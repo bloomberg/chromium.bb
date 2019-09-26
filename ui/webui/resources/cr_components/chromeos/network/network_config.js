@@ -383,7 +383,7 @@ Polymer({
     this.hiddenNetworkWarning_ = this.showHiddenNetworkWarning_();
 
     this.updateIsConfigured_();
-    this.updateDeviceCertsOnly_();
+    this.onNetworkCertificatesChanged();
   },
 
   save: function() {
@@ -477,7 +477,7 @@ Polymer({
   },
 
   /** CrNetworkListenerBehavior override */
-  onCertificateListsChanged_: function() {
+  onNetworkCertificatesChanged: function() {
     this.networkConfig_.getNetworkCertificates().then(response => {
       const isOpenVpn = this.configProperties_.type == mojom.NetworkType.kVPN &&
           this.configProperties_.vpn.type == mojom.VpnType.kOpenVPN;
@@ -648,7 +648,7 @@ Polymer({
 
   /** @private */
   onShareChanged_: function(event) {
-    this.updateDeviceCertsOnly_();
+    this.updateSelectedCerts_();
   },
 
   /**
@@ -811,7 +811,6 @@ Polymer({
     if (managedProperties.type == mojom.NetworkType.kVPN) {
       this.vpnType_ = this.getVpnTypeFromProperties_(this.configProperties_);
     }
-    this.onCertificateListsChanged_();
   },
 
   /**
@@ -1031,7 +1030,6 @@ Polymer({
       };
     }
     this.updateCertError_();
-    this.onCertificateListsChanged_();
   },
 
   /** @private */
@@ -1145,29 +1143,53 @@ Polymer({
    * @private
    */
   updateSelectedCerts_: function() {
+    if (!this.serverCaCerts_.length || !this.userCerts_.length) {
+      return;
+    }
+    const eap = this.eapProperties_;
+
+    // Only device-wide certificates can be used for shared networks that
+    // require a certificate.
+    this.deviceCertsOnly_ =
+        this.shareNetwork_ && !!eap && eap.outer == 'EAP-TLS';
+
     // Validate selected Server CA.
-    if (!this.findCert_(this.serverCaCerts_, this.selectedServerCaHash_)) {
+    const caCert =
+        this.findCert_(this.serverCaCerts_, this.selectedServerCaHash_);
+    if (!caCert || (this.deviceCertsOnly_ && !caCert.deviceWide)) {
       this.selectedServerCaHash_ = undefined;
     }
     if (!this.selectedServerCaHash_) {
-      const eap = this.eapProperties_;
-      if (eap) {
-        this.selectedServerCaHash_ =
-            eap.useSystemCas ? DEFAULT_HASH : DO_NOT_CHECK_HASH;
+      if (eap && eap.useSystemCas) {
+        this.selectedServerCaHash_ = DEFAULT_HASH;
       } else if (!this.guid && this.serverCaCerts_[0]) {
-        // For unconfigured networks only, default to the first CA.
-        this.selectedServerCaHash_ = this.serverCaCerts_[0].hash;
+        // For unconfigured networks, default to the first available
+        // certificate, or DO_NOT_CHECK (i.e. skip DEFAULT_HASH). See
+        /// onNetworkCertificatesChanged() for how certificates are added.
+        let cert = this.serverCaCerts_[0];
+        if (cert.hash == DEFAULT_HASH && this.serverCaCerts_[1]) {
+          cert = this.serverCaCerts_[1];
+        }
+        this.selectedServerCaHash_ = cert.hash;
       } else {
         this.selectedServerCaHash_ = DO_NOT_CHECK_HASH;
       }
     }
 
     // Validate selected User cert.
-    if (!this.findCert_(this.userCerts_, this.selectedUserCertHash_)) {
+    const userCert =
+        this.findCert_(this.userCerts_, this.selectedUserCertHash_);
+    if (!userCert || (this.deviceCertsOnly_ && !userCert.deviceWide)) {
       this.selectedUserCertHash_ = undefined;
     }
-    if (!this.selectedUserCertHash_ && this.userCerts_[0]) {
-      this.selectedUserCertHash_ = this.userCerts_[0].hash;
+    if (!this.selectedUserCertHash_) {
+      for (let i = 0; i < this.userCerts_.length; ++i) {
+        const userCert = this.userCerts_[i];
+        if (userCert && (!this.deviceCertsOnly_ || userCert.deviceWide)) {
+          this.selectedUserCertHash_ = userCert.hash;
+          break;
+        }
+      }
     }
   },
 
@@ -1205,27 +1227,6 @@ Polymer({
   /** @private */
   updateIsConfigured_: function() {
     this.isConfigured_ = this.getIsConfigured_();
-  },
-
-  /** @private */
-  updateDeviceCertsOnly_: function() {
-    // Only device-wide certificates can be used for networks that require a
-    // certificate and are shared.
-    const eap = this.eapProperties_;
-    if (!this.shareNetwork_ || !eap || eap.outer != 'EAP-TLS') {
-      this.deviceCertsOnly_ = false;
-      return;
-    }
-    // Clear selection if certificate is not device-wide.
-    let cert = this.findCert_(this.userCerts_, this.selectedUserCertHash_);
-    if (cert && !cert.deviceWide) {
-      this.selectedUserCertHash_ = undefined;
-    }
-    cert = this.findCert_(this.serverCaCerts_, this.selectedServerCaHash_);
-    if (cert && !cert.deviceWide) {
-      this.selectedServerCaHash_ = undefined;
-    }
-    this.deviceCertsOnly_ = true;
   },
 
   /**

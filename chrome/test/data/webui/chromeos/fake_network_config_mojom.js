@@ -115,7 +115,10 @@ class FakeNetworkConfig {
    * @return {!Promise}
    */
   whenCalled(methodName) {
-    return this.getResolver_(methodName).promise;
+    return this.getResolver_(methodName).promise.then(() => {
+      // Support sequential calls to whenCalled by replacing the promise.
+      this.resolverMap_.set(methodName, new PromiseResolver());
+    });
   }
 
   /**
