@@ -121,6 +121,11 @@ vars = {
   # Wildcards are supported (e.g. "qemu.*").
   'checkout_fuchsia_boot_images': "qemu.x64,qemu.arm64",
 
+  # By Default, do not checkout AEMU, as it is too big. This can be overridden
+  # e.g. with custom_vars.
+  # TODO(chonggu): Delete once AEMU package is small enough.
+  'checkout_aemu': False,
+
   # Default to the empty board. Desktop Chrome OS builds don't need cros SDK
   # dependencies. Other Chrome OS builds should always define this explicitly.
   'cros_board': '',
@@ -1324,6 +1329,28 @@ deps = {
           },
       ],
       'condition': 'host_os == "mac" and checkout_fuchsia',
+      'dep_type': 'cipd',
+  },
+
+  'src/third_party/aemu-linux-x64': {
+      'packages': [
+          {
+              'package': 'fuchsia/third_party/aemu/linux-amd64',
+              'version': 'IzRqaHDMNtw9FjGgpntL65P_3dvQRLIuzxBkSUpoG1UC'
+          },
+      ],
+      'condition': 'host_os == "linux" and checkout_aemu',
+      'dep_type': 'cipd',
+  },
+
+  'src/third_party/aemu-mac-x64': {
+      'packages': [
+          {
+              'package': 'fuchsia/third_party/aemu/mac-amd64',
+              'version': 'T9bWxf8aUC5TwCFgPxpuW29Mfy-7Z9xCfXB9QO8MfU0C'
+          },
+      ],
+      'condition': 'host_os == "mac" and checkout_aemu',
       'dep_type': 'cipd',
   },
 
