@@ -2464,7 +2464,8 @@ void UserSessionManager::MaybeShowReleaseNotesNotification(Profile* profile) {
   if (!release_notes_notification_) {
     release_notes_notification_ =
         std::make_unique<ReleaseNotesNotification>(profile);
-    release_notes_notification_->MaybeShowReleaseNotes();
+    if (chrome::GetChannel() == version_info::Channel::STABLE)
+      release_notes_notification_->MaybeShowReleaseNotes();
   }
 }
 
