@@ -3432,7 +3432,7 @@ TEST_P(HotseatShelfLayoutManagerTest, ReleasingSlowDragBelowThreshold) {
                              ->shelf_view_for_testing()
                              ->GetBoundsInScreen()
                              .height();
-  const gfx::Point end(start + gfx::Vector2d(0, -shelf_size / 2));
+  const gfx::Point end(start + gfx::Vector2d(0, -shelf_size / 4));
   const base::TimeDelta kTimeDelta = base::TimeDelta::FromMilliseconds(1000);
   const int kNumScrollSteps = 4;
   GetEventGenerator()->GestureScrollSequence(start, end, kTimeDelta,

@@ -374,6 +374,10 @@ views::View* ScrollableShelfView::GetDefaultFocusableChild() {
   }
 }
 
+gfx::Rect ScrollableShelfView::GetHotseatBackgroundBounds() {
+  return available_space_;
+}
+
 views::View* ScrollableShelfView::GetShelfContainerViewForTest() {
   return shelf_container_view_;
 }
@@ -502,6 +506,9 @@ void ScrollableShelfView::Layout() {
   const gfx::Insets padding_insets = CalculateEdgePadding();
   available_space_ = GetLocalBounds();
   available_space_.Inset(padding_insets);
+  // The hotseat uses |available_space_| to determine where to show its
+  // background, so notify it when it is recalculated.
+  GetShelf()->shelf_widget()->hotseat_widget()->UpdateOpaqueBackground();
 
   // The upper bound of scrolling offset may vary due to display rotation.
   // Ensures that |scroll_offset_| is within the legal range.

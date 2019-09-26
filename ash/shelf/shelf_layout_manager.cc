@@ -1066,6 +1066,14 @@ HotseatState ShelfLayoutManager::CalculateHotseatState(
       }
     }
     case kDragCompleteInProgress:
+      if (visibility_state == SHELF_AUTO_HIDE) {
+        // When the shelf is autohidden and the drag is being completed, the
+        // auto hide state has been finalized, so ensure the hotseat matches.
+        DCHECK_EQ(drag_auto_hide_state_, auto_hide_state);
+        return auto_hide_state == SHELF_AUTO_HIDE_SHOWN
+                   ? HotseatState::kExtended
+                   : HotseatState::kHidden;
+      }
       FALLTHROUGH;
     case kDragCancelInProgress: {
       // If the drag being completed is not a Hotseat drag, don't change the
@@ -1377,6 +1385,7 @@ void ShelfLayoutManager::CalculateTargetBounds(
   int hotseat_height;
   if (shelf_->IsHorizontalAlignment()) {
     int hotseat_y;
+    const int hotseat_size = Shell::Get()->shelf_config()->hotseat_size();
     switch (state_.hotseat_state) {
       case HotseatState::kShown:
         // Show the hotseat co-altitude with ShelfView.
@@ -1384,11 +1393,12 @@ void ShelfLayoutManager::CalculateTargetBounds(
         break;
       case HotseatState::kHidden:
         // Show the hotseat offscreen.
-        hotseat_y = shelf_height;
+        hotseat_y = hotseat_size;
         break;
       case HotseatState::kExtended:
         // Show the hotseat at its extended position.
-        hotseat_y = -shelf_height;
+        hotseat_y = -hotseat_size -
+                    Shell::Get()->shelf_config()->hotseat_bottom_padding();
         break;
     }
 
@@ -1403,7 +1413,7 @@ void ShelfLayoutManager::CalculateTargetBounds(
                                     home_button_edge_spacing;
     hotseat_origin = gfx::Point(hotseat_x, hotseat_y);
 
-    hotseat_height = shelf_height;
+    hotseat_height = hotseat_size;
   } else {
     hotseat_origin = gfx::Point(0, target_bounds->nav_bounds_in_shelf.bottom() +
                                        home_button_edge_spacing);
@@ -1539,16 +1549,20 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
     int hotseat_y = 0;
     if (!Shell::Get()->overview_controller() ||
         !Shell::Get()->overview_controller()->InOverviewSession()) {
+      const int hotseat_extended_y =
+          Shell::Get()->shelf_config()->hotseat_size() +
+          Shell::Get()->shelf_config()->hotseat_bottom_padding();
       const int hotseat_baseline =
-          (state_.hotseat_state == HotseatState::kExtended) ? -shelf_size
-                                                            : shelf_size;
+          (state_.hotseat_state == HotseatState::kExtended)
+              ? -hotseat_extended_y
+              : shelf_size;
       bool use_hotseat_baseline =
           (state_.hotseat_state == HotseatState::kExtended &&
            visibility_state() == SHELF_AUTO_HIDE) ||
           (state_.hotseat_state == HotseatState::kHidden &&
            visibility_state() != SHELF_AUTO_HIDE);
       hotseat_y = std::max(
-          -shelf_size,
+          -hotseat_extended_y,
           static_cast<int>((use_hotseat_baseline ? hotseat_baseline : 0) +
                            translate));
     }
@@ -2010,7 +2024,7 @@ bool ShelfLayoutManager::StartShelfDrag(
   // offset to the hotseats extended position.
   if (state_.hotseat_state == HotseatState::kExtended &&
       visibility_state() == SHELF_VISIBLE) {
-    drag_amount_ = -ShelfConfig::Get()->shelf_size();
+    drag_amount_ = -ShelfConfig::Get()->hotseat_size();
   } else {
     drag_amount_ = 0.f;
   }
