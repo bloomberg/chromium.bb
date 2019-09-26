@@ -1631,7 +1631,7 @@ bool WebGLRenderingContextBase::CopyRenderingResultsFromDrawingBuffer(
     // CopyToPlatformTexture is done correctly. See crbug.com/794706.
     gl->Flush();
 
-    bool flip_y = is_origin_top_left_ && !canvas()->LowLatencyEnabled();
+    bool flip_y = IsOriginTopLeft() != resource_provider->IsOriginTopLeft();
     return drawing_buffer_->CopyToPlatformTexture(
         gl, texture_target, texture_id, 0 /*texture LOD */, true, flip_y,
         IntPoint(0, 0), IntRect(IntPoint(0, 0), drawing_buffer_->Size()),
