@@ -2575,6 +2575,30 @@ class TestGitCl(TestCase):
     self.assertRegexpMatches(sys.stdout.getvalue(), 'Started:')
     self.assertRegexpMatches(sys.stdout.getvalue(), '2 tryjobs')
 
+  def test_filter_failed_none(self):
+    self.assertEqual(git_cl._filter_failed({}), {})
+
+  def test_filter_failed_some(self):
+    builds = {
+      '9000': {
+        'id': '9000',
+        'bucket': 'luci.chromium.try',
+        'project': 'chromium',
+        'created_by': 'user:someone@chromium.org',
+        'created_ts': '147200002222000',
+        'experimental': False,
+        'parameters_json': json.dumps({
+          'builder_name': 'my-bot',
+          'properties': {'category': 'cq'},
+        }),
+        'status': 'COMPLETED',
+        'result': 'FAILURE',
+      }
+    }
+    self.assertEqual(
+      git_cl._filter_failed(builds),
+      {'chromium/try': {'my-bot': []}})
+
   def _mock_gerrit_changes_for_detail_cache(self):
     self.mock(git_cl.Changelist, '_GetGerritHost', lambda _: 'host')
 
