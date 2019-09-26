@@ -65,8 +65,7 @@ SecureChannelClientImpl::InitiateConnectionToDevice(
       base::BindOnce(
           &SecureChannelClientImpl::PerformInitiateConnectionToDevice,
           weak_ptr_factory_.GetWeakPtr(), device_to_connect, local_device,
-          feature, connection_priority,
-          connection_attempt->GenerateInterfacePtr()));
+          feature, connection_priority, connection_attempt->GenerateRemote()));
 
   return connection_attempt;
 }
@@ -88,8 +87,7 @@ SecureChannelClientImpl::ListenForConnectionFromDevice(
       base::BindOnce(
           &SecureChannelClientImpl::PerformListenForConnectionFromDevice,
           weak_ptr_factory_.GetWeakPtr(), device_to_connect, local_device,
-          feature, connection_priority,
-          connection_attempt->GenerateInterfacePtr()));
+          feature, connection_priority, connection_attempt->GenerateRemote()));
 
   return connection_attempt;
 }
@@ -99,10 +97,10 @@ void SecureChannelClientImpl::PerformInitiateConnectionToDevice(
     multidevice::RemoteDeviceRef local_device,
     const std::string& feature,
     ConnectionPriority connection_priority,
-    mojom::ConnectionDelegatePtr connection_delegate_ptr) {
+    mojo::PendingRemote<mojom::ConnectionDelegate> connection_delegate_remote) {
   secure_channel_ptr_->InitiateConnectionToDevice(
       device_to_connect.GetRemoteDevice(), local_device.GetRemoteDevice(),
-      feature, connection_priority, std::move(connection_delegate_ptr));
+      feature, connection_priority, std::move(connection_delegate_remote));
 }
 
 void SecureChannelClientImpl::PerformListenForConnectionFromDevice(
@@ -110,10 +108,10 @@ void SecureChannelClientImpl::PerformListenForConnectionFromDevice(
     multidevice::RemoteDeviceRef local_device,
     const std::string& feature,
     ConnectionPriority connection_priority,
-    mojom::ConnectionDelegatePtr connection_delegate_ptr) {
+    mojo::PendingRemote<mojom::ConnectionDelegate> connection_delegate_remote) {
   secure_channel_ptr_->ListenForConnectionFromDevice(
       device_to_connect.GetRemoteDevice(), local_device.GetRemoteDevice(),
-      feature, connection_priority, std::move(connection_delegate_ptr));
+      feature, connection_priority, std::move(connection_delegate_remote));
 }
 
 void SecureChannelClientImpl::FlushForTesting() {

@@ -33,6 +33,7 @@
 #include "chromeos/services/secure_channel/timer_factory_impl.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -273,7 +274,8 @@ class FakeClientConnectionParametersFactory
   // ClientConnectionParametersImpl::Factory:
   std::unique_ptr<ClientConnectionParameters> BuildInstance(
       const std::string& feature,
-      mojom::ConnectionDelegatePtr connection_delegate_ptr) override {
+      mojo::PendingRemote<mojom::ConnectionDelegate> connection_delegate_remote)
+      override {
     auto instance = std::make_unique<FakeClientConnectionParameters>(
         feature, base::BindOnce(
                      &FakeClientConnectionParametersFactory::OnInstanceDeleted,
@@ -804,11 +806,11 @@ class SecureChannelServiceTest : public testing::Test {
     if (is_listener) {
       secure_channel_ptr_->ListenForConnectionFromDevice(
           device_to_connect, local_device, feature, connection_priority,
-          fake_connection_delegate.GenerateInterfacePtr());
+          fake_connection_delegate.GenerateRemote());
     } else {
       secure_channel_ptr_->InitiateConnectionToDevice(
           device_to_connect, local_device, feature, connection_priority,
-          fake_connection_delegate.GenerateInterfacePtr());
+          fake_connection_delegate.GenerateRemote());
     }
 
     secure_channel_ptr_.FlushForTesting();
