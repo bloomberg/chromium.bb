@@ -715,7 +715,7 @@ gfx::Insets ScrollableShelfView::CalculateEdgePadding() const {
       2 * ShelfConfig::Get()->app_icon_group_margin();
 
   int gap =
-      layout_strategy_ == kNotShowArrowButtons
+      CanFitAllAppsWithoutScrolling()
           ? available_size_for_app_icons - icons_size  // shelf centering
           : CalculateOverflowPadding(available_size_for_app_icons);  // overflow
 
