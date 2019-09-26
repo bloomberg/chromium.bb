@@ -798,9 +798,7 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
                      # converts it to None.
                      {'metadata_signature': None,
                       'metadata_size': 10,
-                      'appid': 'foo-appid',
-                      'md5_hex': 'deprecated',
-                      'sha1_hex': 'deprecated'})
+                      'appid': 'foo-appid'})
 
   def testGetPayloadPropertiesMapSigned(self):
     """Tests getting the payload properties as a dict for signed payloads."""
@@ -821,9 +819,7 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
                       # properties file even if it is empty.
                       'appid': '',
                       # This is the base64 encode of 'foo-pubkey'.
-                      'public_key': 'Zm9vLXB1YmtleQ==',
-                      'md5_hex': 'deprecated',
-                      'sha1_hex': 'deprecated'})
+                      'public_key': 'Zm9vLXB1YmtleQ=='})
 
 
 class PaygenPayloadLibEndToEndTest(PaygenPayloadLibTest):

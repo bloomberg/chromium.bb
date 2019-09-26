@@ -686,8 +686,6 @@ class PaygenPayload(object):
 
     In addition we add the following three keys to description file:
 
-    "sha1_hex": Payload sha1 hash as a hex encoded string.
-    "md5_hex": Payload md5 hash as a hex encoded string.
     "appid": The APP ID associated with this payload.
     "public_key": The public key the payload was signed with.
 
@@ -729,13 +727,6 @@ class PaygenPayload(object):
     if self._public_key:
       props_map['public_key'] = base64.b64encode(
           osutils.ReadFile(self._public_key))
-
-    # TODO(b/131762584): Remove these completely once they are deprecated from
-    # the Goldeneye. The client doesn't even check for these, so there is no
-    # point in calculating and sending them over. Better keep them like this so
-    # someone in the future hopefully fully deprecate them.
-    props_map['md5_hex'] = 'deprecated'
-    props_map['sha1_hex'] = 'deprecated'
 
     # We need the metadata size later for payload verification. Just grab it
     # from the properties file.
