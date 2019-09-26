@@ -1749,10 +1749,20 @@ IFACEMETHODIMP AXPlatformNodeWin::get_ExpandCollapseState(
   WIN_ACCESSIBILITY_API_HISTOGRAM(
       UMA_API_EXPANDCOLLAPSE_GET_EXPANDCOLLAPSESTATE);
   UIA_VALIDATE_CALL_1_ARG(result);
+
   const AXNodeData& data = GetData();
-  if (data.HasState(ax::mojom::State::kExpanded)) {
+  const bool is_menu_button = data.GetHasPopup() == ax::mojom::HasPopup::kMenu;
+  const bool is_expanded_menu_button =
+      is_menu_button &&
+      data.GetCheckedState() == ax::mojom::CheckedState::kTrue;
+  const bool is_collapsed_menu_button =
+      is_menu_button &&
+      data.GetCheckedState() != ax::mojom::CheckedState::kTrue;
+
+  if (data.HasState(ax::mojom::State::kExpanded) || is_expanded_menu_button) {
     *result = ExpandCollapseState_Expanded;
-  } else if (data.HasState(ax::mojom::State::kCollapsed)) {
+  } else if (data.HasState(ax::mojom::State::kCollapsed) ||
+             is_collapsed_menu_button) {
     *result = ExpandCollapseState_Collapsed;
   } else {
     *result = ExpandCollapseState_LeafNode;
