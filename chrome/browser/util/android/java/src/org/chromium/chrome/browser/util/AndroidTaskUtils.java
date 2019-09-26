@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.document;
+package org.chromium.chrome.browser.util;
 
 import android.annotation.TargetApi;
 import android.app.ActivityManager;
@@ -26,7 +26,7 @@ import java.util.List;
  * Deals with Document-related API calls.
  */
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-public class DocumentUtils {
+public class AndroidTaskUtils {
     public static final String TAG = "DocumentUtilities";
 
     /**
