@@ -4397,13 +4397,6 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
   registry_->AddInterface(base::BindRepeating(
       &KeyboardLockServiceImpl::CreateMojoService, base::Unretained(this)));
 
-
-  sensor_provider_proxy_.reset(
-      new SensorProviderProxyImpl(permission_controller, this));
-  registry_->AddInterface(
-      base::Bind(&SensorProviderProxyImpl::Bind,
-                 base::Unretained(sensor_provider_proxy_.get())));
-
 #if !defined(OS_ANDROID)
   if (command_line->HasSwitch(
           switches::kEnableExperimentalWebPlatformFeatures)) {
@@ -6376,6 +6369,17 @@ void RenderFrameHostImpl::GetSpeechSynthesis(
 void RenderFrameHostImpl::GetFileChooser(
     mojo::PendingReceiver<blink::mojom::FileChooser> receiver) {
   FileChooserImpl::Create(this, std::move(receiver));
+}
+
+void RenderFrameHostImpl::GetSensorProvider(
+    mojo::PendingReceiver<device::mojom::SensorProvider> receiver) {
+  if (!sensor_provider_proxy_) {
+    sensor_provider_proxy_.reset(new SensorProviderProxyImpl(
+        PermissionControllerImpl::FromBrowserContext(
+            GetProcess()->GetBrowserContext()),
+        this));
+  }
+  sensor_provider_proxy_->Bind(std::move(receiver));
 }
 
 mojo::Remote<blink::mojom::FileChooser>

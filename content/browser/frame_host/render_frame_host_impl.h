@@ -66,6 +66,7 @@
 #include "net/base/network_isolation_key.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/http/http_response_headers.h"
+#include "services/device/public/mojom/sensor_provider.mojom.h"
 #include "services/device/public/mojom/wake_lock_context.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
@@ -1078,6 +1079,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   void GetFileChooser(
       mojo::PendingReceiver<blink::mojom::FileChooser> receiver);
+
+  void GetSensorProvider(
+      mojo::PendingReceiver<device::mojom::SensorProvider> receiver);
 
   void CreatePermissionService(
       mojo::PendingReceiver<blink::mojom::PermissionService> receiver);

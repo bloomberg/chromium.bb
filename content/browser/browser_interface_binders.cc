@@ -17,6 +17,7 @@
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/shared_worker_instance.h"
 #include "media/capture/mojom/image_capture.mojom.h"
+#include "services/device/public/mojom/sensor_provider.mojom.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom.h"
 #include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom.h"
@@ -79,6 +80,9 @@ void PopulateFrameBinders(RenderFrameHostImpl* host,
 
   map->Add<blink::mojom::FileChooser>(base::BindRepeating(
       &RenderFrameHostImpl::GetFileChooser, base::Unretained(host)));
+
+  map->Add<device::mojom::SensorProvider>(base::BindRepeating(
+      &RenderFrameHostImpl::GetSensorProvider, base::Unretained(host)));
 
   map->Add<media::mojom::ImageCapture>(
       base::BindRepeating(&ImageCaptureImpl::Create));
