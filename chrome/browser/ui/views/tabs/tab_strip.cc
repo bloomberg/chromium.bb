@@ -1161,6 +1161,10 @@ void TabStrip::ChangeTabGroup(int model_index,
       layout_helper_->UpdateGroupHeaderIndex(old_group.value());
     }
   }
+  if (new_group.has_value()) {
+    // As above, ensure the header is in the right place.
+    layout_helper_->UpdateGroupHeaderIndex(new_group.value());
+  }
   UpdateIdealBounds();
   AnimateToIdealBounds();
 }
