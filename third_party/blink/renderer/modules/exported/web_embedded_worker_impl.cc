@@ -70,6 +70,19 @@
 
 namespace blink {
 
+WebServiceWorkerInstalledScriptsManagerParams::
+    WebServiceWorkerInstalledScriptsManagerParams(
+        WebVector<WebURL> installed_scripts_urls,
+        mojo::ScopedMessagePipeHandle manager_receiver,
+        mojo::ScopedMessagePipeHandle manager_host_remote)
+    : installed_scripts_urls(std::move(installed_scripts_urls)),
+      manager_receiver(std::move(manager_receiver)),
+      manager_host_remote(std::move(manager_host_remote)) {
+  DCHECK(!this->installed_scripts_urls.empty());
+  DCHECK(this->manager_receiver);
+  DCHECK(this->manager_host_remote);
+}
+
 // static
 std::unique_ptr<WebEmbeddedWorker> WebEmbeddedWorker::Create(
     WebServiceWorkerContextClient* client) {

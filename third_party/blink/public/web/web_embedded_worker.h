@@ -45,7 +45,14 @@ struct WebEmbeddedWorkerStartData;
 
 // As we're on the border line between non-Blink and Blink variants, we need
 // to use mojo::ScopedMessagePipeHandle to pass Mojo types.
-struct WebServiceWorkerInstalledScriptsManagerParams {
+struct BLINK_EXPORT WebServiceWorkerInstalledScriptsManagerParams {
+  WebServiceWorkerInstalledScriptsManagerParams() = delete;
+  WebServiceWorkerInstalledScriptsManagerParams(
+      WebVector<WebURL> installed_scripts_urls,
+      mojo::ScopedMessagePipeHandle manager_receiver,
+      mojo::ScopedMessagePipeHandle manager_host_remote);
+  ~WebServiceWorkerInstalledScriptsManagerParams() = default;
+
   WebVector<WebURL> installed_scripts_urls;
   // A handle for
   // mojo::PendingReceiver<mojom::blink::ServiceWorkerInstalledScriptsManager>.

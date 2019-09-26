@@ -104,16 +104,11 @@ void EmbeddedWorkerInstanceClientImpl::StartWorker(
   // when the worker is not installed, or the worker is launched for checking
   // the update.
   if (params->installed_scripts_info) {
-    installed_scripts_manager_params = std::make_unique<
-        blink::WebServiceWorkerInstalledScriptsManagerParams>();
-    installed_scripts_manager_params->installed_scripts_urls =
-        std::move(params->installed_scripts_info->installed_urls);
-    installed_scripts_manager_params->manager_receiver =
-        params->installed_scripts_info->manager_receiver.PassPipe();
-    installed_scripts_manager_params->manager_host_remote =
-        params->installed_scripts_info->manager_host_remote.PassPipe();
-    DCHECK(installed_scripts_manager_params->manager_receiver.is_valid());
-    DCHECK(installed_scripts_manager_params->manager_host_remote.is_valid());
+    installed_scripts_manager_params =
+        std::make_unique<blink::WebServiceWorkerInstalledScriptsManagerParams>(
+            std::move(params->installed_scripts_info->installed_urls),
+            params->installed_scripts_info->manager_receiver.PassPipe(),
+            params->installed_scripts_info->manager_host_remote.PassPipe());
   }
 
   auto worker =

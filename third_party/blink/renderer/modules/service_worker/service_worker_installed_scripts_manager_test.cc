@@ -141,14 +141,11 @@ class ServiceWorkerInstalledScriptsManagerTest : public testing::Test {
   void CreateInstalledScriptsManager(
       mojom::blink::ServiceWorkerInstalledScriptsInfoPtr
           installed_scripts_info) {
-    auto installed_scripts_manager_params = std::make_unique<
-        blink::WebServiceWorkerInstalledScriptsManagerParams>();
-    installed_scripts_manager_params->installed_scripts_urls =
-        std::move(installed_scripts_info->installed_urls);
-    installed_scripts_manager_params->manager_receiver =
-        installed_scripts_info->manager_receiver.PassPipe();
-    installed_scripts_manager_params->manager_host_remote =
-        installed_scripts_info->manager_host_remote.PassPipe();
+    auto installed_scripts_manager_params =
+        std::make_unique<WebServiceWorkerInstalledScriptsManagerParams>(
+            std::move(installed_scripts_info->installed_urls),
+            installed_scripts_info->manager_receiver.PassPipe(),
+            installed_scripts_info->manager_host_remote.PassPipe());
     installed_scripts_manager_ =
         std::make_unique<ServiceWorkerInstalledScriptsManager>(
             std::move(installed_scripts_manager_params),
