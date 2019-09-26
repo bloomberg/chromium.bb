@@ -106,7 +106,6 @@ enum class GpuRasterizationStatus {
   ON,
   ON_FORCED,
   OFF_DEVICE,
-  OFF_VIEWPORT,
   MSAA_CONTENT,
 };
 
@@ -522,7 +521,6 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   virtual bool InitializeFrameSink(LayerTreeFrameSink* layer_tree_frame_sink);
   TileManager* tile_manager() { return &tile_manager_; }
 
-  void SetHasGpuRasterizationTrigger(bool flag);
   void SetContentHasSlowPaths(bool flag);
   void SetContentHasNonAAPaint(bool flag);
   void GetGpuRasterizationCapabilities(bool* gpu_rasterization_enabled,
@@ -1043,7 +1041,6 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   bool need_update_gpu_rasterization_status_ = false;
   bool content_has_slow_paths_ = false;
   bool content_has_non_aa_paint_ = false;
-  bool has_gpu_rasterization_trigger_ = false;
   bool use_gpu_rasterization_ = false;
   bool use_oop_rasterization_ = false;
   bool use_msaa_ = false;

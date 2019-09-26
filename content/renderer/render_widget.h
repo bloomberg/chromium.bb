@@ -470,7 +470,6 @@ class CONTENT_EXPORT RenderWidget
                                     bool up,
                                     bool down) override;
   void FallbackCursorModeSetCursorVisibility(bool visible) override;
-  void SetAllowGpuRasterization(bool allow_gpu_raster) override;
   void SetPageScaleStateAndLimits(float page_scale_factor,
                                   bool is_pinch_gesture_active,
                                   float minimum,

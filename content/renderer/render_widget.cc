@@ -3396,10 +3396,6 @@ void RenderWidget::FallbackCursorModeSetCursorVisibility(bool visible) {
   widget_input_handler_manager_->FallbackCursorModeSetCursorVisibility(visible);
 }
 
-void RenderWidget::SetAllowGpuRasterization(bool allow_gpu_raster) {
-  layer_tree_host_->SetHasGpuRasterizationTrigger(allow_gpu_raster);
-}
-
 void RenderWidget::SetPageScaleStateAndLimits(float page_scale_factor,
                                               bool is_pinch_gesture_active,
                                               float minimum,
