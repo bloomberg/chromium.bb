@@ -152,6 +152,7 @@ source_set("app_internal") {
     "//components/browsing_data/core",
     "//components/component_updater",
     "//components/component_updater:crl_set_remover",
+    "//components/component_updater/installer_policies",
     "//components/content_settings/core/browser",
     "//components/crash/core/common",
     "//components/favicon/core",
