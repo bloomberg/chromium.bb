@@ -232,6 +232,8 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
     return link_highlights_;
   }
 
+  int GetRenderingContext3D() const { return rendering_context3d_; }
+
   static void RegisterContentsLayer(cc::Layer*);
   static void UnregisterContentsLayer(cc::Layer*);
 
@@ -368,6 +370,8 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   int contents_layer_id_;
 
   Vector<LinkHighlight*> link_highlights_;
+
+  int rendering_context3d_;
 
   SquashingDisallowedReasons squashing_disallowed_reasons_ =
       SquashingDisallowedReason::kNone;

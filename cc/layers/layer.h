@@ -460,6 +460,17 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     return inputs_.should_flatten_transform;
   }
 
+  // Set or get a 3d sorting context for this layer, where adjacent layers (in a
+  // pre-order traversal) with the same id are sorted as a group and may occlude
+  // each other based on their z-position, including intersecting each other and
+  // each occluding the other layer partially. Layers in different sorting
+  // contexts will be composited and occlude in tree order (children occlude
+  // ancestors and earlier siblings in the children list). If the |id| is 0,
+  // then the layer is not part of any sorting context, and is always composited
+  // in tree order.
+  void Set3dSortingContextId(int id);
+  int sorting_context_id() const { return inputs_.sorting_context_id; }
+
   // When true the layer may contribute to the compositor's output. When false,
   // it does not. This property does not apply to children of the layer, they
   // may contribute while this layer does not. The layer itself will determine

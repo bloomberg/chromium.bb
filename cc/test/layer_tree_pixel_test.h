@@ -78,13 +78,6 @@ class LayerTreePixelTest : public LayerTreeTest {
       int border_width,
       SkColor border_color);
 
-  void CreateSolidColorLayerPlusBorders(
-      const gfx::Rect& rect,
-      SkColor color,
-      int border_width,
-      SkColor border_color,
-      std::vector<scoped_refptr<SolidColorLayer>>&);
-
   void RunPixelTest(RendererType renderer_type,
                     scoped_refptr<Layer> content_root,
                     base::FilePath file_name);

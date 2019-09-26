@@ -25,7 +25,7 @@ Before:
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutNGBlockFlow (positioned) DIV id='green-box' class='center box-container'",
+      "name": "LayoutBlockFlow (positioned) DIV id='green-box' class='center box-container'",
       "position": [108, 108],
       "contentsOpaque": true,
       "drawsContent": false
@@ -36,43 +36,43 @@ Before:
       "transform": 2
     },
     {
-      "name": "LayoutNGBlockFlow DIV id='camera' class='rotate-3d-start'",
+      "name": "LayoutBlockFlow DIV id='camera' class='rotate-3d-start'",
       "contentsOpaque": true,
       "drawsContent": false,
       "transform": 3
     },
     {
-      "name": "LayoutNGBlockFlow (positioned) DIV class='side side-1'",
+      "name": "LayoutBlockFlow (positioned) DIV class='side side-1'",
       "bounds": [100, 100],
       "backgroundColor": "#00FF00CC",
       "transform": 4
     },
     {
-      "name": "LayoutNGBlockFlow (positioned) DIV class='side side-2'",
+      "name": "LayoutBlockFlow (positioned) DIV class='side side-2'",
       "bounds": [100, 100],
       "backgroundColor": "#00FF00CC",
       "transform": 5
     },
     {
-      "name": "LayoutNGBlockFlow (positioned) DIV class='side side-3'",
+      "name": "LayoutBlockFlow (positioned) DIV class='side side-3'",
       "bounds": [100, 100],
       "backgroundColor": "#00FF00CC",
       "transform": 6
     },
     {
-      "name": "LayoutNGBlockFlow (positioned) DIV class='side side-4'",
+      "name": "LayoutBlockFlow (positioned) DIV class='side side-4'",
       "bounds": [100, 100],
       "backgroundColor": "#00FF00CC",
       "transform": 7
     },
     {
-      "name": "LayoutNGBlockFlow (positioned) DIV class='side side-5'",
+      "name": "LayoutBlockFlow (positioned) DIV class='side side-5'",
       "bounds": [100, 100],
       "backgroundColor": "#00FF00CC",
       "transform": 8
     },
     {
-      "name": "LayoutNGBlockFlow (positioned) DIV class='side side-6'",
+      "name": "LayoutBlockFlow (positioned) DIV class='side side-6'",
       "bounds": [100, 100],
       "backgroundColor": "#00FF00CC",
       "transform": 9
@@ -109,7 +109,8 @@ Before:
         [0, 0, 0, 1]
       ],
       "origin": [50, 50],
-      "flattenInheritedTransform": false
+      "flattenInheritedTransform": false,
+      "renderingContext": 1
     },
     {
       "id": 4,
@@ -120,7 +121,8 @@ Before:
         [0, 0, 1, 0],
         [0, 0, 50, 1]
       ],
-      "flattenInheritedTransform": false
+      "flattenInheritedTransform": false,
+      "renderingContext": 1
     },
     {
       "id": 5,
@@ -132,7 +134,8 @@ Before:
         [50, 0, 0, 1]
       ],
       "origin": [50, 50],
-      "flattenInheritedTransform": false
+      "flattenInheritedTransform": false,
+      "renderingContext": 1
     },
     {
       "id": 6,
@@ -144,7 +147,8 @@ Before:
         [0, 0, -50, 1]
       ],
       "origin": [50, 50],
-      "flattenInheritedTransform": false
+      "flattenInheritedTransform": false,
+      "renderingContext": 1
     },
     {
       "id": 7,
@@ -156,7 +160,8 @@ Before:
         [-50, 0, 0, 1]
       ],
       "origin": [50, 50],
-      "flattenInheritedTransform": false
+      "flattenInheritedTransform": false,
+      "renderingContext": 1
     },
     {
       "id": 8,
@@ -168,7 +173,8 @@ Before:
         [0, -50, 0, 1]
       ],
       "origin": [50, 50],
-      "flattenInheritedTransform": false
+      "flattenInheritedTransform": false,
+      "renderingContext": 1
     },
     {
       "id": 9,
@@ -180,7 +186,8 @@ Before:
         [0, 50, 0, 1]
       ],
       "origin": [50, 50],
-      "flattenInheritedTransform": false
+      "flattenInheritedTransform": false,
+      "renderingContext": 1
     }
   ]
 }
@@ -206,7 +213,7 @@ After:
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutNGBlockFlow (positioned) DIV id='green-box' class='center box-container'",
+      "name": "LayoutBlockFlow (positioned) DIV id='green-box' class='center box-container'",
       "position": [108, 108],
       "contentsOpaque": true,
       "drawsContent": false
@@ -217,43 +224,43 @@ After:
       "transform": 2
     },
     {
-      "name": "LayoutNGBlockFlow DIV id='camera' class='rotate-3d-start rotate-3d-end'",
+      "name": "LayoutBlockFlow DIV id='camera' class='rotate-3d-start rotate-3d-end'",
       "contentsOpaque": true,
       "drawsContent": false,
       "transform": 3
     },
     {
-      "name": "LayoutNGBlockFlow (positioned) DIV class='side side-1'",
+      "name": "LayoutBlockFlow (positioned) DIV class='side side-1'",
       "bounds": [100, 100],
       "backgroundColor": "#00FF00CC",
       "transform": 4
     },
     {
-      "name": "LayoutNGBlockFlow (positioned) DIV class='side side-2'",
+      "name": "LayoutBlockFlow (positioned) DIV class='side side-2'",
       "bounds": [100, 100],
       "backgroundColor": "#00FF00CC",
       "transform": 5
     },
     {
-      "name": "LayoutNGBlockFlow (positioned) DIV class='side side-3'",
+      "name": "LayoutBlockFlow (positioned) DIV class='side side-3'",
       "bounds": [100, 100],
       "backgroundColor": "#00FF00CC",
       "transform": 6
     },
     {
-      "name": "LayoutNGBlockFlow (positioned) DIV class='side side-4'",
+      "name": "LayoutBlockFlow (positioned) DIV class='side side-4'",
       "bounds": [100, 100],
       "backgroundColor": "#00FF00CC",
       "transform": 7
     },
     {
-      "name": "LayoutNGBlockFlow (positioned) DIV class='side side-5'",
+      "name": "LayoutBlockFlow (positioned) DIV class='side side-5'",
       "bounds": [100, 100],
       "backgroundColor": "#00FF00CC",
       "transform": 8
     },
     {
-      "name": "LayoutNGBlockFlow (positioned) DIV class='side side-6'",
+      "name": "LayoutBlockFlow (positioned) DIV class='side side-6'",
       "bounds": [100, 100],
       "backgroundColor": "#00FF00CC",
       "transform": 9
@@ -263,14 +270,14 @@ After:
       "drawsContent": false
     },
     {
-      "name": "LayoutNGBlockFlow (positioned) DIV class='box top left'",
+      "name": "LayoutBlockFlow (positioned) DIV class='box top left'",
       "position": [8, 8],
       "bounds": [100, 150],
       "contentsOpaque": true,
       "backgroundColor": "#808080"
     },
     {
-      "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (positioned) DIV class='box top right')",
+      "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='box top right')",
       "position": [8, 8],
       "bounds": [300, 300]
     }
@@ -306,7 +313,8 @@ After:
         [0, 0, 0, 1]
       ],
       "origin": [50, 50],
-      "flattenInheritedTransform": false
+      "flattenInheritedTransform": false,
+      "renderingContext": 1
     },
     {
       "id": 4,
@@ -317,7 +325,8 @@ After:
         [0, 0, 1, 0],
         [0, 0, 50, 1]
       ],
-      "flattenInheritedTransform": false
+      "flattenInheritedTransform": false,
+      "renderingContext": 1
     },
     {
       "id": 5,
@@ -329,7 +338,8 @@ After:
         [50, 0, 0, 1]
       ],
       "origin": [50, 50],
-      "flattenInheritedTransform": false
+      "flattenInheritedTransform": false,
+      "renderingContext": 1
     },
     {
       "id": 6,
@@ -341,7 +351,8 @@ After:
         [0, 0, -50, 1]
       ],
       "origin": [50, 50],
-      "flattenInheritedTransform": false
+      "flattenInheritedTransform": false,
+      "renderingContext": 1
     },
     {
       "id": 7,
@@ -353,7 +364,8 @@ After:
         [-50, 0, 0, 1]
       ],
       "origin": [50, 50],
-      "flattenInheritedTransform": false
+      "flattenInheritedTransform": false,
+      "renderingContext": 1
     },
     {
       "id": 8,
@@ -365,7 +377,8 @@ After:
         [0, -50, 0, 1]
       ],
       "origin": [50, 50],
-      "flattenInheritedTransform": false
+      "flattenInheritedTransform": false,
+      "renderingContext": 1
     },
     {
       "id": 9,
@@ -377,7 +390,8 @@ After:
         [0, 50, 0, 1]
       ],
       "origin": [50, 50],
-      "flattenInheritedTransform": false
+      "flattenInheritedTransform": false,
+      "renderingContext": 1
     }
   ]
 }

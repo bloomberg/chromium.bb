@@ -51,6 +51,17 @@ void AddTransformJSONProperties(const GraphicsLayer* layer,
   }
 
   AddFlattenInheritedTransformJSON(layer, json);
+
+  if (int rendering_context3d = layer->GetRenderingContext3D()) {
+    auto it = rendering_context_map.find(rendering_context3d);
+    int context_id = rendering_context_map.size() + 1;
+    if (it == rendering_context_map.end())
+      rendering_context_map.Set(rendering_context3d, context_id);
+    else
+      context_id = it->value;
+
+    json.SetInteger("renderingContext", context_id);
+  }
 }
 
 std::unique_ptr<JSONObject> GraphicsLayerAsJSON(
@@ -238,7 +249,7 @@ class LayersAsJSONArray {
       AddFlattenInheritedTransformJSON(&layer, *scroll_translate_json);
     }
 
-    if (!layer.Transform().IsIdentity() ||
+    if (!layer.Transform().IsIdentity() || layer.GetRenderingContext3D() ||
         layer.GetCompositingReasons() & CompositingReason::k3DTransform) {
       if (position != FloatPoint()) {
         // Output position offset as a transform.
@@ -254,7 +265,7 @@ class LayersAsJSONArray {
         position = FloatPoint();
       }
 
-      if (!layer.Transform().IsIdentity()) {
+      if (!layer.Transform().IsIdentity() || layer.GetRenderingContext3D()) {
         auto* transform_json = AddTransformJSON(transform_id);
         AddTransformJSONProperties(&layer, *transform_json,
                                    rendering_context_map_);

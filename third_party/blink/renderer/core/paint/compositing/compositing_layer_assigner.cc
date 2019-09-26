@@ -173,6 +173,9 @@ CompositingLayerAssigner::GetReasonsPreventingSquashing(
   if (layer->TransformAncestor() != squashing_layer.TransformAncestor())
     return SquashingDisallowedReason::kTransformAncestorMismatch;
 
+  if (layer->RenderingContextRoot() != squashing_layer.RenderingContextRoot())
+    return SquashingDisallowedReason::kRenderingContextMismatch;
+
   if (layer->HasFilterInducingProperty() ||
       layer->FilterAncestor() != squashing_layer.FilterAncestor())
     return SquashingDisallowedReason::kFilterMismatch;
