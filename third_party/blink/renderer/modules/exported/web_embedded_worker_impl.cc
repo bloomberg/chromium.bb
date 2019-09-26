@@ -116,23 +116,10 @@ void WebEmbeddedWorkerImpl::StartWorkerContext(
   std::unique_ptr<ServiceWorkerInstalledScriptsManager>
       installed_scripts_manager;
   if (installed_scripts_manager_params) {
-    DCHECK(installed_scripts_manager_params->manager_receiver.is_valid());
-    DCHECK(installed_scripts_manager_params->manager_host_remote.is_valid());
-    Vector<KURL> installed_scripts_urls;
-    installed_scripts_urls.AppendRange(
-        installed_scripts_manager_params->installed_scripts_urls.begin(),
-        installed_scripts_manager_params->installed_scripts_urls.end());
-    installed_scripts_manager = std::make_unique<
-        ServiceWorkerInstalledScriptsManager>(
-        installed_scripts_urls,
-        mojo::PendingReceiver<
-            mojom::blink::ServiceWorkerInstalledScriptsManager>(
-            std::move(installed_scripts_manager_params->manager_receiver)),
-        mojo::PendingRemote<
-            mojom::blink::ServiceWorkerInstalledScriptsManagerHost>(
-            std::move(installed_scripts_manager_params->manager_host_remote),
-            mojom::blink::ServiceWorkerInstalledScriptsManagerHost::Version_),
-        Platform::Current()->GetIOTaskRunner());
+    installed_scripts_manager =
+        std::make_unique<ServiceWorkerInstalledScriptsManager>(
+            std::move(installed_scripts_manager_params),
+            Platform::Current()->GetIOTaskRunner());
   }
 
   // TODO(mkwst): This really needs to be piped through from the requesting
