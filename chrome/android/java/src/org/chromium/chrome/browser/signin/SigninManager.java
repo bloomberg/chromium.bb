@@ -451,19 +451,16 @@ public class SigninManager
         assert mSignInState.mCoreAccountInfo != null;
 
         Log.d(TAG, "Checking if account has policy management enabled");
-        fetchAndApplyCloudPolicy(mSignInState.mCoreAccountInfo, this::onPolicyFetchedBeforeSignIn);
+        fetchAndApplyCloudPolicy(
+                mSignInState.mCoreAccountInfo, this::finishSignInAfterPolicyEnforced);
     }
 
-    @VisibleForTesting
     /**
-     * If the user is managed, its policy has been fetched and is being enforced; features like sync
-     * may now be disabled by policy, and the rest of the sign-in flow can be resumed.
+     * Finishes the sign-in flow. If the user is managed, the policy should be fetched and enforced
+     * before calling this method.
      */
-    void onPolicyFetchedBeforeSignIn() {
-        finishSignIn();
-    }
-
-    private void finishSignIn() {
+    @VisibleForTesting
+    void finishSignInAfterPolicyEnforced() {
         // This method should be called at most once per sign-in flow.
         assert mSignInState != null && mSignInState.mCoreAccountInfo != null;
 

@@ -245,7 +245,7 @@ public class SigninManagerTest {
         mSigninManager.runAfterOperationInProgress(callCount::incrementAndGet);
         assertEquals(0, callCount.get());
 
-        mSigninManager.onPolicyFetchedBeforeSignIn();
+        mSigninManager.finishSignInAfterPolicyEnforced();
         assertFalse(mSigninManager.isOperationInProgress());
         assertEquals(1, callCount.get());
     }
