@@ -4051,6 +4051,9 @@
   "DeviceLoginScreenVirtualKeyboardEnabled" : {
   },
 
+  "DeviceLoginScreenDictationEnabled" : {
+  },
+
   "DeviceLoginScreenLocales" : {
   },
 

@@ -645,6 +645,7 @@
         'DeviceLoginScreenSpokenFeedbackEnabled',
         'DeviceLoginScreenHighContrastEnabled',
         'DeviceLoginScreenVirtualKeyboardEnabled',
+        'DeviceLoginScreenDictationEnabled',
       ],
     },
     {
@@ -10369,6 +10370,31 @@
           If this policy is left unset, the screen magnifier is disabled when the login screen is first shown. Users can enable or disable the screen magnifier anytime and its status on the login screen is persisted between users.''',
     },
     {
+      'name': 'DeviceLoginScreenDictationEnabled',
+      'owners': ['amraboelkher@chromium.org', 'emaxx@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:79-'],
+      'device_only': True,
+      'features': {
+        'can_be_recommended': True,
+        'dynamic_refresh': True,
+      },
+      'example_value': True,
+      'id': 611,
+      'caption': '''Enable the dictation on the login screen''',
+      'tags': [],
+      'desc': '''Enable the dictation accessibility feature on the login screen.
+
+          If this policy is set to true, the dictation will always be enabled on the login screen.
+
+          If this policy is set to false, the dictation will always be disabled on the login screen.
+
+          If you set this policy, users cannot change or override it.
+
+          If this policy is left unset, the dictation is disabled on the login screen initially but can be enabled by the user anytime.''',
+    },
+    {
       'name': 'HideWebStoreIcon',
       'owners': ['file://components/policy/resources/OWNERS'],
       'type': 'main',
@@ -18157,6 +18183,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'DeviceLoginScreenDefaultScreenMagnifierType': 'accessibility_settings.login_screen_default_screen_magnifier_type',
     'DeviceLoginScreenDefaultVirtualKeyboardEnabled': 'accessibility_settings.login_screen_default_virtual_keyboard_enabled',
     'DeviceLoginScreenVirtualKeyboardEnabled': 'accessibility_settings.login_screen_virtual_keyboard_enabled',
+    'DeviceLoginScreenDictationEnabled': 'accessibility_settings.login_screen_dictation_enabled',
     'AttestationEnabledForDevice': 'attestation_settings.attestation_enabled',
     'AttestationForContentProtectionEnabled': 'attestation_settings.content_protection_enabled',
     'SystemTimezone': 'system_timezone.timezone',
@@ -18657,6 +18684,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562, 569],
-  'highest_id_currently_used': 610,
+  'highest_id_currently_used': 611,
   'highest_atomic_group_id_currently_used': 37
 }
