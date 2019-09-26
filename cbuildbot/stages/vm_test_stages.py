@@ -858,7 +858,7 @@ def _RunTestSuiteUsingCtest(buildroot,
 
   crostestutils = os.path.join(buildroot, 'src', 'platform', 'crostestutils')
   cmd = [
-      os.path.join(crostestutils, 'ctest', 'ctest.py'),
+      os.path.join(crostestutils, 'au_test_harness', 'cros_au_test_harness.py'),
       '--board=%s' % board,
       '--type=%s' % dut_type, '--no_graphics', '--verbose',
       '--target_image=%s' % image_path,
@@ -872,9 +872,9 @@ def _RunTestSuiteUsingCtest(buildroot,
       constants.VM_SUITE_TEST_TYPE, constants.GCE_SUITE_TEST_TYPE
   ]:
     cmd.append('--ssh_port=%s' % ssh_port)
-    cmd.append('--suite=%s' % test_config.test_suite)
+    cmd.append('--verify_suite_name=%s' % test_config.test_suite)
 
-  cmd.append('--only_verify')
+  cmd.append('--test_prefix=SimpleTestVerify')
 
   if whitelist_chrome_crashes:
     cmd.append('--whitelist_chrome_crashes')

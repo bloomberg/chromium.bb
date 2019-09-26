@@ -428,9 +428,10 @@ class RunTestSuiteTest(cros_test_lib.RunCommandTempDirTestCase):
     if test_config.use_ctest:
       self.assertCommandContains([
           os.path.join(self.BUILD_ROOT, 'src', 'platform', 'crostestutils',
-                       'ctest', 'ctest.py'),
+                       'au_test_harness', 'cros_au_test_harness.py'),
           '--no_graphics', '--verbose',
           '--target_image=%s' % self.TEST_IMAGE_OUTSIDE_CHROOT,
+          '--test_prefix=SimpleTestVerify',
           '--ssh_private_key=%s' % self.PRIVATE_KEY_OUTSIDE_CHROOT
       ])
       self.assertCommandContains(enter_chroot=True, expected=False)
@@ -448,32 +449,32 @@ class RunTestSuiteTest(cros_test_lib.RunCommandTempDirTestCase):
     """Test SIMPLE config."""
     config = config_lib.VMTestConfig(constants.SIMPLE_AU_TEST_TYPE)
     self._RunTestSuite(config)
-    self.assertCommandContains(['--only_verify'])
+    self.assertCommandContains(['--test_prefix=SimpleTestVerify'])
 
   def testSmoke(self):
     """Test SMOKE config."""
     config = config_lib.VMTestConfig(
         constants.VM_SUITE_TEST_TYPE, test_suite='smoke')
     self._RunTestSuite(config)
-    self.assertCommandContains(['--only_verify'])
+    self.assertCommandContains(['--verify_suite_name=smoke'])
 
   def testGceSmokeTestType(self):
     """Test GCE test with gce-smoke suite."""
     config = config_lib.GCETestConfig(
         constants.GCE_SUITE_TEST_TYPE, test_suite='gce-smoke')
     self._RunTestSuite(config)
-    self.assertCommandContains(['--only_verify'])
+    self.assertCommandContains(['--test_prefix=SimpleTestVerify'])
     self.assertCommandContains(['--type=gce'])
-    self.assertCommandContains(['--suite=gce-smoke'])
+    self.assertCommandContains(['--verify_suite_name=gce-smoke'])
 
   def testGceSanityTestType(self):
     """Test GCE test with gce-sanity suite."""
     config = config_lib.GCETestConfig(
         constants.GCE_SUITE_TEST_TYPE, test_suite='gce-sanity')
     self._RunTestSuite(config)
-    self.assertCommandContains(['--only_verify'])
+    self.assertCommandContains(['--test_prefix=SimpleTestVerify'])
     self.assertCommandContains(['--type=gce'])
-    self.assertCommandContains(['--suite=gce-sanity'])
+    self.assertCommandContains(['--verify_suite_name=gce-sanity'])
 
   def testSmokeChromite(self):
     """Test SMOKE config using chromite VM code path."""
