@@ -77,6 +77,7 @@
 #include "chrome/browser/chromeos/account_manager/account_manager_util.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/assistant/assistant_util.h"
+#include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/kerberos/kerberos_credentials_manager.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
@@ -582,7 +583,7 @@ void AddCrostiniStrings(content::WebUIDataSource* html_source,
               crostini::ContainerChromeOSBaseDirectory().value())));
   html_source->AddBoolean(
       "showCrostiniExportImport",
-      crostini::IsCrostiniExportImportUIAllowedForProfile(profile));
+      crostini::CrostiniFeatures::Get()->IsExportImportUIAllowed(profile));
 }
 
 void AddPluginVmStrings(content::WebUIDataSource* html_source,
