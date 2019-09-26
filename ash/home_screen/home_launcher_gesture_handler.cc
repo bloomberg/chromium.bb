@@ -258,8 +258,10 @@ class HomeLauncherGestureHandler::ScopedWindowModifier
   }
 
   void ResetOpacityAndTransform() {
-    window_->SetTransform(window_values_.initial_transform);
-    window_->layer()->SetOpacity(window_values_.initial_opacity);
+    if (!window_values_.has_value())
+      return;
+    window_->SetTransform(window_values_->initial_transform);
+    window_->layer()->SetOpacity(window_values_->initial_opacity);
     for (const auto& descendant : transient_descendants_values_) {
       descendant.first->SetTransform(descendant.second.initial_transform);
       descendant.first->layer()->SetOpacity(descendant.second.initial_opacity);
@@ -279,7 +281,7 @@ class HomeLauncherGestureHandler::ScopedWindowModifier
           gfx::RectF(window->GetTargetBounds()),
           GetOffscreenWindowBounds(window, work_area, target_work_area));
       if (window == window_) {
-        window_values_ = values;
+        window_values_ = base::make_optional(values);
         continue;
       }
 
@@ -298,7 +300,9 @@ class HomeLauncherGestureHandler::ScopedWindowModifier
   }
 
   aura::Window* window() { return window_; }
-  WindowValues window_values() const { return window_values_; }
+  const base::Optional<WindowValues>& window_values() const {
+    return window_values_;
+  }
   const std::map<aura::Window*, WindowValues>& transient_descendants_values()
       const {
     return transient_descendants_values_;
@@ -307,11 +311,14 @@ class HomeLauncherGestureHandler::ScopedWindowModifier
  private:
   aura::Window* window_;
 
-  // Original and target transform and opacity of |window_|.
-  WindowValues window_values_;
+  // Original and target transform and opacity of |window_|. It will be empty
+  // if the drag mode is kDragWindowToHomeOrOverview since we don't need the
+  // pre-calculated opacity and transform for |window_| and its transient
+  // descendants.
+  base::Optional<WindowValues> window_values_;
 
   // Tracks the transient descendants of |window_| and their initial and
-  // target opacities and transforms.
+  // target opacities and transforms. Empty if |window_values_| is empty.
   std::map<aura::Window*, WindowValues> transient_descendants_values_;
 
   // For the duration of this object |window_| event targeting policy will be
@@ -802,23 +809,25 @@ void HomeLauncherGestureHandler::UpdateWindowsForSlideUpOrDown(double progress,
     update_windows_helper(progress, animate, divider_window, *divider_values_);
   }
 
-  if (secondary_window_) {
+  if (secondary_window_ && secondary_window_->window_values().has_value()) {
     for (const auto& descendant :
          secondary_window_->transient_descendants_values()) {
       update_windows_helper(progress, animate, descendant.first,
                             descendant.second);
     }
     update_windows_helper(progress, animate, GetSecondaryWindow(),
-                          secondary_window_->window_values());
+                          *(secondary_window_->window_values()));
   }
 
-  for (const auto& descendant :
-       active_window_->transient_descendants_values()) {
-    update_windows_helper(progress, animate, descendant.first,
-                          descendant.second);
+  if (active_window_ && active_window_->window_values().has_value()) {
+    for (const auto& descendant :
+         active_window_->transient_descendants_values()) {
+      update_windows_helper(progress, animate, descendant.first,
+                            descendant.second);
+    }
+    update_windows_helper(progress, animate, GetActiveWindow(),
+                          *(active_window_->window_values()));
   }
-  update_windows_helper(progress, animate, GetActiveWindow(),
-                        active_window_->window_values());
 }
 
 void HomeLauncherGestureHandler::RemoveObserversAndStopTracking() {
@@ -971,6 +980,33 @@ bool HomeLauncherGestureHandler::SetUpWindows(
     });
   }
 
+  // Hide all visible windows which are behind our window so that when we
+  // scroll, the home launcher will be visible in kSlideUpToShow case and
+  // wallpaper will be visible in kDragWindowToHomeOrOverview case. This is only
+  // needed when swiping up, and not when overview mode is active.
+  hidden_windows_.clear();
+  if ((mode == Mode::kSlideUpToShow ||
+       mode == Mode::kDragWindowToHomeOrOverview) &&
+      !overview_active_on_gesture_start_) {
+    for (auto* window : windows) {
+      if (window->IsVisible() &&
+          (mode == Mode::kSlideUpToShow ||
+           (mode == Mode::kDragWindowToHomeOrOverview &&
+            !split_view_controller->IsWindowInSplitView(window)))) {
+        hidden_windows_.push_back(window);
+        window->AddObserver(this);
+      }
+    }
+    window_util::HideAndMaybeMinimizeWithoutAnimation(hidden_windows_,
+                                                      /*minimize=*/false);
+  }
+
+  // In kDragWindowToHomeOrOverview mode, no need to calculate the desired
+  // opacity and transform for the dragged window and its transient descendants
+  // and backdrop window and the divider window.
+  if (mode == Mode::kDragWindowToHomeOrOverview)
+    return true;
+
   // Show |active_window_| if we are swiping down to hide.
   if (mode == Mode::kSlideDownToHide) {
     ScopedAnimationDisabler disable(GetActiveWindow());
@@ -1025,27 +1061,6 @@ bool HomeLauncherGestureHandler::SetUpWindows(
     divider_values_->target_transform = gfx::TransformBetweenRects(
         gfx::RectF(divider_window->bounds()),
         GetOffscreenWindowBounds(divider_window, work_area, target_work_area));
-  }
-
-  // Hide all visible windows which are behind our window so that when we
-  // scroll, the home launcher will be visible in kSlideUpToShow case and
-  // wallpaper will be visible in kDragWindowToHomeOrOverview case. This is only
-  // needed when swiping up, and not when overview mode is active.
-  hidden_windows_.clear();
-  if ((mode == Mode::kSlideUpToShow ||
-       mode == Mode::kDragWindowToHomeOrOverview) &&
-      !overview_active_on_gesture_start_) {
-    for (auto* window : windows) {
-      if (window->IsVisible() &&
-          (mode == Mode::kSlideUpToShow ||
-           (mode == Mode::kDragWindowToHomeOrOverview &&
-            !split_view_controller->IsWindowInSplitView(window)))) {
-        hidden_windows_.push_back(window);
-        window->AddObserver(this);
-      }
-    }
-    window_util::HideAndMaybeMinimizeWithoutAnimation(hidden_windows_,
-                                                      /*minimize=*/false);
   }
 
   return true;
