@@ -52,10 +52,13 @@ void BadgeManager::BindReceiver(
     mojo::PendingReceiver<blink::mojom::BadgeService> receiver) {
   Profile* profile = Profile::FromBrowserContext(
       content::WebContents::FromRenderFrameHost(frame)->GetBrowserContext());
+
   badging::BadgeManager* badge_manager =
       badging::BadgeManagerFactory::GetInstance()->GetForProfile(profile);
-  BindingContext context(frame->GetProcess()->GetID(), frame->GetRoutingID());
+  if (!badge_manager)
+    return;
 
+  BindingContext context(frame->GetProcess()->GetID(), frame->GetRoutingID());
   badge_manager->receivers_.Add(badge_manager, std::move(receiver),
                                 std::move(context));
 }
