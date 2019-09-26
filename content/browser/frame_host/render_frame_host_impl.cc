@@ -2456,7 +2456,6 @@ void RenderFrameHostImpl::DidCommitBackForwardCacheNavigation(
   // re-fire the DidStartLoading event, which we don't want since it has already
   // been fired.
   is_loading_ = true;
-  dom_content_loaded_ = false;
 
   DidCommitNavigationInternal(std::move(owned_request), validated_params.get(),
                               /*is_same_document_navigation=*/false);

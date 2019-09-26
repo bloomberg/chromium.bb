@@ -1672,27 +1672,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, FetchWhileStoring) {
   // 3) Go back to A.
   web_contents()->GetController().GoBack();
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
-  EXPECT_FALSE(delete_observer_rfh_a.deleted());
-  EXPECT_EQ(current_frame_host(), rfh_a);
-
-  // TODO(https://crbug.com/996267). Consider evicting the page or closing the
-  // connection.
-  EXPECT_EQ("TheResponse", EvalJs(rfh_a, R"(
-    new Promise(async resolve => {
-      if (my_fetch == undefined) {
-        resolve("undefined");
-        return;
-      }
-
-      try {
-        response = await my_fetch;
-        text = await response.text();
-        resolve(text);
-      } catch (exception) {
-        resolve("error");
-      }
-    });
-  )"));
+  EXPECT_TRUE(delete_observer_rfh_a.deleted());
 }
 
 // Only HTTP/HTTPS main document can enter the BackForwardCache.
