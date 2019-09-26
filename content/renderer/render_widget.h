@@ -690,9 +690,6 @@ class CONTENT_EXPORT RenderWidget
   // [routing IPC from browser].
   virtual void SynchronizeVisualPropertiesFromRenderView(
       const VisualProperties& visual_properties);
-  // TODO(danakj): A sub-step of SynchronizeVisualPropertiesFromRenderView that
-  // should be merged together.
-  void SynchronizeVisualProperties(const VisualProperties& visual_properties);
 
   bool in_synchronous_composite_for_testing() const {
     return in_synchronous_composite_for_testing_;
@@ -1081,7 +1078,9 @@ class CONTENT_EXPORT RenderWidget
   int pending_window_rect_count_ = 0;
   gfx::Rect pending_window_rect_;
 
-  // The screen rects of the view and the window that contains it.
+  // The screen rects of the view and the window that contains it. These do not
+  // include any scaling by device scale factor, so are logical pixels not
+  // physical device pixels.
   gfx::Rect widget_screen_rect_;
   gfx::Rect window_screen_rect_;
 

@@ -934,7 +934,47 @@ void RenderWidget::SynchronizeVisualPropertiesFromRenderView(
       page_properties_->ScreenMetricsEmulator()->OnSynchronizeVisualProperties(
           visual_properties);
     } else {
-      SynchronizeVisualProperties(visual_properties);
+      gfx::Rect new_compositor_viewport_pixel_rect =
+          visual_properties.compositor_viewport_pixel_rect;
+      if (auto_resize_mode_) {
+        new_compositor_viewport_pixel_rect = gfx::Rect(gfx::ScaleToCeiledSize(
+            size_, visual_properties.screen_info.device_scale_factor));
+      }
+
+      UpdateSurfaceAndScreenInfo(
+          visual_properties.local_surface_id_allocation.value_or(
+              viz::LocalSurfaceIdAllocation()),
+          new_compositor_viewport_pixel_rect, visual_properties.screen_info);
+
+      if (for_frame()) {
+        // TODO(danakj): This should not need to go through RenderFrame to set
+        // Page-level properties.
+        blink::WebFrameWidget* frame_widget = GetFrameWidget();
+        // TODO(danakj): Stop doing SynchronizeVisualProperties() (due to
+        // emulation) while undead, and change this to a DCHECK.
+        if (frame_widget) {
+          RenderFrameImpl* render_frame =
+              RenderFrameImpl::FromWebFrame(frame_widget->LocalRoot());
+
+          // This causes compositing state to be modified which dirties the
+          // document lifecycle. Android Webview relies on the document
+          // lifecycle being clean after the RenderWidget is initialized, in
+          // order to send IPCs that query and change compositing state. So
+          // ResizeWebWidget() must come after this call, as it runs the entire
+          // document lifecycle.
+          render_frame->SetPreferCompositingToLCDTextEnabledOnRenderView(
+              ComputePreferCompositingToLCDText(
+                  compositor_deps_, page_properties_->GetDeviceScaleFactor()));
+        }
+      }
+
+      if (!auto_resize_mode_) {
+        display_mode_ = visual_properties.display_mode;
+
+        visible_viewport_size_ = visual_properties.visible_viewport_size;
+        size_ = visual_properties.new_size;
+        ResizeWebWidget();
+      }
     }
   }
 
@@ -1824,53 +1864,6 @@ void RenderWidget::SetScreenInfoAndSize(
   ResizeWebWidget();
 }
 
-void RenderWidget::SynchronizeVisualProperties(
-    const VisualProperties& visual_properties) {
-  // This method needs to handle changes to the screen_info, new_size, and
-  // visible_viewport_size fields in |visual_properties|, as this method is
-  // called from the RenderWidgetScreenMetricsEmulator and it changes those
-  // fields but not others.
-
-  gfx::Rect new_compositor_viewport_pixel_rect =
-      auto_resize_mode_
-          ? gfx::Rect(gfx::ScaleToCeiledSize(
-                size_, visual_properties.screen_info.device_scale_factor))
-          : visual_properties.compositor_viewport_pixel_rect;
-  UpdateSurfaceAndScreenInfo(
-      visual_properties.local_surface_id_allocation.value_or(
-          viz::LocalSurfaceIdAllocation()),
-      new_compositor_viewport_pixel_rect, visual_properties.screen_info);
-
-  if (for_frame()) {
-    // TODO(danakj): This should not need to go through RenderFrame to set
-    // Page-level properties.
-    blink::WebFrameWidget* frame_widget = GetFrameWidget();
-    // TODO(danakj): Stop doing SynchronizeVisualProperties() (due to emulation)
-    // while undead, and change this to a DCHECK.
-    if (frame_widget) {
-      RenderFrameImpl* render_frame =
-          RenderFrameImpl::FromWebFrame(frame_widget->LocalRoot());
-
-      // This causes compositing state to be modified which dirties the document
-      // lifecycle. Android Webview relies on the document lifecycle being clean
-      // after the RenderWidget is initialized, in order to send IPCs that query
-      // and change compositing state. So ResizeWebWidget() must come after this
-      // call, as it runs the entire document lifecycle.
-      render_frame->SetPreferCompositingToLCDTextEnabledOnRenderView(
-          ComputePreferCompositingToLCDText(
-              compositor_deps_, page_properties_->GetDeviceScaleFactor()));
-    }
-  }
-
-  if (!auto_resize_mode_) {
-    display_mode_ = visual_properties.display_mode;
-
-    visible_viewport_size_ = visual_properties.visible_viewport_size;
-    size_ = visual_properties.new_size;
-    ResizeWebWidget();
-  }
-}
-
 void RenderWidget::SetScreenMetricsEmulationParameters(
     bool enabled,
     const blink::WebDeviceEmulationParams& params) {
@@ -2390,21 +2383,27 @@ void RenderWidget::UpdateSurfaceAndScreenInfo(
 
 void RenderWidget::SetWindowRectSynchronously(
     const gfx::Rect& new_window_rect) {
-  VisualProperties visual_properties;
-  visual_properties.screen_info = page_properties_->GetScreenInfo();
-  visual_properties.new_size = new_window_rect.size();
-  visual_properties.compositor_viewport_pixel_rect =
-      gfx::Rect(gfx::ScaleToCeiledSize(
-          new_window_rect.size(), page_properties_->GetDeviceScaleFactor()));
-  visual_properties.visible_viewport_size = new_window_rect.size();
-  visual_properties.is_fullscreen_granted = is_fullscreen_granted_;
-  visual_properties.display_mode = display_mode_;
-  visual_properties.local_surface_id_allocation =
-      local_surface_id_allocation_from_parent_;
+  // This method is only call in tests, and it applies the |new_window_rect| to
+  // all three of:
+  // a) widget size (in |size_|)
+  // b) blink viewport (in |visible_viewport_size_|)
+  // c) compositor viewport (in cc::LayerTreeHost)
+  // Normally the browser controls these three things independently, but this is
+  // used in tests to control the size from the renderer.
+
   // We are resizing the window from the renderer, so allocate a new
   // viz::LocalSurfaceId to avoid surface invariants violations in tests.
   layer_tree_host_->RequestNewLocalSurfaceId();
-  SynchronizeVisualProperties(visual_properties);
+
+  gfx::Rect compositor_viewport_pixel_rect(gfx::ScaleToCeiledSize(
+      new_window_rect.size(), page_properties_->GetDeviceScaleFactor()));
+  UpdateSurfaceAndScreenInfo(local_surface_id_allocation_from_parent_,
+                             compositor_viewport_pixel_rect,
+                             page_properties_->GetScreenInfo());
+
+  visible_viewport_size_ = new_window_rect.size();
+  size_ = new_window_rect.size();
+  ResizeWebWidget();
 
   widget_screen_rect_ = new_window_rect;
   window_screen_rect_ = new_window_rect;
