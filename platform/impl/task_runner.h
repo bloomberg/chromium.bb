@@ -104,10 +104,6 @@ class TaskRunnerImpl final : public TaskRunner {
   // minimum delay time has elapsed.
   void ScheduleDelayedTasks();
 
-  // Look at the current state of the TaskRunner and determine if the run loop
-  // should be woken up
-  bool ShouldWakeUpRunLoop();
-
   // Transfers all ready-to-run tasks from |tasks_| to |running_tasks_|. If
   // there are no ready-to-run tasks, and |is_running_| is true, this method
   // will block waiting for new tasks. Returns true if any tasks were

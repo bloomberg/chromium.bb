@@ -19,7 +19,10 @@ TaskRunnerImpl::TaskRunnerImpl(platform::ClockNowFunctionPtr now_function,
       task_waiter_(event_waiter),
       waiter_timeout_(waiter_timeout) {}
 
-TaskRunnerImpl::~TaskRunnerImpl() = default;
+TaskRunnerImpl::~TaskRunnerImpl() {
+  // Ensure no thread is currently executing inside RunUntilStopped().
+  OSP_DCHECK_EQ(task_runner_thread_id_, std::thread::id());
+}
 
 void TaskRunnerImpl::PostPackagedTask(Task task) {
   std::lock_guard<std::mutex> lock(task_mutex_);
@@ -48,7 +51,7 @@ bool TaskRunnerImpl::IsRunningOnTaskRunner() {
 }
 
 void TaskRunnerImpl::RunUntilStopped() {
-  OSP_CHECK(!is_running_);
+  OSP_DCHECK(!is_running_);
   task_runner_thread_id_ = std::this_thread::get_id();
   is_running_ = true;
 
@@ -104,19 +107,6 @@ void TaskRunnerImpl::ScheduleDelayedTasks() {
   delayed_tasks_.erase(delayed_tasks_.begin(), end_of_range);
 }
 
-bool TaskRunnerImpl::ShouldWakeUpRunLoop() {
-  if (!is_running_) {
-    return true;
-  }
-
-  if (!tasks_.empty()) {
-    return true;
-  }
-
-  return !delayed_tasks_.empty() &&
-         (delayed_tasks_.begin()->first <= now_function_());
-}
-
 bool TaskRunnerImpl::GrabMoreRunnableTasks() {
   OSP_DCHECK(running_tasks_.empty());
 
@@ -131,36 +121,25 @@ bool TaskRunnerImpl::GrabMoreRunnableTasks() {
   }
 
   if (task_waiter_) {
-    do {
-      Clock::duration timeout = waiter_timeout_;
-      if (!delayed_tasks_.empty()) {
-        Clock::duration next_task_delta =
-            delayed_tasks_.begin()->first - now_function_();
-        if (next_task_delta < timeout) {
-          timeout = next_task_delta;
-        }
-      }
-      lock.unlock();
-      task_waiter_->WaitForTaskToBePosted(timeout);
-      lock.lock();
-    } while (!ShouldWakeUpRunLoop());
-  } else {
-    // Pass a wait predicate to avoid lost or spurious wakeups.
-    const auto wait_predicate = [this] { return ShouldWakeUpRunLoop(); };
+    Clock::duration timeout = waiter_timeout_;
     if (!delayed_tasks_.empty()) {
-      // We don't have any work to do currently, but have some in the
-      // pipe.
-      OSP_DVLOG << "TaskRunner waiting for lock until delayed task ready...";
-      run_loop_wakeup_.wait_for(lock,
-                                delayed_tasks_.begin()->first - now_function_(),
-                                wait_predicate);
-    } else {
-      // We don't have any work queued.
-      OSP_DVLOG << "TaskRunnerImpl waiting for lock...";
-      run_loop_wakeup_.wait(lock, wait_predicate);
+      Clock::duration next_task_delta =
+          delayed_tasks_.begin()->first - now_function_();
+      if (next_task_delta < timeout) {
+        timeout = next_task_delta;
+      }
     }
+    lock.unlock();
+    task_waiter_->WaitForTaskToBePosted(timeout);
+    return false;
   }
 
+  if (delayed_tasks_.empty()) {
+    run_loop_wakeup_.wait(lock);
+  } else {
+    run_loop_wakeup_.wait_for(lock,
+                              delayed_tasks_.begin()->first - now_function_());
+  }
   return false;
 }
 
