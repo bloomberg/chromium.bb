@@ -4,6 +4,7 @@
 
 #include "content/browser/browser_interface_binders.h"
 
+#include "base/feature_list.h"
 #include "build/build_config.h"
 #include "content/browser/background_fetch/background_fetch_service_impl.h"
 #include "content/browser/content_index/content_index_service_impl.h"
@@ -43,6 +44,11 @@
 
 #if !defined(OS_ANDROID)
 #include "third_party/blink/public/mojom/hid/hid.mojom.h"
+#endif
+
+#if defined(OS_ANDROID)
+#include "content/public/common/content_features.h"
+#include "services/device/public/mojom/nfc.mojom.h"
 #endif
 
 namespace content {
@@ -99,6 +105,13 @@ void PopulateFrameBinders(RenderFrameHostImpl* host,
 
   map->Add<blink::mojom::FileChooser>(base::BindRepeating(
       &RenderFrameHostImpl::GetFileChooser, base::Unretained(host)));
+
+#if defined(OS_ANDROID)
+  if (base::FeatureList::IsEnabled(features::kWebNfc)) {
+    map->Add<device::mojom::NFC>(base::BindRepeating(
+        &RenderFrameHostImpl::BindNFCReceiver, base::Unretained(host)));
+  }
+#endif
 
   map->Add<device::mojom::SensorProvider>(base::BindRepeating(
       &RenderFrameHostImpl::GetSensorProvider, base::Unretained(host)));

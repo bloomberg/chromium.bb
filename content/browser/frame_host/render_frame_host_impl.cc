@@ -4332,13 +4332,6 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
     }
   }
 
-#if defined(OS_ANDROID)
-  if (base::FeatureList::IsEnabled(features::kWebNfc)) {
-    registry_->AddInterface<device::mojom::NFC>(base::Bind(
-        &RenderFrameHostImpl::BindNFCReceiver, base::Unretained(this)));
-  }
-#endif
-
   registry_->AddInterface(
       base::Bind(&MediaSessionServiceImpl::Create, base::Unretained(this)));
 

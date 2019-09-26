@@ -244,7 +244,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "content.mojom.RendererAudioOutputStreamFactory",
                   "device.mojom.GamepadMonitor",
                   "device.mojom.Geolocation",
-                  "device.mojom.NFC",
                   "device.mojom.VRService",
                   "discardable_memory.mojom.DiscardableSharedMemoryManager",
                   "media.mojom.FuchsiaCdmProvider",
