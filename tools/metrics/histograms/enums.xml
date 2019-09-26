@@ -13104,6 +13104,7 @@ Called by update_net_error_codes.py.-->
   <int value="8" label="Failed too many overlays"/>
   <int value="9" label="Failed no hw overlay support (deprecated)"/>
   <int value="10" label="Failed quad has rounded corners"/>
+  <int value="11" label="Failed read by backdrop filters"/>
 </enum>
 
 <enum name="DeclarativeAPIFunctionType">
