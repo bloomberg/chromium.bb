@@ -5023,6 +5023,7 @@ static AOM_INLINE void get_mean_dev_features(const int16_t *data, int stride,
       total_x_sum += x_sum;
       total_x2_sum += x2_sum;
 
+      aom_clear_system_state();
       const float mean = (float)x_sum / sub_num;
       const float dev = get_dev(mean, (double)x2_sum, sub_num);
       feature[feature_idx++] = mean;
