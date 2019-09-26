@@ -122,16 +122,6 @@ int ToMessageID(int resource_id) {
       return IDS_FORM_RESET_LABEL;
     case WebLocalizedString::kSubmitButtonDefaultLabel:
       return IDS_FORM_SUBMIT_LABEL;
-    case WebLocalizedString::kValidationBadInputForDateTime:
-      return IDS_FORM_VALIDATION_BAD_INPUT_DATETIME;
-    case WebLocalizedString::kValidationBadInputForNumber:
-      return IDS_FORM_VALIDATION_BAD_INPUT_NUMBER;
-    case WebLocalizedString::kValidationPatternMismatch:
-      return IDS_FORM_VALIDATION_PATTERN_MISMATCH;
-    case WebLocalizedString::kValidationRangeOverflowDateTime:
-      return IDS_FORM_VALIDATION_RANGE_OVERFLOW_DATETIME;
-    case WebLocalizedString::kValidationRangeUnderflowDateTime:
-      return IDS_FORM_VALIDATION_RANGE_UNDERFLOW_DATETIME;
     case WebLocalizedString::kValidationStepMismatchCloseToLimit:
       return IDS_FORM_VALIDATION_STEP_MISMATCH_CLOSE_TO_LIMIT;
     case WebLocalizedString::kValidationTooShort:

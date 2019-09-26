@@ -421,7 +421,7 @@ std::pair<String, String> InputType::ValidationMessage(
     //   pattern. User agents may use the contents of this attribute, if it
     //   is present, when informing the user that the pattern is not matched
     return std::make_pair(
-        GetLocale().QueryString(WebLocalizedString::kValidationPatternMismatch),
+        GetLocale().QueryString(IDS_FORM_VALIDATION_PATTERN_MISMATCH),
         GetElement().FastGetAttribute(kTitleAttr).GetString());
   }
 
