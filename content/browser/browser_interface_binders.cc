@@ -14,10 +14,14 @@
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/worker_host/dedicated_worker_host.h"
 #include "content/browser/worker_host/shared_worker_host.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/shared_worker_instance.h"
 #include "media/capture/mojom/image_capture.mojom.h"
+#include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/sensor_provider.mojom.h"
+#include "services/device/public/mojom/vibration_manager.mojom.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom.h"
 #include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom.h"
@@ -39,6 +43,17 @@
 
 namespace content {
 namespace internal {
+
+// Forwards service receivers to Service Manager since the renderer cannot
+// launch out-of-process services on is own.
+template <typename Interface>
+void ForwardServiceReceiver(const char* service_name,
+                            RenderFrameHostImpl* host,
+                            mojo::PendingReceiver<Interface> receiver) {
+  auto* connector =
+      BrowserContext::GetConnectorFor(host->GetProcess()->GetBrowserContext());
+  connector->Connect(service_name, std::move(receiver));
+}
 
 // Documents/frames
 void PopulateFrameBinders(RenderFrameHostImpl* host,
@@ -83,6 +98,10 @@ void PopulateFrameBinders(RenderFrameHostImpl* host,
 
   map->Add<device::mojom::SensorProvider>(base::BindRepeating(
       &RenderFrameHostImpl::GetSensorProvider, base::Unretained(host)));
+
+  map->Add<device::mojom::VibrationManager>(base::BindRepeating(
+      &ForwardServiceReceiver<device::mojom::VibrationManager>,
+      device::mojom::kServiceName, base::Unretained(host)));
 
   map->Add<media::mojom::ImageCapture>(
       base::BindRepeating(&ImageCaptureImpl::Create));
