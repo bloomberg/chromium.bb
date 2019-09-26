@@ -639,39 +639,39 @@ def map_and_run(data, constant_run_path):
   Returns metadata about the result.
   """
   result = {
-    'duration': None,
-    'exit_code': None,
-    'had_hard_timeout': False,
-    'internal_failure': 'run_isolated did not complete properly',
-    'stats': {
-      'isolated': {
-        #'cipd': {
-        #  'duration': 0.,
-        #  'get_client_duration': 0.,
-        #},
-        'download': {
-          #'duration': 0.,
-          'initial_number_items': len(data.isolate_cache),
-          'initial_size': data.isolate_cache.total_size,
-          #'items_cold': '<large.pack()>',
-          #'items_hot': '<large.pack()>',
-        },
-        #'upload': {
-        #  'duration': 0.,
-        #  'items_cold': '<large.pack()>',
-        #  'items_hot': '<large.pack()>',
-        #},
+      'duration': None,
+      'exit_code': None,
+      'had_hard_timeout': False,
+      'internal_failure': 'run_isolated did not complete properly',
+      'stats': {
+          #'cipd': {
+          #  'duration': 0.,
+          #  'get_client_duration': 0.,
+          #},
+          'isolated': {
+              'download': {
+                  #'duration': 0.,
+                  'initial_number_items': len(data.isolate_cache),
+                  'initial_size': data.isolate_cache.total_size,
+                  #'items_cold': '<large.pack()>',
+                  #'items_hot': '<large.pack()>',
+              },
+              #'upload': {
+              #  'duration': 0.,
+              #  'items_cold': '<large.pack()>',
+              #  'items_hot': '<large.pack()>',
+              #},
+          },
       },
-    },
-    #'cipd_pins': {
-    #  'packages': [
-    #    {'package_name': ..., 'version': ..., 'path': ...},
-    #    ...
-    #  ],
-    # 'client_package': {'package_name': ..., 'version': ...},
-    #},
-    'outputs_ref': None,
-    'version': 5,
+      #'cipd_pins': {
+      #  'packages': [
+      #    {'package_name': ..., 'version': ..., 'path': ...},
+      #    ...
+      #  ],
+      # 'client_package': {'package_name': ..., 'version': ...},
+      #},
+      'outputs_ref': None,
+      'version': 5,
   }
 
   if data.root_dir:
