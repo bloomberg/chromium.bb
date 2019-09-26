@@ -87,10 +87,6 @@ struct WebLocalizedString {
     kValidationTypeMismatchForEmailNoAtSign,
     kValidationTypeMismatchForMultipleEmail,
     kValidationTypeMismatchForURL,
-    kValidationValueMissingForCheckbox,
-    kValidationValueMissingForFile,
-    kValidationValueMissingForMultipleFile,
-    kValidationValueMissingForRadio,
     kWeekNumberLabel,
   };
 };

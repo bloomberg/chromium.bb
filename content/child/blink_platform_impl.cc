@@ -160,14 +160,6 @@ int ToMessageID(int resource_id) {
       return IDS_FORM_VALIDATION_TYPE_MISMATCH_MULTIPLE_EMAIL;
     case WebLocalizedString::kValidationTypeMismatchForURL:
       return IDS_FORM_VALIDATION_TYPE_MISMATCH_URL;
-    case WebLocalizedString::kValidationValueMissingForCheckbox:
-      return IDS_FORM_VALIDATION_VALUE_MISSING_CHECKBOX;
-    case WebLocalizedString::kValidationValueMissingForFile:
-      return IDS_FORM_VALIDATION_VALUE_MISSING_FILE;
-    case WebLocalizedString::kValidationValueMissingForMultipleFile:
-      return IDS_FORM_VALIDATION_VALUE_MISSING_MULTIPLE_FILE;
-    case WebLocalizedString::kValidationValueMissingForRadio:
-      return IDS_FORM_VALIDATION_VALUE_MISSING_RADIO;
     case WebLocalizedString::kWeekNumberLabel:
       return IDS_FORM_WEEK_NUMBER_LABEL;
     case WebLocalizedString::kTextTracksNoLabel:
