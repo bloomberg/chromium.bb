@@ -43,6 +43,8 @@ struct NativeLibraryLoadError;
 
 namespace win {
 
+BASE_EXPORT extern const char kApplicationVerifierDllName[];
+
 inline uint32_t HandleToUint32(HANDLE h) {
   // Cast through uintptr_t and then unsigned int to make the truncation to
   // 32 bits explicit. Handles are size of-pointer but are always 32-bit values.
