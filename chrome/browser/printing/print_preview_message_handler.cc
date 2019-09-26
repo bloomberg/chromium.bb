@@ -167,9 +167,12 @@ void PrintPreviewMessageHandler::OnDidPreviewPage(
     // Use utility process to convert skia metafile to pdf.
     client->DoCompositePageToPdf(
         params.document_cookie, render_frame_host, content,
-        base::BindOnce(&PrintPreviewMessageHandler::OnCompositePdfPageDone,
-                       weak_ptr_factory_.GetWeakPtr(), page_number,
-                       params.document_cookie, ids));
+        mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+            base::BindOnce(&PrintPreviewMessageHandler::OnCompositePdfPageDone,
+                           weak_ptr_factory_.GetWeakPtr(), page_number,
+                           params.document_cookie, ids),
+            mojom::PdfCompositor::Status::kCompositingFailure,
+            base::ReadOnlySharedMemoryRegion()));
   } else {
     NotifyUIPreviewPageReady(
         print_preview_ui, page_number, ids,
@@ -208,10 +211,13 @@ void PrintPreviewMessageHandler::OnMetafileReadyForPrinting(
 
     client->DoCompositeDocumentToPdf(
         params.document_cookie, render_frame_host, content,
-        base::BindOnce(&PrintPreviewMessageHandler::OnCompositePdfDocumentDone,
-                       weak_ptr_factory_.GetWeakPtr(),
-                       params.expected_pages_count, params.document_cookie,
-                       ids));
+        mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+            base::BindOnce(
+                &PrintPreviewMessageHandler::OnCompositePdfDocumentDone,
+                weak_ptr_factory_.GetWeakPtr(), params.expected_pages_count,
+                params.document_cookie, ids),
+            mojom::PdfCompositor::Status::kCompositingFailure,
+            base::ReadOnlySharedMemoryRegion()));
   } else {
     NotifyUIPreviewDocumentReady(
         print_preview_ui, params.expected_pages_count, ids,
@@ -316,12 +322,14 @@ void PrintPreviewMessageHandler::OnCompositePdfPageDone(
     mojom::PdfCompositor::Status status,
     base::ReadOnlySharedMemoryRegion region) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  PrintPreviewUI* print_preview_ui = GetPrintPreviewUI(ids.ui_id);
   if (status != mojom::PdfCompositor::Status::kSuccess) {
     DLOG(ERROR) << "Compositing pdf failed with error " << status;
+    if (print_preview_ui)
+      print_preview_ui->OnPrintPreviewFailed(ids.request_id);
     return;
   }
 
-  PrintPreviewUI* print_preview_ui = GetPrintPreviewUI(ids.ui_id);
   if (!print_preview_ui)
     return;
 
@@ -393,12 +401,14 @@ void PrintPreviewMessageHandler::OnCompositePdfDocumentDone(
     mojom::PdfCompositor::Status status,
     base::ReadOnlySharedMemoryRegion region) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  PrintPreviewUI* print_preview_ui = GetPrintPreviewUI(ids.ui_id);
   if (status != mojom::PdfCompositor::Status::kSuccess) {
     DLOG(ERROR) << "Compositing pdf failed with error " << status;
+    if (print_preview_ui)
+      print_preview_ui->OnPrintPreviewFailed(ids.request_id);
     return;
   }
 
-  PrintPreviewUI* print_preview_ui = GetPrintPreviewUI(ids.ui_id);
   if (!print_preview_ui)
     return;
 
