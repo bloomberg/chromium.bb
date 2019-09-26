@@ -36,8 +36,8 @@
 namespace webui {
 
 std::string GetBitmapDataUrl(const SkBitmap& bitmap) {
-  TRACE_EVENT2("oobe", "GetImageDataUrl",
-               "width", bitmap.width(), "height", bitmap.height());
+  TRACE_EVENT2("ui", "GetBitmapDataUrl", "width", bitmap.width(), "height",
+               bitmap.height());
   std::vector<unsigned char> output;
   gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, false, &output);
   return GetPngDataUrl(output.data(), output.size());
