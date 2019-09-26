@@ -332,11 +332,11 @@ void ExtensionUpdater::CheckNow(CheckParams params) {
                      pending_id, info->update_url(), info->install_source(),
                      is_corrupt_reinstall, request_id, params.fetch_priority)) {
         request.in_progress_ids_.insert(pending_id);
-        InstallationReporter::ReportInstallationStage(
-            profile_, pending_id, InstallationReporter::Stage::DOWNLOADING);
+        InstallationReporter::Get(profile_)->ReportInstallationStage(
+            pending_id, InstallationReporter::Stage::DOWNLOADING);
       } else {
-        InstallationReporter::ReportFailure(
-            profile_, pending_id,
+        InstallationReporter::Get(profile_)->ReportFailure(
+            pending_id,
             InstallationReporter::FailureReason::DOWNLOADER_ADD_FAILED);
       }
     }
@@ -403,7 +403,7 @@ void ExtensionUpdater::CheckExtensionSoon(const std::string& extension_id,
 
 void ExtensionUpdater::OnExtensionDownloadStageChanged(const std::string& id,
                                                        Stage stage) {
-  InstallationReporter::ReportDownloadingStage(profile_, id, stage);
+  InstallationReporter::Get(profile_)->ReportDownloadingStage(id, stage);
 }
 
 void ExtensionUpdater::OnExtensionDownloadFailed(
@@ -412,6 +412,8 @@ void ExtensionUpdater::OnExtensionDownloadFailed(
     const PingResult& ping,
     const std::set<int>& request_ids) {
   DCHECK(alive_);
+  InstallationReporter* installation_reporter =
+      InstallationReporter::Get(profile_);
 
   switch (error) {
     case Error::CRX_FETCH_FAILED:
@@ -419,29 +421,28 @@ void ExtensionUpdater::OnExtensionDownloadFailed(
           "Extensions.ExtensionUpdaterUpdateResults",
           ExtensionUpdaterUpdateResult::UPDATE_DOWNLOAD_ERROR,
           ExtensionUpdaterUpdateResult::UPDATE_RESULT_COUNT);
-      InstallationReporter::ReportFailure(
-          profile_, id, InstallationReporter::FailureReason::CRX_FETCH_FAILED);
+      installation_reporter->ReportFailure(
+          id, InstallationReporter::FailureReason::CRX_FETCH_FAILED);
       break;
     case Error::MANIFEST_FETCH_FAILED:
-      InstallationReporter::ReportFailure(
-          profile_, id,
-          InstallationReporter::FailureReason::MANIFEST_FETCH_FAILED);
+      installation_reporter->ReportFailure(
+          id, InstallationReporter::FailureReason::MANIFEST_FETCH_FAILED);
       UMA_HISTOGRAM_ENUMERATION(
           "Extensions.ExtensionUpdaterUpdateResults",
           ExtensionUpdaterUpdateResult::UPDATE_CHECK_ERROR,
           ExtensionUpdaterUpdateResult::UPDATE_RESULT_COUNT);
       break;
     case Error::MANIFEST_INVALID:
-      InstallationReporter::ReportFailure(
-          profile_, id, InstallationReporter::FailureReason::MANIFEST_INVALID);
+      installation_reporter->ReportFailure(
+          id, InstallationReporter::FailureReason::MANIFEST_INVALID);
       UMA_HISTOGRAM_ENUMERATION(
           "Extensions.ExtensionUpdaterUpdateResults",
           ExtensionUpdaterUpdateResult::UPDATE_CHECK_ERROR,
           ExtensionUpdaterUpdateResult::UPDATE_RESULT_COUNT);
       break;
     case Error::NO_UPDATE_AVAILABLE:
-      InstallationReporter::ReportFailure(
-          profile_, id, InstallationReporter::FailureReason::NO_UPDATE);
+      installation_reporter->ReportFailure(
+          id, InstallationReporter::FailureReason::NO_UPDATE);
       UMA_HISTOGRAM_ENUMERATION(
           "Extensions.ExtensionUpdaterUpdateResults",
           ExtensionUpdaterUpdateResult::NO_UPDATE,
@@ -482,8 +483,8 @@ void ExtensionUpdater::OnExtensionDownloadFinished(
     const std::set<int>& request_ids,
     const InstallCallback& callback) {
   DCHECK(alive_);
-  InstallationReporter::ReportInstallationStage(
-      profile_, file.extension_id, InstallationReporter::Stage::INSTALLING);
+  InstallationReporter::Get(profile_)->ReportInstallationStage(
+      file.extension_id, InstallationReporter::Stage::INSTALLING);
   UpdatePingData(file.extension_id, ping);
 
   VLOG(2) << download_url << " written to " << file.path.value();
