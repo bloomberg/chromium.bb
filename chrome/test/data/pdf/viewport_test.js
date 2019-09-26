@@ -1033,6 +1033,23 @@ var tests = [
     chrome.test.succeed();
   },
 
+  function testLayoutOptions() {
+    var viewport =
+        new Viewport(new MockWindow(100, 100), new MockSizer(), 0, 1, 0);
+
+    chrome.test.assertEq(undefined, viewport.getLayoutOptions());
+
+    viewport.setDocumentDimensions(
+        new MockDocumentDimensions(50, 50, {defaultPageOrientation: 1}));
+    chrome.test.assertEq(
+        {defaultPageOrientation: 1}, viewport.getLayoutOptions());
+
+    viewport.setDocumentDimensions(new MockDocumentDimensions(50, 50));
+    chrome.test.assertEq(undefined, viewport.getLayoutOptions());
+
+    chrome.test.succeed();
+  },
+
   function testToolbarHeightOffset() {
     var mockSizer = new MockSizer();
     var mockWindow = new MockWindow(100, 100);

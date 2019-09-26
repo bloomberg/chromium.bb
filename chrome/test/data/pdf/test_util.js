@@ -80,9 +80,10 @@ function MockViewportChangedCallback() {
   };
 }
 
-function MockDocumentDimensions(width, height) {
+function MockDocumentDimensions(width, height, layoutOptions) {
   this.width = width || 0;
   this.height = height ? height : 0;
+  this.layoutOptions = layoutOptions;
   this.pageDimensions = [];
   this.addPage = function(w, h) {
     var y = 0;
