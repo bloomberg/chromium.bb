@@ -4352,8 +4352,6 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
   registry_->AddInterface(base::BindRepeating(
       &SharedWorkerConnectorImpl::Create, process_->GetID(), routing_id_));
 
-  registry_->AddInterface(base::BindRepeating(&device::GamepadMonitor::Create));
-
   registry_->AddInterface<device::mojom::VRService>(base::Bind(
       &WebvrServiceProvider::BindWebvrService, base::Unretained(this)));
 

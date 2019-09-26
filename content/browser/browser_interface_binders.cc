@@ -20,6 +20,8 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/shared_worker_instance.h"
+#include "device/gamepad/gamepad_monitor.h"
+#include "device/gamepad/public/mojom/gamepad.mojom.h"
 #include "media/capture/mojom/image_capture.mojom.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/sensor_provider.mojom.h"
@@ -105,6 +107,9 @@ void PopulateFrameBinders(RenderFrameHostImpl* host,
 
   map->Add<blink::mojom::FileChooser>(base::BindRepeating(
       &RenderFrameHostImpl::GetFileChooser, base::Unretained(host)));
+
+  map->Add<device::mojom::GamepadMonitor>(
+      base::BindRepeating(&device::GamepadMonitor::Create));
 
 #if defined(OS_ANDROID)
   if (base::FeatureList::IsEnabled(features::kWebNfc)) {

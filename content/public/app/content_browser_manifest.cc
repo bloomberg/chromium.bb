@@ -242,7 +242,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "content.mojom.InputInjector",
                   "content.mojom.RendererAudioInputStreamFactory",
                   "content.mojom.RendererAudioOutputStreamFactory",
-                  "device.mojom.GamepadMonitor",
                   "device.mojom.Geolocation",
                   "device.mojom.VRService",
                   "discardable_memory.mojom.DiscardableSharedMemoryManager",
