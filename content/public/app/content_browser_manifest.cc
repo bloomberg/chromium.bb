@@ -222,7 +222,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "blink.mojom.GeolocationService",
                   "blink.mojom.IDBFactory",
                   "blink.mojom.InsecureInputService",
-                  "blink.mojom.KeyboardLockService",
                   "blink.mojom.MediaDevicesDispatcherHost",
                   "blink.mojom.MediaStreamDispatcherHost",
                   "blink.mojom.MediaSessionService",

@@ -9,6 +9,7 @@
 #include "content/browser/content_index/content_index_service_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/image_capture/image_capture_impl.h"
+#include "content/browser/keyboard_lock/keyboard_lock_service_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/screen_enumeration/screen_enumeration_impl.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
@@ -29,6 +30,7 @@
 #include "third_party/blink/public/mojom/credentialmanager/credential_manager.mojom.h"
 #include "third_party/blink/public/mojom/filesystem/file_system.mojom.h"
 #include "third_party/blink/public/mojom/idle/idle_manager.mojom.h"
+#include "third_party/blink/public/mojom/keyboard_lock/keyboard_lock.mojom.h"
 #include "third_party/blink/public/mojom/locks/lock_manager.mojom.h"
 #include "third_party/blink/public/mojom/permissions/permission.mojom.h"
 #include "third_party/blink/public/mojom/presentation/presentation.mojom.h"
@@ -130,6 +132,8 @@ void PopulateBinderMapWithContext(
       base::BindRepeating(&BackgroundFetchServiceImpl::CreateForFrame));
   map->Add<blink::mojom::ContentIndexService>(
       base::BindRepeating(&ContentIndexServiceImpl::CreateForFrame));
+  map->Add<blink::mojom::KeyboardLockService>(
+      base::BindRepeating(&KeyboardLockServiceImpl::CreateMojoService));
   GetContentClient()->browser()->RegisterBrowserInterfaceBindersForFrame(map);
 }
 

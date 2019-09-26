@@ -67,7 +67,6 @@
 #include "content/browser/geolocation/geolocation_service_impl.h"
 #include "content/browser/installedapp/installed_app_provider_impl_default.h"
 #include "content/browser/interface_provider_filtering.h"
-#include "content/browser/keyboard_lock/keyboard_lock_service_impl.h"
 #include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/loader/prefetch_url_loader_service.h"
 #include "content/browser/log_console_message.h"
@@ -4392,9 +4391,6 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
   registry_->AddInterface(base::Bind(&RemoterFactoryImpl::Bind,
                                      GetProcess()->GetID(), GetRoutingID()));
 #endif  // BUILDFLAG(ENABLE_MEDIA_REMOTING)
-
-  registry_->AddInterface(base::BindRepeating(
-      &KeyboardLockServiceImpl::CreateMojoService, base::Unretained(this)));
 
 #if !defined(OS_ANDROID)
   if (command_line->HasSwitch(
