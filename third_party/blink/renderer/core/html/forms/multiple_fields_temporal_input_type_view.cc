@@ -38,6 +38,8 @@
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
 #include "third_party/blink/renderer/core/events/mouse_event.h"
 #include "third_party/blink/renderer/core/html/forms/base_temporal_input_type.h"
+#include "third_party/blink/renderer/core/html/forms/date_time_chooser.h"
+#include "third_party/blink/renderer/core/html/forms/date_time_field_element.h"
 #include "third_party/blink/renderer/core/html/forms/date_time_fields_state.h"
 #include "third_party/blink/renderer/core/html/forms/form_controller.h"
 #include "third_party/blink/renderer/core/html/forms/html_data_list_element.h"
@@ -310,6 +312,13 @@ Element& MultipleFieldsTemporalInputTypeView::PickerOwnerElement() const {
 
 bool MultipleFieldsTemporalInputTypeView::SetupDateTimeChooserParameters(
     DateTimeChooserParameters& parameters) {
+  // TODO(iopopesc): Get the field information by parsing the datetime format.
+  if (DateTimeEditElement* edit = GetDateTimeEditElement()) {
+    parameters.has_ampm = edit->HasField(DateTimeField::kAMPM);
+    parameters.has_second = edit->HasField(DateTimeField::kSecond);
+    parameters.has_millisecond = edit->HasField(DateTimeField::kMillisecond);
+  }
+
   return GetElement().SetupDateTimeChooserParameters(parameters);
 }
 
