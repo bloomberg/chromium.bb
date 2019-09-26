@@ -106,23 +106,12 @@ bool IsAppListWindow(const aura::Window* window) {
 bool IsTabletModeEnabled() {
   // Shell could be destroying. Shell destroys TabletModeController before
   // closing all windows.
-  if (!Shell::Get()->tablet_mode_controller())
-    return false;
-
-  return Shell::Get()->tablet_mode_controller()->InTabletMode();
+  return Shell::Get()->tablet_mode_controller() &&
+         Shell::Get()->tablet_mode_controller()->InTabletMode();
 }
 
 bool IsHotseatEnabled() {
   return IsTabletModeEnabled() && chromeos::switches::ShouldShowShelfHotseat();
-}
-
-bool IsHomeScreenAvailable() {
-  // Shell could be destroying. Shell destroys HomeScreenController before
-  // closing all windows.
-  if (!Shell::Get() || !Shell::Get()->home_screen_controller())
-    return false;
-
-  return Shell::Get()->home_screen_controller()->IsHomeScreenAvailable();
 }
 
 // Returns the |WorkspaceWindowState| of the currently active desk on the root
@@ -632,7 +621,7 @@ ShelfBackgroundType ShelfLayoutManager::GetShelfBackgroundType() const {
             ->home_screen_controller()
             ->home_launcher_gesture_handler()
             ->GetActiveWindow());
-  if (IsHomeScreenAvailable()) {
+  if (IsTabletModeEnabled()) {
     // If the home launcher is shown, being animated, or dragged, show the
     // default background.
     if (is_app_list_visible_ || home_launcher_animation_state_ == kShowing)
@@ -1638,7 +1627,7 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
   if (shelf_->auto_hide_lock())
     return state_.auto_hide_state;
 
-  if (shelf_widget_->IsShowingAppList() && !IsHomeScreenAvailable())
+  if (shelf_widget_->IsShowingAppList() && !IsTabletModeEnabled())
     return SHELF_AUTO_HIDE_SHOWN;
 
   if (shelf_widget_->status_area_widget() &&
@@ -1781,7 +1770,7 @@ float ShelfLayoutManager::ComputeTargetOpacity(const State& state) const {
 bool ShelfLayoutManager::IsShelfHiddenForFullscreen() const {
   // If the non-fullscreen app list should be shown, the shelf should not be
   // hidden.
-  if (!IsHomeScreenAvailable() &&
+  if (!IsTabletModeEnabled() &&
       Shell::Get()->app_list_controller()->GetTargetVisibility()) {
     return false;
   }
@@ -1957,7 +1946,7 @@ bool ShelfLayoutManager::StartAppListDrag(
     float scroll_y_hint) {
   // If the home screen is available, gesture dragging is handled by
   // HomeLauncherGestureHandler.
-  if (IsHomeScreenAvailable() && event_in_screen.IsGestureEvent())
+  if (IsTabletModeEnabled() && event_in_screen.IsGestureEvent())
     return false;
 
   // Fullscreen app list can only be dragged from bottom alignment shelf.
@@ -2002,7 +1991,7 @@ bool ShelfLayoutManager::StartAppListDrag(
 bool ShelfLayoutManager::StartShelfDrag(
     const ui::LocatedEvent& event_in_screen) {
   // Disable the shelf dragging if the fullscreen app list is opened.
-  if (is_app_list_visible_ && !IsHomeScreenAvailable())
+  if (is_app_list_visible_ && !IsTabletModeEnabled())
     return false;
 
   // Also disable shelf drags until the overflow shelf is closed.
