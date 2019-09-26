@@ -4619,6 +4619,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPercentBasedScrollingDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kPercentBasedScrolling)},
 
+#if !defined(OS_ANDROID)
+    {"show-legacy-tls-warnings", flag_descriptions::kLegacyTLSWarningsName,
+     flag_descriptions::kLegacyTLSWarningsDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kLegacyTLSWarnings)},
+#endif
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

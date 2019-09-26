@@ -35910,6 +35910,7 @@ from previous Chrome versions.
   <int value="-722474177" label="browser-side-navigation:disabled"/>
   <int value="-721245076" label="DesktopPWAsStayInWindow:disabled"/>
   <int value="-719819631" label="TranslateUI:disabled"/>
+  <int value="-719698123" label="LegacyTLSWarnings:enabled"/>
   <int value="-719147284" label="ExperimentalProductivityFeatures:disabled"/>
   <int value="-718884399" label="NewTabPageUIMd:enabled"/>
   <int value="-718626298" label="SysInternals:enabled"/>
@@ -36755,6 +36756,7 @@ from previous Chrome versions.
   <int value="431691805" label="MediaDocumentDownloadButton:enabled"/>
   <int value="434033638" label="PwaPersistentNotification:disabled"/>
   <int value="436682243" label="TabGroupsAndroid:disabled"/>
+  <int value="444754854" label="LegacyTLSWarnings:disabled"/>
   <int value="446316019" label="enable-threaded-compositing"/>
   <int value="451196246" label="disable-impl-side-painting"/>
   <int value="452139294" label="VrShellExperimentalRendering:enabled"/>
