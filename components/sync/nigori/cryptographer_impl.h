@@ -65,6 +65,11 @@ class CryptographerImpl : public Cryptographer {
   // false.
   void ClearDefaultEncryptionKey();
 
+  // Returns a proto representation of the default encryption key, without the
+  // name field populated. |*this| must have a default encryption key set,
+  // as reflected by CanEncrypt().
+  sync_pb::NigoriKey ExportDefaultKeyWithoutName() const;
+
   // Cryptographer overrides.
   std::unique_ptr<Cryptographer> Clone() const override;
   bool CanEncrypt() const override;

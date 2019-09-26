@@ -83,6 +83,14 @@ void CryptographerImpl::ClearDefaultEncryptionKey() {
   default_encryption_key_name_.clear();
 }
 
+sync_pb::NigoriKey CryptographerImpl::ExportDefaultKeyWithoutName() const {
+  DCHECK(CanEncrypt());
+
+  sync_pb::NigoriKey key = key_bag_.ExportKey(default_encryption_key_name_);
+  key.clear_name();
+  return key;
+}
+
 std::unique_ptr<Cryptographer> CryptographerImpl::Clone() const {
   return base::WrapUnique(
       new CryptographerImpl(key_bag_.Clone(), default_encryption_key_name_));
