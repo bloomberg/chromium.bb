@@ -1225,6 +1225,21 @@ static void search_filter_ref(AV1_COMP *cpi, MACROBLOCK *x, RD_STATS *this_rdc,
   *this_early_term = best_early_term;
 }
 
+#define COLLECT_PICK_MODE_STAT 0
+
+#if COLLECT_PICK_MODE_STAT
+typedef struct _mode_search_stat {
+  int32_t num_blocks[BLOCK_SIZES];
+  int64_t avg_block_times[BLOCK_SIZES];
+  int32_t num_searches[BLOCK_SIZES][MB_MODE_COUNT];
+  int32_t num_nonskipped_searches[BLOCK_SIZES][MB_MODE_COUNT];
+  int64_t search_times[BLOCK_SIZES][MB_MODE_COUNT];
+  int64_t nonskipped_search_times[BLOCK_SIZES][MB_MODE_COUNT];
+  struct aom_usec_timer timer1;
+  struct aom_usec_timer timer2;
+} mode_search_stat;
+#endif  // COLLECT_PICK_MODE_STAT
+
 void av1_fast_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
                                        MACROBLOCK *x, int mi_row, int mi_col,
                                        RD_STATS *rd_cost, BLOCK_SIZE bsize,
@@ -1237,7 +1252,9 @@ void av1_fast_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
 
   BEST_PICKMODE best_pickmode;
   int inter_mode_mask[BLOCK_SIZES];
-
+#if COLLECT_PICK_MODE_STAT
+  static mode_search_stat ms_stat;
+#endif
   MV_REFERENCE_FRAME ref_frame;
   MV_REFERENCE_FRAME usable_ref_frame, second_ref_frame;
   int_mv frame_mv[MB_MODE_COUNT][REF_FRAMES];
@@ -1278,7 +1295,9 @@ void av1_fast_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   const int bw = block_size_wide[bsize];
   const int pixels_in_block = bh * bw;
   struct buf_2d orig_dst = pd->dst;
-
+#if COLLECT_PICK_MODE_STAT
+  aom_usec_timer_start(&ms_stat.timer2);
+#endif
   const int intra_cost_penalty = av1_get_intra_cost_penalty(
       cm->base_qindex, cm->y_dc_delta_q, cm->seq_params.bit_depth);
   const int64_t inter_mode_thresh = RDCOST(x->rdmult, intra_cost_penalty, 0);
@@ -1390,6 +1409,11 @@ void av1_fast_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
       cpi->oxcf.rc_mode == AOM_CBR && large_block &&
       !cyclic_refresh_segment_id_boosted(xd->mi[0]->segment_id) &&
       cm->base_qindex;
+
+#if COLLECT_PICK_MODE_STAT
+  ms_stat.num_blocks[bsize]++;
+#endif
+
   for (int idx = 0; idx < num_inter_modes; ++idx) {
     int rate_mv = 0;
     int mode_rd_thresh;
@@ -1406,6 +1430,11 @@ void av1_fast_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
 
     this_mode = ref_mode_set[idx].pred_mode;
     ref_frame = ref_mode_set[idx].ref_frame;
+
+#if COLLECT_PICK_MODE_STAT
+    aom_usec_timer_start(&ms_stat.timer1);
+    ms_stat.num_searches[bsize][this_mode]++;
+#endif
     init_mbmi(mi, this_mode, ref_frame, NONE_FRAME, cm);
 
     mi->tx_size = AOMMIN(AOMMIN(max_txsize_lookup[bsize],
@@ -1569,7 +1598,9 @@ void av1_fast_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
         pd->dst.stride = bw;
       }
     }
-
+#if COLLECT_PICK_MODE_STAT
+    ms_stat.num_nonskipped_searches[bsize][this_mode]++;
+#endif
     if (cpi->sf.use_nonrd_filter_search) {
       search_filter_ref(cpi, x, &this_rdc, mi_row, mi_col, bsize, &var_y,
                         &sse_y, &this_early_term, use_model_yrd_large);
@@ -1670,7 +1701,11 @@ void av1_fast_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     }
 
     mode_checked[this_mode][ref_frame] = 1;
-
+#if COLLECT_PICK_MODE_STAT
+    aom_usec_timer_mark(&ms_stat.timer1);
+    ms_stat.nonskipped_search_times[bsize][this_mode] +=
+        aom_usec_timer_elapsed(&ms_stat.timer1);
+#endif
     if (this_rdc.rdcost < best_rdc.rdcost) {
       best_rdc = this_rdc;
       best_early_term = this_early_term;
@@ -1836,5 +1871,43 @@ void av1_fast_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   }
 
   store_coding_context(x, ctx, mi->mode);
+#if COLLECT_PICK_MODE_STAT
+  aom_usec_timer_mark(&ms_stat.timer2);
+  ms_stat.avg_block_times[bsize] += aom_usec_timer_elapsed(&ms_stat.timer2);
+  //
+  if ((mi_row + mi_size_high[bsize] >= (cpi->common.mi_rows)) &&
+      (mi_col + mi_size_wide[bsize] >= (cpi->common.mi_cols))) {
+    int i, j;
+    PREDICTION_MODE used_modes[3] = { NEARESTMV, NEARMV, NEWMV };
+    BLOCK_SIZE bss[5] = { BLOCK_8X8, BLOCK_16X16, BLOCK_32X32, BLOCK_64X64,
+                          BLOCK_128X128 };
+    int64_t total_time = 0l;
+    int32_t total_blocks = 0;
+
+    printf("\n");
+    for (i = 0; i < 5; i++) {
+      printf("BS(%d) Num %d, Avg_time %f: ", bss[i], ms_stat.num_blocks[bss[i]],
+             ms_stat.num_blocks[bss[i]] > 0
+                 ? (float)ms_stat.avg_block_times[bss[i]] /
+                       ms_stat.num_blocks[bss[i]]
+                 : 0);
+      total_time += ms_stat.avg_block_times[bss[i]];
+      total_blocks += ms_stat.num_blocks[bss[i]];
+      for (j = 0; j < 3; j++) {
+        printf("Mode %d, %d/%d tps %f ", used_modes[j],
+               ms_stat.num_nonskipped_searches[bss[i]][used_modes[j]],
+               ms_stat.num_searches[bss[i]][used_modes[j]],
+               ms_stat.num_nonskipped_searches[bss[i]][used_modes[j]] > 0
+                   ? (float)ms_stat
+                             .nonskipped_search_times[bss[i]][used_modes[j]] /
+                         ms_stat.num_nonskipped_searches[bss[i]][used_modes[j]]
+                   : 0l);
+      }
+      printf("\n");
+    }
+    printf("Total time = %ld. Total blocks = %d\n", total_time, total_blocks);
+  }
+  //
+#endif  // COLLECT_PICK_MODE_STAT
   *rd_cost = best_rdc;
 }
