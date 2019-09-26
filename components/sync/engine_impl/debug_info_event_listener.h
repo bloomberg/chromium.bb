@@ -104,8 +104,9 @@ class DebugInfoEventListener : public SyncManager::Observer,
   // Cryptographer has keys that are not yet decrypted.
   bool cryptographer_has_pending_keys_;
 
-  // Cryptographer is initialized and does not have pending keys.
-  bool cryptographer_ready_;
+  // Cryptographer is able to encrypt data, which usually means it's initialized
+  // and does not have pending keys.
+  bool cryptographer_can_encrypt_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

@@ -448,7 +448,7 @@ void SyncManagerImpl::OnEncryptionComplete() {
 
 void SyncManagerImpl::OnCryptographerStateChanged(Cryptographer* cryptographer,
                                                   bool has_pending_keys) {
-  allstatus_.SetCryptographerReady(cryptographer->CanEncrypt());
+  allstatus_.SetCryptographerCanEncrypt(cryptographer->CanEncrypt());
   allstatus_.SetCryptoHasPendingKeys(has_pending_keys);
   allstatus_.SetKeystoreMigrationTime(
       sync_encryption_handler_->GetKeystoreMigrationTime());

@@ -13,7 +13,7 @@ namespace syncer {
 DebugInfoEventListener::DebugInfoEventListener()
     : events_dropped_(false),
       cryptographer_has_pending_keys_(false),
-      cryptographer_ready_(false) {}
+      cryptographer_can_encrypt_(false) {}
 
 DebugInfoEventListener::~DebugInfoEventListener() {}
 
@@ -103,7 +103,7 @@ void DebugInfoEventListener::OnCryptographerStateChanged(
     bool has_pending_keys) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   cryptographer_has_pending_keys_ = has_pending_keys;
-  cryptographer_ready_ = cryptographer->CanEncrypt();
+  cryptographer_can_encrypt_ = cryptographer->CanEncrypt();
 }
 
 void DebugInfoEventListener::OnPassphraseTypeChanged(
@@ -142,7 +142,7 @@ void DebugInfoEventListener::GetDebugInfo(sync_pb::DebugInfo* debug_info) {
   }
 
   debug_info->set_events_dropped(events_dropped_);
-  debug_info->set_cryptographer_ready(cryptographer_ready_);
+  debug_info->set_cryptographer_ready(cryptographer_can_encrypt_);
   debug_info->set_cryptographer_has_pending_keys(
       cryptographer_has_pending_keys_);
 }
