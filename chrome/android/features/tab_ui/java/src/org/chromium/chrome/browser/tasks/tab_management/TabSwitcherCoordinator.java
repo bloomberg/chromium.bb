@@ -127,7 +127,8 @@ public class TabSwitcherCoordinator implements Destroyable, TabSwitcher,
                 mTabListCoordinator.getContainerView(), TabListContainerViewBinder::bind);
 
         if (FeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()
-                && mode == TabListCoordinator.TabListMode.GRID) {
+                && mode == TabListCoordinator.TabListMode.GRID
+                && !FeatureUtilities.isStartSurfaceEnabled()) {
             mTabGridIphItemCoordinator = new TabGridIphItemCoordinator(
                     context, mTabListCoordinator.getContainerView(), container);
             mMediator.setIphProvider(mTabGridIphItemCoordinator.getIphProvider());
