@@ -1894,7 +1894,7 @@ TEST_F(PasswordAutofillAgentTest, NoCredentialsOnPasswordClick) {
 // PasswordAutofillAgent can still remember the username and the password
 // typed by the user.
 TEST_F(PasswordAutofillAgentTest,
-       RememberLastNonEmptyUsernameAndPasswordOnSubmit_ScriptCleared) {
+       DISABLED_RememberLastNonEmptyUsernameAndPasswordOnSubmit_ScriptCleared) {
   LoadHTML(kSignupFormHTML);
   WebInputElement username_element = GetInputElementByID("random_info");
   ASSERT_FALSE(username_element.IsNull());
@@ -1957,7 +1957,7 @@ TEST_F(PasswordAutofillAgentTest,
 // Similar to RememberLastNonEmptyPasswordOnSubmit_ScriptCleared, but uses the
 // new password instead of the current password.
 TEST_F(PasswordAutofillAgentTest,
-       RememberLastNonEmptyUsernameAndPasswordOnSubmit_New) {
+       DISABLED_RememberLastNonEmptyUsernameAndPasswordOnSubmit_New) {
   const char kNewPasswordFormHTML[] =
       "<FORM name='LoginTestForm' action='http://www.bidule.com'>"
       "  <INPUT type='text' id='username' autocomplete='username'/>"
