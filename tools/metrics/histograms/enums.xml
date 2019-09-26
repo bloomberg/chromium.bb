@@ -52941,6 +52941,10 @@ Called by update_net_trust_anchors.py.-->
 <enum name="SafetyTipInteraction">
   <int value="0" label="User dismissed the Safety Tip"/>
   <int value="1" label="User left the site with the Safety Tip"/>
+  <int value="2" label="No action on the Safety Tip"/>
+  <int value="3" label="User dismissed the Safety Tip with the esc key"/>
+  <int value="4" label="User dismissed the Safety Tip with the close button"/>
+  <int value="5" label="User dismissed the Safety Tip with the ignore button"/>
 </enum>
 
 <enum name="SafetyTipStatus">

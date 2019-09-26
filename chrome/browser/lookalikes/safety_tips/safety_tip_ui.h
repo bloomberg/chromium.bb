@@ -21,12 +21,19 @@ namespace safety_tips {
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
 enum class SafetyTipInteraction {
-  // The user dismissed the safety tip.
+  // The user dismissed the safety tip. Every time the user dismisses the
+  // dialog, a histogram will be recorded once with this value, and again with a
+  // more specific way of dismissing the safety tip (e.g. kDismissWithEsc).
   kDismiss = 0,
   // The user followed the safety tip's call to action to leave the site.
   kLeaveSite = 1,
   kNoAction = 2,
-  kMaxValue = kNoAction,
+  // The values below record specific ways that the user dismissed the safety
+  // tip.
+  kDismissWithEsc = 3,
+  kDismissWithClose = 4,
+  kDismissWithIgnore = 5,
+  kMaxValue = kDismissWithIgnore,
 };
 
 // Shows Safety Tip UI using the specified information if it is not already

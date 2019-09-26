@@ -185,9 +185,19 @@ void ReputationService::GetReputationStatus(const GURL& url,
 }
 
 void ReputationService::SetUserIgnore(content::WebContents* web_contents,
-                                      const GURL& url) {
+                                      const GURL& url,
+                                      SafetyTipInteraction interaction) {
+  // Record that the user dismissed the safety tip. kDismiss is the base case,
+  // which makes it easier to track overall dismissal metrics without having
+  // to re-constitute from separate histograms that record specifically how the
+  // user dismissed the safety tip. The way the user dismissed the dialog is
+  // also recorded to this interaction histogram, but with a more specific value
+  // (e.g. kDismissWithEsc) that is passed into this method.
   RecordSafetyTipInteractionHistogram(web_contents,
                                       SafetyTipInteraction::kDismiss);
+  // Record a histogram indicating how the user dismissed the safety tip
+  // (i.e. esc key, close button, or ignore button).
+  RecordSafetyTipInteractionHistogram(web_contents, interaction);
   warning_dismissed_origins_.insert(url::Origin::Create(url));
 }
 

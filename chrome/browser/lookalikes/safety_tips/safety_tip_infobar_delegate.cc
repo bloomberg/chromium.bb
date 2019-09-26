@@ -82,9 +82,13 @@ bool SafetyTipInfoBarDelegate::Accept() {
 bool SafetyTipInfoBarDelegate::Cancel() {
   auto* tab = TabAndroid::FromWebContents(web_contents_);
   if (tab) {
-    action_taken_ = SafetyTipInteraction::kDismiss;
+    // Only record the action taken if it hasn't already been set by
+    // InfoBarDismissed().
+    if (action_taken_ != SafetyTipInteraction::kDismissWithClose) {
+      action_taken_ = SafetyTipInteraction::kDismissWithIgnore;
+    }
     safety_tips::ReputationService::Get(tab->GetProfile())
-        ->SetUserIgnore(web_contents_, url_);
+        ->SetUserIgnore(web_contents_, url_, action_taken_);
   }
 
   return true;
@@ -100,7 +104,9 @@ int SafetyTipInfoBarDelegate::GetIconId() const {
 }
 
 void SafetyTipInfoBarDelegate::InfoBarDismissed() {
-  // Called when you click the X. Treat the same as 'ignore'.
+  // Called when you click the X. Treat the same as 'ignore', except record
+  // the interaction differently.
+  action_taken_ = SafetyTipInteraction::kDismissWithClose;
   Cancel();
 }
 

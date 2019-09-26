@@ -113,6 +113,8 @@ SafetyTipPageInfoBubbleView::~SafetyTipPageInfoBubbleView() {}
 void SafetyTipPageInfoBubbleView::OnWidgetDestroying(views::Widget* widget) {
   PageInfoBubbleViewBase::OnWidgetDestroying(widget);
 
+  bool should_set_ignore = false;
+
   switch (widget->closed_reason()) {
     case views::Widget::ClosedReason::kUnspecified:
     case views::Widget::ClosedReason::kLostFocus:
@@ -124,16 +126,26 @@ void SafetyTipPageInfoBubbleView::OnWidgetDestroying(views::Widget* widget) {
       // stumble there again, we should warn again.
       break;
     case views::Widget::ClosedReason::kEscKeyPressed:
+      action_taken_ = safety_tips::SafetyTipInteraction::kDismissWithEsc;
+      should_set_ignore = true;
+      break;
     case views::Widget::ClosedReason::kCloseButtonClicked:
+      action_taken_ = safety_tips::SafetyTipInteraction::kDismissWithClose;
+      should_set_ignore = true;
+      break;
     case views::Widget::ClosedReason::kCancelButtonClicked:
-      action_taken_ = safety_tips::SafetyTipInteraction::kDismiss;
-      Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
-      if (browser)
-        safety_tips::ReputationService::Get(browser->profile())
-            ->SetUserIgnore(web_contents(), url_);
+      action_taken_ = safety_tips::SafetyTipInteraction::kDismissWithIgnore;
+      should_set_ignore = true;
       break;
   }
   std::move(close_callback_).Run(action_taken_);
+  if (should_set_ignore) {
+    Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
+    if (browser) {
+      safety_tips::ReputationService::Get(browser->profile())
+          ->SetUserIgnore(web_contents(), url_, action_taken_);
+    }
+  }
 }
 
 void SafetyTipPageInfoBubbleView::ButtonPressed(views::Button* button,
