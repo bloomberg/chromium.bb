@@ -18,27 +18,25 @@
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "Squashing Containment Layer",
-      "drawsContent": false
-    },
-    {
-      "name": "LayoutNGBlockFlow DIV",
+      "name": "LayoutBlockFlow DIV id='grandparent' class='composited'",
       "bounds": [100, 100],
       "contentsOpaque": true,
-      "backgroundColor": "#D3D3D3",
+      "backgroundColor": "#008000",
       "transform": 1
     },
     {
-      "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (positioned) DIV id='target')",
-      "position": [28, 28],
+      "name": "LayoutBlockFlow DIV id='parent' class='composited'",
       "bounds": [100, 100],
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow (positioned) DIV id='target'",
-          "rect": [0, 0, 100, 100],
-          "reason": "background"
-        }
-      ]
+      "contentsOpaque": true,
+      "backgroundColor": "#008000",
+      "transform": 1
+    },
+    {
+      "name": "LayoutBlockFlow DIV id='child' class='composited'",
+      "bounds": [100, 100],
+      "contentsOpaque": true,
+      "backgroundColor": "#008000",
+      "transform": 1
     }
   ],
   "transforms": [
@@ -49,8 +47,7 @@
         [0, 1, 0, 0],
         [0, 0, 1, 0],
         [8, 8, 0, 1]
-      ],
-      "flattenInheritedTransform": false
+      ]
     }
   ]
 }

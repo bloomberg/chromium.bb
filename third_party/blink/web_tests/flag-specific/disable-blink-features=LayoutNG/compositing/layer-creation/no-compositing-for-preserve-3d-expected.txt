@@ -21,12 +21,12 @@ This layer should be composited.
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutNGBlockFlow DIV class='preserve3d'",
+      "name": "LayoutBlockFlow DIV class='preserve3d'",
       "position": [18, 394],
       "bounds": [342, 182]
     },
     {
-      "name": "LayoutNGBlockFlow (relative positioned) DIV class='box'",
+      "name": "LayoutBlockFlow (relative positioned) DIV class='box'",
       "bounds": [100, 100],
       "contentsOpaque": true,
       "backgroundColor": "#C0C0C0",
