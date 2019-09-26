@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#define _USE_MATH_DEFINES  // For VC++ to get M_PI. This has to be first.
-
 #include "ui/events/blink/prediction/kalman_predictor.h"
+
+#include <algorithm>
+#include <cmath>
+
+#include "base/numerics/math_constants.h"
 #include "ui/events/blink/prediction/predictor_factory.h"
 
 namespace {
@@ -95,7 +98,7 @@ bool KalmanPredictor::GeneratePrediction(base::TimeTicks predict_time,
                         atan2(second_dir.x(), second_dir.y());
       }
     }
-    if (abs(points_angle) * 180 / M_PI > 15) {
+    if (fabsf(points_angle) * 180 / base::kPiDouble > 15) {
       position += ScaleVector2d(acceleration,
                                 kAccelerationInfluence * pred_dt * pred_dt);
     }
