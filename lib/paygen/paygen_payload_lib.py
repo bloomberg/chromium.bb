@@ -883,8 +883,6 @@ class PaygenPayload(object):
     # Deliver the payload to the final location.
     if self.signer:
       urilib.Copy(self.signed_payload_file, self.payload.uri)
-      urilib.Copy(self.metadata_signature_file,
-                  self._MetadataUri(self.payload.uri))
     else:
       urilib.Copy(self.payload_file, self.payload.uri)
 

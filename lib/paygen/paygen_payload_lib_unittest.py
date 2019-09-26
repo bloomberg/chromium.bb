@@ -758,8 +758,6 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
     self.assertEqual(copy_mock.call_args_list, [
         # Check signed calls.
         mock.call('/work/delta.bin.signed', 'gs://full_old_foo/boo'),
-        mock.call('/work/delta.bin.signed.metadata-signature',
-                  'gs://full_old_foo/boo.metadata-signature'),
         mock.call('/work/delta.log', 'gs://full_old_foo/boo.log'),
         mock.call('/work/delta.json', 'gs://full_old_foo/boo.json'),
         # Check unsigned calls.
