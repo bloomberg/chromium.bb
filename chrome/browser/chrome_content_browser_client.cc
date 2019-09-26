@@ -334,7 +334,6 @@
 #include "storage/browser/fileapi/external_mount_points.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
-#include "third_party/blink/public/mojom/installedapp/installed_app_provider.mojom.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "third_party/blink/public/mojom/user_agent/user_agent_metadata.mojom.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -4407,8 +4406,6 @@ void ChromeContentBrowserClient::InitWebContextInterfaces() {
       base::BindRepeating(&InsecureSensitiveInputDriverFactory::BindDriver));
 
 #if defined(OS_ANDROID)
-  frame_interfaces_parameterized_->AddInterface(base::Bind(
-      &ForwardToJavaFrameRegistry<blink::mojom::InstalledAppProvider>));
   frame_interfaces_parameterized_->AddInterface(
       base::Bind(&ForwardToJavaFrameRegistry<payments::mojom::PaymentRequest>));
   frame_interfaces_parameterized_->AddInterface(

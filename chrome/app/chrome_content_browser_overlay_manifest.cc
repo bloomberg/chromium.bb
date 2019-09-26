@@ -158,7 +158,6 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
             service_manager::Manifest::InterfaceList<
                 autofill::mojom::AutofillDriver,
                 autofill::mojom::PasswordManagerDriver,
-                blink::mojom::InstalledAppProvider,
 #if defined(BROWSER_MEDIA_CONTROLS_MENU)
                 blink::mojom::MediaControlsMenuHost,
 #endif

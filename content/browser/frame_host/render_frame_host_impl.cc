@@ -65,7 +65,6 @@
 #include "content/browser/frame_host/render_frame_proxy_host.h"
 #include "content/browser/generic_sensor/sensor_provider_proxy_impl.h"
 #include "content/browser/geolocation/geolocation_service_impl.h"
-#include "content/browser/installedapp/installed_app_provider_impl_default.h"
 #include "content/browser/interface_provider_filtering.h"
 #include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/loader/prefetch_url_loader_service.h"
@@ -4306,13 +4305,6 @@ void RenderFrameHostImpl::ResourceLoadComplete(
 
 void RenderFrameHostImpl::RegisterMojoInterfaces() {
   auto* command_line = base::CommandLine::ForCurrentProcess();
-
-#if !defined(OS_ANDROID)
-  // The default (no-op) implementation of InstalledAppProvider. On Android, the
-  // real implementation is provided in Java.
-  registry_->AddInterface(
-      base::BindRepeating(&InstalledAppProviderImplDefault::Create));
-#endif  // !defined(OS_ANDROID)
 
   PermissionControllerImpl* permission_controller =
       PermissionControllerImpl::FromBrowserContext(

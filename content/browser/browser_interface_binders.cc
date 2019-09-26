@@ -45,7 +45,9 @@
 #include "third_party/blink/public/mojom/webauthn/virtual_authenticator.mojom.h"
 
 #if !defined(OS_ANDROID)
+#include "content/browser/installedapp/installed_app_provider_impl_default.h"
 #include "third_party/blink/public/mojom/hid/hid.mojom.h"
+#include "third_party/blink/public/mojom/installedapp/installed_app_provider.mojom.h"
 #endif
 
 #if defined(OS_ANDROID)
@@ -89,6 +91,13 @@ void PopulateFrameBinders(RenderFrameHostImpl* host,
 
   map->Add<blink::mojom::IdleManager>(base::BindRepeating(
       &RenderFrameHostImpl::GetIdleManager, base::Unretained(host)));
+
+#if !defined(OS_ANDROID)
+  // The default (no-op) implementation of InstalledAppProvider. On Android, the
+  // real implementation is provided in Java.
+  map->Add<blink::mojom::InstalledAppProvider>(
+      base::BindRepeating(&InstalledAppProviderImplDefault::Create));
+#endif
 
   map->Add<blink::mojom::PermissionService>(base::BindRepeating(
       &RenderFrameHostImpl::CreatePermissionService, base::Unretained(host)));
