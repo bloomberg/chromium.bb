@@ -245,6 +245,23 @@ base::Value NetLogQuicCertificateVerifiedParams(
   return dict;
 }
 
+base::Value NetLogQuicCryptoFrameParams(const quic::QuicCryptoFrame* frame) {
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetStringKey("encryption_level",
+                    quic::QuicUtils::EncryptionLevelToString(frame->level));
+  dict.SetIntKey("data_length", frame->data_length);
+  dict.SetKey("offset", NetLogNumberValue(frame->offset));
+  return dict;
+}
+
+base::Value NetLogQuicStopSendingFrameParams(
+    const quic::QuicStopSendingFrame* frame) {
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetIntKey("stream_id", frame->stream_id);
+  dict.SetIntKey("application_error_code", frame->application_error_code);
+  return dict;
+}
+
 void UpdatePublicResetAddressMismatchHistogram(
     const IPEndPoint& server_hello_address,
     const IPEndPoint& public_reset_address) {
@@ -461,10 +478,17 @@ void QuicConnectionLogger::OnFrameAddedToPacket(const quic::QuicFrame& frame) {
     case quic::PATH_CHALLENGE_FRAME:
       break;
     case quic::STOP_SENDING_FRAME:
+      net_log_.AddEvent(
+          NetLogEventType::QUIC_SESSION_STOP_SENDING_FRAME_SENT, [&] {
+            return NetLogQuicStopSendingFrameParams(frame.stop_sending_frame);
+          });
       break;
     case quic::MESSAGE_FRAME:
       break;
     case quic::CRYPTO_FRAME:
+      net_log_.AddEvent(NetLogEventType::QUIC_SESSION_CRYPTO_FRAME_SENT, [&] {
+        return NetLogQuicCryptoFrameParams(frame.crypto_frame);
+      });
       break;
     case quic::NEW_TOKEN_FRAME:
       break;
@@ -623,6 +647,21 @@ void QuicConnectionLogger::OnStreamFrame(const quic::QuicStreamFrame& frame) {
     return;
   net_log_.AddEvent(NetLogEventType::QUIC_SESSION_STREAM_FRAME_RECEIVED,
                     [&] { return NetLogQuicStreamFrameParams(frame); });
+}
+
+void QuicConnectionLogger::OnCryptoFrame(const quic::QuicCryptoFrame& frame) {
+  if (!net_log_.IsCapturing())
+    return;
+  net_log_.AddEvent(NetLogEventType::QUIC_SESSION_CRYPTO_FRAME_RECEIVED,
+                    [&] { return NetLogQuicCryptoFrameParams(&frame); });
+}
+
+void QuicConnectionLogger::OnStopSendingFrame(
+    const quic::QuicStopSendingFrame& frame) {
+  if (!net_log_.IsCapturing())
+    return;
+  net_log_.AddEvent(NetLogEventType::QUIC_SESSION_STOP_SENDING_FRAME_RECEIVED,
+                    [&] { return NetLogQuicStopSendingFrameParams(&frame); });
 }
 
 void QuicConnectionLogger::OnIncomingAck(
