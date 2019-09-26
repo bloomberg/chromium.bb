@@ -346,11 +346,12 @@ def _RetryUrlOpen(url, tries=3):
     time.sleep(10)
 
 
-def GrabRemotePackageIndex(binhost_url):
+def GrabRemotePackageIndex(binhost_url, **kwargs):
   """Grab the latest binary package database from the specified URL.
 
   Args:
     binhost_url: Base URL of remote packages (PORTAGE_BINHOST).
+    kwargs: Additional RunCommand parameters.
 
   Returns:
     A PackageIndex object, if the Packages file can be retrieved. If the
@@ -373,7 +374,7 @@ def GrabRemotePackageIndex(binhost_url):
   elif binhost_url.startswith('gs://'):
     try:
       gs_context = gs.GSContext()
-      output = gs_context.Cat(url)
+      output = gs_context.Cat(url, **kwargs)
     except (cros_build_lib.RunCommandError, gs.GSNoSuchKey) as e:
       logging.PrintBuildbotStepWarnings()
       logging.error('Cannot GET %s: %s', url, e)
