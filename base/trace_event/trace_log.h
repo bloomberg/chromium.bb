@@ -301,7 +301,6 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
                         TraceEventHandle handle);
 
   int process_id() const { return process_id_; }
-  const std::string& process_name() const { return process_name_; }
 
   uint64_t MangleEventId(uint64_t id);
 
