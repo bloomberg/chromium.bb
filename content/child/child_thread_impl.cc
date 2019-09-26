@@ -233,7 +233,8 @@ mojo::IncomingInvitation InitializeMojoIPCChannel() {
           service_manager::kMojoIPCChannel))));
 #endif
 
-  return mojo::IncomingInvitation::Accept(std::move(endpoint));
+  return mojo::IncomingInvitation::Accept(
+      std::move(endpoint), MOJO_ACCEPT_INVITATION_FLAG_LEAK_TRANSPORT_ENDPOINT);
 }
 
 class ChannelBootstrapFilter : public ConnectionFilter {
