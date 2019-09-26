@@ -94,7 +94,8 @@ During code review ensure the following -
 
 *   Verify that for an enum histogram, the enum described in enums.xml and the
     enum defined in the client code matches. Furthermore, the enum in the code
-    should have a comment mentioning that the values must not be changes and aslo that additions to the enum should be synced to enums.xml.
+    should have a comment mentioning that the values must not be changes and
+    also that additions to the enum should be synced to enums.xml.
 
     *   See the sample comment
         [here](https://cs.chromium.org/chromium/src/base/metrics/histogram_macros.h?rcl=2c99f35f64380ba63c928787834661fbc1fa4234&l=46).
