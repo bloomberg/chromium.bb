@@ -773,10 +773,8 @@ void ChildThreadImpl::ReleaseCachedFonts() {
 }
 
 mojom::FontCacheWin* ChildThreadImpl::GetFontCacheWin() {
-  if (!font_cache_win_ptr_) {
-    GetConnector()->BindInterface(mojom::kSystemServiceName,
-                                  &font_cache_win_ptr_);
-  }
+  if (!font_cache_win_ptr_)
+    BindHostReceiver(mojo::MakeRequest(&font_cache_win_ptr_));
   return font_cache_win_ptr_.get();
 }
 #endif
