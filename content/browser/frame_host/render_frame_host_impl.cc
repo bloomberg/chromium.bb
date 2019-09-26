@@ -80,7 +80,6 @@
 #include "content/browser/permissions/permission_controller_impl.h"
 #include "content/browser/permissions/permission_service_context.h"
 #include "content/browser/permissions/permission_service_impl.h"
-#include "content/browser/picture_in_picture/picture_in_picture_service_impl.h"
 #include "content/browser/portal/portal.h"
 #include "content/browser/presentation/presentation_service_impl.h"
 #include "content/browser/push_messaging/push_messaging_manager.h"
@@ -4473,9 +4472,6 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
 
   registry_->AddInterface(base::BindRepeating(&WakeLockServiceImpl::Create,
                                               base::Unretained(this)));
-
-  registry_->AddInterface(base::BindRepeating(
-      &PictureInPictureServiceImpl::Create, base::Unretained(this)));
 
   if (base::FeatureList::IsEnabled(blink::features::kNativeFileSystemAPI)) {
     registry_->AddInterface(base::BindRepeating(
