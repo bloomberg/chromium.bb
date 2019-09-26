@@ -1655,7 +1655,7 @@ class FormatToggler extends HTMLElement {
         '3.18359L0.617188 2.61719L3 0.234375L5.38281 2.61719L4.81641 ' +
         '3.18359L3 1.36719L1.18359 3.18359ZM4.81641 4.81641L5.38281 ' +
         '5.38281L3 7.76562L0.617188 5.38281L1.18359 4.81641L3 ' +
-        '6.63281L4.81641 4.81641Z" fill="black"/></svg>';
+        '6.63281L4.81641 4.81641Z" fill="WindowText"/></svg>';
 
     this.append(...this.colorFormatLabels_, this.upDownIcon_);
 
@@ -1813,7 +1813,7 @@ class SubmissionControls extends HTMLElement {
         '<svg width="14" height="10" viewBox="0 0 14 10" fill="none" ' +
         'xmlns="http://www.w3.org/2000/svg"><path d="M13.3516 ' +
         '1.35156L5 9.71094L0.648438 5.35156L1.35156 4.64844L5 ' +
-        '8.28906L12.6484 0.648438L13.3516 1.35156Z" fill="black"/></svg>'
+        '8.28906L12.6484 0.648438L13.3516 1.35156Z" fill="WindowText"/></svg>'
     );
     this.cancelButton_ = new SubmissionButton(cancelCallback,
         '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" ' +
@@ -1821,7 +1821,7 @@ class SubmissionControls extends HTMLElement {
         '12.3984L12.3984 13.1016L7 7.71094L1.60156 13.1016L0.898438 ' +
         '12.3984L6.28906 7L0.898438 1.60156L1.60156 0.898438L7 ' +
         '6.28906L12.3984 0.898438L13.1016 1.60156L7.71094 7Z" ' +
-        'fill="black"/></svg>'
+        'fill="WindowText"/></svg>'
     );
     this.append(this.submitButton_, this.cancelButton_);
   }
