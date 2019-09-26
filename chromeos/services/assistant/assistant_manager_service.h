@@ -26,14 +26,10 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerService
   enum State {
     // Initial state, the service is created but not started yet.
     STOPPED = 0,
-    // Start has been called but libassistant creation is still in progress.
-    // Calling |assistant_manager()| will still return a nullptr.
-    STARTING = 1,
-    // The service is started, libassistant has been created, but libassistant
-    // is not ready yet to take requests.
-    STARTED = 2,
+    // The service is started, it takes a little time to be fully running.
+    STARTED = 1,
     // The service is fully running and ready to take requests.
-    RUNNING = 3
+    RUNNING = 2
   };
 
   ~AssistantManagerService() override = default;

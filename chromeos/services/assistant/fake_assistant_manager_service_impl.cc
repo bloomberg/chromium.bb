@@ -23,7 +23,7 @@ void FakeAssistantManagerServiceImpl::Start(
     const base::Optional<std::string>& access_token,
     bool enable_hotword,
     base::OnceClosure callback) {
-  state_ = State::STARTING;
+  state_ = State::STARTED;
   start_callback_ = std::move(callback);
 }
 
