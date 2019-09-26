@@ -553,7 +553,7 @@ class CONTENT_EXPORT RenderWidget
   void OnImeEventGuardStart(ImeEventGuard* guard);
   void OnImeEventGuardFinish(ImeEventGuard* guard);
 
-  void ApplyEmulatedScreenMetricsForPopupWidget(RenderWidget* origin_widget);
+  void ApplyEmulatedScreenMetricsForPopupWidget();
 
   // Checks if the selection bounds have been changed. If they are changed,
   // the new value will be sent to the browser process.

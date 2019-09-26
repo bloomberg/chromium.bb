@@ -598,12 +598,13 @@ void RenderWidget::Init(ShowCallback show_callback, WebWidget* web_widget) {
   RenderThread::Get()->AddRoute(routing_id_, this);
 }
 
-void RenderWidget::ApplyEmulatedScreenMetricsForPopupWidget(
-    RenderWidget* origin_widget) {
+void RenderWidget::ApplyEmulatedScreenMetricsForPopupWidget() {
   RenderWidgetScreenMetricsEmulator* emulator =
       page_properties_->ScreenMetricsEmulator();
   if (!emulator)
     return;
+  // TODO(danakj): Have RenderWidget go directly through the emulator when it
+  // uses these popup variables, and remove the variables.
   popup_origin_scale_for_emulation_ = emulator->scale();
   popup_view_origin_for_emulation_ = emulator->applied_widget_rect().origin();
   popup_screen_origin_for_emulation_ =
@@ -932,7 +933,8 @@ void RenderWidget::SynchronizeVisualPropertiesFromRenderView(
       // modify can be consumed directly here instead of in
       // SynchronizeVisualProperties().
       page_properties_->ScreenMetricsEmulator()->OnSynchronizeVisualProperties(
-          visual_properties);
+          visual_properties.screen_info, visual_properties.new_size,
+          visual_properties.visible_viewport_size);
     } else {
       gfx::Rect new_compositor_viewport_pixel_rect =
           visual_properties.compositor_viewport_pixel_rect;
@@ -1037,18 +1039,10 @@ void RenderWidget::OnEnableDeviceEmulation(
     return;
 
   if (!page_properties_->ScreenMetricsEmulator()) {
-    VisualProperties visual_properties;
-    visual_properties.screen_info = page_properties_->GetScreenInfo();
-    visual_properties.new_size = size_;
-    visual_properties.compositor_viewport_pixel_rect = CompositorViewportRect();
-    visual_properties.local_surface_id_allocation =
-        local_surface_id_allocation_from_parent_;
-    visual_properties.visible_viewport_size = visible_viewport_size_;
-    visual_properties.is_fullscreen_granted = is_fullscreen_granted_;
-    visual_properties.display_mode = display_mode_;
     page_properties_->SetScreenMetricsEmulator(
         std::make_unique<RenderWidgetScreenMetricsEmulator>(
-            this, visual_properties, widget_screen_rect_, window_screen_rect_));
+            this, page_properties_->GetScreenInfo(), size_,
+            visible_viewport_size_, widget_screen_rect_, window_screen_rect_));
   }
   page_properties_->ScreenMetricsEmulator()->ChangeEmulationParams(params);
 }

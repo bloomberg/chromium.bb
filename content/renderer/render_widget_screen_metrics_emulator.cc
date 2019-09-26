@@ -4,7 +4,6 @@
 
 #include "content/renderer/render_widget_screen_metrics_emulator.h"
 
-#include "content/common/visual_properties.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/renderer/render_widget_screen_metrics_emulator_delegate.h"
 
@@ -12,11 +11,15 @@ namespace content {
 
 RenderWidgetScreenMetricsEmulator::RenderWidgetScreenMetricsEmulator(
     RenderWidgetScreenMetricsEmulatorDelegate* delegate,
-    const VisualProperties& visual_properties,
+    const ScreenInfo& screen_info,
+    const gfx::Size& widget_size,
+    const gfx::Size& visible_viewport_size,
     const gfx::Rect& view_screen_rect,
     const gfx::Rect& window_screen_rect)
     : delegate_(delegate),
-      original_visual_properties_(visual_properties),
+      original_screen_info_(screen_info),
+      original_widget_size_(widget_size),
+      original_visible_viewport_size_(visible_viewport_size),
       original_view_screen_rect_(view_screen_rect),
       original_window_screen_rect_(window_screen_rect) {}
 
@@ -27,11 +30,8 @@ void RenderWidgetScreenMetricsEmulator::DisableAndApply() {
   delegate_->SetScreenMetricsEmulationParameters(false, emulation_params_);
   delegate_->SetScreenRects(original_view_screen_rect_,
                             original_window_screen_rect_);
-  delegate_->SetScreenInfoAndSize(
-      original_visual_properties_.screen_info,
-      /*widget_size=*/original_visual_properties_.new_size,
-      /*visible_viewport_size=*/
-      original_visual_properties_.visible_viewport_size);
+  delegate_->SetScreenInfoAndSize(original_screen_info_, original_widget_size_,
+                                  original_visible_viewport_size_);
 }
 
 void RenderWidgetScreenMetricsEmulator::ChangeEmulationParams(
@@ -41,7 +41,7 @@ void RenderWidgetScreenMetricsEmulator::ChangeEmulationParams(
 }
 
 void RenderWidgetScreenMetricsEmulator::Apply() {
-  ScreenInfo screen_info = original_visual_properties_.screen_info;
+  ScreenInfo screen_info = original_screen_info_;
 
   applied_widget_rect_.set_size(gfx::Size(emulation_params_.view_size));
 
@@ -136,8 +136,12 @@ void RenderWidgetScreenMetricsEmulator::Apply() {
 }
 
 void RenderWidgetScreenMetricsEmulator::OnSynchronizeVisualProperties(
-    const VisualProperties& params) {
-  original_visual_properties_ = params;
+    const ScreenInfo& screen_info,
+    const gfx::Size& widget_size,
+    const gfx::Size& visible_viewport_size) {
+  original_screen_info_ = screen_info;
+  original_widget_size_ = widget_size;
+  original_visible_viewport_size_ = visible_viewport_size;
   Apply();
 }
 
