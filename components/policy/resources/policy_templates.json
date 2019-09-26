@@ -647,6 +647,7 @@
         'DeviceLoginScreenVirtualKeyboardEnabled',
         'DeviceLoginScreenDictationEnabled',
         'DeviceLoginScreenSelectToSpeakEnabled',
+        'DeviceLoginScreenCursorHighlightEnabled',
       ],
     },
     {
@@ -10428,6 +10429,31 @@
           If this policy is left unset, the select to speak is disabled on the login screen initially but can be enabled by the user anytime.''',
     },
     {
+      'name': 'DeviceLoginScreenCursorHighlightEnabled',
+      'owners': ['amraboelkher@chromium.org', 'emaxx@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:79-'],
+      'device_only': True,
+      'features': {
+        'can_be_recommended': True,
+        'dynamic_refresh': True,
+      },
+      'example_value': True,
+      'id': 613,
+      'caption': '''Enable the cursor highlight on the login screen''',
+      'tags': [],
+      'desc': '''Enable the cursor highlight accessibility feature on the login screen.
+
+          If this policy is set to true, the cursor highlight will always be enabled on the login screen.
+
+          If this policy is set to false, the cursor highlight will always be disabled on the login screen.
+
+          If you set this policy, users cannot change or override it.
+
+          If this policy is left unset, the cursor highlight is disabled on the login screen initially but can be enabled by the user anytime.''',
+    },
+    {
       'name': 'HideWebStoreIcon',
       'owners': ['file://components/policy/resources/OWNERS'],
       'type': 'main',
@@ -18218,6 +18244,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'DeviceLoginScreenVirtualKeyboardEnabled': 'accessibility_settings.login_screen_virtual_keyboard_enabled',
     'DeviceLoginScreenDictationEnabled': 'accessibility_settings.login_screen_dictation_enabled',
     'DeviceLoginScreenSelectToSpeakEnabled': 'accessibility_settings.login_screen_select_to_speak_enabled',
+    'DeviceLoginScreenCursorHighlightEnabled': 'accessibility_settings.login_screen_cursor_highlight_enabled',
     'AttestationEnabledForDevice': 'attestation_settings.attestation_enabled',
     'AttestationForContentProtectionEnabled': 'attestation_settings.content_protection_enabled',
     'SystemTimezone': 'system_timezone.timezone',
@@ -18718,6 +18745,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562, 569],
-  'highest_id_currently_used': 612,
+  'highest_id_currently_used': 613,
   'highest_atomic_group_id_currently_used': 37
 }

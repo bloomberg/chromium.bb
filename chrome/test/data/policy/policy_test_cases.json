@@ -4057,6 +4057,9 @@
   "DeviceLoginScreenSelectToSpeakEnabled" : {
   },
 
+  "DeviceLoginScreenCursorHighlightEnabled" : {
+  },
+
   "DeviceLoginScreenLocales" : {
   },
 

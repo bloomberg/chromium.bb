@@ -18130,6 +18130,7 @@ Called by update_net_error_codes.py.-->
   <int value="610" label="SharedClipboardEnabled"/>
   <int value="611" label="DeviceLoginScreenDictationEnabled"/>
   <int value="612" label="DeviceLoginScreenSelectToSpeakEnabled"/>
+  <int value="613" label="DeviceLoginScreenCursorHighlightEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

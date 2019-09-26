@@ -595,4 +595,56 @@ IN_PROC_BROWSER_TEST_F(LoginScreenAccessibilityPolicyBrowsertest,
   accessibility_manager->SetSelectToSpeakEnabled(false);
   EXPECT_FALSE(accessibility_manager->IsSelectToSpeakEnabled());
 }
+
+IN_PROC_BROWSER_TEST_F(LoginScreenAccessibilityPolicyBrowsertest,
+                       DeviceLoginScreenCursorHighlightEnabled) {
+  // Verifies that the state of the cursor highlight accessibility feature on
+  // the login screen can be controlled through device policy.
+  chromeos::AccessibilityManager* accessibility_manager =
+      chromeos::AccessibilityManager::Get();
+  ASSERT_TRUE(accessibility_manager);
+  EXPECT_FALSE(accessibility_manager->IsCursorHighlightEnabled());
+
+  // Manually enable the cursor highlight.
+  accessibility_manager->SetCursorHighlightEnabled(true);
+  EXPECT_TRUE(accessibility_manager->IsCursorHighlightEnabled());
+
+  // Disable the cursor highlight through device policy and wait for the change
+  // to take effect.
+  em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
+  proto.mutable_accessibility_settings()
+      ->set_login_screen_cursor_highlight_enabled(false);
+  RefreshDevicePolicyAndWaitForPrefChange(
+      ash::prefs::kAccessibilityCursorHighlightEnabled);
+
+  // Verify that the pref which controls the cursor highlight in the login
+  // profile is managed by the policy.
+  EXPECT_TRUE(IsPrefManaged(ash::prefs::kAccessibilityCursorHighlightEnabled));
+  EXPECT_EQ(base::Value(false),
+            GetPrefValue(ash::prefs::kAccessibilityCursorHighlightEnabled));
+
+  // Verify that the cursor highlight cannot be enabled manually anymore.
+  accessibility_manager->SetCursorHighlightEnabled(true);
+  EXPECT_FALSE(accessibility_manager->IsCursorHighlightEnabled());
+
+  // Enable the cursor highlight through device policy as a recommended value
+  // and wait for the change to take effect.
+  proto.mutable_accessibility_settings()
+      ->set_login_screen_cursor_highlight_enabled(true);
+  proto.mutable_accessibility_settings()
+      ->mutable_login_screen_cursor_highlight_enabled_options()
+      ->set_mode(em::PolicyOptions::RECOMMENDED);
+  RefreshDevicePolicyAndWaitForPrefChange(
+      ash::prefs::kAccessibilityCursorHighlightEnabled);
+
+  // Verify that the pref which controls the cursor highlight in the login
+  // profile is being applied as recommended by the policy.
+  EXPECT_FALSE(IsPrefManaged(ash::prefs::kAccessibilityCursorHighlightEnabled));
+  EXPECT_EQ(base::Value(true),
+            GetPrefValue(ash::prefs::kAccessibilityCursorHighlightEnabled));
+
+  // Verify that the cursor highlight can be enabled manually again.
+  accessibility_manager->SetCursorHighlightEnabled(false);
+  EXPECT_FALSE(accessibility_manager->IsCursorHighlightEnabled());
+}
 }  // namespace policy
