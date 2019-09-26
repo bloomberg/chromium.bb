@@ -90,11 +90,8 @@ class CommandData(object):
 # Before a SIGINT is seen, wait(p) will simply call p.wait() and
 # return the result. Once a SIGINT has been seen (in the main process
 # or a subprocess, including the one the current call is waiting for),
-# wait(p) will call p.terminate() and raise ProcessWasInterrupted.
+# wait(p) will call p.terminate().
 class SigintHandler(object):
-  class ProcessWasInterrupted(Exception):
-    pass
-
   sigint_returncodes = {-signal.SIGINT,  # Unix
                         -1073741510,     # Windows
                         }
@@ -102,7 +99,7 @@ class SigintHandler(object):
     self.__lock = threading.Lock()
     self.__processes = set()
     self.__got_sigint = False
-    signal.signal(signal.SIGINT, lambda signal_num, frame: self.interrupt())
+    self.__previous_signal = signal.signal(signal.SIGINT, self.interrupt)
 
   def __on_sigint(self):
     self.__got_sigint = True
@@ -112,9 +109,10 @@ class SigintHandler(object):
       except OSError:
         pass
 
-  def interrupt(self):
+  def interrupt(self, signal_num, frame):
     with self.__lock:
       self.__on_sigint()
+    self.__previous_signal(signal_num, frame)
 
   def got_sigint(self):
     with self.__lock:
@@ -131,8 +129,6 @@ class SigintHandler(object):
       self.__processes.discard(p)
       if code in self.sigint_returncodes:
         self.__on_sigint()
-      if self.__got_sigint:
-        raise self.ProcessWasInterrupted
     return stdout, stderr
 
 sigint_handler = SigintHandler()
