@@ -2913,6 +2913,7 @@ jumbo_split_static_library("browser") {
       "//components/feed:feature_list",
       "//components/invalidation/impl:feature_list",
       "//components/language/android:language_bridge",
+      "//components/module_installer/android:native",
       "//components/omnibox/browser",
       "//components/page_load_metrics/browser",
       "//components/payments/content/android",
