@@ -465,6 +465,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // |destination|.
   GURL ComputeSiteForCookiesForNavigation(const GURL& destination) const;
 
+  // Computes site_for_cookies for this frame. It can be used to check
+  // if cookies (including storage APIs and shared/service workers) are
+  // accessible.
+  GURL ComputeSiteForCookies() const;
+
   // Allows overriding the last committed origin in tests.
   void SetLastCommittedOriginForTesting(const url::Origin& origin);
 
@@ -1359,6 +1364,12 @@ class CONTENT_EXPORT RenderFrameHostImpl
       ui::input_types::ScrollGranularity granularity);
   void OnFrameDidCallFocus();
   void OnRenderFallbackContentInParentProcess();
+
+  // To be called by ComputeSiteForCookiesForNavigation() and
+  // ComputeSiteForCookies().
+  // Starts traversing the tree from |render_frame_host|.
+  GURL ComputeSiteForCookiesInternal(
+      const RenderFrameHostImpl* render_frame_host) const;
 
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
   void OnShowPopup(const FrameHostMsg_ShowPopup_Params& params);
