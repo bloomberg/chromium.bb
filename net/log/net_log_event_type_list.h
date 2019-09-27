@@ -2027,6 +2027,38 @@ EVENT_TYPE(QUIC_SESSION_STOP_SENDING_FRAME_SENT)
 //  }
 EVENT_TYPE(QUIC_SESSION_STOP_SENDING_FRAME_RECEIVED)
 
+// Session sent a STREAMS_BLOCKED frame.
+//  {
+//    "stream_count": <The number of streams that the sender wishes to exceed>
+//    "unidirectional": <boolean to indicate if the frame is for unidirectional
+//    streams.>
+//  }
+EVENT_TYPE(QUIC_SESSION_STREAMS_BLOCKED_FRAME_SENT)
+
+// Session received a STREAMS_BLOCKED frame.
+//  {
+//    "stream_count": <The number of streams that the sender wishes to exceed>
+//    "unidirectional": <boolean to indicate if the frame is for unidirectional
+//    streams.>
+//  }
+EVENT_TYPE(QUIC_SESSION_STREAMS_BLOCKED_FRAME_RECEIVED)
+
+// Session sent a MAX_STREAMS frame.
+//  {
+//    "stream_count": <The number of streams that may be opened>
+//    "unidirectional": <boolean to indicate if the frame is for unidirectional
+//    streams.>
+//  }
+EVENT_TYPE(QUIC_SESSION_MAX_STREAMS_FRAME_SENT)
+
+// Session received a MAX_STREAMS frame.
+//  {
+//    "stream_count": <The number of streams that may be opened>
+//    "unidirectional": <boolean to indicate if the frame is for unidirectional
+//    streams.>
+//  }
+EVENT_TYPE(QUIC_SESSION_MAX_STREAMS_FRAME_RECEIVED)
+
 // ------------------------------------------------------------------------
 // QuicHttpStream
 // ------------------------------------------------------------------------
