@@ -1941,11 +1941,12 @@ void RenderProcessHostImpl::BindFileSystemManager(
 }
 
 void RenderProcessHostImpl::CreateLockManager(
+    int render_frame_id,
     const url::Origin& origin,
     mojo::PendingReceiver<blink::mojom::LockManager> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  storage_partition_impl_->GetLockManager()->CreateService(origin,
-                                                           std::move(receiver));
+  storage_partition_impl_->GetLockManager()->BindReceiver(
+      GetID(), render_frame_id, origin, std::move(receiver));
 }
 
 void RenderProcessHostImpl::CreatePermissionService(

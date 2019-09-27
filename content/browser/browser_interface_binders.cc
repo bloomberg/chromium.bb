@@ -218,9 +218,9 @@ void PopulateDedicatedWorkerBinders(DedicatedWorkerHost* host,
 void PopulateBinderMapWithContext(
     DedicatedWorkerHost* host,
     service_manager::BinderMapWithContext<const url::Origin&>* map) {
-  map->Add<blink::mojom::LockManager>(
-      base::BindRepeating(&RenderProcessHost::CreateLockManager,
-                          base::Unretained(host->GetProcessHost())));
+  map->Add<blink::mojom::LockManager>(base::BindRepeating(
+      &RenderProcessHost::CreateLockManager,
+      base::Unretained(host->GetProcessHost()), MSG_ROUTING_NONE));
   map->Add<blink::mojom::PermissionService>(
       base::BindRepeating(&RenderProcessHost::CreatePermissionService,
                           base::Unretained(host->GetProcessHost())));
@@ -255,9 +255,9 @@ void PopulateBinderMapWithContext(
   map->Add<blink::mojom::FileSystemManager>(
       base::BindRepeating(&RenderProcessHost::BindFileSystemManager,
                           base::Unretained(host->GetProcessHost())));
-  map->Add<blink::mojom::LockManager>(
-      base::BindRepeating(&RenderProcessHost::CreateLockManager,
-                          base::Unretained(host->GetProcessHost())));
+  map->Add<blink::mojom::LockManager>(base::BindRepeating(
+      &RenderProcessHost::CreateLockManager,
+      base::Unretained(host->GetProcessHost()), MSG_ROUTING_NONE));
   map->Add<blink::mojom::PermissionService>(
       base::BindRepeating(&RenderProcessHost::CreatePermissionService,
                           base::Unretained(host->GetProcessHost())));

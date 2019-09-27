@@ -6447,7 +6447,7 @@ void RenderFrameHostImpl::GetFileSystemManager(
 
 void RenderFrameHostImpl::CreateLockManager(
     mojo::PendingReceiver<blink::mojom::LockManager> receiver) {
-  GetProcess()->CreateLockManager(GetLastCommittedOrigin(),
+  GetProcess()->CreateLockManager(GetRoutingID(), GetLastCommittedOrigin(),
                                   std::move(receiver));
 }
 

@@ -96,7 +96,7 @@ void CreateLockManagerImpl(
   if (!process)
     return;
 
-  process->CreateLockManager(origin, std::move(receiver));
+  process->CreateLockManager(MSG_ROUTING_NONE, origin, std::move(receiver));
 }
 
 void CreatePermissionServiceImpl(

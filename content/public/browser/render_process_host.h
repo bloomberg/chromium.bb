@@ -503,6 +503,7 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // only, and is only exposed here to support MockRenderProcessHost usage in
   // tests.
   virtual void CreateLockManager(
+      int render_frame_id,
       const url::Origin& origin,
       mojo::PendingReceiver<blink::mojom::LockManager> receiver) = 0;
 
