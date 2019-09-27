@@ -73,6 +73,7 @@ class ImageView;
 //    in response to dragged tabs.
 class TabStrip : public views::AccessiblePaneView,
                  public views::ButtonListener,
+                 public views::ContextMenuController,
                  public views::MouseWatcherListener,
                  public views::ViewObserver,
                  public views::ViewTargeterDelegate,
@@ -237,9 +238,6 @@ class TabStrip : public views::AccessiblePaneView,
   void ToggleSelected(Tab* tab) override;
   void AddSelectionFromAnchorTo(Tab* tab) override;
   void CloseTab(Tab* tab, CloseTabSource source) override;
-  void ShowContextMenuForTab(Tab* tab,
-                             const gfx::Point& p,
-                             ui::MenuSourceType source_type) override;
   bool IsActiveTab(const Tab* tab) const override;
   bool IsTabSelected(const Tab* tab) const override;
   bool IsTabPinned(const Tab* tab) const override;
@@ -540,6 +538,11 @@ class TabStrip : public views::AccessiblePaneView,
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+
+  // views::ContextMenuController:
+  void ShowContextMenuForViewImpl(views::View* source,
+                                  const gfx::Point& point,
+                                  ui::MenuSourceType source_type) override;
 
   // views::View:
   const views::View* GetViewByID(int id) const override;

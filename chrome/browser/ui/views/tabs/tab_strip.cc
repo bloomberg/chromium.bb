@@ -974,6 +974,7 @@ void TabStrip::AddTabAt(int model_index, TabRendererData data, bool is_active) {
       (model_index > 0) ? (GetIndexOf(tab_at(model_index - 1)) + 1) : 0;
 
   Tab* tab = new Tab(this);
+  tab->set_context_menu_controller(this);
   AddChildViewAt(tab, view_index);
   const bool pinned = data.pinned;
   tabs_.Add(tab, model_index);
@@ -1456,12 +1457,6 @@ void TabStrip::CloseTab(Tab* tab, CloseTabSource source) {
 
   UpdateHoverCard(nullptr);
   controller_->CloseTab(model_index, source);
-}
-
-void TabStrip::ShowContextMenuForTab(Tab* tab,
-                                     const gfx::Point& p,
-                                     ui::MenuSourceType source_type) {
-  controller_->ShowContextMenuForTab(tab, p, source_type);
 }
 
 bool TabStrip::IsActiveTab(const Tab* tab) const {
@@ -2958,6 +2953,18 @@ void TabStrip::ButtonPressed(views::Button* sender, const ui::Event& event) {
   }
 }
 
+void TabStrip::ShowContextMenuForViewImpl(views::View* source,
+                                          const gfx::Point& point,
+                                          ui::MenuSourceType source_type) {
+  // We only install ourselves as a context-menu handler for tabs, so this cast
+  // should be safe.
+  DCHECK_EQ(Tab::kViewClassName, source->GetClassName());
+  Tab* const tab = static_cast<Tab*>(source);
+  if (tab->closing())
+    return;
+  controller_->ShowContextMenuForTab(tab, point, source_type);
+}
+
 // Overridden to support automation. See automation_proxy_uitest.cc.
 const views::View* TabStrip::GetViewByID(int view_id) const {
   if (tab_count() > 0) {
@@ -3039,7 +3046,8 @@ void TabStrip::OnGestureEvent(ui::GestureEvent* event) {
                                : FindTabHitByPoint(local_point);
       if (tab) {
         ConvertPointToScreen(this, &local_point);
-        ShowContextMenuForTab(tab, local_point, ui::MENU_SOURCE_TOUCH);
+        controller_->ShowContextMenuForTab(tab, local_point,
+                                           ui::MENU_SOURCE_TOUCH);
       }
       break;
     }
