@@ -84,9 +84,6 @@ namespace {
 // The size above which we stop triggering autocomplete.
 const size_t kMaximumTextSizeForAutocomplete = 1000;
 
-const char kDummyUsernameField[] = "anonymous_username";
-const char kDummyPasswordField[] = "anonymous_password";
-
 // Names of HTML attributes to show form and field signatures for debugging.
 const char kDebugAttributeForFormSignature[] = "form_signature";
 const char kDebugAttributeForFieldSignature[] = "field_signature";
@@ -100,24 +97,6 @@ typedef std::map<base::string16, WebInputElement> FormInputElementMap;
 typedef SavePasswordProgressLogger Logger;
 
 typedef std::vector<FormInputElementMap> FormElementsList;
-
-bool FillDataContainsFillableUsername(const PasswordFormFillData& fill_data) {
-  return !fill_data.username_field.name.empty() &&
-         (!fill_data.additional_logins.empty() ||
-          !fill_data.username_field.value.empty());
-}
-
-// Returns true if password form has username and password fields with either
-// same or no name and id attributes supplied.
-bool DoesFormContainAmbiguousOrEmptyNames(
-    const PasswordFormFillData& fill_data) {
-  return (fill_data.username_field.name == fill_data.password_field.name) ||
-         (fill_data.password_field.name ==
-              base::ASCIIToUTF16(kDummyPasswordField) &&
-          (!FillDataContainsFillableUsername(fill_data) ||
-           fill_data.username_field.name ==
-               base::ASCIIToUTF16(kDummyUsernameField)));
-}
 
 bool IsElementEditable(const WebInputElement& element) {
   return element.IsEnabled() && !element.IsReadOnly();
@@ -830,11 +809,6 @@ bool PasswordAutofillAgent::ShowSuggestions(const WebInputElement& element,
   if (!element.IsTextField() || !IsElementEditable(element) ||
       (!password_element.IsNull() && !IsElementEditable(password_element))) {
     return true;
-  }
-
-  if (element.NameForAutofill().IsEmpty() &&
-      !DoesFormContainAmbiguousOrEmptyNames(password_info->fill_data)) {
-    return false;  // If the field has no name, then we won't have values.
   }
 
   // Don't attempt to autofill with values that are too large.
