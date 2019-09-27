@@ -1156,6 +1156,8 @@ IMAGE_TYPE_NV_LP0_FIRMWARE = 'nv_lp0_firmware'
 IMAGE_TYPE_ACCESSORY_USBPD = 'accessory_usbpd'
 # Standalone accessory microcontroller firmware (e.g. wireless keyboard).
 IMAGE_TYPE_ACCESSORY_RWSIG = 'accessory_rwsig'
+# Cr50 Firmware.
+IMAGE_TYPE_CR50_FIRMWARE = 'cr50_firmware'
 
 IMAGE_TYPE_TO_NAME = {
     IMAGE_TYPE_BASE: BASE_IMAGE_BIN,

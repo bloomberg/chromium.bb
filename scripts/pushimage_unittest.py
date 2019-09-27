@@ -287,7 +287,7 @@ class PushImageTests(gs_unittest.AbstractGSContextTest):
     with mock.patch.object(gs.GSContext, 'Exists', return_value=True):
       urls = pushimage.PushImage('/src', 'test.board', 'R34-5126.0.0',
                                  sign_types=['recovery'])
-    self.assertEqual(self.gs_mock.call_count, 26)
+    self.assertEqual(self.gs_mock.call_count, 28)
     self.assertTrue(self.mark_mock.called)
     self.assertEqual(urls, EXPECTED)
 
@@ -305,6 +305,24 @@ class PushImageTests(gs_unittest.AbstractGSContextTest):
     with mock.patch.object(gs.GSContext, 'Exists', return_value=True):
       urls = pushimage.PushImage('/src', 'test.board', 'R34-5126.0.0',
                                  sign_types=['base'])
+    self.assertEqual(self.gs_mock.call_count, 30)
+    self.assertTrue(self.mark_mock.called)
+    self.assertEqual(urls, EXPECTED)
+
+  def testSignTypesCr50Firmware(self):
+    """Only sign the requested type"""
+    EXPECTED = {
+        'canary': [
+            ('gs://chromeos-releases/canary-channel/board2/5126.0.0/'
+             'ChromeOS-cr50_firmware-R34-5126.0.0-board2.instructions')],
+        'dev': [
+            ('gs://chromeos-releases/dev-channel/board2/5126.0.0/'
+             'ChromeOS-cr50_firmware-R34-5126.0.0-board2.instructions')],
+    }
+
+    with mock.patch.object(gs.GSContext, 'Exists', return_value=True):
+      urls = pushimage.PushImage('/src', 'board2', 'R34-5126.0.0',
+                                 sign_types=['cr50_firmware'])
     self.assertEqual(self.gs_mock.call_count, 28)
     self.assertTrue(self.mark_mock.called)
     self.assertEqual(urls, EXPECTED)
@@ -313,7 +331,7 @@ class PushImageTests(gs_unittest.AbstractGSContextTest):
     """Verify nothing is signed when we request an unavailable type"""
     urls = pushimage.PushImage('/src', 'test.board', 'R34-5126.0.0',
                                sign_types=['nononononono'])
-    self.assertEqual(self.gs_mock.call_count, 24)
+    self.assertEqual(self.gs_mock.call_count, 26)
     self.assertFalse(self.mark_mock.called)
     self.assertEqual(urls, {})
 
