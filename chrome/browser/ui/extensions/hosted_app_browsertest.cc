@@ -49,6 +49,7 @@
 #include "chrome/browser/ui/web_applications/web_app_menu_model.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/test/web_app_install_observer.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/web_application_info.h"
@@ -181,6 +182,13 @@ void NavigateAndCheckForToolbar(Browser* browser,
   NavigateToURLAndWait(browser, url, proceed_through_interstitial);
   EXPECT_EQ(expected_visibility,
             browser->app_controller()->ShouldShowCustomTabBar());
+}
+
+void NavigateAndAwaitInstallabilityCheck(Browser* browser, const GURL& url) {
+  auto* manager = banners::TestAppBannerManagerDesktop::CreateForWebContents(
+      browser->tab_strip_model()->GetActiveWebContents());
+  NavigateToURLAndWait(browser, url);
+  manager->WaitForInstallableCheck();
 }
 
 void CheckWebContentsHasAppPrefs(content::WebContents* web_contents) {
@@ -392,6 +400,23 @@ class HostedAppTest : public extensions::ExtensionBrowserTest,
 
     CHECK(app_browser_);
     CHECK(app_browser_ != browser());
+  }
+
+  web_app::AppId InstallPwaForCurrentUrl() {
+    chrome::SetAutoAcceptPWAInstallConfirmationForTesting(true);
+    web_app::WebAppInstallObserver observer(profile());
+    CHECK(chrome::ExecuteCommand(browser(), IDC_INSTALL_PWA));
+    web_app::AppId app_id = observer.AwaitNextInstall();
+    chrome::SetAutoAcceptPWAInstallConfirmationForTesting(false);
+    return app_id;
+  }
+
+  Browser* NavigateInNewWindowAndAwaitInstallabilityCheck(const GURL& url) {
+    Browser* new_browser = new Browser(
+        Browser::CreateParams(Browser::TYPE_NORMAL, profile(), true));
+    AddBlankTabAndShow(new_browser);
+    NavigateAndAwaitInstallabilityCheck(new_browser, url);
+    return new_browser;
   }
 
   void SetUpInProcessBrowserTestFixture() override {
@@ -1159,6 +1184,25 @@ IN_PROC_BROWSER_TEST_P(SharedPWATest,
 
   EXPECT_EQ(GetAppMenuCommandState(IDC_CREATE_SHORTCUT, browser()), kEnabled);
   EXPECT_EQ(GetAppMenuCommandState(IDC_INSTALL_PWA, browser()), kNotPresent);
+}
+
+// Tests that an installed PWA is not used when out of scope by one path level.
+IN_PROC_BROWSER_TEST_P(SharedPWATest, MenuOptionsOutsideInstalledPwaScope) {
+  ASSERT_TRUE(https_server()->Start());
+
+  NavigateToURLAndWait(
+      browser(),
+      https_server()->GetURL("/banners/scope_is_start_url/index.html"));
+  InstallPwaForCurrentUrl();
+
+  // Open a page that is one directory up from the installed PWA.
+  Browser* new_browser = NavigateInNewWindowAndAwaitInstallabilityCheck(
+      https_server()->GetURL("/banners/no_manifest_test_page.html"));
+
+  EXPECT_EQ(GetAppMenuCommandState(IDC_CREATE_SHORTCUT, new_browser), kEnabled);
+  EXPECT_EQ(GetAppMenuCommandState(IDC_INSTALL_PWA, new_browser), kNotPresent);
+  EXPECT_EQ(GetAppMenuCommandState(IDC_OPEN_IN_PWA_WINDOW, new_browser),
+            kNotPresent);
 }
 
 IN_PROC_BROWSER_TEST_P(SharedPWATest, InstallInstallableSite) {
