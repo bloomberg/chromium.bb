@@ -7668,4 +7668,16 @@ void RenderFrameHostImpl::LogCannotCommitOriginCrashKeys(
   }
 }
 
+void RenderFrameHostImpl::EnableMojoJsBindings() {
+  // This method should only be called on RenderFrameHost which is for a WebUI.
+  DCHECK_NE(WebUI::kNoWebUI,
+            WebUIControllerFactoryRegistry::GetInstance()->GetWebUIType(
+                GetSiteInstance()->GetBrowserContext(),
+                site_instance_->GetSiteURL()));
+
+  if (!frame_bindings_control_)
+    GetRemoteAssociatedInterfaces()->GetInterface(&frame_bindings_control_);
+  frame_bindings_control_->EnableMojoJsBindings();
+}
+
 }  // namespace content

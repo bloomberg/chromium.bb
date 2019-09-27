@@ -3344,6 +3344,10 @@ void RenderFrameImpl::AllowBindings(int32_t enabled_bindings_flags) {
   RenderProcess::current()->AddBindings(enabled_bindings_flags);
 }
 
+void RenderFrameImpl::EnableMojoJsBindings() {
+  enable_mojo_js_bindings_ = true;
+}
+
 // mojom::FrameNavigationControl implementation --------------------------------
 
 void RenderFrameImpl::CommitNavigation(
@@ -5554,8 +5558,9 @@ bool RenderFrameImpl::ShouldTrackUseCounter(const blink::WebURL& url) {
 
 void RenderFrameImpl::DidCreateScriptContext(v8::Local<v8::Context> context,
                                              int world_id) {
-  if ((enabled_bindings_ & BINDINGS_POLICY_MOJO_WEB_UI) && IsMainFrame() &&
-      world_id == ISOLATED_WORLD_ID_GLOBAL) {
+  if (((enabled_bindings_ & BINDINGS_POLICY_MOJO_WEB_UI) ||
+       enable_mojo_js_bindings_) &&
+      IsMainFrame() && world_id == ISOLATED_WORLD_ID_GLOBAL) {
     // We only allow these bindings to be installed when creating the main
     // world context of the main frame.
     blink::WebContextFeatures::EnableMojoJS(context, true);
