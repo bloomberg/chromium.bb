@@ -287,11 +287,6 @@
           'shards': 12,
         }
       },
-      'android-kitkat-arm-rel': {
-        'swarming': {
-          'shards': 12,
-        },
-      },
       'KitKat Phone Tester (dbg)': {
         'swarming': {
           'shards': 20,
@@ -387,6 +382,11 @@
       'Lollipop Phone Tester': {
         'swarming': {
           'shards': 13,
+        },
+      },
+      'android-kitkat-arm-rel': {
+        'swarming': {
+          'shards': 15,
         },
       },
       # chromium.linux
