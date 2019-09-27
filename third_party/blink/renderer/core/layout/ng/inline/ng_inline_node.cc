@@ -480,7 +480,7 @@ void NGInlineNode::PrepareLayout(
   DCHECK(data);
   CollectInlines(data, previous_data.get(), dirty_lines);
   SegmentText(data);
-  ShapeText(data, &previous_data->text_content);
+  ShapeText(data, previous_data ? &previous_data->text_content : nullptr);
   ShapeTextForFirstLineIfNeeded(data);
   AssociateItemsWithInlines(data);
   DCHECK_EQ(data, MutableData());
