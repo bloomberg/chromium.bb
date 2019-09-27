@@ -245,12 +245,18 @@ base::Value NetLogQuicCertificateVerifiedParams(
   return dict;
 }
 
-base::Value NetLogQuicCryptoFrameParams(const quic::QuicCryptoFrame* frame) {
+base::Value NetLogQuicCryptoFrameParams(const quic::QuicCryptoFrame* frame,
+                                        bool has_buffer) {
   base::Value dict(base::Value::Type::DICTIONARY);
   dict.SetStringKey("encryption_level",
                     quic::QuicUtils::EncryptionLevelToString(frame->level));
   dict.SetIntKey("data_length", frame->data_length);
   dict.SetKey("offset", NetLogNumberValue(frame->offset));
+  if (has_buffer) {
+    dict.SetKey("bytes", NetLogBinaryValue(
+                             reinterpret_cast<const void*>(frame->data_buffer),
+                             frame->data_length));
+  }
   return dict;
 }
 
@@ -487,7 +493,8 @@ void QuicConnectionLogger::OnFrameAddedToPacket(const quic::QuicFrame& frame) {
       break;
     case quic::CRYPTO_FRAME:
       net_log_.AddEvent(NetLogEventType::QUIC_SESSION_CRYPTO_FRAME_SENT, [&] {
-        return NetLogQuicCryptoFrameParams(frame.crypto_frame);
+        return NetLogQuicCryptoFrameParams(frame.crypto_frame,
+                                           /*has_buffer = */ false);
       });
       break;
     case quic::NEW_TOKEN_FRAME:
@@ -652,8 +659,9 @@ void QuicConnectionLogger::OnStreamFrame(const quic::QuicStreamFrame& frame) {
 void QuicConnectionLogger::OnCryptoFrame(const quic::QuicCryptoFrame& frame) {
   if (!net_log_.IsCapturing())
     return;
-  net_log_.AddEvent(NetLogEventType::QUIC_SESSION_CRYPTO_FRAME_RECEIVED,
-                    [&] { return NetLogQuicCryptoFrameParams(&frame); });
+  net_log_.AddEvent(NetLogEventType::QUIC_SESSION_CRYPTO_FRAME_RECEIVED, [&] {
+    return NetLogQuicCryptoFrameParams(&frame, /*has_buffer = */ true);
+  });
 }
 
 void QuicConnectionLogger::OnStopSendingFrame(
