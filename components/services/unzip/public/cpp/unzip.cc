@@ -19,6 +19,7 @@
 #include "components/services/filesystem/directory_impl.h"
 #include "components/services/filesystem/lock_table.h"
 #include "components/services/unzip/public/mojom/unzipper.mojom.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 
@@ -28,9 +29,10 @@ namespace {
 
 class UnzipFilter : public unzip::mojom::UnzipFilter {
  public:
-  UnzipFilter(unzip::mojom::UnzipFilterRequest request,
+  UnzipFilter(mojo::PendingReceiver<unzip::mojom::UnzipFilter> receiver,
               UnzipFilterCallback filter_callback)
-      : binding_(this, std::move(request)), filter_callback_(filter_callback) {}
+      : receiver_(this, std::move(receiver)),
+        filter_callback_(filter_callback) {}
 
  private:
   // unzip::mojom::UnzipFilter implementation:
@@ -39,7 +41,7 @@ class UnzipFilter : public unzip::mojom::UnzipFilter {
     std::move(callback).Run(filter_callback_.Run(path));
   }
 
-  mojo::Binding<unzip::mojom::UnzipFilter> binding_;
+  mojo::Receiver<unzip::mojom::UnzipFilter> receiver_;
   UnzipFilterCallback filter_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(UnzipFilter);
@@ -133,13 +135,13 @@ void DoUnzipWithFilter(
     return;
   }
 
-  unzip::mojom::UnzipFilterPtr unzip_filter_ptr;
+  mojo::PendingRemote<unzip::mojom::UnzipFilter> unzip_filter_remote;
   unzip_params->set_unzip_filter(std::make_unique<UnzipFilter>(
-      mojo::MakeRequest(&unzip_filter_ptr), filter_callback));
+      unzip_filter_remote.InitWithNewPipeAndPassReceiver(), filter_callback));
 
   unzip_params->unzipper()->UnzipWithFilter(
       std::move(zip_file), std::move(directory_remote),
-      std::move(unzip_filter_ptr), base::BindOnce(&UnzipDone, unzip_params));
+      std::move(unzip_filter_remote), base::BindOnce(&UnzipDone, unzip_params));
 }
 
 }  // namespace

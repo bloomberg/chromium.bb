@@ -88,10 +88,10 @@ bool FilterNoFiles(const base::FilePath& unused) {
   return true;
 }
 
-bool FilterWithFilterPtr(mojom::UnzipFilterPtr* filter,
-                         const base::FilePath& path) {
+bool FilterWithFilterRemote(mojom::UnzipFilter* filter,
+                            const base::FilePath& path) {
   bool result = false;
-  (*filter)->ShouldUnzipFile(path, &result);
+  filter->ShouldUnzipFile(path, &result);
   return result;
 }
 
@@ -121,11 +121,12 @@ void UnzipperImpl::Unzip(
 void UnzipperImpl::UnzipWithFilter(
     base::File zip_file,
     mojo::PendingRemote<filesystem::mojom::Directory> output_dir_remote,
-    mojom::UnzipFilterPtr filter,
+    mojo::PendingRemote<mojom::UnzipFilter> filter_remote,
     UnzipCallback callback) {
   DCHECK(zip_file.IsValid());
   mojo::Remote<filesystem::mojom::Directory> output_dir(
       std::move(output_dir_remote));
+  mojo::Remote<mojom::UnzipFilter> filter(std::move(filter_remote));
 
   // Note that we pass a pointer to |filter| below, as it is a repeating
   // callback and transferring its value would cause the callback to fail when
@@ -136,7 +137,7 @@ void UnzipperImpl::UnzipWithFilter(
       zip_file.GetPlatformFile(),
       base::BindRepeating(&MakeFileWriterDelegate, output_dir.get()),
       base::BindRepeating(&CreateDirectory, output_dir.get()),
-      base::BindRepeating(&FilterWithFilterPtr, &filter),
+      base::BindRepeating(&FilterWithFilterRemote, filter.get()),
       /*log_skipped_files=*/false));
 }
 

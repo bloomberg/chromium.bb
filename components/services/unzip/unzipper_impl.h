@@ -37,7 +37,7 @@ class UnzipperImpl : public mojom::Unzipper {
   void UnzipWithFilter(
       base::File zip_file,
       mojo::PendingRemote<filesystem::mojom::Directory> output_dir_remote,
-      mojom::UnzipFilterPtr filter,
+      mojo::PendingRemote<mojom::UnzipFilter> filter_remote,
       UnzipWithFilterCallback callback) override;
 
   mojo::Receiver<mojom::Unzipper> receiver_{this};
