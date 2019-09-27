@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/file_url_loader_factory.h"
+#include "content/browser/loader/file_url_loader_factory.h"
 
 #include <memory>
 #include <string>
@@ -491,6 +491,13 @@ class FileURLLoader : public network::mojom::URLLoader {
       return;
     }
 
+    if (file_access_policy == FileAccessPolicy::kRestricted &&
+        !GetContentClient()->browser()->IsFileAccessAllowed(
+            path, base::MakeAbsoluteFilePath(path), profile_path)) {
+      OnClientComplete(net::ERR_ACCESS_DENIED, std::move(observer));
+      return;
+    }
+
 #if defined(OS_WIN)
     base::FilePath shortcut_target;
     if (link_following_policy == LinkFollowingPolicy::kFollow &&
@@ -528,13 +535,6 @@ class FileURLLoader : public network::mojom::URLLoader {
       return;
     }
 #endif  // defined(OS_WIN)
-
-    if (file_access_policy == FileAccessPolicy::kRestricted &&
-        !GetContentClient()->browser()->IsFileAccessAllowed(
-            path, base::MakeAbsoluteFilePath(path), profile_path)) {
-      OnClientComplete(net::ERR_ACCESS_DENIED, std::move(observer));
-      return;
-    }
 
     mojo::DataPipe pipe(kDefaultFileUrlPipeSize);
     if (!pipe.consumer_handle.is_valid()) {
