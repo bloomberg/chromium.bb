@@ -11,25 +11,23 @@
 namespace gfx {
 
 TEST(FontConfigUtilTest, GetFontRenderParamsFromFcPatternWithEmptyPattern) {
-  FcPattern* pattern = FcPatternCreate();
+  ScopedFcPattern pattern(FcPatternCreate());
 
   FontRenderParams params;
-  GetFontRenderParamsFromFcPattern(pattern, &params);
-  FcPatternDestroy(pattern);
+  GetFontRenderParamsFromFcPattern(pattern.get(), &params);
 
   FontRenderParams empty_params;
   EXPECT_EQ(params, empty_params);
 }
 
 TEST(FontConfigUtilTest, GetFontRenderParamsFromFcPatternWithFalseValues) {
-  FcPattern* pattern = FcPatternCreate();
-  FcPatternAddBool(pattern, FC_ANTIALIAS, FcFalse);
-  FcPatternAddBool(pattern, FC_AUTOHINT, FcFalse);
-  FcPatternAddBool(pattern, FC_EMBEDDED_BITMAP, FcFalse);
+  ScopedFcPattern pattern(FcPatternCreate());
+  FcPatternAddBool(pattern.get(), FC_ANTIALIAS, FcFalse);
+  FcPatternAddBool(pattern.get(), FC_AUTOHINT, FcFalse);
+  FcPatternAddBool(pattern.get(), FC_EMBEDDED_BITMAP, FcFalse);
 
   FontRenderParams params;
-  GetFontRenderParamsFromFcPattern(pattern, &params);
-  FcPatternDestroy(pattern);
+  GetFontRenderParamsFromFcPattern(pattern.get(), &params);
 
   FontRenderParams expected_params;
   expected_params.antialiasing = false;
@@ -39,16 +37,15 @@ TEST(FontConfigUtilTest, GetFontRenderParamsFromFcPatternWithFalseValues) {
 }
 
 TEST(FontConfigUtilTest, GetFontRenderParamsFromFcPatternWithValues) {
-  FcPattern* pattern = FcPatternCreate();
-  FcPatternAddBool(pattern, FC_ANTIALIAS, FcTrue);
-  FcPatternAddBool(pattern, FC_AUTOHINT, FcTrue);
-  FcPatternAddInteger(pattern, FC_HINT_STYLE, FC_HINT_MEDIUM);
-  FcPatternAddBool(pattern, FC_EMBEDDED_BITMAP, FcTrue);
-  FcPatternAddInteger(pattern, FC_RGBA, FC_RGBA_RGB);
+  ScopedFcPattern pattern(FcPatternCreate());
+  FcPatternAddBool(pattern.get(), FC_ANTIALIAS, FcTrue);
+  FcPatternAddBool(pattern.get(), FC_AUTOHINT, FcTrue);
+  FcPatternAddInteger(pattern.get(), FC_HINT_STYLE, FC_HINT_MEDIUM);
+  FcPatternAddBool(pattern.get(), FC_EMBEDDED_BITMAP, FcTrue);
+  FcPatternAddInteger(pattern.get(), FC_RGBA, FC_RGBA_RGB);
 
   FontRenderParams params;
-  GetFontRenderParamsFromFcPattern(pattern, &params);
-  FcPatternDestroy(pattern);
+  GetFontRenderParamsFromFcPattern(pattern.get(), &params);
 
   FontRenderParams expected_params;
   expected_params.antialiasing = true;

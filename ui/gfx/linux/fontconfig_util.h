@@ -12,6 +12,11 @@
 
 namespace gfx {
 
+struct FcPatternDeleter {
+  void operator()(FcPattern* ptr) const { FcPatternDestroy(ptr); }
+};
+using ScopedFcPattern = std::unique_ptr<FcPattern, FcPatternDeleter>;
+
 // Returns the appropriate parameters for rendering the font represented by the
 // font config pattern.
 GFX_EXPORT void GetFontRenderParamsFromFcPattern(FcPattern* pattern,

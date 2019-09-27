@@ -111,11 +111,6 @@ bool QueryFontconfig(const FontRenderParamsQuery& query,
                      std::string* family_out) {
   TRACE_EVENT0("fonts", "gfx::QueryFontconfig");
 
-  struct FcPatternDeleter {
-    void operator()(FcPattern* ptr) const { FcPatternDestroy(ptr); }
-  };
-  typedef std::unique_ptr<FcPattern, FcPatternDeleter> ScopedFcPattern;
-
   ScopedFcPattern query_pattern(FcPatternCreate());
   CHECK(query_pattern);
 
