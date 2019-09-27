@@ -52,8 +52,9 @@ struct GPU_EXPORT VulkanYCbCrInfo {
   uint32_t suggested_ychroma_offset;
 
   // Describes the capabilities of the format when used with an image bound to
-  // memory imported from buffer. Corresponds to vulkan type:
-  // VkFormatFeatureFlags.
+  // memory imported from buffer. Must be set when for external-format image
+  // created from the Android hardware buffer. For regular (not external) images
+  // it can be set 0. Corresponds to Vulkan type: VkFormatFeatureFlags.
   uint32_t format_features;
 };
 
