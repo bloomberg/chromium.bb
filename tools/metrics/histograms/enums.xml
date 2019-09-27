@@ -18132,6 +18132,7 @@ Called by update_net_error_codes.py.-->
   <int value="612" label="DeviceLoginScreenSelectToSpeakEnabled"/>
   <int value="613" label="DeviceLoginScreenCursorHighlightEnabled"/>
   <int value="614" label="DeviceLoginScreenCaretHighlightEnabled"/>
+  <int value="615" label="DeviceLoginScreenMonoAudioEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
