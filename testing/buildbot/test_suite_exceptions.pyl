@@ -1174,11 +1174,6 @@
       },
     },
   },
-  'nonperfetto_content_browsertests': {
-    'remove_from': [
-      'android-asan',
-    ],
-  },
   'not_site_per_process_webkit_layout_tests': {
     'remove_from': [
       # chromium.linux
