@@ -2649,6 +2649,7 @@ source_set("unit_tests") {
     "login/screens/multidevice_setup_screen_unittest.cc",
     "login/screens/network_screen_unittest.cc",
     "login/screens/recommend_apps/recommend_apps_fetcher_impl_unittest.cc",
+    "login/screens/update_required_screen_unittest.cc",
     "login/screens/update_screen_unittest.cc",
     "login/session/user_session_manager_test.cc",
     "login/signin_partition_manager_unittest.cc",
