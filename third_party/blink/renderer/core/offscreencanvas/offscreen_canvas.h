@@ -62,7 +62,7 @@ class CORE_EXPORT OffscreenCanvas final
   void setHeight(unsigned);
 
   // CanvasResourceDispatcherClient
-  void BeginFrame() override;
+  bool BeginFrame() override;
 
   // API Methods
   ImageBitmap* transferToImageBitmap(ScriptState*, ExceptionState&);
@@ -115,8 +115,8 @@ class CORE_EXPORT OffscreenCanvas final
   void DetachContext() override { context_ = nullptr; }
   CanvasRenderingContext* RenderingContext() const override { return context_; }
 
-  void PushFrameIfNeeded();
-  void PushFrame(scoped_refptr<CanvasResource> frame,
+  bool PushFrameIfNeeded();
+  bool PushFrame(scoped_refptr<CanvasResource> frame,
                  const SkIRect& damage_rect) override;
   void DidDraw(const FloatRect&) override;
   void DidDraw() override;

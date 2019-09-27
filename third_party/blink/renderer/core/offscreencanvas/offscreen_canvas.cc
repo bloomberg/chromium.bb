@@ -410,16 +410,17 @@ void OffscreenCanvas::DidDraw(const FloatRect& rect) {
   }
 }
 
-void OffscreenCanvas::BeginFrame() {
+bool OffscreenCanvas::BeginFrame() {
   DCHECK(HasPlaceholderCanvas());
-  PushFrameIfNeeded();
   GetOrCreateResourceDispatcher()->SetNeedsBeginFrame(false);
+  return PushFrameIfNeeded();
 }
 
-void OffscreenCanvas::PushFrameIfNeeded() {
+bool OffscreenCanvas::PushFrameIfNeeded() {
   if (needs_push_frame_ && context_) {
-    context_->PushFrame();
+    return context_->PushFrame();
   }
+  return false;
 }
 
 bool OffscreenCanvas::ShouldAccelerate2dContext() const {
@@ -429,20 +430,21 @@ bool OffscreenCanvas::ShouldAccelerate2dContext() const {
          context_provider_wrapper->Utils()->Accelerated2DCanvasFeatureEnabled();
 }
 
-void OffscreenCanvas::PushFrame(scoped_refptr<CanvasResource> canvas_resource,
+bool OffscreenCanvas::PushFrame(scoped_refptr<CanvasResource> canvas_resource,
                                 const SkIRect& damage_rect) {
   TRACE_EVENT0("blink", "OffscreenCanvas::PushFrame");
   DCHECK(needs_push_frame_);
   needs_push_frame_ = false;
   current_frame_damage_rect_.join(damage_rect);
   if (current_frame_damage_rect_.isEmpty() || !canvas_resource)
-    return;
+    return false;
   const base::TimeTicks commit_start_time = base::TimeTicks::Now();
   GetOrCreateResourceDispatcher()->DispatchFrame(
       std::move(canvas_resource), commit_start_time, current_frame_damage_rect_,
       !RenderingContext()->IsOriginTopLeft() /* needs_vertical_flip */,
       IsOpaque());
   current_frame_damage_rect_ = SkIRect::MakeEmpty();
+  return true;
 }
 
 FontSelector* OffscreenCanvas::GetFontSelector() {
