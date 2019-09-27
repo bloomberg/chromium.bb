@@ -171,7 +171,7 @@ TEST_F(ExternalPolicyDataFetcherTest, ConnectionInterrupted) {
 
   // Make the fetch fail due to an interrupted connection.
   test_url_loader_factory_.AddResponse(
-      GURL(kExternalPolicyDataURLs[0]), network::ResourceResponseHead(),
+      GURL(kExternalPolicyDataURLs[0]), network::mojom::URLResponseHead::New(),
       std::string(),
       network::URLLoaderCompletionStatus(net::ERR_CONNECTION_RESET));
 
@@ -196,7 +196,7 @@ TEST_F(ExternalPolicyDataFetcherTest, NetworkError) {
 
   // Make the fetch fail due to a network error.
   test_url_loader_factory_.AddResponse(
-      GURL(kExternalPolicyDataURLs[0]), network::ResourceResponseHead(),
+      GURL(kExternalPolicyDataURLs[0]), network::mojom::URLResponseHead::New(),
       std::string(),
       network::URLLoaderCompletionStatus(net::ERR_NETWORK_CHANGED));
 

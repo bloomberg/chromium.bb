@@ -191,7 +191,7 @@ TEST_F(ExternalPolicyDataUpdaterTest, FetchFailure) {
 
   // Make the first fetch fail due to an interrupted connection.
   test_url_loader_factory_.AddResponse(
-      GURL(kExternalPolicyDataURLs[0]), network::ResourceResponseHead(),
+      GURL(kExternalPolicyDataURLs[0]), network::mojom::URLResponseHead::New(),
       std::string(),
       network::URLLoaderCompletionStatus(net::ERR_NETWORK_CHANGED));
   base::RunLoop().RunUntilIdle();
@@ -220,7 +220,7 @@ TEST_F(ExternalPolicyDataUpdaterTest, ServerFailure) {
 
   // Make the first fetch fail with a server error.
   test_url_loader_factory_.AddResponse(
-      GURL(kExternalPolicyDataURLs[0]), network::ResourceResponseHead(),
+      GURL(kExternalPolicyDataURLs[0]), network::mojom::URLResponseHead::New(),
       std::string(),
       network::URLLoaderCompletionStatus(net::HTTP_INTERNAL_SERVER_ERROR));
   base::RunLoop().RunUntilIdle();

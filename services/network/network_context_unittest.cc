@@ -4492,7 +4492,7 @@ TEST_F(NetworkContextTest, EnsureProperProxyServerIsUsed) {
     client.RunUntilComplete();
 
     EXPECT_TRUE(client.has_received_completion());
-    EXPECT_EQ(client.response_head().proxy_server.scheme(),
+    EXPECT_EQ(client.response_head()->proxy_server.scheme(),
               proxy_data.expected_proxy_config_scheme);
   }
 }
@@ -4610,7 +4610,7 @@ TEST_F(NetworkContextTest, HeaderClientModifiesHeaders) {
     EXPECT_EQ(response, "bar");
 
     // Make sure response header was modified.
-    EXPECT_TRUE(client.response_head().headers->HasHeaderValue("baz", "qux"));
+    EXPECT_TRUE(client.response_head()->headers->HasHeaderValue("baz", "qux"));
   }
 
   // Next, do a request without kURLLoadOptionUseHeaderClient set, headers
@@ -4632,7 +4632,7 @@ TEST_F(NetworkContextTest, HeaderClientModifiesHeaders) {
     EXPECT_EQ(response, "None");
 
     // Make sure response header was not set.
-    EXPECT_FALSE(client.response_head().headers->HasHeaderValue("foo", "bar"));
+    EXPECT_FALSE(client.response_head()->headers->HasHeaderValue("foo", "bar"));
   }
 }
 
@@ -4830,7 +4830,7 @@ TEST_F(NetworkContextTest, HangingHeaderClientModifiesHeadersAsynchronously) {
   EXPECT_EQ(response, "bar");
 
   // Make sure response header was modified.
-  EXPECT_TRUE(client.response_head().headers->HasHeaderValue("baz", "qux"));
+  EXPECT_TRUE(client.response_head()->headers->HasHeaderValue("baz", "qux"));
 }
 
 // Test destroying the mojom::URLLoader after the OnBeforeSendHeaders event and
@@ -5010,7 +5010,7 @@ TEST_F(NetworkContextMockHostTest, CustomProxyAddsHeaders) {
   EXPECT_EQ(response, base::JoinString({"post_bar_value", "post_foo_value",
                                         "pre_bar_value", "pre_foo_value"},
                                        "\n"));
-  EXPECT_EQ(client->response_head().proxy_server, proxy_server);
+  EXPECT_EQ(client->response_head()->proxy_server, proxy_server);
 }
 
 // Tests that if using a custom proxy results in redirect loop, then
@@ -5150,7 +5150,7 @@ TEST_F(NetworkContextMockHostTest, CustomProxyHeadersAreMerged) {
             base::JoinString({"first_bar_key=value2, bar_next_key=value4",
                               "first_foo_key=value1, foo_next_key=value3"},
                              "\n"));
-  EXPECT_EQ(client->response_head().proxy_server, proxy_server);
+  EXPECT_EQ(client->response_head()->proxy_server, proxy_server);
 }
 
 TEST_F(NetworkContextMockHostTest, CustomProxyConfigHeadersAddedBeforeCache) {
@@ -5186,8 +5186,8 @@ TEST_F(NetworkContextMockHostTest, CustomProxyConfigHeadersAddedBeforeCache) {
       mojo::BlockingCopyToString(client->response_body_release(), &response));
 
   EXPECT_EQ(response, base::JoinString({"bar_value", "foo_value"}, "\n"));
-  EXPECT_EQ(client->response_head().proxy_server, proxy_server);
-  EXPECT_FALSE(client->response_head().was_fetched_via_cache);
+  EXPECT_EQ(client->response_head()->proxy_server, proxy_server);
+  EXPECT_FALSE(client->response_head()->was_fetched_via_cache);
 
   // post_cache_headers should not break caching.
   config->post_cache_headers.SetHeader("bar", "new_bar");
@@ -5199,7 +5199,7 @@ TEST_F(NetworkContextMockHostTest, CustomProxyConfigHeadersAddedBeforeCache) {
       mojo::BlockingCopyToString(client->response_body_release(), &response));
 
   EXPECT_EQ(response, base::JoinString({"bar_value", "foo_value"}, "\n"));
-  EXPECT_TRUE(client->response_head().was_fetched_via_cache);
+  EXPECT_TRUE(client->response_head()->was_fetched_via_cache);
 
   // pre_cache_headers should invalidate cache.
   config->pre_cache_headers.SetHeader("foo", "new_foo");
@@ -5211,8 +5211,8 @@ TEST_F(NetworkContextMockHostTest, CustomProxyConfigHeadersAddedBeforeCache) {
       mojo::BlockingCopyToString(client->response_body_release(), &response));
 
   EXPECT_EQ(response, base::JoinString({"new_bar", "new_foo"}, "\n"));
-  EXPECT_EQ(client->response_head().proxy_server, proxy_server);
-  EXPECT_FALSE(client->response_head().was_fetched_via_cache);
+  EXPECT_EQ(client->response_head()->proxy_server, proxy_server);
+  EXPECT_FALSE(client->response_head()->was_fetched_via_cache);
 }
 
 TEST_F(NetworkContextMockHostTest, CustomProxyRequestHeadersAddedBeforeCache) {
@@ -5248,8 +5248,8 @@ TEST_F(NetworkContextMockHostTest, CustomProxyRequestHeadersAddedBeforeCache) {
       mojo::BlockingCopyToString(client->response_body_release(), &response));
 
   EXPECT_EQ(response, base::JoinString({"bar_value", "foo_value"}, "\n"));
-  EXPECT_EQ(client->response_head().proxy_server, proxy_server);
-  EXPECT_FALSE(client->response_head().was_fetched_via_cache);
+  EXPECT_EQ(client->response_head()->proxy_server, proxy_server);
+  EXPECT_FALSE(client->response_head()->was_fetched_via_cache);
 
   // custom_proxy_post_cache_headers should not break caching.
   request.custom_proxy_post_cache_headers.SetHeader("bar", "new_bar");
@@ -5259,7 +5259,7 @@ TEST_F(NetworkContextMockHostTest, CustomProxyRequestHeadersAddedBeforeCache) {
       mojo::BlockingCopyToString(client->response_body_release(), &response));
 
   EXPECT_EQ(response, base::JoinString({"bar_value", "foo_value"}, "\n"));
-  EXPECT_TRUE(client->response_head().was_fetched_via_cache);
+  EXPECT_TRUE(client->response_head()->was_fetched_via_cache);
 
   // custom_proxy_pre_cache_headers should invalidate cache.
   request.custom_proxy_pre_cache_headers.SetHeader("foo", "new_foo");
@@ -5269,8 +5269,8 @@ TEST_F(NetworkContextMockHostTest, CustomProxyRequestHeadersAddedBeforeCache) {
       mojo::BlockingCopyToString(client->response_body_release(), &response));
 
   EXPECT_EQ(response, base::JoinString({"new_bar", "new_foo"}, "\n"));
-  EXPECT_EQ(client->response_head().proxy_server, proxy_server);
-  EXPECT_FALSE(client->response_head().was_fetched_via_cache);
+  EXPECT_EQ(client->response_head()->proxy_server, proxy_server);
+  EXPECT_FALSE(client->response_head()->was_fetched_via_cache);
 }
 
 TEST_F(NetworkContextMockHostTest,
@@ -5306,7 +5306,7 @@ TEST_F(NetworkContextMockHostTest,
       mojo::BlockingCopyToString(client->response_body_release(), &response));
 
   EXPECT_EQ(response, base::JoinString({"None", "None", "None", "None"}, "\n"));
-  EXPECT_TRUE(client->response_head().proxy_server.is_direct());
+  EXPECT_TRUE(client->response_head()->proxy_server.is_direct());
 }
 
 TEST_F(NetworkContextMockHostTest,
@@ -5351,7 +5351,7 @@ TEST_F(NetworkContextMockHostTest,
       mojo::BlockingCopyToString(client->response_body_release(), &response));
 
   EXPECT_EQ(response, base::JoinString({"None", "None", "None", "None"}, "\n"));
-  EXPECT_EQ(client->response_head().proxy_server,
+  EXPECT_EQ(client->response_head()->proxy_server,
             ConvertToProxyServer(proxy_test_server));
 }
 
@@ -5384,7 +5384,7 @@ TEST_F(NetworkContextMockHostTest, CustomProxyUsesSpecifiedProxyList) {
 
   // |invalid_server| has no handlers set up so would return an empty response.
   EXPECT_EQ(response, "Echo");
-  EXPECT_EQ(client->response_head().proxy_server,
+  EXPECT_EQ(client->response_head()->proxy_server,
             ConvertToProxyServer(proxy_test_server));
 }
 
