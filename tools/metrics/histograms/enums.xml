@@ -18122,7 +18122,7 @@ Called by update_net_error_codes.py.-->
   <int value="602" label="ReportDeviceOsUpdateStatus"/>
   <int value="603" label="DeviceLoginScreenWebUsbAllowDevicesForUrls"/>
   <int value="604" label="AllowSyncXHRInPageDismissal"/>
-  <int value="605" label="DeviceLoginSpokenFeedbackEnabled"/>
+  <int value="605" label="DeviceLoginScreenSpokenFeedbackEnabled"/>
   <int value="606" label="DeviceLoginScreenHighContrastEnabled"/>
   <int value="607" label="DeviceLoginScreenVirtualKeyboardEnabled"/>
   <int value="608" label="CloudExtensionRequestEnabled"/>
@@ -18133,6 +18133,7 @@ Called by update_net_error_codes.py.-->
   <int value="613" label="DeviceLoginScreenCursorHighlightEnabled"/>
   <int value="614" label="DeviceLoginScreenCaretHighlightEnabled"/>
   <int value="615" label="DeviceLoginScreenMonoAudioEnabled"/>
+  <int value="616" label="TotalMemoryLimitMb"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
