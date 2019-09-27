@@ -213,7 +213,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
               std::set<const char*>{
                   "autofill.mojom.AutofillDriver",
                   "autofill.mojom.PasswordManagerDriver",
-                  "blink.mojom.AnchorElementMetricsHost",
                   "blink.mojom.CacheStorage",
                   "blink.mojom.ColorChooserFactory",
                   "blink.mojom.DateTimeChooser",
