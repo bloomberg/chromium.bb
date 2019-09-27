@@ -155,7 +155,7 @@ public class WebLayerAnimationDemoActivity extends FragmentActivity {
 
         controller.addObserver(new BrowserObserver() {
             @Override
-            public void displayURLChanged(Uri uri) {
+            public void visibleUrlChanged(Uri uri) {
                 urlView.setText(uri.toString());
             }
         });

@@ -122,7 +122,7 @@ public class WebLayerShellActivity extends FragmentActivity {
         loadUrl(startupUrl);
         mBrowserController.addObserver(new BrowserObserver() {
             @Override
-            public void displayURLChanged(Uri uri) {
+            public void visibleUrlChanged(Uri uri) {
                 mUrlView.setText(uri.toString());
             }
 
