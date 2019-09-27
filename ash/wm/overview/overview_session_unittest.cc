@@ -1299,9 +1299,7 @@ TEST_P(OverviewSessionTest, DropTargetOnCorrectDisplayForDraggingFromTop) {
 
 // Tests that dragging a window from overview creates a drop target on the same
 // display.
-// Disabled, test is flaky: crbug.com/1008408
-TEST_P(OverviewSessionTest,
-       DISABLED_DropTargetOnCorrectDisplayForDraggingFromOverview) {
+TEST_P(OverviewSessionTest, DropTargetOnCorrectDisplayForDraggingFromOverview) {
   UpdateDisplay("600x600,600x600");
   EnterTabletMode();
   // DisplayConfigurationObserver enables mirror mode when tablet mode is
