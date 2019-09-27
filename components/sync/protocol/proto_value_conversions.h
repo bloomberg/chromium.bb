@@ -41,8 +41,6 @@ class FaviconTrackingSpecifics;
 class HistoryDeleteDirectiveSpecifics;
 class LinkedAppIconInfo;
 class ManagedUserSettingSpecifics;
-class ManagedUserSharedSettingSpecifics;
-class ManagedUserSpecifics;
 class ManagedUserWhitelistSpecifics;
 class MountainShareSpecifics;
 class NavigationRedirect;
@@ -169,13 +167,6 @@ std::unique_ptr<base::DictionaryValue> LinkedAppIconInfoToValue(
 
 std::unique_ptr<base::DictionaryValue> ManagedUserSettingSpecificsToValue(
     const sync_pb::ManagedUserSettingSpecifics& managed_user_setting_specifics);
-
-std::unique_ptr<base::DictionaryValue> ManagedUserSharedSettingSpecificsToValue(
-    const sync_pb::ManagedUserSharedSettingSpecifics&
-        managed_user_shared_setting_specifics);
-
-std::unique_ptr<base::DictionaryValue> ManagedUserSpecificsToValue(
-    const sync_pb::ManagedUserSpecifics& managed_user_specifics);
 
 std::unique_ptr<base::DictionaryValue> ManagedUserWhitelistSpecificsToValue(
     const sync_pb::ManagedUserWhitelistSpecifics&

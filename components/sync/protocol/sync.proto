@@ -37,8 +37,6 @@ import "favicon_tracking_specifics.proto";
 import "get_updates_caller_info.proto";
 import "history_delete_directive_specifics.proto";
 import "managed_user_setting_specifics.proto";
-import "managed_user_shared_setting_specifics.proto";
-import "managed_user_specifics.proto";
 import "managed_user_whitelist_specifics.proto";
 import "mountain_share_specifics.proto";
 import "nigori_specifics.proto";
@@ -132,8 +130,6 @@ message EntitySpecifics {
     FaviconTrackingSpecifics favicon_tracking = 181534;
     FaviconImageSpecifics favicon_image = 182019;
     ManagedUserSettingSpecifics managed_user_setting = 186662;
-    ManagedUserSpecifics managed_user = 194582;
-    ManagedUserSharedSettingSpecifics managed_user_shared_setting = 202026;
     ManagedUserWhitelistSpecifics managed_user_whitelist = 306060;
     ArticleSpecifics article = 223759;
     AppListSpecifics app_list = 229170;
@@ -155,6 +151,10 @@ message EntitySpecifics {
   reserved "app_notification";
   reserved 153108;
   reserved "synced_notification";
+  reserved 194582;
+  reserved "managed_user";
+  reserved 202026;
+  reserved "managed_user_shared_setting";
   reserved 235816;
   reserved "synced_notification_app_info";
 }

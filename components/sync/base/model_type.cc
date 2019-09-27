@@ -130,13 +130,6 @@ const ModelTypeInfo kModelTypeInfoMap[] = {
      "Managed User Settings",
      sync_pb::EntitySpecifics::kManagedUserSettingFieldNumber,
      ModelTypeForHistograms::kSupervisedUserSettings},
-    {DEPRECATED_SUPERVISED_USERS, "MANAGED_USER", "managed_users",
-     "Managed Users", sync_pb::EntitySpecifics::kManagedUserFieldNumber,
-     ModelTypeForHistograms::kDeprecatedSupervisedUsers},
-    {DEPRECATED_SUPERVISED_USER_SHARED_SETTINGS, "MANAGED_USER_SHARED_SETTING",
-     "managed_user_shared_settings", "Managed User Shared Settings",
-     sync_pb::EntitySpecifics::kManagedUserSharedSettingFieldNumber,
-     ModelTypeForHistograms::kDeprecatedSupervisedUserSharedSettings},
     {DEPRECATED_ARTICLES, "ARTICLE", "articles", "Articles",
      sync_pb::EntitySpecifics::kArticleFieldNumber,
      ModelTypeForHistograms::kDeprecatedArticles},
@@ -195,11 +188,11 @@ const ModelTypeInfo kModelTypeInfoMap[] = {
 static_assert(base::size(kModelTypeInfoMap) == ModelType::NUM_ENTRIES,
               "kModelTypeInfoMap should have ModelType::NUM_ENTRIES elements");
 
-static_assert(43 == syncer::ModelType::NUM_ENTRIES,
+static_assert(41 == syncer::ModelType::NUM_ENTRIES,
               "When adding a new type, update enum SyncModelTypes in enums.xml "
               "and suffix SyncModelType in histograms.xml.");
 
-static_assert(43 == syncer::ModelType::NUM_ENTRIES,
+static_assert(41 == syncer::ModelType::NUM_ENTRIES,
               "When adding a new type, update kAllocatorDumpNameWhitelist in "
               "base/trace_event/memory_infra_background_whitelist.cc.");
 
@@ -274,12 +267,6 @@ void AddDefaultFieldValue(ModelType type, sync_pb::EntitySpecifics* specifics) {
       break;
     case SUPERVISED_USER_SETTINGS:
       specifics->mutable_managed_user_setting();
-      break;
-    case DEPRECATED_SUPERVISED_USERS:
-      specifics->mutable_managed_user();
-      break;
-    case DEPRECATED_SUPERVISED_USER_SHARED_SETTINGS:
-      specifics->mutable_managed_user_shared_setting();
       break;
     case DEPRECATED_ARTICLES:
       specifics->mutable_article();
@@ -374,7 +361,7 @@ ModelType GetModelType(const sync_pb::SyncEntity& sync_entity) {
 }
 
 ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
-  static_assert(43 == ModelType::NUM_ENTRIES,
+  static_assert(41 == ModelType::NUM_ENTRIES,
                 "When adding new protocol types, the following type lookup "
                 "logic must be updated.");
   if (specifics.has_bookmark())
@@ -421,10 +408,6 @@ ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
     return PRIORITY_PREFERENCES;
   if (specifics.has_managed_user_setting())
     return SUPERVISED_USER_SETTINGS;
-  if (specifics.has_managed_user())
-    return DEPRECATED_SUPERVISED_USERS;
-  if (specifics.has_managed_user_shared_setting())
-    return DEPRECATED_SUPERVISED_USER_SHARED_SETTINGS;
   if (specifics.has_article())
     return DEPRECATED_ARTICLES;
   if (specifics.has_app_list())
@@ -462,7 +445,7 @@ ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
 }
 
 ModelTypeSet EncryptableUserTypes() {
-  static_assert(43 == ModelType::NUM_ENTRIES,
+  static_assert(41 == ModelType::NUM_ENTRIES,
                 "If adding an unencryptable type, remove from "
                 "encryptable_user_types below.");
   ModelTypeSet encryptable_user_types = UserTypes();
@@ -478,11 +461,6 @@ ModelTypeSet EncryptableUserTypes() {
   encryptable_user_types.Remove(PRIORITY_PREFERENCES);
   // Supervised user settings are not encrypted since they are set server-side.
   encryptable_user_types.Remove(SUPERVISED_USER_SETTINGS);
-  // Supervised users are not encrypted since they are managed server-side.
-  encryptable_user_types.Remove(DEPRECATED_SUPERVISED_USERS);
-  // Supervised user shared settings are not encrypted since they are managed
-  // server-side and shared between manager and supervised user.
-  encryptable_user_types.Remove(DEPRECATED_SUPERVISED_USER_SHARED_SETTINGS);
   // Supervised user whitelists are not encrypted since they are managed
   // server-side.
   encryptable_user_types.Remove(SUPERVISED_USER_WHITELISTS);

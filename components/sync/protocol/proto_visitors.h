@@ -372,7 +372,7 @@ VISIT_PROTO_FIELDS(const sync_pb::EntityMetadata& proto) {
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::EntitySpecifics& proto) {
-  static_assert(43 == ModelType::NUM_ENTRIES,
+  static_assert(41 == ModelType::NUM_ENTRIES,
                 "When adding a new protocol type, you will likely need to add "
                 "it here as well.");
   VISIT(encrypted);
@@ -393,9 +393,7 @@ VISIT_PROTO_FIELDS(const sync_pb::EntitySpecifics& proto) {
   VISIT(favicon_image);
   VISIT(favicon_tracking);
   VISIT(history_delete_directive);
-  VISIT(managed_user);
   VISIT(managed_user_setting);
-  VISIT(managed_user_shared_setting);
   VISIT(managed_user_whitelist);
   VISIT(mountain_share);
   VISIT(nigori);
@@ -560,24 +558,6 @@ VISIT_PROTO_FIELDS(const sync_pb::LinkedAppIconInfo& proto) {
 VISIT_PROTO_FIELDS(const sync_pb::ManagedUserSettingSpecifics& proto) {
   VISIT(name);
   VISIT(value);
-}
-
-VISIT_PROTO_FIELDS(const sync_pb::ManagedUserSharedSettingSpecifics& proto) {
-  VISIT(mu_id);
-  VISIT(key);
-  VISIT(value);
-  VISIT(acknowledged);
-}
-
-VISIT_PROTO_FIELDS(const sync_pb::ManagedUserSpecifics& proto) {
-  VISIT(id);
-  VISIT(name);
-  VISIT(acknowledged);
-  VISIT(master_key);
-  VISIT(chrome_avatar);
-  VISIT(chromeos_avatar);
-  VISIT(password_signature_key);
-  VISIT(password_encryption_key);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::ManagedUserWhitelistSpecifics& proto) {
