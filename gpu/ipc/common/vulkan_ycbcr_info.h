@@ -6,11 +6,12 @@
 #define GPU_IPC_COMMON_VULKAN_YCBCR_INFO_H_
 
 #include <stdint.h>
+#include "gpu/gpu_export.h"
 
 namespace gpu {
 
 // Sampler Ycbcr conversion information.
-struct VulkanYCbCrInfo {
+struct GPU_EXPORT VulkanYCbCrInfo {
   VulkanYCbCrInfo();
   VulkanYCbCrInfo(uint32_t image_format,
                   uint64_t external_format,
