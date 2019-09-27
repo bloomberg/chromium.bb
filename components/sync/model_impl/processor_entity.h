@@ -45,7 +45,6 @@ class ProcessorEntity {
   const std::string& storage_key() const { return storage_key_; }
   const sync_pb::EntityMetadata& metadata() const { return metadata_; }
   const EntityData& commit_data() { return *commit_data_; }
-  base::Time unsynced_time() const { return unsynced_time_; }
 
   // Returns true if this data is out of sync with the server.
   // A commit may or may not be in progress at this time.

@@ -38,8 +38,6 @@ class RecordingModelTypeChangeProcessor : public FakeModelTypeChangeProcessor {
   bool IsTrackingMetadata() override;
   std::string TrackedAccountId() override;
 
-  void SetIsTrackingMetadata(bool is_tracking);
-
   const std::multimap<std::string, std::unique_ptr<EntityData>>& put_multimap()
       const {
     return put_multimap_;
@@ -76,7 +74,6 @@ class RecordingModelTypeChangeProcessor : public FakeModelTypeChangeProcessor {
   std::set<std::string> untrack_for_storage_key_set_;
   std::set<std::string> untrack_for_client_tag_hash_set_;
   std::unique_ptr<MetadataBatch> metadata_;
-  bool is_tracking_metadata_ = true;
 };
 
 }  //  namespace syncer

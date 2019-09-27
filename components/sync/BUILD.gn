@@ -210,7 +210,6 @@ jumbo_static_library("rest_of_sync") {
     "engine_impl/non_blocking_type_commit_contribution.h",
     "engine_impl/nudge_handler.cc",
     "engine_impl/nudge_handler.h",
-    "engine_impl/nudge_source.cc",
     "engine_impl/nudge_source.h",
     "engine_impl/process_updates_util.cc",
     "engine_impl/process_updates_util.h",
