@@ -112,8 +112,7 @@ var OSSettingsPageTest = class extends OSSettingsBrowserTest {
   }
 };
 
-// Disabled due to flakiness on linux-chromeos-rel. https://crbug.com/992116
-TEST_F('OSSettingsPageTest', 'DISABLED_AllJsTests', () => {
+TEST_F('OSSettingsPageTest', 'AllJsTests', () => {
   // Run all registered tests.
   mocha.run();
 });

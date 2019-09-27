@@ -2,18 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/** @fileoverview Suite of tests for the OS Settings advanced page. */
+/** @fileoverview Suite of tests for the OS Settings main page. */
 
 suite('OSSettingsPage', function() {
   /** @type {?OsSettingsMainElement} */
   let settingsMain = null;
 
-  setup(async () => {
+  suiteSetup(async function() {
+    await CrSettingsPrefs.initialized;
+
     settingsMain =
         document.querySelector('os-settings-ui').$$('os-settings-main');
     assert(!!settingsMain);
-    settingsMain.advancedToggleExpanded = !settingsMain.advancedToggleExpanded;
-    await test_util.flushTasks();
+
+    const idleRender =
+        settingsMain.$$('os-settings-page').$$('settings-idle-load');
+    assert(!!idleRender);
+    await idleRender.get();
+    Polymer.dom.flush();
   });
 
   function getSection(page, section) {
@@ -67,7 +73,12 @@ suite('OSSettingsPage', function() {
     }
   }
 
-  test('AdvancedSections', function() {
+  test('AdvancedSections', async function() {
+    // Open the Advanced section.
+    settingsMain.advancedToggleExpanded = true;
+    Polymer.dom.flush();
+    await test_util.flushTasks();
+
     const page = settingsMain.$$('os-settings-page');
     assertTrue(!!page);
     let sections =
@@ -75,7 +86,7 @@ suite('OSSettingsPage', function() {
 
     for (let i = 0; i < sections.length; i++) {
       const section = getSection(page, sections[i]);
-      assertTrue(!!section);
+      assertTrue(!!section, 'Did not find ' + sections[i]);
       verifySubpagesHidden(section);
     }
   });
