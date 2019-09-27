@@ -17,7 +17,7 @@ import compress_section
 LIBRARY_CC_NAME = 'libtest.cc'
 OPENER_CC_NAME = 'library_opener.cc'
 
-CONSTRUCTOR_C_PATH = '../constructor/library_constructor.c'
+CONSTRUCTOR_C_PATH = '../decompression_hook/decompression_hook.c'
 SCRIPT_PATH = '../compress_section.py'
 
 # src/third_party/llvm-build/Release+Asserts/bin/clang++

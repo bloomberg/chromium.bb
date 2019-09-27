@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This file contains userfaultfd watcher constructor which decompress
+// This file contains userfaultfd watcher constructor that decompress
 // parts of the library's code, compressed by compress_section.py script.
 #include <asm-generic/ioctls.h>
 #include <asm/unistd_64.h>
@@ -42,8 +42,8 @@ void DoNotOptimize(void* value) {
 // The following 4 arrays are here to be patched into by compress_section.py
 // script. They currently contain magic bytes that will be used to locate them
 // in the library file. DoNotOptimize method is applied to them at the
-// beginning of the constructor to ensure that the arrays are not optimized
-// away.
+// beginning of the decompression hook to ensure that the arrays are not
+// optimized away.
 unsigned char g_dummy_cut_range_begin[8] = {0x2e, 0x2a, 0xee, 0xf6,
                                             0x45, 0x03, 0xd2, 0x50};
 unsigned char g_dummy_cut_range_end[8] = {0x52, 0x40, 0xeb, 0x9d,
@@ -246,7 +246,7 @@ static void UnregisterUserfaultFd(void* cut_start,
   ioctl(uffd, UFFDIO_UNREGISTER, &uffd_unregister);
 }
 
-// Backup slow solution for the constructor. Fully decompresses and populates
+// Backup slow solution for the hook. Fully decompresses and populates
 // the cut range. This method is used if the userfaultfd setup failed to ensure
 // that the library will still function despite the failure.
 static void DecompressWholeRange(void* cut_start,
