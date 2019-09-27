@@ -2014,34 +2014,6 @@
         # either passing or there is more capacity.
         'experiment_percentage': 0,
       },
-      'Android WebView O (dbg)': {
-        #TODO(crbug.com/997362): Remove test filters once bug is resolved.
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/android.webview_instrumentation_tests_oreo.filter',
-        ],
-      },
-      'Android WebView P (dbg)': {
-        #TODO(crbug.com/1001309): Remove test filters once bug is resolved.
-        'args': [
-          '--gtest-filter=-org.chromium.android_webview.test.AwAutofillTest.testJavascriptNotTriggerSelectControlChangeNotification',
-        ],
-      },
-    },
-  },
-  'webview_instrumentation_test_apk_no_field_trial': {
-    'modifications': {
-      'Android WebView O (dbg)': {
-        #TODO(crbug.com/997362): Remove test filters once bug is resolved.
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/android.webview_instrumentation_tests_oreo.filter',
-        ],
-      },
-      'Android WebView P (dbg)': {
-        #TODO(crbug.com/1001309): Remove test filters once bug is resolved.
-        'args': [
-          '--gtest-filter=-org.chromium.android_webview.test.AwAutofillTest.testJavascriptNotTriggerSelectControlChangeNotification',
-        ],
-      },
     },
   },
   'xr_browser_tests': {
