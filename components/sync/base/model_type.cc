@@ -111,14 +111,6 @@ const ModelTypeInfo kModelTypeInfoMap[] = {
      "history_delete_directives", "History Delete Directives",
      sync_pb::EntitySpecifics::kHistoryDeleteDirectiveFieldNumber,
      ModelTypeForHistograms::kHistoryDeleteDirectices},
-    {DEPRECATED_SYNCED_NOTIFICATIONS, "SYNCED_NOTIFICATION",
-     "synced_notifications", "Synced Notifications",
-     sync_pb::EntitySpecifics::kSyncedNotificationFieldNumber,
-     ModelTypeForHistograms::kDeprecatedSyncedNotifications},
-    {DEPRECATED_SYNCED_NOTIFICATION_APP_INFO, "SYNCED_NOTIFICATION_APP_INFO",
-     "synced_notification_app_info", "Synced Notification App Info",
-     sync_pb::EntitySpecifics::kSyncedNotificationAppInfoFieldNumber,
-     ModelTypeForHistograms::kDeprecatedSyncedNotificationAppInfo},
     {DICTIONARY, "DICTIONARY", "dictionary", "Dictionary",
      sync_pb::EntitySpecifics::kDictionaryFieldNumber,
      ModelTypeForHistograms::kDictionary},
@@ -204,11 +196,11 @@ const ModelTypeInfo kModelTypeInfoMap[] = {
 static_assert(base::size(kModelTypeInfoMap) == ModelType::NUM_ENTRIES,
               "kModelTypeInfoMap should have ModelType::NUM_ENTRIES elements");
 
-static_assert(45 == syncer::ModelType::NUM_ENTRIES,
+static_assert(43 == syncer::ModelType::NUM_ENTRIES,
               "When adding a new type, update enum SyncModelTypes in enums.xml "
               "and suffix SyncModelType in histograms.xml.");
 
-static_assert(45 == syncer::ModelType::NUM_ENTRIES,
+static_assert(43 == syncer::ModelType::NUM_ENTRIES,
               "When adding a new type, update kAllocatorDumpNameWhitelist in "
               "base/trace_event/memory_infra_background_whitelist.cc.");
 
@@ -265,12 +257,6 @@ void AddDefaultFieldValue(ModelType type, sync_pb::EntitySpecifics* specifics) {
       break;
     case HISTORY_DELETE_DIRECTIVES:
       specifics->mutable_history_delete_directive();
-      break;
-    case DEPRECATED_SYNCED_NOTIFICATIONS:
-      specifics->mutable_synced_notification();
-      break;
-    case DEPRECATED_SYNCED_NOTIFICATION_APP_INFO:
-      specifics->mutable_synced_notification_app_info();
       break;
     case DICTIONARY:
       specifics->mutable_dictionary();
@@ -389,7 +375,7 @@ ModelType GetModelType(const sync_pb::SyncEntity& sync_entity) {
 }
 
 ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
-  static_assert(45 == ModelType::NUM_ENTRIES,
+  static_assert(43 == ModelType::NUM_ENTRIES,
                 "When adding new protocol types, the following type lookup "
                 "logic must be updated.");
   if (specifics.has_bookmark())
@@ -424,10 +410,6 @@ ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
     return EXTENSION_SETTINGS;
   if (specifics.has_history_delete_directive())
     return HISTORY_DELETE_DIRECTIVES;
-  if (specifics.has_synced_notification())
-    return DEPRECATED_SYNCED_NOTIFICATIONS;
-  if (specifics.has_synced_notification_app_info())
-    return DEPRECATED_SYNCED_NOTIFICATION_APP_INFO;
   if (specifics.has_dictionary())
     return DICTIONARY;
   if (specifics.has_favicon_image())
@@ -481,7 +463,7 @@ ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
 }
 
 ModelTypeSet EncryptableUserTypes() {
-  static_assert(45 == ModelType::NUM_ENTRIES,
+  static_assert(43 == ModelType::NUM_ENTRIES,
                 "If adding an unencryptable type, remove from "
                 "encryptable_user_types below.");
   ModelTypeSet encryptable_user_types = UserTypes();
@@ -489,11 +471,6 @@ ModelTypeSet EncryptableUserTypes() {
   encryptable_user_types.Remove(AUTOFILL_WALLET_DATA);
   // We never encrypt history delete directives.
   encryptable_user_types.Remove(HISTORY_DELETE_DIRECTIVES);
-  // Synced notifications are not encrypted since the server must see changes.
-  encryptable_user_types.Remove(DEPRECATED_SYNCED_NOTIFICATIONS);
-  // Synced Notification App Info does not have private data, so it is not
-  // encrypted.
-  encryptable_user_types.Remove(DEPRECATED_SYNCED_NOTIFICATION_APP_INFO);
   // Device info data is not encrypted because it might be synced before
   // encryption is ready.
   encryptable_user_types.Remove(DEVICE_INFO);

@@ -52,8 +52,6 @@ import "security_event_specifics.proto";
 import "send_tab_to_self_specifics.proto";
 import "session_specifics.proto";
 import "sync_enums.proto";
-import "synced_notification_app_info_specifics.proto";
-import "synced_notification_specifics.proto";
 import "theme_specifics.proto";
 import "typed_url_specifics.proto";
 import "unique_position.proto";
@@ -127,8 +125,6 @@ message EntitySpecifics {
     ExtensionSettingSpecifics extension_setting = 96159;
     AppSettingSpecifics app_setting = 103656;
     HistoryDeleteDirectiveSpecifics history_delete_directive = 150251;
-    SyncedNotificationSpecifics synced_notification = 153108;
-    SyncedNotificationAppInfoSpecifics synced_notification_app_info = 235816;
     DeviceInfoSpecifics device_info = 154522;
     ExperimentsSpecifics experiments = 161496;
     PriorityPreferenceSpecifics priority_preference = 163425;
@@ -157,6 +153,10 @@ message EntitySpecifics {
   }
   reserved 45184;
   reserved "app_notification";
+  reserved 153108;
+  reserved "synced_notification";
+  reserved 235816;
+  reserved "synced_notification_app_info";
 }
 
 message SyncEntity {

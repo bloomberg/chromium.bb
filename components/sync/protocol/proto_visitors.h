@@ -372,7 +372,7 @@ VISIT_PROTO_FIELDS(const sync_pb::EntityMetadata& proto) {
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::EntitySpecifics& proto) {
-  static_assert(45 == ModelType::NUM_ENTRIES,
+  static_assert(43 == ModelType::NUM_ENTRIES,
                 "When adding a new protocol type, you will likely need to add "
                 "it here as well.");
   VISIT(encrypted);
@@ -408,8 +408,6 @@ VISIT_PROTO_FIELDS(const sync_pb::EntitySpecifics& proto) {
   VISIT(security_event);
   VISIT(send_tab_to_self);
   VISIT(session);
-  VISIT(synced_notification);
-  VISIT(synced_notification_app_info);
   VISIT(theme);
   VISIT(typed_url);
   VISIT(user_consent);
@@ -851,10 +849,6 @@ VISIT_PROTO_FIELDS(const sync_pb::SyncEntity& proto) {
   VISIT(client_defined_unique_tag);
   VISIT_BYTES(ordinal_in_parent);
 }
-
-VISIT_PROTO_FIELDS(const sync_pb::SyncedNotificationAppInfoSpecifics& proto) {}
-
-VISIT_PROTO_FIELDS(const sync_pb::SyncedNotificationSpecifics& proto) {}
 
 VISIT_PROTO_FIELDS(const sync_pb::SecurityEventSpecifics& proto) {
   VISIT(gaia_password_reuse_event);

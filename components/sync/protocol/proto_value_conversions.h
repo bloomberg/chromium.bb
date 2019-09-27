@@ -64,8 +64,6 @@ class SessionTab;
 class SessionWindow;
 class SyncCycleCompletedEventInfo;
 class SyncEntity;
-class SyncedNotificationAppInfoSpecifics;
-class SyncedNotificationSpecifics;
 class TabNavigation;
 class ThemeSpecifics;
 class TimeRangeDirective;
@@ -239,14 +237,6 @@ std::unique_ptr<base::DictionaryValue> SessionWindowToValue(
 
 std::unique_ptr<base::DictionaryValue> SyncCycleCompletedEventInfoToValue(
     const sync_pb::SyncCycleCompletedEventInfo& proto);
-
-std::unique_ptr<base::DictionaryValue>
-SyncedNotificationAppInfoSpecificsToValue(
-    const sync_pb::SyncedNotificationAppInfoSpecifics&
-        synced_notification_specifics);
-
-std::unique_ptr<base::DictionaryValue> SyncedNotificationSpecificsToValue(
-    const sync_pb::SyncedNotificationSpecifics& synced_notification_specifics);
 
 std::unique_ptr<base::DictionaryValue> TabNavigationToValue(
     const sync_pb::TabNavigation& tab_navigation);

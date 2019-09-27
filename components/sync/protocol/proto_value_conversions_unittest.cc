@@ -59,7 +59,7 @@ namespace {
 
 DEFINE_SPECIFICS_TO_VALUE_TEST(encrypted)
 
-static_assert(45 == syncer::ModelType::NUM_ENTRIES,
+static_assert(43 == syncer::ModelType::NUM_ENTRIES,
               "When adding a new field, add a DEFINE_SPECIFICS_TO_VALUE_TEST "
               "for your field below, and optionally a test for the specific "
               "conversions.");
@@ -96,8 +96,6 @@ DEFINE_SPECIFICS_TO_VALUE_TEST(search_engine)
 DEFINE_SPECIFICS_TO_VALUE_TEST(security_event)
 DEFINE_SPECIFICS_TO_VALUE_TEST(send_tab_to_self)
 DEFINE_SPECIFICS_TO_VALUE_TEST(session)
-DEFINE_SPECIFICS_TO_VALUE_TEST(synced_notification)
-DEFINE_SPECIFICS_TO_VALUE_TEST(synced_notification_app_info)
 DEFINE_SPECIFICS_TO_VALUE_TEST(theme)
 DEFINE_SPECIFICS_TO_VALUE_TEST(typed_url)
 DEFINE_SPECIFICS_TO_VALUE_TEST(user_consent)
