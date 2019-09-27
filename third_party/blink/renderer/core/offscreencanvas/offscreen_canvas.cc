@@ -120,25 +120,30 @@ void OffscreenCanvas::setHeight(unsigned height) {
 }
 
 void OffscreenCanvas::SetSize(const IntSize& size) {
+  // Setting size of a canvas also resets it.
+  if (size == size_) {
+    if (context_ && context_->Is2d()) {
+      context_->Reset();
+      origin_clean_ = true;
+    }
+    return;
+  }
+
+  size_ = size;
+  UpdateMemoryUsage();
+  current_frame_damage_rect_ = SkIRect::MakeWH(size_.Width(), size_.Height());
+
+  if (frame_dispatcher_)
+    frame_dispatcher_->Reshape(size_);
   if (context_) {
     if (context_->Is3d()) {
-      if (size != size_)
-        context_->Reshape(size.Width(), size.Height());
+      context_->Reshape(size_.Width(), size_.Height());
     } else if (context_->Is2d()) {
       context_->Reset();
       origin_clean_ = true;
     }
-  }
-  if (size != size_) {
-    UpdateMemoryUsage();
-  }
-  size_ = size;
-  if (frame_dispatcher_)
-    frame_dispatcher_->Reshape(size_);
-
-  current_frame_damage_rect_ = SkIRect::MakeWH(size_.Width(), size_.Height());
-  if (context_)
     context_->DidDraw();
+  }
 }
 
 void OffscreenCanvas::RecordTransfer() {
