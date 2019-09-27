@@ -83,7 +83,7 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_99, false)
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_unified_iw_options, false)
 
 // Number of packets that the pacing sender allows in bursts during pacing.
-QUIC_FLAG(int32_t, FLAGS_quic_lumpy_pacing_size, 1)
+QUIC_FLAG(int32_t, FLAGS_quic_lumpy_pacing_size, 2)
 
 // Congestion window fraction that the pacing sender allows in bursts during
 // pacing.
@@ -173,6 +173,9 @@ QUIC_FLAG(
     FLAGS_quic_reloadable_flag_send_quic_fallback_server_config_on_leto_error,
     false)
 
+// If true, enable QUIC version 49.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_49, false)
+
 // If true, GFE will not request private keys when fetching QUIC ServerConfigs
 // from Leto.
 QUIC_FLAG(bool,
@@ -204,13 +207,6 @@ QUIC_FLAG(bool,
 
 // If true, use predictable version negotiation versions.
 QUIC_FLAG(bool, FLAGS_quic_disable_version_negotiation_grease_randomness, false)
-
-// If true and --quic_lumpy_pacing_size is 1, QUIC will use a lumpy size of two
-// for pacing.
-QUIC_FLAG(
-    bool,
-    FLAGS_quic_reloadable_flag_quic_change_default_lumpy_pacing_size_to_two,
-    true)
 
 // If true, do not add connection ID of packets with unknown connection ID
 // and no version to time wait list, instead, send appropriate responses
