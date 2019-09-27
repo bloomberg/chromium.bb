@@ -21,6 +21,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/shared_worker_instance.h"
+#include "content/public/common/content_features.h"
 #include "device/gamepad/gamepad_monitor.h"
 #include "device/gamepad/public/mojom/gamepad.mojom.h"
 #include "media/capture/mojom/image_capture.mojom.h"
@@ -41,6 +42,7 @@
 #include "third_party/blink/public/mojom/permissions/permission.mojom.h"
 #include "third_party/blink/public/mojom/picture_in_picture/picture_in_picture.mojom.h"
 #include "third_party/blink/public/mojom/presentation/presentation.mojom.h"
+#include "third_party/blink/public/mojom/sms/sms_receiver.mojom.h"
 #include "third_party/blink/public/mojom/speech/speech_synthesis.mojom.h"
 #include "third_party/blink/public/mojom/wake_lock/wake_lock.mojom.h"
 #include "third_party/blink/public/mojom/webaudio/audio_context_manager.mojom.h"
@@ -54,7 +56,6 @@
 #endif
 
 #if defined(OS_ANDROID)
-#include "content/public/common/content_features.h"
 #include "services/device/public/mojom/nfc.mojom.h"
 #endif
 
@@ -113,6 +114,11 @@ void PopulateFrameBinders(RenderFrameHostImpl* host,
 
   map->Add<blink::mojom::ScreenEnumeration>(
       base::BindRepeating(&ScreenEnumerationImpl::Create));
+
+  if (base::FeatureList::IsEnabled(features::kSmsReceiver)) {
+    map->Add<blink::mojom::SmsReceiver>(base::BindRepeating(
+        &RenderFrameHostImpl::BindSmsReceiverReceiver, base::Unretained(host)));
+  }
 
   map->Add<blink::mojom::LockManager>(base::BindRepeating(
       &RenderFrameHostImpl::CreateLockManager, base::Unretained(host)));
@@ -201,6 +207,10 @@ void PopulateDedicatedWorkerBinders(DedicatedWorkerHost* host,
       &DedicatedWorkerHost::CreateIdleManager, base::Unretained(host)));
   map->Add<blink::mojom::ScreenEnumeration>(
       base::BindRepeating(&ScreenEnumerationImpl::Create));
+  if (base::FeatureList::IsEnabled(features::kSmsReceiver)) {
+    map->Add<blink::mojom::SmsReceiver>(base::BindRepeating(
+        &DedicatedWorkerHost::BindSmsReceiverReceiver, base::Unretained(host)));
+  }
   map->Add<payments::mojom::PaymentManager>(base::BindRepeating(
       &DedicatedWorkerHost::CreatePaymentManager, base::Unretained(host)));
 }

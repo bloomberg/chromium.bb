@@ -4478,11 +4478,6 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
   registry_->AddInterface(base::BindRepeating(
       &GetRestrictedCookieManager, base::Unretained(this),
       GetProcess()->GetID(), routing_id_, GetProcess()->GetStoragePartition()));
-
-  if (base::FeatureList::IsEnabled(features::kSmsReceiver)) {
-    registry_->AddInterface(base::BindRepeating(
-        &RenderFrameHostImpl::BindSmsReceiverReceiver, base::Unretained(this)));
-  }
 }
 
 void RenderFrameHostImpl::ResetWaitingState() {

@@ -1110,6 +1110,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void BindNFCReceiver(mojo::PendingReceiver<device::mojom::NFC> receiver);
 #endif
 
+  void BindSmsReceiverReceiver(
+      mojo::PendingReceiver<blink::mojom::SmsReceiver> receiver);
+
   // https://mikewest.github.io/corpp/#initialize-embedder-policy-for-global
   network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy()
       const {
@@ -1610,9 +1613,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void BindAuthenticatorRequest(
       mojo::PendingReceiver<blink::mojom::Authenticator> receiver);
 #endif
-
-  void BindSmsReceiverReceiver(
-      mojo::PendingReceiver<blink::mojom::SmsReceiver> receiver);
 
   // service_manager::mojom::InterfaceProvider:
   void GetInterface(const std::string& interface_name,
