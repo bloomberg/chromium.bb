@@ -26,11 +26,13 @@ void ShowSafetyTipDialog(
     content::WebContents* web_contents,
     security_state::SafetyTipStatus safety_tip_status,
     const GURL& url,
+    const GURL& suggested_url,
     base::OnceCallback<void(SafetyTipInteraction)> close_callback) {
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents);
   auto delegate = std::make_unique<SafetyTipInfoBarDelegate>(
-      safety_tip_status, url, web_contents, std::move(close_callback));
+      safety_tip_status, url, suggested_url, web_contents,
+      std::move(close_callback));
   infobar_service->AddInfoBar(
       SafetyTipInfoBar::CreateInfoBar(std::move(delegate)));
 }
@@ -40,10 +42,12 @@ void ShowSafetyTipDialog(
 SafetyTipInfoBarDelegate::SafetyTipInfoBarDelegate(
     security_state::SafetyTipStatus safety_tip_status,
     const GURL& url,
+    const GURL& suggested_url,
     WebContents* web_contents,
     base::OnceCallback<void(SafetyTipInteraction)> close_callback)
     : safety_tip_status_(safety_tip_status),
       url_(url),
+      suggested_url_(suggested_url),
       close_callback_(std::move(close_callback)),
       web_contents_(web_contents) {}
 
@@ -52,7 +56,7 @@ SafetyTipInfoBarDelegate::~SafetyTipInfoBarDelegate() {
 }
 
 base::string16 SafetyTipInfoBarDelegate::GetMessageText() const {
-  return l10n_util::GetStringUTF16(IDS_PAGE_INFO_SAFETY_TIP_SUMMARY);
+  return GetSafetyTipTitle(safety_tip_status_, suggested_url_);
 }
 
 int SafetyTipInfoBarDelegate::GetButtons() const {
@@ -63,7 +67,8 @@ base::string16 SafetyTipInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
   switch (button) {
     case BUTTON_OK:
-      return l10n_util::GetStringUTF16(IDS_SAFETY_TIP_ANDROID_LEAVE_BUTTON);
+      return l10n_util::GetStringUTF16(
+          GetSafetyTipLeaveButtonId(safety_tip_status_));
     case BUTTON_CANCEL:
       return l10n_util::GetStringUTF16(IDS_SAFETY_TIP_ANDROID_IGNORE_BUTTON);
     case BUTTON_NONE:
@@ -75,7 +80,10 @@ base::string16 SafetyTipInfoBarDelegate::GetButtonLabel(
 
 bool SafetyTipInfoBarDelegate::Accept() {
   action_taken_ = SafetyTipInteraction::kLeaveSite;
-  LeaveSite(web_contents_);
+  auto url = safety_tip_status_ == security_state::SafetyTipStatus::kLookalike
+                 ? suggested_url_
+                 : GURL(safety_tips::kSafeUrl);
+  LeaveSite(web_contents_, url);
   return true;
 }
 

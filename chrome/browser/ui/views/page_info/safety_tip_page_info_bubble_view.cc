@@ -26,6 +26,8 @@
 #include "ui/views/window/dialog_client_view.h"
 #include "url/gurl.h"
 
+using security_state::SafetyTipStatus;
+
 SafetyTipPageInfoBubbleView::SafetyTipPageInfoBubbleView(
     views::View* anchor_view,
     const gfx::Rect& anchor_rect,
@@ -33,20 +35,23 @@ SafetyTipPageInfoBubbleView::SafetyTipPageInfoBubbleView(
     content::WebContents* web_contents,
     security_state::SafetyTipStatus safety_tip_status,
     const GURL& url,
+    const GURL& suggested_url,
     base::OnceCallback<void(safety_tips::SafetyTipInteraction)> close_callback)
     : PageInfoBubbleViewBase(anchor_view,
                              anchor_rect,
                              parent_window,
                              PageInfoBubbleViewBase::BUBBLE_SAFETY_TIP,
                              web_contents),
+      safety_tip_status_(safety_tip_status),
       url_(url),
+      suggested_url_(suggested_url),
       close_callback_(std::move(close_callback)) {
   // Keep the bubble open until explicitly closed (or we navigate away, a tab is
   // created over it, etc).
   set_close_on_deactivate(false);
 
-  const base::string16 title_text = l10n_util::GetStringUTF16(
-      safety_tips::GetSafetyTipTitleId(safety_tip_status));
+  const base::string16 title_text =
+      safety_tips::GetSafetyTipTitle(safety_tip_status, suggested_url);
   set_window_title(title_text);
 
   views::BubbleDialogDelegateView::CreateBubble(this);
@@ -98,7 +103,8 @@ SafetyTipPageInfoBubbleView::SafetyTipPageInfoBubbleView(
   std::unique_ptr<views::Button> button(
       views::MdTextButton::CreateSecondaryUiBlueButton(
           this,
-          l10n_util::GetStringUTF16(IDS_PAGE_INFO_SAFETY_TIP_LEAVE_BUTTON)));
+          l10n_util::GetStringUTF16(
+              safety_tips::GetSafetyTipLeaveButtonId(safety_tip_status))));
   button->SetID(PageInfoBubbleView::VIEW_ID_PAGE_INFO_BUTTON_LEAVE_SITE);
   leave_button_ =
       layout->AddView(std::move(button), 1, 1, views::GridLayout::TRAILING,
@@ -153,7 +159,10 @@ void SafetyTipPageInfoBubbleView::ButtonPressed(views::Button* button,
   switch (button->GetID()) {
     case PageInfoBubbleView::VIEW_ID_PAGE_INFO_BUTTON_LEAVE_SITE:
       action_taken_ = safety_tips::SafetyTipInteraction::kLeaveSite;
-      safety_tips::LeaveSite(web_contents());
+      auto url = safety_tip_status_ == SafetyTipStatus::kLookalike
+                     ? suggested_url_
+                     : GURL(safety_tips::kSafeUrl);
+      safety_tips::LeaveSite(web_contents(), url);
       return;
   }
   NOTREACHED();
@@ -165,6 +174,7 @@ void ShowSafetyTipDialog(
     content::WebContents* web_contents,
     security_state::SafetyTipStatus safety_tip_status,
     const GURL& virtual_url,
+    const GURL& suggested_url,
     base::OnceCallback<void(SafetyTipInteraction)> close_callback) {
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
   if (!browser)
@@ -182,7 +192,7 @@ void ShowSafetyTipDialog(
 
   views::BubbleDialogDelegateView* bubble = new SafetyTipPageInfoBubbleView(
       configuration.anchor_view, anchor_rect, parent_view, web_contents,
-      safety_tip_status, virtual_url, std::move(close_callback));
+      safety_tip_status, virtual_url, suggested_url, std::move(close_callback));
 
   bubble->SetHighlightedButton(configuration.highlighted_button);
   bubble->SetArrow(configuration.bubble_arrow);
@@ -196,9 +206,10 @@ PageInfoBubbleViewBase* CreateSafetyTipBubbleForTesting(
     content::WebContents* web_contents,
     security_state::SafetyTipStatus safety_tip_status,
     const GURL& virtual_url,
+    const GURL& suggested_url,
     base::OnceCallback<void(safety_tips::SafetyTipInteraction)>
         close_callback) {
   return new SafetyTipPageInfoBubbleView(
       nullptr, gfx::Rect(), parent_view, web_contents, safety_tip_status,
-      virtual_url, std::move(close_callback));
+      virtual_url, suggested_url, std::move(close_callback));
 }

@@ -224,7 +224,8 @@ class SafetyTipPageInfoBubbleViewBrowserTest
         PageInfoBubbleViewBase::GetPageInfoBubbleForTesting();
     ASSERT_TRUE(page_info);
     EXPECT_EQ(page_info->GetWindowTitle(),
-              l10n_util::GetStringUTF16(IDS_PAGE_INFO_SAFETY_TIP_SUMMARY));
+              l10n_util::GetStringUTF16(
+                  IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_TITLE));
   }
 
   void CheckPageInfoDoesNotShowSafetyTipInfo(Browser* browser) {
@@ -233,7 +234,8 @@ class SafetyTipPageInfoBubbleViewBrowserTest
         PageInfoBubbleViewBase::GetPageInfoBubbleForTesting();
     ASSERT_TRUE(page_info);
     EXPECT_NE(page_info->GetWindowTitle(),
-              l10n_util::GetStringUTF16(IDS_PAGE_INFO_SAFETY_TIP_SUMMARY));
+              l10n_util::GetStringUTF16(
+                  IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_TITLE));
   }
 
  private:
@@ -398,14 +400,15 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
 }
 
 // Tests that Safety Tips trigger on lookalike domains that don't qualify for an
-// interstitial.
+// interstitial, but do not impact Page Info.
 IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
                        TriggersOnLookalike) {
-  // This domain is a top domain, but not top 500.
+  // This domain is a lookalike of a top domain not in the top 500.
   const GURL kNavigatedUrl = GetURL("googlé.sk");
   SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
   NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
   EXPECT_TRUE(IsUIShowingIfEnabled());
+  ASSERT_NO_FATAL_FAILURE(CheckPageInfoDoesNotShowSafetyTipInfo(browser()));
 }
 
 // Tests that Safety Tips trigger (or not) on lookalike domains with edit

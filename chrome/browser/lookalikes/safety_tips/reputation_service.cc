@@ -21,6 +21,7 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
+#include "url/url_constants.h"
 
 namespace {
 
@@ -40,7 +41,8 @@ const base::FeatureParam<bool> kEnableLookalikeEditDistanceSiteEngagement{
 bool ShouldTriggerSafetyTipFromLookalike(
     const GURL& url,
     const DomainInfo& navigated_domain,
-    const std::vector<DomainInfo>& engaged_sites) {
+    const std::vector<DomainInfo>& engaged_sites,
+    GURL* safe_url) {
   std::string matched_domain;
   LookalikeMatchType match_type;
 
@@ -55,6 +57,8 @@ bool ShouldTriggerSafetyTipFromLookalike(
     return false;
   }
 
+  *safe_url = GURL(std::string(url::kHttpScheme) +
+                   url::kStandardSchemeSeparator + matched_domain);
   // Edit distance has higher false positives, so it gets its own feature param
   if (match_type == LookalikeMatchType::kEditDistance) {
     return kEnableLookalikeEditDistance.Get();
@@ -222,14 +226,14 @@ void ReputationService::GetReputationStatusWithEngagedSites(
                    });
   if (already_engaged != engaged_sites.end()) {
     std::move(callback).Run(security_state::SafetyTipStatus::kNone,
-                            IsIgnored(url), url);
+                            IsIgnored(url), url, GURL());
     return;
   }
 
   // 2. Server-side blocklist check.
   security_state::SafetyTipStatus status = GetUrlBlockType(url);
   if (status != security_state::SafetyTipStatus::kNone) {
-    std::move(callback).Run(status, IsIgnored(url), url);
+    std::move(callback).Run(status, IsIgnored(url), url, GURL());
     return;
   }
 
@@ -238,21 +242,22 @@ void ReputationService::GetReputationStatusWithEngagedSites(
   if (navigated_domain.domain_and_registry.empty() ||
       lookalikes::IsTopDomain(navigated_domain)) {
     std::move(callback).Run(security_state::SafetyTipStatus::kNone,
-                            IsIgnored(url), url);
+                            IsIgnored(url), url, GURL());
     return;
   }
 
   // 4. Lookalike heuristics.
-  if (ShouldTriggerSafetyTipFromLookalike(url, navigated_domain,
-                                          engaged_sites)) {
+  GURL safe_url;
+  if (ShouldTriggerSafetyTipFromLookalike(url, navigated_domain, engaged_sites,
+                                          &safe_url)) {
     std::move(callback).Run(security_state::SafetyTipStatus::kLookalike,
-                            IsIgnored(url), url);
+                            IsIgnored(url), url, safe_url);
     return;
   }
 
   // TODO(crbug/984725): 5. Additional client-side heuristics
   std::move(callback).Run(security_state::SafetyTipStatus::kNone,
-                          IsIgnored(url), url);
+                          IsIgnored(url), url, GURL());
 }
 
 security_state::SafetyTipStatus GetUrlBlockType(const GURL& url) {

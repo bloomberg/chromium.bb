@@ -129,7 +129,8 @@ void ReputationWebContentsObserver::MaybeShowSafetyTip() {
 void ReputationWebContentsObserver::HandleReputationCheckResult(
     security_state::SafetyTipStatus safety_tip_status,
     bool user_ignored,
-    const GURL& url) {
+    const GURL& url,
+    const GURL& suggested_url) {
   UMA_HISTOGRAM_ENUMERATION("Security.SafetyTips.SafetyTipShown",
                             safety_tip_status);
 
@@ -162,7 +163,7 @@ void ReputationWebContentsObserver::HandleReputationCheckResult(
     return;
   }
   ShowSafetyTipDialog(
-      web_contents(), safety_tip_status, url,
+      web_contents(), safety_tip_status, url, suggested_url,
       base::BindOnce(OnSafetyTipClosed, safety_tip_status, base::Time::Now()));
 }
 
