@@ -2657,10 +2657,11 @@ void Element::RemovedFrom(ContainerNode& insertion_point) {
     if (ElementAnimations* element_animations = data->GetElementAnimations())
       element_animations->CssAnimations().Cancel();
 
-    if (data->IntersectionObserverData()) {
+    if (was_in_document && data->IntersectionObserverData()) {
       data->IntersectionObserverData()->ComputeIntersectionsForTarget(
           IntersectionObservation::kExplicitRootObserversNeedUpdate |
-          IntersectionObservation::kImplicitRootObserversNeedUpdate);
+          IntersectionObservation::kImplicitRootObserversNeedUpdate |
+          IntersectionObservation::kIgnoreDelay);
       GetDocument().EnsureIntersectionObserverController().RemoveTrackedElement(
           *this);
     }
