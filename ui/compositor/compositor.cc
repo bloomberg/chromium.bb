@@ -667,7 +667,7 @@ void Compositor::OnFrameTokenChanged(uint32_t frame_token) {
   NOTREACHED();
 }
 
-#if defined(USE_X11)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 void Compositor::OnCompleteSwapWithNewSize(const gfx::Size& size) {
   for (auto& observer : observer_list_)
     observer.OnCompositingCompleteSwapWithNewSize(this, size);
