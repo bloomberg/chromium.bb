@@ -17,8 +17,6 @@ source_set("badges") {
   sources = [
     "badge_button.h",
     "badge_button.mm",
-    "badge_button_action_handler.h",
-    "badge_button_action_handler.mm",
     "badge_button_factory.h",
     "badge_button_factory.mm",
     "badge_consumer.h",
