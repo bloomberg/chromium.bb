@@ -30,11 +30,6 @@ extern char __ehdr_start;
 
 // This function can be used to prevent a value or expression from being
 // optimized away by the compiler.
-//
-// This method is clang specific, hence the #error
-#ifndef __clang__
-#error "DoNotOptimize is clang specific method"
-#endif
 void DoNotOptimize(void* value) {
   __asm__ volatile("" : : "r,m"(value) : "memory");
 }
@@ -44,6 +39,9 @@ void DoNotOptimize(void* value) {
 // in the library file. DoNotOptimize method is applied to them at the
 // beginning of the decompression hook to ensure that the arrays are not
 // optimized away.
+//
+// TODO(https://crbug.com/998082): Check if dl_iterate_phdr can replace the
+// magic bytes approach.
 unsigned char g_dummy_cut_range_begin[8] = {0x2e, 0x2a, 0xee, 0xf6,
                                             0x45, 0x03, 0xd2, 0x50};
 unsigned char g_dummy_cut_range_end[8] = {0x52, 0x40, 0xeb, 0x9d,
@@ -291,9 +289,11 @@ void* ConvertDummyArrayToAddress(void* dummy_array) {
   return (void*)value;
 }
 
-void __attribute__((constructor(100))) InitLibraryDecompressor() {
+void __attribute__((constructor(0))) InitLibraryDecompressor() {
   // The constructor only works on 64 bit systems and as such expecting the
   // pointer size to be 8 bytes.
+  // The constructor priority is set to 0(the highest) to ensure that it starts
+  // as a first constructor.
   _Static_assert(sizeof(uint64_t) == sizeof(uintptr_t),
                  "Pointer size is not 8 bytes");
 
