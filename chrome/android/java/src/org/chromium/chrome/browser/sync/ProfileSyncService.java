@@ -58,14 +58,6 @@ public class ProfileSyncService {
         }
     }
 
-    /**
-     * Provider for the Android master sync flag.
-     */
-    interface MasterSyncEnabledProvider {
-        // Returns whether master sync is enabled.
-        public boolean isMasterSyncEnabled();
-    }
-
     private static final String TAG = "ProfileSyncService";
 
     private static final int[] ALL_SELECTABLE_TYPES = new int[] {
@@ -89,11 +81,6 @@ public class ProfileSyncService {
      * {@link init()}.
      */
     private long mNativeProfileSyncServiceAndroid;
-
-    /**
-     * An object that knows whether Android's master sync setting is enabled.
-     */
-    private MasterSyncEnabledProvider mMasterSyncEnabledProvider;
 
     private int mSetupInProgressCounter;
 
@@ -618,30 +605,6 @@ public class ProfileSyncService {
     public void setPassphrasePrompted(boolean prompted) {
         ProfileSyncServiceJni.get().setPassphrasePrompted(
                 mNativeProfileSyncServiceAndroid, ProfileSyncService.this, prompted);
-    }
-
-    /**
-     * Set the MasterSyncEnabledProvider for ProfileSyncService.
-     *
-     * This method is intentionally package-scope and should only be called once.
-     */
-    void setMasterSyncEnabledProvider(MasterSyncEnabledProvider masterSyncEnabledProvider) {
-        ThreadUtils.assertOnUiThread();
-        assert mMasterSyncEnabledProvider == null;
-        mMasterSyncEnabledProvider = masterSyncEnabledProvider;
-    }
-
-    /**
-     * Returns whether Android's master sync setting is enabled.
-     */
-    @CalledByNative
-    public boolean isMasterSyncEnabled() {
-        ThreadUtils.assertOnUiThread();
-        // TODO(maxbogue): ensure that this method is never called before
-        // setMasterSyncEnabledProvider() and change the line below to an assert.
-        // See http://crbug.com/570569
-        if (mMasterSyncEnabledProvider == null) return true;
-        return mMasterSyncEnabledProvider.isMasterSyncEnabled();
     }
 
     /**
