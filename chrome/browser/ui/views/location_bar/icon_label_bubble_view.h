@@ -98,6 +98,10 @@ class IconLabelBubbleView : public views::InkDropObserver,
     next_element_interior_padding_ = padding;
   }
 
+  void set_grow_animation_starting_width_for_testing(int width) {
+    grow_animation_starting_width_ = width;
+  }
+
  protected:
   static constexpr int kOpenTimeMS = 150;
 
@@ -238,6 +242,9 @@ class IconLabelBubbleView : public views::InkDropObserver,
   bool is_animation_paused_ = false;
   double pause_animation_state_ = 0.0;
   double open_state_fraction_ = 0.0;
+  // This is used to offset the label animation by the current width (e.g. the
+  // icon). Set before animation begins in AnimateIn().
+  int grow_animation_starting_width_ = 0;
 
   ScopedObserver<ui::MaterialDesignController,
                  ui::MaterialDesignControllerObserver>
