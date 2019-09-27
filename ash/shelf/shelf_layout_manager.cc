@@ -1408,11 +1408,19 @@ void ShelfLayoutManager::CalculateTargetBounds(
         shelf_width - target_bounds->nav_bounds_in_shelf.size().width() -
         home_button_edge_spacing - ShelfConfig::Get()->app_icon_group_margin() -
         status_size.width();
-    const int hotseat_x = base::i18n::IsRTL()
-                              ? target_bounds->nav_bounds_in_shelf.x() -
-                                    home_button_edge_spacing - hotseat_width
-                              : target_bounds->nav_bounds_in_shelf.right() +
-                                    home_button_edge_spacing;
+
+    int hotseat_x = base::i18n::IsRTL()
+                        ? target_bounds->nav_bounds_in_shelf.x() -
+                              home_button_edge_spacing - hotseat_width
+                        : target_bounds->nav_bounds_in_shelf.right() +
+                              home_button_edge_spacing;
+
+    if (state_.hotseat_state != HotseatState::kShown) {
+      // Give the hotseat more space if it is shown outside of the shelf.
+      hotseat_width = available_bounds.width();
+      hotseat_x = 0;
+    }
+
     hotseat_origin = gfx::Point(hotseat_x, hotseat_y);
 
     hotseat_height = hotseat_size;
