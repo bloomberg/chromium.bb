@@ -24751,6 +24751,7 @@ Called by update_net_error_codes.py.-->
   <int value="3034"
       label="MediaSourceGroupEndTimestampDecreaseWithinMediaSegment"/>
   <int value="3035" label="TextFragmentAnchorTapToDismiss"/>
+  <int value="3036" label="XRIsSessionSupported"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">

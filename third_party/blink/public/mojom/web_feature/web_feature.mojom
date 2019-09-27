@@ -2416,6 +2416,7 @@ enum WebFeature {
   kThirdPartyBroadcastChannel = 3033,
   kMediaSourceGroupEndTimestampDecreaseWithinMediaSegment = 3034,
   kTextFragmentAnchorTapToDismiss = 3035,
+  kXRIsSessionSupported = 3036,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
