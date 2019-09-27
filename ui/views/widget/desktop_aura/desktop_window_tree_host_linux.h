@@ -20,6 +20,10 @@ class VIEWS_EXPORT DesktopWindowTreeHostLinux
       DesktopNativeWidgetAura* desktop_native_widget_aura);
   ~DesktopWindowTreeHostLinux() override;
 
+  // This must be called before the window is created, because the visual cannot
+  // be changed after. Useful for X11. Not in use for Wayland.
+  void SetPendingXVisualId(int x_visual_id);
+
  protected:
   // Adjusts |requested_size| to avoid the WM "feature" where setting the
   // window size to the monitor size causes the WM to set the EWMH for
@@ -35,6 +39,11 @@ class VIEWS_EXPORT DesktopWindowTreeHostLinux
   void AddAdditionalInitProperties(
       const Widget::InitParams& params,
       ui::PlatformWindowInitProperties* properties) override;
+
+  // X11 may set set a visual id for the system tray icon before the host is
+  // initialized. This value will be passed down to PlatformWindow during
+  // initialization of the host.
+  base::Optional<int> pending_x_visual_id_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopWindowTreeHostLinux);
 };

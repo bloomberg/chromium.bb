@@ -184,6 +184,7 @@ void XWindow::Init(const Configuration& config) {
   }
 
   Visual* visual = CopyFromParent;
+  SetVisualId(config.visual_id);
   int depth = CopyFromParent;
   Colormap colormap = CopyFromParent;
   ui::XVisualManager* visual_manager = ui::XVisualManager::GetInstance();
@@ -1540,6 +1541,14 @@ void XWindow::UnconfineCursor() {
   pointer_barriers_.fill(x11::None);
 
   has_pointer_barriers_ = false;
+}
+
+void XWindow::SetVisualId(base::Optional<int> visual_id) {
+  if (!visual_id.has_value())
+    return;
+
+  DCHECK_GE(visual_id.value(), 0);
+  visual_id_ = visual_id.value();
 }
 
 }  // namespace ui

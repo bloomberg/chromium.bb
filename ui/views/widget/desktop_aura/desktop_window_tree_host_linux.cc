@@ -21,6 +21,10 @@ DesktopWindowTreeHostLinux::DesktopWindowTreeHostLinux(
 
 DesktopWindowTreeHostLinux::~DesktopWindowTreeHostLinux() = default;
 
+void DesktopWindowTreeHostLinux::SetPendingXVisualId(int x_visual_id) {
+  pending_x_visual_id_ = x_visual_id;
+}
+
 gfx::Size DesktopWindowTreeHostLinux::AdjustSizeForDisplay(
     const gfx::Size& requested_size_in_pixels) {
   std::vector<display::Display> displays =
@@ -78,6 +82,8 @@ void DesktopWindowTreeHostLinux::AddAdditionalInitProperties(
   properties->wm_class_name = params.wm_class_name;
   properties->wm_class_class = params.wm_class_class;
   properties->wm_role_name = params.wm_role_name;
+
+  properties->x_visual_id = pending_x_visual_id_;
 }
 
 }  // namespace views
