@@ -884,9 +884,16 @@ def GeneralTemplates(site_config):
   # bvt-tast-cq and bvt-tast-informational suites on real hardware in the lab.
   site_config.AddTemplate(
       'tast_vm_canary_tests',
-      tast_vm_tests=[config_lib.TastVMTestConfig(
-          'tast_vm_canary',
-          ['(!disabled && ("group:mainline" || !"group:*"))'])],
+      tast_vm_tests=[
+          config_lib.TastVMTestConfig(
+              'tast_vm_canary_critical',
+              ['(!disabled && ("group:mainline" || !"group:*") && '
+               '!informational)']),
+          config_lib.TastVMTestConfig(
+              'tast_vm_canary_informational',
+              ['(!disabled && ("group:mainline" || !"group:*") && '
+               'informational)']),
+      ],
   )
 
   site_config.AddTemplate(
