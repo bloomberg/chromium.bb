@@ -740,11 +740,7 @@
       'chromeos-kevin-compile-rel': 'cros_chrome_sdk_headless_ozone',
       'chromeos-kevin-experimental-rel': 'cros_chrome_sdk_headless_ozone',
       'chromeos-kevin-rel': 'cros_chrome_sdk_headless_ozone',
-      'linux-chromeos-rel': 'chromeos_with_codecs_release_trybot',
-      # Replicate linux-chromeos-rel for code coverage experiment.
-      # TODO(crbug.com/1000367): Remove once linux-chromeos-coverage-rel is
-      # folded into linux-chromeos-rel.
-      'linux-chromeos-coverage-rel': 'chromeos_with_codecs_release_trybot_code_coverage',
+      'linux-chromeos-rel': 'chromeos_with_codecs_release_trybot_code_coverage',
       'linux-chromeos-compile-dbg': 'chromeos_with_codecs_debug_bot',
       'linux-chromeos-dbg': 'chromeos_with_codecs_debug_bot',
     },
@@ -1301,6 +1297,7 @@
       'chromeos_with_codecs', 'release_trybot', 'no_symbols',
     ],
 
+    # Keep in sync with chromeos_with_codecs_release_trybot.
     'chromeos_with_codecs_release_trybot_code_coverage': [
       'chromeos_with_codecs', 'release_trybot', 'no_symbols',
       'use_clang_coverage', 'partial_code_coverage_instrumentation',
@@ -1654,6 +1651,8 @@
       'gpu_tests', 'release_trybot', 'no_symbols', 'use_dummy_lastchange',
     ],
 
+    # Keep in sync with
+    # gpu_tests_release_trybot_no_symbols_use_dummy_lastchange.
     'gpu_tests_release_trybot_no_symbols_use_dummy_lastchange_code_coverage': [
       'gpu_tests', 'release_trybot', 'no_symbols', 'use_dummy_lastchange',
       'use_clang_coverage', 'partial_code_coverage_instrumentation',
