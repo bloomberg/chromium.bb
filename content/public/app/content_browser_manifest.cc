@@ -172,7 +172,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "blink.mojom.QuotaDispatcherHost",
                   "blink.mojom.WebSocketConnector",
                   "media.mojom.VideoDecodePerfHistory",
-                  "payments.mojom.PaymentManager",
                   "shape_detection.mojom.BarcodeDetectionProvider",
                   "shape_detection.mojom.FaceDetectionProvider",
                   "shape_detection.mojom.TextDetection"})
@@ -189,7 +188,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "blink.mojom.WebUsbService", "blink.mojom.SmsReceiver",
                   "blink.mojom.WebSocketConnector",
                   "media.mojom.VideoDecodePerfHistory",
-                  "payments.mojom.PaymentManager",
                   "shape_detection.mojom.BarcodeDetectionProvider",
                   "shape_detection.mojom.FaceDetectionProvider",
                   "shape_detection.mojom.TextDetection"})
@@ -204,7 +202,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "media.mojom.VideoDecodePerfHistory",
                   "network.mojom.RestrictedCookieManager",
                   "blink.mojom.WebSocketConnector",
-                  "payments.mojom.PaymentManager",
                   "shape_detection.mojom.BarcodeDetectionProvider",
                   "shape_detection.mojom.FaceDetectionProvider",
                   "shape_detection.mojom.TextDetection"})
@@ -252,7 +249,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "mojom.ProcessInternalsHandler",
                   "network.mojom.RestrictedCookieManager",
                   "blink.mojom.WebSocketConnector",
-                  "payments.mojom.PaymentManager",
                   "payments.mojom.PaymentRequest",
                   "resource_coordinator.mojom.DocumentCoordinationUnit",
                   "shape_detection.mojom.BarcodeDetectionProvider",

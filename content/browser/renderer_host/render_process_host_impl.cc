@@ -1956,6 +1956,13 @@ void RenderProcessHostImpl::CreatePermissionService(
                                                       std::move(receiver));
 }
 
+void RenderProcessHostImpl::CreatePaymentManager(
+    mojo::PendingReceiver<payments::mojom::PaymentManager> receiver) {
+  static_cast<StoragePartitionImpl*>(GetStoragePartition())
+      ->GetPaymentAppContext()
+      ->CreatePaymentManager(std::move(receiver));
+}
+
 void RenderProcessHostImpl::CancelProcessShutdownDelayForUnload() {
   if (IsKeepAliveRefCountDisabled())
     return;

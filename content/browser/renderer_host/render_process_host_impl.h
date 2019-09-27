@@ -519,6 +519,12 @@ class CONTENT_EXPORT RenderProcessHostImpl
       const url::Origin& origin,
       mojo::PendingReceiver<blink::mojom::PermissionService> receiver) override;
 
+  // Binds |receiver| to the PaymentManager instance owned by
+  // |storage_partition_impl_|, and is used by workers via
+  // BrowserInterfaceBroker.
+  void CreatePaymentManager(
+      mojo::PendingReceiver<payments::mojom::PaymentManager> receiver) override;
+
   // Adds a CORB (Cross-Origin Read Blocking) exception for |process_id|.  The
   // exception will be removed when the corresponding RenderProcessHostImpl is
   // destroyed (see |cleanup_corb_exception_for_plugin_upon_destruction_|).

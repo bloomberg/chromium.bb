@@ -426,6 +426,15 @@ void DedicatedWorkerHost::CreateIdleManager(
       ->CreateService(std::move(receiver));
 }
 
+void DedicatedWorkerHost::CreatePaymentManager(
+    mojo::PendingReceiver<payments::mojom::PaymentManager> receiver) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  RenderProcessHost* worker_process_host = GetProcessHost();
+  if (!worker_process_host)
+    return;
+  worker_process_host->CreatePaymentManager(std::move(receiver));
+}
+
 void DedicatedWorkerHost::ObserveNetworkServiceCrash(
     StoragePartitionImpl* storage_partition_impl) {
   auto params = network::mojom::URLLoaderFactoryParams::New();
