@@ -51,6 +51,23 @@ def Create(input_proto, output_proto, _config):
   return controller.RETURN_CODE_SUCCESS
 
 
+@faux.all_empty
+@validate.require('build_target.name')
+@validate.validation_complete
+def CreateSimpleChromeSysroot(input_proto, output_proto, _config):
+  """Create a sysroot for SimpleChrome to use."""
+  build_target_name = input_proto.build_target.name
+  use_flags = input_proto.use_flags
+
+  sysroot_tar_path = sysroot.CreateSimpleChromeSysroot(build_target_name,
+                                                       use_flags)
+  # By assigning this Path variable to the tar path, the tar file will be
+  # copied out to the input_proto's ResultPath location.
+  output_proto.sysroot_archive.path = sysroot_tar_path
+
+  return controller.RETURN_CODE_SUCCESS
+
+
 def _MockFailedPackagesResponse(_input_proto, output_proto, _config):
   """Mock error response that populates failed packages."""
   pkg = output_proto.failed_packages.add()
