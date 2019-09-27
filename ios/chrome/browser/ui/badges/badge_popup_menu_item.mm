@@ -146,7 +146,7 @@ const CGFloat kVerticalMargin = 8;
 
     _trailingImageView = [[UIImageView alloc]
         initWithImage:
-            [[UIImage imageNamed:@"badge_menu_item_gear"]
+            [[UIImage imageNamed:@"infobar_settings_icon"]
                 imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]];
     _trailingImageView.translatesAutoresizingMaskIntoConstraints = NO;
     _trailingImageView.tintColor = [UIColor colorNamed:kBlueColor];
