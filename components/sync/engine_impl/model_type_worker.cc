@@ -669,12 +669,17 @@ void ModelTypeWorker::DecryptStoredEntities() {
     decrypted_update->entity = std::move(it->second->entity);
     decrypted_update->entity->specifics = std::move(specifics);
     // TODO(crbug.com/1007199): Reconcile with AdaptGuidForBookmarks().
-    if (decrypted_update->entity->specifics.has_bookmark() &&
-        !decrypted_update->entity->specifics.bookmark().has_guid() &&
-        base::IsValidGUID(
-            decrypted_update->entity->originator_client_item_id)) {
-      decrypted_update->entity->specifics.mutable_bookmark()->set_guid(
-          decrypted_update->entity->originator_client_item_id);
+    if (decrypted_update->entity->specifics.has_bookmark()) {
+      if (decrypted_update->entity->specifics.bookmark().has_guid()) {
+        LogGUIDSource(BookmarkGUIDSource::kSpecifics);
+      } else if (base::IsValidGUID(
+                     decrypted_update->entity->originator_client_item_id)) {
+        decrypted_update->entity->specifics.mutable_bookmark()->set_guid(
+            decrypted_update->entity->originator_client_item_id);
+        LogGUIDSource(BookmarkGUIDSource::kValidOCII);
+      } else {
+        LogGUIDSource(BookmarkGUIDSource::kLeftEmpty);
+      }
     }
     pending_updates_.push_back(std::move(decrypted_update));
     it = entries_pending_decryption_.erase(it);
