@@ -3494,6 +3494,35 @@ TEST_P(HotseatShelfLayoutManagerTest, ShowingOverviewFromShownAnimatesOnce) {
   state_watcher_->CheckEqual({HotseatState::kExtended, HotseatState::kShown});
 }
 
+// Tests that the hotseat is not flush with the bottom of the screen when home
+// launcher is showing.
+TEST_P(HotseatShelfLayoutManagerTest, HotseatNotFlushWhenHomeLauncherShowing) {
+  GetPrimaryShelf()->SetAutoHideBehavior(GetParam());
+  TabletModeControllerTestApi().EnterTabletMode();
+  const int display_height =
+      display::Screen::GetScreen()->GetPrimaryDisplay().bounds().height();
+  const int hotseat_bottom = GetPrimaryShelf()
+                                 ->shelf_widget()
+                                 ->hotseat_widget()
+                                 ->GetWindowBoundsInScreen()
+                                 .bottom();
+  EXPECT_LT(hotseat_bottom, display_height);
+}
+
+// Tests that the hotseat is flush with the bottom of the screen when in
+// clamshell mode and the shelf is oriented on the bottom.
+TEST_P(HotseatShelfLayoutManagerTest, HotseatFlushWithScreenBottomInClamshell) {
+  GetPrimaryShelf()->SetAutoHideBehavior(GetParam());
+  const int display_height =
+      display::Screen::GetScreen()->GetPrimaryDisplay().bounds().height();
+  const int hotseat_bottom = GetPrimaryShelf()
+                                 ->shelf_widget()
+                                 ->hotseat_widget()
+                                 ->GetWindowBoundsInScreen()
+                                 .bottom();
+  EXPECT_EQ(hotseat_bottom, display_height);
+}
+
 class ShelfLayoutManagerKeyboardTest : public AshTestBase {
  public:
   ShelfLayoutManagerKeyboardTest() = default;

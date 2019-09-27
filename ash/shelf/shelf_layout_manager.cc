@@ -1389,10 +1389,17 @@ void ShelfLayoutManager::CalculateTargetBounds(
     int hotseat_y;
     const int hotseat_size = Shell::Get()->shelf_config()->hotseat_size();
     switch (state_.hotseat_state) {
-      case HotseatState::kShown:
-        // Show the hotseat co-altitude with ShelfView.
-        hotseat_y = 0;
-        break;
+      case HotseatState::kShown: {
+        // When the hotseat state is HotseatState::kShown in tablet mode, the
+        // home launcher is showing. Elevate the hotseat a few px to match the
+        // navigation and status area.
+        const bool use_padding = chromeos::switches::ShouldShowShelfHotseat() &&
+                                 IsTabletModeEnabled();
+        hotseat_y =
+            use_padding
+                ? -Shell::Get()->shelf_config()->hotseat_bottom_padding()
+                : 0;
+      } break;
       case HotseatState::kHidden:
         // Show the hotseat offscreen.
         hotseat_y = hotseat_size;
