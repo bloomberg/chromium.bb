@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/memory/scoped_refptr.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
+#include "media/base/color_plane_layout.h"
 #include "media/base/format_utils.h"
 #include "media/base/video_frame.h"
 #include "media/gpu/buildflags.h"
@@ -318,7 +319,7 @@ base::Optional<VideoFrameLayout> CreateVideoFrameLayout(VideoPixelFormat format,
                                                         const gfx::Size& size) {
   const size_t num_planes = VideoFrame::NumPlanes(format);
 
-  std::vector<VideoFrameLayout::Plane> planes(num_planes);
+  std::vector<ColorPlaneLayout> planes(num_planes);
   const auto strides = VideoFrame::ComputeStrides(format, size);
   size_t offset = 0;
   for (size_t i = 0; i < num_planes; ++i) {
