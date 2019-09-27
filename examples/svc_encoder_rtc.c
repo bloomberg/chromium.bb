@@ -30,9 +30,9 @@ static const char *exec_name;
 
 void usage_exit(void) { exit(EXIT_FAILURE); }
 
-static int mode_to_num_temporal_layers[9] = { 1, 2, 3, 3, 2, 1, 1, 3, 3 };
-static int mode_to_num_spatial_layers[9] = { 1, 1, 1, 1, 1, 2, 3, 3, 3 };
-static int mode_to_num_layers[9] = { 1, 2, 3, 3, 2, 2, 3, 9, 9 };
+static int mode_to_num_temporal_layers[10] = { 1, 2, 3, 3, 2, 1, 1, 3, 3, 3 };
+static int mode_to_num_spatial_layers[10] = { 1, 1, 1, 1, 1, 2, 3, 3, 3, 3 };
+static int mode_to_num_layers[10] = { 1, 2, 3, 3, 2, 2, 3, 9, 9, 9 };
 
 // For rate control encoding stats.
 struct RateControlMetrics {
@@ -248,7 +248,8 @@ static void printout_rate_control_summary(struct RateControlMetrics *rc,
 static int set_layer_pattern(int layering_mode, int superframe_cnt,
                              aom_svc_layer_id_t *layer_id,
                              aom_svc_ref_frame_config_t *ref_frame_config,
-                             int *use_svc_control, int spatial_layer_id) {
+                             int *use_svc_control, int spatial_layer_id,
+                             int is_key_frame, int ksvc_mode) {
   int i;
   int shift = (layering_mode == 7) ? 2 : 0;
   *use_svc_control = 1;
@@ -262,6 +263,13 @@ static int set_layer_pattern(int layering_mode, int superframe_cnt,
   int layer_flags = AOM_EFLAG_NO_REF_LAST2 | AOM_EFLAG_NO_REF_LAST3 |
                     AOM_EFLAG_NO_REF_ARF | AOM_EFLAG_NO_REF_BWD |
                     AOM_EFLAG_NO_REF_ARF2;
+  if (ksvc_mode) {
+    // Same pattern as case 8.
+    layering_mode = 8;
+    if (!is_key_frame)
+      // No inter-layer prediction on inter-frames.
+      layer_flags |= AOM_EFLAG_NO_REF_GF;
+  }
   switch (layering_mode) {
     case 0:
       // 1-layer: update LAST on every frame, reference LAST and GF.
@@ -728,6 +736,8 @@ int main(int argc, char **argv) {
   aom_codec_control(&codec, AV1E_SET_GF_CBR_BOOST_PCT, 0);
   aom_codec_control(&codec, AV1E_SET_ENABLE_CDEF, 1);
   aom_codec_control(&codec, AV1E_SET_ENABLE_ORDER_HINT, 0);
+  aom_codec_control(&codec, AV1E_SET_ENABLE_TPL_MODEL, 0);
+  aom_codec_control(&codec, AV1E_SET_DELTAQ_MODE, 0);
 
   svc_params.number_spatial_layers = ss_number_layers;
   svc_params.number_temporal_layers = ts_number_layers;
@@ -764,6 +774,7 @@ int main(int argc, char **argv) {
   while (frame_avail || got_data) {
     struct aom_usec_timer timer;
     frame_avail = read_frame(&input_ctx, &raw);
+    int is_key_frame = (frame_cnt % cfg.kf_max_dist) == 0;
     // Loop over spatial layers.
     for (unsigned int slx = 0; slx < ss_number_layers; slx++) {
       aom_codec_iter_t iter = NULL;
@@ -773,7 +784,8 @@ int main(int argc, char **argv) {
       // Set the reference/update flags, layer_id, and reference_map
       // buffer index.
       flags = set_layer_pattern(layering_mode, frame_cnt, &layer_id,
-                                &ref_frame_config, &use_svc_control, slx);
+                                &ref_frame_config, &use_svc_control, slx,
+                                is_key_frame, (layering_mode == 9));
       aom_codec_control(&codec, AV1E_SET_SVC_LAYER_ID, &layer_id);
       if (use_svc_control)
         aom_codec_control(&codec, AV1E_SET_SVC_REF_FRAME_CONFIG,
