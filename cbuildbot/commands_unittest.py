@@ -293,7 +293,8 @@ class SkylabHWLabCommandsTest(cros_test_lib.RunCommandTestCase):
         wait_cmd, output=self._fakeWaitJson('COMPLETED', False))
 
     result = commands.RunSkylabHWTestSuite(
-        build, suite, board, pool=pool, wait_for_results=True)
+        build, suite, board, pool=pool, timeout_mins=None,
+        wait_for_results=True)
     self.assertEqual(result.to_raise, None)
     self.assertEqual(result.json_dump_result, None)
 
@@ -329,7 +330,8 @@ class SkylabHWLabCommandsTest(cros_test_lib.RunCommandTestCase):
     self.rc.AddCmdResult(wait_cmd, output=self._fakeWaitJson('COMPLETED', True))
 
     result = commands.RunSkylabHWTestSuite(
-        build, suite, board, pool=pool, wait_for_results=True)
+        build, suite, board, pool=pool, timeout_mins=None,
+        wait_for_results=True)
     error = result.to_raise
     self.assertTrue(isinstance(error, failures_lib.TestFailure))
     self.assertTrue('Suite failed' in error.message)
