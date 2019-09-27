@@ -549,19 +549,6 @@ const char* ModelTypeToHistogramSuffix(ModelType model_type) {
   return kModelTypeInfoMap[model_type].notification_type;
 }
 
-// The normal rules about histograms apply here.  Always append to the bottom of
-// the list, and be careful to not reuse integer values that have already been
-// assigned.
-//
-// Don't forget to update the "SyncModelTypes" enum in enums.xml when you make
-// changes to this list.
-int ModelTypeToHistogramInt(ModelType model_type) {
-  DCHECK_GE(model_type, UNSPECIFIED);
-  DCHECK_LT(model_type, ModelType::NUM_ENTRIES);
-  return static_cast<int>(
-      kModelTypeInfoMap[model_type].model_type_histogram_val);
-}
-
 ModelTypeForHistograms ModelTypeHistogramValue(ModelType model_type) {
   DCHECK_GE(model_type, UNSPECIFIED);
   DCHECK_LT(model_type, ModelType::NUM_ENTRIES);
@@ -572,7 +559,7 @@ int ModelTypeToStableIdentifier(ModelType model_type) {
   DCHECK_GE(model_type, UNSPECIFIED);
   DCHECK_LT(model_type, ModelType::NUM_ENTRIES);
   // Make sure the value is stable and positive.
-  return ModelTypeToHistogramInt(model_type) + 1;
+  return static_cast<int>(ModelTypeHistogramValue(model_type)) + 1;
 }
 
 std::unique_ptr<base::Value> ModelTypeToValue(ModelType model_type) {

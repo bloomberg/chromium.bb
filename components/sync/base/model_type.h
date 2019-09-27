@@ -364,9 +364,6 @@ const char* ModelTypeToHistogramSuffix(ModelType model_type);
 // The mapping from ModelType to integer is defined here. It defines a
 // completely different order than the ModelType enum itself. The mapping should
 // match the SyncModelTypes mapping from integer to labels defined in enums.xml.
-// TODO(crbug.com/1007293): Update all histogram recording sites to use
-// ModelTypeHistogramValue() and remove ModelTypeToHistogramInt();
-int ModelTypeToHistogramInt(ModelType model_type);
 ModelTypeForHistograms ModelTypeHistogramValue(ModelType model_type);
 
 // Returns for every model_type a positive unique integer that is stable over

@@ -2248,7 +2248,7 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
   OnSyncStarting();
   histogram_tester.ExpectBucketCount(
       "Sync.PersistedModelTypeIdMismatch",
-      /*bucket=*/ModelTypeToHistogramInt(GetModelType()), /*count=*/1);
+      /*bucket=*/ModelTypeHistogramValue(GetModelType()), /*count=*/1);
 
   // Model should still be ready to sync.
   ASSERT_TRUE(type_processor()->IsModelReadyToSyncForTest());
@@ -2282,7 +2282,7 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
 
     histogram_tester.ExpectBucketCount(
         "Sync.ModelTypeOrphanMetadata",
-        /*bucket=*/ModelTypeToHistogramInt(GetModelType()), /*count=*/1);
+        /*bucket=*/ModelTypeHistogramValue(GetModelType()), /*count=*/1);
   }
 
   // Orphan metadata should have been deleted.
@@ -2303,7 +2303,7 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
   // The processor should not report orphan again in UMA.
   histogram_tester.ExpectBucketCount(
       "Sync.ModelTypeOrphanMetadata",
-      /*bucket=*/ModelTypeToHistogramInt(GetModelType()), /*count=*/0);
+      /*bucket=*/ModelTypeHistogramValue(GetModelType()), /*count=*/0);
 }
 
 TEST_F(

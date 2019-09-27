@@ -184,12 +184,8 @@ void ClientTagBasedModelTypeProcessor::ConnectIfReady() {
     // belong to the current syncing client.
     if (model_type_state_.progress_marker().data_type_id() !=
         GetSpecificsFieldNumberFromModelType(type_)) {
-      // This is not strongly typed because historically,
-      // ModelTypeToHistogramInt() defines quite a different order from the
-      // type_ enum.
       UMA_HISTOGRAM_ENUMERATION("Sync.PersistedModelTypeIdMismatch",
-                                ModelTypeToHistogramInt(type_),
-                                static_cast<int>(ModelType::NUM_ENTRIES));
+                                ModelTypeHistogramValue(type_));
     }
     ClearMetadataAndResetState();
 
@@ -427,8 +423,7 @@ void ClientTagBasedModelTypeProcessor::Put(
   } else if (entity->MatchesData(*data)) {
     // Ignore changes that don't actually change anything.
     UMA_HISTOGRAM_ENUMERATION("Sync.ModelTypeRedundantPut",
-                              ModelTypeToHistogramInt(type_),
-                              static_cast<int>(ModelType::NUM_ENTRIES));
+                              ModelTypeHistogramValue(type_));
     return;
   }
 
@@ -1198,8 +1193,7 @@ void ClientTagBasedModelTypeProcessor::ConsumeDataBatch(
     // had been called.
     storage_keys_to_untrack.push_back(storage_key);
     UMA_HISTOGRAM_ENUMERATION("Sync.ModelTypeOrphanMetadata",
-                              ModelTypeToHistogramInt(type_),
-                              static_cast<int>(ModelType::NUM_ENTRIES));
+                              ModelTypeHistogramValue(type_));
   }
 
   if (storage_keys_to_untrack.empty()) {
