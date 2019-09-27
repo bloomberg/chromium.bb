@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_MIME_SNIFFING_URL_LOADER_H_
-#define CONTENT_COMMON_MIME_SNIFFING_URL_LOADER_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_COMMON_LOADER_MIME_SNIFFING_URL_LOADER_H_
+#define THIRD_PARTY_BLINK_PUBLIC_COMMON_LOADER_MIME_SNIFFING_URL_LOADER_H_
 
 #include <tuple>
 
@@ -11,7 +11,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_piece.h"
-#include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -23,9 +22,10 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "third_party/blink/public/common/common_export.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 
-namespace content {
+namespace blink {
 
 class MimeSniffingThrottle;
 
@@ -54,7 +54,7 @@ class MimeSniffingThrottle;
 //           the source loader to |this| are stopped. All incoming messages from
 //           the destination (through network::mojom::URLLoader) are ignored in
 //           this state.
-class CONTENT_EXPORT MimeSniffingURLLoader
+class BLINK_COMMON_EXPORT MimeSniffingURLLoader
     : public network::mojom::URLLoaderClient,
       public network::mojom::URLLoader {
  public:
@@ -154,6 +154,6 @@ class CONTENT_EXPORT MimeSniffingURLLoader
   DISALLOW_COPY_AND_ASSIGN(MimeSniffingURLLoader);
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_COMMON_MIME_SNIFFING_URL_LOADER_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_COMMON_LOADER_MIME_SNIFFING_URL_LOADER_H_

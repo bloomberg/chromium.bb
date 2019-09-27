@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/mime_sniffing_url_loader.h"
+#include "third_party/blink/public/common/loader/mime_sniffing_url_loader.h"
 
 #include "base/bind.h"
-#include "content/common/mime_sniffing_throttle.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/base/mime_sniffer.h"
+#include "third_party/blink/public/common/loader/mime_sniffing_throttle.h"
 
-namespace content {
+namespace blink {
 
 // static
 const char MimeSniffingURLLoader::kDefaultMimeType[] = "text/plain";
@@ -369,4 +369,4 @@ void MimeSniffingURLLoader::Abort() {
   // has already been destroyed by some reason.
 }
 
-}  // namespace content
+}  // namespace blink

@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_MIME_SNIFFING_THROTTLE_H_
-#define CONTENT_COMMON_MIME_SNIFFING_THROTTLE_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_COMMON_LOADER_MIME_SNIFFING_THROTTLE_H_
+#define THIRD_PARTY_BLINK_PUBLIC_COMMON_LOADER_MIME_SNIFFING_THROTTLE_H_
 
 #include "base/memory/weak_ptr.h"
-#include "content/common/content_export.h"
+#include "third_party/blink/public/common/common_export.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 
-namespace content {
+namespace blink {
 
 // Throttle for mime type sniffing. This may intercept the request and
 // modify the response's mime type in the response head.
-class CONTENT_EXPORT MimeSniffingThrottle : public blink::URLLoaderThrottle {
+class BLINK_COMMON_EXPORT MimeSniffingThrottle : public URLLoaderThrottle {
  public:
   // |task_runner| is used to bind the right task runner for handling incoming
   // IPC in MimeSniffingLoader. |task_runner| is supposed to be bound to the
@@ -36,6 +36,6 @@ class CONTENT_EXPORT MimeSniffingThrottle : public blink::URLLoaderThrottle {
   base::WeakPtrFactory<MimeSniffingThrottle> weak_factory_{this};
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_COMMON_MIME_SNIFFING_THROTTLE_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_COMMON_LOADER_MIME_SNIFFING_THROTTLE_H_

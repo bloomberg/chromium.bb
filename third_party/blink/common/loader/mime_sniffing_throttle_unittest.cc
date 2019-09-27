@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/mime_sniffing_throttle.h"
+#include "third_party/blink/public/common/loader/mime_sniffing_throttle.h"
 
 #include <memory>
 
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
-#include "content/common/mime_sniffing_url_loader.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -17,10 +16,11 @@
 #include "services/network/test/test_url_loader_client.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/loader/mime_sniffing_url_loader.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "url/gurl.h"
 
-namespace content {
+namespace blink {
 
 namespace {
 
@@ -341,10 +341,12 @@ TEST_F(MimeSniffingThrottleTest, EmptyBody) {
   EXPECT_TRUE(defer);
   EXPECT_TRUE(delegate->is_intercepted());
 
-  mojo::DataPipe pipe;
+  mojo::ScopedDataPipeProducerHandle producer;
+  mojo::ScopedDataPipeConsumerHandle consumer;
+  CHECK_EQ(MOJO_RESULT_OK, mojo::CreateDataPipe(nullptr, &producer, &consumer));
   delegate->source_loader_client_remote()->OnStartLoadingResponseBody(
-      std::move(pipe.consumer_handle));
-  pipe.producer_handle.reset();  // The pipe is empty.
+      std::move(consumer));
+  producer.reset();  // The pipe is empty.
 
   delegate->source_loader_client_remote()->OnComplete(
       network::URLLoaderCompletionStatus());
@@ -515,4 +517,4 @@ TEST_F(MimeSniffingThrottleTest, Abort_NoBodyPipe) {
   task_environment_.RunUntilIdle();
 }
 
-}  // namespace content
+}  // namespace blink

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/mime_sniffing_throttle.h"
+#include "third_party/blink/public/common/loader/mime_sniffing_throttle.h"
 
-#include "content/common/mime_sniffing_url_loader.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/mime_sniffer.h"
+#include "third_party/blink/public/common/loader/mime_sniffing_url_loader.h"
 
-namespace content {
+namespace blink {
 
 MimeSniffingThrottle::MimeSniffingThrottle(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
@@ -62,4 +62,4 @@ void MimeSniffingThrottle::ResumeWithNewResponseHead(
   delegate_->Resume();
 }
 
-}  // namespace content
+}  // namespace blink
