@@ -54208,11 +54208,12 @@ Called by update_net_trust_anchors.py.-->
 
 <enum name="SecurityLevel">
   <int value="0" label="None"/>
-  <int value="1" label="Non-secure with warning"/>
+  <int value="1" label="HTTP with warning (deprecated)"/>
   <int value="2" label="Secure with EV certificate"/>
   <int value="3" label="Secure"/>
   <int value="4" label="Secure with policy-installed certificate"/>
   <int value="5" label="Dangerous"/>
+  <int value="6" label="Warning"/>
 </enum>
 
 <enum name="SelectFileDialogScope">
