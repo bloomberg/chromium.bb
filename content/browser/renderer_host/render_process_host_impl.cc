@@ -4629,9 +4629,9 @@ void RenderProcessHostImpl::CreateMediaStreamTrackMetricsHost(
 
 #if BUILDFLAG(ENABLE_MDNS)
 void RenderProcessHostImpl::CreateMdnsResponder(
-    network::mojom::MdnsResponderRequest request) {
+    mojo::PendingReceiver<network::mojom::MdnsResponder> receiver) {
   GetStoragePartition()->GetNetworkContext()->CreateMdnsResponder(
-      std::move(request));
+      std::move(receiver));
 }
 #endif  // BUILDFLAG(ENABLE_MDNS)
 
