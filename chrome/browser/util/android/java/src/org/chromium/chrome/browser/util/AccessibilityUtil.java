@@ -25,7 +25,7 @@ public class AccessibilityUtil {
     private static Boolean sIsAccessibilityEnabled;
     private static ActivityStateListener sActivityStateListener;
 
-    private AccessibilityUtil() { }
+    private AccessibilityUtil() {}
 
     /**
      * Checks to see that this device has accessibility and touch exploration enabled.
