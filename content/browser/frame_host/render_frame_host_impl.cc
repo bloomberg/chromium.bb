@@ -104,7 +104,6 @@
 #include "content/browser/speech/speech_recognition_dispatcher_host.h"
 #include "content/browser/speech/speech_synthesis_impl.h"
 #include "content/browser/storage_partition_impl.h"
-#include "content/browser/wake_lock/wake_lock_service_impl.h"
 #include "content/browser/web_package/bundled_exchanges_handle.h"
 #include "content/browser/web_package/prefetched_signed_exchange_cache.h"
 #include "content/browser/webauth/authenticator_environment_impl.h"
@@ -4452,9 +4451,6 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
       GetProcess()->GetID(),
       GetProcess()->GetStoragePartition()->GetFileSystemContext(),
       ChromeBlobStorageContext::GetFor(GetProcess()->GetBrowserContext())));
-
-  registry_->AddInterface(base::BindRepeating(&WakeLockServiceImpl::Create,
-                                              base::Unretained(this)));
 
   if (base::FeatureList::IsEnabled(blink::features::kNativeFileSystemAPI)) {
     registry_->AddInterface(base::BindRepeating(

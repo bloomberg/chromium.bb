@@ -15,6 +15,7 @@
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/screen_enumeration/screen_enumeration_impl.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
+#include "content/browser/wake_lock/wake_lock_service_impl.h"
 #include "content/browser/worker_host/dedicated_worker_host.h"
 #include "content/browser/worker_host/shared_worker_host.h"
 #include "content/public/browser/browser_context.h"
@@ -40,6 +41,7 @@
 #include "third_party/blink/public/mojom/picture_in_picture/picture_in_picture.mojom.h"
 #include "third_party/blink/public/mojom/presentation/presentation.mojom.h"
 #include "third_party/blink/public/mojom/speech/speech_synthesis.mojom.h"
+#include "third_party/blink/public/mojom/wake_lock/wake_lock.mojom.h"
 #include "third_party/blink/public/mojom/webaudio/audio_context_manager.mojom.h"
 #include "third_party/blink/public/mojom/webauthn/authenticator.mojom.h"
 #include "third_party/blink/public/mojom/webauthn/virtual_authenticator.mojom.h"
@@ -165,6 +167,8 @@ void PopulateBinderMapWithContext(
       base::BindRepeating(&KeyboardLockServiceImpl::CreateMojoService));
   map->Add<blink::mojom::PictureInPictureService>(
       base::BindRepeating(&PictureInPictureServiceImpl::Create));
+  map->Add<blink::mojom::WakeLockService>(
+      base::BindRepeating(&WakeLockServiceImpl::Create));
   GetContentClient()->browser()->RegisterBrowserInterfaceBindersForFrame(map);
 }
 
