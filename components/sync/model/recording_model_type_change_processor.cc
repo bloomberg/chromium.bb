@@ -44,7 +44,7 @@ void RecordingModelTypeChangeProcessor::UntrackEntityForStorageKey(
 }
 
 void RecordingModelTypeChangeProcessor::UntrackEntityForClientTagHash(
-    const std::string& client_tag_hash) {
+    const ClientTagHash& client_tag_hash) {
   untrack_for_client_tag_hash_set_.insert(client_tag_hash);
 }
 

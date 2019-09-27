@@ -20,6 +20,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/memory_usage_estimator.h"
 #include "components/sync/base/cancelation_signal.h"
+#include "components/sync/base/client_tag_hash.h"
 #include "components/sync/base/hash_util.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/time.h"
@@ -40,14 +41,14 @@ bool ContainsDuplicate(std::vector<std::string> values) {
 }
 
 bool ContainsDuplicateClientTagHash(const UpdateResponseDataList& updates) {
-  std::vector<std::string> client_tag_hashes;
+  std::vector<std::string> raw_client_tag_hashes;
   for (const std::unique_ptr<UpdateResponseData>& update : updates) {
     DCHECK(update);
-    if (!update->entity->client_tag_hash.empty()) {
-      client_tag_hashes.push_back(update->entity->client_tag_hash);
+    if (!update->entity->client_tag_hash.value().empty()) {
+      raw_client_tag_hashes.push_back(update->entity->client_tag_hash.value());
     }
   }
-  return ContainsDuplicate(std::move(client_tag_hashes));
+  return ContainsDuplicate(std::move(raw_client_tag_hashes));
 }
 
 bool ContainsDuplicateServerID(const UpdateResponseDataList& updates) {
@@ -108,13 +109,11 @@ void AdaptUniquePositionForBookmarks(const sync_pb::SyncEntity& update_entity,
       missing_originator_fields = true;
     }
 
-    std::string suffix =
-        missing_originator_fields
-            ? UniquePosition::RandomSuffix()
-            : GenerateSyncableHash(
-                  syncer::GetModelType(update_entity),
-                  /*client_tag=*/update_entity.originator_cache_guid() +
-                      update_entity.originator_client_item_id());
+    std::string suffix = missing_originator_fields
+                             ? UniquePosition::RandomSuffix()
+                             : GenerateSyncableBookmarkHash(
+                                   update_entity.originator_cache_guid(),
+                                   update_entity.originator_client_item_id());
 
     if (update_entity.has_position_in_parent()) {
       data->unique_position =
@@ -357,7 +356,8 @@ ModelTypeWorker::DecryptionStatus ModelTypeWorker::PopulateUpdateResponseData(
   auto data = std::make_unique<syncer::EntityData>();
   // Prepare the message for the model thread.
   data->id = update_entity.id_string();
-  data->client_tag_hash = update_entity.client_defined_unique_tag();
+  data->client_tag_hash =
+      ClientTagHash::FromHashed(update_entity.client_defined_unique_tag());
   data->creation_time = ProtoTimeToTime(update_entity.ctime());
   data->modification_time = ProtoTimeToTime(update_entity.mtime());
   data->name = update_entity.name();
@@ -716,11 +716,11 @@ void ModelTypeWorker::DeduplicatePendingUpdatesBasedOnClientTagHash() {
   UpdateResponseDataList candidates;
   pending_updates_.swap(candidates);
 
-  std::map<std::string, size_t> tag_to_index;
+  std::map<ClientTagHash, size_t> tag_to_index;
   for (std::unique_ptr<UpdateResponseData>& candidate : candidates) {
     DCHECK(candidate);
     // Items with empty client tag hash just get passed through.
-    if (candidate->entity->client_tag_hash.empty()) {
+    if (candidate->entity->client_tag_hash.value().empty()) {
       pending_updates_.push_back(std::move(candidate));
       continue;
     }

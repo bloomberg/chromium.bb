@@ -18,6 +18,8 @@
 #include "components/sync/protocol/entity_metadata.pb.h"
 
 namespace syncer {
+
+class ClientTagHash;
 struct CommitRequestData;
 struct CommitResponseData;
 struct UpdateResponseData;
@@ -31,7 +33,7 @@ class ProcessorEntity {
   // Construct an instance representing a new locally-created item.
   static std::unique_ptr<ProcessorEntity> CreateNew(
       const std::string& storage_key,
-      const std::string& client_tag_hash,
+      const ClientTagHash& client_tag_hash,
       const std::string& id,
       base::Time creation_time);
 
