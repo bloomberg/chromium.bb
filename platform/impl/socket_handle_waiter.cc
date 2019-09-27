@@ -49,11 +49,17 @@ void SocketHandleWaiter::OnHandleDeletion(Subscriber* subscriber,
   if (it != handle_mappings_.end()) {
     handle_mappings_.erase(it);
     if (!disable_locking_for_testing) {
+      handles_being_deleted_.push_back(handle);
+
       // This code will allow us to block completion of the socket destructor
       // (and subsequent invalidation of pointers to this socket) until we no
       // longer are waiting on a SELECT(...) call to it, since we only signal
       // this condition variable's wait(...) to proceed outside of SELECT(...).
-      handle_deletion_block_.wait(lock);
+      handle_deletion_block_.wait(lock, [this, handle]() {
+        return std::find(handles_being_deleted_.begin(),
+                         handles_being_deleted_.end(),
+                         handle) == handles_being_deleted_.end();
+      });
     }
   }
 }
@@ -76,6 +82,7 @@ Error SocketHandleWaiter::ProcessHandles(const Clock::duration& timeout) {
   std::vector<SocketHandleRef> handles;
   {
     std::lock_guard<std::mutex> lock(mutex_);
+    handles_being_deleted_.clear();
     handle_deletion_block_.notify_all();
     handles.reserve(handle_mappings_.size());
     for (const auto& pair : handle_mappings_) {
@@ -85,7 +92,13 @@ Error SocketHandleWaiter::ProcessHandles(const Clock::duration& timeout) {
 
   ErrorOr<std::vector<SocketHandleRef>> changed_handles =
       AwaitSocketsReadable(handles, timeout);
-  handle_deletion_block_.notify_all();
+
+  {
+    std::lock_guard<std::mutex> lock(mutex_);
+    handles_being_deleted_.clear();
+    handle_deletion_block_.notify_all();
+  }
+
   if (changed_handles.is_error()) {
     return changed_handles.error();
   }

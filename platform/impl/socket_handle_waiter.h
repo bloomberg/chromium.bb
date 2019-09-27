@@ -85,6 +85,10 @@ class SocketHandleWaiter {
   // Blocks deletion of handles until they are no longer being watched.
   std::condition_variable handle_deletion_block_;
 
+  // Set of handles currently being deleted, for ensuring handle_deletion_block_
+  // does not exit prematurely.
+  std::vector<SocketHandleRef> handles_being_deleted_;
+
   // Set of all socket handles currently being watched, mapped to the subscriber
   // that is watching them.
   std::unordered_map<SocketHandleRef, Subscriber*, SocketHandleHash>
