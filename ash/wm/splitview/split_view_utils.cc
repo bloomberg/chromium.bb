@@ -355,4 +355,64 @@ bool IsPhysicalLeftOrTop(SplitViewController::SnapPosition position) {
                           : SplitViewController::RIGHT);
 }
 
+SplitViewController::SnapPosition GetSnapPosition(
+    aura::Window* window,
+    const gfx::Point& location_in_screen,
+    const gfx::Rect& work_area) {
+  if (!ShouldAllowSplitView() || !CanSnapInSplitview(window))
+    return SplitViewController::NONE;
+
+  const bool is_landscape = IsCurrentScreenOrientationLandscape();
+  const bool is_primary = IsCurrentScreenOrientationPrimary();
+
+  // Check to see if the current event location |location_in_screen|is within
+  // the drag indicators bounds.
+  gfx::Rect area(work_area);
+  if (is_landscape) {
+    const int screen_edge_inset_for_drag =
+        area.width() * kHighlightScreenPrimaryAxisRatio +
+        kHighlightScreenEdgePaddingDp;
+    area.Inset(screen_edge_inset_for_drag, 0);
+    if (location_in_screen.x() <= area.x()) {
+      return is_primary ? SplitViewController::LEFT
+                        : SplitViewController::RIGHT;
+    }
+    if (location_in_screen.x() >= area.right() - 1) {
+      return is_primary ? SplitViewController::RIGHT
+                        : SplitViewController::LEFT;
+    }
+    return SplitViewController::NONE;
+  }
+
+  const int screen_edge_inset_for_drag =
+      area.height() * kHighlightScreenPrimaryAxisRatio +
+      kHighlightScreenEdgePaddingDp;
+  area.Inset(0, screen_edge_inset_for_drag);
+  if (location_in_screen.y() <= area.y())
+    return is_primary ? SplitViewController::LEFT : SplitViewController::RIGHT;
+  if (location_in_screen.y() >= area.bottom() - 1)
+    return is_primary ? SplitViewController::RIGHT : SplitViewController::LEFT;
+  return SplitViewController::NONE;
+}
+
+IndicatorState GetIndicatorState(
+    aura::Window* window,
+    SplitViewController::SnapPosition snap_position) {
+  if (!ShouldAllowSplitView())
+    return IndicatorState::kNone;
+
+  switch (snap_position) {
+    case SplitViewController::LEFT:
+      return IndicatorState::kPreviewAreaLeft;
+    case SplitViewController::RIGHT:
+      return IndicatorState::kPreviewAreaRight;
+    case SplitViewController::NONE:
+      return CanSnapInSplitview(window) ? IndicatorState::kDragArea
+                                        : IndicatorState::kCannotSnap;
+  }
+
+  NOTREACHED();
+  return IndicatorState::kNone;
+}
+
 }  // namespace ash

@@ -560,24 +560,9 @@ void OverviewWindowDragController::UpdateDragIndicatorsAndOverviewGrid(
   if (!ShouldUpdateDragIndicatorsOrSnap(location_in_screen))
     return;
 
-  IndicatorState indicator_state;
-  if (CanSnapInSplitview(item_->GetWindow())) {
-    snap_position_ = GetSnapPosition(location_in_screen);
-    switch (snap_position_) {
-      case SplitViewController::NONE:
-        indicator_state = IndicatorState::kDragArea;
-        break;
-      case SplitViewController::LEFT:
-        indicator_state = IndicatorState::kPreviewAreaLeft;
-        break;
-      case SplitViewController::RIGHT:
-        indicator_state = IndicatorState::kPreviewAreaRight;
-        break;
-    }
-  } else {
-    snap_position_ = SplitViewController::NONE;
-    indicator_state = IndicatorState::kCannotSnap;
-  }
+  snap_position_ = GetSnapPosition(location_in_screen);
+  IndicatorState indicator_state =
+      GetIndicatorState(item_->GetWindow(), snap_position_);
   item_->overview_grid()->RearrangeDuringDrag(item_->GetWindow(),
                                               indicator_state);
   overview_session_->SetSplitViewDragIndicatorsIndicatorState(
@@ -676,38 +661,9 @@ SplitViewController::SnapPosition OverviewWindowDragController::GetSnapPosition(
       return default_snap_position;
   }
 
-  if (is_landscape) {
-    // The window can be snapped if it reaches close enough to the screen
-    // edge of the screen (on primary axis). The edge insets are a fixed ratio
-    // of the screen plus some padding. This matches the drag indicators ui.
-    const int screen_edge_inset_for_drag =
-        area.width() * kHighlightScreenPrimaryAxisRatio +
-        kHighlightScreenEdgePaddingDp;
-    area.Inset(screen_edge_inset_for_drag, 0);
-    if (location_in_screen.x() <= area.x()) {
-      return is_primary ? SplitViewController::LEFT
-                        : SplitViewController::RIGHT;
-    }
-    if (location_in_screen.x() >= area.right() - 1) {
-      return is_primary ? SplitViewController::RIGHT
-                        : SplitViewController::LEFT;
-    }
-    return SplitViewController::NONE;
-  } else {
-    const int screen_edge_inset_for_drag =
-        area.height() * kHighlightScreenPrimaryAxisRatio +
-        kHighlightScreenEdgePaddingDp;
-    area.Inset(0, screen_edge_inset_for_drag);
-    if (location_in_screen.y() <= area.y()) {
-      return is_primary ? SplitViewController::LEFT
-                        : SplitViewController::RIGHT;
-    }
-    if (location_in_screen.y() >= area.bottom() - 1) {
-      return is_primary ? SplitViewController::RIGHT
-                        : SplitViewController::LEFT;
-    }
-    return SplitViewController::NONE;
-  }
+  return ::ash::GetSnapPosition(
+      item_->GetWindow(),
+      gfx::Point(location_in_screen.x(), location_in_screen.y()), area);
 }
 
 void OverviewWindowDragController::SnapWindow(
