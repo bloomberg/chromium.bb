@@ -3667,13 +3667,15 @@ void WebContentsImpl::SetHistoryOffsetAndLengthForView(
       render_view_host->GetRoutingID(), history_offset, history_length));
 }
 
-void WebContentsImpl::ReloadFocusedFrame(bool bypass_cache) {
+void WebContentsImpl::ReloadFocusedFrame() {
   RenderFrameHost* focused_frame = GetFocusedFrame();
   if (!focused_frame)
     return;
 
-  focused_frame->Send(new FrameMsg_Reload(
-      focused_frame->GetRoutingID(), bypass_cache));
+  // TODO(https://crbug.com/995428). This function is deprecated. Navigations
+  // are handled from the browser process. There is no need to send an IPC to
+  // the renderer process for this.
+  focused_frame->Send(new FrameMsg_Reload(focused_frame->GetRoutingID()));
 }
 
 std::vector<mojo::Remote<blink::mojom::PauseSubresourceLoadingHandle>>

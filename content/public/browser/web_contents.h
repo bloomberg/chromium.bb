@@ -629,7 +629,7 @@ class WebContents : public PageNavigator,
   virtual std::unique_ptr<WebContents> Clone() = 0;
 
   // Reloads the focused frame.
-  virtual void ReloadFocusedFrame(bool bypass_cache) = 0;
+  virtual void ReloadFocusedFrame() = 0;
 
   // Attains PauseSubresourceLoadingHandles for each frame in the web contents.
   // As long as these handles are not deleted, subresources will continue to be
