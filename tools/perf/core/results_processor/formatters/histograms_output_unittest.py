@@ -9,7 +9,7 @@ import os
 import shutil
 import tempfile
 
-from core.results_processor import histograms_output
+from core.results_processor.formatters import histograms_output
 from core.results_processor import command_line
 from core.results_processor import testing
 

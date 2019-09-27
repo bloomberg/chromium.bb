@@ -7,7 +7,7 @@
 import codecs
 import os
 
-from core.results_processor import histograms_output
+from core.results_processor.formatters import histograms_output
 from tracing_build import vulcanize_histograms_viewer
 
 

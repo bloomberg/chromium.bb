@@ -5,7 +5,7 @@
 import copy
 import unittest
 
-from core.results_processor import json3_output
+from core.results_processor.formatters import json3_output
 from core.results_processor import testing
 
 
