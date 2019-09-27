@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "components/services/filesystem/public/mojom/directory.mojom.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/zlib/google/zip.h"
 #include "third_party/zlib/google/zip_reader.h"
 
@@ -43,26 +44,24 @@ std::string PathToMojoString(const base::FilePath& path) {
 }
 
 // Modifies output_dir to point to the final directory.
-bool CreateDirectory(filesystem::mojom::DirectoryPtr* output_dir,
+bool CreateDirectory(filesystem::mojom::Directory* output_dir,
                      const base::FilePath& path) {
   base::File::Error err = base::File::Error::FILE_OK;
-  return (*output_dir)
-             ->OpenDirectory(PathToMojoString(path), mojo::NullReceiver(),
-                             filesystem::mojom::kFlagOpenAlways, &err) &&
+  return output_dir->OpenDirectory(PathToMojoString(path), mojo::NullReceiver(),
+                                   filesystem::mojom::kFlagOpenAlways, &err) &&
          err == base::File::Error::FILE_OK;
 }
 
 std::unique_ptr<zip::WriterDelegate> MakeFileWriterDelegateNoParent(
-    filesystem::mojom::DirectoryPtr* output_dir,
+    filesystem::mojom::Directory* output_dir,
     const base::FilePath& path) {
   auto file = std::make_unique<base::File>();
   base::File::Error err;
-  if (!(*output_dir)
-           ->OpenFileHandle(PathToMojoString(path),
-                            filesystem::mojom::kFlagCreate |
-                                filesystem::mojom::kFlagWrite |
-                                filesystem::mojom::kFlagWriteAttributes,
-                            &err, file.get()) ||
+  if (!output_dir->OpenFileHandle(PathToMojoString(path),
+                                  filesystem::mojom::kFlagCreate |
+                                      filesystem::mojom::kFlagWrite |
+                                      filesystem::mojom::kFlagWriteAttributes,
+                                  &err, file.get()) ||
       err != base::File::Error::FILE_OK) {
     return std::make_unique<DudWriterDelegate>();
   }
@@ -70,20 +69,19 @@ std::unique_ptr<zip::WriterDelegate> MakeFileWriterDelegateNoParent(
 }
 
 std::unique_ptr<zip::WriterDelegate> MakeFileWriterDelegate(
-    filesystem::mojom::DirectoryPtr* output_dir,
+    filesystem::mojom::Directory* output_dir,
     const base::FilePath& path) {
   if (path == path.BaseName())
     return MakeFileWriterDelegateNoParent(output_dir, path);
-  filesystem::mojom::DirectoryPtr parent;
+  mojo::Remote<filesystem::mojom::Directory> parent;
   base::File::Error err;
-  if (!(*output_dir)
-           ->OpenDirectory(PathToMojoString(path.DirName()),
-                           mojo::MakeRequest(&parent),
-                           filesystem::mojom::kFlagOpenAlways, &err) ||
+  if (!output_dir->OpenDirectory(PathToMojoString(path.DirName()),
+                                 parent.BindNewPipeAndPassReceiver(),
+                                 filesystem::mojom::kFlagOpenAlways, &err) ||
       err != base::File::Error::FILE_OK) {
     return std::make_unique<DudWriterDelegate>();
   }
-  return MakeFileWriterDelegateNoParent(&parent, path.BaseName());
+  return MakeFileWriterDelegateNoParent(parent.get(), path.BaseName());
 }
 
 bool FilterNoFiles(const base::FilePath& unused) {
@@ -106,22 +104,28 @@ UnzipperImpl::UnzipperImpl(mojo::PendingReceiver<mojom::Unzipper> receiver)
 
 UnzipperImpl::~UnzipperImpl() = default;
 
-void UnzipperImpl::Unzip(base::File zip_file,
-                         filesystem::mojom::DirectoryPtr output_dir,
-                         UnzipCallback callback) {
+void UnzipperImpl::Unzip(
+    base::File zip_file,
+    mojo::PendingRemote<filesystem::mojom::Directory> output_dir_remote,
+    UnzipCallback callback) {
   DCHECK(zip_file.IsValid());
+  mojo::Remote<filesystem::mojom::Directory> output_dir(
+      std::move(output_dir_remote));
   std::move(callback).Run(zip::UnzipWithFilterAndWriters(
       zip_file.GetPlatformFile(),
-      base::BindRepeating(&MakeFileWriterDelegate, &output_dir),
-      base::BindRepeating(&CreateDirectory, &output_dir),
+      base::BindRepeating(&MakeFileWriterDelegate, output_dir.get()),
+      base::BindRepeating(&CreateDirectory, output_dir.get()),
       base::BindRepeating(&FilterNoFiles), /*log_skipped_files=*/false));
 }
 
-void UnzipperImpl::UnzipWithFilter(base::File zip_file,
-                                   filesystem::mojom::DirectoryPtr output_dir,
-                                   mojom::UnzipFilterPtr filter,
-                                   UnzipCallback callback) {
+void UnzipperImpl::UnzipWithFilter(
+    base::File zip_file,
+    mojo::PendingRemote<filesystem::mojom::Directory> output_dir_remote,
+    mojom::UnzipFilterPtr filter,
+    UnzipCallback callback) {
   DCHECK(zip_file.IsValid());
+  mojo::Remote<filesystem::mojom::Directory> output_dir(
+      std::move(output_dir_remote));
 
   // Note that we pass a pointer to |filter| below, as it is a repeating
   // callback and transferring its value would cause the callback to fail when
@@ -130,8 +134,8 @@ void UnzipperImpl::UnzipWithFilter(base::File zip_file,
   // the method returns.
   std::move(callback).Run(zip::UnzipWithFilterAndWriters(
       zip_file.GetPlatformFile(),
-      base::BindRepeating(&MakeFileWriterDelegate, &output_dir),
-      base::BindRepeating(&CreateDirectory, &output_dir),
+      base::BindRepeating(&MakeFileWriterDelegate, output_dir.get()),
+      base::BindRepeating(&CreateDirectory, output_dir.get()),
       base::BindRepeating(&FilterWithFilterPtr, &filter),
       /*log_skipped_files=*/false));
 }

@@ -20,7 +20,7 @@
 #include "components/services/filesystem/lock_table.h"
 #include "components/services/unzip/public/mojom/unzipper.mojom.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 
 namespace unzip {
 
@@ -111,10 +111,10 @@ void DoUnzipWithFilter(
     return;
   }
 
-  filesystem::mojom::DirectoryPtr directory_ptr;
-  mojo::MakeStrongBinding(
+  mojo::PendingRemote<filesystem::mojom::Directory> directory_remote;
+  mojo::MakeSelfOwnedReceiver(
       std::make_unique<filesystem::DirectoryImpl>(output_dir, nullptr, nullptr),
-      mojo::MakeRequest(&directory_ptr));
+      directory_remote.InitWithNewPipeAndPassReceiver());
 
   // |result_callback| is shared between the connection error handler and the
   // Unzip call using a refcounted UnzipParams object that owns
@@ -128,7 +128,7 @@ void DoUnzipWithFilter(
 
   if (filter_callback.is_null()) {
     unzip_params->unzipper()->Unzip(std::move(zip_file),
-                                    std::move(directory_ptr),
+                                    std::move(directory_remote),
                                     base::BindOnce(&UnzipDone, unzip_params));
     return;
   }
@@ -138,7 +138,7 @@ void DoUnzipWithFilter(
       mojo::MakeRequest(&unzip_filter_ptr), filter_callback));
 
   unzip_params->unzipper()->UnzipWithFilter(
-      std::move(zip_file), std::move(directory_ptr),
+      std::move(zip_file), std::move(directory_remote),
       std::move(unzip_filter_ptr), base::BindOnce(&UnzipDone, unzip_params));
 }
 
