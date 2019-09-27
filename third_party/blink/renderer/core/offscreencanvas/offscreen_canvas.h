@@ -46,9 +46,11 @@ class CORE_EXPORT OffscreenCanvas final
   USING_PRE_FINALIZER(OffscreenCanvas, Dispose);
 
  public:
-  static OffscreenCanvas* Create(unsigned width, unsigned height);
+  static OffscreenCanvas* Create(ExecutionContext*,
+                                 unsigned width,
+                                 unsigned height);
 
-  explicit OffscreenCanvas(const IntSize&);
+  OffscreenCanvas(ExecutionContext*, const IntSize&);
   ~OffscreenCanvas() override;
   void Dispose();
 
@@ -70,6 +72,7 @@ class CORE_EXPORT OffscreenCanvas final
   void RecordTransfer();
 
   void SetPlaceholderCanvasId(DOMNodeId canvas_id);
+  void DeregisterFromAnimationFrameProvider();
   DOMNodeId PlaceholderCanvasId() const { return placeholder_canvas_id_; }
   bool HasPlaceholderCanvas() const;
   bool IsNeutered() const override { return is_neutered_; }
@@ -111,6 +114,7 @@ class CORE_EXPORT OffscreenCanvas final
   void FinalizeFrame() override {}
   void DetachContext() override { context_ = nullptr; }
   CanvasRenderingContext* RenderingContext() const override { return context_; }
+
   void PushFrameIfNeeded();
   void PushFrame(scoped_refptr<CanvasResource> frame,
                  const SkIRect& damage_rect) override;

@@ -332,6 +332,7 @@ void CanvasResourceDispatcher::OnBeginFrame(
     return;
   }
 
+  // TODO(fserb): should EnqueueMicrotask.
   if (Client())
     Client()->BeginFrame();
   // TODO(eseckler): Tell |sink_| if we did not draw during the BeginFrame.
