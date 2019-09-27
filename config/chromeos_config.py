@@ -1336,6 +1336,8 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.release_afdo_verify,
       boards=['eve'],
       chrome_afdo_verify=True,
+      afdo_use=False,
+      useflags=config_lib.append_useflags(['afdo_verify']),
       # Start at 7 hours after benchmark-afdo-generate, to
       # give the builder enough time to finish.
       schedule='0 5/12 * * *',

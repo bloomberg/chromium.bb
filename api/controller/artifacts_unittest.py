@@ -751,6 +751,8 @@ class BundleAFDOGenerationArtifactsTestCase(
     osutils.SafeMakedirs(temp_dir)
     self.output_dir = os.path.join(self.tempdir, 'output_dir')
     osutils.SafeMakedirs(self.output_dir)
+    self.chrome_root = os.path.join(self.tempdir, 'chrome_root')
+    osutils.SafeMakedirs(self.chrome_root)
     self.build_target = 'board'
     self.valid_artifact_type = toolchain_pb2.ORDERFILE
     self.invalid_artifact_type = toolchain_pb2.NONE_TYPE
@@ -759,19 +761,20 @@ class BundleAFDOGenerationArtifactsTestCase(
 
     self.response = artifacts_pb2.BundleResponse()
 
-  def _GetRequest(self, chroot=None, build_target=None, output_dir=None,
-                  artifact_type=None):
+  def _GetRequest(self, chroot=None, build_target=None, chrome_root=None,
+                  output_dir=None, artifact_type=None):
     """Helper to create a request message instance.
 
     Args:
       chroot (str): The chroot path.
       build_target (str): The build target name.
+      chrome_root (str): The path to Chrome root.
       output_dir (str): The output directory.
       artifact_type (artifacts_pb2.AFDOArtifactType):
       The type of the artifact.
     """
     return artifacts_pb2.BundleChromeAFDORequest(
-        chroot={'path': chroot},
+        chroot={'path': chroot, 'chrome_dir': chrome_root},
         build_target={'name': build_target},
         output_dir=output_dir,
         artifact_type=artifact_type,
@@ -783,6 +786,7 @@ class BundleAFDOGenerationArtifactsTestCase(
                              'BundleAFDOGenerationArtifacts')
     request = self._GetRequest(chroot=self.chroot_dir,
                                build_target=self.build_target,
+                               chrome_root=self.chrome_root,
                                output_dir=self.output_dir,
                                artifact_type=self.valid_artifact_type)
     artifacts.BundleAFDOGenerationArtifacts(request, self.response,
@@ -792,6 +796,7 @@ class BundleAFDOGenerationArtifactsTestCase(
   def testNoBuildTarget(self):
     """Test no build target fails."""
     request = self._GetRequest(chroot=self.chroot_dir,
+                               chrome_root=self.chrome_root,
                                output_dir=self.output_dir,
                                artifact_type=self.valid_artifact_type)
     with self.assertRaises(cros_build_lib.DieSystemExit) as context:
@@ -800,10 +805,23 @@ class BundleAFDOGenerationArtifactsTestCase(
     self.assertEqual('build_target.name is required.',
                      str(context.exception))
 
+  def testNoChromeRoot(self):
+    """Test no chrome root fails."""
+    request = self._GetRequest(chroot=self.chroot_dir,
+                               build_target=self.build_target,
+                               output_dir=self.output_dir,
+                               artifact_type=self.valid_artifact_type)
+    with self.assertRaises(cros_build_lib.DieSystemExit) as context:
+      artifacts.BundleAFDOGenerationArtifacts(request, self.response,
+                                              self.api_config)
+    self.assertEqual('chroot.chrome_dir path does not exist: ',
+                     str(context.exception))
+
   def testNoOutputDir(self):
     """Test no output dir fails."""
     request = self._GetRequest(chroot=self.chroot_dir,
                                build_target=self.build_target,
+                               chrome_root=self.chrome_root,
                                artifact_type=self.valid_artifact_type)
     with self.assertRaises(cros_build_lib.DieSystemExit) as context:
       artifacts.BundleAFDOGenerationArtifacts(request, self.response,
@@ -815,6 +833,7 @@ class BundleAFDOGenerationArtifactsTestCase(
     """Test output directory not existing fails."""
     request = self._GetRequest(chroot=self.chroot_dir,
                                build_target=self.build_target,
+                               chrome_root=self.chrome_root,
                                output_dir=self.does_not_exist,
                                artifact_type=self.valid_artifact_type)
     with self.assertRaises(cros_build_lib.DieSystemExit) as context:
@@ -828,6 +847,7 @@ class BundleAFDOGenerationArtifactsTestCase(
     """Test no artifact type."""
     request = self._GetRequest(chroot=self.chroot_dir,
                                build_target=self.build_target,
+                               chrome_root=self.chrome_root,
                                output_dir=self.output_dir)
     with self.assertRaises(cros_build_lib.DieSystemExit) as context:
       artifacts.BundleAFDOGenerationArtifacts(request, self.response,
@@ -839,6 +859,7 @@ class BundleAFDOGenerationArtifactsTestCase(
     """Test passing wrong artifact type."""
     request = self._GetRequest(chroot=self.chroot_dir,
                                build_target=self.build_target,
+                               chrome_root=self.chrome_root,
                                output_dir=self.output_dir,
                                artifact_type=self.invalid_artifact_type)
     with self.assertRaises(cros_build_lib.DieSystemExit) as context:
@@ -857,6 +878,7 @@ class BundleAFDOGenerationArtifactsTestCase(
 
     request = self._GetRequest(chroot=self.chroot_dir,
                                build_target=self.build_target,
+                               chrome_root=self.chrome_root,
                                output_dir=self.output_dir,
                                artifact_type=artifact_type)
 

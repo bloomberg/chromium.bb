@@ -60,6 +60,7 @@ KERNEL_AFDO_COMPRESSION_SUFFIX = '.gcov.xz'
 TOOLCHAIN_UTILS_PATH = '/mnt/host/source/src/third_party/toolchain-utils/'
 TOOLCHAIN_UTILS_REPO = \
     'https://chromium.googlesource.com/chromiumos/third_party/toolchain-utils'
+AFDO_PROFILE_PATH_IN_CHROMIUM = 'src/chromeos/profiles/%s.afdo.newest.txt'
 
 # How old can the Kernel AFDO data be? (in days).
 KERNEL_ALLOWED_STALE_DAYS = 42
@@ -76,8 +77,11 @@ RELEASE_BENCHMARK_MERGE_WEIGHT = 100 - RELEASE_CWP_MERGE_WEIGHT
 #
 # This must be consistent with the definitions in autotest.
 AFDO_DATA_GENERATORS_LLVM = ('chell', 'samus')
-
+CHROME_AFDO_VERIFIER_BOARDS = {'eve': 'silvermont'}
 KERNEL_AFDO_VERIFIER_BOARDS = {'lulu': '3.14', 'chell': '3.18', 'eve': '4.4'}
+# FIXME(tcwang): Once all testing boards are added under
+# CHROME_AFDO_VERIFIER_BOARDS. This variable can be replaced by
+# CHROME_AFDO_VERIFIER_BOARDS.values()
 CWP_PROFILE_SUPPORTED_ARCHS = ['silvermont', 'airmont', 'broadwell']
 
 AFDO_ALERT_RECIPIENTS = [
@@ -125,22 +129,26 @@ CWP_PROFILE_NAME_REGEX = r"""
 CWPProfileVersion = collections.namedtuple('CWPProfileVersion',
                                            ['major', 'build', 'patch', 'clock'])
 
-ORDERFILE_NAME_REGEX = r"""
-      ^chromeos-chrome-orderfile
+MERGED_PROFILE_NAME_REGEX = r"""
+      ^chromeos-chrome
+      -(?:orderfile|amd64)                       # prefix for either orderfile
+                                                 # or release profile.
       # CWP parts
-      -field
-      -(\d+)                     # Major
-      -(\d+)                     # Build
-      \.(\d+)                     # Patch
-      -(\d+)                     # Clock; breaks ties sometimes.
+      -(?:field|silvermont|airmont|broadwell)    # Valid names
+      -(\d+)                                     # Major
+      -(\d+)                                     # Build
+      \.(\d+)                                    # Patch
+      -(\d+)                                     # Clock; breaks ties sometimes.
       # Benchmark parts
       -benchmark
-      -(\d+)                     # Major
-      \.(\d+)                     # Minor
-      \.(\d+)                     # Build
-      \.(\d+)                     # Patch
-      -r(\d+)                    # Revision
-      \.orderfile(?:\.xz)?$
+      -(\d+)                                     # Major
+      \.(\d+)                                    # Minor
+      \.(\d+)                                    # Build
+      \.(\d+)                                    # Patch
+      -r(\d+)                                    # Revision
+      (?:\.orderfile|-redacted\.afdo)            # suffix for either orderfile
+                                                 # or release profile.
+      (?:\.xz)?$
 """
 
 CHROME_ARCH_VERSION = '%(package)s-%(arch)s-%(version)s'
@@ -222,8 +230,8 @@ def _ParseCWPProfileName(profile_name):
   return CWPProfileVersion(*[int(x) for x in match.groups()])
 
 
-def _ParseOrderfileName(orderfile_name):
-  """Parse the name of an orderfile for Chrome.
+def _ParseMergedProfileName(artifact_name):
+  """Parse the name of an orderfile or a release profile for Chrome.
 
   Examples:
     With input: profile_name='chromeos-chrome-orderfile\
@@ -235,16 +243,16 @@ def _ParseOrderfileName(orderfile_name):
      CWPProfileVersion(major=77, build=3809, patch=38, clock=1562580965))
 
   Args:
-    orderfile_name: The name of an orderfile.
+    artifact_name: The name of an orderfile, or a release AFDO profile.
 
   Returns:
     A tuple of (BenchmarkProfileVersion, CWPProfileVersion)
   """
-  pattern = re.compile(ORDERFILE_NAME_REGEX, re.VERBOSE)
-  match = pattern.match(orderfile_name)
+  pattern = re.compile(MERGED_PROFILE_NAME_REGEX, re.VERBOSE)
+  match = pattern.match(artifact_name)
   if not match:
     raise ProfilesNameHelperError(
-        'Unparseable orderfile name: %s' % orderfile_name)
+        'Unparseable merged AFDO name: %s' % artifact_name)
   groups = match.groups()
   cwp_groups = groups[:4]
   benchmark_groups = groups[4:]
@@ -290,21 +298,52 @@ def _FindEbuildPath(package, buildroot=None, board=None):
   return os.path.join(buildroot, ebuild_path)
 
 
-# FIXME(tcwang): This is used to get the name of a profile used to
-# build the packages. For Chrome, we are moving the AFDO bits out of
-# the ebuild (https://crbug.com/1001227), so we need to rewrite this
-# call for Chrome AFDOs.
-def _GetArtifactVersionInEbuild(package, variable, buildroot=None):
-  """Find the version (name) of AFDO artifact in ebuild file.
+def _GetArtifactVersionInChromium(arch, chrome_root):
+  """Find the version (name) of AFDO artifact from chromium source.
 
   Args:
-    package: The name of the package to search ebuild file.
-    variable: The name of the variable appear in the ebuild file.
+    arch: There are three AFDO profiles in chromium:
+    silvermont, broadwell, and airmont.
+    chrome_root: The path to Chrome root.
+
+  Returns:
+    The name of the AFDO artifact found in the chroot.
+    None if not found.
+
+  Raises:
+    ValueError: when "arch" is not a supported.
+    RuntimeError: when the file containing AFDO profile name can't be found.
+  """
+  if arch not in CWP_PROFILE_SUPPORTED_ARCHS:
+    raise ValueError('Invalid architecture %s to use in AFDO profile' % arch)
+
+  if not os.path.exists(chrome_root):
+    raise RuntimeError('chrome_root %s does not exist.' % chrome_root)
+
+  profile_file = os.path.join(chrome_root,
+                              AFDO_PROFILE_PATH_IN_CHROMIUM % arch)
+  if not os.path.exists(profile_file):
+    logging.info('Files in chrome_root profile: %r', os.listdir(
+        os.path.join(chrome_root,
+                     AFDO_PROFILE_PATH_IN_CHROMIUM % arch,
+                     '..')))
+    raise RuntimeError(
+        'File %s containing profile name does not exist', profile_file)
+
+  return osutils.ReadFile(profile_file)
+
+
+def _GetArtifactVersionInEbuild(package, variable, buildroot=None):
+  """Find the version (name) of AFDO artifact from files in ebuild.
+
+  Args:
+    package: The name of the package to search in ebuild.
+    variable: Use this variable directly as regex to search.
     buildroot: Optional. When omitted, search ebuild file inside
     chroot. Otherwise, use the path to search ebuild file outside.
 
   Returns:
-    The name of the AFDO artifact found in the ebuild file.
+    The name of the AFDO artifact found in the ebuild.
     None if not found.
   """
   ebuild_file = _FindEbuildPath(package, buildroot=buildroot)
@@ -319,51 +358,51 @@ def _GetArtifactVersionInEbuild(package, variable, buildroot=None):
   return None
 
 
-def _GetCombinedAFDOName(cwp_name, cwp_arch, benchmark_name):
+def _GetCombinedAFDOName(cwp_versions, cwp_arch, benchmark_versions):
   """Construct a name mixing CWP and benchmark AFDO names.
 
   Examples:
-    If benchmark AFDO is chromeos-chrome-amd64-77.0.3849.0_rc-r1.afdo,
-    and CWP AFDO is R77-3809.38-1562580965.afdo, the returned name is:
-    field-77-3809.38-1562580965-benchmark-77.0.3849.0-r1
+    If benchmark AFDO is BenchmarkProfileVersion(
+      major=77, minor=0, build=3849, patch=0, revision=1, is_merged=False)
+    and CWP AFDO is CWPProfileVersion(
+      major=77, build=3809, patch=38, clock=1562580965),
+    and cwp_arch is 'silvermont',
+    the returned name is:
+    silvermont-77-3809.38-1562580965-benchmark-77.0.3849.0-r1
 
   Args:
-    cwp_name: Name of a CWP profile.
+    cwp_versions: CWP profile as a namedtuple CWPProfileVersion.
     cwp_arch: Architecture used to differentiate CWP profiles.
-    benchmark_name: Name of benchmark profile.
+    benchmark_versions: Benchmark profile as a namedtuple
+    BenchmarkProfileVersion.
 
   Returns:
     A name using the combination of CWP + benchmark AFDO names.
   """
-  benchmark_afdo_versions = _ParseBenchmarkProfileName(benchmark_name)
-  cwp_afdo_versions = _ParseCWPProfileName(cwp_name)
   cwp_piece = '%s-%d-%d.%d-%d' % (
-      cwp_arch, cwp_afdo_versions.major, cwp_afdo_versions.build,
-      cwp_afdo_versions.patch, cwp_afdo_versions.clock)
+      cwp_arch, cwp_versions.major, cwp_versions.build,
+      cwp_versions.patch, cwp_versions.clock)
   benchmark_piece = 'benchmark-%d.%d.%d.%d-r%d' % (
-      benchmark_afdo_versions.major, benchmark_afdo_versions.minor,
-      benchmark_afdo_versions.build, benchmark_afdo_versions.patch,
-      benchmark_afdo_versions.revision)
+      benchmark_versions.major, benchmark_versions.minor,
+      benchmark_versions.build, benchmark_versions.patch,
+      benchmark_versions.revision)
   return '%s-%s' % (cwp_piece, benchmark_piece)
 
 
-def _GetOrderfileName(buildroot):
+def _GetOrderfileName(chrome_root):
   """Construct an orderfile name for the current Chrome OS checkout.
 
   Args:
-    buildroot: The path to build root.
+    chrome_root: The path to chrome_root.
 
   Returns:
     An orderfile name using CWP + benchmark AFDO name.
   """
-  benchmark_afdo_name = _GetArtifactVersionInEbuild(
-      'chromeos-chrome', AFDO_VARIABLE_REGEX % 'benchmark', buildroot=buildroot)
-  cwp_afdo_name = _GetArtifactVersionInEbuild(
-      'chromeos-chrome',
-      AFDO_VARIABLE_REGEX % 'silvermont',
-      buildroot=buildroot)
+  benchmark_afdo_version, cwp_afdo_version = _ParseMergedProfileName(
+      _GetArtifactVersionInChromium(arch='silvermont',
+                                    chrome_root=chrome_root))
   return 'chromeos-chrome-orderfile-%s' % (
-      _GetCombinedAFDOName(cwp_afdo_name, 'field', benchmark_afdo_name))
+      _GetCombinedAFDOName(cwp_afdo_version, 'field', benchmark_afdo_version))
 
 
 def _GetBenchmarkAFDOName(buildroot, board):
@@ -550,17 +589,18 @@ class GenerateChromeOrderfile(object):
   INPUT_ORDERFILE_PATH = ('/build/${BOARD}/opt/google/chrome/'
                           'chrome.orderfile.txt')
 
-  def __init__(self, board, output_dir, chroot_path, chroot_args):
+  def __init__(self, board, output_dir, chrome_root, chroot_path, chroot_args):
     """Construct an object for generating orderfile for Chrome.
 
     Args:
       board: Name of the board.
       output_dir: Directory (outside chroot) to save the output artifacts.
+      chrome_root: Path to the Chrome source.
       chroot_path: Path to the chroot.
       chroot_args: The arguments used to enter the chroot.
     """
     self.output_dir = output_dir
-    self.orderfile_name = _GetOrderfileName(os.path.join(chroot_path, '..'))
+    self.orderfile_name = _GetOrderfileName(chrome_root)
     self.chrome_binary = self.CHROME_BINARY_PATH.replace('${BOARD}', board)
     self.input_orderfile = self.INPUT_ORDERFILE_PATH.replace('${BOARD}', board)
     self.chroot_path = chroot_path
@@ -784,9 +824,10 @@ def _RankValidOrderfiles(name):
     ValueError, if the parsed orderfile is not valid.
   """
   try:
-    benchmark_part, cwp_part = _ParseOrderfileName(os.path.basename(name))
+    benchmark_part, cwp_part = _ParseMergedProfileName(os.path.basename(name))
     if benchmark_part.is_merged:
-      raise ValueError('-merged should not appear in orderfile name.')
+      raise ValueError(
+          '-merged should not appear in orderfile or release AFDO name.')
     return benchmark_part, cwp_part.clock
   except ProfilesNameHelperError:
     return None
@@ -917,16 +958,14 @@ def OrderfileUpdateChromeEbuild(board):
 
   Returns:
     Status of the update.
-
-  Raises:
-    RuntimeError: if no eligible orderfile is found in bucket.
   """
 
   orderfile_name = _FindLatestAFDOArtifact(ORDERFILE_GS_URL_UNVETTED,
                                            _RankValidOrderfiles)
 
   if not orderfile_name:
-    raise RuntimeError('No eligible orderfile to verify.')
+    logging.info('No eligible orderfile to verify.')
+    return False
 
   updater = UpdateEbuildWithAFDOArtifacts(
       board=board,
@@ -945,20 +984,27 @@ def AFDOUpdateChromeEbuild(board):
   Returns:
     Status of the update.
   """
-
-  update_rules = {}
   benchmark_afdo = _FindLatestAFDOArtifact(BENCHMARK_AFDO_GS_URL,
                                            _RankValidBenchmarkProfiles)
-  update_rules[AFDO_VARIABLE_REGEX %
-               'benchmark'] = os.path.splitext(benchmark_afdo)[0]
+  arch = CHROME_AFDO_VERIFIER_BOARDS[board]
+  url = os.path.join(CWP_AFDO_GS_URL, arch)
+  cwp_afdo = _FindLatestAFDOArtifact(url, _RankValidCWPProfiles)
 
-  for arch in CWP_PROFILE_SUPPORTED_ARCHS:
-    url = os.path.join(CWP_AFDO_GS_URL, arch)
-    cwp_afdo = _FindLatestAFDOArtifact(url, _RankValidCWPProfiles)
-    update_rules[AFDO_VARIABLE_REGEX % arch] = os.path.splitext(cwp_afdo)[0]
+  if not benchmark_afdo or not cwp_afdo:
+    logging.info('No eligible benchmark or cwp AFDO to verify.')
+    return False
+
+  with osutils.TempDir() as tempdir:
+    result = _CreateReleaseChromeAFDO(
+        os.path.splitext(cwp_afdo)[0], arch,
+        os.path.splitext(benchmark_afdo)[0], tempdir)
+    afdo_profile_for_verify = os.path.join('/tmp', os.path.basename(result))
+    os.rename(result, afdo_profile_for_verify)
 
   updater = UpdateEbuildWithAFDOArtifacts(
-      board=board, package='chromeos-chrome', update_rules=update_rules)
+      board=board,
+      package='chromeos-chrome',
+      update_rules={'UNVETTED_AFDO_FILE': afdo_profile_for_verify})
   updater.Perform()
   return True
 
@@ -1251,21 +1297,24 @@ def CanVerifyKernelAFDOData(board):
   return board in KERNEL_AFDO_VERIFIER_BOARDS
 
 
-def CheckAFDOArtifactExists(buildroot, board, target):
+def CheckAFDOArtifactExists(buildroot, chrome_root, board, target):
   """Check if the artifact to upload in the builder already exists or not.
 
   Args:
     buildroot: The path to build root.
+    chrome_root: The path to Chrome root.
     board: The name of the board.
     target: The target to check. It can be one of:
-    "orderfile_generate": We need to check if the name of the orderfile to
-    generate is already in the GS bucket or not.
-    "orderfile_verify": We need to find if the latest unvetted orderfile is
-    already verified or not.
-    "benchmark_afdo": We need to check if the name of the benchmark AFDO profile
-    is already in the GS bucket or not.
-    "kernel_afdo": We need to check if the latest unvetted kernel profile is
-    already verified or not.
+      "orderfile_generate": We need to check if the name of the orderfile to
+      generate is already in the GS bucket or not.
+      "orderfile_verify": We need to find if the latest unvetted orderfile is
+      already verified or not.
+      "benchmark_afdo": We need to check if the name of the benchmark AFDO
+      profile is already in the GS bucket or not.
+      "kernel_afdo": We need to check if the latest unvetted kernel profile is
+      already verified or not.
+      "chrome_afdo": We need to check if a release profile created with
+      latest unvetted benchmark and CWP profiles is already verified or not.
 
   Returns:
     True if exists. False otherwise.
@@ -1276,7 +1325,7 @@ def CheckAFDOArtifactExists(buildroot, board, target):
   gs_context = gs.GSContext()
   if target == 'orderfile_generate':
     # For orderfile_generate builder, get the orderfile name from chrome ebuild
-    orderfile_name = _GetOrderfileName(buildroot)
+    orderfile_name = _GetOrderfileName(chrome_root)
     return gs_context.Exists(
         os.path.join(ORDERFILE_GS_URL_UNVETTED,
                      orderfile_name + ORDERFILE_COMPRESSION_SUFFIX))
@@ -1306,44 +1355,19 @@ def CheckAFDOArtifactExists(buildroot, board, target):
 
   if target == 'chrome_afdo':
     # Check the latest unvetted chrome AFDO profiles are verified
-    all_exist = True
     benchmark_afdo = _FindLatestAFDOArtifact(BENCHMARK_AFDO_GS_URL,
                                              _RankValidBenchmarkProfiles)
-    for arch in CWP_PROFILE_SUPPORTED_ARCHS:
-      source_url = os.path.join(CWP_AFDO_GS_URL, arch)
-      cwp_afdo = _FindLatestAFDOArtifact(source_url, _RankValidCWPProfiles)
-      merged_name = _GetCombinedAFDOName(
-          os.path.splitext(cwp_afdo)[0], arch,
-          os.path.splitext(benchmark_afdo)[0])
-      all_exist &= gs_context.Exists(
-          os.path.join(RELEASE_AFDO_GS_URL_VETTED, merged_name))
-    return all_exist
+    arch = CHROME_AFDO_VERIFIER_BOARDS[board]
+    source_url = os.path.join(CWP_AFDO_GS_URL, arch)
+    cwp_afdo = _FindLatestAFDOArtifact(source_url, _RankValidCWPProfiles)
+    merged_name = _GetCombinedAFDOName(
+        _ParseCWPProfileName(os.path.splitext(cwp_afdo)[0]),
+        arch,
+        _ParseBenchmarkProfileName(os.path.splitext(benchmark_afdo)[0]))
+    return gs_context.Exists(
+        os.path.join(RELEASE_AFDO_GS_URL_VETTED, merged_name))
 
   raise ValueError('Unsupported target %s to check' % target)
-
-
-def _UpdateLatestFileForLegacyPFQ(artifact):
-  """Update the content of lastet file to support legacy PFQ."""
-
-  gs_context = gs.GSContext()
-  chrome_branch = _FindCurrentChromeBranch()
-  latest_file = 'latest-chromeos-chrome-amd64-%s.afdo' % chrome_branch
-  latest_file_url = os.path.join(BENCHMARK_AFDO_GS_URL, latest_file)
-
-  if gs_context.Exists(latest_file_url):
-    with osutils.TempDir() as tempdir:
-      local_file = os.path.join(tempdir, latest_file)
-      gs_context.Copy(latest_file_url, local_file)
-      old_artifact = osutils.ReadFile(local_file)
-      logging.info('Updating %s from %s to %s', latest_file_url, old_artifact,
-                   artifact)
-  else:
-    logging.info('Creating a new %s with %s', latest_file_url, artifact)
-
-  with osutils.TempDir() as tempdir:
-    local_file = os.path.join(tempdir, latest_file)
-    osutils.WriteFile(local_file, artifact)
-    gs_context.Copy(local_file, latest_file_url)
 
 
 def _UploadVettedAFDOArtifacts(artifact_type, subcategory=None):
@@ -1384,35 +1408,14 @@ def _UploadVettedAFDOArtifacts(artifact_type, subcategory=None):
     full_name = artifact + KERNEL_AFDO_COMPRESSION_SUFFIX
     source_url = os.path.join(KERNEL_PROFILE_URL, subcategory, full_name)
     dest_url = os.path.join(KERNEL_AFDO_GS_URL_VETTED, subcategory, full_name)
-  elif artifact_type == 'benchmark_afdo':
-    artifact = _GetArtifactVersionInEbuild('chromeos-chrome',
-                                           AFDO_VARIABLE_REGEX % 'benchmark')
-    full_name = artifact + AFDO_COMPRESSION_SUFFIX
-    source_url = os.path.join(BENCHMARK_AFDO_GS_URL, full_name)
-    dest_url = os.path.join(BENCHMARK_AFDO_GS_URL_VETTED, full_name)
-  elif artifact_type == 'cwp_afdo':
-    if not subcategory:
-      raise ValueError('Subcategory is required for cwp_afdo.')
-    artifact = _GetArtifactVersionInEbuild('chromeos-chrome',
-                                           AFDO_VARIABLE_REGEX % subcategory)
-    full_name = artifact + ORDERFILE_COMPRESSION_SUFFIX
-    source_url = os.path.join(CWP_AFDO_GS_URL, subcategory, full_name)
-    dest_url = os.path.join(CWP_AFDO_GS_URL_VETTED, subcategory, full_name)
   else:
-    raise ValueError(
-        'Only orderfile, chrome_afdo and kernel_afdo are supported.')
+    raise ValueError('Only orderfile and kernel_afdo are supported.')
 
   if gs_context.Exists(dest_url):
     return None
 
   logging.info('Copying artifact from %s to %s', source_url, dest_url)
   gs_context.Copy(source_url, dest_url, acl='public-read')
-
-  # For benchmark AFDO, we also need to update lastest-* file on the bucket
-  # to be compatible with legacy PFQ. Should not be needed once migrated to
-  # PUpr.
-  if artifact_type == 'benchmark_afdo':
-    _UpdateLatestFileForLegacyPFQ(artifact)
 
   return artifact
 
@@ -1511,7 +1514,7 @@ def _PublishVettedAFDOArtifacts(json_file, uploaded, title=None):
       print_cmd=True)
 
 
-def _UploadReleaseChromeAFDO(cwp_afdo, arch, benchmark_afdo):
+def _CreateReleaseChromeAFDO(cwp_afdo, arch, benchmark_afdo, output_dir):
   """Create an AFDO profile to be used in release Chrome.
 
   This means we want to merge the CWP and benchmark AFDO profiles into
@@ -1521,66 +1524,66 @@ def _UploadReleaseChromeAFDO(cwp_afdo, arch, benchmark_afdo):
     cwp_afdo: Name of the verified CWP profile.
     arch: Architecture name of the CWP profile.
     benchmark_afdo: Name of the verified benchmark profile.
+    output_dir: A directory to store all artifacts.
+
+  Returns:
+    Full path to a generated release AFDO profile.
   """
-  if not cwp_afdo and not benchmark_afdo:
-    logging.info('Both benchmark and CWP AFDO have not changed. '
-                 'Skip generating release profiles.')
-    return
-
-  # If either CWP or benchmark profile is not uploaded, find its name from
-  # the ebuild because it's latest, and the creation of release profile is
-  # still needed with either being uploaded.
-  # Also looks for the names in the ebuilds (instead of in the GS bucket)
-  # to avoid the race that a new unvetted CWP/benchmark profiles uploaded
-  # after the builder starts but not actually tested in the builder.
-  if not cwp_afdo:
-    cwp_afdo = _GetArtifactVersionInEbuild('chromeos-chrome',
-                                           AFDO_VARIABLE_REGEX % arch)
-  if not benchmark_afdo:
-    benchmark_afdo = _GetArtifactVersionInEbuild(
-        'chromeos-chrome', AFDO_VARIABLE_REGEX % 'benchmark')
-
   gs_context = gs.GSContext()
+  # Download profiles from gsutil.
+  cwp_full_name = cwp_afdo + ORDERFILE_COMPRESSION_SUFFIX
+  benchmark_full_name = benchmark_afdo + AFDO_COMPRESSION_SUFFIX
 
+  cwp_afdo_url = os.path.join(CWP_AFDO_GS_URL, arch, cwp_full_name)
+  cwp_afdo_local = os.path.join(output_dir, cwp_full_name)
+  gs_context.Copy(cwp_afdo_url, cwp_afdo_local)
+
+  benchmark_afdo_url = os.path.join(BENCHMARK_AFDO_GS_URL, benchmark_full_name)
+  benchmark_afdo_local = os.path.join(output_dir, benchmark_full_name)
+  gs_context.Copy(benchmark_afdo_url, benchmark_afdo_local)
+
+  # Decompress the files.
+  cwp_local_uncompressed = os.path.join(output_dir, cwp_afdo)
+  cros_build_lib.UncompressFile(cwp_afdo_local, cwp_local_uncompressed)
+  benchmark_local_uncompressed = os.path.join(output_dir, benchmark_afdo)
+  cros_build_lib.UncompressFile(benchmark_afdo_local,
+                                benchmark_local_uncompressed)
+
+  # Merge profiles.
+  merge_weights = [(cwp_local_uncompressed, RELEASE_CWP_MERGE_WEIGHT),
+                   (benchmark_local_uncompressed,
+                    RELEASE_BENCHMARK_MERGE_WEIGHT)]
+  merged_profile_name = 'chromeos-chrome-amd64-%s' % (
+      _GetCombinedAFDOName(_ParseCWPProfileName(cwp_afdo), arch,
+                           _ParseBenchmarkProfileName(benchmark_afdo)))
+  merged_profile = os.path.join(output_dir, merged_profile_name)
+  _MergeAFDOProfiles(merge_weights, merged_profile)
+
+  # Redact profiles.
+  redacted_profile_name = merged_profile_name + '-redacted.afdo'
+  redacted_profile = os.path.join(output_dir, redacted_profile_name)
+  _RedactAFDOProfile(merged_profile, redacted_profile)
+
+  return redacted_profile
+
+
+def _UploadReleaseChromeAFDO():
+  """Upload an AFDO profile to be used in release Chrome.
+
+  Returns:
+    Full path to the release AFDO profile uploaded.
+  """
   with osutils.TempDir() as tempdir:
-    # Download profiles from gsutil.
-    cwp_full_name = cwp_afdo + ORDERFILE_COMPRESSION_SUFFIX
-    benchmark_full_name = benchmark_afdo + AFDO_COMPRESSION_SUFFIX
-
-    cwp_afdo_url = os.path.join(CWP_AFDO_GS_URL, arch, cwp_full_name)
-    cwp_afdo_local = os.path.join(tempdir, cwp_full_name)
-    gs_context.Copy(cwp_afdo_url, cwp_afdo_local)
-
-    benchmark_afdo_url = os.path.join(BENCHMARK_AFDO_GS_URL,
-                                      benchmark_full_name)
-    benchmark_afdo_local = os.path.join(tempdir, benchmark_full_name)
-    gs_context.Copy(benchmark_afdo_url, benchmark_afdo_local)
-
-    # Decompress the files.
-    cwp_local_uncompressed = os.path.join(tempdir, cwp_afdo)
-    cros_build_lib.UncompressFile(cwp_afdo_local, cwp_local_uncompressed)
-    benchmark_local_uncompressed = os.path.join(tempdir, benchmark_afdo)
-    cros_build_lib.UncompressFile(benchmark_afdo_local,
-                                  benchmark_local_uncompressed)
-
-    # Merge profiles.
-    merge_weights = [(cwp_local_uncompressed, RELEASE_CWP_MERGE_WEIGHT),
-                     (benchmark_local_uncompressed,
-                      RELEASE_BENCHMARK_MERGE_WEIGHT)]
-    merged_profile_name = 'chromeos-chrome-amd64-%s' % (
-        _GetCombinedAFDOName(cwp_afdo, arch, benchmark_afdo))
-    merged_profile = os.path.join(tempdir, merged_profile_name)
-    _MergeAFDOProfiles(merge_weights, merged_profile)
-
-    # Redact profiles.
-    redacted_profile_name = merged_profile_name + '-redacted.afdo'
-    redacted_profile = os.path.join(tempdir, redacted_profile_name)
-    _RedactAFDOProfile(merged_profile, redacted_profile)
-
-    # Compress and upload the final AFDO profile.
-    ret = _CompressAFDOFiles([redacted_profile], None, tempdir,
+    # This path should be a full path to the profile
+    profile_path = _GetArtifactVersionInEbuild('chromeos-chrome',
+                                               'UNVETTED_AFDO_FILE')
+    # Compress the final AFDO profile.
+    ret = _CompressAFDOFiles([profile_path], None, tempdir,
                              ORDERFILE_COMPRESSION_SUFFIX)
+    # Upload to GS bucket
     _UploadAFDOArtifactToGSBucket(RELEASE_AFDO_GS_URL_VETTED, ret[0])
+
+    return profile_path
 
 
 def UploadAndPublishVettedAFDOArtifacts(artifact_type, board):
@@ -1599,13 +1602,9 @@ def UploadAndPublishVettedAFDOArtifacts(artifact_type, board):
 
   uploaded = {}
   if artifact_type == 'chrome_afdo':
-    uploaded['benchmark'] = _UploadVettedAFDOArtifacts('benchmark_afdo')
-    for arch in CWP_PROFILE_SUPPORTED_ARCHS:
-      uploaded[arch] = _UploadVettedAFDOArtifacts('cwp_afdo', arch)
-      _UploadReleaseChromeAFDO(uploaded[arch], arch, uploaded['benchmark'])
-    json_file = os.path.join(TOOLCHAIN_UTILS_PATH,
-                             'afdo_metadata/chrome_afdo.json')
-    title = 'afdo_metadata: Publish new profiles for Chrome.'
+    # For current board, there is a release AFDO in chroot used for
+    # verification.
+    uploaded['chrome-afdo'] = _UploadReleaseChromeAFDO()
   elif artifact_type == 'kernel_afdo':
     kver = KERNEL_AFDO_VERIFIER_BOARDS[board]
     name = 'chromeos-kernel-' + kver.replace('.', '_')
@@ -1620,8 +1619,8 @@ def UploadAndPublishVettedAFDOArtifacts(artifact_type, board):
     # Nothing to publish to should be caught earlier
     return False
 
-  if artifact_type != 'orderfile':
-    # No need to publish orderfile changes.
+  if artifact_type == 'kernel_afdo':
+    # No need to publish orderfile or chrome AFDO changes.
     # Skia autoroller can pick it up from uploads.
     _PublishVettedAFDOArtifacts(json_file, uploaded, title)
   return True

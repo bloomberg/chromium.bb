@@ -434,6 +434,8 @@ class BundleAFDOGenerationArtifacts(cros_test_lib.MockTempDirTestCase):
     self.output_dir = os.path.join(self.tempdir, 'output_dir')
     osutils.SafeMakedirs(self.output_dir)
 
+    self.chrome_root = os.path.join(self.tempdir, 'chrome_root')
+
   def testRunSuccess(self):
     """Generic function for testing success cases for different types."""
 
@@ -460,12 +462,14 @@ class BundleAFDOGenerationArtifacts(cros_test_lib.MockTempDirTestCase):
         osutils.Touch(os.path.join(call_tempdir, f))
 
       created = artifacts.BundleAFDOGenerationArtifacts(
-          is_orderfile, self.chroot, self.build_target, self.output_dir)
+          is_orderfile, self.chroot, self.chrome_root,
+          self.build_target, self.output_dir)
 
       # Test right class is called with right arguments
       if is_orderfile:
         mock_orderfile_generate.assert_called_once_with(
             board=self.build_target.name,
+            chrome_root=self.chrome_root,
             output_dir=call_tempdir,
             chroot_path=self.chroot.path,
             chroot_args=self.chroot.get_enter_args()

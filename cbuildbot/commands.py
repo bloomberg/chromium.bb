@@ -3841,13 +3841,14 @@ class ChromeSDK(object):
     return os.path.join(self._GetOutDirectory(debug=debug), '.ninja_log')
 
 
-def GenerateAFDOArtifacts(buildroot, board, output_path, target):
+def GenerateAFDOArtifacts(buildroot, chrome_root, board, output_path, target):
   """Command to generate AFDO artifacts.
 
   This is only a wrapper of the build API. It doesn't validate the inputs.
 
   Args:
     buildroot: The path to build root.
+    chrome_root: The path to Chrome root.
     board: Name of the board.
     output_path: The path to save output.
     target: A valid toolchain_pb2.AFDOArtifactType.
@@ -3858,6 +3859,7 @@ def GenerateAFDOArtifacts(buildroot, board, output_path, target):
   input_proto = {
       'chroot': {
           'path': os.path.join(buildroot, 'chroot'),
+          'chrome_dir': chrome_root,
       },
       'build_target': {
           'name': board,

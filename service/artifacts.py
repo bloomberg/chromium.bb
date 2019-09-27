@@ -468,7 +468,7 @@ def GenerateQuickProvisionPayloads(target_image_path, archive_dir):
   return payloads
 
 
-def BundleAFDOGenerationArtifacts(is_orderfile, chroot,
+def BundleAFDOGenerationArtifacts(is_orderfile, chroot, chrome_root,
                                   build_target, output_dir):
   """Generate artifacts for toolchain-related AFDO artifacts.
 
@@ -476,6 +476,7 @@ def BundleAFDOGenerationArtifacts(is_orderfile, chroot,
     is_orderfile (boolean): The generation is for orderfile (True) or
     for AFDO (False).
     chroot (chroot_lib.Chroot): The chroot in which the sysroot should be built.
+    chrome_root (str): Path to Chrome root.
     build_target (build_target_util.BuildTarget): The build target.
     output_dir (str): The location outside the chroot where the files should be
       stored.
@@ -489,6 +490,7 @@ def BundleAFDOGenerationArtifacts(is_orderfile, chroot,
       generate_orderfile = toolchain_util.GenerateChromeOrderfile(
           board=build_target.name,
           output_dir=tempdir,
+          chrome_root=chrome_root,
           chroot_path=chroot.path,
           chroot_args=chroot_args)
 

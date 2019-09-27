@@ -1844,6 +1844,7 @@ class GenerateAFDOArtifactsTests(
     osutils.SafeMakedirs(chroot_tmp)
     self.board = 'board'
     self.target = 'any_target'
+    self.chrome_root = '/path/to/chrome_root'
     self.output_path = os.path.join(self.tempdir, 'output_dir')
     osutils.SafeMakedirs(self.output_path)
     self.mock_command = self.PatchObject(commands,
@@ -1867,7 +1868,8 @@ class GenerateAFDOArtifactsTests(
       json.dump(output_proto, f)
 
     ret = commands.GenerateAFDOArtifacts(
-        self.buildroot, self.board, self.output_path, self.target)
+        self.buildroot, self.chrome_root, self.board,
+        self.output_path, self.target)
 
     cmd = [
         'build_api',
@@ -1884,6 +1886,8 @@ class GenerateAFDOArtifactsTests(
     input_proto = json.loads(osutils.ReadFile(input_proto_file))
     self.assertEqual(input_proto['chroot']['path'],
                      os.path.join(self.buildroot, 'chroot'))
+    self.assertEqual(input_proto['chroot']['chrome_dir'],
+                     self.chrome_root)
     self.assertEqual(input_proto['build_target']['name'],
                      self.board)
     self.assertEqual(input_proto['output_dir'],

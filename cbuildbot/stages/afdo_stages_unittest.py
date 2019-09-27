@@ -166,7 +166,7 @@ class GenerateAFDOArtifactStageTests(
       else:
         target = toolchain_pb2.ORDERFILE
       mock_generate.assert_called_once_with(
-          self.build_root, self._current_board,
+          self.build_root, None, self._current_board,
           output_path, target)
       calls = [mock.call([os.path.basename(x)]) for x in artifacts]
       mock_put.assert_has_calls(calls)

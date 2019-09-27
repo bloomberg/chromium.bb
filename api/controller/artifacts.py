@@ -425,6 +425,7 @@ _VALID_ARTIFACT_TYPES = [toolchain_pb2.BENCHMARK_AFDO,
 @validate.require('build_target.name', 'output_dir')
 @validate.is_in('artifact_type', _VALID_ARTIFACT_TYPES)
 @validate.exists('output_dir')
+@validate.exists('chroot.chrome_dir')
 @validate.validation_complete
 def BundleAFDOGenerationArtifacts(input_proto, output_proto, _config):
   """Generic function for creating tarballs of both AFDO and orerfile.
@@ -437,6 +438,9 @@ def BundleAFDOGenerationArtifacts(input_proto, output_proto, _config):
 
   # Required args.
   build_target = build_target_util.BuildTarget(input_proto.build_target.name)
+  chrome_root = input_proto.chroot.chrome_dir
+  if not chrome_root:
+    cros_build_lib.Die('chrome_root is not included in chroot')
   output_dir = input_proto.output_dir
   artifact_type = input_proto.artifact_type
 
@@ -445,7 +449,7 @@ def BundleAFDOGenerationArtifacts(input_proto, output_proto, _config):
   try:
     is_orderfile = bool(artifact_type is toolchain_pb2.ORDERFILE)
     results = artifacts.BundleAFDOGenerationArtifacts(
-        is_orderfile, chroot,
+        is_orderfile, chroot, chrome_root,
         build_target, output_dir)
   except artifacts.Error as e:
     cros_build_lib.Die('Error %s raised in BundleSimpleChromeArtifacts: %s',

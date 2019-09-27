@@ -362,6 +362,7 @@ class SimpleBuilder(generic_builders.Builder):
            toolchain_util.CanGenerateAFDOData(board) and \
            toolchain_util.CheckAFDOArtifactExists(
                buildroot=builder_run.buildroot,
+               chrome_root=builder_run.options.chrome_root,
                board=board,
                target='benchmark_afdo'):
           continue
@@ -370,6 +371,7 @@ class SimpleBuilder(generic_builders.Builder):
         if builder_run.config.orderfile_generate and \
            toolchain_util.CheckAFDOArtifactExists(
                buildroot=builder_run.buildroot,
+               chrome_root=builder_run.options.chrome_root,
                board=board,
                target='orderfile_generate'):
           continue
@@ -379,6 +381,7 @@ class SimpleBuilder(generic_builders.Builder):
           # Skip verifying orderfile if it's already verified.
           if toolchain_util.CheckAFDOArtifactExists(
               buildroot=builder_run.buildroot,
+              chrome_root=builder_run.options.chrome_root,
               board=board,
               target='orderfile_verify'):
             continue
@@ -389,6 +392,7 @@ class SimpleBuilder(generic_builders.Builder):
           # Skip verifying kernel AFDO if it's already verified.
           if toolchain_util.CheckAFDOArtifactExists(
               buildroot=builder_run.buildroot,
+              chrome_root=builder_run.options.chrome_root,
               board=board,
               target='kernel_afdo'):
             continue
@@ -399,6 +403,7 @@ class SimpleBuilder(generic_builders.Builder):
           # Skip verifying Chrome AFDO if both benchmark and CWP are verified.
           if toolchain_util.CheckAFDOArtifactExists(
               buildroot=builder_run.buildroot,
+              chrome_root=builder_run.options.chrome_root,
               board=board,
               target='chrome_afdo'):
             continue
