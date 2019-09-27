@@ -17,6 +17,7 @@
 #include "net/http/http_util.h"
 #include "net/url_request/redirect_util.h"
 #include "services/network/loader_util.h"
+#include "services/network/public/cpp/content_security_policy.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/cpp/resource_response.h"
@@ -108,6 +109,8 @@ void ServiceWorkerLoaderHelpers::SaveResponseInfo(
     out_head->cache_storage_cache_name.clear();
   out_head->cors_exposed_header_names = response.cors_exposed_header_names;
   out_head->did_service_worker_navigation_preload = false;
+  out_head->content_security_policy =
+      network::ContentSecurityPolicy(response.content_security_policy.Clone());
 }
 
 // static
