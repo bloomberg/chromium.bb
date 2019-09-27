@@ -2197,6 +2197,17 @@ int AppListView::GetPreferredWidgetYForState(
   // container's y as the top of display.
   const display::Display display = GetDisplayNearestView();
   const gfx::Rect work_area_bounds = display.work_area();
+
+  // The ChromeVox panel as well as the Docked Magnifier viewport affect the
+  // workarea of the display. We need to account for that when applist is in
+  // fullscreen to avoid being shown below them.
+  const int fullscreen_height = work_area_bounds.y() - display.bounds().y();
+
+  // Force fullscreen height if onscreen keyboard is shown to match the UI state
+  // that's set by default when the onscreen keyboard is first shown.
+  if (onscreen_keyboard_shown_ && state != ash::AppListViewState::kClosed)
+    return fullscreen_height;
+
   switch (state) {
     case ash::AppListViewState::kPeeking:
       return display.bounds().height() -
@@ -2206,10 +2217,7 @@ int AppListView::GetPreferredWidgetYForState(
                       display.bounds().height() - kHalfAppListHeight);
     case ash::AppListViewState::kFullscreenAllApps:
     case ash::AppListViewState::kFullscreenSearch:
-      // The ChromeVox panel as well as the Docked Magnifier viewport affect the
-      // workarea of the display. We need to account for that when applist is in
-      // fullscreen to avoid being shown below them.
-      return work_area_bounds.y() - display.bounds().y();
+      return fullscreen_height;
     case ash::AppListViewState::kClosed:
       // Align the widget y with shelf y to avoid flicker in show animation. In
       // side shelf mode, the widget y is the top of work area because the
