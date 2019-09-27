@@ -504,6 +504,7 @@ void FidoCableDiscovery::CableDeviceFound(BluetoothAdapter* adapter,
 
   FIDO_LOG(EVENT) << "Found new caBLE device.";
   active_devices_.insert(device_address);
+  active_authenticator_eids_.insert(maybe_result->eid);
 
   auto cable_device =
       std::make_unique<FidoCableDevice>(adapter, device->GetAddress());
