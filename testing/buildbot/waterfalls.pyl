@@ -4377,23 +4377,6 @@
   {
     'name': 'tryserver.chromium.android',
     'machines': {
-      'android-kitkat-arm-coverage-rel': {
-        'mixins': [
-          'code-coverage',
-          'kitkat',
-          'hammerhead',
-        ],
-        'additional_compile_targets': [
-          'cronet_test_instrumentation_apk',
-          'monochrome_static_initializers',
-        ],
-        'test_suites': {
-          'gtest_tests': 'chromium_android_gtests',
-          'junit_tests': 'chromium_junit_tests',
-          'isolated_scripts': 'monochrome_apk_checker_isolated_script',
-        },
-        'os_type': 'android',
-      },
       'android-marshmallow-arm64-coverage-rel': {
         'mixins': [
           'code-coverage',
