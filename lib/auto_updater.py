@@ -51,6 +51,7 @@ import time
 
 from chromite.cli import command
 from chromite.lib import auto_update_util
+from chromite.lib import auto_updater_transfer
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import nebraska_wrapper
@@ -90,10 +91,6 @@ POST_CHECK_SETTLE_SECONDS = 15
 
 # Number of seconds to delay between post check retries.
 POST_CHECK_RETRY_SECONDS = 5
-
-# Update file names for rootfs+kernel and stateful partitions.
-ROOTFS_FILENAME = 'update.gz'
-STATEFUL_FILENAME = 'stateful.tgz'
 
 
 class ChromiumOSUpdateError(Exception):
@@ -282,7 +279,7 @@ class ChromiumOSUpdater(BaseUpdater):
                     self.GetPayloadPropertiesFileName(payload_name)]
 
     if self._do_stateful_update:
-      filenames += [STATEFUL_FILENAME]
+      filenames += [auto_updater_transfer.STATEFUL_FILENAME]
 
     for fname in filenames:
       payload = os.path.join(self.payload_dir, fname)
@@ -471,7 +468,7 @@ class ChromiumOSUpdater(BaseUpdater):
     if self.is_au_endtoendtest:
       return self.payload_filename
     else:
-      return ROOTFS_FILENAME
+      return auto_updater_transfer.ROOTFS_FILENAME
 
   def _TransferUpdateUtilsPackage(self):
     """Transfer update-utils package to work directory of the remote device."""
@@ -528,14 +525,15 @@ class ChromiumOSUpdater(BaseUpdater):
     if self.original_payload_dir:
       logging.info('Copying original stateful payload to device...')
       original_payload = os.path.join(
-          self.original_payload_dir, STATEFUL_FILENAME)
+          self.original_payload_dir, auto_updater_transfer.STATEFUL_FILENAME)
       self._EnsureDeviceDirectory(self.device_restore_dir)
       self.device.CopyToDevice(original_payload, self.device_restore_dir,
                                mode=self.payload_mode, log_output=True,
                                **self._cmd_kwargs)
 
     logging.info('Copying target stateful payload to device...')
-    payload = os.path.join(self.payload_dir, STATEFUL_FILENAME)
+    payload = os.path.join(self.payload_dir,
+                           auto_updater_transfer.STATEFUL_FILENAME)
     self.device.CopyToWorkDir(payload, mode=self.payload_mode,
                               log_output=True, **self._cmd_kwargs)
 
@@ -683,7 +681,7 @@ class ChromiumOSUpdater(BaseUpdater):
       payload_dir = self.device.work_dir
     cmd = ['sh',
            self.stateful_update_bin,
-           os.path.join(payload_dir, STATEFUL_FILENAME)]
+           os.path.join(payload_dir, auto_updater_transfer.STATEFUL_FILENAME)]
 
     if self._clobber_stateful:
       cmd.append('--stateful_change=clean')

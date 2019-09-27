@@ -15,6 +15,7 @@ import tempfile
 
 from chromite.lib import constants
 from chromite.lib import auto_updater
+from chromite.lib import auto_updater_transfer
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
@@ -447,12 +448,13 @@ class RemoteDeviceUpdater(object):
                    image_path, payload_dir)
 
     # Generate rootfs and stateful update payloads if they do not exist.
-    payload_path = os.path.join(payload_dir, auto_updater.ROOTFS_FILENAME)
+    payload_path = os.path.join(payload_dir,
+                                auto_updater_transfer.ROOTFS_FILENAME)
     if not os.path.exists(payload_path):
       paygen_payload_lib.GenerateUpdatePayload(
           image_path, payload_path, src_image=self.src_image_to_delta)
-    if not os.path.exists(os.path.join(payload_dir,
-                                       auto_updater.STATEFUL_FILENAME)):
+    if not os.path.exists(os.path.join(
+        payload_dir, auto_updater_transfer.STATEFUL_FILENAME)):
       paygen_stateful_payload_lib.GenerateStatefulPayload(image_path,
                                                           payload_dir)
     return payload_dir
