@@ -3139,12 +3139,6 @@ blink::WebPlugin* RenderFrameImpl::CreatePlugin(
   return nullptr;
 }
 
-void RenderFrameImpl::LoadErrorPage(int reason) {
-  LoadNavigationErrorPage(frame_->GetDocumentLoader(),
-                          WebURLError(reason, frame_->GetDocument().Url()),
-                          base::nullopt, true /* replace_current_item */);
-}
-
 void RenderFrameImpl::ExecuteJavaScript(const base::string16& javascript) {
   JavaScriptExecuteRequest(javascript, false, base::DoNothing());
 }
