@@ -638,6 +638,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                                    int context_id) override;
   RenderFrameHostImpl* GetMainFrameForInnerDelegate(
       FrameTreeNode* frame_tree_node) override;
+  bool IsFrameLowPriority(const RenderFrameHost* render_frame_host) override;
 
   // RenderViewHostDelegate ----------------------------------------------------
   RenderViewHostDelegateView* GetDelegateView() override;

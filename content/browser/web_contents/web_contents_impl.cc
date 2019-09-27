@@ -7198,6 +7198,13 @@ RenderFrameHostImpl* WebContentsImpl::GetMainFrameForInnerDelegate(
   return nullptr;
 }
 
+bool WebContentsImpl::IsFrameLowPriority(
+    const RenderFrameHost* render_frame_host) {
+  if (!delegate_)
+    return false;
+  return delegate_->IsFrameLowPriority(this, render_frame_host);
+}
+
 void WebContentsImpl::UpdateWebContentsVisibility(Visibility visibility) {
   // Occlusion is disabled when |features::kWebContentsOcclusion| is disabled
   // (for power and speed impact assessment) or when
