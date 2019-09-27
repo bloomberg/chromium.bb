@@ -125,7 +125,8 @@ static AOM_INLINE void mode_estimation(
     AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd, struct scale_factors *sf,
     int frame_idx, int16_t *src_diff, tran_low_t *coeff, tran_low_t *qcoeff,
     tran_low_t *dqcoeff, int mi_row, int mi_col, BLOCK_SIZE bsize,
-    TX_SIZE tx_size, const YV12_BUFFER_CONFIG *ref_frame[], uint8_t *predictor,
+    TX_SIZE tx_size, const YV12_BUFFER_CONFIG *ref_frame[],
+    const YV12_BUFFER_CONFIG *src_ref_frame[], uint8_t *predictor,
     int64_t *recon_error, int64_t *sse, TplDepStats *tpl_stats) {
   AV1_COMMON *cm = &cpi->common;
   const GF_GROUP *gf_group = &cpi->gf_group;
@@ -146,6 +147,7 @@ static AOM_INLINE void mode_estimation(
   int64_t intra_cost;
   PREDICTION_MODE mode;
   PREDICTION_MODE best_mode = DC_PRED;
+
   int mb_y_offset = mi_row * MI_SIZE * xd->cur_buf->y_stride + mi_col * MI_SIZE;
   uint8_t *src_mb_buffer = xd->cur_buf->y_buffer + mb_y_offset;
   const int src_stride = xd->cur_buf->y_stride;
@@ -219,8 +221,9 @@ static AOM_INLINE void mode_estimation(
 
   for (rf_idx = 0; rf_idx < INTER_REFS_PER_FRAME; ++rf_idx) {
     if (ref_frame[rf_idx] == NULL) continue;
+    if (src_ref_frame[rf_idx] == NULL) continue;
 
-    const YV12_BUFFER_CONFIG *ref_frame_ptr = ref_frame[rf_idx];
+    const YV12_BUFFER_CONFIG *ref_frame_ptr = src_ref_frame[rf_idx];
     int ref_mb_offset =
         mi_row * MI_SIZE * ref_frame_ptr->y_stride + mi_col * MI_SIZE;
     uint8_t *ref_mb = ref_frame_ptr->y_buffer + ref_mb_offset;
@@ -315,6 +318,7 @@ static AOM_INLINE void mode_estimation(
   wht_fwd_txfm(src_diff, bw, coeff, tx_size, xd->bd, is_cur_buf_hbd(xd));
 
   uint16_t eob;
+
   get_quantize_error(x, 0, coeff, qcoeff, dqcoeff, tx_size, &eob, recon_error,
                      sse);
 
@@ -511,6 +515,8 @@ static AOM_INLINE void mc_flow_dispenser(AV1_COMP *cpi, int frame_idx) {
   unsigned int ref_frame_display_index[7];
   MV_REFERENCE_FRAME ref[2] = { LAST_FRAME, INTRA_FRAME };
   const int max_allowed_refs = get_max_allowed_ref_frames(cpi);
+  const YV12_BUFFER_CONFIG *src_frame[7] = { NULL, NULL, NULL, NULL,
+                                             NULL, NULL, NULL };
 
   AV1_COMMON *cm = &cpi->common;
   struct scale_factors sf;
@@ -548,6 +554,7 @@ static AOM_INLINE void mc_flow_dispenser(AV1_COMP *cpi, int frame_idx) {
     TplDepFrame *tpl_ref_frame = &cpi->tpl_frame[tpl_frame->ref_map_index[idx]];
     ref_frame[idx] = cpi->tpl_frame[tpl_frame->ref_map_index[idx]].rec_picture;
     ref_frame_display_index[idx] = tpl_ref_frame->frame_display_index;
+    src_frame[idx] = cpi->tpl_frame[tpl_frame->ref_map_index[idx]].gf_picture;
   }
 
   // Remove duplicate frames
@@ -616,7 +623,7 @@ static AOM_INLINE void mc_flow_dispenser(AV1_COMP *cpi, int frame_idx) {
       xd->mb_to_right_edge = ((cm->mi_cols - mi_width - mi_col) * MI_SIZE) * 8;
       mode_estimation(cpi, x, xd, &sf, frame_idx, src_diff, coeff, qcoeff,
                       dqcoeff, mi_row, mi_col, bsize, tx_size, ref_frame,
-                      predictor, &recon_error, &sse, &tpl_stats);
+                      src_frame, predictor, &recon_error, &sse, &tpl_stats);
 
       // Motion flow dependency dispenser.
       double quant_ratio = (double)recon_error / sse;
