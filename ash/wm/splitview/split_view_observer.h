@@ -2,25 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_PUBLIC_CPP_SPLIT_VIEW_H_
-#define ASH_PUBLIC_CPP_SPLIT_VIEW_H_
+#ifndef ASH_WM_SPLITVIEW_SPLIT_VIEW_OBSERVER_H_
+#define ASH_WM_SPLITVIEW_SPLIT_VIEW_OBSERVER_H_
 
-#include "ash/public/cpp/ash_public_export.h"
+#include "ash/ash_export.h"
+#include "ash/wm/splitview/split_view_controller.h"
 
 namespace ash {
 
-enum class SplitViewState {
-  kNoSnap,
-  kLeftSnapped,
-  kRightSnapped,
-  kBothSnapped,
-};
-
-class ASH_PUBLIC_EXPORT SplitViewObserver {
+class ASH_EXPORT SplitViewObserver {
  public:
   // Called when split view state changed from |previous_state| to |state|.
-  virtual void OnSplitViewStateChanged(SplitViewState previous_state,
-                                       SplitViewState state) {}
+  virtual void OnSplitViewStateChanged(
+      SplitViewController::State previous_state,
+      SplitViewController::State state) {}
 
   // Called when split view divider's position has changed.
   virtual void OnSplitViewDividerPositionChanged() {}
@@ -32,4 +27,4 @@ class ASH_PUBLIC_EXPORT SplitViewObserver {
 
 }  // namespace ash
 
-#endif  // ASH_PUBLIC_CPP_SPLIT_VIEW_H_
+#endif  // ASH_WM_SPLITVIEW_SPLIT_VIEW_OBSERVER_H_

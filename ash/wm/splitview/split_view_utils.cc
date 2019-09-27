@@ -269,7 +269,8 @@ void MaybeRestoreSplitView(bool refresh_snapped_windows) {
           break;
       }
 
-      if (split_view_controller->state() == SplitViewState::kBothSnapped)
+      if (split_view_controller->state() ==
+          SplitViewController::State::kBothSnapped)
         break;
     }
   }
@@ -277,9 +278,9 @@ void MaybeRestoreSplitView(bool refresh_snapped_windows) {
   // Ensure that overview mode is active if and only if there is a window
   // snapped to one side but no window snapped to the other side.
   OverviewController* overview_controller = Shell::Get()->overview_controller();
-  SplitViewState state = split_view_controller->state();
-  if (state == SplitViewState::kLeftSnapped ||
-      state == SplitViewState::kRightSnapped) {
+  SplitViewController::State state = split_view_controller->state();
+  if (state == SplitViewController::State::kLeftSnapped ||
+      state == SplitViewController::State::kRightSnapped) {
     overview_controller->StartOverview();
   } else {
     overview_controller->EndOverview();

@@ -417,10 +417,10 @@ void ScreenOrientationController::OnTabletModeEnded() {
 }
 
 void ScreenOrientationController::OnSplitViewStateChanged(
-    SplitViewState previous_state,
-    SplitViewState state) {
-  if (previous_state == SplitViewState::kNoSnap ||
-      state == SplitViewState::kNoSnap) {
+    SplitViewController::State previous_state,
+    SplitViewController::State state) {
+  if (previous_state == SplitViewController::State::kNoSnap ||
+      state == SplitViewController::State::kNoSnap) {
     ApplyLockForActiveWindow();
   }
 }

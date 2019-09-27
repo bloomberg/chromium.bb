@@ -750,10 +750,11 @@ void ShelfLayoutManager::OnPinnedStateChanged(aura::Window* pinned_window) {
   UpdateVisibilityState();
 }
 
-void ShelfLayoutManager::OnSplitViewStateChanged(SplitViewState previous_state,
-                                                 SplitViewState state) {
-  if (previous_state == SplitViewState::kNoSnap ||
-      state == SplitViewState::kNoSnap) {
+void ShelfLayoutManager::OnSplitViewStateChanged(
+    SplitViewController::State previous_state,
+    SplitViewController::State state) {
+  if (previous_state == SplitViewController::State::kNoSnap ||
+      state == SplitViewController::State::kNoSnap) {
     MaybeUpdateShelfBackground(AnimationChangeType::ANIMATE);
   }
 }

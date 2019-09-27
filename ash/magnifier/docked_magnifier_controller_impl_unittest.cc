@@ -374,7 +374,8 @@ TEST_P(DockedMagnifierTest, DisplaysWorkAreasSingleSplitView) {
   WindowState::Get(window.get())->Maximize();
 
   auto* split_view_controller = Shell::Get()->split_view_controller();
-  EXPECT_EQ(split_view_controller->state(), SplitViewState::kNoSnap);
+  EXPECT_EQ(split_view_controller->state(),
+            SplitViewController::State::kNoSnap);
   EXPECT_EQ(split_view_controller->InSplitViewMode(), false);
 
   // Simulate going into split view, by enabling overview mode, and snapping
@@ -383,7 +384,8 @@ TEST_P(DockedMagnifierTest, DisplaysWorkAreasSingleSplitView) {
   overview_controller->StartOverview();
   EXPECT_TRUE(overview_controller->InOverviewSession());
   split_view_controller->SnapWindow(window.get(), SplitViewController::LEFT);
-  EXPECT_EQ(split_view_controller->state(), SplitViewState::kLeftSnapped);
+  EXPECT_EQ(split_view_controller->state(),
+            SplitViewController::State::kLeftSnapped);
   EXPECT_EQ(split_view_controller->left_window(), window.get());
   EXPECT_TRUE(overview_controller->InOverviewSession());
 
@@ -393,7 +395,8 @@ TEST_P(DockedMagnifierTest, DisplaysWorkAreasSingleSplitView) {
   controller()->SetEnabled(true);
   EXPECT_TRUE(controller()->GetEnabled());
   EXPECT_FALSE(overview_controller->InOverviewSession());
-  EXPECT_EQ(split_view_controller->state(), SplitViewState::kNoSnap);
+  EXPECT_EQ(split_view_controller->state(),
+            SplitViewController::State::kNoSnap);
   EXPECT_EQ(split_view_controller->InSplitViewMode(), false);
   const display::Display& display = display_manager()->GetDisplayAt(0);
   const int magnifier_height = GetMagnifierHeight(display.bounds().height());
@@ -425,7 +428,8 @@ TEST_P(DockedMagnifierTest, DisplaysWorkAreasDoubleSplitView) {
   split_view_controller->SnapWindow(window1.get(), SplitViewController::LEFT);
   split_view_controller->SnapWindow(window2.get(), SplitViewController::RIGHT);
   EXPECT_EQ(split_view_controller->InSplitViewMode(), true);
-  EXPECT_EQ(split_view_controller->state(), SplitViewState::kBothSnapped);
+  EXPECT_EQ(split_view_controller->state(),
+            SplitViewController::State::kBothSnapped);
 
   // Snapping both windows should exit overview mode.
   EXPECT_FALSE(overview_controller->InOverviewSession());
@@ -436,7 +440,8 @@ TEST_P(DockedMagnifierTest, DisplaysWorkAreasDoubleSplitView) {
   controller()->SetEnabled(true);
   EXPECT_TRUE(controller()->GetEnabled());
   EXPECT_EQ(split_view_controller->InSplitViewMode(), true);
-  EXPECT_EQ(split_view_controller->state(), SplitViewState::kBothSnapped);
+  EXPECT_EQ(split_view_controller->state(),
+            SplitViewController::State::kBothSnapped);
   const display::Display& display = display_manager()->GetDisplayAt(0);
   const int magnifier_height = GetMagnifierHeight(display.bounds().height());
   gfx::Rect work_area = display.bounds();

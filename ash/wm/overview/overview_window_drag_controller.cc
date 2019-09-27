@@ -291,11 +291,12 @@ void OverviewWindowDragController::ActivateDraggedWindow() {
   // right window, snap the current window to left. If split view is active
   // and the selected window cannot be snapped, exit splitview and activate
   // the selected window, and also exit the overview.
-  SplitViewState split_state = split_view_controller_->state();
-  if (!should_allow_split_view_ || split_state == SplitViewState::kNoSnap) {
+  SplitViewController::State split_state = split_view_controller_->state();
+  if (!should_allow_split_view_ ||
+      split_state == SplitViewController::State::kNoSnap) {
     overview_session_->SelectWindow(item_);
   } else if (CanSnapInSplitview(item_->GetWindow())) {
-    SnapWindow(split_state == SplitViewState::kLeftSnapped
+    SnapWindow(split_state == SplitViewController::State::kLeftSnapped
                    ? SplitViewController::RIGHT
                    : SplitViewController::LEFT);
   } else {
