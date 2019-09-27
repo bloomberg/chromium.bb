@@ -2662,10 +2662,10 @@ class TestResolveHostClient : public ResolveHostClientBase {
 };
 
 TEST_F(NetworkContextTest, ResolveHost_Sync) {
+  auto resolver = std::make_unique<net::MockHostResolver>();
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(CreateContextParams());
 
-  auto resolver = std::make_unique<net::MockHostResolver>();
   network_context->url_request_context()->set_host_resolver(resolver.get());
   resolver->set_synchronous_mode(true);
 
@@ -2691,10 +2691,10 @@ TEST_F(NetworkContextTest, ResolveHost_Sync) {
 }
 
 TEST_F(NetworkContextTest, ResolveHost_Async) {
+  auto resolver = std::make_unique<net::MockHostResolver>();
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(CreateContextParams());
 
-  auto resolver = std::make_unique<net::MockHostResolver>();
   network_context->url_request_context()->set_host_resolver(resolver.get());
   resolver->set_synchronous_mode(false);
 
@@ -2726,10 +2726,10 @@ TEST_F(NetworkContextTest, ResolveHost_Async) {
 }
 
 TEST_F(NetworkContextTest, ResolveHost_Failure_Sync) {
+  auto resolver = std::make_unique<net::MockHostResolver>();
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(CreateContextParams());
 
-  auto resolver = std::make_unique<net::MockHostResolver>();
   network_context->url_request_context()->set_host_resolver(resolver.get());
   resolver->rules()->AddSimulatedFailure("example.com");
   resolver->set_synchronous_mode(true);
@@ -2754,10 +2754,10 @@ TEST_F(NetworkContextTest, ResolveHost_Failure_Sync) {
 }
 
 TEST_F(NetworkContextTest, ResolveHost_Failure_Async) {
+  auto resolver = std::make_unique<net::MockHostResolver>();
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(CreateContextParams());
 
-  auto resolver = std::make_unique<net::MockHostResolver>();
   network_context->url_request_context()->set_host_resolver(resolver.get());
   resolver->rules()->AddSimulatedFailure("example.com");
   resolver->set_synchronous_mode(false);
@@ -2840,12 +2840,11 @@ TEST_F(NetworkContextTest, ResolveHost_CloseControlHandle) {
 }
 
 TEST_F(NetworkContextTest, ResolveHost_Cancellation) {
-  std::unique_ptr<NetworkContext> network_context =
-      CreateContextWithParams(CreateContextParams());
-
   // Override the HostResolver with a hanging one, so the test can ensure the
   // request won't be completed before the cancellation arrives.
   auto resolver = std::make_unique<net::HangingHostResolver>();
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
   network_context->url_request_context()->set_host_resolver(resolver.get());
 
   ASSERT_EQ(0, resolver->num_cancellations());
@@ -2880,12 +2879,11 @@ TEST_F(NetworkContextTest, ResolveHost_Cancellation) {
 }
 
 TEST_F(NetworkContextTest, ResolveHost_DestroyContext) {
-  std::unique_ptr<NetworkContext> network_context =
-      CreateContextWithParams(CreateContextParams());
-
   // Override the HostResolver with a hanging one, so the test can ensure the
   // request won't be completed before the cancellation arrives.
   auto resolver = std::make_unique<net::HangingHostResolver>();
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
   network_context->url_request_context()->set_host_resolver(resolver.get());
 
   ASSERT_EQ(0, resolver->num_cancellations());
@@ -2918,12 +2916,11 @@ TEST_F(NetworkContextTest, ResolveHost_DestroyContext) {
 }
 
 TEST_F(NetworkContextTest, ResolveHost_CloseClient) {
-  std::unique_ptr<NetworkContext> network_context =
-      CreateContextWithParams(CreateContextParams());
-
   // Override the HostResolver with a hanging one, so the test can ensure the
   // request won't be completed before the cancellation arrives.
   auto resolver = std::make_unique<net::HangingHostResolver>();
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
   network_context->url_request_context()->set_host_resolver(resolver.get());
 
   ASSERT_EQ(0, resolver->num_cancellations());
@@ -3038,12 +3035,11 @@ TEST_F(NetworkContextTest, CreateHostResolver) {
 }
 
 TEST_F(NetworkContextTest, CreateHostResolver_CloseResolver) {
-  std::unique_ptr<NetworkContext> network_context =
-      CreateContextWithParams(CreateContextParams());
-
   // Override the HostResolver with a hanging one, so the test can ensure the
   // request won't be completed before the cancellation arrives.
   auto internal_resolver = std::make_unique<net::HangingHostResolver>();
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
   network_context->url_request_context()->set_host_resolver(
       internal_resolver.get());
 
@@ -3081,12 +3077,11 @@ TEST_F(NetworkContextTest, CreateHostResolver_CloseResolver) {
 }
 
 TEST_F(NetworkContextTest, CreateHostResolver_CloseContext) {
-  std::unique_ptr<NetworkContext> network_context =
-      CreateContextWithParams(CreateContextParams());
-
   // Override the HostResolver with a hanging one, so the test can ensure the
   // request won't be completed before the cancellation arrives.
   auto internal_resolver = std::make_unique<net::HangingHostResolver>();
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
   network_context->url_request_context()->set_host_resolver(
       internal_resolver.get());
 
