@@ -1791,8 +1791,7 @@ void ResourceFetcher::HandleLoaderFinish(
 
   if (scoped_refptr<ResourceTimingInfo> info =
           resource_timing_info_map_.Take(resource)) {
-    if (resource->GetResponse().IsHTTP() &&
-        resource->GetResponse().HttpStatusCode() < 400) {
+    if (resource->GetResponse().IsHTTP()) {
       info->SetInitialURL(resource->GetResourceRequest()
                                   .GetInitialUrlForResourceTiming()
                                   .IsNull()
