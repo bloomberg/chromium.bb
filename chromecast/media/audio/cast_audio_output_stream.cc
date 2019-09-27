@@ -481,7 +481,8 @@ void CastAudioOutputStream::OnGetMultiroomInfo(
 
   if (!use_mixer_service_) {
     cma_wrapper_ = std::make_unique<CmaAudioOutputStream>(
-        audio_params_, device_id_, audio_manager_->cma_backend_factory());
+        audio_params_, audio_params_.GetBufferDuration(), device_id_,
+        audio_manager_->cma_backend_factory());
     POST_TO_CMA_WRAPPER(Initialize, application_session_id,
                         std::move(multiroom_info));
   } else {

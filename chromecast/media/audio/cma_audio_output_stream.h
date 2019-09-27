@@ -41,6 +41,7 @@ class CmaBackendFactory;
 class CmaAudioOutputStream : public CmaBackend::Decoder::Delegate {
  public:
   CmaAudioOutputStream(const ::media::AudioParameters& audio_params,
+                       base::TimeDelta buffer_duration,
                        const std::string& device_id,
                        CmaBackendFactory* cma_backend_factory);
   ~CmaAudioOutputStream() override;

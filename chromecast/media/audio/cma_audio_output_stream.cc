@@ -40,6 +40,7 @@ AudioContentType GetContentType(const std::string& device_id) {
 
 CmaAudioOutputStream::CmaAudioOutputStream(
     const ::media::AudioParameters& audio_params,
+    base::TimeDelta buffer_duration,
     const std::string& device_id,
     CmaBackendFactory* cma_backend_factory)
     : is_audio_prefetch_(audio_params.effects() &
@@ -48,7 +49,7 @@ CmaAudioOutputStream::CmaAudioOutputStream(
       device_id_(device_id),
       cma_backend_factory_(cma_backend_factory),
       timestamp_helper_(audio_params_.sample_rate()),
-      buffer_duration_(audio_params_.GetBufferDuration()),
+      buffer_duration_(buffer_duration),
       render_buffer_size_estimate_(kRenderBufferSize) {
   DCHECK(cma_backend_factory_);
   DETACH_FROM_THREAD(media_thread_checker_);
@@ -263,7 +264,7 @@ void CmaAudioOutputStream::PushBuffer() {
   }
   auto decoder_buffer =
       base::MakeRefCounted<DecoderBufferAdapter>(new ::media::DecoderBuffer(
-          audio_params_.GetBytesPerBuffer(::media::kSampleFormatS16)));
+          frame_count * audio_bus_->channels() * sizeof(int16_t)));
   audio_bus_->ToInterleaved<::media::SignedInt16SampleTypeTraits>(
       frame_count, reinterpret_cast<int16_t*>(decoder_buffer->writable_data()));
   decoder_buffer->set_timestamp(timestamp_helper_.GetTimestamp());
