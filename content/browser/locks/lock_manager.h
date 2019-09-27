@@ -59,16 +59,22 @@ class LockManager : public base::RefCountedThreadSafe<LockManager>,
   // State for a particular origin.
   class OriginState;
 
+  // Describes a frame or a worker.
+  struct ExecutionContext {
+    // The identifier of the process hosting this frame or worker.
+    int render_process_id;
+
+    // The frame identifier, or MSG_ROUTING_NONE if this describes a worker
+    // (this means that dedicated/shared/service workers are not distinguished).
+    int render_frame_id;
+  };
+
   // State for each client held in |receivers_|.
   struct ReceiverState {
     std::string client_id;
 
-    // Process owning this receiver.
-    int render_process_id;
-
-    // Frame owning this receiver. MSG_ROUTING_NONE if the receiver is owned by
-    // a worker.
-    int render_frame_id;
+    // ExecutionContext owning this receiver.
+    ExecutionContext execution_context;
 
     // Origin of the frame or worker owning this receiver.
     url::Origin origin;
