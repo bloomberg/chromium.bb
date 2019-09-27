@@ -413,7 +413,7 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   // to left or right, the left and right window will be resized accordingly.
   std::unique_ptr<SplitViewDivider> split_view_divider_;
 
-  // A black scrim layer that fades in over a window when it’s width drops under
+  // A black scrim layer that fades in over a window when its width drops under
   // 1/3 of the width of the screen, increasing in opacity as the divider gets
   // closer to the edge of the screen.
   std::unique_ptr<ui::Layer> black_scrim_layer_;
