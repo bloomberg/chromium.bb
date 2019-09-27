@@ -344,10 +344,9 @@ Polymer({
     if (!this.didSetFocus_) {
       // Focus a button once the initial state is set.
       this.didSetFocus_ = true;
-      const button = this.$$('#titleDiv .action-button:not([hidden])') ||
-          this.$$('#titleDiv cr-button:not([hidden])');
+      const button = this.$$('#titleDiv .action-button:not([hidden])');
       if (button) {
-        setTimeout(() => button.focus());
+        Polymer.RenderStatus.afterNextRender(this, () => button.focus());
       }
     }
 
