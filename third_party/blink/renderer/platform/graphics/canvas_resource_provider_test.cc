@@ -142,6 +142,13 @@ class CanvasResourceProviderTest : public Test {
         ->SetCapabilities(capabilities);
   }
 
+  bool PlatformSupportsGMBs() {
+#if defined(OS_ANDROID)
+    return false;
+#endif
+    return true;
+  }
+
  protected:
   base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper_;
   ScopedTestingPlatformSupport<GpuMemoryBufferTestPlatform> platform_;
@@ -164,7 +171,7 @@ TEST_F(CanvasResourceProviderTest,
   EXPECT_TRUE(provider->IsValid());
   EXPECT_TRUE(provider->IsAccelerated());
   EXPECT_TRUE(provider->SupportsDirectCompositing());
-  EXPECT_TRUE(provider->SupportsSingleBuffering());
+  EXPECT_EQ(provider->SupportsSingleBuffering(), PlatformSupportsGMBs());
   EXPECT_EQ(provider->ColorParams().ColorSpace(), kColorParams.ColorSpace());
   EXPECT_EQ(provider->ColorParams().PixelFormat(), kColorParams.PixelFormat());
   EXPECT_EQ(provider->ColorParams().GetOpacityMode(),
@@ -172,7 +179,7 @@ TEST_F(CanvasResourceProviderTest,
 
   EXPECT_FALSE(provider->IsSingleBuffered());
   provider->TryEnableSingleBuffering();
-  EXPECT_TRUE(provider->IsSingleBuffered());
+  EXPECT_EQ(provider->IsSingleBuffered(), PlatformSupportsGMBs());
 }
 
 TEST_F(CanvasResourceProviderTest, CanvasResourceProviderTexture) {
@@ -216,8 +223,8 @@ TEST_F(CanvasResourceProviderTest,
   EXPECT_EQ(provider->Size(), kSize);
   EXPECT_TRUE(provider->IsValid());
   EXPECT_FALSE(provider->IsAccelerated());
-  EXPECT_TRUE(provider->SupportsDirectCompositing());
-  EXPECT_TRUE(provider->SupportsSingleBuffering());
+  EXPECT_EQ(provider->SupportsDirectCompositing(), PlatformSupportsGMBs());
+  EXPECT_EQ(provider->SupportsSingleBuffering(), PlatformSupportsGMBs());
   EXPECT_EQ(provider->ColorParams().ColorSpace(), kColorParams.ColorSpace());
   EXPECT_EQ(provider->ColorParams().PixelFormat(), kColorParams.PixelFormat());
   EXPECT_EQ(provider->ColorParams().GetOpacityMode(),
@@ -412,7 +419,7 @@ TEST_F(CanvasResourceProviderTest,
   EXPECT_TRUE(provider->IsValid());
   EXPECT_TRUE(provider->IsAccelerated());
   EXPECT_TRUE(provider->SupportsDirectCompositing());
-  EXPECT_TRUE(provider->SupportsSingleBuffering());
+  EXPECT_EQ(provider->SupportsSingleBuffering(), PlatformSupportsGMBs());
   EXPECT_EQ(provider->ColorParams().ColorSpace(), kColorParams.ColorSpace());
   EXPECT_EQ(provider->ColorParams().PixelFormat(), kColorParams.PixelFormat());
   EXPECT_EQ(provider->ColorParams().GetOpacityMode(),
@@ -420,7 +427,7 @@ TEST_F(CanvasResourceProviderTest,
 
   EXPECT_FALSE(provider->IsSingleBuffered());
   provider->TryEnableSingleBuffering();
-  EXPECT_TRUE(provider->IsSingleBuffered());
+  EXPECT_EQ(provider->IsSingleBuffered(), PlatformSupportsGMBs());
 }
 
 TEST_F(CanvasResourceProviderTest,
@@ -441,7 +448,7 @@ TEST_F(CanvasResourceProviderTest,
   EXPECT_TRUE(provider->IsValid());
   EXPECT_TRUE(provider->IsAccelerated());
   EXPECT_TRUE(provider->SupportsDirectCompositing());
-  EXPECT_TRUE(provider->SupportsSingleBuffering());
+  EXPECT_EQ(provider->SupportsSingleBuffering(), PlatformSupportsGMBs());
   EXPECT_EQ(provider->ColorParams().ColorSpace(), kColorParams.ColorSpace());
   EXPECT_EQ(provider->ColorParams().PixelFormat(), kColorParams.PixelFormat());
   EXPECT_EQ(provider->ColorParams().GetOpacityMode(),
@@ -449,8 +456,10 @@ TEST_F(CanvasResourceProviderTest,
 
   EXPECT_FALSE(provider->IsSingleBuffered());
   provider->TryEnableSingleBuffering();
-  EXPECT_TRUE(provider->IsSingleBuffered());
+  EXPECT_EQ(provider->IsSingleBuffered(), PlatformSupportsGMBs());
 
+  if (!PlatformSupportsGMBs())
+    return;
   gpu::Mailbox mailbox = gpu::Mailbox::Generate();
   scoped_refptr<ExternalCanvasResource> resource =
       ExternalCanvasResource::Create(
