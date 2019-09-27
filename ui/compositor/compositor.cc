@@ -25,6 +25,7 @@
 #include "cc/base/switches.h"
 #include "cc/input/input_handler.h"
 #include "cc/layers/layer.h"
+#include "cc/metrics/begin_main_frame_metrics.h"
 #include "cc/trees/latency_info_swap_promise.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_settings.h"
@@ -624,6 +625,11 @@ void Compositor::DidCommit() {
   DCHECK(!IsLocked());
   for (auto& observer : observer_list_)
     observer.OnCompositingDidCommit(this);
+}
+
+std::unique_ptr<cc::BeginMainFrameMetrics>
+Compositor::GetBeginMainFrameMetrics() {
+  return nullptr;
 }
 
 void Compositor::DidReceiveCompositorFrameAck() {
