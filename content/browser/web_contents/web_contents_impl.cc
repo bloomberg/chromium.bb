@@ -2203,6 +2203,14 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
   // happens after RenderFrameHostManager::Init.
   NotifySwappedFromRenderManager(
       nullptr, GetRenderManager()->current_frame_host(), true);
+
+  // For WebContents that are never shown, do critical initialization here which
+  // would normally only happen when the WebContents is shown.
+  if (params.is_never_visible) {
+    // This has just been created so there can only be one frame. Thus it is
+    // safe to initialize the root.
+    GetMainFrame()->Init();
+  }
 }
 
 void WebContentsImpl::OnWebContentsDestroyed(WebContentsImpl* web_contents) {
@@ -2838,8 +2846,6 @@ RenderFrameHostDelegate* WebContentsImpl::CreateNewWindow(
     RenderFrameHostImpl* rfh =
         RenderFrameHostImpl::FromID(render_process_id, main_frame_route_id);
     if (rfh) {
-      DCHECK(rfh->IsRenderFrameLive());
-      rfh->Init();
       // TODO(crbug.com/545684): It's super surprising that
       // ShouldCreateWebContents() is actually a way to allow
       // BackgroundWebContents to intercede and provide a completely different

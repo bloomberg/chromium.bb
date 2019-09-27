@@ -222,6 +222,12 @@ class WebContents : public PageNavigator,
     // default initialized then the value is not passed on to the WebContents
     // and GetLastActiveTime() will return the WebContents' creation time.
     base::TimeTicks last_active_time;
+
+    // Normal WebContents initialization is split between construction and the
+    // first time it is shown. Some WebContents are never shown though.
+    // Setting this to true will invoke the WebContents delayed initialization
+    // that doesn't require visibility.
+    bool is_never_visible;
   };
 
   // Creates a new WebContents.
