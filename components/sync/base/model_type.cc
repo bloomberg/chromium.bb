@@ -9,7 +9,6 @@
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/values.h"
-#include "components/sync/protocol/app_notification_specifics.pb.h"
 #include "components/sync/protocol/app_setting_specifics.pb.h"
 #include "components/sync/protocol/app_specifics.pb.h"
 #include "components/sync/protocol/autofill_specifics.pb.h"
