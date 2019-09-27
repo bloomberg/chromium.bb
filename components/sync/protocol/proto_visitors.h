@@ -131,16 +131,6 @@ VISIT_PROTO_FIELDS(const sync_pb::ArcPackageSpecifics& proto) {
   VISIT(last_backup_time);
 }
 
-VISIT_PROTO_FIELDS(const sync_pb::ArticlePage& proto) {
-  VISIT(url);
-}
-
-VISIT_PROTO_FIELDS(const sync_pb::ArticleSpecifics& proto) {
-  VISIT(entry_id);
-  VISIT(title);
-  VISIT_REP(pages);
-}
-
 VISIT_PROTO_FIELDS(const sync_pb::AutofillCullingFlags& proto) {
   VISIT(enabled);
 }
@@ -372,7 +362,7 @@ VISIT_PROTO_FIELDS(const sync_pb::EntityMetadata& proto) {
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::EntitySpecifics& proto) {
-  static_assert(41 == ModelType::NUM_ENTRIES,
+  static_assert(39 == ModelType::NUM_ENTRIES,
                 "When adding a new protocol type, you will likely need to add "
                 "it here as well.");
   VISIT(encrypted);
@@ -380,7 +370,6 @@ VISIT_PROTO_FIELDS(const sync_pb::EntitySpecifics& proto) {
   VISIT(app_list);
   VISIT(app_setting);
   VISIT(arc_package);
-  VISIT(article);
   VISIT(autofill);
   VISIT(autofill_profile);
   VISIT(autofill_wallet);
@@ -413,7 +402,6 @@ VISIT_PROTO_FIELDS(const sync_pb::EntitySpecifics& proto) {
   VISIT(wallet_metadata);
   VISIT(web_app);
   VISIT(wifi_configuration);
-  VISIT(wifi_credential);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::ExperimentsSpecifics& proto) {
@@ -641,7 +629,6 @@ VISIT_PROTO_FIELDS(const sync_pb::NigoriSpecifics& proto) {
   VISIT(encrypt_apps);
   VISIT(encrypt_search_engines);
   VISIT(encrypt_dictionary);
-  VISIT(encrypt_articles);
   VISIT(encrypt_app_list);
   VISIT(encrypt_arc_package);
   VISIT(encrypt_reading_list);
@@ -1097,12 +1084,6 @@ VISIT_PROTO_FIELDS(const sync_pb::WebAppSpecifics& proto) {
   VISIT(name);
   VISIT_ENUM(launch_container);
   VISIT(theme_color);
-}
-
-VISIT_PROTO_FIELDS(const sync_pb::WifiCredentialSpecifics& proto) {
-  VISIT_BYTES(ssid);
-  VISIT_ENUM(security_class);
-  VISIT_BYTES(passphrase);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::WifiConfigurationSpecifics& proto) {

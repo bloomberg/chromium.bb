@@ -130,15 +130,9 @@ const ModelTypeInfo kModelTypeInfoMap[] = {
      "Managed User Settings",
      sync_pb::EntitySpecifics::kManagedUserSettingFieldNumber,
      ModelTypeForHistograms::kSupervisedUserSettings},
-    {DEPRECATED_ARTICLES, "ARTICLE", "articles", "Articles",
-     sync_pb::EntitySpecifics::kArticleFieldNumber,
-     ModelTypeForHistograms::kDeprecatedArticles},
     {APP_LIST, "APP_LIST", "app_list", "App List",
      sync_pb::EntitySpecifics::kAppListFieldNumber,
      ModelTypeForHistograms::kAppList},
-    {DEPRECATED_WIFI_CREDENTIALS, "WIFI_CREDENTIAL", "wifi_credentials",
-     "WiFi Credentials", sync_pb::EntitySpecifics::kWifiCredentialFieldNumber,
-     ModelTypeForHistograms::kDeprecatedWifiCredentials},
     {SUPERVISED_USER_WHITELISTS, "MANAGED_USER_WHITELIST",
      "managed_user_whitelists", "Managed User Whitelists",
      sync_pb::EntitySpecifics::kManagedUserWhitelistFieldNumber,
@@ -188,11 +182,11 @@ const ModelTypeInfo kModelTypeInfoMap[] = {
 static_assert(base::size(kModelTypeInfoMap) == ModelType::NUM_ENTRIES,
               "kModelTypeInfoMap should have ModelType::NUM_ENTRIES elements");
 
-static_assert(41 == syncer::ModelType::NUM_ENTRIES,
+static_assert(39 == syncer::ModelType::NUM_ENTRIES,
               "When adding a new type, update enum SyncModelTypes in enums.xml "
               "and suffix SyncModelType in histograms.xml.");
 
-static_assert(41 == syncer::ModelType::NUM_ENTRIES,
+static_assert(39 == syncer::ModelType::NUM_ENTRIES,
               "When adding a new type, update kAllocatorDumpNameWhitelist in "
               "base/trace_event/memory_infra_background_whitelist.cc.");
 
@@ -268,14 +262,8 @@ void AddDefaultFieldValue(ModelType type, sync_pb::EntitySpecifics* specifics) {
     case SUPERVISED_USER_SETTINGS:
       specifics->mutable_managed_user_setting();
       break;
-    case DEPRECATED_ARTICLES:
-      specifics->mutable_article();
-      break;
     case APP_LIST:
       specifics->mutable_app_list();
-      break;
-    case DEPRECATED_WIFI_CREDENTIALS:
-      specifics->mutable_wifi_credential();
       break;
     case SUPERVISED_USER_WHITELISTS:
       specifics->mutable_managed_user_whitelist();
@@ -361,7 +349,7 @@ ModelType GetModelType(const sync_pb::SyncEntity& sync_entity) {
 }
 
 ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
-  static_assert(41 == ModelType::NUM_ENTRIES,
+  static_assert(39 == ModelType::NUM_ENTRIES,
                 "When adding new protocol types, the following type lookup "
                 "logic must be updated.");
   if (specifics.has_bookmark())
@@ -408,12 +396,8 @@ ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
     return PRIORITY_PREFERENCES;
   if (specifics.has_managed_user_setting())
     return SUPERVISED_USER_SETTINGS;
-  if (specifics.has_article())
-    return DEPRECATED_ARTICLES;
   if (specifics.has_app_list())
     return APP_LIST;
-  if (specifics.has_wifi_credential())
-    return DEPRECATED_WIFI_CREDENTIALS;
   if (specifics.has_managed_user_whitelist())
     return SUPERVISED_USER_WHITELISTS;
   if (specifics.has_arc_package())
@@ -445,7 +429,7 @@ ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
 }
 
 ModelTypeSet EncryptableUserTypes() {
-  static_assert(41 == ModelType::NUM_ENTRIES,
+  static_assert(39 == ModelType::NUM_ENTRIES,
                 "If adding an unencryptable type, remove from "
                 "encryptable_user_types below.");
   ModelTypeSet encryptable_user_types = UserTypes();

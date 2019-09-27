@@ -477,8 +477,7 @@ class DirectoryUpdateHandlerApplyUpdateTest : public ::testing::Test {
         password_worker_(new FakeModelWorker(GROUP_PASSWORD)),
         passive_worker_(new FakeModelWorker(GROUP_PASSIVE)),
         bookmarks_emitter_(BOOKMARKS, &type_observers_),
-        passwords_emitter_(PASSWORDS, &type_observers_),
-        articles_emitter_(DEPRECATED_ARTICLES, &type_observers_) {}
+        passwords_emitter_(PASSWORDS, &type_observers_) {}
 
   void SetUp() override {
     dir_maker_.SetUp();
@@ -502,10 +501,6 @@ class DirectoryUpdateHandlerApplyUpdateTest : public ::testing::Test {
 
   const UpdateCounters& GetPasswordsUpdateCounters() {
     return passwords_emitter_.GetUpdateCounters();
-  }
-
-  const UpdateCounters& GetArticlesUpdateCounters() {
-    return articles_emitter_.GetUpdateCounters();
   }
 
   DirectoryCryptographer* GetCryptographer(
@@ -539,7 +534,6 @@ class DirectoryUpdateHandlerApplyUpdateTest : public ::testing::Test {
   base::ObserverList<TypeDebugInfoObserver>::Unchecked type_observers_;
   DirectoryTypeDebugInfoEmitter bookmarks_emitter_;
   DirectoryTypeDebugInfoEmitter passwords_emitter_;
-  DirectoryTypeDebugInfoEmitter articles_emitter_;
 
   std::map<ModelType, std::unique_ptr<UpdateHandler>> update_handler_map_;
 };

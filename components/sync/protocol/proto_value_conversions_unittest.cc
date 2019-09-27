@@ -33,7 +33,6 @@
 #include "components/sync/protocol/sync.pb.h"
 #include "components/sync/protocol/theme_specifics.pb.h"
 #include "components/sync/protocol/typed_url_specifics.pb.h"
-#include "components/sync/protocol/wifi_credential_specifics.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
@@ -57,7 +56,7 @@ namespace {
 
 DEFINE_SPECIFICS_TO_VALUE_TEST(encrypted)
 
-static_assert(41 == syncer::ModelType::NUM_ENTRIES,
+static_assert(39 == syncer::ModelType::NUM_ENTRIES,
               "When adding a new field, add a DEFINE_SPECIFICS_TO_VALUE_TEST "
               "for your field below, and optionally a test for the specific "
               "conversions.");
@@ -66,7 +65,6 @@ DEFINE_SPECIFICS_TO_VALUE_TEST(app)
 DEFINE_SPECIFICS_TO_VALUE_TEST(app_list)
 DEFINE_SPECIFICS_TO_VALUE_TEST(app_setting)
 DEFINE_SPECIFICS_TO_VALUE_TEST(arc_package)
-DEFINE_SPECIFICS_TO_VALUE_TEST(article)
 DEFINE_SPECIFICS_TO_VALUE_TEST(autofill)
 DEFINE_SPECIFICS_TO_VALUE_TEST(autofill_profile)
 DEFINE_SPECIFICS_TO_VALUE_TEST(autofill_wallet)
@@ -99,7 +97,6 @@ DEFINE_SPECIFICS_TO_VALUE_TEST(user_event)
 DEFINE_SPECIFICS_TO_VALUE_TEST(wallet_metadata)
 DEFINE_SPECIFICS_TO_VALUE_TEST(web_app)
 DEFINE_SPECIFICS_TO_VALUE_TEST(wifi_configuration)
-DEFINE_SPECIFICS_TO_VALUE_TEST(wifi_credential)
 
 TEST(ProtoValueConversionsTest, PasswordSpecifics) {
   sync_pb::PasswordSpecifics specifics;

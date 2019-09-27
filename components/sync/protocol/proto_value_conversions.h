@@ -17,7 +17,6 @@ class AppNotificationSettings;
 class AppSettingSpecifics;
 class AppSpecifics;
 class ArcPackageSpecifics;
-class ArticleSpecifics;
 class AutofillProfileSpecifics;
 class AutofillSpecifics;
 class AutofillWalletSpecifics;
@@ -74,7 +73,6 @@ class WalletMetadataSpecifics;
 class WalletPostalAddress;
 class WebAppSpecifics;
 class WifiConfigurationSpecifics;
-class WifiCredentialSpecifics;
 }  // namespace sync_pb
 
 // Keep this file in sync with the .proto files in this directory.
@@ -100,9 +98,6 @@ std::unique_ptr<base::DictionaryValue> AppSpecificsToValue(
 
 std::unique_ptr<base::DictionaryValue> ArcPackageSpecificsToValue(
     const sync_pb::ArcPackageSpecifics& proto);
-
-std::unique_ptr<base::DictionaryValue> ArticleSpecificsToValue(
-    const sync_pb::ArticleSpecifics& article_specifics);
 
 std::unique_ptr<base::DictionaryValue> AutofillProfileSpecificsToValue(
     const sync_pb::AutofillProfileSpecifics& autofill_profile_specifics);
@@ -264,9 +259,6 @@ std::unique_ptr<base::DictionaryValue> WebAppSpecificsToValue(
 
 std::unique_ptr<base::DictionaryValue> WifiConfigurationSpecificsToValue(
     const sync_pb::WifiConfigurationSpecifics& wifi_configuration_specifics);
-
-std::unique_ptr<base::DictionaryValue> WifiCredentialSpecificsToValue(
-    const sync_pb::WifiCredentialSpecifics& wifi_credential_specifics);
 
 // ToValue functions that allow omitting specifics.
 
