@@ -29,6 +29,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -119,15 +120,8 @@ class CONTENT_EXPORT DownloadManager : public base::SupportsUserData::Data,
       base::Time remove_end) = 0;
 
   using SimpleDownloadManager::DownloadUrl;
-  // For downloads of blob URLs, the caller can pass a BlobDataHandle object so
-  // that the blob will remain valid until the download starts. The
-  // BlobDataHandle will be attached to the associated URLRequest.
-  // If |blob_data_handle| is unspecified, and the blob URL cannot be mapped to
-  // a blob by the time the download request starts, then the download will
-  // fail.
   virtual void DownloadUrl(
       std::unique_ptr<download::DownloadUrlParameters> parameters,
-      std::unique_ptr<storage::BlobDataHandle> blob_data_handle,
       scoped_refptr<network::SharedURLLoaderFactory>
           blob_url_loader_factory) = 0;
 
