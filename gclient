@@ -19,4 +19,12 @@ if [[ "#grep#fetch#cleanup#diff#setdep#" != *"#$1#"* ]]; then
   esac
 fi
 
-PYTHONDONTWRITEBYTECODE=1 exec python "$base_dir/gclient.py" "$@"
+# Ensure that "depot_tools" is somewhere in PATH so this tool can be used
+# standalone, but allow other PATH manipulations to take priority.
+PATH=$PATH:$base_dir
+
+if [[ $GCLIENT_PY3 == 1 ]]; then
+  PYTHONDONTWRITEBYTECODE=1 exec vpython3 "$base_dir/gclient.py" "$@"
+else
+  PYTHONDONTWRITEBYTECODE=1 exec python "$base_dir/gclient.py" "$@"
+fi

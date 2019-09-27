@@ -12,4 +12,9 @@ call "%~dp0update_depot_tools.bat" %*
 set PATH=%PATH%;%~dp0
 
 :: Defer control.
-python "%~dp0gclient.py" %*
+IF "%GCLIENT_PY3%" == "1" (
+  :: TODO(1003139): Use vpython3 once vpython3 works on Windows.
+  python3 "%~dp0gclient.py" %*
+) ELSE (
+  python "%~dp0gclient.py" %*
+)
