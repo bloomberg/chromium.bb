@@ -2974,10 +2974,6 @@ const char kOmniboxTabSwitchSuggestionsDedicatedRowDescription[] =
     "Put each tab switch suggestion in a separate suggestion, immediately "
     "following the original suggestion.";
 
-const char kOmniboxWrapPopupPositionName[] = "Omnibox wrap pop-up position";
-const char kOmniboxWrapPopupPositionDescription[] =
-    "Enable wrapping the Omnibox pop-up position between top and bottom.";
-
 const char kProactiveTabFreezeAndDiscardName[] =
     "Proactive Tab Freeze and Discard";
 const char kProactiveTabFreezeAndDiscardDescription[] =
