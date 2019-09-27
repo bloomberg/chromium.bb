@@ -77,7 +77,6 @@ class ExternalPolicyDataUpdaterTest : public testing::Test {
   network::TestURLLoaderFactory test_url_loader_factory_;
   MockFetchSuccessCallbackListener callback_listener_;
   scoped_refptr<base::TestSimpleTaskRunner> backend_task_runner_;
-  std::unique_ptr<ExternalPolicyDataFetcherBackend> fetcher_backend_;
   std::unique_ptr<ExternalPolicyDataUpdater> updater_;
 };
 
@@ -89,11 +88,10 @@ void ExternalPolicyDataUpdaterTest::CreateUpdater(size_t max_parallel_fetches) {
   auto url_loader_factory =
       base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
           &test_url_loader_factory_);
-  fetcher_backend_ = std::make_unique<ExternalPolicyDataFetcherBackend>(
-      std::move(url_loader_factory));
   updater_ = std::make_unique<ExternalPolicyDataUpdater>(
       backend_task_runner_,
-      fetcher_backend_->CreateFrontend(backend_task_runner_),
+      std::make_unique<ExternalPolicyDataFetcher>(std::move(url_loader_factory),
+                                                  backend_task_runner_),
       max_parallel_fetches);
 }
 
