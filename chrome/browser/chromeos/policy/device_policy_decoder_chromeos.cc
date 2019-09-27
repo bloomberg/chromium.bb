@@ -961,6 +961,19 @@ void DecodeAccessibilityPolicies(const em::ChromeDeviceSettingsProto& policy,
                       nullptr);
       }
     }
+    if (container.has_login_screen_caret_highlight_enabled()) {
+      PolicyLevel level;
+      if (GetPolicyLevel(
+              container.has_login_screen_caret_highlight_enabled_options(),
+              container.login_screen_caret_highlight_enabled_options(),
+              &level)) {
+        policies->Set(key::kDeviceLoginScreenCaretHighlightEnabled, level,
+                      POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                      std::make_unique<base::Value>(
+                          container.login_screen_caret_highlight_enabled()),
+                      nullptr);
+      }
+    }
   }
 }
 
