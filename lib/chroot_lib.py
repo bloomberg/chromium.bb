@@ -40,7 +40,7 @@ class Chroot(object):
     if self._goma:
       if not self._env:
         self._env = {}
-      self._env.update(self._goma.GetExtraEnv())
+      self._env.update(self._goma.GetChrootExtraEnv())
 
   def __eq__(self, other):
     if self.__class__ is other.__class__:
