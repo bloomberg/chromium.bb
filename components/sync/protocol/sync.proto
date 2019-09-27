@@ -18,7 +18,6 @@ option optimize_for = LITE_RUNTIME;
 package sync_pb;
 
 import "app_list_specifics.proto";
-import "app_notification_specifics.proto";
 import "app_setting_specifics.proto";
 import "app_specifics.proto";
 import "arc_package_specifics.proto";
@@ -118,7 +117,6 @@ message EntitySpecifics {
     PreferenceSpecifics preference = 37702;
     TypedUrlSpecifics typed_url = 40781;
     ThemeSpecifics theme = 41210;
-    AppNotification app_notification = 45184;
     PasswordSpecifics password = 45873;
     NigoriSpecifics nigori = 47745;
     ExtensionSpecifics extension = 48119;
@@ -157,6 +155,8 @@ message EntitySpecifics {
     WebAppSpecifics web_app = 673225;
     WifiConfigurationSpecifics wifi_configuration = 662827;
   }
+  reserved 45184;
+  reserved "app_notification";
 }
 
 message SyncEntity {

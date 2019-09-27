@@ -176,8 +176,8 @@ def ParseModelTypeEntries(input_api, model_type_cc_path):
   for line in file_contents.splitlines():
     current_line_number += 1
     if line.strip().startswith('//'):
-        # Ignore comments.
-        continue
+      # Ignore comments.
+      continue
     if start_pattern.match(line):
       inside_enum = True
       continue
@@ -376,8 +376,7 @@ def FieldNumberToPrototypeString(field_number):
     => 'AppSpecifics'
   """
   return field_number.replace(FIELD_NUMBER_PREFIX, '').replace(
-    'FieldNumber', 'Specifics').replace(
-    'AppNotificationSpecifics', 'AppNotification')
+    'FieldNumber', 'Specifics')
 
 def CheckChangeLintsClean(input_api, output_api):
   source_filter = lambda x: input_api.FilterSourceFile(

@@ -107,9 +107,6 @@ const ModelTypeInfo kModelTypeInfoMap[] = {
      "Extension settings",
      sync_pb::EntitySpecifics::kExtensionSettingFieldNumber,
      ModelTypeForHistograms::kExtensionSettings},
-    {DEPRECATED_APP_NOTIFICATIONS, "APP_NOTIFICATION", "app_notifications",
-     "App Notifications", sync_pb::EntitySpecifics::kAppNotificationFieldNumber,
-     ModelTypeForHistograms::kDeprecatedAppNotifications},
     {HISTORY_DELETE_DIRECTIVES, "HISTORY_DELETE_DIRECTIVE",
      "history_delete_directives", "History Delete Directives",
      sync_pb::EntitySpecifics::kHistoryDeleteDirectiveFieldNumber,
@@ -207,11 +204,11 @@ const ModelTypeInfo kModelTypeInfoMap[] = {
 static_assert(base::size(kModelTypeInfoMap) == ModelType::NUM_ENTRIES,
               "kModelTypeInfoMap should have ModelType::NUM_ENTRIES elements");
 
-static_assert(46 == syncer::ModelType::NUM_ENTRIES,
+static_assert(45 == syncer::ModelType::NUM_ENTRIES,
               "When adding a new type, update enum SyncModelTypes in enums.xml "
               "and suffix SyncModelType in histograms.xml.");
 
-static_assert(46 == syncer::ModelType::NUM_ENTRIES,
+static_assert(45 == syncer::ModelType::NUM_ENTRIES,
               "When adding a new type, update kAllocatorDumpNameWhitelist in "
               "base/trace_event/memory_infra_background_whitelist.cc.");
 
@@ -265,9 +262,6 @@ void AddDefaultFieldValue(ModelType type, sync_pb::EntitySpecifics* specifics) {
       break;
     case EXTENSION_SETTINGS:
       specifics->mutable_extension_setting();
-      break;
-    case DEPRECATED_APP_NOTIFICATIONS:
-      specifics->mutable_app_notification();
       break;
     case HISTORY_DELETE_DIRECTIVES:
       specifics->mutable_history_delete_directive();
@@ -395,7 +389,7 @@ ModelType GetModelType(const sync_pb::SyncEntity& sync_entity) {
 }
 
 ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
-  static_assert(46 == ModelType::NUM_ENTRIES,
+  static_assert(45 == ModelType::NUM_ENTRIES,
                 "When adding new protocol types, the following type lookup "
                 "logic must be updated.");
   if (specifics.has_bookmark())
@@ -428,8 +422,6 @@ ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
     return APP_SETTINGS;
   if (specifics.has_extension_setting())
     return EXTENSION_SETTINGS;
-  if (specifics.has_app_notification())
-    return DEPRECATED_APP_NOTIFICATIONS;
   if (specifics.has_history_delete_directive())
     return HISTORY_DELETE_DIRECTIVES;
   if (specifics.has_synced_notification())
@@ -489,7 +481,7 @@ ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
 }
 
 ModelTypeSet EncryptableUserTypes() {
-  static_assert(46 == ModelType::NUM_ENTRIES,
+  static_assert(45 == ModelType::NUM_ENTRIES,
                 "If adding an unencryptable type, remove from "
                 "encryptable_user_types below.");
   ModelTypeSet encryptable_user_types = UserTypes();

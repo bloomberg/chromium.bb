@@ -11,7 +11,6 @@
 #include "base/values.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/unique_position.h"
-#include "components/sync/protocol/app_notification_specifics.pb.h"
 #include "components/sync/protocol/app_setting_specifics.pb.h"
 #include "components/sync/protocol/app_specifics.pb.h"
 #include "components/sync/protocol/autofill_specifics.pb.h"
@@ -60,14 +59,13 @@ namespace {
 
 DEFINE_SPECIFICS_TO_VALUE_TEST(encrypted)
 
-static_assert(46 == syncer::ModelType::NUM_ENTRIES,
+static_assert(45 == syncer::ModelType::NUM_ENTRIES,
               "When adding a new field, add a DEFINE_SPECIFICS_TO_VALUE_TEST "
               "for your field below, and optionally a test for the specific "
               "conversions.");
 
 DEFINE_SPECIFICS_TO_VALUE_TEST(app)
 DEFINE_SPECIFICS_TO_VALUE_TEST(app_list)
-DEFINE_SPECIFICS_TO_VALUE_TEST(app_notification)
 DEFINE_SPECIFICS_TO_VALUE_TEST(app_setting)
 DEFINE_SPECIFICS_TO_VALUE_TEST(arc_package)
 DEFINE_SPECIFICS_TO_VALUE_TEST(article)

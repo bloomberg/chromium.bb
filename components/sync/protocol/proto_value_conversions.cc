@@ -300,7 +300,6 @@ class ToValueVisitor {
   }
 
 IMPLEMENT_PROTO_TO_VALUE(AppListSpecifics)
-IMPLEMENT_PROTO_TO_VALUE(AppNotification)
 IMPLEMENT_PROTO_TO_VALUE(AppNotificationSettings)
 IMPLEMENT_PROTO_TO_VALUE(AppSettingSpecifics)
 IMPLEMENT_PROTO_TO_VALUE(AppSpecifics)

@@ -7,7 +7,6 @@
 
 #include "components/sync/base/model_type.h"
 #include "components/sync/protocol/app_list_specifics.pb.h"
-#include "components/sync/protocol/app_notification_specifics.pb.h"
 #include "components/sync/protocol/app_setting_specifics.pb.h"
 #include "components/sync/protocol/app_specifics.pb.h"
 #include "components/sync/protocol/arc_package_specifics.pb.h"
@@ -99,16 +98,6 @@ VISIT_PROTO_FIELDS(const sync_pb::AppListSpecifics& proto) {
   VISIT(parent_id);
   VISIT(item_ordinal);
   VISIT(item_pin_ordinal);
-}
-
-VISIT_PROTO_FIELDS(const sync_pb::AppNotification& proto) {
-  VISIT(guid);
-  VISIT(app_id);
-  VISIT(creation_timestamp_ms);
-  VISIT(title);
-  VISIT(body_text);
-  VISIT(link_url);
-  VISIT(link_text);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::AppNotificationSettings& proto) {
@@ -383,13 +372,12 @@ VISIT_PROTO_FIELDS(const sync_pb::EntityMetadata& proto) {
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::EntitySpecifics& proto) {
-  static_assert(46 == ModelType::NUM_ENTRIES,
+  static_assert(45 == ModelType::NUM_ENTRIES,
                 "When adding a new protocol type, you will likely need to add "
                 "it here as well.");
   VISIT(encrypted);
   VISIT(app);
   VISIT(app_list);
-  VISIT(app_notification);
   VISIT(app_setting);
   VISIT(arc_package);
   VISIT(article);

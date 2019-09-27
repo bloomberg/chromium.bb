@@ -13,7 +13,6 @@ class DictionaryValue;
 
 namespace sync_pb {
 class AppListSpecifics;
-class AppNotification;
 class AppNotificationSettings;
 class AppSettingSpecifics;
 class AppSpecifics;
@@ -93,9 +92,6 @@ namespace syncer {
 
 std::unique_ptr<base::DictionaryValue> AppListSpecificsToValue(
     const sync_pb::AppListSpecifics& proto);
-
-std::unique_ptr<base::DictionaryValue> AppNotificationToValue(
-    const sync_pb::AppNotification& app_notification_specifics);
 
 std::unique_ptr<base::DictionaryValue> AppNotificationSettingsToValue(
     const sync_pb::AppNotificationSettings& app_notification_settings);

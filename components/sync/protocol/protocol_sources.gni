@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 sync_protocol_bases = [
-  "app_notification_specifics",
   "app_setting_specifics",
   "app_specifics",
   "app_list_specifics",
