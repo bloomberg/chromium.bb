@@ -24,9 +24,11 @@ and populates the target range.
 
 ## Usage
 Firstly, the library needs to be build with the tool's constructor. To do this
-add the following to your build:
+add the following file to your build:
 
     constructor/library_constructor.c
+
+Additionally the library must be linked with `-pthread` option.
 
 After the library build is complete, the compression script must be applied to
 it in the following way:
