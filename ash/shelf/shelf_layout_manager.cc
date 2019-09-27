@@ -1083,7 +1083,7 @@ HotseatState ShelfLayoutManager::CalculateHotseatState(
 
       if (shelf_widget_->hotseat_widget()->IsDraggedToExtended())
         return HotseatState::kExtended;
-      if (std::abs(last_drag_velocity_) >= 5) {
+      if (std::abs(last_drag_velocity_) >= 120) {
         if (last_drag_velocity_ > 0)
           return HotseatState::kHidden;
         return HotseatState::kExtended;
@@ -1094,8 +1094,10 @@ HotseatState ShelfLayoutManager::CalculateHotseatState(
               .bounds()
               .bottom() -
           shelf_widget_->hotseat_widget()->GetWindowBoundsInScreen().y();
-      if (top_of_hotseat_to_screen_bottom < ShelfConfig::Get()->shelf_size())
+      if (top_of_hotseat_to_screen_bottom <
+          ShelfConfig::Get()->hotseat_size() / 2) {
         return HotseatState::kHidden;
+      }
       return HotseatState::kExtended;
     }
     case kDragAppListInProgress:
