@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/modules/webgpu/gpu_buffer.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_buffer_copy_view.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_command_buffer.h"
+#include "third_party/blink/renderer/modules/webgpu/gpu_command_buffer_descriptor.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_command_encoder_descriptor.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_compute_pass_descriptor.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_compute_pass_encoder.h"
@@ -271,9 +272,15 @@ void GPUCommandEncoder::insertDebugMarker(String markerLabel) {
                                              markerLabel.Utf8().data());
 }
 
-GPUCommandBuffer* GPUCommandEncoder::finish() {
+GPUCommandBuffer* GPUCommandEncoder::finish(
+    const GPUCommandBufferDescriptor* descriptor) {
+  DawnCommandBufferDescriptor dawn_desc = {};
+  if (descriptor->hasLabel()) {
+    dawn_desc.label = descriptor->label().Utf8().data();
+  }
+
   return GPUCommandBuffer::Create(
-      device_, GetProcs().commandEncoderFinish(GetHandle(), nullptr));
+      device_, GetProcs().commandEncoderFinish(GetHandle(), &dawn_desc));
 }
 
 }  // namespace blink
