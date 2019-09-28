@@ -115,7 +115,6 @@ bool ConditionEventListener::Matches(const EventListener& listener) const {
 void ConditionEventListener::Invoke(ExecutionContext*, Event* event) {
   if (!animation_)
     return;
-  animation_->IntervalIsDirty();
   animation_->AddInstanceTime(condition_->GetBeginOrEnd(),
                               animation_->Elapsed() + condition_->Offset(),
                               SMILTimeOrigin::kEvent);
