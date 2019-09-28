@@ -843,6 +843,7 @@ modules_dictionary_idl_files =
           "webgpu/gpu_color_state_descriptor.idl",
           "webgpu/gpu_command_encoder_descriptor.idl",
           "webgpu/gpu_compute_pipeline_descriptor.idl",
+          "webgpu/gpu_compute_pass_descriptor.idl",
           "webgpu/gpu_depth_stencil_state_descriptor.idl",
           "webgpu/gpu_device_descriptor.idl",
           "webgpu/gpu_extensions.idl",

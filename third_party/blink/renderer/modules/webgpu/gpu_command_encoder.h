@@ -13,6 +13,7 @@ class GPUBuffer;
 class GPUBufferCopyView;
 class GPUCommandBuffer;
 class GPUCommandEncoderDescriptor;
+class GPUComputePassDescriptor;
 class GPUComputePassEncoder;
 class GPUExtent3D;
 class GPURenderPassDescriptor;
@@ -33,7 +34,8 @@ class GPUCommandEncoder : public DawnObject<DawnCommandEncoder> {
   // gpu_command_encoder.idl
   GPURenderPassEncoder* beginRenderPass(
       const GPURenderPassDescriptor* descriptor);
-  GPUComputePassEncoder* beginComputePass();
+  GPUComputePassEncoder* beginComputePass(
+      const GPUComputePassDescriptor* descriptor);
   void copyBufferToBuffer(GPUBuffer* src,
                           uint64_t src_offset,
                           GPUBuffer* dst,
