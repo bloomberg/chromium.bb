@@ -225,7 +225,6 @@ SVGSMILElement::SVGSMILElement(const QualifiedName& tag_name, Document& doc)
       cached_min_(kInvalidCachedTime),
       cached_max_(kInvalidCachedTime),
       interval_has_changed_(false) {
-  ResolveFirstInterval();
 }
 
 SVGSMILElement::~SVGSMILElement() = default;
