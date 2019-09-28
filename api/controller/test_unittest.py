@@ -106,7 +106,7 @@ class BuildTargetUnitTestTest(cros_test_lib.MockTempDirTestCase,
     failed = []
     for pi in output_msg.failed_packages:
       failed.append((pi.category, pi.package_name))
-    self.assertItemsEqual(expected, failed)
+    self.assertCountEqual(expected, failed)
 
   def testOtherBuildScriptFailure(self):
     """Test build script failure due to non-package emerge error."""

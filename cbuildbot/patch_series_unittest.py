@@ -156,8 +156,8 @@ class PatchSeriesTestCase(patch_unittest.UploadedLocalPatchTestCase,
     failed_inflight = _GetIds(failed_inflight)
 
     self.assertEqual(applied, applied_result)
-    self.assertItemsEqual(failed_inflight, failed_inflight_result)
-    self.assertItemsEqual(failed_tot, failed_tot_result)
+    self.assertCountEqual(failed_inflight, failed_inflight_result)
+    self.assertCountEqual(failed_tot, failed_tot_result)
     return result
 
 
@@ -598,5 +598,5 @@ class TestPatchSeries(PatchSeriesTestCase):
     ordered_plans, failed = series.CreateDisjointTransactions(changes)
     changes_in_plan = [change for plan in ordered_plans for change in plan]
 
-    self.assertItemsEqual(changes_in_plan, p[0:5])
-    self.assertItemsEqual(failed, [ex])
+    self.assertCountEqual(changes_in_plan, p[0:5])
+    self.assertCountEqual(failed, [ex])

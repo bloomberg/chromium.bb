@@ -134,7 +134,7 @@ class BundleImageArchivesTest(BundleTestCase):
     artifacts.BundleImageArchives(self.target_request, self.response,
                                   self.api_config)
 
-    self.assertItemsEqual(expected, [a.path for a in self.response.artifacts])
+    self.assertCountEqual(expected, [a.path for a in self.response.artifacts])
 
 
 class BundleImageZipTest(BundleTestCase):
@@ -199,7 +199,7 @@ class BundleAutotestFilesTest(BundleTestCase):
     # Verify the output proto is being populated correctly.
     self.assertTrue(self.response.artifacts)
     paths = [artifact.path for artifact in self.response.artifacts]
-    self.assertItemsEqual(files.values(), paths)
+    self.assertCountEqual(files.values(), paths)
 
   def testBundleAutotestFiles(self):
     """BundleAutotestFiles calls service correctly."""
@@ -219,7 +219,7 @@ class BundleAutotestFilesTest(BundleTestCase):
     # Verify the output proto is being populated correctly.
     self.assertTrue(self.response.artifacts)
     paths = [artifact.path for artifact in self.response.artifacts]
-    self.assertItemsEqual(files.values(), paths)
+    self.assertCountEqual(files.values(), paths)
 
   def testInvalidOutputDir(self):
     """Test invalid output directory argument."""
@@ -517,13 +517,13 @@ class BundleTestUpdatePayloadsTest(cros_test_lib.MockTempDirTestCase,
         for artifact in self.output_proto.artifacts
     ]
     expected = ['payload1.bin', 'payload2.bin']
-    self.assertItemsEqual(actual, expected)
+    self.assertCountEqual(actual, expected)
 
     actual = [
         os.path.relpath(path, self.archive_root)
         for path in osutils.DirectoryIterator(self.archive_root)
     ]
-    self.assertItemsEqual(actual, expected)
+    self.assertCountEqual(actual, expected)
 
   def testBundleTestUpdatePayloadsNoImageDir(self):
     """BundleTestUpdatePayloads dies if no image dir is found."""
@@ -638,7 +638,7 @@ class BundleSimpleChromeArtifactsTest(cros_test_lib.MockTempDirTestCase,
     artifacts.BundleSimpleChromeArtifacts(request, response, self.api_config)
 
     self.assertTrue(response.artifacts)
-    self.assertItemsEqual(expected_files, [a.path for a in response.artifacts])
+    self.assertCountEqual(expected_files, [a.path for a in response.artifacts])
 
 
 class BundleVmFilesTest(cros_test_lib.MockTempDirTestCase,
@@ -864,7 +864,7 @@ class BundleAFDOGenerationArtifactsTestCase(
                                             self.api_config)
 
     self.assertTrue(self.response.artifacts)
-    self.assertItemsEqual(expected_files,
+    self.assertCountEqual(expected_files,
                           [a.path for a in self.response.artifacts])
 
   def testOutputHandlingOnAFDO(self):

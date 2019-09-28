@@ -369,7 +369,7 @@ class SlaveBuilderStatusTest(cros_test_lib.MockTestCase):
     manager = self.ConstructBuilderStatusManager(db=mock_db)
     slave_failures_dict = manager._GetSlaveFailures(fake_buildbucket_info_dict)
 
-    self.assertItemsEqual(slave_failures_dict.keys(),
+    self.assertCountEqual(slave_failures_dict.keys(),
                           [self.slave_1, self.slave_2])
     self.assertEqual(len(slave_failures_dict[self.slave_1]), 1)
     self.assertEqual(len(slave_failures_dict[self.slave_2]), 1)
@@ -410,7 +410,7 @@ class SlaveBuilderStatusTest(cros_test_lib.MockTestCase):
                      return_value={self.slave_1: bb_infos.GetSuccessBuild()})
     manager = self.ConstructBuilderStatusManager()
 
-    self.assertItemsEqual(manager.builders_array, [self.slave_1])
+    self.assertCountEqual(manager.builders_array, [self.slave_1])
     self.assertIsNotNone(manager.buildbucket_info_dict)
 
   def testGetStatusWithBuildbucket(self):
@@ -693,18 +693,18 @@ class BuilderStatusesFetcherTests(cros_test_lib.MockTestCase):
         builders_array=status_dict.keys())
 
     important, experimental = fetcher.GetBuilderStatuses()
-    self.assertItemsEqual(['build1', 'build2', 'build3', 'master-paladin'],
+    self.assertCountEqual(['build1', 'build2', 'build3', 'master-paladin'],
                           important.keys())
-    self.assertItemsEqual([], experimental.keys())
+    self.assertCountEqual([], experimental.keys())
 
     # Update the experimental_builders in metadata
     self.metadata.UpdateWithDict({
         constants.METADATA_EXPERIMENTAL_BUILDERS: ['build1']
     })
     important, experimental = fetcher.GetBuilderStatuses()
-    self.assertItemsEqual(['build2', 'build3', 'master-paladin'],
+    self.assertCountEqual(['build2', 'build3', 'master-paladin'],
                           important.keys())
-    self.assertItemsEqual(['build1'], experimental.keys())
+    self.assertCountEqual(['build1'], experimental.keys())
 
   def _CreateBuilderStatusDict(self):
     passed = builder_status_lib.BuilderStatus(

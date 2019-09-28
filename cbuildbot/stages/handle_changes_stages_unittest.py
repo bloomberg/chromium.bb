@@ -92,7 +92,7 @@ class CommitQueueHandleChangesStageTests(
 
     builds = stage._GetBuildsPassedSyncStage(
         'build_id', ['id_1', 'id_2'])
-    self.assertItemsEqual(builds, ['s_1', 's_2', 'master-paladin'])
+    self.assertCountEqual(builds, ['s_1', 's_2', 'master-paladin'])
 
   def _MockPartialSubmit(self, stage):
     self.PatchObject(relevant_changes.RelevantChanges,

@@ -424,13 +424,13 @@ class TestPaygenBuildLibTestGSSearch(BasePaygenBuildLibTestWithBuilds):
 
     # Test the empty case.
     results = paygen._DiscoverRequiredDeltasBuildToBuild([], [])
-    self.assertItemsEqual(results, [])
+    self.assertCountEqual(results, [])
 
     # Fully populated prev and current.
     results = paygen._DiscoverRequiredDeltasBuildToBuild(
         [self.prev_test_image],
         [self.test_image])
-    self.assertItemsEqual(results, [
+    self.assertCountEqual(results, [
         gspaths.Payload(src_image=self.prev_test_image,
                         tgt_image=self.test_image),
     ])
@@ -439,7 +439,7 @@ class TestPaygenBuildLibTestGSSearch(BasePaygenBuildLibTestWithBuilds):
     results = paygen._DiscoverRequiredDeltasBuildToBuild(
         [self.prev_premp_image],
         [self.basic_image])
-    self.assertItemsEqual(results, [])
+    self.assertCountEqual(results, [])
 
     # It's totally legal for a build to be signed for both PreMP and MP at the
     # same time. If that happens we generate:
@@ -447,7 +447,7 @@ class TestPaygenBuildLibTestGSSearch(BasePaygenBuildLibTestWithBuilds):
     results = paygen._DiscoverRequiredDeltasBuildToBuild(
         [self.prev_image, self.prev_premp_image, self.prev_test_image],
         [self.basic_image, self.premp_image, self.test_image])
-    self.assertItemsEqual(results, [
+    self.assertCountEqual(results, [
         gspaths.Payload(src_image=self.prev_image,
                         tgt_image=self.basic_image),
         gspaths.Payload(src_image=self.prev_premp_image,
@@ -462,13 +462,13 @@ class TestPaygenBuildLibTestGSSearch(BasePaygenBuildLibTestWithBuilds):
 
     # Test the empty case.
     results = paygen._DiscoverRequiredDLCDeltasBuildToBuild([], [])
-    self.assertItemsEqual(results, [])
+    self.assertCountEqual(results, [])
 
     # Fully populated prev and current.
     results = paygen._DiscoverRequiredDLCDeltasBuildToBuild(
         [self.prev_dlc_package_image],
         [self.dlc_image])
-    self.assertItemsEqual(results, [
+    self.assertCountEqual(results, [
         gspaths.Payload(src_image=self.prev_dlc_package_image,
                         tgt_image=self.dlc_image),
     ])
@@ -477,11 +477,11 @@ class TestPaygenBuildLibTestGSSearch(BasePaygenBuildLibTestWithBuilds):
     results = paygen._DiscoverRequiredDLCDeltasBuildToBuild(
         [self.prev_dlc2_image],
         [self.dlc_image])
-    self.assertItemsEqual(results, [])
+    self.assertCountEqual(results, [])
     results = paygen._DiscoverRequiredDLCDeltasBuildToBuild(
         [self.prev_dlc_package2_image],
         [self.dlc_image])
-    self.assertItemsEqual(results, [])
+    self.assertCountEqual(results, [])
 
   def testDiscoverDLCImages(self):
     """Test _DiscoverDLCImages."""
@@ -669,7 +669,7 @@ class TestPaygenBuildLibDiscoverRequiredPayloads(MockImageDiscoveryHelper,
             '-<random>.signed' % (dlc_id, dlc_package, dlc_id, dlc_package))
 
     # Verify the results.
-    self.assertItemsEqual(
+    self.assertCountEqual(
         payloads,
         [
             mp_full,
@@ -683,7 +683,7 @@ class TestPaygenBuildLibDiscoverRequiredPayloads(MockImageDiscoveryHelper,
             dlc_delta,
         ])
 
-    self.assertItemsEqual(
+    self.assertCountEqual(
         tests,
         [
             paygen_build_lib.PayloadTest(test_full,
@@ -725,7 +725,7 @@ class TestPaygenBuildLibDiscoverRequiredPayloads(MockImageDiscoveryHelper,
                                  uri=mock.ANY)
 
     # Verify the results.
-    self.assertItemsEqual(
+    self.assertCountEqual(
         payloads,
         [
             mp_full,
@@ -734,7 +734,7 @@ class TestPaygenBuildLibDiscoverRequiredPayloads(MockImageDiscoveryHelper,
             test_delta,
         ])
 
-    self.assertItemsEqual(
+    self.assertCountEqual(
         tests,
         [
             paygen_build_lib.PayloadTest(test_full,
@@ -772,14 +772,14 @@ class TestPaygenBuildLibDiscoverRequiredPayloads(MockImageDiscoveryHelper,
     test_full = gspaths.Payload(tgt_image=test_image, uri=mock.ANY)
 
     # Verify the results.
-    self.assertItemsEqual(
+    self.assertCountEqual(
         payloads,
         [
             mp_full,
             test_full,
         ])
 
-    self.assertItemsEqual(
+    self.assertCountEqual(
         tests,
         [
             paygen_build_lib.PayloadTest(test_full,
@@ -897,7 +897,7 @@ class TestPaygenBuildLibDiscoverRequiredPayloads(MockImageDiscoveryHelper,
         tgt_image=test_image, src_image=test_image_9460_67, uri=mock.ANY)
 
     # Verify the results.
-    self.assertItemsEqual(
+    self.assertCountEqual(
         payloads,
         [
             mp_full,
@@ -913,7 +913,7 @@ class TestPaygenBuildLibDiscoverRequiredPayloads(MockImageDiscoveryHelper,
             mp_delta_9460_67, test_delta_9460_67,
         ])
 
-    self.assertItemsEqual(
+    self.assertCountEqual(
         tests,
         [
             paygen_build_lib.PayloadTest(
@@ -1173,7 +1173,7 @@ class TestAutotestPayloadsPayloads(BasePaygenBuildLibTestWithBuilds):
 
     # Verify tarfile contents.
     with tarfile.open(tarball_path) as t:
-      self.assertItemsEqual(
+      self.assertCountEqual(
           t.getnames(),
           ['autotest/au_control_files', delta_ctrl, full_ctrl])
 

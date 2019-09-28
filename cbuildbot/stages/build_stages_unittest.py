@@ -506,8 +506,7 @@ EC (RW) version: reef_v1.1.5909-bd1f0c9
           temp_goma_client_json.name
       ], chroot_args)
       portage_env = stage._portage_extra_env
-      self.assertRegexpMatches(
-          portage_env.get('GOMA_DIR', ''), '^/home/.*/goma$')
+      self.assertRegex(portage_env.get('GOMA_DIR', ''), '^/home/.*/goma$')
       self.assertIn(portage_env.get('USE', ''), 'goma')
       self.assertEqual(
           '/creds/service_accounts/service-account-goma-client.json',
@@ -524,7 +523,7 @@ EC (RW) version: reef_v1.1.5909-bd1f0c9
       self._run.options.chromeos_goma_dir = goma_dir
 
       stage = self.ConstructStage()
-      with self.assertRaisesRegexp(ValueError, 'json file is missing'):
+      with self.assertRaisesRegex(ValueError, 'json file is missing'):
         stage._SetupGomaIfNecessary()
 
   def testGomaOnBotWithoutCertFile(self):
@@ -538,8 +537,8 @@ EC (RW) version: reef_v1.1.5909-bd1f0c9
       stage = self.ConstructStage()
       self._run.options.chromeos_goma_dir = goma_dir
 
-      with self.assertRaisesRegexp(ValueError,
-                                   'goma_client_json is not provided'):
+      with self.assertRaisesRegex(ValueError,
+                                  'goma_client_json is not provided'):
         stage._SetupGomaIfNecessary()
 
 

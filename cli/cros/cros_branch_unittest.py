@@ -530,14 +530,14 @@ class ManifestRepositoryTest(ManifestTestCase, cros_test_lib.MockTestCase):
     }
 
     self.manifest_repo.RepairManifestsOnDisk(branches)
-    self.assertItemsEqual(repair.call_args_list, [
+    self.assertCountEqual(repair.call_args_list, [
         mock.call('/root/manifest-internal/default.xml', branches_by_path),
         mock.call('/root/manifest-internal/official.xml', branches_by_path),
         mock.call('/root/manifest-internal/internal.xml', branches_by_path),
         mock.call('/root/manifest-internal/external.xml', branches_by_path),
         mock.call('/root/manifest-internal/_remotes.xml', branches_by_path),
     ])
-    self.assertItemsEqual(write.call_args_list, [
+    self.assertCountEqual(write.call_args_list, [
         mock.call('/root/manifest-internal/default.xml'),
         mock.call('/root/manifest-internal/official.xml'),
         mock.call('/root/manifest-internal/internal.xml'),
@@ -1444,7 +1444,7 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
     """
     git_repo = self.GetRemotePath(self.ProjectFor(pid))
     actual = git.MatchBranchName(git_repo, '.*', namespace='refs/heads/')
-    self.assertItemsEqual(actual, branches)
+    self.assertCountEqual(actual, branches)
 
   def AssertCrosBranches(self, branches):
     """Assert remote projects have the expected chromiumos branches.

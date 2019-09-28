@@ -87,8 +87,8 @@ class CrosBisectTest(cros_test_lib.MockTestCase):
     self.PatchObject(remote_access, 'ChromiumOSDevice',
                      return_value=cros_test_lib.EasyAttr(board=''))
     bisector = cros_bisect.BisectCommand(options)
-    self.assertRaisesRegexp(Exception, 'Unable to obtain board name from DUT',
-                            bisector.ProcessOptions)
+    self.assertRaisesRegex(Exception, 'Unable to obtain board name from DUT',
+                           bisector.ProcessOptions)
 
   def testGoodBadCommitType(self):
     """Tests GoodBadCommitType."""

@@ -317,13 +317,13 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
   def testGetExpectedBuilders(self):
     """Tests _GetExpectedBuilders does not return experimental builders."""
     slave_status = self._GetSlaveStatus(builders_array=['build1', 'build2'])
-    self.assertItemsEqual(slave_status._GetExpectedBuilders(),
+    self.assertCountEqual(slave_status._GetExpectedBuilders(),
                           ['build1', 'build2'])
 
     self.metadata.UpdateWithDict({
         constants.METADATA_EXPERIMENTAL_BUILDERS: ['build1']
     })
-    self.assertItemsEqual(slave_status._GetExpectedBuilders(), ['build2'])
+    self.assertCountEqual(slave_status._GetExpectedBuilders(), ['build2'])
 
   def testGetMissingBuilds(self):
     """Tests GetMissingBuilds returns the missing builders."""
@@ -1113,9 +1113,9 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
         config=self.master_cq_config)
 
     slave_status.UpdateSlaveStatus()
-    self.assertItemsEqual(slave_status.metadata.GetValueWithDefault(
+    self.assertCountEqual(slave_status.metadata.GetValueWithDefault(
         constants.METADATA_EXPERIMENTAL_BUILDERS, []), [])
-    self.assertItemsEqual(slave_status.all_builders,
+    self.assertCountEqual(slave_status.all_builders,
                           self._GetFullBuildConfigs())
 
   def testShouldWaitBuildersStillBuildingWithBuildbucket(self):
@@ -1321,7 +1321,7 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
     new_buildbucket_info = slave_status._GetNewSlaveBuildbucketInfo(
         all_buildbucket_info_dict, completed)
 
-    self.assertItemsEqual(new_buildbucket_info.keys(),
+    self.assertCountEqual(new_buildbucket_info.keys(),
                           ['completed_canceled', 'completed_failure'])
 
   def test_GetNewSlaveCIDBStatusInfoWithCompletedBuilds(self):
@@ -1333,7 +1333,7 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
     cidb_status_dict = slave_status._GetNewSlaveCIDBStatusInfo(
         all_cidb_status_dict, set(['completed_success']))
 
-    self.assertItemsEqual(
+    self.assertCountEqual(
         cidb_status_dict.keys(),
         ['started', 'completed_failure', 'completed_canceled'])
 

@@ -163,7 +163,7 @@ class CopyPathInTest(cros_test_lib.TempDirTestCase):
 
       self._path_checks(self.source_dir, self.dest_dir)
       # Make sure both directories have the same files.
-      self.assertItemsEqual(os.listdir(self.source_dir), os.listdir(new_path))
+      self.assertCountEqual(os.listdir(self.source_dir), os.listdir(new_path))
 
   def test_direction(self):
     """Test the direction argument preventing copies."""
@@ -256,7 +256,7 @@ class ExtractResultsTest(cros_test_lib.TempDirTestCase):
     field_handler.extract_results(self.request, self.response, self.chroot)
 
     self._path_checks(self.response.artifact.path, self.dest_dir)
-    self.assertItemsEqual(os.listdir(self.chroot_source),
+    self.assertCountEqual(os.listdir(self.chroot_source),
                           os.listdir(self.response.artifact.path))
 
   def test_multiple_files(self):
@@ -296,4 +296,4 @@ class ExtractResultsTest(cros_test_lib.TempDirTestCase):
 
     expected = os.listdir(self.chroot_source)
     expected.extend(os.listdir(self.chroot_source2))
-    self.assertItemsEqual(expected, os.listdir(self.response.artifact.path))
+    self.assertCountEqual(expected, os.listdir(self.response.artifact.path))

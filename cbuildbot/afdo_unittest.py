@@ -369,7 +369,7 @@ class AfdoTest(cros_test_lib.MockTempDirTestCase):
     self.assertEqual(ordered_args, expected_ordered_args)
 
     unordered_args = args[len(expected_ordered_args):]
-    self.assertItemsEqual(unordered_args, expected_unordered_args)
+    self.assertCountEqual(unordered_args, expected_unordered_args)
     self.assertEqual(mocks.gs_context.Copy.call_count, 5)
 
   def testCreateAndUploadMergedAFDOProfileWorksInTheHappyCase(self):
@@ -415,7 +415,7 @@ class AfdoTest(cros_test_lib.MockTempDirTestCase):
     self.assertEqual(ordered_args, expected_ordered_args)
 
     unordered_args = args[len(expected_ordered_args):]
-    self.assertItemsEqual(unordered_args, expected_unordered_args)
+    self.assertCountEqual(unordered_args, expected_unordered_args)
     self.assertEqual(mocks.gs_context.Copy.call_count, 5)
 
     self.assertEqual(mocks.uncompress_file.call_count, 5)
@@ -516,7 +516,7 @@ class AfdoTest(cros_test_lib.MockTempDirTestCase):
     self.assertEqual(ordered_args, expected_ordered_args)
 
     unordered_args = args[len(expected_ordered_args):]
-    self.assertItemsEqual(unordered_args, expected_unordered_args)
+    self.assertCountEqual(unordered_args, expected_unordered_args)
 
     self.assertEqual(mocks.gs_context.Copy.call_count, 3)
     self.assertEqual(mocks.uncompress_file.call_count, 3)

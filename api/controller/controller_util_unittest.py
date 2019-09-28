@@ -77,7 +77,7 @@ class ParseBuildTargetsTest(cros_test_lib.TestCase):
 
     result = controller_util.ParseBuildTargets(message.build_targets)
 
-    self.assertItemsEqual([BuildTarget(name) for name in names], result)
+    self.assertCountEqual([BuildTarget(name) for name in names], result)
 
   def testWrongMessage(self):
     """Wrong message type handling."""

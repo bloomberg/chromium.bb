@@ -1266,7 +1266,7 @@ class BoardConfigsTest(ChromeosConfigTestBase):
     self.assertEqual(self.internal_board_configs, pre_test)
 
     # The result as the same list of boards.
-    self.assertItemsEqual(result.keys(), pre_test.keys())
+    self.assertCountEqual(result.keys(), pre_test.keys())
 
     # And only appropriate values were updated.
     for b in pre_test:

@@ -141,7 +141,7 @@ class FindChromeEbuildsTest(cros_test_lib.TempDirTestCase):
   def test_find_all(self):
     unstable, stables = uprev_lib.find_chrome_ebuilds(self.tempdir)
     self.assertEqual(self.unstable, unstable.ebuild_path)
-    self.assertItemsEqual([self.best_stable, self.old_stable],
+    self.assertCountEqual([self.best_stable, self.old_stable],
                           [stable.ebuild_path for stable in stables])
 
 
@@ -194,7 +194,7 @@ class UprevChromeManagerTest(cros_test_lib.MockTempDirTestCase):
     # The old one should be deleted and the new one should exist.
     new_path = self.stable_path.replace(self.stable_chrome_version,
                                         self.new_chrome_version)
-    self.assertItemsEqual([self.stable_path, new_path],
+    self.assertCountEqual([self.stable_path, new_path],
                           manager.modified_ebuilds)
     self.assertExists(new_path)
     self.assertNotExists(self.stable_path)
@@ -214,7 +214,7 @@ class UprevChromeManagerTest(cros_test_lib.MockTempDirTestCase):
     new_path = self.stable_path.replace('-r%d' % self.stable_revision,
                                         '-r%d' % (self.stable_revision + 1))
 
-    self.assertItemsEqual([self.stable_path, new_path],
+    self.assertCountEqual([self.stable_path, new_path],
                           manager.modified_ebuilds)
     self.assertExists(new_path)
     self.assertNotExists(self.stable_path)

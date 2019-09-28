@@ -153,12 +153,12 @@ class ManifestTest(cros_test_lib.TempDirTestCase, XMLTestCase):
     manifest = repo_manifest.Manifest.FromString(
         MANIFEST_OUTER_XML % INCLUDES_XML, allow_unsupported_features=True)
     include_names = [i.name for i in manifest.Includes()]
-    self.assertItemsEqual(include_names, ['include.xml', 'include_me_too.xml'])
+    self.assertCountEqual(include_names, ['include.xml', 'include_me_too.xml'])
 
   def testRemotes(self):
     """Test Manifest.Remotes."""
     remote_names = [x.name for x in self.manifest.Remotes()]
-    self.assertItemsEqual(remote_names, ['simple_remote', 'complex_remote'])
+    self.assertCountEqual(remote_names, ['simple_remote', 'complex_remote'])
 
   def testGetRemote(self):
     """Test Manifest.GetRemote."""
@@ -173,7 +173,7 @@ class ManifestTest(cros_test_lib.TempDirTestCase, XMLTestCase):
   def testProjects(self):
     """Test Manifest.Projects."""
     project_names = [x.name for x in self.manifest.Projects()]
-    self.assertItemsEqual(project_names, ['simple/project', 'complex/project'])
+    self.assertCountEqual(project_names, ['simple/project', 'complex/project'])
 
   def testGetUniqueProject(self):
     """Test Manifest.GetUniqueProject."""

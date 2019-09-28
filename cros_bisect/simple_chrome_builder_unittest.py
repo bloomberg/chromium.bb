@@ -161,8 +161,8 @@ class TestSimpleChromeBuilder(cros_test_lib.MockTempDirTestCase):
     osutils.SafeMakedirs(os.path.join(self.default_repo_dir, '.git'))
 
     builder = self.GetBuilder(reuse_repo=False)
-    self.assertRaisesRegexp(Exception, 'Chromium repo exists.*',
-                            builder.SetUp)
+    self.assertRaisesRegex(Exception, 'Chromium repo exists.*',
+                           builder.SetUp)
 
     write_config_mock.assert_not_called()
     git_mock.assert_not_called()

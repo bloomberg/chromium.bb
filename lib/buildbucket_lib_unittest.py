@@ -374,13 +374,13 @@ class GetAttributeTest(cros_test_lib.MockTestCase):
         }
     }
     tags = buildbucket_lib.GetBuildTags(content, 'build_type')
-    self.assertItemsEqual(tags, ['paladin'])
+    self.assertCountEqual(tags, ['paladin'])
 
     tags = buildbucket_lib.GetBuildTags(content, 'buildset')
-    self.assertItemsEqual(tags, ['buildset_1', 'buildset_2'])
+    self.assertCountEqual(tags, ['buildset_1', 'buildset_2'])
 
     tags = buildbucket_lib.GetBuildTags(content, 'master_config')
-    self.assertItemsEqual(tags, [''])
+    self.assertCountEqual(tags, [''])
 
 
 class BuildbucketLibTest(cros_test_lib.MockTestCase):

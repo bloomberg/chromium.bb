@@ -390,7 +390,7 @@ class HWTestStageTest(generic_stages_unittest.AbstractStageTestCase,
         'cheets_CTS.com.android.cts.dram': constants.HWTEST_STATUS_FAIL,
         'cheets_ContainerSmokeTest': constants.HWTEST_STATUS_PASS
     }
-    self.assertItemsEqual(expect_dict, result_dict)
+    self.assertCountEqual(expect_dict, result_dict)
     self.assertEqual(len(results), 5)
 
   def testPerformStageOnCQ(self):

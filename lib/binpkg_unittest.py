@@ -100,4 +100,4 @@ class PackageIndexTest(cros_test_lib.TempDirTestCase):
       read_index.Read(f)
 
     self.assertDictEqual(pkg_index.header, read_index.header)
-    self.assertItemsEqual(pkg_index.packages, read_index.packages)
+    self.assertCountEqual(pkg_index.packages, read_index.packages)

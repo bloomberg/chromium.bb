@@ -32,7 +32,7 @@ class ChrootTest(cros_test_lib.TempDirTestCase):
     chroot = chroot_lib.Chroot(path=path, cache_dir=cache_dir,
                                chrome_root=chrome_root)
 
-    self.assertItemsEqual(expected, chroot.get_enter_args())
+    self.assertCountEqual(expected, chroot.get_enter_args())
 
   def testEnv(self):
     """Test the env handling."""

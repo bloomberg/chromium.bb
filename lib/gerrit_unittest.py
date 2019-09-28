@@ -516,7 +516,7 @@ class GerritHelperTest(GerritTestCase):
         emails[0], emails[1]))
     reviewers = gob_util.GetReviewers(helper.host, gpatch.gerrit_number)
     self.assertEqual(len(reviewers), 2)
-    self.assertItemsEqual(
+    self.assertCountEqual(
         [r['email'] for r in reviewers],
         [emails[0], emails[1]])
     helper.SetReviewers(gpatch.gerrit_number,

@@ -88,7 +88,7 @@ class BuildTargetUnitTestTest(cros_test_lib.RunCommandTempDirTestCase):
 
     self.assertFalse(result.success)
     self.assertEqual(expected_rc, result.return_code)
-    self.assertItemsEqual(cpvs, result.failed_cpvs)
+    self.assertCountEqual(cpvs, result.failed_cpvs)
 
 
 class BuildTargetUnitTestTarballTest(cros_test_lib.MockTestCase):

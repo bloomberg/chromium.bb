@@ -149,7 +149,7 @@ class CQConfigParserTest(cros_test_lib.MockTestCase):
       parser = self.CreateCQConfigParser(common_config_file=path)
       pre_cq_configs = parser.GetPreCQConfigs()
 
-      self.assertItemsEqual(pre_cq_configs, ['default', 'binhost-pre-cq'])
+      self.assertCountEqual(pre_cq_configs, ['default', 'binhost-pre-cq'])
 
   def testGetStagesToIgnore(self):
     """Test if we can get the ignored stages from a good config file."""
@@ -231,7 +231,7 @@ class CQConfigParserTest(cros_test_lib.MockTestCase):
           change=change, common_config_file=root_ini, checkout=mock_checkout)
       pre_cq_configs = parser.GetUnionedPreCQConfigs()
 
-      self.assertItemsEqual(pre_cq_configs,
+      self.assertCountEqual(pre_cq_configs,
                             {'default', 'lumpy-pre-cq', 'lakitu-pre-cq',
                              'stumpy-pre-cq'})
 

@@ -237,7 +237,7 @@ class MockedCallResultsTest(cros_test_lib.TestCase):
     self.mr.AddResultForParams(
         (partial_mock.In('test'),), 3,
         side_effect=self._DummyException(expected_msg))
-    with self.assertRaisesRegexp(self._DummyException, expected_msg):
+    with self.assertRaisesRegex(self._DummyException, expected_msg):
       self.mr.LookupResult(('test',))
 
   def testExceptionClassRaise(self):

@@ -80,7 +80,7 @@ class UprevTest(cros_test_lib.MockTestCase, ApiConfigMixin):
                                         output_dir)
     # First argument (build targets) of the first (only) call.
     call_targets = uprev_patch.call_args[0][0]
-    self.assertItemsEqual(targets, [t.name for t in call_targets])
+    self.assertCountEqual(targets, [t.name for t in call_targets])
 
     for ebuild in self.response.modified_ebuilds:
       self.assertIn(ebuild.path, changed)
@@ -164,7 +164,7 @@ class UprevVersionedPackageTest(cros_test_lib.MockTestCase, ApiConfigMixin):
 
     for idx, uprev_response in enumerate(self.response.responses):
       self.assertEqual(result.modified[idx].new_version, uprev_response.version)
-      self.assertItemsEqual(
+      self.assertCountEqual(
           result.modified[idx].files,
           [ebuild.path for ebuild in uprev_response.modified_ebuilds])
 

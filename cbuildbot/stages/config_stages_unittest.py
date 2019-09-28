@@ -61,7 +61,7 @@ class CheckTemplateStageTest(generic_stages_unittest.AbstractStageTestCase):
     stage.ctx.LS.return_value = ['template.json']
 
     gs_paths = stage._ListTemplates()
-    self.assertItemsEqual(gs_paths, ['R_template.json', 'template.json'])
+    self.assertCountEqual(gs_paths, ['R_template.json', 'template.json'])
 
   def test_ListTemplatesWithNoSuchKeyError(self):
     """Test _ListTemplates with NoSuchKeyError."""

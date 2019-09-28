@@ -246,38 +246,38 @@ class AndroidBuildTests(cros_test_lib.TestCase):
     self.assertIsNone(filepath)
 
     # Less than that it's an error.
-    with self.assertRaisesRegexp(ValueError, r'\btoo short\b'):
+    with self.assertRaisesRegex(ValueError, r'\btoo short\b'):
       branch, target, build_id, filepath = androidbuild.SplitAbUrl(
           'ab://android-build/git_mnc-dev')
 
-    with self.assertRaisesRegexp(ValueError, r'\btoo short\b'):
+    with self.assertRaisesRegex(ValueError, r'\btoo short\b'):
       branch, target, build_id, filepath = androidbuild.SplitAbUrl(
           'ab://android-build')
 
-    with self.assertRaisesRegexp(ValueError, r'\btoo short\b'):
+    with self.assertRaisesRegex(ValueError, r'\btoo short\b'):
       branch, target, build_id, filepath = androidbuild.SplitAbUrl(
           'ab://android-build/')
 
-    with self.assertRaisesRegexp(ValueError, r'\bempty target\b'):
+    with self.assertRaisesRegex(ValueError, r'\bempty target\b'):
       branch, target, build_id, filepath = androidbuild.SplitAbUrl(
           'ab://android-build/git_mnc-dev/')
 
     # Non-numeric build_id.
-    with self.assertRaisesRegexp(ValueError, r'\bnon-numeric build_id\b'):
+    with self.assertRaisesRegex(ValueError, r'\bnon-numeric build_id\b'):
       branch, target, build_id, filepath = androidbuild.SplitAbUrl(
           'ab://android-build/git_mnc-dev/mickey-userdebug/NaN/test.zip')
 
     # Wrong protocol.
-    with self.assertRaisesRegexp(ValueError, r'\bab:// protocol\b'):
+    with self.assertRaisesRegex(ValueError, r'\bab:// protocol\b'):
       branch, target, build_id, filepath = androidbuild.SplitAbUrl(
           'gs://android-build/git_mnc-dev/mickey-userdebug/123456/'
           'abc/mickey-img-123456.zip')
 
-    with self.assertRaisesRegexp(ValueError, r'\bab:// protocol\b'):
+    with self.assertRaisesRegex(ValueError, r'\bab:// protocol\b'):
       branch, target, build_id, filepath = androidbuild.SplitAbUrl(
           'http://android-build/git_mnc-dev/mickey-userdebug/123456')
 
     # Wrong bucket.
-    with self.assertRaisesRegexp(ValueError, r'\s"android-build" bucket\b'):
+    with self.assertRaisesRegex(ValueError, r'\s"android-build" bucket\b'):
       branch, target, build_id, filepath = androidbuild.SplitAbUrl(
           'ab://cros-build/git_mnc-dev/mickey-userdebug/123456')

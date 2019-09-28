@@ -344,7 +344,7 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
 
     self.PatchObject(partition_lib, 'LookupImageType', side_effect=side_effect)
 
-    with self.assertRaisesRegexp(paygen_payload_lib.Error, 'different types'):
+    with self.assertRaisesRegex(paygen_payload_lib.Error, 'different types'):
       gen._PreparePartitions()
 
   def testPreparePartitionsGptFull(self):

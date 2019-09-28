@@ -71,10 +71,10 @@ class ChromeCommitterTester(cros_test_lib.RunCommandTestCase,
                                 'Automated Commit: Modify OWNERS and BUILD.gn'])
 
     # Non-existent file should raise.
-    self.assertRaisesRegexp(chrome_committer.CommitError,
-                            'Invalid path: /tmp/chromite.*/nonexistent$',
-                            self.committer.Commit,
-                            ['nonexistent'], 'Commit non-existent file')
+    self.assertRaisesRegex(chrome_committer.CommitError,
+                           'Invalid path: /tmp/chromite.*/nonexistent$',
+                           self.committer.Commit,
+                           ['nonexistent'], 'Commit non-existent file')
 
   def testUpload(self):
     """Tests that we can upload a commit."""

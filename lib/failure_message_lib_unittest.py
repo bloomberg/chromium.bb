@@ -244,7 +244,7 @@ class PackageBuildFailureMessageTests(cros_test_lib.TestCase):
     """Test GetFailedPackages."""
     failure_message = FailureMessageHelper.GetPackageBuildFailureMessage()
 
-    self.assertItemsEqual(
+    self.assertCountEqual(
         ['chromeos-base/chromeos-chrome', 'chromeos-base/chromeos-init'],
         failure_message.GetFailedPackages())
 
@@ -348,7 +348,7 @@ class FailureMessageManagerTests(cros_test_lib.TestCase):
 
     self.assertEqual(len(failures), 4)
     failure_ids = [f.failure_id for f in failures]
-    self.assertItemsEqual(failure_ids, [4, 5, 6, 7])
+    self.assertCountEqual(failure_ids, [4, 5, 6, 7])
 
     for f in failures:
       if f.failure_id == 4:
@@ -356,7 +356,7 @@ class FailureMessageManagerTests(cros_test_lib.TestCase):
             f, failure_message_lib.CompoundFailureMessage))
         inner_failures = f.inner_failures
         inner_failure_ids = [n_f.failure_id for n_f in inner_failures]
-        self.assertItemsEqual([1, 2, 3], inner_failure_ids)
+        self.assertCountEqual([1, 2, 3], inner_failure_ids)
 
   def testReconstructMessagesOnEmptyMsgs(self):
     """Test ReconstructMessages on empty messages."""
@@ -377,7 +377,7 @@ class FailureMessageManagerTests(cros_test_lib.TestCase):
 
     self.assertEqual(len(failures), 3)
     failure_ids = [f.failure_id for f in failures]
-    self.assertItemsEqual(failure_ids, [1, 2, 3])
+    self.assertCountEqual(failure_ids, [1, 2, 3])
 
   def testConstructStageFailureMessagesOnCompoundFailures(self):
     """Test ConstructStageFailureMessages on compound failures."""
@@ -397,4 +397,4 @@ class FailureMessageManagerTests(cros_test_lib.TestCase):
     self.assertEqual(f.failure_id, 1)
     self.assertTrue(isinstance(f, failure_message_lib.CompoundFailureMessage))
     inner_failure_ids = [n_f.failure_id for n_f in f.inner_failures]
-    self.assertItemsEqual([2, 3], inner_failure_ids)
+    self.assertCountEqual([2, 3], inner_failure_ids)

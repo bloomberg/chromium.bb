@@ -637,7 +637,7 @@ class TestCoreLogic(_Base):
     pool.filtered_set = set([p_1])
 
     result = pool._FilterDependencyErrors(errors)
-    self.assertItemsEqual(result, [e_4])
+    self.assertCountEqual(result, [e_4])
 
   def testFilterNonLcqProjects(self):
     """Runs through a filter of own manifest and fake changes.
@@ -1351,7 +1351,7 @@ class BaseSubmitPoolTestCase(_Base):
         _, actually_rejected = pool.SubmitChanges(verified_cls)
 
     # Check that the right patches were submitted and rejected.
-    self.assertItemsEqual([str(x) for x in rejected],
+    self.assertCountEqual([str(x) for x in rejected],
                           [str(x) for x in actually_rejected])
     actually_submitted = self.pool_mock.GetSubmittedChanges()
     self.assertEqual([str(x) for x in submitted],

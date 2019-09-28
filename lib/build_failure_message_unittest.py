@@ -54,7 +54,7 @@ class BuildFailureMessageTests(cros_test_lib.MockTestCase):
     build_failure = self._GetBuildFailureMessageWithMixedMsgs()
     failing_stages = build_failure.GetFailingStages()
 
-    self.assertItemsEqual(failing_stages, ['Paygen', 'InitSDK', 'BuildImage'])
+    self.assertCountEqual(failing_stages, ['Paygen', 'InitSDK', 'BuildImage'])
 
   def testMatchesExceptionCategoriesOnMixedFailuresReturnsFalse(self):
     """Test MatchesExceptionCategories on mixed failures returns False."""
@@ -169,14 +169,14 @@ class BuildFailureMessageTests(cros_test_lib.MockTestCase):
                      return_value='chromiumos/overlays/chromiumos-overlay')
     suspects, no_assignee_packages = (
         build_failure.FindPackageBuildFailureSuspects(changes, f_1))
-    self.assertItemsEqual([changes[0], changes[1]], suspects)
+    self.assertCountEqual([changes[0], changes[1]], suspects)
     self.assertFalse(no_assignee_packages)
 
     self.PatchObject(portage_util, 'FindWorkonProjects',
                      return_value='chromiumos/chromite')
     suspects, no_assignee_packages = (
         build_failure.FindPackageBuildFailureSuspects(changes, f_1))
-    self.assertItemsEqual([changes[2]], suspects)
+    self.assertCountEqual([changes[2]], suspects)
     self.assertFalse(no_assignee_packages)
 
   def testFindPackageBuildFailureSuspectsNoSuspects(self):

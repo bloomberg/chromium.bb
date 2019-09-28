@@ -579,47 +579,47 @@ class MasterCQSyncTest(MasterCQSyncTestCase):
   def testCommitNonManifestChange(self):
     """See MasterCQSyncTestCase"""
     changes = self._testCommitNonManifestChange()
-    self.assertItemsEqual(self.sync_stage.pool.candidates, changes)
-    self.assertItemsEqual(self.sync_stage.pool.non_manifest_changes, [])
+    self.assertCountEqual(self.sync_stage.pool.candidates, changes)
+    self.assertCountEqual(self.sync_stage.pool.non_manifest_changes, [])
 
   def testFailedCommitOfNonManifestChange(self):
     """See MasterCQSyncTestCase"""
     changes = self._testFailedCommitOfNonManifestChange()
-    self.assertItemsEqual(self.sync_stage.pool.candidates, changes)
-    self.assertItemsEqual(self.sync_stage.pool.non_manifest_changes, [])
+    self.assertCountEqual(self.sync_stage.pool.candidates, changes)
+    self.assertCountEqual(self.sync_stage.pool.non_manifest_changes, [])
 
   def testCommitManifestChange(self):
     """See MasterCQSyncTestCase"""
     changes = self._testCommitManifestChange()
-    self.assertItemsEqual(self.sync_stage.pool.candidates, changes)
-    self.assertItemsEqual(self.sync_stage.pool.non_manifest_changes, [])
+    self.assertCountEqual(self.sync_stage.pool.candidates, changes)
+    self.assertCountEqual(self.sync_stage.pool.non_manifest_changes, [])
 
   def testCommitManifestChangeWithoutPreCQ(self):
     """Changes get ignored if they aren't approved by pre-cq."""
     self._testCommitManifestChange(pre_cq_status=None)
-    self.assertItemsEqual(self.sync_stage.pool.candidates, [])
-    self.assertItemsEqual(self.sync_stage.pool.non_manifest_changes, [])
+    self.assertCountEqual(self.sync_stage.pool.candidates, [])
+    self.assertCountEqual(self.sync_stage.pool.non_manifest_changes, [])
 
   def testCommitManifestChangeWithoutPreCQAndOldPatches(self):
     """Changes get tested without pre-cq if the approval_timestamp is old."""
     changes = self._testCommitManifestChange(
         pre_cq_status=None, approval_timestamp=0)
-    self.assertItemsEqual(self.sync_stage.pool.candidates, changes)
-    self.assertItemsEqual(self.sync_stage.pool.non_manifest_changes, [])
+    self.assertCountEqual(self.sync_stage.pool.candidates, changes)
+    self.assertCountEqual(self.sync_stage.pool.non_manifest_changes, [])
 
   def testDefaultSync(self):
     """See MasterCQSyncTestCase"""
     changes = self._testDefaultSync()
-    self.assertItemsEqual(self.sync_stage.pool.candidates, changes)
-    self.assertItemsEqual(self.sync_stage.pool.non_manifest_changes, [])
+    self.assertCountEqual(self.sync_stage.pool.candidates, changes)
+    self.assertCountEqual(self.sync_stage.pool.non_manifest_changes, [])
 
   def testReload(self):
     """Test basic ability to sync and reload the patches from disk."""
     # Use zero patches because mock patches can't be pickled.
     changes = self.PerformSync(num_patches=0, runs=0)
     self.ReloadPool()
-    self.assertItemsEqual(self.sync_stage.pool.candidates, changes)
-    self.assertItemsEqual(self.sync_stage.pool.non_manifest_changes, [])
+    self.assertCountEqual(self.sync_stage.pool.candidates, changes)
+    self.assertCountEqual(self.sync_stage.pool.non_manifest_changes, [])
 
 
 class PreCQLauncherStageTest(MasterCQSyncTestCase):
@@ -688,7 +688,7 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
     action_history = self.fake_db.GetActionsForChanges([change])
 
     failed_configs = self.sync_stage._GetFailedPreCQConfigs(action_history)
-    self.assertItemsEqual(failed_configs, ['eve-pre-cq'])
+    self.assertCountEqual(failed_configs, ['eve-pre-cq'])
 
   def testFailureStreakCounterExceedsThreshold(self):
     """Test FailureStreakCounterExceedsThreshold."""
@@ -811,7 +811,7 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
     return_string = ' '.join(configs_to_test)
     self.PatchObject(
         cq_config.CQConfigParser, 'GetOption', return_value=return_string)
-    self.assertItemsEqual(
+    self.assertCountEqual(
         self.sync_stage.VerificationsForChange(change), configs_to_test)
 
   def testVerificationsForChangeNoSuchConfig(self):
@@ -820,21 +820,21 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
         cq_config.CQConfigParser,
         'GetOption',
         return_value='this_config_does_not_exist')
-    self.assertItemsEqual(
+    self.assertCountEqual(
         self.sync_stage.VerificationsForChange(change),
         constants.PRE_CQ_DEFAULT_CONFIGS)
 
   def testVerificationsForChangeEmptyField(self):
     change = MockPatch()
     self.PatchObject(cq_config.CQConfigParser, 'GetOption', return_value=' ')
-    self.assertItemsEqual(
+    self.assertCountEqual(
         self.sync_stage.VerificationsForChange(change),
         constants.PRE_CQ_DEFAULT_CONFIGS)
 
   def testVerificationsForChangeNoneField(self):
     change = MockPatch()
     self.PatchObject(cq_config.CQConfigParser, 'GetOption', return_value=None)
-    self.assertItemsEqual(
+    self.assertCountEqual(
         self.sync_stage.VerificationsForChange(change),
         constants.PRE_CQ_DEFAULT_CONFIGS)
 
@@ -842,7 +842,7 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
     change = MockPatch(project='chromiumos/overlays/chromiumos-overlay')
     self.PatchObject(cq_config.CQConfigParser, 'GetOption', return_value=None)
     configs = constants.PRE_CQ_DEFAULT_CONFIGS + [constants.BINHOST_PRE_CQ]
-    self.assertItemsEqual(
+    self.assertCountEqual(
         self.sync_stage.VerificationsForChange(change), configs)
 
   def testRequestedDefaultVerifications(self):
@@ -852,7 +852,7 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
         'GetOption',
         return_value='default eve-pre-cq')
     configs = constants.PRE_CQ_DEFAULT_CONFIGS + ['eve-pre-cq']
-    self.assertItemsEqual(
+    self.assertCountEqual(
         self.sync_stage.VerificationsForChange(change), configs)
 
   def testVerificationsForChangeFromInvalidCommitMessage(self):
@@ -863,7 +863,7 @@ pre-cq-configs: insect-pre-cq
 """)
     self.PatchObject(
         cq_config.CQConfigParser, 'GetOption', return_value='eve-pre-cq')
-    self.assertItemsEqual(
+    self.assertCountEqual(
         self.sync_stage.VerificationsForChange(change), ['eve-pre-cq'])
 
   def testVerificationsForChangeFromCommitMessage(self):
@@ -874,7 +874,7 @@ pre-cq-configs: chell-pre-cq
 """)
     self.PatchObject(
         cq_config.CQConfigParser, 'GetOption', return_value='eve-pre-cq')
-    self.assertItemsEqual(
+    self.assertCountEqual(
         self.sync_stage.VerificationsForChange(change), ['chell-pre-cq'])
 
   def testMultiVerificationsForChangeFromCommitMessage(self):
@@ -886,7 +886,7 @@ pre-cq-configs: grunt-pre-cq
 """)
     self.PatchObject(
         cq_config.CQConfigParser, 'GetOption', return_value='eve-pre-cq')
-    self.assertItemsEqual(
+    self.assertCountEqual(
         self.sync_stage.VerificationsForChange(change),
         ['chell-pre-cq', 'grunt-pre-cq'])
 
@@ -1469,7 +1469,7 @@ pre-cq-configs: grunt-pre-cq
     result = []
     for cl_action in cl_actions:
       result.append((cl_action.build_id, cl_action.action))
-    self.assertItemsEqual(result, expected)
+    self.assertCountEqual(result, expected)
     mock_cancel.assert_called_once_with(
         '100', dryrun=self.sync_stage._run.options.debug)
 
@@ -1544,11 +1544,11 @@ pre-cq-configs: grunt-pre-cq
     pre_cqs = self.sync_stage._GetPreCQConfigsFromOptions(change)
     expected_pre_cq = set(constants.PRE_CQ_DEFAULT_CONFIGS +
                           ['binhost-pre-cq', 'eve-pre-cq'])
-    self.assertItemsEqual(pre_cqs, expected_pre_cq)
+    self.assertCountEqual(pre_cqs, expected_pre_cq)
 
     pre_cqs = self.sync_stage._GetPreCQConfigsFromOptions(
         change, union_pre_cq_limit=2)
-    self.assertItemsEqual(pre_cqs, expected_pre_cq)
+    self.assertCountEqual(pre_cqs, expected_pre_cq)
 
   def testGetPreCQConfigsFromOptionsUnioned(self):
     """Test _GetPreCQConfigsFromOptions for unioned Pre-CQ config."""
@@ -1567,7 +1567,7 @@ pre-cq-configs: grunt-pre-cq
 
     expected_pre_cq = set(constants.PRE_CQ_DEFAULT_CONFIGS +
                           ['binhost-pre-cq', 'eve-pre-cq'])
-    self.assertItemsEqual(pre_cqs, expected_pre_cq)
+    self.assertCountEqual(pre_cqs, expected_pre_cq)
 
     self.assertRaises(
         sync_stages.ExceedUnionPreCQLimitException,

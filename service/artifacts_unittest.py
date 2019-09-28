@@ -183,7 +183,7 @@ class ArchiveImagesTest(cros_test_lib.TempDirTestCase):
   def testAllImages(self):
     """Test each image gets picked up."""
     created = artifacts.ArchiveImages(self.image_dir, self.output_dir)
-    self.assertItemsEqual(artifacts.IMAGE_TARS.values(), created)
+    self.assertCountEqual(artifacts.IMAGE_TARS.values(), created)
 
 
 class CreateChromeRootTest(cros_test_lib.RunCommandTempDirTestCase):
@@ -234,7 +234,7 @@ class CreateChromeRootTest(cros_test_lib.RunCommandTempDirTestCase):
     self.assertCommandContains(['cros_generate_sysroot',
                                 '--board', self.build_target.name])
     # Make sure we
-    self.assertItemsEqual(expected_files, created)
+    self.assertCountEqual(expected_files, created)
     for f in created:
       self.assertExists(f)
 
@@ -372,7 +372,7 @@ class BundleVmFilesTest(cros_test_lib.TempDirTestCase):
     expected_archive_files = [
         output_dir + '/chromiumos_qemu_disk.bin' + '123.tar',
         output_dir + '/chromiumos_qemu_mem.bin.tar']
-    self.assertItemsEqual(archives, expected_archive_files)
+    self.assertCountEqual(archives, expected_archive_files)
 
 
 class BuildFirmwareArchiveTest(cros_test_lib.TempDirTestCase):
@@ -480,7 +480,7 @@ class BundleAFDOGenerationArtifacts(cros_test_lib.MockTempDirTestCase):
         )
 
       # Make sure we get all the expected files
-      self.assertItemsEqual(expected_files, created)
+      self.assertCountEqual(expected_files, created)
       for f in created:
         self.assertExists(f)
         os.remove(f)
@@ -515,7 +515,7 @@ class FetchPinnedGuestImagesTest(cros_test_lib.TempDirTestCase):
     ]
 
     pins = artifacts.FetchPinnedGuestImages(self.chroot, self.sysroot)
-    self.assertItemsEqual(expected, pins)
+    self.assertCountEqual(expected, pins)
 
   def testBadPin(self):
     """Tests that generating a guest images tarball with a bad pin file."""

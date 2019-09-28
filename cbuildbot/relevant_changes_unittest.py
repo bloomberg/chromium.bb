@@ -443,7 +443,7 @@ class TriageRelevantChangesTest(cros_test_lib.MockTestCase):
     triage_changes = self.GetTriageRelevantChanges()
     slave_stages = triage_changes.GetChildStages()
 
-    self.assertItemsEqual(slave_stages.keys(), self.slaves)
+    self.assertCountEqual(slave_stages.keys(), self.slaves)
     self.assertEqual(len(slave_stages['slave_1']), 1)
     self.assertEqual(len(slave_stages['slave_2']), 1)
     self.assertEqual(len(slave_stages['slave_3']), 1)
@@ -460,7 +460,7 @@ class TriageRelevantChangesTest(cros_test_lib.MockTestCase):
     passed_builds = triage_changes.GetBuildsPassedAnyOfStages(
         slave_stages, relevant_changes.TriageRelevantChanges.STAGE_SYNC)
 
-    self.assertItemsEqual(passed_builds, {'slave_2', 'slave_3', 'slave_4'})
+    self.assertCountEqual(passed_builds, {'slave_2', 'slave_3', 'slave_4'})
 
   def test_GetRelevantChangesWithoutCLActions(self):
     """Test _GetRelevantChanges without CLActions."""
@@ -473,7 +473,7 @@ class TriageRelevantChangesTest(cros_test_lib.MockTestCase):
     slave_changes_dict = triage_changes._GetRelevantChanges(slave_stages_dict)
 
     self.assertEqual(len(slave_changes_dict.keys()), 4)
-    self.assertItemsEqual(slave_changes_dict['slave_1'], self.changes)
+    self.assertCountEqual(slave_changes_dict['slave_1'], self.changes)
     for slave in ['slave_2', 'slave_3', 'slave_4']:
       self.assertEqual(slave_changes_dict[slave], set())
 
@@ -500,10 +500,10 @@ class TriageRelevantChangesTest(cros_test_lib.MockTestCase):
     slave_changes_dict = triage_changes._GetRelevantChanges(slave_stages_dict)
 
     self.assertEqual(len(slave_changes_dict.keys()), 4)
-    self.assertItemsEqual(slave_changes_dict['slave_1'], self.changes)
-    self.assertItemsEqual(slave_changes_dict['slave_2'], self.changes)
-    self.assertItemsEqual(slave_changes_dict['slave_3'], self.changes[0:2])
-    self.assertItemsEqual(slave_changes_dict['slave_4'], set())
+    self.assertCountEqual(slave_changes_dict['slave_1'], self.changes)
+    self.assertCountEqual(slave_changes_dict['slave_2'], self.changes)
+    self.assertCountEqual(slave_changes_dict['slave_3'], self.changes[0:2])
+    self.assertCountEqual(slave_changes_dict['slave_4'], set())
 
   def _GetFailedBuilderStatus(self, contains_message=True):
     """Helper to return a failed BuilderStatus."""
@@ -547,7 +547,7 @@ class TriageRelevantChangesTest(cros_test_lib.MockTestCase):
     ignorable_changes = triage_changes._GetIgnorableChanges(
         'test-paladin', builder_status, set(self.changes))
 
-    self.assertItemsEqual(ignorable_changes, self.changes)
+    self.assertCountEqual(ignorable_changes, self.changes)
 
   def test_GetIgnorableChangesOnFailedStatusWithoutMessageReturnsNone(self):
     """Test _GetIgnorableChanges on Failed BuilderStatus without messages."""
@@ -624,13 +624,13 @@ class TriageRelevantChangesTest(cros_test_lib.MockTestCase):
         self.changes[1]: set(),
         self.changes[2]: {'slave_2'}
     }
-    self.assertItemsEqual(
+    self.assertCountEqual(
         triage_changes._GetWillNotSubmitChanges('slave_1', self.changes[0:3]),
         self.changes[1:2])
-    self.assertItemsEqual(
+    self.assertCountEqual(
         triage_changes._GetWillNotSubmitChanges('slave_2', self.changes[0:3]),
         self.changes[0:2])
-    self.assertItemsEqual(
+    self.assertCountEqual(
         triage_changes._GetWillNotSubmitChanges('slave_3', self.changes[0:3]),
         self.changes[2:3])
 
@@ -662,9 +662,9 @@ class TriageRelevantChangesTest(cros_test_lib.MockTestCase):
     triage_changes = self.GetTriageRelevantChanges(
         completed_builds={build})
     triage_changes._ProcessCompletedBuilds()
-    self.assertItemsEqual(triage_changes.will_submit, set())
-    self.assertItemsEqual(triage_changes.might_submit, set(self.changes[2:4]))
-    self.assertItemsEqual(triage_changes.will_not_submit,
+    self.assertCountEqual(triage_changes.will_submit, set())
+    self.assertCountEqual(triage_changes.might_submit, set(self.changes[2:4]))
+    self.assertCountEqual(triage_changes.will_not_submit,
                           self.changes[0:2])
 
   def testProcessCompletedBuildsNoStagePassedBefore(self):
@@ -676,9 +676,9 @@ class TriageRelevantChangesTest(cros_test_lib.MockTestCase):
         completed_builds={build})
     triage_changes.change_passed_slaves_dict = {self.changes[1]: {build}}
     triage_changes._ProcessCompletedBuilds()
-    self.assertItemsEqual(triage_changes.will_submit, set())
-    self.assertItemsEqual(triage_changes.might_submit, set(self.changes[1:4]))
-    self.assertItemsEqual(triage_changes.will_not_submit,
+    self.assertCountEqual(triage_changes.will_submit, set())
+    self.assertCountEqual(triage_changes.might_submit, set(self.changes[1:4]))
+    self.assertCountEqual(triage_changes.will_not_submit,
                           self.changes[0:1])
 
   def testProcessCompletedBuildsFailedSyncStage(self):
@@ -691,9 +691,9 @@ class TriageRelevantChangesTest(cros_test_lib.MockTestCase):
         completed_builds={build})
 
     triage_changes._ProcessCompletedBuilds()
-    self.assertItemsEqual(triage_changes.will_submit, set())
-    self.assertItemsEqual(triage_changes.might_submit, set(self.changes[2:4]))
-    self.assertItemsEqual(triage_changes.will_not_submit,
+    self.assertCountEqual(triage_changes.will_submit, set())
+    self.assertCountEqual(triage_changes.might_submit, set(self.changes[2:4]))
+    self.assertCountEqual(triage_changes.will_not_submit,
                           self.changes[0:2])
 
   def testProcessCompletedBuildsNoCompletionStageWithMissingStatus(self):
@@ -706,9 +706,9 @@ class TriageRelevantChangesTest(cros_test_lib.MockTestCase):
         completed_builds={build})
 
     triage_changes._ProcessCompletedBuilds()
-    self.assertItemsEqual(triage_changes.will_submit, set())
-    self.assertItemsEqual(triage_changes.might_submit, set(self.changes[2:4]))
-    self.assertItemsEqual(triage_changes.will_not_submit,
+    self.assertCountEqual(triage_changes.will_submit, set())
+    self.assertCountEqual(triage_changes.might_submit, set(self.changes[2:4]))
+    self.assertCountEqual(triage_changes.will_not_submit,
                           set(self.changes[0:2]))
 
   def testProcessCompletedBuildsFailedCompletionStageNoStatus(self):
@@ -721,9 +721,9 @@ class TriageRelevantChangesTest(cros_test_lib.MockTestCase):
         completed_builds={build})
 
     triage_changes._ProcessCompletedBuilds()
-    self.assertItemsEqual(triage_changes.will_submit, set())
-    self.assertItemsEqual(triage_changes.might_submit, set(self.changes[2:4]))
-    self.assertItemsEqual(triage_changes.will_not_submit,
+    self.assertCountEqual(triage_changes.will_submit, set())
+    self.assertCountEqual(triage_changes.might_submit, set(self.changes[2:4]))
+    self.assertCountEqual(triage_changes.will_not_submit,
                           set(self.changes[0:2]))
 
   def testProcessCompletedBuildsFailedCompletionStageNoStatusPassedBefore(self):
@@ -737,9 +737,9 @@ class TriageRelevantChangesTest(cros_test_lib.MockTestCase):
     triage_changes.change_passed_slaves_dict = {self.changes[1]: {build}}
 
     triage_changes._ProcessCompletedBuilds()
-    self.assertItemsEqual(triage_changes.will_submit, set())
-    self.assertItemsEqual(triage_changes.might_submit, set(self.changes[1:4]))
-    self.assertItemsEqual(triage_changes.will_not_submit,
+    self.assertCountEqual(triage_changes.will_submit, set())
+    self.assertCountEqual(triage_changes.might_submit, set(self.changes[1:4]))
+    self.assertCountEqual(triage_changes.will_not_submit,
                           set(self.changes[0:1]))
 
   def testProcessCompletedBuildsForgivenCompletionStageWithPassedStatus(self):
@@ -759,9 +759,9 @@ class TriageRelevantChangesTest(cros_test_lib.MockTestCase):
 
     triage_changes._ProcessCompletedBuilds()
     self.assertFalse(can_ignore_failures_mock.called)
-    self.assertItemsEqual(triage_changes.will_submit, set())
-    self.assertItemsEqual(triage_changes.might_submit, set(self.changes))
-    self.assertItemsEqual(triage_changes.will_not_submit, set())
+    self.assertCountEqual(triage_changes.will_submit, set())
+    self.assertCountEqual(triage_changes.might_submit, set(self.changes))
+    self.assertCountEqual(triage_changes.will_not_submit, set())
 
   def testProcessCompletedBuildsForgivenCompletionStageNoStatus(self):
     """Test build with forgiven completion stage and missing BuilderStatus."""
@@ -776,9 +776,9 @@ class TriageRelevantChangesTest(cros_test_lib.MockTestCase):
 
     triage_changes._ProcessCompletedBuilds()
     self.assertFalse(can_ignore_failures_mock.called)
-    self.assertItemsEqual(triage_changes.will_submit, set())
-    self.assertItemsEqual(triage_changes.might_submit, set(self.changes[2:4]))
-    self.assertItemsEqual(triage_changes.will_not_submit,
+    self.assertCountEqual(triage_changes.will_submit, set())
+    self.assertCountEqual(triage_changes.might_submit, set(self.changes[2:4]))
+    self.assertCountEqual(triage_changes.will_not_submit,
                           set(self.changes[0:2]))
 
   def testProcessCompletedBuildsForgiveCompStageNoStatusPassedBefore(self):
@@ -795,9 +795,9 @@ class TriageRelevantChangesTest(cros_test_lib.MockTestCase):
 
     triage_changes._ProcessCompletedBuilds()
     self.assertFalse(can_ignore_failures_mock.called)
-    self.assertItemsEqual(triage_changes.will_submit, set())
-    self.assertItemsEqual(triage_changes.might_submit, set(self.changes[1:4]))
-    self.assertItemsEqual(triage_changes.will_not_submit,
+    self.assertCountEqual(triage_changes.will_submit, set())
+    self.assertCountEqual(triage_changes.might_submit, set(self.changes[1:4]))
+    self.assertCountEqual(triage_changes.will_not_submit,
                           set(self.changes[0:1]))
 
   def testProcessCompletedBuildsForgivenCompletionStageWithFailedStatus(self):
@@ -816,9 +816,9 @@ class TriageRelevantChangesTest(cros_test_lib.MockTestCase):
         completed_builds={build})
 
     triage_changes._ProcessCompletedBuilds()
-    self.assertItemsEqual(triage_changes.will_submit, set())
-    self.assertItemsEqual(triage_changes.might_submit, set(self.changes[1:4]))
-    self.assertItemsEqual(triage_changes.will_not_submit,
+    self.assertCountEqual(triage_changes.will_submit, set())
+    self.assertCountEqual(triage_changes.might_submit, set(self.changes[1:4]))
+    self.assertCountEqual(triage_changes.will_not_submit,
                           set(self.changes[0:1]))
 
   def testProcessCompletedBuildsPassedCompletionStage(self):
@@ -837,9 +837,9 @@ class TriageRelevantChangesTest(cros_test_lib.MockTestCase):
         completed_builds={build})
 
     triage_changes._ProcessCompletedBuilds()
-    self.assertItemsEqual(triage_changes.will_submit, set())
-    self.assertItemsEqual(triage_changes.might_submit, set(self.changes))
-    self.assertItemsEqual(triage_changes.will_not_submit, set())
+    self.assertCountEqual(triage_changes.will_submit, set())
+    self.assertCountEqual(triage_changes.might_submit, set(self.changes))
+    self.assertCountEqual(triage_changes.will_not_submit, set())
 
   def testChangeVerifiedByCurrentBuild(self):
     """Test ChangeVerifiedByCurrentBuild."""

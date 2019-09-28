@@ -46,7 +46,7 @@ class TestRetries(cros_test_lib.MockTempDirTestCase):
     @retry_util.WithRetry(max_retry=3)
     def _run():
       raise Exception('Retry fail')
-    with self.assertRaisesRegexp(Exception, 'Retry fail'):
+    with self.assertRaisesRegex(Exception, 'Retry fail'):
       _run()
 
   def testGenericRetry(self):

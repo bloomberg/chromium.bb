@@ -125,7 +125,7 @@ class TestFindSuspects(cros_test_lib.MockTestCase):
     results = triage_lib.CalculateSuspects.FindSuspects(
         patches, [message], lab_fail=lab_fail, infra_fail=infra_fail,
         sanity=sanity)
-    self.assertItemsEqual(suspects, results.keys())
+    self.assertCountEqual(suspects, results.keys())
 
   def testFailSameProject(self):
     """Patches to the package that failed should be marked as failing."""
@@ -188,11 +188,11 @@ class TestFindSuspects(cros_test_lib.MockTestCase):
     """If a message is just 'None', it should cause all patches to fail."""
     patches = [self.kernel_patch, self.power_manager_patch, self.secret_patch]
     results = triage_lib.CalculateSuspects.FindSuspects(patches, [None])
-    self.assertItemsEqual(results.keys(), patches)
+    self.assertCountEqual(results.keys(), patches)
 
     results = triage_lib.CalculateSuspects.FindSuspects(
         patches, [None], sanity=False)
-    self.assertItemsEqual(results.keys(), [])
+    self.assertCountEqual(results.keys(), [])
 
   def testFailNoExceptions(self):
     """If there are no exceptions, all patches should be failed."""
@@ -340,11 +340,11 @@ class TestFindSuspects(cros_test_lib.MockTestCase):
 
     suspects = triage_lib.CalculateSuspects.FindSuspectsForFailures(
         self.changes, messages, build_root, failed_hwtests, False)
-    self.assertItemsEqual(suspects.keys(), self.changes[0:1])
+    self.assertCountEqual(suspects.keys(), self.changes[0:1])
 
     suspects = triage_lib.CalculateSuspects.FindSuspectsForFailures(
         self.changes, messages, build_root, failed_hwtests, True)
-    self.assertItemsEqual(suspects.keys(), self.changes[0:1])
+    self.assertCountEqual(suspects.keys(), self.changes[0:1])
 
     for index in range(0, 3):
       messages[index].FindSuspectedChanges.called_once_with(
@@ -360,11 +360,11 @@ class TestFindSuspects(cros_test_lib.MockTestCase):
 
     suspects = triage_lib.CalculateSuspects.FindSuspectsForFailures(
         self.changes, messages, build_root, failed_hwtests, False)
-    self.assertItemsEqual(suspects.keys(), set())
+    self.assertCountEqual(suspects.keys(), set())
 
     suspects = triage_lib.CalculateSuspects.FindSuspectsForFailures(
         self.changes, messages, build_root, failed_hwtests, True)
-    self.assertItemsEqual(suspects.keys(), self.changes)
+    self.assertCountEqual(suspects.keys(), self.changes)
 
 
 class TestGetFullyVerifiedChanges(cros_test_lib.MockTestCase):
