@@ -97,7 +97,9 @@
 
       'chromeos-amd64-generic-asan-rel': 'cros_chrome_sdk_asan',
       'chromeos-amd64-generic-cfi-thin-lto-rel': 'cros_chrome_sdk_headless_ozone_cfi_thin_lto',
+      'chromeos-amd64-generic-dbg': 'cros_chrome_sdk_dbg',
       'chromeos-amd64-generic-rel': 'cros_chrome_sdk_headless_ozone',
+      'chromeos-arm-generic-dbg': 'cros_chrome_sdk_dbg',
       'chromeos-arm-generic-rel': 'cros_chrome_sdk',
       'chromeos-kevin-rel': 'cros_chrome_sdk_headless_ozone',
       'linux-chromeos-rel': 'chromeos_with_codecs_release_bot',
@@ -734,7 +736,9 @@
       # TODO(crbug.com/913750): Enable DCHECKS on the two amd64-generic bots
       # and two kevin bots when the PFQ has it enabled.
       'chromeos-amd64-generic-cfi-thin-lto-rel': 'cros_chrome_sdk_headless_ozone_cfi_thin_lto',
+      'chromeos-amd64-generic-dbg': 'cros_chrome_sdk_dbg',
       'chromeos-amd64-generic-rel': 'cros_chrome_sdk_headless_ozone',
+      'chromeos-arm-generic-dbg': 'cros_chrome_sdk_dbg',
       'chromeos-arm-generic-rel': 'cros_chrome_sdk_dchecks_always_on',
       'chromeos-kevin-compile-rel': 'cros_chrome_sdk_headless_ozone',
       'chromeos-kevin-experimental-rel': 'cros_chrome_sdk_headless_ozone',
@@ -1427,6 +1431,10 @@
 
     'cros_chrome_sdk_asan': [
       'cros_chrome_sdk', 'asan',
+    ],
+
+    'cros_chrome_sdk_dbg': [
+      'cros_chrome_sdk', 'debug',
     ],
 
     'cros_chrome_sdk_dchecks_always_on': [
