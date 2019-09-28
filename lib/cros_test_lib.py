@@ -706,6 +706,16 @@ class TestCase(unittest.TestCase):
   failUnlessRaises = _disable('failUnlessRaises', 'assertRaises')
   failIf = _disable('failIf', 'assertFalse')
 
+  # Python 3 renamed these.
+  if sys.version_info.major < 3:
+    assertCountEqual = unittest.TestCase.assertItemsEqual
+    assertRaisesRegex = unittest.TestCase.assertRaisesRegexp
+    assertRegex = unittest.TestCase.assertRegexpMatches
+
+  assertItemsEqual = _disable('assertItemsEqual', 'assertCountEqual')
+  assertRaisesRegexp = _disable('assertRaisesRegexp', 'assertRaisesRegex')
+  assertRegexpMatches = _disable('assertRegexpMatches', 'assertRegex')
+
 
 class LoggingTestCase(TestCase):
   """Base class for logging capturer test cases."""
