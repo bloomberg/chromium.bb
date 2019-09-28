@@ -969,10 +969,6 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   ClearAllWebUI();
 
   SetLastCommittedSiteUrl(GURL());
-  RenderProcessHostImpl* rph =
-      static_cast<RenderProcessHostImpl*>(GetProcess());
-  rph->UpdateFrameWithPriority(last_committed_document_priority_,
-                               base::nullopt);
 
   if (overlay_routing_token_)
     g_token_frame_map.Get().erase(*overlay_routing_token_);
@@ -2300,18 +2296,6 @@ void RenderFrameHostImpl::ResetChildren() {
 
 void RenderFrameHostImpl::SetLastCommittedUrl(const GURL& url) {
   last_committed_url_ = url;
-}
-
-void RenderFrameHostImpl::UpdateRenderProcessHostFramePriorities() {
-  const auto new_committed_document_priority =
-      (delegate_ && delegate_->IsFrameLowPriority(this))
-          ? RenderProcessHostImpl::FramePriority::kLow
-          : RenderProcessHostImpl::FramePriority::kNormal;
-  RenderProcessHostImpl* rph =
-      static_cast<RenderProcessHostImpl*>(GetProcess());
-  rph->UpdateFrameWithPriority(last_committed_document_priority_,
-                               new_committed_document_priority);
-  last_committed_document_priority_ = new_committed_document_priority;
 }
 
 void RenderFrameHostImpl::OnDetach() {
@@ -6916,8 +6900,6 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
 
   last_http_status_code_ = validated_params->http_status_code;
   UpdateSiteURL(validated_params->url, validated_params->url_is_unreachable);
-  if (!is_same_document_navigation)
-    UpdateRenderProcessHostFramePriorities();
 
   // Set the state whether this navigation is to an MHTML document, since there
   // are certain security checks that we cannot apply to subframes in MHTML

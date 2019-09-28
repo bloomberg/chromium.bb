@@ -455,9 +455,6 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   virtual RenderFrameHostImpl* GetMainFrameForInnerDelegate(
       FrameTreeNode* frame_tree_node);
 
-  // Determine if the frame is of a low priority.
-  virtual bool IsFrameLowPriority(const RenderFrameHost* render_frame_host);
-
  protected:
   virtual ~RenderFrameHostDelegate() {}
 };
