@@ -2852,11 +2852,6 @@ const char kNtpCustomizationMenuV2Name[] = "NTP customization menu version 2";
 const char kNtpCustomizationMenuV2Description[] =
     "Use the second version of the NTP customization menu.";
 
-const char kNtpDisableInitialMostVisitedFadeInName[] =
-    "Disable NTP initial most visited fade in";
-const char kNtpDisableInitialMostVisitedFadeInDescription[] =
-    "Do not initially fade in most visited tiles on the New Tab Page";
-
 const char kNtpDismissPromosName[] = "Dismiss promos on the New Tab Page";
 const char kNtpDismissPromosDescription[] =
     "Enables a UI to persistently dismiss [non-emergency] promos on the "

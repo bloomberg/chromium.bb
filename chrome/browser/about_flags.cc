@@ -3088,12 +3088,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kNtpCustomizationMenuV2Description, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kNtpCustomizationMenuV2)},
 
-    {"ntp-disable-initial-most-visited-fade-in",
-     flag_descriptions::kNtpDisableInitialMostVisitedFadeInName,
-     flag_descriptions::kNtpDisableInitialMostVisitedFadeInDescription,
-     kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kDisableInitialMostVisitedFadeIn)},
-
     {"ntp-dismiss-promos", flag_descriptions::kNtpDismissPromosName,
      flag_descriptions::kNtpDismissPromosDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kDismissNtpPromos)},

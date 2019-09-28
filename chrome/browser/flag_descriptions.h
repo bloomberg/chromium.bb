@@ -1679,9 +1679,6 @@ extern const char kGridLayoutForNtpShortcutsDescription[];
 extern const char kNtpCustomizationMenuV2Name[];
 extern const char kNtpCustomizationMenuV2Description[];
 
-extern const char kNtpDisableInitialMostVisitedFadeInName[];
-extern const char kNtpDisableInitialMostVisitedFadeInDescription[];
-
 extern const char kNtpDismissPromosName[];
 extern const char kNtpDismissPromosDescription[];
 

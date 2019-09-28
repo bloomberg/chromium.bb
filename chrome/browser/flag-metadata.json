@@ -2493,7 +2493,7 @@
   {
     "name": "ntp-disable-initial-most-visited-fade-in",
     "owners": ["dbeam"],
-    "expiry_milestone": 80
+    "expiry_milestone": 79
   },
   {
     "name": "ntp-dismiss-promos",
