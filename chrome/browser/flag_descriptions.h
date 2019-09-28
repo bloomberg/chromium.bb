@@ -2010,6 +2010,9 @@ extern const char kEnableGoogleAssistantDspDescription[];
 extern const char kEnableGoogleAssistantStereoInputName[];
 extern const char kEnableGoogleAssistantStereoInputDescription[];
 
+extern const char kEnableGoogleAssistantAecName[];
+extern const char kEnableGoogleAssistantAecDescription[];
+
 extern const char kEnableHeuristicStylusPalmRejectionName[];
 extern const char kEnableHeuristicStylusPalmRejectionDescription[];
 

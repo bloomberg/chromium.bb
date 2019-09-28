@@ -4637,6 +4637,12 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kLegacyTLSWarnings)},
 #endif
 
+#if defined(OS_CHROMEOS)
+    {"enable-assistant-aec", flag_descriptions::kEnableGoogleAssistantAecName,
+     flag_descriptions::kEnableGoogleAssistantAecDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::assistant::features::kAssistantAudioEraser)},
+#endif
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

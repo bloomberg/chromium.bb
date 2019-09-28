@@ -3384,6 +3384,11 @@ const char kEnableGoogleAssistantStereoInputDescription[] =
     "Enable an experimental feature that uses stereo audio input for hotword "
     "and voice to text detection in Google Assistant.";
 
+const char kEnableGoogleAssistantAecName[] = "Enable Google Assistant AEC";
+const char kEnableGoogleAssistantAecDescription[] =
+    "Enable an experimental feature that removes local feedback from audio "
+    "input to help hotword and ASR when background audio is playing.";
+
 const char kEnableHeuristicStylusPalmRejectionName[] =
     "Enable Heuristic for Stylus/Palm Rejection.";
 const char kEnableHeuristicStylusPalmRejectionDescription[] =
