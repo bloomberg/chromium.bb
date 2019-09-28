@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/page_load_metrics/observers/use_counter_page_load_metrics_observer.h"
-#include "chrome/browser/browser_process.h"
-#include "content/public/browser/render_frame_host.h"
-#include "services/metrics/public/cpp/ukm_builders.h"
+#include "components/page_load_metrics/browser/observers/use_counter_page_load_metrics_observer.h"
 
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
+#include "content/public/browser/render_frame_host.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 
 using Features = page_load_metrics::mojom::PageLoadFeatures;
 using UkmFeatureList = UseCounterPageLoadMetricsObserver::UkmFeatureList;
@@ -102,7 +101,9 @@ void RecordAnimatedCssProperty(CSSSampleId animated_property) {
 }  // namespace
 
 UseCounterPageLoadMetricsObserver::UseCounterPageLoadMetricsObserver() {}
-UseCounterPageLoadMetricsObserver::~UseCounterPageLoadMetricsObserver() {}
+
+UseCounterPageLoadMetricsObserver::~UseCounterPageLoadMetricsObserver() =
+    default;
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 UseCounterPageLoadMetricsObserver::OnCommit(
