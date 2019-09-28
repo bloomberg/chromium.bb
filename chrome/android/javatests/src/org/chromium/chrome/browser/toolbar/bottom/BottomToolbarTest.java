@@ -16,7 +16,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -53,7 +52,6 @@ public class BottomToolbarTest {
     }
 
     @Test
-    @DisabledTest
     @MediumTest
     public void testBottomToolbarVisibility() {
         Assert.assertNotNull("BottomToolbarCoordinator should be constructed.",
@@ -65,7 +63,6 @@ public class BottomToolbarTest {
     }
 
     @Test
-    @DisabledTest
     @MediumTest
     public void testBottomToolbarTabSwitcherButton() throws ExecutionException {
         Assert.assertFalse("Tab switcher should not be visible.",
