@@ -1774,6 +1774,7 @@ class PixelTestPages(object):
         test_rect=[0, 0, 240, 135],
         revision=0,
         browser_args=browser_args,
+        other_args={'no_overlay': True},
         tolerance=tolerance_dc),
 
       PixelTestPage(
