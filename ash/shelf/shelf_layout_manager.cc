@@ -2039,7 +2039,8 @@ bool ShelfLayoutManager::StartShelfDrag(
   // offset to the hotseats extended position.
   if (state_.hotseat_state == HotseatState::kExtended &&
       visibility_state() == SHELF_VISIBLE) {
-    drag_amount_ = -ShelfConfig::Get()->hotseat_size();
+    drag_amount_ = -(ShelfConfig::Get()->hotseat_size() +
+                     ShelfConfig::Get()->hotseat_bottom_padding());
   } else {
     drag_amount_ = 0.f;
   }
