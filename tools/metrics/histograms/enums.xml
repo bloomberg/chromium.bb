@@ -24752,6 +24752,8 @@ Called by update_net_error_codes.py.-->
       label="MediaSourceGroupEndTimestampDecreaseWithinMediaSegment"/>
   <int value="3035" label="TextFragmentAnchorTapToDismiss"/>
   <int value="3036" label="XRIsSessionSupported"/>
+  <int value="3037" label="ScrollbarUseScrollbarButtonReversedDirection"/>
+  <int value="3038" label="CSSSelectorPseudoScrollbarButtonReversedDirection"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
