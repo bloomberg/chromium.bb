@@ -80,19 +80,9 @@ class LockManager : public base::RefCountedThreadSafe<LockManager>,
     url::Origin origin;
   };
 
-  bool IsGrantable(const url::Origin& origin,
-                   const std::string& name,
-                   blink::mojom::LockMode mode) const;
-
   // Mints a monotonically increasing identifier. Used both for lock requests
   // and granted locks as keys in ordered maps.
   int64_t NextLockId();
-
-  void Break(const url::Origin& origin, const std::string& name);
-
-  // Called when a lock is requested and optionally when a lock is released,
-  // to process outstanding requests within the origin.
-  void ProcessRequests(const url::Origin& origin);
 
   mojo::ReceiverSet<blink::mojom::LockManager, ReceiverState> receivers_;
 

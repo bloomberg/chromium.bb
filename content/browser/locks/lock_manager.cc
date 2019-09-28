@@ -85,15 +85,6 @@ class LockManager::Lock {
 
   ~Lock() = default;
 
-  // Abort a lock request.
-  void Abort(const std::string& message) {
-    DCHECK(request_);
-    DCHECK(!handle_);
-
-    request_->Abort(message);
-    request_.reset();
-  }
-
   // Grant a lock request. This mints a LockHandle and returns it over the
   // request pipe.
   void Grant(base::WeakPtr<LockManager> context, const url::Origin& origin) {
