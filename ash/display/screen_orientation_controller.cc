@@ -45,7 +45,7 @@ OrientationLockType GetDisplayNaturalOrientation() {
   display::ManagedDisplayInfo info =
       Shell::Get()->display_manager()->GetDisplayInfo(
           display::Display::InternalDisplayId());
-  gfx::Size size = info.bounds_in_native().size();
+  gfx::Size size = info.GetSizeInPixelWithPanelOrientation();
   return size.width() > size.height() ? OrientationLockType::kLandscape
                                       : OrientationLockType::kPortrait;
 }
@@ -545,7 +545,7 @@ void ScreenOrientationController::HandleScreenRotation(
   // The reference vector is the angle of gravity when the device is rotated
   // clockwise by 45 degrees. Computing the angle between this vector and
   // gravity we can easily determine the expected display rotation.
-  static const gfx::Vector3dF rotation_reference(-1.0f, 1.0f, 0.0f);
+  static constexpr gfx::Vector3dF rotation_reference(-1.0f, 1.0f, 0.0f);
 
   // Set the down vector to match the expected direction of gravity given the
   // last configured rotation. This is used to enforce a stickiness that the
