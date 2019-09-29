@@ -700,14 +700,21 @@ def CMDupdate_bootstrap(parser, args):
     print('Sorry, update bootstrap will not work on Windows.', file=sys.stderr)
     return 1
 
+  parser.add_option('--skip-populate', action='store_true',
+                    help='Skips "populate" step if mirror already exists.')
   parser.add_option('--gc-aggressive', action='store_true',
                     help='Run aggressive repacking of the repo.')
   parser.add_option('--prune', action='store_true',
                     help='Prune all other cached bundles of the same repo.')
 
-  # First, we need to ensure the cache is populated.
   populate_args = args[:]
-  CMDpopulate(parser, populate_args)
+  options, args = parser.parse_args(args)
+  url = args[0]
+  mirror = Mirror(url)
+  if not options.skip_populate or not mirror.exists():
+    CMDpopulate(parser, populate_args)
+  else:
+    print('Skipped populate step.')
 
   # Get the repo directory.
   options, args = parser.parse_args(args)
