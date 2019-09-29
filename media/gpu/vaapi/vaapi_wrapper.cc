@@ -1590,7 +1590,9 @@ bool VaapiWrapper::SubmitBuffer(VABufferType va_buffer_type,
                                 const void* buffer) {
   DCHECK_LT(va_buffer_type, VABufferTypeMax);
   DCHECK(buffer);
+  TRACE_EVENT0("media,gpu", "VaapiWrapper::SubmitBuffer");
   base::AutoLock auto_lock(*va_lock_);
+  TRACE_EVENT0("media,gpu", "VaapiWrapper::SubmitBufferLocked");
 
   VABufferID buffer_id;
   VAStatus va_res = vaCreateBuffer(va_display_, va_context_id_, va_buffer_type,
@@ -1649,7 +1651,9 @@ bool VaapiWrapper::SubmitVAEncMiscParamBuffer(
 }
 
 void VaapiWrapper::DestroyPendingBuffers() {
+  TRACE_EVENT0("media,gpu", "VaapiWrapper::DestroyPendingBuffers");
   base::AutoLock auto_lock(*va_lock_);
+  TRACE_EVENT0("media,gpu", "VaapiWrapper::DestroyPendingBuffersLocked");
 
   for (const auto& pending_va_buf : pending_va_bufs_) {
     VAStatus va_res = vaDestroyBuffer(va_display_, pending_va_buf);
@@ -1711,7 +1715,9 @@ std::unique_ptr<ScopedVAImage> VaapiWrapper::CreateVaImage(
 
 bool VaapiWrapper::UploadVideoFrameToSurface(const VideoFrame& frame,
                                              VASurfaceID va_surface_id) {
+  TRACE_EVENT0("media,gpu", "VaapiWrapper::UploadVideoFrameToSurface");
   base::AutoLock auto_lock(*va_lock_);
+  TRACE_EVENT0("media,gpu", "VaapiWrapper::UploadVideoFrameToSurfaceLocked");
 
   const gfx::Size size = frame.coded_size();
   bool va_create_put_fallback = false;
@@ -1785,7 +1791,9 @@ bool VaapiWrapper::UploadVideoFrameToSurface(const VideoFrame& frame,
 }
 
 bool VaapiWrapper::CreateVABuffer(size_t size, VABufferID* buffer_id) {
+  TRACE_EVENT0("media,gpu", "VaapiWrapper::CreateVABuffer");
   base::AutoLock auto_lock(*va_lock_);
+  TRACE_EVENT0("media,gpu", "VaapiWrapper::CreateVABufferLocked");
   VAStatus va_res =
       vaCreateBuffer(va_display_, va_context_id_, VAEncCodedBufferType, size, 1,
                      NULL, buffer_id);
@@ -1802,7 +1810,9 @@ bool VaapiWrapper::DownloadFromVABuffer(VABufferID buffer_id,
                                         size_t target_size,
                                         size_t* coded_data_size) {
   DCHECK(target_ptr);
+  TRACE_EVENT0("media,gpu", "VaapiWrapper::DownloadFromVABuffer");
   base::AutoLock auto_lock(*va_lock_);
+  TRACE_EVENT0("media,gpu", "VaapiWrapper::DownloadFromVABufferLocked");
 
   VAStatus va_res = vaSyncSurface(va_display_, sync_surface_id);
   VA_SUCCESS_OR_RETURN(va_res, "Failed syncing surface", false);
@@ -2176,6 +2186,7 @@ void VaapiWrapper::DestroySurface(VASurfaceID va_surface_id) {
 bool VaapiWrapper::Execute(VASurfaceID va_surface_id) {
   TRACE_EVENT0("media,gpu", "VaapiWrapper::Execute");
   base::AutoLock auto_lock(*va_lock_);
+  TRACE_EVENT0("media,gpu", "VaapiWrapper::ExecuteLocked");
 
   DVLOG(4) << "Pending VA bufs to commit: " << pending_va_bufs_.size();
   DVLOG(4) << "Pending slice bufs to commit: " << pending_slice_bufs_.size();

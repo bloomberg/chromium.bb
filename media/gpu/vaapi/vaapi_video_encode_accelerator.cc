@@ -617,6 +617,7 @@ void VaapiVideoEncodeAccelerator::EncodePendingInputs() {
     // If this is a flush (null) frame, don't create/submit a new encode job for
     // it, but forward a null job to the submitted_encode_jobs_ queue.
     scoped_refptr<VaapiEncodeJob> job;
+    TRACE_EVENT0("media,gpu", "VAVEA::FromCreateEncodeJobToReturn");
     if (input_frame) {
       job = CreateEncodeJob(input_frame->frame, input_frame->force_keyframe);
       if (!job)
@@ -630,8 +631,10 @@ void VaapiVideoEncodeAccelerator::EncodePendingInputs() {
         NOTIFY_ERROR(kPlatformFailureError, "Failed preparing an encode job.");
         return;
       }
-
-      TRACE_EVENT0("media,gpu", "VAVEA: Execute");
+    }
+    TRACE_EVENT0("media,gpu", "VAVEA::FromExecuteToReturn");
+    if (job) {
+      TRACE_EVENT0("media,gpu", "VAVEA::Execute");
       job->Execute();
     }
 
