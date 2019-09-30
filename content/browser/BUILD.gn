@@ -2425,6 +2425,7 @@ jumbo_source_set("browser") {
       "//ui/android",
       "//ui/compositor",
       "//ui/compositor/host",
+      "//url:origin_android",
     ]
     if (enable_vulkan) {
       deps += [ "//gpu/vulkan/init" ]
