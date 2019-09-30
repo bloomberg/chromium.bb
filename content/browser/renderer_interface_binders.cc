@@ -127,10 +127,11 @@ void BindFaceDetectionProvider(
   GetShapeDetectionService()->BindFaceDetectionProvider(std::move(request));
 }
 
-void BindTextDetection(shape_detection::mojom::TextDetectionRequest request,
-                       RenderProcessHost* host,
-                       const url::Origin& origin) {
-  GetShapeDetectionService()->BindTextDetection(std::move(request));
+void BindTextDetection(
+    mojo::PendingReceiver<shape_detection::mojom::TextDetection> receiver,
+    RenderProcessHost* host,
+    const url::Origin& origin) {
+  GetShapeDetectionService()->BindTextDetection(std::move(receiver));
 }
 
 // Register renderer-exposed interfaces. Each registered interface binder is
