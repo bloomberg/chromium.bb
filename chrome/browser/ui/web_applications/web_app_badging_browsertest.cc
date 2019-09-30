@@ -215,6 +215,21 @@ IN_PROC_BROWSER_TEST_P(WebAppBadgingBrowserTest,
   ASSERT_EQ(base::nullopt, last_badge_content_);
 }
 
+// Tests that badging incognito windows does not cause a crash.
+IN_PROC_BROWSER_TEST_P(WebAppBadgingBrowserTest,
+                       BadgingIncognitoWindowsDoesNotCrash) {
+  Browser* incognito_browser =
+      OpenURLOffTheRecord(profile(), main_frame_->GetLastCommittedURL());
+  RenderFrameHost* incognito_frame = incognito_browser->tab_strip_model()
+                                         ->GetActiveWebContents()
+                                         ->GetMainFrame();
+
+  ASSERT_TRUE(
+      content::ExecuteScript(incognito_frame, "ExperimentalBadge.set()"));
+  ASSERT_TRUE(
+      content::ExecuteScript(incognito_frame, "ExperimentalBadge.clear()"));
+}
+
 INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     WebAppBadgingBrowserTest,
