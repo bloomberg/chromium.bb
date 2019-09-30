@@ -4758,6 +4758,10 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   return [self userAgentType] == web::UserAgentType::DESKTOP;
 }
 
+- (web::WebState*)webStateToReplace {
+  return self.currentWebState;
+}
+
 #pragma mark - NetExportTabHelperDelegate
 
 - (void)netExportTabHelper:(NetExportTabHelper*)tabHelper
