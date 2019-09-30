@@ -398,9 +398,6 @@
       status: "experimental",
     },
     {
-      name: "CSSFontFeatureValues"
-    },
-    {
       name: "CSSFontSizeAdjust",
       status: "experimental",
     },
