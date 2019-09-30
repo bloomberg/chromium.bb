@@ -122,10 +122,11 @@ void BindBarcodeDetectionProvider(
 }
 
 void BindFaceDetectionProvider(
-    shape_detection::mojom::FaceDetectionProviderRequest request,
+    mojo::PendingReceiver<shape_detection::mojom::FaceDetectionProvider>
+        receiver,
     RenderProcessHost* host,
     const url::Origin& origin) {
-  GetShapeDetectionService()->BindFaceDetectionProvider(std::move(request));
+  GetShapeDetectionService()->BindFaceDetectionProvider(std::move(receiver));
 }
 
 void BindTextDetection(
