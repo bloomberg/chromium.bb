@@ -215,7 +215,7 @@ def GeneralTemplates(site_config):
       compilecheck=True,
       build_packages=False,
       upload_standalone_images=False,
-      sync_chrome=False,
+      sync_chrome=True,
       # The unittest only paladin needs to build everything from source
       # as a way to ensure ISA compatibility with the remote builder and
       # our binpkg selection mechanisms will provide incorrect binaries
@@ -3640,7 +3640,7 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
         boards=[],
         master=True,
         slave_configs=[],
-        sync_chrome=False,
+        sync_chrome=True,
         chrome_sdk=False,
         afdo_use=False,
         # Because PST is 8 hours from UTC, these times are the same in both. But
