@@ -27,7 +27,7 @@ typedef NS_OPTIONS(NSUInteger, BadgeState) {
 - (BadgeType)badgeType;
 // Whether the badge should be displayed in the fullScreenBadge position. If
 // YES, it will be displayed in both FullScreen and non FullScreen.
-- (BOOL)isFullScreen;
+@property(nonatomic, assign, readonly) BOOL fullScreen;
 // Some badges may not be tappable if there is no action associated with it.
 @property(nonatomic, assign, readonly, getter=isTappable) BOOL tappable;
 // The BadgeState of the badge.

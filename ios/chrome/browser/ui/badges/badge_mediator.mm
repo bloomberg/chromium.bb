@@ -145,7 +145,7 @@ const int kMinimumNonFullScreenBadgesForOverflow = 2;
       [[NSMutableArray alloc] init];
   // Get all non-fullscreen badges.
   for (id<BadgeItem> item in self.badges) {
-    if (![item isFullScreen]) {
+    if (!item.fullScreen) {
       [popupMenuBadges addObject:item];
     }
   }
@@ -195,7 +195,7 @@ const int kMinimumNonFullScreenBadgesForOverflow = 2;
   // displayedBadge if there are multiple badges.
   id<BadgeItem> presentingBadge;
   for (id<BadgeItem> item in self.badges) {
-    if ([item isFullScreen]) {
+    if (item.fullScreen) {
       fullScreenBadge = item;
     } else {
       if (item.badgeState == BadgeStatePresented) {
