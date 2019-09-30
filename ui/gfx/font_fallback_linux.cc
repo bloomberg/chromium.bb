@@ -9,9 +9,7 @@
 #include <map>
 #include <memory>
 #include <string>
-#include <vector>
 
-#include "base/containers/mru_cache.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
@@ -25,16 +23,6 @@ namespace {
 
 const char kFontFormatTrueType[] = "TrueType";
 const char kFontFormatCFF[] = "CFF";
-
-// The fallback cache is a mapping from a font family name to it's potential
-// fallback fonts.
-using FallbackCache = base::MRUCache<std::string, std::vector<Font>>;
-constexpr int kFallbackCacheSize = 64;
-
-FallbackCache* GetFallbackCacheInstance() {
-  static base::NoDestructor<FallbackCache> fallback_cache(kFallbackCacheSize);
-  return fallback_cache.get();
-}
 
 std::string GetFilenameFromFcPattern(FcPattern* pattern) {
   const char* c_filename = nullptr;
@@ -81,6 +69,13 @@ bool IsValidFontFromPattern(FcPattern* pattern) {
 }
 
 }  // namespace
+
+FallbackFontsCache* GetFallbackFontsCacheInstance() {
+  constexpr int kFallbackCacheSize = 64;
+  static base::NoDestructor<FallbackFontsCache> fallback_cache(
+      kFallbackCacheSize);
+  return fallback_cache.get();
+}
 
 bool GetFallbackFont(const Font& font,
                      const std::string& locale,
@@ -147,7 +142,7 @@ std::vector<Font> GetFallbackFonts(const Font& font) {
   std::string font_family = font.GetFontName();
 
   // Lookup in the cache for already processed family.
-  FallbackCache* font_cache = GetFallbackCacheInstance();
+  FallbackFontsCache* font_cache = GetFallbackFontsCacheInstance();
   auto cached_fallback_fonts = font_cache->Get(font_family);
   if (cached_fallback_fonts != font_cache->end()) {
     // Already in cache.
