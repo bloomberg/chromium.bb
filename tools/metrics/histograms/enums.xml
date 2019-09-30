@@ -35609,6 +35609,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1143496217" label="enable-oop-rasterization"/>
   <int value="-1143108160" label="PasswordManagerOnboardingAndroid:enabled"/>
   <int value="-1143007275" label="EnableNewStyleLauncher:disabled"/>
+  <int value="-1142933895" label="ReduceDisplayNotifications:disabled"/>
   <int value="-1142034548" label="BuiltInModuleKvStorage:enabled"/>
   <int value="-1137696948" label="enable-chromeos-account-manager"/>
   <int value="-1137442543" label="enable-slimming-paint"/>
@@ -36553,6 +36554,7 @@ from previous Chrome versions.
   <int value="106840653" label="mus"/>
   <int value="107900612" label="ChromeHomePersistentIph:disabled"/>
   <int value="109577361" label="ForbidSyncXHRInPageDismissal:enabled"/>
+  <int value="110888614" label="ReduceDisplayNotifications:enabled"/>
   <int value="112140177" label="DesktopPWAsUnifiedInstall:disabled"/>
   <int value="115915570"
       label="OmniboxUIExperimentHideSteadyStateUrlPathQueryAndRef:enabled"/>

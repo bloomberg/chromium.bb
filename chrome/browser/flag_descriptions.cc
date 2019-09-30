@@ -3546,6 +3546,11 @@ const char kPrinterProviderSearchAppDescription[] =
     "searches Chrome Web Store for extensions that support printing to a USB "
     "printer with specific USB ID.";
 
+const char kReduceDisplayNotificationsName[] = "Reduce display notifications";
+const char kReduceDisplayNotificationsDescription[] =
+    "If enabled, notifications for display rotation, display removed, display "
+    "mirroring, and display extending will be suppressed.";
+
 const char kReleaseNotesName[] = "CrOS Release Notes.";
 const char kReleaseNotesDescription[] =
     "Instructs OS to show notification about CrOS ReleaseNotes on login after "
