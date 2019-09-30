@@ -166,6 +166,11 @@ public class AddToHomescreenManagerTest {
                 public void onIconAvailable(Bitmap icon) {
                     TestAddToHomescreenManager.this.addToHomescreen(mTitle);
                 }
+
+                @Override
+                public void onAdaptableIconAvailable(Bitmap icon) {
+                    TestAddToHomescreenManager.this.addToHomescreen(mTitle);
+                }
             };
         }
     }
