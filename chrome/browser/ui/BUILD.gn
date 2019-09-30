@@ -429,7 +429,6 @@ jumbo_split_static_library("ui") {
     "//components/data_reduction_proxy/core/browser",
     "//components/device_event_log",
     "//components/dom_distiller/content/browser",
-    "//components/dom_distiller/webui",
     "//components/domain_reliability",
     "//components/download/content/factory",
     "//components/download/content/public",
