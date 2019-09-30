@@ -480,7 +480,7 @@ TEST_F(SessionStorageContextMojoTest, ImmediateCloning) {
   EXPECT_TRUE(bad_message_called_);
 }
 
-TEST_F(SessionStorageContextMojoTest, Scavenging) {
+TEST_F(SessionStorageContextMojoTest, DISABLED_Scavenging) {
   // Create our namespace, destroy our context and leave that namespace on disk,
   // and verify that it is scavenged if we re-create the context without calling
   // CreateSessionNamespace.
