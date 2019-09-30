@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.webapps.addtohomescreen;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Build;
@@ -40,11 +39,14 @@ import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.common.ContentSwitches;
 import org.chromium.net.test.EmbeddedTestServerRule;
+import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
 import java.util.concurrent.Callable;
 
 /**
- * Tests org.chromium.chrome.browser.webapps.AddToHomescreenManager and its C++ counterpart.
+ * Tests org.chromium.chrome.browser.webapps.addtohomescreen.AddToHomescreenManager and its C++
+ * counterpart.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @RetryOnFailure
@@ -136,8 +138,9 @@ public class AddToHomescreenManagerTest {
             }
         }
     }
+
     /**
-     * Test AddToHomescreenManager subclass which mocks showing the add-to-homescreen dialog and
+     * Test AddToHomescreenManager subclass which mocks showing the add-to-homescreen view and
      * adds the shortcut to the home screen once it is ready.
      */
     private static class TestAddToHomescreenManager extends AddToHomescreenManager {
@@ -145,33 +148,33 @@ public class AddToHomescreenManagerTest {
 
         /**
          * Creates an instance of {@link TestAddToHomescreenManager}.
+         *
          * @param title The title that the user entered into the add-to-homescreen dialog.
          */
-        public TestAddToHomescreenManager(Activity activity, Tab tab, String title) {
+        public TestAddToHomescreenManager(ChromeActivity activity, Tab tab, String title) {
             super(activity, tab);
             mTitle = title;
         }
 
         @Override
         public void showDialog() {
-            mDialog = new AddToHomescreenView(mActivity, TestAddToHomescreenManager.this) {
-                @Override
-                public void onUserTitleAvailable(String title, String url, boolean isWebapp) {
-                    if (TextUtils.isEmpty(mTitle)) {
-                        mTitle = title;
-                    }
-                }
+            mViewModel = new PropertyModel.Builder(AddToHomescreenProperties.ALL_KEYS).build();
+            PropertyModelChangeProcessor.create(mViewModel,
+                    new AddToHomescreenDialogView(mActivity, mActivity.getModalDialogManager(),
+                            R.string.menu_add_to_homescreen, this) {
+                        @Override
+                        void setTitle(String title) {
+                            if (TextUtils.isEmpty(mTitle)) {
+                                mTitle = title;
+                            }
+                        }
 
-                @Override
-                public void onIconAvailable(Bitmap icon) {
-                    TestAddToHomescreenManager.this.addToHomescreen(mTitle);
-                }
-
-                @Override
-                public void onAdaptableIconAvailable(Bitmap icon) {
-                    TestAddToHomescreenManager.this.addToHomescreen(mTitle);
-                }
-            };
+                        @Override
+                        void setIcon(Bitmap icon, boolean isAdaptive) {
+                            TestAddToHomescreenManager.this.onAddToHomescreen(mTitle);
+                        }
+                    },
+                    AddToHomescreenViewBinder::bind);
         }
     }
 
