@@ -231,22 +231,19 @@ static int get_ref_frame_flags(const AV1_COMP *const cpi) {
   for (int i = 1; i < INTER_REFS_PER_FRAME; ++i) {
     const RefCntBuffer *const this_ref = ref_frames[i];
     // If this_ref has appeared before, mark the corresponding ref frame as
-    // invalid.
-    for (int j = 0; j < i; ++j) {
+    // invalid. For fast_nonrd mode, only disable GOLDEN_FRAME if it's the same
+    // as LAST_FRAME.
+    int index = (cpi->sf.use_fast_nonrd_pick_mode &&
+                 ref_frame_priority_order[i] == GOLDEN_FRAME)
+                    ? 1
+                    : i;
+    for (int j = 0; j < index; ++j) {
       if (this_ref == ref_frames[j]) {
         flags &= ~(1 << (ref_frame_priority_order[i] - 1));
         break;
       }
     }
   }
-
-  // For non-RD mode, only disable GOLDEN_FRAME if it's the same as LAST_FRAME.
-  if (cpi->sf.use_fast_nonrd_pick_mode) {
-    const RefCntBuffer *last_buf = get_ref_frame_buf(cm, LAST_FRAME);
-    const RefCntBuffer *golden_buf = get_ref_frame_buf(cm, GOLDEN_FRAME);
-    if (golden_buf != last_buf) flags |= (1 << GOLDEN_FRAME);
-  }
-
   return flags;
 }
 
