@@ -98,7 +98,7 @@ TEST_F(BrowserViewTest, BrowserView) {
 }
 
 // Test layout of the top-of-window UI.
-TEST_F(BrowserViewTest, BrowserViewLayout) {
+TEST_F(BrowserViewTest, DISABLED_BrowserViewLayout) {
   BookmarkBarView::DisableAnimationsForTesting(true);
 
   // |browser_view_| owns the Browser, not the test class.
