@@ -4066,6 +4066,9 @@
   "DeviceLoginScreenMonoAudioEnabled" : {
   },
 
+  "DeviceLoginScreenAutoclickEnabled" : {
+  },
+
   "DeviceLoginScreenLocales" : {
   },
 

@@ -751,4 +751,56 @@ IN_PROC_BROWSER_TEST_F(LoginScreenAccessibilityPolicyBrowsertest,
   accessibility_manager->EnableMonoAudio(false);
   EXPECT_FALSE(accessibility_manager->IsMonoAudioEnabled());
 }
+
+IN_PROC_BROWSER_TEST_F(LoginScreenAccessibilityPolicyBrowsertest,
+                       DeviceLoginScreenAutoclickEnabled) {
+  // Verifies that the state of the autoclick accessibility feature on
+  // the login screen can be controlled through device policy.
+  chromeos::AccessibilityManager* accessibility_manager =
+      chromeos::AccessibilityManager::Get();
+  ASSERT_TRUE(accessibility_manager);
+  EXPECT_FALSE(accessibility_manager->IsAutoclickEnabled());
+
+  // Manually enable the autoclick.
+  accessibility_manager->EnableAutoclick(true);
+  EXPECT_TRUE(accessibility_manager->IsAutoclickEnabled());
+
+  // Disable the autoclick through device policy and wait for the change
+  // to take effect.
+  em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
+  proto.mutable_accessibility_settings()->set_login_screen_autoclick_enabled(
+      false);
+  RefreshDevicePolicyAndWaitForPrefChange(
+      ash::prefs::kAccessibilityAutoclickEnabled);
+
+  // Verify that the pref which controls the autoclick in the login
+  // profile is managed by the policy.
+  EXPECT_TRUE(IsPrefManaged(ash::prefs::kAccessibilityAutoclickEnabled));
+  EXPECT_EQ(base::Value(false),
+            GetPrefValue(ash::prefs::kAccessibilityAutoclickEnabled));
+
+  // Verify that the autoclick cannot be enabled manually anymore.
+  accessibility_manager->EnableAutoclick(true);
+  EXPECT_FALSE(accessibility_manager->IsAutoclickEnabled());
+
+  // Enable the autoclick through device policy as a recommended value and wait
+  // for the change to take effect.
+  proto.mutable_accessibility_settings()->set_login_screen_autoclick_enabled(
+      true);
+  proto.mutable_accessibility_settings()
+      ->mutable_login_screen_autoclick_enabled_options()
+      ->set_mode(em::PolicyOptions::RECOMMENDED);
+  RefreshDevicePolicyAndWaitForPrefChange(
+      ash::prefs::kAccessibilityAutoclickEnabled);
+
+  // Verify that the pref which controls the autoclick in the login
+  // profile is being applied as recommended by the policy.
+  EXPECT_FALSE(IsPrefManaged(ash::prefs::kAccessibilityAutoclickEnabled));
+  EXPECT_EQ(base::Value(true),
+            GetPrefValue(ash::prefs::kAccessibilityAutoclickEnabled));
+
+  // Verify that the autoclick can be enabled manually again.
+  accessibility_manager->EnableAutoclick(false);
+  EXPECT_FALSE(accessibility_manager->IsAutoclickEnabled());
+}
 }  // namespace policy

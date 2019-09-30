@@ -50,6 +50,7 @@ const DevicePolicyToUserPolicyMapEntry kDevicePoliciesWithPolicyOptionsMap[] = {
      key::kCursorHighlightEnabled},
     {key::kDeviceLoginScreenCaretHighlightEnabled, key::kCaretHighlightEnabled},
     {key::kDeviceLoginScreenMonoAudioEnabled, key::kMonoAudioEnabled},
+    {key::kDeviceLoginScreenAutoclickEnabled, key::kAutoclickEnabled},
 };
 
 const DevicePolicyToUserPolicyMapEntry kRecommendedDevicePoliciesMap[] = {
