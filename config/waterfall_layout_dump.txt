@@ -522,6 +522,7 @@
     octavius-release
     octopus-release
     orco-release
+    puff-release
     pyro-release
     rammus-release
     reef-release
@@ -2682,6 +2683,7 @@
     octavius-release-tryjob
     octopus-release-tryjob
     orco-release-tryjob
+    puff-release-tryjob
     pyro-release-tryjob
     rammus-release-tryjob
     reef-release-tryjob
