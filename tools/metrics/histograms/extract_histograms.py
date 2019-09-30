@@ -57,7 +57,13 @@ XML below will generate the following five histograms:
 
 import copy
 import datetime
-import HTMLParser
+
+try:
+  import html
+except ImportError: # For Py2 compatibility
+  import HTMLParser
+  html = HTMLParser.HTMLParser()
+
 import logging
 import re
 import xml.dom.minidom
@@ -142,7 +148,7 @@ def NormalizeString(text):
 
   # Unescape using default ASCII encoding. Unescapes any HTML escaped character
   # like &quot; etc.
-  return HTMLParser.HTMLParser().unescape(line)
+  return html.unescape(line)
 
 
 def _NormalizeAllAttributeValues(node):
