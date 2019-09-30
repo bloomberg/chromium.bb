@@ -80,8 +80,8 @@ void DemoAppLauncher::OnProfileLoaded(Profile* profile) {
 
   extensions::ExtensionRegistry* extension_registry =
       extensions::ExtensionRegistry::Get(profile);
-  const extensions::Extension* extension = extension_registry->GetExtensionById(
-      extension_id, extensions::ExtensionRegistry::COMPATIBILITY);
+  const extensions::Extension* extension =
+      extension_registry->enabled_extensions().GetByID(extension_id);
   if (!extension) {
     // We've already done too much setup at this point to just return out, it
     // is safer to just restart.
