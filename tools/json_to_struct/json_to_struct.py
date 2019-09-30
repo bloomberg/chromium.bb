@@ -136,13 +136,6 @@ def _GenerateH(basepath, fileroot, head, namespace, schema, description):
     for element_name, element in description['elements'].items():
       f.write('extern const %s %s;\n' % (schema['type_name'], element_name))
 
-    if 'generate_array' in description:
-      f.write('\n')
-      f.write('extern const %s* const %s[];\n' % (schema['type_name'],
-          description['generate_array']['array_name']))
-      f.write('extern const size_t %s;\n' %
-          (description['generate_array']['array_name'] + 'Length'))
-
     if namespace:
       f.write('\n')
       f.write('}  // namespace %s\n' % namespace)
@@ -177,17 +170,6 @@ def _GenerateCC(basepath, fileroot, head, namespace, schema, description):
 
     f.write(element_generator.GenerateElements(schema['type_name'],
         schema['schema'], description))
-
-    if 'generate_array' in description:
-      f.write('\n')
-      f.write('const %s* const %s[] = {\n' % (schema['type_name'],
-          description['generate_array']['array_name']))
-      for element_name, _ in description['elements'].items():
-        f.write('\t&%s,\n' % element_name)
-      f.write('};\n')
-      f.write('const size_t %s = base::size(%s);\n' %
-          (description['generate_array']['array_name'] + 'Length',
-           description['generate_array']['array_name']))
 
     if namespace:
       f.write('\n')

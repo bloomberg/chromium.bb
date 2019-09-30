@@ -9,7 +9,6 @@
 {
   "type_name": "PrepopulatedEngine",
   "headers": [
-    "base/stl_util.h",
     "components/search_engines/search_engine_type.h"
   ],
   "schema": [

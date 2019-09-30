@@ -635,7 +635,6 @@
       "alternate_urls": [
 	"http://hladaj.atlas.sk/fulltext/?phrase={searchTerms}"
       ],
-      "type": "SEARCH_ENGINE_ATLAS",
       "id": 27
     },
 
@@ -1010,9 +1009,5 @@
       "type": "SEARCH_ENGINE_ZOZNAM",
       "id": 85
     }
-  },
-
-  "generate_array": {
-    "array_name": "kAllEngines"
   }
 }
