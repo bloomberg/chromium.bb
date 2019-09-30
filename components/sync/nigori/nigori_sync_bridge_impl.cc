@@ -724,8 +724,7 @@ bool NigoriSyncBridgeImpl::IsEncryptEverythingEnabled() const {
 
 base::Time NigoriSyncBridgeImpl::GetKeystoreMigrationTime() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  NOTIMPLEMENTED();
-  return base::Time();
+  return state_.keystore_migration_time;
 }
 
 KeystoreKeysHandler* NigoriSyncBridgeImpl::GetKeystoreKeysHandler() {
