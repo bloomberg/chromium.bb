@@ -99,7 +99,7 @@ base::string16 SharedClipboardUiController::GetErrorDialogText() const {
 }
 
 const gfx::VectorIcon& SharedClipboardUiController::GetVectorIcon() const {
-  return kSendTabToSelfIcon;
+  return kCopyIcon;
 }
 
 base::string16 SharedClipboardUiController::GetTextForTooltipAndAccessibleName()
