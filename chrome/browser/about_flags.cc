@@ -3127,12 +3127,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_ANDROID)
-    {"download-home-v2", flag_descriptions::kDownloadHomeV2Name,
-     flag_descriptions::kDownloadHomeV2Description, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kDownloadHomeV2)},
-#endif
-
-#if defined(OS_ANDROID)
     {"download-auto-resumption-native",
      flag_descriptions::kDownloadAutoResumptionNativeName,
      flag_descriptions::kDownloadAutoResumptionNativeDescription, kOsAndroid,

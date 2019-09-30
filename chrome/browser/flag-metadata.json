@@ -793,11 +793,6 @@
     "expiry_milestone": 80
   },
   {
-    "name": "download-home-v2",
-    "owners": [ "shaktisahu", "xingliu", "dtrainor" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "download-rename",
     "owners": [ "hesen", "dtrainor" ],
     "expiry_milestone": 79

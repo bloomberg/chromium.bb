@@ -1457,9 +1457,6 @@ extern const char kDirectActionsDescription[];
 extern const char kDontPrefetchLibrariesName[];
 extern const char kDontPrefetchLibrariesDescription[];
 
-extern const char kDownloadHomeV2Name[];
-extern const char kDownloadHomeV2Description[];
-
 extern const char kDownloadRenameName[];
 extern const char kDownloadRenameDescription[];
 
