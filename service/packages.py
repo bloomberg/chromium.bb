@@ -22,6 +22,9 @@ from chromite.lib import git
 from chromite.lib import portage_util
 from chromite.lib import uprev_lib
 
+if cros_build_lib.IsInsideChroot():
+  from chromite.service import dependency
+
 # Registered handlers for uprevving versioned packages.
 _UPREV_FUNCS = {}
 
@@ -408,3 +411,11 @@ def has_prebuilt(atom, build_target=None):
 
   board = build_target.name if build_target else None
   return portage_util.HasPrebuilt(atom, board=board)
+
+
+def builds(atom, build_target):
+  """Check if |build_target| builds |atom| (has it in its depgraph)."""
+  cros_build_lib.AssertInsideChroot()
+
+  graph = dependency.GetBuildDependency(build_target.name)
+  return any(atom in package for package in graph['package_deps'])
