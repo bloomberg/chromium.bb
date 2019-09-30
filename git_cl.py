@@ -313,7 +313,8 @@ def _git_set_branch_config_value(key, value, branch=None, **kwargs):
 
 
 def _get_properties_from_options(options):
-  properties = dict(x.split('=', 1) for x in options.properties)
+  prop_list = getattr(options, 'properties', [])
+  properties = dict(x.split('=', 1) for x in prop_list)
   for key, val in properties.iteritems():
     try:
       properties[key] = json.loads(val)
@@ -456,9 +457,9 @@ def _trigger_try_jobs(auth_config, changelist, buckets, options, patchset):
   print('To see results in browser, run:  git cl web')
 
   gerrit_changes = [changelist.GetGerritChange(patchset)]
-  shared_properties = {'category': options.category}
+  shared_properties = {'category': getattr(options, 'category', 'git_cl_try')}
   shared_properties.update(changelist.GetLegacyProperties(patchset))
-  if options.clobber:
+  if getattr(options, 'clobber', False):
     shared_properties['clobber'] = True
   shared_properties.update(_get_properties_from_options(options) or {})
 
@@ -480,7 +481,7 @@ def _trigger_try_jobs(auth_config, changelist, buckets, options, patchset):
           'scheduleBuild': {
               'requestId': str(uuid.uuid4()),
               'builder': {
-                  'project': options.project or project,
+                  'project': getattr(options, 'project', None) or project,
                   'bucket': bucket,
                   'builder': builder,
               },
@@ -4458,10 +4459,11 @@ def CMDupload(parser, args):
   parser.add_option('--r-owners', dest='add_owners_to', action='store_const',
                     const='R', help='add a set of OWNERS to R')
   parser.add_option('-c', '--use-commit-queue', action='store_true',
+                    default=False,
                     help='tell the CQ to commit this patchset; '
-                          'implies --send-mail')
-  parser.add_option('-d', '--cq-dry-run', dest='cq_dry_run',
-                    action='store_true',
+                         'implies --send-mail')
+  parser.add_option('-d', '--cq-dry-run',
+                    action='store_true', default=False,
                     help='Send the patchset to do a CQ dry run right after '
                          'upload.')
   parser.add_option('--preserve-tryjobs', action='store_true',
@@ -4478,11 +4480,17 @@ def CMDupload(parser, args):
   parser.add_option('--parallel', action='store_true',
                     help='Run all tests specified by input_api.RunTests in all '
                          'PRESUBMIT files in parallel.')
-
   parser.add_option('--no-autocc', action='store_true',
                     help='Disables automatic addition of CC emails')
   parser.add_option('--private', action='store_true',
                     help='Set the review private. This implies --no-autocc.')
+  parser.add_option('-R', '--retry-failed', action='store_true',
+                    help='Retry failed tryjobs from old patchset immediately '
+                         'after uploading new patchset. Cannot be used with '
+                         '--use-commit-queue or --cq-dry-run.')
+  parser.add_option('--buildbucket-host', default='cr-buildbucket.appspot.com',
+                    help='Host of buildbucket. The default host is %default.')
+  auth.add_auth_options(parser)
 
   orig_args = args
   _add_codereview_select_options(parser)
@@ -4502,8 +4510,11 @@ def CMDupload(parser, args):
     options.message = gclient_utils.FileRead(options.message_file)
     options.message_file = None
 
-  if options.cq_dry_run and options.use_commit_queue:
-    parser.error('Only one of --use-commit-queue and --cq-dry-run allowed.')
+  if ([options.cq_dry_run,
+       options.use_commit_queue,
+       options.retry_failed].count(True) > 1):
+    parser.error('Only one of --use-commit-queue, --cq-dry-run, or '
+                 '--retry-failed is allowed.')
 
   if options.use_commit_queue:
     options.send_mail = True
@@ -4512,8 +4523,32 @@ def CMDupload(parser, args):
   settings.GetIsGerrit()
 
   cl = Changelist()
+  if options.retry_failed and not cl.GetIssue():
+    print('No previous patchsets, so --retry-failed has no effect.')
+    options.retry_failed = False
+  # cl.GetMostRecentPatchset uses cached information, and can return the last
+  # patchset before upload. Calling it here makes it clear that it's the
+  # last patchset before upload. Note that GetMostRecentPatchset will fail
+  # if no CL has been uploaded yet.
+  if options.retry_failed:
+    patchset = cl.GetMostRecentPatchset()
 
-  return cl.CMDUpload(options, args, orig_args)
+  ret = cl.CMDUpload(options, args, orig_args)
+
+  if options.retry_failed:
+    if ret != 0:
+      print('Upload failed, so --retry-failed has no effect.')
+      return ret
+    auth_config = auth.extract_auth_config_from_options(options)
+    builds = fetch_try_jobs(
+        auth_config, cl, options.buildbucket_host, patchset)
+    buckets = _filter_failed(builds)
+    if len(buckets) == 0:
+      print('No failed tryjobs, so --retry-failed has no effect.')
+      return ret
+    _trigger_try_jobs(auth_config, cl, buckets, options, patchset + 1)
+
+  return ret
 
 
 @subcommand.usage('--description=<description file>')
@@ -4808,7 +4843,7 @@ def CMDtry(parser, args):
       print('There are no failed jobs in the latest set of jobs '
             '(patchset #%d), doing nothing.' % patchset)
       return 0
-    num_builders = sum(len(builders) for builders in buckets.values())
+    num_builders = sum(map(len, buckets.itervalues()))
     if num_builders > 10:
       confirm_or_exit('There are %d builders with failed builds.'
                       % num_builders, action='continue')

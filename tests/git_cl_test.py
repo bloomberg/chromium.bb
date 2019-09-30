@@ -3262,7 +3262,6 @@ class CMDTryTestCase(unittest.TestCase):
     mockCallBuildbucket.assert_called_with(
         mock.ANY, 'cr-buildbucket.appspot.com', 'Batch', expected_request)
 
-
   @mock.patch('git_cl.Changelist._GetChangeDetail')
   def testScheduleOnBuildbucket_WrongBucket(self, mockGetChangeDetail):
     mockGetChangeDetail.return_value = {
@@ -3321,6 +3320,87 @@ class CMDTryTestCase(unittest.TestCase):
         self.assertIn(
             'WARNING Please specify buckets', git_cl.sys.stdout.getvalue())
 
+
+class CMDUploadTestCase(unittest.TestCase):
+
+  def setUp(self):
+    super(CMDUploadTestCase, self).setUp()
+    mock.patch('git_cl.sys.stdout', StringIO.StringIO()).start()
+    mock.patch('git_cl.uuid.uuid4', _constantFn('uuid4')).start()
+    mock.patch('git_cl.Changelist.GetIssue', _constantFn(123456)).start()
+    mock.patch('git_cl.Changelist.GetCodereviewServer',
+               _constantFn('https://chromium-review.googlesource.com')).start()
+    mock.patch('git_cl.Changelist.GetMostRecentPatchset',
+               _constantFn(7)).start()
+    mock.patch('git_cl.auth.get_authenticator_for_host', AuthenticatorMock())
+    self.addCleanup(mock.patch.stopall)
+
+  @mock.patch('git_cl.fetch_try_jobs')
+  @mock.patch('git_cl._trigger_try_jobs')
+  @mock.patch('git_cl.Changelist._GetChangeDetail')
+  @mock.patch('git_cl.Changelist.CMDUpload', _constantFn(0))
+  def testUploadRetryFailed(self, mockGetChangeDetail, mockTriggerTryJobs,
+                            mockFetchTryJobs):
+    # This test mocks out the actual upload part, and just asserts that after
+    # upload, if --retry-failed is added, then the tool will fetch try jobs
+    # from the previous patchset and trigger the right builders on the latest
+    # patchset.
+    mockGetChangeDetail.return_value = {
+        'project': 'depot_tools',
+        'status': 'OPEN',
+        'owner': {'email': 'owner@e.mail'},
+        'current_revision': 'beeeeeef',
+        'revisions': {
+            'deadbeaf': {
+                '_number': 6,
+            },
+            'beeeeeef': {
+                '_number': 7,
+                'fetch': {'http': {
+                    'url': 'https://chromium.googlesource.com/depot_tools',
+                    'ref': 'refs/changes/56/123456/7'
+                }},
+            },
+        },
+    }
+    mockFetchTryJobs.return_value = {
+      '9000': {
+        'id': '9000',
+        'project': 'infra',
+        'bucket': 'luci.infra.try',
+        'created_by': 'user:someone@chromium.org',
+        'created_ts': '147200002222000',
+        'experimental': False,
+        'parameters_json': json.dumps({
+          'builder_name': 'red-bot',
+          'properties': {'category': 'cq'},
+        }),
+        'status': 'COMPLETED',
+        'result': 'FAILURE',
+        'tags': ['user_agent:cq'],
+      },
+      8000: {
+        'id': '8000',
+        'project': 'infra',
+        'bucket': 'luci.infra.try',
+        'created_by': 'user:someone@chromium.org',
+        'created_ts': '147200002222020',
+        'experimental': False,
+        'parameters_json': json.dumps({
+          'builder_name': 'green-bot',
+          'properties': {'category': 'cq'},
+        }),
+        'status': 'COMPLETED',
+        'result': 'SUCCESS',
+        'tags': ['user_agent:cq'],
+      },
+    }
+    self.assertEqual(0, git_cl.main(['upload', '--retry-failed']))
+    mockFetchTryJobs.assert_called_with(
+        mock.ANY, mock.ANY, 'cr-buildbucket.appspot.com', 7)
+    buckets = {'infra/try': {'red-bot': []}}
+    mockTriggerTryJobs.assert_called_once_with(
+        mock.ANY, mock.ANY, buckets, mock.ANY, 8)
 
 if __name__ == '__main__':
   logging.basicConfig(
