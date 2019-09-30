@@ -551,6 +551,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kForceStartupSigninPromoName,
      flag_descriptions::kForceStartupSigninPromoDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(signin::kForceStartupSigninPromo)},
+    {"embedder-block-restore-url",
+     flag_descriptions::kEmbedderBlockRestoreUrlName,
+     flag_descriptions::kEmbedderBlockRestoreUrlDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kEmbedderBlockRestoreUrl)},
 };
 
 // Add all switches from experimental flags to |command_line|.

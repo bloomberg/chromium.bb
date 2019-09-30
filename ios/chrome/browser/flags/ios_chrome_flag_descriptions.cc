@@ -146,6 +146,11 @@ const char kDetectMainThreadFreezeDescription[] =
 const char kDragAndDropName[] = "Drag and Drop";
 const char kDragAndDropDescription[] = "Enable support for drag and drop.";
 
+const char kEmbedderBlockRestoreUrlName[] =
+    "Allow embedders to prevent certain URLs from restoring.";
+const char kEmbedderBlockRestoreUrlDescription[] =
+    "Embedders can prevent URLs from restoring.";
+
 const char kEnableAutofillCreditCardUploadEditableCardholderNameName[] =
     "Make cardholder name editable in dialog during credit card upload";
 const char kEnableAutofillCreditCardUploadEditableCardholderNameDescription[] =
