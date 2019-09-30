@@ -2040,6 +2040,7 @@ if (!is_android) {
         "../browser/chromeos/extensions/incoming_native_messaging_apitest.cc",
         "../browser/chromeos/extensions/info_private_apitest.cc",
         "../browser/chromeos/extensions/input_method_apitest_chromeos.cc",
+        "../browser/chromeos/extensions/login_screen/login/login_apitest.cc",
         "../browser/chromeos/extensions/login_screen/login_screen_apitest_base.cc",
         "../browser/chromeos/extensions/login_screen/login_screen_apitest_base.h",
         "../browser/chromeos/extensions/login_screen/login_screen_ui/login_screen_ui_apitest.cc",
