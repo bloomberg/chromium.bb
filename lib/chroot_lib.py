@@ -41,6 +41,7 @@ class Chroot(object):
       if not self._env:
         self._env = {}
       self._env.update(self._goma.GetChrootExtraEnv())
+      self._env['USE_GOMA'] = 'true'
 
   def __eq__(self, other):
     if self.__class__ is other.__class__:
