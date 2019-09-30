@@ -507,11 +507,15 @@ class TabListMediator {
                 @Override
                 public void didMoveTabOutOfGroup(Tab movedTab, int prevFilterIndex) {
                     assert !(mActionsOnAllRelatedTabs && mTabGridDialogHandler != null);
-
                     TabGroupModelFilter filter =
                             (TabGroupModelFilter) mTabModelSelector.getTabModelFilterProvider()
                                     .getCurrentTabModelFilter();
+                    boolean isUngroupingLastTabInGroup =
+                            filter.getTabAt(prevFilterIndex).getId() == movedTab.getId();
                     if (mActionsOnAllRelatedTabs) {
+                        if (isUngroupingLastTabInGroup) {
+                            return;
+                        }
                         Tab currentSelectedTab = mTabModelSelector.getCurrentTab();
                         int index = TabModelUtils.getTabIndexById(
                                 mTabModelSelector.getTabModelFilterProvider()
@@ -528,8 +532,9 @@ class TabListMediator {
                         if (!isValidMovePosition(curIndex)) return;
                         mModel.removeAt(curIndex);
                         if (mTabGridDialogHandler != null) {
-                            mTabGridDialogHandler.updateDialogContent(
-                                    filter.getTabAt(prevFilterIndex).getId());
+                            mTabGridDialogHandler.updateDialogContent(isUngroupingLastTabInGroup
+                                            ? Tab.INVALID_TAB_ID
+                                            : filter.getTabAt(prevFilterIndex).getId());
                         }
                     }
                 }

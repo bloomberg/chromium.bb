@@ -354,9 +354,14 @@ public class TabGroupModelFilter extends TabModelFilter {
                 sourceTabGroup.getTabIdForIndex(sourceTabGroup.getTabIdList().size() - 1));
         int targetIndex = tabModel.indexOf(lastTabInSourceGroup);
         assert targetIndex != TabModel.INVALID_TAB_INDEX;
-        assert sourceTabGroup.size() > 1;
 
         int prevFilterIndex = mGroupIdToGroupIndexMap.get(sourceTab.getRootId());
+        if (sourceTabGroup.size() == 1) {
+            for (Observer observer : mGroupFilterObserver) {
+                observer.didMoveTabOutOfGroup(sourceTab, prevFilterIndex);
+            }
+            return;
+        }
         if (sourceTab.getId() == sourceTab.getRootId()) {
             // If moving tab's id is the root id of the group, find a new root id.
             int newRootId = Tab.INVALID_TAB_ID;

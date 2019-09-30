@@ -506,6 +506,20 @@ public class TabGroupModelFilterUnitTest {
     }
 
     @Test
+    public void moveTabOutOfGroup_LastTab() {
+        List<Tab> expectedTabModelBeforeUngroup =
+                new ArrayList<>(Arrays.asList(mTab1, mTab2, mTab3, mTab4, mTab5, mTab6));
+        assertArrayEquals(mTabs.toArray(), expectedTabModelBeforeUngroup.toArray());
+
+        mTabGroupModelFilter.moveTabOutOfGroup(TAB1_ID);
+
+        // Ungrouping the last tab in group should have no effect on tab model.
+        verify(mTabModel, never()).moveTab(anyInt(), anyInt());
+        verify(mTabGroupModelFilterObserver).didMoveTabOutOfGroup(mTab1, POSITION1);
+        assertArrayEquals(mTabs.toArray(), expectedTabModelBeforeUngroup.toArray());
+    }
+
+    @Test
     public void moveTabOutOfGroup_OtherGroupsLastShownIdUnchanged() {
         List<Tab> expectedTabModel =
                 new ArrayList<>(Arrays.asList(mTab1, mTab3, mTab2, mTab4, mTab5, mTab6));
