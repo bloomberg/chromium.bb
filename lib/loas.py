@@ -55,9 +55,9 @@ class Loas(object):
     loas_error = 'loas_check for %s failed! Did you run: %s' % (
         self.user, self.enroll_msg)
     try:
-      cros_build_lib.sudo_run(cmd, user=self.user, error_message=loas_error)
+      cros_build_lib.sudo_run(cmd, user=self.user)
     except cros_build_lib.RunCommandError as e:
-      raise LoasError(e.msg)
+      raise LoasError('%s\n%s' % (e.msg, loas_error))
 
   def Status(self):
     # Only bother checking once a day.  Our certs are valid in the

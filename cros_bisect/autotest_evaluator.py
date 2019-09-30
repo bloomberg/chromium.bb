@@ -243,7 +243,7 @@ class AutotestEvaluator(evaluator.Evaluator):
       A CommandResult object.
 
     Raises:
-      RunCommandError:  Raises exception on error with optional error_message.
+      RunCommandError: Raised on error.
     """
     # --chrome_root is needed for autotests running Telemetry.
     # --no-ns-pid is used to prevent the program receiving SIGTTIN (e.g. go to

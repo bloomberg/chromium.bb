@@ -308,7 +308,7 @@ def RetryCommand(functor, max_retry, *args, **kwargs):
     A CommandResult object.
 
   Raises:
-    Exception:  Raises RunCommandError on error with optional error_message.
+    RunCommandError: Raised on error.
   """
   values = kwargs.pop('retry_on', None)
   error_check = kwargs.pop('error_check', lambda x: None)
@@ -359,7 +359,7 @@ def RunCommandWithRetries(max_retry, *args, **kwargs):
     A CommandResult object.
 
   Raises:
-    Exception:  Raises RunCommandError on error with optional error_message.
+    RunCommandError: Raised on error.
   """
   return RetryCommand(cros_build_lib.run, max_retry, *args, **kwargs)
 

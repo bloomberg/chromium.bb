@@ -107,10 +107,13 @@ def _GetTipOfTrunkVersionFile(root):
     root: path to the root of the chromium checkout.
   """
   version_file = os.path.join(root, 'src', 'chrome', 'VERSION')
-  chrome_version_info = cros_build_lib.run(
-      ['cat', version_file],
-      redirect_stdout=True,
-      error_message='Could not read version file at %s.' % version_file).output
+  try:
+    chrome_version_info = cros_build_lib.run(
+        ['cat', version_file],
+        redirect_stdout=True).stdout
+  except cros_build_lib.RunCommandError as e:
+    e.msg += '\nCould not read version file at %s.' % version_file
+    raise e
 
   return _GetVersionContents(chrome_version_info)
 

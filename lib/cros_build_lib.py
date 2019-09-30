@@ -461,7 +461,7 @@ class _Popen(subprocess.Popen):
 
 
 # pylint: disable=redefined-builtin
-def run(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
+def run(cmd, print_cmd=True, redirect_stdout=False,
         redirect_stderr=False, cwd=None, input=None, enter_chroot=False,
         shell=False, env=None, extra_env=None, ignore_sigint=False,
         combine_stdout_stderr=False, log_stdout_to_file=None,
@@ -476,7 +476,6 @@ def run(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
       must be true. Otherwise the command must be an array of arguments, and
       shell must be false.
     print_cmd: prints the command before running it.
-    error_message: prints out this message when an error occurs.
     redirect_stdout: returns the stdout.
     redirect_stderr: holds stderr output until input is communicated.
     cwd: the working directory to run this cmd.
@@ -525,7 +524,7 @@ def run(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
     A CommandResult object.
 
   Raises:
-    RunCommandError:  Raises exception on error with optional error_message.
+    RunCommandError: Raised on error.
   """
   if capture_output:
     redirect_stdout, redirect_stderr = True, True
@@ -700,8 +699,6 @@ def run(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
         msg += ', cwd=%s' % cwd
       if extra_env:
         msg += ', extra env=%s' % extra_env
-      if error_message:
-        msg += '\n%s' % error_message
       raise RunCommandError(msg, cmd_result)
   except OSError as e:
     estr = str(e)
