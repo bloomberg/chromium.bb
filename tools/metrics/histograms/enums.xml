@@ -24765,6 +24765,11 @@ Called by update_net_error_codes.py.-->
   <int value="3036" label="XRIsSessionSupported"/>
   <int value="3037" label="ScrollbarUseScrollbarButtonReversedDirection"/>
   <int value="3038" label="CSSSelectorPseudoScrollbarButtonReversedDirection"/>
+  <int value="3039" label="FragmentHasTildeAmpersandTilde"/>
+  <int value="3040" label="FragmentHasColonTildeColon"/>
+  <int value="3041" label="FragmentHasTildeAtTilde"/>
+  <int value="3042" label="FragmentHasAmpersandDelimiterQuestion"/>
+  <int value="3043" label="InvalidFragmentDirective"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
