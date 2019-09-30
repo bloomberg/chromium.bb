@@ -267,7 +267,7 @@ def set_luci_context_account(account, tmp_dir):
   If 'account' is None or '', does nothing at all. This happens when
   run_isolated.py is called without '--switch-to-account' flag. In this case,
   if run_isolated.py is running in some LUCI_CONTEXT environment, the task will
-  just inherit whatever account is already set. This may happen is users invoke
+  just inherit whatever account is already set. This may happen if users invoke
   run_isolated.py explicitly from their code.
 
   If the requested account is not defined in the context, switches to
