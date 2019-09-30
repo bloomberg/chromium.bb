@@ -79,6 +79,12 @@ def BuildRepackageFileList(src_dir):
   # Strip off a trailing slash if present
   if src_dir.endswith('\\'):
     src_dir = src_dir[:-1]
+
+  # Ensure .\win_sdk\Debuggers exists and fail to repackage if it doesn't.
+  debuggers_path = os.path.join(src_dir, 'win_sdk', 'Debuggers')
+  if not os.path.exists(debuggers_path):
+    raise Exception('Repacking failed. Missing %s.' % (debuggers_path))
+
   result = []
   for root, _, files in os.walk(src_dir):
     for f in files:
@@ -166,6 +172,10 @@ def BuildFileList(override_dir, include_arm):
           result.append((final_from, dest))
 
   sdk_path = r'C:\Program Files (x86)\Windows Kits\10'
+  debuggers_path = os.path.join(sdk_path, 'Debuggers')
+  if not os.path.exists(debuggers_path):
+    raise Exception('Packaging failed. Missing %s.' % (debuggers_path))
+
   for root, _, files in os.walk(sdk_path):
     for f in files:
       combined = os.path.normpath(os.path.join(root, f))
