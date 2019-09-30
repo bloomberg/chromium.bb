@@ -2909,12 +2909,10 @@ if (enable_java_templates) {
           deps += _deps + [ ":$_compile_resources_target" ]
           proguard_mapping_path = _proguard_mapping_path
         } else {
-          input_jars = [ _lib_dex_path ]
-          input_dex_classpath =
-              "${_rebased_build_config}:final_dex:dependency_dex_files"
+          input_dex_jars = [ _lib_dex_path ]
+          input_dex_filearg = "@FileArg(${_rebased_build_config}:final_dex:dependency_dex_files)"
           if (_enable_main_dex_list) {
-            input_jar_classpath =
-                "${_rebased_build_config}:deps_info:java_runtime_classpath"
+            main_dex_list_input_classes_filearg = "@FileArg(${_rebased_build_config}:deps_info:java_runtime_classpath)"
           }
         }
 
