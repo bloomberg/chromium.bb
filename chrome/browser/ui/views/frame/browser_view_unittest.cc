@@ -239,7 +239,7 @@ TEST_F(BrowserViewTest, MAYBE_BookmarkBarInvisibleOnShutdown) {
   BookmarkBarView::DisableAnimationsForTesting(false);
 }
 
-TEST_F(BrowserViewTest, AccessibleWindowTitle) {
+TEST_F(BrowserViewTest, DISABLED_AccessibleWindowTitle) {
   EXPECT_EQ(SubBrowserName("Untitled - %s"),
             browser_view()->GetAccessibleWindowTitleForChannelAndProfile(
                 version_info::Channel::STABLE, browser()->profile()));
