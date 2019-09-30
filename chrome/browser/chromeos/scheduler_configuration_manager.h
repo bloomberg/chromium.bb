@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chromeos/system/scheduler_configuration_manager_base.h"
 #include "components/prefs/pref_change_registrar.h"
 
 class PrefRegistrySimple;
@@ -25,11 +26,11 @@ class DebugDaemonClient;
 // For more information on why H/T is configurable, see
 // https://www.chromium.org/chromium-os/mds-on-chromeos
 //
-class SchedulerConfigurationManager {
+class SchedulerConfigurationManager : public SchedulerConfigurationManagerBase {
  public:
   SchedulerConfigurationManager(DebugDaemonClient* debug_daemon_client,
                                 PrefService* local_state);
-  ~SchedulerConfigurationManager();
+  ~SchedulerConfigurationManager() override;
 
   static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
 

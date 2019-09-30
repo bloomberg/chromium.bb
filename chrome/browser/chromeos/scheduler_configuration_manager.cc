@@ -98,8 +98,8 @@ void SchedulerConfigurationManager::OnConfigurationSet(
   } else {
     LOG(ERROR) << "Failed to update scheduler configuration";
   }
-  // TODO(b/139752657): Add an observer class for monitoring |result| and
-  // |num_cores_disabled|.
+  for (Observer& obs : observer_list_)
+    obs.OnConfigurationSet(result, num_cores_disabled);
 }
 
 }  // namespace chromeos
