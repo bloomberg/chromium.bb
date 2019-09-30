@@ -593,8 +593,8 @@ class RemoteAccess(object):
       cmd: Command to run on the remote device.
       **kwargs: See RemoteSh for documentation.
     """
-    result = cros_build_lib.run(producer_cmd, stdout_to_pipe=True,
-                                print_cmd=False, capture_output=True)
+    result = cros_build_lib.run(producer_cmd, print_cmd=False,
+                                capture_output=True)
     return self.RemoteSh(cmd, input=kwargs.pop('input', result.output),
                          **kwargs)
 

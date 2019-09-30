@@ -467,7 +467,7 @@ def run(cmd, print_cmd=True, redirect_stdout=False,
         combine_stdout_stderr=False, log_stdout_to_file=None,
         append_to_file=False, chroot_args=None, debug_level=logging.INFO,
         check=True, int_timeout=1, kill_timeout=1,
-        log_output=False, stdout_to_pipe=False, capture_output=False,
+        log_output=False, capture_output=False,
         quiet=False, mute_output=None, **kwargs):
   """Runs a command.
 
@@ -513,9 +513,8 @@ def run(cmd, print_cmd=True, redirect_stdout=False,
     kill_timeout: If we're interrupted, how long (in seconds) should we give the
       invoked process to shutdown from a SIGTERM before we SIGKILL it.
     log_output: Log the command and its output automatically.
-    stdout_to_pipe: Redirect stdout to pipe.
     capture_output: Set |redirect_stdout| and |redirect_stderr| to True.
-    quiet: Set |print_cmd| to False, |stdout_to_pipe| and
+    quiet: Set |print_cmd| to False, |redirect_stdout| to True, and
       |combine_stdout_stderr| to True.
     mute_output: Mute subprocess printing to parent stdout/stderr. Defaults to
       None, which bases muting on |debug_level|.
@@ -529,6 +528,7 @@ def run(cmd, print_cmd=True, redirect_stdout=False,
   if capture_output:
     redirect_stdout, redirect_stderr = True, True
 
+  stdout_to_pipe = False
   if quiet:
     debug_level = logging.DEBUG
     stdout_to_pipe, combine_stdout_stderr = True, True

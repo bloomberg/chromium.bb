@@ -1034,7 +1034,7 @@ def UnpackPackage(pkg_state):
   cmd.append(path)
 
   with cros_event.newEvent(task_name='UnpackPackage', **pkg_state) as event:
-    result = cros_build_lib.run(cmd, cwd=root, stdout_to_pipe=True,
+    result = cros_build_lib.run(cmd, cwd=root, redirect_stdout=True,
                                 print_cmd=False, error_code_ok=True)
 
     # If we were not successful, return now and don't attempt untar.
