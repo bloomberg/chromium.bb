@@ -63,6 +63,7 @@ class PLATFORM_EXPORT CanvasResourceDispatcher
   void ReplaceBeginFrameAck(const viz::BeginFrameArgs& args) {
     current_begin_frame_ack_ = viz::BeginFrameAck(args, true);
   }
+  bool HasTooManyPendingFrames() const;
 
   void Reshape(const IntSize&);
 

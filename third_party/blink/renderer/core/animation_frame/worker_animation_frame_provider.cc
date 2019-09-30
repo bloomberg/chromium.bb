@@ -52,7 +52,12 @@ void WorkerAnimationFrameProvider::BeginFrame(const viz::BeginFrameArgs& args) {
         {
           OffscreenCanvas::ScopedInsideWorkerRAF inside_raf_scope(args);
           for (auto& offscreen_canvas : provider->offscreen_canvases_) {
-            inside_raf_scope.AddOffscreenCanvas(offscreen_canvas);
+            // If one of the OffscreenCanvas has too many pending frames,
+            // we abort the whole process.
+            if (!inside_raf_scope.AddOffscreenCanvas(offscreen_canvas)) {
+              provider->begin_frame_provider_->FinishBeginFrame(args);
+              return;
+            }
           }
 
           double time = (args.frame_time - base::TimeTicks()).InMillisecondsF();
