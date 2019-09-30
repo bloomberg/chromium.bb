@@ -110,7 +110,8 @@ class ClickToCallBrowserTest : public SyncTest {
               device->chrome_version(), device->sync_user_agent(),
               device->device_type(), device->signin_scoped_device_id(),
               device->last_updated_timestamp(),
-              device->send_tab_to_self_receiving_enabled());
+              device->send_tab_to_self_receiving_enabled(),
+              device->sharing_info());
       fake_device_info_tracker_.Add(fake_device.get());
       device_infos_.push_back(std::move(fake_device));
     }
