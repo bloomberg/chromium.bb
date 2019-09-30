@@ -2191,7 +2191,10 @@ GURL RenderFrameHostImpl::ComputeSiteForCookiesInternal(
   }
 #endif
 
-  const GURL& top_document_url = frame_tree_->root()->current_url();
+  const GURL& top_document_url = frame_tree_->root()
+                                     ->current_frame_host()
+                                     ->GetLastCommittedOrigin()
+                                     .GetURL();
 
   if (GetContentClient()
           ->browser()

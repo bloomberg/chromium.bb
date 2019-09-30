@@ -418,8 +418,6 @@ void WebFrameTestClient::WillSendRequest(blink::WebURLRequest& request) {
     delegate_->PrintMessage(" - willSendRequest <NSURLRequest URL ");
     delegate_->PrintMessage(
         DescriptionSuitableForTestResult(request_url).c_str());
-    delegate_->PrintMessage(", main document URL ");
-    delegate_->PrintMessage(URLDescription(main_document_url).c_str());
     delegate_->PrintMessage(", http method ");
     delegate_->PrintMessage(request.HttpMethod().Utf8().data());
     delegate_->PrintMessage(">\n");
