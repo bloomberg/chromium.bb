@@ -61,7 +61,7 @@ crbug.com/887140 hdr/video-canvas-alpha.html [ Failure ]
 # issues (e.g. missing OOPIF support in the test harness).
 # TODO(lukasza, alexmos): Burn down this list.
 crbug.com/645641 external/wpt/html/syntax/parsing/html5lib_tests19.html [ Crash Failure ]
-crbug.com/665058 http/tests/local/drag-over-remote-content.html [ Crash ]
+crbug.com/665058 http/tests/local/drag-over-remote-content.html [ Crash Timeout ]
 crbug.com/771003 http/tests/security/mixedContent/insecure-iframe-in-main-frame.html [ Failure ]
 
 # Tests temporarily disabled with Site Isolation - uninvestigated bugs:
