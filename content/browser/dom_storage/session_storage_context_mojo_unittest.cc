@@ -243,7 +243,7 @@ TEST_F(SessionStorageContextMojoTest, MigrationV0ToV1) {
                                key_as_vector, String16ToUint8Vector(value))));
 }
 
-TEST_F(SessionStorageContextMojoTest, StartupShutdownSave) {
+TEST_F(SessionStorageContextMojoTest, DISABLED_StartupShutdownSave) {
   std::string namespace_id1 = base::GenerateGUID();
   url::Origin origin1 = url::Origin::Create(GURL("http://foobar.com"));
   context()->CreateSessionNamespace(namespace_id1);
