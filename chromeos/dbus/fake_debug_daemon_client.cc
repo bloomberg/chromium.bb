@@ -271,10 +271,11 @@ void FakeDebugDaemonClient::SetSchedulerConfiguration(
 void FakeDebugDaemonClient::SetSchedulerConfigurationV2(
     const std::string& config_name,
     bool lock_policy,
-    VoidDBusMethodCallback callback) {
+    SetSchedulerConfigurationV2Callback callback) {
   scheduler_configuration_name_ = config_name;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), true));
+      FROM_HERE,
+      base::BindOnce(std::move(callback), true, /*num_cores_disabled=*/0));
 }
 
 void FakeDebugDaemonClient::SetU2fFlags(const std::set<std::string>& flags,

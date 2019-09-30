@@ -36,7 +36,7 @@ class SchedulerConfigurationManager {
  private:
   void OnDebugDaemonReady(bool service_is_ready);
   void OnPrefChange();
-  void OnConfigurationSet(bool result);
+  void OnConfigurationSet(bool result, size_t num_cores_disabled);
 
   DebugDaemonClient* debug_daemon_client_ = nullptr;
   PrefChangeRegistrar observer_;
