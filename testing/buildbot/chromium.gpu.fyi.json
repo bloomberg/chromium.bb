@@ -10417,7 +10417,6 @@
           "--test-machine-name",
           "${buildername}"
         ],
-        "experiment_percentage": 100,
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
           "args": [],
@@ -10811,7 +10810,6 @@
           "--test-machine-name",
           "${buildername}"
         ],
-        "experiment_percentage": 100,
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
           "args": [],
