@@ -351,7 +351,7 @@ TEST_F(BookmarkUtilsTest, MakeTitleUnique) {
             bookmark_bar_node->children()[1]->GetTitle());
 }
 
-TEST_F(BookmarkUtilsTest, CopyPasteMetaInfo) {
+TEST_F(BookmarkUtilsTest, DISABLED_CopyPasteMetaInfo) {
   std::unique_ptr<BookmarkModel> model(TestBookmarkClient::CreateModel());
   const BookmarkNode* node = model->AddURL(model->other_node(),
                                            0,
