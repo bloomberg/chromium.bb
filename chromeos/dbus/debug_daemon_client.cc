@@ -555,18 +555,6 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
-  void SetSchedulerConfiguration(const std::string& config_name,
-                                 VoidDBusMethodCallback callback) override {
-    dbus::MethodCall method_call(debugd::kDebugdInterface,
-                                 debugd::kSetSchedulerConfiguration);
-    dbus::MessageWriter writer(&method_call);
-    writer.AppendString(config_name);
-    debugdaemon_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(&DebugDaemonClientImpl::OnVoidMethod,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
-  }
-
   void SetSchedulerConfigurationV2(
       const std::string& config_name,
       bool lock_policy,

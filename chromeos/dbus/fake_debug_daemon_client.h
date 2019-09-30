@@ -89,8 +89,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeDebugDaemonClient
   void StartPluginVmDispatcher(PluginVmDispatcherCallback callback) override;
   void StopPluginVmDispatcher(PluginVmDispatcherCallback callback) override;
   void SetRlzPingSent(SetRlzPingSentCallback callback) override;
-  void SetSchedulerConfiguration(const std::string& config_name,
-                                 VoidDBusMethodCallback callback) override;
   void SetSchedulerConfigurationV2(
       const std::string& config_name,
       bool lock_policy,

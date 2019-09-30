@@ -248,11 +248,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) DebugDaemonClient
   // to 0.
   virtual void SetRlzPingSent(SetRlzPingSentCallback callback) = 0;
 
-  // Deprecated. Use SetSchedulerConfigurationV2 instead.
-  // TODO(abhishekbh): Remove the method.
-  virtual void SetSchedulerConfiguration(const std::string& config_name,
-                                         VoidDBusMethodCallback callback) = 0;
-
   // A callback to handle the result of SetSchedulerConfigurationV2.
   using SetSchedulerConfigurationV2Callback =
       base::OnceCallback<void(bool success, size_t num_cores_disabled)>;
