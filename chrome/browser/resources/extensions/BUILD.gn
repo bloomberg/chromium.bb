@@ -7,46 +7,48 @@ import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/grit/grit_rule.gni")
 import("../optimize_webui.gni")
 
-extensions_pak_file = "extensions_resources.pak"
-unpak_folder = "extensions_resources.unpak"
+if (optimize_webui) {
+  extensions_pak_file = "extensions_resources.pak"
+  unpak_folder = "extensions_resources.unpak"
 
-optimize_webui("build") {
-  host = "extensions"
-  html_in_files = [ "extensions.html" ]
-  html_out_files = [ "vulcanized.html" ]
-  insert_in_head = "<base href=\"chrome://extensions\">"
-  input = rebase_path("$target_gen_dir/$unpak_folder", root_build_dir)
-  js_out_files = [ "crisper.js" ]
-  replace_for_html_imports_polyfill = "crisper.js"
+  optimize_webui("build") {
+    host = "extensions"
+    html_in_files = [ "extensions.html" ]
+    html_out_files = [ "vulcanized.html" ]
+    insert_in_head = "<base href=\"chrome://extensions\">"
+    input = rebase_path("$target_gen_dir/$unpak_folder", root_build_dir)
+    js_out_files = [ "crisper.js" ]
+    replace_for_html_imports_polyfill = "crisper.js"
 
-  deps = [
-    ":unpak",
-  ]
-}
+    deps = [
+      ":unpak",
+    ]
+  }
 
-unpak("unpak") {
-  pak_file = extensions_pak_file
-  out_folder = unpak_folder
+  unpak("unpak") {
+    pak_file = extensions_pak_file
+    out_folder = unpak_folder
 
-  deps = [
-    ":flattened_resources",
-  ]
-}
+    deps = [
+      ":flattened_resources",
+    ]
+  }
 
-grit("flattened_resources") {
-  source = "extensions_resources.grd"
+  grit("flattened_resources") {
+    source = "extensions_resources.grd"
 
-  # The .grd contains references to generated files.
-  source_is_generated = true
+    # The .grd contains references to generated files.
+    source_is_generated = true
 
-  defines = chrome_grit_defines
-  outputs = [
-    "grit/extensions_resources.h",
-    "grit/extensions_resources_map.cc",
-    "grit/extensions_resources_map.h",
-    extensions_pak_file,
-  ]
-  output_dir = "$root_gen_dir/chrome/browser/resources/extensions"
+    defines = chrome_grit_defines
+    outputs = [
+      "grit/extensions_resources.h",
+      "grit/extensions_resources_map.cc",
+      "grit/extensions_resources_map.h",
+      extensions_pak_file,
+    ]
+    output_dir = "$root_gen_dir/chrome/browser/resources/extensions"
+  }
 }
 
 group("closure_compile") {
