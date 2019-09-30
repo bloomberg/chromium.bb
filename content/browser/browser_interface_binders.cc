@@ -9,6 +9,7 @@
 #include "content/browser/background_fetch/background_fetch_service_impl.h"
 #include "content/browser/content_index/content_index_service_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/image_capture/image_capture_impl.h"
 #include "content/browser/keyboard_lock/keyboard_lock_service_impl.h"
 #include "content/browser/media/session/media_session_service_impl.h"
@@ -32,6 +33,10 @@
 #include "services/device/public/mojom/sensor_provider.mojom.h"
 #include "services/device/public/mojom/vibration_manager.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "services/shape_detection/public/mojom/barcodedetection_provider.mojom.h"
+#include "services/shape_detection/public/mojom/facedetection_provider.mojom.h"
+#include "services/shape_detection/public/mojom/shape_detection_service.mojom.h"
+#include "services/shape_detection/public/mojom/textdetection.mojom.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom.h"
 #include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom.h"
@@ -66,6 +71,8 @@
 namespace content {
 namespace internal {
 
+namespace {
+
 // Forwards service receivers to Service Manager since the renderer cannot
 // launch out-of-process services on is own.
 template <typename Interface>
@@ -76,6 +83,47 @@ void ForwardServiceReceiver(const char* service_name,
       BrowserContext::GetConnectorFor(host->GetProcess()->GetBrowserContext());
   connector->Connect(service_name, std::move(receiver));
 }
+
+void BindShapeDetectionServiceOnIOThread(
+    mojo::PendingReceiver<shape_detection::mojom::ShapeDetectionService>
+        receiver) {
+  auto* gpu = GpuProcessHost::Get();
+  if (gpu)
+    gpu->RunService(std::move(receiver));
+}
+
+shape_detection::mojom::ShapeDetectionService* GetShapeDetectionService() {
+  static base::NoDestructor<
+      mojo::Remote<shape_detection::mojom::ShapeDetectionService>>
+      remote;
+  if (!*remote) {
+    base::PostTask(FROM_HERE, {BrowserThread::IO},
+                   base::BindOnce(&BindShapeDetectionServiceOnIOThread,
+                                  remote->BindNewPipeAndPassReceiver()));
+    remote->reset_on_disconnect();
+  }
+
+  return remote->get();
+}
+
+void BindBarcodeDetectionProvider(
+    mojo::PendingReceiver<shape_detection::mojom::BarcodeDetectionProvider>
+        receiver) {
+  GetShapeDetectionService()->BindBarcodeDetectionProvider(std::move(receiver));
+}
+
+void BindFaceDetectionProvider(
+    mojo::PendingReceiver<shape_detection::mojom::FaceDetectionProvider>
+        receiver) {
+  GetShapeDetectionService()->BindFaceDetectionProvider(std::move(receiver));
+}
+
+void BindTextDetection(
+    mojo::PendingReceiver<shape_detection::mojom::TextDetection> receiver) {
+  GetShapeDetectionService()->BindTextDetection(std::move(receiver));
+}
+
+}  // namespace
 
 // Documents/frames
 void PopulateFrameBinders(RenderFrameHostImpl* host,
@@ -173,6 +221,15 @@ void PopulateFrameBinders(RenderFrameHostImpl* host,
   map->Add<media::mojom::VideoDecodePerfHistory>(
       base::BindRepeating(&RenderProcessHost::BindVideoDecodePerfHistory,
                           base::Unretained(host->GetProcess())));
+
+  map->Add<shape_detection::mojom::BarcodeDetectionProvider>(
+      base::BindRepeating(&BindBarcodeDetectionProvider));
+
+  map->Add<shape_detection::mojom::FaceDetectionProvider>(
+      base::BindRepeating(&BindFaceDetectionProvider));
+
+  map->Add<shape_detection::mojom::TextDetection>(
+      base::BindRepeating(&BindTextDetection));
 }
 
 void PopulateBinderMapWithContext(
@@ -226,6 +283,12 @@ void PopulateDedicatedWorkerBinders(DedicatedWorkerHost* host,
                           base::Unretained(host)));
   map->Add<payments::mojom::PaymentManager>(base::BindRepeating(
       &DedicatedWorkerHost::CreatePaymentManager, base::Unretained(host)));
+  map->Add<shape_detection::mojom::BarcodeDetectionProvider>(
+      base::BindRepeating(&BindBarcodeDetectionProvider));
+  map->Add<shape_detection::mojom::FaceDetectionProvider>(
+      base::BindRepeating(&BindFaceDetectionProvider));
+  map->Add<shape_detection::mojom::TextDetection>(
+      base::BindRepeating(&BindTextDetection));
 }
 
 void PopulateBinderMapWithContext(
@@ -261,6 +324,12 @@ void PopulateSharedWorkerBinders(SharedWorkerHost* host,
       &SharedWorkerHost::BindVideoDecodePerfHistory, base::Unretained(host)));
   map->Add<payments::mojom::PaymentManager>(base::BindRepeating(
       &SharedWorkerHost::CreatePaymentManager, base::Unretained(host)));
+  map->Add<shape_detection::mojom::BarcodeDetectionProvider>(
+      base::BindRepeating(&BindBarcodeDetectionProvider));
+  map->Add<shape_detection::mojom::FaceDetectionProvider>(
+      base::BindRepeating(&BindFaceDetectionProvider));
+  map->Add<shape_detection::mojom::TextDetection>(
+      base::BindRepeating(&BindTextDetection));
 }
 
 void PopulateBinderMapWithContext(
@@ -310,6 +379,15 @@ void PopulateServiceWorkerBinders(ServiceWorkerProviderHost* host,
   map->Add<payments::mojom::PaymentManager>(
       base::BindRepeating(&ServiceWorkerProviderHost::CreatePaymentManager,
                           base::Unretained(host)));
+
+  map->Add<shape_detection::mojom::BarcodeDetectionProvider>(
+      base::BindRepeating(&BindBarcodeDetectionProvider));
+
+  map->Add<shape_detection::mojom::FaceDetectionProvider>(
+      base::BindRepeating(&BindFaceDetectionProvider));
+
+  map->Add<shape_detection::mojom::TextDetection>(
+      base::BindRepeating(&BindTextDetection));
 }
 
 void PopulateBinderMapWithContext(

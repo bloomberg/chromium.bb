@@ -170,10 +170,7 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "blink.mojom.NativeFileSystemManager",
                   "blink.mojom.NotificationService",
                   "blink.mojom.QuotaDispatcherHost",
-                  "blink.mojom.WebSocketConnector",
-                  "shape_detection.mojom.BarcodeDetectionProvider",
-                  "shape_detection.mojom.FaceDetectionProvider",
-                  "shape_detection.mojom.TextDetection"})
+                  "blink.mojom.WebSocketConnector"})
           .ExposeInterfaceFilterCapability_Deprecated(
               "navigation:dedicated_worker", "renderer",
               std::set<const char*>{
@@ -185,10 +182,7 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "blink.mojom.QuotaDispatcherHost",
                   "blink.mojom.SerialService",
                   "blink.mojom.WebUsbService",
-                  "blink.mojom.WebSocketConnector",
-                  "shape_detection.mojom.BarcodeDetectionProvider",
-                  "shape_detection.mojom.FaceDetectionProvider",
-                  "shape_detection.mojom.TextDetection"})
+                  "blink.mojom.WebSocketConnector"})
           .ExposeInterfaceFilterCapability_Deprecated(
               "navigation:service_worker", "renderer",
               std::set<const char*>{
@@ -198,10 +192,7 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "blink.mojom.NotificationService",
                   "blink.mojom.QuotaDispatcherHost",
                   "network.mojom.RestrictedCookieManager",
-                  "blink.mojom.WebSocketConnector",
-                  "shape_detection.mojom.BarcodeDetectionProvider",
-                  "shape_detection.mojom.FaceDetectionProvider",
-                  "shape_detection.mojom.TextDetection"})
+                  "blink.mojom.WebSocketConnector"})
           .ExposeInterfaceFilterCapability_Deprecated(
               "navigation:frame", "renderer",
               std::set<const char*>{
@@ -244,9 +235,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "network.mojom.RestrictedCookieManager",
                   "blink.mojom.WebSocketConnector",
                   "resource_coordinator.mojom.DocumentCoordinationUnit",
-                  "shape_detection.mojom.BarcodeDetectionProvider",
-                  "shape_detection.mojom.FaceDetectionProvider",
-                  "shape_detection.mojom.TextDetection",
                   "viz.mojom.Gpu"})
           .RequireInterfaceFilterCapability_Deprecated(
               mojom::kRendererServiceName, "navigation:frame", "browser")

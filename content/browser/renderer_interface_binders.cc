@@ -13,7 +13,6 @@
 #include "base/task/post_task.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/cookie_store/cookie_store_context.h"
-#include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/native_file_system/native_file_system_manager_impl.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
 #include "content/browser/permissions/permission_service_context.h"
@@ -33,10 +32,6 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/shape_detection/public/mojom/barcodedetection_provider.mojom.h"
-#include "services/shape_detection/public/mojom/facedetection_provider.mojom.h"
-#include "services/shape_detection/public/mojom/shape_detection_service.mojom.h"
-#include "services/shape_detection/public/mojom/textdetection.mojom.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom.h"
 #include "third_party/blink/public/mojom/cookie_store/cookie_store.mojom.h"
@@ -91,51 +86,6 @@ class RendererInterfaceBinders {
       parameterized_binder_registry_;
 };
 
-void BindShapeDetectionServiceOnIOThread(
-    mojo::PendingReceiver<shape_detection::mojom::ShapeDetectionService>
-        receiver) {
-  auto* gpu = GpuProcessHost::Get();
-  if (gpu)
-    gpu->RunService(std::move(receiver));
-}
-
-shape_detection::mojom::ShapeDetectionService* GetShapeDetectionService() {
-  static base::NoDestructor<
-      mojo::Remote<shape_detection::mojom::ShapeDetectionService>>
-      remote;
-  if (!*remote) {
-    base::PostTask(FROM_HERE, {BrowserThread::IO},
-                   base::BindOnce(&BindShapeDetectionServiceOnIOThread,
-                                  remote->BindNewPipeAndPassReceiver()));
-    remote->reset_on_disconnect();
-  }
-
-  return remote->get();
-}
-
-void BindBarcodeDetectionProvider(
-    mojo::PendingReceiver<shape_detection::mojom::BarcodeDetectionProvider>
-        receiver,
-    RenderProcessHost* host,
-    const url::Origin& origin) {
-  GetShapeDetectionService()->BindBarcodeDetectionProvider(std::move(receiver));
-}
-
-void BindFaceDetectionProvider(
-    mojo::PendingReceiver<shape_detection::mojom::FaceDetectionProvider>
-        receiver,
-    RenderProcessHost* host,
-    const url::Origin& origin) {
-  GetShapeDetectionService()->BindFaceDetectionProvider(std::move(receiver));
-}
-
-void BindTextDetection(
-    mojo::PendingReceiver<shape_detection::mojom::TextDetection> receiver,
-    RenderProcessHost* host,
-    const url::Origin& origin) {
-  GetShapeDetectionService()->BindTextDetection(std::move(receiver));
-}
-
 // Register renderer-exposed interfaces. Each registered interface binder is
 // exposed to all renderer-hosted execution context types (document/frame,
 // dedicated worker, shared worker and service worker) where the appropriate
@@ -143,13 +93,6 @@ void BindTextDetection(
 // interface requests from frames, binders registered on the frame itself
 // override binders registered here.
 void RendererInterfaceBinders::InitializeParameterizedBinderRegistry() {
-  parameterized_binder_registry_.AddInterface(
-      base::BindRepeating(&BindBarcodeDetectionProvider));
-  parameterized_binder_registry_.AddInterface(
-      base::BindRepeating(&BindFaceDetectionProvider));
-  parameterized_binder_registry_.AddInterface(
-      base::BindRepeating(&BindTextDetection));
-
   // Used for shared workers and service workers to create a websocket.
   // In other cases, RenderFrameHostImpl for documents or DedicatedWorkerHost
   // for dedicated workers handles interface requests in order to associate
