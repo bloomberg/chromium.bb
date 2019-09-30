@@ -50,7 +50,7 @@ void WorkerAnimationFrameProvider::BeginFrame(const viz::BeginFrameArgs& args) {
             "blink", "WorkerAnimationFrameProvider::RequestAnimationFrame",
             TRACE_ID_GLOBAL(args.trace_id), TRACE_EVENT_FLAG_FLOW_IN);
         {
-          OffscreenCanvas::ScopedInsideWorkerRAF inside_raf_scope;
+          OffscreenCanvas::ScopedInsideWorkerRAF inside_raf_scope(args);
           for (auto& offscreen_canvas : provider->offscreen_canvases_) {
             inside_raf_scope.AddOffscreenCanvas(offscreen_canvas);
           }

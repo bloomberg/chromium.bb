@@ -183,7 +183,8 @@ class CORE_EXPORT OffscreenCanvas final
     STACK_ALLOCATED();
 
    public:
-    ScopedInsideWorkerRAF() {}
+    ScopedInsideWorkerRAF(const viz::BeginFrameArgs& args)
+        : begin_frame_args_(args) {}
 
     void AddOffscreenCanvas(OffscreenCanvas* canvas) {
       DCHECK(!canvas->inside_worker_raf_);
@@ -195,11 +196,15 @@ class CORE_EXPORT OffscreenCanvas final
       for (auto canvas : canvases_) {
         DCHECK(canvas->inside_worker_raf_);
         canvas->inside_worker_raf_ = false;
+        if (canvas->frame_dispatcher_) {
+          canvas->frame_dispatcher_->ReplaceBeginFrameAck(begin_frame_args_);
+        }
         canvas->PushFrameIfNeeded();
       }
     }
 
    private:
+    const viz::BeginFrameArgs& begin_frame_args_;
     HeapVector<Member<OffscreenCanvas>> canvases_;
   };
 
