@@ -16,6 +16,11 @@ const char kU2FServiceName[] = "org.chromium.U2F";
 // Signals of the u2f interface:
 const char kU2FUserNotificationSignal[] = "UserNotification";
 
+// Methods of the u2f interface:
+const char kU2FMakeCredential[] = "MakeCredential";
+const char kU2FGetAssertion[] = "GetAssertion";
+const char kU2FHasCredentials[] = "HasCredentials";
+
 }  // namespace u2f
 
 #endif  // SYSTEM_API_DBUS_U2F_DBUS_CONSTANTS_H_
