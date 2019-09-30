@@ -235,7 +235,7 @@ public final class LaunchTest {
      * yield an infinite loop.
      */
     @Test
-    public void testDoesNotPropagateRelaunchDirective() throws Exception {
+    public void testDoesNotPropagateRelaunchDirective() {
         final String deepLinkUrl = "https://pwa.rocks/deep_link.html";
 
         Intent launchIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(deepLinkUrl));

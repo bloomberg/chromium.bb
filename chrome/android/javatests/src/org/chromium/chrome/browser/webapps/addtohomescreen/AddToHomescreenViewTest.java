@@ -60,7 +60,7 @@ public class AddToHomescreenViewTest {
     @SmallTest
     @Feature("{Webapp}")
     @RetryOnFailure
-    public void testSmoke() throws InterruptedException {
+    public void testSmoke() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             AddToHomescreenView dialog = new AddToHomescreenView(mActivityTestRule.getActivity(),
                     new MockAddToHomescreenManager(mActivityTestRule.getActivity(),

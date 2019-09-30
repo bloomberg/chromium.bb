@@ -77,7 +77,7 @@ public class AutofillAssistantUiTest {
     public CustomTabActivityTestRule mCustomTabActivityTestRule = new CustomTabActivityTestRule();
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         ThreadUtils.runOnUiThreadBlocking(() -> FirstRunStatus.setFirstRunFlowComplete(true));
 
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
@@ -87,7 +87,7 @@ public class AutofillAssistantUiTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         ThreadUtils.runOnUiThreadBlocking(() -> FirstRunStatus.setFirstRunFlowComplete(false));
         mTestServer.stopAndDestroyServer();
     }

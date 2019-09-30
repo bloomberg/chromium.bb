@@ -285,7 +285,7 @@ public class AddToHomescreenManagerTest {
     @Feature("{Webapp}")
     @Restriction(Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @CommandLineFlags.Add(ContentSwitches.DISABLE_POPUP_BLOCKING)
-    public void testAddWebappShortcutWithEmptyPage() throws Exception {
+    public void testAddWebappShortcutWithEmptyPage() {
         Tab spawnedPopup = spawnPopupInBackground("");
         addShortcutToTab(spawnedPopup, "", false);
     }
@@ -343,7 +343,7 @@ public class AddToHomescreenManagerTest {
         new TabLoadObserver(mTab, expectedPageTitle, null).fullyLoadUrl(url);
     }
 
-    private void addShortcutToTab(Tab tab, String title, boolean expectAdded) throws Exception {
+    private void addShortcutToTab(Tab tab, String title, boolean expectAdded) {
         // Add the shortcut.
         TestAddToHomescreenManager manager = new TestAddToHomescreenManager(mActivity, tab, title);
         startManagerOnUiThread(manager);

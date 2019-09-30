@@ -91,7 +91,7 @@ public class AutofillAssistantDetailsUiTest {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         AutofillAssistantUiTestUtil.startOnBlankPage(mTestRule);
     }
 

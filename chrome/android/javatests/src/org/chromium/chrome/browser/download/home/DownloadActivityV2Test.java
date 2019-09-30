@@ -114,7 +114,7 @@ public class DownloadActivityV2Test extends DummyUiActivityTestCase {
 
     @Test
     @MediumTest
-    public void testLaunchingActivity() throws Exception {
+    public void testLaunchingActivity() {
         TestThreadUtils.runOnUiThreadBlocking(() -> { setUpUi(); });
 
         onView(withText("page 1")).check(matches(isDisplayed()));

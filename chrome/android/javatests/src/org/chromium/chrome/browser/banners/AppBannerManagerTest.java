@@ -195,7 +195,7 @@ public class AppBannerManagerTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         mTestServer.stopAndDestroyServer();
     }
 
@@ -263,7 +263,7 @@ public class AppBannerManagerTest {
         });
     }
 
-    private void tapAndWaitForModalBanner(final Tab tab) throws Exception {
+    private void tapAndWaitForModalBanner(final Tab tab) {
         TouchCommon.singleClickView(tab.getView());
 
         CriteriaHelper.pollUiThread(new Criteria() {

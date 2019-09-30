@@ -197,8 +197,7 @@ class AutofillAssistantUiTestUtil {
     /**
      * Starts the CCT test rule on a blank page.
      */
-    public static void startOnBlankPage(CustomTabActivityTestRule testRule)
-            throws InterruptedException {
+    public static void startOnBlankPage(CustomTabActivityTestRule testRule) {
         testRule.startCustomTabActivityWithIntent(CustomTabsTestUtils.createMinimalCustomTabIntent(
                 InstrumentationRegistry.getTargetContext(), "about:blank"));
     }

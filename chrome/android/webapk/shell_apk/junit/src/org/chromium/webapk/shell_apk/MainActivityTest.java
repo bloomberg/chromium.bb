@@ -239,7 +239,7 @@ public final class MainActivityTest {
      * launch intent are in fact propagated.
      */
     @Test
-    public void testPropagatedDeepLinkExtras() throws Exception {
+    public void testPropagatedDeepLinkExtras() {
         final String startUrl = "https://www.google.com/";
 
         Bundle extrasToPropagate = new Bundle();

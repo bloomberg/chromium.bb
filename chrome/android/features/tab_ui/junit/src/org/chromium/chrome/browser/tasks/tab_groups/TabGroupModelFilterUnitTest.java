@@ -105,12 +105,14 @@ public class TabGroupModelFilterUnitTest {
 
         doAnswer(new Answer() {
             @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
+            public Object answer(InvocationOnMock invocation) {
                 int newRootId = invocation.getArgument(0);
                 doReturn(newRootId).when(tab).getRootId();
                 return null;
             }
-        }).when(tab).setRootId(anyInt());
+        })
+                .when(tab)
+                .setRootId(anyInt());
 
         doReturn(tabId).when(tab).getId();
         doReturn(parentTabId).when(tab).getParentId();
@@ -122,12 +124,14 @@ public class TabGroupModelFilterUnitTest {
     private void setRootId(Tab tab, int rootId) {
         doAnswer(new Answer() {
             @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
+            public Object answer(InvocationOnMock invocation) {
                 int newRootId = invocation.getArgument(0);
                 doReturn(newRootId).when(tab).getRootId();
                 return null;
             }
-        }).when(tab).setRootId(rootId);
+        })
+                .when(tab)
+                .setRootId(rootId);
     }
 
     private void setUpTab() {
@@ -142,18 +146,20 @@ public class TabGroupModelFilterUnitTest {
     private void setUpTabModel() {
         doAnswer(new Answer() {
             @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
+            public Object answer(InvocationOnMock invocation) {
                 Tab tab = invocation.getArgument(0);
                 int index = invocation.getArgument(1);
                 index = index == -1 ? mTabs.size() : index;
                 mTabs.add(index, tab);
                 return null;
             }
-        }).when(mTabModel).addTab(any(Tab.class), anyInt(), anyInt());
+        })
+                .when(mTabModel)
+                .addTab(any(Tab.class), anyInt(), anyInt());
 
         doAnswer(new Answer() {
             @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
+            public Object answer(InvocationOnMock invocation) {
                 int movedTabId = invocation.getArgument(0);
                 int newIndex = invocation.getArgument(1);
 
@@ -166,30 +172,38 @@ public class TabGroupModelFilterUnitTest {
                 mTabModelObserverCaptor.getValue().didMoveTab(tab, newIndex, oldIndex);
                 return null;
             }
-        }).when(mTabModel).moveTab(anyInt(), anyInt());
+        })
+                .when(mTabModel)
+                .moveTab(anyInt(), anyInt());
 
         doAnswer(new Answer() {
             @Override
-            public Tab answer(InvocationOnMock invocation) throws Throwable {
+            public Tab answer(InvocationOnMock invocation) {
                 int index = invocation.getArgument(0);
                 return mTabs.get(index);
             }
-        }).when(mTabModel).getTabAt(anyInt());
+        })
+                .when(mTabModel)
+                .getTabAt(anyInt());
 
         doAnswer(new Answer() {
             @Override
-            public Integer answer(InvocationOnMock invocation) throws Throwable {
+            public Integer answer(InvocationOnMock invocation) {
                 Tab tab = invocation.getArgument(0);
                 return mTabs.indexOf(tab);
             }
-        }).when(mTabModel).indexOf(any(Tab.class));
+        })
+                .when(mTabModel)
+                .indexOf(any(Tab.class));
 
         doAnswer(new Answer() {
             @Override
-            public Integer answer(InvocationOnMock invocation) throws Throwable {
+            public Integer answer(InvocationOnMock invocation) {
                 return mTabs.size();
             }
-        }).when(mTabModel).getCount();
+        })
+                .when(mTabModel)
+                .getCount();
 
         doReturn(0).when(mTabModel).index();
         doNothing().when(mTabModel).addObserver(mTabModelObserverCaptor.capture());
