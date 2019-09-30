@@ -3608,6 +3608,13 @@ Unknown properties are collapsed to zero. -->
   <int value="20" label="Installing the feature module failed"/>
 </enum>
 
+<enum name="AutofillAssistantFeatureModuleInstallation">
+  <int value="0" label="Background installation requested"/>
+  <int value="1" label="Foreground installation succeeded"/>
+  <int value="2" label="Foreground installation failed"/>
+  <int value="3" label="Already installed"/>
+</enum>
+
 <enum name="AutofillAssistantOnBoarding">
   <int value="0" label="Shown"/>
   <int value="1" label="Not shown (returning user)"/>
