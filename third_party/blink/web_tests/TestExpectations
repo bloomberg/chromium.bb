@@ -6226,3 +6226,6 @@ crbug.com/1008257 external/wpt/service-workers/service-worker/worker-interceptio
 
 # Sheriff 2019-09-27
 crbug.com/1008826 [ Mac10.13 ] http/tests/security/frameNavigation/xss-ALLOWED-parent-navigation-change.html [ Pass Failure ]
+
+# Sheriff 2019-09-30
+crbug.com/1009016 [ Win10 ] http/tests/devtools/portals/portals-elements-nesting-after-adoption.js [ Pass Failure ]
