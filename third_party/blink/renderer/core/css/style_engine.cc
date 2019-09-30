@@ -1858,7 +1858,8 @@ bool StyleEngine::SupportsDarkColorScheme() {
 
 void StyleEngine::UpdateColorScheme() {
   auto* settings = GetDocument().GetSettings();
-  DCHECK(settings);
+  if (!settings)
+    return;
 
   ForcedColors old_forced_colors = forced_colors_;
   forced_colors_ = settings->GetForcedColors();
