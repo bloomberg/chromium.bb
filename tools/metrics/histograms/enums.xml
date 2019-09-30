@@ -18143,6 +18143,7 @@ Called by update_net_error_codes.py.-->
   <int value="616" label="TotalMemoryLimitMb"/>
   <int value="617" label="DeviceLoginScreenAutoclickEnabled"/>
   <int value="618" label="DeviceLoginScreenStickyKeysEnabled"/>
+  <int value="619" label="DeviceLoginScreenKeyboardFocusHighlightEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

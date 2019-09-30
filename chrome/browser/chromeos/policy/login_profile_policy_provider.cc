@@ -52,6 +52,8 @@ const DevicePolicyToUserPolicyMapEntry kDevicePoliciesWithPolicyOptionsMap[] = {
     {key::kDeviceLoginScreenMonoAudioEnabled, key::kMonoAudioEnabled},
     {key::kDeviceLoginScreenAutoclickEnabled, key::kAutoclickEnabled},
     {key::kDeviceLoginScreenStickyKeysEnabled, key::kStickyKeysEnabled},
+    {key::kDeviceLoginScreenKeyboardFocusHighlightEnabled,
+     key::kKeyboardFocusHighlightEnabled},
 };
 
 const DevicePolicyToUserPolicyMapEntry kRecommendedDevicePoliciesMap[] = {

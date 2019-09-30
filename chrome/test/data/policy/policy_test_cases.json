@@ -4072,6 +4072,9 @@
   "DeviceLoginScreenStickyKeysEnabled" : {
   },
 
+  "DeviceLoginScreenKeyboardFocusHighlightEnabled" : {
+  },
+
   "DeviceLoginScreenLocales" : {
   },
 

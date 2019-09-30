@@ -855,4 +855,57 @@ IN_PROC_BROWSER_TEST_F(LoginScreenAccessibilityPolicyBrowsertest,
   accessibility_manager->EnableStickyKeys(false);
   EXPECT_FALSE(accessibility_manager->IsStickyKeysEnabled());
 }
+
+IN_PROC_BROWSER_TEST_F(LoginScreenAccessibilityPolicyBrowsertest,
+                       DeviceLoginScreenKeyboardFocusHighlightEnabled) {
+  // Verifies that the state of the keyboard focus highlight accessibility
+  // feature on the login screen can be controlled through device policy.
+  chromeos::AccessibilityManager* accessibility_manager =
+      chromeos::AccessibilityManager::Get();
+  ASSERT_TRUE(accessibility_manager);
+  EXPECT_FALSE(accessibility_manager->IsFocusHighlightEnabled());
+
+  // Manually enable the keyboard focus highlight.
+  accessibility_manager->SetFocusHighlightEnabled(true);
+  EXPECT_TRUE(accessibility_manager->IsFocusHighlightEnabled());
+
+  // Disable the keyboard focus highlight through device policy and wait for the
+  // change to take effect.
+  em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
+  proto.mutable_accessibility_settings()
+      ->set_login_screen_keyboard_focus_highlight_enabled(false);
+  RefreshDevicePolicyAndWaitForPrefChange(
+      ash::prefs::kAccessibilityFocusHighlightEnabled);
+
+  // Verify that the pref which controls the keyboard focus highlight in the
+  // login profile is managed by the policy.
+  EXPECT_TRUE(IsPrefManaged(ash::prefs::kAccessibilityFocusHighlightEnabled));
+  EXPECT_EQ(base::Value(false),
+            GetPrefValue(ash::prefs::kAccessibilityFocusHighlightEnabled));
+
+  // Verify that the keyboard focus highlight cannot be enabled manually
+  // anymore.
+  accessibility_manager->SetFocusHighlightEnabled(true);
+  EXPECT_FALSE(accessibility_manager->IsFocusHighlightEnabled());
+
+  // Enable the keyboard focus highlight through device policy as a recommended
+  // value and wait for the change to take effect.
+  proto.mutable_accessibility_settings()
+      ->set_login_screen_keyboard_focus_highlight_enabled(true);
+  proto.mutable_accessibility_settings()
+      ->mutable_login_screen_keyboard_focus_highlight_enabled_options()
+      ->set_mode(em::PolicyOptions::RECOMMENDED);
+  RefreshDevicePolicyAndWaitForPrefChange(
+      ash::prefs::kAccessibilityFocusHighlightEnabled);
+
+  // Verify that the pref which controls the keyboard focus highlight in the
+  // login profile is being applied as recommended by the policy.
+  EXPECT_FALSE(IsPrefManaged(ash::prefs::kAccessibilityFocusHighlightEnabled));
+  EXPECT_EQ(base::Value(true),
+            GetPrefValue(ash::prefs::kAccessibilityFocusHighlightEnabled));
+
+  // Verify that the keyboard focus highlight can be enabled manually again.
+  accessibility_manager->SetFocusHighlightEnabled(false);
+  EXPECT_FALSE(accessibility_manager->IsFocusHighlightEnabled());
+}
 }  // namespace policy
