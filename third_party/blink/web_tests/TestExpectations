@@ -2387,6 +2387,7 @@ crbug.com/305376 external/wpt/css/css-overflow/webkit-line-clamp-024.html [ Fail
 crbug.com/305376 external/wpt/css/css-overflow/webkit-line-clamp-025.html [ Failure ]
 crbug.com/965137 external/wpt/css/css-overflow/webkit-line-clamp-026.html [ Failure ]
 crbug.com/305376 external/wpt/css/css-overflow/webkit-line-clamp-027.html [ Failure ]
+crbug.com/1007065 external/wpt/css/css-overflow/overflow-codependent-scrollbars.html [ Failure ]
 
 crbug.com/424365 external/wpt/css/css-shapes/shape-outside/shape-image/shape-image-024.html [ Failure ]
 crbug.com/441840 [ Win ] external/wpt/css/css-shapes/shape-outside/values/shape-margin-001.html [ Failure ]
