@@ -268,9 +268,13 @@ TEST_F(PrintBackendCupsIppUtilTest, AdvancedCaps) {
 
   EXPECT_EQ(6u, caps.advanced_capabilities.size());
   EXPECT_EQ("ipp-attribute-fidelity", caps.advanced_capabilities[0].name);
+  EXPECT_EQ(base::Value::Type::BOOLEAN, caps.advanced_capabilities[0].type);
   EXPECT_EQ("finishings/7", caps.advanced_capabilities[1].name);
+  EXPECT_EQ(base::Value::Type::BOOLEAN, caps.advanced_capabilities[1].type);
   EXPECT_EQ("finishings/10", caps.advanced_capabilities[2].name);
+  EXPECT_EQ(base::Value::Type::BOOLEAN, caps.advanced_capabilities[2].type);
   EXPECT_EQ("job-name", caps.advanced_capabilities[3].name);
+  EXPECT_EQ(base::Value::Type::STRING, caps.advanced_capabilities[3].type);
   EXPECT_EQ("output-bin", caps.advanced_capabilities[4].name);
   EXPECT_EQ(2u, caps.advanced_capabilities[4].values.size());
   EXPECT_EQ("print-quality", caps.advanced_capabilities[5].name);
