@@ -3707,6 +3707,7 @@ test("unit_tests") {
       "../browser/media/router/discovery/discovery_network_monitor_unittest.cc",
       "../browser/media/unified_autoplay_config_unittest.cc",
       "../browser/media/webrtc/desktop_capture_access_handler_unittest.cc",
+      "../browser/media/webrtc/desktop_media_picker_controller_unittest.cc",
       "../browser/media/webrtc/display_media_access_handler_unittest.cc",
       "../browser/media/webrtc/tab_desktop_media_list_unittest.cc",
       "../browser/media/webrtc/webrtc_event_log_manager_common_unittest.cc",
