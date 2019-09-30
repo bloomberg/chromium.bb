@@ -22,7 +22,30 @@ if (build_with_chromium) {
 # If this is a problem, feel free to remove "testonly" and use "assert_no_deps"
 # on the main Chrome binary.
 
-source_set("internal") {
+source_set("flag_internal") {
+  testonly = true
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [
+    "//build/config/compiler:no_chromium_code",
+    "//third_party/abseil-cpp:absl_default_cflags_cc",
+  ]
+  public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
+  sources = [
+    "internal/flag.cc",
+  ]
+  public = [
+    "internal/flag.h",
+  ]
+  deps = [
+    ":handle",
+    ":registry",
+    "../synchronization",
+  ]
+  visibility = []
+  visibility += [ ":*" ]
+}
+
+source_set("program_name") {
   testonly = true
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [
@@ -34,12 +57,30 @@ source_set("internal") {
     "internal/program_name.cc",
   ]
   public = [
-    "internal/path_util.h",
     "internal/program_name.h",
   ]
   deps = [
+    ":path_util",
     "../strings",
     "../synchronization",
+  ]
+  visibility = []
+  visibility += [ ":*" ]
+}
+
+source_set("path_util") {
+  testonly = true
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [
+    "//build/config/compiler:no_chromium_code",
+    "//third_party/abseil-cpp:absl_default_cflags_cc",
+  ]
+  public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
+  public = [
+    "internal/path_util.h",
+  ]
+  deps = [
+    "../strings",
   ]
   visibility = []
   visibility += [ ":*" ]
@@ -61,7 +102,8 @@ source_set("config") {
     "usage_config.h",
   ]
   deps = [
-    ":internal",
+    ":path_util",
+    ":program_name",
     "../base:core_headers",
     "../strings",
     "../synchronization",
@@ -106,8 +148,8 @@ source_set("handle") {
   deps = [
     ":config",
     ":marshalling",
-    "../base",
     "../base:core_headers",
+    "../base:raw_logging_internal",
     "../strings",
     "../synchronization",
     "../types:optional",
@@ -135,9 +177,9 @@ source_set("registry") {
   deps = [
     ":config",
     ":handle",
-    "../base",
     "../base:core_headers",
     "../base:dynamic_annotations",
+    "../base:raw_logging_internal",
     "../strings",
     "../synchronization",
   ]
@@ -159,13 +201,12 @@ source_set("flag") {
   public = [
     "declare.h",
     "flag.h",
-    "internal/flag.h",
   ]
   deps = [
     ":config",
+    ":flag_internal",
     ":handle",
     ":marshalling",
-    ":registry",
     "../base",
     "../base:core_headers",
     "../strings",
@@ -190,7 +231,8 @@ source_set("usage_internal") {
     ":config",
     ":flag",
     ":handle",
-    ":internal",
+    ":path_util",
+    ":program_name",
     "../strings",
     "../synchronization",
   ]
@@ -237,8 +279,7 @@ source_set("parse") {
   deps = [
     ":config",
     ":flag",
-    ":handle",
-    ":internal",
+    ":program_name",
     ":registry",
     ":usage",
     ":usage_internal",

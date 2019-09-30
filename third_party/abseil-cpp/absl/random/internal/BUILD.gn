@@ -61,13 +61,11 @@ source_set("distributions") {
   ]
   deps = [
     ":distribution_caller",
-    ":fast_uniform_bits",
-    ":fastmath",
     ":traits",
     ":uniform_helper",
+    "../../base",
     "../../meta:type_traits",
     "../../strings",
-    "../../types:span",
   ]
 }
 
@@ -100,8 +98,8 @@ source_set("seed_material") {
   ]
   deps = [
     ":fast_uniform_bits",
-    "../../base",
     "../../base:core_headers",
+    "../../base:raw_logging_internal",
     "../../strings",
     "../../types:optional",
     "../../types:span",
@@ -129,6 +127,7 @@ source_set("pool_urbg") {
     "../../base:config",
     "../../base:core_headers",
     "../../base:endian",
+    "../../base:raw_logging_internal",
     "../../random:seed_gen_exception",
     "../../types:span",
   ]
@@ -318,7 +317,7 @@ source_set("randen") {
     ":platform",
     ":randen_hwaes",
     ":randen_slow",
-    "../../base",
+    "../../base:raw_logging_internal",
   ]
 }
 
@@ -373,6 +372,7 @@ source_set("randen_hwaes_impl") {
   ]
   deps = [
     ":platform",
+    "../../base:core_headers",
   ]
 }
 
@@ -409,8 +409,8 @@ source_set("distribution_test_util") {
     "distribution_test_util.cc",
   ]
   deps = [
-    "../../base",
     "../../base:core_headers",
+    "../../base:raw_logging_internal",
     "../../strings",
     "../../strings:str_format",
     "../../types:span",
@@ -430,7 +430,7 @@ source_set("nanobenchmark") {
   deps = [
     ":platform",
     ":randen_engine",
-    "../../base",
+    "../../base:raw_logging_internal",
   ]
 }
 
@@ -445,11 +445,6 @@ source_set("uniform_helper") {
     "uniform_helper.h",
   ]
   deps = [
-    ":distribution_impl",
-    ":fast_uniform_bits",
-    ":iostream_state_saver",
-    ":traits",
-    "../../base:core_headers",
     "../../meta:type_traits",
   ]
 }

@@ -254,6 +254,7 @@ source_set("hash_generator_testing") {
   ]
   deps = [
     ":hash_policy_testing",
+    "../memory",
     "../meta:type_traits",
     "../strings",
   ]

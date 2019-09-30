@@ -67,9 +67,9 @@ static std::string NormalizeFileName(absl::string_view fname) {
   fname = normalized;
 #endif
 
-  auto absl_pos = fname.find("/absl/");
+  auto absl_pos = fname.rfind("absl/");
   if (absl_pos != absl::string_view::npos) {
-    fname = fname.substr(absl_pos + 1);
+    fname = fname.substr(absl_pos);
   }
   return std::string(fname);
 }
@@ -395,7 +395,7 @@ TEST_F(UsageReportingTest, TestUsageFlag_helpon) {
 }  // namespace
 
 int main(int argc, char* argv[]) {
-  absl::GetFlag(FLAGS_undefok);  // Force linking of parse.cc
+  (void)absl::GetFlag(FLAGS_undefok);  // Force linking of parse.cc
   flags::SetProgramInvocationName("usage_test");
   absl::SetProgramUsageMessage(kTestUsageMessage);
   ::testing::InitGoogleTest(&argc, argv);

@@ -12,6 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "absl/container/inlined_vector.h"
+
+#include "absl/base/config.h"
+
+#ifdef ABSL_HAVE_EXCEPTIONS
+
 #include <array>
 #include <initializer_list>
 #include <iterator>
@@ -20,7 +26,6 @@
 
 #include "gtest/gtest.h"
 #include "absl/base/internal/exception_safety_testing.h"
-#include "absl/container/inlined_vector.h"
 
 namespace {
 
@@ -57,8 +62,8 @@ using ThrowAllocMovableThrowerVec =
                                                                \
        : std::initializer_list<T>{T(0, testing::nothrow_ctor), \
                                   T(1, testing::nothrow_ctor)})
-static_assert((kLargeSize == 8 || kSmallSize == 2),
-              "Must update ABSL_INTERNAL_MAKE_INIT_LIST(...).");
+static_assert(kLargeSize == 8, "Must update ABSL_INTERNAL_MAKE_INIT_LIST(...)");
+static_assert(kSmallSize == 2, "Must update ABSL_INTERNAL_MAKE_INIT_LIST(...)");
 
 template <typename TheVecT, size_t... TheSizes>
 class TestParams {
@@ -487,3 +492,5 @@ TYPED_TEST(TwoSizeTest, Swap) {
 }
 
 }  // namespace
+
+#endif  // ABSL_HAVE_EXCEPTIONS

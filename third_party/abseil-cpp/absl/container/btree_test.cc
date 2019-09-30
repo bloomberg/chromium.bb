@@ -25,6 +25,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "absl/base/internal/raw_logging.h"
+#include "absl/base/macros.h"
 #include "absl/container/btree_map.h"
 #include "absl/container/btree_set.h"
 #include "absl/container/internal/counting_allocator.h"
@@ -48,7 +49,6 @@ using ::absl::test_internal::InstanceTracker;
 using ::absl::test_internal::MovableOnlyInstance;
 using ::testing::ElementsAre;
 using ::testing::ElementsAreArray;
-using ::testing::IsEmpty;
 using ::testing::Pair;
 
 template <typename T, typename U>
@@ -323,6 +323,7 @@ class unique_checker : public base_checker<TreeType, CheckerType> {
   unique_checker(const unique_checker &x) : super_type(x) {}
   template <class InputIterator>
   unique_checker(InputIterator b, InputIterator e) : super_type(b, e) {}
+  unique_checker& operator=(const unique_checker&) = default;
 
   // Insertion routines.
   std::pair<iterator, bool> insert(const value_type &x) {
@@ -370,6 +371,7 @@ class multi_checker : public base_checker<TreeType, CheckerType> {
   multi_checker(const multi_checker &x) : super_type(x) {}
   template <class InputIterator>
   multi_checker(InputIterator b, InputIterator e) : super_type(b, e) {}
+  multi_checker& operator=(const multi_checker&) = default;
 
   // Insertion routines.
   iterator insert(const value_type &x) {
@@ -1535,12 +1537,11 @@ TEST(Btree, MapAt) {
   const absl::btree_map<int, int> &const_map = map;
   EXPECT_EQ(const_map.at(1), 2);
   EXPECT_EQ(const_map.at(2), 8);
-  try {
-    map.at(3);
-    FAIL() << "Exception not thrown";
-  } catch (const std::out_of_range& e) {
-    EXPECT_STREQ(e.what(), "absl::btree_map::at");
-  }
+#ifdef ABSL_HAVE_EXCEPTIONS
+  EXPECT_THROW(map.at(3), std::out_of_range);
+#else
+  EXPECT_DEATH(map.at(3), "absl::btree_map::at");
+#endif
 }
 
 TEST(Btree, BtreeMultisetEmplace) {

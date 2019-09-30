@@ -14,12 +14,11 @@
 # limitations under the License.
 #
 
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
 load(
     "//absl:copts/configure_copts.bzl",
     "ABSL_DEFAULT_COPTS",
     "ABSL_DEFAULT_LINKOPTS",
-    "ABSL_EXCEPTIONS_FLAG",
-    "ABSL_EXCEPTIONS_FLAG_LINKOPTS",
     "ABSL_TEST_COPTS",
 )
 
@@ -71,20 +70,6 @@ cc_library(
 cc_test(
     name = "fixed_array_test",
     srcs = ["fixed_array_test.cc"],
-    copts = ABSL_TEST_COPTS + ABSL_EXCEPTIONS_FLAG,
-    linkopts = ABSL_EXCEPTIONS_FLAG_LINKOPTS + ABSL_DEFAULT_LINKOPTS,
-    deps = [
-        ":fixed_array",
-        "//absl/base:exception_testing",
-        "//absl/hash:hash_testing",
-        "//absl/memory",
-        "@com_google_googletest//:gtest_main",
-    ],
-)
-
-cc_test(
-    name = "fixed_array_test_noexceptions",
-    srcs = ["fixed_array_test.cc"],
     copts = ABSL_TEST_COPTS,
     linkopts = ABSL_DEFAULT_LINKOPTS,
     deps = [
@@ -99,10 +84,11 @@ cc_test(
 cc_test(
     name = "fixed_array_exception_safety_test",
     srcs = ["fixed_array_exception_safety_test.cc"],
-    copts = ABSL_TEST_COPTS + ABSL_EXCEPTIONS_FLAG,
-    linkopts = ABSL_EXCEPTIONS_FLAG_LINKOPTS + ABSL_DEFAULT_LINKOPTS,
+    copts = ABSL_TEST_COPTS,
+    linkopts = ABSL_DEFAULT_LINKOPTS,
     deps = [
         ":fixed_array",
+        "//absl/base:config",
         "//absl/base:exception_safety_testing",
         "@com_google_googletest//:gtest_main",
     ],
@@ -160,34 +146,15 @@ cc_library(
 cc_test(
     name = "inlined_vector_test",
     srcs = ["inlined_vector_test.cc"],
-    copts = ABSL_TEST_COPTS + ABSL_EXCEPTIONS_FLAG,
-    linkopts = ABSL_EXCEPTIONS_FLAG_LINKOPTS + ABSL_DEFAULT_LINKOPTS,
-    deps = [
-        ":counting_allocator",
-        ":inlined_vector",
-        ":test_instance_tracker",
-        "//absl/base",
-        "//absl/base:core_headers",
-        "//absl/base:exception_testing",
-        "//absl/hash:hash_testing",
-        "//absl/memory",
-        "//absl/strings",
-        "@com_google_googletest//:gtest_main",
-    ],
-)
-
-cc_test(
-    name = "inlined_vector_test_noexceptions",
-    srcs = ["inlined_vector_test.cc"],
     copts = ABSL_TEST_COPTS,
     linkopts = ABSL_DEFAULT_LINKOPTS,
     deps = [
         ":counting_allocator",
         ":inlined_vector",
         ":test_instance_tracker",
-        "//absl/base",
         "//absl/base:core_headers",
         "//absl/base:exception_testing",
+        "//absl/base:raw_logging_internal",
         "//absl/hash:hash_testing",
         "//absl/memory",
         "//absl/strings",
@@ -203,8 +170,8 @@ cc_test(
     tags = ["benchmark"],
     deps = [
         ":inlined_vector",
-        "//absl/base",
         "//absl/base:core_headers",
+        "//absl/base:raw_logging_internal",
         "//absl/strings",
         "@com_github_google_benchmark//:benchmark_main",
     ],
@@ -213,9 +180,10 @@ cc_test(
 cc_test(
     name = "inlined_vector_exception_safety_test",
     srcs = ["inlined_vector_exception_safety_test.cc"],
-    copts = ABSL_TEST_COPTS + ABSL_EXCEPTIONS_FLAG,
+    copts = ABSL_TEST_COPTS,
     deps = [
         ":inlined_vector",
+        "//absl/base:config",
         "//absl/base:exception_safety_testing",
         "@com_google_googletest//:gtest_main",
     ],
@@ -447,6 +415,7 @@ cc_library(
     linkopts = ABSL_DEFAULT_LINKOPTS,
     deps = [
         ":hash_policy_testing",
+        "//absl/memory",
         "//absl/meta:type_traits",
         "//absl/strings",
     ],
@@ -635,6 +604,7 @@ cc_test(
         ":raw_hash_set",
         "//absl/base",
         "//absl/base:core_headers",
+        "//absl/base:raw_logging_internal",
         "//absl/strings",
         "@com_google_googletest//:gtest_main",
     ],
@@ -678,8 +648,8 @@ cc_test(
     visibility = ["//visibility:private"],
     deps = [
         ":layout",
-        "//absl/base",
         "//absl/base:core_headers",
+        "//absl/base:raw_logging_internal",
         "//absl/types:span",
         "@com_google_googletest//:gtest_main",
     ],
@@ -875,7 +845,7 @@ cc_test(
     srcs = [
         "btree_test.cc",
     ],
-    copts = ABSL_TEST_COPTS + ["-fexceptions"],
+    copts = ABSL_TEST_COPTS,
     linkopts = ABSL_DEFAULT_LINKOPTS,
     shard_count = 10,
     visibility = ["//visibility:private"],
@@ -884,7 +854,8 @@ cc_test(
         ":btree_test_common",
         ":counting_allocator",
         ":test_instance_tracker",
-        "//absl/base",
+        "//absl/base:core_headers",
+        "//absl/base:raw_logging_internal",
         "//absl/flags:flag",
         "//absl/hash:hash_testing",
         "//absl/memory",

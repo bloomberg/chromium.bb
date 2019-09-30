@@ -67,6 +67,7 @@ source_set("strings") {
     "../base:config",
     "../base:core_headers",
     "../base:endian",
+    "../base:raw_logging_internal",
     "../base:throw_delegate",
     "../memory",
     "../meta:type_traits",

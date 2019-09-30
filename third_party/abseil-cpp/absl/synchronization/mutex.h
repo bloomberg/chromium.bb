@@ -558,8 +558,7 @@ class ABSL_SCOPED_LOCKABLE MutexLock {
 // releases a shared lock on a `Mutex` via RAII.
 class ABSL_SCOPED_LOCKABLE ReaderMutexLock {
  public:
-  explicit ReaderMutexLock(Mutex *mu) ABSL_SHARED_LOCK_FUNCTION(mu)
-      :  mu_(mu) {
+  explicit ReaderMutexLock(Mutex *mu) ABSL_SHARED_LOCK_FUNCTION(mu) : mu_(mu) {
     mu->ReaderLock();
   }
 
@@ -568,9 +567,7 @@ class ABSL_SCOPED_LOCKABLE ReaderMutexLock {
   ReaderMutexLock& operator=(const ReaderMutexLock&) = delete;
   ReaderMutexLock& operator=(ReaderMutexLock&&) = delete;
 
-  ~ReaderMutexLock() ABSL_UNLOCK_FUNCTION() {
-    this->mu_->ReaderUnlock();
-  }
+  ~ReaderMutexLock() ABSL_UNLOCK_FUNCTION() { this->mu_->ReaderUnlock(); }
 
  private:
   Mutex *const mu_;
@@ -592,9 +589,7 @@ class ABSL_SCOPED_LOCKABLE WriterMutexLock {
   WriterMutexLock& operator=(const WriterMutexLock&) = delete;
   WriterMutexLock& operator=(WriterMutexLock&&) = delete;
 
-  ~WriterMutexLock() ABSL_UNLOCK_FUNCTION() {
-    this->mu_->WriterUnlock();
-  }
+  ~WriterMutexLock() ABSL_UNLOCK_FUNCTION() { this->mu_->WriterUnlock(); }
 
  private:
   Mutex *const mu_;
@@ -863,10 +858,15 @@ class CondVar {
 class ABSL_SCOPED_LOCKABLE MutexLockMaybe {
  public:
   explicit MutexLockMaybe(Mutex *mu) ABSL_EXCLUSIVE_LOCK_FUNCTION(mu)
-      : mu_(mu) { if (this->mu_ != nullptr) { this->mu_->Lock(); } }
+      : mu_(mu) {
+    if (this->mu_ != nullptr) {
+      this->mu_->Lock();
+    }
+  }
   ~MutexLockMaybe() ABSL_UNLOCK_FUNCTION() {
     if (this->mu_ != nullptr) { this->mu_->Unlock(); }
   }
+
  private:
   Mutex *const mu_;
   MutexLockMaybe(const MutexLockMaybe&) = delete;

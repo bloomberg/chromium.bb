@@ -16,26 +16,40 @@
 #ifndef ABSL_FLAGS_INTERNAL_FLAG_H_
 #define ABSL_FLAGS_INTERNAL_FLAG_H_
 
+#include <cstring>
+
 #include "absl/flags/internal/commandlineflag.h"
 #include "absl/flags/internal/registry.h"
 
 namespace absl {
 namespace flags_internal {
 
+constexpr int64_t AtomicInit() { return 0xababababababababll; }
+
+// Signature for the mutation callback used by watched Flags
+// The callback is noexcept.
+// TODO(rogeeff): add noexcept after C++17 support is added.
+using FlagCallback = void (*)();
+
+void InvokeCallback(absl::Mutex* primary_mu, absl::Mutex* callback_mu,
+                    FlagCallback cb) ABSL_EXCLUSIVE_LOCKS_REQUIRED(primary_mu);
+
 // This is "unspecified" implementation of absl::Flag<T> type.
 template <typename T>
-class Flag : public flags_internal::CommandLineFlag {
+class Flag final : public flags_internal::CommandLineFlag {
  public:
   constexpr Flag(const char* name, const flags_internal::HelpGenFunc help_gen,
                  const char* filename,
-                 const flags_internal::FlagMarshallingOpFn marshalling_op_arg,
+                 const flags_internal::FlagMarshallingOpFn marshalling_op,
                  const flags_internal::InitialValGenFunc initial_value_gen)
       : flags_internal::CommandLineFlag(
             name, flags_internal::HelpText::FromFunctionPointer(help_gen),
-            filename, &flags_internal::FlagOps<T>, marshalling_op_arg,
+            filename, &flags_internal::FlagOps<T>, marshalling_op,
             initial_value_gen,
-            /*retired_arg=*/false, /*def_arg=*/nullptr,
-            /*cur_arg=*/nullptr) {}
+            /*def=*/nullptr,
+            /*cur=*/nullptr),
+        atomic_(flags_internal::AtomicInit()),
+        callback_(nullptr) {}
 
   T Get() const {
     // Implementation notes:
@@ -61,21 +75,57 @@ class Flag : public flags_internal::CommandLineFlag {
     };
     U u;
 
-    this->Read(&u.value, &flags_internal::FlagOps<T>);
+    Read(&u.value, &flags_internal::FlagOps<T>);
     return std::move(u.value);
   }
 
   bool AtomicGet(T* v) const {
-    const int64_t r = this->atomic.load(std::memory_order_acquire);
-    if (r != flags_internal::CommandLineFlag::kAtomicInit) {
-      memcpy(v, &r, sizeof(T));
+    const int64_t r = atomic_.load(std::memory_order_acquire);
+    if (r != flags_internal::AtomicInit()) {
+      std::memcpy(v, &r, sizeof(T));
       return true;
     }
 
     return false;
   }
 
-  void Set(const T& v) { this->Write(&v, &flags_internal::FlagOps<T>); }
+  void Set(const T& v) { Write(&v, &flags_internal::FlagOps<T>); }
+
+  void SetCallback(const flags_internal::FlagCallback mutation_callback) {
+    absl::MutexLock l(InitFlagIfNecessary());
+
+    callback_ = mutation_callback;
+
+    InvokeCallback();
+  }
+  void InvokeCallback() override
+      ABSL_EXCLUSIVE_LOCKS_REQUIRED(locks_->primary_mu) {
+    flags_internal::InvokeCallback(&locks_->primary_mu, &locks_->callback_mu,
+                                   callback_);
+  }
+
+ private:
+  void Destroy() const override {
+    // Values are heap allocated Abseil Flags.
+    if (cur_) Delete(op_, cur_);
+    if (def_) Delete(op_, def_);
+
+    delete locks_;
+  }
+
+  void StoreAtomic() override {
+    if (sizeof(T) <= sizeof(int64_t)) {
+      int64_t t = 0;
+      std::memcpy(&t, cur_, (std::min)(sizeof(T), sizeof(int64_t)));
+      atomic_.store(t, std::memory_order_release);
+    }
+  }
+
+  // Flag's data
+  // For some types, a copy of the current value is kept in an atomically
+  // accessible field.
+  std::atomic<int64_t> atomic_;
+  FlagCallback callback_;  // Mutation callback
 };
 
 // This class facilitates Flag object registration and tail expression-based
