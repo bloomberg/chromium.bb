@@ -1051,11 +1051,25 @@ void NigoriSyncBridgeImpl::UpdateCryptographerFromNonKeystoreNigori(
 
 std::unique_ptr<EntityData> NigoriSyncBridgeImpl::GetData() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(cryptographer_->CanEncrypt());
-  DCHECK_NE(passphrase_type_, NigoriSpecifics::UNKNOWN);
+  if (passphrase_type_ == NigoriSpecifics::UNKNOWN) {
+    // Bridge never received NigoriSpecifics from the server. This line should
+    // be reachable only from processor's GetAllNodesForDebugging().
+    DCHECK(!cryptographer_->CanEncrypt());
+    DCHECK(!pending_keys_.has_value());
+    return nullptr;
+  }
 
   NigoriSpecifics specifics;
-  EncryptKeyBag(*cryptographer_, specifics.mutable_encryption_keybag());
+  if (cryptographer_->CanEncrypt()) {
+    EncryptKeyBag(*cryptographer_, specifics.mutable_encryption_keybag());
+  } else {
+    DCHECK(pending_keys_.has_value());
+    // This case is reachable only from processor's GetAllNodesForDebugging(),
+    // since currently commit is never issued while bridge has |pending_keys_|.
+    // Note: with complete support of TRUSTED_VAULT mode, commit might be
+    // issued in this case as well.
+    *specifics.mutable_encryption_keybag() = *pending_keys_;
+  }
   specifics.set_keybag_is_frozen(true);
   specifics.set_encrypt_everything(encrypt_everything_);
   if (encrypt_everything_) {
@@ -1081,6 +1095,8 @@ std::unique_ptr<EntityData> NigoriSyncBridgeImpl::GetData() {
   }
   // TODO(crbug.com/922900): add other fields support.
   NOTIMPLEMENTED();
+  DCHECK(IsValidNigoriSpecifics(specifics));
+
   auto entity_data = std::make_unique<EntityData>();
   *entity_data->specifics.mutable_nigori() = std::move(specifics);
   entity_data->name = kNigoriNonUniqueName;
