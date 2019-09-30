@@ -189,7 +189,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/compositor/CompositorSurfaceManagerImpl.java",
   "java/src/org/chromium/chrome/browser/compositor/CompositorView.java",
   "java/src/org/chromium/chrome/browser/compositor/CompositorViewHolder.java",
-  "java/src/org/chromium/chrome/browser/compositor/EventOffsetHandler.java",
   "java/src/org/chromium/chrome/browser/compositor/Invalidator.java",
   "java/src/org/chromium/chrome/browser/compositor/LayerTitleCache.java",
   "java/src/org/chromium/chrome/browser/compositor/TitleCache.java",

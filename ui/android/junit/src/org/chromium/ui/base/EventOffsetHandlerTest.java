@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.compositor;
+package org.chromium.ui.base;
 
 import static org.junit.Assert.assertEquals;
 
@@ -27,24 +27,20 @@ public class EventOffsetHandlerTest {
     private EventOffsetHandler.EventOffsetHandlerDelegate mDelegate =
             new EventOffsetHandler.EventOffsetHandlerDelegate() {
                 @Override
-                public RectF getViewport() {
-                    return mViewport;
+                public float getTop() {
+                    return mViewport.top;
                 }
 
                 @Override
-                public void setCurrentTouchEventOffsets(float x, float y) {
-                    mOffsetX = x;
-                    mOffsetY = y;
+                public void setCurrentTouchEventOffsets(float top) {
+                    mOffsetY = top;
                 }
-
             };
 
     private RectF mViewport;
-    private float mOffsetX;
     private float mOffsetY;
 
-    private void assertOffsets(float x, float y) {
-        assertEquals(x, mOffsetX, 0.0);
+    private void assertOffsets(float y) {
         assertEquals(y, mOffsetY, 0.0);
     }
 
@@ -52,7 +48,7 @@ public class EventOffsetHandlerTest {
     public void setUp() {
         mHandler = new EventOffsetHandler(mDelegate);
         mViewport = new RectF(100, 200, 600, 800);
-        assertOffsets(0, 0);
+        assertOffsets(0);
     }
 
     @Test
@@ -61,20 +57,20 @@ public class EventOffsetHandlerTest {
         mHandler.onPostDispatchDragEvent(DragEvent.ACTION_DRAG_STARTED);
 
         // Viewport position has been negated.
-        assertOffsets(-100, -200);
+        assertOffsets(-200);
 
         MotionEvent motionStart = MotionEvent.obtain(0, 0, MotionEvent.ACTION_DOWN, 100, 100, 0);
         mHandler.onInterceptTouchEvent(motionStart);
 
-        assertOffsets(-100, -200);
+        assertOffsets(-200);
 
         MotionEvent motionEnd = MotionEvent.obtain(0, 0, MotionEvent.ACTION_UP, 100, 100, 0);
         mHandler.onInterceptTouchEvent(motionStart);
 
-        assertOffsets(-100, -200);
+        assertOffsets(-200);
 
         mHandler.onPreDispatchDragEvent(DragEvent.ACTION_DRAG_ENDED);
         mHandler.onPostDispatchDragEvent(DragEvent.ACTION_DRAG_ENDED);
-        assertOffsets(0, 0);
+        assertOffsets(0);
     }
 }

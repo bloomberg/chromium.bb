@@ -2,25 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.weblayer_private;
+package org.chromium.ui.base;
 
 import android.view.DragEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
-import org.chromium.ui.base.SPenSupport;
-
 /**
  * A class to update motion event offset while dragging. This is needed to compensate the change
  * caused by top control.
- * TODO: Note this class is copied from src/chrome and should be shared.
  */
 public class EventOffsetHandler {
     /**
      * A delegate for EventOffsetHandler.
      */
-    interface EventOffsetHandlerDelegate {
+    public interface EventOffsetHandlerDelegate {
         float getTop();
         void setCurrentTouchEventOffsets(float top);
     }
