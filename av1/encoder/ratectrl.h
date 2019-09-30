@@ -156,6 +156,7 @@ typedef struct {
   // Q index used for ALT frame
   int arf_q;
   int active_worst_quality;
+  int base_layer_qp;
 } RATE_CONTROL;
 
 struct AV1_COMP;
