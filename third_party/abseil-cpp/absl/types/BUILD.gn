@@ -67,8 +67,8 @@ source_set("bad_any_cast_impl") {
     "bad_any_cast.h",
   ]
   deps = [
+    "../base",
     "../base:config",
-    "../base:raw_logging_internal",
   ]
   visibility = []
   visibility += [ ":*" ]
@@ -133,8 +133,8 @@ source_set("bad_optional_access") {
     "bad_optional_access.h",
   ]
   deps = [
+    "../base",
     "../base:config",
-    "../base:raw_logging_internal",
   ]
 }
 
@@ -152,8 +152,8 @@ source_set("bad_variant_access") {
     "bad_variant_access.h",
   ]
   deps = [
+    "../base",
     "../base:config",
-    "../base:raw_logging_internal",
   ]
 }
 

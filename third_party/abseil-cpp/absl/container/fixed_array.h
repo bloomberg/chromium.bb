@@ -31,6 +31,7 @@
 #define ABSL_CONTAINER_FIXED_ARRAY_H_
 
 #include <algorithm>
+#include <array>
 #include <cassert>
 #include <cstddef>
 #include <initializer_list>
@@ -385,7 +386,8 @@ class FixedArray {
   //     error: call to int __builtin___sprintf_chk(etc...)
   //     will always overflow destination buffer [-Werror]
   //
-  template <typename OuterT, typename InnerT = absl::remove_extent_t<OuterT>,
+  template <typename OuterT = value_type,
+            typename InnerT = absl::remove_extent_t<OuterT>,
             size_t InnerN = std::extent<OuterT>::value>
   struct StorageElementWrapper {
     InnerT array[InnerN];
@@ -394,6 +396,8 @@ class FixedArray {
   using StorageElement =
       absl::conditional_t<std::is_array<value_type>::value,
                           StorageElementWrapper<value_type>, value_type>;
+  using StorageElementBuffer =
+      absl::aligned_storage_t<sizeof(StorageElement), alignof(StorageElement)>;
 
   static pointer AsValueType(pointer ptr) { return ptr; }
   static pointer AsValueType(StorageElementWrapper<value_type>* ptr) {
@@ -403,25 +407,25 @@ class FixedArray {
   static_assert(sizeof(StorageElement) == sizeof(value_type), "");
   static_assert(alignof(StorageElement) == alignof(value_type), "");
 
-  class NonEmptyInlinedStorage {
-   public:
-    StorageElement* data() { return reinterpret_cast<StorageElement*>(buff_); }
-    void AnnotateConstruct(size_type n);
-    void AnnotateDestruct(size_type n);
+  struct NonEmptyInlinedStorage {
+    StorageElement* data() {
+      return reinterpret_cast<StorageElement*>(inlined_storage_.data());
+    }
 
 #ifdef ADDRESS_SANITIZER
     void* RedzoneBegin() { return &redzone_begin_; }
     void* RedzoneEnd() { return &redzone_end_ + 1; }
 #endif  // ADDRESS_SANITIZER
 
-   private:
+    void AnnotateConstruct(size_type);
+    void AnnotateDestruct(size_type);
+
     ABSL_ADDRESS_SANITIZER_REDZONE(redzone_begin_);
-    alignas(StorageElement) char buff_[sizeof(StorageElement[inline_elements])];
+    std::array<StorageElementBuffer, inline_elements> inlined_storage_;
     ABSL_ADDRESS_SANITIZER_REDZONE(redzone_end_);
   };
 
-  class EmptyInlinedStorage {
-   public:
+  struct EmptyInlinedStorage {
     StorageElement* data() { return nullptr; }
     void AnnotateConstruct(size_type) {}
     void AnnotateDestruct(size_type) {}
@@ -455,7 +459,9 @@ class FixedArray {
     size_type size() const { return size_alloc_.template get<0>(); }
     StorageElement* begin() const { return data_; }
     StorageElement* end() const { return begin() + size(); }
-    allocator_type& alloc() { return size_alloc_.template get<1>(); }
+    allocator_type& alloc() {
+      return size_alloc_.template get<1>();
+    }
 
    private:
     static bool UsingInlinedStorage(size_type n) {

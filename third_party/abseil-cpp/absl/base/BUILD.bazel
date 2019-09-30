@@ -14,11 +14,12 @@
 # limitations under the License.
 #
 
-load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_test")
 load(
     "//absl:copts/configure_copts.bzl",
     "ABSL_DEFAULT_COPTS",
     "ABSL_DEFAULT_LINKOPTS",
+    "ABSL_EXCEPTIONS_FLAG",
+    "ABSL_EXCEPTIONS_FLAG_LINKOPTS",
     "ABSL_TEST_COPTS",
 )
 
@@ -47,18 +48,10 @@ cc_library(
 
 cc_library(
     name = "raw_logging_internal",
-    srcs = ["internal/raw_logging.cc"],
-    hdrs = ["internal/raw_logging.h"],
     copts = ABSL_DEFAULT_COPTS,
     linkopts = ABSL_DEFAULT_LINKOPTS,
     visibility = [
         "//absl:__subpackages__",
-    ],
-    deps = [
-        ":atomic_hook",
-        ":config",
-        ":core_headers",
-        ":log_severity",
     ],
 )
 
@@ -144,7 +137,6 @@ cc_library(
         ":config",
         ":core_headers",
         ":dynamic_annotations",
-        ":raw_logging_internal",
         ":spinlock_wait",
     ],
 )
@@ -172,6 +164,7 @@ cc_library(
     name = "base",
     srcs = [
         "internal/cycleclock.cc",
+        "internal/raw_logging.cc",
         "internal/spinlock.cc",
         "internal/sysinfo.cc",
         "internal/thread_identity.cc",
@@ -183,6 +176,7 @@ cc_library(
         "internal/cycleclock.h",
         "internal/low_level_scheduling.h",
         "internal/per_thread_tls.h",
+        "internal/raw_logging.h",
         "internal/spinlock.h",
         "internal/sysinfo.h",
         "internal/thread_identity.h",
@@ -201,7 +195,6 @@ cc_library(
         ":core_headers",
         ":dynamic_annotations",
         ":log_severity",
-        ":raw_logging_internal",
         ":spinlock_wait",
         "//absl/meta:type_traits",
     ],
@@ -239,24 +232,23 @@ cc_library(
     name = "throw_delegate",
     srcs = ["internal/throw_delegate.cc"],
     hdrs = ["internal/throw_delegate.h"],
-    copts = ABSL_DEFAULT_COPTS,
-    linkopts = ABSL_DEFAULT_LINKOPTS,
+    copts = ABSL_DEFAULT_COPTS + ABSL_EXCEPTIONS_FLAG,
+    linkopts = ABSL_EXCEPTIONS_FLAG_LINKOPTS + ABSL_DEFAULT_LINKOPTS,
     visibility = [
         "//absl:__subpackages__",
     ],
     deps = [
+        ":base",
         ":config",
-        ":raw_logging_internal",
     ],
 )
 
 cc_test(
     name = "throw_delegate_test",
     srcs = ["throw_delegate_test.cc"],
-    copts = ABSL_TEST_COPTS,
-    linkopts = ABSL_DEFAULT_LINKOPTS,
+    copts = ABSL_TEST_COPTS + ABSL_EXCEPTIONS_FLAG,
+    linkopts = ABSL_EXCEPTIONS_FLAG_LINKOPTS + ABSL_DEFAULT_LINKOPTS,
     deps = [
-        ":config",
         ":throw_delegate",
         "@com_google_googletest//:gtest_main",
     ],
@@ -289,8 +281,8 @@ cc_library(
     testonly = 1,
     srcs = ["internal/exception_safety_testing.cc"],
     hdrs = ["internal/exception_safety_testing.h"],
-    copts = ABSL_TEST_COPTS,
-    linkopts = ABSL_DEFAULT_LINKOPTS,
+    copts = ABSL_TEST_COPTS + ABSL_EXCEPTIONS_FLAG,
+    linkopts = ABSL_EXCEPTIONS_FLAG_LINKOPTS + ABSL_DEFAULT_LINKOPTS,
     deps = [
         ":config",
         ":pretty_function",
@@ -305,8 +297,8 @@ cc_library(
 cc_test(
     name = "exception_safety_testing_test",
     srcs = ["exception_safety_testing_test.cc"],
-    copts = ABSL_TEST_COPTS,
-    linkopts = ABSL_DEFAULT_LINKOPTS,
+    copts = ABSL_TEST_COPTS + ABSL_EXCEPTIONS_FLAG,
+    linkopts = ABSL_EXCEPTIONS_FLAG_LINKOPTS + ABSL_DEFAULT_LINKOPTS,
     deps = [
         ":exception_safety_testing",
         "//absl/memory",
@@ -390,7 +382,6 @@ cc_library(
     deps = [
         ":base",
         ":base_internal",
-        ":raw_logging_internal",
         "//absl/synchronization",
         "@com_github_google_benchmark//:benchmark_main",
     ],
@@ -464,7 +455,7 @@ cc_test(
     copts = ABSL_TEST_COPTS,
     linkopts = ABSL_DEFAULT_LINKOPTS,
     deps = [
-        ":raw_logging_internal",
+        ":base",
         "//absl/strings",
         "@com_google_googletest//:gtest_main",
     ],
@@ -552,7 +543,7 @@ cc_library(
     visibility = [
         "//absl:__subpackages__",
     ],
-    deps = [":raw_logging_internal"],
+    deps = [":base"],
 )
 
 cc_test(
@@ -574,9 +565,8 @@ cc_test(
     copts = ABSL_TEST_COPTS,
     linkopts = ABSL_DEFAULT_LINKOPTS,
     deps = [
+        ":base",
         ":log_severity",
-        "//absl/flags:marshalling",
-        "//absl/strings",
         "@com_google_googletest//:gtest_main",
     ],
 )

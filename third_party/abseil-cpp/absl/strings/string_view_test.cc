@@ -29,8 +29,7 @@
 #include "absl/base/config.h"
 #include "absl/base/dynamic_annotations.h"
 
-#if defined(ABSL_HAVE_STD_STRING_VIEW) || defined(__ANDROID__)
-// We don't control the death messaging when using std::string_view.
+#ifdef __ANDROID__
 // Android assert messages only go to system log, so death tests cannot inspect
 // the message for matching.
 #define ABSL_EXPECT_DEATH_IF_SUPPORTED(statement, regex) \
@@ -373,7 +372,7 @@ TEST(StringViewTest, STL1) {
 #ifdef ABSL_HAVE_EXCEPTIONS
   EXPECT_THROW(a.copy(buf, 1, 27), std::out_of_range);
 #else
-  ABSL_EXPECT_DEATH_IF_SUPPORTED(a.copy(buf, 1, 27), "absl::string_view::copy");
+  EXPECT_DEATH(a.copy(buf, 1, 27), "absl::string_view::copy");
 #endif
 }
 
@@ -687,8 +686,7 @@ TEST(StringViewTest, STL2Substr) {
 #ifdef ABSL_HAVE_EXCEPTIONS
   EXPECT_THROW((void)a.substr(99, 2), std::out_of_range);
 #else
-  ABSL_EXPECT_DEATH_IF_SUPPORTED((void)a.substr(99, 2),
-                                 "absl::string_view::substr");
+  EXPECT_DEATH((void)a.substr(99, 2), "absl::string_view::substr");
 #endif
 }
 
@@ -824,17 +822,15 @@ TEST(StringViewTest, FrontBackSingleChar) {
 // "read of dereferenced null pointer is not allowed in a constant expression".
 // At run time, the behavior of `std::char_traits::length()` on `nullptr` is
 // undefined by the standard and usually results in crash with libc++.
-// GCC also started rejected this in libstdc++ starting in GCC9.
 // In MSVC, creating a constexpr string_view from nullptr also triggers an
 // "unevaluable pointer value" error. This compiler implementation conforms
 // to the standard, but `absl::string_view` implements a different
 // behavior for historical reasons. We work around tests that construct
 // `string_view` from `nullptr` when using libc++.
-#if !defined(ABSL_HAVE_STD_STRING_VIEW) ||                    \
-    (!(defined(_GLIBCXX_RELEASE) && _GLIBCXX_RELEASE >= 9) && \
-     !defined(_LIBCPP_VERSION) && !defined(_MSC_VER))
+#if !defined(ABSL_HAVE_STD_STRING_VIEW) || \
+    (!defined(_LIBCPP_VERSION) && !defined(_MSC_VER))
 #define ABSL_HAVE_STRING_VIEW_FROM_NULLPTR 1
-#endif
+#endif  // !defined(ABSL_HAVE_STD_STRING_VIEW) || !defined(_LIBCPP_VERSION)
 
 TEST(StringViewTest, NULLInput) {
   absl::string_view s;
@@ -894,18 +890,6 @@ TEST(StringViewTest, Comparisons2) {
   EXPECT_EQ(digits.compare(3, 4, "0123456789", 3, 4), 0);     // 6
   EXPECT_LT(digits.compare(3, 4, "0123456789", 3, 5), 0);     // 6
   EXPECT_LT(digits.compare(0, npos, "0123456789", 3, 5), 0);  // 6
-}
-
-TEST(StringViewTest, At) {
-  absl::string_view abc = "abc";
-  EXPECT_EQ(abc.at(0), 'a');
-  EXPECT_EQ(abc.at(1), 'b');
-  EXPECT_EQ(abc.at(2), 'c');
-#ifdef ABSL_HAVE_EXCEPTIONS
-  EXPECT_THROW(abc.at(3), std::out_of_range);
-#else
-  ABSL_EXPECT_DEATH_IF_SUPPORTED(abc.at(3), "absl::string_view::at");
-#endif
 }
 
 struct MyCharAlloc : std::allocator<char> {};

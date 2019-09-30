@@ -296,7 +296,7 @@ static struct SynchEvent {     // this is a trivial hash table for the events
 
   // Constant after initialization
   char name[1];         // actually longer---null-terminated std::string
-} * synch_event[kNSynchEvent] ABSL_GUARDED_BY(synch_event_mu);
+} *synch_event[kNSynchEvent] ABSL_GUARDED_BY(synch_event_mu);
 
 // Ensure that the object at "addr" has a SynchEvent struct associated with it,
 // set "bits" in the word there (waiting until lockbit is clear before doing

@@ -85,15 +85,13 @@ https://github.com/abseil/abseil-cpp/issues/109 for more information.
 Here's a non-exhaustive list of Abseil CMake public targets:
 
 ```cmake
-absl::algorithm
 absl::base
+absl::algorithm
 absl::debugging
 absl::flat_hash_map
-absl::flags
 absl::memory
 absl::meta
 absl::numeric
-absl::random
 absl::strings
 absl::synchronization
 absl::time

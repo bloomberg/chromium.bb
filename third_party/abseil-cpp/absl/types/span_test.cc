@@ -35,7 +35,7 @@
 namespace {
 
 MATCHER_P(DataIs, data,
-          absl::StrCat("data() ", negation ? "isn't " : "is ",
+          absl::StrCat("data() is ", negation ? "is " : "isn't ",
                        testing::PrintToString(data))) {
   return arg.data() == data;
 }

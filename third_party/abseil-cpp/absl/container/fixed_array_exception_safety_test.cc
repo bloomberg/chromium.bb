@@ -12,16 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "absl/container/fixed_array.h"
-
-#include "absl/base/config.h"
-
-#ifdef ABSL_HAVE_EXCEPTIONS
-
 #include <initializer_list>
 
 #include "gtest/gtest.h"
 #include "absl/base/internal/exception_safety_testing.h"
+#include "absl/container/fixed_array.h"
 
 namespace absl {
 
@@ -119,5 +114,3 @@ TEST(FixedArrayExceptionSafety, Fill) {
 }  // namespace
 
 }  // namespace absl
-
-#endif  // ABSL_HAVE_EXCEPTIONS

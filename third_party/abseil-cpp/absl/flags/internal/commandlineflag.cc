@@ -58,55 +58,65 @@ absl::Mutex* InitFlag(CommandLineFlag* flag) {
   {
     absl::MutexLock lock(&init_lock);
 
-    if (flag->locks_ == nullptr) {  // Must initialize Mutexes for this flag.
-      flag->locks_ = new flags_internal::CommandLineFlagLocks;
+    if (flag->locks == nullptr) {  // Must initialize Mutexes for this flag.
+      flag->locks = new flags_internal::CommandLineFlagLocks;
     }
 
-    mu = &flag->locks_->primary_mu;
+    mu = &flag->locks->primary_mu;
   }
 
   {
     absl::MutexLock lock(mu);
 
-    if (!flag->IsRetired() && flag->def_ == nullptr) {
+    if (!flag->retired && flag->def == nullptr) {
       // Need to initialize def and cur fields.
-      flag->def_ = (*flag->make_init_value_)();
-      flag->cur_ = Clone(flag->op_, flag->def_);
+      flag->def = (*flag->make_init_value)();
+      flag->cur = Clone(flag->op, flag->def);
       UpdateCopy(flag);
-      flag->inited_.store(true, std::memory_order_release);
+      flag->inited.store(true, std::memory_order_release);
       flag->InvokeCallback();
     }
   }
 
-  flag->inited_.store(true, std::memory_order_release);
+  flag->inited.store(true, std::memory_order_release);
   return mu;
 }
 
 // Ensure that the lazily initialized fields of *flag have been initialized,
-// and return &flag->locks_->primary_mu.
+// and return &flag->locks->primary_mu.
 absl::Mutex* CommandLineFlag::InitFlagIfNecessary() const
-    ABSL_LOCK_RETURNED(locks_->primary_mu) {
-  if (!inited_.load(std::memory_order_acquire)) {
+    ABSL_LOCK_RETURNED(locks->primary_mu) {
+  if (!this->inited.load(std::memory_order_acquire)) {
     return InitFlag(const_cast<CommandLineFlag*>(this));
   }
 
-  // All fields initialized; locks_ is therefore safe to read.
-  return &locks_->primary_mu;
+  // All fields initialized; this->locks is therefore safe to read.
+  return &this->locks->primary_mu;
+}
+
+void CommandLineFlag::Destroy() const {
+  // Values are heap allocated for retired and Abseil Flags.
+  if (IsRetired() || IsAbseilFlag()) {
+    if (this->cur) Delete(this->op, this->cur);
+    if (this->def) Delete(this->op, this->def);
+  }
+
+  delete this->locks;
 }
 
 bool CommandLineFlag::IsModified() const {
   absl::MutexLock l(InitFlagIfNecessary());
-  return modified_;
+  return modified;
 }
 
 void CommandLineFlag::SetModified(bool is_modified) {
   absl::MutexLock l(InitFlagIfNecessary());
-  modified_ = is_modified;
+  modified = is_modified;
 }
 
 bool CommandLineFlag::IsSpecifiedOnCommandLine() const {
   absl::MutexLock l(InitFlagIfNecessary());
-  return on_command_line_;
+  return on_command_line;
 }
 
 absl::string_view CommandLineFlag::Typename() const {
@@ -134,19 +144,100 @@ absl::string_view CommandLineFlag::Typename() const {
 }
 
 std::string CommandLineFlag::Filename() const {
-  return flags_internal::GetUsageConfig().normalize_filename(filename_);
+  return flags_internal::GetUsageConfig().normalize_filename(this->filename);
 }
 
 std::string CommandLineFlag::DefaultValue() const {
   absl::MutexLock l(InitFlagIfNecessary());
 
-  return Unparse(marshalling_op_, def_);
+  return Unparse(this->marshalling_op, this->def);
 }
 
 std::string CommandLineFlag::CurrentValue() const {
   absl::MutexLock l(InitFlagIfNecessary());
 
-  return Unparse(marshalling_op_, cur_);
+  return Unparse(this->marshalling_op, this->cur);
+}
+
+bool CommandLineFlag::HasValidatorFn() const {
+  absl::MutexLock l(InitFlagIfNecessary());
+
+  return this->validator != nullptr;
+}
+
+bool CommandLineFlag::SetValidatorFn(FlagValidator fn) {
+  absl::MutexLock l(InitFlagIfNecessary());
+
+  // ok to register the same function over and over again
+  if (fn == this->validator) return true;
+
+  // Can't set validator to a different function, unless reset first.
+  if (fn != nullptr && this->validator != nullptr) {
+    ABSL_INTERNAL_LOG(
+        WARNING, absl::StrCat("Ignoring SetValidatorFn() for flag '", Name(),
+                              "': validate-fn already registered"));
+
+    return false;
+  }
+
+  this->validator = fn;
+  return true;
+}
+
+bool CommandLineFlag::InvokeValidator(const void* value) const
+    ABSL_EXCLUSIVE_LOCKS_REQUIRED(this->locks->primary_mu) {
+  if (!this->validator) {
+    return true;
+  }
+
+  (void)value;
+
+  ABSL_INTERNAL_LOG(
+      FATAL,
+      absl::StrCat("Flag '", Name(),
+                   "' of encapsulated type should not have a validator"));
+
+  return false;
+}
+
+void CommandLineFlag::SetCallback(
+    const flags_internal::FlagCallback mutation_callback) {
+  absl::MutexLock l(InitFlagIfNecessary());
+
+  callback = mutation_callback;
+
+  InvokeCallback();
+}
+
+// If the flag has a mutation callback this function invokes it. While the
+// callback is being invoked the primary flag's mutex is unlocked and it is
+// re-locked back after call to callback is completed. Callback invocation is
+// guarded by flag's secondary mutex instead which prevents concurrent callback
+// invocation. Note that it is possible for other thread to grab the primary
+// lock and update flag's value at any time during the callback invocation.
+// This is by design. Callback can get a value of the flag if necessary, but it
+// might be different from the value initiated the callback and it also can be
+// different by the time the callback invocation is completed.
+// Requires that *primary_lock be held in exclusive mode; it may be released
+// and reacquired by the implementation.
+void CommandLineFlag::InvokeCallback()
+    ABSL_EXCLUSIVE_LOCKS_REQUIRED(this->locks->primary_mu) {
+  if (!this->callback) return;
+
+  // The callback lock is guaranteed initialized, because *locks->primary_mu
+  // exists.
+  absl::Mutex* callback_mu = &this->locks->callback_mu;
+
+  // When executing the callback we need the primary flag's mutex to be unlocked
+  // so that callback can retrieve the flag's value.
+  this->locks->primary_mu.Unlock();
+
+  {
+    absl::MutexLock lock(callback_mu);
+    this->callback();
+  }
+
+  this->locks->primary_mu.Lock();
 }
 
 // Attempts to parse supplied `value` string using parsing routine in the `flag`
@@ -157,31 +248,31 @@ std::string CommandLineFlag::CurrentValue() const {
 // in 'err'
 bool TryParseLocked(CommandLineFlag* flag, void* dst, absl::string_view value,
                     std::string* err)
-    ABSL_EXCLUSIVE_LOCKS_REQUIRED(flag->locks_->primary_mu) {
-  void* tentative_value = Clone(flag->op_, flag->def_);
+    ABSL_EXCLUSIVE_LOCKS_REQUIRED(flag->locks->primary_mu) {
+  void* tentative_value = Clone(flag->op, flag->def);
   std::string parse_err;
-  if (!Parse(flag->marshalling_op_, value, tentative_value, &parse_err)) {
+  if (!Parse(flag->marshalling_op, value, tentative_value, &parse_err)) {
     auto type_name = flag->Typename();
     absl::string_view err_sep = parse_err.empty() ? "" : "; ";
     absl::string_view typename_sep = type_name.empty() ? "" : " ";
     *err = absl::StrCat("Illegal value '", value, "' specified for",
                         typename_sep, type_name, " flag '", flag->Name(), "'",
                         err_sep, parse_err);
-    Delete(flag->op_, tentative_value);
+    Delete(flag->op, tentative_value);
     return false;
   }
 
   if (!flag->InvokeValidator(tentative_value)) {
     *err = absl::StrCat("Failed validation of new value '",
-                        Unparse(flag->marshalling_op_, tentative_value),
+                        Unparse(flag->marshalling_op, tentative_value),
                         "' for flag '", flag->Name(), "'");
-    Delete(flag->op_, tentative_value);
+    Delete(flag->op, tentative_value);
     return false;
   }
 
-  flag->counter_++;
-  Copy(flag->op_, tentative_value, dst);
-  Delete(flag->op_, tentative_value);
+  flag->counter++;
+  Copy(flag->op, tentative_value, dst);
+  Delete(flag->op, tentative_value);
   return true;
 }
 
@@ -201,38 +292,38 @@ bool CommandLineFlag::SetFromString(absl::string_view value,
   absl::MutexLock l(InitFlagIfNecessary());
 
   // Direct-access flags can be modified without going through the
-  // flag API. Detect such changes and update the flag->modified_ bit.
+  // flag API. Detect such changes and update the flag->modified bit.
   if (!IsAbseilFlag()) {
-    if (!modified_ && ChangedDirectly(this, cur_, def_)) {
-      modified_ = true;
+    if (!this->modified && ChangedDirectly(this, this->cur, this->def)) {
+      this->modified = true;
     }
   }
 
   switch (set_mode) {
     case SET_FLAGS_VALUE: {
       // set or modify the flag's value
-      if (!TryParseLocked(this, cur_, value, err)) return false;
-      modified_ = true;
+      if (!TryParseLocked(this, this->cur, value, err)) return false;
+      this->modified = true;
       UpdateCopy(this);
       InvokeCallback();
 
       if (source == kCommandLine) {
-        on_command_line_ = true;
+        this->on_command_line = true;
       }
       break;
     }
     case SET_FLAG_IF_DEFAULT: {
       // set the flag's value, but only if it hasn't been set by someone else
-      if (!modified_) {
-        if (!TryParseLocked(this, cur_, value, err)) return false;
-        modified_ = true;
+      if (!this->modified) {
+        if (!TryParseLocked(this, this->cur, value, err)) return false;
+        this->modified = true;
         UpdateCopy(this);
         InvokeCallback();
       } else {
         // TODO(rogeeff): review and fix this semantic. Currently we do not fail
         // in this case if flag is modified. This is misleading since the flag's
         // value is not updated even though we return true.
-        // *err = absl::StrCat(Name(), " is already set to ",
+        // *err = absl::StrCat(this->Name(), " is already set to ",
         //                     CurrentValue(), "\n");
         // return false;
         return true;
@@ -241,11 +332,11 @@ bool CommandLineFlag::SetFromString(absl::string_view value,
     }
     case SET_FLAGS_DEFAULT: {
       // modify the flag's default-value
-      if (!TryParseLocked(this, def_, value, err)) return false;
+      if (!TryParseLocked(this, this->def, value, err)) return false;
 
-      if (!modified_) {
+      if (!this->modified) {
         // Need to set both defvalue *and* current, in this case
-        Copy(op_, def_, cur_);
+        Copy(this->op, this->def, this->cur);
         UpdateCopy(this);
         InvokeCallback();
       }
@@ -261,14 +352,21 @@ bool CommandLineFlag::SetFromString(absl::string_view value,
   return true;
 }
 
+void CommandLineFlag::StoreAtomic(size_t size) {
+  int64_t t = 0;
+  assert(size <= sizeof(int64_t));
+  memcpy(&t, this->cur, size);
+  this->atomic.store(t, std::memory_order_release);
+}
+
 void CommandLineFlag::CheckDefaultValueParsingRoundtrip() const {
   std::string v = DefaultValue();
 
   absl::MutexLock lock(InitFlagIfNecessary());
 
-  void* dst = Clone(op_, def_);
+  void* dst = Clone(this->op, this->def);
   std::string error;
-  if (!flags_internal::Parse(marshalling_op_, v, dst, &error)) {
+  if (!flags_internal::Parse(this->marshalling_op, v, dst, &error)) {
     ABSL_INTERNAL_LOG(
         FATAL,
         absl::StrCat("Flag ", Name(), " (from ", Filename(),
@@ -278,25 +376,27 @@ void CommandLineFlag::CheckDefaultValueParsingRoundtrip() const {
 
   // We do not compare dst to def since parsing/unparsing may make
   // small changes, e.g., precision loss for floating point types.
-  Delete(op_, dst);
+  Delete(this->op, dst);
 }
 
 bool CommandLineFlag::ValidateDefaultValue() const {
   absl::MutexLock lock(InitFlagIfNecessary());
-  return InvokeValidator(def_);
+  return InvokeValidator(this->def);
 }
 
 bool CommandLineFlag::ValidateInputValue(absl::string_view value) const {
   absl::MutexLock l(InitFlagIfNecessary());  // protect default value access
 
-  void* obj = Clone(op_, def_);
+  void* obj = Clone(this->op, this->def);
   std::string ignored_error;
   const bool result =
-      flags_internal::Parse(marshalling_op_, value, obj, &ignored_error) &&
+      flags_internal::Parse(this->marshalling_op, value, obj, &ignored_error) &&
       InvokeValidator(obj);
-  Delete(op_, obj);
+  Delete(this->op, obj);
   return result;
 }
+
+const int64_t CommandLineFlag::kAtomicInit;
 
 void CommandLineFlag::Read(void* dst,
                            const flags_internal::FlagOpFn dst_op) const {
@@ -305,13 +405,13 @@ void CommandLineFlag::Read(void* dst,
   // `dst_op` is the unmarshaling operation corresponding to the declaration
   // visibile at the call site. `op` is the Flag's defined unmarshalling
   // operation. They must match for this operation to be well-defined.
-  if (ABSL_PREDICT_FALSE(dst_op != op_)) {
+  if (ABSL_PREDICT_FALSE(dst_op != op)) {
     ABSL_INTERNAL_LOG(
         ERROR,
-        absl::StrCat("Flag '", Name(),
+        absl::StrCat("Flag '", name,
                      "' is defined as one type and declared as another"));
   }
-  CopyConstruct(op_, cur_, dst);
+  CopyConstruct(op, cur, dst);
 }
 
 void CommandLineFlag::Write(const void* src,
@@ -321,28 +421,28 @@ void CommandLineFlag::Write(const void* src,
   // `src_op` is the marshalling operation corresponding to the declaration
   // visible at the call site. `op` is the Flag's defined marshalling operation.
   // They must match for this operation to be well-defined.
-  if (ABSL_PREDICT_FALSE(src_op != op_)) {
+  if (ABSL_PREDICT_FALSE(src_op != op)) {
     ABSL_INTERNAL_LOG(
         ERROR,
-        absl::StrCat("Flag '", Name(),
+        absl::StrCat("Flag '", name,
                      "' is defined as one type and declared as another"));
   }
 
   if (ShouldValidateFlagValue(*this)) {
-    void* obj = Clone(op_, src);
+    void* obj = Clone(op, src);
     std::string ignored_error;
-    std::string src_as_str = Unparse(marshalling_op_, src);
-    if (!Parse(marshalling_op_, src_as_str, obj, &ignored_error) ||
+    std::string src_as_str = Unparse(marshalling_op, src);
+    if (!Parse(marshalling_op, src_as_str, obj, &ignored_error) ||
         !InvokeValidator(obj)) {
-      ABSL_INTERNAL_LOG(ERROR, absl::StrCat("Attempt to set flag '", Name(),
+      ABSL_INTERNAL_LOG(ERROR, absl::StrCat("Attempt to set flag '", name,
                                             "' to invalid value ", src_as_str));
     }
-    Delete(op_, obj);
+    Delete(op, obj);
   }
 
-  modified_ = true;
-  counter_++;
-  Copy(op_, src, cur_);
+  modified = true;
+  counter++;
+  Copy(op, src, cur);
 
   UpdateCopy(this);
   InvokeCallback();
@@ -360,7 +460,7 @@ std::string HelpText::GetHelpText() const {
 void UpdateCopy(CommandLineFlag* flag) {
 #define STORE_ATOMIC(T)           \
   else if (flag->IsOfType<T>()) { \
-    flag->StoreAtomic();          \
+    flag->StoreAtomic(sizeof(T)); \
   }
 
   if (false) {

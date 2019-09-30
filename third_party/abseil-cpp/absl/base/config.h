@@ -125,7 +125,7 @@
 #error ABSL_HAVE_STD_IS_TRIVIALLY_ASSIGNABLE cannot directly set
 #elif (defined(__clang__) && defined(_LIBCPP_VERSION)) ||        \
     (!defined(__clang__) && defined(__GNUC__) &&                 \
-     (__GNUC__ > 7 || (__GNUC__ == 7 && __GNUC_MINOR__ >= 4)) && \
+     (__GNUC__ > 5 || (__GNUC__ == 5 && __GNUC_MINOR__ >= 1)) && \
      (defined(_LIBCPP_VERSION) || defined(__GLIBCXX__))) ||      \
     (defined(_MSC_VER) && !defined(__NVCC__))
 #define ABSL_HAVE_STD_IS_TRIVIALLY_CONSTRUCTIBLE 1
@@ -336,8 +336,6 @@
 // feature tests for Microsoft's library
 #elif defined(__EMSCRIPTEN__)
 // emscripten doesn't support signals
-#elif defined(__Fuchsia__)
-// Signals don't exist on fuchsia.
 #elif defined(__native_client__)
 #else
 // other standard libraries

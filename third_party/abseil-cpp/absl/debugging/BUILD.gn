@@ -33,6 +33,7 @@ source_set("stacktrace") {
   ]
   deps = [
     ":debugging_internal",
+    "../base",
     "../base:core_headers",
   ]
 }
@@ -61,7 +62,6 @@ source_set("symbolize") {
     "../base:core_headers",
     "../base:dynamic_annotations",
     "../base:malloc_internal",
-    "../base:raw_logging_internal",
   ]
 }
 
@@ -83,8 +83,8 @@ source_set("examine_stack") {
   deps = [
     ":stacktrace",
     ":symbolize",
+    "../base",
     "../base:core_headers",
-    "../base:raw_logging_internal",
   ]
 }
 
@@ -107,7 +107,6 @@ source_set("failure_signal_handler") {
     "../base",
     "../base:config",
     "../base:core_headers",
-    "../base:raw_logging_internal",
   ]
 }
 
@@ -130,9 +129,9 @@ source_set("debugging_internal") {
     "internal/vdso_support.h",
   ]
   deps = [
+    "../base",
     "../base:core_headers",
     "../base:dynamic_annotations",
-    "../base:raw_logging_internal",
   ]
 }
 
@@ -243,8 +242,8 @@ source_set("stack_consumption") {
     "internal/stack_consumption.h",
   ]
   deps = [
+    "../base",
     "../base:core_headers",
-    "../base:raw_logging_internal",
   ]
   visibility = []
   visibility += [ ":*" ]

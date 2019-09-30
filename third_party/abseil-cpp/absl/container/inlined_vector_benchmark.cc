@@ -25,45 +25,42 @@
 namespace {
 
 void BM_InlinedVectorFill(benchmark::State& state) {
-  const int len = state.range(0);
   absl::InlinedVector<int, 8> v;
-  v.reserve(len);
+  int val = 10;
   for (auto _ : state) {
-    v.resize(0);  // Use resize(0) as InlinedVector releases storage on clear().
-    for (int i = 0; i < len; ++i) {
-      v.push_back(i);
-    }
     benchmark::DoNotOptimize(v);
+    v.push_back(val);
   }
 }
-BENCHMARK(BM_InlinedVectorFill)->Range(1, 256);
+BENCHMARK(BM_InlinedVectorFill)->Range(0, 1024);
 
 void BM_InlinedVectorFillRange(benchmark::State& state) {
   const int len = state.range(0);
-  const std::vector<int> src(len, len);
-  absl::InlinedVector<int, 8> v;
-  v.reserve(len);
+  std::unique_ptr<int[]> ia(new int[len]);
+  for (int i = 0; i < len; i++) {
+    ia[i] = i;
+  }
+  auto* from = ia.get();
+  auto* to = from + len;
   for (auto _ : state) {
-    benchmark::DoNotOptimize(src);
-    v.assign(src.begin(), src.end());
+    benchmark::DoNotOptimize(from);
+    benchmark::DoNotOptimize(to);
+    absl::InlinedVector<int, 8> v(from, to);
     benchmark::DoNotOptimize(v);
   }
 }
-BENCHMARK(BM_InlinedVectorFillRange)->Range(1, 256);
+BENCHMARK(BM_InlinedVectorFillRange)->Range(0, 1024);
 
 void BM_StdVectorFill(benchmark::State& state) {
-  const int len = state.range(0);
   std::vector<int> v;
-  v.reserve(len);
+  int val = 10;
   for (auto _ : state) {
-    v.clear();
-    for (int i = 0; i < len; ++i) {
-      v.push_back(i);
-    }
     benchmark::DoNotOptimize(v);
+    benchmark::DoNotOptimize(val);
+    v.push_back(val);
   }
 }
-BENCHMARK(BM_StdVectorFill)->Range(1, 256);
+BENCHMARK(BM_StdVectorFill)->Range(0, 1024);
 
 // The purpose of the next two benchmarks is to verify that
 // absl::InlinedVector is efficient when moving is more efficent than

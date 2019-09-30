@@ -31,6 +31,18 @@
 
 namespace absl {
 namespace flags_internal {
+namespace {
+
+void DestroyFlag(CommandLineFlag* flag) ABSL_NO_THREAD_SAFETY_ANALYSIS {
+  flag->Destroy();
+
+  // CommandLineFlag handle object is heap allocated for non Abseil Flags.
+  if (!flag->IsAbseilFlag()) {
+    delete flag;
+  }
+}
+
+}  // namespace
 
 // --------------------------------------------------------------------
 // FlagRegistry
@@ -47,7 +59,7 @@ class FlagRegistry {
   FlagRegistry() = default;
   ~FlagRegistry() {
     for (auto& p : flags_) {
-      p.second->Destroy();
+      DestroyFlag(p.second);
     }
   }
 
@@ -118,7 +130,7 @@ void FlagRegistry::RegisterFlag(CommandLineFlag* flag) {
               (flag->IsRetired() ? old_flag->Filename() : flag->Filename()),
               "'."),
           true);
-    } else if (flag->op_ != old_flag->op_) {
+    } else if (flag->op != old_flag->op) {
       flags_internal::ReportUsageError(
           absl::StrCat("Flag '", flag->Name(),
                        "' was defined more than once but with "
@@ -129,7 +141,7 @@ void FlagRegistry::RegisterFlag(CommandLineFlag* flag) {
           true);
     } else if (old_flag->IsRetired()) {
       // Retired definitions are idempotent. Just keep the old one.
-      flag->Destroy();
+      DestroyFlag(flag);
       return;
     } else if (old_flag->Filename() != flag->Filename()) {
       flags_internal::ReportUsageError(
@@ -208,16 +220,16 @@ class FlagSaverImpl {
       if (flag->IsRetired()) return;
 
       saved.name = flag->Name();
-      saved.op = flag->op_;
-      saved.marshalling_op = flag->marshalling_op_;
+      saved.op = flag->op;
+      saved.marshalling_op = flag->marshalling_op;
       {
         absl::MutexLock l(flag->InitFlagIfNecessary());
-        saved.validator = flag->GetValidator();
-        saved.modified = flag->modified_;
-        saved.on_command_line = flag->on_command_line_;
-        saved.current = Clone(saved.op, flag->cur_);
-        saved.default_value = Clone(saved.op, flag->def_);
-        saved.counter = flag->counter_;
+        saved.validator = flag->validator;
+        saved.modified = flag->modified;
+        saved.on_command_line = flag->on_command_line;
+        saved.current = Clone(saved.op, flag->cur);
+        saved.default_value = Clone(saved.op, flag->def);
+        saved.counter = flag->counter;
       }
       backup_registry_.push_back(saved);
     });
@@ -237,28 +249,26 @@ class FlagSaverImpl {
 
       bool restored = false;
       {
-        // This function encapsulate the lock.
-        flag->SetValidator(src.validator);
-
         absl::MutexLock l(flag->InitFlagIfNecessary());
-        flag->modified_ = src.modified;
-        flag->on_command_line_ = src.on_command_line;
-        if (flag->counter_ != src.counter ||
-            ChangedDirectly(flag, src.default_value, flag->def_)) {
+        flag->validator = src.validator;
+        flag->modified = src.modified;
+        flag->on_command_line = src.on_command_line;
+        if (flag->counter != src.counter ||
+            ChangedDirectly(flag, src.default_value, flag->def)) {
           restored = true;
-          Copy(src.op, src.default_value, flag->def_);
+          Copy(src.op, src.default_value, flag->def);
         }
-        if (flag->counter_ != src.counter ||
-            ChangedDirectly(flag, src.current, flag->cur_)) {
+        if (flag->counter != src.counter ||
+            ChangedDirectly(flag, src.current, flag->cur)) {
           restored = true;
-          Copy(src.op, src.current, flag->cur_);
+          Copy(src.op, src.current, flag->cur);
           UpdateCopy(flag);
           flag->InvokeCallback();
         }
       }
 
       if (restored) {
-        flag->counter_++;
+        flag->counter++;
 
         // Revalidate the flag because the validator might store state based
         // on the flag's value, which just changed due to the restore.
@@ -280,9 +290,9 @@ class FlagSaverImpl {
     FlagOpFn op;
     FlagMarshallingOpFn marshalling_op;
     int64_t counter;
-    void* validator;
     bool modified;
     bool on_command_line;
+    bool (*validator)();
     const void* current;        // nullptr after restore
     const void* default_value;  // nullptr after restore
   };
@@ -307,6 +317,44 @@ FlagSaver::~FlagSaver() {
 
   impl_->RestoreToRegistry();
   delete impl_;
+}
+
+// --------------------------------------------------------------------
+// GetAllFlags()
+//    The main way the FlagRegistry class exposes its data.  This
+//    returns, as strings, all the info about all the flags in
+//    the main registry, sorted first by filename they are defined
+//    in, and then by flagname.
+// --------------------------------------------------------------------
+
+struct FilenameFlagnameLess {
+  bool operator()(const CommandLineFlagInfo& a,
+                  const CommandLineFlagInfo& b) const {
+    int cmp = absl::string_view(a.filename).compare(b.filename);
+    if (cmp != 0) return cmp < 0;
+    return a.name < b.name;
+  }
+};
+
+void FillCommandLineFlagInfo(CommandLineFlag* flag,
+                             CommandLineFlagInfo* result) {
+  result->name = std::string(flag->Name());
+  result->type = std::string(flag->Typename());
+  result->description = flag->Help();
+  result->filename = flag->Filename();
+
+  if (!flag->IsAbseilFlag()) {
+    if (!flag->IsModified() && ChangedDirectly(flag, flag->cur, flag->def)) {
+      flag->modified = true;
+    }
+  }
+
+  result->current_value = flag->CurrentValue();
+  result->default_value = flag->DefaultValue();
+  result->is_default = !flag->IsModified();
+  result->has_validator_fn = flag->HasValidatorFn();
+  absl::MutexLock l(flag->InitFlagIfNecessary());
+  result->flag_ptr = flag->IsAbseilFlag() ? nullptr : flag->cur;
 }
 
 // --------------------------------------------------------------------
@@ -344,6 +392,21 @@ void ForEachFlag(std::function<void(CommandLineFlag*)> visitor) {
 
 // --------------------------------------------------------------------
 
+void GetAllFlags(std::vector<CommandLineFlagInfo>* OUTPUT) {
+  flags_internal::ForEachFlag([&](CommandLineFlag* flag) {
+    if (flag->IsRetired()) return;
+
+    CommandLineFlagInfo fi;
+    FillCommandLineFlagInfo(flag, &fi);
+    OUTPUT->push_back(fi);
+  });
+
+  // Now sort the flags, first by filename they occur in, then alphabetically
+  std::sort(OUTPUT->begin(), OUTPUT->end(), FilenameFlagnameLess());
+}
+
+// --------------------------------------------------------------------
+
 bool RegisterCommandLineFlag(CommandLineFlag* flag) {
   FlagRegistry::GlobalRegistry()->RegisterFlag(flag);
   return true;
@@ -351,38 +414,14 @@ bool RegisterCommandLineFlag(CommandLineFlag* flag) {
 
 // --------------------------------------------------------------------
 
-namespace {
-
-class RetiredFlagObj final : public flags_internal::CommandLineFlag {
- public:
-  constexpr RetiredFlagObj(const char* name, FlagOpFn ops,
-                           FlagMarshallingOpFn marshalling_ops)
-      : flags_internal::CommandLineFlag(
-            name, flags_internal::HelpText::FromStaticCString(nullptr),
-            /*filename=*/"RETIRED", ops, marshalling_ops,
-            /*initial_value_gen=*/nullptr,
-            /*def=*/nullptr,
-            /*cur=*/nullptr) {}
-
- private:
-  bool IsRetired() const override { return true; }
-
-  void Destroy() const override {
-    // Values are heap allocated for Retired Flags.
-    if (cur_) Delete(op_, cur_);
-    if (def_) Delete(op_, def_);
-
-    if (locks_) delete locks_;
-
-    delete this;
-  }
-};
-
-}  // namespace
-
-bool Retire(const char* name, FlagOpFn ops,
-            FlagMarshallingOpFn marshalling_ops) {
-  auto* flag = new flags_internal::RetiredFlagObj(name, ops, marshalling_ops);
+bool Retire(FlagOpFn ops, FlagMarshallingOpFn marshalling_ops,
+            const char* name) {
+  auto* flag = new CommandLineFlag(
+      name,
+      /*help_text=*/absl::flags_internal::HelpText::FromStaticCString(nullptr),
+      /*filename_arg=*/"RETIRED", ops, marshalling_ops,
+      /*initial_value_gen=*/nullptr,
+      /*retired_arg=*/true, nullptr, nullptr);
   FlagRegistry::GlobalRegistry()->RegisterFlag(flag);
   return true;
 }

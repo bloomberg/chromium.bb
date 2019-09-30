@@ -39,15 +39,6 @@ absl_cc_library(
 absl_cc_library(
   NAME
     raw_logging_internal
-  HDRS
-    "internal/raw_logging.h"
-  SRCS
-    "internal/raw_logging.cc"
-  DEPS
-    absl::atomic_hook
-    absl::config
-    absl::core_headers
-    absl::log_severity
   COPTS
     ${ABSL_DEFAULT_COPTS}
 )
@@ -128,7 +119,6 @@ absl_cc_library(
     absl::config
     absl::core_headers
     absl::dynamic_annotations
-    absl::raw_logging_internal
     absl::spinlock_wait
     Threads::Threads
 )
@@ -156,6 +146,7 @@ absl_cc_library(
     "internal/cycleclock.h"
     "internal/low_level_scheduling.h"
     "internal/per_thread_tls.h"
+    "internal/raw_logging.h"
     "internal/spinlock.h"
     "internal/sysinfo.h"
     "internal/thread_identity.h"
@@ -164,6 +155,7 @@ absl_cc_library(
     "log_severity.h"
   SRCS
     "internal/cycleclock.cc"
+    "internal/raw_logging.cc"
     "internal/spinlock.cc"
     "internal/sysinfo.cc"
     "internal/thread_identity.cc"
@@ -178,7 +170,6 @@ absl_cc_library(
     absl::core_headers
     absl::dynamic_annotations
     absl::log_severity
-    absl::raw_logging_internal
     absl::spinlock_wait
     absl::type_traits
     Threads::Threads
@@ -194,9 +185,9 @@ absl_cc_library(
     "internal/throw_delegate.cc"
   COPTS
     ${ABSL_DEFAULT_COPTS}
+    ${ABSL_EXCEPTIONS_FLAG}
   DEPS
-    absl::config
-    absl::raw_logging_internal
+    absl::base
 )
 
 absl_cc_library(
@@ -230,6 +221,9 @@ absl_cc_library(
     "internal/exception_safety_testing.cc"
   COPTS
     ${ABSL_TEST_COPTS}
+    ${ABSL_EXCEPTIONS_FLAG}
+  LINKOPTS
+    ${ABSL_EXCEPTIONS_FLAG_LINKOPTS}
   DEPS
     absl::config
     absl::pretty_function
@@ -248,6 +242,9 @@ absl_cc_test(
     "exception_safety_testing_test.cc"
   COPTS
     ${ABSL_TEST_COPTS}
+    ${ABSL_EXCEPTIONS_FLAG}
+  LINKOPTS
+    ${ABSL_EXCEPTIONS_FLAG_LINKOPTS}
   DEPS
     absl::exception_safety_testing
     absl::memory
@@ -289,7 +286,6 @@ absl_cc_test(
     ${ABSL_TEST_COPTS}
   DEPS
     absl::base
-    absl::config
     absl::throw_delegate
     gtest_main
 )
@@ -419,7 +415,7 @@ absl_cc_test(
   COPTS
     ${ABSL_TEST_COPTS}
   DEPS
-    absl::raw_logging_internal
+    absl::base
     absl::strings
     gtest_main
 )
@@ -497,7 +493,7 @@ absl_cc_library(
   COPTS
     ${ABSL_DEFAULT_COPTS}
   DEPS
-    absl::raw_logging_internal
+    absl::base
 )
 
 absl_cc_test(
@@ -529,9 +525,8 @@ absl_cc_test(
   SRCS
     "log_severity_test.cc"
   DEPS
-    absl::flags_marshalling
+    absl::base
     absl::log_severity
-    absl::strings
     gmock
     gtest_main
 )

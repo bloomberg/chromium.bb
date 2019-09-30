@@ -14,9 +14,6 @@
 
 #include "absl/types/any.h"
 
-// This test is a no-op when absl::any is an alias for std::any.
-#if !defined(ABSL_HAVE_STD_ANY)
-
 #include <initializer_list>
 #include <type_traits>
 #include <utility>
@@ -777,5 +774,3 @@ TEST(AnyTest, FailedEmplace) {
 }
 
 }  // namespace
-
-#endif  // #if !defined(ABSL_HAVE_STD_ANY)

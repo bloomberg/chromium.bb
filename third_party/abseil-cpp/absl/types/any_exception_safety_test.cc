@@ -14,12 +14,6 @@
 
 #include "absl/types/any.h"
 
-#include "absl/base/config.h"
-
-// This test is a no-op when absl::any is an alias for std::any and when
-// exceptions are not enabled.
-#if !defined(ABSL_HAVE_STD_ANY) && defined(ABSL_HAVE_EXCEPTIONS)
-
 #include <typeinfo>
 #include <vector>
 
@@ -142,6 +136,8 @@ TEST(AnyExceptionSafety, Assignment) {
   EXPECT_TRUE(strong_empty_any_tester.Test(move));
 }
 
+// libstdc++ std::any fails this test
+#if !defined(ABSL_HAVE_STD_ANY)
 TEST(AnyExceptionSafety, Emplace) {
   auto initial_val =
       absl::any{absl::in_place_type_t<Thrower>(), 1, testing::nothrow_ctor};
@@ -167,7 +163,6 @@ TEST(AnyExceptionSafety, Emplace) {
   EXPECT_TRUE(empty_tester.Test(emp_thrower));
   EXPECT_TRUE(empty_tester.Test(emp_throwervec));
 }
+#endif  // ABSL_HAVE_STD_ANY
 
 }  // namespace
-
-#endif  // #if !defined(ABSL_HAVE_STD_ANY) && defined(ABSL_HAVE_EXCEPTIONS)

@@ -14,12 +14,6 @@
 
 #include "absl/types/variant.h"
 
-#include "absl/base/config.h"
-
-// This test is a no-op when absl::variant is an alias for std::variant and when
-// exceptions are not enabled.
-#if !defined(ABSL_HAVE_STD_VARIANT) && defined(ABSL_HAVE_EXCEPTIONS)
-
 #include <iostream>
 #include <memory>
 #include <utility>
@@ -27,6 +21,7 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "absl/base/config.h"
 #include "absl/base/internal/exception_safety_testing.h"
 #include "absl/memory/memory.h"
 
@@ -526,5 +521,3 @@ TEST(VariantExceptionSafetyTest, Swap) {
 }  // namespace absl
 
 #endif  // !defined(ABSL_INTERNAL_MSVC_2017_DBG_MODE)
-
-#endif  // #if !defined(ABSL_HAVE_STD_VARIANT) && defined(ABSL_HAVE_EXCEPTIONS)

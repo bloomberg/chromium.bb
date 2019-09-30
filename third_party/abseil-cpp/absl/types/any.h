@@ -515,22 +515,18 @@ ValueType any_cast(any&& operand) {
 // Description at the declaration site (top of file).
 template <typename T>
 const T* any_cast(const any* operand) noexcept {
-  using U =
-      typename std::remove_cv<typename std::remove_reference<T>::type>::type;
-  return operand && operand->GetObjTypeId() == any::IdForType<U>()
+  return operand && operand->GetObjTypeId() == any::IdForType<T>()
              ? std::addressof(
-                   static_cast<const any::Obj<U>*>(operand->obj_.get())->value)
+                   static_cast<const any::Obj<T>*>(operand->obj_.get())->value)
              : nullptr;
 }
 
 // Description at the declaration site (top of file).
 template <typename T>
 T* any_cast(any* operand) noexcept {
-  using U =
-      typename std::remove_cv<typename std::remove_reference<T>::type>::type;
-  return operand && operand->GetObjTypeId() == any::IdForType<U>()
+  return operand && operand->GetObjTypeId() == any::IdForType<T>()
              ? std::addressof(
-                   static_cast<any::Obj<U>*>(operand->obj_.get())->value)
+                   static_cast<any::Obj<T>*>(operand->obj_.get())->value)
              : nullptr;
 }
 

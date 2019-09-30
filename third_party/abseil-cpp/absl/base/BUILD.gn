@@ -59,20 +59,8 @@ source_set("raw_logging_internal") {
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  sources = [
-    "internal/raw_logging.cc",
-  ]
-  public = [
-    "internal/raw_logging.h",
-  ]
   visibility = []
   visibility += [ "../*" ]
-  deps = [
-    ":atomic_hook",
-    ":config",
-    ":core_headers",
-    ":log_severity",
-  ]
 }
 
 source_set("spinlock_wait") {
@@ -179,7 +167,6 @@ source_set("malloc_internal") {
     ":config",
     ":core_headers",
     ":dynamic_annotations",
-    ":raw_logging_internal",
     ":spinlock_wait",
   ]
   visibility = []
@@ -216,6 +203,7 @@ source_set("base") {
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
   sources = [
     "internal/cycleclock.cc",
+    "internal/raw_logging.cc",
     "internal/spinlock.cc",
     "internal/sysinfo.cc",
     "internal/thread_identity.cc",
@@ -227,6 +215,7 @@ source_set("base") {
     "internal/cycleclock.h",
     "internal/low_level_scheduling.h",
     "internal/per_thread_tls.h",
+    "internal/raw_logging.h",
     "internal/spinlock.h",
     "internal/sysinfo.h",
     "internal/thread_identity.h",
@@ -240,7 +229,6 @@ source_set("base") {
     ":core_headers",
     ":dynamic_annotations",
     ":log_severity",
-    ":raw_logging_internal",
     ":spinlock_wait",
     "../meta:type_traits",
   ]
@@ -260,8 +248,8 @@ source_set("throw_delegate") {
     "internal/throw_delegate.h",
   ]
   deps = [
+    ":base",
     ":config",
-    ":raw_logging_internal",
   ]
   visibility = []
   visibility += [ "../*" ]
@@ -393,7 +381,7 @@ source_set("scoped_set_env") {
     "internal/scoped_set_env.cc",
   ]
   deps = [
-    ":raw_logging_internal",
+    ":base",
   ]
   visibility = []
   visibility += [ "../*" ]

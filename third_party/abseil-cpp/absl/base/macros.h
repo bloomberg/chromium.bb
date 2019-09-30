@@ -137,15 +137,10 @@ enum LinkerInitialized {
 // declarations. The macro argument is used as a custom diagnostic message (e.g.
 // suggestion of a better alternative).
 //
-// Examples:
+// Example:
 //
 //   class ABSL_DEPRECATED("Use Bar instead") Foo {...};
-//
-//   ABSL_DEPRECATED("Use Baz() instead") void Bar() {...}
-//
-//   template <typename T>
-//   ABSL_DEPRECATED("Use DoThat() instead")
-//   void DoThis();
+//   ABSL_DEPRECATED("Use Baz instead") void Bar() {...}
 //
 // Every usage of a deprecated entity will trigger a warning when compiled with
 // clang's `-Wdeprecated-declarations` option. This option is turned off by

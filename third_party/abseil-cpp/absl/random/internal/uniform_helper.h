@@ -30,33 +30,15 @@ class uniform_real_distribution;
 
 // Interval tag types which specify whether the interval is open or closed
 // on either boundary.
-
 namespace random_internal {
-template <typename T>
-struct TagTypeCompare {};
-
-template <typename T>
-constexpr bool operator==(TagTypeCompare<T>, TagTypeCompare<T>) {
-  // Tags are mono-states. They always compare equal.
-  return true;
-}
-template <typename T>
-constexpr bool operator!=(TagTypeCompare<T>, TagTypeCompare<T>) {
-  return false;
-}
-
+struct IntervalClosedClosedT {};
+struct IntervalClosedOpenT {};
+struct IntervalOpenClosedT {};
+struct IntervalOpenOpenT {};
 }  // namespace random_internal
 
-struct IntervalClosedClosedTag
-    : public random_internal::TagTypeCompare<IntervalClosedClosedTag> {};
-struct IntervalClosedOpenTag
-    : public random_internal::TagTypeCompare<IntervalClosedOpenTag> {};
-struct IntervalOpenClosedTag
-    : public random_internal::TagTypeCompare<IntervalOpenClosedTag> {};
-struct IntervalOpenOpenTag
-    : public random_internal::TagTypeCompare<IntervalOpenOpenTag> {};
-
 namespace random_internal {
+
 // The functions
 //    uniform_lower_bound(tag, a, b)
 // and
@@ -77,8 +59,8 @@ template <typename IntType, typename Tag>
 typename absl::enable_if_t<
     absl::conjunction<
         std::is_integral<IntType>,
-        absl::disjunction<std::is_same<Tag, IntervalOpenClosedTag>,
-                          std::is_same<Tag, IntervalOpenOpenTag>>>::value,
+        absl::disjunction<std::is_same<Tag, IntervalOpenClosedT>,
+                          std::is_same<Tag, IntervalOpenOpenT>>>::value,
     IntType>
 uniform_lower_bound(Tag, IntType a, IntType) {
   return a + 1;
@@ -88,8 +70,8 @@ template <typename FloatType, typename Tag>
 typename absl::enable_if_t<
     absl::conjunction<
         std::is_floating_point<FloatType>,
-        absl::disjunction<std::is_same<Tag, IntervalOpenClosedTag>,
-                          std::is_same<Tag, IntervalOpenOpenTag>>>::value,
+        absl::disjunction<std::is_same<Tag, IntervalOpenClosedT>,
+                          std::is_same<Tag, IntervalOpenOpenT>>>::value,
     FloatType>
 uniform_lower_bound(Tag, FloatType a, FloatType b) {
   return std::nextafter(a, b);
@@ -97,8 +79,8 @@ uniform_lower_bound(Tag, FloatType a, FloatType b) {
 
 template <typename NumType, typename Tag>
 typename absl::enable_if_t<
-    absl::disjunction<std::is_same<Tag, IntervalClosedClosedTag>,
-                      std::is_same<Tag, IntervalClosedOpenTag>>::value,
+    absl::disjunction<std::is_same<Tag, IntervalClosedClosedT>,
+                      std::is_same<Tag, IntervalClosedOpenT>>::value,
     NumType>
 uniform_lower_bound(Tag, NumType a, NumType) {
   return a;
@@ -108,8 +90,8 @@ template <typename IntType, typename Tag>
 typename absl::enable_if_t<
     absl::conjunction<
         std::is_integral<IntType>,
-        absl::disjunction<std::is_same<Tag, IntervalClosedOpenTag>,
-                          std::is_same<Tag, IntervalOpenOpenTag>>>::value,
+        absl::disjunction<std::is_same<Tag, IntervalClosedOpenT>,
+                          std::is_same<Tag, IntervalOpenOpenT>>>::value,
     IntType>
 uniform_upper_bound(Tag, IntType, IntType b) {
   return b - 1;
@@ -119,8 +101,8 @@ template <typename FloatType, typename Tag>
 typename absl::enable_if_t<
     absl::conjunction<
         std::is_floating_point<FloatType>,
-        absl::disjunction<std::is_same<Tag, IntervalClosedOpenTag>,
-                          std::is_same<Tag, IntervalOpenOpenTag>>>::value,
+        absl::disjunction<std::is_same<Tag, IntervalClosedOpenT>,
+                          std::is_same<Tag, IntervalOpenOpenT>>>::value,
     FloatType>
 uniform_upper_bound(Tag, FloatType, FloatType b) {
   return b;
@@ -130,8 +112,8 @@ template <typename IntType, typename Tag>
 typename absl::enable_if_t<
     absl::conjunction<
         std::is_integral<IntType>,
-        absl::disjunction<std::is_same<Tag, IntervalClosedClosedTag>,
-                          std::is_same<Tag, IntervalOpenClosedTag>>>::value,
+        absl::disjunction<std::is_same<Tag, IntervalClosedClosedT>,
+                          std::is_same<Tag, IntervalOpenClosedT>>>::value,
     IntType>
 uniform_upper_bound(Tag, IntType, IntType b) {
   return b;
@@ -141,8 +123,8 @@ template <typename FloatType, typename Tag>
 typename absl::enable_if_t<
     absl::conjunction<
         std::is_floating_point<FloatType>,
-        absl::disjunction<std::is_same<Tag, IntervalClosedClosedTag>,
-                          std::is_same<Tag, IntervalOpenClosedTag>>>::value,
+        absl::disjunction<std::is_same<Tag, IntervalClosedClosedT>,
+                          std::is_same<Tag, IntervalOpenClosedT>>>::value,
     FloatType>
 uniform_upper_bound(Tag, FloatType, FloatType b) {
   return std::nextafter(b, (std::numeric_limits<FloatType>::max)());
@@ -156,7 +138,7 @@ using UniformDistribution =
 
 template <typename TagType, typename NumType>
 struct UniformDistributionWrapper : public UniformDistribution<NumType> {
-  explicit UniformDistributionWrapper(TagType, NumType lo, NumType hi)
+  explicit UniformDistributionWrapper(NumType lo, NumType hi)
       : UniformDistribution<NumType>(
             uniform_lower_bound<NumType>(TagType{}, lo, hi),
             uniform_upper_bound<NumType>(TagType{}, lo, hi)) {}
