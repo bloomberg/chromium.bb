@@ -44,7 +44,7 @@ bool HasValidTargetDevice(Profile* profile) {
          service->GetSendTabToSelfModel()->HasValidTargetDevice();
 }
 
-bool IsContentRequirementsMet(const GURL& url, Profile* profile) {
+bool AreContentRequirementsMet(const GURL& url, Profile* profile) {
   bool is_http_or_https = url.SchemeIsHTTPOrHTTPS();
   bool is_native_page = url.SchemeIs(content::kChromeUIScheme);
   bool is_incognito_mode = profile->IsIncognitoProfile();
@@ -59,7 +59,7 @@ bool ShouldOfferFeature(content::WebContents* web_contents) {
   // If sending is enabled, then so is receiving.
   return IsSendingEnabled() && IsUserSyncTypeActive(profile) &&
          HasValidTargetDevice(profile) &&
-         IsContentRequirementsMet(web_contents->GetURL(), profile);
+         AreContentRequirementsMet(web_contents->GetURL(), profile);
 }
 
 bool ShouldOfferFeatureForLink(content::WebContents* web_contents,
@@ -73,8 +73,8 @@ bool ShouldOfferFeatureForLink(content::WebContents* web_contents,
          // Send tab to self should not be offered for tel links, click to call
          // feature will be handling tel links.
          !link_url.SchemeIs(url::kTelScheme) &&
-         (IsContentRequirementsMet(web_contents->GetURL(), profile) ||
-          IsContentRequirementsMet(link_url, profile));
+         (AreContentRequirementsMet(web_contents->GetURL(), profile) ||
+          AreContentRequirementsMet(link_url, profile));
 }
 
 bool ShouldOfferOmniboxIcon(content::WebContents* web_contents) {

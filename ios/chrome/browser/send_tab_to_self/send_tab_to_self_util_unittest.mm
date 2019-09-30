@@ -96,22 +96,23 @@ TEST_F(SendTabToSelfUtilTest, AreFlagsDisabled) {
 
 TEST_F(SendTabToSelfUtilTest, NotHTTPOrHTTPS) {
   GURL url = GURL("192.168.0.0");
-  EXPECT_FALSE(IsContentRequirementsMet(url, browser_state()));
+  EXPECT_FALSE(AreContentRequirementsMet(url, browser_state()));
 }
 
 TEST_F(SendTabToSelfUtilTest, WebUIPage) {
   GURL url = GURL("chrome://flags");
-  EXPECT_FALSE(IsContentRequirementsMet(url, browser_state()));
+  EXPECT_FALSE(AreContentRequirementsMet(url, browser_state()));
 }
 
 TEST_F(SendTabToSelfUtilTest, IncognitoMode) {
   GURL url = GURL("https://www.google.com");
-  EXPECT_FALSE(IsContentRequirementsMet(url, OffTheRecordChromeBrowserState()));
+  EXPECT_FALSE(
+      AreContentRequirementsMet(url, OffTheRecordChromeBrowserState()));
 }
 
 TEST_F(SendTabToSelfUtilTest, ValidUrl) {
   GURL url = GURL("https://www.google.com");
-  EXPECT_TRUE(IsContentRequirementsMet(url, browser_state()));
+  EXPECT_TRUE(AreContentRequirementsMet(url, browser_state()));
 }
 
 // TODO(crbug.com/961897) Add test for CreateNewEntry.

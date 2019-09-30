@@ -96,21 +96,21 @@ TEST_F(SendTabToSelfUtilTest, HasValidTargetDevice) {
 }
 
 TEST_F(SendTabToSelfUtilTest, ContentRequirementsMet) {
-  EXPECT_TRUE(IsContentRequirementsMet(url_, profile()));
+  EXPECT_TRUE(AreContentRequirementsMet(url_, profile()));
 }
 
 TEST_F(SendTabToSelfUtilTest, NotHTTPOrHTTPS) {
   url_ = GURL("192.168.0.0");
-  EXPECT_FALSE(IsContentRequirementsMet(url_, profile()));
+  EXPECT_FALSE(AreContentRequirementsMet(url_, profile()));
 }
 
 TEST_F(SendTabToSelfUtilTest, NativePage) {
   url_ = GURL("chrome://flags");
-  EXPECT_FALSE(IsContentRequirementsMet(url_, profile()));
+  EXPECT_FALSE(AreContentRequirementsMet(url_, profile()));
 }
 
 TEST_F(SendTabToSelfUtilTest, IncognitoMode) {
-  EXPECT_FALSE(IsContentRequirementsMet(url_, incognito_profile_));
+  EXPECT_FALSE(AreContentRequirementsMet(url_, incognito_profile_));
 }
 
 TEST_F(SendTabToSelfUtilTest, ShouldNotOfferFeatureForTelephoneLink) {

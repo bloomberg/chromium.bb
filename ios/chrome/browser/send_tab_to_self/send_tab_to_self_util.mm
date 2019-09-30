@@ -55,8 +55,8 @@ bool HasValidTargetDevice(ios::ChromeBrowserState* browser_state) {
          service->GetSendTabToSelfModel()->HasValidTargetDevice();
 }
 
-bool IsContentRequirementsMet(const GURL& url,
-                              ios::ChromeBrowserState* browser_state) {
+bool AreContentRequirementsMet(const GURL& url,
+                               ios::ChromeBrowserState* browser_state) {
   bool is_http_or_https = url.SchemeIsHTTPOrHTTPS();
   bool is_native_page = url.SchemeIs(kChromeUIScheme);
   bool is_incognito_mode = browser_state->IsOffTheRecord();
@@ -68,7 +68,7 @@ bool ShouldOfferFeature(ios::ChromeBrowserState* browser_state,
   // If sending is enabled, then so is receiving.
   return IsSendingEnabled() && IsUserSyncTypeActive(browser_state) &&
          HasValidTargetDevice(browser_state) &&
-         IsContentRequirementsMet(url, browser_state);
+         AreContentRequirementsMet(url, browser_state);
 }
 
 void CreateNewEntry(ios::ChromeBrowserState* browser_state,

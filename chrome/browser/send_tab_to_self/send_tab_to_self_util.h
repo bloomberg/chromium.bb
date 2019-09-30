@@ -28,7 +28,7 @@ bool HasValidTargetDevice(Profile* profile);
 //  User is viewing an HTTP or HTTPS page.
 //  User is not on a native page.
 //  User is not in Incongnito mode.
-bool IsContentRequirementsMet(const GURL& gurl, Profile* profile);
+bool AreContentRequirementsMet(const GURL& gurl, Profile* profile);
 
 // Returns true if the feature should be offered in menus.
 bool ShouldOfferFeature(content::WebContents* web_contents);
