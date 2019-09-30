@@ -66,9 +66,9 @@ void BarcodeDetectorStatics::EnsureServiceConnection() {
 
   // See https://bit.ly/2S0zRAS for task types.
   auto task_runner = context->GetTaskRunner(TaskType::kMiscPlatformAPI);
-  auto request = mojo::MakeRequest(&service_, task_runner);
-  context->GetInterfaceProvider()->GetInterface(std::move(request));
-  service_.set_connection_error_handler(WTF::Bind(
+  context->GetInterfaceProvider()->GetInterface(
+      service_.BindNewPipeAndPassReceiver(task_runner));
+  service_.set_disconnect_handler(WTF::Bind(
       &BarcodeDetectorStatics::OnConnectionError, WrapWeakPersistent(this)));
 }
 

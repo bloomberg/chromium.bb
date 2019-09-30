@@ -114,10 +114,11 @@ shape_detection::mojom::ShapeDetectionService* GetShapeDetectionService() {
 }
 
 void BindBarcodeDetectionProvider(
-    shape_detection::mojom::BarcodeDetectionProviderRequest request,
+    mojo::PendingReceiver<shape_detection::mojom::BarcodeDetectionProvider>
+        receiver,
     RenderProcessHost* host,
     const url::Origin& origin) {
-  GetShapeDetectionService()->BindBarcodeDetectionProvider(std::move(request));
+  GetShapeDetectionService()->BindBarcodeDetectionProvider(std::move(receiver));
 }
 
 void BindFaceDetectionProvider(
