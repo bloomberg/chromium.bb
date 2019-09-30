@@ -412,6 +412,7 @@ class WebContentsViewAura::AsyncDropNavigationObserver
  public:
   AsyncDropNavigationObserver(WebContents* watched_contents,
                               std::unique_ptr<DropData> drop_data,
+                              base::ScopedClosureRunner end_drag_runner,
                               RenderWidgetHostImpl* target_rwh,
                               const gfx::PointF& client_pt,
                               const gfx::PointF& screen_pt,
@@ -436,6 +437,7 @@ class WebContentsViewAura::AsyncDropNavigationObserver
   // Data cached at the start of the drop operation and needed to complete the
   // drop.
   std::unique_ptr<DropData> drop_data_;
+  base::ScopedClosureRunner end_drag_runner_;
   base::WeakPtr<RenderWidgetHostImpl> target_rwh_;
   const gfx::PointF client_pt_;
   const gfx::PointF screen_pt_;
@@ -447,6 +449,7 @@ class WebContentsViewAura::AsyncDropNavigationObserver
 WebContentsViewAura::AsyncDropNavigationObserver::AsyncDropNavigationObserver(
     WebContents* watched_contents,
     std::unique_ptr<DropData> drop_data,
+    base::ScopedClosureRunner end_drag_runner,
     RenderWidgetHostImpl* target_rwh,
     const gfx::PointF& client_pt,
     const gfx::PointF& screen_pt,
@@ -454,6 +457,7 @@ WebContentsViewAura::AsyncDropNavigationObserver::AsyncDropNavigationObserver(
     : WebContentsObserver(watched_contents),
       drop_allowed_(true),
       drop_data_(std::move(drop_data)),
+      end_drag_runner_(std::move(end_drag_runner)),
       target_rwh_(target_rwh->GetWeakPtr()),
       client_pt_(client_pt),
       screen_pt_(screen_pt),
@@ -1093,7 +1097,15 @@ void WebContentsViewAura::StartDragging(
     return;
   }
 
-  EndDrag(source_rwh_weak_ptr.get(), ConvertToWeb(result_op));
+  // If drag is still in progress that means we haven't received drop targeting
+  // callback yet. So we have to make sure to delay calling EndDrag until drop
+  // is done.
+  if (!drag_in_progress_)
+    EndDrag(source_rwh_weak_ptr.get(), ConvertToWeb(result_op));
+  else
+    end_drag_runner_ = base::ScopedClosureRunner(base::BindOnce(
+        &WebContentsViewAura::EndDrag, weak_ptr_factory_.GetWeakPtr(),
+        source_rwh_weak_ptr.get(), ConvertToWeb(result_op)));
 }
 
 void WebContentsViewAura::UpdateDragCursor(blink::WebDragOperation operation) {
@@ -1387,6 +1399,8 @@ void WebContentsViewAura::PerformDropCallback(
     base::WeakPtr<RenderWidgetHostViewBase> target,
     base::Optional<gfx::PointF> transformed_pt) {
   drag_in_progress_ = false;
+  base::ScopedClosureRunner end_drag_runner(std::move(end_drag_runner_));
+
   if (!target)
     return;
   RenderWidgetHostImpl* target_rwh =
@@ -1407,9 +1421,8 @@ void WebContentsViewAura::PerformDropCallback(
     DragEnteredCallback(event, std::move(drop_data), target, transformed_pt);
   }
 
-  if (!current_drop_data_) {
+  if (!current_drop_data_)
     return;
-  }
 
   const int key_modifiers = ui::EventFlagsToWebEventModifiers(event.flags());
 #if defined(OS_WIN)
@@ -1434,8 +1447,9 @@ void WebContentsViewAura::PerformDropCallback(
       // operation completes.
       async_drop_navigation_observer_ =
           std::make_unique<AsyncDropNavigationObserver>(
-              web_contents_, std::move(current_drop_data_), target_rwh,
-              transformed_pt.value(), screen_pt, key_modifiers);
+              web_contents_, std::move(current_drop_data_),
+              std::move(end_drag_runner), target_rwh, transformed_pt.value(),
+              screen_pt, key_modifiers);
       return;
     }
   }
