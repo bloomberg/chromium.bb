@@ -41,16 +41,18 @@ void WorkerAnimationFrameProvider::BeginFrame(
   TRACE_EVENT0("blink", "WorkerAnimationFrameProvider::BeginFrame");
 
   double time = (frame_time - base::TimeTicks()).InMillisecondsF();
-
   Microtask::EnqueueMicrotask(WTF::Bind(
       [](base::WeakPtr<WorkerAnimationFrameProvider> provider, double time) {
+        if (!provider)
+          return;
         TRACE_EVENT0("blink",
                      "WorkerAnimationFrameProvider::RequestAnimationFrame");
-        provider->callback_collection_.ExecuteFrameCallbacks(time, time);
-
+        OffscreenCanvas::ScopedInsideWorkerRAF inside_raf_scope;
         for (auto& offscreen_canvas : provider->offscreen_canvases_) {
-          offscreen_canvas->PushFrameIfNeeded();
+          inside_raf_scope.AddOffscreenCanvas(offscreen_canvas);
         }
+
+        provider->callback_collection_.ExecuteFrameCallbacks(time, time);
       },
       weak_factory_.GetWeakPtr(), time));
 }

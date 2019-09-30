@@ -179,6 +179,30 @@ class CORE_EXPORT OffscreenCanvas final
 
   void Trace(blink::Visitor*) override;
 
+  class ScopedInsideWorkerRAF {
+    STACK_ALLOCATED();
+
+   public:
+    ScopedInsideWorkerRAF() {}
+
+    void AddOffscreenCanvas(OffscreenCanvas* canvas) {
+      DCHECK(!canvas->inside_worker_raf_);
+      canvas->inside_worker_raf_ = true;
+      canvases_.push_back(canvas);
+    }
+
+    ~ScopedInsideWorkerRAF() {
+      for (auto canvas : canvases_) {
+        DCHECK(canvas->inside_worker_raf_);
+        canvas->inside_worker_raf_ = false;
+        canvas->PushFrameIfNeeded();
+      }
+    }
+
+   private:
+    HeapVector<Member<OffscreenCanvas>> canvases_;
+  };
+
  private:
   int32_t memory_usage_ = 0;
 
@@ -195,7 +219,6 @@ class CORE_EXPORT OffscreenCanvas final
 
   IntSize size_;
   bool is_neutered_ = false;
-
   bool origin_clean_ = true;
   bool disable_reading_from_canvas_ = false;
 
@@ -205,6 +228,7 @@ class CORE_EXPORT OffscreenCanvas final
 
   bool needs_matrix_clip_restore_ = false;
   bool needs_push_frame_ = false;
+  bool inside_worker_raf_ = false;
 
   SkFilterQuality filter_quality_ = kLow_SkFilterQuality;
 
