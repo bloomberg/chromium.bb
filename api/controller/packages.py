@@ -127,3 +127,21 @@ def HasChromePrebuilt(input_proto, output_proto, _config):
   exists = packages.has_prebuilt(constants.CHROME_CP, build_target=build_target)
 
   output_proto.has_prebuilt = exists
+
+
+def _BuildsChromeSuccess(_input_proto, output_proto, _config):
+  """Mock success case for BuildsChrome."""
+  output_proto.builds_chrome = True
+
+
+@faux.success(_BuildsChromeSuccess)
+@faux.empty_error
+@validate.require('build_target.name')
+@validate.validation_complete
+def BuildsChrome(input_proto, output_proto, _config):
+  """Check if the board builds chrome."""
+  _build_target = controller_util.ParseBuildTarget(input_proto.build_target)
+
+  # TODO(saklein): Call implementation once it's been completed and add tests
+  #   for successful endpoint executions.
+  output_proto.builds_chrome = True

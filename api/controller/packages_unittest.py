@@ -258,3 +258,35 @@ class HasChromePrebuiltTest(cros_test_lib.MockTestCase, ApiConfigMixin):
     with self.assertRaises(cros_build_lib.DieSystemExit):
       packages_controller.HasChromePrebuilt(request, self.response,
                                             self.api_config)
+
+
+class BuildsChromeTest(cros_test_lib.MockTestCase, ApiConfigMixin):
+  """BuildsChrome tests."""
+
+  def setUp(self):
+    self.response = packages_pb2.BuildsChromeResponse()
+
+  def _GetRequest(self, board=None):
+    """Helper to build out a request."""
+    request = packages_pb2.BuildsChromeRequest()
+
+    if board:
+      request.build_target.name = board
+
+    return request
+
+  def testValidateOnly(self):
+    """Sanity check that a validate only call does not execute any logic."""
+    patch = self.PatchObject(packages_service, 'has_prebuilt')
+
+    request = self._GetRequest(board='betty')
+    packages_controller.BuildsChrome(request, self.response,
+                                     self.validate_only_config)
+    patch.assert_not_called()
+
+  def testNoBuildTargetFails(self):
+    """No build target argument should fail."""
+    request = self._GetRequest()
+
+    with self.assertRaises(cros_build_lib.DieSystemExit):
+      packages_controller.BuildsChrome(request, self.response, self.api_config)
