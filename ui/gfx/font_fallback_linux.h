@@ -33,6 +33,8 @@ GFX_EXPORT FallbackFontsCache* GetFallbackFontsCacheInstance();
 // Previously blink::WebFontInfo::fallbackFontForChar.
 struct FallbackFontData {
   std::string name;
+  // TODO(etienneb): This field should be a base::FilePath and renamed
+  // |filepath|.
   std::string filename;
   int ttc_index = 0;
   bool is_bold = false;
