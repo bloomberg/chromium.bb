@@ -10,7 +10,8 @@
 #include "base/memory/shared_memory.h"
 #include "device/gamepad/gamepad_service.h"
 #include "device/gamepad/gamepad_shared_buffer.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/message.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 
 namespace device {
 
@@ -50,7 +51,9 @@ void GamepadMonitor::GamepadStartPolling(GamepadStartPollingCallback callback) {
   is_started_ = true;
 
   GamepadService* service = GamepadService::GetInstance();
-  service->ConsumerBecameActive(this);
+  if (!service->ConsumerBecameActive(this)) {
+    mojo::ReportBadMessage("GamepadMonitor::GamepadStartPolling failed");
+  }
   std::move(callback).Run(service->DuplicateSharedMemoryRegion());
 }
 
@@ -58,7 +61,9 @@ void GamepadMonitor::GamepadStopPolling(GamepadStopPollingCallback callback) {
   DCHECK(is_started_);
   is_started_ = false;
 
-  GamepadService::GetInstance()->ConsumerBecameInactive(this);
+  if (!GamepadService::GetInstance()->ConsumerBecameInactive(this)) {
+    mojo::ReportBadMessage("GamepadMonitor::GamepadStopPolling failed");
+  }
   std::move(callback).Run();
 }
 
