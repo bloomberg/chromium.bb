@@ -89,7 +89,7 @@ public class BoundaryInterfaceReflectionUtil {
      *
      * @param delegate the object which the resulting {@link InvocationHandler} should delegate
      *     method calls to.
-     * @return an {@link InvocationHandlerWithDelegateGetter} wrapping {@code delegate}
+     * @return an InvocationHandlerWithDelegateGetter wrapping {@code delegate}
      */
     @TargetApi(Build.VERSION_CODES.KITKAT)
     @Nullable
@@ -108,7 +108,7 @@ public class BoundaryInterfaceReflectionUtil {
      * {@link InvocationHandler}.
 
      * @param delegates an array of objects to which to delegate.
-     * @return an array of {@link InvocationHandlerWithDelegateGetter} instances, each delegating to
+     * @return an array of InvocationHandlerWithDelegateGetter instances, each delegating to
      *     the corresponding member of {@code delegates}.
      */
     @TargetApi(Build.VERSION_CODES.KITKAT)
@@ -131,7 +131,7 @@ public class BoundaryInterfaceReflectionUtil {
      *
      * <p>A {@code null} {@link InvocationHandler} is treated as wrapping a {@code null} delegate.
      *
-     * @param invocationHandler a {@link Nullable} {@link InvocationHandlerWithDelegateGetter}.
+     * @param invocationHandler a {@link Nullable} InvocationHandlerWithDelegateGetter.
      * @return the corresponding delegate.
      */
     @Nullable
