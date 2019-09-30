@@ -318,7 +318,7 @@ TEST_F(BookmarkUtilsTest, CopyPaste) {
 
 // Test for updating title such that url and title pair are unique among the
 // children of parent.
-TEST_F(BookmarkUtilsTest, MakeTitleUnique) {
+TEST_F(BookmarkUtilsTest, DISABLED_MakeTitleUnique) {
   std::unique_ptr<BookmarkModel> model(TestBookmarkClient::CreateModel());
   const base::string16 url_text = ASCIIToUTF16("http://www.google.com/");
   const base::string16 title_text = ASCIIToUTF16("foobar");
