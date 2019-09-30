@@ -4069,6 +4069,9 @@
   "DeviceLoginScreenAutoclickEnabled" : {
   },
 
+  "DeviceLoginScreenStickyKeysEnabled" : {
+  },
+
   "DeviceLoginScreenLocales" : {
   },
 

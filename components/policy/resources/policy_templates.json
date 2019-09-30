@@ -651,6 +651,7 @@
         'DeviceLoginScreenCaretHighlightEnabled',
         'DeviceLoginScreenMonoAudioEnabled',
         'DeviceLoginScreenAutoclickEnabled',
+        'DeviceLoginScreenStickyKeysEnabled',
       ],
     },
     {
@@ -10536,6 +10537,31 @@
           If this policy is left unset, the autoclick is disabled on the login screen initially but can be enabled by the user anytime.''',
     },
     {
+      'name': 'DeviceLoginScreenStickyKeysEnabled',
+      'owners': ['amraboelkher@chromium.org', 'emaxx@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:79-'],
+      'device_only': True,
+      'features': {
+        'can_be_recommended': True,
+        'dynamic_refresh': True,
+      },
+      'example_value': True,
+      'id': 618,
+      'caption': '''Enable the sticky keys on the login screen''',
+      'tags': [],
+      'desc': '''Enable the sticky keys accessibility feature on the login screen.
+
+          If this policy is set to true, the sticky keys will always be enabled on the login screen.
+
+          If this policy is set to false, the sticky keys will always be disabled on the login screen.
+
+          If you set this policy, users cannot change or override it.
+
+          If this policy is left unset, the sticky keys is disabled on the login screen initially but can be enabled by the user anytime.''',
+    },
+    {
       'name': 'HideWebStoreIcon',
       'owners': ['file://components/policy/resources/OWNERS'],
       'type': 'main',
@@ -18356,6 +18382,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'DeviceLoginScreenCaretHighlightEnabled': 'accessibility_settings.login_screen_caret_highlight_enabled',
     'DeviceLoginScreenMonoAudioEnabled': 'accessibility_settings.login_screen_mono_audio_enabled',
     'DeviceLoginScreenAutoclickEnabled': 'accessibility_settings.login_screen_autoclick_enabled',
+    'DeviceLoginScreenStickyKeysEnabled': 'accessibility_settings.login_screen_sticky_keys_enabled',
     'AttestationEnabledForDevice': 'attestation_settings.attestation_enabled',
     'AttestationForContentProtectionEnabled': 'attestation_settings.content_protection_enabled',
     'SystemTimezone': 'system_timezone.timezone',
@@ -18856,6 +18883,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562, 569],
-  'highest_id_currently_used': 617,
+  'highest_id_currently_used': 618,
   'highest_atomic_group_id_currently_used': 37
 }

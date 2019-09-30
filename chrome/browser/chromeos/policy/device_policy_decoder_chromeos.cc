@@ -1004,6 +1004,19 @@ void DecodeAccessibilityPolicies(const em::ChromeDeviceSettingsProto& policy,
                       nullptr);
       }
     }
+
+    if (container.has_login_screen_sticky_keys_enabled()) {
+      PolicyLevel level;
+      if (GetPolicyLevel(
+              container.has_login_screen_sticky_keys_enabled_options(),
+              container.login_screen_sticky_keys_enabled_options(), &level)) {
+        policies->Set(key::kDeviceLoginScreenStickyKeysEnabled, level,
+                      POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                      std::make_unique<base::Value>(
+                          container.login_screen_sticky_keys_enabled()),
+                      nullptr);
+      }
+    }
   }
 }
 

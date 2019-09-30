@@ -803,4 +803,56 @@ IN_PROC_BROWSER_TEST_F(LoginScreenAccessibilityPolicyBrowsertest,
   accessibility_manager->EnableAutoclick(false);
   EXPECT_FALSE(accessibility_manager->IsAutoclickEnabled());
 }
+
+IN_PROC_BROWSER_TEST_F(LoginScreenAccessibilityPolicyBrowsertest,
+                       DeviceLoginScreenStickyKeysEnabled) {
+  // Verifies that the state of the sticky keys accessibility feature on
+  // the login screen can be controlled through device policy.
+  chromeos::AccessibilityManager* accessibility_manager =
+      chromeos::AccessibilityManager::Get();
+  ASSERT_TRUE(accessibility_manager);
+  EXPECT_FALSE(accessibility_manager->IsStickyKeysEnabled());
+
+  // Manually enable the sticky keys.
+  accessibility_manager->EnableStickyKeys(true);
+  EXPECT_TRUE(accessibility_manager->IsStickyKeysEnabled());
+
+  // Disable the sticky keys through device policy and wait for the change
+  // to take effect.
+  em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
+  proto.mutable_accessibility_settings()->set_login_screen_sticky_keys_enabled(
+      false);
+  RefreshDevicePolicyAndWaitForPrefChange(
+      ash::prefs::kAccessibilityStickyKeysEnabled);
+
+  // Verify that the pref which controls the sticky keys in the login
+  // profile is managed by the policy.
+  EXPECT_TRUE(IsPrefManaged(ash::prefs::kAccessibilityStickyKeysEnabled));
+  EXPECT_EQ(base::Value(false),
+            GetPrefValue(ash::prefs::kAccessibilityStickyKeysEnabled));
+
+  // Verify that the sticky keys cannot be enabled manually anymore.
+  accessibility_manager->EnableStickyKeys(true);
+  EXPECT_FALSE(accessibility_manager->IsStickyKeysEnabled());
+
+  // Enable the sticky keys through device policy as a recommended value and
+  // wait for the change to take effect.
+  proto.mutable_accessibility_settings()->set_login_screen_sticky_keys_enabled(
+      true);
+  proto.mutable_accessibility_settings()
+      ->mutable_login_screen_sticky_keys_enabled_options()
+      ->set_mode(em::PolicyOptions::RECOMMENDED);
+  RefreshDevicePolicyAndWaitForPrefChange(
+      ash::prefs::kAccessibilityStickyKeysEnabled);
+
+  // Verify that the pref which controls the sticky keys in the login
+  // profile is being applied as recommended by the policy.
+  EXPECT_FALSE(IsPrefManaged(ash::prefs::kAccessibilityStickyKeysEnabled));
+  EXPECT_EQ(base::Value(true),
+            GetPrefValue(ash::prefs::kAccessibilityStickyKeysEnabled));
+
+  // Verify that the sticky keys can be enabled manually again.
+  accessibility_manager->EnableStickyKeys(false);
+  EXPECT_FALSE(accessibility_manager->IsStickyKeysEnabled());
+}
 }  // namespace policy
