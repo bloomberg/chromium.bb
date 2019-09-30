@@ -6229,3 +6229,5 @@ crbug.com/1008826 [ Mac10.13 ] http/tests/security/frameNavigation/xss-ALLOWED-p
 
 # Sheriff 2019-09-30
 crbug.com/1009016 [ Win10 ] http/tests/devtools/portals/portals-elements-nesting-after-adoption.js [ Pass Failure ]
+crbug.com/1003715 [ Win10 ] http/tests/notifications/serviceworker-notification-properties.html [ Pass Failure ]
+
