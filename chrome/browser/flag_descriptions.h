@@ -1334,6 +1334,9 @@ extern const char kAllowRemoteContextForNotificationsDescription[];
 extern const char kAndroidAutofillAccessibilityName[];
 extern const char kAndroidAutofillAccessibilityDescription[];
 
+extern const char kAndroidSetupSearchEngineName[];
+extern const char kAndroidSetupSearchEngineDescription[];
+
 extern const char kAndroidSurfaceControl[];
 extern const char kAndroidSurfaceControlDescription[];
 
