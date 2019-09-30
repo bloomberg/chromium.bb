@@ -7,532 +7,540 @@
 
 namespace bluetooth_plugin {
 // Service identifiers for the plugin interface added to the /org/bluez object.
-const char kBluetoothPluginServiceName[] = "org.bluez";
-const char kBluetoothPluginInterface[] = "org.chromium.Bluetooth";
+constexpr char kBluetoothPluginServiceName[] = "org.bluez";
+constexpr char kBluetoothPluginInterface[] = "org.chromium.Bluetooth";
 
 // Bluetooth plugin properties.
-const char kSupportsLEServices[] = "SupportsLEServices";
-const char kSupportsConnInfo[] = "SupportsConnInfo";
+constexpr char kSupportsLEServices[] = "SupportsLEServices";
+constexpr char kSupportsConnInfo[] = "SupportsConnInfo";
 }  // namespace bluetooth_plugin
 
 namespace bluetooth_plugin_device {
 // Service identifiers for the plugin interface added to Bluetooth Device
 // objects.
-const char kBluetoothPluginServiceName[] = "org.bluez";
-const char kBluetoothPluginInterface[] = "org.chromium.BluetoothDevice";
+constexpr char kBluetoothPluginServiceName[] = "org.bluez";
+constexpr char kBluetoothPluginInterface[] = "org.chromium.BluetoothDevice";
 
 // Bluetooth Device plugin methods.
-const char kGetConnInfo[] = "GetConnInfo";
-const char kSetLEConnectionParameters[] = "SetLEConnectionParameters";
+constexpr char kGetConnInfo[] = "GetConnInfo";
+constexpr char kSetLEConnectionParameters[] = "SetLEConnectionParameters";
 // Valid connection parameters that can be passed to the
 // SetLEConnectionParameters API as dictionary keys.
-const char kLEConnectionParameterMinimumConnectionInterval[] =
+constexpr char kLEConnectionParameterMinimumConnectionInterval[] =
     "MinimumConnectionInterval";
-const char kLEConnectionParameterMaximumConnectionInterval[] =
+constexpr char kLEConnectionParameterMaximumConnectionInterval[] =
     "MaximumConnectionInterval";
 }  // namespace bluetooth_plugin_device
 
 namespace bluetooth_adapter {
 // Bluetooth Adapter service identifiers.
-const char kBluetoothAdapterServiceName[] = "org.bluez";
-const char kBluetoothAdapterInterface[] = "org.bluez.Adapter1";
+constexpr char kBluetoothAdapterServiceName[] = "org.bluez";
+constexpr char kBluetoothAdapterInterface[] = "org.bluez.Adapter1";
 
 // Bluetooth Adapter methods.
-const char kStartDiscovery[] = "StartDiscovery";
-const char kSetDiscoveryFilter[] = "SetDiscoveryFilter";
-const char kStopDiscovery[] = "StopDiscovery";
-const char kPauseDiscovery[] = "PauseDiscovery";
-const char kUnpauseDiscovery[] = "UnpauseDiscovery";
-const char kRemoveDevice[] = "RemoveDevice";
-const char kCreateServiceRecord[] = "CreateServiceRecord";
-const char kRemoveServiceRecord[] = "RemoveServiceRecord";
-const char kHandleSuspendImminent[] = "HandleSuspendImminent";
-const char kHandleSuspendDone[] = "HandleSuspendDone";
-const char kGetSupportedCapabilities[] = "GetSupportedCapabilities";
-const char kSetLongTermKeys[] = "SetLongTermKeys";
+constexpr char kStartDiscovery[] = "StartDiscovery";
+constexpr char kSetDiscoveryFilter[] = "SetDiscoveryFilter";
+constexpr char kStopDiscovery[] = "StopDiscovery";
+constexpr char kPauseDiscovery[] = "PauseDiscovery";
+constexpr char kUnpauseDiscovery[] = "UnpauseDiscovery";
+constexpr char kRemoveDevice[] = "RemoveDevice";
+constexpr char kCreateServiceRecord[] = "CreateServiceRecord";
+constexpr char kRemoveServiceRecord[] = "RemoveServiceRecord";
+constexpr char kHandleSuspendImminent[] = "HandleSuspendImminent";
+constexpr char kHandleSuspendDone[] = "HandleSuspendDone";
+constexpr char kGetSupportedCapabilities[] = "GetSupportedCapabilities";
+constexpr char kSetLongTermKeys[] = "SetLongTermKeys";
 
 // Bluetooth Adapter properties.
-const char kAddressProperty[] = "Address";
-const char kNameProperty[] = "Name";
-const char kAliasProperty[] = "Alias";
-const char kClassProperty[] = "Class";
-const char kPoweredProperty[] = "Powered";
-const char kDiscoverableProperty[] = "Discoverable";
-const char kPairableProperty[] = "Pairable";
-const char kPairableTimeoutProperty[] = "PairableTimeout";
-const char kDiscoverableTimeoutProperty[] = "DiscoverableTimeout";
-const char kDiscoveringProperty[] = "Discovering";
-const char kUUIDsProperty[] = "UUIDs";
-const char kModaliasProperty[] = "Modalias";
-const char kStackSyncQuittingProperty[] = "StackSyncQuitting";
+constexpr char kAddressProperty[] = "Address";
+constexpr char kNameProperty[] = "Name";
+constexpr char kAliasProperty[] = "Alias";
+constexpr char kClassProperty[] = "Class";
+constexpr char kPoweredProperty[] = "Powered";
+constexpr char kDiscoverableProperty[] = "Discoverable";
+constexpr char kPairableProperty[] = "Pairable";
+constexpr char kPairableTimeoutProperty[] = "PairableTimeout";
+constexpr char kDiscoverableTimeoutProperty[] = "DiscoverableTimeout";
+constexpr char kDiscoveringProperty[] = "Discovering";
+constexpr char kUUIDsProperty[] = "UUIDs";
+constexpr char kModaliasProperty[] = "Modalias";
+constexpr char kStackSyncQuittingProperty[] = "StackSyncQuitting";
 
 // Bluetooth Adapter errors.
-const char kErrorNotReady[] = "org.bluez.Error.NotReady";
-const char kErrorFailed[] = "org.bluez.Error.Failed";
-const char kErrorInProgress[] = "org.bluez.Error.InProgress";
-const char kErrorNotAuthorized[] = "org.bluez.Error.NotAuthorized";
-const char kErrorInvalidArguments[] = "org.bluez.Error.InvalidArguments";
-const char kErrorAlreadyExists[] = "org.bluez.Error.AlreadyExists";
-const char kErrorDoesNotExist[] = "org.bluez.Error.DoesNotExist";
+constexpr char kErrorNotReady[] = "org.bluez.Error.NotReady";
+constexpr char kErrorFailed[] = "org.bluez.Error.Failed";
+constexpr char kErrorInProgress[] = "org.bluez.Error.InProgress";
+constexpr char kErrorNotAuthorized[] = "org.bluez.Error.NotAuthorized";
+constexpr char kErrorInvalidArguments[] = "org.bluez.Error.InvalidArguments";
+constexpr char kErrorAlreadyExists[] = "org.bluez.Error.AlreadyExists";
+constexpr char kErrorDoesNotExist[] = "org.bluez.Error.DoesNotExist";
 
 // Bluetooth Adapter parameters supplied to SetDiscoveryFilter request.
-const char kDiscoveryFilterParameterUUIDs[] = "UUIDs";
-const char kDiscoveryFilterParameterRSSI[] = "RSSI";
-const char kDiscoveryFilterParameterPathloss[] = "Pathloss";
-const char kDiscoveryFilterParameterTransport[] = "Transport";
+constexpr char kDiscoveryFilterParameterUUIDs[] = "UUIDs";
+constexpr char kDiscoveryFilterParameterRSSI[] = "RSSI";
+constexpr char kDiscoveryFilterParameterPathloss[] = "Pathloss";
+constexpr char kDiscoveryFilterParameterTransport[] = "Transport";
 }  // namespace bluetooth_adapter
 
 namespace bluetooth_agent_manager {
 // Bluetooth Agent Manager service indentifiers
-const char kBluetoothAgentManagerServiceName[] = "org.bluez";
-const char kBluetoothAgentManagerServicePath[] = "/org/bluez";
-const char kBluetoothAgentManagerInterface[] = "org.bluez.AgentManager1";
+constexpr char kBluetoothAgentManagerServiceName[] = "org.bluez";
+constexpr char kBluetoothAgentManagerServicePath[] = "/org/bluez";
+constexpr char kBluetoothAgentManagerInterface[] = "org.bluez.AgentManager1";
 
 // Bluetooth Agent Manager methods.
-const char kRegisterAgent[] = "RegisterAgent";
-const char kUnregisterAgent[] = "UnregisterAgent";
-const char kRequestDefaultAgent[] = "RequestDefaultAgent";
+constexpr char kRegisterAgent[] = "RegisterAgent";
+constexpr char kUnregisterAgent[] = "UnregisterAgent";
+constexpr char kRequestDefaultAgent[] = "RequestDefaultAgent";
 
 // Bluetooth capabilities.
-const char kNoInputNoOutputCapability[] = "NoInputNoOutput";
-const char kDisplayOnlyCapability[] = "DisplayOnly";
-const char kKeyboardOnlyCapability[] = "KeyboardOnly";
-const char kDisplayYesNoCapability[] = "DisplayYesNo";
-const char kKeyboardDisplayCapability[] = "KeyboardDisplay";
+constexpr char kNoInputNoOutputCapability[] = "NoInputNoOutput";
+constexpr char kDisplayOnlyCapability[] = "DisplayOnly";
+constexpr char kKeyboardOnlyCapability[] = "KeyboardOnly";
+constexpr char kDisplayYesNoCapability[] = "DisplayYesNo";
+constexpr char kKeyboardDisplayCapability[] = "KeyboardDisplay";
 
 // Bluetooth Agent Manager errors.
-const char kErrorInvalidArguments[] = "org.bluez.Error.InvalidArguments";
-const char kErrorAlreadyExists[] = "org.bluez.Error.AlreadyExists";
-const char kErrorDoesNotExist[] = "org.bluez.Error.DoesNotExist";
+constexpr char kErrorInvalidArguments[] = "org.bluez.Error.InvalidArguments";
+constexpr char kErrorAlreadyExists[] = "org.bluez.Error.AlreadyExists";
+constexpr char kErrorDoesNotExist[] = "org.bluez.Error.DoesNotExist";
 }  // namespace bluetooth_agent_manager
 
 namespace bluetooth_agent {
 // Bluetooth Agent service indentifiers
-const char kBluetoothAgentInterface[] = "org.bluez.Agent1";
+constexpr char kBluetoothAgentInterface[] = "org.bluez.Agent1";
 
 // Bluetooth Agent methods.
-const char kRelease[] = "Release";
-const char kRequestPinCode[] = "RequestPinCode";
-const char kDisplayPinCode[] = "DisplayPinCode";
-const char kRequestPasskey[] = "RequestPasskey";
-const char kDisplayPasskey[] = "DisplayPasskey";
-const char kRequestConfirmation[] = "RequestConfirmation";
-const char kRequestAuthorization[] = "RequestAuthorization";
-const char kAuthorizeService[] = "AuthorizeService";
-const char kCancel[] = "Cancel";
+constexpr char kRelease[] = "Release";
+constexpr char kRequestPinCode[] = "RequestPinCode";
+constexpr char kDisplayPinCode[] = "DisplayPinCode";
+constexpr char kRequestPasskey[] = "RequestPasskey";
+constexpr char kDisplayPasskey[] = "DisplayPasskey";
+constexpr char kRequestConfirmation[] = "RequestConfirmation";
+constexpr char kRequestAuthorization[] = "RequestAuthorization";
+constexpr char kAuthorizeService[] = "AuthorizeService";
+constexpr char kCancel[] = "Cancel";
 
 // Bluetooth Agent errors.
-const char kErrorRejected[] = "org.bluez.Error.Rejected";
-const char kErrorCanceled[] = "org.bluez.Error.Canceled";
+constexpr char kErrorRejected[] = "org.bluez.Error.Rejected";
+constexpr char kErrorCanceled[] = "org.bluez.Error.Canceled";
 }  // namespace bluetooth_agent
 
 namespace bluetooth_device {
 // Bluetooth Device service identifiers.
-const char kBluetoothDeviceServiceName[] = "org.bluez";
-const char kBluetoothDeviceInterface[] = "org.bluez.Device1";
+constexpr char kBluetoothDeviceServiceName[] = "org.bluez";
+constexpr char kBluetoothDeviceInterface[] = "org.bluez.Device1";
 
 // Bluetooth Device methods.
-const char kConnect[] = "Connect";
-const char kDisconnect[] = "Disconnect";
-const char kConnectProfile[] = "ConnectProfile";
-const char kDisconnectProfile[] = "DisconnectProfile";
-const char kPair[] = "Pair";
-const char kCancelPairing[] = "CancelPairing";
-const char kGetServiceRecords[] = "GetServiceRecords";
-const char kExecuteWrite[] = "ExecuteWrite";
+constexpr char kConnect[] = "Connect";
+constexpr char kDisconnect[] = "Disconnect";
+constexpr char kConnectProfile[] = "ConnectProfile";
+constexpr char kDisconnectProfile[] = "DisconnectProfile";
+constexpr char kPair[] = "Pair";
+constexpr char kCancelPairing[] = "CancelPairing";
+constexpr char kGetServiceRecords[] = "GetServiceRecords";
+constexpr char kExecuteWrite[] = "ExecuteWrite";
 
 // Bluetooth Device properties.
-const char kAddressProperty[] = "Address";
-const char kNameProperty[] = "Name";
-const char kIconProperty[] = "Icon";
-const char kClassProperty[] = "Class";
-const char kTypeProperty[] = "Type";
-const char kAppearanceProperty[] = "Appearance";
-const char kUUIDsProperty[] = "UUIDs";
-const char kPairedProperty[] = "Paired";
-const char kConnectedProperty[] = "Connected";
-const char kTrustedProperty[] = "Trusted";
-const char kBlockedProperty[] = "Blocked";
-const char kAliasProperty[] = "Alias";
-const char kAdapterProperty[] = "Adapter";
-const char kLegacyPairingProperty[] = "LegacyPairing";
-const char kModaliasProperty[] = "Modalias";
-const char kRSSIProperty[] = "RSSI";
-const char kTxPowerProperty[] = "TxPower";
-const char kManufacturerDataProperty[] = "ManufacturerData";
-const char kServiceDataProperty[] = "ServiceData";
-const char kServicesResolvedProperty[] = "ServicesResolved";
-const char kAdvertisingDataFlagsProperty[] = "AdvertisingFlags";
-const char kMTUProperty[] = "MTU";
-const char kEIRProperty[] = "EIR";
+constexpr char kAddressProperty[] = "Address";
+constexpr char kNameProperty[] = "Name";
+constexpr char kIconProperty[] = "Icon";
+constexpr char kClassProperty[] = "Class";
+constexpr char kTypeProperty[] = "Type";
+constexpr char kAppearanceProperty[] = "Appearance";
+constexpr char kUUIDsProperty[] = "UUIDs";
+constexpr char kPairedProperty[] = "Paired";
+constexpr char kConnectedProperty[] = "Connected";
+constexpr char kTrustedProperty[] = "Trusted";
+constexpr char kBlockedProperty[] = "Blocked";
+constexpr char kAliasProperty[] = "Alias";
+constexpr char kAdapterProperty[] = "Adapter";
+constexpr char kLegacyPairingProperty[] = "LegacyPairing";
+constexpr char kModaliasProperty[] = "Modalias";
+constexpr char kRSSIProperty[] = "RSSI";
+constexpr char kTxPowerProperty[] = "TxPower";
+constexpr char kManufacturerDataProperty[] = "ManufacturerData";
+constexpr char kServiceDataProperty[] = "ServiceData";
+constexpr char kServicesResolvedProperty[] = "ServicesResolved";
+constexpr char kAdvertisingDataFlagsProperty[] = "AdvertisingFlags";
+constexpr char kMTUProperty[] = "MTU";
+constexpr char kEIRProperty[] = "EIR";
 
 // Bluetooth Device errors.
-const char kErrorNotReady[] = "org.bluez.Error.NotReady";
-const char kErrorFailed[] = "org.bluez.Error.Failed";
-const char kErrorInProgress[] = "org.bluez.Error.InProgress";
-const char kErrorAlreadyConnected[] = "org.bluez.Error.AlreadyConnected";
-const char kErrorAlreadyExists[] = "org.bluez.Error.AlreadyExists";
-const char kErrorNotConnected[] = "org.bluez.Error.NotConnected";
-const char kErrorDoesNotExist[] = "org.bluez.Error.DoesNotExist";
-const char kErrorInvalidArguments[] = "org.bluez.Error.InvalidArguments";
+constexpr char kErrorNotReady[] = "org.bluez.Error.NotReady";
+constexpr char kErrorFailed[] = "org.bluez.Error.Failed";
+constexpr char kErrorInProgress[] = "org.bluez.Error.InProgress";
+constexpr char kErrorAlreadyConnected[] = "org.bluez.Error.AlreadyConnected";
+constexpr char kErrorAlreadyExists[] = "org.bluez.Error.AlreadyExists";
+constexpr char kErrorNotConnected[] = "org.bluez.Error.NotConnected";
+constexpr char kErrorDoesNotExist[] = "org.bluez.Error.DoesNotExist";
+constexpr char kErrorInvalidArguments[] = "org.bluez.Error.InvalidArguments";
 
 // Undocumented errors that we know BlueZ returns for Bluetooth Device methods.
-const char kErrorNotSupported[] = "org.bluez.Error.NotSupported";
-const char kErrorAuthenticationCanceled[] =
+constexpr char kErrorNotSupported[] = "org.bluez.Error.NotSupported";
+constexpr char kErrorAuthenticationCanceled[] =
     "org.bluez.Error.AuthenticationCanceled";
-const char kErrorAuthenticationFailed[] =
+constexpr char kErrorAuthenticationFailed[] =
     "org.bluez.Error.AuthenticationFailed";
-const char kErrorAuthenticationRejected[] =
+constexpr char kErrorAuthenticationRejected[] =
     "org.bluez.Error.AuthenticationRejected";
-const char kErrorAuthenticationTimeout[] =
+constexpr char kErrorAuthenticationTimeout[] =
     "org.bluez.Error.AuthenticationTimeout";
-const char kErrorConnectionAttemptFailed[] =
+constexpr char kErrorConnectionAttemptFailed[] =
     "org.bluez.Error.ConnectionAttemptFailed";
 }  // namespace bluetooth_device
 
 namespace bluetooth_gatt_characteristic {
 // Bluetooth GATT Characteristic service identifiers. The service name is used
 // only for characteristic objects hosted by bluetoothd.
-const char kBluetoothGattCharacteristicServiceName[] = "org.bluez";
-const char kBluetoothGattCharacteristicInterface[] =
+constexpr char kBluetoothGattCharacteristicServiceName[] = "org.bluez";
+constexpr char kBluetoothGattCharacteristicInterface[] =
     "org.bluez.GattCharacteristic1";
 
 // Bluetooth GATT Characteristic methods.
-const char kReadValue[] = "ReadValue";
-const char kWriteValue[] = "WriteValue";
-const char kStartNotify[] = "StartNotify";
-const char kStopNotify[] = "StopNotify";
-const char kPrepareWriteValue[] = "PrepareWriteValue";
+constexpr char kReadValue[] = "ReadValue";
+constexpr char kWriteValue[] = "WriteValue";
+constexpr char kStartNotify[] = "StartNotify";
+constexpr char kStopNotify[] = "StopNotify";
+constexpr char kPrepareWriteValue[] = "PrepareWriteValue";
 
 // Bluetooth GATT Characteristic signals.
-const char kValueUpdatedSignal[] = "ValueUpdated";
+constexpr char kValueUpdatedSignal[] = "ValueUpdated";
 
 // Possible keys for option dict used in ReadValue, WriteValue and
 // PrepareWriteValue.
-const char kOptionOffset[] = "offset";
-const char kOptionDevice[] = "device";
-const char kOptionHasSubsequentWrite[] = "has-subsequent-write";
+constexpr char kOptionOffset[] = "offset";
+constexpr char kOptionDevice[] = "device";
+constexpr char kOptionHasSubsequentWrite[] = "has-subsequent-write";
 
 // Bluetooth GATT Characteristic properties.
-const char kUUIDProperty[] = "UUID";
-const char kServiceProperty[] = "Service";
-const char kValueProperty[] = "Value";
-const char kFlagsProperty[] = "Flags";
-const char kNotifyingProperty[] = "Notifying";
-const char kDescriptorsProperty[] = "Descriptors";
+constexpr char kUUIDProperty[] = "UUID";
+constexpr char kServiceProperty[] = "Service";
+constexpr char kValueProperty[] = "Value";
+constexpr char kFlagsProperty[] = "Flags";
+constexpr char kNotifyingProperty[] = "Notifying";
+constexpr char kDescriptorsProperty[] = "Descriptors";
 
 // Possible values for Bluetooth GATT Characteristic "Flags" property.
-const char kFlagBroadcast[] = "broadcast";
-const char kFlagRead[] = "read";
-const char kFlagWriteWithoutResponse[] = "write-without-response";
-const char kFlagWrite[] = "write";
-const char kFlagNotify[] = "notify";
-const char kFlagIndicate[] = "indicate";
-const char kFlagAuthenticatedSignedWrites[] = "authenticated-signed-writes";
-const char kFlagExtendedProperties[] = "extended-properties";
-const char kFlagReliableWrite[] = "reliable-write";
-const char kFlagWritableAuxiliaries[] = "writable-auxiliaries";
-const char kFlagEncryptRead[] = "encrypt-read";
-const char kFlagEncryptWrite[] = "encrypt-write";
-const char kFlagEncryptAuthenticatedRead[] = "encrypt-authenticated-read";
-const char kFlagEncryptAuthenticatedWrite[] = "encrypt-authenticated-write";
-const char kFlagPermissionRead[] = "permission-read";
-const char kFlagPermissionWrite[] = "permission-write";
-const char kFlagPermissionEncryptRead[] = "permission-encrypt-read";
-const char kFlagPermissionEncryptWrite[] = "permission-encrypt-write";
-const char kFlagPermissionAuthenticatedRead[] = "permission-authenticated-read";
-const char kFlagPermissionAuthenticatedWrite[] =
+constexpr char kFlagBroadcast[] = "broadcast";
+constexpr char kFlagRead[] = "read";
+constexpr char kFlagWriteWithoutResponse[] = "write-without-response";
+constexpr char kFlagWrite[] = "write";
+constexpr char kFlagNotify[] = "notify";
+constexpr char kFlagIndicate[] = "indicate";
+constexpr char kFlagAuthenticatedSignedWrites[] = "authenticated-signed-writes";
+constexpr char kFlagExtendedProperties[] = "extended-properties";
+constexpr char kFlagReliableWrite[] = "reliable-write";
+constexpr char kFlagWritableAuxiliaries[] = "writable-auxiliaries";
+constexpr char kFlagEncryptRead[] = "encrypt-read";
+constexpr char kFlagEncryptWrite[] = "encrypt-write";
+constexpr char kFlagEncryptAuthenticatedRead[] = "encrypt-authenticated-read";
+constexpr char kFlagEncryptAuthenticatedWrite[] = "encrypt-authenticated-write";
+constexpr char kFlagPermissionRead[] = "permission-read";
+constexpr char kFlagPermissionWrite[] = "permission-write";
+constexpr char kFlagPermissionEncryptRead[] = "permission-encrypt-read";
+constexpr char kFlagPermissionEncryptWrite[] = "permission-encrypt-write";
+constexpr char kFlagPermissionAuthenticatedRead[] =
+    "permission-authenticated-read";
+constexpr char kFlagPermissionAuthenticatedWrite[] =
     "permission-authenticated-write";
-const char kFlagPermissionSecureRead[] = "permission-secure-read";
-const char kFlagPermissionSecureWrite[] = "permission-secure-write";
+constexpr char kFlagPermissionSecureRead[] = "permission-secure-read";
+constexpr char kFlagPermissionSecureWrite[] = "permission-secure-write";
 
 // Bluetooth GATT Characteristic errors.
-const char kErrorFailed[] = "org.bluez.Error.Failed";
-const char kErrorInProgress[] = "org.bluez.Error.InProgress";
-const char kErrorInvalidArguments[] = "org.bluez.Error.InvalidArguments";
-const char kErrorInvalidValueLength[] = "org.bluez.Error.InvalidValueLength";
-const char kErrorNotAuthorized[] = "org.bluez.Error.NotAuthorized";
-const char kErrorNotConnected[] = "org.bluez.Error.NotConnected";
-const char kErrorNotPermitted[] = "org.bluez.Error.NotPermitted";
-const char kErrorNotSupported[] = "org.bluez.Error.NotSupported";
+constexpr char kErrorFailed[] = "org.bluez.Error.Failed";
+constexpr char kErrorInProgress[] = "org.bluez.Error.InProgress";
+constexpr char kErrorInvalidArguments[] = "org.bluez.Error.InvalidArguments";
+constexpr char kErrorInvalidValueLength[] =
+    "org.bluez.Error.InvalidValueLength";
+constexpr char kErrorNotAuthorized[] = "org.bluez.Error.NotAuthorized";
+constexpr char kErrorNotConnected[] = "org.bluez.Error.NotConnected";
+constexpr char kErrorNotPermitted[] = "org.bluez.Error.NotPermitted";
+constexpr char kErrorNotSupported[] = "org.bluez.Error.NotSupported";
 }  // namespace bluetooth_gatt_characteristic
 
 namespace bluetooth_gatt_descriptor {
 // Bluetooth GATT Descriptor service identifiers. The service name is used
 // only for descriptor objects hosted by bluetoothd.
-const char kBluetoothGattDescriptorServiceName[] = "org.bluez";
-const char kBluetoothGattDescriptorInterface[] = "org.bluez.GattDescriptor1";
+constexpr char kBluetoothGattDescriptorServiceName[] = "org.bluez";
+constexpr char kBluetoothGattDescriptorInterface[] =
+    "org.bluez.GattDescriptor1";
 
 // Bluetooth GATT Descriptor methods.
-const char kReadValue[] = "ReadValue";
-const char kWriteValue[] = "WriteValue";
+constexpr char kReadValue[] = "ReadValue";
+constexpr char kWriteValue[] = "WriteValue";
 
 // Possible keys for option dict used in ReadValue and WriteValue.
-const char kOptionOffset[] = "offset";
-const char kOptionDevice[] = "device";
+constexpr char kOptionOffset[] = "offset";
+constexpr char kOptionDevice[] = "device";
 
 // Bluetooth GATT Descriptor properties.
-const char kUUIDProperty[] = "UUID";
-const char kCharacteristicProperty[] = "Characteristic";
-const char kValueProperty[] = "Value";
-const char kFlagsProperty[] = "Flags";
+constexpr char kUUIDProperty[] = "UUID";
+constexpr char kCharacteristicProperty[] = "Characteristic";
+constexpr char kValueProperty[] = "Value";
+constexpr char kFlagsProperty[] = "Flags";
 
 // Possible values for Bluetooth GATT Descriptor "Flags" property.
-const char kFlagRead[] = "read";
-const char kFlagWrite[] = "write";
-const char kFlagEncryptRead[] = "encrypt-read";
-const char kFlagEncryptWrite[] = "encrypt-write";
-const char kFlagEncryptAuthenticatedRead[] = "encrypt-authenticated-read";
-const char kFlagEncryptAuthenticatedWrite[] = "encrypt-authenticated-write";
+constexpr char kFlagRead[] = "read";
+constexpr char kFlagWrite[] = "write";
+constexpr char kFlagEncryptRead[] = "encrypt-read";
+constexpr char kFlagEncryptWrite[] = "encrypt-write";
+constexpr char kFlagEncryptAuthenticatedRead[] = "encrypt-authenticated-read";
+constexpr char kFlagEncryptAuthenticatedWrite[] = "encrypt-authenticated-write";
 
 // Bluetooth GATT Descriptor errors.
-const char kErrorFailed[] = "org.bluez.Error.Failed";
-const char kErrorInProgress[] = "org.bluez.Error.InProgress";
-const char kErrorInvalidValueLength[] = "org.bluez.Error.InvalidValueLength";
-const char kErrorNotAuthorized[] = "org.bluez.Error.NotAuthorized";
-const char kErrorNotPermitted[] = "org.bluez.Error.NotPermitted";
-const char kErrorNotSupported[] = "org.bluez.Error.NotSupported";
+constexpr char kErrorFailed[] = "org.bluez.Error.Failed";
+constexpr char kErrorInProgress[] = "org.bluez.Error.InProgress";
+constexpr char kErrorInvalidValueLength[] =
+    "org.bluez.Error.InvalidValueLength";
+constexpr char kErrorNotAuthorized[] = "org.bluez.Error.NotAuthorized";
+constexpr char kErrorNotPermitted[] = "org.bluez.Error.NotPermitted";
+constexpr char kErrorNotSupported[] = "org.bluez.Error.NotSupported";
 }  // namespace bluetooth_gatt_descriptor
 
 namespace bluetooth_gatt_manager {
 // Bluetooth GATT Manager service identifiers.
-const char kBluetoothGattManagerServiceName[] = "org.bluez";
-const char kBluetoothGattManagerInterface[] = "org.bluez.GattManager1";
+constexpr char kBluetoothGattManagerServiceName[] = "org.bluez";
+constexpr char kBluetoothGattManagerInterface[] = "org.bluez.GattManager1";
 
 // Bluetooth GATT Manager methods.
-const char kRegisterApplication[] = "RegisterApplication";
-const char kUnregisterApplication[] = "UnregisterApplication";
-const char kRegisterService[] = "RegisterService";
-const char kUnregisterService[] = "UnregisterService";
+constexpr char kRegisterApplication[] = "RegisterApplication";
+constexpr char kUnregisterApplication[] = "UnregisterApplication";
+constexpr char kRegisterService[] = "RegisterService";
+constexpr char kUnregisterService[] = "UnregisterService";
 
 // Bluetooth GATT Manager errors.
-const char kErrorInvalidArguments[] = "org.bluez.Error.InvalidArguments";
-const char kErrorAlreadyExists[] = "org.bluez.Error.AlreadyExists";
-const char kErrorDoesNotExist[] = "org.bluez.Error.DoesNotExist";
+constexpr char kErrorInvalidArguments[] = "org.bluez.Error.InvalidArguments";
+constexpr char kErrorAlreadyExists[] = "org.bluez.Error.AlreadyExists";
+constexpr char kErrorDoesNotExist[] = "org.bluez.Error.DoesNotExist";
 }  // namespace bluetooth_gatt_manager
 
 namespace bluetooth_gatt_service {
 // Bluetooth GATT Service service identifiers. The service name is used
 // only for service objects hosted by bluetoothd.
-const char kBluetoothGattServiceServiceName[] = "org.bluez";
-const char kBluetoothGattServiceInterface[] = "org.bluez.GattService1";
+constexpr char kBluetoothGattServiceServiceName[] = "org.bluez";
+constexpr char kBluetoothGattServiceInterface[] = "org.bluez.GattService1";
 
 // Bluetooth GATT Service properties.
-const char kUUIDProperty[] = "UUID";
-const char kDeviceProperty[] = "Device";
-const char kPrimaryProperty[] = "Primary";
-const char kIncludesProperty[] = "Includes";
-const char kCharacteristicsProperty[] = "Characteristics";
+constexpr char kUUIDProperty[] = "UUID";
+constexpr char kDeviceProperty[] = "Device";
+constexpr char kPrimaryProperty[] = "Primary";
+constexpr char kIncludesProperty[] = "Includes";
+constexpr char kCharacteristicsProperty[] = "Characteristics";
 
 // Bluetooth GATT Service errors.
-const char kErrorFailed[] = "org.bluez.Error.Failed";
-const char kErrorInProgress[] = "org.bluez.Error.InProgress";
-const char kErrorInvalidValueLength[] = "org.bluez.Error.InvalidValueLength";
-const char kErrorNotAuthorized[] = "org.bluez.Error.NotAuthorized";
-const char kErrorNotPaired[] = "org.bluez.Error.NotPaired";
-const char kErrorNotSupported[] = "org.bluez.Error.NotSupported";
-const char kErrorNotPermitted[] = "org.bluez.Error.NotPermitted";
+constexpr char kErrorFailed[] = "org.bluez.Error.Failed";
+constexpr char kErrorInProgress[] = "org.bluez.Error.InProgress";
+constexpr char kErrorInvalidValueLength[] =
+    "org.bluez.Error.InvalidValueLength";
+constexpr char kErrorNotAuthorized[] = "org.bluez.Error.NotAuthorized";
+constexpr char kErrorNotPaired[] = "org.bluez.Error.NotPaired";
+constexpr char kErrorNotSupported[] = "org.bluez.Error.NotSupported";
+constexpr char kErrorNotPermitted[] = "org.bluez.Error.NotPermitted";
 }  // namespace bluetooth_gatt_service
 
 namespace bluetooth_input {
 // Bluetooth Input service identifiers.
-const char kBluetoothInputServiceName[] = "org.bluez";
-const char kBluetoothInputInterface[] = "org.bluez.Input1";
+constexpr char kBluetoothInputServiceName[] = "org.bluez";
+constexpr char kBluetoothInputInterface[] = "org.bluez.Input1";
 
 // Bluetooth Input properties.
-const char kReconnectModeProperty[] = "ReconnectMode";
+constexpr char kReconnectModeProperty[] = "ReconnectMode";
 
 // Bluetooth Input property values.
-const char kNoneReconnectModeProperty[] = "none";
-const char kHostReconnectModeProperty[] = "host";
-const char kDeviceReconnectModeProperty[] = "device";
-const char kAnyReconnectModeProperty[] = "any";
+constexpr char kNoneReconnectModeProperty[] = "none";
+constexpr char kHostReconnectModeProperty[] = "host";
+constexpr char kDeviceReconnectModeProperty[] = "device";
+constexpr char kAnyReconnectModeProperty[] = "any";
 }  // namespace bluetooth_input
 
 namespace bluetooth_media {
 // Bluetooth Media service identifiers
-const char kBluetoothMediaServiceName[] = "org.bluez";
-const char kBluetoothMediaInterface[] = "org.bluez.Media1";
+constexpr char kBluetoothMediaServiceName[] = "org.bluez";
+constexpr char kBluetoothMediaInterface[] = "org.bluez.Media1";
 
 // Bluetooth Media methods
-const char kRegisterEndpoint[] = "RegisterEndpoint";
-const char kUnregisterEndpoint[] = "UnregisterEndpoint";
-const char kRegisterPlayer[] = "RegisterPlayer";
-const char kUnregisterPlayer[] = "UnregisterPlayer";
+constexpr char kRegisterEndpoint[] = "RegisterEndpoint";
+constexpr char kUnregisterEndpoint[] = "UnregisterEndpoint";
+constexpr char kRegisterPlayer[] = "RegisterPlayer";
+constexpr char kUnregisterPlayer[] = "UnregisterPlayer";
 
 // Bluetooth Media errors
-const char kErrorFailed[] = "org.bluez.Error.Failed";
-const char kErrorInvalidArguments[] = "org.bluez.Error.InvalidArguments";
-const char kErrorNotSupported[] = "org.bluez.Error.NotSupported";
+constexpr char kErrorFailed[] = "org.bluez.Error.Failed";
+constexpr char kErrorInvalidArguments[] = "org.bluez.Error.InvalidArguments";
+constexpr char kErrorNotSupported[] = "org.bluez.Error.NotSupported";
 }  // namespace bluetooth_media
 
 namespace bluetooth_media_endpoint {
 // Bluetooth Media Endpoint service identifiers
-const char kBluetoothMediaEndpointServiceName[] = "org.bluez";
-const char kBluetoothMediaEndpointInterface[] = "org.bluez.MediaEndpoint1";
+constexpr char kBluetoothMediaEndpointServiceName[] = "org.bluez";
+constexpr char kBluetoothMediaEndpointInterface[] = "org.bluez.MediaEndpoint1";
 
 // Bluetooth Media Endpoint methods
-const char kSetConfiguration[] = "SetConfiguration";
-const char kSelectConfiguration[] = "SelectConfiguration";
-const char kClearConfiguration[] = "ClearConfiguration";
-const char kRelease[] = "Release";
+constexpr char kSetConfiguration[] = "SetConfiguration";
+constexpr char kSelectConfiguration[] = "SelectConfiguration";
+constexpr char kClearConfiguration[] = "ClearConfiguration";
+constexpr char kRelease[] = "Release";
 }  // namespace bluetooth_media_endpoint
 
 namespace bluetooth_media_transport {
 // Bluetooth Media Transport service identifiers
-const char kBluetoothMediaTransportServiceName[] = "org.bluez";
-const char kBluetoothMediaTransportInterface[] = "org.bluez.MediaTransport1";
+constexpr char kBluetoothMediaTransportServiceName[] = "org.bluez";
+constexpr char kBluetoothMediaTransportInterface[] =
+    "org.bluez.MediaTransport1";
 
 // Bluetooth Media Transport methods
-const char kAcquire[] = "Acquire";
-const char kTryAcquire[] = "TryAcquire";
-const char kRelease[] = "Release";
+constexpr char kAcquire[] = "Acquire";
+constexpr char kTryAcquire[] = "TryAcquire";
+constexpr char kRelease[] = "Release";
 
 // Bluetooth Media Transport property names.
-const char kDeviceProperty[] = "Device";
-const char kUUIDProperty[] = "UUID";
-const char kCodecProperty[] = "Codec";
-const char kConfigurationProperty[] = "Configuration";
-const char kStateProperty[] = "State";
-const char kDelayProperty[] = "Delay";
-const char kVolumeProperty[] = "Volume";
+constexpr char kDeviceProperty[] = "Device";
+constexpr char kUUIDProperty[] = "UUID";
+constexpr char kCodecProperty[] = "Codec";
+constexpr char kConfigurationProperty[] = "Configuration";
+constexpr char kStateProperty[] = "State";
+constexpr char kDelayProperty[] = "Delay";
+constexpr char kVolumeProperty[] = "Volume";
 
 // Possible states for the "State" property
-const char kStateIdle[] = "idle";
-const char kStatePending[] = "pending";
-const char kStateActive[] = "active";
+constexpr char kStateIdle[] = "idle";
+constexpr char kStatePending[] = "pending";
+constexpr char kStateActive[] = "active";
 
 // Bluetooth Media Transport errors.
-const char kErrorFailed[] = "org.bluez.Error.Failed";
-const char kErrorNotAuthorized[] = "org.bluez.Error.NotAuthorized";
-const char kErrorNotAvailable[] = "org.bluez.Error.NotAvailable";
+constexpr char kErrorFailed[] = "org.bluez.Error.Failed";
+constexpr char kErrorNotAuthorized[] = "org.bluez.Error.NotAuthorized";
+constexpr char kErrorNotAvailable[] = "org.bluez.Error.NotAvailable";
 }  // namespace bluetooth_media_transport
 
 namespace bluez_object_manager {
 // BlueZ daemon Object Manager service identifiers.
-const char kBluezObjectManagerServiceName[] = "org.bluez";
-const char kBluezObjectManagerServicePath[] = "/";
+constexpr char kBluezObjectManagerServiceName[] = "org.bluez";
+constexpr char kBluezObjectManagerServicePath[] = "/";
 }  // namespace bluez_object_manager
 
 namespace bluetooth_object_manager {
 // Bluetooth daemon Object Manager service identifiers.
-const char kBluetoothObjectManagerServiceName[] = "org.chromium.Bluetooth";
-const char kBluetoothObjectManagerServicePath[] = "/";
+constexpr char kBluetoothObjectManagerServiceName[] = "org.chromium.Bluetooth";
+constexpr char kBluetoothObjectManagerServicePath[] = "/";
 }  // namespace bluetooth_object_manager
 
 namespace newblue_object_manager {
 // NewBlue daemon Object Manager service identifiers.
-const char kNewblueObjectManagerServiceName[] = "org.chromium.Newblue";
-const char kNewblueObjectManagerServicePath[] = "/";
+constexpr char kNewblueObjectManagerServiceName[] = "org.chromium.Newblue";
+constexpr char kNewblueObjectManagerServicePath[] = "/";
 }  // namespace newblue_object_manager
 
 namespace bluetooth_profile_manager {
 // Bluetooth Profile Manager service identifiers.
-const char kBluetoothProfileManagerServiceName[] = "org.bluez";
-const char kBluetoothProfileManagerServicePath[] = "/org/bluez";
-const char kBluetoothProfileManagerInterface[] = "org.bluez.ProfileManager1";
+constexpr char kBluetoothProfileManagerServiceName[] = "org.bluez";
+constexpr char kBluetoothProfileManagerServicePath[] = "/org/bluez";
+constexpr char kBluetoothProfileManagerInterface[] =
+    "org.bluez.ProfileManager1";
 
 // Bluetooth Profile Manager methods.
-const char kRegisterProfile[] = "RegisterProfile";
-const char kUnregisterProfile[] = "UnregisterProfile";
+constexpr char kRegisterProfile[] = "RegisterProfile";
+constexpr char kUnregisterProfile[] = "UnregisterProfile";
 
 // Bluetooth Profile Manager option names.
-const char kNameOption[] = "Name";
-const char kServiceOption[] = "Service";
-const char kRoleOption[] = "Role";
-const char kChannelOption[] = "Channel";
-const char kPSMOption[] = "PSM";
-const char kRequireAuthenticationOption[] = "RequireAuthentication";
-const char kRequireAuthorizationOption[] = "RequireAuthorization";
-const char kAutoConnectOption[] = "AutoConnect";
-const char kServiceRecordOption[] = "ServiceRecord";
-const char kVersionOption[] = "Version";
-const char kFeaturesOption[] = "Features";
+constexpr char kNameOption[] = "Name";
+constexpr char kServiceOption[] = "Service";
+constexpr char kRoleOption[] = "Role";
+constexpr char kChannelOption[] = "Channel";
+constexpr char kPSMOption[] = "PSM";
+constexpr char kRequireAuthenticationOption[] = "RequireAuthentication";
+constexpr char kRequireAuthorizationOption[] = "RequireAuthorization";
+constexpr char kAutoConnectOption[] = "AutoConnect";
+constexpr char kServiceRecordOption[] = "ServiceRecord";
+constexpr char kVersionOption[] = "Version";
+constexpr char kFeaturesOption[] = "Features";
 
 // Bluetooth Profile Manager option values.
-const char kClientRoleOption[] = "client";
-const char kServerRoleOption[] = "server";
+constexpr char kClientRoleOption[] = "client";
+constexpr char kServerRoleOption[] = "server";
 
 // Bluetooth Profile Manager errors.
-const char kErrorInvalidArguments[] = "org.bluez.Error.InvalidArguments";
-const char kErrorAlreadyExists[] = "org.bluez.Error.AlreadyExists";
-const char kErrorDoesNotExist[] = "org.bluez.Error.DoesNotExist";
+constexpr char kErrorInvalidArguments[] = "org.bluez.Error.InvalidArguments";
+constexpr char kErrorAlreadyExists[] = "org.bluez.Error.AlreadyExists";
+constexpr char kErrorDoesNotExist[] = "org.bluez.Error.DoesNotExist";
 }  // namespace bluetooth_profile_manager
 
 namespace bluetooth_profile {
 // Bluetooth Profile service identifiers.
-const char kBluetoothProfileInterface[] = "org.bluez.Profile1";
+constexpr char kBluetoothProfileInterface[] = "org.bluez.Profile1";
 
 // Bluetooth Profile methods.
-const char kRelease[] = "Release";
-const char kNewConnection[] = "NewConnection";
-const char kRequestDisconnection[] = "RequestDisconnection";
-const char kCancel[] = "Cancel";
+constexpr char kRelease[] = "Release";
+constexpr char kNewConnection[] = "NewConnection";
+constexpr char kRequestDisconnection[] = "RequestDisconnection";
+constexpr char kCancel[] = "Cancel";
 
 // Bluetooth Profile property names.
-const char kVersionProperty[] = "Version";
-const char kFeaturesProperty[] = "Features";
+constexpr char kVersionProperty[] = "Version";
+constexpr char kFeaturesProperty[] = "Features";
 
 // Bluetooth Profile errors.
-const char kErrorRejected[] = "org.bluez.Error.Rejected";
-const char kErrorCanceled[] = "org.bluez.Error.Canceled";
+constexpr char kErrorRejected[] = "org.bluez.Error.Rejected";
+constexpr char kErrorCanceled[] = "org.bluez.Error.Canceled";
 }  // namespace bluetooth_profile
 
 namespace bluetooth_advertisement {
 // Bluetooth LE Advertisement service identifiers.
-const char kBluetoothAdvertisementServiceName[] = "org.bluez";
-const char kBluetoothAdvertisementInterface[] = "org.bluez.LEAdvertisement1";
+constexpr char kBluetoothAdvertisementServiceName[] = "org.bluez";
+constexpr char kBluetoothAdvertisementInterface[] =
+    "org.bluez.LEAdvertisement1";
 
 // Bluetooth Advertisement methods.
-const char kRelease[] = "Release";
+constexpr char kRelease[] = "Release";
 
 // Bluetooth Advertisement properties.
-const char kManufacturerDataProperty[] = "ManufacturerData";
-const char kServiceUUIDsProperty[] = "ServiceUUIDs";
-const char kServiceDataProperty[] = "ServiceData";
-const char kSolicitUUIDsProperty[] = "SolicitUUIDs";
-const char kTypeProperty[] = "Type";
-const char kIncludeTxPowerProperty[] = "IncludeTxPower";
+constexpr char kManufacturerDataProperty[] = "ManufacturerData";
+constexpr char kServiceUUIDsProperty[] = "ServiceUUIDs";
+constexpr char kServiceDataProperty[] = "ServiceData";
+constexpr char kSolicitUUIDsProperty[] = "SolicitUUIDs";
+constexpr char kTypeProperty[] = "Type";
+constexpr char kIncludeTxPowerProperty[] = "IncludeTxPower";
 
 // Possible values for the "Type" property.
-const char kTypeBroadcast[] = "broadcast";
-const char kTypePeripheral[] = "peripheral";
+constexpr char kTypeBroadcast[] = "broadcast";
+constexpr char kTypePeripheral[] = "peripheral";
 }  // namespace bluetooth_advertisement
 
 namespace bluetooth_advertising_manager {
 // Bluetooth LE Advertising Manager service identifiers.
-const char kBluetoothAdvertisingManagerServiceName[] = "org.bluez";
-const char kBluetoothAdvertisingManagerInterface[] =
+constexpr char kBluetoothAdvertisingManagerServiceName[] = "org.bluez";
+constexpr char kBluetoothAdvertisingManagerInterface[] =
     "org.bluez.LEAdvertisingManager1";
 
 // Bluetooth LE Advertising Manager methods.
-const char kRegisterAdvertisement[] = "RegisterAdvertisement";
-const char kUnregisterAdvertisement[] = "UnregisterAdvertisement";
-const char kSetAdvertisingIntervals[] = "SetAdvertisingIntervals";
-const char kResetAdvertising[] = "ResetAdvertising";
+constexpr char kRegisterAdvertisement[] = "RegisterAdvertisement";
+constexpr char kUnregisterAdvertisement[] = "UnregisterAdvertisement";
+constexpr char kSetAdvertisingIntervals[] = "SetAdvertisingIntervals";
+constexpr char kResetAdvertising[] = "ResetAdvertising";
 
 // Bluetooth LE Advertising Manager properties.
-const char kIsTXPowerSupportedProperty[] = "IsTXPowerSupported";
+constexpr char kIsTXPowerSupportedProperty[] = "IsTXPowerSupported";
 
 // Bluetooth LE Advertising Manager errors.
-const char kErrorAlreadyExists[] = "org.bluez.Error.AlreadyExists";
-const char kErrorDoesNotExist[] = "org.bluez.Error.DoesNotExist";
-const char kErrorFailed[] = "org.bluez.Error.Failed";
-const char kErrorInvalidArguments[] = "org.bluez.Error.InvalidArguments";
-const char kErrorInvalidLength[] = "org.bluez.Error.InvalidLength";
+constexpr char kErrorAlreadyExists[] = "org.bluez.Error.AlreadyExists";
+constexpr char kErrorDoesNotExist[] = "org.bluez.Error.DoesNotExist";
+constexpr char kErrorFailed[] = "org.bluez.Error.Failed";
+constexpr char kErrorInvalidArguments[] = "org.bluez.Error.InvalidArguments";
+constexpr char kErrorInvalidLength[] = "org.bluez.Error.InvalidLength";
 }  // namespace bluetooth_advertising_manager
 
 namespace bluetooth_debug {
-const char kBluetoothDebugInterface[] = "org.chromium.Bluetooth.Debug";
+constexpr char kBluetoothDebugInterface[] = "org.chromium.Bluetooth.Debug";
 
 // Methods.
-const char kSetLevels[] = "SetLevels";
+constexpr char kSetLevels[] = "SetLevels";
 
 // Properties.
-const char kDispatcherLevelProperty[] = "DispatcherLevel";
-const char kNewblueLevelProperty[] = "NewblueLevel";
-const char kBluezLevelProperty[] = "BluezLevel";
-const char kKernelLevelProperty[] = "KernelLevel";
+constexpr char kDispatcherLevelProperty[] = "DispatcherLevel";
+constexpr char kNewblueLevelProperty[] = "NewblueLevel";
+constexpr char kBluezLevelProperty[] = "BluezLevel";
+constexpr char kKernelLevelProperty[] = "KernelLevel";
 }  // namespace bluetooth_debug
 
 #endif  // SYSTEM_API_DBUS_BLUETOOTH_DBUS_CONSTANTS_H_
