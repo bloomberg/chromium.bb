@@ -29631,8 +29631,8 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
     CAUSE_FOR_GPU_LAUNCH_ABOUT_GPUCRASH
   </int>
   <int value="1" label="about:gpuhang">CAUSE_FOR_GPU_LAUNCH_ABOUT_GPUHANG</int>
-  <int value="2" label="GpuDataManager RequestCompleteGpuInfoIfNeeded">
-    CAUSE_FOR_GPU_LAUNCH_GPUDATAMANAGER_REQUESTCOMPLETEGPUINFOIFNEEDED
+  <int value="2" label="GpuDataManager RequestDxdiagDx12VulkanGpuInfoIfNeeded">
+    CAUSE_FOR_GPU_LAUNCH_GPUDATAMANAGER_REQUESTDXDIAGDX12VULKANGPUINFOIFNEEDED
   </int>
   <int value="3" label="RenderWidgetFullScreenPepper CreateContext">
     CAUSE_FOR_GPU_LAUNCH_RENDERWIDGETFULLSCREENPEPPER_CREATECONTEXT
