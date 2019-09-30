@@ -29,8 +29,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "media/mojo/mojom/video_decode_perf_history.mojom.h"
-#include "media/mojo/services/video_decode_perf_history.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
@@ -207,12 +205,6 @@ void RendererInterfaceBinders::InitializeParameterizedBinderRegistry() {
         static_cast<StoragePartitionImpl*>(host->GetStoragePartition())
             ->GetCookieStoreContext()
             ->CreateService(std::move(request), origin);
-      }));
-  parameterized_binder_registry_.AddInterface(base::BindRepeating(
-      [](media::mojom::VideoDecodePerfHistoryRequest request,
-         RenderProcessHost* host, const url::Origin& origin) {
-        host->GetBrowserContext()->GetVideoDecodePerfHistory()->BindRequest(
-            std::move(request));
       }));
 }
 

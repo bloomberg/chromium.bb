@@ -26,6 +26,8 @@
 #include "device/gamepad/gamepad_monitor.h"
 #include "device/gamepad/public/mojom/gamepad.mojom.h"
 #include "media/capture/mojom/image_capture.mojom.h"
+#include "media/mojo/mojom/video_decode_perf_history.mojom.h"
+#include "media/mojo/services/video_decode_perf_history.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/sensor_provider.mojom.h"
 #include "services/device/public/mojom/vibration_manager.mojom.h"
@@ -145,9 +147,6 @@ void PopulateFrameBinders(RenderFrameHostImpl* host,
       &ForwardServiceReceiver<device::mojom::VibrationManager>,
       device::mojom::kServiceName, base::Unretained(host)));
 
-  map->Add<media::mojom::ImageCapture>(
-      base::BindRepeating(&ImageCaptureImpl::Create));
-
   map->Add<payments::mojom::PaymentManager>(
       base::BindRepeating(&RenderProcessHost::CreatePaymentManager,
                           base::Unretained(host->GetProcess())));
@@ -167,6 +166,13 @@ void PopulateFrameBinders(RenderFrameHostImpl* host,
   map->Add<blink::test::mojom::VirtualAuthenticatorManager>(
       base::BindRepeating(&RenderFrameHostImpl::GetVirtualAuthenticatorManager,
                           base::Unretained(host)));
+
+  map->Add<media::mojom::ImageCapture>(
+      base::BindRepeating(&ImageCaptureImpl::Create));
+
+  map->Add<media::mojom::VideoDecodePerfHistory>(
+      base::BindRepeating(&RenderProcessHost::BindVideoDecodePerfHistory,
+                          base::Unretained(host->GetProcess())));
 }
 
 void PopulateBinderMapWithContext(
@@ -215,6 +221,9 @@ void PopulateDedicatedWorkerBinders(DedicatedWorkerHost* host,
     map->Add<blink::mojom::SmsReceiver>(base::BindRepeating(
         &DedicatedWorkerHost::BindSmsReceiverReceiver, base::Unretained(host)));
   }
+  map->Add<media::mojom::VideoDecodePerfHistory>(
+      base::BindRepeating(&DedicatedWorkerHost::BindVideoDecodePerfHistory,
+                          base::Unretained(host)));
   map->Add<payments::mojom::PaymentManager>(base::BindRepeating(
       &DedicatedWorkerHost::CreatePaymentManager, base::Unretained(host)));
 }
@@ -248,6 +257,8 @@ void PopulateSharedWorkerBinders(SharedWorkerHost* host,
       &SharedWorkerHost::CreateAppCacheBackend, base::Unretained(host)));
   map->Add<blink::mojom::ScreenEnumeration>(
       base::BindRepeating(&ScreenEnumerationImpl::Create));
+  map->Add<media::mojom::VideoDecodePerfHistory>(base::BindRepeating(
+      &SharedWorkerHost::BindVideoDecodePerfHistory, base::Unretained(host)));
   map->Add<payments::mojom::PaymentManager>(base::BindRepeating(
       &SharedWorkerHost::CreatePaymentManager, base::Unretained(host)));
 }
@@ -291,6 +302,11 @@ void PopulateServiceWorkerBinders(ServiceWorkerProviderHost* host,
   map->Add<blink::mojom::PermissionService>(
       base::BindRepeating(&ServiceWorkerProviderHost::CreatePermissionService,
                           base::Unretained(host)));
+
+  map->Add<media::mojom::VideoDecodePerfHistory>(base::BindRepeating(
+      &ServiceWorkerProviderHost::BindVideoDecodePerfHistory,
+      base::Unretained(host)));
+
   map->Add<payments::mojom::PaymentManager>(
       base::BindRepeating(&ServiceWorkerProviderHost::CreatePaymentManager,
                           base::Unretained(host)));

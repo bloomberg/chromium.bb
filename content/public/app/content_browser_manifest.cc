@@ -171,7 +171,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "blink.mojom.NotificationService",
                   "blink.mojom.QuotaDispatcherHost",
                   "blink.mojom.WebSocketConnector",
-                  "media.mojom.VideoDecodePerfHistory",
                   "shape_detection.mojom.BarcodeDetectionProvider",
                   "shape_detection.mojom.FaceDetectionProvider",
                   "shape_detection.mojom.TextDetection"})
@@ -187,7 +186,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "blink.mojom.SerialService",
                   "blink.mojom.WebUsbService",
                   "blink.mojom.WebSocketConnector",
-                  "media.mojom.VideoDecodePerfHistory",
                   "shape_detection.mojom.BarcodeDetectionProvider",
                   "shape_detection.mojom.FaceDetectionProvider",
                   "shape_detection.mojom.TextDetection"})
@@ -199,7 +197,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "blink.mojom.NativeFileSystemManager",
                   "blink.mojom.NotificationService",
                   "blink.mojom.QuotaDispatcherHost",
-                  "media.mojom.VideoDecodePerfHistory",
                   "network.mojom.RestrictedCookieManager",
                   "blink.mojom.WebSocketConnector",
                   "shape_detection.mojom.BarcodeDetectionProvider",
@@ -243,7 +240,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "media.mojom.MediaMetricsProvider",
                   "media.mojom.RemoterFactory",
                   "media.mojom.Renderer",
-                  "media.mojom.VideoDecodePerfHistory",
                   "mojom.ProcessInternalsHandler",
                   "network.mojom.RestrictedCookieManager",
                   "blink.mojom.WebSocketConnector",
