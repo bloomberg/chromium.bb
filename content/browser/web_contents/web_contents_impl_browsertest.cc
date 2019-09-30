@@ -1412,7 +1412,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsSplitCacheBrowserTestDisabled,
 }
 
 // TODO(http://crbug.com/997808): Flaky on Linux ASAN.
-#if defined(OS_LINUX) && defined(ADDRESS_SANITIZER)
+#if defined(OS_LINUX) && (defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER))
 #define MAYBE_SplitCacheDedicatedWorkers DISABLED_SplitCacheDedicatedWorkers
 #else
 #define MAYBE_SplitCacheDedicatedWorkers SplitCacheDedicatedWorkers
