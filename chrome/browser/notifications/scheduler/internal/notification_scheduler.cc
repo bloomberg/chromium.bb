@@ -290,8 +290,8 @@ class NotificationSchedulerImpl : public NotificationScheduler,
 
   // ImpressionHistoryTracker::Delegate implementation.
   void OnImpressionUpdated() override {
-    // TODO(xingliu): Fix duplicate ScheduleBackgroundTask() call.
-    ScheduleBackgroundTask();
+    // TODO(xingliu): Remove ImpressionHistoryTracker::Delegate, and add a
+    // browser test for user action hooks.
   }
 
   void FindNotificationToShow(TaskFinishedCallback task_finish_callback) {
@@ -338,7 +338,7 @@ class NotificationSchedulerImpl : public NotificationScheduler,
 
   void OnUserAction(const UserActionData& action_data) override {
     context_->impression_tracker()->OnUserAction(action_data);
-
+    ScheduleBackgroundTask();
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(&NotificationSchedulerImpl::NotifyClientAfterUserAction,
