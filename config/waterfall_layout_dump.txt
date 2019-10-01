@@ -963,7 +963,6 @@
   betty-unittest-stress
   betty-vmtest-informational-tryjob
   binhost-pre-cq
-  bluestreak-pre-cq
   bob-chrome-pfq-tryjob
   bob-chromium-pfq-tryjob
   bob-compile-only-pre-cq

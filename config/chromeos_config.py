@@ -1607,17 +1607,6 @@ def PreCqBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.wificell_pre_cq,
   )
 
-  # Bluestreak specific PreCQ.
-  site_config.Add(
-      'bluestreak-pre-cq',
-      board_configs['guado'],
-      site_config.templates.pre_cq,
-      hw_tests=hw_test_list.BluestreakPoolPreCQ(),
-      hw_tests_override=hw_test_list.BluestreakPoolPreCQ(),
-      archive=True,
-      description='Bluestreak tests as pre-cq for CFM related changes',
-  )
-
   site_config.Add(
       'signer-pre-cq',
       site_config.templates.pre_cq,
@@ -2453,10 +2442,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'amd64-generic',
   ])
 
-  _paladin_bluestreak_hwtest_boards = frozenset([
-      'guado',
-  ])
-
   _paladin_enable_skylab_hwtest = frozenset([
       'auron_paine',
       'auron_yuna',
@@ -2561,10 +2546,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
               )
           ],
           hw_tests_override=None)
-    if board in _paladin_bluestreak_hwtest_boards:
-      customizations.update(
-          hw_tests=hw_test_list.BluestreakPoolPreCQ(),
-          hw_tests_override=hw_test_list.BluestreakPoolPreCQ())
     if board in _paladin_experimental_boards:
       customizations.update(important=False)
     if board in _paladin_chroot_replace_boards:
