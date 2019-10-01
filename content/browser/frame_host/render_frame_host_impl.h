@@ -460,13 +460,20 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Return the http status code of the last committed navigation.
   int last_http_status_code() { return last_http_status_code_; }
 
+  const url::Origin& ComputeTopFrameOrigin(
+      const url::Origin& frame_origin) const;
+
   // Computes site_for_cookies to be used when navigating this frame to
   // |destination|.
   GURL ComputeSiteForCookiesForNavigation(const GURL& destination) const;
 
-  // Computes site_for_cookies for this frame. It can be used to check
-  // if cookies (including storage APIs and shared/service workers) are
-  // accessible.
+  // Computes site_for_cookies for this frame. A non-empty result denotes which
+  // domains are considered first-party to the top-level site when resources are
+  // loaded inside this frame. An empty result means that nothing will be
+  // first-party, as the frame hierarchy makes this context third-party already.
+  //
+  // The result can be used to check if cookies (including storage APIs and
+  // shared/service workers) are accessible.
   GURL ComputeSiteForCookies() const;
 
   // Allows overriding the last committed origin in tests.

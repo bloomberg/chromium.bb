@@ -80,8 +80,8 @@ void GetInterfaceImpl(const std::string& interface_name,
         std::move(interface_pipe));
     process->GetStoragePartition()->CreateRestrictedCookieManager(
         network::mojom::RestrictedCookieManagerRole::SCRIPT, origin,
-        true /* is_service_worker */, process_id, MSG_ROUTING_NONE,
-        std::move(receiver));
+        origin.GetURL(), origin, true /* is_service_worker */, process_id,
+        MSG_ROUTING_NONE, std::move(receiver));
     return;
   }
 

@@ -4887,6 +4887,8 @@ bool ChromeContentBrowserClient::WillCreateRestrictedCookieManager(
     network::mojom::RestrictedCookieManagerRole role,
     content::BrowserContext* browser_context,
     const url::Origin& origin,
+    const GURL& site_for_cookies,
+    const url::Origin& top_frame_origin,
     bool is_service_worker,
     int process_id,
     int routing_id,
@@ -4896,7 +4898,8 @@ bool ChromeContentBrowserClient::WillCreateRestrictedCookieManager(
   if (origin.scheme() == extensions::kExtensionScheme) {
     DCHECK_EQ(network::mojom::RestrictedCookieManagerRole::SCRIPT, role);
     extensions::ChromeExtensionCookies::Get(browser_context)
-        ->CreateRestrictedCookieManager(origin, std::move(*receiver));
+        ->CreateRestrictedCookieManager(origin, site_for_cookies,
+                                        top_frame_origin, std::move(*receiver));
     return true;
   }
 #endif

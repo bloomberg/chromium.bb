@@ -496,7 +496,8 @@ void GetRestrictedCookieManager(
     mojo::PendingReceiver<network::mojom::RestrictedCookieManager> receiver) {
   storage_partition->CreateRestrictedCookieManager(
       network::mojom::RestrictedCookieManagerRole::SCRIPT,
-      frame_host->GetLastCommittedOrigin(),
+      frame_host->GetLastCommittedOrigin(), frame_host->ComputeSiteForCookies(),
+      frame_host->ComputeTopFrameOrigin(frame_host->GetLastCommittedOrigin()),
       /* is_service_worker = */ false, process_id, frame_id,
       std::move(receiver));
 }
@@ -2162,6 +2163,13 @@ void RenderFrameHostImpl::SetLastCommittedOrigin(const url::Origin& origin) {
 void RenderFrameHostImpl::SetLastCommittedOriginForTesting(
     const url::Origin& origin) {
   SetLastCommittedOrigin(origin);
+}
+
+const url::Origin& RenderFrameHostImpl::ComputeTopFrameOrigin(
+    const url::Origin& frame_origin) const {
+  return frame_tree_node_->IsMainFrame()
+             ? frame_origin
+             : frame_tree_->root()->current_origin();
 }
 
 GURL RenderFrameHostImpl::ComputeSiteForCookiesForNavigation(
@@ -5077,11 +5085,8 @@ void RenderFrameHostImpl::CommitNavigation(
   // instead of creating one from a URL which lacks opacity information.
   if (!is_same_document) {
     const url::Origin frame_origin = url::Origin::Create(common_params->url);
-    const url::Origin top_frame_origin =
-        frame_tree_node_->IsMainFrame() ? frame_origin
-                                        : frame_tree_->root()->current_origin();
-    network_isolation_key_ =
-        net::NetworkIsolationKey(top_frame_origin, frame_origin);
+    network_isolation_key_ = net::NetworkIsolationKey(
+        ComputeTopFrameOrigin(frame_origin), frame_origin);
   }
 
   std::unique_ptr<blink::URLLoaderFactoryBundleInfo>

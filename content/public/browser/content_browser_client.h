@@ -1328,7 +1328,12 @@ class CONTENT_EXPORT ContentBrowserClient {
   // preference-following access to cookies. This is primarily used for objects
   // vended to renderer processes for limited, origin-locked (to |origin|),
   // access to script-accessible cookies from JavaScript, so returned objects
-  // should treat their inputs as untrusted.
+  // should treat their inputs as untrusted.  |site_for_cookies| represents
+  // which domains the cookie manager should consider to be first-party, for
+  // purposes of SameSite cookies and any third-party cookie blocking the
+  // embedder may implement (if |site_for_cookies| is empty, no domains are
+  // first-party). |top_frame_origin| represents the domain for top-level frame,
+  // and can be used to look up preferences that are dependent on that.
   //
   // |*receiver| is always valid upon entry.
   //
@@ -1351,6 +1356,8 @@ class CONTENT_EXPORT ContentBrowserClient {
       network::mojom::RestrictedCookieManagerRole role,
       BrowserContext* browser_context,
       const url::Origin& origin,
+      const GURL& site_for_cookies,
+      const url::Origin& top_frame_origin,
       bool is_service_worker,
       int process_id,
       int routing_id,
