@@ -107,24 +107,7 @@ void HotseatWidget::DelegateView::UpdateOpaqueBackground() {
   }
 
   opaque_background_.SetVisible(true);
-
-  // Fetches wallpaper color and darkens it.
-  auto darken_wallpaper = [&](int darkening_alpha) {
-    if (!wallpaper_controller_)
-      return ShelfConfig::Get()->shelf_default_base_color();
-    SkColor target_color =
-        wallpaper_controller_->GetProminentColor(color_utils::ColorProfile(
-            color_utils::LumaRange::DARK, color_utils::SaturationRange::MUTED));
-    if (target_color == kInvalidWallpaperColor)
-      return ShelfConfig::Get()->shelf_default_base_color();
-    return color_utils::GetResultingPaintColor(
-        SkColorSetA(ShelfConfig::Get()->shelf_default_base_color(),
-                    darkening_alpha),
-        target_color);
-  };
-
-  opaque_background_.SetColor(darken_wallpaper(
-      ShelfConfig::Get()->shelf_translucent_color_darken_alpha()));
+  opaque_background_.SetColor(ShelfConfig::Get()->GetDefaultShelfColor());
 
   const int radius = ShelfConfig::Get()->hotseat_size() / 2;
   gfx::RoundedCornersF rounded_corners = {radius, radius, radius, radius};

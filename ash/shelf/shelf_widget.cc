@@ -437,7 +437,7 @@ ShelfBackgroundType ShelfWidget::GetBackgroundType() const {
 
 int ShelfWidget::GetBackgroundAlphaValue(
     ShelfBackgroundType background_type) const {
-  return background_animator_.GetBackgroundAlphaValue(background_type);
+  return SkColorGetA(background_animator_.GetBackgroundColor(background_type));
 }
 
 void ShelfWidget::OnShelfAlignmentChanged() {
