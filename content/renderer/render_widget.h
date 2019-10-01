@@ -556,8 +556,6 @@ class CONTENT_EXPORT RenderWidget
   void OnImeEventGuardStart(ImeEventGuard* guard);
   void OnImeEventGuardFinish(ImeEventGuard* guard);
 
-  void ApplyEmulatedScreenMetricsForPopupWidget();
-
   // Checks if the selection bounds have been changed. If they are changed,
   // the new value will be sent to the browser process.
   void UpdateSelectionBounds();
@@ -1096,12 +1094,6 @@ class CONTENT_EXPORT RenderWidget
 
   // True if the IME requests updated composition info.
   bool monitor_composition_info_ = false;
-
-  // Popups may be displaced when screen metrics emulation is enabled.
-  // These values are used to properly adjust popup position.
-  gfx::Point popup_view_origin_for_emulation_;
-  gfx::Point popup_screen_origin_for_emulation_;
-  float popup_origin_scale_for_emulation_ = 0.f;
 
   scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue_;
 

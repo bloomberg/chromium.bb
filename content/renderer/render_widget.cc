@@ -598,22 +598,6 @@ void RenderWidget::Init(ShowCallback show_callback, WebWidget* web_widget) {
   RenderThread::Get()->AddRoute(routing_id_, this);
 }
 
-void RenderWidget::ApplyEmulatedScreenMetricsForPopupWidget() {
-  RenderWidgetScreenMetricsEmulator* emulator =
-      page_properties_->ScreenMetricsEmulator();
-  if (!emulator)
-    return;
-  // TODO(danakj): Have RenderWidget go directly through the emulator when it
-  // uses these popup variables, and remove the variables.
-  popup_origin_scale_for_emulation_ = emulator->scale();
-  popup_view_origin_for_emulation_ = emulator->applied_widget_rect().origin();
-  popup_screen_origin_for_emulation_ =
-      emulator->original_screen_rect().origin();
-  UpdateSurfaceAndScreenInfo(local_surface_id_allocation_from_parent_,
-                             CompositorViewportRect(),
-                             emulator->original_screen_info());
-}
-
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
 void RenderWidget::SetExternalPopupOriginAdjustmentsForEmulation(
     ExternalPopupMenu* popup) {
@@ -2002,9 +1986,18 @@ LayerTreeView* RenderWidget::InitializeLayerTreeView() {
       compositor_deps_->CreateUkmRecorderFactory());
   layer_tree_host_ = layer_tree_view_->layer_tree_host();
 
+  ScreenInfo screen_info = page_properties_->GetScreenInfo();
+  // A popup widget does not get emulated. So we hand it the real screen info
+  // and adjust values it gives back into the emulated space later.
+  if (popup_) {
+    RenderWidgetScreenMetricsEmulator* emulator =
+        page_properties_->ScreenMetricsEmulator();
+    if (emulator)
+      screen_info = emulator->original_screen_info();
+  }
+
   UpdateSurfaceAndScreenInfo(local_surface_id_allocation_from_parent_,
-                             CompositorViewportRect(),
-                             page_properties_->GetScreenInfo());
+                             CompositorViewportRect(), screen_info);
   // If the widget is hidden, delay starting the compositor until the user shows
   // it. Also if the RenderWidget is undead, we delay starting the compositor
   // until we expect to use the widget, which will be signaled through
@@ -2125,28 +2118,40 @@ bool RenderWidget::IsForProvisionalFrame() const {
 
 void RenderWidget::ScreenRectToEmulatedIfNeeded(WebRect* window_rect) const {
   DCHECK(window_rect);
-  float scale = popup_origin_scale_for_emulation_;
-  if (!scale)
+
+  if (!popup_)
     return;
+  RenderWidgetScreenMetricsEmulator* emulator =
+      page_properties_->ScreenMetricsEmulator();
+  if (!emulator)
+    return;
+
   window_rect->x =
-      popup_view_origin_for_emulation_.x() +
-      (window_rect->x - popup_screen_origin_for_emulation_.x()) / scale;
+      emulator->ViewRectOrigin().x() +
+      (window_rect->x - emulator->original_screen_rect().origin().x()) /
+          emulator->scale();
   window_rect->y =
-      popup_view_origin_for_emulation_.y() +
-      (window_rect->y - popup_screen_origin_for_emulation_.y()) / scale;
+      emulator->ViewRectOrigin().y() +
+      (window_rect->y - emulator->original_screen_rect().origin().y()) /
+          emulator->scale();
 }
 
 void RenderWidget::EmulatedToScreenRectIfNeeded(WebRect* window_rect) const {
   DCHECK(window_rect);
-  float scale = popup_origin_scale_for_emulation_;
-  if (!scale)
+
+  if (!popup_)
     return;
+  RenderWidgetScreenMetricsEmulator* emulator =
+      page_properties_->ScreenMetricsEmulator();
+  if (!emulator)
+    return;
+
   window_rect->x =
-      popup_screen_origin_for_emulation_.x() +
-      (window_rect->x - popup_view_origin_for_emulation_.x()) * scale;
+      emulator->original_screen_rect().origin().x() +
+      (window_rect->x - emulator->ViewRectOrigin().x()) * emulator->scale();
   window_rect->y =
-      popup_screen_origin_for_emulation_.y() +
-      (window_rect->y - popup_view_origin_for_emulation_.y()) * scale;
+      emulator->original_screen_rect().origin().y() +
+      (window_rect->y - emulator->ViewRectOrigin().y()) * emulator->scale();
 }
 
 WebRect RenderWidget::WindowRect() {
