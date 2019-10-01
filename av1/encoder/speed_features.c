@@ -332,6 +332,7 @@ static void set_good_speed_features_framesize_independent(
 
   if (speed >= 2) {
     sf->gm_erroradv_type = GM_ERRORADV_TR_2;
+    sf->prune_ref_frame_for_gm_search = 1;
 
     sf->selective_ref_frame = 3;
 
@@ -853,6 +854,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   sf->tx_domain_dist_thres_level = 0;
   sf->gm_search_type = GM_FULL_SEARCH;
   sf->gm_disable_recode = 0;
+  sf->prune_ref_frame_for_gm_search = 0;
   sf->use_fast_interpolation_filter_search = 0;
   sf->disable_dual_filter = 0;
   sf->skip_repeat_interpolation_filter_search = 0;

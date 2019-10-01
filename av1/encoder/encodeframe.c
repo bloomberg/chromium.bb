@@ -5157,6 +5157,12 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
       compute_gm_for_valid_ref_frames(
           cpi, ref_buf, frame, &num_frm_corners, frm_corners, frm_buffer,
           params_by_motion, segment_map, segment_map_w, segment_map_h);
+      // If farthest ref frame yields INVALID/TRANSLATION/IDENTITY  global
+      // motion, skip evaluation of global motion w.r.t to other ref frames in
+      // that direction
+      if (cpi->sf.prune_ref_frame_for_gm_search && past_frame == 0 &&
+          cm->global_motion[frame].wmtype != ROTZOOM)
+        break;
     }
 
     // Compute global motion w.r.t. future reference frames
@@ -5166,6 +5172,12 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
       compute_gm_for_valid_ref_frames(
           cpi, ref_buf, frame, &num_frm_corners, frm_corners, frm_buffer,
           params_by_motion, segment_map, segment_map_w, segment_map_h);
+      // If farthest ref frame yields INVALID/TRANSLATION/IDENTITY  global
+      // motion, skip evaluation of global motion w.r.t to other ref frames in
+      // that direction
+      if (cpi->sf.prune_ref_frame_for_gm_search && future_frame == 0 &&
+          cm->global_motion[frame].wmtype != ROTZOOM)
+        break;
     }
     aom_free(segment_map);
 

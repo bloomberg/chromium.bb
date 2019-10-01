@@ -512,6 +512,11 @@ typedef struct SPEED_FEATURES {
   // whether to disable the global motion recode loop
   int gm_disable_recode;
 
+  // prune reference frames during global motion estimation, if the farthest
+  // ref_frame in either direction (past/future) yields gm_type as
+  // INVALID/TRANSLATION/IDENTITY
+  int prune_ref_frame_for_gm_search;
+
   // Do limited interpolation filter search for dual filters, since best choice
   // usually includes EIGHTTAP_REGULAR.
   int use_fast_interpolation_filter_search;
