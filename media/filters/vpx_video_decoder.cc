@@ -508,7 +508,6 @@ bool VpxVideoDecoder::CopyVpxImageToVideoFrame(
   // benefit, and only risk copying too much data.
   const gfx::Size coded_size(vpx_image->w, vpx_image->d_h);
   const gfx::Size visible_size(vpx_image->d_w, vpx_image->d_h);
-  const gfx::Size natural_size(vpx_image->r_w, vpx_image->r_h);
 
   if (memory_pool_) {
     DCHECK_EQ(kCodecVP9, config_.codec());
@@ -522,18 +521,19 @@ bool VpxVideoDecoder::CopyVpxImageToVideoFrame(
                         vpx_image_alpha->stride[VPX_PLANE_Y],
                         vpx_image_alpha->d_w, vpx_image_alpha->d_h);
       *video_frame = VideoFrame::WrapExternalYuvaData(
-          codec_format, coded_size, gfx::Rect(visible_size), natural_size,
-          vpx_image->stride[VPX_PLANE_Y], vpx_image->stride[VPX_PLANE_U],
-          vpx_image->stride[VPX_PLANE_V], vpx_image_alpha->stride[VPX_PLANE_Y],
-          vpx_image->planes[VPX_PLANE_Y], vpx_image->planes[VPX_PLANE_U],
-          vpx_image->planes[VPX_PLANE_V], alpha_plane, kNoTimestamp);
+          codec_format, coded_size, gfx::Rect(visible_size),
+          config_.natural_size(), vpx_image->stride[VPX_PLANE_Y],
+          vpx_image->stride[VPX_PLANE_U], vpx_image->stride[VPX_PLANE_V],
+          vpx_image_alpha->stride[VPX_PLANE_Y], vpx_image->planes[VPX_PLANE_Y],
+          vpx_image->planes[VPX_PLANE_U], vpx_image->planes[VPX_PLANE_V],
+          alpha_plane, kNoTimestamp);
     } else {
       *video_frame = VideoFrame::WrapExternalYuvData(
-          codec_format, coded_size, gfx::Rect(visible_size), natural_size,
-          vpx_image->stride[VPX_PLANE_Y], vpx_image->stride[VPX_PLANE_U],
-          vpx_image->stride[VPX_PLANE_V], vpx_image->planes[VPX_PLANE_Y],
-          vpx_image->planes[VPX_PLANE_U], vpx_image->planes[VPX_PLANE_V],
-          kNoTimestamp);
+          codec_format, coded_size, gfx::Rect(visible_size),
+          config_.natural_size(), vpx_image->stride[VPX_PLANE_Y],
+          vpx_image->stride[VPX_PLANE_U], vpx_image->stride[VPX_PLANE_V],
+          vpx_image->planes[VPX_PLANE_Y], vpx_image->planes[VPX_PLANE_U],
+          vpx_image->planes[VPX_PLANE_V], kNoTimestamp);
     }
     if (!(*video_frame))
       return false;
@@ -544,8 +544,8 @@ bool VpxVideoDecoder::CopyVpxImageToVideoFrame(
   }
 
   *video_frame = frame_pool_.CreateFrame(codec_format, visible_size,
-                                         gfx::Rect(visible_size), natural_size,
-                                         kNoTimestamp);
+                                         gfx::Rect(visible_size),
+                                         config_.natural_size(), kNoTimestamp);
   if (!(*video_frame))
     return false;
 
