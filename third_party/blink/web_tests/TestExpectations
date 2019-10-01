@@ -6211,3 +6211,6 @@ crbug.com/1008826 [ Mac10.13 ] http/tests/security/frameNavigation/xss-ALLOWED-p
 crbug.com/1009016 [ Win10 ] http/tests/devtools/portals/portals-elements-nesting-after-adoption.js [ Pass Failure ]
 crbug.com/1003715 [ Win10 ] http/tests/notifications/serviceworker-notification-properties.html [ Pass Failure Timeout ]
 
+# Sheriff 2019-10-01
+crbug.com/1010013 [ Win10 ] virtual/threaded/http/tests/devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.js [ Failure ]
+
