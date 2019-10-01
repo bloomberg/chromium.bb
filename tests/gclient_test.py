@@ -802,8 +802,8 @@ class GclientTest(trial_dir.TestCase):
     self.assertEqual(
         [
           ('foo', 'svn://example.com/foo'),
-          ('foo/bar', 'svn://example.com/bar'),
-          ('foo/baz', 'svn://example.com/baz'),
+          (os.path.join('foo', 'bar'), 'svn://example.com/bar'),
+          (os.path.join('foo', 'baz'), 'svn://example.com/baz'),
         ],
         self._get_processed())
 
@@ -839,8 +839,8 @@ class GclientTest(trial_dir.TestCase):
     self.assertEqual(
         [
           ('foo', 'svn://example.com/foo'),
-          ('foo/bar', 'svn://example.com/bar'),
-          ('foo/bar/baz', 'svn://example.com/baz'),
+          (os.path.join('foo', 'bar'), 'svn://example.com/bar'),
+          (os.path.join('foo', 'bar', 'baz'), 'svn://example.com/baz'),
         ],
         self._get_processed())
 
@@ -878,8 +878,8 @@ class GclientTest(trial_dir.TestCase):
     self.assertEqual(
         [
           ('foo', 'svn://example.com/foo'),
-          ('foo/third_party/bar', 'svn://example.com/bar'),
-          ('foo/third_party/baz', 'svn://example.com/baz'),
+          (os.path.join('foo', 'third_party', 'bar'), 'svn://example.com/bar'),
+          (os.path.join('foo', 'third_party', 'baz'), 'svn://example.com/baz'),
         ],
         self._get_processed())
 

@@ -69,7 +69,7 @@ def exponential_backoff_retry(fn, excs=(Exception,), name=None, count=10,
   Returns: The return value of the successful fn.
   """
   printerr = printerr or logging.warning
-  for i in xrange(count):
+  for i in range(count):
     try:
       return fn()
     except excs as e:
@@ -268,7 +268,13 @@ class Mirror(object):
   def UrlToCacheDir(url):
     """Convert a git url to a normalized form for the cache dir path."""
     parsed = urlparse.urlparse(url)
-    norm_url = parsed.netloc + parsed.path
+    # Get rid of the port. This is only needed for Windows tests, since tests
+    # serve git from git://localhost:port/git, but Windows doesn't like ':' in
+    # paths.
+    netloc = parsed.netloc
+    if ':' in netloc:
+      netloc = netloc.split(':', 1)[0]
+    norm_url = netloc + parsed.path
     if norm_url.endswith('.git'):
       norm_url = norm_url[:-len('.git')]
 
