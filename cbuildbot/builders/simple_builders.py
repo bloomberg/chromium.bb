@@ -598,9 +598,13 @@ class DistributedBuilder(SimpleBuilder):
                       was_build_successful and
                       build_finished)
 
-        # CQ no longer publishes uprevs. There is no easy way to disable this
-        # in ChromeOS config, so hack the check here.
-        if not config_lib.IsCQType(self._run.config.build_type):
+        # CQ and Master Chrome PFQ no longer publish uprevs. For Master Chrome
+        # PFQ this is because this duty is being transitioned to the Chrome
+        # PUpr in the PCQ world. See http://go/pupr.
+        # There is no easy way to disable this in ChromeOS config,
+        # so hack the check here.
+        if (not config_lib.IsCQType(self._run.config.build_type) and
+            not is_master_chrome_pfq):
           self._RunStage(completion_stages.PublishUprevChangesStage,
                          self.sync_stage, publish, stage_push)
 
