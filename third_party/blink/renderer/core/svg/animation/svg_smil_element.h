@@ -278,6 +278,7 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   mutable SMILTime cached_max_;
 
   bool interval_has_changed_;
+  bool is_notifying_dependents_;
 
   friend class ConditionEventListener;
 };
