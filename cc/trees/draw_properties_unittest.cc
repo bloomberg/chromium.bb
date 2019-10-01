@@ -339,15 +339,11 @@ TEST_F(DrawPropertiesTest, TransformsAboutScrollOffset) {
       gfx::Size(scroll_layer->bounds().width() + kMaxScrollOffset.x(),
                 scroll_layer->bounds().height() + kMaxScrollOffset.y()));
 
-  LayerImpl* page_scale_layer = AddLayer<LayerImpl>();
-  page_scale_layer->SetBounds(gfx::Size(3, 4));
-
   LayerImpl* root = root_layer();
   root->SetBounds(gfx::Size(3, 4));
+  SetupViewport(root, gfx::Size(3, 4), gfx::Size(500, 500));
 
-  CopyProperties(root, page_scale_layer);
-  CreateTransformNode(page_scale_layer);
-  CopyProperties(page_scale_layer, scroll_layer);
+  CopyProperties(OuterViewportScrollLayer(), scroll_layer);
   CreateTransformNode(scroll_layer);
   CreateScrollNode(scroll_layer);
   CopyProperties(scroll_layer, sublayer);
@@ -356,12 +352,6 @@ TEST_F(DrawPropertiesTest, TransformsAboutScrollOffset) {
   scroll_tree.UpdateScrollOffsetBaseForTesting(scroll_layer->element_id(),
                                                kScrollOffset);
   SetScrollOffsetDelta(scroll_layer, kScrollDelta);
-
-  LayerTreeHost::ViewportPropertyIds viewport_property_ids;
-  viewport_property_ids.page_scale_transform =
-      page_scale_layer->transform_tree_index();
-  host_impl()->active_tree()->set_viewport_property_ids(viewport_property_ids);
-
   host_impl()->active_tree()->SetPageScaleOnActiveTree(page_scale);
   UpdateActiveTreeDrawProperties(kDeviceScale);
 
@@ -3203,9 +3193,7 @@ TEST_F(DrawPropertiesScalingTest, SurfaceLayerTransformsInHighDPI) {
 
   LayerImpl* root = root_layer();
   root->SetBounds(gfx::Size(100, 100));
-
-  LayerImpl* page_scale = AddLayer<LayerImpl>();
-  page_scale->SetBounds(gfx::Size(100, 100));
+  SetupViewport(root, gfx::Size(100, 100), gfx::Size(100, 100));
 
   LayerImpl* parent = AddLayer<LayerImpl>();
   parent->SetBounds(gfx::Size(100, 100));
@@ -3219,10 +3207,7 @@ TEST_F(DrawPropertiesScalingTest, SurfaceLayerTransformsInHighDPI) {
   scale_surface->SetBounds(gfx::Size(10, 10));
   scale_surface->SetDrawsContent(true);
 
-  CopyProperties(root, page_scale);
-  auto& page_scale_transform_node = CreateTransformNode(page_scale);
-  page_scale_transform_node.in_subtree_of_page_scale_layer = true;
-  CopyProperties(page_scale, parent);
+  CopyProperties(OuterViewportScrollLayer(), parent);
   CopyProperties(parent, perspective_surface);
   auto& perspective_surface_transform =
       CreateTransformNode(perspective_surface);
@@ -3239,11 +3224,6 @@ TEST_F(DrawPropertiesScalingTest, SurfaceLayerTransformsInHighDPI) {
 
   float device_scale_factor = 2.5f;
   float page_scale_factor = 3.f;
-
-  LayerTreeHost::ViewportPropertyIds viewport_property_ids;
-  viewport_property_ids.page_scale_transform =
-      page_scale->transform_tree_index();
-  host_impl()->active_tree()->set_viewport_property_ids(viewport_property_ids);
   host_impl()->active_tree()->SetPageScaleOnActiveTree(page_scale_factor);
 
   UpdateActiveTreeDrawProperties(device_scale_factor);
@@ -3334,10 +3314,10 @@ TEST_F(DrawPropertiesScalingTest, SmallIdealScale) {
   CopyProperties(parent, child_scale);
   CreateTransformNode(child_scale).local = child_scale_matrix;
 
-  LayerTreeHost::ViewportPropertyIds viewport_property_ids;
+  LayerTreeImpl::ViewportPropertyIds viewport_property_ids;
   viewport_property_ids.page_scale_transform =
       page_scale->transform_tree_index();
-  host_impl()->active_tree()->set_viewport_property_ids(viewport_property_ids);
+  host_impl()->active_tree()->SetViewportPropertyIds(viewport_property_ids);
 
   host_impl()->active_tree()->SetPageScaleOnActiveTree(page_scale_factor);
   UpdateActiveTreeDrawProperties(device_scale_factor);
@@ -6172,44 +6152,37 @@ TEST_F(DrawPropertiesTest, VisibleContentRectInChildRenderSurface) {
 }
 
 TEST_F(DrawPropertiesTest, ViewportBoundsDeltaAffectVisibleContentRect) {
-  // Set two layers: the root layer clips it's child,
-  // the child draws its content.
-
-  gfx::Size root_size = gfx::Size(300, 500);
-
-  // Sublayer should be bigger than the root enlarged by bounds_delta.
-  gfx::Size sublayer_size = gfx::Size(300, 1000);
+  gfx::Size container_size = gfx::Size(300, 500);
+  gfx::Size scroll_size = gfx::Size(300, 1000);
 
   // Device viewport accomidated the root and the browser controls.
   gfx::Rect device_viewport_rect = gfx::Rect(300, 600);
 
-  host_impl()->active_tree()->SetDeviceViewportRect(device_viewport_rect);
+  LayerTreeImpl* active_tree = host_impl()->active_tree();
+  active_tree->SetDeviceViewportRect(device_viewport_rect);
+  active_tree->set_browser_controls_shrink_blink_size(true);
+  active_tree->SetTopControlsHeight(50);
+  active_tree->PushPageScaleFromMainThread(1.0f, 1.0f, 1.0f);
 
   LayerImpl* root = root_layer();
-  root->SetBounds(root_size);
-  root->SetMasksToBounds(true);
+  root->SetBounds(device_viewport_rect.size());
+  SetupViewport(root, container_size, scroll_size);
 
-  // Make root the inner viewport scroll layer. This ensures the later call to
-  // |SetViewportBoundsDelta| will be on a viewport layer.
-  LayerTreeImpl::ViewportLayerIds viewport_ids;
-  viewport_ids.inner_viewport_scroll = root->id();
-  host_impl()->active_tree()->SetViewportLayersFromIds(viewport_ids);
+  LayerImpl* scroll_layer = InnerViewportScrollLayer();
+  scroll_layer->SetDrawsContent(true);
 
-  LayerImpl* sublayer = AddLayer<LayerImpl>();
-  sublayer->SetBounds(sublayer_size);
-  sublayer->SetDrawsContent(true);
-
-  CreateClipNode(root);
-  CopyProperties(root, sublayer);
-
+  active_tree->SetCurrentBrowserControlsShownRatio(1.0f);
+  active_tree->UpdateViewportContainerSizes();
   UpdateActiveTreeDrawProperties();
-  EXPECT_EQ(gfx::Rect(root_size), sublayer->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(container_size), scroll_layer->visible_layer_rect());
 
-  root->SetViewportBoundsDelta(gfx::Vector2dF(0.0, 50.0));
+  active_tree->SetCurrentBrowserControlsShownRatio(0.0f);
+  active_tree->UpdateViewportContainerSizes();
   UpdateActiveTreeDrawProperties();
 
-  gfx::Rect affected_by_delta(0, 0, root_size.width(), root_size.height() + 50);
-  EXPECT_EQ(affected_by_delta, sublayer->visible_layer_rect());
+  gfx::Rect affected_by_delta(container_size.width(),
+                              container_size.height() + 50);
+  EXPECT_EQ(affected_by_delta, scroll_layer->visible_layer_rect());
 }
 
 TEST_F(DrawPropertiesTest, VisibleContentRectForAnimatedLayer) {

@@ -3412,10 +3412,6 @@ void RenderWidget::ZoomToFindInPageRectInMainFrame(
                                                          rect_to_zoom));
 }
 
-void RenderWidget::RegisterViewportLayers(const cc::ViewportLayers& layers) {
-  layer_tree_host_->RegisterViewportLayers(layers);
-}
-
 void RenderWidget::RegisterSelection(const cc::LayerSelection& selection) {
   layer_tree_host_->RegisterSelection(selection);
 }

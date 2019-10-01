@@ -3224,47 +3224,6 @@ bool WebViewImpl::TabsToLinks() const {
   return tabs_to_links_;
 }
 
-void WebViewImpl::RegisterViewportLayersWithCompositor() {
-  DCHECK(does_composite_);
-
-  if (!GetPage()->MainFrame() || !GetPage()->MainFrame()->IsLocalFrame())
-    return;
-
-  Document* document = GetPage()->DeprecatedLocalMainFrame()->GetDocument();
-
-  DCHECK(document);
-
-  // Get the outer viewport scroll layers.
-  GraphicsLayer* layout_viewport_container_layer =
-      GetPage()->GlobalRootScrollerController().RootContainerLayer();
-  cc::Layer* layout_viewport_container_cc_layer =
-      layout_viewport_container_layer
-          ? layout_viewport_container_layer->CcLayer()
-          : nullptr;
-
-  GraphicsLayer* layout_viewport_scroll_layer =
-      GetPage()->GlobalRootScrollerController().RootScrollerLayer();
-  cc::Layer* layout_viewport_scroll_cc_layer =
-      layout_viewport_scroll_layer ? layout_viewport_scroll_layer->CcLayer()
-                                   : nullptr;
-
-  VisualViewport& visual_viewport = GetPage()->GetVisualViewport();
-
-  cc::ViewportLayers viewport_layers;
-  viewport_layers.overscroll_elasticity_element_id =
-      visual_viewport.GetCompositorOverscrollElasticityElementId();
-  viewport_layers.page_scale = visual_viewport.PageScaleLayer()->CcLayer();
-  viewport_layers.inner_viewport_container =
-      visual_viewport.ContainerLayer()->CcLayer();
-  viewport_layers.outer_viewport_container = layout_viewport_container_cc_layer;
-  viewport_layers.inner_viewport_scroll =
-      visual_viewport.ScrollLayer()->CcLayer();
-  viewport_layers.outer_viewport_scroll = layout_viewport_scroll_cc_layer;
-
-  MainFrameImpl()->FrameWidgetImpl()->Client()->RegisterViewportLayers(
-      viewport_layers);
-}
-
 void WebViewImpl::SetRootGraphicsLayer(GraphicsLayer* graphics_layer) {
   DCHECK(MainFrameImpl());
 
@@ -3279,9 +3238,6 @@ void WebViewImpl::SetRootGraphicsLayer(GraphicsLayer* graphics_layer) {
     root_layer_ = root_graphics_layer_->CcLayer();
     UpdateDeviceEmulationTransform();
     MainFrameImpl()->FrameWidgetImpl()->Client()->SetRootLayer(root_layer_);
-    // We register viewport layers here since there may not be a layer
-    // tree view prior to this point.
-    RegisterViewportLayersWithCompositor();
   } else {
     root_graphics_layer_ = nullptr;
     visual_viewport_container_layer_ = nullptr;
@@ -3289,7 +3245,6 @@ void WebViewImpl::SetRootGraphicsLayer(GraphicsLayer* graphics_layer) {
     WebWidgetClient* widget_client =
         MainFrameImpl()->FrameWidgetImpl()->Client();
     widget_client->SetRootLayer(nullptr);
-    widget_client->RegisterViewportLayers(cc::ViewportLayers());
 
     // When the document in an already-attached main frame is being replaced by
     // a navigation then SetRootGraphicsLayer(nullptr) will be called. Since we
