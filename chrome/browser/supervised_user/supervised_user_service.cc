@@ -104,23 +104,11 @@ void CreateURLAccessRequest(const GURL& url,
   creator->CreateURLAccessRequest(url, std::move(callback));
 }
 
-void CreateExtensionInstallRequest(
-    const std::string& id,
-    PermissionRequestCreator* creator,
-    SupervisedUserService::SuccessCallback callback) {
-  creator->CreateExtensionInstallRequest(id, std::move(callback));
-}
-
 void CreateExtensionUpdateRequest(
     const std::string& id,
     PermissionRequestCreator* creator,
     SupervisedUserService::SuccessCallback callback) {
   creator->CreateExtensionUpdateRequest(id, std::move(callback));
-}
-
-// Default callback for AddExtensionInstallRequest.
-void ExtensionInstallRequestSent(const std::string& id, bool success) {
-  VLOG_IF(1, !success) << "Failed sending install request for " << id;
 }
 
 // Default callback for AddExtensionUpdateRequest.
@@ -206,24 +194,6 @@ void SupervisedUserService::AddURLAccessRequest(const GURL& url,
       base::BindRepeating(CreateURLAccessRequest,
                           policy::url_util::Normalize(effective_url)),
       std::move(callback), 0);
-}
-
-void SupervisedUserService::AddExtensionInstallRequest(
-    const std::string& extension_id,
-    const base::Version& version,
-    SuccessCallback callback) {
-  std::string id = GetExtensionRequestId(extension_id, version);
-  AddPermissionRequestInternal(
-      base::BindRepeating(CreateExtensionInstallRequest, id),
-      std::move(callback), 0);
-}
-
-void SupervisedUserService::AddExtensionInstallRequest(
-    const std::string& extension_id,
-    const base::Version& version) {
-  std::string id = GetExtensionRequestId(extension_id, version);
-  AddExtensionInstallRequest(extension_id, version,
-                             base::BindOnce(ExtensionInstallRequestSent, id));
 }
 
 void SupervisedUserService::AddExtensionUpdateRequest(
@@ -824,21 +794,6 @@ bool SupervisedUserService::MustRemainDisabled(
     }
     if (reason)
       *reason = extensions::disable_reason::DISABLE_CUSTODIAN_APPROVAL_REQUIRED;
-    if (base::FeatureList::IsEnabled(
-            supervised_users::kSupervisedUserInitiatedExtensionInstall)) {
-      // If the Extension isn't pending a custodian approval already, send
-      // an approval request.
-      if (!extension_prefs->HasDisableReason(
-              extension->id(), extensions::disable_reason::
-                                   DISABLE_CUSTODIAN_APPROVAL_REQUIRED)) {
-        // MustRemainDisabled is a const method and hence cannot call
-        // AddExtensionInstallRequest directly.
-        SupervisedUserService* supervised_user_service =
-            SupervisedUserServiceFactory::GetForProfile(profile_);
-        supervised_user_service->AddExtensionInstallRequest(
-            extension->id(), extension->version());
-      }
-    }
   }
   return must_remain_disabled;
 }

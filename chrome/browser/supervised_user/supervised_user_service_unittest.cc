@@ -267,11 +267,6 @@ class MockPermissionRequestCreator : public PermissionRequestCreator {
     callbacks_.push_back(std::move(callback));
   }
 
-  void CreateExtensionInstallRequest(const std::string& extension_id,
-                                     SuccessCallback callback) override {
-    FAIL();
-  }
-
   void CreateExtensionUpdateRequest(const std::string& id,
                                     SuccessCallback callback) override {
     FAIL();
