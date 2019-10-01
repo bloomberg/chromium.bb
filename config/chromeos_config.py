@@ -2291,9 +2291,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'kevin64',
       'kip',
       'kukui',
-      'lakitu',
-      'lakitu-gpu',
-      'lakitu-st',
       'lars',
       'lasilla-ground',
       'littlejoe',
@@ -2386,6 +2383,9 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   _paladin_experimental_boards = _paladin_new_boards | frozenset([
       'auron_paine', # crbug.com/1008410
       'fizz-moblab', # crbug.com/995170
+      'lakitu', # crbug.com/1010132
+      'lakitu-gpu', # crbug.com/1010132
+      'lakitu-st', # crbug.com/1010132
       'mistral', # b/140536001
       'moblab-generic-vm', # crbug.com/960998, crbug.com/976297
       'samus-kernelnext', # https://crbug.com/1004618
