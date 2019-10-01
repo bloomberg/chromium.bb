@@ -3369,6 +3369,10 @@ const char kEnableVirtualDesksName[] = "Enable Virtual Desks";
 const char kEnableVirtualDesksDescription[] =
     "A preview of the upcoming Virtual Desks features on Chrome OS devices.";
 
+const char kEnableVirtualDesksGesturesName[] = "Enable Virtual Desks gestures";
+const char kEnableVirtualDesksGesturesDescription[] =
+    "Enables touchpad gestures for Virtual Desks.";
+
 const char kTrimOnFreezeName[] = "Trim Working Set on freeze";
 const char kTrimOnFreezeDescription[] = "Trim Working Set on all frames frozen";
 
