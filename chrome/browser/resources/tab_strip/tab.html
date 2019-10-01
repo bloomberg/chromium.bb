@@ -10,14 +10,11 @@
     width: var(--tabstrip-tab-width);
   }
 
-  :host([active]) #dragImage {
-    box-shadow: 0 0 0 2px var(--tabstrip-focus-color);
-    outline: none;
-  }
-
   #dragImage {
+    background: var(--tabstrip-tab-background-color);
     border-radius: var(--tabstrip-card-border-radius);
-    box-shadow: var(--tabstrip-elevation-box-shadow);
+    box-shadow: 0 0 0 1px currentColor;
+    color: var(--tabstrip-tab-text-color);
     display: flex;
     flex-direction: column;
     height: 100%;
@@ -25,10 +22,14 @@
     width: 100%;
   }
 
+  :host([active]) #dragImage {
+    box-shadow: 0 0 0 2px var(--tabstrip-focus-color);
+    outline: none;
+  }
+
   #title {
     align-items: center;
-    background: var(--tabstrip-card-background-color);
-    border-block-end: 1px solid var(--tabstrip-separator-color);
+    border-block-end: 1px solid currentColor;
     box-sizing: border-box;
     display: flex;
     height: var(--tabstrip-tab-title-height);
@@ -57,8 +58,10 @@
   }
 
   #loading {
-    -webkit-mask-image: url(chrome://resources/images/throbber_small.svg);
-    background-color: var(--tabstrip-primary-text-color);
+    -webkit-mask:
+        url(chrome://resources/images/throbber_small.svg)
+        center/contain no-repeat;
+    background-color: currentColor;
     display: none;
   }
 
@@ -92,6 +95,7 @@
     align-items: center;
     background-color: transparent;
     border: 0;
+    color: inherit;
     cursor: pointer;
     display: flex;
     flex-shrink: 0;
@@ -104,8 +108,9 @@
   }
 
   #closeIcon {
-    background:
-        url(chrome://resources/images/icon_clear.svg) center/contain no-repeat;
+    -webkit-mask:
+        url(chrome://resources/images/icon_clear.svg)center/contain no-repeat;
+    background-color: currentColor;
     display: block;
     height: 18px;
     position: relative;
