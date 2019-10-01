@@ -8,7 +8,7 @@ export function now(): number {
   return perf.now();
 }
 
-export function rejectOnTimeout(ms: number, msg: string): Promise<GPUUncapturedErrorEvent> {
+export function rejectOnTimeout(ms: number, msg: string): Promise<never> {
   return new Promise((resolve, reject) => {
     setTimeout(() => {
       reject(new Error(msg));
