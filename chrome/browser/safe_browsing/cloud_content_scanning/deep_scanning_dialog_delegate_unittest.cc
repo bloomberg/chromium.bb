@@ -184,17 +184,6 @@ TEST_F(DeepScanningDialogDelegateIsEnabledTest, MalwareNoPref2) {
   EXPECT_FALSE(data.do_malware_scan);
 }
 
-TEST_F(DeepScanningDialogDelegateIsEnabledTest, MalwareNoPref3) {
-  EnableFeatures({kDeepScanningOfUploads});
-  SetDMToken(kDmToken);
-  SetMalwarePolicy(SEND_FILES_DISABLED);
-
-  DeepScanningDialogDelegate::Data data;
-  EXPECT_FALSE(DeepScanningDialogDelegate::IsEnabled(profile(), GURL(), &data));
-  EXPECT_FALSE(data.do_dlp_scan);
-  EXPECT_FALSE(data.do_malware_scan);
-}
-
 TEST_F(DeepScanningDialogDelegateIsEnabledTest, MalwareNoPref4) {
   EnableFeatures({kDeepScanningOfUploads});
   SetDMToken(kDmToken);
