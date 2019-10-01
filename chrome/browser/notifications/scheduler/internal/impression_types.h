@@ -52,9 +52,6 @@ struct Impression {
   // rate.
   bool integrated = false;
 
-  // The task start time when this impression is generated.
-  SchedulerTaskTime task_start_time = SchedulerTaskTime::kUnknown;
-
   // The unique identifier of the notification.
   std::string guid;
 

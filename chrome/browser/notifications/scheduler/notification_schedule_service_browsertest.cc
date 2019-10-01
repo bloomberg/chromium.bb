@@ -76,8 +76,7 @@ class TestBackgroundTaskScheduler : public NotificationBackgroundTaskScheduler {
   }
 
   // NotificationBackgroundTaskScheduler implementation.
-  void Schedule(notifications::SchedulerTaskTime scheduler_task_time,
-                base::TimeDelta window_start,
+  void Schedule(base::TimeDelta window_start,
                 base::TimeDelta window_end) override {
     QuitRunLoopIfNeeded();
   }

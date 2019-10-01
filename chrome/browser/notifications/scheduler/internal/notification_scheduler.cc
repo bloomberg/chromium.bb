@@ -201,8 +201,7 @@ class NotificationSchedulerImpl : public NotificationScheduler,
  public:
   NotificationSchedulerImpl(
       std::unique_ptr<NotificationSchedulerContext> context)
-      : context_(std::move(context)),
-        task_start_time_(SchedulerTaskTime::kUnknown) {}
+      : context_(std::move(context)) {}
 
   ~NotificationSchedulerImpl() override = default;
 
@@ -274,22 +273,18 @@ class NotificationSchedulerImpl : public NotificationScheduler,
   }
 
   // NotificationBackgroundTaskScheduler::Handler implementation.
-  void OnStartTask(SchedulerTaskTime task_time,
-                   TaskFinishedCallback callback) override {
+  void OnStartTask(TaskFinishedCallback callback) override {
     stats::LogBackgroundTaskEvent(stats::BackgroundTaskEvent::kStart);
-
-    task_start_time_ = task_time;
 
     // Updates the impression data to compute daily notification shown budget.
     context_->impression_tracker()->AnalyzeImpressionHistory();
 
     // Show notifications.
-    FindNotificationToShow(task_start_time_, std::move(callback));
+    FindNotificationToShow(std::move(callback));
   }
 
-  void OnStopTask(SchedulerTaskTime task_time) override {
+  void OnStopTask() override {
     stats::LogBackgroundTaskEvent(stats::BackgroundTaskEvent::kStopByOS);
-    task_start_time_ = task_time;
     ScheduleBackgroundTask();
   }
 
@@ -299,9 +294,7 @@ class NotificationSchedulerImpl : public NotificationScheduler,
     ScheduleBackgroundTask();
   }
 
-  // TODO(xingliu): Remove |task_start_time|.
-  void FindNotificationToShow(SchedulerTaskTime task_start_time,
-                              TaskFinishedCallback task_finish_callback) {
+  void FindNotificationToShow(TaskFinishedCallback task_finish_callback) {
     DisplayDecider::Results results;
     ScheduledNotificationManager::Notifications notifications;
     context_->notification_manager()->GetAllNotifications(&notifications);
@@ -373,10 +366,6 @@ class NotificationSchedulerImpl : public NotificationScheduler,
   std::unique_ptr<NotificationSchedulerContext> context_;
   std::unique_ptr<InitHelper> init_helper_;
   std::unique_ptr<DisplayHelper> display_helper_;
-
-  // The start time of the background task. SchedulerTaskTime::kUnknown if
-  // currently not running in a background task.
-  SchedulerTaskTime task_start_time_;
 
   base::WeakPtrFactory<NotificationSchedulerImpl> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(NotificationSchedulerImpl);

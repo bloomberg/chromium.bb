@@ -115,8 +115,7 @@ class NotificationSchedulerTest : public testing::Test {
         base::BindOnce([](base::RepeatingClosure quit_closure,
                           bool needs_reschedule) { quit_closure.Run(); },
                        loop.QuitClosure());
-    scheduler()->OnStartTask(SchedulerTaskTime::kMorning,
-                             std::move(task_finish_callback));
+    scheduler()->OnStartTask(std::move(task_finish_callback));
     loop.Run();
   }
 
@@ -420,7 +419,7 @@ TEST_F(NotificationSchedulerTest, ClientDropNotification) {
 TEST_F(NotificationSchedulerTest, BackgroundTaskStop) {
   Init();
   EXPECT_CALL(*task_coordinator(), ScheduleBackgroundTask(_, _));
-  scheduler()->OnStopTask(SchedulerTaskTime::kMorning);
+  scheduler()->OnStopTask();
 }
 
 }  // namespace
