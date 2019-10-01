@@ -43,15 +43,16 @@ HeapProfilerController::~HeapProfilerController() {
 }
 
 void HeapProfilerController::Start() {
-  if (base::FeatureList::IsEnabled(
+  if (!base::FeatureList::IsEnabled(
           metrics::CallStackProfileMetricsProvider::kHeapProfilerReporting)) {
-    int sampling_rate = base::GetFieldTrialParamByFeatureAsInt(
-        metrics::CallStackProfileMetricsProvider::kHeapProfilerReporting,
-        kHeapProfilerSamplingRate, 0);
-    if (sampling_rate > 0)
-      base::SamplingHeapProfiler::Get()->SetSamplingInterval(sampling_rate);
-    base::SamplingHeapProfiler::Get()->Start();
+    return;
   }
+  int sampling_rate = base::GetFieldTrialParamByFeatureAsInt(
+      metrics::CallStackProfileMetricsProvider::kHeapProfilerReporting,
+      kHeapProfilerSamplingRate, 0);
+  if (sampling_rate > 0)
+    base::SamplingHeapProfiler::Get()->SetSamplingInterval(sampling_rate);
+  base::SamplingHeapProfiler::Get()->Start();
   ScheduleNextSnapshot(stopped_);
 }
 
