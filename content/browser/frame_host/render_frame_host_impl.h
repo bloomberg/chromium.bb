@@ -146,7 +146,6 @@ class Range;
 
 namespace network {
 class ResourceRequestBody;
-struct ResourceResponse;
 }  // namespace network
 
 namespace content {
@@ -725,7 +724,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       NavigationRequest* navigation_request,
       mojom::CommonNavigationParamsPtr common_params,
       mojom::CommitNavigationParamsPtr commit_params,
-      network::ResourceResponse* response_head,
+      network::mojom::URLResponseHeadPtr response_head,
       mojo::ScopedDataPipeConsumerHandle response_body,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
       bool is_view_source,
@@ -1187,7 +1186,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       NavigationRequest* navigation_request,
       mojom::CommonNavigationParamsPtr common_params,
       mojom::CommitNavigationParamsPtr commit_params,
-      const network::ResourceResponseHead& response_head,
+      network::mojom::URLResponseHeadPtr response_head,
       mojo::ScopedDataPipeConsumerHandle response_body,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo>

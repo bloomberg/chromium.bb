@@ -4943,7 +4943,7 @@ void RenderFrameHostImpl::CommitNavigation(
     NavigationRequest* navigation_request,
     mojom::CommonNavigationParamsPtr common_params,
     mojom::CommitNavigationParamsPtr commit_params,
-    network::ResourceResponse* response_head,
+    network::mojom::URLResponseHeadPtr response_head,
     mojo::ScopedDataPipeConsumerHandle response_body,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     bool is_view_source,
@@ -5056,8 +5056,12 @@ void RenderFrameHostImpl::CommitNavigation(
     render_view_host()->Send(new FrameMsg_EnableViewSourceMode(routing_id_));
   }
 
-  const network::ResourceResponseHead head =
-      response_head ? response_head->head : network::ResourceResponseHead();
+  // TODO(lfg): The renderer is not able to handle a null response, so the
+  // browser provides an empty response instead. See the DCHECK in the beginning
+  // of this method for the edge cases where a response isn't provided.
+  network::mojom::URLResponseHeadPtr head =
+      response_head ? std::move(response_head)
+                    : network::mojom::URLResponseHead::New();
   const bool is_same_document =
       NavigationTypeUtils::IsSameDocument(common_params->navigation_type);
 
@@ -5395,7 +5399,7 @@ void RenderFrameHostImpl::CommitNavigation(
     dom_content_loaded_ = false;
     SendCommitNavigation(
         navigation_client, navigation_request, std::move(common_params),
-        std::move(commit_params), head, std::move(response_body),
+        std::move(commit_params), std::move(head), std::move(response_body),
         std::move(url_loader_client_endpoints),
         std::move(subresource_loader_factories),
         std::move(subresource_overrides), std::move(controller),
@@ -7049,7 +7053,7 @@ void RenderFrameHostImpl::SendCommitNavigation(
     NavigationRequest* navigation_request,
     mojom::CommonNavigationParamsPtr common_params,
     mojom::CommitNavigationParamsPtr commit_params,
-    const network::ResourceResponseHead& response_head,
+    network::mojom::URLResponseHeadPtr response_head,
     mojo::ScopedDataPipeConsumerHandle response_body,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
@@ -7063,8 +7067,9 @@ void RenderFrameHostImpl::SendCommitNavigation(
     const base::UnguessableToken& devtools_navigation_token) {
   if (navigation_client) {
     navigation_client->CommitNavigation(
-        std::move(common_params), std::move(commit_params), response_head,
-        std::move(response_body), std::move(url_loader_client_endpoints),
+        std::move(common_params), std::move(commit_params),
+        std::move(response_head), std::move(response_body),
+        std::move(url_loader_client_endpoints),
         std::move(subresource_loader_factories),
         std::move(subresource_overrides), std::move(controller),
         std::move(provider_info), std::move(prefetch_loader_factory),
@@ -7072,8 +7077,9 @@ void RenderFrameHostImpl::SendCommitNavigation(
         BuildNavigationClientCommitNavigationCallback(navigation_request));
   } else {
     GetNavigationControl()->CommitNavigation(
-        std::move(common_params), std::move(commit_params), response_head,
-        std::move(response_body), std::move(url_loader_client_endpoints),
+        std::move(common_params), std::move(commit_params),
+        std::move(response_head), std::move(response_body),
+        std::move(url_loader_client_endpoints),
         std::move(subresource_loader_factories),
         std::move(subresource_overrides), std::move(controller),
         std::move(provider_info), std::move(prefetch_loader_factory),
