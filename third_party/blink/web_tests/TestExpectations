@@ -6214,4 +6214,8 @@ crbug.com/1003715 [ Win10 ] http/tests/notifications/serviceworker-notification-
 # Sheriff 2019-10-01
 crbug.com/1010013 [ Win10 ] virtual/threaded/http/tests/devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.js [ Failure ]
 crbug.com/1010025 [ Mac ] fast/forms/date/date-appearance-basic.html [ Failure ]
+crbug.com/1010032 [ Win7 ] fast/text/fallback-traits-fixup.html [ Failure ]
+crbug.com/1010032 [ Win7 ] fast/text/international/bold-bengali.html [ Failure ]
+crbug.com/1010032 [ Win7 ] fast/text/selection/khmer-selection.html [ Failure ]
+crbug.com/1010032 [ Win7 ] fast/writing-mode/Kusa-Makura-background-canvas.html [ Failure ]
 
