@@ -200,6 +200,7 @@ SVGSMILElement::SVGSMILElement(const QualifiedName& tag_name, Document& doc)
       cached_min_(kInvalidCachedTime),
       cached_max_(kInvalidCachedTime),
       interval_has_changed_(false),
+      instance_lists_have_changed_(false),
       is_notifying_dependents_(false) {}
 
 SVGSMILElement::~SVGSMILElement() = default;
@@ -491,6 +492,7 @@ void SVGSMILElement::ParseAttribute(const AttributeModificationParams& params) {
     ParseBeginOrEnd(value.GetString(), kBegin);
     if (isConnected()) {
       ConnectConditions();
+      instance_lists_have_changed_ = true;
       InstanceListChanged();
       if (time_container_) {
         time_container_->MarkIntervalsDirty();
@@ -506,6 +508,7 @@ void SVGSMILElement::ParseAttribute(const AttributeModificationParams& params) {
     ParseBeginOrEnd(value.GetString(), kEnd);
     if (isConnected()) {
       ConnectConditions();
+      instance_lists_have_changed_ = true;
       InstanceListChanged();
       if (time_container_) {
         time_container_->MarkIntervalsDirty();
@@ -707,6 +710,7 @@ void SVGSMILElement::AddInstanceTime(BeginOrEnd begin_or_end,
   Vector<SMILTimeWithOrigin>& list =
       begin_or_end == kBegin ? begin_times_ : end_times_;
   InsertSortedAndUnique(list, SMILTimeWithOrigin(time, origin));
+  instance_lists_have_changed_ = true;
 }
 
 void SVGSMILElement::AddInstanceTimeAndUpdate(BeginOrEnd begin_or_end,
@@ -855,23 +859,17 @@ SMILTime SVGSMILElement::NextInterestingTime(SMILTime presentation_time) const {
 }
 
 void SVGSMILElement::InstanceListChanged() {
+  DCHECK(instance_lists_have_changed_);
   if (is_waiting_for_first_interval_) {
+    instance_lists_have_changed_ = false;
     ResolveFirstInterval();
     return;
   }
   SMILTime current_presentation_time =
       time_container_ ? time_container_->CurrentDocumentTime() : SMILTime();
   DCHECK(!current_presentation_time.IsUnresolved());
-  DiscardOrRevalidateCurrentInterval(current_presentation_time);
   SMILInterval old_interval = interval_;
-  if (!interval_.IsResolved()) {
-    // We have no current interval, try to resolve one.
-    interval_ =
-        ResolveInterval(SMILTime::Earliest(), current_presentation_time);
-  } else {
-    // We have a current interval, check if it needs to be updated.
-    CheckAndUpdateInterval(current_presentation_time);
-  }
+  UpdateInterval(current_presentation_time);
   if (interval_ != old_interval) {
     if (GetActiveState() == kActive &&
         interval_.BeginsAfter(current_presentation_time)) {
@@ -879,7 +877,6 @@ void SVGSMILElement::InstanceListChanged() {
       if (GetActiveState() != kActive)
         EndedActiveInterval();
     }
-    NotifyDependentsOnNewInterval(interval_);
     interval_has_changed_ = false;
   }
 }
@@ -907,13 +904,31 @@ void SVGSMILElement::DiscardOrRevalidateCurrentInterval(
   }
 }
 
-void SVGSMILElement::CheckAndUpdateInterval(SMILTime elapsed) {
+void SVGSMILElement::UpdateInterval(SMILTime presentation_time) {
   DCHECK(!is_waiting_for_first_interval_);
-  DCHECK(interval_.BeginsBefore(elapsed));
+  if (instance_lists_have_changed_) {
+    instance_lists_have_changed_ = false;
+    DiscardOrRevalidateCurrentInterval(presentation_time);
+  }
+  base::Optional<SMILInterval> new_interval;
+  if (!interval_.IsResolved()) {
+    new_interval = ResolveInterval(SMILTime::Earliest(), presentation_time);
+  } else {
+    new_interval = CheckAndUpdateInterval(presentation_time);
+  }
+  if (new_interval) {
+    previous_interval_ = interval_;
+    interval_ = *new_interval;
+    NotifyDependentsOnNewInterval(interval_);
+    interval_has_changed_ = true;
+  }
+}
 
+base::Optional<SMILInterval> SVGSMILElement::CheckAndUpdateInterval(
+    SMILTime elapsed) {
   Restart restart = GetRestart();
   if (restart == kRestartNever)
-    return;
+    return base::nullopt;
 
   base::Optional<SMILInterval> new_interval;
   if (restart == kRestartAlways && interval_.EndsAfter(elapsed)) {
@@ -930,12 +945,7 @@ void SVGSMILElement::CheckAndUpdateInterval(SMILTime elapsed) {
     if (next_interval.IsResolved() && next_interval.begin != interval_.begin)
       new_interval = next_interval;
   }
-
-  if (new_interval) {
-    previous_interval_ = interval_;
-    interval_ = *new_interval;
-    interval_has_changed_ = true;
-  }
+  return new_interval;
 }
 
 const SMILInterval& SVGSMILElement::GetActiveInterval(SMILTime elapsed) const {
@@ -1081,7 +1091,6 @@ void SVGSMILElement::UpdateSyncBases() {
   if (!interval_has_changed_)
     return;
   interval_has_changed_ = false;
-  NotifyDependentsOnNewInterval(interval_);
 }
 
 void SVGSMILElement::UpdateActiveState(SMILTime elapsed) {
@@ -1196,13 +1205,22 @@ void SVGSMILElement::CreateInstanceTimesFromSyncBase(
     instance_lists_changed = true;
   }
 
-  if (instance_lists_changed) {
-    InstanceListChanged();
-    if (time_container_) {
-      time_container_->MarkIntervalsDirty();
-      time_container_->ScheduleIntervalUpdate();
-    }
-  }
+  // No instance times were added.
+  if (!instance_lists_changed)
+    return;
+
+  // We need to check/update the intervals.
+  if (time_container_)
+    time_container_->MarkIntervalsDirty();
+
+  // We're currently sending notifications for, and thus updating, this element
+  // so let that update handle the new instance times.
+  if (is_notifying_dependents_)
+    return;
+
+  InstanceListChanged();
+  if (time_container_)
+    time_container_->ScheduleIntervalUpdate();
 }
 
 void SVGSMILElement::AddSyncBaseDependent(SVGSMILElement& animation) {

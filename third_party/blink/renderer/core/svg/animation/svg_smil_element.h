@@ -86,10 +86,7 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   SMILTime SimpleDuration() const;
 
   bool CurrentIntervalIsActive(SMILTime elapsed);
-  void DiscardOrRevalidateCurrentInterval(SMILTime presentation_time);
-  // Check if the current interval is still current, and if not compute the
-  // next interval.
-  void CheckAndUpdateInterval(SMILTime elapsed);
+  void UpdateInterval(SMILTime presentation_time);
   void UpdateActiveState(SMILTime elapsed);
   void UpdateSyncBases();
 
@@ -164,6 +161,10 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
 
   SMILInterval ResolveInterval(SMILTime begin_after, SMILTime end_after) const;
   bool ResolveFirstInterval();
+  // Check if the current interval is still current, and if not compute the
+  // next interval.
+  base::Optional<SMILInterval> CheckAndUpdateInterval(SMILTime elapsed);
+  void DiscardOrRevalidateCurrentInterval(SMILTime presentation_time);
   SMILTime ResolveActiveEnd(SMILTime resolved_begin,
                             SMILTime resolved_end) const;
   SMILTime RepeatingDuration() const;
@@ -281,6 +282,7 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   mutable SMILTime cached_max_;
 
   bool interval_has_changed_;
+  bool instance_lists_have_changed_;
   bool is_notifying_dependents_;
 
   friend class ConditionEventListener;
