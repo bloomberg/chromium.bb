@@ -1210,7 +1210,9 @@ int Element::clientWidth() {
 
   if (LayoutBox* layout_object = GetLayoutBox())
     return AdjustForAbsoluteZoom::AdjustLayoutUnit(
-               LayoutUnit(layout_object->PixelSnappedClientWidth()),
+               LayoutUnit(
+                   layout_object
+                       ->PixelSnappedClientWidthWithTableSpecialBehavior()),
                layout_object->StyleRef())
         .Round();
   return 0;
@@ -1246,7 +1248,9 @@ int Element::clientHeight() {
 
   if (LayoutBox* layout_object = GetLayoutBox())
     return AdjustForAbsoluteZoom::AdjustLayoutUnit(
-               LayoutUnit(layout_object->PixelSnappedClientHeight()),
+               LayoutUnit(
+                   layout_object
+                       ->PixelSnappedClientHeightWithTableSpecialBehavior()),
                layout_object->StyleRef())
         .Round();
   return 0;
