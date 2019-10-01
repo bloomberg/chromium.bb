@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_DBUS_FAKE_DEBUG_DAEMON_CLIENT_H_
-#define CHROMEOS_DBUS_FAKE_DEBUG_DAEMON_CLIENT_H_
+#ifndef CHROMEOS_DBUS_DEBUG_DAEMON_FAKE_DEBUG_DAEMON_CLIENT_H_
+#define CHROMEOS_DBUS_DEBUG_DAEMON_FAKE_DEBUG_DAEMON_CLIENT_H_
 
 #include <stdint.h>
 #include <sys/types.h>
@@ -16,13 +16,13 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
-#include "chromeos/dbus/debug_daemon_client.h"
+#include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
 
 namespace chromeos {
 
 // The DebugDaemonClient implementation used on Linux desktop,
 // which does nothing.
-class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeDebugDaemonClient
+class COMPONENT_EXPORT(DEBUG_DAEMON) FakeDebugDaemonClient
     : public DebugDaemonClient {
  public:
   FakeDebugDaemonClient();
@@ -125,4 +125,4 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeDebugDaemonClient
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_DBUS_FAKE_DEBUG_DAEMON_CLIENT_H_
+#endif  // CHROMEOS_DBUS_DEBUG_DAEMON_FAKE_DEBUG_DAEMON_CLIENT_H_

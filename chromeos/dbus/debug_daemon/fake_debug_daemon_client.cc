@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/dbus/fake_debug_daemon_client.h"
+#include "chromeos/dbus/debug_daemon/fake_debug_daemon_client.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -32,8 +32,7 @@ namespace chromeos {
 
 FakeDebugDaemonClient::FakeDebugDaemonClient()
     : features_mask_(DebugDaemonClient::DEV_FEATURE_NONE),
-      service_is_available_(true) {
-}
+      service_is_available_(true) {}
 
 FakeDebugDaemonClient::~FakeDebugDaemonClient() = default;
 
@@ -140,8 +139,7 @@ void FakeDebugDaemonClient::TestICMPWithOptions(
       FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
 }
 
-void FakeDebugDaemonClient::UploadCrashes() {
-}
+void FakeDebugDaemonClient::UploadCrashes() {}
 
 void FakeDebugDaemonClient::EnableDebuggingFeatures(
     const std::string& password,

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_DBUS_DEBUG_DAEMON_CLIENT_H_
-#define CHROMEOS_DBUS_DEBUG_DAEMON_CLIENT_H_
+#ifndef CHROMEOS_DBUS_DEBUG_DAEMON_DEBUG_DAEMON_CLIENT_H_
+#define CHROMEOS_DBUS_DEBUG_DAEMON_DEBUG_DAEMON_CLIENT_H_
 
 #include <stdint.h>
 #include <sys/types.h>
@@ -23,10 +23,6 @@
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
-namespace metrics {
-class DebugdClientProvider;
-}  // namespace metrics
-
 namespace chromeos {
 
 // A DbusLibraryError represents an error response received from D-Bus.
@@ -37,7 +33,7 @@ enum DbusLibraryError {
 };
 
 // DebugDaemonClient is used to communicate with the debug daemon.
-class COMPONENT_EXPORT(CHROMEOS_DBUS) DebugDaemonClient
+class COMPONENT_EXPORT(DEBUG_DAEMON) DebugDaemonClient
     : public DBusClient,
       public base::trace_event::TracingAgent {
  public:
@@ -153,8 +149,8 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) DebugDaemonClient
   // Called once QueryDebuggingFeatures() is complete. |succeeded| will be true
   // if debugging features have been successfully enabled. |feature_mask| is a
   // bitmask made out of DebuggingFeature enum values.
-  typedef base::Callback<void(bool succeeded,
-                              int feature_mask)> QueryDevFeaturesCallback;
+  typedef base::Callback<void(bool succeeded, int feature_mask)>
+      QueryDevFeaturesCallback;
   // Checks which debugging features have been already enabled.
   virtual void QueryDebuggingFeatures(
       const QueryDevFeaturesCallback& callback) = 0;
@@ -274,7 +270,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) DebugDaemonClient
  protected:
   // For calling Init() in initiating a DebugDaemonClient instance for private
   // connections.
-  friend class metrics::DebugdClientProvider;
+  friend class DebugDaemonClientProvider;
 
   // Create() should be used instead.
   DebugDaemonClient();
@@ -285,4 +281,4 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) DebugDaemonClient
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_DBUS_DEBUG_DAEMON_CLIENT_H_
+#endif  // CHROMEOS_DBUS_DEBUG_DAEMON_DEBUG_DAEMON_CLIENT_H_

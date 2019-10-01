@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/dbus/debug_daemon_client.h"
+#include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
 
 #include <dbus/dbus-protocol.h>
 #include <fcntl.h>
@@ -163,8 +163,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
       bool numeric,
       bool ipv6,
       DBusMethodCallback<std::vector<std::string>> callback) override {
-    dbus::MethodCall method_call(debugd::kDebugdInterface,
-                                 debugd::kGetRoutes);
+    dbus::MethodCall method_call(debugd::kDebugdInterface, debugd::kGetRoutes);
     dbus::MessageWriter writer(&method_call);
     dbus::MessageWriter sub_writer(NULL);
     writer.OpenArray("{sv}", &sub_writer);
@@ -255,8 +254,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
   }
 
   void GetAllLogs(GetLogsCallback callback) override {
-    dbus::MethodCall method_call(debugd::kDebugdInterface,
-                                 debugd::kGetAllLogs);
+    dbus::MethodCall method_call(debugd::kDebugdInterface, debugd::kGetAllLogs);
     debugdaemon_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&DebugDaemonClientImpl::OnGetAllLogs,
@@ -280,9 +278,8 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
 
   void StartAgentTracing(const base::trace_event::TraceConfig& trace_config,
                          StartAgentTracingCallback callback) override {
-    dbus::MethodCall method_call(
-        debugd::kDebugdInterface,
-        debugd::kSystraceStart);
+    dbus::MethodCall method_call(debugd::kDebugdInterface,
+                                 debugd::kSystraceStart);
     dbus::MessageWriter writer(&method_call);
     if (trace_config.systrace_events().empty()) {
       writer.AppendString("all");  // TODO(sleffler) parameterize category list
@@ -341,8 +338,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
 
   void TestICMP(const std::string& ip_address,
                 TestICMPCallback callback) override {
-    dbus::MethodCall method_call(debugd::kDebugdInterface,
-                                 debugd::kTestICMP);
+    dbus::MethodCall method_call(debugd::kDebugdInterface, debugd::kTestICMP);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(ip_address);
     debugdaemon_proxy_->CallMethod(
@@ -630,9 +626,9 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
     while (sub_reader.HasMoreData()) {
       dbus::MessageReader sub_sub_reader(NULL);
       std::string key, value;
-      if (!sub_reader.PopDictEntry(&sub_sub_reader)
-          || !sub_sub_reader.PopString(&key)
-          || !sub_sub_reader.PopString(&value)) {
+      if (!sub_reader.PopDictEntry(&sub_sub_reader) ||
+          !sub_sub_reader.PopString(&key) ||
+          !sub_sub_reader.PopString(&value)) {
         broken = true;
         break;
       }
@@ -699,18 +695,16 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
     std::move(callback).Run(std::move(result));
   }
 
-  void OnEnableDebuggingFeatures(
-      const EnableDebuggingCallback& callback,
-      dbus::Response* response) {
+  void OnEnableDebuggingFeatures(const EnableDebuggingCallback& callback,
+                                 dbus::Response* response) {
     if (callback.is_null())
       return;
 
     callback.Run(response != NULL);
   }
 
-  void OnQueryDebuggingFeatures(
-      const QueryDevFeaturesCallback& callback,
-      dbus::Response* response) {
+  void OnQueryDebuggingFeatures(const QueryDevFeaturesCallback& callback,
+                                dbus::Response* response) {
     if (callback.is_null())
       return;
 
@@ -723,9 +717,8 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
     callback.Run(true, feature_mask);
   }
 
-  void OnRemoveRootfsVerification(
-      const EnableDebuggingCallback& callback,
-      dbus::Response* response) {
+  void OnRemoveRootfsVerification(const EnableDebuggingCallback& callback,
+                                  dbus::Response* response) {
     if (callback.is_null())
       return;
 
