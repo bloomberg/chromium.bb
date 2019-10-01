@@ -58,7 +58,7 @@ class PaygenJsonTests(BasePaygenBuildLibTest):
   """Test cases that require mocking paygen.json fetching."""
 
   def testGetPaygenJsonCaching(self):
-    expected_paygen_size = 1056
+    expected_paygen_size = 1057
     result = paygen_build_lib.PaygenBuild.GetPaygenJson()
     self.assertEqual(len(result), expected_paygen_size)
     self.mockGetJson.assert_called_once()
@@ -940,6 +940,101 @@ class TestPaygenBuildLibDiscoverRequiredPayloads(MockImageDiscoveryHelper,
             # test_image_9460_67 had test turned off in json.
         ])
 
+  def testApplicableModels(self):
+    """Handle the applicable_models argument for FSI payloads."""
+
+    self.PatchObject(cros_build_lib, 'GetRandomString', return_value='<random>')
+
+    # Setup a stable build that we will generate payload tests for
+    target_build = gspaths.Build(bucket='crt',
+                                 channel='stable-channel',
+                                 board='reef',
+                                 version='11021.57.0')
+
+    # This is all of the other stable channel builds defined in paygen.json
+    # We will generate a payload and test from each
+    build_61 = gspaths.Build(bucket='crt',
+                             channel='stable-channel',
+                             board='reef',
+                             version='9202.61.0')
+    build_64 = gspaths.Build(bucket='crt',
+                             channel='stable-channel',
+                             board='reef',
+                             version='9202.64.0')
+    build_58 = gspaths.Build(bucket='crt',
+                             channel='stable-channel',
+                             board='reef',
+                             version='9334.58.2')
+    build_72 = gspaths.Build(bucket='crt',
+                             channel='stable-channel',
+                             board='reef',
+                             version='9334.72.0')
+    build_60 = gspaths.Build(bucket='crt',
+                             channel='stable-channel',
+                             board='reef',
+                             version='9460.60.0')
+
+    # This the one we really care about that has applicable_models defined.
+    build_56 = gspaths.Build(bucket='crt',
+                             channel='stable-channel',
+                             board='reef',
+                             version='11021.56.0')
+
+    # Tell the build instance about all of them
+    self.addSignedImage(target_build)
+    self.addTestImage(target_build)
+    self.addSignedImage(build_61)
+    self.addTestImage(build_61)
+    self.addSignedImage(build_64)
+    self.addTestImage(build_64)
+    self.addSignedImage(build_58)
+    self.addTestImage(build_58)
+    self.addSignedImage(build_72)
+    self.addTestImage(build_72)
+    self.addSignedImage(build_60)
+    self.addTestImage(build_60)
+    self.addSignedImage(build_56)
+    self.addTestImage(build_56)
+
+    # Generate the payloads and tests
+    paygen = self._GetPaygenBuildInstance(target_build)
+    _, tests = paygen._DiscoverRequiredPayloads()
+
+    expected_fsi_payload_test = {
+        'applicable_models': [u'basking', u'electro'],
+        'src_channel': 'stable-channel', 'src_version': u'11021.56.0',
+        'payload_type': u'FSI',
+        'payload': {
+            'src_image': None,
+            'uri': ('gs://crt/stable-channel/reef/11021.57.0/payloads/'
+                    'chromeos_11021.57.0_reef_stable-channel_full_test.bin-'
+                    '<random>'),
+            'exists': False,
+            'tgt_image': {
+                'image_type': None,
+                'uri': None,
+                'build': {
+                    'version': '11021.57.0',
+                    'bucket': 'crt',
+                    'board': 'reef',
+                    'channel': 'stable-channel',
+                    'uri': None
+                },
+                'milestone': None
+            },
+            'build': {
+                'version': '11021.57.0',
+                'bucket': 'crt',
+                'board': 'reef',
+                'channel': 'stable-channel',
+                'uri': None
+            }
+        }
+    }
+
+    # Check that the last test with applicable_models has the correct data
+    self.assertDictEqual(tests[-1], expected_fsi_payload_test)
+
 
 class TestPayloadGeneration(BasePaygenBuildLibTestWithBuilds):
   """Test GeneratePayloads method."""
@@ -1313,7 +1408,9 @@ class HWTest(cros_test_lib.MockTestCase):
             target_release='target-release',
             source_payload_uri='source-uri',
             target_payload_uri='target-uri',
-            suite_name='dummy-suite')]
+            suite_name='dummy-suite',
+            payload_type=paygen_build_lib.PAYLOAD_TYPE_N2N,
+            applicable_models=None)]
 
     test_plan_string = paygen_build_lib._TestPlan(
         payload_test_configs=payload_test_configs,
@@ -1336,7 +1433,7 @@ class HWTest(cros_test_lib.MockTestCase):
                 },
                 'displayName': 'dummy-build/dummy-suite/' +
                                'autoupdate_EndToEndTest_' +
-                               'dummy-test_delta_source-release'
+                               'dummy-test_delta_source-release_n2n'
             }]
         }
     }
@@ -1346,7 +1443,8 @@ class HWTest(cros_test_lib.MockTestCase):
                               'target_release=target-release',
                               'target_payload_uri=target-uri',
                               'SUITE=dummy-suite',
-                              'source_payload_uri=source-uri'])
+                              'source_payload_uri=source-uri',
+                              'payload_type=N2N'])
 
     self.assertDictEqual(test_plan_dict, expected_test_plan)
     self.assertSetEqual(test_args_set, expected_test_args)

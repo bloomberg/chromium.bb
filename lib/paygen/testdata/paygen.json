@@ -9431,6 +9431,25 @@
     },
     {
       "board": {
+        "public_codename": "reef",
+        "is_active": true,
+        "builder_name": "reef"
+      },
+      "delta_type": "FSI",
+      "channel": "stable",
+      "chrome_os_version": "11021.56.0",
+      "chrome_version": "70.0.3538.76",
+      "milestone": 70,
+      "generate_delta": true,
+      "delta_payload_tests": true,
+      "full_payload_tests": true,
+      "applicable_models": [
+        "basking",
+        "electro"
+      ]
+    },
+    {
+      "board": {
         "public_codename": "reks",
         "is_active": true,
         "builder_name": "reks"

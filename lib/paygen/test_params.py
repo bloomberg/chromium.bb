@@ -22,7 +22,7 @@ class TestConfig(object):
   def __init__(self, board, name, is_delta_update, source_release,
                target_release, source_payload_uri, target_payload_uri,
                suite_name=_DEFAULT_AU_SUITE_NAME, source_archive_uri=None,
-               payload_type=None):
+               payload_type=None, applicable_models=None):
     """Initialize a test configuration.
 
     Args:
@@ -38,6 +38,9 @@ class TestConfig(object):
       payload_type: The type of update we are doing with this payload.
                     Possible types are in defined in PAYLOAD_TYPES at
                     chromite/lib/paygen/paygen_build_lib.
+      applicable_models: A list of models that this config should run
+                         against. Only used for FSI configs. None
+                         indicates it can run on any board.
     """
     self.board = board
     self.name = name
@@ -49,6 +52,7 @@ class TestConfig(object):
     self.suite_name = suite_name
     self.source_archive_uri = source_archive_uri
     self.payload_type = payload_type
+    self.applicable_models = applicable_models
 
   def get_update_type(self):
     return 'delta' if self.is_delta_update else 'full'
