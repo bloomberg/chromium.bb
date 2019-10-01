@@ -4534,9 +4534,7 @@ static int gm_get_params_cost(const WarpedMotionParams *gm,
   return (params_cost << AV1_PROB_COST_SHIFT);
 }
 
-static int do_gm_search_logic(SPEED_FEATURES *const sf, int num_refs_using_gm,
-                              int frame) {
-  (void)num_refs_using_gm;
+static int do_gm_search_logic(SPEED_FEATURES *const sf, int frame) {
   (void)frame;
   switch (sf->gm_search_type) {
     case GM_FULL_SEARCH: return 1;
@@ -4906,7 +4904,6 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
       0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0
     };
     // clang-format on
-    int num_refs_using_gm = 0;
     int num_frm_corners = -1;
     int frm_corners[2 * MAX_CORNERS];
     unsigned char *frm_buffer = cpi->source->y_buffer;
@@ -4947,7 +4944,7 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
 
       if (ref_buf[frame]->y_crop_width == cpi->source->y_crop_width &&
           ref_buf[frame]->y_crop_height == cpi->source->y_crop_height &&
-          do_gm_search_logic(&cpi->sf, num_refs_using_gm, frame) &&
+          do_gm_search_logic(&cpi->sf, frame) &&
           !prune_ref_by_selective_ref_frame(
               cpi, ref_frame, cm->cur_frame->ref_display_order_hint,
               cm->current_frame.display_order_hint) &&
@@ -5061,7 +5058,6 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
         }
         aom_clear_system_state();
       }
-      if (cm->global_motion[frame].wmtype != IDENTITY) num_refs_using_gm++;
       cpi->gmparams_cost[frame] =
           gm_get_params_cost(&cm->global_motion[frame], ref_params,
                              cm->allow_high_precision_mv) +
