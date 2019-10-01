@@ -1951,10 +1951,13 @@ class AppListPresenterDelegateScalableAppListTest
   AppListPresenterDelegateScalableAppListTest() {
     if (GetParam()) {
       scoped_feature_list_.InitWithFeatures(
-          {app_list_features::kScalableAppList}, {});
+          {app_list_features::kScalableAppList,
+           ash::features::kEnableBackgroundBlur},
+          {});
     } else {
       scoped_feature_list_.InitWithFeatures(
-          {}, {app_list_features::kScalableAppList});
+          {ash::features::kEnableBackgroundBlur},
+          {app_list_features::kScalableAppList});
     }
   }
 

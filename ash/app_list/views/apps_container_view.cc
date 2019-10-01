@@ -437,7 +437,6 @@ const gfx::Insets& AppsContainerView::CalculateMarginsForAvailableBounds(
       grid_layout.columns, grid_layout.rows);
   const gfx::Size max_grid_size = apps_grid_view()->GetMaximumTileGridSize(
       grid_layout.columns, grid_layout.rows);
-  const gfx::Insets grid_insets = apps_grid_view()->GetInsets();
 
   int available_height = available_bounds.height();
   // If calculating the bounds for the full apps container (rather than apps
@@ -491,19 +490,17 @@ const gfx::Insets& AppsContainerView::CalculateMarginsForAvailableBounds(
       calculate_margin(ideal_horizontal_margin, available_bounds.width(),
                        min_grid_size.width(), max_grid_size.width());
 
-  DCHECK_GE(grid_insets.top(), kAppsGridMinimumMargin);
-  DCHECK_GE(grid_insets.bottom(), kAppsGridMinimumMargin);
   const int min_horizontal_margin =
       app_list_features::IsScalableAppListEnabled()
           ? kAppsGridPageSwitcherSpacing +
                 page_switcher_->GetPreferredSize().width()
           : kAppsGridMinimumMargin;
 
-  cached_container_margins_.margins =
-      gfx::Insets(std::max(vertical_margin, grid_insets.top()),
-                  std::max(horizontal_margin, min_horizontal_margin),
-                  std::max(vertical_margin, grid_insets.bottom()),
-                  std::max(horizontal_margin, min_horizontal_margin));
+  cached_container_margins_.margins = gfx::Insets(
+      std::max(vertical_margin, GetAppListConfig().grid_fadeout_zone_height()),
+      std::max(horizontal_margin, min_horizontal_margin),
+      std::max(vertical_margin, GetAppListConfig().grid_fadeout_zone_height()),
+      std::max(horizontal_margin, min_horizontal_margin));
   cached_container_margins_.bounds_size = available_bounds.size();
   cached_container_margins_.search_box_size = search_box_size;
 

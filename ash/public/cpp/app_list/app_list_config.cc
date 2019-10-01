@@ -8,6 +8,7 @@
 
 #include "ash/public/cpp/app_list/app_list_config_provider.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
+#include "ash/public/cpp/ash_features.h"
 #include "base/macros.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "ui/gfx/color_palette.h"
@@ -146,6 +147,12 @@ int GridFocusCornerRadiusForType(ash::AppListConfigType type) {
 }
 
 int GridFadeoutMaskHeightForType(ash::AppListConfigType type) {
+  // The fadeout mask layer is shown only if background blur is enabled - if
+  // fadeout mask is not shown, return 0 here so the apps grid respects is not
+  // shown in the fadeout zone during drag.
+  if (!ash::features::IsBackgroundBlurEnabled())
+    return 0;
+
   switch (type) {
     case ash::AppListConfigType::kShared:
       return 24;
