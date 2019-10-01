@@ -50,6 +50,7 @@ executable("openscreen_unittests") {
   deps = [
     "cast/common:unittests",
     "cast/common/certificate:unittests",
+    "cast/common/channel:unittests",
     "cast/sender/channel:unittests",
     "osp:unittests",
     "osp/impl/discovery/mdns:unittests",

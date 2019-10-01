@@ -4,30 +4,37 @@
 
 source_set("channel") {
   sources = [
-    "cast_auth_util.cc",
-    "cast_auth_util.h",
+    "cast_socket.cc",
+    "cast_socket.h",
+    "message_framer.cc",
+    "message_framer.h",
   ]
 
   deps = [
-    "../../common/channel/proto",
+    "../../../util",
+    "proto",
   ]
 
   public_deps = [
     "../../../platform",
+    "../../../third_party/abseil",
   ]
 }
 
 source_set("unittests") {
   testonly = true
   sources = [
-    "cast_auth_util_unittest.cc",
+    "cast_socket_unittest.cc",
+    "message_framer_unittest.cc",
   ]
 
   deps = [
     ":channel",
     "../../../platform",
+    "../../../third_party/googletest:gmock",
     "../../../third_party/googletest:gtest",
+    "../../../util",
     "../../common/certificate/proto:unittest_proto",
-    "../../common/channel/proto",
+    "proto",
   ]
 }
