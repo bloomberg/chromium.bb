@@ -175,7 +175,7 @@ def enumerate_input(input_filename, directory, recursive, ignore_errors, output,
     with open(input_filename, 'rb') as f:
       sha1_match = re.match(b'^([A-Za-z0-9]{40})$', f.read(1024).rstrip())
       if sha1_match:
-        yield (sha1_match.groups(1)[0], output)
+        yield (sha1_match.groups(1)[0].decode('utf-8'), output)
         return
     if not ignore_errors:
       raise InvalidFileError('No sha1 sum found in %s.' % input_filename)
@@ -214,7 +214,10 @@ def enumerate_input(input_filename, directory, recursive, ignore_errors, output,
         with open(full_path, 'rb') as f:
           sha1_match = re.match(b'^([A-Za-z0-9]{40})$', f.read(1024).rstrip())
         if sha1_match:
-          yield (sha1_match.groups(1)[0], full_path.replace('.sha1', ''))
+          yield (
+              sha1_match.groups(1)[0].decode('utf-8'),
+              full_path.replace('.sha1', '')
+          )
         else:
           if not ignore_errors:
             raise InvalidFileError('No sha1 sum found in %s.' % filename)
