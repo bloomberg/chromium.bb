@@ -262,7 +262,6 @@ TEST_F(NotificationSchedulerTest, OnUserAction) {
   UserActionData action_data(SchedulerClientType::kTest1,
                              UserActionType::kButtonClick, kGuid);
   EXPECT_CALL(*impression_tracker(), OnUserAction(action_data));
-  EXPECT_CALL(*task_coordinator(), ScheduleBackgroundTask(_, _)).Times(1);
   EXPECT_CALL(*client(), OnUserAction(_)).WillOnce(InvokeWithoutArgs([&]() {
     loop.Quit();
   }));
