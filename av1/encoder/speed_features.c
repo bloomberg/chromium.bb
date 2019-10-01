@@ -294,14 +294,11 @@ static void set_good_speed_features_framesize_independent(
     sf->simple_motion_search_split = cm->allow_screen_content_tools ? 1 : 2;
     sf->simple_motion_search_early_term_none = 1;
 
-    sf->disable_wedge_search_var_thresh = 0;
-    sf->disable_wedge_search_edge_thresh = 0;
     sf->disable_interinter_wedge_newmv_search = boosted ? 0 : 1;
     sf->prune_comp_type_by_comp_avg = 1;
     sf->prune_motion_mode_level = 2;
     sf->gm_search_type = GM_REDUCED_REF_SEARCH_SKIP_L2_L3_ARF2;
     sf->disable_adaptive_warp_error_thresh = 0;
-    sf->cb_pred_filter_search = 1;
     sf->tx_domain_dist_level = boosted ? 1 : 2;
     sf->tx_domain_dist_thres_level = 1;
     sf->perform_coeff_opt = boosted ? 1 : 2;
