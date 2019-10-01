@@ -500,7 +500,6 @@ Polymer({
     } else if (type == chromeos.networkConfig.mojom.NetworkType.kWiFi) {
       fields.push('restrictedConnectivity');
     }
-    fields.push('macAddress');
     return fields;
   },
 });
