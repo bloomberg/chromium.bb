@@ -67,7 +67,7 @@ class ChrootTest(cros_test_lib.MockTestCase):
     self.mock_inside.return_value = False
     self.cmd_mock.inst.Run()
 
-    #Ensure that we exec'd with logging level notice.
+    # Ensure that we exec'd with logging level notice.
     self.cmd_mock.rc_mock.assertCommandContains(
         ['ls'], chroot_args=['--log-level', 'notice'], enter_chroot=True)
 

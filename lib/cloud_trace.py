@@ -25,7 +25,8 @@ from chromite.lib import structured
 SPANS_LOG = '/var/log/trace/{pid}-{span_id}.json'
 _SPAN_COUNT_METRIC = 'chromeos/trace/client/logged_count'
 
-#--- Code for logging spans to a file for later processing. --------------------
+
+# --- Code for logging spans to a file for later processing. -------------------
 def GetSpanLogFilePath(span):
   """Gets the path to write a span to.
 
@@ -70,7 +71,8 @@ def _RecordSpanMetrics(span):
       field_spec=[ts_mon.StringField('name')])
   m.increment(fields={'name': span.name})
 
-#-- User-facing API ------------------------------------------------------------
+
+# -- User-facing API -----------------------------------------------------------
 class Span(structured.Structured):
   """An object corresponding to a cloud trace Span."""
 

@@ -21,15 +21,16 @@ as many/few checkers as we want in this one module.
 from __future__ import print_function
 
 import collections
+import tokenize
 import os
 import re
 import sys
 
 from chromite.utils import memoize
 
-from pylint.checkers import BaseChecker
+import pylint.checkers
 from pylint.config import ConfigurationMixIn
-from pylint.interfaces import IAstroidChecker
+import pylint.interfaces
 
 
 _THIRD_PARTY = os.path.join(
@@ -118,7 +119,7 @@ def _PylintrcConfig(config_file, section, opts):
   return cfg
 
 
-class DocStringChecker(BaseChecker):
+class DocStringChecker(pylint.checkers.BaseChecker):
   """PyLint AST based checker to verify PEP 257 compliance
 
   See our style guide for more info:
@@ -128,7 +129,7 @@ class DocStringChecker(BaseChecker):
   # TODO: See about merging with the pep257 project:
   # https://github.com/GreenSteam/pep257
 
-  __implements__ = IAstroidChecker
+  __implements__ = pylint.interfaces.IAstroidChecker
 
   # pylint: disable=class-missing-docstring,multiple-statements
   class _MessageCP001(object): pass
@@ -207,7 +208,7 @@ class DocStringChecker(BaseChecker):
   }
 
   def __init__(self, *args, **kwargs):
-    BaseChecker.__init__(self, *args, **kwargs)
+    pylint.checkers.BaseChecker.__init__(self, *args, **kwargs)
 
     if self.linter is None:
       # Unit tests don't set this up.
@@ -557,10 +558,10 @@ class DocStringChecker(BaseChecker):
       self.add_message('C9011', node=node, line=node.fromlineno, args=margs)
 
 
-class Py3kCompatChecker(BaseChecker):
+class Py3kCompatChecker(pylint.checkers.BaseChecker):
   """Make sure we enforce py3k compatible features"""
 
-  __implements__ = IAstroidChecker
+  __implements__ = pylint.interfaces.IAstroidChecker
 
   # pylint: disable=class-missing-docstring,multiple-statements
   class _MessageR9100(object): pass
@@ -605,10 +606,10 @@ class Py3kCompatChecker(BaseChecker):
     self.saw_imports = True
 
 
-class SourceChecker(BaseChecker):
+class SourceChecker(pylint.checkers.BaseChecker):
   """Make sure we enforce rules on the source."""
 
-  __implements__ = IAstroidChecker
+  __implements__ = pylint.interfaces.IAstroidChecker
 
   # pylint: disable=class-missing-docstring,multiple-statements
   class _MessageR9200(object): pass
@@ -703,10 +704,49 @@ class SourceChecker(BaseChecker):
       self.add_message('R9203')
 
 
-class ChromiteLoggingChecker(BaseChecker):
+class CommentChecker(pylint.checkers.BaseTokenChecker):
+  """Enforce our arbitrary rules on comments."""
+
+  __implements__ = pylint.interfaces.ITokenChecker
+
+  # pylint: disable=class-missing-docstring,multiple-statements
+  class _MessageR9250(object): pass
+  # pylint: enable=class-missing-docstring,multiple-statements
+
+  name = 'comment_checker'
+  priority = -1
+  MSG_ARGS = 'offset:%(offset)i: {%(line)s}'
+  msgs = {
+      'R9250': ('One space needed at start of comment: %(comment)s',
+                ('comment-missing-leading-space'), _MessageR9250),
+  }
+  options = ()
+
+  def _visit_comment(self, lineno, comment):
+    """Process |comment| at |lineno|."""
+    if comment == '#':
+      # Ignore standalone comments for spacing.
+      return
+
+    if lineno == 1 and comment.startswith('#!'):
+      # Ignore shebangs.
+      return
+
+    # We remove multiple leading # to support runs like ###.
+    if not comment.lstrip('#').startswith(' '):
+      self.add_message('R9250', line=lineno, args={'comment': comment})
+
+  def process_tokens(self, tokens):
+    """Process tokens and look for comments."""
+    for (tok_type, token, (start_row, _), _, _) in tokens:
+      if tok_type == tokenize.COMMENT:
+        self._visit_comment(start_row, token)
+
+
+class ChromiteLoggingChecker(pylint.checkers.BaseChecker):
   """Make sure we enforce rules on importing logging."""
 
-  __implements__ = IAstroidChecker
+  __implements__ = pylint.interfaces.IAstroidChecker
 
   # pylint: disable=class-missing-docstring,multiple-statements
   class _MessageR9301(object): pass
@@ -738,8 +778,7 @@ def register(linter):
   # Walk all the classes in this module and register ours.
   this_module = sys.modules[__name__]
   for member in dir(this_module):
-    if (not member.endswith('Checker') or
-        member in ('BaseChecker', 'IAstroidChecker')):
+    if not member.endswith('Checker'):
       continue
     cls = getattr(this_module, member)
     linter.register_checker(cls(linter))

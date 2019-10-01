@@ -594,7 +594,7 @@ class TriageRelevantChanges(object):
     if bb_info.status != constants.BUILDBUCKET_BUILDER_STATUS_COMPLETED:
       return False
     if bb_info.result != constants.BUILDBUCKET_BUILDER_RESULT_SUCCESS:
-      #If the build uploaded 'passed' BuilderStatus pickle or the build
+      # If the build uploaded 'passed' BuilderStatus pickle or the build
       # only contains failures which can be ignored by this change, change is
       # in the value set for build_config in build_ignorable_changes_dict.
       if change not in ignorable_changes:

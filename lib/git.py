@@ -1401,7 +1401,7 @@ def PushBranch(branch, git_repo, dryrun=False,
                            ref=remote_ref.ref.replace(
                                'heads', 'for', 1) + '%notify=NONE,submit',
                            project_name=remote_ref.project_name)
-  #reference = staging_branch if staging_branch is not None else remote_ref.ref
+  # reference = staging_branch if staging_branch is not None else remote_ref.ref
   if staging_branch is not None:
     remote_ref = remote_ref._replace(ref=staging_branch)
 

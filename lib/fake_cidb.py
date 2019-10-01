@@ -435,7 +435,7 @@ class FakeCIDBConnection(object):
 
     return build_stages
 
-  #pylint: disable=unused-argument
+  # pylint: disable=unused-argument
   def GetBuildHistory(self, build_config, num_results,
                       ignore_build_id=None, start_date=None, end_date=None,
                       branch=None, milestone_version=None,

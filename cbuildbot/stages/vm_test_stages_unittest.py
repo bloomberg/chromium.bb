@@ -296,7 +296,7 @@ class MoblabVMTestStageTestCase(
     mock_qp_payloads = self.PatchObject(commands,
                                         'GenerateQuickProvisionPayloads')
     self.PatchObject(commands, 'BuildAutotestTarballsForHWTest')
-    #self.PatchObject(vm_test_stages, 'StageArtifactsOnMoblab', autospec=True)
+    # self.PatchObject(vm_test_stages, 'StageArtifactsOnMoblab', autospec=True)
     mock_run_moblab_tests = self.PatchObject(
         vm_test_stages, 'RunMoblabTests', autospec=True)
     mock_validate_results = self.PatchObject(

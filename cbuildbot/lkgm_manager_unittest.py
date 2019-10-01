@@ -595,7 +595,7 @@ Commit: Gerrit <chrome-bot@chromium.org>
           1,
           1,
           3,
-          #Invalid tokens
+          # Invalid tokens
           '…')
 
       mock_pool = self._MockValidationPool([gerrit_patch])

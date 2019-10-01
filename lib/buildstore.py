@@ -524,7 +524,7 @@ class BuildStore(object):
           buildbucket_ids)
 
 
-#pylint: disable=unused-argument
+# pylint: disable=unused-argument
 class FakeBuildStore(object):
   """Fake BuildStore class to be used only in unittests."""
 

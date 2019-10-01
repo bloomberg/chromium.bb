@@ -659,7 +659,7 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
       logging.info('Logging events to %s', event_file)
       event_file_in_chroot = path_util.ToChrootPath(event_file)
     except cbuildbot_run.VersionNotSetError:
-      #TODO(chingcodes): Add better detection of archive options
+      # TODO(chingcodes): Add better detection of archive options.
       logging.info('Unable to archive, disabling build events file')
       event_filename = None
       event_file = None
@@ -705,7 +705,7 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
 
     if event_file and os.path.isfile(event_file):
       logging.info('Archive build-events.json file')
-      #TODO: @chingcodes Remove upload after events DB is final
+      # TODO(chingcodes): Remove upload after events DB is final.
       self.UploadArtifact(event_filename, archive=False, strict=True)
 
       creds_file = topology.topology.get(topology.DATASTORE_WRITER_CREDS_KEY)

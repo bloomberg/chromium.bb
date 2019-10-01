@@ -512,7 +512,7 @@ def ApplyCustomOverrides(site_config, ge_build_config):
           'hw_tests': [],
           # 'hwqual':False,
           'image_test':False,
-          #'images':['test'],
+          # 'images':['test'],
           'signer_tests':False,
           'vm_tests':[],
       },
@@ -895,7 +895,7 @@ def GeneralTemplates(site_config, ge_build_config):
       site_config.templates.no_vmtest_builder,
       site_config.templates.no_hwtest_builder,
   )
-  #END Termina
+  # END Termina
 
   # BEGIN Unittest Stress
   site_config.templates.unittest_stress.apply(

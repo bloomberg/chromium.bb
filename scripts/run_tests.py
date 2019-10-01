@@ -116,7 +116,7 @@ SPECIAL_TESTS = {
 
     # Tests that take >2 minutes to run.  All the slow tests are
     # disabled atm though ...
-    #'scripts/cros_portage_upgrade_unittest': SKIP,
+    # 'scripts/cros_portage_upgrade_unittest': SKIP,
 }
 
 SLOW_TESTS = {

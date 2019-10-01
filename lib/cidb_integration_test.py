@@ -412,14 +412,14 @@ class DataSeries0Test(CIDBIntegrationTest):
     self._cl_action_checks(readonly_db)
     self._last_updated_time_checks(readonly_db)
 
-    #| Test get build_status from -- here's the relevant data from
+    # | Test get build_status from -- here's the relevant data from
     # master-paladin
-    #|          id | status |
-    #|         601 | pass   |
-    #|         571 | pass   |
-    #|         541 | fail   |
-    #|         511 | pass   |
-    #|         481 | pass   |
+    # |          id | status |
+    # |         601 | pass   |
+    # |         571 | pass   |
+    # |         541 | fail   |
+    # |         511 | pass   |
+    # |         481 | pass   |
     # From 1929 because we always go back one build first.
     last_status = readonly_db.GetBuildHistory('master-paladin', 1)
     self.assertEqual(len(last_status), 1)

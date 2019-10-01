@@ -451,7 +451,7 @@ class BundleAFDOGenerationArtifacts(cros_test_lib.MockTempDirTestCase):
         toolchain_util, 'GenerateBenchmarkAFDOProfile',
         autospec=True)
 
-    #Test both orderfile and AFDO.
+    # Test both orderfile and AFDO.
     for is_orderfile in [False, True]:
       # Set up files in the tempdir since the command isn't being called to
       # generate anything for it to handle.

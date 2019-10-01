@@ -535,7 +535,7 @@ def run(cmd, print_cmd=True, redirect_stdout=False,
 
   if 'error_code_ok' in kwargs:
     # TODO(vapier): Enable this warning once chromite & users migrate.
-    #logging.warning('run: error_code_ok= is renamed/inverted to check=')
+    # logging.warning('run: error_code_ok= is renamed/inverted to check=')
     check = not kwargs.pop('error_code_ok')
   assert not kwargs, 'Unknown arguments to run: %s' % (list(kwargs),)
 

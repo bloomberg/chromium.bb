@@ -46,7 +46,7 @@ def _value(field, message):
   return value
 
 
-#pylint: disable=docstring-misnamed-args
+# pylint: disable=docstring-misnamed-args
 def exists(*fields):
   """Validate that the paths in |fields| exist.
 
@@ -101,7 +101,7 @@ def is_in(field, values):
   return decorator
 
 
-#pylint: disable=docstring-misnamed-args
+# pylint: disable=docstring-misnamed-args
 def require(*fields):
   """Verify |fields| have all been set.
 

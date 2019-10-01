@@ -790,3 +790,43 @@ class SourceCheckerTest(CheckerTestCase):
       self.results = []
       self.checker._check_module_name(node)
       self.assertLintFailed(expected=('R9203',))
+
+
+class CommentCheckerTest(CheckerTestCase):
+  """Tests for CommentChecker module"""
+
+  CHECKER = lint.CommentChecker
+
+  def testGoodComments(self):
+    """Verify we accept good comments."""
+    GOOD_COMMENTS = (
+        '# Blah.',
+        '## Blah.',
+        '#',
+        '#   Indented Code.',
+        '# pylint: disable all the things',
+    )
+    for comment in GOOD_COMMENTS:
+      self.results = []
+      self.checker._visit_comment(0, comment)
+      self.assertLintPassed()
+
+  def testIgnoreShebangs(self):
+    """Verify we ignore shebangs."""
+    self.results = []
+    self.checker._visit_comment(1, '#!/usr/bin/env python3')
+    self.assertLintPassed()
+
+  def testBadCommentsSpace(self):
+    """Verify we reject comments missing leading space."""
+    BAD_COMMENTS = (
+        '#Blah.',
+        '##Blah.',
+        '#TODO(foo): Bar.',
+        '#pylint: nah',
+        '#\tNo tabs!',
+    )
+    for comment in BAD_COMMENTS:
+      self.results = []
+      self.checker._visit_comment(0, comment)
+      self.assertLintFailed(expected=('R9250',))

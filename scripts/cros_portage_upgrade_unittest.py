@@ -27,7 +27,7 @@ from chromite.scripts import cros_portage_upgrade as cpu
 # This left in, but disabled, until we can get GetCurrentVersionsTest
 # working again.
 # pylint: disable=import-error
-#from portage.package.ebuild import config as portcfg
+# from portage.package.ebuild import config as portcfg
 
 
 # This unittest module pokes a lot of internal cros_portage_upgrade state
@@ -222,7 +222,7 @@ GOLDEN_DEP_GRAPHS = {
     # for E-3, rather than in just E-2 where it belongs.
     # See https://crbug.com/205225.
     # To repeat bug, swap the commented status of next two lines.
-    #'dev-libs/E-3': {'needs': {}},
+    # 'dev-libs/E-3': {'needs': {}},
     'dev-libs/E-3': {'needs': {'dev-libs/D-3': 'blocker'}},
     'chromeos-base/libcros-1': {
         'needs': {
@@ -2633,10 +2633,10 @@ class GetCurrentVersionsTest(CpuTestBase):
     mocked_upgrader._GenParallelEmergeArgv.assert_called_once_with(targets)
     # If we can get this unittest passing again, this is the old mox way of
     # checking the test worked.  We need a fuller sandbox first.
-    #mocked_upgrader._SetPortTree(mox.IsA(portcfg.config), mox.IsA(dict))
-    #packages = [pinfo.package for pinfo in target_pinfolist]
-    #verifier = _GenDepsGraphVerifier(packages)
-    #depgraph_mock.assert_called_once_with(mox.Func(verifier))
+    # mocked_upgrader._SetPortTree(mox.IsA(portcfg.config), mox.IsA(dict))
+    # packages = [pinfo.package for pinfo in target_pinfolist]
+    # verifier = _GenDepsGraphVerifier(packages)
+    # depgraph_mock.assert_called_once_with(mox.Func(verifier))
 
   def testGetCurrentVersionsTwoPkgs(self):
     target_pinfolist = [cpu.PInfo(package='dev-libs/A', cpv='dev-libs/A-2'),
@@ -2673,7 +2673,7 @@ class GetCurrentVersionsTest(CpuTestBase):
     mocked_upgrader._GenParallelEmergeArgv.assert_called_once_with(packages)
     # If we can get this unittest passing again, this is the old mox way of
     # checking the test worked.  We need a fuller sandbox first.
-    #mocked_upgrader._SetPortTree(mox.IsA(portcfg.config), mox.IsA(dict))
+    # mocked_upgrader._SetPortTree(mox.IsA(portcfg.config), mox.IsA(dict))
 
   def testGetCurrentVersionsWorld(self):
     target_pinfolist = [cpu.PInfo(package='world', cpv='world')]

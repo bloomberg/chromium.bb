@@ -261,11 +261,11 @@ class RunAttributes(object):
 
   # TODO(mtennant): Complain if a child process attempts to set a non-parallel
   # run attribute?  It could be done something like this:
-  #def __setattr__(self, attr, value):
-  #  """Override __setattr__ to prevent misuse of run attributes."""
-  #  if attr in self.REGULAR_ATTRS:
-  #    assert not self._IsChildProcess()
-  #  super(RunAttributes, self).__setattr__(attr, value)
+  # def __setattr__(self, attr, value):
+  #   """Override __setattr__ to prevent misuse of run attributes."""
+  #   if attr in self.REGULAR_ATTRS:
+  #     assert not self._IsChildProcess()
+  #   super(RunAttributes, self).__setattr__(attr, value)
 
   def _GetBoardAttrName(self, attr, board, target):
     """Translate plain |attr| to uniquified board attribute name.
@@ -1000,7 +1000,7 @@ class _RealBuilderRun(object):
         # each time, which is nice for identity and equality checks.  Subtle
         # gotcha that we accept: if the function itself on run_base is replaced
         # then this will continue to provide the behavior of the previous one.
-        #setattr(self, attr, FuncWrapper)
+        # setattr(self, attr, FuncWrapper)
 
         return FuncWrapper
       else:

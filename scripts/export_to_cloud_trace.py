@@ -298,7 +298,7 @@ def _WatchAndSendSpans(project_id, client):
     # Rebatch the lines.
     _BatchAndSendSpans(project_id, client, batches)
 
-#-- Code for talking to the trace API. -----------------------------------------
+# -- Code for talking to the trace API. ----------------------------------------
 def _MakeCreds(creds_path):
   """Creates a GoogleCredentials object with the trace.append scope.
 

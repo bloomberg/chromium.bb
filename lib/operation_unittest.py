@@ -63,7 +63,7 @@ class ProgressBarOperationTest(cros_test_lib.MockTestCase,
       op.ProgressBar(percent)
     stdout = output.GetStdout()
 
-    #Check that the shaded and unshaded regions are the expected size.
+    # Check that the shaded and unshaded regions are the expected size.
     self.assertEqual(stdout.count('#'), expected_shaded)
     self.assertEqual(stdout.count('-'), expected_unshaded)
 
