@@ -2926,7 +2926,12 @@ void Element::RecalcStyle(const StyleRecalcChange change) {
     if (ShadowRoot* root = GetShadowRoot()) {
       if (child_change.TraverseChild(*root))
         root->RecalcStyle(child_change);
-      RecalcDescendantStyles(StyleRecalcChange::kClearEnsured);
+      if (!RuntimeEnabledFeatures::FlatTreeStyleRecalcEnabled())
+        RecalcDescendantStyles(StyleRecalcChange::kClearEnsured);
+    } else if (auto* slot = ToHTMLSlotElementIfSupportsAssignmentOrNull(this)) {
+      slot->RecalcStyleForSlotChildren(child_change);
+    } else if (auto* insertion_point = DynamicTo<V0InsertionPoint>(this)) {
+      insertion_point->RecalcStyleForInsertionPointChildren(child_change);
     } else {
       RecalcDescendantStyles(child_change);
     }
