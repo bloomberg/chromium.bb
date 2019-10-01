@@ -58,18 +58,19 @@ class WebviewController : public CastWebContents::Delegate,
   webview::AsyncPageEvent_State current_state();
 
   void ProcessInputEvent(const webview::InputEvent& ev);
-  void JavascriptCallback(base::Value result);
+  void JavascriptCallback(int64_t id, base::Value result);
   void HandleEvaluateJavascript(
+      int64_t id,
       const webview::EvaluateJavascriptRequest& request);
   void HandleAddJavascriptChannels(
       const webview::AddJavascriptChannelsRequest& request);
   void HandleRemoveJavascriptChannels(
       const webview::RemoveJavascriptChannelsRequest& request);
-  void HandleGetCurrentUrl();
-  void HandleCanGoBack();
-  void HandleCanGoForward();
+  void HandleGetCurrentUrl(int64_t id);
+  void HandleCanGoBack(int64_t id);
+  void HandleCanGoForward(int64_t id);
   void HandleClearCache();
-  void HandleGetTitle();
+  void HandleGetTitle(int64_t id);
   void HandleUpdateSettings(const webview::UpdateSettingsRequest& request);
   void HandleSetAutoMediaPlaybackPolicy(
       const webview::SetAutoMediaPlaybackPolicyRequest& request);

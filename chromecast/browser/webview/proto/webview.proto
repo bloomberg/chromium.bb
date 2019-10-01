@@ -170,6 +170,10 @@ message SetAutoMediaPlaybackPolicyRequest {
 }
 
 message WebviewRequest {
+  // Unique identifier for the request. For requests that will have a response,
+  // the response id will match the request id.
+  // Valid ID values must be greater than 0.
+  int64 id = 18;
   oneof type {
     // This must be the first message.
     WebviewCreateRequest create = 1;
@@ -209,6 +213,10 @@ message WebviewRequest {
 }
 
 message WebviewResponse {
+  // Unique identifier. The value will match that of the request.
+  // Responses that do not have an associated request (such as page status
+  // event), the ID is meaningless.
+  int64 id = 8;
   oneof type {
     WebviewCreateResponse create_response = 1;
     AsyncPageEvent page_event = 2;

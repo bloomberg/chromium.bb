@@ -70,7 +70,7 @@ void WebviewController::ProcessRequest(const webview::WebviewRequest& request) {
 
     case webview::WebviewRequest::kEvaluateJavascript:
       if (request.has_evaluate_javascript()) {
-        HandleEvaluateJavascript(request.evaluate_javascript());
+        HandleEvaluateJavascript(request.id(), request.evaluate_javascript());
       } else {
         client_->OnError("evaluate_javascript() not supplied");
       }
@@ -93,15 +93,15 @@ void WebviewController::ProcessRequest(const webview::WebviewRequest& request) {
       break;
 
     case webview::WebviewRequest::kGetCurrentUrl:
-      HandleGetCurrentUrl();
+      HandleGetCurrentUrl(request.id());
       break;
 
     case webview::WebviewRequest::kCanGoBack:
-      HandleCanGoBack();
+      HandleCanGoBack(request.id());
       break;
 
     case webview::WebviewRequest::kCanGoForward:
-      HandleCanGoForward();
+      HandleCanGoForward(request.id());
       break;
 
     case webview::WebviewRequest::kGoBack:
@@ -131,7 +131,7 @@ void WebviewController::ProcessRequest(const webview::WebviewRequest& request) {
       break;
 
     case webview::WebviewRequest::kGetTitle:
-      HandleGetTitle();
+      HandleGetTitle(request.id());
       break;
 
     case webview::WebviewRequest::kSetAutoMediaPlaybackPolicy:
@@ -215,21 +215,23 @@ void WebviewController::ProcessInputEvent(const webview::InputEvent& ev) {
   }
 }
 
-void WebviewController::JavascriptCallback(base::Value result) {
+void WebviewController::JavascriptCallback(int64_t id, base::Value result) {
   std::string json;
   base::JSONWriter::Write(result, &json);
   std::unique_ptr<webview::WebviewResponse> response =
       std::make_unique<webview::WebviewResponse>();
+  response->set_id(id);
   response->mutable_evaluate_javascript()->set_json(json);
   client_->EnqueueSend(std::move(response));
 }
 
 void WebviewController::HandleEvaluateJavascript(
+    int64_t id,
     const webview::EvaluateJavascriptRequest& request) {
   contents_->GetMainFrame()->ExecuteJavaScript(
       base::UTF8ToUTF16(request.javascript_blob()),
       base::BindOnce(&WebviewController::JavascriptCallback,
-                     weak_ptr_factory_.GetWeakPtr()));
+                     weak_ptr_factory_.GetWeakPtr(), id));
 }
 
 void WebviewController::HandleAddJavascriptChannels(
@@ -244,27 +246,30 @@ void WebviewController::HandleRemoveJavascriptChannels(
   client_->OnError("Unimplemented remove_javascript_channels()");
 }
 
-void WebviewController::HandleGetCurrentUrl() {
+void WebviewController::HandleGetCurrentUrl(int64_t id) {
   std::unique_ptr<webview::WebviewResponse> response =
       std::make_unique<webview::WebviewResponse>();
 
+  response->set_id(id);
   response->mutable_get_current_url()->set_url(contents_->GetURL().spec());
   client_->EnqueueSend(std::move(response));
 }
 
-void WebviewController::HandleCanGoBack() {
+void WebviewController::HandleCanGoBack(int64_t id) {
   std::unique_ptr<webview::WebviewResponse> response =
       std::make_unique<webview::WebviewResponse>();
 
+  response->set_id(id);
   response->mutable_can_go_back()->set_can_go_back(
       contents_->GetController().CanGoBack());
   client_->EnqueueSend(std::move(response));
 }
 
-void WebviewController::HandleCanGoForward() {
+void WebviewController::HandleCanGoForward(int64_t id) {
   std::unique_ptr<webview::WebviewResponse> response =
       std::make_unique<webview::WebviewResponse>();
 
+  response->set_id(id);
   response->mutable_can_go_forward()->set_can_go_forward(
       contents_->GetController().CanGoForward());
   client_->EnqueueSend(std::move(response));
@@ -286,10 +291,11 @@ void WebviewController::HandleClearCache() {
                       content::BrowsingDataRemover::ORIGIN_TYPE_PROTECTED_WEB);
 }
 
-void WebviewController::HandleGetTitle() {
+void WebviewController::HandleGetTitle(int64_t id) {
   std::unique_ptr<webview::WebviewResponse> response =
       std::make_unique<webview::WebviewResponse>();
 
+  response->set_id(id);
   response->mutable_get_title()->set_title(
       base::UTF16ToUTF8(contents_->GetTitle()));
   client_->EnqueueSend(std::move(response));
