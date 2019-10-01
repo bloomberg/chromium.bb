@@ -50,6 +50,7 @@ class RemoteDeviceUpdaterMock(partial_mock.PartialCmdMock):
   def ResolveAPPIDMismatchIfAny(self, _inst, *_args, **_kwargs):
     """Mock out ResolveAPPIDMismatchIfAny."""
 
+
 class RemoteDeviceUpdaterTest(cros_test_lib.MockTempDirTestCase):
   """Test the flow of flash.Flash() with RemoteDeviceUpdater."""
 
@@ -96,6 +97,43 @@ class RemoteDeviceUpdaterTest(cros_test_lib.MockTempDirTestCase):
     with mock.patch('os.path.exists', return_value=False):
       self.assertRaises(auto_updater.ChromiumOSUpdateError, flash.Flash,
                         self.DEVICE, self.IMAGE)
+
+  def testFullPayload(self):
+    """Tests that we download full_payload and stateful using xBuddy."""
+    with mock.patch.object(
+        dev_server_wrapper,
+        'GetImagePathWithXbuddy',
+        return_value=('translated/xbuddy/path',
+                      'resolved/xbuddy/path')) as mock_xbuddy:
+      with mock.patch('os.path.exists', return_value=True):
+        flash.Flash(self.DEVICE, self.IMAGE)
+
+      # Call to download full_payload and stateful. No other calls.
+      mock_xbuddy.assert_has_calls(
+          [mock.call('/path/to/image/full_payload', mock.ANY,
+                     static_dir=flash.DEVSERVER_STATIC_DIR),
+           mock.call('/path/to/image/stateful', mock.ANY,
+                     static_dir=flash.DEVSERVER_STATIC_DIR)])
+      self.assertEqual(mock_xbuddy.call_count, 2)
+
+  def testTestImage(self):
+    """Tests that we download the test image when the full payload fails."""
+    with mock.patch.object(
+        dev_server_wrapper,
+        'GetImagePathWithXbuddy',
+        side_effect=(dev_server_wrapper.ImagePathError,
+                     ('translated/xbuddy/path',
+                      'resolved/xbuddy/path'))) as mock_xbuddy:
+      with mock.patch('os.path.exists', return_value=True):
+        flash.Flash(self.DEVICE, self.IMAGE)
+
+      # Call to download full_payload and image. No other calls.
+      mock_xbuddy.assert_has_calls(
+          [mock.call('/path/to/image/full_payload', mock.ANY,
+                     static_dir=flash.DEVSERVER_STATIC_DIR),
+           mock.call('/path/to/image', mock.ANY,
+                     static_dir=flash.DEVSERVER_STATIC_DIR)])
+      self.assertEqual(mock_xbuddy.call_count, 2)
 
 
 class USBImagerMock(partial_mock.PartialCmdMock):

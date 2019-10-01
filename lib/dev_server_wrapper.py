@@ -43,6 +43,10 @@ class ImagePathError(Exception):
   """Raised when the provided path can't be resolved to an image."""
 
 
+class ArtifactDownloadError(Exception):
+  """Raised when the artifact could not be downloaded."""
+
+
 def ConvertTranslatedPath(original_path, translated_path):
   """Converts a translated xbuddy path to an xbuddy path.
 
@@ -130,6 +134,7 @@ def GetImagePathWithXbuddy(path, board, version=None,
                     'does not exist: %s' % DEVSERVER_PKG_DIR)
   sys.path.append(DEVSERVER_PKG_DIR)
   # pylint: disable=import-error
+  import build_artifact
   import xbuddy
   import cherrypy
 
@@ -157,6 +162,9 @@ def GetImagePathWithXbuddy(path, board, version=None,
     logging.error('Locating image "%s" failed. The path might not be valid or '
                   'the image might not exist.', path)
     raise ImagePathError('Cannot locate image %s: %s' % (path, e))
+  except build_artifact.ArtifactDownloadError as e:
+    logging.error('Downloading image "%s" failed.', path)
+    raise ArtifactDownloadError('Cannot download image %s: %s' % (path, e))
 
 
 def GenerateXbuddyRequest(path, req_type):

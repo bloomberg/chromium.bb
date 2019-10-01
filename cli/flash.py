@@ -418,6 +418,7 @@ class RemoteDeviceUpdater(object):
       logging.info('Using provided payloads in %s', self.image)
       return self.image
 
+    image_path = None
     if os.path.isfile(self.image):
       # The given path is an image.
       image_path = self.image
@@ -434,18 +435,36 @@ class RemoteDeviceUpdater(object):
                          (device.board, self.board))
       logging.info('Board is %s', self.board)
 
-      # Translate the xbuddy path to get the exact image to use.
 
       # TODO(crbug.com/872441): Once devserver code has been moved to chromite,
       # use xbuddy library directly instead of the devserver_wrapper.
-      translated_path, _ = ds_wrapper.GetImagePathWithXbuddy(
-          self.image, self.board, static_dir=DEVSERVER_STATIC_DIR)
-      image_path = ds_wrapper.TranslatedPathToLocalPath(
-          translated_path, DEVSERVER_STATIC_DIR)
-      payload_dir = os.path.join(os.path.dirname(image_path), 'payloads')
+      # Fetch the full payload and properties, and stateful files. If this
+      # fails, fallback to downloading the image.
+      try:
+        translated_path, _ = ds_wrapper.GetImagePathWithXbuddy(
+            os.path.join(self.image, 'full_payload'), self.board,
+            static_dir=DEVSERVER_STATIC_DIR)
+        payload_dir = os.path.dirname(
+            ds_wrapper.TranslatedPathToLocalPath(translated_path,
+                                                 DEVSERVER_STATIC_DIR))
+        ds_wrapper.GetImagePathWithXbuddy(
+            os.path.join(self.image, 'stateful'), self.board,
+            static_dir=DEVSERVER_STATIC_DIR)
+        fetch_image = False
+      except (ds_wrapper.ImagePathError, ds_wrapper.ArtifactDownloadError):
+        logging.info('Could not find full_payload or stateful for "%s"',
+                     self.image)
+        fetch_image = True
 
-    logging.notice('Using image path %s and payload directory %s',
-                   image_path, payload_dir)
+      # We didn't find the full_payload, attempt to download the image.
+      if fetch_image:
+        translated_path, _ = ds_wrapper.GetImagePathWithXbuddy(
+            self.image, self.board, static_dir=DEVSERVER_STATIC_DIR)
+        image_path = ds_wrapper.TranslatedPathToLocalPath(
+            translated_path, DEVSERVER_STATIC_DIR)
+        payload_dir = os.path.join(os.path.dirname(image_path), 'payloads')
+        logging.notice('Using image path %s and payload directory %s',
+                       image_path, payload_dir)
 
     # Generate rootfs and stateful update payloads if they do not exist.
     payload_path = os.path.join(payload_dir,
@@ -511,6 +530,7 @@ class RemoteDeviceUpdater(object):
 
     finally:
       self.Cleanup()
+
 
 def Flash(device, image, board=None, install=False, src_image_to_delta=None,
           rootfs_update=True, stateful_update=True, clobber_stateful=False,
