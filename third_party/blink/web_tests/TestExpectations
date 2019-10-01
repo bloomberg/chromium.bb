@@ -6213,4 +6213,5 @@ crbug.com/1003715 [ Win10 ] http/tests/notifications/serviceworker-notification-
 
 # Sheriff 2019-10-01
 crbug.com/1010013 [ Win10 ] virtual/threaded/http/tests/devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.js [ Failure ]
+crbug.com/1010025 [ Mac ] fast/forms/date/date-appearance-basic.html [ Failure ]
 
