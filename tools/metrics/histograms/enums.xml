@@ -48638,6 +48638,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="PluginListError">
+  <obsolete>
+    Removed 10/2019.
+  </obsolete>
   <int value="0" label="NoError"/>
   <int value="1" label="JsonInvalidEscape"/>
   <int value="2" label="JsonSyntaxError"/>
