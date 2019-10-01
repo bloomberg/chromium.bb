@@ -39,19 +39,16 @@ class NotificationSchedulerImpl;
 class InitHelper {
  public:
   using InitCallback = base::OnceCallback<void(bool)>;
-  InitHelper()
-      : context_(nullptr),
-        impression_tracker_delegate_(nullptr) {}
+  InitHelper() : context_(nullptr), impression_tracker_delegate_(nullptr) {}
 
   ~InitHelper() = default;
 
   // Initializes subsystems in notification scheduler, |callback| will be
   // invoked if all initializations finished or anyone of them failed. The
   // object should be destroyed along with the |callback|.
-  void Init(
-      NotificationSchedulerContext* context,
-      ImpressionHistoryTracker::Delegate* impression_tracker_delegate,
-      InitCallback callback) {
+  void Init(NotificationSchedulerContext* context,
+            ImpressionHistoryTracker::Delegate* impression_tracker_delegate,
+            InitCallback callback) {
     // TODO(xingliu): Initialize the databases in parallel, we currently
     // initialize one by one to work around a shared db issue. See
     // https://crbug.com/978680.
@@ -162,7 +159,8 @@ class DisplayHelper {
     // Tracks user impression on the notification to be shown.
     context_->impression_tracker()->AddImpression(
         entry->type, entry->guid, entry->schedule_params.impression_mapping,
-        updated_notification_data->custom_data);
+        updated_notification_data->custom_data,
+        entry->schedule_params.custom_suppression_duration);
 
     stats::LogNotificationShow(*updated_notification_data, entry->type);
 

@@ -154,7 +154,7 @@ std::string DebugString(const ClientState* client_state) {
 
   if (client_state->suppression_info.has_value()) {
     std::ostringstream stream;
-    stream << "Suppression info, last_trigger_time:"
+    stream << "\n Suppression info, last_trigger_time: "
            << client_state->suppression_info->last_trigger_time << "\n"
            << "duration:" << client_state->suppression_info->duration << "\n"
            << "recover_goal:" << client_state->suppression_info->recover_goal;
