@@ -1853,6 +1853,8 @@ jumbo_source_set("browser") {
     "web_contents/web_drag_utils_win.h",
     "web_package/bundled_exchanges_handle.cc",
     "web_package/bundled_exchanges_handle.h",
+    "web_package/bundled_exchanges_handle_tracker.cc",
+    "web_package/bundled_exchanges_handle_tracker.h",
     "web_package/bundled_exchanges_reader.cc",
     "web_package/bundled_exchanges_reader.h",
     "web_package/bundled_exchanges_source.cc",

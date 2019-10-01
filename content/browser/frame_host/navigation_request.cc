@@ -49,6 +49,7 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_navigation_handle.h"
 #include "content/browser/site_instance_impl.h"
+#include "content/browser/web_package/bundled_exchanges_handle_tracker.h"
 #include "content/browser/web_package/bundled_exchanges_source.h"
 #include "content/browser/web_package/bundled_exchanges_utils.h"
 #include "content/browser/web_package/prefetched_signed_exchange_cache.h"
@@ -688,7 +689,9 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
     mojo::PendingAssociatedRemote<mojom::NavigationClient> navigation_client,
     mojo::PendingRemote<blink::mojom::NavigationInitiator> navigation_initiator,
     scoped_refptr<PrefetchedSignedExchangeCache>
-        prefetched_signed_exchange_cache) {
+        prefetched_signed_exchange_cache,
+    std::unique_ptr<BundledExchangesHandleTracker>
+        bundled_exchanges_handle_tracker) {
   // Only normal navigations to a different document or reloads are expected.
   // - Renderer-initiated same document navigations never start in the browser.
   // - Restore-navigations are always browser-initiated.
@@ -750,6 +753,8 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
       std::move(blob_url_loader_factory);
   navigation_request->prefetched_signed_exchange_cache_ =
       std::move(prefetched_signed_exchange_cache);
+  navigation_request->bundled_exchanges_handle_tracker_ =
+      std::move(bundled_exchanges_handle_tracker);
   return navigation_request;
 }
 
@@ -1984,19 +1989,29 @@ void NavigationRequest::OnStartChecksComplete(
   }
 
   // Initialize the BundledExchangesHandle.
-  if (bundled_exchanges_utils::CanLoadAsTrustableBundledExchangesFile(
-          common_params_->url)) {
-    auto source = BundledExchangesSource::MaybeCreateFromTrustedFileUrl(
-        common_params_->url);
-    // MaybeCreateFromTrustedFileUrl() returns null when the url contains an
-    // invalid character.
-    if (source) {
-      bundled_exchanges_handle_ =
-          BundledExchangesHandle::CreateForTrustableFile(std::move(source));
+  if (bundled_exchanges_handle_tracker_) {
+    DCHECK(base::FeatureList::IsEnabled(features::kBundledHTTPExchanges) ||
+           base::CommandLine::ForCurrentProcess()->HasSwitch(
+               switches::kTrustableBundledExchangesFileUrl));
+    bundled_exchanges_handle_ =
+        bundled_exchanges_handle_tracker_->MaybeCreateBundledExchangesHandle(
+            common_params_->url);
+  }
+  if (!bundled_exchanges_handle_) {
+    if (bundled_exchanges_utils::CanLoadAsTrustableBundledExchangesFile(
+            common_params_->url)) {
+      auto source = BundledExchangesSource::MaybeCreateFromTrustedFileUrl(
+          common_params_->url);
+      // MaybeCreateFromTrustedFileUrl() returns null when the url contains an
+      // invalid character.
+      if (source) {
+        bundled_exchanges_handle_ =
+            BundledExchangesHandle::CreateForTrustableFile(std::move(source));
+      }
+    } else if (bundled_exchanges_utils::CanLoadAsBundledExchangesFile(
+                   common_params_->url)) {
+      bundled_exchanges_handle_ = BundledExchangesHandle::CreateForFile();
     }
-  } else if (bundled_exchanges_utils::CanLoadAsBundledExchangesFile(
-                 common_params_->url)) {
-    bundled_exchanges_handle_ = BundledExchangesHandle::CreateForFile();
   }
 
   // Mark the fetch_start (Navigation Timing API).

@@ -54,6 +54,7 @@ struct FrameHostMsg_DidCommitProvisionalLoad_Params;
 namespace content {
 
 class AppCacheNavigationHandle;
+class BundledExchangesHandleTracker;
 class FrameNavigationEntry;
 class FrameTreeNode;
 class NavigationHandleImpl;
@@ -164,7 +165,9 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
       mojo::PendingRemote<blink::mojom::NavigationInitiator>
           navigation_initiator,
       scoped_refptr<PrefetchedSignedExchangeCache>
-          prefetched_signed_exchange_cache);
+          prefetched_signed_exchange_cache,
+      std::unique_ptr<BundledExchangesHandleTracker>
+          bundled_exchanges_handle_tracker);
 
   // Creates a request at commit time. This should only be used for
   // renderer-initiated same-document navigations, and navigations whose
@@ -991,6 +994,12 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   // (where all prefetched resources are stored and shared in http cache).
   scoped_refptr<PrefetchedSignedExchangeCache>
       prefetched_signed_exchange_cache_;
+
+  // Tracks navigations within bundled exchanges file. Used when
+  // BundledHTTPExchanges feature is enabled or
+  // TrustableBundledExchangesFileUrl switch is set.
+  std::unique_ptr<BundledExchangesHandleTracker>
+      bundled_exchanges_handle_tracker_;
 
   // The time this navigation was ready to commit.
   base::TimeTicks ready_to_commit_time_;
