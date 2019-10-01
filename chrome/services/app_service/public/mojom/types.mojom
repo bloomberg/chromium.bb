@@ -162,6 +162,7 @@ enum LaunchSource {
   kFromAppListRecommendation,    // Query-less recommendations (smaller icons).
   kFromParentalControls,         // Parental Controls Settings Section.
   kFromShelf,                    // Shelf.
+  kFromFileManager,              // FileManager.
 };
 
 enum TriState {

@@ -97,6 +97,8 @@ ash::ShelfLaunchSource ConvertLaunchSource(
       return ash::LAUNCH_FROM_APP_LIST_SEARCH;
     case apps::mojom::LaunchSource::kFromShelf:
       return ash::LAUNCH_FROM_SHELF;
+    case apps::mojom::LaunchSource::kFromFileManager:
+      return ash::LAUNCH_FROM_UNKNOWN;
   }
 }
 }  // namespace
@@ -267,6 +269,7 @@ void ExtensionApps::Launch(const std::string& app_id,
       break;
     case apps::mojom::LaunchSource::kFromAppListRecommendation:
     case apps::mojom::LaunchSource::kFromShelf:
+    case apps::mojom::LaunchSource::kFromFileManager:
       break;
   }
 
