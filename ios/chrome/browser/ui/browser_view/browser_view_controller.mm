@@ -961,8 +961,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
     fullscreenController->SetWebStateList(self.tabModel.webStateList);
 
-    _fullscreenUIUpdater = std::make_unique<FullscreenUIUpdater>(self);
-    fullscreenController->AddObserver(_fullscreenUIUpdater.get());
+    _fullscreenUIUpdater =
+        std::make_unique<FullscreenUIUpdater>(fullscreenController, self);
     [self updateForFullscreenProgress:fullscreenController->GetProgress()];
   } else {
     StopBroadcastingToolbarUI(broadcaster);
@@ -973,7 +973,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     [_webMainContentUIForwarder disconnect];
     _webMainContentUIForwarder = nil;
 
-    fullscreenController->RemoveObserver(_fullscreenUIUpdater.get());
     _fullscreenUIUpdater = nullptr;
 
     fullscreenController->SetWebStateList(nullptr);
