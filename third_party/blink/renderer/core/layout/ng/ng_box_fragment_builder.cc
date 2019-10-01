@@ -81,6 +81,9 @@ void GatherInlineContainerFragmentsFromLinebox(
 
 void NGBoxFragmentBuilder::AddBreakBeforeChild(NGLayoutInputNode child,
                                                bool is_forced_break) {
+  if (is_forced_break)
+    SetHasForcedBreak();
+
   DCHECK(has_block_fragmentation_);
   SetDidBreak();
   if (auto* child_inline_node = DynamicTo<NGInlineNode>(child)) {

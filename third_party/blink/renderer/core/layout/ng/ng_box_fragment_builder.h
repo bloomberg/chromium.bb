@@ -117,11 +117,6 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   // This will result in a fragment which has an unfinished break token.
   void SetDidBreak() { did_break_ = true; }
 
-  void SetHasForcedBreak() {
-    has_forced_break_ = true;
-    minimal_space_shortage_ = LayoutUnit();
-  }
-
   // Report space shortage, i.e. how much more space would have been sufficient
   // to prevent some piece of content from breaking. This information may be
   // used by the column balancer to stretch columns.
@@ -251,6 +246,11 @@ class CORE_EXPORT NGBoxFragmentBuilder final
  private:
   // Update whether we have fragmented in this flow.
   void PropagateBreak(const NGLayoutResult&);
+
+  void SetHasForcedBreak() {
+    has_forced_break_ = true;
+    minimal_space_shortage_ = LayoutUnit();
+  }
 
   scoped_refptr<const NGLayoutResult> ToBoxFragment(WritingMode);
 
