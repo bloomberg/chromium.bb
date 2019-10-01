@@ -715,6 +715,11 @@ void ContentBrowserClient::RegisterNonNetworkNavigationURLLoaderFactories(
     NonNetworkURLLoaderFactoryMap* factories) {}
 
 void ContentBrowserClient::
+    RegisterNonNetworkWorkerMainResourceURLLoaderFactories(
+        BrowserContext* browser_context,
+        NonNetworkURLLoaderFactoryMap* factories) {}
+
+void ContentBrowserClient::
     RegisterNonNetworkServiceWorkerUpdateURLLoaderFactories(
         BrowserContext* browser_context,
         NonNetworkURLLoaderFactoryMap* factories) {}

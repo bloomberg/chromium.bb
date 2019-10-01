@@ -527,6 +527,7 @@ void DedicatedWorkerHost::UpdateSubresourceLoaderFactories() {
   std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
       subresource_loader_factories =
           WorkerScriptFetchInitiator::CreateFactoryBundle(
+              WorkerScriptFetchInitiator::LoaderType::kSubResource,
               worker_process_id_, storage_partition_impl, storage_domain,
               file_url_support_, /*filesystem_url_support=*/true);
 
