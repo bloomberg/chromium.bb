@@ -20,7 +20,12 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
+#include "ash/wm/desks/desks_bar_view.h"
+#include "ash/wm/desks/new_desk_button.h"
 #include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/overview/overview_grid.h"
+#include "ash/wm/overview/overview_item.h"
+#include "ash/wm/overview/overview_test_util.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
@@ -360,6 +365,38 @@ TEST_P(DockedMagnifierTest, DisplaysWorkAreasOverviewMode) {
   EXPECT_EQ(workarea, display.work_area());
   EXPECT_EQ(workarea, window->bounds());
   EXPECT_TRUE(WindowState::Get(window.get())->IsMaximized());
+}
+
+TEST_P(DockedMagnifierTest, OverviewTabbing) {
+  auto window = CreateTestWindow();
+  controller()->SetEnabled(true);
+
+  auto* overview_controller = Shell::Get()->overview_controller();
+  overview_controller->StartOverview();
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+
+  auto* root_window = Shell::GetPrimaryRootWindow();
+  const auto* desk_bar_view = GetOverviewSession()
+                                  ->GetGridWithRootWindow(root_window)
+                                  ->desks_bar_view();
+
+  // Tab once. The viewport should be centered on the center of the new desk
+  // button.
+  SendKey(ui::VKEY_TAB);
+  TestMagnifierLayerTransform(
+      desk_bar_view->new_desk_button()->GetBoundsInScreen().CenterPoint(),
+      root_window);
+
+  // Tab one more time. The viewport should be centered on the beginning of the
+  // overview item's title.
+  SendKey(ui::VKEY_TAB);
+  OverviewItem* item = GetOverviewItemForWindow(window.get());
+  ASSERT_TRUE(item);
+  const auto label_bounds_in_screen =
+      item->caption_container_view()->title_label()->GetBoundsInScreen();
+  const gfx::Point expected_point_of_interest(
+      label_bounds_in_screen.x(), label_bounds_in_screen.CenterPoint().y());
+  TestMagnifierLayerTransform(expected_point_of_interest, root_window);
 }
 
 // Test that we exist split view and over view modes when a single window is
