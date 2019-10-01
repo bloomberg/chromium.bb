@@ -18,7 +18,6 @@ assert(is_chromeos, "Non-ChromeOS builds cannot depend on //chromeos")
 source_set("unit_tests") {
   testonly = true
   deps = [
-    "//chromeos/services/assistant:tests",
     "//chromeos/services/cellular_setup:unit_tests",
     "//chromeos/services/cros_healthd/public/cpp:unit_tests",
     "//chromeos/services/device_sync:unit_tests",
@@ -29,4 +28,8 @@ source_set("unit_tests") {
     "//chromeos/services/network_config:unit_tests",
     "//chromeos/services/secure_channel:unit_tests",
   ]
+
+  if (enable_cros_assistant) {
+    deps += [ "//chromeos/services/assistant:tests" ]
+  }
 }

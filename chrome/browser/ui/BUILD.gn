@@ -3722,7 +3722,7 @@ jumbo_split_static_library("ui") {
     }
   }
 
-  if (is_chromeos) {
+  if (enable_cros_assistant) {
     deps += [
       "//ash/public/cpp",
       "//chromeos/services/assistant:lib",

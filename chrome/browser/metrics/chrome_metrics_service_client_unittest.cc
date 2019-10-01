@@ -32,6 +32,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "chromeos/assistant/buildflags.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/login/login_state/login_state.h"
 #endif
@@ -178,10 +179,12 @@ TEST_F(ChromeMetricsServiceClientTest, TestRegisterMetricsServiceProviders) {
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 
 #if defined(OS_CHROMEOS)
-  // AssistantServiceMetricsProvider,
+#if BUILDFLAG(ENABLE_CROS_ASSISTANT)
+  expected_providers++;  // AssistantServiceMetricsProvider.
+#endif                   // BUILDFLAG(ENABLE_CROS_ASSISTANT)
   // ChromeOSMetricsProvider, SigninStatusMetricsProviderChromeOS,
   // PrinterMetricsProvider, and HashedLoggingMetricsProvider.
-  expected_providers += 5;
+  expected_providers += 4;
 #endif  // defined(OS_CHROMEOS)
 
 #if !defined(OS_CHROMEOS)

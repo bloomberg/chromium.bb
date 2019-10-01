@@ -119,7 +119,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/task_manager/task_manager_interface.h"
-#include "chrome/browser/ui/ash/assistant/assistant_client.h"
 #include "chrome/browser/ui/ash/assistant/assistant_state_client.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chrome/browser/ui/webui/chromeos/login/discover/discover_manager.h"
@@ -199,6 +198,10 @@
 
 #if BUILDFLAG(ENABLE_RLZ)
 #include "components/rlz/rlz_tracker.h"
+#endif
+
+#if BUILDFLAG(ENABLE_CROS_ASSISTANT)
+#include "chrome/browser/ui/ash/assistant/assistant_client.h"
 #endif
 
 namespace chromeos {
@@ -633,11 +636,13 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
   // Requires UserManager.
   assistant_state_client_ = std::make_unique<AssistantStateClient>();
 
+#if BUILDFLAG(ENABLE_CROS_ASSISTANT)
   // Assistant has to be initialized before
   // ChromeBrowserMainExtraPartsAsh::session_controller_client_ to avoid race of
   // SessionChanged event and assistant_client initialization. It must come
   // after AssistantStateClient.
   assistant_client_ = std::make_unique<AssistantClient>();
+#endif
 
   base::PostTaskAndReplyWithResult(
       FROM_HERE,
@@ -958,9 +963,11 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
 
   arc_service_launcher_->Shutdown();
 
+#if BUILDFLAG(ENABLE_CROS_ASSISTANT)
   // Assistant has to shut down before voice interaction controller client to
   // correctly remove the observer.
   assistant_client_.reset();
+#endif
 
   assistant_state_client_.reset();
 
