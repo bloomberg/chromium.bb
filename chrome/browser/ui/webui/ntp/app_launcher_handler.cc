@@ -527,8 +527,8 @@ void AppLauncherHandler::HandleLaunchApp(const base::ListValue* args) {
       disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB ||
       disposition == WindowOpenDisposition::NEW_WINDOW) {
     // TODO(jamescook): Proper support for background tabs.
-    AppLaunchParams params(
-        profile, extension_id,
+    apps::AppLaunchParams params(
+        extension_id,
         disposition == WindowOpenDisposition::NEW_WINDOW
             ? apps::mojom::LaunchContainer::kLaunchContainerWindow
             : apps::mojom::LaunchContainer::kLaunchContainerTab,
@@ -544,7 +544,7 @@ void AppLauncherHandler::HandleLaunchApp(const base::ListValue* args) {
     if (browser)
       old_contents = browser->tab_strip_model()->GetActiveWebContents();
 
-    AppLaunchParams params = CreateAppLaunchParamsUserContainer(
+    apps::AppLaunchParams params = CreateAppLaunchParamsUserContainer(
         profile, extension,
         old_contents ? WindowOpenDisposition::CURRENT_TAB
                      : WindowOpenDisposition::NEW_FOREGROUND_TAB,

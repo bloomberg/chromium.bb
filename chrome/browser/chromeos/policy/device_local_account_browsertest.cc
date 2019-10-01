@@ -1646,8 +1646,8 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, LastWindowClosedLogoutReminder) {
 
   // Start the platform app, causing it to open a window.
   run_loop_.reset(new base::RunLoop);
-  apps::LaunchService::Get(profile)->OpenApplication(AppLaunchParams(
-      profile, app->id(), apps::mojom::LaunchContainer::kLaunchContainerNone,
+  apps::LaunchService::Get(profile)->OpenApplication(apps::AppLaunchParams(
+      app->id(), apps::mojom::LaunchContainer::kLaunchContainerNone,
       WindowOpenDisposition::NEW_WINDOW,
       apps::mojom::AppLaunchSource::kSourceTest));
   run_loop_->Run();

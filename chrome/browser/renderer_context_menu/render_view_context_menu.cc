@@ -2660,9 +2660,8 @@ void RenderViewContextMenu::ExecOpenBookmarkApp() {
   if (!pwa)
     return;
 
-  AppLaunchParams launch_params(
-      GetProfile(), pwa->id(),
-      apps::mojom::LaunchContainer::kLaunchContainerWindow,
+  apps::AppLaunchParams launch_params(
+      pwa->id(), apps::mojom::LaunchContainer::kLaunchContainerWindow,
       WindowOpenDisposition::CURRENT_TAB,
       apps::mojom::AppLaunchSource::kSourceContextMenu);
   launch_params.override_url = params_.link_url;
