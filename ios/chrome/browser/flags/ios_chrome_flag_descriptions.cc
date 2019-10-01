@@ -120,6 +120,10 @@ const char kCollectionsCardPresentationStyleDescription[] =
     "When enabled collections are presented using the new iOS13 card "
     "style.";
 
+const char kConfirmInfobarMessagesUIName[] = "Confirm Infobars Messages UI";
+const char kConfirmInfobarMessagesUIDescription[] =
+    "When enabled Confirm Infobars use the new Messages UI.";
+
 const char kCopiedContentBehaviorName[] =
     "Enable differentiating between copied urls, text, and images";
 const char kCopiedContentBehaviorDescription[] =

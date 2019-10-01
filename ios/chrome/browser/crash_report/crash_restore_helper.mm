@@ -136,7 +136,7 @@ bool SessionCrashedInfoBarDelegate::Create(
   std::unique_ptr<ConfirmInfoBarDelegate> delegate(
       new SessionCrashedInfoBarDelegate(crash_restore_helper));
 
-  if (IsInfobarUIRebootEnabled()) {
+  if (IsConfirmInfobarMessagesUIEnabled()) {
     return !!infobar_manager->AddInfoBar(
         ::CreateHighPriorityConfirmInfoBar(std::move(delegate)));
   } else {

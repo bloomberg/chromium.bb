@@ -92,6 +92,11 @@ extern const char kBrowserContainerKeepsContentViewDescription[];
 extern const char kCollectionsCardPresentationStyleName[];
 extern const char kCollectionsCardPresentationStyleDescription[];
 
+// Title and description for the flag that enables Messages UI on
+// ConfirmInfobars.
+extern const char kConfirmInfobarMessagesUIName[];
+extern const char kConfirmInfobarMessagesUIDescription[];
+
 // Title and description for the flag to diffentiate between copied
 // urls, strings, and images.
 extern const char kCopiedContentBehaviorName[];

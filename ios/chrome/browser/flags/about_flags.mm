@@ -555,6 +555,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEmbedderBlockRestoreUrlName,
      flag_descriptions::kEmbedderBlockRestoreUrlDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kEmbedderBlockRestoreUrl)},
+    {"messages-confirm-infobars",
+     flag_descriptions::kConfirmInfobarMessagesUIName,
+     flag_descriptions::kConfirmInfobarMessagesUIDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kConfirmInfobarMessagesUI)},
 };
 
 // Add all switches from experimental flags to |command_line|.
