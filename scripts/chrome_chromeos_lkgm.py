@@ -34,7 +34,8 @@ class ChromeLKGMCommitter(object):
       # Make all LKGM updates run and pass on the betty trybot before landing.
       # Since it's an internal trybot, the CQ won't automatically trigger it,
       # so we have to explicitly tell it to.
-      '\n\nCQ_INCLUDE_TRYBOTS=luci.chrome.try:chromeos-betty-chrome'
+      # TODO(crbug.com/1010136): Add chromeos-betty-chrome back to LKGM updates.
+      #'\n\nCQ_INCLUDE_TRYBOTS=luci.chrome.try:chromeos-betty-chrome'
       '\n\nBUG=762641')
   # Files needed in a local checkout to successfully update the LKGM. The OWNERS
   # file allows the --tbr-owners mechanism to select an appropriate OWNER to
