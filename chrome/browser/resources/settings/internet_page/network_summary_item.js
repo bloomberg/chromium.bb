@@ -126,12 +126,11 @@ Polymer({
    * @private
    */
   getConnectionStateText_: function(networkState, deviceState) {
-    if (!networkState) {
+    if (!networkState || !networkState.guid) {
       return '';
     }
     const connectionState = networkState.connectionState;
-    const name =
-        networkState ? OncMojo.getNetworkStateDisplayName(networkState) : '';
+    const name = OncMojo.getNetworkStateDisplayName(networkState);
     if (OncMojo.connectionStateIsConnected(connectionState)) {
       return name;
     }
