@@ -193,6 +193,16 @@ public class HostBrowserUtilsTest {
         setHostBrowserInSharedPreferences(null);
         Assert.assertEquals(BROWSERS_SUPPORTING_WEBAPKS[0],
                 HostBrowserUtils.computeHostBrowserPackageClearCachedDataOnChange(mContext));
+
+        // Shared pref browser: Null
+        // Default browser: Does not support WebAPKs
+        // > 1 installed browsers
+        setInstalledBrowsersAndClearedCachedData(DefaultBrowserWebApkSupport.NO,
+                new String[] {
+                        BROWSERS_NOT_SUPPORTING_WEBAPKS[0], BROWSERS_NOT_SUPPORTING_WEBAPKS[1]});
+        setHostBrowserInSharedPreferences(null);
+        Assert.assertEquals(DEFAULT_BROWSER_NOT_SUPPORTING_WEBAPKS,
+                HostBrowserUtils.computeHostBrowserPackageClearCachedDataOnChange(mContext));
     }
 
     /**
