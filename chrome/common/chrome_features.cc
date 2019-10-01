@@ -177,7 +177,7 @@ const base::Feature kImmersiveFullscreen{"ImmersiveFullscreen",
 #if defined(OS_CHROMEOS)
 // Shows a setting that allows disabling mouse acceleration.
 const base::Feature kAllowDisableMouseAcceleration{
-    "AllowDisableMouseAcceleration", base::FEATURE_DISABLED_BY_DEFAULT};
+    "AllowDisableMouseAcceleration", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable project Crostini, Linux VMs on Chrome OS.
 const base::Feature kCrostini{"Crostini", base::FEATURE_DISABLED_BY_DEFAULT};
