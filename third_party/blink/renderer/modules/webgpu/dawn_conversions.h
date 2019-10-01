@@ -19,7 +19,8 @@
 
 namespace blink {
 
-class GPUColor;
+class DoubleSequenceOrGPUColorDict;
+class GPUColorDict;
 class GPUExtent3D;
 class GPUOrigin3D;
 class GPUPipelineStageDescriptor;
@@ -37,7 +38,9 @@ DawnEnum AsDawnEnum(const WTF::String& webgpu_enum);
 // These conversions are used multiple times and are declared here. Conversions
 // used only once, for example for object construction, are defined
 // individually.
-DawnColor AsDawnType(const GPUColor*);
+DawnColor AsDawnColor(const Vector<double>&);
+DawnColor AsDawnType(const GPUColorDict*);
+DawnColor AsDawnType(const DoubleSequenceOrGPUColorDict*);
 DawnExtent3D AsDawnType(const GPUExtent3D*);
 DawnOrigin3D AsDawnType(const GPUOrigin3D*);
 

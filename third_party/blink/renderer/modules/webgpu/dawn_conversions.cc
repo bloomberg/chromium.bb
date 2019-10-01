@@ -6,7 +6,7 @@
 
 #include <dawn/dawn.h>
 
-#include "third_party/blink/renderer/modules/webgpu/gpu_color.h"
+#include "third_party/blink/renderer/bindings/modules/v8/double_sequence_or_gpu_color_dict.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_extent_3d.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_origin_3d.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_pipeline_stage_descriptor.h"
@@ -702,7 +702,19 @@ DawnErrorFilter AsDawnEnum<DawnErrorFilter>(const WTF::String& webgpu_enum) {
   return DAWN_ERROR_FILTER_FORCE32;
 }
 
-DawnColor AsDawnType(const GPUColor* webgpu_color) {
+DawnColor AsDawnColor(const Vector<double>& webgpu_color) {
+  DCHECK_EQ(webgpu_color.size(), 4UL);
+
+  DawnColor dawn_color = {};
+  dawn_color.r = webgpu_color[0];
+  dawn_color.g = webgpu_color[1];
+  dawn_color.b = webgpu_color[2];
+  dawn_color.a = webgpu_color[3];
+
+  return dawn_color;
+}
+
+DawnColor AsDawnType(const GPUColorDict* webgpu_color) {
   DCHECK(webgpu_color);
 
   DawnColor dawn_color = {};
@@ -711,6 +723,19 @@ DawnColor AsDawnType(const GPUColor* webgpu_color) {
   dawn_color.b = webgpu_color->b();
   dawn_color.a = webgpu_color->a();
 
+  return dawn_color;
+}
+
+DawnColor AsDawnType(const DoubleSequenceOrGPUColorDict* webgpu_color) {
+  DCHECK(webgpu_color);
+
+  if (webgpu_color->IsDoubleSequence()) {
+    return AsDawnColor(webgpu_color->GetAsDoubleSequence());
+  } else if (webgpu_color->IsGPUColorDict()) {
+    return AsDawnType(webgpu_color->GetAsGPUColorDict());
+  }
+  NOTREACHED();
+  DawnColor dawn_color = {};
   return dawn_color;
 }
 

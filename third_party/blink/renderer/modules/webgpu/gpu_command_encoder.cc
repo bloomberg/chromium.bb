@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/webgpu/gpu_command_encoder.h"
 
+#include "third_party/blink/renderer/bindings/modules/v8/double_sequence_or_gpu_color_dict.h"
 #include "third_party/blink/renderer/modules/webgpu/dawn_conversions.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_buffer.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_buffer_copy_view.h"
@@ -39,8 +40,14 @@ DawnRenderPassColorAttachmentDescriptor AsDawnType(
     const WTF::String& gpuLoadOp = webgpu_desc->loadValue().GetAsGPULoadOp();
     dawn_desc.loadOp = AsDawnEnum<DawnLoadOp>(gpuLoadOp);
 
-  } else if (webgpu_desc->loadValue().IsGPUColor()) {
-    GPUColor* gpuColor = webgpu_desc->loadValue().GetAsGPUColor();
+  } else if (webgpu_desc->loadValue().IsDoubleSequence()) {
+    const Vector<double>& gpuColor =
+        webgpu_desc->loadValue().GetAsDoubleSequence();
+    dawn_desc.loadOp = DAWN_LOAD_OP_CLEAR;
+    dawn_desc.clearColor = AsDawnColor(gpuColor);
+
+  } else if (webgpu_desc->loadValue().IsGPUColorDict()) {
+    const GPUColorDict* gpuColor = webgpu_desc->loadValue().GetAsGPUColorDict();
     dawn_desc.loadOp = DAWN_LOAD_OP_CLEAR;
     dawn_desc.clearColor = AsDawnType(gpuColor);
 
@@ -171,11 +178,26 @@ GPUCommandEncoder::~GPUCommandEncoder() {
 }
 
 GPURenderPassEncoder* GPUCommandEncoder::beginRenderPass(
-    const GPURenderPassDescriptor* descriptor) {
+    const GPURenderPassDescriptor* descriptor,
+    ExceptionState& exception_state) {
   DCHECK(descriptor);
 
   uint32_t color_attachment_count =
       static_cast<uint32_t>(descriptor->colorAttachments().size());
+
+  // Check loadValue color is correctly formatted before further processing.
+  for (wtf_size_t i = 0; i < color_attachment_count; ++i) {
+    const GPURenderPassColorAttachmentDescriptor* color_attachment =
+        descriptor->colorAttachments()[i];
+    const GPULoadOpOrDoubleSequenceOrGPUColorDict load_value =
+        color_attachment->loadValue();
+
+    if (load_value.IsDoubleSequence() &&
+        load_value.GetAsDoubleSequence().size() != 4) {
+      exception_state.ThrowRangeError("loadValue color size must be 4");
+      return nullptr;
+    }
+  }
 
   DawnRenderPassDescriptor dawn_desc = {};
   dawn_desc.colorAttachmentCount = color_attachment_count;

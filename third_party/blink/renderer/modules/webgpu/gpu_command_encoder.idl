@@ -7,7 +7,7 @@
 [
     RuntimeEnabled=WebGPU
 ] interface GPUCommandEncoder {
-    GPURenderPassEncoder beginRenderPass(GPURenderPassDescriptor descriptor);
+    [RaisesException] GPURenderPassEncoder beginRenderPass(GPURenderPassDescriptor descriptor);
     GPUComputePassEncoder beginComputePass(optional GPUComputePassDescriptor descriptor);
 
     void copyBufferToBuffer(

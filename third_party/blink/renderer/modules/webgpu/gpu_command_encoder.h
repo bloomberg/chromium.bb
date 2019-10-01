@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGPU_GPU_COMMAND_ENCODER_H_
 
 #include "third_party/blink/renderer/modules/webgpu/dawn_object.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 
 namespace blink {
 
@@ -34,7 +35,8 @@ class GPUCommandEncoder : public DawnObject<DawnCommandEncoder> {
 
   // gpu_command_encoder.idl
   GPURenderPassEncoder* beginRenderPass(
-      const GPURenderPassDescriptor* descriptor);
+      const GPURenderPassDescriptor* descriptor,
+      ExceptionState& exception_state);
   GPUComputePassEncoder* beginComputePass(
       const GPUComputePassDescriptor* descriptor);
   void copyBufferToBuffer(GPUBuffer* src,
