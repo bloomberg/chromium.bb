@@ -593,6 +593,7 @@
 
 == vmpi_android_pfq ==
   master-vmpi-android-pfq
+    eve-arcvm-mesa-virgl-next-vmpi-android-pfq
     eve-arcvm-vmpi-android-pfq
 
 == tryjob ==
@@ -1395,6 +1396,7 @@
   eve-arcvm-full-tryjob
   eve-arcvm-llvm-next-toolchain-tryjob
   eve-arcvm-llvm-toolchain-tryjob
+  eve-arcvm-mesa-virgl-next-chrome-pfq-tryjob
   eve-arcvm-mesa-virgl-next-chromium-pfq-tryjob
   eve-arcvm-mesa-virgl-next-compile-only-pre-cq
   eve-arcvm-mesa-virgl-next-full-tryjob
@@ -1402,10 +1404,16 @@
   eve-arcvm-mesa-virgl-next-llvm-toolchain-tryjob
   eve-arcvm-mesa-virgl-next-no-vmtest-pre-cq
   eve-arcvm-mesa-virgl-next-paladin-tryjob
+  eve-arcvm-mesa-virgl-next-payloads-tryjob
   eve-arcvm-mesa-virgl-next-pre-cq
+  eve-arcvm-mesa-virgl-next-release-afdo-generate-tryjob
+  eve-arcvm-mesa-virgl-next-release-afdo-tryjob
+  eve-arcvm-mesa-virgl-next-release-afdo-use-tryjob
   eve-arcvm-mesa-virgl-next-release-tryjob
+  eve-arcvm-mesa-virgl-next-tot-chrome-pfq-informational-tryjob
   eve-arcvm-mesa-virgl-next-tot-chromium-pfq-informational-tryjob
   eve-arcvm-mesa-virgl-next-unittest-stress
+  eve-arcvm-mesa-virgl-next-vmpi-android-pfq-tryjob
   eve-arcvm-no-vmtest-pre-cq
   eve-arcvm-paladin-tryjob
   eve-arcvm-payloads-tryjob
@@ -2756,6 +2764,7 @@
     arm-llvm-next-toolchain-tryjob
     arm64-llvm-next-toolchain-tryjob
   master-vmpi-android-pfq-tryjob
+    eve-arcvm-mesa-virgl-next-vmpi-android-pfq-tryjob
     eve-arcvm-vmpi-android-pfq-tryjob
   mistral-compile-only-pre-cq
   mistral-factory-mistral-12361.B-factorybranch-tryjob
