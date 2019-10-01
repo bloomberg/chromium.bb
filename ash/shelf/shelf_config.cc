@@ -124,9 +124,6 @@ void ShelfConfig::OnOverviewModeEnded() {
 }
 
 int ShelfConfig::shelf_size() const {
-  // TODO(manucornet): Add unit tests to check that this returns the correct
-  // sizes in various situations.
-
   // Before the hotseat redesign, the shelf always has the same size.
   if (!chromeos::switches::ShouldShowShelfHotseat())
     return 56;
