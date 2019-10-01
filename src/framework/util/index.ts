@@ -25,3 +25,7 @@ export function objectEquals(x: unknown, y: unknown): boolean {
   const p = Object.keys(x);
   return Object.keys(y).every(i => p.indexOf(i) !== -1) && p.every(i => objectEquals(x1[i], y1[i]));
 }
+
+export function range<T>(n: number, fn: (i: number) => T): T[] {
+  return [...new Array(n)].map(fn);
+}
