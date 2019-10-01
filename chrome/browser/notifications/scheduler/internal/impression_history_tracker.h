@@ -32,6 +32,7 @@ class ImpressionHistoryTracker : public UserActionHandler {
       std::map<SchedulerClientType, std::unique_ptr<ClientState>>;
   using InitCallback = base::OnceCallback<void(bool)>;
 
+  // TODO(xingliu): Delete this.
   class Delegate {
    public:
     Delegate() = default;
