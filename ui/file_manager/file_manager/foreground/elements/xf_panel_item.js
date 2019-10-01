@@ -369,6 +369,16 @@ class PanelItem extends HTMLElement {
    */
   connectedCallback() {
     this.onclick = this.onClicked_.bind(this);
+
+    // Set click event handler references.
+    let button = this.shadowRoot.querySelector('#primary-action');
+    if (button) {
+      button.onclick = this.onclick;
+    }
+    button = this.shadowRoot.querySelector('#secondary-action');
+    if (button) {
+      button.onclick = this.onclick;
+    }
   }
 
   /**
