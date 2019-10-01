@@ -38,6 +38,8 @@ class GClientSmokeBase(fake_repos.FakeReposTestBase):
     self.env = os.environ.copy()
     self.env['DEPOT_TOOLS_UPDATE'] = '0'
     self.env['DEPOT_TOOLS_METRICS'] = '0'
+    # Suppress Python 3 warnings and other test undesirables.
+    self.env['GCLIENT_TEST'] = '1'
 
   def gclient(self, cmd, cwd=None):
     if not cwd:

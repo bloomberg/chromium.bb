@@ -118,6 +118,12 @@ import setup_color
 
 from third_party import six
 
+# Check for people accidentally running this script with Python3 - an
+# increasingly common error on Windows 10 due to the store version of Python.
+if sys.version_info.major >= 3 and not 'GCLIENT_TEST' in os.environ:
+  print("Warning: gclient doesn't yet support Python 3 and may not work "
+        "correctly.", file=sys.stderr)
+
 
 # TODO(crbug.com/953884): Remove this when python3 migration is done.
 if six.PY3:
