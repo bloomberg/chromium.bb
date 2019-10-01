@@ -372,7 +372,7 @@ proto_library("system_api-u2f-protos") {
   proto_in_dir = "dbus/u2f"
   proto_out_dir = "include/u2f/proto_bindings"
   sources = [
-    "${proto_in_dir}/interface.proto",
+    "${proto_in_dir}/u2f_interface.proto",
   ]
   standalone = true
 }
