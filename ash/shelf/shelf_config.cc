@@ -183,7 +183,8 @@ int ShelfConfig::control_size() const {
 }
 
 int ShelfConfig::control_border_radius() const {
-  return (is_in_app() && Shell::Get()->tablet_mode_controller()->InTabletMode())
+  return (chromeos::switches::ShouldShowShelfHotseat() && is_in_app() &&
+          Shell::Get()->tablet_mode_controller()->InTabletMode())
              ? 0
              : control_size() / 2;
 }
