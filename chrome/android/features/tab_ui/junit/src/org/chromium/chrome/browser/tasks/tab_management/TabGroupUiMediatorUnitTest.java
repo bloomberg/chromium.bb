@@ -104,6 +104,8 @@ public class TabGroupUiMediatorUnitTest {
     TabModelFilterProvider mTabModelFilterProvider;
     @Mock
     TabGroupModelFilter mTabGroupModelFilter;
+    @Mock
+    TabGridDialogMediator.DialogController mTabGridDialogController;
     @Captor
     ArgumentCaptor<TabModelObserver> mTabModelObserverArgumentCaptor;
     @Captor
@@ -169,7 +171,8 @@ public class TabGroupUiMediatorUnitTest {
         }
 
         mTabGroupUiMediator = new TabGroupUiMediator(mVisibilityController, mResetHandler, mModel,
-                mTabModelSelector, mTabCreatorManager, mOverviewModeBehavior, mThemeColorProvider);
+                mTabModelSelector, mTabCreatorManager, mOverviewModeBehavior, mThemeColorProvider,
+                mTabGridDialogController);
 
         if (currentTab == null) {
             verifyNeverReset();
@@ -298,10 +301,11 @@ public class TabGroupUiMediatorUnitTest {
     }
 
     @Test
+    // clang-format off
     @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID,
             ChromeFeatureList.TAB_GROUPS_UI_IMPROVEMENTS_ANDROID})
-    public void
-    onClickExpand() {
+    public void onClickExpand() {
+        // clang-format on
         initAndAssertProperties(mTab2);
 
         View.OnClickListener listener =
@@ -638,6 +642,24 @@ public class TabGroupUiMediatorUnitTest {
         mTintObserverArgumentCaptor.getValue().onTintChanged(colorStateList, true);
 
         assertThat(mModel.get(TabStripToolbarViewProperties.TINT), equalTo(colorStateList));
+    }
+
+    @Test
+    public void backButtonPress_ShouldHandle() {
+        initAndAssertProperties(mTab1);
+        doReturn(true).when(mTabGridDialogController).handleBackPressed();
+
+        assertThat(mTabGroupUiMediator.onBackPressed(), equalTo(true));
+        verify(mTabGridDialogController).handleBackPressed();
+    }
+
+    @Test
+    public void backButtonPress_ShouldNotHandle() {
+        initAndAssertProperties(mTab1);
+        doReturn(false).when(mTabGridDialogController).handleBackPressed();
+
+        assertThat(mTabGroupUiMediator.onBackPressed(), equalTo(false));
+        verify(mTabGridDialogController).handleBackPressed();
     }
 
     @Test
