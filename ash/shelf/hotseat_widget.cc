@@ -10,10 +10,8 @@
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/wallpaper_controller_observer.h"
 #include "ash/shelf/scrollable_shelf_view.h"
-#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_navigation_widget.h"
 #include "ash/shelf/shelf_view.h"
-#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
@@ -187,11 +185,6 @@ void HotseatWidget::OnMouseEvent(ui::MouseEvent* event) {
 void HotseatWidget::OnGestureEvent(ui::GestureEvent* event) {
   if (event->type() == ui::ET_GESTURE_TAP_DOWN)
     keyboard::KeyboardUIController::Get()->HideKeyboardImplicitlyByUser();
-  GetShelfView()
-      ->shelf_widget()
-      ->shelf_layout_manager()
-      ->ProcessGestureEventFromHotseatWidget(
-          event, static_cast<aura::Window*>(event->target()));
 
   if (!event->handled())
     views::Widget::OnGestureEvent(event);
