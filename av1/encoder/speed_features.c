@@ -148,15 +148,12 @@ static void set_good_speed_feature_framesize_dependent(
   }
 
   if (speed >= 1) {
-    sf->simple_motion_search_split = 2;
     if (is_720p_or_larger) {
       sf->use_square_partition_only_threshold = BLOCK_128X128;
     } else if (is_480p_or_larger) {
       sf->use_square_partition_only_threshold = BLOCK_64X64;
     } else {
       sf->use_square_partition_only_threshold = BLOCK_32X32;
-
-      sf->simple_motion_search_split = 1;
     }
 
     if (!is_720p_or_larger) {
@@ -199,14 +196,6 @@ static void set_good_speed_feature_framesize_dependent(
       sf->partition_search_breakout_dist_thr = (1 << 23);
       sf->partition_search_breakout_rate_thr = 120;
     }
-
-    // TODO(Venkat): Clean-up frame type dependency for
-    // simple_motion_search_split in partition search function and set the
-    // speed feature accordingly
-    // TODO(any): The models and thresholds used by simple_motion_split is
-    // trained and tuned on speed 1 and 2. We might get better performance if we
-    // readjust them for speed 3 and 4.
-    sf->simple_motion_search_split = cm->allow_screen_content_tools ? 1 : 2;
   }
 
   if (speed >= 4) {
@@ -299,7 +288,10 @@ static void set_good_speed_features_framesize_independent(
     sf->prune_comp_search_by_single_result = 1;
     sf->skip_repeated_newmv = 1;
     sf->obmc_full_pixel_search_level = 1;
-    sf->simple_motion_search_split = 1;
+    // TODO(Venkat): Clean-up frame type dependency for
+    // simple_motion_search_split in partition search function and set the
+    // speed feature accordingly
+    sf->simple_motion_search_split = cm->allow_screen_content_tools ? 1 : 2;
     sf->simple_motion_search_early_term_none = 1;
 
     sf->disable_wedge_search_var_thresh = 0;
