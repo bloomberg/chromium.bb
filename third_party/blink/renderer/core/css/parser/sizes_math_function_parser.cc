@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/core/css/parser/sizes_calc_parser.h"
+#include "third_party/blink/renderer/core/css/parser/sizes_math_function_parser.h"
 
 #include "third_party/blink/renderer/core/css/media_values.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_token.h"
@@ -11,13 +11,13 @@
 
 namespace blink {
 
-SizesCalcParser::SizesCalcParser(CSSParserTokenRange range,
-                                 MediaValues* media_values)
+SizesMathFunctionParser::SizesMathFunctionParser(CSSParserTokenRange range,
+                                                 MediaValues* media_values)
     : media_values_(media_values), result_(0) {
   is_valid_ = CalcToReversePolishNotation(range) && Calculate();
 }
 
-float SizesCalcParser::Result() const {
+float SizesMathFunctionParser::Result() const {
   DCHECK(is_valid_);
   return result_;
 }
@@ -32,8 +32,8 @@ static bool OperatorPriority(CSSMathOperator cc, bool& high_priority) {
   return true;
 }
 
-bool SizesCalcParser::HandleOperator(Vector<CSSParserToken>& stack,
-                                     const CSSParserToken& token) {
+bool SizesMathFunctionParser::HandleOperator(Vector<CSSParserToken>& stack,
+                                             const CSSParserToken& token) {
   // If the token is not an operator, then return. Else determine the
   // precedence of the new operator (op1).
   bool incoming_operator_priority;
@@ -65,7 +65,8 @@ bool SizesCalcParser::HandleOperator(Vector<CSSParserToken>& stack,
   return true;
 }
 
-bool SizesCalcParser::HandleRightParenthesis(Vector<CSSParserToken>& stack) {
+bool SizesMathFunctionParser::HandleRightParenthesis(
+    Vector<CSSParserToken>& stack) {
   // If the token is a right parenthesis:
   // Until the token at the top of the stack is a left parenthesis or a
   // function, pop operators off the stack onto the output queue.
@@ -114,8 +115,8 @@ bool SizesCalcParser::HandleRightParenthesis(Vector<CSSParserToken>& stack) {
   return true;
 }
 
-bool SizesCalcParser::HandleComma(Vector<CSSParserToken>& stack,
-                                  const CSSParserToken& token) {
+bool SizesMathFunctionParser::HandleComma(Vector<CSSParserToken>& stack,
+                                          const CSSParserToken& token) {
   if (!RuntimeEnabledFeatures::CSSComparisonFunctionsEnabled())
     return false;
   // Treat comma as a binary right-associative operation for now, so that
@@ -134,14 +135,14 @@ bool SizesCalcParser::HandleComma(Vector<CSSParserToken>& stack,
   return true;
 }
 
-void SizesCalcParser::AppendNumber(const CSSParserToken& token) {
-  SizesCalcValue value;
+void SizesMathFunctionParser::AppendNumber(const CSSParserToken& token) {
+  SizesMathValue value;
   value.value = token.NumericValue();
   value_list_.push_back(value);
 }
 
-bool SizesCalcParser::AppendLength(const CSSParserToken& token) {
-  SizesCalcValue value;
+bool SizesMathFunctionParser::AppendLength(const CSSParserToken& token) {
+  SizesMathValue value;
   double result = 0;
   if (!media_values_->ComputeLength(token.NumericValue(), token.GetUnitType(),
                                     result))
@@ -152,11 +153,12 @@ bool SizesCalcParser::AppendLength(const CSSParserToken& token) {
   return true;
 }
 
-void SizesCalcParser::AppendOperator(const CSSParserToken& token) {
+void SizesMathFunctionParser::AppendOperator(const CSSParserToken& token) {
   value_list_.emplace_back(ParseCSSArithmeticOperator(token));
 }
 
-bool SizesCalcParser::CalcToReversePolishNotation(CSSParserTokenRange range) {
+bool SizesMathFunctionParser::CalcToReversePolishNotation(
+    CSSParserTokenRange range) {
   // This method implements the shunting yard algorithm, to turn the calc syntax
   // into a reverse polish notation.
   // http://en.wikipedia.org/wiki/Shunting-yard_algorithm
@@ -250,13 +252,13 @@ bool SizesCalcParser::CalcToReversePolishNotation(CSSParserTokenRange range) {
   return true;
 }
 
-static bool OperateOnStack(Vector<SizesCalcValue>& stack,
+static bool OperateOnStack(Vector<SizesMathValue>& stack,
                            CSSMathOperator operation) {
   if (stack.size() < 2)
     return false;
-  SizesCalcValue right_operand = stack.back();
+  SizesMathValue right_operand = stack.back();
   stack.pop_back();
-  SizesCalcValue left_operand = stack.back();
+  SizesMathValue left_operand = stack.back();
   stack.pop_back();
   bool is_length;
   switch (operation) {
@@ -265,40 +267,40 @@ static bool OperateOnStack(Vector<SizesCalcValue>& stack,
         return false;
       is_length = (right_operand.is_length && left_operand.is_length);
       stack.push_back(
-          SizesCalcValue(left_operand.value + right_operand.value, is_length));
+          SizesMathValue(left_operand.value + right_operand.value, is_length));
       break;
     case CSSMathOperator::kSubtract:
       if (right_operand.is_length != left_operand.is_length)
         return false;
       is_length = (right_operand.is_length && left_operand.is_length);
       stack.push_back(
-          SizesCalcValue(left_operand.value - right_operand.value, is_length));
+          SizesMathValue(left_operand.value - right_operand.value, is_length));
       break;
     case CSSMathOperator::kMultiply:
       if (right_operand.is_length && left_operand.is_length)
         return false;
       is_length = (right_operand.is_length || left_operand.is_length);
       stack.push_back(
-          SizesCalcValue(left_operand.value * right_operand.value, is_length));
+          SizesMathValue(left_operand.value * right_operand.value, is_length));
       break;
     case CSSMathOperator::kDivide:
       if (right_operand.is_length || right_operand.value == 0)
         return false;
-      stack.push_back(SizesCalcValue(left_operand.value / right_operand.value,
+      stack.push_back(SizesMathValue(left_operand.value / right_operand.value,
                                      left_operand.is_length));
       break;
     case CSSMathOperator::kMin:
       if (right_operand.is_length != left_operand.is_length)
         return false;
       is_length = (right_operand.is_length && left_operand.is_length);
-      stack.push_back(SizesCalcValue(
+      stack.push_back(SizesMathValue(
           std::min(left_operand.value, right_operand.value), is_length));
       break;
     case CSSMathOperator::kMax:
       if (right_operand.is_length != left_operand.is_length)
         return false;
       is_length = (right_operand.is_length && left_operand.is_length);
-      stack.push_back(SizesCalcValue(
+      stack.push_back(SizesMathValue(
           std::max(left_operand.value, right_operand.value), is_length));
       break;
     default:
@@ -307,8 +309,8 @@ static bool OperateOnStack(Vector<SizesCalcValue>& stack,
   return true;
 }
 
-bool SizesCalcParser::Calculate() {
-  Vector<SizesCalcValue> stack;
+bool SizesMathFunctionParser::Calculate() {
+  Vector<SizesMathValue> stack;
   for (const auto& value : value_list_) {
     if (value.operation == CSSMathOperator::kInvalid) {
       stack.push_back(value);

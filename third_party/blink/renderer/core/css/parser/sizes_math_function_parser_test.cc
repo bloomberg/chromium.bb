@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/core/css/parser/sizes_calc_parser.h"
+#include "third_party/blink/renderer/core/css/parser/sizes_math_function_parser.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/css/css_math_function_value.h"
@@ -62,7 +62,7 @@ static void VerifyCSSCalc(String text,
   EXPECT_APPROX_EQ(value, math_value->ComputeLength<float>(conversion_data));
 }
 
-TEST(SizesCalcParserTest, Basic) {
+TEST(SizesMathFunctionParserTest, Basic) {
   ScopedCSSComparisonFunctionsForTest scope(true);
 
   SizesCalcTestCase test_cases[] = {
@@ -187,7 +187,7 @@ TEST(SizesCalcParserTest, Basic) {
   auto* media_values = MakeGarbageCollected<MediaValuesCached>(data);
 
   for (unsigned i = 0; test_cases[i].input; ++i) {
-    SizesCalcParser calc_parser(
+    SizesMathFunctionParser calc_parser(
         CSSParserTokenRange(CSSTokenizer(test_cases[i].input).TokenizeToEOF()),
         media_values);
     ASSERT_EQ(test_cases[i].valid, calc_parser.IsValid());
