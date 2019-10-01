@@ -8,6 +8,7 @@
     RuntimeEnabled=WebGPU
 ] interface GPUDevice : EventTarget {
     readonly attribute GPUAdapter adapter;
+    [CallWith=ScriptState] readonly attribute Promise<GPUDeviceLostInfo> lost;
 
     GPUBuffer createBuffer(GPUBufferDescriptor descriptor);
     [CallWith=ScriptState, RaisesException] GPUMappedBuffer createBufferMapped(GPUBufferDescriptor descriptor);

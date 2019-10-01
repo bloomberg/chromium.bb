@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_property.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/webgpu/dawn_callback.h"
@@ -28,6 +29,7 @@ class GPUBindGroupLayoutDescriptor;
 class GPUComputePipeline;
 class GPUComputePipelineDescriptor;
 class GPUDeviceDescriptor;
+class GPUDeviceLostInfo;
 class GPUPipelineLayout;
 class GPUPipelineLayoutDescriptor;
 class GPUQueue;
@@ -66,6 +68,7 @@ class GPUDevice final : public EventTargetWithInlineData,
 
   // gpu_device.idl
   GPUAdapter* adapter() const;
+  ScriptPromise lost(ScriptState* script_state);
 
   GPUBuffer* createBuffer(const GPUBufferDescriptor* descriptor);
   HeapVector<ScriptValue> createBufferMapped(
@@ -110,6 +113,10 @@ class GPUDevice final : public EventTargetWithInlineData,
   ExecutionContext* GetExecutionContext() const override;
 
  private:
+  using LostProperty = ScriptPromiseProperty<Member<GPUDevice>,
+                                             Member<GPUDeviceLostInfo>,
+                                             ToV8UndefinedGenerator>;
+
   void OnUncapturedError(ExecutionContext* execution_context,
                          DawnErrorType errorType,
                          const char* message);
@@ -120,6 +127,7 @@ class GPUDevice final : public EventTargetWithInlineData,
 
   Member<GPUAdapter> adapter_;
   Member<GPUQueue> queue_;
+  Member<LostProperty> lost_property_;
   std::unique_ptr<
       DawnCallback<base::RepeatingCallback<void(DawnErrorType, const char*)>>>
       error_callback_;
