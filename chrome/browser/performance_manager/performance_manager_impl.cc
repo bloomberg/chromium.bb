@@ -275,11 +275,6 @@ void PerformanceManagerImpl::BatchDeleteNodesImpl(
       }
       case FrameNodeImpl::Type():
         break;
-      case WorkerNodeImpl::Type(): {
-        auto* worker_node = WorkerNodeImpl::FromNodeBase(it->get());
-        graph_.RemoveNode(worker_node);
-        break;
-      }
       case SystemNodeImpl::Type():
       case NodeTypeEnum::kInvalidType:
       default: {
