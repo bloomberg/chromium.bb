@@ -1454,14 +1454,18 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
     }
 
     @Override
-    public boolean back() {
+    public @ChromeTabbedActivity.BackPressedResult Integer back() {
+        if (mBottomControlsCoordinator != null && mBottomControlsCoordinator.onBackPressed()) {
+            return ChromeTabbedActivity.BackPressedResult.EXITED_TAB_GROUP_DIALOG;
+        }
+
         Tab tab = mLocationBarModel.getTab();
         if (tab != null && tab.canGoBack()) {
             tab.goBack();
             updateButtonStatus();
-            return true;
+            return ChromeTabbedActivity.BackPressedResult.NAVIGATED_BACK;
         }
-        return false;
+        return null;
     }
 
     @Override
