@@ -213,3 +213,12 @@ struct Condition {
 struct IntentFilter {
   array<Condition> conditions;
 };
+
+// Action and resource handling request. This includes the scheme and URL at
+// the moment, and will be extended to handle MIME type and file extensions in
+// the future.
+struct Intent {
+  string? scheme; // URL scheme. e.g. https.
+  string? host;   // URL host. e.g. www.google.com.
+  string? path;   // URL path. e.g. /abc.
+};
