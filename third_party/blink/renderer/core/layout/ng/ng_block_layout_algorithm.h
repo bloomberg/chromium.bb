@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_floats_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_algorithm.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_unpositioned_float.h"
 
 namespace blink {
@@ -22,7 +23,6 @@ namespace blink {
 class NGConstraintSpace;
 class NGEarlyBreak;
 class NGFragment;
-class NGLayoutResult;
 class NGPhysicalLineBoxFragment;
 
 // This struct is used for communicating to a child the position of the previous
@@ -179,9 +179,10 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   //
   // Returns false if we need to abort layout, because a previously unknown BFC
   // block offset has now been resolved.
-  bool HandleNewFormattingContext(NGLayoutInputNode child,
-                                  const NGBreakToken* child_break_token,
-                                  NGPreviousInflowPosition*);
+  NGLayoutResult::EStatus HandleNewFormattingContext(
+      NGLayoutInputNode child,
+      const NGBreakToken* child_break_token,
+      NGPreviousInflowPosition*);
 
   // Performs the actual layout of a new formatting context. This may be called
   // multiple times from HandleNewFormattingContext.
@@ -196,14 +197,14 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   // Handle an in-flow child.
   // Returns false if we need to abort layout, because a previously unknown BFC
   // block offset has now been resolved. (Same as HandleNewFormattingContext).
-  bool HandleInflow(
+  NGLayoutResult::EStatus HandleInflow(
       NGLayoutInputNode child,
       const NGBreakToken* child_break_token,
       NGPreviousInflowPosition*,
       NGInlineChildLayoutContext*,
       scoped_refptr<const NGInlineBreakToken>* previous_inline_break_token);
 
-  bool FinishInflow(
+  NGLayoutResult::EStatus FinishInflow(
       NGLayoutInputNode child,
       const NGBreakToken* child_break_token,
       const NGConstraintSpace&,

@@ -181,8 +181,7 @@ class CORE_EXPORT NGBoxFragmentBuilder final
     return ToBoxFragment(ToLineWritingMode(GetWritingMode()));
   }
 
-  scoped_refptr<const NGLayoutResult> Abort(
-      NGLayoutResult::NGLayoutResultStatus);
+  scoped_refptr<const NGLayoutResult> Abort(NGLayoutResult::EStatus);
 
   NGPhysicalFragment::NGBoxType BoxType() const;
   void SetBoxType(NGPhysicalFragment::NGBoxType box_type) {
