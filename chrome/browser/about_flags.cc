@@ -2844,6 +2844,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kServiceWorkerLongRunningMessageDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kServiceWorkerLongRunningMessage)},
 
+    {"enable-service-worker-on-ui", flag_descriptions::kServiceWorkerOnUIName,
+     flag_descriptions::kServiceWorkerOnUIDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kServiceWorkerOnUI)},
+
 #if defined(OS_CHROMEOS)
     {"scheduler-configuration", flag_descriptions::kSchedulerConfigurationName,
      flag_descriptions::kSchedulerConfigurationDescription, kOsCrOS,
