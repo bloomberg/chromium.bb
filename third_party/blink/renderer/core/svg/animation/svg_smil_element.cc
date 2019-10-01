@@ -292,8 +292,10 @@ Node::InsertionNotificationRequest SVGSMILElement::InsertedInto(
   if (is_waiting_for_first_interval_)
     ResolveFirstInterval();
 
-  if (time_container_)
-    time_container_->NotifyIntervalsChanged();
+  if (time_container_) {
+    time_container_->MarkIntervalsDirty();
+    time_container_->ScheduleIntervalUpdate();
+  }
 
   BuildPendingResource();
 
@@ -490,8 +492,10 @@ void SVGSMILElement::ParseAttribute(const AttributeModificationParams& params) {
     if (isConnected()) {
       ConnectConditions();
       InstanceListChanged();
-      if (time_container_)
-        time_container_->NotifyIntervalsChanged();
+      if (time_container_) {
+        time_container_->MarkIntervalsDirty();
+        time_container_->ScheduleIntervalUpdate();
+      }
     }
     AnimationAttributeChanged();
   } else if (name == svg_names::kEndAttr) {
@@ -503,8 +507,10 @@ void SVGSMILElement::ParseAttribute(const AttributeModificationParams& params) {
     if (isConnected()) {
       ConnectConditions();
       InstanceListChanged();
-      if (time_container_)
-        time_container_->NotifyIntervalsChanged();
+      if (time_container_) {
+        time_container_->MarkIntervalsDirty();
+        time_container_->ScheduleIntervalUpdate();
+      }
     }
     AnimationAttributeChanged();
   } else if (name == svg_names::kOnbeginAttr) {
@@ -713,8 +719,10 @@ void SVGSMILElement::AddInstanceTimeAndUpdate(BeginOrEnd begin_or_end,
     return;
   AddInstanceTime(begin_or_end, time, origin);
   InstanceListChanged();
-  if (time_container_)
-    time_container_->NotifyIntervalsChanged();
+  if (time_container_) {
+    time_container_->MarkIntervalsDirty();
+    time_container_->ScheduleIntervalUpdate();
+  }
 }
 
 SMILTime SVGSMILElement::FindInstanceTime(BeginOrEnd begin_or_end,
@@ -1064,7 +1072,7 @@ bool SVGSMILElement::CurrentIntervalIsActive(SMILTime elapsed) {
     // The current internal must be the first, and has started, so clear the flag and (re)resolve.
     is_waiting_for_first_interval_ = false;
     if (ResolveFirstInterval())
-      time_container_->NotifyIntervalsChanged();
+      time_container_->MarkIntervalsDirty();
   }
   return true;
 }
@@ -1190,8 +1198,10 @@ void SVGSMILElement::CreateInstanceTimesFromSyncBase(
 
   if (instance_lists_changed) {
     InstanceListChanged();
-    if (time_container_)
-      time_container_->NotifyIntervalsChanged();
+    if (time_container_) {
+      time_container_->MarkIntervalsDirty();
+      time_container_->ScheduleIntervalUpdate();
+    }
   }
 }
 
