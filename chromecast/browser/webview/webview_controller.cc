@@ -335,6 +335,7 @@ void WebviewController::OnPageStateChanged(CastWebContents* cast_web_contents) {
     std::unique_ptr<webview::WebviewResponse> response =
         std::make_unique<webview::WebviewResponse>();
     auto* event = response->mutable_page_event();
+    event->set_url(contents_->GetURL().spec());
     event->set_current_page_state(current_state());
     client_->EnqueueSend(std::move(response));
   }
@@ -347,6 +348,7 @@ void WebviewController::OnPageStopped(CastWebContents* cast_web_contents,
     std::unique_ptr<webview::WebviewResponse> response =
         std::make_unique<webview::WebviewResponse>();
     auto* event = response->mutable_page_event();
+    event->set_url(contents_->GetURL().spec());
     event->set_current_page_state(current_state());
     event->set_stopped_error_code(error_code);
     client_->EnqueueSend(std::move(response));
@@ -361,6 +363,7 @@ void WebviewController::ResourceLoadFailed(CastWebContents* cast_web_contents) {
     std::unique_ptr<webview::WebviewResponse> response =
         std::make_unique<webview::WebviewResponse>();
     auto* event = response->mutable_page_event();
+    event->set_url(contents_->GetURL().spec());
     event->set_current_page_state(current_state());
     event->set_resource_load_failed(true);
     client_->EnqueueSend(std::move(response));
