@@ -19,8 +19,10 @@
 class Profile;
 
 namespace syncer {
+class MetadataBatch;
+class ModelError;
 class ModelTypeChangeProcessor;
-}
+}  // namespace syncer
 
 namespace web_app {
 
@@ -63,8 +65,12 @@ class WebAppSyncBridge : public AppRegistryController,
   // Update the in-memory model.
   void UpdateRegistrar(std::unique_ptr<RegistryUpdateData> update_data);
 
-  void OnDatabaseOpened(base::OnceClosure callback, Registry registry);
+  void OnDatabaseOpened(base::OnceClosure callback,
+                        Registry registry,
+                        std::unique_ptr<syncer::MetadataBatch> metadata_batch);
   void OnDataWritten(CommitCallback callback, bool success);
+
+  void ReportErrorToChangeProcessor(const syncer::ModelError& error);
 
   // syncer::ModelTypeSyncBridge:
   std::unique_ptr<syncer::MetadataChangeList> CreateMetadataChangeList()
