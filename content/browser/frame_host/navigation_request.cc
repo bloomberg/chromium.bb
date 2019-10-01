@@ -644,8 +644,12 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
     NavigationControllerImpl* controller =
         static_cast<NavigationControllerImpl*>(
             frame_tree_node->navigator()->GetController());
-    rfh_restored_from_back_forward_cache =
-        controller->GetBackForwardCache().GetDocument(entry->GetUniqueID());
+    BackForwardCacheImpl::Entry* restored_entry =
+        controller->GetBackForwardCache().GetEntry(entry->GetUniqueID());
+    if (restored_entry) {
+      rfh_restored_from_back_forward_cache =
+          restored_entry->render_frame_host.get();
+    }
   }
 
   std::unique_ptr<NavigationRequest> navigation_request(new NavigationRequest(
@@ -1608,10 +1612,11 @@ void NavigationRequest::OnResponseStarted(
     NavigationControllerImpl* controller =
         static_cast<NavigationControllerImpl*>(
             frame_tree_node_->navigator()->GetController());
-    render_frame_host_ =
-        controller->GetBackForwardCache().GetDocument(nav_entry_id_);
+    render_frame_host_ = controller->GetBackForwardCache()
+                             .GetEntry(nav_entry_id_)
+                             ->render_frame_host.get();
 
-    // The only time GetDocument can return nullptr here, is if the document was
+    // The only time GetEntry can return nullptr here, is if the document was
     // evicted from the BackForwardCache since this navigation started.
     //
     // If the document was evicted, the navigation should have been re-issued
@@ -2309,8 +2314,8 @@ void NavigationRequest::CommitNavigation() {
         static_cast<NavigationControllerImpl*>(
             frame_tree_node_->navigator()->GetController());
 
-    std::unique_ptr<RenderFrameHostImpl> restored_rfh =
-        controller->GetBackForwardCache().RestoreDocument(nav_entry_id_);
+    std::unique_ptr<BackForwardCacheImpl::Entry> restored_bfcache_entry =
+        controller->GetBackForwardCache().RestoreEntry(nav_entry_id_);
 
     // The only time restored_rfh can be nullptr here, is if the
     // document was evicted from the BackForwardCache since this navigation
@@ -2319,18 +2324,19 @@ void NavigationRequest::CommitNavigation() {
     // If the document was evicted, it should have re-issued the navigation
     // (deleting this NavigationRequest), so we should never reach this point
     // without the document still present in the BackForwardCache.
-    CHECK(restored_rfh);
+    CHECK(restored_bfcache_entry);
 
     // Transfer ownership of this NavigationRequest to the restored
     // RenderFrameHost.
     frame_tree_node_->TransferNavigationRequestOwnership(GetRenderFrameHost());
 
-    // Move the restored RenderFrameHost into RenderFrameHostManager, in
+    // Move the restored BackForwardCache Entry into RenderFrameHostManager, in
     // preparation for committing.
     frame_tree_node_->render_manager()->RestoreFromBackForwardCache(
-        std::move(restored_rfh));
+        std::move(restored_bfcache_entry));
 
-    // Commit the restored RenderFrameHost.
+    // Commit the restored BackForwardCache Entry. This includes committing the
+    // RenderFrameHost and restoring extra state, such as proxies, etc.
     // Note that this will delete the NavigationRequest.
     GetRenderFrameHost()->DidCommitBackForwardCacheNavigation(
         this, MakeDidCommitProvisionalLoadParamsForBFCache());
