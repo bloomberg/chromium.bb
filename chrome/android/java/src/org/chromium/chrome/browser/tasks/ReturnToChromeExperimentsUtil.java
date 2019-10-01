@@ -69,19 +69,6 @@ public final class ReturnToChromeExperimentsUtil {
     }
 
     /**
-     * TODO(mattsimmons): Merge this with the one above once all the surface variations work
-     *  correctly with mv tiles, omnibox, etc. (both should be true when != NO_START_SURFACE)
-     * @return Whether we show the most visited tiles on the tab switcher.
-     */
-    public static boolean shouldShowMostVisitedOnTabSwitcher() {
-        return ChromeFeatureList.isInitialized()
-                && ChromeFeatureList
-                           .getFieldTrialParamByFeature(ChromeFeatureList.START_SURFACE_ANDROID,
-                                   "start_surface_variation")
-                           .equals("tasksonly");
-    }
-
-    /**
      * Check if we should handle the navigation. If so, create a new tab and load the URL.
      *
      * @param url The URL to load.

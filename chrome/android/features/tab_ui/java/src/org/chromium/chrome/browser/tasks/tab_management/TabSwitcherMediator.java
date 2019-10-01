@@ -504,11 +504,6 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
         return true;
     }
 
-    @Override
-    public void setBottomControlsHeight(int bottomControlsHeight) {
-        mContainerViewModel.set(BOTTOM_CONTROLS_HEIGHT, bottomControlsHeight);
-    }
-
     /**
      * Do clean-up work after the overview hiding animation is finished.
      * @see TabSwitcher#postHiding
