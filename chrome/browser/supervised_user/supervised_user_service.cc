@@ -743,12 +743,9 @@ bool SupervisedUserService::UserMayModifySettings(const Extension* extension,
                                                   base::string16* error) const {
   DCHECK(ProfileIsSupervised());
   ExtensionState result = GetExtensionState(*extension);
-  // While the following check allows the supervised user to modify the settings
-  // and enable or disable the extension, MustRemainDisabled properly takes care
-  // of keeping an extension disabled when required.
-  // For custodian-installed extensions, the state is always FORCED, even if
-  // it's waiting for an update approval.
-  bool may_modify = result != ExtensionState::FORCED;
+  // Only allow the supervised user to modify the settings and enable or disable
+  // the extension if the supervised user has full control.
+  bool may_modify = result == ExtensionState::ALLOWED;
   if (!may_modify && error)
     *error = GetExtensionsLockedMessage();
   return may_modify;
