@@ -1089,6 +1089,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void CreateLockManager(
       mojo::PendingReceiver<blink::mojom::LockManager> receiver);
 
+  void CreateIDBFactory(
+      mojo::PendingReceiver<blink::mojom::IDBFactory> receiver);
+
   void GetFileChooser(
       mojo::PendingReceiver<blink::mojom::FileChooser> receiver);
 

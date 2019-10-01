@@ -497,8 +497,8 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // receiver is sent to the IO thread. This is for internal use only, and is
   // only exposed here to support MockRenderProcessHost usage in tests.
   virtual void BindIndexedDB(
-      mojo::PendingReceiver<blink::mojom::IDBFactory> receiver,
-      const url::Origin& origin) = 0;
+      const url::Origin& origin,
+      mojo::PendingReceiver<blink::mojom::IDBFactory> receiver) = 0;
 
   // Binds |receiver| to the VideoDecodePerfHistory instance.  This is for
   // internal use only, and is only exposed here to support

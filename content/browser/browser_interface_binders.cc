@@ -44,6 +44,7 @@
 #include "third_party/blink/public/mojom/credentialmanager/credential_manager.mojom.h"
 #include "third_party/blink/public/mojom/filesystem/file_system.mojom.h"
 #include "third_party/blink/public/mojom/idle/idle_manager.mojom.h"
+#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 #include "third_party/blink/public/mojom/keyboard_lock/keyboard_lock.mojom.h"
 #include "third_party/blink/public/mojom/locks/lock_manager.mojom.h"
 #include "third_party/blink/public/mojom/mediasession/media_session.mojom.h"
@@ -174,6 +175,9 @@ void PopulateFrameBinders(RenderFrameHostImpl* host,
   map->Add<blink::mojom::LockManager>(base::BindRepeating(
       &RenderFrameHostImpl::CreateLockManager, base::Unretained(host)));
 
+  map->Add<blink::mojom::IDBFactory>(base::BindRepeating(
+      &RenderFrameHostImpl::CreateIDBFactory, base::Unretained(host)));
+
   map->Add<blink::mojom::FileChooser>(base::BindRepeating(
       &RenderFrameHostImpl::GetFileChooser, base::Unretained(host)));
 
@@ -302,6 +306,8 @@ void PopulateDedicatedWorkerBinders(DedicatedWorkerHost* host,
       base::BindRepeating(&BindFaceDetectionProvider));
   map->Add<shape_detection::mojom::TextDetection>(
       base::BindRepeating(&BindTextDetection));
+  map->Add<blink::mojom::IDBFactory>(base::BindRepeating(
+      &DedicatedWorkerHost::CreateIDBFactory, base::Unretained(host)));
 
 #if !defined(OS_ANDROID)
   if (AreExperimentalWebPlatformFeaturesEnabled()) {
@@ -350,6 +356,8 @@ void PopulateSharedWorkerBinders(SharedWorkerHost* host,
       base::BindRepeating(&BindFaceDetectionProvider));
   map->Add<shape_detection::mojom::TextDetection>(
       base::BindRepeating(&BindTextDetection));
+  map->Add<blink::mojom::IDBFactory>(base::BindRepeating(
+      &SharedWorkerHost::CreateIDBFactory, base::Unretained(host)));
 }
 
 void PopulateBinderMapWithContext(
@@ -387,6 +395,9 @@ void PopulateServiceWorkerBinders(ServiceWorkerProviderHost* host,
 
   map->Add<blink::mojom::LockManager>(base::BindRepeating(
       &ServiceWorkerProviderHost::CreateLockManager, base::Unretained(host)));
+
+  map->Add<blink::mojom::IDBFactory>(base::BindRepeating(
+      &ServiceWorkerProviderHost::CreateIDBFactory, base::Unretained(host)));
 
   map->Add<blink::mojom::PermissionService>(
       base::BindRepeating(&ServiceWorkerProviderHost::CreatePermissionService,
