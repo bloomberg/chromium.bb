@@ -452,12 +452,14 @@
     cheza64-release
     cobblepot-release
     coral-release
+    cyan-kernelnext-release
     cyan-release
     drallion-release
     edgar-release
     elm-release
     enguarde-release
     eve-arcnext-release
+    eve-arcvm-mesa-virgl-next-release
     eve-arcvm-release
     eve-arm64-release
     eve-campfire-release
@@ -1272,6 +1274,17 @@
   cyan-compile-only-pre-cq
   cyan-factory-strago-7458.B-factorybranch-tryjob
   cyan-full-tryjob
+  cyan-kernelnext-chromium-pfq-tryjob
+  cyan-kernelnext-compile-only-pre-cq
+  cyan-kernelnext-full-tryjob
+  cyan-kernelnext-llvm-next-toolchain-tryjob
+  cyan-kernelnext-llvm-toolchain-tryjob
+  cyan-kernelnext-no-vmtest-pre-cq
+  cyan-kernelnext-paladin-tryjob
+  cyan-kernelnext-pre-cq
+  cyan-kernelnext-release-tryjob
+  cyan-kernelnext-tot-chromium-pfq-informational-tryjob
+  cyan-kernelnext-unittest-stress
   cyan-llvm-next-toolchain-tryjob
   cyan-llvm-toolchain-tryjob
   cyan-no-vmtest-pre-cq
@@ -1383,6 +1396,17 @@
   eve-arcvm-full-tryjob
   eve-arcvm-llvm-next-toolchain-tryjob
   eve-arcvm-llvm-toolchain-tryjob
+  eve-arcvm-mesa-virgl-next-chromium-pfq-tryjob
+  eve-arcvm-mesa-virgl-next-compile-only-pre-cq
+  eve-arcvm-mesa-virgl-next-full-tryjob
+  eve-arcvm-mesa-virgl-next-llvm-next-toolchain-tryjob
+  eve-arcvm-mesa-virgl-next-llvm-toolchain-tryjob
+  eve-arcvm-mesa-virgl-next-no-vmtest-pre-cq
+  eve-arcvm-mesa-virgl-next-paladin-tryjob
+  eve-arcvm-mesa-virgl-next-pre-cq
+  eve-arcvm-mesa-virgl-next-release-tryjob
+  eve-arcvm-mesa-virgl-next-tot-chromium-pfq-informational-tryjob
+  eve-arcvm-mesa-virgl-next-unittest-stress
   eve-arcvm-no-vmtest-pre-cq
   eve-arcvm-paladin-tryjob
   eve-arcvm-payloads-tryjob
@@ -2613,12 +2637,14 @@
     cheza64-release-tryjob
     cobblepot-release-tryjob
     coral-release-tryjob
+    cyan-kernelnext-release-tryjob
     cyan-release-tryjob
     drallion-release-tryjob
     edgar-release-tryjob
     elm-release-tryjob
     enguarde-release-tryjob
     eve-arcnext-release-tryjob
+    eve-arcvm-mesa-virgl-next-release-tryjob
     eve-arcvm-release-tryjob
     eve-arm64-release-tryjob
     eve-campfire-release-tryjob

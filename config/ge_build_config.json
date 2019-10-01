@@ -398,6 +398,18 @@
       ]
     },
     {
+      "name": "cyan-kernelnext",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": false,
+          "board_group": "strago",
+          "arch": "X86_INTERNAL"
+        }
+      ]
+    },
+    {
       "name": "edgar",
       "configs": [
         {
@@ -459,6 +471,18 @@
     },
     {
       "name": "eve-arcvm",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": false,
+          "board_group": "poppy",
+          "arch": "X86_INTERNAL"
+        }
+      ]
+    },
+    {
+      "name": "eve-arcvm-mesa-virgl-next",
       "configs": [
         {
           "builder": "RELEASE",
