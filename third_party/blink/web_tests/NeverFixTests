@@ -416,6 +416,8 @@ external/wpt/css/css-text/text-transform/text-transform-full-size-kana-004.html 
 external/wpt/css/css-text/text-transform/text-transform-full-size-kana-005.html [ WontFix ]
 external/wpt/css/css-text/text-transform/text-transform-full-size-kana-006.html [ WontFix ]
 external/wpt/css/css-text/text-transform/text-transform-full-size-kana-007.html [ WontFix ]
+external/wpt/css/css-text/text-transform/text-transform-fullwidth-008.html [ WontFix ]
+external/wpt/css/css-text/text-transform/text-transform-fullwidth-009.html [ WontFix ]
 
 external/wpt/css/CSS2/linebox/inline-formatting-context-010b.xht [ WontFix ]
 external/wpt/css/CSS2/normal-flow/inline-block-replaced-height-008.xht [ WontFix ]
