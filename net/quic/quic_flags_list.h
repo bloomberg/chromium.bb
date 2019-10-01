@@ -76,7 +76,7 @@ QUIC_FLAG(int32_t, FLAGS_quic_anti_amplification_factor, 3)
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_less_probe_rtt, false)
 
 // If true, enable QUIC v99.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_99, true)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_99, false)
 
 // When true, set the initial congestion control window from connection options
 // in QuicSentPacketManager rather than TcpCubicSenderBytes.
