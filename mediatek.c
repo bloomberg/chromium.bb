@@ -241,8 +241,9 @@ static uint32_t mediatek_resolve_format(struct driver *drv, uint32_t format, uin
 		return DRM_FORMAT_XBGR8888;
 	case DRM_FORMAT_FLEX_YCbCr_420_888:
 #ifdef MTK_MT8183
-		/* Only for MT8183 Camera subsystem requires NV12 */
-		if (use_flags & (BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE))
+		/* MT8183 camera and decoder subsystems require NV12. */
+		if (use_flags &
+		    (BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE | BO_USE_HW_VIDEO_DECODER))
 			return DRM_FORMAT_NV12;
 #endif
 		return DRM_FORMAT_YVU420;
