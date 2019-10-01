@@ -385,8 +385,8 @@ class WorkspaceSyncChromeStageTest(WorkspaceStageBase):
                                     'chromite/bin/sync_chrome'),
                        '--reset', '--ignore_locks',
                        '--gclient', os.path.join(
-                           self.workspace,
-                           'chromium/tools/depot_tools/gclient'),
+                           self.workspace, constants.DEPOT_TOOLS_SUBPATH,
+                           'gclient'),
                        '--tag', '0.0.1',
                        '--git_cache_dir', mock.ANY,
                        '--internal',

@@ -297,7 +297,7 @@ class WorkspaceSyncChromeStage(WorkspaceStageBase):
     sync_chrome = os.path.join(
         self._orig_root, 'chromite', 'bin', 'sync_chrome')
     gclient = os.path.join(
-        self._build_root, 'chromium', 'tools', 'depot_tools', 'gclient')
+        self._build_root, constants.DEPOT_TOOLS_SUBPATH, 'gclient')
 
     # Branched gclient can use git-cache incompatibly, so use a temp one.
     with osutils.TempDir(prefix='dummy') as git_cache:
