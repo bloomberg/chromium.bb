@@ -132,6 +132,15 @@ void WebAppSyncBridge::SetAppLaunchContainer(const AppId& app_id,
     web_app->SetLaunchContainer(launch_container);
 }
 
+void WebAppSyncBridge::SetAppIsLocallyInstalledForTesting(
+    const AppId& app_id,
+    bool is_locally_installed) {
+  ScopedRegistryUpdate update(this);
+  WebApp* web_app = update->UpdateApp(app_id);
+  if (web_app)
+    web_app->SetIsLocallyInstalled(is_locally_installed);
+}
+
 WebAppSyncBridge* WebAppSyncBridge::AsWebAppSyncBridge() {
   return this;
 }
