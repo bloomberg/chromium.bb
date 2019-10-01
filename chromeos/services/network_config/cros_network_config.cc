@@ -1947,6 +1947,8 @@ void CrosNetworkConfig::SetProperties(const std::string& guid,
     return;
   }
 
+  NET_LOG(DEBUG) << "Configuring properties for " << guid << ": " << *onc;
+
   int callback_id = callback_id_++;
   set_properties_callbacks_[callback_id] = std::move(callback);
 
