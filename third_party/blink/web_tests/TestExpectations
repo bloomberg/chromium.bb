@@ -2426,6 +2426,10 @@ crbug.com/626703 external/wpt/css/css-text/word-break/word-break-normal-tdd-000.
 
 crbug.com/972992 external/wpt/css/css-text/white-space/white-space-pre-wrap-trailing-spaces-001.html [ Failure ]
 crbug.com/972992 external/wpt/css/css-text/white-space/white-space-pre-wrap-trailing-spaces-003.html [ Failure ]
+crbug.com/1008029 [ Mac ] external/wpt/css/css-text/white-space/pre-wrap-018.html [ Failure ]
+crbug.com/1008029 external/wpt/css/css-text/white-space/pre-wrap-019.html [ Failure ]
+crbug.com/1008029 external/wpt/css/css-text/white-space/textarea-pre-wrap-012.html [ Failure ]
+crbug.com/1008029 external/wpt/css/css-text/white-space/textarea-pre-wrap-013.html [ Failure ]
 
 # Handling of trailing other spaces is not implemented yet.
 crbug.com/991413 external/wpt/css/css-text/white-space/trailing-other-space-separators-001.html [ Skip ]
@@ -3233,16 +3237,6 @@ crbug.com/626703 [ Win7 ] external/wpt/pointerevents/pointerevent_touch-action-i
 crbug.com/626703 [ Win ] external/wpt/css/css-text/word-break/word-break-keep-all-008.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-text/word-break/word-break-keep-all-007.html [ Failure ]
 crbug.com/626703 [ Mac10.11 ] external/wpt/shape-detection/idlharness.https.any.sharedworker.html [ Failure Timeout ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-text/white-space/textarea-pre-wrap-013.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-text/white-space/textarea-pre-wrap-013.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-text/white-space/textarea-pre-wrap-013.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-text/white-space/pre-wrap-018.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-text/white-space/pre-wrap-019.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-text/white-space/pre-wrap-019.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-text/white-space/pre-wrap-019.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-text/white-space/textarea-pre-wrap-012.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-text/white-space/textarea-pre-wrap-012.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-text/white-space/textarea-pre-wrap-012.html [ Failure ]
 crbug.com/626703 [ Win7 ] external/wpt/pointerevents/pointerevent_touch-action-pan-y-css_touch.html [ Timeout ]
 crbug.com/626703 [ Win10 ] external/wpt/payment-request/payment-request-hasenrolledinstrument-method.tentative.https.html [ Failure Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/css/motion/offset-path-ray-contain-003.html [ Failure ]
