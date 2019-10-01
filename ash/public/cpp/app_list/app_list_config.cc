@@ -252,6 +252,17 @@ int SuggestionChipIconDimension() {
   return app_list_features::IsScalableAppListEnabled() ? 20 : 16;
 }
 
+int SuggestionChipContainerTopMarginForType(ash::AppListConfigType type) {
+  switch (type) {
+    case ash::AppListConfigType::kSmall:
+    case ash::AppListConfigType::kMedium:
+    case ash::AppListConfigType::kLarge:
+      return 16;
+    case ash::AppListConfigType::kShared:
+      return 24;
+  }
+}
+
 }  // namespace
 
 AppListConfig::AppListConfig(ash::AppListConfigType type)
@@ -279,13 +290,15 @@ AppListConfig::AppListConfig(ash::AppListConfigType type)
       search_list_icon_vertical_bar_dimension_(48),
       search_list_badge_icon_dimension_(14),
       suggestion_chip_icon_dimension_(SuggestionChipIconDimension()),
+      suggestion_chip_container_top_margin_(
+          SuggestionChipContainerTopMarginForType(type)),
       app_title_max_line_height_(AppTitleMaxLineHeightForType(type)),
       app_title_font_(AppTitleFontForType(type)),
       peeking_app_list_height_(284),
       search_box_closed_top_padding_(0),
       search_box_peeking_top_padding_(84),
       search_box_fullscreen_top_padding_(24),
-      search_box_preferred_size_for_dense_layout_(40),
+      search_box_height_for_dense_layout_(40),
       preferred_cols_(5),
       preferred_rows_(4),
       page_spacing_(48),
@@ -388,6 +401,8 @@ AppListConfig::AppListConfig(const AppListConfig& base_config,
           base_config.search_list_badge_icon_dimension_),
       suggestion_chip_icon_dimension_(
           base_config.suggestion_chip_icon_dimension_),
+      suggestion_chip_container_top_margin_(
+          base_config.suggestion_chip_container_top_margin_),
       app_title_max_line_height_(base_config.app_title_max_line_height_),
       app_title_font_(base_config.app_title_font_.DeriveWithSizeDelta(
           min_y_scale ? -2 : (scale_y < 0.66 ? -1 : 0))),
@@ -398,8 +413,8 @@ AppListConfig::AppListConfig(const AppListConfig& base_config,
           base_config.search_box_peeking_top_padding_),
       search_box_fullscreen_top_padding_(
           base_config.search_box_fullscreen_top_padding_),
-      search_box_preferred_size_for_dense_layout_(
-          base_config.search_box_preferred_size_for_dense_layout_),
+      search_box_height_for_dense_layout_(
+          base_config.search_box_height_for_dense_layout_),
       preferred_cols_(base_config.preferred_cols_),
       preferred_rows_(base_config.preferred_rows_),
       page_spacing_(base_config.page_spacing_),

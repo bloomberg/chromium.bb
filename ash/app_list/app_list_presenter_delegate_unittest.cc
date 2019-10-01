@@ -1967,11 +1967,9 @@ class AppListPresenterDelegateScalableAppListTest
 
   bool ScalableAppListEnabled() const { return GetParam(); }
 
-  // Calculates expected suggestion chip top based on the search box in-screen
-  // bounds.
   int ExpectedSuggestionChipContainerTop(const gfx::Rect& search_box_bounds) {
     return search_box_bounds.bottom() +
-           24 /*suggesion chip container top margin*/;
+           (ScalableAppListEnabled() ? 16 : 24); /*suggesion chip top margin*/
   }
 
   // Calculates expected apps grid position based on display height and the

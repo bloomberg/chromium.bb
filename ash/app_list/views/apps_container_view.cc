@@ -40,7 +40,6 @@ namespace {
 constexpr int kSuggestionChipContainerHeight = 32;
 
 // Suggestion chip container top margin (from the search box view).
-constexpr int kSuggestionChipContainerTopMargin = 24;
 constexpr int kSuggestionChipContainerTopMarginForSmallScreens = 8;
 
 // The ratio of allowed bounds for apps grid view to its maximum margin.
@@ -82,11 +81,11 @@ gfx::Size AppsContainerView::GetNonAppsGridSize() {
   size.Enlarge(min_grid_horizontal_margin, 0);
 
   // Enlarge with suggestion chips.
-  size.Enlarge(0,
-               AppListConfig::instance().search_box_fullscreen_top_padding() +
-                   search_box::kSearchBoxPreferredHeight +
-                   kSuggestionChipContainerTopMargin +
-                   kSuggestionChipContainerHeight);
+  size.Enlarge(
+      0, AppListConfig::instance().search_box_fullscreen_top_padding() +
+             search_box::kSearchBoxPreferredHeight +
+             AppListConfig::instance().suggestion_chip_container_top_margin() +
+             kSuggestionChipContainerHeight);
 
   // Enlarge with page switcher.
   size.Enlarge((kAppsGridPageSwitcherSpacing +
@@ -448,10 +447,11 @@ const gfx::Insets& AppsContainerView::CalculateMarginsForAvailableBounds(
   // |for_full_container_bounds| is false) because they are included into the
   // total margin values.
   if (for_full_container_bounds) {
-    available_height -= search_box_size.height() +
-                        GetAppListConfig().grid_fadeout_zone_height() +
-                        kSuggestionChipContainerHeight +
-                        kSuggestionChipContainerTopMargin;
+    available_height -=
+        search_box_size.height() +
+        GetAppListConfig().grid_fadeout_zone_height() +
+        kSuggestionChipContainerHeight +
+        GetAppListConfig().suggestion_chip_container_top_margin();
   }
 
   // Calculates margin value to ensure the apps grid size is within required
@@ -577,10 +577,10 @@ int AppsContainerView::GetSuggestionChipContainerTopMargin(
   if (GetContentsBounds().height() < kAppsGridMarginSmallWidthThreshold &&
       !app_list_features::IsScalableAppListEnabled() && progress > 1.0) {
     return gfx::Tween::IntValueBetween(
-        progress - 1, kSuggestionChipContainerTopMargin,
+        progress - 1, GetAppListConfig().suggestion_chip_container_top_margin(),
         kSuggestionChipContainerTopMarginForSmallScreens);
   }
-  return kSuggestionChipContainerTopMargin;
+  return GetAppListConfig().suggestion_chip_container_top_margin();
 }
 
 int AppsContainerView::GetExpectedSuggestionChipY(float progress) {
