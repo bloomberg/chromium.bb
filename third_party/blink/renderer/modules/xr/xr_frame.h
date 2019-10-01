@@ -41,7 +41,7 @@ class XRFrame final : public ScriptWrappable {
   XRWorldInformation* worldInformation() const { return world_information_; }
   XRAnchorSet* trackedAnchors() const;
 
-  void SetMojoFromViewer(const TransformationMatrix&, bool emulated_position);
+  void SetMojoFromViewer(const TransformationMatrix&);
 
   void Trace(blink::Visitor*) override;
 
@@ -54,8 +54,6 @@ class XRFrame final : public ScriptWrappable {
   HeapVector<Member<XRHitTestResult>> getHitTestResults(
       XRHitTestSource* hitTestSource,
       XRSpace* relativeTo);
-
-  bool EmulatedPosition() const { return emulated_position_; }
 
  private:
   std::unique_ptr<TransformationMatrix> GetAdjustedPoseMatrix(XRSpace*) const;
@@ -78,8 +76,6 @@ class XRFrame final : public ScriptWrappable {
   // animation frames. getViewerPose should only be called from JS on active
   // animation frames.
   bool is_animation_frame_ = false;
-
-  bool emulated_position_ = false;
 };
 
 }  // namespace blink

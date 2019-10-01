@@ -924,8 +924,7 @@ void XRSession::ApplyPendingRenderState() {
 void XRSession::UpdatePresentationFrameState(
     double timestamp,
     std::unique_ptr<TransformationMatrix> mojo_from_viewer,
-    const device::mojom::blink::XRFrameDataPtr& frame_data,
-    bool emulated_position) {
+    const device::mojom::blink::XRFrameDataPtr& frame_data) {
   TRACE_EVENT0("gpu", __FUNCTION__);
   DVLOG(2) << __FUNCTION__ << " : frame_data valid? "
            << (frame_data ? true : false);
@@ -936,8 +935,6 @@ void XRSession::UpdatePresentationFrameState(
   mojo_from_viewer_ = std::move(mojo_from_viewer);
   DVLOG(2) << __FUNCTION__ << " : mojo_from_viewer_ valid? "
            << (mojo_from_viewer_ ? true : false);
-
-  emulated_position_ = emulated_position;
 
   // Update objects that might change on per-frame basis.
   if (frame_data) {
@@ -1052,9 +1049,7 @@ XRFrame* XRSession::CreatePresentationFrame() {
   if (mojo_from_viewer_ && visibility_state_ != XRVisibilityState::HIDDEN) {
     DVLOG(2) << __func__ << " : mojo_from_viewer_ is set and not hidden,"
              << " updating presentation frame";
-
-    presentation_frame->SetMojoFromViewer(*mojo_from_viewer_,
-                                          EmulatedPosition());
+    presentation_frame->SetMojoFromViewer(*mojo_from_viewer_);
   }
   return presentation_frame;
 }

@@ -254,10 +254,6 @@ void XRFrameProvider::OnImmersiveFrameData(
   frame_id_ = data->frame_id;
   buffer_mailbox_holder_ = data->buffer_holder;
 
-  if (frame_pose_) {
-    emulated_position_ = frame_pose_->emulated_position;
-  }
-
   pending_immersive_vsync_ = false;
 
   // Post a task to handle scheduled animations after the current
@@ -340,8 +336,7 @@ void XRFrameProvider::ProcessScheduledFrame(
     // presentation frame as newly created presentation frame will get passed to
     // the input source select[/start/end] events.
     immersive_session_->UpdatePresentationFrameState(
-        high_res_now_ms, getPoseMatrix(frame_pose_), frame_data,
-        emulated_position_);
+        high_res_now_ms, getPoseMatrix(frame_pose_), frame_data);
 
     if (frame_pose_) {
       base::span<const device::mojom::blink::XRInputSourceStatePtr>
@@ -406,9 +401,8 @@ void XRFrameProvider::ProcessScheduledFrame(
       // Prior to updating input source state, update the state needed to create
       // presentation frame as newly created presentation frame will get passed
       // to the input source select[/start/end] events.
-      session->UpdatePresentationFrameState(high_res_now_ms,
-                                            getPoseMatrix(frame_pose_),
-                                            frame_data, emulated_position_);
+      session->UpdatePresentationFrameState(
+          high_res_now_ms, getPoseMatrix(frame_pose_), frame_data);
 
       if (frame_pose_) {
         base::span<const device::mojom::blink::XRInputSourceStatePtr>

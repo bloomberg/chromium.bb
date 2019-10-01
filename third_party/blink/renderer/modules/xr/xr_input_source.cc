@@ -79,6 +79,7 @@ XRInputSource* XRInputSource::CreateOrUpdateFrom(
 
     updated_source->state_.target_ray_mode = desc->target_ray_mode;
     updated_source->state_.handedness = desc->handedness;
+    updated_source->state_.emulated_position = desc->emulated_position;
 
     updated_source->input_from_pointer_ =
         TryGetTransformationMatrix(desc->pointer_offset);
@@ -90,8 +91,6 @@ XRInputSource* XRInputSource::CreateOrUpdateFrom(
   }
 
   updated_source->mojo_from_input_ = TryGetTransformationMatrix(state->grip);
-
-  updated_source->state_.emulated_position = state->emulated_position;
 
   return updated_source;
 }

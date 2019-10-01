@@ -187,14 +187,15 @@ class XRSession final
   device::mojom::blink::XRInputSourceButtonListenerAssociatedPtrInfo
   GetInputClickListener();
 
+  // TODO(crbug.com/969131): Update the mojom to deliver this per-frame.
   bool EmulatedPosition() const {
-    // If we don't have display info then we should be using the identity
-    // reference space, which by definition will be emulating the position.
-    if (!display_info_) {
-      return true;
+    if (display_info_) {
+      return !display_info_->capabilities->has_position;
     }
 
-    return emulated_position_;
+    // If we don't have display info then we should be using the identity
+    // reference space, which by definition will be emulating the position.
+    return true;
   }
 
   // Immersive sessions currently use two views for VR, and only a single view
@@ -235,8 +236,7 @@ class XRSession final
   void UpdatePresentationFrameState(
       double timestamp,
       std::unique_ptr<TransformationMatrix> mojo_from_viewer,
-      const device::mojom::blink::XRFrameDataPtr& frame_data,
-      bool emulated_position);
+      const device::mojom::blink::XRFrameDataPtr& frame_data);
 
  private:
   class XRSessionResizeObserverDelegate;
@@ -342,8 +342,6 @@ class XRSession final
   bool sensorless_session_ = false;
 
   int16_t last_frame_id_ = -1;
-
-  bool emulated_position_ = false;
 };
 
 }  // namespace blink

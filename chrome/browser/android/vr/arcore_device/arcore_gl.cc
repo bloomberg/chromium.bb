@@ -707,7 +707,7 @@ mojom::XRInputSourceStatePtr ArCoreGl::GetInputSourceState() {
   state->description->target_ray_mode = device::mojom::XRTargetRayMode::TAPPING;
 
   // Controller doesn't have a measured position.
-  state->emulated_position = true;
+  state->description->emulated_position = true;
 
   // The Renderer code ignores state->grip for TAPPING (screen-based) target ray
   // mode, so we don't bother filling it in here. If this does get used at
