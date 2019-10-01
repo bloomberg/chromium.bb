@@ -617,7 +617,6 @@ class SourceChecker(BaseChecker):
   class _MessageR9203(object): pass
   class _MessageR9204(object): pass
   class _MessageR9205(object): pass
-  class _MessageR9210(object): pass
   # pylint: enable=class-missing-docstring,multiple-statements
 
   name = 'source_checker'
@@ -638,8 +637,6 @@ class SourceChecker(BaseChecker):
                 ('missing-file-encoding'), _MessageR9204),
       'R9205': ('File encoding should be "utf-8"',
                 ('bad-file-encoding'), _MessageR9205),
-      'R9210': ('Trailing new lines found at end of file',
-                ('excess-trailing-newlines'), _MessageR9210),
   }
   options = ()
 
@@ -653,7 +650,6 @@ class SourceChecker(BaseChecker):
     self._check_shebang(node, stream, st)
     self._check_encoding(node, stream, st)
     self._check_module_name(node)
-    self._check_trailing_lines(node, stream, st)
 
   def _check_shebang(self, _node, stream, st):
     """Verify the shebang is version specific"""
@@ -705,13 +701,6 @@ class SourceChecker(BaseChecker):
     name = node.name.rsplit('.', 2)[-1]
     if name.rsplit('_', 2)[-1] in ('unittests',):
       self.add_message('R9203')
-
-  def _check_trailing_lines(self, _node, stream, st):
-    """Reject trailing lines"""
-    if st.st_size > 1:
-      stream.seek(st.st_size - 2)
-      if not stream.read().strip('\n'):
-        self.add_message('R9210')
 
 
 class ChromiteLoggingChecker(BaseChecker):
