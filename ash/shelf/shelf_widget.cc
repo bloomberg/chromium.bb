@@ -449,6 +449,7 @@ void ShelfWidget::OnShelfAlignmentChanged() {
 }
 
 void ShelfWidget::OnTabletModeChanged() {
+  delegate_view_->UpdateOpaqueBackground();
   hotseat_widget()->OnTabletModeChanged();
   shelf_layout_manager()->UpdateVisibilityState();
 }
