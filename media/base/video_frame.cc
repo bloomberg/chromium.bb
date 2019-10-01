@@ -110,6 +110,8 @@ static bool RequiresEvenSizeAllocation(VideoPixelFormat format) {
     case PIXEL_FORMAT_Y16:
     case PIXEL_FORMAT_ABGR:
     case PIXEL_FORMAT_XBGR:
+    case PIXEL_FORMAT_XR30:
+    case PIXEL_FORMAT_XB30:
       return false;
     case PIXEL_FORMAT_NV12:
     case PIXEL_FORMAT_NV21:
@@ -240,7 +242,7 @@ bool VideoFrame::IsValidConfig(VideoPixelFormat format,
     return true;
 
   // Make sure new formats are properly accounted for in the method.
-  static_assert(PIXEL_FORMAT_MAX == 29,
+  static_assert(PIXEL_FORMAT_MAX == 31,
                 "Added pixel format, please review IsValidConfig()");
 
   if (format == PIXEL_FORMAT_UNKNOWN) {
@@ -299,7 +301,8 @@ scoped_refptr<VideoFrame> VideoFrame::WrapNativeTextures(
     base::TimeDelta timestamp) {
   if (format != PIXEL_FORMAT_ARGB && format != PIXEL_FORMAT_XRGB &&
       format != PIXEL_FORMAT_NV12 && format != PIXEL_FORMAT_I420 &&
-      format != PIXEL_FORMAT_ABGR) {
+      format != PIXEL_FORMAT_ABGR && format != PIXEL_FORMAT_XR30 &&
+      format != PIXEL_FORMAT_XB30) {
     DLOG(ERROR) << "Unsupported pixel format: "
                 << VideoPixelFormatToString(format);
     return nullptr;
@@ -790,6 +793,8 @@ int VideoFrame::BytesPerElement(VideoPixelFormat format, size_t plane) {
     case PIXEL_FORMAT_XRGB:
     case PIXEL_FORMAT_ABGR:
     case PIXEL_FORMAT_XBGR:
+    case PIXEL_FORMAT_XR30:
+    case PIXEL_FORMAT_XB30:
       return 4;
     case PIXEL_FORMAT_RGB24:
       return 3;
@@ -1212,6 +1217,8 @@ gfx::Size VideoFrame::SampleSize(VideoPixelFormat format, size_t plane) {
         case PIXEL_FORMAT_MJPEG:
         case PIXEL_FORMAT_ABGR:
         case PIXEL_FORMAT_XBGR:
+        case PIXEL_FORMAT_XR30:
+        case PIXEL_FORMAT_XB30:
           break;
       }
   }

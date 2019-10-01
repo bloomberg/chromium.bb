@@ -62198,6 +62198,8 @@ Full version information for the fingerprint enum values:
   <int value="27" label="ABGR"/>
   <int value="28" label="XBGR"/>
   <int value="29" label="P016LE"/>
+  <int value="30" label="XR30"/>
+  <int value="31" label="XB30"/>
 </enum>
 
 <enum name="VideoPlayerCastAPIExtensionStatus">
