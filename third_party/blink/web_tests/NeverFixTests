@@ -409,6 +409,7 @@ external/wpt/encrypted-media/clearkey-update-non-ascii-input.https.html [ WontFi
 external/wpt/media-source/mediasource-invalid-codec.html [ WontFix ]
 
 # CSS Text features that are not planned to implement.
+external/wpt/css/css-text/text-justify/text-justify-006.html [ WontFix ]
 external/wpt/css/css-text/text-transform/text-transform-full-size-kana-001.html [ WontFix ]
 external/wpt/css/css-text/text-transform/text-transform-full-size-kana-002.html [ WontFix ]
 external/wpt/css/css-text/text-transform/text-transform-full-size-kana-003.html [ WontFix ]

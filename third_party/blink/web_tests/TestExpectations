@@ -3228,9 +3228,6 @@ crbug.com/618969 external/wpt/css/css-grid/subgrid/ [ Skip ]
 
 # ====== New tests from wpt-importer added here ======
 crbug.com/626703 [ Win10 ] external/wpt/css/css-text/line-breaking/line-breaking-021.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-text/text-justify/text-justify-006.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-text/text-justify/text-justify-006.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-text/text-justify/text-justify-006.html [ Failure ]
 crbug.com/626703 [ Win7 ] external/wpt/pointerevents/pointerevent_touch-action-inherit_child-pan-x-child-pan-y_touch.html [ Timeout ]
 crbug.com/626703 [ Win7 ] external/wpt/pointerevents/pointerevent_touch-action-inherit_child-none_touch.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/css/css-text/word-break/word-break-keep-all-008.html [ Failure ]
