@@ -240,8 +240,12 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
     return static_cast<ActiveState>(active_state_);
   }
   ActiveState DetermineActiveState(SMILTime elapsed) const;
-  float CalculateAnimationPercent(SMILTime elapsed) const;
-  unsigned CalculateAnimationRepeat(SMILTime elapsed) const;
+
+  struct ProgressState {
+    float progress;
+    unsigned repeat;
+  };
+  ProgressState CalculateProgressState(SMILTime presentation_time) const;
 
   Member<SVGElement> target_element_;
   Member<IdTargetObserver> target_id_observer_;

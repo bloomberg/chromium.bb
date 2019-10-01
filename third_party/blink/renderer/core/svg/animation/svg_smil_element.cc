@@ -959,62 +959,51 @@ const SMILInterval& SVGSMILElement::GetActiveInterval(SMILTime elapsed) const {
   return interval_;
 }
 
-unsigned SVGSMILElement::CalculateAnimationRepeat(SMILTime elapsed) const {
+SVGSMILElement::ProgressState SVGSMILElement::CalculateProgressState(
+    SMILTime presentation_time) const {
   const SMILTime simple_duration = SimpleDuration();
+  if (simple_duration.IsIndefinite())
+    return {0.0f, 0};
   if (!simple_duration)
-    return 0;
+    return {1.0f, 0};
   DCHECK(simple_duration.IsFinite());
-  const SMILInterval& active_interval = GetActiveInterval(elapsed);
-  DCHECK(active_interval.begin.IsFinite());
-
-  SMILTime active_time = elapsed - active_interval.begin;
-  SMILTime repeating_duration = RepeatingDuration();
-  int64_t repeat;
-  if (elapsed >= active_interval.end || active_time > repeating_duration) {
-    if (!repeating_duration.IsFinite())
-      return 0;
-    repeat = repeating_duration / simple_duration;
-    if (!(repeating_duration % simple_duration))
-      repeat--;
-  } else {
-    repeat = active_time / simple_duration;
-  }
-  return clampTo<unsigned>(repeat);
-}
-
-float SVGSMILElement::CalculateAnimationPercent(SMILTime elapsed) const {
-  SMILTime simple_duration = SimpleDuration();
-  if (simple_duration.IsIndefinite()) {
-    return 0.f;
-  }
-  if (!simple_duration) {
-    return 1.f;
-  }
-  DCHECK(simple_duration.IsFinite());
-  const SMILInterval& active_interval = GetActiveInterval(elapsed);
+  const SMILInterval& active_interval = GetActiveInterval(presentation_time);
   DCHECK(active_interval.IsResolved());
-
-  SMILTime repeating_duration = RepeatingDuration();
-  SMILTime active_time = elapsed - active_interval.begin;
-  if (elapsed >= active_interval.end || active_time > repeating_duration) {
+  const SMILTime active_time = presentation_time - active_interval.begin;
+  const SMILTime repeating_duration = RepeatingDuration();
+  int64_t repeat;
+  SMILTime simple_time;
+  if (presentation_time >= active_interval.end ||
+      active_time > repeating_duration) {
     // Use the interval to compute the interval position if we've passed the
     // interval end, otherwise use the "repeating duration". This prevents a
     // stale interval (with for instance an 'indefinite' end) from yielding an
     // invalid interval position.
-    SMILTime last_active_duration = repeating_duration;
-    if (elapsed >= active_interval.end)
-      last_active_duration = active_interval.end - active_interval.begin;
-    double percent = last_active_duration.InternalValueAsDouble() /
-                     simple_duration.InternalValueAsDouble();
-    percent = percent - floor(percent);
-    float epsilon = std::numeric_limits<float>::epsilon();
-    if (percent < epsilon || 1 - percent < epsilon)
-      return 1.0f;
-    return clampTo<float>(percent);
+    SMILTime last_active_duration =
+        presentation_time >= active_interval.end
+            ? active_interval.end - active_interval.begin
+            : repeating_duration;
+    if (!last_active_duration.IsFinite())
+      return {0.0f, 0};
+    // If the repeat duration is a multiple of the simple duration, we should
+    // use a progress value of 1.0, otherwise we should return a value that is
+    // within the interval (< 1.0), so subtract the smallest representable time
+    // delta in that case.
+    repeat = last_active_duration / simple_duration;
+    simple_time = last_active_duration % simple_duration;
+    if (simple_time) {
+      simple_time = simple_time - SMILTime::Epsilon();
+    } else {
+      simple_time = simple_duration;
+      repeat--;
+    }
+  } else {
+    repeat = active_time / simple_duration;
+    simple_time = active_time % simple_duration;
   }
-  SMILTime simple_time = active_time % simple_duration;
-  return clampTo<float>(simple_time.InternalValueAsDouble() /
-                        simple_duration.InternalValueAsDouble());
+  return {clampTo<float>(simple_time.InternalValueAsDouble() /
+                         simple_duration.InternalValueAsDouble()),
+          clampTo<unsigned>(repeat)};
 }
 
 SMILTime SVGSMILElement::NextProgressTime(SMILTime presentation_time) const {
@@ -1111,14 +1100,13 @@ void SVGSMILElement::UpdateActiveState(SMILTime elapsed) {
       StartedActiveInterval();
     }
 
-    unsigned repeat = CalculateAnimationRepeat(elapsed);
-    if (repeat && repeat != last_repeat_) {
-      last_repeat_ = repeat;
-      NotifyDependentsOnRepeat(repeat, elapsed);
+    ProgressState progress_state = CalculateProgressState(elapsed);
+    if (progress_state.repeat && progress_state.repeat != last_repeat_) {
+      last_repeat_ = progress_state.repeat;
+      NotifyDependentsOnRepeat(last_repeat_, elapsed);
       ScheduleRepeatEvents();
     }
-
-    last_percent_ = CalculateAnimationPercent(elapsed);
+    last_percent_ = progress_state.progress;
   }
 }
 
