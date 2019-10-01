@@ -323,7 +323,6 @@ class CONTENT_EXPORT RenderFrameImpl
   // Notifications from RenderWidget.
   void WasHidden();
   void WasShown();
-  void WidgetWillClose();
 
   // Start/Stop loading notifications.
   // TODO(nasko): Those are page-level methods at this time and come from

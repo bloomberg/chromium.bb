@@ -5793,11 +5793,6 @@ void RenderFrameImpl::WasShown() {
 #endif  // ENABLE_PLUGINS
 }
 
-void RenderFrameImpl::WidgetWillClose() {
-  for (auto& observer : observers_)
-    observer.WidgetWillClose();
-}
-
 bool RenderFrameImpl::IsMainFrame() {
   return is_main_frame_;
 }

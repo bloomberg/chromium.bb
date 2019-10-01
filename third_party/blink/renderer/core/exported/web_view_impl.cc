@@ -1220,24 +1220,27 @@ void WebViewImpl::Close() {
   DCHECK(AllInstances().Contains(this));
   AllInstances().erase(this);
 
+  if (does_composite_) {
+    // This must occur before WillBeDestroyed, since detaching the main frame
+    // will also destroy the WebWidgetClient and the AnimationHost.
+    // TODO(danakj): Since the AnimationHost will be destroyed anyways, there
+    // is probably no good reason to do this at all.
+    GetPage()->WillCloseAnimationHost(nullptr);
+  }
+
   // Initiate shutdown for the entire frameset.  This will cause a lot of
   // notifications to be sent. This will detach all frames in this WebView's
   // frame tree.
   AsView().page->WillBeDestroyed();
 
-  // The WebWidget should be closed in response to the main frame being detached
+  // The main frame being detached in WillBeDestroyed() will make use of this
   // which happens in Page::WillBeDestroyed(). But since the RenderWidget lives
+  // |animation_host_| through its WebFrameWidget, before causing the
   // forever (https://crbug.com/419087), the WebWidget is not closed elsewhere.
+  // WebWidgetClient and the AnimationHost to be destroyed. So this is nulled
   // So we close it here but try to simulate the same ordering by closing it
-  // after the main frame is detached but before the Page is destroyed. This
-  // means the main frame's WebWidget remains valid while the main frame is
-  // being detached (and in particular while its unload handlers run).
-  {
-    if (does_composite_)
-      GetPage()->WillCloseAnimationHost(nullptr);
-
-    animation_host_ = nullptr;
-  }
+  // out after detaching the main frame.
+  animation_host_ = nullptr;
 
   // TODO(bokan): Temporary debugging added to diagnose
   // https://crbug.com/992315. Somehow we're synchronously calling
