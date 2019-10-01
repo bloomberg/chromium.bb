@@ -376,6 +376,8 @@ grit("generate_components_strings") {
 source_set("webview_entry_point") {
   deps = [
     ":common",
+    "//base",
+    "//weblayer:weblayer_lib",
   ]
   sources = [
     "lib/webview_entry_point.cc",
