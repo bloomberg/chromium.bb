@@ -12595,8 +12595,10 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   // Prepared stats used later to check if we could skip intra mode eval.
   int64_t inter_cost = -1;
   int64_t intra_cost = -1;
-  // Now only use this for <=480p. Will try other resolutions.
-  if (sf->skip_intra_in_interframe && AOMMIN(cm->width, cm->height) <= 480) {
+  // Need to tweak the threshold for hdres speed 0 & 1.
+  const int do_pruning =
+      (AOMMIN(cm->width, cm->height) > 480 && cpi->speed <= 1) ? 0 : 1;
+  if (do_pruning && sf->skip_intra_in_interframe) {
     // Only consider full SB.
     int len = tpl_blocks_in_sb(cm->seq_params.sb_size);
     if (len == x->valid_cost_b) {
@@ -12934,7 +12936,9 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
       (x->source_variance > sf->src_var_thresh_intra_skip)) {
     if (inter_cost >= 0 && intra_cost >= 0) {
       aom_clear_system_state();
-      const NN_CONFIG *nn_config = &av1_intrap_nn_config;
+      const NN_CONFIG *nn_config = (AOMMIN(cm->width, cm->height) <= 480)
+                                       ? &av1_intrap_nn_config
+                                       : &av1_intrap_hd_nn_config;
       float features[6];
       float scores[2] = { 0.0f };
       float probs[2] = { 0.0f };
