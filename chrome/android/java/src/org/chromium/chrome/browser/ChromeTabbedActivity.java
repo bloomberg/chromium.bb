@@ -180,16 +180,13 @@ import java.util.Locale;
  * are accessible via a chrome specific tab switching UI.
  */
 public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMonitorDelegate {
-    /**
-     * The results of a system back press action.
-     */
     @IntDef({BackPressedResult.NOTHING_HAPPENED, BackPressedResult.HELP_URL_CLOSED,
             BackPressedResult.MINIMIZED_NO_TAB_CLOSED, BackPressedResult.MINIMIZED_TAB_CLOSED,
             BackPressedResult.TAB_CLOSED, BackPressedResult.TAB_IS_NULL,
             BackPressedResult.EXITED_TAB_SWITCHER, BackPressedResult.EXITED_FULLSCREEN,
-            BackPressedResult.NAVIGATED_BACK, BackPressedResult.EXITED_TAB_GROUP_DIALOG})
+            BackPressedResult.NAVIGATED_BACK})
     @Retention(RetentionPolicy.SOURCE)
-    public @interface BackPressedResult {
+    private @interface BackPressedResult {
         int NOTHING_HAPPENED = 0;
         int HELP_URL_CLOSED = 1;
         int MINIMIZED_NO_TAB_CLOSED = 2;
@@ -199,9 +196,8 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
         int EXITED_TAB_SWITCHER = 6;
         int EXITED_FULLSCREEN = 7;
         int NAVIGATED_BACK = 8;
-        int EXITED_TAB_GROUP_DIALOG = 9;
 
-        int NUM_ENTRIES = 10;
+        int NUM_ENTRIES = 9;
     }
 
     private static final String TAG = "ChromeTabbedActivity";
@@ -1901,25 +1897,13 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
 
         // If we are in overview mode and not a tablet, then leave overview mode on back.
         if (mOverviewModeController.overviewVisible() && !isTablet()) {
-            recordBackPressedUma("Hide overview", BackPressedResult.EXITED_TAB_SWITCHER);
+            recordBackPressedUma("Hid overview", BackPressedResult.EXITED_TAB_SWITCHER);
             mOverviewModeController.hideOverview(true);
             return true;
         }
 
-        Integer toolbarManagerBackPressResult = getToolbarManager().back();
-        if (toolbarManagerBackPressResult != null) {
-            String logMessage = "";
-            switch (toolbarManagerBackPressResult) {
-                case BackPressedResult.NAVIGATED_BACK:
-                    logMessage = "Navigating backward";
-                    break;
-                case BackPressedResult.EXITED_TAB_GROUP_DIALOG:
-                    logMessage = "Exiting tab group dialog";
-                    break;
-                default:
-                    assert false;
-            }
-            recordBackPressedUma(logMessage, toolbarManagerBackPressResult);
+        if (getToolbarManager().back()) {
+            recordBackPressedUma("Navigating backward", BackPressedResult.NAVIGATED_BACK);
             return true;
         }
 

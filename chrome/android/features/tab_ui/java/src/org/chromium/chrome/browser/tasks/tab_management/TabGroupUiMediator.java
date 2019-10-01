@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
-import androidx.annotation.Nullable;
-
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
@@ -70,21 +68,19 @@ public class TabGroupUiMediator {
     private final BottomControlsCoordinator
             .BottomControlsVisibilityController mVisibilityController;
     private final ThemeColorProvider mThemeColorProvider;
-    private final TabGridDialogMediator.DialogController mTabGridDialogController;
     private final ThemeColorProvider.ThemeColorObserver mThemeColorObserver;
     private final ThemeColorProvider.TintObserver mTintObserver;
     private final TabModelSelectorTabObserver mTabModelSelectorTabObserver;
     private final TabModelSelectorObserver mTabModelSelectorObserver;
-    private final TabGroupModelFilter.Observer mTabGroupModelFilterObserver;
     private boolean mIsTabGroupUiVisible;
     private boolean mIsShowingOverViewMode;
+    private final TabGroupModelFilter.Observer mTabGroupModelFilterObserver;
 
     TabGroupUiMediator(
             BottomControlsCoordinator.BottomControlsVisibilityController visibilityController,
             ResetHandler resetHandler, PropertyModel toolbarPropertyModel,
             TabModelSelector tabModelSelector, TabCreatorManager tabCreatorManager,
-            OverviewModeBehavior overviewModeBehavior, ThemeColorProvider themeColorProvider,
-            @Nullable TabGridDialogMediator.DialogController dialogController) {
+            OverviewModeBehavior overviewModeBehavior, ThemeColorProvider themeColorProvider) {
         mResetHandler = resetHandler;
         mToolbarPropertyModel = toolbarPropertyModel;
         mTabModelSelector = tabModelSelector;
@@ -92,7 +88,6 @@ public class TabGroupUiMediator {
         mOverviewModeBehavior = overviewModeBehavior;
         mVisibilityController = visibilityController;
         mThemeColorProvider = themeColorProvider;
-        mTabGridDialogController = dialogController;
 
         // register for tab model
         mTabModelObserver = new EmptyTabModelObserver() {
@@ -259,12 +254,6 @@ public class TabGroupUiMediator {
         return mTabModelSelector.getTabModelFilterProvider()
                 .getCurrentTabModelFilter()
                 .getRelatedTabList(id);
-    }
-
-    public boolean onBackPressed() {
-        // TODO(crbug.com/1006421): add a regression test to make sure that the back button closes
-        // the dialog when the dialog is showing.
-        return mTabGridDialogController != null && mTabGridDialogController.handleBackPressed();
     }
 
     public void destroy() {

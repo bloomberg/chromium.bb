@@ -1323,8 +1323,6 @@ Unknown properties are collapsed to zero. -->
   <int value="6" label="User exited the tab switcher"/>
   <int value="7" label="User exited fullscreen mode"/>
   <int value="8" label="User navigated backward in the tab's history"/>
-  <int value="9"
-      label="User used back press to exit tab group dialog from tab strip"/>
 </enum>
 
 <enum name="AndroidApiLevel">
