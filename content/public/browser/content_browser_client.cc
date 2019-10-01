@@ -902,11 +902,6 @@ ContentBrowserClient::CreateWindowForPictureInPicture(
   return nullptr;
 }
 
-bool ContentBrowserClient::IsSafeRedirectTarget(const GURL& url,
-                                                BrowserContext* context) {
-  return true;
-}
-
 void ContentBrowserClient::RegisterRendererPreferenceWatcher(
     BrowserContext* browser_context,
     mojo::PendingRemote<blink::mojom::RendererPreferenceWatcher> watcher) {

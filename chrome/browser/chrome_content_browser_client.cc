@@ -5083,23 +5083,6 @@ ChromeContentBrowserClient::CreateWindowForPictureInPicture(
   return content::OverlayWindow::Create(controller);
 }
 
-bool ChromeContentBrowserClient::IsSafeRedirectTarget(
-    const GURL& url,
-    content::BrowserContext* context) {
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  if (url.SchemeIs(extensions::kExtensionScheme)) {
-    const Extension* extension = extensions::ExtensionRegistry::Get(context)
-                                     ->enabled_extensions()
-                                     .GetByID(url.host());
-    if (!extension)
-      return false;
-    return extensions::WebAccessibleResourcesInfo::IsResourceWebAccessible(
-        extension, url.path());
-  }
-#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
-  return true;
-}
-
 void ChromeContentBrowserClient::RegisterRendererPreferenceWatcher(
     content::BrowserContext* browser_context,
     mojo::PendingRemote<blink::mojom::RendererPreferenceWatcher> watcher) {

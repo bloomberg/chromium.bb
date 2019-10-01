@@ -545,8 +545,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       network::mojom::URLLoaderFactoryPtr* out_factory) override;
   std::unique_ptr<content::OverlayWindow> CreateWindowForPictureInPicture(
       content::PictureInPictureWindowController* controller) override;
-  bool IsSafeRedirectTarget(const GURL& url,
-                            content::BrowserContext* context) override;
   void RegisterRendererPreferenceWatcher(
       content::BrowserContext* browser_context,
       mojo::PendingRemote<blink::mojom::RendererPreferenceWatcher> watcher)

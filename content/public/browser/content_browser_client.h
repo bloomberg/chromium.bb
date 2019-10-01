@@ -1545,10 +1545,6 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual std::unique_ptr<OverlayWindow> CreateWindowForPictureInPicture(
       PictureInPictureWindowController* controller);
 
-  // Returns true if it is safe to redirect to |url|, otherwise returns false.
-  // This is called on the UI thread.
-  virtual bool IsSafeRedirectTarget(const GURL& url, BrowserContext* context);
-
   // Registers the watcher to observe updates in RendererPreferences.
   virtual void RegisterRendererPreferenceWatcher(
       BrowserContext* browser_context,
