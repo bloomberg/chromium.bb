@@ -8075,5 +8075,74 @@ TEST_F(DrawPropertiesTestWithLayerTree, CustomLayerClipBoundsWithMaskToBounds) {
   EXPECT_EQ(child_impl->clip_rect(), expected_child_impl->clip_rect());
 }
 
+// In layer tree mode, not using impl-side PropertyTreeBuilder.
+TEST_F(DrawPropertiesTestWithLayerTree, RoundedCornerOnRenderSurface) {
+  // -Root
+  //   - Parent 1
+  //     - [Render Surface] Child 1 with rounded corner
+  //   - [Render Surface] Parent 2 with rounded corner
+  //     - [Render Surface] Child 2
+  //   - Parent 3 with rounded corner
+  //     - [Render Surface] Child 3
+
+  scoped_refptr<Layer> root = Layer::Create();
+  host()->SetRootLayer(root);
+  root->SetBounds(gfx::Size(250, 250));
+  root->SetIsDrawable(true);
+
+  scoped_refptr<Layer> parent_1 = Layer::Create();
+  root->AddChild(parent_1);
+  parent_1->SetBounds(gfx::Size(80, 80));
+  parent_1->SetPosition(gfx::PointF(0, 0));
+  parent_1->SetIsDrawable(true);
+
+  scoped_refptr<Layer> parent_2 = Layer::Create();
+  root->AddChild(parent_2);
+  parent_2->SetBounds(gfx::Size(80, 80));
+  parent_1->SetPosition(gfx::PointF(80, 80));
+  parent_2->SetIsDrawable(true);
+  parent_2->SetForceRenderSurfaceForTesting(true);
+  parent_2->SetRoundedCorner(gfx::RoundedCornersF(10.f));
+  parent_2->SetIsFastRoundedCorner(true);
+
+  scoped_refptr<Layer> parent_3 = Layer::Create();
+  root->AddChild(parent_3);
+  parent_3->SetBounds(gfx::Size(80, 80));
+  parent_1->SetPosition(gfx::PointF(160, 160));
+  parent_3->SetIsDrawable(true);
+  parent_3->SetRoundedCorner(gfx::RoundedCornersF(10.f));
+  parent_3->SetIsFastRoundedCorner(true);
+
+  scoped_refptr<Layer> child_1 = Layer::Create();
+  parent_1->AddChild(child_1);
+  child_1->SetBounds(gfx::Size(80, 80));
+  child_1->SetIsDrawable(true);
+  child_1->SetForceRenderSurfaceForTesting(true);
+  child_1->SetRoundedCorner(gfx::RoundedCornersF(10.f));
+  child_1->SetIsFastRoundedCorner(true);
+
+  scoped_refptr<Layer> child_2 = Layer::Create();
+  parent_2->AddChild(child_2);
+  child_2->SetBounds(gfx::Size(80, 80));
+  child_2->SetIsDrawable(true);
+  child_2->SetForceRenderSurfaceForTesting(true);
+
+  scoped_refptr<Layer> child_3 = Layer::Create();
+  parent_3->AddChild(child_3);
+  child_3->SetBounds(gfx::Size(80, 80));
+  child_3->SetIsDrawable(true);
+  child_3->SetForceRenderSurfaceForTesting(true);
+
+  UpdateMainDrawProperties();
+  CommitAndActivate();
+
+  EXPECT_FALSE(
+      GetRenderSurfaceImpl(child_1)->rounded_corner_bounds().IsEmpty());
+  EXPECT_FALSE(
+      GetRenderSurfaceImpl(child_2)->rounded_corner_bounds().IsEmpty());
+  EXPECT_FALSE(
+      GetRenderSurfaceImpl(child_3)->rounded_corner_bounds().IsEmpty());
+}
+
 }  // namespace
 }  // namespace cc

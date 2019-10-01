@@ -687,9 +687,16 @@ std::pair<gfx::RRectF, bool> GetRoundedCornerRRect(
       break;
     }
 
-    // Simply break if we reached a node that has a render surface or is the
-    // render target.
-    if (node->HasRenderSurface() || node->id == target_id)
+    // If the iteration has reached a node in the parent chain that has a render
+    // surface, then break. If this iteration is for a render surface to begin
+    // with, then ensure |node| is a parent of |effect_node|.
+    if (node->HasRenderSurface() &&
+        (!for_render_surface || effect_node != node)) {
+      break;
+    }
+
+    // Simply break if we reached a node that is the render target.
+    if (node->id == target_id)
       break;
 
     node = effect_tree->parent(node);
