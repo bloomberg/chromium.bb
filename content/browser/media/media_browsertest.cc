@@ -167,7 +167,8 @@ IN_PROC_BROWSER_TEST_P(MediaTest, DISABLED_VideoBearWebm) {
   PlayVideo("bear.webm", GetParam());
 }
 
-IN_PROC_BROWSER_TEST_P(MediaTest, AudioBearOpusWebm) {
+// crbug.com/1001364: disabled due to flakiness.
+IN_PROC_BROWSER_TEST_P(MediaTest, DISABLED_AudioBearOpusWebm) {
   PlayVideo("bear-opus.webm", GetParam());
 }
 
@@ -301,11 +302,13 @@ IN_PROC_BROWSER_TEST_P(MediaTest, MAYBE_VideoBearWavAlaw) {
   PlayAudio("bear_alaw.wav", GetParam());
 }
 
-IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearWavMulaw) {
+// crbug.com/1001364: disabled due to flakiness.
+IN_PROC_BROWSER_TEST_P(MediaTest, DISABLED_VideoBearWavMulaw) {
   PlayAudio("bear_mulaw.wav", GetParam());
 }
 
-IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearWavPcm) {
+// crbug.com/1001364: disabled due to flakiness.
+IN_PROC_BROWSER_TEST_P(MediaTest, DISABLED_VideoBearWavPcm) {
   PlayAudio("bear_pcm.wav", GetParam());
 }
 
