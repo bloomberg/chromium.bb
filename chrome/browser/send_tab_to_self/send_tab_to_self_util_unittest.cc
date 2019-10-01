@@ -15,7 +15,6 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/send_tab_to_self_sync_service_factory.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
-#include "components/send_tab_to_self/features.h"
 #include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
 #include "components/send_tab_to_self/test_send_tab_to_self_model.h"
 #include "components/sync/driver/sync_driver_switches.h"
@@ -74,18 +73,6 @@ class SendTabToSelfUtilTest : public BrowserWithTestWindowTest {
   base::string16 title_;
 };
 
-TEST_F(SendTabToSelfUtilTest, AreFlagsEnabled_True) {
-  scoped_feature_list_.InitWithFeatures({kSendTabToSelfShowSendingUI}, {});
-
-  EXPECT_TRUE(IsSendingEnabled());
-}
-
-TEST_F(SendTabToSelfUtilTest, AreFlagsEnabled_False) {
-  scoped_feature_list_.InitWithFeatures({}, {kSendTabToSelfShowSendingUI});
-
-  EXPECT_FALSE(IsSendingEnabled());
-}
-
 TEST_F(SendTabToSelfUtilTest, HasValidTargetDevice) {
   EXPECT_FALSE(HasValidTargetDevice(profile()));
 
@@ -116,7 +103,6 @@ TEST_F(SendTabToSelfUtilTest, IncognitoMode) {
 TEST_F(SendTabToSelfUtilTest, ShouldNotOfferFeatureForTelephoneLink) {
   url_ = GURL("tel:07387252578");
 
-  scoped_feature_list_.InitWithFeatures({kSendTabToSelfShowSendingUI}, {});
   AddTab(browser(), url_);
   SendTabToSelfSyncServiceFactory::GetInstance()->SetTestingFactory(
       profile(), base::BindRepeating(&BuildTestSendTabToSelfSyncService));
@@ -129,7 +115,6 @@ TEST_F(SendTabToSelfUtilTest, ShouldNotOfferFeatureForTelephoneLink) {
 }
 
 TEST_F(SendTabToSelfUtilTest, ShouldOfferFeatureForGoogleLink) {
-  scoped_feature_list_.InitWithFeatures({kSendTabToSelfShowSendingUI}, {});
   AddTab(browser(), url_);
   SendTabToSelfSyncServiceFactory::GetInstance()->SetTestingFactory(
       profile(), base::BindRepeating(&BuildTestSendTabToSelfSyncService));
@@ -142,7 +127,6 @@ TEST_F(SendTabToSelfUtilTest, ShouldOfferFeatureForGoogleLink) {
 }
 
 TEST_F(SendTabToSelfUtilTest, ShouldNotOfferFeatureInOmniboxWhileNavigating) {
-  scoped_feature_list_.InitWithFeatures({kSendTabToSelfShowSendingUI}, {});
   AddTab(browser(), url_);
   SendTabToSelfSyncServiceFactory::GetInstance()->SetTestingFactory(
       profile(), base::BindRepeating(&BuildTestSendTabToSelfSyncService));

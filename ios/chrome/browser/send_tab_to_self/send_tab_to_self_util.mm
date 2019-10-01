@@ -6,7 +6,6 @@
 
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/send_tab_to_self/features.h"
 #include "components/send_tab_to_self/send_tab_to_self_model.h"
 #include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
 #include "components/sync/driver/sync_service.h"
@@ -35,10 +34,6 @@
 
 namespace send_tab_to_self {
 
-bool IsSendingEnabled() {
-  return base::FeatureList::IsEnabled(kSendTabToSelfShowSendingUI);
-}
-
 bool IsUserSyncTypeActive(ios::ChromeBrowserState* browser_state) {
   SendTabToSelfSyncService* service =
       SendTabToSelfSyncServiceFactory::GetForBrowserState(browser_state);
@@ -65,8 +60,7 @@ bool AreContentRequirementsMet(const GURL& url,
 
 bool ShouldOfferFeature(ios::ChromeBrowserState* browser_state,
                         const GURL& url) {
-  // If sending is enabled, then so is receiving.
-  return IsSendingEnabled() && IsUserSyncTypeActive(browser_state) &&
+  return IsUserSyncTypeActive(browser_state) &&
          HasValidTargetDevice(browser_state) &&
          AreContentRequirementsMet(url, browser_state);
 }

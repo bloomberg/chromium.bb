@@ -1784,12 +1784,6 @@ const char kSendTabToSelfBroadcastDescription[] =
     "Allows users to broadcast the tab they send to all of their devices "
     "instead of targetting only one device.";
 
-const char kSendTabToSelfShowSendingUIName[] =
-    "Send tab to self show sending UI";
-const char kSendTabToSelfShowSendingUIDescription[] =
-    "Allows users to send tabs to other synced devices by accessing the "
-    "sending user interface. Requires Send tab to self to also be enabled";
-
 const char kSendTabToSelfWhenSignedInName[] =
     "Send tab to self: enable use when signed-in regardless of sync state";
 const char kSendTabToSelfWhenSignedInDescription[] =

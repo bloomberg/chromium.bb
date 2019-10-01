@@ -1058,9 +1058,6 @@ extern const char kSendTabToSelfDescription[];
 extern const char kSendTabToSelfBroadcastName[];
 extern const char kSendTabToSelfBroadcastDescription[];
 
-extern const char kSendTabToSelfShowSendingUIName[];
-extern const char kSendTabToSelfShowSendingUIDescription[];
-
 extern const char kSendTabToSelfWhenSignedInName[];
 extern const char kSendTabToSelfWhenSignedInDescription[];
 

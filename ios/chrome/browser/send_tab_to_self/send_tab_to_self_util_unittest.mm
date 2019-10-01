@@ -6,7 +6,6 @@
 
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
-#include "components/send_tab_to_self/features.h"
 #include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
 #include "components/send_tab_to_self/test_send_tab_to_self_model.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
@@ -78,20 +77,6 @@ TEST_F(SendTabToSelfUtilTest, HasValidTargetDevice) {
       browser_state(), base::BindRepeating(&BuildTestSendTabToSelfSyncService));
 
   EXPECT_TRUE(HasValidTargetDevice(browser_state()));
-}
-
-TEST_F(SendTabToSelfUtilTest, AreFlagsEnabled) {
-  task_environment_.RunUntilIdle();
-  scoped_feature_list_.InitWithFeatures({kSendTabToSelfShowSendingUI}, {});
-
-  EXPECT_TRUE(IsSendingEnabled());
-}
-
-TEST_F(SendTabToSelfUtilTest, AreFlagsDisabled) {
-  task_environment_.RunUntilIdle();
-  scoped_feature_list_.InitWithFeatures({}, {kSendTabToSelfShowSendingUI});
-
-  EXPECT_FALSE(IsSendingEnabled());
 }
 
 TEST_F(SendTabToSelfUtilTest, NotHTTPOrHTTPS) {

@@ -92,7 +92,6 @@ class SendTabToSelfBridgeTest : public testing::Test {
  protected:
   SendTabToSelfBridgeTest()
       : store_(syncer::ModelTypeStoreTestUtil::CreateInMemoryStoreForTest()) {
-    scoped_feature_list_.InitAndEnableFeature(kSendTabToSelfShowSendingUI);
     SetLocalDeviceCacheGuid(kLocalDeviceCacheGuid);
     local_device_ = std::make_unique<syncer::DeviceInfo>(
         kLocalDeviceCacheGuid, "device", "72", "agent",
@@ -575,9 +574,7 @@ TEST_F(SendTabToSelfBridgeTest, AddDuplicateEntries) {
 TEST_F(SendTabToSelfBridgeTest,
        NotifyRemoteSendTabToSelfEntryAdded_BroadcastDisabled) {
   base::test::ScopedFeatureList scoped_features;
-  scoped_features.InitWithFeatures(
-      /*enabled_features=*/{kSendTabToSelfShowSendingUI},
-      /*disabled_features=*/{kSendTabToSelfBroadcast});
+  scoped_features.InitAndDisableFeature(kSendTabToSelfBroadcast);
 
   const std::string kRemoteGuid = "RemoteDevice";
   InitializeBridge();
@@ -609,10 +606,7 @@ TEST_F(SendTabToSelfBridgeTest,
 TEST_F(SendTabToSelfBridgeTest,
        NotifyRemoteSendTabToSelfEntryAdded_BroadcastEnabled) {
   base::test::ScopedFeatureList scoped_features;
-  scoped_features.InitWithFeatures(
-      /*enabled_features=*/{kSendTabToSelfShowSendingUI,
-                            kSendTabToSelfBroadcast},
-      /*disabled_features=*/{});
+  scoped_features.InitAndEnableFeature(kSendTabToSelfBroadcast);
 
   InitializeBridge();
   SetLocalDeviceCacheGuid("Device1");
@@ -862,10 +856,7 @@ TEST_F(SendTabToSelfBridgeTest,
 
 TEST_F(SendTabToSelfBridgeTest, NotifyRemoteSendTabToSelfEntryOpened) {
   base::test::ScopedFeatureList scoped_features;
-  scoped_features.InitWithFeatures(
-      /*enabled_features=*/{kSendTabToSelfShowSendingUI,
-                            kSendTabToSelfBroadcast},
-      /*disabled_features=*/{});
+  scoped_features.InitAndEnableFeature(kSendTabToSelfBroadcast);
 
   InitializeBridge();
   SetLocalDeviceCacheGuid("Device1");

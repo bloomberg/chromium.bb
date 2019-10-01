@@ -3795,11 +3795,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAll,
      FEATURE_VALUE_TYPE(features::kEnableAmbientAuthenticationInGuestSession)},
 
-    {"enable-send-tab-to-self-show-sending-ui",
-     flag_descriptions::kSendTabToSelfShowSendingUIName,
-     flag_descriptions::kSendTabToSelfShowSendingUIDescription, kOsAll,
-     FEATURE_VALUE_TYPE(send_tab_to_self::kSendTabToSelfShowSendingUI)},
-
     {"enable-send-tab-to-self-when-signed-in",
      flag_descriptions::kSendTabToSelfWhenSignedInName,
      flag_descriptions::kSendTabToSelfWhenSignedInDescription, kOsAll,

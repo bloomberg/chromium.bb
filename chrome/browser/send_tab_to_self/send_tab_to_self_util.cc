@@ -24,10 +24,6 @@
 
 namespace send_tab_to_self {
 
-bool IsSendingEnabled() {
-  return base::FeatureList::IsEnabled(kSendTabToSelfShowSendingUI);
-}
-
 bool IsUserSyncTypeActive(Profile* profile) {
   SendTabToSelfSyncService* service =
       SendTabToSelfSyncServiceFactory::GetForProfile(profile);
@@ -56,9 +52,8 @@ bool ShouldOfferFeature(content::WebContents* web_contents) {
     return false;
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  // If sending is enabled, then so is receiving.
-  return IsSendingEnabled() && IsUserSyncTypeActive(profile) &&
-         HasValidTargetDevice(profile) &&
+
+  return IsUserSyncTypeActive(profile) && HasValidTargetDevice(profile) &&
          AreContentRequirementsMet(web_contents->GetURL(), profile);
 }
 
@@ -68,8 +63,7 @@ bool ShouldOfferFeatureForLink(content::WebContents* web_contents,
     return false;
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  return IsSendingEnabled() && IsUserSyncTypeActive(profile) &&
-         HasValidTargetDevice(profile) &&
+  return IsUserSyncTypeActive(profile) && HasValidTargetDevice(profile) &&
          // Send tab to self should not be offered for tel links, click to call
          // feature will be handling tel links.
          !link_url.SchemeIs(url::kTelScheme) &&
