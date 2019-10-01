@@ -930,22 +930,22 @@ base::Optional<SMILInterval> SVGSMILElement::CheckAndUpdateInterval(
   if (restart == kRestartNever)
     return base::nullopt;
 
-  base::Optional<SMILInterval> new_interval;
   if (restart == kRestartAlways && interval_.EndsAfter(elapsed)) {
     SMILTime next_begin = FindInstanceTime(kBegin, interval_.begin, false);
     if (interval_.EndsAfter(next_begin)) {
-      new_interval = interval_;
-      new_interval->end = next_begin;
+      interval_.end = next_begin;
+      NotifyDependentsOnNewInterval(interval_);
+      interval_has_changed_ = true;
     }
   }
 
-  if ((new_interval && new_interval->EndsBefore(elapsed)) ||
-      (!new_interval && interval_.EndsBefore(elapsed))) {
-    SMILInterval next_interval = ResolveInterval(interval_.end, elapsed);
-    if (next_interval.IsResolved() && next_interval.begin != interval_.begin)
-      new_interval = next_interval;
-  }
-  return new_interval;
+  if (interval_.EndsAfter(elapsed))
+    return base::nullopt;
+
+  SMILInterval next_interval = ResolveInterval(interval_.end, elapsed);
+  if (!next_interval.IsResolved() || next_interval == interval_)
+    return base::nullopt;
+  return next_interval;
 }
 
 const SMILInterval& SVGSMILElement::GetActiveInterval(SMILTime elapsed) const {
@@ -1094,18 +1094,19 @@ void SVGSMILElement::UpdateSyncBases() {
 }
 
 void SVGSMILElement::UpdateActiveState(SMILTime elapsed) {
-  ActiveState old_active_state = GetActiveState();
+  const bool was_active = GetActiveState() == kActive;
   active_state_ = DetermineActiveState(elapsed);
-
-  // TODO(fs): This should really only need to cover the case where we have a
-  // new interval and the previous interval ended at the same time as the
-  // current interval began. It seems this is prevented by the way dependent
-  // interval notifications can end up clobbering the current interval.
+  const bool is_active = GetActiveState() == kActive;
   const bool interval_restart =
-      interval_has_changed_ && previous_interval_ != interval_;
+      interval_has_changed_ && previous_interval_.end == interval_.begin;
+
+  if ((was_active && !is_active) || interval_restart) {
+    ScheduleEvent(event_type_names::kEndEvent);
+    EndedActiveInterval();
+  }
 
   if (IsContributing(elapsed)) {
-    if (old_active_state == kInactive || interval_restart) {
+    if (!was_active || interval_restart) {
       ScheduleEvent(event_type_names::kBeginEvent);
       StartedActiveInterval();
     }
@@ -1118,12 +1119,6 @@ void SVGSMILElement::UpdateActiveState(SMILTime elapsed) {
     }
 
     last_percent_ = CalculateAnimationPercent(elapsed);
-  }
-
-  if ((old_active_state == kActive && GetActiveState() != kActive) ||
-      interval_restart) {
-    ScheduleEvent(event_type_names::kEndEvent);
-    EndedActiveInterval();
   }
 }
 
