@@ -131,7 +131,7 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
  protected:
   enum BeginOrEnd { kBegin, kEnd };
 
-  void AddInstanceTime(BeginOrEnd, SMILTime, SMILTimeOrigin);
+  void AddInstanceTimeAndUpdate(BeginOrEnd, SMILTime, SMILTimeOrigin);
 
   void SetInactive() { active_state_ = kInactive; }
 
@@ -169,6 +169,9 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   SMILTime RepeatingDuration() const;
   const SMILInterval& GetActiveInterval(SMILTime elapsed) const;
 
+  void AddInstanceTime(BeginOrEnd begin_or_end,
+                       SMILTime time,
+                       SMILTimeOrigin origin);
   void InstanceListChanged();
 
   // This represents conditions on elements begin or end list that need to be

@@ -80,9 +80,9 @@ class ConditionEventListener final : public NativeEventListener {
   void Invoke(ExecutionContext*, Event*) override {
     if (!animation_)
       return;
-    animation_->AddInstanceTime(condition_->GetBeginOrEnd(),
-                                animation_->Elapsed() + condition_->Offset(),
-                                SMILTimeOrigin::kEvent);
+    animation_->AddInstanceTimeAndUpdate(
+        condition_->GetBeginOrEnd(),
+        animation_->Elapsed() + condition_->Offset(), SMILTimeOrigin::kEvent);
   }
 
   void Trace(blink::Visitor* visitor) override {
@@ -698,15 +698,20 @@ static void InsertSortedAndUnique(Vector<SMILTimeWithOrigin>& list,
 void SVGSMILElement::AddInstanceTime(BeginOrEnd begin_or_end,
                                      SMILTime time,
                                      SMILTimeOrigin origin) {
+  Vector<SMILTimeWithOrigin>& list =
+      begin_or_end == kBegin ? begin_times_ : end_times_;
+  InsertSortedAndUnique(list, SMILTimeWithOrigin(time, origin));
+}
+
+void SVGSMILElement::AddInstanceTimeAndUpdate(BeginOrEnd begin_or_end,
+                                              SMILTime time,
+                                              SMILTimeOrigin origin) {
   // Ignore new instance times for 'end' if the element is not active
   // and the origin is script.
   if (begin_or_end == kEnd && GetActiveState() == kInactive &&
       origin == SMILTimeOrigin::kScript)
     return;
-  Vector<SMILTimeWithOrigin>& list =
-      begin_or_end == kBegin ? begin_times_ : end_times_;
-  InsertSortedAndUnique(list, SMILTimeWithOrigin(time, origin));
-
+  AddInstanceTime(begin_or_end, time, origin);
   InstanceListChanged();
   if (time_container_)
     time_container_->NotifyIntervalsChanged();
@@ -1152,6 +1157,7 @@ void SVGSMILElement::CreateInstanceTimesFromSyncBase(
     const NotifyDependentsInfo& info) {
   // FIXME: To be really correct, this should handle updating exising interval
   // by changing the associated times instead of creating new ones.
+  bool instance_lists_changed = false;
   for (Condition* condition : conditions_) {
     if (!condition->IsSyncBaseFor(timed_element))
       continue;
@@ -1179,6 +1185,13 @@ void SVGSMILElement::CreateInstanceTimesFromSyncBase(
     if (!time.IsFinite())
       continue;
     AddInstanceTime(condition->GetBeginOrEnd(), time, info.origin);
+    instance_lists_changed = true;
+  }
+
+  if (instance_lists_changed) {
+    InstanceListChanged();
+    if (time_container_)
+      time_container_->NotifyIntervalsChanged();
   }
 }
 
@@ -1195,7 +1208,7 @@ void SVGSMILElement::RemoveSyncBaseDependent(SVGSMILElement& animation) {
 }
 
 void SVGSMILElement::BeginByLinkActivation() {
-  AddInstanceTime(kBegin, Elapsed(), SMILTimeOrigin::kLinkActivation);
+  AddInstanceTimeAndUpdate(kBegin, Elapsed(), SMILTimeOrigin::kLinkActivation);
 }
 
 void SVGSMILElement::EndedActiveInterval() {
