@@ -68,8 +68,7 @@ def BuildTargetUnitTest(build_target, chroot, blacklist=None, was_built=True):
 
   # Set up the failed package status file.
   extra_env = chroot.env
-  base_dir = os.path.join(chroot.path, 'tmp')
-  with osutils.TempDir(base_dir=base_dir) as tempdir:
+  with chroot.tempdir() as tempdir:
     extra_env[constants.CROS_METRICS_DIR_ENVVAR] = tempdir
 
     result = cros_build_lib.run(cmd, enter_chroot=True,

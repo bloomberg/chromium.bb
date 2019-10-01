@@ -354,8 +354,7 @@ def CreateChromeRoot(chroot, build_target, output_dir):
   chroot_args = chroot.get_enter_args()
 
   extra_env = {'USE': 'chrome_internal'}
-  base_dir = os.path.join(chroot.path, 'tmp')
-  with osutils.TempDir(base_dir=base_dir) as tempdir:
+  with chroot.tempdir() as tempdir:
     in_chroot_path = os.path.relpath(tempdir, chroot.path)
     cmd = ['cros_generate_sysroot', '--out-dir', in_chroot_path, '--board',
            build_target.name, '--deps-only', '--package', constants.CHROME_CP]
