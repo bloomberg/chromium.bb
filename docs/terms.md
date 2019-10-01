@@ -59,7 +59,7 @@ test files can be discovered by the web runner (since it does not have filesyste
 
 ### Listing File
 
-**Example:**: `out/suites/*/index.js`
+**Example:** `out/suites/*/index.js`
 
 ## Test Spec
 
