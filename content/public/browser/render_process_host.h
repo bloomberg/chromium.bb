@@ -627,6 +627,16 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
 
   // Counts current RenderProcessHost(s), ignoring the spare process.
   static int GetCurrentRenderProcessCountForTesting();
+
+  // Allows tests to override host interface binding behavior. Any interface
+  // binding request which would normally pass through the RPH's internal
+  // IOThreadHostImpl::BindHostReceiver() will pass through |callback| first if
+  // non-null. |callback| is only called from the IO thread.
+  using BindHostReceiverInterceptor =
+      base::RepeatingCallback<void(int render_process_id,
+                                   mojo::GenericPendingReceiver* receiver)>;
+  static void InterceptBindHostReceiverForTesting(
+      BindHostReceiverInterceptor callback);
 };
 
 }  // namespace content
