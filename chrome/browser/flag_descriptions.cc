@@ -1623,6 +1623,13 @@ const char kQueryInOmniboxDescription[] =
 const char kQuicName[] = "Experimental QUIC protocol";
 const char kQuicDescription[] = "Enable experimental QUIC protocol support.";
 
+const char kQuietNotificationPromptsName[] =
+    "Quieter notification permission prompts";
+const char kQuietNotificationPromptsDescription[] =
+    "Enables quieter permission prompts for notification permission requests. "
+    "When a site wishes to show notifications, the usual modal dialog is "
+    "replaced with a quieter version.";
+
 const char kReducedReferrerGranularityName[] =
     "Reduce default 'referer' header granularity.";
 const char kReducedReferrerGranularityDescription[] =
@@ -2639,13 +2646,6 @@ extern const char kProcessSharingWithStrictSiteInstancesDescription[] =
     "instance. This mode adds a third way: site instances are strictly "
     "separated like strict site isolation, but process selection puts multiple "
     "site instances in a single process.";
-
-const char kQuietNotificationPromptsName[] =
-    "Quieter notification permission prompts";
-const char kQuietNotificationPromptsDescription[] =
-    "Enables quieter permission prompts for notification permission requests. "
-    "When a site wishes to show notifications, the usual modal dialog is "
-    "replaced with a quieter version.";
 
 const char kReaderModeHeuristicsName[] = "Reader Mode triggering";
 const char kReaderModeHeuristicsDescription[] =
