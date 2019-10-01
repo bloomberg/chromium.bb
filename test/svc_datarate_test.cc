@@ -65,6 +65,8 @@ class DatarateTestSVC
                      &svc_params_);
       encoder->Control(AV1E_SET_SVC_PARAMS, &svc_params_);
       encoder->Control(AV1E_SET_ENABLE_ORDER_HINT, 0);
+      encoder->Control(AV1E_SET_ENABLE_TPL_MODEL, 0);
+      encoder->Control(AV1E_SET_DELTAQ_MODE, 0);
     }
     if (number_spatial_layers_ == 2) {
       spatial_layer_id = (layer_frame_cnt_ % 2 == 0) ? 0 : 1;
@@ -471,6 +473,51 @@ class DatarateTestSVC
     }
   }
 
+  virtual void BasicRateTargetingSVC3TL3SLKfTest() {
+    cfg_.rc_buf_initial_sz = 500;
+    cfg_.rc_buf_optimal_sz = 500;
+    cfg_.rc_buf_sz = 1000;
+    cfg_.rc_dropframe_thresh = 0;
+    cfg_.rc_min_quantizer = 0;
+    cfg_.rc_max_quantizer = 63;
+    cfg_.rc_end_usage = AOM_CBR;
+    cfg_.g_lag_in_frames = 0;
+    cfg_.g_usage = AOM_USAGE_REALTIME;
+    cfg_.g_error_resilient = 1;
+    cfg_.kf_mode = AOM_KF_AUTO;
+    cfg_.kf_min_dist = cfg_.kf_max_dist = 100;
+
+    ::libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352,
+                                         288, 30, 1, 0, 300);
+    const int bitrate_array[2] = { 600, 1200 };
+    cfg_.rc_target_bitrate = bitrate_array[GET_PARAM(4)];
+    ResetModel();
+    number_temporal_layers_ = 3;
+    number_spatial_layers_ = 3;
+    // SL0
+    const int bitrate_sl0 = 1 * cfg_.rc_target_bitrate / 8;
+    target_layer_bitrate_[0] = 50 * bitrate_sl0 / 100;
+    target_layer_bitrate_[1] = 70 * bitrate_sl0 / 100;
+    target_layer_bitrate_[2] = bitrate_sl0;
+    // SL1
+    const int bitrate_sl1 = 3 * cfg_.rc_target_bitrate / 8;
+    target_layer_bitrate_[3] = 50 * bitrate_sl1 / 100;
+    target_layer_bitrate_[4] = 70 * bitrate_sl1 / 100;
+    target_layer_bitrate_[5] = bitrate_sl1;
+    // SL2
+    const int bitrate_sl2 = 4 * cfg_.rc_target_bitrate / 8;
+    target_layer_bitrate_[6] = 50 * bitrate_sl2 / 100;
+    target_layer_bitrate_[7] = 70 * bitrate_sl2 / 100;
+    target_layer_bitrate_[8] = bitrate_sl2;
+    ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
+    for (int i = 0; i < number_temporal_layers_ * number_spatial_layers_; i++) {
+      ASSERT_GE(effective_datarate_tl[i], target_layer_bitrate_[i] * 0.75)
+          << " The datarate for the file is lower than target by too much!";
+      ASSERT_LE(effective_datarate_tl[i], target_layer_bitrate_[i] * 1.4)
+          << " The datarate for the file is greater than target by too much!";
+    }
+  }
+
   int layer_frame_cnt_;
   int superframe_cnt_;
   int number_temporal_layers_;
@@ -501,6 +548,12 @@ TEST_P(DatarateTestSVC, BasicRateTargetingSVC1TL3SL) {
 // Check basic rate targeting for CBR, for 3 spatial, 3 temporal layers.
 TEST_P(DatarateTestSVC, BasicRateTargetingSVC3TL3SL) {
   BasicRateTargetingSVC3TL3SLTest();
+}
+
+// Check basic rate targeting for CBR, for 3 spatial, 3 temporal layers,
+// for auto key frame mode with short key frame period.
+TEST_P(DatarateTestSVC, BasicRateTargetingSVC3TL3SLKf) {
+  BasicRateTargetingSVC3TL3SLKfTest();
 }
 
 AV1_INSTANTIATE_TEST_CASE(DatarateTestSVC,

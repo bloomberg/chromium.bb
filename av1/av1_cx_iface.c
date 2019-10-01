@@ -1817,7 +1817,8 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
   // Handle fixed keyframe intervals
   if (ctx->cfg.kf_mode == AOM_KF_AUTO &&
       ctx->cfg.kf_min_dist == ctx->cfg.kf_max_dist) {
-    if (++ctx->fixed_kf_cntr > ctx->cfg.kf_min_dist) {
+    if (cpi->common.spatial_layer_id == 0 &&
+        ++ctx->fixed_kf_cntr > ctx->cfg.kf_min_dist) {
       flags |= AOM_EFLAG_FORCE_KF;
       ctx->fixed_kf_cntr = 1;
     }

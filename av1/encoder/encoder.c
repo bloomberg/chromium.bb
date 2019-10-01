@@ -1360,11 +1360,14 @@ static void init_config(struct AV1_COMP *cpi, AV1EncoderConfig *oxcf) {
   // Single thread case: use counts in common.
   cpi->td.counts = &cpi->counts;
 
+  // Set init SVC parameters.
   cpi->use_svc = 0;
   cpi->svc.external_ref_frame_config = 0;
   cpi->svc.non_reference_frame = 0;
   cm->number_spatial_layers = 1;
   cm->number_temporal_layers = 1;
+  cm->spatial_layer_id = 0;
+  cm->temporal_layer_id = 0;
 
   // change includes all joint functionality
   av1_change_config(cpi, oxcf);

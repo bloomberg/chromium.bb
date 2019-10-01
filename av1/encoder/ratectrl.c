@@ -1874,7 +1874,10 @@ void av1_get_one_pass_rt_params(AV1_COMP *cpi,
     av1_update_temporal_layer_framerate(cpi);
     av1_restore_layer_context(cpi);
   }
-  if (rc->frames_to_key == 0 || (frame_flags & FRAMEFLAGS_KEY)) {
+  if ((!cpi->use_svc && rc->frames_to_key == 0) ||
+      (cpi->use_svc && cpi->svc.spatial_layer_id == 0 &&
+       cpi->svc.current_superframe % cpi->oxcf.key_freq == 0) ||
+      (frame_flags & FRAMEFLAGS_KEY)) {
     frame_params->frame_type = KEY_FRAME;
     rc->this_key_frame_forced =
         cm->current_frame.frame_number != 0 && rc->frames_to_key == 0;
