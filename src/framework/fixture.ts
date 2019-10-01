@@ -47,10 +47,11 @@ export class Fixture {
     this.log('OK' + m);
   }
 
-  protected async asyncExpectation(fn: () => Promise<void>): Promise<void> {
+  protected async asyncExpectation<T>(fn: () => Promise<T>): Promise<T> {
     this.numOutstandingAsyncExpectations++;
-    await fn();
+    const ret = await fn();
     this.numOutstandingAsyncExpectations--;
+    return ret;
   }
 
   private expectErrorValue(expectedName: string, ex: unknown, m: string): void {

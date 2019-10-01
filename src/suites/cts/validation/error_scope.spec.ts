@@ -3,15 +3,7 @@ error scope validation tests.
 `;
 
 import { getGPU } from '../../../framework/gpu/implementation.js';
-import { Fixture, TestGroup } from '../../../framework/index.js';
-
-function rejectTimeout(ms: number, msg: string): Promise<GPUUncapturedErrorEvent> {
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      reject(new Error(msg));
-    }, ms);
-  });
-}
+import { Fixture, TestGroup, rejectOnTimeout } from '../../../framework/index.js';
 
 class F extends Fixture {
   device: GPUDevice = undefined!;
@@ -33,24 +25,26 @@ class F extends Fixture {
   }
 
   async expectUncapturedError(fn: Function): Promise<GPUUncapturedErrorEvent> {
-    // TODO: Make arbitrary timeout value a test runner variable
-    const TIMEOUT_IN_MS = 1000;
+    return this.asyncExpectation(() => {
+      // TODO: Make arbitrary timeout value a test runner variable
+      const TIMEOUT_IN_MS = 1000;
 
-    const promise: Promise<GPUUncapturedErrorEvent> = new Promise(resolve => {
-      const eventListener = ((event: GPUUncapturedErrorEvent) => {
-        this.debug(`Got uncaptured error event with ${event.error}`);
-        resolve(event);
-      }) as EventListener;
+      const promise: Promise<GPUUncapturedErrorEvent> = new Promise(resolve => {
+        const eventListener = ((event: GPUUncapturedErrorEvent) => {
+          this.debug(`Got uncaptured error event with ${event.error}`);
+          resolve(event);
+        }) as EventListener;
 
-      this.device.addEventListener('uncapturederror', eventListener, { once: true });
+        this.device.addEventListener('uncapturederror', eventListener, { once: true });
+      });
+
+      fn();
+
+      return Promise.race([
+        promise,
+        rejectOnTimeout(TIMEOUT_IN_MS, 'Uncaptured error timeout occurred'),
+      ]);
     });
-
-    fn();
-
-    return Promise.race([
-      promise,
-      rejectTimeout(TIMEOUT_IN_MS, 'Uncaptured error timeout occurred'),
-    ]);
   }
 }
 
