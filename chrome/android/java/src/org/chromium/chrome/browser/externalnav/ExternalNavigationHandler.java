@@ -481,6 +481,36 @@ public class ExternalNavigationHandler {
         return sendIntentToMarket(intent.getPackage(), marketReferrer, params);
     }
 
+    private boolean maybeSetSmsPackage(Intent targetIntent, List<ResolveInfo> resolvingInfos) {
+        final Uri uri = targetIntent.getData();
+        if (targetIntent.getPackage() == null && uri != null
+                && UrlConstants.SMS_SCHEME.equals(uri.getScheme())) {
+            targetIntent.setPackage(getDefaultSmsPackageName(resolvingInfos));
+            return true;
+        }
+        return false;
+    }
+
+    private void maybeRecordPhoneIntentMetrics(Intent targetIntent) {
+        final Uri uri = targetIntent.getData();
+        if (uri != null && UrlConstants.TEL_SCHEME.equals(uri.getScheme())
+                || (Intent.ACTION_DIAL.equals(targetIntent.getAction()))
+                || (Intent.ACTION_CALL.equals(targetIntent.getAction()))) {
+            RecordUserAction.record("Android.PhoneIntent");
+        }
+    }
+
+    private boolean shouldStayInIncognito(
+            ExternalNavigationParams params, boolean isExternalProtocol) {
+        // In incognito mode, links that can be handled within the browser should just do so,
+        // without asking the user.
+        if (params.isIncognito() && !isExternalProtocol) {
+            if (DEBUG) Log.i(TAG, "NO_OVERRIDE: Stay incognito");
+            return true;
+        }
+        return false;
+    }
+
     private @OverrideUrlLoadingResult int shouldOverrideUrlLoadingInternal(
             ExternalNavigationParams params, Intent targetIntent,
             @Nullable String browserFallbackUrl) {
@@ -552,6 +582,10 @@ public class ExternalNavigationHandler {
 
         if (shouldStayInWebapp(params)) return OverrideUrlLoadingResult.NO_OVERRIDE;
 
+        if (shouldStayInIncognito(params, isExternalProtocol)) {
+            return OverrideUrlLoadingResult.NO_OVERRIDE;
+        }
+
         sanitizeQueryIntentActivitiesIntent(targetIntent);
 
         List<ResolveInfo> resolvingInfos = mDelegate.queryIntentActivities(targetIntent);
@@ -564,14 +598,8 @@ public class ExternalNavigationHandler {
 
         if (browserFallbackUrl != null) targetIntent.removeExtra(EXTRA_BROWSER_FALLBACK_URL);
 
-        final Uri uri = targetIntent.getData();
-        if (targetIntent.getPackage() == null && uri != null
-                && UrlConstants.SMS_SCHEME.equals(uri.getScheme())) {
-            targetIntent.setPackage(getDefaultSmsPackageName(resolvingInfos));
-        } else if (uri != null && UrlConstants.TEL_SCHEME.equals(uri.getScheme())
-                || (Intent.ACTION_DIAL.equals(targetIntent.getAction()))
-                || (Intent.ACTION_CALL.equals(targetIntent.getAction()))) {
-            RecordUserAction.record("Android.PhoneIntent");
+        if (!maybeSetSmsPackage(targetIntent, resolvingInfos)) {
+            maybeRecordPhoneIntentMetrics(targetIntent);
         }
 
         // Set the Browser application ID to us in case the user chooses Chrome
@@ -590,16 +618,7 @@ public class ExternalNavigationHandler {
             IntentHandler.setPendingReferrer(targetIntent, params.getReferrerUrl());
         }
 
-        if (params.isIncognito()) {
-            // In incognito mode, links that can be handled within the browser should just do so,
-            // without asking the user.
-            if (!isExternalProtocol) {
-                if (DEBUG) Log.i(TAG, "NO_OVERRIDE: Stay incognito");
-                return OverrideUrlLoadingResult.NO_OVERRIDE;
-            }
-
-            IntentHandler.setPendingIncognitoUrl(targetIntent);
-        }
+        if (params.isIncognito()) IntentHandler.setPendingIncognitoUrl(targetIntent);
 
         // Make sure webkit can handle it internally before checking for specialized
         // handlers. If webkit can't handle it internally, we need to call
