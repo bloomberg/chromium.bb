@@ -481,27 +481,13 @@ bool RestrictedCookieManager::ValidateAccessToCookiesAt(const GURL& url) {
   if (origin_.IsSameOriginWith(url::Origin::Create(url)))
     return true;
 
-  // TODO(https://crbug.com/983090): Remove the crash keys once fixed.
-  static base::debug::CrashKeyString* bound_origin =
-      base::debug::AllocateCrashKeyString(
-          "restricted_cookie_manager_bound_origin",
-          base::debug::CrashKeySize::Size256);
-  base::debug::SetCrashKeyString(bound_origin, origin_.GetDebugString());
-
-  static base::debug::CrashKeyString* url_origin =
-      base::debug::AllocateCrashKeyString(
-          "restricted_cookie_manager_url_origin",
-          base::debug::CrashKeySize::Size256);
-  base::debug::SetCrashKeyString(url_origin,
-                                 url::Origin::Create(url).GetDebugString());
-
   if (url.IsAboutBlank() || url.IsAboutSrcdoc()) {
     // Temporary mitigation for 983090, classification improvement for parts of
     // 992587.
-    base::debug::DumpWithoutCrashing();
-  } else {
-    mojo::ReportBadMessage("Incorrect url origin");
+    return false;
   }
+
+  mojo::ReportBadMessage("Incorrect url origin");
   return false;
 }
 
