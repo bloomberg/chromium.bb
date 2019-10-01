@@ -1805,7 +1805,6 @@ crbug.com/591099 virtual/layout_ng_experimental/fragmentation/auto-scrollbar-shr
 crbug.com/591099 virtual/layout_ng_experimental/fragmentation/become-unfragmented-with-lines.html [ Crash Pass ]
 crbug.com/591099 virtual/layout_ng_experimental/fragmentation/become-unfragmented-with-unbreakable-blocks.html [ Crash Pass ]
 crbug.com/591099 virtual/layout_ng_experimental/fragmentation/block-after-float-first-child.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/fragmentation/break-inside-avoid-with-forced-break.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fragmentation/change-fragmentainer-height-block-float-2.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fragmentation/change-fragmentainer-height-block-float.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fragmentation/change-fragmentainer-height-inline-float.html [ Failure ]

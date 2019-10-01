@@ -2022,8 +2022,9 @@ bool NGBlockLayoutAlgorithm::BreakBeforeChildIfNeeded(
           DynamicTo<NGBlockBreakToken>(physical_fragment.BreakToken())) {
     // The block child broke inside. We now need to decide whether to keep that
     // break, or if it would be better to break before it.
-    if (!child_token->HasLastResortBreak() &&
-        !IsAvoidBreakValue(ConstraintSpace(), child.Style().BreakInside())) {
+    if ((!child_token->HasLastResortBreak() &&
+         !IsAvoidBreakValue(ConstraintSpace(), child.Style().BreakInside())) ||
+        layout_result.HasForcedBreak()) {
       // The break inside is perfect. Keep it.
       return false;
     }
