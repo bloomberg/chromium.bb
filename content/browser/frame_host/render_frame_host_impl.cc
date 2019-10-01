@@ -4388,15 +4388,6 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
                                      GetProcess()->GetID(), GetRoutingID()));
 #endif  // BUILDFLAG(ENABLE_MEDIA_REMOTING)
 
-#if !defined(OS_ANDROID)
-  if (command_line->HasSwitch(
-          switches::kEnableExperimentalWebPlatformFeatures)) {
-    registry_->AddInterface(
-        base::BindRepeating(&RenderFrameHostImpl::BindSerialServiceReceiver,
-                            base::Unretained(this)));
-  }
-#endif  // !defined(OS_ANDROID)
-
   // Only save decode stats when BrowserContext provides a VideoPerfHistory.
   // Off-the-record contexts will internally use an ephemeral history DB.
   media::VideoDecodePerfHistory::SaveCallback save_stats_cb;
@@ -6298,7 +6289,7 @@ void RenderFrameHostImpl::BindNFCReceiver(
 #endif
 
 #if !defined(OS_ANDROID)
-void RenderFrameHostImpl::BindSerialServiceReceiver(
+void RenderFrameHostImpl::BindSerialService(
     mojo::PendingReceiver<blink::mojom::SerialService> receiver) {
   if (!IsFeatureEnabled(blink::mojom::FeaturePolicyFeature::kSerial)) {
     mojo::ReportBadMessage("Feature policy blocks access to Serial.");

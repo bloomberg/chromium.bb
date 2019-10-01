@@ -59,13 +59,17 @@
 #include "third_party/blink/public/mojom/webauthn/virtual_authenticator.mojom.h"
 
 #if !defined(OS_ANDROID)
+#include "base/command_line.h"
 #include "content/browser/installedapp/installed_app_provider_impl_default.h"
+#include "content/public/common/content_switches.h"
 #include "third_party/blink/public/mojom/hid/hid.mojom.h"
 #include "third_party/blink/public/mojom/installedapp/installed_app_provider.mojom.h"
+#include "third_party/blink/public/mojom/serial/serial.mojom.h"
 #endif
 
 #if defined(OS_ANDROID)
 #include "services/device/public/mojom/nfc.mojom.h"
+#include "third_party/blink/public/mojom/hid/hid.mojom.h"
 #endif
 
 namespace content {
@@ -123,6 +127,13 @@ void BindTextDetection(
   GetShapeDetectionService()->BindTextDetection(std::move(receiver));
 }
 
+#if !defined(OS_ANDROID)
+bool AreExperimentalWebPlatformFeaturesEnabled() {
+  auto* command_line = base::CommandLine::ForCurrentProcess();
+  return command_line->HasSwitch(
+      switches::kEnableExperimentalWebPlatformFeatures);
+}
+#endif
 }  // namespace
 
 // Documents/frames
@@ -140,20 +151,8 @@ void PopulateFrameBinders(RenderFrameHostImpl* host,
   map->Add<blink::mojom::FileSystemManager>(base::BindRepeating(
       &RenderFrameHostImpl::GetFileSystemManager, base::Unretained(host)));
 
-#if !defined(OS_ANDROID)
-  map->Add<blink::mojom::HidService>(base::BindRepeating(
-      &RenderFrameHostImpl::GetHidService, base::Unretained(host)));
-#endif
-
   map->Add<blink::mojom::IdleManager>(base::BindRepeating(
       &RenderFrameHostImpl::GetIdleManager, base::Unretained(host)));
-
-#if !defined(OS_ANDROID)
-  // The default (no-op) implementation of InstalledAppProvider. On Android, the
-  // real implementation is provided in Java.
-  map->Add<blink::mojom::InstalledAppProvider>(
-      base::BindRepeating(&InstalledAppProviderImplDefault::Create));
-#endif
 
   map->Add<blink::mojom::PermissionService>(base::BindRepeating(
       &RenderFrameHostImpl::CreatePermissionService, base::Unretained(host)));
@@ -180,13 +179,6 @@ void PopulateFrameBinders(RenderFrameHostImpl* host,
 
   map->Add<device::mojom::GamepadMonitor>(
       base::BindRepeating(&device::GamepadMonitor::Create));
-
-#if defined(OS_ANDROID)
-  if (base::FeatureList::IsEnabled(features::kWebNfc)) {
-    map->Add<device::mojom::NFC>(base::BindRepeating(
-        &RenderFrameHostImpl::BindNFCReceiver, base::Unretained(host)));
-  }
-#endif
 
   map->Add<device::mojom::SensorProvider>(base::BindRepeating(
       &RenderFrameHostImpl::GetSensorProvider, base::Unretained(host)));
@@ -230,6 +222,26 @@ void PopulateFrameBinders(RenderFrameHostImpl* host,
 
   map->Add<shape_detection::mojom::TextDetection>(
       base::BindRepeating(&BindTextDetection));
+
+#if defined(OS_ANDROID)
+  if (base::FeatureList::IsEnabled(features::kWebNfc)) {
+    map->Add<device::mojom::NFC>(base::BindRepeating(
+        &RenderFrameHostImpl::BindNFCReceiver, base::Unretained(host)));
+  }
+#else
+  map->Add<blink::mojom::HidService>(base::BindRepeating(
+      &RenderFrameHostImpl::GetHidService, base::Unretained(host)));
+
+  // The default (no-op) implementation of InstalledAppProvider. On Android, the
+  // real implementation is provided in Java.
+  map->Add<blink::mojom::InstalledAppProvider>(
+      base::BindRepeating(&InstalledAppProviderImplDefault::Create));
+
+  if (AreExperimentalWebPlatformFeaturesEnabled()) {
+    map->Add<blink::mojom::SerialService>(base::BindRepeating(
+        &RenderFrameHostImpl::BindSerialService, base::Unretained(host)));
+  }
+#endif  // !defined(OS_ANDROID)
 }
 
 void PopulateBinderMapWithContext(
@@ -274,6 +286,7 @@ void PopulateDedicatedWorkerBinders(DedicatedWorkerHost* host,
       &DedicatedWorkerHost::CreateIdleManager, base::Unretained(host)));
   map->Add<blink::mojom::ScreenEnumeration>(
       base::BindRepeating(&ScreenEnumerationImpl::Create));
+
   if (base::FeatureList::IsEnabled(features::kSmsReceiver)) {
     map->Add<blink::mojom::SmsReceiver>(base::BindRepeating(
         &DedicatedWorkerHost::BindSmsReceiverReceiver, base::Unretained(host)));
@@ -289,6 +302,13 @@ void PopulateDedicatedWorkerBinders(DedicatedWorkerHost* host,
       base::BindRepeating(&BindFaceDetectionProvider));
   map->Add<shape_detection::mojom::TextDetection>(
       base::BindRepeating(&BindTextDetection));
+
+#if !defined(OS_ANDROID)
+  if (AreExperimentalWebPlatformFeaturesEnabled()) {
+    map->Add<blink::mojom::SerialService>(base::BindRepeating(
+        &DedicatedWorkerHost::BindSerialService, base::Unretained(host)));
+  }
+#endif  // !defined(OS_ANDROID)
 }
 
 void PopulateBinderMapWithContext(

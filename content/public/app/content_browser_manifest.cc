@@ -180,7 +180,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "blink.mojom.NativeFileSystemManager",
                   "blink.mojom.NotificationService",
                   "blink.mojom.QuotaDispatcherHost",
-                  "blink.mojom.SerialService",
                   "blink.mojom.WebUsbService",
                   "blink.mojom.WebSocketConnector"})
           .ExposeInterfaceFilterCapability_Deprecated(
@@ -213,7 +212,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "blink.mojom.Portal",
                   "blink.mojom.PrefetchURLLoaderService",
                   "blink.mojom.QuotaDispatcherHost",
-                  "blink.mojom.SerialService",
                   "blink.mojom.SharedWorkerConnector",
                   "blink.mojom.SpeechRecognizer",
                   "blink.mojom.TextSuggestionHost",

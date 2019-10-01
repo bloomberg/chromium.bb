@@ -457,6 +457,22 @@ void DedicatedWorkerHost::BindSmsReceiverReceiver(
   ancestor_render_frame_host->BindSmsReceiverReceiver(std::move(receiver));
 }
 
+#if !defined(OS_ANDROID)
+void DedicatedWorkerHost::BindSerialService(
+    mojo::PendingReceiver<blink::mojom::SerialService> receiver) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  RenderFrameHostImpl* ancestor_render_frame_host =
+      GetAncestorRenderFrameHost();
+  if (!ancestor_render_frame_host) {
+    // The ancestor frame may have already been closed. In that case, the worker
+    // will soon be terminated too, so abort the connection.
+    return;
+  }
+
+  ancestor_render_frame_host->BindSerialService(std::move(receiver));
+}
+#endif
+
 void DedicatedWorkerHost::ObserveNetworkServiceCrash(
     StoragePartitionImpl* storage_partition_impl) {
   auto params = network::mojom::URLLoaderFactoryParams::New();

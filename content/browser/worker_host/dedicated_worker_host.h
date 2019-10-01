@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_WORKER_HOST_DEDICATED_WORKER_HOST_H_
 #define CONTENT_BROWSER_WORKER_HOST_DEDICATED_WORKER_HOST_H_
 
+#include "build/build_config.h"
 #include "content/browser/browser_interface_broker_impl.h"
 #include "content/public/browser/render_process_host.h"
 #include "media/mojo/mojom/video_decode_perf_history.mojom.h"
@@ -23,6 +24,10 @@
 #include "third_party/blink/public/mojom/worker/dedicated_worker_host.mojom.h"
 #include "third_party/blink/public/mojom/worker/dedicated_worker_host_factory.mojom.h"
 #include "third_party/blink/public/mojom/worker/subresource_loader_updater.mojom.h"
+
+#if !defined(OS_ANDROID)
+#include "third_party/blink/public/mojom/serial/serial.mojom-forward.h"
+#endif
 
 namespace url {
 class Origin;
@@ -77,6 +82,11 @@ class DedicatedWorkerHost final
       mojo::PendingReceiver<payments::mojom::PaymentManager> receiver);
   void BindSmsReceiverReceiver(
       mojo::PendingReceiver<blink::mojom::SmsReceiver> receiver);
+
+#if !defined(OS_ANDROID)
+  void BindSerialService(
+      mojo::PendingReceiver<blink::mojom::SerialService> receiver);
+#endif
 
   // service_manager::mojom::InterfaceProvider:
   void GetInterface(const std::string& interface_name,
