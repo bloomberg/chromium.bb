@@ -16,7 +16,6 @@
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
-#include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/navigation_request_info.h"
 #include "content/browser/frame_host/navigator_delegate.h"

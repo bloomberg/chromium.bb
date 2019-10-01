@@ -56,7 +56,6 @@
 #include "content/browser/frame_host/ipc_utils.h"
 #include "content/browser/frame_host/keep_alive_handle_factory.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
-#include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/navigator_impl.h"
@@ -2584,11 +2583,6 @@ RenderWidgetHostView* RenderFrameHostImpl::GetView() {
 
 GlobalFrameRoutingId RenderFrameHostImpl::GetGlobalFrameRoutingId() {
   return GlobalFrameRoutingId(GetProcess()->GetID(), GetRoutingID());
-}
-
-NavigationHandleImpl* RenderFrameHostImpl::GetNavigationHandle() {
-  return navigation_request() ? navigation_request()->navigation_handle()
-                              : nullptr;
 }
 
 void RenderFrameHostImpl::ResetNavigationRequests() {

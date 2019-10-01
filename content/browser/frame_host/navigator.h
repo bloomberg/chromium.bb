@@ -7,7 +7,6 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
-#include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/navigator_delegate.h"
 #include "content/common/content_export.h"
