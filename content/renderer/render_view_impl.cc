@@ -1432,7 +1432,7 @@ WebView* RenderViewImpl::CreateView(
                      base::Unretained(creator_frame), opened_by_user_gesture);
 
   RenderViewImpl* view = RenderViewImpl::Create(
-      render_widget_->compositor_deps(), std::move(view_params),
+      page_properties_.GetCompositorDependencies(), std::move(view_params),
       std::move(show_callback),
       creator->GetTaskRunner(blink::TaskType::kInternalDefault));
 
