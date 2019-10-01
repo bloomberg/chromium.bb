@@ -79,10 +79,10 @@ typedef struct {
 typedef struct {
   tran_low_t tcoeff[MAX_MB_PLANE][MAX_SB_SQUARE];
   uint16_t eobs[MAX_MB_PLANE][MAX_SB_SQUARE / (TX_SIZE_W_MIN * TX_SIZE_H_MIN)];
-  uint8_t txb_skip_ctx[MAX_MB_PLANE]
-                      [MAX_SB_SQUARE / (TX_SIZE_W_MIN * TX_SIZE_H_MIN)];
-  int dc_sign_ctx[MAX_MB_PLANE]
-                 [MAX_SB_SQUARE / (TX_SIZE_W_MIN * TX_SIZE_H_MIN)];
+  // Transform block entropy contexts.
+  // Bits 0~3: txb_skip_ctx; bits 4~5: dc_sign_ctx.
+  uint8_t entropy_ctx[MAX_MB_PLANE]
+                     [MAX_SB_SQUARE / (TX_SIZE_W_MIN * TX_SIZE_H_MIN)];
 } CB_COEFF_BUFFER;
 
 typedef struct {

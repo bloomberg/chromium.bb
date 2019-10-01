@@ -505,7 +505,7 @@ void av1_get_nz_map_contexts_c(const uint8_t *const levels,
 void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
                           aom_writer *w, int blk_row, int blk_col, int plane,
                           TX_SIZE tx_size, const tran_low_t *tcoeff,
-                          uint16_t eob, TXB_CTX *txb_ctx) {
+                          uint16_t eob, const TXB_CTX *txb_ctx) {
   const TX_SIZE txs_ctx = get_txsize_entropy_ctx(tx_size);
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
   aom_write_symbol(w, eob == 0,
@@ -644,12 +644,12 @@ static void write_coeffs_txb_wrap(const AV1_COMMON *cm, MACROBLOCK *x,
   const tran_low_t *tcoeff_txb =
       cb_coef_buff->tcoeff[plane] + x->mbmi_ext_frame->cb_offset;
   const uint16_t *eob_txb = cb_coef_buff->eobs[plane] + txb_offset;
-  const uint8_t *txb_skip_ctx_txb =
-      cb_coef_buff->txb_skip_ctx[plane] + txb_offset;
-  const int *dc_sign_ctx_txb = cb_coef_buff->dc_sign_ctx[plane] + txb_offset;
   const tran_low_t *tcoeff = BLOCK_OFFSET(tcoeff_txb, block);
   const uint16_t eob = eob_txb[block];
-  TXB_CTX txb_ctx = { txb_skip_ctx_txb[block], dc_sign_ctx_txb[block] };
+  const uint8_t *entropy_ctx = cb_coef_buff->entropy_ctx[plane] + txb_offset;
+  const TXB_CTX txb_ctx = { entropy_ctx[block] & TXB_SKIP_CTX_MASK,
+                            (entropy_ctx[block] >> DC_SIGN_CTX_SHIFT) &
+                                DC_SIGN_CTX_MASK };
   av1_write_coeffs_txb(cm, xd, w, blk_row, blk_col, plane, tx_size, tcoeff, eob,
                        &txb_ctx);
 }
@@ -2044,8 +2044,8 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
   const int txb_offset =
       x->mbmi_ext_frame->cb_offset / (TX_SIZE_W_MIN * TX_SIZE_H_MIN);
   uint16_t *eob_txb = cb_coef_buff->eobs[plane] + txb_offset;
-  uint8_t *txb_skip_ctx_txb = cb_coef_buff->txb_skip_ctx[plane] + txb_offset;
-  txb_skip_ctx_txb[block] = txb_ctx.txb_skip_ctx;
+  uint8_t *const entropy_ctx = cb_coef_buff->entropy_ctx[plane] + txb_offset;
+  entropy_ctx[block] = txb_ctx.txb_skip_ctx;
   eob_txb[block] = eob;
 
   if (eob == 0) {
@@ -2153,8 +2153,7 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
 #endif  // CONFIG_ENTROPY_STATS
     if (allow_update_cdf)
       update_cdf(ec_ctx->dc_sign_cdf[plane_type][dc_sign_ctx], dc_sign, 2);
-    int *dc_sign_ctx_txb = cb_coef_buff->dc_sign_ctx[plane] + txb_offset;
-    dc_sign_ctx_txb[block] = dc_sign_ctx;
+    entropy_ctx[block] |= dc_sign_ctx << DC_SIGN_CTX_SHIFT;
   }
 
   const int cul_level = av1_get_txb_entropy_context(tcoeff, scan_order, eob);

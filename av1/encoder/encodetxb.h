@@ -24,6 +24,10 @@
 extern "C" {
 #endif
 
+#define TXB_SKIP_CTX_MASK 15
+#define DC_SIGN_CTX_SHIFT 4
+#define DC_SIGN_CTX_MASK 3
+
 typedef struct TxbInfo {
   tran_low_t *qcoeff;
   uint8_t *levels;  // absolute values and clamped to 255.
@@ -54,7 +58,7 @@ int av1_cost_coeffs_txb(const AV1_COMMON *const cm, const MACROBLOCK *x,
 void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
                           aom_writer *w, int blk_row, int blk_col, int plane,
                           TX_SIZE tx_size, const tran_low_t *tcoeff,
-                          uint16_t eob, TXB_CTX *txb_ctx);
+                          uint16_t eob, const TXB_CTX *txb_ctx);
 void av1_write_coeffs_mb(const AV1_COMMON *const cm, MACROBLOCK *x, int mi_row,
                          int mi_col, aom_writer *w, BLOCK_SIZE bsize);
 int av1_get_txb_entropy_context(const tran_low_t *qcoeff,
