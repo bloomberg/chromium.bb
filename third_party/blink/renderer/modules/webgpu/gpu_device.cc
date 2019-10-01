@@ -173,8 +173,9 @@ ScriptPromise GPUDevice::createBufferMappedAsync(
   return promise;
 }
 
-GPUTexture* GPUDevice::createTexture(const GPUTextureDescriptor* descriptor) {
-  return GPUTexture::Create(this, descriptor);
+GPUTexture* GPUDevice::createTexture(const GPUTextureDescriptor* descriptor,
+                                     ExceptionState& exception_state) {
+  return GPUTexture::Create(this, descriptor, exception_state);
 }
 
 GPUSampler* GPUDevice::createSampler(const GPUSamplerDescriptor* descriptor) {

@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/webgpu/gpu_command_encoder.h"
 
 #include "third_party/blink/renderer/bindings/modules/v8/double_sequence_or_gpu_color_dict.h"
+#include "third_party/blink/renderer/bindings/modules/v8/unsigned_long_sequence_or_gpu_extent_3d_dict.h"
 #include "third_party/blink/renderer/modules/webgpu/dawn_conversions.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_buffer.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_buffer_copy_view.h"
@@ -14,7 +15,6 @@
 #include "third_party/blink/renderer/modules/webgpu/gpu_compute_pass_descriptor.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_compute_pass_encoder.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_device.h"
-#include "third_party/blink/renderer/modules/webgpu/gpu_extent_3d.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_origin_3d.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_render_pass_color_attachment_descriptor.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_render_pass_depth_stencil_attachment_descriptor.h"
@@ -25,6 +25,16 @@
 #include "third_party/blink/renderer/modules/webgpu/gpu_texture_view.h"
 
 namespace blink {
+
+bool ValidateCopySize(UnsignedLongSequenceOrGPUExtent3DDict& copy_size,
+                      ExceptionState& exception_state) {
+  if (copy_size.IsUnsignedLongSequence() &&
+      copy_size.GetAsUnsignedLongSequence().size() != 3) {
+    exception_state.ThrowRangeError("copySize length must be 3");
+    return false;
+  }
+  return true;
+}
 
 DawnRenderPassColorAttachmentDescriptor AsDawnType(
     const GPURenderPassColorAttachmentDescriptor* webgpu_desc) {
@@ -247,34 +257,52 @@ void GPUCommandEncoder::copyBufferToBuffer(GPUBuffer* src,
                                               dst_offset, size);
 }
 
-void GPUCommandEncoder::copyBufferToTexture(GPUBufferCopyView* source,
-                                            GPUTextureCopyView* destination,
-                                            GPUExtent3D* copy_size) {
+void GPUCommandEncoder::copyBufferToTexture(
+    GPUBufferCopyView* source,
+    GPUTextureCopyView* destination,
+    UnsignedLongSequenceOrGPUExtent3DDict& copy_size,
+    ExceptionState& exception_state) {
+  if (!ValidateCopySize(copy_size, exception_state)) {
+    return;
+  }
+
   DawnBufferCopyView dawn_source = AsDawnType(source);
   DawnTextureCopyView dawn_destination = AsDawnType(destination);
-  DawnExtent3D dawn_copy_size = AsDawnType(copy_size);
+  DawnExtent3D dawn_copy_size = AsDawnType(&copy_size);
 
   GetProcs().commandEncoderCopyBufferToTexture(
       GetHandle(), &dawn_source, &dawn_destination, &dawn_copy_size);
 }
 
-void GPUCommandEncoder::copyTextureToBuffer(GPUTextureCopyView* source,
-                                            GPUBufferCopyView* destination,
-                                            GPUExtent3D* copy_size) {
+void GPUCommandEncoder::copyTextureToBuffer(
+    GPUTextureCopyView* source,
+    GPUBufferCopyView* destination,
+    UnsignedLongSequenceOrGPUExtent3DDict& copy_size,
+    ExceptionState& exception_state) {
+  if (!ValidateCopySize(copy_size, exception_state)) {
+    return;
+  }
+
   DawnTextureCopyView dawn_source = AsDawnType(source);
   DawnBufferCopyView dawn_destination = AsDawnType(destination);
-  DawnExtent3D dawn_copy_size = AsDawnType(copy_size);
+  DawnExtent3D dawn_copy_size = AsDawnType(&copy_size);
 
   GetProcs().commandEncoderCopyTextureToBuffer(
       GetHandle(), &dawn_source, &dawn_destination, &dawn_copy_size);
 }
 
-void GPUCommandEncoder::copyTextureToTexture(GPUTextureCopyView* source,
-                                             GPUTextureCopyView* destination,
-                                             GPUExtent3D* copy_size) {
+void GPUCommandEncoder::copyTextureToTexture(
+    GPUTextureCopyView* source,
+    GPUTextureCopyView* destination,
+    UnsignedLongSequenceOrGPUExtent3DDict& copy_size,
+    ExceptionState& exception_state) {
+  if (!ValidateCopySize(copy_size, exception_state)) {
+    return;
+  }
+
   DawnTextureCopyView dawn_source = AsDawnType(source);
   DawnTextureCopyView dawn_destination = AsDawnType(destination);
-  DawnExtent3D dawn_copy_size = AsDawnType(copy_size);
+  DawnExtent3D dawn_copy_size = AsDawnType(&copy_size);
 
   GetProcs().commandEncoderCopyTextureToTexture(
       GetHandle(), &dawn_source, &dawn_destination, &dawn_copy_size);

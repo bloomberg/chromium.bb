@@ -13,7 +13,7 @@
     GPUBuffer createBuffer(GPUBufferDescriptor descriptor);
     [CallWith=ScriptState, RaisesException] GPUMappedBuffer createBufferMapped(GPUBufferDescriptor descriptor);
     [CallWith=ScriptState, RaisesException] Promise<GPUMappedBuffer> createBufferMappedAsync(GPUBufferDescriptor descriptor);
-    GPUTexture createTexture(GPUTextureDescriptor descriptor);
+    [RaisesException] GPUTexture createTexture(GPUTextureDescriptor descriptor);
     GPUSampler createSampler(optional GPUSamplerDescriptor descriptor);
 
     GPUBindGroup createBindGroup(GPUBindGroupDescriptor descriptor);

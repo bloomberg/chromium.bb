@@ -21,9 +21,9 @@ namespace blink {
 
 class DoubleSequenceOrGPUColorDict;
 class GPUColorDict;
-class GPUExtent3D;
 class GPUOrigin3D;
 class GPUPipelineStageDescriptor;
+class UnsignedLongSequenceOrGPUExtent3DDict;
 
 // Convert WebGPU bitfield values to Dawn enums. These have the same value.
 template <typename DawnEnum>
@@ -41,7 +41,7 @@ DawnEnum AsDawnEnum(const WTF::String& webgpu_enum);
 DawnColor AsDawnColor(const Vector<double>&);
 DawnColor AsDawnType(const GPUColorDict*);
 DawnColor AsDawnType(const DoubleSequenceOrGPUColorDict*);
-DawnExtent3D AsDawnType(const GPUExtent3D*);
+DawnExtent3D AsDawnType(const UnsignedLongSequenceOrGPUExtent3DDict*);
 DawnOrigin3D AsDawnType(const GPUOrigin3D*);
 
 using OwnedPipelineStageDescriptor =

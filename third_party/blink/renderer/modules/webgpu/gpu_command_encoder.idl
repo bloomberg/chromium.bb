@@ -17,17 +17,17 @@
         GPUBufferSize dstOffset,
         GPUBufferSize size);
 
-    void copyBufferToTexture(
+    [RaisesException] void copyBufferToTexture(
         GPUBufferCopyView source,
         GPUTextureCopyView destination,
         GPUExtent3D copySize);
 
-    void copyTextureToBuffer(
+    [RaisesException] void copyTextureToBuffer(
         GPUTextureCopyView source,
         GPUBufferCopyView destination,
         GPUExtent3D copySize);
 
-    void copyTextureToTexture(
+    [RaisesException] void copyTextureToTexture(
         GPUTextureCopyView source,
         GPUTextureCopyView destination,
         GPUExtent3D copySize);

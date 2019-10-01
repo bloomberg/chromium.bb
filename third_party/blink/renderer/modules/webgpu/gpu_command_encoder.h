@@ -10,6 +10,7 @@
 
 namespace blink {
 
+class ExceptionState;
 class GPUBuffer;
 class GPUBufferCopyView;
 class GPUCommandBuffer;
@@ -17,10 +18,10 @@ class GPUCommandBufferDescriptor;
 class GPUCommandEncoderDescriptor;
 class GPUComputePassDescriptor;
 class GPUComputePassEncoder;
-class GPUExtent3D;
 class GPURenderPassDescriptor;
 class GPURenderPassEncoder;
 class GPUTextureCopyView;
+class UnsignedLongSequenceOrGPUExtent3DDict;
 
 class GPUCommandEncoder : public DawnObject<DawnCommandEncoder> {
   DEFINE_WRAPPERTYPEINFO();
@@ -46,13 +47,16 @@ class GPUCommandEncoder : public DawnObject<DawnCommandEncoder> {
                           uint64_t size);
   void copyBufferToTexture(GPUBufferCopyView* source,
                            GPUTextureCopyView* destination,
-                           GPUExtent3D* copy_size);
+                           UnsignedLongSequenceOrGPUExtent3DDict& copy_size,
+                           ExceptionState& exception_state);
   void copyTextureToBuffer(GPUTextureCopyView* source,
                            GPUBufferCopyView* destination,
-                           GPUExtent3D* copy_size);
+                           UnsignedLongSequenceOrGPUExtent3DDict& copy_size,
+                           ExceptionState& exception_state);
   void copyTextureToTexture(GPUTextureCopyView* source,
                             GPUTextureCopyView* destination,
-                            GPUExtent3D* copy_size);
+                            UnsignedLongSequenceOrGPUExtent3DDict& copy_size,
+                            ExceptionState& exception_state);
   void pushDebugGroup(String groupLabel);
   void popDebugGroup();
   void insertDebugMarker(String markerLabel);
