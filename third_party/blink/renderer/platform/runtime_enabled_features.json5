@@ -1765,6 +1765,7 @@
     },
     {
       name: "WebkitBoxLayoutUsesFlexLayout",
+      status: "stable",
     },
     {
       name: "WebNFC",
