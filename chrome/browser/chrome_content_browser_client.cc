@@ -3310,12 +3310,6 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
             ? content::AutoplayPolicy::kDocumentUserActivationRequired
             : content::AutoplayPolicy::kNoUserGestureRequired;
   }
-#if !defined(OS_MACOSX)
-  // Mac has a concept of high contrast that does not relate to forced colors.
-  web_prefs->forced_colors = native_theme->UsesHighContrastColors()
-                                 ? blink::ForcedColors::kActive
-                                 : blink::ForcedColors::kNone;
-#endif  // !defined(OS_MACOSX)
 
   switch (native_theme->GetPreferredColorScheme()) {
     case ui::NativeTheme::PreferredColorScheme::kDark:

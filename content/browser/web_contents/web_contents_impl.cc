@@ -614,7 +614,6 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
 
   ui::NativeTheme* native_theme = ui::NativeTheme::GetInstanceForWeb();
   native_theme_observer_.Add(native_theme);
-  in_high_contrast_ = native_theme->UsesHighContrastColors();
   using_dark_colors_ = native_theme->ShouldUseDarkColors();
   preferred_color_scheme_ = native_theme->GetPreferredColorScheme();
 }
@@ -7354,17 +7353,12 @@ void WebContentsImpl::OnNativeThemeUpdated(ui::NativeTheme* observed_theme) {
   DCHECK(native_theme_observer_.IsObserving(observed_theme));
 
   bool using_dark_colors = observed_theme->ShouldUseDarkColors();
-  bool in_high_contrast = observed_theme->UsesHighContrastColors();
   ui::NativeTheme::PreferredColorScheme preferred_color_scheme =
       observed_theme->GetPreferredColorScheme();
   bool preferences_changed = false;
 
   if (using_dark_colors_ != using_dark_colors) {
     using_dark_colors_ = using_dark_colors;
-    preferences_changed = true;
-  }
-  if (in_high_contrast_ != in_high_contrast) {
-    in_high_contrast_ = in_high_contrast;
     preferences_changed = true;
   }
   if (preferred_color_scheme_ != preferred_color_scheme) {

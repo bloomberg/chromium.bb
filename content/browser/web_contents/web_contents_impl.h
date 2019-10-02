@@ -1918,13 +1918,11 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // with OOPIF renderers.
   blink::WebTextAutosizerPageInfo text_autosizer_page_info_;
 
-  // Observe native theme for changes to dark mode, high contrast and preferred
-  // color scheme. Used to notify the renderer of preferred color scheme and
-  // forced colors changes.
+  // Observe native theme for changes to dark mode, and preferred color scheme.
+  // Used to notify the renderer of preferred color scheme changes.
   ScopedObserver<ui::NativeTheme, ui::NativeThemeObserver>
       native_theme_observer_;
 
-  bool in_high_contrast_ = false;
   bool using_dark_colors_ = false;
   ui::NativeTheme::PreferredColorScheme preferred_color_scheme_ =
       ui::NativeTheme::PreferredColorScheme::kNoPreference;
