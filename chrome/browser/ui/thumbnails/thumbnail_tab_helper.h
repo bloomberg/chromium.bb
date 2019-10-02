@@ -48,6 +48,8 @@ class ThumbnailTabHelper
 
   content::RenderWidgetHostView* GetView();
 
+  gfx::Size GetThumbnailSize() const;
+
   // content::WebContentsObserver:
   void OnVisibilityChanged(content::Visibility visibility) override;
   void DidFinishNavigation(
