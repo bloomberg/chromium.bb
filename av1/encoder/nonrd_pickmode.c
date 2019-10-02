@@ -1601,7 +1601,9 @@ void av1_fast_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
 #if COLLECT_PICK_MODE_STAT
     ms_stat.num_nonskipped_searches[bsize][this_mode]++;
 #endif
-    if (cpi->sf.use_nonrd_filter_search) {
+    if (cpi->sf.use_nonrd_filter_search &&
+        ((mi->mv[0].as_mv.row & 0x07) || (mi->mv[0].as_mv.col & 0x07)) &&
+        ref_frame == LAST_FRAME) {
       search_filter_ref(cpi, x, &this_rdc, mi_row, mi_col, bsize, &var_y,
                         &sse_y, &this_early_term, use_model_yrd_large);
     } else {
