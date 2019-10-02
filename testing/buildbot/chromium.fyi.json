@@ -14847,21 +14847,6 @@
             }
           ]
         },
-        "test": "content_nocompile_tests"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-16.04"
-            }
-          ]
-        },
         "test": "content_unittests"
       },
       {
@@ -22395,23 +22380,6 @@
           "shards": 6
         },
         "test": "content_browsertests"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:0a2e",
-              "os": "Mac-10.15"
-            }
-          ],
-          "expiration": 21600
-        },
-        "test": "content_nocompile_tests"
       },
       {
         "merge": {

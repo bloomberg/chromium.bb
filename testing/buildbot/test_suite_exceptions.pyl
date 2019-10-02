@@ -424,12 +424,6 @@
       },
     },
   },
-  'content_nocompile_tests': {
-      'remove_from': [
-          # chromium.linux
-          'Linux Tests',  # https://crbug.com/878706
-      ],
-  },
   'content_shell_crash_test': {
     'modifications': {
       # chromium.win
