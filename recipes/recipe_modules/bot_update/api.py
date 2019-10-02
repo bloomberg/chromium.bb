@@ -119,7 +119,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
     patch_root = patch_root or self.m.gclient.get_gerrit_patch_root(
         gclient_config=cfg)
 
-    # Allow patch_project's revision if necessary.
+    # Allow patched project's revision if necessary.
     # This is important for projects which are checked out as DEPS of the
     # gclient solution.
     self.m.gclient.set_patch_repo_revision(cfg)

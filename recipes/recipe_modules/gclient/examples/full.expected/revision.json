@@ -128,8 +128,6 @@
       "--with_tags",
       "--delete_unversioned_trees",
       "--revision",
-      "Angle@abc",
-      "--revision",
       "src/third_party/angle@refs/heads/lkgr",
       "--output-json",
       "/path/to/tmp/json"

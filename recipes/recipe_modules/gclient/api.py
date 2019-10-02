@@ -347,7 +347,7 @@ class GclientApi(recipe_api.RecipeApi):
     return None
 
   def set_patch_repo_revision(self, gclient_config=None):
-    """Updates config revision corresponding to patch_project.
+    """Updates config revision corresponding to patched project.
 
     Useful for bot_update only, as this is the only consumer of gclient's config
     revision map. This doesn't overwrite the revision if it was already set.

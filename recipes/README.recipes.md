@@ -322,7 +322,7 @@ Args:
 
 &mdash; **def [set\_patch\_repo\_revision](/recipes/recipe_modules/gclient/api.py#349)(self, gclient_config=None):**
 
-Updates config revision corresponding to patch_project.
+Updates config revision corresponding to patched project.
 
 Useful for bot_update only, as this is the only consumer of gclient's config
 revision map. This doesn't overwrite the revision if it was already set.
@@ -979,14 +979,14 @@ Raises:
 &mdash; **def [RunSteps](/recipes/recipes/fetch_end_to_end_test.py#16)(api):**
 ### *recipes* / [gclient:examples/full](/recipes/recipe_modules/gclient/examples/full.py)
 
-[DEPS](/recipes/recipe_modules/gclient/examples/full.py#5): [gclient](#recipe_modules-gclient), [recipe\_engine/context][recipe_engine/recipe_modules/context], [recipe\_engine/path][recipe_engine/recipe_modules/path], [recipe\_engine/properties][recipe_engine/recipe_modules/properties], [recipe\_engine/step][recipe_engine/recipe_modules/step]
+[DEPS](/recipes/recipe_modules/gclient/examples/full.py#5): [gclient](#recipe_modules-gclient), [recipe\_engine/buildbucket][recipe_engine/recipe_modules/buildbucket], [recipe\_engine/context][recipe_engine/recipe_modules/context], [recipe\_engine/path][recipe_engine/recipe_modules/path], [recipe\_engine/properties][recipe_engine/recipe_modules/properties], [recipe\_engine/step][recipe_engine/recipe_modules/step]
 
-&mdash; **def [RunSteps](/recipes/recipe_modules/gclient/examples/full.py#53)(api):**
+&mdash; **def [RunSteps](/recipes/recipe_modules/gclient/examples/full.py#54)(api):**
 ### *recipes* / [gclient:tests/patch\_project](/recipes/recipe_modules/gclient/tests/patch_project.py)
 
 [DEPS](/recipes/recipe_modules/gclient/tests/patch_project.py#9): [gclient](#recipe_modules-gclient), [recipe\_engine/buildbucket][recipe_engine/recipe_modules/buildbucket], [recipe\_engine/properties][recipe_engine/recipe_modules/properties]
 
-&mdash; **def [RunSteps](/recipes/recipe_modules/gclient/tests/patch_project.py#22)(api, patch_project, patch_repository_url):**
+&mdash; **def [RunSteps](/recipes/recipe_modules/gclient/tests/patch_project.py#16)(api):**
 ### *recipes* / [gerrit:examples/full](/recipes/recipe_modules/gerrit/examples/full.py)
 
 [DEPS](/recipes/recipe_modules/gerrit/examples/full.py#5): [gerrit](#recipe_modules-gerrit), [recipe\_engine/step][recipe_engine/recipe_modules/step]
