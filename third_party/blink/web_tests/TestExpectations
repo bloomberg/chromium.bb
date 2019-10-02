@@ -6198,4 +6198,7 @@ crbug.com/1010170 [ Mac ] media/video-played-reset.html [ Failure ]
 
 # Sheriff 2019-10-02
 crbug.com/1010472 [ Linux Mac Debug ] fast/canvas/color-space/canvas-drawImage-offscreenCanvas.html [ Timeout Pass ]
+crbug.com/1010483 [ Win ] fast/parser/residual-style-dom.html [ Crash Pass ]
+crbug.com/1010483 [ Win ] fast/parser/residual-style-hang.html [ Crash Pass ]
+crbug.com/1010483 [ Win ] fast/selectors/specificity-overflow.html [ Crash Pass ]
 
