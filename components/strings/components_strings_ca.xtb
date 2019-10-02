@@ -78,12 +78,12 @@
 <translation id="132301787627749051">Cerca la imatge del porta-retalls</translation>
 <translation id="1323433172918577554">Mostra'n més</translation>
 <translation id="132390688737681464">Desa i emplena les adreces</translation>
-<translation id="1333989956347591814">És possible que la teva activitat <ph name="BEGIN_EMPHASIS" />continuï sent visible<ph name="END_EMPHASIS" /> en:
-        <ph name="BEGIN_LIST" />
-          <ph name="LIST_ITEM" />Els llocs web que visitis
-          <ph name="LIST_ITEM" />La teva empresa o el teu centre educatiu
-          <ph name="LIST_ITEM" />El teu proveïdor de serveis d'Internet
-        <ph name="END_LIST" /></translation>
+<translation id="1333989956347591814">És possible que la teva activitat <ph name="BEGIN_EMPHASIS" />continuï sent visible<ph name="END_EMPHASIS" /> per a:
+<ph name="BEGIN_LIST" />
+<ph name="LIST_ITEM" />els llocs web que visitis
+<ph name="LIST_ITEM" />la teva empresa o el teu centre educatiu
+<ph name="LIST_ITEM" />el teu proveïdor d'Internet
+<ph name="END_LIST" /></translation>
 <translation id="1339601241726513588">Domini d'inscripció:</translation>
 <translation id="1340482604681802745">Adreça de recollida</translation>
 <translation id="1348198688976932919">Aquest lloc web conté aplicacions perilloses</translation>

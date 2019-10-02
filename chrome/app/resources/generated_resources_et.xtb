@@ -1580,7 +1580,7 @@ Selle konto seadete haldamiseks installige oma seadmesse Family Link.  Saatsime 
 <translation id="3317459757438853210">Kahepoolne</translation>
 <translation id="3317678681329786349">Kaamera ja mikrofon on blokeeritud</translation>
 <translation id="3319048459796106952">Uus &amp;inkognito aken</translation>
-<translation id="3323521181261657960">Boonus! Saite ekraaniaega juurde</translation>
+<translation id="3323521181261657960">Boonus! Said ekraaniaega juurde</translation>
 <translation id="3325910708063135066">Kaamera ja mikrofon on Maci süsteemieelistustes välja lülitatud</translation>
 <translation id="3328489342742826322">Varukoopiast taastamisel kustutatakse olemasolevad Linuxi rakendused ja andmed teie Linuxi failide kaustast.</translation>
 <translation id="3331321258768829690">(<ph name="UTCOFFSET" />) <ph name="LONGTZNAME" /> (<ph name="EXEMPLARCITY" />)</translation>
@@ -5360,7 +5360,7 @@ Hoidke oma võtmefail kindlas kohas. Teil läheb seda oma laiendi uute versiooni
 <translation id="8879284080359814990">&amp;Kuva vahelehena</translation>
 <translation id="8879921471468674457">Jäta sisselogimisandmed meelde</translation>
 <translation id="8881020143150461183">Proovige uuesti. Tehnilise toe saamiseks võtke ühendust operaatoriga <ph name="CARRIER_NAME" />.</translation>
-<translation id="8884570509232205463">Teie seade lukustatakse nüüd kell <ph name="UNLOCK_TIME" />.</translation>
+<translation id="8884570509232205463">Sinu seade lukustatakse nüüd kell <ph name="UNLOCK_TIME" />.</translation>
 <translation id="8885197664446363138">Smart Lock pole saadaval</translation>
 <translation id="8888253246822647887">Rakendus avatakse, kui uuendamine on lõppenud. Uuendamiseks võib kuluda mõni minut.</translation>
 <translation id="8888432776533519951">Värv:</translation>

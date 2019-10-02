@@ -303,7 +303,7 @@
 <translation id="1444628761356461360">Esta configuración es administrada por el propietario del dispositivo: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="144518587530125858">No se pudo cargar '<ph name="IMAGE_PATH" />' para el tema.</translation>
 <translation id="1445693676523799095">Esta acción puede demorar unos minutos</translation>
-<translation id="1450011005989029586">Tu contraseña quedó expuesta debido a un incumplimiento de datos en un sitio o app que usas. Chrome te recomienda que <ph name="BOLD" /> en <ph name="ORIGIN" /> ahora.</translation>
+<translation id="1450011005989029586">Tu contraseña quedó expuesta debido a una violación de la seguridad de datos en un sitio o app que usas. Chrome te recomienda que <ph name="BOLD" /> en <ph name="ORIGIN" /> ahora.</translation>
 <translation id="1451375123200651445">Página web (un único archivo)</translation>
 <translation id="1451917004835509682">Agregar persona supervisada</translation>
 <translation id="1454223536435069390">Tomar captura de pantalla</translation>

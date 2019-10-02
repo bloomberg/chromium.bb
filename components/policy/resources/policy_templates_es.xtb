@@ -44,8 +44,8 @@
 <translation id="1040446814317236570">Habilitar eliminación de URL PAC (para https://)</translation>
 <translation id="1044878202534415707">Informa sobre estadísticas de hardware, como el uso de CPU o de RAM.
 
-      Si se asigna el valor false a esta política, no se informará sobre las estadísticas.
-      Si se asigna el valor true o si la política no se configura, se informará sobre ellas.</translation>
+      Si se asigna el valor "false" a esta política, no se informará sobre las estadísticas.
+      Si se asigna el valor "true" o si la política no se configura, se informará sobre ellas.</translation>
 <translation id="1046484220783400299">Habilita funciones obsoletas de la plataforma web durante un periodo de tiempo limitado</translation>
 <translation id="1047128214168693844">No permitir que ningún sitio haga un seguimiento de la ubicación física de los usuarios</translation>
 <translation id="1049138910114524876">Establece la configuración regional que se fuerza a aplicar en la pantalla de inicio de sesión de <ph name="PRODUCT_OS_NAME" />.
@@ -478,8 +478,8 @@ Si esta política está establecida en "false" o no está establecida, se inhabi
       Para obtener más información sobre la política <ph name="IEEM_SITELIST_POLICY" /> de Internet Explorer, visita la página https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="1839060937202387559">Envía estadísticas e identificadores de hardware de los dispositivos de almacenamiento.
 
-      Si se asigna el valor "False" a esta política, las estadísticas no se enviarán.
-      Si se le asigna el valor "True" o no se le asigna ninguno, las estadísticas se enviarán.</translation>
+      Si se asigna el valor "false" a esta política, las estadísticas no se enviarán.
+      Si se le asigna el valor "true" o no se le asigna ninguno, las estadísticas se enviarán.</translation>
 <translation id="1843117931376765605">Frecuencia con la que se actualiza la política de usuario</translation>
 <translation id="1844620919405873871">Configura las políticas relacionadas con el desbloqueo rápido.</translation>
 <translation id="1845405905602899692">Configuración de kiosco</translation>
@@ -779,7 +779,7 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
 <translation id="2303795211377219696">Habilitar la función Autocompletar para tarjetas de crédito</translation>
 <translation id="2309390639296060546">Configuración de ubicación geográfica predeterminada</translation>
 <translation id="2327252517317514801">Definir los dominios autorizados para acceder a G Suite</translation>
-<translation id="2345547870894930157">Habilitar DNS sobre HTTPS sin alternativa insegura</translation>
+<translation id="2345547870894930157">Habilitar DNS-over-HTTPS sin alternativa insegura</translation>
 <translation id="237494535617297575">Permite establecer una lista de patrones de URL que especifiquen sitios que puedan mostrar notificaciones.
 
           Si no se establece esta política, se usará para todos los sitios el valor general predeterminado que se indique en la política DefaultNotificationsSetting (si se ha establecido) o el valor personalizado que haya definido el usuario (en caso contrario).</translation>
@@ -865,7 +865,7 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
       Un patrón de URL debe seguir el formato que se indica en la página https://www.chromium.org/administrators/url-blacklist-filter-format. No obstante, como los certificados son válidos para un determinado nombre de host independientemente del esquema, el puerto o la ruta, solo se tendrá en cuenta la parte del nombre de host de la URL. No se admiten hosts comodín.
 
       Si no se establece esta política, todos los certificados que se deban revelar mediante la Transparencia en los Certificados no se considerarán de confianza si no se hacen públicos de acuerdo con la Política de Transparencia en los Certificados.</translation>
-<translation id="2486911595447603756">Controla el modo de DNS sobre HTTPS.</translation>
+<translation id="2486911595447603756">Controla el modo DNS-over-HTTPS.</translation>
 <translation id="2488010520405124654">Habilita el mensaje de configuración de red si no hay conexión.
 
       Si se utiliza el valor True para esta política o no se establece la política, se ha configurado una cuenta local de dispositivo para el inicio de sesión automático sin tiempo de espera y el dispositivo no tiene conexión a Internet, <ph name="PRODUCT_OS_NAME" /> mostrará un mensaje de configuración de red.
@@ -2488,7 +2488,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 
       Si se le asigna el valor "Check uploads and downloads", <ph name="PRODUCT_NAME" /> seguirá las reglas descritas en los valores "Check downloads" y "Check uploads".
       </translation>
-<translation id="532848608876725157">Habilitar DNS sobre HTTPS con alternativa insegura</translation>
+<translation id="532848608876725157">Habilitar DNS-over-HTTPS con alternativa insegura</translation>
 <translation id="5329007337159326804">Advertencia: La política de la versión máxima de TLS se retirará por completo de <ph name="PRODUCT_NAME" /> aproximadamente en la versión 75 (en torno a junio del 2019).
 
       Si esta política no se configura, <ph name="PRODUCT_NAME" /> usa la versión máxima predeterminada.
@@ -3442,7 +3442,7 @@ Si no se establece esta política, el teclado en pantalla se inhabilitará la pr
 <translation id="7027785306666625591">Configura la administración de energía en <ph name="PRODUCT_OS_NAME" />.
 
 Estas políticas te permiten configurar el comportamiento de <ph name="PRODUCT_OS_NAME" /> cuando el usuario permanece inactivo durante un periodo de tiempo determinado.</translation>
-<translation id="7032813174556919004">Inhabilitar DNS sobre HTTPS</translation>
+<translation id="7032813174556919004">Inhabilitar DNS-over-HTTPS</translation>
 <translation id="7040229947030068419">Valor de ejemplo:</translation>
 <translation id="7044883996351280650">Controlar el servicio de copia de seguridad y restauración de Android</translation>
 <translation id="7049373494483449255">Permite que <ph name="PRODUCT_NAME" /> envíe documentos a <ph name="CLOUD_PRINT_NAME" /> para imprimirlos. NOTA: Esto solo afecta a la asistencia de <ph name="CLOUD_PRINT_NAME" /> en <ph name="PRODUCT_NAME" />. No evita que otros usuarios envíen trabajos de impresión a través sitios web.
@@ -3556,17 +3556,17 @@ Estas políticas te permiten configurar el comportamiento de <ph name="PRODUCT_O
 <translation id="7149042336307555519"> Indica los tipos de conexiones que se pueden utilizar para actualizar el sistema operativo. Estas actualizaciones pueden constituir un lastre para la conexión debido a su tamaño y pueden suponer costes adicionales. Por tanto, están inhabilitadas de forma predeterminada en los tipos de conexión que se consideran más costosos (actualmente, solo las redes móviles).
 
       Los identificadores de tipos de conexión reconocidos son <ph name="CONNECTION_TYPE_ETHERNET_NAME" />, <ph name="CONNECTION_TYPE_WIFI_NAME" /> y <ph name="CONNECTION_TYPE_CELLULAR_NAME" />.</translation>
-<translation id="7152605873936173525">Controla el modo de resolución de DNS sobre HTTPS. Ten en cuenta que esta política solo definirá el modo predeterminado de cada solicitud. El modo se puede anular en tipos de solicitudes especiales, como las que se usan para resolver el nombre de host de un servidor con el protocolo DNS sobre HTTPS.
+<translation id="7152605873936173525">Controla el modo de resolución de DNS-over-HTTPS. Ten en cuenta que esta política solo definirá el modo predeterminado de cada solicitud. El modo se puede anular en tipos de solicitudes especiales, como las que se usan para resolver el nombre de host de un servidor con el protocolo DNS-over-HTTPS.
 
-      El modo <ph name="SECURE_DNS_MODE_OFF" /> inhabilitará DNS sobre HTTPS.
+      El modo <ph name="SECURE_DNS_MODE_OFF" /> inhabilitará DNS-over-HTTPS.
 
-      El modo <ph name="SECURE_DNS_MODE_AUTOMATIC" /> enviará primero solicitudes de DNS sobre HTTPS si hay un servidor de este tipo disponible. En caso de error, es posible que recurra a solicitudes inseguras.
+      El modo <ph name="SECURE_DNS_MODE_AUTOMATIC" /> enviará primero solicitudes de DNS-over-HTTPS si hay un servidor de este tipo disponible. En caso de error, es posible que recurra a solicitudes inseguras.
 
-      El modo <ph name="SECURE_DNS_MODE_SECURE" /> solo enviará solicitudes de DNS sobre HTTPS. En caso de error, no resolverá.
+      El modo <ph name="SECURE_DNS_MODE_SECURE" /> solo enviará solicitudes de DNS-over-HTTPS. En caso de error, no resolverá.
 
       En la versión <ph name="ANDROID_VERSION" /> y posteriores, si el protocolo DNS a través de TLS está activo, <ph name="PRODUCT_NAME" /> no enviará solicitudes de DNS inseguras.
 
-      Si no se define esta política, es posible que el navegador envíe solicitudes de DNS sobre HTTPS a un sistema de resolución asociado al sistema de resolución configurado por el usuario.</translation>
+      Si no se define esta política, es posible que el navegador envíe solicitudes de DNS-over-HTTPS a un sistema de resolución asociado al sistema de resolución configurado por el usuario.</translation>
 <translation id="7158064522994309072">Esta política determina qué comando se debe usar para abrir direcciones URL en un navegador alternativo.
 
       Si no se asigna ningún valor a esta política, se usa un navegador predeterminado en función de la plataforma: Internet Explorer para Windows o Safari para Mac OS X. Si la política se inhabilita en Linux, el navegador alternativo no se podrá abrir.
@@ -4194,8 +4194,8 @@ Te recomendamos que utilices GPO para configurar la política en Windows, aunque
           Si no se le asigna ningún valor, el dictado se inhabilitará al inicio, pero el usuario podrá habilitarlo en cualquier momento.</translation>
 <translation id="8292322992383748446">Envía estadísticas de hardware sobre componentes SoC.
 
-      Si se asigna el valor "False" a esta política, las estadísticas no se enviarán.
-      Si se le asigna el valor "True" o no se le asigna ninguno, las estadísticas se enviarán.</translation>
+      Si se asigna el valor "false" a esta política, las estadísticas no se enviarán.
+      Si se le asigna el valor "true" o no se le asigna ninguno, las estadísticas se enviarán.</translation>
 <translation id="829337533107201925">Si se habilita esta política, las políticas procedentes de un grupo atómico que no compartan la fuente con mayor prioridad de ese grupo serán ignoradas.
 
       Si se inhabilita esta política, no se ignorará ninguna política a causa de su fuente. Solo se ignorarán las políticas si se produce un conflicto y la política no tiene la mayor prioridad.
@@ -4233,8 +4233,8 @@ Te recomendamos que utilices GPO para configurar la política en Windows, aunque
 <translation id="8371178326720637170">Permite que las extensiones gestionadas usen la API Enterprise Hardware Platform</translation>
 <translation id="8374747520743832795">Envía estadísticas e identificadores de hardware relacionados con la energía.
 
-      Si se asigna el valor "False" a esta política, las estadísticas no se enviarán.
-      Si se le asigna el valor "True" o no se le asigna ninguno, las estadísticas se enviarán.</translation>
+      Si se asigna el valor "false" a esta política, las estadísticas no se enviarán.
+      Si se le asigna el valor "true" o no se le asigna ninguno, las estadísticas se enviarán.</translation>
 <translation id="8380490658357556620">Permite habilitar el uso de servidores de retransmisión cuando los clientes remotos intentan conectarse a este ordenador.
 
           Si se habilita esta opción, los clientes remotos podrán utilizar servidores de retransmisión para conectarse a este ordenador cuando no haya disponible una conexión directa (por ejemplo, debido a restricciones del cortafuegos).

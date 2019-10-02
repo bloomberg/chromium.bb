@@ -54,6 +54,9 @@
 <translation id="2094919256425865063">तरीही Chrome बंद करायचे?</translation>
 <translation id="2120620239521071941">हे या डिव्‍हाइस मधून <ph name="ITEMS_COUNT" /> आयटम हटवेल. नंतर तुमचा डेटा पुनर्प्राप्त करण्‍यासाठी Chrome मध्ये <ph name="USER_EMAIL" /> म्हणून साइन इन करा.</translation>
 <translation id="2123055963409958220"><ph name="BEGIN_LINK" />वर्तमान सेटिंग्ज<ph name="END_LINK" /> चा अहवाल देऊन Chrome ला आणखी चांगले बनविण्यात मदत करा</translation>
+<translation id="2128103434102193461">Chrome OS च्या तपशिलांसाठी, कृपया<ph name="LINK_BEGIN" />
+     Chrome OS विषयी<ph name="LINK_END" /> पाहा</translation>
+<translation id="2151406531797534936">कृपया आता Chrome रीस्टार्ट करा</translation>
 <translation id="216054706567564023">Chrome तुमच्या फोनवर इंस्टॉल करा. आम्ही तुमच्या खाते रिकव्हरी फोन नंबरवर एक SMS पाठवू.</translation>
 <translation id="2246246234298806438">बिल्ट-इन पीडीएफ व्ह्यूअर गहाळ असताना Google Chrome प्रिंट पूर्वावलोकन दाखवू शकत नाही.</translation>
 <translation id="2252923619938421629">वर्तमान सेटिंग्जचा अहवाल देऊन Google Chrome उत्कृष्ट बनविण्यास मदत करा</translation>
@@ -225,6 +228,7 @@ Google Chrome तुमची सेटिंग्ज पुन्हा मि
 <translation id="7589360514048265910">यापुढे Mac OS X 10.9 ला सपोर्ट नसल्यामुळे, या कॉंप्युटरला इथून पुढे Google Chrome चे अपडेट मिळणार नाहीत.</translation>
 <translation id="7592736734348559088">तुमचे खाते साइन इन तपशील कालबाह्य झाल्यामुळे Google Chrome तुमचा डेटा संकालित करू शकले नाही.</translation>
 <translation id="7626032353295482388">Chrome मध्ये स्वागत आहे</translation>
+<translation id="7629695634924605473">तुमचे पासवर्ड कधीही धोक्यात असल्यास, Chrome तुम्हाला कळवते</translation>
 <translation id="7641148173327520642">तुमच्या सिस्टम अ‍ॅडमिनिस्ट्रेटरने <ph name="TARGET_URL_HOSTNAME" /> अ‍ॅक्सेस करण्यासाठी <ph name="ALTERNATIVE_BROWSER_NAME" /> उघडण्याकरिता Google Chrome कॉन्फिगर केले आहे.</translation>
 <translation id="7651907282515937834">Chrome एंटरप्राइझ लोगो</translation>
 <translation id="7747138024166251722">इन्स्टॉलर तात्पुरती डिरेक्टरी तयार करू शकत नाही. कृपया सॉफ्टवेअर इंस्टॉल करण्यासाठी रिक्त डिस्क स्थान आणि परवानगी पहा.</translation>

@@ -119,7 +119,7 @@
 <translation id="1521655867290435174">Tabulky Google</translation>
 <translation id="1527263332363067270">Čeká se na připojení…</translation>
 <translation id="1529521330346880926">10x15 (obálka)</translation>
-<translation id="1530707389502320859">Web, který se pokoušíte navštívit, vypadá falešný. Útočníci někdy weby napodobují tak, že v adrese URL provádějí drobné obtížně odhalitelné změny.</translation>
+<translation id="1530707389502320859">Web, který se pokoušíte navštívit, vypadá falešný. Útočníci někdy weby napodobují tak, že v adrese URL provádějí drobné, obtížně odhalitelné změny.</translation>
 <translation id="1531205177818805254">Exec</translation>
 <translation id="1532118530259321453">Tato stránka říká</translation>
 <translation id="153384715582417236">To je prozatím vše</translation>
@@ -561,7 +561,7 @@
 <translation id="3964661563329879394">{COUNT,plural, =0{Žádné}=1{Z 1 webu }few{Z # webů }many{Z # webu }other{Z # webů }}</translation>
 <translation id="397105322502079400">Probíhá výpočet…</translation>
 <translation id="3973234410852337861">Web <ph name="HOST_NAME" /> je blokován</translation>
-<translation id="3981540111851280311">Organizace <ph name="ENROLLMENT_DOMAIN" /> ve vašem prohlížeči zapnula ochranu Chrome Enterprise před hrozbami. Ochrana Chrome Enterprise před hrozbami má přístup k některým vašim datům.</translation>
+<translation id="3981540111851280311">Organizace <ph name="ENROLLMENT_DOMAIN" /> ve vašem prohlížeči zapnula ochranu před hrozbami Chrome Enterprise. Ochrana před hrozbami Chrome Enterprise má přístup k některým vašim datům.</translation>
 <translation id="3987940399970879459">Méně než 1 MB</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 webová stránka v okolí}few{# webové stránky v okolí}many{# webové stránky v okolí}other{# webových stránek v okolí}}</translation>
 <translation id="4030383055268325496">&amp;Vrátit přidání zpět</translation>
@@ -1012,7 +1012,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="6433490469411711332">Upravit kontaktní údaje</translation>
 <translation id="6433595998831338502">Web <ph name="HOST_NAME" /> odmítl připojení.</translation>
 <translation id="6434309073475700221">Zahodit</translation>
-<translation id="6435221585574090192">Sdílet s administrátorem údaje o událostech zabezpečení nahlášené ochranou Chrome Enterprise před hrozbami. Sdílené údaje mohou zahrnovat adresy URL stránek, názvy souborů, metadata souborů, uživatelské jméno použité v zařízení a uživatelské jméno použité v Chromu.</translation>
+<translation id="6435221585574090192">Sdílet s administrátorem údaje o událostech zabezpečení nahlášených ochranou před hrozbami Chrome Enterprise. Sdílené údaje mohou zahrnovat adresy URL stránek, názvy souborů, metadata souborů, uživatelské jméno použité v zařízení a uživatelské jméno použité v Chromu.</translation>
 <translation id="6440503408713884761">Ignorováno</translation>
 <translation id="6446163441502663861">Kahu (obálka)</translation>
 <translation id="6446608382365791566">Přidání dalších informací</translation>
@@ -1237,7 +1237,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="7610193165460212391">Hodnota <ph name="VALUE" /> je mimo rozsah.</translation>
 <translation id="7613889955535752492">Vypršení platnosti: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Již máte údaje, které jsou šifrovány pomocí jiné verze vašeho hesla k účtu Google. Zadejte toto heslo prosím níže.</translation>
-<translation id="7625784245512586808">Ochrana Chrome Enterprise před hrozbami</translation>
+<translation id="7625784245512586808">Ochrana před hrozbami Chrome Enterprise</translation>
 <translation id="7633909222644580952">Údaje o výkonu a přehledy selhání</translation>
 <translation id="7637571805876720304">Odstranit platební kartu z prohlížeče Chromium?</translation>
 <translation id="7638605456503525968">Sériové porty</translation>
@@ -1496,7 +1496,7 @@ Další podrobnosti:
 <translation id="9080712759204168376">Přehled objednávky</translation>
 <translation id="9089260154716455634">Zásada Off-Hours:</translation>
 <translation id="9095388113577226029">Další jazyky...</translation>
-<translation id="9098981495403789647">Administrátor ve vašem prohlížeči zapnul ochranu Chrome Enterprise před hrozbami. Ochrana Chrome Enterprise před hrozbami má přístup k některým vašim datům.</translation>
+<translation id="9098981495403789647">Administrátor ve vašem prohlížeči zapnul ochranu před hrozbami Chrome Enterprise. Ochrana před hrozbami Chrome Enterprise má přístup k některým vašim datům.</translation>
 <translation id="9103872766612412690">Web <ph name="SITE" /> vaše informace běžně chrání šifrováním. Když se prohlížeč Chromium k webu <ph name="SITE" /> pokusil připojit tentokrát, web vrátil neobvyklé a nesprávné identifikační údaje. K tomuto problému může dojít, pokud se za web <ph name="SITE" /> pokouší vydávat nějaký útočník nebo pokud bylo připojení přerušeno přihlašovací obrazovkou sítě Wi-Fi. Vaše informace jsou i nadále v bezpečí, protože prohlížeč Chromium připojení přerušil dříve, než došlo k odeslání jakýchkoliv dat.</translation>
 <translation id="9106062320799175032">Přidání fakturační adresy</translation>
 <translation id="9114524666733003316">Ověřování karty...</translation>

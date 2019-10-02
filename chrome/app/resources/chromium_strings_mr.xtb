@@ -91,6 +91,8 @@
 <translation id="4230135487732243613">या खात्यावर तुमच्या Chromium डेटा लिंक करायचा?</translation>
 <translation id="4271805377592243930">Chromium सह मदत मिळवा</translation>
 <translation id="4285930937574705105">नमूद न केलेल्या एररमुळे स्थापना अयशस्वी झाली. सध्‍या Chromium चालत असल्‍यास, कृपया त्‍यास बंद करा आणि पुन्‍हा प्रयत्‍न करा.</translation>
+<translation id="4371648796594901282">Chromium OS च्या तपशिलांसाठी, कृपया<ph name="LINK_BEGIN" />
+     Chromium OS विषयी<ph name="LINK_END" /> पाहा</translation>
 <translation id="4407044323746248786">तरीही Chromium बंद करायचे?</translation>
 <translation id="4415566066719264597">Chromium बॅकग्राउंडमध्ये चालू द्या</translation>
 <translation id="4423735387467980091">Chromium कस्टमाइझ करा आणि नियंत्रित करा</translation>
@@ -123,6 +125,7 @@
 <translation id="5623402015214259806">{0,plural, =0{Chromium अपडेट उपलब्ध आहे}=1{Chromium अपडेट उपलब्ध आहे}other{Chromium अपडेट # दिवसांसाठी उपलब्ध आहे}}</translation>
 <translation id="5631814766731275228">Chromium नाव आणि फोटो</translation>
 <translation id="5634636535844844681">Chromium साठी Windows 7 किंवा नंतरची आवृत्ती आवश्यक आहे.</translation>
+<translation id="5653831366781983928">कृपया आता Chromium रीस्टार्ट करा</translation>
 <translation id="5680901439334282664">Chromium वर साइन इन करा</translation>
 <translation id="5698481217667032250">Chromium या भाषेत डिस्प्ले करा</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
@@ -165,6 +168,7 @@
 <translation id="6734080038664603509">&amp;Chromium अपडेट करा</translation>
 <translation id="6734291798041940871">तुमच्या कॉंप्युटरवर सर्व वापरकर्त्यांसाठी आधीच Chromium इंस्टॉल केले आहे.</translation>
 <translation id="6810143991807788455">वर्तमान सेटिंग्जचा अहवाल देऊन Chromium उत्कृष्ट बनविण्यास मदत करा</translation>
+<translation id="6847869444787758381">तुमचे पासवर्ड कधीही धोक्यात असल्यास, Chromium तुम्हाला कळवते</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (Chromium वर कॉपी केले)</translation>
 <translation id="6868056391275687737">Chromium च्या इतर प्रती रन होत आहेत. अपडेट करण्यासाठी, त्या बंद करा.</translation>

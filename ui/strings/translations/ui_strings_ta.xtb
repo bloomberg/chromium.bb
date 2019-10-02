@@ -13,7 +13,7 @@
 <translation id="1290982764014248209"><ph name="DRAGGED_APP" />ஐ <ph name="FOLDER_NAME" /> கோப்புறைக்கு நகர்த்தும்.</translation>
 <translation id="1291104554099683393">சிறுசிறு பகுதிகளாக உரையைப் பகிர முயலவும்.</translation>
 <translation id="1293699935367580298">Esc</translation>
-<translation id="1306549533752902673">பரிந்துரைக்கப்படும் பயன்பாடுகள்</translation>
+<translation id="1306549533752902673">பரிந்துரைக்கப்படும் ஆப்ஸ்</translation>
 <translation id="1368832886055348810">இடமிருந்து வலம்</translation>
 <translation id="1383876407941801731">தேடல்</translation>
 <translation id="1398853756734560583">பெரிதாக்கு</translation>
@@ -235,7 +235,7 @@
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 நொடி}other{# நொடிகள்}}</translation>
 <translation id="9059834730836941392">அறிவிப்பைச் சுருக்கு</translation>
 <translation id="9150735707954472829">தாவல்</translation>
-<translation id="9161053988251441839">பரிந்துரைக்கும் பயன்பாடுகள்</translation>
+<translation id="9161053988251441839">பரிந்துரைக்கும் ஆப்ஸ்</translation>
 <translation id="9170848237812810038">&amp;செயல்தவிர்</translation>
 <translation id="932327136139879170">முகப்பு</translation>
 <translation id="944069440740578670">படிக்காத அறிவிப்புகள்</translation>

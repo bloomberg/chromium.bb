@@ -88,6 +88,8 @@
 <translation id="4230135487732243613">మీ Chromium డేటాను ఈ ఖాతాకు జోడించాలా?</translation>
 <translation id="4271805377592243930">Chromium గురించి సహాయాన్ని పొందండి</translation>
 <translation id="4285930937574705105">పేర్కొనబడని ఎర్రర్ కారణంగా ఇన్‌స్టాలేషన్ విఫలమైంది. ప్రస్తుతం Chromium అమలు చేయబడుతుంటే, దయచేసి దీనిని మూసివేసి, మళ్లీ ప్రయత్నించండి.</translation>
+<translation id="4371648796594901282">Chromium OS వివరాల కోసం, దయచేసి <ph name="LINK_BEGIN" />
+      Chromium OS పరిచయం<ph name="LINK_END" />ను చూడండి</translation>
 <translation id="4407044323746248786">ఏదేమైనా Chromium నుండి నిష్క్రమించాలా?</translation>
 <translation id="4415566066719264597">నేపథ్యంలో అమలయ్యేందుకు Chromiumని అనుమతించండి</translation>
 <translation id="4423735387467980091">Chromiumను అనుకూలీకరించండి మరియు నియంత్రించండి</translation>
@@ -120,6 +122,7 @@
 <translation id="5623402015214259806">{0,plural, =0{ఒక Chromium అప్‌డేట్ అందుబాటులో ఉంది}=1{ఒక Chromium అప్‌డేట్ అందుబాటులో ఉంది}other{ఒక Chromium అప్‌డేట్ # రోజులుగా అందుబాటులో ఉంది}}</translation>
 <translation id="5631814766731275228">Chromium పేరు మరియు చిత్రం</translation>
 <translation id="5634636535844844681">Chromiumకి Windows 7 లేదా అంతకంటే ఆధునికమైనది ఉండటం ఆవశ్యకం.</translation>
+<translation id="5653831366781983928">దయచేసి ఇప్పుడు Chromiumను మళ్ళీ ప్రారంభించండి</translation>
 <translation id="5680901439334282664">Chromiumకు సైన్ ఇన్ చేయండి</translation>
 <translation id="5698481217667032250">Chromiumను ఈ భాషలో ప్రదర్శించు</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
@@ -162,6 +165,7 @@
 <translation id="6734080038664603509">&amp;Chromiumను అప్‌డేట్ చేయండి</translation>
 <translation id="6734291798041940871">మీ కంప్యూటర్‌లోని వినియోగదారులందరికీ Chromium ఇప్పటికే ఇన్‌స్టాల్ చేయబడింది.</translation>
 <translation id="6810143991807788455">ప్రస్తుత సెట్టింగ్‌లను నివేదించడం ద్వారా Chromiumను మెరుగుపరచడంలో సహాయపడండి</translation>
+<translation id="6847869444787758381">మీ పాస్‌వర్డ్‌లు ఎప్పుడైనా హ్యాక్ అయితే, Chromium మీకు తెలియచేస్తుంది</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (Chromiumకి కాపీ చేయబడింది)</translation>
 <translation id="6868056391275687737">Chromium యొక్క ఇతర కాపీలు అమలు అవుతున్నాయి. అప్‌డేట్ చేయడానికి, వాటిని మూసివేయండి.</translation>
