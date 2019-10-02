@@ -12,7 +12,7 @@
         height: 15em;
       }
       .test {
-        border-width: 1px 0 0 1px;
+        border-width: 1px 1px 0 1px;
         border-style: solid;
         border-color: gray;
       }
@@ -56,8 +56,8 @@
       }
       .caselogs {
         margin-left: 8pt;
-        width: 100%;
-        border-width: 0 0 0 1px;
+        width: calc(100% - 8pt - 1px);
+        border-width: 0 1px 0 1px;
         border-style: solid;
         border-color: gray;
         background: white;
@@ -86,9 +86,10 @@
     </script>
   </head>
   <body>
+    <h1>WebGPU Conformance Test Suite</h1>
     <div id="info"></div>
-    <textarea id="resultsJSON"></textarea>
     <div id="resultsVis"></div>
+    <textarea id="resultsJSON"></textarea>
 
     <script type="module" src="out/runtime/standalone.js"></script>
   </body>
