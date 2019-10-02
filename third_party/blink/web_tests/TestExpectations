@@ -5483,7 +5483,6 @@ crbug.com/919587 [ Linux ] virtual/threaded/fast/idle-callback/idle_periods.html
 crbug.com/923244 external/wpt/webrtc/RTCDTMFSender-ontonechange.https.html [ Failure Pass ]
 # WebRTC Plan B
 crbug.com/920979 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-remote-track-mute.https.html [ Timeout ]
-crbug.com/997201 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-iceConnectionState.https.html [ Pass Failure ]
 crbug.com/920979 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCTrackEvent-fire.html [ Timeout ]
 # WebRTC codec tests - software H.264 not present on webkit bot family
 crbug.com/840659 external/wpt/webrtc/protocol/video-codecs.https.html [ Pass Failure ]
