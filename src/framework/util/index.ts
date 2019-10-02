@@ -8,6 +8,14 @@ export function now(): number {
   return perf.now();
 }
 
+export function rejectOnTimeout(ms: number, msg: string): Promise<never> {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      reject(new Error(msg));
+    }, ms);
+  });
+}
+
 export function objectEquals(x: unknown, y: unknown): boolean {
   if (typeof x !== 'object' || typeof y !== 'object') return x === y;
   if (x === null || y === null) return x === y;
