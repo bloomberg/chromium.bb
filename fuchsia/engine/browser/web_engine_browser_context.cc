@@ -111,6 +111,11 @@ WebEngineBrowserContext::GetPushMessagingService() {
   return nullptr;
 }
 
+content::StorageNotificationService*
+WebEngineBrowserContext::GetStorageNotificationService() {
+  return nullptr;
+}
+
 content::SSLHostStateDelegate*
 WebEngineBrowserContext::GetSSLHostStateDelegate() {
   return nullptr;
