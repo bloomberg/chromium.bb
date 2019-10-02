@@ -3996,7 +3996,6 @@ void ChromeContentBrowserClient::OpenURL(
     const content::OpenURLParams& params,
     base::OnceCallback<void(content::WebContents*)> callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(ShouldAllowOpenURL(site_instance, params.url));
 
   content::BrowserContext* browser_context = site_instance->GetBrowserContext();
 
