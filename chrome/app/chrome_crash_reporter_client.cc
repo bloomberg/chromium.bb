@@ -164,8 +164,12 @@ bool ChromeCrashReporterClient::GetCollectStatsConsent() {
   bool is_stable_channel =
       chrome::GetChannel() == version_info::Channel::STABLE;
 
-  if (is_guest_session && is_stable_channel)
+  if (is_guest_session && is_stable_channel) {
+    VLOG(1) << "GetCollectStatsConsent(): is_guest_session " << is_guest_session
+            << " && is_stable_channel " << is_stable_channel
+            << " so returning false";
     return false;
+  }
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_ANDROID)
@@ -174,8 +178,15 @@ bool ChromeCrashReporterClient::GetCollectStatsConsent() {
   // do not upload them.
   return is_official_chrome_build;
 #else  // !defined(OS_ANDROID)
-  return is_official_chrome_build &&
-      GoogleUpdateSettings::GetCollectStatsConsent();
+  if (!is_official_chrome_build) {
+    VLOG(1) << "GetCollectStatsConsent(): is_official_chrome_build is false "
+            << "so returning false";
+    return false;
+  }
+  bool settings_consent = GoogleUpdateSettings::GetCollectStatsConsent();
+  VLOG(1) << "GetCollectStatsConsent(): settings_consent: " << settings_consent
+          << " so returning that";
+  return settings_consent;
 #endif  // defined(OS_ANDROID)
 }
 
