@@ -33,7 +33,6 @@
 #include <memory>
 
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/renderer/bindings/core/v8/initialize_v8_extras_binding.h"
 #include "third_party/blink/renderer/bindings/core/v8/referrer_script_info.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
@@ -308,11 +307,6 @@ void WorkerOrWorkletScriptController::PrepareForEvaluation() {
   wrapper_type_info->InstallConditionalFeatures(
       context, *world_, global_object, v8::Local<v8::Object>(),
       v8::Local<v8::Function>(), global_interface_template);
-
-  // This can only be called after the global object is fully initialised, as it
-  // reads values from it.
-  // WARNING: May modify the global object!
-  InitializeV8ExtrasBinding(script_state_);
 }
 
 void WorkerOrWorkletScriptController::DisableEvalInternal(
