@@ -37,8 +37,6 @@
 #include "ui/events/event.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/button/image_button_factory.h"
-#include "ui/views/controls/menu/menu_runner.h"
-
 #if defined(OS_WIN)
 #include "base/win/atl.h"
 #endif
@@ -68,15 +66,6 @@ OmniboxResultView::OmniboxResultView(
       omnibox::kKeywordSearchIcon, GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
       GetColor(OmniboxPart::RESULTS_ICON)));
   keyword_view_->icon()->SizeToPreferredSize();
-
-  if (base::FeatureList::IsEnabled(
-          omnibox::kOmniboxSuggestionTransparencyOptions)) {
-    context_menu_contents_.AddItemWithStringId(IDS_OMNIBOX_WHY_THIS_SUGGESTION,
-                                               IDS_OMNIBOX_WHY_THIS_SUGGESTION);
-    context_menu_contents_.AddItemWithStringId(IDS_OMNIBOX_REMOVE_SUGGESTION,
-                                               IDS_OMNIBOX_REMOVE_SUGGESTION);
-    set_context_menu_controller(this);
-  }
 }
 
 OmniboxResultView::~OmniboxResultView() {}
@@ -442,64 +431,6 @@ gfx::Size OmniboxResultView::CalculatePreferredSize() const {
 void OmniboxResultView::OnThemeChanged() {
   Invalidate(true);
   SchedulePaint();
-}
-
-void OmniboxResultView::ShowContextMenuForViewImpl(
-    views::View* source,
-    const gfx::Point& point,
-    ui::MenuSourceType source_type) {
-  // Deferred unhover of the result until the context menu is closed.
-  // If the mouse is still over the result when the context menu is closed, the
-  // View will receive an OnMouseMoved call anyways, which sets hover to true.
-  base::RepeatingClosure set_hovered_false = base::BindRepeating(
-      &OmniboxResultView::SetHovered, weak_factory_.GetWeakPtr(), false);
-
-  context_menu_runner_ = std::make_unique<views::MenuRunner>(
-      &context_menu_contents_,
-      views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU,
-      set_hovered_false);
-  context_menu_runner_->RunMenuAt(
-      GetWidget(), nullptr, gfx::Rect(point, gfx::Size()),
-      views::MenuAnchorPosition::kTopLeft, source_type);
-
-  // Opening the context menu unsets the hover state, but we still want the
-  // result 'hovered' as long as the context menu is open.
-  SetHovered(true);
-}
-
-// ui::SimpleMenuModel::Delegate overrides:
-bool OmniboxResultView::IsCommandIdVisible(int command_id) const {
-  if (command_id == IDS_OMNIBOX_REMOVE_SUGGESTION)
-    return match_.SupportsDeletion();
-
-  DCHECK(command_id == IDS_OMNIBOX_WHY_THIS_SUGGESTION);
-  return true;
-}
-
-void OmniboxResultView::ExecuteCommand(int command_id, int event_flags) {
-  // Temporarily inhibit the popup closing on blur while we open the remove
-  // suggestion confirmation bubble.
-  popup_contents_view_->model()->set_popup_closes_on_blur(false);
-
-  // TODO(tommycli): We re-fetch the original match from the popup model,
-  // because |match_| already has its contents and description swapped by this
-  // class, and we don't want that for the bubble. We should improve this.
-  AutocompleteMatch raw_match =
-      popup_contents_view_->model()->result().match_at(model_index_);
-
-  if (command_id == IDS_OMNIBOX_REMOVE_SUGGESTION) {
-    TemplateURLService* template_url_service = popup_contents_view_->model()
-                                                   ->edit_model()
-                                                   ->client()
-                                                   ->GetTemplateURLService();
-    ShowRemoveSuggestion(template_url_service, this, raw_match,
-                         base::BindOnce(&OmniboxResultView::RemoveSuggestion,
-                                        weak_factory_.GetWeakPtr()));
-  } else if (command_id == IDS_OMNIBOX_WHY_THIS_SUGGESTION) {
-    ShowWhyThisSuggestion(this, raw_match);
-  }
-
-  popup_contents_view_->model()->set_popup_closes_on_blur(true);
 }
 
 void OmniboxResultView::ProvideButtonFocusHint() {

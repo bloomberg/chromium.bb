@@ -113,8 +113,3 @@ void ShowRemoveSuggestion(TemplateURLService* template_url_service,
           template_url_service, anchor_view, match, std::move(remove_closure)))
       ->Show();
 }
-
-void ShowWhyThisSuggestion(views::View* anchor_view,
-                           const AutocompleteMatch& match) {
-  // TODO(tommycli): Implement this.
-}
