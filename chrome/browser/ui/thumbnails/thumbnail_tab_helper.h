@@ -70,6 +70,10 @@ class ThumbnailTabHelper
   // was last hidden.
   bool captured_loaded_thumbnail_since_tab_hidden_ = false;
 
+  // The estimated percentage of the most recent frame being captured that
+  // consists of possible right and bottom scroll bars.
+  float last_frame_scrollbar_percent_ = 0.0f;
+
   // Captures frames from the WebContents while it's hidden. The capturer count
   // of the WebContents is incremented/decremented when a capturer is set/unset.
   std::unique_ptr<viz::ClientFrameSinkVideoCapturer> video_capturer_;

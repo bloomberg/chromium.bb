@@ -21,6 +21,7 @@
 #include "content/public/browser/web_contents.h"
 #include "media/capture/mojom/video_capture_types.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/scrollbar_size.h"
 #include "ui/gfx/skia_util.h"
 
@@ -132,11 +133,13 @@ void ThumbnailTabHelper::StartVideoCapture() {
     return;
   }
 
-  // TODO(dfried): this doesn't take scroll bars into account, so they show up
-  // in the thumbnail. Fix it.
+  const float scrollbar_size = gfx::scrollbar_size() * scale_factor;
   gfx::Size max_size_px;
-  if (source_size_px.width() < target_size_px.width() ||
-      source_size_px.height() < target_size_px.height()) {
+  if (source_size_px.width() - scrollbar_size < target_size_px.width() ||
+      source_size_px.height() - scrollbar_size < target_size_px.height()) {
+    // We need all of the pixels we can get, so we won't trim off scrollbars
+    // later.
+    last_frame_scrollbar_percent_ = 0.0f;
     // The source is smaller than the target - typically shorter, since normal
     // browser windows have a minimum width. Allowing the capture to use up to
     // double the size of the target bitmap provides decent results in most
@@ -145,13 +148,19 @@ void ThumbnailTabHelper::StartVideoCapture() {
     max_size_px =
         gfx::Size(target_size_px.width() * 2, target_size_px.height() * 2);
   } else {
+    const gfx::SizeF effective_source_size{
+        source_size_px.width() - scrollbar_size,
+        source_size_px.height() - scrollbar_size};
+    // Remember how much of the frame is likely to be scroll bars so we can trim
+    // them off later.
+    last_frame_scrollbar_percent_ = scrollbar_size / source_size_px.width();
     // This scaling logic makes the maximum size equal to the size of the source
     // scaled down so it is no smaller than the target bitmap in either
     // dimension. It means we always have an appropriate sized frame to clip
     // from (the final clip region will be determined after capture).
     const float min_ratio =
-        std::min(float{source_size_px.width()} / target_size_px.width(),
-                 float{source_size_px.height()} / target_size_px.height());
+        std::min(effective_source_size.width() / target_size_px.width(),
+                 effective_source_size.height() / target_size_px.height());
     max_size_px = gfx::ScaleToCeiledSize(source_size_px, 1.0f / min_ratio);
   }
 
@@ -243,17 +252,25 @@ void ThumbnailTabHelper::OnFrameCaptured(
     viz::mojom::FrameSinkVideoConsumerFrameCallbacksPtr releaser;
   };
 
+  content::RenderWidgetHostView* const source_view = GetView();
+  const float scale_factor =
+      source_view ? source_view->GetDeviceScaleFactor() : 1.0f;
+
+  // Subtract back out the scroll bars if we decided there was enough canvas to
+  // account for them and still have a decent preview image.
+  const int scrollbar_width =
+      std::round(content_rect.right() * last_frame_scrollbar_percent_);
+  gfx::Rect effective_content_rect = content_rect;
+  effective_content_rect.Inset(0, 0, scrollbar_width, scrollbar_width);
+
   // We want to grab a subset of the captured content rect. Since we've ensured
   // that in the vast majority of cases the captured frame will be an
   // appropriate size to clip a thumbnail from, our standard clipping logic
   // should be adequate here.
-  content::RenderWidgetHostView* const source_view = GetView();
-  const float scale_factor =
-      source_view ? source_view->GetDeviceScaleFactor() : 1.0f;
   auto copy_info = thumbnails::GetCanvasCopyInfo(
-      content_rect.size(), scale_factor, GetThumbnailSize());
+      effective_content_rect.size(), scale_factor, GetThumbnailSize());
   gfx::Rect copy_rect = copy_info.copy_rect;
-  copy_rect.Offset(content_rect.x(), content_rect.y());
+  copy_rect.Offset(effective_content_rect.x(), effective_content_rect.y());
 
   const gfx::Size bitmap_size(content_rect.right(), content_rect.bottom());
   SkBitmap frame;
