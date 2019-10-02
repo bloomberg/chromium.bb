@@ -452,8 +452,18 @@ class CrosSigningTestStage(generic_stages.BuilderStage):
   category = constants.CI_INFRA_STAGE
 
   def PerformStage(self):
-    """Run the cros-signing unittests."""
-    commands.RunCrosSigningTests(self._build_root)
+    """Run the cros-signing unittests on each distinct branch.
+
+    This runs the cros-signing unittests for each distinct branch in set of
+    changes.
+    """
+    # The branch for the changes is buried in the metadata for the build.
+    changes = self._run.attrs.metadata.GetDict().get('changes', [])
+    branches = set()
+    for change in changes:
+      if change['project'] == 'chromeos/cros-signing':
+        branches.add(change['branch'])
+    commands.RunCrosSigningTests(self._build_root, branches=branches)
 
 
 class UnexpectedTryjobResult(Exception):
