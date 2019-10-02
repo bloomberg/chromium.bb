@@ -1951,8 +1951,11 @@ TEST_F(WebFrameTest, SetForceZeroLayoutHeightWorksWithWrapContentMode) {
 
   LocalFrame* frame = web_view_helper.LocalMainFrame()->GetFrame();
   VisualViewport& visual_viewport = frame->GetPage()->GetVisualViewport();
-  EXPECT_EQ(viewport_height, visual_viewport.ContainerLayer()->Size().height());
-  EXPECT_TRUE(visual_viewport.ContainerLayer()->CcLayer()->masks_to_bounds());
+  auto* scroll_node = visual_viewport.GetScrollTranslationNode()->ScrollNode();
+  EXPECT_EQ(IntRect(0, 0, viewport_width, viewport_height),
+            scroll_node->ContainerRect());
+  EXPECT_EQ(IntSize(viewport_width, viewport_height),
+            scroll_node->ContentsSize());
   EXPECT_FALSE(scroll_container->CcLayer()->masks_to_bounds());
 }
 

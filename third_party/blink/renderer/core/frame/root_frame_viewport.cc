@@ -459,10 +459,6 @@ void RootFrameViewport::ScrollControlWasSetNeedsPaintInvalidation() {
   LayoutViewport().ScrollControlWasSetNeedsPaintInvalidation();
 }
 
-GraphicsLayer* RootFrameViewport::LayerForContainer() const {
-  return LayoutViewport().LayerForContainer();
-}
-
 GraphicsLayer* RootFrameViewport::LayerForScrolling() const {
   return LayoutViewport().LayerForScrolling();
 }

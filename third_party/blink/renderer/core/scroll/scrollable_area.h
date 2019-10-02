@@ -332,7 +332,6 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
                    MaximumScrollOffset(orientation));
   }
 
-  virtual GraphicsLayer* LayerForContainer() const;
   virtual GraphicsLayer* LayerForScrolling() const { return nullptr; }
   virtual GraphicsLayer* LayerForHorizontalScrollbar() const { return nullptr; }
   virtual GraphicsLayer* LayerForVerticalScrollbar() const { return nullptr; }
