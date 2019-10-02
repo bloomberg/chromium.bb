@@ -3641,13 +3641,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kCompositorThreadedScrollbarScrolling)},
 
 #if defined(OS_CHROMEOS)
-    {"enable-chromeos-account-manager",
-     flag_descriptions::kEnableChromeOsAccountManagerName,
-     flag_descriptions::kEnableChromeOsAccountManagerDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kAccountManager)},
-#endif
-
-#if defined(OS_CHROMEOS)
     {"enable-vaapi-jpeg-image-decode-acceleration",
      flag_descriptions::kVaapiJpegImageDecodeAccelerationName,
      flag_descriptions::kVaapiJpegImageDecodeAccelerationDescription, kOsCrOS,

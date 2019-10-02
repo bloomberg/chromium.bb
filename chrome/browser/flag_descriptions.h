@@ -1989,9 +1989,6 @@ extern const char kEnableAssistantRoutinesDescription[];
 extern const char kEnableBackgroundBlurName[];
 extern const char kEnableBackgroundBlurDescription[];
 
-extern const char kEnableChromeOsAccountManagerName[];
-extern const char kEnableChromeOsAccountManagerDescription[];
-
 extern const char kEnableDiscoverAppName[];
 extern const char kEnableDiscoverAppDescription[];
 
