@@ -151,7 +151,8 @@ void Scrollbar::OffsetDidChange() {
   current_pos_ = position;
 
   ScrollbarPart invalid_parts =
-      GetTheme().InvalidateOnThumbPositionChange(*this, old_position, position);
+      GetTheme().PartsToInvalidateOnThumbPositionChange(*this, old_position,
+                                                        position);
   SetNeedsPaintInvalidation(invalid_parts);
 
   if (pressed_part_ == kThumbPart)

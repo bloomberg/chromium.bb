@@ -1430,11 +1430,8 @@ class ScrollbarAppearanceTest
   void SetUp() override {
     SimTest::SetUp();
     // Use real scrollbars to ensure we're testing the real ScrollbarThemes.
-    // TODO(bokan): For some reason this has to happen *after* the WebViewImpl
-    // loads and everything or the test fails. But not doing it also fails.
-    // However this changes a runtime feature and should go *before* anything
-    // is set up!! Otherwise blink sees inconsistent values which doesn't happen
-    // in reality.
+    // This is after SimTest::SetUp() to override the mock scrollbar settings
+    // initialized there.
     mock_scrollbars_ =
         std::make_unique<UseMockScrollbarSettings>(false, GetParam());
   }

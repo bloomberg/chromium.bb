@@ -73,18 +73,16 @@ int LayoutScrollbarTheme::MinimumThumbLength(const Scrollbar& scrollbar) {
 }
 
 IntRect LayoutScrollbarTheme::BackButtonRect(const Scrollbar& scrollbar,
-                                             ScrollbarPart part_type,
-                                             bool) {
+                                             ScrollbarPart part_type) {
   return To<LayoutScrollbar>(scrollbar).ButtonRect(part_type);
 }
 
 IntRect LayoutScrollbarTheme::ForwardButtonRect(const Scrollbar& scrollbar,
-                                                ScrollbarPart part_type,
-                                                bool) {
+                                                ScrollbarPart part_type) {
   return To<LayoutScrollbar>(scrollbar).ButtonRect(part_type);
 }
 
-IntRect LayoutScrollbarTheme::TrackRect(const Scrollbar& scrollbar, bool) {
+IntRect LayoutScrollbarTheme::TrackRect(const Scrollbar& scrollbar) {
   if (!HasButtons(scrollbar))
     return scrollbar.FrameRect();
 
@@ -119,12 +117,12 @@ void LayoutScrollbarTheme::PaintScrollCorner(
     const DisplayItemClient& display_item_client,
     const IntRect& corner_rect,
     WebColorScheme color_scheme) {
-  if (DrawingRecorder::UseCachedDrawingIfPossible(
-          context, display_item_client, DisplayItem::kScrollbarCorner))
+  if (DrawingRecorder::UseCachedDrawingIfPossible(context, display_item_client,
+                                                  DisplayItem::kScrollCorner))
     return;
 
   DrawingRecorder recorder(context, display_item_client,
-                           DisplayItem::kScrollbarCorner);
+                           DisplayItem::kScrollCorner);
   // FIXME: Implement.
   context.FillRect(corner_rect, Color::kWhite);
 }

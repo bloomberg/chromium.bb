@@ -86,13 +86,9 @@ class LayoutScrollbarTheme final : public ScrollbarTheme {
   bool HasButtons(const Scrollbar&) override;
   bool HasThumb(const Scrollbar&) override;
 
-  IntRect BackButtonRect(const Scrollbar&,
-                         ScrollbarPart,
-                         bool painting = false) override;
-  IntRect ForwardButtonRect(const Scrollbar&,
-                            ScrollbarPart,
-                            bool painting = false) override;
-  IntRect TrackRect(const Scrollbar&, bool painting = false) override;
+  IntRect BackButtonRect(const Scrollbar&, ScrollbarPart) override;
+  IntRect ForwardButtonRect(const Scrollbar&, ScrollbarPart) override;
+  IntRect TrackRect(const Scrollbar&) override;
 
   void PaintScrollbarBackground(GraphicsContext&, const Scrollbar&) override;
   void PaintTrackBackground(GraphicsContext&,
@@ -110,6 +106,11 @@ class LayoutScrollbarTheme final : public ScrollbarTheme {
   void PaintTickmarks(GraphicsContext&,
                       const Scrollbar&,
                       const IntRect&) override;
+
+  // The layout objects in the custom scrollbar create display items.
+  bool CreatesSingleDisplayItemForTrackAndButtons() const final {
+    return false;
+  }
 
   IntRect ConstrainTrackRectToTrackPieces(const Scrollbar&,
                                           const IntRect&) override;
