@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_aura.h"
@@ -22,9 +23,6 @@
 namespace ui {
 
 namespace {
-
-constexpr char kMimeTypeText[] = "text/plain";
-constexpr char kMimeTypeTextUTF8[] = "text/plain;charset=utf-8";
 
 int GetOperation(uint32_t source_actions, uint32_t dnd_action) {
   uint32_t action = dnd_action != WL_DATA_DEVICE_MANAGER_DND_ACTION_NONE
@@ -56,7 +54,7 @@ void AddToOSExchangeData(const std::string& data,
                          const std::string& mime_type,
                          OSExchangeData* os_exchange_data) {
   DCHECK(os_exchange_data);
-  if ((mime_type == kMimeTypeText || mime_type == kMimeTypeTextUTF8)) {
+  if ((mime_type == kMimeTypeText || mime_type == kMimeTypeTextUtf8)) {
     DCHECK(!os_exchange_data->HasString());
     AddStringToOSExchangeData(data, os_exchange_data);
     return;
@@ -70,7 +68,7 @@ void AddToOSExchangeData(const std::string& data,
 // static
 WaylandDataDevice::WaylandDataDevice(WaylandConnection* connection,
                                      wl_data_device* data_device)
-    : data_device_(data_device), connection_(connection) {
+    : internal::WaylandDataDeviceBase(connection), data_device_(data_device) {
   static const struct wl_data_device_listener kDataDeviceListener = {
       WaylandDataDevice::OnDataOffer, WaylandDataDevice::OnEnter,
       WaylandDataDevice::OnLeave,     WaylandDataDevice::OnMotion,
@@ -79,25 +77,6 @@ WaylandDataDevice::WaylandDataDevice(WaylandConnection* connection,
 }
 
 WaylandDataDevice::~WaylandDataDevice() = default;
-
-bool WaylandDataDevice::RequestSelectionData(const std::string& mime_type) {
-  if (!selection_offer_)
-    return false;
-
-  base::ScopedFD fd = selection_offer_->Receive(mime_type);
-  if (!fd.is_valid()) {
-    LOG(ERROR) << "Failed to open file descriptor.";
-    return false;
-  }
-
-  // Ensure there is not pending operation to be performed by the compositor,
-  // otherwise read(..) can block awaiting data to be sent to pipe.
-  deferred_read_closure_ =
-      base::BindOnce(&WaylandDataDevice::ReadClipboardDataFromFD,
-                     base::Unretained(this), std::move(fd), mime_type);
-  RegisterDeferredReadCallback();
-  return true;
-}
 
 void WaylandDataDevice::RequestDragData(
     const std::string& mime_type,
@@ -110,9 +89,9 @@ void WaylandDataDevice::RequestDragData(
 
   // Ensure there is not pending operation to be performed by the compositor,
   // otherwise read(..) can block awaiting data to be sent to pipe.
-  deferred_read_closure_ = base::BindOnce(
+  RegisterDeferredReadClosure(base::BindOnce(
       &WaylandDataDevice::ReadDragDataFromFD, base::Unretained(this),
-      std::move(fd), std::move(callback));
+      std::move(fd), std::move(callback)));
   RegisterDeferredReadCallback();
 }
 
@@ -121,7 +100,7 @@ void WaylandDataDevice::DeliverDragData(const std::string& mime_type,
   DCHECK(buffer);
   DCHECK(source_data_);
 
-  if (mime_type != kMimeTypeText && mime_type != kMimeTypeTextUTF8)
+  if (mime_type != kMimeTypeText && mime_type != kMimeTypeTextUtf8)
     return;
 
   const OSExchangeData::FilenameToURLPolicy policy =
@@ -148,7 +127,7 @@ void WaylandDataDevice::StartDrag(wl_data_source* data_source,
   DCHECK(data_source);
 
   WaylandWindow* window =
-      connection_->wayland_window_manager()->GetCurrentFocusedWindow();
+      connection()->wayland_window_manager()->GetCurrentFocusedWindow();
   if (!window) {
     LOG(ERROR) << "Failed to get focused window.";
     return;
@@ -156,45 +135,22 @@ void WaylandDataDevice::StartDrag(wl_data_source* data_source,
   const SkBitmap* icon = PrepareDragIcon(data);
   source_data_ = std::make_unique<ui::OSExchangeData>(data.provider().Clone());
   wl_data_device_start_drag(data_device_.get(), data_source, window->surface(),
-                            icon_surface_.get(), connection_->serial());
+                            icon_surface_.get(), connection()->serial());
   if (icon)
     DrawDragIcon(icon);
-  connection_->ScheduleFlush();
+  connection()->ScheduleFlush();
 }
 
 void WaylandDataDevice::ResetSourceData() {
   source_data_.reset();
 }
 
-std::vector<std::string> WaylandDataDevice::GetAvailableMimeTypes() {
-  if (selection_offer_)
-    return selection_offer_->GetAvailableMimeTypes();
-
-  return std::vector<std::string>();
-}
-
-void WaylandDataDevice::ReadClipboardDataFromFD(base::ScopedFD fd,
-                                                const std::string& mime_type) {
-  std::string contents;
-  ReadDataFromFD(std::move(fd), &contents);
-  connection_->clipboard()->SetData(contents, mime_type);
-}
-
 void WaylandDataDevice::ReadDragDataFromFD(
     base::ScopedFD fd,
     base::OnceCallback<void(const std::string&)> callback) {
   std::string contents;
-  ReadDataFromFD(std::move(fd), &contents);
+  wl::ReadDataFromFD(std::move(fd), &contents);
   std::move(callback).Run(contents);
-}
-
-void WaylandDataDevice::ReadDataFromFD(base::ScopedFD fd,
-                                       std::string* contents) {
-  DCHECK(contents);
-  char buffer[1 << 10];  // 1 kB in bytes.
-  ssize_t length;
-  while ((length = read(fd.get(), buffer, sizeof(buffer))) > 0)
-    contents->append(buffer, length);
 }
 
 void WaylandDataDevice::HandleDeferredLeaveIfNeeded() {
@@ -210,7 +166,7 @@ void WaylandDataDevice::OnDataOffer(void* data,
                                     wl_data_offer* offer) {
   auto* self = static_cast<WaylandDataDevice*>(data);
 
-  self->connection_->clipboard()->UpdateSequenceNumber(
+  self->connection()->clipboard()->UpdateSequenceNumber(
       ClipboardBuffer::kCopyPaste);
 
   DCHECK(!self->new_offer_);
@@ -241,7 +197,7 @@ void WaylandDataDevice::OnEnter(void* data,
   // all mime types offered because current implementation doesn't decide
   // action based on mime type.
   self->unprocessed_mime_types_.clear();
-  for (auto mime : self->drag_offer_->GetAvailableMimeTypes()) {
+  for (auto mime : self->drag_offer_->mime_types()) {
     self->unprocessed_mime_types_.push_back(mime);
     self->drag_offer_->Accept(serial, mime);
   }
@@ -336,45 +292,24 @@ void WaylandDataDevice::OnSelection(void* data,
   // 'offer' will be null to indicate that the selection is no longer valid,
   // i.e. there is no longer clipboard data available to paste.
   if (!offer) {
-    self->selection_offer_.reset();
+    self->ResetDataOffer();
 
     // Clear Clipboard cache.
-    self->connection_->clipboard()->SetData(std::string(), std::string());
+    self->connection()->clipboard()->SetData({}, {});
     return;
   }
 
   DCHECK(self->new_offer_);
-  self->selection_offer_ = std::move(self->new_offer_);
+  self->set_data_offer(std::move(self->new_offer_));
 
-  self->selection_offer_->EnsureTextMimeTypeIfNeeded();
-}
-
-void WaylandDataDevice::RegisterDeferredReadCallback() {
-  static const wl_callback_listener kDeferredReadListener = {
-      WaylandDataDevice::DeferredReadCallback};
-
-  DCHECK(!deferred_read_callback_);
-  deferred_read_callback_.reset(wl_display_sync(connection_->display()));
-  wl_callback_add_listener(deferred_read_callback_.get(),
-                           &kDeferredReadListener, this);
-  connection_->ScheduleFlush();
-}
-
-void WaylandDataDevice::DeferredReadCallback(void* data,
-                                             struct wl_callback* cb,
-                                             uint32_t time) {
-  auto* data_device = static_cast<WaylandDataDevice*>(data);
-  DCHECK(data_device);
-  DCHECK(!data_device->deferred_read_closure_.is_null());
-  std::move(data_device->deferred_read_closure_).Run();
-  data_device->deferred_read_callback_.reset();
+  self->data_offer()->EnsureTextMimeTypeIfNeeded();
 }
 
 const SkBitmap* WaylandDataDevice::PrepareDragIcon(const OSExchangeData& data) {
   const SkBitmap* icon_bitmap = data.provider().GetDragImage().bitmap();
   if (!icon_bitmap || icon_bitmap->empty())
     return nullptr;
-  icon_surface_.reset(wl_compositor_create_surface(connection_->compositor()));
+  icon_surface_.reset(wl_compositor_create_surface(connection()->compositor()));
   DCHECK(icon_surface_);
   return icon_bitmap;
 }
@@ -385,7 +320,7 @@ void WaylandDataDevice::DrawDragIcon(const SkBitmap* icon_bitmap) {
   gfx::Size size(icon_bitmap->width(), icon_bitmap->height());
 
   if (!shm_buffer_ || shm_buffer_->size() != size) {
-    shm_buffer_ = std::make_unique<WaylandShmBuffer>(connection_->shm(), size);
+    shm_buffer_ = std::make_unique<WaylandShmBuffer>(connection()->shm(), size);
     if (!shm_buffer_->IsValid()) {
       LOG(ERROR) << "Failed to create drag icon buffer.";
       return;
@@ -436,7 +371,7 @@ void WaylandDataDevice::HandleReceivedData(
 std::string WaylandDataDevice::SelectNextMimeType() {
   while (!unprocessed_mime_types_.empty()) {
     std::string& mime_type = unprocessed_mime_types_.front();
-    if ((mime_type == kMimeTypeText || mime_type == kMimeTypeTextUTF8) &&
+    if ((mime_type == kMimeTypeText || mime_type == kMimeTypeTextUtf8) &&
         !received_data_->HasString()) {
       return mime_type;
     }
