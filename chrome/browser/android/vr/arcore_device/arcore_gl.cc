@@ -372,6 +372,17 @@ void ArCoreGl::GetFrameData(
   have_camera_image_ = true;
   mojom::XRFrameDataPtr frame_data = mojom::XRFrameData::New();
 
+  // Check if floor height estimate has changed. The estimate might eventually
+  // be provided by |arcore_| - for now, use hard-coded value.
+  if (floor_height_estimate_changed_) {
+    frame_data->stage_parameters_updated = true;
+    frame_data->stage_parameters = mojom::VRStageParameters::New();
+    frame_data->stage_parameters->standing_transform = gfx::Transform();
+    frame_data->stage_parameters->standing_transform.Translate3d(
+        0, floor_height_estimate_, 0);
+    floor_height_estimate_changed_ = false;
+  }
+
   frame_data->frame_id = webxr_->StartFrameAnimating();
   DVLOG(2) << __func__ << " frame=" << frame_data->frame_id;
 
