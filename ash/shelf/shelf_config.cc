@@ -269,9 +269,9 @@ SkColor ShelfConfig::GetDefaultShelfColor() const {
   if (dark_muted_color == kInvalidWallpaperColor)
     return final_color;
 
-  // Combine SK_ColorBLACK at 70% opacity with |dark_muted_color|.
+  // Combine SK_ColorBLACK at 50% opacity with |dark_muted_color|.
   final_color = color_utils::GetResultingPaintColor(
-      SkColorSetA(SK_ColorBLACK, 178), dark_muted_color);
+      SkColorSetA(SK_ColorBLACK, 127), dark_muted_color);
 
   return SkColorSetA(final_color, 189);  // 74% opacity
 }
