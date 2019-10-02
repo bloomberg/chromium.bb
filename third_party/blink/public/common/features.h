@@ -81,9 +81,6 @@ BLINK_COMMON_EXPORT extern const base::Feature kDecodeJpeg420ImagesToYUV;
 BLINK_COMMON_EXPORT extern const base::Feature kDecodeLossyWebPImagesToYUV;
 
 BLINK_COMMON_EXPORT extern const base::Feature
-    kSendPreviewsLoadingHintsBeforeCommit;
-
-BLINK_COMMON_EXPORT extern const base::Feature
     kWebFontsCacheAwareTimeoutAdaption;
 BLINK_COMMON_EXPORT extern const base::Feature
     kBlockingFocusWithoutUserActivation;
