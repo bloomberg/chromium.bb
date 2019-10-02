@@ -3219,7 +3219,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, SaveLinkAsVsCrossOriginResourcePolicy) {
 
 // This test ensures that the Referer header is properly sanitized when
 // Save Image As is chosen from the context menu.
-// TODO(crbug.com/1005586): Re-enable this test.
 IN_PROC_BROWSER_TEST_P(DownloadReferrerPolicyTest,
                        DISABLED_SaveImageAsReferrerPolicy) {
   embedded_test_server()->RegisterRequestHandler(
@@ -3300,10 +3299,8 @@ IN_PROC_BROWSER_TEST_P(DownloadReferrerPolicyTest,
 
 // This test ensures that a cross-domain download correctly sets the referrer
 // according to the referrer policy.
-//
-// Disabled because flaky. See https://crbug.com/1009022.
 IN_PROC_BROWSER_TEST_P(DownloadReferrerPolicyTest,
-                       DISABLED_DownloadCrossDomainReferrerPolicy) {
+                       DownloadCrossDomainReferrerPolicy) {
   embedded_test_server()->RegisterRequestHandler(
       base::Bind(&ServerRedirectRequestHandler));
   embedded_test_server()->RegisterRequestHandler(
