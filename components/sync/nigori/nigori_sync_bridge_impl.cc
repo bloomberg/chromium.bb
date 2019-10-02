@@ -70,18 +70,22 @@ bool EncryptKeyBag(const CryptographerImpl& cryptographer,
   return cryptographer.Encrypt(proto.key_bag(), encrypted);
 }
 
-// TODO(crbug.com/922900): This should be revisited because the encryption key
-// should be determined by keystore keys, which does not always match the
-// default encryption key.
 bool EncryptKeystoreDecryptorToken(
     const CryptographerImpl& cryptographer,
-    sync_pb::EncryptedData* keystore_decryptor_token) {
+    sync_pb::EncryptedData* keystore_decryptor_token,
+    const std::vector<std::string>& keystore_keys) {
   DCHECK(keystore_decryptor_token);
 
   const sync_pb::NigoriKey default_key = cryptographer.ExportDefaultKey();
 
-  return cryptographer.EncryptString(default_key.SerializeAsString(),
-                                     keystore_decryptor_token);
+  // TODO(crbug.com/922900): consider maintaining cached version of this
+  // |keystore_cryptographer| to avoid its creation here and inside
+  // DecryptKestoreDecryptorToken().
+  std::unique_ptr<CryptographerImpl> keystore_cryptographer =
+      CreateCryptographerFromKeystoreKeys(keystore_keys);
+
+  return keystore_cryptographer->EncryptString(default_key.SerializeAsString(),
+                                               keystore_decryptor_token);
 }
 
 // Attempts to decrypt |keystore_decryptor_token| with |keystore_keys|. Returns
@@ -131,7 +135,8 @@ base::Optional<NigoriSpecifics> MakeDefaultKeystoreNigori(
 
   NigoriSpecifics specifics;
   if (!EncryptKeystoreDecryptorToken(
-          *cryptographer, specifics.mutable_keystore_decryptor_token())) {
+          *cryptographer, specifics.mutable_keystore_decryptor_token(),
+          keystore_keys)) {
     DLOG(ERROR) << "Failed to encrypt default key as keystore_decryptor_token.";
     return base::nullopt;
   }
@@ -1081,7 +1086,8 @@ std::unique_ptr<EntityData> NigoriSyncBridgeImpl::GetData() {
   }
   if (state_.passphrase_type == NigoriSpecifics::KEYSTORE_PASSPHRASE) {
     EncryptKeystoreDecryptorToken(*state_.cryptographer,
-                                  specifics.mutable_keystore_decryptor_token());
+                                  specifics.mutable_keystore_decryptor_token(),
+                                  state_.keystore_keys);
   }
   if (!state_.keystore_migration_time.is_null()) {
     specifics.set_keystore_migration_time(

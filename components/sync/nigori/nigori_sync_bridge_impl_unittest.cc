@@ -108,6 +108,21 @@ MATCHER_P(EncryptedDataEq, expected, "") {
          given.blob() == expected.blob();
 }
 
+MATCHER_P3(EncryptedDataEqAfterDecryption,
+           expected,
+           password,
+           derivation_params,
+           "") {
+  const sync_pb::EncryptedData& given = arg;
+  std::unique_ptr<CryptographerImpl> cryptographer =
+      CryptographerImpl::FromSingleKeyForTesting(password, derivation_params);
+  std::string decrypted_given;
+  EXPECT_TRUE(cryptographer->DecryptToString(given, &decrypted_given));
+  std::string decrypted_expected;
+  EXPECT_TRUE(cryptographer->DecryptToString(expected, &decrypted_expected));
+  return decrypted_given == decrypted_expected;
+}
+
 MATCHER_P2(IsDummyNigoriMetadataBatchWithTokenAndSequenceNumber,
            expected_token,
            expected_sequence_number,
@@ -450,6 +465,42 @@ TEST_F(NigoriSyncBridgeImplTest,
   EXPECT_THAT(cryptographer, CanDecryptWith(kGaiaKeyParams));
   EXPECT_THAT(cryptographer, CanDecryptWith(kKeystoreKeyParams));
   EXPECT_THAT(cryptographer, HasDefaultKeyDerivedFrom(kGaiaKeyParams));
+}
+
+TEST_F(NigoriSyncBridgeImplTest, ShouldExposeBackwardCompatibleKeystoreNigori) {
+  const KeyParams kGaiaKeyParams = Pbkdf2KeyParams("gaia_key");
+  const std::string kRawKeystoreKey = "raw_keystore_key";
+  const KeyParams kKeystoreKeyParams = KeystoreKeyParams(kRawKeystoreKey);
+  EntityData entity_data;
+  *entity_data.specifics.mutable_nigori() = BuildKeystoreNigoriSpecifics(
+      /*keybag_keys_params=*/{kGaiaKeyParams, kKeystoreKeyParams},
+      /*keystore_decryptor_params=*/kGaiaKeyParams,
+      /*keystore_key_params=*/kKeystoreKeyParams);
+  sync_pb::EncryptedData original_encryption_keybag =
+      entity_data.specifics.nigori().encryption_keybag();
+  sync_pb::EncryptedData original_keystore_decryptor_token =
+      entity_data.specifics.nigori().keystore_decryptor_token();
+
+  ASSERT_TRUE(bridge()->SetKeystoreKeys({kRawKeystoreKey}));
+  ASSERT_THAT(bridge()->MergeSyncData(std::move(entity_data)),
+              Eq(base::nullopt));
+
+  std::unique_ptr<EntityData> local_entity_data = bridge()->GetData();
+  ASSERT_TRUE(local_entity_data);
+  ASSERT_TRUE(local_entity_data->specifics.has_nigori());
+  // Note: EncryptedDataEqAfterDecryption() exercises more strict requirements
+  // than bridge must support, because there is nothing wrong with reordering
+  // of the keys in encryption_keybag, which will lead to failing this
+  // expectation.
+  EXPECT_THAT(local_entity_data->specifics.nigori().encryption_keybag(),
+              EncryptedDataEqAfterDecryption(original_encryption_keybag,
+                                             kGaiaKeyParams.password,
+                                             kGaiaKeyParams.derivation_params));
+  EXPECT_THAT(
+      local_entity_data->specifics.nigori().keystore_decryptor_token(),
+      EncryptedDataEqAfterDecryption(original_keystore_decryptor_token,
+                                     kKeystoreKeyParams.password,
+                                     kKeystoreKeyParams.derivation_params));
 }
 
 // Tests that we can successfully use old keys from encryption_keybag in
