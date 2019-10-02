@@ -74,6 +74,7 @@ class CORE_EXPORT DocumentMarkerController final
                                  Color background_color);
   void AddSuggestionMarker(const EphemeralRange&,
                            const SuggestionMarkerProperties&);
+  void AddTextFragmentMarker(const EphemeralRange&);
 
   void MoveMarkers(const Text& src_node, int length, const Text& dst_node);
 
