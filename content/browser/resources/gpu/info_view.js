@@ -456,6 +456,13 @@ cr.define('gpu', function() {
       }
       ANGLEFeatureEl.appendChild(status);
 
+      if (ANGLEFeature.condition) {
+        const condition = document.createElement('span');
+        condition.textContent = ': ' + ANGLEFeature.condition;
+        condition.classList.add('feature-gray');
+        ANGLEFeatureEl.appendChild(condition);
+      }
+
       // if there's a description, put on new line, italicized
       if (ANGLEFeature.description) {
         const brNode = document.createElement('br');
