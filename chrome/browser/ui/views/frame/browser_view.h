@@ -346,6 +346,7 @@ class BrowserView : public BrowserWindow,
   bool IsFullscreen() const override;
   bool IsFullscreenBubbleVisible() const override;
   bool UpdatePageActionIcon(PageActionIconType type) override;
+  void ShowAvatarHighlightAnimation() override;
   void ExecutePageActionIconForTesting(PageActionIconType type) override;
   LocationBar* GetLocationBar() const override;
   void SetFocusToLocationBar(bool select_all) override;

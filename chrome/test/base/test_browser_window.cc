@@ -143,6 +143,8 @@ bool TestBrowserWindow::UpdatePageActionIcon(PageActionIconType type) {
   return false;
 }
 
+void TestBrowserWindow::ShowAvatarHighlightAnimation() {}
+
 ToolbarActionsBar* TestBrowserWindow::GetToolbarActionsBar() {
   return nullptr;
 }

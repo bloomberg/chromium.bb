@@ -248,6 +248,9 @@ class BrowserWindow : public ui::BaseWindow {
   // the window. Returns whether any change occurred.
   virtual bool UpdatePageActionIcon(PageActionIconType type) = 0;
 
+  // Executes highlight animation on toolbar's avatar.
+  virtual void ShowAvatarHighlightAnimation() = 0;
+
   // Executes the action for the specified page action icon.
   virtual void ExecutePageActionIconForTesting(PageActionIconType type) = 0;
 

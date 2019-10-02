@@ -94,6 +94,7 @@ class TestBrowserWindow : public BrowserWindow {
   bool IsFullscreenBubbleVisible() const override;
   LocationBar* GetLocationBar() const override;
   bool UpdatePageActionIcon(PageActionIconType type) override;
+  void ShowAvatarHighlightAnimation() override;
   void ExecutePageActionIconForTesting(PageActionIconType type) override {}
   void SetFocusToLocationBar(bool select_all) override {}
   void UpdateReloadStopState(bool is_loading, bool force) override {}

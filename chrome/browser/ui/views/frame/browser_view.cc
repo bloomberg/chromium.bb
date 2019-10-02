@@ -1106,6 +1106,13 @@ bool BrowserView::UpdatePageActionIcon(PageActionIconType type) {
   return icon ? icon->Update() : false;
 }
 
+void BrowserView::ShowAvatarHighlightAnimation() {
+  AvatarToolbarButton* avatar_button = toolbar_->GetAvatarToolbarButton();
+  if (!avatar_button)
+    return;
+  avatar_button->ShowAvatarHighlightAnimation();
+}
+
 void BrowserView::ExecutePageActionIconForTesting(PageActionIconType type) {
   toolbar_button_provider_->GetPageActionIconView(type)->ExecuteForTesting();
 }
