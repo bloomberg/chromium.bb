@@ -6197,3 +6197,6 @@ crbug.com/1010032 [ Win7 ] fast/text/selection/khmer-selection.html [ Failure ]
 crbug.com/1010032 [ Win7 ] fast/writing-mode/Kusa-Makura-background-canvas.html [ Failure ]
 crbug.com/1010170 [ Mac ] media/video-played-reset.html [ Failure ]
 
+# Sheriff 2019-10-02
+crbug.com/1010472 [ Linux Mac Debug ] fast/canvas/color-space/canvas-drawImage-offscreenCanvas.html [ Timeout Pass ]
+
