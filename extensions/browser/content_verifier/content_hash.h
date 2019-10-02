@@ -120,10 +120,6 @@ class ContentHash : public base::RefCountedThreadSafe<ContentHash> {
 
   const ComputedHashes::Reader& computed_hashes() const;
 
-  bool has_verified_contents() const {
-    return status_ >= Status::kHasVerifiedContents;
-  }
-
   bool succeeded() const { return status_ >= Status::kSucceeded; }
 
   // If ContentHash creation writes computed_hashes.json, then this returns the
@@ -194,6 +190,10 @@ class ContentHash : public base::RefCountedThreadSafe<ContentHash> {
   void BuildComputedHashes(bool attempted_fetching_verified_contents,
                            bool force_build,
                            const IsCancelledCallback& is_cancelled);
+
+  bool has_verified_contents() const {
+    return status_ >= Status::kHasVerifiedContents;
+  }
 
   const ExtensionId extension_id_;
   const base::FilePath extension_root_;
