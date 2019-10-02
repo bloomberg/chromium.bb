@@ -1841,8 +1841,7 @@ const char kSharingDeviceRegistrationDescription[] =
 const char kSharingUseDeviceInfoName[] =
     "Enable Sharing device registration in DeviceInfo";
 const char kSharingUseDeviceInfoDescription[] =
-    "Enables Sharing infrastructure to register devices in DeviceInfo and "
-    "remove sync requirement.";
+    "Enables Sharing infrastructure to register devices in DeviceInfo.";
 
 const char kShelfHotseatName[] = "Enable a modular design for the shelf.";
 const char kShelfHotseatDescription[] =
