@@ -2443,7 +2443,7 @@ bool PropagateScrollSnapStyleToViewport(
                  SetScrollPaddingLeft, Length());
 
   if (changed) {
-    document.GetSnapCoordinator()->SnapContainerDidChange(
+    document.GetSnapCoordinator().SnapContainerDidChange(
         *document.GetLayoutView(), false /* is_removed */);
   }
 
@@ -7554,11 +7554,11 @@ bool Document::ThreadedParsingEnabledForTesting() {
   return g_threaded_parsing_enabled_for_testing;
 }
 
-SnapCoordinator* Document::GetSnapCoordinator() {
+SnapCoordinator& Document::GetSnapCoordinator() {
   if (!snap_coordinator_)
     snap_coordinator_ = MakeGarbageCollected<SnapCoordinator>();
 
-  return snap_coordinator_.Get();
+  return *snap_coordinator_;
 }
 
 void Document::SetContextFeatures(ContextFeatures& features) {

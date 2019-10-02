@@ -1614,14 +1614,9 @@ int PaintLayerScrollableArea::HorizontalScrollbarHeight(
 
 void PaintLayerScrollableArea::SnapAfterScrollbarScrolling(
     ScrollbarOrientation orientation) {
-  SnapCoordinator* snap_coordinator =
-      GetLayoutBox()->GetDocument().GetSnapCoordinator();
-  if (!snap_coordinator)
-    return;
-
-  snap_coordinator->SnapAtCurrentPosition(*GetLayoutBox(),
-                                          orientation == kHorizontalScrollbar,
-                                          orientation == kVerticalScrollbar);
+  GetLayoutBox()->GetDocument().GetSnapCoordinator().SnapAtCurrentPosition(
+      *GetLayoutBox(), orientation == kHorizontalScrollbar,
+      orientation == kVerticalScrollbar);
 }
 
 bool PaintLayerScrollableArea::HasOverflowControls() const {
@@ -2045,7 +2040,7 @@ PhysicalRect PaintLayerScrollableArea::ScrollIntoView(
   end_point = GetLayoutBox()
                   ->GetDocument()
                   .GetSnapCoordinator()
-                  ->GetSnapPosition(*GetLayoutBox(), *strategy)
+                  .GetSnapPosition(*GetLayoutBox(), *strategy)
                   .value_or(end_point);
   new_scroll_offset = ScrollPositionToOffset(end_point);
 

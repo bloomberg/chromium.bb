@@ -1832,10 +1832,7 @@ void LocalFrameView::PerformPostLayoutTasks() {
           this->GetScrollingCoordinator()) {
     scrolling_coordinator->NotifyGeometryChanged(this);
   }
-
-  if (SnapCoordinator* snap_coordinator =
-          frame_->GetDocument()->GetSnapCoordinator())
-    snap_coordinator->UpdateAllSnapContainerData();
+  frame_->GetDocument()->GetSnapCoordinator().UpdateAllSnapContainerData();
 
   SendResizeEventIfNeeded();
 }

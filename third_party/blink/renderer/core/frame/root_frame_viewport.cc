@@ -311,7 +311,7 @@ PhysicalRect RootFrameViewport::ScrollIntoView(
     end_point = GetLayoutBox()
                     ->GetDocument()
                     .GetSnapCoordinator()
-                    ->GetSnapPosition(*GetLayoutBox(), *strategy)
+                    .GetSnapPosition(*GetLayoutBox(), *strategy)
                     .value_or(end_point);
     new_scroll_offset = ScrollPositionToOffset(end_point);
   }
