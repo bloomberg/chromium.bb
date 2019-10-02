@@ -260,6 +260,10 @@ BrowserSwitcherPrefs& BrowserSwitcherService::prefs() {
   return prefs_;
 }
 
+Profile* BrowserSwitcherService::profile() {
+  return profile_;
+}
+
 XmlDownloader* BrowserSwitcherService::sitelist_downloader() {
   return sitelist_downloader_.get();
 }
