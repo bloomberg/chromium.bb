@@ -379,9 +379,9 @@ TEST(ErrorReportTest, TrialDebugInfo) {
 #else
   EXPECT_EQ(0, trial_info.mac_combined_trust_debug_info_size());
 #endif
-  ASSERT_TRUE(trial_info.has_trial_verification_time());
+  ASSERT_TRUE(trial_info.has_trial_verification_time_usec());
   EXPECT_EQ(time.ToDeltaSinceWindowsEpoch().InMicroseconds(),
-            trial_info.trial_verification_time());
+            trial_info.trial_verification_time_usec());
   ASSERT_TRUE(trial_info.has_trial_der_verification_time());
   EXPECT_EQ("it's just a string", trial_info.trial_der_verification_time());
 }

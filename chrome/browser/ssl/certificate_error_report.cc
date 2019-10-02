@@ -194,7 +194,7 @@ CertificateErrorReport::CertificateErrorReport(
       trial_report->mutable_mac_combined_trust_debug_info());
 #endif
   if (!debug_info->trial_verification_time.is_null()) {
-    trial_report->set_trial_verification_time(
+    trial_report->set_trial_verification_time_usec(
         debug_info->trial_verification_time.ToDeltaSinceWindowsEpoch()
             .InMicroseconds());
   }
