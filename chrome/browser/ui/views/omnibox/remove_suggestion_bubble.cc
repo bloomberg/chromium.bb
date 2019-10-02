@@ -28,7 +28,7 @@ class RemoveSuggestionBubbleDialogDelegateView
       const AutocompleteMatch& match,
       base::OnceClosure remove_closure)
       : views::BubbleDialogDelegateView(anchor_view,
-                                        views::BubbleBorder::TOP_LEFT),
+                                        views::BubbleBorder::TOP_RIGHT),
         match_(match),
         remove_closure_(std::move(remove_closure)) {
     DCHECK(template_url_service);

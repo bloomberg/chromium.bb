@@ -22,6 +22,7 @@
 #include "ui/views/animation/animation_delegate_views.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/view.h"
 
@@ -165,6 +166,7 @@ class OmniboxResultView : public views::View,
   OmniboxMatchCellView* suggestion_view_;  // The leading (or left) view.
   OmniboxMatchCellView* keyword_view_;     // The trailing (or right) view.
   std::unique_ptr<OmniboxTabSwitchButton> suggestion_tab_switch_button_;
+  std::unique_ptr<views::ImageButton> remove_suggestion_button_;
 
   base::WeakPtrFactory<OmniboxResultView> weak_factory_{this};
 

@@ -27,6 +27,7 @@
 #include "components/omnibox/browser/vector_icons.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/vector_icons/vector_icons.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -35,6 +36,7 @@
 #include "ui/base/theme_provider.h"
 #include "ui/events/event.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/controls/menu/menu_runner.h"
 
 #if defined(OS_WIN)
@@ -101,6 +103,29 @@ void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
     AddChildView(suggestion_tab_switch_button_.get());
   } else {
     suggestion_tab_switch_button_.reset();
+  }
+
+  if (match_.SupportsDeletion() &&
+      base::FeatureList::IsEnabled(
+          omnibox::kOmniboxSuggestionTransparencyOptions)) {
+    // This is intentionally not in the tab order by default, but should be
+    // if the user has full-acessibility mode on. This is because this is a
+    // tertiary priority button, which already has a Shift+Delete shortcut.
+    // TODO(tommycli): Make sure we announce the Shift+Delete capability in the
+    // accessibility node data for removable suggestions.
+    if (!remove_suggestion_button_) {
+      remove_suggestion_button_ = views::CreateVectorImageButton(this);
+      remove_suggestion_button_->set_owned_by_client();
+
+      // TODO(tommycli): Make sure this is visible in Dark Mode.
+      views::SetImageFromVectorIcon(remove_suggestion_button_.get(),
+                                    vector_icons::kCloseRoundedIcon,
+                                    GetColor(OmniboxPart::RESULTS_ICON));
+
+      AddChildView(remove_suggestion_button_.get());
+    }
+  } else {
+    remove_suggestion_button_.reset();
   }
 
   Invalidate();
@@ -237,7 +262,31 @@ void OmniboxResultView::SetRichSuggestionImage(const gfx::ImageSkia& image) {
 // |button| is the tab switch button.
 void OmniboxResultView::ButtonPressed(views::Button* button,
                                       const ui::Event& event) {
-  OpenMatch(WindowOpenDisposition::SWITCH_TO_TAB, event.time_stamp());
+  if (button == suggestion_tab_switch_button_.get()) {
+    OpenMatch(WindowOpenDisposition::SWITCH_TO_TAB, event.time_stamp());
+  } else if (button == remove_suggestion_button_.get()) {
+    // Temporarily inhibit the popup closing on blur while we open the remove
+    // suggestion confirmation bubble.
+    popup_contents_view_->model()->set_popup_closes_on_blur(false);
+
+    // TODO(tommycli): We re-fetch the original match from the popup model,
+    // because |match_| already has its contents and description swapped by this
+    // class, and we don't want that for the bubble. We should improve this.
+    AutocompleteMatch raw_match =
+        popup_contents_view_->model()->result().match_at(model_index_);
+
+    TemplateURLService* template_url_service = popup_contents_view_->model()
+                                                   ->edit_model()
+                                                   ->client()
+                                                   ->GetTemplateURLService();
+    ShowRemoveSuggestion(template_url_service, this, raw_match,
+                         base::BindOnce(&OmniboxResultView::RemoveSuggestion,
+                                        weak_factory_.GetWeakPtr()));
+
+    popup_contents_view_->model()->set_popup_closes_on_blur(true);
+  } else {
+    NOTREACHED();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -252,6 +301,22 @@ void OmniboxResultView::Layout() {
     const int max_kw_x =
         suggestion_width - OmniboxMatchCellView::GetTextIndent();
     suggestion_width = animation_->CurrentValueBetween(max_kw_x, 0);
+  }
+
+  // Add buttons from right to left, shrinking the suggestion width as we go.
+  // TODO(tommycli): We should probably use a layout manager here.
+  if (remove_suggestion_button_) {
+    const gfx::Size button_size = remove_suggestion_button_->GetPreferredSize();
+    suggestion_width -=
+        button_size.width() + OmniboxMatchCellView::kMarginRight;
+
+    // Center the button vertically.
+    const int vertical_margin =
+        (suggestion_view_->height() - button_size.height()) / 2;
+    remove_suggestion_button_->SetBounds(suggestion_width, vertical_margin,
+                                         button_size.width(),
+                                         button_size.height());
+    remove_suggestion_button_->SetVisible(true);
   }
   if (suggestion_tab_switch_button_) {
     suggestion_tab_switch_button_->ProvideWidthHint(suggestion_width);
@@ -274,6 +339,7 @@ void OmniboxResultView::Layout() {
       suggestion_tab_switch_button_->SetVisible(false);
     }
   }
+
   keyword_view_->SetBounds(suggestion_width, 0, width() - suggestion_width,
                            height());
   if (popup_contents_view_->InExplicitExperimentalKeywordMode() ||
