@@ -2235,6 +2235,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'beaglebone',
       'beaglebone_servo',
       'betty',
+      'betty-arc64',
       'betty-arcnext',
       'betty-pi-arc',
       'bob',
@@ -2370,7 +2371,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   # notice, preferably with a comment indicating why and a bug.
   _paladin_experimental_boards = _paladin_new_boards | frozenset([
       'auron_paine', # crbug.com/1008410
-      'betty-arc64', # crbug.com/1010372
       'fizz-moblab', # crbug.com/995170
       'lakitu', # crbug.com/1010132
       'lakitu-gpu', # crbug.com/1010132
