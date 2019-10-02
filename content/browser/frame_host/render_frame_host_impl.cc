@@ -1597,6 +1597,12 @@ bool RenderFrameHostImpl::AccessibilityViewHasFocus() const {
   return false;
 }
 
+void RenderFrameHostImpl::AccessibilityViewSetFocus() {
+  RenderWidgetHostView* view = render_view_host_->GetWidget()->GetView();
+  if (view)
+    view->Focus();
+}
+
 gfx::Rect RenderFrameHostImpl::AccessibilityGetViewBounds() const {
   RenderWidgetHostView* view = render_view_host_->GetWidget()->GetView();
   if (view)
