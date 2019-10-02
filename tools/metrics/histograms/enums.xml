@@ -36036,7 +36036,6 @@ from previous Chrome versions.
   <int value="-623364791" label="ClickToCallReceiver:disabled"/>
   <int value="-622685174" label="enable-pdf-material-ui"/>
   <int value="-621382525" label="VizDisplayCompositor:enabled"/>
-  <int value="-621044227" label="OmniboxReverseTabSwitchLogic:enabled"/>
   <int value="-620030047" label="CrosCompUpdates:disabled"/>
   <int value="-619740638" label="ListAllDisplayModes:enabled"/>
   <int value="-619665653" label="DisableKeepaliveFetch:disabled"/>
@@ -37316,7 +37315,6 @@ from previous Chrome versions.
       label="AutofillCreditCardLastUsedDateDisplay:disabled"/>
   <int value="1155905651" label="DrawVerticallyEdgeToEdge:disabled"/>
   <int value="1155923106" label="NTPOfflinePages:enabled"/>
-  <int value="1161075291" label="OmniboxReverseTabSwitchLogic:disabled"/>
   <int value="1163255347" label="ash-enable-touch-view-touch-feedback"/>
   <int value="1165682330" label="AutofillSaveAndFillVPA:disabled"/>
   <int value="1166169237" label="disable-delay-agnostic-aec"/>

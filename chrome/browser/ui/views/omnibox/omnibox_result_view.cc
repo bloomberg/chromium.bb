@@ -10,7 +10,6 @@
 
 #include "base/feature_list.h"
 #include "base/macros.h"
-#include "base/metrics/field_trial_params.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -24,7 +23,6 @@
 #include "chrome/browser/ui/views/omnibox/remove_suggestion_bubble.h"
 #include "chrome/browser/ui/views/omnibox/rounded_omnibox_results_frame.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_popup_model.h"
 #include "components/omnibox/browser/vector_icons.h"
 #include "components/omnibox/common/omnibox_features.h"
@@ -94,19 +92,11 @@ void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
 
   // Set up possible button.
   if (match.ShouldShowButton()) {
-    if (!OmniboxFieldTrial::IsTabSwitchLogicReversed()) {
-      suggestion_tab_switch_button_ = std::make_unique<OmniboxTabSwitchButton>(
-          popup_contents_view_, this,
-          l10n_util::GetStringUTF16(IDS_OMNIBOX_TAB_SUGGEST_HINT),
-          l10n_util::GetStringUTF16(IDS_OMNIBOX_TAB_SUGGEST_SHORT_HINT),
-          omnibox::kSwitchIcon, theme_provider_);
-    } else {
-      suggestion_tab_switch_button_ = std::make_unique<OmniboxTabSwitchButton>(
-          // TODO(krb): Make official strings when we accept the feature.
-          popup_contents_view_, this, base::ASCIIToUTF16("Open in this tab"),
-          base::ASCIIToUTF16("Open"), omnibox::kSwitchIcon, theme_provider_);
-    }
-
+    suggestion_tab_switch_button_ = std::make_unique<OmniboxTabSwitchButton>(
+        popup_contents_view_, this,
+        l10n_util::GetStringUTF16(IDS_OMNIBOX_TAB_SUGGEST_HINT),
+        l10n_util::GetStringUTF16(IDS_OMNIBOX_TAB_SUGGEST_SHORT_HINT),
+        omnibox::kSwitchIcon, theme_provider_);
     suggestion_tab_switch_button_->set_owned_by_client();
     AddChildView(suggestion_tab_switch_button_.get());
   } else {
@@ -155,25 +145,13 @@ void OmniboxResultView::Invalidate(bool force_reapply_styles) {
   // description text, whereas non-answer suggestions use the match text and
   // calculated classifications for the description text.
   if (match_.answer) {
-    const bool reverse = OmniboxFieldTrial::IsReverseAnswersEnabled() &&
-                         !match_.answer->IsExceptedFromLineReversal();
-    if (reverse) {
-      suggestion_view_->content()->SetText(match_.answer->second_line());
-      suggestion_view_->description()->SetText(match_.contents,
-                                               match_.contents_class, true);
-      suggestion_view_->description()->ApplyTextColor(
-          OmniboxPart::RESULTS_TEXT_DIMMED);
-      suggestion_view_->description()->AppendExtraText(
-          match_.answer->first_line());
-    } else {
-      suggestion_view_->content()->SetText(match_.contents,
-                                           match_.contents_class);
-      suggestion_view_->content()->ApplyTextColor(
-          OmniboxPart::RESULTS_TEXT_DEFAULT);
-      suggestion_view_->content()->AppendExtraText(match_.answer->first_line());
-      suggestion_view_->description()->SetText(match_.answer->second_line(),
-                                               true);
-    }
+    suggestion_view_->content()->SetText(match_.contents,
+                                         match_.contents_class);
+    suggestion_view_->content()->ApplyTextColor(
+        OmniboxPart::RESULTS_TEXT_DEFAULT);
+    suggestion_view_->content()->AppendExtraText(match_.answer->first_line());
+    suggestion_view_->description()->SetText(match_.answer->second_line(),
+                                             true);
   } else if (match_.type == AutocompleteMatchType::SEARCH_SUGGEST_ENTITY ||
              match_.type == AutocompleteMatchType::PEDAL) {
     // Entities use match text and calculated classifications, but with style
@@ -259,12 +237,7 @@ void OmniboxResultView::SetRichSuggestionImage(const gfx::ImageSkia& image) {
 // |button| is the tab switch button.
 void OmniboxResultView::ButtonPressed(views::Button* button,
                                       const ui::Event& event) {
-  if (!(OmniboxFieldTrial::IsTabSwitchLogicReversed() &&
-        match_.ShouldShowTabMatchButton())) {
-    OpenMatch(WindowOpenDisposition::SWITCH_TO_TAB, event.time_stamp());
-  } else {
-    OpenMatch(WindowOpenDisposition::CURRENT_TAB, event.time_stamp());
-  }
+  OpenMatch(WindowOpenDisposition::SWITCH_TO_TAB, event.time_stamp());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -355,9 +328,7 @@ void OmniboxResultView::OnMouseReleased(const ui::MouseEvent& event) {
         event.IsOnlyLeftMouseButton()
             ? WindowOpenDisposition::CURRENT_TAB
             : WindowOpenDisposition::NEW_BACKGROUND_TAB;
-    if ((OmniboxFieldTrial::IsTabSwitchLogicReversed() &&
-         match_.ShouldShowTabMatchButton()) ||
-        match_.IsTabSwitchSuggestion()) {
+    if (match_.IsTabSwitchSuggestion()) {
       disposition = WindowOpenDisposition::SWITCH_TO_TAB;
     }
     OpenMatch(disposition, event.time_stamp());
