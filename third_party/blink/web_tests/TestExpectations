@@ -5843,6 +5843,7 @@ crbug.com/959693 external/wpt/trusted-types/WorkerGlobalScope-importScripts.http
 # Allow failure until its appearance gets stable.
 crbug.com/972476 std-switch/switch-appearance.html [ Failure ]
 crbug.com/972476 std-switch/switch-appearance-customization.html [ Failure ]
+crbug.com/972476 std-switch/switch-appearance-theme.html [ Failure ]
 
 # Sheriff 2019-05-20
 crbug.com/965389 [ Mac ] media/track/track-cue-rendering-position-auto.html [ Pass Failure ]
