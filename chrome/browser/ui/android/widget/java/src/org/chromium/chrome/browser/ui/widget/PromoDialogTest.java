@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.widget;
+package org.chromium.chrome.browser.ui.widget;
 
 import android.app.Activity;
 import android.content.DialogInterface;
@@ -19,8 +19,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CallbackHelper;
-import org.chromium.chrome.R;
-import org.chromium.chrome.browser.widget.PromoDialog.DialogParams;
+import org.chromium.chrome.browser.ui.widget.PromoDialog.DialogParams;
+import org.chromium.chrome.browser.ui.widget.test.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ui.DummyUiActivityTestCase;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -102,18 +102,18 @@ public class PromoDialogTest extends DummyUiActivityTestCase {
     public void testBasic_Visibility() throws Exception {
         // Create a full dialog.
         DialogParams dialogParams = new DialogParams();
-        dialogParams.vectorDrawableResource = R.drawable.data_reduction_illustration;
-        dialogParams.headerStringResource = R.string.data_reduction_promo_title_lite_mode;
-        dialogParams.subheaderStringResource = R.string.data_reduction_promo_summary_lite_mode;
-        dialogParams.primaryButtonStringResource = R.string.ok;
-        dialogParams.secondaryButtonStringResource = R.string.cancel;
-        dialogParams.footerStringResource = R.string.learn_more;
+        dialogParams.vectorDrawableResource = R.drawable.promo_dialog_test_vector;
+        dialogParams.headerStringResource = R.string.promo_dialog_test_header;
+        dialogParams.subheaderStringResource = R.string.promo_dialog_test_subheader;
+        dialogParams.primaryButtonStringResource = R.string.promo_dialog_test_primary_button;
+        dialogParams.secondaryButtonStringResource = R.string.promo_dialog_test_secondary_button;
+        dialogParams.footerStringResource = R.string.promo_dialog_test_footer;
         checkDialogControlVisibility(dialogParams);
 
         // Create a minimal dialog.
         dialogParams = new DialogParams();
-        dialogParams.headerStringResource = R.string.data_reduction_promo_title_lite_mode;
-        dialogParams.primaryButtonStringResource = R.string.ok;
+        dialogParams.headerStringResource = R.string.promo_dialog_test_subheader;
+        dialogParams.primaryButtonStringResource = R.string.promo_dialog_test_primary_button;
         checkDialogControlVisibility(dialogParams);
     }
 
@@ -151,12 +151,12 @@ public class PromoDialogTest extends DummyUiActivityTestCase {
     @SmallTest
     public void testBasic_Orientation() throws Exception {
         DialogParams dialogParams = new DialogParams();
-        dialogParams.vectorDrawableResource = R.drawable.data_reduction_illustration;
-        dialogParams.headerStringResource = R.string.data_reduction_promo_title_lite_mode;
-        dialogParams.subheaderStringResource = R.string.data_reduction_promo_summary_lite_mode;
-        dialogParams.primaryButtonStringResource = R.string.ok;
-        dialogParams.secondaryButtonStringResource = R.string.cancel;
-        dialogParams.footerStringResource = R.string.learn_more;
+        dialogParams.vectorDrawableResource = R.drawable.promo_dialog_test_vector;
+        dialogParams.headerStringResource = R.string.promo_dialog_test_header;
+        dialogParams.subheaderStringResource = R.string.promo_dialog_test_subheader;
+        dialogParams.primaryButtonStringResource = R.string.promo_dialog_test_primary_button;
+        dialogParams.secondaryButtonStringResource = R.string.promo_dialog_test_secondary_button;
+        dialogParams.footerStringResource = R.string.promo_dialog_test_footer;
 
         PromoDialogWrapper wrapper = new PromoDialogWrapper(getActivity(), dialogParams);
         final PromoDialogLayout promoDialogLayout = wrapper.dialogLayout;
@@ -184,9 +184,9 @@ public class PromoDialogTest extends DummyUiActivityTestCase {
     @SmallTest
     public void testBasic_ButtonClicks() throws Exception {
         DialogParams dialogParams = new DialogParams();
-        dialogParams.headerStringResource = R.string.search_with_sogou;
-        dialogParams.primaryButtonStringResource = R.string.ok;
-        dialogParams.secondaryButtonStringResource = R.string.cancel;
+        dialogParams.headerStringResource = R.string.promo_dialog_test_header;
+        dialogParams.primaryButtonStringResource = R.string.promo_dialog_test_primary_button;
+        dialogParams.secondaryButtonStringResource = R.string.promo_dialog_test_secondary_button;
 
         PromoDialogWrapper wrapper = new PromoDialogWrapper(getActivity(), dialogParams);
         final PromoDialogLayout promoDialogLayout = wrapper.dialogLayout;
@@ -213,9 +213,9 @@ public class PromoDialogTest extends DummyUiActivityTestCase {
     public void testBasic_HeaderBehavior_WithIllustration() throws Exception {
         // With an illustration, the header View is part of the scrollable content.
         DialogParams dialogParams = new DialogParams();
-        dialogParams.drawableResource = R.drawable.preview_pin_round;
-        dialogParams.headerStringResource = R.string.data_reduction_promo_title_lite_mode;
-        dialogParams.primaryButtonStringResource = R.string.data_reduction_enable_button_lite_mode;
+        dialogParams.drawableResource = R.drawable.promo_dialog_test_drawable;
+        dialogParams.headerStringResource = R.string.promo_dialog_test_header;
+        dialogParams.primaryButtonStringResource = R.string.promo_dialog_test_primary_button;
 
         PromoDialogWrapper wrapper = new PromoDialogWrapper(getActivity(), dialogParams);
         PromoDialogLayout promoDialogLayout = wrapper.dialogLayout;
@@ -232,9 +232,9 @@ public class PromoDialogTest extends DummyUiActivityTestCase {
     public void testBasic_HeaderBehavior_WithVectorIllustration() throws Exception {
         // With a vector illustration, the header View is part of the scrollable content.
         DialogParams dialogParams = new DialogParams();
-        dialogParams.vectorDrawableResource = R.drawable.search_sogou;
-        dialogParams.headerStringResource = R.string.search_with_sogou;
-        dialogParams.primaryButtonStringResource = R.string.ok;
+        dialogParams.vectorDrawableResource = R.drawable.promo_dialog_test_vector;
+        dialogParams.headerStringResource = R.string.promo_dialog_test_header;
+        dialogParams.primaryButtonStringResource = R.string.promo_dialog_test_primary_button;
 
         PromoDialogWrapper wrapper = new PromoDialogWrapper(getActivity(), dialogParams);
         PromoDialogLayout promoDialogLayout = wrapper.dialogLayout;
@@ -252,8 +252,8 @@ public class PromoDialogTest extends DummyUiActivityTestCase {
         // Without an illustration, the header View becomes locked to the top of the layout if
         // there is enough height.
         DialogParams dialogParams = new DialogParams();
-        dialogParams.headerStringResource = R.string.search_with_sogou;
-        dialogParams.primaryButtonStringResource = R.string.ok;
+        dialogParams.headerStringResource = R.string.promo_dialog_test_header;
+        dialogParams.primaryButtonStringResource = R.string.promo_dialog_test_primary_button;
 
         PromoDialogWrapper wrapper = new PromoDialogWrapper(getActivity(), dialogParams);
         PromoDialogLayout promoDialogLayout = wrapper.dialogLayout;

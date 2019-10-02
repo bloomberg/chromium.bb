@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.widget;
+package org.chromium.chrome.browser.ui.widget;
 
 import android.content.Context;
 import android.support.graphics.drawable.VectorDrawableCompat;
@@ -15,10 +15,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ui.widget.BoundedLinearLayout;
-import org.chromium.chrome.browser.ui.widget.DualControlLayout;
-import org.chromium.chrome.browser.widget.PromoDialog.DialogParams;
+import org.chromium.chrome.browser.ui.widget.PromoDialog.DialogParams;
 
 /**
  * Lays out a promo dialog that is shown when Clank starts up.

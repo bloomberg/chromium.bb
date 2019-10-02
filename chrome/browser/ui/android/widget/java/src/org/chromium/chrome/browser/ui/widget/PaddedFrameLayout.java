@@ -2,26 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.widget;
+package org.chromium.chrome.browser.ui.widget;
 
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.util.AttributeSet;
 import android.widget.FrameLayout;
 
-import org.chromium.chrome.R;
-
 /**
  * A layout for displaying a View with padding, borders, and a maximum width and/or height. E.g.:
  *
- *   <org.chromium.chrome.browser.widget.PaddedFrameLayout
+ *   <org.chromium.chrome.browser.ui.widget.PaddedFrameLayout
  *       chrome:maxChildWidth="200dp"
  *       chrome:maxChildHeight="400dp">
  *       ... contents here ...
- *   </org.chromium.chrome.browser.widget.PaddedFrameLayout>
+ *   </org.chromium.chrome.browser.ui.widget.PaddedFrameLayout>
  */
 public class PaddedFrameLayout extends FrameLayout {
-
     // Value for mMaxChildWidth or mMaxChildHeight to specify that the width or height should
     // not be constrained.
     private static final int NO_MAX_SIZE = -1;
@@ -38,10 +35,10 @@ public class PaddedFrameLayout extends FrameLayout {
     public PaddedFrameLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
         TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.PaddedFrameLayout);
-        mMaxChildWidth = a.getDimensionPixelSize(
-                R.styleable.PaddedFrameLayout_maxChildWidth, NO_MAX_SIZE);
-        mMaxChildHeight = a.getDimensionPixelSize(
-                R.styleable.PaddedFrameLayout_maxChildHeight, NO_MAX_SIZE);
+        mMaxChildWidth =
+                a.getDimensionPixelSize(R.styleable.PaddedFrameLayout_maxChildWidth, NO_MAX_SIZE);
+        mMaxChildHeight =
+                a.getDimensionPixelSize(R.styleable.PaddedFrameLayout_maxChildHeight, NO_MAX_SIZE);
         a.recycle();
     }
 
@@ -77,8 +74,8 @@ public class PaddedFrameLayout extends FrameLayout {
         int bottomPadding = mBottomPadding;
         if (mMaxChildHeight != NO_MAX_SIZE) {
             // Increase padding if needed to ensure children are no taller than mMaxChildHeight.
-            int childHeight = MeasureSpec.getSize(heightMeasureSpec)
-                    - (mTopPadding + mBottomPadding);
+            int childHeight =
+                    MeasureSpec.getSize(heightMeasureSpec) - (mTopPadding + mBottomPadding);
             int excessHeight = childHeight - mMaxChildHeight;
             if (excessHeight > 0) {
                 topPadding += excessHeight / 2;
@@ -89,5 +86,4 @@ public class PaddedFrameLayout extends FrameLayout {
 
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }
-
 }

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.widget;
+package org.chromium.chrome.browser.ui.widget;
 
 import android.app.Activity;
 import android.content.DialogInterface;
@@ -17,8 +17,6 @@ import android.view.ViewGroup.LayoutParams;
 import android.widget.FrameLayout;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ui.widget.AlwaysDismissedDialog;
 
 /**
  * Generic builder for promo dialogs.

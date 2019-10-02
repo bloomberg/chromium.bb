@@ -14,7 +14,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <org.chromium.chrome.browser.widget.PromoDialogLayout
+    <org.chromium.chrome.browser.ui.widget.PromoDialogLayout
             android:id="@+id/promo_dialog_layout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -67,11 +67,12 @@
                         android:layout_marginBottom="@dimen/dialog_header_margin"
                         android:textAppearance="@style/TextAppearance.BlackHeadline" />
 
-                    <TextView
+                    <org.chromium.ui.widget.TextViewWithLeading
                         android:id="@+id/subheader"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        style="@style/PromoDialogNormalText" />
+                        app:leading="@dimen/text_size_medium_leading"
+                        style="@style/TextAppearance.BlackBody" />
                 </org.chromium.chrome.browser.ui.widget.BoundedLinearLayout>
             </LinearLayout>
 
@@ -79,7 +80,7 @@
 
         <ViewStub
                 android:id="@+id/footer_stub"
-                android:layout="@layout/infobar_control_description"
+                android:layout="@layout/dialog_control_description"
                 android:inflatedId="@+id/footer"
                 android:layout_margin="@dimen/promo_dialog_padding"
                 android:layout_width="match_parent"
@@ -92,8 +93,8 @@
                 android:layout_gravity="end"
                 android:padding="@dimen/promo_dialog_padding"
                 app:buttonAlignment="end"
-                app:stackedMargin="@dimen/infobar_padding" />
+                app:stackedMargin="@dimen/promo_dialog_stacked_margin" />
 
-    </org.chromium.chrome.browser.widget.PromoDialogLayout>
+    </org.chromium.chrome.browser.ui.widget.PromoDialogLayout>
 
 </merge>

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.widget.dragreorder;
+package org.chromium.chrome.browser.ui.widget.dragreorder;
 
 import android.content.Context;
 import android.content.res.Resources;
@@ -17,7 +17,7 @@ import android.support.v7.widget.helper.ItemTouchHelper;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ui.widget.R;
 
 import java.util.Collections;
 import java.util.List;

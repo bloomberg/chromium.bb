@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.widget;
+package org.chromium.chrome.browser.ui.widget;
 
 import android.app.Activity;
 import android.graphics.Color;
@@ -18,7 +18,6 @@ import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
 import android.view.animation.ScaleAnimation;
 
-import org.chromium.chrome.browser.ui.widget.AlwaysDismissedDialog;
 import org.chromium.chrome.browser.ui.widget.animation.Interpolators;
 
 /**

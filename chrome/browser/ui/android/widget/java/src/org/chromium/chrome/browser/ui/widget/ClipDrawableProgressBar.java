@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.widget;
+package org.chromium.chrome.browser.ui.widget;
 
 import android.content.Context;
 import android.graphics.Color;
@@ -16,7 +16,6 @@ import android.widget.ImageView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.R;
 
 /**
  * An alternative progress bar implemented using ClipDrawable for simplicity and performance.
@@ -55,7 +54,7 @@ public class ClipDrawableProgressBar extends ImageView {
     private static final int CLIP_DRAWABLE_MAX = 10000;
 
     private final ColorDrawable mForegroundDrawable;
-    private int mBackgroundColor = Color.TRANSPARENT;
+    private int mBackgroundColor;
     private float mProgress;
     private int mDesiredVisibility;
 
@@ -135,27 +134,15 @@ public class ClipDrawableProgressBar extends ImageView {
         drawingInfoOut.progressBarBackgroundColor = applyAlpha(mBackgroundColor, effectiveAlpha);
 
         if (ViewCompat.getLayoutDirection(this) == LAYOUT_DIRECTION_LTR) {
-            drawingInfoOut.progressBarRect.set(
-                    getLeft(),
-                    getTop(),
-                    getLeft() + Math.round(mProgress * getWidth()),
-                    getBottom());
+            drawingInfoOut.progressBarRect.set(getLeft(), getTop(),
+                    getLeft() + Math.round(mProgress * getWidth()), getBottom());
             drawingInfoOut.progressBarBackgroundRect.set(
-                    drawingInfoOut.progressBarRect.right,
-                    getTop(),
-                    getRight(),
-                    getBottom());
+                    drawingInfoOut.progressBarRect.right, getTop(), getRight(), getBottom());
         } else {
-            drawingInfoOut.progressBarRect.set(
-                    getRight() - Math.round(mProgress * getWidth()),
-                    getTop(),
-                    getRight(),
-                    getBottom());
+            drawingInfoOut.progressBarRect.set(getRight() - Math.round(mProgress * getWidth()),
+                    getTop(), getRight(), getBottom());
             drawingInfoOut.progressBarBackgroundRect.set(
-                    getLeft(),
-                    getTop(),
-                    drawingInfoOut.progressBarRect.left,
-                    getBottom());
+                    getLeft(), getTop(), drawingInfoOut.progressBarRect.left, getBottom());
         }
     }
 

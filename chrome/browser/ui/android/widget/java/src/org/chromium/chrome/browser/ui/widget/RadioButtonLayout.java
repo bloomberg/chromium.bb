@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.widget;
+package org.chromium.chrome.browser.ui.widget;
 
 import android.content.Context;
 import android.util.AttributeSet;
@@ -12,8 +12,6 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 
 import androidx.annotation.Nullable;
-
-import org.chromium.chrome.R;
 
 import java.util.List;
 
@@ -38,7 +36,7 @@ public final class RadioButtonLayout extends RadioGroup {
     public RadioButtonLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
         mMarginBetweenRows = context.getResources().getDimensionPixelSize(
-                R.dimen.infobar_control_margin_between_rows);
+                R.dimen.dual_control_margin_between_items);
     }
 
     /**

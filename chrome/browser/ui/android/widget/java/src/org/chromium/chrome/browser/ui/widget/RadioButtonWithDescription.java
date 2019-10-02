@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.widget;
+package org.chromium.chrome.browser.ui.widget;
 
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -17,8 +17,6 @@ import android.view.View.OnClickListener;
 import android.widget.RadioButton;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-
-import org.chromium.chrome.R;
 
 import java.util.List;
 
@@ -74,8 +72,8 @@ public class RadioButtonWithDescription extends RelativeLayout implements OnClic
     }
 
     private void applyAttributes(AttributeSet attrs) {
-        TypedArray a = getContext().getTheme().obtainStyledAttributes(attrs,
-                R.styleable.RadioButtonWithDescription, 0, 0);
+        TypedArray a = getContext().getTheme().obtainStyledAttributes(
+                attrs, R.styleable.RadioButtonWithDescription, 0, 0);
 
         String titleText = a.getString(R.styleable.RadioButtonWithDescription_titleText);
         if (titleText != null) mTitle.setText(titleText);
@@ -214,4 +212,3 @@ public class RadioButtonWithDescription extends RelativeLayout implements OnClic
         dispatchThawSelfOnly(container);
     }
 }
-
