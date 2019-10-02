@@ -21,7 +21,6 @@ enum class PassphraseType;
 
 // Reasons due to which Cryptographer might require a passphrase.
 enum PassphraseRequiredReason {
-  REASON_PASSPHRASE_NOT_REQUIRED = 0,  // Initial value.
   REASON_ENCRYPTION = 1,               // The cryptographer requires a
                                        // passphrase for its first attempt at
                                        // encryption. Happens only during

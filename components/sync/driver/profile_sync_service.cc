@@ -1334,11 +1334,6 @@ SyncCycleSnapshot ProfileSyncService::GetLastCycleSnapshotForDebugging() const {
   return last_snapshot_;
 }
 
-PassphraseRequiredReason
-ProfileSyncService::GetPassphraseRequiredReasonForTest() const {
-  return crypto_.passphrase_required_reason();
-}
-
 void ProfileSyncService::HasUnsyncedItemsForTest(
     base::OnceCallback<void(bool)> cb) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

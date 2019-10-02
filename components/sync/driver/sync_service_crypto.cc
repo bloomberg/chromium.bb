@@ -151,6 +151,18 @@ base::Time SyncServiceCrypto::GetExplicitPassphraseTime() const {
   return state_.cached_explicit_passphrase_time;
 }
 
+bool SyncServiceCrypto::IsPassphraseRequired() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  switch (state_.required_user_action) {
+    case RequiredUserAction::kNone:
+      break;
+    case RequiredUserAction::kPassphraseRequiredForDecryption:
+    case RequiredUserAction::kPassphraseRequiredForEncryption:
+      return true;
+  }
+  return false;
+}
+
 bool SyncServiceCrypto::IsUsingSecondaryPassphrase() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return IsExplicitPassphrase(state_.cached_passphrase_type);
@@ -176,17 +188,20 @@ void SyncServiceCrypto::SetEncryptionPassphrase(const std::string& passphrase) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // This should only be called when the engine has been initialized.
   DCHECK(state_.engine);
-  DCHECK(state_.passphrase_required_reason != REASON_DECRYPTION)
+  DCHECK_NE(state_.required_user_action,
+            RequiredUserAction::kPassphraseRequiredForDecryption)
       << "Can not set explicit passphrase when decryption is needed.";
 
   DVLOG(1) << "Setting explicit passphrase for encryption.";
-  if (state_.passphrase_required_reason == REASON_ENCRYPTION) {
-    // REASON_ENCRYPTION implies that the cryptographer does not have pending
-    // keys. Hence, as long as we're not trying to do an invalid passphrase
-    // change (e.g. explicit -> explicit or explicit -> implicit), we know this
-    // will succeed. If for some reason a new encryption key arrives via
-    // sync later, the SBH will trigger another OnPassphraseRequired().
-    state_.passphrase_required_reason = REASON_PASSPHRASE_NOT_REQUIRED;
+  if (state_.required_user_action ==
+      RequiredUserAction::kPassphraseRequiredForEncryption) {
+    // |kPassphraseRequiredForEncryption| implies that the cryptographer does
+    // not have pending keys. Hence, as long as we're not trying to do an
+    // invalid passphrase change (e.g. explicit -> explicit or explicit ->
+    // implicit), we know this will succeed. If for some reason a new
+    // encryption key arrives via sync later, the SyncEncryptionHandler will
+    // trigger another OnPassphraseRequired().
+    state_.required_user_action = RequiredUserAction::kNone;
     notify_observers_.Run();
   }
 
@@ -270,7 +285,17 @@ void SyncServiceCrypto::OnPassphraseRequired(
 
   DVLOG(1) << "Passphrase required with reason: "
            << PassphraseRequiredReasonToString(reason);
-  state_.passphrase_required_reason = reason;
+
+  switch (reason) {
+    case REASON_ENCRYPTION:
+      state_.required_user_action =
+          RequiredUserAction::kPassphraseRequiredForEncryption;
+      break;
+    case REASON_DECRYPTION:
+      state_.required_user_action =
+          RequiredUserAction::kPassphraseRequiredForDecryption;
+      break;
+  }
 
   // Reconfigure without the encrypted types (excluded implicitly via the
   // failed datatypes handler).
@@ -283,9 +308,9 @@ void SyncServiceCrypto::OnPassphraseAccepted() {
   // Clear our cache of the cryptographer's pending keys.
   state_.cached_pending_keys.clear_blob();
 
-  // Reset |passphrase_required_reason| since we know we no longer require the
+  // Reset |required_user_action| since we know we no longer require the
   // passphrase.
-  state_.passphrase_required_reason = REASON_PASSPHRASE_NOT_REQUIRED;
+  state_.required_user_action = RequiredUserAction::kNone;
 
   // Make sure the data types that depend on the passphrase are started at
   // this time.

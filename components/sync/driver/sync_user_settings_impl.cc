@@ -125,8 +125,7 @@ void SyncUserSettingsImpl::EnableEncryptEverything() {
 }
 
 bool SyncUserSettingsImpl::IsPassphraseRequired() const {
-  return crypto_->passphrase_required_reason() !=
-         REASON_PASSPHRASE_NOT_REQUIRED;
+  return crypto_->IsPassphraseRequired();
 }
 
 bool SyncUserSettingsImpl::IsPassphraseRequiredForPreferredDataTypes() const {
