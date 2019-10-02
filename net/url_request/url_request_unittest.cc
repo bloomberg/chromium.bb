@@ -6993,12 +6993,8 @@ TEST_F(URLRequestTest, ReportCookieActivity) {
     auto entries =
         net_log.GetEntriesWithType(NetLogEventType::COOKIE_INCLUSION_STATUS);
     EXPECT_EQ(2u, entries.size());
-    EXPECT_THAT(GetStringValueFromParams(entries[0], "exclusion_reason"),
-                ::testing::HasSubstr("EXCLUDE_NOT_ON_PATH"));
-    EXPECT_THAT(GetStringValueFromParams(entries[0], "exclusion_reason"),
-                ::testing::HasSubstr("EXCLUDE_USER_PREFERENCES"));
-    EXPECT_THAT(GetStringValueFromParams(entries[0], "exclusion_reason"),
-                ::testing::HasSubstr("DO_NOT_WARN"));
+    EXPECT_EQ("EXCLUDE_NOT_ON_PATH, EXCLUDE_USER_PREFERENCES, DO_NOT_WARN",
+              GetStringValueFromParams(entries[0], "exclusion_reason"));
     EXPECT_EQ("EXCLUDE_USER_PREFERENCES, DO_NOT_WARN",
               GetStringValueFromParams(entries[1], "exclusion_reason"));
     net_log.Clear();
