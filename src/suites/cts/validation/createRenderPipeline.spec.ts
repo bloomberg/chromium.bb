@@ -8,6 +8,10 @@ import GLSL from '../../../tools/glsl.macro.js';
 import { ValidationTest } from './validation_test.js';
 
 class F extends ValidationTest {
+  async init(): Promise<void> {
+    await Promise.all([super.init(), this.initGLSL()]);
+  }
+
   getDescriptor(
     options: {
       primitiveTopology?: GPUPrimitiveTopology;
@@ -24,9 +28,11 @@ class F extends ValidationTest {
       depthStencilState,
     } = options;
 
+    const format = colorStates.length ? colorStates[0].format : 'rgba8unorm';
+
     return {
       vertexStage: this.getVertexStage(),
-      fragmentStage: this.getFragmentStage(),
+      fragmentStage: this.getFragmentStage(format),
       layout: this.getPipelineLayout(),
       primitiveTopology,
       colorStates,
@@ -51,19 +57,26 @@ class F extends ValidationTest {
     };
   }
 
-  getFragmentStage(): GPUProgrammableStageDescriptor {
+  getFragmentStage(format: GPUTextureFormat): GPUProgrammableStageDescriptor {
+    let fragColorType;
+    if (format.endsWith('sint')) {
+      fragColorType = 'ivec4';
+    } else if (format.endsWith('uint')) {
+      fragColorType = 'uvec4';
+    } else {
+      fragColorType = 'vec4';
+    }
+
+    const code = `
+      #version 450
+      layout(location = 0) out ${fragColorType} fragColor;
+      void main() {
+        fragColor = ${fragColorType}(0.0, 1.0, 0.0, 1.0);
+      }
+    `;
+
     return {
-      module: this.device.createShaderModule({
-        code: GLSL(
-          'fragment',
-          `#version 450
-            layout(location = 0) out vec4 fragColor;
-            void main() {
-              fragColor = vec4(0.0, 1.0, 0.0, 1.0);
-            }
-          `
-        ),
-      }),
+      module: this.makeShaderModule('fragment', code),
       entryPoint: 'main',
     };
   }
