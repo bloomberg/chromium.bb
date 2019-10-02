@@ -679,6 +679,10 @@ DocumentMarkerVector DocumentMarkerController::ComputeMarkersToPaint(
   return markers_to_paint;
 }
 
+bool DocumentMarkerController::PossiblyHasTextMatchMarkers() const {
+  return PossiblyHasMarkers(DocumentMarker::kTextMatch);
+}
+
 Vector<IntRect> DocumentMarkerController::LayoutRectsForTextMatchMarkers() {
   DCHECK(!document_->View()->NeedsLayout());
   DCHECK(!document_->NeedsLayoutTreeUpdate());

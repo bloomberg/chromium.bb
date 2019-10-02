@@ -337,7 +337,8 @@ class CORE_EXPORT PaintLayerScrollableArea final
   WebColorScheme UsedColorScheme() const override;
   cc::AnimationHost* GetCompositorAnimationHost() const override;
   CompositorAnimationTimeline* GetCompositorAnimationTimeline() const override;
-  void GetTickmarks(Vector<IntRect>&) const override;
+  bool HasTickmarks() const override;
+  Vector<IntRect> GetTickmarks() const override;
 
   void VisibleSizeChanged();
 

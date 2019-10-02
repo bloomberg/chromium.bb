@@ -79,7 +79,8 @@ class CORE_EXPORT Scrollbar : public GarbageCollected<Scrollbar>,
   const IntRect& FrameRect() const { return frame_rect_; }
 
   ScrollbarOverlayColorTheme GetScrollbarOverlayColorTheme() const;
-  void GetTickmarks(Vector<IntRect>&) const;
+  bool HasTickmarks() const;
+  Vector<IntRect> GetTickmarks() const;
   bool IsScrollableAreaActive() const;
 
   IntPoint ConvertFromRootFrame(const IntPoint&) const;

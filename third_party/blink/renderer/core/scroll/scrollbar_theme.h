@@ -156,29 +156,9 @@ class CORE_EXPORT ScrollbarTheme {
                           IntRect& thumb,
                           IntRect& end_track);
 
-  virtual void PaintScrollbarBackground(GraphicsContext&, const Scrollbar&) {}
-  virtual void PaintTrackBackground(GraphicsContext&,
-                                    const Scrollbar&,
-                                    const IntRect&) {}
-  virtual void PaintTrackPiece(GraphicsContext&,
-                               const Scrollbar&,
-                               const IntRect&,
-                               ScrollbarPart) {}
-  virtual void PaintButton(GraphicsContext&,
-                           const Scrollbar&,
-                           const IntRect&,
-                           ScrollbarPart) {}
   virtual void PaintThumb(GraphicsContext&, const Scrollbar&, const IntRect&) {}
 
-  // Paint the thumb with ThumbOpacity() applied.
-  virtual void PaintThumbWithOpacity(GraphicsContext& context,
-                                     const Scrollbar& scrollbar,
-                                     const IntRect& rect) {
-    // By default this method just calls PaintThumb(). A theme with custom
-    // ThumbOpacity() should override this method to apply the opacity.
-    DCHECK_EQ(1.0f, ThumbOpacity(scrollbar));
-    PaintThumb(context, scrollbar, rect);
-  }
+  void PaintTrackAndButtonsForCompositor(GraphicsContext&, const Scrollbar&);
 
   virtual int MaxOverlapBetweenPages() {
     return std::numeric_limits<int>::max();
@@ -226,6 +206,29 @@ class CORE_EXPORT ScrollbarTheme {
 
  protected:
   virtual int TickmarkBorderWidth() { return 0; }
+  virtual void PaintScrollbarBackground(GraphicsContext&, const Scrollbar&) {}
+  virtual void PaintTrackBackground(GraphicsContext&,
+                                    const Scrollbar&,
+                                    const IntRect&) {}
+  virtual void PaintTrackPiece(GraphicsContext&,
+                               const Scrollbar&,
+                               const IntRect&,
+                               ScrollbarPart) {}
+  virtual void PaintButton(GraphicsContext&,
+                           const Scrollbar&,
+                           const IntRect&,
+                           ScrollbarPart) {}
+
+  // Paint the thumb with ThumbOpacity() applied.
+  virtual void PaintThumbWithOpacity(GraphicsContext& context,
+                                     const Scrollbar& scrollbar,
+                                     const IntRect& rect) {
+    // By default this method just calls PaintThumb(). A theme with custom
+    // ThumbOpacity() should override this method to apply the opacity.
+    DCHECK_EQ(1.0f, ThumbOpacity(scrollbar));
+    PaintThumb(context, scrollbar, rect);
+  }
+
   static DisplayItem::Type ButtonPartToDisplayItemType(ScrollbarPart);
   static DisplayItem::Type TrackPiecePartToDisplayItemType(ScrollbarPart);
 

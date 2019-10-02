@@ -223,8 +223,7 @@ void ScrollbarTheme::PaintTickmarks(GraphicsContext& context,
     return;
 
   // Get the tickmarks for the frameview.
-  Vector<IntRect> tickmarks;
-  scrollbar.GetTickmarks(tickmarks);
+  Vector<IntRect> tickmarks = scrollbar.GetTickmarks();
   if (!tickmarks.size())
     return;
 
@@ -392,6 +391,43 @@ void ScrollbarTheme::SetMockScrollbarsEnabled(bool flag) {
 
 bool ScrollbarTheme::MockScrollbarsEnabled() {
   return g_mock_scrollbars_enabled_;
+}
+
+void ScrollbarTheme::PaintTrackAndButtonsForCompositor(
+    GraphicsContext& context,
+    const Scrollbar& scrollbar) {
+  // We paint compositor scrollbars in the space relative to the scrollbar's
+  // origin.
+  IntPoint offset = -scrollbar.Location();
+
+  if (HasButtons(scrollbar)) {
+    IntRect back_button_rect = BackButtonRect(scrollbar, kBackButtonStartPart);
+    back_button_rect.MoveBy(offset);
+    PaintButton(context, scrollbar, back_button_rect, kBackButtonStartPart);
+
+    IntRect forward_button_rect =
+        ForwardButtonRect(scrollbar, kForwardButtonEndPart);
+    forward_button_rect.MoveBy(offset);
+    PaintButton(context, scrollbar, forward_button_rect, kForwardButtonEndPart);
+
+    // Composited scrollbars don't have kBackButtonEndPart and
+    // kForwardButtonStartPart.
+    DCHECK(BackButtonRect(scrollbar, kBackButtonEndPart).IsEmpty());
+    DCHECK(ForwardButtonRect(scrollbar, kForwardButtonStartPart).IsEmpty());
+  }
+
+  IntRect track_rect = TrackRect(scrollbar);
+  track_rect.MoveBy(offset);
+  PaintTrackBackground(context, scrollbar, track_rect);
+
+  if (HasThumb(scrollbar)) {
+    // We don't repaint composited scrollbars on thumb position change, so
+    // the back track and forward track can't depend on thumb position. Just
+    // paint them on the whole track. All scrollbar themes for composited
+    // scrollbars know how to handle this case.
+    PaintTrackPiece(context, scrollbar, track_rect, kBackTrackPart);
+    PaintTrackPiece(context, scrollbar, track_rect, kForwardTrackPart);
+  }
 }
 
 DisplayItem::Type ScrollbarTheme::ButtonPartToDisplayItemType(

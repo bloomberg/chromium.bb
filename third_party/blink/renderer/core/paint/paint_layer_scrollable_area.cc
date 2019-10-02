@@ -2332,9 +2332,14 @@ PaintLayerScrollableArea::GetCompositorAnimationTimeline() const {
       ->GetCompositorAnimationTimeline();
 }
 
-void PaintLayerScrollableArea::GetTickmarks(Vector<IntRect>& tickmarks) const {
+bool PaintLayerScrollableArea::HasTickmarks() const {
+  return layer_->IsRootLayer() && ToLayoutView(GetLayoutBox())->HasTickmarks();
+}
+
+Vector<IntRect> PaintLayerScrollableArea::GetTickmarks() const {
   if (layer_->IsRootLayer())
-    tickmarks = ToLayoutView(GetLayoutBox())->GetTickmarks();
+    return ToLayoutView(GetLayoutBox())->GetTickmarks();
+  return Vector<IntRect>();
 }
 
 void PaintLayerScrollableArea::ScrollbarManager::SetHasHorizontalScrollbar(

@@ -143,6 +143,7 @@ class CORE_EXPORT DocumentMarkerController final
   DocumentMarkerVector Markers() const;
   DocumentMarkerVector ComputeMarkersToPaint(const Text&) const;
 
+  bool PossiblyHasTextMatchMarkers() const;
   Vector<IntRect> LayoutRectsForTextMatchMarkers();
   void InvalidateRectsForAllTextMatchMarkers();
   void InvalidateRectsForTextMatchMarkersInNode(const Text&);
