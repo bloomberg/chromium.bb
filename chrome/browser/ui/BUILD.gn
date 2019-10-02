@@ -613,8 +613,8 @@ jumbo_split_static_library("ui") {
 
   if (is_win || is_android || is_linux) {
     sources += [
-      "webui/sandbox_internals_ui.cc",
-      "webui/sandbox_internals_ui.h",
+      "webui/sandbox/sandbox_internals_ui.cc",
+      "webui/sandbox/sandbox_internals_ui.h",
     ]
   }
 
