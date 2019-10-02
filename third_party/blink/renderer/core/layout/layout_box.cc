@@ -2330,6 +2330,7 @@ void LayoutBox::SetCachedLayoutResult(const NGLayoutResult& layout_result,
 scoped_refptr<const NGLayoutResult> LayoutBox::CachedLayoutResult(
     const NGConstraintSpace& new_space,
     const NGBreakToken* break_token,
+    const NGEarlyBreak* early_break,
     base::Optional<NGFragmentGeometry>* initial_fragment_geometry,
     NGLayoutCacheStatus* out_cache_status) {
   *out_cache_status = NGLayoutCacheStatus::kNeedsLayout;
@@ -2343,6 +2344,9 @@ scoped_refptr<const NGLayoutResult> LayoutBox::CachedLayoutResult(
 
   // TODO(cbiesinger): Support caching fragmented boxes.
   if (break_token)
+    return nullptr;
+
+  if (early_break)
     return nullptr;
 
   // Set our initial temporary cache status to "hit".

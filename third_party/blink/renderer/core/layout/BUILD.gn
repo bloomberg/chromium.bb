@@ -434,6 +434,7 @@ blink_core_sources("layout") {
     "ng/ng_box_fragment.h",
     "ng/ng_box_fragment_builder.cc",
     "ng/ng_box_fragment_builder.h",
+    "ng/ng_break_appeal.h",
     "ng/ng_break_token.cc",
     "ng/ng_break_token.h",
     "ng/ng_column_layout_algorithm.cc",
