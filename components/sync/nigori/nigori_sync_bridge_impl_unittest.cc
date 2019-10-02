@@ -293,6 +293,8 @@ class MockObserver : public SyncEncryptionHandler::Observer {
                     const KeyDerivationParams&,
                     const sync_pb::EncryptedData&));
   MOCK_METHOD0(OnPassphraseAccepted, void());
+  MOCK_METHOD0(OnTrustedVaultKeyRequired, void());
+  MOCK_METHOD0(OnTrustedVaultKeyAccepted, void());
   MOCK_METHOD2(OnBootstrapTokenUpdated,
                void(const std::string&, BootstrapTokenType type));
   MOCK_METHOD2(OnEncryptedTypesChanged, void(ModelTypeSet, bool));

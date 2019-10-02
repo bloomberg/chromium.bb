@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
@@ -41,6 +42,7 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer {
   bool IsEncryptEverythingEnabled() const;
   void SetEncryptionPassphrase(const std::string& passphrase);
   bool SetDecryptionPassphrase(const std::string& passphrase);
+  void AddTrustedVaultDecryptionKeys(const std::vector<std::string>& keys);
 
   // Returns the actual passphrase type being used for encryption.
   PassphraseType GetPassphraseType() const;
@@ -54,6 +56,8 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer {
       const KeyDerivationParams& key_derivation_params,
       const sync_pb::EncryptedData& pending_keys) override;
   void OnPassphraseAccepted() override;
+  void OnTrustedVaultKeyRequired() override;
+  void OnTrustedVaultKeyAccepted() override;
   void OnBootstrapTokenUpdated(const std::string& bootstrap_token,
                                BootstrapTokenType type) override;
   void OnEncryptedTypesChanged(ModelTypeSet encrypted_types,
@@ -77,6 +81,7 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer {
     kNone,
     kPassphraseRequiredForDecryption,
     kPassphraseRequiredForEncryption,
+    kTrustedVaultKeyRequired,
   };
 
   // Calls SyncServiceBase::NotifyObservers(). Never null.

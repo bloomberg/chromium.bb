@@ -48,6 +48,22 @@ class SyncEncryptionObserverProxy : public SyncEncryptionHandler::Observer {
                        observer_));
   }
 
+  void OnTrustedVaultKeyRequired() override {
+    task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &SyncEncryptionHandler::Observer::OnTrustedVaultKeyRequired,
+            observer_));
+  }
+
+  void OnTrustedVaultKeyAccepted() override {
+    task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &SyncEncryptionHandler::Observer::OnTrustedVaultKeyAccepted,
+            observer_));
+  }
+
   void OnBootstrapTokenUpdated(const std::string& bootstrap_token,
                                BootstrapTokenType type) override {
     task_runner_->PostTask(
@@ -159,6 +175,10 @@ bool SyncServiceCrypto::IsPassphraseRequired() const {
     case RequiredUserAction::kPassphraseRequiredForDecryption:
     case RequiredUserAction::kPassphraseRequiredForEncryption:
       return true;
+    case RequiredUserAction::kTrustedVaultKeyRequired:
+      // TODO(crbug.com/1010189): This should return false and get exposed
+      // differently to upper layers.
+      return true;
   }
   return false;
 }
@@ -217,6 +237,13 @@ void SyncServiceCrypto::SetEncryptionPassphrase(const std::string& passphrase) {
 
 bool SyncServiceCrypto::SetDecryptionPassphrase(const std::string& passphrase) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // TODO(crbug.com/1010189): Move this logic to a separate function.
+  if (state_.required_user_action ==
+      RequiredUserAction::kTrustedVaultKeyRequired) {
+    state_.engine->AddTrustedVaultDecryptionKeys({passphrase});
+    return true;
+  }
 
   // We should never be called with an empty passphrase.
   DCHECK(!passphrase.empty());
@@ -313,6 +340,37 @@ void SyncServiceCrypto::OnPassphraseAccepted() {
   state_.required_user_action = RequiredUserAction::kNone;
 
   // Make sure the data types that depend on the passphrase are started at
+  // this time.
+  reconfigure_.Run(CONFIGURE_REASON_CRYPTO);
+}
+
+void SyncServiceCrypto::OnTrustedVaultKeyRequired() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // To be on the safe since, if a passphrase is required, we avoid overriding
+  // |state_.required_user_action|.
+  if (state_.required_user_action != RequiredUserAction::kNone) {
+    return;
+  }
+
+  state_.required_user_action = RequiredUserAction::kTrustedVaultKeyRequired;
+
+  // Reconfigure without the encrypted types (excluded implicitly via the
+  // failed datatypes handler).
+  reconfigure_.Run(CONFIGURE_REASON_CRYPTO);
+}
+
+void SyncServiceCrypto::OnTrustedVaultKeyAccepted() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (state_.required_user_action !=
+      RequiredUserAction::kTrustedVaultKeyRequired) {
+    return;
+  }
+
+  state_.required_user_action = RequiredUserAction::kNone;
+
+  // Make sure the data types that depend on the decryption key are started at
   // this time.
   reconfigure_.Run(CONFIGURE_REASON_CRYPTO);
 }

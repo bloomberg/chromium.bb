@@ -711,6 +711,21 @@ void NigoriSyncBridgeImpl::SetDecryptionPassphrase(
   NOTIMPLEMENTED();
 }
 
+void NigoriSyncBridgeImpl::AddTrustedVaultDecryptionKeys(
+    const std::vector<std::string>& keys) {
+  if (state_.passphrase_type != NigoriSpecifics::TRUSTED_VAULT_PASSPHRASE ||
+      !state_.pending_keys) {
+    return;
+  }
+
+  // TODO(crbug.com/1010189): Implement this independently of
+  // SetDecryptionPassphrase() and notify observers via trustedvault-specific
+  // notification functions.
+  for (const std::string& key : keys) {
+    SetDecryptionPassphrase(key);
+  }
+}
+
 void NigoriSyncBridgeImpl::EnableEncryptEverything() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   NOTIMPLEMENTED();
