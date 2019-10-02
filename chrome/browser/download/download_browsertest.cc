@@ -1170,7 +1170,7 @@ class FakeDownloadProtectionService
 
   void CheckClientDownload(
       DownloadItem* download_item,
-      safe_browsing::CheckDownloadCallback callback) override {
+      safe_browsing::CheckDownloadRepeatingCallback callback) override {
     std::move(callback).Run(safe_browsing::DownloadCheckResult::UNCOMMON);
   }
 };
@@ -4172,7 +4172,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, SafeSupportedFile) {
 
   DownloadItem* download = downloads[0];
   EXPECT_FALSE(download->IsDangerous());
-  EXPECT_EQ(download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
+  EXPECT_EQ(download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
             download->GetDangerType());
 
   download->Cancel(true);
