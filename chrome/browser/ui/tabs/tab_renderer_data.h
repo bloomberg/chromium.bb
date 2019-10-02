@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_TABS_TAB_RENDERER_DATA_H_
-#define CHROME_BROWSER_UI_VIEWS_TABS_TAB_RENDERER_DATA_H_
+#ifndef CHROME_BROWSER_UI_TABS_TAB_RENDERER_DATA_H_
+#define CHROME_BROWSER_UI_TABS_TAB_RENDERER_DATA_H_
 
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/tabs/tab_network_state.h"
@@ -47,4 +47,4 @@ struct TabRendererData {
   bool should_hide_throbber = false;
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_TABS_TAB_RENDERER_DATA_H_
+#endif  // CHROME_BROWSER_UI_TABS_TAB_RENDERER_DATA_H_
