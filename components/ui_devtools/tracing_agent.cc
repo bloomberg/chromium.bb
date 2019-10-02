@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/process/process.h"
 #include "base/timer/timer.h"
+#include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
 #include "components/ui_devtools/connector_delegate.h"
 #include "components/ui_devtools/devtools_base_agent.h"

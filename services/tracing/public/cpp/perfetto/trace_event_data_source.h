@@ -12,6 +12,7 @@
 
 #include "base/component_export.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram_base.h"
 #include "base/sequence_checker.h"
 #include "base/threading/thread_local.h"
@@ -21,6 +22,14 @@
 #include "services/tracing/public/cpp/perfetto/perfetto_traced_process.h"
 #include "third_party/perfetto/protos/perfetto/trace/chrome/chrome_metadata.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/chrome/chrome_trace_event.pbzero.h"
+
+namespace base {
+namespace trace_event {
+class ThreadInstructionCount;
+class TraceEvent;
+struct TraceEventHandle;
+}  // namespace trace_event
+}  // namespace base
 
 namespace perfetto {
 class StartupTraceWriter;

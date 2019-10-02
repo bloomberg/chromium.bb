@@ -17,6 +17,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
 #include "chrome/browser/android/vr/arcore_device/ar_image_transport.h"
 #include "chrome/browser/android/vr/arcore_device/arcore_impl.h"

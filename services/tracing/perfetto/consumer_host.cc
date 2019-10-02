@@ -18,6 +18,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
+#include "base/trace_event/trace_log.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/wait.h"

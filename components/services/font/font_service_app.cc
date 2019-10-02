@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "components/services/font/fontconfig_matching.h"
 #include "mojo/public/cpp/system/platform_handle.h"
