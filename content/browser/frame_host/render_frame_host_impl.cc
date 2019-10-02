@@ -99,7 +99,6 @@
 #include "content/browser/scoped_active_url.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/sms/sms_service.h"
-#include "content/browser/speech/speech_recognition_dispatcher_host.h"
 #include "content/browser/speech/speech_synthesis_impl.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/web_package/bundled_exchanges_handle.h"
@@ -4450,11 +4449,6 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
   // TODO(crbug.com/775792): Move to RendererInterfaceBinders.
   registry_->AddInterface(base::BindRepeating(
       &QuotaDispatcherHost::CreateForFrame, GetProcess(), routing_id_));
-
-  registry_->AddInterface(
-      base::BindRepeating(SpeechRecognitionDispatcherHost::Create,
-                          GetProcess()->GetID(), routing_id_),
-      base::CreateSingleThreadTaskRunner({BrowserThread::IO}));
 
   file_system_manager_.reset(new FileSystemManagerImpl(
       GetProcess()->GetID(),
