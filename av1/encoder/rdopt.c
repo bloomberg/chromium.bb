@@ -51,6 +51,7 @@
 #include "av1/encoder/hybrid_fwd_txfm.h"
 #include "av1/encoder/mcomp.h"
 #include "av1/encoder/ml.h"
+#include "av1/encoder/mode_prune_model_weights.h"
 #include "av1/encoder/palette.h"
 #include "av1/encoder/pustats.h"
 #include "av1/encoder/random.h"
