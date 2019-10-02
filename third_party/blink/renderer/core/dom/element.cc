@@ -5319,13 +5319,6 @@ void Element::SetIsInTopLayer(bool in_top_layer) {
     SetForceReattachLayoutTree();
 }
 
-void Element::requestPointerLock() {
-  if (GetDocument().GetPage()) {
-    GetDocument().GetPage()->GetPointerLockController().RequestPointerLock(
-        this);
-  }
-}
-
 void Element::requestPointerLock(const PointerLockOptions* options) {
   if (GetDocument().GetPage()) {
     GetDocument().GetPage()->GetPointerLockController().RequestPointerLock(
