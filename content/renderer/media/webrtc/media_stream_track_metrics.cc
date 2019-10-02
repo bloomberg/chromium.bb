@@ -8,10 +8,11 @@
 #include <string>
 
 #include "base/hash/md5.h"
-#include "base/threading/thread_task_runner_handle.h"
-#include "content/child/child_thread_impl.h"
-#include "content/public/common/service_names.mojom.h"
+#include "base/strings/stringprintf.h"
+#include "base/threading/thread_checker.h"
 #include "content/renderer/render_thread_impl.h"
+#include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
+#include "third_party/blink/public/platform/platform.h"
 
 namespace content {
 
@@ -264,7 +265,7 @@ uint64_t MediaStreamTrackMetrics::MakeUniqueId(const std::string& track_id,
 mojo::Remote<blink::mojom::MediaStreamTrackMetricsHost>&
 MediaStreamTrackMetrics::GetMediaStreamTrackMetricsHost() {
   if (!track_metrics_host_) {
-    ChildThreadImpl::current()->BindHostReceiver(
+    blink::Platform::Current()->GetBrowserInterfaceBrokerProxy()->GetInterface(
         track_metrics_host_.BindNewPipeAndPassReceiver());
   }
   return track_metrics_host_;
