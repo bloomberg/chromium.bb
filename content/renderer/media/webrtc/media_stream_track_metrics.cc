@@ -10,7 +10,6 @@
 #include "base/hash/md5.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_checker.h"
-#include "content/renderer/render_thread_impl.h"
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/platform.h"
 
@@ -214,19 +213,14 @@ void MediaStreamTrackMetrics::SendLifetimeMessage(const std::string& track_id,
                                                   Kind kind,
                                                   LifetimeEvent event,
                                                   Direction direction) {
-  RenderThreadImpl* render_thread = RenderThreadImpl::current();
-  // |render_thread| can be NULL in certain cases when running as part
-  // |of a unit test.
-  if (render_thread) {
-    if (event == LifetimeEvent::kConnected) {
-      GetMediaStreamTrackMetricsHost()->AddTrack(
-          MakeUniqueId(track_id, direction), kind == Kind::kAudio,
-          direction == Direction::kReceive);
-    } else {
-      DCHECK_EQ(LifetimeEvent::kDisconnected, event);
-      GetMediaStreamTrackMetricsHost()->RemoveTrack(
-          MakeUniqueId(track_id, direction));
-    }
+  if (event == LifetimeEvent::kConnected) {
+    GetMediaStreamTrackMetricsHost()->AddTrack(
+        MakeUniqueId(track_id, direction), kind == Kind::kAudio,
+        direction == Direction::kReceive);
+  } else {
+    DCHECK_EQ(LifetimeEvent::kDisconnected, event);
+    GetMediaStreamTrackMetricsHost()->RemoveTrack(
+        MakeUniqueId(track_id, direction));
   }
 }
 
