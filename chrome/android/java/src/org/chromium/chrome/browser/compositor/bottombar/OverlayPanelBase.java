@@ -374,14 +374,14 @@ abstract class OverlayPanelBase {
     private boolean mIsMaximized;
 
     /**
-     * @return The vertical offset of the Overlay Panel.
+     * @return The horizontal offset of the Overlay Panel in DPs.
      */
     public float getOffsetX() {
         return mOffsetX;
     }
 
     /**
-     * @return The vertical offset of the Overlay Panel.
+     * @return The vertical offset of the Overlay Panel in DPs.
      */
     public float getOffsetY() {
         return mOffsetY;
@@ -547,7 +547,7 @@ abstract class OverlayPanelBase {
     }
 
     /**
-     * @return The width/height of the open tab icon.
+     * @return The width/height of the open tab icon in DPs.
      */
     public float getOpenTabIconDimension() {
         if (mOpenTabIconWidth == 0) {
@@ -559,7 +559,7 @@ abstract class OverlayPanelBase {
     }
 
     /**
-     * @return The left X coordinate of the open new tab icon.
+     * @return The left X coordinate of the open new tab icon in DPs.
      */
     public float getOpenTabIconX() {
         float offset = getCloseIconDimension() + 2 * mButtonPaddingDps;
