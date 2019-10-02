@@ -522,7 +522,7 @@ dir_path (Path): directory to clone into
 remote_name (str): the remote name to rebase from if not origin
 ### *recipe_modules* / [git\_cl](/recipes/recipe_modules/git_cl)
 
-[DEPS](/recipes/recipe_modules/git_cl/__init__.py#1): [recipe\_engine/context][recipe_engine/recipe_modules/context], [recipe\_engine/raw\_io][recipe_engine/recipe_modules/raw_io], [recipe\_engine/step][recipe_engine/recipe_modules/step]
+[DEPS](/recipes/recipe_modules/git_cl/__init__.py#1): [recipe\_engine/context][recipe_engine/recipe_modules/context], [recipe\_engine/python][recipe_engine/recipe_modules/python], [recipe\_engine/raw\_io][recipe_engine/recipe_modules/raw_io]
 
 #### **class [GitClApi](/recipes/recipe_modules/git_cl/api.py#9)([RecipeApi][recipe_engine/wkt/RecipeApi]):**
 
