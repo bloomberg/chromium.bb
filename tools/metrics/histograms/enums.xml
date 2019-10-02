@@ -4691,6 +4691,13 @@ Unknown properties are collapsed to zero. -->
   <int value="5" label="Overlay Insecure Non-player-element Fullscreen"/>
 </enum>
 
+<enum name="BackForwardCacheHistoryNavigationOutcome">
+  <int value="0" label="Restored"/>
+  <int value="1" label="Not cached"/>
+  <int value="2" label="Evicted"/>
+  <int value="3" label="Not cached due to the experiment condition"/>
+</enum>
+
 <enum name="BackForwardNavigationType">
   <int value="0" label="Fast back navigation with WKBackForwardList"/>
   <int value="1" label="Slow back navigation"/>

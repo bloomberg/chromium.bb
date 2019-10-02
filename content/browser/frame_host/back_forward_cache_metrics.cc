@@ -4,6 +4,7 @@
 
 #include "content/browser/frame_host/back_forward_cache_metrics.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/public/browser/browser_thread.h"
@@ -93,6 +94,24 @@ void BackForwardCacheMetrics::MainFrameDidStartNavigationToDocument() {
 
 void BackForwardCacheMetrics::DidCommitNavigation(
     NavigationRequest* navigation) {
+  bool is_history_navigation =
+      navigation->GetPageTransition() & ui::PAGE_TRANSITION_FORWARD_BACK;
+  if (navigation->IsInMainFrame() && !navigation->IsSameDocument() &&
+      is_history_navigation) {
+    // TODO(hajimehoshi): Use kNotCachedDueToExperimentCondition if the
+    // experiment condition does not match.
+    HistoryNavigationOutcome outcome = HistoryNavigationOutcome::kNotCached;
+    if (navigation->is_served_from_back_forward_cache())
+      outcome = HistoryNavigationOutcome::kRestored;
+    if (evicted_ || last_committed_main_frame_navigation_id_ == -1) {
+      DCHECK(!navigation->is_served_from_back_forward_cache());
+      outcome = HistoryNavigationOutcome::kEvicted;
+    }
+    UMA_HISTOGRAM_ENUMERATION("BackForwardCache.HistoryNavigationOutcome",
+                              outcome, HistoryNavigationOutcome::kMaxValue);
+    evicted_ = false;
+  }
+
   if (last_committed_main_frame_navigation_id_ != -1 &&
       navigation->IsInMainFrame()) {
     // We've visited an entry associated with this main frame document before,
@@ -164,6 +183,10 @@ void BackForwardCacheMetrics::CollectFeatureUsageFromSubtree(
     CollectFeatureUsageFromSubtree(rfh->child_at(i)->current_frame_host(),
                                    main_frame_origin);
   }
+}
+
+void BackForwardCacheMetrics::MarkEvictedFromBackForwardCache() {
+  evicted_ = true;
 }
 
 }  // namespace content
