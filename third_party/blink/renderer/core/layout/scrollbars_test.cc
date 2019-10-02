@@ -18,7 +18,7 @@
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/inspector/dev_tools_emulator.h"
-#include "third_party/blink/renderer/core/layout/layout_scrollbar_part.h"
+#include "third_party/blink/renderer/core/layout/layout_custom_scrollbar_part.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -2666,20 +2666,20 @@ class ScrollbarTrackMarginsTest : public ScrollbarsTest {
         ToLayoutBox(div->GetLayoutObject())->GetScrollableArea();
 
     ASSERT_TRUE(div_scrollable->HorizontalScrollbar());
-    LayoutScrollbar* horizontal_scrollbar =
-        To<LayoutScrollbar>(div_scrollable->HorizontalScrollbar());
+    CustomScrollbar* horizontal_scrollbar =
+        To<CustomScrollbar>(div_scrollable->HorizontalScrollbar());
     horizontal_track_ = horizontal_scrollbar->GetPart(kTrackBGPart);
     ASSERT_TRUE(horizontal_track_);
 
     ASSERT_TRUE(div_scrollable->VerticalScrollbar());
-    LayoutScrollbar* vertical_scrollbar =
-        To<LayoutScrollbar>(div_scrollable->VerticalScrollbar());
+    CustomScrollbar* vertical_scrollbar =
+        To<CustomScrollbar>(div_scrollable->VerticalScrollbar());
     vertical_track_ = vertical_scrollbar->GetPart(kTrackBGPart);
     ASSERT_TRUE(vertical_track_);
   }
 
-  LayoutScrollbarPart* horizontal_track_ = nullptr;
-  LayoutScrollbarPart* vertical_track_ = nullptr;
+  LayoutCustomScrollbarPart* horizontal_track_ = nullptr;
+  LayoutCustomScrollbarPart* vertical_track_ = nullptr;
 };
 
 TEST_F(ScrollbarTrackMarginsTest,

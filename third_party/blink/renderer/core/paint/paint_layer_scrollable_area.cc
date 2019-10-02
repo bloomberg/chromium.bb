@@ -71,10 +71,10 @@
 #include "third_party/blink/renderer/core/html/forms/text_control_element.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
+#include "third_party/blink/renderer/core/layout/custom_scrollbar.h"
+#include "third_party/blink/renderer/core/layout/layout_custom_scrollbar_part.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_flexible_box.h"
-#include "third_party/blink/renderer/core/layout/layout_scrollbar.h"
-#include "third_party/blink/renderer/core/layout/layout_scrollbar_part.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/ng/legacy_layout_tree_walking.h"
@@ -1354,7 +1354,7 @@ int PaintLayerScrollableArea::HypotheticalScrollbarThickness(
   bool has_custom_scrollbar_style =
       style_source.StyleRef().HasPseudoElementStyle(kPseudoIdScrollbar);
   if (has_custom_scrollbar_style) {
-    return LayoutScrollbar::HypotheticalScrollbarThickness(
+    return CustomScrollbar::HypotheticalScrollbarThickness(
         orientation, *GetLayoutBox(), style_source);
   }
 
@@ -1396,7 +1396,7 @@ bool PaintLayerScrollableArea::NeedsScrollbarReconstruction() const {
     if (needs_custom) {
       DCHECK(scrollbar->IsCustomScrollbar());
       // We have a custom scrollbar with a stale m_owner.
-      if (To<LayoutScrollbar>(scrollbar)->StyleSource()->GetLayoutObject() !=
+      if (To<CustomScrollbar>(scrollbar)->StyleSource()->GetLayoutObject() !=
           style_source) {
         return true;
       }
@@ -1671,7 +1671,7 @@ void PaintLayerScrollableArea::UpdateScrollCornerStyle() {
           : scoped_refptr<ComputedStyle>(nullptr);
   if (corner) {
     if (!scroll_corner_) {
-      scroll_corner_ = LayoutScrollbarPart::CreateAnonymous(
+      scroll_corner_ = LayoutCustomScrollbarPart::CreateAnonymous(
           &GetLayoutBox()->GetDocument(), this);
     }
     scroll_corner_->SetStyle(std::move(corner));
@@ -1830,7 +1830,7 @@ void PaintLayerScrollableArea::UpdateResizerStyle(
           : scoped_refptr<ComputedStyle>(nullptr);
   if (resizer) {
     if (!resizer_) {
-      resizer_ = LayoutScrollbarPart::CreateAnonymous(
+      resizer_ = LayoutCustomScrollbarPart::CreateAnonymous(
           &GetLayoutBox()->GetDocument(), this);
     }
     resizer_->SetStyle(std::move(resizer));
@@ -2393,7 +2393,7 @@ Scrollbar* PaintLayerScrollableArea::ScrollbarManager::CreateScrollbar(
       style_source.StyleRef().HasPseudoElementStyle(kPseudoIdScrollbar);
   if (has_custom_scrollbar_style) {
     DCHECK(style_source.GetNode() && style_source.GetNode()->IsElementNode());
-    scrollbar = LayoutScrollbar::CreateCustomScrollbar(
+    scrollbar = CustomScrollbar::CreateCustomScrollbar(
         ScrollableArea(), orientation, To<Element>(style_source.GetNode()));
   } else {
     ScrollbarControlSize scrollbar_size = kRegularScrollbar;
@@ -2702,7 +2702,7 @@ static IntRect InvalidatePaintOfScrollbarIfNeeded(
   ObjectPaintInvalidator(box).InvalidateDisplayItemClient(
       *scrollbar, PaintInvalidationReason::kScrollControl);
   if (scrollbar->IsCustomScrollbar()) {
-    To<LayoutScrollbar>(scrollbar)
+    To<CustomScrollbar>(scrollbar)
         ->InvalidateDisplayItemClientsOfScrollbarParts();
   }
 
@@ -2732,12 +2732,12 @@ void PaintLayerScrollableArea::InvalidatePaintOfScrollControlsIfNeeded(
           scroll_corner_and_resizer_visual_rect_,
           ScrollCornerNeedsPaintInvalidation())) {
     SetScrollCornerAndResizerVisualRect(scroll_corner_and_resizer_visual_rect);
-    if (LayoutScrollbarPart* scroll_corner = ScrollCorner()) {
+    if (LayoutCustomScrollbarPart* scroll_corner = ScrollCorner()) {
       ObjectPaintInvalidator(*scroll_corner)
           .InvalidateDisplayItemClientsIncludingNonCompositingDescendants(
               PaintInvalidationReason::kScrollControl);
     }
-    if (LayoutScrollbarPart* resizer = Resizer()) {
+    if (LayoutCustomScrollbarPart* resizer = Resizer()) {
       ObjectPaintInvalidator(*resizer)
           .InvalidateDisplayItemClientsIncludingNonCompositingDescendants(
               PaintInvalidationReason::kScrollControl);
@@ -2775,9 +2775,9 @@ void PaintLayerScrollableArea::SetVerticalScrollbarVisualRect(
 void PaintLayerScrollableArea::SetScrollCornerAndResizerVisualRect(
     const IntRect& rect) {
   scroll_corner_and_resizer_visual_rect_ = rect;
-  if (LayoutScrollbarPart* scroll_corner = ScrollCorner())
+  if (LayoutCustomScrollbarPart* scroll_corner = ScrollCorner())
     scroll_corner->GetMutableForPainting().FirstFragment().SetVisualRect(rect);
-  if (LayoutScrollbarPart* resizer = Resizer())
+  if (LayoutCustomScrollbarPart* resizer = Resizer())
     resizer->GetMutableForPainting().FirstFragment().SetVisualRect(rect);
 }
 

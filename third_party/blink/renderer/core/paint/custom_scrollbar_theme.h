@@ -23,18 +23,22 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_SCROLLBAR_THEME_H_
-#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_SCROLLBAR_THEME_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_CUSTOM_SCROLLBAR_THEME_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_CUSTOM_SCROLLBAR_THEME_H_
 
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
 
 namespace blink {
 
+class CustomScrollbar;
+class LayoutCustomScrollbarPart;
 class WebMouseEvent;
+struct PhysicalOffset;
+struct PhysicalRect;
 
-class LayoutScrollbarTheme final : public ScrollbarTheme {
+class CustomScrollbarTheme final : public ScrollbarTheme {
  public:
-  ~LayoutScrollbarTheme() override = default;
+  ~CustomScrollbarTheme() override = default;
 
   int ScrollbarThickness(ScrollbarControlSize control_size) override {
     return ScrollbarTheme::DeprecatedStaticGetTheme().ScrollbarThickness(
@@ -80,7 +84,13 @@ class LayoutScrollbarTheme final : public ScrollbarTheme {
                                  int& before_size,
                                  int& after_size);
 
-  static LayoutScrollbarTheme* GetLayoutScrollbarTheme();
+  static CustomScrollbarTheme* GetCustomScrollbarTheme();
+
+  static void PaintIntoRect(const LayoutCustomScrollbarPart&,
+                            GraphicsContext&,
+                            const PhysicalOffset& paint_offset,
+                            const PhysicalRect&,
+                            const CustomScrollbar* = nullptr);
 
  protected:
   bool HasButtons(const Scrollbar&) override;
@@ -114,8 +124,14 @@ class LayoutScrollbarTheme final : public ScrollbarTheme {
 
   IntRect ConstrainTrackRectToTrackPieces(const Scrollbar&,
                                           const IntRect&) override;
+
+ private:
+  void PaintPart(GraphicsContext&,
+                 const Scrollbar&,
+                 const IntRect&,
+                 ScrollbarPart);
 };
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_SCROLLBAR_THEME_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_CUSTOM_SCROLLBAR_THEME_H_

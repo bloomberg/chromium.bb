@@ -23,8 +23,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_SCROLLBAR_H_
-#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_SCROLLBAR_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_CUSTOM_SCROLLBAR_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_CUSTOM_SCROLLBAR_H_
 
 #include "third_party/blink/renderer/core/scroll/scrollbar.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
@@ -37,17 +37,20 @@ namespace blink {
 class ComputedStyle;
 class Element;
 class LayoutBox;
+class LayoutCustomScrollbarPart;
 class LayoutObject;
-class LayoutScrollbarPart;
 
-class LayoutScrollbar final : public Scrollbar {
+// Custom scrollbars are created when a box has -webkit-scrollbar* pseudo
+// styles. The parts of a custom scrollbar are layout objects of class
+// LayoutCustomScrollbarPart.
+class CustomScrollbar final : public Scrollbar {
  public:
   static Scrollbar* CreateCustomScrollbar(ScrollableArea*,
                                           ScrollbarOrientation,
                                           Element*);
 
-  LayoutScrollbar(ScrollableArea*, ScrollbarOrientation, Element*);
-  ~LayoutScrollbar() override;
+  CustomScrollbar(ScrollableArea*, ScrollbarOrientation, Element*);
+  ~CustomScrollbar() override;
 
   // Return the thickness that a custom scrollbar would have, without actually
   // constructing the scrollbar.
@@ -63,10 +66,10 @@ class LayoutScrollbar final : public Scrollbar {
 
   bool IsOverlayScrollbar() const override { return false; }
 
-  LayoutScrollbarPart* GetPart(ScrollbarPart part_type) {
+  LayoutCustomScrollbarPart* GetPart(ScrollbarPart part_type) {
     return parts_.at(part_type);
   }
-  const LayoutScrollbarPart* GetPart(ScrollbarPart part_type) const {
+  const LayoutCustomScrollbarPart* GetPart(ScrollbarPart part_type) const {
     return parts_.at(part_type);
   }
 
@@ -95,11 +98,11 @@ class LayoutScrollbar final : public Scrollbar {
                                                               PseudoId);
   void UpdateScrollbarPart(ScrollbarPart, bool destroy = false);
 
-  HashMap<unsigned, LayoutScrollbarPart*> parts_;
+  HashMap<unsigned, LayoutCustomScrollbarPart*> parts_;
 };
 
 template <>
-struct DowncastTraits<LayoutScrollbar> {
+struct DowncastTraits<CustomScrollbar> {
   static bool AllowFrom(const Scrollbar& scrollbar) {
     return scrollbar.IsCustomScrollbar();
   }
@@ -107,4 +110,4 @@ struct DowncastTraits<LayoutScrollbar> {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_SCROLLBAR_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_CUSTOM_SCROLLBAR_H_

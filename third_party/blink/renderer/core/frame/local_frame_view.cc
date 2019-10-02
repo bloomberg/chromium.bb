@@ -1472,7 +1472,7 @@ void LocalFrameView::ClearLayoutSubtreeRootsAndMarkContainingBlocks() {
 }
 
 void LocalFrameView::AddOrthogonalWritingModeRoot(LayoutBox& root) {
-  DCHECK(!root.IsLayoutScrollbarPart());
+  DCHECK(!root.IsLayoutCustomScrollbarPart());
   orthogonal_writing_mode_root_list_.Add(root);
 }
 

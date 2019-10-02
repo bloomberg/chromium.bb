@@ -23,25 +23,25 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_SCROLLBAR_PART_H_
-#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_SCROLLBAR_PART_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_CUSTOM_SCROLLBAR_PART_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_CUSTOM_SCROLLBAR_PART_H_
 
 #include "third_party/blink/renderer/core/layout/layout_block.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
 
 namespace blink {
 
-class LayoutScrollbar;
+class CustomScrollbar;
 class ScrollableArea;
 
-class LayoutScrollbarPart final : public LayoutBlock {
+class LayoutCustomScrollbarPart final : public LayoutBlock {
  public:
-  static LayoutScrollbarPart* CreateAnonymous(Document*,
-                                              ScrollableArea*,
-                                              LayoutScrollbar* = nullptr,
-                                              ScrollbarPart = kNoPart);
+  static LayoutCustomScrollbarPart* CreateAnonymous(Document*,
+                                                    ScrollableArea*,
+                                                    CustomScrollbar* = nullptr,
+                                                    ScrollbarPart = kNoPart);
 
-  const char* GetName() const override { return "LayoutScrollbarPart"; }
+  const char* GetName() const override { return "LayoutCustomScrollbarPart"; }
 
   PaintLayerType LayerTypeRequired() const override { return kNoPaintLayer; }
 
@@ -69,7 +69,7 @@ class LayoutScrollbarPart final : public LayoutBlock {
   }
 
   bool IsOfType(LayoutObjectType type) const override {
-    return type == kLayoutObjectLayoutScrollbarPart ||
+    return type == kLayoutObjectLayoutCustomScrollbarPart ||
            LayoutBlock::IsOfType(type);
   }
   ScrollableArea* GetScrollableArea() const { return scrollable_area_; }
@@ -81,7 +81,7 @@ class LayoutScrollbarPart final : public LayoutBlock {
   void ImageChanged(WrappedImagePtr, CanDeferInvalidation) override;
 
  private:
-  LayoutScrollbarPart(ScrollableArea*, LayoutScrollbar*, ScrollbarPart);
+  LayoutCustomScrollbarPart(ScrollableArea*, CustomScrollbar*, ScrollbarPart);
 
   void ComputePreferredLogicalWidths() override;
 
@@ -106,12 +106,13 @@ class LayoutScrollbarPart final : public LayoutBlock {
   bool AllowsOverflowClip() const override { return false; }
 
   UntracedMember<ScrollableArea> scrollable_area_;
-  UntracedMember<LayoutScrollbar> scrollbar_;
+  UntracedMember<CustomScrollbar> scrollbar_;
   ScrollbarPart part_;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutScrollbarPart, IsLayoutScrollbarPart());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutCustomScrollbarPart,
+                                IsLayoutCustomScrollbarPart());
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_SCROLLBAR_PART_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_CUSTOM_SCROLLBAR_PART_H_

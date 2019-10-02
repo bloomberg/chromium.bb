@@ -23,21 +23,22 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "third_party/blink/renderer/core/layout/layout_scrollbar_part.h"
+#include "third_party/blink/renderer/core/layout/layout_custom_scrollbar_part.h"
 
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
-#include "third_party/blink/renderer/core/layout/layout_scrollbar.h"
-#include "third_party/blink/renderer/core/layout/layout_scrollbar_theme.h"
+#include "third_party/blink/renderer/core/layout/custom_scrollbar.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/paint/custom_scrollbar_theme.h"
 #include "third_party/blink/renderer/platform/geometry/length_functions.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 
 namespace blink {
 
-LayoutScrollbarPart::LayoutScrollbarPart(ScrollableArea* scrollable_area,
-                                         LayoutScrollbar* scrollbar,
-                                         ScrollbarPart part)
+LayoutCustomScrollbarPart::LayoutCustomScrollbarPart(
+    ScrollableArea* scrollable_area,
+    CustomScrollbar* scrollbar,
+    ScrollbarPart part)
     : LayoutBlock(nullptr),
       scrollable_area_(scrollable_area),
       scrollbar_(scrollbar),
@@ -78,19 +79,19 @@ static void RecordScrollbarPartStats(Document& document, ScrollbarPart part) {
   }
 }
 
-LayoutScrollbarPart* LayoutScrollbarPart::CreateAnonymous(
+LayoutCustomScrollbarPart* LayoutCustomScrollbarPart::CreateAnonymous(
     Document* document,
     ScrollableArea* scrollable_area,
-    LayoutScrollbar* scrollbar,
+    CustomScrollbar* scrollbar,
     ScrollbarPart part) {
-  LayoutScrollbarPart* layout_object =
-      new LayoutScrollbarPart(scrollable_area, scrollbar, part);
+  LayoutCustomScrollbarPart* layout_object =
+      new LayoutCustomScrollbarPart(scrollable_area, scrollbar, part);
   RecordScrollbarPartStats(*document, part);
   layout_object->SetDocumentForAnonymous(document);
   return layout_object;
 }
 
-void LayoutScrollbarPart::UpdateLayout() {
+void LayoutCustomScrollbarPart::UpdateLayout() {
   // We don't worry about positioning ourselves. We're just determining our
   // minimum width/height.
   SetLocation(LayoutPoint());
@@ -102,7 +103,7 @@ void LayoutScrollbarPart::UpdateLayout() {
   ClearNeedsLayout();
 }
 
-void LayoutScrollbarPart::LayoutHorizontalPart() {
+void LayoutCustomScrollbarPart::LayoutHorizontalPart() {
   if (part_ == kScrollbarBGPart) {
     SetWidth(LayoutUnit(scrollbar_->Width()));
     UpdateScrollbarHeight();
@@ -112,7 +113,7 @@ void LayoutScrollbarPart::LayoutHorizontalPart() {
   }
 }
 
-void LayoutScrollbarPart::LayoutVerticalPart() {
+void LayoutCustomScrollbarPart::LayoutVerticalPart() {
   if (part_ == kScrollbarBGPart) {
     UpdateScrollbarWidth();
     SetHeight(LayoutUnit(scrollbar_->Height()));
@@ -131,9 +132,10 @@ static int CalcScrollbarThicknessUsing(SizeType size_type,
   return theme->ScrollbarThickness();
 }
 
-int LayoutScrollbarPart::ComputeScrollbarWidth(int visible_size,
-                                               const ComputedStyle* style) {
-  LayoutScrollbarTheme* theme = LayoutScrollbarTheme::GetLayoutScrollbarTheme();
+int LayoutCustomScrollbarPart::ComputeScrollbarWidth(
+    int visible_size,
+    const ComputedStyle* style) {
+  CustomScrollbarTheme* theme = CustomScrollbarTheme::GetCustomScrollbarTheme();
   int w = CalcScrollbarThicknessUsing(kMainOrPreferredSize, style->Width(),
                                       visible_size, theme);
   int min_width = CalcScrollbarThicknessUsing(kMinSize, style->MinWidth(),
@@ -147,9 +149,10 @@ int LayoutScrollbarPart::ComputeScrollbarWidth(int visible_size,
   return std::max(min_width, std::min(max_width, w));
 }
 
-int LayoutScrollbarPart::ComputeScrollbarHeight(int visible_size,
-                                                const ComputedStyle* style) {
-  LayoutScrollbarTheme* theme = LayoutScrollbarTheme::GetLayoutScrollbarTheme();
+int LayoutCustomScrollbarPart::ComputeScrollbarHeight(
+    int visible_size,
+    const ComputedStyle* style) {
+  CustomScrollbarTheme* theme = CustomScrollbarTheme::GetCustomScrollbarTheme();
   int h = CalcScrollbarThicknessUsing(kMainOrPreferredSize, style->Height(),
                                       visible_size, theme);
   int min_height = CalcScrollbarThicknessUsing(kMinSize, style->MinHeight(),
@@ -162,7 +165,7 @@ int LayoutScrollbarPart::ComputeScrollbarHeight(int visible_size,
   return std::max(min_height, std::min(max_height, h));
 }
 
-void LayoutScrollbarPart::UpdateScrollbarWidth() {
+void LayoutCustomScrollbarPart::UpdateScrollbarWidth() {
   LayoutBox* box = scrollbar_->GetScrollableArea()->GetLayoutBox();
   if (!box)
     return;
@@ -185,7 +188,7 @@ void LayoutScrollbarPart::UpdateScrollbarWidth() {
           .Round()));
 }
 
-void LayoutScrollbarPart::UpdateScrollbarHeight() {
+void LayoutCustomScrollbarPart::UpdateScrollbarHeight() {
   LayoutBox* box = scrollbar_->GetScrollableArea()->GetLayoutBox();
   if (!box)
     return;
@@ -208,7 +211,7 @@ void LayoutScrollbarPart::UpdateScrollbarHeight() {
           .Round()));
 }
 
-void LayoutScrollbarPart::ComputePreferredLogicalWidths() {
+void LayoutCustomScrollbarPart::ComputePreferredLogicalWidths() {
   if (!PreferredLogicalWidthsDirty())
     return;
 
@@ -217,14 +220,15 @@ void LayoutScrollbarPart::ComputePreferredLogicalWidths() {
   ClearPreferredLogicalWidthsDirty();
 }
 
-void LayoutScrollbarPart::StyleWillChange(StyleDifference diff,
-                                          const ComputedStyle& new_style) {
+void LayoutCustomScrollbarPart::StyleWillChange(
+    StyleDifference diff,
+    const ComputedStyle& new_style) {
   LayoutBlock::StyleWillChange(diff, new_style);
   SetInline(false);
 }
 
-void LayoutScrollbarPart::StyleDidChange(StyleDifference diff,
-                                         const ComputedStyle* old_style) {
+void LayoutCustomScrollbarPart::StyleDidChange(StyleDifference diff,
+                                               const ComputedStyle* old_style) {
   LayoutBlock::StyleDidChange(diff, old_style);
   // See adjustStyleBeforeSet() above.
   DCHECK(!IsOrthogonalWritingModeRoot());
@@ -235,19 +239,19 @@ void LayoutScrollbarPart::StyleDidChange(StyleDifference diff,
     SetNeedsPaintInvalidation();
 }
 
-void LayoutScrollbarPart::ImageChanged(WrappedImagePtr image,
-                                       CanDeferInvalidation defer) {
+void LayoutCustomScrollbarPart::ImageChanged(WrappedImagePtr image,
+                                             CanDeferInvalidation defer) {
   SetNeedsPaintInvalidation();
   LayoutBlock::ImageChanged(image, defer);
 }
 
-void LayoutScrollbarPart::SetNeedsPaintInvalidation() {
+void LayoutCustomScrollbarPart::SetNeedsPaintInvalidation() {
   if (scrollbar_) {
     scrollbar_->SetNeedsPaintInvalidation(kAllParts);
     return;
   }
 
-  // This LayoutScrollbarPart is a scroll corner or a resizer.
+  // This LayoutCustomScrollbarPart is a scroll corner or a resizer.
   DCHECK_EQ(part_, kNoPart);
   scrollable_area_->SetScrollCornerNeedsPaintInvalidation();
 }
