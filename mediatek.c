@@ -128,6 +128,15 @@ static int mediatek_bo_create_with_modifiers(struct bo *bo, uint32_t width, uint
 
 		drv_bo_from_format_and_padding(bo, stride, aligned_height, format, padding);
 	} else {
+#ifdef MTK_MT8183
+		/*
+		 * JPEG Encoder Accelerator requires 16x16 alignment. We want the buffer
+		 * from camera can be put in JEA directly so align the height to 16
+		 * bytes.
+		 */
+		if (format == DRM_FORMAT_NV12)
+			height = ALIGN(height, 16);
+#endif
 		drv_bo_from_format(bo, stride, height, format);
 	}
 
