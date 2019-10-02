@@ -265,10 +265,11 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
 
   // Use buffer backed by dmabuf file descriptors in |passed_dmabuf_fds| for the
   // OutputRecord associated with |picture_buffer_id|, taking ownership of the
-  // file descriptors.
-  void ImportBufferForPictureTask(
-      int32_t picture_buffer_id,
-      std::vector<base::ScopedFD> passed_dmabuf_fds);
+  // file descriptors. |stride| is the number of bytes from one row of pixels
+  // to the next row.
+  void ImportBufferForPictureTask(int32_t picture_buffer_id,
+                                  std::vector<base::ScopedFD> passed_dmabuf_fds,
+                                  int32_t stride);
 
   // Check that |planes| and |dmabuf_fds| are valid in import mode and call
   // ImportBufferForPictureTask.
