@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/callback_helpers.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -244,6 +245,10 @@ class CONTENT_EXPORT WebContentsViewAura
   std::unique_ptr<AsyncDropTempFileDeleter> async_drop_temp_file_deleter_;
 #endif
   DropCallbackForTesting drop_callback_for_testing_;
+
+  // If this callback is initialized it must be run after the drop operation is
+  // done to send dragend event in EndDrag function.
+  base::ScopedClosureRunner end_drag_runner_;
 
   std::unique_ptr<aura::Window> window_;
 
