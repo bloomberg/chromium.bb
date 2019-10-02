@@ -493,7 +493,15 @@ TEST_F(ContentCaptureReceiverTest, RenderFrameHostGone) {
   DidRemoveContent(expected_removed_ids());
 }
 
-TEST_F(ContentCaptureReceiverTest, ChildFrameCaptureContentFirst) {
+// TODO(https://crbug.com/1010416): Fix flakes on win10_chromium_x64_rel_ng and
+// re-enable this test.
+#if defined(OS_WIN)
+#define MAYBE_ChildFrameCaptureContentFirst \
+  DISABLED_ChildFrameCaptureContentFirst
+#else
+#define MAYBE_ChildFrameCaptureContentFirst ChildFrameCaptureContentFirst
+#endif
+TEST_F(ContentCaptureReceiverTest, MAYBE_ChildFrameCaptureContentFirst) {
   // Simulate add child frame.
   SetupChildFrame();
   // Simulate to capture the content from child frame.
