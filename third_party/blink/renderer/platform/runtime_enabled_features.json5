@@ -910,7 +910,8 @@
       // Enabled by features::kLegacyWindowsDWriteFontFallback;
     },
     {
-      name: "LinkSystemColors"
+      name: "LinkSystemColors",
+      status: "stable",
     },
     {
       name: "LongTaskV2",
@@ -1666,6 +1667,7 @@
     },
     {
       name: "UseWindowsSystemColors",
+      status: "stable",
     },
     {
       name: "V8IdleTasks",
