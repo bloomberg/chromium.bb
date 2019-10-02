@@ -41,6 +41,7 @@ g.test('wait/equal to signaled', async t => {
 // All promises resolve when signal is called once.
 g.test('wait/signaled once', async t => {
   const fence = t.queue.createFence();
+  t.queue.signal(fence, 20);
   const promises = [];
   for (let i = 0; i <= 20; ++i) {
     promises.push(
@@ -49,7 +50,6 @@ g.test('wait/signaled once', async t => {
       })
     );
   }
-  t.queue.signal(fence, 20);
   await Promise.all(promises);
 });
 
