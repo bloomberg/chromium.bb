@@ -6,6 +6,8 @@
 #define SERVICES_TRACING_PERFETTO_CONSUMER_HOST_H_
 
 #include <memory>
+#include <set>
+#include <string>
 #include <vector>
 
 #include "base/callback.h"
@@ -76,6 +78,7 @@ class ConsumerHost : public perfetto::Consumer, public mojom::ConsumerHost {
     void DisableTracingAndEmitJson(
         const std::string& agent_label_filter,
         mojo::ScopedDataPipeProducerHandle stream,
+        bool privacy_filtering_enabled,
         DisableTracingAndEmitJsonCallback callback) override;
 
    private:

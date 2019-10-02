@@ -343,6 +343,7 @@ void ConsumerHost::TracingSession::RequestBufferUsage(
 void ConsumerHost::TracingSession::DisableTracingAndEmitJson(
     const std::string& agent_label_filter,
     mojo::ScopedDataPipeProducerHandle stream,
+    bool privacy_filtering_enabled,
     DisableTracingAndEmitJsonCallback callback) {
   DCHECK(!read_buffers_stream_writer_);
 
@@ -367,7 +368,11 @@ void ConsumerHost::TracingSession::DisableTracingAndEmitJson(
 
   JSONTraceExporter::ArgumentFilterPredicate arg_filter_predicate;
   JSONTraceExporter::MetadataFilterPredicate metadata_filter_predicate;
-  if (privacy_filtering_enabled_) {
+  if (privacy_filtering_enabled) {
+    // For filtering/whitelisting to be possible at JSON export time,
+    // filtering must not have been enabled during proto emission time
+    // (or there's nothing to pass through the whitelist).
+    DCHECK(!privacy_filtering_enabled_);
     auto* trace_log = base::trace_event::TraceLog::GetInstance();
     arg_filter_predicate = trace_log->GetArgumentFilterPredicate();
     metadata_filter_predicate = trace_log->GetMetadataFilterPredicate();
