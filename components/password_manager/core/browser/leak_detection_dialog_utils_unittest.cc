@@ -2,10 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/passwords/credential_leak_dialog_utils.h"
-#include "base/strings/utf_string_conversions.h"
-#include "chrome/grit/generated_resources.h"
 #include "components/password_manager/core/browser/leak_detection_dialog_utils.h"
+#include "base/strings/utf_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/elide_url.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -20,7 +18,7 @@ using password_manager::IsReused;
 using password_manager::IsSaved;
 using password_manager::IsSyncing;
 
-namespace leak_dialog_utils {
+namespace password_manager {
 
 namespace {
 
@@ -153,4 +151,4 @@ TEST(CredentialLeakDialogUtilsTest, ShouldShowCancelButton) {
   }
 }
 
-}  // namespace leak_dialog_utils
+}  // namespace password_manager
