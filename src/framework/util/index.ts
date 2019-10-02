@@ -35,5 +35,5 @@ export function objectEquals(x: unknown, y: unknown): boolean {
 }
 
 export function range<T>(n: number, fn: (i: number) => T): T[] {
-  return [...new Array(n)].map(fn);
+  return [...new Array(n)].map((_, i) => fn(i));
 }
