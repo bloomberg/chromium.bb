@@ -801,10 +801,10 @@ TEST(NigoriSyncBridgeImplPersistenceTest, ShouldRestoreKeystoreNigori) {
 // the sync protocol.
 TEST_F(NigoriSyncBridgeImplTest,
        ShouldRequireUserActionIfInitiallyUsingTrustedVault) {
-  const std::string kTrustedVaultPassphrase = "trusted_vault_passphrase";
+  const std::string kTrustedVaultKey = "trusted_vault_key";
   EntityData entity_data;
-  *entity_data.specifics.mutable_nigori() = BuildTrustedVaultNigoriSpecifics(
-      {Pbkdf2KeyParams(kTrustedVaultPassphrase)});
+  *entity_data.specifics.mutable_nigori() =
+      BuildTrustedVaultNigoriSpecifics({Pbkdf2KeyParams(kTrustedVaultKey)});
 
   ASSERT_TRUE(bridge()->SetKeystoreKeys({"keystore_key"}));
 
@@ -813,9 +813,7 @@ TEST_F(NigoriSyncBridgeImplTest,
   EXPECT_CALL(*observer(),
               OnPassphraseTypeChanged(PassphraseType::kTrustedVaultPassphrase,
                                       NullTime()));
-  EXPECT_CALL(*observer(), OnPassphraseRequired(/*reason=*/REASON_DECRYPTION,
-                                                /*key_derivation_params=*/_,
-                                                /*pending_keys=*/_));
+  EXPECT_CALL(*observer(), OnTrustedVaultKeyRequired());
   EXPECT_THAT(bridge()->MergeSyncData(std::move(entity_data)),
               Eq(base::nullopt));
   EXPECT_THAT(bridge()->GetPassphraseTypeForTesting(),
@@ -824,11 +822,11 @@ TEST_F(NigoriSyncBridgeImplTest,
               Eq(SyncEncryptionHandler::SensitiveTypes()));
   EXPECT_TRUE(bridge()->HasPendingKeysForTesting());
 
-  EXPECT_CALL(*observer(), OnPassphraseAccepted());
+  EXPECT_CALL(*observer(), OnTrustedVaultKeyAccepted());
   EXPECT_CALL(*observer(), OnCryptographerStateChanged(
                                NotNull(), /*has_pending_keys=*/false));
   EXPECT_CALL(*observer(), OnBootstrapTokenUpdated(_, _)).Times(0);
-  bridge()->SetDecryptionPassphrase(kTrustedVaultPassphrase);
+  bridge()->AddTrustedVaultDecryptionKeys({kTrustedVaultKey});
   EXPECT_FALSE(bridge()->HasPendingKeysForTesting());
 }
 
@@ -837,7 +835,7 @@ TEST_F(NigoriSyncBridgeImplTest,
 // passphrase by means other than the sync protocol.
 TEST_F(NigoriSyncBridgeImplTest,
        ShouldProcessRemoteTransitionFromKeystoreToTrustedVault) {
-  const std::string kTrustedVaultPassphrase = "trusted_vault_passphrase";
+  const std::string kTrustedVaultKey = "trusted_vault_key";
 
   EntityData default_entity_data;
   *default_entity_data.specifics.mutable_nigori() =
@@ -851,8 +849,7 @@ TEST_F(NigoriSyncBridgeImplTest,
 
   EntityData new_entity_data;
   *new_entity_data.specifics.mutable_nigori() =
-      BuildTrustedVaultNigoriSpecifics(
-          {Pbkdf2KeyParams(kTrustedVaultPassphrase)});
+      BuildTrustedVaultNigoriSpecifics({Pbkdf2KeyParams(kTrustedVaultKey)});
 
   EXPECT_CALL(*observer(), OnEncryptedTypesChanged(_, _)).Times(0);
   EXPECT_CALL(*observer(), OnBootstrapTokenUpdated(_, _)).Times(0);
@@ -861,9 +858,7 @@ TEST_F(NigoriSyncBridgeImplTest,
   EXPECT_CALL(*observer(),
               OnPassphraseTypeChanged(PassphraseType::kTrustedVaultPassphrase,
                                       NullTime()));
-  EXPECT_CALL(*observer(), OnPassphraseRequired(/*reason=*/REASON_DECRYPTION,
-                                                /*key_derivation_params=*/_,
-                                                /*pending_keys=*/_));
+  EXPECT_CALL(*observer(), OnTrustedVaultKeyRequired());
   EXPECT_THAT(bridge()->ApplySyncChanges(std::move(new_entity_data)),
               Eq(base::nullopt));
   EXPECT_THAT(bridge()->GetPassphraseTypeForTesting(),
@@ -872,11 +867,11 @@ TEST_F(NigoriSyncBridgeImplTest,
               Eq(SyncEncryptionHandler::SensitiveTypes()));
   EXPECT_TRUE(bridge()->HasPendingKeysForTesting());
 
-  EXPECT_CALL(*observer(), OnPassphraseAccepted());
+  EXPECT_CALL(*observer(), OnTrustedVaultKeyAccepted());
   EXPECT_CALL(*observer(), OnCryptographerStateChanged(
                                NotNull(), /*has_pending_keys=*/false));
   EXPECT_CALL(*observer(), OnBootstrapTokenUpdated(_, _)).Times(0);
-  bridge()->SetDecryptionPassphrase(kTrustedVaultPassphrase);
+  bridge()->AddTrustedVaultDecryptionKeys({kTrustedVaultKey});
   EXPECT_FALSE(bridge()->HasPendingKeysForTesting());
 }
 
@@ -884,18 +879,18 @@ TEST_F(NigoriSyncBridgeImplTest,
 // vault passphrase.
 TEST_F(NigoriSyncBridgeImplTest,
        ShouldProcessRemoteKeyRotationForTrustedVault) {
-  const std::string kTrustedVaultPassphrase = "trusted_vault_passphrase";
-  const std::string kRotatedTrustedVaultPassphrase = "rotated_vault_passphrase";
+  const std::string kTrustedVaultKey = "trusted_vault_key";
+  const std::string kRotatedTrustedVaultKey = "rotated_vault_key";
 
   EntityData entity_data;
-  *entity_data.specifics.mutable_nigori() = BuildTrustedVaultNigoriSpecifics(
-      {Pbkdf2KeyParams(kTrustedVaultPassphrase)});
+  *entity_data.specifics.mutable_nigori() =
+      BuildTrustedVaultNigoriSpecifics({Pbkdf2KeyParams(kTrustedVaultKey)});
 
   ASSERT_TRUE(bridge()->SetKeystoreKeys({"keystore_key"}));
   ASSERT_THAT(bridge()->MergeSyncData(std::move(entity_data)),
               Eq(base::nullopt));
   ASSERT_TRUE(bridge()->HasPendingKeysForTesting());
-  bridge()->SetDecryptionPassphrase(kTrustedVaultPassphrase);
+  bridge()->AddTrustedVaultDecryptionKeys({kTrustedVaultKey});
   ASSERT_FALSE(bridge()->HasPendingKeysForTesting());
   ASSERT_THAT(bridge()->GetPassphraseTypeForTesting(),
               Eq(sync_pb::NigoriSpecifics::TRUSTED_VAULT_PASSPHRASE));
@@ -903,25 +898,23 @@ TEST_F(NigoriSyncBridgeImplTest,
   EntityData new_entity_data;
   *new_entity_data.specifics.mutable_nigori() =
       BuildTrustedVaultNigoriSpecifics(
-          {Pbkdf2KeyParams(kTrustedVaultPassphrase),
-           Pbkdf2KeyParams(kRotatedTrustedVaultPassphrase)});
+          {Pbkdf2KeyParams(kTrustedVaultKey),
+           Pbkdf2KeyParams(kRotatedTrustedVaultKey)});
   EXPECT_CALL(*observer(), OnEncryptedTypesChanged(_, _)).Times(0);
   EXPECT_CALL(*observer(), OnBootstrapTokenUpdated(_, _)).Times(0);
   EXPECT_CALL(*observer(), OnPassphraseTypeChanged(_, _)).Times(0);
   EXPECT_CALL(*observer(), OnCryptographerStateChanged(
                                NotNull(), /*has_pending_keys=*/true));
-  EXPECT_CALL(*observer(), OnPassphraseRequired(/*reason=*/REASON_DECRYPTION,
-                                                /*key_derivation_params=*/_,
-                                                /*pending_keys=*/_));
+  EXPECT_CALL(*observer(), OnTrustedVaultKeyRequired());
 
   EXPECT_THAT(bridge()->ApplySyncChanges(std::move(new_entity_data)),
               Eq(base::nullopt));
   EXPECT_TRUE(bridge()->HasPendingKeysForTesting());
 
-  EXPECT_CALL(*observer(), OnPassphraseAccepted());
+  EXPECT_CALL(*observer(), OnTrustedVaultKeyAccepted());
   EXPECT_CALL(*observer(), OnCryptographerStateChanged(
                                NotNull(), /*has_pending_keys=*/false));
-  bridge()->SetDecryptionPassphrase(kRotatedTrustedVaultPassphrase);
+  bridge()->AddTrustedVaultDecryptionKeys({kRotatedTrustedVaultKey});
   EXPECT_FALSE(bridge()->HasPendingKeysForTesting());
 }
 
@@ -929,18 +922,18 @@ TEST_F(NigoriSyncBridgeImplTest,
 // passphrase.
 TEST_F(NigoriSyncBridgeImplTest,
        ShouldTransitionLocallyFromTrustedVaultToCustomPassphrase) {
-  const std::string kTrustedVaultPassphrase = "trusted_vault_passphrase";
+  const std::string kTrustedVaultKey = "trusted_vault_key";
   const std::string kCustomPassphrase = "custom_passphrase";
 
   EntityData entity_data;
-  *entity_data.specifics.mutable_nigori() = BuildTrustedVaultNigoriSpecifics(
-      {Pbkdf2KeyParams(kTrustedVaultPassphrase)});
+  *entity_data.specifics.mutable_nigori() =
+      BuildTrustedVaultNigoriSpecifics({Pbkdf2KeyParams(kTrustedVaultKey)});
 
   ASSERT_TRUE(bridge()->SetKeystoreKeys({"keystore_key"}));
   ASSERT_THAT(bridge()->MergeSyncData(std::move(entity_data)),
               Eq(base::nullopt));
   ASSERT_TRUE(bridge()->HasPendingKeysForTesting());
-  bridge()->SetDecryptionPassphrase(kTrustedVaultPassphrase);
+  bridge()->AddTrustedVaultDecryptionKeys({kTrustedVaultKey});
   ASSERT_FALSE(bridge()->HasPendingKeysForTesting());
   ASSERT_THAT(bridge()->GetPassphraseTypeForTesting(),
               Eq(sync_pb::NigoriSpecifics::TRUSTED_VAULT_PASSPHRASE));
