@@ -18162,6 +18162,7 @@ Called by update_net_error_codes.py.-->
   <int value="617" label="DeviceLoginScreenAutoclickEnabled"/>
   <int value="618" label="DeviceLoginScreenStickyKeysEnabled"/>
   <int value="619" label="DeviceLoginScreenKeyboardFocusHighlightEnabled"/>
+  <int value="620" label="ShelfAlignment"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
