@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/performance_manager/decorators/freeze_origin_trial_policy_aggregator.h"
+#include "chrome/browser/performance_manager/decorators/page_aggregator.h"
 
 #include "chrome/browser/performance_manager/graph/frame_node_impl.h"
 #include "chrome/browser/performance_manager/graph/graph_impl_operations.h"
@@ -18,19 +18,20 @@ using resource_coordinator::mojom::InterventionPolicy;
 
 namespace {
 
-class FreezeOriginTrialPolicyAggregatorTest : public GraphTestHarness {
+class PageAggregatorTest : public GraphTestHarness {
  public:
   void SetUp() override {
     GraphTestHarness::SetUp();
-    graph()->PassToGraph(std::make_unique<FreezeOriginTrialPolicyAggregator>());
+    graph()->PassToGraph(std::make_unique<PageAggregator>());
   }
 };
 
-void ExpectInitialPolicyWorks(GraphImpl* mock_graph,
-                              InterventionPolicy f0_policy,
-                              InterventionPolicy f1_policy,
-                              InterventionPolicy f0_policy_aggregated,
-                              InterventionPolicy f0f1_policy_aggregated) {
+void ExpectInitialOriginTrialFreezingPolicyWorks(
+    GraphImpl* mock_graph,
+    InterventionPolicy f0_policy,
+    InterventionPolicy f1_policy,
+    InterventionPolicy f0_policy_aggregated,
+    InterventionPolicy f0f1_policy_aggregated) {
   TestNodeWrapper<ProcessNodeImpl> process =
       TestNodeWrapper<ProcessNodeImpl>::Create(mock_graph);
   TestNodeWrapper<PageNodeImpl> page =
@@ -39,8 +40,8 @@ void ExpectInitialPolicyWorks(GraphImpl* mock_graph,
   // Check the initial values before any frames are added.
   EXPECT_EQ(InterventionPolicy::kDefault, page->origin_trial_freeze_policy());
 
-  // Create an initial frame. Expect the page policy to be
-  // |f0_policy_aggregated| when it is made current.
+  // Create an initial frame. Expect the policy to be |f0_policy_aggregated|
+  // when it is made current.
   TestNodeWrapper<FrameNodeImpl> f0 = TestNodeWrapper<FrameNodeImpl>::Create(
       mock_graph, process.get(), page.get());
   f0->SetOriginTrialFreezePolicy(f0_policy);
@@ -71,32 +72,32 @@ void ExpectInitialPolicyWorks(GraphImpl* mock_graph,
 
 }  // namespace
 
-// Tests all possible combinations of policies for 2 frames. In this test, the
-// policy of a frame is set before it becomes current.
-TEST_F(FreezeOriginTrialPolicyAggregatorTest, InitialPolicy) {
+// Tests all possible combinations of Origin Trial freezing policies for 2
+// frames. In this test, the policy of a frame is set before it becomes current.
+TEST_F(PageAggregatorTest, InitialOriginTrialFreezingPolicy) {
   auto* mock_graph = graph();
 
   // Unknown x [Unknown, Default, OptIn, OptOut]
 
-  ExpectInitialPolicyWorks(
+  ExpectInitialOriginTrialFreezingPolicyWorks(
       mock_graph, InterventionPolicy::kUnknown /* f0_policy */,
       InterventionPolicy::kUnknown /* f1_policy */,
       InterventionPolicy::kUnknown /* f0_policy_aggregated */,
       InterventionPolicy::kUnknown /* f0f1_policy_aggregated */);
 
-  ExpectInitialPolicyWorks(
+  ExpectInitialOriginTrialFreezingPolicyWorks(
       mock_graph, InterventionPolicy::kUnknown /* f0_policy */,
       InterventionPolicy::kDefault /* f1_policy */,
       InterventionPolicy::kUnknown /* f0_policy_aggregated */,
       InterventionPolicy::kUnknown /* f0f1_policy_aggregated */);
 
-  ExpectInitialPolicyWorks(
+  ExpectInitialOriginTrialFreezingPolicyWorks(
       mock_graph, InterventionPolicy::kUnknown /* f0_policy */,
       InterventionPolicy::kOptIn /* f1_policy */,
       InterventionPolicy::kUnknown /* f0_policy_aggregated */,
       InterventionPolicy::kUnknown /* f0f1_policy_aggregated */);
 
-  ExpectInitialPolicyWorks(
+  ExpectInitialOriginTrialFreezingPolicyWorks(
       mock_graph, InterventionPolicy::kUnknown /* f0_policy */,
       InterventionPolicy::kOptOut /* f1_policy */,
       InterventionPolicy::kUnknown /* f0_policy_aggregated */,
@@ -104,25 +105,25 @@ TEST_F(FreezeOriginTrialPolicyAggregatorTest, InitialPolicy) {
 
   // Default x [Unknown, Default, OptIn, OptOut]
 
-  ExpectInitialPolicyWorks(
+  ExpectInitialOriginTrialFreezingPolicyWorks(
       mock_graph, InterventionPolicy::kDefault /* f0_policy */,
       InterventionPolicy::kUnknown /* f1_policy */,
       InterventionPolicy::kDefault /* f0_policy_aggregated */,
       InterventionPolicy::kUnknown /* f0f1_policy_aggregated */);
 
-  ExpectInitialPolicyWorks(
+  ExpectInitialOriginTrialFreezingPolicyWorks(
       mock_graph, InterventionPolicy::kDefault /* f0_policy */,
       InterventionPolicy::kDefault /* f1_policy */,
       InterventionPolicy::kDefault /* f0_policy_aggregated */,
       InterventionPolicy::kDefault /* f0f1_policy_aggregated */);
 
-  ExpectInitialPolicyWorks(
+  ExpectInitialOriginTrialFreezingPolicyWorks(
       mock_graph, InterventionPolicy::kDefault /* f0_policy */,
       InterventionPolicy::kOptIn /* f1_policy */,
       InterventionPolicy::kDefault /* f0_policy_aggregated */,
       InterventionPolicy::kOptIn /* f0f1_policy_aggregated */);
 
-  ExpectInitialPolicyWorks(
+  ExpectInitialOriginTrialFreezingPolicyWorks(
       mock_graph, InterventionPolicy::kDefault /* f0_policy */,
       InterventionPolicy::kOptOut /* f1_policy */,
       InterventionPolicy::kDefault /* f0_policy_aggregated */,
@@ -130,25 +131,25 @@ TEST_F(FreezeOriginTrialPolicyAggregatorTest, InitialPolicy) {
 
   // OptIn x [Unknown, Default, OptIn, OptOut]
 
-  ExpectInitialPolicyWorks(
+  ExpectInitialOriginTrialFreezingPolicyWorks(
       mock_graph, InterventionPolicy::kOptIn /* f0_policy */,
       InterventionPolicy::kUnknown /* f1_policy */,
       InterventionPolicy::kOptIn /* f0_policy_aggregated */,
       InterventionPolicy::kUnknown /* f0f1_policy_aggregated */);
 
-  ExpectInitialPolicyWorks(
+  ExpectInitialOriginTrialFreezingPolicyWorks(
       mock_graph, InterventionPolicy::kOptIn /* f0_policy */,
       InterventionPolicy::kDefault /* f1_policy */,
       InterventionPolicy::kOptIn /* f0_policy_aggregated */,
       InterventionPolicy::kOptIn /* f0f1_policy_aggregated */);
 
-  ExpectInitialPolicyWorks(
+  ExpectInitialOriginTrialFreezingPolicyWorks(
       mock_graph, InterventionPolicy::kOptIn /* f0_policy */,
       InterventionPolicy::kOptIn /* f1_policy */,
       InterventionPolicy::kOptIn /* f0_policy_aggregated */,
       InterventionPolicy::kOptIn /* f0f1_policy_aggregated */);
 
-  ExpectInitialPolicyWorks(
+  ExpectInitialOriginTrialFreezingPolicyWorks(
       mock_graph, InterventionPolicy::kOptIn /* f0_policy */,
       InterventionPolicy::kOptOut /* f1_policy */,
       InterventionPolicy::kOptIn /* f0_policy_aggregated */,
@@ -156,33 +157,34 @@ TEST_F(FreezeOriginTrialPolicyAggregatorTest, InitialPolicy) {
 
   // OptOut x [Unknown, Default, OptIn, OptOut]
 
-  ExpectInitialPolicyWorks(
+  ExpectInitialOriginTrialFreezingPolicyWorks(
       mock_graph, InterventionPolicy::kOptOut /* f0_policy */,
       InterventionPolicy::kUnknown /* f1_policy */,
       InterventionPolicy::kOptOut /* f0_policy_aggregated */,
       InterventionPolicy::kUnknown /* f0f1_policy_aggregated */);
 
-  ExpectInitialPolicyWorks(
+  ExpectInitialOriginTrialFreezingPolicyWorks(
       mock_graph, InterventionPolicy::kOptOut /* f0_policy */,
       InterventionPolicy::kDefault /* f1_policy */,
       InterventionPolicy::kOptOut /* f0_policy_aggregated */,
       InterventionPolicy::kOptOut /* f0f1_policy_aggregated */);
 
-  ExpectInitialPolicyWorks(
+  ExpectInitialOriginTrialFreezingPolicyWorks(
       mock_graph, InterventionPolicy::kOptOut /* f0_policy */,
       InterventionPolicy::kOptIn /* f1_policy */,
       InterventionPolicy::kOptOut /* f0_policy_aggregated */,
       InterventionPolicy::kOptOut /* f0f1_policy_aggregated */);
 
-  ExpectInitialPolicyWorks(
+  ExpectInitialOriginTrialFreezingPolicyWorks(
       mock_graph, InterventionPolicy::kOptOut /* f0_policy */,
       InterventionPolicy::kOptOut /* f1_policy */,
       InterventionPolicy::kOptOut /* f0_policy_aggregated */,
       InterventionPolicy::kOptOut /* f0f1_policy_aggregated */);
 }
 
-// Test changing the policy of a frame after it becomes current.
-TEST_F(FreezeOriginTrialPolicyAggregatorTest, PolicyChanges) {
+// Test changing the Origin Trial Freezing policy of a frame after it becomes
+// current.
+TEST_F(PageAggregatorTest, OriginTrialFreezingPolicyChanges) {
   TestNodeWrapper<ProcessNodeImpl> process =
       TestNodeWrapper<ProcessNodeImpl>::Create(graph());
   TestNodeWrapper<PageNodeImpl> page =
