@@ -137,6 +137,10 @@
 #include "chromecast/external_mojo/broker_service/broker_service.h"
 #endif
 
+#if BUILDFLAG(ENABLE_CAST_WAYLAND_SERVER)
+#include "chromecast/browser/webview/webview_controller.h"
+#endif  // BUILDFLAG(ENABLE_CAST_WAYLAND_SERVER)
+
 namespace chromecast {
 namespace shell {
 
@@ -945,6 +949,13 @@ CastContentBrowserClient::CreateThrottlesForNavigation(
         std::make_unique<GeneralAudienceBrowsingNavigationThrottle>(
             handle, general_audience_browsing_service_.get()));
   }
+
+#if BUILDFLAG(ENABLE_CAST_WAYLAND_SERVER)
+  auto webview_throttle = WebviewController::MaybeGetNavigationThrottle(handle);
+  if (webview_throttle) {
+    throttles.push_back(std::move(webview_throttle));
+  }
+#endif  // BUILDFLAG(ENABLE_CAST_WAYLAND_SERVER)
 
   return throttles;
 }

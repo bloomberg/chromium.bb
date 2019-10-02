@@ -10,8 +10,10 @@
 #include "chromecast/browser/cast_web_contents_impl.h"
 #include "chromecast/browser/webview/proto/webview.pb.h"
 #include "chromecast/browser/webview/webview_layout_manager.h"
+#include "chromecast/browser/webview/webview_navigation_throttle.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browsing_data_remover.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/web_preferences.h"
@@ -21,11 +23,32 @@
 
 namespace chromecast {
 
+namespace {
+
+const void* kWebviewResponseUserDataKey = &kWebviewResponseUserDataKey;
+
+class WebviewUserData : public base::SupportsUserData::Data {
+ public:
+  explicit WebviewUserData(WebviewController* controller);
+  ~WebviewUserData() override;
+
+  std::unique_ptr<Data> Clone() override;
+
+  WebviewController* controller() const { return controller_; }
+
+ private:
+  WebviewController* controller_;
+};
+
+}  // namespace
+
 WebviewController::WebviewController(content::BrowserContext* browser_context,
                                      Client* client)
     : client_(client) {
   content::WebContents::CreateParams create_params(browser_context, nullptr);
   contents_ = content::WebContents::Create(create_params);
+  contents_->SetUserData(kWebviewResponseUserDataKey,
+                         std::make_unique<WebviewUserData>(this));
   CastWebContents::InitParams cast_contents_init;
   cast_contents_init.is_root_window = true;
   cast_contents_init.enabled_for_dev = CAST_IS_DEBUG_BUILD();
@@ -43,6 +66,20 @@ WebviewController::WebviewController(content::BrowserContext* browser_context,
 }
 
 WebviewController::~WebviewController() {}
+
+std::unique_ptr<content::NavigationThrottle>
+WebviewController::MaybeGetNavigationThrottle(
+    content::NavigationHandle* handle) {
+  auto* web_contents = handle->GetWebContents();
+  auto* webview_user_data = static_cast<WebviewUserData*>(
+      web_contents->GetUserData(kWebviewResponseUserDataKey));
+  if (webview_user_data &&
+      webview_user_data->controller()->has_navigation_delegate_) {
+    return std::make_unique<WebviewNavigationThrottle>(
+        handle, webview_user_data->controller());
+  }
+  return nullptr;
+}
 
 void WebviewController::ProcessRequest(const webview::WebviewRequest& request) {
   switch (request.type_case()) {
@@ -142,11 +179,27 @@ void WebviewController::ProcessRequest(const webview::WebviewRequest& request) {
         client_->OnError("set_auto_media_playback_policy() not supplied");
       }
       break;
-
+    case webview::WebviewRequest::kNavigationDecision:
+      if (current_navigation_throttle_) {
+        current_navigation_throttle_->ProcessNavigationDecision(
+            request.navigation_decision());
+        current_navigation_throttle_ = nullptr;
+      }
+      break;
     default:
       client_->OnError("Unknown request code");
       break;
   }
+}
+
+void WebviewController::SendNavigationEvent(WebviewNavigationThrottle* throttle,
+                                            const GURL& gurl) {
+  DCHECK(!current_navigation_throttle_);
+  std::unique_ptr<webview::WebviewResponse> response =
+      std::make_unique<webview::WebviewResponse>();
+  response->mutable_navigation_event()->set_url(gurl.spec());
+  current_navigation_throttle_ = throttle;
+  client_->EnqueueSend(std::move(response));
 }
 
 void WebviewController::ClosePage() {
@@ -308,7 +361,7 @@ void WebviewController::HandleUpdateSettings(
   prefs.javascript_enabled = request.javascript_enabled();
   contents_->GetRenderViewHost()->UpdateWebkitPreferences(prefs);
 
-  // TODO(dnicoara): Add support for |has_navigation_delegate|.
+  has_navigation_delegate_ = request.has_navigation_delegate();
 
   // Given that cast_shell enables devtools unconditionally there isn't
   // anything that needs to be done for |request.debugging_enabled()|. Though,
@@ -386,6 +439,15 @@ void WebviewController::Destroy() {
     // This will eventually call OnPageStopped.
     cast_web_contents_->ClosePage();
   }
+}
+
+WebviewUserData::WebviewUserData(WebviewController* controller)
+    : controller_(controller) {}
+
+WebviewUserData::~WebviewUserData() = default;
+
+std::unique_ptr<base::SupportsUserData::Data> WebviewUserData::Clone() {
+  return std::make_unique<WebviewUserData>(controller_);
 }
 
 }  // namespace chromecast

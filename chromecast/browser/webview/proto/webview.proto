@@ -169,6 +169,14 @@ message SetAutoMediaPlaybackPolicyRequest {
   bool require_user_gesture = 1;
 }
 
+message NavigationRequestEvent {
+  string url = 1;
+}
+
+enum NavigationDecision {
+  PREVENT = 0;
+  NAVIGATE = 1;
+}
 message WebviewRequest {
   // Unique identifier for the request. For requests that will have a response,
   // the response id will match the request id.
@@ -209,6 +217,8 @@ message WebviewRequest {
     GetTitleRequest get_title = 16;
     // No response.
     SetAutoMediaPlaybackPolicyRequest set_auto_media_playback_policy = 17;
+    // Response to a navigation request.
+    NavigationDecision navigation_decision = 19;
   }
 }
 
@@ -225,6 +235,8 @@ message WebviewResponse {
     CanGoBackResponse can_go_back = 5;
     CanGoForwardResponse can_go_forward = 6;
     GetTitleResponse get_title = 7;
+    // Triggered by web navigation events inside the webview.
+    NavigationRequestEvent navigation_event = 9;
   }
 }
 
