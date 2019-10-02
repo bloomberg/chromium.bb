@@ -413,11 +413,6 @@ const base::Feature kHappinessTrackingSurveysForDesktopDemo{
 const base::Feature kHTTPAuthCommittedInterstitials{
     "HTTPAuthCommittedInterstitials", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables security warning UI treatments for sites that use legacy TLS versions
-// (TLS 1.0 or 1.1).
-const base::Feature kLegacyTLSWarnings{"LegacyTLSWarnings",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables navigation suggestions UI for lookalike URLs (e.g. internationalized
 // domain names that are visually similar to popular domains or to domains with
 // engagement score, such as googlé.com).
