@@ -65,7 +65,8 @@ public final class ReturnToChromeExperimentsUtil {
         return ChromeFeatureList.isInitialized()
                 && (FeatureUtilities.isGridTabSwitcherEnabled()
                         || FeatureUtilities.isTabGroupsAndroidEnabled())
-                && ChromeFeatureList.isEnabled(ChromeFeatureList.START_SURFACE_ANDROID);
+                && (ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_SWITCHER_ON_RETURN)
+                        || FeatureUtilities.isStartSurfaceEnabled());
     }
 
     /**
