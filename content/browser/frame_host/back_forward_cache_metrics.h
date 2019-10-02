@@ -18,6 +18,7 @@ class Origin;
 
 namespace content {
 class NavigationEntryImpl;
+class NavigationRequest;
 class RenderFrameHostImpl;
 
 // Helper class for recording metrics around history navigations.
@@ -68,9 +69,7 @@ class BackForwardCacheMetrics
   void MainFrameDidStartNavigationToDocument();
 
   // Notifies that an associated entry has committed a navigation.
-  void DidCommitNavigation(int64_t navigation_id,
-                           int64_t navigation_entry_id,
-                           bool is_main_frame_navigation);
+  void DidCommitNavigation(NavigationRequest* navigation_request);
 
   // Records when another navigation commits away from the most recent entry
   // associated with |this|.  This is the point in time that the previous
