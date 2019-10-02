@@ -98,6 +98,10 @@ class TabStripUIHandler : public content::WebUIMessageHandler {
     colors.SetString("--tabstrip-tab-text-color",
                      color_utils::SkColorToRgbaString(
                          tp.GetColor(ThemeProperties::COLOR_TAB_TEXT)));
+    colors.SetString("--tabstrip-tab-separator-color",
+                     color_utils::SkColorToRgbaString(SkColorSetA(
+                         tp.GetColor(ThemeProperties::COLOR_TAB_TEXT),
+                         /* 16% opacity */ 0.16 * 255)));
 
     ResolveJavascriptCallback(callback_id, colors);
   }

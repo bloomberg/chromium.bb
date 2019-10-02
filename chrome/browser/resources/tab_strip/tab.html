@@ -13,7 +13,7 @@
   #dragImage {
     background: var(--tabstrip-tab-background-color);
     border-radius: var(--tabstrip-card-border-radius);
-    box-shadow: 0 0 0 1px currentColor;
+    box-shadow: 0 0 0 1px var(--tabstrip-tab-separator-color);
     color: var(--tabstrip-tab-text-color);
     display: flex;
     flex-direction: column;
@@ -29,7 +29,7 @@
 
   #title {
     align-items: center;
-    border-block-end: 1px solid currentColor;
+    border-block-end: 1px solid var(--tabstrip-tab-separator-color);
     box-sizing: border-box;
     display: flex;
     height: var(--tabstrip-tab-title-height);
