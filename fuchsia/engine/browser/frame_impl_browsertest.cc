@@ -170,8 +170,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, FrameDeletedBeforeContext) {
   base::RunLoop().RunUntilIdle();
 
   FrameImpl* frame_impl = context_impl()->GetFrameImplForTest(&frame);
-  MockWebContentsObserver deletion_observer(
-      frame_impl->web_contents_for_test());
+  MockWebContentsObserver deletion_observer(frame_impl->web_contents());
   base::RunLoop run_loop;
   EXPECT_CALL(deletion_observer, RenderViewDeleted(_))
       .WillOnce(InvokeWithoutArgs([&run_loop] { run_loop.Quit(); }));
