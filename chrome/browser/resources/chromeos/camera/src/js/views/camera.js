@@ -96,8 +96,8 @@ cca.views.Camera = function(
    * @private
    */
   this.modes_ = new cca.views.camera.Modes(
-      photoPreferrer, videoPreferrer, this.restart.bind(this), doSavePhoto,
-      createVideoSaver, doSaveVideo);
+      this.defaultMode, photoPreferrer, videoPreferrer, this.restart.bind(this),
+      doSavePhoto, createVideoSaver, doSaveVideo);
 
   /**
    * @type {?string}
@@ -164,6 +164,16 @@ cca.views.Camera.prototype = {
   get suspended() {
     return this.locked_ || chrome.app.window.current().isMinimized() ||
         cca.state.get('suspend');
+  },
+  get defaultMode() {
+    switch (window.intent && window.intent.mode) {
+      case cca.intent.Mode.PHOTO:
+        return cca.views.camera.Mode.PHOTO;
+      case cca.intent.Mode.VIDEO:
+        return cca.views.camera.Mode.VIDEO;
+      default:
+        return cca.views.camera.Mode.PHOTO;
+    }
   },
 };
 

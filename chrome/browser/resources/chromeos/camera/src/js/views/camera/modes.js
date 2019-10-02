@@ -71,7 +71,19 @@ cca.views.camera.PhotoResult;
  */
 
 /**
+ * Capture modes.
+ * @enum {string}
+ */
+cca.views.camera.Mode = {
+  PHOTO: 'photo-mode',
+  VIDEO: 'video-mode',
+  SQUARE: 'square-mode',
+  PORTRAIT: 'portrait-mode',
+};
+
+/**
  * Mode controller managing capture sequence of different camera mode.
+ * @param {!cca.views.camera.Mode} defaultMode Default mode to be switched to.
  * @param {cca.device.PhotoResolPreferrer} photoResolPreferrer
  * @param {cca.device.VideoConstraintsPreferrer} videoPreferrer
  * @param {!DoSwitchMode} doSwitchMode
@@ -81,7 +93,7 @@ cca.views.camera.PhotoResult;
  * @constructor
  */
 cca.views.camera.Modes = function(
-    photoResolPreferrer, videoPreferrer, doSwitchMode, doSavePhoto,
+    defaultMode, photoResolPreferrer, videoPreferrer, doSwitchMode, doSavePhoto,
     createVideoSaver, doSaveVideo) {
   /**
    * @type {!DoSwitchMode}
@@ -91,7 +103,7 @@ cca.views.camera.Modes = function(
 
   /**
    * Capture controller of current camera mode.
-   * @type {cca.views.camera.Mode}
+   * @type {cca.views.camera.ModeBase}
    */
   this.current = null;
 
@@ -188,12 +200,12 @@ cca.views.camera.Modes = function(
   });
 
   // Set default mode when app started.
-  this.updateModeUI_('photo-mode');
+  this.updateModeUI_(defaultMode);
 };
 
 /**
  * Updates state of mode related UI to the target mode.
- * @param {string} mode Mode to be toggled.
+ * @param {!cca.views.camera.Mode} mode Mode to be toggled.
  */
 cca.views.camera.Modes.prototype.updateModeUI_ = function(mode) {
   Object.keys(this.allModes_).forEach((m) => cca.state.set(m, m == mode));
@@ -411,7 +423,7 @@ cca.views.camera.Modes.prototype.disableSaveMetadata_ = async function() {
  *     height.
  * @constructor
  */
-cca.views.camera.Mode = function(stream, captureResolution) {
+cca.views.camera.ModeBase = function(stream, captureResolution) {
   /**
    * Stream of current mode.
    * @type {?Promise}
@@ -439,7 +451,7 @@ cca.views.camera.Mode = function(stream, captureResolution) {
  * Initiates video/photo capture operation.
  * @return {?Promise} Promise for ongoing capture operation.
  */
-cca.views.camera.Mode.prototype.startCapture = function() {
+cca.views.camera.ModeBase.prototype.startCapture = function() {
   if (!this.capture_) {
     this.capture_ = this.start_().finally(() => this.capture_ = null);
   }
@@ -451,7 +463,7 @@ cca.views.camera.Mode.prototype.startCapture = function() {
  * @async
  * @return {Promise} Promise for ongoing capture operation.
  */
-cca.views.camera.Mode.prototype.stopCapture = async function() {
+cca.views.camera.ModeBase.prototype.stopCapture = async function() {
   this.stop_();
   return await this.capture_;
 };
@@ -460,26 +472,27 @@ cca.views.camera.Mode.prototype.stopCapture = async function() {
  * Adds an observer to save image metadata.
  * @return {!Promise} Promise for the operation.
  */
-cca.views.camera.Mode.prototype.addMetadataObserver = async function() {};
+cca.views.camera.ModeBase.prototype.addMetadataObserver = async function() {};
 
 /**
  * Remove the observer that saves metadata.
  * @return {!Promise} Promise for the operation.
  */
-cca.views.camera.Mode.prototype.removeMetadataObserver = async function() {};
+cca.views.camera.ModeBase.prototype.removeMetadataObserver =
+    async function() {};
 
 /**
  * Initiates video/photo capture operation under this mode.
  * @async
  * @protected
  */
-cca.views.camera.Mode.prototype.start_ = async function() {};
+cca.views.camera.ModeBase.prototype.start_ = async function() {};
 
 /**
  * Stops the ongoing capture operation under this mode.
  * @protected
  */
-cca.views.camera.Mode.prototype.stop_ = function() {};
+cca.views.camera.ModeBase.prototype.stop_ = function() {};
 
 /**
  * Video mode capture controller.
@@ -489,7 +502,7 @@ cca.views.camera.Mode.prototype.stop_ = function() {};
  * @constructor
  */
 cca.views.camera.Video = function(stream, createVideoSaver, doSaveVideo) {
-  cca.views.camera.Mode.call(this, stream, null);
+  cca.views.camera.ModeBase.call(this, stream, null);
 
   /**
    * @type {!CreateVideoSaver}
@@ -529,7 +542,7 @@ cca.views.camera.Video = function(stream, createVideoSaver, doSaveVideo) {
 };
 
 cca.views.camera.Video.prototype = {
-  __proto__: cca.views.camera.Mode.prototype,
+  __proto__: cca.views.camera.ModeBase.prototype,
 };
 
 /**
@@ -637,7 +650,7 @@ cca.views.camera.Video.prototype.captureVideo_ = async function() {
  * @constructor
  */
 cca.views.camera.Photo = function(stream, doSavePhoto, captureResolution) {
-  cca.views.camera.Mode.call(this, stream, captureResolution);
+  cca.views.camera.ModeBase.call(this, stream, captureResolution);
 
   /**
    * Callback for saving picture.
@@ -669,7 +682,7 @@ cca.views.camera.Photo = function(stream, doSavePhoto, captureResolution) {
 };
 
 cca.views.camera.Photo.prototype = {
-  __proto__: cca.views.camera.Mode.prototype,
+  __proto__: cca.views.camera.ModeBase.prototype,
 };
 
 /**
