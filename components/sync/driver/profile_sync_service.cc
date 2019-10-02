@@ -1045,7 +1045,7 @@ void ProfileSyncService::OnConfigureDone(
 
   // We should never get in a state where we have no encrypted datatypes
   // enabled, and yet we still think we require a passphrase for decryption.
-  DCHECK(!user_settings_->IsPassphraseRequiredForDecryption() ||
+  DCHECK(!user_settings_->IsPassphraseRequiredForPreferredDataTypes() ||
          user_settings_->IsEncryptedDatatypeEnabled());
 
   // Notify listeners that configuration is done.

@@ -93,7 +93,7 @@ class SyncUserSettings : public syncer::DataTypeEncryptionHandler {
   bool IsPassphraseRequired() const override = 0;
   // Whether a passphrase is required to decrypt the data for any currently
   // enabled data type.
-  virtual bool IsPassphraseRequiredForDecryption() const = 0;
+  virtual bool IsPassphraseRequiredForPreferredDataTypes() const = 0;
   // Whether a "secondary" passphrase is in use (aka explicit passphrase), which
   // means either a custom or a frozen implicit passphrase.
   virtual bool IsUsingSecondaryPassphrase() const = 0;
