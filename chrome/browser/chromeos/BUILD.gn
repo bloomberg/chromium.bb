@@ -1535,6 +1535,8 @@ source_set("chromeos") {
     "net/client_cert_store_chromeos.h",
     "net/delay_network_call.cc",
     "net/delay_network_call.h",
+    "net/dhcp_wpad_url_client.cc",
+    "net/dhcp_wpad_url_client.h",
     "net/network_portal_detector_impl.cc",
     "net/network_portal_detector_impl.h",
     "net/network_portal_detector_test_impl.cc",
