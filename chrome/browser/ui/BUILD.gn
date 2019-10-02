@@ -613,10 +613,17 @@ jumbo_split_static_library("ui") {
     ]
   }
 
-  if (is_android || is_linux) {
+  if (is_win || is_android || is_linux) {
     sources += [
       "webui/sandbox_internals_ui.cc",
       "webui/sandbox_internals_ui.h",
+    ]
+  }
+
+  if (is_win) {
+    sources += [
+      "webui/sandbox/sandbox_handler.cc",
+      "webui/sandbox/sandbox_handler.h",
     ]
   }
 
