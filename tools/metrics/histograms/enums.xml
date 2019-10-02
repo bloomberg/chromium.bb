@@ -21587,6 +21587,23 @@ Called by update_net_error_codes.py.-->
   </int>
 </enum>
 
+<enum name="FeatureModuleInstallingStatus">
+  <int value="0" label="UnknownCode">Unknown update status.</int>
+  <int value="1" label="Requested">Module requested (on-demand).</int>
+  <int value="2" label="Pending">Module pending.</int>
+  <int value="3" label="Downloading">Module downloading.</int>
+  <int value="4" label="Downloaded">Module downloaded.</int>
+  <int value="5" label="Installing">Module installing.</int>
+  <int value="6" label="Installed">Module installed.</int>
+  <int value="7" label="Failed">Module request failed.</int>
+  <int value="8" label="Canceling">Module request canceling.</int>
+  <int value="9" label="Canceled">Module request canceled.</int>
+  <int value="10" label="RequiresUserConfirmation">
+    Module request requires user confirmation.
+  </int>
+  <int value="11" label="RequestedDeferred">Module requested (deferred).</int>
+</enum>
+
 <enum name="FeatureModuleInstallStatus">
   <int value="0" label="Success">Installation succeeded.</int>
   <int value="1" label="Failure (deprecated)">
