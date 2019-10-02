@@ -3595,8 +3595,11 @@ static int get_rdmult_delta(AV1_COMP *cpi, BLOCK_SIZE bsize, int analysis_type,
       if (row >= cm->mi_rows || col >= mi_cols_sr) continue;
       TplDepStats *this_stats =
           &tpl_stats[av1_tpl_ptr_pos(cpi, row, col, tpl_stride)];
-      intra_cost += this_stats->recrf_dist;
-      mc_dep_cost += this_stats->recrf_dist + this_stats->mc_dep_delta;
+      int64_t mc_dep_delta =
+          RDCOST(tpl_frame->base_rdmult, this_stats->mc_dep_rate,
+                 this_stats->mc_dep_dist);
+      intra_cost += this_stats->recrf_dist << RDDIV_BITS;
+      mc_dep_cost += (this_stats->recrf_dist << RDDIV_BITS) + mc_dep_delta;
 #if !USE_TPL_CLASSIC_MODEL
       mc_count += this_stats->mc_count;
       mc_saved += this_stats->mc_saved;
@@ -3740,8 +3743,11 @@ static int get_q_for_deltaq_objective(AV1_COMP *const cpi, BLOCK_SIZE bsize,
       if (row >= cm->mi_rows || col >= mi_cols_sr) continue;
       TplDepStats *this_stats =
           &tpl_stats[av1_tpl_ptr_pos(cpi, row, col, tpl_stride)];
-      intra_cost += this_stats->recrf_dist;
-      mc_dep_cost += this_stats->recrf_dist + this_stats->mc_dep_delta;
+      int64_t mc_dep_delta =
+          RDCOST(tpl_frame->base_rdmult, this_stats->mc_dep_rate,
+                 this_stats->mc_dep_dist);
+      intra_cost += this_stats->recrf_dist << RDDIV_BITS;
+      mc_dep_cost += (this_stats->recrf_dist << RDDIV_BITS) + mc_dep_delta;
 #if !USE_TPL_CLASSIC_MODEL
       mc_count += this_stats->mc_count;
       mc_saved += this_stats->mc_saved;

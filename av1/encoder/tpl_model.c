@@ -287,6 +287,7 @@ static AOM_INLINE void mode_estimation(
                          recon_error, sse);
       int rate_cost = rate_estimator(qcoeff, eob, tx_size);
       best_rdcost = RDCOST(base_rdmult, rate_cost, *recon_error);
+      tpl_stats->srcrf_rate = rate_cost << TPL_DEP_COST_SCALE_LOG2;
     }
   }
   best_intra_cost = AOMMAX(best_intra_cost, 1);
@@ -298,8 +299,7 @@ static AOM_INLINE void mode_estimation(
   tpl_stats->inter_cost = best_inter_cost << TPL_DEP_COST_SCALE_LOG2;
   tpl_stats->intra_cost = best_intra_cost << TPL_DEP_COST_SCALE_LOG2;
 
-  tpl_stats->srcrf_dist = *recon_error
-                          << (TPL_DEP_COST_SCALE_LOG2 + RDDIV_BITS);
+  tpl_stats->srcrf_dist = *recon_error << (TPL_DEP_COST_SCALE_LOG2);
   tpl_stats->src_rdcost = best_rdcost << TPL_DEP_COST_SCALE_LOG2;
 
   // Final encode
@@ -350,17 +350,18 @@ static AOM_INLINE void mode_estimation(
   av1_inverse_transform_block(xd, dqcoeff, 0, DCT_DCT, tx_size, dst_buffer,
                               dst_buffer_stride, eob, 0);
 
-  tpl_stats->recrf_dist = *recon_error
-                          << (TPL_DEP_COST_SCALE_LOG2 + RDDIV_BITS);
+  tpl_stats->recrf_dist = *recon_error << (TPL_DEP_COST_SCALE_LOG2);
+  tpl_stats->recrf_rate = rate_cost << TPL_DEP_COST_SCALE_LOG2;
   tpl_stats->rec_rdcost = RDCOST(base_rdmult, rate_cost, *recon_error)
                           << TPL_DEP_COST_SCALE_LOG2;
   if (!is_inter_mode(best_mode)) {
-    tpl_stats->srcrf_dist = *recon_error
-                            << (TPL_DEP_COST_SCALE_LOG2 + RDDIV_BITS);
+    tpl_stats->srcrf_dist = *recon_error << (TPL_DEP_COST_SCALE_LOG2);
+    tpl_stats->srcrf_rate = rate_cost << TPL_DEP_COST_SCALE_LOG2;
     tpl_stats->src_rdcost = RDCOST(base_rdmult, rate_cost, *recon_error)
                             << TPL_DEP_COST_SCALE_LOG2;
   }
   tpl_stats->recrf_dist = AOMMAX(tpl_stats->srcrf_dist, tpl_stats->recrf_dist);
+  tpl_stats->recrf_rate = AOMMAX(tpl_stats->srcrf_rate, tpl_stats->recrf_rate);
   tpl_stats->rec_rdcost = AOMMAX(tpl_stats->rec_rdcost, tpl_stats->src_rdcost);
 
   if (frame_idx && best_rf_idx != -1) {
@@ -422,6 +423,35 @@ int av1_tpl_ptr_pos(AV1_COMP *cpi, int mi_row, int mi_col, int stride) {
   return (mi_row >> right_shift) * stride + (mi_col >> right_shift);
 }
 
+static int delta_rate_cost(int64_t delta_rate, int64_t recrf_dist,
+                           int64_t srcrf_dist, int pix_num) {
+  double beta = (double)srcrf_dist / recrf_dist;
+  int64_t rate_cost = delta_rate;
+
+  if (srcrf_dist <= 128) return rate_cost;
+
+  double dr =
+      (double)(delta_rate >> (TPL_DEP_COST_SCALE_LOG2 + AV1_PROB_COST_SHIFT)) /
+      pix_num;
+
+  double log_den = log(beta) / log(2.0) + 2.0 * dr;
+
+  if (log_den > log(10.0) / log(2.0)) {
+    rate_cost = (int64_t)((log(1.0 / beta) * pix_num) / log(2.0) / 2.0);
+    rate_cost <<= (TPL_DEP_COST_SCALE_LOG2 + AV1_PROB_COST_SHIFT);
+    return rate_cost;
+  }
+
+  double num = pow(2.0, log_den);
+  double den = num * beta + (1 - beta) * beta;
+
+  rate_cost = (int64_t)((pix_num * log(num / den)) / log(2.0) / 2.0);
+
+  rate_cost <<= (TPL_DEP_COST_SCALE_LOG2 + AV1_PROB_COST_SHIFT);
+
+  return rate_cost;
+}
+
 static AOM_INLINE void tpl_model_update_b(AV1_COMP *cpi, TplDepFrame *tpl_frame,
                                           TplDepStats *tpl_stats_ptr,
                                           int mi_row, int mi_col,
@@ -462,12 +492,18 @@ static AOM_INLINE void tpl_model_update_b(AV1_COMP *cpi, TplDepFrame *tpl_frame,
           (int64_t)(tpl_stats_ptr->quant_ratio * tpl_stats_ptr->mc_dep_cost *
                     (1.0 - iiratio_nl));
 
-      int64_t cur_dep_cost =
-          tpl_stats_ptr->rec_rdcost - tpl_stats_ptr->src_rdcost;
-      int64_t mc_dep_delta = (int64_t)(
-          tpl_stats_ptr->mc_dep_delta *
+      int64_t cur_dep_dist =
+          tpl_stats_ptr->recrf_dist - tpl_stats_ptr->srcrf_dist;
+      int64_t mc_dep_dist = (int64_t)(
+          tpl_stats_ptr->mc_dep_dist *
           ((double)(tpl_stats_ptr->recrf_dist - tpl_stats_ptr->srcrf_dist) /
            tpl_stats_ptr->recrf_dist));
+
+      int64_t delta_rate =
+          tpl_stats_ptr->recrf_rate - tpl_stats_ptr->srcrf_rate;
+      int64_t mc_dep_rate =
+          delta_rate_cost(tpl_stats_ptr->mc_dep_rate, tpl_stats_ptr->recrf_dist,
+                          tpl_stats_ptr->srcrf_dist, pix_num);
 
 #if !USE_TPL_CLASSIC_MODEL
       int64_t mc_saved = tpl_stats_ptr->intra_cost - tpl_stats_ptr->inter_cost;
@@ -483,8 +519,11 @@ static AOM_INLINE void tpl_model_update_b(AV1_COMP *cpi, TplDepFrame *tpl_frame,
           des_stats->mc_saved += (mc_saved * overlap_area) / pix_num;
 #endif  // !USE_TPL_CLASSIC_MODEL
 
-          des_stats->mc_dep_delta +=
-              ((cur_dep_cost + mc_dep_delta) * overlap_area) / pix_num;
+          des_stats->mc_dep_dist +=
+              ((cur_dep_dist + mc_dep_dist) * overlap_area) / pix_num;
+          des_stats->mc_dep_rate +=
+              ((delta_rate + mc_dep_rate) * overlap_area) / pix_num;
+
           assert(overlap_area >= 0);
         }
       }
@@ -523,6 +562,8 @@ static AOM_INLINE void tpl_model_store(AV1_COMP *cpi,
   int64_t inter_cost = src_stats->inter_cost / (mi_height * mi_width);
   int64_t srcrf_dist = src_stats->srcrf_dist / (mi_height * mi_width);
   int64_t recrf_dist = src_stats->recrf_dist / (mi_height * mi_width);
+  int64_t srcrf_rate = src_stats->srcrf_rate / (mi_height * mi_width);
+  int64_t recrf_rate = src_stats->recrf_rate / (mi_height * mi_width);
   int64_t src_rdcost = src_stats->src_rdcost / (mi_height * mi_width);
   int64_t rec_rdcost = src_stats->rec_rdcost / (mi_height * mi_width);
 
@@ -530,6 +571,8 @@ static AOM_INLINE void tpl_model_store(AV1_COMP *cpi,
   inter_cost = AOMMAX(1, inter_cost);
   srcrf_dist = AOMMAX(1, srcrf_dist);
   recrf_dist = AOMMAX(1, recrf_dist);
+  srcrf_rate = AOMMAX(1, srcrf_rate);
+  recrf_rate = AOMMAX(1, recrf_rate);
   src_rdcost = AOMMAX(1, src_rdcost);
   rec_rdcost = AOMMAX(1, rec_rdcost);
 
@@ -541,6 +584,8 @@ static AOM_INLINE void tpl_model_store(AV1_COMP *cpi,
       tpl_ptr->inter_cost = inter_cost;
       tpl_ptr->srcrf_dist = srcrf_dist;
       tpl_ptr->recrf_dist = recrf_dist;
+      tpl_ptr->srcrf_rate = srcrf_rate;
+      tpl_ptr->recrf_rate = recrf_rate;
       tpl_ptr->src_rdcost = src_rdcost;
       tpl_ptr->rec_rdcost = rec_rdcost;
       tpl_ptr->quant_ratio = src_stats->quant_ratio;
@@ -668,6 +713,8 @@ static AOM_INLINE void mc_flow_dispenser(AV1_COMP *cpi, int frame_idx,
   av1_frame_init_quantizer(cpi);
 
   int base_rdmult = av1_compute_rd_mult_based_on_qindex(cpi, pframe_qindex) / 6;
+
+  tpl_frame->base_rdmult = base_rdmult;
 
   for (mi_row = 0; mi_row < cm->mi_rows; mi_row += mi_height) {
     // Motion estimation row boundary
@@ -1244,9 +1291,12 @@ void av1_tpl_rdmult_setup(AV1_COMP *cpi) {
           if (mi_row >= cm->mi_rows || mi_col >= mi_cols_sr) continue;
           const TplDepStats *this_stats =
               &tpl_stats[av1_tpl_ptr_pos(cpi, mi_row, mi_col, tpl_stride)];
-          intra_cost += (double)this_stats->recrf_dist;
+          int64_t mc_dep_delta =
+              RDCOST(tpl_frame->base_rdmult, this_stats->mc_dep_rate,
+                     this_stats->mc_dep_dist);
+          intra_cost += (double)(this_stats->recrf_dist << RDDIV_BITS);
           mc_dep_cost +=
-              (double)this_stats->recrf_dist + this_stats->mc_dep_delta;
+              (double)(this_stats->recrf_dist << RDDIV_BITS) + mc_dep_delta;
         }
       }
       const double rk = intra_cost / mc_dep_cost;
