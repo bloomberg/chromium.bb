@@ -10232,6 +10232,9 @@ void EmbedderHeapTracer::IterateTracedGlobalHandles(
   isolate->global_handles()->IterateTracedNodes(visitor);
 }
 
+void ConvertableToTraceFormatShim::AppendAsTraceFormat(std::string* out) const {
+  out->append(GetToBeAppendedTraceFormat());
+}
 
 namespace internal {
 
