@@ -14,7 +14,6 @@ import("//build/util/version.gni")
 import("//chrome/browser/media/router/features.gni")
 import("//chrome/chrome_repack_locales.gni")
 import("//chrome/common/features.gni")
-import("//chromeos/assistant/assistant.gni")
 import("//components/feature_engagement/features.gni")
 import("//components/feed/features.gni")
 import("//components/gwp_asan/buildflags/buildflags.gni")
@@ -2276,6 +2275,7 @@ if (!is_android) {
         "../browser/signin/chromeos_mirror_account_consistency_browsertest.cc",
         "../browser/ui/app_list/arc/arc_usb_host_permission_browsertest.cc",
         "../browser/ui/ash/accelerator_commands_browsertest.cc",
+        "../browser/ui/ash/assistant/assistant_context_browsertest.cc",
         "../browser/ui/ash/chrome_new_window_client_browsertest.cc",
         "../browser/ui/ash/chrome_screenshot_grabber_browsertest.cc",
         "../browser/ui/ash/keyboard/keyboard_controller_browsertest.cc",
@@ -2333,10 +2333,6 @@ if (!is_android) {
         "base/interactive_test_utils_aura.h",
         "base/interactive_test_utils_views.cc",
       ]
-      if (enable_cros_assistant) {
-        sources +=
-            [ "../browser/ui/ash/assistant/assistant_context_browsertest.cc" ]
-      }
       sources -= [
         "../../apps/load_and_launch_browsertest.cc",
         "../browser/policy/policy_startup_browsertest.cc",
