@@ -119,8 +119,9 @@ class WaylandConnection : public PlatformEventSource,
   // Requests the data to the platform when Chromium gets drag-and-drop started
   // by others. Once reading the data from platform is done, |callback| should
   // be called with the data.
-  void RequestDragData(const std::string& mime_type,
-                       base::OnceCallback<void(const std::string&)> callback);
+  void RequestDragData(
+      const std::string& mime_type,
+      base::OnceCallback<void(const std::vector<uint8_t>&)> callback);
 
   // Returns true when dragging is entered or started.
   bool IsDragInProgress();

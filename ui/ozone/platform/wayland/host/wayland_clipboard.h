@@ -5,6 +5,9 @@
 #ifndef UI_OZONE_PLATFORM_WAYLAND_HOST_WAYLAND_CLIPBOARD_H_
 #define UI_OZONE_PLATFORM_WAYLAND_HOST_WAYLAND_CLIPBOARD_H_
 
+#include <string>
+#include <vector>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "ui/ozone/platform/wayland/host/wayland_data_source.h"
@@ -49,7 +52,8 @@ class WaylandClipboard : public PlatformClipboard {
       PlatformClipboard::SequenceNumberUpdateCb cb) override;
 
   void DataSourceCancelled(ClipboardBuffer buffer);
-  void SetData(const std::string& contents, const std::string& mime_type);
+  void SetData(const std::vector<uint8_t>& contents,
+               const std::string& mime_type);
   void UpdateSequenceNumber(ClipboardBuffer buffer);
 
  private:

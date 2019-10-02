@@ -58,8 +58,7 @@ class WaylandDataDeviceBase {
                                    struct wl_callback* cb,
                                    uint32_t time);
 
-  void DeferredReadCallbackInternal(struct wl_callback* cb,
-                                    uint32_t time);
+  void DeferredReadCallbackInternal(struct wl_callback* cb, uint32_t time);
 
   // Used to call out to WaylandConnection once clipboard data
   // has been successfully read.

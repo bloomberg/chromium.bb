@@ -54,7 +54,7 @@ void WaylandDataDeviceBase::ResetDataOffer() {
 void WaylandDataDeviceBase::ReadClipboardDataFromFD(
     base::ScopedFD fd,
     const std::string& mime_type) {
-  std::string contents;
+  std::vector<uint8_t> contents;
   wl::ReadDataFromFD(std::move(fd), &contents);
   connection_->clipboard()->SetData(contents, mime_type);
 }
@@ -89,8 +89,14 @@ void WaylandDataDeviceBase::DeferredReadCallback(void* data,
 void WaylandDataDeviceBase::DeferredReadCallbackInternal(struct wl_callback* cb,
                                                          uint32_t time) {
   DCHECK(!deferred_read_closure_.is_null());
-  std::move(deferred_read_closure_).Run();
+
+  // The callback must be reset before invoking the closure because the latter
+  // may want to set another callback.  That typically happens when non-trivial
+  // data types are dropped; they have fallbacks to plain text so several
+  // roundtrips to data are chained.
   deferred_read_callback_.reset();
+
+  std::move(deferred_read_closure_).Run();
 }
 
 }  // namespace internal

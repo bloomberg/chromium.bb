@@ -7,6 +7,7 @@
 #include "base/files/file_util.h"
 #include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
 
@@ -38,10 +39,24 @@ void WaylandDataSource::WriteToClipboard(
 }
 
 void WaylandDataSource::Offer(const ui::OSExchangeData& data) {
-  // TODO(jkim): Handle mime types based on data.
+  // Drag'n'drop manuals usually suggest putting data in order so the more
+  // specific a MIME type is, the earlier it occurs in the list.  Wayland specs
+  // don't say anything like that, but here we follow that common practice:
+  // begin with URIs and end with plain text.  Just in case.
   std::vector<std::string> mime_types;
-  mime_types.push_back(kMimeTypeText);
-  mime_types.push_back(kMimeTypeTextUtf8);
+  if (data.HasFile()) {
+    mime_types.push_back(kMimeTypeURIList);
+  }
+  if (data.HasURL(ui::OSExchangeData::FilenameToURLPolicy::CONVERT_FILENAMES)) {
+    mime_types.push_back(kMimeTypeMozillaURL);
+  }
+  if (data.HasHtml()) {
+    mime_types.push_back(kMimeTypeHTML);
+  }
+  if (data.HasString()) {
+    mime_types.push_back(kMimeTypeTextUtf8);
+    mime_types.push_back(kMimeTypeText);
+  }
 
   source_window_ =
       connection_->wayland_window_manager()->GetCurrentFocusedWindow();

@@ -108,13 +108,12 @@ void WaylandClipboard::DataSourceCancelled(ClipboardBuffer buffer) {
   }
 }
 
-void WaylandClipboard::SetData(const std::string& contents,
+void WaylandClipboard::SetData(const std::vector<uint8_t>& contents,
                                const std::string& mime_type) {
   if (!data_map_)
     return;
 
-  (*data_map_)[mime_type] =
-      std::vector<uint8_t>(contents.begin(), contents.end());
+  (*data_map_)[mime_type] = contents;
 
   if (!read_clipboard_closure_.is_null()) {
     auto it = data_map_->find(mime_type);

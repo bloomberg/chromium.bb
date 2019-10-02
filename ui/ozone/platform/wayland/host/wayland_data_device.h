@@ -20,6 +20,7 @@
 #include "ui/ozone/platform/wayland/host/internal/wayland_data_device_base.h"
 #include "ui/ozone/platform/wayland/host/wayland_data_offer.h"
 #include "ui/ozone/platform/wayland/host/wayland_shm_buffer.h"
+#include "ui/ozone/public/platform_clipboard.h"
 
 class SkBitmap;
 
@@ -40,8 +41,9 @@ class WaylandDataDevice : public internal::WaylandDataDeviceBase {
   // Requests the data to the platform when Chromium gets drag-and-drop started
   // by others. Once reading the data from platform is done, |callback| should
   // be called with the data.
-  void RequestDragData(const std::string& mime_type,
-                       base::OnceCallback<void(const std::string&)> callback);
+  void RequestDragData(
+      const std::string& mime_type,
+      base::OnceCallback<void(const PlatformClipboard::Data&)> callback);
   // Delivers the data owned by Chromium which initiates drag-and-drop. |buffer|
   // is an output parameter and it should be filled with the data corresponding
   // to mime_type.
@@ -59,7 +61,7 @@ class WaylandDataDevice : public internal::WaylandDataDeviceBase {
  private:
   void ReadDragDataFromFD(
       base::ScopedFD fd,
-      base::OnceCallback<void(const std::string&)> callback);
+      base::OnceCallback<void(const PlatformClipboard::Data&)> callback);
 
   // If source_data_ is not set, data is being dragged from an external
   // application (non-chromium).
@@ -105,7 +107,7 @@ class WaylandDataDevice : public internal::WaylandDataDeviceBase {
   const SkBitmap* PrepareDragIcon(const OSExchangeData& data);
   void DrawDragIcon(const SkBitmap* bitmap);
 
-  void OnDragDataReceived(const std::string& contents);
+  void OnDragDataReceived(const PlatformClipboard::Data& contents);
 
   // HandleUnprocessedMimeTypes asynchronously request and read data for every
   // negotiated mime type, one after another (OnDragDataReceived calls back

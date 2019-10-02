@@ -169,7 +169,7 @@ void WaylandConnection::DeliverDragData(const std::string& mime_type,
 
 void WaylandConnection::RequestDragData(
     const std::string& mime_type,
-    base::OnceCallback<void(const std::string&)> callback) {
+    base::OnceCallback<void(const std::vector<uint8_t>&)> callback) {
   data_device_->RequestDragData(mime_type, std::move(callback));
 }
 

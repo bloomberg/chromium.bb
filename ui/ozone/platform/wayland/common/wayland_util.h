@@ -5,7 +5,7 @@
 #ifndef UI_OZONE_PLATFORM_WAYLAND_COMMON_WAYLAND_UTIL_H_
 #define UI_OZONE_PLATFORM_WAYLAND_COMMON_WAYLAND_UTIL_H_
 
-#include <string>
+#include <vector>
 
 #include <wayland-client.h>
 
@@ -43,7 +43,7 @@ uint32_t IdentifyDirection(const ui::WaylandConnection& connection,
 bool DrawBitmap(const SkBitmap& bitmap, ui::WaylandShmBuffer* out_buffer);
 
 // Helper function to read data from a file.
-void ReadDataFromFD(base::ScopedFD fd, std::string* contents);
+void ReadDataFromFD(base::ScopedFD fd, std::vector<uint8_t>* contents);
 
 }  // namespace wl
 

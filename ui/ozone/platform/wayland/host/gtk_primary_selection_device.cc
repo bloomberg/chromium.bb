@@ -53,7 +53,7 @@ void GtkPrimarySelectionDevice::OnSelection(
     self->ResetDataOffer();
 
     // Clear Clipboard cache.
-    self->connection()->clipboard()->SetData(std::string(), std::string());
+    self->connection()->clipboard()->SetData({}, {});
     return;
   }
 
