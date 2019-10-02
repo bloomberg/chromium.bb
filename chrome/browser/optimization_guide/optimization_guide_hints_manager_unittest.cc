@@ -20,9 +20,11 @@
 #include "chrome/browser/previews/previews_service_factory.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/optimization_guide/bloom_filter.h"
 #include "components/optimization_guide/hints_component_util.h"
 #include "components/optimization_guide/hints_fetcher.h"
+#include "components/optimization_guide/optimization_guide_constants.h"
 #include "components/optimization_guide/optimization_guide_decider.h"
 #include "components/optimization_guide/optimization_guide_enums.h"
 #include "components/optimization_guide/optimization_guide_features.h"
@@ -217,8 +219,9 @@ class OptimizationGuideHintsManagerTest
         data_reduction_proxy::DataReductionProxyTestContext::Builder()
             .WithMockConfig()
             .Build();
-    drp_test_context_->DisableWarmupURLFetch();
     CreateServiceAndHintsManager(/*top_host_provider=*/nullptr);
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        data_reduction_proxy::switches::kEnableDataReductionProxy);
   }
 
   void TearDown() override {
@@ -379,6 +382,10 @@ class OptimizationGuideHintsManagerTest
 
   GURL url_with_hints() const {
     return GURL("https://somedomain.org/news/whatever");
+  }
+
+  GURL url_without_hints() const {
+    return GURL("https://url_without_hints.org/");
   }
 
   base::FilePath temp_dir() const { return temp_dir_.GetPath(); }
@@ -687,8 +694,8 @@ TEST_F(OptimizationGuideHintsManagerTest,
   navigation_handle->set_has_committed(true);
 
   base::RunLoop run_loop;
-  hints_manager()->LoadHintForNavigation(navigation_handle.get(),
-                                         run_loop.QuitClosure());
+  hints_manager()->OnNavigationStartOrRedirect(navigation_handle.get(),
+                                               run_loop.QuitClosure());
   run_loop.Run();
 
   histogram_tester.ExpectUniqueSample("OptimizationGuide.LoadedHint.Result",
@@ -711,8 +718,8 @@ TEST_F(OptimizationGuideHintsManagerTest, LoadHintForNavigationWithHint) {
           url_with_hints());
 
   base::RunLoop run_loop;
-  hints_manager()->LoadHintForNavigation(navigation_handle.get(),
-                                         run_loop.QuitClosure());
+  hints_manager()->OnNavigationStartOrRedirect(navigation_handle.get(),
+                                               run_loop.QuitClosure());
   run_loop.Run();
 
   histogram_tester.ExpectUniqueSample("OptimizationGuide.LoadedHint.Result",
@@ -735,8 +742,8 @@ TEST_F(OptimizationGuideHintsManagerTest, LoadHintForNavigationNoHint) {
           GURL("https://notinhints.com"));
 
   base::RunLoop run_loop;
-  hints_manager()->LoadHintForNavigation(navigation_handle.get(),
-                                         run_loop.QuitClosure());
+  hints_manager()->OnNavigationStartOrRedirect(navigation_handle.get(),
+                                               run_loop.QuitClosure());
   run_loop.Run();
 
   histogram_tester.ExpectUniqueSample("OptimizationGuide.LoadedHint.Result",
@@ -759,8 +766,8 @@ TEST_F(OptimizationGuideHintsManagerTest, LoadHintForNavigationNoHost) {
           GURL("blargh"));
 
   base::RunLoop run_loop;
-  hints_manager()->LoadHintForNavigation(navigation_handle.get(),
-                                         run_loop.QuitClosure());
+  hints_manager()->OnNavigationStartOrRedirect(navigation_handle.get(),
+                                               run_loop.QuitClosure());
   run_loop.Run();
 
   histogram_tester.ExpectTotalCount("OptimizationGuide.LoadedHint.Result", 0);
@@ -1470,8 +1477,8 @@ TEST_F(OptimizationGuideHintsManagerTest,
       CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
           url_with_hints());
   base::RunLoop run_loop;
-  hints_manager()->LoadHintForNavigation(navigation_handle.get(),
-                                         run_loop.QuitClosure());
+  hints_manager()->OnNavigationStartOrRedirect(navigation_handle.get(),
+                                               run_loop.QuitClosure());
   run_loop.Run();
 
   optimization_guide::OptimizationTargetDecision optimization_target_decision;
@@ -1509,8 +1516,8 @@ TEST_F(OptimizationGuideHintsManagerTest,
       CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
           url_with_hints());
   base::RunLoop run_loop;
-  hints_manager()->LoadHintForNavigation(navigation_handle.get(),
-                                         run_loop.QuitClosure());
+  hints_manager()->OnNavigationStartOrRedirect(navigation_handle.get(),
+                                               run_loop.QuitClosure());
   run_loop.Run();
 
   optimization_guide::OptimizationTargetDecision optimization_target_decision;
@@ -1548,8 +1555,8 @@ TEST_F(OptimizationGuideHintsManagerTest,
       CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
           url_with_hints());
   base::RunLoop run_loop;
-  hints_manager()->LoadHintForNavigation(navigation_handle.get(),
-                                         run_loop.QuitClosure());
+  hints_manager()->OnNavigationStartOrRedirect(navigation_handle.get(),
+                                               run_loop.QuitClosure());
   run_loop.Run();
 
   optimization_guide::OptimizationTargetDecision optimization_target_decision;
@@ -1585,8 +1592,8 @@ TEST_F(OptimizationGuideHintsManagerTest,
       CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
           url_with_hints());
   base::RunLoop run_loop;
-  hints_manager()->LoadHintForNavigation(navigation_handle.get(),
-                                         run_loop.QuitClosure());
+  hints_manager()->OnNavigationStartOrRedirect(navigation_handle.get(),
+                                               run_loop.QuitClosure());
   run_loop.Run();
 
   optimization_guide::OptimizationTargetDecision optimization_target_decision;
@@ -1624,8 +1631,8 @@ TEST_F(OptimizationGuideHintsManagerTest,
       CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
           url_with_hints());
   base::RunLoop run_loop;
-  hints_manager()->LoadHintForNavigation(navigation_handle.get(),
-                                         run_loop.QuitClosure());
+  hints_manager()->OnNavigationStartOrRedirect(navigation_handle.get(),
+                                               run_loop.QuitClosure());
   run_loop.Run();
 
   optimization_guide::OptimizationTargetDecision optimization_target_decision;
@@ -1663,8 +1670,8 @@ TEST_F(OptimizationGuideHintsManagerTest,
       CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
           url_with_hints());
   base::RunLoop run_loop;
-  hints_manager()->LoadHintForNavigation(navigation_handle.get(),
-                                         run_loop.QuitClosure());
+  hints_manager()->OnNavigationStartOrRedirect(navigation_handle.get(),
+                                               run_loop.QuitClosure());
   run_loop.Run();
 
   // Purposely set the page hint to be null to show that we override the page
@@ -1696,6 +1703,54 @@ TEST_F(OptimizationGuideHintsManagerTest,
 }
 
 TEST_F(OptimizationGuideHintsManagerTest,
+       HintsFetchedAtNavigationTime_ECT_SLOW_2G) {
+  hints_manager()->RegisterOptimizationTypes(
+      {optimization_guide::proto::DEFER_ALL_SCRIPT});
+  base::test::ScopedFeatureList scoped_list;
+  scoped_list.InitAndEnableFeature(
+      optimization_guide::features::kOptimizationHintsFetching);
+  InitializeWithDefaultConfig("1.0.0.0");
+
+  // Set ECT estimate so hint is activated.
+  hints_manager()->OnEffectiveConnectionTypeChanged(
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
+  std::unique_ptr<content::MockNavigationHandle> navigation_handle =
+      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
+          url_without_hints());
+  base::RunLoop run_loop;
+  base::HistogramTester histogram_tester;
+  hints_manager()->OnNavigationStartOrRedirect(navigation_handle.get(),
+                                               run_loop.QuitClosure());
+  run_loop.Run();
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 1, 1);
+}
+
+TEST_F(OptimizationGuideHintsManagerTest,
+       HintsNotFetchedAtNavigationTime_ECT_4G) {
+  hints_manager()->RegisterOptimizationTypes(
+      {optimization_guide::proto::DEFER_ALL_SCRIPT});
+  base::test::ScopedFeatureList scoped_list;
+  scoped_list.InitAndEnableFeature(
+      optimization_guide::features::kOptimizationHintsFetching);
+  InitializeWithDefaultConfig("1.0.0.0");
+
+  // Set ECT estimate so hint is activated.
+  hints_manager()->OnEffectiveConnectionTypeChanged(
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_4G);
+  std::unique_ptr<content::MockNavigationHandle> navigation_handle =
+      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
+          url_without_hints());
+  base::HistogramTester histogram_tester;
+  base::RunLoop run_loop;
+  hints_manager()->OnNavigationStartOrRedirect(navigation_handle.get(),
+                                               run_loop.QuitClosure());
+  run_loop.Run();
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 0);
+}
+
+TEST_F(OptimizationGuideHintsManagerTest,
        CanApplyOptimizationNoMatchingPageHint) {
   InitializeWithDefaultConfig("1.0.0.0");
 
@@ -1706,8 +1761,8 @@ TEST_F(OptimizationGuideHintsManagerTest,
       CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
           GURL("https://somedomain.org/nomatch"));
   base::RunLoop run_loop;
-  hints_manager()->LoadHintForNavigation(navigation_handle.get(),
-                                         run_loop.QuitClosure());
+  hints_manager()->OnNavigationStartOrRedirect(navigation_handle.get(),
+                                               run_loop.QuitClosure());
   run_loop.Run();
 
   optimization_guide::OptimizationTargetDecision optimization_target_decision;
@@ -1836,8 +1891,8 @@ TEST_F(OptimizationGuideHintsManagerTest,
   ProcessHints(config, "1.0.0.0");
 
   base::RunLoop run_loop;
-  hints_manager()->LoadHintForNavigation(navigation_handle.get(),
-                                         run_loop.QuitClosure());
+  hints_manager()->OnNavigationStartOrRedirect(navigation_handle.get(),
+                                               run_loop.QuitClosure());
   run_loop.Run();
 
   // Set ECT estimate so hint is activated.
@@ -1901,8 +1956,8 @@ TEST_F(OptimizationGuideHintsManagerTest,
   ProcessHints(config, "1.0.0.0");
 
   base::RunLoop run_loop;
-  hints_manager()->LoadHintForNavigation(navigation_handle.get(),
-                                         run_loop.QuitClosure());
+  hints_manager()->OnNavigationStartOrRedirect(navigation_handle.get(),
+                                               run_loop.QuitClosure());
   run_loop.Run();
 
   hints_manager()->OnEffectiveConnectionTypeChanged(

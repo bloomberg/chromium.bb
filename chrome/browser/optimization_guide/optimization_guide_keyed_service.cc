@@ -143,8 +143,12 @@ void OptimizationGuideKeyedService::Initialize(
 
 void OptimizationGuideKeyedService::MaybeLoadHintForNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (hints_manager_ && hints_manager_->HasRegisteredOptimizationTypes())
-    hints_manager_->LoadHintForNavigation(navigation_handle, base::DoNothing());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (hints_manager_ && hints_manager_->HasRegisteredOptimizationTypes()) {
+    hints_manager_->OnNavigationStartOrRedirect(navigation_handle,
+                                                base::DoNothing());
+  }
 }
 
 void OptimizationGuideKeyedService::RegisterOptimizationTypes(
