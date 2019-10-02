@@ -1492,35 +1492,25 @@ void V4L2SliceVideoDecodeAccelerator::ImportBufferForPicture(
   DVLOGF(3) << "picture_buffer_id=" << picture_buffer_id;
   DCHECK(child_task_runner_->BelongsToCurrentThread());
 
-  std::vector<base::ScopedFD> dmabuf_fds;
-#if defined(USE_OZONE)
-  // If the driver does not accept as many fds as we received from the client,
-  // we have to check if the additional fds are actually duplicated fds pointing
-  // to previous planes; if so, we can close the duplicates and keep only the
-  // original fd(s).
-  // Assume that an fd is a duplicate of a previous plane's fd if offset != 0.
-  // Otherwise, if offset == 0, return error as it may be pointing to a new
-  // plane.
-  for (auto& plane : gpu_memory_buffer_handle.native_pixmap_handle.planes) {
-    dmabuf_fds.push_back(std::move(plane.fd));
-  }
-  for (size_t i = dmabuf_fds.size() - 1; i >= gl_image_planes_count_; i--) {
-    if (gpu_memory_buffer_handle.native_pixmap_handle.planes[i].offset == 0) {
-      VLOGF(1) << "The dmabuf fd points to a new buffer, ";
-      NOTIFY_ERROR(INVALID_ARGUMENT);
-      return;
-    }
-    // Drop safely, because this fd is duplicate dmabuf fd pointing to previous
-    // buffer and the appropriate address can be accessed by associated offset.
-    dmabuf_fds.pop_back();
-  }
-#endif
-
   if (output_mode_ != Config::OutputMode::IMPORT) {
     VLOGF(1) << "Cannot import in non-import mode";
     NOTIFY_ERROR(INVALID_ARGUMENT);
     return;
   }
+
+  decoder_thread_.task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &V4L2SliceVideoDecodeAccelerator::ImportBufferForPictureForImportTask,
+          base::Unretained(this), picture_buffer_id, pixel_format,
+          std::move(gpu_memory_buffer_handle.native_pixmap_handle)));
+}
+
+void V4L2SliceVideoDecodeAccelerator::ImportBufferForPictureForImportTask(
+    int32_t picture_buffer_id,
+    VideoPixelFormat pixel_format,
+    gfx::NativePixmapHandle handle) {
+  DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
 
   if (pixel_format !=
       V4L2Device::V4L2PixFmtToVideoPixelFormat(gl_image_format_fourcc_)) {
@@ -1530,11 +1520,31 @@ void V4L2SliceVideoDecodeAccelerator::ImportBufferForPicture(
     return;
   }
 
-  decoder_thread_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &V4L2SliceVideoDecodeAccelerator::ImportBufferForPictureTask,
-          base::Unretained(this), picture_buffer_id, std::move(dmabuf_fds)));
+  std::vector<base::ScopedFD> dmabuf_fds;
+  for (auto& plane : handle.planes) {
+    dmabuf_fds.push_back(std::move(plane.fd));
+  }
+
+  // If the driver does not accept as many fds as we received from the client,
+  // we have to check if the additional fds are actually duplicated fds pointing
+  // to previous planes; if so, we can close the duplicates and keep only the
+  // original fd(s).
+  // Assume that an fd is a duplicate of a previous plane's fd if offset != 0.
+  // Otherwise, if offset == 0, return error as it may be pointing to a new
+  // plane.
+  while (dmabuf_fds.size() > gl_image_planes_count_) {
+    const size_t idx = dmabuf_fds.size() - 1;
+    if (handle.planes[idx].offset == 0) {
+      VLOGF(1) << "The dmabuf fd points to a new buffer, ";
+      NOTIFY_ERROR(INVALID_ARGUMENT);
+      return;
+    }
+    // Drop safely, because this fd is duplicate dmabuf fd pointing to previous
+    // buffer and the appropriate address can be accessed by associated offset.
+    dmabuf_fds.pop_back();
+  }
+
+  ImportBufferForPictureTask(picture_buffer_id, std::move(dmabuf_fds));
 }
 
 void V4L2SliceVideoDecodeAccelerator::ImportBufferForPictureTask(
