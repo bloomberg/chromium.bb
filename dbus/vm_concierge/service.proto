@@ -165,6 +165,10 @@ message StartArcVmRequest {
 
   // Path to Android fstab.
   string fstab = 6;
+
+  // The number of CPUs to give to the VM.  Cannot be larger than the number of
+  // CPUs on the device and cannot be 0.
+  uint32 cpus = 7;
 }
 
 enum VmStatus {
