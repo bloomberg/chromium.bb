@@ -295,6 +295,9 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kKidsManagementUrlClassification;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kLegacyTLSWarnings;
+
+COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kLookalikeUrlNavigationSuggestionsUI;
 
 #if defined(OS_MACOSX)
