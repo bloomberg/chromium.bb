@@ -16,8 +16,9 @@ cca.models = cca.models || {};
 
 /**
  * Used to save captured video.
+ * @implements {cca.models.VideoSaver}
  */
-cca.models.VideoSaver = class {
+cca.models.FileVideoSaver = class {
   /**
    * @param {!FileEntry} file
    * @param {!FileWriter} writer
@@ -42,9 +43,7 @@ cca.models.VideoSaver = class {
   }
 
   /**
-   * Writes video data to result video.
-   * @param {!Blob} blob Video data to be written.
-   * @return {!Promise}
+   * @override
    */
   async write(blob) {
     this.curWrite_ = (async () => {
@@ -58,8 +57,7 @@ cca.models.VideoSaver = class {
   }
 
   /**
-   * Finishes the write of video data parts and returns result video file.
-   * @return {!Promise<!FileEntry>} Result video file.
+   * @override
    */
   async endWrite() {
     await this.curWrite_;
@@ -67,14 +65,14 @@ cca.models.VideoSaver = class {
   }
 
   /**
-   * Create VideoSaver.
-   * @param {!FileEntry} file The file which VideoSaver saves the result video
-   *     into.
-   * @return {!Promise<!cca.models.VideoSaver>}
+   * Creates FileVideoSaver.
+   * @param {!FileEntry} file The file which FileVideoSaver saves the result
+   *     video into.
+   * @return {!Promise<!cca.models.FileVideoSaver>}
    */
   static async create(file) {
     const writer = await new Promise(
         (resolve, reject) => file.createWriter(resolve, reject));
-    return new cca.models.VideoSaver(file, writer);
+    return new cca.models.FileVideoSaver(file, writer);
   }
 };

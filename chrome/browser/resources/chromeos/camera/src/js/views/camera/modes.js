@@ -162,12 +162,14 @@ cca.views.camera.Modes = function(
     'portrait-mode': {
       captureFactory: () => new cca.views.camera.Portrait(
           this.stream_, doSavePhoto, this.captureResolution_),
-      isSupported: async (stream) => {
-        const deviceOperator = await cca.mojo.DeviceOperator.getInstance();
-        if (!deviceOperator) {
+      isSupported: async (deviceId) => {
+        if (deviceId === null) {
           return false;
         }
-        const deviceId = stream.getVideoTracks()[0].getSettings().deviceId;
+        const deviceOperator = await cca.mojo.DeviceOperator.getInstance();
+        if (deviceOperator === null) {
+          return false;
+        }
         return await deviceOperator.isPortraitModeSupported(deviceId);
       },
       resolutionConfig: photoResolPreferrer,
@@ -273,7 +275,7 @@ cca.views.camera.Modes.prototype.switchMode_ = function(mode) {
 /**
  * Gets all mode candidates. Desired trying sequence of candidate modes is
  * reflected in the order of the returned array.
- * @return {Array<string>} Mode candidates to be tried out.
+ * @return {!Array<string>} Mode candidates to be tried out.
  */
 cca.views.camera.Modes.prototype.getModeCandidates = function() {
   const tried = {};
@@ -326,14 +328,15 @@ cca.views.camera.Modes.prototype.getCaptureIntent = function(mode) {
 };
 
 /**
- * Gets supported modes for video device of the given stream.
- * @param {MediaStream} stream Stream of the video device.
- * @return {Array<string>} Names of all supported mode for the video device.
+ * Gets supported modes for video device of given device id.
+ * @param {?string} deviceId Device id of the video device.
+ * @return {!Promise<!Array<cca.views.camera.Mode>>} All supported mode for the
+ *     video device.
  */
-cca.views.camera.Modes.prototype.getSupportedModes = async function(stream) {
+cca.views.camera.Modes.prototype.getSupportedModes = async function(deviceId) {
   let supportedModes = [];
   for (const [mode, obj] of Object.entries(this.allModes_)) {
-    if (await obj.isSupported(stream)) {
+    if (await obj.isSupported(deviceId)) {
       supportedModes.push(mode);
     }
   }
@@ -341,12 +344,13 @@ cca.views.camera.Modes.prototype.getSupportedModes = async function(stream) {
 };
 
 /**
- * Updates mode selection UI according to given supported modes.
- * @param {Array<string>} supportedModes Supported mode names to be updated
- *     with.
+ * Updates mode selection UI according to given device id.
+ * @param {?string} deviceId
+ * @return {!Promise}
  */
-cca.views.camera.Modes.prototype.updateModeSelectionUI = function(
-    supportedModes) {
+cca.views.camera.Modes.prototype.updateModeSelectionUI =
+    async function(deviceId) {
+  const supportedModes = await this.getSupportedModes(deviceId);
   document.querySelectorAll('.mode-item').forEach((element) => {
     const radio = element.querySelector('input[type=radio]');
     element.classList.toggle(
