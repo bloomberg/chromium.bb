@@ -194,6 +194,14 @@ ShowTranslateBubbleResult TestBrowserWindow::ShowTranslateBubble(
   return ShowTranslateBubbleResult::SUCCESS;
 }
 
+qrcode_generator::QRCodeGeneratorBubbleView*
+TestBrowserWindow::ShowQRCodeGeneratorBubble(
+    content::WebContents* contents,
+    qrcode_generator::QRCodeGeneratorBubbleController* controller,
+    const GURL& url) {
+  return nullptr;
+}
+
 autofill::SaveCardBubbleView* TestBrowserWindow::ShowSaveCreditCardBubble(
     content::WebContents* contents,
     autofill::SaveCardBubbleController* controller,

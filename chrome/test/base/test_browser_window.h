@@ -29,6 +29,11 @@ namespace extensions {
 class Extension;
 }
 
+namespace qrcode_generator {
+class QRCodeGeneratorBubbleController;
+class QRCodeGeneratorBubbleView;
+}  // namespace qrcode_generator
+
 namespace send_tab_to_self {
 class SendTabToSelfBubbleController;
 class SendTabToSelfBubbleView;
@@ -124,6 +129,10 @@ class TestBrowserWindow : public BrowserWindow {
                                    SharingUiController* controller) override;
   void ShowUpdateChromeDialog() override {}
   void ShowBookmarkBubble(const GURL& url, bool already_bookmarked) override {}
+  qrcode_generator::QRCodeGeneratorBubbleView* ShowQRCodeGeneratorBubble(
+      content::WebContents* contents,
+      qrcode_generator::QRCodeGeneratorBubbleController* controller,
+      const GURL& url) override;
 #if !defined(OS_ANDROID)
   void ShowIntentPickerBubble(std::vector<apps::IntentPickerAppInfo> app_info,
                               bool show_stay_in_chrome,

@@ -13725,6 +13725,9 @@ Called by update_net_error_codes.py.-->
   <int value="94" label="Crostini Container Upgrade"/>
   <int value="95" label="Cookie Controls"/>
   <int value="96" label="Crostini Ansible Software Config"/>
+  <int value="97" label="Incognito Menu"/>
+  <int value="98" label="Phone Chooser"/>
+  <int value="99" label="QR Code Generator"/>
 </enum>
 
 <enum name="DialogOriginRelationship">
@@ -52427,6 +52430,7 @@ Called by update_net_trust_anchors.py.-->
       label="IDC_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_SINGLE_DEVICE"/>
   <int value="109"
       label="IDC_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_MULTIPLE_DEVICES"/>
+  <int value="110" label="IDC_CONTENT_CONTEXT_GENERATE_QR_CODE"/>
 </enum>
 
 <enum name="ReopenTabPromoStepAtDismissal">
