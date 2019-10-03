@@ -1025,6 +1025,8 @@ SVGSMILElement::ActiveState SVGSMILElement::DetermineActiveState(
     SMILTime elapsed) const {
   if (interval_.Contains(elapsed))
     return kActive;
+  if (is_waiting_for_first_interval_)
+    return kInactive;
   return Fill() == kFillFreeze ? kFrozen : kInactive;
 }
 
@@ -1070,8 +1072,6 @@ bool SVGSMILElement::CurrentIntervalIsActive(SMILTime elapsed) {
 }
 
 void SVGSMILElement::UpdateActiveState(SMILTime elapsed) {
-  if (is_waiting_for_first_interval_)
-    return;
   const bool was_active = GetActiveState() == kActive;
   active_state_ = DetermineActiveState(elapsed);
   const bool is_active = GetActiveState() == kActive;
