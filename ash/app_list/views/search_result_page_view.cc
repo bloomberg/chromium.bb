@@ -267,6 +267,13 @@ gfx::Size SearchResultPageView::CalculatePreferredSize() const {
   return gfx::Size(kWidth, kHeight);
 }
 
+void SearchResultPageView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  // This bounds change is produced by search result movement (rotation, etc)
+  // and all content has to follow.
+  if (previous_bounds != GetContentsBounds())
+    layer()->SetClipRect(GetContentsBounds());
+}
+
 void SearchResultPageView::ReorderSearchResultContainers() {
   int view_offset = 0;
   if (assistant_privacy_info_view_) {
