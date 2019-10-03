@@ -580,8 +580,9 @@ void SetIndividualRuntimeFeatures(
     WebRuntimeFeatures::EnableFeatureFromString("StorageAccessAPI", true);
   }
 
-  WebRuntimeFeatures::EnablePointerLockOptions(
-      base::FeatureList::IsEnabled(features::kPointerLockOptions));
+  if (base::FeatureList::IsEnabled(features::kPointerLockOptions)) {
+    WebRuntimeFeatures::EnablePointerLockOptions(true);
+  }
 
   WebRuntimeFeatures::EnableDocumentPolicy(
       base::FeatureList::IsEnabled(features::kDocumentPolicy));

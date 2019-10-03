@@ -1296,6 +1296,7 @@
     },
     {
       name: "PointerLockOptions",
+      origin_trial_feature_name: "PointerLockOptions",
     },
     {
       name: "PointerRawUpdate",
