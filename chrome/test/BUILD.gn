@@ -4072,7 +4072,6 @@ test("unit_tests") {
 
       # Only list files here (not directories). See https://crbug.com/912946
       data += [
-        "$root_out_dir/test_data/chrome/renderer/resources/extensions/notifications_custom_bindings.gtestjs",
         "$root_out_dir/test_data/chrome/renderer/resources/extensions/notifications_custom_bindings.js",
         "$root_out_dir/test_data/chrome/renderer/resources/extensions/notifications_test_util.js",
         "$root_out_dir/test_data/ui/webui/resources/js/cr.js",
