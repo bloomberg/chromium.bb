@@ -20,15 +20,6 @@ public class TestDummyActivity extends AppCompatActivity {
             finish();
             return;
         }
-        if (!TestDummyModuleProvider.isModuleInstalled()) {
-            TestDummyModuleProvider.installModule(this::onModuleInstalled);
-            return;
-        }
-        onModuleInstalled(true);
-    }
-
-    private void onModuleInstalled(boolean success) {
-        if (!success) throw new RuntimeException("Failed to install module");
-        TestDummyModuleProvider.getTestDummyProvider().getTestDummy().launch(getIntent(), this);
+        TestDummyModuleProvider.launchTestDummy(getIntent(), this);
     }
 }

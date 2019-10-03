@@ -4,52 +4,31 @@
 
 package org.chromium.chrome.modules.test_dummy;
 
-import org.chromium.base.ThreadUtils;
-import org.chromium.base.annotations.JNINamespace;
-import org.chromium.base.annotations.NativeMethods;
-import org.chromium.components.module_installer.OnModuleInstallFinishedListener;
+import android.app.Activity;
+import android.content.Intent;
 
-/** Installs and loads the test dummy module. */
-@JNINamespace("test_dummy")
+/** Installs the test dummy module and launches the test dummy implementation. */
 public class TestDummyModuleProvider {
-    private static boolean sIsModuleLoaded;
-
-    /** Returns true if the module is installed. */
-    public static boolean isModuleInstalled() {
-        ThreadUtils.assertOnUiThread();
-        return TestDummyModule.isInstalled();
-    }
-
     /**
-     * Installs the module.
+     * Launches test dummy. Installs test dummy module if necessary.
      *
-     * Can only be called if the module is not installed.
-     *
-     * @param onFinished Called when the install has finished.
+     * @param intent A test dummy intent encoding the desired test scenario.
+     * @param activity The activity the test dummy will run in.
      */
-    public static void installModule(OnModuleInstallFinishedListener onFinished) {
-        ThreadUtils.assertOnUiThread();
-        TestDummyModule.install(onFinished);
-    }
-
-    /**
-     * Returns the test dummy provider from inside the module.
-     *
-     * Can only be called if the module is installed. Maps native resources into memory on first
-     * call.
-     */
-    public static TestDummyProvider getTestDummyProvider() {
-        ThreadUtils.assertOnUiThread();
-        assert isModuleInstalled();
-        if (!sIsModuleLoaded) {
-            TestDummyModuleProviderJni.get().loadNative();
-            sIsModuleLoaded = true;
+    public static void launchTestDummy(Intent intent, Activity activity) {
+        if (!TestDummyModule.isInstalled()) {
+            installAndLaunchTestDummy(intent, activity);
+            return;
         }
-        return TestDummyModule.getImpl();
+        TestDummyModule.getImpl().getTestDummy().launch(intent, activity);
     }
 
-    @NativeMethods
-    interface Natives {
-        void loadNative();
+    private static void installAndLaunchTestDummy(Intent intent, Activity activity) {
+        TestDummyModule.install((success) -> {
+            if (!success) {
+                throw new RuntimeException("Failed to install module.");
+            }
+            TestDummyModule.getImpl().getTestDummy().launch(intent, activity);
+        });
     }
 }

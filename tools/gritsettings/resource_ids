@@ -172,9 +172,6 @@
   # END chrome/ WebUI resources section
 
   # START chrome/ miscellaneous section.
-  "chrome/android/features/test_dummy/internal/resources/resources.grd": {
-    "includes": [14070],
-  },
   "chrome/common/common_resources.grd": {
     "includes": [14160],
   },

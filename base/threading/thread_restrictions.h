@@ -194,9 +194,6 @@ class OSMetrics;
 namespace midi {
 class TaskService;  // https://crbug.com/796830
 }
-namespace module_installer {
-class ScopedAllowModulePakLoad;
-}
 namespace mojo {
 class CoreLibraryInitializer;
 class SyncCallRestrictions;
@@ -350,7 +347,6 @@ class BASE_EXPORT ScopedAllowBlocking {
   friend class cronet::CronetPrefsManager;
   friend class cronet::CronetURLRequestContext;
   friend class memory_instrumentation::OSMetrics;
-  friend class module_installer::ScopedAllowModulePakLoad;
   friend class mojo::CoreLibraryInitializer;
   friend class resource_coordinator::TabManagerDelegate;  // crbug.com/778703
   friend class ui::MaterialDesignController;
