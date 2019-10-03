@@ -423,19 +423,23 @@ def _get_bucket_map(changelist, options, option_parser):
       'Please specify the bucket, e.g. "-B luci.chromium.try".')
 
 
-def _parse_bucket(bucket):
-  if '/' in bucket:
-    return tuple(bucket.split('/', 1))
-  # Legacy buckets.
-  print('WARNING Please specify buckets as <project>/<bucket>.')
+def _parse_bucket(raw_bucket):
+  legacy = True
+  project = bucket = None
+  if '/' in raw_bucket:
+    legacy = False
+    project, bucket = raw_bucket.split('/', 1)
   # Assume luci.<project>.<bucket>.
-  if bucket.startswith('luci.'):
-    return tuple(bucket[len('luci.'):].split('.', 1))
+  elif raw_bucket.startswith('luci.'):
+    project, bucket = raw_bucket[len('luci.'):].split('.', 1)
   # Otherwise, assume prefix is also the project name.
-  if '.' in bucket:
-    project = bucket.split('.')[0]
-    return project, bucket
-  return None, None
+  elif '.' in raw_bucket:
+    project = raw_bucket.split('.')[0]
+    bucket = raw_bucket
+  # Legacy buckets.
+  if legacy:
+    print('WARNING Please use %s/%s to specify the bucket.' % (project, bucket))
+  return project, bucket
 
 
 def _trigger_try_jobs(auth_config, changelist, buckets, options, patchset):
