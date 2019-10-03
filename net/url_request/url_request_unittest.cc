@@ -90,6 +90,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_server_properties.h"
 #include "net/http/http_util.h"
+#include "net/log/file_net_log_observer.h"
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_source.h"
 #include "net/log/test_net_log.h"
@@ -6960,8 +6961,9 @@ TEST_F(URLRequestTest, ReportCookieActivity) {
     auto entries =
         net_log.GetEntriesWithType(NetLogEventType::COOKIE_INCLUSION_STATUS);
     EXPECT_EQ(1u, entries.size());
-    EXPECT_EQ("EXCLUDE_USER_PREFERENCES, DO_NOT_WARN",
-              GetStringValueFromParams(entries[0], "exclusion_reason"));
+    EXPECT_EQ(
+        "{\"exclusion_reason\":\"EXCLUDE_USER_PREFERENCES, DO_NOT_WARN\"}",
+        SerializeNetLogValueToJson(entries[0].params));
     net_log.Clear();
   }
   {
@@ -6993,10 +6995,13 @@ TEST_F(URLRequestTest, ReportCookieActivity) {
     auto entries =
         net_log.GetEntriesWithType(NetLogEventType::COOKIE_INCLUSION_STATUS);
     EXPECT_EQ(2u, entries.size());
-    EXPECT_EQ("EXCLUDE_NOT_ON_PATH, EXCLUDE_USER_PREFERENCES, DO_NOT_WARN",
-              GetStringValueFromParams(entries[0], "exclusion_reason"));
-    EXPECT_EQ("EXCLUDE_USER_PREFERENCES, DO_NOT_WARN",
-              GetStringValueFromParams(entries[1], "exclusion_reason"));
+    EXPECT_EQ(
+        "{\"exclusion_reason\":\"EXCLUDE_NOT_ON_PATH, "
+        "EXCLUDE_USER_PREFERENCES, DO_NOT_WARN\"}",
+        SerializeNetLogValueToJson(entries[0].params));
+    EXPECT_EQ(
+        "{\"exclusion_reason\":\"EXCLUDE_USER_PREFERENCES, DO_NOT_WARN\"}",
+        SerializeNetLogValueToJson(entries[1].params));
     net_log.Clear();
   }
 
@@ -7025,8 +7030,8 @@ TEST_F(URLRequestTest, ReportCookieActivity) {
     auto entries =
         net_log.GetEntriesWithType(NetLogEventType::COOKIE_INCLUSION_STATUS);
     EXPECT_EQ(1u, entries.size());
-    EXPECT_EQ("EXCLUDE_NOT_ON_PATH, DO_NOT_WARN",
-              GetStringValueFromParams(entries[0], "exclusion_reason"));
+    EXPECT_EQ("{\"exclusion_reason\":\"EXCLUDE_NOT_ON_PATH, DO_NOT_WARN\"}",
+              SerializeNetLogValueToJson(entries[0].params));
     net_log.Clear();
   }
 }
