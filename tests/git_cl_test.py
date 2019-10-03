@@ -1062,16 +1062,18 @@ class TestGitCl(TestCase):
       ref_suffix += ',m=' + title
       metrics_arguments.append('m')
 
-    calls += [
-      ((['git', 'config', 'rietveld.cc'],), ''),
-    ]
+    if issue is None:
+      calls += [
+        ((['git', 'config', 'rietveld.cc'],), ''),
+      ]
     if short_hostname == 'chromium':
       # All reviwers and ccs get into ref_suffix.
       for r in sorted(reviewers):
         ref_suffix += ',r=%s' % r
         metrics_arguments.append('r')
-      for c in sorted(['chromium-reviews+test-more-cc@chromium.org',
-                      'joe@example.com'] + cc):
+      if issue is None:
+        cc += ['chromium-reviews+test-more-cc@chromium.org', 'joe@example.com']
+      for c in sorted(cc):
         ref_suffix += ',cc=%s' % c
         metrics_arguments.append('cc')
       reviewers, cc = [], []
@@ -1091,7 +1093,9 @@ class TestGitCl(TestCase):
           ref_suffix  += ',r=%s' % r
           metrics_arguments.append('r')
           reviewers.remove(r)
-      for c in sorted(['joe@example.com'] + cc):
+      if issue is None:
+        cc += ['joe@example.com']
+      for c in sorted(cc):
         ref_suffix += ',cc=%s' % c
         metrics_arguments.append('cc')
         if c in cc:

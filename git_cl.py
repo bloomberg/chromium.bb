@@ -2540,11 +2540,12 @@ class Changelist(object):
                                    options.add_owners_to, change)
 
     reviewers = sorted(change_desc.get_reviewers())
-    # Add cc's from the CC_LIST and --cc flag (if any).
-    if not options.private and not options.no_autocc:
+    cc = []
+    # Add CCs from WATCHLISTS and rietveld.cc git config unless this is
+    # the initial upload, the CL is private, or auto-CCing has ben disabled.
+    if not (self.GetIssue() or options.private or options.no_autocc):
       cc = self.GetCCList().split(',')
-    else:
-      cc = []
+    # Add cc's from the --cc flag.
     if options.cc:
       cc.extend(options.cc)
     cc = filter(None, [email.strip() for email in cc])
