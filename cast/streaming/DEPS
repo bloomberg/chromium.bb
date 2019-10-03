@@ -6,5 +6,8 @@ include_rules = [
   '+cast/common',
   '+cast/receiver',
   '+cast/sender',
-  '+cast/streaming'
+  '+cast/streaming',
+
+  # TODO(jophba): remove after streaming/cast code is migrated.
+  '+streaming/cast'
 ]
