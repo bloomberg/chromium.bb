@@ -46,6 +46,10 @@ WebUITabStripContainerView::WebUITabStripContainerView(Browser* browser)
       web_view_->web_contents());
 }
 
+views::NativeViewHost* WebUITabStripContainerView::GetNativeViewHost() {
+  return web_view_->holder();
+}
+
 std::unique_ptr<ToolbarButton>
 WebUITabStripContainerView::CreateNewTabButton() {
   auto new_tab_button = std::make_unique<ToolbarButton>(this);

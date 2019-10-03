@@ -16,6 +16,7 @@
 #endif
 
 namespace views {
+class NativeViewHost;
 class WebView;
 }  // namespace views
 
@@ -25,6 +26,8 @@ class WebUITabStripContainerView : public views::View,
                                    public views::ButtonListener {
  public:
   explicit WebUITabStripContainerView(Browser* browser);
+
+  views::NativeViewHost* GetNativeViewHost();
 
   // Control buttons.
   std::unique_ptr<ToolbarButton> CreateNewTabButton();
