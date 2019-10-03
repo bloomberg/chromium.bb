@@ -12,9 +12,12 @@ from __future__ import print_function
 
 import os
 import re
+import shutil
 
+from chromite.cbuildbot import commands
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import failures_lib
 from chromite.lib import moblab_vm
 from chromite.lib import osutils
@@ -196,6 +199,163 @@ def RunMoblabVmTest(chroot, vms, builder, image_cache_dir, results_dir):
         enter_chroot=True,
         chroot_args=chroot.get_enter_args(),
     )
+
+
+def SimpleChromeWorkflowTest(sysroot_path, build_target_name, chrome_root,
+                             goma):
+  """Execute SimpleChrome workflow tests
+
+  Args:
+    sysroot_path (str): The sysroot path for testing Chrome.
+    build_target_name (str): Board build target
+    chrome_root (str): Path to Chrome source root.
+    goma (goma_util.Goma): Goma object (or None).
+  """
+  board_dir = 'out_%s' % build_target_name
+
+  out_board_dir = os.path.join(chrome_root, board_dir, 'Release')
+  use_goma = goma != None
+  extra_args = []
+
+  with osutils.TempDir(prefix='chrome-sdk-cache') as tempdir:
+    sdk_cmd = _InitSimpleChromeSDK(tempdir, build_target_name, sysroot_path,
+                                   chrome_root, use_goma)
+
+    if goma:
+      extra_args.extend(['--nostart-goma', '--gomadir', goma.linux_goma_dir])
+
+    _BuildChrome(sdk_cmd, chrome_root, out_board_dir, goma)
+    _TestDeployChrome(sdk_cmd, out_board_dir)
+    _VMTestChrome(build_target_name, sdk_cmd)
+
+
+def _InitSimpleChromeSDK(tempdir, build_target_name, sysroot_path, chrome_root,
+                         use_goma):
+  """Create ChromeSDK object for executing 'cros chrome-sdk' commands.
+
+  Args:
+    tempdir (string): Tempdir for command execution.
+    build_target_name (string): Board build target.
+    sysroot_path (string): Sysroot for Chrome to use.
+    chrome_root (string): Path to Chrome.
+    use_goma (bool): Whether to use goma.
+
+  Returns:
+    A ChromeSDK object.
+  """
+  extra_args = ['--cwd', chrome_root, '--sdk-path', sysroot_path]
+  cache_dir = os.path.join(tempdir, 'cache')
+
+  sdk_cmd = commands.ChromeSDK(
+      constants.SOURCE_ROOT, build_target_name, chrome_src=chrome_root,
+      goma=use_goma, extra_args=extra_args, cache_dir=cache_dir)
+  return sdk_cmd
+
+
+def _VerifySDKEnvironment(out_board_dir):
+  """Make sure the SDK environment is set up properly.
+
+  Args:
+    out_board_dir (str): Output SDK dir for board.
+  """
+  if not os.path.exists(out_board_dir):
+    raise AssertionError('%s not created!' % out_board_dir)
+  logging.info('ARGS.GN=\n%s',
+               osutils.ReadFile(os.path.join(out_board_dir, 'args.gn')))
+
+
+def _BuildChrome(sdk_cmd, chrome_root, out_board_dir, goma):
+  """Build Chrome with SimpleChrome environment.
+
+  Args:
+    sdk_cmd (ChromeSDK object): sdk_cmd to run cros chrome-sdk commands.
+    chrome_root (string): Path to Chrome.
+    out_board_dir (string): Path to board directory.
+    goma (goma_util.Goma): Goma object
+  """
+  # Validate fetching of the SDK and setting everything up.
+  sdk_cmd.Run(['true'])
+
+  sdk_cmd.Run(['gclient', 'runhooks'])
+
+  # Generate args.gn and ninja files.
+  gn_cmd = os.path.join(chrome_root, 'buildtools', 'linux64', 'gn')
+  gn_gen_cmd = '%s gen "%s" --args="$GN_ARGS"' % (gn_cmd, out_board_dir)
+  sdk_cmd.Run(['bash', '-c', gn_gen_cmd])
+
+  _VerifySDKEnvironment(out_board_dir)
+
+  if goma:
+    # If goma is enabled, start goma compiler_proxy here, and record
+    # several information just before building Chrome is started.
+    goma.Start()
+    extra_env = goma.GetExtraEnv()
+    ninja_env_path = os.path.join(goma.goma_log_dir, 'ninja_env')
+    sdk_cmd.Run(['env', '--null'],
+                run_args={'extra_env': extra_env,
+                          'log_stdout_to_file': ninja_env_path})
+    osutils.WriteFile(os.path.join(goma.goma_log_dir, 'ninja_cwd'),
+                      sdk_cmd.cwd)
+    osutils.WriteFile(os.path.join(goma.goma_log_dir, 'ninja_command'),
+                      cros_build_lib.CmdToStr(sdk_cmd.GetNinjaCommand()))
+  else:
+    extra_env = None
+
+  result = None
+  try:
+    # Build chromium.
+    result = sdk_cmd.Ninja(run_args={'extra_env': extra_env})
+  finally:
+    # In teardown, if goma is enabled, stop the goma compiler proxy,
+    # and record/copy some information to log directory, which will be
+    # uploaded to the goma's server in a later stage.
+    if goma:
+      goma.Stop()
+      ninja_log_path = os.path.join(chrome_root,
+                                    sdk_cmd.GetNinjaLogPath())
+      if os.path.exists(ninja_log_path):
+        shutil.copy2(ninja_log_path,
+                     os.path.join(goma.goma_log_dir, 'ninja_log'))
+      if result:
+        osutils.WriteFile(os.path.join(goma.goma_log_dir, 'ninja_exit'),
+                          str(result.returncode))
+
+
+def _TestDeployChrome(sdk_cmd, out_board_dir):
+  """Test SDK deployment.
+
+  Args:
+    sdk_cmd (ChromeSDK object): sdk_cmd to run cros chrome-sdk commands.
+    out_board_dir (string): Path to board directory.
+  """
+  with osutils.TempDir(prefix='chrome-sdk-stage') as tempdir:
+    # Use the TOT deploy_chrome.
+    script_path = os.path.join(
+        constants.SOURCE_ROOT, constants.CHROMITE_BIN_SUBDIR, 'deploy_chrome')
+    sdk_cmd.Run([script_path, '--build-dir', out_board_dir,
+                 '--staging-only', '--staging-dir', tempdir])
+    # Verify chrome is deployed.
+    chromepath = os.path.join(tempdir, 'chrome')
+    if not os.path.exists(chromepath):
+      raise AssertionError(
+          'deploy_chrome did not run successfully! Searched %s' % (chromepath))
+
+
+def _VMTestChrome(board, sdk_cmd):
+  """Run cros_run_test."""
+
+  # This is how  generic_stages.py creates an image_dir_symlink in
+  # GetImageDirSymlink
+  image_dir_symlink = os.path.join(constants.SOURCE_ROOT, 'src', 'build',
+                                   'images', board, 'latest-cbuildbot')
+
+  image_path = os.path.join(image_dir_symlink,
+                            constants.VM_IMAGE_BIN)
+
+  # Run VM test for boards where we've built a VM.
+  if image_path and os.path.exists(image_path):
+    sdk_cmd.VMTest(image_path)
+
 
 
 def ValidateMoblabVmTest(results_dir):

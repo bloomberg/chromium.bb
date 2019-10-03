@@ -17,6 +17,7 @@ from chromite.api import faux
 from chromite.api import validate
 from chromite.api.controller import controller_util
 from chromite.api.gen.chromite.api import test_pb2
+from chromite.cbuildbot import goma_util
 from chromite.lib import build_target_util
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
@@ -109,6 +110,27 @@ def ChromiteUnitTest(_input_proto, _output_proto, _config):
     return controller.RETURN_CODE_SUCCESS
   else:
     return controller.RETURN_CODE_COMPLETED_UNSUCCESSFULLY
+
+
+
+@faux.all_empty
+@validate.require('sysroot.path', 'sysroot.build_target.name', 'chrome_root')
+@validate.validation_complete
+def SimpleChromeWorkflowTest(input_proto, _output_proto, _config):
+  """Run SimpleChromeWorkflow tests."""
+  if input_proto.goma_config.goma_dir:
+    chromeos_goma_dir = input_proto.goma_config.chromeos_goma_dir or None
+    goma = goma_util.Goma(
+        input_proto.goma_config.goma_dir,
+        input_proto.goma_config.goma_client_json,
+        stage_name='BuildApiTestSimpleChrome',
+        chromeos_goma_dir=chromeos_goma_dir)
+  else:
+    goma = None
+  return test.SimpleChromeWorkflowTest(input_proto.sysroot.path,
+                                       input_proto.sysroot.build_target.name,
+                                       input_proto.chrome_root,
+                                       goma)
 
 
 @faux.all_empty
