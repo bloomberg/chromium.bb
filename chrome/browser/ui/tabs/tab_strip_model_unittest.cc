@@ -2858,31 +2858,34 @@ TEST_F(TabStripModelTest, AddTabToNewGroupReorders) {
   strip.CloseAllTabs();
 }
 
-TEST_F(TabStripModelTest, AddTabToNewGroupPins) {
+TEST_F(TabStripModelTest, AddTabToNewGroupUnpins) {
   TestTabStripModelDelegate delegate;
   TabStripModel strip(&delegate, profile());
   PrepareTabs(&strip, 2);
 
   strip.SetTabPinned(0, true);
   strip.AddToNewGroup({0, 1});
-  EXPECT_EQ("0p 1p", GetTabStripStateString(strip));
+
+  EXPECT_EQ("0 1", GetTabStripStateString(strip));
 
   strip.CloseAllTabs();
 }
 
-TEST_F(TabStripModelTest, AddTabToNewGroupPinsAndReorders) {
+TEST_F(TabStripModelTest, AddTabToNewGroupUnpinsAndReorders) {
   TestTabStripModelDelegate delegate;
   TabStripModel strip(&delegate, profile());
   PrepareTabs(&strip, 3);
 
   strip.SetTabPinned(0, true);
-  strip.AddToNewGroup({0, 2});
-  EXPECT_EQ("0p 2p 1", GetTabStripStateString(strip));
+  strip.SetTabPinned(1, true);
+  strip.AddToNewGroup({0});
+
+  EXPECT_EQ("1p 0 2", GetTabStripStateString(strip));
 
   strip.CloseAllTabs();
 }
 
-TEST_F(TabStripModelTest, AddTabToNewGroupMovePinnedTabRight) {
+TEST_F(TabStripModelTest, AddTabToNewGroupMovesPinnedAndUnpinnedTabs) {
   TestTabStripModelDelegate delegate;
   TabStripModel strip(&delegate, profile());
   PrepareTabs(&strip, 4);
@@ -2890,27 +2893,11 @@ TEST_F(TabStripModelTest, AddTabToNewGroupMovePinnedTabRight) {
   strip.SetTabPinned(0, true);
   strip.SetTabPinned(1, true);
   strip.SetTabPinned(2, true);
-  strip.AddToNewGroup({0, 1, 2});
+  strip.AddToNewGroup({0, 1});
+  EXPECT_EQ("2p 0 1 3", GetTabStripStateString(strip));
 
-  strip.AddToNewGroup({1, 3});
-  EXPECT_EQ("0p 2p 1p 3p", GetTabStripStateString(strip));
-
-  strip.CloseAllTabs();
-}
-
-TEST_F(TabStripModelTest, AddTabToNewGroupMovePinnedTabLeft) {
-  TestTabStripModelDelegate delegate;
-  TabStripModel strip(&delegate, profile());
-  PrepareTabs(&strip, 5);
-
-  strip.SetTabPinned(0, true);
-  strip.SetTabPinned(1, true);
-  strip.SetTabPinned(2, true);
-  strip.SetTabPinned(3, true);
-  strip.AddToNewGroup({0, 1, 2});
-
-  strip.AddToNewGroup({1, 3, 4});
-  EXPECT_EQ("0p 2p 1p 3p 4p", GetTabStripStateString(strip));
+  strip.AddToNewGroup({0, 2});
+  EXPECT_EQ("2 1 0 3", GetTabStripStateString(strip));
 
   strip.CloseAllTabs();
 }
@@ -3019,22 +3006,6 @@ TEST_F(TabStripModelTest, AddTabToExistingGroupReorders) {
   strip.CloseAllTabs();
 }
 
-TEST_F(TabStripModelTest, AddTabToExistingGroupPins) {
-  TestTabStripModelDelegate delegate;
-  TabStripModel strip(&delegate, profile());
-  PrepareTabs(&strip, 2);
-
-  strip.SetTabPinned(0, true);
-  strip.AddToNewGroup({0});
-  base::Optional<TabGroupId> group = strip.GetTabGroupForTab(0);
-
-  strip.AddToExistingGroup({1}, group.value());
-  EXPECT_EQ("0p 1p", GetTabStripStateString(strip));
-  EXPECT_EQ(strip.GetTabGroupForTab(1), group);
-
-  strip.CloseAllTabs();
-}
-
 TEST_F(TabStripModelTest, AddTabToExistingGroupUnpins) {
   TestTabStripModelDelegate delegate;
   TabStripModel strip(&delegate, profile());
@@ -3048,6 +3019,21 @@ TEST_F(TabStripModelTest, AddTabToExistingGroupUnpins) {
   EXPECT_FALSE(strip.IsTabPinned(0));
   EXPECT_EQ(strip.GetTabGroupForTab(0), group);
   EXPECT_EQ("1 0", GetTabStripStateString(strip));
+
+  strip.CloseAllTabs();
+}
+
+TEST_F(TabStripModelTest, PinTabInGroupUngroups) {
+  TestTabStripModelDelegate delegate;
+  TabStripModel strip(&delegate, profile());
+  PrepareTabs(&strip, 2);
+
+  strip.AddToNewGroup({0, 1});
+  strip.SetTabPinned(1, true);
+
+  EXPECT_FALSE(strip.GetTabGroupForTab(0).has_value());
+  EXPECT_TRUE(strip.GetTabGroupForTab(1).has_value());
+  EXPECT_EQ("1p 0", GetTabStripStateString(strip));
 
   strip.CloseAllTabs();
 }
@@ -3309,25 +3295,6 @@ TEST_F(TabStripModelTest, InsertWebContentsAtWithGroupGroups) {
   EXPECT_EQ(strip.GetTabGroupForTab(1), group);
   EXPECT_EQ(strip.GetTabGroupForTab(2), group);
   EXPECT_EQ("0 2 1", GetTabStripStateString(strip));
-
-  strip.CloseAllTabs();
-}
-
-// When inserting a WebContents, if a group is specified and the tabs in that
-// group are pinned, the new tab should be pinned also.
-TEST_F(TabStripModelTest, InsertWebContentsAtWithPinnedGroupPins) {
-  TestTabStripModelDelegate delegate;
-  TabStripModel strip(&delegate, profile());
-  strip.AppendWebContents(CreateWebContentsWithID(0), true);
-  strip.AppendWebContents(CreateWebContentsWithID(1), false);
-  strip.SetTabPinned(0, true);
-  strip.SetTabPinned(1, true);
-  strip.AddToNewGroup({0, 1});
-  base::Optional<TabGroupId> group = strip.GetTabGroupForTab(0);
-
-  strip.InsertWebContentsAt(1, CreateWebContentsWithID(2),
-                            TabStripModel::ADD_NONE, group);
-  EXPECT_EQ("0p 2p 1p", GetTabStripStateString(strip));
 
   strip.CloseAllTabs();
 }
