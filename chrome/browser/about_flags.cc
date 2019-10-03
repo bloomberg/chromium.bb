@@ -860,36 +860,31 @@ const FeatureEntry::FeatureVariation kOmniboxDocumentProviderVariations[] = {
 const FeatureEntry::FeatureParam kOmniboxOnFocusSuggestionsParamSERP[] = {
     {"ZeroSuggestVariant:6:*", "RemoteSendUrl"}};
 const FeatureEntry::FeatureParam
-    kOmniboxOnFocusSuggestionsParamNTPOmniboxRemote[] = {
-        {"ZeroSuggestVariant:7:*", "RemoteNoUrl"}};
-const FeatureEntry::FeatureParam
     kOmniboxOnFocusSuggestionsParamNTPOmniboxRemoteLocal[] = {
         {"ZeroSuggestVariant:7:*", "RemoteNoUrl,Local"}};
 const FeatureEntry::FeatureParam
-    kOmniboxOnFocusSuggestionsParamNTPRealboxRemote[] = {
-        {"ZeroSuggestVariant:15:*", "RemoteNoUrl"}};
-const FeatureEntry::FeatureParam
     kOmniboxOnFocusSuggestionsParamNTPRealboxRemoteLocal[] = {
         {"ZeroSuggestVariant:15:*", "RemoteNoUrl,Local"}};
+const FeatureEntry::FeatureParam
+    kOmniboxOnFocusSuggestionsParamNTPOmniboxRealboxRemoteLocal[] = {
+        *kOmniboxOnFocusSuggestionsParamNTPOmniboxRemoteLocal,
+        *kOmniboxOnFocusSuggestionsParamNTPRealboxRemoteLocal};
 const FeatureEntry::FeatureVariation kOmniboxOnFocusSuggestionsVariations[] = {
     {"SERP - RemoteSendURL", kOmniboxOnFocusSuggestionsParamSERP,
      base::size(kOmniboxOnFocusSuggestionsParamSERP),
      "t3315869" /* variation_id */},
-    {"NTP Omnibox - Remote", kOmniboxOnFocusSuggestionsParamNTPOmniboxRemote,
-     base::size(kOmniboxOnFocusSuggestionsParamNTPOmniboxRemote),
-     "t3316133" /* variation_id */},
     {"NTP Omnibox - Remote,Local",
      kOmniboxOnFocusSuggestionsParamNTPOmniboxRemoteLocal,
      base::size(kOmniboxOnFocusSuggestionsParamNTPOmniboxRemoteLocal),
-     "t3316133" /* variation_id */},
-    {"NTP Realbox - Remote", kOmniboxOnFocusSuggestionsParamNTPRealboxRemote,
-     base::size(kOmniboxOnFocusSuggestionsParamNTPRealboxRemote),
      "t3316133" /* variation_id */},
     {"NTP Realbox - Remote,Local",
      kOmniboxOnFocusSuggestionsParamNTPRealboxRemoteLocal,
      base::size(kOmniboxOnFocusSuggestionsParamNTPRealboxRemoteLocal),
      "t3316133" /* variation_id */},
-
+    {"NTP Omnibox,Realbox - Remote,Local",
+     kOmniboxOnFocusSuggestionsParamNTPOmniboxRealboxRemoteLocal,
+     base::size(kOmniboxOnFocusSuggestionsParamNTPOmniboxRealboxRemoteLocal),
+     "t3316133" /* variation_id */},
 };
 
 const FeatureEntry::FeatureParam kOmniboxUIMaxAutocompleteMatches3[] = {
