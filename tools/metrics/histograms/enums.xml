@@ -24620,6 +24620,11 @@ Called by update_net_error_codes.py.-->
   <int value="3027" label="PointerLockUnadjustedMovement"/>
   <int value="3029" label="QuotaRead"/>
   <int value="3035" label="TextFragmentAnchorTapToDismiss"/>
+  <int value="3039" label="FragmentHasTildeAmpersandTilde"/>
+  <int value="3040" label="FragmentHasColonTildeColon"/>
+  <int value="3041" label="FragmentHasTildeAtTilde"/>
+  <int value="3042" label="FragmentHasAmpersandDelimiterQuestion"/>
+  <int value="3043" label="InvalidFragmentDirective"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
