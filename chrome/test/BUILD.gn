@@ -2302,6 +2302,7 @@ if (!is_android) {
         "../browser/ui/views/crostini/crostini_ansible_software_config_view_browsertest.cc",
         "../browser/ui/views/crostini/crostini_browser_test_util.cc",
         "../browser/ui/views/crostini/crostini_browser_test_util.h",
+        "../browser/ui/views/crostini/crostini_force_close_view_browsertest.cc",
         "../browser/ui/views/crostini/crostini_installer_view_browsertest.cc",
         "../browser/ui/views/crostini/crostini_uninstaller_view_browsertest.cc",
         "../browser/ui/views/crostini/crostini_upgrade_container_view_browsertest.cc",

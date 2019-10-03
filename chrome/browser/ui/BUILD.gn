@@ -3714,6 +3714,8 @@ jumbo_split_static_library("ui") {
         "views/crostini/crostini_app_restart_view.h",
         "views/crostini/crostini_app_uninstaller_view.cc",
         "views/crostini/crostini_app_uninstaller_view.h",
+        "views/crostini/crostini_force_close_view.cc",
+        "views/crostini/crostini_force_close_view.h",
         "views/crostini/crostini_installer_view.cc",
         "views/crostini/crostini_installer_view.h",
         "views/crostini/crostini_uninstaller_view.cc",
