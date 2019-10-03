@@ -565,7 +565,7 @@ void VRDisplay::OnRequestImmersiveSessionReturned(
     // The presentation provider error handler can trigger if a device is
     // disconnected from the system. This can happen if, for example, an HMD is
     // unplugged.
-    vr_presentation_data_provider_.set_connection_error_handler(
+    vr_presentation_data_provider_.set_disconnect_handler(
         WTF::Bind(&VRDisplay::OnPresentationProviderConnectionError,
                   WrapWeakPersistent(this)));
     vr_presentation_provider_.Bind(
