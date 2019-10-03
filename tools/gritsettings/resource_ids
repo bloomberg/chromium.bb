@@ -328,9 +328,6 @@
   "ash/components/ash_components_strings.grd": {
     "messages": [23740],
   },
-  "ash/components/resources/ash_components_resources.grd": {
-    "structures": [23955],
-  },
   "ash/keyboard/ui/keyboard_resources.grd": {
     "includes": [23960],
   },
