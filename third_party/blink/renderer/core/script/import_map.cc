@@ -22,8 +22,6 @@ namespace blink {
 
 namespace {
 
-static const char kStdScheme[] = "std";
-
 // TODO(https://crbug.com/928549): Audit and improve error messages throughout
 // this file.
 
@@ -72,17 +70,6 @@ String NormalizeSpecifierKey(const String& key_string,
       return key_string;
 
     case ParsedSpecifier::Type::kURL:
-      // <spec
-      // href="https://wicg.github.io/import-maps/#parse-a-url-like-import-specifier"
-      // step="4">If url’s scheme is either a fetch scheme or "std", then return
-      // url.</spec>
-      //
-      // TODO(hiroshige): Perhaps we should move this into ParsedSpecifier.
-      if (!SchemeRegistry::IsFetchScheme(key.GetUrl().Protocol()) &&
-          key.GetUrl().Protocol() != kStdScheme) {
-        // <spec step="4">Return specifierKey.</spec>
-        return key_string;
-      }
       // <spec step="3">If url is not null, then return the serialization of
       // url.</spec>
       return key.GetImportMapKeyString();
