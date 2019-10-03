@@ -61,17 +61,10 @@ source_set("cast_runner_core") {
     "cast/application_controller_impl.h",
     "cast/cast_component.cc",
     "cast/cast_component.h",
-    "cast/cast_platform_bindings_ids.h",
     "cast/cast_runner.cc",
     "cast/cast_runner.h",
     "cast/named_message_port_connector.cc",
     "cast/named_message_port_connector.h",
-    "cast/touch_input_bindings.cc",
-    "cast/touch_input_bindings.h",
-  ]
-  data = [
-    "cast/not_implemented_api_bindings.js",
-    "cast/touch_input_bindings.js",
   ]
   data_deps = [
     "//chromecast/bindings:named_message_port_connector_resources",
@@ -187,7 +180,6 @@ test("cast_runner_browsertests") {
   sources = [
     "cast/api_bindings_client_browsertest.cc",
     "cast/named_message_port_connector_browsertest.cc",
-    "cast/not_implemented_api_bindings_browsertest.cc",
   ]
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
   data = [

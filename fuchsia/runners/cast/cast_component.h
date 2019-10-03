@@ -15,7 +15,6 @@
 #include "fuchsia/runners/cast/api_bindings_client.h"
 #include "fuchsia/runners/cast/application_controller_impl.h"
 #include "fuchsia/runners/cast/named_message_port_connector.h"
-#include "fuchsia/runners/cast/touch_input_bindings.h"
 #include "fuchsia/runners/common/web_component.h"
 
 class CastRunner;
@@ -66,9 +65,7 @@ class CastComponent : public WebComponent,
   chromium::cast::UrlRequestRewriteRulesProviderPtr rewrite_rules_provider_;
 
   bool constructor_active_ = false;
-  TouchInputPolicy touch_input_policy_;
   NamedMessagePortConnector connector_;
-  std::unique_ptr<TouchInputBindings> touch_input_;
   std::unique_ptr<ApiBindingsClient> api_bindings_client_;
   std::unique_ptr<ApplicationControllerImpl> application_controller_;
 
