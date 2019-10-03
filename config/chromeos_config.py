@@ -2995,8 +2995,6 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.informational,
       boards=['amd64-generic'],
       description='Build with Address Sanitizer (Clang)',
-      # THESE IMAGES CAN DAMAGE THE LAB and cannot be used for hardware testing.
-      disk_layout='4gb-rootfs',
       # Every 3 hours.
       schedule='0 */3 * * *',
       board_replace=True,
