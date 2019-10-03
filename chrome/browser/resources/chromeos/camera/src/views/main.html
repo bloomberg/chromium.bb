@@ -65,11 +65,13 @@
   </head>
   <body class="sound mirror mic _3x3">
     <div id="camera">
-      <div id="preview-wrapper" aria-hidden="true">
-        <img id="review-photo-result" class="preview-content">
+      <div id="preview-wrapper">
+        <img id="review-photo-result" class="preview-content"
+          aria-hidden="true">
         <video id="review-video-result" class="preview-content"></video>
         <div class="buttons circle centered-overlay">
-          <button id="play-result-video"></button>
+          <button id="play-result-video" tabindex="0"
+            i18n-label="play_result_video_button"></button>
         </div>
         <video id="preview-video" class="preview-content"></video>
         <div id="preview-metadata">
@@ -151,8 +153,10 @@
                 i18n-label="gallery_button" hidden></button>
       </div>
       <div id="confirm-result-groups" class="buttons right-stripe circle">
-        <button id="confirm-result"></button>
-        <button id="cancel-result"></button>
+        <button id="confirm-result" tabindex="0"
+          i18n-label="confirm_review_button"></button>
+        <button id="cancel-result" tabindex="0"
+          i18n-label="cancel_review_button"></button>
       </div>
       <div class="bottom-stripe left-stripe buttons circle">
         <button id="switch-device" tabindex="0"
