@@ -1231,7 +1231,7 @@ static void postprocess_q_and_bounds(const AV1_COMP *cpi, int width, int height,
         q = active_worst_quality;
     }
   }
-  clamp(q, active_best_quality, active_worst_quality);
+  q = clamp(q, active_best_quality, active_worst_quality);
 
   *active_best = active_best_quality;
   *active_worst = active_worst_quality;
