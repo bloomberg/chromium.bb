@@ -403,6 +403,8 @@ class LoadingPredictorBrowserTest : public InProcessBrowserTest {
         &LoadingPredictorBrowserTest::HandleCacheRedirectRequest));
 
     ASSERT_TRUE(preconnecting_test_server_.InitializeAndListen());
+    preconnecting_test_server_.RegisterRequestHandler(base::BindRepeating(
+        &LoadingPredictorBrowserTest::HandleFaviconRequest));
     preconnecting_test_server_.AddDefaultHandlers(GetChromeTestDataDir());
 
     InProcessBrowserTest::SetUp();
@@ -1013,9 +1015,18 @@ class LoadingPredictorNetworkIsolationKeyBrowserTest
         simple_loader_helper.GetCallback());
     simple_loader_helper.WaitForCallback();
     ASSERT_TRUE(simple_loader_helper.response_body());
-    EXPECT_EQ(1u, connection_tracker()->GetAcceptedSocketCount());
-    EXPECT_EQ(1u, connection_tracker()->GetReadSocketCount());
-    connection_tracker()->ResetCounts();
+    if (url.IntPort() == embedded_test_server()->port()) {
+      EXPECT_EQ(1u, connection_tracker()->GetAcceptedSocketCount());
+      EXPECT_EQ(1u, connection_tracker()->GetReadSocketCount());
+    } else {
+      EXPECT_EQ(url.IntPort(), preconnecting_test_server_.port());
+      EXPECT_EQ(
+          1u,
+          preconnecting_server_connection_tracker()->GetAcceptedSocketCount());
+      EXPECT_EQ(
+          1u, preconnecting_server_connection_tracker()->GetReadSocketCount());
+    }
+    ResetNetworkState();
   }
 
  private:
@@ -1118,14 +1129,18 @@ IN_PROC_BROWSER_TEST_P(LoadingPredictorNetworkIsolationKeyBrowserTest,
 // Checks the opposite of the above test - tests that even when a redirect is
 // predicted, preconnects are still made to the original origin using the
 // correct NetworkIsolationKey.
-// TODO(crbug.com/1006637). Flaky on all platforms.
 IN_PROC_BROWSER_TEST_P(LoadingPredictorNetworkIsolationKeyBrowserTest,
-                       DISABLED_LoadingPredictorWithRedirects2) {
+                       LoadingPredictorWithRedirects2) {
   // Cache the redirect, so the only connections to the tracked server created
   // during navigations should be for preconnects.
   GURL destination_url = preconnecting_test_server()->GetURL("/cachetime");
   GURL redirecting_url = embedded_test_server()->GetURL("/cached-redirect?" +
                                                         destination_url.spec());
+
+  // Unlike other tests, the "preconnecting" server is actually the final
+  // destination, so its favicon needs to be cached.
+  CacheUrl(preconnecting_test_server()->GetURL("/favicon.ico"));
+
   CacheUrl(redirecting_url);
 
   // The first navigation learns to preconnect based on the redirect, and the
@@ -1145,9 +1160,9 @@ IN_PROC_BROWSER_TEST_P(LoadingPredictorNetworkIsolationKeyBrowserTest,
 
     // Verify that the redirect from |redirecting_url| to |destination_url| was
     // learned and preconnected to.
-    if (i == 1) {
+    if (i == 1)
       preconnecting_server_connection_tracker()->WaitForAcceptedConnections(1);
-    }
+    EXPECT_EQ(0u, connection_tracker()->GetReadSocketCount());
 
     // Verify that the preconnects to |embedded_test_server| were made using
     // the |redirecting_url|'s NetworkIsolationKey. To do this, make a request
