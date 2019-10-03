@@ -107,7 +107,7 @@ struct XRSession {
 // way connection between the renderer and a device to synchronize and submit
 // frames to a sink outside of Chrome.
 struct XRPresentationConnection {
-  XRPresentationProvider provider;
+  pending_remote<XRPresentationProvider> provider;
   pending_receiver<XRPresentationClient> client_receiver;
   XRPresentationTransportOptions transport_options;
 };

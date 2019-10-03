@@ -85,7 +85,7 @@ void XRFrameProvider::BeginImmersiveSession(
 
   presentation_provider_.Bind(
       std::move(session_ptr->submit_frame_sink->provider));
-  presentation_provider_.set_connection_error_handler(WTF::Bind(
+  presentation_provider_.set_disconnect_handler(WTF::Bind(
       &XRFrameProvider::OnProviderConnectionError, WrapWeakPersistent(this)));
 
   frame_transport_->BindSubmitFrameClient(

@@ -70,7 +70,8 @@ class XRFrameProvider final : public GarbageCollected<XRFrameProvider> {
   HeapVector<Member<XRSession>> requesting_sessions_;
   HeapVector<Member<XRSession>> processing_sessions_;
 
-  device::mojom::blink::XRPresentationProviderPtr presentation_provider_;
+  mojo::Remote<device::mojom::blink::XRPresentationProvider>
+      presentation_provider_;
   mojo::Remote<device::mojom::blink::XRFrameDataProvider>
       immersive_data_provider_;
   device::mojom::blink::VRPosePtr frame_pose_;

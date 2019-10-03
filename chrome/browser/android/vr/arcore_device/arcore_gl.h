@@ -202,7 +202,8 @@ class ArCoreGl : public mojom::XRFrameDataProvider,
   void OnBindingDisconnect();
   void CloseBindingsIfOpen();
 
-  mojo::Binding<device::mojom::XRPresentationProvider> presentation_binding_;
+  mojo::Receiver<device::mojom::XRPresentationProvider> presentation_receiver_{
+      this};
   mojo::Remote<device::mojom::XRPresentationClient> submit_client_;
 
   base::OnceClosure pending_getframedata_;

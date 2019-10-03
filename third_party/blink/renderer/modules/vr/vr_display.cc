@@ -570,7 +570,7 @@ void VRDisplay::OnRequestImmersiveSessionReturned(
                   WrapWeakPersistent(this)));
     vr_presentation_provider_.Bind(
         std::move(session->submit_frame_sink->provider));
-    vr_presentation_provider_.set_connection_error_handler(
+    vr_presentation_provider_.set_disconnect_handler(
         WTF::Bind(&VRDisplay::OnPresentationProviderConnectionError,
                   WrapWeakPersistent(this)));
 

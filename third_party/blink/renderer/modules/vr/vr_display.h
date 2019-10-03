@@ -273,7 +273,8 @@ class VRDisplay final : public EventTargetWithInlineData,
       display_client_receiver_{this};
   mojo::Remote<device::mojom::blink::XRFrameDataProvider>
       vr_presentation_data_provider_;
-  device::mojom::blink::XRPresentationProviderPtr vr_presentation_provider_;
+  mojo::Remote<device::mojom::blink::XRPresentationProvider>
+      vr_presentation_provider_;
 
   HeapDeque<Member<ScriptPromiseResolver>> pending_present_resolvers_;
 };

@@ -179,7 +179,7 @@ class XRCompositorCommon : public base::Thread,
   base::RepeatingCallback<void(mojom::XRVisibilityState)>
       on_visibility_state_changed_;
   mojom::IsolatedXRGamepadProvider::RequestUpdateCallback gamepad_callback_;
-  mojo::Binding<mojom::XRPresentationProvider> presentation_binding_;
+  mojo::Receiver<mojom::XRPresentationProvider> presentation_receiver_{this};
   mojo::Receiver<mojom::XRFrameDataProvider> frame_data_receiver_{this};
   mojo::Binding<mojom::IsolatedXRGamepadProvider> gamepad_provider_;
   mojo::Binding<mojom::ImmersiveOverlay> overlay_binding_;
