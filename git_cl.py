@@ -1024,6 +1024,11 @@ def ParseIssueNumberArgument(arg):
   """Parses the issue argument and returns _ParsedIssueNumberArgument."""
   fail_result = _ParsedIssueNumberArgument()
 
+  if isinstance(arg, int):
+    return _ParsedIssueNumberArgument(issue=arg)
+  if not isinstance(arg, basestring):
+    return fail_result
+
   if arg.isdigit():
     return _ParsedIssueNumberArgument(issue=int(arg))
   if not arg.startswith('http'):
@@ -1035,7 +1040,26 @@ def ParseIssueNumberArgument(arg):
   except ValueError:
     return fail_result
 
-  return Changelist.ParseIssueURL(parsed_url) or fail_result
+  # Gerrit's new UI is https://domain/c/project/+/<issue_number>[/[patchset]]
+  # But old GWT UI is https://domain/#/c/project/+/<issue_number>[/[patchset]]
+  # Short urls like https://domain/<issue_number> can be used, but don't allow
+  # specifying the patchset (you'd 404), but we allow that here.
+  if parsed_url.path == '/':
+    part = parsed_url.fragment
+  else:
+    part = parsed_url.path
+
+  match = re.match(
+      r'(/c(/.*/\+)?)?/(?P<issue>\d+)(/(?P<patchset>\d+)?/?)?$', part)
+  if not match:
+    return fail_result
+
+  issue = int(match.group('issue'))
+  patchset = match.group('patchset')
+  return _ParsedIssueNumberArgument(
+      issue=issue,
+      patchset=int(patchset) if patchset else None,
+      hostname=parsed_url.netloc)
 
 
 def _create_description_from_log(args):
@@ -1538,20 +1562,6 @@ class Changelist(object):
       return result
     except presubmit_support.PresubmitFailure as e:
       DieWithError('%s\nMaybe your depot_tools is out of date?' % e)
-
-  def CMDPatchIssue(self, issue_arg, nocommit):
-    """Fetches and applies the issue patch from codereview to local branch."""
-    if isinstance(issue_arg, (int, long)) or issue_arg.isdigit():
-      parsed_issue_arg = _ParsedIssueNumberArgument(int(issue_arg))
-    else:
-      # Assume url.
-      parsed_issue_arg = self.ParseIssueURL(
-          urlparse.urlparse(issue_arg))
-    if not parsed_issue_arg or not parsed_issue_arg.valid:
-      DieWithError('Failed to parse issue argument "%s". '
-                   'Must be an issue number or a valid URL.' % issue_arg)
-    return self.CMDPatchWithParsedIssue(
-        parsed_issue_arg, nocommit, False)
 
   def CMDUpload(self, options, git_diff_args, orig_args):
     """Uploads a change to codereview."""
@@ -2222,26 +2232,6 @@ class Changelist(object):
 
     return 0
 
-  @staticmethod
-  def ParseIssueURL(parsed_url):
-    if not parsed_url.scheme or not parsed_url.scheme.startswith('http'):
-      return None
-    # Gerrit's new UI is https://domain/c/project/+/<issue_number>[/[patchset]]
-    # But old GWT UI is https://domain/#/c/project/+/<issue_number>[/[patchset]]
-    # Short urls like https://domain/<issue_number> can be used, but don't allow
-    # specifying the patchset (you'd 404), but we allow that here.
-    if parsed_url.path == '/':
-      part = parsed_url.fragment
-    else:
-      part = parsed_url.path
-    match = re.match(r'(/c(/.*/\+)?)?/(\d+)(/(\d+)?/?)?$', part)
-    if match:
-      return _ParsedIssueNumberArgument(
-          issue=int(match.group(3)),
-          patchset=int(match.group(5)) if match.group(5) else None,
-          hostname=parsed_url.netloc)
-    return None
-
   def _GerritCommitMsgHookCheck(self, offer_removal):
     hook = os.path.join(settings.GetRoot(), '.git', 'hooks', 'commit-msg')
     if not os.path.exists(hook):
@@ -2833,12 +2823,6 @@ def _add_codereview_select_options(parser):
   parser.codereview_group.add_option(
       '--gerrit', action='store_true',
       help='Deprecated. Noop. Do not use.')
-
-
-def _process_codereview_select_options(parser, options):
-  options.forced_codereview = None
-  if options.gerrit:
-    options.forced_codereview = 'gerrit'
 
 
 def _get_bug_line_values(default_project, bugs):
@@ -3881,7 +3865,6 @@ def CMDstatus(parser, args):
   _add_codereview_issue_select_options(
     parser, 'Must be in conjunction with --field.')
   options, args = parser.parse_args(args)
-  _process_codereview_select_options(parser, options)
   if args:
     parser.error('Unsupported args: %s' % args)
 
@@ -4021,7 +4004,6 @@ def CMDissue(parser, args):
                     help='Path to JSON output file, or "-" for stdout.')
   _add_codereview_select_options(parser)
   options, args = parser.parse_args(args)
-  _process_codereview_select_options(parser, options)
 
   if options.reverse:
     branches = RunGit(['for-each-ref', 'refs/heads',
@@ -4094,7 +4076,6 @@ def CMDcomments(parser, args):
                     help='File to write JSON summary to, or "-" for stdout')
   _add_codereview_select_options(parser)
   options, args = parser.parse_args(args)
-  _process_codereview_select_options(parser, options)
 
   issue = None
   if options.issue:
@@ -4153,7 +4134,6 @@ def CMDdescription(parser, args):
 
   _add_codereview_select_options(parser)
   options, args = parser.parse_args(args)
-  _process_codereview_select_options(parser, options)
 
   target_issue_arg = None
   if len(args) > 0:
@@ -4162,19 +4142,15 @@ def CMDdescription(parser, args):
       parser.error('Invalid issue ID or URL.')
 
   kwargs = {}
-  detected_codereview_from_url = False
   if target_issue_arg:
     kwargs['issue'] = target_issue_arg.issue
     kwargs['codereview_host'] = target_issue_arg.hostname
-    if not args[0].isdigit() and not options.forced_codereview:
-      detected_codereview_from_url = True
 
   cl = Changelist(**kwargs)
   if not cl.GetIssue():
-    assert not detected_codereview_from_url
     DieWithError('This branch has no associated changelist.')
 
-  if detected_codereview_from_url:
+  if args and not args[0].isdigit():
     logging.info('canonical issue/change URL: %s\n', cl.GetIssueURL())
 
   description = ChangeDescription(cl.GetDescription())
@@ -4500,7 +4476,6 @@ def CMDupload(parser, args):
   orig_args = args
   _add_codereview_select_options(parser)
   (options, args) = parser.parse_args(args)
-  _process_codereview_select_options(parser, options)
 
   if git_common.is_dirty_git_tree('upload'):
     return 1
@@ -4665,7 +4640,6 @@ def CMDpatch(parser, args):
 
   _add_codereview_select_options(parser)
   (options, args) = parser.parse_args(args)
-  _process_codereview_select_options(parser, options)
 
   if options.reapply:
     if options.newbranch:
@@ -4685,7 +4659,8 @@ def CMDpatch(parser, args):
     if options.pull:
       RunGit(['pull'])
 
-    return cl.CMDPatchIssue(cl.GetIssue(), options.nocommit)
+    target_issue_arg = ParseIssueNumberArgument(cl.GetIssue())
+    return cl.CMDPatchWithParsedIssue(target_issue_arg, options.nocommit, False)
 
   if len(args) != 1 or not args[0]:
     parser.error('Must specify issue number or URL.')
@@ -4693,14 +4668,6 @@ def CMDpatch(parser, args):
   target_issue_arg = ParseIssueNumberArgument(args[0])
   if not target_issue_arg.valid:
     parser.error('Invalid issue ID or URL.')
-
-  cl_kwargs = {
-      'codereview_host': target_issue_arg.hostname,
-  }
-  detected_codereview_from_url = False
-  if not args[0].isdigit() and not options.forced_codereview:
-    detected_codereview_from_url = True
-    cl_kwargs['issue'] = target_issue_arg.issue
 
   # We don't want uncommitted changes mixed up with the patch.
   if git_common.is_dirty_git_tree('patch'):
@@ -4712,9 +4679,10 @@ def CMDpatch(parser, args):
              stderr=subprocess2.PIPE, error_ok=True)
     RunGit(['new-branch', options.newbranch])
 
-  cl = Changelist(**cl_kwargs)
+  cl = Changelist(
+      codereview_host=target_issue_arg.hostname, issue=target_issue_arg.issue)
 
-  if detected_codereview_from_url:
+  if not args[0].isdigit():
     print('canonical issue/change URL: %s\n' % cl.GetIssueURL())
 
   return cl.CMDPatchWithParsedIssue(
@@ -4811,7 +4779,6 @@ def CMDtry(parser, args):
   auth.add_auth_options(parser)
   _add_codereview_issue_select_options(parser)
   options, args = parser.parse_args(args)
-  _process_codereview_select_options(parser, options)
   auth_config = auth.extract_auth_config_from_options(options)
 
   # Make sure that all properties are prop=value pairs.
@@ -4904,7 +4871,6 @@ def CMDtry_results(parser, args):
   auth.add_auth_options(parser)
   _add_codereview_issue_select_options(parser)
   options, args = parser.parse_args(args)
-  _process_codereview_select_options(parser, options)
   if args:
     parser.error('Unrecognized args: %s' % ' '.join(args))
 
@@ -4994,7 +4960,6 @@ def CMDset_commit(parser, args):
                     help='stop CQ run, if any')
   _add_codereview_issue_select_options(parser)
   options, args = parser.parse_args(args)
-  _process_codereview_select_options(parser, options)
   if args:
     parser.error('Unrecognized args: %s' % ' '.join(args))
   if options.dry_run and options.clear:
@@ -5018,7 +4983,6 @@ def CMDset_close(parser, args):
   """Closes the issue."""
   _add_codereview_issue_select_options(parser)
   options, args = parser.parse_args(args)
-  _process_codereview_select_options(parser, options)
   if args:
     parser.error('Unrecognized args: %s' % ' '.join(args))
   cl = Changelist(issue=options.issue)

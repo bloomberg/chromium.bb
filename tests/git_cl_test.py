@@ -487,18 +487,19 @@ class TestParseIssueURL(unittest.TestCase):
     self.assertEqual(parsed.patchset, patchset)
     self.assertEqual(parsed.hostname, hostname)
 
-  def _run_and_validate(self, func, url, *args, **kwargs):
-    result = func(urlparse.urlparse(url))
-    if kwargs.pop('fail', False):
-      self.assertIsNone(result)
-      return None
-    self._validate(result, *args, fail=False, **kwargs)
+  def test_ParseIssueNumberArgument(self):
+    def test(arg, *args, **kwargs):
+      self._validate(git_cl.ParseIssueNumberArgument(arg), *args, **kwargs)
 
-  def test_gerrit(self):
-    def test(url, *args, **kwargs):
-      self._run_and_validate(git_cl.Changelist.ParseIssueURL, url,
-                             *args, **kwargs)
+    test('123', 123)
+    test('', fail=True)
+    test('abc', fail=True)
+    test('123/1', fail=True)
+    test('123a', fail=True)
+    test('ssh://chrome-review.source.com/#/c/123/4/', fail=True)
 
+    test('https://codereview.source.com/123',
+         123, None, 'codereview.source.com')
     test('http://chrome-review.source.com/c/123',
          123, None, 'chrome-review.source.com')
     test('https://chrome-review.source.com/c/123/',
@@ -514,28 +515,11 @@ class TestParseIssueURL(unittest.TestCase):
     test('https://chrome-review.source.com/123/4',
          123, 4, 'chrome-review.source.com')
 
+    test('https://chrome-review.source.com/bad/123/4', fail=True)
     test('https://chrome-review.source.com/c/123/1/whatisthis', fail=True)
     test('https://chrome-review.source.com/c/abc/', fail=True)
     test('ssh://chrome-review.source.com/c/123/1/', fail=True)
 
-  def test_ParseIssueNumberArgument(self):
-    def test(arg, *args, **kwargs):
-      self._validate(git_cl.ParseIssueNumberArgument(arg), *args, **kwargs)
-
-    test('123', 123)
-    test('', fail=True)
-    test('abc', fail=True)
-    test('123/1', fail=True)
-    test('123a', fail=True)
-    test('ssh://chrome-review.source.com/#/c/123/4/', fail=True)
-
-    test('https://codereview.source.com/123',
-         123, None, 'codereview.source.com')
-
-    # Gerrrit.
-    test('https://chrome-review.source.com/c/123/4',
-         123, 4, 'chrome-review.source.com')
-    test('https://chrome-review.source.com/bad/123/4', fail=True)
 
 
 class GitCookiesCheckerTest(TestCase):
