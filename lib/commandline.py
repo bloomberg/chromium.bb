@@ -880,7 +880,7 @@ def _RestartInChroot(cmd, chroot_args, extra_env):
                             mute_output=False).returncode
 
 
-def RunInsideChroot(command, chroot_args=None):
+def RunInsideChroot(command=None, chroot_args=None):
   """Restart the current command inside the chroot.
 
   This method is only valid for any code that is run via ScriptWrapperMain.
@@ -889,6 +889,7 @@ def RunInsideChroot(command, chroot_args=None):
 
   Args:
     command: An instance of CliCommand to be restarted inside the chroot.
+             |command| can be None if you do not wish to modify the log_level.
     chroot_args: List of command-line arguments to pass to cros_sdk, if invoked.
   """
   if cros_build_lib.IsInsideChroot():
@@ -902,7 +903,8 @@ def RunInsideChroot(command, chroot_args=None):
   # chroot.
   if chroot_args is None:
     chroot_args = []
-  chroot_args += ['--log-level', command.options.log_level]
+  if command is not None:
+    chroot_args += ['--log-level', command.options.log_level]
 
   raise ChrootRequiredError(argv, chroot_args)
 

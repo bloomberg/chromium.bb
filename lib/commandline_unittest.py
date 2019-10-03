@@ -616,7 +616,10 @@ class TestRunInsideChroot(cros_test_lib.MockTestCase):
       commandline.RunInsideChroot(self.cmd, **kwargs)
 
     if log_level_args is None:
-      log_level_args = ['--log-level', self.cmd.options.log_level]
+      if self.cmd is not None:
+        log_level_args = ['--log-level', self.cmd.options.log_level]
+      else:
+        log_level_args = []
 
     if expected_chroot_args is not None:
       log_level_args.extend(expected_chroot_args)
@@ -630,6 +633,12 @@ class TestRunInsideChroot(cros_test_lib.MockTestCase):
   def testRunInsideChroot(self):
     """Test we can restart inside the chroot."""
     self.mock_inside_chroot.return_value = False
+    self._VerifyRunInsideChroot(['/inside/cmd', 'arg1', 'arg2'])
+
+  def testRunInsideChrootWithoutCommand(self):
+    """Test that RunInsideChroot can get by without the |command| parameter."""
+    self.mock_inside_chroot.return_value = False
+    self.cmd = None
     self._VerifyRunInsideChroot(['/inside/cmd', 'arg1', 'arg2'])
 
   def testRunInsideChrootLogLevel(self):
