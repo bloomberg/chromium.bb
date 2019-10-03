@@ -380,6 +380,7 @@ public class DownloadManagerService
         downloadItem.setSystemDownloadId(
                 DownloadManagerBridge.getDownloadIdForDownloadGuid(downloadInfo.getDownloadGuid()));
         updateDownloadProgress(downloadItem, status);
+        updateDownloadInfoBar(downloadItem);
     }
 
     @Override
@@ -390,6 +391,7 @@ public class DownloadManagerService
             removeAutoResumableDownload(item.getId());
         }
         updateDownloadProgress(item, DownloadStatus.IN_PROGRESS);
+        updateDownloadInfoBar(item);
         scheduleUpdateIfNeeded();
     }
 
@@ -398,6 +400,7 @@ public class DownloadManagerService
         DownloadItem item = new DownloadItem(false, downloadInfo);
         removeAutoResumableDownload(item.getId());
         updateDownloadProgress(new DownloadItem(false, downloadInfo), DownloadStatus.CANCELLED);
+        updateDownloadInfoBar(item);
     }
 
     @Override
@@ -418,6 +421,7 @@ public class DownloadManagerService
                     UmaBackgroundDownload.INTERRUPTED, downloadInfo.getDownloadGuid());
         }
         updateDownloadProgress(item, status);
+        updateDownloadInfoBar(item);
 
         if (FeatureUtilities.isDownloadAutoResumptionEnabledInNative()) return;
         DownloadProgress progress = mDownloadProgressMap.get(item.getId());
@@ -466,6 +470,12 @@ public class DownloadManagerService
                     /*isOffTheRecord=*/false);
             mActivityLaunched = true;
         }
+    }
+
+    private void updateDownloadInfoBar(DownloadItem item) {
+        DownloadInfoBarController infobarController =
+                getInfoBarController(item.getDownloadInfo().isOffTheRecord());
+        if (infobarController != null) infobarController.onDownloadItemUpdated(item);
     }
 
     /**
@@ -1786,9 +1796,6 @@ public class DownloadManagerService
         for (DownloadObserver adapter : mDownloadObservers) {
             adapter.onDownloadItemCreated(item);
         }
-        DownloadInfoBarController infobarController =
-                getInfoBarController(item.getDownloadInfo().isOffTheRecord());
-        if (infobarController != null) infobarController.onDownloadItemUpdated(item);
     }
 
     @CalledByNative
@@ -1796,10 +1803,6 @@ public class DownloadManagerService
         for (DownloadObserver adapter : mDownloadObservers) {
             adapter.onDownloadItemUpdated(item);
         }
-
-        DownloadInfoBarController infobarController =
-                getInfoBarController(item.getDownloadInfo().isOffTheRecord());
-        if (infobarController != null) infobarController.onDownloadItemUpdated(item);
     }
 
     @CalledByNative
