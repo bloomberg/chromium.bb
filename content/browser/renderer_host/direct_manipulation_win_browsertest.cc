@@ -350,7 +350,8 @@ class PrecisionTouchpadBrowserTest : public DirectManipulationBrowserTestBase {
 
 // Confirm that preventDefault correctly prevents pinch zoom on precision
 // touchpad.
-IN_PROC_BROWSER_TEST_F(PrecisionTouchpadBrowserTest, PreventDefaultPinchZoom) {
+IN_PROC_BROWSER_TEST_F(PrecisionTouchpadBrowserTest,
+                       DISABLED_PreventDefaultPinchZoom) {
   if (base::win::GetVersion() < base::win::Version::WIN10)
     return;
 
@@ -411,7 +412,8 @@ IN_PROC_BROWSER_TEST_F(PrecisionTouchpadBrowserTest, PreventDefaultPinchZoom) {
 
 // Confirm that preventDefault correctly prevents scrolling on precision
 // touchpad.
-IN_PROC_BROWSER_TEST_F(PrecisionTouchpadBrowserTest, PreventDefaultScroll) {
+IN_PROC_BROWSER_TEST_F(PrecisionTouchpadBrowserTest,
+                       DISABLED_PreventDefaultScroll) {
   if (base::win::GetVersion() < base::win::Version::WIN10)
     return;
 
