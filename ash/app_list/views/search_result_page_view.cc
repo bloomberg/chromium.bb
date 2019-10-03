@@ -529,11 +529,8 @@ gfx::Rect SearchResultPageView::GetPageBoundsForState(
     // Hides this view behind the search box by using the same bounds.
     return search_box_bounds;
   }
-
-  gfx::Rect bounds = contents_bounds;
-  bounds.Offset((contents_bounds.width() - kWidth) / 2, search_box_bounds.y());
-  bounds.set_size(GetPreferredSize());
-  return bounds;
+  return gfx::Rect(search_box_bounds.origin(),
+                   gfx::Size(search_box_bounds.width(), kHeight));
 }
 
 views::View* SearchResultPageView::GetFirstFocusableView() {
