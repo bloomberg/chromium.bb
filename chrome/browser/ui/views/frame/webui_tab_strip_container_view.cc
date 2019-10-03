@@ -70,9 +70,9 @@ WebUITabStripContainerView::CreateToggleButton() {
   return toggle_button;
 }
 
-gfx::Size WebUITabStripContainerView::CalculatePreferredSize() const {
+int WebUITabStripContainerView::GetHeightForWidth(int w) const {
   constexpr int kWebUITabStripHeightDp = 248;
-  return gfx::Size(0, kWebUITabStripHeightDp);
+  return kWebUITabStripHeightDp;
 }
 
 void WebUITabStripContainerView::ButtonPressed(views::Button* sender,

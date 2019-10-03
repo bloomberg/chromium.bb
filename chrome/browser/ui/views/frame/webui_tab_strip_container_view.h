@@ -35,7 +35,7 @@ class WebUITabStripContainerView : public views::View,
 
  private:
   // views::View:
-  gfx::Size CalculatePreferredSize() const override;
+  int GetHeightForWidth(int w) const override;
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
