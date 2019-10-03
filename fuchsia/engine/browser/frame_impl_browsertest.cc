@@ -24,7 +24,6 @@
 #include "fuchsia/base/test_navigation_listener.h"
 #include "fuchsia/base/url_request_rewrite_test_util.h"
 #include "fuchsia/engine/browser/frame_impl.h"
-#include "fuchsia/engine/common.h"
 #include "fuchsia/engine/test/web_engine_browser_test.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"

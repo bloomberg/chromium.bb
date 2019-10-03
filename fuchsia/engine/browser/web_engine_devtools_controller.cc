@@ -16,7 +16,7 @@
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_socket_factory.h"
 #include "content/public/common/content_switches.h"
-#include "fuchsia/engine/common.h"
+#include "fuchsia/engine/switches.h"
 #include "net/base/net_errors.h"
 #include "net/base/port_util.h"
 #include "net/socket/tcp_server_socket.h"
@@ -294,10 +294,10 @@ WebEngineDevToolsController::CreateFromCommandLine(
     return std::make_unique<UserModeController>(parsed_port);
   }
 
-  if (command_line.HasSwitch(kRemoteDebuggerHandles)) {
+  if (command_line.HasSwitch(switches::kRemoteDebuggerHandles)) {
     // Initialize the Debug devtools listeners.
     std::string handle_ids_str =
-        command_line.GetSwitchValueASCII(kRemoteDebuggerHandles);
+        command_line.GetSwitchValueASCII(switches::kRemoteDebuggerHandles);
 
     // Extract individual handle IDs from the comma-separated list.
     base::StringTokenizer tokenizer(handle_ids_str, ",");

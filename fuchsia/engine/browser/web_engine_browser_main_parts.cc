@@ -17,7 +17,7 @@
 #include "fuchsia/engine/browser/web_engine_browser_context.h"
 #include "fuchsia/engine/browser/web_engine_devtools_controller.h"
 #include "fuchsia/engine/browser/web_engine_screen.h"
-#include "fuchsia/engine/common.h"
+#include "fuchsia/engine/switches.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "ui/aura/screen_ozone.h"
 #include "ui/ozone/public/ozone_platform.h"
@@ -50,7 +50,7 @@ void WebEngineBrowserMainParts::PreMainMessageLoopRun() {
 
   DCHECK(!browser_context_);
   browser_context_ = std::make_unique<WebEngineBrowserContext>(
-      base::CommandLine::ForCurrentProcess()->HasSwitch(kIncognitoSwitch));
+      base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kIncognito));
 
   DCHECK(request_);
   devtools_controller_ = WebEngineDevToolsController::CreateFromCommandLine(

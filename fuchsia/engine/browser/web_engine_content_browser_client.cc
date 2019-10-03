@@ -17,7 +17,7 @@
 #include "fuchsia/engine/browser/web_engine_browser_context.h"
 #include "fuchsia/engine/browser/web_engine_browser_main_parts.h"
 #include "fuchsia/engine/browser/web_engine_devtools_controller.h"
-#include "fuchsia/engine/common.h"
+#include "fuchsia/engine/common/web_engine_content_client.h"
 #include "fuchsia/engine/common/web_engine_url_loader_throttle.h"
 #include "fuchsia/engine/switches.h"
 
@@ -82,10 +82,10 @@ std::string WebEngineContentBrowserClient::GetProduct() {
 std::string WebEngineContentBrowserClient::GetUserAgent() {
   std::string user_agent = content::BuildUserAgentFromProduct(GetProduct());
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          kUserAgentProductAndVersion)) {
+          switches::kUserAgentProductAndVersion)) {
     user_agent +=
         " " + base::CommandLine::ForCurrentProcess()->GetSwitchValueNative(
-                  kUserAgentProductAndVersion);
+                  switches::kUserAgentProductAndVersion);
   }
   return user_agent;
 }
@@ -109,8 +109,9 @@ void WebEngineContentBrowserClient::
     RegisterNonNetworkNavigationURLLoaderFactories(
         int frame_tree_node_id,
         NonNetworkURLLoaderFactoryMap* factories) {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(kContentDirectories)) {
-    (*factories)[kFuchsiaContentDirectoryScheme] =
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kContentDirectories)) {
+    (*factories)[WebEngineContentClient::kFuchsiaContentDirectoryScheme] =
         std::make_unique<ContentDirectoryLoaderFactory>();
   }
 }
@@ -120,8 +121,9 @@ void WebEngineContentBrowserClient::
         int render_process_id,
         int render_frame_id,
         NonNetworkURLLoaderFactoryMap* factories) {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(kContentDirectories)) {
-    (*factories)[kFuchsiaContentDirectoryScheme] =
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kContentDirectories)) {
+    (*factories)[WebEngineContentClient::kFuchsiaContentDirectoryScheme] =
         std::make_unique<ContentDirectoryLoaderFactory>();
   }
 }
@@ -130,7 +132,7 @@ void WebEngineContentBrowserClient::AppendExtraCommandLineSwitches(
     base::CommandLine* command_line,
     int child_process_id) {
   constexpr char const* kSwitchesToCopy[] = {
-      kContentDirectories,
+      switches::kContentDirectories,
       switches::kDisableSoftwareVideoDecoders,
       switches::kEnableWidevine,
       switches::kPlayreadyKeySystem,
