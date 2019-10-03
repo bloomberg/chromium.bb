@@ -29,6 +29,8 @@ if os.path.basename(_containing_dir) == 'third_party':
 _extra_import_paths = [
     'google',
     'pyelftools',
+    # Allow Python 2 or 3 specific modules under a separate subpath.
+    'python%s' % sys.version_info.major,
 ]
 
 for _path in _extra_import_paths:
