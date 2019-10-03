@@ -948,6 +948,43 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self._driver.PerformActions(actions)
     self.assertEquals(1, len(self._driver.FindElements('tag name', 'br')))
 
+  def testActionsMultiTouchPoint(self):
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
+    self._driver.ExecuteScript(
+        'document.body.innerHTML = "<div>old</div>";'
+        'var div = document.getElementsByTagName("div")[0];'
+        'window.events = [];'
+        'var touch_point_count = 0;'
+        'div.style["width"] = "100px";'
+        'div.style["height"] = "100px";'
+        'div.addEventListener("pointerdown", function() {'
+        '  touch_point_count++;'
+        '  window.events.push('
+        '      {x: event.clientX, y: event.clientY});'
+        '});'
+        'return div;')
+    actions = ({"actions": [{
+      "type":"pointer",
+      "actions":[{"type": "pointerMove", "x": 10, "y": 10},
+                 {"type": "pointerDown"},
+                 {"type": "pointerUp"}],
+      "parameters": {"pointerType": "touch"},
+      "id": "pointer1"},
+      {
+      "type":"pointer",
+      "actions":[{"type": "pointerMove", "x": 15, "y": 15},
+                 {"type": "pointerDown"},
+                 {"type": "pointerUp"}],
+      "parameters": {"pointerType": "touch"},
+      "id": "pointer2"}]})
+    self._driver.PerformActions(actions)
+    events = self._driver.ExecuteScript('return window.events')
+    self.assertEquals(2, len(events))
+    self.assertEquals(10, events[0]['x'])
+    self.assertEquals(10, events[0]['y'])
+    self.assertEquals(15, events[1]['x'])
+    self.assertEquals(15, events[1]['y'])
+
   def testActionsMulti(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
     self._driver.ExecuteScript(
