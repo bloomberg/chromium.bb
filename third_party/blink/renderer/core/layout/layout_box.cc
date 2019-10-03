@@ -182,6 +182,7 @@ void LayoutBox::WillBeDestroyed() {
       first_inline_fragment->LayoutObjectWillBeDestroyed();
   }
 
+  SetSnapContainer(nullptr);
   LayoutBoxModelObject::WillBeDestroyed();
 }
 
@@ -483,7 +484,7 @@ void LayoutBox::UpdateScrollSnapMappingAfterStyleChange(
       old_style.ScrollPaddingLeft() != StyleRef().ScrollPaddingLeft() ||
       old_style.ScrollPaddingTop() != StyleRef().ScrollPaddingTop() ||
       old_style.ScrollPaddingRight() != StyleRef().ScrollPaddingRight()) {
-    snap_coordinator.SnapContainerDidChange(*this, false /* is_removed */);
+    snap_coordinator.SnapContainerDidChange(*this);
   }
 
   // scroll-snap-align, scroll-snap-stop and scroll-margin invalidate the snap
@@ -499,13 +500,11 @@ void LayoutBox::UpdateScrollSnapMappingAfterStyleChange(
 
 void LayoutBox::AddScrollSnapMapping() {
   SnapCoordinator& snap_coordinator = GetDocument().GetSnapCoordinator();
-  snap_coordinator.SnapContainerDidChange(*this, false /* is_removed */);
   snap_coordinator.SnapAreaDidChange(*this, Style()->GetScrollSnapAlign());
 }
 
 void LayoutBox::ClearScrollSnapMapping() {
   SnapCoordinator& snap_coordinator = GetDocument().GetSnapCoordinator();
-  snap_coordinator.SnapContainerDidChange(*this, true /* is_removed */);
   snap_coordinator.SnapAreaDidChange(*this, cc::ScrollSnapAlign());
 }
 
