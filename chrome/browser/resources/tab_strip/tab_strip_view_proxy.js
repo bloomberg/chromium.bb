@@ -4,7 +4,12 @@
 
 import {addSingletonGetter, addWebUIListener, sendWithPromise} from 'chrome://resources/js/cr.m.js';
 
-export class ThemeProxy {
+export class TabStripViewProxy {
+  /** @return {boolean} */
+  isVisible() {
+    return document.visibilityState === 'visible';
+  }
+
   /**
    * @return {!Promise<!Object<string, string>>} Object with CSS variables
    *     as keys and rgba strings as values
@@ -13,9 +18,9 @@ export class ThemeProxy {
     return sendWithPromise('getThemeColors');
   }
 
-  startObserving() {
+  observeThemeChanges() {
     chrome.send('observeThemeChanges');
   }
 }
 
-addSingletonGetter(ThemeProxy);
+addSingletonGetter(TabStripViewProxy);

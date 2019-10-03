@@ -4,14 +4,15 @@
 
 import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
 
-export class TestThemeProxy extends TestBrowserProxy {
+export class TestTabStripViewProxy extends TestBrowserProxy {
   constructor() {
     super([
       'getColors',
-      'startObserving',
+      'isVisible',
+      'observeThemeChanges',
     ]);
 
-    this.colors_ = {};
+    this.visible_ = false;
   }
 
   getColors() {
@@ -19,11 +20,20 @@ export class TestThemeProxy extends TestBrowserProxy {
     return Promise.resolve(this.colors_);
   }
 
+  isVisible() {
+    this.methodCalled('isVisible');
+    return this.visible_;
+  }
+
   setColors(colors) {
     this.colors_ = colors;
   }
 
-  startObserving() {
-    this.methodCalled('startObserving');
+  setVisible(visible) {
+    this.visible_ = visible;
+  }
+
+  observeThemeChanges() {
+    this.methodCalled('observeThemeChanges');
   }
 }
