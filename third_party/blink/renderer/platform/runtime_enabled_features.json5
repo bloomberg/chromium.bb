@@ -1494,7 +1494,7 @@
       status: {"Android": "", "default": "experimental"},
     },
     {
-      name: "ServiceWorkerFilterFrozen",
+      name: "ServiceWorkerClientLifecycleState",
       status: "experimental",
     },
     {
