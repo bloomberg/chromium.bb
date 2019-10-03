@@ -1049,8 +1049,8 @@ class Change(object):
     """Returns all bugs referenced in the commit description."""
     tags = [b.strip() for b in self.tags.get('BUG', '').split(',') if b.strip()]
     footers = []
-    unsplit_footers = git_footers.parse_footers(self._full_description).get(
-        'Bug', [])
+    parsed = git_footers.parse_footers(self._full_description)
+    unsplit_footers = parsed.get('Bug', []) + parsed.get('Fixed', [])
     for unsplit_footer in unsplit_footers:
       footers += [b.strip() for b in unsplit_footer.split(',')]
     return sorted(set(tags + footers))

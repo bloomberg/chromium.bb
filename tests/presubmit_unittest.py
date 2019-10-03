@@ -1375,6 +1375,13 @@ class ChangeUnittest(PresubmitTestsBase):
     self.assertEqual('WHIZ=bang\nbar\nFOO=baz', change.FullDescriptionText())
     self.assertEqual({'WHIZ': 'bang', 'FOO': 'baz'}, change.tags)
 
+  def testBugFromDescription_FixedAndBugGetDeduped(self):
+    change = presubmit.Change(
+        '', 'foo\n\nChange-Id: asdf\nBug: 1, 2\nFixed:2, 1 ',
+        self.fake_root_dir, [], 0, 0, '')
+    self.assertEqual(['1', '2'], change.BugsFromDescription())
+    self.assertEqual('1,2', change.BUG)
+
   def testBugsFromDescription_MixedTagsAndFooters(self):
     change = presubmit.Change(
         '', 'foo\nBUG=2,1\n\nChange-Id: asdf\nBug: 3, 6',
@@ -1384,10 +1391,17 @@ class ChangeUnittest(PresubmitTestsBase):
 
   def testBugsFromDescription_MultipleFooters(self):
     change = presubmit.Change(
-        '', 'foo\n\nChange-Id: asdf\nBug: 1\nBug:4,  6',
+        '', 'foo\n\nChange-Id: asdf\nBug: 1\nBug:4,  6\nFixed: 7',
         self.fake_root_dir, [], 0, 0, '')
-    self.assertEqual(['1', '4', '6'], change.BugsFromDescription())
-    self.assertEqual('1,4,6', change.BUG)
+    self.assertEqual(['1', '4', '6', '7'], change.BugsFromDescription())
+    self.assertEqual('1,4,6,7', change.BUG)
+
+  def testBugFromDescription_OnlyFixed(self):
+    change = presubmit.Change(
+        '', 'foo\n\nChange-Id: asdf\nFixed:1, 2',
+        self.fake_root_dir, [], 0, 0, '')
+    self.assertEqual(['1', '2'], change.BugsFromDescription())
+    self.assertEqual('1,2', change.BUG)
 
   def testReviewersFromDescription(self):
     change = presubmit.Change(
