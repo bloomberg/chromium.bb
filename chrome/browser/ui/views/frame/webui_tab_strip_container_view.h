@@ -31,6 +31,10 @@ class WebUITabStripContainerView : public views::View,
   std::unique_ptr<ToolbarButton> CreateToggleButton();
 
  private:
+  // views::View:
+  gfx::Size CalculatePreferredSize() const override;
+
+  // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   Browser* const browser_;
