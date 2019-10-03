@@ -22,7 +22,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='chromite.api',
   syntax='proto3',
   serialized_options=_b('Z6go.chromium.org/chromiumos/infra/proto/go/chromite/api'),
-  serialized_pb=_b('\n\x17\x63hromite/api/test.proto\x12\x0c\x63hromite.api\x1a\x1c\x63hromite/api/build_api.proto\x1a\x1a\x63hromite/api/sysroot.proto\x1a\x17\x63hromiumos/common.proto\"\x97\x02\n\x1a\x42uildTargetUnitTestRequest\x12-\n\x0c\x62uild_target\x18\x01 \x01(\x0b\x32\x17.chromiumos.BuildTarget\x12\x13\n\x0bresult_path\x18\x02 \x01(\t\x12\"\n\x06\x63hroot\x18\x03 \x01(\x0b\x32\x12.chromiumos.Chroot\x12=\n\x05\x66lags\x18\x04 \x01(\x0b\x32..chromite.api.BuildTargetUnitTestRequest.Flags\x12\x32\n\x11package_blacklist\x18\x05 \x03(\x0b\x32\x17.chromiumos.PackageInfo\x1a\x1e\n\x05\x46lags\x12\x15\n\rempty_sysroot\x18\x01 \x01(\x08\"e\n\x1b\x42uildTargetUnitTestResponse\x12\x14\n\x0ctarball_path\x18\x01 \x01(\t\x12\x30\n\x0f\x66\x61iled_packages\x18\x02 \x03(\x0b\x32\x17.chromiumos.PackageInfo\"=\n\x17\x43hromiteUnitTestRequest\x12\"\n\x06\x63hroot\x18\x01 \x01(\x0b\x32\x12.chromiumos.Chroot\"\x1a\n\x18\x43hromiteUnitTestResponse\"<\n\x16\x43rosSigningTestRequest\x12\"\n\x06\x63hroot\x18\x01 \x01(\x0b\x32\x12.chromiumos.Chroot\"\x19\n\x17\x43rosSingingTestResponse\"b\n\x14\x44\x65\x62ugInfoTestRequest\x12&\n\x07sysroot\x18\x01 \x01(\x0b\x32\x15.chromite.api.Sysroot\x12\"\n\x06\x63hroot\x18\x02 \x01(\x0b\x32\x12.chromiumos.Chroot\"\x17\n\x15\x44\x65\x62ugInfoTestResponse\"\xd2\x03\n\rVmTestRequest\x12-\n\x0c\x62uild_target\x18\x01 \x01(\x0b\x32\x17.chromiumos.BuildTarget\x12\"\n\x06\x63hroot\x18\x02 \x01(\x0b\x32\x12.chromiumos.Chroot\x12!\n\x07vm_path\x18\x03 \x01(\x0b\x32\x10.chromiumos.Path\x12;\n\x0bssh_options\x18\x04 \x01(\x0b\x32&.chromite.api.VmTestRequest.SshOptions\x12=\n\x0ctest_harness\x18\x05 \x01(\x0e\x32\'.chromite.api.VmTestRequest.TestHarness\x12\x34\n\x08vm_tests\x18\x06 \x03(\x0b\x32\".chromite.api.VmTestRequest.VmTest\x1a\x46\n\nSshOptions\x12*\n\x10private_key_path\x18\x01 \x01(\x0b\x32\x10.chromiumos.Path\x12\x0c\n\x04port\x18\x02 \x01(\x05\x1a\x19\n\x06VmTest\x12\x0f\n\x07pattern\x18\x01 \x01(\t\"6\n\x0bTestHarness\x12\x0f\n\x0bUNSPECIFIED\x10\x00\x12\x08\n\x04TAST\x10\x01\x12\x0c\n\x08\x41UTOTEST\x10\x02\"\x10\n\x0eVmTestResponse\"\xe9\x01\n\x13MoblabVmTestRequest\x12\"\n\x06\x63hroot\x18\x01 \x01(\x0b\x32\x12.chromiumos.Chroot\x12@\n\rimage_payload\x18\x02 \x01(\x0b\x32).chromite.api.MoblabVmTestRequest.Payload\x12\x41\n\x0e\x63\x61\x63he_payloads\x18\x03 \x03(\x0b\x32).chromite.api.MoblabVmTestRequest.Payload\x1a)\n\x07Payload\x12\x1e\n\x04path\x18\x01 \x01(\x0b\x32\x10.chromiumos.Path\"\x16\n\x14MoblabVmTestResponse\"p\n\x1fSimpleChromeWorkflowTestRequest\x12&\n\x07sysroot\x18\x01 \x01(\x0b\x32\x15.chromite.api.Sysroot\x12\x13\n\x0b\x63hrome_root\x18\x02 \x01(\t\x12\x10\n\x08use_goma\x18\x03 \x01(\x08\"\"\n SimpleChromeWorkflowTestResponse2\xcb\x05\n\x0bTestService\x12r\n\x13\x42uildTargetUnitTest\x12(.chromite.api.BuildTargetUnitTestRequest\x1a).chromite.api.BuildTargetUnitTestResponse\"\x06\xc2\xed\x1a\x02\x10\x02\x12\x61\n\x10\x43hromiteUnitTest\x12%.chromite.api.ChromiteUnitTestRequest\x1a&.chromite.api.ChromiteUnitTestResponse\x12^\n\x0f\x43rosSigningTest\x12$.chromite.api.CrosSigningTestRequest\x1a%.chromite.api.CrosSingingTestResponse\x12X\n\rDebugInfoTest\x12\".chromite.api.DebugInfoTestRequest\x1a#.chromite.api.DebugInfoTestResponse\x12\x43\n\x06VmTest\x12\x1b.chromite.api.VmTestRequest\x1a\x1c.chromite.api.VmTestResponse\x12]\n\x0cMoblabVmTest\x12!.chromite.api.MoblabVmTestRequest\x1a\".chromite.api.MoblabVmTestResponse\"\x06\xc2\xed\x1a\x02\x10\x02\x12y\n\x18SimpleChromeWorkflowTest\x12-.chromite.api.SimpleChromeWorkflowTestRequest\x1a..chromite.api.SimpleChromeWorkflowTestResponse\x1a\x0c\xc2\xed\x1a\x08\n\x04test\x10\x01\x42\x38Z6go.chromium.org/chromiumos/infra/proto/go/chromite/apib\x06proto3')
+  serialized_pb=_b('\n\x17\x63hromite/api/test.proto\x12\x0c\x63hromite.api\x1a\x1c\x63hromite/api/build_api.proto\x1a\x1a\x63hromite/api/sysroot.proto\x1a\x17\x63hromiumos/common.proto\"\x97\x02\n\x1a\x42uildTargetUnitTestRequest\x12-\n\x0c\x62uild_target\x18\x01 \x01(\x0b\x32\x17.chromiumos.BuildTarget\x12\x13\n\x0bresult_path\x18\x02 \x01(\t\x12\"\n\x06\x63hroot\x18\x03 \x01(\x0b\x32\x12.chromiumos.Chroot\x12=\n\x05\x66lags\x18\x04 \x01(\x0b\x32..chromite.api.BuildTargetUnitTestRequest.Flags\x12\x32\n\x11package_blacklist\x18\x05 \x03(\x0b\x32\x17.chromiumos.PackageInfo\x1a\x1e\n\x05\x46lags\x12\x15\n\rempty_sysroot\x18\x01 \x01(\x08\"e\n\x1b\x42uildTargetUnitTestResponse\x12\x14\n\x0ctarball_path\x18\x01 \x01(\t\x12\x30\n\x0f\x66\x61iled_packages\x18\x02 \x03(\x0b\x32\x17.chromiumos.PackageInfo\"=\n\x17\x43hromiteUnitTestRequest\x12\"\n\x06\x63hroot\x18\x01 \x01(\x0b\x32\x12.chromiumos.Chroot\"\x1a\n\x18\x43hromiteUnitTestResponse\"<\n\x16\x43rosSigningTestRequest\x12\"\n\x06\x63hroot\x18\x01 \x01(\x0b\x32\x12.chromiumos.Chroot\"\x19\n\x17\x43rosSingingTestResponse\"b\n\x14\x44\x65\x62ugInfoTestRequest\x12&\n\x07sysroot\x18\x01 \x01(\x0b\x32\x15.chromite.api.Sysroot\x12\"\n\x06\x63hroot\x18\x02 \x01(\x0b\x32\x12.chromiumos.Chroot\"\x17\n\x15\x44\x65\x62ugInfoTestResponse\"\xd2\x03\n\rVmTestRequest\x12-\n\x0c\x62uild_target\x18\x01 \x01(\x0b\x32\x17.chromiumos.BuildTarget\x12\"\n\x06\x63hroot\x18\x02 \x01(\x0b\x32\x12.chromiumos.Chroot\x12!\n\x07vm_path\x18\x03 \x01(\x0b\x32\x10.chromiumos.Path\x12;\n\x0bssh_options\x18\x04 \x01(\x0b\x32&.chromite.api.VmTestRequest.SshOptions\x12=\n\x0ctest_harness\x18\x05 \x01(\x0e\x32\'.chromite.api.VmTestRequest.TestHarness\x12\x34\n\x08vm_tests\x18\x06 \x03(\x0b\x32\".chromite.api.VmTestRequest.VmTest\x1a\x46\n\nSshOptions\x12*\n\x10private_key_path\x18\x01 \x01(\x0b\x32\x10.chromiumos.Path\x12\x0c\n\x04port\x18\x02 \x01(\x05\x1a\x19\n\x06VmTest\x12\x0f\n\x07pattern\x18\x01 \x01(\t\"6\n\x0bTestHarness\x12\x0f\n\x0bUNSPECIFIED\x10\x00\x12\x08\n\x04TAST\x10\x01\x12\x0c\n\x08\x41UTOTEST\x10\x02\"\x10\n\x0eVmTestResponse\"\xe9\x01\n\x13MoblabVmTestRequest\x12\"\n\x06\x63hroot\x18\x01 \x01(\x0b\x32\x12.chromiumos.Chroot\x12@\n\rimage_payload\x18\x02 \x01(\x0b\x32).chromite.api.MoblabVmTestRequest.Payload\x12\x41\n\x0e\x63\x61\x63he_payloads\x18\x03 \x03(\x0b\x32).chromite.api.MoblabVmTestRequest.Payload\x1a)\n\x07Payload\x12\x1e\n\x04path\x18\x01 \x01(\x0b\x32\x10.chromiumos.Path\"\x16\n\x14MoblabVmTestResponse\"\x8b\x01\n\x1fSimpleChromeWorkflowTestRequest\x12&\n\x07sysroot\x18\x01 \x01(\x0b\x32\x15.chromite.api.Sysroot\x12\x13\n\x0b\x63hrome_root\x18\x02 \x01(\t\x12+\n\x0bgoma_config\x18\x03 \x01(\x0b\x32\x16.chromiumos.GomaConfig\"\"\n SimpleChromeWorkflowTestResponse2\xcb\x05\n\x0bTestService\x12r\n\x13\x42uildTargetUnitTest\x12(.chromite.api.BuildTargetUnitTestRequest\x1a).chromite.api.BuildTargetUnitTestResponse\"\x06\xc2\xed\x1a\x02\x10\x02\x12\x61\n\x10\x43hromiteUnitTest\x12%.chromite.api.ChromiteUnitTestRequest\x1a&.chromite.api.ChromiteUnitTestResponse\x12^\n\x0f\x43rosSigningTest\x12$.chromite.api.CrosSigningTestRequest\x1a%.chromite.api.CrosSingingTestResponse\x12X\n\rDebugInfoTest\x12\".chromite.api.DebugInfoTestRequest\x1a#.chromite.api.DebugInfoTestResponse\x12\x43\n\x06VmTest\x12\x1b.chromite.api.VmTestRequest\x1a\x1c.chromite.api.VmTestResponse\x12]\n\x0cMoblabVmTest\x12!.chromite.api.MoblabVmTestRequest\x1a\".chromite.api.MoblabVmTestResponse\"\x06\xc2\xed\x1a\x02\x10\x02\x12y\n\x18SimpleChromeWorkflowTest\x12-.chromite.api.SimpleChromeWorkflowTestRequest\x1a..chromite.api.SimpleChromeWorkflowTestResponse\x1a\x0c\xc2\xed\x1a\x08\n\x04test\x10\x01\x42\x38Z6go.chromium.org/chromiumos/infra/proto/go/chromite/apib\x06proto3')
   ,
   dependencies=[chromite_dot_api_dot_build__api__pb2.DESCRIPTOR,chromite_dot_api_dot_sysroot__pb2.DESCRIPTOR,chromiumos_dot_common__pb2.DESCRIPTOR,])
 
@@ -633,9 +633,9 @@ _SIMPLECHROMEWORKFLOWTESTREQUEST = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='use_goma', full_name='chromite.api.SimpleChromeWorkflowTestRequest.use_goma', index=2,
-      number=3, type=8, cpp_type=7, label=1,
-      has_default_value=False, default_value=False,
+      name='goma_config', full_name='chromite.api.SimpleChromeWorkflowTestRequest.goma_config', index=2,
+      number=3, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -651,8 +651,8 @@ _SIMPLECHROMEWORKFLOWTESTREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1561,
-  serialized_end=1673,
+  serialized_start=1562,
+  serialized_end=1701,
 )
 
 
@@ -675,8 +675,8 @@ _SIMPLECHROMEWORKFLOWTESTRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1675,
-  serialized_end=1709,
+  serialized_start=1703,
+  serialized_end=1737,
 )
 
 _BUILDTARGETUNITTESTREQUEST_FLAGS.containing_type = _BUILDTARGETUNITTESTREQUEST
@@ -705,6 +705,7 @@ _MOBLABVMTESTREQUEST.fields_by_name['chroot'].message_type = chromiumos_dot_comm
 _MOBLABVMTESTREQUEST.fields_by_name['image_payload'].message_type = _MOBLABVMTESTREQUEST_PAYLOAD
 _MOBLABVMTESTREQUEST.fields_by_name['cache_payloads'].message_type = _MOBLABVMTESTREQUEST_PAYLOAD
 _SIMPLECHROMEWORKFLOWTESTREQUEST.fields_by_name['sysroot'].message_type = chromite_dot_api_dot_sysroot__pb2._SYSROOT
+_SIMPLECHROMEWORKFLOWTESTREQUEST.fields_by_name['goma_config'].message_type = chromiumos_dot_common__pb2._GOMACONFIG
 DESCRIPTOR.message_types_by_name['BuildTargetUnitTestRequest'] = _BUILDTARGETUNITTESTREQUEST
 DESCRIPTOR.message_types_by_name['BuildTargetUnitTestResponse'] = _BUILDTARGETUNITTESTRESPONSE
 DESCRIPTOR.message_types_by_name['ChromiteUnitTestRequest'] = _CHROMITEUNITTESTREQUEST
@@ -860,8 +861,8 @@ _TESTSERVICE = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=_b('\302\355\032\010\n\004test\020\001'),
-  serialized_start=1712,
-  serialized_end=2427,
+  serialized_start=1740,
+  serialized_end=2455,
   methods=[
   _descriptor.MethodDescriptor(
     name='BuildTargetUnitTest',

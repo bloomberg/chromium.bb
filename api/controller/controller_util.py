@@ -59,9 +59,11 @@ def ParseChroot(chroot_message):
 
   goma = None
   if chroot_message.goma.goma_dir:
+    chromeos_goma_dir = chroot_message.goma.chromeos_goma_dir or None
     goma = goma_util.Goma(chroot_message.goma.goma_dir,
                           chroot_message.goma.goma_client_json,
-                          stage_name='BuildAPI')
+                          stage_name='BuildAPI',
+                          chromeos_goma_dir=chromeos_goma_dir)
 
   return Chroot(path=path, cache_dir=cache_dir, chrome_root=chrome_root,
                 env=env, goma=goma)
