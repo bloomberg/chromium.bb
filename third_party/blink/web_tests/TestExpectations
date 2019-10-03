@@ -345,6 +345,9 @@ crbug.com/981719 external/wpt/css/css-ui/appearance-textfield-001.html [ Failure
 crbug.com/981719 [ Linux ] external/wpt/css/css-ui/webkit-appearance-textfield-001.html [ Failure ]
 crbug.com/981719 [ Win ] external/wpt/css/css-ui/webkit-appearance-textfield-001.html [ Failure ]
 
+crbug.com/1010946 [ Mac10.13 ] paint/invalidation/svg/use-clipped-hit.svg [ Failure ]
+crbug.com/1010946 [ Mac10.13 ] paint/invalidation/svg/svg-background-partial-redraw.html [ Failure ]
+
 # ====== Paint team owned tests to here ======
 
 crbug.com/922249 virtual/android/fullscreen/compositor-touch-hit-rects-fullscreen-video-controls.html [ Failure Pass ]
