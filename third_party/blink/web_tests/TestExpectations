@@ -6181,3 +6181,8 @@ crbug.com/1010483 [ Win ] fast/parser/residual-style-dom.html [ Crash Pass ]
 crbug.com/1010483 [ Win ] fast/parser/residual-style-hang.html [ Crash Pass ]
 crbug.com/1010483 [ Win ] fast/selectors/specificity-overflow.html [ Crash Pass ]
 
+# Latent failures discovered with the creation of the
+# virtual/disable-deferred-rendering suite
+crbug.com/1010593 virtual/disable-deferred-rendering/fast/canvas/canvas-scale-drawImage-shadow.html [ Failure ]
+crbug.com/1010655 virtual/disable-deferred-rendering/fast/canvas/canvas-lost-gpu-context.html [ Failure ]
+crbug.com/1010657 [ Mac ] virtual/disable-deferred-rendering/fast/canvas/image-object-in-canvas.html [ Failure ]
