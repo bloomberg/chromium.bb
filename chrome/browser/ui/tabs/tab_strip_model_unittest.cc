@@ -1011,89 +1011,141 @@ TEST_F(TabStripModelTest, TestInsertionIndexDeterminationNestedOpener) {
 }
 
 // Tests that selection is shifted to the correct tab when a tab is closed.
-// If a tab is in the background when it is closed, the selection does not
+// If the tab is in the background when it is closed, the selection does not
 // change.
-// If a tab is in the foreground (selected),
-//   If that tab does not have an opener, selection shifts to the right.
-//   If the tab has an opener,
-//     The next tab (scanning LTR) in the entire strip that has the same opener
-//     is selected
-//     If there are no other tabs that have the same opener,
-//       The opener is selected
-TEST_F(TabStripModelTest, TestSelectOnClose) {
+TEST_F(TabStripModelTest, CloseInactiveTabKeepsSelection) {
   TestTabStripModelDelegate delegate;
   TabStripModel tabstrip(&delegate, profile());
-  EXPECT_TRUE(tabstrip.empty());
+  ASSERT_TRUE(tabstrip.empty());
 
   std::unique_ptr<WebContents> opener = CreateWebContents();
   tabstrip.AppendWebContents(std::move(opener), true);
+  InsertWebContentses(&tabstrip, CreateWebContents(), CreateWebContents(),
+                      CreateWebContents());
+  ASSERT_EQ(0, tabstrip.active_index());
 
-  std::unique_ptr<WebContents> contentses[3];
-  for (int i = 0; i < 3; ++i)
-    contentses[i] = CreateWebContents();
-
-  // Note that we use Detach instead of Close throughout this test to avoid
-  // having to keep reconstructing these WebContentses.
-
-  // First test that closing tabs that are in the background doesn't adjust the
-  // current selection.
-  InsertWebContentses(&tabstrip, std::move(contentses[0]),
-                      std::move(contentses[1]), std::move(contentses[2]));
+  tabstrip.CloseWebContentsAt(1, TabStripModel::CLOSE_NONE);
+  EXPECT_EQ(0, tabstrip.active_index());
+  tabstrip.CloseWebContentsAt(1, TabStripModel::CLOSE_NONE);
+  EXPECT_EQ(0, tabstrip.active_index());
+  tabstrip.CloseWebContentsAt(1, TabStripModel::CLOSE_NONE);
   EXPECT_EQ(0, tabstrip.active_index());
 
-  contentses[0] = tabstrip.DetachWebContentsAt(1);
-  EXPECT_EQ(0, tabstrip.active_index());
+  tabstrip.CloseAllTabs();
+  ASSERT_TRUE(tabstrip.empty());
+}
 
-  for (int i = tabstrip.count() - 1; i >= 1; --i)
-    contentses[i] = tabstrip.DetachWebContentsAt(i);
+// Tests that selection is shifted to the correct tab when a tab is closed.
+// If the tab doesn't have an opener or a group, selection shifts to the right.
+TEST_F(TabStripModelTest, CloseActiveTabShiftsSelectionRight) {
+  TestTabStripModelDelegate delegate;
+  TabStripModel tabstrip(&delegate, profile());
+  ASSERT_TRUE(tabstrip.empty());
 
-  // Now test that when a tab doesn't have an opener, selection shifts to the
-  // right when the tab is closed.
-  InsertWebContentses(&tabstrip, std::move(contentses[0]),
-                      std::move(contentses[1]), std::move(contentses[2]));
-  EXPECT_EQ(0, tabstrip.active_index());
+  std::unique_ptr<WebContents> opener = CreateWebContents();
+  tabstrip.AppendWebContents(std::move(opener), true);
+  InsertWebContentses(&tabstrip, CreateWebContents(), CreateWebContents(),
+                      CreateWebContents());
+  ASSERT_EQ(0, tabstrip.active_index());
 
   tabstrip.ForgetAllOpeners();
   tabstrip.ActivateTabAt(1, {TabStripModel::GestureType::kOther});
+  ASSERT_EQ(1, tabstrip.active_index());
+
+  tabstrip.CloseWebContentsAt(1, TabStripModel::CLOSE_NONE);
   EXPECT_EQ(1, tabstrip.active_index());
-  contentses[0] = tabstrip.DetachWebContentsAt(1);
+  tabstrip.CloseWebContentsAt(1, TabStripModel::CLOSE_NONE);
   EXPECT_EQ(1, tabstrip.active_index());
-  contentses[1] = tabstrip.DetachWebContentsAt(1);
-  EXPECT_EQ(1, tabstrip.active_index());
-  contentses[2] = tabstrip.DetachWebContentsAt(1);
+  tabstrip.CloseWebContentsAt(1, TabStripModel::CLOSE_NONE);
   EXPECT_EQ(0, tabstrip.active_index());
 
-  EXPECT_EQ(1, tabstrip.count());
+  tabstrip.CloseAllTabs();
+  ASSERT_TRUE(tabstrip.empty());
+}
 
-  // Now test that when a tab does have an opener, it selects the next tab
-  // opened by the same opener scanning LTR when it is closed.
-  InsertWebContentses(&tabstrip, std::move(contentses[0]),
-                      std::move(contentses[1]), std::move(contentses[2]));
+// Tests that selection is shifted to the correct tab when a tab is closed.
+// If the tab doesn't have an opener but is in a group, selection shifts to
+// another tab in the same group.
+TEST_F(TabStripModelTest, CloseGroupedTabShiftsSelectionWithinGroup) {
+  TestTabStripModelDelegate delegate;
+  TabStripModel tabstrip(&delegate, profile());
+  ASSERT_TRUE(tabstrip.empty());
+
+  std::unique_ptr<WebContents> opener = CreateWebContents();
+  tabstrip.AppendWebContents(std::move(opener), true);
+  InsertWebContentses(&tabstrip, CreateWebContents(), CreateWebContents(),
+                      CreateWebContents());
+  ASSERT_EQ(0, tabstrip.active_index());
+
+  tabstrip.ForgetAllOpeners();
+  tabstrip.AddToNewGroup({0, 1, 2});
+  tabstrip.ActivateTabAt(1, {TabStripModel::GestureType::kOther});
+  ASSERT_EQ(1, tabstrip.active_index());
+
+  tabstrip.CloseWebContentsAt(1, TabStripModel::CLOSE_NONE);
+  EXPECT_EQ(1, tabstrip.active_index());
+  tabstrip.CloseWebContentsAt(1, TabStripModel::CLOSE_NONE);
   EXPECT_EQ(0, tabstrip.active_index());
+  tabstrip.CloseWebContentsAt(1, TabStripModel::CLOSE_NONE);
+  EXPECT_EQ(0, tabstrip.active_index());
+
+  tabstrip.CloseAllTabs();
+  ASSERT_TRUE(tabstrip.empty());
+}
+
+// Tests that selection is shifted to the correct tab when a tab is closed.
+// If the tab does have an opener, selection shifts to the next tab opened by
+// the same opener scanning LTR.
+TEST_F(TabStripModelTest, CloseTabWithOpenerShiftsSelectionWithinOpened) {
+  TestTabStripModelDelegate delegate;
+  TabStripModel tabstrip(&delegate, profile());
+  ASSERT_TRUE(tabstrip.empty());
+
+  std::unique_ptr<WebContents> opener = CreateWebContents();
+  tabstrip.AppendWebContents(std::move(opener), true);
+  InsertWebContentses(&tabstrip, CreateWebContents(), CreateWebContents(),
+                      CreateWebContents());
+  ASSERT_EQ(0, tabstrip.active_index());
+
   tabstrip.ActivateTabAt(2, {TabStripModel::GestureType::kOther});
-  EXPECT_EQ(2, tabstrip.active_index());
+  ASSERT_EQ(2, tabstrip.active_index());
+
   tabstrip.CloseWebContentsAt(2, TabStripModel::CLOSE_NONE);
   EXPECT_EQ(2, tabstrip.active_index());
   tabstrip.CloseWebContentsAt(2, TabStripModel::CLOSE_NONE);
   EXPECT_EQ(1, tabstrip.active_index());
   tabstrip.CloseWebContentsAt(1, TabStripModel::CLOSE_NONE);
   EXPECT_EQ(0, tabstrip.active_index());
-  // Finally test that when a tab has no "siblings" that the opener is
-  // selected.
+
+  tabstrip.CloseAllTabs();
+  ASSERT_TRUE(tabstrip.empty());
+}
+
+// Tests that selection is shifted to the correct tab when a tab is closed.
+// If the tab has an opener but no "siblings" opened by the same opener,
+// selection shifts to the opener itself.
+TEST_F(TabStripModelTest, CloseTabWithOpenerShiftsSelectionToOpener) {
+  TestTabStripModelDelegate delegate;
+  TabStripModel tabstrip(&delegate, profile());
+  ASSERT_TRUE(tabstrip.empty());
+
+  std::unique_ptr<WebContents> opener = CreateWebContents();
+  tabstrip.AppendWebContents(std::move(opener), true);
   std::unique_ptr<WebContents> other_contents = CreateWebContents();
   tabstrip.InsertWebContentsAt(1, std::move(other_contents),
                                TabStripModel::ADD_NONE);
-  EXPECT_EQ(2, tabstrip.count());
+  ASSERT_EQ(2, tabstrip.count());
   std::unique_ptr<WebContents> opened_contents = CreateWebContents();
   tabstrip.InsertWebContentsAt(
       2, std::move(opened_contents),
       TabStripModel::ADD_ACTIVE | TabStripModel::ADD_INHERIT_OPENER);
-  EXPECT_EQ(2, tabstrip.active_index());
+  ASSERT_EQ(2, tabstrip.active_index());
+
   tabstrip.CloseWebContentsAt(2, TabStripModel::CLOSE_NONE);
   EXPECT_EQ(0, tabstrip.active_index());
 
   tabstrip.CloseAllTabs();
-  EXPECT_TRUE(tabstrip.empty());
+  ASSERT_TRUE(tabstrip.empty());
 }
 
 // Tests IsContextMenuCommandEnabled and ExecuteContextMenuCommand with
