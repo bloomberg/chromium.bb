@@ -41,6 +41,7 @@ public class LensUtils {
             // No data transmission occurring so safe to assume incognito is false.
             Intent lensIntent = getShareWithGoogleLensIntent(Uri.EMPTY, /* isIncognito= */ false);
             ComponentName lensActivity = lensIntent.resolveActivity(pm);
+            if (lensActivity == null) return "";
             PackageInfo packageInfo = pm.getPackageInfo(lensActivity.getPackageName(), 0);
             if (packageInfo == null) {
                 return "";
