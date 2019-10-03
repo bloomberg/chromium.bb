@@ -191,6 +191,7 @@ def GeneralTemplates(site_config):
       upload_standalone_images=False,
       images=['base', 'test'],
       image_test=True,
+      sync_chrome=True,
       chrome_sdk=True,
       chrome_sdk_build_chrome=False,
       doc='https://dev.chromium.org/chromium-os/build/builder-overview#TOC-CQ',
