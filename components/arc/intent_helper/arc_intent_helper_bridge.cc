@@ -13,6 +13,7 @@
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
@@ -325,18 +326,31 @@ ArcIntentHelperBridge::FilterOutIntentHelper(
 void ArcIntentHelperBridge::OnIntentFiltersUpdated(
     std::vector<IntentFilter> filters) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
   intent_filters_.clear();
+
   for (auto& filter : filters)
     intent_filters_[filter.package_name()].push_back(std::move(filter));
 
   for (auto& observer : observer_list_)
-    observer.OnIntentFiltersUpdated();
+    observer.OnIntentFiltersUpdated(base::nullopt);
 }
 
 const std::vector<IntentFilter>&
 ArcIntentHelperBridge::GetIntentFilterForPackage(
     const std::string& package_name) {
   return intent_filters_[package_name];
+}
+
+void ArcIntentHelperBridge::OnIntentFiltersUpdatedForPackage(
+    const std::string& package_name,
+    std::vector<IntentFilter> filters) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  intent_filters_.erase(package_name);
+  if (filters.size() > 0)
+    intent_filters_[package_name] = std::move(filters);
+
+  for (auto& observer : observer_list_)
+    observer.OnIntentFiltersUpdated(package_name);
 }
 }  // namespace arc
