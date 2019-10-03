@@ -78,6 +78,8 @@ fuchsia::web::CreateContextParams WebContentRunner::BuildCreateContextParams(
         BUILDFLAG(ENABLE_REMOTE_DEBUGGING_ON_PORT));
   }
 
+  create_params.set_features(features);
+
   return create_params;
 }
 
