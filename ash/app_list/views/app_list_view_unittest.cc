@@ -2903,7 +2903,7 @@ TEST_F(AppListViewTest, EnsurePageSwitcherFitsAppsGridMargin) {
                                         ash::features::kEnableBackgroundBlur},
                                        {});
 
-  const gfx::Size window_size = gfx::Size(600, 800);
+  const gfx::Size window_size = gfx::Size(400, 800);
   gfx::NativeView parent = GetContext();
   parent->SetBounds(gfx::Rect(window_size));
 
@@ -2915,12 +2915,12 @@ TEST_F(AppListViewTest, EnsurePageSwitcherFitsAppsGridMargin) {
   const int expected_vertical_margin =
       (window_size.height() - ShelfHeight()) / 16;
   // The horizontal margin is selected so the page switcher fits the margin
-  // space (note that 600 / 16, which is how the margin is normally calculated
+  // space (note that 400 / 12, which is how the margin is normally calculated
   // is smaller than the width required by page switcher).
   VerifyAppsContainerLayout(window_size, 4 /*column_count*/, 5 /*row_count*/,
                             40 /*expected_horizontal_margin*/,
                             expected_vertical_margin,
-                            88 /*expected_item_size*/);
+                            80 /*expected_item_size*/);
 }
 
 // Verifies that the vertical spacing between items in apps grid has an upper
