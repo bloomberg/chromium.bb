@@ -708,7 +708,6 @@ crbug.com/591099 fast/events/touch/compositor-touch-hit-rects-list-translate.htm
 crbug.com/591099 fast/events/touch/compositor-touch-hit-rects.html [ Failure ]
 crbug.com/889721 fast/inline/outline-continuations.html [ Failure ]
 crbug.com/591099 fast/text/font-format-support-color-cff2-vertical.html [ Failure ]
-crbug.com/998872 fast/text/international/bidi-ignored-for-first-child-inline.html [ Failure ]
 crbug.com/591099 fast/text/whitespace/018.html [ Failure ]
 crbug.com/591099 fast/writing-mode/auto-sizing-orthogonal-flows.html [ Failure ]
 crbug.com/591099 fast/writing-mode/percentage-height-orthogonal-writing-modes.html [ Failure ]
