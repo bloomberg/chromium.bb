@@ -45,7 +45,7 @@ GetTopHostProviderIfUserPermitted(content::BrowserContext* browser_context) {
 // navigation's OptimizationGuideNavigationData;
 void LogDecisions(
     content::NavigationHandle* navigation_handle,
-    optimization_guide::OptimizationTarget optimization_target,
+    optimization_guide::proto::OptimizationTarget optimization_target,
     optimization_guide::OptimizationTargetDecision optimization_target_decision,
     optimization_guide::proto::OptimizationType optimization_type,
     optimization_guide::OptimizationTypeDecision optimization_type_decision) {
@@ -162,7 +162,7 @@ void OptimizationGuideKeyedService::RegisterOptimizationTypes(
 optimization_guide::OptimizationGuideDecision
 OptimizationGuideKeyedService::CanApplyOptimization(
     content::NavigationHandle* navigation_handle,
-    optimization_guide::OptimizationTarget optimization_target,
+    optimization_guide::proto::OptimizationTarget optimization_target,
     optimization_guide::proto::OptimizationType optimization_type,
     optimization_guide::OptimizationMetadata* optimization_metadata) {
   DCHECK(hints_manager_);

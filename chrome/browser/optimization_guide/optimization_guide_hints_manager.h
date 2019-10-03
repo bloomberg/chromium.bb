@@ -21,6 +21,7 @@
 #include "components/optimization_guide/hints_component_info.h"
 #include "components/optimization_guide/optimization_guide_service_observer.h"
 #include "components/optimization_guide/proto/hints.pb.h"
+#include "components/optimization_guide/proto/models.pb.h"
 #include "net/nqe/effective_connection_type.h"
 #include "services/network/public/cpp/network_quality_tracker.h"
 
@@ -103,7 +104,7 @@ class OptimizationGuideHintsManager
   // for whether the page load matches the given parameters.
   void CanApplyOptimization(
       content::NavigationHandle* navigation_handle,
-      optimization_guide::OptimizationTarget optimization_target,
+      optimization_guide::proto::OptimizationTarget optimization_target,
       optimization_guide::proto::OptimizationType optimization_type,
       optimization_guide::OptimizationTargetDecision*
           optimization_target_decision,

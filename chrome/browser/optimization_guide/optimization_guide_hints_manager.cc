@@ -651,7 +651,7 @@ bool OptimizationGuideHintsManager::HasLoadedOptimizationFilter(
 
 void OptimizationGuideHintsManager::CanApplyOptimization(
     content::NavigationHandle* navigation_handle,
-    optimization_guide::OptimizationTarget optimization_target,
+    optimization_guide::proto::OptimizationTarget optimization_target,
     optimization_guide::proto::OptimizationType optimization_type,
     optimization_guide::OptimizationTargetDecision*
         optimization_target_decision,
@@ -670,10 +670,11 @@ void OptimizationGuideHintsManager::CanApplyOptimization(
   *optimization_type_decision =
       optimization_guide::OptimizationTypeDecision::kUnknown;
 
-  // We only support the optimization target |kPainfulPageLoad|, so just return
-  // that we don't know if the target doesn't match that.
+  // We only support the optimization target
+  // |OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD|, so just return that we don't know
+  // if the target doesn't match that.
   if (optimization_target !=
-      optimization_guide::OptimizationTarget::kPainfulPageLoad) {
+      optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD) {
     return;
   }
 

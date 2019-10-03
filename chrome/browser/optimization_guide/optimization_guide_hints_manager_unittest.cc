@@ -1208,7 +1208,7 @@ TEST_F(OptimizationGuideHintsManagerTest, CanApplyOptimizationUrlWithNoHost) {
   optimization_guide::OptimizationTypeDecision optimization_type_decision;
   hints_manager()->CanApplyOptimization(
       navigation_handle.get(),
-      optimization_guide::OptimizationTarget::kPainfulPageLoad,
+      optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
       optimization_guide::proto::LITE_PAGE_REDIRECT,
       &optimization_target_decision, &optimization_type_decision,
       /*optimization_metadata=*/nullptr);
@@ -1252,7 +1252,7 @@ TEST_F(OptimizationGuideHintsManagerTest,
   optimization_guide::OptimizationTypeDecision optimization_type_decision;
   hints_manager()->CanApplyOptimization(
       navigation_handle.get(),
-      optimization_guide::OptimizationTarget::kPainfulPageLoad,
+      optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
       optimization_guide::proto::LITE_PAGE_REDIRECT,
       &optimization_target_decision, &optimization_type_decision,
       /*optimization_metadata=*/nullptr);
@@ -1299,7 +1299,7 @@ TEST_F(OptimizationGuideHintsManagerTest,
   optimization_guide::OptimizationTypeDecision optimization_type_decision;
   hints_manager()->CanApplyOptimization(
       navigation_handle.get(),
-      optimization_guide::OptimizationTarget::kPainfulPageLoad,
+      optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
       optimization_guide::proto::LITE_PAGE_REDIRECT,
       &optimization_target_decision, &optimization_type_decision,
       /*optimization_metadata=*/nullptr);
@@ -1346,7 +1346,7 @@ TEST_F(OptimizationGuideHintsManagerTest,
   optimization_guide::OptimizationTypeDecision optimization_type_decision;
   hints_manager()->CanApplyOptimization(
       navigation_handle.get(),
-      optimization_guide::OptimizationTarget::kPainfulPageLoad,
+      optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
       optimization_guide::proto::LITE_PAGE_REDIRECT,
       &optimization_target_decision, &optimization_type_decision,
       /*optimization_metadata=*/nullptr);
@@ -1392,7 +1392,7 @@ TEST_F(OptimizationGuideHintsManagerTest, CanApplyOptimizationNoECTEstimate) {
   optimization_guide::OptimizationTypeDecision optimization_type_decision;
   hints_manager()->CanApplyOptimization(
       navigation_handle.get(),
-      optimization_guide::OptimizationTarget::kPainfulPageLoad,
+      optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
       optimization_guide::proto::LITE_PAGE_REDIRECT,
       &optimization_target_decision, &optimization_type_decision,
       /*optimization_metadata=*/nullptr);
@@ -1440,7 +1440,7 @@ TEST_F(OptimizationGuideHintsManagerTest,
   optimization_guide::OptimizationTypeDecision optimization_type_decision;
   hints_manager()->CanApplyOptimization(
       navigation_handle.get(),
-      optimization_guide::OptimizationTarget::kPainfulPageLoad,
+      optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
       optimization_guide::proto::LITE_PAGE_REDIRECT,
       &optimization_target_decision, &optimization_type_decision,
       /*optimization_metadata=*/nullptr);
@@ -1486,7 +1486,7 @@ TEST_F(OptimizationGuideHintsManagerTest,
   optimization_guide::OptimizationMetadata optimization_metadata;
   hints_manager()->CanApplyOptimization(
       navigation_handle.get(),
-      optimization_guide::OptimizationTarget::kPainfulPageLoad,
+      optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
       optimization_guide::proto::NOSCRIPT, &optimization_target_decision,
       &optimization_type_decision, &optimization_metadata);
   EXPECT_EQ(12345, optimization_metadata.previews_metadata.inflation_percent());
@@ -1525,7 +1525,7 @@ TEST_F(OptimizationGuideHintsManagerTest,
   optimization_guide::OptimizationMetadata optimization_metadata;
   hints_manager()->CanApplyOptimization(
       navigation_handle.get(),
-      optimization_guide::OptimizationTarget::kPainfulPageLoad,
+      optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
       optimization_guide::proto::NOSCRIPT, &optimization_target_decision,
       &optimization_type_decision, &optimization_metadata);
   EXPECT_EQ(1234, optimization_metadata.previews_metadata.inflation_percent());
@@ -1564,7 +1564,7 @@ TEST_F(OptimizationGuideHintsManagerTest,
   optimization_guide::OptimizationMetadata optimization_metadata;
   hints_manager()->CanApplyOptimization(
       navigation_handle.get(),
-      optimization_guide::OptimizationTarget::kPainfulPageLoad,
+      optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
       optimization_guide::proto::NOSCRIPT, &optimization_target_decision,
       &optimization_type_decision, &optimization_metadata);
   EXPECT_EQ(1234, optimization_metadata.previews_metadata.inflation_percent());
@@ -1600,7 +1600,8 @@ TEST_F(OptimizationGuideHintsManagerTest,
   optimization_guide::OptimizationTypeDecision optimization_type_decision;
   optimization_guide::OptimizationMetadata optimization_metadata;
   hints_manager()->CanApplyOptimization(
-      navigation_handle.get(), optimization_guide::OptimizationTarget::kUnknown,
+      navigation_handle.get(),
+      optimization_guide::proto::OPTIMIZATION_TARGET_UNKNOWN,
       optimization_guide::proto::NOSCRIPT, &optimization_target_decision,
       &optimization_type_decision, &optimization_metadata);
   // Make sure metadata is cleared.
@@ -1640,7 +1641,7 @@ TEST_F(OptimizationGuideHintsManagerTest,
   optimization_guide::OptimizationMetadata optimization_metadata;
   hints_manager()->CanApplyOptimization(
       navigation_handle.get(),
-      optimization_guide::OptimizationTarget::kPainfulPageLoad,
+      optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
       optimization_guide::proto::DEFER_ALL_SCRIPT,
       &optimization_target_decision, &optimization_type_decision,
       /*optimization_metadata=*/nullptr);
@@ -1685,7 +1686,7 @@ TEST_F(OptimizationGuideHintsManagerTest,
   optimization_guide::OptimizationMetadata optimization_metadata;
   hints_manager()->CanApplyOptimization(
       navigation_handle.get(),
-      optimization_guide::OptimizationTarget::kPainfulPageLoad,
+      optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
       optimization_guide::proto::DEFER_ALL_SCRIPT,
       &optimization_target_decision, &optimization_type_decision,
       /*optimization_metadata=*/nullptr);
@@ -1770,7 +1771,7 @@ TEST_F(OptimizationGuideHintsManagerTest,
   optimization_guide::OptimizationMetadata optimization_metadata;
   hints_manager()->CanApplyOptimization(
       navigation_handle.get(),
-      optimization_guide::OptimizationTarget::kPainfulPageLoad,
+      optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
       optimization_guide::proto::NOSCRIPT, &optimization_target_decision,
       &optimization_type_decision,
       /*optimization_metadata=*/nullptr);
@@ -1806,7 +1807,7 @@ TEST_F(OptimizationGuideHintsManagerTest,
   optimization_metadata.previews_metadata.set_inflation_percent(12345);
   hints_manager()->CanApplyOptimization(
       navigation_handle.get(),
-      optimization_guide::OptimizationTarget::kPainfulPageLoad,
+      optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
       optimization_guide::proto::NOSCRIPT, &optimization_target_decision,
       &optimization_type_decision, &optimization_metadata);
   EXPECT_EQ(0, optimization_metadata.previews_metadata.inflation_percent());
@@ -1841,7 +1842,7 @@ TEST_F(OptimizationGuideHintsManagerTest,
   optimization_guide::OptimizationMetadata optimization_metadata;
   hints_manager()->CanApplyOptimization(
       navigation_handle.get(),
-      optimization_guide::OptimizationTarget::kPainfulPageLoad,
+      optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
       optimization_guide::proto::NOSCRIPT, &optimization_target_decision,
       &optimization_type_decision, &optimization_metadata);
 
@@ -1903,7 +1904,7 @@ TEST_F(OptimizationGuideHintsManagerTest,
   optimization_guide::OptimizationTypeDecision optimization_type_decision;
   hints_manager()->CanApplyOptimization(
       navigation_handle.get(),
-      optimization_guide::OptimizationTarget::kPainfulPageLoad,
+      optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
       optimization_guide::proto::LITE_PAGE_REDIRECT,
       &optimization_target_decision, &optimization_type_decision,
       /*optimization_metadata=*/nullptr);
@@ -1967,7 +1968,7 @@ TEST_F(OptimizationGuideHintsManagerTest,
   optimization_guide::OptimizationTypeDecision optimization_type_decision;
   hints_manager()->CanApplyOptimization(
       navigation_handle.get(),
-      optimization_guide::OptimizationTarget::kPainfulPageLoad,
+      optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
       optimization_guide::proto::LITE_PAGE_REDIRECT,
       &optimization_target_decision, &optimization_type_decision,
       /*optimization_metadata=*/nullptr);
