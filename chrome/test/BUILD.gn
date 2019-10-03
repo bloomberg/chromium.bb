@@ -6086,7 +6086,6 @@ if (!is_android && !is_fuchsia) {
       "//third_party/pywebsocket/src/mod_pywebsocket/",
       "//third_party/tlslite/",
       "//testing/xvfb.py",
-      "//testing/buildbot/filters/e2e.sync_integration_tests.filter",
     ]
 
     if (is_linux || is_win) {
@@ -6124,6 +6123,7 @@ if (!is_android && !is_fuchsia) {
 
     data_deps = [
       "//third_party/mesa_headers",
+      "//testing/buildbot/filters:e2e_sync_integration_tests_filters",
     ]
 
     if (is_mac) {
