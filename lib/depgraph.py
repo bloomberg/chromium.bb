@@ -41,7 +41,7 @@ class DepGraphGenerator(object):
 
   __slots__ = [
       'board', 'emerge', 'package_db', 'show_output', 'sysroot', 'unpack_only',
-      'max_retries'
+      'max_retries', 'include_bdepend'
   ]
 
   def __init__(self):
@@ -52,6 +52,7 @@ class DepGraphGenerator(object):
     self.sysroot = None
     self.unpack_only = False
     self.max_retries = int(os.environ.get('PARALLEL_EMERGE_MAX_RETRIES', 1))
+    self.include_bdepend = False
 
   def ParseParallelEmergeArgs(self, argv):
     """Read the parallel emerge arguments from the command-line.
@@ -95,6 +96,8 @@ class DepGraphGenerator(object):
         event_logger = cros_event.getEventFileLogger(log_file_name)
         event_logger.setKind('ParallelEmerge')
         cros_event.setEventLogger(event_logger)
+      elif arg == '--include-bdepend':
+        self.include_bdepend = True
       else:
         # Not one of our options, so pass through to emerge.
         emerge_args.append(arg)
@@ -317,7 +320,8 @@ class DepGraphGenerator(object):
       # We just refer to CPVs as packages here because it's easier.
       deps = {}
       for child, priorities in node_deps[0].items():
-        if isinstance(child, Package) and child.root == root:
+        if isinstance(child, Package) and (self.include_bdepend or
+                                           child.root == root):
           cpv = str(child.cpv)
           action = str(child.operation)
 
@@ -335,7 +339,8 @@ class DepGraphGenerator(object):
               action=action, deptypes=[str(x) for x in priorities], deps={})
 
       # We've built our list of deps, so we can add our package to the tree.
-      if isinstance(node, Package) and node.root == root:
+      if isinstance(node, Package) and (self.include_bdepend or
+                                        child.root == root):
         deps_tree[str(node.cpv)] = dict(action=str(node.operation), deps=deps)
 
     # Ask portage for its install plan, so that we can only throw out
@@ -343,14 +348,6 @@ class DepGraphGenerator(object):
     deps_info = {}
     for pkg in depgraph.altlist():
       if isinstance(pkg, Package):
-        # This may indicate there is an issue with EAPI 7
-        # support. (crbug.com/998929)
-        if pkg.root != root:
-          raise RuntimeError(
-              'crbug.com/998929: There may be an issue with EAPI=7 support '
-              '(offending package is %s)' % pkg.cpv)
-        self.package_db[pkg.cpv] = pkg
-
         # Save off info about the package
         deps_info[str(pkg.cpv)] = {'idx': len(deps_info)}
 

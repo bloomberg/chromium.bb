@@ -266,9 +266,9 @@ def ExtractDeps(sysroot, package_list, formatting='deps'):
   """Returns the set of dependencies for the packages in package_list.
 
   For calculating dependencies graph, this should only consider packages
-  that are DEPENDS or RDEPENDS. Essentially, this should answer the question
-  "which are all the packages which changing them may change the execution
-  of any binaries produced by packages in |package_list|."
+  that are DEPENDS, RDEPENDS, or BDEPENDS. Essentially, this should answer the
+  question "which are all the packages which changing them may change the
+  execution of any binaries produced by packages in |package_list|."
 
   Args:
     sysroot: the path (string) to the root directory into which the package is
@@ -283,7 +283,7 @@ def ExtractDeps(sysroot, package_list, formatting='deps'):
   Returns:
     A JSON-izable object that either follows 'deps' or 'cpe' format.
   """
-  lib_argv = ['--quiet', '--pretend', '--emptytree']
+  lib_argv = ['--quiet', '--pretend', '--emptytree', '--include-bdepend']
   lib_argv += ['--sysroot=%s' % sysroot]
   lib_argv.extend(package_list)
 
