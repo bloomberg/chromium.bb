@@ -25,10 +25,6 @@ class BrowserController {
  public:
   static std::unique_ptr<BrowserController> Create(Profile* profile);
 
-#if defined(OS_ANDROID)
-  static BrowserController* GetLastControllerForTesting();
-#endif
-
   virtual ~BrowserController() {}
 
   virtual void AddObserver(BrowserObserver* observer) = 0;

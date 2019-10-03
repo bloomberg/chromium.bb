@@ -1,6 +1,0 @@
-include_rules = [
-  "+content/public/android",
-  "+content/public/app",
-  "+content/public/test",
-  "+ui/android",
-]

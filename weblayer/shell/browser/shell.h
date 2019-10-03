@@ -38,9 +38,6 @@ class Profile;
 
 // This represents one window of the Web Shell, i.e. all the UI including
 // buttons and url bar, as well as the web content area.
-// On desktop this is used for the demo Shell application and also
-// weblayer_browsertests. On Android this is only used for
-// weblayer_browsertests.
 class Shell : public BrowserObserver {
  public:
   ~Shell() override;
@@ -70,7 +67,7 @@ class Shell : public BrowserObserver {
   // instance is destroyed.
   static void SetMainMessageLoopQuitClosure(base::OnceClosure quit_closure);
 
-  BrowserController* browser_controller();
+  BrowserController* browser_controller() { return browser_controller_.get(); }
 
   gfx::NativeWindow window() { return window_; }
 
