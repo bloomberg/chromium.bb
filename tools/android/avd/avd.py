@@ -26,6 +26,7 @@ from py_utils import tempfile_ext
 
 sys.path.append(
     os.path.join(_SRC_ROOT, 'third_party', 'catapult', 'devil'))
+from devil.android import device_utils
 from devil.android.sdk import adb_wrapper
 from devil.android.tools import script_common
 from devil.utils import cmd_helper
@@ -208,7 +209,10 @@ class AvdConfig(object):
       cipd_json_output: string path to pass to `cipd create` via -json-output.
     """
     logging.info('Installing required packages.')
-    self.Install(packages=[self._config.system_image_package])
+    self.Install(packages=[
+        self._config.emulator_package,
+        self._config.system_image_package,
+    ])
 
     android_avd_home = os.path.join(self._emulator_home, 'avd')
 
@@ -241,9 +245,13 @@ class AvdConfig(object):
         config_ini_file.write('disk.dataPartition.size=4G\n')
 
       # Start & stop the AVD.
-      if snapshot:
-        # TODO(crbug.com/922145): Implement support for snapshotting.
-        raise NotImplementedError('Snapshotting is not supported yet.')
+      self._Initialize()
+      instance = _AvdInstance(
+          self._emulator_path, self._config.avd_name, self._emulator_home)
+      instance.Start(read_only=not snapshot)
+      device_utils.DeviceUtils(instance.serial).WaitUntilFullyBooted(
+          timeout=180, retries=0)
+      instance.Stop()
 
       package_def_content = {
           'package': self._config.avd_package.package_name,
@@ -392,7 +400,7 @@ class _AvdInstance(object):
     self._emulator_serial = None
     self._sink = None
 
-  def Start(self):
+  def Start(self, read_only=True):
     """Starts the emulator running an instance of the given AVD."""
     with tempfile_ext.TemporaryFileName() as socket_path, (contextlib.closing(
         socket.socket(socket.AF_UNIX))) as sock:
@@ -403,9 +411,12 @@ class _AvdInstance(object):
           self._avd_name,
           '-report-console',
           'unix:%s' % socket_path,
-          '-read-only',
           '-no-window'
       ]
+      if read_only:
+        emulator_cmd += [
+            '-read-only',
+        ]
       emulator_env = {}
       if self._emulator_home:
         emulator_env['ANDROID_EMULATOR_HOME'] = self._emulator_home
