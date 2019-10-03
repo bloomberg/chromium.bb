@@ -136,7 +136,7 @@ void XRCompositorCommon::SubmitFrameWithTextureHandle(
 }
 
 void XRCompositorCommon::CleanUp() {
-  submit_client_ = nullptr;
+  submit_client_.reset();
   webxr_has_pose_ = false;
   presentation_binding_.Close();
   frame_data_binding_.Close();
@@ -234,7 +234,8 @@ void XRCompositorCommon::RequestSession(
 
   auto submit_frame_sink = device::mojom::XRPresentationConnection::New();
   submit_frame_sink->provider = presentation_provider.PassInterface();
-  submit_frame_sink->client_request = mojo::MakeRequest(&submit_client_);
+  submit_frame_sink->client_receiver =
+      submit_client_.BindNewPipeAndPassReceiver();
   submit_frame_sink->transport_options = std::move(transport_options);
 
   auto session = device::mojom::XRSession::New();
@@ -255,7 +256,7 @@ void XRCompositorCommon::ExitPresent() {
   webxr_has_pose_ = false;
   presentation_binding_.Close();
   frame_data_binding_.Close();
-  submit_client_ = nullptr;
+  submit_client_.reset();
   StopRuntime();
 
   pending_frame_.reset();

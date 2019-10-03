@@ -576,7 +576,7 @@ void VRDisplay::OnRequestImmersiveSessionReturned(
 
     frame_transport_ = MakeGarbageCollected<XRFrameTransport>();
     frame_transport_->BindSubmitFrameClient(
-        std::move(session->submit_frame_sink->client_request));
+        std::move(session->submit_frame_sink->client_receiver));
     frame_transport_->SetTransportOptions(
         std::move(session->submit_frame_sink->transport_options));
 

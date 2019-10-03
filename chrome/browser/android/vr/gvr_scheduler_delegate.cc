@@ -196,7 +196,8 @@ void GvrSchedulerDelegate::ConnectPresentingService(
   }
 
   auto submit_frame_sink = device::mojom::XRPresentationConnection::New();
-  submit_frame_sink->client_request = mojo::MakeRequest(&submit_client_);
+  submit_frame_sink->client_receiver =
+      submit_client_.BindNewPipeAndPassReceiver();
   submit_frame_sink->provider = presentation_provider.PassInterface();
   submit_frame_sink->transport_options = std::move(transport_options);
 

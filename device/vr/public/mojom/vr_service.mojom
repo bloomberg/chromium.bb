@@ -108,7 +108,7 @@ struct XRSession {
 // frames to a sink outside of Chrome.
 struct XRPresentationConnection {
   XRPresentationProvider provider;
-  XRPresentationClient& client_request;
+  pending_receiver<XRPresentationClient> client_receiver;
   XRPresentationTransportOptions transport_options;
 };
 
