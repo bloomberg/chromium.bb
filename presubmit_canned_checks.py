@@ -49,6 +49,22 @@ def CheckChangeHasBugField(input_api, output_api):
     return [output_api.PresubmitNotifyResult(
         'If this change has an associated bug, add Bug: [bug number].')]
 
+def CheckChangeHasNoUnwantedTags(input_api, output_api):
+  UNWANTED_TAGS = {
+      'FIXED': {
+          'why': 'is not supported',
+          'instead': 'Use "Fixed:" instead.'
+      },
+      # TODO: BUG, ISSUE
+  }
+
+  errors = []
+  for tag, desc in UNWANTED_TAGS.items():
+    if tag in input_api.change.tags:
+      subs = tag, desc['why'], desc.get('instead', '')
+      errors.append(('%s= %s. %s' % subs).rstrip())
+
+  return [output_api.PresubmitError('\n'.join(errors))] if errors else []
 
 def CheckDoNotSubmitInDescription(input_api, output_api):
   """Checks that the user didn't add 'DO NOT ''SUBMIT' to the CL description.

@@ -1582,6 +1582,11 @@ class CannedChecksUnittest(PresubmitTestsBase):
                          presubmit.OutputApi.PresubmitNotifyResult,
                          False)
 
+  def testCannedCheckChangeHasNoUnwantedTags(self):
+    self.DescriptionTest(presubmit_canned_checks.CheckChangeHasNoUnwantedTags,
+                         'Foo\n', 'Foo\nFIXED=1234',
+                         presubmit.OutputApi.PresubmitError, False)
+
   def testCheckChangeHasDescription(self):
     self.DescriptionTest(presubmit_canned_checks.CheckChangeHasDescription,
                          'Bleh', '',
