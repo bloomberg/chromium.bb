@@ -190,6 +190,10 @@ class ChromeDriver(object):
       assert type(chrome_switches) is list
       options['args'] = chrome_switches
 
+      # TODO(crbug.com/1011000): Work around a bug with headless on Mac.
+      if util.GetPlatformName() == 'mac' and '--headless' in chrome_switches:
+        options['excludeSwitches'] = ['--enable-logging']
+
     if mobile_emulation:
       assert type(mobile_emulation) is dict
       options['mobileEmulation'] = mobile_emulation
