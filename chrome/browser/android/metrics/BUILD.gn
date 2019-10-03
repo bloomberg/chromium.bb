@@ -5,9 +5,6 @@
 if (is_android) {
   import("//build/config/android/rules.gni")
 
-  _jni_java_files =
-      [ "javatests/org/chromium/chrome/metrics/util/UkmUtilsForTest.java" ]
-
   static_library("ukm_utils_for_test") {
     testonly = true
     sources = [
@@ -22,12 +19,14 @@ if (is_android) {
   }
 
   generate_jni("jni_headers") {
-    sources = _jni_java_files
+    sources = [
+      "../../../android/java/src/org/chromium/chrome/browser/metrics/UkmUtilsForTest.java",
+    ]
   }
 
   android_library("ukm_utils_java") {
     testonly = true
-    java_files = _jni_java_files
+    java_files = [ "../../../android/java/src/org/chromium/chrome/browser/metrics/UkmUtilsForTest.java" ]
     deps = [
       "//base:base_java",
     ]
