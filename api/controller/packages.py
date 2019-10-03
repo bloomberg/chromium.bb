@@ -140,8 +140,6 @@ def _BuildsChromeSuccess(_input_proto, output_proto, _config):
 @validate.validation_complete
 def BuildsChrome(input_proto, output_proto, _config):
   """Check if the board builds chrome."""
-  _build_target = controller_util.ParseBuildTarget(input_proto.build_target)
-
-  # TODO(saklein): Call implementation once it's been completed and add tests
-  #   for successful endpoint executions.
-  output_proto.builds_chrome = True
+  build_target = controller_util.ParseBuildTarget(input_proto.build_target)
+  builds_chrome = packages.builds(constants.CHROME_CP, build_target)
+  output_proto.builds_chrome = builds_chrome

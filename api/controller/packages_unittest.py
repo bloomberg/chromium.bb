@@ -17,6 +17,7 @@ from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import portage_util
+from chromite.lib.build_target_util import BuildTarget
 from chromite.service import packages as packages_service
 
 
@@ -277,7 +278,7 @@ class BuildsChromeTest(cros_test_lib.MockTestCase, ApiConfigMixin):
 
   def testValidateOnly(self):
     """Sanity check that a validate only call does not execute any logic."""
-    patch = self.PatchObject(packages_service, 'has_prebuilt')
+    patch = self.PatchObject(packages_service, 'builds')
 
     request = self._GetRequest(board='betty')
     packages_controller.BuildsChrome(request, self.response,
@@ -290,3 +291,12 @@ class BuildsChromeTest(cros_test_lib.MockTestCase, ApiConfigMixin):
 
     with self.assertRaises(cros_build_lib.DieSystemExit):
       packages_controller.BuildsChrome(request, self.response, self.api_config)
+
+  def testBuilds(self):
+    """Test successful call handling."""
+    patch = self.PatchObject(packages_service, 'builds', return_value=True)
+
+    request = self._GetRequest(board='foo')
+    packages_controller.BuildsChrome(request, self.response, self.api_config)
+    self.assertTrue(self.response.builds_chrome)
+    patch.assert_called_once_with(constants.CHROME_CP, BuildTarget('foo'))
