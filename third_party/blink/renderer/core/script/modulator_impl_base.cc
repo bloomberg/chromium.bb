@@ -49,6 +49,10 @@ bool ModulatorImplBase::IsScriptingDisabled() const {
   return !GetExecutionContext()->CanExecuteScripts(kAboutToExecuteScript);
 }
 
+bool ModulatorImplBase::ImportMapsEnabled() const {
+  return RuntimeEnabledFeatures::ImportMapsEnabled(GetExecutionContext());
+}
+
 bool ModulatorImplBase::BuiltInModuleInfraEnabled() const {
   return RuntimeEnabledFeatures::BuiltInModuleInfraEnabled(
       GetExecutionContext());
@@ -257,7 +261,7 @@ ScriptValue ModulatorImplBase::CreateSyntaxError(const String& message) const {
 void ModulatorImplBase::RegisterImportMap(const ImportMap* import_map,
                                           ScriptValue error_to_rethrow) {
   DCHECK(import_map);
-  DCHECK(BuiltInModuleInfraEnabled());
+  DCHECK(ImportMapsEnabled());
 
   // <spec step="7">If import map parse result’s error to rethrow is not null,
   // then:</spec>
