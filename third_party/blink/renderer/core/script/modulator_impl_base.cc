@@ -174,7 +174,7 @@ KURL ModulatorImplBase::ResolveModuleSpecifier(const String& specifier,
                                                const KURL& base_url,
                                                String* failure_reason) {
   ParsedSpecifier parsed_specifier =
-      ParsedSpecifier::Create(specifier, base_url);
+      ParsedSpecifier::Create(specifier, base_url, BuiltInModuleInfraEnabled());
 
   if (!parsed_specifier.IsValid()) {
     if (failure_reason) {
@@ -221,13 +221,6 @@ KURL ModulatorImplBase::ResolveModuleSpecifier(const String& specifier,
       return KURL();
 
     case ParsedSpecifier::Type::kBare:
-      // Allow |@std/x| specifiers if Layered API is enabled.
-      if (BuiltInModuleInfraEnabled()) {
-        if (parsed_specifier.GetImportMapKeyString().StartsWith("@std/")) {
-          return KURL("import:" + parsed_specifier.GetImportMapKeyString());
-        }
-      }
-
       // Reject bare specifiers as specced by the pre-ImportMap spec.
       if (failure_reason) {
         *failure_reason =
