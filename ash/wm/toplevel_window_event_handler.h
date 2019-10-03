@@ -47,6 +47,10 @@ class ASH_EXPORT ToplevelWindowEventHandler
   // The distance for swiping from left edge to go previous page.
   static constexpr int kSwipingDistanceForGoingBack = 80;
 
+  // The threshold of the fling velocity while fling from left edge to go
+  // previous page.
+  static constexpr int kFlingVelocityForGoingBack = 1000;
+
   // Describes what triggered ending the drag.
   enum class DragResult {
     // The drag successfully completed.

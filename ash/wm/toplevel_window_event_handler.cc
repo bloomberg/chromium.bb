@@ -863,10 +863,14 @@ bool ToplevelWindowEventHandler::HandleGoingBackFromLeftEdge(
       back_gesture_affordance_->SetDragProgress(event->location().x());
       return true;
     case ui::ET_GESTURE_SCROLL_END:
+    case ui::ET_SCROLL_FLING_START: {
       if (!going_back_started_)
         break;
       DCHECK(back_gesture_affordance_);
-      if (event->location().x() >= kSwipingDistanceForGoingBack) {
+      if ((event->type() == ui::ET_GESTURE_SCROLL_END &&
+           event->location().x() >= kSwipingDistanceForGoingBack) ||
+          (event->type() == ui::ET_SCROLL_FLING_START &&
+           event->details().velocity_x() >= kFlingVelocityForGoingBack)) {
         aura::Window* root_window =
             window_util::GetRootWindowAt(event->location());
         ui::KeyEvent press_key_event(ui::ET_KEY_PRESSED, ui::VKEY_BROWSER_BACK,
@@ -883,7 +887,7 @@ bool ToplevelWindowEventHandler::HandleGoingBackFromLeftEdge(
       }
       going_back_started_ = false;
       return true;
-    // TODO(crbug.com/1002733): Add support for fling event.
+    }
     default:
       break;
   }
