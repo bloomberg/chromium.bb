@@ -84,9 +84,6 @@ const base::Feature kUseBluetoothSystemInAsh{"UseBluetoothSystemInAsh",
 const base::Feature kSupervisedUserDeprecationNotice{
     "SupervisedUserDeprecationNotice", base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kSystemTrayFeaturePodsPagination{
-    "SystemTrayFeaturePodsPagination", base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kSwapSideVolumeButtonsForOrientation{
     "SwapSideVolumeButtonsForOrientation", base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -165,10 +162,6 @@ bool IsViewsLoginEnabled() {
 
 bool IsSupervisedUserDeprecationNoticeEnabled() {
   return base::FeatureList::IsEnabled(kSupervisedUserDeprecationNotice);
-}
-
-bool IsSystemTrayFeaturePodsPaginationEnabled() {
-  return base::FeatureList::IsEnabled(kSystemTrayFeaturePodsPagination);
 }
 
 bool IsSwapSideVolumeButtonsForOrientationEnabled() {

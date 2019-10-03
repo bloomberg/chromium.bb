@@ -1768,9 +1768,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"trim-on-memory-pressure", flag_descriptions::kTrimOnMemoryPressureName,
      flag_descriptions::kTrimOnMemoryPressureDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(performance_manager::features::kTrimOnMemoryPressure)},
-    {"system-tray-pagination", flag_descriptions::kSystemTrayPaginationName,
-     flag_descriptions::kSystemTrayPaginationDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kSystemTrayFeaturePodsPagination)},
+    {"message-center-redesign", flag_descriptions::kMessageCenterRedesignName,
+     flag_descriptions::kMessageCenterRedesignName, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kUnifiedMessageCenterRefactor)},
 #endif  // OS_CHROMEOS
     {
         "disable-accelerated-video-decode",

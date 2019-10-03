@@ -3599,11 +3599,10 @@ const char kSyncWifiConfigurationsName[] = "Sync Wi-Fi network configurations";
 const char kSyncWifiConfigurationsDescription[] =
     "Enables the option to sync Wi-Fi network configurations with Chrome Sync.";
 
-const char kSystemTrayPaginationName[] = "Enable system menu pagination";
-const char kSystemTrayPaginationDescription[] =
-    "If enabled the number of rows of feature pod buttons in the system menu "
-    "is limited between 1-3 based on available screen space. The feature pod "
-    "buttons can be scrolled or swiped between pages.";
+const char kMessageCenterRedesignName[] = "Enable Message Center Redesign";
+const char kMessageCenterRedesignDescription[] =
+    "Enables split message center, stacked notification icons and system tray "
+    "pagination";
 
 const char kTetherName[] = "Instant Tethering";
 const char kTetherDescription[] =

@@ -2426,6 +2426,11 @@
     "expiry_milestone": -1
   },
   {
+    "name": "message-center-redesign",
+    "owners": ["amehfooz", "tengs"],
+    "expiry_milestone": 81
+  },
+  {
     "name": "mime-handler-view-in-cross-process-frame",
     "owners": [ "ekaramad" ],
     "expiry_milestone": 80
@@ -3168,11 +3173,6 @@
     "name": "system-keyboard-lock",
     "owners": [ "joedow", "garykac", "jamiewalch" ],
     "expiry_milestone": 79
-  },
-  {
-    "name": "system-tray-pagination",
-    "owners": ["amehfooz", "tengs"],
-    "expiry_milestone": 81
   },
   {
     "name": "tab-groups",

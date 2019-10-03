@@ -35396,7 +35396,6 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1446425986" label="ProtectSyncCredentialOnReauth:disabled"/>
   <int value="-1444051091" label="ash-disable-night-light"/>
   <int value="-1443796945" label="OfflinePagesSharing:disabled"/>
-  <int value="-1442753429" label="SystemTrayFeaturePodsPagination:disabled"/>
   <int value="-1441695001" label="OmniboxOnFocusSuggestions:enabled"/>
   <int value="-1441340278" label="NewTabPageIcons:enabled"/>
   <int value="-1440440375" label="WebVrAutopresent:enabled"/>
@@ -35519,6 +35518,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1302904242" label="enable-navigation-tracing"/>
   <int value="-1302859198" label="enable-stylus-virtual-keyboard:disabled"/>
   <int value="-1297079591" label="EnableRemovingAllThirdPartyCookies:disabled"/>
+  <int value="-1294656363" label="UnifiedMessageCenterRefactor:enabled"/>
   <int value="-1294050129" label="ContentFullscreen:disabled"/>
   <int value="-1293987566" label="OmniboxZeroSuggestionsOnNTPRealbox:disabled"/>
   <int value="-1292615467"
@@ -36806,6 +36806,7 @@ from previous Chrome versions.
   <int value="402143634" label="enable-search-button-in-omnibox-always"/>
   <int value="403288255" label="enable-wheel-scroll-latching"/>
   <int value="403741682" label="CrostiniBackup:enabled"/>
+  <int value="403939322" label="UnifiedMessageCenterRefactor:disabled"/>
   <int value="405329388"
       label="FramebustingNeedsSameOriginOrUserGesture:enabled"/>
   <int value="408190863" label="OmniboxDisableInstantExtendedLimit:disabled"/>
@@ -37952,7 +37953,6 @@ from previous Chrome versions.
   <int value="1957472162"
       label="AutofillUpstreamEditableExpirationDate:disabled"/>
   <int value="1958387645" label="ScanCardsInWebPayments:enabled"/>
-  <int value="1959020463" label="SystemTrayFeaturePodsPagination:enabled"/>
   <int value="1959148757" label="OffMainThreadFetch:enabled"/>
   <int value="1960169775" label="NewPhotoPicker:disabled"/>
   <int value="1961425320" label="force-qtkit"/>
