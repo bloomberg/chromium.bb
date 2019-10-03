@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.widget;
+package org.chromium.chrome.browser.ui.widget;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 
@@ -14,9 +15,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.R;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
@@ -82,8 +81,7 @@ public class RoundedIconGeneratorTest {
         final int iconCornerRadiusDp = 20;
         final int iconTextSizeDp = 12;
 
-        int iconColor = ApiCompatibilityUtils.getColor(
-                mContext.getResources(), R.color.default_favicon_background_color);
+        int iconColor = Color.GRAY;
         RoundedIconGenerator generator = new RoundedIconGenerator(mContext.getResources(),
                 iconSizeDp, iconSizeDp, iconCornerRadiusDp, iconColor, iconTextSizeDp);
 

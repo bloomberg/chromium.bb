@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.widget;
+package org.chromium.chrome.browser.ui.widget.highlight;
 
 import android.content.Context;
 import android.graphics.Color;
@@ -10,8 +10,8 @@ import android.graphics.drawable.ColorDrawable;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.support.test.rule.UiThreadTestRule;
-import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.ImageView;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -19,8 +19,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ViewHighlighterTestUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
 /**
@@ -36,14 +34,12 @@ public class ViewHighlighterTest {
     @Before
     public void setUp() {
         mContext = InstrumentationRegistry.getTargetContext();
-        mContext.setTheme(R.style.Theme_Chromium_WithWindowAnimation);
     }
 
     @Test
     @MediumTest
     public void testRepeatedCallsToHighlightWorksCorrectly() {
-        View tintedImageButton =
-                LayoutInflater.from(mContext).inflate(R.layout.clear_storage, null, false);
+        View tintedImageButton = new ImageView(mContext);
         tintedImageButton.setBackground(new ColorDrawable(Color.LTGRAY));
         checkHighlightOff(tintedImageButton);
 
@@ -65,8 +61,7 @@ public class ViewHighlighterTest {
     @Test
     @MediumTest
     public void testViewWithNullBackground() {
-        View tintedImageButton =
-                LayoutInflater.from(mContext).inflate(R.layout.clear_storage, null, false);
+        View tintedImageButton = new ImageView(mContext);
         checkHighlightOff(tintedImageButton);
 
         ViewHighlighter.turnOffHighlight(tintedImageButton);

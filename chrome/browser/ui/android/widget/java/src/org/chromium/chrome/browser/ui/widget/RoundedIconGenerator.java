@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.widget;
+package org.chromium.chrome.browser.ui.widget;
 
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -13,10 +13,10 @@ import android.graphics.Paint.FontMetrics;
 import android.graphics.RectF;
 import android.text.TextPaint;
 import android.text.TextUtils;
-import android.util.Log;
 
 import androidx.annotation.Nullable;
 
+import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.browser.util.UrlUtilities;
@@ -114,11 +114,9 @@ public class RoundedIconGenerator {
         String displayText = text.substring(0, length).toUpperCase(Locale.getDefault());
         float textWidth = mTextPaint.measureText(displayText);
 
-        canvas.drawText(
-                displayText,
-                (mIconWidthPx - textWidth) / 2f,
-                Math.round((Math.max(mIconHeightPx, mTextHeight) - mTextHeight)
-                        / 2.0f + mTextYOffset),
+        canvas.drawText(displayText, (mIconWidthPx - textWidth) / 2f,
+                Math.round(
+                        (Math.max(mIconHeightPx, mTextHeight) - mTextHeight) / 2.0f + mTextYOffset),
                 mTextPaint);
 
         return icon;

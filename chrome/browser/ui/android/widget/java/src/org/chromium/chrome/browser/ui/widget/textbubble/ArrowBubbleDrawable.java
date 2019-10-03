@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.widget.textbubble;
+package org.chromium.chrome.browser.ui.widget.textbubble;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -19,7 +19,7 @@ import android.support.v4.graphics.drawable.DrawableCompat;
 
 import androidx.annotation.ColorInt;
 
-import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ui.widget.R;
 
 /**
  * A {@link Drawable} that is a bubble with an arrow pointing out of either the top or bottom.
@@ -62,7 +62,8 @@ class ArrowBubbleDrawable extends Drawable implements Drawable.Callback {
 
         mBubbleDrawable = DrawableCompat.wrap(new ShapeDrawable(
                 new RoundRectShape(new float[] {mRadiusPx, mRadiusPx, mRadiusPx, mRadiusPx,
-                    mRadiusPx, mRadiusPx, mRadiusPx, mRadiusPx}, null, null)));
+                                           mRadiusPx, mRadiusPx, mRadiusPx, mRadiusPx},
+                        null, null)));
 
         mBubbleDrawable.setCallback(this);
     }

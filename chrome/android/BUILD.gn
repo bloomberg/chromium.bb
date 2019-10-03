@@ -815,6 +815,7 @@ android_library("chrome_test_java") {
     "//chrome/android/webapk/libs/common:common_java",
     "//chrome/browser/android/metrics:ukm_utils_java",
     "//chrome/browser/ui/android/widget:java",
+    "//chrome/browser/ui/android/widget:test_support_java",
     "//chrome/browser/util/android:java",
     "//chrome/test/android:chrome_java_test_support",
     "//chrome/test/android/test_trusted_web_activity:test_trusted_web_activity_java",
