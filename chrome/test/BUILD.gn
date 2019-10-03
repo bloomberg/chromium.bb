@@ -5210,6 +5210,11 @@ test("unit_tests") {
     sources += [ "../gpu/widevine_cdm_proxy_factory_unittest.cc" ]
   }
 
+  if (enable_widevine_cdm_component && is_desktop_linux) {
+    sources +=
+        [ "../common/media/component_widevine_cdm_hint_file_linux_unittest.cc" ]
+  }
+
   if (enable_openscreen) {
     include_dirs = [ "//third_party/openscreen/src" ]
 
