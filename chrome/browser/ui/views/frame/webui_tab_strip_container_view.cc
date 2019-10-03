@@ -55,11 +55,14 @@ WebUITabStripContainerView::CreateNewTabButton() {
   return new_tab_button;
 }
 
-// TODO(pbos): Replace this button with tab counter. Remember to add a tooltip.
+// TODO(crbug.com/992972): Replace this button with tab counter. Consider
+// replacing the "toggle" string with a separate show/hide tooltip string.
 std::unique_ptr<ToolbarButton>
 WebUITabStripContainerView::CreateToggleButton() {
   auto toggle_button = std::make_unique<ToolbarButton>(this);
   toggle_button->SetID(VIEW_ID_WEBUI_TAB_STRIP_TOGGLE_BUTTON);
+  toggle_button->SetTooltipText(
+      l10n_util::GetStringUTF16(IDS_TOOLTIP_WEBUI_TAB_STRIP_TOGGLE_BUTTON));
   return toggle_button;
 }
 
