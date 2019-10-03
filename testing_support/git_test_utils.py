@@ -15,13 +15,18 @@ import tempfile
 import unittest
 
 
+if sys.version_info.major == 3:
+  # pylint: disable=redefined-builtin
+  basestring = (str,)
+
+
 def git_hash_data(data, typ='blob'):
   """Calculate the git-style SHA1 for some data.
 
   Only supports 'blob' type data at the moment.
   """
   assert typ == 'blob', 'Only support blobs for now'
-  return hashlib.sha1('blob %s\0%s' % (len(data), data)).hexdigest()
+  return hashlib.sha1(b'blob %d\0%s' % (len(data), data)).hexdigest()
 
 
 class OrderedSet(collections.MutableSet):
@@ -120,8 +125,8 @@ class GitRepoSchema(object):
 
   This is the repo
 
-     A - B - C - D
-           \ E /
+     A - B -  C - D
+           \\ E /
 
   Whitespace doesn't matter. Each line is a declaration of which commits come
   before which other commits.
@@ -166,15 +171,15 @@ class GitRepoSchema(object):
     is_root = True
     par_map = copy.deepcopy(self.par_map)
     while par_map:
-      empty_keys = set(k for k, v in par_map.iteritems() if not v)
+      empty_keys = set(k for k, v in par_map.items() if not v)
       assert empty_keys, 'Cycle detected! %s' % par_map
 
       for k in sorted(empty_keys):
         yield self.COMMIT(k, self.par_map[k],
-                          not any(k in v for v in self.par_map.itervalues()),
+                          not any(k in v for v in self.par_map.values()),
                           is_root)
         del par_map[k]
-      for v in par_map.itervalues():
+      for v in par_map.values():
         v.difference_update(empty_keys)
       is_root = False
 
@@ -321,7 +326,7 @@ class GitRepo(object):
 
     env = self.get_git_commit_env(commit_data)
 
-    for fname, file_data in commit_data.iteritems():
+    for fname, file_data in commit_data.items():
       # If it isn't a string, it's one of the special keys.
       if not isinstance(fname, basestring):
         continue
@@ -367,7 +372,9 @@ class GitRepo(object):
           self._date += datetime.timedelta(days=1)
         else:
           val = getattr(self, 'DEFAULT_%s' % singleton)
-        env['GIT_%s' % singleton] = str(val)
+        if not isinstance(val, str) and not isinstance(val, bytes):
+          val = str(val)
+        env['GIT_%s' % singleton] = val
     return env
 
   def git(self, *args, **kwargs):
@@ -377,6 +384,7 @@ class GitRepo(object):
       with open(os.devnull, 'wb') as devnull:
         output = subprocess.check_output(
           ('git',) + args, cwd=self.repo_path, stderr=devnull, **kwargs)
+        output = output.decode('utf-8')
       return self.COMMAND_OUTPUT(0, output)
     except subprocess.CalledProcessError as e:
       return self.COMMAND_OUTPUT(e.returncode, e.output)
@@ -418,17 +426,17 @@ class GitRepo(object):
     stdout = sys.stdout
     stderr = sys.stderr
     try:
-      # "multiple statements on a line" pylint: disable=multiple-statements
-      with tempfile.TemporaryFile() as out, tempfile.TemporaryFile() as err:
-        sys.stdout = out
-        sys.stderr = err
-        try:
-          self.run(fn, *args, **kwargs)
-        except SystemExit:
-          pass
-        out.seek(0)
-        err.seek(0)
-        return out.read(), err.read()
+      with tempfile.TemporaryFile('w+') as out:
+        with tempfile.TemporaryFile('w+') as err:
+          sys.stdout = out
+          sys.stderr = err
+          try:
+            self.run(fn, *args, **kwargs)
+          except SystemExit:
+            pass
+          out.seek(0)
+          err.seek(0)
+          return out.read(), err.read()
     finally:
       sys.stdout = stdout
       sys.stderr = stderr

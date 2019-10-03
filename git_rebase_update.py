@@ -320,8 +320,8 @@ def main(args=None):
     else:
       root_branch = git.root()
       if return_branch != 'HEAD':
-        print("%r was merged with its parent, checking out %r instead." %
-              (return_branch, root_branch))
+        print("%s was merged with its parent, checking out %s instead." %
+              (git.unicode_repr(return_branch), git.unicode_repr(root_branch)))
       git.run('checkout', root_branch)
 
     # return_workdir may also not be there any more.

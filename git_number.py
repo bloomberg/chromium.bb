@@ -75,7 +75,8 @@ def get_number_tree(prefix_bytes):
   ref = '%s:%s' % (REF, pathlify(prefix_bytes))
 
   try:
-    raw = buffer(git.run('cat-file', 'blob', ref, autostrip=False))
+    raw = buffer(
+        git.run('cat-file', 'blob', ref, autostrip=False, decode=False))
     return dict(struct.unpack_from(CHUNK_FMT, raw, i * CHUNK_SIZE)
                 for i in xrange(len(raw) / CHUNK_SIZE))
   except subprocess2.CalledProcessError:

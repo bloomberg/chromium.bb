@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env vpython3
 # Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -85,7 +85,7 @@ class Support(GitCommonTestBase):
     add_to_list()
     add_to_list()
 
-    self.assertEquals(testlist, ['dog'])
+    self.assertEqual(testlist, ['dog'])
 
 
 def slow_square(i):
@@ -102,7 +102,7 @@ class ScopedPoolTest(GitCommonTestBase):
   def testThreads(self):
     result = []
     with self.gc.ScopedPool(kind='threads') as pool:
-      result = list(pool.imap(slow_square, xrange(10)))
+      result = list(pool.imap(slow_square, range(10)))
     self.assertEqual([0, 1, 4, 9, 16, 25, 36, 49, 64, 81], result)
 
   def testThreadsCtrlC(self):
@@ -110,7 +110,7 @@ class ScopedPoolTest(GitCommonTestBase):
     with self.assertRaises(KeyboardInterrupt):
       with self.gc.ScopedPool(kind='threads') as pool:
         # Make sure this pool is interrupted in mid-swing
-        for i in pool.imap(slow_square, xrange(20)):
+        for i in pool.imap(slow_square, range(20)):
           if i > 32:
             os.kill(os.getpid(), self.CTRL_C)
           result.append(i)
@@ -119,7 +119,7 @@ class ScopedPoolTest(GitCommonTestBase):
   def testProcs(self):
     result = []
     with self.gc.ScopedPool() as pool:
-      result = list(pool.imap(slow_square, xrange(10)))
+      result = list(pool.imap(slow_square, range(10)))
     self.assertEqual([0, 1, 4, 9, 16, 25, 36, 49, 64, 81], result)
 
   def testProcsCtrlC(self):
@@ -127,7 +127,7 @@ class ScopedPoolTest(GitCommonTestBase):
     with self.assertRaises(KeyboardInterrupt):
       with self.gc.ScopedPool() as pool:
         # Make sure this pool is interrupted in mid-swing
-        for i in pool.imap(slow_square, xrange(20)):
+        for i in pool.imap(slow_square, range(20)):
           if i > 32:
             os.kill(os.getpid(), self.CTRL_C)
           result.append(i)
@@ -146,7 +146,6 @@ class ProgressPrinterTest(GitCommonTestBase):
     def flush(self):
       self.count += 1
 
-  @unittest.expectedFailure
   def testBasic(self):
     """This test is probably racy, but I don't have a better alternative."""
     fmt = '%(count)d/10'
@@ -154,12 +153,12 @@ class ProgressPrinterTest(GitCommonTestBase):
 
     pp = self.gc.ProgressPrinter(fmt, enabled=True, fout=stream, period=0.01)
     with pp as inc:
-      for _ in xrange(10):
+      for _ in range(10):
         time.sleep(0.02)
         inc()
 
     filtered = {x.strip() for x in stream.data}
-    rslt = {fmt % {'count': i} for i in xrange(11)}
+    rslt = {fmt % {'count': i} for i in range(11)}
     self.assertSetEqual(filtered, rslt)
     self.assertGreaterEqual(stream.count, 10)
 
@@ -172,24 +171,24 @@ class GitReadOnlyFunctionsTest(git_test_utils.GitRepoReadOnlyTestBase,
   """
 
   COMMIT_A = {
-    'some/files/file1': {'data': 'file1'},
-    'some/files/file2': {'data': 'file2'},
-    'some/files/file3': {'data': 'file3'},
-    'some/other/file':  {'data': 'otherfile'},
+    'some/files/file1': {'data': b'file1'},
+    'some/files/file2': {'data': b'file2'},
+    'some/files/file3': {'data': b'file3'},
+    'some/other/file':  {'data': b'otherfile'},
   }
 
   COMMIT_C = {
     'some/files/file2': {
       'mode': 0o755,
-      'data': 'file2 - vanilla\n'},
+      'data': b'file2 - vanilla\n'},
   }
 
   COMMIT_E = {
-    'some/files/file2': {'data': 'file2 - merged\n'},
+    'some/files/file2': {'data': b'file2 - merged\n'},
   }
 
   COMMIT_D = {
-    'some/files/file2': {'data': 'file2 - vanilla\nfile2 - merged\n'},
+    'some/files/file2': {'data': b'file2 - vanilla\nfile2 - merged\n'},
   }
 
   def testHashes(self):
@@ -209,7 +208,7 @@ class GitReadOnlyFunctionsTest(git_test_utils.GitRepoReadOnlyTestBase,
       self.repo['E'],
       self.repo['C'],
     ], ret)
-    self.assertEquals(
+    self.assertEqual(
       self.repo.run(self.gc.hash_one, 'branch_D'),
       self.repo['D']
     )
@@ -217,23 +216,23 @@ class GitReadOnlyFunctionsTest(git_test_utils.GitRepoReadOnlyTestBase,
         self.repo.run(self.gc.hash_one, 'branch_D', short=True)))
 
   def testStream(self):
-    items = set(self.repo.commit_map.itervalues())
+    items = set(self.repo.commit_map.values())
 
     def testfn():
-      for line in self.gc.run_stream('log', '--format=%H').xreadlines():
-        line = line.strip()
+      for line in self.gc.run_stream('log', '--format=%H').readlines():
+        line = line.strip().decode('utf-8')
         self.assertIn(line, items)
         items.remove(line)
 
     self.repo.run(testfn)
 
   def testStreamWithRetcode(self):
-    items = set(self.repo.commit_map.itervalues())
+    items = set(self.repo.commit_map.values())
 
     def testfn():
       with self.gc.run_stream_with_retcode('log', '--format=%H') as stdout:
-        for line in stdout.xreadlines():
-          line = line.strip()
+        for line in stdout.readlines():
+          line = line.strip().decode('utf-8')
           self.assertIn(line, items)
           items.remove(line)
 
@@ -326,13 +325,14 @@ class GitReadOnlyFunctionsTest(git_test_utils.GitRepoReadOnlyTestBase,
         'tag_C^{}',
       ]
     )
-    self.assertEqual(ret, map(binascii.unhexlify, [
-      self.repo['D'],
-      self.repo['A'],
-      self.repo['B'],
-      self.repo['E'],
-      self.repo['C'],
-    ]))
+    hashes = [
+        self.repo['D'],
+        self.repo['A'],
+        self.repo['B'],
+        self.repo['E'],
+        self.repo['C'],
+    ]
+    self.assertEqual(ret, [binascii.unhexlify(h) for h in hashes])
 
     with self.assertRaisesRegexp(Exception, r"one of \('master', 'bananas'\)"):
       self.repo.run(self.gc.parse_commitrefs, 'master', 'bananas')
@@ -356,20 +356,20 @@ class GitReadOnlyFunctionsTest(git_test_utils.GitRepoReadOnlyTestBase,
     file1 = self.COMMIT_A['some/files/file1']['data']
     file2 = self.COMMIT_D['some/files/file2']['data']
     file3 = self.COMMIT_A['some/files/file3']['data']
-    self.assertEquals(
+    self.assertEqual(
         tree['file1'],
         ('100644', 'blob', git_test_utils.git_hash_data(file1)))
-    self.assertEquals(
+    self.assertEqual(
         tree['file2'],
         ('100755', 'blob', git_test_utils.git_hash_data(file2)))
-    self.assertEquals(
+    self.assertEqual(
         tree['file3'],
         ('100644', 'blob', git_test_utils.git_hash_data(file3)))
 
     tree = self.repo.run(self.gc.tree, 'master:some')
-    self.assertEquals(len(tree), 2)
+    self.assertEqual(len(tree), 2)
     # Don't check the tree hash because we're lazy :)
-    self.assertEquals(tree['files'][:2], ('040000', 'tree'))
+    self.assertEqual(tree['files'][:2], ('040000', 'tree'))
 
     tree = self.repo.run(self.gc.tree, 'master:wat')
     self.assertEqual(tree, None)
@@ -380,16 +380,16 @@ class GitReadOnlyFunctionsTest(git_test_utils.GitRepoReadOnlyTestBase,
     file2 = self.COMMIT_D['some/files/file2']['data']
     file3 = self.COMMIT_A['some/files/file3']['data']
     other = self.COMMIT_A['some/other/file']['data']
-    self.assertEquals(
+    self.assertEqual(
         tree['files/file1'],
         ('100644', 'blob', git_test_utils.git_hash_data(file1)))
-    self.assertEquals(
+    self.assertEqual(
         tree['files/file2'],
         ('100755', 'blob', git_test_utils.git_hash_data(file2)))
-    self.assertEquals(
+    self.assertEqual(
         tree['files/file3'],
         ('100644', 'blob', git_test_utils.git_hash_data(file3)))
-    self.assertEquals(
+    self.assertEqual(
         tree['other/file'],
         ('100644', 'blob', git_test_utils.git_hash_data(other)))
 
@@ -399,7 +399,7 @@ class GitMutableFunctionsTest(git_test_utils.GitRepoReadWriteTestBase,
   REPO_SCHEMA = ''
 
   def _intern_data(self, data):
-    with tempfile.TemporaryFile() as f:
+    with tempfile.TemporaryFile('w') as f:
       f.write(data)
       f.seek(0)
       return self.repo.run(self.gc.intern_f, f)
@@ -407,8 +407,8 @@ class GitMutableFunctionsTest(git_test_utils.GitRepoReadWriteTestBase,
   def testInternF(self):
     data = 'CoolBobcatsBro'
     data_hash = self._intern_data(data)
-    self.assertEquals(git_test_utils.git_hash_data(data), data_hash)
-    self.assertEquals(data, self.repo.git('cat-file', 'blob', data_hash).stdout)
+    self.assertEqual(git_test_utils.git_hash_data(data.encode()), data_hash)
+    self.assertEqual(data, self.repo.git('cat-file', 'blob', data_hash).stdout)
 
   def testMkTree(self):
     tree = {}
@@ -416,47 +416,47 @@ class GitMutableFunctionsTest(git_test_utils.GitRepoReadWriteTestBase,
       name = 'file%d' % i
       tree[name] = ('100644', 'blob', self._intern_data(name))
     tree_hash = self.repo.run(self.gc.mktree, tree)
-    self.assertEquals('37b61866d6e061c4ba478e7eb525be7b5752737d', tree_hash)
+    self.assertEqual('37b61866d6e061c4ba478e7eb525be7b5752737d', tree_hash)
 
   def testConfig(self):
     self.repo.git('config', '--add', 'happy.derpies', 'food')
-    self.assertEquals(self.repo.run(self.gc.get_config_list, 'happy.derpies'),
-                      ['food'])
-    self.assertEquals(self.repo.run(self.gc.get_config_list, 'sad.derpies'), [])
+    self.assertEqual(self.repo.run(self.gc.get_config_list, 'happy.derpies'),
+                     ['food'])
+    self.assertEqual(self.repo.run(self.gc.get_config_list, 'sad.derpies'), [])
 
     self.repo.git('config', '--add', 'happy.derpies', 'cat')
-    self.assertEquals(self.repo.run(self.gc.get_config_list, 'happy.derpies'),
-                      ['food', 'cat'])
+    self.assertEqual(self.repo.run(self.gc.get_config_list, 'happy.derpies'),
+                     ['food', 'cat'])
 
-    self.assertEquals('cat', self.repo.run(self.gc.get_config, 'dude.bob',
-                                           'cat'))
+    self.assertEqual(
+        'cat', self.repo.run(self.gc.get_config, 'dude.bob', 'cat'))
 
     self.repo.run(self.gc.set_config, 'dude.bob', 'dog')
 
-    self.assertEquals('dog', self.repo.run(self.gc.get_config, 'dude.bob',
-                                           'cat'))
+    self.assertEqual(
+        'dog', self.repo.run(self.gc.get_config, 'dude.bob', 'cat'))
 
     self.repo.run(self.gc.del_config, 'dude.bob')
 
     # This should work without raising an exception
     self.repo.run(self.gc.del_config, 'dude.bob')
 
-    self.assertEquals('cat', self.repo.run(self.gc.get_config, 'dude.bob',
-                                           'cat'))
+    self.assertEqual(
+        'cat', self.repo.run(self.gc.get_config, 'dude.bob', 'cat'))
 
-    self.assertEquals('origin/master', self.repo.run(self.gc.root))
+    self.assertEqual('origin/master', self.repo.run(self.gc.root))
 
     self.repo.git('config', 'depot-tools.upstream', 'catfood')
 
-    self.assertEquals('catfood', self.repo.run(self.gc.root))
+    self.assertEqual('catfood', self.repo.run(self.gc.root))
 
   def testUpstream(self):
     self.repo.git('commit', '--allow-empty', '-am', 'foooooo')
-    self.assertEquals(self.repo.run(self.gc.upstream, 'bobly'), None)
-    self.assertEquals(self.repo.run(self.gc.upstream, 'master'), None)
+    self.assertEqual(self.repo.run(self.gc.upstream, 'bobly'), None)
+    self.assertEqual(self.repo.run(self.gc.upstream, 'master'), None)
     self.repo.git('checkout', '-tb', 'happybranch', 'master')
-    self.assertEquals(self.repo.run(self.gc.upstream, 'happybranch'),
-                      'master')
+    self.assertEqual(self.repo.run(self.gc.upstream, 'happybranch'),
+                     'master')
 
   def testNormalizedVersion(self):
     self.assertTrue(all(
@@ -505,7 +505,7 @@ class GitMutableFunctionsTest(git_test_utils.GitRepoReadWriteTestBase,
         ),
         'to_delete': None
     }
-    self.assertEquals(expected, actual)
+    self.assertEqual(expected, actual)
 
 
 class GitMutableStructuredTest(git_test_utils.GitRepoReadWriteTestBase,
@@ -520,12 +520,12 @@ class GitMutableStructuredTest(git_test_utils.GitRepoReadWriteTestBase,
   CAT DOG
   """
 
-  COMMIT_B = {'file': {'data': 'B'}}
-  COMMIT_H = {'file': {'data': 'H'}}
-  COMMIT_I = {'file': {'data': 'I'}}
-  COMMIT_J = {'file': {'data': 'J'}}
-  COMMIT_K = {'file': {'data': 'K'}}
-  COMMIT_L = {'file': {'data': 'L'}}
+  COMMIT_B = {'file': {'data': b'B'}}
+  COMMIT_H = {'file': {'data': b'H'}}
+  COMMIT_I = {'file': {'data': b'I'}}
+  COMMIT_J = {'file': {'data': b'J'}}
+  COMMIT_K = {'file': {'data': b'K'}}
+  COMMIT_L = {'file': {'data': b'L'}}
 
   def setUp(self):
     super(GitMutableStructuredTest, self).setUp()
@@ -536,7 +536,7 @@ class GitMutableStructuredTest(git_test_utils.GitRepoReadWriteTestBase,
     self.repo.git('branch', '--set-upstream-to', 'root_X', 'root_A')
 
   def testTooManyBranches(self):
-    for i in xrange(30):
+    for i in range(30):
       self.repo.git('branch', 'a'*i)
 
     _, rslt = self.repo.capture_stdio(list, self.gc.branches())
@@ -597,8 +597,8 @@ class GitMutableStructuredTest(git_test_utils.GitRepoReadWriteTestBase,
     self.repo.run(self.gc.remove_merge_base, 'branch_K')
     self.repo.run(self.gc.remove_merge_base, 'branch_L')
 
-    self.assertEqual(None, self.repo.run(self.gc.get_config,
-                                         'branch.branch_K.base'))
+    self.assertEqual(
+        None, self.repo.run(self.gc.get_config, 'branch.branch_K.base'))
 
     self.assertEqual({}, self.repo.run(self.gc.branch_config_map, 'base'))
 
@@ -658,20 +658,20 @@ class GitMutableStructuredTest(git_test_utils.GitRepoReadWriteTestBase,
     self.repo.capture_stdio(
       lambda: retval.append(self.repo.run(self.gc.is_dirty_git_tree, 'foo')))
 
-    self.assertEquals(False, retval[0])
+    self.assertEqual(False, retval[0])
     self.repo.open('test.file', 'w').write('test data')
     self.repo.git('add', 'test.file')
 
     retval = []
     self.repo.capture_stdio(
       lambda: retval.append(self.repo.run(self.gc.is_dirty_git_tree, 'foo')))
-    self.assertEquals(True, retval[0])
+    self.assertEqual(True, retval[0])
 
   def testSquashBranch(self):
     self.repo.git('checkout', 'branch_K')
 
-    self.assertEquals(True, self.repo.run(self.gc.squash_current_branch,
-                                          'cool message'))
+    self.assertEqual(
+        True, self.repo.run(self.gc.squash_current_branch, 'cool message'))
 
     lines = ['cool message', '']
     for l in 'HIJK':
@@ -679,18 +679,18 @@ class GitMutableStructuredTest(git_test_utils.GitRepoReadWriteTestBase,
     lines.pop()
     msg = '\n'.join(lines)
 
-    self.assertEquals(self.repo.run(self.gc.run, 'log', '-n1', '--format=%B'),
-                      msg)
+    self.assertEqual(self.repo.run(self.gc.run, 'log', '-n1', '--format=%B'),
+                     msg)
 
-    self.assertEquals(
+    self.assertEqual(
       self.repo.git('cat-file', 'blob', 'branch_K:file').stdout,
       'K'
     )
 
   def testSquashBranchDefaultMessage(self):
     self.repo.git('checkout', 'branch_K')
-    self.assertEquals(True, self.repo.run(self.gc.squash_current_branch))
-    self.assertEquals(self.repo.run(self.gc.run, 'log', '-n1', '--format=%s'),
+    self.assertEqual(True, self.repo.run(self.gc.squash_current_branch))
+    self.assertEqual(self.repo.run(self.gc.run, 'log', '-n1', '--format=%s'),
                       'git squash commit for branch_K.')
 
   def testSquashBranchEmpty(self):
@@ -699,7 +699,7 @@ class GitMutableStructuredTest(git_test_utils.GitRepoReadWriteTestBase,
     self.repo.git('commit', '-m', 'revert all changes no branch')
     # Should return False since the quash would result in an empty commit
     stdout = self.repo.capture_stdio(self.gc.squash_current_branch)[0]
-    self.assertEquals(stdout, 'Nothing to commit; squashed branch is empty\n')
+    self.assertEqual(stdout, 'Nothing to commit; squashed branch is empty\n')
 
   def testRebase(self):
     self.assertSchema("""
@@ -782,24 +782,24 @@ class GitFreezeThaw(git_test_utils.GitRepoReadWriteTestBase):
   """
 
   COMMIT_A = {
-    'some/files/file1': {'data': 'file1'},
-    'some/files/file2': {'data': 'file2'},
-    'some/files/file3': {'data': 'file3'},
-    'some/other/file':  {'data': 'otherfile'},
+    'some/files/file1': {'data': b'file1'},
+    'some/files/file2': {'data': b'file2'},
+    'some/files/file3': {'data': b'file3'},
+    'some/other/file':  {'data': b'otherfile'},
   }
 
   COMMIT_C = {
     'some/files/file2': {
       'mode': 0o755,
-      'data': 'file2 - vanilla'},
+      'data': b'file2 - vanilla'},
   }
 
   COMMIT_E = {
-    'some/files/file2': {'data': 'file2 - merged'},
+    'some/files/file2': {'data': b'file2 - merged'},
   }
 
   COMMIT_D = {
-    'some/files/file2': {'data': 'file2 - vanilla\nfile2 - merged'},
+    'some/files/file2': {'data': b'file2 - vanilla\nfile2 - merged'},
   }
 
   def testNothing(self):
@@ -825,23 +825,23 @@ class GitFreezeThaw(git_test_utils.GitRepoReadWriteTestBase):
       self.repo.git('add', 'some/files/file5')
 
       # Freeze group 1
-      self.assertEquals(self.repo.git('status', '--porcelain').stdout, STATUS_1)
+      self.assertEqual(self.repo.git('status', '--porcelain').stdout, STATUS_1)
       self.assertIsNone(self.gc.freeze())
-      self.assertEquals(self.repo.git('status', '--porcelain').stdout, '')
+      self.assertEqual(self.repo.git('status', '--porcelain').stdout, '')
 
       # Freeze group 2
       with open('some/files/file2', 'a') as f2:
         print('new! appended line!', file=f2)
-      self.assertEquals(self.repo.git('status', '--porcelain').stdout,
-                        ' M some/files/file2\n')
+      self.assertEqual(self.repo.git('status', '--porcelain').stdout,
+                       ' M some/files/file2\n')
       self.assertIsNone(self.gc.freeze())
-      self.assertEquals(self.repo.git('status', '--porcelain').stdout, '')
+      self.assertEqual(self.repo.git('status', '--porcelain').stdout, '')
 
       # Thaw it out!
       self.assertIsNone(self.gc.thaw())
       self.assertIsNotNone(self.gc.thaw())  # One thaw should thaw everything
 
-      self.assertEquals(self.repo.git('status', '--porcelain').stdout, STATUS_1)
+      self.assertEqual(self.repo.git('status', '--porcelain').stdout, STATUS_1)
 
     self.repo.run(inner)
 
@@ -850,7 +850,7 @@ class GitFreezeThaw(git_test_utils.GitRepoReadWriteTestBase):
       self.repo.git('config', 'depot-tools.freeze-size-limit', '1')
       with open('bigfile', 'w') as f:
         chunk = 'NERDFACE' * 1024
-        for _ in xrange(128 * 2 + 1):  # Just over 2 mb
+        for _ in range(128 * 2 + 1):  # Just over 2 mb
           f.write(chunk)
       _, err = self.repo.capture_stdio(self.gc.freeze)
       self.assertIn('too much untracked+unignored', err)
@@ -860,10 +860,10 @@ class GitFreezeThaw(git_test_utils.GitRepoReadWriteTestBase):
   def testTooBigMultipleFiles(self):
     def inner():
       self.repo.git('config', 'depot-tools.freeze-size-limit', '1')
-      for i in xrange(3):
+      for i in range(3):
         with open('file%d' % i, 'w') as f:
           chunk = 'NERDFACE' * 1024
-          for _ in xrange(50):  # About 400k
+          for _ in range(50):  # About 400k
             f.write(chunk)
       _, err = self.repo.capture_stdio(self.gc.freeze)
       self.assertIn('too much untracked+unignored', err)
@@ -896,7 +896,7 @@ class GitFreezeThaw(git_test_utils.GitRepoReadWriteTestBase):
       self.repo.git('checkout', '-b', 'unreadable_file_branch')
       with open('bad_file', 'w') as f:
         f.write('some text')
-      os.chmod('bad_file', 0111)
+      os.chmod('bad_file', 0o0111)
       ret = self.repo.run(self.gc.freeze)
       self.assertIn('Failed to index some unindexed files.', ret)
 
@@ -935,11 +935,11 @@ class GitTestUtilsTest(git_test_utils.GitRepoReadOnlyTestBase):
   """
 
   COMMIT_A = {
-    'file1': {'data': 'file1'},
+    'file1': {'data': b'file1'},
   }
 
   COMMIT_B = {
-    'file1': {'data': 'file1 changed'},
+    'file1': {'data': b'file1 changed'},
   }
 
   # Test special keys (custom commit data).
@@ -952,7 +952,7 @@ class GitTestUtilsTest(git_test_utils.GitRepoReadOnlyTestBase):
     GitRepo.COMMITTER_EMAIL: 'committer@example.com',
     GitRepo.COMMITTER_DATE: datetime.datetime(1990, 4, 5, 6, 7, 8,
                                               tzinfo=git_test_utils.UTC),
-    'file1': {'data': 'file1 changed again'},
+    'file1': {'data': b'file1 changed again'},
   }
 
   def testAutomaticCommitDates(self):
@@ -960,22 +960,22 @@ class GitTestUtilsTest(git_test_utils.GitRepoReadOnlyTestBase):
     # must be in UTC (otherwise the tests are system-dependent, and if your
     # local timezone is positive, timestamps will be <0 which causes bizarre
     # behaviour in Git; http://crbug.com/581895).
-    self.assertEquals('Author McAuthorly 1970-01-01 00:00:00 +0000',
-                      self.repo.show_commit('A', format_string='%an %ai'))
-    self.assertEquals('Charles Committish 1970-01-02 00:00:00 +0000',
-                      self.repo.show_commit('A', format_string='%cn %ci'))
-    self.assertEquals('Author McAuthorly 1970-01-03 00:00:00 +0000',
-                      self.repo.show_commit('B', format_string='%an %ai'))
-    self.assertEquals('Charles Committish 1970-01-04 00:00:00 +0000',
-                      self.repo.show_commit('B', format_string='%cn %ci'))
+    self.assertEqual('Author McAuthorly 1970-01-01 00:00:00 +0000',
+                     self.repo.show_commit('A', format_string='%an %ai'))
+    self.assertEqual('Charles Committish 1970-01-02 00:00:00 +0000',
+                     self.repo.show_commit('A', format_string='%cn %ci'))
+    self.assertEqual('Author McAuthorly 1970-01-03 00:00:00 +0000',
+                     self.repo.show_commit('B', format_string='%an %ai'))
+    self.assertEqual('Charles Committish 1970-01-04 00:00:00 +0000',
+                     self.repo.show_commit('B', format_string='%cn %ci'))
 
   def testCustomCommitData(self):
-    self.assertEquals('Custom Author author@example.com '
-                      '1980-09-08 07:06:05 +0000',
-                      self.repo.show_commit('C', format_string='%an %ae %ai'))
-    self.assertEquals('Custom Committer committer@example.com '
-                      '1990-04-05 06:07:08 +0000',
-                      self.repo.show_commit('C', format_string='%cn %ce %ci'))
+    self.assertEqual('Custom Author author@example.com '
+                     '1980-09-08 07:06:05 +0000',
+                     self.repo.show_commit('C', format_string='%an %ae %ai'))
+    self.assertEqual('Custom Committer committer@example.com '
+                     '1990-04-05 06:07:08 +0000',
+                     self.repo.show_commit('C', format_string='%cn %ce %ci'))
 
 if __name__ == '__main__':
   sys.exit(coverage_utils.covered_main(
