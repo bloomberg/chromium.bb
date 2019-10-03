@@ -418,6 +418,12 @@ def AddInstrumentationTestOptions(parser):
       help='Specify Android App Bundle modules to install in addition to the '
       'base module.')
   parser.add_argument(
+      '--fake-module',
+      action='append',
+      dest='fake_modules',
+      help='Specify Android App Bundle modules to fake install in addition to '
+      'the real modules.')
+  parser.add_argument(
       '--coverage-dir',
       type=os.path.realpath,
       help='Directory in which to place all generated '
