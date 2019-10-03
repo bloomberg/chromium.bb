@@ -103,6 +103,8 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
   // Returns nullptr if this global scope is a WorkletGlobalScope
   virtual WorkerNavigator* navigator() const { return nullptr; }
 
+  // Returns the resource fetcher for subresources (a.k.a. inside settings
+  // resource fetcher). See core/workers/README.md for details.
   ResourceFetcher* Fetcher() const override;
   ResourceFetcher* EnsureFetcher();
 
