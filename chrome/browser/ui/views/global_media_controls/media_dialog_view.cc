@@ -78,11 +78,16 @@ bool MediaDialogView::Close() {
 }
 
 void MediaDialogView::AddedToWidget() {
+  int corner_radius =
+      views::LayoutProvider::Get()->GetCornerRadiusMetric(views::EMPHASIS_HIGH);
+
   views::BubbleFrameView* frame = GetBubbleFrameView();
   if (frame) {
-    frame->SetCornerRadius(views::LayoutProvider::Get()->GetCornerRadiusMetric(
-        views::EMPHASIS_HIGH));
+    frame->SetCornerRadius(corner_radius);
   }
+
+  SetPaintToLayer();
+  layer()->SetRoundedCornerRadius(gfx::RoundedCornersF(corner_radius));
 
   controller_->SetDialogDelegate(this);
 }
