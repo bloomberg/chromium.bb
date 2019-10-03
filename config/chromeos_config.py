@@ -1437,6 +1437,7 @@ def PreCqBuilders(site_config, boards_dict, ge_build_config):
       pre_cq=True,
       archive=False,
       chrome_sdk=False,
+      sync_chrome=True,
       chroot_replace=True,
       debug_symbols=False,
       prebuilts=False,
