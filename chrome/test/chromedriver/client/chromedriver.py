@@ -628,7 +628,7 @@ class ChromeDriver(object):
 
   def AddVirtualAuthenticator(self, protocol=None, transport=None,
                               hasResidentKey=None, hasUserVerification=None,
-                              isUserVerified=None):
+                              isUserConsenting=None, isUserVerified=None):
     options = {}
     if protocol is not None:
       options['protocol'] = protocol
@@ -638,6 +638,8 @@ class ChromeDriver(object):
       options['hasResidentKey'] = hasResidentKey
     if hasUserVerification is not None:
       options['hasUserVerification'] = hasUserVerification
+    if isUserConsenting is not None:
+      options['isUserConsenting'] = isUserConsenting
     if isUserVerified is not None:
       options['isUserVerified'] = isUserVerified
 

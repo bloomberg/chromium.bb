@@ -2394,6 +2394,23 @@ class ChromeDriverSecureContextTest(ChromeDriverBaseTestWithWebServer):
         transport = 'usb',
         hasResidentKey = False,
         hasUserVerification = False,
+        isUserConsenting = True,
+        isUserVerified = True,
+    )
+    result = self._driver.ExecuteAsyncScript(script)
+    self.assertEquals('OK', result['status'])
+    self.assertEquals(['usb'], result['credential']['transports'])
+
+  def testAddVirtualAuthenticatorDefaultParams(self):
+    script = """
+      let done = arguments[0];
+      registerCredential().then(done);
+    """
+    self._driver.Load(self.GetHttpsUrlForFile(
+        '/chromedriver/webauthn_test.html', 'chromedriver.test'))
+    self._driver.AddVirtualAuthenticator(
+        protocol = 'ctap2',
+        transport = 'usb',
     )
     result = self._driver.ExecuteAsyncScript(script)
     self.assertEquals('OK', result['status'])
@@ -2501,6 +2518,7 @@ class ChromeDriverSecureContextTest(ChromeDriverBaseTestWithWebServer):
         transport = 'usb',
         hasResidentKey = True,
         hasUserVerification = True,
+        isUserVerified = True,
     )['authenticatorId']
 
     # Register a credential via the webauthn API.
@@ -2529,8 +2547,6 @@ class ChromeDriverSecureContextTest(ChromeDriverBaseTestWithWebServer):
     authenticatorId = self._driver.AddVirtualAuthenticator(
         protocol = 'ctap2',
         transport = 'usb',
-        hasResidentKey = True,
-        hasUserVerification = True,
     )['authenticatorId']
 
     # Register two credentials.
@@ -2562,8 +2578,6 @@ class ChromeDriverSecureContextTest(ChromeDriverBaseTestWithWebServer):
     authenticatorId = self._driver.AddVirtualAuthenticator(
         protocol = 'ctap2',
         transport = 'usb',
-        hasResidentKey = True,
-        hasUserVerification = True,
     )['authenticatorId']
 
     # Register a credential via the webauthn API.
