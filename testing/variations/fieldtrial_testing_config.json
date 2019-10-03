@@ -4196,6 +4196,26 @@
             ]
         }
     ],
+    "PartitionConnectionsByNetworkIsolationKey": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "PartitionConnectionsAndSSLSessions",
+                    "enable_features": [
+                        "PartitionConnectionsByNetworkIsolationKey",
+                        "PartitionSSLSessionsByNetworkIsolationKey"
+                    ]
+                }
+            ]
+        }
+    ],
     "PassiveDocumentEventListeners": [
         {
             "platforms": [
