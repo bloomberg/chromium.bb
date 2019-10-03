@@ -62,11 +62,17 @@ void QuicHttp3Logger::OnPeerQpackDecoderStreamCreated(
       stream_id);
 }
 
-void QuicHttp3Logger::OnSettingsFrame(const quic::SettingsFrame& frame) {
+void QuicHttp3Logger::OnSettingsFrameReceived(
+    const quic::SettingsFrame& frame) {
   if (!net_log_.IsCapturing())
     return;
   net_log_.AddEvent(NetLogEventType::HTTP3_SETTINGS_RECEIVED,
                     [&] { return NetLogSettingsParams(frame); });
+}
+
+void QuicHttp3Logger::OnSettingsFrameSent(
+    const quic::SettingsFrame& /*frame*/) {
+  // TODO(renjietang): handle this event.
 }
 
 }  // namespace net
