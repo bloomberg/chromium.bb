@@ -527,6 +527,40 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
   }
 }
 
+// Test that after searching in "Use Other Password" and selecting an option,
+// the screen is dismissed.
+- (void)testOtherPasswordsDismissAfterSearch {
+  // Bring up the keyboard.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+      performAction:TapWebElementWithId(kFormElementUsername)];
+
+  // Tap the passwords icon.
+  [[EarlGrey selectElementWithMatcher:PasswordIconMatcher()]
+      performAction:grey_tap()];
+
+  // Tap "Use Other Password...".
+  [[EarlGrey selectElementWithMatcher:OtherPasswordsMatcher()]
+      performAction:grey_tap()];
+
+  // Verify "Use Other Passwords" opened.
+  [[EarlGrey selectElementWithMatcher:OtherPasswordsDismissMatcher()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Tap the password search bar.
+  [[EarlGrey selectElementWithMatcher:PasswordSearchBarMatcher()]
+      performAction:grey_typeText(@"user")];
+
+  // Select a username.
+  [[EarlGrey selectElementWithMatcher:UsernameButtonMatcher()]
+      performAction:grey_tap()];
+
+  // Verify the password list disappears.
+  [[EarlGrey selectElementWithMatcher:PasswordSearchBarMatcher()]
+      assertWithMatcher:grey_nil()];
+  [[EarlGrey selectElementWithMatcher:OtherPasswordsMatcher()]
+      assertWithMatcher:grey_nil()];
+}
+
 // Tests that the Password View Controller is dismissed when tapping the
 // keyboard icon.
 - (void)testKeyboardIconDismissPasswordController {
