@@ -1390,7 +1390,7 @@ LayerThreadedAnimationDelegate* Layer::GetThreadedAnimationDelegate() {
 }
 
 void Layer::CreateCcLayer() {
-  if (type_ == LAYER_SOLID_COLOR) {
+  if (type_ == LAYER_SOLID_COLOR || type_ == LAYER_NOT_DRAWN) {
     solid_color_layer_ = cc::SolidColorLayer::Create();
     cc_layer_ = solid_color_layer_.get();
   } else if (type_ == LAYER_NINE_PATCH) {
