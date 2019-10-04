@@ -1720,6 +1720,7 @@ def AndroidTemplates(site_config):
       uprev=False,
       overlays=constants.BOTH_OVERLAYS,
       manifest_version=True,
+      sync_chrome=True,
       android_rev=constants.ANDROID_REV_LATEST,
       description='Preflight Android Uprev & Build (internal)',
       luci_builder=config_lib.LUCI_BUILDER_PFQ,
