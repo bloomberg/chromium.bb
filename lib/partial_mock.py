@@ -203,7 +203,7 @@ def _RecursiveCompare(lhs, rhs):
             len(lhs) == len(rhs) and
             all(_RecursiveCompare(i, j) for i, j in zip(lhs, rhs)))
   elif isinstance(lhs, dict):
-    return _RecursiveCompare(sorted(lhs.items()), sorted(rhs.iteritems()))
+    return _RecursiveCompare(sorted(lhs.items()), sorted(rhs.items()))
   else:
     return lhs == rhs
 

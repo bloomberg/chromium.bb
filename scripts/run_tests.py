@@ -199,6 +199,7 @@ PYTHON3_TESTS = {
     'lib/namespaces_unittest',
     'lib/nebraska_wrapper_unittest',
     'lib/parseelf_unittest',
+    'lib/partial_mock_unittest',
     'lib/path_util_unittest',
     'lib/paygen/gslock_unittest',
     'lib/paygen/partition_lib_unittest',
