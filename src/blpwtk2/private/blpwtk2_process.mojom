@@ -71,6 +71,15 @@ interface ProcessHost {
     registerScreenForStreaming(uint32 view) => (string media_id);
         // Register a Display device as a streaming media source
 
+    dumpDiagnostics(int32 type, string path);
+        // Request process host to dump diagnostic information to the file
+        // located in 'path'.
+
+    [Sync]
+    getGpuInfo() => (string diagnostics);
+        // Request process host to return gpu diagnostic information 
+        // as a string.
+
     addHttpProxy(ProxyConfigType type, string host, int32 port);
         // Add a new proxy host 'host':'port'.  This will cause the browser
         // to direct HTTP traffic to 'host':'port' via the 'type' protocol.
