@@ -14,6 +14,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
+import org.chromium.ui.modaldialog.ModalDialogManager;
 
 /** JNI call glue between the native password manager onboarding class and Java objects. */
 public class OnboardingDialogBridge {
@@ -63,7 +64,8 @@ public class OnboardingDialogBridge {
     public void showDialog(String onboardingTitle, String onboardingDetails) {
         mOnboardingDialog.showDialog(onboardingTitle, onboardingDetails,
                 getDrawableResourceFromFeature(), mResources.getString(R.string.continue_button),
-                mResources.getString(R.string.not_now), this::onClick, true);
+                mResources.getString(R.string.not_now), this::onClick, true,
+                ModalDialogManager.ModalDialogType.TAB);
     }
 
     @CalledByNative
