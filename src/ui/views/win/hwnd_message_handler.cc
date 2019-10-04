@@ -407,6 +407,7 @@ HWNDMessageHandler::HWNDMessageHandler(HWNDMessageHandlerDelegate* delegate,
       pointer_events_for_touch_(::features::IsUsingWMPointerForTouch()),
       precision_touchpad_scroll_phase_enabled_(base::FeatureList::IsEnabled(
           ::features::kPrecisionTouchpadScrollPhase)),
+      reroute_mouse_wheel_to_any_related_window_(false),
       autohide_factory_(this) {}
 
 HWNDMessageHandler::~HWNDMessageHandler() {
@@ -836,6 +837,11 @@ bool HWNDMessageHandler::SetTitle(const base::string16& title) {
 }
 
 void HWNDMessageHandler::SetCursor(HCURSOR cursor) {
+  if (is_cursor_overridden_) {
+    current_cursor_ = cursor;
+    return;
+  }
+
   if (cursor) {
     previous_cursor_ = ::SetCursor(cursor);
     current_cursor_ = cursor;
@@ -983,6 +989,9 @@ LRESULT HWNDMessageHandler::OnWndProc(UINT message,
   if (delegate_) {
     delegate_->PostHandleMSG(message, w_param, l_param);
     if (message == WM_NCDESTROY) {
+      if (!handled_wm_destroy_) {
+        OnDestroy();
+      }
       RestoreEnabledIfNecessary();
       delegate_->HandleDestroyed();
     }
@@ -1612,6 +1621,8 @@ void HWNDMessageHandler::OnDestroy() {
     // discarded.
     UiaReturnRawElementProvider(hwnd(), 0, 0, nullptr);
   }
+
+  handled_wm_destroy_ = true;
 }
 
 void HWNDMessageHandler::OnDisplayChange(UINT bits_per_pixel,
@@ -2351,6 +2362,7 @@ LRESULT HWNDMessageHandler::OnSetCursor(UINT message,
       break;
     case HTTOPLEFT:
     case HTBOTTOMRIGHT:
+    case HTOBJECT:  /* see blpwtk2_webviewimpl.cc: HTBOTTOMRIGHT is 'special' in Windows, so we don't use it */
       cursor = IDC_SIZENWSE;
       break;
     case HTTOPRIGHT:
@@ -2358,6 +2370,7 @@ LRESULT HWNDMessageHandler::OnSetCursor(UINT message,
       cursor = IDC_SIZENESW;
       break;
     case HTCLIENT:
+      is_cursor_overridden_ = false;
       SetCursor(current_cursor_);
       return 1;
     case LOWORD(HTERROR):  // Use HTERROR's LOWORD value for valid comparison.
@@ -2367,6 +2380,7 @@ LRESULT HWNDMessageHandler::OnSetCursor(UINT message,
       // Use the default value, IDC_ARROW.
       break;
   }
+  is_cursor_overridden_ = true;
   ::SetCursor(LoadCursor(nullptr, cursor));
   return 1;
 }
@@ -2903,7 +2917,7 @@ LRESULT HWNDMessageHandler::HandleMouseEventInternal(UINT message,
   } else if (event.type() == ui::ET_MOUSEWHEEL) {
     ui::MouseWheelEvent mouse_wheel_event(msg);
     // Reroute the mouse wheel to the window under the pointer if applicable.
-    return (ui::RerouteMouseWheel(hwnd(), w_param, l_param) ||
+    return (ui::RerouteMouseWheel(hwnd(), w_param, l_param, reroute_mouse_wheel_to_any_related_window_) ||
             delegate_->HandleMouseEvent(&mouse_wheel_event))
                ? 0
                : 1;
