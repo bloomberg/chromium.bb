@@ -282,7 +282,8 @@ TEST_F(MetricsWebContentsObserverTest, SuccessfulMainFrameNavigation) {
   CheckNoErrorEvents();
 }
 
-TEST_F(MetricsWebContentsObserverTest, MainFrameNavigationInternalAbort) {
+TEST_F(MetricsWebContentsObserverTest,
+       DISABLED_MainFrameNavigationInternalAbort) {
   content::WebContentsTester* web_contents_tester =
       content::WebContentsTester::For(web_contents());
   web_contents_tester->NavigateAndFail(
