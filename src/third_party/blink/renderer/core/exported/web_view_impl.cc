@@ -74,6 +74,7 @@
 #include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
+#include "third_party/blink/renderer/core/dom/events/custom_event.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/editing/editor.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
@@ -1964,6 +1965,25 @@ void WebViewImpl::DidAcquirePointerLock() {
 void WebViewImpl::DidNotAcquirePointerLock() {
   if (MainFrameImpl())
     MainFrameImpl()->FrameWidget()->DidNotAcquirePointerLock();
+}
+
+void WebViewImpl::DidChangeWindowRect()
+{
+  if (!MainFrameImpl()
+      || !MainFrameImpl()->GetFrame()
+      || !MainFrameImpl()->GetFrame()->GetDocument()) {
+    return;
+  }
+
+  CustomEventInit eventInit;
+  eventInit.setBubbles(false);
+  eventInit.setCancelable(false);
+
+  CustomEvent* event = CustomEvent::Create(
+      ToScriptStateForMainWorld(MainFrameImpl()->GetFrame()),
+      "bbWindowRectChanged",
+      &eventInit);
+  MainFrameImpl()->GetFrame()->DomWindow()->DispatchEvent(*event);
 }
 
 void WebViewImpl::DidLosePointerLock() {
