@@ -607,9 +607,6 @@ if (is_android) {
       "android/browsertests_apk/src/org/chromium/android_browsertests_apk/ChromeBrowserTestsActivity.java",
       "android/browsertests_apk/src/org/chromium/android_browsertests_apk/ChromeBrowserTestsApplication.java",
     ]
-    srcjar_deps = [
-      "//components/module_installer/android:module_installer_build_config",
-    ]
   }
 
   jinja_template("android_browsertests_manifest") {
@@ -3672,10 +3669,6 @@ test("unit_tests") {
         "//chrome/android/modules/dev_ui/provider:java",
       ]
     }
-
-    srcjar_deps = [
-      "//components/module_installer/android:module_installer_build_config",
-    ]
   } else {
     # !is_android
     sources += [
