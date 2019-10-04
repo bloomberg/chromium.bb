@@ -4506,6 +4506,8 @@ def CheckChangeOnCommit(input_api, output_api):
       input_api.canned_checks.CheckPatchFormatted(input_api, output_api))
   results.extend(input_api.canned_checks.CheckChangeHasBugField(
       input_api, output_api))
+  results.extend(input_api.canned_checks.CheckChangeHasNoUnwantedTags(
+      input_api, output_api))
   results.extend(input_api.canned_checks.CheckChangeHasDescription(
       input_api, output_api))
   return results
