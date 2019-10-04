@@ -506,7 +506,7 @@ NonClientFrameView* DesktopWindowTreeHostPlatform::CreateNonClientFrameView() {
 }
 
 bool DesktopWindowTreeHostPlatform::ShouldUseNativeFrame() const {
-  return false;
+  return platform_window()->ShouldUseNativeFrame();
 }
 
 bool DesktopWindowTreeHostPlatform::ShouldWindowContentsBeTransparent() const {

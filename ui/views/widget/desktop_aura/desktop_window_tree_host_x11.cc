@@ -255,10 +255,6 @@ void DesktopWindowTreeHostX11::SetVisibilityChangedAnimationsEnabled(
   // Much like the previous NativeWidgetGtk, we don't have anything to do here.
 }
 
-bool DesktopWindowTreeHostX11::ShouldUseNativeFrame() const {
-  return GetXWindow()->use_native_frame();
-}
-
 void DesktopWindowTreeHostX11::FrameTypeChanged() {
   Widget::FrameType new_type =
       native_widget_delegate()->AsWidget()->frame_type();
