@@ -48,11 +48,16 @@ junit_binary("module_installer_junit_tests") {
   java_files = [
     "junit/src/org/chromium/components/module_installer/engine/ApkEngineTest.java",
     "junit/src/org/chromium/components/module_installer/engine/SplitCompatEngineTest.java",
+    "junit/src/org/chromium/components/module_installer/logger/LoggerTestUtil.java",
+    "junit/src/org/chromium/components/module_installer/logger/PlayCoreLoggerTest.java",
+    "junit/src/org/chromium/components/module_installer/logger/SplitInstallFailureLoggerTest.java",
+    "junit/src/org/chromium/components/module_installer/logger/SplitInstallStatusLoggerTest.java",
     "junit/src/org/chromium/components/module_installer/observer/ActivityObserverTest.java",
   ]
   deps = [
     ":module_installer_java",
     "//base:base_java",
+    "//base:base_java_test_support",
     "//base:base_junit_test_support",
   ]
 }
