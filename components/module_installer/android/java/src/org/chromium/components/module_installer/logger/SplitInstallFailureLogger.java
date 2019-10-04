@@ -87,13 +87,13 @@ class SplitInstallFailureLogger {
         log(moduleName, NO_SPLITCOMPAT);
     }
 
-    public void logStatusFailure(String moduleName, @SplitInstallErrorCode int status) {
-        Integer code = getHistogramCode(status);
+    public void logStatusFailure(String moduleName, @SplitInstallErrorCode int errorCode) {
+        Integer code = getHistogramCode(errorCode);
         log(moduleName, code == -1 ? UNKNOWN_SPLITINSTALL_ERROR : code);
     }
 
-    public void logRequestFailure(String moduleName, @SplitInstallErrorCode int status) {
-        Integer code = getHistogramCode(status);
+    public void logRequestFailure(String moduleName, @SplitInstallErrorCode int errorCode) {
+        Integer code = getHistogramCode(errorCode);
         log(moduleName, code == -1 ? UNKNOWN_REQUEST_ERROR : code);
     }
 
