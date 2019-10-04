@@ -3337,13 +3337,13 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
   // disabled; some of the UI is not yet correctly themed. Note: the WebUI CSS
   // explicitly uses light (instead of not dark), which is why we don't reset
   // back to no-preference. https://crbug.com/965811
-  if (contents && !base::FeatureList::IsEnabled(features::kWebUIDarkMode)) {
-    bool force_light = contents->GetURL().SchemeIs(content::kChromeUIScheme);
+  if (!base::FeatureList::IsEnabled(features::kWebUIDarkMode)) {
+    const GURL url = rvh->GetSiteInstance()->GetSiteURL();
+    bool force_light = url.SchemeIs(content::kChromeUIScheme);
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     if (!force_light) {
-      force_light =
-          contents->GetURL().SchemeIs(extensions::kExtensionScheme) &&
-          contents->GetURL().host_piece() == extension_misc::kPdfExtensionId;
+      force_light = url.SchemeIs(extensions::kExtensionScheme) &&
+                    url.host_piece() == extension_misc::kPdfExtensionId;
     }
 #endif
     if (force_light)
