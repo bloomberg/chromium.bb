@@ -455,7 +455,8 @@ TEST_F(SharingServiceTest, DeviceRegistration) {
   scoped_feature_list_.InitAndEnableFeature(kSharingDeviceRegistration);
   test_sync_service_.SetTransportState(
       syncer::SyncService::TransportState::ACTIVE);
-  test_sync_service_.SetActiveDataTypes(syncer::PREFERENCES);
+  test_sync_service_.SetActiveDataTypes(
+      {syncer::DEVICE_INFO, syncer::PREFERENCES});
 
   EXPECT_EQ(SharingService::State::DISABLED, GetSharingService()->GetState());
 
@@ -482,12 +483,50 @@ TEST_F(SharingServiceTest, DeviceRegistration) {
   EXPECT_EQ(SharingService::State::ACTIVE, GetSharingService()->GetState());
 }
 
+TEST_F(SharingServiceTest, DeviceRegistrationPreferenceNotAvailable) {
+  // Enable the feature.
+  scoped_feature_list_.InitAndEnableFeature(kSharingDeviceRegistration);
+  test_sync_service_.SetTransportState(
+      syncer::SyncService::TransportState::ACTIVE);
+  test_sync_service_.SetActiveDataTypes(syncer::DEVICE_INFO);
+
+  EXPECT_EQ(SharingService::State::DISABLED, GetSharingService()->GetState());
+
+  // As sync preferences is not available, registration shouldn't start.
+  EXPECT_CALL(*fcm_handler_, StartListening()).Times(0);
+  test_sync_service_.FireStateChanged();
+  EXPECT_EQ(0, sharing_device_registration_->registration_attempts());
+  EXPECT_EQ(SharingService::State::DISABLED, GetSharingService()->GetState());
+}
+
+TEST_F(SharingServiceTest, DeviceRegistrationTransportMode) {
+  // Enable the registration feature and transport mode required features.
+  scoped_feature_list_.InitWithFeatures(
+      /*enabled_features=*/{kSharingDeviceRegistration, kSharingUseDeviceInfo,
+                            kSharingDeriveVapidKey},
+      /*disabled_features=*/{});
+  test_sync_service_.SetTransportState(
+      syncer::SyncService::TransportState::ACTIVE);
+  test_sync_service_.SetActiveDataTypes(syncer::DEVICE_INFO);
+
+  EXPECT_EQ(SharingService::State::DISABLED, GetSharingService()->GetState());
+
+  // Expect registration to be successful on sync state changed.
+  sharing_device_registration_->SetResult(
+      SharingDeviceRegistrationResult::kSuccess);
+  EXPECT_CALL(*fcm_handler_, StartListening()).Times(1);
+  test_sync_service_.FireStateChanged();
+  EXPECT_EQ(1, sharing_device_registration_->registration_attempts());
+  EXPECT_EQ(SharingService::State::ACTIVE, GetSharingService()->GetState());
+}
+
 TEST_F(SharingServiceTest, DeviceRegistrationTransientError) {
   // Enable the feature.
   scoped_feature_list_.InitAndEnableFeature(kSharingDeviceRegistration);
   test_sync_service_.SetTransportState(
       syncer::SyncService::TransportState::ACTIVE);
-  test_sync_service_.SetActiveDataTypes(syncer::PREFERENCES);
+  test_sync_service_.SetActiveDataTypes(
+      {syncer::DEVICE_INFO, syncer::PREFERENCES});
 
   EXPECT_EQ(SharingService::State::DISABLED, GetSharingService()->GetState());
 
@@ -545,7 +584,8 @@ TEST_F(SharingServiceTest, DeviceRegisterAndUnregister) {
   scoped_feature_list_.InitAndEnableFeature(kSharingDeviceRegistration);
   test_sync_service_.SetTransportState(
       syncer::SyncService::TransportState::ACTIVE);
-  test_sync_service_.SetActiveDataTypes(syncer::PREFERENCES);
+  test_sync_service_.SetActiveDataTypes(
+      {syncer::DEVICE_INFO, syncer::PREFERENCES});
 
   // Create new SharingService instance with feature enabled at constructor.
   GetSharingService();
@@ -601,7 +641,7 @@ TEST_F(SharingServiceTest, DeviceRegisterAndUnregister) {
   EXPECT_EQ(SharingService::State::ACTIVE, GetSharingService()->GetState());
 
   // Disable syncing of preference and un-registration should happen.
-  test_sync_service_.SetActiveDataTypes(syncer::ModelTypeSet());
+  test_sync_service_.SetActiveDataTypes(syncer::DEVICE_INFO);
   EXPECT_CALL(*fcm_handler_, StopListening()).Times(1);
   test_sync_service_.FireStateChanged();
   EXPECT_EQ(2, sharing_device_registration_->registration_attempts());
@@ -613,7 +653,8 @@ TEST_F(SharingServiceTest, StartListeningToFCMAtConstructor) {
   scoped_feature_list_.InitAndEnableFeature(kSharingDeviceRegistration);
   test_sync_service_.SetTransportState(
       syncer::SyncService::TransportState::ACTIVE);
-  test_sync_service_.SetActiveDataTypes(syncer::PREFERENCES);
+  test_sync_service_.SetActiveDataTypes(
+      {syncer::DEVICE_INFO, syncer::PREFERENCES});
 
   // Create new SharingService instance with FCM already registered at
   // constructor.

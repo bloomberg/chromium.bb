@@ -439,7 +439,7 @@ bool SharingService::IsSyncEnabled() const {
   return sync_service_ &&
          sync_service_->GetTransportState() ==
              syncer::SyncService::TransportState::ACTIVE &&
-         sync_service_->GetActiveDataTypes().Has(syncer::PREFERENCES);
+         sync_service_->GetActiveDataTypes().HasAll(GetRequiredSyncDataTypes());
 }
 
 SharingSyncPreference* SharingService::GetSyncPreferences() const {
@@ -450,11 +450,24 @@ bool SharingService::IsSyncDisabled() const {
   // TODO(alexchau): Better way to make
   // ClickToCallBrowserTest.ContextMenu_DevicesAvailable_SyncTurnedOff pass
   // without unnecessarily checking SyncService::GetDisableReasons.
-  return sync_service_ &&
-         (sync_service_->GetTransportState() ==
-              syncer::SyncService::TransportState::DISABLED ||
-          (sync_service_->GetTransportState() ==
-               syncer::SyncService::TransportState::ACTIVE &&
-           !sync_service_->GetActiveDataTypes().Has(syncer::PREFERENCES)) ||
-          sync_service_->GetDisableReasons());
+  return sync_service_ && (sync_service_->GetTransportState() ==
+                               syncer::SyncService::TransportState::DISABLED ||
+                           (sync_service_->GetTransportState() ==
+                                syncer::SyncService::TransportState::ACTIVE &&
+                            !sync_service_->GetActiveDataTypes().HasAll(
+                                GetRequiredSyncDataTypes())) ||
+                           sync_service_->GetDisableReasons());
+}
+
+syncer::ModelTypeSet SharingService::GetRequiredSyncDataTypes() const {
+  // DeviceInfo is always required to list devices.
+  syncer::ModelTypeSet required_data_types(syncer::DEVICE_INFO);
+
+  // Legacy implementation of device list and VAPID key uses sync preferences.
+  if (!base::FeatureList::IsEnabled(kSharingUseDeviceInfo) ||
+      !base::FeatureList::IsEnabled(kSharingDeriveVapidKey)) {
+    required_data_types.Put(syncer::PREFERENCES);
+  }
+
+  return required_data_types;
 }
