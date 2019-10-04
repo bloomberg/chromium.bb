@@ -101,6 +101,7 @@
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/dom_storage/session_storage_namespace_id.h"
 #include "third_party/blink/public/common/frame/user_activation_update_source.h"
+#include "third_party/blink/public/common/plugin/plugin_action.h"
 #include "third_party/blink/public/platform/file_path_conversion.h"
 #include "third_party/blink/public/platform/modules/video_capture/web_video_capture_impl_manager.h"
 #include "third_party/blink/public/platform/url_conversion.h"
@@ -143,7 +144,6 @@
 #include "third_party/blink/public/web/web_page_importance_signals.h"
 #include "third_party/blink/public/web/web_page_popup.h"
 #include "third_party/blink/public/web/web_plugin.h"
-#include "third_party/blink/public/web/web_plugin_action.h"
 #include "third_party/blink/public/web/web_range.h"
 #include "third_party/blink/public/web/web_render_theme.h"
 #include "third_party/blink/public/web/web_script_source.h"
@@ -185,6 +185,7 @@
 #include "content/renderer/pepper/pepper_plugin_registry.h"
 #endif
 
+using blink::PluginAction;
 using blink::WebAXObject;
 using blink::WebConsoleMessage;
 using blink::WebData;
@@ -197,8 +198,8 @@ using blink::WebFrame;
 using blink::WebFrameContentDumper;
 using blink::WebGestureEvent;
 using blink::WebHistoryItem;
-using blink::WebHTTPBody;
 using blink::WebHitTestResult;
+using blink::WebHTTPBody;
 using blink::WebImage;
 using blink::WebInputElement;
 using blink::WebInputEvent;
@@ -207,9 +208,9 @@ using blink::WebMouseEvent;
 using blink::WebNavigationPolicy;
 using blink::WebNavigationType;
 using blink::WebNode;
-using blink::WebPluginAction;
 using blink::WebPoint;
 using blink::WebRect;
+using blink::WebRuntimeFeatures;
 using blink::WebSandboxFlags;
 using blink::WebScriptSource;
 using blink::WebSearchableFormData;
@@ -229,7 +230,6 @@ using blink::WebVector;
 using blink::WebView;
 using blink::WebWidget;
 using blink::WebWindowFeatures;
-using blink::WebRuntimeFeatures;
 
 namespace content {
 
@@ -2009,7 +2009,7 @@ void RenderViewImpl::OnSetRendererPrefs(
 }
 
 void RenderViewImpl::OnPluginActionAt(const gfx::Point& location,
-                                      const WebPluginAction& action) {
+                                      const PluginAction& action) {
   if (webview())
     webview()->PerformPluginAction(action, location);
 }

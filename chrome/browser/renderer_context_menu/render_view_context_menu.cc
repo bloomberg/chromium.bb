@@ -144,10 +144,10 @@
 #include "printing/buildflags/buildflags.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/public/common/plugin/plugin_action.h"
 #include "third_party/blink/public/public_buildflags.h"
 #include "third_party/blink/public/web/web_context_menu_data.h"
 #include "third_party/blink/public/web/web_media_player_action.h"
-#include "third_party/blink/public/web/web_plugin_action.h"
 #include "third_party/metrics_proto/omnibox_input_type.pb.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
@@ -199,9 +199,9 @@
 #endif
 
 using base::UserMetricsAction;
+using blink::PluginAction;
 using blink::WebContextMenuData;
 using blink::WebMediaPlayerAction;
-using blink::WebPluginAction;
 using blink::WebString;
 using blink::WebURL;
 using content::BrowserContext;
@@ -2919,15 +2919,14 @@ void RenderViewContextMenu::ExecControls() {
 void RenderViewContextMenu::ExecRotateCW() {
   base::RecordAction(UserMetricsAction("PluginContextMenu_RotateClockwise"));
   PluginActionAt(gfx::Point(params_.x, params_.y),
-                 WebPluginAction(WebPluginAction::kRotate90Clockwise, true));
+                 PluginAction(PluginAction::kRotate90Clockwise, true));
 }
 
 void RenderViewContextMenu::ExecRotateCCW() {
   base::RecordAction(
       UserMetricsAction("PluginContextMenu_RotateCounterclockwise"));
-  PluginActionAt(
-      gfx::Point(params_.x, params_.y),
-      WebPluginAction(WebPluginAction::kRotate90Counterclockwise, true));
+  PluginActionAt(gfx::Point(params_.x, params_.y),
+                 PluginAction(PluginAction::kRotate90Counterclockwise, true));
 }
 
 void RenderViewContextMenu::ExecReloadPackagedApp() {
@@ -3056,9 +3055,8 @@ void RenderViewContextMenu::MediaPlayerActionAt(
     frame_host->ExecuteMediaPlayerActionAtLocation(location, action);
 }
 
-void RenderViewContextMenu::PluginActionAt(
-    const gfx::Point& location,
-    const WebPluginAction& action) {
+void RenderViewContextMenu::PluginActionAt(const gfx::Point& location,
+                                           const PluginAction& action) {
   source_web_contents_->GetRenderViewHost()->
       ExecutePluginActionAtLocation(location, action);
 }

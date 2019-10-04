@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_PLUGIN_ACTION_H_
-#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_PLUGIN_ACTION_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_COMMON_PLUGIN_PLUGIN_ACTION_H_
+#define THIRD_PARTY_BLINK_PUBLIC_COMMON_PLUGIN_PLUGIN_ACTION_H_
 
 namespace blink {
 
-struct WebPluginAction {
+struct PluginAction {
   enum Type {
     kUnknown,
     kRotate90Clockwise,
@@ -44,8 +44,8 @@ struct WebPluginAction {
   Type type;
   bool enable;
 
-  WebPluginAction() : type(kUnknown), enable(false) {}
-  WebPluginAction(Type type, bool enable) : type(type), enable(enable) {}
+  PluginAction() : type(kUnknown), enable(false) {}
+  PluginAction(Type type, bool enable) : type(type), enable(enable) {}
 };
 
 }  // namespace blink
