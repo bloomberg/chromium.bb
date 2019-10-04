@@ -314,7 +314,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libexpat
   # and whatever else without interference from each other.
-  'libexpat_revision': '4f23e05a33a66c5962589a32c87df4fe68144fce',
+  'libexpat_revision': 'a7bc26b69768f7fb24f0c7976fae24b157b85b13',
 
   # TODO(crbug.com/941824): The values below need to be kept in sync
   # between //DEPS and //buildtools/DEPS, so if you're updating one,
