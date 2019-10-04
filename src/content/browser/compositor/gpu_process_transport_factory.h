@@ -161,6 +161,8 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
   bool disable_frame_rate_limit_ = false;
   bool wait_for_all_pipeline_stages_before_draw_ = false;
 
+  bool disableGpuCompositorFallBackToSoftwareOnGLError_ = false;
+
   gpu::GpuChannelEstablishFactory* const gpu_channel_factory_;
   // Service-side impl that controls the compositing mode based on what mode the
   // display compositors are using.

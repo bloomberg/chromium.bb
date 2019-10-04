@@ -669,6 +669,8 @@ void GpuDataManagerImplPrivate::AddLogMessage(
   log_messages_.push_back(LogMessage(level, header, message));
   if (log_messages_.size() > kLogMessageLimit)
     log_messages_.erase(log_messages_.begin());
+
+  observer_list_->Notify(FROM_HERE, &GpuDataManagerObserver::OnAddLogMessage, level, header, message);
 }
 
 void GpuDataManagerImplPrivate::ProcessCrashed(
