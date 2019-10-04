@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sharing/fake_local_device_info_provider.h"
+#include "components/sync_device_info/fake_local_device_info_provider.h"
 
 #include "base/time/time.h"
+
+namespace syncer {
 
 FakeLocalDeviceInfoProvider::FakeLocalDeviceInfoProvider()
     : device_info_("id",
@@ -24,12 +26,11 @@ version_info::Channel FakeLocalDeviceInfoProvider::GetChannel() const {
   return version_info::Channel::UNKNOWN;
 }
 
-const syncer::DeviceInfo* FakeLocalDeviceInfoProvider::GetLocalDeviceInfo()
-    const {
+const DeviceInfo* FakeLocalDeviceInfoProvider::GetLocalDeviceInfo() const {
   return ready_ ? &device_info_ : nullptr;
 }
 
-std::unique_ptr<syncer::LocalDeviceInfoProvider::Subscription>
+std::unique_ptr<LocalDeviceInfoProvider::Subscription>
 FakeLocalDeviceInfoProvider::RegisterOnInitializedCallback(
     const base::RepeatingClosure& callback) {
   return callback_list_.Add(callback);
@@ -42,6 +43,8 @@ void FakeLocalDeviceInfoProvider::SetReady(bool ready) {
     callback_list_.Notify();
 }
 
-syncer::DeviceInfo* FakeLocalDeviceInfoProvider::GetMutableDeviceInfo() {
+DeviceInfo* FakeLocalDeviceInfoProvider::GetMutableDeviceInfo() {
   return &device_info_;
 }
+
+}  // namespace syncer

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SHARING_FAKE_LOCAL_DEVICE_INFO_PROVIDER_H_
-#define CHROME_BROWSER_SHARING_FAKE_LOCAL_DEVICE_INFO_PROVIDER_H_
+#ifndef COMPONENTS_SYNC_DEVICE_INFO_FAKE_LOCAL_DEVICE_INFO_PROVIDER_H_
+#define COMPONENTS_SYNC_DEVICE_INFO_FAKE_LOCAL_DEVICE_INFO_PROVIDER_H_
 
 #include <memory>
 
@@ -11,26 +11,30 @@
 #include "components/sync_device_info/device_info.h"
 #include "components/sync_device_info/local_device_info_provider.h"
 
-class FakeLocalDeviceInfoProvider : public syncer::LocalDeviceInfoProvider {
+namespace syncer {
+
+class FakeLocalDeviceInfoProvider : public LocalDeviceInfoProvider {
  public:
   FakeLocalDeviceInfoProvider();
   ~FakeLocalDeviceInfoProvider() override;
 
-  // Overrides for syncer::LocalDeviceInfoProvider.
+  // Overrides for LocalDeviceInfoProvider.
   version_info::Channel GetChannel() const override;
-  const syncer::DeviceInfo* GetLocalDeviceInfo() const override;
+  const DeviceInfo* GetLocalDeviceInfo() const override;
   std::unique_ptr<Subscription> RegisterOnInitializedCallback(
       const base::RepeatingClosure& callback) override;
 
   void SetReady(bool ready);
-  syncer::DeviceInfo* GetMutableDeviceInfo();
+  DeviceInfo* GetMutableDeviceInfo();
 
  private:
-  syncer::DeviceInfo device_info_;
+  DeviceInfo device_info_;
   bool ready_ = true;
   base::CallbackList<void(void)> callback_list_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeLocalDeviceInfoProvider);
 };
 
-#endif  // CHROME_BROWSER_SHARING_FAKE_LOCAL_DEVICE_INFO_PROVIDER_H_
+}  // namespace syncer
+
+#endif  // COMPONENTS_SYNC_DEVICE_INFO_FAKE_LOCAL_DEVICE_INFO_PROVIDER_H_
