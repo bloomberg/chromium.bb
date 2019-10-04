@@ -925,8 +925,9 @@ class MasterSlaveLKGMSyncStage(ManifestVersionedSyncStage):
         num_results=self.MAX_BUILD_HISTORY_LENGTH,
         ignore_build_id=buildbucket_id)
     full_versions = [b.get('full_version') for b in builds]
-    old_version = next(itertools.ifilter(bool, full_versions), None)
-    if old_version:
+    old_versions = [x for x in full_versions if x]
+    if old_versions:
+      old_version = old_versions[0]
       pattern = r'^R(\d+)-(\d+.\d+.\d+(-rc\d+)*)'
       m = re.match(pattern, old_version)
       if m:

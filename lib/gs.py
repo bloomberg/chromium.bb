@@ -13,7 +13,6 @@ import datetime
 import errno
 import fnmatch
 import getpass
-import itertools
 import hashlib
 import os
 import re
@@ -1410,7 +1409,8 @@ def _FirstMatch(predicate, elems):
     predicate: A function which takes an element and returns a bool
     elems: A sequence of elements.
   """
-  return next(itertools.ifilter(predicate, elems), None)
+  matches = [x for x in elems if predicate(x)]
+  return matches[0] if matches else None
 
 
 def _FirstSubstring(superstring, haystack):

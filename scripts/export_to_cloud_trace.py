@@ -286,12 +286,14 @@ def _WatchAndSendSpans(project_id, client):
     all_batches = itertools.chain([preexisting_lines], new_batches)
 
     # Ignore lines that don't parse.
-    batches = itertools.ifilter(None, (
+    batches = [
         _MapIgnoringErrors(
             json.loads,
             batch,
             exception_type=ValueError)
-        for batch in all_batches))
+        for batch in all_batches]
+    # Filter out non-blank entries.
+    batches = [x for x in batches if x]
 
     batches = _RecordDurationMetric(batches)
 
