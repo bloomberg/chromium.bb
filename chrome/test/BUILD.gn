@@ -39,6 +39,7 @@ assert(!is_ios, "Chromium/iOS shouldn't use anything in //chrome")
 
 if (is_android) {
   import("//build/config/android/rules.gni")
+  import("//chrome/android/features/dev_ui/dev_ui_module.gni")
   import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
 } else {
   include_js_tests = !(is_asan || is_msan || is_tsan)
@@ -3662,6 +3663,15 @@ test("unit_tests") {
       deps += [ "//tools/v8_context_snapshot:v8_context_snapshot_assets" ]
     } else {
       deps += [ "//v8:v8_external_startup_data_assets" ]
+    }
+    if (dfmify_dev_ui) {
+      # If DevUI DFM is on, include Java classes and native resource split so
+      # that DevUI page tests would work.
+      deps += [
+        "//chrome/android/features/dev_ui:java",
+        "//chrome/android/features/dev_ui:pak_assets",
+        "//chrome/android/modules/dev_ui/provider:java",
+      ]
     }
 
     srcjar_deps = [
