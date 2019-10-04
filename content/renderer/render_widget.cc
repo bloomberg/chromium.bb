@@ -486,7 +486,7 @@ RenderWidget::RenderWidget(int32_t widget_routing_id,
 
 RenderWidget::~RenderWidget() {
   DCHECK(!webwidget_) << "Leaking our WebWidget!";
-  DCHECK(closing_)
+  DCHECK(closed_)
       << " RenderWidget must be destroyed via RenderWidget::Close()";
 
   // TODO(ajwong): Add in check that routing_id_ has been removed from
@@ -528,10 +528,20 @@ void RenderWidget::InitForChildLocalRoot(
 }
 
 void RenderWidget::CloseForFrame(std::unique_ptr<RenderWidget> widget) {
-  DCHECK(for_frame());
+  DCHECK(for_child_local_root_frame_);
   DCHECK_EQ(widget.get(), this);  // This method takes ownership of |this|.
 
-  Close(std::move(widget));
+  PrepareForClose();
+
+  // The RenderWidget may be deattached from JS, which in turn may be called
+  // in a re-entrant context. We cannot synchronously destroy the object, so we
+  // post a task to do so later.
+  //
+  // Unretained(this) stays valid because |this| is owned by the |widget| being
+  // passed to Close().
+  GetCleanupTaskRunner()->PostNonNestableTask(
+      FROM_HERE, base::BindOnce(&RenderWidget::Close, base::Unretained(this),
+                                std::move(widget)));
 }
 
 void RenderWidget::Init(ShowCallback show_callback, WebWidget* web_widget) {
@@ -705,7 +715,40 @@ bool RenderWidget::ShouldHandleImeEvents() const {
 void RenderWidget::OnClose() {
   DCHECK(popup_ || pepper_fullscreen_);
 
-  Close(base::WrapUnique(this));
+  PrepareForClose();
+
+  // IPCs can be invoked from nested message loops. We must dispatch this
+  // task non-nested to avoid re-entrancy issues.
+  //
+  // Unretained(this) stays valid because |this| is owned by the |widget| being
+  // passed to Close().
+  GetCleanupTaskRunner()->PostNonNestableTask(
+      FROM_HERE, base::BindOnce(&RenderWidget::Close, base::Unretained(this),
+                                base::WrapUnique(this)));
+}
+
+void RenderWidget::PrepareForClose() {
+  DCHECK(RenderThread::IsMainThread());
+  DCHECK(!closing_);
+  closing_ = true;
+
+  // Browser correspondence is no longer needed at this point.
+  if (routing_id_ != MSG_ROUTING_NONE) {
+    RenderThread::Get()->RemoveRoute(routing_id_);
+    g_routing_id_widget_map.Get().erase(routing_id_);
+  }
+
+  // Stop handling main thread input events immediately so we don't have them
+  // running while things are partly shut down.
+  if (input_event_queue_)
+    input_event_queue_->ClearClient();
+
+  close_weak_ptr_factory_.InvalidateWeakPtrs();
+
+  // The |webwidget_| will be null when the main frame RenderWidget is undead.
+  if (webwidget_)
+    webwidget_->Close();
+  webwidget_ = nullptr;
 }
 
 void RenderWidget::SynchronizeVisualPropertiesFromRenderView(
@@ -1199,16 +1242,12 @@ void RenderWidget::SetFocus(bool enable) {
 
 void RenderWidget::ApplyViewportChanges(
     const cc::ApplyViewportChangesArgs& args) {
-  // TODO(danakj): This should never be null now that LayerTreeView disconnects
-  // during Close().
   if (!GetWebWidget())
     return;
   GetWebWidget()->ApplyViewportChanges(args);
 }
 
 void RenderWidget::RecordManipulationTypeCounts(cc::ManipulationInfo info) {
-  // TODO(danakj): This should never be null now that LayerTreeView disconnects
-  // during Close().
   if (!GetWebWidget())
     return;
   GetWebWidget()->RecordManipulationTypeCounts(info);
@@ -1217,8 +1256,6 @@ void RenderWidget::RecordManipulationTypeCounts(cc::ManipulationInfo info) {
 void RenderWidget::SendOverscrollEventFromImplSide(
     const gfx::Vector2dF& overscroll_delta,
     cc::ElementId scroll_latched_element_id) {
-  // TODO(danakj): This should never be null now that LayerTreeView disconnects
-  // during Close().
   if (!GetWebWidget())
     return;
   GetWebWidget()->SendOverscrollEventFromImplSide(overscroll_delta,
@@ -1226,16 +1263,12 @@ void RenderWidget::SendOverscrollEventFromImplSide(
 }
 void RenderWidget::SendScrollEndEventFromImplSide(
     cc::ElementId scroll_latched_element_id) {
-  // TODO(danakj): This should never be null now that LayerTreeView disconnects
-  // during Close().
   if (!GetWebWidget())
     return;
   GetWebWidget()->SendScrollEndEventFromImplSide(scroll_latched_element_id);
 }
 
 void RenderWidget::BeginMainFrame(base::TimeTicks frame_time) {
-  // TODO(danakj): This should never be null now that LayerTreeView disconnects
-  // during Close().
   if (!GetWebWidget())
     return;
 
@@ -1260,8 +1293,6 @@ void RenderWidget::BeginMainFrame(base::TimeTicks frame_time) {
 void RenderWidget::OnDeferMainFrameUpdatesChanged(bool deferral_state) {
   // The input handler wants to know about the mainframe update status to
   // enable/disable input and for metrics.
-  // TODO(danakj): This should never be null now that LayerTreeView disconnects
-  // during Close().
   if (widget_input_handler_manager_)
     widget_input_handler_manager_->OnDeferMainFrameUpdatesChanged(
         deferral_state);
@@ -1270,15 +1301,11 @@ void RenderWidget::OnDeferMainFrameUpdatesChanged(bool deferral_state) {
 void RenderWidget::OnDeferCommitsChanged(bool deferral_state) {
   // The input handler wants to know about the commit status for metric purposes
   // and to enable/disable input.
-  // TODO(danakj): This should never be null now that LayerTreeView disconnects
-  // during Close().
   if (widget_input_handler_manager_)
     widget_input_handler_manager_->OnDeferCommitsChanged(deferral_state);
 }
 
 void RenderWidget::DidBeginMainFrame() {
-  // TODO(danakj): This should never be null now that LayerTreeView disconnects
-  // during Close().
   if (!GetWebWidget())
     return;
   GetWebWidget()->DidBeginFrame();
@@ -1295,8 +1322,6 @@ void RenderWidget::RequestNewLayerTreeFrameSink(
 
   // If we early out, we drop the request which means the compositor waits
   // forever, which is fine since we're going to destroy it soon.
-  // TODO(danakj): This should never be true now that LayerTreeView disconnects
-  // during Close().
   if (closing_)
     return;
 
@@ -1347,8 +1372,6 @@ void RenderWidget::DidCommitAndDrawCompositorFrame() {
 }
 
 void RenderWidget::WillCommitCompositorFrame() {
-  // TODO(danakj): This should never be true now that LayerTreeView disconnects
-  // during Close().
   if (GetWebWidget())
     GetWebWidget()->BeginCommitCompositorFrame();
 }
@@ -1356,15 +1379,11 @@ void RenderWidget::WillCommitCompositorFrame() {
 void RenderWidget::DidCommitCompositorFrame() {
   if (delegate())
     delegate()->DidCommitCompositorFrameForWidget();
-  // TODO(danakj): This should never be true now that LayerTreeView disconnects
-  // during Close().
   if (GetWebWidget())
     GetWebWidget()->EndCommitCompositorFrame();
 }
 
 void RenderWidget::DidCompletePageScaleAnimation() {
-  // TODO(danakj): This should never be true now that LayerTreeView disconnects
-  // during Close().
   if (delegate())
     delegate()->DidCompletePageScaleAnimationForWidget();
 }
@@ -1482,15 +1501,11 @@ void RenderWidget::RecordTimeToFirstActivePaint() {
 }
 
 void RenderWidget::RecordStartOfFrameMetrics() {
-  // TODO(danakj): This should never be true now that LayerTreeView disconnects
-  // during Close().
   if (GetWebWidget())
     GetWebWidget()->RecordStartOfFrameMetrics();
 }
 
 void RenderWidget::RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) {
-  // TODO(danakj): This should never be true now that LayerTreeView disconnects
-  // during Close().
   if (GetWebWidget())
     GetWebWidget()->RecordEndOfFrameMetrics(frame_begin_time);
 }
@@ -1503,15 +1518,11 @@ RenderWidget::GetBeginMainFrameMetrics() {
 }
 
 void RenderWidget::BeginUpdateLayers() {
-  // TODO(danakj): This should never be true now that LayerTreeView disconnects
-  // during Close().
   if (GetWebWidget())
     GetWebWidget()->BeginUpdateLayers();
 }
 
 void RenderWidget::EndUpdateLayers() {
-  // TODO(danakj): This should never be true now that LayerTreeView disconnects
-  // during Close().
   if (GetWebWidget())
     GetWebWidget()->EndUpdateLayers();
 }
@@ -1519,8 +1530,6 @@ void RenderWidget::EndUpdateLayers() {
 void RenderWidget::WillBeginCompositorFrame() {
   TRACE_EVENT0("gpu", "RenderWidget::willBeginCompositorFrame");
 
-  // TODO(danakj): This should never be true now that LayerTreeView disconnects
-  // during Close().
   if (!GetWebWidget())
     return;
 
@@ -2052,51 +2061,20 @@ void RenderWidget::CloseWidgetSoon() {
   // loops running and handling the resuliting Close IPC. So instead, post a
   // message back to the message loop, which won't run until the JS is
   // complete, and then the Close request can be sent.
-  compositor_deps_->GetCleanupTaskRunner()->PostTask(
+  GetCleanupTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(&RenderWidget::DoDeferredClose, routing_id_));
 }
 
 void RenderWidget::Close(std::unique_ptr<RenderWidget> widget) {
+  DCHECK(closing_);  // PrepareForClose() comes first.
   // At the end of this method, |widget| which points to this is deleted.
   DCHECK_EQ(widget.get(), this);
-  DCHECK(RenderThread::IsMainThread());
-  DCHECK(!closing_);
 
-  closing_ = true;
-
-  // Browser correspondence is no longer needed at this point.
-  if (routing_id_ != MSG_ROUTING_NONE) {
-    RenderThread::Get()->RemoveRoute(routing_id_);
-    g_routing_id_widget_map.Get().erase(routing_id_);
-  }
-
-  // Stop handling main thread input events immediately so we don't have them
-  // running while things are partly shut down.
-  if (input_event_queue_)
-    input_event_queue_->ClearClient();
-
-  // The |webwidget_| will be null when the main frame RenderWidget is undead.
-  if (webwidget_)
-    webwidget_->Close();
-  webwidget_ = nullptr;
-
-  // The LayerTreeHost may already be in the call stack, if this RenderWidget is
-  // being destroyed during an animation callback for instance. We can not
-  // delete it here and unwind the stack back up to it, or it will crash. So we
-  // post the deletion to another task, but disconnect the LayerTreeHost (via
-  // the LayerTreeView) from the destroying RenderWidget. The LayerTreeView owns
-  // the LayerTreeHost, and is its client, so they are kept alive together for a
-  // clean call stack.
-  layer_tree_view_->Disconnect();
-  compositor_deps_->GetCleanupTaskRunner()->DeleteSoon(
-      FROM_HERE, std::move(layer_tree_view_));
-  // The |widget_input_handler_manager_| is referenced through the LayerTreeHost
-  // on the compositor thread, so must outlive the LayerTreeHost.
-  compositor_deps_->GetCleanupTaskRunner()->ReleaseSoon(
-      FROM_HERE, std::move(widget_input_handler_manager_));
-
+  layer_tree_view_.reset();
   // Note the ACK is a control message going to the RenderProcessHost.
   RenderThread::Get()->Send(new WidgetHostMsg_Close_ACK(routing_id()));
+  // For the destructor to verify |this| was deleted by Close().
+  closed_ = true;
 }
 
 blink::WebFrameWidget* RenderWidget::GetFrameWidget() const {
@@ -3678,10 +3656,12 @@ viz::FrameSinkId RenderWidget::GetFrameSinkId() {
 void RenderWidget::NotifySwapAndPresentationTime(
     ReportTimeCallback swap_time_callback,
     ReportTimeCallback presentation_time_callback) {
+  // When the WebWidget is closed we cancel any pending SwapPromise that would
+  // call back into blink, so we use |close_weak_ptr_factory_|.
   layer_tree_host_->QueueSwapPromise(std::make_unique<ReportTimeSwapPromise>(
       std::move(swap_time_callback), std::move(presentation_time_callback),
       layer_tree_host_->GetTaskRunnerProvider()->MainThreadTaskRunner(),
-      weak_ptr_factory_.GetWeakPtr()));
+      close_weak_ptr_factory_.GetWeakPtr()));
 }
 
 void RenderWidget::RequestUnbufferedInputEvents() {
@@ -3948,6 +3928,14 @@ gfx::Rect RenderWidget::ViewportVisibleRect() {
   if (for_child_local_root_frame_)
     return compositor_visible_rect_;
   return CompositorViewportRect();
+}
+
+// static
+scoped_refptr<base::SingleThreadTaskRunner>
+RenderWidget::GetCleanupTaskRunner() {
+  return RenderThreadImpl::current_blink_platform_impl()
+      ->main_thread_scheduler()
+      ->CleanupTaskRunner();
 }
 
 base::WeakPtr<RenderWidget> RenderWidget::AsWeakPtr() {
