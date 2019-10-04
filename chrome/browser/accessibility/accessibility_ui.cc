@@ -321,9 +321,8 @@ void AddPropertyFilters(
   }
 }
 
-std::string Validate(const std::string* str) {
-  CHECK(str);
-  return *str;
+bool IsValidJSValue(const std::string* str) {
+  return str && str->length() < 5000U;
 }
 
 }  // namespace
@@ -448,7 +447,9 @@ void AccessibilityUIMessageHandler::SetGlobalFlag(const base::ListValue* args) {
   const base::DictionaryValue* data;
   CHECK(args->GetDictionary(0, &data));
 
-  std::string flag_name_str = Validate(data->FindStringPath(kFlagNameField));
+  const std::string* flag_name_str_p = data->FindStringPath(kFlagNameField);
+  CHECK(IsValidJSValue(flag_name_str_p));
+  std::string flag_name_str = *flag_name_str_p;
   bool enabled = *data->FindBoolPath(kEnabledField);
 
   AllowJavascript();
@@ -509,14 +510,21 @@ void AccessibilityUIMessageHandler::RequestWebContentsTree(
   int process_id = *data->FindIntPath(kProcessIdField);
   int route_id = *data->FindIntPath(kRouteIdField);
 
-  std::string request_type = Validate(data->FindStringPath(kRequestTypeField));
+  const std::string* request_type_p = data->FindStringPath(kRequestTypeField);
+  CHECK(IsValidJSValue(request_type_p));
+  std::string request_type = *request_type_p;
   CHECK(request_type == kShowOrRefreshTree || request_type == kCopyTree);
   request_type = "accessibility." + request_type;
 
-  std::string allow = Validate(data->FindStringPath("filters.allow"));
-  std::string allow_empty =
-      Validate(data->FindStringPath("filters.allowEmpty"));
-  std::string deny = Validate(data->FindStringPath("filters.deny"));
+  const std::string* allow_p = data->FindStringPath("filters.allow");
+  CHECK(IsValidJSValue(allow_p));
+  std::string allow = *allow_p;
+  const std::string* allow_empty_p = data->FindStringPath("filters.allowEmpty");
+  CHECK(IsValidJSValue(allow_empty_p));
+  std::string allow_empty = *allow_empty_p;
+  const std::string* deny_p = data->FindStringPath("filters.deny");
+  CHECK(IsValidJSValue(deny_p));
+  std::string deny = *deny_p;
 
   AllowJavascript();
   content::RenderViewHost* rvh =
@@ -565,14 +573,21 @@ void AccessibilityUIMessageHandler::RequestNativeUITree(
   CHECK(args->GetDictionary(0, &data));
 
   int session_id = *data->FindIntPath(kSessionIdField);
-  std::string request_type = Validate(data->FindStringPath(kRequestTypeField));
+  const std::string* request_type_p = data->FindStringPath(kRequestTypeField);
+  CHECK(IsValidJSValue(request_type_p));
+  std::string request_type = *request_type_p;
   CHECK(request_type == kShowOrRefreshTree || request_type == kCopyTree);
   request_type = "accessibility." + request_type;
 
-  std::string allow = Validate(data->FindStringPath("filters.allow"));
-  std::string allow_empty =
-      Validate(data->FindStringPath("filters.allowEmpty"));
-  std::string deny = Validate(data->FindStringPath("filters.deny"));
+  const std::string* allow_p = data->FindStringPath("filters.allow");
+  CHECK(IsValidJSValue(allow_p));
+  std::string allow = *allow_p;
+  const std::string* allow_empty_p = data->FindStringPath("filters.allowEmpty");
+  CHECK(IsValidJSValue(allow_empty_p));
+  std::string allow_empty = *allow_empty_p;
+  const std::string* deny_p = data->FindStringPath("filters.deny");
+  CHECK(IsValidJSValue(deny_p));
+  std::string deny = *deny_p;
 
   AllowJavascript();
 
