@@ -1455,6 +1455,7 @@ crbug.com/829028 virtual/layout_ng_experimental/external/wpt/css/css-multicol/mu
 crbug.com/829028 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-span-all-children-height-005.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-span-all-children-height-006.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-span-all-children-height-007.html [ Failure ]
+crbug.com/829028 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-span-all-children-height-008.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-span-all-dynamic-add-004.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-span-all-dynamic-add-007.html [ Failure ]
 crbug.com/924142 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-span-all-dynamic-add-010.html [ Crash Pass ]
@@ -3174,9 +3175,6 @@ crbug.com/1002514 external/wpt/web-share/share-sharePromise-internal-slot.https.
 crbug.com/618969 external/wpt/css/css-grid/subgrid/ [ Skip ]
 
 # ====== New tests from wpt-importer added here ======
-crbug.com/626703 [ Linux ] virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-span-all-children-height-008.html [ Failure ]
-crbug.com/626703 [ Mac ] virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-span-all-children-height-008.html [ Failure ]
-crbug.com/626703 [ Win ] virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-span-all-children-height-008.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/webaudio/the-audio-api/processing-model/feedback-delay-time.html [ Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/webaudio/the-audio-api/processing-model/feedback-delay-time.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/webaudio/the-audio-api/processing-model/feedback-delay-time.html [ Timeout ]
