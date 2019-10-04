@@ -294,23 +294,37 @@ class RunCommandError(Exception):
     Args:
       error: See comment about individual arguments above.
       output: See comment about individual arguments above.
+
+    Returns:
+      A summary string for this result.
     """
     items = [
-        'return code: %s; command: %s' % (
+        u'return code: %s; command: %s' % (
             self.result.returncode, self.result.cmdstr),
     ]
     if error and self.result.stderr:
-      items.append(self.result.stderr)
+      stderr = self.result.stderr
+      if isinstance(stderr, six.binary_type):
+        stderr = stderr.decode('utf-8', 'replace')
+      items.append(stderr)
     if output and self.result.stdout:
-      items.append(self.result.stdout)
+      stdout = self.result.stdout
+      if isinstance(stdout, six.binary_type):
+        stdout = stdout.decode('utf-8', 'replace')
+      items.append(stdout)
     if self.msg:
-      items.append(self.msg)
-    return '\n'.join(items)
+      msg = self.msg
+      if isinstance(msg, six.binary_type):
+        msg = msg.decode('utf-8', 'replace')
+      items.append(msg)
+    return u'\n'.join(items)
 
   def __str__(self):
-    # __str__ needs to return ascii, thus force a conversion to be safe.
-    return self.Stringify().decode('utf-8', 'replace').encode(
-        'ascii', 'xmlcharrefreplace')
+    if sys.version_info.major < 3:
+      # __str__ needs to return ascii, thus force a conversion to be safe.
+      return self.Stringify().encode('ascii', 'xmlcharrefreplace')
+    else:
+      return self.Stringify()
 
   def __eq__(self, other):
     return (isinstance(other, type(self)) and
@@ -744,18 +758,22 @@ def run(cmd, print_cmd=True, redirect_stdout=False,
 
     cmd_result.returncode = proc.returncode
 
-    if log_output:
-      if cmd_result.stdout:
-        logging.log(debug_level, '(stdout):\n%s', cmd_result.stdout)
-      if cmd_result.stderr:
-        logging.log(debug_level, '(stderr):\n%s', cmd_result.stderr)
-
-    # Convert after logging so we have the original binary output.
-    if encoding:
-      if cmd_result.stdout is not None:
-        cmd_result.stdout = cmd_result.stdout.decode(encoding, errors)
-      if cmd_result.stderr is not None:
-        cmd_result.stderr = cmd_result.stderr.decode(encoding, errors)
+    # The try/finally block is a bit hairy.  We normally want the logged
+    # output to be what gets passed back up.  But if there's a decode error,
+    # we don't want it to break logging entirely.  If the output had a lot of
+    # newlines, always logging it as bytes wouldn't be human readable.
+    try:
+      if encoding:
+        if cmd_result.stdout is not None:
+          cmd_result.stdout = cmd_result.stdout.decode(encoding, errors)
+        if cmd_result.stderr is not None:
+          cmd_result.stderr = cmd_result.stderr.decode(encoding, errors)
+    finally:
+      if log_output:
+        if cmd_result.stdout:
+          logging.log(debug_level, '(stdout):\n%s', cmd_result.stdout)
+        if cmd_result.stderr:
+          logging.log(debug_level, '(stderr):\n%s', cmd_result.stderr)
 
     if check and proc.returncode:
       msg = 'cmd=%s' % cmd
@@ -1077,7 +1095,7 @@ def CreateTarball(target, cwd, sudo=False, compression=COMP_XZ, chroot=None,
          ['--sparse', '-I', comp, '-cf', target])
   if len(inputs) > _THRESHOLD_TO_USE_T_FOR_TAR:
     cmd += ['--null', '-T', '/dev/stdin']
-    rc_input = '\0'.join(inputs)
+    rc_input = b'\0'.join(x.encode('utf-8') for x in inputs)
   else:
     cmd += list(inputs)
     rc_input = None
@@ -1373,7 +1391,8 @@ class ContextManagerStack(object):
     six.reraise(exc_type, exc, exc_tb)
 
 
-def iflatten_instance(iterable, terminate_on_kls=six.string_types):
+def iflatten_instance(iterable,
+                      terminate_on_kls=(six.string_types, six.binary_type)):
   """Derivative of snakeoil.lists.iflatten_instance; flatten an object.
 
   Given an object, flatten it into a single depth iterable-
@@ -1446,7 +1465,7 @@ def SafeRun(functors, combine_exceptions=False):
     if len(errors) == 1 or not combine_exceptions:
       # To preserve the traceback.
       inst, tb = errors[0]
-      six.reraise(inst, None, tb)
+      six.reraise(type(inst), inst, tb)
     else:
       raise RuntimeError([e[0] for e in errors])
 

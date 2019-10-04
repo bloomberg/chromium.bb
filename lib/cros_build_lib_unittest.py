@@ -94,6 +94,9 @@ class CmdToStrTest(cros_test_lib.TestCase):
         (r'''"s'a\$va\\rs"''', r"s'a$va\rs"),
         (r'''"\\'\\\""''', r'''\'\"'''),
         (r'''"'\\\$"''', r"""'\$"""),
+    )
+
+    bytes_quote = (
         # Since we allow passing bytes down, quote them too.
         ('bytes', b'bytes'),
         ("'by tes'", b'by tes'),
@@ -111,6 +114,14 @@ class CmdToStrTest(cros_test_lib.TestCase):
 
     def aux(s):
       return cros_build_lib.ShellUnquote(cros_build_lib.ShellQuote(s))
+
+    if sys.version_info.major < 3:
+      # In Python 2, these roundtrip.
+      tests_quote += bytes_quote
+    else:
+      # In Python 3, we can only go one way bytes->string.
+      self._testData(cros_build_lib.ShellQuote, bytes_quote)
+      self._testData(aux, [(x, x) for x, _ in bytes_quote], False)
 
     self._testData(cros_build_lib.ShellQuote, tests_quote)
     self._testData(cros_build_lib.ShellUnquote, tests_unquote)
@@ -164,14 +175,14 @@ class TestRunCommandNoMock(cros_test_lib.TestCase):
 
   def testInputString(self):
     """Verify input argument when it is a string."""
-    for data in ('', 'foo', 'bar\nhigh'):
+    for data in (b'', b'foo', b'bar\nhigh'):
       result = cros_build_lib.run(['cat'], input=data)
       self.assertEqual(result.output, data)
 
   def testInputFileObject(self):
     """Verify input argument when it is a file object."""
     result = cros_build_lib.run(['cat'], input=open('/dev/null'))
-    self.assertEqual(result.output, '')
+    self.assertEqual(result.output, b'')
 
     result = cros_build_lib.run(['cat'], input=open(__file__))
     self.assertEqual(result.stdout,
@@ -181,7 +192,7 @@ class TestRunCommandNoMock(cros_test_lib.TestCase):
     """Verify input argument when it is a file descriptor."""
     with open('/dev/null') as f:
       result = cros_build_lib.run(['cat'], input=f.fileno())
-      self.assertEqual(result.output, '')
+      self.assertEqual(result.output, b'')
 
     with open(__file__) as f:
       result = cros_build_lib.run(['cat'], input=f.fileno())
@@ -629,7 +640,7 @@ class TestRunCommandOutput(cros_test_lib.TempDirTestCase,
     ret = cros_build_lib.run(
         ['sh', '-c', 'echo monkeys3 >&2'],
         log_stdout_to_file=log, redirect_stderr=True)
-    self.assertEqual(ret.error, 'monkeys3\n')
+    self.assertEqual(ret.error, b'monkeys3\n')
     self.assertExists(log)
     self.assertEqual(os.path.getsize(log), 0)
 
@@ -717,7 +728,9 @@ class TestRunCommandOutput(cros_test_lib.TempDirTestCase,
     logging.getLogger().addHandler(fh)
     cros_build_lib.run(cmd, **kwargs)
     logging.getLogger().removeHandler(fh)
-    return osutils.ReadFile(log)
+    output = osutils.ReadFile(log)
+    fh.close()
+    return output
 
   @_ForceLoggingLevel
   def testLogOutput(self):
@@ -726,8 +739,10 @@ class TestRunCommandOutput(cros_test_lib.TempDirTestCase,
     log_output = ('run: /bin/bash -c '
                   "'echo Greece; echo Italy >&2; echo Spain'\n"
                   '(stdout):\nGreece\nSpain\n\n(stderr):\nItaly\n\n')
-    self.assertEqual(self._CaptureLogOutput(cmd, shell=True, log_output=True),
-                     log_output)
+    output = self._CaptureLogOutput(cmd, shell=True, log_output=True,
+                                    encoding='utf-8')
+    self.assertEqual(output, log_output)
+
 
 class TestTimedSection(cros_test_lib.TestCase):
   """Tests for TimedSection context manager."""
@@ -936,6 +951,9 @@ class Test_iflatten_instance(cros_test_lib.TestCase):
     self.assertEqual([1, 2, 'f', 'd', 'a', 's'],
                      f([1, 2, ('fdas',)], terminate_on_kls=int))
     self.assertEqual([''], f(''))
+    self.assertEqual([b''], f(b''))
+    self.assertEqual([b'1234'], f(b'1234'))
+    self.assertEqual([b'12', b'34'], f([b'12', b'34']))
 
 
 class SafeRunTest(cros_test_lib.TestCase):
