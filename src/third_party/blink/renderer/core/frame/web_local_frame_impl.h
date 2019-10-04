@@ -448,6 +448,8 @@ class CORE_EXPORT WebLocalFrameImpl final
 
   virtual void Trace(blink::Visitor*);
 
+  bool IsPrintAllowed() const override;
+
  private:
   friend LocalFrameClientImpl;
 
