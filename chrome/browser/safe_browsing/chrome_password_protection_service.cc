@@ -360,7 +360,11 @@ void ChromePasswordProtectionService::ShowModalWarning(
   DCHECK(password_type.account_type() == ReusedPasswordAccountType::GMAIL ||
          password_type.account_type() == ReusedPasswordAccountType::GSUITE ||
          password_type.account_type() ==
-             ReusedPasswordAccountType::NON_GAIA_ENTERPRISE);
+             ReusedPasswordAccountType::NON_GAIA_ENTERPRISE ||
+         (password_type.account_type() ==
+              ReusedPasswordAccountType::SAVED_PASSWORD &&
+          base::FeatureList::IsEnabled(
+              safe_browsing::kPasswordProtectionForSavedPasswords)));
   // Don't show warning again if there is already a modal warning showing.
   if (IsModalWarningShowingInWebContents(web_contents))
     return;
@@ -1274,7 +1278,9 @@ bool ChromePasswordProtectionService::IsPingingEnabled(
   if (trigger_type == LoginReputationClientRequest::PASSWORD_REUSE_EVENT) {
     if (password_type.account_type() ==
         ReusedPasswordAccountType::SAVED_PASSWORD)
-      return IsExtendedReporting();
+      return IsExtendedReporting() ||
+             base::FeatureList::IsEnabled(
+                 safe_browsing::kPasswordProtectionForSavedPasswords);
 
     PasswordProtectionTrigger trigger_level =
         GetPasswordProtectionWarningTriggerPref(password_type);
