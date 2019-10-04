@@ -632,7 +632,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
       mojo::PendingReceiver<blink::mojom::StoragePartitionService> receiver);
   void CreateBroadcastChannelProvider(
       mojo::PendingReceiver<blink::mojom::BroadcastChannelProvider> receiver);
-  void CreateRendererHost(mojom::RendererHostAssociatedRequest request);
+  void CreateRendererHost(
+      mojo::PendingAssociatedReceiver<mojom::RendererHost> receiver);
   void BindVideoDecoderService(media::mojom::InterfaceFactoryRequest request);
   void BindWebDatabaseHostImpl(
       mojo::PendingReceiver<blink::mojom::WebDatabaseHost> receiver);

@@ -1876,10 +1876,6 @@ RenderFrameImpl::RenderFrameImpl(CreateParams params)
       focused_pepper_plugin_(nullptr),
       pepper_last_mouse_event_target_(nullptr),
 #endif
-      autoplay_configuration_binding_(this),
-      frame_navigation_control_receiver_(this),
-      fullscreen_binding_(this),
-      mhtml_file_writer_binding_(this),
       navigation_client_impl_(nullptr),
       has_accessed_initial_document_(false),
       media_factory_(
@@ -1926,9 +1922,9 @@ RenderFrameImpl::RenderFrameImpl(CreateParams params)
 }
 
 mojom::FrameHost* RenderFrameImpl::GetFrameHost() {
-  if (!frame_host_ptr_.is_bound())
-    GetRemoteAssociatedInterfaces()->GetInterface(&frame_host_ptr_);
-  return frame_host_ptr_.get();
+  if (!frame_host_remote_.is_bound())
+    GetRemoteAssociatedInterfaces()->GetInterface(&frame_host_remote_);
+  return frame_host_remote_.get();
 }
 
 RenderFrameImpl::~RenderFrameImpl() {
@@ -2347,15 +2343,17 @@ void RenderFrameImpl::OnAssociatedInterfaceRequest(
 }
 
 void RenderFrameImpl::BindFullscreen(
-    mojom::FullscreenVideoElementHandlerAssociatedRequest request) {
-  fullscreen_binding_.Bind(std::move(request),
-                           GetTaskRunner(blink::TaskType::kInternalIPC));
+    mojo::PendingAssociatedReceiver<mojom::FullscreenVideoElementHandler>
+        receiver) {
+  fullscreen_receiver_.Bind(std::move(receiver),
+                            GetTaskRunner(blink::TaskType::kInternalIPC));
 }
 
 void RenderFrameImpl::BindAutoplayConfiguration(
-    blink::mojom::AutoplayConfigurationClientAssociatedRequest request) {
-  autoplay_configuration_binding_.Bind(
-      std::move(request), GetTaskRunner(blink::TaskType::kInternalIPC));
+    mojo::PendingAssociatedReceiver<blink::mojom::AutoplayConfigurationClient>
+        receiver) {
+  autoplay_configuration_receiver_.Bind(
+      std::move(receiver), GetTaskRunner(blink::TaskType::kInternalIPC));
 }
 
 void RenderFrameImpl::BindFrame(
@@ -7344,9 +7342,9 @@ void RenderFrameImpl::RegisterMojoInterfaces() {
 }
 
 void RenderFrameImpl::BindMhtmlFileWriter(
-    mojom::MhtmlFileWriterAssociatedRequest request) {
-  mhtml_file_writer_binding_.Bind(
-      std::move(request), GetTaskRunner(blink::TaskType::kInternalDefault));
+    mojo::PendingAssociatedReceiver<mojom::MhtmlFileWriter> receiver) {
+  mhtml_file_writer_receiver_.Bind(
+      std::move(receiver), GetTaskRunner(blink::TaskType::kInternalDefault));
 }
 
 void RenderFrameImpl::CheckIfAudioSinkExistsAndIsAuthorized(
