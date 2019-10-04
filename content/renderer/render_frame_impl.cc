@@ -3532,8 +3532,9 @@ void RenderFrameImpl::CommitNavigationInternal(
                                             WebString::FromUTF8(charset), data);
   } else {
     NavigationBodyLoader::FillNavigationParamsResponseAndBodyLoader(
-        *common_params, *commit_params, request_id, response_head,
-        std::move(response_body), std::move(url_loader_client_endpoints),
+        std::move(common_params), std::move(commit_params), request_id,
+        response_head, std::move(response_body),
+        std::move(url_loader_client_endpoints),
         GetTaskRunner(blink::TaskType::kInternalLoading), GetRoutingID(),
         !frame_->Parent(), navigation_params.get());
   }
