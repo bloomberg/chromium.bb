@@ -60,6 +60,7 @@ namespace ui {
 enum class DomCode;
 class InputMethod;
 class LocatedEvent;
+class RubberbandOutline;
 }
 
 namespace content {
@@ -173,6 +174,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
       viz::CompositorFrame frame,
       base::Optional<viz::HitTestRegionList> hit_test_region_list) override;
   void OnDidNotProduceFrame(const viz::BeginFrameAck& ack) override;
+  void SetRubberbandRect(const gfx::Rect& rect) override;
+  void HideRubberbandRect() override;  
   void ClearCompositorFrame() override;
   void ResetFallbackToFirstNavigationSurface() override;
   bool RequestRepaintForTesting() override;
@@ -675,6 +678,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   gfx::SelectionBound selection_end_;
 
   gfx::Insets insets_;
+
+  // The rect to draw the rubberband highlight.
+  std::unique_ptr<ui::RubberbandOutline> rubberband_outline_;
 
   std::unique_ptr<wm::ScopedTooltipDisabler> tooltip_disabler_;
 
