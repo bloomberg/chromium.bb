@@ -431,6 +431,31 @@ class OncMojo {
   }
 
   /**
+   * Policy indicators expect a per-property PolicySource, but sometimes we need
+   * to use the per-configuration OncSource (e.g. for unmanaged intrinsic
+   * properties like Security). This returns the corresponding PolicySource.
+   * @param {!chromeos.networkConfig.mojom.OncSource} source
+   * @return {!chromeos.networkConfig.mojom.PolicySource}
+   */
+  static getEnforcedPolicySourceFromOncSource(source) {
+    const OncSource = chromeos.networkConfig.mojom.OncSource;
+    const PolicySource = chromeos.networkConfig.mojom.PolicySource;
+    switch (source) {
+      case OncSource.kNone:
+      case OncSource.kDevice:
+      case OncSource.kUser:
+        return PolicySource.kNone;
+      case OncSource.kDevicePolicy:
+        return PolicySource.kDevicePolicyEnforced;
+      case OncSource.kUserPolicy:
+        return PolicySource.kUserPolicyEnforced;
+    }
+    assert(source !== undefined, 'OncSource undefined');
+    assertNotReached('Invalid OncSource: ' + source.toString());
+    return PolicySource.kNone;
+  }
+
+  /**
    * @param {!chromeos.networkConfig.mojom.NetworkType} type
    * @return {string}
    */
