@@ -6383,6 +6383,11 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="Is phishing"/>
 </enum>
 
+<enum name="BooleanIsRepeat">
+  <int value="0" label="First"/>
+  <int value="1" label="Repeat"/>
+</enum>
+
 <enum name="BooleanIsShared">
   <int value="0" label="Not Shared"/>
   <int value="1" label="Is Shared"/>

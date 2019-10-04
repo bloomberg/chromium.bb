@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/global_media_controls/media_dialog_view.h"
 
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/global_media_controls/media_toolbar_button_controller.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
@@ -21,6 +22,9 @@ using media_session::mojom::MediaSessionAction;
 MediaDialogView* MediaDialogView::instance_ = nullptr;
 
 // static
+bool MediaDialogView::has_been_opened_ = false;
+
+// static
 void MediaDialogView::ShowDialog(views::View* anchor_view,
                                  MediaToolbarButtonController* controller,
                                  service_manager::Connector* connector) {
@@ -31,6 +35,10 @@ void MediaDialogView::ShowDialog(views::View* anchor_view,
   views::Widget* widget =
       views::BubbleDialogDelegateView::CreateBubble(instance_);
   widget->Show();
+
+  base::UmaHistogramBoolean("Media.GlobalMediaControls.RepeatUsage",
+                            has_been_opened_);
+  has_been_opened_ = true;
 }
 
 // static
