@@ -599,11 +599,6 @@ void RenderWidget::SetExternalPopupOriginAdjustmentsForEmulation(
 }
 #endif
 
-void RenderWidget::OnShowHostContextMenu(ContextMenuParams* params) {
-  if (page_properties_->ScreenMetricsEmulator())
-    page_properties_->ScreenMetricsEmulator()->OnShowContextMenu(params);
-}
-
 bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
   // TODO(https://crbug.com/1000502): Don't process IPC messages on undead
   // RenderWidgets. We would like to eventually remove them altogether, so they

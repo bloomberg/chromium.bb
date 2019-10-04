@@ -135,6 +135,7 @@
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/render_widget_fullscreen_pepper.h"
+#include "content/renderer/render_widget_screen_metrics_emulator.h"
 #include "content/renderer/renderer_blink_platform_impl.h"
 #include "content/renderer/resource_timing_info_conversions.h"
 #include "content/renderer/savable_resources.h"
@@ -5258,14 +5259,28 @@ bool RenderFrameImpl::RunModalBeforeUnloadDialog(bool is_reload) {
 
 void RenderFrameImpl::ShowContextMenu(const blink::WebContextMenuData& data) {
   ContextMenuParams params = ContextMenuParamsBuilder::Build(data);
-  blink::WebRect position_in_window(params.x, params.y, 0, 0);
-  GetLocalRootRenderWidget()->ConvertViewportToWindow(&position_in_window);
-  params.x = position_in_window.x;
-  params.y = position_in_window.y;
-  GetLocalRootRenderWidget()->OnShowHostContextMenu(&params);
   if (GetLocalRootRenderWidget()->has_host_context_menu_location()) {
+    // If the context menu request came from the browser, it came with a
+    // position that was stored on RenderWidget and is relative to the
+    // WindowScreenRect.
     params.x = GetLocalRootRenderWidget()->host_context_menu_location().x();
     params.y = GetLocalRootRenderWidget()->host_context_menu_location().y();
+  } else {
+    // If the context menu request came from the renderer, the position in
+    // |params| is real, but they come in blink viewport coordiates, which
+    // include the device scale factor, but not emulation scale. Here we convert
+    // them to DIP coordiates relative to the WindowScreenRect.
+    blink::WebRect position_in_window(params.x, params.y, 0, 0);
+    render_view_->page_properties()->ConvertViewportToWindow(
+        &position_in_window);
+    if (render_view_->page_properties()->ScreenMetricsEmulator()) {
+      const float scale =
+          render_view_->page_properties()->ScreenMetricsEmulator()->scale();
+      position_in_window.x *= scale;
+      position_in_window.y *= scale;
+    }
+    params.x = position_in_window.x;
+    params.y = position_in_window.y;
   }
 
   // Serializing a GURL longer than kMaxURLChars will fail, so don't do

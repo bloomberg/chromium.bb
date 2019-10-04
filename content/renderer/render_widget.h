@@ -123,7 +123,6 @@ class RenderFrameProxy;
 class RenderViewImpl;
 class RenderWidgetDelegate;
 class WidgetInputHandlerManager;
-struct ContextMenuParams;
 struct VisualProperties;
 
 // RenderWidget provides a communication bridge between a WebWidget and
@@ -540,8 +539,6 @@ class CONTENT_EXPORT RenderWidget
   void UpdateSelectionBounds();
 
   void GetSelectionBounds(gfx::Rect* start, gfx::Rect* end);
-
-  void OnShowHostContextMenu(ContextMenuParams* params);
 
   // Checks if the composition range or composition character bounds have been
   // changed. If they are changed, the new value will be sent to the browser
