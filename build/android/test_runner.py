@@ -315,6 +315,11 @@ def AddEmulatorOptions(parser):
       help='Path to the avd config textpb. '
       '(See //tools/android/avd/proto/ for message definition'
       ' and existing textpb files.)')
+  parser.add_argument(
+      '--emulator-count',
+      type=int,
+      default=1,
+      help='Number of emulators to use.')
 
 
 def AddGTestOptions(parser):

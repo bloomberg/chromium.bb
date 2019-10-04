@@ -365,15 +365,23 @@ class AvdConfig(object):
         if not os.path.exists(d):
           os.makedirs(d)
 
+  def CreateInstance(self):
+    """Creates an AVD instance without starting it.
+
+    Returns:
+      An _AvdInstance.
+    """
+    self._Initialize()
+    return _AvdInstance(
+        self._emulator_path, self._config.avd_name, self._emulator_home)
+
   def StartInstance(self):
     """Starts an AVD instance.
 
     Returns:
       An _AvdInstance.
     """
-    self._Initialize()
-    instance = _AvdInstance(
-        self._emulator_path, self._config.avd_name, self._emulator_home)
+    instance = self.CreateInstance()
     instance.Start()
     return instance
 
@@ -399,6 +407,9 @@ class _AvdInstance(object):
     self._emulator_proc = None
     self._emulator_serial = None
     self._sink = None
+
+  def __str__(self):
+    return '%s|%s' % (self._avd_name, (self._emulator_serial or id(self)))
 
   def Start(self, read_only=True):
     """Starts the emulator running an instance of the given AVD."""
@@ -445,9 +456,9 @@ class _AvdInstance(object):
         self._emulator_serial = timeout_retry.Run(
             listen_for_serial, timeout=30, retries=0, args=[sock])
         logging.info('%s started', self._emulator_serial)
-      except Exception:
+      except Exception as e:
         self.Stop()
-        raise
+        raise AvdException('Emulator failed to start: %s' % str(e))
 
   def Stop(self):
     """Stops the emulator process."""
