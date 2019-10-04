@@ -37,13 +37,7 @@ struct PriorityCompare {
   PriorityCompare(SMILTime elapsed) : elapsed_(elapsed) {}
   bool operator()(const Member<SVGSMILElement>& a,
                   const Member<SVGSMILElement>& b) {
-    // FIXME: This should also consider possible timing relations between the
-    // elements.
-    SMILTime a_begin = a->BeginTimeForPrioritization(elapsed_);
-    SMILTime b_begin = b->BeginTimeForPrioritization(elapsed_);
-    if (a_begin == b_begin)
-      return a->DocumentOrderIndex() < b->DocumentOrderIndex();
-    return a_begin < b_begin;
+    return b->IsHigherPriorityThan(a, elapsed_);
   }
   SMILTime elapsed_;
 };
