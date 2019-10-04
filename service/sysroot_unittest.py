@@ -167,6 +167,9 @@ class CreateSimpleChromeSysrootTest(cros_test_lib.MockTempDirTestCase):
   def setUp(self):
     self.run_mock = self.PatchObject(cros_build_lib, 'RunCommand',
                                      return_value=True)
+    self.source_root = os.path.join(self.tempdir, 'source_root')
+    osutils.SafeMakedirs(self.source_root)
+    self.PatchObject(constants, 'SOURCE_ROOT', new=self.source_root)
 
   def testCreateSimpleChromeSysroot(self):
     # A board for which we will create a simple chrome sysroot.
@@ -180,7 +183,7 @@ class CreateSimpleChromeSysrootTest(cros_test_lib.MockTempDirTestCase):
          '--deps-only', '--package', 'chromeos-base/chromeos-chrome'],
         extra_env={'USE': 'cros-debug chrome_internal'},
         enter_chroot=True,
-        cwd='/mnt/host/source'
+        cwd=self.source_root
     )
 
 
