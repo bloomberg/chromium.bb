@@ -28,5 +28,7 @@
     DOMString listPumpSchedulerTunables();
     void activatePumpScheduler(long index);
     void setPumpSchedulerTunable(long index, long value);
+
+    DOMString getGpuInfo();
 };
 
