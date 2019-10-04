@@ -1743,12 +1743,9 @@ extern const char kProactiveTabFreezeAndDiscardDescription[];
 extern const char kWebUIA11yEnhancementsName[];
 extern const char kWebUIA11yEnhancementsDescription[];
 
-#if defined(GOOGLE_CHROME_BUILD)
-
+// Only used in branded builds.
 extern const char kGoogleBrandedContextMenuName[];
 extern const char kGoogleBrandedContextMenuDescription[];
-
-#endif  // defined(GOOGLE_CHROME_BUILD)
 
 #endif  // defined(OS_ANDROID)
 
