@@ -86,6 +86,8 @@ enum {
     IDM_TEST,
     IDM_TEST_V8_APPEND_ELEMENT,
     IDM_TEST_PLAY_KEYBOARD_EVENTS,
+    IDM_TEST_GET_PDF,
+    IDM_TEST_GET_BITMAP,
     IDM_TEST_DUMP_LAYOUT_TREE,
     IDM_LANGUAGES,
     IDM_LANGUAGE_DE,
@@ -195,6 +197,198 @@ void getWebViewPosition(HWND hwnd, int *left, int *top, int *width, int *height)
     *top = URLBAR_HEIGHT;
     *width = rect.right;
     *height = rect.bottom - URLBAR_HEIGHT;
+}
+
+void testGetPicture(blpwtk2::NativeView hwnd,
+                    blpwtk2::WebView* webView,
+                    blpwtk2::WebView::DrawParams::RendererType rendererType,
+                    int scaleX,
+                    int scaleY)
+{
+    // NOTE: The PDF engine issues different commands based on the type of
+    // device it is drawing to
+    //
+    //   Real printer:  Rasterizes the output into a bitmap and block
+    //                  transfers it to the provided device context. This is
+    //                  a temporary workaround in
+    //                  PDFiumEngineExports::RenderPDFPageToDC
+    //
+    //   non-EMF files: Uses the CGdiDisplayDriver driver to issue the draw
+    //                  commands on the provided device context.
+    //
+    //   EMF files:     Uses the CGdiPrinterDriver driver to issue the draw
+    //                  commands on the provided device context.
+    //
+    // Using EMF files produces a very low-quality output. This is probably due
+    // to an incorrect assumption by CFX_WindowsDevice::CreateDriver to assume
+    // all EMF files to be compatible with a printer device rather than being
+    // truely device independent.
+    //
+    // To ensure the test driver generates an output close to the output that
+    // will be sent to the printer, we will use a non-EMF files (ie. Bitmap)
+    // to test the drawContent method. Once the workaround in RenderPDFPageToDC
+    // is removed and CFX_WindowsDevice::CreateDriver creates a driver that
+    // issues device-independent commands, we can switch the test driver to use
+    // EMF files instead.
+
+    int left = 0, top = 0, width = 0, height = 0;
+
+    assert(webView);
+    getWebViewPosition(hwnd, &left, &top, &width, &height);
+
+    if (!width || !height) {
+        std::cout << "Unable to get bitmap of canvas. Canvas area is zero" << std::endl;
+        return;
+    }
+
+    blpwtk2::NativeDeviceContext refDeviceContext = GetDC(hwnd);
+
+#ifdef USE_EMF
+    RECT rect = { 0 };
+    int iWidthMM = GetDeviceCaps(refDeviceContext, HORZSIZE);
+    int iHeightMM = GetDeviceCaps(refDeviceContext, VERTSIZE);
+    int iWidthPels = GetDeviceCaps(refDeviceContext, HORZRES);
+    int iHeightPels = GetDeviceCaps(refDeviceContext, VERTRES);
+
+    rect.right = (scaleX * width * iWidthMM * 100) / iWidthPels;
+    rect.bottom = (scaleY * height * iHeightMM * 100) / iHeightPels;
+
+    blpwtk2::NativeDeviceContext deviceContext = CreateEnhMetaFileW(refDeviceContext, L"outputPicture.emf", &rect, L"blpwtk2_shell");
+#else
+    const int bytesPerRow = width * scaleX * 4;
+    const long imageDataSize = bytesPerRow * height * scaleY;
+
+    BITMAPFILEHEADER fileHeader = {
+        0x4d42,
+        sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER) + imageDataSize,
+        0,
+        0,
+        sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER),
+    };
+
+    BITMAPINFO bmi = { {
+            sizeof(BITMAPINFOHEADER),
+            width * scaleX,
+            height * scaleY,
+            1,
+            32,
+            BI_RGB
+        } };
+
+    // Use the device context of the parent HWND as a template to create a new
+    // device context.
+    blpwtk2::NativeDeviceContext deviceContext = CreateCompatibleDC(refDeviceContext);
+#endif
+
+    ReleaseDC(hwnd, refDeviceContext);
+
+    // This is the best stretch mode
+    SetStretchBltMode(deviceContext, HALFTONE);
+
+#ifndef USE_EMF
+    // Create a new bitmap object
+    void *buffer = (void*) NULL;
+    HBITMAP bitmap = CreateDIBSection(deviceContext, &bmi, DIB_RGB_COLORS, &buffer, 0, 0);
+
+    // Set the new bitmap object as a backing surface for the device context.
+    // The original backing surface is saved in originalSurface
+    HGDIOBJ originalSurface = SelectObject(deviceContext, bitmap);
+#endif
+
+    // Draw the contents of the webview onto the device context
+    blpwtk2::WebView::DrawParams drawParams;
+    drawParams.srcRegion = { 0, 0, width, height };
+    drawParams.destWidth = width * scaleX;
+    drawParams.destHeight = height * scaleY;
+    drawParams.styleClass = "screen-grab";
+    drawParams.rendererType = rendererType;
+    drawParams.dpi = 72;
+
+    if (rendererType == blpwtk2::WebView::DrawParams::RendererType::PDF) {
+        std::vector<char> pdf_data;
+        {
+            blpwtk2::Blob blob;
+            webView->drawContentsToBlob(&blob, drawParams);
+
+            pdf_data.resize(blob.size());
+            blob.copyTo(&pdf_data[0]);
+        }
+
+        blpwtk2::PdfUtil::RenderPDFPageToDC(pdf_data.data(),
+                                            pdf_data.size(),
+                                            0,
+                                            deviceContext,
+                                            drawParams.dpi,
+                                            0,
+                                            0,
+                                            drawParams.destWidth,
+                                            drawParams.destHeight,
+                                            false,
+                                            false,
+                                            false,
+                                            false,
+                                            false,
+                                            true);
+    }
+    else if (rendererType == blpwtk2::WebView::DrawParams::RendererType::Bitmap) {
+        std::vector<char> bmp_data;
+        {
+            blpwtk2::Blob blob;
+            webView->drawContentsToBlob(&blob, drawParams);
+
+            bmp_data.resize(blob.size());
+            blob.copyTo(&bmp_data[0]);
+        }
+
+        // Create a device context to associate with the bitmap object
+        blpwtk2::NativeDeviceContext bitmapDeviceContext = CreateCompatibleDC(deviceContext);
+
+        // Create a new bitmap object
+        void *buffer = (void*)NULL;
+        BITMAPINFO bmi = { *reinterpret_cast<BITMAPINFOHEADER*>(bmp_data.data() + sizeof(BITMAPFILEHEADER)) };
+        HBITMAP inputBitmap = CreateDIBSection(bitmapDeviceContext, &bmi, DIB_RGB_COLORS, &buffer, 0, 0);
+
+        // Copy bitmap data from blob into bitmap object
+        memcpy(buffer,
+               bmp_data.data() + sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER),
+               bmp_data.size() - sizeof(BITMAPFILEHEADER) - sizeof(BITMAPINFOHEADER));
+
+        // Block transfer image from bitmap object to 'deviceContext'
+        HGDIOBJ originalSurface = SelectObject(bitmapDeviceContext, inputBitmap);
+        BitBlt(deviceContext,
+               0,
+               0,
+               drawParams.destWidth,
+               drawParams.destHeight,
+               bitmapDeviceContext,
+               0,
+               0,
+               SRCCOPY);
+
+        SelectObject(bitmapDeviceContext, originalSurface);
+        DeleteObject(inputBitmap);
+        DeleteDC(bitmapDeviceContext);
+    }
+
+#ifdef USE_EMF
+    HENHMETAFILE emf = CloseEnhMetaFile(deviceContext);
+    DeleteEnhMetaFile(emf);
+#else
+    // The device context is switched back to use the original backing surface.
+    SelectObject(deviceContext, originalSurface);
+
+    std::ofstream file("outputBitmap.bmp", std::ios::binary);
+    file.write(reinterpret_cast<char *>(&fileHeader), sizeof(fileHeader));
+    file.write(reinterpret_cast<char *>(&bmi.bmiHeader), sizeof(bmi.bmiHeader));
+    file.write(reinterpret_cast<char *>(buffer), imageDataSize);
+    file.close();
+
+    // Delete the bitmap object and its associated memory
+    DeleteObject(bitmap);
+
+    // Delete the device context
+    DeleteDC(deviceContext);
+#endif
 }
 
 class Shell : public blpwtk2::WebViewDelegate {
@@ -1021,6 +1215,12 @@ LRESULT CALLBACK shellWndProc(HWND hwnd,        // handle to window
 
 
         // patch section: screen printing
+        case IDM_TEST_GET_PDF:
+            testGetPicture(shell->d_mainWnd, shell->d_webView, blpwtk2::WebView::DrawParams::RendererType::PDF, 2, 2);
+            return 0;
+        case IDM_TEST_GET_BITMAP:
+            testGetPicture(shell->d_mainWnd, shell->d_webView, blpwtk2::WebView::DrawParams::RendererType::Bitmap, 2, 2);
+            return 0;
 
 
 
@@ -1211,6 +1411,8 @@ Shell* createShell(blpwtk2::Profile* profile, blpwtk2::WebView* webView, bool fo
     HMENU testMenu = CreateMenu();
     AppendMenu(testMenu, MF_STRING, IDM_TEST_V8_APPEND_ELEMENT, L"Append Element Using &V8");
     AppendMenu(testMenu, MF_STRING, IDM_TEST_PLAY_KEYBOARD_EVENTS, L"Test Play Keyboard Events");
+    AppendMenu(testMenu, MF_STRING, IDM_TEST_GET_PDF, L"Test Capture PDF");
+    AppendMenu(testMenu, MF_STRING, IDM_TEST_GET_BITMAP, L"Test Capture Bitmap");
     AppendMenu(testMenu, MF_STRING, IDM_TEST_DUMP_LAYOUT_TREE, L"Dump Layout Tree");
 
 
