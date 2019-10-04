@@ -31,6 +31,7 @@ struct KeyData {
   int32 windows_key_code;
   int32 native_key_code;
   bool is_system_key;
+  bool is_num_lock;
   bool is_browser_shortcut;
   mojo_base.mojom.String16 text;
   mojo_base.mojom.String16 unmodified_text;
