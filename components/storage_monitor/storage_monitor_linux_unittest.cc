@@ -422,7 +422,7 @@ TEST_F(StorageMonitorLinuxTest, SwapMountPoints) {
 }
 
 // More complicated test case with multiple devices on multiple mount points.
-TEST_F(StorageMonitorLinuxTest, MultiDevicesMultiMountPoints) {
+TEST_F(StorageMonitorLinuxTest, DISABLED_MultiDevicesMultiMountPoints) {
   base::FilePath test_path_a = CreateMountPointWithDCIMDir(kMountPointA);
   base::FilePath test_path_b = CreateMountPointWithDCIMDir(kMountPointB);
   ASSERT_FALSE(test_path_a.empty());
@@ -489,7 +489,8 @@ TEST_F(StorageMonitorLinuxTest, MultiDevicesMultiMountPoints) {
   EXPECT_EQ(5, observer().detach_calls());
 }
 
-TEST_F(StorageMonitorLinuxTest, MultipleMountPointsWithNonDCIMDevices) {
+TEST_F(StorageMonitorLinuxTest,
+       DISABLED_MultipleMountPointsWithNonDCIMDevices) {
   base::FilePath test_path_a = CreateMountPointWithDCIMDir(kMountPointA);
   base::FilePath test_path_b = CreateMountPointWithDCIMDir(kMountPointB);
   ASSERT_FALSE(test_path_a.empty());
