@@ -1712,7 +1712,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   //
   // TODO(creis): RenderViewHost will eventually go away and be replaced with
   // some form of page context.
-  const scoped_refptr<RenderViewHostImpl> render_view_host_;
+  scoped_refptr<RenderViewHostImpl> render_view_host_;
 
   RenderFrameHostDelegate* const delegate_;
 
