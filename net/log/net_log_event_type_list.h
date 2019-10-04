@@ -3297,10 +3297,12 @@ EVENT_TYPE(COOKIE_GET_BLOCKED_BY_NETWORK_DELEGATE)
 //  }
 EVENT_TYPE(COOKIE_SET_BLOCKED_BY_NETWORK_DELEGATE)
 
-// Event emitted when cookies are associated with domain but not sent
-// and received but not stored
+// Event emitted when a cookie is received but not stored, or when a cookie is
+// not sent to an associated domain.
 //  {
-//    "exclusion_reason": <Exclusion flags>
+//    "exclusion_reason": <Exclusion flags>,
+//    "name": <Name of the cookie>,
+//    "operation": <Operation, either "send" or "store">
 //  }
 EVENT_TYPE(COOKIE_INCLUSION_STATUS)
 

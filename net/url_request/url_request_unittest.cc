@@ -6962,7 +6962,8 @@ TEST_F(URLRequestTest, ReportCookieActivity) {
         net_log.GetEntriesWithType(NetLogEventType::COOKIE_INCLUSION_STATUS);
     EXPECT_EQ(1u, entries.size());
     EXPECT_EQ(
-        "{\"exclusion_reason\":\"EXCLUDE_USER_PREFERENCES, DO_NOT_WARN\"}",
+        "{\"exclusion_reason\":\"EXCLUDE_USER_PREFERENCES, "
+        "DO_NOT_WARN\",\"name\":\"not_stored_cookie\",\"operation\":\"store\"}",
         SerializeNetLogValueToJson(entries[0].params));
     net_log.Clear();
   }
@@ -6997,12 +6998,45 @@ TEST_F(URLRequestTest, ReportCookieActivity) {
     EXPECT_EQ(2u, entries.size());
     EXPECT_EQ(
         "{\"exclusion_reason\":\"EXCLUDE_NOT_ON_PATH, "
-        "EXCLUDE_USER_PREFERENCES, DO_NOT_WARN\"}",
+        "EXCLUDE_USER_PREFERENCES, "
+        "DO_NOT_WARN\",\"name\":\"path_cookie\",\"operation\":\"send\"}",
         SerializeNetLogValueToJson(entries[0].params));
     EXPECT_EQ(
-        "{\"exclusion_reason\":\"EXCLUDE_USER_PREFERENCES, DO_NOT_WARN\"}",
+        "{\"exclusion_reason\":\"EXCLUDE_USER_PREFERENCES, "
+        "DO_NOT_WARN\",\"name\":\"stored_cookie\",\"operation\":\"send\"}",
         SerializeNetLogValueToJson(entries[1].params));
     net_log.Clear();
+  }
+  {
+    TestDelegate d;
+    // Ensure that the log does not contain cookie names when not set to collect
+    // sensitive data.
+    net_log.SetObserverCaptureMode(NetLogCaptureMode::kDefault);
+
+    GURL test_url = test_server.GetURL("/echoheader?Cookie");
+    std::unique_ptr<URLRequest> req(context.CreateRequest(
+        test_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+    req->set_site_for_cookies(test_url);
+    req->Start();
+    d.RunUntilComplete();
+
+    auto entries =
+        net_log.GetEntriesWithType(NetLogEventType::COOKIE_INCLUSION_STATUS);
+    EXPECT_EQ(2u, entries.size());
+
+    // Ensure that the potentially-sensitive |name| field is omitted, but other
+    // fields are logged as expected.
+    EXPECT_EQ(
+        "{\"exclusion_reason\":\"EXCLUDE_NOT_ON_PATH, EXCLUDE_USER_PREFERENCES,"
+        " DO_NOT_WARN\",\"operation\":\"send\"}",
+        SerializeNetLogValueToJson(entries[0].params));
+    EXPECT_EQ(
+        "{\"exclusion_reason\":\"EXCLUDE_USER_PREFERENCES, DO_NOT_WARN\",\""
+        "operation\":\"send\"}",
+        SerializeNetLogValueToJson(entries[1].params));
+
+    net_log.Clear();
+    net_log.SetObserverCaptureMode(NetLogCaptureMode::kIncludeSensitive);
   }
 
   network_delegate.unset_block_get_cookies();
@@ -7030,8 +7064,10 @@ TEST_F(URLRequestTest, ReportCookieActivity) {
     auto entries =
         net_log.GetEntriesWithType(NetLogEventType::COOKIE_INCLUSION_STATUS);
     EXPECT_EQ(1u, entries.size());
-    EXPECT_EQ("{\"exclusion_reason\":\"EXCLUDE_NOT_ON_PATH, DO_NOT_WARN\"}",
-              SerializeNetLogValueToJson(entries[0].params));
+    EXPECT_EQ(
+        "{\"exclusion_reason\":\"EXCLUDE_NOT_ON_PATH, "
+        "DO_NOT_WARN\",\"name\":\"path_cookie\",\"operation\":\"send\"}",
+        SerializeNetLogValueToJson(entries[0].params));
     net_log.Clear();
   }
 }
