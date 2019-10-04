@@ -9,7 +9,6 @@ import unittest
 
 import mock
 
-from infra_libs.ts_mon.common import distribution
 from infra_libs.ts_mon.common import errors
 from infra_libs.ts_mon.common import interface
 from infra_libs.ts_mon.common import metric_store

@@ -4,21 +4,15 @@
 
 """Classes representing the monitoring interface for tasks or devices."""
 
-
-import base64
-import httplib2
 import json
 import logging
 import socket
-import traceback
 
-from googleapiclient import discovery
+import httplib2
+
 from googleapiclient import errors
 from infra_libs import httplib2_utils
-from infra_libs.ts_mon.common import interface
-from infra_libs.ts_mon.common import http_metrics
 from infra_libs.ts_mon.common import pb_to_popo
-from infra_libs.ts_mon.protos import metrics_pb2
 try: # pragma: no cover
   from oauth2client import gce
 except ImportError: # pragma: no cover

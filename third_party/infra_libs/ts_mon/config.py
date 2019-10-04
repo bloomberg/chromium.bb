@@ -7,13 +7,11 @@ import logging
 import os
 import socket
 import sys
-import urlparse
 import re
 
 import requests
 
 from infra_libs.ts_mon.common import interface
-from infra_libs.ts_mon.common import metric_store
 from infra_libs.ts_mon.common import monitors
 from infra_libs.ts_mon.common import standard_metrics
 from infra_libs.ts_mon.common import targets

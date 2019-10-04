@@ -4,7 +4,6 @@
 
 """Classes representing individual metrics that can be sent."""
 
-import copy
 import re
 
 from infra_libs.ts_mon.protos import metrics_pb2

@@ -2,21 +2,17 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import base64
-import httplib2
 import json
 import os
-import tempfile
 import unittest
 
-from googleapiclient import errors
+import httplib2
 import mock
 
 from infra_libs import httplib2_utils
 from infra_libs.ts_mon.common import interface
 from infra_libs.ts_mon.common import monitors
 from infra_libs.ts_mon.common import pb_to_popo
-from infra_libs.ts_mon.common import targets
 from infra_libs.ts_mon.protos import metrics_pb2
 import infra_libs
 
