@@ -1141,8 +1141,8 @@ NGBoxFragmentPainter::MoveTo NGBoxFragmentPainter::PaintBoxItem(
     return kDontSkipChildren;
   }
 
-  // TODO(kojii): Implement.
-  // NGInlineBoxFragmentPainter(*child).Paint(paint_info, paint_offset);
+  NGInlineBoxFragmentPainter(item, *child_fragment)
+      .Paint(paint_info, paint_offset);
   return kDontSkipChildren;
 }
 
