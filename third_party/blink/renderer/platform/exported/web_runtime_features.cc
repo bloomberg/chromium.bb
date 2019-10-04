@@ -668,12 +668,6 @@ void WebRuntimeFeatures::EnableDisplayLocking(bool enable) {
   RuntimeEnabledFeatures::SetDisplayLockingEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnablePauseExecutionContextOnBackgroundFreeze(
-    bool enable) {
-  RuntimeEnabledFeatures::SetPauseExecutionContextOnBackgroundFreezeEnabled(
-      enable);
-}
-
 void WebRuntimeFeatures::EnableConsolidatedMovementXY(bool enable) {
   RuntimeEnabledFeatures::SetConsolidatedMovementXYEnabled(enable);
 }

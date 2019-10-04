@@ -383,11 +383,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
                                                 true);
   }
 
-  if (!base::FeatureList::IsEnabled(
-          features::kPauseExecutionContextOnBackgroundFreeze)) {
-    WebRuntimeFeatures::EnablePauseExecutionContextOnBackgroundFreeze(false);
-  }
-
   WebRuntimeFeatures::EnableConsolidatedMovementXY(
       base::FeatureList::IsEnabled(features::kConsolidatedMovementXY));
 

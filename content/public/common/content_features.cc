@@ -344,11 +344,6 @@ const base::Feature kPassiveDocumentWheelEventListeners{
 const base::Feature kPassiveEventListenersDueToFling{
     "PassiveEventListenersDueToFling", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Whether ExecutionContext is paused (and workers) on background freeze.
-const base::Feature kPauseExecutionContextOnBackgroundFreeze = {
-    "PauseExecutionContextOnBackgroundFreeze",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Whether web apps can run periodic tasks upon network connectivity.
 const base::Feature kPeriodicBackgroundSync{"PeriodicBackgroundSync",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
