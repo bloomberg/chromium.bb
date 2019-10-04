@@ -230,6 +230,7 @@ PYTHON3_TESTS = {
     'lib/paygen/utils_unittest',
     'lib/process_util_unittest',
     'lib/prpc_unittest',
+    'lib/qemu_unittest',
     'lib/repo_util_unittest',
     'lib/request_build_unittest',
     'lib/retry_stats_unittest',

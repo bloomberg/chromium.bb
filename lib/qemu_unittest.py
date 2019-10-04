@@ -31,13 +31,25 @@ class QemuTests(cros_test_lib.TestCase):
       if arch is None:
         # See if we have a mask for it.
         # pylint: disable=protected-access
-        self.assertNotIn(exp_arch, qemu.Qemu._MAGIC_MASK.keys(),
+        self.assertNotIn(exp_arch, list(qemu.Qemu._MAGIC_MASK),
                          msg='ELF "%s" did not match "%s", but should have' %
                          (test, exp_arch))
       else:
         self.assertEqual(arch, exp_arch)
 
-  def testRegisterStr(self):
+  def testArmRegisterStr(self):
+    """Make sure the register string is exact.
+
+    We don't check every arch, just one to make sure the general logic is OK.
+    """
+    exp = (b':foo:M::'
+           b'\x7fELF\x01\x01\x01!\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\x02'
+           b'\\x00(\\x00:\xff\xff\xff\xff\xff\xff\xff\\x00\xff\xff\xff\xff\xff'
+           b'\xff\xff\xff\xfe\xff\xff\xff:'
+           b'/pfx-binfmt-wrapper:POC')
+    self.assertEqual(exp, qemu.Qemu.GetRegisterBinfmtStr('arm', 'foo', '/pfx'))
+
+  def testRegisterStrLengths(self):
     """Verify the binfmt register string doesn't exceed kernel limits"""
     # pylint: disable=protected-access
     for arch in qemu.Qemu._MAGIC_MASK.keys():
