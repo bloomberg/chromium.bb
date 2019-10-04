@@ -563,4 +563,12 @@ const char kSetDebugMode[] = "SetDebugMode";
 
 }  // namespace modemfwd
 
+namespace lock_to_single_user {
+const char kLockToSingleUserInterface[] = "org.chromium.LockToSingleUser";
+const char kLockToSingleUserServicePath[] = "/org/chromium/LockToSingleUser";
+const char kLockToSingleUserServiceName[] = "org.chromium.LockToSingleUser";
+
+const char kNotifyVmStartingMethod[] = "NotifyVmStarting";
+}  // namespace lock_to_single_user
+
 #endif  // SYSTEM_API_DBUS_SERVICE_CONSTANTS_H_
