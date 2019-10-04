@@ -478,7 +478,7 @@ static const arg_def_t enable_tx64 =
     ARG_DEF(NULL, "enable-tx64", 1,
             "Enable 64-pt transform (0: false, 1: true (default))");
 static const arg_def_t tx_size_search_method =
-    ARG_DEF(NULL, "tx-size-search-method", 0,
+    ARG_DEF(NULL, "tx-size-search-method", 1,
             "Set transform block size search method "
             "(0: Full RD (default), 1: Fast RD, 2: use largest allowed)");
 static const arg_def_t enable_flip_idtx =
