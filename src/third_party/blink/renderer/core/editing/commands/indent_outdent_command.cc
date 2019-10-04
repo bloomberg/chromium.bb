@@ -418,6 +418,44 @@ void IndentOutdentCommand::OutdentRegion(
           EndOfParagraph(NextPositionOf(end_of_current_paragraph))
               .ToPositionWithAffinity();
     }
+
+    // unquote the following blockquote could get into infinite loop,
+    // where the follow-up <br> of foo is out of the blockquote:
+    // ...
+    // <div>
+    // <blockquote>
+    //   <br>
+    //   foo
+    // </blockquote>
+    // <br>
+    // </div>
+    // bar
+    //
+    // The reason is end_after_selection is pointing to the 2nd 'br'.
+    // OutdentParagraph -> MoveParagraph would update the html similar to:
+    // ...
+    // <div>
+    // <blockquote ...> </blockquote>
+    // <span ...> <br> </span>
+    // foo
+    // <span ...> <br> </span>
+    // </div>
+    // bar
+    //
+    // When end_of_next_paragraph points to the 2nd <br>,
+    // CreateVisiblePosition(end_of_next_paragraph) would return a position
+    // pointing to foo again. Then the 2nd run with end_of_next_paragraph
+    // (pointing to foo) will skip the the 2nd <br> because:
+    //   PositionWithAffinity end_of_next_paragraph = xxx
+    // would set end_of_next_paragraph pointing to bar that the while loop
+    // exit condition cannot be met
+    //
+    // The fix is to break the loop when end_after_selection already points at
+    // the same location as end_after_selection
+    if (end_of_next_paragraph.GetPosition() == end_after_selection) {
+      break;
+    }
+
     end_of_current_paragraph = CreateVisiblePosition(end_of_next_paragraph);
   }
 }
