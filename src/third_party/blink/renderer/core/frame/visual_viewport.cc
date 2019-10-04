@@ -599,19 +599,20 @@ void VisualViewport::CreateLayerTree() {
          !inner_viewport_container_layer_);
 
   needs_paint_property_update_ = true;
+  bool use_nearest_neighbor_filter = true;
 
   // FIXME: The root transform layer should only be created on demand.
-  root_transform_layer_ = std::make_unique<GraphicsLayer>(*this);
-  inner_viewport_container_layer_ = std::make_unique<GraphicsLayer>(*this);
+  root_transform_layer_ = std::make_unique<GraphicsLayer>(*this, use_nearest_neighbor_filter);
+  inner_viewport_container_layer_ = std::make_unique<GraphicsLayer>(*this, use_nearest_neighbor_filter);
   // TODO(crbug.com/836884) Should remove overscroll_elasticity_layer_ after
   // BGPT landed.
   if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-    overscroll_elasticity_layer_ = std::make_unique<GraphicsLayer>(*this);
+    overscroll_elasticity_layer_ = std::make_unique<GraphicsLayer>(*this, use_nearest_neighbor_filter);
     overscroll_elasticity_layer_->SetElementId(
         GetCompositorOverscrollElasticityElementId());
   }
-  page_scale_layer_ = std::make_unique<GraphicsLayer>(*this);
-  inner_viewport_scroll_layer_ = std::make_unique<GraphicsLayer>(*this);
+  page_scale_layer_ = std::make_unique<GraphicsLayer>(*this, use_nearest_neighbor_filter);
+  inner_viewport_scroll_layer_ = std::make_unique<GraphicsLayer>(*this, use_nearest_neighbor_filter);
 
   ScrollingCoordinator* coordinator = GetPage().GetScrollingCoordinator();
   DCHECK(coordinator);
@@ -685,8 +686,9 @@ void VisualViewport::InitializeScrollbars() {
       !GetPage().GetSettings().GetHideScrollbars()) {
     DCHECK(!overlay_scrollbar_horizontal_);
     DCHECK(!overlay_scrollbar_vertical_);
-    overlay_scrollbar_horizontal_ = std::make_unique<GraphicsLayer>(*this);
-    overlay_scrollbar_vertical_ = std::make_unique<GraphicsLayer>(*this);
+    bool use_nearest_neighbor_filter = true;
+    overlay_scrollbar_horizontal_ = std::make_unique<GraphicsLayer>(*this, use_nearest_neighbor_filter);
+    overlay_scrollbar_vertical_ = std::make_unique<GraphicsLayer>(*this, use_nearest_neighbor_filter);
     SetupScrollbar(kHorizontalScrollbar);
     SetupScrollbar(kVerticalScrollbar);
   } else {

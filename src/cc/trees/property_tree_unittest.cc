@@ -461,9 +461,9 @@ TEST(PropertyTreeTest, NonIntegerTranslationTest) {
   tree.set_needs_update(true);
   draw_property_utils::ComputeTransforms(&tree);
   EXPECT_FALSE(
-      tree.Node(parent)->node_and_ancestors_have_only_integer_translation);
+      tree.Node(parent)->node_and_ancestors_have_only_axis_aligned_transform);
   EXPECT_FALSE(
-      tree.Node(child)->node_and_ancestors_have_only_integer_translation);
+      tree.Node(child)->node_and_ancestors_have_only_axis_aligned_transform);
 
   tree.Node(parent)->local.Translate(0.5f, 0.5f);
   tree.Node(child)->local.Translate(0.5f, 0.5f);
@@ -472,18 +472,18 @@ TEST(PropertyTreeTest, NonIntegerTranslationTest) {
   tree.set_needs_update(true);
   draw_property_utils::ComputeTransforms(&tree);
   EXPECT_TRUE(
-      tree.Node(parent)->node_and_ancestors_have_only_integer_translation);
+      tree.Node(parent)->node_and_ancestors_have_only_axis_aligned_transform);
   EXPECT_FALSE(
-      tree.Node(child)->node_and_ancestors_have_only_integer_translation);
+      tree.Node(child)->node_and_ancestors_have_only_axis_aligned_transform);
 
   tree.Node(child)->local.Translate(0.5f, 0.5f);
   tree.Node(child)->needs_local_transform_update = true;
   tree.set_needs_update(true);
   draw_property_utils::ComputeTransforms(&tree);
   EXPECT_TRUE(
-      tree.Node(parent)->node_and_ancestors_have_only_integer_translation);
+      tree.Node(parent)->node_and_ancestors_have_only_axis_aligned_transform);
   EXPECT_TRUE(
-      tree.Node(child)->node_and_ancestors_have_only_integer_translation);
+      tree.Node(child)->node_and_ancestors_have_only_axis_aligned_transform);
 }
 
 TEST(PropertyTreeTest, SingularTransformSnapTest) {

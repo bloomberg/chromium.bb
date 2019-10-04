@@ -62,6 +62,8 @@ cc_component("cc") {
     "input/touch_action.h",
     "layers/append_quads_data.cc",
     "layers/append_quads_data.h",
+    "layers/content_layer_client.cc",
+    "layers/content_layer_client.h",
     "layers/content_layer_client.h",
     "layers/deadline_policy.cc",
     "layers/deadline_policy.h",
