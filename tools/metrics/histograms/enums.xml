@@ -35574,6 +35574,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1248478422" label="enable-zip-archiver-packer"/>
   <int value="-1246840031" label="OptInImeMenu:disabled"/>
   <int value="-1243694853" label="DeferAllScript:disabled"/>
+  <int value="-1241868814" label="WebAuthenticationPhoneSupport:disabled"/>
   <int value="-1241747717" label="enable-android-password-link"/>
   <int value="-1241002324" label="FocusMode:enabled"/>
   <int value="-1239262870" label="TextFragmentAnchor:enabled"/>
@@ -36716,6 +36717,7 @@ from previous Chrome versions.
       label="AutofillEnableLocalCardMigrationForNonSyncUser:enabled"/>
   <int value="291389947" label="PercentBasedScrolling:disabled"/>
   <int value="291482671" label="ExperimentalFlingAnimation:disabled"/>
+  <int value="291866104" label="WebAuthenticationPhoneSupport:enabled"/>
   <int value="292560715" label="ViewsCastDialog:disabled"/>
   <int value="293134455" label="AutofillSendBillingCustomerNumber:disabled"/>
   <int value="293996306" label="ArrayPrototypeValues:disabled"/>

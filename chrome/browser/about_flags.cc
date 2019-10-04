@@ -3210,10 +3210,10 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // !defined(OS_ANDROID)
 
 #if !defined(OS_ANDROID)
-    {"enable-web-authentication-cable-support",
-     flag_descriptions::kEnableWebAuthenticationCableSupportName,
-     flag_descriptions::kEnableWebAuthenticationCableSupportDescription,
-     kOsDesktop, FEATURE_VALUE_TYPE(features::kWebAuthCable)},
+    {"enable-web-authentication-cable-v2-support",
+     flag_descriptions::kEnableWebAuthenticationCableV2SupportName,
+     flag_descriptions::kEnableWebAuthenticationCableV2SupportDescription,
+     kOsDesktop, FEATURE_VALUE_TYPE(device::kWebAuthPhoneSupport)},
 #endif  // !defined(OS_ANDROID)
 
     {"enable-viz-display-compositor",

@@ -573,8 +573,8 @@ extern const char kEnableSharedArrayBufferDescription[];
 extern const char kEnableWasmName[];
 extern const char kEnableWasmDescription[];
 
-extern const char kEnableWebAuthenticationCableSupportName[];
-extern const char kEnableWebAuthenticationCableSupportDescription[];
+extern const char kEnableWebAuthenticationCableV2SupportName[];
+extern const char kEnableWebAuthenticationCableV2SupportDescription[];
 
 extern const char kEnableWebUsbName[];
 extern const char kEnableWebUsbDescription[];
