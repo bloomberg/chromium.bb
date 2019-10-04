@@ -2414,6 +2414,28 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
+                       DisableBackForwardCacheIframe) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  GURL url_c(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  // 1) Navigate to A.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+  RenderFrameHostImpl* rfh_b = rfh_a->child_at(0)->current_frame_host();
+  RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
+  RenderFrameDeletedObserver delete_observer_rfh_b(rfh_b);
+
+  BackForwardCache::DisableForRenderFrameHost(rfh_b, "test");
+
+  // 2) Navigate to C. A and B are immediately deleted.
+  EXPECT_TRUE(NavigateToURL(shell(), url_c));
+  EXPECT_TRUE(delete_observer_rfh_a.deleted());
+  EXPECT_TRUE(delete_observer_rfh_b.deleted());
+}
+
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
                        DisableBackForwardEvictsIfAlreadyInCache) {
   ASSERT_TRUE(embedded_test_server()->Start());
   const GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));

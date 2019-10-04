@@ -213,12 +213,6 @@ BackForwardCacheImpl::CanStoreDocument(RenderFrameHostImpl* rfh) {
             kBackForwardCacheDisabled);
   }
 
-  if (rfh->is_back_forward_cache_disallowed()) {
-    return CanStoreDocumentResult::No(
-        BackForwardCacheMetrics::CanNotStoreDocumentReason::
-            kDisableForRenderFrameHostCalled);
-  }
-
   // Two pages in the same BrowsingInstance can script each other. When a page
   // can be scripted from outside, it can't enter the BackForwardCache.
   //
@@ -268,6 +262,12 @@ BackForwardCacheImpl::CanStoreRenderFrameHost(RenderFrameHostImpl* rfh,
     return CanStoreDocumentResult::No(
         BackForwardCacheMetrics::CanNotStoreDocumentReason::
             kWasGrantedMediaAccess);
+  }
+
+  if (rfh->is_back_forward_cache_disallowed()) {
+    return CanStoreDocumentResult::No(
+        BackForwardCacheMetrics::CanNotStoreDocumentReason::
+            kDisableForRenderFrameHostCalled);
   }
 
   // Don't cache the page if it uses any disallowed features.
