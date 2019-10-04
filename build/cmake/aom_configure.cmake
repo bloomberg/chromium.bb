@@ -52,8 +52,9 @@ string(STRIP "${AOM_CMAKE_CONFIG}" AOM_CMAKE_CONFIG)
 
 # Detect target CPU.
 if(NOT AOM_TARGET_CPU)
-  if("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "AMD64"
-     OR "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
+  string(TOLOWER "${CMAKE_SYSTEM_PROCESSOR}" cpu_lowercase)
+  if("${cpu_lowercase}" STREQUAL "amd64"
+     OR "${cpu_lowercase}" STREQUAL "x86_64")
     if(${CMAKE_SIZEOF_VOID_P} EQUAL 4)
       set(AOM_TARGET_CPU "x86")
     elseif(${CMAKE_SIZEOF_VOID_P} EQUAL 8)
@@ -65,15 +66,15 @@ if(NOT AOM_TARGET_CPU)
                     "      CMAKE_SYSTEM_PROCESSOR=${CMAKE_SYSTEM_PROCESSOR}\n"
                     "      CMAKE_GENERATOR=${CMAKE_GENERATOR}\n")
     endif()
-  elseif("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "i386"
-         OR "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86")
+  elseif("${cpu_lowercase}" STREQUAL "i386"
+         OR "${cpu_lowercase}" STREQUAL "x86")
     set(AOM_TARGET_CPU "x86")
-  elseif("${CMAKE_SYSTEM_PROCESSOR}" MATCHES "^arm"
-         OR "${CMAKE_SYSTEM_PROCESSOR}" MATCHES "^mips")
-    set(AOM_TARGET_CPU "${CMAKE_SYSTEM_PROCESSOR}")
-  elseif("${CMAKE_SYSTEM_PROCESSOR}" MATCHES "aarch64")
+  elseif("${cpu_lowercase}" MATCHES "^arm"
+         OR "${cpu_lowercase}" MATCHES "^mips")
+    set(AOM_TARGET_CPU "${cpu_lowercase}")
+  elseif("${cpu_lowercase}" MATCHES "aarch64")
     set(AOM_TARGET_CPU "arm64")
-  elseif("${CMAKE_SYSTEM_PROCESSOR}" MATCHES "^ppc")
+  elseif("${cpu_lowercase}" MATCHES "^ppc")
     set(AOM_TARGET_CPU "ppc")
   else()
     message(WARNING "The architecture ${CMAKE_SYSTEM_PROCESSOR} is not "
