@@ -390,5 +390,15 @@ QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_donot_process_small_initial_packets,
           false)
 
+// If true, treat queued QUIC packets as sent.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_treat_queued_packets_as_sent,
+          false)
+
+// Call NeuterHandshakePackets() at most once per connection.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_neuter_handshake_packets_once,
+          false)
+
 // If true, support HTTP/3 priority in v99.
 QUIC_FLAG(bool, FLAGS_quic_allow_http3_priority, false)
