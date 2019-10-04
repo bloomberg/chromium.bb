@@ -132,7 +132,7 @@ class PLATFORM_EXPORT VideoFrameSubmitter
 
   cc::VideoFrameProvider* video_frame_provider_ = nullptr;
   scoped_refptr<viz::RasterContextProvider> context_provider_;
-  viz::mojom::blink::CompositorFrameSinkPtr compositor_frame_sink_;
+  mojo::Remote<viz::mojom::blink::CompositorFrameSink> compositor_frame_sink_;
   mojo::Remote<mojom::blink::SurfaceEmbedder> surface_embedder_;
   mojo::Receiver<viz::mojom::blink::CompositorFrameSinkClient> receiver_{this};
   WebContextProviderCallback context_provider_callback_;

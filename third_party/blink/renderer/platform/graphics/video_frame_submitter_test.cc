@@ -184,8 +184,7 @@ class VideoFrameSubmitterTest : public testing::Test {
     // By setting the submission state before we set the sink, we can make
     // testing easier without having to worry about the first sent frame.
     submitter_->SetIsSurfaceVisible(true);
-    submitter_->compositor_frame_sink_ =
-        viz::mojom::blink::CompositorFrameSinkPtr(std::move(submitter_sink));
+    submitter_->compositor_frame_sink_.Bind(std::move(submitter_sink));
     mojo::Remote<mojom::blink::SurfaceEmbedder> embedder;
     ignore_result(embedder.BindNewPipeAndPassReceiver());
     submitter_->surface_embedder_ = std::move(embedder);
