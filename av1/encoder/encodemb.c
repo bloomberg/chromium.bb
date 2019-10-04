@@ -35,27 +35,11 @@
 #include "av1/encoder/rd.h"
 #include "av1/encoder/rdopt.h"
 
-// Check if one needs to use c version subtraction.
-static int check_subtract_block_size(int w, int h) { return w < 4 || h < 4; }
-
 static void subtract_block(const MACROBLOCKD *xd, int rows, int cols,
                            int16_t *diff, ptrdiff_t diff_stride,
                            const uint8_t *src8, ptrdiff_t src_stride,
                            const uint8_t *pred8, ptrdiff_t pred_stride) {
-  if (check_subtract_block_size(rows, cols)) {
-#if CONFIG_AV1_HIGHBITDEPTH
-    if (is_cur_buf_hbd(xd)) {
-      aom_highbd_subtract_block_c(rows, cols, diff, diff_stride, src8,
-                                  src_stride, pred8, pred_stride, xd->bd);
-      return;
-    }
-#endif
-    (void)xd;
-    aom_subtract_block_c(rows, cols, diff, diff_stride, src8, src_stride, pred8,
-                         pred_stride);
-
-    return;
-  }
+  assert(rows >= 4 && cols >= 4);
 #if CONFIG_AV1_HIGHBITDEPTH
   if (is_cur_buf_hbd(xd)) {
     aom_highbd_subtract_block(rows, cols, diff, diff_stride, src8, src_stride,
@@ -63,6 +47,7 @@ static void subtract_block(const MACROBLOCKD *xd, int rows, int cols,
     return;
   }
 #endif
+  (void)xd;
   aom_subtract_block(rows, cols, diff, diff_stride, src8, src_stride, pred8,
                      pred_stride);
 }

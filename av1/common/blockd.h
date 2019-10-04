@@ -1021,10 +1021,7 @@ static INLINE int is_motion_variation_allowed_bsize(BLOCK_SIZE bsize) {
 
 static INLINE int is_motion_variation_allowed_compound(
     const MB_MODE_INFO *mbmi) {
-  if (!has_second_ref(mbmi))
-    return 1;
-  else
-    return 0;
+  return !has_second_ref(mbmi);
 }
 
 // input: log2 of length, 0(4), 1(8), ...
