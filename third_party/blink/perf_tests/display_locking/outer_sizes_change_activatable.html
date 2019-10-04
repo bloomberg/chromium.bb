@@ -1,9 +1,9 @@
 <!doctype HTML>
 
 <!--
-This test appends 30,000 items to the page, locking all but the first one.
-It then changes the style of all the locked elements, causing self-layout
-for all of them.
+This test appends 30,000 items to the page, locking all of them with the
+activatable flag on. It then changes the style of all the locked elements,
+causing self-layout for all of them.
 
 The test works with and without display locking. If display locking is not
 enabled, then none of the elements are locked and the performance should
@@ -30,7 +30,7 @@ be noticeably worse.
 <body>
 <!-- node template from which to construct items -->
 <template id="node_template">
-<div class="container">
+<div class="container" rendersubtree="invisible activatable">
   Lorem ipsum dolor sit amet, consectetur adipiscing elit.
   Quisque ante dui, posuere at pretium suscipit, condimentum at augue.
   <div class="box">
@@ -47,12 +47,8 @@ be noticeably worse.
 function construct(n) {
   const specimen = document.importNode(
     document.getElementById("node_template").content, true).firstElementChild;
-  for (let i = 0; i < n; ++i) {
-    const clone = specimen.cloneNode(true);
-    if (i > 0)
-      clone.renderSubtree = "invisible";
-    document.body.appendChild(clone);
-  }
+  for (let i = 0; i < n; ++i)
+    document.body.appendChild(specimen.cloneNode(true));
 }
 
 let sizes = ["200px", "250px"];
