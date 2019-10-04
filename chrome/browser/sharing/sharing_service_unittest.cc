@@ -159,11 +159,20 @@ class FakeSharingDeviceRegistration : public SharingDeviceRegistration {
   int registration_attempts() { return registration_attempts_; }
   int unregistration_attempts() { return unregistration_attempts_; }
 
+  bool IsSharedClipboardSupported() const override {
+    return shared_clipboard_supported_;
+  }
+
+  void SetIsSharedClipboardSupported(bool supported) {
+    shared_clipboard_supported_ = supported;
+  }
+
  private:
   SharingDeviceRegistrationResult result_ =
       SharingDeviceRegistrationResult::kSuccess;
   int registration_attempts_ = 0;
   int unregistration_attempts_ = 0;
+  bool shared_clipboard_supported_ = false;
 };
 
 class SharingServiceTest : public testing::Test {
@@ -254,6 +263,24 @@ class SharingServiceTest : public testing::Test {
 };
 
 }  // namespace
+
+TEST_F(SharingServiceTest, SharedClipboard_IsAdded) {
+  sharing_device_registration_->SetIsSharedClipboardSupported(true);
+  GetSharingService();
+  SharingMessageHandler* shared_clipboard_handler =
+      fcm_handler_->GetSharingHandler(
+          chrome_browser_sharing::SharingMessage::kSharedClipboardMessage);
+  EXPECT_TRUE(shared_clipboard_handler);
+}
+
+TEST_F(SharingServiceTest, SharedClipboard_NotAdded) {
+  sharing_device_registration_->SetIsSharedClipboardSupported(false);
+  GetSharingService();
+  SharingMessageHandler* shared_clipboard_handler =
+      fcm_handler_->GetSharingHandler(
+          chrome_browser_sharing::SharingMessage::kSharedClipboardMessage);
+  EXPECT_FALSE(shared_clipboard_handler);
+}
 
 TEST_F(SharingServiceTest, GetDeviceCandidates_Empty) {
   std::vector<std::unique_ptr<syncer::DeviceInfo>> candidates =

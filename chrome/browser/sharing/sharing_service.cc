@@ -91,7 +91,7 @@ SharingService::SharingService(
           this, notification_display_service);
 #endif  // defined(OS_ANDROID)
 
-  if (base::FeatureList::IsEnabled(kSharedClipboardReceiver)) {
+  if (sharing_device_registration_->IsSharedClipboardSupported()) {
     fcm_handler_->AddSharingHandler(
         chrome_browser_sharing::SharingMessage::kSharedClipboardMessage,
         shared_clipboard_message_handler_.get());
