@@ -301,7 +301,7 @@ bool Text::TextLayoutObjectIsNeeded(const AttachContext& context,
   if (style.WhiteSpace() == EWhiteSpace::kPreWrap && parent.IsSVG())
     return false;
 
-  // pre/pre-wrap/pre-line always make layoutObjects.
+  // pre/pre-wrap/bb-pre-wrap-text/pre-line always make layoutObjects.
   if (style.PreserveNewline())
     return true;
 
