@@ -1205,7 +1205,7 @@ TEST_F(MetricsWebContentsObserverTest,
   CheckNoErrorEvents();
 }
 
-TEST_F(MetricsWebContentsObserverTest, LongestInputInMainFrame) {
+TEST_F(MetricsWebContentsObserverTest, DISABLED_LongestInputInMainFrame) {
   content::WebContentsTester* web_contents_tester =
       content::WebContentsTester::For(web_contents());
 
