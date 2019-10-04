@@ -137,7 +137,7 @@ void LayoutListMarker::UpdateLayout() {
   if (IsImage()) {
     UpdateMarginsAndContent();
     LayoutSize image_size(ImageBulletSize());
-    SetWidth(image_size.Width());
+    SetWidth(MinPreferredLogicalWidth());
     SetHeight(image_size.Height());
   } else {
     const SimpleFontData* font_data = StyleRef().GetFont().PrimaryFont();
@@ -167,7 +167,7 @@ void LayoutListMarker::ImageChanged(WrappedImagePtr o, CanDeferInvalidation) {
     return;
 
   LayoutSize image_size = IsImage() ? ImageBulletSize() : LayoutSize();
-  if (Size() != image_size || image_->ErrorOccurred()) {
+  if (Size() != image_size + LayoutSize(kCMarkerPaddingPx, 0) || image_->ErrorOccurred()) {
     SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
         layout_invalidation_reason::kImageChanged);
   } else {
@@ -218,11 +218,10 @@ LayoutUnit LayoutListMarker::GetWidthOfTextWithSuffix() const {
   LayoutUnit item_width = LayoutUnit(font.Width(TextRun(text_)));
   // TODO(wkorman): Look into constructing a text run for both text and suffix
   // and painting them together.
-  UChar suffix[2] = {
-      list_marker_text::Suffix(StyleRef().ListStyleType(), list_item_->Value()),
-      ' '};
+  UChar suffix[1] = {
+      list_marker_text::Suffix(Style()->ListStyleType(), list_item_->Value())};
   TextRun run =
-      ConstructTextRun(font, suffix, 2, StyleRef(), StyleRef().Direction());
+      ConstructTextRun(font, suffix, 1, StyleRef(), Style()->Direction());
   LayoutUnit suffix_space_width = LayoutUnit(font.Width(run));
   return item_width + suffix_space_width;
 }
@@ -236,6 +235,8 @@ void LayoutListMarker::ComputePreferredLogicalWidths() {
     min_preferred_logical_width_ = max_preferred_logical_width_ =
         StyleRef().IsHorizontalWritingMode() ? image_size.Width()
                                              : image_size.Height();
+    min_preferred_logical_width_ += kCMarkerPaddingPx;
+    max_preferred_logical_width_ += kCMarkerPaddingPx;
     ClearPreferredLogicalWidthsDirty();
     UpdateMargins();
     return;
@@ -247,9 +248,13 @@ void LayoutListMarker::ComputePreferredLogicalWidths() {
       break;
     case ListStyleCategory::kSymbol:
       logical_width = WidthOfSymbol(StyleRef());
+      logical_width += kCMarkerPaddingPx;
       break;
     case ListStyleCategory::kLanguage:
       logical_width = GetWidthOfTextWithSuffix();
+      if (!text_.IsEmpty()) {
+          logical_width += kCMarkerPaddingPx;
+      }
       break;
   }
 
@@ -275,11 +280,16 @@ void LayoutListMarker::UpdateMargins() {
   LayoutUnit margin_end;
   const ComputedStyle& style = StyleRef();
   if (IsInside()) {
+  #if 0
     std::tie(margin_start, margin_end) =
         InlineMarginsForInside(style, IsImage());
+  #endif
   } else {
+  #if 0
     std::tie(margin_start, margin_end) =
         InlineMarginsForOutside(style, IsImage(), MinPreferredLogicalWidth());
+  #endif
+    margin_start = -MinPreferredLogicalWidth();
   }
 
   Length start_length = Length::Fixed(margin_start);
@@ -464,10 +474,22 @@ bool LayoutListMarker::IsInside() const {
 }
 
 LayoutRect LayoutListMarker::GetRelativeMarkerRect() const {
-  if (IsImage())
-    return LayoutRect(LayoutPoint(), ImageBulletSize());
-
   LayoutRect relative_rect;
+
+  if (IsImage()) {
+    IntSize image_size = FlooredIntSize(ImageBulletSize());
+    relative_rect = LayoutRect(0, 0, image_size.Width(), image_size.Height());
+    if (!Style()->IsLeftToRightDirection()) {
+      relative_rect.Move(kCMarkerPaddingPx, 0);
+    }
+    return relative_rect;
+  }
+
+  const SimpleFontData* font_data = Style()->GetFont().PrimaryFont();
+  DCHECK(font_data);
+  if (!font_data)
+    return relative_rect;
+
   switch (GetListStyleCategory()) {
     case ListStyleCategory::kNone:
       return LayoutRect();
@@ -483,6 +505,10 @@ LayoutRect LayoutListMarker::GetRelativeMarkerRect() const {
                      LayoutUnit(font_data->GetFontMetrics().Height()));
       break;
     }
+  }
+
+  if (!StyleRef().IsLeftToRightDirection()) {
+    relative_rect.Move(kCMarkerPaddingPx, 0);
   }
 
   if (!StyleRef().IsHorizontalWritingMode()) {

@@ -1611,6 +1611,11 @@ void LayoutBlock::ComputeBlockPreferredLogicalWidths(
       margin_start += start_margin_length.Value();
     if (end_margin_length.IsFixed())
       margin_end += end_margin_length.Value();
+
+    // SHEZ: additionalMarginStart is treated as fixed margin
+    if (child->IsBox())
+      margin_start += ToLayoutBox(child)->AdditionalMarginStart();
+
     margin = margin_start + margin_end;
 
     LayoutUnit child_min_preferred_logical_width,

@@ -158,9 +158,9 @@ void ListMarkerPainter::Paint(const PaintInfo& paint_info) {
   const UChar suffix =
       list_marker_text::Suffix(layout_list_marker_.StyleRef().ListStyleType(),
                                layout_list_marker_.ListItem()->Value());
-  UChar suffix_str[2] = {suffix, static_cast<UChar>(' ')};
+  UChar suffix_str[1] = {suffix};
   TextRun suffix_run =
-      ConstructTextRun(font, suffix_str, 2, layout_list_marker_.StyleRef(),
+      ConstructTextRun(font, suffix_str, 1, layout_list_marker_.StyleRef(),
                        layout_list_marker_.StyleRef().Direction());
   TextRunPaintInfo suffix_run_info(suffix_run);
 

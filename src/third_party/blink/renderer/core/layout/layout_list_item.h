@@ -69,6 +69,8 @@ class LayoutListItem final : public LayoutBlockFlow {
 
   void UpdateOverflow();
 
+  LayoutUnit AdditionalMarginStart() const override;
+
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
 
   void ComputeVisualOverflow(bool recompute_floats) final;
