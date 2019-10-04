@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "android_webview/browser/aw_metrics_service_client.h"
+#include "android_webview/browser/metrics/aw_metrics_service_client.h"
 
 #include <jni.h>
 #include <cstdint>
 #include <memory>
 
-#include "android_webview/browser/aw_metrics_log_uploader.h"
+#include "android_webview/browser/metrics/aw_metrics_log_uploader.h"
 #include "android_webview/browser_jni_headers/AwMetricsServiceClient_jni.h"
 #include "android_webview/common/aw_features.h"
 #include "base/android/jni_android.h"

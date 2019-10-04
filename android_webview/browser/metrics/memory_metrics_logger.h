@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ANDROID_WEBVIEW_BROWSER_MEMORY_METRICS_LOGGER_H_
-#define ANDROID_WEBVIEW_BROWSER_MEMORY_METRICS_LOGGER_H_
+#ifndef ANDROID_WEBVIEW_BROWSER_METRICS_MEMORY_METRICS_LOGGER_H_
+#define ANDROID_WEBVIEW_BROWSER_METRICS_MEMORY_METRICS_LOGGER_H_
 
 #include <jni.h>
 #include <memory>
@@ -56,4 +56,4 @@ class MemoryMetricsLogger {
 
 }  // namespace android_webview
 
-#endif  // ANDROID_WEBVIEW_BROWSER_MEMORY_METRICS_LOGGER_H_
+#endif  // ANDROID_WEBVIEW_BROWSER_METRICS_MEMORY_METRICS_LOGGER_H_

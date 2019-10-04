@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "android_webview/browser/memory_metrics_logger.h"
+#include "android_webview/browser/metrics/memory_metrics_logger.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ANDROID_WEBVIEW_BROWSER_AW_METRICS_SERVICE_CLIENT_H_
-#define ANDROID_WEBVIEW_BROWSER_AW_METRICS_SERVICE_CLIENT_H_
+#ifndef ANDROID_WEBVIEW_BROWSER_METRICS_AW_METRICS_SERVICE_CLIENT_H_
+#define ANDROID_WEBVIEW_BROWSER_METRICS_AW_METRICS_SERVICE_CLIENT_H_
 
 #include <memory>
 #include <string>
@@ -91,7 +91,7 @@ class AwMetricsServiceClient : public metrics::MetricsServiceClient,
   void Initialize(PrefService* pref_service);
   void SetHaveMetricsConsent(bool user_consent, bool app_consent);
   std::unique_ptr<const base::FieldTrial::EntropyProvider>
-      CreateLowEntropyProvider();
+  CreateLowEntropyProvider();
 
   // metrics::EnabledStateProvider
   bool IsConsentGiven() const override;
@@ -141,4 +141,4 @@ class AwMetricsServiceClient : public metrics::MetricsServiceClient,
 
 }  // namespace android_webview
 
-#endif  // ANDROID_WEBVIEW_BROWSER_AW_METRICS_SERVICE_CLIENT_H_
+#endif  // ANDROID_WEBVIEW_BROWSER_METRICS_AW_METRICS_SERVICE_CLIENT_H_

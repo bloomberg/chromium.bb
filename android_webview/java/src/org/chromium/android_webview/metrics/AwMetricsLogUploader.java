@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.android_webview;
+package org.chromium.android_webview.metrics;
 
 import org.chromium.android_webview.common.PlatformServiceBridge;
 import org.chromium.base.annotations.CalledByNative;
