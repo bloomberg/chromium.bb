@@ -5683,6 +5683,9 @@ if (!is_android) {
           deps += [ "//build/config/linux/gtk" ]
         }
       }
+      if (!is_chromeos) {
+        sources += [ "../browser/ui/views/global_media_controls/media_dialog_view_interactive_browsertest.cc" ]
+      }
       if (use_aura || is_mac) {
         deps += [ "//ui/touch_selection" ]
       }
