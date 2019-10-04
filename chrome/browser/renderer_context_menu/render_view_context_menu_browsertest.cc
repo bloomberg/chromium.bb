@@ -1145,8 +1145,6 @@ class LoadImageBrowserTest : public InProcessBrowserTest {
   void SetupAndLoadImagePage(const std::string& page_path,
                              const std::string& image_path) {
     image_path_ = image_path;
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kLoadBrokenImagesFromContextMenu);
 
     embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
         &LoadImageBrowserTest::HandleRequest, base::Unretained(this)));
@@ -1198,7 +1196,6 @@ class LoadImageBrowserTest : public InProcessBrowserTest {
 
   std::string image_path_;
   size_t request_attempts_ = 0u;
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(LoadImageBrowserTest, LoadImage) {

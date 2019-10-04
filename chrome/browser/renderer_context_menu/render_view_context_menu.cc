@@ -1385,9 +1385,7 @@ void RenderViewContextMenu::AppendOpenInBookmarkAppLinkItems() {
 }
 
 void RenderViewContextMenu::AppendImageItems() {
-  if (!params_.has_image_contents &&
-      base::FeatureList::IsEnabled(
-          features::kLoadBrokenImagesFromContextMenu)) {
+  if (!params_.has_image_contents) {
     menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_LOAD_IMAGE,
                                     IDS_CONTENT_CONTEXT_LOAD_IMAGE);
   }
