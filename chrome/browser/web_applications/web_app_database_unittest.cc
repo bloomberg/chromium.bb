@@ -22,6 +22,7 @@
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "components/sync/model/model_type_store.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "url/gurl.h"
 
 namespace web_app {
@@ -71,8 +72,8 @@ class WebAppDatabaseTest : public WebAppTest {
     app->SetThemeColor(theme_color);
     app->SetIsLocallyInstalled(!(suffix & 2));
     app->SetIsSyncPlaceholder(!(suffix & 4));
-    app->SetLaunchContainer((suffix & 1) ? LaunchContainer::kTab
-                                         : LaunchContainer::kWindow);
+    app->SetDisplayMode((suffix & 1) ? blink::mojom::DisplayMode::kBrowser
+                                     : blink::mojom::DisplayMode::kStandalone);
 
     const std::string icon_url =
         base_url + "/icon" + base::NumberToString(suffix);
@@ -249,14 +250,14 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   const auto launch_url = GURL("https://example.com/");
   const AppId app_id = GenerateAppIdFromURL(GURL(launch_url));
   const std::string name = "Name";
-  const auto launch_container = LaunchContainer::kTab;
+  const auto display_mode = blink::mojom::DisplayMode::kBrowser;
 
   auto app = std::make_unique<WebApp>(app_id);
 
   // Required fields:
   app->SetLaunchUrl(launch_url);
   app->SetName(name);
-  app->SetLaunchContainer(launch_container);
+  app->SetDisplayMode(display_mode);
   app->SetIsLocallyInstalled(false);
 
   EXPECT_FALSE(app->HasAnySources());
@@ -284,7 +285,7 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_EQ(app_id, app_copy->app_id());
   EXPECT_EQ(launch_url, app_copy->launch_url());
   EXPECT_EQ(name, app_copy->name());
-  EXPECT_EQ(launch_container, app_copy->launch_container());
+  EXPECT_EQ(display_mode, app_copy->display_mode());
   EXPECT_FALSE(app_copy->is_locally_installed());
 
   for (int i = Source::kMinValue; i < Source::kMaxValue; ++i) {

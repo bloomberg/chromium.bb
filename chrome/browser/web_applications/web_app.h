@@ -14,12 +14,11 @@
 #include "base/optional.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "url/gurl.h"
 
 namespace web_app {
-
-enum class LaunchContainer;
 
 class WebApp {
  public:
@@ -33,7 +32,7 @@ class WebApp {
   const GURL& launch_url() const { return launch_url_; }
   const GURL& scope() const { return scope_; }
   const base::Optional<SkColor>& theme_color() const { return theme_color_; }
-  LaunchContainer launch_container() const { return launch_container_; }
+  blink::mojom::DisplayMode display_mode() const { return display_mode_; }
   bool is_locally_installed() const { return is_locally_installed_; }
   // Sync-initiated installation produces a sync placeholder app awaiting for
   // full installation process. The sync placeholder app has only app_id,
@@ -74,7 +73,7 @@ class WebApp {
   void SetLaunchUrl(const GURL& launch_url);
   void SetScope(const GURL& scope);
   void SetThemeColor(base::Optional<SkColor> theme_color);
-  void SetLaunchContainer(LaunchContainer launch_container);
+  void SetDisplayMode(blink::mojom::DisplayMode display_mode);
   void SetIsLocallyInstalled(bool is_locally_installed);
   void SetIsSyncPlaceholder(bool is_sync_placeholder);
   void SetIcons(Icons icons);
@@ -99,7 +98,7 @@ class WebApp {
   // is within the scope.
   GURL scope_;
   base::Optional<SkColor> theme_color_;
-  LaunchContainer launch_container_;
+  blink::mojom::DisplayMode display_mode_;
   bool is_locally_installed_ = true;
   bool is_sync_placeholder_ = false;
   Icons icons_;

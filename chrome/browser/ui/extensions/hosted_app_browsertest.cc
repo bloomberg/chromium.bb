@@ -48,7 +48,6 @@
 #include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
 #include "chrome/browser/ui/web_applications/web_app_menu_model.h"
 #include "chrome/browser/web_applications/components/app_registry_controller.h"
-#include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/test/web_app_install_observer.h"
@@ -1282,9 +1281,9 @@ IN_PROC_BROWSER_TEST_P(SharedPWATest, CanInstallOverTabPwa) {
 
   NavigateToURLAndWait(browser(), GetInstallableAppURL());
   web_app::AppId app_id = InstallPwaForCurrentUrl();
-  // Change launch container to open in tab.
-  registry_controller().SetAppLaunchContainer(app_id,
-                                              web_app::LaunchContainer::kTab);
+  // Change display mode to open in tab.
+  registry_controller().SetAppDisplayMode(app_id,
+                                          blink::mojom::DisplayMode::kBrowser);
 
   Browser* new_browser =
       NavigateInNewWindowAndAwaitInstallabilityCheck(GetInstallableAppURL());
@@ -1301,8 +1300,8 @@ IN_PROC_BROWSER_TEST_P(SharedPWATest, CannotInstallOverWindowShortcutApp) {
   NavigateToURLAndWait(browser(), GetInstallableAppURL());
   web_app::AppId app_id = InstallShortcutAppForCurrentUrl();
   // Change launch container to open in window.
-  registry_controller().SetAppLaunchContainer(
-      app_id, web_app::LaunchContainer::kWindow);
+  registry_controller().SetAppDisplayMode(
+      app_id, blink::mojom::DisplayMode::kStandalone);
 
   Browser* new_browser =
       NavigateInNewWindowAndAwaitInstallabilityCheck(GetInstallableAppURL());

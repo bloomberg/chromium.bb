@@ -16,21 +16,6 @@
 
 namespace web_app {
 
-namespace {
-
-blink::mojom::DisplayMode GetDisplayMode(LaunchContainer launch_container) {
-  switch (launch_container) {
-    case LaunchContainer::kDefault:
-      return blink::mojom::DisplayMode::kUndefined;
-    case LaunchContainer::kTab:
-      return blink::mojom::DisplayMode::kBrowser;
-    case LaunchContainer::kWindow:
-      return blink::mojom::DisplayMode::kStandalone;
-  }
-}
-
-}  // namespace
-
 WebAppRegistrar::WebAppRegistrar(Profile* profile) : AppRegistrar(profile) {}
 
 WebAppRegistrar::~WebAppRegistrar() = default;
@@ -123,9 +108,8 @@ base::Optional<GURL> WebAppRegistrar::GetAppScope(const AppId& app_id) const {
 
 blink::mojom::DisplayMode WebAppRegistrar::GetAppDisplayMode(
     const web_app::AppId& app_id) const {
-  // TODO(crbug.com/1009909): Read display_mode() from web_app.
   auto* web_app = GetAppById(app_id);
-  return web_app ? GetDisplayMode(web_app->launch_container())
+  return web_app ? web_app->display_mode()
                  : blink::mojom::DisplayMode::kUndefined;
 }
 

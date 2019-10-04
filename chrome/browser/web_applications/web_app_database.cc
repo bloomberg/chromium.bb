@@ -15,6 +15,7 @@
 #include "components/sync/model/metadata_batch.h"
 #include "components/sync/model/model_error.h"
 #include "components/sync/protocol/web_app_specifics.pb.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 
 namespace web_app {
 
@@ -101,9 +102,9 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
 
   local_data->set_name(web_app.name());
 
-  DCHECK_NE(LaunchContainer::kDefault, web_app.launch_container());
-  sync_data->set_launch_container(web_app.launch_container() ==
-                                          LaunchContainer::kWindow
+  DCHECK_NE(blink::mojom::DisplayMode::kUndefined, web_app.display_mode());
+  sync_data->set_launch_container(web_app.display_mode() ==
+                                          blink::mojom::DisplayMode::kStandalone
                                       ? sync_pb::WebAppSpecifics::WINDOW
                                       : sync_pb::WebAppSpecifics::TAB);
 
@@ -192,10 +193,10 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
     DLOG(ERROR) << "WebApp proto parse error: no launch_container field";
     return nullptr;
   }
-  web_app->SetLaunchContainer(sync_data.launch_container() ==
-                                      sync_pb::WebAppSpecifics::WINDOW
-                                  ? LaunchContainer::kWindow
-                                  : LaunchContainer::kTab);
+  web_app->SetDisplayMode(sync_data.launch_container() ==
+                                  sync_pb::WebAppSpecifics::WINDOW
+                              ? blink::mojom::DisplayMode::kStandalone
+                              : blink::mojom::DisplayMode::kBrowser);
 
   if (!local_data.has_is_locally_installed()) {
     DLOG(ERROR) << "WebApp proto parse error: no is_locally_installed field";
