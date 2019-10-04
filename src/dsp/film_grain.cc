@@ -301,6 +301,10 @@ template <int bitdepth>
 constexpr int FilmGrain<bitdepth>::kMinChromaHeight;
 template <int bitdepth>
 constexpr int FilmGrain<bitdepth>::kMaxChromaHeight;
+template <int bitdepth>
+constexpr int FilmGrain<bitdepth>::kGrainMin;
+template <int bitdepth>
+constexpr int FilmGrain<bitdepth>::kGrainMax;
 
 template <int bitdepth>
 FilmGrain<bitdepth>::FilmGrain(const FilmGrainParams& params,
@@ -317,27 +321,19 @@ FilmGrain<bitdepth>::FilmGrain(const FilmGrainParams& params,
       chroma_width_((subsampling_x != 0) ? kMinChromaWidth : kMaxChromaWidth),
       chroma_height_((subsampling_y != 0) ? kMinChromaHeight
                                           : kMaxChromaHeight) {
-  // bitdepth  grain_min_  grain_max_
-  // --------------------------------
-  //     8        -128         127
-  //    10        -512         511
-  //    12       -2048        2047
-  const int grain_center = 128 << (bitdepth - 8);
-  grain_min_ = -grain_center;
-  grain_max_ = grain_center - 1;
 }
 
 template <int bitdepth>
 bool FilmGrain<bitdepth>::Init() {
   // Section 7.18.3.3. Generate grain process.
   GenerateLumaGrain(params_, luma_grain_);
-  ApplyAutoRegressiveFilterToLumaGrain(params_, grain_min_, grain_max_,
+  ApplyAutoRegressiveFilterToLumaGrain(params_, kGrainMin, kGrainMax,
                                        luma_grain_);
   if (!is_monochrome_) {
     GenerateChromaGrains(params_, chroma_width_, chroma_height_, u_grain_,
                          v_grain_);
     ApplyAutoRegressiveFilterToChromaGrains(
-        params_, grain_min_, grain_max_, luma_grain_, subsampling_x_,
+        params_, kGrainMin, kGrainMax, luma_grain_, subsampling_x_,
         subsampling_y_, chroma_width_, chroma_height_, u_grain_, v_grain_);
   }
 
@@ -667,8 +663,8 @@ void FilmGrain<bitdepth>::ConstructNoiseStripes() {
                 } else {
                   grain = old * 17 + grain * 27;
                 }
-                grain = Clip3(RightShiftWithRounding(grain, 5), grain_min_,
-                              grain_max_);
+                grain = Clip3(RightShiftWithRounding(grain, 5), kGrainMin,
+                              kGrainMax);
               }
               noise_stripe[i * plane_width + (x * 2 + j)] = grain;
             } else {
@@ -676,8 +672,8 @@ void FilmGrain<bitdepth>::ConstructNoiseStripes() {
               if (j == 0 && params_.overlap_flag && x > 0) {
                 const int old = noise_stripe[i * plane_width + (x + j)];
                 grain = old * 23 + grain * 22;
-                grain = Clip3(RightShiftWithRounding(grain, 5), grain_min_,
-                              grain_max_);
+                grain = Clip3(RightShiftWithRounding(grain, 5), kGrainMin,
+                              kGrainMax);
               }
               noise_stripe[i * plane_width + (x + j)] = grain;
             }
@@ -739,7 +735,7 @@ void FilmGrain<bitdepth>::ConstructNoiseImage() {
               grain = old * 17 + grain * 27;
             }
             grain =
-                Clip3(RightShiftWithRounding(grain, 5), grain_min_, grain_max_);
+                Clip3(RightShiftWithRounding(grain, 5), kGrainMin, kGrainMax);
           }
         } else {
           if (i < 1 && luma_num > 0 && params_.overlap_flag) {
@@ -747,7 +743,7 @@ void FilmGrain<bitdepth>::ConstructNoiseImage() {
                 noise_stripes_[luma_num - 1][plane][(i + 16) * plane_width + x];
             grain = old * 23 + grain * 22;
             grain =
-                Clip3(RightShiftWithRounding(grain, 5), grain_min_, grain_max_);
+                Clip3(RightShiftWithRounding(grain, 5), kGrainMin, kGrainMax);
           }
         }
         noise_image_[plane][y][x] = grain;

@@ -36,11 +36,11 @@ void FilmGrainInit_C();
 template <int bitdepth>
 class FilmGrain {
  public:
-  // bitdepth  grain_min_  grain_max_
-  // --------------------------------
-  //     8        -128         127
-  //    10        -512         511
-  //    12       -2048        2047
+  // bitdepth  kGrainMin  kGrainMax
+  // ------------------------------
+  //     8       -128        127
+  //    10       -512        511
+  //    12      -2048       2047
   //
   // So int8_t is big enough for bitdepth 8, whereas bitdepths 10 and 12 need
   // int16_t.
@@ -123,6 +123,10 @@ class FilmGrain {
   // The two possible heights of the chroma noise array.
   static constexpr int kMinChromaHeight = 38;
   static constexpr int kMaxChromaHeight = 73;
+  // The minimum value of film grain noise.
+  static constexpr int kGrainMin = -(1 << (bitdepth - 1));
+  // The maximum value of film grain noise.
+  static constexpr int kGrainMax = (1 << (bitdepth - 1)) - 1;
 
   const FilmGrainParams& params_;
   const bool is_monochrome_;
@@ -131,8 +135,6 @@ class FilmGrain {
   const int subsampling_y_;
   const int width_;
   const int height_;
-  int grain_min_;
-  int grain_max_;
   const int chroma_width_;
   const int chroma_height_;
   // The luma_grain array contains white noise generated for luma.
