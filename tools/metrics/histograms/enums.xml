@@ -35273,6 +35273,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1645071473" label="ChromeColors:disabled"/>
   <int value="-1641832607" label="DragToPinTabs:enabled"/>
   <int value="-1638815914" label="enable-experimental-productivity-features"/>
+  <int value="-1634895178" label="SharingDeriveVapidKey:disabled"/>
   <int value="-1634878515" label="ChromeHomeModernLayout:enabled"/>
   <int value="-1634490190"
       label="AutofillCreditCardLocalCardMigration:disabled"/>
@@ -36721,6 +36722,7 @@ from previous Chrome versions.
   <int value="241187301" label="BrowserTouchBar:disabled"/>
   <int value="244697230" label="enable-theme-color-in-tabbed-mode"/>
   <int value="245896533" label="SearchSuggestionsOnLocalNtp:enabled"/>
+  <int value="245919941" label="SharingDeriveVapidKey:enabled"/>
   <int value="250855010" label="WebAssemblyBaseline:disabled"/>
   <int value="255375615" label="stop-non-timers-in-background:enabled"/>
   <int value="258621334"
