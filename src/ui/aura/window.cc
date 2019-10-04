@@ -659,6 +659,10 @@ Window* Window::GetToplevelWindow() {
   return topmost_window_with_delegate;
 }
 
+bool Window::ShouldTryFocusOnMouseDown() const {
+  return !delegate_ || delegate_->ShouldTryFocusOnMouseDown();
+}
+
 void Window::Focus() {
   client::FocusClient* client = client::GetFocusClient(this);
   DCHECK(client);
