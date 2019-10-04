@@ -54,7 +54,7 @@ class TestSyncUserSettings : public SyncUserSettings {
   void ClearFirstSetupComplete();
   void SetEncryptEverythingAllowed(bool allowed);
   void SetPassphraseRequired(bool required);
-  void SetPassphraseRequiredForDecryption(bool required);
+  void SetPassphraseRequiredForPreferredDataTypes(bool required);
   void SetIsUsingSecondaryPassphrase(bool enabled);
 
  private:
@@ -64,7 +64,7 @@ class TestSyncUserSettings : public SyncUserSettings {
   bool sync_everything_enabled_ = true;
 
   bool passphrase_required_ = false;
-  bool passphrase_required_for_decryption_ = false;
+  bool passphrase_required_for_preferred_data_types_ = false;
   bool using_secondary_passphrase_ = false;
 };
 
