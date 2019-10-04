@@ -32,6 +32,7 @@
     Serializable
 ] interface File : Blob {
     readonly attribute DOMString name;
+    readonly attribute DOMString blpPath;
     readonly attribute long long lastModified;
 
     // Non-standard APIs
