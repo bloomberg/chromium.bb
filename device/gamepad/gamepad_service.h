@@ -142,16 +142,15 @@ class DEVICE_GAMEPAD_EXPORT GamepadService
   void SetSanitizationEnabled(bool sanitize);
 
   struct ConsumerInfo {
-    ConsumerInfo(device::GamepadConsumer* consumer)
-        : consumer(consumer), did_observe_user_gesture(false) {}
+    ConsumerInfo(GamepadConsumer* consumer) : consumer(consumer) {}
 
     bool operator<(const ConsumerInfo& other) const {
       return consumer < other.consumer;
     }
 
     device::GamepadConsumer* consumer;
-    mutable bool is_active;
-    mutable bool did_observe_user_gesture;
+    mutable bool is_active = false;
+    mutable bool did_observe_user_gesture = false;
   };
 
   std::unique_ptr<device::GamepadProvider> provider_;
