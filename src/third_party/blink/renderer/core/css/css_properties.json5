@@ -3995,7 +3995,7 @@
       inherited: true,
       field_template: "multi_keyword", // We use a bitflag field due peformance issues
       keywords: [
-        "none", "normal", "pre", "pre-wrap", "pre-line", "nowrap", "-webkit-nowrap", "break-spaces"
+        "none", "normal", "pre", "pre-wrap", "pre-line", "nowrap", "-webkit-nowrap", "break-spaces", "-bb-pre-wrap-text"
       ],
       typedom_types: ["Keyword"],
       default_value: "normal",
@@ -4039,7 +4039,7 @@
       field_group: "*",
       field_template: "keyword",
       // Word Break Values. Matches WinIE and CSS3
-      keywords: ["normal", "break-all", "keep-all", "break-word"],
+      keywords: ["normal", "break-all", "keep-all", "-bb-keep-all-if-korean", "break-word"],
       default_value: "normal",
       typedom_types: ["Keyword"]
     },
