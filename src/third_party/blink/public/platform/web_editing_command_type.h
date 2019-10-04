@@ -159,6 +159,8 @@ enum class WebEditingCommandType {
 
 
   // patch section: indent-block/outdent-block (141,142)
+  kIndentBlock = 141,
+  kOutdentBlock = 142,
 
 
 
