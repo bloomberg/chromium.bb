@@ -930,7 +930,7 @@ customize.richerPicker_previewImage = function(tile) {
   if (tile.id === customize.IDS.BACKGROUNDS_DEFAULT_ICON) {
     preview.dataset.hasImage = false;
     preview.style.backgroundImage = '';
-    preview.style.backgroundColor = document.body.style.backgroundColor;
+    preview.style.backgroundColor = 'transparent';
   } else if (tile.id === customize.IDS.BACKGROUNDS_UPLOAD_ICON) {
     // No previews for uploaded images.
     return;
