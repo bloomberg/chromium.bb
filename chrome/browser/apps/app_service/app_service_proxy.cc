@@ -11,6 +11,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/apps/app_service/app_icon_source.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/chromeos/extensions/gfx_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/services/app_service/public/mojom/constants.mojom.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
@@ -235,5 +236,17 @@ void AppServiceProxy::OnApps(std::vector<apps::mojom::AppPtr> deltas) {
 void AppServiceProxy::Clone(apps::mojom::SubscriberRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
+
+#if defined(OS_CHROMEOS)
+void AppServiceProxy::ApplyChromeBadge(Profile* profile,
+                                       const std::string& arc_package_name) {
+  const std::vector<std::string> extension_ids =
+      extensions::util::GetEquivalentInstalledExtensions(profile,
+                                                         arc_package_name);
+  for (auto app_id : extension_ids) {
+    this->extension_apps_.ApplyChromeBadge(app_id);
+  }
+}
+#endif  // OS_CHROMEOS
 
 }  // namespace apps

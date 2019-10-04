@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
+#include "chrome/browser/apps/app_service/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/icon_key_util.h"
 #include "chrome/services/app_service/public/mojom/app_service.mojom.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
@@ -46,6 +47,8 @@ class ExtensionApps : public apps::mojom::Publisher,
                   Profile* profile,
                   apps::mojom::AppType type);
   void Shutdown();
+
+  void ApplyChromeBadge(const std::string& app_id);
 
  private:
   // Determines whether the given extension should be treated as type app_type_,
@@ -116,6 +119,7 @@ class ExtensionApps : public apps::mojom::Publisher,
   void ConvertVector(const extensions::ExtensionSet& extensions,
                      apps::mojom::Readiness readiness,
                      std::vector<apps::mojom::AppPtr>* apps_out);
+  IconEffects GetIconEffect(const extensions::Extension* extension);
 
   mojo::Binding<apps::mojom::Publisher> binding_;
   mojo::InterfacePtrSet<apps::mojom::Subscriber> subscribers_;

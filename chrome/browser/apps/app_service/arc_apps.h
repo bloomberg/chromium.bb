@@ -81,6 +81,8 @@ class ArcApps : public KeyedService,
       const arc::mojom::ArcPackageInfo& package_info) override;
   void OnPackageModified(
       const arc::mojom::ArcPackageInfo& package_info) override;
+  void OnPackageRemoved(const std::string& package_name,
+                        bool uninstalled) override;
   void OnPackageListInitialRefreshed() override;
 
   void LoadPlayStoreIcon(apps::mojom::IconCompression icon_compression,
@@ -94,6 +96,7 @@ class ArcApps : public KeyedService,
   void Publish(apps::mojom::AppPtr app);
   void ConvertAndPublishPackageApps(
       const arc::mojom::ArcPackageInfo& package_info);
+  void ApplyChromeBadge(const std::string& arc_package_name);
 
   mojo::Binding<apps::mojom::Publisher> binding_;
   mojo::InterfacePtrSet<apps::mojom::Subscriber> subscribers_;
