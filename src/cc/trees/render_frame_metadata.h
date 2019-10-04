@@ -38,7 +38,7 @@ class CC_EXPORT RenderFrameMetadata {
   // The background color of a CompositorFrame. It can be used for filling the
   // content area if the primary surface is unavailable and fallback is not
   // specified.
-  SkColor root_background_color = SK_ColorWHITE;
+  SkColor root_background_color = SK_ColorBLACK;
 
   // Scroll offset of the root layer. This optional parameter is only valid
   // during tests.
