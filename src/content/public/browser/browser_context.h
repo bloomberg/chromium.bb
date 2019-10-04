@@ -92,6 +92,10 @@ class SiteInstance;
 class StoragePartition;
 class SSLHostStateDelegate;
 
+#if defined(OS_WIN)
+class FontCollection;
+#endif
+
 // A mapping from the scheme name to the protocol handler that services its
 // content.
 using ProtocolHandlerMap =
@@ -333,6 +337,8 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
       std::vector<network::mojom::CorsOriginPatternPtr> allow_patterns,
       std::vector<network::mojom::CorsOriginPatternPtr> block_patterns,
       base::OnceClosure closure);
+
+  virtual FontCollection* GetFontCollection();
 
   // Returns a SharedCorsOriginAccessList instance.
   virtual const SharedCorsOriginAccessList* GetSharedCorsOriginAccessList()
