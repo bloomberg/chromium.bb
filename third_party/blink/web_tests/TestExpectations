@@ -6183,3 +6183,7 @@ crbug.com/1010483 [ Win ] fast/selectors/specificity-overflow.html [ Crash Pass 
 crbug.com/1010593 virtual/disable-deferred-rendering/fast/canvas/canvas-scale-drawImage-shadow.html [ Failure ]
 crbug.com/1010655 virtual/disable-deferred-rendering/fast/canvas/canvas-lost-gpu-context.html [ Failure ]
 crbug.com/1010657 [ Mac ] virtual/disable-deferred-rendering/fast/canvas/image-object-in-canvas.html [ Failure ]
+
+# Sheriff 2019-10-04
+crbug.com/1011191 [ Mac ] paint/invalidation/svg/use-clipped-hit.svg  [ Pass Failure ]
+crbug.com/1011188 [ Mac ] paint/invalidation/svg/svg-background-partial-redraw.html [ Pass Failure ]
