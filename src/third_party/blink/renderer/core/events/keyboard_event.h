@@ -93,6 +93,7 @@ class CORE_EXPORT KeyboardEvent final : public UIEventWithKeyState {
   const AtomicString& InterfaceName() const override;
   bool IsKeyboardEvent() const override;
   unsigned which() const override;
+  bool bbIsNumLock() const { return is_num_lock; }
   bool isComposing() const { return is_composing_; }
 
   void Trace(blink::Visitor*) override;
@@ -104,6 +105,7 @@ class CORE_EXPORT KeyboardEvent final : public UIEventWithKeyState {
   String code_;
   String key_;
   unsigned location_;
+  bool is_num_lock = false;
   bool is_composing_ = false;
   unsigned char_code_ = 0;
   unsigned key_code_ = 0;
