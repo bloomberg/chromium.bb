@@ -301,10 +301,6 @@ template <int bitdepth>
 constexpr int FilmGrain<bitdepth>::kMinChromaHeight;
 template <int bitdepth>
 constexpr int FilmGrain<bitdepth>::kMaxChromaHeight;
-template <int bitdepth>
-constexpr int FilmGrain<bitdepth>::kGrainMin;
-template <int bitdepth>
-constexpr int FilmGrain<bitdepth>::kGrainMax;
 
 template <int bitdepth>
 FilmGrain<bitdepth>::FilmGrain(const FilmGrainParams& params,

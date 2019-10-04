@@ -47,6 +47,8 @@ list(APPEND libgav1_dsp_sources_neon
             "${libgav1_source}/dsp/arm/convolve_neon.h"
             "${libgav1_source}/dsp/arm/distance_weighted_blend_neon.cc"
             "${libgav1_source}/dsp/arm/distance_weighted_blend_neon.h"
+            "${libgav1_source}/dsp/arm/film_grain_neon.cc"
+            "${libgav1_source}/dsp/arm/film_grain_neon.h"
             "${libgav1_source}/dsp/arm/intra_edge_neon.cc"
             "${libgav1_source}/dsp/arm/intra_edge_neon.h"
             "${libgav1_source}/dsp/arm/intrapred_cfl_neon.cc"

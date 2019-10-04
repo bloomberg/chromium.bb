@@ -29,6 +29,8 @@
 #if 0
 #include <cstdio>
 
+#include "third_party/abseil-cpp/absl/strings/str_cat.h"
+
 constexpr bool kEnablePrintRegs = true;
 
 union DebugRegister {
@@ -80,6 +82,16 @@ inline void PrintVectQ(const DebugRegisterQ r, const char* const name,
     }
     fprintf(stderr, "\n");
   }
+}
+
+inline void PrintReg(const int32x4x2_t val, const std::string& name) {
+  DebugRegisterQ r;
+  vst1q_u32(r.u32, val.val[0]);
+  const std::string name0 = absl::StrCat(name, ".val[0]").c_str();
+  PrintVectQ(r, name0.c_str(), 32);
+  vst1q_u32(r.u32, val.val[1]);
+  const std::string name1 = absl::StrCat(name, ".val[1]").c_str();
+  PrintVectQ(r, name1.c_str(), 32);
 }
 
 inline void PrintReg(const uint32x4_t val, const char* name) {
@@ -189,6 +201,13 @@ inline uint8x8_t Load2(const void* const buf, uint8x8_t val) {
       vld1_lane_u16(&temp, vreinterpret_u16_u8(val), lane));
 }
 
+// Load 4 int8_t values into the low half of an int8x8_t register.
+inline int8x8_t LoadLo4(const void* const buf, int8x8_t val) {
+  int32_t temp;
+  memcpy(&temp, buf, 4);
+  return vreinterpret_s8_s32(vld1_lane_s32(&temp, vreinterpret_s32_s8(val), 0));
+}
+
 // Load 4 uint8_t values into the low half of a uint8x8_t register.
 inline uint8x8_t LoadLo4(const void* const buf, uint8x8_t val) {
   uint32_t temp;
@@ -212,6 +231,11 @@ inline uint8x8_t LoadHi4(const void* const buf, uint8x8_t val) {
 template <typename T>
 inline void ValueToMem(void* const buf, T val) {
   memcpy(buf, &val, sizeof(val));
+}
+
+// Store 4 int8_t values from the low half of an int8x8_t register.
+inline void StoreLo4(void* const buf, const int8x8_t val) {
+  ValueToMem<int32_t>(buf, vget_lane_s32(vreinterpret_s32_s8(val), 0));
 }
 
 // Store 4 uint8_t values from the low half of a uint8x8_t register.

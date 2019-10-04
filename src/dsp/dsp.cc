@@ -90,6 +90,7 @@ void DspInit() {
     AverageBlendInit_NEON();
     ConvolveInit_NEON();
     DistanceWeightedBlendInit_NEON();
+    FilmGrainInit_NEON();
     IntraEdgeInit_NEON();
     IntraPredCflInit_NEON();
     IntraPredDirectionalInit_NEON();

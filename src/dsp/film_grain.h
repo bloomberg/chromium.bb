@@ -22,9 +22,20 @@
 #include <memory>
 #include <type_traits>
 
+// Pull in LIBGAV1_DspXXX defines representing the implementation status
+// of each function. The resulting value of each can be used by each module to
+// determine whether an implementation is needed at compile time.
+// IWYU pragma: begin_exports
+
+// ARM:
+#include "src/dsp/arm/film_grain_neon.h"
+
+// IWYU pragma: end_exports
+
 #include "src/dsp/common.h"
 #include "src/utils/array_2d.h"
 #include "src/utils/constants.h"
+#include "src/utils/cpu.h"
 
 namespace libgav1 {
 namespace dsp {
@@ -41,9 +52,12 @@ class FilmGrain {
   //     8       -128        127
   //    10       -512        511
   //    12      -2048       2047
-  //
   // So int8_t is big enough for bitdepth 8, whereas bitdepths 10 and 12 need
   // int16_t.
+  // The minimum value of film grain noise.
+  static constexpr int kGrainMin = -(1 << (bitdepth - 1));
+  // The maximum value of film grain noise.
+  static constexpr int kGrainMax = (1 << (bitdepth - 1)) - 1;
   using GrainType =
       typename std::conditional<bitdepth == 8, int8_t, int16_t>::type;
 
@@ -63,6 +77,13 @@ class FilmGrain {
   static void ApplyAutoRegressiveFilterToLumaGrain(
       const FilmGrainParams& params, int grain_min, int grain_max,
       GrainType* luma_grain);
+
+#if LIBGAV1_ENABLE_NEON
+  template <int auto_regression_coeff_lag>
+  static void ApplyAutoRegressiveFilterToLumaGrain_NEON(
+      const FilmGrainParams& params, int grain_min, int grain_max,
+      GrainType* luma_grain);
+#endif
 
   // Generates white noise arrays u_grain and v_grain chroma_width samples wide
   // and chroma_height samples high.
@@ -89,11 +110,24 @@ class FilmGrain {
                 ptrdiff_t dest_stride_u, void* dest_plane_v,
                 ptrdiff_t dest_stride_v);
 
+#if LIBGAV1_ENABLE_NEON
+  bool AddNoise_NEON(const void* source_plane_y, ptrdiff_t source_stride_y,
+                     const void* source_plane_u, ptrdiff_t source_stride_u,
+                     const void* source_plane_v, ptrdiff_t source_stride_v,
+                     void* dest_plane_y, ptrdiff_t dest_stride_y,
+                     void* dest_plane_u, ptrdiff_t dest_stride_u,
+                     void* dest_plane_v, ptrdiff_t dest_stride_v);
+#endif
+
  private:
   using Pixel =
       typename std::conditional<bitdepth == 8, uint8_t, uint16_t>::type;
 
   bool Init();
+
+#if LIBGAV1_ENABLE_NEON
+  bool Init_NEON();
+#endif
 
   // Allocates noise_stripes_, which points to memory owned by noise_buffer_.
   bool AllocateNoiseStripes();
@@ -123,10 +157,6 @@ class FilmGrain {
   // The two possible heights of the chroma noise array.
   static constexpr int kMinChromaHeight = 38;
   static constexpr int kMaxChromaHeight = 73;
-  // The minimum value of film grain noise.
-  static constexpr int kGrainMin = -(1 << (bitdepth - 1));
-  // The maximum value of film grain noise.
-  static constexpr int kGrainMax = (1 << (bitdepth - 1)) - 1;
 
   const FilmGrainParams& params_;
   const bool is_monochrome_;
