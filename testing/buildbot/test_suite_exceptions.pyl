@@ -1812,6 +1812,7 @@
         'args': [
           '--debug',
           '--additional-driver-flag=--enable-features=BackForwardCache',
+          '--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/enable-features=BackForwardCache',
         ],
       },
       'linux-blink-animation-use-time-delta': {
