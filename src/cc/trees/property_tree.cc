@@ -230,7 +230,7 @@ void TransformTree::UpdateTransforms(int id) {
   UpdateScreenSpaceTransform(node, parent_node);
   UpdateAnimationProperties(node, parent_node);
   UpdateSnapping(node);
-  UpdateNodeAndAncestorsHaveIntegerTranslations(node, parent_node);
+  UpdateNodeAndAncestorsHaveAxisAlignedTransforms(node, parent_node);
   UpdateTransformChanged(node, parent_node, source_node);
   UpdateNodeAndAncestorsAreAnimatedOrInvertible(node, parent_node);
 }
@@ -1214,13 +1214,13 @@ bool EffectTree::HitTestMayBeAffectedByMask(int effect_id) const {
   return false;
 }
 
-void TransformTree::UpdateNodeAndAncestorsHaveIntegerTranslations(
+void TransformTree::UpdateNodeAndAncestorsHaveAxisAlignedTransforms(
     TransformNode* node,
     TransformNode* parent_node) {
   DCHECK(parent_node);
-  node->node_and_ancestors_have_only_integer_translation =
-      node->to_parent.IsIdentityOrIntegerTranslation() &&
-      parent_node->node_and_ancestors_have_only_integer_translation;
+  node->node_and_ancestors_have_only_axis_aligned_transform =
+      node->to_parent.IsScaleOrTranslation() &&
+      parent_node->node_and_ancestors_have_only_axis_aligned_transform;
 }
 
 void ClipTree::SetViewportClip(gfx::RectF viewport_rect) {

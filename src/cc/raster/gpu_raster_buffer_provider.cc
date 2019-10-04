@@ -149,9 +149,11 @@ static void RasterizeSourceOOP(
   ri->BeginRasterCHROMIUM(raster_source->background_color(), msaa_sample_count,
                           playback_settings.use_lcd_text, color_space,
                           mailbox->name);
+
+  float transform_scale = std::min(transform.scale().width(), transform.scale().height());
   float recording_to_raster_scale =
-      transform.scale() / raster_source->recording_scale_factor();
-  gfx::Size content_size = raster_source->GetContentSize(transform.scale());
+      transform_scale / raster_source->recording_scale_factor();
+  gfx::Size content_size = gfx::ScaleToCeiledSize(raster_source->GetSize(), transform.scale().width(), transform.scale().height());
 
   // TODO(enne): could skip the clear on new textures, as the service side has
   // to do that anyway.  resource_has_previous_content implies that the texture
@@ -238,7 +240,9 @@ static void RasterizeSource(
     if (raster_full_rect == playback_rect)
       canvas->discard();
 
-    gfx::Size content_size = raster_source->GetContentSize(transform.scale());
+    gfx::Size content_size = gfx::ScaleToCeiledSize(raster_source->GetSize(),
+                                                    transform.scale().width(),
+                                                    transform.scale().height());
     raster_source->PlaybackToCanvas(canvas, content_size, raster_full_rect,
                                     playback_rect, transform,
                                     playback_settings);
