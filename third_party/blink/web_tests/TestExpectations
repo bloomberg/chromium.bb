@@ -6186,3 +6186,4 @@ crbug.com/1010657 [ Mac ] virtual/disable-deferred-rendering/fast/canvas/image-o
 # Sheriff 2019-10-04
 crbug.com/1011191 [ Mac ] paint/invalidation/svg/use-clipped-hit.svg  [ Pass Failure ]
 crbug.com/1011188 [ Mac ] paint/invalidation/svg/svg-background-partial-redraw.html [ Pass Failure ]
+crbug.com/1010863 http/tests/credentialmanager/credentialscontainer-get-with-virtual-authenticator.html [ Skip ]
