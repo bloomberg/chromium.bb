@@ -70,9 +70,11 @@ void QuicHttp3Logger::OnSettingsFrameReceived(
                     [&] { return NetLogSettingsParams(frame); });
 }
 
-void QuicHttp3Logger::OnSettingsFrameSent(
-    const quic::SettingsFrame& /*frame*/) {
-  // TODO(renjietang): handle this event.
+void QuicHttp3Logger::OnSettingsFrameSent(const quic::SettingsFrame& frame) {
+  if (!net_log_.IsCapturing())
+    return;
+  net_log_.AddEvent(NetLogEventType::HTTP3_SETTINGS_SENT,
+                    [&] { return NetLogSettingsParams(frame); });
 }
 
 }  // namespace net
