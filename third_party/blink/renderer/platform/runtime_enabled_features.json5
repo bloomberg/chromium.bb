@@ -1797,6 +1797,11 @@
       // depends_on: ["WebXRARModule"],  // TODO(https://crbug.com/954679): uncomment once bug is fixed
     },
     {
+      name: "WebXRARDOMOverlay",
+      // depends_on: ["WebXRARModule"],  // TODO(https://crbug.com/954679): uncomment once bug is fixed
+      status: "experimental",
+    },
+    {
       name: "WebXRARModule",
       // depends_on: ["WebXR"],  // TODO(https://crbug.com/954679): uncomment once bug is fixed
       status: "experimental",

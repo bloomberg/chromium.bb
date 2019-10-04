@@ -465,6 +465,10 @@ void WebRuntimeFeatures::EnableWebXRARModule(bool enable) {
   RuntimeEnabledFeatures::SetWebXRARModuleEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableWebXRARDOMOverlay(bool enable) {
+  RuntimeEnabledFeatures::SetWebXRARDOMOverlayEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableWebXRAnchors(bool enable) {
   RuntimeEnabledFeatures::SetWebXRAnchorsEnabled(enable);
 }

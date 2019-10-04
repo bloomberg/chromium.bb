@@ -706,6 +706,10 @@ const base::Feature kWebXrHitTest{"WebXRHitTest",
 const base::Feature kWebXrPlaneDetection{"WebXRPlaneDetection",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables access to planes detected in the user's environment.
+const base::Feature kWebXrArDOMOverlay{"WebXRARDOMOverlay",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Start streaming scripts on script preload.
 const base::Feature kScriptStreamingOnPreload{"ScriptStreamingOnPreload",
                                               base::FEATURE_ENABLED_BY_DEFAULT};

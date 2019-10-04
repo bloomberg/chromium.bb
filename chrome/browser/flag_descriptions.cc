@@ -2266,6 +2266,10 @@ const char kWebXrArModuleDescription[] =
     "Enables access to Augmented Reality features defined in the WebXR AR "
     "Module";
 
+const char kWebXrArDOMOverlayName[] = "WebXR AR DOM Overlay";
+const char kWebXrArDOMOverlayDescription[] =
+    "Enables experimental use of a DOM overlay in WebXR AR sessions";
+
 const char kWebXrAnchorsName[] = "WebXR Anchors";
 const char kWebXrAnchorsDescription[] =
     "Enables access to anchors via WebXR API.";

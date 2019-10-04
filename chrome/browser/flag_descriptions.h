@@ -1333,6 +1333,9 @@ extern const char kWebXrDescription[];
 extern const char kWebXrArModuleName[];
 extern const char kWebXrArModuleDescription[];
 
+extern const char kWebXrArDOMOverlayName[];
+extern const char kWebXrArDOMOverlayDescription[];
+
 extern const char kWebXrHitTestName[];
 extern const char kWebXrHitTestDescription[];
 

@@ -3454,6 +3454,11 @@
     "expiry_milestone": 82
   },
   {
+    "name": "webxr-ar-dom-overlay",
+    "owners": [ "//third_party/blink/renderer/modules/xr/OWNERS", "xr-dev@chromium.org" ],
+    "expiry_milestone": 81
+  },
+  {
     "name": "webxr-ar-module",
     "owners": [ "//third_party/blink/renderer/modules/xr/OWNERS", "xr-dev@chromium.org" ],
     "expiry_milestone": 82

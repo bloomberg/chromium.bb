@@ -156,6 +156,9 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
   if (base::FeatureList::IsEnabled(features::kWebXr))
     WebRuntimeFeatures::EnableWebXR(true);
 
+  if (base::FeatureList::IsEnabled(features::kWebXrArDOMOverlay))
+    WebRuntimeFeatures::EnableWebXRARDOMOverlay(true);
+
   if (base::FeatureList::IsEnabled(features::kWebXrArModule))
     WebRuntimeFeatures::EnableWebXRARModule(true);
 

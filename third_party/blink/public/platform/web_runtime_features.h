@@ -189,6 +189,7 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableWebVR(bool);
   BLINK_PLATFORM_EXPORT static void EnableWebXR(bool);
   BLINK_PLATFORM_EXPORT static void EnableWebXRARModule(bool);
+  BLINK_PLATFORM_EXPORT static void EnableWebXRARDOMOverlay(bool);
   BLINK_PLATFORM_EXPORT static void EnableWebXRAnchors(bool);
   BLINK_PLATFORM_EXPORT static void EnableWebXRHitTest(bool);
   BLINK_PLATFORM_EXPORT static void EnableWebXRPlaneDetection(bool);
