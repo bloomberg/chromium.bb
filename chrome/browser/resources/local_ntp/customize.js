@@ -940,6 +940,9 @@ customize.richerPicker_previewImage = function(tile) {
     const re = /w\d+\-h\d+/;
     preview.style.backgroundImage =
         tile.style.backgroundImage.replace(re, 'w1280-h720');
+    preview.dataset.attributionLine1 = tile.dataset.attributionLine1;
+    preview.dataset.attributionLine2 = tile.dataset.attributionLine2;
+    preview.dataset.attributionActionUrl = tile.dataset.attributionActionUrl;
   }
   background.style.opacity = 0;
   preview.style.opacity = 1;
