@@ -672,7 +672,7 @@ TEST_F(PrintPreviewHandlerTest, GetPreview) {
       preview_id_found = true;
       continue;
     }
-    base::Value* value_in = print_ticket.FindKey(it.first);
+    const base::Value* value_in = print_ticket.FindKey(it.first);
     ASSERT_TRUE(value_in);
     EXPECT_EQ(*value_in, it.second);
   }
@@ -690,30 +690,30 @@ TEST_F(PrintPreviewHandlerTest, SendPreviewUpdates) {
   base::DictionaryValue preview_params = VerifyPreviewMessage();
 
   // Read the preview UI ID and request ID
-  const base::Value* request_value = preview_params.FindKey(kPreviewRequestID);
-  ASSERT_TRUE(request_value);
-  ASSERT_TRUE(request_value->is_int());
-  int preview_request_id = request_value->GetInt();
+  base::Optional<int> request_value =
+      preview_params.FindIntKey(kPreviewRequestID);
+  ASSERT_TRUE(request_value.has_value());
+  int preview_request_id = request_value.value();
 
-  const base::Value* ui_value = preview_params.FindKey(kPreviewUIID);
-  ASSERT_TRUE(ui_value);
-  ASSERT_TRUE(ui_value->is_int());
-  int preview_ui_id = ui_value->GetInt();
+  base::Optional<int> ui_value = preview_params.FindIntKey(kPreviewUIID);
+  ASSERT_TRUE(ui_value.has_value());
+  int preview_ui_id = ui_value.value();
 
   // Simulate renderer responses: PageLayoutReady, PageCountReady,
   // PagePreviewReady, and OnPrintPreviewReady will be called in that order.
   base::DictionaryValue layout;
-  layout.SetKey(kSettingMarginTop, base::Value(34.0));
-  layout.SetKey(kSettingMarginLeft, base::Value(34.0));
-  layout.SetKey(kSettingMarginBottom, base::Value(34.0));
-  layout.SetKey(kSettingMarginRight, base::Value(34.0));
-  layout.SetKey(kSettingContentWidth, base::Value(544.0));
-  layout.SetKey(kSettingContentHeight, base::Value(700.0));
-  layout.SetKey(kSettingPrintableAreaX, base::Value(17));
-  layout.SetKey(kSettingPrintableAreaY, base::Value(17));
-  layout.SetKey(kSettingPrintableAreaWidth, base::Value(578));
-  layout.SetKey(kSettingPrintableAreaHeight, base::Value(734));
-  handler()->SendPageLayoutReady(layout, false, preview_request_id);
+  layout.SetDoubleKey(kSettingMarginTop, 34.0);
+  layout.SetDoubleKey(kSettingMarginLeft, 34.0);
+  layout.SetDoubleKey(kSettingMarginBottom, 34.0);
+  layout.SetDoubleKey(kSettingMarginRight, 34.0);
+  layout.SetDoubleKey(kSettingContentWidth, 544.0);
+  layout.SetDoubleKey(kSettingContentHeight, 700.0);
+  layout.SetIntKey(kSettingPrintableAreaX, 17);
+  layout.SetIntKey(kSettingPrintableAreaY, 17);
+  layout.SetIntKey(kSettingPrintableAreaWidth, 578);
+  layout.SetIntKey(kSettingPrintableAreaHeight, 734);
+  handler()->SendPageLayoutReady(layout, /*has_custom_page_size_style,=*/false,
+                                 preview_request_id);
 
   // Verify that page-layout-ready webUI event was fired.
   AssertWebUIEventFired(*web_ui()->call_data().back(), "page-layout-ready");
@@ -736,7 +736,8 @@ TEST_F(PrintPreviewHandlerTest, SendPreviewUpdates) {
   // None of these should work since there has been no new preview request.
   // Check that there are no new web UI messages sent.
   size_t message_count = web_ui()->call_data().size();
-  handler()->SendPageLayoutReady(base::DictionaryValue(), false,
+  handler()->SendPageLayoutReady(base::DictionaryValue(),
+                                 /*has_custom_page_size_style,=*/false,
                                  preview_request_id);
   EXPECT_EQ(message_count, web_ui()->call_data().size());
   handler()->SendPageCountReady(1, -1, 0);
