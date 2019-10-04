@@ -725,7 +725,7 @@ def DefaultSettings():
       debug_cidb=False,
 
       # Timeout for the build as a whole (in seconds).
-      build_timeout=(4 * 60 + 30) * 60,
+      build_timeout=(5 * 60 + 30) * 60,
 
       # An integer. If this builder fails this many times consecutively, send
       # an alert email to the recipients health_alert_recipients. This does
