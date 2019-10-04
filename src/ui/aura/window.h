@@ -354,6 +354,9 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // that has a delegate set).  The toplevel window may be |this|.
   Window* GetToplevelWindow();
 
+  // Returns true if this window should try to take focus on mousedown.
+  bool ShouldTryFocusOnMouseDown() const;
+
   // Claims focus.
   void Focus();
 
