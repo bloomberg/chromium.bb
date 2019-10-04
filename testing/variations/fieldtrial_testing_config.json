@@ -3281,25 +3281,6 @@
             ]
         }
     ],
-    "LightweightNoStatePrefetch": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "HTML_CSS_SyncScript_20190725",
-                    "params": {
-                        "skip_async_script": "true",
-                        "skip_other": "true"
-                    },
-                    "enable_features": [
-                        "LightweightNoStatePrefetch"
-                    ]
-                }
-            ]
-        }
-    ],
     "LoadingOnlyLearnHighPriorityResources": [
         {
             "platforms": [
