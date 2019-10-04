@@ -221,8 +221,8 @@ class PLATFORM_EXPORT V8PerIsolateData {
     return unified_heap_controller_.get();
   }
 
-  v8::EmbedderHeapTracer* GetEmbedderHeapTracer() const {
-    return static_cast<v8::EmbedderHeapTracer*>(GetUnifiedHeapController());
+  gin::MultiHeapTracer* GetEmbedderHeapTracer() const {
+    return isolate_holder_.heap_tracer();
   }
 
  private:
