@@ -112,6 +112,26 @@ class VIEWS_EXPORT NativeWidgetDelegate {
   // tree if necessary.
   virtual void OnNativeWidgetPaint(const ui::PaintContext& context) = 0;
 
+  // Like GetNonClientComponent, but gets called before, and lets the delegate
+  // handle non-client hit test regardless of whether the necessary aura/views
+  // flags have been setup.
+  virtual bool OnNCHitTest(int* result, const gfx::Point& point) = 0;
+
+  // Called when the user starts dragging in a non-client region.  Return true
+  // if the delegate will handle the non-client drag, in which case,
+  // OnNCDragMove will be called continuously until OnNCDragEnd is called.
+  virtual bool OnNCDragBegin(int hit_test_code) = 0;
+
+  // Called when the user is dragging in a non-client region.  This is only
+  // called if the previous OnNCDragBegin returned true.
+  virtual void OnNCDragMove() = 0;
+
+  // Called when the user is finishes dragging in a non-client region.  This is
+  // only called if the previous OnNCDragBegin returned true.
+  virtual void OnNCDragEnd() = 0;
+
+  virtual void OnNCDoubleClick() = 0;
+
   // Returns the non-client component (see ui/base/hit_test.h) containing
   // |point|, in client coordinates.
   virtual int GetNonClientComponent(const gfx::Point& point) = 0;

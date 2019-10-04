@@ -804,6 +804,15 @@ void WebViewImpl::OnNCDragEnd()
     }
 }
 
+void WebViewImpl::OnNCDoubleClick()
+{
+    if (d_delegate) {
+        POINT screenPoint;
+        ::GetCursorPos(&screenPoint);
+        d_delegate->ncDoubleClick(this, screenPoint);
+    }
+}
+
 aura::Window *WebViewImpl::GetDefaultActivationWindow()
 {
     DCHECK(Statics::isInBrowserMainThread());
