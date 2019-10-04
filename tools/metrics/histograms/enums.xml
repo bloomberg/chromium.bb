@@ -11063,6 +11063,37 @@ Called by update_net_error_codes.py.-->
   <int value="6" label="CRAS_CLIENT_TYPE_CROSVM"/>
 </enum>
 
+<enum name="CrasDeviceType">
+  <summary>
+    List of the device type of CRAS. The list can be found in
+    https://chromium.googlesource.com/chromiumos/third_party/adhd/+/master/cras/src/server/cras_server_metrics.c
+    (enum CRAS_METRICS_DEVICE_TYPE).
+  </summary>
+  <int value="0" label="CRAS_METRICS_DEVICE_INTERNAL_SPEAKER"/>
+  <int value="1" label="CRAS_METRICS_DEVICE_HEADPHONE"/>
+  <int value="2" label="CRAS_METRICS_DEVICE_HDMI"/>
+  <int value="3" label="CRAS_METRICS_DEVICE_HAPTIC"/>
+  <int value="4" label="CRAS_METRICS_DEVICE_LINEOUT"/>
+  <int value="5" label="CRAS_METRICS_DEVICE_INTERNAL_MIC"/>
+  <int value="6" label="CRAS_METRICS_DEVICE_FRONT_MIC"/>
+  <int value="7" label="CRAS_METRICS_DEVICE_REAR_MIC"/>
+  <int value="8" label="CRAS_METRICS_DEVICE_KEYBOARD_MIC"/>
+  <int value="9" label="CRAS_METRICS_DEVICE_MIC"/>
+  <int value="10" label="CRAS_METRICS_DEVICE_HOTWORD"/>
+  <int value="11" label="CRAS_METRICS_DEVICE_POST_MIX_LOOPBACK"/>
+  <int value="12" label="CRAS_METRICS_DEVICE_POST_DSP_LOOPBACK"/>
+  <int value="13" label="CRAS_METRICS_DEVICE_USB"/>
+  <int value="14" label="CRAS_METRICS_DEVICE_A2DP"/>
+  <int value="15" label="CRAS_METRICS_DEVICE_HFP"/>
+  <int value="16" label="CRAS_METRICS_DEVICE_HSP"/>
+  <int value="17" label="CRAS_METRICS_DEVICE_BLUETOOTH"/>
+  <int value="18" label="CRAS_METRICS_DEVICE_NO_DEVICE"/>
+  <int value="19" label="CRAS_METRICS_DEVICE_NORMAL_FALLBACK"/>
+  <int value="20" label="CRAS_METRICS_DEVICE_ABNORMAL_FALLBACK"/>
+  <int value="21" label="CRAS_METRICS_DEVICE_SILENT_HOTWORD"/>
+  <int value="22" label="CRAS_METRICS_DEVICE_UNKNOWN"/>
+</enum>
+
 <enum name="CrashExitCodes">
 <!-- These are abs() raw exit codes, so always positive. See MapCrashExitCodeForHistogram  function. See also the WindowsExitCode enum. -->
 
