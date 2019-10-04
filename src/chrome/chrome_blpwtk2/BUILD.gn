@@ -39,6 +39,45 @@ static_library("chrome_blpwtk2") {
     "//chrome/common/pref_names.h",
     "//chrome/utility/chrome_content_utility_client.cc",
     "//chrome/utility/chrome_content_utility_client.h",
+
+    # required by //blpwtk2:blpwtk2 (for printing)
+    "//chrome/browser/printing/pdf_to_emf_converter.cc",
+    "//chrome/browser/printing/pdf_to_emf_converter.h",
+    "//chrome/browser/printing/print_view_manager_basic.cc",
+    "//chrome/browser/printing/print_view_manager_basic.h",
+    "//chrome/browser/printing/print_view_manager_common.cc",
+    "//chrome/browser/printing/print_view_manager_common.h",
+
+    # required by //blpwtk2/private/blpwtk2_webviewimpl.cc
+    "//chrome/browser/printing/print_view_manager.cc",
+    "//chrome/browser/printing/print_view_manager.h",
+
+    # required by //chrome/browser/printing/print_view_manager_base.cc
+    "//chrome/browser/printing/print_job.cc",
+    "//chrome/browser/printing/print_job.h",
+
+    # required by //blpwtk2/private/blpwtk2_browsermainrunner.cc
+    "//chrome/browser/printing/print_job_manager.cc",
+    "//chrome/browser/printing/print_job_manager.h",
+
+    # required by //chrome/browser/printing/print_view_manager.cc
+    "//chrome/browser/printing/print_view_manager_base.cc",
+    "//chrome/browser/printing/print_view_manager_base.h",
+
+    # required by //blpwtk2/private/blpwtk2_contentbrowserclientimpl.cc"
+    "//chrome/browser/printing/printing_message_filter.cc",
+    "//chrome/browser/printing/printing_message_filter.h",
+
+    # required by //chrome/browser/printing/print_job_manager.cc,
+    #             //chrome/browser/printing/printing_message_filter.cc
+    "//chrome/browser/printing/printer_query.cc",
+    "//chrome/browser/printing/printer_query.h",
+
+    # required by //chrome/browser/printing/printer_query.cc,
+    #             //chrome/browser/printing/print_job.cc
+    "//chrome/browser/printing/print_job_worker.h",
+    "//chrome/browser/printing/print_job_worker.cc",
+
     # required by //chrome/common/chrome_content_client.cc
     "//chrome/common/chrome_switches.cc",
     "//chrome/common/chrome_switches.h",
@@ -63,12 +102,15 @@ static_library("chrome_blpwtk2") {
      "//chrome/services/printing/public/cpp:manifest",
      "//chrome/services/util_win/public/mojom",
      "//chrome/services/util_win:lib",
+     "//components/printing/browser",
+     "//components/printing/renderer",
      "//components/signin/core/browser:signin_buildflags",
      "//components/safe_browsing/web_ui:constants",
      "//components/mirroring/mojom:constants",
      "//components/mirroring/service:mirroring_service",
      "//components/services/pdf_compositor/public/cpp:factory",
      "//components/services/pdf_compositor/public/interfaces",
+     "//components/printing/renderer",
      "//content",
 
      # required by //chrome/common/chrome_content_client.cc

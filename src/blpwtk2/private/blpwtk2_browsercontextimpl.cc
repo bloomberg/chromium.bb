@@ -55,6 +55,7 @@
 #include <content/public/browser/storage_partition.h>
 #include <components/keyed_service/content/browser_context_dependency_manager.h>
 #include <components/pref_registry/pref_registry_syncable.h>
+#include <components/printing/renderer/print_render_frame_helper.h>
 #include <components/user_prefs/user_prefs.h>
 #include <net/proxy_resolution/proxy_config.h>
 #include <printing/backend/print_backend.h>
@@ -117,6 +118,8 @@ BrowserContextImpl::BrowserContextImpl(const std::string& dataDir)
     // dependency manager.
     {
     }
+
+    d_prefRegistry->RegisterBooleanPref(prefs::kPrintingEnabled, true);
 
     // Register this context with the dependency manager.
     BrowserContextDependencyManager* dependencyManager = BrowserContextDependencyManager::GetInstance();
@@ -436,6 +439,12 @@ void BrowserContextImpl::setPacUrl(const StringRef& url)
 
 
 // patch section: printing
+void BrowserContextImpl::setDefaultPrinter(const StringRef& name)
+{
+    printing::PrintRenderFrameHelper::UseDefaultPrintSettings();
+    printing::PrintBackend::SetUserDefaultPrinterName(
+            std::string(name.data(), name.size()));
+}
 
 
 // patch section: diagnostics

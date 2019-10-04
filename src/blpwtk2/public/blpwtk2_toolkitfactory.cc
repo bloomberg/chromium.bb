@@ -153,6 +153,11 @@ Toolkit* ToolkitFactory::create(const ToolkitCreateParams& params)
     std::string profileDirectory(params.profileDirectory().data(),
                                  params.profileDirectory().length());
 
+    std::string html(params.headerFooterHTMLContent().data(),
+                     params.headerFooterHTMLContent().length());
+    printing::PrintSettings::SetDefaultPrinterSettings(
+        base::UTF8ToUTF16(html), params.isPrintBackgroundGraphicsEnabled());
+
     ToolkitImpl* toolkit = new ToolkitImpl(dictionaryPath,
                                            hostChannel,
                                            commandLineSwitches,

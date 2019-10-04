@@ -598,7 +598,7 @@ source_set("builtin_service_manifests") {
     deps += [ "//components/services/pdf_compositor/public/cpp:manifest" ]
   }
 
-  if (enable_print_preview) {
+  if (enable_basic_printing || enable_print_preview) {
     deps += [ "//chrome/services/printing/public/cpp:manifest" ]
   }
 
