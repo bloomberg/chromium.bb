@@ -54,18 +54,38 @@ Process Process::Current() {
 
 // static
 Process Process::Open(ProcessId pid) {
-  return Process(::OpenProcess(kBasicProcessAccess, FALSE, pid));
+  return Process::OpenWithAccess(pid, kBasicProcessAccess);
 }
 
 // static
 Process Process::OpenWithExtraPrivileges(ProcessId pid) {
   DWORD access = kBasicProcessAccess | PROCESS_DUP_HANDLE | PROCESS_VM_READ;
-  return Process(::OpenProcess(access, FALSE, pid));
+  return Process::OpenWithAccess(pid, access);
 }
 
 // static
 Process Process::OpenWithAccess(ProcessId pid, DWORD desired_access) {
-  return Process(::OpenProcess(desired_access, FALSE, pid));
+  DWORD access = desired_access;
+  ProcessHandle handle = ::OpenProcess(access, FALSE, pid);
+  if (!handle) {
+    PLOG(WARNING) << "Failed to open process handle for pid=" << pid
+                  << ", access=" << access;
+
+    // Try again without PROCESS_TERMINATE.
+    if (access & PROCESS_TERMINATE) {
+      access &= ~PROCESS_TERMINATE;
+      handle = ::OpenProcess(access, FALSE, pid);
+      if (!handle) {
+        PLOG(ERROR) << "Still failed to open process handle for pid=" << pid
+                    << ", access=" << access;
+      }
+      else {
+        PLOG(INFO) << "Successfully opened process handle for pid=" << pid
+                   << ", access=" << access;
+      }
+    }
+  }
+  return Process(handle);
 }
 
 // static

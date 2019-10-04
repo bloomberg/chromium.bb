@@ -32,8 +32,11 @@ SharedMemoryHandle SharedMemoryHandle::Duplicate() const {
   ProcessHandle process = GetCurrentProcess();
   BOOL success = ::DuplicateHandle(process, handle_, process, &duped_handle, 0,
                                    FALSE, DUPLICATE_SAME_ACCESS);
-  if (!success)
+  if (!success) {
+    PLOG(ERROR) << "DuplicateHandle failed"
+                << ", handle = " << handle_;
     return SharedMemoryHandle();
+  }
 
   base::SharedMemoryHandle handle(duped_handle, GetSize(), GetGUID());
   handle.SetOwnershipPassesToIPC(true);
