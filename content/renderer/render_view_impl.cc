@@ -1908,10 +1908,6 @@ RenderWidget* RenderViewImpl::GetWidget() {
   return render_widget_.get();
 }
 
-const RenderWidget* RenderViewImpl::GetWidget() const {
-  return render_widget_.get();
-}
-
 RenderFrameImpl* RenderViewImpl::GetMainRenderFrame() {
   return main_render_frame_;
 }

@@ -145,7 +145,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   // RenderView does not own a RenderWidget [e.g. for remote main frame in
   // future].
   RenderWidget* GetWidget();
-  const RenderWidget* GetWidget() const;
 
   // Returns a |page_properties| interface. The lifetime is scoped to
   // the RenderViewImpl.
