@@ -83,6 +83,9 @@ def ComputeTBMv2Metrics(intermediate_results):
       del artifacts[HISTOGRAM_DICTS_FILE]
       continue
 
+    if test_result['status'] == 'SKIP':
+      continue
+
     if (HTML_TRACE_NAME not in artifacts or
         not any(tag['key'] == 'tbmv2' for tag in test_result.get('tags', []))):
       continue
