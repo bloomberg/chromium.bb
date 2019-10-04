@@ -1072,16 +1072,12 @@ void RenderViewImpl::Destroy() {
   // a main frame. So it should not be able to see this happening when there is
   // no local main frame.
   if (close_render_widget_here) {
-    // TODO(danakj): Go through CloseForFrame()? But we don't need/want to post-
-    // task the Close step here, do we? Since we're inside RenderViewImpl
-    // destruction?
-    render_widget_->PrepareForClose();
     // We pass ownership of |render_widget_| to itself. Grab a raw pointer to
     // call the Close() method on so we don't have to be a C++ expert to know
     // whether we will end up with a nullptr where we didn't intend due to order
     // of execution.
     RenderWidget* closing_widget = render_widget_.get();
-    closing_widget->Close(std::move(render_widget_));
+    closing_widget->CloseForFrame(std::move(render_widget_));
   }
 
   delete this;
@@ -1571,19 +1567,15 @@ void RenderViewImpl::DetachWebFrameWidget() {
     // We are inside RenderViewImpl::Destroy() and the main frame is being
     // detached as part of shutdown. So we can destroy the RenderWidget.
 
-    // The RenderWidget is closed and it will close the WebWidget stored in
-    // |frame_widget_|. We just want to drop raw pointer here.
+    // The RenderWidget will be closed, and it will close the WebWidget stored
+    // in |frame_widget_|. We just want to drop raw pointer here.
     frame_widget_ = nullptr;
-    // TODO(danakj): Go through CloseForFrame()? But we don't need/want to post-
-    // task the Close step here, do we? Since we're inside RenderViewImpl
-    // destruction?
-    render_widget_->PrepareForClose();
     // We pass ownership of |render_widget_| to itself. Grab a raw pointer to
     // call the Close() method on so we don't have to be a C++ expert to know
     // whether we will end up with a nullptr where we didn't intend due to order
     // of execution.
     RenderWidget* closing_widget = render_widget_.get();
-    closing_widget->Close(std::move(render_widget_));
+    closing_widget->CloseForFrame(std::move(render_widget_));
   } else {
     // We are not inside RenderViewImpl::Destroy(), the main frame is being
     // detached and replaced with a remote frame proxy. We can't close the
