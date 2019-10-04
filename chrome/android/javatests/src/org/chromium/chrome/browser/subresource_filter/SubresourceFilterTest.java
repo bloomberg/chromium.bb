@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser;
+package org.chromium.chrome.browser.subresource_filter;
 
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
@@ -17,10 +17,12 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
+import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.MockSafeBrowsingApiHandler;
 import org.chromium.chrome.browser.infobar.AdsBlockedInfoBar;
 import org.chromium.chrome.browser.infobar.InfoBar;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
-import org.chromium.chrome.browser.subresource_filter.TestSubresourceFilterPublisher;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
@@ -57,7 +59,7 @@ public final class SubresourceFilterTest {
             "{\"matches\":[{\"threat_type\":\"13\",\"sf_bas\":\"warn\"}]}";
 
     private void createAndPublishRulesetDisallowingSuffix(String suffix) {
-        TestSubresourceFilterPublisher publisher = new TestSubresourceFilterPublisher();
+        TestRulesetPublisher publisher = new TestRulesetPublisher();
         TestThreadUtils.runOnUiThreadBlocking(
                 (Runnable) ()
                         -> publisher.createAndPublishRulesetDisallowingSuffixForTesting(suffix));
