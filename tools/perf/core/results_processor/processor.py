@@ -62,6 +62,23 @@ def ProcessResults(options):
     else:
       formatter.ProcessIntermediateResults(intermediate_results, options)
 
+  return GenerateExitCode(intermediate_results)
+
+
+def GenerateExitCode(intermediate_results):
+  """Generate an exit code as expected by callers.
+
+  Returns:
+    1 if there were failed tests.
+    -1 if all tests were skipped.
+    0 otherwise.
+  """
+  if any(r['status'] == 'FAIL' for r in intermediate_results['testResults']):
+    return 1
+  if all(r['status'] == 'SKIP' for r in intermediate_results['testResults']):
+    return -1
+  return 0
+
 
 def _LoadIntermediateResults(intermediate_file):
   """Load intermediate results from a file into a single dict."""
