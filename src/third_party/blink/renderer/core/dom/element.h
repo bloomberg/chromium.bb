@@ -324,6 +324,12 @@ class CORE_EXPORT Element : public ContainerNode {
 
 
   // patch section: element-extensions
+  virtual int bbScrollLeftNoZoomAdjust() const;
+  virtual int bbScrollTopNoZoomAdjust() const;
+  virtual void setBbScrollLeftNoZoomAdjust(int);
+  virtual void setBbScrollTopNoZoomAdjust(int);
+  virtual int bbScrollWidthNoZoomAdjust() const;
+  virtual int bbScrollHeightNoZoomAdjust() const;
 
 
   // patch section: spellcheck
