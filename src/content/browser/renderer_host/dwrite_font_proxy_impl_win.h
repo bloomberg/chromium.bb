@@ -42,6 +42,10 @@ class CONTENT_EXPORT DWriteFontProxyImpl
   static void Create(blink::mojom::DWriteFontProxyRequest request,
                      const service_manager::BindSourceInfo& source_info);
 
+#if defined(OS_WIN)
+  static void SetFontCollection(FontCollection* collection);
+#endif
+
   void SetWindowsFontsPathForTesting(base::string16 path);
 
  protected:
