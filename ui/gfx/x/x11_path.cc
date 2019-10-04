@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gfx/path_x11.h"
+#include "ui/gfx/x/x11_path.h"
 
 #include <memory>
 
@@ -28,7 +28,7 @@ Region CreateRegionFromSkRegion(const SkRegion& region) {
 }
 
 Region CreateRegionFromSkPath(const SkPath& path) {
-  int point_count = path.getPoints(NULL, 0);
+  int point_count = path.getPoints(nullptr, 0);
   std::unique_ptr<SkPoint[]> points(new SkPoint[point_count]);
   path.getPoints(points.get(), point_count);
   std::unique_ptr<XPoint[]> x11_points(new XPoint[point_count]);
