@@ -114,6 +114,13 @@ interface ProcessHost {
 
 
     // patch section: spellcheck
+    enableSpellCheck(bool enabled);
+
+    setLanguages(array<string> languages);
+
+    addCustomWords(array<string> words);
+
+    removeCustomWords(array<string> words);
 
 
     // patch section: printing
