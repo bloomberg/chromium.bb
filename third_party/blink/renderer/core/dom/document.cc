@@ -7030,11 +7030,13 @@ void Document::InitSecurityContext(
       AddInsecureNavigationUpgrade(to_upgrade);
   }
 
-  cookie_url_ = url_;
+  bool inherit_cookie_url_from_owner = initializer.IsSrcdocDocument() ||
+                                       url_.IsAboutBlankURL() ||
+                                       !initializer.OriginToCommit();
 
-  if (!initializer.OriginToCommit() && initializer.OwnerDocument()) {
-    cookie_url_ = initializer.OwnerDocument()->CookieURL();
-  }
+  cookie_url_ = inherit_cookie_url_from_owner && initializer.OwnerDocument()
+                    ? initializer.OwnerDocument()->CookieURL()
+                    : url_;
 
   SetAddressSpace(initializer.GetIPAddressSpace());
 
