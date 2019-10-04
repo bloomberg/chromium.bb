@@ -46,6 +46,7 @@ class WebAppDatabaseTest : public WebAppTest {
     const std::string scope =
         base_url + "/scope" + base::NumberToString(suffix);
     const base::Optional<SkColor> theme_color = suffix;
+    const base::Optional<SkColor> synced_theme_color = suffix ^ UINT_MAX;
 
     auto app = std::make_unique<WebApp>(app_id);
 
@@ -69,6 +70,7 @@ class WebAppDatabaseTest : public WebAppTest {
     app->SetScope(GURL(scope));
     app->SetThemeColor(theme_color);
     app->SetIsLocallyInstalled(!(suffix & 2));
+    app->SetIsSyncPlaceholder(!(suffix & 4));
     app->SetLaunchContainer((suffix & 1) ? LaunchContainer::kTab
                                          : LaunchContainer::kWindow);
 
@@ -80,6 +82,11 @@ class WebAppDatabaseTest : public WebAppTest {
     icons.push_back({GURL(icon_url), icon_size_in_px});
 
     app->SetIcons(std::move(icons));
+
+    WebApp::SyncData sync_data;
+    sync_data.name = "Sync" + name;
+    sync_data.theme_color = synced_theme_color;
+    app->SetSyncData(sync_data);
 
     return app;
   }
@@ -263,6 +270,9 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_TRUE(app->scope().is_empty());
   EXPECT_FALSE(app->theme_color().has_value());
   EXPECT_TRUE(app->icons().empty());
+  EXPECT_FALSE(app->is_sync_placeholder());
+  EXPECT_TRUE(app->sync_data().name.empty());
+  EXPECT_FALSE(app->sync_data().theme_color.has_value());
   controller().RegisterApp(std::move(app));
 
   Registry registry = database_factory().ReadRegistry();
@@ -288,6 +298,9 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_TRUE(app_copy->scope().is_empty());
   EXPECT_FALSE(app_copy->theme_color().has_value());
   EXPECT_TRUE(app_copy->icons().empty());
+  EXPECT_FALSE(app_copy->is_sync_placeholder());
+  EXPECT_TRUE(app_copy->sync_data().name.empty());
+  EXPECT_FALSE(app_copy->sync_data().theme_color.has_value());
 }
 
 TEST_F(WebAppDatabaseTest, WebAppWithManyIcons) {

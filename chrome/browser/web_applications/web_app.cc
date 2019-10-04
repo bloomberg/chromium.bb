@@ -65,18 +65,35 @@ void WebApp::SetIsLocallyInstalled(bool is_locally_installed) {
   is_locally_installed_ = is_locally_installed;
 }
 
+void WebApp::SetIsSyncPlaceholder(bool is_sync_placeholder) {
+  is_sync_placeholder_ = is_sync_placeholder;
+}
+
 void WebApp::SetIcons(Icons icons) {
   icons_ = std::move(icons);
 }
 
+void WebApp::SetSyncData(const SyncData& sync_data) {
+  sync_data_ = sync_data;
+}
+
+WebApp::SyncData::SyncData() = default;
+
+WebApp::SyncData::~SyncData() = default;
+
 std::ostream& operator<<(std::ostream& out, const WebApp& app) {
   const std::string theme_color =
-      app.theme_color()
-          ? color_utils::SkColorToRgbaString(app.theme_color().value())
+      app.theme_color_.has_value()
+          ? color_utils::SkColorToRgbaString(app.theme_color_.value())
+          : "none";
+  const std::string sync_theme_color =
+      app.sync_data_.theme_color.has_value()
+          ? color_utils::SkColorToRgbaString(app.sync_data_.theme_color.value())
           : "none";
   const char* launch_container =
-      LaunchContainerEnumToStr(app.launch_container());
-  const bool is_locally_installed = app.is_locally_installed();
+      LaunchContainerEnumToStr(app.launch_container_);
+  const bool is_locally_installed = app.is_locally_installed_;
+  const bool is_sync_placeholder = app.is_sync_placeholder_;
 
   return out << "app_id: " << app.app_id_ << std::endl
              << "  name: " << app.name_ << std::endl
@@ -84,8 +101,11 @@ std::ostream& operator<<(std::ostream& out, const WebApp& app) {
              << "  scope: " << app.scope_ << std::endl
              << "  theme_color: " << theme_color << std::endl
              << "  launch_container: " << launch_container << std::endl
-             << "  sources: " << app.sources_ << std::endl
+             << "  sources: " << app.sources_.to_string() << std::endl
              << "  is_locally_installed: " << is_locally_installed << std::endl
+             << "  is_sync_placeholder: " << is_sync_placeholder << std::endl
+             << "  sync_data.name: " << app.sync_data_.name << std::endl
+             << "  sync_data.theme_color: " << sync_theme_color << std::endl
              << "  description: " << app.description_;
 }
 
@@ -95,15 +115,23 @@ bool operator==(const WebApp::IconInfo& icon_info1,
          std::tie(icon_info2.url, icon_info2.size_in_px);
 }
 
+bool operator==(const WebApp::SyncData& sync_data1,
+                const WebApp::SyncData& sync_data2) {
+  return std::tie(sync_data1.name, sync_data1.theme_color) ==
+         std::tie(sync_data2.name, sync_data2.theme_color);
+}
+
 bool operator==(const WebApp& app1, const WebApp& app2) {
   return std::tie(app1.app_id_, app1.sources_, app1.name_, app1.launch_url_,
                   app1.description_, app1.scope_, app1.theme_color_,
                   app1.icons_, app1.launch_container_,
-                  app1.is_locally_installed_) ==
+                  app1.is_locally_installed_, app1.is_sync_placeholder_,
+                  app1.sync_data_) ==
          std::tie(app2.app_id_, app2.sources_, app2.name_, app2.launch_url_,
                   app2.description_, app2.scope_, app2.theme_color_,
                   app2.icons_, app2.launch_container_,
-                  app2.is_locally_installed_);
+                  app2.is_locally_installed_, app2.is_sync_placeholder_,
+                  app2.sync_data_);
 }
 
 bool operator!=(const WebApp& app1, const WebApp& app2) {

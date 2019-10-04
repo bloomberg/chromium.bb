@@ -35,6 +35,12 @@ class WebApp {
   const base::Optional<SkColor>& theme_color() const { return theme_color_; }
   LaunchContainer launch_container() const { return launch_container_; }
   bool is_locally_installed() const { return is_locally_installed_; }
+  // Sync-initiated installation produces a sync placeholder app awaiting for
+  // full installation process. The sync placeholder app has only app_id,
+  // launch_url and sync_data fields defined, no icons. If online install
+  // succeeds, icons get downloaded and all the fields get their values. If
+  // install fails, icons get generated using |sync_data| fields.
+  bool is_sync_placeholder() const { return is_sync_placeholder_; }
 
   struct IconInfo {
     GURL url;
@@ -43,7 +49,19 @@ class WebApp {
   using Icons = std::vector<IconInfo>;
   const Icons& icons() const { return icons_; }
 
-  // A Web App can be installed from multiple sources simulateneously. Installs
+  // While local |name| and |theme_color| may vary from device to device, the
+  // synced copies of these fields are replicated to all devices. The synced
+  // copies are read by a device to generate a placeholder icon (if needed). Any
+  // device may write new values to |sync_data|, random last update wins.
+  struct SyncData {
+    SyncData();
+    ~SyncData();
+    std::string name;
+    base::Optional<SkColor> theme_color;
+  };
+  const SyncData& sync_data() const { return sync_data_; }
+
+  // A Web App can be installed from multiple sources simultaneously. Installs
   // add a source to the app. Uninstalls remove a source from the app.
   void AddSource(Source::Type source);
   void RemoveSource(Source::Type source);
@@ -58,7 +76,10 @@ class WebApp {
   void SetThemeColor(base::Optional<SkColor> theme_color);
   void SetLaunchContainer(LaunchContainer launch_container);
   void SetIsLocallyInstalled(bool is_locally_installed);
+  void SetIsSyncPlaceholder(bool is_sync_placeholder);
   void SetIcons(Icons icons);
+
+  void SetSyncData(const SyncData& sync_data);
 
  private:
   friend class WebAppDatabase;
@@ -80,7 +101,10 @@ class WebApp {
   base::Optional<SkColor> theme_color_;
   LaunchContainer launch_container_;
   bool is_locally_installed_ = true;
+  bool is_sync_placeholder_ = false;
   Icons icons_;
+
+  SyncData sync_data_;
 
   DISALLOW_COPY_AND_ASSIGN(WebApp);
 };
@@ -90,6 +114,9 @@ std::ostream& operator<<(std::ostream& out, const WebApp& app);
 
 bool operator==(const WebApp::IconInfo& icon_info1,
                 const WebApp::IconInfo& icon_info2);
+
+bool operator==(const WebApp::SyncData& sync_data1,
+                const WebApp::SyncData& sync_data2);
 
 bool operator==(const WebApp& app1, const WebApp& app2);
 
