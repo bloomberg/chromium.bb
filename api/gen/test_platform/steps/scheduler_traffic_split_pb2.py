@@ -21,11 +21,73 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='test_platform.steps',
   syntax='proto3',
   serialized_options=_b('Z=go.chromium.org/chromiumos/infra/proto/go/test_platform/steps'),
-  serialized_pb=_b('\n1test_platform/steps/scheduler_traffic_split.proto\x12\x13test_platform.steps\x1a\x1btest_platform/request.proto\x1a!test_platform/config/config.proto\"\x88\x01\n\x1cSchedulerTrafficSplitRequest\x12\'\n\x07request\x18\x01 \x01(\x0b\x32\x16.test_platform.Request\x12?\n\x06\x63onfig\x18\x02 \x01(\x0b\x32/.test_platform.config.Config.SchedulerMigration\"\x81\x01\n\x1dSchedulerTrafficSplitResponse\x12\x30\n\x10\x61utotest_request\x18\x01 \x01(\x0b\x32\x16.test_platform.Request\x12.\n\x0eskylab_request\x18\x02 \x01(\x0b\x32\x16.test_platform.RequestB?Z=go.chromium.org/chromiumos/infra/proto/go/test_platform/stepsb\x06proto3')
+  serialized_pb=_b('\n1test_platform/steps/scheduler_traffic_split.proto\x12\x13test_platform.steps\x1a\x1btest_platform/request.proto\x1a!test_platform/config/config.proto\"d\n\x1dSchedulerTrafficSplitRequests\x12\x43\n\x08requests\x18\x01 \x03(\x0b\x32\x31.test_platform.steps.SchedulerTrafficSplitRequest\"g\n\x1eSchedulerTrafficSplitResponses\x12\x45\n\tresponses\x18\x01 \x03(\x0b\x32\x32.test_platform.steps.SchedulerTrafficSplitResponse\"\x88\x01\n\x1cSchedulerTrafficSplitRequest\x12\'\n\x07request\x18\x01 \x01(\x0b\x32\x16.test_platform.Request\x12?\n\x06\x63onfig\x18\x02 \x01(\x0b\x32/.test_platform.config.Config.SchedulerMigration\"\x81\x01\n\x1dSchedulerTrafficSplitResponse\x12\x30\n\x10\x61utotest_request\x18\x01 \x01(\x0b\x32\x16.test_platform.Request\x12.\n\x0eskylab_request\x18\x02 \x01(\x0b\x32\x16.test_platform.RequestB?Z=go.chromium.org/chromiumos/infra/proto/go/test_platform/stepsb\x06proto3')
   ,
   dependencies=[test__platform_dot_request__pb2.DESCRIPTOR,test__platform_dot_config_dot_config__pb2.DESCRIPTOR,])
 
 
+
+
+_SCHEDULERTRAFFICSPLITREQUESTS = _descriptor.Descriptor(
+  name='SchedulerTrafficSplitRequests',
+  full_name='test_platform.steps.SchedulerTrafficSplitRequests',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='requests', full_name='test_platform.steps.SchedulerTrafficSplitRequests.requests', index=0,
+      number=1, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=138,
+  serialized_end=238,
+)
+
+
+_SCHEDULERTRAFFICSPLITRESPONSES = _descriptor.Descriptor(
+  name='SchedulerTrafficSplitResponses',
+  full_name='test_platform.steps.SchedulerTrafficSplitResponses',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='responses', full_name='test_platform.steps.SchedulerTrafficSplitResponses.responses', index=0,
+      number=1, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=240,
+  serialized_end=343,
+)
 
 
 _SCHEDULERTRAFFICSPLITREQUEST = _descriptor.Descriptor(
@@ -61,8 +123,8 @@ _SCHEDULERTRAFFICSPLITREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=139,
-  serialized_end=275,
+  serialized_start=346,
+  serialized_end=482,
 )
 
 
@@ -99,17 +161,35 @@ _SCHEDULERTRAFFICSPLITRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=278,
-  serialized_end=407,
+  serialized_start=485,
+  serialized_end=614,
 )
 
+_SCHEDULERTRAFFICSPLITREQUESTS.fields_by_name['requests'].message_type = _SCHEDULERTRAFFICSPLITREQUEST
+_SCHEDULERTRAFFICSPLITRESPONSES.fields_by_name['responses'].message_type = _SCHEDULERTRAFFICSPLITRESPONSE
 _SCHEDULERTRAFFICSPLITREQUEST.fields_by_name['request'].message_type = test__platform_dot_request__pb2._REQUEST
 _SCHEDULERTRAFFICSPLITREQUEST.fields_by_name['config'].message_type = test__platform_dot_config_dot_config__pb2._CONFIG_SCHEDULERMIGRATION
 _SCHEDULERTRAFFICSPLITRESPONSE.fields_by_name['autotest_request'].message_type = test__platform_dot_request__pb2._REQUEST
 _SCHEDULERTRAFFICSPLITRESPONSE.fields_by_name['skylab_request'].message_type = test__platform_dot_request__pb2._REQUEST
+DESCRIPTOR.message_types_by_name['SchedulerTrafficSplitRequests'] = _SCHEDULERTRAFFICSPLITREQUESTS
+DESCRIPTOR.message_types_by_name['SchedulerTrafficSplitResponses'] = _SCHEDULERTRAFFICSPLITRESPONSES
 DESCRIPTOR.message_types_by_name['SchedulerTrafficSplitRequest'] = _SCHEDULERTRAFFICSPLITREQUEST
 DESCRIPTOR.message_types_by_name['SchedulerTrafficSplitResponse'] = _SCHEDULERTRAFFICSPLITRESPONSE
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
+
+SchedulerTrafficSplitRequests = _reflection.GeneratedProtocolMessageType('SchedulerTrafficSplitRequests', (_message.Message,), dict(
+  DESCRIPTOR = _SCHEDULERTRAFFICSPLITREQUESTS,
+  __module__ = 'test_platform.steps.scheduler_traffic_split_pb2'
+  # @@protoc_insertion_point(class_scope:test_platform.steps.SchedulerTrafficSplitRequests)
+  ))
+_sym_db.RegisterMessage(SchedulerTrafficSplitRequests)
+
+SchedulerTrafficSplitResponses = _reflection.GeneratedProtocolMessageType('SchedulerTrafficSplitResponses', (_message.Message,), dict(
+  DESCRIPTOR = _SCHEDULERTRAFFICSPLITRESPONSES,
+  __module__ = 'test_platform.steps.scheduler_traffic_split_pb2'
+  # @@protoc_insertion_point(class_scope:test_platform.steps.SchedulerTrafficSplitResponses)
+  ))
+_sym_db.RegisterMessage(SchedulerTrafficSplitResponses)
 
 SchedulerTrafficSplitRequest = _reflection.GeneratedProtocolMessageType('SchedulerTrafficSplitRequest', (_message.Message,), dict(
   DESCRIPTOR = _SCHEDULERTRAFFICSPLITREQUEST,

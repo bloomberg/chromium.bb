@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='test_platform',
   syntax='proto3',
   serialized_options=_b('Z7go.chromium.org/chromiumos/infra/proto/go/test_platform'),
-  serialized_pb=_b('\n\x1dtest_platform/taskstate.proto\x12\rtest_platform\"\xa3\x04\n\tTaskState\x12\x36\n\nlife_cycle\x18\x01 \x01(\x0e\x32\".test_platform.TaskState.LifeCycle\x12\x31\n\x07verdict\x18\x02 \x01(\x0e\x32 .test_platform.TaskState.Verdict\"\x87\x01\n\rLifeCycleMask\x12\x1f\n\x1bLIFE_CYCLE_MASK_UNSPECIFIED\x10\x00\x12\x1b\n\x17LIFE_CYCLE_MASK_STARTED\x10\x10\x12\x1d\n\x19LIFE_CYCLE_MASK_COMPLETED\x10 \x12\x19\n\x15LIFE_CYCLE_MASK_FINAL\x10@\"\xbc\x01\n\tLifeCycle\x12\x1a\n\x16LIFE_CYCLE_UNSPECIFIED\x10\x00\x12\x16\n\x12LIFE_CYCLE_PENDING\x10\x01\x12\x16\n\x12LIFE_CYCLE_RUNNING\x10\x10\x12\x18\n\x14LIFE_CYCLE_COMPLETED\x10p\x12\x18\n\x14LIFE_CYCLE_CANCELLED\x10\x41\x12\x17\n\x13LIFE_CYCLE_REJECTED\x10\x42\x12\x16\n\x12LIFE_CYCLE_ABORTED\x10P\"b\n\x07Verdict\x12\x17\n\x13VERDICT_UNSPECIFIED\x10\x00\x12\x12\n\x0eVERDICT_PASSED\x10\x01\x12\x12\n\x0eVERDICT_FAILED\x10\x02\x12\x16\n\x12VERDICT_NO_VERDICT\x10\x03\x42\x39Z7go.chromium.org/chromiumos/infra/proto/go/test_platformb\x06proto3')
+  serialized_pb=_b('\n\x1dtest_platform/taskstate.proto\x12\rtest_platform\"\xc0\x04\n\tTaskState\x12\x36\n\nlife_cycle\x18\x01 \x01(\x0e\x32\".test_platform.TaskState.LifeCycle\x12\x31\n\x07verdict\x18\x02 \x01(\x0e\x32 .test_platform.TaskState.Verdict\"\x87\x01\n\rLifeCycleMask\x12\x1f\n\x1bLIFE_CYCLE_MASK_UNSPECIFIED\x10\x00\x12\x1b\n\x17LIFE_CYCLE_MASK_STARTED\x10\x10\x12\x1d\n\x19LIFE_CYCLE_MASK_COMPLETED\x10 \x12\x19\n\x15LIFE_CYCLE_MASK_FINAL\x10@\"\xbc\x01\n\tLifeCycle\x12\x1a\n\x16LIFE_CYCLE_UNSPECIFIED\x10\x00\x12\x16\n\x12LIFE_CYCLE_PENDING\x10\x01\x12\x16\n\x12LIFE_CYCLE_RUNNING\x10\x10\x12\x18\n\x14LIFE_CYCLE_COMPLETED\x10p\x12\x18\n\x14LIFE_CYCLE_CANCELLED\x10\x41\x12\x17\n\x13LIFE_CYCLE_REJECTED\x10\x42\x12\x16\n\x12LIFE_CYCLE_ABORTED\x10P\"\x7f\n\x07Verdict\x12\x17\n\x13VERDICT_UNSPECIFIED\x10\x00\x12\x12\n\x0eVERDICT_PASSED\x10\x01\x12\x12\n\x0eVERDICT_FAILED\x10\x02\x12\x16\n\x12VERDICT_NO_VERDICT\x10\x03\x12\x1b\n\x17VERDICT_PASSED_ON_RETRY\x10\x04\x42\x39Z7go.chromium.org/chromiumos/infra/proto/go/test_platformb\x06proto3')
 )
 
 
@@ -118,11 +118,15 @@ _TASKSTATE_VERDICT = _descriptor.EnumDescriptor(
       name='VERDICT_NO_VERDICT', index=3, number=3,
       serialized_options=None,
       type=None),
+    _descriptor.EnumValueDescriptor(
+      name='VERDICT_PASSED_ON_RETRY', index=4, number=4,
+      serialized_options=None,
+      type=None),
   ],
   containing_type=None,
   serialized_options=None,
   serialized_start=498,
-  serialized_end=596,
+  serialized_end=625,
 )
 _sym_db.RegisterEnumDescriptor(_TASKSTATE_VERDICT)
 
@@ -164,7 +168,7 @@ _TASKSTATE = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=49,
-  serialized_end=596,
+  serialized_end=625,
 )
 
 _TASKSTATE.fields_by_name['life_cycle'].enum_type = _TASKSTATE_LIFECYCLE

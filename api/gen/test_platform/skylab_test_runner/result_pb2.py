@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='test_platform.skylab_test_runner',
   syntax='proto3',
   serialized_options=_b('ZJgo.chromium.org/chromiumos/infra/proto/go/test_platform/skylab_test_runner'),
-  serialized_pb=_b('\n-test_platform/skylab_test_runner/result.proto\x12 test_platform.skylab_test_runner\"\xc4\x05\n\x06Result\x12L\n\x0f\x61utotest_result\x18\x01 \x01(\x0b\x32\x31.test_platform.skylab_test_runner.Result.AutotestH\x00\x12?\n\x06prejob\x18\x02 \x01(\x0b\x32/.test_platform.skylab_test_runner.Result.Prejob\x1a\xa4\x02\n\x08\x41utotest\x12N\n\ntest_cases\x18\x01 \x03(\x0b\x32:.test_platform.skylab_test_runner.Result.Autotest.TestCase\x12\x12\n\nincomplete\x18\x02 \x01(\x08\x1a\xb3\x01\n\x08TestCase\x12\x0c\n\x04name\x18\x01 \x01(\t\x12S\n\x07verdict\x18\x02 \x01(\x0e\x32\x42.test_platform.skylab_test_runner.Result.Autotest.TestCase.Verdict\"D\n\x07Verdict\x12\x15\n\x11VERDICT_UNDEFINED\x10\x00\x12\x10\n\x0cVERDICT_PASS\x10\x01\x12\x10\n\x0cVERDICT_FAIL\x10\x02\x1a\xf8\x01\n\x06Prejob\x12\x42\n\x04step\x18\x01 \x03(\x0b\x32\x34.test_platform.skylab_test_runner.Result.Prejob.Step\x1a\xa9\x01\n\x04Step\x12\x0c\n\x04name\x18\x01 \x01(\t\x12M\n\x07verdict\x18\x02 \x01(\x0e\x32<.test_platform.skylab_test_runner.Result.Prejob.Step.Verdict\"D\n\x07Verdict\x12\x15\n\x11VERDICT_UNDEFINED\x10\x00\x12\x10\n\x0cVERDICT_PASS\x10\x01\x12\x10\n\x0cVERDICT_FAIL\x10\x02\x42\t\n\x07harnessBLZJgo.chromium.org/chromiumos/infra/proto/go/test_platform/skylab_test_runnerb\x06proto3')
+  serialized_pb=_b('\n-test_platform/skylab_test_runner/result.proto\x12 test_platform.skylab_test_runner\"\x84\x06\n\x06Result\x12L\n\x0f\x61utotest_result\x18\x01 \x01(\x0b\x32\x31.test_platform.skylab_test_runner.Result.AutotestH\x00\x12?\n\x06prejob\x18\x02 \x01(\x0b\x32/.test_platform.skylab_test_runner.Result.Prejob\x1a\xc4\x02\n\x08\x41utotest\x12N\n\ntest_cases\x18\x01 \x03(\x0b\x32:.test_platform.skylab_test_runner.Result.Autotest.TestCase\x12\x12\n\nincomplete\x18\x02 \x01(\x08\x1a\xd3\x01\n\x08TestCase\x12\x0c\n\x04name\x18\x01 \x01(\t\x12S\n\x07verdict\x18\x02 \x01(\x0e\x32\x42.test_platform.skylab_test_runner.Result.Autotest.TestCase.Verdict\x12\x1e\n\x16human_readable_summary\x18\x03 \x01(\t\"D\n\x07Verdict\x12\x15\n\x11VERDICT_UNDEFINED\x10\x00\x12\x10\n\x0cVERDICT_PASS\x10\x01\x12\x10\n\x0cVERDICT_FAIL\x10\x02\x1a\x98\x02\n\x06Prejob\x12\x42\n\x04step\x18\x01 \x03(\x0b\x32\x34.test_platform.skylab_test_runner.Result.Prejob.Step\x1a\xc9\x01\n\x04Step\x12\x0c\n\x04name\x18\x01 \x01(\t\x12M\n\x07verdict\x18\x02 \x01(\x0e\x32<.test_platform.skylab_test_runner.Result.Prejob.Step.Verdict\x12\x1e\n\x16human_readable_summary\x18\x03 \x01(\t\"D\n\x07Verdict\x12\x15\n\x11VERDICT_UNDEFINED\x10\x00\x12\x10\n\x0cVERDICT_PASS\x10\x01\x12\x10\n\x0cVERDICT_FAIL\x10\x02\x42\t\n\x07harnessBLZJgo.chromium.org/chromiumos/infra/proto/go/test_platform/skylab_test_runnerb\x06proto3')
 )
 
 
@@ -45,8 +45,8 @@ _RESULT_AUTOTEST_TESTCASE_VERDICT = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=462,
-  serialized_end=530,
+  serialized_start=494,
+  serialized_end=562,
 )
 _sym_db.RegisterEnumDescriptor(_RESULT_AUTOTEST_TESTCASE_VERDICT)
 
@@ -71,8 +71,8 @@ _RESULT_PREJOB_STEP_VERDICT = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=462,
-  serialized_end=530,
+  serialized_start=494,
+  serialized_end=562,
 )
 _sym_db.RegisterEnumDescriptor(_RESULT_PREJOB_STEP_VERDICT)
 
@@ -98,6 +98,13 @@ _RESULT_AUTOTEST_TESTCASE = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='human_readable_summary', full_name='test_platform.skylab_test_runner.Result.Autotest.TestCase.human_readable_summary', index=2,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -112,7 +119,7 @@ _RESULT_AUTOTEST_TESTCASE = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=351,
-  serialized_end=530,
+  serialized_end=562,
 )
 
 _RESULT_AUTOTEST = _descriptor.Descriptor(
@@ -149,7 +156,7 @@ _RESULT_AUTOTEST = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=238,
-  serialized_end=530,
+  serialized_end=562,
 )
 
 _RESULT_PREJOB_STEP = _descriptor.Descriptor(
@@ -173,6 +180,13 @@ _RESULT_PREJOB_STEP = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='human_readable_summary', full_name='test_platform.skylab_test_runner.Result.Prejob.Step.human_readable_summary', index=2,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -186,8 +200,8 @@ _RESULT_PREJOB_STEP = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=612,
-  serialized_end=781,
+  serialized_start=644,
+  serialized_end=845,
 )
 
 _RESULT_PREJOB = _descriptor.Descriptor(
@@ -216,8 +230,8 @@ _RESULT_PREJOB = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=533,
-  serialized_end=781,
+  serialized_start=565,
+  serialized_end=845,
 )
 
 _RESULT = _descriptor.Descriptor(
@@ -257,7 +271,7 @@ _RESULT = _descriptor.Descriptor(
       index=0, containing_type=None, fields=[]),
   ],
   serialized_start=84,
-  serialized_end=792,
+  serialized_end=856,
 )
 
 _RESULT_AUTOTEST_TESTCASE.fields_by_name['verdict'].enum_type = _RESULT_AUTOTEST_TESTCASE_VERDICT

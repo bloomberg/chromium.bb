@@ -23,11 +23,73 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='test_platform.steps',
   syntax='proto3',
   serialized_options=_b('Z=go.chromium.org/chromiumos/infra/proto/go/test_platform/steps'),
-  serialized_pb=_b('\n#test_platform/steps/execution.proto\x12\x13test_platform.steps\x1a\x1btest_platform/request.proto\x1a%test_platform/steps/enumeration.proto\x1a!test_platform/config/config.proto\x1a\x1dtest_platform/taskstate.proto\"\xb4\x01\n\x0e\x45xecuteRequest\x12\x35\n\x0erequest_params\x18\x01 \x01(\x0b\x32\x1d.test_platform.Request.Params\x12=\n\x0b\x65numeration\x18\x02 \x01(\x0b\x32(.test_platform.steps.EnumerationResponse\x12,\n\x06\x63onfig\x18\x03 \x01(\x0b\x32\x1c.test_platform.config.Config\"\xfa\x01\n\x0f\x45xecuteResponse\x12\x45\n\x0ctask_results\x18\x01 \x03(\x0b\x32/.test_platform.steps.ExecuteResponse.TaskResult\x12\'\n\x05state\x18\x02 \x01(\x0b\x32\x18.test_platform.TaskState\x1aw\n\nTaskResult\x12\x10\n\x08task_url\x18\x02 \x01(\t\x12\'\n\x05state\x18\x03 \x01(\x0b\x32\x18.test_platform.TaskState\x12\x0c\n\x04name\x18\x04 \x01(\t\x12\x0f\n\x07log_url\x18\x05 \x01(\t\x12\x0f\n\x07\x61ttempt\x18\x06 \x01(\x05\x42?Z=go.chromium.org/chromiumos/infra/proto/go/test_platform/stepsb\x06proto3')
+  serialized_pb=_b('\n#test_platform/steps/execution.proto\x12\x13test_platform.steps\x1a\x1btest_platform/request.proto\x1a%test_platform/steps/enumeration.proto\x1a!test_platform/config/config.proto\x1a\x1dtest_platform/taskstate.proto\"H\n\x0f\x45xecuteRequests\x12\x35\n\x08requests\x18\x01 \x03(\x0b\x32#.test_platform.steps.ExecuteRequest\"K\n\x10\x45xecuteResponses\x12\x37\n\tresponses\x18\x01 \x03(\x0b\x32$.test_platform.steps.ExecuteResponse\"\xb4\x01\n\x0e\x45xecuteRequest\x12\x35\n\x0erequest_params\x18\x01 \x01(\x0b\x32\x1d.test_platform.Request.Params\x12=\n\x0b\x65numeration\x18\x02 \x01(\x0b\x32(.test_platform.steps.EnumerationResponse\x12,\n\x06\x63onfig\x18\x03 \x01(\x0b\x32\x1c.test_platform.config.Config\"\x98\x04\n\x0f\x45xecuteResponse\x12\x45\n\x0ctask_results\x18\x01 \x03(\x0b\x32/.test_platform.steps.ExecuteResponse.TaskResult\x12\'\n\x05state\x18\x02 \x01(\x0b\x32\x18.test_platform.TaskState\x1a\x94\x03\n\nTaskResult\x12\x10\n\x08task_url\x18\x02 \x01(\t\x12\'\n\x05state\x18\x03 \x01(\x0b\x32\x18.test_platform.TaskState\x12\x0c\n\x04name\x18\x04 \x01(\t\x12\x0f\n\x07log_url\x18\x05 \x01(\t\x12\x0f\n\x07\x61ttempt\x18\x06 \x01(\x05\x12R\n\ntest_cases\x18\x07 \x03(\x0b\x32>.test_platform.steps.ExecuteResponse.TaskResult.TestCaseResult\x12T\n\x0cprejob_steps\x18\x08 \x03(\x0b\x32>.test_platform.steps.ExecuteResponse.TaskResult.TestCaseResult\x1aq\n\x0eTestCaseResult\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x31\n\x07verdict\x18\x02 \x01(\x0e\x32 .test_platform.TaskState.Verdict\x12\x1e\n\x16human_readable_summary\x18\x03 \x01(\tB?Z=go.chromium.org/chromiumos/infra/proto/go/test_platform/stepsb\x06proto3')
   ,
   dependencies=[test__platform_dot_request__pb2.DESCRIPTOR,test__platform_dot_steps_dot_enumeration__pb2.DESCRIPTOR,test__platform_dot_config_dot_config__pb2.DESCRIPTOR,test__platform_dot_taskstate__pb2.DESCRIPTOR,])
 
 
+
+
+_EXECUTEREQUESTS = _descriptor.Descriptor(
+  name='ExecuteRequests',
+  full_name='test_platform.steps.ExecuteRequests',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='requests', full_name='test_platform.steps.ExecuteRequests.requests', index=0,
+      number=1, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=194,
+  serialized_end=266,
+)
+
+
+_EXECUTERESPONSES = _descriptor.Descriptor(
+  name='ExecuteResponses',
+  full_name='test_platform.steps.ExecuteResponses',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='responses', full_name='test_platform.steps.ExecuteResponses.responses', index=0,
+      number=1, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=268,
+  serialized_end=343,
+)
 
 
 _EXECUTEREQUEST = _descriptor.Descriptor(
@@ -70,10 +132,54 @@ _EXECUTEREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=195,
-  serialized_end=375,
+  serialized_start=346,
+  serialized_end=526,
 )
 
+
+_EXECUTERESPONSE_TASKRESULT_TESTCASERESULT = _descriptor.Descriptor(
+  name='TestCaseResult',
+  full_name='test_platform.steps.ExecuteResponse.TaskResult.TestCaseResult',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='name', full_name='test_platform.steps.ExecuteResponse.TaskResult.TestCaseResult.name', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='verdict', full_name='test_platform.steps.ExecuteResponse.TaskResult.TestCaseResult.verdict', index=1,
+      number=2, type=14, cpp_type=8, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='human_readable_summary', full_name='test_platform.steps.ExecuteResponse.TaskResult.TestCaseResult.human_readable_summary', index=2,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=952,
+  serialized_end=1065,
+)
 
 _EXECUTERESPONSE_TASKRESULT = _descriptor.Descriptor(
   name='TaskResult',
@@ -117,10 +223,24 @@ _EXECUTERESPONSE_TASKRESULT = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='test_cases', full_name='test_platform.steps.ExecuteResponse.TaskResult.test_cases', index=5,
+      number=7, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='prejob_steps', full_name='test_platform.steps.ExecuteResponse.TaskResult.prejob_steps', index=6,
+      number=8, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
-  nested_types=[],
+  nested_types=[_EXECUTERESPONSE_TASKRESULT_TESTCASERESULT, ],
   enum_types=[
   ],
   serialized_options=None,
@@ -129,8 +249,8 @@ _EXECUTERESPONSE_TASKRESULT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=509,
-  serialized_end=628,
+  serialized_start=661,
+  serialized_end=1065,
 )
 
 _EXECUTERESPONSE = _descriptor.Descriptor(
@@ -166,20 +286,42 @@ _EXECUTERESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=378,
-  serialized_end=628,
+  serialized_start=529,
+  serialized_end=1065,
 )
 
+_EXECUTEREQUESTS.fields_by_name['requests'].message_type = _EXECUTEREQUEST
+_EXECUTERESPONSES.fields_by_name['responses'].message_type = _EXECUTERESPONSE
 _EXECUTEREQUEST.fields_by_name['request_params'].message_type = test__platform_dot_request__pb2._REQUEST_PARAMS
 _EXECUTEREQUEST.fields_by_name['enumeration'].message_type = test__platform_dot_steps_dot_enumeration__pb2._ENUMERATIONRESPONSE
 _EXECUTEREQUEST.fields_by_name['config'].message_type = test__platform_dot_config_dot_config__pb2._CONFIG
+_EXECUTERESPONSE_TASKRESULT_TESTCASERESULT.fields_by_name['verdict'].enum_type = test__platform_dot_taskstate__pb2._TASKSTATE_VERDICT
+_EXECUTERESPONSE_TASKRESULT_TESTCASERESULT.containing_type = _EXECUTERESPONSE_TASKRESULT
 _EXECUTERESPONSE_TASKRESULT.fields_by_name['state'].message_type = test__platform_dot_taskstate__pb2._TASKSTATE
+_EXECUTERESPONSE_TASKRESULT.fields_by_name['test_cases'].message_type = _EXECUTERESPONSE_TASKRESULT_TESTCASERESULT
+_EXECUTERESPONSE_TASKRESULT.fields_by_name['prejob_steps'].message_type = _EXECUTERESPONSE_TASKRESULT_TESTCASERESULT
 _EXECUTERESPONSE_TASKRESULT.containing_type = _EXECUTERESPONSE
 _EXECUTERESPONSE.fields_by_name['task_results'].message_type = _EXECUTERESPONSE_TASKRESULT
 _EXECUTERESPONSE.fields_by_name['state'].message_type = test__platform_dot_taskstate__pb2._TASKSTATE
+DESCRIPTOR.message_types_by_name['ExecuteRequests'] = _EXECUTEREQUESTS
+DESCRIPTOR.message_types_by_name['ExecuteResponses'] = _EXECUTERESPONSES
 DESCRIPTOR.message_types_by_name['ExecuteRequest'] = _EXECUTEREQUEST
 DESCRIPTOR.message_types_by_name['ExecuteResponse'] = _EXECUTERESPONSE
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
+
+ExecuteRequests = _reflection.GeneratedProtocolMessageType('ExecuteRequests', (_message.Message,), dict(
+  DESCRIPTOR = _EXECUTEREQUESTS,
+  __module__ = 'test_platform.steps.execution_pb2'
+  # @@protoc_insertion_point(class_scope:test_platform.steps.ExecuteRequests)
+  ))
+_sym_db.RegisterMessage(ExecuteRequests)
+
+ExecuteResponses = _reflection.GeneratedProtocolMessageType('ExecuteResponses', (_message.Message,), dict(
+  DESCRIPTOR = _EXECUTERESPONSES,
+  __module__ = 'test_platform.steps.execution_pb2'
+  # @@protoc_insertion_point(class_scope:test_platform.steps.ExecuteResponses)
+  ))
+_sym_db.RegisterMessage(ExecuteResponses)
 
 ExecuteRequest = _reflection.GeneratedProtocolMessageType('ExecuteRequest', (_message.Message,), dict(
   DESCRIPTOR = _EXECUTEREQUEST,
@@ -191,6 +333,13 @@ _sym_db.RegisterMessage(ExecuteRequest)
 ExecuteResponse = _reflection.GeneratedProtocolMessageType('ExecuteResponse', (_message.Message,), dict(
 
   TaskResult = _reflection.GeneratedProtocolMessageType('TaskResult', (_message.Message,), dict(
+
+    TestCaseResult = _reflection.GeneratedProtocolMessageType('TestCaseResult', (_message.Message,), dict(
+      DESCRIPTOR = _EXECUTERESPONSE_TASKRESULT_TESTCASERESULT,
+      __module__ = 'test_platform.steps.execution_pb2'
+      # @@protoc_insertion_point(class_scope:test_platform.steps.ExecuteResponse.TaskResult.TestCaseResult)
+      ))
+    ,
     DESCRIPTOR = _EXECUTERESPONSE_TASKRESULT,
     __module__ = 'test_platform.steps.execution_pb2'
     # @@protoc_insertion_point(class_scope:test_platform.steps.ExecuteResponse.TaskResult)
@@ -202,6 +351,7 @@ ExecuteResponse = _reflection.GeneratedProtocolMessageType('ExecuteResponse', (_
   ))
 _sym_db.RegisterMessage(ExecuteResponse)
 _sym_db.RegisterMessage(ExecuteResponse.TaskResult)
+_sym_db.RegisterMessage(ExecuteResponse.TaskResult.TestCaseResult)
 
 
 DESCRIPTOR._options = None
