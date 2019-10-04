@@ -1,0 +1,106 @@
+# libgav1 requires modern CMake.
+cmake_minimum_required(VERSION 3.7.1 FATAL_ERROR)
+
+# libgav1 requires C++11.
+set(CMAKE_CXX_STANDARD 11)
+
+project(libgav1 CXX)
+
+set(libgav1_root "${CMAKE_CURRENT_SOURCE_DIR}")
+set(libgav1_build "${CMAKE_BINARY_DIR}")
+
+if("${libgav1_root}" STREQUAL "${libgav1_build}")
+  message(
+    FATAL_ERROR
+      "Building from within the libgav1 source tree is not supported.\n"
+      "Hint: Run these commands\n" "$ rm -rf CMakeCache.txt CMakeFiles\n"
+      "$ mkdir -p ../libgav1_build\n" "$ cd ../libgav1_build\n"
+      "And re-run CMake from the libgav1_build directory.")
+endif()
+
+set(libgav1_examples "${libgav1_root}/examples")
+set(libgav1_source "${libgav1_root}/src")
+
+include(FindThreads)
+
+include("${libgav1_examples}/libgav1_examples.cmake")
+include("${libgav1_root}/cmake/libgav1_build_definitions.cmake")
+include("${libgav1_root}/cmake/libgav1_cpu_detection.cmake")
+include("${libgav1_root}/cmake/libgav1_flags.cmake")
+include("${libgav1_root}/cmake/libgav1_helpers.cmake")
+include("${libgav1_root}/cmake/libgav1_install.cmake")
+include("${libgav1_root}/cmake/libgav1_intrinsics.cmake")
+include("${libgav1_root}/cmake/libgav1_options.cmake")
+include("${libgav1_root}/cmake/libgav1_sanitizer.cmake")
+include("${libgav1_root}/cmake/libgav1_targets.cmake")
+include("${libgav1_root}/cmake/libgav1_variables.cmake")
+include("${libgav1_source}/dsp/libgav1_dsp.cmake")
+include("${libgav1_source}/libgav1_decoder.cmake")
+include("${libgav1_source}/utils/libgav1_utils.cmake")
+
+libgav1_option(NAME LIBGAV1_ENABLE_OPTIMIZATIONS HELPSTRING
+               "Enables optimized code." VALUE ON)
+libgav1_option(NAME LIBGAV1_ENABLE_NEON HELPSTRING "Enables neon optimizations."
+               VALUE ON)
+libgav1_option(NAME LIBGAV1_ENABLE_SSE4_1 HELPSTRING
+               "Enables sse4.1 optimizations." VALUE ON)
+libgav1_option(
+  NAME LIBGAV1_VERBOSE HELPSTRING
+  "Enables verbose build system output. Higher numbers are more verbose." VALUE
+  OFF)
+
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE RELEASE)
+endif()
+
+libgav1_optimization_detect()
+libgav1_set_build_definitions()
+libgav1_set_cxx_flags()
+libgav1_configure_sanitizer()
+
+# Supported bit depth.
+libgav1_track_configuration_variable(LIBGAV1_MAX_BITDEPTH)
+
+# C++ and linker flags.
+libgav1_track_configuration_variable(LIBGAV1_CXX_FLAGS)
+libgav1_track_configuration_variable(LIBGAV1_EXE_LINKER_FLAGS)
+
+# Sanitizer integration.
+libgav1_track_configuration_variable(LIBGAV1_SANITIZE)
+
+# Generated source file directory.
+libgav1_track_configuration_variable(LIBGAV1_GENERATED_SOURCES_DIRECTORY)
+
+if(LIBGAV1_VERBOSE)
+  libgav1_dump_cmake_flag_variables()
+  libgav1_dump_tracked_configuration_variables()
+  libgav1_dump_options()
+endif()
+
+set(libgav1_abseil_build "${libgav1_build}/abseil")
+set(libgav1_gtest_build "${libgav1_build}/gtest")
+
+# Compiler/linker flags must be lists, but come in from the environment as
+# strings. Break them up:
+if(NOT "${LIBGAV1_CXX_FLAGS}" STREQUAL "")
+  separate_arguments(LIBGAV1_CXX_FLAGS)
+endif()
+if(NOT "${LIBGAV1_EXE_LINKER_FLAGS}" STREQUAL "")
+  separate_arguments(LIBGAV1_EXE_LINKER_FLAGS)
+endif()
+
+add_subdirectory("${libgav1_root}/third_party/abseil-cpp"
+                 "${libgav1_abseil_build}" EXCLUDE_FROM_ALL)
+
+libgav1_reset_target_lists()
+libgav1_add_dsp_targets()
+libgav1_add_decoder_targets()
+libgav1_add_examples_targets()
+libgav1_add_utils_targets()
+libgav1_setup_install_target()
+
+if(LIBGAV1_VERBOSE)
+  libgav1_dump_cmake_flag_variables()
+  libgav1_dump_tracked_configuration_variables()
+  libgav1_dump_options()
+endif()
