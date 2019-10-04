@@ -573,6 +573,7 @@
         "scroll-snap-points-y",
         "scroll-snap-coordinate",
         "variable",
+        "-bb-suppress-needs-compositing-input-update"
     ],
     "properties": {}
 }

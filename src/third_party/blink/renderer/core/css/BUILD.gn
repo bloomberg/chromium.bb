@@ -438,6 +438,7 @@ blink_core_sources("css") {
 
 
     # patch section: suppress-needs-compositing-input-update
+    "properties/longhands/bb_suppress_needs_compositing_input_update_custom.cc",
 
 
 

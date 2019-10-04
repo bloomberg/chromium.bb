@@ -1343,6 +1343,8 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   unsigned has_self_painting_layer_descendant_ : 1;
   unsigned is_non_stacked_with_in_flow_stacked_descendant_ : 1;
 
+  unsigned suppress_needs_compositing_inputs_update_ : 1;
+
   LayoutBoxModelObject& layout_object_;
 
   PaintLayer* parent_;

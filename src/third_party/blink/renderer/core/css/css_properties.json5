@@ -1018,6 +1018,16 @@
       typedom_types: ["Keyword", "Percentage", "Length"]
     },
     {
+      name: "-bb-suppress-needs-compositing-input-update",
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
+      field_group: "*",
+      field_size: 1,
+      field_template: "primitive",
+      default_value: "0",
+      name_for_methods: "BBSuppressNeedsCompositingInputUpdate",
+      type_name: "unsigned"
+    },
+    {
       name: "border-bottom-color",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "ColorIncludingFallback"],
       interpolable: true,
