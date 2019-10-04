@@ -296,10 +296,9 @@
   firmware-candy-5216.310.B-firmwarebranch
   firmware-celes-7287.92.B-firmwarebranch
   firmware-coral-10068.B-firmwarebranch
-  firmware-cr50-9308.24.B-firmwarebranch
   firmware-cr50-9308.B-firmwarebranch
+  firmware-cr50-guc-factory-9308.26.B-firmwarebranch
   firmware-cr50-mp-release-9308.87.B-firmwarebranch
-  firmware-cr50-release-9308.25.B-firmwarebranch
   firmware-cyan-7287.57.B-firmwarebranch
   firmware-edgar-7287.167.B-firmwarebranch
   firmware-enguarde-5216.201.B-firmwarebranch
@@ -1676,10 +1675,9 @@
   firmware-candy-5216.310.B-firmwarebranch-tryjob
   firmware-celes-7287.92.B-firmwarebranch-tryjob
   firmware-coral-10068.B-firmwarebranch-tryjob
-  firmware-cr50-9308.24.B-firmwarebranch-tryjob
   firmware-cr50-9308.B-firmwarebranch-tryjob
+  firmware-cr50-guc-factory-9308.26.B-firmwarebranch-tryjob
   firmware-cr50-mp-release-9308.87.B-firmwarebranch-tryjob
-  firmware-cr50-release-9308.25.B-firmwarebranch-tryjob
   firmware-cyan-7287.57.B-firmwarebranch-tryjob
   firmware-edgar-7287.167.B-firmwarebranch-tryjob
   firmware-enguarde-5216.201.B-firmwarebranch-tryjob
