@@ -4086,13 +4086,6 @@ test("unit_tests") {
 
     if (include_js_tests) {
       deps += [ "//chrome/test/data/webui:unit_tests_js" ]
-
-      # Only list files here (not directories). See https://crbug.com/912946
-      data += [
-        "$root_out_dir/test_data/chrome/renderer/resources/extensions/notifications_custom_bindings.js",
-        "$root_out_dir/test_data/chrome/renderer/resources/extensions/notifications_test_util.js",
-        "$root_out_dir/test_data/ui/webui/resources/js/cr.js",
-      ]
     }
   }
 
