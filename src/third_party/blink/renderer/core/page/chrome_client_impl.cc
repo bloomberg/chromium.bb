@@ -524,7 +524,7 @@ void ChromeClientImpl::MainFrameLayoutUpdated() const {
   web_view_->MainFrameLayoutUpdated();
 }
 
-void ChromeClientImpl::ShowMouseOverURL(const HitTestResult& result) {
+void ChromeClientImpl::ShowMouseOverURL(LocalFrame& frame, const HitTestResult& result) {
   if (!web_view_->Client())
     return;
 
@@ -553,6 +553,19 @@ void ChromeClientImpl::ShowMouseOverURL(const HitTestResult& result) {
   }
 
   web_view_->Client()->SetMouseOverURL(url);
+  
+  // If we displayed a tooltip earlier, and we move over a new node, make
+  // sure we unset the tooltip. If the new node has a tooltip, then
+  // setToolTip will be called later with the new text.
+  if (m_lastTooltipHadText && m_lastMouseOverNode != result.InnerNodeOrImageMapImage()) {
+      WebLocalFrameImpl* webFrame =
+          WebLocalFrameImpl::FromFrame(&frame)->LocalRoot();
+      webFrame->FrameWidgetImpl()->Client()->SetToolTipText(String(),
+		                                       kWebTextDirectionLeftToRight);
+      m_lastTooltipHadText = false;
+  }
+
+  m_lastMouseOverNode = result.InnerNodeOrImageMapImage();
 }
 
 void ChromeClientImpl::SetToolTip(LocalFrame& frame,

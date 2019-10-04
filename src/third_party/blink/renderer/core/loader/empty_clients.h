@@ -174,7 +174,7 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
   WebScreenInfo GetScreenInfo() const override { return WebScreenInfo(); }
   void ContentsSizeChanged(LocalFrame*, const IntSize&) const override {}
 
-  void ShowMouseOverURL(const HitTestResult&) override {}
+  void ShowMouseOverURL(LocalFrame&, const HitTestResult&) override {}
 
   void SetToolTip(LocalFrame&, const String&, TextDirection) override {}
 
