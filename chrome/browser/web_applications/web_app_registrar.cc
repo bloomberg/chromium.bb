@@ -11,10 +11,25 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
-#include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 
 namespace web_app {
+
+namespace {
+
+blink::mojom::DisplayMode GetDisplayMode(LaunchContainer launch_container) {
+  switch (launch_container) {
+    case LaunchContainer::kDefault:
+      return blink::mojom::DisplayMode::kUndefined;
+    case LaunchContainer::kTab:
+      return blink::mojom::DisplayMode::kBrowser;
+    case LaunchContainer::kWindow:
+      return blink::mojom::DisplayMode::kStandalone;
+  }
+}
+
+}  // namespace
 
 WebAppRegistrar::WebAppRegistrar(Profile* profile) : AppRegistrar(profile) {}
 
@@ -106,10 +121,12 @@ base::Optional<GURL> WebAppRegistrar::GetAppScope(const AppId& app_id) const {
   return web_app ? base::Optional<GURL>(web_app->scope()) : base::nullopt;
 }
 
-LaunchContainer WebAppRegistrar::GetAppLaunchContainer(
-    const AppId& app_id) const {
+blink::mojom::DisplayMode WebAppRegistrar::GetAppDisplayMode(
+    const web_app::AppId& app_id) const {
+  // TODO(crbug.com/1009909): Read display_mode() from web_app.
   auto* web_app = GetAppById(app_id);
-  return web_app ? web_app->launch_container() : LaunchContainer::kDefault;
+  return web_app ? GetDisplayMode(web_app->launch_container())
+                 : blink::mojom::DisplayMode::kUndefined;
 }
 
 std::vector<AppId> WebAppRegistrar::GetAppIds() const {

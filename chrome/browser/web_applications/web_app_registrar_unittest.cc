@@ -23,6 +23,7 @@
 #include "chrome/browser/web_applications/web_app_registry_update.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "url/gurl.h"
 
 namespace web_app {
@@ -328,7 +329,8 @@ TEST_F(WebAppRegistrarTest, GetAppDataFields) {
   EXPECT_EQ(description, registrar().GetAppDescription(app_id));
   EXPECT_EQ(theme_color, registrar().GetAppThemeColor(app_id));
   EXPECT_EQ(launch_url, registrar().GetAppLaunchURL(app_id));
-  EXPECT_EQ(launch_container, registrar().GetAppLaunchContainer(app_id));
+  EXPECT_EQ(blink::mojom::DisplayMode::kStandalone,
+            registrar().GetAppDisplayMode(app_id));
 
   {
     EXPECT_FALSE(registrar().IsLocallyInstalled(app_id));
@@ -339,11 +341,12 @@ TEST_F(WebAppRegistrarTest, GetAppDataFields) {
   }
 
   {
-    EXPECT_EQ(LaunchContainer::kDefault,
-              registrar().GetAppLaunchContainer("unknown"));
+    EXPECT_EQ(blink::mojom::DisplayMode::kUndefined,
+              registrar().GetAppDisplayMode("unknown"));
 
     web_app_ptr->SetLaunchContainer(LaunchContainer::kTab);
-    EXPECT_EQ(LaunchContainer::kTab, registrar().GetAppLaunchContainer(app_id));
+    EXPECT_EQ(blink::mojom::DisplayMode::kBrowser,
+              registrar().GetAppDisplayMode(app_id));
 
     sync_bridge().SetAppLaunchContainer(app_id, LaunchContainer::kWindow);
     EXPECT_EQ(LaunchContainer::kWindow, web_app_ptr->launch_container());
