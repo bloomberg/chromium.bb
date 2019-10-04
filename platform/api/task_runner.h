@@ -51,7 +51,7 @@ class TaskRunner {
 
   // Return true if the calling thread is the thread that task runner is using
   // to run tasks, false otherwise.
-  virtual bool IsRunningOnTaskRunner() = 0;
+  virtual bool IsRunningOnTaskRunner() { return true; }
 };
 
 // Class used to post the same task repeatedly to the task runner, with the
