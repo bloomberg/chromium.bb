@@ -5310,6 +5310,8 @@ if (!is_android) {
     public_deps = [
       "//chrome/browser:test_support_ui",
       "//content/public/browser",
+      "//mojo/public/cpp/bindings",
+      "//mojo/public/cpp/system",
     ]
     deps = [
       "//chrome/common/profiler",
