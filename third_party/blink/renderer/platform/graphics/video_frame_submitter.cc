@@ -325,7 +325,7 @@ void VideoFrameSubmitter::StartSubmitting() {
       mojo::MakeRequest(&compositor_frame_sink_));
   if (!surface_embedder_.is_bound()) {
     provider->ConnectToEmbedder(frame_sink_id_,
-                                mojo::MakeRequest(&surface_embedder_));
+                                surface_embedder_.BindNewPipeAndPassReceiver());
   } else {
     GenerateNewSurfaceId();
   }

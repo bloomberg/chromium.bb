@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/test/simple_test_tick_clock.h"
@@ -24,6 +25,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom-blink.h"
 #include "services/viz/public/mojom/hit_test/hit_test_region_list.mojom-blink.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -184,8 +186,8 @@ class VideoFrameSubmitterTest : public testing::Test {
     submitter_->SetIsSurfaceVisible(true);
     submitter_->compositor_frame_sink_ =
         viz::mojom::blink::CompositorFrameSinkPtr(std::move(submitter_sink));
-    mojom::blink::SurfaceEmbedderPtr embedder;
-    mojo::MakeRequest(&embedder);
+    mojo::Remote<mojom::blink::SurfaceEmbedder> embedder;
+    ignore_result(embedder.BindNewPipeAndPassReceiver());
     submitter_->surface_embedder_ = std::move(embedder);
     auto surface_id = viz::SurfaceId(
         viz::FrameSinkId(1, 1),
