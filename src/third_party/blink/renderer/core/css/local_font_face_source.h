@@ -76,6 +76,7 @@ class LocalFontFaceSource final : public CSSFontFaceSource,
   bool was_resolved_ = false;
   AtomicString font_name_;
   LocalFontHistograms histograms_;
+  bool need_to_adjust_for_bold_italic_;
   base::WeakPtrFactory<LocalFontFaceSource> weak_factory_;
 };
 

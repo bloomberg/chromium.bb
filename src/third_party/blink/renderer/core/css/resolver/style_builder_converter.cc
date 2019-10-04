@@ -198,10 +198,21 @@ static bool ConvertFontFamilyName(
     FontDescription::GenericFamilyType& generic_family,
     AtomicString& family_name,
     FontBuilder* font_builder,
-    const Document* document_for_count) {
+    const Document* document_for_count,
+    bool& bold_override,
+    bool& italic_override) {
   if (auto* font_family_value = DynamicTo<CSSFontFamilyValue>(value)) {
     generic_family = FontDescription::kNoFamily;
-    family_name = AtomicString(font_family_value->Value());
+    WTF::String wtfFace = font_family_value->Value();
+    if (wtfFace.EndsWith(" Italic")) {
+      italic_override = true;
+      wtfFace = wtfFace.Substring(0, wtfFace.length() - 7);
+    }
+    if (wtfFace.EndsWith(" Bold")) {
+      bold_override = true;
+      wtfFace = wtfFace.Substring(0, wtfFace.length() - 5);
+    }
+    family_name = AtomicString(wtfFace);
 #if defined(OS_MACOSX)
     if (family_name == FontCache::LegacySystemFontFamily()) {
       document_for_count->CountUse(WebFeature::kBlinkMacSystemFont);
@@ -230,7 +241,8 @@ FontDescription::FamilyDescription StyleBuilderConverterBase::ConvertFontFamily(
     AtomicString family_name;
 
     if (!ConvertFontFamilyName(*family, generic_family, family_name,
-                               font_builder, document_for_count))
+                               font_builder, document_for_count,
+                               desc.bold_override, desc.italic_override))
       continue;
 
     if (!curr_family) {
