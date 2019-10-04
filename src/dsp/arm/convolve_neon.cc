@@ -2227,8 +2227,8 @@ void ConvolveVertical_NEON(const void* const reference,
       FilterVertical<0>(src, src_stride, dest, dest_stride, width, height,
                         taps + 1);
     }
-  } else if (filter_index == 1 &&
-             (filter_id == 1 || filter_id == 15)) {  // 5 tap.
+  } else if ((filter_index == 1) &
+             ((filter_id == 1) | (filter_id == 15))) {  // 5 tap.
     if (width == 2) {
       FilterVertical2xH<1>(src, src_stride, dest, dest_stride, height,
                            taps + 1);
@@ -2239,9 +2239,9 @@ void ConvolveVertical_NEON(const void* const reference,
       FilterVertical<1>(src, src_stride, dest, dest_stride, width, height,
                         taps + 1);
     }
-  } else if (filter_index == 1 &&
-             (filter_id == 7 || filter_id == 8 ||
-              filter_id == 9)) {  // 6 tap with weird negative taps.
+  } else if ((filter_index == 1) &
+             ((filter_id == 7) | (filter_id == 8) |
+              (filter_id == 9))) {  // 6 tap with weird negative taps.
     if (width == 2) {
       FilterVertical2xH<1, /*is_compound=*/false,
                         /*negative_outside_taps=*/true>(
@@ -2492,8 +2492,8 @@ void ConvolveCompoundVertical_NEON(
       FilterCompoundVertical<8, 0>(src, src_stride, dest, pred_stride, width,
                                    height, taps + 1);
     }
-  } else if (filter_index == 1 &&
-             (filter_id == 1 || filter_id == 15)) {  // 5 tap.
+  } else if ((filter_index == 1) &
+             ((filter_id == 1) | (filter_id == 15))) {  // 5 tap.
     if (width == 2) {
       FilterVertical2xH<1, /*is_compound=*/true>(src, src_stride, dest,
                                                  pred_stride, height, taps + 1);
@@ -2504,9 +2504,9 @@ void ConvolveCompoundVertical_NEON(
       FilterCompoundVertical<8, 1>(src, src_stride, dest, pred_stride, width,
                                    height, taps + 1);
     }
-  } else if (filter_index == 1 &&
-             (filter_id == 7 || filter_id == 8 ||
-              filter_id == 9)) {  // 6 tap with weird negative taps.
+  } else if ((filter_index == 1) &
+             ((filter_id == 7) | (filter_id == 8) |
+              (filter_id == 9))) {  // 6 tap with weird negative taps.
     if (width == 2) {
       FilterVertical2xH<1, /*is_compound=*/true,
                         /*negative_outside_taps=*/true>(
