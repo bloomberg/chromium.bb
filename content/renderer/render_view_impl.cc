@@ -1137,7 +1137,7 @@ void RenderViewImpl::CancelPagePopupForWidget() {
 }
 
 void RenderViewImpl::ApplyNewDisplayModeForWidget(
-    blink::WebDisplayMode new_display_mode) {
+    blink::mojom::DisplayMode new_display_mode) {
   webview()->SetDisplayMode(new_display_mode);
 }
 
@@ -1488,7 +1488,7 @@ blink::WebPagePopup* RenderViewImpl::CreatePopup(
 
   RenderWidget* popup_widget = RenderWidget::CreateForPopup(
       widget_routing_id, render_widget->compositor_deps(), page_properties(),
-      blink::kWebDisplayModeUndefined,
+      blink::mojom::DisplayMode::kUndefined,
       /*hidden=*/false,
       /*never_visible=*/false, std::move(widget_channel_receiver));
 

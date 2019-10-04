@@ -167,7 +167,7 @@ void AppBannerManagerDesktop::OnWebAppInstalled(
   if (app_id.has_value() && *app_id == installed_app_id &&
       registrar().GetAppLaunchContainer(*app_id) ==
           web_app::LaunchContainer::kWindow) {
-    OnInstall(blink::kWebDisplayModeStandalone);
+    OnInstall(blink::mojom::DisplayMode::kStandalone);
   }
 }
 

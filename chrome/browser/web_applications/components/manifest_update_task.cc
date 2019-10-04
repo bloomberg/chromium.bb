@@ -122,10 +122,10 @@ void ManifestUpdateTask::OnAllAppWindowsClosed(blink::Manifest manifest) {
     case LaunchContainer::kDefault:
       break;
     case LaunchContainer::kTab:
-      manifest.display = blink::kWebDisplayModeBrowser;
+      manifest.display = blink::mojom::DisplayMode::kBrowser;
       break;
     case LaunchContainer::kWindow:
-      manifest.display = blink::kWebDisplayModeStandalone;
+      manifest.display = blink::mojom::DisplayMode::kStandalone;
       break;
   }
 
