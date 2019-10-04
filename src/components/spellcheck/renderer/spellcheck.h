@@ -91,6 +91,7 @@ class SpellCheck : public base::SupportsWeakPtr<SpellCheck>,
                       int tag,
                       size_t* misspelling_start,
                       size_t* misspelling_len,
+                      bool checkForContractions,
                       std::vector<base::string16>* optional_suggestions);
 
   // SpellCheck a paragraph.

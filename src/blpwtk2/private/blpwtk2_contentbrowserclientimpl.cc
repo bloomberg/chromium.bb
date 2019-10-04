@@ -46,6 +46,7 @@
 #include <content/public/common/service_names.mojom.h>
 #include <content/public/common/url_constants.h>
 #include <content/public/common/user_agent.h>
+#include "chrome/app/builtin_service_manifests.h"
 #include "chrome/app/chrome_content_browser_overlay_manifest.h"
 #include "chrome/app/chrome_content_gpu_overlay_manifest.h"
 #include "chrome/app/chrome_content_renderer_overlay_manifest.h"
@@ -203,7 +204,7 @@ void ContentBrowserClientImpl::ExposeInterfacesToRenderer(
         content::RenderProcessHost* render_process_host)
 {
     ProcessHostImpl::registerMojoInterfaces(registry);
-}            
+}
 
 void ContentBrowserClientImpl::StartInProcessRendererThread(
     mojo::OutgoingInvitation* broker_client_invitation,
@@ -220,7 +221,17 @@ mojo::OutgoingInvitation* ContentBrowserClientImpl::GetClientInvitation() const
 std::vector<service_manager::Manifest>
 ContentBrowserClientImpl::GetExtraServiceManifests()
 {
-    return std::vector<service_manager::Manifest>{};
+    // needed for chrome services
+    auto manifests = GetChromeBuiltinServiceManifests();
+    manifests.push_back(
+        service_manager::ManifestBuilder()
+            .WithServiceName(chrome::mojom::kRendererServiceName)
+            .ExposeCapability("browser",
+                              service_manager::Manifest::InterfaceList<
+                                  spellcheck::mojom::SpellChecker>())
+            .RequireCapability(chrome::mojom::kServiceName, "renderer")
+            .Build());
+    return manifests;
 }
 
 base::Optional<service_manager::Manifest> ContentBrowserClientImpl::GetServiceManifestOverlay(
