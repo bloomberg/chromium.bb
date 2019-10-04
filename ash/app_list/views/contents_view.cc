@@ -152,11 +152,13 @@ void ContentsView::ResetForShow() {
   // QueryChanged(). Since it wants to reset to kStateApps, first reset the
   // search box and then set its active state to kStateApps.
   GetSearchBoxView()->ResetForShow();
-  SetActiveState(ash::AppListState::kStateApps, /*animate=*/false);
-  // Make other pages invisible.
+  // Make sure the default visibilities of the pages. This should be done before
+  // SetActiveState() since it checks the visibility of the pages.
+  horizontal_page_container_->SetVisible(true);
   search_results_page_view_->SetVisible(false);
   if (assistant_page_view_)
     assistant_page_view_->SetVisible(false);
+  SetActiveState(ash::AppListState::kStateApps, /*animate=*/false);
   // In side shelf, the opacity of the contents is not animated so set it to the
   // final state. In tablet mode, opacity of the elements is controlled by the
   // HomeLauncherGestureHandler which expects these elements to be opaque.

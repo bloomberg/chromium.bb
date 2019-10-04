@@ -25,6 +25,7 @@
 #include "ash/app_list/views/contents_view.h"
 #include "ash/app_list/views/expand_arrow_view.h"
 #include "ash/app_list/views/folder_header_view.h"
+#include "ash/app_list/views/horizontal_page_container.h"
 #include "ash/app_list/views/page_switcher.h"
 #include "ash/app_list/views/result_selection_controller.h"
 #include "ash/app_list/views/search_box_view.h"
@@ -2647,6 +2648,30 @@ TEST_F(AppListViewFocusTest, ShowEmbeddedAssistantUI) {
   EXPECT_EQ(1, GetOpenFirstSearchResultCount());
   EXPECT_EQ(2, GetTotalOpenSearchResultCount());
   EXPECT_EQ(1, GetTotalOpenAssistantUICount());
+}
+
+// Tests that the correct contents is visible in the contents_view upon
+// reshowing. See b/142069648 for the details.
+TEST_F(AppListViewTest, AppsGridVisibilityOnResetForShow) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {app_list_features::kEnableEmbeddedAssistantUI}, {});
+  Initialize(true /*is_tablet_mode*/);
+  Show(true /*is_tablet_mode*/);
+
+  contents_view()->ShowEmbeddedAssistantUI(true);
+  EXPECT_FALSE(contents_view()->horizontal_page_container()->GetVisible());
+  EXPECT_FALSE(contents_view()->search_results_page_view()->GetVisible());
+  const int assistant_page_index = contents_view()->GetPageIndexForState(
+      ash::AppListState::kStateEmbeddedAssistant);
+  EXPECT_TRUE(contents_view()->GetPageView(assistant_page_index)->GetVisible());
+
+  view_->OnTabletModeChanged(false);
+  Show(false /*is_tablet_mode*/);
+  EXPECT_TRUE(contents_view()->horizontal_page_container()->GetVisible());
+  EXPECT_FALSE(contents_view()->search_results_page_view()->GetVisible());
+  EXPECT_FALSE(
+      contents_view()->GetPageView(assistant_page_index)->GetVisible());
 }
 
 // Tests that no answer card view when kEnableEmbeddedAssistantUI is enabled.
