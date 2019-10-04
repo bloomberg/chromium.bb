@@ -959,6 +959,7 @@ test("content_browsertests") {
     "../browser/loader/prefetch_browsertest_base.h",
     "../browser/loader/reload_cache_control_browsertest.cc",
     "../browser/loader/resource_scheduler_browsertest.cc",
+    "../browser/locks/lock_manager_browsertest.cc",
     "../browser/manifest/manifest_browsertest.cc",
     "../browser/media/encrypted_media_browsertest.cc",
     "../browser/media/media_autoplay_browsertest.cc",

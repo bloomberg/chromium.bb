@@ -1142,6 +1142,8 @@ jumbo_split_static_library("browser") {
     "performance_manager/performance_manager.cc",
     "performance_manager/performance_manager_impl.cc",
     "performance_manager/performance_manager_impl.h",
+    "performance_manager/performance_manager_lock_observer.cc",
+    "performance_manager/performance_manager_lock_observer.h",
     "performance_manager/performance_manager_tab_helper.cc",
     "performance_manager/performance_manager_tab_helper.h",
     "performance_manager/persistence/site_data/exponential_moving_average.cc",

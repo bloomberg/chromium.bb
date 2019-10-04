@@ -167,6 +167,7 @@ class ClientCertificateDelegate;
 class ControllerPresentationServiceDelegate;
 class DevToolsManagerDelegate;
 class HidDelegate;
+class LockObserver;
 class LoginDelegate;
 class MediaObserver;
 class NavigationHandle;
@@ -771,6 +772,13 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Returns a class to get notifications about media event. The embedder can
   // return nullptr if they're not interested.
   virtual MediaObserver* GetMediaObserver();
+
+  // Returns a class to observe usage of locks. The embedder can return nullptr
+  // if they're not interested. The returned LockObserver may be used on any
+  // sequence until threads are destroyed. The impl should therefore be
+  // thread-safe and remain alive until at least
+  // BrowserMainParts::PostDestroyThreads().
+  virtual LockObserver* GetLockObserver();
 
   // Returns the platform notification service, capable of displaying Web
   // Notifications to the user. The embedder can return a nullptr if they don't

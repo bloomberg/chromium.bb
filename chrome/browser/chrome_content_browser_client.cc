@@ -84,6 +84,7 @@
 #include "chrome/browser/payments/payment_request_display_manager_factory.h"
 #include "chrome/browser/performance_manager/chrome_browser_main_extra_parts_performance_manager.h"
 #include "chrome/browser/performance_manager/chrome_content_browser_client_performance_manager_part.h"
+#include "chrome/browser/performance_manager/public/performance_manager.h"
 #include "chrome/browser/permissions/attestation_permission_request.h"
 #include "chrome/browser/permissions/permission_context_base.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
@@ -2872,6 +2873,10 @@ base::OnceClosure ChromeContentBrowserClient::SelectClientCertificate(
 
 content::MediaObserver* ChromeContentBrowserClient::GetMediaObserver() {
   return MediaCaptureDevicesDispatcher::GetInstance();
+}
+
+content::LockObserver* ChromeContentBrowserClient::GetLockObserver() {
+  return performance_manager::PerformanceManager::GetLockObserver();
 }
 
 content::PlatformNotificationService*

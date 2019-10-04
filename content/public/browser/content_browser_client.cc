@@ -480,6 +480,10 @@ MediaObserver* ContentBrowserClient::GetMediaObserver() {
   return nullptr;
 }
 
+LockObserver* ContentBrowserClient::GetLockObserver() {
+  return nullptr;
+}
+
 PlatformNotificationService*
 ContentBrowserClient::GetPlatformNotificationService(
     BrowserContext* browser_context) {
