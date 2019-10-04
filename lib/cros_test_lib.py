@@ -185,8 +185,9 @@ def VerifyTarball(tarball, dir_struct):
     AssertionError when there is any divergence between the tarball and the
     structure specified by 'dir_struct'.
   """
-  contents = cros_build_lib.run(
-      ['tar', '-tf', tarball], capture_output=True).output.splitlines()
+  result = cros_build_lib.run(['tar', '-tf', tarball], capture_output=True,
+                              encoding='utf-8')
+  contents = result.stdout.splitlines()
   normalized = set()
   for p in contents:
     norm = os.path.normpath(p)
