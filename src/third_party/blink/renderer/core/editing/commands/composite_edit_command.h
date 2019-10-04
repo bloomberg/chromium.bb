@@ -152,7 +152,8 @@ class CORE_EXPORT CompositeEditCommand : public EditCommand {
   void MoveRemainingSiblingsToNewParent(Node*,
                                         Node* past_last_node_to_move,
                                         Element* new_parent,
-                                        EditingState*);
+                                        EditingState*,
+                                        Node* prpRefChild = nullptr);
   void UpdatePositionForNodeRemovalPreservingChildren(Position&, Node&);
   void Prune(Node*, EditingState*, Node* exclude_node = nullptr);
   void ReplaceTextInNode(Text*,
