@@ -64,6 +64,35 @@ class ToolkitCreateParams
     ToolkitCreateParamsImpl *d_impl;
 
   public:
+    enum LogMessageSeverity {
+        kSeverityVerbose = 0,
+        kSeverityInfo = 1,
+        kSeverityWarning = 2,
+        kSeverityError = 3,
+        kSeverityFatal = 4,
+    };
+
+    enum class LogThrottleType {
+        kNoThrottle = 0,
+        kWarningThrottle, /* Throttle warning, error, fatal messages */
+    };
+
+    // The callback function that will be invoked whenever a log message
+    // happens.
+    typedef void(*LogMessageHandler)(LogMessageSeverity severity,
+                                     const char* file,
+                                     int line,
+                                     const char* message);
+
+    // The callback function that will be invoked whenever a log message
+    // is printed to the Web Console
+    typedef void(*ConsoleLogMessageHandler)(LogMessageSeverity severity,
+                                            const StringRef& file,
+                                            unsigned line,
+                                            unsigned column,
+                                            const StringRef& message,
+                                            const StringRef& stack_trace);
+
     typedef int(__cdecl *WinProcExceptionFilter)(EXCEPTION_POINTERS* info);
         // The callback function that will be invoked whenever SEH exceptions
         // are caught in win procs.
@@ -86,6 +115,15 @@ class ToolkitCreateParams
         // open a print dialog to ask for the target printing device.
         // Calling this will disable the print dialog and use the default
         // printing device on the system.
+
+    BLPWTK2_EXPORT void setLogMessageHandler(LogMessageHandler handler);
+        // By default, log messages go to a "blpwtk2.log" file and to debug output.
+        // Use this method to install a custom log message handler instead.  Note
+        // that the handler callback can be invoked from any thread.
+
+    BLPWTK2_EXPORT void setConsoleLogMessageHandler(ConsoleLogMessageHandler handler);
+        // Use this method to install a custom log message handler for the
+        // Web Console. This handler is only used for in-process renderers.
 
     BLPWTK2_EXPORT void setWinProcExceptionFilter(WinProcExceptionFilter filter);
         // Use this method to install a custom filter that will be invoked
@@ -215,9 +253,13 @@ class ToolkitCreateParams
 
 
 
+    BLPWTK2_EXPORT void setLogThrottleType(LogThrottleType throttleType);
+
     // ACCESSORS
     ThreadMode threadMode() const;
     bool useDefaultPrintSettings() const;
+    LogMessageHandler logMessageHandler() const;
+    ConsoleLogMessageHandler consoleLogMessageHandler() const;
     WinProcExceptionFilter winProcExceptionFilter() const;
     ChannelErrorHandler channelErrorHandler() const;
     bool isInProcessRendererEnabled() const;
@@ -241,7 +283,7 @@ class ToolkitCreateParams
     bool isInProcessResizeOptimizationDisabled() const;
     StringRef profileDirectory() const;
     bool isIsolatedProfile() const;
-
+    LogThrottleType logThrottleType() const;
 
 
     // patch section: embedder ipc
