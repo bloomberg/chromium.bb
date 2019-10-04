@@ -35374,6 +35374,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1466862366" label="TouchToFillAndroid:enabled"/>
   <int value="-1466759286" label="TabModalJsDialog:disabled"/>
   <int value="-1465172796" label="CCTModule:disabled"/>
+  <int value="-1464832541" label="EnableFuzzyAppSearch:disabled"/>
   <int value="-1463489219" label="OfflinePagesCTSuppressNotifications:enabled"/>
   <int value="-1463410070" label="IPH_DemoMode:enabled"/>
   <int value="-1461261930" label="OutOfBlinkCORS:disabled"/>
@@ -37238,6 +37239,7 @@ from previous Chrome versions.
       label="disable-hide-inactive-stacked-tab-close-buttons"/>
   <int value="1022424308" label="SignedExchangeSubresourcePrefetch:enabled"/>
   <int value="1022992701" label="enable-origin-chip-always"/>
+  <int value="1024560563" label="EnableFuzzyAppSearch:enabled"/>
   <int value="1027252926" label="SyncSupportSecondaryAccount:enabled"/>
   <int value="1033148287" label="NTPShortcuts:disabled"/>
   <int value="1033412163" label="OmniboxDisplayTitleForCurrentUrl:enabled"/>

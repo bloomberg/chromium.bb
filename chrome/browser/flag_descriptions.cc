@@ -3481,6 +3481,10 @@ const char kFsNosymfollowDescription[] =
     " option, so the chromuimos LSM denies symlink traversal on the"
     " filesystem.";
 
+const char kFuzzyAppSearchName[] = "Fuzzy app search algorithm in launcher.";
+const char kFuzzyAppSearchDescription[] =
+    "Uses fuzzy search algorithm for app search in launcher.";
+
 const char kGaiaActionButtonsName[] =
     "Enable action buttons on Gaia login screen";
 const char kGaiaActionButtonsDescription[] =
