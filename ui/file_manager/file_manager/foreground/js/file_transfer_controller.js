@@ -658,8 +658,6 @@ class FileTransferController {
                 const destinationName = util.getEntryLabel(
                     destinationLocationInfo, destinationEntry);
                 item.destinationMessage = destinationName;
-                item.subMessage =
-                    strf('TO_FOLDER_NAME', item.destinationMessage);
                 this.progressCenter_.updateItem(item);
                 // Check if cross share is needed or not.
                 return this.getMultiProfileShareEntries_(entries);

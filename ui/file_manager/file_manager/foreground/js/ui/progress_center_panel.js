@@ -420,8 +420,10 @@ class ProgressCenterPanel {
             'primary-text',
             this.generateSourceString_(item, panelItem.userData));
         panelItem.setAttribute('data-progress-id', item.id);
-        if (item.subMessage) {
-          panelItem.setAttribute('secondary-text', item.subMessage);
+        if (item.destinationMessage) {
+          panelItem.setAttribute(
+              'secondary-text',
+              strf('TO_FOLDER_NAME', item.destinationMessage));
         }
       }
       panelItem.signalCallback = (signal) => {
