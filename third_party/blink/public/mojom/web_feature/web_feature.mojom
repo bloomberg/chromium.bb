@@ -2360,7 +2360,6 @@ enum WebFeature {
   kAutoplayDynamicDelegation = 2977,
   kToggleEventHandlerDuringParsing = 2978,
   kFragmentDoubleHash = 2979,
-  kV8RegExpMatchAllWithNonGlobalRegExp = 2980,
   kOBSOLETE_CSSValueOverflowXOverlay = 2981,
   kOBSOLETE_CSSValueOverflowYOverlay = 2982,
   kContentIndexAdd = 2983,
