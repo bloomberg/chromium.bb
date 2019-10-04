@@ -7336,6 +7336,12 @@ the Bookmarks menu.">
         <message name="IDS_EXTERNAL_PROTOCOL_TITLE" desc="External Protocol Dialog Title">
           Open <ph name="APPLICATION">$1<ex>Adobe Acrobat</ex></ph>?
         </message>
+        <message name="IDS_EXTERNAL_PROTOCOL_MESSAGE_WITH_INITIATING_ORIGIN" desc="External Protocol Dialog message when initiated by another website">
+          <ph name="ORIGIN">$1<ex>https://google.com</ex></ph> wants to open this application.
+        </message>
+        <message name="IDS_EXTERNAL_PROTOCOL_MESSAGE" desc="External Protocol Dialog message when the initiating website is unknown">
+          A website wants to open this application.
+        </message>
         <message name="IDS_EXTERNAL_PROTOCOL_OK_BUTTON_TEXT" desc="Button in External Protocol Dialog that launches the application associated with the protocol">
           Open <ph name="APPLICATION">$1<ex>Adobe Acrobat</ex></ph>
         </message>

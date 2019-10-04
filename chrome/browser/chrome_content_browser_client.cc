@@ -962,7 +962,8 @@ chrome::mojom::PrerenderCanceler* GetPrerenderCanceller(
 void LaunchURL(const GURL& url,
                const content::WebContents::Getter& web_contents_getter,
                ui::PageTransition page_transition,
-               bool has_user_gesture) {
+               bool has_user_gesture,
+               const base::Optional<url::Origin>& initiating_origin) {
   // If there is no longer a WebContents, the request may have raced with tab
   // closing. Don't fire the external request. (It may have been a prerender.)
   content::WebContents* web_contents = web_contents_getter.Run();
@@ -1006,7 +1007,7 @@ void LaunchURL(const GURL& url,
     ExternalProtocolHandler::LaunchUrl(
         url, web_contents->GetRenderViewHost()->GetProcess()->GetID(),
         web_contents->GetRenderViewHost()->GetRoutingID(), page_transition,
-        has_user_gesture);
+        has_user_gesture, initiating_origin);
   }
 }
 
@@ -5031,6 +5032,7 @@ bool ChromeContentBrowserClient::HandleExternalProtocol(
     bool is_main_frame,
     ui::PageTransition page_transition,
     bool has_user_gesture,
+    const base::Optional<url::Origin>& initiating_origin,
     network::mojom::URLLoaderFactoryPtr* out_factory) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // External protocols are disabled for guests. An exception is made for the
@@ -5053,9 +5055,10 @@ bool ChromeContentBrowserClient::HandleExternalProtocol(
     return false;
 #endif  // defined(ANDROID)
 
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&LaunchURL, url, web_contents_getter,
-                                page_transition, has_user_gesture));
+  base::PostTask(
+      FROM_HERE, {BrowserThread::UI},
+      base::BindOnce(&LaunchURL, url, web_contents_getter, page_transition,
+                     has_user_gesture, initiating_origin));
   return true;
 }
 

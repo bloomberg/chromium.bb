@@ -1536,6 +1536,11 @@ class CONTENT_EXPORT ContentBrowserClient {
   // ChildProcessHost::kInvalidUniqueID and |navigation_ui_data| will valid.
   // Otherwise child_id will be the process id and |navigation_ui_data| will be
   // nullptr.
+  //
+  // |initiating_origin| is the origin that initiated the navigation to the
+  // external protocol, and may be null, e.g. in the case of browser-initiated
+  // navigations. The initiating origin is intended to help users make security
+  // decisions about whether to allow an external application to launch.
   virtual bool HandleExternalProtocol(
       const GURL& url,
       WebContents::Getter web_contents_getter,
@@ -1544,6 +1549,7 @@ class CONTENT_EXPORT ContentBrowserClient {
       bool is_main_frame,
       ui::PageTransition page_transition,
       bool has_user_gesture,
+      const base::Optional<url::Origin>& initiating_origin,
       network::mojom::URLLoaderFactoryPtr* out_factory);
 
   // Creates an OverlayWindow to be used for Picture-in-Picture. This window
