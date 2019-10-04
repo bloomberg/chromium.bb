@@ -24851,6 +24851,7 @@ Called by update_net_error_codes.py.-->
   <int value="3041" label="FragmentHasTildeAtTilde"/>
   <int value="3042" label="FragmentHasAmpersandDelimiterQuestion"/>
   <int value="3043" label="InvalidFragmentDirective"/>
+  <int value="3044" label="ContactsManagerGetProperties"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
