@@ -154,6 +154,7 @@
 #include "third_party/blink/renderer/core/events/page_transition_event.h"
 #include "third_party/blink/renderer/core/events/visual_viewport_resize_event.h"
 #include "third_party/blink/renderer/core/events/visual_viewport_scroll_event.h"
+#include "third_party/blink/renderer/core/execution_context/agent_metrics_collector.h"
 #include "third_party/blink/renderer/core/execution_context/window_agent.h"
 #include "third_party/blink/renderer/core/execution_context/window_agent_factory.h"
 #include "third_party/blink/renderer/core/feature_policy/document_policy.h"
@@ -1203,6 +1204,9 @@ Document::Document(const DocumentInit& initializer,
 #ifndef NDEBUG
   liveDocumentSet().insert(this);
 #endif
+
+  if (frame_ && frame_->GetPage()->GetAgentMetricsCollector())
+    frame_->GetPage()->GetAgentMetricsCollector()->DidAttachDocument(*this);
 }
 
 Document::~Document() {
@@ -3402,6 +3406,8 @@ void Document::Shutdown() {
 
   // Check for frame_ so we only detach execution contexts with its own
   // scheduler.
+  // TODO(bokan): Can this happen? |frame_| is dereferenced above and CHECKed
+  // at top.
   if (frame_)
     GetAgent()->DetachExecutionContext(this);
 
