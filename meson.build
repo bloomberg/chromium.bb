@@ -256,9 +256,6 @@ if prog_xslt.found()
 endif
 with_man_pages = with_man_pages != 'false' and prog_xslt.found() and prog_sed.found()
 
-# Used for tests
-prog_bash = find_program('bash')
-
 config.set10('HAVE_VISIBILITY',
   cc.compiles('''int foo_hidden(void) __attribute__((visibility(("hidden"))));''',
               name : 'compiler supports __attribute__(("hidden"))'))

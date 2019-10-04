@@ -71,7 +71,7 @@ pkg.generate(
 
 test(
   'freedreno-symbol-check',
-  prog_bash,
+  find_program('freedreno-symbol-check'),
   env : env_test,
-  args : [files('freedreno-symbol-check'), libdrm_freedreno]
+  args : libdrm_freedreno,
 )

@@ -54,6 +54,7 @@ ext_libdrm_etnaviv = declare_dependency(
 
 test(
   'etnaviv-symbol-check',
-  prog_bash,
-  args : [files('etnaviv-symbol-check'), libdrm_etnaviv]
+  find_program('etnaviv-symbol-check'),
+  env : env_test,
+  args : libdrm_etnaviv,
 )

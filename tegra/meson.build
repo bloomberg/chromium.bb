@@ -47,7 +47,7 @@ pkg.generate(
 
 test(
   'tegra-symbol-check',
-  prog_bash,
+  find_program('tegra-symbol-check'),
   env : env_test,
-  args : [files('tegra-symbol-check'), libdrm_tegra]
+  args : libdrm_tegra,
 )

@@ -69,7 +69,7 @@ pkg.generate(
 
 test(
   'kms-symbol-check',
-  prog_bash,
+  find_program('kms-symbol-check'),
   env : env_test,
-  args : [files('kms-symbol-check'), libkms]
+  args : libkms,
 )

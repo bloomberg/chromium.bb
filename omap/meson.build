@@ -48,7 +48,7 @@ pkg.generate(
 
 test(
   'omap-symbol-check',
-  prog_bash,
+  find_program('omap-symbol-check'),
   env : env_test,
-  args : [files('omap-symbol-check'), libdrm_omap]
+  args : libdrm_omap,
 )

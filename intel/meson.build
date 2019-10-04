@@ -64,43 +64,37 @@ test_decode = executable(
 
 test(
   'gen4-3d.batch',
-  prog_bash,
-  args : files('tests/gen4-3d.batch.sh'),
+  find_program('tests/gen4-3d.batch.sh'),
   workdir : meson.current_build_dir(),
 )
 test(
   'gen45-3d.batch',
-  prog_bash,
-  args : files('tests/gm45-3d.batch.sh'),
+  find_program('tests/gm45-3d.batch.sh'),
   workdir : meson.current_build_dir(),
 )
 test(
   'gen5-3d.batch',
-  prog_bash,
-  args : files('tests/gen5-3d.batch.sh'),
+  find_program('tests/gen5-3d.batch.sh'),
   workdir : meson.current_build_dir(),
 )
 test(
   'gen6-3d.batch',
-  prog_bash,
-  args : files('tests/gen6-3d.batch.sh'),
+  find_program('tests/gen6-3d.batch.sh'),
   workdir : meson.current_build_dir(),
 )
 test(
   'gen7-3d.batch',
-  prog_bash,
-  args : files('tests/gen7-3d.batch.sh'),
+  find_program('tests/gen7-3d.batch.sh'),
   workdir : meson.current_build_dir(),
 )
 test(
   'gen7-2d-copy.batch',
-  prog_bash,
-  args : files('tests/gen7-2d-copy.batch.sh'),
+  find_program('tests/gen7-2d-copy.batch.sh'),
   workdir : meson.current_build_dir(),
 )
 test(
   'intel-symbol-check',
-  prog_bash,
+  find_program('intel-symbol-check'),
   env : env_test,
-  args : [files('intel-symbol-check'), libdrm_intel]
+  args : libdrm_intel,
 )

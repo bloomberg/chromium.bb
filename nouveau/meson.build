@@ -53,7 +53,7 @@ pkg.generate(
 
 test(
   'nouveau-symbol-check',
-  prog_bash,
+  find_program('nouveau-symbol-check'),
   env : env_test,
-  args : [files('nouveau-symbol-check'), libdrm_nouveau]
+  args : libdrm_nouveau,
 )
