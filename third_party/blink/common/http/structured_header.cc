@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/public/common/web_package/http_structured_header.h"
+#include "third_party/blink/public/common/http/structured_header.h"
 
 #include <string>
 #include <utility>
@@ -79,7 +79,7 @@ class StructuredHeaderParser {
   // byte sequences) are supported, and all types are returned as a string
   // regardless of the item type. E.g. both 123 (number) and "123" (string) are
   // returned as "123".
-  // TODO(ksakamoto): Add support for other types, and return a value with type
+  // TODO(1011101): Add support for other types, and return a value with type
   // info.
   base::Optional<std::string> ReadItem() {
     if (input_.empty()) {
@@ -288,6 +288,8 @@ class StructuredHeaderParser {
 }  // namespace
 
 ParameterisedIdentifier::ParameterisedIdentifier(
+    const ParameterisedIdentifier&) = default;
+ParameterisedIdentifier& ParameterisedIdentifier::operator=(
     const ParameterisedIdentifier&) = default;
 ParameterisedIdentifier::ParameterisedIdentifier(const std::string& id,
                                                  const Parameters& ps)
