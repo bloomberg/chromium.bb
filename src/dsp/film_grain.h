@@ -74,6 +74,9 @@ class FilmGrain {
                                 GrainType* luma_grain);
 
   // Applies an auto-regressive filter to the white noise in luma_grain.
+  //
+  // Note: This method assumes params.auto_regression_coeff_lag is not 0. Do
+  // not call this method if params.auto_regression_coeff_lag is 0.
   static void ApplyAutoRegressiveFilterToLumaGrain(
       const FilmGrainParams& params, int grain_min, int grain_max,
       GrainType* luma_grain);

@@ -323,8 +323,15 @@ template <int bitdepth>
 bool FilmGrain<bitdepth>::Init() {
   // Section 7.18.3.3. Generate grain process.
   GenerateLumaGrain(params_, luma_grain_);
-  ApplyAutoRegressiveFilterToLumaGrain(params_, kGrainMin, kGrainMax,
-                                       luma_grain_);
+  // If params_.auto_regression_coeff_lag is 0, the filter is the identity
+  // filter and therefore can be skipped. If params_.num_y_points is 0,
+  // luma_grain_ is all zeros (see GenerateLumaGrain), so we can also skip the
+  // filter. (In fact, the Note at the end of Section 7.18.3.3 says luma_grain_
+  // will never be read in this case.)
+  if (params_.auto_regression_coeff_lag > 0 && params_.num_y_points > 0) {
+    ApplyAutoRegressiveFilterToLumaGrain(params_, kGrainMin, kGrainMax,
+                                         luma_grain_);
+  }
   if (!is_monochrome_) {
     GenerateChromaGrains(params_, chroma_width_, chroma_height_, u_grain_,
                          v_grain_);
@@ -390,24 +397,57 @@ void FilmGrain<bitdepth>::ApplyAutoRegressiveFilterToLumaGrain(
     const FilmGrainParams& params, int grain_min, int grain_max,
     GrainType* luma_grain) {
   assert(params.auto_regression_coeff_lag <= 3);
+  // A pictorial representation of the auto-regressive filter for various values
+  // of params.auto_regression_coeff_lag. The letter 'O' represents the current
+  // sample. (The filter always operates on the current sample with filter
+  // coefficient 1.) The letters 'X' represent the neighoring samples that the
+  // filter operates on.
+  //
+  // params.auto_regression_coeff_lag == 3:
+  //   X X X X X X X
+  //   X X X X X X X
+  //   X X X X X X X
+  //   X X X O
+  // params.auto_regression_coeff_lag == 2:
+  //     X X X X X
+  //     X X X X X
+  //     X X O
+  // params.auto_regression_coeff_lag == 1:
+  //       X X X
+  //       X O
+  // params.auto_regression_coeff_lag == 0:
+  //         O
+  //
+  // Note that if params.auto_regression_coeff_lag is 0, the filter is the
+  // identity filter and therefore can be skipped. This implementation assumes
+  // it is not called in that case.
+  assert(params.auto_regression_coeff_lag > 0);
   const int shift = params.auto_regression_shift;
   for (int y = 3; y < kLumaHeight; ++y) {
     for (int x = 3; x < kLumaWidth - 3; ++x) {
       int sum = 0;
       int pos = 0;
       int delta_row = -params.auto_regression_coeff_lag;
+      // The last iteration (delta_row == 0) is shorter and is handled
+      // separately.
       do {
         int delta_column = -params.auto_regression_coeff_lag;
         do {
-          if (delta_row == 0 && delta_column == 0) {
-            break;
-          }
           const int coeff = params.auto_regression_coeff_y[pos];
           sum += luma_grain[(y + delta_row) * kLumaWidth + (x + delta_column)] *
                  coeff;
           ++pos;
         } while (++delta_column <= params.auto_regression_coeff_lag);
-      } while (++delta_row <= 0);
+      } while (++delta_row < 0);
+      // Last iteration: delta_row == 0.
+      {
+        int delta_column = -params.auto_regression_coeff_lag;
+        do {
+          const int coeff = params.auto_regression_coeff_y[pos];
+          sum += luma_grain[y * kLumaWidth + (x + delta_column)] * coeff;
+          ++pos;
+        } while (++delta_column < 0);
+      }
       luma_grain[y * kLumaWidth + x] = Clip3(
           luma_grain[y * kLumaWidth + x] + RightShiftWithRounding(sum, shift),
           grain_min, grain_max);
