@@ -745,6 +745,9 @@ def CMDpopulate(parser, args):
   parser.add_option('--ignore_locks', '--ignore-locks',
                     action='store_true',
                     help='Don\'t try to lock repository')
+  parser.add_option('--break-locks',
+                    action='store_true',
+                    help='Break any existing lock instead of just ignoring it')
   parser.add_option('--reset-fetch-config', action='store_true', default=False,
                     help='Reset the fetch config before populating the cache.')
 
@@ -754,6 +757,8 @@ def CMDpopulate(parser, args):
   url = args[0]
 
   mirror = Mirror(url, refs=options.ref)
+  if options.break_locks:
+    mirror.unlock()
   kwargs = {
       'verbose': options.verbose,
       'shallow': options.shallow,
