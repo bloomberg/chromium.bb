@@ -1087,6 +1087,17 @@ deps = {
       'condition': 'checkout_android',
   },
 
+  'src/third_party/jdk': {
+      'packages': [
+          {
+              'package': 'chromium/third_party/jdk',
+              'version': 'rfJtuH296mzs7BYOgmQkpz-7ydXtpLKeO15qDDMaa5cC',
+          },
+      ],
+      'condition': 'host_os == "linux" and checkout_android',
+      'dep_type': 'cipd',
+  },
+
   'src/third_party/jsoncpp/source':
     Var('chromium_git') + '/external/github.com/open-source-parsers/jsoncpp.git'
       + '@' + '645250b6690785be60ab6780ce4b58698d884d11', # release 1.9.1
