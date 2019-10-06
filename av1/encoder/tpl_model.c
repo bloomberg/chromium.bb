@@ -423,8 +423,8 @@ int av1_tpl_ptr_pos(AV1_COMP *cpi, int mi_row, int mi_col, int stride) {
   return (mi_row >> right_shift) * stride + (mi_col >> right_shift);
 }
 
-static int delta_rate_cost(int64_t delta_rate, int64_t recrf_dist,
-                           int64_t srcrf_dist, int pix_num) {
+static int64_t delta_rate_cost(int64_t delta_rate, int64_t recrf_dist,
+                               int64_t srcrf_dist, int pix_num) {
   double beta = (double)srcrf_dist / recrf_dist;
   int64_t rate_cost = delta_rate;
 
