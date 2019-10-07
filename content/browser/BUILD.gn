@@ -625,6 +625,7 @@ jumbo_source_set("browser") {
     "cache_storage/legacy/legacy_cache_storage_manager.cc",
     "cache_storage/legacy/legacy_cache_storage_manager.h",
     "cache_storage/scoped_writable_entry.h",
+    "can_commit_status.h",
     "child_process_launcher.cc",
     "child_process_launcher.h",
     "child_process_launcher_helper.cc",

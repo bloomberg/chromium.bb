@@ -33,6 +33,7 @@
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/browser_interface_broker_impl.h"
+#include "content/browser/can_commit_status.h"
 #include "content/browser/renderer_host/media/old_render_frame_audio_input_stream_factory.h"
 #include "content/browser/renderer_host/media/old_render_frame_audio_output_stream_factory.h"
 #include "content/browser/renderer_host/media/render_frame_audio_input_stream_factory.h"
@@ -1502,11 +1503,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // in cases where it is applicable. This is a more conservative check than
   // RenderProcessHost::FilterURL, since it will be used to kill processes that
   // commit unauthorized origins.
-  enum class CanCommitStatus {
-    CAN_COMMIT_ORIGIN_AND_URL,
-    CANNOT_COMMIT_ORIGIN,
-    CANNOT_COMMIT_URL
-  };
   CanCommitStatus CanCommitOriginAndUrl(const url::Origin& origin,
                                         const GURL& url);
 

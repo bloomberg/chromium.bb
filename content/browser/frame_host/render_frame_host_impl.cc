@@ -4585,7 +4585,7 @@ void RenderFrameHostImpl::ResetWaitingState() {
   network_service_connection_error_handler_holder_.reset();
 }
 
-RenderFrameHostImpl::CanCommitStatus RenderFrameHostImpl::CanCommitOriginAndUrl(
+CanCommitStatus RenderFrameHostImpl::CanCommitOriginAndUrl(
     const url::Origin& origin,
     const GURL& url) {
   // If the --disable-web-security flag is specified, all bets are off and the
@@ -4630,41 +4630,29 @@ RenderFrameHostImpl::CanCommitStatus RenderFrameHostImpl::CanCommitOriginAndUrl(
   if (!GetContentClient()->browser()->CanCommitURL(GetProcess(), url))
     return CanCommitStatus::CANNOT_COMMIT_URL;
 
-  // TODO(nasko): This check should be updated to apply to all URLs, not just
-  // standard ones.
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
-  if (url.IsStandard() &&
-      !policy->CanAccessDataForOrigin(GetProcess()->GetID(), url)) {
-    return CanCommitStatus::CANNOT_COMMIT_URL;
+  const CanCommitStatus can_commit_status =
+      policy->CanCommitOriginAndUrl(GetProcess()->GetID(), origin, url);
+  if (can_commit_status != CanCommitStatus::CAN_COMMIT_ORIGIN_AND_URL)
+    return can_commit_status;
+
+  if (!origin.opaque()) {
+    // A non-opaque origin must be a valid URL, which allows us to safely do a
+    // conversion to GURL.
+    GURL origin_url = origin.GetURL();
+
+    // Verify that the origin is allowed to commit in this process.
+    // Note: This also handles non-standard cases for |url|, such as
+    // about:blank, data, and blob URLs.
+
+    // Renderer-debug URLs can never be committed.
+    if (IsRendererDebugURL(origin_url))
+      return CanCommitStatus::CANNOT_COMMIT_ORIGIN;
+
+    // Give the client a chance to disallow URLs from committing.
+    if (!GetContentClient()->browser()->CanCommitURL(GetProcess(), origin_url))
+      return CanCommitStatus::CANNOT_COMMIT_ORIGIN;
   }
-
-  // It is safe to commit into a opaque origin, regardless of the URL, as it is
-  // restricted from accessing other origins.
-  if (origin.opaque())
-    return CanCommitStatus::CAN_COMMIT_ORIGIN_AND_URL;
-
-  // Standard URLs must match the reported origin.
-  if (url.IsStandard() && !origin.IsSameOriginWith(url::Origin::Create(url)))
-    return CanCommitStatus::CANNOT_COMMIT_ORIGIN;
-
-  // A non-opaque origin must be a valid URL, which allows us to safely do a
-  // conversion to GURL.
-  GURL origin_url = origin.GetURL();
-
-  if (!policy->CanAccessDataForOrigin(GetProcess()->GetID(), origin))
-    return CanCommitStatus::CANNOT_COMMIT_ORIGIN;
-
-  // Verify that the origin is allowed to commit in this process.
-  // Note: This also handles non-standard cases for |url|, such as
-  // about:blank, data, and blob URLs.
-
-  // Renderer-debug URLs can never be committed.
-  if (IsRendererDebugURL(origin_url))
-    return CanCommitStatus::CANNOT_COMMIT_ORIGIN;
-
-  // Give the client a chance to disallow URLs from committing.
-  if (!GetContentClient()->browser()->CanCommitURL(GetProcess(), origin_url))
-    return CanCommitStatus::CANNOT_COMMIT_ORIGIN;
 
   return CanCommitStatus::CAN_COMMIT_ORIGIN_AND_URL;
 }
