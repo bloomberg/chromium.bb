@@ -71,6 +71,14 @@ class PageNode : public Node {
   // Returns the freeze policy set via origin trial.
   virtual InterventionPolicy GetOriginTrialFreezePolicy() const = 0;
 
+  // Returns true if at least one of the frame in this page is currently
+  // holding a WebLock.
+  virtual bool IsHoldingWebLock() const = 0;
+
+  // Returns true if at least one of the frame in this page is currently
+  // holding an IndexedDB lock.
+  virtual bool IsHoldingIndexedDBLock() const = 0;
+
   // Returns the navigation ID associated with the last committed navigation
   // event for the main frame of this page.
   // See PageNodeObserver::OnMainFrameNavigationCommitted.
@@ -140,6 +148,13 @@ class PageNodeObserver {
   virtual void OnPageOriginTrialFreezePolicyChanged(
       const PageNode* page_node) = 0;
 
+  // Invoked when the IsHoldingWebLock property changes.
+  virtual void OnPageIsHoldingWebLockChanged(const PageNode* page_node) = 0;
+
+  // Invoked when the IsHoldingIndexedDBLock property changes.
+  virtual void OnPageIsHoldingIndexedDBLockChanged(
+      const PageNode* page_node) = 0;
+
   // Invoked when the MainFrameUrl property changes.
   virtual void OnMainFrameUrlChanged(const PageNode* page_node) = 0;
 
@@ -183,6 +198,9 @@ class PageNode::ObserverDefaultImpl : public PageNodeObserver {
   void OnPageLifecycleStateChanged(const PageNode* page_node) override {}
   void OnPageOriginTrialFreezePolicyChanged(
       const PageNode* page_node) override {}
+  void OnPageIsHoldingWebLockChanged(const PageNode* page_node) override {}
+  void OnPageIsHoldingIndexedDBLockChanged(const PageNode* page_node) override {
+  }
   void OnPageAlmostIdleChanged(const PageNode* page_node) override {}
   void OnMainFrameUrlChanged(const PageNode* page_node) override {}
   void OnMainFrameDocumentChanged(const PageNode* page_node) override {}

@@ -195,6 +195,16 @@ PageNodeImpl::InterventionPolicy PageNodeImpl::origin_trial_freeze_policy()
   return origin_trial_freeze_policy_.value();
 }
 
+bool PageNodeImpl::is_holding_weblock() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return is_holding_weblock_.value();
+}
+
+bool PageNodeImpl::is_holding_indexeddb_lock() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return is_holding_indexeddb_lock_.value();
+}
+
 const base::flat_set<FrameNodeImpl*>& PageNodeImpl::main_frame_nodes() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return main_frame_nodes_;
@@ -319,6 +329,16 @@ PageNodeImpl::InterventionPolicy PageNodeImpl::GetOriginTrialFreezePolicy()
   return origin_trial_freeze_policy();
 }
 
+bool PageNodeImpl::IsHoldingWebLock() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return is_holding_weblock();
+}
+
+bool PageNodeImpl::IsHoldingIndexedDBLock() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return is_holding_indexeddb_lock();
+}
+
 int64_t PageNodeImpl::GetNavigationID() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return navigation_id();
@@ -362,6 +382,16 @@ void PageNodeImpl::SetLifecycleState(LifecycleState lifecycle_state) {
 void PageNodeImpl::SetOriginTrialFreezePolicy(InterventionPolicy policy) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   origin_trial_freeze_policy_.SetAndMaybeNotify(this, policy);
+}
+
+void PageNodeImpl::SetIsHoldingWebLock(bool is_holding_weblock) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  is_holding_weblock_.SetAndMaybeNotify(this, is_holding_weblock);
+}
+
+void PageNodeImpl::SetIsHoldingIndexedDBLock(bool is_holding_indexeddb_lock) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  is_holding_indexeddb_lock_.SetAndMaybeNotify(this, is_holding_indexeddb_lock);
 }
 
 }  // namespace performance_manager

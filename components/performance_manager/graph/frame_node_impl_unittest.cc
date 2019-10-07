@@ -132,8 +132,8 @@ class LenientMockObserver : public FrameNodeImpl::Observer {
                     const resource_coordinator::mojom::InterventionPolicy&));
   MOCK_METHOD2(OnURLChanged, void(const FrameNode*, const GURL&));
   MOCK_METHOD1(OnIsAdFrameChanged, void(const FrameNode*));
-  MOCK_METHOD1(OnFrameHoldsWebLockChanged, void(const FrameNode*));
-  MOCK_METHOD1(OnFrameHoldsIndexedDBLockChanged, void(const FrameNode*));
+  MOCK_METHOD1(OnFrameIsHoldingWebLockChanged, void(const FrameNode*));
+  MOCK_METHOD1(OnFrameIsHoldingIndexedDBLockChanged, void(const FrameNode*));
   MOCK_METHOD1(OnNonPersistentNotificationCreated, void(const FrameNode*));
   MOCK_METHOD1(OnPriorityAndReasonChanged, void(const FrameNode*));
 
@@ -225,7 +225,7 @@ TEST_F(FrameNodeImplTest, IsAdFrame) {
   graph()->RemoveFrameNodeObserver(&obs);
 }
 
-TEST_F(FrameNodeImplTest, HoldsWebLock) {
+TEST_F(FrameNodeImplTest, IsHoldingWebLock) {
   auto process = CreateNode<ProcessNodeImpl>();
   auto page = CreateNode<PageNodeImpl>();
   auto frame_node = CreateFrameNodeAutoId(process.get(), page.get());
@@ -233,18 +233,18 @@ TEST_F(FrameNodeImplTest, HoldsWebLock) {
   MockObserver obs;
   graph()->AddFrameNodeObserver(&obs);
 
-  EXPECT_FALSE(frame_node->holds_web_lock());
-  EXPECT_CALL(obs, OnFrameHoldsWebLockChanged(frame_node.get()));
-  frame_node->SetHoldsWebLock(true);
-  EXPECT_TRUE(frame_node->holds_web_lock());
-  EXPECT_CALL(obs, OnFrameHoldsWebLockChanged(frame_node.get()));
-  frame_node->SetHoldsWebLock(false);
-  EXPECT_FALSE(frame_node->holds_web_lock());
+  EXPECT_FALSE(frame_node->is_holding_weblock());
+  EXPECT_CALL(obs, OnFrameIsHoldingWebLockChanged(frame_node.get()));
+  frame_node->SetIsHoldingWebLock(true);
+  EXPECT_TRUE(frame_node->is_holding_weblock());
+  EXPECT_CALL(obs, OnFrameIsHoldingWebLockChanged(frame_node.get()));
+  frame_node->SetIsHoldingWebLock(false);
+  EXPECT_FALSE(frame_node->is_holding_weblock());
 
   graph()->RemoveFrameNodeObserver(&obs);
 }
 
-TEST_F(FrameNodeImplTest, HoldsIndexedDBLock) {
+TEST_F(FrameNodeImplTest, IsHoldingIndexedDBLock) {
   auto process = CreateNode<ProcessNodeImpl>();
   auto page = CreateNode<PageNodeImpl>();
   auto frame_node = CreateFrameNodeAutoId(process.get(), page.get());
@@ -252,13 +252,12 @@ TEST_F(FrameNodeImplTest, HoldsIndexedDBLock) {
   MockObserver obs;
   graph()->AddFrameNodeObserver(&obs);
 
-  EXPECT_FALSE(frame_node->holds_indexed_db_lock());
-  EXPECT_CALL(obs, OnFrameHoldsIndexedDBLockChanged(frame_node.get()));
-  frame_node->SetHoldsIndexedDBLock(true);
-  EXPECT_TRUE(frame_node->holds_indexed_db_lock());
-  EXPECT_CALL(obs, OnFrameHoldsIndexedDBLockChanged(frame_node.get()));
-  frame_node->SetHoldsIndexedDBLock(false);
-  EXPECT_FALSE(frame_node->holds_indexed_db_lock());
+  EXPECT_CALL(obs, OnFrameIsHoldingIndexedDBLockChanged(frame_node.get()));
+  frame_node->SetIsHoldingIndexedDBLock(true);
+  EXPECT_TRUE(frame_node->is_holding_indexeddb_lock());
+  EXPECT_CALL(obs, OnFrameIsHoldingIndexedDBLockChanged(frame_node.get()));
+  frame_node->SetIsHoldingIndexedDBLock(false);
+  EXPECT_FALSE(frame_node->is_holding_indexeddb_lock());
 
   graph()->RemoveFrameNodeObserver(&obs);
 }
@@ -353,9 +352,10 @@ TEST_F(FrameNodeImplTest, PublicInterface) {
   EXPECT_EQ(frame_node->network_almost_idle(),
             public_frame_node->GetNetworkAlmostIdle());
   EXPECT_EQ(frame_node->is_ad_frame(), public_frame_node->IsAdFrame());
-  EXPECT_EQ(frame_node->holds_web_lock(), public_frame_node->HoldsWebLock());
-  EXPECT_EQ(frame_node->holds_indexed_db_lock(),
-            public_frame_node->HoldsIndexedDBLock());
+  EXPECT_EQ(frame_node->is_holding_weblock(),
+            public_frame_node->IsHoldingWebLock());
+  EXPECT_EQ(frame_node->is_holding_indexeddb_lock(),
+            public_frame_node->IsHoldingIndexedDBLock());
 }
 
 }  // namespace performance_manager

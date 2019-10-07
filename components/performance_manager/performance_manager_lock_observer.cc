@@ -12,14 +12,14 @@ namespace performance_manager {
 
 namespace {
 
-void SetHoldsWebLock(int render_process_id,
-                     int render_frame_id,
-                     bool holds_web_lock,
-                     GraphImpl* graph) {
+void SetIsHoldingWebLock(int render_process_id,
+                         int render_frame_id,
+                         bool is_holding_web_lock,
+                         GraphImpl* graph) {
   FrameNodeImpl* frame_node =
       graph->GetFrameNodeById(render_process_id, render_frame_id);
   if (frame_node)
-    frame_node->SetHoldsWebLock(holds_web_lock);
+    frame_node->SetIsHoldingWebLock(is_holding_web_lock);
 }
 
 }  // namespace
@@ -31,7 +31,7 @@ void PerformanceManagerLockObserver::OnFrameStartsHoldingWebLocks(
     int render_process_id,
     int render_frame_id) {
   PerformanceManagerImpl::CallOnGraphImpl(
-      FROM_HERE, base::BindOnce(&SetHoldsWebLock, render_process_id,
+      FROM_HERE, base::BindOnce(&SetIsHoldingWebLock, render_process_id,
                                 render_frame_id, true));
 }
 
@@ -39,7 +39,7 @@ void PerformanceManagerLockObserver::OnFrameStopsHoldingWebLocks(
     int render_process_id,
     int render_frame_id) {
   PerformanceManagerImpl::CallOnGraphImpl(
-      FROM_HERE, base::BindOnce(&SetHoldsWebLock, render_process_id,
+      FROM_HERE, base::BindOnce(&SetIsHoldingWebLock, render_process_id,
                                 render_frame_id, false));
 }
 

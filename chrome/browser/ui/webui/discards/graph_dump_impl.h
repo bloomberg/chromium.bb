@@ -75,10 +75,10 @@ class DiscardsGraphDumpImpl : public discards::mojom::GraphDump,
   void OnIsAdFrameChanged(
       const performance_manager::FrameNode* frame_node) override {}
   // Ignored.
-  void OnFrameHoldsWebLockChanged(
+  void OnFrameIsHoldingWebLockChanged(
       const performance_manager::FrameNode* frame_node) override {}
   // Ignored.
-  void OnFrameHoldsIndexedDBLockChanged(
+  void OnFrameIsHoldingIndexedDBLockChanged(
       const performance_manager::FrameNode* frame_node) override {}
   // Ignored.
   void OnNonPersistentNotificationCreated(
@@ -104,6 +104,12 @@ class DiscardsGraphDumpImpl : public discards::mojom::GraphDump,
       const performance_manager::PageNode* page_node) override {}
   // Ignored.
   void OnPageOriginTrialFreezePolicyChanged(
+      const performance_manager::PageNode* page_node) override {}
+  // Ignored.
+  void OnPageIsHoldingWebLockChanged(
+      const performance_manager::PageNode* page_node) override {}
+  // Ignored.
+  void OnPageIsHoldingIndexedDBLockChanged(
       const performance_manager::PageNode* page_node) override {}
   void OnMainFrameUrlChanged(
       const performance_manager::PageNode* page_node) override;

@@ -198,6 +198,8 @@ class LenientMockObserver : public PageNodeImpl::Observer {
   MOCK_METHOD1(OnUkmSourceIdChanged, void(const PageNode*));
   MOCK_METHOD1(OnPageLifecycleStateChanged, void(const PageNode*));
   MOCK_METHOD1(OnPageOriginTrialFreezePolicyChanged, void(const PageNode*));
+  MOCK_METHOD1(OnPageIsHoldingWebLockChanged, void(const PageNode*));
+  MOCK_METHOD1(OnPageIsHoldingIndexedDBLockChanged, void(const PageNode*));
   MOCK_METHOD1(OnMainFrameUrlChanged, void(const PageNode*));
   MOCK_METHOD1(OnPageAlmostIdleChanged, void(const PageNode*));
   MOCK_METHOD1(OnMainFrameDocumentChanged, void(const PageNode*));

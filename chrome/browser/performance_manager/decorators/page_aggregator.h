@@ -14,8 +14,8 @@ namespace performance_manager {
 // aggregator are:
 //   - The freeze origin trial policy: The aggregation of the freeze
 //     origin trial policies of its current frames.
-//
-// TODO(sebmarchand): Add the WebLocks and IndexedDB properties.
+//   - The usage of WebLocks in one of the page's frames.
+//   - The usage of IndexedDB locks in one of the page's frames.
 class PageAggregator : public FrameNode::ObserverDefaultImpl,
                        public GraphOwnedDefaultImpl {
  public:
@@ -32,6 +32,9 @@ class PageAggregator : public FrameNode::ObserverDefaultImpl,
   void OnOriginTrialFreezePolicyChanged(
       const FrameNode* frame_node,
       const InterventionPolicy& previous_value) override;
+  void OnFrameIsHoldingWebLockChanged(const FrameNode* frame_node) override;
+  void OnFrameIsHoldingIndexedDBLockChanged(
+      const FrameNode* frame_node) override;
 
   // GraphOwned implementation:
   void OnPassedToGraph(Graph* graph) override;

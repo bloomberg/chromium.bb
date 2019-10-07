@@ -167,14 +167,14 @@ bool FrameNodeImpl::is_ad_frame() const {
   return is_ad_frame_.value();
 }
 
-bool FrameNodeImpl::holds_web_lock() const {
+bool FrameNodeImpl::is_holding_weblock() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return holds_web_lock_.value();
+  return is_holding_weblock_.value();
 }
 
-bool FrameNodeImpl::holds_indexed_db_lock() const {
+bool FrameNodeImpl::is_holding_indexeddb_lock() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return holds_indexed_db_lock_.value();
+  return is_holding_indexeddb_lock_.value();
 }
 
 const base::flat_set<WorkerNodeImpl*>& FrameNodeImpl::child_worker_nodes()
@@ -214,16 +214,16 @@ void FrameNodeImpl::SetIsCurrent(bool is_current) {
 #endif
 }
 
-void FrameNodeImpl::SetHoldsWebLock(bool holds_web_lock) {
+void FrameNodeImpl::SetIsHoldingWebLock(bool is_holding_weblock) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_NE(holds_web_lock, holds_web_lock_.value());
-  holds_web_lock_.SetAndMaybeNotify(this, holds_web_lock);
+  DCHECK_NE(is_holding_weblock, is_holding_weblock_.value());
+  is_holding_weblock_.SetAndMaybeNotify(this, is_holding_weblock);
 }
 
-void FrameNodeImpl::SetHoldsIndexedDBLock(bool holds_indexed_db_lock) {
+void FrameNodeImpl::SetIsHoldingIndexedDBLock(bool is_holding_indexeddb_lock) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_NE(holds_indexed_db_lock, holds_indexed_db_lock_.value());
-  holds_indexed_db_lock_.SetAndMaybeNotify(this, holds_indexed_db_lock);
+  DCHECK_NE(is_holding_indexeddb_lock, is_holding_indexeddb_lock_.value());
+  is_holding_indexeddb_lock_.SetAndMaybeNotify(this, is_holding_indexeddb_lock);
 }
 
 void FrameNodeImpl::OnNavigationCommitted(const GURL& url, bool same_document) {
@@ -361,14 +361,14 @@ bool FrameNodeImpl::IsAdFrame() const {
   return is_ad_frame();
 }
 
-bool FrameNodeImpl::HoldsWebLock() const {
+bool FrameNodeImpl::IsHoldingWebLock() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return holds_web_lock();
+  return is_holding_weblock();
 }
 
-bool FrameNodeImpl::HoldsIndexedDBLock() const {
+bool FrameNodeImpl::IsHoldingIndexedDBLock() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return holds_indexed_db_lock();
+  return is_holding_indexeddb_lock();
 }
 
 const base::flat_set<const WorkerNode*> FrameNodeImpl::GetChildWorkerNodes()

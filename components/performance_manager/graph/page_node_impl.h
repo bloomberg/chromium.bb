@@ -81,6 +81,8 @@ class PageNodeImpl
   ukm::SourceId ukm_source_id() const;
   LifecycleState lifecycle_state() const;
   InterventionPolicy origin_trial_freeze_policy() const;
+  bool is_holding_weblock() const;
+  bool is_holding_indexeddb_lock() const;
   const base::flat_set<FrameNodeImpl*>& main_frame_nodes() const;
   base::TimeTicks usage_estimate_time() const;
   base::TimeDelta cumulative_cpu_usage_estimate() const;
@@ -120,6 +122,8 @@ class PageNodeImpl
   ukm::SourceId GetUkmSourceID() const override;
   LifecycleState GetLifecycleState() const override;
   InterventionPolicy GetOriginTrialFreezePolicy() const override;
+  bool IsHoldingWebLock() const override;
+  bool IsHoldingIndexedDBLock() const override;
   int64_t GetNavigationID() const override;
   base::TimeDelta GetTimeSinceLastNavigation() const override;
   const FrameNode* GetMainFrameNode() const override;
@@ -135,6 +139,8 @@ class PageNodeImpl
   void SetPageAlmostIdle(bool page_almost_idle);
   void SetLifecycleState(LifecycleState lifecycle_state);
   void SetOriginTrialFreezePolicy(InterventionPolicy policy);
+  void SetIsHoldingWebLock(bool is_holding_weblock);
+  void SetIsHoldingIndexedDBLock(bool is_holding_indexeddb_lock);
 
   // The WebContentsProxy associated with this page.
   const WebContentsProxy contents_proxy_;
@@ -224,6 +230,17 @@ class PageNodeImpl
       InterventionPolicy,
       &PageNodeObserver::OnPageOriginTrialFreezePolicyChanged>
       origin_trial_freeze_policy_{InterventionPolicy::kDefault};
+  // Indicates if at least one frame of the page is currently holding a WebLock.
+  ObservedProperty::NotifiesOnlyOnChanges<
+      bool,
+      &PageNodeObserver::OnPageIsHoldingWebLockChanged>
+      is_holding_weblock_{false};
+  // Indicates if at least one frame of the page is currently holding an
+  // IndexedDB lock.
+  ObservedProperty::NotifiesOnlyOnChanges<
+      bool,
+      &PageNodeObserver::OnPageIsHoldingIndexedDBLockChanged>
+      is_holding_indexeddb_lock_{false};
 
   // Storage for PageAlmostIdle user data.
   std::unique_ptr<NodeAttachedData> page_almost_idle_data_;
@@ -232,7 +249,7 @@ class PageNodeImpl
   InternalNodeAttachedDataStorage<sizeof(uintptr_t) + 8> frozen_frame_data_;
 
   // Inline storage for PageAggregatorAccess user data.
-  InternalNodeAttachedDataStorage<sizeof(uintptr_t) + 16> page_aggregator_data_;
+  InternalNodeAttachedDataStorage<sizeof(uintptr_t) + 24> page_aggregator_data_;
 
   DISALLOW_COPY_AND_ASSIGN(PageNodeImpl);
 };
