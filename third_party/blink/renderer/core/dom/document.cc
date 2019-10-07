@@ -8619,7 +8619,8 @@ void Document::ColorSchemeChanged() {
 }
 
 bool Document::InForcedColorsMode() const {
-  return RuntimeEnabledFeatures::ForcedColorsEnabled() &&
+  return RuntimeEnabledFeatures::ForcedColorsEnabled() && Platform::Current() &&
+         Platform::Current()->ThemeEngine() &&
          Platform::Current()->ThemeEngine()->ForcedColors() !=
              ForcedColors::kNone;
 }

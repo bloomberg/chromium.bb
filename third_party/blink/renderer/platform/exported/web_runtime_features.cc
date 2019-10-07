@@ -64,6 +64,14 @@ void WebRuntimeFeatures::EnableFeatureFromString(const std::string& name,
   RuntimeEnabledFeatures::SetFeatureEnabledFromString(name, enable);
 }
 
+void WebRuntimeFeatures::EnableForcedColors(bool enable) {
+  RuntimeEnabledFeatures::SetForcedColorsEnabled(enable);
+}
+
+bool WebRuntimeFeatures::IsForcedColorsEnabled() {
+  return RuntimeEnabledFeatures::ForcedColorsEnabled();
+}
+
 void WebRuntimeFeatures::EnableFractionalScrollOffsets(bool enable) {
   RuntimeEnabledFeatures::SetFractionalScrollOffsetsEnabled(enable);
 }

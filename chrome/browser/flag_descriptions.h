@@ -967,6 +967,9 @@ extern const char kPasswordLeakDetectionDescription[];
 extern const char kForceWebContentsDarkModeName[];
 extern const char kForceWebContentsDarkModeDescription[];
 
+extern const char kForcedColorsName[];
+extern const char kForcedColorsDescription[];
+
 extern const char kPercentBasedScrollingName[];
 extern const char kPercentBasedScrollingDescription[];
 

@@ -2888,6 +2888,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kForceEffectiveConnectionTypeDescription, kOsAll,
      MULTI_VALUE_TYPE(kForceEffectiveConnectionTypeChoices)},
 
+    {"forced-colors", flag_descriptions::kForcedColorsName,
+     flag_descriptions::kForcedColorsDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kForcedColors)},
+
     {"memlog", flag_descriptions::kMemlogName,
      flag_descriptions::kMemlogDescription, kOsAll,
      MULTI_VALUE_TYPE(kMemlogModeChoices)},

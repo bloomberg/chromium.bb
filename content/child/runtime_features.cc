@@ -345,6 +345,9 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
   WebRuntimeFeatures::EnableUpdateHoverAtBeginFrame(
       base::FeatureList::IsEnabled(features::kUpdateHoverAtBeginFrame));
 
+  WebRuntimeFeatures::EnableForcedColors(
+      base::FeatureList::IsEnabled(features::kForcedColors));
+
   WebRuntimeFeatures::EnableFractionalScrollOffsets(
       base::FeatureList::IsEnabled(features::kFractionalScrollOffsets));
 

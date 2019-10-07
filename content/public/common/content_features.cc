@@ -165,6 +165,10 @@ const base::Feature kFeaturePolicyForSandbox{"FeaturePolicyForSandbox",
 const base::Feature kFontSrcLocalMatching{"FontSrcLocalMatching",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables forced colors mode for web content.
+const base::Feature kForcedColors{"ForcedColors",
+                                  base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables scrollers inside Blink to store scroll offsets in fractional
 // floating-point numbers rather than truncating to integers.
 const base::Feature kFractionalScrollOffsets{"FractionalScrollOffsets",

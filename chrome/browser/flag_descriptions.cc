@@ -1613,6 +1613,10 @@ const char kForceWebContentsDarkModeName[] = "Force Dark Mode for Web Contents";
 const char kForceWebContentsDarkModeDescription[] =
     "Automatically render all web contents using a dark theme.";
 
+const char kForcedColorsName[] = "Forced Colors";
+const char kForcedColorsDescription[] =
+    "Enables forced colors mode for web content.";
+
 const char kPercentBasedScrollingName[] = "Percent-based Scrolling";
 const char kPercentBasedScrollingDescription[] =
     "If enabled, mousewheel and keyboard scrolls will scroll by a percentage "

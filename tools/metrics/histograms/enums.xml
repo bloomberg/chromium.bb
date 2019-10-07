@@ -35896,6 +35896,7 @@ from previous Chrome versions.
   <int value="-892428689" label="ManualPasswordGenerationAndroid:enabled"/>
   <int value="-891856063" label="MidiManagerAndroid:enabled"/>
   <int value="-889670978" label="AssistantRoutines:disabled"/>
+  <int value="-887094098" label="ForcedColors:enabled"/>
   <int value="-886912558" label="ChromeHomePromo:enabled"/>
   <int value="-886898803" label="CooperativeScheduling:enabled"/>
   <int value="-885601782" label="enable-contextual-search"/>
@@ -36766,6 +36767,7 @@ from previous Chrome versions.
   <int value="297095559" label="ShowBluetoothDebugLogToggle:disabled"/>
   <int value="299792415" label="OmniboxSuggestionTransparencyOptions:enabled"/>
   <int value="300095239" label="FCMInvalidations:enabled"/>
+  <int value="301630312" label="ForcedColors:disabled"/>
   <int value="301869874" label="NTPPhysicalWebPageSuggestions:disabled"/>
   <int value="303058039" label="AccountConsistency:disabled"/>
   <int value="303252119" label="AutofillExpandedPopupViews:disabled"/>

@@ -47,6 +47,7 @@ CONTENT_EXPORT extern const base::Feature
     kExtraSafelistedRequestHeadersForOutOfBlinkCors;
 CONTENT_EXPORT extern const base::Feature kFeaturePolicyForSandbox;
 CONTENT_EXPORT extern const base::Feature kFontSrcLocalMatching;
+CONTENT_EXPORT extern const base::Feature kForcedColors;
 CONTENT_EXPORT extern const base::Feature kFractionalScrollOffsets;
 CONTENT_EXPORT extern const base::Feature kGuestViewCrossProcessFrames;
 CONTENT_EXPORT extern const base::Feature kHistoryManipulationIntervention;
