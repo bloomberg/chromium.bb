@@ -4013,7 +4013,6 @@ void ChromeContentBrowserClient::OpenURL(
   NavigateParams nav_params(Profile::FromBrowserContext(browser_context),
                             params.url, params.transition);
   nav_params.FillNavigateParamsFromOpenURLParams(params);
-  nav_params.user_gesture = params.user_gesture;
 
   Navigate(&nav_params);
   std::move(callback).Run(nav_params.navigated_or_inserted_contents);
