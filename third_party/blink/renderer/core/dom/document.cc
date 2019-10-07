@@ -3144,6 +3144,14 @@ void Document::SetIsImmersiveArOverlay(bool val) {
     // the fullscreened element and its backdrop transparent.
     documentElement()->PseudoStateChanged(
         CSSSelector::kPseudoXrImmersiveDomOverlay);
+
+    // Ensure that the graphics layer tree gets fully rebuilt on changes,
+    // similar to HTMLVideoElement::DidEnterFullscreen(). This may not be
+    // strictly necessary if the compositing changes are based on visibility
+    // settings, but helps ensure consistency in case it's changed to
+    // detaching layers or re-rooting the graphics layer tree.
+    GetLayoutView()->Compositor()->SetNeedsCompositingUpdate(
+        kCompositingUpdateRebuildTree);
   }
 }
 
