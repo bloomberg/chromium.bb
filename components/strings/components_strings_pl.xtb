@@ -575,7 +575,7 @@
 <translation id="3964661563329879394">{COUNT,plural, =0{Brak}=1{Z 1 witryny }few{Z # witryn }many{Z # witryn }other{Z # witryny }}</translation>
 <translation id="397105322502079400">Obliczanie...</translation>
 <translation id="3973234410852337861">Strona <ph name="HOST_NAME" /> jest zablokowana</translation>
-<translation id="3981540111851280311">Domena <ph name="ENROLLMENT_DOMAIN" /> włączyła w Twojej przeglądarce usługę ochrony Chrome Enterprise. Ma ona dostęp do niektórych Twoich danych.</translation>
+<translation id="3981540111851280311">Domena <ph name="ENROLLMENT_DOMAIN" /> włączyła w Twojej przeglądarce dostępną w Chrome ochronę przed zagrożeniami dla firm. Ta funkcja ma dostęp do niektórych Twoich danych.</translation>
 <translation id="3987940399970879459">Mniej niż 1 MB</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 strona w pobliżu}few{# strony w pobliżu}many{# stron w pobliżu}other{# strony w pobliżu}}</translation>
 <translation id="4030383055268325496">&amp;Cofnij dodanie</translation>
@@ -1028,7 +1028,7 @@
 <translation id="6433490469411711332">Edytuj dane kontaktowe</translation>
 <translation id="6433595998831338502">Serwer <ph name="HOST_NAME" /> odrzucił połączenie.</translation>
 <translation id="6434309073475700221">Przerwij</translation>
-<translation id="6435221585574090192">Udostępniaj administratorowi dane na temat zdarzeń związanych z bezpieczeństwem zgłoszonych przez usługę ochrony Chrome Enterprise. Dane te mogą obejmować adresy URL stron, nazwę i metadane pliku oraz nazwę użytkownika urządzenia i Chrome.</translation>
+<translation id="6435221585574090192">Udostępniaj administratorowi dane na temat zdarzeń związanych z bezpieczeństwem zgłoszonych przez dostępną w Chrome ochronę przed zagrożeniami dla firm. Dane te mogą obejmować adresy URL stron, nazwę i metadane pliku oraz nazwę użytkownika urządzenia i Chrome.</translation>
 <translation id="6440503408713884761">Ignorowany</translation>
 <translation id="6446163441502663861">Kahu (koperta)</translation>
 <translation id="6446608382365791566">Dodaj więcej informacji</translation>
@@ -1257,7 +1257,7 @@ Dodatkowe informacje:
 <translation id="7610193165460212391">Wartość spoza zakresu (<ph name="VALUE" />)</translation>
 <translation id="7613889955535752492">Wygasa: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Masz już dane zaszyfrowane przy użyciu innej wersji hasła konta Google. Wpisz je poniżej.</translation>
-<translation id="7625784245512586808">Usługa ochrony Chrome Enterprise</translation>
+<translation id="7625784245512586808">Dostępna w Chrome ochrona przed zagrożeniami dla firm</translation>
 <translation id="7633909222644580952">Dane o wydajności i raporty o awariach</translation>
 <translation id="7637571805876720304">Usunąć tę kartę kredytową z Chromium?</translation>
 <translation id="7638605456503525968">Porty szeregowe</translation>
@@ -1515,7 +1515,7 @@ Dodatkowe informacje:
 <translation id="9080712759204168376">Podsumowanie zamówienia</translation>
 <translation id="9089260154716455634">Zasada „po godzinach”:</translation>
 <translation id="9095388113577226029">Więcej języków…</translation>
-<translation id="9098981495403789647">Twój administrator włączył w przeglądarce usługę ochrony Chrome Enterprise. Ma ona dostęp do niektórych Twoich danych.</translation>
+<translation id="9098981495403789647">Twój administrator włączył w przeglądarce dostępną w Chrome ochronę przed zagrożeniami dla firm. Ta funkcja ma dostęp do niektórych Twoich danych.</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> zazwyczaj używa szyfrowania do ochrony Twoich informacji. Gdy tym razem przeglądarka Chromium próbowała połączyć się ze stroną <ph name="SITE" />, odesłała ona nietypowe i nieprawidłowe dane logowania. Może się tak zdarzyć, gdy pod stronę <ph name="SITE" /> podszywa się osoba atakująca albo gdy ekran logowania do sieci Wi-Fi przerwie połączenie. Twoje informacje są nadal bezpieczne, bo połączenie w Chromium zakończyło się przed wymianą jakichkolwiek danych.</translation>
 <translation id="9106062320799175032">Dodaj adres rozliczeniowy</translation>
 <translation id="9114524666733003316">Sprawdzam kartę…</translation>

@@ -128,9 +128,9 @@
 <translation id="155039086686388498">എഞ്ചിനീയറിംഗ്-D</translation>
 <translation id="1555130319947370107">നീല</translation>
 <translation id="1559528461873125649">അത്തരത്തിലുള്ള ഫയലോ ഡയറക്റ്ററിയോ ഇല്ല</translation>
-<translation id="1559572115229829303">&lt;p&gt;നിങ്ങളുടെ ഉപകരണത്തിന്റെ തീയതിയും സമയവും (<ph name="DATE_AND_TIME" />) തെറ്റായതിനാൽ <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> എന്നതിലേക്ക് ഒരു സ്വകാര്യ കണക്ഷൻ സ്ഥാപിക്കാനാകില്ല.&lt;/p&gt;
+<translation id="1559572115229829303">&lt;p&gt;നിങ്ങളുടെ ഉപകരണത്തിന്‍റെ തീയതിയും സമയവും (<ph name="DATE_AND_TIME" />) തെറ്റായതിനാൽ <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> എന്നതിലേക്ക് ഒരു സ്വകാര്യ കണക്ഷൻ സ്ഥാപിക്കാനാകില്ല.&lt;/p&gt;
 
-          &lt;p&gt;&lt;strong&gt;ക്രമീകരണ&lt;/strong&gt; ആപ്പിന്റെ &lt;strong&gt;പൊതുവായവ&lt;/strong&gt; വിഭാഗത്തിൽ നിന്ന് തീയതിയും സമയവും ക്രമീകരിക്കുക.&lt;/p&gt;</translation>
+      &lt;p&gt;&lt;strong&gt;ക്രമീകരണ&lt;/strong&gt; ആപ്പിന്‍റെ &lt;strong&gt;പൊതുവായവ&lt;/strong&gt; വിഭാഗത്തിൽ നിന്ന് തീയതിയും സമയവും ക്രമീകരിക്കുക.&lt;/p&gt;</translation>
 <translation id="1569487616857761740">കാലഹരണപ്പെടുന്ന തീയതി നൽകുക</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">ഈ വെബ്‌പേജ് പ്രദർശിപ്പിക്കുമ്പോൾ എന്തോ കുഴപ്പം സംഭവിച്ചു.</translation>
@@ -262,7 +262,7 @@
 <translation id="2270484714375784793">ഫോൺ നമ്പർ</translation>
 <translation id="2277103315734023688">മുന്നോട്ട് നീക്കുക</translation>
 <translation id="2283340219607151381">വിലാസങ്ങൾ സംരക്ഷിച്ച് സ്വമേധയാ പൂരിപ്പിക്കുക</translation>
-<translation id="2292556288342944218">നിങ്ങളുടെ ഇന്‍റർനെറ്റ് ആക്‌സസ് തടഞ്ഞു</translation>
+<translation id="2292556288342944218">നിങ്ങളുടെ ഇന്റർനെറ്റ് ആക്‌സസ്സ് ബ്ലോക്ക് ചെയ്‌തു</translation>
 <translation id="2297722699537546652">B5 (എൻവലപ്പ്)</translation>
 <translation id="2310021320168182093">Chou2 (എൻവലപ്പ്)</translation>
 <translation id="2316887270356262533">1 MB-യിൽ കുറഞ്ഞ ഡാറ്റ ലാഭിക്കുന്നു. അടുത്തതവണ നിങ്ങൾ സന്ദർശിക്കുമ്പോൾ ചില സൈറ്റുകൾ ഇതിനേക്കാൾ പതുക്കെ ലോഡാകാം.</translation>
@@ -405,7 +405,7 @@
 <translation id="3057676462092457419">DnsOverHttps മോഡ് <ph name="SECURE_DNS_MODE_SECURE" /> ഇപ്പോഴും പിന്തുണയ്‌ക്കുന്നില്ല, <ph name="SECURE_DNS_MODE_OFF" /> എന്നതിലേക്ക് മോഡ് സജ്ജീകരിച്ചു.</translation>
 <translation id="3060227939791841287">C9 (എൻവലപ്പ്)</translation>
 <translation id="3061707000357573562">പാച്ച് സേവനം</translation>
-<translation id="3064966200440839136">ഒരു എക്‌സ്‌റ്റേണൽ അപ്ലിക്കേഷൻ വഴി പണമടയ്‌ക്കാൻ അദൃശ്യ മോഡ് ഒഴിവാക്കുന്നു. തുടരണോ?</translation>
+<translation id="3064966200440839136">ഒരു എക്‌സ്‌റ്റേണൽ ആപ്പ് വഴി പണമടയ്‌ക്കാൻ അദൃശ്യ മോഡ് ഒഴിവാക്കുന്നു. തുടരണോ?</translation>
 <translation id="3095940652251934233">പ്രസ്‌താവന</translation>
 <translation id="3096100844101284527">പിക്കപ്പ് വിലാസം ചേർക്കുക</translation>
 <translation id="3105172416063519923">അസറ്റ് ഐഡി:</translation>
@@ -850,7 +850,7 @@
 <translation id="5490432419156082418">വിലാസങ്ങളും മറ്റും</translation>
 <translation id="5492298309214877701">കമ്പനി, ഓർഗനൈസേഷൻ അല്ലെങ്കിൽ സ്‌കൂൾ ഇൻട്രാനെറ്റിലെ ഈ സൈറ്റിന്, ബാഹ്യ വെബ്‌സൈറ്റിന് സമാനമായ URL ആണുള്ളത്.
     <ph name="LINE_BREAK" />
-    നിങ്ങളുടെ സിസ്‌റ്റം അഡ്‌മിനിസ്‌ട്രേറ്ററുമായി ബന്ധപ്പെടാൻ ശ്രമിക്കുക.</translation>
+    നിങ്ങളുടെ സിസ്‌റ്റം അഡ്‌മിനുമായി ബന്ധപ്പെടാൻ ശ്രമിക്കുക.</translation>
 <translation id="549333378215107354">വലുപ്പം 3</translation>
 <translation id="5509762909502811065">B0</translation>
 <translation id="5509780412636533143">നിയന്ത്രിത ബുക്കുമാർക്കുകൾ</translation>
@@ -1050,7 +1050,7 @@
 <translation id="6624427990725312378">കോണ്‍ടാക്റ്റ് വിവരം</translation>
 <translation id="6626291197371920147">ശരിയായ കാർഡ് നമ്പർ ചേർക്കുക</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> തിരയൽ</translation>
-<translation id="6630809736994426279"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> എന്ന സൈറ്റിലെ നിലവിലുള്ള ആക്രമികൾ നിങ്ങളുടെ വിവരങ്ങൾ ഇല്ലാതാക്കാനോ മോഷ്‌ടിക്കാനോ ഇടയുള്ള (ഉദാഹരണത്തിന്, ഫോട്ടോകൾ, പാസ്‌വേഡുകൾ, സന്ദേശങ്ങൾ, ക്രെഡിറ്റ് കാർഡുകൾ മുതലായവ) അപകടകരമായ പ്രോഗ്രാമുകൾ Mac-ൽ ഇൻസ്‌റ്റാളുചെയ്യാൻ ശ്രമിച്ചേക്കാം. <ph name="BEGIN_LEARN_MORE_LINK" />കൂടുതലറിയുക<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="6630809736994426279"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> എന്ന സൈറ്റിലെ നിലവിലുള്ള അക്രമികൾ നിങ്ങളുടെ വിവരങ്ങൾ ഇല്ലാതാക്കാനോ മോഷ്‌ടിക്കാനോ ഇടയുള്ള (ഉദാഹരണത്തിന്, ഫോട്ടോകൾ, പാസ്‌വേഡുകൾ, സന്ദേശങ്ങൾ, ക്രെഡിറ്റ് കാർഡുകൾ മുതലായവ) അപകടകരമായ പ്രോഗ്രാമുകൾ Mac-ൽ ഇൻസ്‌റ്റാൾ ചെയ്യാൻ ശ്രമിച്ചേക്കാം. <ph name="BEGIN_LEARN_MORE_LINK" />കൂടുതലറിയുക<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6631202559048444592">ഈ നയത്തിന് ഒന്നിലധികം ഉറവിടങ്ങളുണ്ടെങ്കിലും മൂല്യങ്ങൾ സമാനമാണ്.</translation>
 <translation id="6643016212128521049">മായ്‌ക്കുക</translation>
 <translation id="6644283850729428850">ഈ നയം ഇല്ലാതാക്കി.</translation>
@@ -1287,7 +1287,7 @@
 <translation id="782886543891417279">നിങ്ങൾ ഉപയോഗിക്കുന്ന Wi-Fi (<ph name="WIFI_NAME" />) അതിന്റെ ലോഗിൻ പേജ് സന്ദർശിക്കാൻ ആവശ്യപ്പെടാം..</translation>
 <translation id="7836231406687464395">പോസ്‌റ്റ്ഫിക്‌സ് (എൻവലപ്പ്)</translation>
 <translation id="7844689747373518809">{COUNT,plural, =0{ഒന്നുമില്ല}=1{ഒരു ആപ്പ് (<ph name="EXAMPLE_APP_1" />)}=2{2 ആപ്പുകൾ (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />)}other{# ആപ്പുകൾ (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />, <ph name="AND_MORE" />)}}</translation>
-<translation id="785549533363645510">എന്നിരുന്നാലും നിങ്ങൾ അദൃശ്യനല്ല. അദൃശ്യമാക്കുന്നതിലൂടെ, നിങ്ങളുടെ തൊഴിൽ ദാതാവിൽ നിന്നോ ഇന്റർനെറ്റ് സേവന ദാതാവിൽ നിന്നോ നിങ്ങൾ സന്ദർശിക്കുന്ന വെബ്‌സൈറ്റുകളിൽ നിന്നോ നിങ്ങളുടെ ബ്രൗസിംഗിനെ മറയ്‌ക്കില്ല.</translation>
+<translation id="785549533363645510">എന്നിരുന്നാലും നിങ്ങൾ അദൃശ്യനല്ല. അദൃശ്യ മോഡിലേക്ക് പോകുന്നത്, നിങ്ങളുടെ തൊഴിൽ ദാതാവിൽ നിന്നോ ഇന്റർനെറ്റ് സേവന ദാതാവിൽ നിന്നോ നിങ്ങൾ സന്ദർശിക്കുന്ന വെബ്‌സൈറ്റുകളിൽ നിന്നോ ഉള്ള ബ്രൗസിംഗിനെ മറയ്‌ക്കില്ല.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7862185352068345852">സൈറ്റ് വിടണോ?</translation>
 <translation id="7878176543348854470">ഡെബിറ്റ് കാർഡുകളും പ്രീപെയ്ഡ് കാർഡുകളും സ്വീകരിക്കുന്നു.</translation>
@@ -1520,7 +1520,7 @@
 <translation id="9183425211371246419"><ph name="HOST_NAME" /> പിന്തുണയ്‌ക്കാത്ത ഒരു പ്രോട്ടോക്കോളാണ് ഉപയോഗിക്കുന്നത്.</translation>
 <translation id="9205078245616868884">നിങ്ങളുടെ സമന്വയ പാസ്‌ഫ്രെയ്‌സ് ഉപയോഗിച്ച് ഡാറ്റ എൻക്രിപ്‌റ്റ് ചെയ്‌തു. സമന്വയം ആരംഭിക്കുന്നതിന് ഇത് നൽകുക.</translation>
 <translation id="9207861905230894330">ലേഖനം ചേർക്കാനായില്ല.</translation>
-<translation id="9215416866750762878">ഈ സൈറ്റിലേക്ക് സുരക്ഷിതമായി കണക്റ്റ് ചെയ്യുന്നതിൽ നിന്ന് Chrome-നെ ഒരു ആപ്പ് തടയുന്നു</translation>
+<translation id="9215416866750762878">ഈ സൈറ്റിലേക്ക് സുരക്ഷിതമായി കണക്റ്റുചെയ്യുന്നതിൽ നിന്ന് Chrome-നെ ഒരു ആപ്പ് തടയുന്നു</translation>
 <translation id="9219103736887031265">ചിത്രങ്ങൾ‌</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">ഫോം മായ്‌ക്കുക</translation>
