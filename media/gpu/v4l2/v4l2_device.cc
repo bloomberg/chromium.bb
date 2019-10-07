@@ -795,7 +795,7 @@ base::Optional<struct v4l2_format> V4L2Queue::SetFormat(uint32_t fourcc,
                                                         const gfx::Size& size,
                                                         size_t buffer_size) {
   struct v4l2_format format = {};
-  format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
+  format.type = type_;
   format.fmt.pix_mp.pixelformat = fourcc;
   format.fmt.pix_mp.width = size.width();
   format.fmt.pix_mp.height = size.height();
@@ -803,7 +803,8 @@ base::Optional<struct v4l2_format> V4L2Queue::SetFormat(uint32_t fourcc,
   format.fmt.pix_mp.plane_fmt[0].sizeimage = buffer_size;
   if (device_->Ioctl(VIDIOC_S_FMT, &format) != 0 ||
       format.fmt.pix_mp.pixelformat != fourcc) {
-    VPLOGF(2) << "Failed to set output format. format_fourcc=" << fourcc;
+    VPLOGF(2) << "Failed to set format on queue " << type_
+              << ". format_fourcc=0x" << std::hex << fourcc;
     return base::nullopt;
   }
 
