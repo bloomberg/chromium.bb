@@ -13,7 +13,8 @@
 #error "This file requires ARC support."
 #endif
 
-@interface PasswordBreachCoordinator () <PasswordBreachCommands>
+@interface PasswordBreachCoordinator () <PasswordBreachCommands,
+                                         PasswordBreachPresenter>
 
 // The main view controller for this coordinator.
 @property(nonatomic, strong) PasswordBreachViewController* viewController;
@@ -63,6 +64,7 @@
   self.viewController = [[PasswordBreachViewController alloc] init];
   self.mediator =
       [[PasswordBreachMediator alloc] initWithConsumer:self.viewController
+                                             presenter:self
                                                    URL:URL
                                               leakType:leakType];
   self.viewController.actionHandler = self.mediator;
