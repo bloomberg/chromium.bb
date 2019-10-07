@@ -371,6 +371,7 @@ class CONTENT_EXPORT RenderWidget
   bool WillHandleMouseEvent(const blink::WebMouseEvent& event) override;
 
   // RenderWidgetScreenMetricsEmulatorDelegate
+  void Redraw() override;
   void SynchronizeVisualProperties(
       const VisualProperties& resize_params) override;
   void SetScreenMetricsEmulationParameters(
@@ -531,6 +532,9 @@ class CONTENT_EXPORT RenderWidget
   void GetCompositionCharacterBounds(std::vector<gfx::Rect>* character_bounds);
 
   void bbHandleInputEvent(const blink::WebInputEvent& event);
+
+  void bbIgnoreSynchronizeVisualPropertiesIPC(
+                                bool ignore_synchronize_visual_properties_ipc);
 
   // Called when the Widget has changed size as a result of an auto-resize.
   void DidAutoResize(const gfx::Size& new_size);
@@ -1172,6 +1176,7 @@ class CONTENT_EXPORT RenderWidget
 
   uint32_t last_capture_sequence_number_ = 0u;
 
+  bool bb_ignore_synchronize_visual_properties_ipc_ = false;
   bool bb_OnHandleInputEvent_no_ack_{false};
   // Used to generate a callback for the reply when making the warmup frame
   // sink, and to cancel that callback if the warmup is aborted.

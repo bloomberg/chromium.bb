@@ -158,7 +158,7 @@ void GpuClient::EstablishGpuChannel(EstablishGpuChannelCallback callback) {
   if (gpu_channel_requested_)
     return;
   gpu_channel_requested_ = true;
-  const bool is_gpu_host = false;
+  const bool is_gpu_host = true;
   gpu_host->EstablishGpuChannel(
       client_id_, client_tracing_id_, is_gpu_host,
       base::BindOnce(&GpuClient::OnEstablishGpuChannel,
