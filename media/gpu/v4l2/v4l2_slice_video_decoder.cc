@@ -369,6 +369,16 @@ void V4L2SliceVideoDecoder::InitializeTask(const VideoDecoderConfig& config,
   needs_bitstream_conversion_ = (config.codec() == kCodecH264);
   pixel_aspect_ratio_ = config.GetPixelAspectRatio();
 
+  // Create Input/Output V4L2Queue
+  input_queue_ = device_->GetQueue(V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE);
+  output_queue_ = device_->GetQueue(V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE);
+  if (!input_queue_ || !output_queue_) {
+    VLOGF(1) << "Failed to create V4L2 queue.";
+    client_task_runner_->PostTask(FROM_HERE,
+                                  base::BindOnce(std::move(init_cb), false));
+    return;
+  }
+
   // Setup input format.
   if (!SetupInputFormat(input_format_fourcc)) {
     VLOGF(1) << "Failed to setup input format.";
@@ -385,15 +395,6 @@ void V4L2SliceVideoDecoder::InitializeTask(const VideoDecoderConfig& config,
     return;
   }
 
-  // Create Input/Output V4L2Queue
-  input_queue_ = device_->GetQueue(V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE);
-  output_queue_ = device_->GetQueue(V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE);
-  if (!input_queue_ || !output_queue_) {
-    VLOGF(1) << "Failed to create V4L2 queue.";
-    client_task_runner_->PostTask(FROM_HERE,
-                                  base::BindOnce(std::move(init_cb), false));
-    return;
-  }
   if (input_queue_->AllocateBuffers(kNumInputBuffers, V4L2_MEMORY_MMAP) == 0) {
     VLOGF(1) << "Failed to allocate input buffer.";
     client_task_runner_->PostTask(FROM_HERE,
