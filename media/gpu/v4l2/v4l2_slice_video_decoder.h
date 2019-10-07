@@ -140,6 +140,20 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder : public VideoDecoder,
     kWaitSubFrameDecoded,
   };
 
+  class BitstreamIdGenerator {
+   public:
+    BitstreamIdGenerator() { DETACH_FROM_SEQUENCE(sequence_checker_); }
+    int32_t GetNextBitstreamId() {
+      DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+      next_bitstream_buffer_id_ = (next_bitstream_buffer_id_ + 1) & 0x7FFFFFFF;
+      return next_bitstream_buffer_id_;
+    }
+
+   private:
+    int32_t next_bitstream_buffer_id_ = 0;
+    SEQUENCE_CHECKER(sequence_checker_);
+  };
+
   // Initialize on decoder thread.
   void InitializeTask(const VideoDecoderConfig& config,
                       InitCB init_cb,
@@ -173,7 +187,8 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder : public VideoDecoder,
 
   // Enqueue |request| to the pending decode request queue, and try to decode
   // from the queue.
-  void EnqueueDecodeTask(DecodeRequest request);
+  void EnqueueDecodeTask(scoped_refptr<DecoderBuffer> buffer,
+                         V4L2SliceVideoDecoder::DecodeCB decode_cb);
   // Try to decode buffer from the pending decode request queue.
   // This method stops decoding when:
   // - Run out of surface
@@ -199,8 +214,6 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder : public VideoDecoder,
   // Try to dequeue input and output buffers from device.
   void ServiceDeviceTask(bool event);
 
-  // Get the next bitsream ID.
-  int32_t GetNextBitstreamId();
   // Convert the frame and call the output callback.
   void RunOutputCB(scoped_refptr<VideoFrame> frame,
                    const gfx::Rect& visible_rect,
@@ -267,8 +280,8 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder : public VideoDecoder,
 
   // True if the decoder needs bitstream conversion before decoding.
   bool needs_bitstream_conversion_ = false;
-  // Next bitstream ID.
-  int32_t next_bitstream_buffer_id_ = 0;
+
+  BitstreamIdGenerator bitstream_id_generator_;
 
   // Set to true by CreateInputBuffers() if the codec driver supports requests.
   bool supports_requests_ = false;

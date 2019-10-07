@@ -631,24 +631,29 @@ void V4L2SliceVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
   decoder_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&V4L2SliceVideoDecoder::EnqueueDecodeTask, weak_this_,
-                     DecodeRequest(std::move(buffer), std::move(decode_cb),
-                                   GetNextBitstreamId())));
+                     std::move(buffer), std::move(decode_cb)));
 }
 
-void V4L2SliceVideoDecoder::EnqueueDecodeTask(DecodeRequest request) {
+void V4L2SliceVideoDecoder::EnqueueDecodeTask(
+    scoped_refptr<DecoderBuffer> buffer,
+    V4L2SliceVideoDecoder::DecodeCB decode_cb) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DCHECK_NE(state_, State::kUninitialized);
 
   if (state_ == State::kError) {
-    std::move(request.decode_cb).Run(DecodeStatus::DECODE_ERROR);
+    std::move(decode_cb).Run(DecodeStatus::DECODE_ERROR);
     return;
   }
 
-  if (!request.buffer->end_of_stream()) {
-    bitstream_id_to_timestamp_.Put(request.bitstream_id,
-                                   request.buffer->timestamp());
+  const int32_t bitstream_id = bitstream_id_generator_.GetNextBitstreamId();
+
+  if (!buffer->end_of_stream()) {
+    bitstream_id_to_timestamp_.Put(bitstream_id, buffer->timestamp());
   }
-  decode_request_queue_.push(std::move(request));
+
+  decode_request_queue_.push(
+      DecodeRequest(std::move(buffer), std::move(decode_cb), bitstream_id));
+
   // If we are already decoding, then we don't need to pump again.
   if (!current_decode_request_)
     PumpDecodeTask();
@@ -1080,13 +1085,6 @@ void V4L2SliceVideoDecoder::ServiceDeviceTask(bool /* event */) {
         FROM_HERE,
         base::BindOnce(&V4L2SliceVideoDecoder::PumpDecodeTask, weak_this_));
   }
-}
-
-int32_t V4L2SliceVideoDecoder::GetNextBitstreamId() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
-
-  next_bitstream_buffer_id_ = (next_bitstream_buffer_id_ + 1) & 0x7FFFFFFF;
-  return next_bitstream_buffer_id_;
 }
 
 void V4L2SliceVideoDecoder::RunDecodeCB(DecodeCB cb, DecodeStatus status) {
