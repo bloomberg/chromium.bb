@@ -20,6 +20,7 @@
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_core_observer.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/service_worker_running_info.h"
@@ -55,7 +56,8 @@ class URLLoaderFactoryGetter;
 class CONTENT_EXPORT ServiceWorkerContextWrapper
     : public ServiceWorkerContext,
       public ServiceWorkerContextCoreObserver,
-      public base::RefCountedThreadSafe<ServiceWorkerContextWrapper> {
+      public base::RefCountedThreadSafe<ServiceWorkerContextWrapper,
+                                        BrowserThread::DeleteOnUIThread> {
  public:
   using StatusCallback =
       base::OnceCallback<void(blink::ServiceWorkerStatusCode)>;
@@ -326,9 +328,9 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
 
  private:
   friend class BackgroundSyncManagerTest;
-  friend class base::RefCountedThreadSafe<ServiceWorkerContextWrapper>;
-  friend class EmbeddedWorkerTestHelper;
+  friend class base::DeleteHelper<ServiceWorkerContextWrapper>;
   friend class EmbeddedWorkerBrowserTest;
+  friend class EmbeddedWorkerTestHelper;
   friend class FakeServiceWorkerContextWrapper;
   friend class ServiceWorkerClientsApiBrowserTest;
   friend class ServiceWorkerInternalsUI;
@@ -336,6 +338,7 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   friend class ServiceWorkerProcessManager;
   friend class ServiceWorkerRequestHandler;
   friend class ServiceWorkerVersionBrowserTest;
+  friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
 
   ~ServiceWorkerContextWrapper() override;
 

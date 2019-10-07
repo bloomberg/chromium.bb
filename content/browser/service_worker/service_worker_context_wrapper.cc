@@ -343,12 +343,16 @@ BrowserThread::ID ServiceWorkerContext::GetCoreThreadId() {
 void ServiceWorkerContextWrapper::OnRegistrationCompleted(
     int64_t registration_id,
     const GURL& scope) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   for (auto& observer : observer_list_)
     observer.OnRegistrationCompleted(scope);
 }
 
 void ServiceWorkerContextWrapper::OnRegistrationStored(int64_t registration_id,
                                                        const GURL& scope) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   for (auto& observer : observer_list_)
     observer.OnRegistrationStored(registration_id, scope);
 }
@@ -356,12 +360,16 @@ void ServiceWorkerContextWrapper::OnRegistrationStored(int64_t registration_id,
 void ServiceWorkerContextWrapper::OnReportConsoleMessage(
     int64_t version_id,
     const ConsoleMessage& message) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   for (auto& observer : observer_list_)
     observer.OnReportConsoleMessage(version_id, message);
 }
 
 void ServiceWorkerContextWrapper::OnNoControllees(int64_t version_id,
                                                   const GURL& scope) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   for (auto& observer : observer_list_)
     observer.OnNoControllees(version_id, scope);
 }
@@ -407,6 +415,8 @@ void ServiceWorkerContextWrapper::OnRunningStateChanged(
 }
 
 void ServiceWorkerContextWrapper::OnDeleteAndStartOver() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   for (int version_id : running_service_workers_) {
     for (auto& observer : observer_list_) {
       observer.OnVersionRunningStatusChanged(this, version_id,
@@ -420,6 +430,8 @@ void ServiceWorkerContextWrapper::OnVersionStateChanged(
     int64_t version_id,
     const GURL& scope,
     ServiceWorkerVersion::Status status) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   if (status == ServiceWorkerVersion::Status::ACTIVATED) {
     for (auto& observer : observer_list_)
       observer.OnVersionActivated(version_id, scope);
@@ -431,11 +443,15 @@ void ServiceWorkerContextWrapper::OnVersionStateChanged(
 
 void ServiceWorkerContextWrapper::AddObserver(
     ServiceWorkerContextObserver* observer) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   observer_list_.AddObserver(observer);
 }
 
 void ServiceWorkerContextWrapper::RemoveObserver(
     ServiceWorkerContextObserver* observer) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   observer_list_.RemoveObserver(observer);
 }
 
@@ -1451,6 +1467,8 @@ void ServiceWorkerContextWrapper::RemoveObserver(
 }
 
 ServiceWorkerContextWrapper::~ServiceWorkerContextWrapper() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   for (auto& observer : observer_list_)
     observer.OnDestruct(static_cast<ServiceWorkerContext*>(this));
 
