@@ -52,14 +52,15 @@ class FilmGrain {
   //     8       -128        127
   //    10       -512        511
   //    12      -2048       2047
+  //
   // So int8_t is big enough for bitdepth 8, whereas bitdepths 10 and 12 need
   // int16_t.
+  using GrainType =
+      typename std::conditional<bitdepth == 8, int8_t, int16_t>::type;
   // The minimum value of film grain noise.
   static constexpr int kGrainMin = -(1 << (bitdepth - 1));
   // The maximum value of film grain noise.
   static constexpr int kGrainMax = (1 << (bitdepth - 1)) - 1;
-  using GrainType =
-      typename std::conditional<bitdepth == 8, int8_t, int16_t>::type;
 
   FilmGrain(const FilmGrainParams& params, bool is_monochrome,
             bool color_matrix_is_identity, int subsampling_x, int subsampling_y,

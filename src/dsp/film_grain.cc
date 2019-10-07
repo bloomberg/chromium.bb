@@ -290,6 +290,10 @@ void FilmGrainInit_C() {
 
 // Static data member definitions.
 template <int bitdepth>
+constexpr int FilmGrain<bitdepth>::kGrainMin;
+template <int bitdepth>
+constexpr int FilmGrain<bitdepth>::kGrainMax;
+template <int bitdepth>
 constexpr int FilmGrain<bitdepth>::kLumaWidth;
 template <int bitdepth>
 constexpr int FilmGrain<bitdepth>::kLumaHeight;
