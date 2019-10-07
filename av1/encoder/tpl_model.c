@@ -410,13 +410,6 @@ static int get_overlap_area(int grid_pos_row, int grid_pos_col, int ref_pos_row,
   return width * height;
 }
 
-static double iiratio_nonlinear(double iiratio) {
-  double z = 8 * (iiratio - 0.5);
-  double sigmoid = 1.0 / (1.0 + exp(-z));
-  return sigmoid;
-  return iiratio * iiratio;
-}
-
 int av1_tpl_ptr_pos(AV1_COMP *cpi, int mi_row, int mi_col, int stride) {
   const int right_shift = cpi->tpl_stats_block_mis_log2;
 
@@ -473,6 +466,16 @@ static AOM_INLINE void tpl_model_update_b(AV1_COMP *cpi, TplDepFrame *tpl_frame,
   int grid_pos_col_base = round_floor(ref_pos_col, bw) * bw;
   int block;
 
+  int64_t cur_dep_dist = tpl_stats_ptr->recrf_dist - tpl_stats_ptr->srcrf_dist;
+  int64_t mc_dep_dist = (int64_t)(
+      tpl_stats_ptr->mc_dep_dist *
+      ((double)(tpl_stats_ptr->recrf_dist - tpl_stats_ptr->srcrf_dist) /
+       tpl_stats_ptr->recrf_dist));
+  int64_t delta_rate = tpl_stats_ptr->recrf_rate - tpl_stats_ptr->srcrf_rate;
+  int64_t mc_dep_rate =
+      delta_rate_cost(tpl_stats_ptr->mc_dep_rate, tpl_stats_ptr->recrf_dist,
+                      tpl_stats_ptr->srcrf_dist, pix_num);
+
   for (block = 0; block < 4; ++block) {
     int grid_pos_row = grid_pos_row_base + bh * (block >> 1);
     int grid_pos_col = grid_pos_col_base + bw * (block & 0x01);
@@ -483,42 +486,12 @@ static AOM_INLINE void tpl_model_update_b(AV1_COMP *cpi, TplDepFrame *tpl_frame,
           grid_pos_row, grid_pos_col, ref_pos_row, ref_pos_col, block, bsize);
       int ref_mi_row = round_floor(grid_pos_row, bh) * mi_height;
       int ref_mi_col = round_floor(grid_pos_col, bw) * mi_width;
-
-      const double iiratio_nl = iiratio_nonlinear(
-          (double)tpl_stats_ptr->inter_cost / tpl_stats_ptr->intra_cost);
-      tpl_stats_ptr->mc_dep_cost =
-          tpl_stats_ptr->intra_cost + tpl_stats_ptr->mc_flow;
-      int64_t mc_flow =
-          (int64_t)(tpl_stats_ptr->quant_ratio * tpl_stats_ptr->mc_dep_cost *
-                    (1.0 - iiratio_nl));
-
-      int64_t cur_dep_dist =
-          tpl_stats_ptr->recrf_dist - tpl_stats_ptr->srcrf_dist;
-      int64_t mc_dep_dist = (int64_t)(
-          tpl_stats_ptr->mc_dep_dist *
-          ((double)(tpl_stats_ptr->recrf_dist - tpl_stats_ptr->srcrf_dist) /
-           tpl_stats_ptr->recrf_dist));
-
-      int64_t delta_rate =
-          tpl_stats_ptr->recrf_rate - tpl_stats_ptr->srcrf_rate;
-      int64_t mc_dep_rate =
-          delta_rate_cost(tpl_stats_ptr->mc_dep_rate, tpl_stats_ptr->recrf_dist,
-                          tpl_stats_ptr->srcrf_dist, pix_num);
-
-#if !USE_TPL_CLASSIC_MODEL
-      int64_t mc_saved = tpl_stats_ptr->intra_cost - tpl_stats_ptr->inter_cost;
-#endif  // #if !USE_TPL_CLASSIC_MODEL
       const int step = 1 << cpi->tpl_stats_block_mis_log2;
+
       for (int idy = 0; idy < mi_height; idy += step) {
         for (int idx = 0; idx < mi_width; idx += step) {
           TplDepStats *des_stats = &ref_stats_ptr[av1_tpl_ptr_pos(
               cpi, ref_mi_row + idy, ref_mi_col + idx, ref_tpl_frame->stride)];
-          des_stats->mc_flow += (mc_flow * overlap_area) / pix_num;
-#if !USE_TPL_CLASSIC_MODEL
-          des_stats->mc_count += overlap_area << TPL_DEP_COST_SCALE_LOG2;
-          des_stats->mc_saved += (mc_saved * overlap_area) / pix_num;
-#endif  // !USE_TPL_CLASSIC_MODEL
-
           des_stats->mc_dep_dist +=
               ((cur_dep_dist + mc_dep_dist) * overlap_area) / pix_num;
           des_stats->mc_dep_rate +=
@@ -588,7 +561,6 @@ static AOM_INLINE void tpl_model_store(AV1_COMP *cpi,
       tpl_ptr->recrf_rate = recrf_rate;
       tpl_ptr->src_rdcost = src_rdcost;
       tpl_ptr->rec_rdcost = rec_rdcost;
-      tpl_ptr->quant_ratio = src_stats->quant_ratio;
       tpl_ptr->mv.as_int = src_stats->mv.as_int;
       tpl_ptr->ref_frame_index = src_stats->ref_frame_index;
       ++tpl_ptr;
@@ -739,8 +711,6 @@ static AOM_INLINE void mc_flow_dispenser(AV1_COMP *cpi, int frame_idx,
                       &tpl_stats);
 
       // Motion flow dependency dispenser.
-      double quant_ratio = (double)recon_error / sse;
-      tpl_stats.quant_ratio = quant_ratio;
       tpl_model_store(cpi, tpl_frame->tpl_stats_ptr, mi_row, mi_col, bsize,
                       tpl_frame->stride, &tpl_stats);
     }
