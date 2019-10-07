@@ -185,6 +185,7 @@ class PixelIntegrationTest(
       pages += namespace.MacSpecificPages(cls.test_base_name)
     if sys.platform.startswith('win'):
       pages += namespace.DirectCompositionPages(cls.test_base_name)
+      pages += namespace.LowLatencySwapChainPages(cls.test_base_name)
     for p in pages:
       yield(p.name, gpu_relative_path + p.url, (p))
 
