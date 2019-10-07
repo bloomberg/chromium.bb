@@ -628,6 +628,10 @@
     "label": "//chrome/android:chrome_modern_public_bundle_smoke_test",
     "type": "console_test_launcher",
   },
+  "chrome_modern_public_bundle_fake_modules_smoke_test": {
+    "label": "//chrome/android:chrome_modern_public_bundle_fake_modules_smoke_test",
+    "type": "console_test_launcher",
+  },
   "chrome_official_builder": {
     "label": "//:chrome_official_builder",
     "type": "additional_compile_target",
@@ -1758,6 +1762,10 @@
   },
   "monochrome_public_bundle_smoke_test": {
     "label": "//chrome/android:monochrome_public_bundle_smoke_test",
+    "type": "console_test_launcher",
+  },
+  "monochrome_public_bundle_fake_modules_smoke_test": {
+    "label": "//chrome/android:monochrome_public_bundle_fake_modules_smoke_test",
     "type": "console_test_launcher",
   },
   "mojo_core_channel_fuzzer": {
