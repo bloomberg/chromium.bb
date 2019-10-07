@@ -250,9 +250,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
                                                 false);
   }
 
-  if (base::FeatureList::IsEnabled(features::kRasterInducingScroll))
-    WebRuntimeFeatures::EnableRasterInducingScroll(true);
-
   WebRuntimeFeatures::EnableFeatureFromString(
       "AllowContentInitiatedDataUrlNavigations",
       base::FeatureList::IsEnabled(
