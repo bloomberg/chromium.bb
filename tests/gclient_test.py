@@ -76,10 +76,14 @@ class GclientTest(trial_dir.TestCase):
     self._old_createscm = gclient.gclient_scm.GitWrapper
     gclient.gclient_scm.GitWrapper = SCMMock
     SCMMock.unit_test = self
+    self._old_sys_stdout = sys.stdout
+    sys.stdout = gclient.gclient_utils.MakeFileAutoFlush(sys.stdout)
+    sys.stdout = gclient.gclient_utils.MakeFileAnnotated(sys.stdout)
 
   def tearDown(self):
     self.assertEqual([], self._get_processed())
     gclient.gclient_scm.GitWrapper = self._old_createscm
+    sys.stdout = self._old_sys_stdout
     os.chdir(self.previous_dir)
     super(GclientTest, self).tearDown()
 
@@ -1362,9 +1366,9 @@ class GclientTest(trial_dir.TestCase):
 
 if __name__ == '__main__':
   sys.stdout = gclient_utils.MakeFileAutoFlush(sys.stdout)
-  sys.stdout = gclient_utils.MakeFileAnnotated(sys.stdout)
+  sys.stdout = gclient_utils.MakeFileAnnotated(sys.stdout, include_zero=True)
   sys.stderr = gclient_utils.MakeFileAutoFlush(sys.stderr)
-  sys.stderr = gclient_utils.MakeFileAnnotated(sys.stderr)
+  sys.stderr = gclient_utils.MakeFileAnnotated(sys.stderr, include_zero=True)
   logging.basicConfig(
       level=[logging.ERROR, logging.WARNING, logging.INFO, logging.DEBUG][
         min(sys.argv.count('-v'), 3)],

@@ -40,10 +40,8 @@ import subprocess2
 
 if sys.version_info.major == 2:
   from cStringIO import StringIO
-  string_type = basestring
 else:
   from io import StringIO
-  string_type = str
 
 
 RETRY_MAX = 3
@@ -373,10 +371,6 @@ class Annotated(Wrapper):
   def write(self, out):
     index = getattr(threading.currentThread(), 'index', 0)
     if not index and not self.__include_zero:
-      # Store as bytes to ensure Unicode characters get output correctly.
-      if isinstance(out, bytes):
-        out = out.decode('utf-8')
-
       # Unindexed threads aren't buffered.
       return self._wrapped.write(out)
 
@@ -386,32 +380,28 @@ class Annotated(Wrapper):
       # Strings are immutable, requiring to keep a lock for the whole dictionary
       # otherwise. Using an array is faster than using a dummy object.
       if not index in self.__output_buffers:
-        obj = self.__output_buffers[index] = [b'']
+        obj = self.__output_buffers[index] = ['']
       else:
         obj = self.__output_buffers[index]
     finally:
       self.lock.release()
 
-    # Store as bytes to ensure Unicode characters get output correctly.
-    if isinstance(out, string_type):
-      out = out.encode('utf-8')
-
     # Continue lockless.
     obj[0] += out
     while True:
       # TODO(agable): find both of these with a single pass.
-      cr_loc = obj[0].find(b'\r')
-      lf_loc = obj[0].find(b'\n')
+      cr_loc = obj[0].find('\r')
+      lf_loc = obj[0].find('\n')
       if cr_loc == lf_loc == -1:
         break
       elif cr_loc == -1 or (lf_loc >= 0 and lf_loc < cr_loc):
-        line, remaining = obj[0].split(b'\n', 1)
+        line, remaining = obj[0].split('\n', 1)
         if line:
-          self._wrapped.write('%d>%s\n' % (index, line.decode('utf-8')))
+          self._wrapped.write('%d>%s\n' % (index, line))
       elif lf_loc == -1 or (cr_loc >= 0 and cr_loc < lf_loc):
-        line, remaining = obj[0].split(b'\r', 1)
+        line, remaining = obj[0].split('\r', 1)
         if line:
-          self._wrapped.write('%d>%s\r' % (index, line.decode('utf-8')))
+          self._wrapped.write('%d>%s\r' % (index, line))
       obj[0] = remaining
 
   def flush(self):
@@ -433,7 +423,7 @@ class Annotated(Wrapper):
     # Don't keep the lock while writting. Will append \n when it shouldn't.
     for orphan in orphans:
       if orphan[1]:
-        self._wrapped.write('%d>%s\n' % (orphan[0], orphan[1].decode('utf-8')))
+        self._wrapped.write('%d>%s\n' % (orphan[0], orphan[1]))
     return self._wrapped.flush()
 
 

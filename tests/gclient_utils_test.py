@@ -127,7 +127,7 @@ class CheckCallAndFilterTestCase(unittest.TestCase):
         'after a short nap...')
 
   @mock.patch('subprocess2.Popen')
-  def testCheckCallAndFilter_PrintStdout(self, mockPopen):
+  def testCHeckCallAndFilter_PrintStdout(self, mockPopen):
     cwd = 'bleh'
     args = ['boo', 'foo', 'bar']
     test_string = 'ahah\naccb\nallo\naddb\n✔'
@@ -139,51 +139,16 @@ class CheckCallAndFilterTestCase(unittest.TestCase):
         print_stdout=True)
 
     self.assertEqual(result, test_string.encode('utf-8'))
-    self.assertEqual(self.stdout.getvalue().splitlines(), [
-        b"________ running 'boo foo bar' in 'bleh'",
-        b'ahah',
-        b'accb',
-        b'allo',
-        b'addb',
-        b'\xe2\x9c\x94',
-    ])
-
-
-class AnnotatedTestCase(unittest.TestCase):
-  def setUp(self):
-    self.out = gclient_utils.MakeFileAnnotated(io.StringIO())
-    self.outz = gclient_utils.MakeFileAnnotated(
-        io.StringIO(), include_zero=True)
-
-  def testString(self):
-    self.outz.write('test string\n')
-    self.assertEqual(self.outz.getvalue(), '0>test string\n')
-
-  def testBytes(self):
-    self.out.write(b'test string\n')
-    self.assertEqual(self.out.getvalue(), 'test string\n')
-
-  def testBytesZero(self):
-    self.outz.write(b'test string\n')
-    self.assertEqual(self.outz.getvalue(), '0>test string\n')
-
-  def testUnicode(self):
-    self.out.write(b'\xe2\x9c\x94\n')
-    self.assertEqual(self.out.getvalue(), '✔\n')
-
-  def testUnicodeZero(self):
-    self.outz.write('✔\n')
-    self.assertEqual(self.outz.getvalue(), '0>✔\n')
-
-  def testMultiline(self):
-    self.out.write(b'first line\nsecond line')
-    self.assertEqual(self.out.getvalue(), 'first line\nsecond line')
-
-  def testFlush(self):
-    self.outz.write(b'first line\nsecond line')
-    self.assertEqual(self.outz.getvalue(), '0>first line\n')
-    self.outz.flush()
-    self.assertEqual(self.outz.getvalue(), '0>first line\n0>second line\n')
+    self.assertEqual(
+        self.stdout.getvalue().splitlines(),
+        [
+            b'________ running \'boo foo bar\' in \'bleh\'',
+            b'ahah',
+            b'accb',
+            b'allo',
+            b'addb',
+            b'\xe2\x9c\x94',
+        ])
 
 
 class SplitUrlRevisionTestCase(unittest.TestCase):
@@ -306,6 +271,7 @@ class GClientUtilsTest(trial_dir.TestCase):
 
 
 if __name__ == '__main__':
+  import unittest
   unittest.main()
 
 # vim: ts=2:sw=2:tw=80:et:
