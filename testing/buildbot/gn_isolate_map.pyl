@@ -656,6 +656,15 @@
     "label": "//chrome/android:chrome_public_test_vr_apk",
     "type": "console_test_launcher",
   },
+  "chrome_public_wpt": {
+    "label": "//chrome/android:chrome_public_wpt",
+    "type": "script",
+    "script": "//testing/scripts/run_android_wpt.py",
+    "args": [
+      "--product=chrome_android",
+      "--apk=apks/ChromePublic.apk",
+    ],
+  },
   "chrome_sandbox": {
     "label": "//sandbox/linux:chrome_sandbox",
     "type": "additional_compile_target",
@@ -2606,6 +2615,16 @@
     ],
     "label": "//android_webview/tools/system_webview_shell:system_webview_shell_layout_test_apk",
     "type": "console_test_launcher",
+  },
+  "system_webview_wpt": {
+    "label": "//android_webview/test:system_webview_wpt",
+    "type": "script",
+    "script": "//testing/scripts/run_android_wpt.py",
+    "args": [
+      "--product=android_webview",
+      "--apk=apks/SystemWebView.apk",
+      "--system-webview-shell=apks/SystemWebViewShell.apk",
+    ],
   },
   "telemetry_gpu_integration_test": {
     "args": [

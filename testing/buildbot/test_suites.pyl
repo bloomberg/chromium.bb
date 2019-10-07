@@ -304,6 +304,23 @@
       },
     },
 
+    'chrome_public_wpt': {
+      'chrome_public_wpt': {
+        'swarming': {
+          'shards': 15,
+          'expiration': 18000,
+          'hard_timeout': 14400,
+          'cipd_packages': [
+            {
+              "cipd_package": 'chromium/chrome/test/chromedriver/cipd',
+              'location': 'chrome/test/chromedriver/cipd',
+              'revision': 'PCCG9OmVmpDaf9oaKhJ3sSxXgINilZ9qpl4oaRU0R60C',
+            }
+          ]
+        },
+      },
+    },
+
     'chrome_sizes': {
       'chrome_sizes': {
         'merge': {
@@ -4810,6 +4827,23 @@
       },
     },
 
+    'system_webview_wpt': {
+      'system_webview_wpt': {
+        'swarming': {
+          'shards': 15,
+          'expiration': 18000,
+          'hard_timeout': 14400,
+          'cipd_packages': [
+            {
+              "cipd_package": 'chromium/chrome/test/chromedriver/cipd',
+              'location': 'chrome/test/chromedriver/cipd',
+              'revision': 'PCCG9OmVmpDaf9oaKhJ3sSxXgINilZ9qpl4oaRU0R60C',
+            }
+          ]
+        },
+      },
+    },
+
     'telemetry_perf_unittests_isolated_scripts': {
       'telemetry_perf_unittests': {
         'swarming': {
@@ -5188,6 +5222,11 @@
       'linux_flavor_specific_chromium_gtests',
       'vr_platform_specific_chromium_gtests',
       'network_service_android_gtests',
+    ],
+
+    'android_wpt_scripts': [
+      'chrome_public_wpt',
+      'system_webview_wpt',
     ],
 
     'bfcache_android_gtests': [
