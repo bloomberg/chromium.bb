@@ -475,7 +475,6 @@ extern const char kWebRtcEventLogCollectionAllowed[];
 
 #if !defined(OS_ANDROID)
 extern const char kHasSeenWelcomePage[];
-extern const char kShowFirstRunDefaultSearchShortcut[];
 #endif
 
 #if defined(OS_WIN)
