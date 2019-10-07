@@ -53,7 +53,9 @@ class HintsFetcher {
   // not already in progress. Returns whether a new request was issued.
   // |hints_fetched_callback| is run, passing a GetHintsResponse object, if a
   // fetch was successful or passes nullopt if the fetch fails. Virtualized for
-  // testing.
+  // testing. Hints fetcher may fetch hints for only a subset of the provided
+  // |hosts|. |hosts| should be an ordered list in descending order of
+  // probability that the hints are needed for that host.
   virtual bool FetchOptimizationGuideServiceHints(
       const std::vector<std::string>& hosts,
       optimization_guide::proto::RequestContext request_context,
