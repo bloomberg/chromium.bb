@@ -893,7 +893,8 @@ def GeneralTemplates(site_config):
           config_lib.TastVMTestConfig(
               'tast_vm_canary_informational',
               ['(!disabled && ("group:mainline" || !"group:*") && '
-               'informational)']),
+               'informational)'],
+              timeout=2 * 60 * 60),
       ],
   )
 
