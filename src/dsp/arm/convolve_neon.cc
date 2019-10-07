@@ -496,6 +496,52 @@ void FilterHorizontal(const uint8_t* src, const ptrdiff_t src_stride,
 
 // Process 16 bit inputs and output 32 bits.
 template <int num_taps>
+inline uint32x4_t Sum2DVerticalTaps4(const int16x4_t* const src,
+                                     const int16x8_t taps) {
+  // In order to get the rollover correct with the lengthening instruction we
+  // need to treat these as signed so that they sign extend properly.
+  const int16x4_t taps_lo = vget_low_s16(taps);
+  const int16x4_t taps_hi = vget_high_s16(taps);
+  // An offset to guarantee the sum is non negative. Captures 56 * -4590 =
+  // 257040 (worst case negative value from horizontal pass). It should be
+  // possible to use 1 << 18 (262144) instead of 1 << 19 but there probably
+  // isn't any benefit.
+  // |offset_bits| = bitdepth + 2 * kFilterBits - kInterRoundBitsHorizontal ==
+  // 19
+  int32x4_t sum = vdupq_n_s32(1 << 19);
+  if (num_taps == 8) {
+    sum = vmlal_lane_s16(sum, src[0], taps_lo, 0);
+    sum = vmlal_lane_s16(sum, src[1], taps_lo, 1);
+    sum = vmlal_lane_s16(sum, src[2], taps_lo, 2);
+    sum = vmlal_lane_s16(sum, src[3], taps_lo, 3);
+    sum = vmlal_lane_s16(sum, src[4], taps_hi, 0);
+    sum = vmlal_lane_s16(sum, src[5], taps_hi, 1);
+    sum = vmlal_lane_s16(sum, src[6], taps_hi, 2);
+    sum = vmlal_lane_s16(sum, src[7], taps_hi, 3);
+  } else if (num_taps == 6) {
+    sum = vmlal_lane_s16(sum, src[0], taps_lo, 1);
+    sum = vmlal_lane_s16(sum, src[1], taps_lo, 2);
+    sum = vmlal_lane_s16(sum, src[2], taps_lo, 3);
+    sum = vmlal_lane_s16(sum, src[3], taps_hi, 0);
+    sum = vmlal_lane_s16(sum, src[4], taps_hi, 1);
+    sum = vmlal_lane_s16(sum, src[5], taps_hi, 2);
+  } else if (num_taps == 4) {
+    sum = vmlal_lane_s16(sum, src[0], taps_lo, 2);
+    sum = vmlal_lane_s16(sum, src[1], taps_lo, 3);
+    sum = vmlal_lane_s16(sum, src[2], taps_hi, 0);
+    sum = vmlal_lane_s16(sum, src[3], taps_hi, 1);
+  } else if (num_taps == 2) {
+    sum = vmlal_lane_s16(sum, src[0], taps_lo, 3);
+    sum = vmlal_lane_s16(sum, src[1], taps_hi, 0);
+  }
+
+  // This is guaranteed to be positive. Convert it for the final shift.
+  const uint32x4_t return_val = vreinterpretq_u32_s32(sum);
+  return return_val;
+}
+
+// Process 16 bit inputs and output 32 bits.
+template <int num_taps>
 uint32x4x2_t Sum2DVerticalTaps(const int16x8_t* const src,
                                const int16x8_t taps) {
   // In order to get the rollover correct with the lengthening instruction we
@@ -1548,12 +1594,136 @@ inline void ConvolveKernelHorizontalSigned8Tap(
   } while (x < width);
 }
 
+// This function handles blocks of width 2 or 4.
+template <int num_taps, int grade_y, int width>
+inline void ConvolveVerticalScale4xH(const int16_t* src, const int subpixel_y,
+                                     const int inter_round_bits,
+                                     const int filter_index, const int step_y,
+                                     const int height, uint16_t* dest,
+                                     const ptrdiff_t dest_stride) {
+  const int32x4_t v_inter_round_bits = vdupq_n_s32(-inter_round_bits);
+  constexpr ptrdiff_t src_stride = kIntermediateStride;
+  constexpr int kernel_offset = (8 - num_taps) / 2;
+  src += src_stride * kernel_offset;
+  const int16_t* src_y = src;
+  int16x4_t s[num_taps + grade_y];
+
+  int p = subpixel_y & 1023;
+  int prev_p = p;
+  int y = 0;
+  do {  // y < height
+    for (int i = 0; i < num_taps; ++i) {
+      s[i] = vld1_s16(src_y + i * src_stride);
+    }
+    int filter_id = (p >> 6) & kSubPixelMask;
+    int16x8_t filter = vld1q_s16(kSubPixelFilters[filter_index][filter_id]);
+    uint32x4_t sums = Sum2DVerticalTaps4<num_taps>(s, filter);
+    if (width == 2) {
+      Store2<0>(dest, vmovn_u32(vrshlq_u32(sums, v_inter_round_bits)));
+    } else {
+      vst1_u16(dest, vmovn_u32(vrshlq_u32(sums, v_inter_round_bits)));
+    }
+    p += step_y;
+    int p_diff = (p >> kScaleSubPixelBits) - (prev_p >> kScaleSubPixelBits);
+    prev_p = p;
+    // Here we load extra source in case it is needed. If |p_diff| == 0, these
+    // values will be unused, but it's faster to load than to branch.
+    s[num_taps] = vld1_s16(src_y + num_taps * src_stride);
+    if (grade_y > 1) {
+      s[num_taps + 1] = vld1_s16(src_y + (num_taps + 1) * src_stride);
+    }
+    dest += dest_stride;
+
+    filter_id = (p >> 6) & kSubPixelMask;
+    filter = vld1q_s16(kSubPixelFilters[filter_index][filter_id]);
+    sums = Sum2DVerticalTaps4<num_taps>(&s[p_diff], filter);
+    if (width == 2) {
+      Store2<0>(dest, vmovn_u32(vrshlq_u32(sums, v_inter_round_bits)));
+    } else {
+      vst1_u16(dest, vmovn_u32(vrshlq_u32(sums, v_inter_round_bits)));
+    }
+    p += step_y;
+    src_y = src + (p >> kScaleSubPixelBits) * src_stride;
+    prev_p = p;
+    dest += dest_stride;
+
+    y += 2;
+  } while (y < height);
+}
+
+template <int num_taps, int grade_y>
+inline void ConvolveVerticalScale(const int16_t* src, const int width,
+                                  const int subpixel_y,
+                                  const int inter_round_bits,
+                                  const int filter_index, const int step_y,
+                                  const int height, uint16_t* dest,
+                                  const ptrdiff_t dest_stride) {
+  const int32x4_t v_inter_round_bits = vdupq_n_s32(-inter_round_bits);
+  constexpr ptrdiff_t src_stride = kIntermediateStride;
+  constexpr int kernel_offset = (8 - num_taps) / 2;
+  src += src_stride * kernel_offset;
+  // A possible improvement is to use arithmetic to decide how many times to
+  // apply filters to same source before checking whether to load new srcs.
+  // However, this will only improve performance with very small step sizes.
+  int16x8_t s[num_taps + grade_y];
+
+  int x = 0;
+  do {  // x < width
+    const int16_t* src_x = src + x;
+    const int16_t* src_y = src_x;
+    uint16_t* dest_y = dest + x;
+    int p = subpixel_y & 1023;
+    int prev_p = p;
+    int y = 0;
+    do {  // y < height
+      for (int i = 0; i < num_taps; ++i) {
+        s[i] = vld1q_s16(src_y + i * src_stride);
+      }
+      int filter_id = (p >> 6) & kSubPixelMask;
+      int16x8_t filter = vld1q_s16(kSubPixelFilters[filter_index][filter_id]);
+      uint32x4x2_t sums = Sum2DVerticalTaps<num_taps>(s, filter);
+      vst1q_u16(
+          dest_y,
+          vcombine_u16(vmovn_u32(vrshlq_u32(sums.val[0], v_inter_round_bits)),
+                       vmovn_u32(vrshlq_u32(sums.val[1], v_inter_round_bits))));
+      p += step_y;
+      int p_diff = (p >> kScaleSubPixelBits) - (prev_p >> kScaleSubPixelBits);
+      // |grade_y| > 1 always means p_diff > 0, so load vectors that may be
+      // needed. Otherwise, we only need to load one vector because |p_diff|
+      // can't exceed 1.
+      s[num_taps] = vld1q_s16(src_y + num_taps * src_stride);
+      if (grade_y > 1) {
+        s[num_taps + 1] = vld1q_s16(src_y + (num_taps + 1) * src_stride);
+      }
+      dest_y += dest_stride;
+
+      filter_id = (p >> 6) & kSubPixelMask;
+      filter = vld1q_s16(kSubPixelFilters[filter_index][filter_id]);
+      sums = Sum2DVerticalTaps<num_taps>(&s[p_diff], filter);
+      vst1q_u16(
+          dest_y,
+          vcombine_u16(vmovn_u32(vrshlq_u32(sums.val[0], v_inter_round_bits)),
+                       vmovn_u32(vrshlq_u32(sums.val[1], v_inter_round_bits))));
+      p += step_y;
+      src_y = src_x + (p >> kScaleSubPixelBits) * src_stride;
+      prev_p = p;
+      dest_y += dest_stride;
+
+      y += 2;
+    } while (y < height);
+    x += 8;
+  } while (x < width);
+}
+
 void ConvolveCompoundScale2D_NEON(
     const void* const reference, const ptrdiff_t reference_stride,
     const int horizontal_filter_index, const int vertical_filter_index,
     const int inter_round_bits_vertical, const int subpixel_x,
     const int subpixel_y, const int step_x, const int step_y, const int width,
     const int height, void* prediction, const ptrdiff_t pred_stride) {
+  // TODO(petersonab): Reduce the height here by using the vertical filter size
+  // and offset horizontal filter. Reduce intermediate block stride to width
+  // to make smaller blocks faster.
   const int intermediate_height =
       (((height - 1) * step_y + (1 << kScaleSubPixelBits) - 1) >>
        kScaleSubPixelBits) +
@@ -1575,7 +1745,6 @@ void ConvolveCompoundScale2D_NEON(
   int16_t* intermediate = intermediate_result;
   const auto* src = static_cast<const uint8_t*>(reference);
   const ptrdiff_t src_stride = reference_stride;
-  auto* dest = static_cast<uint16_t*>(prediction);
   switch (filter_index) {
     case 0:
       if (step_x > 1024) {
@@ -1635,23 +1804,136 @@ void ConvolveCompoundScale2D_NEON(
   // Vertical filter.
   filter_index = GetFilterIndex(vertical_filter_index, height);
   intermediate = intermediate_result;
-  const int offset_bits = kBitdepth8 + 2 * kFilterBits - 3;
-  for (int y = 0, p = subpixel_y & 1023; y < height; ++y, p += step_y) {
-    const int filter_id = (p >> 6) & kSubPixelMask;
-    for (int x = 0; x < width; ++x) {
-      // An offset to guarantee the sum is non negative.
-      int sum = 1 << offset_bits;
-      for (int k = 0; k < kSubPixelTaps; ++k) {
-        sum +=
-            kSubPixelFilters[filter_index][filter_id][k] *
-            intermediate[((p >> kScaleSubPixelBits) + k) * kIntermediateStride +
-                         x];
+  auto* dest = static_cast<uint16_t*>(prediction);
+
+  switch (filter_index) {
+    case 0:
+    case 1:
+      if (step_y <= 1024) {
+        if (width == 2) {
+          ConvolveVerticalScale4xH<6, 1, 2>(
+              intermediate, subpixel_y, inter_round_bits_vertical, filter_index,
+              step_y, height, dest, pred_stride);
+        } else if (width == 4) {
+          ConvolveVerticalScale4xH<6, 1, 4>(
+              intermediate, subpixel_y, inter_round_bits_vertical, filter_index,
+              step_y, height, dest, pred_stride);
+        } else {
+          ConvolveVerticalScale<6, 1>(intermediate, width, subpixel_y,
+                                      inter_round_bits_vertical, filter_index,
+                                      step_y, height, dest, pred_stride);
+        }
+      } else {
+        if (width == 2) {
+          ConvolveVerticalScale4xH<6, 2, 2>(
+              intermediate, subpixel_y, inter_round_bits_vertical, filter_index,
+              step_y, height, dest, pred_stride);
+        } else if (width == 4) {
+          ConvolveVerticalScale4xH<6, 2, 4>(
+              intermediate, subpixel_y, inter_round_bits_vertical, filter_index,
+              step_y, height, dest, pred_stride);
+        } else {
+          ConvolveVerticalScale<6, 2>(intermediate, width, subpixel_y,
+                                      inter_round_bits_vertical, filter_index,
+                                      step_y, height, dest, pred_stride);
+        }
       }
-      assert(sum >= 0 && sum < (1 << (offset_bits + 2)));
-      dest[x] = static_cast<uint16_t>(
-          RightShiftWithRounding(sum, inter_round_bits_vertical));
-    }
-    dest += pred_stride;
+      break;
+    case 2:
+      if (step_y <= 1024) {
+        if (width == 2) {
+          ConvolveVerticalScale4xH<8, 1, 2>(
+              intermediate, subpixel_y, inter_round_bits_vertical, filter_index,
+              step_y, height, dest, pred_stride);
+        } else if (width == 4) {
+          ConvolveVerticalScale4xH<8, 1, 4>(
+              intermediate, subpixel_y, inter_round_bits_vertical, filter_index,
+              step_y, height, dest, pred_stride);
+        } else {
+          ConvolveVerticalScale<8, 1>(intermediate, width, subpixel_y,
+                                      inter_round_bits_vertical, filter_index,
+                                      step_y, height, dest, pred_stride);
+        }
+      } else {
+        if (width == 2) {
+          ConvolveVerticalScale4xH<8, 2, 2>(
+              intermediate, subpixel_y, inter_round_bits_vertical, filter_index,
+              step_y, height, dest, pred_stride);
+        } else if (width == 4) {
+          ConvolveVerticalScale4xH<8, 2, 4>(
+              intermediate, subpixel_y, inter_round_bits_vertical, filter_index,
+              step_y, height, dest, pred_stride);
+        } else {
+          ConvolveVerticalScale<8, 2>(intermediate, width, subpixel_y,
+                                      inter_round_bits_vertical, filter_index,
+                                      step_y, height, dest, pred_stride);
+        }
+      }
+      break;
+    case 3:
+      if (step_y <= 1024) {
+        if (width == 2) {
+          ConvolveVerticalScale4xH<2, 1, 2>(
+              intermediate, subpixel_y, inter_round_bits_vertical, filter_index,
+              step_y, height, dest, pred_stride);
+        } else if (width == 4) {
+          ConvolveVerticalScale4xH<2, 1, 4>(
+              intermediate, subpixel_y, inter_round_bits_vertical, filter_index,
+              step_y, height, dest, pred_stride);
+        } else {
+          ConvolveVerticalScale<2, 1>(intermediate, width, subpixel_y,
+                                      inter_round_bits_vertical, filter_index,
+                                      step_y, height, dest, pred_stride);
+        }
+      } else {
+        if (width == 2) {
+          ConvolveVerticalScale4xH<2, 2, 2>(
+              intermediate, subpixel_y, inter_round_bits_vertical, filter_index,
+              step_y, height, dest, pred_stride);
+        } else if (width == 4) {
+          ConvolveVerticalScale4xH<2, 2, 4>(
+              intermediate, subpixel_y, inter_round_bits_vertical, filter_index,
+              step_y, height, dest, pred_stride);
+        } else {
+          ConvolveVerticalScale<2, 2>(intermediate, width, subpixel_y,
+                                      inter_round_bits_vertical, filter_index,
+                                      step_y, height, dest, pred_stride);
+        }
+      }
+      break;
+    case 4:
+    default:
+      assert(filter_index == 4 || filter_index == 5);
+      assert(height <= 4);
+      if (step_y <= 1024) {
+        if (width == 2) {
+          ConvolveVerticalScale4xH<4, 1, 2>(
+              intermediate, subpixel_y, inter_round_bits_vertical, filter_index,
+              step_y, height, dest, pred_stride);
+        } else if (width == 4) {
+          ConvolveVerticalScale4xH<4, 1, 4>(
+              intermediate, subpixel_y, inter_round_bits_vertical, filter_index,
+              step_y, height, dest, pred_stride);
+        } else {
+          ConvolveVerticalScale<4, 1>(intermediate, width, subpixel_y,
+                                      inter_round_bits_vertical, filter_index,
+                                      step_y, height, dest, pred_stride);
+        }
+      } else {
+        if (width == 2) {
+          ConvolveVerticalScale4xH<4, 2, 2>(
+              intermediate, subpixel_y, inter_round_bits_vertical, filter_index,
+              step_y, height, dest, pred_stride);
+        } else if (width == 4) {
+          ConvolveVerticalScale4xH<4, 2, 4>(
+              intermediate, subpixel_y, inter_round_bits_vertical, filter_index,
+              step_y, height, dest, pred_stride);
+        } else {
+          ConvolveVerticalScale<4, 2>(intermediate, width, subpixel_y,
+                                      inter_round_bits_vertical, filter_index,
+                                      step_y, height, dest, pred_stride);
+        }
+      }
   }
 }
 

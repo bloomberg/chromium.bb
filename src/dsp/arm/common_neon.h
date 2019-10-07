@@ -262,6 +262,13 @@ inline void Store2(void* const buf, const uint16x8_t val) {
   ValueToMem<uint32_t>(buf, vgetq_lane_u32(vreinterpretq_u32_u16(val), lane));
 }
 
+// Store 2 uint16_t values from |lane| * 2 and |lane| * 2 + 1 of a uint16x4_t
+// register.
+template <int lane>
+inline void Store2(uint16_t* const buf, const uint16x4_t val) {
+  ValueToMem<uint32_t>(buf, vget_lane_u32(vreinterpret_u32_u16(val), lane));
+}
+
 //------------------------------------------------------------------------------
 // Bit manipulation.
 
