@@ -83,6 +83,7 @@ source_set("native") {
   deps = [
     ":jni_headers",
     "//base",
+    "//ui/base",
   ]
 
   # The method used to load and register JNI for native libraries depends
