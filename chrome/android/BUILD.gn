@@ -1190,7 +1190,6 @@ chrome_common_shared_library("libchrome") {
     deps += [ "//chrome/browser/android/vr:module_factory" ]
   }
 
-  allow_partitions = true
   module_descs = chrome_modern_module_descs
 }
 
@@ -1460,7 +1459,6 @@ template("libmonochrome_apk_or_bundle_tmpl") {
     }
 
     is_monochrome = true
-    allow_partitions = true
     module_descs = monochrome_module_descs
   }
 }

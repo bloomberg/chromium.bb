@@ -79,8 +79,8 @@ void LoadLibrary(JNIEnv* env, const std::string& library_name) {
                            << dlerror();
   registration_function = reinterpret_cast<JniRegistrationFunction*>(symbol);
 #else   // defined(LOAD_FROM_PARTITIONS) || defined(LOAD_FROM_COMPONENTS)
-  // TODO(https://crbug.com/870055): Similar to the declarations above, this map
-  // could be auto-generated.
+  // TODO(https://crbug.com/1011834): Remove this code path (and anything
+  // associated with it) once there's confidence partitions will stay enabled.
   const std::map<std::string, JniRegistrationFunction*> modules = {
       {"test_dummy", JNI_OnLoad_test_dummy}};
   registration_function = modules.at(library_name);
