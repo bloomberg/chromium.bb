@@ -704,7 +704,8 @@ def GetGClientRootAndEntries(path=None):
     return None
   config_path = os.path.join(root, config_file)
   env = {}
-  execfile(config_path, env)
+  with open(config_path) as config:
+    exec(config.read(), env)
   config_dir = os.path.dirname(config_path)
   return config_dir, env['entries']
 
