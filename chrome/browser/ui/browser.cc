@@ -2447,6 +2447,9 @@ void Browser::ConfigureTabGroupForNavigation(content::WebContents* source,
   if (!source)
     return;
 
+  if (!SupportsWindowFeature(WindowFeature::FEATURE_TABSTRIP))
+    return;
+
   const int source_index = tab_strip_model_->GetIndexOfWebContents(source);
 
   // If the source tab is pinned, don't create a group.
