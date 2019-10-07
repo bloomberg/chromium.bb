@@ -66,6 +66,7 @@
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
+#include "gin/public/debug.h"
 
 namespace blink {
 
@@ -250,8 +251,20 @@ void MainThreadDebugger::runMessageLoopOnPause(int context_group_id) {
   UserGestureIndicator::SetTimeoutPolicy(UserGestureToken::kHasPaused);
 
   // Wait for continue or step command.
-  if (client_message_loop_)
+  if (client_message_loop_) {
+    auto breakCb  = gin::Debug::GetDebugBreakCallback();
+    auto resumeCb = gin::Debug::GetDebugResumeCallback();
+
+    if (breakCb) {
+      breakCb();
+    }
+
     client_message_loop_->Run(paused_frame);
+
+    if (resumeCb) {
+      resumeCb();
+    }
+  }
 }
 
 void MainThreadDebugger::quitMessageLoopOnPause() {
