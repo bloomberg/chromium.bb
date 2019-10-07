@@ -2336,7 +2336,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'ultima',
       'veyron_fievel',
       'veyron_jaq',
-      'veyron_jerry',
       'veyron_mickey',
       'veyron_minnie',
       'veyron_rialto',
@@ -2391,6 +2390,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'mistral', # b/140536001
       'moblab-generic-vm', # crbug.com/960998, crbug.com/976297
       'samus-kernelnext', # https://crbug.com/1004618
+      'veyron_jerry', # https://crbug.com/1011621
       'veyron_mighty', # https://crbug.com/1001290
       'whirlwind', # https://crbug.com/1001714
       'wizpig', # crbug.com/996944
