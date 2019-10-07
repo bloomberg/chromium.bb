@@ -210,7 +210,7 @@ static const CGFloat kDontShowAgainViewHeightAdjustment = 10.f;
 
 - (void)viewDidDisappear:(BOOL)animated {
   DCHECK(_completion);
-  _completion(_dontShowAgainSwitch.on);
+  _completion(_dontShowAgainSwitch && _dontShowAgainSwitch.on);
   // Release the block as long as the dialog is disappeared, since it could
   // potentially have retain loop.
   _completion = nil;

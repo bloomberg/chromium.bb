@@ -125,7 +125,8 @@ void NotificationPresenter::OnNotificationFetched(
           objectForFlag:RemotingFlagLastSeenNotificationMessageId]);
   NotificationUiState ui_state = NSNumberToUiState([RemotingPreferences.instance
       objectForFlag:RemotingFlagNotificationUiState]);
-  if (ui_state == USER_CHOSE_DONT_SHOW_AGAIN &&
+  if (notification->allow_dont_show_again &&
+      ui_state == USER_CHOSE_DONT_SHOW_AGAIN &&
       last_seen_message_id == notification->message_id) {
     return;
   }
@@ -165,10 +166,12 @@ void NotificationPresenter::OnNotificationFetched(
       break;
     }
     case NotificationMessage::Appearance::DIALOG: {
+      BOOL shouldShowDontShowAgain = notification->allow_dont_show_again &&
+                                     ui_state == SHOWN_AT_LEAST_ONCE;
       NotificationDialogViewController* dialogVc =
           [[NotificationDialogViewController alloc]
                 initWithNotificationMessage:*notification
-              shouldShowDontShowAgainToggle:(ui_state == SHOWN_AT_LEAST_ONCE)];
+              shouldShowDontShowAgainToggle:shouldShowDontShowAgain];
       [dialogVc presentOnTopVCWithCompletion:^(BOOL isDontShowAgainOn) {
         NotificationUiState new_ui_state = isDontShowAgainOn
                                                ? USER_CHOSE_DONT_SHOW_AGAIN
