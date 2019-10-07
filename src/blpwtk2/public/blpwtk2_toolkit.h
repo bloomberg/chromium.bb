@@ -84,6 +84,7 @@
 
 #include <blpwtk2_webviewcreateparams.h>
 #include <v8.h>
+#include <v8-platform.h>
 #include <blpwtk2_stringref.h>
 
 namespace blpwtk2 {
@@ -189,6 +190,8 @@ class Toolkit {
 
 
     // patch section: expose v8 platform
+    virtual v8::Platform *getV8Platform() = 0;
+        // Return a pointer to the 'v8::Platform' used for this process.
 
 
     // patch section: multi-heap tracer
