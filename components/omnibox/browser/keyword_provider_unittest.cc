@@ -46,7 +46,13 @@ class TestingSchemeClassifier : public AutocompleteSchemeClassifier {
 
 }  // namespace
 
-class KeywordProviderTest : public testing::Test {
+// Flaky leaks on ASAN LSAN (crbug.com/1010691).
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_KeywordProviderTest DISABLED_KeywordProviderTest
+#else
+#define MAYBE_KeywordProviderTest KeywordProviderTest
+#endif
+class MAYBE_KeywordProviderTest : public testing::Test {
  protected:
   template<class ResultType>
   struct MatchType {
@@ -61,7 +67,7 @@ class KeywordProviderTest : public testing::Test {
     const MatchType<ResultType> output[3];
   };
 
-  KeywordProviderTest() : kw_provider_(nullptr) {
+  MAYBE_KeywordProviderTest() : kw_provider_(nullptr) {
     // Destroy the existing FieldTrialList before creating a new one to avoid
     // a DCHECK.
     field_trial_list_.reset();
@@ -69,7 +75,7 @@ class KeywordProviderTest : public testing::Test {
         std::make_unique<variations::SHA1EntropyProvider>("foo")));
     variations::testing::ClearAllVariationParams();
   }
-  ~KeywordProviderTest() override {}
+  ~MAYBE_KeywordProviderTest() override {}
 
   // Should be called at least once during a test case.  This is a separate
   // function from SetUp() because the client may want to set parameters
@@ -94,7 +100,7 @@ class KeywordProviderTest : public testing::Test {
 };
 
 // static
-const TemplateURLService::Initializer KeywordProviderTest::kTestData[] = {
+const TemplateURLService::Initializer MAYBE_KeywordProviderTest::kTestData[] = {
     {"aa", "aa.com?foo={searchTerms}", "aa"},
     {"aaaa", "http://aaaa/?aaaa=1&b={searchTerms}&c", "aaaa"},
     {"aaaaa", "{searchTerms}", "aaaaa"},
@@ -130,22 +136,22 @@ const TemplateURLService::Initializer KeywordProviderTest::kTestData[] = {
      "clean v8 slash"},
 };
 
-void KeywordProviderTest::SetUpClientAndKeywordProvider() {
+void MAYBE_KeywordProviderTest::SetUpClientAndKeywordProvider() {
   client_.reset(new MockAutocompleteProviderClient());
   client_->set_template_url_service(
       std::make_unique<TemplateURLService>(kTestData, base::size(kTestData)));
   kw_provider_ = new KeywordProvider(client_.get(), nullptr);
 }
 
-void KeywordProviderTest::TearDown() {
+void MAYBE_KeywordProviderTest::TearDown() {
   client_.reset();
   kw_provider_ = nullptr;
 }
 
-template<class ResultType>
-void KeywordProviderTest::RunTest(TestData<ResultType>* keyword_cases,
-                                  int num_cases,
-                                  ResultType AutocompleteMatch::* member) {
+template <class ResultType>
+void MAYBE_KeywordProviderTest::RunTest(TestData<ResultType>* keyword_cases,
+                                        int num_cases,
+                                        ResultType AutocompleteMatch::*member) {
   ACMatches matches;
   for (int i = 0; i < num_cases; ++i) {
     SCOPED_TRACE(keyword_cases[i].input);
@@ -164,7 +170,7 @@ void KeywordProviderTest::RunTest(TestData<ResultType>* keyword_cases,
   }
 }
 
-TEST_F(KeywordProviderTest, Edit) {
+TEST_F(MAYBE_KeywordProviderTest, Edit) {
   const MatchType<base::string16> kEmptyMatch = { base::string16(), false };
   TestData<base::string16> edit_cases[] = {
       // Searching for a nonexistent prefix should give nothing.
@@ -271,7 +277,7 @@ TEST_F(KeywordProviderTest, Edit) {
                           &AutocompleteMatch::fill_into_edit);
 }
 
-TEST_F(KeywordProviderTest, DomainMatches) {
+TEST_F(MAYBE_KeywordProviderTest, DomainMatches) {
   const MatchType<base::string16> kEmptyMatch = { base::string16(), false };
   TestData<base::string16> edit_cases[] = {
     // Searching for a nonexistent prefix should give nothing.
@@ -322,7 +328,7 @@ TEST_F(KeywordProviderTest, DomainMatches) {
                           &AutocompleteMatch::fill_into_edit);
 }
 
-TEST_F(KeywordProviderTest, IgnoreRegistryForScoring) {
+TEST_F(MAYBE_KeywordProviderTest, IgnoreRegistryForScoring) {
   const MatchType<base::string16> kEmptyMatch = { base::string16(), false };
   TestData<base::string16> edit_cases[] = {
     // Matches should be limited to three and sorted in quality order.
@@ -367,7 +373,7 @@ TEST_F(KeywordProviderTest, IgnoreRegistryForScoring) {
                           &AutocompleteMatch::fill_into_edit);
 }
 
-TEST_F(KeywordProviderTest, DISABLED_URL) {
+TEST_F(MAYBE_KeywordProviderTest, DISABLED_URL) {
   const MatchType<GURL> kEmptyMatch = { GURL(), false };
   TestData<GURL> url_cases[] = {
       // No query input -> empty destination URL.
@@ -405,7 +411,7 @@ TEST_F(KeywordProviderTest, DISABLED_URL) {
                 &AutocompleteMatch::destination_url);
 }
 
-TEST_F(KeywordProviderTest, Contents) {
+TEST_F(MAYBE_KeywordProviderTest, Contents) {
   const MatchType<base::string16> kEmptyMatch = { base::string16(), false };
   TestData<base::string16> contents_cases[] = {
       // No query input -> substitute "<Type search term>" into contents.
@@ -456,7 +462,7 @@ TEST_F(KeywordProviderTest, Contents) {
                           &AutocompleteMatch::contents);
 }
 
-TEST_F(KeywordProviderTest, AddKeyword) {
+TEST_F(MAYBE_KeywordProviderTest, AddKeyword) {
   SetUpClientAndKeywordProvider();
   TemplateURLData data;
   data.SetShortName(ASCIIToUTF16("Test"));
@@ -470,7 +476,7 @@ TEST_F(KeywordProviderTest, AddKeyword) {
       client_->GetTemplateURLService()->GetTemplateURLForKeyword(keyword));
 }
 
-TEST_F(KeywordProviderTest, RemoveKeyword) {
+TEST_F(MAYBE_KeywordProviderTest, RemoveKeyword) {
   SetUpClientAndKeywordProvider();
   TemplateURLService* template_url_service = client_->GetTemplateURLService();
   base::string16 url(ASCIIToUTF16("http://aaaa/?aaaa=1&b={searchTerms}&c"));
@@ -480,7 +486,7 @@ TEST_F(KeywordProviderTest, RemoveKeyword) {
                   ASCIIToUTF16("aaaa")) == nullptr);
 }
 
-TEST_F(KeywordProviderTest, GetKeywordForInput) {
+TEST_F(MAYBE_KeywordProviderTest, GetKeywordForInput) {
   SetUpClientAndKeywordProvider();
   EXPECT_EQ(ASCIIToUTF16("aa"),
       kw_provider_->GetKeywordForText(ASCIIToUTF16("aa")));
@@ -535,7 +541,7 @@ TEST_F(KeywordProviderTest, GetKeywordForInput) {
             kw_provider_->GetKeywordForText(ASCIIToUTF16("cleantestv8")));
 }
 
-TEST_F(KeywordProviderTest, GetSubstitutingTemplateURLForInput) {
+TEST_F(MAYBE_KeywordProviderTest, GetSubstitutingTemplateURLForInput) {
   struct {
     const std::string text;
     const size_t cursor_position;
@@ -596,7 +602,7 @@ TEST_F(KeywordProviderTest, GetSubstitutingTemplateURLForInput) {
 
 // If extra query params are specified on the command line, they should be
 // reflected (only) in the default search provider's destination URL.
-TEST_F(KeywordProviderTest, ExtraQueryParams) {
+TEST_F(MAYBE_KeywordProviderTest, ExtraQueryParams) {
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kExtraSearchQueryParams, "a=b");
 
@@ -612,7 +618,7 @@ TEST_F(KeywordProviderTest, ExtraQueryParams) {
                 &AutocompleteMatch::destination_url);
 }
 
-TEST_F(KeywordProviderTest, DoesNotProvideMatchesOnFocus) {
+TEST_F(MAYBE_KeywordProviderTest, DoesNotProvideMatchesOnFocus) {
   SetUpClientAndKeywordProvider();
   AutocompleteInput input(ASCIIToUTF16("aaa"),
                           metrics::OmniboxEventProto::OTHER,

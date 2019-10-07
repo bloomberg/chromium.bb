@@ -52,11 +52,19 @@ struct TestMatchData {
 
 }  // namespace
 
-class LocalHistoryZeroSuggestProviderTest
+// Flaky leaks on ASAN LSAN (crbug.com/1010691).
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_LocalHistoryZeroSuggestProviderTest \
+  DISABLED_LocalHistoryZeroSuggestProviderTest
+#else
+#define MAYBE_LocalHistoryZeroSuggestProviderTest \
+  LocalHistoryZeroSuggestProviderTest
+#endif
+class MAYBE_LocalHistoryZeroSuggestProviderTest
     : public testing::Test,
       public AutocompleteProviderListener {
  public:
-  LocalHistoryZeroSuggestProviderTest()
+  MAYBE_LocalHistoryZeroSuggestProviderTest()
       : client_(std::make_unique<FakeAutocompleteProviderClient>()),
         provider_(base::WrapRefCounted(
             LocalHistoryZeroSuggestProvider::Create(client_.get(), this))) {
@@ -64,7 +72,7 @@ class LocalHistoryZeroSuggestProviderTest
         metrics::OmniboxEventProto::NTP_REALBOX,
         LocalHistoryZeroSuggestProvider::kZeroSuggestLocalVariant);
   }
-  ~LocalHistoryZeroSuggestProviderTest() override {}
+  ~MAYBE_LocalHistoryZeroSuggestProviderTest() override {}
 
  protected:
   // testing::Test
@@ -110,10 +118,10 @@ class LocalHistoryZeroSuggestProviderTest
   scoped_refptr<LocalHistoryZeroSuggestProvider> provider_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(LocalHistoryZeroSuggestProviderTest);
+  DISALLOW_COPY_AND_ASSIGN(MAYBE_LocalHistoryZeroSuggestProviderTest);
 };
 
-void LocalHistoryZeroSuggestProviderTest::SetZeroSuggestVariant(
+void MAYBE_LocalHistoryZeroSuggestProviderTest::SetZeroSuggestVariant(
     PageClassification page_classification,
     std::string zero_suggest_variant_value) {
   scoped_feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
@@ -124,7 +132,7 @@ void LocalHistoryZeroSuggestProviderTest::SetZeroSuggestVariant(
         zero_suggest_variant_value}});
 }
 
-void LocalHistoryZeroSuggestProviderTest::LoadURLs(
+void MAYBE_LocalHistoryZeroSuggestProviderTest::LoadURLs(
     std::vector<TestURLData> url_data_list) {
   const Time now = Time::Now();
   history::URLRows rows;
@@ -149,7 +157,7 @@ void LocalHistoryZeroSuggestProviderTest::LoadURLs(
   WaitForHistoryService();
 }
 
-void LocalHistoryZeroSuggestProviderTest::WaitForHistoryService() {
+void MAYBE_LocalHistoryZeroSuggestProviderTest::WaitForHistoryService() {
   history::BlockUntilHistoryProcessesPendingRequests(
       client_->GetHistoryService());
 
@@ -158,7 +166,7 @@ void LocalHistoryZeroSuggestProviderTest::WaitForHistoryService() {
   BlockUntilInMemoryURLIndexIsRefreshed(client_->GetInMemoryURLIndex());
 }
 
-void LocalHistoryZeroSuggestProviderTest::StartProviderAndWaitUntilDone(
+void MAYBE_LocalHistoryZeroSuggestProviderTest::StartProviderAndWaitUntilDone(
     const std::string& text = "",
     bool from_omnibox_focus = true,
     PageClassification page_classification =
@@ -174,13 +182,13 @@ void LocalHistoryZeroSuggestProviderTest::StartProviderAndWaitUntilDone(
   }
 }
 
-void LocalHistoryZeroSuggestProviderTest::OnProviderUpdate(
+void MAYBE_LocalHistoryZeroSuggestProviderTest::OnProviderUpdate(
     bool updated_matches) {
   if (provider_->done() && provider_run_loop_)
     provider_run_loop_->Quit();
 }
 
-void LocalHistoryZeroSuggestProviderTest::ExpectMatches(
+void MAYBE_LocalHistoryZeroSuggestProviderTest::ExpectMatches(
     std::vector<TestMatchData> match_data_list) {
   ASSERT_EQ(match_data_list.size(), provider_->matches().size());
   size_t index = 0;
@@ -195,7 +203,7 @@ void LocalHistoryZeroSuggestProviderTest::ExpectMatches(
 }
 
 // Tests that suggestions are returned only if when input is empty and focused.
-TEST_F(LocalHistoryZeroSuggestProviderTest, Input) {
+TEST_F(MAYBE_LocalHistoryZeroSuggestProviderTest, Input) {
   LoadURLs({
       {default_search_provider(), "hello world", "&foo=bar", 1},
   });
@@ -212,7 +220,7 @@ TEST_F(LocalHistoryZeroSuggestProviderTest, Input) {
 
 // Tests that suggestions are returned only if ZeroSuggestVariant is configured
 // to return local history suggestions in the NTP.
-TEST_F(LocalHistoryZeroSuggestProviderTest, ZeroSuggestVariant) {
+TEST_F(MAYBE_LocalHistoryZeroSuggestProviderTest, ZeroSuggestVariant) {
   LoadURLs({
       {default_search_provider(), "hello world", "&foo=bar", 1},
   });
@@ -248,7 +256,7 @@ TEST_F(LocalHistoryZeroSuggestProviderTest, ZeroSuggestVariant) {
 
 // Tests that search terms are extracted from the default search provider's
 // search history only and only when Google is the default search provider.
-TEST_F(LocalHistoryZeroSuggestProviderTest, DefaultSearchProvider) {
+TEST_F(MAYBE_LocalHistoryZeroSuggestProviderTest, DefaultSearchProvider) {
   auto* template_url_service = client_->GetTemplateURLService();
   auto* other_search_provider = template_url_service->Add(
       std::make_unique<TemplateURL>(*GenerateDummyTemplateURLData("other")));
@@ -274,7 +282,7 @@ TEST_F(LocalHistoryZeroSuggestProviderTest, DefaultSearchProvider) {
 // Tests that search terms are extracted with the correct encoding, whitespaces
 // are collapsed, search terms are lowercased and duplicated, and empty searches
 // are ignored.
-TEST_F(LocalHistoryZeroSuggestProviderTest, SearchTerms) {
+TEST_F(MAYBE_LocalHistoryZeroSuggestProviderTest, SearchTerms) {
   LoadURLs({
       {default_search_provider(), "hello world", "&foo=bar", 1},
       {default_search_provider(), "hello   world", "&foo=bar", 1},
@@ -290,7 +298,7 @@ TEST_F(LocalHistoryZeroSuggestProviderTest, SearchTerms) {
 }
 
 // Tests that the suggestions are ordered by recency.
-TEST_F(LocalHistoryZeroSuggestProviderTest, Suggestions_Recency) {
+TEST_F(MAYBE_LocalHistoryZeroSuggestProviderTest, Suggestions_Recency) {
   LoadURLs({
       {default_search_provider(), "less recent search", "&foo=bar", 2},
       {default_search_provider(), "more recent search", "&foo=bar", 1},
@@ -301,7 +309,7 @@ TEST_F(LocalHistoryZeroSuggestProviderTest, Suggestions_Recency) {
 }
 
 // Tests that suggestions are created from fresh search histories only.
-TEST_F(LocalHistoryZeroSuggestProviderTest, Suggestions_Freshness) {
+TEST_F(MAYBE_LocalHistoryZeroSuggestProviderTest, Suggestions_Freshness) {
   int fresh = (Time::Now() - history::AutocompleteAgeThreshold()).InDays() - 1;
   int stale = (Time::Now() - history::AutocompleteAgeThreshold()).InDays() + 1;
   LoadURLs({
@@ -315,7 +323,7 @@ TEST_F(LocalHistoryZeroSuggestProviderTest, Suggestions_Freshness) {
 
 // Tests that all the search URLs that would produce a given suggestion get
 // deleted when the autocomplete match is deleted.
-TEST_F(LocalHistoryZeroSuggestProviderTest, DISABLED_Delete) {
+TEST_F(MAYBE_LocalHistoryZeroSuggestProviderTest, DISABLED_Delete) {
   LoadURLs({
       {default_search_provider(), "hello   world", "&foo=bar&aqs=1", 1},
       {default_search_provider(), "HELLO WORLD", "&foo=bar&aqs=12", 1},

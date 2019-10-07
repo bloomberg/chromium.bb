@@ -122,9 +122,15 @@ void CacheFileSaverObserver::OnCacheSaveFinished(bool succeeded) {
 
 // -----------------------------------------------------------------------------
 
-class InMemoryURLIndexTest : public testing::Test {
+// Flaky leaks on ASAN LSAN (crbug.com/1010691).
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_InMemoryURLIndexTest DISABLED_InMemoryURLIndexTest
+#else
+#define MAYBE_InMemoryURLIndexTest InMemoryURLIndexTest
+#endif
+class MAYBE_InMemoryURLIndexTest : public testing::Test {
  public:
-  InMemoryURLIndexTest() = default;
+  MAYBE_InMemoryURLIndexTest() = default;
 
  protected:
   // Test setup.
@@ -177,57 +183,59 @@ class InMemoryURLIndexTest : public testing::Test {
   std::unique_ptr<InMemoryURLIndex> url_index_;
 };
 
-sql::Database& InMemoryURLIndexTest::GetDB() {
+sql::Database& MAYBE_InMemoryURLIndexTest::GetDB() {
   return history_database_->GetDB();
 }
 
-URLIndexPrivateData* InMemoryURLIndexTest::GetPrivateData() const {
+URLIndexPrivateData* MAYBE_InMemoryURLIndexTest::GetPrivateData() const {
   DCHECK(url_index_->private_data());
   return url_index_->private_data();
 }
 
-base::CancelableTaskTracker* InMemoryURLIndexTest::GetPrivateDataTracker()
+base::CancelableTaskTracker* MAYBE_InMemoryURLIndexTest::GetPrivateDataTracker()
     const {
   DCHECK(url_index_->private_data_tracker());
   return url_index_->private_data_tracker();
 }
 
-void InMemoryURLIndexTest::ClearPrivateData() {
+void MAYBE_InMemoryURLIndexTest::ClearPrivateData() {
   return url_index_->ClearPrivateData();
 }
 
-void InMemoryURLIndexTest::set_history_dir(const base::FilePath& dir_path) {
+void MAYBE_InMemoryURLIndexTest::set_history_dir(
+    const base::FilePath& dir_path) {
   return url_index_->set_history_dir(dir_path);
 }
 
-bool InMemoryURLIndexTest::GetCacheFilePath(base::FilePath* file_path) const {
+bool MAYBE_InMemoryURLIndexTest::GetCacheFilePath(
+    base::FilePath* file_path) const {
   DCHECK(file_path);
   return url_index_->GetCacheFilePath(file_path);
 }
 
-void InMemoryURLIndexTest::PostRestoreFromCacheFileTask() {
+void MAYBE_InMemoryURLIndexTest::PostRestoreFromCacheFileTask() {
   url_index_->PostRestoreFromCacheFileTask();
 }
 
-void InMemoryURLIndexTest::PostSaveToCacheFileTask() {
+void MAYBE_InMemoryURLIndexTest::PostSaveToCacheFileTask() {
   url_index_->PostSaveToCacheFileTask();
 }
 
-const SchemeSet& InMemoryURLIndexTest::scheme_whitelist() {
+const SchemeSet& MAYBE_InMemoryURLIndexTest::scheme_whitelist() {
   return url_index_->scheme_whitelist();
 }
 
-bool InMemoryURLIndexTest::UpdateURL(const history::URLRow& row) {
+bool MAYBE_InMemoryURLIndexTest::UpdateURL(const history::URLRow& row) {
   return GetPrivateData()->UpdateURL(
       history_service_.get(), row, url_index_->scheme_whitelist_,
       GetPrivateDataTracker());
 }
 
-bool InMemoryURLIndexTest::DeleteURL(const GURL& url) {
+bool MAYBE_InMemoryURLIndexTest::DeleteURL(const GURL& url) {
   return GetPrivateData()->DeleteURL(url);
 }
 
-void InMemoryURLIndexTest::SetUp() {
+void MAYBE_InMemoryURLIndexTest::SetUp() {
   // We cannot access the database until the backend has been loaded.
   if (history_dir_.CreateUniqueTempDir())
     history_service_ =
@@ -287,7 +295,7 @@ void InMemoryURLIndexTest::SetUp() {
     InitializeInMemoryURLIndex();
 }
 
-void InMemoryURLIndexTest::TearDown() {
+void MAYBE_InMemoryURLIndexTest::TearDown() {
   // Ensure that the InMemoryURLIndex no longer observes HistoryService before
   // it is destroyed in order to prevent HistoryService calling dead observer.
   if (url_index_)
@@ -295,15 +303,15 @@ void InMemoryURLIndexTest::TearDown() {
   task_environment_.RunUntilIdle();
 }
 
-base::FilePath::StringType InMemoryURLIndexTest::TestDBName() const {
+base::FilePath::StringType MAYBE_InMemoryURLIndexTest::TestDBName() const {
   return FILE_PATH_LITERAL("in_memory_url_index_test.sql");
 }
 
-bool InMemoryURLIndexTest::InitializeInMemoryURLIndexInSetUp() const {
+bool MAYBE_InMemoryURLIndexTest::InitializeInMemoryURLIndexInSetUp() const {
   return true;
 }
 
-void InMemoryURLIndexTest::InitializeInMemoryURLIndex() {
+void MAYBE_InMemoryURLIndexTest::InitializeInMemoryURLIndex() {
   DCHECK(!url_index_);
 
   SchemeSet client_schemes_to_whitelist;
@@ -315,7 +323,7 @@ void InMemoryURLIndexTest::InitializeInMemoryURLIndex() {
   url_index_->RebuildFromHistory(history_database_);
 }
 
-void InMemoryURLIndexTest::CheckTerm(
+void MAYBE_InMemoryURLIndexTest::CheckTerm(
     const URLIndexPrivateData::SearchTermCacheMap& cache,
     base::string16 term) const {
   auto cache_iter(cache.find(term));
@@ -326,7 +334,7 @@ void InMemoryURLIndexTest::CheckTerm(
       << "Cache item '" << term << "' should be marked as being in use.";
 }
 
-void InMemoryURLIndexTest::ExpectPrivateDataNotEmpty(
+void MAYBE_InMemoryURLIndexTest::ExpectPrivateDataNotEmpty(
     const URLIndexPrivateData& data) {
   EXPECT_FALSE(data.word_list_.empty());
   // available_words_ will be empty since we have freshly built the
@@ -339,7 +347,7 @@ void InMemoryURLIndexTest::ExpectPrivateDataNotEmpty(
   EXPECT_FALSE(data.history_info_map_.empty());
 }
 
-void InMemoryURLIndexTest::ExpectPrivateDataEmpty(
+void MAYBE_InMemoryURLIndexTest::ExpectPrivateDataEmpty(
     const URLIndexPrivateData& data) {
   EXPECT_TRUE(data.word_list_.empty());
   EXPECT_TRUE(data.available_words_.empty());
@@ -369,7 +377,7 @@ void ExpectMapOfContainersIdentical(const T& expected, const T& actual) {
   }
 }
 
-void InMemoryURLIndexTest::ExpectPrivateDataEqual(
+void MAYBE_InMemoryURLIndexTest::ExpectPrivateDataEqual(
     const URLIndexPrivateData& expected,
     const URLIndexPrivateData& actual) {
   EXPECT_EQ(expected.word_list_.size(), actual.word_list_.size());
@@ -441,21 +449,29 @@ void InMemoryURLIndexTest::ExpectPrivateDataEqual(
 
 //------------------------------------------------------------------------------
 
-class LimitedInMemoryURLIndexTest : public InMemoryURLIndexTest {
+// Flaky leaks on ASAN LSAN (crbug.com/1010691).
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_LimitedInMemoryURLIndexTest DISABLED_LimitedInMemoryURLIndexTest
+#else
+#define MAYBE_LimitedInMemoryURLIndexTest LimitedInMemoryURLIndexTest
+#endif
+class MAYBE_LimitedInMemoryURLIndexTest : public MAYBE_InMemoryURLIndexTest {
  protected:
   base::FilePath::StringType TestDBName() const override;
   bool InitializeInMemoryURLIndexInSetUp() const override;
 };
 
-base::FilePath::StringType LimitedInMemoryURLIndexTest::TestDBName() const {
+base::FilePath::StringType MAYBE_LimitedInMemoryURLIndexTest::TestDBName()
+    const {
   return FILE_PATH_LITERAL("in_memory_url_index_test_limited.sql");
 }
 
-bool LimitedInMemoryURLIndexTest::InitializeInMemoryURLIndexInSetUp() const {
+bool MAYBE_LimitedInMemoryURLIndexTest::InitializeInMemoryURLIndexInSetUp()
+    const {
   return false;
 }
 
-TEST_F(LimitedInMemoryURLIndexTest, Initialization) {
+TEST_F(MAYBE_LimitedInMemoryURLIndexTest, Initialization) {
   // Verify that the database contains the expected number of items, which
   // is the pre-filtered count, i.e. all of the items.
   sql::Statement statement(GetDB().GetUniqueStatement("SELECT * FROM urls;"));
@@ -473,7 +489,7 @@ TEST_F(LimitedInMemoryURLIndexTest, Initialization) {
   EXPECT_EQ(17U, private_data.word_map_.size());
 }
 
-TEST_F(InMemoryURLIndexTest, HiddenURLRowsAreIgnored) {
+TEST_F(MAYBE_InMemoryURLIndexTest, HiddenURLRowsAreIgnored) {
   history::URLID new_row_id = 87654321;  // Arbitrarily chosen large new row id.
   history::URLRow new_row =
       history::URLRow(GURL("http://hidden.com/"), new_row_id++);
@@ -488,7 +504,7 @@ TEST_F(InMemoryURLIndexTest, HiddenURLRowsAreIgnored) {
               .size());
 }
 
-TEST_F(InMemoryURLIndexTest, DISABLED_Retrieval) {
+TEST_F(MAYBE_InMemoryURLIndexTest, DISABLED_Retrieval) {
   // See if a very specific term gives a single result.
   ScoredHistoryMatches matches = url_index_->HistoryItemsForTerms(
       ASCIIToUTF16("DrudgeReport"), base::string16::npos, kProviderMaxMatches);
@@ -581,7 +597,7 @@ TEST_F(InMemoryURLIndexTest, DISABLED_Retrieval) {
             matches[0].url_info.title());
 }
 
-TEST_F(InMemoryURLIndexTest, CursorPositionRetrieval) {
+TEST_F(MAYBE_InMemoryURLIndexTest, CursorPositionRetrieval) {
   // See if a very specific term with no cursor gives an empty result.
   ScoredHistoryMatches matches = url_index_->HistoryItemsForTerms(
       ASCIIToUTF16("DrudReport"), base::string16::npos, kProviderMaxMatches);
@@ -624,7 +640,7 @@ TEST_F(InMemoryURLIndexTest, CursorPositionRetrieval) {
             matches[0].url_info.title());
 }
 
-TEST_F(InMemoryURLIndexTest, URLPrefixMatching) {
+TEST_F(MAYBE_InMemoryURLIndexTest, URLPrefixMatching) {
   // "drudgere" - found
   ScoredHistoryMatches matches = url_index_->HistoryItemsForTerms(
       ASCIIToUTF16("drudgere"), base::string16::npos, kProviderMaxMatches);
@@ -678,7 +694,7 @@ TEST_F(InMemoryURLIndexTest, URLPrefixMatching) {
   EXPECT_EQ(0U, matches.size());
 }
 
-TEST_F(InMemoryURLIndexTest, ProperStringMatching) {
+TEST_F(MAYBE_InMemoryURLIndexTest, ProperStringMatching) {
   // Search for the following with the expected results:
   // "atdmt view" - found
   // "atdmt.view" - not found
@@ -694,7 +710,7 @@ TEST_F(InMemoryURLIndexTest, ProperStringMatching) {
   EXPECT_EQ(1U, matches.size());
 }
 
-TEST_F(InMemoryURLIndexTest, TrimHistoryIds) {
+TEST_F(MAYBE_InMemoryURLIndexTest, TrimHistoryIds) {
   // Constants ---------------------------------------------------------------
 
   constexpr size_t kItemsToScoreLimit = 500;
@@ -794,7 +810,7 @@ TEST_F(InMemoryURLIndexTest, TrimHistoryIds) {
       << "broken after: " << error_position - std::begin(item_groups);
 }
 
-TEST_F(InMemoryURLIndexTest, HugeResultSet) {
+TEST_F(MAYBE_InMemoryURLIndexTest, HugeResultSet) {
   // Create a huge set of qualifying history items.
   for (history::URLID row_id = 5000; row_id < 6000; ++row_id) {
     history::URLRow new_row(GURL("http://www.brokeandaloneinmanitoba.com/"),
@@ -808,7 +824,7 @@ TEST_F(InMemoryURLIndexTest, HugeResultSet) {
   EXPECT_EQ(kProviderMaxMatches, matches.size());
 }
 
-TEST_F(InMemoryURLIndexTest, TitleSearch) {
+TEST_F(MAYBE_InMemoryURLIndexTest, TitleSearch) {
   // Signal if someone has changed the test DB.
   EXPECT_EQ(30U, GetPrivateData()->history_info_map_.size());
 
@@ -827,7 +843,7 @@ TEST_F(InMemoryURLIndexTest, TitleSearch) {
       matches[0].url_info.title());
 }
 
-TEST_F(InMemoryURLIndexTest, TitleChange) {
+TEST_F(MAYBE_InMemoryURLIndexTest, TitleChange) {
   // Verify current title terms retrieves desired item.
   base::string16 original_terms =
       ASCIIToUTF16("lebronomics could high taxes influence");
@@ -865,7 +881,7 @@ TEST_F(InMemoryURLIndexTest, TitleChange) {
   EXPECT_EQ(0U, matches.size());
 }
 
-TEST_F(InMemoryURLIndexTest, NonUniqueTermCharacterSets) {
+TEST_F(MAYBE_InMemoryURLIndexTest, NonUniqueTermCharacterSets) {
   // The presence of duplicate characters should succeed. Exercise by cycling
   // through a string with several duplicate characters.
   ScoredHistoryMatches matches = url_index_->HistoryItemsForTerms(
@@ -896,7 +912,7 @@ TEST_F(InMemoryURLIndexTest, NonUniqueTermCharacterSets) {
   EXPECT_EQ(28, matches[0].url_info.id());
 }
 
-TEST_F(InMemoryURLIndexTest, TypedCharacterCaching) {
+TEST_F(MAYBE_InMemoryURLIndexTest, TypedCharacterCaching) {
   // Verify that match results for previously typed characters are retained
   // (in the term_char_word_set_cache_) and reused, if possible, in future
   // autocompletes.
@@ -956,7 +972,7 @@ TEST_F(InMemoryURLIndexTest, TypedCharacterCaching) {
   CheckTerm(cache, ASCIIToUTF16("rec"));
 }
 
-TEST_F(InMemoryURLIndexTest, DISABLED_AddNewRows) {
+TEST_F(MAYBE_InMemoryURLIndexTest, DISABLED_AddNewRows) {
   // Verify that the row we're going to add does not already exist.
   history::URLID new_row_id = 87654321;
   // Newly created history::URLRows get a last_visit time of 'right now' so it
@@ -996,7 +1012,7 @@ TEST_F(InMemoryURLIndexTest, DISABLED_AddNewRows) {
   EXPECT_FALSE(UpdateURL(new_row));
 }
 
-TEST_F(InMemoryURLIndexTest, DeleteRows) {
+TEST_F(MAYBE_InMemoryURLIndexTest, DeleteRows) {
   ScoredHistoryMatches matches = url_index_->HistoryItemsForTerms(
       ASCIIToUTF16("DrudgeReport"), base::string16::npos, kProviderMaxMatches);
   ASSERT_EQ(1U, matches.size());
@@ -1014,7 +1030,7 @@ TEST_F(InMemoryURLIndexTest, DeleteRows) {
   EXPECT_FALSE(DeleteURL(url));
 }
 
-TEST_F(InMemoryURLIndexTest, ExpireRow) {
+TEST_F(MAYBE_InMemoryURLIndexTest, ExpireRow) {
   ScoredHistoryMatches matches = url_index_->HistoryItemsForTerms(
       ASCIIToUTF16("DrudgeReport"), base::string16::npos, kProviderMaxMatches);
   ASSERT_EQ(1U, matches.size());
@@ -1032,7 +1048,7 @@ TEST_F(InMemoryURLIndexTest, ExpireRow) {
                   .empty());
 }
 
-TEST_F(InMemoryURLIndexTest, WhitelistedURLs) {
+TEST_F(MAYBE_InMemoryURLIndexTest, WhitelistedURLs) {
   std::string client_whitelisted_url =
       base::StringPrintf("%s://foo", kClientWhitelistedScheme);
   struct TestData {
@@ -1116,13 +1132,13 @@ TEST_F(InMemoryURLIndexTest, WhitelistedURLs) {
   }
 }
 
-TEST_F(InMemoryURLIndexTest, ReadVisitsFromHistory) {
+TEST_F(MAYBE_InMemoryURLIndexTest, ReadVisitsFromHistory) {
   const HistoryInfoMap& history_info_map = GetPrivateData()->history_info_map_;
 
   // Check (for URL with id 1) that the number of visits and their
   // transition types are what we expect.  We don't bother checking
   // the timestamps because it's too much trouble.  (The timestamps go
-  // through a transformation in InMemoryURLIndexTest::SetUp().  We
+  // through a transformation in MAYBE_InMemoryURLIndexTest::SetUp().  We
   // assume that if the count and transitions show up with the right
   // information, we're getting the right information from the history
   // database file.)
@@ -1158,7 +1174,7 @@ TEST_F(InMemoryURLIndexTest, ReadVisitsFromHistory) {
   }
 }
 
-TEST_F(InMemoryURLIndexTest, DISABLED_CacheSaveRestore) {
+TEST_F(MAYBE_InMemoryURLIndexTest, DISABLED_CacheSaveRestore) {
   base::ScopedTempDir temp_directory;
   ASSERT_TRUE(temp_directory.CreateUniqueTempDir());
   set_history_dir(temp_directory.GetPath());
@@ -1227,7 +1243,7 @@ TEST_F(InMemoryURLIndexTest, DISABLED_CacheSaveRestore) {
   ExpectPrivateDataEqual(*old_data, new_data);
 }
 
-TEST_F(InMemoryURLIndexTest, RebuildFromHistoryIfCacheOld) {
+TEST_F(MAYBE_InMemoryURLIndexTest, RebuildFromHistoryIfCacheOld) {
   base::ScopedTempDir temp_directory;
   ASSERT_TRUE(temp_directory.CreateUniqueTempDir());
   set_history_dir(temp_directory.GetPath());
@@ -1304,7 +1320,7 @@ TEST_F(InMemoryURLIndexTest, RebuildFromHistoryIfCacheOld) {
   ExpectPrivateDataEqual(*old_data, new_data);
 }
 
-TEST_F(InMemoryURLIndexTest, CalculateWordStartsOffsets) {
+TEST_F(MAYBE_InMemoryURLIndexTest, CalculateWordStartsOffsets) {
   const struct {
     const char* search_string;
     size_t cursor_position;
@@ -1381,7 +1397,7 @@ TEST_F(InMemoryURLIndexTest, CalculateWordStartsOffsets) {
   }
 }
 
-TEST_F(InMemoryURLIndexTest, CalculateWordStartsOffsetsUnderscore) {
+TEST_F(MAYBE_InMemoryURLIndexTest, CalculateWordStartsOffsetsUnderscore) {
   const struct {
     const char* search_string;
     size_t cursor_position;

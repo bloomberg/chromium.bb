@@ -39,10 +39,24 @@
 #include "sql/init_status.h"
 #include "ui/base/page_transition_types.h"
 
+// Flaky leaks on ASAN LSAN (crbug.com/1010691).
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_HistoryQuickProviderTest DISABLED_HistoryQuickProviderTest
+#else
+#define MAYBE_HistoryQuickProviderTest HistoryQuickProviderTest
+#endif
+
+// Flaky leaks on ASAN LSAN (crbug.com/1010691).
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_HistoryQuickProviderTest DISABLED_HistoryQuickProviderTest
+#else
+#define MAYBE_HistoryQuickProviderTest HistoryQuickProviderTest
+#endif
+
 class GURL;
-class HistoryQuickProviderTest;
+class MAYBE_HistoryQuickProviderTest;
 class HistoryURLProvider;
-class InMemoryURLIndexTest;
+class MAYBE_InMemoryURLIndexTest;
 class SkBitmap;
 class SyncBookmarkDataTypeControllerTest;
 class TestingProfile;
@@ -543,11 +557,11 @@ class HistoryService : public KeyedService {
   friend class favicon::FaviconServiceImpl;
   friend class HistoryBackend;
   friend class HistoryQueryTest;
-  friend class ::HistoryQuickProviderTest;
+  friend class ::MAYBE_HistoryQuickProviderTest;
   friend class HistoryServiceTest;
   friend class ::HistoryURLProvider;
   friend class HQPPerfTestOnePopularURL;
-  friend class ::InMemoryURLIndexTest;
+  friend class ::MAYBE_InMemoryURLIndexTest;
   friend class ::SyncBookmarkDataTypeControllerTest;
   friend class ::TestingProfile;
   friend std::unique_ptr<HistoryService> CreateHistoryService(

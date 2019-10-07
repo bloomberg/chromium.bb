@@ -13,6 +13,13 @@
 #include "components/omnibox/browser/test_omnibox_edit_controller.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+// Flaky leaks on ASAN LSAN (crbug.com/1010691).
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_OmniboxPedalImplementationsTest \
+  DISABLED_OmniboxPedalImplementationsTest
+#else
+#define MAYBE_OmniboxPedalImplementationsTest OmniboxPedalImplementationsTest
+#endif
 class OmniboxPedalImplementationsTest : public testing::Test {
  protected:
   OmniboxPedalImplementationsTest()
