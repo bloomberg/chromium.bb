@@ -407,6 +407,9 @@ extern const char kEnforceTLS13DowngradeDescription[];
 extern const char kEnableTLS13EarlyDataName[];
 extern const char kEnableTLS13EarlyDataDescription[];
 
+extern const char kWinrtGeolocationImplementationName[];
+extern const char kWinrtGeolocationImplementationDescription[];
+
 extern const char kWinrtSensorsImplementationName[];
 extern const char kWinrtSensorsImplementationDescription[];
 

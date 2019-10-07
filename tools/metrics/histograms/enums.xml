@@ -37376,6 +37376,7 @@ from previous Chrome versions.
   <int value="1138349838" label="EnableMDRoundedCornersOnDialogs:disabled"/>
   <int value="1139226452" label="enable-nacl-debug"/>
   <int value="1139363314" label="disable-supervised-user-blacklist"/>
+  <int value="1140541604" label="WinrtGeolocationImplementation:enabled"/>
   <int value="1142515376" label="enable-nacl"/>
   <int value="1142788238" label="FontCacheScaling:disabled"/>
   <int value="1142970266"
@@ -37577,6 +37578,7 @@ from previous Chrome versions.
   <int value="1382500494" label="disable-drive-apps-in-app-list"/>
   <int value="1383591631" label="enable-gesture-typing"/>
   <int value="1384614036" label="disable-unified-media-pipeline"/>
+  <int value="1385833812" label="WinrtGeolocationImplementation:disabled"/>
   <int value="1386300777"
       label="OmniboxUIExperimentHideSuggestionUrlTrivialSubdomains:disabled"/>
   <int value="1387356699" label="PolicyAtomicGroup:enabled"/>

@@ -668,6 +668,12 @@ const char kEnableTLS13EarlyDataDescription[] =
     "during the handshake when resuming a connection to a compatible TLS 1.3 "
     "server.";
 
+const char kWinrtGeolocationImplementationName[] =
+    "WinRT Geolocation Implementation";
+const char kWinrtGeolocationImplementationDescription[] =
+    "Enables usage of the Windows.Devices.Geolocation WinRT APIs on Windows "
+    "for geolocation";
+
 const char kWinrtSensorsImplementationName[] = "WinRT Sensor Implementation";
 const char kWinrtSensorsImplementationDescription[] =
     "Enables usage of the Windows.Devices.Sensors WinRT APIs on Windows for "

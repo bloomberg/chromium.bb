@@ -2021,6 +2021,11 @@
     "expiry_milestone": 80
   },
   {
+    "name": "enable-winrt-geolocation-implementation",
+    "owners": [ "pelavall@microsoft.com" ],
+    "expiry_milestone": 81
+  },
+  {
     "name": "enable-winrt-sensor-implementation",
     "owners": [ "wensh@microsoft.com" ],
     "expiry_milestone": 80

@@ -4636,6 +4636,13 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chromeos::assistant::features::kAssistantAudioEraser)},
 #endif
 
+#if defined(OS_WIN)
+    {"enable-winrt-geolocation-implementation",
+     flag_descriptions::kWinrtGeolocationImplementationName,
+     flag_descriptions::kWinrtGeolocationImplementationDescription, kOsWin,
+     FEATURE_VALUE_TYPE(features::kWinrtGeolocationImplementation)},
+#endif
+
 #if defined(OS_CHROMEOS)
     {"exo-pointer-lock", flag_descriptions::kExoPointerLockName,
      flag_descriptions::kExoPointerLockDescription, kOsCrOS,
