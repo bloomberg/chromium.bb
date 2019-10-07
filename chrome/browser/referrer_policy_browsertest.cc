@@ -671,7 +671,24 @@ struct ReferrerOverrideParams {
       cross_origin_to_same_origin_redirect, same_origin_subresource,
       same_origin_to_cross_origin_subresource_redirect;
 } kReferrerOverrideParams[] = {
-    // TODO(davidvc, subsequent CL): Add a block of parameters for kNoReferrers.
+    {.feature_to_enable = features::kNoReferrers,
+     .baseline_policy = network::mojom::ReferrerPolicy::kAlways,
+     // The renderer's "have we completely disabled referrers?"
+     // implementation resets requests' referrer policies to the default when
+     // it excises their referrers.
+     .expected_policy =
+         content::Referrer::NetReferrerPolicyToBlinkReferrerPolicy(
+             content::Referrer::GetDefaultReferrerPolicy()),
+     .same_origin_nav = ReferrerPolicyTest::EXPECT_EMPTY_REFERRER,
+     .cross_origin_nav = ReferrerPolicyTest::EXPECT_EMPTY_REFERRER,
+     .cross_origin_downgrade_nav = ReferrerPolicyTest::EXPECT_EMPTY_REFERRER,
+     .same_origin_to_cross_origin_redirect =
+         ReferrerPolicyTest::EXPECT_EMPTY_REFERRER,
+     .cross_origin_to_same_origin_redirect =
+         ReferrerPolicyTest::EXPECT_EMPTY_REFERRER,
+     .same_origin_subresource = ReferrerPolicyTest::EXPECT_EMPTY_REFERRER,
+     .same_origin_to_cross_origin_subresource_redirect =
+         ReferrerPolicyTest::EXPECT_EMPTY_REFERRER},
     {
         .feature_to_enable =
             network::features::kCapReferrerToOriginOnCrossOrigin,
