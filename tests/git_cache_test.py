@@ -28,7 +28,8 @@ class GitCacheTest(unittest.TestCase):
 
   def git(self, cmd, cwd=None):
     cwd = cwd or self.origin_dir
-    subprocess.check_call(['git'] + cmd, cwd=cwd)
+    git = 'git.bat' if sys.platform == 'win32' else 'git'
+    subprocess.check_call([git] + cmd, cwd=cwd)
 
   def testParseFetchSpec(self):
     testData = [

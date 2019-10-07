@@ -252,9 +252,15 @@ My commit message is my best friend. It is my life. I must master it.
       'sys.stdin',
       StringIO('line\r\nany spaces\r\n\r\n\r\nFoo: 1\nBar: 2\nFoo: 3'))
   def testToJson(self):
-    with tempfile.NamedTemporaryFile() as tmp:
-      self.assertEqual(git_footers.main(['--json', tmp.name]), 0)
-      js = json.load(open(tmp.name))
+    with tempfile.NamedTemporaryFile(delete=False) as tmp:
+      try:
+        # NamedTemporaryFiles must be closed on Windows before being opened
+        # again.
+        tmp.close()
+        self.assertEqual(git_footers.main(['--json', tmp.name]), 0)
+        js = json.load(open(tmp.name))
+      finally:
+        os.remove(tmp.name)
     self.assertEqual(js, {'Foo': ['3', '1'], 'Bar': ['2']})
 
 
