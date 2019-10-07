@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/policy/cloud/machine_level_user_cloud_policy_helper.h"
+#include "chrome/browser/policy/cloud/chrome_browser_cloud_management_helper.h"
 
 #include <utility>
 
@@ -32,19 +32,21 @@ void OnPolicyFetchCompleted(bool success) {
 
 }  // namespace
 
-/* MachineLevelUserCloudPolicyRegistrar */
-MachineLevelUserCloudPolicyRegistrar::MachineLevelUserCloudPolicyRegistrar(
+/* ChromeBrowserCloudManagementRegistrar */
+ChromeBrowserCloudManagementRegistrar::ChromeBrowserCloudManagementRegistrar(
     DeviceManagementService* device_management_service,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : device_management_service_(device_management_service),
       url_loader_factory_(url_loader_factory) {}
 
-MachineLevelUserCloudPolicyRegistrar::~MachineLevelUserCloudPolicyRegistrar() {}
+ChromeBrowserCloudManagementRegistrar::
+    ~ChromeBrowserCloudManagementRegistrar() {}
 
-void MachineLevelUserCloudPolicyRegistrar::RegisterForPolicyWithEnrollmentToken(
-    const std::string& enrollment_token,
-    const std::string& client_id,
-    const PolicyRegistrationCallback& callback) {
+void ChromeBrowserCloudManagementRegistrar::
+    RegisterForCloudManagementWithEnrollmentToken(
+        const std::string& enrollment_token,
+        const std::string& client_id,
+        const CloudManagementRegistrationCallback& callback) {
   DCHECK(!enrollment_token.empty());
   DCHECK(!client_id.empty());
 
@@ -74,14 +76,16 @@ void MachineLevelUserCloudPolicyRegistrar::RegisterForPolicyWithEnrollmentToken(
       enterprise_management::DeviceRegisterRequest::BROWSER);
   registration_helper_->StartRegistrationWithEnrollmentToken(
       enrollment_token, client_id,
-      base::BindRepeating(
-          &MachineLevelUserCloudPolicyRegistrar::CallPolicyRegistrationCallback,
-          base::Unretained(this), base::Passed(&policy_client), callback));
+      base::BindRepeating(&ChromeBrowserCloudManagementRegistrar::
+                              CallCloudManagementRegistrationCallback,
+                          base::Unretained(this), base::Passed(&policy_client),
+                          callback));
 }
 
-void MachineLevelUserCloudPolicyRegistrar::CallPolicyRegistrationCallback(
-    std::unique_ptr<CloudPolicyClient> client,
-    PolicyRegistrationCallback callback) {
+void ChromeBrowserCloudManagementRegistrar::
+    CallCloudManagementRegistrationCallback(
+        std::unique_ptr<CloudPolicyClient> client,
+        CloudManagementRegistrationCallback callback) {
   registration_helper_.reset();
   if (callback)
     callback.Run(client->dm_token(), client->client_id());

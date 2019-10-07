@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_POLICY_CLOUD_MACHINE_LEVEL_USER_CLOUD_POLICY_HELPER_H_
-#define CHROME_BROWSER_POLICY_CLOUD_MACHINE_LEVEL_USER_CLOUD_POLICY_HELPER_H_
+#ifndef CHROME_BROWSER_POLICY_CLOUD_CHROME_BROWSER_CLOUD_MANAGEMENT_HELPER_H_
+#define CHROME_BROWSER_POLICY_CLOUD_CHROME_BROWSER_CLOUD_MANAGEMENT_HELPER_H_
 
 #include <memory>
 #include <string>
@@ -28,36 +28,37 @@ class MachineLevelUserCloudPolicyManager;
 class DeviceManagementService;
 
 // A helper class that register device with the enrollment token and client id.
-class MachineLevelUserCloudPolicyRegistrar {
+class ChromeBrowserCloudManagementRegistrar {
  public:
-  MachineLevelUserCloudPolicyRegistrar(
+  ChromeBrowserCloudManagementRegistrar(
       DeviceManagementService* device_management_service,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
-  ~MachineLevelUserCloudPolicyRegistrar();
+  ~ChromeBrowserCloudManagementRegistrar();
 
   // The callback invoked once policy registration is complete. Passed
   // |dm_token| and |client_id| parameters are empty if policy registration
   // failed.
   // TODO(crbug.com/825321): Update this to OnceCallback.
-  using PolicyRegistrationCallback =
+  using CloudManagementRegistrationCallback =
       base::RepeatingCallback<void(const std::string& dm_token,
                                    const std::string& client_id)>;
 
   // Registers a CloudPolicyClient for fetching machine level user policy.
-  void RegisterForPolicyWithEnrollmentToken(
+  void RegisterForCloudManagementWithEnrollmentToken(
       const std::string& enrollment_token,
       const std::string& client_id,
-      const PolicyRegistrationCallback& callback);
+      const CloudManagementRegistrationCallback& callback);
 
  private:
-  void CallPolicyRegistrationCallback(std::unique_ptr<CloudPolicyClient> client,
-                                      PolicyRegistrationCallback callback);
+  void CallCloudManagementRegistrationCallback(
+      std::unique_ptr<CloudPolicyClient> client,
+      CloudManagementRegistrationCallback callback);
 
   std::unique_ptr<CloudPolicyClientRegistrationHelper> registration_helper_;
   DeviceManagementService* device_management_service_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(MachineLevelUserCloudPolicyRegistrar);
+  DISALLOW_COPY_AND_ASSIGN(ChromeBrowserCloudManagementRegistrar);
 };
 
 // A helper class that setup registration and fetch policy.
@@ -93,4 +94,4 @@ class MachineLevelUserCloudPolicyFetcher : public CloudPolicyService::Observer {
 
 }  // namespace policy
 
-#endif  // CHROME_BROWSER_POLICY_CLOUD_MACHINE_LEVEL_USER_CLOUD_POLICY_HELPER_H_
+#endif  // CHROME_BROWSER_POLICY_CLOUD_CHROME_BROWSER_CLOUD_MANAGEMENT_HELPER_H_
