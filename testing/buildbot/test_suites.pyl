@@ -175,8 +175,6 @@
         'name': 'android_webview_pixel_skia_gold_test',
         'args': [
           '--dont-restore-color-profile-after-test',
-          '--os-type',
-          '${os_type}',
           '--build-revision',
           '${got_revision}',
           '--test-machine-name',
@@ -3714,8 +3712,6 @@
         'name': 'egl_pixel_skia_gold_test',
         'args': [
           '--dont-restore-color-profile-after-test',
-          '--os-type',
-          '${os_type}',
           '--build-revision',
           '${got_revision}',
           '--test-machine-name',
@@ -3745,8 +3741,6 @@
         'name': 'skia_renderer_pixel_skia_gold_test',
         'args': [
           '--dont-restore-color-profile-after-test',
-          '--os-type',
-          '${os_type}',
           '--build-revision',
           '${got_revision}',
           '--test-machine-name',
@@ -3794,8 +3788,6 @@
         'name': 'maps_pixel_test',
         'args': [
           '--dont-restore-color-profile-after-test',
-          '--os-type',
-          '${os_type}',
           '--build-revision',
           '${got_revision}',
           '--test-machine-name',
@@ -3853,8 +3845,6 @@
         'name': 'vulkan_pixel_skia_gold_test',
         'args': [
           '--dont-restore-color-profile-after-test',
-          '--os-type',
-          '${os_type}',
           '--build-revision',
           '${got_revision}',
           '--test-machine-name',
@@ -3895,8 +3885,6 @@
         'name': 'maps_pixel_test',
         'args': [
           '--dont-restore-color-profile-after-test',
-          '--os-type',
-          '${os_type}',
           '--build-revision',
           '${got_revision}',
           '--test-machine-name',
@@ -3921,8 +3909,6 @@
         'name': 'pixel_skia_gold_test',
         'args': [
           '--dont-restore-color-profile-after-test',
-          '--os-type',
-          '${os_type}',
           '--build-revision',
           '${got_revision}',
           '--test-machine-name',
