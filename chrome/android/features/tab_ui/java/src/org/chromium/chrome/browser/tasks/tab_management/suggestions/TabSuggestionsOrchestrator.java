@@ -19,6 +19,7 @@ import java.util.List;
 public class TabSuggestionsOrchestrator implements TabSuggestions, Destroyable {
     public static final String TAB_SUGGESTIONS_UMA_PREFIX = "TabSuggestionsOrchestrator";
     private static final String TAG = "TabSuggestionsDetailed";
+    private static final int MIN_CLOSE_SUGGESTIONS_THRESHOLD = 3;
 
     protected TabContextObserver mTabContextObserver;
     private final ActivityLifecycleDispatcher mActivityLifecycleDispatcher;
@@ -55,8 +56,21 @@ public class TabSuggestionsOrchestrator implements TabSuggestions, Destroyable {
     private List<TabSuggestion> aggregateResults(List<TabSuggestion> tabSuggestions) {
         List<TabSuggestion> aggregated = new LinkedList<>();
         for (TabSuggestion tabSuggestion : tabSuggestions) {
-            if (!tabSuggestion.getTabsInfo().isEmpty()) {
-                aggregated.add(tabSuggestion);
+            switch (tabSuggestion.getAction()) {
+                case TabSuggestion.TabSuggestionAction.CLOSE:
+                    if (tabSuggestion.getTabsInfo().size() >= MIN_CLOSE_SUGGESTIONS_THRESHOLD) {
+                        aggregated.add(tabSuggestion);
+                    }
+                    break;
+                case TabSuggestion.TabSuggestionAction.GROUP:
+                    if (!tabSuggestion.getTabsInfo().isEmpty()) {
+                        aggregated.add(tabSuggestion);
+                    }
+                    break;
+                default:
+                    android.util.Log.e(
+                            TAG, String.format("Unknown action: %d", tabSuggestion.getAction()));
+                    break;
             }
         }
         Collections.shuffle(aggregated);

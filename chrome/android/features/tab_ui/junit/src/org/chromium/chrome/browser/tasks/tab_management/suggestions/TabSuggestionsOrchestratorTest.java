@@ -40,7 +40,7 @@ import java.util.List;
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class TabSuggestionsOrchestratorTest {
-    private static final int TAB_ID = 0;
+    private static final int[] TAB_IDS = {0, 1, 2};
 
     @Rule
     public TestRule mProcessor = new Features.JUnitProcessor();
@@ -60,7 +60,7 @@ public class TabSuggestionsOrchestratorTest {
     @Mock
     private ActivityLifecycleDispatcher mDispatcher;
 
-    private static Tab sTab = mockTab(TAB_ID);
+    private static Tab[] sTabs = {mockTab(TAB_IDS[0]), mockTab(TAB_IDS[1]), mockTab(TAB_IDS[2])};
 
     private static Tab mockTab(int id) {
         Tab tab = mock(Tab.class);
@@ -76,21 +76,25 @@ public class TabSuggestionsOrchestratorTest {
                 .when(mTabModelFilterProvider)
                 .addTabModelFilterObserver(any(TabModelObserver.class));
         doReturn(mTabModelFilter).when(mTabModelFilterProvider).getCurrentTabModelFilter();
-        doReturn(1).when(mTabModelFilter).getCount();
-        doReturn(sTab).when(mTabModelFilter).getTabAt(eq(0));
         doReturn(null).when(mTabModelFilter).getRelatedTabList(anyInt());
     }
 
     @Test
     public void verifyResultsPrefetched() {
+        doReturn(TAB_IDS.length).when(mTabModelFilter).getCount();
+        for (int idx = 0; idx < TAB_IDS.length; idx++) {
+            doReturn(sTabs[idx]).when(mTabModelFilter).getTabAt(eq(idx));
+        }
         TabSuggestionsOrchestrator tabSuggestionsOrchestrator =
                 new TabSuggestionsOrchestrator(mTabModelSelector, mDispatcher);
         tabSuggestionsOrchestrator.mTabContextObserver.mTabModelObserver.didAddTab(null, 0);
         List<TabSuggestion> suggestions = tabSuggestionsOrchestrator.getSuggestions(
                 TabContext.createCurrentContext(mTabModelSelector));
         Assert.assertEquals(1, suggestions.size());
-        Assert.assertEquals(1, suggestions.get(0).getTabsInfo().size());
-        Assert.assertEquals(TAB_ID, suggestions.get(0).getTabsInfo().get(0).id);
+        Assert.assertEquals(TAB_IDS.length, suggestions.get(0).getTabsInfo().size());
+        for (int idx = 0; idx < TAB_IDS.length; idx++) {
+            Assert.assertEquals(TAB_IDS[idx], suggestions.get(0).getTabsInfo().get(idx).id);
+        }
     }
 
     @Test
@@ -100,5 +104,17 @@ public class TabSuggestionsOrchestratorTest {
         verify(mDispatcher, times(1)).register(eq(tabSuggestionsOrchestrator));
         tabSuggestionsOrchestrator.destroy();
         verify(mDispatcher, times(1)).unregister(eq(tabSuggestionsOrchestrator));
+    }
+
+    @Test
+    public void testTabFiltering() {
+        doReturn(1).when(mTabModelFilter).getCount();
+        doReturn(sTabs[0]).when(mTabModelFilter).getTabAt(eq(0));
+        TabSuggestionsOrchestrator tabSuggestionsOrchestrator =
+                new TabSuggestionsOrchestrator(mTabModelSelector, mDispatcher);
+        tabSuggestionsOrchestrator.mTabContextObserver.mTabModelObserver.didAddTab(null, 0);
+        List<TabSuggestion> suggestions = tabSuggestionsOrchestrator.getSuggestions(
+                TabContext.createCurrentContext(mTabModelSelector));
+        Assert.assertEquals(0, suggestions.size());
     }
 }
