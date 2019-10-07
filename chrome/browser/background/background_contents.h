@@ -62,7 +62,9 @@ class BackgroundContents : public extensions::DeferredStartRenderHost,
   BackgroundContents(
       scoped_refptr<content::SiteInstance> site_instance,
       content::RenderFrameHost* opener,
-      bool is_new_browsing_instance,
+      int32_t routing_id,
+      int32_t main_frame_routing_id,
+      int32_t main_frame_widget_routing_id,
       Delegate* delegate,
       const std::string& partition_id,
       content::SessionStorageNamespace* session_storage_namespace);

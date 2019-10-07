@@ -117,13 +117,15 @@ class BackgroundContentsService : private content::NotificationObserver,
   const std::string& GetParentApplicationId(BackgroundContents* contents) const;
 
   // Creates a new BackgroundContents using the passed |site| and
-  // begins tracking the object internally so it can be shutdown if the parent
-  // application is uninstalled.
+  // the |route_id| and begins tracking the object internally so it can be
+  // shutdown if the parent application is uninstalled.
   // Observers will receive a OnBackgroundContentsOpened call.
   BackgroundContents* CreateBackgroundContents(
       scoped_refptr<content::SiteInstance> site,
       content::RenderFrameHost* opener,
-      bool is_new_browsing_instance,
+      int32_t route_id,
+      int32_t main_frame_route_id,
+      int32_t main_frame_widget_route_id,
       const std::string& frame_name,
       const std::string& application_id,
       const std::string& partition_id,

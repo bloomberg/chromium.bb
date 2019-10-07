@@ -32,7 +32,9 @@ using content::WebContents;
 BackgroundContents::BackgroundContents(
     scoped_refptr<SiteInstance> site_instance,
     content::RenderFrameHost* opener,
-    bool is_new_browsing_instance,
+    int32_t routing_id,
+    int32_t main_frame_routing_id,
+    int32_t main_frame_widget_routing_id,
     Delegate* delegate,
     const std::string& partition_id,
     content::SessionStorageNamespace* session_storage_namespace)
@@ -47,12 +49,11 @@ BackgroundContents::BackgroundContents(
       opener ? opener->GetProcess()->GetID() : MSG_ROUTING_NONE;
   create_params.opener_render_frame_id =
       opener ? opener->GetRoutingID() : MSG_ROUTING_NONE;
+  create_params.routing_id = routing_id;
+  create_params.main_frame_routing_id = main_frame_routing_id;
+  create_params.main_frame_widget_routing_id = main_frame_widget_routing_id;
+  create_params.renderer_initiated_creation = routing_id != MSG_ROUTING_NONE;
   create_params.is_never_visible = true;
-
-  // This isn't semantically sensible, but it is what the old code implicitly
-  // did.
-  create_params.renderer_initiated_creation = !is_new_browsing_instance;
-
   if (session_storage_namespace) {
     content::SessionStorageNamespaceMap session_storage_namespace_map;
     session_storage_namespace_map.insert(
