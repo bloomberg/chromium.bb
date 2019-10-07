@@ -71,7 +71,8 @@ inline int16x8_t ZeroExtend(const uint8x8_t in) {
 // is shifted by |kFilterBits| (7) and saturated to uint8_t. This means any
 // value over 255 << 7 (32576 because of rounding) is clamped.
 template <int filter_index, bool negative_outside_taps = false>
-int16x8_t SumTaps(const uint8x8_t* const src, const uint8x8_t* const taps) {
+int16x8_t SumVerticalTaps(const uint8x8_t* const src,
+                          const uint8x8_t* const taps) {
   uint16x8_t sum;
   if (filter_index == 0) {
     // 6 taps. + - + + - +
@@ -152,7 +153,8 @@ int16x8_t SumTaps(const uint8x8_t* const src, const uint8x8_t* const taps) {
 
 // Add an offset to ensure the sum is positive and it fits within uint16_t.
 template <int filter_index, bool negative_outside_taps = false>
-uint16x8_t SumTaps8To16(const uint8x8_t* const src, const uint8x8_t taps[8]) {
+uint16x8_t SumVerticalTaps8To16(const uint8x8_t* const src,
+                                const uint8x8_t taps[8]) {
   // The worst case sum of negative taps is -56. The worst case sum of positive
   // taps is 184. With the single pass versions of the Convolve we could safely
   // saturate to int16_t because it outranged the final shift and narrow to
@@ -216,8 +218,8 @@ uint16x8_t SumTaps8To16(const uint8x8_t* const src, const uint8x8_t taps[8]) {
 }
 
 template <int num_taps, int filter_index, bool negative_outside_taps = true>
-uint16x8_t SumCompoundHorizontalTaps(const uint8_t* const src,
-                                     const uint8x8_t* const v_tap) {
+uint16x8_t SumHorizontalTaps(const uint8_t* const src,
+                             const uint8x8_t* const v_tap) {
   // Start with an offset to guarantee the sum is non negative.
   uint16x8_t v_sum = vdupq_n_u16(1 << 14);
   uint8x16_t v_src[8];
@@ -355,8 +357,8 @@ void FilterHorizontal(const uint8_t* src, const ptrdiff_t src_stride,
       int x = 0;
       do {
         uint16x8_t v_sum =
-            SumCompoundHorizontalTaps<num_taps, filter_index,
-                                      negative_outside_taps>(&src[x], v_tap);
+            SumHorizontalTaps<num_taps, filter_index, negative_outside_taps>(
+                &src[x], v_tap);
         if (is_2d || is_compound) {
           v_sum = vrshlq_u16(v_sum, v_inter_round_bits_0);
           if (!is_2d) {
@@ -386,8 +388,8 @@ void FilterHorizontal(const uint8_t* src, const ptrdiff_t src_stride,
     int y = 0;
     do {
       uint16x8_t v_sum =
-          SumCompoundHorizontalTaps<num_taps, filter_index,
-                                    negative_outside_taps>(&src[0], v_tap);
+          SumHorizontalTaps<num_taps, filter_index, negative_outside_taps>(
+              &src[0], v_tap);
       if (is_2d || is_compound) {
         v_sum = vrshlq_u16(v_sum, v_inter_round_bits_0);
         if (!is_2d) {
@@ -1687,7 +1689,7 @@ void FilterVertical(const uint8_t* src, const ptrdiff_t src_stride,
       src_x += src_stride;
 
       const int16x8_t sums =
-          SumTaps<filter_index, negative_outside_taps>(srcs, taps);
+          SumVerticalTaps<filter_index, negative_outside_taps>(srcs, taps);
       const uint8x8_t results = vqrshrun_n_s16(sums, kFilterBits);
 
       vst1_u8(dst + x + y * dst_stride, results);
@@ -1734,7 +1736,7 @@ void FilterVertical4xH(const uint8_t* src, const ptrdiff_t src_stride,
       srcs[1] = vext_u8(srcs[0], srcs[2], 4);
 
       const int16x8_t sums =
-          SumTaps<filter_index, negative_outside_taps>(srcs, taps);
+          SumVerticalTaps<filter_index, negative_outside_taps>(srcs, taps);
       const uint8x8_t results = vqrshrun_n_s16(sums, kFilterBits);
 
       StoreLo4(dst, results);
@@ -1767,7 +1769,7 @@ void FilterVertical4xH(const uint8_t* src, const ptrdiff_t src_stride,
       srcs[3] = vext_u8(srcs[2], srcs[4], 4);
 
       const int16x8_t sums =
-          SumTaps<filter_index, negative_outside_taps>(srcs, taps);
+          SumVerticalTaps<filter_index, negative_outside_taps>(srcs, taps);
       const uint8x8_t results = vqrshrun_n_s16(sums, kFilterBits);
 
       StoreLo4(dst, results);
@@ -1808,7 +1810,7 @@ void FilterVertical4xH(const uint8_t* src, const ptrdiff_t src_stride,
       srcs[5] = vext_u8(srcs[4], srcs[6], 4);
 
       const int16x8_t sums =
-          SumTaps<filter_index, negative_outside_taps>(srcs, taps);
+          SumVerticalTaps<filter_index, negative_outside_taps>(srcs, taps);
       const uint8x8_t results = vqrshrun_n_s16(sums, kFilterBits);
 
       StoreLo4(dst, results);
@@ -1857,7 +1859,7 @@ void FilterVertical4xH(const uint8_t* src, const ptrdiff_t src_stride,
       srcs[7] = vext_u8(srcs[6], srcs[8], 4);
 
       const int16x8_t sums =
-          SumTaps<filter_index, negative_outside_taps>(srcs, taps);
+          SumVerticalTaps<filter_index, negative_outside_taps>(srcs, taps);
       const uint8x8_t results = vqrshrun_n_s16(sums, kFilterBits);
 
       StoreLo4(dst, results);
@@ -1923,7 +1925,8 @@ void FilterVertical2xH(const uint8_t* src, const ptrdiff_t src_stride,
 
       if (is_compound) {
         const uint16x8_t sums =
-            SumTaps8To16<filter_index, negative_outside_taps>(srcs, taps);
+            SumVerticalTaps8To16<filter_index, negative_outside_taps>(srcs,
+                                                                      taps);
         const uint16x8_t shifted = vrshrq_n_u16(sums, 3);
         const uint16x8_t offset = vaddq_u16(shifted, compound_round_offset);
 
@@ -1938,7 +1941,7 @@ void FilterVertical2xH(const uint8_t* src, const ptrdiff_t src_stride,
         dst16 += dst_stride;
       } else {
         const int16x8_t sums =
-            SumTaps<filter_index, negative_outside_taps>(srcs, taps);
+            SumVerticalTaps<filter_index, negative_outside_taps>(srcs, taps);
         const uint8x8_t results = vqrshrun_n_s16(sums, kFilterBits);
 
         Store2<0>(dst8, results);
@@ -1981,7 +1984,8 @@ void FilterVertical2xH(const uint8_t* src, const ptrdiff_t src_stride,
 
       if (is_compound) {
         const uint16x8_t sums =
-            SumTaps8To16<filter_index, negative_outside_taps>(srcs, taps);
+            SumVerticalTaps8To16<filter_index, negative_outside_taps>(srcs,
+                                                                      taps);
         const uint16x8_t shifted = vrshrq_n_u16(sums, 3);
         const uint16x8_t offset = vaddq_u16(shifted, compound_round_offset);
 
@@ -1996,7 +2000,7 @@ void FilterVertical2xH(const uint8_t* src, const ptrdiff_t src_stride,
         dst16 += dst_stride;
       } else {
         const int16x8_t sums =
-            SumTaps<filter_index, negative_outside_taps>(srcs, taps);
+            SumVerticalTaps<filter_index, negative_outside_taps>(srcs, taps);
         const uint8x8_t results = vqrshrun_n_s16(sums, kFilterBits);
 
         Store2<0>(dst8, results);
@@ -2051,7 +2055,8 @@ void FilterVertical2xH(const uint8_t* src, const ptrdiff_t src_stride,
 
       if (is_compound) {
         const uint16x8_t sums =
-            SumTaps8To16<filter_index, negative_outside_taps>(srcs, taps);
+            SumVerticalTaps8To16<filter_index, negative_outside_taps>(srcs,
+                                                                      taps);
         const uint16x8_t shifted = vrshrq_n_u16(sums, 3);
         const uint16x8_t offset = vaddq_u16(shifted, compound_round_offset);
 
@@ -2065,7 +2070,7 @@ void FilterVertical2xH(const uint8_t* src, const ptrdiff_t src_stride,
         dst16 += dst_stride;
       } else {
         const int16x8_t sums =
-            SumTaps<filter_index, negative_outside_taps>(srcs, taps);
+            SumVerticalTaps<filter_index, negative_outside_taps>(srcs, taps);
         const uint8x8_t results = vqrshrun_n_s16(sums, kFilterBits);
 
         Store2<0>(dst8, results);
@@ -2127,7 +2132,8 @@ void FilterVertical2xH(const uint8_t* src, const ptrdiff_t src_stride,
 
       if (is_compound) {
         const uint16x8_t sums =
-            SumTaps8To16<filter_index, negative_outside_taps>(srcs, taps);
+            SumVerticalTaps8To16<filter_index, negative_outside_taps>(srcs,
+                                                                      taps);
         const uint16x8_t shifted = vrshrq_n_u16(sums, 3);
         const uint16x8_t offset = vaddq_u16(shifted, compound_round_offset);
 
@@ -2141,7 +2147,7 @@ void FilterVertical2xH(const uint8_t* src, const ptrdiff_t src_stride,
         dst16 += dst_stride;
       } else {
         const int16x8_t sums =
-            SumTaps<filter_index, negative_outside_taps>(srcs, taps);
+            SumVerticalTaps<filter_index, negative_outside_taps>(srcs, taps);
         const uint8x8_t results = vqrshrun_n_s16(sums, kFilterBits);
 
         Store2<0>(dst8, results);
@@ -2407,7 +2413,7 @@ void FilterCompoundVertical(const uint8_t* src, const ptrdiff_t src_stride,
       src_x += src_stride;
 
       const uint16x8_t sums =
-          SumTaps8To16<filter_index, negative_outside_taps>(srcs, taps);
+          SumVerticalTaps8To16<filter_index, negative_outside_taps>(srcs, taps);
       const uint16x8_t shifted = vrshrq_n_u16(sums, 3);
       // In order to keep the sum in 16 bits we added an offset to the sum
       // (1 << (bitdepth + kFilterBits - 1) == 1 << 14). This ensures that the
