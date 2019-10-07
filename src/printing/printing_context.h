@@ -34,6 +34,10 @@ class PRINTING_EXPORT PrintingContext {
     // Returns parent view to use for modal dialogs.
     virtual gfx::NativeView GetParentView() = 0;
 
+    virtual HWND GetOwnerWnd();
+
+    virtual void SetOwnerWnd(HWND ownerWnd) {}
+
     // Returns application locale.
     virtual std::string GetAppLocale() = 0;
   };
@@ -156,6 +160,13 @@ class PRINTING_EXPORT PrintingContext {
  private:
   DISALLOW_COPY_AND_ASSIGN(PrintingContext);
 };
+
+inline
+HWND PrintingContext::Delegate::GetOwnerWnd() {
+  return 0;
+}
+
+
 
 }  // namespace printing
 

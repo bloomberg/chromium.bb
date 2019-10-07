@@ -372,6 +372,9 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void ClearAutoplayFlags() override;
   int32_t AutoplayFlagsForTest() override;
 
+  HWND GetHwnd() override;
+  void SetHwnd(HWND hwnd) override;
+
   IntSize MainFrameSize();
   WebDisplayMode DisplayMode() const { return display_mode_; }
 
@@ -672,6 +675,9 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   GraphicsLayer* root_graphics_layer_ = nullptr;
   GraphicsLayer* visual_viewport_container_layer_ = nullptr;
   bool matches_heuristics_for_gpu_rasterization_ = false;
+
+  // hwnd of WebView if available. e.g. blpwtk2::RenderWebview
+  HWND hwnd_;
 
   std::unique_ptr<FullscreenController> fullscreen_controller_;
 
