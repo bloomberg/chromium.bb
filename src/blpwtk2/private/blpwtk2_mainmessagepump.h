@@ -103,6 +103,15 @@ class MainMessagePump final : public base::MessagePumpForUI {
     // STATIC CREATORS
     static MainMessagePump* current();
 
+    // CLASS METHODS
+    static void OnDebugBreak();
+        // Notify this pump that we're entering a "modal" loop due to being
+        // paused at a JavaScript breakpoint.
+
+    static void OnDebugResume();
+        // Notify this pump that we're exiting a "modal" loop due to resuming
+        // from being paused at a JavaScript breakpoint.
+
     // CREATORS
     MainMessagePump();
     ~MainMessagePump() override;
