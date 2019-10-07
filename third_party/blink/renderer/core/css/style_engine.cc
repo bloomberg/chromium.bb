@@ -1746,8 +1746,8 @@ void StyleEngine::RecalcStyle() {
   SelectorFilterRootScope filter_scope(parent);
   root_element->RecalcStyle({});
 
-  for (ContainerNode* ancestor = root_element->ParentOrShadowHostNode();
-       ancestor; ancestor = ancestor->ParentOrShadowHostNode()) {
+  for (ContainerNode* ancestor = root_element->GetStyleRecalcParent(); ancestor;
+       ancestor = ancestor->GetStyleRecalcParent()) {
     if (auto* ancestor_element = DynamicTo<Element>(ancestor))
       ancestor_element->RecalcStyleForTraversalRootAncestor();
     ancestor->ClearChildNeedsStyleRecalc();
