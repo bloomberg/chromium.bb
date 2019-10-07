@@ -641,13 +641,13 @@ MULTI_THREAD_TEST_F(
 class LayerTreeHostFreeContextResourcesOnDestroy
     : public LayerTreeHostContextCacheTest {
  public:
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    // TODO(crbug.com/985009): Fix test with surface sync enabled.
-    settings->enable_surface_synchronization = false;
-  }
-
   void WillBeginImplFrameOnThread(LayerTreeHostImpl* host_impl,
                                   const viz::BeginFrameArgs& args) override {
+    if (!first_will_begin_impl_frame_)
+      return;
+
+    first_will_begin_impl_frame_ = false;
+
     // Ensure that our initialization expectations have completed.
     Mock::VerifyAndClearExpectations(mock_main_context_support_);
     Mock::VerifyAndClearExpectations(mock_worker_context_support_);
@@ -659,6 +659,9 @@ class LayerTreeHostFreeContextResourcesOnDestroy
                 SetAggressivelyFreeResources(true));
     EndTest();
   }
+
+ private:
+  bool first_will_begin_impl_frame_ = true;
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostFreeContextResourcesOnDestroy);
