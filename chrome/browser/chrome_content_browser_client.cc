@@ -405,6 +405,7 @@
 #elif defined(OS_ANDROID)
 #include "base/android/application_status_listener.h"
 #include "chrome/android/features/dev_ui/buildflags.h"
+#include "chrome/android/modules/extra_icu/provider/module_provider.h"
 #include "chrome/browser/android/app_hooks.h"
 #include "chrome/browser/android/chrome_context_util.h"
 #include "chrome/browser/android/devtools_manager_delegate_android.h"
@@ -5667,4 +5668,11 @@ void ChromeContentBrowserClient::BlockBluetoothScanning(
       requesting_origin.GetURL(), embedding_origin.GetURL(),
       CONTENT_SETTINGS_TYPE_BLUETOOTH_SCANNING, std::string(),
       CONTENT_SETTING_BLOCK);
+}
+
+bool ChromeContentBrowserClient::ShouldLoadExtraIcuDataFile() {
+#if defined(OS_ANDROID)
+  return extra_icu::ModuleProvider::IsModuleInstalled();
+#endif
+  return false;
 }
