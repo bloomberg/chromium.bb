@@ -78,8 +78,6 @@ _NEGATIVE_FILTER = [
     'ChromeDriverTest.testAlertOnNewWindow',
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2532
     'ChromeDriverPageLoadTimeoutTest.testRefreshWithPageLoadTimeout',
-    # https://bugs.chromium.org/p/chromium/issues/detail?id=1011225
-    'ChromeDriverTest.testActionsMultiTouchPoint',
 ]
 
 
@@ -953,15 +951,18 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
         'document.body.innerHTML = "<div>old</div>";'
         'var div = document.getElementsByTagName("div")[0];'
         'window.events = [];'
-        'var touch_point_count = 0;'
         'div.style["width"] = "100px";'
         'div.style["height"] = "100px";'
-        'div.addEventListener("pointerdown", function() {'
-        '  touch_point_count++;'
+        'div.addEventListener("touchstart", function(e) {'
         '  window.events.push('
-        '      {x: event.clientX, y: event.clientY});'
+        '      {type: e.type,'
+        '       x: e.touches[e.touches.length - 1].clientX,'
+        '       y: e.touches[e.touches.length - 1].clientY});'
         '});'
-        'return div;')
+        'div.addEventListener("touchend", function(e) {'
+        '  window.events.push('
+        '      {type: e.type});'
+        '});')
     actions = ({"actions": [{
       "type":"pointer",
       "actions":[{"type": "pointerMove", "x": 10, "y": 10},
@@ -978,7 +979,11 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
       "id": "pointer2"}]})
     self._driver.PerformActions(actions)
     events = self._driver.ExecuteScript('return window.events')
-    self.assertEquals(2, len(events))
+    self.assertEquals(4, len(events))
+    self.assertEquals("touchstart", events[0]['type'])
+    self.assertEquals("touchstart", events[1]['type'])
+    self.assertEquals("touchend", events[2]['type'])
+    self.assertEquals("touchend", events[3]['type'])
     self.assertEquals(10, events[0]['x'])
     self.assertEquals(10, events[0]['y'])
     self.assertEquals(15, events[1]['x'])
