@@ -844,6 +844,9 @@ class Document::SecurityContextInit : public FeaturePolicyParserDelegate {
         }
       }
     }
+
+    if (initializer.GrantLoadLocalResources())
+      security_origin_->GrantLoadLocalResources();
   }
 
   void InitializeFeaturePolicy(const DocumentInit& initializer,
