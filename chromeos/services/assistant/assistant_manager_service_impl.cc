@@ -321,6 +321,8 @@ void AssistantManagerServiceImpl::RegisterAlarmsTimersListener() {
 }
 
 void AssistantManagerServiceImpl::EnableListening(bool enable) {
+  if (!assistant_manager_)
+    return;
   assistant_manager_->EnableListening(enable);
 }
 

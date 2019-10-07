@@ -69,7 +69,7 @@ AssistantSettingsManager* g_settings_manager_override = nullptr;
 
 class Service::Context : public ServiceContext {
  public:
-  Context(Service* parent) : parent_(parent) {}
+  explicit Context(Service* parent) : parent_(parent) {}
   ~Context() override = default;
 
   // ServiceContext:
@@ -233,12 +233,19 @@ void Service::OnSessionActivated(bool activated) {
   DCHECK(client_);
   session_active_ = activated;
 
-  if (assistant_manager_service_->GetState() !=
-      AssistantManagerService::State::RUNNING) {
-    return;
+  bool is_assistant_running;
+  switch (assistant_manager_service_->GetState()) {
+    case AssistantManagerService::State::STOPPED:
+    case AssistantManagerService::State::STARTING:
+      is_assistant_running = false;
+      break;
+    case AssistantManagerService::State::STARTED:
+    case AssistantManagerService::State::RUNNING:
+      is_assistant_running = true;
+      break;
   }
-
-  client_->OnAssistantStatusChanged(activated /* running */);
+  client_->OnAssistantStatusChanged(is_assistant_running &&
+                                    activated /* running */);
   UpdateListeningState();
 }
 
@@ -512,11 +519,6 @@ void Service::AddAshSessionObserver() {
 
 void Service::UpdateListeningState() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  if (assistant_manager_service_->GetState() !=
-      AssistantManagerService::State::RUNNING) {
-    return;
-  }
 
   bool should_listen =
       !locked_ &&
