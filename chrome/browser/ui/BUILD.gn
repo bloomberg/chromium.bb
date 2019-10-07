@@ -470,6 +470,7 @@ jumbo_split_static_library("ui") {
     "//components/payments/content/icon",
     "//components/payments/core:error_strings",
     "//components/pdf/browser",
+    "//components/performance_manager",
     "//components/policy/core/browser",
     "//components/pref_registry",
     "//components/previews/content",

@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_PERFORMANCE_MANAGER_DECORATORS_PAGE_AGGREGATOR_H_
 #define CHROME_BROWSER_PERFORMANCE_MANAGER_DECORATORS_PAGE_AGGREGATOR_H_
 
-#include "chrome/browser/performance_manager/public/graph/frame_node.h"
-#include "chrome/browser/performance_manager/public/graph/graph.h"
+#include "components/performance_manager/public/graph/frame_node.h"
+#include "components/performance_manager/public/graph/graph.h"
 
 namespace performance_manager {
 

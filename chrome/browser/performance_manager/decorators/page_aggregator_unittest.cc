@@ -4,11 +4,11 @@
 
 #include "chrome/browser/performance_manager/decorators/page_aggregator.h"
 
-#include "chrome/browser/performance_manager/graph/frame_node_impl.h"
-#include "chrome/browser/performance_manager/graph/graph_impl_operations.h"
-#include "chrome/browser/performance_manager/graph/process_node_impl.h"
-#include "chrome/browser/performance_manager/public/graph/page_node.h"
-#include "chrome/browser/performance_manager/test_support/graph_test_harness.h"
+#include "components/performance_manager/graph/frame_node_impl.h"
+#include "components/performance_manager/graph/graph_impl_operations.h"
+#include "components/performance_manager/graph/process_node_impl.h"
+#include "components/performance_manager/public/graph/page_node.h"
+#include "components/performance_manager/test_support/graph_test_harness.h"
 #include "services/resource_coordinator/public/mojom/coordination_unit.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
