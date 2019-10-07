@@ -576,17 +576,16 @@ String ImportMap::ToString() const {
     if (!is_first_key)
       builder.Append(",");
     is_first_key = false;
-    builder.Append("\n  \"");
-    builder.Append(it.key);
-    builder.Append("\": [");
+    builder.Append("\n  ");
+    builder.Append(it.key.EncodeForDebugging());
+    builder.Append(": [");
     bool is_first_value = true;
     for (const auto& v : it.value) {
       if (!is_first_value)
         builder.Append(",");
       is_first_value = false;
-      builder.Append("\n    \"");
-      builder.Append(v.GetString());
-      builder.Append("\"");
+      builder.Append("\n    ");
+      builder.Append(v.GetString().EncodeForDebugging());
     }
     builder.Append("\n  ]");
   }
