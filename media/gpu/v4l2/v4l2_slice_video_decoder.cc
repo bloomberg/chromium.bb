@@ -49,31 +49,6 @@ constexpr uint32_t kSupportedInputFourccs[] = {
     V4L2_PIX_FMT_VP9_FRAME,
 };
 
-// Checks an underlying video frame buffer of |frame| is valid for VIDIOC_DQBUF
-// that requires |target_num_fds| fds.
-bool IsValidFrameForQueueDMABuf(const VideoFrame* frame,
-                                size_t target_num_fds) {
-  DCHECK(frame);
-  if (frame->DmabufFds().size() < target_num_fds) {
-    VLOGF(1) << "The count of dmabuf fds (" << frame->DmabufFds().size()
-             << ") are not enough, needs " << target_num_fds << " fds.";
-    return false;
-  }
-
-  const auto& planes = frame->layout().planes();
-  for (size_t i = frame->DmabufFds().size() - 1; i >= target_num_fds; --i) {
-    // Assume that an fd is a duplicate of a previous plane's fd if offset != 0.
-    // Otherwise, if offset == 0, return error as surface_it may be pointing to
-    // a new plane.
-    if (planes[i].offset == 0) {
-      VLOGF(1) << "Additional dmabuf fds point to a new buffer.";
-      return false;
-    }
-  }
-
-  return true;
-}
-
 }  // namespace
 
 V4L2SliceVideoDecoder::DecodeRequest::DecodeRequest(
@@ -560,7 +535,6 @@ base::Optional<VideoFrameLayout> V4L2SliceVideoDecoder::SetupOutputFormat(
         continue;
       }
 
-      num_output_planes_ = format->fmt.pix_mp.num_planes;
       return frame_layout;
     }
   }
@@ -962,11 +936,6 @@ void V4L2SliceVideoDecoder::DecodeSurface(
     return;
   }
 
-  if (!IsValidFrameForQueueDMABuf(dec_surface->video_frame().get(),
-                                  num_output_planes_)) {
-    SetState(State::kError);
-    return;
-  }
   if (!std::move(dec_surface->output_buffer())
            .QueueDMABuf(dec_surface->video_frame()->DmabufFds())) {
     SetState(State::kError);

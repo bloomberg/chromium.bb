@@ -265,9 +265,6 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder : public VideoDecoder,
   // Queue of pending output request.
   base::queue<OutputRequest> output_request_queue_;
 
-  // The number of planes, which is the number of DMA-buf fds we enqueue into
-  // the V4L2 device.
-  size_t num_output_planes_ = 0;
   // True if the decoder needs bitstream conversion before decoding.
   bool needs_bitstream_conversion_ = false;
   // Next bitstream ID.
