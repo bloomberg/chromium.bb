@@ -18206,6 +18206,8 @@ Called by update_net_error_codes.py.-->
   <int value="620" label="ShelfAlignment"/>
   <int value="621" label="PrintingAllowedBackgroundGraphicsModes"/>
   <int value="622" label="PrintingBackgroundGraphicsDefault"/>
+  <int value="623" label="LegacySameSiteCookieBehaviorEnabled"/>
+  <int value="624" label="LegacySameSiteCookieBehaviorEnabledForDomainList"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
@@ -48852,6 +48854,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="35" label="DateAndTime"/>
   <int value="36" label="Display"/>
   <int value="37" label="ActiveDirectoryManagement"/>
+  <int value="38" label="LegacySameSiteCookieBehaviorSettings"/>
 </enum>
 
 <enum name="PolicyLoadStatus">
