@@ -340,7 +340,7 @@ def _downloader_worker_thread(thread_num, q, force, base_url,
       if code != 0:
         out_q.put('%d> %s' % (thread_num, err.decode()))
         ret_codes.put((code, err.decode()))
-      elif re.search(r'executable:\s*1', out):
+      elif re.search(r'executable:\s*1', out.decode()):
         st = os.stat(output_filename)
         os.chmod(output_filename, st.st_mode | stat.S_IEXEC)
 
