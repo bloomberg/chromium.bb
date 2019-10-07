@@ -49884,6 +49884,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="11" label="The chrome-proxy header is invalid"/>
   <int value="12" label="The network probe has not completed yet"/>
   <int value="13" label="The network probe completed and failed"/>
+  <int value="14" label="Preview is disabled for API navigations"/>
 </enum>
 
 <enum name="PreviewsServerLitePageServerResponse">
