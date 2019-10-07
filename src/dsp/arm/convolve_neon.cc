@@ -564,54 +564,6 @@ uint32x4x2_t Sum2DVerticalTaps(const int16x8_t* const src,
   return return_val;
 }
 
-// Process 16 bit inputs and output 32 bits.
-template <int num_taps>
-uint32x4_t Sum2DVerticalTaps(const int16x4_t* const src, const int16x8_t taps) {
-  // In order to get the rollover correct with the lengthening instruction we
-  // need to treat these as signed so that they sign extend properly.
-  const int16x4_t taps_lo = vget_low_s16(taps);
-  const int16x4_t taps_hi = vget_high_s16(taps);
-  // An offset to guarantee the sum is non negative. Captures 56 * -4590 =
-  // 257040 (worst case negative value from horizontal pass). It should be
-  // possible to use 1 << 18 (262144) instead of 1 << 19 but there probably
-  // isn't any benefit.
-  // |offset_bits| = bitdepth + 2 * kFilterBits - kInterRoundBitsHorizontal
-  // == 19.
-  int32x4_t sum = vdupq_n_s32(1 << 19);
-  if (num_taps == 8) {
-    sum = vmlal_lane_s16(sum, src[0], taps_lo, 0);
-    sum = vmlal_lane_s16(sum, src[1], taps_lo, 1);
-    sum = vmlal_lane_s16(sum, src[2], taps_lo, 2);
-    sum = vmlal_lane_s16(sum, src[3], taps_lo, 3);
-
-    sum = vmlal_lane_s16(sum, src[4], taps_hi, 0);
-    sum = vmlal_lane_s16(sum, src[5], taps_hi, 1);
-    sum = vmlal_lane_s16(sum, src[6], taps_hi, 2);
-    sum = vmlal_lane_s16(sum, src[7], taps_hi, 3);
-  } else if (num_taps == 6) {
-    sum = vmlal_lane_s16(sum, src[0], taps_lo, 1);
-    sum = vmlal_lane_s16(sum, src[1], taps_lo, 2);
-    sum = vmlal_lane_s16(sum, src[2], taps_lo, 3);
-
-    sum = vmlal_lane_s16(sum, src[3], taps_hi, 0);
-    sum = vmlal_lane_s16(sum, src[4], taps_hi, 1);
-    sum = vmlal_lane_s16(sum, src[5], taps_hi, 2);
-  } else if (num_taps == 4) {
-    sum = vmlal_lane_s16(sum, src[0], taps_lo, 2);
-    sum = vmlal_lane_s16(sum, src[1], taps_lo, 3);
-
-    sum = vmlal_lane_s16(sum, src[2], taps_hi, 0);
-    sum = vmlal_lane_s16(sum, src[3], taps_hi, 1);
-  } else if (num_taps == 2) {
-    sum = vmlal_lane_s16(sum, src[0], taps_lo, 3);
-
-    sum = vmlal_lane_s16(sum, src[1], taps_hi, 0);
-  }
-
-  // This is guaranteed to be positive. Convert it for the final shift.
-  return vreinterpretq_u32_s32(sum);
-}
-
 template <int num_taps, bool is_compound = false>
 void Filter2DVertical(const uint16_t* src, void* const dst,
                       const ptrdiff_t dst_stride, const int width,
