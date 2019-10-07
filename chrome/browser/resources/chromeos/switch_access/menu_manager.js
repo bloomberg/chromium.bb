@@ -69,12 +69,10 @@ class MenuManager {
     this.selectionExists_ = false;
 
     /**
-     * Callback for reloading the menu when the text selection has changed.
-     * Bind creates a new function, so this function is saved as a field to
-     * add and remove the selection event listener properly.
-     * @private {function(chrome.automation.AutomationEvent): undefined}
+     * A function to be called when the menu exits.
+     * @private {?function()}
      */
-    this.onSelectionChanged_ = this.reloadMenuForSelectionChange_.bind(this);
+    this.onExitCallback_ = null;
 
     /**
      * Keeps track of when the clipboard is empty.
@@ -150,16 +148,14 @@ class MenuManager {
     this.closeCurrentMenu_();
     this.inMenu_ = false;
 
-    if (window.switchAccess.improvedTextInputEnabled() &&
-        this.menuOriginNode_) {
-      this.menuOriginNode_.removeEventListener(
-          chrome.automation.EventType.TEXT_SELECTION_CHANGED,
-          this.onSelectionChanged_, false /** Don't use capture. */);
+    if (this.onExitCallback_) {
+      this.onExitCallback_();
+      this.onExitCallback_ = null;
     }
     this.menuOriginNode_ = null;
 
     chrome.accessibilityPrivate.setSwitchAccessMenuState(
-        false /** Hide the menu. */, RectHelper.ZERO_RECT, 0);
+        false /** should_show */, RectHelper.ZERO_RECT, 0);
   }
 
   /**
@@ -227,9 +223,15 @@ class MenuManager {
 
     this.menuOriginNode_ = navNode;
     if (!shouldReloadMenu && window.switchAccess.improvedTextInputEnabled()) {
+      const callback = this.reloadMenuForSelectionChange_.bind(this);
+
       this.menuOriginNode_.addEventListener(
-          chrome.automation.EventType.TEXT_SELECTION_CHANGED,
-          this.onSelectionChanged_, false /** Don't use capture. */);
+          chrome.automation.EventType.TEXT_SELECTION_CHANGED, callback,
+          false /** use_capture */);
+      this.onExitCallback_ = this.menuOriginNode_.removeEventListener.bind(
+          this.menuOriginNode_,
+          chrome.automation.EventType.TEXT_SELECTION_CHANGED, callback,
+          false /** use_capture */);
     }
 
     if (shouldReloadMenu && actionNode) {
