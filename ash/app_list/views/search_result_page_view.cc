@@ -268,10 +268,11 @@ gfx::Size SearchResultPageView::CalculatePreferredSize() const {
 }
 
 void SearchResultPageView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  // This bounds change is produced by search result movement (rotation, etc)
-  // and all content has to follow.
-  if (previous_bounds != GetContentsBounds())
-    layer()->SetClipRect(GetContentsBounds());
+  // The clip rect set for page state animations needs to be reset when the
+  // bounds change because page size change invalidates the previous bounds.
+  // This allows content to properly follow target bounds when screen rotates.
+  if (previous_bounds.size() != bounds().size())
+    layer()->SetClipRect(gfx::Rect());
 }
 
 void SearchResultPageView::ReorderSearchResultContainers() {
