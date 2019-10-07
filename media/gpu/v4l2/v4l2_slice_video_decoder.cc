@@ -387,6 +387,13 @@ void V4L2SliceVideoDecoder::InitializeTask(const VideoDecoderConfig& config,
     return;
   }
 
+  if (!SetCodedSizeOnInputQueue(config.coded_size())) {
+    VLOGF(1) << "Failed to set coded size on input queue";
+    client_task_runner_->PostTask(FROM_HERE,
+                                  base::BindOnce(std::move(init_cb), false));
+    return;
+  }
+
   // Setup output format.
   if (!SetupOutputFormat(config.coded_size(), config.visible_rect())) {
     VLOGF(1) << "Failed to setup output format.";
@@ -500,6 +507,27 @@ bool V4L2SliceVideoDecoder::SetupInputFormat(uint32_t input_format_fourcc) {
     return false;
   }
   DCHECK_EQ(format->fmt.pix_mp.pixelformat, input_format_fourcc);
+
+  return true;
+}
+
+bool V4L2SliceVideoDecoder::SetCodedSizeOnInputQueue(
+    const gfx::Size& coded_size) {
+  struct v4l2_format format = {};
+
+  format.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
+  if (device_->Ioctl(VIDIOC_G_FMT, &format) != 0) {
+    VPLOGF(1) << "Failed getting OUTPUT format";
+    return false;
+  }
+
+  format.fmt.pix_mp.width = coded_size.width();
+  format.fmt.pix_mp.height = coded_size.height();
+
+  if (device_->Ioctl(VIDIOC_S_FMT, &format) != 0) {
+    VPLOGF(1) << "Failed setting OUTPUT format";
+    return false;
+  }
 
   return true;
 }
@@ -809,6 +837,12 @@ bool V4L2SliceVideoDecoder::ChangeResolution() {
   DCHECK(!pic_size.IsEmpty());
   DVLOGF(3) << "Change resolution to " << pic_size.width() << "x"
             << pic_size.height();
+
+  if (!SetCodedSizeOnInputQueue(pic_size)) {
+    VLOGF(1) << "Failed to set coded size on input queue";
+    return false;
+  }
+
   auto frame_layout = SetupOutputFormat(pic_size, avd_->GetVisibleRect());
   if (!frame_layout) {
     VLOGF(1) << "No format is available with thew new resolution";
