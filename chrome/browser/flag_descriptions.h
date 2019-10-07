@@ -1511,9 +1511,6 @@ extern const char kInterestFeedContentSuggestionsDescription[];
 extern const char kManualPasswordGenerationAndroidName[];
 extern const char kManualPasswordGenerationAndroidDescription[];
 
-extern const char kNewNetErrorPageUIName[];
-extern const char kNewNetErrorPageUIDescription[];
-
 extern const char kNewPhotoPickerName[];
 extern const char kNewPhotoPickerDescription[];
 

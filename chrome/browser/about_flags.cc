@@ -3157,12 +3157,6 @@ const FeatureEntry kFeatureEntries[] = {
          download::features::kAllowDownloadResumptionWithoutStrongValidators)},
 
 #if defined(OS_ANDROID)
-    {"new-net-error-page-ui", flag_descriptions::kNewNetErrorPageUIName,
-     flag_descriptions::kNewNetErrorPageUIDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(features::kNewNetErrorPageUI)},
-#endif  // defined(OS_ANDROID)
-
-#if defined(OS_ANDROID)
     {"auto-fetch-on-net-error-page",
      flag_descriptions::kAutoFetchOnNetErrorPageName,
      flag_descriptions::kAutoFetchOnNetErrorPageDescription, kOsAndroid,

@@ -221,8 +221,7 @@ AvailableOfflineContentProvider::AvailableOfflineContentProvider(
 AvailableOfflineContentProvider::~AvailableOfflineContentProvider() = default;
 
 void AvailableOfflineContentProvider::List(ListCallback callback) {
-  if (!offline_pages::IsOfflinePagesEnabled() ||
-      !base::FeatureList::IsEnabled(features::kNewNetErrorPageUI)) {
+  if (!offline_pages::IsOfflinePagesEnabled()) {
     std::move(callback).Run(true, {});
     return;
   }

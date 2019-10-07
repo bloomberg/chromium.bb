@@ -127,7 +127,6 @@ OfflineItemVisuals TestThumbnail() {
 class AvailableOfflineContentTest : public testing::Test {
  protected:
   void SetUp() override {
-    scoped_feature_list_->InitAndEnableFeature(features::kNewNetErrorPageUI);
     aggregator_ =
         OfflineContentAggregatorFactory::GetForKey(profile_.GetProfileKey());
     aggregator_->RegisterProvider(kProviderNamespace, &content_provider_);
@@ -228,19 +227,6 @@ TEST_F(AvailableOfflineContentTest, MAYBE_FourInterestingItems) {
                                "data:image/png;base64,iVBORw0K",
                                base::CompareCase::SENSITIVE));
   EXPECT_EQ(page_item.attribution, first->attribution);
-}
-
-TEST_F(AvailableOfflineContentTest, NotEnabled) {
-  scoped_feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
-  scoped_feature_list_->InitAndDisableFeature(features::kNewNetErrorPageUI);
-  content_provider_.SetItems({SuggestedOfflinePageItem()});
-
-  bool list_visible_by_prefs;
-  std::vector<chrome::mojom::AvailableOfflineContentPtr> suggestions;
-  std::tie(list_visible_by_prefs, suggestions) = ListAndWait();
-
-  EXPECT_TRUE(suggestions.empty());
-  EXPECT_TRUE(list_visible_by_prefs);
 }
 
 #if defined(DISABLE_OFFLINE_PAGES_TOUCHLESS)
