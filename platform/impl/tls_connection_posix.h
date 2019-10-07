@@ -39,8 +39,8 @@ class TlsConnectionPosix : public TlsConnection,
 
   // TlsConnection overrides.
   void Write(const void* data, size_t len) override;
-  const IPEndpoint& local_address() const override;
-  const IPEndpoint& remote_address() const override;
+  IPEndpoint local_address() const override;
+  IPEndpoint remote_address() const override;
 
   // TlsWriteBuffer::Observer overrides.
   void NotifyWriteBufferFill(double fraction) override;

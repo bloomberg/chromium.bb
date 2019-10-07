@@ -37,8 +37,8 @@ class MockTlsConnection final : public TlsConnection {
 
   MOCK_METHOD(void, Write, (const void* data, size_t len));
 
-  const IPEndpoint& local_address() const override { return local_address_; }
-  const IPEndpoint& remote_address() const override { return remote_address_; }
+  IPEndpoint local_address() const override { return local_address_; }
+  IPEndpoint remote_address() const override { return remote_address_; }
 
   void OnWriteBlocked() { TlsConnection::OnWriteBlocked(); }
   void OnWriteUnblocked() { TlsConnection::OnWriteUnblocked(); }

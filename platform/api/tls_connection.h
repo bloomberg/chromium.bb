@@ -47,10 +47,10 @@ class TlsConnection {
   virtual void Write(const void* data, size_t len) = 0;
 
   // Get the local address.
-  virtual const IPEndpoint& local_address() const = 0;
+  virtual IPEndpoint local_address() const = 0;
 
   // Get the connected remote address.
-  virtual const IPEndpoint& remote_address() const = 0;
+  virtual IPEndpoint remote_address() const = 0;
 
   // Sets the client for this instance.
   void set_client(Client* client) { client_ = client; }

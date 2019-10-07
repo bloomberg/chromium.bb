@@ -77,13 +77,13 @@ void TlsConnectionPosix::Write(const void* data, size_t len) {
   OSP_UNIMPLEMENTED();
 }
 
-const IPEndpoint& TlsConnectionPosix::local_address() const {
+IPEndpoint TlsConnectionPosix::local_address() const {
   const absl::optional<IPEndpoint> endpoint = socket_->local_address();
   OSP_DCHECK(endpoint.has_value());
   return endpoint.value();
 }
 
-const IPEndpoint& TlsConnectionPosix::remote_address() const {
+IPEndpoint TlsConnectionPosix::remote_address() const {
   const absl::optional<IPEndpoint> endpoint = socket_->remote_address();
   OSP_DCHECK(endpoint.has_value());
   return endpoint.value();
