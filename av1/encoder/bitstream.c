@@ -370,20 +370,7 @@ static AOM_INLINE void pack_txb_tokens(
                                                          blk_col)];
 
   if (tx_size == plane_tx_size || plane) {
-    const CB_COEFF_BUFFER *cb_coef_buff = x->cb_coef_buff;
-    const int txb_offset =
-        x->mbmi_ext_frame->cb_offset / (TX_SIZE_W_MIN * TX_SIZE_H_MIN);
-    const tran_low_t *tcoeff_txb =
-        cb_coef_buff->tcoeff[plane] + x->mbmi_ext_frame->cb_offset;
-    const uint16_t *eob_txb = cb_coef_buff->eobs[plane] + txb_offset;
-    const tran_low_t *tcoeff = BLOCK_OFFSET(tcoeff_txb, block);
-    const uint16_t eob = eob_txb[block];
-    const uint8_t *entropy_ctx = cb_coef_buff->entropy_ctx[plane] + txb_offset;
-    const TXB_CTX txb_ctx = { entropy_ctx[block] & TXB_SKIP_CTX_MASK,
-                              (entropy_ctx[block] >> DC_SIGN_CTX_SHIFT) &
-                                  DC_SIGN_CTX_MASK };
-    av1_write_coeffs_txb(cm, xd, w, blk_row, blk_col, plane, tx_size, tcoeff,
-                         eob, &txb_ctx);
+    av1_write_coeffs_txb(cm, x, w, blk_row, blk_col, plane, block, tx_size);
 #if CONFIG_RD_DEBUG
     TOKEN_STATS tmp_token_stats;
     init_token_stats(&tmp_token_stats);
@@ -807,24 +794,16 @@ static AOM_INLINE void write_palette_mode_info(const AV1_COMMON *cm,
 }
 
 void av1_write_tx_type(const AV1_COMMON *const cm, const MACROBLOCKD *xd,
-                       int blk_row, int blk_col, int plane, TX_SIZE tx_size,
-                       aom_writer *w) {
+                       TX_TYPE tx_type, TX_SIZE tx_size, aom_writer *w) {
   MB_MODE_INFO *mbmi = xd->mi[0];
   const int is_inter = is_inter_block(mbmi);
-  FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
-
-  // Only y plane's tx_type is transmitted
-  if (plane > 0) return;
-  PLANE_TYPE plane_type = get_plane_type(plane);
-  TX_TYPE tx_type = av1_get_tx_type(plane_type, xd, blk_row, blk_col, tx_size,
-                                    cm->reduced_tx_set_used);
-
-  const TX_SIZE square_tx_size = txsize_sqr_map[tx_size];
   if (get_ext_tx_types(tx_size, is_inter, cm->reduced_tx_set_used) > 1 &&
       ((!cm->seg.enabled && cm->base_qindex > 0) ||
        (cm->seg.enabled && xd->qindex[mbmi->segment_id] > 0)) &&
       !mbmi->skip &&
       !segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP)) {
+    FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
+    const TX_SIZE square_tx_size = txsize_sqr_map[tx_size];
     const TxSetType tx_set_type =
         av1_get_ext_tx_set_type(tx_size, is_inter, cm->reduced_tx_set_used);
     const int eset = get_ext_tx_set(tx_size, is_inter, cm->reduced_tx_set_used);
