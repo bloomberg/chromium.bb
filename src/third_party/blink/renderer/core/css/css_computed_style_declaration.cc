@@ -202,19 +202,21 @@ const CSSPropertyID kComputedPropertyArray[] = {
     CSSPropertyID::kPaintOrder, CSSPropertyID::kD, CSSPropertyID::kCx,
     CSSPropertyID::kCy, CSSPropertyID::kX, CSSPropertyID::kY, CSSPropertyID::kR,
     CSSPropertyID::kRx, CSSPropertyID::kRy, CSSPropertyID::kTranslate,
+    CSSPropertyID::kRotate, CSSPropertyID::kScale, CSSPropertyID::kCaretColor,
 
 
 
     // patch section: lcd-text background
+    CSSPropertyID::kBbLcdBackgroundColor,
 
 
     // patch section: rubberband
 
 
 
-    CSSPropertyID::kRotate, CSSPropertyID::kScale, CSSPropertyID::kCaretColor,
     CSSPropertyID::kLineBreak};
 
+>>>>>>> origin/feature/composited-lcd-text
 CSSValueID CssIdentifierForFontSizeKeyword(int keyword_size) {
   DCHECK_NE(keyword_size, 0);
   DCHECK_LE(keyword_size, 8);

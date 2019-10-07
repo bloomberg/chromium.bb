@@ -37,6 +37,8 @@ class CC_EXPORT PictureLayer : public Layer {
     return picture_layer_inputs_.transformed_rasterization_allowed;
   }
 
+  void SetDefaultLCDBackgroundColor(SkColor default_lcd_background_color);
+
   // Layer interface.
   std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
   void SetLayerTreeHost(LayerTreeHost* host) override;
@@ -73,6 +75,7 @@ class CC_EXPORT PictureLayer : public Layer {
     gfx::Rect recorded_viewport;
     scoped_refptr<DisplayItemList> display_list;
     size_t painter_reported_memory_usage = 0;
+    SkColor default_lcd_background_color = SK_ColorTRANSPARENT;
   };
 
   explicit PictureLayer(ContentLayerClient* client);
