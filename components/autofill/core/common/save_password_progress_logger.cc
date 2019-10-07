@@ -405,8 +405,6 @@ std::string SavePasswordProgressLogger::GetStringFromID(
       return "Form name";
     case SavePasswordProgressLogger::STRING_FIELDS:
       return "Form fields";
-    case SavePasswordProgressLogger::STRING_SERVER_PREDICTIONS:
-      return "Server predictions";
     case SavePasswordProgressLogger::STRING_FORM_VOTES:
       return "Form votes";
     case SavePasswordProgressLogger::STRING_FIRSTUSE_FORM_VOTE:
@@ -515,6 +513,8 @@ std::string SavePasswordProgressLogger::GetStringFromID(
       return "PasswordManager::DidNavigateMainFrame";
     case STRING_NAVIGATION_NTP:
       return "Navigation to New Tab page";
+    case STRING_SERVER_PREDICTIONS:
+      return "Server predictions";
     case SavePasswordProgressLogger::STRING_INVALID:
       return "INVALID";
       // Intentionally no default: clause here -- all IDs need to get covered.
