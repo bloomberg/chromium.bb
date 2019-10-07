@@ -47,7 +47,6 @@ class Rect;
 }
 
 class BackgroundContentsServiceObserver;
-struct BackgroundContentsOpenedDetails;
 
 // BackgroundContentsService is owned by the profile, and is responsible for
 // managing the lifetime of BackgroundContents (tracking the set of background
@@ -108,7 +107,9 @@ class BackgroundContentsService : private content::NotificationObserver,
   void OnBackgroundContentsNavigated(BackgroundContents* contents) override;
   void OnBackgroundContentsTerminated(BackgroundContents* contents) override;
   void OnBackgroundContentsClosed(BackgroundContents* contents) override;
-  void OnBackgroundContentsDeleted(BackgroundContents* contents) override;
+
+  // KeyedService implementation.
+  void Shutdown() override;
 
   // Gets the parent application id for the passed BackgroundContents. Returns
   // an empty string if no parent application found (e.g. passed
@@ -127,6 +128,9 @@ class BackgroundContentsService : private content::NotificationObserver,
       const std::string& application_id,
       const std::string& partition_id,
       content::SessionStorageNamespace* session_storage_namespace);
+
+  // Removes |contents| from |contents_map_|, deleting it.
+  void DeleteBackgroundContents(BackgroundContents* contents);
 
   // Load the manifest-specified background page for the specified hosted app.
   // If the manifest doesn't specify one, then load the BackgroundContents
@@ -189,7 +193,9 @@ class BackgroundContentsService : private content::NotificationObserver,
                               const std::string& appid);
 
   // Invoked when a new BackgroundContents is opened.
-  void BackgroundContentsOpened(BackgroundContentsOpenedDetails* details);
+  void AddBackgroundContents(std::unique_ptr<BackgroundContents> contents,
+                             const std::string& application_id,
+                             const std::string& frame_name);
 
   // Registers the |contents->GetURL()| to be run at startup. Only happens for
   // the first navigation after window.open() (future calls to
@@ -233,8 +239,11 @@ class BackgroundContentsService : private content::NotificationObserver,
 
   // Information we track about each BackgroundContents.
   struct BackgroundContentsInfo {
+    BackgroundContentsInfo();
+    ~BackgroundContentsInfo();
+
     // The BackgroundContents whose information we are tracking.
-    BackgroundContents* contents;
+    std::unique_ptr<BackgroundContents> contents;
     // The name of the top level frame for this BackgroundContents.
     std::string frame_name;
   };

@@ -2879,7 +2879,7 @@ BackgroundContents* Browser::CreateBackgroundContents(
       return nullptr;
     // For scriptable background pages, if one already exists, close it (even
     // if it was specified in the manifest).
-    delete existing;
+    service->DeleteBackgroundContents(existing);
   }
 
   // Passed all the checks, so this should be created as a BackgroundContents.
