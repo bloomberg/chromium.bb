@@ -15,6 +15,7 @@
 #include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/time/clock.h"
+#include "base/time/time.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "url/gurl.h"
 
@@ -121,6 +122,10 @@ class HintsFetcher {
 
   // Used for creating a |url_loader_| when needed for request hints.
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
+
+  // The start time of the current hints fetch, used to determine the latency in
+  // retrieving hints from the remote Optimization Guide Service.
+  base::TimeTicks hints_fetch_start_time_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
