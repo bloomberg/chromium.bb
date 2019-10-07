@@ -37,8 +37,6 @@ android_library("module_installer_java") {
     "//third_party/google_android_play_core:com_google_android_play_core_java",
   ]
 
-  jar_excluded_patterns = [ "*/ModuleInstallerConfig.class" ]
-
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 }
 
@@ -75,16 +73,6 @@ java_annotation_processor("module_interface_processor") {
     ":module_interface_java",
     "//third_party/android_deps:com_squareup_javapoet_java",
     "//third_party/auto:auto_service_java",
-  ]
-}
-
-# Use this one if your target needs to depend on ModuleInstallerConfig. The
-# other two targets are automatically added to build targets.
-java_cpp_template("module_installer_build_config") {
-  # TODO(fredmello): Temporary code to keep downstream unbroken.
-  package_path = "org/chromium/components/module_installer/builder"
-  sources = [
-    "build/ModuleInstallerConfig.template",
   ]
 }
 
