@@ -21,7 +21,7 @@ namespace blink {
 
 class DoubleSequenceOrGPUColorDict;
 class GPUColorDict;
-class GPUPipelineStageDescriptor;
+class GPUProgrammableStageDescriptor;
 class UnsignedLongSequenceOrGPUExtent3DDict;
 class UnsignedLongSequenceOrGPUOrigin3DDict;
 
@@ -44,9 +44,10 @@ DawnColor AsDawnType(const DoubleSequenceOrGPUColorDict*);
 DawnExtent3D AsDawnType(const UnsignedLongSequenceOrGPUExtent3DDict*);
 DawnOrigin3D AsDawnType(const UnsignedLongSequenceOrGPUOrigin3DDict*);
 
-using OwnedPipelineStageDescriptor =
+using OwnedProgrammableStageDescriptor =
     std::tuple<DawnPipelineStageDescriptor, std::unique_ptr<char[]>>;
-OwnedPipelineStageDescriptor AsDawnType(const GPUPipelineStageDescriptor*);
+OwnedProgrammableStageDescriptor AsDawnType(
+    const GPUProgrammableStageDescriptor*);
 
 // WebGPU objects are converted to Dawn objects by getting the opaque handle
 // which can be passed to Dawn.
