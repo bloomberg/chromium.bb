@@ -201,7 +201,7 @@ class MenuManager {
     if (!shouldReloadMenu) {
       // Wait for the menu to appear in the panel before highlighting the
       // first available action.
-      this.menuPanelNode().addEventListener(
+      this.menuPanelNode_.addEventListener(
           chrome.automation.EventType.CHILDREN_CHANGED,
           this.onMenuPanelChildrenChanged_, false /** Don't use capture. */);
     }
@@ -323,7 +323,7 @@ class MenuManager {
     // panel, so remove the listener once the callback has been called once.
     // This ensures the first action is not continually highlighted as we
     // navigate through the menu.
-    this.menuPanelNode().removeEventListener(
+    this.menuPanelNode_.removeEventListener(
         chrome.automation.EventType.CHILDREN_CHANGED,
         this.onMenuPanelChildrenChanged_, false /** Don't use capture. */);
   }
@@ -432,28 +432,23 @@ class MenuManager {
    */
   connectMenuPanel(menuPanel) {
     this.menuPanel_ = menuPanel;
+    this.findMenuPanelNode_();
     return this;
   }
 
   /**
-   * Get the menu panel node. If it's not defined, search for it.
-   * @return {!chrome.automation.AutomationNode}
+   * Searches for the menu panel node.
    */
-  menuPanelNode() {
-    if (this.menuPanelNode_) {
-      return this.menuPanelNode_;
-    }
-
+  findMenuPanelNode_() {
     const treeWalker = new AutomationTreeWalker(
         this.desktop_, constants.Dir.FORWARD,
         SwitchAccessPredicate.switchAccessMenuPanelDiscoveryRestrictions());
     const node = treeWalker.next().node;
-    if (node) {
-      this.menuPanelNode_ = node;
-      return this.menuPanelNode_;
+    if (!node) {
+      setTimeout(this.findMenuPanelNode_.bind(this), 500);
+      return;
     }
-    console.log('Unable to find the Switch Access menu panel.');
-    return this.desktop_;
+    this.menuPanelNode_ = node;
   }
 
   /**
@@ -467,7 +462,7 @@ class MenuManager {
       return this.menuNode_;
     }
 
-    if (this.menuPanelNode() !== this.desktop_) {
+    if (this.menuPanelNode_) {
       if (this.menuPanelNode_.firstChild) {
         this.menuNode_ = this.menuPanelNode_.firstChild;
         return this.menuNode_;
