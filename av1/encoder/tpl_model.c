@@ -281,13 +281,14 @@ static AOM_INLINE void mode_estimation(
       uint16_t eob;
       best_rf_idx = rf_idx;
       best_inter_cost_weighted = inter_cost_weighted;
-      best_mode = NEWMV;
       best_mv.as_int = x->best_mv.as_int;
       get_quantize_error(x, 0, coeff, qcoeff, dqcoeff, tx_size, &eob,
                          recon_error, sse);
       int rate_cost = rate_estimator(qcoeff, eob, tx_size);
       best_rdcost = RDCOST(base_rdmult, rate_cost, *recon_error);
       tpl_stats->srcrf_rate = rate_cost << TPL_DEP_COST_SCALE_LOG2;
+
+      if (best_inter_cost_weighted < best_intra_cost) best_mode = NEWMV;
     }
   }
   best_intra_cost = AOMMAX(best_intra_cost, 1);
