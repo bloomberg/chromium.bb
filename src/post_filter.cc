@@ -121,20 +121,24 @@ bool PostFilter::ApplyFiltering() {
   if (DoCdef() && !ApplyCdef()) return false;
   if (DoSuperRes() && !ApplySuperRes()) return false;
   if (DoRestoration() && !ApplyLoopRestoration()) return false;
-  // Extend frame boundary for inter frame convolution, referencing.
-  for (int plane = kPlaneY; plane < planes_; ++plane) {
-    const int8_t subsampling_x = (plane == kPlaneY) ? 0 : subsampling_x_;
-    const int8_t subsampling_y = (plane == kPlaneY) ? 0 : subsampling_y_;
-    const int plane_width =
-        RightShiftWithRounding(upscaled_width_, subsampling_x);
-    const int plane_height = RightShiftWithRounding(height_, subsampling_y);
-    assert(source_buffer_->left_border(plane) >= kMinLeftBorderPixels &&
-           source_buffer_->right_border(plane) >= kMinRightBorderPixels);
-    ExtendFrameBoundary(
-        source_buffer_->data(plane), plane_width, plane_height,
-        source_buffer_->stride(plane), source_buffer_->left_border(plane),
-        source_buffer_->right_border(plane), source_buffer_->top_border(plane),
-        source_buffer_->bottom_border(plane));
+  // Extend frame boundary for inter frame convolution and referencing if the
+  // frame will be saved as a reference frame.
+  if (frame_header_.refresh_frame_flags != 0) {
+    for (int plane = kPlaneY; plane < planes_; ++plane) {
+      const int8_t subsampling_x = (plane == kPlaneY) ? 0 : subsampling_x_;
+      const int8_t subsampling_y = (plane == kPlaneY) ? 0 : subsampling_y_;
+      const int plane_width =
+          RightShiftWithRounding(upscaled_width_, subsampling_x);
+      const int plane_height = RightShiftWithRounding(height_, subsampling_y);
+      assert(source_buffer_->left_border(plane) >= kMinLeftBorderPixels &&
+             source_buffer_->right_border(plane) >= kMinRightBorderPixels);
+      ExtendFrameBoundary(source_buffer_->data(plane), plane_width,
+                          plane_height, source_buffer_->stride(plane),
+                          source_buffer_->left_border(plane),
+                          source_buffer_->right_border(plane),
+                          source_buffer_->top_border(plane),
+                          source_buffer_->bottom_border(plane));
+    }
   }
   return true;
 }
