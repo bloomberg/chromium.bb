@@ -30,10 +30,6 @@ void MojoCdmProxyService::Initialize(
     mojom::CdmProxyClientAssociatedPtrInfo client,
     InitializeCallback callback) {
   DVLOG(2) << __func__;
-
-  CHECK(!has_initialize_been_called_) << "Initialize should only happen once";
-  has_initialize_been_called_ = true;
-
   client_.Bind(std::move(client));
 
   cdm_proxy_->Initialize(
@@ -89,9 +85,6 @@ void MojoCdmProxyService::OnInitialized(InitializeCallback callback,
                                         ::media::CdmProxy::Status status,
                                         ::media::CdmProxy::Protocol protocol,
                                         uint32_t crypto_session_id) {
-  CHECK_EQ(cdm_id_, CdmContext::kInvalidCdmId)
-      << "CDM proxy should only be created once.";
-
   if (status == ::media::CdmProxy::Status::kOk)
     cdm_id_ = context_->RegisterCdmProxy(this);
 
