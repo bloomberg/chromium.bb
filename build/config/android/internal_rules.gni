@@ -2818,7 +2818,7 @@ if (enable_java_templates) {
 
         if (defined(_dex_path)) {
           dex_path =
-              get_label_info(_dex_target, "target_gen_dir") + "/bootstrap.dex"
+              get_label_info(_dex_target, "target_out_dir") + "/bootstrap.dex"
         }
 
         native_libs = _native_libs_even_when_incremental
@@ -3286,7 +3286,7 @@ if (enable_java_templates) {
       }
 
       if (_supports_android) {
-        _dex_path = "$target_gen_dir/$_main_target_name.dex.jar"
+        _dex_path = "$target_out_dir/$_main_target_name.dex.jar"
         if (defined(invoker.dex_path)) {
           _dex_path = invoker.dex_path
         }

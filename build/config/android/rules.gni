@@ -2144,8 +2144,8 @@ if (enable_java_templates) {
   template("android_apk_or_module") {
     forward_variables_from(invoker, [ "testonly" ])
     assert(defined(invoker.android_manifest))
-    _gen_dir = "$target_gen_dir/$target_name"
-    _base_path = "$_gen_dir/$target_name"
+    _out_dir = "$target_out_dir/$target_name"
+    _base_path = "$_out_dir/$target_name"
     _build_config = "$target_gen_dir/$target_name.build_config"
     _build_config_target = "$target_name$build_config_target_suffix"
 
@@ -2173,7 +2173,7 @@ if (enable_java_templates) {
 
     _enable_multidex =
         !defined(invoker.enable_multidex) || invoker.enable_multidex
-    _final_dex_path = "$_gen_dir/classes.dex.zip"
+    _final_dex_path = "$_out_dir/classes.dex.zip"
 
     if (!_is_bundle_module) {
       _final_apk_path = invoker.final_apk_path
@@ -2372,7 +2372,7 @@ if (enable_java_templates) {
         defined(invoker.static_library_dependent_targets) && _proguard_enabled
     if (_is_static_library_provider) {
       _static_library_sync_dex_path =
-          "$_gen_dir/static_library_synchronized_proguard.classes.dex.zip"
+          "$_out_dir/static_library_synchronized_proguard.classes.dex.zip"
       _resource_ids_provider_deps = []
       foreach(_target, invoker.static_library_dependent_targets) {
         if (_target.is_resource_ids_provider) {
