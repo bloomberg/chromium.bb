@@ -391,8 +391,6 @@ test("components_unittests") {
     ]
   } else if (safe_browsing_mode == 2) {
     deps += [ "//components/safe_browsing/android:unit_tests_mobile" ]
-  } else if (safe_browsing_mode == 3) {
-    deps += [ "//components/safe_browsing/db:unit_tests_desktop" ]
   }
 
   if (!is_ios) {

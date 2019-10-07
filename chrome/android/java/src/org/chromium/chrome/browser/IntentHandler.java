@@ -472,9 +472,6 @@ public class IntentHandler {
 
         if (isIntentForMhtmlFileOrContent(intent) && tabOpenType == TabOpenType.OPEN_NEW_TAB
                 && referrerUrl == null && extraHeaders == null) {
-            if (!OfflinePageUtils.isEnabled()) {
-                return false;
-            }
             handleMhtmlFileOrContentIntent(url, intent);
             return true;
         }

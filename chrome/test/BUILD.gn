@@ -3581,15 +3581,11 @@ test("unit_tests") {
       "//components/offline_pages/core/background:test_support",
       "//components/offline_pages/core/prefetch:test_support",
     ]
-    if (defined(notouch_build) && notouch_build) {
-      defines += [ "DISABLE_OFFLINE_PAGES_TOUCHLESS" ]
-    } else {
-      sources += [
-        "../browser/offline_pages/offline_page_request_handler_unittest.cc",
-        "../browser/offline_pages/offline_page_utils_unittest.cc",
-        "../browser/offline_pages/prefetch/prefetch_instance_id_proxy_unittest.cc",
-      ]
-    }
+    sources += [
+      "../browser/offline_pages/offline_page_request_handler_unittest.cc",
+      "../browser/offline_pages/offline_page_utils_unittest.cc",
+      "../browser/offline_pages/prefetch/prefetch_instance_id_proxy_unittest.cc",
+    ]
   }
 
   if (enable_feed_in_chrome) {

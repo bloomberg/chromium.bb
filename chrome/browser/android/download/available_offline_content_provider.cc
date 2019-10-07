@@ -221,10 +221,6 @@ AvailableOfflineContentProvider::AvailableOfflineContentProvider(
 AvailableOfflineContentProvider::~AvailableOfflineContentProvider() = default;
 
 void AvailableOfflineContentProvider::List(ListCallback callback) {
-  if (!offline_pages::IsOfflinePagesEnabled()) {
-    std::move(callback).Run(true, {});
-    return;
-  }
   offline_items_collection::OfflineContentAggregator* aggregator =
       OfflineContentAggregatorFactory::GetForKey(profile_->GetProfileKey());
   aggregator->GetAllItems(

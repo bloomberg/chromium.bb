@@ -98,7 +98,7 @@ NetErrorHelperCore::FrameType GetFrameType(RenderFrame* render_frame) {
 
 #if defined(OS_ANDROID)
 bool IsOfflineContentOnNetErrorFeatureEnabled() {
-  return offline_pages::IsOfflinePagesEnabled();
+  return true;
 }
 #else   // OS_ANDROID
 bool IsOfflineContentOnNetErrorFeatureEnabled() {
@@ -108,8 +108,7 @@ bool IsOfflineContentOnNetErrorFeatureEnabled() {
 
 #if defined(OS_ANDROID)
 bool IsAutoFetchFeatureEnabled() {
-  return base::FeatureList::IsEnabled(features::kAutoFetchOnNetErrorPage) &&
-         offline_pages::IsOfflinePagesEnabled();
+  return base::FeatureList::IsEnabled(features::kAutoFetchOnNetErrorPage);
 }
 #else   // OS_ANDROID
 bool IsAutoFetchFeatureEnabled() {
