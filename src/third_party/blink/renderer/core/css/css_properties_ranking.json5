@@ -572,6 +572,7 @@
         "scroll-snap-points-x",
         "scroll-snap-points-y",
         "scroll-snap-coordinate",
+        "-bb-lcd-background-color",
         "variable",
     ],
     "properties": {}

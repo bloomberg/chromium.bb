@@ -57,7 +57,7 @@ size_t SkImageInfo::computeByteSize(size_t rowBytes) const {
 
 SkImageInfo SkImageInfo::MakeS32(int width, int height, SkAlphaType at) {
     return SkImageInfo(width, height, kN32_SkColorType, at,
-                       SkColorSpace::MakeSRGB());
+                       SkColorSpace::MakeSRGB(), SK_ColorTRANSPARENT);
 }
 
 bool SkColorTypeValidateAlphaType(SkColorType colorType, SkAlphaType alphaType,

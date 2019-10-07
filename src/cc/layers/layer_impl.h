@@ -188,6 +188,9 @@ class CC_EXPORT LayerImpl {
   void SetContentsOpaque(bool opaque);
   bool contents_opaque() const { return contents_opaque_; }
 
+  void SetContentsOpaqueForLCDText(bool opaque);
+  bool contents_opaque_for_lcd_text() const { return contents_opaque_for_lcd_text_; }
+
   float Opacity() const;
 
   // Stable identifier for clients. See comment in cc/trees/element_id.h.
@@ -525,6 +528,7 @@ class CC_EXPORT LayerImpl {
 
   bool masks_to_bounds_ : 1;
   bool contents_opaque_ : 1;
+  bool contents_opaque_for_lcd_text_ : 1;
   bool use_parent_backface_visibility_ : 1;
   bool should_check_backface_visibility_ : 1;
   bool draws_content_ : 1;
