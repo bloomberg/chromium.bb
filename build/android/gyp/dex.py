@@ -402,8 +402,7 @@ def main(args):
       output_paths=output_paths,
       input_paths=input_paths,
       input_strings=dex_cmd + [bool(options.incremental_dir)],
-      pass_changes=True,
-      add_pydeps=False)
+      pass_changes=True)
 
 
 if __name__ == '__main__':

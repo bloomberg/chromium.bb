@@ -642,8 +642,7 @@ def CallAndWriteDepfileIfStale(on_stale_md5,
                                output_paths=None,
                                force=False,
                                pass_changes=False,
-                               depfile_deps=None,
-                               add_pydeps=True):
+                               depfile_deps=None):
   """Wraps md5_check.CallAndRecordIfStale() and writes a depfile if applicable.
 
   Depfiles are automatically added to output_paths when present in the |options|
@@ -661,10 +660,7 @@ def CallAndWriteDepfileIfStale(on_stale_md5,
   input_strings = list(input_strings or [])
   output_paths = list(output_paths or [])
 
-  python_deps = None
-  if hasattr(options, 'depfile') and options.depfile:
-    python_deps = _ComputePythonDependencies()
-    input_paths += python_deps
+  input_paths += _ComputePythonDependencies()
 
   md5_check.CallAndRecordIfStale(
       on_stale_md5,
@@ -678,9 +674,6 @@ def CallAndWriteDepfileIfStale(on_stale_md5,
   # Write depfile even when inputs have not changed to ensure build correctness
   # on bots that build with & without patch, and the patch changes the depfile
   # location.
-  if python_deps is not None:
-    all_depfile_deps = list(python_deps) if add_pydeps else []
-    if depfile_deps:
-      all_depfile_deps.extend(depfile_deps)
+  if hasattr(options, 'depfile') and options.depfile:
     WriteDepfile(
-        options.depfile, output_paths[0], all_depfile_deps, add_pydeps=False)
+        options.depfile, output_paths[0], depfile_deps, add_pydeps=False)
