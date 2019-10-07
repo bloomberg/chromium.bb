@@ -121,6 +121,7 @@ class GURL;
 struct AccessibilityHostMsg_EventBundleParams;
 struct AccessibilityHostMsg_FindInPageResultParams;
 struct AccessibilityHostMsg_LocationChangeParams;
+struct FrameHostMsg_DownloadUrl_Params;
 struct FrameHostMsg_OpenURL_Params;
 struct FrameMsg_TextTrackSettings_Params;
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
@@ -1389,6 +1390,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
       ui::input_types::ScrollGranularity granularity);
   void OnFrameDidCallFocus();
   void OnRenderFallbackContentInParentProcess();
+  void OnDownloadUrl(const FrameHostMsg_DownloadUrl_Params& params);
+  void OnSaveImageFromDataURL(const std::string& url_str);
 
   // To be called by ComputeSiteForCookiesForNavigation() and
   // ComputeSiteForCookies().
@@ -1901,6 +1904,16 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Returns the BackForwardCacheMetrics associated with the last
   // NavigationEntry this RenderFrameHostImpl committed.
   BackForwardCacheMetrics* GetBackForwardCacheMetrics();
+
+  // Helper for handling download-related IPCs.
+  void DownloadUrl(
+      const GURL& url,
+      const Referrer& referrer,
+      const url::Origin& initiator,
+      const base::string16& suggested_name,
+      const bool use_prompt,
+      const bool follow_cross_origin_redirects,
+      mojo::PendingRemote<blink::mojom::BlobURLToken> blob_url_token);
 
   // The RenderViewHost that this RenderFrameHost is associated with.
   //

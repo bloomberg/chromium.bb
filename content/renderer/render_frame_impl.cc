@@ -4672,8 +4672,6 @@ void RenderFrameImpl::DownloadURL(
     return;
 
   FrameHostMsg_DownloadUrl_Params params;
-  params.render_view_id = render_view_->GetRoutingID();
-  params.render_frame_id = GetRoutingID();
   params.url = request.Url();
   params.referrer = RenderViewImpl::GetReferrerFromRequest(frame_, request);
   params.initiator_origin = request.RequestorOrigin();
@@ -4683,7 +4681,7 @@ void RenderFrameImpl::DownloadURL(
       (cross_origin_redirect_behavior == CrossOriginRedirects::kFollow);
   params.blob_url_token = blob_url_token.release();
 
-  Send(new FrameHostMsg_DownloadUrl(params));
+  Send(new FrameHostMsg_DownloadUrl(routing_id_, params));
 }
 
 void RenderFrameImpl::WillSendSubmitEvent(const blink::WebFormElement& form) {
@@ -5328,8 +5326,7 @@ void RenderFrameImpl::SaveImageFromDataURL(const blink::WebString& data_url) {
   // Note: We should basically send GURL but we use size-limited string instead
   // in order to send a larger data url to save a image for <canvas> or <img>.
   if (data_url.length() < kMaxLengthOfDataURLString) {
-    Send(new FrameHostMsg_SaveImageFromDataURL(render_view_->GetRoutingID(),
-                                               routing_id_, data_url.Utf8()));
+    Send(new FrameHostMsg_SaveImageFromDataURL(routing_id_, data_url.Utf8()));
   }
 }
 
