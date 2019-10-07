@@ -315,6 +315,10 @@ class SkylabHWTestStage(HWTestStage):
     suite_config.SetBranchedValuesForSkylab()
 
   def PerformStage(self):
+    if not self.TestsEnabled(self._run):
+      logging.info('Skipping SkylabHWTestStage because HWTests are disabled.')
+      return
+
     build = '/'.join([self._bot_id, self.version])
 
     cmd_result = commands.RunSkylabHWTestSuite(
