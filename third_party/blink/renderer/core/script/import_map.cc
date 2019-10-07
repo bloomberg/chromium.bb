@@ -148,8 +148,7 @@ ImportMap* ImportMap::Parse(const Modulator& modulator,
   if (!parsed) {
     *error_to_rethrow =
         modulator.CreateSyntaxError("Failed to parse import map: invalid JSON");
-    return MakeGarbageCollected<ImportMap>(modulator, SpecifierMap(),
-                                           ScopeType());
+    return MakeGarbageCollected<ImportMap>();
   }
 
   // <spec step="2">If parsed is not a map, then throw a TypeError indicating
@@ -158,8 +157,7 @@ ImportMap* ImportMap::Parse(const Modulator& modulator,
   if (!parsed_map) {
     *error_to_rethrow =
         modulator.CreateTypeError("Failed to parse import map: not an object");
-    return MakeGarbageCollected<ImportMap>(modulator, SpecifierMap(),
-                                           ScopeType());
+    return MakeGarbageCollected<ImportMap>();
   }
 
   // <spec step="3">Let sortedAndNormalizedImports be an empty map.</spec>
@@ -175,8 +173,7 @@ ImportMap* ImportMap::Parse(const Modulator& modulator,
       *error_to_rethrow = modulator.CreateTypeError(
           "Failed to parse import map: \"imports\" "
           "top-level key must be a JSON object.");
-      return MakeGarbageCollected<ImportMap>(modulator, SpecifierMap(),
-                                             ScopeType());
+      return MakeGarbageCollected<ImportMap>();
     }
 
     // <spec step="4.2">Set sortedAndNormalizedImports to the result of sorting
@@ -198,8 +195,7 @@ ImportMap* ImportMap::Parse(const Modulator& modulator,
       *error_to_rethrow = modulator.CreateTypeError(
           "Failed to parse import map: \"scopes\" "
           "top-level key must be a JSON object.");
-      return MakeGarbageCollected<ImportMap>(modulator, SpecifierMap(),
-                                             ScopeType());
+      return MakeGarbageCollected<ImportMap>();
     }
 
     // <spec step="6.2">Set sortedAndNormalizedScopes to the result of sorting
@@ -225,8 +221,7 @@ ImportMap* ImportMap::Parse(const Modulator& modulator,
             "Failed to parse import map: the value of the scope with prefix "
             "\"" +
             entry.first + "\" must be a JSON object.");
-        return MakeGarbageCollected<ImportMap>(modulator, SpecifierMap(),
-                                               ScopeType());
+        return MakeGarbageCollected<ImportMap>();
       }
 
       // <spec step="2.2">Let scopePrefixURL be the result of parsing
@@ -273,7 +268,8 @@ ImportMap* ImportMap::Parse(const Modulator& modulator,
   // sortedAndNormalizedImports and whose scopes scopes are
   // sortedAndNormalizedScopes.</spec>
   return MakeGarbageCollected<ImportMap>(
-      modulator, std::move(sorted_and_normalized_imports),
+      modulator, support_builtin_modules,
+      std::move(sorted_and_normalized_imports),
       std::move(sorted_and_normalized_scopes));
 }
 
@@ -445,11 +441,17 @@ base::Optional<ImportMap::MatchResult> ImportMap::MatchPrefix(
   return best_match;
 }
 
+ImportMap::ImportMap()
+    : support_builtin_modules_(false),
+      modulator_for_built_in_modules_(nullptr) {}
+
 ImportMap::ImportMap(const Modulator& modulator_for_built_in_modules,
+                     bool support_builtin_modules,
                      SpecifierMap&& imports,
                      ScopeType&& scopes)
     : imports_(std::move(imports)),
       scopes_(std::move(scopes)),
+      support_builtin_modules_(support_builtin_modules),
       modulator_for_built_in_modules_(&modulator_for_built_in_modules) {}
 
 // <specdef
@@ -549,7 +551,8 @@ base::Optional<KURL> ImportMap::ResolveImportsMatchInternal(
     // return url1.</spec>
     //
     // Note: Here we filter out non-existing built-in modules in all cases.
-    if (layered_api::ResolveFetchingURL(*modulator_for_built_in_modules_, url)
+    if (!support_builtin_modules_ ||
+        layered_api::ResolveFetchingURL(*modulator_for_built_in_modules_, url)
             .IsValid()) {
       *debug_message = "Import Map: \"" + key + "\" matches with \"" +
                        matched->key + "\" and is mapped to " +

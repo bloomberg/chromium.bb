@@ -44,7 +44,13 @@ class CORE_EXPORT ImportMap final : public GarbageCollected<ImportMap> {
   using ScopeEntryType = std::pair<String, SpecifierMap>;
   using ScopeType = Vector<ScopeEntryType>;
 
-  ImportMap(const Modulator&, SpecifierMap&& imports, ScopeType&& scopes);
+  // Empty import map.
+  ImportMap();
+
+  ImportMap(const Modulator&,
+            bool support_builtin_modules,
+            SpecifierMap&& imports,
+            ScopeType&& scopes);
 
   base::Optional<KURL> Resolve(const ParsedSpecifier&,
                                const KURL& base_url,
@@ -81,6 +87,8 @@ class CORE_EXPORT ImportMap final : public GarbageCollected<ImportMap> {
 
   // https://wicg.github.io/import-maps/#import-map-scopes.
   ScopeType scopes_;
+
+  const bool support_builtin_modules_;
 
   Member<const Modulator> modulator_for_built_in_modules_;
 };
