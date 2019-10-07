@@ -186,7 +186,7 @@ void AdsPageLoadMetricsObserver::MaybeTriggerHeavyAdIntervention(
   // Ensure that this RenderFrameHost is a subframe.
   DCHECK(render_frame_host->GetParent());
 
-  GetDelegate().GetWebContents()->GetController().LoadErrorPage(
+  GetDelegate().GetWebContents()->GetController().LoadPostCommitErrorPage(
       render_frame_host, render_frame_host->GetLastCommittedURL(),
       heavy_ads::PrepareHeavyAdPage(), net::ERR_BLOCKED_BY_CLIENT);
 

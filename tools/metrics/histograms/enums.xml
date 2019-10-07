@@ -5075,6 +5075,7 @@ Unknown properties are collapsed to zero. -->
   <int value="217" label="AUTH_INVALID_ICON_URL"/>
   <int value="218" label="MDDH_INVALID_STREAM_SELECTION_INFO"/>
   <int value="219" label="REGISTER_PROTOCOL_HANDLER_INVALID_URL"/>
+  <int value="220" label="NC_SAME_DOCUMENT_POST_COMMIT_ERROR"/>
 </enum>
 
 <enum name="BadMessageReasonExtensions">
