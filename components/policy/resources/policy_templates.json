@@ -16899,7 +16899,7 @@
       },
       'example_value': False,
       'id': 538,
-      'caption': '''Enable power peak shift''',
+      'caption': '''Enable peak shift power management''',
       'tags': [],
       'desc': '''Enable the power peak shift power management policy.
 
