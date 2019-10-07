@@ -228,22 +228,15 @@ class HistoryURLProvider : public HistoryProvider {
                      history::URLDatabase* db);
 
  private:
-// Flaky leaks on ASAN LSAN (crbug.com/1010691).
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_HistoryURLProviderTest DISABLED_HistoryURLProviderTest
-#else
-#define MAYBE_HistoryURLProviderTest HistoryURLProviderTest
-#endif
-
-  FRIEND_TEST_ALL_PREFIXES(MAYBE_HistoryURLProviderTest, HUPScoringExperiment);
-  FRIEND_TEST_ALL_PREFIXES(MAYBE_HistoryURLProviderTest, DoTrimHttpScheme);
-  FRIEND_TEST_ALL_PREFIXES(MAYBE_HistoryURLProviderTest,
+  FRIEND_TEST_ALL_PREFIXES(HistoryURLProviderTest, HUPScoringExperiment);
+  FRIEND_TEST_ALL_PREFIXES(HistoryURLProviderTest, DoTrimHttpScheme);
+  FRIEND_TEST_ALL_PREFIXES(HistoryURLProviderTest,
                            DontTrimHttpSchemeIfInputHasScheme);
-  FRIEND_TEST_ALL_PREFIXES(MAYBE_HistoryURLProviderTest,
+  FRIEND_TEST_ALL_PREFIXES(HistoryURLProviderTest,
                            DontTrimHttpSchemeIfInputMatchesInScheme);
-  FRIEND_TEST_ALL_PREFIXES(MAYBE_HistoryURLProviderTest,
+  FRIEND_TEST_ALL_PREFIXES(HistoryURLProviderTest,
                            DontTrimHttpsSchemeIfInputMatchesInScheme);
-  FRIEND_TEST_ALL_PREFIXES(MAYBE_HistoryURLProviderTest, DoTrimHttpsScheme);
+  FRIEND_TEST_ALL_PREFIXES(HistoryURLProviderTest, DoTrimHttpsScheme);
 
   enum MatchType {
     NORMAL,

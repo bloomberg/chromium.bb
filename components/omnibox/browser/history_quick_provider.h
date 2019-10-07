@@ -42,25 +42,18 @@ class HistoryQuickProvider : public HistoryProvider {
   static void set_disabled(bool disabled) { disabled_ = disabled; }
 
  private:
-// Flaky leaks on ASAN LSAN (crbug.com/1010691).
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_HistoryQuickProviderTest DISABLED_HistoryQuickProviderTest
-#else
-#define MAYBE_HistoryQuickProviderTest HistoryQuickProviderTest
-#endif
-
-  friend class MAYBE_HistoryQuickProviderTest;
-  FRIEND_TEST_ALL_PREFIXES(MAYBE_HistoryQuickProviderTest, Spans);
-  FRIEND_TEST_ALL_PREFIXES(MAYBE_HistoryQuickProviderTest, Relevance);
-  FRIEND_TEST_ALL_PREFIXES(MAYBE_HistoryQuickProviderTest, DoTrimHttpScheme);
-  FRIEND_TEST_ALL_PREFIXES(MAYBE_HistoryQuickProviderTest,
+  friend class HistoryQuickProviderTest;
+  FRIEND_TEST_ALL_PREFIXES(HistoryQuickProviderTest, Spans);
+  FRIEND_TEST_ALL_PREFIXES(HistoryQuickProviderTest, Relevance);
+  FRIEND_TEST_ALL_PREFIXES(HistoryQuickProviderTest, DoTrimHttpScheme);
+  FRIEND_TEST_ALL_PREFIXES(HistoryQuickProviderTest,
                            DontTrimHttpSchemeIfInputHasScheme);
-  FRIEND_TEST_ALL_PREFIXES(MAYBE_HistoryQuickProviderTest,
+  FRIEND_TEST_ALL_PREFIXES(HistoryQuickProviderTest,
                            DontTrimHttpSchemeIfInputMatches);
-  FRIEND_TEST_ALL_PREFIXES(MAYBE_HistoryQuickProviderTest,
+  FRIEND_TEST_ALL_PREFIXES(HistoryQuickProviderTest,
                            DontTrimHttpsSchemeIfInputHasScheme);
-  FRIEND_TEST_ALL_PREFIXES(MAYBE_HistoryQuickProviderTest, DoTrimHttpsScheme);
-  FRIEND_TEST_ALL_PREFIXES(MAYBE_HistoryQuickProviderTest,
+  FRIEND_TEST_ALL_PREFIXES(HistoryQuickProviderTest, DoTrimHttpsScheme);
+  FRIEND_TEST_ALL_PREFIXES(HistoryQuickProviderTest,
                            CorrectAutocompleteWithTrailingSlash);
 
   ~HistoryQuickProvider() override;

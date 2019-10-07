@@ -29,15 +29,8 @@
 #include "components/omnibox/browser/scored_history_match.h"
 #include "components/search_engines/template_url_service.h"
 
-// Flaky leaks on ASAN LSAN (crbug.com/1010691).
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_HistoryQuickProviderTest DISABLED_HistoryQuickProviderTest
-#else
-#define MAYBE_HistoryQuickProviderTest HistoryQuickProviderTest
-#endif
-
 class FakeAutocompleteProviderClient;
-class MAYBE_HistoryQuickProviderTest;
+class HistoryQuickProviderTest;
 
 namespace base {
 class SequencedTaskRunner;
@@ -152,19 +145,12 @@ class InMemoryURLIndex : public KeyedService,
   }
 
  private:
-// Flaky leaks on ASAN LSAN (crbug.com/1010691).
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_InMemoryURLIndexTest DISABLED_InMemoryURLIndexTest
-#else
-#define MAYBE_InMemoryURLIndexTest InMemoryURLIndexTest
-#endif
-
   friend class ::FakeAutocompleteProviderClient;
-  friend class ::MAYBE_HistoryQuickProviderTest;
+  friend class ::HistoryQuickProviderTest;
   friend class history::HQPPerfTestOnePopularURL;
-  friend class MAYBE_InMemoryURLIndexTest;
+  friend class InMemoryURLIndexTest;
   friend class InMemoryURLIndexCacheTest;
-  FRIEND_TEST_ALL_PREFIXES(MAYBE_InMemoryURLIndexTest, ExpireRow);
+  FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, ExpireRow);
   FRIEND_TEST_ALL_PREFIXES(LimitedInMemoryURLIndexTest, Initialization);
 
   // HistoryDBTask used to rebuild our private data from the history database.

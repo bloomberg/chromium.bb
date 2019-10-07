@@ -147,13 +147,6 @@ class AutocompleteController : public AutocompleteProviderListener,
     return last_time_default_match_changed_;
   }
 
-// Flaky leaks on ASAN LSAN (crbug.com/1010691).
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_OmniboxPopupModelTest DISABLED_OmniboxPopupModelTest
-#else
-#define MAYBE_OmniboxPopupModelTest OmniboxPopupModelTest
-#endif
-
  private:
   friend class AutocompleteProviderTest;
   FRIEND_TEST_ALL_PREFIXES(AutocompleteProviderTest,
@@ -169,9 +162,9 @@ class AutocompleteController : public AutocompleteProviderListener,
 #if defined(OS_WIN)
   FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsUIATest, AccessibleOmnibox);
 #endif  // OS_WIN
-  FRIEND_TEST_ALL_PREFIXES(MAYBE_OmniboxPopupModelTest, SetSelectedLine);
-  FRIEND_TEST_ALL_PREFIXES(MAYBE_OmniboxPopupModelTest, TestFocusFixing);
-  FRIEND_TEST_ALL_PREFIXES(MAYBE_OmniboxPopupModelTest, PopupPositionChanging);
+  FRIEND_TEST_ALL_PREFIXES(OmniboxPopupModelTest, SetSelectedLine);
+  FRIEND_TEST_ALL_PREFIXES(OmniboxPopupModelTest, TestFocusFixing);
+  FRIEND_TEST_ALL_PREFIXES(OmniboxPopupModelTest, PopupPositionChanging);
   FRIEND_TEST_ALL_PREFIXES(OmniboxPopupContentsViewTest,
                            EmitSelectedChildrenChangedAccessibilityEvent);
 

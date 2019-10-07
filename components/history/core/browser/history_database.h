@@ -30,14 +30,7 @@ namespace base {
 class FilePath;
 }
 
-// Flaky leaks on ASAN LSAN (crbug.com/1010691).
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_InMemoryURLIndexTest DISABLED_InMemoryURLIndexTest
-#else
-#define MAYBE_InMemoryURLIndexTest InMemoryURLIndexTest
-#endif
-
-class MAYBE_InMemoryURLIndexTest;
+class InMemoryURLIndexTest;
 
 namespace history {
 
@@ -173,8 +166,7 @@ class HistoryDatabase : public DownloadDatabase,
   friend class AndroidProviderBackend;
   FRIEND_TEST_ALL_PREFIXES(AndroidURLsMigrationTest, MigrateToVersion22);
 #endif
-
-  friend class ::MAYBE_InMemoryURLIndexTest;
+  friend class ::InMemoryURLIndexTest;
 
   // Overridden from URLDatabase, DownloadDatabase, VisitDatabase,
   // VisitSegmentDatabase and TypedURLSyncMetadataDatabase.

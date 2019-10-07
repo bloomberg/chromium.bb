@@ -20,13 +20,7 @@
 #include "components/omnibox/browser/in_memory_url_index_types.h"
 #include "components/omnibox/browser/scored_history_match.h"
 
-// Flaky leaks on ASAN LSAN (crbug.com/1010691).
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_HistoryQuickProviderTest DISABLED_HistoryQuickProviderTest
-#else
-#define MAYBE_HistoryQuickProviderTest HistoryQuickProviderTest
-#endif
-class MAYBE_HistoryQuickProviderTest;
+class HistoryQuickProviderTest;
 class TemplateURLService;
 
 namespace bookmarks {
@@ -156,37 +150,21 @@ class URLIndexPrivateData
   friend class base::RefCountedThreadSafe<URLIndexPrivateData>;
   ~URLIndexPrivateData();
 
-// Flaky leaks on ASAN LSAN (crbug.com/1010691).
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_InMemoryURLIndexTest DISABLED_InMemoryURLIndexTest
-#else
-#define MAYBE_InMemoryURLIndexTest InMemoryURLIndexTest
-#endif
-
-// Flaky leaks on ASAN LSAN (crbug.com/1010691).
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_LimitedInMemoryURLIndexTest DISABLED_LimitedInMemoryURLIndexTest
-#else
-#define MAYBE_LimitedInMemoryURLIndexTest LimitedInMemoryURLIndexTest
-#endif
-
-  friend class ::MAYBE_HistoryQuickProviderTest;
-  friend class MAYBE_InMemoryURLIndexTest;
-  FRIEND_TEST_ALL_PREFIXES(MAYBE_InMemoryURLIndexTest, CacheSaveRestore);
-  FRIEND_TEST_ALL_PREFIXES(MAYBE_InMemoryURLIndexTest,
-                           CalculateWordStartsOffsets);
-  FRIEND_TEST_ALL_PREFIXES(MAYBE_InMemoryURLIndexTest,
+  friend class ::HistoryQuickProviderTest;
+  friend class InMemoryURLIndexTest;
+  FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, CacheSaveRestore);
+  FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, CalculateWordStartsOffsets);
+  FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest,
                            CalculateWordStartsOffsetsUnderscore);
-  FRIEND_TEST_ALL_PREFIXES(MAYBE_InMemoryURLIndexTest, HugeResultSet);
-  FRIEND_TEST_ALL_PREFIXES(MAYBE_InMemoryURLIndexTest, ReadVisitsFromHistory);
-  FRIEND_TEST_ALL_PREFIXES(MAYBE_InMemoryURLIndexTest,
-                           RebuildFromHistoryIfCacheOld);
-  FRIEND_TEST_ALL_PREFIXES(MAYBE_InMemoryURLIndexTest, Scoring);
-  FRIEND_TEST_ALL_PREFIXES(MAYBE_InMemoryURLIndexTest, TitleSearch);
-  FRIEND_TEST_ALL_PREFIXES(MAYBE_InMemoryURLIndexTest, TrimHistoryIds);
-  FRIEND_TEST_ALL_PREFIXES(MAYBE_InMemoryURLIndexTest, TypedCharacterCaching);
-  FRIEND_TEST_ALL_PREFIXES(MAYBE_InMemoryURLIndexTest, WhitelistedURLs);
-  FRIEND_TEST_ALL_PREFIXES(MAYBE_LimitedInMemoryURLIndexTest, Initialization);
+  FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, HugeResultSet);
+  FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, ReadVisitsFromHistory);
+  FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, RebuildFromHistoryIfCacheOld);
+  FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, Scoring);
+  FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, TitleSearch);
+  FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, TrimHistoryIds);
+  FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, TypedCharacterCaching);
+  FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, WhitelistedURLs);
+  FRIEND_TEST_ALL_PREFIXES(LimitedInMemoryURLIndexTest, Initialization);
 
   // Support caching of term results so that we can optimize searches which
   // build upon a previous search. Each entry in this map represents one

@@ -16,16 +16,10 @@
 #include "components/sessions/core/session_id.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-// Flaky leaks on ASAN LSAN (crbug.com/1010691).
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_OmniboxControllerTest DISABLED_OmniboxControllerTest
-#else
-#define MAYBE_OmniboxControllerTest OmniboxControllerTest
-#endif
-class MAYBE_OmniboxControllerTest : public testing::Test {
+class OmniboxControllerTest : public testing::Test {
  protected:
-  MAYBE_OmniboxControllerTest();
-  ~MAYBE_OmniboxControllerTest() override;
+  OmniboxControllerTest();
+  ~OmniboxControllerTest() override;
 
   void CreateController();
   void AssertProviders(int expected_providers);
@@ -43,14 +37,14 @@ class MAYBE_OmniboxControllerTest : public testing::Test {
   std::unique_ptr<TestOmniboxClient> omnibox_client_;
   std::unique_ptr<OmniboxController> omnibox_controller_;
 
-  DISALLOW_COPY_AND_ASSIGN(MAYBE_OmniboxControllerTest);
+  DISALLOW_COPY_AND_ASSIGN(OmniboxControllerTest);
 };
 
-MAYBE_OmniboxControllerTest::MAYBE_OmniboxControllerTest() {}
+OmniboxControllerTest::OmniboxControllerTest() {}
 
-MAYBE_OmniboxControllerTest::~MAYBE_OmniboxControllerTest() {}
+OmniboxControllerTest::~OmniboxControllerTest() {}
 
-void MAYBE_OmniboxControllerTest::CreateController() {
+void OmniboxControllerTest::CreateController() {
   DCHECK(omnibox_client_);
   omnibox_controller_ =
       std::make_unique<OmniboxController>(nullptr, omnibox_client_.get());
@@ -58,7 +52,7 @@ void MAYBE_OmniboxControllerTest::CreateController() {
 
 // Checks that the list of autocomplete providers used by the OmniboxController
 // matches the one in the |expected_providers| bit field.
-void MAYBE_OmniboxControllerTest::AssertProviders(int expected_providers) {
+void OmniboxControllerTest::AssertProviders(int expected_providers) {
   const AutocompleteController::Providers& providers =
       GetAutocompleteProviders();
 
@@ -75,16 +69,16 @@ void MAYBE_OmniboxControllerTest::AssertProviders(int expected_providers) {
   ASSERT_EQ(0, expected_providers);
 }
 
-void MAYBE_OmniboxControllerTest::SetUp() {
+void OmniboxControllerTest::SetUp() {
   omnibox_client_ = std::make_unique<TestOmniboxClient>();
 }
 
-void MAYBE_OmniboxControllerTest::TearDown() {
+void OmniboxControllerTest::TearDown() {
   omnibox_controller_.reset();
   omnibox_client_.reset();
 }
 
-TEST_F(MAYBE_OmniboxControllerTest, CheckDefaultAutocompleteProviders) {
+TEST_F(OmniboxControllerTest, CheckDefaultAutocompleteProviders) {
   CreateController();
   // First collect the basic providers.
   int observed_providers = 0;

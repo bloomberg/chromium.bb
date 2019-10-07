@@ -110,15 +110,9 @@ class GetURLTask : public history::HistoryDBTask {
 
 }  // namespace
 
-// Flaky leaks on ASAN LSAN (crbug.com/1010691).
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_HistoryQuickProviderTest DISABLED_HistoryQuickProviderTest
-#else
-#define MAYBE_HistoryQuickProviderTest HistoryQuickProviderTest
-#endif
-class MAYBE_HistoryQuickProviderTest : public testing::Test {
+class HistoryQuickProviderTest : public testing::Test {
  public:
-  MAYBE_HistoryQuickProviderTest() = default;
+  HistoryQuickProviderTest() = default;
 
  protected:
   struct TestURLInfo {
@@ -193,10 +187,10 @@ class MAYBE_HistoryQuickProviderTest : public testing::Test {
 
   scoped_refptr<HistoryQuickProvider> provider_;
 
-  DISALLOW_COPY_AND_ASSIGN(MAYBE_HistoryQuickProviderTest);
+  DISALLOW_COPY_AND_ASSIGN(HistoryQuickProviderTest);
 };
 
-void MAYBE_HistoryQuickProviderTest::SetUp() {
+void HistoryQuickProviderTest::SetUp() {
   client_ = std::make_unique<FakeAutocompleteProviderClient>();
   ASSERT_TRUE(client_->GetHistoryService());
   ASSERT_NO_FATAL_FAILURE(FillData());
@@ -216,14 +210,14 @@ void MAYBE_HistoryQuickProviderTest::SetUp() {
   provider_ = new HistoryQuickProvider(client_.get());
 }
 
-void MAYBE_HistoryQuickProviderTest::TearDown() {
+void HistoryQuickProviderTest::TearDown() {
   provider_ = nullptr;
   client_.reset();
   task_environment_.RunUntilIdle();
 }
 
-std::vector<MAYBE_HistoryQuickProviderTest::TestURLInfo>
-MAYBE_HistoryQuickProviderTest::GetTestData() {
+std::vector<HistoryQuickProviderTest::TestURLInfo>
+HistoryQuickProviderTest::GetTestData() {
   return {
       {"http://www.google.com/", "Google", 3, 3, 0},
       {"http://slashdot.org/favorite_page.html", "Favorite page", 200, 100, 0},
@@ -276,7 +270,7 @@ MAYBE_HistoryQuickProviderTest::GetTestData() {
   };
 }
 
-void MAYBE_HistoryQuickProviderTest::FillData() {
+void HistoryQuickProviderTest::FillData() {
   for (const auto& info : GetTestData()) {
     history::URLRow row{GURL(info.url)};
     ASSERT_TRUE(row.url().is_valid());
@@ -290,19 +284,19 @@ void MAYBE_HistoryQuickProviderTest::FillData() {
   }
 }
 
-MAYBE_HistoryQuickProviderTest::SetShouldContain::SetShouldContain(
+HistoryQuickProviderTest::SetShouldContain::SetShouldContain(
     const ACMatches& matched_urls) {
   for (auto iter = matched_urls.begin(); iter != matched_urls.end(); ++iter)
     matches_.insert(iter->destination_url.spec());
 }
 
-void MAYBE_HistoryQuickProviderTest::SetShouldContain::operator()(
+void HistoryQuickProviderTest::SetShouldContain::operator()(
     const std::string& expected) {
   EXPECT_EQ(1U, matches_.erase(expected))
       << "Results did not contain '" << expected << "' but should have.";
 }
 
-void MAYBE_HistoryQuickProviderTest::RunTest(
+void HistoryQuickProviderTest::RunTest(
     const base::string16 text,
     bool prevent_inline_autocomplete,
     std::vector<std::string> expected_urls,
@@ -314,7 +308,7 @@ void MAYBE_HistoryQuickProviderTest::RunTest(
                     expected_fill_into_edit, expected_autocompletion);
 }
 
-void MAYBE_HistoryQuickProviderTest::RunTestWithCursor(
+void HistoryQuickProviderTest::RunTestWithCursor(
     const base::string16 text,
     const size_t cursor_position,
     bool prevent_inline_autocomplete,
@@ -376,7 +370,7 @@ void MAYBE_HistoryQuickProviderTest::RunTestWithCursor(
   EXPECT_EQ(expected_fill_into_edit, ac_matches_[0].fill_into_edit);
 }
 
-bool MAYBE_HistoryQuickProviderTest::GetURLProxy(const GURL& url) {
+bool HistoryQuickProviderTest::GetURLProxy(const GURL& url) {
   base::CancelableTaskTracker task_tracker;
   bool result = false;
   client_->GetHistoryService()->ScheduleDBTask(
@@ -389,7 +383,7 @@ bool MAYBE_HistoryQuickProviderTest::GetURLProxy(const GURL& url) {
   return result;
 }
 
-TEST_F(MAYBE_HistoryQuickProviderTest, SimpleSingleMatch) {
+TEST_F(HistoryQuickProviderTest, SimpleSingleMatch) {
   std::vector<std::string> expected_urls;
   expected_urls.push_back("http://slashdot.org/favorite_page.html");
   RunTest(ASCIIToUTF16("slashdot"), false, expected_urls, true,
@@ -397,7 +391,7 @@ TEST_F(MAYBE_HistoryQuickProviderTest, SimpleSingleMatch) {
                   ASCIIToUTF16(".org/favorite_page.html"));
 }
 
-TEST_F(MAYBE_HistoryQuickProviderTest, SingleMatchWithCursor) {
+TEST_F(HistoryQuickProviderTest, SingleMatchWithCursor) {
   std::vector<std::string> expected_urls;
   expected_urls.push_back("http://slashdot.org/favorite_page.html");
   // With cursor after "slash", we should retrieve the desired result but it
@@ -408,7 +402,7 @@ TEST_F(MAYBE_HistoryQuickProviderTest, SingleMatchWithCursor) {
                     base::string16());
 }
 
-TEST_F(MAYBE_HistoryQuickProviderTest, MatchWithAndWithoutCursorWordBreak) {
+TEST_F(HistoryQuickProviderTest, MatchWithAndWithoutCursorWordBreak) {
   std::vector<std::string> expected_urls;
   expected_urls.push_back("https://twitter.com/fungoodtimes");
   // With cursor after "good", we should retrieve the desired result but it
@@ -418,14 +412,14 @@ TEST_F(MAYBE_HistoryQuickProviderTest, MatchWithAndWithoutCursorWordBreak) {
                     base::string16());
 }
 
-TEST_F(MAYBE_HistoryQuickProviderTest, WordBoundariesWithPunctuationMatch) {
+TEST_F(HistoryQuickProviderTest, WordBoundariesWithPunctuationMatch) {
   std::vector<std::string> expected_urls;
   expected_urls.push_back("http://popularsitewithpathonly.com/moo");
   RunTest(ASCIIToUTF16("/moo"), false, expected_urls, false,
           ASCIIToUTF16("popularsitewithpathonly.com/moo"), base::string16());
 }
 
-TEST_F(MAYBE_HistoryQuickProviderTest, MultiTermTitleMatch) {
+TEST_F(HistoryQuickProviderTest, MultiTermTitleMatch) {
   std::vector<std::string> expected_urls;
   expected_urls.push_back(
       "http://cda.com/Dogs%20Cats%20Gorillas%20Sea%20Slugs%20and%20Mice");
@@ -434,7 +428,7 @@ TEST_F(MAYBE_HistoryQuickProviderTest, MultiTermTitleMatch) {
           base::string16());
 }
 
-TEST_F(MAYBE_HistoryQuickProviderTest, NonWordLastCharacterMatch) {
+TEST_F(HistoryQuickProviderTest, NonWordLastCharacterMatch) {
   std::string expected_url("http://slashdot.org/favorite_page.html");
   std::vector<std::string> expected_urls;
   expected_urls.push_back(expected_url);
@@ -443,7 +437,7 @@ TEST_F(MAYBE_HistoryQuickProviderTest, NonWordLastCharacterMatch) {
                        ASCIIToUTF16("favorite_page.html"));
 }
 
-TEST_F(MAYBE_HistoryQuickProviderTest, MultiMatch) {
+TEST_F(HistoryQuickProviderTest, MultiMatch) {
   std::vector<std::string> expected_urls;
   // Scores high because of typed_count.
   expected_urls.push_back("http://foo.com/");
@@ -455,7 +449,7 @@ TEST_F(MAYBE_HistoryQuickProviderTest, MultiMatch) {
           ASCIIToUTF16("foo.com"), ASCIIToUTF16(".com"));
 }
 
-TEST_F(MAYBE_HistoryQuickProviderTest, StartRelativeMatch) {
+TEST_F(HistoryQuickProviderTest, StartRelativeMatch) {
   std::vector<std::string> expected_urls;
   expected_urls.push_back("http://xyzabcdefghijklmnopqrstuvw.com/a");
   RunTest(ASCIIToUTF16("xyza"), false, expected_urls, true,
@@ -463,7 +457,7 @@ TEST_F(MAYBE_HistoryQuickProviderTest, StartRelativeMatch) {
               ASCIIToUTF16("bcdefghijklmnopqrstuvw.com/a"));
 }
 
-TEST_F(MAYBE_HistoryQuickProviderTest, EncodingMatch) {
+TEST_F(HistoryQuickProviderTest, EncodingMatch) {
   std::vector<std::string> expected_urls;
   expected_urls.push_back("http://spaces.com/path%20with%20spaces/foo.html");
   RunTest(ASCIIToUTF16("path with spaces"), false, expected_urls, false,
@@ -471,7 +465,7 @@ TEST_F(MAYBE_HistoryQuickProviderTest, EncodingMatch) {
           base::string16());
 }
 
-TEST_F(MAYBE_HistoryQuickProviderTest, ContentsClass) {
+TEST_F(HistoryQuickProviderTest, ContentsClass) {
   std::vector<std::string> expected_urls;
   expected_urls.push_back(
       "http://ja.wikipedia.org/wiki/%E7%AC%AC%E4%BA%8C%E6%AC%A1%E4%B8%96%E7"
@@ -503,7 +497,7 @@ TEST_F(MAYBE_HistoryQuickProviderTest, ContentsClass) {
     EXPECT_EQ(expected_offsets[i], contents_class[i].offset);
 }
 
-TEST_F(MAYBE_HistoryQuickProviderTest, VisitCountMatches) {
+TEST_F(HistoryQuickProviderTest, VisitCountMatches) {
   std::vector<std::string> expected_urls;
   expected_urls.push_back("http://visitedest.com/y/a");
   expected_urls.push_back("http://visitedest.com/y/b");
@@ -513,7 +507,7 @@ TEST_F(MAYBE_HistoryQuickProviderTest, VisitCountMatches) {
                     ASCIIToUTF16(".com/y/a"));
 }
 
-TEST_F(MAYBE_HistoryQuickProviderTest, TypedCountMatches) {
+TEST_F(HistoryQuickProviderTest, TypedCountMatches) {
   std::vector<std::string> expected_urls;
   expected_urls.push_back("http://typeredest.com/y/a");
   expected_urls.push_back("http://typeredest.com/y/b");
@@ -523,7 +517,7 @@ TEST_F(MAYBE_HistoryQuickProviderTest, TypedCountMatches) {
                     ASCIIToUTF16(".com/y/a"));
 }
 
-TEST_F(MAYBE_HistoryQuickProviderTest, DaysAgoMatches) {
+TEST_F(HistoryQuickProviderTest, DaysAgoMatches) {
   std::vector<std::string> expected_urls;
   expected_urls.push_back("http://daysagoest.com/y/a");
   expected_urls.push_back("http://daysagoest.com/y/b");
@@ -533,7 +527,7 @@ TEST_F(MAYBE_HistoryQuickProviderTest, DaysAgoMatches) {
                     ASCIIToUTF16(".com/y/a"));
 }
 
-TEST_F(MAYBE_HistoryQuickProviderTest, EncodingLimitMatch) {
+TEST_F(HistoryQuickProviderTest, EncodingLimitMatch) {
   std::vector<std::string> expected_urls;
   std::string url(
       "http://cda.com/Dogs%20Cats%20Gorillas%20Sea%20Slugs%20and%20Mice");
@@ -561,7 +555,7 @@ TEST_F(MAYBE_HistoryQuickProviderTest, EncodingLimitMatch) {
     EXPECT_LT(diter->offset, page_title.length());
 }
 
-TEST_F(MAYBE_HistoryQuickProviderTest, Spans) {
+TEST_F(HistoryQuickProviderTest, Spans) {
   // Test SpansFromTermMatch
   TermMatches matches_a;
   // Simulates matches: '.xx.xxx..xx...xxxxx..' which will test no match at
@@ -612,7 +606,7 @@ TEST_F(MAYBE_HistoryQuickProviderTest, Spans) {
             spans_b[2].style);
 }
 
-TEST_F(MAYBE_HistoryQuickProviderTest, DeleteMatch) {
+TEST_F(HistoryQuickProviderTest, DeleteMatch) {
   GURL test_url("http://slashdot.org/favorite_page.html");
   std::vector<std::string> expected_urls;
   expected_urls.push_back(test_url.spec());
@@ -640,7 +634,7 @@ TEST_F(MAYBE_HistoryQuickProviderTest, DeleteMatch) {
           ASCIIToUTF16("NONE EXPECTED"), base::string16());
 }
 
-TEST_F(MAYBE_HistoryQuickProviderTest, PreventBeatingURLWhatYouTypedMatch) {
+TEST_F(HistoryQuickProviderTest, PreventBeatingURLWhatYouTypedMatch) {
   std::vector<std::string> expected_urls;
 
   expected_urls.clear();
@@ -712,7 +706,7 @@ TEST_F(MAYBE_HistoryQuickProviderTest, PreventBeatingURLWhatYouTypedMatch) {
             HistoryURLProvider::kScoreForBestInlineableResult);
 }
 
-TEST_F(MAYBE_HistoryQuickProviderTest, PreventInlineAutocomplete) {
+TEST_F(HistoryQuickProviderTest, PreventInlineAutocomplete) {
   std::vector<std::string> expected_urls;
   expected_urls.push_back("http://popularsitewithroot.com/");
 
@@ -739,7 +733,7 @@ TEST_F(MAYBE_HistoryQuickProviderTest, PreventInlineAutocomplete) {
           ASCIIToUTF16("popularsitewithroot.com"), base::string16());
 }
 
-TEST_F(MAYBE_HistoryQuickProviderTest, DoesNotProvideMatchesOnFocus) {
+TEST_F(HistoryQuickProviderTest, DoesNotProvideMatchesOnFocus) {
   AutocompleteInput input(ASCIIToUTF16("popularsite"),
                           metrics::OmniboxEventProto::OTHER,
                           TestSchemeClassifier());
@@ -756,7 +750,7 @@ ScoredHistoryMatch BuildScoredHistoryMatch(const std::string& url_text) {
 }
 
 // Trim the http:// scheme from the contents in the general case.
-TEST_F(MAYBE_HistoryQuickProviderTest, DoTrimHttpScheme) {
+TEST_F(HistoryQuickProviderTest, DoTrimHttpScheme) {
   AutocompleteInput input(ASCIIToUTF16("face"),
                           metrics::OmniboxEventProto::OTHER,
                           TestSchemeClassifier());
@@ -770,7 +764,7 @@ TEST_F(MAYBE_HistoryQuickProviderTest, DoTrimHttpScheme) {
 
 // Don't trim the http:// scheme from the match contents if
 // the user input included a scheme.
-TEST_F(MAYBE_HistoryQuickProviderTest, DontTrimHttpSchemeIfInputHasScheme) {
+TEST_F(HistoryQuickProviderTest, DontTrimHttpSchemeIfInputHasScheme) {
   AutocompleteInput input(ASCIIToUTF16("http://face"),
                           metrics::OmniboxEventProto::OTHER,
                           TestSchemeClassifier());
@@ -784,7 +778,7 @@ TEST_F(MAYBE_HistoryQuickProviderTest, DontTrimHttpSchemeIfInputHasScheme) {
 
 // Don't trim the http:// scheme from the match contents if
 // the user input matched it.
-TEST_F(MAYBE_HistoryQuickProviderTest, DontTrimHttpSchemeIfInputMatches) {
+TEST_F(HistoryQuickProviderTest, DontTrimHttpSchemeIfInputMatches) {
   AutocompleteInput input(ASCIIToUTF16("ht"), metrics::OmniboxEventProto::OTHER,
                           TestSchemeClassifier());
   provider().Start(input, false);
@@ -798,7 +792,7 @@ TEST_F(MAYBE_HistoryQuickProviderTest, DontTrimHttpSchemeIfInputMatches) {
 
 // Don't trim the https:// scheme from the match contents if the user input
 // included a scheme.
-TEST_F(MAYBE_HistoryQuickProviderTest, DontTrimHttpsSchemeIfInputHasScheme) {
+TEST_F(HistoryQuickProviderTest, DontTrimHttpsSchemeIfInputHasScheme) {
   AutocompleteInput input(ASCIIToUTF16("https://face"),
                           metrics::OmniboxEventProto::OTHER,
                           TestSchemeClassifier());
@@ -811,7 +805,7 @@ TEST_F(MAYBE_HistoryQuickProviderTest, DontTrimHttpsSchemeIfInputHasScheme) {
 }
 
 // Trim the https:// scheme from the match contents if nothing prevents it.
-TEST_F(MAYBE_HistoryQuickProviderTest, DoTrimHttpsScheme) {
+TEST_F(HistoryQuickProviderTest, DoTrimHttpsScheme) {
   AutocompleteInput input(ASCIIToUTF16("face"),
                           metrics::OmniboxEventProto::OTHER,
                           TestSchemeClassifier());
@@ -823,7 +817,7 @@ TEST_F(MAYBE_HistoryQuickProviderTest, DoTrimHttpsScheme) {
   EXPECT_EQ(ASCIIToUTF16("facebook.com"), match.contents);
 }
 
-TEST_F(MAYBE_HistoryQuickProviderTest, CorrectAutocompleteWithTrailingSlash) {
+TEST_F(HistoryQuickProviderTest, CorrectAutocompleteWithTrailingSlash) {
   provider().autocomplete_input_ = AutocompleteInput(
       base::ASCIIToUTF16("cr/"), metrics::OmniboxEventProto::OTHER,
       TestSchemeClassifier());
@@ -841,7 +835,7 @@ TEST_F(MAYBE_HistoryQuickProviderTest, CorrectAutocompleteWithTrailingSlash) {
 
 // HQPOrderingTest -------------------------------------------------------------
 
-class HQPOrderingTest : public MAYBE_HistoryQuickProviderTest {
+class HQPOrderingTest : public HistoryQuickProviderTest {
  public:
   HQPOrderingTest() = default;
 
@@ -852,7 +846,7 @@ class HQPOrderingTest : public MAYBE_HistoryQuickProviderTest {
   DISALLOW_COPY_AND_ASSIGN(HQPOrderingTest);
 };
 
-std::vector<MAYBE_HistoryQuickProviderTest::TestURLInfo>
+std::vector<HistoryQuickProviderTest::TestURLInfo>
 HQPOrderingTest::GetTestData() {
   return {
       {"http://www.teamliquid.net/tlpd/korean/games/21648_bisu_vs_iris", "", 6,

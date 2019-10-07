@@ -146,13 +146,6 @@ class AutocompleteResult {
       const AutocompleteResult& old_result,
       const AutocompleteResult& new_result);
 
-// Flaky leaks on ASAN LSAN (crbug.com/1010691).
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_HistoryURLProviderTest DISABLED_HistoryURLProviderTest
-#else
-#define MAYBE_HistoryURLProviderTest HistoryURLProviderTest
-#endif
-
  private:
   FRIEND_TEST_ALL_PREFIXES(AutocompleteResultTest, ConvertsOpenTabsCorrectly);
   FRIEND_TEST_ALL_PREFIXES(AutocompleteResultTest,
@@ -161,7 +154,7 @@ class AutocompleteResult {
                            TestGroupSuggestionsBySearchVsURL);
   FRIEND_TEST_ALL_PREFIXES(AutocompleteResultTest,
                            DemoteOnDeviceSearchSuggestions);
-  friend class MAYBE_HistoryURLProviderTest;
+  friend class HistoryURLProviderTest;
 
   typedef std::map<AutocompleteProvider*, ACMatches> ProviderToMatches;
 

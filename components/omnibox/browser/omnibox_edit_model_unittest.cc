@@ -28,13 +28,7 @@
 
 using metrics::OmniboxEventProto;
 
-// Flaky leaks on ASAN LSAN (crbug.com/1010691).
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_OmniboxEditModelTest DISABLED_OmniboxEditModelTest
-#else
-#define MAYBE_OmniboxEditModelTest OmniboxEditModelTest
-#endif
-class MAYBE_OmniboxEditModelTest : public testing::Test {
+class OmniboxEditModelTest : public testing::Test {
  public:
   void SetUp() override {
     controller_ = std::make_unique<TestOmniboxEditController>();
@@ -58,7 +52,7 @@ class MAYBE_OmniboxEditModelTest : public testing::Test {
 };
 
 // Tests various permutations of AutocompleteModel::AdjustTextForCopy.
-TEST_F(MAYBE_OmniboxEditModelTest, AdjustTextForCopy) {
+TEST_F(OmniboxEditModelTest, AdjustTextForCopy) {
   struct Data {
     const char* url_for_editing;
     const int sel_start;
@@ -198,14 +192,7 @@ TEST_F(MAYBE_OmniboxEditModelTest, AdjustTextForCopy) {
 
 // Tests that AdjustTextForCopy behaves properly with Query in Omnibox enabled.
 // For more general tests of copy adjustment, see the AdjustTextForCopy test.
-// Flaky leaks on ASAN LSAN (crbug.com/1010691).
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_AdjustTextForCopyQueryInOmnibox \
-  DISABLED_AdjustTextForCopyQueryInOmnibox
-#else
-#define MAYBE_AdjustTextForCopyQueryInOmnibox AdjustTextForCopyQueryInOmnibox
-#endif
-TEST_F(MAYBE_OmniboxEditModelTest, MAYBE_AdjustTextForCopyQueryInOmnibox) {
+TEST_F(OmniboxEditModelTest, AdjustTextForCopyQueryInOmnibox) {
   location_bar_model()->set_url(GURL("https://www.example.com/"));
   location_bar_model()->set_url_for_display(base::ASCIIToUTF16("example.com"));
   location_bar_model()->set_display_search_terms(base::ASCIIToUTF16("foobar"));
@@ -236,7 +223,7 @@ TEST_F(MAYBE_OmniboxEditModelTest, MAYBE_AdjustTextForCopyQueryInOmnibox) {
   }
 }
 
-TEST_F(MAYBE_OmniboxEditModelTest, DISABLED_InlineAutocompleteText) {
+TEST_F(OmniboxEditModelTest, DISABLED_InlineAutocompleteText) {
   // Test if the model updates the inline autocomplete text in the view.
   EXPECT_EQ(base::string16(), view()->inline_autocomplete_text());
   model()->SetUserText(base::ASCIIToUTF16("he"));
@@ -273,7 +260,7 @@ TEST_F(MAYBE_OmniboxEditModelTest, DISABLED_InlineAutocompleteText) {
 
 // iOS doesn't use elisions in the Omnibox textfield.
 #if !defined(OS_IOS)
-TEST_F(MAYBE_OmniboxEditModelTest, RespectUnelisionInZeroSuggest) {
+TEST_F(OmniboxEditModelTest, RespectUnelisionInZeroSuggest) {
   location_bar_model()->set_url(GURL("https://www.example.com/"));
   location_bar_model()->set_url_for_display(base::ASCIIToUTF16("example.com"));
 
@@ -302,7 +289,7 @@ TEST_F(MAYBE_OmniboxEditModelTest, RespectUnelisionInZeroSuggest) {
 // The failure was due to erroneously trying to strip the scheme from the
 // resulting fill_into_edit.  Alternate nav matches are never shown, so there's
 // no need to ever try and strip this scheme.
-TEST_F(MAYBE_OmniboxEditModelTest, AlternateNavHasHTTP) {
+TEST_F(OmniboxEditModelTest, AlternateNavHasHTTP) {
   const TestOmniboxClient* client =
       static_cast<TestOmniboxClient*>(model()->client());
   const AutocompleteMatch match(
@@ -324,13 +311,7 @@ TEST_F(MAYBE_OmniboxEditModelTest, AlternateNavHasHTTP) {
       client->alternate_nav_match().fill_into_edit));
 }
 
-// Flaky leaks on ASAN LSAN (crbug.com/1010691).
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_CurrentMatch DISABLED_CurrentMatch
-#else
-#define MAYBE_CurrentMatch CurrentMatch
-#endif
-TEST_F(MAYBE_OmniboxEditModelTest, MAYBE_CurrentMatch) {
+TEST_F(OmniboxEditModelTest, CurrentMatch) {
   location_bar_model()->set_url(GURL("http://localhost/"));
   location_bar_model()->set_url_for_display(base::ASCIIToUTF16("localhost"));
   model()->ResetDisplayTexts();
@@ -357,7 +338,7 @@ TEST_F(MAYBE_OmniboxEditModelTest, MAYBE_CurrentMatch) {
   }
 }
 
-TEST_F(MAYBE_OmniboxEditModelTest, DisplayText) {
+TEST_F(OmniboxEditModelTest, DisplayText) {
   location_bar_model()->set_url(GURL("https://www.example.com/"));
   location_bar_model()->set_url_for_display(base::ASCIIToUTF16("example.com"));
 
@@ -394,13 +375,7 @@ TEST_F(MAYBE_OmniboxEditModelTest, DisplayText) {
   EXPECT_FALSE(model()->ShouldShowCurrentPageIcon());
 }
 
-// Flaky leaks on ASAN LSAN (crbug.com/1010691).
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_DisplayAndExitQueryInOmnibox DISABLED_DisplayAndExitQueryInOmnibox
-#else
-#define MAYBE_DisplayAndExitQueryInOmnibox DisplayAndExitQueryInOmnibox
-#endif
-TEST_F(MAYBE_OmniboxEditModelTest, MAYBE_DisplayAndExitQueryInOmnibox) {
+TEST_F(OmniboxEditModelTest, DisplayAndExitQueryInOmnibox) {
   location_bar_model()->set_url(GURL("https://www.example.com/"));
   location_bar_model()->set_url_for_display(base::ASCIIToUTF16("example.com"));
   location_bar_model()->set_display_search_terms(base::ASCIIToUTF16("foobar"));
@@ -426,7 +401,7 @@ TEST_F(MAYBE_OmniboxEditModelTest, MAYBE_DisplayAndExitQueryInOmnibox) {
   EXPECT_FALSE(model()->ShouldShowCurrentPageIcon());
 }
 
-TEST_F(MAYBE_OmniboxEditModelTest, UnelideDoesNothingWhenFullURLAlreadyShown) {
+TEST_F(OmniboxEditModelTest, UnelideDoesNothingWhenFullURLAlreadyShown) {
   location_bar_model()->set_url(GURL("https://www.example.com/"));
   location_bar_model()->set_url_for_display(
       base::ASCIIToUTF16("https://www.example.com/"));
@@ -449,7 +424,7 @@ TEST_F(MAYBE_OmniboxEditModelTest, UnelideDoesNothingWhenFullURLAlreadyShown) {
 
 // The tab-switching system sometimes focuses the Omnibox even if it was not
 // previously focused. In those cases, ignore the saved focus state.
-TEST_F(MAYBE_OmniboxEditModelTest, IgnoreInvalidSavedFocusStates) {
+TEST_F(OmniboxEditModelTest, IgnoreInvalidSavedFocusStates) {
   // The Omnibox starts out unfocused. Save that state.
   ASSERT_FALSE(model()->has_focus());
   OmniboxEditModel::State state = model()->GetStateForTabSwitch();
@@ -466,7 +441,7 @@ TEST_F(MAYBE_OmniboxEditModelTest, IgnoreInvalidSavedFocusStates) {
 
 // Tests ConsumeCtrlKey() consumes ctrl key when down, but does not affect ctrl
 // state otherwise.
-TEST_F(MAYBE_OmniboxEditModelTest, ConsumeCtrlKey) {
+TEST_F(OmniboxEditModelTest, ConsumeCtrlKey) {
   model()->control_key_state_ = TestOmniboxEditModel::UP;
   model()->ConsumeCtrlKey();
   EXPECT_EQ(model()->control_key_state_, TestOmniboxEditModel::UP);
@@ -480,7 +455,7 @@ TEST_F(MAYBE_OmniboxEditModelTest, ConsumeCtrlKey) {
 }
 
 // Tests ctrl_key_state_ is set consumed if the ctrl key is down on focus.
-TEST_F(MAYBE_OmniboxEditModelTest, ConsumeCtrlKeyOnRequestFocus) {
+TEST_F(OmniboxEditModelTest, ConsumeCtrlKeyOnRequestFocus) {
   model()->control_key_state_ = TestOmniboxEditModel::DOWN;
   model()->OnSetFocus(false);
   EXPECT_EQ(model()->control_key_state_, TestOmniboxEditModel::UP);
@@ -490,7 +465,7 @@ TEST_F(MAYBE_OmniboxEditModelTest, ConsumeCtrlKeyOnRequestFocus) {
 }
 
 // Tests the ctrl key is consumed on a ctrl-action (e.g. ctrl-c to copy)
-TEST_F(MAYBE_OmniboxEditModelTest, ConsumeCtrlKeyOnCtrlAction) {
+TEST_F(OmniboxEditModelTest, ConsumeCtrlKeyOnCtrlAction) {
   model()->control_key_state_ = TestOmniboxEditModel::DOWN;
   OmniboxView::StateChanges state_changes{nullptr, nullptr, 0,     0,
                                           false,   false,   false, false};
@@ -499,7 +474,7 @@ TEST_F(MAYBE_OmniboxEditModelTest, ConsumeCtrlKeyOnCtrlAction) {
             TestOmniboxEditModel::DOWN_AND_CONSUMED);
 }
 
-TEST_F(MAYBE_OmniboxEditModelTest, KeywordModePreservesInlineAutocompleteText) {
+TEST_F(OmniboxEditModelTest, KeywordModePreservesInlineAutocompleteText) {
   // Set the edit model into an inline autocompletion state.
   view()->SetUserText(base::UTF8ToUTF16("user"));
   view()->OnInlineAutocompleteTextMaybeChanged(base::UTF8ToUTF16("user text"),
@@ -525,7 +500,7 @@ TEST_F(MAYBE_OmniboxEditModelTest, KeywordModePreservesInlineAutocompleteText) {
   }
 }
 
-TEST_F(MAYBE_OmniboxEditModelTest, KeywordModePreservesTemporaryText) {
+TEST_F(OmniboxEditModelTest, KeywordModePreservesTemporaryText) {
   // Set the edit model into a temporary text state.
   view()->SetUserText(base::UTF8ToUTF16("user text"));
   GURL destination_url("http://example.com");

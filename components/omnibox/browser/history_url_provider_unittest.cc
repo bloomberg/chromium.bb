@@ -176,25 +176,20 @@ struct TestURLInfo {
 
 }  // namespace
 
-// Flaky leaks on ASAN LSAN (crbug.com/1010691).
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_MAYBE_HistoryURLProviderTest DISABLED_HistoryURLProviderTest
-#else
-#define MAYBE_HistoryURLProviderTest HistoryURLProviderTest
-#endif
-class MAYBE_HistoryURLProviderTest : public testing::Test,
-                                     public AutocompleteProviderListener {
+class HistoryURLProviderTest : public testing::Test,
+                               public AutocompleteProviderListener {
  public:
   struct UrlAndLegalDefault {
     std::string url;
     bool allowed_to_be_default_match;
   };
 
-  MAYBE_HistoryURLProviderTest() : sort_matches_(false) {
+  HistoryURLProviderTest()
+      : sort_matches_(false) {
     HistoryQuickProvider::set_disabled(true);
   }
 
-  ~MAYBE_HistoryURLProviderTest() override {
+  ~HistoryURLProviderTest() override {
     HistoryQuickProvider::set_disabled(false);
   }
 
@@ -249,34 +244,33 @@ class MAYBE_HistoryURLProviderTest : public testing::Test,
   bool sort_matches_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MAYBE_HistoryURLProviderTest);
+  DISALLOW_COPY_AND_ASSIGN(HistoryURLProviderTest);
 };
 
-class HistoryURLProviderTestNoDB : public MAYBE_HistoryURLProviderTest {
+class HistoryURLProviderTestNoDB : public HistoryURLProviderTest {
  protected:
   void SetUp() override { ASSERT_TRUE(SetUpImpl(false)); }
 };
 
-class HistoryURLProviderTestNoSearchProvider
-    : public MAYBE_HistoryURLProviderTest {
+class HistoryURLProviderTestNoSearchProvider : public HistoryURLProviderTest {
  protected:
   void SetUp() override {
     DefaultSearchManager::SetFallbackSearchEnginesDisabledForTesting(true);
-    MAYBE_HistoryURLProviderTest::SetUp();
+    HistoryURLProviderTest::SetUp();
   }
 
   void TearDown() override {
-    MAYBE_HistoryURLProviderTest::TearDown();
+    HistoryURLProviderTest::TearDown();
     DefaultSearchManager::SetFallbackSearchEnginesDisabledForTesting(false);
   }
 };
 
-void MAYBE_HistoryURLProviderTest::OnProviderUpdate(bool updated_matches) {
+void HistoryURLProviderTest::OnProviderUpdate(bool updated_matches) {
   if (autocomplete_->done())
     base::RunLoop::QuitCurrentWhenIdleDeprecated();
 }
 
-bool MAYBE_HistoryURLProviderTest::SetUpImpl(bool create_history_db) {
+bool HistoryURLProviderTest::SetUpImpl(bool create_history_db) {
   client_ = std::make_unique<FakeAutocompleteProviderClient>(create_history_db);
   if (!client_->GetHistoryService())
     return false;
@@ -285,13 +279,13 @@ bool MAYBE_HistoryURLProviderTest::SetUpImpl(bool create_history_db) {
   return true;
 }
 
-void MAYBE_HistoryURLProviderTest::TearDown() {
+void HistoryURLProviderTest::TearDown() {
   autocomplete_ = nullptr;
   client_.reset();
   task_environment_.RunUntilIdle();
 }
 
-void MAYBE_HistoryURLProviderTest::FillData() {
+void HistoryURLProviderTest::FillData() {
   // Most visits are a long time ago (some tests require this since we do some
   // special logic for things visited very recently). Note that this time must
   // be more recent than the "expire history" threshold for the data to be kept
@@ -311,7 +305,7 @@ void MAYBE_HistoryURLProviderTest::FillData() {
   }
 }
 
-void MAYBE_HistoryURLProviderTest::RunTest(
+void HistoryURLProviderTest::RunTest(
     const base::string16& text,
     const std::string& desired_tld,
     bool prevent_inline_autocomplete,
@@ -348,7 +342,7 @@ void MAYBE_HistoryURLProviderTest::RunTest(
   }
 }
 
-void MAYBE_HistoryURLProviderTest::ExpectFormattedFullMatch(
+void HistoryURLProviderTest::ExpectFormattedFullMatch(
     const std::string& input_text,
     const wchar_t* expected_match_contents,
     size_t expected_match_location,
@@ -397,7 +391,7 @@ void MAYBE_HistoryURLProviderTest::ExpectFormattedFullMatch(
   }
 }
 
-TEST_F(MAYBE_HistoryURLProviderTest, PromoteShorterURLs) {
+TEST_F(HistoryURLProviderTest, PromoteShorterURLs) {
   // Test that hosts get synthesized below popular pages.
   const UrlAndLegalDefault expected_nonsynth[] = {
     { "http://slashdot.org/favorite_page.html", false },
@@ -532,7 +526,7 @@ TEST_F(MAYBE_HistoryURLProviderTest, PromoteShorterURLs) {
           base::size(short_5b));
 }
 
-TEST_F(MAYBE_HistoryURLProviderTest, CullRedirects) {
+TEST_F(HistoryURLProviderTest, CullRedirects) {
   // URLs we will be using, plus the visit counts they will initially get
   // (the redirect set below will also increment the visit counts). We want
   // the results to be in A,B,C order. Note also that our visit counts are
@@ -605,7 +599,7 @@ TEST_F(HistoryURLProviderTestNoSearchProvider, WhatYouTypedNoSearchProvider) {
           base::size(results_2));
 }
 
-TEST_F(MAYBE_HistoryURLProviderTest, WhatYouTyped) {
+TEST_F(HistoryURLProviderTest, WhatYouTyped) {
   // Make sure we suggest a What You Typed match at the right times.
   RunTest(ASCIIToUTF16("wytmatch"), std::string(), false, nullptr, 0);
   RunTest(ASCIIToUTF16("wytmatch foo bar"), std::string(), false, nullptr, 0);
@@ -650,7 +644,7 @@ TEST_F(MAYBE_HistoryURLProviderTest, WhatYouTyped) {
           base::size(results_6));
 }
 
-TEST_F(MAYBE_HistoryURLProviderTest, Fixup) {
+TEST_F(HistoryURLProviderTest, Fixup) {
   // Test for various past crashes we've had.
   RunTest(ASCIIToUTF16("\\"), std::string(), false, nullptr, 0);
   RunTest(ASCIIToUTF16("#"), std::string(), false, nullptr, 0);
@@ -712,7 +706,7 @@ TEST_F(MAYBE_HistoryURLProviderTest, Fixup) {
 
 // Make sure the results for the input 'p' don't change between the first and
 // second passes.
-TEST_F(MAYBE_HistoryURLProviderTest, EmptyVisits) {
+TEST_F(HistoryURLProviderTest, EmptyVisits) {
   // Wait for history to create the in memory DB.
   history::BlockUntilHistoryProcessesPendingRequests(
       client_->GetHistoryService());
@@ -756,7 +750,7 @@ TEST_F(HistoryURLProviderTestNoDB, NavigateWithoutDB) {
   RunTest(ASCIIToUTF16("this is a query"), std::string(), false, nullptr, 0);
 }
 
-TEST_F(MAYBE_HistoryURLProviderTest, AutocompleteOnTrailingWhitespace) {
+TEST_F(HistoryURLProviderTest, AutocompleteOnTrailingWhitespace) {
   struct AutocompletionExpectation {
     std::string fill_into_edit;
     std::string inline_autocompletion;
@@ -839,7 +833,7 @@ TEST_F(MAYBE_HistoryURLProviderTest, AutocompleteOnTrailingWhitespace) {
                      });
 }
 
-TEST_F(MAYBE_HistoryURLProviderTest, TreatEmailsAsSearches) {
+TEST_F(HistoryURLProviderTest, TreatEmailsAsSearches) {
   // Visiting foo.com should not make this string be treated as a navigation.
   // That means the result should not be allowed to be default, and it should
   // be scored around 1200 rather than 1400+.
@@ -852,7 +846,7 @@ TEST_F(MAYBE_HistoryURLProviderTest, TreatEmailsAsSearches) {
   EXPECT_LT(matches_[0].relevance, 1210);
 }
 
-TEST_F(MAYBE_HistoryURLProviderTest, IntranetURLsWithPaths) {
+TEST_F(HistoryURLProviderTest, IntranetURLsWithPaths) {
   struct TestCase {
     const char* input;
     int relevance;
@@ -889,7 +883,7 @@ TEST_F(MAYBE_HistoryURLProviderTest, IntranetURLsWithPaths) {
 
 // Makes sure autocompletion happens for intranet sites that have been
 // previoulsy visited.
-TEST_F(MAYBE_HistoryURLProviderTest, IntranetURLCompletion) {
+TEST_F(HistoryURLProviderTest, IntranetURLCompletion) {
   sort_matches_ = true;
 
   const UrlAndLegalDefault expected1[] = {
@@ -956,7 +950,7 @@ TEST_F(MAYBE_HistoryURLProviderTest, IntranetURLCompletion) {
                                   false, expected8, base::size(expected8)));
 }
 
-TEST_F(MAYBE_HistoryURLProviderTest, CrashDueToFixup) {
+TEST_F(HistoryURLProviderTest, CrashDueToFixup) {
   // This test passes if we don't crash.  The results don't matter.
   const char* const test_cases[] = {
     "//c",
@@ -973,7 +967,7 @@ TEST_F(MAYBE_HistoryURLProviderTest, CrashDueToFixup) {
   }
 }
 
-TEST_F(MAYBE_HistoryURLProviderTest, DoesNotProvideMatchesOnFocus) {
+TEST_F(HistoryURLProviderTest, DoesNotProvideMatchesOnFocus) {
   AutocompleteInput input(ASCIIToUTF16("foo"),
                           metrics::OmniboxEventProto::OTHER,
                           TestSchemeClassifier());
@@ -982,7 +976,7 @@ TEST_F(MAYBE_HistoryURLProviderTest, DoesNotProvideMatchesOnFocus) {
   EXPECT_TRUE(autocomplete_->matches().empty());
 }
 
-TEST_F(MAYBE_HistoryURLProviderTest, DoesNotInlinePunycodeMatches) {
+TEST_F(HistoryURLProviderTest, DoesNotInlinePunycodeMatches) {
   // A URL that matches due to a match in the punycode URL is allowed to be the
   // default match if the URL doesn't get rendered as international characters.
   const UrlAndLegalDefault expected1_true[] = {
@@ -1032,7 +1026,7 @@ TEST_F(MAYBE_HistoryURLProviderTest, DoesNotInlinePunycodeMatches) {
           expected2_true, base::size(expected2_true));
 }
 
-TEST_F(MAYBE_HistoryURLProviderTest, CullSearchResults) {
+TEST_F(HistoryURLProviderTest, CullSearchResults) {
   // Set up a default search engine.
   TemplateURLData data;
   data.SetShortName(ASCIIToUTF16("TestEngine"));
@@ -1080,7 +1074,7 @@ TEST_F(MAYBE_HistoryURLProviderTest, CullSearchResults) {
           base::size(expected_when_searching_site));
 }
 
-TEST_F(MAYBE_HistoryURLProviderTest, SuggestExactInput) {
+TEST_F(HistoryURLProviderTest, SuggestExactInput) {
   const size_t npos = std::string::npos;
   struct TestCase {
     // Inputs:
@@ -1164,7 +1158,7 @@ TEST_F(MAYBE_HistoryURLProviderTest, SuggestExactInput) {
   }
 }
 
-TEST_F(MAYBE_HistoryURLProviderTest, HUPScoringExperiment) {
+TEST_F(HistoryURLProviderTest, HUPScoringExperiment) {
   HUPScoringParams max_2000_no_time_decay;
   max_2000_no_time_decay.typed_count_buckets.buckets().push_back(
       std::make_pair(0.0, 2000));
@@ -1269,7 +1263,7 @@ TEST_F(MAYBE_HistoryURLProviderTest, HUPScoringExperiment) {
   }
 }
 
-TEST_F(MAYBE_HistoryURLProviderTest, MatchURLFormatting) {
+TEST_F(HistoryURLProviderTest, MatchURLFormatting) {
   // Sanity check behavior under default flags.
   ExpectFormattedFullMatch("abc", L"www.abc.def.com/path", 4, 3);
   ExpectFormattedFullMatch("hij", L"hij.com/path", 0, 3);
@@ -1322,7 +1316,7 @@ std::unique_ptr<HistoryURLProviderParams> BuildHistoryURLProviderParams(
 }
 
 // Make sure "http://" scheme is generally trimmed.
-TEST_F(MAYBE_HistoryURLProviderTest, DoTrimHttpScheme) {
+TEST_F(HistoryURLProviderTest, DoTrimHttpScheme) {
   auto params =
       BuildHistoryURLProviderParams("face", "http://www.facebook.com", false);
 
@@ -1331,7 +1325,7 @@ TEST_F(MAYBE_HistoryURLProviderTest, DoTrimHttpScheme) {
 }
 
 // Make sure "http://" scheme is not trimmed if input has a scheme too.
-TEST_F(MAYBE_HistoryURLProviderTest, DontTrimHttpSchemeIfInputHasScheme) {
+TEST_F(HistoryURLProviderTest, DontTrimHttpSchemeIfInputHasScheme) {
   auto params = BuildHistoryURLProviderParams("http://face",
                                               "http://www.facebook.com", false);
 
@@ -1340,7 +1334,7 @@ TEST_F(MAYBE_HistoryURLProviderTest, DontTrimHttpSchemeIfInputHasScheme) {
 }
 
 // Make sure "http://" scheme is not trimmed if input matches in scheme.
-TEST_F(MAYBE_HistoryURLProviderTest, DontTrimHttpSchemeIfInputMatchesInScheme) {
+TEST_F(HistoryURLProviderTest, DontTrimHttpSchemeIfInputMatchesInScheme) {
   auto params =
       BuildHistoryURLProviderParams("ht face", "http://www.facebook.com", true);
 
@@ -1349,8 +1343,7 @@ TEST_F(MAYBE_HistoryURLProviderTest, DontTrimHttpSchemeIfInputMatchesInScheme) {
 }
 
 // Make sure "https://" scheme is not trimmed if the input has a scheme.
-TEST_F(MAYBE_HistoryURLProviderTest,
-       DontTrimHttpsSchemeIfInputMatchesInScheme) {
+TEST_F(HistoryURLProviderTest, DontTrimHttpsSchemeIfInputMatchesInScheme) {
   auto params = BuildHistoryURLProviderParams(
       "https://face", "https://www.facebook.com", false);
 
@@ -1359,7 +1352,7 @@ TEST_F(MAYBE_HistoryURLProviderTest,
 }
 
 // Make sure "https://" scheme is trimmed if nothing prevents it.
-TEST_F(MAYBE_HistoryURLProviderTest, DoTrimHttpsScheme) {
+TEST_F(HistoryURLProviderTest, DoTrimHttpsScheme) {
   auto params =
       BuildHistoryURLProviderParams("face", "https://www.facebook.com", false);
 

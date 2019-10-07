@@ -379,20 +379,11 @@ class OmniboxEditModel {
 
   OmniboxView* view() { return view_; }
 
-// Flaky leaks on ASAN LSAN (crbug.com/1010691).
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_OmniboxEditModelTest DISABLED_OmniboxEditModelTest
-#else
-#define MAYBE_OmniboxEditModelTest OmniboxEditModelTest
-#endif
-
  private:
-  friend class MAYBE_OmniboxControllerTest;
-  FRIEND_TEST_ALL_PREFIXES(MAYBE_OmniboxEditModelTest, ConsumeCtrlKey);
-  FRIEND_TEST_ALL_PREFIXES(MAYBE_OmniboxEditModelTest,
-                           ConsumeCtrlKeyOnRequestFocus);
-  FRIEND_TEST_ALL_PREFIXES(MAYBE_OmniboxEditModelTest,
-                           ConsumeCtrlKeyOnCtrlAction);
+  friend class OmniboxControllerTest;
+  FRIEND_TEST_ALL_PREFIXES(OmniboxEditModelTest, ConsumeCtrlKey);
+  FRIEND_TEST_ALL_PREFIXES(OmniboxEditModelTest, ConsumeCtrlKeyOnRequestFocus);
+  FRIEND_TEST_ALL_PREFIXES(OmniboxEditModelTest, ConsumeCtrlKeyOnCtrlAction);
 
   enum PasteState {
     NONE,           // Most recent edit was not a paste.

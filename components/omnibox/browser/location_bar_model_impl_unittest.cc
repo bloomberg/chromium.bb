@@ -77,18 +77,12 @@ class FakeLocationBarModelDelegate : public LocationBarModelDelegate {
   bool connection_info_initialized_ = true;
 };
 
-// Flaky leaks on ASAN LSAN (crbug.com/1010691).
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_LocationBarModelImplTest DISABLED_LocationBarModelImplTest
-#else
-#define MAYBE_LocationBarModelImplTest LocationBarModelImplTest
-#endif
-class MAYBE_LocationBarModelImplTest : public testing::Test {
+class LocationBarModelImplTest : public testing::Test {
  protected:
   const GURL kValidSearchResultsPage =
       GURL("https://www.google.com/search?q=foo+query");
 
-  MAYBE_LocationBarModelImplTest() : model_(&delegate_, 1024) {}
+  LocationBarModelImplTest() : model_(&delegate_, 1024) {}
 
   FakeLocationBarModelDelegate* delegate() { return &delegate_; }
 
@@ -100,7 +94,7 @@ class MAYBE_LocationBarModelImplTest : public testing::Test {
   LocationBarModelImpl model_;
 };
 
-TEST_F(MAYBE_LocationBarModelImplTest,
+TEST_F(LocationBarModelImplTest,
        DisplayUrlAppliesFormattedStringWithEquivalentMeaning) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeatures({omnibox::kHideSteadyStateUrlScheme,
@@ -124,7 +118,7 @@ TEST_F(MAYBE_LocationBarModelImplTest,
 #else
 #define MAYBE_PreventElisionWorks PreventElisionWorks
 #endif
-TEST_F(MAYBE_LocationBarModelImplTest, MAYBE_PreventElisionWorks) {
+TEST_F(LocationBarModelImplTest, MAYBE_PreventElisionWorks) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeatures(
       {omnibox::kHideSteadyStateUrlScheme,
@@ -143,7 +137,7 @@ TEST_F(MAYBE_LocationBarModelImplTest, MAYBE_PreventElisionWorks) {
   EXPECT_FALSE(model()->GetDisplaySearchTerms(nullptr));
 }
 
-TEST_F(MAYBE_LocationBarModelImplTest, QueryInOmniboxFeatureFlagWorks) {
+TEST_F(LocationBarModelImplTest, QueryInOmniboxFeatureFlagWorks) {
   delegate()->SetURL(kValidSearchResultsPage);
   delegate()->SetSecurityLevel(security_state::SecurityLevel::SECURE);
 
@@ -155,7 +149,7 @@ TEST_F(MAYBE_LocationBarModelImplTest, QueryInOmniboxFeatureFlagWorks) {
   EXPECT_TRUE(model()->GetDisplaySearchTerms(nullptr));
 }
 
-TEST_F(MAYBE_LocationBarModelImplTest, QueryInOmniboxSecurityLevel) {
+TEST_F(LocationBarModelImplTest, QueryInOmniboxSecurityLevel) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(omnibox::kQueryInOmnibox);
 
@@ -180,7 +174,7 @@ TEST_F(MAYBE_LocationBarModelImplTest, QueryInOmniboxSecurityLevel) {
   EXPECT_TRUE(model()->GetDisplaySearchTerms(nullptr));
 }
 
-TEST_F(MAYBE_LocationBarModelImplTest,
+TEST_F(LocationBarModelImplTest,
        QueryInOmniboxDefaultSearchProviderWithAndWithoutQuery) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(omnibox::kQueryInOmnibox);
@@ -199,7 +193,7 @@ TEST_F(MAYBE_LocationBarModelImplTest,
   EXPECT_EQ(base::string16(), result);
 }
 
-TEST_F(MAYBE_LocationBarModelImplTest, QueryInOmniboxNonDefaultSearchProvider) {
+TEST_F(LocationBarModelImplTest, QueryInOmniboxNonDefaultSearchProvider) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(omnibox::kQueryInOmnibox);
 
@@ -213,7 +207,7 @@ TEST_F(MAYBE_LocationBarModelImplTest, QueryInOmniboxNonDefaultSearchProvider) {
   EXPECT_EQ(base::string16(), result);
 }
 
-TEST_F(MAYBE_LocationBarModelImplTest, QueryInOmniboxLookalikeURL) {
+TEST_F(LocationBarModelImplTest, QueryInOmniboxLookalikeURL) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(omnibox::kQueryInOmnibox);
 

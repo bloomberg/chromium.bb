@@ -48,15 +48,9 @@ class TestOmniboxEditModel : public OmniboxEditModel {
 
 }  // namespace
 
-// Flaky leaks on ASAN LSAN (crbug.com/1010691).
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_OmniboxPopupModelTest DISABLED_OmniboxPopupModelTest
-#else
-#define MAYBE_OmniboxPopupModelTest OmniboxPopupModelTest
-#endif
-class MAYBE_OmniboxPopupModelTest : public ::testing::Test {
+class OmniboxPopupModelTest : public ::testing::Test {
  public:
-  MAYBE_OmniboxPopupModelTest()
+  OmniboxPopupModelTest()
       : view_(&controller_),
         model_(&view_, &controller_, std::make_unique<TestOmniboxClient>()),
         popup_model_(&popup_view_, &model_) {}
@@ -72,13 +66,13 @@ class MAYBE_OmniboxPopupModelTest : public ::testing::Test {
   TestOmniboxPopupView popup_view_;
   OmniboxPopupModel popup_model_;
 
-  DISALLOW_COPY_AND_ASSIGN(MAYBE_OmniboxPopupModelTest);
+  DISALLOW_COPY_AND_ASSIGN(OmniboxPopupModelTest);
 };
 
 // This verifies that the new treatment of the user's selected match in
 // |SetSelectedLine()| with removed |AutocompleteResult::Selection::empty()|
 // is correct in the face of various replacement versions of |empty()|.
-TEST_F(MAYBE_OmniboxPopupModelTest, SetSelectedLine) {
+TEST_F(OmniboxPopupModelTest, SetSelectedLine) {
   ACMatches matches;
   for (size_t i = 0; i < 2; ++i) {
     AutocompleteMatch match(nullptr, 1000, false,
@@ -101,7 +95,7 @@ TEST_F(MAYBE_OmniboxPopupModelTest, SetSelectedLine) {
   EXPECT_TRUE(popup_model()->has_selected_match());
 }
 
-TEST_F(MAYBE_OmniboxPopupModelTest, PopupPositionChanging) {
+TEST_F(OmniboxPopupModelTest, PopupPositionChanging) {
   ACMatches matches;
   for (size_t i = 0; i < 3; ++i) {
     AutocompleteMatch match(nullptr, 1000, false,
@@ -130,7 +124,7 @@ TEST_F(MAYBE_OmniboxPopupModelTest, PopupPositionChanging) {
   }
 }
 
-TEST_F(MAYBE_OmniboxPopupModelTest, ComputeMatchMaxWidths) {
+TEST_F(OmniboxPopupModelTest, ComputeMatchMaxWidths) {
   int contents_max_width, description_max_width;
   const int separator_width = 10;
   const int kMinimumContentsWidth = 300;
@@ -268,7 +262,7 @@ TEST_F(MAYBE_OmniboxPopupModelTest, ComputeMatchMaxWidths) {
 // Makes sure focus remains on the tab switch button when nothing changes,
 // and leaves when it does. Exercises the ratcheting logic in
 // OmniboxPopupModel::OnResultChanged().
-TEST_F(MAYBE_OmniboxPopupModelTest, TestFocusFixing) {
+TEST_F(OmniboxPopupModelTest, TestFocusFixing) {
   ACMatches matches;
   AutocompleteMatch match(nullptr, 1000, false,
                           AutocompleteMatchType::URL_WHAT_YOU_TYPED);
