@@ -876,8 +876,9 @@ constexpr ProfileMenuView::ActionableItem
 
 IN_PROC_BROWSER_TEST_P(ProfileMenuClickTest_WithUnconsentedPrimaryAccount,
                        SetupAndRunTest) {
-  secondary_account_helper::SignInSecondaryAccount(
-      browser()->profile(), &test_url_loader_factory_, "user@example.com");
+  signin::MakeAccountAvailableWithCookies(identity_manager(),
+                                          &test_url_loader_factory_,
+                                          "user@example.com", "gaia_id");
   // Check that the setup was successful.
   ASSERT_FALSE(identity_manager()->HasPrimaryAccount());
   ASSERT_TRUE(identity_manager()->HasUnconsentedPrimaryAccount());
