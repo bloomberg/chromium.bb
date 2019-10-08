@@ -6,7 +6,6 @@ import("//build/config/ui.gni")
 
 source_set("platform_window") {
   sources = [
-    "platform_window.h",
     "platform_window_base.cc",
     "platform_window_base.h",
     "platform_window_delegate.h",

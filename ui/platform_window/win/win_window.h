@@ -9,7 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/gfx/win/window_impl.h"
-#include "ui/platform_window/platform_window.h"
+#include "ui/platform_window/platform_window_base.h"
 #include "ui/platform_window/platform_window_delegate.h"
 #include "ui/platform_window/win/win_window_export.h"
 
@@ -17,7 +17,7 @@
 
 namespace ui {
 
-class WIN_WINDOW_EXPORT WinWindow : public PlatformWindow,
+class WIN_WINDOW_EXPORT WinWindow : public PlatformWindowBase,
                                     public gfx::WindowImpl {
  public:
   WinWindow(PlatformWindowDelegate* delegate, const gfx::Rect& bounds);
