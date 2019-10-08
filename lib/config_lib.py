@@ -1855,7 +1855,9 @@ def GroupBoardsByBuilderAndBoardGroup(board_list):
 
   for b in board_list:
     name = b[CONFIG_TEMPLATE_NAME]
-    for config in b[CONFIG_TEMPLATE_CONFIGS]:
+    # Invalid build configs being written out with no config templates,
+    # thus the default. See https://crbug.com/1012278.
+    for config in b.get(CONFIG_TEMPLATE_CONFIGS, []):
       board = {'name': name}
       board.update(config)
 
