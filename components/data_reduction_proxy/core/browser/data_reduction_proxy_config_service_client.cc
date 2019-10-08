@@ -243,6 +243,22 @@ void DataReductionProxyConfigServiceClient::SetEnabled(bool enabled) {
   enabled_ = enabled;
 }
 
+void DataReductionProxyConfigServiceClient::InvalidateAndRetrieveNewConfig() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  InvalidateConfig();
+  DCHECK(config_->GetProxiesForHttp().empty());
+
+  if (fetch_in_progress_) {
+    // If a client config fetch is already in progress, then do not start
+    // another fetch since starting a new fetch will cause extra data
+    // usage, and also cancel the ongoing fetch.
+    return;
+  }
+
+  RetrieveConfig();
+}
+
 void DataReductionProxyConfigServiceClient::RetrieveConfig() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!enabled_)

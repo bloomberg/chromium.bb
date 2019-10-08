@@ -1341,17 +1341,6 @@ IN_PROC_BROWSER_TEST_P(PreviewsLitePageRedirectServerBrowserTest,
   }
 
   {
-    // Verify the preview is not triggered when the server responds with 403.
-    base::HistogramTester histogram_tester;
-    ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kAuthFailure));
-    VerifyPreviewNotLoaded();
-    ClearDeciderState();
-    histogram_tester.ExpectBucketCount(
-        "Previews.ServerLitePage.ServerResponse",
-        previews::LitePageRedirectServerResponse::kAuthFailure, 1);
-  }
-
-  {
     // Verify the preview is not triggered when the server responds with 503.
     base::HistogramTester histogram_tester;
     ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kLoadshed));
@@ -1361,6 +1350,27 @@ IN_PROC_BROWSER_TEST_P(PreviewsLitePageRedirectServerBrowserTest,
         "Previews.ServerLitePage.ServerResponse",
         previews::LitePageRedirectServerResponse::kServiceUnavailable, 1);
   }
+}
+
+IN_PROC_BROWSER_TEST_P(
+    PreviewsLitePageRedirectServerBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsAuthFailure)) {
+  // Verify the preview is not triggered when the server responds with 403.
+  base::HistogramTester histogram_tester;
+  ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kAuthFailure));
+  VerifyPreviewNotLoaded();
+  ClearDeciderState();
+  histogram_tester.ExpectBucketCount(
+      "Previews.ServerLitePage.ServerResponse",
+      previews::LitePageRedirectServerResponse::kAuthFailure, 1);
+
+  // DRP config is invalid, a subsequent preview page load should fail.
+  ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
+  VerifyPreviewNotLoaded();
+
+  histogram_tester.ExpectBucketCount(
+      "Previews.ServerLitePage.IneligibleReasons",
+      previews::LitePageRedirectIneligibleReason::kInvalidProxyHeaders, 1);
 }
 
 IN_PROC_BROWSER_TEST_P(PreviewsLitePageRedirectServerBrowserTest,
