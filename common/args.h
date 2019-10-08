@@ -12,6 +12,8 @@
 #ifndef AOM_COMMON_ARGS_H_
 #define AOM_COMMON_ARGS_H_
 #include <stdio.h>
+#include "aom/aom_codec.h"
+#include "aom/aom_encoder.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -50,7 +52,10 @@ struct arg arg_init(char **argv);
 int arg_match(struct arg *arg_, const struct arg_def *def, char **argv);
 char *ignore_front_spaces(const char *str);
 void ignore_end_spaces(char *str);
-int arg_cfg(int *argc, char ***argv, const char *file);
+
+int parse_cfg(const char *file, cfg_options_t *pConfig);
+void init_config(cfg_options_t *pConfig);
+
 const char *arg_next(struct arg *arg);
 void arg_show_usage(FILE *fp, const struct arg_def *const *defs);
 char **argv_dup(int argc, const char **argv);
