@@ -187,8 +187,8 @@ void RenderFrameHostManager::Init(SiteInstance* site_instance,
   // Do this only for subframes, as the main frame case is taken care of by
   // WebContentsImpl::Init.
   if (!frame_tree_node_->IsMainFrame()) {
-    delegate_->NotifySwappedFromRenderManager(
-        nullptr, render_frame_host_.get(), false);
+    delegate_->NotifySwappedFromRenderManager(nullptr, render_frame_host_.get(),
+                                              false);
   }
 }
 
@@ -1207,8 +1207,8 @@ bool RenderFrameHostManager::ShouldSwapBrowsingInstancesForNavigation(
   // current_effective_url here, which uses the SiteInstance's site if there is
   // no current_entry.
   if (GetContentClient()->browser()->ShouldSwapBrowsingInstancesForNavigation(
-          render_frame_host_->GetSiteInstance(),
-          current_effective_url, new_effective_url)) {
+          render_frame_host_->GetSiteInstance(), current_effective_url,
+          new_effective_url)) {
     return true;
   }
 
@@ -1294,8 +1294,9 @@ RenderFrameHostManager::GetSiteInstanceForNavigation(
   // https://crbug.com/766630.
   NavigationEntry* current_entry =
       delegate_->GetLastCommittedNavigationEntryForRenderManager();
-  bool current_is_view_source_mode = current_entry ?
-      current_entry->IsViewSourceMode() : dest_is_view_source_mode;
+  bool current_is_view_source_mode = current_entry
+                                         ? current_entry->IsViewSourceMode()
+                                         : dest_is_view_source_mode;
 
   bool force_swap = ShouldSwapBrowsingInstancesForNavigation(
       current_effective_url, current_is_view_source_mode, dest_instance,
@@ -2732,12 +2733,12 @@ std::unique_ptr<RenderFrameHostImpl> RenderFrameHostManager::SetRenderFrameHost(
     // count top-level ones.  This makes the value easier for consumers to
     // interpret.
     if (render_frame_host_) {
-      render_frame_host_->GetSiteInstance()->
-          IncrementRelatedActiveContentsCount();
+      render_frame_host_->GetSiteInstance()
+          ->IncrementRelatedActiveContentsCount();
     }
     if (old_render_frame_host) {
-      old_render_frame_host->GetSiteInstance()->
-          DecrementRelatedActiveContentsCount();
+      old_render_frame_host->GetSiteInstance()
+          ->DecrementRelatedActiveContentsCount();
     }
   }
 
@@ -2841,8 +2842,8 @@ void RenderFrameHostManager::CreateOpenerProxies(
     int opener_routing_id =
         node->render_manager()->GetOpenerRoutingID(instance);
     DCHECK_NE(opener_routing_id, MSG_ROUTING_NONE);
-    proxy->Send(new FrameMsg_UpdateOpener(proxy->GetRoutingID(),
-                                          opener_routing_id));
+    proxy->Send(
+        new FrameMsg_UpdateOpener(proxy->GetRoutingID(), opener_routing_id));
   }
 }
 
@@ -2891,8 +2892,7 @@ void RenderFrameHostManager::SendPageMessage(IPC::Message* msg,
     return;
   }
 
-  auto send_msg = [instance_to_skip](IPC::Sender* sender,
-                                     int routing_id,
+  auto send_msg = [instance_to_skip](IPC::Sender* sender, int routing_id,
                                      IPC::Message* msg,
                                      SiteInstance* sender_instance) {
     if (sender_instance == instance_to_skip)
