@@ -2430,7 +2430,7 @@ enum WebFeature {
   kPluginElementLoadedDocument = 3046,
   kPluginElementLoadedImage = 3047,
   kPluginElementLoadedExternal = 3048,
-
+  kRenderSubtreeAttribute = 3049,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
