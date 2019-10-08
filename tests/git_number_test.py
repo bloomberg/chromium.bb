@@ -41,11 +41,11 @@ class Basic(git_test_utils.GitRepoReadWriteTestBase):
     super(Basic, self).tearDown()
 
   def _git_number(self, refs, cache=False):
-    refs = map(binascii.unhexlify, refs)
+    refs = [binascii.unhexlify(ref) for ref in refs]
     self.repo.run(self.gn.load_generation_numbers, refs)
     if cache:
       self.repo.run(self.gn.finalize, refs)
-    return map(self.gn.get_num, refs)
+    return [self.gn.get_num(ref) for ref in refs]
 
   def testBasic(self):
     self.assertEqual([0], self._git_number([self.repo['A']]))
