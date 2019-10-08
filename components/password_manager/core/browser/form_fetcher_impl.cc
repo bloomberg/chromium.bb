@@ -216,10 +216,15 @@ std::unique_ptr<FormFetcher> FormFetcherImpl::Clone() {
   result->non_federated_ = MakeCopies(non_federated_);
   result->federated_ = MakeCopies(federated_);
   result->is_blacklisted_ = is_blacklisted_;
+  std::vector<const PasswordForm*> best_matches;
   password_manager_util::FindBestMatches(
       MakeWeakCopies(result->non_federated_), form_digest_.scheme,
       sort_matches_by_date_last_used_, &result->non_federated_same_scheme_,
-      &result->best_matches_, &result->preferred_match_);
+      &best_matches, &result->preferred_match_);
+  result->best_matches_.clear();
+  for (const auto* match : best_matches) {
+    result->best_matches_[match->username_value] = match;
+  }
 
   result->interactions_stats_ = interactions_stats_;
   result->state_ = state_;
@@ -234,10 +239,15 @@ void FormFetcherImpl::ProcessPasswordStoreResults(
   state_ = State::NOT_WAITING;
   SplitResults(std::move(results));
 
+  std::vector<const PasswordForm*> best_matches;
   password_manager_util::FindBestMatches(
       MakeWeakCopies(non_federated_), form_digest_.scheme,
       sort_matches_by_date_last_used_, &non_federated_same_scheme_,
-      &best_matches_, &preferred_match_);
+      &best_matches, &preferred_match_);
+  best_matches_.clear();
+  for (const auto* match : best_matches) {
+    best_matches_[match->username_value] = match;
+  }
 
   for (auto* consumer : consumers_)
     consumer->OnFetchCompleted();
