@@ -502,8 +502,9 @@ void DesktopWindowTreeHostPlatform::EndMoveLoop() {
 
 void DesktopWindowTreeHostPlatform::SetVisibilityChangedAnimationsEnabled(
     bool value) {
-  // TODO: needs PlatformWindow support.
-  NOTIMPLEMENTED_LOG_ONCE();
+#if defined(OS_WIN)
+  platform_window()->SetVisibilityChangedAnimationsEnabled(value);
+#endif
 }
 
 NonClientFrameView* DesktopWindowTreeHostPlatform::CreateNonClientFrameView() {

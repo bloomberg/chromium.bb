@@ -43,6 +43,10 @@ source_set("platform_window") {
       "platform_window_linux.h",
     ]
   }
+
+  if (is_win) {
+    sources += [ "platform_window_win.h" ]
+  }
 }
 
 group("platform_impls") {
