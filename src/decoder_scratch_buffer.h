@@ -56,14 +56,10 @@ struct DecoderScratchBuffer : public MaxAlignedAllocable {
     return convolve_block_buffer != nullptr;
   }
 
-  // The following prediction modes need a prediction mask:
-  // kCompoundPredictionTypeDiffWeighted, kCompoundPredictionTypeWedge,
-  // kCompoundPredictionTypeIntra. They are mutually exclusive. This buffer is
-  // used to store the prediction mask during the inter prediction process. The
-  // mask only needs to be created for the Y plane and is used for the U & V
-  // planes.
-  alignas(kMaxAlignment) uint8_t
-      prediction_mask[kMaxSuperBlockSizeSquareInPixels];
+  // kCompoundPredictionTypeDiffWeighted prediction mode needs a mask of the
+  // prediction block size. This buffer is used to store that mask. The masks
+  // will be created for the Y plane and will be re-used for the U & V planes.
+  alignas(kMaxAlignment) uint8_t weight_mask[kMaxSuperBlockSizeSquareInPixels];
 
   // For each instance of the DecoderScratchBuffer, only one of the following
   // buffers will be used at any given time, so it is ok to share them in a

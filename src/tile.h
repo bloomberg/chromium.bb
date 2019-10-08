@@ -353,9 +353,8 @@ class Tile : public Allocable {
   void CompoundInterPrediction(
       const Block& block, ptrdiff_t prediction_stride,
       const uint8_t* prediction_mask, ptrdiff_t prediction_mask_stride,
-      int prediction_width, int prediction_height, Plane plane,
-      int subsampling_x, int subsampling_y, int bitdepth, int candidate_row,
-      int candidate_column, uint8_t* dest,
+      int prediction_width, int prediction_height, int subsampling_x,
+      int subsampling_y, int candidate_row, int candidate_column, uint8_t* dest,
       ptrdiff_t dest_stride);  // Part of section 7.11.3.1 in the spec.
   GlobalMotion* GetWarpParams(const Block& block, Plane plane,
                               int prediction_width, int prediction_height,

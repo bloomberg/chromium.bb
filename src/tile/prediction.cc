@@ -632,8 +632,8 @@ void Tile::CompoundInterPrediction(
     const Block& block, const ptrdiff_t prediction_stride,
     const uint8_t* const prediction_mask,
     const ptrdiff_t prediction_mask_stride, const int prediction_width,
-    const int prediction_height, const Plane plane, const int subsampling_x,
-    const int subsampling_y, const int bitdepth, const int candidate_row,
+    const int prediction_height, const int subsampling_x,
+    const int subsampling_y, const int candidate_row,
     const int candidate_column, uint8_t* dest, const ptrdiff_t dest_stride) {
   const PredictionParameters& prediction_parameters =
       *block.bp->prediction_parameters;
@@ -649,19 +649,12 @@ void Tile::CompoundInterPrediction(
           prediction_height, dest, dest_stride);
       break;
     case kCompoundPredictionTypeDiffWeighted:
-      if (plane == kPlaneY) {
-        GenerateWeightMask(
-            prediction[0], prediction_stride, prediction[1], prediction_stride,
-            prediction_parameters.mask_is_inverse, prediction_width,
-            prediction_height, bitdepth, block.scratch_buffer->prediction_mask,
-            prediction_mask_stride);
-      }
       GetMaskBlendFunc(dsp_, prediction_parameters.inter_intra_mode,
                        prediction_parameters.is_wedge_inter_intra,
                        subsampling_x, subsampling_y)(
           prediction[0], prediction_stride, prediction[1], prediction_stride,
-          block.scratch_buffer->prediction_mask, prediction_mask_stride,
-          prediction_width, prediction_height, dest, dest_stride);
+          prediction_mask, prediction_mask_stride, prediction_width,
+          prediction_height, dest, dest_stride);
       break;
     case kCompoundPredictionTypeDistance:
       DistanceWeightedPrediction(
@@ -773,8 +766,8 @@ void Tile::InterPrediction(const Block& block, const Plane plane, const int x,
 
   const int subsampling_x = subsampling_x_[plane];
   const int subsampling_y = subsampling_y_[plane];
-  ptrdiff_t prediction_mask_stride = kMaxSuperBlockSizeInPixels;
-  const uint8_t* prediction_mask = block.scratch_buffer->prediction_mask;
+  ptrdiff_t prediction_mask_stride = 0;
+  const uint8_t* prediction_mask = nullptr;
   if (prediction_parameters.compound_prediction_type ==
       kCompoundPredictionTypeWedge) {
     const Array2D<uint8_t>& wedge_mask =
@@ -793,14 +786,25 @@ void Tile::InterPrediction(const Block& block, const Plane plane, const int x,
                         [GetInterIntraMaskLookupIndex(prediction_width)]
                         [GetInterIntraMaskLookupIndex(prediction_height)];
     prediction_mask_stride = prediction_width;
+  } else if (prediction_parameters.compound_prediction_type ==
+             kCompoundPredictionTypeDiffWeighted) {
+    if (plane == kPlaneY) {
+      GenerateWeightMask(
+          block.scratch_buffer->prediction_buffer[0], prediction_stride,
+          block.scratch_buffer->prediction_buffer[1], prediction_stride,
+          prediction_parameters.mask_is_inverse, prediction_width,
+          prediction_height, bitdepth, block.scratch_buffer->weight_mask,
+          kMaxSuperBlockSizeInPixels);
+    }
+    prediction_mask = block.scratch_buffer->weight_mask;
+    prediction_mask_stride = kMaxSuperBlockSizeInPixels;
   }
 
   if (is_compound) {
     CompoundInterPrediction(block, prediction_stride, prediction_mask,
                             prediction_mask_stride, prediction_width,
-                            prediction_height, plane, subsampling_x,
-                            subsampling_y, bitdepth, candidate_row,
-                            candidate_column, dest, dest_stride);
+                            prediction_height, subsampling_x, subsampling_y,
+                            candidate_row, candidate_column, dest, dest_stride);
   } else if (prediction_parameters.motion_mode == kMotionModeObmc) {
     // Obmc mode is allowed only for single reference (!is_compound).
     ObmcPrediction(block, plane, prediction_width, prediction_height,
