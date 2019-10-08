@@ -1496,7 +1496,7 @@ def PreCqBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.no_vmtest_builder,
       site_config.templates.no_hwtest_builder,
       boards=[],
-      build_timeout=4 * 60 * 60,
+      build_timeout=5 * 60 * 60,
       display_label=config_lib.DISPLAY_LABEL_PRECQ,
       build_type=constants.PRE_CQ_LAUNCHER_TYPE,
       luci_builder=config_lib.LUCI_BUILDER_PRECQ_LAUNCHER,
