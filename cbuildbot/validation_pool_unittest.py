@@ -8,7 +8,6 @@
 from __future__ import print_function
 
 import collections
-import contextlib
 import functools
 import copy
 import itertools
@@ -575,13 +574,10 @@ class TestCoreLogic(_Base):
 
     self.PatchObject(cros_patch.GitRepoPatch, 'IsMerge', return_value=False)
 
-    context = contextlib.nested(
-        mock.patch.object(git, 'SyncPushBranch'),
-        mock.patch.object(git, 'GitPush'),
-        mock.patch.object(git, 'GetTrackingBranch',
-                          new=lambda _: tracking_branch))
-
-    with context as (sync_func, push_func, _):
+    with mock.patch.object(git, 'SyncPushBranch') as sync_func, \
+         mock.patch.object(git, 'GitPush') as push_func, \
+         mock.patch.object(git, 'GetTrackingBranch',
+                           new=lambda _: tracking_branch):
       errors = pool.PushRepoBranch(repo, set(patches), 'from_branch')
       self.assertEqual({}, errors)
       self.assertEqual(1, sync_func.call_count)

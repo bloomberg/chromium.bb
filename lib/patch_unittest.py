@@ -8,7 +8,6 @@
 from __future__ import print_function
 
 import copy
-import contextlib
 import functools
 import itertools
 import os
@@ -1141,13 +1140,10 @@ class TestGerritPatch(TestGitRepoPatch):
 
     for msg in self._MakeCommitMessages():
       for footers in self._MakeFooters():
-        ctx = contextlib.nested(
-            mock.patch('chromite.lib.patch.FooterForApproval',
-                       new=mock.Mock(side_effect=itertools.cycle(footers))),
-            mock.patch.object(patch, '_approvals',
-                              new=[approval] * len(footers)))
-
-        with ctx:
+        with mock.patch('chromite.lib.patch.FooterForApproval',
+                        new=mock.Mock(side_effect=itertools.cycle(footers))), \
+             mock.patch.object(patch, '_approvals',
+                               new=[approval] * len(footers)):
           patch._commit_message = msg
 
           # Idempotence
