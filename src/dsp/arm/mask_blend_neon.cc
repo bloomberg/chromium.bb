@@ -47,7 +47,8 @@ inline uint16x8_t GetMask4x2(const uint8_t* mask, ptrdiff_t mask_stride) {
       final_val = vaddq_u16(vcombine_u16(mask_val0, mask_val1),
                             vcombine_u16(next_mask_val0, next_mask_val1));
     } else {
-      final_val = vpaddlq_u8(vcombine_u8(mask_val0, mask_val1));
+      final_val =
+          vpaddlq_u8(vreinterpretq_u8_u16(vcombine_u16(mask_val0, mask_val1)));
     }
     return vrshrq_n_u16(final_val, subsampling_y + 1);
   }
