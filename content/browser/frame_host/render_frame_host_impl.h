@@ -1174,6 +1174,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
     return appcache_handle_.get();
   }
 
+  // Returns the BackForwardCacheMetrics associated with the last
+  // NavigationEntry this RenderFrameHostImpl committed.
+  BackForwardCacheMetrics* GetBackForwardCacheMetrics();
+
   base::WeakPtr<RenderFrameHostImpl> GetWeakPtr();
 
  protected:
@@ -1896,10 +1900,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Evicts the document from the BackForwardCache if it is in the cache,
   // and ineligible for caching.
   void MaybeEvictFromBackForwardCache();
-
-  // Returns the BackForwardCacheMetrics associated with the last
-  // NavigationEntry this RenderFrameHostImpl committed.
-  BackForwardCacheMetrics* GetBackForwardCacheMetrics();
 
   // Helper for handling download-related IPCs.
   void DownloadUrl(
