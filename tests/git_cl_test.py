@@ -3321,7 +3321,9 @@ class CMDUploadTestCase(unittest.TestCase):
                _constantFn('https://chromium-review.googlesource.com')).start()
     mock.patch('git_cl.Changelist.GetMostRecentPatchset',
                _constantFn(7)).start()
-    mock.patch('git_cl.auth.get_authenticator_for_host', AuthenticatorMock())
+    mock.patch('git_cl.auth.get_authenticator_for_host',
+               AuthenticatorMock()).start()
+    mock.patch('git_common.is_dirty_git_tree', return_value=False).start()
     self.addCleanup(mock.patch.stopall)
 
   @mock.patch('git_cl.fetch_try_jobs')
