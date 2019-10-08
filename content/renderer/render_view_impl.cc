@@ -534,7 +534,6 @@ void RenderViewImpl::Initialize(
   OnSetRendererPrefs(*params->renderer_preferences);
 
   GetContentClient()->renderer()->RenderViewCreated(this);
-  page_zoom_level_ = 0;
 
   nav_state_sync_timer_.SetTaskRunner(task_runner);
 
