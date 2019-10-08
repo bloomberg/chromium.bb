@@ -137,6 +137,7 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
   float shelf_tooltip_preview_min_ratio() const {
     return shelf_tooltip_preview_min_ratio_;
   }
+  int shelf_blur_radius() const { return shelf_blur_radius_; }
 
   // Gets the current color for the shelf control buttons.
   SkColor GetShelfControlButtonColor() const;
@@ -150,6 +151,9 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
   // Gets the default shelf color, calculated using the wallpaper color if
   // available.
   SkColor GetDefaultShelfColor() const;
+
+  // Returns the current blur radius to use for the control buttons.
+  int GetShelfControlButtonBlurRadius() const;
 
  private:
   friend class ShelfConfigTest;
@@ -219,6 +223,9 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
   const int shelf_tooltip_preview_max_width_;
   const float shelf_tooltip_preview_max_ratio_;
   const float shelf_tooltip_preview_min_ratio_;
+
+  // The blur radius used for the shelf.
+  const int shelf_blur_radius_;
 
   base::ObserverList<Observer> observers_;
 
