@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
@@ -14,11 +15,13 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/base/signin_pref_names.h"
@@ -258,6 +261,32 @@ std::string GetAllowedDomain(std::string signin_pattern) {
     return std::string();
 
   return domain;
+}
+
+bool ShouldShowIdentityOnOpeningProfile(
+    const ProfileAttributesStorage& profile_attributes_storage,
+    Profile* profile) {
+  DCHECK(profile);
+  signin::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile);
+  DCHECK(identity_manager->AreRefreshTokensLoaded());
+  // Wait with the potential positive response until refresh tokens are loaded
+  // so that we never show it twice on startup.
+  // TODO(crbug.com/1009441): Make it only appear once per profile
+  // instantiation (currently it appears for every new window which have their
+  // own instance of AvatarToolbarButton).
+  if (!base::FeatureList::IsEnabled(
+          features::kAnimatedAvatarButtonOnOpeningProfile)) {
+    return false;
+  }
+
+  // Show the user identity for users with multiple profiles.
+  if (profile_attributes_storage.GetNumberOfProfiles() > 1) {
+    return true;
+  }
+
+  // Show the user identity for users with multiple signed-in accounts.
+  return identity_manager->GetAccountsWithRefreshTokens().size() > 1;
 }
 
 }  // namespace signin_ui_util

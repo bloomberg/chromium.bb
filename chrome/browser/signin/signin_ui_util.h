@@ -18,6 +18,7 @@
 struct AccountInfo;
 class Browser;
 class Profile;
+class ProfileAttributesStorage;
 
 // Utility functions to gather status information from the various signed in
 // services and construct messages suitable for showing in UI.
@@ -89,6 +90,13 @@ void EnableSyncFromPromo(
         create_dice_turn_sync_on_helper_callback);
 }  // namespace internal
 #endif
+
+// Returns whether Chrome should show the identity of the user (using a brief
+// animation) on opening a profile. IdentityManager's refresh tokens must be
+// loaded when this function gets called.
+bool ShouldShowIdentityOnOpeningProfile(
+    const ProfileAttributesStorage& profile_attributes_storage,
+    Profile* profile);
 
 }  // namespace signin_ui_util
 

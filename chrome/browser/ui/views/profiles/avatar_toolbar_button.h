@@ -83,6 +83,7 @@ class AvatarToolbarButton : public ToolbarButton,
   // Needed if the first sync promo account should be displayed.
   void OnUnconsentedPrimaryAccountChanged(
       const CoreAccountInfo& unconsented_primary_account_info) override;
+  void OnRefreshTokensLoaded() override;
   void OnAccountsInCookieUpdated(
       const signin::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
       const GoogleServiceAuthError& error) override;

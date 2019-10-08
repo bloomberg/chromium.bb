@@ -48,11 +48,14 @@ constexpr base::TimeDelta kEmailExpansionDuration =
 constexpr base::TimeDelta kAvatarHighlightAnimationDuration =
     base::TimeDelta::FromSeconds(2);
 
+ProfileAttributesStorage& GetProfileAttributesStorage() {
+  return g_browser_process->profile_manager()->GetProfileAttributesStorage();
+}
+
 ProfileAttributesEntry* GetProfileAttributesEntry(Profile* profile) {
   ProfileAttributesEntry* entry;
-  if (!g_browser_process->profile_manager()
-           ->GetProfileAttributesStorage()
-           .GetProfileAttributesWithPath(profile->GetPath(), &entry)) {
+  if (!GetProfileAttributesStorage().GetProfileAttributesWithPath(
+          profile->GetPath(), &entry)) {
     return nullptr;
   }
   return entry;
@@ -65,9 +68,7 @@ bool IsGenericProfile(const ProfileAttributesEntry& entry) {
     return true;
 
   return entry.GetAvatarIconIndex() == 0 &&
-         g_browser_process->profile_manager()
-                 ->GetProfileAttributesStorage()
-                 .GetNumberOfProfiles() == 1;
+         GetProfileAttributesStorage().GetNumberOfProfiles() == 1;
 }
 
 int GetIconSizeForNonTouchUi() {
@@ -88,8 +89,7 @@ AvatarToolbarButton::AvatarToolbarButton(Browser* browser)
 #endif  // !defined(OS_CHROMEOS)
       browser_(browser),
       profile_(browser_->profile()) {
-  profile_observer_.Add(
-      &g_browser_process->profile_manager()->GetProfileAttributesStorage());
+  profile_observer_.Add(&GetProfileAttributesStorage());
 
   State state = GetState();
   if (state == State::kIncognitoProfile) {
@@ -98,7 +98,9 @@ AvatarToolbarButton::AvatarToolbarButton(Browser* browser)
     signin::IdentityManager* identity_manager =
         IdentityManagerFactory::GetForProfile(profile_);
     identity_manager_observer_.Add(identity_manager);
-    SetUserEmail(identity_manager->GetUnconsentedPrimaryAccountInfo().email);
+
+    if (identity_manager->AreRefreshTokensLoaded())
+      OnRefreshTokensLoaded();
   }
 
   // Activate on press for left-mouse-button only to mimic other MenuButtons
@@ -328,7 +330,19 @@ void AvatarToolbarButton::OnProfileNameChanged(
 
 void AvatarToolbarButton::OnUnconsentedPrimaryAccountChanged(
     const CoreAccountInfo& unconsented_primary_account_info) {
+  if (!base::FeatureList::IsEnabled(features::kAnimatedAvatarButtonOnSignIn))
+    return;
   SetUserEmail(unconsented_primary_account_info.email);
+}
+
+void AvatarToolbarButton::OnRefreshTokensLoaded() {
+  if (!signin_ui_util::ShouldShowIdentityOnOpeningProfile(
+          GetProfileAttributesStorage(), profile_)) {
+    return;
+  }
+  SetUserEmail(IdentityManagerFactory::GetForProfile(profile_)
+                   ->GetUnconsentedPrimaryAccountInfo()
+                   .email);
 }
 
 void AvatarToolbarButton::OnAccountsInCookieUpdated(
