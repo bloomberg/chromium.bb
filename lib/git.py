@@ -44,9 +44,6 @@ class RemoteRef(_RemoteRef):
   def __new__(cls, remote, ref, project_name=None):
     return super(RemoteRef, cls).__new__(cls, remote, ref, project_name)
 
-  def __init__(self, remote, ref, project_name=None):
-    super(RemoteRef, self).__init__(remote, ref, project_name)
-
 
 def FindRepoDir(path):
   """Returns the nearest higher-level repo dir from the specified path.
