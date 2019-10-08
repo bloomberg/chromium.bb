@@ -12,6 +12,8 @@ import json
 import mock
 
 from chromite.scripts import trigger_cr50_signing as trigger
+from chromite.api.gen.chromiumos import common_pb2
+from chromite.api.gen.chromiumos import sign_image_pb2
 from chromite.lib import cros_logging as logging
 from chromite.lib import cros_test_lib
 
@@ -57,11 +59,12 @@ class TestMain(cros_test_lib.RunCommandTempDirTestCase):
         False, trigger.CR50_PRODUCTION_JOB, {
             'archive': 'gs://test/file.bin',
             'build_target': {'name': 'unknown'},
-            'channel': 0,
-            'cr50_instructions': {'target': 0},
-            'image_type': 9,
+            'channel': common_pb2.CHANNEL_UNSPECIFIED,
+            'cr50_instructions': {
+                'target': sign_image_pb2.Cr50Instructions.UNSPECIFIED},
+            'image_type': common_pb2.CR50_FIRMWARE,
             'keyset': 'test-keyset',
-            'signer_type': 1})
+            'signer_type': sign_image_pb2.SIGNER_DEV})
 
   def testPropertiesCorrect(self):
     """Test minimal instructions."""
@@ -98,11 +101,12 @@ class TestMain(cros_test_lib.RunCommandTempDirTestCase):
         False, trigger.CR50_STAGING_JOB, {
             'archive': 'gs://test/file.bin',
             'build_target': {'name': 'unknown'},
-            'channel': 0,
-            'cr50_instructions': {'target': 0},
-            'image_type': 9,
+            'channel': common_pb2.CHANNEL_UNSPECIFIED,
+            'cr50_instructions': {
+                'target': sign_image_pb2.Cr50Instructions.UNSPECIFIED},
+            'image_type': common_pb2.CR50_FIRMWARE,
             'keyset': 'test-keyset',
-            'signer_type': 1})
+            'signer_type': sign_image_pb2.SIGNER_DEV})
 
   def testDryRun(self):
     """Test --dry-run works."""
@@ -114,11 +118,12 @@ class TestMain(cros_test_lib.RunCommandTempDirTestCase):
         True, trigger.CR50_PRODUCTION_JOB, {
             'archive': 'gs://test/file.bin',
             'build_target': {'name': 'unknown'},
-            'channel': 0,
-            'cr50_instructions': {'target': 0},
-            'image_type': 9,
+            'channel': common_pb2.CHANNEL_UNSPECIFIED,
+            'cr50_instructions': {
+                'target': sign_image_pb2.Cr50Instructions.UNSPECIFIED},
+            'image_type': common_pb2.CR50_FIRMWARE,
             'keyset': 'test-keyset',
-            'signer_type': 1})
+            'signer_type': sign_image_pb2.SIGNER_DEV})
 
   def testNodeLockedCatchesBadDeviceId(self):
     """Test --target node_locked catches bad --device-id."""
@@ -156,20 +161,25 @@ class TestMain(cros_test_lib.RunCommandTempDirTestCase):
             '--dev01', '2', '33']
     self.assertEqual(0, trigger.main(args))
     self.log_error.assert_not_called()
+    expected_properties = [
+        {'archive': 'gs://test/file.bin', 'build_target': {'name': 'unknown'},
+         'channel': 0,
+         'cr50_instructions': {'target': trigger._target_types['node_locked'],
+                               'device_id': '00000001-00001234'},
+         'signer_type': sign_image_pb2.SIGNER_DEV,
+         'image_type': common_pb2.CR50_FIRMWARE, 'keyset': 'test-keyset'},
+        {'archive': 'gs://test/file.bin', 'build_target': {'name': 'unknown'},
+         'channel': 0,
+         'cr50_instructions': {'target': trigger._target_types['node_locked'],
+                               'device_id': '00000002-00000021'},
+         'signer_type': sign_image_pb2.SIGNER_DEV,
+         'image_type': common_pb2.CR50_FIRMWARE, 'keyset': 'test-keyset'}]
+    # Check the calls in two parts, since we need to convert the json string
+    # back to a dict.
     self.assertEqual(self.rc.call_args_list, [
         mock.call(
-            ['bb', 'add', '-p', '@/dev/stdin', 'chromeos/packaging/sign-image'],
-            log_output=True,
-            input='{"cr50_instructions": {'
-            '"target": 3, "device_id": "00000001-00001234"}, '
-            '"image_type": 9, "keyset": "test-keyset", "signer_type": 1, '
-            '"build_target": {"name": "unknown"}, '
-            '"archive": "gs://test/file.bin", "channel": 0}'),
-        mock.call(
-            ['bb', 'add', '-p', '@/dev/stdin', 'chromeos/packaging/sign-image'],
-            log_output=True,
-            input='{"cr50_instructions": {'
-            '"target": 3, "device_id": "00000002-00000021"}, '
-            '"image_type": 9, "keyset": "test-keyset", "signer_type": 1, '
-            '"build_target": {"name": "unknown"}, '
-            '"archive": "gs://test/file.bin", "channel": 0}')])
+            ['bb', 'add', '-p', '@/dev/stdin', trigger.CR50_PRODUCTION_JOB],
+            log_output=True, input=mock.ANY) for _ in expected_properties])
+    self.assertEqual(
+        expected_properties,
+        [json.loads(x[1]['input']) for x in self.rc.call_args_list])

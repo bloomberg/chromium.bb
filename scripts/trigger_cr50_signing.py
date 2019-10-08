@@ -15,6 +15,7 @@ import json
 import re
 
 from chromite.api.gen.chromiumos import common_pb2
+from chromite.api.gen.chromiumos import sign_image_pb2
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
@@ -23,28 +24,19 @@ CR50_PRODUCTION_JOB = 'chromeos/packaging/sign-image'
 CR50_STAGING_JOB = 'chromeos/staging/staging-sign-image'
 
 # See ../infra/proto/src/chromiumos/common.proto.
-_channels = {
-    k.replace('CHANNEL_', '').lower(): v for k, v in common_pb2.Channel.items()}
+_channels = {k.lower().replace('channel_', ''): v
+             for k, v in common_pb2.Channel.items()}
 
 # See ../infra/proto/src/chromiumos/common.proto.
 _image_types = {k.lower(): v for k, v in common_pb2.ImageType.items() if v}
 
 # See ../infra/proto/src/chromiumos/sign_image.proto.
-# TODO(lamontjones): update these once api.gen.chromiumos has them.
-_signer_types = {
-    'production': 1,
-    'staging': 2,
-    'dev': 1,
-}
+_signer_types = {k.lower().replace('signer_', ''): v
+                 for k, v in sign_image_pb2.SignerType.items() if v}
 
 # See ../infra/proto/src/chromiumos/sign_image.proto.
-_target_types = {
-    'unchanged': 0,
-    'prepvt': 1,
-    'release_candidate': 2,
-    'node_locked': 3,
-    'general_release': 4,
-}
+_target_types = {k.lower() if v else 'unchanged': v
+                 for k, v in sign_image_pb2.Cr50Instructions.Target.items()}
 
 
 def GetParser():
@@ -160,15 +152,15 @@ def main(argv):
   builder = CR50_STAGING_JOB if options.staging else CR50_PRODUCTION_JOB
 
   properties = {
+      'archive': options.archive,
       'build_target': {'name': options.build_target},
       'channel': _channels[options.channel],
-      'archive': options.archive,
+      'cr50_instructions': {
+          'target': _target_types[options.target],
+      },
       'image_type': _image_types[options.image_type],
       'keyset': options.keyset,
       'signer_type': _signer_types[options.signer_type],
-      'cr50_instructions': {
-          'target': _target_types[options.target],
-      }
   }
 
   if options.target != 'node_locked':
