@@ -4436,9 +4436,6 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
     }
   }
 
-  registry_->AddInterface(base::BindRepeating(
-      &RenderFrameHostImpl::CreateWebUsbService, base::Unretained(this)));
-
   registry_->AddInterface<media::mojom::InterfaceFactory>(
       base::Bind(&RenderFrameHostImpl::BindMediaInterfaceFactoryRequest,
                  base::Unretained(this)));

@@ -58,6 +58,7 @@
 #include "third_party/blink/public/mojom/sms/sms_receiver.mojom.h"
 #include "third_party/blink/public/mojom/speech/speech_recognizer.mojom.h"
 #include "third_party/blink/public/mojom/speech/speech_synthesis.mojom.h"
+#include "third_party/blink/public/mojom/usb/web_usb_service.mojom.h"
 #include "third_party/blink/public/mojom/wake_lock/wake_lock.mojom.h"
 #include "third_party/blink/public/mojom/webaudio/audio_context_manager.mojom.h"
 #include "third_party/blink/public/mojom/webauthn/authenticator.mojom.h"
@@ -180,6 +181,9 @@ void PopulateFrameBinders(RenderFrameHostImpl* host,
     map->Add<blink::mojom::SmsReceiver>(base::BindRepeating(
         &RenderFrameHostImpl::BindSmsReceiverReceiver, base::Unretained(host)));
   }
+
+  map->Add<blink::mojom::WebUsbService>(base::BindRepeating(
+      &RenderFrameHostImpl::CreateWebUsbService, base::Unretained(host)));
 
   map->Add<blink::mojom::LockManager>(base::BindRepeating(
       &RenderFrameHostImpl::CreateLockManager, base::Unretained(host)));
@@ -307,6 +311,8 @@ void PopulateDedicatedWorkerBinders(DedicatedWorkerHost* host,
     map->Add<blink::mojom::SmsReceiver>(base::BindRepeating(
         &DedicatedWorkerHost::BindSmsReceiverReceiver, base::Unretained(host)));
   }
+  map->Add<blink::mojom::WebUsbService>(base::BindRepeating(
+      &DedicatedWorkerHost::CreateWebUsbService, base::Unretained(host)));
   map->Add<media::mojom::VideoDecodePerfHistory>(
       base::BindRepeating(&DedicatedWorkerHost::BindVideoDecodePerfHistory,
                           base::Unretained(host)));

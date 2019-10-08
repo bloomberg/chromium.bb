@@ -1133,6 +1133,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void BindSmsReceiverReceiver(
       mojo::PendingReceiver<blink::mojom::SmsReceiver> receiver);
 
+  // Creates connections to WebUSB interfaces bound to this frame.
+  void CreateWebUsbService(
+      mojo::PendingReceiver<blink::mojom::WebUsbService> receiver);
+
   // https://mikewest.github.io/corpp/#initialize-embedder-policy-for-global
   network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy()
       const {
@@ -1603,10 +1607,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Deletes the Web Bluetooth Service owned by the frame.
   void DeleteWebBluetoothService(
       WebBluetoothServiceImpl* web_bluetooth_service);
-
-  // Creates connections to WebUSB interfaces bound to this frame.
-  void CreateWebUsbService(
-      mojo::PendingReceiver<blink::mojom::WebUsbService> receiver);
 
   void CreateAudioInputStreamFactory(
       mojo::PendingReceiver<mojom::RendererAudioInputStreamFactory> receiver);
