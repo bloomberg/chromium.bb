@@ -120,9 +120,12 @@ enum class SafetyTipStatus {
   kNone = 1,
   // The current page triggered a Safety Tip because it was bad reputation.
   kBadReputation = 2,
-  // The current page trigged a Safety Tip because it had a lookalike URL.
+  // The current page triggered a Safety Tip because it had a lookalike URL.
   kLookalike = 3,
-  kMaxValue = kLookalike,
+  // The current page triggered a Safety Tip because a suspicious keyword was
+  // found in its hostname.
+  kBadKeyword = 4,
+  kMaxValue = kBadKeyword,
 };
 
 // Contains the security state relevant to computing the SecurityLevel
