@@ -3222,7 +3222,8 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
       slave_configs=[],
       binhost_test=True,
       push_overlays=constants.BOTH_OVERLAYS,
-      afdo_update_ebuild=True,
+      # Moving AFDO updates to PUpr, https://crbug.com/1012311.
+      afdo_update_ebuild=False,
       chrome_sdk=False,
       health_alert_recipients=['chromeos-infra-eng@grotations.appspotmail.com',
                                'chrome'],
