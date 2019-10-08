@@ -478,6 +478,7 @@
     gandof-release
     gnawty-release
     gonzo-release
+    grunt-kernelnext-release
     grunt-release
     guado-cfm-release
     guado-kernelnext-release
@@ -1906,6 +1907,17 @@
   grunt-compile-only-pre-cq
   grunt-factory-grunt-11164.B-factorybranch-tryjob
   grunt-full-tryjob
+  grunt-kernelnext-chromium-pfq-tryjob
+  grunt-kernelnext-compile-only-pre-cq
+  grunt-kernelnext-full-tryjob
+  grunt-kernelnext-llvm-next-toolchain-tryjob
+  grunt-kernelnext-llvm-toolchain-tryjob
+  grunt-kernelnext-no-vmtest-pre-cq
+  grunt-kernelnext-paladin-tryjob
+  grunt-kernelnext-pre-cq
+  grunt-kernelnext-release-tryjob
+  grunt-kernelnext-tot-chromium-pfq-informational-tryjob
+  grunt-kernelnext-unittest-stress
   grunt-llvm-next-toolchain-tryjob
   grunt-llvm-toolchain-tryjob
   grunt-no-vmtest-pre-cq
@@ -2667,6 +2679,7 @@
     gandof-release-tryjob
     gnawty-release-tryjob
     gonzo-release-tryjob
+    grunt-kernelnext-release-tryjob
     grunt-release-tryjob
     guado-cfm-release-tryjob
     guado-kernelnext-release-tryjob
