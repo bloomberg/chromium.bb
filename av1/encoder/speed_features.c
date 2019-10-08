@@ -664,6 +664,8 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->tx_size_search_level = 1;
     sf->estimate_motion_for_var_based_partition = 0;
     sf->short_circuit_low_temp_var = 3;
+    sf->reuse_inter_pred_nonrd = 1;
+
 // TODO(kyslov) Enable when better model is available
 // It gives +5% speedup and 11% overall BDRate degradation
 // So, can not enable now until better CurvFit is there

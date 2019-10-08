@@ -1168,12 +1168,16 @@ static INLINE int get_force_skip_low_temp_var(uint8_t *variance_low, int mi_row,
 
 #define FILTER_SEARCH_SIZE 2
 static void search_filter_ref(AV1_COMP *cpi, MACROBLOCK *x, RD_STATS *this_rdc,
-                              int mi_row, int mi_col, BLOCK_SIZE bsize,
-                              unsigned int *var_y, unsigned int *sse_y,
-                              int *this_early_term, int use_model_yrd_large) {
+                              int mi_row, int mi_col, PRED_BUFFER *tmp,
+                              BLOCK_SIZE bsize, int reuse_inter_pred,
+                              PRED_BUFFER **this_mode_pred, unsigned int *var_y,
+                              unsigned int *sse_y, int *this_early_term,
+                              int use_model_yrd_large) {
   AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *const xd = &x->e_mbd;
+  struct macroblockd_plane *const pd = &xd->plane[0];
   MB_MODE_INFO *const mi = xd->mi[0];
+  const int bw = block_size_wide[bsize];
 
   int pf_rate[FILTER_SEARCH_SIZE] = { 0 };
   int64_t pf_dist[FILTER_SEARCH_SIZE] = { 0 };
@@ -1181,6 +1185,7 @@ static void search_filter_ref(AV1_COMP *cpi, MACROBLOCK *x, RD_STATS *this_rdc,
   unsigned int pf_var[FILTER_SEARCH_SIZE] = { 0 };
   unsigned int pf_sse[FILTER_SEARCH_SIZE] = { 0 };
   TX_SIZE pf_tx_size[FILTER_SEARCH_SIZE] = { 0 };
+  PRED_BUFFER *current_pred = *this_mode_pred;
   int skip_txfm[FILTER_SEARCH_SIZE] = { 0 };
   int best_skip = 0;
   int best_early_term = 0;
@@ -1211,9 +1216,20 @@ static void search_filter_ref(AV1_COMP *cpi, MACROBLOCK *x, RD_STATS *this_rdc,
       best_cost = cost;
       best_skip = skip_txfm[i];
       best_early_term = *this_early_term;
+      if (reuse_inter_pred) {
+        if (*this_mode_pred != current_pred) {
+          free_pred_buffer(*this_mode_pred);
+          *this_mode_pred = current_pred;
+        }
+        current_pred = &tmp[get_pred_buffer(tmp, 3)];
+        pd->dst.buf = current_pred->data;
+        pd->dst.stride = bw;
+      }
     }
   }
   assert(best_filter_index >= 0 && best_filter_index < FILTER_SEARCH_SIZE);
+  if (reuse_inter_pred && *this_mode_pred != current_pred)
+    free_pred_buffer(current_pred);
 
   mi->interp_filters = av1_broadcast_interp_filter(filters[best_filter_index]);
   mi->tx_size = pf_tx_size[best_filter_index];
@@ -1223,7 +1239,10 @@ static void search_filter_ref(AV1_COMP *cpi, MACROBLOCK *x, RD_STATS *this_rdc,
   *sse_y = pf_sse[best_filter_index];
   this_rdc->skip = (best_skip || best_early_term);
   *this_early_term = best_early_term;
-  if (best_filter_index < FILTER_SEARCH_SIZE - 1) {
+  if (reuse_inter_pred) {
+    pd->dst.buf = (*this_mode_pred)->data;
+    pd->dst.stride = (*this_mode_pred)->stride;
+  } else if (best_filter_index < FILTER_SEARCH_SIZE - 1) {
     av1_enc_build_inter_predictor(cm, xd, mi_row, mi_col, NULL, bsize,
                                   AOM_PLANE_Y, AOM_PLANE_Y);
   }
@@ -1272,7 +1291,6 @@ void av1_fast_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   unsigned int var_y = UINT_MAX;
   const int *const rd_threshes = cpi->rd.threshes[mi->segment_id][bsize];
   const int *const rd_thresh_freq_fact = x->thresh_freq_fact[bsize];
-
   InterpFilter filter_ref;
   int const_motion[REF_FRAMES] = { 0 };
   int ref_frame_skip_mask = 0;
@@ -1292,7 +1310,7 @@ void av1_fast_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   int num_inter_modes = RT_INTER_MODES;
   unsigned char segment_id = mi->segment_id;
   PRED_BUFFER tmp[4];
-  DECLARE_ALIGNED(16, uint8_t, pred_buf[3 * 64 * 64]);
+  DECLARE_ALIGNED(16, uint8_t, pred_buf[3 * 128 * 128]);
   PRED_BUFFER *this_mode_pred = NULL;
   const int reuse_inter_pred = cpi->sf.reuse_inter_pred_nonrd;
   const int bh = block_size_high[bsize];
@@ -1608,8 +1626,9 @@ void av1_fast_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     if (cpi->sf.use_nonrd_filter_search &&
         ((mi->mv[0].as_mv.row & 0x07) || (mi->mv[0].as_mv.col & 0x07)) &&
         ref_frame == LAST_FRAME) {
-      search_filter_ref(cpi, x, &this_rdc, mi_row, mi_col, bsize, &var_y,
-                        &sse_y, &this_early_term, use_model_yrd_large);
+      search_filter_ref(cpi, x, &this_rdc, mi_row, mi_col, tmp, bsize,
+                        reuse_inter_pred, &this_mode_pred, &var_y, &sse_y,
+                        &this_early_term, use_model_yrd_large);
     } else {
       mi->interp_filters = (filter_ref == SWITCHABLE)
                                ? av1_broadcast_interp_filter(EIGHTTAP_REGULAR)
