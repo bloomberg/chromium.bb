@@ -35,6 +35,12 @@
 //------------------------------------------------------------------------------
 // Sanitizer attributes.
 
+#if LIBGAV1_HAS_FEATURE(address_sanitizer) || defined(__SANITIZE_ADDRESS__)
+#define LIBGAV1_ASAN 1
+#else
+#define LIBGAV1_ASAN 0
+#endif
+
 #if LIBGAV1_HAS_FEATURE(memory_sanitizer)
 #define LIBGAV1_MSAN 1
 #else
@@ -45,6 +51,18 @@
 #define LIBGAV1_TSAN 1
 #else
 #define LIBGAV1_TSAN 0
+#endif
+
+//------------------------------------------------------------------------------
+// AddressSanitizer support.
+
+// Define the macros for AddressSanitizer manual memory poisoning. See
+// https://github.com/google/sanitizers/wiki/AddressSanitizerManualPoisoning.
+#if LIBGAV1_ASAN
+#include <sanitizer/asan_interface.h>
+#else
+#define ASAN_POISON_MEMORY_REGION(addr, size) ((void)(addr), (void)(size))
+#define ASAN_UNPOISON_MEMORY_REGION(addr, size) ((void)(addr), (void)(size))
 #endif
 
 //------------------------------------------------------------------------------
