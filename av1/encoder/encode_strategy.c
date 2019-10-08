@@ -904,6 +904,8 @@ static int denoise_and_encode(AV1_COMP *const cpi, uint8_t *const dest,
   AV1_COMMON *const cm = &cpi->common;
   double noise_level;
   const int use_hbd = frame_input->source->flags & YV12_FLAG_HIGHBITDEPTH;
+  const int num_planes = av1_num_planes(cm);
+
   if (use_hbd) {
     noise_level = highbd_estimate_noise(
         frame_input->source->y_buffer, frame_input->source->y_crop_width,
@@ -940,7 +942,6 @@ static int denoise_and_encode(AV1_COMP *const cpi, uint8_t *const dest,
     av1_setup_past_independence(cm);
 
     // Keep a copy of the source image.
-    const int num_planes = av1_num_planes(cm);
     aom_yv12_copy_frame(frame_input->source, &cpi->source_kf_buffer,
                         num_planes);
     av1_temporal_filter(cpi, -1);
@@ -948,23 +949,28 @@ static int denoise_and_encode(AV1_COMP *const cpi, uint8_t *const dest,
     // Use the filtered frame for encoding.
     frame_input->source = &cpi->alt_ref_buffer;
     *temporal_filtered = 1;
-    if (av1_encode(cpi, dest, frame_input, frame_params, frame_results) !=
-        AOM_CODEC_OK) {
-      return AOM_CODEC_ERROR;
-    }
-    // Set frame_input source to true source for psnr calculation.
-    if (oxcf->arnr_max_frames > 0 && *temporal_filtered) {
-      aom_yv12_copy_frame(&cpi->source_kf_buffer, cpi->source, num_planes);
-      aom_yv12_copy_frame(&cpi->source_kf_buffer, cpi->unscaled_source,
-                          num_planes);
-    }
-  } else {
-    // Encode other frames.
-    if (av1_encode(cpi, dest, frame_input, frame_params, frame_results) !=
-        AOM_CODEC_OK) {
-      return AOM_CODEC_ERROR;
-    }
   }
+
+  if (oxcf->lag_in_frames > 0 && oxcf->pass != 1 &&
+      frame_params->frame_type == KEY_FRAME && frame_params->show_frame) {
+    av1_configure_buffer_updates(cpi, frame_params, KEY_FRAME, 0);
+    av1_set_frame_size(cpi, cm->width, cm->height);
+    av1_set_speed_features_framesize_independent(cpi, oxcf->speed);
+    av1_tpl_setup_stats(cpi, frame_params, frame_input);
+  }
+
+  if (av1_encode(cpi, dest, frame_input, frame_params, frame_results) !=
+      AOM_CODEC_OK) {
+    return AOM_CODEC_ERROR;
+  }
+
+  // Set frame_input source to true source for psnr calculation.
+  if (oxcf->arnr_max_frames > 0 && *temporal_filtered) {
+    aom_yv12_copy_frame(&cpi->source_kf_buffer, cpi->source, num_planes);
+    aom_yv12_copy_frame(&cpi->source_kf_buffer, cpi->unscaled_source,
+                        num_planes);
+  }
+
   return AOM_CODEC_OK;
 }
 #endif  // !CONFIG_REALTIME_ONLY
@@ -1257,20 +1263,6 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
          REF_FRAMES * sizeof(*cm->remapped_ref_idx));
 
   cpi->td.mb.e_mbd.delta_qindex = 0;
-#if ENABLE_KF_TPL && !CONFIG_REALTIME_ONLY
-  if (oxcf->lag_in_frames > 0 && oxcf->pass != 1 &&
-      frame_params.frame_type == KEY_FRAME && frame_params.show_frame) {
-    av1_configure_buffer_updates(cpi, &frame_params, frame_update_type, 0);
-    av1_set_frame_size(cpi, cm->width, cm->height);
-    // TODO(any) As "selective_ref_frame" speed feature is used in
-    // tpl, the function "av1_set_speed_features_framesize_independent"
-    // is called here. There are multiple calls to the function
-    // "av1_set_speed_features_framesize_independent" per frame which
-    // can be avoided.
-    av1_set_speed_features_framesize_independent(cpi, oxcf->speed);
-    av1_tpl_setup_stats(cpi, &frame_params, &frame_input);
-  }
-#endif  // ENABLE_KF_TPL
 
   if (!frame_params.show_existing_frame) {
     cm->using_qmatrix = cpi->oxcf.using_qm;
