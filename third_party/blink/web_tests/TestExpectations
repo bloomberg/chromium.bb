@@ -6066,6 +6066,7 @@ crbug.com/998917 external/wpt/native-file-system/native_FileSystemDirectoryHandl
 crbug.com/998917 external/wpt/native-file-system/native_FileSystemDirectoryHandle-getEntries.tentative.https.manual.window.html [ Skip ]
 crbug.com/998917 external/wpt/native-file-system/native_FileSystemDirectoryHandle-getFile.tentative.https.manual.window.html [ Skip ]
 crbug.com/998917 external/wpt/native-file-system/native_FileSystemDirectoryHandle-removeEntry.tentative.https.manual.window.html [ Skip ]
+crbug.com/998917 external/wpt/native-file-system/native_FileSystemFileHandle-getFile.tentative.https.manual.window.html [ Skip ]
 crbug.com/998917 external/wpt/native-file-system/native_FileSystemWriter.tentative.https.manual.window.html [ Skip ]
 
 crbug.com/1000051 media/controls/volume-slider.html [ Failure Timeout Pass ]
