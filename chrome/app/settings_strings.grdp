@@ -1488,7 +1488,7 @@
       Save detected printers to your profile, or add a new printer.
     </message>
     <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTERS_AVAILABLE_PRINTERS" desc="In CUPS printing settings subpage, title for the nearby printers list.">
-      Available printers to save
+      Add printers to your profile
     </message>
     <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTERS_EDIT" desc="Text for the drop down menu which allows the user to edit the printer details.">
       Edit
