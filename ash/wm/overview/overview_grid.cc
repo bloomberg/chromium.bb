@@ -349,7 +349,8 @@ gfx::Rect GetDesksWidgetBounds(aura::Window* root,
                                const gfx::Rect& overview_grid_screen_bounds) {
   gfx::Rect desks_widget_root_bounds = overview_grid_screen_bounds;
   ::wm::ConvertRectFromScreen(root, &desks_widget_root_bounds);
-  desks_widget_root_bounds.set_height(DesksBarView::GetBarHeight());
+  desks_widget_root_bounds.set_height(
+      DesksBarView::GetBarHeight(desks_widget_root_bounds.width()));
 
   // Shift the widget down to make room for the splitview indicator guidance
   // when it's shown at the top of the screen when in portrait mode and no other
@@ -1378,7 +1379,7 @@ gfx::Rect OverviewGrid::GetGridEffectiveBounds() const {
     return bounds_;
 
   gfx::Rect effective_bounds = bounds_;
-  effective_bounds.Inset(0, DesksBarView::GetBarHeight(), 0, 0);
+  effective_bounds.Inset(0, DesksBarView::GetBarHeight(bounds_.width()), 0, 0);
   return effective_bounds;
 }
 
