@@ -476,11 +476,9 @@ void Service::FinalizeAssistantManagerService() {
     BindAssistant(remote_for_controller.InitWithNewPipeAndPassReceiver());
     assistant_controller_->SetAssistant(std::move(remote_for_controller));
 
-    if (features::IsTimerNotificationEnabled()) {
-      // Bind to the AssistantAlarmTimerController in ash.
-      client_->RequestAssistantAlarmTimerController(
-          assistant_alarm_timer_controller_.BindNewPipeAndPassReceiver());
-    }
+    // Bind to the AssistantAlarmTimerController in ash.
+    client_->RequestAssistantAlarmTimerController(
+        assistant_alarm_timer_controller_.BindNewPipeAndPassReceiver());
 
     // Bind to the AssistantNotificationController in ash.
     client_->RequestAssistantNotificationController(
