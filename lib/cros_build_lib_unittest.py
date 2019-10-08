@@ -886,7 +886,7 @@ class TestContextManagerStack(cros_test_lib.TestCase):
 
   def test(self):
     invoked = []
-    counter = iter(itertools.count()).next
+    counter = functools.partial(next, itertools.count())
     def _mk_kls(has_exception=None, exception_kls=None, suppress=False):
       class foon(object):
         """Simple context manager which runs checks on __exit__."""

@@ -9,6 +9,7 @@ from __future__ import print_function
 
 import collections
 import contextlib
+import functools
 import copy
 import itertools
 import os
@@ -44,7 +45,7 @@ from chromite.lib import timeout_util
 from chromite.lib import triage_lib
 
 
-_GetNumber = iter(itertools.count()).next
+_GetNumber = functools.partial(next, itertools.count())
 # Without this some lambda's defined in constants will not be the same as
 # constants defined in this module. For comparisons, lambdas must be the same
 # function.
@@ -644,7 +645,8 @@ class TestCoreLogic(_Base):
 
     This test should filter out the tacos/chromite project as its not real.
     """
-    base_func = itertools.cycle(['chromiumos', 'chromeos']).next
+    base_func = functools.partial(next,
+                                  itertools.cycle(['chromiumos', 'chromeos']))
     patches = self.GetPatches(10)
     for patch in patches:
       patch.project = '%s/%i' % (base_func(), _GetNumber())

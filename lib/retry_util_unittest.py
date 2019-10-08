@@ -7,6 +7,7 @@
 
 from __future__ import print_function
 
+import functools
 import itertools
 import os
 import time
@@ -51,7 +52,7 @@ class TestRetries(cros_test_lib.MockTempDirTestCase):
 
   def testGenericRetry(self):
     """Test basic semantics of retry and success recording."""
-    source = iter(range(5)).next
+    source = functools.partial(next, iter(range(5)))
 
     def _TestMain():
       val = source()
@@ -160,7 +161,7 @@ class TestRetries(cros_test_lib.MockTempDirTestCase):
 
   def testRetryException(self):
     """Verify we retry only when certain exceptions get thrown"""
-    source = iter(range(6)).next
+    source = functools.partial(next, iter(range(6)))
     def _TestMain():
       val = source()
       if val < 2:

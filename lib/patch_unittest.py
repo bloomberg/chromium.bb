@@ -9,6 +9,7 @@ from __future__ import print_function
 
 import copy
 import contextlib
+import functools
 import itertools
 import os
 import shutil
@@ -26,7 +27,7 @@ from chromite.lib import osutils
 from chromite.lib import patch as cros_patch
 
 
-_GetNumber = iter(itertools.count()).next
+_GetNumber = functools.partial(next, itertools.count())
 
 # Change-ID of a known open change in public gerrit.
 GERRIT_OPEN_CHANGEID = '8366'
@@ -1387,7 +1388,7 @@ class MockPatchFactory(object):
     patch_mock: Optional PatchMock instance.
     """
     self.patch_mock = patch_mock
-    self._patch_counter = (itertools.count(1)).next
+    self._patch_counter = functools.partial(next, itertools.count(1))
 
   def MockPatch(self, change_id=None, patch_number=None, is_merged=False,
                 project='chromiumos/chromite',
@@ -1401,7 +1402,8 @@ class MockPatchFactory(object):
     change_id = hex(change_id)[2:].rstrip('L').lower()
     change_id = 'I%s' % change_id.rjust(40, '0')
     sha1 = hex(_GetNumber())[2:].rstrip('L').lower().rjust(40, '0')
-    patch_number = (patch_number if patch_number is not None else _GetNumber())
+    if patch_number is None:
+      patch_number = _GetNumber()
     fake_url = 'http://foo/bar'
     if not approvals:
       approvals = [{'type': 'VRIF', 'value': '1', 'grantedOn': 1391733002},
