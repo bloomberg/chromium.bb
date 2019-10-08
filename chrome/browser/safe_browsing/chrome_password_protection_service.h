@@ -434,6 +434,11 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
       sync_pb::GaiaPasswordReuse::PasswordReuseDialogInteraction::
           InteractionResult interaction_result);
 
+  void OnModalWarningShownForSavedPassword(
+      content::WebContents* web_contents,
+      ReusedPasswordAccountType password_type,
+      const std::string& verdict_token);
+
   void OnModalWarningShownForGaiaPassword(
       content::WebContents* web_contents,
       ReusedPasswordAccountType password_type,

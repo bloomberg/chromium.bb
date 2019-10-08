@@ -1138,6 +1138,18 @@ TEST_F(ChromePasswordProtectionServiceTest,
                    OnPolicySpecifiedPasswordReuseDetected::kEventName));
 }
 
+TEST_F(ChromePasswordProtectionServiceTest, VerifyGetWarningDetailTextSaved) {
+  base::string16 warning_text =
+      l10n_util::GetStringUTF16(IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_SAVED);
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      safe_browsing::kPasswordProtectionForSavedPasswords);
+  ReusedPasswordAccountType reused_password_type;
+  reused_password_type.set_account_type(
+      ReusedPasswordAccountType::SAVED_PASSWORD);
+  EXPECT_EQ(warning_text, service_->GetWarningDetailText(reused_password_type));
+}
+
 TEST_F(ChromePasswordProtectionServiceTest,
        VerifyGetWarningDetailTextEnterprise) {
   base::string16 warning_text_non_sync = l10n_util::GetStringUTF16(
