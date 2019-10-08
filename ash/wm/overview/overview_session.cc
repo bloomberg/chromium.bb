@@ -364,7 +364,7 @@ void OverviewSession::AppendItem(aura::Window* window,
   if (!grid || grid->GetOverviewItemContaining(window))
     return;
 
-  grid->AppendItem(window, reposition, animate);
+  grid->AppendItem(window, reposition, animate, /*use_spawn_animation=*/true);
   ++num_items_;
 
   UpdateNoWindowsWidget();
