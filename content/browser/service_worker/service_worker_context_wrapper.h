@@ -553,7 +553,8 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
 
   // Observers which live outside content's implementation boundary. Observer
   // methods will always be dispatched on the UI thread.
-  base::ObserverList<ServiceWorkerContextObserver>::Unchecked observer_list_;
+  base::ObserverList<ServiceWorkerContextObserver, true>::Unchecked
+      observer_list_;
 
   const std::unique_ptr<ServiceWorkerProcessManager> process_manager_;
   // Cleared in ShutdownOnCoreThread():
