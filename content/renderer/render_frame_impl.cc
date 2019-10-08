@@ -934,10 +934,6 @@ std::unique_ptr<DocumentState> BuildDocumentStateFromParams(
   internal_data->set_request_id(request_id);
 
   if (head) {
-    if (head->headers)
-      internal_data->set_http_status_code(head->headers->response_code());
-    else if (common_params.url.SchemeIs(url::kDataScheme))
-      internal_data->set_http_status_code(200);
     document_state->set_was_fetched_via_spdy(head->was_fetched_via_spdy);
     document_state->set_was_alpn_negotiated(head->was_alpn_negotiated);
     document_state->set_alpn_negotiated_protocol(
@@ -3015,36 +3011,6 @@ void RenderFrameImpl::NotifyObserversOfFailedProvisionalLoad() {
     observer.DidFailProvisionalLoad();
 }
 
-void RenderFrameImpl::LoadNavigationErrorPage(
-    WebDocumentLoader* document_loader,
-    const WebURLError& error,
-    const base::Optional<std::string>& error_page_content,
-    bool replace_current_item) {
-  std::string error_html;
-  if (error_page_content) {
-    error_html = error_page_content.value();
-  } else {
-    GetContentClient()->renderer()->PrepareErrorPage(
-        this, error, document_loader->HttpMethod().Ascii(), &error_html);
-  }
-
-  // Make sure we never show errors in view source mode.
-  frame_->EnableViewSourceMode(false);
-
-  auto navigation_params = WebNavigationParams::CreateForErrorPage(
-      document_loader, error_html, GURL(kUnreachableWebDataURL), error.url(),
-      error.reason());
-  if (replace_current_item)
-    navigation_params->frame_load_type = WebFrameLoadType::kReplaceCurrentItem;
-  navigation_params->service_worker_network_provider =
-      ServiceWorkerNetworkProviderForFrame::CreateInvalidInstance();
-
-  // The load of the error page can result in this frame being removed.
-  frame_->CommitNavigation(std::move(navigation_params), BuildDocumentState(),
-                           base::DoNothing::Once());
-  // Do not access |this| or |frame_| without checking weak self.
-}
-
 void RenderFrameImpl::DidMeaningfulLayout(
     blink::WebMeaningfulLayout layout_type) {
   for (auto& observer : observers_)
@@ -5026,30 +4992,34 @@ void RenderFrameImpl::RunScriptsAtDocumentReady(bool document_is_empty) {
   // If this is an empty document with an http status code indicating an error,
   // we may want to display our own error page, so the user doesn't end up
   // with an unexplained blank page.
-  if (!document_is_empty)
+  if (!document_is_empty || !IsMainFrame())
     return;
 
   // Display error page instead of a blank page, if appropriate.
-  InternalDocumentStateData* internal_data =
-      InternalDocumentStateData::FromDocumentLoader(
-          frame_->GetDocumentLoader());
-  int http_status_code = internal_data->http_status_code();
-  if (GetContentClient()->renderer()->HasErrorPage(http_status_code)) {
-    WebDocumentLoader* document_loader = frame_->GetDocumentLoader();
-    WebURL unreachable_url = frame_->GetDocument().Url();
-    std::string error_html;
-    GetContentClient()->renderer()->PrepareErrorPageForHttpStatusError(
-        this, unreachable_url, document_loader->HttpMethod().Ascii(),
-        http_status_code, &error_html);
-    // This call may run scripts, e.g. via the beforeunload event, and possibly
-    // delete |this|.
-    LoadNavigationErrorPage(document_loader,
-                            WebURLError(net::ERR_FAILED, unreachable_url),
-                            error_html, true /* replace_current_item */);
-    if (!weak_self)
-      return;
-    // Do not use |this| or |frame_| here without checking |weak_self|.
-  }
+  WebDocumentLoader* document_loader = frame_->GetDocumentLoader();
+  int http_status_code = document_loader->GetResponse().HttpStatusCode();
+  if (!GetContentClient()->renderer()->HasErrorPage(http_status_code))
+    return;
+
+  WebURL unreachable_url = frame_->GetDocument().Url();
+  std::string error_html;
+  GetContentClient()->renderer()->PrepareErrorPageForHttpStatusError(
+      this, unreachable_url, document_loader->HttpMethod().Ascii(),
+      http_status_code, &error_html);
+  // Make sure we never show errors in view source mode.
+  frame_->EnableViewSourceMode(false);
+
+  auto navigation_params = WebNavigationParams::CreateForErrorPage(
+      document_loader, error_html, GURL(kUnreachableWebDataURL),
+      unreachable_url, net::ERR_FAILED);
+  navigation_params->frame_load_type = WebFrameLoadType::kReplaceCurrentItem;
+  navigation_params->service_worker_network_provider =
+      ServiceWorkerNetworkProviderForFrame::CreateInvalidInstance();
+
+  frame_->CommitNavigation(std::move(navigation_params), BuildDocumentState(),
+                           base::DoNothing::Once());
+  // WARNING: The previous call may have have deleted |this|.
+  // Do not use |this| or |frame_| here without checking |weak_self|.
 }
 
 void RenderFrameImpl::RunScriptsAtDocumentIdle() {

@@ -1233,13 +1233,6 @@ class CONTENT_EXPORT RenderFrameImpl
                            const base::string16& default_value,
                            base::string16* result);
 
-  // Loads the appropriate error page for the specified failure into the frame.
-  void LoadNavigationErrorPage(
-      blink::WebDocumentLoader* document_loader,
-      const blink::WebURLError& error,
-      const base::Optional<std::string>& error_page_content,
-      bool replace_current_item);
-
   base::Value GetJavaScriptExecutionResult(v8::Local<v8::Value> result);
 
   void InitializeMediaStreamDeviceObserver();

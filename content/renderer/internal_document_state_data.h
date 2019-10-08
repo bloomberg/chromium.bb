@@ -36,11 +36,6 @@ class InternalDocumentStateData : public base::SupportsUserData::Data {
 
   void CopyFrom(InternalDocumentStateData* other);
 
-  int http_status_code() const { return http_status_code_; }
-  void set_http_status_code(int http_status_code) {
-    http_status_code_ = http_status_code;
-  }
-
   // True if the user agent was overridden for this page.
   bool is_overriding_user_agent() const { return is_overriding_user_agent_; }
   void set_is_overriding_user_agent(bool state) {
@@ -98,7 +93,6 @@ class InternalDocumentStateData : public base::SupportsUserData::Data {
   void set_navigation_state(std::unique_ptr<NavigationState> navigation_state);
 
  private:
-  int http_status_code_;
   bool is_overriding_user_agent_;
   bool must_reset_scroll_and_scale_state_;
   bool cache_policy_override_set_;

@@ -19,8 +19,7 @@ const char kUserDataKey[] = "InternalDocumentStateData";
 }
 
 InternalDocumentStateData::InternalDocumentStateData()
-    : http_status_code_(0),
-      is_overriding_user_agent_(false),
+    : is_overriding_user_agent_(false),
       must_reset_scroll_and_scale_state_(false),
       cache_policy_override_set_(false),
       cache_policy_override_(blink::mojom::FetchCacheMode::kDefault) {}
@@ -50,7 +49,6 @@ InternalDocumentStateData::~InternalDocumentStateData() {
 }
 
 void InternalDocumentStateData::CopyFrom(InternalDocumentStateData* other) {
-  http_status_code_ = other->http_status_code_;
   is_overriding_user_agent_ = other->is_overriding_user_agent_;
   must_reset_scroll_and_scale_state_ =
       other->must_reset_scroll_and_scale_state_;
