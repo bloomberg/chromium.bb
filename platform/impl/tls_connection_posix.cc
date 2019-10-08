@@ -78,15 +78,15 @@ void TlsConnectionPosix::Write(const void* data, size_t len) {
 }
 
 IPEndpoint TlsConnectionPosix::local_address() const {
-  const absl::optional<IPEndpoint> endpoint = socket_->local_address();
+  absl::optional<IPEndpoint> endpoint = socket_->local_address();
   OSP_DCHECK(endpoint.has_value());
-  return endpoint.value();
+  return std::move(endpoint.value());
 }
 
 IPEndpoint TlsConnectionPosix::remote_address() const {
-  const absl::optional<IPEndpoint> endpoint = socket_->remote_address();
+  absl::optional<IPEndpoint> endpoint = socket_->remote_address();
   OSP_DCHECK(endpoint.has_value());
-  return endpoint.value();
+  return std::move(endpoint.value());
 }
 
 void TlsConnectionPosix::NotifyWriteBufferFill(double fraction) {
