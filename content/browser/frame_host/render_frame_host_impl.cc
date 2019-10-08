@@ -86,7 +86,6 @@
 #include "content/browser/renderer_host/input/input_router.h"
 #include "content/browser/renderer_host/input/timeout_monitor.h"
 #include "content/browser/renderer_host/media/audio_input_delegate_impl.h"
-#include "content/browser/renderer_host/media/media_devices_dispatcher_host.h"
 #include "content/browser/renderer_host/media/media_stream_dispatcher_host.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
@@ -4458,26 +4457,6 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
   registry_->AddInterface(
       base::BindRepeating(&RenderFrameHostImpl::CreateAudioOutputStreamFactory,
                           base::Unretained(this)));
-
-  // BrowserMainLoop::GetInstance() may be null on unit tests.
-  if (BrowserMainLoop::GetInstance()) {
-    // BrowserMainLoop, which owns MediaStreamManager, is alive for the lifetime
-    // of Mojo communication (see BrowserMainLoop::ShutdownThreadsAndCleanUp(),
-    // which shuts down Mojo). Hence, passing that MediaStreamManager instance
-    // as a raw pointer here is safe.
-    MediaStreamManager* media_stream_manager =
-        BrowserMainLoop::GetInstance()->media_stream_manager();
-    registry_->AddInterface(
-        base::Bind(&MediaDevicesDispatcherHost::Create, GetProcess()->GetID(),
-                   GetRoutingID(), base::Unretained(media_stream_manager)),
-        base::CreateSingleThreadTaskRunner({BrowserThread::IO}));
-
-    registry_->AddInterface(
-        base::BindRepeating(&MediaStreamDispatcherHost::Create,
-                            GetProcess()->GetID(), GetRoutingID(),
-                            base::Unretained(media_stream_manager)),
-        base::CreateSingleThreadTaskRunner({BrowserThread::IO}));
-  }
 
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING)
   registry_->AddInterface(base::Bind(&RemoterFactoryImpl::Bind,
