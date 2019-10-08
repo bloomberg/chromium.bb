@@ -505,10 +505,6 @@
       status: "stable",
     },
     {
-      name: "CustomUserTiming",
-      status: "stable",
-    },
-    {
       name: "Database",
       status: "stable",
     },
