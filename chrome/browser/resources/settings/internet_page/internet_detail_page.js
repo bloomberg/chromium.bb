@@ -1334,6 +1334,7 @@ Polymer({
           break;
         case mojom.VpnType.kArc:
           fields.push('vpn.type');
+          fields.push('vpn.providerName');
           break;
         case mojom.VpnType.kOpenVPN:
           fields.push(

@@ -1251,6 +1251,11 @@ mojom::ManagedPropertiesPtr ManagedPropertiesToMojo(
         result->vpn = std::move(vpn);
         break;
       }
+      mojom::ManagedStringPtr managed_type =
+          GetManagedString(vpn_dict, ::onc::vpn::kType);
+      CHECK(managed_type);
+      vpn->type = OncVpnTypeToMojo(managed_type->active_value);
+
       vpn->auto_connect = GetManagedBoolean(vpn_dict, ::onc::vpn::kAutoConnect);
       vpn->host = GetManagedString(vpn_dict, ::onc::vpn::kHost);
 
@@ -1291,10 +1296,6 @@ mojom::ManagedPropertiesPtr ManagedPropertiesToMojo(
           }
           break;
       }
-      mojom::ManagedStringPtr managed_type =
-          GetManagedString(vpn_dict, ::onc::vpn::kType);
-      CHECK(managed_type);
-      vpn->type = OncVpnTypeToMojo(managed_type->active_value);
       result->vpn = std::move(vpn);
       break;
     }
