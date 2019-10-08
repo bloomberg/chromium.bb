@@ -34,32 +34,33 @@ namespace {
 // Wiener
 inline void PopulateWienerCoefficients(
     const RestorationUnitInfo& restoration_info, const int direction,
-    int16_t* const filter) {
+    int16_t filter[4]) {
   // In order to keep the horizontal pass intermediate values within 16 bits we
   // initialize |filter[3]| to 0 instead of 128.
-  filter[3] = 0;
+  int filter_3;
+  if (direction == WienerInfo::kHorizontal) {
+    filter_3 = 0;
+  } else {
+    assert(direction == WienerInfo::kVertical);
+    filter_3 = 128;
+  }
+
   for (int i = 0; i < 3; ++i) {
     const int16_t coeff = restoration_info.wiener_info.filter[direction][i];
     filter[i] = coeff;
-    filter[6 - i] = coeff;
-    filter[3] -= coeff * 2;
+    filter_3 -= coeff * 2;
   }
+  filter[3] = filter_3;
 }
 
-inline int16x8_t HorizontalSum(const uint8x8_t a[7], int16_t filter[7]) {
+inline int16x8_t HorizontalSum(const uint8x8_t a[7], int16_t filter[4]) {
   int16x8_t sum = vmulq_n_s16(vreinterpretq_s16_u16(vmovl_u8(a[0])), filter[0]);
-  sum = vaddq_s16(
-      sum, vmulq_n_s16(vreinterpretq_s16_u16(vmovl_u8(a[1])), filter[1]));
-  sum = vaddq_s16(
-      sum, vmulq_n_s16(vreinterpretq_s16_u16(vmovl_u8(a[2])), filter[2]));
-  sum = vaddq_s16(
-      sum, vmulq_n_s16(vreinterpretq_s16_u16(vmovl_u8(a[3])), filter[3]));
-  sum = vaddq_s16(
-      sum, vmulq_n_s16(vreinterpretq_s16_u16(vmovl_u8(a[4])), filter[4]));
-  sum = vaddq_s16(
-      sum, vmulq_n_s16(vreinterpretq_s16_u16(vmovl_u8(a[5])), filter[5]));
-  sum = vaddq_s16(
-      sum, vmulq_n_s16(vreinterpretq_s16_u16(vmovl_u8(a[6])), filter[6]));
+  sum = vmlaq_n_s16(sum, vreinterpretq_s16_u16(vmovl_u8(a[1])), filter[1]);
+  sum = vmlaq_n_s16(sum, vreinterpretq_s16_u16(vmovl_u8(a[2])), filter[2]);
+  sum = vmlaq_n_s16(sum, vreinterpretq_s16_u16(vmovl_u8(a[3])), filter[3]);
+  sum = vmlaq_n_s16(sum, vreinterpretq_s16_u16(vmovl_u8(a[4])), filter[2]);
+  sum = vmlaq_n_s16(sum, vreinterpretq_s16_u16(vmovl_u8(a[5])), filter[1]);
+  sum = vmlaq_n_s16(sum, vreinterpretq_s16_u16(vmovl_u8(a[6])), filter[0]);
 
   sum = vrshrq_n_s16(sum, kInterRoundBitsHorizontal);
 
@@ -89,7 +90,7 @@ inline int16x8_t HorizontalSum(const uint8x8_t a[7], int16_t filter[7]) {
 template <int min_width>
 inline void VerticalSum(const int16_t* src_base, const ptrdiff_t src_stride,
                         uint8_t* dst_base, const ptrdiff_t dst_stride,
-                        const int16x4_t filter[7], const int width,
+                        const int16_t filter[4], const int width,
                         const int height) {
   static_assert(min_width == 4 || min_width == 8, "");
   // -(1 << (bitdepth + kInterRoundBitsVertical - 1))
@@ -120,23 +121,23 @@ inline void VerticalSum(const int16_t* src_base, const ptrdiff_t src_stride,
         src += src_stride;
 
         int32x4_t sum_lo = vdupq_n_s32(vertical_rounding);
-        sum_lo = vmlal_s16(sum_lo, vget_low_s16(a[0]), filter[0]);
-        sum_lo = vmlal_s16(sum_lo, vget_low_s16(a[1]), filter[1]);
-        sum_lo = vmlal_s16(sum_lo, vget_low_s16(a[2]), filter[2]);
-        sum_lo = vmlal_s16(sum_lo, vget_low_s16(a[3]), filter[3]);
-        sum_lo = vmlal_s16(sum_lo, vget_low_s16(a[4]), filter[4]);
-        sum_lo = vmlal_s16(sum_lo, vget_low_s16(a[5]), filter[5]);
-        sum_lo = vmlal_s16(sum_lo, vget_low_s16(a[6]), filter[6]);
+        sum_lo = vmlal_n_s16(sum_lo, vget_low_s16(a[0]), filter[0]);
+        sum_lo = vmlal_n_s16(sum_lo, vget_low_s16(a[1]), filter[1]);
+        sum_lo = vmlal_n_s16(sum_lo, vget_low_s16(a[2]), filter[2]);
+        sum_lo = vmlal_n_s16(sum_lo, vget_low_s16(a[3]), filter[3]);
+        sum_lo = vmlal_n_s16(sum_lo, vget_low_s16(a[4]), filter[2]);
+        sum_lo = vmlal_n_s16(sum_lo, vget_low_s16(a[5]), filter[1]);
+        sum_lo = vmlal_n_s16(sum_lo, vget_low_s16(a[6]), filter[0]);
         uint16x4_t sum_lo_16 = vqrshrun_n_s32(sum_lo, 11);
 
         int32x4_t sum_hi = vdupq_n_s32(vertical_rounding);
-        sum_hi = vmlal_s16(sum_hi, vget_high_s16(a[0]), filter[0]);
-        sum_hi = vmlal_s16(sum_hi, vget_high_s16(a[1]), filter[1]);
-        sum_hi = vmlal_s16(sum_hi, vget_high_s16(a[2]), filter[2]);
-        sum_hi = vmlal_s16(sum_hi, vget_high_s16(a[3]), filter[3]);
-        sum_hi = vmlal_s16(sum_hi, vget_high_s16(a[4]), filter[4]);
-        sum_hi = vmlal_s16(sum_hi, vget_high_s16(a[5]), filter[5]);
-        sum_hi = vmlal_s16(sum_hi, vget_high_s16(a[6]), filter[6]);
+        sum_hi = vmlal_n_s16(sum_hi, vget_high_s16(a[0]), filter[0]);
+        sum_hi = vmlal_n_s16(sum_hi, vget_high_s16(a[1]), filter[1]);
+        sum_hi = vmlal_n_s16(sum_hi, vget_high_s16(a[2]), filter[2]);
+        sum_hi = vmlal_n_s16(sum_hi, vget_high_s16(a[3]), filter[3]);
+        sum_hi = vmlal_n_s16(sum_hi, vget_high_s16(a[4]), filter[2]);
+        sum_hi = vmlal_n_s16(sum_hi, vget_high_s16(a[5]), filter[1]);
+        sum_hi = vmlal_n_s16(sum_hi, vget_high_s16(a[6]), filter[0]);
         uint16x4_t sum_hi_16 = vqrshrun_n_s32(sum_hi, 11);
 
         vst1_u8(dst, vqmovn_u16(vcombine_u16(sum_lo_16, sum_hi_16)));
@@ -174,13 +175,13 @@ inline void VerticalSum(const int16_t* src_base, const ptrdiff_t src_stride,
       src += src_stride;
 
       int32x4_t sum = vdupq_n_s32(vertical_rounding);
-      sum = vmlal_s16(sum, a[0], filter[0]);
-      sum = vmlal_s16(sum, a[1], filter[1]);
-      sum = vmlal_s16(sum, a[2], filter[2]);
-      sum = vmlal_s16(sum, a[3], filter[3]);
-      sum = vmlal_s16(sum, a[4], filter[4]);
-      sum = vmlal_s16(sum, a[5], filter[5]);
-      sum = vmlal_s16(sum, a[6], filter[6]);
+      sum = vmlal_n_s16(sum, a[0], filter[0]);
+      sum = vmlal_n_s16(sum, a[1], filter[1]);
+      sum = vmlal_n_s16(sum, a[2], filter[2]);
+      sum = vmlal_n_s16(sum, a[3], filter[3]);
+      sum = vmlal_n_s16(sum, a[4], filter[2]);
+      sum = vmlal_n_s16(sum, a[5], filter[1]);
+      sum = vmlal_n_s16(sum, a[6], filter[0]);
       uint16x4_t sum_16 = vqrshrun_n_s32(sum, 11);
 
       StoreLo4(dst, vqmovn_u16(vcombine_u16(sum_16, sum_16)));
@@ -201,7 +202,6 @@ void WienerFilter_NEON(const void* const source, void* const dest,
                        const ptrdiff_t source_stride,
                        const ptrdiff_t dest_stride, const int width,
                        const int height, RestorationBuffer* const buffer) {
-  int16_t filter[kSubPixelTaps - 1];
   const auto* src = static_cast<const uint8_t*>(source);
   auto* dst = static_cast<uint8_t*>(dest);
   // It should be possible to set this to |width|.
@@ -211,6 +211,7 @@ void WienerFilter_NEON(const void* const source, void* const dest,
   int16_t* wiener_buffer = reinterpret_cast<int16_t*>(buffer->wiener_buffer);
 
   // Horizontal filtering.
+  int16_t filter[4];
   PopulateWienerCoefficients(restoration_info, WienerInfo::kHorizontal, filter);
   // The taps have a radius of 3. Adjust |src| so we start reading with the top
   // left value.
@@ -245,18 +246,12 @@ void WienerFilter_NEON(const void* const source, void* const dest,
   // Vertical filtering.
   wiener_buffer = reinterpret_cast<int16_t*>(buffer->wiener_buffer);
   PopulateWienerCoefficients(restoration_info, WienerInfo::kVertical, filter);
-  // Add 128 to |filter[3]| to fix the adjustment for the horizontal filtering.
-  // This pass starts with 13 bits so there is no chance of keeping it in 16.
-  const int16x4_t filter_v[7] = {
-      vdup_n_s16(filter[0]),       vdup_n_s16(filter[1]), vdup_n_s16(filter[2]),
-      vdup_n_s16(filter[3] + 128), vdup_n_s16(filter[4]), vdup_n_s16(filter[5]),
-      vdup_n_s16(filter[6])};
 
   if (width == 4) {
-    VerticalSum<4>(wiener_buffer, buffer_stride, dst, dest_stride, filter_v,
+    VerticalSum<4>(wiener_buffer, buffer_stride, dst, dest_stride, filter,
                    width, height);
   } else {
-    VerticalSum<8>(wiener_buffer, buffer_stride, dst, dest_stride, filter_v,
+    VerticalSum<8>(wiener_buffer, buffer_stride, dst, dest_stride, filter,
                    width, height);
   }
 }
