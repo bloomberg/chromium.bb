@@ -1363,6 +1363,10 @@ const char kPrintingSizeDefault[] = "printing.size_default";
 // to print server.
 const char kPrintingSendUsernameAndFilenameEnabled[] =
     "printing.send_username_and_filename_enabled";
+
+// Indicates how long print jobs metadata is stored on the device, in days.
+const char kPrintJobHistoryExpirationPeriod[] =
+    "printing.print_job_history_expiration_period";
 #endif  // OS_CHROMEOS
 
 // An integer pref specifying the fallback behavior for sites outside of content

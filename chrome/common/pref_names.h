@@ -435,6 +435,7 @@ extern const char kPrintingPinDefault[];
 extern const char kPrintingBackgroundGraphicsDefault[];
 extern const char kPrintingSizeDefault[];
 extern const char kPrintingSendUsernameAndFilenameEnabled[];
+extern const char kPrintJobHistoryExpirationPeriod[];
 #endif  // OS_CHROMEOS
 
 extern const char kDefaultSupervisedUserFilteringBehavior[];

@@ -18217,6 +18217,7 @@ Called by update_net_error_codes.py.-->
   <int value="622" label="PrintingBackgroundGraphicsDefault"/>
   <int value="623" label="LegacySameSiteCookieBehaviorEnabled"/>
   <int value="624" label="LegacySameSiteCookieBehaviorEnabledForDomainList"/>
+  <int value="625" label="PrintJobHistoryExpirationPeriod"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
