@@ -27,6 +27,7 @@
 #include "ui/gfx/transform_util.h"
 
 #if defined(USE_X11)
+#include "ui/events/devices/x11/touch_factory_x11.h"        // nogncheck
 #include "ui/events/keycodes/keyboard_code_conversion_x.h"  // nogncheck
 #include "ui/events/x/events_x_utils.h"                     // nogncheck
 #include "ui/gfx/x/x11.h"                                   // nogncheck
@@ -733,15 +734,11 @@ TouchEvent::TouchEvent(const PlatformEvent& native_event)
     : LocatedEvent(native_event),
       unique_event_id_(ui::GetNextTouchEventId()),
       may_cause_scrolling_(false),
-      should_remove_native_touch_id_mapping_(false),
       hovering_(false),
       pointer_details_(GetTouchPointerDetailsFromNative(native_event)) {
   latency()->AddLatencyNumberWithTimestamp(
       INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, time_stamp());
   latency()->AddLatencyNumber(INPUT_EVENT_LATENCY_UI_COMPONENT);
-
-  if (type() == ET_TOUCH_RELEASED || type() == ET_TOUCH_CANCELLED)
-    should_remove_native_touch_id_mapping_ = true;
 }
 
 TouchEvent::TouchEvent(EventType type,
@@ -753,7 +750,6 @@ TouchEvent::TouchEvent(EventType type,
     : LocatedEvent(type, location, root_location, time_stamp, flags),
       unique_event_id_(ui::GetNextTouchEventId()),
       may_cause_scrolling_(false),
-      should_remove_native_touch_id_mapping_(false),
       hovering_(false),
       pointer_details_(pointer_details) {
   latency()->AddLatencyNumber(INPUT_EVENT_LATENCY_UI_COMPONENT);
@@ -775,7 +771,6 @@ TouchEvent::TouchEvent(const TouchEvent& copy)
     : LocatedEvent(copy),
       unique_event_id_(copy.unique_event_id_),
       may_cause_scrolling_(copy.may_cause_scrolling_),
-      should_remove_native_touch_id_mapping_(false),
       hovering_(copy.hovering_),
       pointer_details_(copy.pointer_details_) {
   // Copied events should not remove touch id mapping, as this either causes the
@@ -784,14 +779,13 @@ TouchEvent::TouchEvent(const TouchEvent& copy)
 }
 
 TouchEvent::~TouchEvent() {
+#if defined(USE_X11)
   // In ctor TouchEvent(native_event) we call GetTouchId() which in X11
   // platform setups the tracking_id to slot mapping. So in dtor here,
   // if this touch event is a release event, we clear the mapping accordingly.
-  if (should_remove_native_touch_id_mapping_) {
-    DCHECK(type() == ET_TOUCH_RELEASED || type() == ET_TOUCH_CANCELLED);
-    if (type() == ET_TOUCH_RELEASED || type() == ET_TOUCH_CANCELLED)
-      ClearTouchIdIfReleased(native_event());
-  }
+  if (type() == ET_TOUCH_RELEASED || type() == ET_TOUCH_CANCELLED)
+    TouchFactory::GetInstance()->ReleaseSlot(pointer_details().id);
+#endif
 }
 
 void TouchEvent::UpdateForRootTransform(
