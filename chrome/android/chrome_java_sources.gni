@@ -1717,7 +1717,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/util/ChromeIntentUtil.java",
   "java/src/org/chromium/chrome/browser/util/ColorUtils.java",
   "java/src/org/chromium/chrome/browser/util/FeatureUtilities.java",
-  "java/src/org/chromium/chrome/browser/util/ViewUtils.java",
   "java/src/org/chromium/chrome/browser/vr/ArDelegate.java",
   "java/src/org/chromium/chrome/browser/vr/ArDelegateProvider.java",
   "java/src/org/chromium/chrome/browser/webapps/ActivateWebApkActivity.java",
