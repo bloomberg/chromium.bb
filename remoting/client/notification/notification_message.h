@@ -10,6 +10,8 @@
 namespace remoting {
 
 struct NotificationMessage final {
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chromoting
+  // GENERATED_JAVA_CLASS_NAME_OVERRIDE: NotificationAppearance
   enum class Appearance {
     TOAST,
     DIALOG,

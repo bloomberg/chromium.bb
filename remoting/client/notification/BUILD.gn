@@ -2,6 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+if (is_android) {
+  import("//build/config/android/config.gni")
+  import("//build/config/android/rules.gni")
+}
+
 source_set("notification") {
   sources = [
     "gstatic_json_fetcher.cc",
@@ -23,6 +28,14 @@ source_set("notification") {
     "//remoting/base",
     "//ui/base",
   ]
+}
+
+if (is_android) {
+  java_cpp_enum("notification_enums") {
+    sources = [
+      "notification_message.h",
+    ]
+  }
 }
 
 source_set("unit_tests") {
