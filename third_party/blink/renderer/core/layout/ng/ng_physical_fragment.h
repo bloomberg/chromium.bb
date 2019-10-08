@@ -220,7 +220,6 @@ class CORE_EXPORT NGPhysicalFragment
   PhysicalRect ScrollableOverflow() const;
 
   // ScrollableOverflow(), with transforms applied wrt container if needed.
-  // This does not include any offsets from the parent (including relpos).
   PhysicalRect ScrollableOverflowForPropagation(
       const LayoutObject* container) const;
 
