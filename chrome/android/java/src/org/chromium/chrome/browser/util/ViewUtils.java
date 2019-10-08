@@ -16,17 +16,13 @@ import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
-import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ui.widget.RoundedIconGenerator;
 
 /**
  * View-related utility methods.
  */
 public class ViewUtils {
     private static final int[] sLocationTmp = new int[2];
-    public static int DEFAULT_FAVICON_CORNER_RADIUS = -1;
 
     /**
      * Invalidates a view and all of its descendants.
@@ -161,46 +157,13 @@ public class ViewUtils {
     }
 
     /**
-     * Creates a {@link RoundedIconGenerator} that uses default styles.
-     * @param resources The {@link Resources} for accessing color and dimen resources.
-     * @param circularIcon Whether the generated icons should be circles.
-     * @return A {@link RoundedIconGenerator} that uses the default rounded icon style. Intended for
-     *         monograms, e.g. a rounded rectangle or a circle with character(s) in the center.
-     */
-    public static RoundedIconGenerator createDefaultRoundedIconGenerator(
-            Resources resources, boolean circularIcon) {
-        int iconColor =
-                ApiCompatibilityUtils.getColor(resources, R.color.default_favicon_background_color);
-        int displayedIconSize;
-        int cornerRadius;
-        int textSize;
-
-        if (circularIcon) {
-            displayedIconSize = resources.getDimensionPixelSize(R.dimen.circular_monogram_size);
-            cornerRadius = displayedIconSize / 2;
-            textSize = resources.getDimensionPixelSize(R.dimen.circular_monogram_text_size);
-        } else {
-            displayedIconSize = resources.getDimensionPixelSize(R.dimen.default_favicon_size);
-            cornerRadius = resources.getDimensionPixelSize(R.dimen.default_favicon_corner_radius);
-            textSize = resources.getDimensionPixelSize(R.dimen.default_favicon_icon_text_size);
-        }
-
-        return new RoundedIconGenerator(
-                displayedIconSize, displayedIconSize, cornerRadius, iconColor, textSize);
-    }
-
-    /**
      * Creates a {@link RoundedBitmapDrawable} using the provided {@link Bitmap} and cornerRadius.
      * @param icon The {@link Bitmap} to round.
-     * @param cornerRadius The corner radius or {@link #DEFAULT_FAVICON_CORNER_RADIUS} if the
-     *                     default should be used.
+     * @param cornerRadius The corner radius.
      * @return A {@link RoundedBitmapDrawable} for the provided {@link Bitmap}.
      */
     public static RoundedBitmapDrawable createRoundedBitmapDrawable(Bitmap icon, int cornerRadius) {
         Resources resources = ContextUtils.getApplicationContext().getResources();
-        if (cornerRadius == DEFAULT_FAVICON_CORNER_RADIUS) {
-            cornerRadius = resources.getDimensionPixelSize(R.dimen.default_favicon_corner_radius);
-        }
         RoundedBitmapDrawable roundedIcon = RoundedBitmapDrawableFactory.create(resources, icon);
         roundedIcon.setCornerRadius(cornerRadius);
         return roundedIcon;
