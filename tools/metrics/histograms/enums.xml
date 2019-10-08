@@ -45752,6 +45752,9 @@ Called by update_net_trust_anchors.py.-->
     The model for the optimization target was evaluated and the page load was
     predicted to match the optimization target.
   </int>
+  <int value="3" label="Model for target not available on client">
+    The model for the optimization target not available on the client.
+  </int>
 </enum>
 
 <enum name="OptimizationGuideOptimizationTypeDecision">
