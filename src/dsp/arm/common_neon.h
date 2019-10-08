@@ -268,7 +268,7 @@ inline int8x8_t VQTbl1S8(const int8x16_t a, const uint8x8_t index) {
   return vqtbl1_s8(a, index);
 #else
   const int8x8x2_t b = {vget_low_s8(a), vget_high_s8(a)};
-  return vtbl2_s8(b, index);
+  return vtbl2_s8(b, vreinterpret_s8_u8(index));
 #endif
 }
 
