@@ -35,8 +35,7 @@ constexpr BitMaskSet kIsWedgeCompoundModeAllowed(kBlock8x8, kBlock8x16,
 // decoder. If the video is key frame only, we don't have to call this
 // function. Returns true on success, false on allocation failure.
 // 7.11.3.11.
-bool GenerateWedgeMask(uint8_t* wedge_master_mask_data,
-                       WedgeMaskArray* wedge_masks);
+bool GenerateWedgeMask(WedgeMaskArray* wedge_masks);
 
 // 7.11.3.12.
 void GenerateWeightMask(const uint16_t* prediction_1, ptrdiff_t stride_1,

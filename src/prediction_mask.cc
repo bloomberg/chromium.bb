@@ -151,46 +151,31 @@ uint8_t GetWedgeOffsetY(BlockSize block_size, int index) {
 
 }  // namespace
 
-bool GenerateWedgeMask(uint8_t* const wedge_master_mask_data,
-                       WedgeMaskArray* const wedge_masks) {
+bool GenerateWedgeMask(WedgeMaskArray* const wedge_masks) {
   // Generate master masks.
-  Array2DView<uint8_t> master_mask(6, kMaxMaskBlockSize,
-                                   wedge_master_mask_data);
-  uint8_t* master_mask_row = master_mask[kWedgeVertical];
-  const int stride = kWedgeMaskMasterSize;
+  uint8_t master_mask[6][kWedgeMaskMasterSize][kWedgeMaskMasterSize];
   for (int y = 0; y < kWedgeMaskMasterSize; ++y) {
-    memcpy(master_mask_row, kWedgeMasterVertical, kWedgeMaskMasterSize);
-    master_mask_row += stride;
+    memcpy(master_mask[kWedgeVertical][y], kWedgeMasterVertical,
+           kWedgeMaskMasterSize);
   }
 
-  master_mask_row = master_mask[kWedgeOblique63];
   for (int y = 0, shift = 0; y < kWedgeMaskMasterSize; y += 2, ++shift) {
-    memcpy(master_mask_row, kWedgeMasterObliqueEven + shift,
+    memcpy(master_mask[kWedgeOblique63][y], kWedgeMasterObliqueEven + shift,
            kWedgeMaskMasterSize);
-    master_mask_row += stride;
-    memcpy(master_mask_row, kWedgeMasterObliqueOdd + shift,
+    memcpy(master_mask[kWedgeOblique63][y + 1], kWedgeMasterObliqueOdd + shift,
            kWedgeMaskMasterSize);
-    master_mask_row += stride;
   }
 
-  uint8_t* const master_mask_horizontal = master_mask[kWedgeHorizontal];
-  uint8_t* master_mask_vertical = master_mask[kWedgeVertical];
-  uint8_t* const master_mask_oblique_27 = master_mask[kWedgeOblique27];
-  uint8_t* master_mask_oblique_63 = master_mask[kWedgeOblique63];
-  uint8_t* master_mask_oblique_117 = master_mask[kWedgeOblique117];
-  uint8_t* const master_mask_oblique_153 = master_mask[kWedgeOblique153];
   for (int y = 0; y < kWedgeMaskMasterSize; ++y) {
     for (int x = 0; x < kWedgeMaskMasterSize; ++x) {
-      const uint8_t mask_value = master_mask_oblique_63[x];
-      master_mask_horizontal[x * stride + y] = master_mask_vertical[x];
-      master_mask_oblique_27[x * stride + y] = mask_value;
-      master_mask_oblique_117[kWedgeMaskMasterSize - 1 - x] = 64 - mask_value;
-      master_mask_oblique_153[(kWedgeMaskMasterSize - 1 - x) * stride + y] =
+      const uint8_t mask_value = master_mask[kWedgeOblique63][y][x];
+      master_mask[kWedgeHorizontal][x][y] = master_mask[kWedgeVertical][y][x];
+      master_mask[kWedgeOblique27][x][y] = mask_value;
+      master_mask[kWedgeOblique117][y][kWedgeMaskMasterSize - 1 - x] =
+          64 - mask_value;
+      master_mask[kWedgeOblique153][(kWedgeMaskMasterSize - 1 - x)][y] =
           64 - mask_value;
     }
-    master_mask_vertical += stride;
-    master_mask_oblique_63 += stride;
-    master_mask_oblique_117 += stride;
   }
 
   // Generate wedge masks.
@@ -231,7 +216,7 @@ bool GenerateWedgeMask(uint8_t* const wedge_master_mask_data,
           (*wedge_masks)[block_size_index][flip_sign][wedge_index][0];
       uint8_t* wedge_masks_row_flip =
           (*wedge_masks)[block_size_index][1 - flip_sign][wedge_index][0];
-      master_mask_row = &master_mask[direction][offset_y * stride + offset_x];
+      uint8_t* master_mask_row = &master_mask[direction][offset_y][offset_x];
       for (int y = 0; y < height; ++y) {
         memcpy(wedge_masks_row, master_mask_row, width);
         for (int x = 0; x < width; ++x) {
@@ -239,7 +224,7 @@ bool GenerateWedgeMask(uint8_t* const wedge_master_mask_data,
         }
         wedge_masks_row += width;
         wedge_masks_row_flip += width;
-        master_mask_row += stride;
+        master_mask_row += kWedgeMaskMasterSize;
       }
     }
 

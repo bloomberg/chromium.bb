@@ -92,9 +92,6 @@ struct DecoderState {
   std::array<bool, kNumReferenceFrameTypes> reference_frame_sign_bias = {};
   std::array<RefCountedBufferPtr, kNumReferenceFrameTypes> reference_frame;
   RefCountedBufferPtr current_frame;
-  // wedge_master_mask has to be initialized to zero.
-  std::array<uint8_t, 6 * kWedgeMaskMasterSize* kWedgeMaskMasterSize>
-      wedge_master_mask = {};
   WedgeMaskArray wedge_masks;
   Array2D<TemporalMotionVector> motion_field_mv;
 };

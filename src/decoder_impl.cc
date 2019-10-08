@@ -105,8 +105,7 @@ StatusCode DecoderImpl::Init() {
     LIBGAV1_DLOG(ERROR, "encoded_frames_.Init() failed.");
     return kLibgav1StatusOutOfMemory;
   }
-  if (!GenerateWedgeMask(state_.wedge_master_mask.data(),
-                         &state_.wedge_masks)) {
+  if (!GenerateWedgeMask(&state_.wedge_masks)) {
     LIBGAV1_DLOG(ERROR, "GenerateWedgeMask() failed.");
     return kLibgav1StatusOutOfMemory;
   }

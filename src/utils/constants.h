@@ -130,7 +130,6 @@ enum {
   kQuantizedCoefficientBufferSize = (32 + kQuantizedCoefficientBufferPadding) *
                                     (32 + kQuantizedCoefficientBufferPadding),
   kWedgeMaskMasterSize = 64,
-  kMaxMaskBlockSize = kWedgeMaskMasterSize * kWedgeMaskMasterSize,
   kMaxFrameDistance = 31,
   kReferenceFrameScalePrecision = 14,
   kNumWienerCoefficients = 3,
