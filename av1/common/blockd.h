@@ -908,25 +908,40 @@ static INLINE TX_TYPE av1_get_tx_type(PLANE_TYPE plane_type,
 void av1_setup_block_planes(MACROBLOCKD *xd, int ss_x, int ss_y,
                             const int num_planes);
 
+/*
+ * Logic to generate the lookup table:
+ *
+ * TX_SIZE tx_size = max_txsize_rect_lookup[bsize];
+ * int depth = 0;
+ * while (depth < MAX_TX_DEPTH && tx_size != TX_4X4) {
+ *   depth++;
+ *   tx_size = sub_tx_size_map[tx_size];
+ * }
+ */
 static INLINE int bsize_to_max_depth(BLOCK_SIZE bsize) {
-  TX_SIZE tx_size = max_txsize_rect_lookup[bsize];
-  int depth = 0;
-  while (depth < MAX_TX_DEPTH && tx_size != TX_4X4) {
-    depth++;
-    tx_size = sub_tx_size_map[tx_size];
-  }
-  return depth;
+  static const uint8_t bsize_to_max_depth_table[BLOCK_SIZES_ALL] = {
+    0, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+  };
+  return bsize_to_max_depth_table[bsize];
 }
 
+/*
+ * Logic to generate the lookup table:
+ *
+ * TX_SIZE tx_size = max_txsize_rect_lookup[bsize];
+ * assert(tx_size != TX_4X4);
+ * int depth = 0;
+ * while (tx_size != TX_4X4) {
+ *   depth++;
+ *   tx_size = sub_tx_size_map[tx_size];
+ * }
+ * assert(depth < 10);
+ */
 static INLINE int bsize_to_tx_size_cat(BLOCK_SIZE bsize) {
-  TX_SIZE tx_size = max_txsize_rect_lookup[bsize];
-  assert(tx_size != TX_4X4);
-  int depth = 0;
-  while (tx_size != TX_4X4) {
-    depth++;
-    tx_size = sub_tx_size_map[tx_size];
-    assert(depth < 10);
-  }
+  static const uint8_t bsize_to_tx_size_depth_table[BLOCK_SIZES_ALL] = {
+    0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 4, 4, 4, 2, 2, 3, 3, 4, 4,
+  };
+  const int depth = bsize_to_tx_size_depth_table[bsize];
   assert(depth <= MAX_TX_CATS);
   return depth - 1;
 }
