@@ -60,6 +60,7 @@ constexpr Ssrc kSenderSsrc = 1;
 constexpr Ssrc kReceiverSsrc = 2;
 constexpr int kRtpTimebase = 48000;
 constexpr milliseconds kTargetPlayoutDelay{100};
+constexpr milliseconds kTargetPlayoutDelayChange{800};
 constexpr auto kAesKey =
     std::array<uint8_t, 16>{{0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
                              0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f}};
@@ -79,10 +80,12 @@ constexpr auto kOneWayNetworkDelay = milliseconds(23);
 // will be non-key, dependent on the prior frame. Frame 5 (the 6th frame in the
 // zero-based sequence) will include a target playout delay change, an increase
 // to 800 ms. Frames with different IDs will contain vary in their payload data
-// size, but are always 2 or more packets' worth of data.
+// size, but are always 3 or more packets' worth of data.
 struct SimulatedFrame : public EncodedFrame {
   static constexpr milliseconds kFrameDuration = milliseconds(10);
   static constexpr milliseconds kTargetPlayoutDelayChange = milliseconds(800);
+
+  static constexpr int kPlayoutChangeAtFrame = 5;
 
   SimulatedFrame(Clock::time_point first_frame_reference_time, int which) {
     frame_id = FrameId::first() + which;
@@ -97,11 +100,11 @@ struct SimulatedFrame : public EncodedFrame {
         GetRtpStartTime() +
         RtpTimeDelta::FromDuration(kFrameDuration * which, kRtpTimebase);
     reference_time = first_frame_reference_time + kFrameDuration * which;
-    if (which == 5) {
+    if (which == kPlayoutChangeAtFrame) {
       new_playout_delay = kTargetPlayoutDelayChange;
     }
     constexpr int kAdditionalBytesEachSuccessiveFrame = 3;
-    buffer_.resize(2 * kMaxRtpPacketSize +
+    buffer_.resize(3 * kMaxRtpPacketSize +
                    which * kAdditionalBytesEachSuccessiveFrame);
     for (size_t i = 0; i < buffer_.size(); ++i) {
       buffer_[i] = static_cast<uint8_t>(which + static_cast<int>(i));
@@ -113,6 +116,11 @@ struct SimulatedFrame : public EncodedFrame {
     return RtpTimeTicks::FromTimeSinceOrigin(seconds(0), kRtpTimebase);
   }
 
+  static milliseconds GetExpectedPlayoutDelay(int which) {
+    return (which < kPlayoutChangeAtFrame) ? kTargetPlayoutDelay
+                                           : kTargetPlayoutDelayChange;
+  }
+
  private:
   std::vector<uint8_t> buffer_;
 };
@@ -120,6 +128,7 @@ struct SimulatedFrame : public EncodedFrame {
 // static
 constexpr milliseconds SimulatedFrame::kFrameDuration;
 constexpr milliseconds SimulatedFrame::kTargetPlayoutDelayChange;
+constexpr int SimulatedFrame::kPlayoutChangeAtFrame;
 
 // Processes packets from the Receiver under test, as a real Sender might, and
 // allows the unit tests to set expectations on events of interest to confirm
@@ -264,7 +273,7 @@ class MockEnvironment : public Environment {
 
 class MockConsumer : public Receiver::Consumer {
  public:
-  MOCK_METHOD0(OnFramesComplete, void());
+  MOCK_METHOD1(OnFrameComplete, void(FrameId frame_id));
 };
 
 class ReceiverTest : public testing::Test {
@@ -298,6 +307,42 @@ class ReceiverTest : public testing::Test {
 
   void AdvanceClockAndRunTasks(Clock::duration delta) { clock_.Advance(delta); }
   void RunTasksUntilIdle() { task_runner_.RunTasksUntilIdle(); }
+
+  // Consume one frame from the Receiver, and verify that it is the same as the
+  // |sent_frame|. Exception: The |reference_time| is the playout time on the
+  // Receiver's end, while it refers to the capture time on the Sender's end.
+  void ConsumeAndVerifyFrame(const SimulatedFrame& sent_frame) {
+    SCOPED_TRACE(testing::Message() << "for frame " << sent_frame.frame_id);
+
+    const int payload_size = receiver()->AdvanceToNextFrame();
+    ASSERT_NE(Receiver::kNoFramesReady, payload_size);
+    EncodedFrame received_frame;
+    std::vector<uint8_t> buffer(payload_size);
+    received_frame.data = absl::Span<uint8_t>(buffer);
+    receiver()->ConsumeNextFrame(&received_frame);
+
+    EXPECT_EQ(sent_frame.dependency, received_frame.dependency);
+    EXPECT_EQ(sent_frame.frame_id, received_frame.frame_id);
+    EXPECT_EQ(sent_frame.referenced_frame_id,
+              received_frame.referenced_frame_id);
+    EXPECT_EQ(sent_frame.rtp_timestamp, received_frame.rtp_timestamp);
+    EXPECT_EQ(sent_frame.reference_time + kOneWayNetworkDelay +
+                  SimulatedFrame::GetExpectedPlayoutDelay(sent_frame.frame_id -
+                                                          FrameId::first()),
+              received_frame.reference_time);
+    EXPECT_EQ(sent_frame.new_playout_delay, received_frame.new_playout_delay);
+    EXPECT_EQ(sent_frame.data, received_frame.data);
+  }
+
+  // Consume zero or more frames from the Receiver, verifying that they are the
+  // same as the SimulatedFrame that was sent.
+  void ConsumeAndVerifyFrames(int first,
+                              int last,
+                              Clock::time_point start_time) {
+    for (int i = first; i <= last; ++i) {
+      ConsumeAndVerifyFrame(SimulatedFrame(start_time, i));
+    }
+  }
 
  private:
   FakeClock clock_;
@@ -378,9 +423,11 @@ TEST_F(ReceiverTest, ReceivesFramesInOrder) {
   sender()->SendSenderReport(start_time, SimulatedFrame::GetRtpStartTime());
   AdvanceClockAndRunTasks(kOneWayNetworkDelay);
 
-  EXPECT_CALL(*consumer(), OnFramesComplete()).Times(10);
+  EXPECT_CALL(*consumer(), OnFrameComplete(_)).Times(10);
   for (int i = 0; i <= 9; ++i) {
-    EXPECT_CALL(*sender(), OnReceiverCheckpoint(FrameId::first() + i, _))
+    EXPECT_CALL(*sender(), OnReceiverCheckpoint(
+                               FrameId::first() + i,
+                               SimulatedFrame::GetExpectedPlayoutDelay(i)))
         .Times(1);
     EXPECT_CALL(*sender(), OnReceiverIsMissingPackets(_)).Times(0);
 
@@ -396,18 +443,18 @@ TEST_F(ReceiverTest, ReceivesFramesInOrder) {
     testing::Mock::VerifyAndClearExpectations(sender());
   }
 
-  // TODO(miu): In a soon-upcoming commit: Use AdvanceToNextFrame() and
-  // ConsumeNextFrame() to extract the 10 frames out of the Receiver, and ensure
-  // their data and metadata match expectations.
-
   // When the Receiver has all of the frames and they are complete, it should
   // send out a low-frequency periodic RTCP "ping." Verify that there is one and
   // only one "ping" sent when the clock moves forward by one default report
   // interval during a period of inactivity.
-  EXPECT_CALL(*sender(), OnReceiverCheckpoint(FrameId::first() + 9, _))
+  EXPECT_CALL(*sender(), OnReceiverCheckpoint(FrameId::first() + 9,
+                                              kTargetPlayoutDelayChange))
       .Times(1);
   AdvanceClockAndRunTasks(kRtcpReportInterval);
   testing::Mock::VerifyAndClearExpectations(sender());
+
+  ConsumeAndVerifyFrames(0, 9, start_time);
+  EXPECT_EQ(Receiver::kNoFramesReady, receiver()->AdvanceToNextFrame());
 }
 
 // Tests that the Receiver processes RTP packets, can receive frames out of
@@ -427,7 +474,8 @@ TEST_F(ReceiverTest, ReceivesFramesOutOfOrder) {
       case 3: {
         // Note that frame 4 will not yet be known to the Receiver, and so it
         // should not be mentioned in any of the feedback for this case.
-        EXPECT_CALL(*sender(), OnReceiverCheckpoint(FrameId::first() - 1, _))
+        EXPECT_CALL(*sender(), OnReceiverCheckpoint(FrameId::first() - 1,
+                                                    kTargetPlayoutDelay))
             .Times(AtLeast(1));
         EXPECT_CALL(
             *sender(),
@@ -440,14 +488,12 @@ TEST_F(ReceiverTest, ReceivesFramesOutOfOrder) {
                         PacketNack{FrameId::first() + 2, kAllPacketsLost},
                     })))
             .Times(AtLeast(1));
-        // The consumer should never be notified, since frame 0 (the first
-        // frame) must be completed before consumption of any frames can happen.
-        EXPECT_CALL(*consumer(), OnFramesComplete()).Times(0);
         break;
       }
 
       case 4: {
-        EXPECT_CALL(*sender(), OnReceiverCheckpoint(FrameId::first() - 1, _))
+        EXPECT_CALL(*sender(), OnReceiverCheckpoint(FrameId::first() - 1,
+                                                    kTargetPlayoutDelay))
             .Times(AtLeast(1));
         EXPECT_CALL(*sender(),
                     OnReceiverHasFrames(std::vector<FrameId>(
@@ -460,12 +506,12 @@ TEST_F(ReceiverTest, ReceivesFramesOutOfOrder) {
                         PacketNack{FrameId::first() + 2, kAllPacketsLost},
                     })))
             .Times(AtLeast(1));
-        EXPECT_CALL(*consumer(), OnFramesComplete()).Times(0);
         break;
       }
 
       case 2: {
-        EXPECT_CALL(*sender(), OnReceiverCheckpoint(FrameId::first() - 1, _))
+        EXPECT_CALL(*sender(), OnReceiverCheckpoint(FrameId::first() - 1,
+                                                    kTargetPlayoutDelay))
             .Times(AtLeast(1));
         EXPECT_CALL(*sender(), OnReceiverHasFrames(std::vector<FrameId>(
                                    {FrameId::first() + 2, FrameId::first() + 3,
@@ -477,12 +523,12 @@ TEST_F(ReceiverTest, ReceivesFramesOutOfOrder) {
                         PacketNack{FrameId::first() + 1, kAllPacketsLost},
                     })))
             .Times(AtLeast(1));
-        EXPECT_CALL(*consumer(), OnFramesComplete()).Times(0);
         break;
       }
 
       case 0: {
-        EXPECT_CALL(*sender(), OnReceiverCheckpoint(FrameId::first(), _))
+        EXPECT_CALL(*sender(),
+                    OnReceiverCheckpoint(FrameId::first(), kTargetPlayoutDelay))
             .Times(AtLeast(1));
         EXPECT_CALL(*sender(), OnReceiverHasFrames(std::vector<FrameId>(
                                    {FrameId::first() + 2, FrameId::first() + 3,
@@ -492,22 +538,23 @@ TEST_F(ReceiverTest, ReceivesFramesOutOfOrder) {
                     OnReceiverIsMissingPackets(std::vector<PacketNack>(
                         {PacketNack{FrameId::first() + 1, kAllPacketsLost}})))
             .Times(AtLeast(1));
-        EXPECT_CALL(*consumer(), OnFramesComplete()).Times(1);
         break;
       }
 
       case 1: {
-        EXPECT_CALL(*sender(), OnReceiverCheckpoint(FrameId::first() + 4, _))
+        EXPECT_CALL(*sender(), OnReceiverCheckpoint(FrameId::first() + 4,
+                                                    kTargetPlayoutDelay))
             .Times(AtLeast(1));
         EXPECT_CALL(*sender(), OnReceiverHasFrames(_)).Times(0);
         EXPECT_CALL(*sender(), OnReceiverIsMissingPackets(_)).Times(0);
-        EXPECT_CALL(*consumer(), OnFramesComplete()).Times(1);
         break;
       }
 
       default:
         OSP_NOTREACHED();
     }
+
+    EXPECT_CALL(*consumer(), OnFrameComplete(FrameId::first() + i)).Times(1);
 
     sender()->SetFrameBeingSent(SimulatedFrame(start_time, i));
     sender()->SendRtpPackets(sender()->GetAllPacketIds(i));
@@ -522,9 +569,8 @@ TEST_F(ReceiverTest, ReceivesFramesOutOfOrder) {
     testing::Mock::VerifyAndClearExpectations(consumer());
   }
 
-  // TODO(miu): In a soon-upcoming commit: Use AdvanceToNextFrame() and
-  // ConsumeNextFrame() to extract the 10 frames out of the Receiver, and ensure
-  // their data and metadata match expectations.
+  ConsumeAndVerifyFrames(0, 4, start_time);
+  EXPECT_EQ(Receiver::kNoFramesReady, receiver()->AdvanceToNextFrame());
 }
 
 // Tests that the Receiver will respond to a key frame request from its client
@@ -538,16 +584,17 @@ TEST_F(ReceiverTest, RequestsKeyFrameToRectifyPictureLoss) {
   AdvanceClockAndRunTasks(kOneWayNetworkDelay);
 
   // Send and Receive three frames in-order, normally.
-  EXPECT_CALL(*consumer(), OnFramesComplete()).Times(3);
   for (int i = 0; i <= 2; ++i) {
-    EXPECT_CALL(*sender(), OnReceiverCheckpoint(FrameId::first() + i, _))
+    EXPECT_CALL(*consumer(), OnFrameComplete(FrameId::first() + i)).Times(1);
+    EXPECT_CALL(*sender(),
+                OnReceiverCheckpoint(FrameId::first() + i, kTargetPlayoutDelay))
         .Times(1);
     sender()->SetFrameBeingSent(SimulatedFrame(start_time, i));
     sender()->SendRtpPackets(sender()->GetAllPacketIds(0));
     RunTasksUntilIdle();
     testing::Mock::VerifyAndClearExpectations(sender());
+    testing::Mock::VerifyAndClearExpectations(consumer());
   }
-  testing::Mock::VerifyAndClearExpectations(consumer());
 
   // Simulate the Consumer requesting a key frame after picture loss (e.g., a
   // decoder failure). Ensure the Sender is immediately notified.
@@ -558,8 +605,9 @@ TEST_F(ReceiverTest, RequestsKeyFrameToRectifyPictureLoss) {
 
   // The Sender sends another frame that is not a key frame and, upon receipt,
   // the Receiver should repeat its "cry" for a key frame.
-  EXPECT_CALL(*consumer(), OnFramesComplete()).Times(1);
-  EXPECT_CALL(*sender(), OnReceiverCheckpoint(FrameId::first() + 3, _))
+  EXPECT_CALL(*consumer(), OnFrameComplete(FrameId::first() + 3)).Times(1);
+  EXPECT_CALL(*sender(),
+              OnReceiverCheckpoint(FrameId::first() + 3, kTargetPlayoutDelay))
       .Times(1);
   EXPECT_CALL(*sender(), OnReceiverIndicatesPictureLoss()).Times(1);
   sender()->SetFrameBeingSent(SimulatedFrame(start_time, 3));
@@ -571,8 +619,9 @@ TEST_F(ReceiverTest, RequestsKeyFrameToRectifyPictureLoss) {
   // Finally, the Sender responds to the PLI condition by sending a key frame.
   // Confirm the Receiver has stopped indicating picture loss after having
   // received the key frame.
-  EXPECT_CALL(*consumer(), OnFramesComplete()).Times(1);
-  EXPECT_CALL(*sender(), OnReceiverCheckpoint(FrameId::first() + 4, _))
+  EXPECT_CALL(*consumer(), OnFrameComplete(FrameId::first() + 4)).Times(1);
+  EXPECT_CALL(*sender(),
+              OnReceiverCheckpoint(FrameId::first() + 4, kTargetPlayoutDelay))
       .Times(1);
   EXPECT_CALL(*sender(), OnReceiverIndicatesPictureLoss()).Times(0);
   SimulatedFrame frame(start_time, 4);
@@ -596,38 +645,168 @@ TEST_F(ReceiverTest, EatsItsFill) {
   AdvanceClockAndRunTasks(kOneWayNetworkDelay);
 
   // Send and Receive the maximum possible number of frames in-order, normally.
-  EXPECT_CALL(*consumer(), OnFramesComplete()).Times(kMaxUnackedFrames);
   for (int i = 0; i < kMaxUnackedFrames; ++i) {
-    EXPECT_CALL(*sender(), OnReceiverCheckpoint(FrameId::first() + i, _))
+    EXPECT_CALL(*consumer(), OnFrameComplete(FrameId::first() + i)).Times(1);
+    EXPECT_CALL(*sender(), OnReceiverCheckpoint(
+                               FrameId::first() + i,
+                               SimulatedFrame::GetExpectedPlayoutDelay(i)))
         .Times(1);
     sender()->SetFrameBeingSent(SimulatedFrame(start_time, i));
     sender()->SendRtpPackets(sender()->GetAllPacketIds(0));
     RunTasksUntilIdle();
     testing::Mock::VerifyAndClearExpectations(sender());
+    testing::Mock::VerifyAndClearExpectations(consumer());
   }
-  testing::Mock::VerifyAndClearExpectations(consumer());
 
   // Sending one more frame should be ignored. Over and over. None of the
   // feedback reports from the Receiver should indicate it is collecting packets
   // for future frames.
-  constexpr int kIgnoredFrame = kMaxUnackedFrames;
+  int ignored_frame = kMaxUnackedFrames;
   for (int i = 0; i < 5; ++i) {
-    EXPECT_CALL(*consumer(), OnFramesComplete()).Times(0);
+    EXPECT_CALL(*consumer(), OnFrameComplete(_)).Times(0);
     EXPECT_CALL(*sender(),
-                OnReceiverCheckpoint(FrameId::first() + (kIgnoredFrame - 1), _))
+                OnReceiverCheckpoint(FrameId::first() + (ignored_frame - 1),
+                                     kTargetPlayoutDelayChange))
         .Times(AtLeast(1));
     EXPECT_CALL(*sender(), OnReceiverIsMissingPackets(_)).Times(0);
-    sender()->SetFrameBeingSent(SimulatedFrame(start_time, kIgnoredFrame));
+    sender()->SetFrameBeingSent(SimulatedFrame(start_time, ignored_frame));
     sender()->SendRtpPackets(sender()->GetAllPacketIds(0));
     AdvanceClockAndRunTasks(kRtcpReportInterval);
     testing::Mock::VerifyAndClearExpectations(sender());
     testing::Mock::VerifyAndClearExpectations(consumer());
   }
 
-  // TODO(miu): In a soon-upcoming commit: Use AdvanceToNextFrame() and
-  // ConsumeNextFrame() to start extracting frames out of the Receiver, and
-  // ensure the queue drains and the Receiver resumes collecting packets for
-  // later frames.
+  // Consume only one frame, and confirm the Receiver allows only one frame more
+  // to be received.
+  ConsumeAndVerifyFrames(0, 0, start_time);
+  int no_longer_ignored_frame = ignored_frame;
+  ++ignored_frame;
+  EXPECT_CALL(*consumer(),
+              OnFrameComplete(FrameId::first() + no_longer_ignored_frame))
+      .Times(1);
+  EXPECT_CALL(*sender(),
+              OnReceiverCheckpoint(FrameId::first() + no_longer_ignored_frame,
+                                   kTargetPlayoutDelayChange))
+      .Times(AtLeast(1));
+  EXPECT_CALL(*sender(), OnReceiverIsMissingPackets(_)).Times(0);
+  // This frame should be received successfully.
+  sender()->SetFrameBeingSent(
+      SimulatedFrame(start_time, no_longer_ignored_frame));
+  sender()->SendRtpPackets(sender()->GetAllPacketIds(0));
+  // This second frame should be ignored, however.
+  sender()->SetFrameBeingSent(SimulatedFrame(start_time, ignored_frame));
+  sender()->SendRtpPackets(sender()->GetAllPacketIds(0));
+  AdvanceClockAndRunTasks(kRtcpReportInterval);
+  testing::Mock::VerifyAndClearExpectations(sender());
+  testing::Mock::VerifyAndClearExpectations(consumer());
+}
+
+// Tests that incomplete frames that would be played-out too late are dropped,
+// but only as inter-frame data dependency requirements permit, and only if no
+// target playout delay change information would have been missed.
+TEST_F(ReceiverTest, DropsLateFrames) {
+  // Send the initial Sender Report with lip-sync timing information to
+  // "unblock" the Receiver.
+  const Clock::time_point start_time = FakeClock::now();
+  sender()->SendSenderReport(start_time, SimulatedFrame::GetRtpStartTime());
+  AdvanceClockAndRunTasks(kOneWayNetworkDelay);
+
+  // Before any packets have been sent/received, the Receiver should indicate no
+  // frames are ready.
+  EXPECT_EQ(Receiver::kNoFramesReady, receiver()->AdvanceToNextFrame());
+
+  // Set a ridiculously-large estimated player processing time so that the logic
+  // thinks every frame going to play out too late.
+  receiver()->SetPlayerProcessingTime(seconds(3));
+
+  // In this test there are eight frames total:
+  //   - Frame 0: Key frame.
+  //   - Frames 1-4: Non-key frames.
+  //   - Frame 5: Non-key frame that contains a target playout delay change.
+  //   - Frame 6: Key frame.
+  //   - Frame 7: Non-key frame.
+  ASSERT_EQ(SimulatedFrame::kPlayoutChangeAtFrame, 5);
+  SimulatedFrame frames[8] = {{start_time, 0}, {start_time, 1}, {start_time, 2},
+                              {start_time, 3}, {start_time, 4}, {start_time, 5},
+                              {start_time, 6}, {start_time, 7}};
+  frames[6].dependency = EncodedFrame::KEY_FRAME;
+  frames[6].referenced_frame_id = frames[6].frame_id;
+
+  // Send just packet 1 (NOT packet 0) of all the frames. The Receiver should
+  // never notify the consumer via the callback, nor report that any frames are
+  // ready, because none of the frames have been completely received.
+  EXPECT_CALL(*consumer(), OnFrameComplete(_)).Times(0);
+  EXPECT_CALL(*sender(), OnReceiverCheckpoint(_, _)).Times(0);
+  for (int i = 0; i <= 7; ++i) {
+    sender()->SetFrameBeingSent(frames[i]);
+    // Assumption: There are at least three packets in each frame, else the test
+    // is not exercising the logic meaningfully.
+    ASSERT_LE(size_t{3}, sender()->GetAllPacketIds(0).size());
+    sender()->SendRtpPackets({FramePacketId{1}});
+  }
+  RunTasksUntilIdle();
+  testing::Mock::VerifyAndClearExpectations(consumer());
+  testing::Mock::VerifyAndClearExpectations(sender());
+  EXPECT_EQ(Receiver::kNoFramesReady, receiver()->AdvanceToNextFrame());
+
+  // Send all the packets of Frame 6 (the second key frame) and Frame 7. The
+  // Receiver still cannot drop any frames because it has not seen packet 0 of
+  // every prior frame. In other words, it cannot ignore any possibility of a
+  // target playout delay change from the Sender.
+  EXPECT_CALL(*consumer(), OnFrameComplete(frames[6].frame_id)).Times(1);
+  EXPECT_CALL(*consumer(), OnFrameComplete(frames[7].frame_id)).Times(1);
+  EXPECT_CALL(*sender(), OnReceiverCheckpoint(_, _)).Times(0);
+  for (int i = 6; i <= 7; ++i) {
+    sender()->SetFrameBeingSent(frames[i]);
+    sender()->SendRtpPackets(sender()->GetAllPacketIds(0));
+  }
+  RunTasksUntilIdle();
+  testing::Mock::VerifyAndClearExpectations(consumer());
+  testing::Mock::VerifyAndClearExpectations(sender());
+  EXPECT_EQ(Receiver::kNoFramesReady, receiver()->AdvanceToNextFrame());
+
+  // Send packet 0 for all but Frame 5, which contains a target playout delay
+  // change. All but the last two frames will still be incomplete. The Receiver
+  // still cannot drop any frames because it doesn't know whether Frame 5 had a
+  // target playout delay change.
+  EXPECT_CALL(*consumer(), OnFrameComplete(_)).Times(0);
+  EXPECT_CALL(*sender(), OnReceiverCheckpoint(_, _)).Times(0);
+  for (int i = 0; i <= 7; ++i) {
+    if (i == 5) {
+      continue;
+    }
+    sender()->SetFrameBeingSent(frames[i]);
+    sender()->SendRtpPackets({FramePacketId{0}});
+  }
+  RunTasksUntilIdle();
+  testing::Mock::VerifyAndClearExpectations(consumer());
+  testing::Mock::VerifyAndClearExpectations(sender());
+  EXPECT_EQ(Receiver::kNoFramesReady, receiver()->AdvanceToNextFrame());
+
+  // Finally, send packet 0 for Frame 5. Now, the Receiver will drop every frame
+  // before the completely-received second key frame, as they are all still
+  // incomplete and will play-out too late. When it drops the frames, it will
+  // notify the sender of the new checkpoint so that it stops trying to
+  // re-transmit the dropped frames.
+  EXPECT_CALL(*consumer(), OnFrameComplete(_)).Times(0);
+  EXPECT_CALL(*sender(), OnReceiverCheckpoint(FrameId::first() + 7,
+                                              kTargetPlayoutDelayChange))
+      .Times(1);
+  sender()->SetFrameBeingSent(frames[5]);
+  sender()->SendRtpPackets({FramePacketId{0}});
+  RunTasksUntilIdle();
+  // Note: Consuming Frame 6 will trigger the checkpoint advancement, since this
+  // engages the frame skipping/dropping logic.
+  ConsumeAndVerifyFrame(frames[6]);
+  testing::Mock::VerifyAndClearExpectations(consumer());
+  testing::Mock::VerifyAndClearExpectations(sender());
+
+  // Consuming Frame 7 won't trigger any further checkpoint advancement.
+  EXPECT_CALL(*consumer(), OnFrameComplete(_)).Times(0);
+  EXPECT_CALL(*sender(), OnReceiverCheckpoint(_, _)).Times(0);
+  ConsumeAndVerifyFrame(frames[7]);
+  testing::Mock::VerifyAndClearExpectations(consumer());
+  testing::Mock::VerifyAndClearExpectations(sender());
 }
 
 }  // namespace

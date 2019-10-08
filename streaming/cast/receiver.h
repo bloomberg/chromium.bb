@@ -10,6 +10,7 @@
 #include <array>
 #include <chrono>
 #include <memory>
+#include <vector>
 
 #include "absl/types/optional.h"
 #include "absl/types/span.h"
@@ -67,7 +68,7 @@ class ReceiverPacketRouter;
 //
 //    private:
 //     // Receiver::Consumer implementation.
-//     void OnFramesComplete() override {
+//     void OnFrameComplete(FrameId frame_id) override {
 //       std::vector<uint8_t> buffer;
 //       for (;;) {
 //         const int buffer_size_needed = receiver_->AdvanceToNextFrame();
@@ -83,6 +84,10 @@ class ReceiverPacketRouter;
 //         display_.RenderFrame(decoder_.DecodeFrame(encoded_frame.data));
 //       }
 //     }
+//
+//     // NOTE: An implementation may also want to schedule a timer to poll
+//     // receiver_.AdvanceToNextFrame(), if skipping past late frames is
+//     // desired. This would depend on the application, choice of codec, etc.
 //
 //     Receiver* const receiver_;
 //     MyDecoder decoder_;
@@ -109,7 +114,11 @@ class Receiver {
   class Consumer {
    public:
     virtual ~Consumer();
-    virtual void OnFramesComplete() = 0;
+
+    // Called whenever |frame_id| has been completely received. Note that
+    // AdvanceToNextFrame() might indicate no frames are ready (e.g., if frames
+    // are being received out-of-order).
+    virtual void OnFrameComplete(FrameId frame_id) = 0;
   };
 
   // Constructs a Receiver that attaches to the given |environment| and
@@ -157,7 +166,7 @@ class Receiver {
   // relationship with them (e.g., key frames).
   //
   // This method returns kNoFramesReady if there is not currently a frame ready
-  // for consumption. The caller can wait for a Consumer::OnFramesComplete()
+  // for consumption. The caller can wait for a Consumer::OnFrameComplete()
   // notification, or poll this method again later. Otherwise, the number of
   // bytes of encoded data is returned, and the caller should use this to ensure
   // the buffer it passes to ConsumeNextFrame() is large enough.
@@ -200,6 +209,9 @@ class Receiver {
 
     PendingFrame();
     ~PendingFrame();
+
+    // Reset this entry to its initial state, freeing resources.
+    void Reset();
   };
 
   // Get/Set the checkpoint FrameId. This indicates that all of the packets for
@@ -216,14 +228,34 @@ class Receiver {
   // packets to be sent periodically for the life of this Receiver.
   void SendRtcp();
 
-  // Helper to map the given |frame_id| to the element in the |pending_frames_|
-  // circular queue.
-  PendingFrame* GetQueueEntry(FrameId frame_id);
+  // Helpers to map the given |frame_id| to the element in the |pending_frames_|
+  // circular queue. There are both const and non-const versions, but neither
+  // mutate any state (i.e., they are just look-ups).
+  const PendingFrame& GetQueueEntry(FrameId frame_id) const;
+  PendingFrame& GetQueueEntry(FrameId frame_id);
 
-  // Called when the checkpoint frame has moved forward. This will record the
-  // |new_checkpoint| and immediately send an RTCP packet to the Sender to
-  // inform it of the new checkpoint.
-  void AdvanceCheckpointTo(FrameId new_checkpoint);
+  // Record that the target playout delay has changed starting with the given
+  // FrameId.
+  void RecordNewTargetPlayoutDelay(FrameId as_of_frame,
+                                   std::chrono::milliseconds delay);
+
+  // Examine the known target playout delay changes to determine what setting is
+  // in-effect for the given frame.
+  std::chrono::milliseconds ResolveTargetPlayoutDelay(FrameId frame_id) const;
+
+  // Called to move the checkpoint forward. This scans the queue, starting from
+  // |new_checkpoint|, to find the latest in a contiguous sequence of completed
+  // frames. Then, it records that frame as the new checkpoint, and immediately
+  // sends a feedback RTCP packet to the Sender.
+  void AdvanceCheckpoint(FrameId new_checkpoint);
+
+  // Helper to force-drop all frames before |first_kept_frame|, even if they
+  // were never consumed. This will also auto-cancel frames that were never
+  // completely received, artificially moving the checkpoint forward, and
+  // notifying the Sender of that. The caller of this method is responsible for
+  // making sure that frame data dependencies will not be broken by dropping the
+  // frames.
+  void DropAllFramesBefore(FrameId first_kept_frame);
 
   const platform::ClockNowFunctionPtr now_;
   ReceiverPacketRouter* const packet_router_;
@@ -232,7 +264,8 @@ class Receiver {
   CompoundRtcpBuilder rtcp_builder_;
   PacketReceiveStatsTracker stats_tracker_;  // Tracks transmission stats.
   RtpPacketParser rtp_parser_;
-  const int rtp_timebase_;  // RTP timestamp ticks per second.
+  const int rtp_timebase_;    // RTP timestamp ticks per second.
+  const FrameCrypto crypto_;  // Decrypts assembled frames.
 
   // Buffer for serializing/sending RTCP packets.
   const int rtcp_buffer_capacity_;
@@ -276,9 +309,25 @@ class Receiver {
   // |latest_frame_expected_|.
   std::array<PendingFrame, kMaxUnackedFrames> pending_frames_{};
 
+  // Tracks the recent changes to the target playout delay, which is controlled
+  // by the Sender. The FrameId indicates the first frame where a new delay
+  // setting takes effect. This vector is never empty, is kept sorted, and is
+  // pruned to remain as small as possible.
+  //
+  // The target playout delay is the amount of time between a frame's
+  // capture/recording on the Sender and when it should be played-out at the
+  // Receiver.
+  std::vector<std::pair<FrameId, std::chrono::milliseconds>>
+      playout_delay_changes_;
+
   // The consumer to notify when there are one or more frames completed and
   // ready to be consumed.
   Consumer* consumer_ = nullptr;
+
+  // The additional time needed to decode/play-out each frame after being
+  // consumed from this Receiver.
+  platform::Clock::duration player_processing_time_ =
+      kDefaultPlayerProcessingTime;
 
   // The interval between sending ACK/NACK feedback RTCP messages while
   // incomplete frames exist in the queue.

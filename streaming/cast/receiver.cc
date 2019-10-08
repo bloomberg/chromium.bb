@@ -11,6 +11,7 @@
 #include "platform/api/logging.h"
 #include "streaming/cast/constants.h"
 #include "streaming/cast/receiver_packet_router.h"
+#include "util/std_util.h"
 
 using openscreen::platform::Clock;
 
@@ -29,8 +30,6 @@ namespace cast_streaming {
 // infrastructure is ready.
 #define RECEIVER_LOG(level) OSP_LOG_##level << "[SSRC:" << ssrc() << "] "
 #define RECEIVER_VLOG OSP_VLOG << "[SSRC:" << ssrc() << "] "
-#define RECEIVER_LOG_IF(level, condition) \
-  OSP_LOG_IF(level, condition) << "[SSRC:" << ssrc() << "] "
 
 Receiver::Receiver(Environment* environment,
                    ReceiverPacketRouter* packet_router,
@@ -48,6 +47,7 @@ Receiver::Receiver(Environment* environment,
       stats_tracker_(rtp_timebase),
       rtp_parser_(sender_ssrc),
       rtp_timebase_(rtp_timebase),
+      crypto_(aes_key, cast_iv_mask),
       rtcp_buffer_capacity_(environment->GetMaxPacketSize()),
       rtcp_buffer_(new uint8_t[rtcp_buffer_capacity_]),
       rtcp_alarm_(environment->now_function(), environment->task_runner()),
@@ -58,6 +58,8 @@ Receiver::Receiver(Environment* environment,
   OSP_CHECK(rtcp_buffer_);
 
   rtcp_builder_.SetPlayoutDelay(initial_target_playout_delay);
+  playout_delay_changes_.emplace_back(FrameId::first() - 1,
+                                      initial_target_playout_delay);
 
   packet_router_->OnReceiverCreated(rtcp_session_.sender_ssrc(), this);
 }
@@ -71,7 +73,7 @@ void Receiver::SetConsumer(Consumer* consumer) {
 }
 
 void Receiver::SetPlayerProcessingTime(Clock::duration needed_time) {
-  OSP_UNIMPLEMENTED();
+  player_processing_time_ = std::max(Clock::duration::zero(), needed_time);
 }
 
 void Receiver::RequestKeyFrame() {
@@ -82,12 +84,78 @@ void Receiver::RequestKeyFrame() {
 }
 
 int Receiver::AdvanceToNextFrame() {
-  OSP_UNIMPLEMENTED();
-  return -1;
+  const FrameId immediate_next_frame = last_frame_consumed_ + 1;
+
+  // Scan the queue for the next frame that should be consumed. Typically, this
+  // is the very next frame; but if it is incomplete and already late for
+  // playout, consider skipping-ahead.
+  for (FrameId f = immediate_next_frame; f <= latest_frame_expected_; ++f) {
+    PendingFrame& entry = GetQueueEntry(f);
+    if (entry.collector.is_complete()) {
+      const EncryptedFrame& encrypted_frame =
+          entry.collector.PeekAtAssembledFrame();
+      if (f == immediate_next_frame) {  // Typical case.
+        RECEIVER_VLOG << "AdvanceToNextFrame: Next in sequence (" << f << ')';
+        return FrameCrypto::GetPlaintextSize(encrypted_frame);
+      }
+      if (encrypted_frame.dependency != EncodedFrame::DEPENDS_ON_ANOTHER) {
+        // Found a frame after skipping past some frames. Drop the ones being
+        // skipped, advancing |last_frame_consumed_| before returning.
+        RECEIVER_VLOG << "AdvanceToNextFrame: Skipping-ahead → " << f;
+        DropAllFramesBefore(f);
+        return FrameCrypto::GetPlaintextSize(encrypted_frame);
+      }
+      // Conclusion: The frame in the current queue entry is complete, but
+      // depends on a prior incomplete frame. Continue scanning...
+    }
+
+    // Do not consider skipping past this frame if its estimated capture time is
+    // unknown. The implication here is that, if |estimated_capture_time| is
+    // set, the Receiver also knows whether any target playout delay changes
+    // were communicated from the Sender in the frame's first RTP packet.
+    if (!entry.estimated_capture_time) {
+      break;
+    }
+
+    // If this incomplete frame is not yet late for playout, simply wait for the
+    // rest of its packets to come in.
+    const auto playout_time =
+        *entry.estimated_capture_time + ResolveTargetPlayoutDelay(f);
+    if (playout_time > (now_() + player_processing_time_)) {
+      break;
+    }
+  }
+
+  RECEIVER_VLOG << "AdvanceToNextFrame: No frames ready. Last consumed was "
+                << last_frame_consumed_ << '.';
+  return kNoFramesReady;
 }
 
 void Receiver::ConsumeNextFrame(EncodedFrame* frame) {
-  OSP_UNIMPLEMENTED();
+  // Assumption: The required call to AdvanceToNextFrame() ensures that
+  // |last_frame_consumed_| is set to one before the frame to be consumed here.
+  const FrameId frame_id = last_frame_consumed_ + 1;
+  OSP_CHECK_LE(frame_id, checkpoint_frame());
+
+  // Decrypt the frame, populating the given output |frame|.
+  PendingFrame& entry = GetQueueEntry(frame_id);
+  OSP_DCHECK(entry.collector.is_complete());
+  crypto_.Decrypt(entry.collector.PeekAtAssembledFrame(), frame);
+  OSP_DCHECK(entry.estimated_capture_time);
+  frame->reference_time =
+      *entry.estimated_capture_time + ResolveTargetPlayoutDelay(frame_id);
+
+  RECEIVER_VLOG
+      << "ConsumeNextFrame → " << frame->frame_id << ": " << frame->data.size()
+      << " payload bytes, RTP Timestamp "
+      << frame->rtp_timestamp.ToTimeSinceOrigin<microseconds>(rtp_timebase_)
+             .count()
+      << " µs, to play-out "
+      << duration_cast<microseconds>(frame->reference_time - now_()).count()
+      << " µs from now.";
+
+  entry.Reset();
+  last_frame_consumed_ = frame_id;
 }
 
 void Receiver::OnReceivedRtpPacket(Clock::time_point arrival_time,
@@ -121,7 +189,7 @@ void Receiver::OnReceivedRtpPacket(Clock::time_point arrival_time,
     do {
       ++latest_frame_expected_;
       GetQueueEntry(latest_frame_expected_)
-          ->collector.set_frame_id(latest_frame_expected_);
+          .collector.set_frame_id(latest_frame_expected_);
     } while (latest_frame_expected_ < part->frame_id);
     RECEIVER_VLOG << "Advanced latest frame expected to "
                   << latest_frame_expected_;
@@ -141,8 +209,8 @@ void Receiver::OnReceivedRtpPacket(Clock::time_point arrival_time,
     return;
   }
 
-  PendingFrame* const pending_frame = GetQueueEntry(part->frame_id);
-  FrameCollector& collector = pending_frame->collector;
+  PendingFrame& pending_frame = GetQueueEntry(part->frame_id);
+  FrameCollector& collector = pending_frame.collector;
   if (collector.is_complete()) {
     // An extra, redundant |packet| was received. Do nothing since the frame was
     // already complete.
@@ -157,7 +225,7 @@ void Receiver::OnReceivedRtpPacket(Clock::time_point arrival_time,
   // computing this frame's (and all future frames') playout time. Process that,
   // but only once.
   if (part->packet_id == FramePacketId{0} &&
-      !pending_frame->estimated_capture_time) {
+      !pending_frame.estimated_capture_time) {
     // Estimate the original capture time of this frame (at the Sender), in
     // terms of the Receiver's clock: First, start with a reference time point
     // from the Sender's clock (the one from the last Sender Report). Then,
@@ -165,7 +233,7 @@ void Receiver::OnReceivedRtpPacket(Clock::time_point arrival_time,
     // Receiver's clock by applying the measured offset between the two clocks.
     // Finally, apply the RTP timestamp difference between the Sender Report and
     // this frame to determine what the original capture time of this frame was.
-    pending_frame->estimated_capture_time =
+    pending_frame.estimated_capture_time =
         last_sender_report_->reference_time + smoothed_clock_offset_.Current() +
         (part->rtp_timestamp - last_sender_report_->rtp_timestamp)
             .ToDuration<Clock::duration>(rtp_timebase_);
@@ -175,8 +243,7 @@ void Receiver::OnReceivedRtpPacket(Clock::time_point arrival_time,
       RECEIVER_LOG(INFO) << "Target playout delay changes to "
                          << part->new_playout_delay.count() << " ms, as of "
                          << part->frame_id;
-      // TODO(miu): In a soon-upcoming commit:
-      // RecordNewTargetPlayoutDelay(part->frame_id, part->new_playout_delay);
+      RecordNewTargetPlayoutDelay(part->frame_id, part->new_playout_delay);
     }
   }
 
@@ -191,26 +258,17 @@ void Receiver::OnReceivedRtpPacket(Clock::time_point arrival_time,
     rtcp_builder_.SetPictureLossIndicator(false);
   }
 
-  // Advance the checkpoint FrameId to the most-recent in the sequence of
-  // contiguously completed frames. If the checkpoint advances, send an ACK to
-  // the Sender and then notify the Consumer.
-  FrameId updated_checkpoint = checkpoint_frame();
-  while (updated_checkpoint < latest_frame_expected_) {
-    const FrameId next = updated_checkpoint + 1;
-    if (!GetQueueEntry(next)->collector.is_complete()) {
-      break;
-    }
-    updated_checkpoint = next;
+  // If this just-completed frame is the one right after the checkpoint frame,
+  // advance the checkpoint forward.
+  if (part->frame_id == (checkpoint_frame() + 1)) {
+    AdvanceCheckpoint(part->frame_id);
   }
-  if (checkpoint_frame() != updated_checkpoint) {
-    RECEIVER_VLOG << "Advancing checkpoint to " << updated_checkpoint;
-    AdvanceCheckpointTo(updated_checkpoint);
-    if (consumer_) {
-      consumer_->OnFramesComplete();
-      // WARNING: Nothing should come after this, since the call to
-      // OnFramesComplete() could result in re-entrant calls into this Receiver!
-      return;
-    }
+
+  if (consumer_) {
+    consumer_->OnFrameComplete(part->frame_id);
+    // WARNING: Nothing should come after this, since the call to
+    // OnFrameComplete() could result in re-entrant calls into this Receiver!
+    return;
   }
 }
 
@@ -258,7 +316,7 @@ void Receiver::SendRtcp() {
   std::vector<PacketNack> packet_nacks;
   std::vector<FrameId> frame_acks;
   for (FrameId f = checkpoint_frame() + 1; f <= latest_frame_expected_; ++f) {
-    FrameCollector& collector = GetQueueEntry(f)->collector;
+    const FrameCollector& collector = GetQueueEntry(f).collector;
     if (collector.is_complete()) {
       frame_acks.push_back(f);
     } else {
@@ -286,19 +344,98 @@ void Receiver::SendRtcp() {
                        last_rtcp_send_time_ + interval);
 }
 
-Receiver::PendingFrame* Receiver::GetQueueEntry(FrameId frame_id) {
-  return &pending_frames_[(frame_id - FrameId::first()) %
-                          pending_frames_.size()];
+const Receiver::PendingFrame& Receiver::GetQueueEntry(FrameId frame_id) const {
+  return const_cast<Receiver*>(this)->GetQueueEntry(frame_id);
 }
 
-void Receiver::AdvanceCheckpointTo(FrameId new_checkpoint) {
+Receiver::PendingFrame& Receiver::GetQueueEntry(FrameId frame_id) {
+  return pending_frames_[(frame_id - FrameId::first()) %
+                         pending_frames_.size()];
+}
+
+void Receiver::RecordNewTargetPlayoutDelay(FrameId as_of_frame,
+                                           milliseconds delay) {
+  OSP_DCHECK_GT(as_of_frame, checkpoint_frame());
+
+  // Prune-out entries from |playout_delay_changes_| that are no longer needed.
+  // At least one entry must always be kept (i.e., there must always be a
+  // "current" setting).
+  const FrameId next_frame = last_frame_consumed_ + 1;
+  const auto keep_one_before_it = std::find_if(
+      std::next(playout_delay_changes_.begin()), playout_delay_changes_.end(),
+      [&](const auto& entry) { return entry.first > next_frame; });
+  playout_delay_changes_.erase(playout_delay_changes_.begin(),
+                               std::prev(keep_one_before_it));
+
+  // Insert the delay change entry, maintaining the ascending ordering of the
+  // vector.
+  const auto insert_it = std::find_if(
+      playout_delay_changes_.begin(), playout_delay_changes_.end(),
+      [&](const auto& entry) { return entry.first > as_of_frame; });
+  playout_delay_changes_.emplace(insert_it, as_of_frame, delay);
+
+  OSP_DCHECK(AreElementsSortedAndUnique(playout_delay_changes_));
+}
+
+milliseconds Receiver::ResolveTargetPlayoutDelay(FrameId frame_id) const {
+  OSP_DCHECK_GT(frame_id, last_frame_consumed_);
+
+#if OSP_DCHECK_IS_ON()
+  // Extra precaution: Ensure all possible playout delay changes are known. In
+  // other words, every unconsumed frame in the queue, up to (and including)
+  // |frame_id|, must have an assigned estimated_capture_time.
+  for (FrameId f = last_frame_consumed_ + 1; f <= frame_id; ++f) {
+    OSP_DCHECK(GetQueueEntry(f).estimated_capture_time)
+        << " don't know whether there was a playout delay change for frame "
+        << f;
+  }
+#endif
+
+  const auto it = std::find_if(
+      playout_delay_changes_.crbegin(), playout_delay_changes_.crend(),
+      [&](const auto& entry) { return entry.first <= frame_id; });
+  OSP_DCHECK(it != playout_delay_changes_.crend());
+  return it->second;
+}
+
+void Receiver::AdvanceCheckpoint(FrameId new_checkpoint) {
   OSP_DCHECK_GT(new_checkpoint, checkpoint_frame());
   OSP_DCHECK_LE(new_checkpoint, latest_frame_expected_);
 
+  while (new_checkpoint < latest_frame_expected_) {
+    const FrameId next = new_checkpoint + 1;
+    if (!GetQueueEntry(next).collector.is_complete()) {
+      break;
+    }
+    new_checkpoint = next;
+  }
+
+  RECEIVER_VLOG << "Advancing checkpoint to " << new_checkpoint;
   set_checkpoint_frame(new_checkpoint);
-  // TODO(miu): In a soon-upcoming commit:
-  // rtcp_builder_.SetPlayoutDelay(ResolveTargetPlayoutDelay(new_checkpoint));
+  rtcp_builder_.SetPlayoutDelay(ResolveTargetPlayoutDelay(new_checkpoint));
   SendRtcp();
+}
+
+void Receiver::DropAllFramesBefore(FrameId first_kept_frame) {
+  // The following DCHECKs are verifying that this method is only being called
+  // because one or more incomplete frames are being skipped-over.
+  const FrameId first_to_drop = last_frame_consumed_ + 1;
+  OSP_DCHECK_GT(first_kept_frame, first_to_drop);
+  OSP_DCHECK_GT(first_kept_frame, checkpoint_frame());
+  OSP_DCHECK_LE(first_kept_frame, latest_frame_expected_);
+
+  // Reset each of the frames being dropped, pretending that they were consumed.
+  for (FrameId f = first_to_drop; f < first_kept_frame; ++f) {
+    PendingFrame& entry = GetQueueEntry(f);
+    // Pedantic sanity-check: Ensure the "target playout delay change" data
+    // dependency was satisfied. See comments in AdvanceToNextFrame().
+    OSP_DCHECK(entry.estimated_capture_time);
+    entry.Reset();
+  }
+  last_frame_consumed_ = first_kept_frame - 1;
+
+  RECEIVER_LOG(INFO) << "Artificially advancing checkpoint after skipping.";
+  AdvanceCheckpoint(first_kept_frame);
 }
 
 Receiver::Consumer::~Consumer() = default;
@@ -306,7 +443,14 @@ Receiver::Consumer::~Consumer() = default;
 Receiver::PendingFrame::PendingFrame() = default;
 Receiver::PendingFrame::~PendingFrame() = default;
 
+void Receiver::PendingFrame::Reset() {
+  collector.Reset();
+  estimated_capture_time = absl::nullopt;
+}
+
 // static
+constexpr milliseconds Receiver::kDefaultPlayerProcessingTime;
+constexpr int Receiver::kNoFramesReady;
 constexpr milliseconds Receiver::kNackFeedbackInterval;
 
 }  // namespace cast_streaming
