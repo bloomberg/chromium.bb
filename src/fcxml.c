@@ -2301,6 +2301,11 @@ FcParseCacheDir (FcConfigParse *parse)
 	data = prefix;
 	goto bail;
     }
+    if (data[0] == 0)
+    {
+	FcConfigMessage (parse, FcSevereWarning, "empty cache directory name ignored");
+	return;
+    }
     if (prefix)
     {
 	size_t plen = strlen ((const char *)prefix);

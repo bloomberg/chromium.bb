@@ -82,7 +82,7 @@ export FONTCONFIG_FILE
 dotest "Basic check"
 prep
 cp $FONT1 $FONT2 $FONTDIR
-if [ -n ${SOURCE_DATE_EPOCH:-} ]; then
+if [ -n ${SOURCE_DATE_EPOCH:-} ] && [ ${#SOURCE_DATE_EPOCH} -gt 0 ]; then
     touch -m -t "`date -d \"@${SOURCE_DATE_EPOCH}\" +%y%m%d%H%M.%S`" $FONTDIR
 fi
 check
@@ -90,7 +90,7 @@ check
 dotest "With a subdir"
 prep
 cp $FONT1 $FONT2 $FONTDIR
-if [ -n ${SOURCE_DATE_EPOCH:-} ]; then
+if [ -n ${SOURCE_DATE_EPOCH:-} ] && [ ${#SOURCE_DATE_EPOCH} -gt 0 ]; then
     touch -m -t "`date -d \"@${SOURCE_DATE_EPOCH}\" +%y%m%d%H%M.%S`" $FONTDIR
 fi
 $FCCACHE $FONTDIR
@@ -100,7 +100,7 @@ dotest "Subdir with a cache file"
 prep
 mkdir $FONTDIR/a
 cp $FONT1 $FONT2 $FONTDIR/a
-if [ -n ${SOURCE_DATE_EPOCH:-} ]; then
+if [ -n ${SOURCE_DATE_EPOCH:-} ] && [ ${#SOURCE_DATE_EPOCH} -gt 0 ]; then
     touch -m -t "`date -d \"@${SOURCE_DATE_EPOCH}\" +%y%m%d%H%M.%S`" $FONTDIR/a
 fi
 $FCCACHE $FONTDIR/a
@@ -113,11 +113,11 @@ mkdir $FONTDIR/a/a
 mkdir $FONTDIR/b
 mkdir $FONTDIR/b/a
 cp $FONT1 $FONTDIR/a
-if [ -n ${SOURCE_DATE_EPOCH:-} ]; then
+if [ -n ${SOURCE_DATE_EPOCH:-} ] && [ ${#SOURCE_DATE_EPOCH} -gt 0 ]; then
     touch -m -t "`date -d \"@${SOURCE_DATE_EPOCH}\" +%y%m%d%H%M.%S`" $FONTDIR/a
 fi
 cp $FONT2 $FONTDIR/b/a
-if [ -n ${SOURCE_DATE_EPOCH:-} ]; then
+if [ -n ${SOURCE_DATE_EPOCH:-} ] && [ ${#SOURCE_DATE_EPOCH} -gt 0 ]; then
     touch -m -t "`date -d \"@${SOURCE_DATE_EPOCH}\" +%y%m%d%H%M.%S`" $FONTDIR/b/a
 fi
 check
@@ -156,7 +156,7 @@ if [ x"$BWRAP" != "x" -a "x$EXEEXT" = "x" ]; then
 dotest "Basic functionality with the bind-mounted cache dir"
 prep
 cp $FONT1 $FONT2 $FONTDIR
-if [ -n ${SOURCE_DATE_EPOCH:-} ]; then
+if [ -n ${SOURCE_DATE_EPOCH:-} ] && [ ${#SOURCE_DATE_EPOCH} -gt 0 ]; then
     touch -m -t "`date -d \"@${SOURCE_DATE_EPOCH}\" +%y%m%d%H%M.%S`" $FONTDIR
 fi
 $FCCACHE $FONTDIR
@@ -198,7 +198,7 @@ rm -rf $TESTTMPDIR out1 out2 xxx flist1 flist2 bind-fonts.conf
 dotest "Different directory content between host and sandbox"
 prep
 cp $FONT1 $FONTDIR
-if [ -n ${SOURCE_DATE_EPOCH:-} ]; then
+if [ -n ${SOURCE_DATE_EPOCH:-} ] && [ ${#SOURCE_DATE_EPOCH} -gt 0 ]; then
     touch -m -t "`date -d \"@${SOURCE_DATE_EPOCH}\" +%y%m%d%H%M.%S`" $FONTDIR
 fi
 $FCCACHE $FONTDIR
@@ -208,7 +208,7 @@ stat -c '%n %s %y %z' `cat out1` > stat1
 TESTTMPDIR=`mktemp -d /tmp/fontconfig.XXXXXXXX`
 TESTTMP2DIR=`mktemp -d /tmp/fontconfig.XXXXXXXX`
 cp $FONT2 $TESTTMP2DIR
-if [ -n ${SOURCE_DATE_EPOCH:-} ]; then
+if [ -n ${SOURCE_DATE_EPOCH:-} ] && [ ${#SOURCE_DATE_EPOCH} -gt 0 ]; then
     touch -m -t "`date -d \"@${SOURCE_DATE_EPOCH}\" +%y%m%d%H%M.%S`" $TESTTMP2DIR
 fi
 sed "s!@FONTDIR@!$TESTTMPDIR/fonts</dir><dir salt="'"'"salt-to-make-different"'"'">$FONTDIR!
@@ -251,7 +251,7 @@ dotest "Check consistency of MD5 in cache name"
 prep
 mkdir -p $FONTDIR/sub
 cp $FONT1 $FONTDIR/sub
-if [ -n ${SOURCE_DATE_EPOCH:-} ]; then
+if [ -n ${SOURCE_DATE_EPOCH:-} ] && [ ${#SOURCE_DATE_EPOCH} -gt 0 ]; then
     touch -m -t "`date -d \"@${SOURCE_DATE_EPOCH}\" +%y%m%d%H%M.%S`" $FONTDIR/sub
 fi
 $FCCACHE $FONTDIR
@@ -278,7 +278,7 @@ rm -rf $TESTTMPDIR out1 out2 bind-fonts.conf
 dotest "Fallback to uuid"
 prep
 cp $FONT1 $FONTDIR
-if [ -n ${SOURCE_DATE_EPOCH:-} ]; then
+if [ -n ${SOURCE_DATE_EPOCH:-} ] && [ ${#SOURCE_DATE_EPOCH} -gt 0 ]; then
     touch -m -t "`date -d \"@${SOURCE_DATE_EPOCH}\" +%y%m%d%H%M.%S`" $FONTDIR
 fi
 touch -d @`stat -c %Y $FONTDIR` $FONTDIR
@@ -321,7 +321,7 @@ mkdir -p $MyPWD/sysroot/$FONTDIR
 mkdir -p $MyPWD/sysroot/$CACHEDIR
 mkdir -p $MyPWD/sysroot/$MyPWD
 cp $FONT1 $MyPWD/sysroot/$FONTDIR
-if [ -n ${SOURCE_DATE_EPOCH:-} ]; then
+if [ -n ${SOURCE_DATE_EPOCH:-} ] && [ ${#SOURCE_DATE_EPOCH} -gt 0 ]; then
     touch -m -t "`date -d \"@${SOURCE_DATE_EPOCH}\" +%y%m%d%H%M.%S`" $MyPWD/sysroot/$FONTDIR
 fi
 cp $MyPWD/fonts.conf $MyPWD/sysroot/$MyPWD/fonts.conf
