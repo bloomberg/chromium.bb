@@ -3354,41 +3354,48 @@ class CMDUploadTestCase(unittest.TestCase):
             },
         },
     }
-    mockFetchTryJobs.return_value = {
-      '9000': {
-        'id': '9000',
-        'project': 'infra',
-        'bucket': 'luci.infra.try',
-        'created_by': 'user:someone@chromium.org',
-        'created_ts': '147200002222000',
-        'experimental': False,
-        'parameters_json': json.dumps({
-          'builder_name': 'red-bot',
-          'properties': {'category': 'cq'},
-        }),
-        'status': 'COMPLETED',
-        'result': 'FAILURE',
-        'tags': ['user_agent:cq'],
-      },
-      8000: {
-        'id': '8000',
-        'project': 'infra',
-        'bucket': 'luci.infra.try',
-        'created_by': 'user:someone@chromium.org',
-        'created_ts': '147200002222020',
-        'experimental': False,
-        'parameters_json': json.dumps({
-          'builder_name': 'green-bot',
-          'properties': {'category': 'cq'},
-        }),
-        'status': 'COMPLETED',
-        'result': 'SUCCESS',
-        'tags': ['user_agent:cq'],
-      },
-    }
+    mockFetchTryJobs.side_effect = [
+        # Prior patchset - no builds.
+        {},
+        # Prior to prior patchset -- some builds.
+        {
+          '9000': {
+            'id': '9000',
+            'project': 'infra',
+            'bucket': 'luci.infra.try',
+            'created_by': 'user:someone@chromium.org',
+            'created_ts': '147200002222000',
+            'experimental': False,
+            'parameters_json': json.dumps({
+              'builder_name': 'red-bot',
+              'properties': {'category': 'cq'},
+            }),
+            'status': 'COMPLETED',
+            'result': 'FAILURE',
+            'tags': ['user_agent:cq'],
+          },
+          8000: {
+            'id': '8000',
+            'project': 'infra',
+            'bucket': 'luci.infra.try',
+            'created_by': 'user:someone@chromium.org',
+            'created_ts': '147200002222020',
+            'experimental': False,
+            'parameters_json': json.dumps({
+              'builder_name': 'green-bot',
+              'properties': {'category': 'cq'},
+            }),
+            'status': 'COMPLETED',
+            'result': 'SUCCESS',
+            'tags': ['user_agent:cq'],
+          },
+        },
+    ]
     self.assertEqual(0, git_cl.main(['upload', '--retry-failed']))
-    mockFetchTryJobs.assert_called_with(
-        mock.ANY, mock.ANY, 'cr-buildbucket.appspot.com', 7)
+    mockFetchTryJobs.assert_has_calls([
+        mock.call(mock.ANY, mock.ANY, 'cr-buildbucket.appspot.com', patchset=7),
+        mock.call(mock.ANY, mock.ANY, 'cr-buildbucket.appspot.com', patchset=6),
+    ])
     buckets = {'infra/try': {'red-bot': []}}
     mockTriggerTryJobs.assert_called_once_with(
         mock.ANY, mock.ANY, buckets, mock.ANY, 8)

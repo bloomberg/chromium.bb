@@ -568,7 +568,8 @@ def fetch_try_jobs(auth_config, changelist, buildbucket_host,
   return builds
 
 
-def _fetch_latest_builds(auth_config, changelist, buildbucket_host):
+def _fetch_latest_builds(
+    auth_config, changelist, buildbucket_host, latest_patchset=None):
   """Fetches builds from the latest patchset that has builds (within
   the last few patchsets).
 
@@ -576,7 +577,8 @@ def _fetch_latest_builds(auth_config, changelist, buildbucket_host):
     auth_config (auth.AuthConfig): Auth info for Buildbucket
     changelist (Changelist): The CL to fetch builds for
     buildbucket_host (str): Buildbucket host, e.g. "cr-buildbucket.appspot.com"
-
+    lastest_patchset(int|NoneType): the patchset to start fetching builds from.
+      If None (default), starts with the latest available patchset.
   Returns:
     A tuple (builds, patchset) where builds is a dict mapping from build ID to
     build info from Buildbucket, and patchset is the patchset number where
@@ -585,8 +587,13 @@ def _fetch_latest_builds(auth_config, changelist, buildbucket_host):
   assert buildbucket_host
   assert changelist.GetIssue(), 'CL must be uploaded first'
   assert changelist.GetCodereviewServer(), 'CL must be uploaded first'
-  assert changelist.GetMostRecentPatchset()
-  ps = changelist.GetMostRecentPatchset()
+  if latest_patchset is None:
+    assert changelist.GetMostRecentPatchset()
+    ps = changelist.GetMostRecentPatchset()
+  else:
+    assert latest_patchset > 0, latest_patchset
+    ps = latest_patchset
+
   min_ps = max(1, ps - 5)
   while ps >= min_ps:
     builds = fetch_try_jobs(
@@ -4520,8 +4527,9 @@ def CMDupload(parser, args):
       print('Upload failed, so --retry-failed has no effect.')
       return ret
     auth_config = auth.extract_auth_config_from_options(options)
-    builds = fetch_try_jobs(
-        auth_config, cl, options.buildbucket_host, patchset)
+    builds, _ = _fetch_latest_builds(
+        auth_config, cl, options.buildbucket_host,
+        latest_patchset=patchset)
     buckets = _filter_failed(builds)
     if len(buckets) == 0:
       print('No failed tryjobs, so --retry-failed has no effect.')
