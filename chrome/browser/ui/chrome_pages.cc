@@ -96,7 +96,7 @@ void OpenBookmarkManagerForNode(Browser* browser, int64_t node_id) {
 
 #if defined(OS_CHROMEOS) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 void LaunchReleaseNotesInTab(Profile* profile) {
-  GURL url(kChromeReleaseNotesURL);
+  GURL url(BuildQueryString(profile));
   auto displayer = std::make_unique<ScopedTabbedBrowserDisplayer>(profile);
   ShowSingletonTab(displayer->browser(), url);
 }
