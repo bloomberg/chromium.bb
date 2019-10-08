@@ -74,6 +74,8 @@
     elm-paladin
     enguarde-paladin
     eve-arcnext-paladin
+    eve-arcvm-mesa-virgl-next-paladin
+    eve-arcvm-paladin
     eve-paladin
     excelsior-paladin
     expresso-paladin
@@ -2505,6 +2507,8 @@
     elm-paladin-tryjob
     enguarde-paladin-tryjob
     eve-arcnext-paladin-tryjob
+    eve-arcvm-mesa-virgl-next-paladin-tryjob
+    eve-arcvm-paladin-tryjob
     eve-paladin-tryjob
     excelsior-paladin-tryjob
     expresso-paladin-tryjob

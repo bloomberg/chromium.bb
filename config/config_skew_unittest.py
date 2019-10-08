@@ -168,12 +168,17 @@ class ConfigSkewTest(cros_test_lib.TestCase):
         'cq-orchestrator', PCQ_EXCLUDE_BUILDERS)
     sync_paladin_names = []
     sync_cq_names = []
+    kernel_v4_cq_names = []
     for child in master_cq_children:
       sync_paladin_names.append(child.replace('-paladin', '-cq'))
     for child in cq_orchestrator_children:
       sync_cq_names.append(child.replace('-cq', '-paladin'))
+      # The kernel_v4_* builders will not exist in legacy.
+      if '-kernel-v4_' in child:
+        kernel_v4_cq_names.append(child)
     missing_chromeos_config = (list(set(cq_orchestrator_children) -
-                                    set(sync_paladin_names)))
+                                    set(sync_paladin_names) -
+                                    set(kernel_v4_cq_names)))
     missing_build_targets = list(set(master_cq_children) - set(sync_cq_names))
     if missing_chromeos_config:
       self.fail('Build targets need to be added to chromeos_config.py: %s' %

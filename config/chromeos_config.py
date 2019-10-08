@@ -2243,7 +2243,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'arm64-generic',
       'asuka',
       'atlas',
-      'auron_yuna',
       'banjo',
       'banon',
       'beaglebone',
@@ -2258,7 +2257,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'capri',
       'capri-zfpga',
       'caroline',
-      'cave',
       'celes',
       'chell',
       'cheza',
@@ -2267,7 +2265,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'cyan',
       'drallion',
       'edgar',
-      'elm',
       'enguarde',
       'eve',
       'eve-arcnext',
@@ -2340,7 +2337,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'veyron_jerry',
       'veyron_mickey',
       'veyron_minnie',
-      'veyron_rialto',
       'veyron_speedy',
       'veyron_tiger',
       'viking',
@@ -2372,7 +2368,10 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'betty-kernelnext',
       'bubs',
       'caroline-arcnext',
+      'eve-arcvm',  # New board b/116833948
+      'eve-arcvm-mesa-virgl-next',  # New board b/141943184
       'excelsior',
+      'grunt-kernelnext',
       'jacuzzi',
       'kefka-kernelnext',
       'kevin-arc64',
@@ -2388,11 +2387,15 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   # notice, preferably with a comment indicating why and a bug.
   _paladin_experimental_boards = _paladin_new_boards | frozenset([
       'auron_paine', # crbug.com/1008410
+      'auron_yuna',  # temporary hack for crbug.com/1008674
+      'cave',  # temporary hack for crbug.com/1008674
+      'elm',  # temporary hack for crbug.com/1008674
       'fizz-moblab', # crbug.com/995170
       'mistral', # b/140536001
       'moblab-generic-vm', # crbug.com/960998, crbug.com/976297
       'samus-kernelnext', # https://crbug.com/1004618
       'veyron_mighty', # https://crbug.com/1001290
+      'veyron_rialto',  # https://crbug.com/1007997
       'whirlwind', # https://crbug.com/1001714
       'wizpig', # crbug.com/996944
   ])
