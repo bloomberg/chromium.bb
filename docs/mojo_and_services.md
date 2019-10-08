@@ -186,7 +186,7 @@ class PingResponderImpl : example::mojom::PingResponder {
   }
 
  private:
-  mojo::Receiver<example::mojom::PingResponder> Receiver_;
+  mojo::Receiver<example::mojom::PingResponder> receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(PingResponderImpl);
 };
