@@ -120,6 +120,9 @@
         "browse:social:twitter": {
             "DEFAULT": "system_health_mobile_023.wprgo"
         },
+        "browse:social:twitter:2019": {
+            "DEFAULT": "system_health_mobile_34b94b48e8.wprgo"
+        },
         "browse:tech:discourse_infinite_scroll": {
             "DEFAULT": "system_health_mobile_062.wprgo"
         },
