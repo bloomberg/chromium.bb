@@ -587,7 +587,6 @@ void Preferences::RegisterProfilePrefs(
 
   registry->RegisterBooleanPref(prefs::kSettingsShowBrowserBanner, true);
   registry->RegisterBooleanPref(prefs::kSettingsShowOSBanner, true);
-  registry->RegisterBooleanPref(prefs::kSettingsShowAboutOSBanner, true);
 }
 
 void Preferences::InitUserPrefs(sync_preferences::PrefServiceSyncable* prefs) {

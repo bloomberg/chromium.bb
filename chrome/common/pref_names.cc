@@ -1007,10 +1007,6 @@ const char kSettingsShowBrowserBanner[] = "settings.cros.show_browser_banner";
 // settings that links to OS settings.
 const char kSettingsShowOSBanner[] = "settings.cros.show_os_banner";
 
-// Boolean user profile pref that determines whether to show a banner in browser
-// settings "About Chrome" that links to OS settings "About Chrome OS".
-const char kSettingsShowAboutOSBanner[] = "settings.cros.show_about_os_banner";
-
 // A JSON pref for controlling which USB devices are whitelisted for certain
 // urls to be used via the WebUSB API on the login screen.
 const char kDeviceLoginScreenWebUsbAllowDevicesForUrls[] =
