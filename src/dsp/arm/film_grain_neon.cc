@@ -171,7 +171,7 @@ void FilmGrain<bitdepth>::ApplyAutoRegressiveFilterToLumaGrain_NEON(
         // various values of params.auto_regression_coeff_lag. The letter 'O'
         // represents the current sample. (The filter always operates on the
         // current sample with filter coefficient 1.) The letters 'X'
-        // represent the neighoring samples that the filter operates on, below
+        // represent the neighboring samples that the filter operates on, below
         // their corresponding "offset" number.
         //
         // params.auto_regression_coeff_lag == 3:
