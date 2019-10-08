@@ -2481,7 +2481,6 @@ void RenderFrameHostManager::CommitPending(
 #endif  // defined(OS_MACOSX)
 
   RenderWidgetHostView* old_view = render_frame_host_->GetView();
-  RenderWidgetHostView* new_view = pending_rfh->GetView();
   bool is_main_frame = frame_tree_node_->IsMainFrame();
 
   // First check whether we're going to want to focus the location bar after
@@ -2544,13 +2543,16 @@ void RenderFrameHostManager::CommitPending(
 
   // For top-level frames, the RenderWidget{Host} will not be destroyed when the
   // local frame is detached. https://crbug.com/419087
+  //
   // To work around that, we hide it here. Truly this is to hit all the hide
   // paths in the browser side, but has a side effect of also hiding the
   // renderer side RenderWidget, even though it will get frozen anyway in the
   // future. However freezing doesn't do all the things hiding does at this time
   // so that's probably good.
+  //
   // Note the RenderWidgetHostView can be missing if the process for the old
   // RenderFrameHost crashed.
+  //
   // TODO(crbug.com/419087): This is only done for the main frame, as for sub
   // frames the RenderWidget and its view will be destroyed when the frame is
   // detached, but for the main frame it is not. This call to Hide() can go away
@@ -2561,10 +2563,13 @@ void RenderFrameHostManager::CommitPending(
   // without success in r426913 (https://crbug.com/658688) and r438516 (broke
   // assumptions about RenderWidgetHosts not changing RenderWidgetHostViews over
   // time).
-  // |old_view| and |new_view| can be the same when navigating same-site from a
+  //
+  // |old_rvh| and |new_rvh| can be the same when navigating same-site from a
   // crashed RenderFrameHost. When RenderDocument will be implemented, this will
   // happen for each same-site navigation.
-  if (is_main_frame && old_view && old_view != new_view) {
+  RenderViewHostImpl* old_rvh = old_render_frame_host->render_view_host();
+  RenderViewHostImpl* new_rvh = render_frame_host_->render_view_host();
+  if (is_main_frame && old_view && old_rvh != new_rvh) {
     // Note that this hides the RenderWidget but does not hide the Page. If it
     // did hide the Page then making a new RenderFrameHost on another call to
     // here would need to make sure it showed the RenderView when the
@@ -2575,6 +2580,7 @@ void RenderFrameHostManager::CommitPending(
   // Make sure the size is up to date.  (Fix for bug 1079768.)
   delegate_->UpdateRenderViewSizeForRenderManager(is_main_frame);
 
+  RenderWidgetHostView* new_view = render_frame_host_->GetView();
   if (will_focus_location_bar) {
     delegate_->SetFocusToLocationBar();
   } else if (focus_render_view && new_view) {
@@ -2609,9 +2615,6 @@ void RenderFrameHostManager::CommitPending(
   // useful to show.
   if (is_main_frame && old_view && new_view && old_view != new_view)
     new_view->TakeFallbackContentFrom(old_view);
-
-  RenderViewHostImpl* old_rvh = old_render_frame_host->render_view_host();
-  RenderViewHostImpl* new_rvh = render_frame_host_->render_view_host();
 
   // The RenderViewHost keeps track of the main RenderFrameHost routing id.
   // If this is committing a main frame navigation, update it and set the
