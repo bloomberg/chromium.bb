@@ -545,7 +545,7 @@
         <include name="IDR_IME_WINDOW_CLOSE_C" file="resources\input_ime\ime_window_close_click.png" type="BINDATA" />
         <include name="IDR_IME_WINDOW_CLOSE_H" file="resources\input_ime\ime_window_close_hover.png" type="BINDATA" />
       </if>
-      <include name="IDR_SSL_ERROR_ASSISTANT_PB" file="${root_gen_dir}/chrome/browser/resources/ssl/ssl_error_assistant/ssl_error_assistant.pb" use_base_dir="false" type="BINDATA" />
+      <include name="IDR_SSL_ERROR_ASSISTANT_PB" file="${root_gen_dir}/chrome/browser/resources/ssl/ssl_error_assistant/ssl_error_assistant.pb" use_base_dir="false" type="BINDATA" compress="gzip" />
       <if expr="is_android or is_linux">
         <include name="IDR_SANDBOX_INTERNALS_HTML" file="resources\sandbox_internals\sandbox_internals.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
         <include name="IDR_SANDBOX_INTERNALS_JS" file="resources\sandbox_internals\sandbox_internals.js" type="BINDATA" compress="gzip" />
