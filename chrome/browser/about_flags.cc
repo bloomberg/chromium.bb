@@ -3488,6 +3488,11 @@ const FeatureEntry kFeatureEntries[] = {
      kOsDesktop,
      FEATURE_VALUE_TYPE(features::kExperimentalAccessibilityLabels)},
 
+    {"enable-accessibility-expose-aria-annotations",
+     flag_descriptions::kAccessibilityExposeARIAAnnotationsName,
+     flag_descriptions::kAccessibilityExposeARIAAnnotationsDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kEnableAccessibilityExposeARIAAnnotations)},
+
     {"enable-accessibility-expose-display-none",
      flag_descriptions::kAccessibilityExposeDisplayNoneName,
      flag_descriptions::kAccessibilityExposeDisplayNoneDescription, kOsAll,

@@ -99,6 +99,10 @@
       status: "stable",
     },
     {
+      name: "AccessibilityExposeARIAAnnotations",
+      status: "experimental",
+    },
+    {
       name: "AccessibilityExposeDisplayNone",
       status: "test",
     },
