@@ -45,7 +45,6 @@ namespace {
 // Import all the constants in the anonymous namespace.
 #include "src/inter_intra_masks.inc"
 
-constexpr int kObmcBufferSize = 4096;  // 64x64
 constexpr int kAngleStep = 3;
 constexpr int kPredictionModeToAngle[kIntraPredictionModesUV] = {
     0, 90, 180, 45, 135, 113, 157, 203, 67, 0, 0, 0, 0};
@@ -831,23 +830,24 @@ void Tile::ObmcBlockPrediction(const Block& block, const MotionVector& mv,
   const int bitdepth = sequence_header_.color_config.bitdepth;
   // Obmc's prediction needs to be clipped before blending with above/left
   // prediction blocks.
-  uint8_t obmc_clipped_prediction[kObmcBufferSize
-#if LIBGAV1_MAX_BITDEPTH >= 10
-                                  * 2
-#endif
-  ];
-  const ptrdiff_t obmc_clipped_prediction_stride =
+  // Obmc prediction is used only when is_compound is false. So it is safe to
+  // use prediction_buffer[1] as a temporary buffer for the Obmc prediction.
+  static_assert(sizeof(block.scratch_buffer->prediction_buffer[1]) >
+                    64 * 64 * sizeof(uint16_t),
+                "");
+  auto* const obmc_buffer =
+      reinterpret_cast<uint8_t*>(block.scratch_buffer->prediction_buffer[1]);
+  const ptrdiff_t obmc_buffer_stride =
       (bitdepth == 8) ? width : width * sizeof(uint16_t);
   BlockInterPrediction(block, plane, reference_frame_index, mv, x, y, width,
                        height, candidate_row, candidate_column, nullptr, width,
-                       round_bits, false, false, obmc_clipped_prediction,
-                       obmc_clipped_prediction_stride);
+                       round_bits, false, false, obmc_buffer,
+                       obmc_buffer_stride);
 
   uint8_t* const prediction = GetStartPoint(buffer_, plane, x, y, bitdepth);
   const ptrdiff_t prediction_stride = buffer_[plane].columns();
   dsp_.obmc_blend[blending_direction](prediction, prediction_stride, width,
-                                      height, obmc_clipped_prediction,
-                                      obmc_clipped_prediction_stride);
+                                      height, obmc_buffer, obmc_buffer_stride);
 }
 
 void Tile::ObmcPrediction(const Block& block, const Plane plane,
