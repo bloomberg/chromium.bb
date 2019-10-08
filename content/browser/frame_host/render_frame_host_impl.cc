@@ -1905,16 +1905,6 @@ bool RenderFrameHostImpl::CreateRenderFrame(int previous_routing_id,
   params->has_committed_real_load =
       frame_tree_node()->has_committed_real_load();
 
-  if (GetLocalRenderWidgetHost()) {
-    params->widget_params = mojom::CreateFrameWidgetParams::New();
-    params->widget_params->routing_id =
-        GetLocalRenderWidgetHost()->GetRoutingID();
-    params->widget_params->visual_properties =
-        GetLocalRenderWidgetHost()->GetVisualProperties();
-  }
-
-  GetProcess()->GetRendererInterface()->CreateFrame(std::move(params));
-
   // The RenderWidgetHost takes ownership of its view. It is tied to the
   // lifetime of the current RenderProcessHost for this RenderFrameHost.
   // TODO(avi): This will need to change to initialize a
@@ -1928,6 +1918,16 @@ bool RenderFrameHostImpl::CreateRenderFrame(int previous_routing_id,
     // The child frame should be created hidden.
     DCHECK(!rwhv->IsShowing());
   }
+
+  if (GetLocalRenderWidgetHost()) {
+    params->widget_params = mojom::CreateFrameWidgetParams::New();
+    params->widget_params->routing_id =
+        GetLocalRenderWidgetHost()->GetRoutingID();
+    params->widget_params->visual_properties =
+        GetLocalRenderWidgetHost()->GetVisualProperties();
+  }
+
+  GetProcess()->GetRendererInterface()->CreateFrame(std::move(params));
 
   if (previous_routing_id != MSG_ROUTING_NONE) {
     RenderFrameProxyHost* proxy = RenderFrameProxyHost::FromID(

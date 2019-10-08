@@ -473,6 +473,9 @@ void RenderViewImpl::Initialize(
     RenderWidget::ShowCallback show_callback,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   DCHECK(RenderThread::IsMainThread());
+  // We have either a main frame or a proxy routing id.
+  DCHECK_NE(params->main_frame_routing_id != MSG_ROUTING_NONE,
+            params->proxy_routing_id != MSG_ROUTING_NONE);
 
   RenderThread::Get()->AddRoute(routing_id_, this);
 
@@ -493,16 +496,16 @@ void RenderViewImpl::Initialize(
   g_view_map.Get().insert(std::make_pair(webview(), this));
   g_routing_id_view_map.Get().insert(std::make_pair(GetRoutingID(), this));
 
-  webview()->SetDisplayMode(params->visual_properties.display_mode);
+  bool local_main_frame = params->main_frame_routing_id != MSG_ROUTING_NONE;
+
+  // TODO(danakj): Put this in with making the RenderFrame? Does order matter?
+  if (local_main_frame)
+    webview()->SetDisplayMode(params->visual_properties.display_mode);
 
   ApplyWebPreferences(webkit_preferences_, webview());
   ApplyCommandLineToSettings(webview()->GetSettings());
 
-  // We have either a main frame or a proxy routing id.
-  DCHECK_NE(params->main_frame_routing_id != MSG_ROUTING_NONE,
-            params->proxy_routing_id != MSG_ROUTING_NONE);
-
-  if (params->main_frame_routing_id != MSG_ROUTING_NONE) {
+  if (local_main_frame) {
     main_render_frame_ = RenderFrameImpl::CreateMainFrame(
         this, compositor_deps, opener_frame, &params, std::move(show_callback));
   } else {
