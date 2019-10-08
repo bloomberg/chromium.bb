@@ -30,7 +30,6 @@ class MockSubscriber : public SocketHandleWaiter::Subscriber {
 class TestingSocketHandleWaiter : public SocketHandleWaiter {
  public:
   using SocketHandleRef = SocketHandleWaiter::SocketHandleRef;
-  using SocketHandleWaiter::ProcessHandles;
 
   MOCK_METHOD2(
       AwaitSocketsReadable,

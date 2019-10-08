@@ -11,8 +11,10 @@
 namespace openscreen {
 namespace platform {
 
-TlsDataRouterPosix::TlsDataRouterPosix(SocketHandleWaiter* waiter)
-    : waiter_(waiter) {}
+TlsDataRouterPosix::TlsDataRouterPosix(
+    SocketHandleWaiter* waiter,
+    std::function<Clock::time_point()> now_function)
+    : waiter_(waiter), now_function_(now_function) {}
 
 TlsDataRouterPosix::~TlsDataRouterPosix() {
   waiter_->UnsubscribeAll(this);
@@ -61,20 +63,6 @@ void TlsDataRouterPosix::OnSocketDestroyed(StreamSocketPosix* socket,
                             skip_locking_for_testing);
 }
 
-void TlsDataRouterPosix::ReadAll() {
-  std::lock_guard<std::mutex> lock(connections_mutex_);
-  for (TlsConnectionPosix* connection : connections_) {
-    connection->TryReceiveMessage();
-  }
-}
-
-void TlsDataRouterPosix::WriteAll() {
-  std::lock_guard<std::mutex> lock(connections_mutex_);
-  for (TlsConnectionPosix* connection : connections_) {
-    connection->SendAvailableBytes();
-  }
-}
-
 void TlsDataRouterPosix::ProcessReadyHandle(
     SocketHandleWaiter::SocketHandleRef handle) {
   std::unique_lock<std::mutex> lock(socket_mutex_);
@@ -84,6 +72,56 @@ void TlsDataRouterPosix::ProcessReadyHandle(
       break;
     }
   }
+}
+
+void TlsDataRouterPosix::PerformNetworkingOperations(Clock::duration timeout) {
+  Clock::time_point start_time = now_function_();
+
+  // TODO(rwkeane): Minimize time locked based on how RegisterConnection and
+  // DeregisterConnection are implimented.
+  std::lock_guard<std::mutex> lock(connections_mutex_);
+  if (connections_.empty()) {
+    return;
+  }
+
+  NetworkingOperation current_operation = last_operation_;
+  std::vector<TlsConnectionPosix*>::iterator current_connection =
+      GetConnection(last_connection_processed_);
+  last_connection_processed_ = *current_connection;
+  do {
+    // Get the next (connection, mode) pair to use for processing.
+    current_operation = GetNextMode(current_operation);
+    if (current_operation == NetworkingOperation::kReading) {
+      current_connection++;
+      if (current_connection == connections_.end()) {
+        current_connection = connections_.begin();
+      }
+    }
+
+    // Process the (connection, mode).
+    switch (current_operation) {
+      case NetworkingOperation::kReading:
+        (*current_connection)->TryReceiveMessage();
+        break;
+      case NetworkingOperation::kWriting:
+        (*current_connection)->SendAvailableBytes();
+        break;
+    }
+
+    // If this (connection, mode) is where we started, exit.
+    if (last_connection_processed_ == *current_connection &&
+        last_operation_ == current_operation) {
+      break;
+    }
+  } while (!HasTimedOut(start_time, timeout));
+
+  last_connection_processed_ = *current_connection;
+  last_operation_ = current_operation;
+}
+
+bool TlsDataRouterPosix::HasTimedOut(Clock::time_point start_time,
+                                     Clock::duration timeout) {
+  return now_function_() - start_time > timeout;
 }
 
 void TlsDataRouterPosix::RemoveWatchedSocket(StreamSocketPosix* socket) {
@@ -97,6 +135,23 @@ void TlsDataRouterPosix::RemoveWatchedSocket(StreamSocketPosix* socket) {
 bool TlsDataRouterPosix::IsSocketWatched(StreamSocketPosix* socket) const {
   std::unique_lock<std::mutex> lock(socket_mutex_);
   return socket_mappings_.find(socket) != socket_mappings_.end();
+}
+
+TlsDataRouterPosix::NetworkingOperation TlsDataRouterPosix::GetNextMode(
+    NetworkingOperation state) {
+  return state == NetworkingOperation::kReading ? NetworkingOperation::kWriting
+                                                : NetworkingOperation::kReading;
+}
+
+std::vector<TlsConnectionPosix*>::iterator TlsDataRouterPosix::GetConnection(
+    TlsConnectionPosix* current) {
+  auto current_pos =
+      std::find(connections_.begin(), connections_.end(), current);
+  if (current_pos == connections_.end()) {
+    return connections_.begin();
+  }
+
+  return current_pos;
 }
 
 }  // namespace platform

@@ -31,7 +31,7 @@ class TlsConnectionPosix : public TlsConnection,
   ~TlsConnectionPosix();
 
   // Sends any available bytes from this connection's buffer_.
-  void SendAvailableBytes();
+  virtual void SendAvailableBytes();
 
   // Read out a block/message, if one is available, and notify this instance's
   // TlsConnection::Client.

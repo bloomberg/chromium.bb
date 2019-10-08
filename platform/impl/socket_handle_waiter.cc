@@ -78,7 +78,7 @@ void SocketHandleWaiter::ProcessReadyHandles(
   }
 }
 
-Error SocketHandleWaiter::ProcessHandles(const Clock::duration& timeout) {
+Error SocketHandleWaiter::ProcessHandles(Clock::duration timeout) {
   std::vector<SocketHandleRef> handles;
   {
     std::lock_guard<std::mutex> lock(mutex_);

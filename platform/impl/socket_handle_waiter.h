@@ -63,11 +63,11 @@ class SocketHandleWaiter {
 
   OSP_DISALLOW_COPY_AND_ASSIGN(SocketHandleWaiter);
 
- protected:
   // Gets all socket handles to process, checks them for readable data, and
   // handles any changes that have occured.
-  Error ProcessHandles(const Clock::duration& timeout);
+  Error ProcessHandles(Clock::duration timeout);
 
+ protected:
   // Waits until data is available in one of the provided sockets or the
   // provided timeout has passed - whichever is first. If any sockets have data
   // available, they are returned.

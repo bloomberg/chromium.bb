@@ -11,18 +11,14 @@ namespace openscreen {
 namespace platform {
 
 FakeClock::FakeClock(Clock::time_point start_time) {
-  OSP_CHECK(!instance_) << "attempting to use multiple fake clocks!";
-  instance_ = this;
   now_ = start_time;
 }
 
 FakeClock::~FakeClock() {
   OSP_CHECK(task_runners_.empty());
-  instance_ = nullptr;
 }
 
 Clock::time_point FakeClock::now() noexcept {
-  OSP_CHECK(instance_);
   return now_.load();
 }
 
@@ -48,9 +44,6 @@ void FakeClock::UnsubscribeFromTimeChanges(FakeTaskRunner* task_runner) {
   OSP_CHECK(it != task_runners_.end());
   task_runners_.erase(it);
 }
-
-// static
-FakeClock* FakeClock::instance_ = nullptr;
 
 // static
 std::atomic<Clock::time_point> FakeClock::now_{Clock::time_point{}};
