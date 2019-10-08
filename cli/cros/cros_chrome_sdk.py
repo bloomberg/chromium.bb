@@ -1045,9 +1045,6 @@ class ChromeSDKCommand(command.CliCommand):
 
     gn_args['target_sysroot'] = sysroot
     gn_args.pop('pkg_config', None)
-    # pkg_config only affects the target and comes from the sysroot.
-    # host_pkg_config is used for programs compiled for use later in the build.
-    gn_args['host_pkg_config'] = 'pkg-config'
     if options.clang:
       gn_args['is_clang'] = True
     if options.internal:
