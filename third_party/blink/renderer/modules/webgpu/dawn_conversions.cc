@@ -711,7 +711,7 @@ OwnedProgrammableStageDescriptor AsDawnType(
   char* entry_point_ptr = entry_point_keepalive.get();
   memcpy(entry_point_ptr, entry_point.c_str(), byte_size);
 
-  DawnPipelineStageDescriptor dawn_stage = {};
+  DawnProgrammableStageDescriptor dawn_stage = {};
   dawn_stage.module = webgpu_stage->module()->GetHandle();
   dawn_stage.entryPoint = entry_point_ptr;
 

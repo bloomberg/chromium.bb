@@ -45,7 +45,7 @@ DawnExtent3D AsDawnType(const UnsignedLongSequenceOrGPUExtent3DDict*);
 DawnOrigin3D AsDawnType(const UnsignedLongSequenceOrGPUOrigin3DDict*);
 
 using OwnedProgrammableStageDescriptor =
-    std::tuple<DawnPipelineStageDescriptor, std::unique_ptr<char[]>>;
+    std::tuple<DawnProgrammableStageDescriptor, std::unique_ptr<char[]>>;
 OwnedProgrammableStageDescriptor AsDawnType(
     const GPUProgrammableStageDescriptor*);
 
