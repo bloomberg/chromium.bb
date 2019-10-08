@@ -10,11 +10,9 @@
 
 namespace blink {
 
-PaintRecordBuilder::PaintRecordBuilder(
-    printing::MetafileSkia* metafile,
-    GraphicsContext* containing_context,
-    PaintController* paint_controller,
-    paint_preview::PaintPreviewTracker* tracker)
+PaintRecordBuilder::PaintRecordBuilder(printing::MetafileSkia* metafile,
+                                       GraphicsContext* containing_context,
+                                       PaintController* paint_controller)
     : paint_controller_(nullptr) {
   GraphicsContext::DisabledMode disabled_mode =
       GraphicsContext::kNothingDisabled;
@@ -32,13 +30,12 @@ PaintRecordBuilder::PaintRecordBuilder(
   paint_controller_->UpdateCurrentPaintChunkProperties(
       base::nullopt, PropertyTreeState::Root());
 
-  context_ = std::make_unique<GraphicsContext>(
-      *paint_controller_, disabled_mode, metafile, tracker);
+  context_ = std::make_unique<GraphicsContext>(*paint_controller_,
+                                               disabled_mode, metafile);
   if (containing_context) {
     context_->SetDarkMode(containing_context->dark_mode_settings());
     context_->SetDeviceScaleFactor(containing_context->DeviceScaleFactor());
     context_->SetPrinting(containing_context->Printing());
-    context_->SetIsPaintingPreview(containing_context->IsPaintingPreview());
   }
 }
 
