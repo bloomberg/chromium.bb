@@ -24,6 +24,7 @@ source_set("common") {
 
   deps = [
     "//base",
+    "//gpu/ipc/common:common",
     "//media",
     "//media/gpu:command_buffer_helper",
     "//media/gpu:common",
