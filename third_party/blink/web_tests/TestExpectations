@@ -3120,6 +3120,12 @@ crbug.com/1002514 external/wpt/web-share/share-sharePromise-internal-slot.https.
 crbug.com/618969 external/wpt/css/css-grid/subgrid/ [ Skip ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/lists-3/list-style-type-string-001a.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/lists-3/list-style-type-string-001a.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/lists-3/list-style-type-string-001a.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/lists-3/list-style-type-string-001b.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/lists-3/list-style-type-string-001b.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/lists-3/list-style-type-string-001b.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/clear-site-data/storage.https.html [ Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/clear-site-data/storage.https.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/clear-site-data/storage.https.html [ Timeout ]
