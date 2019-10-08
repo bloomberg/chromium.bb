@@ -173,6 +173,10 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
   PaintRecorder* getRecorder() { return recorder_.get(); }
   sk_sp<cc::PaintRecord> getLastRecord() { return last_recording_; }
 
+  // This is called when the Canvas element has cleared the frame, so the 2D
+  // bridge knows that there's no previous content on the resource.
+  void ClearFrame() { clear_frame_ = true; }
+
  private:
   friend class Canvas2DLayerBridgeTest;
   friend class CanvasRenderingContext2DTest;
@@ -201,6 +205,7 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
   bool hibernation_scheduled_ = false;
   bool dont_use_idle_scheduling_for_testing_ = false;
   bool context_lost_ = false;
+  bool clear_frame_ = true;
 
   const AccelerationMode acceleration_mode_;
   const CanvasColorParams color_params_;
