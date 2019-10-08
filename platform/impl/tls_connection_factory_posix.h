@@ -28,8 +28,9 @@ class TlsConnectionFactoryPosix : public TlsConnectionFactory,
   // TlsConnectionFactory overrides
   void Connect(const IPEndpoint& remote_address,
                const TlsConnectOptions& options) override;
+
+  void SetListenCredentials(const TlsCredentials& credentials) override;
   void Listen(const IPEndpoint& local_address,
-              const TlsCredentials& credentials,
               const TlsListenOptions& options) override;
 
   // TlsDataRouterPosix::SocketObserver overrides.
@@ -46,14 +47,23 @@ class TlsConnectionFactoryPosix : public TlsConnectionFactory,
   // Ensures that SSL is initialized, then gets a new SSL connection.
   ErrorOr<bssl::UniquePtr<SSL>> GetSslConnection();
 
+  // Method wrapping the Initialize() private method, that can be safely called
+  // multiple times.
+  void EnsureInitialized();
+
   // Create the shared context used for all SSL connections created by this
   // factory.
   void Initialize();
 
   // Thread-safe mechanism to ensure Initialize() is only called once.
-  std::once_flag initInstanceFlag;
+  std::once_flag init_instance_flag_;
 
-  TaskRunner* task_runner_;
+  // Are the Listen() credentials set? Getting the certificate directly
+  // from the SSL_CTX is non-trivial, so we store a property instead.
+  bool listen_credentials_set_ = false;
+
+  // The task runner used for internal operations.
+  TaskRunner* const task_runner_;
 
   // SSL context, for creating SSL Connections via BoringSSL.
   bssl::UniquePtr<SSL_CTX> ssl_context_;

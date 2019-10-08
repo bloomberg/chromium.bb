@@ -55,9 +55,13 @@ class TlsConnectionFactory {
   virtual void Connect(const IPEndpoint& remote_address,
                        const TlsConnectOptions& options) = 0;
 
+  // Set the TlsCredentials used for listening for new connections. Currently,
+  // having different certificates on different address is not supported. This
+  // must be called before the first call to Listen.
+  virtual void SetListenCredentials(const TlsCredentials& credentials) = 0;
+
   // Fires an OnAccepted or OnConnectionFailed event.
   virtual void Listen(const IPEndpoint& local_address,
-                      const TlsCredentials& credentials,
                       const TlsListenOptions& options) = 0;
 
  protected:

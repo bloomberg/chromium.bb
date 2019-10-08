@@ -78,28 +78,27 @@ void TlsConnectionFactoryPosix::Connect(const IPEndpoint& remote_address,
   OnConnected(std::move(connection));
 }
 
-bool TlsConnectionFactoryPosix::ConfigureSsl(TlsConnectionPosix* connection) {
-  ErrorOr<bssl::UniquePtr<SSL>> ssl_or_error = GetSslConnection();
-  if (ssl_or_error.is_error()) {
-    OnError(ssl_or_error.error());
-    TRACE_SET_RESULT(ssl_or_error.error());
-    return false;
+void TlsConnectionFactoryPosix::SetListenCredentials(
+    const TlsCredentials& credentials) {
+  EnsureInitialized();
+
+  // We don't really change the certificate, but we do apply ref counting to
+  // it, so a const cast is unfortunately necessary.
+  X509* non_const_cert = const_cast<X509*>(&credentials.certificate());
+  if (SSL_CTX_use_certificate(ssl_context_.get(), non_const_cert) != 1) {
+    OnError(Error::Code::kSocketListenFailure);
+    TRACE_SET_RESULT(Error::Code::kSocketListenFailure);
+    return;
   }
 
-  bssl::UniquePtr<SSL> ssl = std::move(ssl_or_error.value());
-  if (!SSL_set_fd(ssl.get(), connection->socket_->socket_handle().fd)) {
-    OnConnectionFailed(connection->remote_address());
-    TRACE_SET_RESULT(Error(Error::Code::kSocketBindFailure));
-    return false;
-  }
-
-  connection->ssl_.swap(ssl);
-  return true;
+  listen_credentials_set_ = true;
 }
 
 void TlsConnectionFactoryPosix::Listen(const IPEndpoint& local_address,
-                                       const TlsCredentials& credentials,
                                        const TlsListenOptions& options) {
+  // Credentials must be set before Listen() is called.
+  OSP_DCHECK(listen_credentials_set_);
+
   StreamSocketPosix socket(local_address);
   socket.Listen(options.backlog_size);
 
@@ -148,20 +147,41 @@ void TlsConnectionFactoryPosix::OnSocketAccepted(
   OnAccepted(std::move(connection));
 }
 
+bool TlsConnectionFactoryPosix::ConfigureSsl(TlsConnectionPosix* connection) {
+  ErrorOr<bssl::UniquePtr<SSL>> connection_result = GetSslConnection();
+  if (connection_result.is_error()) {
+    OnError(connection_result.error());
+    TRACE_SET_RESULT(connection_result.error());
+    return false;
+  }
+
+  bssl::UniquePtr<SSL> ssl = std::move(connection_result.value());
+  if (!SSL_set_fd(ssl.get(), connection->socket_->socket_handle().fd)) {
+    OnConnectionFailed(connection->remote_address());
+    TRACE_SET_RESULT(Error(Error::Code::kSocketBindFailure));
+    return false;
+  }
+
+  connection->ssl_.swap(ssl);
+  return true;
+}
+
 ErrorOr<bssl::UniquePtr<SSL>> TlsConnectionFactoryPosix::GetSslConnection() {
-  std::call_once(initInstanceFlag, [this]() { this->Initialize(); });
+  EnsureInitialized();
   if (!ssl_context_.get()) {
     return Error::Code::kFatalSSLError;
   }
 
-  // Create this specific call's SSL Context. Handling of the SSL_CTX is thread
-  // safe, so this part doesn't need to be in the mutex.
   SSL* ssl = SSL_new(ssl_context_.get());
   if (ssl == nullptr) {
     return Error::Code::kFatalSSLError;
   }
 
   return bssl::UniquePtr<SSL>(ssl);
+}
+
+void TlsConnectionFactoryPosix::EnsureInitialized() {
+  std::call_once(init_instance_flag_, [this]() { this->Initialize(); });
 }
 
 void TlsConnectionFactoryPosix::Initialize() {
