@@ -44,13 +44,8 @@ enum IPCMessageStart {
   OzoneGpuMsgStart,
   WebTestMsgStart,
   NetworkHintsMsgStart,
-  CastMediaMsgStart,
   ExtensionsGuestViewMsgStart,
   GuestViewMsgStart,
-  // Note: CastCryptoMsgStart and CastChannelMsgStart reserved for Chromecast
-  // internal code. Contact gunsch@ before changing/removing.
-  CastCryptoMsgStart,
-  CastChannelMsgStart,
   IPCTestMsgStart,
   MediaPlayerDelegateMsgStart,
   SurfaceViewManagerMsgStart,
