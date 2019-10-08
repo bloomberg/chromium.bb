@@ -9,7 +9,6 @@ DEPS = [
   'recipe_engine/platform',
   'recipe_engine/properties',
   'recipe_engine/raw_io',
-  'recipe_engine/runtime',
   'recipe_engine/step',
 
   'git',
@@ -98,14 +97,7 @@ def RunSteps(api):
 
 
 def GenTests(api):
-  yield (
-    api.test('basic') +
-    api.runtime(is_luci=False, is_experimental=False)
-  )
-  yield (
-    api.test('basic_luci') +
-    api.runtime(is_luci=True, is_experimental=False)
-  )
+  yield api.test('basic')
   yield api.test('basic_tags') + api.properties(tags=True)
   yield api.test('basic_ref') + api.buildbucket.ci_build(git_ref='refs/foo/bar')
   yield api.test('basic_branch') + api.buildbucket.ci_build(

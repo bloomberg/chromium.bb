@@ -17,11 +17,6 @@ class GitApi(recipe_api.RecipeApi):
     infra_step = kwargs.pop('infra_step', True)
     git_cmd = ['git']
 
-    if kwargs.pop('add_retry', False) and not self.m.runtime.is_luci:
-      # On LUCI, the `git` binary is a go wrapper which already implements all
-      # the git-retry logic.
-      git_cmd += ['retry']
-
     options = kwargs.pop('git_config_options', {})
     for k, v in sorted(options.iteritems()):
       git_cmd.extend(['-c', '%s=%s' % (k, v)])
@@ -201,10 +196,8 @@ class GitApi(recipe_api.RecipeApi):
         with self.m.context(env={'PATH': path}):
           self('cache', 'populate', '-c',
                self.m.infra_paths.default_git_cache_dir, url,
-
                name='populate cache',
-               can_fail_build=can_fail_build,
-               add_retry=True)
+               can_fail_build=can_fail_build)
           dir_cmd = self(
               'cache', 'exists', '--quiet',
               '--cache-dir', self.m.infra_paths.default_git_cache_dir, url,
@@ -269,8 +262,7 @@ class GitApi(recipe_api.RecipeApi):
         self('fetch', *fetch_args,
           name=fetch_step_name,
           stderr=fetch_stderr,
-          can_fail_build=can_fail_build,
-          add_retry=True)
+          can_fail_build=can_fail_build)
       if display_fetch_size:
         self.count_objects(
             name='count-objects after %s' % fetch_step_name,
