@@ -236,6 +236,30 @@ std::vector<AccountInfo> GetAccountsForDicePromos(Profile* profile) {
 
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 
+base::string16 GetShortProfileIdentityToDisplay(
+    const ProfileAttributesEntry& profile_attributes_entry,
+    Profile* profile) {
+  DCHECK(profile);
+  signin::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile);
+  CoreAccountInfo core_info =
+      identity_manager->GetUnconsentedPrimaryAccountInfo();
+  // If there's no unconsented primary account, simply return the name of the
+  // profile according to profile attributes.
+  if (core_info.IsEmpty())
+    return profile_attributes_entry.GetName();
+
+  base::Optional<AccountInfo> extended_info =
+      identity_manager
+          ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
+              core_info.account_id);
+  // If there's no given name available, return the user email.
+  if (!extended_info.has_value() || extended_info->given_name.empty())
+    return base::UTF8ToUTF16(core_info.email);
+
+  return base::UTF8ToUTF16(extended_info->given_name);
+}
+
 std::string GetAllowedDomain(std::string signin_pattern) {
   std::vector<std::string> splitted_signin_pattern = base::SplitString(
       signin_pattern, "@", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);

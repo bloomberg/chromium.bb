@@ -49,10 +49,17 @@ class AvatarToolbarButton : public ToolbarButton,
     kGuestSession,
     kGenericProfile,
     kHighlightAnimation,
-    kAnimatedSignIn,
+    kAnimatedUserIdentity,
     kSyncPaused,
     kSyncError,
     kNormal
+  };
+
+  enum class IdentityAnimationState {
+    kNotShowing,
+    kWaitingForImage,
+    kShowing,
+    kShowingUntilNoLongerHoveredOrFocused
   };
 
   // ToolbarButton:
@@ -96,9 +103,9 @@ class AvatarToolbarButton : public ToolbarButton,
   // autofill::PersonalDataManagerObserver:
   void OnCreditCardSaved() override;
 
-  void ExpandToShowEmail();
-  void ResetUserEmailWhenNotHoveredOrFocused();
-  void ResetUserEmail();
+  void ShowIdentityAnimation();
+  void HideIdentityAnimationWhenNotHoveredOrFocused();
+  void HideIdentityAnimation();
 
   base::string16 GetAvatarTooltipText() const;
   base::string16 GetProfileName() const;
@@ -108,8 +115,8 @@ class AvatarToolbarButton : public ToolbarButton,
 
   void SetInsets();
 
-  // Sets |user_email_| and initiates showing the email (if non-empty).
-  void SetUserEmail(const std::string& user_email);
+  // Initiates showing the identity |user_identity| (if non-empty).
+  void OnUserIdentityChanged(const CoreAccountInfo& user_identity);
 
   void ShowHighlightAnimation();
   void HideHighlightAnimation();
@@ -130,13 +137,8 @@ class AvatarToolbarButton : public ToolbarButton,
   // paused/error state.
   bool autofill_icon_visible_ = false;
 
-  // The user email that we're currently showing in an animation or empty if no
-  // animation is in progress.
-  base::Optional<std::string> user_email_;
-  // We cannot show the animation before we fetch the new avatar.
-  bool waiting_for_image_to_show_user_email_ = false;
-  // We cannot hide the animation when the button is hovered or focused.
-  bool should_reset_user_email_when_no_longer_hovered_or_focused_ = false;
+  IdentityAnimationState identity_animation_state_ =
+      IdentityAnimationState::kNotShowing;
 
   ScopedObserver<ProfileAttributesStorage, ProfileAttributesStorage::Observer>
       profile_observer_{this};

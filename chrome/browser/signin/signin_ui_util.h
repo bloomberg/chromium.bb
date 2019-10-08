@@ -18,6 +18,7 @@
 struct AccountInfo;
 class Browser;
 class Profile;
+class ProfileAttributesEntry;
 class ProfileAttributesStorage;
 
 // Utility functions to gather status information from the various signed in
@@ -63,6 +64,15 @@ std::string GetDisplayEmail(Profile* profile, const std::string& account_id);
 std::vector<AccountInfo> GetAccountsForDicePromos(Profile* profile);
 
 #endif
+
+// Returns the short user identity to display for |profile|. It is based on the
+// current unconsented primary account (if exists).
+// TODO(crbug.com/1012179): Move this logic into ProfileAttributesEntry once
+// AvatarToolbarButton becomes an observer of ProfileAttributesStorage and thus
+// ProfileAttributesEntry is up-to-date when AvatarToolbarButton needs it.
+base::string16 GetShortProfileIdentityToDisplay(
+    const ProfileAttributesEntry& profile_attributes_entry,
+    Profile* profile);
 
 // Returns the domain of the policy value of RestrictSigninToPattern. Returns
 // an empty string if the policy is not set or can not be parsed. The parser
