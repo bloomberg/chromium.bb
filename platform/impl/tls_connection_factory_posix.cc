@@ -56,9 +56,26 @@ void TlsConnectionFactoryPosix::Connect(const IPEndpoint& remote_address,
     OnConnectionFailed(remote_address);
   }
 
-  if (ConfigureSsl(connection.get())) {
-    OnConnected(std::move(connection));
+  if (!ConfigureSsl(connection.get())) {
+    return;
   }
+
+  if (options.unsafely_skip_certificate_validation) {
+    // Verifies the server certificate but does not make errors fatal.
+    SSL_set_verify(connection->ssl_.get(), SSL_VERIFY_NONE, nullptr);
+  } else {
+    // Make server certificate errors fatal.
+    SSL_set_verify(connection->ssl_.get(), SSL_VERIFY_PEER, nullptr);
+  }
+
+  const int connection_status = SSL_connect(connection->ssl_.get());
+  if (connection_status != 1) {
+    OnConnectionFailed(connection->remote_address());
+    TRACE_SET_RESULT(GetSSLError(connection->ssl_.get(), connection_status));
+    return;
+  }
+
+  OnConnected(std::move(connection));
 }
 
 bool TlsConnectionFactoryPosix::ConfigureSsl(TlsConnectionPosix* connection) {
@@ -76,13 +93,6 @@ bool TlsConnectionFactoryPosix::ConfigureSsl(TlsConnectionPosix* connection) {
     return false;
   }
 
-  int connection_status = SSL_connect(ssl.get());
-  if (connection_status != 1) {
-    OnConnectionFailed(connection->remote_address());
-    TRACE_SET_RESULT(GetSSLError(ssl.get(), connection_status));
-    return false;
-  }
-
   connection->ssl_.swap(ssl);
   return true;
 }
@@ -90,8 +100,11 @@ bool TlsConnectionFactoryPosix::ConfigureSsl(TlsConnectionPosix* connection) {
 void TlsConnectionFactoryPosix::Listen(const IPEndpoint& local_address,
                                        const TlsCredentials& credentials,
                                        const TlsListenOptions& options) {
-  // TODO(jophba, rwkeane): Call TlsNetworkManagerPosix::RegisterListener on
-  // singleton instance.
+  StreamSocketPosix socket(local_address);
+  socket.Listen(options.backlog_size);
+
+  // TODO(jophba, rwkeane): Call on singleton:
+  // TlsDataRouterPosix::RegisterSocketObserver(std::move(socket), this)
   OSP_UNIMPLEMENTED();
 }
 
@@ -121,9 +134,18 @@ void TlsConnectionFactoryPosix::OnSocketAccepted(
   auto connection =
       std::make_unique<TlsConnectionPosix>(std::move(socket), task_runner_);
 
-  if (ConfigureSsl(connection.get())) {
-    OnAccepted(std::move(connection));
+  if (!ConfigureSsl(connection.get())) {
+    return;
   }
+
+  const int connection_status = SSL_accept(connection->ssl_.get());
+  if (connection_status != 1) {
+    OnConnectionFailed(connection->remote_address());
+    TRACE_SET_RESULT(GetSSLError(ssl.get(), connection_status));
+    return;
+  }
+
+  OnAccepted(std::move(connection));
 }
 
 ErrorOr<bssl::UniquePtr<SSL>> TlsConnectionFactoryPosix::GetSslConnection() {
