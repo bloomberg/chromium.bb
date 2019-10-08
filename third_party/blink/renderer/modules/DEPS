@@ -4,7 +4,7 @@ include_rules = [
     "+base/strings/char_traits.h",
     "+mojo/public/cpp/bindings",
     "+services/network/public/cpp/shared_url_loader_factory.h",
-    "+services/service_manager/public/mojom/interface_provider.mojom-blink-forward.h",
+    "+services/service_manager/public/mojom/interface_provider.mojom-blink.h",
     "+services/viz/public/mojom/hit_test/hit_test_region_list.mojom-blink.h",
     "+third_party/blink/public/common",
     "+third_party/blink/public/web",
