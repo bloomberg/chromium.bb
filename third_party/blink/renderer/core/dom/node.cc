@@ -1209,13 +1209,13 @@ void Node::MarkAncestorsWithChildNeedsDistributionRecalc() {
 
 void Node::MarkAncestorsWithChildNeedsStyleRecalc() {
   ContainerNode* ancestor = GetStyleRecalcParent();
-  bool parent_dirty = ancestor && ancestor->NeedsStyleRecalc();
+  bool parent_dirty = ancestor && ancestor->IsDirtyForStyleRecalc();
   for (; ancestor && !ancestor->ChildNeedsStyleRecalc();
        ancestor = ancestor->GetStyleRecalcParent()) {
     if (!ancestor->isConnected())
       return;
     ancestor->SetChildNeedsStyleRecalc();
-    if (ancestor->NeedsStyleRecalc())
+    if (ancestor->IsDirtyForStyleRecalc())
       break;
     // If we reach a locked ancestor, we should abort since the ancestor marking
     // will be done when the lock is committed.
