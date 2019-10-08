@@ -1193,7 +1193,7 @@ class PreCQLauncherStage(SyncStage):
   LAUNCH_DELAY = 2
 
   # The number of minutes we allow before considering an in-flight job failed.
-  INFLIGHT_TIMEOUT = 240
+  INFLIGHT_TIMEOUT = 720
 
   # The number of minutes we allow before expiring a pre-cq PASSED or
   # FULLY_VERIFIED status. After this timeout is hit, a CL's status will be
