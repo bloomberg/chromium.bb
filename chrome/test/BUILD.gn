@@ -42,7 +42,9 @@ if (is_android) {
   import("//chrome/android/features/dev_ui/dev_ui_module.gni")
   import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
 } else {
-  include_js_tests = !(is_asan || is_msan || is_tsan)
+  # js_tests don't work in cross builds, https://crbug.com/1010561
+  include_js_tests =
+      !(is_asan || is_msan || is_tsan || (is_win && host_os != "win"))
 }
 
 # This target exists to reference other test executables to bring these files
