@@ -402,7 +402,8 @@ def main(args):
       output_paths=output_paths,
       input_paths=input_paths,
       input_strings=dex_cmd + [bool(options.incremental_dir)],
-      pass_changes=True)
+      pass_changes=True,
+      track_subpaths_whitelist=options.class_inputs)
 
 
 if __name__ == '__main__':

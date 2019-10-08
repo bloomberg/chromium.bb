@@ -642,6 +642,7 @@ def CallAndWriteDepfileIfStale(on_stale_md5,
                                output_paths=None,
                                force=False,
                                pass_changes=False,
+                               track_subpaths_whitelist=None,
                                depfile_deps=None):
   """Wraps md5_check.CallAndRecordIfStale() and writes a depfile if applicable.
 
@@ -669,7 +670,8 @@ def CallAndWriteDepfileIfStale(on_stale_md5,
       input_strings=input_strings,
       output_paths=output_paths,
       force=force,
-      pass_changes=pass_changes)
+      pass_changes=pass_changes,
+      track_subpaths_whitelist=track_subpaths_whitelist)
 
   # Write depfile even when inputs have not changed to ensure build correctness
   # on bots that build with & without patch, and the patch changes the depfile
