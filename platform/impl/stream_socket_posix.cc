@@ -193,7 +193,7 @@ IPAddress::Version StreamSocketPosix::version() const {
 }
 
 bool StreamSocketPosix::EnsureInitialized() {
-  if (!is_initialized_ && (last_error_code_.load() == Error::Code::kNone)) {
+  if (!is_initialized_ && (last_error_code_ == Error::Code::kNone)) {
     return Initialize() == Error::None();
   }
 

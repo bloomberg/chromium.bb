@@ -27,9 +27,11 @@ class StreamSocket {
  public:
   StreamSocket() = default;
   StreamSocket(const StreamSocket& other) = delete;
+  StreamSocket(StreamSocket&& other) = default;
   virtual ~StreamSocket() = default;
 
   StreamSocket& operator=(const StreamSocket& other) = delete;
+  StreamSocket& operator=(StreamSocket&& other) = default;
 
   // Used by passive/server sockets to accept connection requests
   // from a client.

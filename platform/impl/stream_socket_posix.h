@@ -28,7 +28,9 @@ class StreamSocketPosix : public StreamSocket {
   // StreamSocketPosix is non-copyable, due to directly managing the file
   // descriptor.
   StreamSocketPosix(const StreamSocketPosix& other) = delete;
+  StreamSocketPosix(StreamSocketPosix&& other) = default;
   StreamSocketPosix& operator=(const StreamSocketPosix& other) = delete;
+  StreamSocketPosix& operator=(StreamSocketPosix&& other) = default;
   virtual ~StreamSocketPosix();
 
   // StreamSocket overrides.
@@ -64,8 +66,8 @@ class StreamSocketPosix : public StreamSocket {
 
   // last_error_code_ is an Error::Code instead of an Error so it meets
   // atomic's (trivially) copyable and moveable requirements.
-  std::atomic<Error::Code> last_error_code_ = {Error::Code::kNone};
-  const IPAddress::Version version_;
+  Error::Code last_error_code_ = Error::Code::kNone;
+  IPAddress::Version version_;
   absl::optional<SocketAddressPosix> local_address_;
   absl::optional<IPEndpoint> remote_address_;
 
