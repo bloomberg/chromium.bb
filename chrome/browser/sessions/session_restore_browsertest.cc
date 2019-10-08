@@ -13,13 +13,13 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "base/memory/fake_memory_pressure_monitor.h"
 #include "base/process/launch.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
+#include "base/util/memory_pressure/fake_memory_pressure_monitor.h"
 #include "build/build_config.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/first_run/first_run.h"
@@ -234,7 +234,7 @@ class SessionRestoreTest : public InProcessBrowserTest {
   const BrowserList* active_browser_list_ = nullptr;
 
  private:
-  base::test::FakeMemoryPressureMonitor fake_memory_pressure_monitor_;
+  util::test::FakeMemoryPressureMonitor fake_memory_pressure_monitor_;
 };
 
 // Activates the smart restore behaviour and tracks the loading of tabs.

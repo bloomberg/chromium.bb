@@ -2,17 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_MEMORY_FAKE_MEMORY_PRESSURE_MONITOR_H_
-#define BASE_MEMORY_FAKE_MEMORY_PRESSURE_MONITOR_H_
+#ifndef BASE_UTIL_MEMORY_PRESSURE_FAKE_MEMORY_PRESSURE_MONITOR_H_
+#define BASE_UTIL_MEMORY_PRESSURE_FAKE_MEMORY_PRESSURE_MONITOR_H_
 
 #include "base/macros.h"
-#include "base/memory/memory_pressure_monitor.h"
+#include "base/util/memory_pressure/multi_source_memory_pressure_monitor.h"
 
-namespace base {
+namespace util {
 namespace test {
 
-class FakeMemoryPressureMonitor : public base::MemoryPressureMonitor {
+class FakeMemoryPressureMonitor
+    : public ::util::MultiSourceMemoryPressureMonitor {
  public:
+  using MemoryPressureLevel =
+      ::util::MultiSourceMemoryPressureMonitor::MemoryPressureLevel;
+  using DispatchCallback =
+      ::util::MultiSourceMemoryPressureMonitor::DispatchCallback;
+
   FakeMemoryPressureMonitor();
   ~FakeMemoryPressureMonitor() override;
 
@@ -29,6 +35,6 @@ class FakeMemoryPressureMonitor : public base::MemoryPressureMonitor {
 };
 
 }  // namespace test
-}  // namespace base
+}  // namespace util
 
-#endif  // BASE_MEMORY_FAKE_MEMORY_PRESSURE_MONITOR_H_
+#endif  // BASE_UTIL_MEMORY_PRESSURE_FAKE_MEMORY_PRESSURE_MONITOR_H_
