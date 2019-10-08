@@ -1195,6 +1195,11 @@ bool AXObject::ComputeAccessibilityIsIgnoredButIncludedInTree() const {
   if (!GetNode())
     return false;
 
+  // Disallow inert nodes from the tree to ensure the dialog is always the
+  // first child of the root.
+  if (GetNode()->IsInert())
+    return false;
+
   // If the node is part of the user agent shadow dom, or has the explicit
   // internal Role::kIgnored, they aren't interesting for paragraph navigation
   // or LabelledBy/DescribedBy relationships.
