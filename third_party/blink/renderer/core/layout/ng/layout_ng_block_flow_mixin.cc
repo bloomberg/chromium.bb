@@ -132,6 +132,9 @@ void LayoutNGBlockFlowMixin<Base>::AddScrollingOverflowFromChildren() {
       if (child->IsFloatingOrOutOfFlowPositioned()) {
         child_scrollable_overflow =
             child->ScrollableOverflowForPropagation(this);
+        child_scrollable_overflow.offset += ComputeRelativeOffset(
+            child->Style(), Base::StyleRef().GetWritingMode(),
+            Base::StyleRef().Direction(), physical_fragment->Size());
       } else if (children_inline && child->IsLineBox()) {
         DCHECK(child->IsLineBox());
         child_scrollable_overflow =
