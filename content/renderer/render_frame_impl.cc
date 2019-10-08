@@ -502,9 +502,8 @@ void FillNavigationParamsRequest(
     for (const auto& exchange : commit_params.prefetched_signed_exchanges) {
       blink::WebURLResponse web_response;
       WebURLLoaderImpl::PopulateURLResponse(
-          exchange->inner_url,
-          network::ResourceResponseHead(exchange->inner_response),
-          &web_response, false /* report_security_info*/, -1 /* request_id */);
+          exchange->inner_url, *exchange->inner_response, &web_response,
+          false /* report_security_info*/, -1 /* request_id */);
       navigation_params->prefetched_signed_exchanges.emplace_back(
           std::make_unique<
               blink::WebNavigationParams::PrefetchedSignedExchange>(
