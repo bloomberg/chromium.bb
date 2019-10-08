@@ -3094,8 +3094,6 @@ crbug.com/893480 external/wpt/infrastructure/testdriver/actions/actionsWithKeyPr
 
 # Hit a DCHECK
 crbug.com/918664 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/sizing/block-size-with-min-or-max-content-table-1a.html [ Failure Pass ]
-crbug.com/939181 external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects.html [ Failure Crash ]
-crbug.com/939181 virtual/not-site-per-process/external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects.html [ Failure Timeout ]
 
 # FontFace object failures detected by WPT test
 crbug.com/965409 external/wpt/css/css-font-loading/fontface-descriptor-updates.html [ Failure ]
