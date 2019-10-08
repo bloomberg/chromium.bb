@@ -894,7 +894,9 @@ class EVENTS_EXPORT KeyEvent : public Event {
   // Determine key_ on a keystroke event from code_ and flags().
   void ApplyLayout() const;
 
-  static bool IsRepeated(const KeyEvent& event);
+  // Tells if this is a repeated KeyEvent based on |last_key_event|, which is
+  // then updated with the new last KeyEvent address.
+  bool IsRepeated(KeyEvent** last_key_event);
 
   KeyboardCode key_code_;
 

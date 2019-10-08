@@ -838,71 +838,6 @@ KeyEvent* KeyEvent::last_key_event_ = nullptr;
 KeyEvent* KeyEvent::last_ibus_key_event_ = nullptr;
 #endif
 
-// static
-bool KeyEvent::IsRepeated(const KeyEvent& event) {
-  // A safe guard in case if there were continuous key pressed events that are
-  // not auto repeat.
-  const int kMaxAutoRepeatTimeMs = 2000;
-  KeyEvent** last_key_event;
-#if defined(USE_X11)
-  // Use a different static variable for key events that have non standard
-  // state masks as it may be reposted by an IME. IBUS-GTK uses this field
-  // to detect the re-posted event for example. crbug.com/385873.
-  last_key_event = X11EventHasNonStandardState(event.native_event())
-                       ? &last_ibus_key_event_
-                       : &last_key_event_;
-#else
-  last_key_event = &last_key_event_;
-#endif
-  if (event.is_char())
-    return false;
-  if (event.type() == ui::ET_KEY_RELEASED) {
-    delete *last_key_event;
-    *last_key_event = nullptr;
-    return false;
-  }
-
-  CHECK_EQ(ui::ET_KEY_PRESSED, event.type());
-
-  if (!(*last_key_event)) {
-    *last_key_event = new KeyEvent(event);
-    return false;
-  } else if (event.time_stamp() == (*last_key_event)->time_stamp()) {
-    // The KeyEvent is created from the same native event.
-    return ((*last_key_event)->flags() & ui::EF_IS_REPEAT) != 0;
-  }
-
-  DCHECK(*last_key_event);
-  bool is_repeat = false;
-
-#if defined(OS_WIN)
-  if (event.HasNativeEvent()) {
-    // Bit 30 of lParam represents the "previous key state". If set, the key
-    // was already down, therefore this is an auto-repeat.
-    is_repeat = (event.native_event().lParam & 0x40000000) != 0;
-  }
-#endif
-  if (!is_repeat) {
-    if (event.key_code() == (*last_key_event)->key_code() &&
-        event.flags() == ((*last_key_event)->flags() & ~ui::EF_IS_REPEAT) &&
-        (event.time_stamp() - (*last_key_event)->time_stamp())
-                .InMilliseconds() < kMaxAutoRepeatTimeMs) {
-      is_repeat = true;
-    }
-  }
-
-  if (is_repeat) {
-    (*last_key_event)->set_time_stamp(event.time_stamp());
-    (*last_key_event)->set_flags((*last_key_event)->flags() | ui::EF_IS_REPEAT);
-    return true;
-  }
-
-  delete *last_key_event;
-  *last_key_event = new KeyEvent(event);
-
-  return false;
-}
-
 KeyEvent::KeyEvent(const PlatformEvent& native_event)
     : KeyEvent(native_event, EventFlagsFromNative(native_event)) {}
 
@@ -915,10 +850,15 @@ KeyEvent::KeyEvent(const PlatformEvent& native_event, int event_flags)
       INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, time_stamp());
   latency()->AddLatencyNumber(INPUT_EVENT_LATENCY_UI_COMPONENT);
 
-  if (IsRepeated(*this))
-    set_flags(flags() | ui::EF_IS_REPEAT);
+  KeyEvent** last_key_event = &last_key_event_;
 
 #if defined(USE_X11)
+  // Use a different static variable for key events that have non standard
+  // state masks as it may be reposted by an IME. IBUS-GTK uses this field
+  // to detect the re-posted event for example. crbug.com/385873.
+  if (X11EventHasNonStandardState(native_event))
+    last_key_event = &last_ibus_key_event_;
+
   NormalizeFlags();
   key_ = GetDomKeyFromXEvent(native_event);
   SetProperties(GetEventPropertiesFromXEvent(type(), *native_event));
@@ -933,6 +873,9 @@ KeyEvent::KeyEvent(const PlatformEvent& native_event, int event_flags)
     set_flags(adjusted_flags);
   }
 #endif
+
+  if (IsRepeated(last_key_event))
+    set_flags(flags() | ui::EF_IS_REPEAT);
 }
 
 KeyEvent::KeyEvent(EventType type,
@@ -1031,6 +974,63 @@ void KeyEvent::ApplyLayout() const {
 #endif
   if (!DomCodeToUsLayoutDomKey(code, flags(), &key_, &dummy_key_code))
     key_ = DomKey::UNIDENTIFIED;
+}
+
+bool KeyEvent::IsRepeated(KeyEvent** last_key_event) {
+  DCHECK(last_key_event);
+
+  // A safe guard in case if there were continuous key pressed events that are
+  // not auto repeat.
+  const int kMaxAutoRepeatTimeMs = 2000;
+
+  if (is_char())
+    return false;
+  if (type() == ui::ET_KEY_RELEASED) {
+    delete *last_key_event;
+    *last_key_event = nullptr;
+    return false;
+  }
+
+  CHECK_EQ(ui::ET_KEY_PRESSED, type());
+  KeyEvent* last = *last_key_event;
+
+  if (!last) {
+    *last_key_event = new KeyEvent(*this);
+    return false;
+  } else if (time_stamp() == last->time_stamp()) {
+    // The KeyEvent is created from the same native event.
+    return (last->flags() & ui::EF_IS_REPEAT) != 0;
+  }
+
+  DCHECK(last);
+  bool is_repeat = false;
+
+#if defined(OS_WIN)
+  if (HasNativeEvent()) {
+    // Bit 30 of lParam represents the "previous key state". If set, the key
+    // was already down, therefore this is an auto-repeat.
+    is_repeat = (native_event().lParam & 0x40000000) != 0;
+  }
+#endif
+  if (!is_repeat) {
+    if (key_code() == last->key_code() &&
+        flags() == (last->flags() & ~ui::EF_IS_REPEAT) &&
+        (time_stamp() - last->time_stamp()).InMilliseconds() <
+            kMaxAutoRepeatTimeMs) {
+      is_repeat = true;
+    }
+  }
+
+  if (is_repeat) {
+    last->set_time_stamp(time_stamp());
+    last->set_flags(last->flags() | ui::EF_IS_REPEAT);
+    return true;
+  }
+
+  delete *last_key_event;
+  *last_key_event = new KeyEvent(*this);
+
+  return false;
 }
 
 DomKey KeyEvent::GetDomKey() const {
