@@ -158,6 +158,21 @@ class ConnectionFilterImpl : public content::ConnectionFilter {
   DISALLOW_COPY_AND_ASSIGN(ConnectionFilterImpl);
 };
 
+service_manager::Manifest GetContentSystemManifest() {
+  // TODO(https://crbug.com/961869): This is a bit of a temporary hack so that
+  // we can make the global service instance a singleton. For now we just mirror
+  // the per-BrowserContext manifest (formerly also used for the global
+  // singleton instance), sans packaged services, since those are only meant to
+  // be tied to a BrowserContext. The per-BrowserContext service should go away
+  // soon, and then this can be removed.
+  service_manager::Manifest manifest = content::GetContentBrowserManifest();
+  manifest.service_name = content::mojom::kSystemServiceName;
+  manifest.packaged_services.clear();
+  manifest.options.instance_sharing_policy =
+      service_manager::Manifest::InstanceSharingPolicy::kSingleton;
+  return manifest;
+}
+
 }  // namespace
 
 class ServiceUtilityProcessHost::PdfToEmfState {
@@ -344,8 +359,7 @@ bool ServiceUtilityProcessHost::StartProcess(bool sandbox) {
   // child process, which exists ostensibly as the only instance of
   // "content_utility". This is all set up here.
   std::vector<service_manager::Manifest> manifests{
-      content::GetContentBrowserManifest(),
-      content::GetContentUtilityManifest()};
+      GetContentSystemManifest(), content::GetContentUtilityManifest()};
   service_manager_ = std::make_unique<service_manager::ServiceManager>(
       manifests,
       service_manager::ServiceManager::ServiceExecutablePolicy::kNotSupported);
@@ -359,7 +373,7 @@ bool ServiceUtilityProcessHost::StartProcess(bool sandbox) {
 
   mojo::Remote<service_manager::mojom::ProcessMetadata> metadata;
   service_manager_->RegisterService(
-      service_manager::Identity(content::mojom::kBrowserServiceName,
+      service_manager::Identity(content::mojom::kSystemServiceName,
                                 service_manager::kSystemInstanceGroup,
                                 base::Token{}, base::Token::CreateRandom()),
       std::move(browser_proxy), metadata.BindNewPipeAndPassReceiver());
