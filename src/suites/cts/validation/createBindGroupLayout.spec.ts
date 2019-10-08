@@ -63,28 +63,18 @@ g.test('negative binding index', async t => {
   });
 });
 
-// TODO: Update once https://github.com/gpuweb/gpuweb/issues/405 is decided.
-g.test('Visibility of bindings cannot be None', async t => {
-  const goodDescriptor: GPUBindGroupLayoutDescriptor = {
+g.test('Visibility of bindings can be 0', async t => {
+  const descriptor: GPUBindGroupLayoutDescriptor = {
     bindings: [
       {
         binding: 0,
-        visibility: GPUShaderStage.COMPUTE,
+        visibility: 0,
         type: 'storage-buffer',
       },
     ],
   };
 
-  // Control case
-  t.device.createBindGroupLayout(goodDescriptor);
-
-  // Binding visibility set to None can't be specified.
-  const badDescriptor = clone(goodDescriptor);
-  badDescriptor.bindings![0].visibility = GPUShaderStage.NONE;
-
-  await t.expectValidationError(() => {
-    t.device.createBindGroupLayout(badDescriptor);
-  });
+  t.device.createBindGroupLayout(descriptor);
 });
 
 g.test('number of dynamic buffers exceeds the maximum value', async t => {

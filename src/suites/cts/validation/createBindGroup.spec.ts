@@ -243,7 +243,6 @@ g.test('texture binding must have correct usage', async t => {
   });
 
   function* mismatchedTextureUsages(): Iterable<GPUTextureUsage> {
-    yield GPUTextureUsage.NONE;
     yield GPUTextureUsage.COPY_SRC;
     yield GPUTextureUsage.COPY_DST;
     if (type !== 'sampled-texture') {
