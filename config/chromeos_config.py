@@ -2695,19 +2695,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
           site_config.templates.cq_luci_slave,
           boards=['chell'],
       ),
-
-      site_config.Add(
-          'incremental-paladin',
-          site_config.templates.paladin,
-          site_config.templates.internal_paladin,
-          site_config.templates.no_hwtest_builder,
-          site_config.templates.cq_luci_slave,
-          boards=['reef'],
-          build_before_patching=True,
-          compilecheck=True,
-          unittests=False,
-          important=True,
-      ),
   ])
 
   # Used for builders which build completely from source except Chrome.

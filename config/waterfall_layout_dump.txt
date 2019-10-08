@@ -94,7 +94,6 @@
     hana-paladin
     hatch-paladin
     heli-paladin
-    incremental-paladin
     jacuzzi-paladin
     kalista-paladin
     kefka-kernelnext-paladin
@@ -2056,7 +2055,6 @@
   heli-tot-chrome-pfq-informational-tryjob
   heli-tot-chromium-pfq-informational-tryjob
   heli-unittest-stress
-  incremental-paladin-tryjob
   jacuzzi-chrome-pfq-tryjob
   jacuzzi-chromium-pfq-tryjob
   jacuzzi-compile-only-pre-cq
@@ -2515,7 +2513,6 @@
     hana-paladin-tryjob
     hatch-paladin-tryjob
     heli-paladin-tryjob
-    incremental-paladin-tryjob
     jacuzzi-paladin-tryjob
     kalista-paladin-tryjob
     kefka-kernelnext-paladin-tryjob
