@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env vpython3
 # Copyright 2015 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -13,14 +13,15 @@ import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from testing_support import auto_stub
+from third_party import mock
 import git_drover
 
 
-class GitDroverTest(auto_stub.TestCase):
+class GitDroverTest(unittest.TestCase):
 
   def setUp(self):
     super(GitDroverTest, self).setUp()
+    self.maxDiff = None
     self._temp_directory = tempfile.mkdtemp()
     self._parent_repo = os.path.join(self._temp_directory, 'parent_repo')
     self._target_repo = os.path.join(self._temp_directory, 'drover_branch_123')
@@ -33,12 +34,14 @@ class GitDroverTest(auto_stub.TestCase):
     with open(
         os.path.join(self._parent_repo, '.git', 'info', 'refs'), 'w') as f:
       f.write('refs')
-    self.mock(tempfile, 'mkdtemp', self._mkdtemp)
-    self.mock(__builtins__, 'raw_input', self._get_input)
-    self.mock(subprocess, 'check_call', self._check_call)
-    self.mock(subprocess, 'check_output', self._check_call)
+    mock.patch('tempfile.mkdtemp', self._mkdtemp).start()
+    mock.patch('git_drover._raw_input', self._get_input).start()
+    mock.patch('subprocess.check_call', self._check_call).start()
+    mock.patch('subprocess.check_output', self._check_call).start()
     self.real_popen = subprocess.Popen
-    self.mock(subprocess, 'Popen', self._Popen)
+    mock.patch('subprocess.Popen', self._Popen).start()
+    self.addCleanup(mock.patch.stopall)
+
     self._commands = []
     self._input = []
     self._fail_on_command = None
@@ -131,7 +134,7 @@ class GitDroverTest(auto_stub.TestCase):
         def __init__(self, *args, **kwargs):
           self.returncode = -999
         def communicate(self, stdin):
-          if stdin == 'foo\nbar\n':
+          if stdin == b'foo\nbar\n':
             self.returncode = 0
           else:
             self.returncode = 1

@@ -7,7 +7,6 @@
 from __future__ import print_function
 
 import argparse
-import cPickle
 import functools
 import logging
 import os
@@ -19,6 +18,10 @@ import tempfile
 
 import git_common
 
+if sys.version_info.major == 2:
+  import cPickle
+else:
+  import pickle as cPickle
 
 class Error(Exception):
   pass
@@ -66,6 +69,12 @@ if os.name == 'nt':
 else:
   mk_symlink = os.symlink
 
+
+def _raw_input(message):
+  # Use this so that it can be mocked in tests on Python 2 and 3.
+  if sys.version_info.major == 2:
+    return raw_input(message)
+  return input(message)
 
 class _Drover(object):
 
@@ -183,7 +192,7 @@ class _Drover(object):
     result = ''
     while result not in ('y', 'n'):
       try:
-        result = raw_input('%s Continue (y/n)? ' % message)
+        result = _raw_input('%s Continue (y/n)? ' % message)
       except EOFError:
         result = 'n'
     return result == 'y'
@@ -268,9 +277,9 @@ class _Drover(object):
         ['-c', 'core.quotePath=false', 'status', '--porcelain']).splitlines()
     extra_files = [f[3:] for f in repo_status if f[:2] == ' D']
     if extra_files:
+      stdin = '\n'.join(extra_files) + '\n'
       self._run_git_command_with_stdin(
-          ['update-index', '--skip-worktree', '--stdin'],
-          stdin='\n'.join(extra_files) + '\n')
+          ['update-index', '--skip-worktree', '--stdin'], stdin=stdin.encode())
 
   def _upload_and_land(self):
     if self._dry_run:
