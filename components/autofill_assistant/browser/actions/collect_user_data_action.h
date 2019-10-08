@@ -32,6 +32,11 @@ class CollectUserDataAction : public Action,
   // From autofill::PersonalDataManagerObserver.
   void OnPersonalDataChanged() override;
 
+  static bool IsUserDataComplete(
+      autofill::PersonalDataManager* personal_data_manager,
+      const UserData& user_data,
+      const CollectUserDataOptions& collect_user_data_options);
+
  private:
   struct LoginDetails {
     LoginDetails(bool choose_automatically_if_no_other_options,
@@ -67,15 +72,6 @@ class CollectUserDataAction : public Action,
   // Will update |initial_card_has_billing_postal_code_|.
   bool CheckInitialAutofillDataComplete(
       autofill::PersonalDataManager* personal_data_manager,
-      const CollectUserDataOptions& collect_user_data_options);
-  static bool IsCompleteContact(
-      const autofill::AutofillProfile& profile,
-      const CollectUserDataOptions& collect_user_data_options);
-  static bool IsCompleteAddress(const autofill::AutofillProfile& profile,
-                                bool require_postal_code);
-  static bool IsCompleteCreditCard(
-      autofill::PersonalDataManager* personal_data_manager,
-      const autofill::CreditCard& credit_card,
       const CollectUserDataOptions& collect_user_data_options);
 
   bool shown_to_user_ = false;
