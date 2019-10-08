@@ -540,7 +540,7 @@ class SequencedSocketData : public SocketDataProvider {
   // should use a SYNCHRONOUS event with a return value of ERR_IO_PENDING
   // instead.
   bool IsPaused() const;
-  // Resumes events once |this| is in the paused state.  The next even will
+  // Resumes events once |this| is in the paused state.  The next event will
   // occur synchronously with the call if it can.
   void Resume();
   void RunUntilPaused();
@@ -561,7 +561,7 @@ class SequencedSocketData : public SocketDataProvider {
   // Defines the state for the read or write path.
   enum IoState {
     IDLE,        // No async operation is in progress.
-    PENDING,     // An async operation in waiting for another opteration to
+    PENDING,     // An async operation in waiting for another operation to
                  // complete.
     COMPLETING,  // A task has been posted to complete an async operation.
     PAUSED,      // IO is paused until Resume() is called.
