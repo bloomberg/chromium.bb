@@ -36,6 +36,23 @@ class ASH_EXPORT HomeLauncherGestureHandler
       public TabletModeObserver,
       public ui::ImplicitAnimationObserver {
  public:
+  // The distance for the dragged window to pass over shelf so that it can be
+  // dragged into home launcher or overview. If not pass this value, the window
+  // will snap back to its original position.
+  static constexpr float kReturnToMaximizedThreshold = 116;
+
+  // The deceleration threshold to show overview during window dragging when
+  // dragging a window up from the shelf.
+  static constexpr float kShowOverviewThreshold = 4.f;
+
+  // The upward velocity threshold to take the user to the home launcher screen
+  // when swiping up from the shelf. Can happen anytime during dragging.
+  static constexpr float kVelocityToHomeScreenThreshold = 1000.f;
+
+  // The upward velocity threshold to fling the window into overview when split
+  // view is active during dragging.
+  static constexpr float kVelocityToOverviewThreshold = 1000.f;
+
   // Enum which tracks which mode the current scroll process is in.
   enum class Mode {
     // There is no current scroll process.
@@ -60,7 +77,8 @@ class ASH_EXPORT HomeLauncherGestureHandler
   // was not processed.
   bool OnPressEvent(Mode mode, const gfx::Point& location);
   bool OnScrollEvent(const gfx::Point& location, float scroll_y);
-  bool OnReleaseEvent(const gfx::Point& location);
+  bool OnReleaseEvent(const gfx::Point& location,
+                      base::Optional<float> velocity_y);
 
   // Cancel a current drag and animates the items to their final state based on
   // |last_event_location_|.
@@ -157,8 +175,10 @@ class ASH_EXPORT HomeLauncherGestureHandler
   // Called by OnPress/Scroll/ReleaseEvent() when the drag from the shelf or
   // from the top starts/continues/ends. |location| is in screen coordinate.
   void OnDragStarted(const gfx::Point& location);
-  void OnDragContinued(const gfx::Point& location);
-  bool OnDragEnded(const gfx::Point& location);
+  void OnDragContinued(const gfx::Point& location, float scroll_y);
+  bool OnDragEnded(const gfx::Point& location,
+                   base::Optional<float> velocity_y);
+  void OnDragCancelled();
 
   Mode mode_ = Mode::kNone;
 
