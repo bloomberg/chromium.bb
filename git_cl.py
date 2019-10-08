@@ -462,7 +462,6 @@ def _trigger_try_jobs(auth_config, changelist, buckets, options, patchset):
 
   gerrit_changes = [changelist.GetGerritChange(patchset)]
   shared_properties = {'category': getattr(options, 'category', 'git_cl_try')}
-  shared_properties.update(changelist.GetLegacyProperties(patchset))
   if getattr(options, 'clobber', False):
     shared_properties['clobber'] = True
   shared_properties.update(_get_properties_from_options(options) or {})
@@ -2747,34 +2746,6 @@ class Changelist(object):
 
     if data['status'] in ('ABANDONED', 'MERGED'):
       return 'CL %s is closed' % self.GetIssue()
-
-  # TODO(1004447): Remove on Oct 9th, 2019.
-  def GetLegacyProperties(self, patchset=None):
-    host = self.GetCodereviewServer()
-    issue = self.GetIssue()
-    patchset = int(patchset or self.GetPatchset())
-    data = self._GetChangeDetail(['ALL_REVISIONS'])
-
-    assert host and issue and patchset, 'CL must be uploaded first'
-
-    revision_data = None  # Pylint wants it to be defined.
-    for revision_data in data['revisions'].itervalues():
-      if int(revision_data['_number']) == patchset:
-        break
-    else:
-      raise Exception('Patchset %d is not known in Gerrit change %d' %
-                      (patchset, issue))
-
-    return {
-        'patch_issue': issue,
-        'patch_set': patchset,
-        'patch_project': data['project'],
-        'patch_storage': 'gerrit',
-        'patch_ref': revision_data['fetch']['http']['ref'],
-        'patch_repository_url': revision_data['fetch']['http']['url'],
-        'patch_gerrit_url': host,
-    }
-
 
   def GetGerritChange(self, patchset=None):
     """Returns a buildbucket.v2.GerritChange message for the current issue."""
