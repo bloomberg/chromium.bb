@@ -3560,6 +3560,10 @@ BEGIN_PARTITION_SEARCH:
 #undef NUM_SIMPLE_MOTION_FEATURES
 
 #if !CONFIG_REALTIME_ONLY
+static INLINE int coded_to_superres_mi(int mi_col, int denom) {
+  return (mi_col * denom + SCALE_NUMERATOR / 2) / SCALE_NUMERATOR;
+}
+
 static int get_rdmult_delta(AV1_COMP *cpi, BLOCK_SIZE bsize, int analysis_type,
                             int mi_row, int mi_col, int orig_rdmult) {
   AV1_COMMON *const cm = &cpi->common;
@@ -3585,9 +3589,9 @@ static int get_rdmult_delta(AV1_COMP *cpi, BLOCK_SIZE bsize, int analysis_type,
 #endif  // !USE_TPL_CLASSIC_MODEL
   int mi_count = 0;
   const int mi_col_sr =
-      av1_coded_to_superres_mi(mi_col, cm->superres_scale_denominator);
-  const int mi_col_end_sr = av1_coded_to_superres_mi(
-      mi_col + mi_wide, cm->superres_scale_denominator);
+      coded_to_superres_mi(mi_col, cm->superres_scale_denominator);
+  const int mi_col_end_sr =
+      coded_to_superres_mi(mi_col + mi_wide, cm->superres_scale_denominator);
   const int mi_cols_sr = av1_pixels_to_mi(cm->superres_upscaled_width);
   const int step = 1 << cpi->tpl_stats_block_mis_log2;
   for (int row = mi_row; row < mi_row + mi_high; row += step) {
@@ -3670,9 +3674,9 @@ static int get_tpl_stats_b(AV1_COMP *cpi, BLOCK_SIZE bsize, int mi_row,
 
   int mi_count = 0;
   const int mi_col_sr =
-      av1_coded_to_superres_mi(mi_col, cm->superres_scale_denominator);
-  const int mi_col_end_sr = av1_coded_to_superres_mi(
-      mi_col + mi_wide, cm->superres_scale_denominator);
+      coded_to_superres_mi(mi_col, cm->superres_scale_denominator);
+  const int mi_col_end_sr =
+      coded_to_superres_mi(mi_col + mi_wide, cm->superres_scale_denominator);
   const int mi_cols_sr = av1_pixels_to_mi(cm->superres_upscaled_width);
 
   // TPL store unit size is not the same as the motion estimation unit size.
@@ -3733,9 +3737,9 @@ static int get_q_for_deltaq_objective(AV1_COMP *const cpi, BLOCK_SIZE bsize,
 #endif  // !USE_TPL_CLASSIC_MODEL
   int mi_count = 0;
   const int mi_col_sr =
-      av1_coded_to_superres_mi(mi_col, cm->superres_scale_denominator);
-  const int mi_col_end_sr = av1_coded_to_superres_mi(
-      mi_col + mi_wide, cm->superres_scale_denominator);
+      coded_to_superres_mi(mi_col, cm->superres_scale_denominator);
+  const int mi_col_end_sr =
+      coded_to_superres_mi(mi_col + mi_wide, cm->superres_scale_denominator);
   const int mi_cols_sr = av1_pixels_to_mi(cm->superres_upscaled_width);
   const int step = 1 << cpi->tpl_stats_block_mis_log2;
   for (int row = mi_row; row < mi_row + mi_high; row += step) {
