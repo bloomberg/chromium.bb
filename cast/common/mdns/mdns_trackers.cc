@@ -73,6 +73,8 @@ MdnsRecordTracker::MdnsRecordTracker(
 }
 
 Error MdnsRecordTracker::Start(MdnsRecord record) {
+  OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
+
   if (record_.has_value()) {
     return Error::Code::kOperationInvalid;
   }
@@ -85,6 +87,8 @@ Error MdnsRecordTracker::Start(MdnsRecord record) {
 }
 
 Error MdnsRecordTracker::Stop() {
+  OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
+
   if (!record_.has_value()) {
     return Error::Code::kOperationInvalid;
   }
@@ -137,6 +141,8 @@ Error MdnsRecordTracker::Update(const MdnsRecord& new_record) {
 }
 
 bool MdnsRecordTracker::IsStarted() {
+  OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
+
   return record_.has_value();
 };
 
@@ -178,20 +184,9 @@ MdnsQuestionTracker::MdnsQuestionTracker(MdnsSender* sender,
                                          MdnsRandom* random_delay)
     : MdnsTracker(sender, task_runner, now_function, random_delay) {}
 
-// static
-SerialDeletePtr<MdnsQuestionTracker> MdnsQuestionTracker::Create(
-    MdnsSender* sender,
-    TaskRunner* task_runner,
-    ClockNowFunctionPtr now_function,
-    MdnsRandom* random_delay) {
-  // explicit new to access the private constructor that is unavailable to
-  // SerialDeletePtr
-  return SerialDeletePtr<MdnsQuestionTracker>(
-      task_runner,
-      new MdnsQuestionTracker(sender, task_runner, now_function, random_delay));
-}
-
 Error MdnsQuestionTracker::Start(MdnsQuestion question) {
+  OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
+
   if (question_.has_value()) {
     return Error::Code::kOperationInvalid;
   }
@@ -207,40 +202,49 @@ Error MdnsQuestionTracker::Start(MdnsQuestion question) {
 }
 
 Error MdnsQuestionTracker::Stop() {
+  OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
+
   if (!question_.has_value()) {
     return Error::Code::kOperationInvalid;
   }
 
   send_alarm_.Cancel();
   question_.reset();
+  record_trackers_.clear();
   return Error::None();
 }
 
 bool MdnsQuestionTracker::IsStarted() {
+  OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
+
   return question_.has_value();
 };
 
 void MdnsQuestionTracker::AddCallback(MdnsRecordChangedCallback* callback) {
-  // Adding a callback to the collection does not have to be immediate as no
-  // answers will be missed. The callback is called for all known answers.
-  task_runner_->PostTask([this, callback] {
-    const auto find_result =
-        std::find(callbacks_.begin(), callbacks_.end(), callback);
-    if (find_result == callbacks_.end()) {
-      callbacks_.push_back(callback);
-      // TODO(yakimakha): Notify the new callback with all known answers
-    }
-  });
+  OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
+
+  const auto find_result =
+      std::find(callbacks_.begin(), callbacks_.end(), callback);
+  if (find_result == callbacks_.end()) {
+    callbacks_.push_back(callback);
+    // TODO(yakimakha): Notify the new callback with all known answers
+  }
 }
 
 void MdnsQuestionTracker::RemoveCallback(MdnsRecordChangedCallback* callback) {
-  task_runner_->PostTask([this, callback] {
-    const auto find_result =
-        std::find(callbacks_.begin(), callbacks_.end(), callback);
-    if (find_result != callbacks_.end()) {
-      callbacks_.erase(find_result);
-    }
-  });
+  OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
+
+  const auto find_result =
+      std::find(callbacks_.begin(), callbacks_.end(), callback);
+  if (find_result != callbacks_.end()) {
+    callbacks_.erase(find_result);
+  }
+}
+
+bool MdnsQuestionTracker::HasCallbacks() const {
+  OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
+
+  return !callbacks_.empty();
 }
 
 void MdnsQuestionTracker::OnRecordReceived(const MdnsRecord& record) {
@@ -250,8 +254,7 @@ void MdnsQuestionTracker::OnRecordReceived(const MdnsRecord& record) {
     return;
   }
 
-  const std::tuple<DomainName, DnsType, DnsClass> key(
-      record.name(), record.dns_type(), record.dns_class());
+  const RecordKey key(record.name(), record.dns_type(), record.dns_class());
 
   const auto find_result = record_trackers_.find(key);
   if (find_result != record_trackers_.end()) {
@@ -285,8 +288,7 @@ void MdnsQuestionTracker::OnRecordExpired(const MdnsRecord& record) {
     callback->OnRecordChanged(record, RecordChangedEvent::kDeleted);
   }
 
-  std::tuple<DomainName, DnsType, DnsClass> key(
-      record.name(), record.dns_type(), record.dns_class());
+  const RecordKey key(record.name(), record.dns_type(), record.dns_class());
   record_trackers_.erase(key);
 }
 

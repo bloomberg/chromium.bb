@@ -8,19 +8,20 @@
 
 #include "absl/strings/match.h"
 #include "absl/strings/str_join.h"
+
 namespace cast {
 namespace mdns {
+
+bool IsValidDomainLabel(absl::string_view label) {
+  const size_t label_size = label.size();
+  return label_size > 0 && label_size <= kMaxLabelLength;
+}
 
 DomainName::DomainName(const std::vector<absl::string_view>& labels)
     : DomainName(labels.begin(), labels.end()) {}
 
 DomainName::DomainName(std::initializer_list<absl::string_view> labels)
     : DomainName(labels.begin(), labels.end()) {}
-
-bool IsValidDomainLabel(absl::string_view label) {
-  const size_t label_size = label.size();
-  return label_size > 0 && label_size <= kMaxLabelLength;
-}
 
 std::string DomainName::ToString() const {
   return absl::StrJoin(labels_, ".");
@@ -37,10 +38,6 @@ bool DomainName::operator!=(const DomainName& rhs) const {
 
 size_t DomainName::MaxWireSize() const {
   return max_wire_size_;
-}
-
-std::ostream& operator<<(std::ostream& stream, const DomainName& domain_name) {
-  return stream << domain_name.ToString();
 }
 
 RawRecordRdata::RawRecordRdata(std::vector<uint8_t> rdata)

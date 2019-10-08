@@ -37,7 +37,6 @@ class MdnsTracker {
               TaskRunner* task_runner,
               ClockNowFunctionPtr now_function,
               MdnsRandom* random_delay);
-
   MdnsTracker(const MdnsTracker& other) = delete;
   MdnsTracker(MdnsTracker&& other) noexcept = delete;
   ~MdnsTracker() = default;
@@ -106,11 +105,10 @@ class MdnsRecordTracker : public MdnsTracker {
 // continuous monitoring with exponential back-off as described in RFC 6762
 class MdnsQuestionTracker : public MdnsTracker {
  public:
-  static SerialDeletePtr<MdnsQuestionTracker> Create(
-      MdnsSender* sender,
-      TaskRunner* task_runner,
-      ClockNowFunctionPtr now_function,
-      MdnsRandom* random_delay);
+  MdnsQuestionTracker(MdnsSender* sender,
+                      TaskRunner* task_runner,
+                      ClockNowFunctionPtr now_function,
+                      MdnsRandom* random_delay);
 
   // Starts sending query messages for the provided question. Returns error with
   // code Error::Code::kOperationInvalid if called on an instance of
@@ -129,19 +127,16 @@ class MdnsQuestionTracker : public MdnsTracker {
 
   // Adds and removes callbacks that are called when a change to the status of a
   // record happens. When a new callback is added, it's called for all known
-  // answers. Callbacks are added and removed by posting a task to the task
-  // runner to avoid locking the callbacks collection.
+  // answers.
   void AddCallback(MdnsRecordChangedCallback* callback);
   void RemoveCallback(MdnsRecordChangedCallback* callback);
+  bool HasCallbacks() const;
 
   // Called by the owner of the class
   void OnRecordReceived(const MdnsRecord& record);
 
  private:
-  MdnsQuestionTracker(MdnsSender* sender,
-                      TaskRunner* task_runner,
-                      ClockNowFunctionPtr now_function,
-                      MdnsRandom* random_delay);
+  using RecordKey = std::tuple<DomainName, DnsType, DnsClass>;
 
   // Called by owned MdnsRecordTrackers when a tracked record is expired
   void OnRecordExpired(const MdnsRecord& record);
@@ -158,15 +153,18 @@ class MdnsQuestionTracker : public MdnsTracker {
   // A delay between the currently scheduled and the next queries.
   Clock::duration send_delay_;
 
-  // Callbacks collection should only be accessed from the task runner to avoid
-  // the need to have a guarding thread synchronization primitive.
+  // A collection of all callbacks interested in receiving updates for the
+  // question tracked by this instance of MdnsQuestionTracker.
   std::vector<MdnsRecordChangedCallback*> callbacks_;
 
   // Active record trackers, uniquely identified by domain name, DNS record type
-  // and DNS record class.
-  std::unordered_map<std::tuple<DomainName, DnsType, DnsClass>,
+  // and DNS record class. MdnsRecordTracker instances are stored as unique_ptr
+  // so they are not moved around in memory when the collection is modified.
+  // This allows passing a pointer to MdnsRecordTracker to a task running on the
+  // TaskRunner.
+  std::unordered_map<RecordKey,
                      std::unique_ptr<MdnsRecordTracker>,
-                     absl::Hash<std::tuple<DomainName, DnsType, DnsClass>>>
+                     absl::Hash<RecordKey>>
       record_trackers_;
 };
 

@@ -122,9 +122,9 @@ class MdnsTrackerTest : public ::testing::Test {
         [this](const MdnsRecord& record) { expiration_called_ = true; });
   }
 
-  SerialDeletePtr<MdnsQuestionTracker> CreateQuestionTracker() {
-    return MdnsQuestionTracker::Create(&sender_, &task_runner_, &FakeClock::now,
-                                       &random_);
+  std::unique_ptr<MdnsQuestionTracker> CreateQuestionTracker() {
+    return std::make_unique<MdnsQuestionTracker>(&sender_, &task_runner_,
+                                                 &FakeClock::now, &random_);
   }
 
  protected:
@@ -352,15 +352,12 @@ TEST_F(MdnsTrackerTest, RecordTrackerNoExpirationCallbackAfterDestruction) {
 // https://tools.ietf.org/html/rfc6762#section-5.2
 
 TEST_F(MdnsTrackerTest, QuestionTrackerStartStop) {
-  SerialDeletePtr<MdnsQuestionTracker> tracker = CreateQuestionTracker();
+  std::unique_ptr<MdnsQuestionTracker> tracker = CreateQuestionTracker();
   TrackerStartStop(std::move(tracker), a_question_);
-
-  // Drain the task runner to make sure scheduled deleter has run
-  task_runner_.RunTasksUntilIdle();
 }
 
 TEST_F(MdnsTrackerTest, QuestionTrackerQueryAfterDelay) {
-  SerialDeletePtr<MdnsQuestionTracker> tracker = CreateQuestionTracker();
+  std::unique_ptr<MdnsQuestionTracker> tracker = CreateQuestionTracker();
   tracker->Start(a_question_);
 
   EXPECT_CALL(socket_, SendMessage(_, _, _)).Times(1);
@@ -372,15 +369,10 @@ TEST_F(MdnsTrackerTest, QuestionTrackerQueryAfterDelay) {
     clock_.Advance(interval);
     interval *= 2;
   }
-
-  // Force deletion via a reset() call and drain the task runner to make sure
-  // scheduled deleter has run
-  tracker.reset();
-  task_runner_.RunTasksUntilIdle();
 }
 
 TEST_F(MdnsTrackerTest, QuestionTrackerSendsMessage) {
-  SerialDeletePtr<MdnsQuestionTracker> tracker = CreateQuestionTracker();
+  std::unique_ptr<MdnsQuestionTracker> tracker = CreateQuestionTracker();
   tracker->Start(a_question_);
 
   EXPECT_CALL(socket_, SendMessage(_, _, _))
@@ -388,29 +380,20 @@ TEST_F(MdnsTrackerTest, QuestionTrackerSendsMessage) {
           kQuestionQueryBytes.data(), kQuestionQueryBytes.size())));
 
   clock_.Advance(std::chrono::milliseconds(120));
-
-  // Force deletion via a reset() call and drain the task runner to make sure
-  // scheduled deleter has run
-  tracker.reset();
-  task_runner_.RunTasksUntilIdle();
 }
 
 TEST_F(MdnsTrackerTest, QuestionTrackerNoQueryAfterStop) {
-  SerialDeletePtr<MdnsQuestionTracker> tracker = CreateQuestionTracker();
+  std::unique_ptr<MdnsQuestionTracker> tracker = CreateQuestionTracker();
   TrackerNoQueryAfterStop(std::move(tracker), a_question_);
-  // Drain the task runner to make sure scheduled deleter has run
-  task_runner_.RunTasksUntilIdle();
 }
 
 TEST_F(MdnsTrackerTest, QuestionTrackerNoQueryAfterDestruction) {
-  SerialDeletePtr<MdnsQuestionTracker> tracker = CreateQuestionTracker();
+  std::unique_ptr<MdnsQuestionTracker> tracker = CreateQuestionTracker();
   TrackerNoQueryAfterDestruction(std::move(tracker), a_question_);
-  // Drain the task runner to make sure scheduled deleter has run
-  task_runner_.RunTasksUntilIdle();
 }
 
 TEST_F(MdnsTrackerTest, QuestionTrackerCallbackOnRecordReceived) {
-  SerialDeletePtr<MdnsQuestionTracker> tracker = CreateQuestionTracker();
+  std::unique_ptr<MdnsQuestionTracker> tracker = CreateQuestionTracker();
   MockRecordChangedCallback callback1;
   MockRecordChangedCallback callback2;
 
@@ -424,15 +407,10 @@ TEST_F(MdnsTrackerTest, QuestionTrackerCallbackOnRecordReceived) {
   EXPECT_CALL(callback1, OnRecordChanged(_, _)).Times(1);
   EXPECT_CALL(callback2, OnRecordChanged(_, _)).Times(1);
   tracker->OnRecordReceived(a_record_);
-
-  // Force deletion via a reset() call and drain the task runner to make sure
-  // scheduled deleter has run
-  tracker.reset();
-  task_runner_.RunTasksUntilIdle();
 }
 
 TEST_F(MdnsTrackerTest, QuestionTrackerNoCallbackAfterRemoval) {
-  SerialDeletePtr<MdnsQuestionTracker> tracker = CreateQuestionTracker();
+  std::unique_ptr<MdnsQuestionTracker> tracker = CreateQuestionTracker();
   MockRecordChangedCallback callback1;
   MockRecordChangedCallback callback2;
 
@@ -449,15 +427,10 @@ TEST_F(MdnsTrackerTest, QuestionTrackerNoCallbackAfterRemoval) {
   EXPECT_CALL(callback1, OnRecordChanged(_, _)).Times(1);
   EXPECT_CALL(callback2, OnRecordChanged(_, _)).Times(0);
   tracker->OnRecordReceived(a_record_);
-
-  // Force deletion via a reset() call and drain the task runner to make sure
-  // scheduled deleter has run
-  tracker.reset();
-  task_runner_.RunTasksUntilIdle();
 }
 
 TEST_F(MdnsTrackerTest, QuestionTrackerCallbackOnCreateUpdateGoodbye) {
-  SerialDeletePtr<MdnsQuestionTracker> tracker = CreateQuestionTracker();
+  std::unique_ptr<MdnsQuestionTracker> tracker = CreateQuestionTracker();
   MockRecordChangedCallback callback;
 
   tracker->Start(a_question_);
@@ -489,15 +462,10 @@ TEST_F(MdnsTrackerTest, QuestionTrackerCallbackOnCreateUpdateGoodbye) {
   // Expiration is scheduled on the task runner to happen 1 second later as per
   // RFC 6762. Advance the fake clock to receive the callback.
   clock_.Advance(std::chrono::seconds(10));
-
-  // Force deletion via a reset() call and drain the task runner to make sure
-  // scheduled deleter has run
-  tracker.reset();
-  task_runner_.RunTasksUntilIdle();
 }
 
 TEST_F(MdnsTrackerTest, QuestionTrackerNoCallbackOnNoUpdate) {
-  SerialDeletePtr<MdnsQuestionTracker> tracker = CreateQuestionTracker();
+  std::unique_ptr<MdnsQuestionTracker> tracker = CreateQuestionTracker();
   MockRecordChangedCallback callback;
 
   tracker->Start(a_question_);
@@ -509,11 +477,6 @@ TEST_F(MdnsTrackerTest, QuestionTrackerNoCallbackOnNoUpdate) {
   EXPECT_CALL(callback, OnRecordChanged(_, _)).Times(1);
   tracker->OnRecordReceived(a_record_);
   tracker->OnRecordReceived(a_record_);
-
-  // Force deletion via a reset() call and drain the task runner to make sure
-  // scheduled deleter has run
-  tracker.reset();
-  task_runner_.RunTasksUntilIdle();
 }
 
 }  // namespace mdns

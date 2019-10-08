@@ -23,25 +23,18 @@ using IPEndpoint = openscreen::IPEndpoint;
 
 class MdnsReceiver : UdpSocket::Client {
  public:
-  class Delegate {
-   public:
-    virtual ~Delegate() = default;
-    virtual void OnQueryReceived(const MdnsMessage& message,
-                                 const IPEndpoint& sender) = 0;
-    virtual void OnResponseReceived(const MdnsMessage& message,
-                                    const IPEndpoint& sender) = 0;
-  };
-
   // MdnsReceiver does not own |socket| and |delegate|
   // and expects that the lifetime of these objects exceeds the lifetime of
   // MdnsReceiver.
-  MdnsReceiver(UdpSocket* socket, Delegate* delegate);
+  explicit MdnsReceiver(UdpSocket* socket);
   MdnsReceiver(const MdnsReceiver& other) = delete;
   MdnsReceiver(MdnsReceiver&& other) noexcept = delete;
-  ~MdnsReceiver() override;
-
   MdnsReceiver& operator=(const MdnsReceiver& other) = delete;
   MdnsReceiver& operator=(MdnsReceiver&& other) noexcept = delete;
+  ~MdnsReceiver() override;
+
+  void SetQueryCallback(std::function<void(const MdnsMessage&)> callback);
+  void SetResponseCallback(std::function<void(const MdnsMessage&)> callback);
 
   // The receiver can be started and stopped multiple times.
   // Start and Stop are both synchronous calls. When MdnsReceiver has not yet
@@ -63,7 +56,8 @@ class MdnsReceiver : UdpSocket::Client {
   };
 
   UdpSocket* const socket_;
-  Delegate* const delegate_;
+  std::function<void(const MdnsMessage&)> query_callback_;
+  std::function<void(const MdnsMessage&)> response_callback_;
   State state_ = State::kStopped;
 };
 

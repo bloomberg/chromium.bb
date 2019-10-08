@@ -74,8 +74,6 @@ class DomainName {
   std::vector<std::string> labels_;
 };
 
-std::ostream& operator<<(std::ostream& stream, const DomainName& domain_name);
-
 // Parsed represenation of the extra data in a record. Does not include standard
 // DNS record data such as TTL, Name, Type and Class. We use it to distinguish
 // a raw record type that we do not know the identity of.

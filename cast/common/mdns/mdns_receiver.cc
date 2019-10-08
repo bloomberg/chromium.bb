@@ -10,16 +10,31 @@
 namespace cast {
 namespace mdns {
 
-MdnsReceiver::MdnsReceiver(UdpSocket* socket, Delegate* delegate)
-    : socket_(socket), delegate_(delegate) {
+MdnsReceiver::MdnsReceiver(UdpSocket* socket) : socket_(socket) {
   OSP_DCHECK(socket_);
-  OSP_DCHECK(delegate_);
 }
 
 MdnsReceiver::~MdnsReceiver() {
   if (state_ == State::kRunning) {
     Stop();
   }
+}
+
+void MdnsReceiver::SetQueryCallback(
+    std::function<void(const MdnsMessage&)> callback) {
+  // This check verifies that either new or stored callback has a target. It
+  // will fail in case multiple objects try to set or clear the callback.
+  OSP_DCHECK(static_cast<bool>(query_callback_) != static_cast<bool>(callback));
+  query_callback_ = callback;
+}
+
+void MdnsReceiver::SetResponseCallback(
+    std::function<void(const MdnsMessage&)> callback) {
+  // This check verifies that either new or stored callback has a target. It
+  // will fail in case multiple objects try to set or clear the callback.
+  OSP_DCHECK(static_cast<bool>(response_callback_) !=
+             static_cast<bool>(callback));
+  response_callback_ = callback;
 }
 
 void MdnsReceiver::Start() {
@@ -44,10 +59,13 @@ void MdnsReceiver::OnRead(UdpSocket* socket,
   if (!reader.Read(&message)) {
     return;
   }
-  if (message.type() == MessageType::Response) {
-    delegate_->OnResponseReceived(message, packet.source());
-  } else {
-    delegate_->OnQueryReceived(message, packet.source());
+
+  std::function<void(const MdnsMessage&)> callback =
+      (message.type() == MessageType::Response) ? response_callback_
+                                                : query_callback_;
+
+  if (callback) {
+    callback(message);
   }
 }
 
