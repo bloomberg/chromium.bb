@@ -1544,8 +1544,8 @@ void Tile::ReconstructBlock(const Block& block, Plane plane, int start_x,
 }
 
 bool Tile::Residual(const Block& block, ProcessingMode mode) {
-  const int width_chunks = std::max(1, kBlockWidthPixels[block.size] >> 6);
-  const int height_chunks = std::max(1, kBlockHeightPixels[block.size] >> 6);
+  const int width_chunks = std::max(1, block.width >> 6);
+  const int height_chunks = std::max(1, block.height >> 6);
   const BlockSize size_chunk4x4 =
       (width_chunks > 1 || height_chunks > 1) ? kBlock64x64 : block.size;
   const BlockParameters& bp = *block.bp;
@@ -1614,8 +1614,6 @@ bool Tile::IsMvValid(const Block& block, bool is_compound) const {
   if (!block.bp->prediction_parameters->use_intra_block_copy) {
     return true;
   }
-  const int block_width = kBlockWidthPixels[block.size];
-  const int block_height = kBlockHeightPixels[block.size];
   if ((bp.mv[0].mv[0] & 7) != 0 || (bp.mv[0].mv[1] & 7) != 0) {
     return false;
   }
@@ -1623,13 +1621,13 @@ bool Tile::IsMvValid(const Block& block, bool is_compound) const {
   const int delta_column = bp.mv[0].mv[1] >> 3;
   int src_top_edge = MultiplyBy4(block.row4x4) + delta_row;
   int src_left_edge = MultiplyBy4(block.column4x4) + delta_column;
-  const int src_bottom_edge = src_top_edge + block_height;
-  const int src_right_edge = src_left_edge + block_width;
+  const int src_bottom_edge = src_top_edge + block.height;
+  const int src_right_edge = src_left_edge + block.width;
   if (block.HasChroma()) {
-    if (block_width < 8 && subsampling_x_[kPlaneU] != 0) {
+    if (block.width < 8 && subsampling_x_[kPlaneU] != 0) {
       src_left_edge -= 4;
     }
-    if (block_height < 8 && subsampling_y_[kPlaneU] != 0) {
+    if (block.height < 8 && subsampling_y_[kPlaneU] != 0) {
       src_top_edge -= 4;
     }
   }
@@ -1712,13 +1710,11 @@ bool Tile::AssignMv(const Block& block, bool is_compound) {
 }
 
 void Tile::ResetEntropyContext(const Block& block) {
-  const int block_width4x4 = kNum4x4BlocksWide[block.size];
-  const int block_height4x4 = kNum4x4BlocksHigh[block.size];
   for (int plane = 0; plane < (block.HasChroma() ? PlaneCount() : 1); ++plane) {
     const int subsampling_x = subsampling_x_[plane];
     const int start_x = block.column4x4 >> subsampling_x;
     const int end_x =
-        std::min((block.column4x4 + block_width4x4) >> subsampling_x,
+        std::min((block.column4x4 + block.width4x4) >> subsampling_x,
                  frame_header_.columns4x4);
     memset(&coefficient_levels_[kEntropyContextTop][plane][start_x], 0,
            end_x - start_x);
@@ -1727,7 +1723,7 @@ void Tile::ResetEntropyContext(const Block& block) {
     const int subsampling_y = subsampling_y_[plane];
     const int start_y = block.row4x4 >> subsampling_y;
     const int end_y =
-        std::min((block.row4x4 + block_height4x4) >> subsampling_y,
+        std::min((block.row4x4 + block.height4x4) >> subsampling_y,
                  frame_header_.rows4x4);
     memset(&coefficient_levels_[kEntropyContextLeft][plane][start_y], 0,
            end_y - start_y);
@@ -1808,8 +1804,8 @@ void Tile::ComputePrediction(const Block& block) {
         prediction_width = block_width;
         prediction_height = block_height;
       } else {
-        prediction_width = kBlockWidthPixels[block.size] >> subsampling_x;
-        prediction_height = kBlockHeightPixels[block.size] >> subsampling_y;
+        prediction_width = block.width >> subsampling_x;
+        prediction_height = block.height >> subsampling_y;
       }
       for (int r = 0, y = 0; y < block_height; y += prediction_height, ++r) {
         for (int c = 0, x = 0; x < block_width; x += prediction_width, ++c) {
@@ -1874,8 +1870,6 @@ bool Tile::ProcessBlock(int row4x4, int column4x4, BlockSize block_size,
           ? kTransformSize4x4
           : kUVTransformSize[block.residual_size[kPlaneTypeUV]];
   if (bp.skip) ResetEntropyContext(block);
-  const int block_width4x4 = kNum4x4BlocksWide[block_size];
-  const int block_height4x4 = kNum4x4BlocksHigh[block_size];
   if (split_parse_and_decode_) {
     if (!Residual(block, kProcessingModeParseOnly)) return false;
   } else {
@@ -1892,10 +1886,10 @@ bool Tile::ProcessBlock(int row4x4, int column4x4, BlockSize block_size,
   // save bp.segment_id in the current frame.
   if (frame_header_.segmentation.enabled &&
       frame_header_.segmentation.update_map) {
-    const int x_limit =
-        std::min(frame_header_.columns4x4 - column4x4, block_width4x4);
-    const int y_limit =
-        std::min(frame_header_.rows4x4 - row4x4, block_height4x4);
+    const int x_limit = std::min(frame_header_.columns4x4 - column4x4,
+                                 static_cast<int>(block.width4x4));
+    const int y_limit = std::min(frame_header_.rows4x4 - row4x4,
+                                 static_cast<int>(block.height4x4));
     current_frame_.segmentation_map()->FillBlock(row4x4, column4x4, x_limit,
                                                  y_limit, bp.segment_id);
   }
@@ -2408,8 +2402,7 @@ void Tile::StoreMotionFieldMvsIntoCurrentFrame(const Block& block) {
                                  frame_header_.rows4x4);
   const int column_start = block.column4x4 | 1;
   const int column_limit =
-      std::min(block.column4x4 + kNum4x4BlocksWide[block.size],
-               frame_header_.columns4x4);
+      std::min(block.column4x4 + block.width4x4, frame_header_.columns4x4);
   for (int row = row_start; row < row_limit; row += 2) {
     const int row_index = DivideBy2(row);
     ReferenceFrameType* const reference_frame_row_start =

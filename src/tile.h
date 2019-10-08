@@ -651,6 +651,10 @@ struct Tile::Block {
         row4x4(row4x4),
         column4x4(column4x4),
         size(size),
+        width(kBlockWidthPixels[size]),
+        height(kBlockHeightPixels[size]),
+        width4x4(kNum4x4BlocksWide[size]),
+        height4x4(kNum4x4BlocksHigh[size]),
         left_available(tile.IsInside(row4x4, column4x4 - 1)),
         top_available(tile.IsInside(row4x4 - 1, column4x4)),
         residual_size{kPlaneResidualSize[size][0][0],
@@ -678,7 +682,7 @@ struct Tile::Block {
         (row4x4 & 1) == 0) {
       return false;
     }
-    if (kNum4x4BlocksWide[size] == 1 &&
+    if (width4x4 == 1 &&
         tile.sequence_header_.color_config.subsampling_x != 0 &&
         (column4x4 & 1) == 0) {
       return false;
@@ -697,8 +701,7 @@ struct Tile::Block {
 
   bool LeftAvailableChroma() const {
     if (!HasChroma()) return false;
-    if ((tile.sequence_header_.color_config.subsampling_x &
-         kNum4x4BlocksWide[size]) == 1) {
+    if ((tile.sequence_header_.color_config.subsampling_x & width4x4) == 1) {
       return tile.IsInside(row4x4, column4x4 - 2);
     }
     return left_available;
@@ -741,8 +744,8 @@ struct Tile::Block {
   // use by overlapped motion compensation.
   bool HasOverlappableCandidates() const {
     if (top_available) {
-      for (int x = column4x4; x < std::min(tile.frame_header_.columns4x4,
-                                           column4x4 + kNum4x4BlocksWide[size]);
+      for (int x = column4x4;
+           x < std::min(tile.frame_header_.columns4x4, column4x4 + width4x4);
            x += 2) {
         if (tile.Parameters(row4x4 - 1, x | 1).reference_frame[0] >
             kReferenceFrameIntra) {
@@ -767,6 +770,10 @@ struct Tile::Block {
   const int row4x4;
   const int column4x4;
   const BlockSize size;
+  const uint8_t width;
+  const uint8_t height;
+  const uint8_t width4x4;
+  const uint8_t height4x4;
   const bool left_available;
   const bool top_available;
   const BlockSize residual_size[kNumPlaneTypes];

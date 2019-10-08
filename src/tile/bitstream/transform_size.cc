@@ -130,8 +130,7 @@ TransformSize Tile::ReadFixedTransformSize(const Block& block) {
 
 void Tile::ReadVariableTransformTree(const Block& block, int row4x4,
                                      int column4x4, TransformSize tx_size) {
-  const uint8_t pixels =
-      std::max(kBlockWidthPixels[block.size], kBlockHeightPixels[block.size]);
+  const uint8_t pixels = std::max(block.width, block.height);
   const TransformSize max_tx_size = GetSquareTransformSize(pixels);
   const int context_delta = (kNumSquareTransformSizes - 1 -
                              TransformSizeToSquareTransformIndex(max_tx_size)) *
@@ -194,8 +193,6 @@ void Tile::ReadVariableTransformTree(const Block& block, int row4x4,
 }
 
 void Tile::DecodeTransformSize(const Block& block) {
-  const int block_width4x4 = kNum4x4BlocksWide[block.size];
-  const int block_height4x4 = kNum4x4BlocksHigh[block.size];
   BlockParameters& bp = *block.bp;
   if (frame_header_.tx_mode == kTxModeSelect && block.size > kBlock4x4 &&
       bp.is_inter && !bp.skip &&
@@ -203,19 +200,19 @@ void Tile::DecodeTransformSize(const Block& block) {
     const TransformSize max_tx_size = kMaxTransformSizeRectangle[block.size];
     const int tx_width4x4 = kTransformWidth4x4[max_tx_size];
     const int tx_height4x4 = kTransformHeight4x4[max_tx_size];
-    for (int row = block.row4x4; row < block.row4x4 + block_height4x4;
+    for (int row = block.row4x4; row < block.row4x4 + block.height4x4;
          row += tx_height4x4) {
       for (int column = block.column4x4;
-           column < block.column4x4 + block_width4x4; column += tx_width4x4) {
+           column < block.column4x4 + block.width4x4; column += tx_width4x4) {
         ReadVariableTransformTree(block, row, column, max_tx_size);
       }
     }
   } else {
     bp.transform_size = ReadFixedTransformSize(block);
-    for (int row = block.row4x4; row < block.row4x4 + block_height4x4; ++row) {
+    for (int row = block.row4x4; row < block.row4x4 + block.height4x4; ++row) {
       static_assert(sizeof(TransformSize) == 1, "");
       memset(&inter_transform_sizes_[row][block.column4x4], bp.transform_size,
-             block_width4x4);
+             block.width4x4);
     }
   }
 }

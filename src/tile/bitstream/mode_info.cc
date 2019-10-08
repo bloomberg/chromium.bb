@@ -254,10 +254,9 @@ void Tile::ReadCdef(const Block& block) {
   if (cdef_index_[row][column] == -1) {
     cdef_index_[row][column] =
         static_cast<int16_t>(reader_.ReadLiteral(frame_header_.cdef.bits));
-    const int width4x4 = kNum4x4BlocksWide[block.size];
-    const int height4x4 = kNum4x4BlocksHigh[block.size];
-    for (int i = row4x4; i < row4x4 + height4x4; i += cdef_size4x4) {
-      for (int j = column4x4; j < column4x4 + width4x4; j += cdef_size4x4) {
+    for (int i = row4x4; i < row4x4 + block.height4x4; i += cdef_size4x4) {
+      for (int j = column4x4; j < column4x4 + block.width4x4;
+           j += cdef_size4x4) {
         cdef_index_[DivideBy16(i)][DivideBy16(j)] = cdef_index_[row][column];
       }
     }
@@ -539,9 +538,9 @@ int8_t Tile::ComputePredictedSegmentId(const Block& block) const {
   if (prev_segment_ids_ == nullptr) return 0;
 
   const int x_limit = std::min(frame_header_.columns4x4 - block.column4x4,
-                               static_cast<int>(kNum4x4BlocksWide[block.size]));
+                               static_cast<int>(block.width4x4));
   const int y_limit = std::min(frame_header_.rows4x4 - block.row4x4,
-                               static_cast<int>(kNum4x4BlocksHigh[block.size]));
+                               static_cast<int>(block.height4x4));
   int8_t id = 7;
   for (int y = 0; y < y_limit; ++y) {
     for (int x = 0; x < x_limit; ++x) {
@@ -820,11 +819,9 @@ void Tile::ReadReferenceFrames(const Block& block) {
     bp.reference_frame[1] = kReferenceFrameNone;
     return;
   }
-  const int block_width4x4 = kNum4x4BlocksWide[block.size];
-  const int block_height4x4 = kNum4x4BlocksHigh[block.size];
   const bool use_compound_reference =
       frame_header_.reference_mode_select &&
-      std::min(block_width4x4, block_height4x4) >= 2 &&
+      std::min(block.width4x4, block.height4x4) >= 2 &&
       reader_.ReadSymbol(symbol_decoder_context_.use_compound_reference_cdf
                              [GetUseCompoundReferenceContext(block)]);
   if (use_compound_reference) {

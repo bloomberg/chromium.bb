@@ -855,14 +855,11 @@ void Tile::ObmcPrediction(const Block& block, const Plane plane,
                           const int round_bits) {
   const int subsampling_x = subsampling_x_[plane];
   const int subsampling_y = subsampling_y_[plane];
-  const int num4x4_wide = kNum4x4BlocksWide[block.size];
-  const int num4x4_high = kNum4x4BlocksHigh[block.size];
-
   if (block.top_available &&
       !IsBlockSmallerThan8x8(block.residual_size[GetPlaneType(plane)])) {
     const int num_limit = std::min(uint8_t{4}, k4x4WidthLog2[block.size]);
     const int column4x4_max =
-        std::min(block.column4x4 + num4x4_wide, frame_header_.columns4x4);
+        std::min(block.column4x4 + block.width4x4, frame_header_.columns4x4);
     const int candidate_row = block.row4x4 - 1;
     const int block_start_y = MultiplyBy4(block.row4x4) >> subsampling_y;
     int column4x4 = block.column4x4;
@@ -894,7 +891,7 @@ void Tile::ObmcPrediction(const Block& block, const Plane plane,
   if (block.left_available) {
     const int num_limit = std::min(uint8_t{4}, k4x4HeightLog2[block.size]);
     const int row4x4_max =
-        std::min(block.row4x4 + num4x4_high, frame_header_.rows4x4);
+        std::min(block.row4x4 + block.height4x4, frame_header_.rows4x4);
     const int candidate_column = block.column4x4 - 1;
     int row4x4 = block.row4x4;
     const int block_start_x = MultiplyBy4(block.column4x4) >> subsampling_x;

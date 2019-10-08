@@ -252,8 +252,8 @@ bool Tile::ReadPaletteTokens(const Block& block) {
        ++plane_type) {
     const int palette_size = palette_mode_info.size[plane_type];
     if (palette_size == 0) continue;
-    int block_height = kBlockHeightPixels[block.size];
-    int block_width = kBlockWidthPixels[block.size];
+    int block_height = block.height;
+    int block_width = block.width;
     int screen_height = std::min(
         block_height, MultiplyBy4(frame_header_.rows4x4 - block.row4x4));
     int screen_width = std::min(

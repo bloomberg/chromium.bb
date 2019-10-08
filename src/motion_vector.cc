@@ -120,10 +120,8 @@ void SetupGlobalMv(const Tile::Block& block, int index,
     LowerMvPrecision(block, mv->mv);
     return;
   }
-  const int x = MultiplyBy4(block.column4x4) +
-                DivideBy2(kBlockWidthPixels[block.size]) - 1;
-  const int y =
-      MultiplyBy4(block.row4x4) + DivideBy2(kBlockHeightPixels[block.size]) - 1;
+  const int x = MultiplyBy4(block.column4x4) + DivideBy2(block.width) - 1;
+  const int y = MultiplyBy4(block.row4x4) + DivideBy2(block.height) - 1;
   const int xc = (gm.params[2] - (1 << kWarpedModelPrecisionBits)) * x +
                  gm.params[3] * y + gm.params[0];
   const int yc = gm.params[4] * x +
@@ -244,7 +242,6 @@ void ScanRow(const Tile::Block& block, int delta_row, bool is_compound,
              MotionVector global_mv[2], bool* const found_new_mv,
              bool* const found_match, int* const num_mv_found,
              CandidateMotionVector ref_mv_stack[kMaxRefMvStackSize]) {
-  const int block_width4x4 = kNum4x4BlocksWide[block.size];
   int delta_column = 0;
   if (std::abs(delta_row) > 1) {
     delta_row += block.row4x4 & 1;
@@ -252,16 +249,16 @@ void ScanRow(const Tile::Block& block, int delta_row, bool is_compound,
   }
   const int end_mv_column =
       block.column4x4 + delta_column +
-      std::min({block_width4x4,
+      std::min({static_cast<int>(block.width4x4),
                 block.tile.frame_header().columns4x4 - block.column4x4, 16});
   const int mv_row = block.row4x4 + delta_row;
-  const int min_step = GetMinimumStep(block_width4x4, delta_row);
+  const int min_step = GetMinimumStep(block.width4x4, delta_row);
   for (int step, mv_column = block.column4x4 + delta_column;
        mv_column < end_mv_column; mv_column += step) {
     if (!block.tile.IsInside(mv_row, mv_column)) break;
     const BlockParameters& mv_bp = block.tile.Parameters(mv_row, mv_column);
-    step = std::max(std::min(block_width4x4,
-                             static_cast<int>(kNum4x4BlocksWide[mv_bp.size])),
+    step = std::max(static_cast<int>(std::min(block.width4x4,
+                                              kNum4x4BlocksWide[mv_bp.size])),
                     min_step);
     AddReferenceMvCandidate(block, mv_bp, is_compound, MultiplyBy2(step),
                             global_mv, found_new_mv, found_match, num_mv_found,
@@ -274,7 +271,6 @@ void ScanColumn(const Tile::Block& block, int delta_column, bool is_compound,
                 MotionVector global_mv[2], bool* const found_new_mv,
                 bool* const found_match, int* const num_mv_found,
                 CandidateMotionVector ref_mv_stack[kMaxRefMvStackSize]) {
-  const int block_height4x4 = kNum4x4BlocksHigh[block.size];
   int delta_row = 0;
   if (std::abs(delta_column) > 1) {
     delta_row = 1 - (block.row4x4 & 1);
@@ -282,16 +278,16 @@ void ScanColumn(const Tile::Block& block, int delta_column, bool is_compound,
   }
   const int end_mv_row =
       block.row4x4 + delta_row +
-      std::min({block_height4x4,
+      std::min({static_cast<int>(block.height4x4),
                 block.tile.frame_header().rows4x4 - block.row4x4, 16});
   const int mv_column = block.column4x4 + delta_column;
-  const int min_step = GetMinimumStep(block_height4x4, delta_column);
+  const int min_step = GetMinimumStep(block.height4x4, delta_column);
   for (int step, mv_row = block.row4x4 + delta_row; mv_row < end_mv_row;
        mv_row += step) {
     if (!block.tile.IsInside(mv_row, mv_column)) break;
     const BlockParameters& mv_bp = block.tile.Parameters(mv_row, mv_column);
-    step = std::max(std::min(block_height4x4,
-                             static_cast<int>(kNum4x4BlocksHigh[mv_bp.size])),
+    step = std::max(static_cast<int>(std::min(block.height4x4,
+                                              kNum4x4BlocksHigh[mv_bp.size])),
                     min_step);
     AddReferenceMvCandidate(block, mv_bp, is_compound, MultiplyBy2(step),
                             global_mv, found_new_mv, found_match, num_mv_found,
@@ -429,12 +425,12 @@ void TemporalScan(const Tile::Block& block, bool is_compound,
                   const Array2D<TemporalMotionVector>& motion_field_mv,
                   int* const zero_mv_context, int* const num_mv_found,
                   CandidateMotionVector ref_mv_stack[kMaxRefMvStackSize]) {
-  const int block_width4x4 = kNum4x4BlocksWide[block.size];
-  const int block_height4x4 = kNum4x4BlocksHigh[block.size];
-  const int step_w = (block_width4x4 >= 16) ? 4 : 2;
-  const int step_h = (block_height4x4 >= 16) ? 4 : 2;
-  for (int row = 0; row < std::min(block_height4x4, 16); row += step_h) {
-    for (int column = 0; column < std::min(block_width4x4, 16);
+  const int step_w = (block.width4x4 >= 16) ? 4 : 2;
+  const int step_h = (block.height4x4 >= 16) ? 4 : 2;
+  for (int row = 0; row < std::min(static_cast<int>(block.height4x4), 16);
+       row += step_h) {
+    for (int column = 0;
+         column < std::min(static_cast<int>(block.width4x4), 16);
          column += step_w) {
       AddTemporalReferenceMvCandidate(
           block, row, column, is_compound, global_mv, motion_field_mv,
@@ -443,9 +439,9 @@ void TemporalScan(const Tile::Block& block, bool is_compound,
   }
   if (kTemporalScanMask.Contains(block.size)) {
     const int temporal_sample_positions[3][2] = {
-        {block_height4x4, -2},
-        {block_height4x4, block_width4x4},
-        {block_height4x4 - 2, block_width4x4}};
+        {block.height4x4, -2},
+        {block.height4x4, block.width4x4},
+        {block.height4x4 - 2, block.width4x4}};
     for (const auto& temporal_sample_position : temporal_sample_positions) {
       const int row = temporal_sample_position[0];
       const int column = temporal_sample_position[1];
@@ -523,9 +519,9 @@ void ExtraSearch(
     int* const num_mv_found,
     CandidateMotionVector ref_mv_stack[kMaxRefMvStackSize]) {
   const int num4x4 =
-      std::min({static_cast<int>(kNum4x4BlocksWide[block.size]),
+      std::min({static_cast<int>(block.width4x4),
                 block.tile.frame_header().columns4x4 - block.column4x4,
-                static_cast<int>(kNum4x4BlocksHigh[block.size]),
+                static_cast<int>(block.height4x4),
                 block.tile.frame_header().rows4x4 - block.row4x4, 16});
   int ref_id_count[2] = {};
   MotionVector ref_id[2][2] = {};
@@ -594,16 +590,14 @@ void ExtraSearch(
 void ClampMotionVectors(
     const Tile::Block& block, bool is_compound, int num_mv_found,
     CandidateMotionVector ref_mv_stack[kMaxRefMvStackSize]) {
-  const int block_height4x4 = kNum4x4BlocksHigh[block.size];
-  const int block_width4x4 = kNum4x4BlocksWide[block.size];
-  const int row_border = kMvBorder + MultiplyBy32(block_height4x4);
-  const int column_border = kMvBorder + MultiplyBy32(block_width4x4);
+  const int row_border = kMvBorder + MultiplyBy32(block.height4x4);
+  const int column_border = kMvBorder + MultiplyBy32(block.width4x4);
   const int macroblocks_to_top_edge = -MultiplyBy32(block.row4x4);
   const int macroblocks_to_bottom_edge = MultiplyBy32(
-      block.tile.frame_header().rows4x4 - block_height4x4 - block.row4x4);
+      block.tile.frame_header().rows4x4 - block.height4x4 - block.row4x4);
   const int macroblocks_to_left_edge = -MultiplyBy32(block.column4x4);
   const int macroblocks_to_right_edge = MultiplyBy32(
-      block.tile.frame_header().columns4x4 - block_width4x4 - block.column4x4);
+      block.tile.frame_header().columns4x4 - block.width4x4 - block.column4x4);
   const int min[2] = {macroblocks_to_top_edge - row_border,
                       macroblocks_to_left_edge - column_border};
   const int max[2] = {macroblocks_to_bottom_edge + row_border,
@@ -806,8 +800,6 @@ void FindMvStack(
     CandidateMotionVector ref_mv_stack[kMaxRefMvStackSize],
     int* const num_mv_found, MvContexts* const contexts,
     MotionVector global_mv[2]) {
-  const int block_width4x4 = kNum4x4BlocksWide[block.size];
-  const int block_height4x4 = kNum4x4BlocksHigh[block.size];
   SetupGlobalMv(block, 0, &global_mv[0]);
   if (is_compound) SetupGlobalMv(block, 1, &global_mv[1]);
   bool found_new_mv = false;
@@ -818,8 +810,8 @@ void FindMvStack(
   bool found_column_match = false;
   ScanColumn(block, -1, is_compound, global_mv, &found_new_mv,
              &found_column_match, num_mv_found, ref_mv_stack);
-  if (std::max(block_width4x4, block_height4x4) <= 16) {
-    ScanPoint(block, -1, block_width4x4, is_compound, global_mv, &found_new_mv,
+  if (std::max(block.width4x4, block.height4x4) <= 16) {
+    ScanPoint(block, -1, block.width4x4, is_compound, global_mv, &found_new_mv,
               &found_row_match, num_mv_found, ref_mv_stack);
   }
   const int nearest_matches =
@@ -839,11 +831,11 @@ void FindMvStack(
             &found_row_match, num_mv_found, ref_mv_stack);
   static constexpr int deltas[2] = {-3, -5};
   for (int i = 0; i < 2; ++i) {
-    if (i == 0 || block_height4x4 > 1) {
+    if (i == 0 || block.height4x4 > 1) {
       ScanRow(block, deltas[i], is_compound, global_mv, &dummy_bool,
               &found_row_match, num_mv_found, ref_mv_stack);
     }
-    if (i == 0 || block_width4x4 > 1) {
+    if (i == 0 || block.width4x4 > 1) {
       ScanColumn(block, deltas[i], is_compound, global_mv, &dummy_bool,
                  &found_column_match, num_mv_found, ref_mv_stack);
     }
@@ -870,29 +862,27 @@ void FindWarpSamples(const Tile::Block& block, int* const num_warp_samples,
                      int candidates[kMaxLeastSquaresSamples][4]) {
   bool top_left = true;
   bool top_right = true;
-  const int block_width4x4 = kNum4x4BlocksWide[block.size];
-  const int block_height4x4 = kNum4x4BlocksHigh[block.size];
   int step = 1;
   if (block.top_available) {
     BlockSize source_size =
         block.tile.Parameters(block.row4x4 - 1, block.column4x4).size;
     const int source_width4x4 = kNum4x4BlocksWide[source_size];
-    if (block_width4x4 <= source_width4x4) {
+    if (block.width4x4 <= source_width4x4) {
       // The & here is equivalent to % since source_width4x4 is a power of
       // two.
       const int column_offset = -(block.column4x4 & (source_width4x4 - 1));
       if (column_offset < 0) top_left = false;
-      if (column_offset + source_width4x4 > block_width4x4) top_right = false;
+      if (column_offset + source_width4x4 > block.width4x4) top_right = false;
       AddSample(block, -1, 0, num_warp_samples, num_samples_scanned,
                 candidates);
     } else {
       for (int i = 0;
-           i < std::min(block_width4x4,
+           i < std::min(static_cast<int>(block.width4x4),
                         block.tile.frame_header().columns4x4 - block.column4x4);
            i += step) {
         source_size =
             block.tile.Parameters(block.row4x4 - 1, block.column4x4 + i).size;
-        step = std::min(block_width4x4,
+        step = std::min(static_cast<int>(block.width4x4),
                         static_cast<int>(kNum4x4BlocksWide[source_size]));
         AddSample(block, -1, i, num_warp_samples, num_samples_scanned,
                   candidates);
@@ -903,19 +893,19 @@ void FindWarpSamples(const Tile::Block& block, int* const num_warp_samples,
     BlockSize source_size =
         block.tile.Parameters(block.row4x4, block.column4x4 - 1).size;
     const int source_height4x4 = kNum4x4BlocksHigh[source_size];
-    if (block_height4x4 <= source_height4x4) {
+    if (block.height4x4 <= source_height4x4) {
       const int row_offset = -(block.row4x4 & (source_height4x4 - 1));
       if (row_offset < 0) top_left = false;
       AddSample(block, 0, -1, num_warp_samples, num_samples_scanned,
                 candidates);
     } else {
       for (int i = 0;
-           i < std::min(block_height4x4,
+           i < std::min(static_cast<int>(block.height4x4),
                         block.tile.frame_header().rows4x4 - block.row4x4);
            i += step) {
         source_size =
             block.tile.Parameters(block.row4x4 + i, block.column4x4 - 1).size;
-        step = std::min(block_height4x4,
+        step = std::min(static_cast<int>(block.height4x4),
                         static_cast<int>(kNum4x4BlocksHigh[source_size]));
         AddSample(block, i, -1, num_warp_samples, num_samples_scanned,
                   candidates);
@@ -926,7 +916,7 @@ void FindWarpSamples(const Tile::Block& block, int* const num_warp_samples,
     AddSample(block, -1, -1, num_warp_samples, num_samples_scanned, candidates);
   }
   if (top_right && block.size <= kBlock64x64) {
-    AddSample(block, -1, block_width4x4, num_warp_samples, num_samples_scanned,
+    AddSample(block, -1, block.width4x4, num_warp_samples, num_samples_scanned,
               candidates);
   }
   if (*num_warp_samples == 0 && *num_samples_scanned > 0) *num_warp_samples = 1;
