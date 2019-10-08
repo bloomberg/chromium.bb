@@ -130,7 +130,7 @@ class GetCookieTests(cros_test_lib.TestCase):
   """Unittests for GetCookies()"""
 
   def testSimple(self):
-    f = tempfile.NamedTemporaryFile()
+    f = tempfile.NamedTemporaryFile(mode='w+')
     f.write('.googlesource.com\tTRUE\t/f\tTRUE\t2147483647\to\tfoo=bar')
     f.flush()
     cookies = gob_util.GetCookies('foo.googlesource.com', '/foo', [f.name])
