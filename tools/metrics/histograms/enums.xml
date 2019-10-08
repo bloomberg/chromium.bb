@@ -7718,6 +7718,7 @@ histogram as enum -->
   <int value="1" label="Search provider change"/>
   <int value="2" label="Tab closed"/>
   <int value="3" label="Navigation"/>
+  <int value="4" label="Shutdown"/>
 </enum>
 
 <enum name="ChromeDownloadCountType">
