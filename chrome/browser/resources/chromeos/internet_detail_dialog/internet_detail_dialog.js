@@ -316,7 +316,7 @@ Polymer({
   showCellularSim_: function(managedProperties) {
     return managedProperties.type ==
         chromeos.networkConfig.mojom.NetworkType.kCellular &&
-        managedProperties.cellular.family != 'CDMA';
+        managedProperties.typeProperties.cellular.family != 'CDMA';
   },
 
   /**
@@ -327,7 +327,7 @@ Polymer({
   showCellularChooseNetwork_: function(managedProperties) {
     return managedProperties.type ==
         chromeos.networkConfig.mojom.NetworkType.kCellular &&
-        managedProperties.cellular.supportNetworkScan;
+        managedProperties.typeProperties.cellular.supportNetworkScan;
   },
 
   /**
