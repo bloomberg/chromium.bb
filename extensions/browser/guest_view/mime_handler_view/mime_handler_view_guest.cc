@@ -156,7 +156,8 @@ void MimeHandlerViewGuest::SetEmbedderFrame(int process_id, int routing_id) {
 }
 
 void MimeHandlerViewGuest::SetBeforeUnloadController(
-    mime_handler::BeforeUnloadControlPtrInfo pending_before_unload_control) {
+    mojo::PendingRemote<mime_handler::BeforeUnloadControl>
+        pending_before_unload_control) {
   pending_before_unload_control_ = std::move(pending_before_unload_control);
 }
 
@@ -474,12 +475,12 @@ void MimeHandlerViewGuest::ReadyToCommitNavigation(
 }
 
 void MimeHandlerViewGuest::FuseBeforeUnloadControl(
-    mime_handler::BeforeUnloadControlRequest request) {
+    mojo::PendingReceiver<mime_handler::BeforeUnloadControl> receiver) {
   if (!pending_before_unload_control_)
     return;
 
-  mojo::FuseInterface(std::move(request),
-                      std::move(pending_before_unload_control_));
+  mojo::FusePipes(std::move(receiver),
+                  std::move(pending_before_unload_control_));
 }
 
 content::RenderFrameHost* MimeHandlerViewGuest::GetEmbedderFrame() {
