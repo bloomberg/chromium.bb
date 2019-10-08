@@ -629,10 +629,9 @@ class MockSSLClientSocket;
 class MockProxyClientSocket;
 
 // ClientSocketFactory which contains arrays of sockets of each type.
-// You should first fill the arrays using AddMock{SSL,}Socket. When the factory
-// is asked to create a socket, it takes next entry from appropriate array.
-// You can use ResetNextMockIndexes to reset that next entry index for all mock
-// socket types.
+// You should first fill the arrays using Add{SSL,ProxyClient,}SocketDataProvider(). When the
+// factory is asked to create a socket, it takes next entry from appropriate array. You can use
+// ResetNextMockIndexes to reset that next entry index for all mock socket types.
 class MockClientSocketFactory : public ClientSocketFactory {
  public:
   MockClientSocketFactory();
