@@ -1776,11 +1776,7 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
   if ([self shouldCancelLoadForCancelledError:error
                               provisionalLoad:provisionalLoad]) {
     [self loadCancelled];
-    web::NavigationItemImpl* item = web::GetItemWithUniqueID(
-        self.navigationManagerImpl, navigationContext.get());
-    if (self.navigationManagerImpl->GetPendingItem() == item) {
-      self.navigationManagerImpl->DiscardNonCommittedItems();
-    }
+    self.navigationManagerImpl->DiscardNonCommittedItems();
 
     [self.legacyNativeContentController
         handleCancelledErrorForContext:navigationContext];
