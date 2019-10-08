@@ -57,14 +57,12 @@ void JniNotificationPresenter::OnNotificationFetched(
     Java_NotificationPresenter_onNoNotification(env, java_presenter);
     return;
   }
-  jint j_appearance = static_cast<jint>(notification->appearance);
   auto j_message_text =
       ConvertUTF8ToJavaString(env, notification->message_text);
   auto j_link_text = ConvertUTF8ToJavaString(env, notification->link_text);
   auto j_link_url = ConvertUTF8ToJavaString(env, notification->link_url);
-  Java_NotificationPresenter_onNotificationFetched(env, java_presenter,
-                                                   j_appearance, j_message_text,
-                                                   j_link_text, j_link_url);
+  Java_NotificationPresenter_onNotificationFetched(
+      env, java_presenter, j_message_text, j_link_text, j_link_url);
 }
 
 static jlong JNI_NotificationPresenter_Init(

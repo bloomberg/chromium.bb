@@ -15,7 +15,6 @@ import androidx.annotation.IntDef;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.chromoting.NotificationAppearance;
 import org.chromium.chromoting.Preconditions;
 import org.chromium.chromoting.R;
 
@@ -66,8 +65,7 @@ public final class NotificationPresenter {
     }
 
     @CalledByNative
-    void onNotificationFetched(@NotificationAppearance int appearance, String messageText,
-            String linkText, String linkUrl) {
+    void onNotificationFetched(String messageText, String linkText, String linkUrl) {
         Preconditions.isTrue(mState == State.FETCHING);
         mState = State.FETCHED;
 

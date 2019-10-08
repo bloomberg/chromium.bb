@@ -10,13 +10,6 @@
 namespace remoting {
 
 struct NotificationMessage final {
-  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chromoting
-  // GENERATED_JAVA_CLASS_NAME_OVERRIDE: NotificationAppearance
-  enum class Appearance {
-    TOAST,
-    DIALOG,
-  };
-
   NotificationMessage();
   NotificationMessage(const NotificationMessage&);
   NotificationMessage(NotificationMessage&&);
@@ -25,7 +18,6 @@ struct NotificationMessage final {
   NotificationMessage& operator=(const NotificationMessage&);
   NotificationMessage& operator=(NotificationMessage&&);
 
-  Appearance appearance;
   std::string message_id;
   std::string message_text;
   std::string link_text;
