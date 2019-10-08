@@ -1223,6 +1223,10 @@ static void search_filter_ref(AV1_COMP *cpi, MACROBLOCK *x, RD_STATS *this_rdc,
   *sse_y = pf_sse[best_filter_index];
   this_rdc->skip = (best_skip || best_early_term);
   *this_early_term = best_early_term;
+  if (best_filter_index < FILTER_SEARCH_SIZE - 1) {
+    av1_enc_build_inter_predictor(cm, xd, mi_row, mi_col, NULL, bsize,
+                                  AOM_PLANE_Y, AOM_PLANE_Y);
+  }
 }
 
 #define COLLECT_PICK_MODE_STAT 0
