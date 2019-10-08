@@ -54,9 +54,7 @@ static bool check_msgtable() {
   exemptions.push_back(CastMediaMsgStart);    // Reserved for chromecast.
   exemptions.push_back(IPCTestMsgStart);
   exemptions.push_back(WorkerMsgStart);    // Now only used by tests.
-  exemptions.push_back(ResourceMsgStart);  // Cleanup underway.
   exemptions.push_back(ChromeUtilityPrintingMsgStart);  // BUILDFLAGS, sigh.
-  exemptions.push_back(WebRtcLoggingMsgStart);
 
 #if !BUILDFLAG(ENABLE_NACL)
   exemptions.push_back(NaClMsgStart);
@@ -64,11 +62,9 @@ static bool check_msgtable() {
 
 
 #if !defined(OS_ANDROID)
-  exemptions.push_back(MediaPlayerMsgStart);
   exemptions.push_back(EncryptedMediaMsgStart);
   exemptions.push_back(GinJavaBridgeMsgStart);
   exemptions.push_back(AndroidWebViewMsgStart);
-  exemptions.push_back(SyncCompositorMsgStart);
   exemptions.push_back(ExtensionWorkerMsgStart);
   exemptions.push_back(SurfaceViewManagerMsgStart);
 #endif  // !defined(OS_ANDROID)

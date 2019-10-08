@@ -24,7 +24,6 @@ enum IPCMessageStart {
   GpuChannelMsgStart,
   MediaMsgStart,
   PpapiMsgStart,
-  ResourceMsgStart,
   ChromeMsgStart,
   DragMsgStart,
   PrintMsgStart,
@@ -36,9 +35,7 @@ enum IPCMessageStart {
   ChromotingMsgStart,
   BrowserPluginMsgStart,
   AndroidWebViewMsgStart,
-  MediaPlayerMsgStart,
   PeerConnectionTrackerMsgStart,
-  WebRtcLoggingMsgStart,
   NaClHostMsgStart,
   EncryptedMediaMsgStart,
   CastMsgStart,
@@ -48,7 +45,6 @@ enum IPCMessageStart {
   WebTestMsgStart,
   NetworkHintsMsgStart,
   CastMediaMsgStart,
-  SyncCompositorMsgStart,
   ExtensionsGuestViewMsgStart,
   GuestViewMsgStart,
   // Note: CastCryptoMsgStart and CastChannelMsgStart reserved for Chromecast
@@ -60,7 +56,6 @@ enum IPCMessageStart {
   SurfaceViewManagerMsgStart,
   ExtensionWorkerMsgStart,
   SubresourceFilterMsgStart,
-  ChromeAppsMsgStart,
   UnfreezableFrameMsgStart,
   LastIPCMsgStart  // Must come last.
 };
