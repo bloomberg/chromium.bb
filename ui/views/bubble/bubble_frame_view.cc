@@ -188,7 +188,7 @@ int BubbleFrameView::NonClientHitTest(const gfx::Point& point) {
 
   if (point.y() < title()->bounds().bottom()) {
     auto* dialog_delegate = GetWidget()->widget_delegate()->AsDialogDelegate();
-    if (dialog_delegate && dialog_delegate->IsDialogDraggable()) {
+    if (dialog_delegate && dialog_delegate->draggable()) {
       return HTCAPTION;
     }
   }
