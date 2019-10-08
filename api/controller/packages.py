@@ -141,5 +141,6 @@ def _BuildsChromeSuccess(_input_proto, output_proto, _config):
 def BuildsChrome(input_proto, output_proto, _config):
   """Check if the board builds chrome."""
   build_target = controller_util.ParseBuildTarget(input_proto.build_target)
-  builds_chrome = packages.builds(constants.CHROME_CP, build_target)
+  cpvs = [controller_util.PackageInfoToCPV(pi) for pi in input_proto.packages]
+  builds_chrome = packages.builds(constants.CHROME_CP, build_target, cpvs)
   output_proto.builds_chrome = builds_chrome

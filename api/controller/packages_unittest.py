@@ -10,7 +10,9 @@ from __future__ import print_function
 import mock
 
 from chromite.api.api_config import ApiConfigMixin
+from chromite.api.controller import controller_util
 from chromite.api.controller import packages as packages_controller
+from chromite.api.gen.chromiumos import common_pb2
 from chromite.api.gen.chromite.api import binhost_pb2
 from chromite.api.gen.chromite.api import packages_pb2
 from chromite.lib import constants
@@ -267,12 +269,15 @@ class BuildsChromeTest(cros_test_lib.MockTestCase, ApiConfigMixin):
   def setUp(self):
     self.response = packages_pb2.BuildsChromeResponse()
 
-  def _GetRequest(self, board=None):
+  def _GetRequest(self, board=None, packages=None):
     """Helper to build out a request."""
     request = packages_pb2.BuildsChromeRequest()
 
     if board:
       request.build_target.name = board
+
+    if packages:
+      request.packages.extend(packages)
 
     return request
 
@@ -299,4 +304,19 @@ class BuildsChromeTest(cros_test_lib.MockTestCase, ApiConfigMixin):
     request = self._GetRequest(board='foo')
     packages_controller.BuildsChrome(request, self.response, self.api_config)
     self.assertTrue(self.response.builds_chrome)
-    patch.assert_called_once_with(constants.CHROME_CP, BuildTarget('foo'))
+    patch.assert_called_once_with(constants.CHROME_CP, BuildTarget('foo'), [])
+
+  def testBuildsChromeWithPackages(self):
+    """Test successful call with packages handling."""
+    patch = self.PatchObject(packages_service, 'builds', return_value=True)
+
+    package = common_pb2.PackageInfo(
+        category='category',
+        package_name='name',
+        version='1.01',
+    )
+    request = self._GetRequest(board='foo', packages=[package])
+    packages_controller.BuildsChrome(request, self.response, self.api_config)
+    self.assertTrue(self.response.builds_chrome)
+    patch.assert_called_once_with(constants.CHROME_CP, BuildTarget('foo'),
+                                  [controller_util.PackageInfoToCPV(package)])

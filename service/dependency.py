@@ -136,11 +136,13 @@ def GenerateSourcePathMapping(packages, board):
   return results
 
 
-def GetBuildDependency(board):
+def GetBuildDependency(board, packages=None):
   """Return the build dependency and package -> source path map for |board|.
 
   Args:
     board (str): The name of the board whose artifacts are being created.
+    packages (list[CPV]): The packages that need to be built, or empty / None
+        to use the default list.
 
   Returns:
     JSON build dependencies report for the given board which includes:
@@ -154,12 +156,16 @@ def GetBuildDependency(board):
   results['package_deps'] = {}
   results['source_path_mapping'] = {}
 
-  board_specific_packages = [
-      'virtual/target-os', 'virtual/target-os-dev',
-      'virtual/target-os-test', 'virtual/target-os-factory']
-  # Since we don’t have a clear mapping from autotests to git repos
-  # and/or portage packages, we assume every board run all autotests.
-  board_specific_packages += ['chromeos-base/autotest-all']
+  board_specific_packages = []
+  if packages:
+    board_specific_packages.extend([cpv.cp for cpv in packages])
+  else:
+    board_specific_packages.extend([
+        'virtual/target-os', 'virtual/target-os-dev',
+        'virtual/target-os-test', 'virtual/target-os-factory'])
+    # Since we don’t have a clear mapping from autotests to git repos
+    # and/or portage packages, we assume every board run all autotests.
+    board_specific_packages += ['chromeos-base/autotest-all']
 
   non_board_specific_packages = [
       'virtual/target-sdk', 'chromeos-base/chromite',

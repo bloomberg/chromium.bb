@@ -413,9 +413,9 @@ def has_prebuilt(atom, build_target=None):
   return portage_util.HasPrebuilt(atom, board=board)
 
 
-def builds(atom, build_target):
+def builds(atom, build_target, packages=None):
   """Check if |build_target| builds |atom| (has it in its depgraph)."""
   cros_build_lib.AssertInsideChroot()
 
-  graph = dependency.GetBuildDependency(build_target.name)
+  graph = dependency.GetBuildDependency(build_target.name, packages)
   return any(atom in package for package in graph['package_deps'])
