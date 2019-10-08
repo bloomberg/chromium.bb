@@ -90,8 +90,6 @@ typedef struct {
   CANDIDATE_MV ref_mv_stack[MODE_CTX_REF_FRAMES][USABLE_REF_MV_STACK_SIZE];
   uint16_t weight[MODE_CTX_REF_FRAMES][USABLE_REF_MV_STACK_SIZE];
   int_mv global_mvs[REF_FRAMES];
-  // TODO(Ravi/Remya): Check if this variable is still needed at block level
-  int cb_offset;
   int16_t mode_context[MODE_CTX_REF_FRAMES];
   uint8_t ref_mv_count[MODE_CTX_REF_FRAMES];
 } MB_MODE_INFO_EXT;

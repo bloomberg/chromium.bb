@@ -1550,7 +1550,6 @@ static AOM_INLINE void encode_b(const AV1_COMP *const cpi,
   update_state(cpi, td, ctx, mi_row, mi_col, bsize, dry_run);
 
   if (!dry_run) {
-    x->mbmi_ext->cb_offset = x->cb_offset;
     x->mbmi_ext_frame->cb_offset = x->cb_offset;
     assert(x->cb_offset <
            (1 << num_pels_log2_lookup[cpi->common.seq_params.sb_size]));
