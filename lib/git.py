@@ -374,7 +374,14 @@ class Manifest(object):
     handler.startElement = self._StartElement
     handler.endElement = self._EndElement
     parser.setContentHandler(handler)
-    parser.parse(source)
+
+    # Python 2 seems to expect either a file name (as a string) or an
+    # opened file as the parameter to parser.parse, whereas Python 3
+    # seems to expect a URL (as a string) or opened file. Make it
+    # compatible with both by opening files first.
+    with cros_build_lib.Open(source) as f:
+      parser.parse(f)
+
     if finalize:
       self._FinalizeAllProjectData()
 
