@@ -4,9 +4,13 @@
 
 #include "components/crash/content/app/crashpad.h"
 
+#include <pthread.h>
+#include <sys/prctl.h>
+
 #include <limits>
 
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "base/path_service.h"
 #include "base/posix/global_descriptors.h"
 #include "base/strings/string_number_conversions.h"
@@ -34,6 +38,16 @@ void SetFirstChanceExceptionHandler(bool (*handler)(int, siginfo_t*, void*)) {
 
 bool GetHandlerSocket(int* fd, pid_t* pid) {
   return crashpad::CrashpadClient::GetHandlerSocket(fd, pid);
+}
+
+void SetPtracerAtFork() {
+  pid_t pid;
+  if (!GetHandlerSocket(nullptr, &pid)) {
+    return;
+  }
+  if (pid > 0 && prctl(PR_SET_PTRACER, pid, 0, 0, 0) != 0) {
+    PLOG(ERROR) << "prctl";
+  }
 }
 
 namespace internal {
@@ -130,6 +144,7 @@ base::FilePath PlatformCrashpadInitialization(
                             annotations, arguments, false, false);
     DCHECK(result);
 
+    pthread_atfork(nullptr, nullptr, SetPtracerAtFork);
     return database_path;
   }
 
@@ -150,6 +165,7 @@ base::FilePath PlatformCrashpadInitialization(
 
   client.SetHandlerSocket(crashpad::ScopedFileHandle(fd), pid);
 
+  pthread_atfork(nullptr, nullptr, SetPtracerAtFork);
   return base::FilePath();
 }
 
