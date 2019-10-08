@@ -2951,7 +2951,6 @@ crbug.com/828506 [ Win ] virtual/scroll_customization/fast/events/touch/scroll-w
 # Failure messages are unstable so we cannot create baselines.
 crbug.com/832071 external/wpt/service-workers/service-worker/worker-client-id.https.html [ Failure ]
 crbug.com/832071 virtual/navigation-mojo-response/external/wpt/service-workers/service-worker/worker-client-id.https.html [ Failure ]
-crbug.com/832071 virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/worker-client-id.https.html [ Failure ]
 crbug.com/832071 virtual/omt-service-worker-startup/external/wpt/service-workers/service-worker/worker-client-id.https.html [ Failure ]
 
 # failures in external/wpt/css/css-animations/ and web-animations/ from Mozilla tests
@@ -3281,7 +3280,6 @@ crbug.com/699040 external/wpt/svg/text/reftests/text-xml-space-001.svg [ Failure
 crbug.com/626703 external/wpt/service-workers/service-worker/ready.https.html [ Timeout ]
 crbug.com/626703 virtual/omt-service-worker-startup/external/wpt/service-workers/service-worker/ready.https.html [ Timeout ]
 crbug.com/626703 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/ready.https.html [ Timeout ]
-crbug.com/626703 virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/ready.https.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-fonts/math-script-level-and-math-style/math-script-level-auto-and-math-style-002.tentative.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-fonts/math-script-level-and-math-style/math-script-level-auto-and-math-style-002.tentative.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-fonts/math-script-level-and-math-style/math-script-level-auto-and-math-style-002.tentative.html [ Failure ]
@@ -4433,13 +4431,11 @@ crbug.com/927477 external/wpt/import-maps/acquire-import-maps-flag/worker-reques
 crbug.com/691944 external/wpt/service-workers/service-worker/update-after-oneday.https.html [ Skip ]
 crbug.com/691944 virtual/omt-service-worker-startup/external/wpt/service-workers/service-worker/update-after-oneday.https.html [ Skip ]
 crbug.com/691944 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/update-after-oneday.https.html [ Skip ]
-crbug.com/691944 virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/update-after-oneday.https.html [ Skip ]
 
 # These tests (erroneously) see a platform-specific User-Agent header
 crbug.com/595993 external/wpt/service-workers/service-worker/fetch-header-visibility.https.html [ Failure ]
 crbug.com/595993 virtual/omt-service-worker-startup/external/wpt/service-workers/service-worker/fetch-header-visibility.https.html [ Failure ]
 crbug.com/595993 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/fetch-header-visibility.https.html [ Failure ]
-crbug.com/595993 virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/fetch-header-visibility.https.html [ Failure ]
 
 crbug.com/619427 [ Mac ] fast/overflow/overflow-height-float-not-removed-crash3.html [ Pass Failure ]
 
@@ -4697,7 +4693,6 @@ crbug.com/745079 external/wpt/geolocation-API/PositionOptions.https.html [ Failu
 
 # Service worker updates need to handle redirect appropriately.
 crbug.com/889798 external/wpt/service-workers/service-worker/import-scripts-redirect.https.html [ Skip ]
-crbug.com/889798 virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/import-scripts-redirect.https.html [ Skip ]
 crbug.com/889798 virtual/omt-service-worker-startup/external/wpt/service-workers/service-worker/import-scripts-redirect.https.html [ Skip ]
 crbug.com/889798 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/import-scripts-redirect.https.html [ Skip ]
 
@@ -5265,8 +5260,6 @@ crbug.com/869773 http/tests/misc/window-dot-stop.html [ Pass Failure ]
 
 crbug.com/873873 external/wpt/service-workers/service-worker/fetch-canvas-tainting-video.https.html [ Timeout Pass ]
 crbug.com/873873 external/wpt/service-workers/service-worker/fetch-canvas-tainting-video-cache.https.html [ Timeout Pass ]
-crbug.com/873873 virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/fetch-canvas-tainting-video.https.html [ Timeout Pass ]
-crbug.com/873873 virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/fetch-canvas-tainting-video-cache.https.html [ Timeout Pass ]
 
 crbug.com/875884 [ Linux ] lifecycle/background-change-lifecycle-count.html [ Pass Failure ]
 crbug.com/875884 [ Win ] lifecycle/background-change-lifecycle-count.html [ Pass Failure ]
@@ -5585,7 +5578,6 @@ crbug.com/931646 [ Win7 ] http/tests/preload/meta-viewport-link-headers-imagesrc
 crbug.com/933880 external/wpt/service-workers/service-worker/request-end-to-end.https.html [ Failure ]
 crbug.com/933880 virtual/omt-service-worker-startup/external/wpt/service-workers/service-worker/request-end-to-end.https.html [ Failure ]
 crbug.com/933880 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/request-end-to-end.https.html [ Failure ]
-crbug.com/933880 virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/request-end-to-end.https.html [ Failure ]
 crbug.com/933880 http/tests/inspector-protocol/network/interception-take-stream.js [ Failure ]
 crbug.com/933880 http/tests/inspector-protocol/network/xhr-interception-auth-fail.js [ Failure ]
 # This passes in content_shell but not in chrome with network service disabled,
