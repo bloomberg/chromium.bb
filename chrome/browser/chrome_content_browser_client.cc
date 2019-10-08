@@ -2239,7 +2239,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
 #if defined(OS_CHROMEOS)
   if (ChromeCrashReporterClient::ShouldPassCrashLoopBefore(process_type)) {
     static const char* const kSwitchNames[] = {
-        switches::kCrashLoopBefore,
+        crash_reporter::switches::kCrashLoopBefore,
     };
     command_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
                                    base::size(kSwitchNames));

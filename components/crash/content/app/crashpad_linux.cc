@@ -14,7 +14,6 @@
 #include "components/crash/content/app/crash_reporter_client.h"
 #include "components/crash/content/app/crash_switches.h"
 #include "content/public/common/content_descriptors.h"
-#include "content/public/common/content_switches.h"
 #include "sandbox/linux/services/namespace_sandbox.h"
 #include "third_party/crashpad/crashpad/client/crashpad_client.h"
 
@@ -57,7 +56,7 @@ base::FilePath PlatformCrashpadInitialization(
 #if defined(OS_CHROMEOS)
   std::string crash_loop_before =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          ::switches::kCrashLoopBefore);
+          switches::kCrashLoopBefore);
   if (!crash_loop_before.empty()) {
     uint64_t crash_loop_before_time;
     if (!base::StringToUint64(crash_loop_before, &crash_loop_before_time)) {
