@@ -17,11 +17,13 @@ constexpr char kUninstallMethod[] = "Uninstall";
 constexpr char kOnInstallStatusSignal[] = "OnInstallStatus";
 
 // Error Codes from dlcservice.
-constexpr char kErrorNone[] = "NONE";
-constexpr char kErrorInternal[] = "INTERNAL";
-constexpr char kErrorBusy[] = "BUSY";
-constexpr char kErrorNeedReboot[] = "NEED_REBOOT";
-constexpr char kErrorInvalidDlc[] = "INVALID_DLC";
+constexpr char kErrorNone[] = "org.chromium.DlcServiceInterface.NONE";
+constexpr char kErrorInternal[] = "org.chromium.DlcServiceInterface.INTERNAL";
+constexpr char kErrorBusy[] = "org.chromium.DlcServiceInterface.BUSY";
+constexpr char kErrorNeedReboot[] =
+    "org.chromium.DlcServiceInterface.NEED_REBOOT";
+constexpr char kErrorInvalidDlc[] =
+    "org.chromium.DlcServiceInterface.INVALID_DLC";
 
 }  // namespace dlcservice
 
