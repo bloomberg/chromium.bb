@@ -138,6 +138,9 @@
         "load:games:bubbles": {
             "DEFAULT": "system_health_mobile_005.wprgo"
         },
+        "load:games:bubbles:2019": {
+            "DEFAULT": "system_health_mobile_43f2372bc8.wprgo"
+        },
         "load:games:lazors": {
             "DEFAULT": "system_health_mobile_005.wprgo"
         },
