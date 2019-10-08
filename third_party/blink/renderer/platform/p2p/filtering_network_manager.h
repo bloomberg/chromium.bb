@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_P2P_FILTERING_NETWORK_MANAGER_H_
-#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_P2P_FILTERING_NETWORK_MANAGER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_P2P_FILTERING_NETWORK_MANAGER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_P2P_FILTERING_NETWORK_MANAGER_H_
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
-#include "third_party/blink/public/platform/modules/p2p/network_manager_uma.h"
 #include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/renderer/platform/p2p/network_manager_uma.h"
 #include "third_party/webrtc/rtc_base/network.h"
 #include "third_party/webrtc/rtc_base/third_party/sigslot/sigslot.h"
 #include "url/gurl.h"
@@ -125,4 +125,4 @@ class FilteringNetworkManager : public rtc::NetworkManagerBase,
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_P2P_FILTERING_NETWORK_MANAGER_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_P2P_FILTERING_NETWORK_MANAGER_H_

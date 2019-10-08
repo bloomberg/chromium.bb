@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_P2P_NETWORK_MANAGER_UMA_H_
-#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_P2P_NETWORK_MANAGER_UMA_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_P2P_NETWORK_MANAGER_UMA_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_P2P_NETWORK_MANAGER_UMA_H_
 
-#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace base {
 class TimeDelta;
@@ -28,10 +28,10 @@ enum IPPermissionStatus {
   PERMISSION_MAX,
 };
 
-BLINK_PLATFORM_EXPORT void ReportIPPermissionStatus(IPPermissionStatus status);
-BLINK_PLATFORM_EXPORT void ReportTimeToUpdateNetworkList(
+PLATFORM_EXPORT void ReportIPPermissionStatus(IPPermissionStatus status);
+PLATFORM_EXPORT void ReportTimeToUpdateNetworkList(
     const base::TimeDelta& ticks);
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_P2P_NETWORK_MANAGER_UMA_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_P2P_NETWORK_MANAGER_UMA_H_

@@ -2,10 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_P2P_SOCKET_CLIENT_DELEGATE_H_
-#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_P2P_SOCKET_CLIENT_DELEGATE_H_
-
-#include <vector>
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_P2P_SOCKET_CLIENT_DELEGATE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_P2P_SOCKET_CLIENT_DELEGATE_H_
 
 #include "net/base/ip_endpoint.h"
 #include "services/network/public/cpp/p2p_socket_type.h"
@@ -14,8 +12,8 @@ namespace blink {
 
 class P2PSocketClient;
 
-// TODO(crbug.com/787254): Move this class out of the Blink exposed API when
-// all users of it have been Onion souped. Also, move it away from std::vector.
+// TODO(crbug.com/787254): Consider eliminating this pure virtual class now
+// that it has moved to blink/renderer.
 class P2PSocketClientDelegate {
  public:
   virtual ~P2PSocketClientDelegate() {}
@@ -41,10 +39,10 @@ class P2PSocketClientDelegate {
 
   // Called when data is received on the socket.
   virtual void OnDataReceived(const net::IPEndPoint& address,
-                              const std::vector<int8_t>& data,
+                              const Vector<int8_t>& data,
                               const base::TimeTicks& timestamp) = 0;
 };
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_P2P_SOCKET_CLIENT_DELEGATE_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_P2P_SOCKET_CLIENT_DELEGATE_H_

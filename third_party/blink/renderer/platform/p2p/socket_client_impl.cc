@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/p2p/socket_client_impl.h"
+#include "third_party/blink/renderer/platform/p2p/socket_client_impl.h"
 
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/time/time.h"
-#include "content/renderer/p2p/socket_dispatcher.h"
 #include "crypto/random.h"
 #include "services/network/public/cpp/p2p_param_traits.h"
-#include "third_party/blink/public/platform/modules/p2p/socket_client_delegate.h"
+#include "third_party/blink/renderer/platform/p2p/socket_client_delegate.h"
+#include "third_party/blink/renderer/platform/p2p/socket_dispatcher.h"
 
 namespace {
 
@@ -23,7 +23,7 @@ uint64_t GetUniqueId(uint32_t random_socket_id, uint32_t packet_id) {
 
 }  // namespace
 
-namespace content {
+namespace blink {
 
 P2PSocketClientImpl::P2PSocketClientImpl(
     P2PSocketDispatcher* dispatcher,
@@ -57,7 +57,7 @@ void P2PSocketClientImpl::Init(
 
   DCHECK_EQ(state_, STATE_UNINITIALIZED);
   state_ = STATE_OPENING;
-  network::mojom::P2PSocketClientPtr socket_client;
+  network::mojom::blink::P2PSocketClientPtr socket_client;
   binding_.Bind(mojo::MakeRequest(&socket_client));
   binding_.set_connection_error_handler(base::BindOnce(
       &P2PSocketClientImpl::OnConnectionError, base::Unretained(this)));
@@ -67,7 +67,7 @@ void P2PSocketClientImpl::Init(
 }
 
 uint64_t P2PSocketClientImpl::Send(const net::IPEndPoint& address,
-                                   const std::vector<int8_t>& data,
+                                   const Vector<int8_t>& data,
                                    const rtc::PacketOptions& options) {
   uint64_t unique_id = GetUniqueId(random_socket_id_, ++next_packet_id_);
 
@@ -81,7 +81,7 @@ uint64_t P2PSocketClientImpl::Send(const net::IPEndPoint& address,
 }
 
 void P2PSocketClientImpl::SendWithPacketId(const net::IPEndPoint& address,
-                                           const std::vector<int8_t>& data,
+                                           const Vector<int8_t>& data,
                                            const rtc::PacketOptions& options,
                                            uint64_t packet_id) {
   TRACE_EVENT_ASYNC_BEGIN0("p2p", "Send", packet_id);
@@ -134,15 +134,15 @@ void P2PSocketClientImpl::SendComplete(
 
 void P2PSocketClientImpl::IncomingTcpConnection(
     const net::IPEndPoint& socket_address,
-    network::mojom::P2PSocketPtr socket,
-    network::mojom::P2PSocketClientRequest client_request) {
+    network::mojom::blink::P2PSocketPtr socket,
+    network::mojom::blink::P2PSocketClientRequest client_request) {
   DCHECK_EQ(state_, STATE_OPEN);
 
   auto new_client =
       std::make_unique<P2PSocketClientImpl>(dispatcher_, traffic_annotation_);
   new_client->state_ = STATE_OPEN;
 
-  network::mojom::P2PSocketClientPtr socket_client;
+  network::mojom::blink::P2PSocketClientPtr socket_client;
   new_client->socket_ = std::move(socket);
   new_client->binding_.Bind(std::move(client_request));
   new_client->binding_.set_connection_error_handler(base::BindOnce(
@@ -158,7 +158,7 @@ void P2PSocketClientImpl::IncomingTcpConnection(
 }
 
 void P2PSocketClientImpl::DataReceived(const net::IPEndPoint& socket_address,
-                                       const std::vector<int8_t>& data,
+                                       const Vector<int8_t>& data,
                                        base::TimeTicks timestamp) {
   DCHECK_EQ(STATE_OPEN, state_);
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -172,4 +172,4 @@ void P2PSocketClientImpl::OnConnectionError() {
     delegate_->OnError();
 }
 
-}  // namespace content
+}  // namespace blink
