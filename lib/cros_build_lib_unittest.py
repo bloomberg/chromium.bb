@@ -15,6 +15,7 @@ import itertools
 import os
 import signal
 import socket
+import subprocess
 import sys
 
 import mock
@@ -172,13 +173,25 @@ class TestRunCommandNoMock(cros_test_lib.TestCase):
     """Verify input argument when it is bytes."""
     for data in (b'', b'foo', b'bar\nhigh'):
       result = cros_build_lib.run(['cat'], input=data)
-      self.assertEqual(result.output, data)
+      self.assertEqual(result.stdout, data)
+
+  def testInputBytesEncoding(self):
+    """Verify bytes input argument when encoding is set."""
+    for data in (b'', b'foo', b'bar\nhigh'):
+      result = cros_build_lib.run(['cat'], input=data, encoding='utf-8')
+      self.assertEqual(result.stdout, data.decode('utf-8'))
 
   def testInputString(self):
     """Verify input argument when it is a string."""
-    for data in (b'', b'foo', b'bar\nhigh'):
+    for data in ('', 'foo', 'bar\nhigh'):
       result = cros_build_lib.run(['cat'], input=data)
-      self.assertEqual(result.output, data)
+      self.assertEqual(result.stdout, data.encode('utf-8'))
+
+  def testInputStringEncoding(self):
+    """Verify bytes input argument when encoding is set."""
+    for data in ('', 'foo', 'bar\nhigh'):
+      result = cros_build_lib.run(['cat'], input=data, encoding='utf-8')
+      self.assertEqual(result.stdout, data)
 
   def testInputFileObject(self):
     """Verify input argument when it is a file object."""
@@ -206,7 +219,7 @@ class TestRunCommandNoMock(cros_test_lib.TestCase):
                                 encoding='utf-8')
     self.assertEqual(result.stdout, u'hi ß\n')
 
-  def testEncodingBinaryOutpt(self):
+  def testEncodingBinaryOutput(self):
     """Verify encoding=None output handling."""
     result = cros_build_lib.run(b'echo o\xff ut; echo e\xff rr >&2',
                                 shell=True, capture_output=True)
@@ -260,11 +273,12 @@ class TestRunCommand(cros_test_lib.MockTestCase):
     self._old_sigint = signal.getsignal(signal.SIGINT)
 
     # Mock the return value of Popen().
-    self.error = 'test error'
-    self.output = 'test output'
+    self.stdin = None
+    self.error = b'test error'
+    self.output = b'test output'
     self.proc_mock = mock.MagicMock(
         returncode=0,
-        communicate=lambda x: (self.output, self.error))
+        communicate=self._Communicate)
     self.popen_mock = self.PatchObject(cros_build_lib, '_Popen',
                                        return_value=self.proc_mock)
 
@@ -275,6 +289,13 @@ class TestRunCommand(cros_test_lib.MockTestCase):
   def tearDown(self):
     # Restore hidden ENVs.
     os.environ.update(self._old_envs)
+
+  def _Communicate(self, stdin):
+    """Used by mocked _Popen for communicate method to capture what
+    was passed on input.
+    """
+    self.stdin = stdin
+    return self.output, self.error
 
   @contextlib.contextmanager
   def _MockChecker(self, cmd, **kwargs):
@@ -414,6 +435,14 @@ class TestRunCommand(cros_test_lib.MockTestCase):
     with self._MockChecker(real_cmd, ignore_sigint=rc_kv.get('ignore_sigint'),
                            **sp_kv):
       actual_result = runcmd(cmd, **rc_kv)
+
+    # If run was called with encoding, we need to encode the result
+    # before making a comparison below, as the underlying data we are
+    # passing to _Popen is stored as bytes.
+    if 'encoding' in rc_kv:
+      encoding = rc_kv['encoding']
+      actual_result.stdout = actual_result.stdout.encode(encoding)
+      actual_result.stderr = actual_result.stderr.encode(encoding)
 
     self._AssertCrEqual(expected_result, actual_result)
 
@@ -624,6 +653,37 @@ class TestRunCommand(cros_test_lib.MockTestCase):
     self.proc_mock.returncode = 0
     self._TestCmd(cmd, sudo_list, sudo=True,
                   rc_kv=dict(user='MMMMMonster', shell=True))
+
+  def testInputBytes(self):
+    """Test that we can always pass non-UTF-8 bytes as input."""
+    cmd_list = ['foo', 'bar', 'roger']
+    bytes_input = b'\xff'
+    self.proc_mock.returncode = 0
+    self._TestCmd(cmd_list, cmd_list,
+                  sp_kv={'stdin': subprocess.PIPE},
+                  rc_kv={'input': bytes_input, 'encoding': 'utf-8'})
+    self.assertEqual(self.stdin, bytes_input)
+
+  def testInputString(self):
+    """Test that we encode UTF-8 strings passed on input."""
+    cmd_list = ['foo', 'bar', 'roger']
+    unicode_input = u'💩'
+    self.proc_mock.returncode = 0
+    self._TestCmd(cmd_list, cmd_list,
+                  sp_kv={'stdin': subprocess.PIPE},
+                  rc_kv={'input': unicode_input, 'encoding': 'utf-8'})
+    self.assertEqual(self.stdin, unicode_input.encode('utf-8'))
+
+  def testInputStringNoEncoding(self):
+    """Test that we encode UTF-8 strings passed on input without
+    passing encoding parameter."""
+    cmd_list = ['foo', 'bar', 'roger']
+    unicode_input = u'💩'
+    self.proc_mock.returncode = 0
+    self._TestCmd(cmd_list, cmd_list,
+                  sp_kv={'stdin': subprocess.PIPE},
+                  rc_kv={'input': unicode_input})
+    self.assertEqual(self.stdin, unicode_input.encode('utf-8'))
 
 
 class TestRunCommandOutput(cros_test_lib.TempDirTestCase,

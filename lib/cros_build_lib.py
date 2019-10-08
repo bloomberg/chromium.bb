@@ -654,12 +654,14 @@ def run(cmd, print_cmd=True, redirect_stdout=False,
   # Otherwise we assume it's a file object that can be read from directly.
   if isinstance(input, (six.string_types, six.binary_type)):
     stdin = subprocess.PIPE
-    # Allow people to always pass in bytes.
+    # Allow people to always pass in bytes or strings regardless of encoding.
+    # Our Popen usage takes care of converting everything to bytes first.
+    #
     # Linter can't see that we're using |input| as a var, not a builtin.
     # pylint: disable=input-builtin
-    if encoding and isinstance(input, six.binary_type):
+    if encoding and isinstance(input, six.text_type):
       input = input.encode(encoding, errors)
-    elif not encoding and isinstance(input, six.string_types):
+    elif not encoding and isinstance(input, six.text_type):
       input = input.encode('utf-8')
   elif input is not None:
     stdin = input
