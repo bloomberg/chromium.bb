@@ -35,6 +35,7 @@
 #include "net/base/net_errors.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
+#include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
@@ -63,6 +64,14 @@ content::RenderFrameHost* FindFrameMaybeUnsafe(
              ? handle->GetRenderFrameHost()
              : handle->GetWebContents()->UnsafeFindFrameByFrameTreeNodeId(
                    handle->GetFrameTreeNodeId());
+}
+
+void RecordFeatureUsage(content::RenderFrameHost* rfh,
+                        blink::mojom::WebFeature web_feature) {
+  page_load_metrics::mojom::PageLoadFeatures page_load_features(
+      {web_feature}, {} /* css_properties */, {} /* animated_css_properties */);
+  page_load_metrics::MetricsWebContentsObserver::RecordFeatureUsage(
+      rfh, page_load_features);
 }
 
 using ResourceMimeType = AdsPageLoadMetricsObserver::ResourceMimeType;
@@ -201,6 +210,9 @@ void AdsPageLoadMetricsObserver::MaybeTriggerHeavyAdIntervention(
   GetDelegate().GetWebContents()->GetController().LoadPostCommitErrorPage(
       render_frame_host, render_frame_host->GetLastCommittedURL(),
       heavy_ads::PrepareHeavyAdPage(), net::ERR_BLOCKED_BY_CLIENT);
+
+  RecordFeatureUsage(render_frame_host,
+                     blink::mojom::WebFeature::kHeavyAdIntervention);
 
   ADS_HISTOGRAM("HeavyAds.InterventionType2", UMA_HISTOGRAM_ENUMERATION,
                 FrameData::FrameVisibility::kAnyVisibility,

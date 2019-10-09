@@ -44,6 +44,7 @@
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
@@ -907,6 +908,9 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
 
   histogram_tester.ExpectUniqueSample(kHeavyAdInterventionTypeHistogramId,
                                       FrameData::HeavyAdStatus::kNetwork, 1);
+  histogram_tester.ExpectBucketCount(
+      "Blink.UseCounter.Features",
+      blink::mojom::WebFeature::kHeavyAdIntervention, 1);
 }
 
 // Check that when the heavy ad feature is disabled we don't navigate
@@ -938,6 +942,10 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
   // load is not synchronous. Instead check that we didn't log intervention UMA
   // that is always recorded when the intervention occurs.
   histogram_tester.ExpectTotalCount(kHeavyAdInterventionTypeHistogramId, 0);
+
+  histogram_tester.ExpectBucketCount(
+      "Blink.UseCounter.Features",
+      blink::mojom::WebFeature::kHeavyAdIntervention, 0);
 }
 
 // Check that we don't activate a HeavyAdIntervention field trial if we don't
