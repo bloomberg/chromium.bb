@@ -3992,18 +3992,6 @@ void RenderFrameImpl::UpdateSubresourceLoaderFactories(
   }
 }
 
-void RenderFrameImpl::MarkInitiatorAsRequiringSeparateURLLoaderFactory(
-    const url::Origin& initiator_origin,
-    network::mojom::URLLoaderFactoryPtr url_loader_factory) {
-  // Set up |loader_factories_| to be updated by the
-  // UpdateSubresourceLoaderFactories() below.
-  GetLoaderFactoryBundle();
-  auto factory_bundle = std::make_unique<blink::URLLoaderFactoryBundleInfo>();
-  factory_bundle->pending_initiator_specific_factories()[initiator_origin] =
-      url_loader_factory.PassInterface();
-  UpdateSubresourceLoaderFactories(std::move(factory_bundle));
-}
-
 void RenderFrameImpl::BindDevToolsAgent(
     mojo::PendingAssociatedRemote<blink::mojom::DevToolsAgentHost> host,
     mojo::PendingAssociatedReceiver<blink::mojom::DevToolsAgent> receiver) {
