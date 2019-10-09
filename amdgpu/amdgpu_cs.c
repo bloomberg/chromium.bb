@@ -188,6 +188,25 @@ drm_public int amdgpu_cs_query_reset_state(amdgpu_context_handle context,
 	return r;
 }
 
+drm_public int amdgpu_cs_query_reset_state2(amdgpu_context_handle context,
+					    uint64_t *flags)
+{
+	union drm_amdgpu_ctx args;
+	int r;
+
+	if (!context)
+		return -EINVAL;
+
+	memset(&args, 0, sizeof(args));
+	args.in.op = AMDGPU_CTX_OP_QUERY_STATE2;
+	args.in.ctx_id = context->id;
+	r = drmCommandWriteRead(context->dev->fd, DRM_AMDGPU_CTX,
+				&args, sizeof(args));
+	if (!r)
+		*flags = args.out.state.flags;
+	return r;
+}
+
 /**
  * Submit command to kernel DRM
  * \param   dev - \c [in]  Device handle

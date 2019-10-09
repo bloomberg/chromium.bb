@@ -942,6 +942,21 @@ int amdgpu_cs_ctx_override_priority(amdgpu_device_handle dev,
 int amdgpu_cs_query_reset_state(amdgpu_context_handle context,
 				uint32_t *state, uint32_t *hangs);
 
+/**
+ * Query reset state for the specific GPU Context.
+ *
+ * \param   context - \c [in]  GPU Context handle
+ * \param   flags   - \c [out] A combination of AMDGPU_CTX_QUERY2_FLAGS_*
+ *
+ * \return   0 on success\n
+ *          <0 - Negative POSIX Error code
+ *
+ * \sa amdgpu_cs_ctx_create()
+ *
+*/
+int amdgpu_cs_query_reset_state2(amdgpu_context_handle context,
+				 uint64_t *flags);
+
 /*
  * Command Buffers Management
  *
