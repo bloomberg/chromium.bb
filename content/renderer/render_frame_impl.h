@@ -770,7 +770,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void ForwardResourceTimingToParent(
       const blink::WebResourceTimingInfo& info) override;
   void DispatchLoad() override;
-  blink::WebURLRequest::PreviewsState GetPreviewsStateForFrame() const override;
   void DidBlockNavigation(const blink::WebURL& blocked_url,
                           const blink::WebURL& initiator_url,
                           blink::NavigationBlockedReason reason) override;
@@ -1615,13 +1614,6 @@ class CONTENT_EXPORT RenderFrameImpl
   // Only valid if |accessibility_mode_| has |ui::AXMode::kWebContents|
   // flag set.
   RenderAccessibilityImpl* render_accessibility_;
-
-  // The PreviewsState of this RenderFrame that indicates which Previews can
-  // be used. The PreviewsState is a bitmask of potentially several Previews
-  // optimizations.
-  // TODO(sclittle): Consider moving this into Blink to be owned and managed by
-  // LocalFrame or another class around there.
-  PreviewsState previews_state_;
 
   // Whether or not this RenderFrame is currently pasting.
   bool is_pasting_;

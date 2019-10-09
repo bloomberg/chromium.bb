@@ -476,6 +476,11 @@ void FillNavigationParamsRequest(
     }
   }
 
+  if (common_params.previews_state & kDisabledPreviewsBits) {
+    // Sanity check disabled vs. enabled bits here before passing on.
+    DCHECK(!(common_params.previews_state & ~kDisabledPreviewsBits))
+        << common_params.previews_state;
+  }
   navigation_params->previews_state =
       static_cast<WebURLRequest::PreviewsState>(common_params.previews_state);
 
@@ -929,7 +934,6 @@ std::unique_ptr<DocumentState> BuildDocumentStateFromParams(
   internal_data->set_must_reset_scroll_and_scale_state(
       common_params.navigation_type ==
       mojom::NavigationType::RELOAD_ORIGINAL_REQUEST_URL);
-  internal_data->set_previews_state(common_params.previews_state);
   internal_data->set_request_id(request_id);
 
   if (head) {
@@ -1866,7 +1870,6 @@ RenderFrameImpl::RenderFrameImpl(CreateParams params)
       selection_range_(gfx::Range::InvalidRange()),
       handling_select_range_(false),
       render_accessibility_(nullptr),
-      previews_state_(PREVIEWS_UNSPECIFIED),
       is_pasting_(false),
       suppress_further_dialogs_(false),
       blame_context_(nullptr),
@@ -1960,12 +1963,6 @@ void RenderFrameImpl::Initialize() {
   is_main_frame_ = !frame_->Parent();
 
   GetLocalRootRenderWidget()->RegisterRenderFrame(this);
-
-  RenderFrameImpl* parent_frame =
-      RenderFrameImpl::FromWebFrame(frame_->Parent());
-  if (parent_frame) {
-    previews_state_ = parent_frame->GetPreviewsState();
-  }
 
   bool is_tracing_rail = false;
   bool is_tracing_navigation = false;
@@ -3241,7 +3238,9 @@ void RenderFrameImpl::AddMessageToConsole(
 }
 
 PreviewsState RenderFrameImpl::GetPreviewsState() {
-  return previews_state_;
+  WebDocumentLoader* document_loader = frame_->GetDocumentLoader();
+  return document_loader ? document_loader->GetPreviewsState()
+                         : PREVIEWS_UNSPECIFIED;
 }
 
 bool RenderFrameImpl::IsPasting() {
@@ -4704,13 +4703,6 @@ void RenderFrameImpl::DidCommitProvisionalLoad(
   NavigationState* navigation_state = internal_data->navigation_state();
   DCHECK(!navigation_state->WasWithinSameDocument());
 
-  // Only update the PreviewsState and effective connection type states for new
-  // main frame documents. Subframes inherit from the main frame and should not
-  // change at commit time.
-  if (is_main_frame_) {
-    previews_state_ = internal_data->previews_state();
-  }
-
   if (previous_routing_id_ != MSG_ROUTING_NONE) {
     // If this is a provisional frame associated with a proxy (i.e., a frame
     // created for a remote-to-local navigation), swap it into the frame tree
@@ -5120,17 +5112,6 @@ void RenderFrameImpl::DispatchLoad() {
   Send(new FrameHostMsg_DispatchLoad(routing_id_));
 }
 
-blink::WebURLRequest::PreviewsState RenderFrameImpl::GetPreviewsStateForFrame()
-    const {
-  PreviewsState disabled_state = previews_state_ & kDisabledPreviewsBits;
-  if (disabled_state) {
-    // Sanity check disabled vs. enabled bits here before passing on.
-    DCHECK(!(previews_state_ & ~kDisabledPreviewsBits)) << previews_state_;
-    return disabled_state;
-  }
-  return static_cast<WebURLRequest::PreviewsState>(previews_state_);
-}
-
 void RenderFrameImpl::DidBlockNavigation(
     const WebURL& blocked_url,
     const WebURL& initiator_url,
@@ -5400,7 +5381,7 @@ void RenderFrameImpl::WillSendRequestInternal(
           navigation_state->common_params().previews_state));
     } else {
       WebURLRequest::PreviewsState request_previews_state =
-          static_cast<WebURLRequest::PreviewsState>(previews_state_);
+          static_cast<WebURLRequest::PreviewsState>(GetPreviewsState());
 
       // The decision of whether or not to enable Client Lo-Fi is made earlier
       // in the request lifetime, in LocalFrame::MaybeAllowImagePlaceholder(),
