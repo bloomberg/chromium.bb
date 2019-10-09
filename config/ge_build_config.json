@@ -626,18 +626,6 @@
       ]
     },
     {
-      "name": "grunt-kernelnext",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": true,
-          "leader_board": false,
-          "board_group": "",
-          "arch": "X86_INTERNAL"
-        }
-      ]
-    },
-    {
       "name": "guado",
       "configs": [
         {
@@ -2237,6 +2225,87 @@
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt",
           "board_id": 333,
+          "is_active": true
+        }
+      ]
+    },
+    {
+      "name": "grunt-kernelnext",
+      "reference_board_name": "grunt-kernelnext",
+      "arch": "X86_INTERNAL",
+      "builder": "RELEASE",
+      "experimental": true,
+      "models": [
+        {
+          "board_name": "grunt-kernelnext",
+          "name": "aleena",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 417,
+          "is_active": true
+        },
+        {
+          "board_name": "grunt-kernelnext",
+          "name": "barla",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 417,
+          "is_active": true
+        },
+        {
+          "board_name": "grunt-kernelnext",
+          "name": "careena",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 417,
+          "is_active": true
+        },
+        {
+          "board_name": "grunt-kernelnext",
+          "name": "grunt",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 417,
+          "is_active": true
+        },
+        {
+          "board_name": "grunt-kernelnext",
+          "name": "kasumi",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 417,
+          "is_active": true
+        },
+        {
+          "board_name": "grunt-kernelnext",
+          "name": "kasumi360",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 417,
+          "is_active": true
+        },
+        {
+          "board_name": "grunt-kernelnext",
+          "name": "liara",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 417,
+          "is_active": true
+        },
+        {
+          "board_name": "grunt-kernelnext",
+          "name": "treeya",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 417,
+          "is_active": true
+        },
+        {
+          "board_name": "grunt-kernelnext",
+          "name": "treeya360",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 417,
           "is_active": true
         }
       ]
