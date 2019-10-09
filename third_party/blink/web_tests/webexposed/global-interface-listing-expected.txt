@@ -2234,6 +2234,7 @@ interface ElementInternals
     getter form
     getter labels
     getter role
+    getter states
     getter validationMessage
     getter validity
     getter willValidate
