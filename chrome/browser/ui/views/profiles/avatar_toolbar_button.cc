@@ -261,12 +261,6 @@ void AvatarToolbarButton::UpdateText() {
   SetHighlight(text, color);
 }
 
-void AvatarToolbarButton::SetAutofillIconVisible(bool autofill_icon_visible) {
-  DCHECK_NE(GetState(), State::kIncognitoProfile);
-  autofill_icon_visible_ = autofill_icon_visible;
-  UpdateText();
-}
-
 void AvatarToolbarButton::ShowAvatarHighlightAnimation() {
   DCHECK_NE(GetState(), State::kIncognitoProfile);
   DCHECK_NE(GetState(), State::kGuestSession);
@@ -554,7 +548,7 @@ AvatarToolbarButton::State AvatarToolbarButton::GetState() const {
 
 #if !defined(OS_CHROMEOS)
   if (identity_manager->HasPrimaryAccount() && profile_->IsSyncAllowed() &&
-      error_controller_.HasAvatarError() && !autofill_icon_visible_) {
+      error_controller_.HasAvatarError()) {
     // When DICE is enabled and the error is an auth error, the sync-paused
     // icon is shown.
     int unused;

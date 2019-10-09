@@ -36,7 +36,6 @@ class AvatarToolbarButton : public ToolbarButton,
 
   void UpdateIcon();
   void UpdateText();
-  void SetAutofillIconVisible(bool autofill_icon_visible);
   void ShowAvatarHighlightAnimation();
 
  private:
@@ -135,11 +134,6 @@ class AvatarToolbarButton : public ToolbarButton,
   // Whether the avatar highlight animation is visible. If true, hide avatar
   // button sync paused/error state and update highlight color.
   bool highlight_animation_visible_ = false;
-
-  // Whether any autofill icon is visible in |this|'s parent container. Set by
-  // |ToolbarPageActionIconContainerView|. If true, hide avatar button sync
-  // paused/error state.
-  bool autofill_icon_visible_ = false;
 
   IdentityAnimationState identity_animation_state_ =
       IdentityAnimationState::kNotShowing;
