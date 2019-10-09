@@ -111,13 +111,7 @@ class DecoderImpl : public Allocable {
   int GetMaxAllowedFrames() const {
     return settings_.frame_parallel ? settings_.threads : 1;
   }
-  static constexpr int GetMaxBitdepth() {
-#if LIBGAV1_MAX_BITDEPTH >= 10
-    return 10;
-#else
-    return 8;
-#endif
-  }
+  static constexpr int GetMaxBitdepth() { return LIBGAV1_MAX_BITDEPTH; }
 
  private:
   explicit DecoderImpl(const DecoderSettings* settings);
