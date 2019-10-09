@@ -36,8 +36,15 @@ namespace crostini {
 
 struct LinuxPackageInfo;
 
-// A unique identifier for our containers. This is <vm_name, container_name>.
-using ContainerId = std::pair<std::string, std::string>;
+// A unique identifier for our containers.
+struct ContainerId {
+  ContainerId(std::string vm_name, std::string container_name) noexcept;
+
+  std::string vm_name;
+  std::string container_name;
+};
+
+bool operator<(const ContainerId& lhs, const ContainerId& rhs) noexcept;
 
 using LaunchCrostiniAppCallback =
     base::OnceCallback<void(bool success, const std::string& failure_reason)>;

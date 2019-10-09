@@ -278,7 +278,7 @@ void CrostiniPackageService::OnVmShutdown(const std::string& vm_name) {
   std::vector<ContainerId> to_remove;
   for (auto iter = running_notifications_.begin();
        iter != running_notifications_.end(); iter++) {
-    if (iter->first.first == vm_name) {
+    if (iter->first.vm_name == vm_name) {
       to_remove.push_back(iter->first);
     }
   }
@@ -501,8 +501,8 @@ void CrostiniPackageService::OnCrostiniRunningForUninstall(
                                  0);
     return;
   }
-  const std::string& vm_name = container_id.first;
-  const std::string& container_name = container_id.second;
+  const std::string& vm_name = container_id.vm_name;
+  const std::string& container_name = container_id.container_name;
 
   CrostiniManager::GetForProfile(profile_)->UninstallPackageOwningFile(
       vm_name, container_name, desktop_file_id,
@@ -583,8 +583,8 @@ void CrostiniPackageService::StartQueuedOperation(
       install_queue.pop();  // Invalidates |next|
     }
 
-    std::string vm_name = container_id.first;
-    std::string container_name = container_id.second;
+    std::string vm_name = container_id.vm_name;
+    std::string container_name = container_id.container_name;
 
     CrostiniManager::GetForProfile(profile_)->InstallLinuxPackage(
         vm_name, container_name, package_path,

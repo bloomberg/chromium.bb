@@ -493,7 +493,7 @@ void CrostiniExportImport::OnImportComplete(
 
   // Restart from CrostiniManager.
   CrostiniManager::GetForProfile(profile_)->RestartCrostini(
-      container_id.first, container_id.second, std::move(callback));
+      container_id.vm_name, container_id.container_name, std::move(callback));
 }
 
 void CrostiniExportImport::OnImportContainerProgress(

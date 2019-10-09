@@ -298,9 +298,18 @@ bool IsCrostiniAllowedForProfileImpl(Profile* profile) {
 
 namespace crostini {
 
+ContainerId::ContainerId(std::string vm_name,
+                         std::string container_name) noexcept
+    : vm_name(std::move(vm_name)), container_name(std::move(container_name)) {}
+
+bool operator<(const ContainerId& lhs, const ContainerId& rhs) noexcept {
+  const auto result = lhs.vm_name.compare(rhs.vm_name);
+  return result < 0 || (result == 0 && lhs.container_name < rhs.container_name);
+}
+
 std::string ContainerIdToString(const ContainerId& container_id) {
   return base::StrCat(
-      {"(", container_id.first, ", ", container_id.second, ")"});
+      {"(", container_id.vm_name, ", ", container_id.container_name, ")"});
 }
 
 bool IsUninstallable(Profile* profile, const std::string& app_id) {

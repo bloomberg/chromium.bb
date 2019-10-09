@@ -82,7 +82,7 @@ void InvokeAndErasePendingCallbacks(
     const std::string& vm_name,
     Arguments&&... arguments) {
   for (auto it = vm_keyed_map->begin(); it != vm_keyed_map->end();) {
-    if (it->first.first == vm_name) {
+    if (it->first.vm_name == vm_name) {
       std::move(it->second).Run(arguments...);
       vm_keyed_map->erase(it++);
     } else {
@@ -1245,8 +1245,8 @@ void CrostiniManager::ImportLxdContainer(std::string vm_name,
 }
 
 void CrostiniManager::CancelExportLxdContainer(ContainerId key) {
-  const auto& vm_name = key.first;
-  const auto& container_name = key.second;
+  const auto& vm_name = key.vm_name;
+  const auto& container_name = key.container_name;
   if (vm_name.empty()) {
     LOG(ERROR) << "vm_name is required";
     return;
@@ -1274,8 +1274,8 @@ void CrostiniManager::CancelExportLxdContainer(ContainerId key) {
 }
 
 void CrostiniManager::CancelImportLxdContainer(ContainerId key) {
-  const auto& vm_name = key.first;
-  const auto& container_name = key.second;
+  const auto& vm_name = key.vm_name;
+  const auto& container_name = key.container_name;
   if (vm_name.empty()) {
     LOG(ERROR) << "vm_name is required";
     return;
@@ -2746,7 +2746,8 @@ void CrostiniManager::OnCancelExportLxdContainer(
         response) {
   auto it = export_lxd_container_callbacks_.find(key);
   if (it == export_lxd_container_callbacks_.end()) {
-    LOG(ERROR) << "No export callback for " << key.first << ", " << key.second;
+    LOG(ERROR) << "No export callback for " << key.vm_name << ", "
+               << key.container_name;
     return;
   }
 
@@ -2769,7 +2770,8 @@ void CrostiniManager::OnCancelImportLxdContainer(
         response) {
   auto it = import_lxd_container_callbacks_.find(key);
   if (it == import_lxd_container_callbacks_.end()) {
-    LOG(ERROR) << "No import callback for " << key.first << ", " << key.second;
+    LOG(ERROR) << "No import callback for " << key.vm_name << ", "
+               << key.container_name;
     return;
   }
 
