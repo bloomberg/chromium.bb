@@ -538,8 +538,6 @@ void RenderWidget::Init(ShowCallback show_callback, WebWidget* web_widget) {
   DCHECK(!webwidget_);
   DCHECK_NE(routing_id_, MSG_ROUTING_NONE);
 
-  RenderThreadImpl* render_thread_impl = RenderThreadImpl::current();
-
   input_handler_ = std::make_unique<RenderWidgetInputHandler>(this, this);
 
   LayerTreeView* layer_tree_view = InitializeLayerTreeView();
@@ -550,9 +548,9 @@ void RenderWidget::Init(ShowCallback show_callback, WebWidget* web_widget) {
   if (web_widget)
     web_widget->SetAnimationHost(layer_tree_view->animation_host());
 
-  blink::scheduler::WebThreadScheduler* main_thread_scheduler = nullptr;
-  if (render_thread_impl)
-    main_thread_scheduler = render_thread_impl->GetWebMainThreadScheduler();
+  blink::scheduler::WebThreadScheduler* main_thread_scheduler =
+      compositor_deps_->GetWebMainThreadScheduler();
+
   blink::scheduler::WebThreadScheduler* compositor_thread_scheduler =
       blink::scheduler::WebThreadScheduler::CompositorThreadScheduler();
   scoped_refptr<base::SingleThreadTaskRunner> compositor_input_task_runner;
@@ -563,6 +561,10 @@ void RenderWidget::Init(ShowCallback show_callback, WebWidget* web_widget) {
     compositor_input_task_runner =
         compositor_thread_scheduler->InputTaskRunner();
   }
+
+  input_event_queue_ = base::MakeRefCounted<MainThreadEventQueue>(
+      this, main_thread_scheduler->InputTaskRunner(), main_thread_scheduler,
+      /*allow_raf_aligned_input=*/!compositor_never_visible_);
 
   // We only use an external input handler for frame RenderWidgets because only
   // frames use the compositor for input handling. Other kinds of RenderWidgets
@@ -1237,7 +1239,7 @@ void RenderWidget::BeginMainFrame(base::TimeTicks frame_time) {
   // single-thread mode for testing.
   bool record_main_frame_metrics =
       !!compositor_deps_->GetCompositorImplThreadTaskRunner();
-  if (input_event_queue_) {
+  {
     base::Optional<ScopedUkmRafAlignedInputTimer> ukm_timer;
     if (record_main_frame_metrics) {
       ukm_timer.emplace(GetWebWidget());
@@ -1968,16 +1970,6 @@ LayerTreeView* RenderWidget::InitializeLayerTreeView() {
   if (!is_hidden_ && !is_undead_)
     StartStopCompositor();
 
-  DCHECK_NE(MSG_ROUTING_NONE, routing_id_);
-
-  RenderThreadImpl* render_thread = RenderThreadImpl::current();
-  if (render_thread) {
-    input_event_queue_ = base::MakeRefCounted<MainThreadEventQueue>(
-        this, render_thread->GetWebMainThreadScheduler()->InputTaskRunner(),
-        render_thread->GetWebMainThreadScheduler(),
-        /*allow_raf_aligned_input=*/!compositor_never_visible_);
-  }
-
   return layer_tree_view_.get();
 }
 
@@ -2063,8 +2055,7 @@ void RenderWidget::Close(std::unique_ptr<RenderWidget> widget) {
 
   // Stop handling main thread input events immediately so we don't have them
   // running while things are partly shut down.
-  if (input_event_queue_)
-    input_event_queue_->ClearClient();
+  input_event_queue_->ClearClient();
 
   // The |webwidget_| will be null when the main frame RenderWidget is undead.
   if (webwidget_)
@@ -3394,8 +3385,7 @@ cc::ManagedMemoryPolicy RenderWidget::GetGpuMemoryPolicy(
 }
 
 void RenderWidget::SetHasPointerRawUpdateEventHandlers(bool has_handlers) {
-  if (input_event_queue_)
-    input_event_queue_->HasPointerRawUpdateEventHandlers(has_handlers);
+  input_event_queue_->HasPointerRawUpdateEventHandlers(has_handlers);
 }
 
 void RenderWidget::SetHasTouchEventHandlers(bool has_handlers) {
@@ -3413,13 +3403,11 @@ void RenderWidget::SetHaveScrollEventHandlers(bool have_handlers) {
 }
 
 void RenderWidget::SetNeedsLowLatencyInput(bool needs_low_latency) {
-  if (input_event_queue_)
-    input_event_queue_->SetNeedsLowLatency(needs_low_latency);
+  input_event_queue_->SetNeedsLowLatency(needs_low_latency);
 }
 
 void RenderWidget::SetNeedsUnbufferedInputForDebugger(bool unbuffered) {
-  if (input_event_queue_)
-    input_event_queue_->SetNeedsUnbufferedInputForDebugger(unbuffered);
+  input_event_queue_->SetNeedsUnbufferedInputForDebugger(unbuffered);
 }
 
 void RenderWidget::AnimateDoubleTapZoomInMainFrame(
@@ -3694,8 +3682,7 @@ void RenderWidget::NotifySwapAndPresentationTime(
 }
 
 void RenderWidget::RequestUnbufferedInputEvents() {
-  if (input_event_queue_)
-    input_event_queue_->RequestUnbufferedInputEvents();
+  input_event_queue_->RequestUnbufferedInputEvents();
 }
 
 void RenderWidget::SetTouchAction(cc::TouchAction touch_action) {
