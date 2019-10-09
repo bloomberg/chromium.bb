@@ -207,6 +207,10 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
     return navigation_requests_;
   }
 
+  // Simulates RenderFrameHost finishing loading and dispatching all relevant
+  // callbacks.
+  void SimulateLoadingCompleted();
+
  protected:
   void SendCommitNavigation(
       mojom::NavigationClient* navigation_client,

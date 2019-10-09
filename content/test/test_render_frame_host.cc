@@ -693,4 +693,8 @@ TestRenderFrameHost::CreateStubBrowserInterfaceBrokerReceiver() {
       .InitWithNewPipeAndPassReceiver();
 }
 
+void TestRenderFrameHost::SimulateLoadingCompleted() {
+  OnDidStopLoading();
+}
+
 }  // namespace content
