@@ -98,8 +98,8 @@ void IsolatedVRDeviceProvider::OnDevicesEnumerated() {
 
 void IsolatedVRDeviceProvider::SetupDeviceProvider() {
   GetXRDeviceService()->BindRuntimeProvider(
-      mojo::MakeRequest(&device_provider_));
-  device_provider_.set_connection_error_handler(base::BindOnce(
+      device_provider_.BindNewPipeAndPassReceiver());
+  device_provider_.set_disconnect_handler(base::BindOnce(
       &IsolatedVRDeviceProvider::OnServerError, base::Unretained(this)));
 
   device::mojom::IsolatedXRRuntimeProviderClientPtr client;

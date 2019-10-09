@@ -10,6 +10,7 @@
 #include "device/vr/vr_device.h"
 #include "device/vr/vr_device_provider.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace vr {
 
@@ -48,7 +49,7 @@ class IsolatedVRDeviceProvider
 
   bool initialized_ = false;
   int retry_count_ = 0;
-  device::mojom::IsolatedXRRuntimeProviderPtr device_provider_;
+  mojo::Remote<device::mojom::IsolatedXRRuntimeProvider> device_provider_;
 
   base::RepeatingCallback<void(device::mojom::XRDeviceId,
                                device::mojom::VRDisplayInfoPtr,
