@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module resource_coordinator.mojom;
+module performance_manager.mojom;
 
 import "mojo/public/mojom/base/process_id.mojom";
 import "mojo/public/mojom/base/time.mojom";
-import "services/resource_coordinator/public/mojom/lifecycle.mojom";
+import "components/performance_manager/public/mojom/lifecycle.mojom";
 
 // Any new type here needs to be mirrored between coordination_unit_types.h and
 // coordination_unit.mojom, and have mappings between the two defined in
