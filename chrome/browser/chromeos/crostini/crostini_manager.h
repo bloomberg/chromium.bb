@@ -62,8 +62,7 @@ class ExportContainerProgressObserver {
   // DEPCRECATED. A successfully started container export will continually fire
   // progress events until the original callback from ExportLxdContainer is
   // invoked with a status of SUCCESS or CONTAINER_EXPORT_FAILED.
-  virtual void OnExportContainerProgress(const std::string& vm_name,
-                                         const std::string& container_name,
+  virtual void OnExportContainerProgress(const ContainerId& container_id,
                                          ExportContainerProgressStatus status,
                                          int progress_percent,
                                          uint64_t progress_speed) = 0;
@@ -71,8 +70,7 @@ class ExportContainerProgressObserver {
   // A successfully started container export will continually fire progress
   // events until the original callback from ExportLxdContainer is invoked with
   // a status of SUCCESS or CONTAINER_EXPORT_FAILED.
-  virtual void OnExportContainerProgress(const std::string& vm_name,
-                                         const std::string& container_name,
+  virtual void OnExportContainerProgress(const ContainerId& container_id,
                                          const StreamingExportStatus&) = 0;
 };
 
@@ -82,8 +80,7 @@ class ImportContainerProgressObserver {
   // events until the original callback from ImportLxdContainer is invoked with
   // a status of SUCCESS or CONTAINER_IMPORT_FAILED[_*].
   virtual void OnImportContainerProgress(
-      const std::string& vm_name,
-      const std::string& container_name,
+      const ContainerId& container_id,
       ImportContainerProgressStatus status,
       int progress_percent,
       uint64_t progress_speed,

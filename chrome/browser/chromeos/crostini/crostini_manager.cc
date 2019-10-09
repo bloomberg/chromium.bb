@@ -2585,6 +2585,8 @@ void CrostiniManager::OnExportLxdContainerProgress(
   if (signal.owner_id() != owner_id_)
     return;
 
+  const ContainerId container_id(signal.vm_name(), signal.container_name());
+
   CrostiniResult result;
   switch (signal.status()) {
     // TODO(juwa): Remove EXPORTING_[PACK|DOWNLOAD] once a new version of
@@ -2596,9 +2598,9 @@ void CrostiniManager::OnExportLxdContainerProgress(
                               ? ExportContainerProgressStatus::PACK
                               : ExportContainerProgressStatus::DOWNLOAD;
       for (auto& observer : export_container_progress_observers_) {
-        observer.OnExportContainerProgress(
-            signal.vm_name(), signal.container_name(), status,
-            signal.progress_percent(), signal.progress_speed());
+        observer.OnExportContainerProgress(container_id, status,
+                                           signal.progress_percent(),
+                                           signal.progress_speed());
       }
       return;
     }
@@ -2609,8 +2611,7 @@ void CrostiniManager::OnExportLxdContainerProgress(
           .exported_files = signal.input_files_streamed(),
           .exported_bytes = signal.input_bytes_streamed()};
       for (auto& observer : export_container_progress_observers_) {
-        observer.OnExportContainerProgress(signal.vm_name(),
-                                           signal.container_name(), status);
+        observer.OnExportContainerProgress(container_id, status);
       }
       return;
     }
@@ -2627,8 +2628,7 @@ void CrostiniManager::OnExportLxdContainerProgress(
   }
 
   // Invoke original callback with either success or failure.
-  auto key = ContainerId(signal.vm_name(), signal.container_name());
-  auto it = export_lxd_container_callbacks_.find(key);
+  auto it = export_lxd_container_callbacks_.find(container_id);
   if (it == export_lxd_container_callbacks_.end()) {
     LOG(ERROR) << "No export callback for " << signal.vm_name() << ", "
                << signal.container_name();
@@ -2715,20 +2715,21 @@ void CrostiniManager::OnImportLxdContainerProgress(
                  << ", " << signal.failure_reason();
   }
 
+  const ContainerId container_id(signal.vm_name(), signal.container_name());
+
   if (call_observers) {
     for (auto& observer : import_container_progress_observers_) {
       observer.OnImportContainerProgress(
-          signal.vm_name(), signal.container_name(), status,
-          signal.progress_percent(), signal.progress_speed(),
-          signal.architecture_device(), signal.architecture_container(),
-          signal.available_space(), signal.min_required_space());
+          container_id, status, signal.progress_percent(),
+          signal.progress_speed(), signal.architecture_device(),
+          signal.architecture_container(), signal.available_space(),
+          signal.min_required_space());
     }
   }
 
   // Invoke original callback with either success or failure.
   if (call_original_callback) {
-    auto key = ContainerId(signal.vm_name(), signal.container_name());
-    auto it = import_lxd_container_callbacks_.find(key);
+    auto it = import_lxd_container_callbacks_.find(container_id);
     if (it == import_lxd_container_callbacks_.end()) {
       LOG(ERROR) << "No import callback for " << signal.vm_name() << ", "
                  << signal.container_name();
