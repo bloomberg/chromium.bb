@@ -1158,6 +1158,9 @@ void TabStrip::ChangeTabGroup(int model_index,
     // move in terms of model indices.
     layout_helper_->UpdateGroupHeaderIndex(new_group.value());
     group_underlines_[new_group.value()]->SchedulePaint();
+    const int active_index = controller_->GetActiveIndex();
+    if (active_index != ui::ListSelectionModel::kUnselectedIndex)
+      tab_at(active_index)->SchedulePaint();
   }
   if (old_group.has_value()) {
     if (controller_->ListTabsInGroup(old_group.value()).size() == 0) {
@@ -1175,6 +1178,9 @@ void TabStrip::ChangeTabGroup(int model_index,
 void TabStrip::GroupVisualsChanged(TabGroupId group) {
   group_headers_[group]->VisualsChanged();
   group_underlines_[group]->SchedulePaint();
+  const int active_index = controller_->GetActiveIndex();
+  if (active_index != ui::ListSelectionModel::kUnselectedIndex)
+    tab_at(active_index)->SchedulePaint();
   // The group title may have changed size.
   UpdateIdealBounds();
   AnimateToIdealBounds();
