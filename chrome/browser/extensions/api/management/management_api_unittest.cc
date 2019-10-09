@@ -367,7 +367,7 @@ TEST_F(ManagementApiUnitTest, ManagementWebStoreUninstall) {
     bool did_show = false;
     auto callback = base::BindRepeating(
         [](bool* did_show, extensions::ExtensionUninstallDialog* dialog) {
-          EXPECT_EQ("Remove \"Test\"?", dialog->GetHeadingText());
+          EXPECT_EQ("Uninstall Test?", dialog->GetHeadingText());
           *did_show = true;
         },
         &did_show);
