@@ -37,6 +37,9 @@ extern "C" {
 #define BO_USE_HW_VIDEO_DECODER         (1ull << 14)
 #define BO_USE_RENDERSCRIPT		(1ull << 15)
 
+/* Quirks for allocating a buffer. */
+#define BO_QUIRK_NONE			0
+#define BO_QUIRK_DUMB32BPP		(1ull << 0)
 
 /* Map flags */
 #define BO_MAP_NONE 0

@@ -272,8 +272,8 @@ int drv_bo_from_format(struct bo *bo, uint32_t stride, uint32_t aligned_height, 
 	return 0;
 }
 
-int drv_dumb_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_t format,
-		       uint64_t use_flags)
+int drv_dumb_bo_create_ex(struct bo *bo, uint32_t width, uint32_t height, uint32_t format,
+			  uint64_t use_flags, uint64_t quirks)
 {
 	int ret;
 	size_t plane;
@@ -303,9 +303,15 @@ int drv_dumb_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_t 
 	}
 
 	memset(&create_dumb, 0, sizeof(create_dumb));
-	create_dumb.height = aligned_height;
+	if (quirks & BO_QUIRK_DUMB32BPP) {
+		aligned_width =
+		    DIV_ROUND_UP(aligned_width * layout_from_format(format)->bytes_per_pixel[0], 4);
+		create_dumb.bpp = 32;
+	} else {
+		create_dumb.bpp = layout_from_format(format)->bytes_per_pixel[0] * 8;
+	}
 	create_dumb.width = aligned_width;
-	create_dumb.bpp = layout_from_format(format)->bytes_per_pixel[0] * 8;
+	create_dumb.height = aligned_height;
 	create_dumb.flags = 0;
 
 	ret = drmIoctl(bo->drv->fd, DRM_IOCTL_MODE_CREATE_DUMB, &create_dumb);
@@ -321,6 +327,12 @@ int drv_dumb_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_t 
 
 	bo->meta.total_size = create_dumb.size;
 	return 0;
+}
+
+int drv_dumb_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_t format,
+		       uint64_t use_flags)
+{
+	return drv_dumb_bo_create_ex(bo, width, height, format, use_flags, BO_QUIRK_NONE);
 }
 
 int drv_dumb_bo_destroy(struct bo *bo)

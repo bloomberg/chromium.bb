@@ -75,7 +75,7 @@ static int virtio_dumb_bo_create(struct bo *bo, uint32_t width, uint32_t height,
 		height = ALIGN(height, MESA_LLVMPIPE_TILE_SIZE);
 	}
 
-	return drv_dumb_bo_create(bo, width, height, format, use_flags);
+	return drv_dumb_bo_create_ex(bo, width, height, format, use_flags, BO_QUIRK_DUMB32BPP);
 }
 
 static inline void handle_flag(uint64_t *flag, uint64_t check_flag, uint32_t *bind,
@@ -197,16 +197,26 @@ static int virtio_gpu_init(struct driver *drv)
 		priv->has_3d = 0;
 	}
 
-	/* This doesn't mean host can scanout everything, it just means host
-	 * hypervisor can show it. */
-	drv_add_combinations(drv, render_target_formats, ARRAY_SIZE(render_target_formats),
-			     &LINEAR_METADATA, BO_USE_RENDER_MASK | BO_USE_SCANOUT);
-
 	if (priv->has_3d) {
+		/* This doesn't mean host can scanout everything, it just means host
+		 * hypervisor can show it. */
+		drv_add_combinations(drv, render_target_formats, ARRAY_SIZE(render_target_formats),
+				     &LINEAR_METADATA, BO_USE_RENDER_MASK | BO_USE_SCANOUT);
 		drv_add_combinations(drv, texture_source_formats,
 				     ARRAY_SIZE(texture_source_formats), &LINEAR_METADATA,
 				     BO_USE_TEXTURE_MASK);
 	} else {
+		/* Virtio primary plane only allows this format. */
+		drv_add_combination(drv, DRM_FORMAT_XRGB8888, &LINEAR_METADATA,
+				    BO_USE_RENDER_MASK | BO_USE_SCANOUT);
+		/* Virtio cursor plane only allows this format and Chrome cannot live without
+		 * ARGB888 renderable format. */
+		drv_add_combination(drv, DRM_FORMAT_ARGB8888, &LINEAR_METADATA,
+				    BO_USE_RENDER_MASK | BO_USE_CURSOR);
+		/* Android needs more, but they cannot be bound as scanouts anymore after
+		 * "drm/virtio: fix DRM_FORMAT_* handling" */
+		drv_add_combinations(drv, render_target_formats, ARRAY_SIZE(render_target_formats),
+				     &LINEAR_METADATA, BO_USE_RENDER_MASK);
 		drv_add_combinations(drv, dumb_texture_source_formats,
 				     ARRAY_SIZE(dumb_texture_source_formats), &LINEAR_METADATA,
 				     BO_USE_TEXTURE_MASK);
