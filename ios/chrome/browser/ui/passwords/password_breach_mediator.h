@@ -36,6 +36,10 @@ class GURL;
 
 - (instancetype)initWithCoder NS_UNAVAILABLE;
 
+// Informs the mediator that its about to be destroyed, so it can perform any
+// logging or clean up needed.
+- (void)disconnect;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_PASSWORDS_PASSWORD_BREACH_MEDIATOR_H_

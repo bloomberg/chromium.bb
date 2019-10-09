@@ -37,6 +37,7 @@
 }
 
 - (void)stop {
+  [self.mediator disconnect];
   self.mediator = nil;
   [self.viewController.presentingViewController
       dismissViewControllerAnimated:YES
