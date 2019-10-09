@@ -6459,7 +6459,9 @@ the Bookmarks menu.">
         <message name="IDS_CONTROLLED_SETTING_HAS_RECOMMENDATION" desc="Text displayed in the controlled settings bubble when a value is recommended for a setting through policy but is currently overridden by a user-supplied value.">
           Your administrator recommends a specific value for this setting.
         </message>
-
+        <message name="IDS_CONTROLLED_SETTING_CHILD_RESTRICTION" desc="Text displayed in the controlled settings bubble when a setting's value is pre-set because the user is a child.">
+          This setting can't be changed by a child user.
+        </message>
         <!-- Extension install location strings -->
         <message name="IDS_EXTENSIONS_INSTALL_LOCATION_UNKNOWN" desc="The text explaining the the installation location is unknown.">
           Not from Chrome Web Store.
