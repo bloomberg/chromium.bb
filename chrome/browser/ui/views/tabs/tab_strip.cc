@@ -1915,6 +1915,15 @@ void TabStrip::PaintChildren(const views::PaintInfo& paint_info) {
   for (size_t i = 0; i < tabs_dragging.size(); ++i)
     tabs_dragging[i]->Paint(paint_info);
 
+  // If dragging more than one grouped tab, paint the group underline above
+  // those tabs. Otherwise, the non-active tabs will not get an underline.
+  // All dragging tabs should belong to the same group, per TabDragController.
+  if (tabs_dragging.size() > 0) {
+    const base::Optional<TabGroupId> dragged_group = tabs_dragging[0]->group();
+    if (dragged_group.has_value())
+      group_underlines_[dragged_group.value()]->Paint(paint_info);
+  }
+
   // If the active tab is being dragged, it goes last.
   if (active_tab && is_dragging)
     active_tab->Paint(paint_info);
