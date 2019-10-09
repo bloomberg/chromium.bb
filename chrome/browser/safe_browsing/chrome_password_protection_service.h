@@ -246,6 +246,15 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
       LoginReputationClientResponse* out_response) override;
 #endif
 
+  // Sanitize referrer chain by only keeping origin information of all URLs.
+  void SanitizeReferrerChain(ReferrerChain* referrer_chain) override;
+
+  bool CanSendSamplePing() override;
+#if defined(UNIT_TEST)
+  void set_bypass_probability_for_tests(bool bypass_probability_for_tests) {
+    bypass_probability_for_tests_ = bypass_probability_for_tests;
+  }
+#endif
   // Gets |account_info_| based on |profile_|.
   AccountInfo GetAccountInfo() const override;
 
@@ -502,6 +511,9 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
 
   // Schedules the next time to log the PasswordCaptured event.
   base::OneShotTimer log_password_capture_timer_;
+
+  // Bypasses the check for probability when sending sample pings.
+  bool bypass_probability_for_tests_ = false;
 
   // Used to inject a different password hash, for testing. It's done as a
   // member callback rather than a virtual function because it's needed in the

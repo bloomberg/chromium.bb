@@ -91,6 +91,10 @@ namespace {
 // The number of user gestures we trace back for login event attribution.
 const int kPasswordEventAttributionUserGestureLimit = 2;
 
+// Probability for sending password protection reports for domains on the
+// allowlist for users opted into extended reporting, from non-incognito window.
+const float kProbabilityForSendingReportsFromSafeURLs = 0.01;
+
 #if defined(SYNC_PASSWORD_REUSE_WARNING_ENABLED)
 // If user specifically mark a site as legitimate, we will keep this decision
 // for 2 days.
@@ -1526,6 +1530,20 @@ bool ChromePasswordProtectionService::IsURLWhitelistedForPasswordEntry(
   }
 
   return false;
+}
+
+void ChromePasswordProtectionService::SanitizeReferrerChain(
+    ReferrerChain* referrer_chain) {
+  SafeBrowsingNavigationObserverManager::SanitizeReferrerChain(referrer_chain);
+}
+
+bool ChromePasswordProtectionService::CanSendSamplePing() {
+  // Send a sample ping only 1% of the time.
+  return IsExtendedReporting() && !IsIncognito() &&
+         base::FeatureList::IsEnabled(
+             safe_browsing::kSendSampledPingsForAllowlistDomains) &&
+         (bypass_probability_for_tests_ ||
+          base::RandDouble() <= kProbabilityForSendingReportsFromSafeURLs);
 }
 
 // TODO(crbug.com/995926): Enable caching on Android
