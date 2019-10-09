@@ -9158,6 +9158,7 @@ Called by update_net_error_codes.py.-->
   <int value="-402" label="CACHE_WRITE_FAILURE"/>
   <int value="-401" label="CACHE_READ_FAILURE"/>
   <int value="-400" label="CACHE_MISS"/>
+  <int value="-380" label="QUIC_CERT_ROOT_NOT_KNOWN"/>
   <int value="-379" label="HTTP_RESPONSE_CODE_FAILURE"/>
   <int value="-378" label="HTTP2_PUSHED_RESPONSE_DOES_NOT_MATCH"/>
   <int value="-377" label="HTTP2_CLIENT_REFUSED_STREAM"/>
@@ -42105,6 +42106,7 @@ Called by update_net_error_codes.py.-->
   <int value="377" label="HTTP2_CLIENT_REFUSED_STREAM"/>
   <int value="378" label="HTTP2_PUSHED_RESPONSE_DOES_NOT_MATCH"/>
   <int value="379" label="HTTP_RESPONSE_CODE_FAILURE"/>
+  <int value="380" label="QUIC_CERT_ROOT_NOT_KNOWN"/>
   <int value="400" label="CACHE_MISS"/>
   <int value="401" label="CACHE_READ_FAILURE"/>
   <int value="402" label="CACHE_WRITE_FAILURE"/>
