@@ -1631,6 +1631,8 @@ ScriptValue Document::registerElement(ScriptState* script_state,
   V0CustomElementConstructorBuilder constructor_builder(script_state, options);
   RegistrationContext()->RegisterElement(this, &constructor_builder, name,
                                          exception_state);
+  if (exception_state.HadException())
+    return ScriptValue();
   return constructor_builder.BindingsReturnValue();
 }
 
