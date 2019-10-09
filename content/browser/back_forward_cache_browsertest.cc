@@ -115,6 +115,22 @@ class BackForwardCacheBrowserTest : public ContentBrowserTest {
         << location.ToString();
   }
 
+  void ExpectEvictedAfterCommitted(
+      std::vector<BackForwardCacheMetrics::EvictedAfterDocumentRestoredReason>
+          reasons,
+      base::Location location) {
+    for (BackForwardCacheMetrics::EvictedAfterDocumentRestoredReason reason :
+         reasons) {
+      base::HistogramBase::Sample sample = base::HistogramBase::Sample(reason);
+      AddSampleToBuckets(&expected_eviction_after_committing_, sample);
+    }
+
+    EXPECT_EQ(expected_eviction_after_committing_,
+              histogram_tester_.GetAllSamples(
+                  "BackForwardCache.EvictedAfterDocumentRestoredReason"))
+        << location.ToString();
+  }
+
  private:
   void AddSampleToBuckets(std::vector<base::Bucket>* buckets,
                           base::HistogramBase::Sample sample) {
@@ -133,6 +149,7 @@ class BackForwardCacheBrowserTest : public ContentBrowserTest {
   base::HistogramTester histogram_tester_;
   std::vector<base::Bucket> expected_outcomes_;
   std::vector<base::Bucket> expected_disabled_reasons_;
+  std::vector<base::Bucket> expected_eviction_after_committing_;
 };
 
 // Match RenderFrameHostImpl* that are in the BackForwardCache.
@@ -1565,6 +1582,14 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
 
   ExpectOutcome(BackForwardCacheMetrics::HistoryNavigationOutcome::kRestored,
                 FROM_HERE);
+  ExpectEvictedAfterCommitted(
+      {
+          BackForwardCacheMetrics::EvictedAfterDocumentRestoredReason::
+              kRestored,
+          BackForwardCacheMetrics::EvictedAfterDocumentRestoredReason::
+              kByJavaScript,
+      },
+      FROM_HERE);
 }
 
 // Tests the events are fired when going back from the cache.

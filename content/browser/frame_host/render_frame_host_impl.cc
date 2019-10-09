@@ -3528,6 +3528,10 @@ void RenderFrameHostImpl::EvictFromBackForwardCache() {
   }
 
   if (!in_back_forward_cache) {
+    BackForwardCacheMetrics::RecordEvictedAfterDocumentRestored(
+        BackForwardCacheMetrics::EvictedAfterDocumentRestoredReason::
+            kByJavaScript);
+
     // A document is evicted from the BackForwardCache, but it has already been
     // restored. The current document should be reloaded, because it is not
     // salvageable.
