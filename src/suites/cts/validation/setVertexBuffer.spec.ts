@@ -1,5 +1,5 @@
 export const description = `
-setVertexBuffers validation tests.
+setVertexBuffer validation tests.
 `;
 
 import { TestGroup, range } from '../../../framework/index.js';
@@ -96,8 +96,8 @@ g.test('vertex buffers inherit from previous pipeline', async t => {
   const pipeline1 = t.createRenderPipeline(1);
   const pipeline2 = t.createRenderPipeline(2);
 
-  const vertexBuffers = [t.getVertexBuffer(), t.getVertexBuffer()];
-  const offsets = [0, 0];
+  const vertexBuffer1 = t.getVertexBuffer();
+  const vertexBuffer2 = t.getVertexBuffer();
 
   {
     // Check failure when vertex buffer is not set
@@ -116,7 +116,8 @@ g.test('vertex buffers inherit from previous pipeline', async t => {
     const commandEncoder = t.device.createCommandEncoder();
     const renderPass = t.beginRenderPass(commandEncoder);
     renderPass.setPipeline(pipeline2);
-    renderPass.setVertexBuffers(0, vertexBuffers, offsets);
+    renderPass.setVertexBuffer(0, vertexBuffer1);
+    renderPass.setVertexBuffer(1, vertexBuffer2);
     renderPass.draw(3, 1, 0, 0);
     renderPass.setPipeline(pipeline1);
     renderPass.draw(3, 1, 0, 0);
@@ -130,8 +131,8 @@ g.test('vertex buffers do not inherit between render passes', async t => {
   const pipeline1 = t.createRenderPipeline(1);
   const pipeline2 = t.createRenderPipeline(2);
 
-  const vertexBuffers = [t.getVertexBuffer(), t.getVertexBuffer()];
-  const offsets = [0, 0];
+  const vertexBuffer1 = t.getVertexBuffer();
+  const vertexBuffer2 = t.getVertexBuffer();
 
   {
     // Check success when vertex buffer is set for each render pass
@@ -139,14 +140,15 @@ g.test('vertex buffers do not inherit between render passes', async t => {
     {
       const renderPass = t.beginRenderPass(commandEncoder);
       renderPass.setPipeline(pipeline2);
-      renderPass.setVertexBuffers(0, vertexBuffers, offsets);
+      renderPass.setVertexBuffer(0, vertexBuffer1);
+      renderPass.setVertexBuffer(1, vertexBuffer2);
       renderPass.draw(3, 1, 0, 0);
       renderPass.endPass();
     }
     {
       const renderPass = t.beginRenderPass(commandEncoder);
       renderPass.setPipeline(pipeline1);
-      renderPass.setVertexBuffers(0, [vertexBuffers[0]], [offsets[0]]);
+      renderPass.setVertexBuffer(0, vertexBuffer1);
       renderPass.draw(3, 1, 0, 0);
       renderPass.endPass();
     }
@@ -158,7 +160,8 @@ g.test('vertex buffers do not inherit between render passes', async t => {
     {
       const renderPass = t.beginRenderPass(commandEncoder);
       renderPass.setPipeline(pipeline2);
-      renderPass.setVertexBuffers(0, vertexBuffers, offsets);
+      renderPass.setVertexBuffer(0, vertexBuffer1);
+      renderPass.setVertexBuffer(1, vertexBuffer2);
       renderPass.draw(3, 1, 0, 0);
       renderPass.endPass();
     }
