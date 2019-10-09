@@ -16,6 +16,7 @@
 #include "base/debug/alias.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/hash/hash.h"
+#include "base/i18n/character_encoding.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
@@ -3327,7 +3328,12 @@ void RenderFrameHostImpl::OnUpdateTitle(
 void RenderFrameHostImpl::UpdateEncoding(const std::string& encoding_name) {
   // This message is only sent for top-level frames. TODO(avi): when frame tree
   // mirroring works correctly, add a check here to enforce it.
-  delegate_->UpdateEncoding(this, encoding_name);
+  if (encoding_name == last_reported_encoding_)
+    return;
+  last_reported_encoding_ = encoding_name;
+
+  canonical_encoding_ =
+      base::GetCanonicalEncodingNameByAliasName(encoding_name);
 }
 
 void RenderFrameHostImpl::FrameSizeChanged(const gfx::Size& frame_size) {

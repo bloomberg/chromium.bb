@@ -1178,6 +1178,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // NavigationEntry this RenderFrameHostImpl committed.
   BackForwardCacheMetrics* GetBackForwardCacheMetrics();
 
+  const std::string& GetEncoding() const { return canonical_encoding_; }
+
   base::WeakPtr<RenderFrameHostImpl> GetWeakPtr();
 
  protected:
@@ -2425,6 +2427,12 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // in the navigation commit. Setting the value should be based only on
   // browser side state as this value is used in security checks.
   bool is_mhtml_document_ = false;
+
+  // The last reported character encoding, not canonicalized.
+  std::string last_reported_encoding_;
+
+  // The canonicalized character encoding.
+  std::string canonical_encoding_;
 
   // Used to intercept DidCommit* calls in tests.
   CommitCallbackInterceptor* commit_callback_interceptor_;
