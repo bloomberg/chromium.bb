@@ -54,6 +54,15 @@ namespace {
 // For use in histograms.
 enum Commands { PREVIEW, BACK, NTP, ACCESS_REQUEST, HISTOGRAM_BOUNDING_VALUE };
 
+// For use in histograms.The enum values should remain synchronized with the
+// enum ManagedUserURLRequestPermissionSource in
+// tools/metrics/histograms/enums.xml.
+enum class RequestPermissionSource {
+  MAIN_FRAME = 0,
+  SUB_FRAME,
+  HISTOGRAM_BOUNDING_VALUE
+};
+
 class TabCloser : public content::WebContentsUserData<TabCloser> {
  public:
   ~TabCloser() override {}
@@ -214,6 +223,16 @@ void SupervisedUserInterstitial::RequestPermission(
     base::OnceCallback<void(bool)> RequestCallback) {
   UMA_HISTOGRAM_ENUMERATION("ManagedMode.BlockingInterstitialCommand",
                             ACCESS_REQUEST, HISTOGRAM_BOUNDING_VALUE);
+
+  RequestPermissionSource source;
+  if (web_contents()->GetMainFrame()->GetFrameTreeNodeId() == frame_id())
+    source = RequestPermissionSource::MAIN_FRAME;
+  else
+    source = RequestPermissionSource::SUB_FRAME;
+
+  UMA_HISTOGRAM_ENUMERATION("ManagedUsers.RequestPermissionSource", source,
+                            RequestPermissionSource::HISTOGRAM_BOUNDING_VALUE);
+
   SupervisedUserService* supervised_user_service =
       SupervisedUserServiceFactory::GetForProfile(profile_);
   supervised_user_service->AddURLAccessRequest(url_,

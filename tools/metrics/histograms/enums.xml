@@ -38888,6 +38888,11 @@ from previous Chrome versions.
   </int>
 </enum>
 
+<enum name="ManagedUserURLRequestPermissionSource">
+  <int value="0" label="MAIN_FRAME">Request was made from main frame</int>
+  <int value="1" label="SUB_FRAME">Request was made from subframe</int>
+</enum>
+
 <enum name="ManagePasswordsReferrer">
   <int value="0" label="Chrome Settings"/>
   <int value="1" label="Manage Passwords Bubble"/>
