@@ -24882,6 +24882,7 @@ Called by update_net_error_codes.py.-->
   <int value="3050" label="ARIAAnnotationRoles"/>
   <int value="3051" label="IntersectionObserverV2"/>
   <int value="3052" label="HeavyAdIntervention"/>
+  <int value="3053" label="UserTimingL3"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
