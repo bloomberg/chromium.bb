@@ -3176,6 +3176,59 @@ class CMDTryTestCase(CMDTestCaseBase):
         'WARNING Could not parse bucket "not-a-bucket". Skipping.',
         git_cl.sys.stdout.getvalue())
 
+  @mock.patch('git_cl._call_buildbucket')
+  @mock.patch('git_cl.fetch_try_jobs')
+  def testScheduleOnBuildbucketRetryFailed(
+      self, mockFetchTryJobs, mockCallBuildbucket):
+
+    git_cl.fetch_try_jobs.side_effect = lambda *_, **kw: {
+        7: [],
+        6: [{
+            'id': 112112,
+            'builder': {
+                'project': 'chromium',
+                'bucket': 'try',
+                'builder': 'linux',
+            },
+            'status': 'FAILURE',
+        }],
+    }[kw['patchset']]
+    mockCallBuildbucket.return_value = {}
+
+    self.assertEqual(0, git_cl.main(['try', '--retry-failed']))
+    self.assertIn(
+        'Scheduling jobs on:\nBucket: chromium/try',
+        git_cl.sys.stdout.getvalue())
+
+    expected_request = {
+        "requests": [{
+            "scheduleBuild": {
+                "requestId": "uuid4",
+                "builder": {
+                    "project": "chromium",
+                    "bucket": "try",
+                    "builder": "linux",
+                },
+                "gerritChanges": [{
+                    "project": "depot_tools",
+                    "host": "chromium-review.googlesource.com",
+                    "patchset": 7,
+                    "change": 123456,
+                }],
+                "properties": {
+                    "category": "git_cl_try",
+                },
+                "tags": [
+                    {"value": "linux", "key": "builder"},
+                    {"value": "git_cl_try", "key": "user_agent"},
+                    {"value": "1", "key": "retry_failed"},
+                ],
+            },
+        }],
+    }
+    mockCallBuildbucket.assert_called_with(
+        mock.ANY, 'cr-buildbucket.appspot.com', 'Batch', expected_request)
+
   def test_parse_bucket(self):
     test_cases = [
         {

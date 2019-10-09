@@ -460,11 +460,43 @@ def _trigger_try_jobs(auth_config, changelist, buckets, options, patchset):
   print('To see results here, run:        git cl try-results')
   print('To see results in browser, run:  git cl web')
 
+  requests = _make_try_job_schedule_requests(
+      changelist, buckets, options, patchset)
+  if not requests:
+    return
+
+  codereview_url = changelist.GetCodereviewServer()
+  codereview_host = urlparse.urlparse(codereview_url).hostname
+
+  authenticator = auth.get_authenticator_for_host(codereview_host, auth_config)
+  http = authenticator.authorize(httplib2.Http())
+  http.force_exception_to_status_code = True
+
+  batch_request = {'requests': requests}
+  batch_response = _call_buildbucket(
+      http, options.buildbucket_host, 'Batch', batch_request)
+
+  errors = [
+      '  ' + response['error']['message']
+      for response in batch_response.get('responses', [])
+      if 'error' in response
+  ]
+  if errors:
+    raise BuildbucketResponseException(
+        'Failed to schedule builds for some bots:\n%s' % '\n'.join(errors))
+
+
+def _make_try_job_schedule_requests(changelist, buckets, options, patchset):
   gerrit_changes = [changelist.GetGerritChange(patchset)]
   shared_properties = {'category': getattr(options, 'category', 'git_cl_try')}
   if getattr(options, 'clobber', False):
     shared_properties['clobber'] = True
   shared_properties.update(_get_properties_from_options(options) or {})
+
+  shared_tags = [{'key': 'user_agent', 'value': 'git_cl_try'}]
+  if options.retry_failed:
+    shared_tags.append({'key': 'retry_failed',
+                        'value': '1'})
 
   requests = []
   for raw_bucket, builders_and_tests in sorted(buckets.iteritems()):
@@ -492,33 +524,10 @@ def _trigger_try_jobs(auth_config, changelist, buckets, options, patchset):
               'properties': properties,
               'tags': [
                   {'key': 'builder', 'value': builder},
-                  {'key': 'user_agent', 'value': 'git_cl_try'},
-              ],
+              ] + shared_tags,
           }
       })
-
-  if not requests:
-    return
-
-  codereview_url = changelist.GetCodereviewServer()
-  codereview_host = urlparse.urlparse(codereview_url).hostname
-
-  authenticator = auth.get_authenticator_for_host(codereview_host, auth_config)
-  http = authenticator.authorize(httplib2.Http())
-  http.force_exception_to_status_code = True
-
-  batch_request = {'requests': requests}
-  batch_response = _call_buildbucket(
-      http, options.buildbucket_host, 'Batch', batch_request)
-
-  errors = [
-      '  ' + response['error']['message']
-      for response in batch_response.get('responses', [])
-      if 'error' in response
-  ]
-  if errors:
-    raise BuildbucketResponseException(
-        'Failed to schedule builds for some bots:\n%s' % '\n'.join(errors))
+  return requests
 
 
 def fetch_try_jobs(auth_config, changelist, buildbucket_host,
@@ -1870,7 +1879,7 @@ class Changelist(object):
         self._GetGerritHost(), self._GerritChangeIdentifier())
 
     # Add the robot comments onto the list of comments, but only
-    # keep those that are from the latest pachset.
+    # keep those that are from the latest patchset.
     latest_patch_set = self.GetMostRecentPatchset()
     for path, robot_comments in robot_file_comments.iteritems():
       line_comments = file_comments.setdefault(path, [])
