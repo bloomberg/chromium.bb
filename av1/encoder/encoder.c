@@ -925,9 +925,9 @@ static void alloc_raw_frame_buffers(AV1_COMP *cpi) {
   AV1_COMMON *cm = &cpi->common;
   const SequenceHeader *const seq_params = &cm->seq_params;
   const AV1EncoderConfig *oxcf = &cpi->oxcf;
+  int is_scale = (oxcf->resize_mode || oxcf->superres_mode);
 
   if (!cpi->lookahead) {
-    int is_scale = (oxcf->resize_mode || oxcf->superres_mode);
     cpi->lookahead = av1_lookahead_init(
         oxcf->width, oxcf->height, seq_params->subsampling_x,
         seq_params->subsampling_y, seq_params->use_highbitdepth,
@@ -938,10 +938,12 @@ static void alloc_raw_frame_buffers(AV1_COMP *cpi) {
                        "Failed to allocate lag buffers");
 
   // TODO(agrange) Check if ARF is enabled and skip allocation if not.
+  // (yunqing)Here use same border as lookahead buffers.
   if (aom_realloc_frame_buffer(
           &cpi->alt_ref_buffer, oxcf->width, oxcf->height,
           seq_params->subsampling_x, seq_params->subsampling_y,
-          seq_params->use_highbitdepth, oxcf->border_in_pixels,
+          seq_params->use_highbitdepth,
+          is_scale ? oxcf->border_in_pixels : AOM_ENC_LOOKAHEAD_BORDER,
           cm->byte_alignment, NULL, NULL, NULL))
     aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate altref buffer");
