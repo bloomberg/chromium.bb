@@ -819,6 +819,7 @@ template int DaalaBitReader::ReadSymbol<8>(uint16_t* cdf);
 template int DaalaBitReader::ReadSymbol<10>(uint16_t* cdf);
 template int DaalaBitReader::ReadSymbol<11>(uint16_t* cdf);
 template int DaalaBitReader::ReadSymbol<13>(uint16_t* cdf);
+template int DaalaBitReader::ReadSymbol<14>(uint16_t* cdf);
 template int DaalaBitReader::ReadSymbol<16>(uint16_t* cdf);
 
 }  // namespace libgav1

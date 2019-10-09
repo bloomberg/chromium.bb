@@ -398,10 +398,13 @@ void Tile::ReadPredictionModeUV(const Block& block) {
   uint16_t* const cdf =
       symbol_decoder_context_
           .uv_mode_cdf[static_cast<int>(chroma_from_luma_allowed)][bp.y_mode];
-  const int symbol_count =
-      kIntraPredictionModesUV - static_cast<int>(!chroma_from_luma_allowed);
-  bp.uv_mode =
-      static_cast<PredictionMode>(reader_.ReadSymbol(cdf, symbol_count));
+  if (chroma_from_luma_allowed) {
+    bp.uv_mode = static_cast<PredictionMode>(
+        reader_.ReadSymbol<kIntraPredictionModesUV>(cdf));
+  } else {
+    bp.uv_mode = static_cast<PredictionMode>(
+        reader_.ReadSymbol<kIntraPredictionModesUV - 1>(cdf));
+  }
 }
 
 int Tile::ReadMotionVectorComponent(const Block& block, const int component) {
