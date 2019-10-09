@@ -12705,21 +12705,6 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
             search_state.best_pred_sse)
           continue;
 
-      if (this_mode != DC_PRED) {
-        // Only search the oblique modes if the best so far is
-        // one of the neighboring directional modes
-        if ((sf->mode_search_skip_flags & FLAG_SKIP_INTRA_BESTINTER) &&
-            (this_mode >= D45_PRED && this_mode <= PAETH_PRED)) {
-          if (search_state.best_mode_index >= 0 &&
-              search_state.best_mbmode.ref_frame[0] > INTRA_FRAME)
-            continue;
-        }
-        if (sf->mode_search_skip_flags & FLAG_SKIP_INTRA_DIRMISMATCH) {
-          if (conditional_skipintra(this_mode, search_state.best_intra_mode))
-            continue;
-        }
-      }
-
       // Intra modes will be handled in another loop later.
       assert(intra_mode_num < INTRA_MODES);
       intra_mode_idx_ls[intra_mode_num++] = midx;
@@ -12975,10 +12960,28 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   for (int j = 0; j < intra_mode_num; ++j) {
     if (sf->skip_intra_in_interframe && search_state.skip_intra_modes) break;
     const int mode_index = intra_mode_idx_ls[j];
+    const MODE_DEFINITION *mode_order = &av1_mode_order[mode_index];
+    const PREDICTION_MODE this_mode = mode_order->mode;
+
     assert(av1_mode_order[mode_index].ref_frame[0] == INTRA_FRAME);
     assert(av1_mode_order[mode_index].ref_frame[1] == NONE_FRAME);
     init_mbmi(mbmi, mode_index, cm);
     x->skip = 0;
+
+    if (this_mode != DC_PRED) {
+      // Only search the oblique modes if the best so far is
+      // one of the neighboring directional modes
+      if ((sf->mode_search_skip_flags & FLAG_SKIP_INTRA_BESTINTER) &&
+          (this_mode >= D45_PRED && this_mode <= PAETH_PRED)) {
+        if (search_state.best_mode_index >= 0 &&
+            search_state.best_mbmode.ref_frame[0] > INTRA_FRAME)
+          continue;
+      }
+      if (sf->mode_search_skip_flags & FLAG_SKIP_INTRA_DIRMISMATCH) {
+        if (conditional_skipintra(this_mode, search_state.best_intra_mode))
+          continue;
+      }
+    }
 
     RD_STATS intra_rd_stats, intra_rd_stats_y, intra_rd_stats_uv;
     intra_rd_stats.rdcost = handle_intra_mode(
@@ -13374,21 +13377,6 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
         if ((x->source_variance << num_pels_log2_lookup[bsize]) >
             search_state.best_pred_sse)
           continue;
-
-      if (this_mode != DC_PRED) {
-        // Only search the oblique modes if the best so far is
-        // one of the neighboring directional modes
-        if ((sf->mode_search_skip_flags & FLAG_SKIP_INTRA_BESTINTER) &&
-            (this_mode >= D45_PRED && this_mode <= PAETH_PRED)) {
-          if (search_state.best_mode_index >= 0 &&
-              search_state.best_mbmode.ref_frame[0] > INTRA_FRAME)
-            continue;
-        }
-        if (sf->mode_search_skip_flags & FLAG_SKIP_INTRA_DIRMISMATCH) {
-          if (conditional_skipintra(this_mode, search_state.best_intra_mode))
-            continue;
-        }
-      }
     }
 
     // Select prediction reference frames.
@@ -13564,11 +13552,27 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
 
   for (int j = 0; j < intra_mode_num; ++j) {
     const int mode_index = intra_mode_idx_ls[j];
+    const MODE_DEFINITION *mode_order = &av1_mode_order[mode_index];
+    const PREDICTION_MODE curr_mode = mode_order->mode;
     const MV_REFERENCE_FRAME ref_frame =
         av1_mode_order[mode_index].ref_frame[0];
     assert(av1_mode_order[mode_index].ref_frame[1] == NONE_FRAME);
     assert(ref_frame == INTRA_FRAME);
     if (sf->skip_intra_in_interframe && search_state.skip_intra_modes) break;
+    if (curr_mode != DC_PRED) {
+      // Only search the oblique modes if the best so far is
+      // one of the neighboring directional modes
+      if ((sf->mode_search_skip_flags & FLAG_SKIP_INTRA_BESTINTER) &&
+          (curr_mode >= D45_PRED && curr_mode <= PAETH_PRED)) {
+        if (search_state.best_mode_index >= 0 &&
+            search_state.best_mbmode.ref_frame[0] > INTRA_FRAME)
+          continue;
+      }
+      if (sf->mode_search_skip_flags & FLAG_SKIP_INTRA_DIRMISMATCH) {
+        if (conditional_skipintra(curr_mode, search_state.best_intra_mode))
+          continue;
+      }
+    }
     init_mbmi(mbmi, mode_index, cm);
     x->skip = 0;
     set_ref_ptrs(cm, xd, INTRA_FRAME, NONE_FRAME);
