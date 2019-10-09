@@ -1658,6 +1658,8 @@ TEST_F(AdsPageLoadMetricsObserverTest,
   histogram_tester().ExpectUniqueSample(
       SuffixedHistogram("HeavyAds.InterventionType2"),
       FrameData::HeavyAdStatus::kNetwork, 1);
+  histogram_tester().ExpectUniqueSample(
+      SuffixedHistogram("HeavyAds.DisallowedByBlocklist"), false, 1);
 }
 
 TEST_F(AdsPageLoadMetricsObserverTest,
@@ -1792,6 +1794,8 @@ TEST_F(AdsPageLoadMetricsObserverTest, HeavyAdFeatureDisabled_NotFired) {
 
   histogram_tester().ExpectTotalCount(
       SuffixedHistogram("HeavyAds.InterventionType2"), 0);
+  histogram_tester().ExpectTotalCount(
+      SuffixedHistogram("HeavyAds.DisallowedByBlocklist"), 0);
 }
 
 TEST_F(AdsPageLoadMetricsObserverTest,
@@ -1863,6 +1867,10 @@ TEST_F(AdsPageLoadMetricsObserverTest,
 
   histogram_tester().ExpectTotalCount(
       SuffixedHistogram("HeavyAds.InterventionType2"), 1);
+
+  // This histogram should not be recorded when the blocklist is disabled.
+  histogram_tester().ExpectTotalCount(
+      SuffixedHistogram("HeavyAds.DisallowedByBlocklist"), 0);
 }
 
 TEST_F(AdsPageLoadMetricsObserverTest, HeavyAdBlocklist_InterventionReported) {
@@ -1888,6 +1896,8 @@ TEST_F(AdsPageLoadMetricsObserverTest, HeavyAdBlocklist_InterventionReported) {
   histogram_tester().ExpectUniqueSample(
       SuffixedHistogram("HeavyAds.InterventionType2"),
       FrameData::HeavyAdStatus::kNetwork, 1);
+  histogram_tester().ExpectUniqueSample(
+      SuffixedHistogram("HeavyAds.DisallowedByBlocklist"), false, 1);
 
   // Verify the blocklist blocks the next intervention.
   ad_frame = CreateAndNavigateSubFrame(kAdUrl, main_frame);
@@ -1900,4 +1910,6 @@ TEST_F(AdsPageLoadMetricsObserverTest, HeavyAdBlocklist_InterventionReported) {
   histogram_tester().ExpectUniqueSample(
       SuffixedHistogram("HeavyAds.InterventionType2"),
       FrameData::HeavyAdStatus::kNetwork, 1);
+  histogram_tester().ExpectBucketCount(
+      SuffixedHistogram("HeavyAds.DisallowedByBlocklist"), true, 1);
 }

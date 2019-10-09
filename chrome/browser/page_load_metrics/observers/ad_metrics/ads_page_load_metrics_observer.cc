@@ -66,6 +66,8 @@ content::RenderFrameHost* FindFrameMaybeUnsafe(
 }
 
 using ResourceMimeType = AdsPageLoadMetricsObserver::ResourceMimeType;
+const char kDisallowedByBlocklistHistogramName[] =
+    "PageLoad.Clients.Ads.HeavyAds.DisallowedByBlocklist";
 
 }  // namespace
 
@@ -964,15 +966,19 @@ bool AdsPageLoadMetricsObserver::IsBlocklisted() {
   if (!heavy_ad_blocklist_enabled_)
     return false;
 
-  if (heavy_ads_blocklist_blocklisted_)
-    return true;
-
   auto* blocklist = GetHeavyAdBlocklist();
 
   // Treat instances where the blocklist is unavailable as blocklisted. This
   // includes incognito profiles, which do not create a blocklist service.
   if (!blocklist) {
     heavy_ads_blocklist_blocklisted_ = true;
+    return true;
+  }
+
+  if (heavy_ads_blocklist_blocklisted_) {
+    // Only record that we have disallowed an intervention when we have a
+    // blocklist.
+    RecordHeavyAdInterventionDisallowedByBlocklist(true /* disallowed */);
     return true;
   }
 
@@ -984,7 +990,9 @@ bool AdsPageLoadMetricsObserver::IsBlocklisted() {
   heavy_ads_blocklist_blocklisted_ =
       (blocklist_reason != blacklist::BlacklistReason::kAllowed);
 
-  // TODO(https://crbug.com/959849): Add UMA for blocklist reasons.
+  // Record whether this intervention hit the blocklist.
+  RecordHeavyAdInterventionDisallowedByBlocklist(
+      heavy_ads_blocklist_blocklisted_);
 
   return heavy_ads_blocklist_blocklisted_;
 }
@@ -998,4 +1006,9 @@ HeavyAdBlocklist* AdsPageLoadMetricsObserver::GetHeavyAdBlocklist() {
     return nullptr;
 
   return heavy_ad_service->heavy_ad_blocklist();
+}
+
+void AdsPageLoadMetricsObserver::RecordHeavyAdInterventionDisallowedByBlocklist(
+    bool disallowed) {
+  UMA_HISTOGRAM_BOOLEAN(kDisallowedByBlocklistHistogramName, disallowed);
 }

@@ -176,6 +176,7 @@ class AdsPageLoadMetricsObserver
 
   bool IsBlocklisted();
   HeavyAdBlocklist* GetHeavyAdBlocklist();
+  void RecordHeavyAdInterventionDisallowedByBlocklist(bool disallowed);
 
   // Stores the size data of each ad frame. Pointed to by ad_frames_ so use a
   // data structure that won't move the data around. This only stores ad frames
