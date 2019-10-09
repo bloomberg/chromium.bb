@@ -45,6 +45,7 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/switches.h"
 
 // TODO(crbug.com/826982): life cycle events. Extensions can be installed and
@@ -184,6 +185,13 @@ void ExtensionApps::Initialize(
 }
 
 bool ExtensionApps::Accepts(const extensions::Extension* extension) {
+  // Hangouts is a special extension, which shows an window, so it should be
+  // added to the AppService to show the icon on the shelf, when launching the
+  // hangouts.
+  if (extension->id() == extension_misc::kProdHangoutsExtensionId) {
+    return app_type_ == apps::mojom::AppType::kExtension;
+  }
+
   if (!extension->is_app() || IsBlacklisted(extension->id())) {
     return false;
   }
