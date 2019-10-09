@@ -219,16 +219,6 @@ void TestRenderFrameHost::SimulateNavigationCommit(const GURL& url) {
   SendNavigateWithParams(&params, was_within_same_document);
 }
 
-void TestRenderFrameHost::SimulateNavigationStop() {
-  if (is_loading()) {
-    OnDidStopLoading();
-  } else {
-    // Even if the RenderFrameHost is not loading, there may still be an
-    // ongoing navigation in the FrameTreeNode. Cancel this one as well.
-    frame_tree_node()->ResetNavigationRequest(false, true);
-  }
-}
-
 void TestRenderFrameHost::SendBeforeUnloadACK(bool proceed) {
   base::TimeTicks now = base::TimeTicks::Now();
   OnBeforeUnloadACK(proceed, now, now);
