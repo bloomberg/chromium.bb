@@ -1546,8 +1546,6 @@ bool ChromePasswordProtectionService::CanSendSamplePing() {
           base::RandDouble() <= kProbabilityForSendingReportsFromSafeURLs);
 }
 
-// TODO(crbug.com/995926): Enable caching on Android
-#if BUILDFLAG(FULL_SAFE_BROWSING)
 // Stores |verdict| in |settings| based on its |trigger_type|, |url|,
 // reused |password_type|, |verdict| and |receive_time|.
 void ChromePasswordProtectionService::CacheVerdict(
@@ -1582,6 +1580,7 @@ int ChromePasswordProtectionService::GetStoredVerdictCount(
   return cache_manager_->GetStoredPhishGuardVerdictCount(trigger_type);
 }
 
+#if BUILDFLAG(FULL_SAFE_BROWSING)
 bool ChromePasswordProtectionService::IsUnderAdvancedProtection() {
   return AdvancedProtectionStatusManagerFactory::GetForProfile(profile_)
       ->is_under_advanced_protection();
