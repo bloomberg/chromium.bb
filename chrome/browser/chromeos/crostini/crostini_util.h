@@ -46,11 +46,11 @@ struct ContainerId {
 
 bool operator<(const ContainerId& lhs, const ContainerId& rhs) noexcept;
 
+std::ostream& operator<<(std::ostream& ostream,
+                         const ContainerId& container_id);
+
 using LaunchCrostiniAppCallback =
     base::OnceCallback<void(bool success, const std::string& failure_reason)>;
-
-// Return" (<vm_name>, <container_name>)".
-std::string ContainerIdToString(const ContainerId& container_id);
 
 // Checks if user profile is able to a crostini app with a given app_id.
 bool IsUninstallable(Profile* profile, const std::string& app_id);

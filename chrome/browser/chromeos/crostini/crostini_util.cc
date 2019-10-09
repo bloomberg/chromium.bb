@@ -12,7 +12,6 @@
 #include "base/files/file_path.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/strcat.h"
-#include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/crostini/crostini_features.h"
@@ -307,9 +306,10 @@ bool operator<(const ContainerId& lhs, const ContainerId& rhs) noexcept {
   return result < 0 || (result == 0 && lhs.container_name < rhs.container_name);
 }
 
-std::string ContainerIdToString(const ContainerId& container_id) {
-  return base::StrCat(
-      {"(", container_id.vm_name, ", ", container_id.container_name, ")"});
+std::ostream& operator<<(std::ostream& ostream,
+                         const ContainerId& container_id) {
+  return ostream << "(vm: \"" << container_id.vm_name << "\" container: \""
+                 << container_id.container_name << "\")";
 }
 
 bool IsUninstallable(Profile* profile, const std::string& app_id) {

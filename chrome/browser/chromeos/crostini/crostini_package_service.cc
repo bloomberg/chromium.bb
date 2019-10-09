@@ -391,13 +391,11 @@ void CrostiniPackageService::UpdatePackageOperationStatus(
   // Update the notification window, if any.
   auto it = running_notifications_.find(container_id);
   if (it == running_notifications_.end()) {
-    LOG(ERROR) << ContainerIdToString(container_id)
-               << " has no notification to update";
+    LOG(ERROR) << container_id << " has no notification to update";
     return;
   }
   if (it->second == nullptr) {
-    LOG(ERROR) << ContainerIdToString(container_id)
-               << " has null notification pointer";
+    LOG(ERROR) << container_id << " has null notification pointer";
     running_notifications_.erase(it);
     return;
   }
