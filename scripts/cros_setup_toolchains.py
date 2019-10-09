@@ -1158,7 +1158,6 @@ def _ProcessSysrootWrappers(_target, output_dir, srcpath):
   """Remove chroot-specific things from our sysroot wrappers"""
   # Disable ccache since we know it won't work outside of chroot.
 
-  # Update the new go wrapper.
   # Use the version of the wrapper that does not use ccache.
   for sysroot_wrapper in glob.glob(os.path.join(
       output_dir + srcpath, 'sysroot_wrapper*.ccache')):
@@ -1166,35 +1165,7 @@ def _ProcessSysrootWrappers(_target, output_dir, srcpath):
     # but only the extracted toolchain.
     os.unlink(sysroot_wrapper)
     shutil.copy(sysroot_wrapper[:-6] + 'noccache', sysroot_wrapper)
-
-  # Update the old python wrapper
-  # TODO(crbug/773875): Remove this logic once the go wrapper
-  # is rolled out.
-  old_wrapper_paths = [os.path.join(output_dir + srcpath,
-                                    'sysroot_wrapper'),
-                       os.path.join(output_dir + srcpath,
-                                    'sysroot_wrapper.hardened')]
-  for sysroot_wrapper in old_wrapper_paths:
-    if not os.path.exists(sysroot_wrapper):
-      continue
-    contents = osutils.ReadFile(sysroot_wrapper).splitlines()
-
-    # In order to optimize startup time in the chroot we run python a little
-    # differently there.  Put it back to the more portable way here.
-    # See https://crbug.com/773138 for some details.
-    if contents[0] == '#!/usr/bin/python2 -S':
-      contents[0] = '#!/usr/bin/env python2'
-
-    for num, line in enumerate(contents):
-      if '@CCACHE_DEFAULT@' in line:
-        assert 'True' in line
-        contents[num] = line.replace('True', 'False')
-        break
-    # Can't update the wrapper in place to not affect the chroot,
-    # but only the extracted toolchain.
-    os.unlink(sysroot_wrapper)
-    osutils.WriteFile(sysroot_wrapper, '\n'.join(contents))
-    os.chmod(sysroot_wrapper, 0o755)
+    shutil.copy(sysroot_wrapper[:-6] + 'noccache.elf', sysroot_wrapper + '.elf')
 
 
 def _CreateMainLibDir(target, output_dir):
