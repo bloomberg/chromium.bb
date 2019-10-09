@@ -487,9 +487,6 @@ extern const base::Feature kUserActivityEventLogging;
 
 #endif
 
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kUseSameCacheForMedia;
-
 #if defined(OS_CHROMEOS)
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kArcCupsApi;
 
