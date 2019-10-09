@@ -12,6 +12,7 @@ client out of lib/luci/prpc and third_party/infra_libs/buildbucket.
 
 from __future__ import print_function
 
+from httplib import ResponseNotReady  # pylint: disable=deprecated-module
 from ssl import SSLError
 import ast
 import socket
@@ -209,8 +210,10 @@ class BuildbucketV2(object):
     else:
       self.client = Client(BBV2_URL_ENDPOINT_PROD, BuildsServiceDescription)
 
-  @retry_util.WithRetry(max_retry=3, sleep=0.2, exception=SSLError)
-  @retry_util.WithRetry(max_retry=3, sleep=0.2, exception=socket.error)
+  # TODO(crbug/1006818): Need to handle ResponseNotReady given by luci prpc.
+  @retry_util.WithRetry(max_retry=5, sleep=20.0, exception=SSLError)
+  @retry_util.WithRetry(max_retry=5, sleep=20.0, exception=socket.error)
+  @retry_util.WithRetry(max_retry=5, sleep=20.0, exception=ResponseNotReady)
   def GetBuild(self, buildbucket_id, properties=None):
     """GetBuild call of a specific build with buildbucket_id.
 
