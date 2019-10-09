@@ -14,6 +14,7 @@ You can add a .testignore file to a dir to disable scanning it.
 from __future__ import print_function
 
 import errno
+import glob
 import json
 import multiprocessing
 import os
@@ -594,6 +595,22 @@ def FindTests(search_paths=('.',)):
           yield test
 
 
+def ClearPythonCacheFiles():
+  """Clear cache files in the chromite repo.
+
+  When switching branches, modules can be deleted or renamed, but the old pyc
+  files stick around and confuse Python.  This is a bit of a hack, but should
+  be good enough for now.
+  """
+  result = cros_build_lib.dbg_run(
+      ['git', 'ls-tree', '-r', '-z', '--name-only', 'HEAD'], encoding='utf-8',
+      capture_output=True)
+  for subdir in set(os.path.dirname(x) for x in result.stdout.split('\0')):
+    for path in glob.glob(os.path.join(subdir, '*.pyc')):
+      osutils.SafeUnlink(path)
+    osutils.RmDir(os.path.join(subdir, '__pycache__'), ignore_missing=True)
+
+
 def ChrootAvailable():
   """See if `cros_sdk` will work at all.
 
@@ -678,6 +695,10 @@ def main(argv):
   # Make them happy.
   os.chdir(constants.CHROMITE_DIR)
   tests = opts.tests or FindTests()
+
+  # Clear python caches now that we're root, in the right dir, but before we
+  # run any tests.
+  ClearPythonCacheFiles()
 
   if opts.quick:
     SPECIAL_TESTS.update(SLOW_TESTS)
