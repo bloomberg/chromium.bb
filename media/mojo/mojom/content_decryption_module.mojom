@@ -146,5 +146,5 @@ interface CdmFactory {
   // It should be a reverse domain name, e.g. "com.example.somesystem". However,
   // this call may be initiated by an untrusted process (e.g. renderer), so the
   // implementation must fully validate |key_system| before creating the CDM.
-  CreateCdm(string key_system, ContentDecryptionModule& cdm);
+  CreateCdm(string key_system, pending_receiver<ContentDecryptionModule> cdm);
 };
