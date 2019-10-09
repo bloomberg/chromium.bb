@@ -525,16 +525,19 @@ def fetch_try_jobs(auth_config, changelist, buildbucket_host,
                    patchset=None):
   """Fetches tryjobs from buildbucket.
 
-  Returns a map from build ID to build info as a dictionary.
+  Returns list of buildbucket.v2.Build with the try jobs for the changelist.
   """
-  assert buildbucket_host
-  assert changelist.GetIssue(), 'CL must be uploaded first'
-  assert changelist.GetCodereviewServer(), 'CL must be uploaded first'
-  patchset = patchset or changelist.GetMostRecentPatchset()
-  assert patchset, 'CL must be uploaded first'
+  fields = ['id', 'builder', 'status']
+  request = {
+      'predicate': {
+          'gerritChanges': [changelist.GetGerritChange(patchset)],
+      },
+      'fields': ','.join('builds.*.' + field for field in fields),
+  }
 
   codereview_url = changelist.GetCodereviewServer()
   codereview_host = urlparse.urlparse(codereview_url).hostname
+
   authenticator = auth.get_authenticator_for_host(codereview_host, auth_config)
   if authenticator.has_cached_credentials():
     http = authenticator.authorize(httplib2.Http())
@@ -543,29 +546,10 @@ def fetch_try_jobs(auth_config, changelist, buildbucket_host,
           # Get the message on how to login.
           (auth.LoginRequiredError().message,))
     http = httplib2.Http()
-
   http.force_exception_to_status_code = True
 
-  buildset = 'patch/gerrit/{hostname}/{issue}/{patch}'.format(
-      hostname=codereview_host,
-      issue=changelist.GetIssue(),
-      patch=patchset)
-  params = {'tag': 'buildset:%s' % buildset}
-
-  builds = {}
-  while True:
-    url = 'https://{hostname}/_ah/api/buildbucket/v1/search?{params}'.format(
-        hostname=buildbucket_host,
-        params=urllib.urlencode(params))
-    content = _buildbucket_retry('fetching tryjobs', http, url, 'GET')
-    for build in content.get('builds', []):
-      builds[build['id']] = build
-    if 'next_cursor' in content:
-      params['start_cursor'] = content['next_cursor']
-    else:
-      break
-  return builds
-
+  response = _call_buildbucket(http, buildbucket_host, 'SearchBuilds', request)
+  return response.get('builds', [])
 
 def _fetch_latest_builds(
     auth_config, changelist, buildbucket_host, latest_patchset=None):
@@ -579,9 +563,8 @@ def _fetch_latest_builds(
     lastest_patchset(int|NoneType): the patchset to start fetching builds from.
       If None (default), starts with the latest available patchset.
   Returns:
-    A tuple (builds, patchset) where builds is a dict mapping from build ID to
-    build info from Buildbucket, and patchset is the patchset number where
-    those builds came from.
+    A tuple (builds, patchset) where builds is a list of buildbucket.v2.Build,
+    and patchset is the patchset number where those builds came from.
   """
   assert buildbucket_host
   assert changelist.GetIssue(), 'CL must be uploaded first'
@@ -607,23 +590,20 @@ def _filter_failed(builds):
   """Returns a list of buckets/builders that had failed builds.
 
   Args:
-    builds (dict): Builds, in the format returned by fetch_try_jobs,
-      i.e. a dict mapping build ID to build info dict, which includes
-      the keys status, result, bucket, and builder_name.
+    builds (list): Builds, in the format returned by fetch_try_jobs,
+      i.e. a list of buildbucket.v2.Builds which includes status and builder
+      info.
 
   Returns:
     A dict of bucket to builder to tests (empty list). This is the same format
     accepted by _trigger_try_jobs and returned by _get_bucket_map.
   """
   buckets = collections.defaultdict(dict)
-  for build in builds.values():
-    if build['status'] == 'COMPLETED' and build['result'] == 'FAILURE':
-      project = build['project']
-      bucket = build['bucket']
-      if bucket.startswith('luci.'):
-        # Assume legacy bucket name luci.<project>.<bucket>.
-        bucket = bucket.split('.')[2]
-      builder = _get_builder_from_build(build)
+  for build in builds:
+    if build['status'] in ('FAILURE', 'INFRA_FAILURE'):
+      project = build['builder']['project']
+      bucket = build['builder']['bucket']
+      builder = build['builder']['builder']
       buckets[project + '/' + bucket][builder] = []
   return buckets
 
@@ -634,97 +614,53 @@ def print_try_jobs(options, builds):
     print('No tryjobs scheduled.')
     return
 
-  # Make a copy, because we'll be modifying builds dictionary.
-  builds = builds.copy()
-  builder_names_cache = {}
-
-  def get_builder(b):
-    try:
-      return builder_names_cache[b['id']]
-    except KeyError:
-      name = _get_builder_from_build(b)
-      builder_names_cache[b['id']] = name
-      return name
-
+  longest_builder = max(len(b['builder']['builder']) for b in builds)
+  name_fmt = '{builder:<%d}' % longest_builder
   if options.print_master:
-    name_fmt = '%%-%ds %%-%ds' % (
-        max(len(str(b['bucket'])) for b in builds.itervalues()),
-        max(len(str(get_builder(b))) for b in builds.itervalues()))
-    def get_name(b):
-      return name_fmt % (b['bucket'], get_builder(b))
-  else:
-    name_fmt = '%%-%ds' % (
-        max(len(str(get_builder(b))) for b in builds.itervalues()))
-    def get_name(b):
-      return name_fmt % get_builder(b)
+    longest_bucket = max(len(b['builder']['bucket']) for b in builds)
+    name_fmt = ('{bucket:>%d} ' % longest_bucket) + name_fmt
 
-  def sort_key(b):
-    return b['status'], b.get('result'), get_name(b), b.get('url')
+  builds_by_status = {}
+  for b in builds:
+    builds_by_status.setdefault(b['status'], []).append({
+        'id': b['id'],
+        'name': name_fmt.format(
+            builder=b['builder']['builder'], bucket=b['builder']['bucket']),
+    })
 
-  def pop(title, f, color=None, **kwargs):
+  sort_key = lambda b: (b['name'], b['id'])
+
+  def print_builds(title, builds, fmt=None, color=None):
     """Pop matching builds from `builds` dict and print them."""
+    if not builds:
+      return
 
+    fmt = fmt or '{name} https://ci.chromium.org/b/{id}'
     if not options.color or color is None:
-      colorize = str
+      colorize = lambda x: x
     else:
       colorize = lambda x: '%s%s%s' % (color, x, Fore.RESET)
 
-    result = []
-    for b in builds.values():
-      if all(b.get(k) == v for k, v in kwargs.iteritems()):
-        builds.pop(b['id'])
-        result.append(b)
-    if result:
-      print(colorize(title))
-      for b in sorted(result, key=sort_key):
-        print(' ', colorize('\t'.join(map(str, f(b)))))
+    print(colorize(title))
+    for b in sorted(builds, key=sort_key):
+      print(' ', colorize(fmt.format(**b)))
 
   total = len(builds)
-  pop(status='COMPLETED', result='SUCCESS',
-      title='Successes:', color=Fore.GREEN,
-      f=lambda b: (get_name(b), b.get('url')))
-  pop(status='COMPLETED', result='FAILURE', failure_reason='INFRA_FAILURE',
-      title='Infra Failures:', color=Fore.MAGENTA,
-      f=lambda b: (get_name(b), b.get('url')))
-  pop(status='COMPLETED', result='FAILURE', failure_reason='BUILD_FAILURE',
-      title='Failures:', color=Fore.RED,
-      f=lambda b: (get_name(b), b.get('url')))
-  pop(status='COMPLETED', result='CANCELED',
-      title='Canceled:', color=Fore.MAGENTA,
-      f=lambda b: (get_name(b),))
-  pop(status='COMPLETED', result='FAILURE',
-      failure_reason='INVALID_BUILD_DEFINITION',
-      title='Wrong master/builder name:', color=Fore.MAGENTA,
-      f=lambda b: (get_name(b),))
-  pop(status='COMPLETED', result='FAILURE',
-      title='Other failures:',
-      f=lambda b: (get_name(b), b.get('failure_reason'), b.get('url')))
-  pop(status='COMPLETED',
-      title='Other finished:',
-      f=lambda b: (get_name(b), b.get('result'), b.get('url')))
-  pop(status='STARTED',
-      title='Started:', color=Fore.YELLOW,
-      f=lambda b: (get_name(b), b.get('url')))
-  pop(status='SCHEDULED',
-      title='Scheduled:',
-      f=lambda b: (get_name(b), 'id=%s' % b['id']))
+  print_builds(
+      'Successes:', builds_by_status.pop('SUCCESS', []), color=Fore.GREEN)
+  print_builds(
+      'Infra Failures:', builds_by_status.pop('INFRA_FAILURE', []),
+      color=Fore.MAGENTA)
+  print_builds('Failures:', builds_by_status.pop('FAILURE', []), color=Fore.RED)
+  print_builds('Canceled:', builds_by_status.pop('CANCELED', []), fmt='{name}',
+      color=Fore.MAGENTA)
+  print_builds('Started:', builds_by_status.pop('STARTED', []))
+  print_builds(
+      'Scheduled:', builds_by_status.pop('SCHEDULED', []), fmt='{name} id={id}')
   # The last section is just in case buildbucket API changes OR there is a bug.
-  pop(title='Other:',
-      f=lambda b: (get_name(b), 'id=%s' % b['id']))
-  assert len(builds) == 0
+  print_builds(
+      'Other:', sum(builds_by_status.values(), []), fmt='{name} id={id}')
   print('Total: %d tryjobs' % total)
-
-
-def _get_builder_from_build(build):
-  """Returns a builder name from a BB v1 build info dict."""
-  try:
-    parameters = json.loads(build['parameters_json'])
-    name = parameters['builder_name']
-  except (ValueError, KeyError) as error:
-    print('WARNING: Failed to get builder name for build %s: %s' % (
-          build['id'], error))
-    name = None
-  return name
 
 
 def _ComputeDiffLineRanges(files, upstream_commit):
@@ -807,35 +743,6 @@ def _FindYapfConfigFile(fpath, yapf_config_cache, top_dir=None):
       ret = _FindYapfConfigFile(parent_dir, yapf_config_cache, top_dir)
   yapf_config_cache[fpath] = ret
   return ret
-
-
-def write_try_results_json(output_file, builds):
-  """Writes a subset of the data from fetch_try_jobs to a file as JSON.
-
-  The input |builds| dict is assumed to be generated by Buildbucket.
-  Buildbucket documentation: http://goo.gl/G0s101
-  """
-
-  def convert_build_dict(build):
-    """Extracts some of the information from one build dict."""
-    parameters = json.loads(build.get('parameters_json', '{}')) or {}
-    return {
-        'buildbucket_id': build.get('id'),
-        'bucket': build.get('bucket'),
-        'builder_name': parameters.get('builder_name'),
-        'created_ts': build.get('created_ts'),
-        'experimental': build.get('experimental'),
-        'failure_reason': build.get('failure_reason'),
-        'result': build.get('result'),
-        'status': build.get('status'),
-        'tags': build.get('tags'),
-        'url': build.get('url'),
-    }
-
-  converted = []
-  for _, build in sorted(builds.items()):
-    converted.append(convert_build_dict(build))
-  write_json(output_file, converted)
 
 
 def print_stats(args):
@@ -4873,7 +4780,7 @@ def CMDtry_results(parser, args):
     print('Buildbucket error: %s' % ex)
     return 1
   if options.json:
-    write_try_results_json(options.json, jobs)
+    write_json(options.json, jobs)
   else:
     print_try_jobs(options, jobs)
   return 0

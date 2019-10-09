@@ -2426,167 +2426,6 @@ class TestGitCl(TestCase):
     self.assertRegexpMatches(out.getvalue(), 'Issue.*123 has been submitted')
     self.assertRegexpMatches(out.getvalue(), 'Landed as: .*deadbeef')
 
-  BUILDBUCKET_BUILDS_MAP = {
-    '9000': {
-      'id': '9000',
-      'bucket': 'master.x.y',
-      'created_by': 'user:someone@chromium.org',
-      'created_ts': '147200002222000',
-      'experimental': False,
-      'parameters_json': json.dumps({
-        'builder_name': 'my-bot',
-        'properties': {'category': 'cq'},
-      }),
-      'status': 'STARTED',
-      'tags': [
-        'build_address:x.y/my-bot/2',
-        'builder:my-bot',
-        'experimental:false',
-        'user_agent:cq',
-      ],
-      'url': 'http://build.cr.org/p/x.y/builders/my-bot/builds/2',
-    },
-    '8000': {
-      'id': '8000',
-      'bucket': 'master.x.y',
-      'created_by': 'user:someone@chromium.org',
-      'created_ts': '147200001111000',
-      'experimental': False,
-      'failure_reason': 'BUILD_FAILURE',
-      'parameters_json': json.dumps({
-        'builder_name': 'my-bot',
-        'properties': {'category': 'cq'},
-      }),
-      'result_details_json': json.dumps({
-        'properties': {'buildnumber': 1},
-      }),
-      'result': 'FAILURE',
-      'status': 'COMPLETED',
-      'tags': [
-        'build_address:x.y/my-bot/1',
-        'builder:my-bot',
-        'experimental:false',
-        'user_agent:cq',
-      ],
-      'url': 'http://build.cr.org/p/x.y/builders/my-bot/builds/1',
-    },
-  }
-
-  def test_write_try_results_json(self):
-    expected_output = [
-      {
-        'bucket': 'master.x.y',
-        'buildbucket_id': '8000',
-        'builder_name': 'my-bot',
-        'created_ts': '147200001111000',
-        'experimental': False,
-        'failure_reason': 'BUILD_FAILURE',
-        'result': 'FAILURE',
-        'status': 'COMPLETED',
-        'tags': [
-          'build_address:x.y/my-bot/1',
-          'builder:my-bot',
-          'experimental:false',
-          'user_agent:cq',
-        ],
-        'url': 'http://build.cr.org/p/x.y/builders/my-bot/builds/1',
-      },
-      {
-        'bucket': 'master.x.y',
-        'buildbucket_id': '9000',
-        'builder_name': 'my-bot',
-        'created_ts': '147200002222000',
-        'experimental': False,
-        'failure_reason': None,
-        'result': None,
-        'status': 'STARTED',
-        'tags': [
-          'build_address:x.y/my-bot/2',
-          'builder:my-bot',
-          'experimental:false',
-          'user_agent:cq',
-        ],
-        'url': 'http://build.cr.org/p/x.y/builders/my-bot/builds/2',
-      },
-    ]
-    self.calls = [(('write_json', 'output.json', expected_output), '')]
-    git_cl.write_try_results_json('output.json', self.BUILDBUCKET_BUILDS_MAP)
-
-  def _setup_fetch_try_jobs(self, most_recent_patchset=20001):
-    out = StringIO.StringIO()
-    self.mock(sys, 'stdout', out)
-    self.mock(git_cl.Changelist, 'GetMostRecentPatchset',
-              lambda *args: most_recent_patchset)
-    self.mock(git_cl.auth, 'get_authenticator_for_host', lambda host, _cfg:
-              self._mocked_call(['get_authenticator_for_host', host]))
-    self.mock(git_cl, '_buildbucket_retry', lambda *_, **__:
-              self._mocked_call(['_buildbucket_retry']))
-
-  def _setup_fetch_try_jobs_gerrit(self, *request_results):
-    self._setup_fetch_try_jobs(most_recent_patchset=13)
-    self.calls += [
-      ((['git', 'symbolic-ref', 'HEAD'],), 'feature'),
-      ((['git', 'config', 'branch.feature.gerritissue'],), '1'),
-      # TODO(tandrii): Uncomment the below if we decide to support checking
-      # patchsets for Gerrit.
-      # Simulate that Gerrit has more patchsets than local.
-      # ((['git', 'config', 'branch.feature.gerritpatchset'],), '12'),
-      ((['git', 'config', 'branch.feature.gerritserver'],),
-       'https://x-review.googlesource.com'),
-      ((['get_authenticator_for_host', 'x-review.googlesource.com'],),
-       AuthenticatorMock()),
-    ] + [((['_buildbucket_retry'],), r) for r in request_results]
-
-  def test_fetch_try_jobs_none_gerrit(self):
-    self._setup_fetch_try_jobs_gerrit({})
-    self.assertEqual(0, git_cl.main(['try-results']))
-    # TODO(tandrii): Uncomment the below if we decide to support checking
-    # patchsets for Gerrit.
-    # self.assertRegexpMatches(
-    #     sys.stdout.getvalue(),
-    #     r'Warning: Codereview server has newer patchsets \(13\)')
-    self.assertRegexpMatches(sys.stdout.getvalue(), 'No tryjobs')
-
-  def test_fetch_try_jobs_some_gerrit(self):
-    self._setup_fetch_try_jobs_gerrit({
-      'builds': self.BUILDBUCKET_BUILDS_MAP.values(),
-    })
-    # TODO(tandrii): Uncomment the below if we decide to support checking
-    # patchsets for Gerrit.
-    # self.calls.remove(
-    #     ((['git', 'config', 'branch.feature.gerritpatchset'],), '12'))
-    self.assertEqual(0, git_cl.main(['try-results', '--patchset', '5']))
-
-    # ... and doesn't result in warning.
-    self.assertNotRegexpMatches(sys.stdout.getvalue(), 'Warning')
-    self.assertRegexpMatches(sys.stdout.getvalue(), '^Failures:')
-    self.assertRegexpMatches(sys.stdout.getvalue(), 'Started:')
-    self.assertRegexpMatches(sys.stdout.getvalue(), '2 tryjobs')
-
-  def test_filter_failed_none(self):
-    self.assertEqual(git_cl._filter_failed({}), {})
-
-  def test_filter_failed_some(self):
-    builds = {
-      '9000': {
-        'id': '9000',
-        'bucket': 'luci.chromium.try',
-        'project': 'chromium',
-        'created_by': 'user:someone@chromium.org',
-        'created_ts': '147200002222000',
-        'experimental': False,
-        'parameters_json': json.dumps({
-          'builder_name': 'my-bot',
-          'properties': {'category': 'cq'},
-        }),
-        'status': 'COMPLETED',
-        'result': 'FAILURE',
-      }
-    }
-    self.assertEqual(
-      git_cl._filter_failed(builds),
-      {'chromium/try': {'my-bot': []}})
-
   def _mock_gerrit_changes_for_detail_cache(self):
     self.mock(git_cl.Changelist, '_GetGerritHost', lambda _: 'host')
 
@@ -3137,43 +2976,150 @@ class TestGitCl(TestCase):
     self.assertEqual(cl._GerritChangeIdentifier(), '123456')
 
 
-class CMDTryTestCase(unittest.TestCase):
+class CMDTestCaseBase(unittest.TestCase):
+  _STATUSES = [
+      'STATUS_UNSPECIFIED', 'SCHEDULED', 'STARTED', 'SUCCESS', 'FAILURE',
+      'INFRA_FAILURE', 'CANCELED',
+  ]
+  _CHANGE_DETAIL = {
+      'project': 'depot_tools',
+      'status': 'OPEN',
+      'owner': {'email': 'owner@e.mail'},
+      'current_revision': 'beeeeeef',
+      'revisions': {
+          'deadbeaf': {'_number': 6},
+          'beeeeeef': {
+              '_number': 7,
+              'fetch': {'http': {
+                  'url': 'https://chromium.googlesource.com/depot_tools',
+                  'ref': 'refs/changes/56/123456/7'
+              }},
+          },
+      },
+  }
+  _DEFAULT_RESPONSE = {
+      'builds': [
+          {
+              'id': str(100 + idx),
+              'builder': {
+                  'project': 'chromium',
+                  'bucket': 'try',
+                  'builder': 'bot_' + status.lower(),
+              },
+              'status': status,
+          }
+          for idx, status in enumerate(_STATUSES)
+      ]
+  }
+
   def setUp(self):
-    super(CMDTryTestCase, self).setUp()
+    super(CMDTestCaseBase, self).setUp()
     mock.patch('git_cl.sys.stdout', StringIO.StringIO()).start()
-    mock.patch('git_cl.uuid.uuid4', _constantFn('uuid4')).start()
-    mock.patch('git_cl.Changelist.GetIssue', _constantFn(123456)).start()
+    mock.patch('git_cl.uuid.uuid4', return_value='uuid4').start()
+    mock.patch('git_cl.Changelist.GetIssue', return_value=123456).start()
     mock.patch('git_cl.Changelist.GetCodereviewServer',
-               _constantFn('https://chromium-review.googlesource.com')).start()
-    mock.patch('git_cl.Changelist.SetPatchset').start()
-    mock.patch('git_cl.Changelist.GetPatchset', _constantFn(7)).start()
+               return_value='https://chromium-review.googlesource.com').start()
+    mock.patch('git_cl.Changelist.GetMostRecentPatchset',
+               return_value=7).start()
     mock.patch('git_cl.auth.get_authenticator_for_host', AuthenticatorMock())
+    mock.patch('git_cl.Changelist._GetChangeDetail',
+               return_value=self._CHANGE_DETAIL).start()
+    mock.patch('git_cl._call_buildbucket',
+               return_value = self._DEFAULT_RESPONSE).start()
+    mock.patch('git_common.is_dirty_git_tree', return_value=False).start()
     self.addCleanup(mock.patch.stopall)
 
-  @mock.patch('git_cl.Changelist._GetChangeDetail')
-  @mock.patch('git_cl.Changelist.SetCQState')
-  @mock.patch('git_cl._get_bucket_map', _constantFn({}))
-  def testSetCQDryRunByDefault(self, mockSetCQState, mockGetChangeDetail):
-    mockSetCQState.return_value = 0
-    mockGetChangeDetail.return_value = {
-        'project': 'depot_tools',
-        'status': 'OPEN',
-        'owner': {'email': 'owner@e.mail'},
-        'current_revision': 'beeeeeef',
-        'revisions': {
-            'deadbeaf': {
-                '_number': 6,
-            },
-            'beeeeeef': {
-                '_number': 7,
-                'fetch': {'http': {
-                    'url': 'https://chromium.googlesource.com/depot_tools',
-                    'ref': 'refs/changes/56/123456/7'
-                }},
-            },
-        },
-    }
 
+class CMDTryResultsTestCase(CMDTestCaseBase):
+  _DEFAULT_REQUEST = {
+      'predicate': {
+            "gerritChanges": [{
+                "project": "depot_tools",
+                "host": "chromium-review.googlesource.com",
+                "patchset": 7,
+                "change": 123456,
+            }],
+      },
+      'fields': 'builds.*.id,builds.*.builder,builds.*.status',
+  }
+
+  def testNoJobs(self):
+    git_cl._call_buildbucket.return_value = {}
+
+    self.assertEqual(0, git_cl.main(['try-results']))
+    self.assertEqual('No tryjobs scheduled.\n', sys.stdout.getvalue())
+    git_cl._call_buildbucket.assert_called_once_with(
+        mock.ANY, 'cr-buildbucket.appspot.com', 'SearchBuilds',
+        self._DEFAULT_REQUEST)
+
+  def testPrintToStdout(self):
+    self.assertEqual(0, git_cl.main(['try-results']))
+    self.assertEqual([
+        'Successes:',
+        '  bot_success            https://ci.chromium.org/b/103',
+        'Infra Failures:',
+        '  bot_infra_failure      https://ci.chromium.org/b/105',
+        'Failures:',
+        '  bot_failure            https://ci.chromium.org/b/104',
+        'Canceled:',
+        '  bot_canceled          ',
+        'Started:',
+        '  bot_started            https://ci.chromium.org/b/102',
+        'Scheduled:',
+        '  bot_scheduled          id=101',
+        'Other:',
+        '  bot_status_unspecified id=100',
+        'Total: 7 tryjobs',
+    ], sys.stdout.getvalue().splitlines())
+    git_cl._call_buildbucket.assert_called_once_with(
+        mock.ANY, 'cr-buildbucket.appspot.com', 'SearchBuilds',
+        self._DEFAULT_REQUEST)
+
+  def testPrintToStdoutWithMasters(self):
+    self.assertEqual(0, git_cl.main(['try-results', '--print-master']))
+    self.assertEqual([
+        'Successes:',
+        '  try bot_success            https://ci.chromium.org/b/103',
+        'Infra Failures:',
+        '  try bot_infra_failure      https://ci.chromium.org/b/105',
+        'Failures:',
+        '  try bot_failure            https://ci.chromium.org/b/104',
+        'Canceled:',
+        '  try bot_canceled          ',
+        'Started:',
+        '  try bot_started            https://ci.chromium.org/b/102',
+        'Scheduled:',
+        '  try bot_scheduled          id=101',
+        'Other:',
+        '  try bot_status_unspecified id=100',
+        'Total: 7 tryjobs',
+    ], sys.stdout.getvalue().splitlines())
+    git_cl._call_buildbucket.assert_called_once_with(
+        mock.ANY, 'cr-buildbucket.appspot.com', 'SearchBuilds',
+        self._DEFAULT_REQUEST)
+
+  @mock.patch('git_cl.write_json')
+  def testWriteToJson(self, mockJsonDump):
+    self.assertEqual(0, git_cl.main(['try-results', '--json', 'file.json']))
+    git_cl._call_buildbucket.assert_called_once_with(
+        mock.ANY, 'cr-buildbucket.appspot.com', 'SearchBuilds',
+        self._DEFAULT_REQUEST)
+    mockJsonDump.assert_called_once_with(
+        'file.json', self._DEFAULT_RESPONSE['builds'])
+
+  def test_filter_failed(self):
+    self.assertEqual({}, git_cl._filter_failed([]))
+    self.assertEqual({
+        'chromium/try': {'bot_failure': [], 'bot_infra_failure': []},
+    }, git_cl._filter_failed(self._DEFAULT_RESPONSE['builds']))
+
+
+class CMDTryTestCase(CMDTestCaseBase):
+
+  @mock.patch('git_cl.Changelist.SetCQState')
+  @mock.patch('git_cl._get_bucket_map', return_value={})
+  def testSetCQDryRunByDefault(self, _mockGetBucketMap, mockSetCQState):
+    mockSetCQState.return_value = 0
     self.assertEqual(0, git_cl.main(['try']))
     git_cl.Changelist.SetCQState.assert_called_with(git_cl._CQState.DRY_RUN)
     self.assertEqual(
@@ -3181,28 +3127,9 @@ class CMDTryTestCase(unittest.TestCase):
         'Scheduling CQ dry run on: '
         'https://chromium-review.googlesource.com/123456\n')
 
-  @mock.patch('git_cl.Changelist._GetChangeDetail')
   @mock.patch('git_cl._call_buildbucket')
-  def testScheduleOnBuildbucket(self, mockCallBuildbucket, mockGetChangeDetail):
+  def testScheduleOnBuildbucket(self, mockCallBuildbucket):
     mockCallBuildbucket.return_value = {}
-    mockGetChangeDetail.return_value = {
-        'project': 'depot_tools',
-        'status': 'OPEN',
-        'owner': {'email': 'owner@e.mail'},
-        'current_revision': 'beeeeeef',
-        'revisions': {
-            'deadbeaf': {
-                '_number': 6,
-            },
-            'beeeeeef': {
-                '_number': 7,
-                'fetch': {'http': {
-                    'url': 'https://chromium.googlesource.com/depot_tools',
-                    'ref': 'refs/changes/56/123456/7'
-                }},
-            },
-        },
-    }
 
     self.assertEqual(0, git_cl.main([
         'try', '-B', 'luci.chromium.try', '-b', 'win',
@@ -3241,27 +3168,7 @@ class CMDTryTestCase(unittest.TestCase):
     mockCallBuildbucket.assert_called_with(
         mock.ANY, 'cr-buildbucket.appspot.com', 'Batch', expected_request)
 
-  @mock.patch('git_cl.Changelist._GetChangeDetail')
-  def testScheduleOnBuildbucket_WrongBucket(self, mockGetChangeDetail):
-    mockGetChangeDetail.return_value = {
-        'project': 'depot_tools',
-        'status': 'OPEN',
-        'owner': {'email': 'owner@e.mail'},
-        'current_revision': 'beeeeeef',
-        'revisions': {
-            'deadbeaf': {
-                '_number': 6,
-            },
-            'beeeeeef': {
-                '_number': 7,
-                'fetch': {'http': {
-                    'url': 'https://chromium.googlesource.com/depot_tools',
-                    'ref': 'refs/changes/56/123456/7'
-                }},
-            },
-        },
-    }
-
+  def testScheduleOnBuildbucket_WrongBucket(self):
     self.assertEqual(0, git_cl.main([
         'try', '-B', 'not-a-bucket', '-b', 'win',
         '-p', 'key=val', '-p', 'json=[{"a":1}, null]']))
@@ -3301,95 +3208,47 @@ class CMDTryTestCase(unittest.TestCase):
         self.assertIn(expected_warning, git_cl.sys.stdout.getvalue())
 
 
-class CMDUploadTestCase(unittest.TestCase):
-
+class CMDUploadTestCase(CMDTestCaseBase):
   def setUp(self):
     super(CMDUploadTestCase, self).setUp()
-    mock.patch('git_cl.sys.stdout', StringIO.StringIO()).start()
-    mock.patch('git_cl.uuid.uuid4', _constantFn('uuid4')).start()
-    mock.patch('git_cl.Changelist.GetIssue', _constantFn(123456)).start()
-    mock.patch('git_cl.Changelist.GetCodereviewServer',
-               _constantFn('https://chromium-review.googlesource.com')).start()
-    mock.patch('git_cl.Changelist.GetMostRecentPatchset',
-               _constantFn(7)).start()
-    mock.patch('git_cl.auth.get_authenticator_for_host',
-               AuthenticatorMock()).start()
-    mock.patch('git_common.is_dirty_git_tree', return_value=False).start()
+    mock.patch('git_cl.fetch_try_jobs').start()
+    mock.patch('git_cl._trigger_try_jobs', return_value={}).start()
+    mock.patch('git_cl.Changelist.CMDUpload', return_value=0).start()
     self.addCleanup(mock.patch.stopall)
 
-  @mock.patch('git_cl.fetch_try_jobs')
-  @mock.patch('git_cl._trigger_try_jobs')
-  @mock.patch('git_cl.Changelist._GetChangeDetail')
-  @mock.patch('git_cl.Changelist.CMDUpload', _constantFn(0))
-  def testUploadRetryFailed(self, mockGetChangeDetail, mockTriggerTryJobs,
-                            mockFetchTryJobs):
+  def testUploadRetryFailed(self):
     # This test mocks out the actual upload part, and just asserts that after
     # upload, if --retry-failed is added, then the tool will fetch try jobs
     # from the previous patchset and trigger the right builders on the latest
     # patchset.
-    mockGetChangeDetail.return_value = {
-        'project': 'depot_tools',
-        'status': 'OPEN',
-        'owner': {'email': 'owner@e.mail'},
-        'current_revision': 'beeeeeef',
-        'revisions': {
-            'deadbeaf': {
-                '_number': 6,
-            },
-            'beeeeeef': {
-                '_number': 7,
-                'fetch': {'http': {
-                    'url': 'https://chromium.googlesource.com/depot_tools',
-                    'ref': 'refs/changes/56/123456/7'
-                }},
-            },
-        },
-    }
-    mockFetchTryJobs.side_effect = [
-        # Prior patchset - no builds.
-        {},
-        # Prior to prior patchset -- some builds.
-        {
-          '9000': {
-            'id': '9000',
-            'project': 'infra',
-            'bucket': 'luci.infra.try',
-            'created_by': 'user:someone@chromium.org',
-            'created_ts': '147200002222000',
-            'experimental': False,
-            'parameters_json': json.dumps({
-              'builder_name': 'red-bot',
-              'properties': {'category': 'cq'},
-            }),
-            'status': 'COMPLETED',
-            'result': 'FAILURE',
-            'tags': ['user_agent:cq'],
-          },
-          8000: {
-            'id': '8000',
-            'project': 'infra',
-            'bucket': 'luci.infra.try',
-            'created_by': 'user:someone@chromium.org',
-            'created_ts': '147200002222020',
-            'experimental': False,
-            'parameters_json': json.dumps({
-              'builder_name': 'green-bot',
-              'properties': {'category': 'cq'},
-            }),
-            'status': 'COMPLETED',
-            'result': 'SUCCESS',
-            'tags': ['user_agent:cq'],
-          },
-        },
+    git_cl.fetch_try_jobs.side_effect = [
+        # Latest patchset: No builds.
+        [],
+        # Patchset before latest: Some builds.
+        [
+            {
+                'id': str(100 + idx),
+                'builder': {
+                    'project': 'chromium',
+                    'bucket': 'try',
+                    'builder': 'bot_' + status.lower(),
+                },
+                'status': status,
+            }
+            for idx, status in enumerate(self._STATUSES)
+        ],
     ]
+
     self.assertEqual(0, git_cl.main(['upload', '--retry-failed']))
-    mockFetchTryJobs.assert_has_calls([
+    self.assertEqual([
         mock.call(mock.ANY, mock.ANY, 'cr-buildbucket.appspot.com', patchset=7),
         mock.call(mock.ANY, mock.ANY, 'cr-buildbucket.appspot.com', patchset=6),
-    ])
-    buckets = {'infra/try': {'red-bot': []}}
-    mockTriggerTryJobs.assert_called_once_with(
-        mock.ANY, mock.ANY, buckets, mock.ANY, 8)
+    ], git_cl.fetch_try_jobs.mock_calls)
+    expected_buckets = {
+        'chromium/try': {'bot_failure': [], 'bot_infra_failure': []},
+    }
+    git_cl._trigger_try_jobs.assert_called_once_with(
+        mock.ANY, mock.ANY, expected_buckets, mock.ANY, 8)
 
 if __name__ == '__main__':
   logging.basicConfig(
