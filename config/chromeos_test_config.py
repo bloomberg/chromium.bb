@@ -261,7 +261,7 @@ class HWTestList(object):
     sanity_dict = dict(pool=constants.HWTEST_MACH_POOL, file_bugs=True)
     sanity_dict.update(kwargs)
     sanity_dict.update(dict(minimum_duts=1, suite_min_duts=1,
-                            blocking=True))
+                            blocking=True, quota_account='bvt-sync'))
     default_dict = dict(pool=constants.HWTEST_MACH_POOL,
                         suite_min_duts=6)
     default_dict.update(kwargs)
