@@ -119,12 +119,6 @@ class CORE_EXPORT FetchRequestData final
   }
   const base::UnguessableToken& WindowId() const { return window_id_; }
   void SetWindowId(const base::UnguessableToken& id) { window_id_ = id; }
-  bool ShouldAlsoUseFactoryBoundOriginForCors() const {
-    return should_also_use_factory_bound_origin_for_cors_;
-  }
-  void SetShouldAlsoUseFactoryBoundOriginForCors(bool value) {
-    should_also_use_factory_bound_origin_for_cors_ = value;
-  }
 
   void Trace(blink::Visitor*);
 
@@ -167,7 +161,6 @@ class CORE_EXPORT FetchRequestData final
   // the URL got revoked after creating the request.
   network::mojom::blink::URLLoaderFactoryPtr url_loader_factory_;
   base::UnguessableToken window_id_;
-  bool should_also_use_factory_bound_origin_for_cors_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(FetchRequestData);
 };
