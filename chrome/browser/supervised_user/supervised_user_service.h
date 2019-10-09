@@ -30,6 +30,7 @@
 #include "extensions/buildflags/buildflags.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/browser/management_policy.h"
 #endif
@@ -46,10 +47,6 @@ class SupervisedUserWhitelistService;
 namespace base {
 class FilePath;
 class Version;
-}
-
-namespace extensions {
-class ExtensionRegistry;
 }
 
 namespace user_prefs {
@@ -339,7 +336,7 @@ class SupervisedUserService : public KeyedService,
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   ScopedObserver<extensions::ExtensionRegistry,
                  extensions::ExtensionRegistryObserver>
-      registry_observer_;
+      registry_observer_{this};
 #endif
 
   base::ObserverList<SupervisedUserServiceObserver>::Unchecked observer_list_;

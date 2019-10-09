@@ -64,7 +64,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "extensions/browser/extension_prefs.h"
-#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #endif
 
@@ -285,12 +284,7 @@ SupervisedUserService::SupervisedUserService(Profile* profile)
       is_profile_active_(false),
       did_init_(false),
       did_shutdown_(false),
-      blacklist_state_(BlacklistLoadState::NOT_LOADED)
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-      ,
-      registry_observer_(this)
-#endif
-{
+      blacklist_state_(BlacklistLoadState::NOT_LOADED) {
   url_filter_.AddObserver(this);
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   registry_observer_.Add(extensions::ExtensionRegistry::Get(profile));

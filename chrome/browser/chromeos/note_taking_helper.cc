@@ -363,7 +363,6 @@ void NoteTakingHelper::SetProfileWithEnabledLockScreenApps(Profile* profile) {
 NoteTakingHelper::NoteTakingHelper()
     : launch_chrome_app_callback_(
           base::Bind(&apps::LaunchPlatformAppWithAction)),
-      extension_registry_observer_(this),
       note_taking_controller_client_(
           std::make_unique<NoteTakingControllerClient>(this)) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
