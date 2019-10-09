@@ -1817,6 +1817,31 @@ LIBGAV1_ALWAYS_INLINE void Identity4_NEON(void* dest, const void* source,
   }
 }
 
+LIBGAV1_ALWAYS_INLINE bool Identity4DcOnly(void* dest, const void* source,
+                                           int non_zero_coeff_count,
+                                           bool should_round, int tx_height) {
+  if (non_zero_coeff_count > 1) {
+    return false;
+  }
+
+  auto* dst = static_cast<int16_t*>(dest);
+  const auto* const src = static_cast<const int16_t*>(source);
+
+  const int16x4_t v_src0 = vdup_n_s16(src[0]);
+  const uint16x4_t v_mask = vdup_n_u16(should_round ? 0xffff : 0);
+  const int16x4_t v_src_round =
+      vqrdmulh_n_s16(v_src0, kTransformRowMultiplier << 3);
+  const int16x4_t v_src = vbsl_s16(v_mask, v_src_round, v_src0);
+  const int shift = tx_height < 16 ? 0 : 1;
+  const int32x4_t v_dual_round = vdupq_n_s32((1 + (shift << 1)) << 11);
+  const int16x4_t v_multiplier = vdup_n_s16(kIdentity4Multiplier);
+  const int32x4_t v_shift = vdupq_n_s32(-(12 + shift));
+  const int32x4_t v_src_mult_lo = vmlal_s16(v_dual_round, v_src, v_multiplier);
+  const int32x4_t dst_0 = vqshlq_s32(v_src_mult_lo, v_shift);
+  vst1_lane_s16(&dst[0], vqmovn_s32(dst_0), 0);
+  return true;
+}
+
 LIBGAV1_ALWAYS_INLINE void Identity4ColumnStoreToFrame(
     Array2DView<uint8_t> frame, const int start_x, const int start_y,
     const int tx_width, const int tx_height, const int16_t* source) {
@@ -1938,6 +1963,26 @@ LIBGAV1_ALWAYS_INLINE void Identity8Row4_NEON(void* dest, const void* source,
   }
 }
 
+LIBGAV1_ALWAYS_INLINE bool Identity8DcOnly(void* dest, const void* source,
+                                           int non_zero_coeff_count,
+                                           bool should_round, int row_shift) {
+  if (non_zero_coeff_count > 1) {
+    return false;
+  }
+
+  auto* dst = static_cast<int16_t*>(dest);
+  const auto* const src = static_cast<const int16_t*>(source);
+  const int16x4_t v_src0 = vdup_n_s16(src[0]);
+  const uint16x4_t v_mask = vdup_n_u16(should_round ? 0xffff : 0);
+  const int16x4_t v_src_round =
+      vqrdmulh_n_s16(v_src0, kTransformRowMultiplier << 3);
+  const int16x4_t v_src = vbsl_s16(v_mask, v_src_round, v_src0);
+  const int32x4_t v_srcx2 = vaddl_s16(v_src, v_src);
+  const int32x4_t dst_0 = vqrshlq_s32(v_srcx2, vdupq_n_s32(-row_shift));
+  vst1_lane_s16(&dst[0], vqmovn_s32(dst_0), 0);
+  return true;
+}
+
 LIBGAV1_ALWAYS_INLINE void Identity8ColumnStoreToFrame_NEON(
     Array2DView<uint8_t> frame, const int start_x, const int start_y,
     const int tx_width, const int tx_height, const int16_t* source) {
@@ -1996,6 +2041,31 @@ LIBGAV1_ALWAYS_INLINE void Identity16Row_NEON(void* dest, const void* source,
                 vcombine_s16(vqmovn_s32(shift_lo), vqmovn_s32(shift_hi)));
     }
   }
+}
+
+LIBGAV1_ALWAYS_INLINE bool Identity16DcOnly(void* dest, const void* source,
+                                            int non_zero_coeff_count,
+                                            bool should_round, int shift) {
+  if (non_zero_coeff_count > 1) {
+    return false;
+  }
+
+  auto* dst = static_cast<int16_t*>(dest);
+  const auto* const src = static_cast<const int16_t*>(source);
+
+  const int16x4_t v_src0 = vdup_n_s16(src[0]);
+  const uint16x4_t v_mask = vdup_n_u16(should_round ? 0xffff : 0);
+  const int16x4_t v_src_round =
+      vqrdmulh_n_s16(v_src0, kTransformRowMultiplier << 3);
+  const int16x4_t v_src = vbsl_s16(v_mask, v_src_round, v_src0);
+  const int32x4_t v_dual_round = vdupq_n_s32((1 + (shift << 1)) << 11);
+  const int16x4_t v_multiplier = vdup_n_s16(kIdentity16Multiplier);
+  const int32x4_t v_shift = vdupq_n_s32(-(12 + shift));
+  const int32x4_t v_src_mult_lo =
+      vmlal_s16(v_dual_round, (v_src), v_multiplier);
+  const int32x4_t dst_0 = vqshlq_s32(v_src_mult_lo, v_shift);
+  vst1_lane_s16(&dst[0], vqmovn_s32(dst_0), 0);
+  return true;
 }
 
 LIBGAV1_ALWAYS_INLINE void Identity16ColumnStoreToFrame_NEON(
@@ -2060,6 +2130,24 @@ LIBGAV1_ALWAYS_INLINE void Identity32Row16_NEON(void* dest, const void* source,
       vst1q_s16(&dst[i * step + j], v_dst_i);
     }
   }
+}
+
+LIBGAV1_ALWAYS_INLINE bool Identity32DcOnly(void* dest, const void* source,
+                                            int non_zero_coeff_count) {
+  if (non_zero_coeff_count > 1) {
+    return false;
+  }
+
+  auto* dst = static_cast<int16_t*>(dest);
+  const auto* const src = static_cast<const int16_t*>(source);
+  const int16x4_t v_src0 = vdup_n_s16(src[0]);
+  const int16x4_t v_src = vqrdmulh_n_s16(v_src0, kTransformRowMultiplier << 3);
+  // When combining the identity32 multiplier with the row shift, the
+  // calculation for tx_height equal to 16 can be simplified from
+  // ((A * 4) + 1) >> 1) to (A * 2).
+  const int16x4_t v_dst_0 = vqadd_s16(v_src, v_src);
+  vst1_lane_s16(&dst[0], v_dst_0, 0);
+  return true;
 }
 
 LIBGAV1_ALWAYS_INLINE void Identity32ColumnStoreToFrame(
@@ -2856,8 +2944,14 @@ void Identity4TransformLoop_NEON(TransformType tx_type, TransformSize tx_size,
       return;
     }
 
-    const int num_rows = (non_zero_coeff_count == 1) ? 1 : tx_height;
     const bool should_round = (tx_height == 8);
+
+    if (Identity4DcOnly(&src[0], &src[0], non_zero_coeff_count, should_round,
+                        tx_height)) {
+      return;
+    }
+
+    const int num_rows = tx_height;
     if (should_round) {
       ApplyRounding<4>(src, num_rows);
     }
@@ -2909,8 +3003,16 @@ void Identity8TransformLoop_NEON(TransformType tx_type, TransformSize tx_size,
         tx_size == kTransformSize8x4) {
       return;
     }
-    const int num_rows = (non_zero_coeff_count == 1) ? 1 : tx_height;
-    if (kShouldRound[tx_size]) {
+    const bool should_round = kShouldRound[tx_size];
+    const uint8_t row_shift = kTransformRowShift[tx_size];
+
+    if (Identity8DcOnly(&src[0], &src[0], non_zero_coeff_count, should_round,
+                        row_shift)) {
+      return;
+    }
+
+    const int num_rows = tx_height;
+    if (should_round) {
       ApplyRounding<8>(src, num_rows);
     }
 
@@ -2954,9 +3056,16 @@ void Identity16TransformLoop_NEON(TransformType tx_type, TransformSize tx_size,
   const int tx_height = kTransformHeight[tx_size];
 
   if (is_row) {
-    const int num_rows =
-        (non_zero_coeff_count == 1) ? 1 : std::min(tx_height, 32);
-    if (kShouldRound[tx_size]) {
+    const bool should_round = kShouldRound[tx_size];
+    const uint8_t row_shift = kTransformRowShift[tx_size];
+
+    if (Identity16DcOnly(&src[0], &src[0], non_zero_coeff_count, should_round,
+                         row_shift)) {
+      return;
+    }
+
+    const int num_rows = std::min(tx_height, 32);
+    if (should_round) {
       ApplyRounding<16>(src, num_rows);
     }
     for (int i = 0; i < num_rows; i += 4) {
@@ -2984,8 +3093,6 @@ void Identity32TransformLoop_NEON(TransformType /*tx_type*/,
   const int tx_height = kTransformHeight[tx_size];
 
   if (is_row) {
-    const int num_rows = (non_zero_coeff_count == 1) ? 1 : tx_height;
-
     // When combining the identity32 multiplier with the row shift, the
     // calculations for tx_height == 8 and tx_height == 32 can be simplified
     // from ((A * 4) + 2) >> 2) to A.
@@ -2993,7 +3100,14 @@ void Identity32TransformLoop_NEON(TransformType /*tx_type*/,
       return;
     }
 
-    // Process kTransformSize32x16
+    // Process kTransformSize32x16.  The src is always rounded before the
+    // identity transform and shifted by 1 afterwards.
+
+    if (Identity32DcOnly(&src[0], &src[0], non_zero_coeff_count)) {
+      return;
+    }
+
+    const int num_rows = tx_height;
     assert(tx_size == kTransformSize32x16);
     ApplyRounding<32>(src, num_rows);
     for (int i = 0; i < num_rows; i += 4) {
