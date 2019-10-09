@@ -53,6 +53,7 @@ ShelfConfig::ShelfConfig()
       shelf_ink_drop_visible_opacity_(0.2f),
       shelf_icon_color_(SK_ColorWHITE),
       status_indicator_offset_from_shelf_edge_(1),
+      scrollable_shelf_ripple_padding_(2),
       shelf_tooltip_preview_height_(128),
       shelf_tooltip_preview_max_width_(192),
       shelf_tooltip_preview_max_ratio_(1.5),    // = 3/2

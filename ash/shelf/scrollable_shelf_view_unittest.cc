@@ -127,7 +127,9 @@ TEST_F(ScrollableShelfViewTest, CorrectUIAfterDisplayRotationShortToLong) {
   const gfx::Rect icon_bounds = last_visible_icon->GetBoundsInScreen();
   const gfx::Rect shelf_container_bounds =
       scrollable_shelf_view_->shelf_container_view()->GetBoundsInScreen();
-  EXPECT_EQ(icon_bounds.right(), shelf_container_bounds.right());
+  EXPECT_EQ(icon_bounds.right() +
+                ShelfConfig::Get()->scrollable_shelf_ripple_padding(),
+            shelf_container_bounds.right());
   EXPECT_FALSE(scrollable_shelf_view_->ShouldAdjustForTest());
 }
 

@@ -51,7 +51,7 @@ constexpr int KScrollOffsetThreshold = 20;
 constexpr int kArrowButtonTapAreaHorizontal = 32;
 
 // Length of the fade in/out zone.
-constexpr int kGradientZoneLength = 24;
+constexpr int kGradientZoneLength = 26;
 
 // Sum of the shelf button size and the gap between shelf buttons.
 int GetUnit() {
@@ -286,6 +286,15 @@ void ScrollableShelfView::Init() {
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
 
+  // Initialize the shelf container view.
+  // Note that |shelf_container_view_| should be under the arrow buttons. It
+  // ensures that the arrow button receives the tapping events which happen
+  // within the overlapping zone between the arrow button's tapping area and
+  // the bounds of |shelf_container_view_|.
+  shelf_container_view_ =
+      AddChildView(std::make_unique<ShelfContainerView>(shelf_view_));
+  shelf_container_view_->Initialize();
+
   // Initialize the left arrow button.
   left_arrow_ = AddChildView(std::make_unique<ScrollableShelfArrowView>(
       ScrollArrowView::kLeft, GetShelf()->IsHorizontalAlignment(), GetShelf(),
@@ -295,11 +304,6 @@ void ScrollableShelfView::Init() {
   right_arrow_ = AddChildView(std::make_unique<ScrollableShelfArrowView>(
       ScrollArrowView::kRight, GetShelf()->IsHorizontalAlignment(), GetShelf(),
       this));
-
-  // Initialize the shelf container view.
-  shelf_container_view_ =
-      AddChildView(std::make_unique<ShelfContainerView>(shelf_view_));
-  shelf_container_view_->Initialize();
 
   gradient_layer_delegate_ = std::make_unique<GradientLayerDelegate>();
   layer()->SetMaskLayer(gradient_layer_delegate_->layer());
@@ -572,13 +576,15 @@ void ScrollableShelfView::Layout() {
   }
 
   shelf_container_bounds.Inset(
-      shelf_container_before_offset + (left_arrow_bounds.IsEmpty()
-                                           ? GetAppIconEndPadding()
-                                           : kArrowButtonGroupWidth),
+      shelf_container_before_offset +
+          (left_arrow_bounds.IsEmpty() ? GetAppIconEndPadding()
+                                       : kArrowButtonGroupWidth) -
+          ShelfConfig::Get()->scrollable_shelf_ripple_padding(),
       0,
-      shelf_container_after_offset + (right_arrow_bounds.IsEmpty()
-                                          ? GetAppIconEndPadding()
-                                          : kArrowButtonGroupWidth),
+      shelf_container_after_offset +
+          (right_arrow_bounds.IsEmpty() ? GetAppIconEndPadding()
+                                        : kArrowButtonGroupWidth) -
+          ShelfConfig::Get()->scrollable_shelf_ripple_padding(),
       0);
 
   // Adjust the bounds when not showing in the horizontal
@@ -642,6 +648,19 @@ void ScrollableShelfView::Layout() {
             : gfx::Vector2d(0, shelf_container_bounds.y() -
                                    GetAppIconEndPadding() - before_padding);
   }
+
+  // If |layout_strategy_| is kShowLeftArrowButton, apply extra translation
+  // offset on |shelf_view_|, which assures the enough space for the ripple
+  // ring of the last shelf item.
+  if (layout_strategy_ == kShowLeftArrowButton) {
+    translate_vector +=
+        GetShelf()->IsHorizontalAlignment()
+            ? gfx::Vector2d(
+                  ShelfConfig::Get()->scrollable_shelf_ripple_padding(), 0)
+            : gfx::Vector2d(
+                  0, ShelfConfig::Get()->scrollable_shelf_ripple_padding());
+  }
+
   gfx::Vector2dF total_offset = scroll_offset_ + translate_vector;
   if (ShouldAdaptToRTL())
     total_offset = -total_offset;

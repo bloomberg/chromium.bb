@@ -125,6 +125,9 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
   int status_indicator_offset_from_shelf_edge() const {
     return status_indicator_offset_from_shelf_edge_;
   }
+  int scrollable_shelf_ripple_padding() const {
+    return scrollable_shelf_ripple_padding_;
+  }
   int shelf_tooltip_preview_height() const {
     return shelf_tooltip_preview_height_;
   }
@@ -217,6 +220,10 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
 
   // The distance between the edge of the shelf and the status indicators.
   const int status_indicator_offset_from_shelf_edge_;
+
+  // Padding between the shelf container view and the edging app icon in order
+  // to show the app icon's ripple correctly.
+  const int scrollable_shelf_ripple_padding_;
 
   // Dimensions for hover previews.
   const int shelf_tooltip_preview_height_;
