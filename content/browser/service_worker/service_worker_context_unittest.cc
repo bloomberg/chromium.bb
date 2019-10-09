@@ -308,11 +308,10 @@ class TestServiceWorkerContextObserver : public ServiceWorkerContextObserver {
     events_.push_back(log);
   }
 
-  void OnVersionStartedRunning(content::ServiceWorkerContext* context,
-                               int64_t version_id,
-                               const GURL& scope,
-                               int process_id,
-                               const GURL& script_url) override {
+  void OnVersionStartedRunning(
+      content::ServiceWorkerContext* context,
+      int64_t version_id,
+      const ServiceWorkerRunningInfo& running_info) override {
     EventLog log;
     log.type = EventType::VersionStartedRunning;
     log.version_id = version_id;
