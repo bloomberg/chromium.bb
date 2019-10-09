@@ -18,7 +18,7 @@
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/link.h"
-#include "ui/views/layout/fill_layout.h"
+#include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_client_view.h"
 
@@ -75,14 +75,12 @@ void CookieControlsBubbleView::OnBlockedCookiesCountChanged(
       !blocked_cookies_ || (*blocked_cookies_ > 0) != (blocked_cookies > 0);
   blocked_cookies_ = blocked_cookies;
 
-  text_->SetText(
-      l10n_util::GetPluralStringFUTF16(IDS_COOKIE_CONTROLS_BLOCKED_MESSAGE,
-                                       controller_->GetBlockedDomainCount()));
-
-  // If this only incremented the number of blocked sites, no UI update is
-  // necessary besides the |text_| text.
+  // If this only incremented the number of blocked sites, no full UI update is
+  // necessary besides the title text.
   if (has_blocked_changed)
     UpdateUi();
+  else
+    GetBubbleFrameView()->UpdateWindowTitle();
 }
 
 CookieControlsBubbleView::CookieControlsBubbleView(
@@ -122,6 +120,9 @@ void CookieControlsBubbleView::UpdateUi() {
             has_blocked_cookies ? IDR_COOKIE_BLOCKING_ON_HEADER
                                 : IDR_COOKIE_BLOCKING_INACTIVE_HEADER));
     text_->SetVisible(true);
+    text_->SetText(l10n_util::GetStringUTF16(
+        has_blocked_cookies ? IDS_COOKIE_CONTROLS_BLOCKED_MESSAGE
+                            : IDS_COOKIE_CONTROLS_NOTHING_BLOCKED_MESSAGE));
     not_working_link_->SetVisible(has_blocked_cookies);
     blocked_cookies_.reset();
   } else {
@@ -164,9 +165,13 @@ base::string16 CookieControlsBubbleView::GetDialogButtonLabel(
 }
 
 void CookieControlsBubbleView::Init() {
-  SetLayoutManager(std::make_unique<views::FillLayout>());
+  // Use a BoxLayout because the view might be larger than |text_| and we want
+  // |text_| at the top.
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical));
   auto text = std::make_unique<views::Label>(base::string16(),
-                                             views::style::CONTEXT_LABEL);
+                                             views::style::CONTEXT_LABEL,
+                                             views::style::STYLE_SECONDARY);
   text->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
   text->SetMultiLine(true);
   text_ = AddChildView(std::move(text));
@@ -200,7 +205,9 @@ base::string16 CookieControlsBubbleView::GetWindowTitle() const {
     return l10n_util::GetStringUTF16(IDS_COOKIE_CONTROLS_NOT_WORKING_TITLE);
   switch (status_) {
     case CookieControlsController::Status::kEnabled:
-      return l10n_util::GetStringUTF16(IDS_COOKIE_CONTROLS_DIALOG_TITLE);
+      return l10n_util::GetPluralStringFUTF16(
+          IDS_COOKIE_CONTROLS_DIALOG_TITLE,
+          controller_->GetBlockedCookieCount());
     case CookieControlsController::Status::kDisabledForSite:
       return l10n_util::GetStringUTF16(IDS_COOKIE_CONTROLS_DIALOG_TITLE_OFF);
     case CookieControlsController::Status::kUninitialized:

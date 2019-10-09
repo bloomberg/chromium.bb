@@ -50,6 +50,9 @@ class CookieControlsController {
   // Returns the number of registrable domains with blocked cookies.
   int GetBlockedDomainCount();
 
+  // Returns the number of blocked cookies.
+  int GetBlockedCookieCount();
+
   void AddObserver(CookieControlsView* obs);
   void RemoveObserver(CookieControlsView* obs);
 
