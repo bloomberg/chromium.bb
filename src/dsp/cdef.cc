@@ -34,7 +34,7 @@ constexpr int16_t kDivisionTable[] = {0,   840, 420, 280, 210,
 
 constexpr uint8_t kPrimaryTaps[2][2] = {{4, 2}, {3, 3}};
 
-constexpr uint8_t kSecondaryTaps[2][2] = {{2, 1}, {2, 1}};
+constexpr uint8_t kSecondaryTaps[2] = {2, 1};
 
 constexpr int8_t kCdefDirections[8][2][2] = {
     {{-1, 1}, {-2, 2}}, {{0, 1}, {-1, 2}}, {{0, 1}, {0, 2}}, {{0, 1}, {1, 2}},
@@ -162,7 +162,7 @@ void CdefFilter_C(const void* const source, const ptrdiff_t source_stride,
             if (value != kCdefLargeValue) {
               sum +=
                   Constrain(value - pixel_value, secondary_strength, damping) *
-                  kSecondaryTaps[(primary_strength >> coeff_shift) & 1][k];
+                  kSecondaryTaps[k];
               max_value = std::max(value, max_value);
               min_value = std::min(value, min_value);
             }
