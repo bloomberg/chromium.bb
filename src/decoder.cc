@@ -43,7 +43,8 @@ StatusCode Decoder::DequeueFrame(const DecoderBuffer** out_ptr) {
 }
 
 int Decoder::GetMaxAllowedFrames() const {
-  return settings_.frame_parallel ? settings_.threads : 1;
+  if (!initialized_) return 1;
+  return impl_->GetMaxAllowedFrames();
 }
 
 // static.

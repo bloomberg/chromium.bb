@@ -108,6 +108,9 @@ class DecoderImpl : public Allocable {
   StatusCode EnqueueFrame(const uint8_t* data, size_t size,
                           int64_t user_private_data);
   StatusCode DequeueFrame(const DecoderBuffer** out_ptr);
+  int GetMaxAllowedFrames() const {
+    return settings_.frame_parallel ? settings_.threads : 1;
+  }
   static constexpr int GetMaxBitdepth() {
 #if LIBGAV1_MAX_BITDEPTH >= 10
     return 10;

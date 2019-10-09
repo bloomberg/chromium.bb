@@ -98,8 +98,7 @@ DecoderImpl::~DecoderImpl() {
 }
 
 StatusCode DecoderImpl::Init() {
-  const int max_allowed_frames =
-      settings_.frame_parallel ? settings_.threads : 1;
+  const int max_allowed_frames = GetMaxAllowedFrames();
   assert(max_allowed_frames > 0);
   if (!encoded_frames_.Init(max_allowed_frames)) {
     LIBGAV1_DLOG(ERROR, "encoded_frames_.Init() failed.");
