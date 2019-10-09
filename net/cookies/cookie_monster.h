@@ -192,10 +192,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
   static const char* const kDefaultCookieableSchemes[];
   static const int kDefaultCookieableSchemesCount;
 
-  // Take ownership of a CookieAccessDelegate.
-  void SetCookieAccessDelegate(
-      std::unique_ptr<CookieAccessDelegate> delegate) override;
-
   void DumpMemoryStats(base::trace_event::ProcessMemoryDump* pmd,
                        const std::string& parent_absolute_name) const override;
 
@@ -627,10 +623,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
   base::Time last_statistic_record_time_;
 
   bool persist_session_cookies_;
-
-  // Used to determine whether a particular cookie should be subject to legacy
-  // or non-legacy access semantics.
-  std::unique_ptr<CookieAccessDelegate> cookie_access_delegate_;
 
   base::ThreadChecker thread_checker_;
 

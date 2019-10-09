@@ -518,11 +518,6 @@ CookieChangeDispatcher& CookieMonster::GetChangeDispatcher() {
   return change_dispatcher_;
 }
 
-void CookieMonster::SetCookieAccessDelegate(
-    std::unique_ptr<CookieAccessDelegate> delegate) {
-  cookie_access_delegate_ = std::move(delegate);
-}
-
 void CookieMonster::DumpMemoryStats(
     base::trace_event::ProcessMemoryDump* pmd,
     const std::string& parent_absolute_name) const {
@@ -1676,8 +1671,8 @@ bool CookieMonster::HasCookieableScheme(const GURL& url) {
 
 CookieAccessSemantics CookieMonster::GetAccessSemanticsForCookie(
     const CanonicalCookie& cookie) const {
-  if (cookie_access_delegate_)
-    return cookie_access_delegate_->GetAccessSemantics(cookie);
+  if (cookie_access_delegate())
+    return cookie_access_delegate()->GetAccessSemantics(cookie);
   return CookieAccessSemantics::UNKNOWN;
 }
 

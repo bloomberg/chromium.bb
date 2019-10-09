@@ -54,6 +54,7 @@ class NET_EXPORT CookieStore {
   using DeleteCallback = base::OnceCallback<void(uint32_t num_deleted)>;
   using SetCookieableSchemesCallback = base::OnceCallback<void(bool success)>;
 
+  CookieStore();
   virtual ~CookieStore();
 
   // Set the cookie on the cookie store.  |cookie.IsCanonical()| must
@@ -129,12 +130,23 @@ class NET_EXPORT CookieStore {
                                     SetCookieableSchemesCallback callback) = 0;
 
   // Transfer ownership of a CookieAccessDelegate.
-  virtual void SetCookieAccessDelegate(
-      std::unique_ptr<CookieAccessDelegate> delegate);
+  void SetCookieAccessDelegate(std::unique_ptr<CookieAccessDelegate> delegate);
 
   // Reports the estimate of dynamically allocated memory in bytes.
   virtual void DumpMemoryStats(base::trace_event::ProcessMemoryDump* pmd,
                                const std::string& parent_absolute_name) const;
+
+ protected:
+  // This may be null if no delegate has been set yet, or the delegate has been
+  // reset to null.
+  const CookieAccessDelegate* cookie_access_delegate() const {
+    return cookie_access_delegate_.get();
+  }
+
+ private:
+  // Used to determine whether a particular cookie should be subject to legacy
+  // or non-legacy access semantics.
+  std::unique_ptr<CookieAccessDelegate> cookie_access_delegate_;
 };
 
 }  // namespace net
