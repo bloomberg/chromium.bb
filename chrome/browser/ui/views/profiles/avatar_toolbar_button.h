@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_PROFILES_AVATAR_TOOLBAR_BUTTON_H_
 #define CHROME_BROWSER_UI_VIEWS_PROFILES_AVATAR_TOOLBAR_BUTTON_H_
 
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "build/build_config.h"
@@ -119,7 +120,8 @@ class AvatarToolbarButton : public ToolbarButton,
   void SetInsets();
 
   // Initiates showing the identity |user_identity| (if non-empty).
-  void OnUserIdentityChanged(const CoreAccountInfo& user_identity);
+  void OnUserIdentityChanged(const CoreAccountInfo& user_identity,
+                             const base::Feature& triggering_feature);
 
   void ShowHighlightAnimation();
   void HideHighlightAnimation();

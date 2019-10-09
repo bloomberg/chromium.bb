@@ -15,10 +15,10 @@ const base::Feature kAnimatedAvatarButton{"AnimatedAvatarButton",
 // https://crbug.com/967317
 const base::Feature kAnimatedAvatarButtonOnSignIn{
     "AnimatedAvatarButtonOnSignIn", base::FEATURE_ENABLED_BY_DEFAULT};
-// Enables an animated avatar button on the open-profile/startup trigger. This
+// Enables an animated avatar button on the open-window/startup trigger. This
 // feature is guarded by kAnimatedAvatarButton and serves as a kill-switch. See
 // https://crbug.com/967317
-const base::Feature kAnimatedAvatarButtonOnOpeningProfile{
+const base::Feature kAnimatedAvatarButtonOnOpeningWindow{
     "AnimatedAvatarButtonOnOpeningProfile", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables showing the EV certificate details in the Page Info bubble.

@@ -15,6 +15,7 @@
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
+#include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
@@ -197,7 +198,7 @@ void ProfileMenuViewBase::ShowBubble(
   if (IsShowing())
     return;
 
-  base::RecordAction(base::UserMetricsAction("ProfileMenu_Opened"));
+  signin_ui_util::RecordProfileMenuViewShown(browser->profile());
 
   ProfileMenuViewBase* bubble;
 

@@ -362,18 +362,19 @@ void AvatarToolbarButton::OnProfileNameChanged(
 
 void AvatarToolbarButton::OnUnconsentedPrimaryAccountChanged(
     const CoreAccountInfo& unconsented_primary_account_info) {
-  if (!base::FeatureList::IsEnabled(features::kAnimatedAvatarButtonOnSignIn))
-    return;
-  OnUserIdentityChanged(unconsented_primary_account_info);
+  OnUserIdentityChanged(unconsented_primary_account_info,
+                        features::kAnimatedAvatarButtonOnSignIn);
 }
 
 void AvatarToolbarButton::OnRefreshTokensLoaded() {
-  if (!signin_ui_util::ShouldShowIdentityOnOpeningProfile(
+  if (!signin_ui_util::ShouldShowAnimatedIdentityOnOpeningWindow(
           GetProfileAttributesStorage(), profile_)) {
     return;
   }
+
   OnUserIdentityChanged(IdentityManagerFactory::GetForProfile(profile_)
-                            ->GetUnconsentedPrimaryAccountInfo());
+                            ->GetUnconsentedPrimaryAccountInfo(),
+                        features::kAnimatedAvatarButtonOnOpeningWindow);
 }
 
 void AvatarToolbarButton::OnAccountsInCookieUpdated(
@@ -574,9 +575,18 @@ void AvatarToolbarButton::SetInsets() {
 }
 
 void AvatarToolbarButton::OnUserIdentityChanged(
-    const CoreAccountInfo& user_identity) {
+    const CoreAccountInfo& user_identity,
+    const base::Feature& triggering_feature) {
+  if (user_identity.IsEmpty())
+    return;
+
+  // Record the last time the animated identity was set. This is done even if
+  // the feature is disabled, to allow comparing metrics between experimental
+  // groups.
+  signin_ui_util::RecordAnimatedIdentityTriggered(profile_);
+
   if (!base::FeatureList::IsEnabled(features::kAnimatedAvatarButton) ||
-      user_identity.IsEmpty()) {
+      !base::FeatureList::IsEnabled(triggering_feature)) {
     return;
   }
 
