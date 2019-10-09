@@ -49,7 +49,6 @@
 #include "third_party/blink/public/web/web_ax_object.h"
 #include "third_party/blink/public/web/web_console_message.h"
 #include "third_party/blink/public/web/web_element.h"
-#include "third_party/blink/public/web/web_frame_widget.h"
 #include "third_party/blink/public/web/web_history_item.h"
 #include "third_party/blink/public/web/web_navigation_type.h"
 #include "third_party/blink/public/web/web_node.h"
@@ -61,6 +60,7 @@
 #include "ui/surface/transport_dib.h"
 
 namespace blink {
+class WebFrameWidget;
 class WebURLRequest;
 struct PluginAction;
 struct WebWindowFeatures;
@@ -684,10 +684,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   // Helper objects ------------------------------------------------------------
 
   RenderFrameImpl* main_render_frame_ = nullptr;
-
-  // Note: RenderViewImpl is pulling double duty: it's the RenderWidget for the
-  // "view", but it's also the RenderWidget for the main frame.
-  blink::WebFrameWidget* frame_widget_ = nullptr;
 
 #if defined(OS_ANDROID)
   // Android Specific ----------------------------------------------------------

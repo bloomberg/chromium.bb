@@ -1485,7 +1485,7 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
   auto* web_frame_widget =
       blink::WebFrameWidget::CreateForMainFrame(render_widget, web_frame);
 
-  render_widget->InitForMainFrame(std::move(show_callback), web_frame_widget);
+  render_widget->InitForMainFrame(std::move(show_callback));
   render_view->AttachWebFrameWidget(web_frame_widget);
 
   render_widget->SynchronizeVisualPropertiesFromRenderView(

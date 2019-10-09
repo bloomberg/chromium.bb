@@ -516,9 +516,8 @@ void RenderWidget::InitForPepperFullscreen(ShowCallback show_callback,
   Init(std::move(show_callback), web_widget);
 }
 
-void RenderWidget::InitForMainFrame(ShowCallback show_callback,
-                                    blink::WebFrameWidget* web_frame_widget) {
-  Init(std::move(show_callback), web_frame_widget);
+void RenderWidget::InitForMainFrame(ShowCallback show_callback) {
+  Init(std::move(show_callback), /*web_frame_widget=*/nullptr);
 }
 
 void RenderWidget::InitForChildLocalRoot(

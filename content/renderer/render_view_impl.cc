@@ -516,10 +516,7 @@ void RenderViewImpl::Initialize(
         page_properties(), params->visual_properties.display_mode,
         /*is_undead=*/true, params->never_visible);
     undead_render_widget_->set_delegate(this);
-    // We intentionally pass in a null webwidget since it shouldn't be needed
-    // for remote frames.
-    undead_render_widget_->InitForMainFrame(std::move(show_callback),
-                                            /*web_frame_widget=*/nullptr);
+    undead_render_widget_->InitForMainFrame(std::move(show_callback));
 
     RenderFrameProxy::CreateFrameProxy(params->proxy_routing_id, GetRoutingID(),
                                        opener_frame, MSG_ROUTING_NONE,
@@ -556,7 +553,6 @@ void RenderViewImpl::Initialize(
 
 RenderViewImpl::~RenderViewImpl() {
   DCHECK(destroying_);  // Always deleted through Destroy().
-  DCHECK(!frame_widget_);
 
   g_routing_id_view_map.Get().erase(routing_id_);
   RenderThread::Get()->RemoveRoute(routing_id_);
@@ -1145,7 +1141,8 @@ void RenderViewImpl::DisableAutoResizeForWidget() {
 
 void RenderViewImpl::ScrollFocusedNodeIntoViewForWidget() {
   if (WebLocalFrame* focused_frame = GetWebView()->FocusedFrame()) {
-    auto* frame_widget = focused_frame->LocalRoot()->FrameWidget();
+    blink::WebFrameWidget* frame_widget =
+        focused_frame->LocalRoot()->FrameWidget();
     frame_widget->ScrollFocusedEditableElementIntoView();
   }
 }
@@ -1543,9 +1540,10 @@ void RenderViewImpl::PrintPage(WebLocalFrame* frame) {
 }
 
 void RenderViewImpl::AttachWebFrameWidget(blink::WebFrameWidget* frame_widget) {
-  // The previous WebFrameWidget must already be detached by CloseForFrame().
-  DCHECK(!frame_widget_);
-  frame_widget_ = frame_widget;
+  // The previous WebFrameWidget must already be detached by
+  // DetachWebFrameWidget().
+  DCHECK(!render_widget_->GetWebWidget());
+
   render_widget_->SetWebWidgetInternal(frame_widget);
 
   // Initialization for the WebFrameWidget that should only occur for the main
@@ -1558,15 +1556,12 @@ void RenderViewImpl::AttachWebFrameWidget(blink::WebFrameWidget* frame_widget) {
 }
 
 void RenderViewImpl::DetachWebFrameWidget() {
-  DCHECK(frame_widget_);
+  // There is a WebFrameWidget previously attached by AttachWebFrameWidget().
+  DCHECK(render_widget_->GetWebWidget());
 
   if (destroying_) {
     // We are inside RenderViewImpl::Destroy() and the main frame is being
     // detached as part of shutdown. So we can destroy the RenderWidget.
-
-    // The RenderWidget will be closed, and it will close the WebWidget stored
-    // in |frame_widget_|. We just want to drop raw pointer here.
-    frame_widget_ = nullptr;
 
     // We pass ownership of |render_widget_| to itself. Grab a raw pointer to
     // call the Close() method on so we don't have to be a C++ expert to know
@@ -1579,13 +1574,10 @@ void RenderViewImpl::DetachWebFrameWidget() {
     // detached and replaced with a remote frame proxy. We can't close the
     // RenderWidget, and it is marked undead instead, but we do need to close
     // the WebFrameWidget and remove it from the RenderWidget.
-
     render_widget_->SetIsUndead(true);
-
     // The WebWidget needs to be closed even though the RenderWidget won't be
-    // here (since it is marked undead instead).
-    frame_widget_->Close();
-    frame_widget_ = nullptr;
+    // closed here (since it is marked undead instead).
+    render_widget_->GetWebWidget()->Close();
     // This just clears the webwidget_internal_ member from RenderWidget.
     render_widget_->SetWebWidgetInternal(nullptr);
 
