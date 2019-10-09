@@ -142,8 +142,7 @@ static AOM_INLINE void mode_estimation(
     tran_low_t *dqcoeff, int mi_row, int mi_col, BLOCK_SIZE bsize,
     TX_SIZE tx_size, const YV12_BUFFER_CONFIG *ref_frame[],
     const YV12_BUFFER_CONFIG *src_ref_frame[], uint8_t *predictor,
-    int base_rdmult, int64_t *recon_error, int64_t *sse,
-    TplDepStats *tpl_stats) {
+    int64_t *recon_error, int64_t *sse, TplDepStats *tpl_stats) {
   AV1_COMMON *cm = &cpi->common;
   const GF_GROUP *gf_group = &cpi->gf_group;
 
@@ -161,7 +160,6 @@ static AOM_INLINE void mode_estimation(
 
   int64_t best_intra_cost = INT64_MAX;
   int64_t intra_cost;
-  int64_t best_rdcost = 0;
   PREDICTION_MODE mode;
   PREDICTION_MODE best_mode = DC_PRED;
 
@@ -285,7 +283,6 @@ static AOM_INLINE void mode_estimation(
       get_quantize_error(x, 0, coeff, qcoeff, dqcoeff, tx_size, &eob,
                          recon_error, sse);
       int rate_cost = rate_estimator(qcoeff, eob, tx_size);
-      best_rdcost = RDCOST(base_rdmult, rate_cost, *recon_error);
       tpl_stats->srcrf_rate = rate_cost << TPL_DEP_COST_SCALE_LOG2;
 
       if (best_inter_cost_weighted < best_intra_cost) best_mode = NEWMV;
@@ -301,7 +298,6 @@ static AOM_INLINE void mode_estimation(
   tpl_stats->intra_cost = best_intra_cost << TPL_DEP_COST_SCALE_LOG2;
 
   tpl_stats->srcrf_dist = *recon_error << (TPL_DEP_COST_SCALE_LOG2);
-  tpl_stats->src_rdcost = best_rdcost << TPL_DEP_COST_SCALE_LOG2;
 
   // Final encode
   if (is_inter_mode(best_mode)) {
@@ -353,17 +349,12 @@ static AOM_INLINE void mode_estimation(
 
   tpl_stats->recrf_dist = *recon_error << (TPL_DEP_COST_SCALE_LOG2);
   tpl_stats->recrf_rate = rate_cost << TPL_DEP_COST_SCALE_LOG2;
-  tpl_stats->rec_rdcost = RDCOST(base_rdmult, rate_cost, *recon_error)
-                          << TPL_DEP_COST_SCALE_LOG2;
   if (!is_inter_mode(best_mode)) {
     tpl_stats->srcrf_dist = *recon_error << (TPL_DEP_COST_SCALE_LOG2);
     tpl_stats->srcrf_rate = rate_cost << TPL_DEP_COST_SCALE_LOG2;
-    tpl_stats->src_rdcost = RDCOST(base_rdmult, rate_cost, *recon_error)
-                            << TPL_DEP_COST_SCALE_LOG2;
   }
   tpl_stats->recrf_dist = AOMMAX(tpl_stats->srcrf_dist, tpl_stats->recrf_dist);
   tpl_stats->recrf_rate = AOMMAX(tpl_stats->srcrf_rate, tpl_stats->recrf_rate);
-  tpl_stats->rec_rdcost = AOMMAX(tpl_stats->rec_rdcost, tpl_stats->src_rdcost);
 
   if (frame_idx && best_rf_idx != -1) {
     tpl_stats->mv.as_int = best_mv.as_int;
@@ -538,8 +529,6 @@ static AOM_INLINE void tpl_model_store(AV1_COMP *cpi,
   int64_t recrf_dist = src_stats->recrf_dist / (mi_height * mi_width);
   int64_t srcrf_rate = src_stats->srcrf_rate / (mi_height * mi_width);
   int64_t recrf_rate = src_stats->recrf_rate / (mi_height * mi_width);
-  int64_t src_rdcost = src_stats->src_rdcost / (mi_height * mi_width);
-  int64_t rec_rdcost = src_stats->rec_rdcost / (mi_height * mi_width);
 
   intra_cost = AOMMAX(1, intra_cost);
   inter_cost = AOMMAX(1, inter_cost);
@@ -547,8 +536,6 @@ static AOM_INLINE void tpl_model_store(AV1_COMP *cpi,
   recrf_dist = AOMMAX(1, recrf_dist);
   srcrf_rate = AOMMAX(1, srcrf_rate);
   recrf_rate = AOMMAX(1, recrf_rate);
-  src_rdcost = AOMMAX(1, src_rdcost);
-  rec_rdcost = AOMMAX(1, rec_rdcost);
 
   for (int idy = 0; idy < mi_height; idy += step) {
     TplDepStats *tpl_ptr =
@@ -560,8 +547,6 @@ static AOM_INLINE void tpl_model_store(AV1_COMP *cpi,
       tpl_ptr->recrf_dist = recrf_dist;
       tpl_ptr->srcrf_rate = srcrf_rate;
       tpl_ptr->recrf_rate = recrf_rate;
-      tpl_ptr->src_rdcost = src_rdcost;
-      tpl_ptr->rec_rdcost = rec_rdcost;
       tpl_ptr->mv.as_int = src_stats->mv.as_int;
       tpl_ptr->ref_frame_index = src_stats->ref_frame_index;
       ++tpl_ptr;
@@ -685,9 +670,8 @@ static AOM_INLINE void mc_flow_dispenser(AV1_COMP *cpi, int frame_idx,
   cm->base_qindex = base_qindex;
   av1_frame_init_quantizer(cpi);
 
-  int base_rdmult = av1_compute_rd_mult_based_on_qindex(cpi, pframe_qindex) / 6;
-
-  tpl_frame->base_rdmult = base_rdmult;
+  tpl_frame->base_rdmult =
+      av1_compute_rd_mult_based_on_qindex(cpi, pframe_qindex) / 6;
 
   for (mi_row = 0; mi_row < cm->mi_rows; mi_row += mi_height) {
     // Motion estimation row boundary
@@ -708,8 +692,7 @@ static AOM_INLINE void mc_flow_dispenser(AV1_COMP *cpi, int frame_idx,
       xd->mb_to_right_edge = ((cm->mi_cols - mi_width - mi_col) * MI_SIZE) * 8;
       mode_estimation(cpi, x, xd, &sf, frame_idx, src_diff, coeff, qcoeff,
                       dqcoeff, mi_row, mi_col, bsize, tx_size, ref_frame,
-                      src_frame, predictor, base_rdmult, &recon_error, &sse,
-                      &tpl_stats);
+                      src_frame, predictor, &recon_error, &sse, &tpl_stats);
 
       // Motion flow dependency dispenser.
       tpl_model_store(cpi, tpl_frame->tpl_stats_ptr, mi_row, mi_col, bsize,
