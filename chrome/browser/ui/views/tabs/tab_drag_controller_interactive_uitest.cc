@@ -1843,6 +1843,50 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   EXPECT_FALSE(browser2->window()->IsMaximized());
 }
 
+// Creates two browser with two tabs each. The first browser has one tab in a
+// group and the second tab not in a group. The second browser {browser2} has
+// two tabs in another group {group1}. Dragging the two tabs in the first
+// browser into the middle of the second browser will insert the two dragged
+// tabs into the {group1}} after the first tab.
+IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
+                       DragWindowIntoGroup) {
+  scoped_feature_list_.InitAndEnableFeature(features::kTabGroups);
+
+  TabStrip* tab_strip = GetTabStripForBrowser(browser());
+  TabStripModel* model = browser()->tab_strip_model();
+
+  AddTabsAndResetBrowser(browser(), 1);
+  model->AddToNewGroup({0});
+  StopAnimating(tab_strip);
+
+  // Set up the second browser with two tabs in a group with distinct IDs.
+  Browser* browser2 = CreateAnotherBrowserAndResize();
+  TabStrip* tab_strip2 = GetTabStripForBrowser(browser2);
+  TabStripModel* model2 = browser2->tab_strip_model();
+  AddTabsAndResetBrowser(browser2, 1);
+  ResetIDs(model2, 100);
+  TabGroupId group1 = model2->AddToNewGroup({0, 1});
+  StopAnimating(tab_strip2);
+
+  // Click the first tab and select the second tab so they are the only ones
+  // selected.
+  ASSERT_TRUE(PressInput(GetCenterInScreenCoordinates(tab_strip->tab_at(0))));
+  ASSERT_TRUE(ReleaseInput());
+  browser()->tab_strip_model()->ToggleSelectionAt(1);
+
+  // Move to the first tab and drag it enough so that it detaches, but not
+  // enough that it attaches to browser2.
+  DragTabAndNotify(tab_strip, base::BindOnce(&DragAllToSeparateWindowStep2,
+                                             this, tab_strip, tab_strip2));
+
+  // Release the mouse, stopping the drag session.
+  ASSERT_TRUE(ReleaseInput());
+
+  EXPECT_EQ("100 0 1 101", IDString(model2));
+  EXPECT_THAT(model2->ListTabsInGroup(group1),
+              testing::ElementsAre(0, 1, 2, 3));
+}
+
 namespace {
 
 // Invoked from the nested run loop.
