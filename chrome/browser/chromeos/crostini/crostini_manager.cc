@@ -2787,9 +2787,9 @@ void CrostiniManager::OnCancelImportLxdContainer(
 
 void CrostiniManager::OnPendingAppListUpdates(
     const vm_tools::cicerone::PendingAppListUpdatesSignal& signal) {
+  ContainerId container_id(signal.vm_name(), signal.container_name());
   for (auto& observer : pending_app_list_updates_observers_) {
-    observer.OnPendingAppListUpdates(signal.vm_name(), signal.container_name(),
-                                     signal.count());
+    observer.OnPendingAppListUpdates(container_id, signal.count());
   }
 }
 

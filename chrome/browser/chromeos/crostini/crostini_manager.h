@@ -53,8 +53,7 @@ class LinuxPackageOperationProgressObserver {
 class PendingAppListUpdatesObserver : public base::CheckedObserver {
  public:
   // Called whenever the kPendingAppListUpdatesMethod signal is sent.
-  virtual void OnPendingAppListUpdates(const std::string& vm_name,
-                                       const std::string& container_name,
+  virtual void OnPendingAppListUpdates(const ContainerId& container_id,
                                        int count) = 0;
 };
 
