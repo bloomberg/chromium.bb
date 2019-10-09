@@ -331,7 +331,7 @@ class StorageTest(TestCase):
     self.assertEqual(set(a), set(b))
 
   def get_push_state(self, storage, item):
-    missing = list(storage._storage_api.contains([item]).iteritems())
+    missing = list(storage._storage_api.contains([item]).items())
     self.assertEqual(1, len(missing))
     self.assertEqual(item, missing[0][0])
     return missing[0][1]
@@ -350,7 +350,7 @@ class StorageTest(TestCase):
     }
     storage_api = MockedStorageApi(
         server_ref,
-        {item.digest: push_state for item, push_state in missing.iteritems()})
+        {item.digest: push_state for item, push_state in missing.items()})
     storage = isolateserver.Storage(storage_api)
 
     # Intentionally pass a generator, to confirm it works.
@@ -458,7 +458,7 @@ class StorageTest(TestCase):
     add(os.path.join(u'sub', u'a_copy'), 'a'*100)
 
     files_hash = {
-      p: hashlib.sha1(c).hexdigest() for p, c in files_content.iteritems()
+      p: hashlib.sha1(c).hexdigest() for p, c in files_content.items()
     }
     # 'a' and 'sub/c' are missing.
     missing = {
@@ -473,7 +473,7 @@ class StorageTest(TestCase):
       results, cold, hot = isolateserver.archive_files_to_storage(
           storage, [os.path.join(self.tempdir, p) for p in files_content], None)
     self.assertEqual(
-        {os.path.join(self.tempdir, f): h for f, h in files_hash.iteritems()},
+        {os.path.join(self.tempdir, f): h for f, h in files_hash.items()},
         dict(results))
 
     expected = [
@@ -489,7 +489,7 @@ class StorageTest(TestCase):
         [(f.path, f.digest) for f in hot])
     # 'contains' checked for existence of all files.
     self.assertEqualIgnoringOrder(
-        set(files_hash.itervalues()),
+        set(files_hash.values()),
         [i.digest for i in sum(storage_api.contains_calls, [])])
     # Pushed only missing files.
     self.assertEqualIgnoringOrder(
@@ -796,7 +796,7 @@ class IsolateServerStorageApiTest(TestCase):
     storage = isolate_storage.IsolateServer(server_ref)
     result = storage.contains(files)
     self.assertEqual(set(missing), set(result.keys()))
-    for i, (_item, push_state) in enumerate(result.iteritems()):
+    for i, (_item, push_state) in enumerate(result.items()):
       self.assertEqual(
           push_state.upload_url, '_ah/api/isolateservice/v1/store_inline')
       self.assertEqual(push_state.finalize_url, None)
@@ -929,13 +929,13 @@ class IsolateServerStorageSmokeTest(unittest.TestCase):
           storage, list(files), None)
       logging.info('Done')
 
-    expected = {'default': {h: h for h in files.itervalues()}}
+    expected = {'default': {h: h for h in files.values()}}
     self.assertEqual(expected, self.server.contents)
     self.assertEqual(files, dict(results))
     # Everything is cold.
     f = os.path.join(self.tempdir, '512mb_3.7z')
     self.assertEqual(
-        sorted(files.iteritems()), sorted((f.path, f.digest) for f in cold))
+        sorted(files.items()), sorted((f.path, f.digest) for f in cold))
     self.assertEqual([], [(f.path, f.digest) for f in hot])
 
   def test_archive_multiple_files(self):
@@ -1075,7 +1075,7 @@ class IsolateServerDownloadTest(TestCase):
     isolated_data = json.dumps(isolated, sort_keys=True, separators=(',', ':'))
     isolated_hash = isolateserver_fake.hash_content(isolated_data)
     requests = [
-      (v['h'], files[k]) for k, v in isolated['files'].iteritems()
+      (v['h'], files[k]) for k, v in isolated['files'].items()
       if 'h' in v
     ]
     requests.append((isolated_hash, isolated_data))
@@ -1200,7 +1200,7 @@ class IsolateServerDownloadTest(TestCase):
     self.expected_requests(requests)
     self.assertEqual(0, isolateserver.main(cmd))
     expected = {
-      os.path.join(self.tempdir, 'target', k): v for k, v in files.iteritems()
+      os.path.join(self.tempdir, 'target', k): v for k, v in files.items()
     }
     actual = self._get_actual()
     self.assertEqual(expected, actual)
@@ -1266,7 +1266,7 @@ class TestArchive(TestCase):
       'files': {},
       'version': isolated_format.ISOLATED_FILE_VERSION,
     }
-    for k, v in CONTENTS.iteritems():
+    for k, v in CONTENTS.items():
       isolated['files'][k] = {
         'h': isolateserver_fake.hash_content(v),
         's': len(v),

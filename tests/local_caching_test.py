@@ -332,10 +332,10 @@ class DiskContentAddressedCacheTest(TestCase, ContentAddressedCacheTestMixin):
     self._free_disk = 1003
     cache = self.get_cache(_get_policies(min_free_space=1000))
     h_foo = self._algo('foo').hexdigest()
-    self.assertEqual([], sorted(cache._lru._items.iteritems()))
+    self.assertEqual([], sorted(cache._lru._items.items()))
     cache.write(h_foo, ['foo'])
     self.assertEqual([], cache.trim())
-    self.assertEqual([h_foo], [i[0] for i in cache._lru._items.iteritems()])
+    self.assertEqual([h_foo], [i[0] for i in cache._lru._items.items()])
 
     h_a = self._algo('a').hexdigest()
     local_caching.file_write(os.path.join(cache.cache_dir, h_a), 'a')
@@ -344,7 +344,7 @@ class DiskContentAddressedCacheTest(TestCase, ContentAddressedCacheTestMixin):
     file_path.remove(os.path.join(cache.cache_dir, h_foo))
 
     # Still hasn't realized that the file is missing.
-    self.assertEqual([h_foo], [i[0] for i in cache._lru._items.iteritems()])
+    self.assertEqual([h_foo], [i[0] for i in cache._lru._items.items()])
     self.assertEqual(
         sorted([h_a, cache.STATE_FILE]), sorted(fs.listdir(cache.cache_dir)))
     cache.cleanup()
@@ -362,7 +362,7 @@ class DiskContentAddressedCacheTest(TestCase, ContentAddressedCacheTestMixin):
 
     def assertItems(expected):
       actual = [
-        (digest, size) for digest, (size, _) in cache._lru._items.iteritems()]
+        (digest, size) for digest, (size, _) in cache._lru._items.items()]
       self.assertEqual(expected, actual)
 
     self._free_disk = 1101
@@ -755,7 +755,7 @@ class NamedCacheTest(TestCase, CacheTestMixin):
     # It automatically upgrades to v2.
     cache = self.get_cache(_get_policies())
     expected = {u'cache1': ((u'f1', len('world')), now)}
-    self.assertEqual(expected, dict(cache._lru._items.iteritems()))
+    self.assertEqual(expected, dict(cache._lru._items.items()))
     self.assertEqual(
         [u'f1', cache.STATE_FILE], sorted(fs.listdir(cache.cache_dir)))
 

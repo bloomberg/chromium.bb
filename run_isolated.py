@@ -369,7 +369,7 @@ def get_command_env(tmp_dir, cipd_info, run_dir, env, env_prefixes, out_dir,
         SWARMING_BOT_FILE_PARAMETER.
   """
   out = os.environ.copy()
-  for k, v in env.iteritems():
+  for k, v in env.items():
     if not v:
       out.pop(k, None)
     else:
@@ -380,7 +380,7 @@ def get_command_env(tmp_dir, cipd_info, run_dir, env, env_prefixes, out_dir,
     out['PATH'] = '%s%s%s' % (_to_str(bin_dir), os.pathsep, out['PATH'])
     out['CIPD_CACHE_DIR'] = _to_str(cipd_info.cache_dir)
 
-  for key, paths in env_prefixes.iteritems():
+  for key, paths in env_prefixes.items():
     assert isinstance(paths, list), paths
     paths = [os.path.normpath(os.path.join(run_dir, p)) for p in paths]
     cur = out.get(key)
@@ -943,13 +943,13 @@ def _install_packages(run_dir, cipd_cache_dir, client, packages, timeout):
     run_dir,
     {
       subdir: [(name, vers) for name, vers, _ in pkgs]
-      for subdir, pkgs in by_path.iteritems()
+      for subdir, pkgs in by_path.items()
     },
     cache_dir=cipd_cache_dir,
     timeout=timeout,
   )
 
-  for subdir, pin_list in sorted(pins.iteritems()):
+  for subdir, pin_list in sorted(pins.items()):
     this_subdir = by_path[subdir]
     for i, (name, version) in enumerate(pin_list):
       insert_pin(subdir, name, version, this_subdir[i][2])

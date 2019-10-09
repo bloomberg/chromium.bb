@@ -422,7 +422,7 @@ def load_isolated(content, algo):
 
   algo_name = SUPPORTED_ALGOS_REVERSE[algo]
 
-  for key, value in data.iteritems():
+  for key, value in data.items():
     if key == 'algo':
       if not isinstance(value, basestring):
         raise IsolatedError('Expected string, got %r' % value)
@@ -446,7 +446,7 @@ def load_isolated(content, algo):
     elif key == 'files':
       if not isinstance(value, dict):
         raise IsolatedError('Expected dict, got %r' % value)
-      for subkey, subvalue in value.iteritems():
+      for subkey, subvalue in value.items():
         if not isinstance(subkey, basestring):
           raise IsolatedError('Expected string, got %r' % subkey)
         if os.path.isabs(subkey) or subkey.startswith('\\\\'):
@@ -460,7 +460,7 @@ def load_isolated(content, algo):
           raise IsolatedError('File path can\'t reference parent: %r' % subkey)
         if not isinstance(subvalue, dict):
           raise IsolatedError('Expected dict, got %r' % subvalue)
-        for subsubkey, subsubvalue in subvalue.iteritems():
+        for subsubkey, subsubvalue in subvalue.items():
           if subsubkey == 'l':
             if not isinstance(subsubvalue, basestring):
               raise IsolatedError('Expected string, got %r' % subsubvalue)
@@ -532,8 +532,8 @@ def load_isolated(content, algo):
   if 'files' in data:
     data['files'] = dict(
         (k.replace(wrong_path_sep, os.path.sep), v)
-        for k, v in data['files'].iteritems())
-    for v in data['files'].itervalues():
+        for k, v in data['files'].items())
+    for v in data['files'].values():
       if 'l' in v:
         v['l'] = v['l'].replace(wrong_path_sep, os.path.sep)
   if 'relative_cwd' in data:

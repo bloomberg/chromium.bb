@@ -100,7 +100,7 @@ class TraceInputs(unittest.TestCase):
       u'"cmd.exe", ""C:\\\\Winz\\\\cmd.exe" /k ""C:\\\\MSVS\\\\vc.bat"" x86"':
         [u'cmd.exe', u'"C:\\\\Winz\\\\cmd.exe" /k "C:\\\\MSVS\\\\vc.bat" x86'],
     }
-    for data, expected in test_cases.iteritems():
+    for data, expected in test_cases.items():
       csv = trace_inputs.LogmanTrace.Tracer.CsvReader(StringIO.StringIO(data))
       actual = [i for i in csv]
       self.assertEqual(1, len(actual))
@@ -119,7 +119,7 @@ if sys.platform != 'win32':
       context = trace_inputs.Strace.Context(lambda _: False, None, initial_cwd)
       for line in lines:
         context.on_line(*line)
-      done = any(p._done for p in context._process_lookup.itervalues())
+      done = any(p._done for p in context._process_lookup.values())
       return context.to_results().flatten(), done
 
     def assertContext(self, lines, initial_cwd, expected, expected_done):

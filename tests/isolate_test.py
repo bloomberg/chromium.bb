@@ -332,7 +332,7 @@ class IsolateLoad(IsolateBase):
     """Modifies isolated to remove the non-deterministic parts."""
     if sys.platform == 'win32':
       # 'm' are not saved in windows.
-      for values in expected_isolated['files'].itervalues():
+      for values in expected_isolated['files'].values():
         self.assertTrue(values.pop('m'))
 
   def make_tree(self, contents):
@@ -990,7 +990,7 @@ class IsolateLoad(IsolateBase):
 
       # Make all the touched files.
       mapping = {1: isolate_dir_1, 2: isolate_dir_3_2, 3: isolate_dir_3}
-      for k, v in files_to_create.iteritems():
+      for k, v in files_to_create.items():
         f = os.path.join(mapping[k], v)
         base = os.path.dirname(f)
         if not os.path.isdir(base):

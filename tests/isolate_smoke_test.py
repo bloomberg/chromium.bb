@@ -528,7 +528,7 @@ class IsolateTempdirBase(unittest.TestCase):
       root_dir = os.path.join(root_dir, 'tests', 'isolate')
 
     files = {unicode(f): {} for f in DEPENDENCIES[self.case()][1]}
-    for relfile, v in files.iteritems():
+    for relfile, v in files.items():
       filepath = os.path.join(root_dir, relfile)
       filestats = os.lstat(filepath)
       is_link = stat.S_ISLNK(filestats.st_mode)

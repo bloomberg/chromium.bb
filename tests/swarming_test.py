@@ -695,7 +695,7 @@ class TestSwarmingCollection(NetTestCase):
         ])
     actual = get_results(['10100'])
     self.assertEqual([], actual)
-    self.assertTrue(all(not v for v in now.itervalues()), now)
+    self.assertTrue(all(not v for v in now.values()), now)
 
   def test_many_shards(self):
     self.expected_requests(

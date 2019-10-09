@@ -694,10 +694,10 @@ class Storage(object):
             except threading_utils.TaskChannel.Timeout:
               break
             pending_contains -= 1
-            for missing_item, push_state in v.iteritems():
+            for missing_item, push_state in v.items():
               missing.put((missing_item, push_state))
         while pending_contains and not self._aborted:
-          for missing_item, push_state in channel.next().iteritems():
+          for missing_item, push_state in channel.next().items():
             missing.put((missing_item, push_state))
           pending_contains -= 1
       finally:
@@ -1181,7 +1181,7 @@ class IsolatedBundle(object):
     """
     files = isolated.data.get('files', {})
     logging.debug('fetch_files(%s, %d)', isolated.obj_hash, len(files))
-    for filepath, properties in files.iteritems():
+    for filepath, properties in files.items():
       if self._filter_cb and not self._filter_cb(filepath):
         continue
 
@@ -1324,7 +1324,7 @@ def fetch_isolated(isolated_hash, storage, cache, outdir, use_symlinks,
     # Create file system hierarchy.
     file_path.ensure_tree(outdir)
     create_directories(outdir, bundle.files)
-    _create_symlinks(outdir, bundle.files.iteritems())
+    _create_symlinks(outdir, bundle.files.items())
 
     # Ensure working directory exists.
     cwd = os.path.normpath(os.path.join(outdir, bundle.relative_cwd))
@@ -1332,7 +1332,7 @@ def fetch_isolated(isolated_hash, storage, cache, outdir, use_symlinks,
 
     # Multimap: digest -> list of pairs (path, props).
     remaining = {}
-    for filepath, props in bundle.files.iteritems():
+    for filepath, props in bundle.files.items():
       if 'h' in props:
         remaining.setdefault(props['h'], []).append((filepath, props))
         fetch_queue.wait_on(props['h'])
@@ -1584,7 +1584,7 @@ def CMDarchive(parser, args):
       results, _cold, _hot = archive_files_to_storage(storage, files, blacklist)
   except (Error, local_caching.NoMoreSpace) as e:
     parser.error(e.args[0])
-  print('\n'.join('%s %s' % (h, f) for f, h in results.iteritems()))
+  print('\n'.join('%s %s' % (h, f) for f, h in results.items()))
   return 0
 
 

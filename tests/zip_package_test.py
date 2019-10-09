@@ -37,7 +37,7 @@ class ZipPackageTest(unittest.TestCase):
     """Populates temp directory with given files specified as a list or dict."""
     if not isinstance(files, dict):
       files = dict((p, '') for p in files)
-    for path, content in files.iteritems():
+    for path, content in files.items():
       abs_path = os.path.join(self.temp_dir, path.replace('/', os.sep))
       dir_path = os.path.dirname(abs_path)
       if not os.path.exists(dir_path):

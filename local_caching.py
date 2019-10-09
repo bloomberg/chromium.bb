@@ -366,7 +366,7 @@ class MemoryContentAddressedCache(ContentAddressedCache):
   @property
   def total_size(self):
     with self._lock:
-      return sum(len(i) for i in self._lru.itervalues())
+      return sum(len(i) for i in self._lru.values())
 
   def get_oldest(self):
     with self._lock:
@@ -479,7 +479,7 @@ class DiskContentAddressedCache(ContentAddressedCache):
   @property
   def total_size(self):
     with self._lock:
-      return sum(self._lru.itervalues())
+      return sum(self._lru.values())
 
   def get_oldest(self):
     with self._lock:
@@ -689,7 +689,7 @@ class DiskContentAddressedCache(ContentAddressedCache):
 
     # Ensure maximum cache size.
     if self.policies.max_cache_size:
-      total_size = sum(self._lru.itervalues())
+      total_size = sum(self._lru.values())
       while total_size > self.policies.max_cache_size:
         e = self._remove_lru_file(True)
         evicted.append(e)
@@ -710,7 +710,7 @@ class DiskContentAddressedCache(ContentAddressedCache):
       evicted.append(self._remove_lru_file(True))
 
     if evicted:
-      total_usage = sum(self._lru.itervalues())
+      total_usage = sum(self._lru.values())
       usage_percent = 0.
       if total_usage:
         usage_percent = 100. * float(total_usage) / self.policies.max_cache_size
@@ -740,7 +740,7 @@ class DiskContentAddressedCache(ContentAddressedCache):
     try:
       digest, (size, _ts) = self._lru.get_oldest()
       if not allow_protected and digest == self._protected:
-        total_size = sum(self._lru.itervalues())+size
+        total_size = sum(self._lru.values())+size
         msg = (
             'Not enough space to fetch the whole isolated tree.\n'
             '  %s\n  cache=%dbytes, %d items; %sb free_space') % (
@@ -991,7 +991,7 @@ class NamedCache(Cache):
   @property
   def total_size(self):
     with self._lock:
-      return sum(size for _rel_path, size in self._lru.itervalues())
+      return sum(size for _rel_path, size in self._lru.values())
 
   def get_oldest(self):
     with self._lock:
@@ -1054,7 +1054,7 @@ class NamedCache(Cache):
       # Trim according to maximum total size.
       if self._policies.max_cache_size:
         while self._lru:
-          total = sum(size for _rel_cache, size in self._lru.itervalues())
+          total = sum(size for _rel_cache, size in self._lru.values())
           if total <= self._policies.max_cache_size:
             break
           name, size = self._remove_lru_item()
@@ -1078,7 +1078,7 @@ class NamedCache(Cache):
         actual = set(fs.listdir(self.cache_dir))
         actual.discard(self.NAMED_DIR)
         actual.discard(self.STATE_FILE)
-        expected = {v[0]: k for k, v in self._lru.iteritems()}
+        expected = {v[0]: k for k, v in self._lru.items()}
         # First, handle the actual cache content.
         # Remove missing entries.
         for missing in (set(expected) - actual):

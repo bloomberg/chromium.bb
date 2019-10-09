@@ -375,7 +375,7 @@ class Results(object):
 
       If a variable replacement occurs, the cloned object becomes tainted.
       """
-      for variable, root_path in variables.iteritems():
+      for variable, root_path in variables.items():
         if self.path.startswith(root_path):
           return self._clone(
               self.root, variable + self.path[len(root_path):], True)
@@ -639,7 +639,7 @@ class ApiBase(object):
         # instances. It is important to do it first since there could still be
         # multiple entries with the same path but different modes.
         rendered = (
-            fix_and_blacklist_path(f, m) for f, m in self.files.iteritems())
+            fix_and_blacklist_path(f, m) for f, m in self.files.items())
         files = sorted(
           (f for f in rendered if f[0]),
           key=lambda x: (x[0], Results.File.ACCEPTABLE_MODES.index(x[1])))
@@ -647,7 +647,7 @@ class ApiBase(object):
         # important values.
         files = [
           Results.File(None, f, False, None, m)
-          for f, m in dict(files).iteritems()
+          for f, m in dict(files).items()
         ]
         return Results.Process(
             self.pid,
@@ -1332,7 +1332,7 @@ class Strace(ApiBase):
       if not self.root_pid:
         # The non-sudo case. The traced process was started by strace itself,
         # so the pid of the traced process is not known.
-        root = [p for p in self._process_lookup.itervalues() if not p.parentid]
+        root = [p for p in self._process_lookup.values() if not p.parentid]
         if len(root) == 1:
           self.root_process = root[0]
           # Save it for later.
@@ -3278,14 +3278,14 @@ def extract_directories(root_dir, files, blacklist):
         root_dir,
         directory[root_prefix:],
         False,
-        sum(f.size for f in buckets[directory].itervalues()),
-        sum(f.nb_files for f in buckets[directory].itervalues()))
+        sum(f.size for f in buckets[directory].values()),
+        sum(f.nb_files for f in buckets[directory].values()))
       # Remove the whole bucket.
       del buckets[directory]
 
   # Reverse the mapping with what remains. The original instances are returned,
   # so the cached meta data is kept.
-  files = sum((x.values() for x in buckets.itervalues()), [])
+  files = sum((x.values() for x in buckets.values()), [])
   return sorted(files, key=lambda x: x.path)
 
 

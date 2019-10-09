@@ -484,7 +484,7 @@ class Popen(subprocess.Popen):
       kwargs['cwd'] = to_str(kwargs['cwd'])
     if kwargs.get('env'):
       kwargs['env'] = {
-        to_str(k): to_str(v) for k, v in kwargs['env'].iteritems()
+        to_str(k): to_str(v) for k, v in kwargs['env'].items()
       }
 
     # Set via contrived monkey patching below, because stdlib doesn't expose
@@ -930,7 +930,7 @@ def set_signal_handler(signals, handler):
   try:
     yield
   finally:
-    for sig, h in previous.iteritems():
+    for sig, h in previous.items():
       signal.signal(sig, h)
 
 
@@ -1040,6 +1040,6 @@ def split(data, sep='\n'):
       yield pipe_name, to_emit
 
   # Emit remaining chunks that don't end with separators as is.
-  for pipe_name, chunks in sorted(pending_chunks.iteritems()):
+  for pipe_name, chunks in sorted(pending_chunks.items()):
     if chunks:
       yield pipe_name, ''.join(chunks)

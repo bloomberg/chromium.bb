@@ -55,11 +55,11 @@ class LRUDictTest(unittest.TestCase):
   def assert_same_data(self, expected, lru_dict):
     """Asserts that given |lru_dict| contains same data as |expected|.
 
-    Tests iteritems(), itervalues(), get(), __iter__.
+    Tests items(), values(), get(), __iter__.
     """
-    self.assertEqual(list(lru_dict.iteritems()), expected)
+    self.assertEqual(list(lru_dict.items()), expected)
     self.assertEqual(set(lru_dict), set(k for k, v in expected))
-    self.assertEqual(list(lru_dict.itervalues()), [v for k, v in expected])
+    self.assertEqual(list(lru_dict.values()), [v for k, v in expected])
     for k, v in expected:
       self.assertEqual(lru_dict.get(k), v)
 

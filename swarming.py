@@ -169,7 +169,7 @@ def namedtuple_to_dict(value):
   if isinstance(value, (list, tuple)):
     return [namedtuple_to_dict(v) for v in value]
   if isinstance(value, dict):
-    return {k: namedtuple_to_dict(v) for k, v in value.iteritems()}
+    return {k: namedtuple_to_dict(v) for k, v in value.items()}
   return value
 
 
@@ -187,7 +187,7 @@ def task_request_to_raw_request(task_request):
   for task_slice in out['task_slices']:
     task_slice['properties']['env'] = [
       {'key': k, 'value': v}
-      for k, v in task_slice['properties']['env'].iteritems()
+      for k, v in task_slice['properties']['env'].items()
     ]
     task_slice['properties']['env'].sort(key=lambda x: x['key'])
   return out
@@ -310,7 +310,7 @@ def trigger_task_shards(swarming, task_request, shards):
     if tasks:
       print('Only %d shard(s) out of %d were triggered' % (
           len(tasks), len(requests)), file=sys.stderr)
-      for task_dict in tasks.itervalues():
+      for task_dict in tasks.values():
         abort_task(swarming, task_dict['task_id'])
     return None
 
@@ -1164,7 +1164,7 @@ def process_trigger_options(parser, options, args):
       relative_cwd=options.relative_cwd,
       dimensions=orig_dims,
       env=options.env,
-      env_prefixes=[StringListPair(k, v) for k, v in env_prefixes.iteritems()],
+      env_prefixes=[StringListPair(k, v) for k, v in env_prefixes.items()],
       execution_timeout_secs=options.hard_timeout,
       extra_args=extra_args,
       grace_period_secs=30,
@@ -1206,7 +1206,7 @@ def process_trigger_options(parser, options, args):
   # we append it).  Currently the only dimension we can repeat is "caches"; the
   # rest (os, cpu, etc) shouldn't be repeated.
   extra_dims = []
-  for i, (_, kvs) in enumerate(sorted(dims_by_exp.iteritems(), reverse=True)):
+  for i, (_, kvs) in enumerate(sorted(dims_by_exp.items(), reverse=True)):
     dims = list(orig_dims)
     # Replace or append the key/value pairs for this expiration in extra_dims;
     # we keep extra_dims around because we are iterating backwards and filling
@@ -1465,7 +1465,7 @@ def CMDcollect(parser, args):
       parser.error('Failed to open %s' % options.json)
     try:
       tasks = sorted(
-          data['tasks'].itervalues(), key=lambda x: x['shard_index'])
+          data['tasks'].values(), key=lambda x: x['shard_index'])
       args = [t['task_id'] for t in tasks]
     except (KeyError, TypeError):
       parser.error('Failed to process %s' % options.json)
@@ -1610,7 +1610,7 @@ def CMDquery_list(parser, args):
     help_url = (
       'https://apis-explorer.appspot.com/apis-explorer/?base=%s/_ah/api#p/' %
       options.swarming)
-    for i, (api_id, api) in enumerate(sorted(apis.iteritems())):
+    for i, (api_id, api) in enumerate(sorted(apis.items())):
       if i:
         print('')
       print(api_id)
@@ -1620,10 +1620,10 @@ def CMDquery_list(parser, args):
         # TODO(maruel): Remove.
         # pylint: disable=too-many-nested-blocks
         for j, (resource_name, resource) in enumerate(
-            sorted(api['resources'].iteritems())):
+            sorted(api['resources'].items())):
           if j:
             print('')
-          for method_name, method in sorted(resource['methods'].iteritems()):
+          for method_name, method in sorted(resource['methods'].items()):
             # Only list the GET ones.
             if method['httpMethod'] != 'GET':
               continue
@@ -1635,7 +1635,7 @@ def CMDquery_list(parser, args):
             print('  %s%s%s' % (help_url, api['servicePath'], method['id']))
       else:
         # New.
-        for method_name, method in sorted(api['methods'].iteritems()):
+        for method_name, method in sorted(api['methods'].items()):
           # Only list the GET ones.
           if method['httpMethod'] != 'GET':
             continue
@@ -1672,7 +1672,7 @@ def CMDrun(parser, args):
   print('Triggered task: %s' % task_request.name)
   task_ids = [
     t['task_id']
-    for t in sorted(tasks.itervalues(), key=lambda x: x['shard_index'])
+    for t in sorted(tasks.values(), key=lambda x: x['shard_index'])
   ]
   for task_id in task_ids:
     print('Task: {server}/task?id={task}'.format(
@@ -1897,7 +1897,7 @@ def CMDtrigger(parser, args):
     if tasks:
       print('Triggered task: %s' % task_request.name)
       tasks_sorted = sorted(
-          tasks.itervalues(), key=lambda x: x['shard_index'])
+          tasks.values(), key=lambda x: x['shard_index'])
       if options.dump_json:
         data = {
           'base_task_name': task_request.name,

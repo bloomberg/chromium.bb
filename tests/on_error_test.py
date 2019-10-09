@@ -35,7 +35,7 @@ PEM = os.path.join(test_env.TESTS_DIR, 'self_signed.pem')
 def _serialize_env():
   return dict(
       (unicode(k), unicode(v.encode('ascii', 'replace')))
-      for k, v in os.environ.iteritems())
+      for k, v in os.environ.items())
 
 
 class HttpsServer(BaseHTTPServer.HTTPServer):

@@ -388,7 +388,7 @@ if sys.platform == 'win32':
     if not processes:
       return False
     sys.stderr.write('Enumerating processes:\n')
-    for _, proc in sorted(processes.iteritems()):
+    for _, proc in sorted(processes.items()):
       sys.stderr.write(
           '- pid %d; Handles: %d; Exe: %s; Cmd: %s\n' % (
             proc.ProcessId,
@@ -464,7 +464,7 @@ if sys.platform == 'win32':
       found = set()
       for pid in out:
         found.update(
-            p.ProcessId for p in processes.itervalues()
+            p.ProcessId for p in processes.values()
             if p.ParentProcessId == pid)
       found -= set(out)
       if not found:

@@ -61,7 +61,7 @@ def _tf(data, data_raw=False, workdir=None):
 
 def _to_utf8(obj):
   if isinstance(obj, dict):
-    return {_to_utf8(key): _to_utf8(value) for key, value in obj.iteritems()}
+    return {_to_utf8(key): _to_utf8(value) for key, value in obj.items()}
   if isinstance(obj, list):
     return [_to_utf8(item) for item in obj]
   if isinstance(obj, unicode):
@@ -82,7 +82,7 @@ def _check_ok(data):
     return False
 
   bad = False
-  for k, v in data.iteritems():
+  for k, v in data.items():
     if not isinstance(v, dict):
       bad = True
       _LOGGER.error(
@@ -126,7 +126,7 @@ def _read_full():
 
 def _mutate(section_values):
   new_val = read_full()
-  for section, value in section_values.iteritems():
+  for section, value in section_values.items():
     if value is None:
       new_val.pop(section, None)
     elif isinstance(value, dict):

@@ -43,7 +43,7 @@ from utils import tools
 def get_bot_list(swarming_server, dimensions):
   """Returns a list of swarming bots: health, quarantined, dead."""
   q = '&'.join(
-      'dimensions=%s:%s' % (k, v) for k, v in sorted(dimensions.iteritems()))
+      'dimensions=%s:%s' % (k, v) for k, v in sorted(dimensions.items()))
   cmd = [
     sys.executable, 'swarming.py', 'query',
     '--swarming', swarming_server,
@@ -128,7 +128,7 @@ def run_batches(
         '--task-name', task_name,
         '-s', isolated_hash,
       ]
-      for k, v in sorted(dimensions.iteritems()):
+      for k, v in sorted(dimensions.items()):
         cmd.extend(('-d', k, v))
       for t in sorted(tags):
         cmd.extend(('--tags', t))
@@ -166,7 +166,7 @@ def run_serial(
         '--task-name', task_name,
         '-s', isolated_hash,
       ]
-      for k, v in sorted(dimensions.iteritems()):
+      for k, v in sorted(dimensions.items()):
         cmd.extend(('-d', k, v))
       for t in sorted(tags):
         cmd.extend(('--tags', t))

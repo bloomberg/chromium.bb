@@ -300,7 +300,7 @@ def present_task_types(items, bucket_type, show_cost):
   cost = '    Usage Cost $USD' if show_cost else ''
   print('      Nb of Tasks              Total Duration%s' % cost)
   buckets = do_bucket(items, bucket_type)
-  for index, (bucket, tasks) in enumerate(sorted(buckets.iteritems())):
+  for index, (bucket, tasks) in enumerate(sorted(buckets.items())):
     if index:
       print('')
     print('%s:' % (bucket or '<None>'))
@@ -332,7 +332,7 @@ def present_users(items):
   maxlen = max(len(i) for i in users)
   maxusers = 100
   for index, (name, tasks) in enumerate(
-      sorted(users.iteritems(), key=lambda x: -x[1])):
+      sorted(users.items(), key=lambda x: -x[1])):
     if index == maxusers:
       break
     print('%3d  %-*s: %d' % (index + 1, maxlen, name, tasks))

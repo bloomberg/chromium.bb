@@ -97,7 +97,7 @@ def recreate_tree(outdir, indir, infiles, action, as_hash):
     logging.info('Creating %s' % outdir)
     fs.makedirs(outdir)
 
-  for relfile, metadata in infiles.iteritems():
+  for relfile, metadata in infiles.items():
     infile = os.path.join(indir, relfile)
     if as_hash:
       # Do the hashtable specific checks.
@@ -163,7 +163,7 @@ def normalize_path_variables(cwd, path_variables, relative_base_dir):
   relative_base_dir = file_path.get_native_path_case(relative_base_dir)
   return dict(
       (k, _normalize_path_variable(cwd, relative_base_dir, k, v))
-      for k, v in path_variables.iteritems())
+      for k, v in path_variables.items())
 
 
 ### Internal state files.
@@ -395,7 +395,7 @@ class SavedState(Flattenable):
     out = {
       'algo': self.algo_name,
       'files': dict(
-          (filepath, strip(data)) for filepath, data in self.files.iteritems()),
+          (filepath, strip(data)) for filepath, data in self.files.items()),
       # The version of the .state file is different than the one of the
       # .isolated file.
       'version': isolated_format.ISOLATED_FILE_VERSION,
@@ -559,7 +559,7 @@ class CompleteState(object):
     relative_cwd = os.path.relpath(isolate_cmd_dir, self.saved_state.root_dir)
     # Now that we know where the root is, check that the path_variables point
     # inside it.
-    for k, v in self.saved_state.path_variables.iteritems():
+    for k, v in self.saved_state.path_variables.items():
       dest = os.path.join(isolate_cmd_dir, relative_cwd, v)
       if not file_path.path_starts_with(self.saved_state.root_dir, dest):
         raise isolated_format.MappingError(
@@ -624,7 +624,7 @@ class CompleteState(object):
         self.saved_state.path_variables,
         self.saved_state.algo)
     total_bytes = sum(
-        i.get('s', 0) for i in self.saved_state.files.itervalues())
+        i.get('s', 0) for i in self.saved_state.files.values())
     if total_bytes:
       # TODO(maruel): Stats are missing the .isolated files.
       logging.debug('Total size: %d bytes' % total_bytes)
@@ -721,7 +721,7 @@ def load_complete_state(options, cwd, subdir, skip_update):
         (k,
           os.path.normpath(os.path.join(complete_state.saved_state.relative_cwd,
             v)))
-        for k, v in complete_state.saved_state.path_variables.iteritems())
+        for k, v in complete_state.saved_state.path_variables.items())
     subdir = isolate_format.eval_variables(subdir, translated_path_variables)
     subdir = subdir.replace('/', os.path.sep)
 
@@ -877,7 +877,7 @@ def isolate_and_archive(trees, server_ref):
   # Helper generator to avoid materializing the full (huge) list of files until
   # the very end (in upload_items()).
   def emit_files(root_dir, files):
-    for path, meta in files.iteritems():
+    for path, meta in files.items():
       yield (os.path.join(root_dir, path), meta)
 
   # Process all *.isolate files, it involves parsing, file system traversal and
@@ -899,7 +899,7 @@ def isolate_and_archive(trees, server_ref):
         isolated_hashes[target_name] = None
 
   # All bad? Nothing to upload.
-  if all(v is None for v in isolated_hashes.itervalues()):
+  if all(v is None for v in isolated_hashes.values()):
     return isolated_hashes
 
   # Now upload all necessary files at once.
@@ -1025,7 +1025,7 @@ def CMDbatcharchive(parser, args):
     return EXIT_CODE_UPLOAD_ERROR
 
   # isolated_hashes[x] is None if 'x.isolate' contains a error.
-  if not all(isolated_hashes.itervalues()):
+  if not all(isolated_hashes.values()):
     return EXIT_CODE_ISOLATE_ERROR
 
   return 0

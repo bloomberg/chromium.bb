@@ -65,7 +65,7 @@ def umask():
 
 
 def make_tree(out, contents):
-  for relpath, content in sorted(contents.iteritems()):
+  for relpath, content in sorted(contents.items()):
     filepath = os.path.join(out, relpath.replace('/', os.path.sep))
     dirpath = os.path.dirname(filepath)
     if not fs.isdir(dirpath):

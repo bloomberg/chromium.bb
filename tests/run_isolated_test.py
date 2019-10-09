@@ -639,7 +639,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
                 {'package': pkg, 'instance_id': ver}
                 for pkg, ver in packages
               ]
-              for subdir, packages in pins.iteritems()
+              for subdir, packages in pins.items()
             }
           }, json_out)
         return 0

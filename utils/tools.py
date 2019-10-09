@@ -156,7 +156,7 @@ def report_cache_stats_at_exit(func, cache):
       return size + sum(get_size(x, seen) for x in obj)
     elif isinstance(obj, dict):
       return size + sum(
-          get_size(k, seen) + get_size(v, seen) for k, v in obj.iteritems())
+          get_size(k, seen) + get_size(v, seen) for k, v in obj.items())
     return size
 
   def report_caches_state():

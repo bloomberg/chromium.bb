@@ -308,7 +308,7 @@ class IsolateFormatTest(auto_stub.TestCase):
     }
     configs = isolate_format.load_isolate_as_config(FAKE_DIR, data, None)
     self.assertEqual(('CHROMEOS', 'OS'), configs.config_variables)
-    flatten = dict((k, v.flatten()) for k, v in configs._by_config.iteritems())
+    flatten = dict((k, v.flatten()) for k, v in configs._by_config.items())
     expected = {
       (None, None): {
         'isolate_dir': FAKE_DIR,
@@ -352,7 +352,7 @@ class IsolateFormatTest(auto_stub.TestCase):
     configs2 = isolate_format.load_isolate_as_config(FAKE_DIR, data2, None)
     configs = configs1.union(configs2)
     self.assertEqual(('CHROMEOS', 'OS'), configs.config_variables)
-    flatten = dict((k, v.flatten()) for k, v in configs._by_config.iteritems())
+    flatten = dict((k, v.flatten()) for k, v in configs._by_config.items())
     expected = {
       (None, None): {
         'isolate_dir': FAKE_DIR,

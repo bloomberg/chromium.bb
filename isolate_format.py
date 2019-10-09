@@ -237,7 +237,7 @@ def verify_variables(variables):
   ]
   assert isinstance(variables, dict), variables
   assert set(VALID_VARIABLES).issuperset(set(variables)), variables.keys()
-  for name, value in variables.iteritems():
+  for name, value in variables.items():
     if name == 'read_only':
       assert value in (0, 1, 2, None), value
     else:
@@ -312,7 +312,7 @@ def verify_root(value, variables_and_values):
 def get_folders(values_dict):
   """Returns a dict of all the folders in the given value_dict."""
   return dict(
-    (item, configs) for (item, configs) in values_dict.iteritems()
+    (item, configs) for (item, configs) in values_dict.items()
     if item.endswith('/')
   )
 
@@ -485,7 +485,7 @@ class Configs(object):
     # necessarily sorted in the way that makes sense, they are alphabetically
     # sorted. It is important because the left-most takes predescence.
     out = ConfigSettings({}, None)
-    for k, v in sorted(self._by_config.iteritems()):
+    for k, v in sorted(self._by_config.items()):
       if all(i == j or j is None for i, j in zip(config, k)):
         out = out.union(v)
     return out
@@ -518,10 +518,10 @@ class Configs(object):
     mapping_lhs = _get_map_keys(out.config_variables, self.config_variables)
     mapping_rhs = _get_map_keys(out.config_variables, rhs.config_variables)
     lhs_config = dict(
-        (_map_keys(mapping_lhs, k), v) for k, v in self._by_config.iteritems())
+        (_map_keys(mapping_lhs, k), v) for k, v in self._by_config.items())
     # pylint: disable=W0212
     rhs_config = dict(
-        (_map_keys(mapping_rhs, k), v) for k, v in rhs._by_config.iteritems())
+        (_map_keys(mapping_rhs, k), v) for k, v in rhs._by_config.items())
 
     for key in set(lhs_config) | set(rhs_config):
       l = lhs_config.get(key)
@@ -532,7 +532,7 @@ class Configs(object):
   def flatten(self):
     """Returns a flat dictionary representation of the configuration.
     """
-    return dict((k, v.flatten()) for k, v in self._by_config.iteritems())
+    return dict((k, v.flatten()) for k, v in self._by_config.items())
 
   def __str__(self):
     return 'Configs(%s,%s)' % (
@@ -598,7 +598,7 @@ def load_isolate_as_config(isolate_dir, value, file_comment):
   verify_root(value, variables_and_values)
   if variables_and_values:
     config_variables, config_values = zip(
-        *sorted(variables_and_values.iteritems()))
+        *sorted(variables_and_values.items()))
     all_configs = list(itertools.product(*config_values))
   else:
     config_variables = ()
@@ -620,7 +620,7 @@ def load_isolate_as_config(isolate_dir, value, file_comment):
     isolate = isolate.union(new)
 
   # If the .isolate contains command, ignore any command in child .isolate.
-  root_has_command = any(c.command for c in isolate._by_config.itervalues())
+  root_has_command = any(c.command for c in isolate._by_config.values())
 
   # Load the includes. Process them in reverse so the last one take precedence.
   for include in reversed(value.get('includes', [])):
@@ -629,7 +629,7 @@ def load_isolate_as_config(isolate_dir, value, file_comment):
       # Strip any command in the imported isolate. It is because the chosen
       # command is not related to the one in the top-most .isolate, since the
       # configuration is flattened.
-      for c in included._by_config.itervalues():
+      for c in included._by_config.values():
         c.command = []
     isolate = isolate.union(included)
 

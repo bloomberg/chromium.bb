@@ -294,7 +294,7 @@ class RunIsolatedTest(unittest.TestCase):
       index = 1
     else:
       index = 0
-    expected_mangled = dict((k, oct(v[index])) for k, v in expected.iteritems())
+    expected_mangled = dict((k, oct(v[index])) for k, v in expected.items())
     self.assertEqual(expected_mangled, actual)
 
   def test_isolated_normal(self):

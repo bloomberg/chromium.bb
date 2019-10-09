@@ -173,7 +173,7 @@ class CipdClient(object):
 
     try:
       try:
-        for subdir, pkgs in sorted(packages.iteritems()):
+        for subdir, pkgs in sorted(packages.items()):
           if '\n' in subdir:
             raise Error(
               'Could not install packages; subdir %r contains newline' % subdir)
@@ -223,7 +223,7 @@ class CipdClient(object):
         result_json = json.load(jfile)
       return {
         subdir: [(x['package'], x['instance_id']) for x in pins]
-        for subdir, pins in result_json['result'].iteritems()
+        for subdir, pins in result_json['result'].items()
       }
     finally:
       fs.remove(ensure_file_path)

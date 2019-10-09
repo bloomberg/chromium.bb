@@ -151,7 +151,7 @@ class LRUDict(object):
 
     Raises KeyError if dict is empty.
     """
-    for item in self._items.iteritems():
+    for item in self._items.items():
       return item
     raise KeyError('dictionary is empty')
 
@@ -164,18 +164,18 @@ class LRUDict(object):
     self._dirty = True
     return item
 
-  def iteritems(self):
+  def items(self):
     """Iterator over stored values in order."""
-    for key, (val, _ts) in self._items.iteritems():
+    for key, (val, _ts) in self._items.items():
       yield key, val
 
-  def itervalues(self):
+  def values(self):
     """Iterator over stored values in order."""
-    for val, _ in self._items.itervalues():
+    for val, _ in self._items.values():
       yield val
 
   def transform(self, mutator):
     """Updates the data format and saves immediately."""
-    for key, (val, timestamp) in self._items.iteritems():
+    for key, (val, timestamp) in self._items.items():
       self._items[key] = (mutator(key, val), timestamp)
     self._dirty = True
