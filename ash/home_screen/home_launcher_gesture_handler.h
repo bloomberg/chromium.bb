@@ -25,6 +25,7 @@
 namespace ash {
 
 class HomeLauncherGestureHandlerObserver;
+class DragWindowFromShelfController;
 
 // HomeLauncherGestureHandler makes modifications to a window's transform and
 // opacity when gesture drag events are received and forwarded to it.
@@ -36,23 +37,6 @@ class ASH_EXPORT HomeLauncherGestureHandler
       public TabletModeObserver,
       public ui::ImplicitAnimationObserver {
  public:
-  // The distance for the dragged window to pass over shelf so that it can be
-  // dragged into home launcher or overview. If not pass this value, the window
-  // will snap back to its original position.
-  static constexpr float kReturnToMaximizedThreshold = 116;
-
-  // The deceleration threshold to show overview during window dragging when
-  // dragging a window up from the shelf.
-  static constexpr float kShowOverviewThreshold = 4.f;
-
-  // The upward velocity threshold to take the user to the home launcher screen
-  // when swiping up from the shelf. Can happen anytime during dragging.
-  static constexpr float kVelocityToHomeScreenThreshold = 1000.f;
-
-  // The upward velocity threshold to fling the window into overview when split
-  // view is active during dragging.
-  static constexpr float kVelocityToOverviewThreshold = 1000.f;
-
   // Enum which tracks which mode the current scroll process is in.
   enum class Mode {
     // There is no current scroll process.
@@ -119,7 +103,6 @@ class ASH_EXPORT HomeLauncherGestureHandler
 
  private:
   class ScopedWindowModifier;
-  class DragWindowFromShelfController;
 
   FRIEND_TEST_ALL_PREFIXES(HomeLauncherModeGestureHandlerTest,
                            AnimatingToEndResetsState);

@@ -4,6 +4,7 @@
 
 #include "ash/home_screen/home_launcher_gesture_handler.h"
 
+#include "ash/home_screen/drag_window_from_shelf_controller.h"
 #include "ash/home_screen/home_screen_controller.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/shelf/shelf.h"
@@ -616,7 +617,7 @@ TEST_F(HomeLauncherGestureHandlerTest, MayOrMayNotReShowHiddenWindows) {
   GetGestureHandler()->OnScrollEvent(gfx::Point(200, 200), 1.f);
   GetGestureHandler()->OnReleaseEvent(
       gfx::Point(200, 200),
-      -HomeLauncherGestureHandler::kVelocityToHomeScreenThreshold);
+      -DragWindowFromShelfController::kVelocityToHomeScreenThreshold);
   EXPECT_FALSE(window1->IsVisible());
   EXPECT_FALSE(window2->IsVisible());
 
@@ -701,11 +702,12 @@ TEST_F(HomeLauncherGestureHandlerTest, ShowOverviewWhenHold) {
                                     shelf_bounds.CenterPoint());
   GetGestureHandler()->OnScrollEvent(
       gfx::Point(200, 200),
-      HomeLauncherGestureHandler::kShowOverviewThreshold + 1);
+      DragWindowFromShelfController::kShowOverviewThreshold + 1);
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   EXPECT_FALSE(overview_controller->InOverviewSession());
   GetGestureHandler()->OnScrollEvent(
-      gfx::Point(200, 200), HomeLauncherGestureHandler::kShowOverviewThreshold);
+      gfx::Point(200, 200),
+      DragWindowFromShelfController::kShowOverviewThreshold);
   EXPECT_TRUE(overview_controller->InOverviewSession());
   GetGestureHandler()->OnReleaseEvent(gfx::Point(200, 200), base::nullopt);
 }
@@ -727,7 +729,7 @@ TEST_F(HomeLauncherGestureHandlerTest, RestoreWindowToOriginalBounds) {
                                     shelf_bounds.CenterPoint());
   GetGestureHandler()->OnScrollEvent(
       gfx::Point(200, 300),
-      HomeLauncherGestureHandler::kShowOverviewThreshold + 1);
+      DragWindowFromShelfController::kShowOverviewThreshold + 1);
   EXPECT_FALSE(window->layer()->GetTargetTransform().IsIdentity());
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   EXPECT_FALSE(overview_controller->InOverviewSession());
@@ -744,7 +746,8 @@ TEST_F(HomeLauncherGestureHandlerTest, RestoreWindowToOriginalBounds) {
   GetGestureHandler()->OnReleaseEvent(
       gfx::Point(
           200, work_area.bottom() -
-                   HomeLauncherGestureHandler::kReturnToMaximizedThreshold + 1),
+                   DragWindowFromShelfController::kReturnToMaximizedThreshold +
+                   1),
       base::nullopt);
   EXPECT_TRUE(window->layer()->GetTargetTransform().IsIdentity());
   EXPECT_FALSE(overview_controller->InOverviewSession());
@@ -786,7 +789,7 @@ TEST_F(HomeLauncherGestureHandlerTest, FlingInOverview) {
   GetGestureHandler()->OnReleaseEvent(
       gfx::Point(0, 350),
       base::make_optional(
-          -HomeLauncherGestureHandler::kVelocityToHomeScreenThreshold + 10));
+          -DragWindowFromShelfController::kVelocityToHomeScreenThreshold + 10));
   // The window should restore back to its original position.
   EXPECT_FALSE(overview_controller->InOverviewSession());
   EXPECT_TRUE(WindowState::Get(window.get())->IsMaximized());
@@ -799,7 +802,7 @@ TEST_F(HomeLauncherGestureHandlerTest, FlingInOverview) {
   GetGestureHandler()->OnReleaseEvent(
       gfx::Point(0, 350),
       base::make_optional(
-          -HomeLauncherGestureHandler::kVelocityToHomeScreenThreshold));
+          -DragWindowFromShelfController::kVelocityToHomeScreenThreshold));
   EXPECT_FALSE(overview_controller->InOverviewSession());
   EXPECT_TRUE(WindowState::Get(window.get())->IsMinimized());
 }
@@ -856,7 +859,7 @@ TEST_F(HomeLauncherGestureHandlerTest, DragOrFlingInSplitView) {
   GetGestureHandler()->OnReleaseEvent(
       gfx::Point(100, 350),
       base::make_optional(
-          -HomeLauncherGestureHandler::kVelocityToOverviewThreshold + 10));
+          -DragWindowFromShelfController::kVelocityToOverviewThreshold + 10));
   EXPECT_FALSE(overview_controller->InOverviewSession());
   EXPECT_TRUE(split_view_controller->InSplitViewMode());
   EXPECT_TRUE(split_view_controller->IsWindowInSplitView(window1.get()));
@@ -871,7 +874,7 @@ TEST_F(HomeLauncherGestureHandlerTest, DragOrFlingInSplitView) {
   GetGestureHandler()->OnReleaseEvent(
       gfx::Point(100, 350),
       base::make_optional(
-          -HomeLauncherGestureHandler::kVelocityToOverviewThreshold));
+          -DragWindowFromShelfController::kVelocityToOverviewThreshold));
   EXPECT_TRUE(overview_controller->InOverviewSession());
   EXPECT_TRUE(overview_controller->overview_session()->IsWindowInOverview(
       window1.get()));
