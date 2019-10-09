@@ -636,7 +636,7 @@ class TestGitCl(TestCase):
               self._mocked_call('write_json', path, contents))
     self.mock(git_cl.presubmit_support, 'DoPresubmitChecks', PresubmitMock)
     self.mock(git_cl.watchlists, 'Watchlists', WatchlistsMock)
-    self.mock(git_cl.auth, 'get_authenticator_for_host', AuthenticatorMock)
+    self.mock(git_cl.auth, 'get_authenticator', AuthenticatorMock)
     self.mock(git_cl.gerrit_util, 'GetChangeDetail',
               lambda *args, **kwargs: self._mocked_call(
                   'GetChangeDetail', *args, **kwargs))
@@ -3021,7 +3021,8 @@ class CMDTestCaseBase(unittest.TestCase):
                return_value='https://chromium-review.googlesource.com').start()
     mock.patch('git_cl.Changelist.GetMostRecentPatchset',
                return_value=7).start()
-    mock.patch('git_cl.auth.get_authenticator_for_host', AuthenticatorMock())
+    mock.patch('git_cl.auth.get_authenticator',
+               return_value=AuthenticatorMock()).start()
     mock.patch('git_cl.Changelist._GetChangeDetail',
                return_value=self._CHANGE_DETAIL).start()
     mock.patch('git_cl._call_buildbucket',

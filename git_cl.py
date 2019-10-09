@@ -465,11 +465,7 @@ def _trigger_try_jobs(auth_config, changelist, buckets, options, patchset):
   if not requests:
     return
 
-  codereview_url = changelist.GetCodereviewServer()
-  codereview_host = urlparse.urlparse(codereview_url).hostname
-
-  authenticator = auth.get_authenticator_for_host(codereview_host, auth_config)
-  http = authenticator.authorize(httplib2.Http())
+  http = auth.get_authenticator(auth_config).authorize(httplib2.Http())
   http.force_exception_to_status_code = True
 
   batch_request = {'requests': requests}
@@ -544,10 +540,7 @@ def fetch_try_jobs(auth_config, changelist, buildbucket_host,
       'fields': ','.join('builds.*.' + field for field in fields),
   }
 
-  codereview_url = changelist.GetCodereviewServer()
-  codereview_host = urlparse.urlparse(codereview_url).hostname
-
-  authenticator = auth.get_authenticator_for_host(codereview_host, auth_config)
+  authenticator = auth.get_authenticator(auth_config)
   if authenticator.has_cached_credentials():
     http = authenticator.authorize(httplib2.Http())
   else:

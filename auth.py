@@ -50,13 +50,6 @@ OAUTH_SCOPE_GERRIT = 'https://www.googleapis.com/auth/gerritcodereview'
 # Deprecated. Use OAUTH_SCOPE_EMAIL instead.
 OAUTH_SCOPES = OAUTH_SCOPE_EMAIL
 
-# Path to a file with cached OAuth2 credentials used by default relative to the
-# home dir (see _get_token_cache_path). It should be a safe location accessible
-# only to a current user: knowing content of this file is roughly equivalent to
-# knowing account password. Single file can hold multiple independent tokens
-# identified by token_cache_key (see Authenticator).
-OAUTH_TOKENS_CACHE = '.depot_tools_oauth2_tokens'
-
 
 # Authentication configuration extracted from command line options.
 # See doc string for 'make_auth_config' for meaning of fields.
@@ -381,78 +374,37 @@ def auth_config_to_command_options(auth_config):
   return opts
 
 
-def get_authenticator_for_host(hostname, config, scopes=OAUTH_SCOPE_EMAIL):
+def get_authenticator(config, scopes=OAUTH_SCOPE_EMAIL):
   """Returns Authenticator instance to access given host.
 
   Args:
-    hostname: a naked hostname or http(s)://<hostname>[/] URL. Used to derive
-        a cache key for token cache.
     config: AuthConfig instance.
     scopes: space separated oauth scopes. Defaults to OAUTH_SCOPE_EMAIL.
 
   Returns:
     Authenticator object.
-
-  Raises:
-    AuthenticationError if hostname is invalid.
   """
-  hostname = hostname.lower().rstrip('/')
-  # Append some scheme, otherwise urlparse puts hostname into parsed.path.
-  if '://' not in hostname:
-    hostname = 'https://' + hostname
-  parsed = urlparse.urlparse(hostname)
-
-  if parsed.path or parsed.params or parsed.query or parsed.fragment:
-    raise AuthenticationError(
-        'Expecting a hostname or root host URL, got %s instead' % hostname)
-  return Authenticator(parsed.netloc, config, scopes)
+  return Authenticator(config, scopes)
 
 
 class Authenticator(object):
   """Object that knows how to refresh access tokens when needed.
 
   Args:
-    token_cache_key: string key of a section of the token cache file to use
-        to keep the tokens. See hostname_to_token_cache_key.
     config: AuthConfig object that holds authentication configuration.
   """
 
-  def __init__(self, token_cache_key, config, scopes):
+  def __init__(self, config, scopes):
     assert isinstance(config, AuthConfig)
     assert config.use_oauth2
     self._access_token = None
     self._config = config
     self._lock = threading.Lock()
-    self._token_cache_key = token_cache_key
     self._external_token = None
     self._scopes = scopes
     if config.refresh_token_json:
       self._external_token = _read_refresh_token_json(config.refresh_token_json)
     logging.debug('Using auth config %r', config)
-
-  def login(self):
-    """Performs interactive login flow if necessary.
-
-    Raises:
-      AuthenticationError on error or if interrupted.
-    """
-    if self._external_token:
-      raise AuthenticationError(
-          'Can\'t run login flow when using --auth-refresh-token-json.')
-    return self.get_access_token(
-        force_refresh=True, allow_user_interaction=True)
-
-  def logout(self):
-    """Revokes the refresh token and deletes it from the cache.
-
-    Returns True if had some credentials cached.
-    """
-    with self._lock:
-      self._access_token = None
-      had_creds = bool(_get_luci_auth_credentials(self._scopes))
-      subprocess2.check_call(
-          ['luci-auth', 'logout', '-scopes', self._scopes])
-    return had_creds
 
   def has_cached_credentials(self):
     """Returns True if long term credentials (refresh token) are in cache.
@@ -525,16 +477,6 @@ class Authenticator(object):
             get_loc_auth_tkn()
 
       return self._access_token
-
-  def get_token_info(self):
-    """Returns a result of /oauth2/v2/tokeninfo call with token info."""
-    access_token = self.get_access_token()
-    resp, content = httplib2.Http().request(
-        uri='https://www.googleapis.com/oauth2/v2/tokeninfo?%s' % (
-            urllib.urlencode({'access_token': access_token.token})))
-    if resp.status == 200:
-      return json.loads(content)
-    raise AuthenticationError('Failed to fetch the token info: %r' % content)
 
   def authorize(self, http):
     """Monkey patches authentication logic of httplib2.Http instance.
@@ -684,20 +626,6 @@ class Authenticator(object):
 ## Private functions.
 
 
-def _get_token_cache_path():
-  # On non Win just use HOME.
-  if sys.platform != 'win32':
-    return os.path.join(os.path.expanduser('~'), OAUTH_TOKENS_CACHE)
-  # Prefer USERPROFILE over HOME, since HOME is overridden in
-  # git-..._bin/cmd/git.cmd to point to depot_tools. depot-tools-auth.py script
-  # (and all other scripts) doesn't use this override and thus uses another
-  # value for HOME. git.cmd doesn't touch USERPROFILE though, and usually
-  # USERPROFILE == HOME on Windows.
-  if 'USERPROFILE' in os.environ:
-    return os.path.join(os.environ['USERPROFILE'], OAUTH_TOKENS_CACHE)
-  return os.path.join(os.path.expanduser('~'), OAUTH_TOKENS_CACHE)
-
-
 def _is_headless():
   """True if machine doesn't seem to have a display."""
   return sys.platform == 'linux2' and not os.environ.get('DISPLAY')
@@ -749,6 +677,7 @@ def _get_luci_auth_credentials(scopes):
       token_uri=None,
       user_agent=None,
       revoke_uri=None)
+
 
 def _run_oauth_dance(scopes):
   """Perform full 3-legged OAuth2 flow with the browser.

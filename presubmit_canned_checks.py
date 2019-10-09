@@ -1417,8 +1417,7 @@ def CheckChangedLUCIConfigs(input_api, output_api):
 
   # authentication
   try:
-    authenticator = auth.get_authenticator_for_host(
-        LUCI_CONFIG_HOST_NAME, auth.make_auth_config())
+    authenticator = auth.get_authenticator(auth.make_auth_config())
     acc_tkn = authenticator.get_access_token()
   except auth.AuthenticationError as e:
     return [output_api.PresubmitError(

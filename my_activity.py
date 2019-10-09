@@ -293,8 +293,7 @@ class MyActivity(object):
 
   def monorail_get_auth_http(self):
     auth_config = auth.extract_auth_config_from_options(self.options)
-    authenticator = auth.get_authenticator_for_host(
-        'bugs.chromium.org', auth_config)
+    authenticator = auth.get_authenticator(auth_config)
     # Manually use a long timeout (10m); for some users who have a
     # long history on the issue tracker, whatever the default timeout
     # is is reached.
