@@ -798,17 +798,31 @@ static INLINE BLOCK_SIZE get_plane_block_size(BLOCK_SIZE bsize,
   return ss_size_lookup[bsize][subsampling_x][subsampling_y];
 }
 
+/*
+ * Logic to generate the lookup tables:
+ *
+ * TX_SIZE txs = max_txsize_rect_lookup[bsize];
+ * for (int level = 0; level < MAX_VARTX_DEPTH - 1; ++level)
+ *   txs = sub_tx_size_map[txs];
+ * const int tx_w_log2 = tx_size_wide_log2[txs] - MI_SIZE_LOG2;
+ * const int tx_h_log2 = tx_size_high_log2[txs] - MI_SIZE_LOG2;
+ * const int bw_uint_log2 = mi_size_wide_log2[bsize];
+ * const int stride_log2 = bw_uint_log2 - tx_w_log2;
+ */
 static INLINE int av1_get_txb_size_index(BLOCK_SIZE bsize, int blk_row,
                                          int blk_col) {
-  TX_SIZE txs = max_txsize_rect_lookup[bsize];
-  for (int level = 0; level < MAX_VARTX_DEPTH - 1; ++level)
-    txs = sub_tx_size_map[txs];
-  const int tx_w_log2 = tx_size_wide_log2[txs] - MI_SIZE_LOG2;
-  const int tx_h_log2 = tx_size_high_log2[txs] - MI_SIZE_LOG2;
-  const int bw_log2 = mi_size_wide_log2[bsize];
-  const int stride_log2 = bw_log2 - tx_w_log2;
+  static const uint8_t tw_w_log2_table[BLOCK_SIZES_ALL] = {
+    0, 0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 3, 3, 3, 0, 1, 1, 2, 2, 3,
+  };
+  static const uint8_t tw_h_log2_table[BLOCK_SIZES_ALL] = {
+    0, 0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 3, 3, 3, 1, 0, 2, 1, 3, 2,
+  };
+  static const uint8_t stride_log2_table[BLOCK_SIZES_ALL] = {
+    0, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1, 2, 2, 0, 1, 0, 1, 0, 1,
+  };
   const int index =
-      ((blk_row >> tx_h_log2) << stride_log2) + (blk_col >> tx_w_log2);
+      ((blk_row >> tw_h_log2_table[bsize]) << stride_log2_table[bsize]) +
+      (blk_col >> tw_w_log2_table[bsize]);
   assert(index < INTER_TX_SIZE_BUF_LEN);
   return index;
 }
