@@ -34,17 +34,6 @@
 namespace chrome {
 namespace internal {
 
-#if defined(OS_ANDROID)
-template <typename Interface>
-void ForwardToJavaWebContents(content::RenderFrameHost* frame_host,
-                              mojo::PendingReceiver<Interface> receiver) {
-  content::WebContents* contents =
-      content::WebContents::FromRenderFrameHost(frame_host);
-  if (contents)
-    contents->GetJavaInterfaces()->GetInterface(std::move(receiver));
-}
-#endif
-
 // Forward image Annotator requests to the image_annotation service.
 void BindImageAnnotator(
     content::RenderFrameHost* const frame_host,
@@ -56,8 +45,17 @@ void BindImageAnnotator(
 
 #if defined(OS_ANDROID)
 template <typename Interface>
-void ForwardToJavaFrameRegistry(content::RenderFrameHost* render_frame_host,
-                                mojo::PendingReceiver<Interface> receiver) {
+void ForwardToJavaWebContents(content::RenderFrameHost* frame_host,
+                              mojo::PendingReceiver<Interface> receiver) {
+  content::WebContents* contents =
+      content::WebContents::FromRenderFrameHost(frame_host);
+  if (contents)
+    contents->GetJavaInterfaces()->GetInterface(std::move(receiver));
+}
+
+template <typename Interface>
+void ForwardToJavaFrame(content::RenderFrameHost* render_frame_host,
+                        mojo::PendingReceiver<Interface> receiver) {
   render_frame_host->GetJavaInterfaces()->GetInterface(std::move(receiver));
 }
 #endif
@@ -71,10 +69,14 @@ void PopulateChromeFrameBinders(
       base::BindRepeating(&NavigationPredictor::Create));
 #if defined(OS_ANDROID)
   map->Add<blink::mojom::InstalledAppProvider>(base::BindRepeating(
-      &ForwardToJavaFrameRegistry<blink::mojom::InstalledAppProvider>));
+      &ForwardToJavaFrame<blink::mojom::InstalledAppProvider>));
+#if defined(BROWSER_MEDIA_CONTROLS_MENU)
+  map->Add<blink::mojom::MediaControlsMenuHost>(base::BindRepeating(
+      &ForwardToJavaFrame<blink::mojom::MediaControlsMenuHost>));
+#endif
   if (base::FeatureList::IsEnabled(features::kWebPayments)) {
     map->Add<payments::mojom::PaymentRequest>(base::BindRepeating(
-        &ForwardToJavaFrameRegistry<payments::mojom::PaymentRequest>));
+        &ForwardToJavaFrame<payments::mojom::PaymentRequest>));
   }
   map->Add<blink::mojom::ShareService>(base::BindRepeating(
       &ForwardToJavaWebContents<blink::mojom::ShareService>));

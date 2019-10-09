@@ -6355,7 +6355,7 @@ void RenderFrameHostImpl::BindSerialService(
   serial_service_->Bind(std::move(receiver));
 }
 
-void RenderFrameHostImpl::BindAuthenticatorRequest(
+void RenderFrameHostImpl::BindAuthenticatorReceiver(
     mojo::PendingReceiver<blink::mojom::Authenticator> receiver) {
   if (!authenticator_impl_)
     authenticator_impl_.reset(new AuthenticatorImpl(this));
@@ -6517,7 +6517,7 @@ void RenderFrameHostImpl::GetAuthenticator(
     mojo::PendingReceiver<blink::mojom::Authenticator> receiver) {
 #if !defined(OS_ANDROID)
   if (base::FeatureList::IsEnabled(features::kWebAuth)) {
-    BindAuthenticatorRequest(std::move(receiver));
+    BindAuthenticatorReceiver(std::move(receiver));
   }
 #else
   GetJavaInterfaces()->GetInterface(std::move(receiver));

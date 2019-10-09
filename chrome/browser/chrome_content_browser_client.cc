@@ -425,7 +425,6 @@
 #include "components/navigation_interception/intercept_navigation_delegate.h"
 #include "content/public/browser/android/java_interfaces.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
-#include "third_party/blink/public/mojom/webauthn/authenticator.mojom.h"
 #include "ui/base/resource/resource_bundle_android.h"
 #include "ui/base/ui_base_paths.h"
 #if BUILDFLAG(DFMIFY_DEV_UI)
@@ -1977,14 +1976,6 @@ void MaybeAppendBlinkSettingsSwitchForFieldTrial(
   command_line->AppendSwitchASCII(switches::kBlinkSettings,
                                   base::JoinString(blink_settings, ","));
 }
-
-#if defined(OS_ANDROID)
-template <typename Interface>
-void ForwardToJavaFrameRegistry(mojo::InterfaceRequest<Interface> request,
-                                content::RenderFrameHost* render_frame_host) {
-  render_frame_host->GetJavaInterfaces()->GetInterface(std::move(request));
-}
-#endif
 
 }  // namespace
 
@@ -4372,11 +4363,6 @@ void ChromeContentBrowserClient::InitWebContextInterfaces() {
 
   frame_interfaces_parameterized_->AddInterface(
       base::BindRepeating(&InsecureSensitiveInputDriverFactory::BindDriver));
-
-#if defined(OS_ANDROID)
-  frame_interfaces_parameterized_->AddInterface(
-      base::Bind(&ForwardToJavaFrameRegistry<blink::mojom::Authenticator>));
-#endif
 
 #if defined(OS_ANDROID)
   frame_interfaces_parameterized_->AddInterface(
