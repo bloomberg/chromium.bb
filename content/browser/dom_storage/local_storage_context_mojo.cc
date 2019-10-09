@@ -675,6 +675,11 @@ std::vector<uint8_t> LocalStorageContextMojo::MigrateString(
   return result;
 }
 
+void LocalStorageContextMojo::SetDatabaseOpenCallbackForTesting(
+    base::OnceClosure callback) {
+  RunWhenConnected(std::move(callback));
+}
+
 LocalStorageContextMojo::~LocalStorageContextMojo() {
   DCHECK_EQ(connection_state_, CONNECTION_SHUTDOWN);
   base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
@@ -701,13 +706,6 @@ void LocalStorageContextMojo::RunWhenConnected(base::OnceClosure callback) {
 
 void LocalStorageContextMojo::InitiateConnection(bool in_memory_only) {
   DCHECK_EQ(connection_state_, CONNECTION_IN_PROGRESS);
-
-  if (database_factory_for_testing_) {
-    in_memory_ = true;
-    database_ = database_factory_for_testing_.Run();
-    OnDatabaseOpened(leveldb::mojom::DatabaseError::OK);
-    return;
-  }
 
   if (!directory_.empty() && directory_.IsAbsolute() && !in_memory_only) {
     // We were given a subdirectory to write to, so use a disk-backed database.
