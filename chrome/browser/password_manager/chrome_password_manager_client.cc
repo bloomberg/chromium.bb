@@ -491,7 +491,7 @@ void ChromePasswordManagerClient::AutomaticPasswordSave(
 }
 
 void ChromePasswordManagerClient::PasswordWasAutofilled(
-    const std::map<base::string16, const PasswordForm*>& best_matches,
+    const std::vector<const PasswordForm*>& best_matches,
     const GURL& origin,
     const std::vector<const PasswordForm*>* federated_matches) {
 #if defined(OS_ANDROID)
