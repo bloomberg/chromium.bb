@@ -20,7 +20,6 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
-#include "build/branding_buildflags.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/events/event.h"
@@ -138,37 +137,6 @@ void GtkInitFromCommandLine(const base::CommandLine& command_line) {
   CommonInitFromCommandLine(command_line);
 }
 
-GdkModifierType GetGdkModifierForAccelerator(
-    const ui::Accelerator& accelerator) {
-  int event_flag = accelerator.modifiers();
-  int modifier = 0;
-  if (event_flag & ui::EF_SHIFT_DOWN)
-    modifier |= GDK_SHIFT_MASK;
-  if (event_flag & ui::EF_CONTROL_DOWN)
-    modifier |= GDK_CONTROL_MASK;
-  if (event_flag & ui::EF_ALT_DOWN)
-    modifier |= GDK_MOD1_MASK;
-  return static_cast<GdkModifierType>(modifier);
-}
-
-int EventFlagsFromGdkState(guint state) {
-  int flags = ui::EF_NONE;
-  flags |= (state & GDK_SHIFT_MASK) ? ui::EF_SHIFT_DOWN : ui::EF_NONE;
-  flags |= (state & GDK_LOCK_MASK) ? ui::EF_CAPS_LOCK_ON : ui::EF_NONE;
-  flags |= (state & GDK_CONTROL_MASK) ? ui::EF_CONTROL_DOWN : ui::EF_NONE;
-  flags |= (state & GDK_MOD1_MASK) ? ui::EF_ALT_DOWN : ui::EF_NONE;
-  flags |= (state & GDK_BUTTON1_MASK) ? ui::EF_LEFT_MOUSE_BUTTON : ui::EF_NONE;
-  flags |=
-      (state & GDK_BUTTON2_MASK) ? ui::EF_MIDDLE_MOUSE_BUTTON : ui::EF_NONE;
-  flags |= (state & GDK_BUTTON3_MASK) ? ui::EF_RIGHT_MOUSE_BUTTON : ui::EF_NONE;
-  return flags;
-}
-
-void TurnButtonBlue(GtkWidget* button) {
-  gtk_style_context_add_class(gtk_widget_get_style_context(button),
-                              "suggested-action");
-}
-
 void SetGtkTransientForAura(GtkWidget* dialog, aura::Window* parent) {
   if (!parent || !parent->GetHost())
     return;
@@ -242,14 +210,6 @@ PROTECTED_MEMORY_SECTION base::ProtectedMemory<GtkSetObjectName>
     _gtk_widget_path_iter_set_object_name;
 
 }  // namespace
-
-void* GetGdkSharedLibrary() {
-  std::string lib_name =
-      "libgdk-" + std::to_string(GTK_MAJOR_VERSION) + ".so.0";
-  static void* gdk_lib = dlopen(lib_name.c_str(), RTLD_LAZY);
-  DCHECK(gdk_lib);
-  return gdk_lib;
-}
 
 void* GetGtkSharedLibrary() {
   std::string lib_name =
@@ -644,14 +604,6 @@ std::string GetGtkSettingsStringProperty(GtkSettings* settings,
   g_value_unset(&layout);
   return prop_value;
 }
-
-#if defined(USE_X11)
-guint GetGdkKeyCodeForAccelerator(const ui::Accelerator& accelerator) {
-  // The second parameter is false because accelerator keys are expressed in
-  // terms of the non-shift-modified key.
-  return XKeysymForWindowsKeyCode(accelerator.key_code(), false);
-}
-#endif
 
 GdkDisplay* GetGdkDisplay() {
   GdkDisplay* display = nullptr;

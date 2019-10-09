@@ -27,7 +27,6 @@ struct HSL;
 }
 
 namespace ui {
-class Accelerator;
 class KeyEvent;
 }
 
@@ -36,15 +35,6 @@ namespace libgtkui {
 extern const color_utils::HSL kDefaultTintFrameIncognito;
 
 void GtkInitFromCommandLine(const base::CommandLine& command_line);
-
-GdkModifierType GetGdkModifierForAccelerator(
-    const ui::Accelerator& accelerator);
-
-// Translates event flags into plaform independent event flags.
-int EventFlagsFromGdkState(guint state);
-
-// Style a GTK button as a BlueButton
-void TurnButtonBlue(GtkWidget* button);
 
 // Sets |dialog| as transient for |parent|, which will keep it on top and center
 // it above |parent|. Do nothing if |parent| is nullptr.
@@ -64,7 +54,6 @@ void ParseButtonLayout(const std::string& button_string,
                        std::vector<views::FrameButton>* leading_buttons,
                        std::vector<views::FrameButton>* trailing_buttons);
 
-void* GetGdkSharedLibrary();
 void* GetGtkSharedLibrary();
 
 class CairoSurface {
@@ -184,11 +173,6 @@ SkColor GetSeparatorColor(const std::string& css_selector);
 // Get a GtkSettings property as a C++ string.
 std::string GetGtkSettingsStringProperty(GtkSettings* settings,
                                          const gchar* prop_name);
-
-#if defined(USE_X11)
-// TODO(thomasanderson): Remove this once GtkStatusIcon is removed.
-guint GetGdkKeyCodeForAccelerator(const ui::Accelerator& accelerator);
-#endif
 
 // Get current GdkDisplay instance
 GdkDisplay* GetGdkDisplay();
