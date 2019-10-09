@@ -13,6 +13,11 @@ import sys
 import time
 import unittest
 
+if sys.version_info.major == 2:
+  from StringIO import StringIO
+else:
+  from io import StringIO
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from testing_support import trial_dir
@@ -127,7 +132,7 @@ class CheckCallAndFilterTestCase(unittest.TestCase):
         'after a short nap...')
 
   @mock.patch('subprocess2.Popen')
-  def testCHeckCallAndFilter_PrintStdout(self, mockPopen):
+  def testCheckCallAndFilter_PrintStdout(self, mockPopen):
     cwd = 'bleh'
     args = ['boo', 'foo', 'bar']
     test_string = 'ahah\naccb\nallo\naddb\n✔'
@@ -139,16 +144,76 @@ class CheckCallAndFilterTestCase(unittest.TestCase):
         print_stdout=True)
 
     self.assertEqual(result, test_string.encode('utf-8'))
+    self.assertEqual(self.stdout.getvalue().splitlines(), [
+        b"________ running 'boo foo bar' in 'bleh'",
+        b'ahah',
+        b'accb',
+        b'allo',
+        b'addb',
+        b'\xe2\x9c\x94',
+    ])
+
+
+class AnnotatedTestCase(unittest.TestCase):
+  def setUp(self):
+    self.out = gclient_utils.MakeFileAnnotated(io.BytesIO())
+    self.annotated = gclient_utils.MakeFileAnnotated(
+        io.BytesIO(), include_zero=True)
+
+  def testWrite(self):
+    test_cases = [
+        ('test string\n', b'test string\n'),
+        (b'test string\n', b'test string\n'),
+        ('✔\n', b'\xe2\x9c\x94\n'),
+        (b'\xe2\x9c\x94\n', b'\xe2\x9c\x94\n'),
+        ('first line\nsecondline\n', b'first line\nsecondline\n'),
+        (b'first line\nsecondline\n', b'first line\nsecondline\n'),
+    ]
+
+    for test_input, expected_output in test_cases:
+      out = gclient_utils.MakeFileAnnotated(io.BytesIO())
+      out.write(test_input)
+      self.assertEqual(out.getvalue(), expected_output)
+
+  def testWrite_Annotated(self):
+    test_cases = [
+        ('test string\n', b'0>test string\n'),
+        (b'test string\n', b'0>test string\n'),
+        ('✔\n', b'0>\xe2\x9c\x94\n'),
+        (b'\xe2\x9c\x94\n', b'0>\xe2\x9c\x94\n'),
+        ('first line\nsecondline\n', b'0>first line\n0>secondline\n'),
+        (b'first line\nsecondline\n', b'0>first line\n0>secondline\n'),
+    ]
+
+    for test_input, expected_output in test_cases:
+      out = gclient_utils.MakeFileAnnotated(io.BytesIO(), include_zero=True)
+      out.write(test_input)
+      self.assertEqual(out.getvalue(), expected_output)
+
+  def testByteByByteInput(self):
+    self.out.write(b'\xe2')
+    self.out.write(b'\x9c')
+    self.out.write(b'\x94')
+    self.out.write(b'\n')
+    self.out.write(b'\xe2')
+    self.out.write(b'\n')
+    self.assertEqual(self.out.getvalue(), b'\xe2\x9c\x94\n\xe2\n')
+
+  def testByteByByteInput_Annotated(self):
+    self.annotated.write(b'\xe2')
+    self.annotated.write(b'\x9c')
+    self.annotated.write(b'\x94')
+    self.annotated.write(b'\n')
+    self.annotated.write(b'\xe2')
+    self.annotated.write(b'\n')
+    self.assertEqual(self.annotated.getvalue(), b'0>\xe2\x9c\x94\n0>\xe2\n')
+
+  def testFlush_Annotated(self):
+    self.annotated.write(b'first line\nsecond line')
+    self.assertEqual(self.annotated.getvalue(), b'0>first line\n')
+    self.annotated.flush()
     self.assertEqual(
-        self.stdout.getvalue().splitlines(),
-        [
-            b'________ running \'boo foo bar\' in \'bleh\'',
-            b'ahah',
-            b'accb',
-            b'allo',
-            b'addb',
-            b'\xe2\x9c\x94',
-        ])
+        self.annotated.getvalue(), b'0>first line\n0>second line\n')
 
 
 class SplitUrlRevisionTestCase(unittest.TestCase):
@@ -271,7 +336,6 @@ class GClientUtilsTest(trial_dir.TestCase):
 
 
 if __name__ == '__main__':
-  import unittest
   unittest.main()
 
 # vim: ts=2:sw=2:tw=80:et:
