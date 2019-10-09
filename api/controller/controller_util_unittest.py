@@ -7,6 +7,8 @@
 
 from __future__ import print_function
 
+import os
+
 from chromite.api.controller import controller_util
 from chromite.api.gen.chromite.api import build_api_test_pb2
 from chromite.api.gen.chromiumos import common_pb2
@@ -46,6 +48,7 @@ class ParseChrootTest(cros_test_lib.MockTestCase):
   def testChrootCallToGoma(self):
     """Test calls to goma."""
     path = '/chroot/path'
+    chroot_tmp = os.path.join(path, 'tmp')
     cache_dir = '/cache/dir'
     chrome_root = '/chrome/root'
     use_flags = [{'flag': 'useflag1'}, {'flag': 'useflag2'}]
@@ -54,6 +57,7 @@ class ParseChrootTest(cros_test_lib.MockTestCase):
     goma_test_json_string = 'goma_json'
     chromeos_goma_test_dir = '/chromeos/goma/test/dir'
 
+    # Patch goma constructor to avoid creating misc dirs.
     patch = self.PatchObject(goma_util, 'Goma')
 
     goma_config = common_pb2.GomaConfig(goma_dir=goma_test_dir,
@@ -66,7 +70,8 @@ class ParseChrootTest(cros_test_lib.MockTestCase):
 
     controller_util.ParseChroot(chroot_message)
     patch.assert_called_with(goma_test_dir, goma_test_json_string,
-                             stage_name='BuildAPI', chromeos_goma_dir=None)
+                             stage_name='BuildAPI', chromeos_goma_dir=None,
+                             chroot_tmp=chroot_tmp)
 
     goma_config.chromeos_goma_dir = chromeos_goma_test_dir
     chroot_message = common_pb2.Chroot(path=path, cache_dir=cache_dir,
@@ -78,7 +83,8 @@ class ParseChrootTest(cros_test_lib.MockTestCase):
     controller_util.ParseChroot(chroot_message)
     patch.assert_called_with(goma_test_dir, goma_test_json_string,
                              stage_name='BuildAPI',
-                             chromeos_goma_dir=chromeos_goma_test_dir)
+                             chromeos_goma_dir=chromeos_goma_test_dir,
+                             chroot_tmp=chroot_tmp)
 
 
   def testWrongMessage(self):

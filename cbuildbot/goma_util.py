@@ -74,7 +74,7 @@ class Goma(object):
   }
 
   def __init__(self, goma_dir, goma_client_json, goma_tmp_dir=None,
-               stage_name=None, chromeos_goma_dir=None):
+               stage_name=None, chromeos_goma_dir=None, chroot_tmp=None):
     """Initializes Goma instance.
 
     This ensures that |self.goma_log_dir| directory exists (if missing,
@@ -96,6 +96,8 @@ class Goma(object):
       chromeos_goma_dir: Path to the Goma client used for build package.
                          path should be represented as outside of chroot.
                          If None, goma_dir will be used instead.
+      chroot_tmp: The chroot/tmp path to use when the chroot path is not at
+        the default location.
 
     Raises:
       ValueError if 1) |goma_dir| does not point to a directory, 2)
@@ -146,7 +148,8 @@ class Goma(object):
       # Create unique directory by mkdtemp under chroot's /tmp.
       # Expect this directory is removed in next run's clean up phase.
       goma_tmp_dir = tempfile.mkdtemp(
-          prefix='goma_tmp_dir.', dir=path_util.FromChrootPath('/tmp'))
+          prefix='goma_tmp_dir.',
+          dir=chroot_tmp or path_util.FromChrootPath('/tmp'))
     self.goma_tmp_dir = goma_tmp_dir
 
     # Create log directory if not exist.
