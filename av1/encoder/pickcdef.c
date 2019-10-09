@@ -165,17 +165,13 @@ static uint64_t joint_strength_search_dual(int *best_lev0, int *best_lev1,
   return best_tot_mse;
 }
 
-/* FIXME: SSE-optimize this. */
 static void copy_sb16_16(uint16_t *dst, int dstride, const uint16_t *src,
                          int src_voffset, int src_hoffset, int sstride,
                          int vsize, int hsize) {
-  int r, c;
+  int r;
   const uint16_t *base = &src[src_voffset * sstride + src_hoffset];
-  for (r = 0; r < vsize; r++) {
-    for (c = 0; c < hsize; c++) {
-      dst[r * dstride + c] = base[r * sstride + c];
-    }
-  }
+  for (r = 0; r < vsize; r++)
+    memcpy(dst + r * dstride, base + r * sstride, hsize * sizeof(*base));
 }
 
 #if CONFIG_DIST_8X8
