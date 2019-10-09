@@ -506,6 +506,8 @@ class CONTENT_EXPORT RenderFrameImpl
       const RenderFrameMediaPlaybackOptions& opts) override;
   void UpdateAllLifecyclePhasesAndCompositeForTesting() override;
   void SetAllowsCrossBrowsingInstanceFrameLookup() override;
+  gfx::RectF ElementBoundsInWindow(const blink::WebElement& element) override;
+  void ConvertViewportToWindow(blink::WebRect* rect) override;
 
   // blink::mojom::AutoplayConfigurationClient implementation:
   void AddAutoplayFlags(const url::Origin& origin,

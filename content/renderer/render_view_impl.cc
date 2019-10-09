@@ -1860,38 +1860,26 @@ void RenderViewImpl::didScrollWithKeyboard(const blink::WebSize& delta) {
 
 #endif
 
-void RenderViewImpl::ConvertViewportToWindowViaWidget(blink::WebRect* rect) {
-  page_properties_.ConvertViewportToWindow(rect);
-}
-
-gfx::RectF RenderViewImpl::ElementBoundsInWindow(
-    const blink::WebElement& element) {
-  blink::WebRect bounding_box_in_window = element.BoundsInViewport();
-  page_properties_.ConvertViewportToWindow(&bounding_box_in_window);
-  return gfx::RectF(bounding_box_in_window);
-}
-
 void RenderViewImpl::UpdatePreferredSize() {
   // We don't always want to send the change messages over IPC, only if we've
   // been put in that mode by getting a |ViewMsg_EnablePreferredSizeChangedMode|
   // message.
-  if (!send_preferred_size_changes_ || !webview())
+  if (!send_preferred_size_changes_ || !webview() || !main_render_frame_)
     return;
 
   if (!needs_preferred_size_update_)
     return;
   needs_preferred_size_update_ = false;
 
-  blink::WebSize tmp_size = webview()->ContentsPreferredMinimumSize();
-  blink::WebRect tmp_rect(0, 0, tmp_size.width, tmp_size.height);
-  page_properties_.ConvertViewportToWindow(&tmp_rect);
-  gfx::Size size(tmp_rect.width, tmp_rect.height);
-  if (size == preferred_size_)
-    return;
+  blink::WebSize web_size = webview()->ContentsPreferredMinimumSize();
+  blink::WebRect web_rect(0, 0, web_size.width, web_size.height);
+  render_widget_->ConvertViewportToWindow(&web_rect);
+  gfx::Size size(web_rect.width, web_rect.height);
 
-  preferred_size_ = size;
-  Send(new ViewHostMsg_DidContentsPreferredSizeChange(GetRoutingID(),
-                                                      preferred_size_));
+  if (size != preferred_size_) {
+    preferred_size_ = size;
+    Send(new ViewHostMsg_DidContentsPreferredSizeChange(GetRoutingID(), size));
+  }
 }
 
 blink::WebString RenderViewImpl::AcceptLanguages() {

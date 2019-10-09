@@ -32,14 +32,17 @@ namespace blink {
 class AssociatedInterfaceProvider;
 class AssociatedInterfaceRegistry;
 class BrowserInterfaceBrokerProxy;
+class WebElement;
 class WebFrame;
 class WebLocalFrame;
 class WebPlugin;
 struct WebPluginParams;
+struct WebRect;
 }
 
 namespace gfx {
 class Range;
+class RectF;
 class Size;
 }
 
@@ -310,6 +313,17 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
 
   // Sets that cross browsing instance frame lookup is allowed.
   virtual void SetAllowsCrossBrowsingInstanceFrameLookup() = 0;
+
+  // Returns the bounds of |element| in Window coordinates which are device
+  // scale independent. The bounds have been adjusted to include any
+  // transformations, including page scale. This function will update the layout
+  // if required.
+  virtual gfx::RectF ElementBoundsInWindow(
+      const blink::WebElement& element) = 0;
+
+  // Converts the |rect| to Window coordinates which are device scale
+  // independent.
+  virtual void ConvertViewportToWindow(blink::WebRect* rect) = 0;
 
  protected:
   ~RenderFrame() override {}

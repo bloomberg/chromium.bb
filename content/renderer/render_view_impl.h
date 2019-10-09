@@ -303,8 +303,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
   virtual void didScrollWithKeyboard(const blink::WebSize& delta);
 #endif
-  void ConvertViewportToWindowViaWidget(blink::WebRect* rect) override;
-  gfx::RectF ElementBoundsInWindow(const blink::WebElement& element) override;
 
   // Please do not add your stuff randomly to the end here. If there is an
   // appropriate section, add it there. If not, there are some random functions

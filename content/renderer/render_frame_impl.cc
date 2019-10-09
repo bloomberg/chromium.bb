@@ -5229,8 +5229,7 @@ void RenderFrameImpl::ShowContextMenu(const blink::WebContextMenuData& data) {
     // include the device scale factor, but not emulation scale. Here we convert
     // them to DIP coordiates relative to the WindowScreenRect.
     blink::WebRect position_in_window(params.x, params.y, 0, 0);
-    render_view_->page_properties()->ConvertViewportToWindow(
-        &position_in_window);
+    GetLocalRootRenderWidget()->ConvertViewportToWindow(&position_in_window);
     if (render_view_->page_properties()->ScreenMetricsEmulator()) {
       const float scale =
           render_view_->page_properties()->ScreenMetricsEmulator()->scale();
@@ -7630,6 +7629,17 @@ void RenderFrameImpl::AddMessageToConsoleImpl(
 void RenderFrameImpl::SetWebURLLoaderFactoryOverrideForTest(
     std::unique_ptr<blink::WebURLLoaderFactoryForTest> factory) {
   web_url_loader_factory_override_for_test_ = std::move(factory);
+}
+
+gfx::RectF RenderFrameImpl::ElementBoundsInWindow(
+    const blink::WebElement& element) {
+  blink::WebRect bounding_box_in_window = element.BoundsInViewport();
+  GetLocalRootRenderWidget()->ConvertViewportToWindow(&bounding_box_in_window);
+  return gfx::RectF(bounding_box_in_window);
+}
+
+void RenderFrameImpl::ConvertViewportToWindow(blink::WebRect* rect) {
+  GetLocalRootRenderWidget()->ConvertViewportToWindow(rect);
 }
 
 }  // namespace content
