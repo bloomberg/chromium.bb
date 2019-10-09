@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_APP_LIST_VIEWS_ASSISTANT_DIALOG_PLATE_H_
-#define ASH_APP_LIST_VIEWS_ASSISTANT_DIALOG_PLATE_H_
+#ifndef ASH_APP_LIST_VIEWS_ASSISTANT_ASSISTANT_DIALOG_PLATE_H_
+#define ASH_APP_LIST_VIEWS_ASSISTANT_ASSISTANT_DIALOG_PLATE_H_
 
 #include <memory>
 #include <string>
@@ -18,13 +18,6 @@
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/view.h"
 
-namespace ash {
-enum class AssistantButtonId;
-class AssistantViewDelegate;
-class LogoView;
-class MicView;
-}  // namespace ash
-
 namespace ui {
 class CallbackLayerAnimationObserver;
 }  // namespace ui
@@ -33,24 +26,28 @@ namespace views {
 class ImageButton;
 }  // namespace views
 
-namespace app_list {
+namespace ash {
+enum class AssistantButtonId;
+class AssistantViewDelegate;
+class LogoView;
+class MicView;
 
-// DialogPlate -----------------------------------------------------------------
+// AssistantDialogPlate --------------------------------------------------------
 
-// DialogPlate is the child of AssistantMainView concerned with providing the
-// means by which a user converses with Assistant. To this end, DialogPlate
-// provides a textfield for use with the keyboard input modality, and a MicView
-// which serves to toggle voice interaction as appropriate for use with the
-// voice input modality.
-class APP_LIST_EXPORT DialogPlate
+// AssistantDialogPlate is the child of AssistantMainView concerned with
+// providing the means by which a user converses with Assistant. To this end,
+// AssistantDialogPlate provides a textfield for use with the keyboard input
+// modality, and a MicView which serves to toggle voice interaction as
+// appropriate for use with the voice input modality.
+class APP_LIST_EXPORT AssistantDialogPlate
     : public views::View,
       public views::TextfieldController,
       public ash::AssistantInteractionModelObserver,
       public ash::AssistantUiModelObserver,
       public views::ButtonListener {
  public:
-  explicit DialogPlate(ash::AssistantViewDelegate* delegate);
-  ~DialogPlate() override;
+  explicit AssistantDialogPlate(ash::AssistantViewDelegate* delegate);
+  ~AssistantDialogPlate() override;
 
   // views::View:
   const char* GetClassName() const override;
@@ -105,9 +102,9 @@ class APP_LIST_EXPORT DialogPlate
   std::unique_ptr<ui::CallbackLayerAnimationObserver> animation_observer_;
   std::unique_ptr<ash::AssistantQueryHistory::Iterator> query_history_iterator_;
 
-  DISALLOW_COPY_AND_ASSIGN(DialogPlate);
+  DISALLOW_COPY_AND_ASSIGN(AssistantDialogPlate);
 };
 
-}  // namespace app_list
+}  // namespace ash
 
-#endif  // ASH_APP_LIST_VIEWS_ASSISTANT_DIALOG_PLATE_H_
+#endif  // ASH_APP_LIST_VIEWS_ASSISTANT_ASSISTANT_DIALOG_PLATE_H_

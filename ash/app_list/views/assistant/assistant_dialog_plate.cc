@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/app_list/views/assistant/dialog_plate.h"
+#include "ash/app_list/views/assistant/assistant_dialog_plate.h"
 
 #include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
@@ -29,7 +29,7 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 
-namespace app_list {
+namespace ash {
 
 namespace {
 
@@ -53,45 +53,46 @@ constexpr int kAnimationTranslationDip = 30;
 
 }  // namespace
 
-// DialogPlate -----------------------------------------------------------------
+// AssistantDialogPlate --------------------------------------------------------
 
-DialogPlate::DialogPlate(ash::AssistantViewDelegate* delegate)
+AssistantDialogPlate::AssistantDialogPlate(ash::AssistantViewDelegate* delegate)
     : delegate_(delegate),
       animation_observer_(std::make_unique<ui::CallbackLayerAnimationObserver>(
           /*start_animation_callback=*/base::BindRepeating(
-              &DialogPlate::OnAnimationStarted,
+              &AssistantDialogPlate::OnAnimationStarted,
               base::Unretained(this)),
           /*end_animation_callback=*/base::BindRepeating(
-              &DialogPlate::OnAnimationEnded,
+              &AssistantDialogPlate::OnAnimationEnded,
               base::Unretained(this)))),
       query_history_iterator_(
           delegate_->GetInteractionModel()->query_history().GetIterator()) {
   InitLayout();
 
-  // The AssistantViewDelegate should outlive DialogPlate.
+  // The AssistantViewDelegate should outlive AssistantDialogPlate.
   delegate_->AddInteractionModelObserver(this);
   delegate_->AddUiModelObserver(this);
 }
 
-DialogPlate::~DialogPlate() {
+AssistantDialogPlate::~AssistantDialogPlate() {
   delegate_->RemoveUiModelObserver(this);
   delegate_->RemoveInteractionModelObserver(this);
 }
 
-const char* DialogPlate::GetClassName() const {
-  return "DialogPlate";
+const char* AssistantDialogPlate::GetClassName() const {
+  return "AssistantDialogPlate";
 }
 
-gfx::Size DialogPlate::CalculatePreferredSize() const {
+gfx::Size AssistantDialogPlate::CalculatePreferredSize() const {
   return gfx::Size(INT_MAX, GetHeightForWidth(INT_MAX));
 }
 
-void DialogPlate::ButtonPressed(views::Button* sender, const ui::Event& event) {
+void AssistantDialogPlate::ButtonPressed(views::Button* sender,
+                                         const ui::Event& event) {
   OnButtonPressed(static_cast<ash::AssistantButtonId>(sender->GetID()));
 }
 
-bool DialogPlate::HandleKeyEvent(views::Textfield* textfield,
-                                 const ui::KeyEvent& key_event) {
+bool AssistantDialogPlate::HandleKeyEvent(views::Textfield* textfield,
+                                          const ui::KeyEvent& key_event) {
   if (key_event.type() != ui::EventType::ET_KEY_PRESSED)
     return false;
 
@@ -106,7 +107,8 @@ bool DialogPlate::HandleKeyEvent(views::Textfield* textfield,
           textfield_->GetText(), base::TrimPositions::TRIM_ALL);
 
       // Only non-empty trimmed text is consider a valid contents commit.
-      // Anything else will simply result in the DialogPlate being cleared.
+      // Anything else will simply result in the AssistantDialogPlate being
+      // cleared.
       if (!trimmed_text.empty()) {
         delegate_->OnDialogPlateContentsCommitted(
             base::UTF16ToUTF8(trimmed_text));
@@ -130,7 +132,8 @@ bool DialogPlate::HandleKeyEvent(views::Textfield* textfield,
   }
 }
 
-void DialogPlate::OnInputModalityChanged(ash::InputModality input_modality) {
+void AssistantDialogPlate::OnInputModalityChanged(
+    ash::InputModality input_modality) {
   using ash::assistant::util::CreateLayerAnimationSequence;
   using ash::assistant::util::CreateOpacityElement;
   using ash::assistant::util::CreateTransformElement;
@@ -214,13 +217,13 @@ void DialogPlate::OnInputModalityChanged(ash::InputModality input_modality) {
   }
 }
 
-void DialogPlate::OnCommittedQueryChanged(
+void AssistantDialogPlate::OnCommittedQueryChanged(
     const ash::AssistantQuery& committed_query) {
   DCHECK(query_history_iterator_);
   query_history_iterator_->ResetToLast();
 }
 
-void DialogPlate::OnUiVisibilityChanged(
+void AssistantDialogPlate::OnUiVisibilityChanged(
     ash::AssistantVisibility new_visibility,
     ash::AssistantVisibility old_visibility,
     base::Optional<ash::AssistantEntryPoint> entry_point,
@@ -231,11 +234,11 @@ void DialogPlate::OnUiVisibilityChanged(
     textfield_->SetText(base::string16());
 }
 
-void DialogPlate::RequestFocus() {
+void AssistantDialogPlate::RequestFocus() {
   SetFocus(delegate_->GetInteractionModel()->input_modality());
 }
 
-views::View* DialogPlate::FindFirstFocusableView() {
+views::View* AssistantDialogPlate::FindFirstFocusableView() {
   ash::InputModality input_modality =
       delegate_->GetInteractionModel()->input_modality();
 
@@ -251,7 +254,7 @@ views::View* DialogPlate::FindFirstFocusableView() {
   }
 }
 
-void DialogPlate::InitLayout() {
+void AssistantDialogPlate::InitLayout() {
   views::BoxLayout* layout_manager =
       SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::Orientation::kHorizontal,
@@ -286,7 +289,7 @@ void DialogPlate::InitLayout() {
   OnInputModalityChanged(delegate_->GetInteractionModel()->input_modality());
 }
 
-void DialogPlate::InitKeyboardLayoutContainer() {
+void AssistantDialogPlate::InitKeyboardLayoutContainer() {
   keyboard_layout_container_ = new views::View();
   keyboard_layout_container_->SetPaintToLayer();
   keyboard_layout_container_->layer()->SetFillsBoundsOpaquely(false);
@@ -334,7 +337,7 @@ void DialogPlate::InitKeyboardLayoutContainer() {
   input_modality_layout_container_->AddChildView(keyboard_layout_container_);
 }
 
-void DialogPlate::InitVoiceLayoutContainer() {
+void AssistantDialogPlate::InitVoiceLayoutContainer() {
   voice_layout_container_ = new views::View();
   voice_layout_container_->SetPaintToLayer();
   voice_layout_container_->layer()->SetFillsBoundsOpaquely(false);
@@ -386,18 +389,18 @@ void DialogPlate::InitVoiceLayoutContainer() {
   input_modality_layout_container_->AddChildView(voice_layout_container_);
 }
 
-void DialogPlate::OnButtonPressed(ash::AssistantButtonId id) {
+void AssistantDialogPlate::OnButtonPressed(ash::AssistantButtonId id) {
   delegate_->OnDialogPlateButtonPressed(id);
   textfield_->SetText(base::string16());
 }
 
-void DialogPlate::OnAnimationStarted(
+void AssistantDialogPlate::OnAnimationStarted(
     const ui::CallbackLayerAnimationObserver& observer) {
   keyboard_layout_container_->set_can_process_events_within_subtree(false);
   voice_layout_container_->set_can_process_events_within_subtree(false);
 }
 
-bool DialogPlate::OnAnimationEnded(
+bool AssistantDialogPlate::OnAnimationEnded(
     const ui::CallbackLayerAnimationObserver& observer) {
   ash::InputModality input_modality =
       delegate_->GetInteractionModel()->input_modality();
@@ -422,7 +425,7 @@ bool DialogPlate::OnAnimationEnded(
   return false;
 }
 
-void DialogPlate::SetFocus(ash::InputModality input_modality) {
+void AssistantDialogPlate::SetFocus(ash::InputModality input_modality) {
   switch (input_modality) {
     case ash::InputModality::kKeyboard:
       textfield_->RequestFocus();
@@ -435,4 +438,4 @@ void DialogPlate::SetFocus(ash::InputModality input_modality) {
   }
 }
 
-}  // namespace app_list
+}  // namespace ash
