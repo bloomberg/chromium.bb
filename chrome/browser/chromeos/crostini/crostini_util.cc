@@ -40,6 +40,7 @@
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/prefs/pref_service.h"
+#include "components/user_manager/user.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
@@ -473,18 +474,12 @@ std::string CryptohomeIdForProfile(Profile* profile) {
 }
 
 std::string DefaultContainerUserNameForProfile(Profile* profile) {
-  // Get rid of the @domain.name in the profile user name (an email address).
-  std::string container_username = profile->GetProfileUserName();
-  if (container_username.empty()) {
+  const user_manager::User* user =
+      chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
+  if (!user) {
     return kCrostiniDefaultUsername;
   }
-  if (container_username.find('@') != std::string::npos) {
-    // gaia::CanonicalizeEmail CHECKs its argument contains'@'.
-    container_username = gaia::CanonicalizeEmail(container_username);
-    // |container_username| may have changed, so we have to find again.
-    return container_username.substr(0, container_username.find('@'));
-  }
-  return container_username;
+  return user->GetAccountName(/*use_display_email=*/false);
 }
 
 base::FilePath ContainerChromeOSBaseDirectory() {

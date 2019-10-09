@@ -103,8 +103,7 @@ void LoadIcons(Profile* profile,
 // Retrieves cryptohome_id from profile.
 std::string CryptohomeIdForProfile(Profile* profile);
 
-// Retrieves username from profile.  This is the text until '@' in
-// profile->GetProfileUserName() email address.
+// Retrieves username from profile.
 std::string DefaultContainerUserNameForProfile(Profile* profile);
 
 // Returns the mount directory within the container where paths from the Chrome
