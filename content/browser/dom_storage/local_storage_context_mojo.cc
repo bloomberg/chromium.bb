@@ -102,7 +102,8 @@ void DatabaseErrorResponse(base::OnceClosure callback,
 void MigrateStorageHelper(
     base::FilePath db_path,
     const scoped_refptr<base::SingleThreadTaskRunner> reply_task_runner,
-    base::Callback<void(std::unique_ptr<StorageAreaImpl::ValueMap>)> callback) {
+    base::OnceCallback<void(std::unique_ptr<StorageAreaImpl::ValueMap>)>
+        callback) {
   DOMStorageDatabase db(db_path);
   DOMStorageValuesMap map;
   db.ReadAllValues(&map);
@@ -282,7 +283,7 @@ class LocalStorageContextMojo::StorageAreaHolder final
           base::BindOnce(
               &MigrateStorageHelper, sql_db_path(),
               base::ThreadTaskRunnerHandle::Get(),
-              base::Bind(&CallMigrationCalback, base::Passed(&callback))));
+              base::BindOnce(&CallMigrationCalback, base::Passed(&callback))));
       return;
     }
     std::move(callback).Run(nullptr);
