@@ -137,6 +137,7 @@ OverviewWindowDragController::OverviewWindowDragController(
       is_touch_dragging_(is_touch_dragging),
       should_allow_split_view_(ShouldAllowSplitView()),
       virtual_desks_bar_enabled_(GetVirtualDesksBarEnabled(item)) {
+  DCHECK(!Shell::Get()->overview_controller()->IsInStartAnimation());
   DCHECK(!Shell::Get()->split_view_controller()->IsDividerAnimating());
 }
 
