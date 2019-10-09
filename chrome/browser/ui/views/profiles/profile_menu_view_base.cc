@@ -296,7 +296,7 @@ void ProfileMenuViewBase::SetIdentityInfo(const gfx::ImageSkia& image,
   gfx::ImageSkia sized_image =
       image.isNull()
           ? gfx::CreateVectorIcon(kUserAccountAvatarIcon, kIdentityImageSize,
-                                  kIdentityImageSize)
+                                  GetDefaultIconColor())
           : CropCircle(SizeImage(image, kIdentityImageSize));
   gfx::ImageSkia sized_badge =
       AddCircularBackground(SizeImage(badge, kBadgeSize), SK_ColorWHITE,
