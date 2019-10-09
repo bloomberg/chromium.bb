@@ -103,7 +103,10 @@ void TlsDataRouterPosix::PerformNetworkingOperations(Clock::duration timeout) {
       GetConnection(last_connection_processed_);
   last_connection_processed_ = *current_connection;
   do {
-    // Get the next (connection, mode) pair to use for processing.
+    // Get the next (connection, mode) pair to use for processing. This allows
+    // for processing in a round-robin fashion, such that this call to
+    // PerformNetworkingOperations() will pick up where the previous call left
+    // off.
     current_operation = GetNextMode(current_operation);
     if (current_operation == NetworkingOperation::kReading) {
       current_connection++;

@@ -72,7 +72,7 @@ class TlsDataRouterPosix : public SocketHandleWaiter::Subscriber {
 
   // Performs Read and Write operations for all connections or until the timeout
   // has been hit, whichever is first. In the latter case, the following
-  // iteraiton will continue from wherever the previous iteration left off.
+  // iteration will continue from wherever the previous iteration left off.
   void PerformNetworkingOperations(Clock::duration timeout);
 
   // SocketHandleWaiter::Subscriber overrides.
