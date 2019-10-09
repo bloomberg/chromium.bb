@@ -1160,7 +1160,10 @@ def RevertPath(git_repo, filename, rev):
   RunGit(git_repo, ['checkout', rev, '--', filename])
 
 
-def Log(git_repo, pretty=None, after=None, until=None,
+# In Log, we use "format" to refer to the --format flag to
+# git. Disable the nags from pylint.
+# pylint: disable=redefined-builtin
+def Log(git_repo, format=None, after=None, until=None,
         reverse=False, date=None, paths=None):
   """Return git log output for the given arguments.
 
@@ -1168,7 +1171,7 @@ def Log(git_repo, pretty=None, after=None, until=None,
 
   Args:
     git_repo: Path to a directory in the git repository.
-    pretty: Passed directly to the --pretty flag.
+    format: Passed directly to the --format flag.
     after: Passed directly to --after flag.
     until: Passed directly to --until flag.
     reverse: If true, set --reverse flag.
@@ -1179,8 +1182,8 @@ def Log(git_repo, pretty=None, after=None, until=None,
     The raw log output as a string.
   """
   cmd = ['log']
-  if pretty:
-    cmd.append('--pretty=%s' % pretty)
+  if format:
+    cmd.append('--format=%s' % format)
   if after:
     cmd.append('--after=%s' % after)
   if until:
@@ -1193,6 +1196,7 @@ def Log(git_repo, pretty=None, after=None, until=None,
     cmd.append('--')
     cmd.extend(paths)
   return RunGit(git_repo, cmd).output
+# pylint: enable=redefined-builtin
 
 
 def Commit(git_repo, message, amend=False, allow_empty=False,
