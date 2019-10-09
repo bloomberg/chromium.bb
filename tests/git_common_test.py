@@ -1,4 +1,5 @@
 #!/usr/bin/env vpython3
+# coding=utf-8
 # Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -6,6 +7,7 @@
 """Unit tests for git_common.py"""
 
 from __future__ import print_function
+from __future__ import unicode_literals
 
 import binascii
 import collections
@@ -334,7 +336,8 @@ class GitReadOnlyFunctionsTest(git_test_utils.GitRepoReadOnlyTestBase,
     ]
     self.assertEqual(ret, [binascii.unhexlify(h) for h in hashes])
 
-    with self.assertRaisesRegexp(Exception, r"one of \('master', 'bananas'\)"):
+    expected_re = r"one of \(u?'master', u?'bananas'\)"
+    with self.assertRaisesRegexp(Exception, expected_re):
       self.repo.run(self.gc.parse_commitrefs, 'master', 'bananas')
 
   def testRepoRoot(self):
@@ -399,8 +402,8 @@ class GitMutableFunctionsTest(git_test_utils.GitRepoReadWriteTestBase,
   REPO_SCHEMA = ''
 
   def _intern_data(self, data):
-    with tempfile.TemporaryFile('w') as f:
-      f.write(data)
+    with tempfile.TemporaryFile('wb') as f:
+      f.write(data.encode('utf-8'))
       f.seek(0)
       return self.repo.run(self.gc.intern_f, f)
 
@@ -413,10 +416,10 @@ class GitMutableFunctionsTest(git_test_utils.GitRepoReadWriteTestBase,
   def testMkTree(self):
     tree = {}
     for i in 1, 2, 3:
-      name = 'file%d' % i
+      name = '✔ file%d' % i
       tree[name] = ('100644', 'blob', self._intern_data(name))
     tree_hash = self.repo.run(self.gc.mktree, tree)
-    self.assertEqual('37b61866d6e061c4ba478e7eb525be7b5752737d', tree_hash)
+    self.assertEqual('b524c02ba0e1cf482f8eb08c3d63e97b8895c89c', tree_hash)
 
   def testConfig(self):
     self.repo.git('config', '--add', 'happy.derpies', 'food')
@@ -671,9 +674,9 @@ class GitMutableStructuredTest(git_test_utils.GitRepoReadWriteTestBase,
     self.repo.git('checkout', 'branch_K')
 
     self.assertEqual(
-        True, self.repo.run(self.gc.squash_current_branch, 'cool message'))
+        True, self.repo.run(self.gc.squash_current_branch, '✔ cool message'))
 
-    lines = ['cool message', '']
+    lines = ['✔ cool message', '']
     for l in 'HIJK':
       lines.extend((self.repo[l], l, ''))
     lines.pop()

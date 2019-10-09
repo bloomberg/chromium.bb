@@ -605,7 +605,7 @@ def mktree(treedict):
   """
   with tempfile.TemporaryFile() as f:
     for name, (mode, typ, ref) in treedict.items():
-      f.write(('%s %s %s\t%s\0' % (mode, typ, ref, name)).encode())
+      f.write(('%s %s %s\t%s\0' % (mode, typ, ref, name)).encode('utf-8'))
     f.seek(0)
     return run('mktree', '-z', stdin=f)
 
@@ -862,7 +862,7 @@ def squash_current_branch(header=None, merge_base=None):
     # nothing to commit at this point.
     print('Nothing to commit; squashed branch is empty')
     return False
-  run('commit', '--no-verify', '-a', '-F', '-', indata=log_msg.encode())
+  run('commit', '--no-verify', '-a', '-F', '-', indata=log_msg.encode('utf-8'))
   return True
 
 
