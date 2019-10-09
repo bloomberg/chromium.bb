@@ -22,7 +22,6 @@
 -org.chromium.chrome.browser.infobar.InfoBarTest.testInfoBarForGeolocationDisappearsOnBack
 -org.chromium.chrome.browser.keyboard_accessory.PasswordGenerationIntegrationTest.testAutomaticGenerationUsePassword
 -org.chromium.chrome.browser.keyboard_accessory.PasswordGenerationIntegrationTest.testManualGenerationUsePassword
--org.chromium.chrome.browser.media.*
 -org.chromium.chrome.browser.notifications.NotificationPlatformBridgeIntentTest.testLaunchNotificationPreferencesForCategory
 -org.chromium.chrome.browser.notifications.NotificationPlatformBridgeIntentTest.testLaunchNotificationPreferencesForWebsite
 -org.chromium.chrome.browser.offlinepages.*
