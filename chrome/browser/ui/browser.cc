@@ -1370,6 +1370,11 @@ std::unique_ptr<content::WebContents> Browser::SwapWebContents(
       new_view->TakeFallbackContentFrom(old_view);
   }
 
+  DevToolsWindow* dev_tools_window =
+      DevToolsWindow::GetInstanceForInspectedWebContents(old_contents);
+  if (dev_tools_window)
+    dev_tools_window->UpdateInspectedWebContents(new_contents.get());
+
   // TODO(crbug.com/836409): TabLoadTracker should not rely on being notified
   // directly about tab contents swaps.
   resource_coordinator::TabLoadTracker::Get()->SwapTabContents(

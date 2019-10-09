@@ -2,7 +2,7 @@
   <script>
     window.onportalactivate = e => {
       var portal = e.adoptPredecessor();
-      portal.activate();
+      document.body.appendChild(portal);
     }
   </script>
 </body>

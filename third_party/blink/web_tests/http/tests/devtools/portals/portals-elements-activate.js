@@ -4,7 +4,7 @@
 
 (async function() {
   TestRunner.addResult(
-      `Tests that adopted portal is rendered inline correctly.\n`);
+      `Tests that element tree is updated after activation.\n`);
   await TestRunner.loadModule('elements_test_runner');
   await TestRunner.showPanel('elements');
 
@@ -12,22 +12,29 @@
   Elements.StylesSidebarPane.prototype.update = function() {};
   Elements.MetricsSidebarPane.prototype.update = function() {};
 
-  await TestRunner.navigatePromise('resources/append-predecessor-host.html');
+  await TestRunner.navigatePromise('resources/portal_host.html');
 
   TestRunner.runTestSuite([
     function testSetUp(next) {
+      TestRunner.assertEquals(2, SDK.targetManager.targets().length);
       ElementsTestRunner.expandElementsTree(() => {
         ElementsTestRunner.dumpElementsTree();
-        TestRunner.evaluateInPage('activate()');
-        TestRunner
-            .waitForEvent(
-                Host.InspectorFrontendHostAPI.Events.ReattachMainTarget,
-                Host.InspectorFrontendHost.events)
-            .then(next);
+        next();
       });
     },
 
-    function testAfterActivate() {
+    async function testActivate(next) {
+      TestRunner.evaluateInPage(
+          'setTimeout(() => {document.querySelector(\'portal\').activate();})');
+      const mainTarget = SDK.targetManager.mainTarget();
+      await TestRunner.waitForEvent(
+          Host.InspectorFrontendHostAPI.Events.ReattachMainTarget,
+          Host.InspectorFrontendHost.events);
+      next();
+    },
+
+    function testAfterActivate(next) {
+      TestRunner.assertEquals(1, SDK.targetManager.targets().length);
       ElementsTestRunner.expandElementsTree(() => {
         ElementsTestRunner.dumpElementsTree();
         TestRunner.completeTest();
