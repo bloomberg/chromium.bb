@@ -1850,7 +1850,8 @@ LIBGAV1_ALWAYS_INLINE void Identity4ColumnStoreToFrame(
 
   if (tx_width == 4) {
     const uint8x8_t zero = vdup_n_u8(0);
-    for (int i = 0; i < tx_height; ++i) {
+    int i = 0;
+    do {
       const int16x4_t residual = vld1_s16(&source[i * tx_width]);
       const int16x4_t residual_fraction =
           vqrdmulh_n_s16(residual, kIdentity4MultiplierFraction << 3);
@@ -1862,9 +1863,10 @@ LIBGAV1_ALWAYS_INLINE void Identity4ColumnStoreToFrame(
       const uint8x8_t d = vqmovun_s16(vcombine_s16(b, b));
       StoreLo4(dst, d);
       dst += stride;
-    }
+    } while (++i < tx_height);
   } else {
-    for (int i = 0; i < tx_height; ++i) {
+    int i = 0;
+    do {
       const int row = i * tx_width;
       int j = 0;
       do {
@@ -1881,7 +1883,7 @@ LIBGAV1_ALWAYS_INLINE void Identity4ColumnStoreToFrame(
         j += 8;
       } while (j < tx_width);
       dst += stride;
-    }
+    } while (++i < tx_height);
   }
 }
 
@@ -1893,7 +1895,8 @@ LIBGAV1_ALWAYS_INLINE void Identity4RowColumnStoreToFrame(
 
   if (tx_width == 4) {
     const uint8x8_t zero = vdup_n_u8(0);
-    for (int i = 0; i < tx_height; ++i) {
+    int i = 0;
+    do {
       const int16x4_t v_src = vld1_s16(&source[i * tx_width]);
       const int16x4_t v_src_mult =
           vqrdmulh_n_s16(v_src, kIdentity4MultiplierFraction << 3);
@@ -1908,9 +1911,10 @@ LIBGAV1_ALWAYS_INLINE void Identity4RowColumnStoreToFrame(
       const uint8x8_t d = vqmovun_s16(vcombine_s16(b, b));
       StoreLo4(dst, d);
       dst += stride;
-    }
+    } while (++i < tx_height);
   } else {
-    for (int i = 0; i < tx_height; ++i) {
+    int i = 0;
+    do {
       const int row = i * tx_width;
       int j = 0;
       do {
@@ -1930,7 +1934,7 @@ LIBGAV1_ALWAYS_INLINE void Identity4RowColumnStoreToFrame(
         j += 8;
       } while (j < tx_width);
       dst += stride;
-    }
+    } while (++i < tx_height);
   }
 }
 
@@ -1991,7 +1995,8 @@ LIBGAV1_ALWAYS_INLINE void Identity8ColumnStoreToFrame_NEON(
 
   if (tx_width == 4) {
     const uint8x8_t zero = vdup_n_u8(0);
-    for (int i = 0; i < tx_height; ++i) {
+    int i = 0;
+    do {
       const int16x4_t residual = vld1_s16(&source[i * tx_width]);
       const int16x4_t v_dst_i = vqadd_s16(residual, residual);
       const int16x8_t frame_data =
@@ -2001,9 +2006,10 @@ LIBGAV1_ALWAYS_INLINE void Identity8ColumnStoreToFrame_NEON(
       const uint8x8_t d = vqmovun_s16(vcombine_s16(b, b));
       StoreLo4(dst, d);
       dst += stride;
-    }
+    } while (++i < tx_height);
   } else {
-    for (int i = 0; i < tx_height; ++i) {
+    int i = 0;
+    do {
       const int row = i * tx_width;
       for (int j = 0; j < tx_width; j += 8) {
         const int16x8_t residual = vld1q_s16(&source[row + j]);
@@ -2016,7 +2022,7 @@ LIBGAV1_ALWAYS_INLINE void Identity8ColumnStoreToFrame_NEON(
         vst1_u8(dst + j, d);
       }
       dst += stride;
-    }
+    } while (++i < tx_height);
   }
 }
 
@@ -2076,7 +2082,8 @@ LIBGAV1_ALWAYS_INLINE void Identity16ColumnStoreToFrame_NEON(
 
   if (tx_width == 4) {
     const uint8x8_t zero = vdup_n_u8(0);
-    for (int i = 0; i < tx_height; ++i) {
+    int i = 0;
+    do {
       const int16x4_t v_src = vld1_s16(&source[i * tx_width]);
       const int16x4_t v_src_mult =
           vqrdmulh_n_s16(v_src, kIdentity4MultiplierFraction << 4);
@@ -2091,9 +2098,10 @@ LIBGAV1_ALWAYS_INLINE void Identity16ColumnStoreToFrame_NEON(
       const uint8x8_t d = vqmovun_s16(vcombine_s16(b, b));
       StoreLo4(dst, d);
       dst += stride;
-    }
+    } while (++i < tx_height);
   } else {
-    for (int i = 0; i < tx_height; ++i) {
+    int i = 0;
+    do {
       const int row = i * tx_width;
       for (int j = 0; j < tx_width; j += 8) {
         const int16x8_t v_src = vld1q_s16(&source[row + j]);
@@ -2109,7 +2117,7 @@ LIBGAV1_ALWAYS_INLINE void Identity16ColumnStoreToFrame_NEON(
         vst1_u8(dst + j, d);
       }
       dst += stride;
-    }
+    } while (++i < tx_height);
   }
 }
 
@@ -2156,7 +2164,8 @@ LIBGAV1_ALWAYS_INLINE void Identity32ColumnStoreToFrame(
   const int stride = frame.columns();
   uint8_t* dst = frame[start_y] + start_x;
 
-  for (int i = 0; i < tx_height; ++i) {
+  int i = 0;
+  do {
     const int row = i * tx_width;
     int j = 0;
     do {
@@ -2170,7 +2179,7 @@ LIBGAV1_ALWAYS_INLINE void Identity32ColumnStoreToFrame(
       j += 8;
     } while (j < tx_width);
     dst += stride;
-  }
+  } while (++i < tx_height);
 }
 
 //------------------------------------------------------------------------------
@@ -2971,11 +2980,12 @@ void Identity4TransformLoop_NEON(TransformType tx_type, TransformSize tx_size,
     return;
   }
   assert(!is_row);
+  const int height = (non_zero_coeff_count == 1) ? 1 : tx_height;
   // Special case: Process row calculations during column transform call.
   if (tx_type == kTransformTypeIdentityIdentity &&
       (tx_size == kTransformSize4x4 || tx_size == kTransformSize8x4)) {
-    Identity4RowColumnStoreToFrame(frame, start_x, start_y, tx_width,
-                                   /*tx_height=*/4, src);
+    Identity4RowColumnStoreToFrame(frame, start_x, start_y, tx_width, height,
+                                   src);
     return;
   }
 
@@ -2983,8 +2993,7 @@ void Identity4TransformLoop_NEON(TransformType tx_type, TransformSize tx_size,
     FlipColumns<4>(src, tx_width);
   }
 
-  Identity4ColumnStoreToFrame(frame, start_x, start_y, tx_width,
-                              /*tx_height=*/4, src);
+  Identity4ColumnStoreToFrame(frame, start_x, start_y, tx_width, height, src);
 }
 
 void Identity8TransformLoop_NEON(TransformType tx_type, TransformSize tx_size,
@@ -3041,9 +3050,9 @@ void Identity8TransformLoop_NEON(TransformType tx_type, TransformSize tx_size,
   if (kTransformFlipColumnsMask.Contains(tx_type)) {
     FlipColumns<8>(src, tx_width);
   }
-
-  Identity8ColumnStoreToFrame_NEON(frame, start_x, start_y, tx_width,
-                                   /*tx_height=*/8, src);
+  const int height = (non_zero_coeff_count == 1) ? 1 : tx_height;
+  Identity8ColumnStoreToFrame_NEON(frame, start_x, start_y, tx_width, height,
+                                   src);
 }
 
 void Identity16TransformLoop_NEON(TransformType tx_type, TransformSize tx_size,
@@ -3079,8 +3088,9 @@ void Identity16TransformLoop_NEON(TransformType tx_type, TransformSize tx_size,
   if (kTransformFlipColumnsMask.Contains(tx_type)) {
     FlipColumns<16>(src, tx_width);
   }
-  Identity16ColumnStoreToFrame_NEON(frame, start_x, start_y, tx_width,
-                                    /*tx_height=*/16, src);
+  const int height = (non_zero_coeff_count == 1) ? 1 : tx_height;
+  Identity16ColumnStoreToFrame_NEON(frame, start_x, start_y, tx_width, height,
+                                    src);
 }
 
 void Identity32TransformLoop_NEON(TransformType /*tx_type*/,
@@ -3117,8 +3127,8 @@ void Identity32TransformLoop_NEON(TransformType /*tx_type*/,
   }
 
   assert(!is_row);
-  Identity32ColumnStoreToFrame(frame, start_x, start_y, tx_width,
-                               /*tx_height=*/32, src);
+  const int height = (non_zero_coeff_count == 1) ? 1 : tx_height;
+  Identity32ColumnStoreToFrame(frame, start_x, start_y, tx_width, height, src);
 }
 
 void Wht4TransformLoop_NEON(TransformType tx_type, TransformSize tx_size,
