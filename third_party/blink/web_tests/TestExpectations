@@ -3110,9 +3110,10 @@ crbug.com/1002514 external/wpt/web-share/share-sharePromise-internal-slot.https.
 # Subgrid is not implemented yet
 crbug.com/618969 external/wpt/css/css-grid/subgrid/ [ Skip ]
 
+crbug.com/1012600 virtual/threaded/external/wpt/css/css-animations/animation-opacity-pause-and-set-time.html [ Failure Pass ]
+
 # ====== New tests from wpt-importer added here ======
 crbug.com/626703 [ Win7 ] external/wpt/css/css-text/line-breaking/line-breaking-021.html [ Failure ]
-crbug.com/626703 [ Retina ] virtual/threaded/external/wpt/css/css-animations/animation-opacity-pause-and-set-time.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/lists-3/list-style-type-string-001a.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/lists-3/list-style-type-string-001a.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/lists-3/list-style-type-string-001a.html [ Failure ]
