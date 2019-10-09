@@ -3730,7 +3730,9 @@ void RenderWidget::OnWaitNextFrameForTests(
 }
 
 const ScreenInfo& RenderWidget::GetOriginalScreenInfo() const {
-  return page_properties_->GetOriginalScreenInfo();
+  if (page_properties_->ScreenMetricsEmulator())
+    return page_properties_->ScreenMetricsEmulator()->original_screen_info();
+  return page_properties_->GetScreenInfo();
 }
 
 gfx::PointF RenderWidget::ConvertWindowPointToViewport(

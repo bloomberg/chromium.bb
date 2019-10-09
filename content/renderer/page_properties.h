@@ -46,9 +46,6 @@ class CONTENT_EXPORT PageProperties {
   void SetScreenMetricsEmulator(
       std::unique_ptr<RenderWidgetScreenMetricsEmulator> emulator);
 
-  // When emulated, this returns the original (non-emulated) ScreenInfo.
-  const ScreenInfo& GetOriginalScreenInfo() const;
-
   CompositorDependencies* GetCompositorDependencies();
 
  private:

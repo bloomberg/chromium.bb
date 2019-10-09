@@ -19,12 +19,6 @@ void PageProperties::SetScreenMetricsEmulator(
   screen_metrics_emulator_ = std::move(emulator);
 }
 
-const ScreenInfo& PageProperties::GetOriginalScreenInfo() const {
-  return ScreenMetricsEmulator()
-             ? ScreenMetricsEmulator()->original_screen_info()
-             : GetScreenInfo();
-}
-
 CompositorDependencies* PageProperties::GetCompositorDependencies() {
   return compositor_deps_;
 }
