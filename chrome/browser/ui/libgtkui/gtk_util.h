@@ -20,7 +20,6 @@ class Window;
 
 namespace base {
 class CommandLine;
-class Environment;
 }
 
 namespace color_utils {
@@ -37,9 +36,6 @@ namespace libgtkui {
 extern const color_utils::HSL kDefaultTintFrameIncognito;
 
 void GtkInitFromCommandLine(const base::CommandLine& command_line);
-
-// Returns the name of the ".desktop" file associated with our running process.
-std::string GetDesktopName(base::Environment* env);
 
 GdkModifierType GetGdkModifierForAccelerator(
     const ui::Accelerator& accelerator);

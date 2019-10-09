@@ -138,23 +138,6 @@ void GtkInitFromCommandLine(const base::CommandLine& command_line) {
   CommonInitFromCommandLine(command_line);
 }
 
-// TODO(erg): This method was copied out of shell_integration_linux.cc. Because
-// of how this library is structured as a stand alone .so, we can't call code
-// from browser and above.
-std::string GetDesktopName(base::Environment* env) {
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  return "google-chrome.desktop";
-#else  // BUILDFLAG(CHROMIUM_BRANDING)
-  // Allow $CHROME_DESKTOP to override the built-in value, so that development
-  // versions can set themselves as the default without interfering with
-  // non-official, packaged versions using the built-in value.
-  std::string name;
-  if (env->GetVar("CHROME_DESKTOP", &name) && !name.empty())
-    return name;
-  return "chromium-browser.desktop";
-#endif
-}
-
 GdkModifierType GetGdkModifierForAccelerator(
     const ui::Accelerator& accelerator) {
   int event_flag = accelerator.modifiers();

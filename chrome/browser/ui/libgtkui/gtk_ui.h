@@ -81,8 +81,6 @@ class GtkUi : public views::LinuxUI {
   ui::NativeTheme* GetNativeTheme(aura::Window* window) const override;
   void SetNativeThemeOverride(NativeThemeGetter callback) override;
   bool GetDefaultUsesSystemTheme() const override;
-  void SetDownloadCount(int count) const override;
-  void SetProgressFraction(float percentage) const override;
   gfx::Image GetIconForContentType(const std::string& content_type,
                                    int size) const override;
   std::unique_ptr<views::Border> CreateNativeBorder(

@@ -39,8 +39,6 @@ jumbo_component("libgtkui") {
     "settings_provider_gtk.h",
     "skia_utils_gtk.cc",
     "skia_utils_gtk.h",
-    "unity_service.cc",
-    "unity_service.h",
   ]
 
   configs += [

@@ -34,7 +34,6 @@
 #include "chrome/browser/ui/libgtkui/select_file_dialog_impl.h"
 #include "chrome/browser/ui/libgtkui/settings_provider_gtk.h"
 #include "chrome/browser/ui/libgtkui/skia_utils_gtk.h"
-#include "chrome/browser/ui/libgtkui/unity_service.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "printing/buildflags/buildflags.h"
@@ -541,16 +540,6 @@ bool GtkUi::GetDefaultUsesSystemTheme() const {
   // Unless GetDesktopEnvironment() badly misbehaves, this should never happen.
   NOTREACHED();
   return false;
-}
-
-void GtkUi::SetDownloadCount(int count) const {
-  if (unity::IsRunning())
-    unity::SetDownloadCount(count);
-}
-
-void GtkUi::SetProgressFraction(float percentage) const {
-  if (unity::IsRunning())
-    unity::SetProgressFraction(percentage);
 }
 
 gfx::Image GtkUi::GetIconForContentType(const std::string& content_type,

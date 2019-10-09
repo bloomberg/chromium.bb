@@ -2,36 +2,37 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/libgtkui/unity_service.h"
+#include "chrome/browser/download/download_status_updater.h"
 
 #include <dlfcn.h>
-#include <gtk/gtk.h>
 
 #include <memory>
 #include <string>
 
 #include "base/environment.h"
 #include "base/nix/xdg_util.h"
-#include "chrome/browser/ui/libgtkui/gtk_util.h"
+#include "chrome/common/channel_info.h"
+#include "ui/base/glib/glib_integers.h"
 
 // Unity data typedefs.
 typedef struct _UnityInspector UnityInspector;
 typedef UnityInspector* (*unity_inspector_get_default_func)(void);
-typedef gboolean (*unity_inspector_get_unity_running_func)
-    (UnityInspector* self);
+typedef gboolean (*unity_inspector_get_unity_running_func)(
+    UnityInspector* self);
 
 typedef struct _UnityLauncherEntry UnityLauncherEntry;
-typedef UnityLauncherEntry* (*unity_launcher_entry_get_for_desktop_id_func)
-    (const gchar* desktop_id);
+typedef UnityLauncherEntry* (*unity_launcher_entry_get_for_desktop_id_func)(
+    const gchar* desktop_id);
 typedef void (*unity_launcher_entry_set_count_func)(UnityLauncherEntry* self,
-                                               gint64 value);
-typedef void (*unity_launcher_entry_set_count_visible_func)
-    (UnityLauncherEntry* self, gboolean value);
+                                                    gint64 value);
+typedef void (*unity_launcher_entry_set_count_visible_func)(
+    UnityLauncherEntry* self,
+    gboolean value);
 typedef void (*unity_launcher_entry_set_progress_func)(UnityLauncherEntry* self,
                                                        gdouble value);
-typedef void (*unity_launcher_entry_set_progress_visible_func)
-    (UnityLauncherEntry* self, gboolean value);
-
+typedef void (*unity_launcher_entry_set_progress_visible_func)(
+    UnityLauncherEntry* self,
+    gboolean value);
 
 namespace {
 
@@ -59,8 +60,7 @@ void EnsureLibUnityLoaded() {
   attempted_load = true;
 
   std::unique_ptr<base::Environment> env(base::Environment::Create());
-  base::nix::DesktopEnvironment desktop_env =
-      GetDesktopEnvironment(env.get());
+  base::nix::DesktopEnvironment desktop_env = GetDesktopEnvironment(env.get());
 
   // The "icon-tasks" KDE task manager also honors Unity Launcher API.
   if (desktop_env != base::nix::DESKTOP_ENVIRONMENT_UNITY &&
@@ -92,12 +92,11 @@ void EnsureLibUnityLoaded() {
       reinterpret_cast<unity_launcher_entry_get_for_desktop_id_func>(
           dlsym(unity_lib, "unity_launcher_entry_get_for_desktop_id"));
   if (entry_get_for_desktop_id) {
-    std::string desktop_id = libgtkui::GetDesktopName(env.get());
+    std::string desktop_id = chrome::GetDesktopName(env.get());
     chrome_entry = entry_get_for_desktop_id(desktop_id.c_str());
 
-    entry_set_count =
-        reinterpret_cast<unity_launcher_entry_set_count_func>(
-            dlsym(unity_lib, "unity_launcher_entry_set_count"));
+    entry_set_count = reinterpret_cast<unity_launcher_entry_set_count_func>(
+        dlsym(unity_lib, "unity_launcher_entry_set_count"));
 
     entry_set_count_visible =
         reinterpret_cast<unity_launcher_entry_set_count_visible_func>(
@@ -113,21 +112,11 @@ void EnsureLibUnityLoaded() {
   }
 }
 
-}  // namespace
-
-
-namespace unity {
-
 bool IsRunning() {
-  EnsureLibUnityLoaded();
-  if (inspector && get_unity_running)
-    return get_unity_running(inspector);
-
-  return false;
+  return inspector && get_unity_running && get_unity_running(inspector);
 }
 
 void SetDownloadCount(int count) {
-  EnsureLibUnityLoaded();
   if (chrome_entry && entry_set_count && entry_set_count_visible) {
     entry_set_count(chrome_entry, count);
     entry_set_count_visible(chrome_entry, count != 0);
@@ -135,7 +124,6 @@ void SetDownloadCount(int count) {
 }
 
 void SetProgressFraction(float percentage) {
-  EnsureLibUnityLoaded();
   if (chrome_entry && entry_set_progress && entry_set_progress_visible) {
     entry_set_progress(chrome_entry, percentage);
     entry_set_progress_visible(chrome_entry,
@@ -143,4 +131,17 @@ void SetProgressFraction(float percentage) {
   }
 }
 
-}  // namespace unity
+}  // namespace
+
+void DownloadStatusUpdater::UpdateAppIconDownloadProgress(
+    download::DownloadItem* download) {
+  // Only implemented on Unity for now.
+  EnsureLibUnityLoaded();
+  if (!IsRunning())
+    return;
+  float progress = 0;
+  int download_count = 0;
+  GetProgress(&progress, &download_count);
+  SetDownloadCount(download_count);
+  SetProgressFraction(progress);
+}
