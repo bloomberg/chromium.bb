@@ -176,10 +176,10 @@ class EgtestsApp(object):
     """
     module = self.module_name + '_module'
 
-    # If --run_with_custom_webkit is passed as a test arg, set up
+    # If --run-with-custom-webkit is passed as a test arg, set up
     # DYLD_FRAMEWORK_PATH to load the custom webkit modules.
     dyld_framework_path = self.project_path + ':'
-    if '--run_with_custom_webkit' in self.test_args:
+    if '--run-with-custom-webkit' in self.test_args:
       if self.host_app_path:
         webkit_path = os.path.join(self.host_app_path, 'WebKitFrameworks')
       else:
