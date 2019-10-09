@@ -896,7 +896,11 @@ void ChromePasswordProtectionService::HandleUserActionOnModalWarning(
     } else {
       // |outcome| is only recorded as succeeded or response_already_cached.
       MaybeLogPasswordReuseLookupResultWithVerdict(
-          web_contents, PasswordType::OTHER_GAIA_PASSWORD,
+          web_contents,
+          password_type.account_type() ==
+                  ReusedPasswordAccountType::SAVED_PASSWORD
+              ? PasswordType::SAVED_PASSWORD
+              : PasswordType::OTHER_GAIA_PASSWORD,
           outcome == RequestOutcome::SUCCEEDED
               ? PasswordReuseLookup::REQUEST_SUCCESS
               : PasswordReuseLookup::CACHE_HIT,
@@ -910,7 +914,8 @@ void ChromePasswordProtectionService::HandleUserActionOnModalWarning(
               content::Referrer(),
               /*in_new_tab=*/true);
       web_contents_with_unhandled_enterprise_reuses_.erase(web_contents);
-    } else {
+    } else if (password_type.account_type() !=
+               ReusedPasswordAccountType::SAVED_PASSWORD) {
       // Opens accounts.google.com in a new tab.
       OpenUrl(web_contents, GetDefaultChangePasswordURL(), content::Referrer(),
               /*in_new_tab=*/true);
