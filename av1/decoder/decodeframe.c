@@ -228,7 +228,7 @@ static AOM_INLINE void predict_and_reconstruct_intra_block(
     struct macroblockd_plane *const pd = &xd->plane[plane];
 
     // tx_type will be read out in av1_read_coeffs_txb_facade
-    const TX_TYPE tx_type = av1_get_tx_type(plane_type, xd, row, col, tx_size,
+    const TX_TYPE tx_type = av1_get_tx_type(xd, plane_type, row, col, tx_size,
                                             cm->reduced_tx_set_used);
     eob_info *eob_data = pd->eob_data + xd->txb_offset[plane];
     if (eob_data->eob) {
@@ -252,7 +252,7 @@ static AOM_INLINE void inverse_transform_inter_block(
   const struct macroblockd_plane *const pd = &xd->plane[plane];
 
   // tx_type will be read out in av1_read_coeffs_txb_facade
-  const TX_TYPE tx_type = av1_get_tx_type(plane_type, xd, blk_row, blk_col,
+  const TX_TYPE tx_type = av1_get_tx_type(xd, plane_type, blk_row, blk_col,
                                           tx_size, cm->reduced_tx_set_used);
 
   uint8_t *dst =

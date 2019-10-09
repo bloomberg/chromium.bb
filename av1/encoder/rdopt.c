@@ -2064,7 +2064,7 @@ static AOM_INLINE void inverse_transform_block_facade(MACROBLOCKD *xd,
   tran_low_t *dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
   const PLANE_TYPE plane_type = get_plane_type(plane);
   const TX_SIZE tx_size = av1_get_tx_size(plane, xd);
-  const TX_TYPE tx_type = av1_get_tx_type(plane_type, xd, blk_row, blk_col,
+  const TX_TYPE tx_type = av1_get_tx_type(xd, plane_type, blk_row, blk_col,
                                           tx_size, reduced_tx_set);
   const int dst_stride = pd->dst.stride;
   uint8_t *dst =
@@ -2171,7 +2171,7 @@ static INLINE int64_t dist_block_px_domain(const AV1_COMP *cpi, MACROBLOCK *x,
 #endif
 
   const PLANE_TYPE plane_type = get_plane_type(plane);
-  TX_TYPE tx_type = av1_get_tx_type(plane_type, xd, blk_row, blk_col, tx_size,
+  TX_TYPE tx_type = av1_get_tx_type(xd, plane_type, blk_row, blk_col, tx_size,
                                     cpi->common.reduced_tx_set_used);
   av1_inverse_transform_block(xd, dqcoeff, plane, tx_type, tx_size, recon,
                               MAX_TX_SIZE, eob,
@@ -3030,8 +3030,8 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
         x->txb_rd_record_intra.tx_rd_info[intra_hash_idx].valid) {
       mbmi->txk_type[txk_type_idx] = intra_txb_rd_info->tx_type;
       const TX_TYPE ref_tx_type =
-          av1_get_tx_type(get_plane_type(plane), &x->e_mbd, blk_row, blk_col,
-                          tx_size, cpi->common.reduced_tx_set_used);
+          av1_get_tx_type(xd, get_plane_type(plane), blk_row, blk_col, tx_size,
+                          cpi->common.reduced_tx_set_used);
       if (ref_tx_type == intra_txb_rd_info->tx_type) {
         best_rd_stats->rate = intra_txb_rd_info->rate;
         best_rd_stats->dist = intra_txb_rd_info->dist;
@@ -3075,7 +3075,7 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
   if (plane) {
     // tx_type of PLANE_TYPE_UV should be the same as PLANE_TYPE_Y
     uv_tx_type = txk_allowed =
-        av1_get_tx_type(get_plane_type(plane), xd, blk_row, blk_col, tx_size,
+        av1_get_tx_type(xd, get_plane_type(plane), blk_row, blk_col, tx_size,
                         cm->reduced_tx_set_used);
   }
   PREDICTION_MODE intra_dir =
@@ -4969,7 +4969,7 @@ static AOM_INLINE void tx_type_rd(const AV1_COMP *cpi, MACROBLOCK *x,
     if (plane == 0)
       x->e_mbd.mi[0]->txk_type[txk_type_idx] = rd_info_array->tx_type;
     const TX_TYPE ref_tx_type =
-        av1_get_tx_type(get_plane_type(plane), &x->e_mbd, blk_row, blk_col,
+        av1_get_tx_type(&x->e_mbd, get_plane_type(plane), blk_row, blk_col,
                         tx_size, cpi->common.reduced_tx_set_used);
     if (ref_tx_type == rd_info_array->tx_type) {
       rd_stats->rate += rd_info_array->rate;

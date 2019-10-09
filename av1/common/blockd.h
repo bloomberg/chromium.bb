@@ -867,8 +867,8 @@ static INLINE void update_txk_array(TX_TYPE *txk_type, BLOCK_SIZE bsize,
   }
 }
 
-static INLINE TX_TYPE av1_get_tx_type(PLANE_TYPE plane_type,
-                                      const MACROBLOCKD *xd, int blk_row,
+static INLINE TX_TYPE av1_get_tx_type(const MACROBLOCKD *xd,
+                                      PLANE_TYPE plane_type, int blk_row,
                                       int blk_col, TX_SIZE tx_size,
                                       int reduced_tx_set) {
   const MB_MODE_INFO *const mbmi = xd->mi[0];

@@ -519,7 +519,7 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCK *const x,
   if (eob == 0) return;
 
   const PLANE_TYPE plane_type = get_plane_type(plane);
-  const TX_TYPE tx_type = av1_get_tx_type(plane_type, xd, blk_row, blk_col,
+  const TX_TYPE tx_type = av1_get_tx_type(xd, plane_type, blk_row, blk_col,
                                           tx_size, cm->reduced_tx_set_used);
   // Only y plane's tx_type is transmitted
   if (plane == 0) {
@@ -1822,7 +1822,7 @@ int av1_optimize_txb(const struct AV1_COMP *cpi, MACROBLOCK *x, int plane,
   MACROBLOCKD *const xd = &x->e_mbd;
   const PLANE_TYPE plane_type = get_plane_type(plane);
   const TX_SIZE txs_ctx = get_txsize_entropy_ctx(tx_size);
-  const TX_TYPE tx_type = av1_get_tx_type(plane_type, xd, blk_row, blk_col,
+  const TX_TYPE tx_type = av1_get_tx_type(xd, plane_type, blk_row, blk_col,
                                           tx_size, cm->reduced_tx_set_used);
   const MB_MODE_INFO *mbmi = xd->mi[0];
   const struct macroblock_plane *p = &x->plane[plane];
@@ -1920,7 +1920,7 @@ void av1_update_txb_context_b(int plane, int block, int blk_row, int blk_col,
   const uint16_t eob = p->eobs[block];
   const tran_low_t *qcoeff = BLOCK_OFFSET(p->qcoeff, block);
   const PLANE_TYPE plane_type = pd->plane_type;
-  const TX_TYPE tx_type = av1_get_tx_type(plane_type, xd, blk_row, blk_col,
+  const TX_TYPE tx_type = av1_get_tx_type(xd, plane_type, blk_row, blk_col,
                                           tx_size, cm->reduced_tx_set_used);
   const SCAN_ORDER *const scan_order = get_scan(tx_size, tx_type);
   const int cul_level = av1_get_txb_entropy_context(qcoeff, scan_order, eob);
@@ -1942,7 +1942,7 @@ static void update_tx_type_count(const AV1_COMP *cpi, const AV1_COMMON *cm,
 
   // Only y plane's tx_type is updated
   if (plane > 0) return;
-  const TX_TYPE tx_type = av1_get_tx_type(PLANE_TYPE_Y, xd, blk_row, blk_col,
+  const TX_TYPE tx_type = av1_get_tx_type(xd, PLANE_TYPE_Y, blk_row, blk_col,
                                           tx_size, cm->reduced_tx_set_used);
   if (is_inter) {
     if (cpi->oxcf.use_inter_dct_only) {
@@ -2060,7 +2060,7 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
                        td->counts, allow_update_cdf);
 
   const PLANE_TYPE plane_type = pd->plane_type;
-  const TX_TYPE tx_type = av1_get_tx_type(plane_type, xd, blk_row, blk_col,
+  const TX_TYPE tx_type = av1_get_tx_type(xd, plane_type, blk_row, blk_col,
                                           tx_size, cm->reduced_tx_set_used);
   const TX_CLASS tx_class = tx_type_to_class[tx_type];
   const SCAN_ORDER *const scan_order = get_scan(tx_size, tx_type);

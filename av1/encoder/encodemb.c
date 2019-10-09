@@ -225,7 +225,7 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
   l = &args->tl[blk_row];
 
   if (!is_blk_skip(x, plane, blk_row * bw + blk_col) && !mbmi->skip_mode) {
-    TX_TYPE tx_type = av1_get_tx_type(pd->plane_type, xd, blk_row, blk_col,
+    TX_TYPE tx_type = av1_get_tx_type(xd, pd->plane_type, blk_row, blk_col,
                                       tx_size, cm->reduced_tx_set_used);
     if (args->enable_optimize_b != NO_TRELLIS_OPT) {
       av1_xform_quant(
@@ -253,7 +253,7 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
   if (p->eobs[block]) {
     *(args->skip) = 0;
 
-    TX_TYPE tx_type = av1_get_tx_type(pd->plane_type, xd, blk_row, blk_col,
+    TX_TYPE tx_type = av1_get_tx_type(xd, pd->plane_type, blk_row, blk_col,
                                       tx_size, cm->reduced_tx_set_used);
     av1_inverse_transform_block(xd, dqcoeff, plane, tx_type, tx_size, dst,
                                 pd->dst.stride, p->eobs[block],
@@ -566,7 +566,7 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
   struct macroblockd_plane *const pd = &xd->plane[plane];
   tran_low_t *dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
   PLANE_TYPE plane_type = get_plane_type(plane);
-  const TX_TYPE tx_type = av1_get_tx_type(plane_type, xd, blk_row, blk_col,
+  const TX_TYPE tx_type = av1_get_tx_type(xd, plane_type, blk_row, blk_col,
                                           tx_size, cm->reduced_tx_set_used);
   uint16_t *eob = &p->eobs[block];
   const int dst_stride = pd->dst.stride;

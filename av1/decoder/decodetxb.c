@@ -159,7 +159,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
     // only y plane's tx_type is transmitted
     av1_read_tx_type(cm, xd, blk_row, blk_col, tx_size, r);
   }
-  const TX_TYPE tx_type = av1_get_tx_type(plane_type, xd, blk_row, blk_col,
+  const TX_TYPE tx_type = av1_get_tx_type(xd, plane_type, blk_row, blk_col,
                                           tx_size, cm->reduced_tx_set_used);
   const TX_CLASS tx_class = tx_type_to_class[tx_type];
   const TX_SIZE qm_tx_size = av1_get_adjusted_tx_size(tx_size);
@@ -350,7 +350,7 @@ void av1_read_coeffs_txb_facade(const AV1_COMMON *const cm,
   if (is_inter_block(mbmi)) {
     PLANE_TYPE plane_type = get_plane_type(plane);
     // tx_type will be read out in av1_read_coeffs_txb_facade
-    const TX_TYPE tx_type = av1_get_tx_type(plane_type, xd, row, col, tx_size,
+    const TX_TYPE tx_type = av1_get_tx_type(xd, plane_type, row, col, tx_size,
                                             cm->reduced_tx_set_used);
 
     if (plane == 0)
