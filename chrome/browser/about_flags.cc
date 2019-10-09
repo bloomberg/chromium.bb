@@ -1130,19 +1130,10 @@ const FeatureEntry::FeatureParam kSimplifiedServerAllCocaCards = {
 const FeatureEntry::FeatureVariation kSimplifiedServerVariations[] = {
     {"and allow all CoCa cards", &kSimplifiedServerAllCocaCards, 1, nullptr}};
 
-const FeatureEntry::FeatureParam kLongpressResolveHideOnScroll = {
-    contextual_search::kLongpressResolveParamName,
-    contextual_search::kLongpressResolveHideOnScroll};
-const FeatureEntry::FeatureParam kLongpressResolvePrivacyAggressive = {
-    contextual_search::kLongpressResolveParamName,
-    contextual_search::kLongpressResolvePrivacyAggressive};
 const FeatureEntry::FeatureParam kLongpressResolvePreserveTap = {
     contextual_search::kLongpressResolveParamName,
     contextual_search::kLongpressResolvePreserveTap};
 const FeatureEntry::FeatureVariation kLongpressResolveVariations[] = {
-    {"and hide on scroll", &kLongpressResolveHideOnScroll, 1, nullptr},
-    {"and allow privacy-aggressive behavior",
-     &kLongpressResolvePrivacyAggressive, 1, nullptr},
     {"and preserve Tap behavior", &kLongpressResolvePreserveTap, 1, nullptr},
 };
 
