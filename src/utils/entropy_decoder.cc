@@ -166,10 +166,10 @@ void UpdateCdf5(uint16_t* const cdf, const int symbol) {
   const uint16x4_t symbol_vec = vdup_n_u16(symbol);
   const uint16x4_t mask = vclt_u16(index, symbol_vec);
   const uint16x4_t a = vbsl_u16(mask, cdf_max_probability, zero);
-  const uint16x4_t diff = vsub_u16(cdf_vec, a);
+  const int16x4_t diff = vreinterpret_s16_u16(vsub_u16(cdf_vec, a));
   const int16x4_t negative_rate = vdup_n_s16(-rate);
-  const int16x4_t delta = vshl_s16(diff, negative_rate);
-  cdf_vec = vsub_s16(cdf_vec, delta);
+  const uint16x4_t delta = vreinterpret_u16_s16(vshl_s16(diff, negative_rate));
+  cdf_vec = vsub_u16(cdf_vec, delta);
   vst1_u16(cdf, cdf_vec);
   cdf[5] = count + static_cast<uint16_t>(count < 32);
 }
@@ -189,10 +189,11 @@ void UpdateCdf7To9(uint16_t* const cdf, const int symbol) {
   const uint16x8_t symbol_vec = vdupq_n_u16(symbol);
   const uint16x8_t mask = vcltq_u16(index, symbol_vec);
   const uint16x8_t a = vbslq_u16(mask, cdf_max_probability, zero);
-  const uint16x8_t diff = vsubq_u16(cdf_vec, a);
+  const int16x8_t diff = vreinterpretq_s16_u16(vsubq_u16(cdf_vec, a));
   const int16x8_t negative_rate = vdupq_n_s16(-rate);
-  const int16x8_t delta = vshlq_s16(diff, negative_rate);
-  cdf_vec = vsubq_s16(cdf_vec, delta);
+  const uint16x8_t delta =
+      vreinterpretq_u16_s16(vshlq_s16(diff, negative_rate));
+  cdf_vec = vsubq_u16(cdf_vec, delta);
   vst1q_u16(cdf, cdf_vec);
   cdf[symbol_count] = count + static_cast<uint16_t>(count < 32);
 }
@@ -222,9 +223,10 @@ void UpdateCdf11(uint16_t* const cdf, const int symbol) {
                                           vcreate_u16(0x0009000800070006));
     const uint16x8_t mask = vcltq_u16(index, symbol_vec);
     const uint16x8_t a = vbslq_u16(mask, cdf_max_probability, zero);
-    const uint16x8_t diff = vsubq_u16(cdf_vec, a);
-    const int16x8_t delta = vshlq_s16(diff, negative_rate);
-    cdf_vec = vsubq_s16(cdf_vec, delta);
+    const int16x8_t diff = vreinterpretq_s16_u16(vsubq_u16(cdf_vec, a));
+    const uint16x8_t delta =
+        vreinterpretq_u16_s16(vshlq_s16(diff, negative_rate));
+    cdf_vec = vsubq_u16(cdf_vec, delta);
     vst1q_u16(cdf + 2, cdf_vec);
   } else {
     if (symbol != 0) {
@@ -235,8 +237,8 @@ void UpdateCdf11(uint16_t* const cdf, const int symbol) {
       cdf[1] -= cdf[1] >> rate;
     }
     const int16x8_t negative_rate = vdupq_n_s16(-rate);
-    const int16x8_t delta = vshlq_s16(cdf_vec, negative_rate);
-    cdf_vec = vsubq_s16(cdf_vec, delta);
+    const uint16x8_t delta = vshlq_u16(cdf_vec, negative_rate);
+    cdf_vec = vsubq_u16(cdf_vec, delta);
     vst1q_u16(cdf + 2, cdf_vec);
   }
 }
@@ -256,18 +258,18 @@ void UpdateCdf13(uint16_t* const cdf, const int symbol) {
                                   vcreate_u16(0x0007000600050004));
   uint16x8_t mask = vcltq_u16(index, symbol_vec);
   uint16x8_t a = vbslq_u16(mask, cdf_max_probability, zero);
-  uint16x8_t diff = vsubq_u16(cdf_vec0, a);
-  int16x8_t delta = vshlq_s16(diff, negative_rate);
-  cdf_vec0 = vsubq_s16(cdf_vec0, delta);
+  int16x8_t diff = vreinterpretq_s16_u16(vsubq_u16(cdf_vec0, a));
+  uint16x8_t delta = vreinterpretq_u16_s16(vshlq_s16(diff, negative_rate));
+  cdf_vec0 = vsubq_u16(cdf_vec0, delta);
   vst1q_u16(cdf, cdf_vec0);
 
   index = vcombine_u16(vcreate_u16(0x0007000600050004),
                        vcreate_u16(0x000b000a00090008));
   mask = vcltq_u16(index, symbol_vec);
   a = vbslq_u16(mask, cdf_max_probability, zero);
-  diff = vsubq_u16(cdf_vec1, a);
-  delta = vshlq_s16(diff, negative_rate);
-  cdf_vec1 = vsubq_s16(cdf_vec1, delta);
+  diff = vreinterpretq_s16_u16(vsubq_u16(cdf_vec1, a));
+  delta = vreinterpretq_u16_s16(vshlq_s16(diff, negative_rate));
+  cdf_vec1 = vsubq_u16(cdf_vec1, delta);
   vst1q_u16(cdf + 4, cdf_vec1);
 
   cdf[13] = count + static_cast<uint16_t>(count < 32);
@@ -287,9 +289,9 @@ void UpdateCdf16(uint16_t* const cdf, const int symbol) {
                                   vcreate_u16(0x0007000600050004));
   uint16x8_t mask = vcltq_u16(index, symbol_vec);
   uint16x8_t a = vbslq_u16(mask, cdf_max_probability, zero);
-  uint16x8_t diff = vsubq_u16(cdf_vec, a);
-  int16x8_t delta = vshlq_s16(diff, negative_rate);
-  cdf_vec = vsubq_s16(cdf_vec, delta);
+  int16x8_t diff = vreinterpretq_s16_u16(vsubq_u16(cdf_vec, a));
+  uint16x8_t delta = vreinterpretq_u16_s16(vshlq_s16(diff, negative_rate));
+  cdf_vec = vsubq_u16(cdf_vec, delta);
   vst1q_u16(cdf, cdf_vec);
 
   cdf_vec = vld1q_u16(cdf + 8);
@@ -297,9 +299,9 @@ void UpdateCdf16(uint16_t* const cdf, const int symbol) {
                        vcreate_u16(0x000f000e000d000c));
   mask = vcltq_u16(index, symbol_vec);
   a = vbslq_u16(mask, cdf_max_probability, zero);
-  diff = vsubq_u16(cdf_vec, a);
-  delta = vshlq_s16(diff, negative_rate);
-  cdf_vec = vsubq_s16(cdf_vec, delta);
+  diff = vreinterpretq_s16_u16(vsubq_u16(cdf_vec, a));
+  delta = vreinterpretq_u16_s16(vshlq_s16(diff, negative_rate));
+  cdf_vec = vsubq_u16(cdf_vec, delta);
   vst1q_u16(cdf + 8, cdf_vec);
 
   cdf[16] = count + static_cast<uint16_t>(count < 32);
@@ -590,8 +592,8 @@ int DaalaBitReader::ReadSymbol4(uint16_t* const cdf) {
       // Samsung Galaxy S8+ (SM-G955FD).
       uint16x4_t cdf_vec = vld1_u16(cdf);
       const int16x4_t negative_rate = vdup_n_s16(-rate);
-      const int16x4_t delta = vshl_s16(cdf_vec, negative_rate);
-      cdf_vec = vsub_s16(cdf_vec, delta);
+      const uint16x4_t delta = vshl_u16(cdf_vec, negative_rate);
+      cdf_vec = vsub_u16(cdf_vec, delta);
       vst1_u16(cdf, cdf_vec);
 #else
       cdf[0] -= cdf[0] >> rate;
@@ -657,10 +659,12 @@ int DaalaBitReader::ReadSymbol4(uint16_t* const cdf) {
     // defined.
     uint16x4_t cdf_vec = vld1_u16(cdf);
     const uint16x4_t cdf_max_probability = vdup_n_u16(kCdfMaxProbability);
-    const uint16x4_t diff = vsub_u16(cdf_max_probability, cdf_vec);
+    const int16x4_t diff =
+        vreinterpret_s16_u16(vsub_u16(cdf_max_probability, cdf_vec));
     const int16x4_t negative_rate = vdup_n_s16(-rate);
-    const int16x4_t delta = vshl_s16(diff, negative_rate);
-    cdf_vec = vadd_s16(cdf_vec, delta);
+    const uint16x4_t delta =
+        vreinterpret_u16_s16(vshl_s16(diff, negative_rate));
+    cdf_vec = vadd_u16(cdf_vec, delta);
     vst1_u16(cdf, cdf_vec);
     cdf[3] = 0;
 #else
