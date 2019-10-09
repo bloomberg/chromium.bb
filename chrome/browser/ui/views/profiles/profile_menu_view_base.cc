@@ -409,9 +409,6 @@ void ProfileMenuViewBase::AddAccountFeatureButton(
             views::BoxLayout::Orientation::kVertical));
   }
 
-  account_features_container_->AddChildView(
-      std::make_unique<views::Separator>());
-
   views::Button* button =
       account_features_container_->AddChildView(std::make_unique<HoverButton>(
           this, SizeImage(ColorImage(icon, GetDefaultIconColor()), kIconSize),
