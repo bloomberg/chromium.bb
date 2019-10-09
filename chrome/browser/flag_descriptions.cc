@@ -660,14 +660,6 @@ const char kEnableSystemWebAppsDescription[] =
     "Experimental system for using the Desktop PWA framework for running System"
     "Apps (e.g Settings, Discover).";
 
-const char kEnforceTLS13DowngradeName[] = "TLS 1.3 downgrade hardening";
-const char kEnforceTLS13DowngradeDescription[] =
-    "This option enables the TLS 1.3 downgrade hardening mechanism. This "
-    "hardens TLS 1.3 connections while remaining compatible with TLS 1.0 "
-    "through 1.2 connections. Firewalls and proxies that do not function when "
-    "this is enabled do not implement TLS 1.0 through 1.2 correctly or "
-    "securely. They must be fixed by vendors.";
-
 const char kEnableTLS13EarlyDataName[] = "TLS 1.3 Early Data";
 const char kEnableTLS13EarlyDataDescription[] =
     "This option enables TLS 1.3 Early Data, allowing GET requests to be sent "
@@ -2044,6 +2036,16 @@ const char kTintGlCompositedContentName[] = "Tint GL-composited content";
 const char kTintGlCompositedContentDescription[] =
     "Tint contents composited using GL with a shade of red to help debug and "
     "study overlay support.";
+
+const char kTLS13HardeningForLocalAnchorsName[] =
+    "TLS 1.3 hardening for local anchors";
+const char kTLS13HardeningForLocalAnchorsDescription[] =
+    "This option enables the TLS 1.3 downgrade hardening mechanism for "
+    "connections authenticated by local trust anchors. This improves security "
+    "for connections to TLS-1.3-capable servers while remaining compatible "
+    "with older servers. Firewalls and proxies that do not function when this "
+    "is enabled do not implement TLS 1.2 correctly or securely and must be "
+    "updated.";
 
 const char kTopChromeTouchUiName[] = "Touch UI Layout";
 const char kTopChromeTouchUiDescription[] =

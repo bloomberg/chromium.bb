@@ -404,9 +404,6 @@ extern const char kDesktopPWAsOmniboxInstallDescription[];
 extern const char kEnableSystemWebAppsName[];
 extern const char kEnableSystemWebAppsDescription[];
 
-extern const char kEnforceTLS13DowngradeName[];
-extern const char kEnforceTLS13DowngradeDescription[];
-
 extern const char kEnableTLS13EarlyDataName[];
 extern const char kEnableTLS13EarlyDataDescription[];
 
@@ -1209,6 +1206,9 @@ extern const char kTabsInCbdDescription[];
 
 extern const char kTintGlCompositedContentName[];
 extern const char kTintGlCompositedContentDescription[];
+
+extern const char kTLS13HardeningForLocalAnchorsName[];
+extern const char kTLS13HardeningForLocalAnchorsDescription[];
 
 extern const char kTopChromeTouchUiName[];
 extern const char kTopChromeTouchUiDescription[];

@@ -623,13 +623,6 @@ const FeatureEntry::Choice kSiteIsolationOptOutChoices[] = {
      switches::kDisableSiteIsolation, ""},
 };
 
-const FeatureEntry::FeatureParam kEnforceTLS13DowngradeKnownOnly[] = {
-    {"known_roots_only", "true"}};
-
-const FeatureEntry::FeatureVariation kEnforceTLS13DowngradeFeatureVariations[] =
-    {{"(Known Root Only)", kEnforceTLS13DowngradeKnownOnly,
-      base::size(kEnforceTLS13DowngradeKnownOnly), nullptr}};
-
 const FeatureEntry::Choice kForceColorProfileChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
     {flag_descriptions::kForceColorProfileSRGB,
@@ -2387,11 +2380,10 @@ const FeatureEntry kFeatureEntries[] = {
                                  "https://play.google.com/store/apps/"
                                  "details?id=com.android.chrome")},
 #endif  // OS_ANDROID
-    {"enforce-tls13-downgrade", flag_descriptions::kEnforceTLS13DowngradeName,
-     flag_descriptions::kEnforceTLS13DowngradeDescription, kOsAll,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(net::features::kEnforceTLS13Downgrade,
-                                    kEnforceTLS13DowngradeFeatureVariations,
-                                    "EnforceTLS13Downgrade")},
+    {"tls13-hardening-for-local-anchors",
+     flag_descriptions::kTLS13HardeningForLocalAnchorsName,
+     flag_descriptions::kTLS13HardeningForLocalAnchorsDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kTLS13HardeningForLocalAnchors)},
     {"enable-tls13-early-data", flag_descriptions::kEnableTLS13EarlyDataName,
      flag_descriptions::kEnableTLS13EarlyDataDescription, kOsAll,
      FEATURE_VALUE_TYPE(net::features::kEnableTLS13EarlyData)},

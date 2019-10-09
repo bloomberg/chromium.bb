@@ -18224,6 +18224,7 @@ Called by update_net_error_codes.py.-->
   <int value="623" label="LegacySameSiteCookieBehaviorEnabled"/>
   <int value="624" label="LegacySameSiteCookieBehaviorEnabledForDomainList"/>
   <int value="625" label="PrintJobHistoryExpirationPeriod"/>
+  <int value="626" label="TLS13HardeningForLocalAnchorsEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
@@ -36486,6 +36487,7 @@ from previous Chrome versions.
   <int value="-120521482" label="DirectManipulationStylus:enabled"/>
   <int value="-120091289" label="CrostiniAppSearch:enabled"/>
   <int value="-119055644" label="GenericSensor:enabled"/>
+  <int value="-118993417" label="TLS13HardeningForLocalAnchors:disabled"/>
   <int value="-116692797" label="HTTPAuthCommittedInterstitials:enabled"/>
   <int value="-115834377" label="EnableUnifiedMultiDeviceSetup:disabled"/>
   <int value="-114807608" label="TerminalSystemApp:disabled"/>
@@ -37320,6 +37322,7 @@ from previous Chrome versions.
   <int value="1022424308" label="SignedExchangeSubresourcePrefetch:enabled"/>
   <int value="1022992701" label="enable-origin-chip-always"/>
   <int value="1024560563" label="EnableFuzzyAppSearch:enabled"/>
+  <int value="1026981579" label="TLS13HardeningForLocalAnchors:enabled"/>
   <int value="1027252926" label="SyncSupportSecondaryAccount:enabled"/>
   <int value="1033148287" label="NTPShortcuts:disabled"/>
   <int value="1033412163" label="OmniboxDisplayTitleForCurrentUrl:enabled"/>
