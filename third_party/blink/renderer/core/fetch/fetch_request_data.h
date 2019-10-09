@@ -62,10 +62,6 @@ class CORE_EXPORT FetchRequestData final
       scoped_refptr<const SecurityOrigin> isolated_world_origin) {
     isolated_world_origin_ = std::move(isolated_world_origin);
   }
-  bool SameOriginDataURLFlag() { return same_origin_data_url_flag_; }
-  void SetSameOriginDataURLFlag(bool flag) {
-    same_origin_data_url_flag_ = flag;
-  }
   const AtomicString& ReferrerString() const { return referrer_string_; }
   void SetReferrerString(const AtomicString& s) { referrer_string_ = s; }
   network::mojom::ReferrerPolicy GetReferrerPolicy() const {
@@ -133,7 +129,6 @@ class CORE_EXPORT FetchRequestData final
   scoped_refptr<const SecurityOrigin> origin_;
   scoped_refptr<const SecurityOrigin> isolated_world_origin_;
   // FIXME: Support m_forceOriginHeaderFlag;
-  bool same_origin_data_url_flag_;
   AtomicString referrer_string_;
   network::mojom::ReferrerPolicy referrer_policy_;
   // FIXME: Support m_authenticationFlag;

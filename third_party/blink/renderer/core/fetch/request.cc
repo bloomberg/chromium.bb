@@ -60,7 +60,6 @@ FetchRequestData* CreateCopyOfFetchRequestDataForFetch(
   if (world.IsIsolatedWorld())
     request->SetIsolatedWorldOrigin(world.IsolatedWorldSecurityOrigin());
   // FIXME: Set ForceOriginHeaderFlag.
-  request->SetSameOriginDataURLFlag(true);
   request->SetReferrerString(original->ReferrerString());
   request->SetReferrerPolicy(original->GetReferrerPolicy());
   request->SetMode(original->Mode());
