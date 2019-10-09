@@ -26,8 +26,11 @@ class CookieControlsController {
  public:
   enum class Status {
     kUninitialized,
+    // Cookie blocking is enabled.
     kEnabled,
+    // Cookie blocking is disabled.
     kDisabled,
+    // Cookie blocking is enabled in general but was disabled for this site.
     kDisabledForSite,
   };
 
