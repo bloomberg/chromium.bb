@@ -46,7 +46,6 @@
 #include "services/metrics/public/mojom/ukm_interface.mojom-blink.h"
 #include "services/network/public/mojom/ip_address_space.mojom-blink.h"
 #include "services/resource_coordinator/public/mojom/coordination_unit.mojom-blink.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/common/features.h"
@@ -5697,7 +5696,7 @@ void Document::SendDidEditFieldInInsecureContext() {
     return;
 
   mojo::Remote<mojom::blink::InsecureInputService> insecure_input_service;
-  GetFrame()->GetInterfaceProvider().GetInterface(
+  GetFrame()->GetBrowserInterfaceBroker().GetInterface(
       insecure_input_service.BindNewPipeAndPassReceiver());
 
   insecure_input_service->DidEditFieldInInsecureContext();

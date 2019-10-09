@@ -7,6 +7,7 @@
 #include "base/feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor.h"
+#include "chrome/browser/ssl/insecure_sensitive_input_driver_factory.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -15,6 +16,7 @@
 #include "services/image_annotation/public/mojom/constants.mojom-forward.h"
 #include "services/image_annotation/public/mojom/image_annotation.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "third_party/blink/public/mojom/insecure_input/insecure_input_service.mojom.h"
 #include "third_party/blink/public/mojom/loader/navigation_predictor.mojom.h"
 #include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
 
@@ -67,6 +69,10 @@ void PopulateChromeFrameBinders(
 
   map->Add<blink::mojom::AnchorElementMetricsHost>(
       base::BindRepeating(&NavigationPredictor::Create));
+
+  map->Add<blink::mojom::InsecureInputService>(
+      base::BindRepeating(&InsecureSensitiveInputDriverFactory::BindDriver));
+
 #if defined(OS_ANDROID)
   map->Add<blink::mojom::InstalledAppProvider>(base::BindRepeating(
       &ForwardToJavaFrame<blink::mojom::InstalledAppProvider>));

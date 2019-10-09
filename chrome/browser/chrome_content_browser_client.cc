@@ -130,7 +130,6 @@
 #include "chrome/browser/site_isolation/site_isolation_policy.h"
 #include "chrome/browser/speech/chrome_speech_recognition_manager_delegate.h"
 #include "chrome/browser/speech/tts_controller_delegate_impl.h"
-#include "chrome/browser/ssl/insecure_sensitive_input_driver_factory.h"
 #include "chrome/browser/ssl/ssl_blocking_page.h"
 #include "chrome/browser/ssl/ssl_cert_reporter.h"
 #include "chrome/browser/ssl/ssl_client_auth_metrics.h"
@@ -4360,9 +4359,6 @@ void ChromeContentBrowserClient::InitWebContextInterfaces() {
   // Register mojo ContentTranslateDriver interface only for main frame.
   frame_interfaces_parameterized_->AddInterface(
       base::BindRepeating(&language::BindContentTranslateDriver));
-
-  frame_interfaces_parameterized_->AddInterface(
-      base::BindRepeating(&InsecureSensitiveInputDriverFactory::BindDriver));
 
 #if defined(OS_ANDROID)
   frame_interfaces_parameterized_->AddInterface(
