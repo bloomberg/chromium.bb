@@ -103,8 +103,6 @@ fast/harness/results.html [ WontFix ]
 [ Mac ]   virtual/scroll_customization/fast/scrolling/scrollbars/scrollbar-thumb-snapping.html [ WontFix ]
 [ Linux ] virtual/threaded/fast/scrolling/scrollbars/scrollbar-thumb-snapping.html [ WontFix ]
 [ Mac ]   virtual/threaded/fast/scrolling/scrollbars/scrollbar-thumb-snapping.html [ WontFix ]
-[ Linux ] virtual/main_thread_scrollbar_gestures/fast/scrolling/scrollbars/scrollbar-thumb-snapping.html [ WontFix ]
-[ Mac ]   virtual/main_thread_scrollbar_gestures/fast/scrolling/scrollbars/scrollbar-thumb-snapping.html [ WontFix ]
 
 
 # These tests are specific to Linux.

@@ -81,7 +81,6 @@ BLINK_COMMON_EXPORT extern const base::Feature
     kWebFontsCacheAwareTimeoutAdaption;
 BLINK_COMMON_EXPORT extern const base::Feature
     kBlockingFocusWithoutUserActivation;
-BLINK_COMMON_EXPORT extern const base::Feature kScrollbarInjectScrollGestures;
 
 BLINK_COMMON_EXPORT extern const base::Feature kAudioWorkletRealtimeThread;
 

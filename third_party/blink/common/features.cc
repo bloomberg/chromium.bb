@@ -294,10 +294,6 @@ const base::Feature kLightweightNoStatePrefetch{
 #endif
 };
 
-// Use scroll gestures for scrollbar scrolls (see https://crbug.com/954007).
-const base::Feature kScrollbarInjectScrollGestures{
-    "ScrollbarInjectScrollGestures", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Automatically convert light-themed pages to use a Blink-generated dark theme
 const base::Feature kForceWebContentsDarkMode{
     "WebContentsForceDark", base::FEATURE_DISABLED_BY_DEFAULT};

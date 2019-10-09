@@ -2831,12 +2831,6 @@ crbug.com/953847 [ Mac ] virtual/threaded/fast/scrolling/scrollbars/scroll-chain
 crbug.com/953847 [ Mac ] virtual/threaded/fast/scrolling/scrollbars/scrollbar-occluded-by-div.html [ Failure ]
 crbug.com/953847 [ Mac ] virtual/threaded/fast/scrolling/scrollbars/scrollbar-button-gesture-target.html [ Failure ]
 crbug.com/953847 [ Mac ] virtual/threaded/fast/scrolling/scrollbars/mouse-autoscrolling-on-scrollbar.html [ Failure Timeout ]
-crbug.com/953847 [ Mac ] virtual/main_thread_scrollbar_gestures/fast/scrolling/scrollbars/mouse-scrolling-on-div-scrollbar.html [ Failure ]
-crbug.com/953847 [ Mac ] virtual/main_thread_scrollbar_gestures/fast/scrolling/scrollbars/mouse-scrolling-on-root-scrollbar.html [ Failure ]
-crbug.com/953847 [ Mac ] virtual/main_thread_scrollbar_gestures/fast/scrolling/scrollbars/scroll-chaining-for-gesture-based-scrolling.html [ Failure ]
-crbug.com/953847 [ Mac ] virtual/main_thread_scrollbar_gestures/fast/scrolling/scrollbars/scrollbar-occluded-by-div.html [ Failure ]
-crbug.com/953847 [ Mac ] virtual/main_thread_scrollbar_gestures/fast/scrolling/scrollbars/scrollbar-button-gesture-target.html [ Failure ]
-crbug.com/953847 [ Mac ] virtual/main_thread_scrollbar_gestures/fast/scrolling/scrollbars/mouse-autoscrolling-on-scrollbar.html [ Failure Timeout ]
 
 # Compositor threaded scrollbar scrolls parent of subscroller.
 # Note: even when fixed will still fail on Mac until crbug.com/953847
