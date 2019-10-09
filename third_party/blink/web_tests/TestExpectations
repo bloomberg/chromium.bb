@@ -199,6 +199,10 @@ crbug.com/774873 [ Win ] virtual/exotic-color-space/images/color-profile-border-
 crbug.com/974652 [ Debug ] virtual/gpu/fast/canvas/OffscreenCanvas-copyImage.html [ Pass Failure ]
 crbug.com/974652 [ Debug ] fast/canvas/OffscreenCanvas-copyImage.html [ Pass Failure ]
 
+crbug.com/1011060 virtual/gpu/fast/canvas/canvas-getImageData-smooth.html [ Pass Failure ]
+crbug.com/1011060 virtual/gpu/fast/canvas/bug382588.html [ Pass Failure ]
+crbug.com/1011060 virtual/gpu/fast/canvas/canvas-lost-gpu-context.html [ Pass Failure ]
+
 crbug.com/974666 [ Mac10.13 ] http/tests/misc/object-embedding-svg-delayed-size-negotiation-2.htm [ Pass Failure ]
 crbug.com/974720 [ Mac10.13 ] fast/text/firstline/capitalize-transform-2.html [ Pass Crash ]
 crbug.com/974720 [ Mac10.13 ] fast/text/firstline/capitalize-transform.html [ Pass Crash ]
