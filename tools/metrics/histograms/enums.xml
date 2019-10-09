@@ -37084,6 +37084,7 @@ from previous Chrome versions.
       label="enable-fullscreen-handwriting-virtual-keyboard:disabled"/>
   <int value="681622885" label="FullscreenExitUI:enabled"/>
   <int value="682549212" label="ash-enable-cursor-motion-blur"/>
+  <int value="683013217" label="AllowPopupsDuringPageUnload:disabled"/>
   <int value="684806628" label="TranslateLanguageByULP:disabled"/>
   <int value="685916283" label="enable-zip-archiver-on-file-manager"/>
   <int value="687838135" label="ThirdPartyDoodles:disabled"/>
@@ -38106,6 +38107,7 @@ from previous Chrome versions.
   <int value="2047695652" label="DelegateOverscrollSwipes:enabled"/>
   <int value="2047981703" label="IntentPicker:enabled"/>
   <int value="2049432745" label="VaapiWebPImageDecodeAcceleration:enabled"/>
+  <int value="2050985807" label="AllowPopupsDuringPageUnload:enabled"/>
   <int value="2051403297" label="ShowBluetoothDeviceBattery:disabled"/>
   <int value="2053273256" label="BundledHTTPExchanges:disabled"/>
   <int value="2056572020" label="EnableUsernameCorrection:disabled"/>

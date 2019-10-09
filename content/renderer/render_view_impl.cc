@@ -1812,16 +1812,14 @@ bool RenderViewImpl::CanHandleGestureEvent() {
   return true;
 }
 
-// TODO(https://crbug.com/1010509): Re-enable this in Chrome 80.
 // TODO(https://crbug.com/937569): Remove this in Chrome 82.
 bool RenderViewImpl::AllowPopupsDuringPageUnload() {
-  return true;
-#if 0
+  // The switch version is for enabling via enterprise policy. The feature
+  // version is for enabling via about:flags and Finch policy.
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
   return command_line.HasSwitch(switches::kAllowPopupsDuringPageUnload) ||
          base::FeatureList::IsEnabled(features::kAllowPopupsDuringPageUnload);
-#endif
 }
 
 bool RenderViewImpl::CanUpdateLayout() {

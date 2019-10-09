@@ -4221,14 +4221,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAutofillPruneSuggestionsDescription, kOsAll,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillPruneSuggestions)},
 
-// TODO(https://crbug.com/1010509): Re-enable this in Chrome 80.
-#if 0
     {"allow-popups-during-page-unload",
      flag_descriptions::kAllowPopupsDuringPageUnloadName,
      flag_descriptions::kAllowPopupsDuringPageUnloadDescription,
      kOsAll | kDeprecated,
-     SINGLE_VALUE_TYPE(switches::kAllowPopupsDuringPageUnload)},
-#endif
+     FEATURE_VALUE_TYPE(features::kAllowPopupsDuringPageUnload)},
+
 #if defined(OS_CHROMEOS)
     {"enable-advanced-ppd-attributes",
      flag_descriptions::kEnableAdvancedPpdAttributesName,
