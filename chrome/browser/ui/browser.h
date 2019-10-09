@@ -286,7 +286,7 @@ class Browser : public TabStripModelObserver,
 
   // Accessors ////////////////////////////////////////////////////////////////
 
-  CreateParams create_params() const { return create_params_; }
+  const CreateParams& create_params() const { return create_params_; }
   Type type() const { return type_; }
   const std::string& app_name() const { return app_name_; }
   bool is_trusted_source() const { return is_trusted_source_; }
