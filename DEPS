@@ -294,11 +294,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'spirv_cross_revision': 'ffca8735ff42a9e7a3d1dbb984cf3bf2ca724ebc',
+  'spirv_cross_revision': 'e5d3a6655e13870a6f38f40bd88cc662b14e3cdf',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'shaderc_revision': '614d79248ef2dea617085475f8d64148b37d7296',
+  'shaderc_revision': '621605ce2644d55ab74cb27a8afef97dc40f1b0f',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
