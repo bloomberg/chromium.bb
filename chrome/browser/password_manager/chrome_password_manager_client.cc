@@ -828,7 +828,6 @@ void ChromePasswordManagerClient::AutomaticGenerationAvailable(
   if (PasswordGenerationController::AllowedForWebContents(web_contents())) {
     PasswordManagerDriver* driver = driver_factory_->GetDriverForFrame(
         password_generation_driver_bindings_.GetCurrentTargetFrame());
-    DCHECK(driver);
 
     PasswordGenerationController* generation_controller =
         PasswordGenerationController::GetIfExisting(web_contents());
@@ -860,7 +859,6 @@ void ChromePasswordManagerClient::ShowPasswordEditingPopup(
     return;
   auto* driver = driver_factory_->GetDriverForFrame(
       password_generation_driver_bindings_.GetCurrentTargetFrame());
-  DCHECK(driver);
   gfx::RectF element_bounds_in_screen_space =
       GetBoundsInScreenSpace(TransformToRootCoordinates(
           password_generation_driver_bindings_.GetCurrentTargetFrame(),
@@ -1158,7 +1156,6 @@ void ChromePasswordManagerClient::ShowPasswordGenerationPopup(
     password_manager::ContentPasswordManagerDriver* driver,
     const autofill::password_generation::PasswordGenerationUIData& ui_data,
     bool is_manually_triggered) {
-  DCHECK(driver);
   gfx::RectF element_bounds_in_top_frame_space =
       TransformToRootCoordinates(driver->render_frame_host(), ui_data.bounds);
   if (!is_manually_triggered &&
