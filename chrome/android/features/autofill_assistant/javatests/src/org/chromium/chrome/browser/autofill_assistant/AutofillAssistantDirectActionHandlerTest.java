@@ -33,6 +33,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -118,6 +119,7 @@ public class AutofillAssistantDirectActionHandlerTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "crbug.com/991938")
     @DisableIf.Build(sdk_is_greater_than = 22) // TODO(crbug/990118): re-enable
     public void testOnboarding() throws Exception {
         mModuleEntryProvider.setInstalled();
@@ -140,6 +142,7 @@ public class AutofillAssistantDirectActionHandlerTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "crbug.com/991938")
     @DisableIf.Build(sdk_is_greater_than = 22) // TODO(crbug/990118): re-enable
     public void testInstallModuleOnDemand() throws Exception {
         mModuleEntryProvider.setNotInstalled();
