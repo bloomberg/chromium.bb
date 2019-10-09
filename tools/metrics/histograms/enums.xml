@@ -13223,14 +13223,14 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="DefaultAppName">
-  <int value="0" label="Calculator"/>
-  <int value="1" label="Text"/>
-  <int value="2" label="Get Help"/>
-  <int value="3" label="Gallery"/>
-  <int value="4" label="Video Player"/>
-  <int value="5" label="Audio Player"/>
-  <int value="6" label="Chrome Canvas"/>
-  <int value="7" label="Camera"/>
+  <int value="10" label="Calculator"/>
+  <int value="11" label="Text"/>
+  <int value="12" label="Get Help"/>
+  <int value="13" label="Gallery"/>
+  <int value="14" label="Video Player"/>
+  <int value="15" label="Audio Player"/>
+  <int value="16" label="Chrome Canvas"/>
+  <int value="17" label="Camera"/>
 </enum>
 
 <enum name="DefaultBrowserAsyncAttemptResult">
