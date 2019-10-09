@@ -6245,6 +6245,7 @@ void RenderFrameHostImpl::DeleteWebBluetoothService(
 
 void RenderFrameHostImpl::CreateWebUsbService(
     mojo::PendingReceiver<blink::mojom::WebUsbService> receiver) {
+  BackForwardCache::DisableForRenderFrameHost(this, "WebUSB");
   GetContentClient()->browser()->CreateWebUsbService(this, std::move(receiver));
 }
 
