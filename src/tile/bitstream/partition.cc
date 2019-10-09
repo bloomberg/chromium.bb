@@ -120,9 +120,17 @@ bool Tile::ReadPartition(int row4x4, int column4x4, BlockSize block_size,
     const int bsize_log2 = k4x4WidthLog2[block_size];
     // The partition block size should be 8x8 or above.
     assert(bsize_log2 > 0);
-    const int cdf_size = SymbolDecoderContext::PartitionCdfSize(bsize_log2);
-    *partition =
-        static_cast<Partition>(reader_.ReadSymbol(partition_cdf, cdf_size));
+    if (bsize_log2 == 1) {
+      *partition = static_cast<Partition>(
+          reader_.ReadSymbol<kPartitionSplit + 1>(partition_cdf));
+    } else if (bsize_log2 == 5) {
+      *partition = static_cast<Partition>(
+          reader_.ReadSymbol<kPartitionVerticalWithRightSplit + 1>(
+              partition_cdf));
+    } else {
+      *partition = static_cast<Partition>(
+          reader_.ReadSymbol<kMaxPartitionTypes>(partition_cdf));
+    }
   } else if (has_columns) {
     uint16_t cdf[3] = {
         PartitionCdfGatherVerticalAlike(partition_cdf, block_size), 0, 0};
