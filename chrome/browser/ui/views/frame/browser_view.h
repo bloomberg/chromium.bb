@@ -156,12 +156,6 @@ class BrowserView : public BrowserWindow,
   // incognito avatar icon.
   int GetTabStripHeight() const;
 
-  // Takes some view's origin (relative to this BrowserView) and offsets it such
-  // that it can be used as the source origin for seamlessly tiling the toolbar
-  // background image over that view.
-  gfx::Point OffsetPointForToolbarBackgroundImage(
-      const gfx::Point& point) const;
-
   // Container for the tabstrip, toolbar, etc.
   TopContainerView* top_container() { return top_container_; }
 

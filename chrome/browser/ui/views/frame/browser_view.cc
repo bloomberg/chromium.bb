@@ -256,38 +256,6 @@ void InsertIntoFocusOrderAfter(views::View* insert_after,
     old_prev->SetNextFocusableView(old_next);
 }
 
-// Paints the background (including the theme image behind content area) for
-// the Bookmarks Bar.
-// |background_origin| is the origin to use for painting the theme image.
-void PaintBackground(gfx::Canvas* canvas,
-                     const ui::ThemeProvider* theme_provider,
-                     const gfx::Rect& bounds,
-                     const gfx::Point& background_origin) {
-  canvas->DrawColor(theme_provider->GetColor(ThemeProperties::COLOR_TOOLBAR));
-
-  // If there's a non-default background image, tile it.
-  if (theme_provider->HasCustomImage(IDR_THEME_TOOLBAR)) {
-    canvas->TileImageInt(*theme_provider->GetImageSkiaNamed(IDR_THEME_TOOLBAR),
-                         background_origin.x(),
-                         background_origin.y(),
-                         bounds.x(),
-                         bounds.y(),
-                         bounds.width(),
-                         bounds.height());
-  }
-}
-
-void PaintBookmarkBar(gfx::Canvas* canvas,
-                      BookmarkBarView* view,
-                      BrowserView* browser_view) {
-  // Paint background for attached state.
-  gfx::Point background_image_offset =
-      browser_view->OffsetPointForToolbarBackgroundImage(
-          gfx::Point(view->GetMirroredX(), view->y()));
-  PaintBackground(canvas, view->GetThemeProvider(), view->GetLocalBounds(),
-                  background_image_offset);
-}
-
 bool GetGestureCommand(ui::GestureEvent* event, int* command) {
   DCHECK(command);
   *command = 0;
@@ -417,34 +385,6 @@ class BrowserViewLayoutDelegateImpl : public BrowserViewLayoutDelegate {
   DISALLOW_COPY_AND_ASSIGN(BrowserViewLayoutDelegateImpl);
 };
 
-// This class is used to paint the background for Bookmarks Bar.
-class BookmarkBarViewBackground : public views::Background {
- public:
-  BookmarkBarViewBackground(BrowserView* browser_view,
-                            BookmarkBarView* bookmark_bar_view);
-
-  // views:Background:
-  void Paint(gfx::Canvas* canvas, views::View* view) const override;
-
- private:
-  BrowserView* browser_view_;
-
-  // The view hosting this background.
-  BookmarkBarView* bookmark_bar_view_;
-
-  DISALLOW_COPY_AND_ASSIGN(BookmarkBarViewBackground);
-};
-
-BookmarkBarViewBackground::BookmarkBarViewBackground(
-    BrowserView* browser_view,
-    BookmarkBarView* bookmark_bar_view)
-    : browser_view_(browser_view), bookmark_bar_view_(bookmark_bar_view) {}
-
-void BookmarkBarViewBackground::Paint(gfx::Canvas* canvas,
-                                      views::View* view) const {
-  PaintBookmarkBar(canvas, bookmark_bar_view_, browser_view_);
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserView, public:
 
@@ -546,17 +486,6 @@ int BrowserView::GetTabStripHeight() const {
   // of layout, when that hasn't yet been updated to reflect the current state.
   // So return what the tabstrip height _ought_ to be right now.
   return IsTabStripVisible() ? tabstrip_->GetPreferredSize().height() : 0;
-}
-
-gfx::Point BrowserView::OffsetPointForToolbarBackgroundImage(
-    const gfx::Point& point) const {
-  // The background image starts tiling horizontally at the window left edge and
-  // vertically at the top edge of the horizontal tab strip (or where it would
-  // be).  We expect our parent's origin to be the window origin.
-  gfx::Point window_point(point + GetMirroredPosition().OffsetFromOrigin());
-  window_point.Offset(frame_->GetThemeBackgroundXInset(),
-                      -frame_->GetTopInset());
-  return window_point;
 }
 
 bool BrowserView::IsTabStripVisible() const {
@@ -2621,8 +2550,8 @@ void BrowserView::InitViews() {
   }
 #endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
 
-  toolbar_ = new ToolbarView(browser_.get(), this);
-  top_container_->AddChildView(toolbar_);
+  toolbar_ = top_container_->AddChildView(
+      std::make_unique<ToolbarView>(browser_.get(), this));
   toolbar_->Init();
 
   contents_separator_ =
@@ -2743,9 +2672,6 @@ bool BrowserView::MaybeShowBookmarkBar(WebContents* contents) {
     bookmark_bar_view_ =
         std::make_unique<BookmarkBarView>(browser_.get(), this);
     bookmark_bar_view_->set_owned_by_client();
-    bookmark_bar_view_->SetBackground(
-        std::make_unique<BookmarkBarViewBackground>(this,
-                                                    bookmark_bar_view_.get()));
     bookmark_bar_view_->SetBookmarkBarState(
         browser_->bookmark_bar_state(),
         BookmarkBar::DONT_ANIMATE_STATE_CHANGE);
