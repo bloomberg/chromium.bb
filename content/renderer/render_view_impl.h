@@ -326,10 +326,8 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   // be able to specify |initial_setting| where IPC handlers do not.
   void ApplyPageHidden(bool hidden, bool initial_setting);
 
-  // These functions take the main frame's RenderWidget and to make it
-  // inaccessible for out-of-process main frames and then brings it back
-  // if the main frame comes back into the current process.
-  void MakeMainFrameRenderWidgetUndead();
+  // Instead of creating a new RenderWidget, this revives the undead
+  // RenderWidget for use with a new local main frame.
   void ReviveUndeadMainFrameRenderWidget();
 
  private:

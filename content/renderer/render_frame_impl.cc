@@ -4456,7 +4456,6 @@ void RenderFrameImpl::FrameDetached(DetachType type) {
     // this "swap out", the pointer is moved off to the side until it is
     // swapped back in. The renderer is then told that the WebFrameWidget is
     // dropped which should remove all reference to this object.
-    render_view_->MakeMainFrameRenderWidgetUndead();
     render_view_->DetachWebFrameWidget();
   } else if (render_widget_) {
     DCHECK(owned_render_widget_);
