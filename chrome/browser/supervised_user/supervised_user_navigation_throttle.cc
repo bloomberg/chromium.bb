@@ -212,6 +212,7 @@ void SupervisedUserNavigationThrottle::ShowInterstitialAsync(
   SupervisedUserNavigationObserver::OnRequestBlocked(
       navigation_handle()->GetWebContents(), navigation_handle()->GetURL(),
       reason, navigation_handle()->GetNavigationId(),
+      navigation_handle()->GetFrameTreeNodeId(),
       base::Bind(&SupervisedUserNavigationThrottle::OnInterstitialResult,
                  weak_ptr_factory_.GetWeakPtr()));
 }

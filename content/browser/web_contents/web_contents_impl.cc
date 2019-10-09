@@ -3674,10 +3674,7 @@ void WebContentsImpl::ReloadFocusedFrame() {
   if (!focused_frame)
     return;
 
-  // TODO(https://crbug.com/995428). This function is deprecated. Navigations
-  // are handled from the browser process. There is no need to send an IPC to
-  // the renderer process for this.
-  focused_frame->Send(new FrameMsg_Reload(focused_frame->GetRoutingID()));
+  focused_frame->Reload();
 }
 
 std::vector<mojo::Remote<blink::mojom::PauseSubresourceLoadingHandle>>

@@ -3523,6 +3523,16 @@ void RenderFrameHostImpl::UpdateBrowserControlsState(
     frame_->UpdateBrowserControlsState(constraints, current, animate);
 }
 
+void RenderFrameHostImpl::Reload() {
+  if (!IsRenderFrameLive())
+    return;
+
+  // TODO(https://crbug.com/995428). This IPC is deprecated. Navigations are
+  // handled from the browser process. There is no need to send an IPC to the
+  // renderer process for this.
+  Send(new FrameMsg_Reload(GetRoutingID()));
+}
+
 void RenderFrameHostImpl::SendAccessibilityEventsToManager(
     const AXEventNotificationDetails& details) {
   if (browser_accessibility_manager_ &&

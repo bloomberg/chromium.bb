@@ -313,6 +313,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void UpdateBrowserControlsState(BrowserControlsState constraints,
                                   BrowserControlsState current,
                                   bool animate) override;
+  void Reload() override;
 
   void SendAccessibilityEventsToManager(
       const AXEventNotificationDetails& details);

@@ -174,6 +174,9 @@ class SupervisedUserService : public KeyedService,
   }
 #endif  // !defined(OS_ANDROID)
 
+  void SetPrimaryPermissionCreatorForTest(
+      std::unique_ptr<PermissionRequestCreator> permission_creator);
+
  private:
   friend class SupervisedUserServiceExtensionTestBase;
   friend class SupervisedUserServiceFactory;

@@ -425,6 +425,10 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
                                           BrowserControlsState current,
                                           bool animate) = 0;
 
+  // Reloads the frame if it is live. It initiates a reload but doesn't wait for
+  // it to finish.
+  virtual void Reload() = 0;
+
  private:
   // This interface should only be implemented inside content.
   friend class RenderFrameHostImpl;

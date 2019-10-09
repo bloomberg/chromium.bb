@@ -297,6 +297,18 @@ SupervisedUserService::SupervisedUserService(Profile* profile)
       g_browser_process->supervised_user_whitelist_installer(), client_id);
 }
 
+void SupervisedUserService::SetPrimaryPermissionCreatorForTest(
+    std::unique_ptr<PermissionRequestCreator> permission_creator) {
+  if (permissions_creators_.empty()) {
+    permissions_creators_.push_back(std::move(permission_creator));
+    return;
+  }
+
+  // Else there are other permission creators.
+  permissions_creators_.insert(permissions_creators_.begin(),
+                               std::move(permission_creator));
+}
+
 void SupervisedUserService::SetActive(bool active) {
   if (active_ == active)
     return;
