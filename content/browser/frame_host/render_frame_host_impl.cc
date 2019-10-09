@@ -285,6 +285,26 @@ base::i18n::TextDirection WebTextDirectionToChromeTextDirection(
   }
 }
 
+// Returns true if |url| & |base_url| represents a WebView loadDataWithBaseUrl
+// navigation.
+bool IsLoadDataWithBaseURL(const GURL& url, const GURL& base_url) {
+  return url.SchemeIs(url::kDataScheme) && !base_url.is_empty();
+}
+
+// Returns true if |common_params| represents a WebView loadDataWithBaseUrl
+// navigation.
+bool IsLoadDataWithBaseURL(const mojom::CommonNavigationParams& common_params) {
+  return IsLoadDataWithBaseURL(common_params.url,
+                               common_params.base_url_for_data_url);
+}
+
+// Returns true if |validated_params| represents a WebView loadDataWithBaseUrl
+// navigation.
+bool IsLoadDataWithBaseURL(
+    const FrameHostMsg_DidCommitProvisionalLoad_Params& validated_params) {
+  return IsLoadDataWithBaseURL(validated_params.url, validated_params.base_url);
+}
+
 // Ensure that we reset nav_entry_id_ in DidCommitProvisionalLoad if any of
 // the validations fail and lead to an early return.  Call disable() once we
 // know the commit will be successful.  Resetting nav_entry_id_ avoids acting on
@@ -411,8 +431,7 @@ base::Optional<url::Origin> GetOriginForURLLoaderFactoryUnchecked(
 
   // Check if this is loadDataWithBaseUrl (which needs special treatment).
   auto& common_params = navigation_request->common_params();
-  if (common_params.url.SchemeIs(url::kDataScheme) &&
-      !common_params.base_url_for_data_url.is_empty()) {
+  if (IsLoadDataWithBaseURL(common_params)) {
     // A (potentially attacker-controlled) renderer process should not be able
     // to use loadDataWithBaseUrl code path to initiate fetches on behalf of a
     // victim origin (fetches controlled by attacker-provided
@@ -4607,27 +4626,31 @@ CanCommitStatus RenderFrameHostImpl::CanCommitOriginAndUrl(
     return CanCommitStatus::CANNOT_COMMIT_URL;
 
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
-  const CanCommitStatus can_commit_status =
-      policy->CanCommitOriginAndUrl(GetProcess()->GetID(), origin, url);
+  const CanCommitStatus can_commit_status = policy->CanCommitOriginAndUrl(
+      GetProcess()->GetID(), GetSiteInstance()->GetIsolationContext(), origin,
+      url);
   if (can_commit_status != CanCommitStatus::CAN_COMMIT_ORIGIN_AND_URL)
     return can_commit_status;
 
-  if (!origin.opaque()) {
-    // A non-opaque origin must be a valid URL, which allows us to safely do a
-    // conversion to GURL.
-    GURL origin_url = origin.GetURL();
-
-    // Verify that the origin is allowed to commit in this process.
+  const auto origin_tuple_or_precursor_tuple =
+      origin.GetTupleOrPrecursorTupleIfOpaque();
+  if (!origin_tuple_or_precursor_tuple.IsInvalid()) {
+    // Verify that the origin/precursor is allowed to commit in this process.
     // Note: This also handles non-standard cases for |url|, such as
     // about:blank, data, and blob URLs.
 
     // Renderer-debug URLs can never be committed.
-    if (IsRendererDebugURL(origin_url))
+    if (IsRendererDebugURL(origin_tuple_or_precursor_tuple.GetURL()))
       return CanCommitStatus::CANNOT_COMMIT_ORIGIN;
 
-    // Give the client a chance to disallow URLs from committing.
-    if (!GetContentClient()->browser()->CanCommitURL(GetProcess(), origin_url))
+    // Give the client a chance to disallow origin URLs from committing.
+    // TODO(acolwell): Fix this code to work with opaque origins. Currently
+    // some opaque origin precursors, like chrome-extension schemes, can trigger
+    // the commit to fail. These need to be investigated.
+    if (!origin.opaque() && !GetContentClient()->browser()->CanCommitURL(
+                                GetProcess(), origin.GetURL())) {
       return CanCommitStatus::CANNOT_COMMIT_ORIGIN;
+    }
   }
 
   return CanCommitStatus::CAN_COMMIT_ORIGIN_AND_URL;
@@ -5948,8 +5971,7 @@ void RenderFrameHostImpl::UpdatePermissionsForNavigation(
   if (!GetProcess()->IsForGuestsOnly()) {
     ChildProcessSecurityPolicyImpl::GetInstance()->GrantCommitURL(
         GetProcess()->GetID(), common_params.url);
-    if (common_params.url.SchemeIs(url::kDataScheme) &&
-        !common_params.base_url_for_data_url.is_empty()) {
+    if (IsLoadDataWithBaseURL(common_params)) {
       // When there's a base URL specified for the data URL, we also need to
       // grant access to the base URL. This allows file: and other unexpected
       // schemes to be accepted at commit time and during CORS checks (e.g., for
@@ -6789,7 +6811,23 @@ bool RenderFrameHostImpl::ValidateDidCommitParams(
       bypass_checks_for_file_scheme = true;
   }
 
-  if (!bypass_checks_for_error_page && !bypass_checks_for_file_scheme) {
+  // WebView's loadDataWithBaseURL API is allowed to bypass normal commit
+  // checks because it is allowed to commit anything into its unlocked process
+  // and its data: URL and non-opaque origin would fail the normal commit
+  // checks.
+  bool bypass_checks_for_webview = false;
+  if ((navigation_request &&
+       IsLoadDataWithBaseURL(navigation_request->common_params())) ||
+      (is_same_document_navigation &&
+       IsLoadDataWithBaseURL(*validated_params))) {
+    // Allow bypass if the process isn't locked. Otherwise run normal checks.
+    bypass_checks_for_webview = ChildProcessSecurityPolicyImpl::GetInstance()
+                                    ->GetOriginLock(process->GetID())
+                                    .is_empty();
+  }
+
+  if (!bypass_checks_for_error_page && !bypass_checks_for_file_scheme &&
+      !bypass_checks_for_webview) {
     // Attempts to commit certain off-limits URL should be caught more strictly
     // than our FilterURL checks.  If a renderer violates this policy, it
     // should be killed.
@@ -6799,6 +6837,12 @@ bool RenderFrameHostImpl::ValidateDidCommitParams(
         // The origin and URL are safe to commit.
         break;
       case CanCommitStatus::CANNOT_COMMIT_URL:
+        DLOG(ERROR) << "CANNOT_COMMIT_URL url '" << validated_params->url << "'"
+                    << " origin '" << validated_params->origin << "'"
+                    << " lock '"
+                    << ChildProcessSecurityPolicyImpl::GetInstance()
+                           ->GetOriginLock(process->GetID())
+                    << "'";
         VLOG(1) << "Blocked URL " << validated_params->url.spec();
         LogCannotCommitUrlCrashKeys(validated_params->url,
                                     is_same_document_navigation,
@@ -6809,6 +6853,13 @@ bool RenderFrameHostImpl::ValidateDidCommitParams(
             process, bad_message::RFH_CAN_COMMIT_URL_BLOCKED);
         return false;
       case CanCommitStatus::CANNOT_COMMIT_ORIGIN:
+        DLOG(ERROR) << "CANNOT_COMMIT_ORIGIN url '" << validated_params->url
+                    << "'"
+                    << " origin '" << validated_params->origin << "'"
+                    << " lock '"
+                    << ChildProcessSecurityPolicyImpl::GetInstance()
+                           ->GetOriginLock(process->GetID())
+                    << "'";
         DEBUG_ALIAS_FOR_ORIGIN(origin_debug_alias, validated_params->origin);
         LogCannotCommitOriginCrashKeys(is_same_document_navigation,
                                        navigation_request);
