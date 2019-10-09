@@ -24883,6 +24883,8 @@ Called by update_net_error_codes.py.-->
   <int value="3051" label="IntersectionObserverV2"/>
   <int value="3052" label="HeavyAdIntervention"/>
   <int value="3053" label="UserTimingL3"/>
+  <int value="3054" label="GetGamepadsFromCrossOriginSubframe"/>
+  <int value="3055" label="GetGamepadsFromInsecureContext"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -24894,7 +24896,6 @@ Called by update_net_error_codes.py.-->
   <int value="5" label="Origins"/>
   <int value="6" label="KeywordsOnly"/>
   <int value="7" label="Mixed"/>
-  &gt;&gt;&gt;&gt;&gt;&gt;&gt; 9f172e486e8ccfee1dc0a15b090845abc21e8c26
 </enum>
 
 <enum name="FeaturePolicyFeature">

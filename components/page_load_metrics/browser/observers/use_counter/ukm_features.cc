@@ -137,6 +137,8 @@ UseCounterPageLoadMetricsObserver::GetAllowedUkmFeatures() {
           WebFeature::kThirdPartySharedWorker,
           WebFeature::kThirdPartyBroadcastChannel,
           WebFeature::kHeavyAdIntervention,
+          WebFeature::kGetGamepadsFromCrossOriginSubframe,
+          WebFeature::kGetGamepadsFromInsecureContext,
       }));
   return *opt_in_features;
 }
