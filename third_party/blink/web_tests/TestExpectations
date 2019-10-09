@@ -6184,3 +6184,7 @@ crbug.com/1011723 virtual/disable-deferred-rendering/fast/canvas/OffscreenCanvas
 # Sheriff 2019-10-04
 crbug.com/1011191 [ Mac ] paint/invalidation/svg/use-clipped-hit.svg  [ Pass Failure ]
 crbug.com/1011188 [ Mac ] paint/invalidation/svg/svg-background-partial-redraw.html [ Pass Failure ]
+
+# Sheriff 2019-10-09
+crbug.com/1012638 [ Mac ] paint/invalidation/push-block-with-first-line.html [ Pass Failure ]
+
