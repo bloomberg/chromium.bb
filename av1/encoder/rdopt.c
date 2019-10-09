@@ -4228,8 +4228,8 @@ static AOM_INLINE void palette_rd_y(
     int *centroids, int n, uint16_t *color_cache, int n_cache,
     MB_MODE_INFO *best_mbmi, uint8_t *best_palette_color_map, int64_t *best_rd,
     int64_t *best_model_rd, int *rate, int *rate_tokenonly, int *rate_overhead,
-    int64_t *distortion, int *skippable, PICK_MODE_CONTEXT *ctx,
-    uint8_t *blk_skip) {
+    int64_t *distortion, int *skippable, int *beat_best_rd,
+    PICK_MODE_CONTEXT *ctx, uint8_t *blk_skip) {
   optimize_palette_colors(color_cache, n_cache, n, 1, centroids);
   int k = av1_remove_duplicates(centroids, n);
   if (k < PALETTE_MIN_SIZE) {
@@ -4271,6 +4271,9 @@ static AOM_INLINE void palette_rd_y(
   }
   if (this_rd < *best_rd) {
     *best_rd = this_rd;
+    // Setting beat_best_rd flag because current mode rd is better than best_rd.
+    // This flag need to be updated only for palette evaluation in key frames
+    if (beat_best_rd) *beat_best_rd = 1;
     memcpy(best_palette_color_map, color_map,
            block_width * block_height * sizeof(color_map[0]));
     *best_mbmi = *mbmi;
@@ -4288,7 +4291,7 @@ static int rd_pick_palette_intra_sby(
     int mi_col, int dc_mode_cost, MB_MODE_INFO *best_mbmi,
     uint8_t *best_palette_color_map, int64_t *best_rd, int64_t *best_model_rd,
     int *rate, int *rate_tokenonly, int64_t *distortion, int *skippable,
-    PICK_MODE_CONTEXT *ctx, uint8_t *best_blk_skip) {
+    int *beat_best_rd, PICK_MODE_CONTEXT *ctx, uint8_t *best_blk_skip) {
   int rate_overhead = 0;
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = xd->mi[0];
@@ -4375,8 +4378,8 @@ static int rd_pick_palette_intra_sby(
       palette_rd_y(cpi, x, mbmi, bsize, mi_row, mi_col, dc_mode_cost, data,
                    centroids, n, color_cache, n_cache, best_mbmi,
                    best_palette_color_map, best_rd, best_model_rd, rate,
-                   rate_tokenonly, &rate_overhead, distortion, skippable, ctx,
-                   best_blk_skip);
+                   rate_tokenonly, &rate_overhead, distortion, skippable,
+                   beat_best_rd, ctx, best_blk_skip);
     }
 
     // K-means clustering.
@@ -4396,8 +4399,8 @@ static int rd_pick_palette_intra_sby(
       palette_rd_y(cpi, x, mbmi, bsize, mi_row, mi_col, dc_mode_cost, data,
                    centroids, n, color_cache, n_cache, best_mbmi,
                    best_palette_color_map, best_rd, best_model_rd, rate,
-                   rate_tokenonly, &rate_overhead, distortion, skippable, ctx,
-                   best_blk_skip);
+                   rate_tokenonly, &rate_overhead, distortion, skippable,
+                   beat_best_rd, ctx, best_blk_skip);
     }
   }
 
@@ -4714,7 +4717,9 @@ static AOM_INLINE void intra_block_yrd(const AV1_COMP *const cpi, MACROBLOCK *x,
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = xd->mi[0];
   RD_STATS rd_stats;
-  super_block_yrd(cpi, x, &rd_stats, bsize, *best_rd);
+  // In order to improve txfm search avoid rd based breakouts during winner
+  // mode evaluation. Hence passing ref_best_rd as a maximum value
+  super_block_yrd(cpi, x, &rd_stats, bsize, INT64_MAX);
   if (rd_stats.rate == INT_MAX) return;
   int this_rate_tokenonly = rd_stats.rate;
   if (!xd->lossless[mbmi->segment_id] && block_signals_txsize(mbmi->sb_type)) {
@@ -4754,6 +4759,8 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   const int cols = block_size_wide[bsize];
   int is_directional_mode;
   uint8_t directional_mode_skip_mask[INTRA_MODES] = { 0 };
+  // Flag to check rd of any intra mode is better than best_rd passed to this
+  // function
   int beat_best_rd = 0;
   const int *bmode_costs;
   PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
@@ -4834,6 +4841,8 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
     if (this_rd < best_rd) {
       best_mbmi = *mbmi;
       best_rd = this_rd;
+      // Setting beat_best_rd flag because current mode rd is better than
+      // best_rd passed to this function
       beat_best_rd = 1;
       *rate = this_rate;
       *rate_tokenonly = this_rate_tokenonly;
@@ -4848,7 +4857,7 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
     rd_pick_palette_intra_sby(
         cpi, x, bsize, mi_row, mi_col, bmode_costs[DC_PRED], &best_mbmi,
         best_palette_color_map, &best_rd, &best_model_rd, rate, rate_tokenonly,
-        distortion, skippable, ctx, ctx->blk_skip);
+        distortion, skippable, &beat_best_rd, ctx, ctx->blk_skip);
   }
 
   if (beat_best_rd && av1_filter_intra_allowed_bsize(&cpi->common, bsize)) {
@@ -4858,7 +4867,10 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
       best_mbmi = *mbmi;
     }
   }
-
+  // No mode is identified with less rd value than best_rd passed to this
+  // function. In such cases winner mode processing is not necessary and return
+  // best_rd as INT64_MAX to indicate best mode is not identified
+  if (!beat_best_rd) return INT64_MAX;
   // If previous searches use only the default tx type/no R-D optimization of
   // quantized coeffs, do an extra search for the best tx type/better R-D
   // optimization of quantized coeffs
@@ -11609,7 +11621,7 @@ static AOM_INLINE void search_palette_mode(
   rate_overhead_palette = rd_pick_palette_intra_sby(
       cpi, x, bsize, mi_row, mi_col, intra_mode_cost[DC_PRED],
       &best_mbmi_palette, best_palette_color_map, &best_rd_palette,
-      &best_model_rd_palette, NULL, NULL, NULL, NULL, ctx, best_blk_skip);
+      &best_model_rd_palette, NULL, NULL, NULL, NULL, NULL, ctx, best_blk_skip);
   if (pmi->palette_size[0] == 0) return;
 
   memcpy(x->blk_skip, best_blk_skip,
