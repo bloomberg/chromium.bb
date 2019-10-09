@@ -48,6 +48,7 @@
 #include "chrome/browser/ui/views/event_utils.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_metrics.h"
@@ -716,10 +717,6 @@ base::string16 BookmarkBarView::CreateToolTipForURLAndTitle(
   return result;
 }
 
-int BookmarkBarView::GetToolbarOverlap() const {
-  return 1;
-}
-
 gfx::Size BookmarkBarView::CalculatePreferredSize() const {
   gfx::Size prefsize;
   int preferred_height = GetLayoutConstant(BOOKMARK_BAR_HEIGHT);
@@ -772,16 +769,24 @@ void BookmarkBarView::Layout() {
   int x = kBookmarkBarHorizontalMargin;
   int width = View::width() - 2 * kBookmarkBarHorizontalMargin;
 
-  int height = GetLayoutConstant(BOOKMARK_BAR_BUTTON_HEIGHT);
+  const int button_height = GetLayoutConstant(BOOKMARK_BAR_BUTTON_HEIGHT);
 
-  int y = (GetContentsBounds().height() - height) / 2;
-
-  if (browser_view_) {
-    y += browser_view_->GetBookmarkBarContentVerticalOffset();
-
-    // Ensure y is within bounds of the bookmark bar view.
-    y = std::max(0, y);
+  // Bookmark bar buttons should be centered between the bottom of the location
+  // bar and the bottom of the bookmarks bar, which requires factoring in the
+  // bottom margin of the toolbar into the button position.
+  int toolbar_bottom_margin = 0;
+  // Note: |browser_view_| may be null during tests.
+  if (browser_view_ && !browser_view_->IsFullscreen()) {
+    toolbar_bottom_margin =
+        browser_view_->toolbar()->height() -
+        browser_view_->GetLocationBarView()->bounds().bottom();
   }
+  // Center the buttons in the total available space.
+  const int total_height = GetContentsBounds().height() + toolbar_bottom_margin;
+  const int top_margin = (total_height - button_height) / 2;
+  // Calculate the top inset in the bookmarks bar itself (not counting the space
+  // in the toolbar) but do not allow the buttons to leave the bookmarks bar.
+  const int y = std::max(0, top_margin - toolbar_bottom_margin);
 
   gfx::Size other_bookmarks_pref =
       other_bookmarks_button_->GetVisible()
@@ -806,7 +811,7 @@ void BookmarkBarView::Layout() {
   // Start with the apps page shortcut button.
   if (apps_page_shortcut_->GetVisible()) {
     apps_page_shortcut_->SetBounds(x, y, apps_page_shortcut_pref.width(),
-                                   height);
+                                   button_height);
     x += apps_page_shortcut_pref.width() + bookmark_bar_button_padding;
   }
 
@@ -815,7 +820,7 @@ void BookmarkBarView::Layout() {
     gfx::Size managed_bookmarks_pref =
         managed_bookmarks_button_->GetPreferredSize();
     managed_bookmarks_button_->SetBounds(x, y, managed_bookmarks_pref.width(),
-                                         height);
+                                         button_height);
     x += managed_bookmarks_pref.width() + bookmark_bar_button_padding;
   }
 
@@ -842,7 +847,7 @@ void BookmarkBarView::Layout() {
       child->SetVisible(last_visible);
       // Only need to set bounds if the view is actually visible.
       if (last_visible)
-        child->SetBounds(x, y, pref.width(), height);
+        child->SetBounds(x, y, pref.width(), button_height);
       x = next_x;
     }
   }
@@ -851,7 +856,7 @@ void BookmarkBarView::Layout() {
   x = max_x + bookmark_bar_button_padding;
 
   // The overflow button.
-  overflow_button_->SetBounds(x, y, overflow_pref.width(), height);
+  overflow_button_->SetBounds(x, y, overflow_pref.width(), button_height);
   const bool show_overflow =
       model_->loaded() &&
       (model_->bookmark_bar_node()->children().size() >
@@ -863,7 +868,7 @@ void BookmarkBarView::Layout() {
   // Separator.
   if (bookmarks_separator_view_->GetVisible()) {
     bookmarks_separator_view_->SetBounds(x, y, bookmarks_separator_pref.width(),
-                                         height);
+                                         button_height);
 
     x += bookmarks_separator_pref.width();
   }
@@ -871,7 +876,7 @@ void BookmarkBarView::Layout() {
   // The "Other Bookmarks" button.
   if (other_bookmarks_button_->GetVisible()) {
     other_bookmarks_button_->SetBounds(x, y, other_bookmarks_pref.width(),
-                                       height);
+                                       button_height);
     x += other_bookmarks_pref.width() + bookmark_bar_button_padding;
   }
 }

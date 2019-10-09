@@ -557,11 +557,6 @@ class BrowserView : public BrowserWindow,
     return fullscreen_control_host_.get();
   }
 
-  // Gets the amount to vertically shift the placement of the icons on the
-  // bookmark bar so the icons appear centered relative to the views above and
-  // below them.
-  int GetBookmarkBarContentVerticalOffset() const;
-
   // Returns all the NativeViewHosts attached to this BrowserView which should
   // be transformed as part of the TopControlsSlide behavior with touch scroll
   // gestures. These NativeViewHosts include the one hosting the active tab's\
@@ -680,11 +675,6 @@ class BrowserView : public BrowserWindow,
       version_info::Channel,
       Profile* profile) const;
 
-  // Returns the amount of space between the bottom of the location bar to the
-  // bottom of the toolbar. This does not include the part of the toolbar that
-  // overlaps with the bookmark bar.
-  int GetBottomInsetOfLocationBarWithinToolbar() const;
-
   // Reparents |top_container_| to be a child of |this| instead of
   // |overlay_view_|.
   void ReparentTopContainerForEndOfImmersive();
@@ -759,6 +749,9 @@ class BrowserView : public BrowserWindow,
   // The Bookmark Bar View for this window. Lazily created. May be null for
   // non-tabbed browsers like popups. May not be visible.
   std::unique_ptr<BookmarkBarView> bookmark_bar_view_;
+
+  // Separator between top container and contents.
+  views::View* contents_separator_ = nullptr;
 
   // The do-nothing view which controls the z-order of the find bar widget
   // relative to views which paint into layers and views with an associated

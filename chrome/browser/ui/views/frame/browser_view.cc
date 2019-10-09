@@ -172,6 +172,7 @@
 #include "ui/native_theme/native_theme_dark_aura.h"
 #include "ui/views/accessibility/view_accessibility_utils.h"
 #include "ui/views/controls/button/menu_button.h"
+#include "ui/views/controls/separator.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/focus/external_focus_tracker.h"
@@ -278,23 +279,13 @@ void PaintBackground(gfx::Canvas* canvas,
 
 void PaintBookmarkBar(gfx::Canvas* canvas,
                       BookmarkBarView* view,
-                      BrowserView* browser_view,
-                      int toolbar_overlap) {
+                      BrowserView* browser_view) {
   // Paint background for attached state.
   gfx::Point background_image_offset =
       browser_view->OffsetPointForToolbarBackgroundImage(
           gfx::Point(view->GetMirroredX(), view->y()));
   PaintBackground(canvas, view->GetThemeProvider(), view->GetLocalBounds(),
                   background_image_offset);
-
-  if (view->height() >= toolbar_overlap) {
-    const SkColor separator_color = view->GetThemeProvider()->GetColor(
-        ThemeProperties::COLOR_TOOLBAR_CONTENT_AREA_SEPARATOR);
-    const gfx::Rect bounds = view->GetLocalBounds();
-    canvas->DrawLine(gfx::Point(bounds.x(), bounds.bottom() - 1),
-                     gfx::Point(bounds.right(), bounds.bottom() - 1),
-                     separator_color);
-  }
 }
 
 bool GetGestureCommand(ui::GestureEvent* event, int* command) {
@@ -344,6 +335,18 @@ class OverlayViewTargeterDelegate : public views::ViewTargeterDelegate {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(OverlayViewTargeterDelegate);
+};
+
+class ContentsSeparator : public views::Separator {
+ private:
+  // views::View:
+  void OnThemeChanged() override { UpdateColor(); }
+  void AddedToWidget() override { UpdateColor(); }
+
+  void UpdateColor() {
+    SetColor(GetThemeProvider()->GetColor(
+        ThemeProperties::COLOR_TOOLBAR_CONTENT_AREA_SEPARATOR));
+  }
 };
 
 }  // namespace
@@ -439,9 +442,7 @@ BookmarkBarViewBackground::BookmarkBarViewBackground(
 
 void BookmarkBarViewBackground::Paint(gfx::Canvas* canvas,
                                       views::View* view) const {
-  int toolbar_overlap = bookmark_bar_view_->GetToolbarOverlap();
-
-  PaintBookmarkBar(canvas, bookmark_bar_view_, browser_view_, toolbar_overlap);
+  PaintBookmarkBar(canvas, bookmark_bar_view_, browser_view_);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2042,14 +2043,6 @@ base::string16 BrowserView::GetAccessibleTabLabel(bool include_app_name,
   return base::string16();
 }
 
-int BrowserView::GetBookmarkBarContentVerticalOffset() const {
-  if (!bookmark_bar_view_.get()) {
-    return 0;
-  }
-
-  return -GetBottomInsetOfLocationBarWithinToolbar() / 2;
-}
-
 std::vector<views::NativeViewHost*>
 BrowserView::GetNativeViewHostsForTopControlsSlide() const {
   std::vector<views::NativeViewHost*> results;
@@ -2061,12 +2054,6 @@ BrowserView::GetNativeViewHostsForTopControlsSlide() const {
 #endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
 
   return results;
-}
-
-int BrowserView::GetBottomInsetOfLocationBarWithinToolbar() const {
-  return (toolbar_->height() - GetLocationBarView()->height() -
-          bookmark_bar_view_->GetToolbarOverlap()) /
-         2;
 }
 
 void BrowserView::ReparentTopContainerForEndOfImmersive() {
@@ -2638,6 +2625,9 @@ void BrowserView::InitViews() {
   top_container_->AddChildView(toolbar_);
   toolbar_->Init();
 
+  contents_separator_ =
+      top_container_->AddChildView(std::make_unique<ContentsSeparator>());
+
   // This browser view may already have a custom button provider set (e.g the
   // hosted app frame).
   if (!toolbar_button_provider_)
@@ -2688,7 +2678,8 @@ void BrowserView::InitViews() {
       std::make_unique<BrowserViewLayoutDelegateImpl>(this), browser(), this,
       top_container_, tab_strip_region_view_, tabstrip_, webui_tab_strip_view,
       toolbar_, infobar_container_, contents_container_,
-      immersive_mode_controller_.get(), web_footer_experiment);
+      immersive_mode_controller_.get(), web_footer_experiment,
+      contents_separator_);
   SetLayoutManager(std::move(browser_view_layout));
 
   EnsureFocusOrder();
