@@ -22,7 +22,6 @@ import "app_notification_specifics.proto";
 import "app_setting_specifics.proto";
 import "app_specifics.proto";
 import "arc_package_specifics.proto";
-import "article_specifics.proto";
 import "autofill_specifics.proto";
 import "bookmark_specifics.proto";
 import "client_commands.proto";
@@ -143,9 +142,6 @@ message EntitySpecifics {
     FaviconImageSpecifics favicon_image = 182019;
     ManagedUserSettingSpecifics managed_user_setting = 186662;
     ManagedUserWhitelistSpecifics managed_user_whitelist = 306060;
-    // TODO(crbug.com/1007942): |article| isn't used by Sync anymore, but it
-    // can't be removed because dom_distiller code uses it for local storage.
-    ArticleSpecifics article = 223759 [deprecated = true];
     AppListSpecifics app_list = 229170;
     AutofillWalletSpecifics autofill_wallet = 306270;
     WalletMetadataSpecifics wallet_metadata = 330441;
@@ -166,6 +162,8 @@ message EntitySpecifics {
   reserved "managed_user_shared_setting";
   reserved 218175;
   reserved "wifi_credential";
+  reserved 223759;
+  reserved "article";
 }
 
 message SyncEntity {
