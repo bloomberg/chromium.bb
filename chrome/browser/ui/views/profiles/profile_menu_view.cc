@@ -416,15 +416,16 @@ void ProfileMenuView::BuildIdentity() {
   base::Optional<AccountInfo> account_info =
       identity_manager->FindExtendedAccountInfoForAccountWithRefreshToken(
           account);
+  ProfileAttributesEntry* profile_attributes =
+      GetProfileAttributesEntry(profile);
 
   if (account_info.has_value()) {
+    SetHeading(profile_attributes->GetLocalProfileName());
     SetIdentityInfo(account_info.value().account_image.AsImageSkia(),
                     GetSyncIcon(),
                     base::UTF8ToUTF16(account_info.value().full_name),
                     base::UTF8ToUTF16(account_info.value().email));
   } else {
-    ProfileAttributesEntry* profile_attributes =
-        GetProfileAttributesEntry(profile);
     SetIdentityInfo(
         profile_attributes->GetAvatarIcon().AsImageSkia(), GetSyncIcon(),
         profile_attributes->GetName(),

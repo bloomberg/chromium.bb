@@ -274,6 +274,27 @@ ProfileMenuViewBase::~ProfileMenuViewBase() {
   DCHECK(menu_item_groups_.empty());
 }
 
+void ProfileMenuViewBase::SetHeading(const base::string16& heading) {
+  constexpr int kVerticalPadding = 8;
+  const SkColor kBackgroundColor =
+      ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
+          ui::NativeTheme::kColorId_HighlightedMenuItemBackgroundColor);
+  const int kCornerRadius =
+      views::LayoutProvider::Get()->GetCornerRadiusMetric(views::EMPHASIS_HIGH);
+
+  heading_container_->RemoveAllChildViews(/*delete_children=*/true);
+  heading_container_->SetLayoutManager(std::make_unique<views::FillLayout>());
+  heading_container_->SetBackground(
+      views::CreateRoundedRectBackground(kBackgroundColor, kCornerRadius));
+
+  views::Label* label =
+      heading_container_->AddChildView(std::make_unique<views::Label>(
+          heading, views::style::CONTEXT_LABEL, STYLE_HINT));
+  label->SetHandlesTooltips(false);
+  label->SetBorder(
+      views::CreateEmptyBorder(gfx::Insets(kVerticalPadding, kMenuEdgeMargin)));
+}
+
 void ProfileMenuViewBase::SetIdentityInfo(const gfx::ImageSkia& image,
                                           const gfx::ImageSkia& badge,
                                           const base::string16& title,
@@ -598,6 +619,8 @@ void ProfileMenuViewBase::Reset() {
   // Create and add new component containers in the correct order.
   // First, add the bordered box with the identity and feature buttons.
   views::View* bordered_box = components->AddChildView(CreateBorderedBoxView());
+  heading_container_ =
+      bordered_box->AddChildView(std::make_unique<views::View>());
   identity_info_container_ =
       bordered_box->AddChildView(std::make_unique<views::View>());
   shortcut_features_container_ =

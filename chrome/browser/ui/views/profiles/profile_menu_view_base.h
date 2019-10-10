@@ -95,6 +95,7 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
   virtual void BuildMenu() = 0;
 
   // API to build the profile menu.
+  void SetHeading(const base::string16& heading);
   void SetIdentityInfo(const gfx::ImageSkia& image,
                        const gfx::ImageSkia& badge,
                        const base::string16& title,
@@ -227,6 +228,7 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
   std::map<views::View*, base::RepeatingClosure> click_actions_;
 
   // Component containers.
+  views::View* heading_container_ = nullptr;
   views::View* identity_info_container_ = nullptr;
   views::View* sync_info_container_ = nullptr;
   views::View* shortcut_features_container_ = nullptr;
