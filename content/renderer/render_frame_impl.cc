@@ -5261,22 +5261,16 @@ void RenderFrameImpl::WillSendRequest(blink::WebURLRequest& request) {
   WebDocumentLoader* document_loader = frame_->GetDocumentLoader();
   WillSendRequestInternal(
       request, WebURLRequestToResourceType(request),
-      DocumentState::FromDocumentLoader(document_loader),
       GetTransitionType(document_loader, IsMainFrame(), false /* loading */));
 }
 
 void RenderFrameImpl::WillSendRequestInternal(
     blink::WebURLRequest& request,
     ResourceType resource_type,
-    DocumentState* document_state,
     ui::PageTransition transition_type) {
   if (render_view_->renderer_preferences_.enable_do_not_track)
     request.SetHttpHeaderField(blink::WebString::FromUTF8(kDoNotTrackHeader),
                                "1");
-
-  InternalDocumentStateData* internal_data =
-      InternalDocumentStateData::FromDocumentState(document_state);
-  NavigationState* navigation_state = internal_data->navigation_state();
 
   ApplyFilePathAlias(&request);
   GURL new_url;
@@ -5339,25 +5333,6 @@ void RenderFrameImpl::WillSendRequestInternal(
     extra_data->set_url_loader_throttles(
         render_thread->url_loader_throttle_provider()->CreateThrottles(
             routing_id_, request, resource_type));
-  }
-
-  if (request.GetPreviewsState() == WebURLRequest::kPreviewsUnspecified) {
-    if (is_main_frame_ && !navigation_state->request_committed()) {
-      request.SetPreviewsState(static_cast<WebURLRequest::PreviewsState>(
-          navigation_state->common_params().previews_state));
-    } else {
-      WebURLRequest::PreviewsState request_previews_state =
-          static_cast<WebURLRequest::PreviewsState>(GetPreviewsState());
-
-      // The decision of whether or not to enable Client Lo-Fi is made earlier
-      // in the request lifetime, in LocalFrame::MaybeAllowImagePlaceholder(),
-      // so don't add the Client Lo-Fi bit to the request here.
-      request_previews_state &= ~(WebURLRequest::kLazyImageLoadDeferred);
-      if (request_previews_state == WebURLRequest::kPreviewsUnspecified)
-        request_previews_state = WebURLRequest::kPreviewsOff;
-
-      request.SetPreviewsState(request_previews_state);
-    }
   }
 
   // This is an instance where we embed a copy of the routing id
@@ -6971,7 +6946,6 @@ void RenderFrameImpl::PrepareRenderViewForNavigation(
 void RenderFrameImpl::BeginNavigationInternal(
     std::unique_ptr<blink::WebNavigationInfo> info,
     bool is_history_navigation_in_new_child_frame) {
-  std::unique_ptr<DocumentState> document_state = BuildDocumentState();
   if (!frame_->WillStartNavigation(*info,
                                    is_history_navigation_in_new_child_frame))
     return;
@@ -7012,7 +6986,7 @@ void RenderFrameImpl::BeginNavigationInternal(
   WillSendRequestInternal(
       request,
       frame_->Parent() ? ResourceType::kSubFrame : ResourceType::kMainFrame,
-      document_state.get(), transition_type);
+      transition_type);
 
   if (!info->url_request.GetExtraData())
     info->url_request.SetExtraData(std::make_unique<RequestExtraData>());

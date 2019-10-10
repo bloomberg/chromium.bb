@@ -1293,13 +1293,9 @@ class CONTENT_EXPORT RenderFrameImpl
   bool ShouldDisplayErrorPageForFailedLoad(int error_code,
                                            const GURL& unreachable_url);
 
-  // |document_state| and |transition_type| correspond to the document which
-  // triggered this request. For main resource requests (navigations),
-  // |document_state| is a newly created one, and will be used for committing
-  // the navigation and creating the new document.
+  // |transition_type| corresponds to the document which triggered this request.
   void WillSendRequestInternal(blink::WebURLRequest& request,
                                ResourceType resource_type,
-                               DocumentState* document_state,
                                ui::PageTransition transition_type);
 
   // Returns the URL being loaded by the |frame_|'s request.
