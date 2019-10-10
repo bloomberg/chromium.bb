@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/webrtc/mock_peer_connection_impl.h"
+#include "third_party/blink/public/web/modules/peerconnection/mock_peer_connection_impl.h"
 
 #include <stddef.h>
 
@@ -11,9 +11,9 @@
 
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
 #include "third_party/blink/public/platform/modules/peerconnection/webrtc_util.h"
 #include "third_party/blink/public/web/modules/peerconnection/mock_data_channel_impl.h"
+#include "third_party/blink/public/web/modules/peerconnection/mock_peer_connection_dependency_factory.h"
 #include "third_party/webrtc/api/rtp_receiver_interface.h"
 #include "third_party/webrtc/rtc_base/ref_counted_object.h"
 
@@ -28,7 +28,7 @@ using webrtc::PeerConnectionInterface;
 using webrtc::SessionDescriptionInterface;
 using webrtc::SetSessionDescriptionObserver;
 
-namespace content {
+namespace blink {
 
 class MockStreamCollection : public webrtc::StreamCollectionInterface {
  public:
@@ -61,9 +61,7 @@ class MockStreamCollection : public webrtc::StreamCollectionInterface {
     }
     return nullptr;
   }
-  void AddStream(MediaStreamInterface* stream) {
-    streams_.push_back(stream);
-  }
+  void AddStream(MediaStreamInterface* stream) { streams_.push_back(stream); }
   void RemoveStream(MediaStreamInterface* stream) {
     auto it = streams_.begin();
     for (; it != streams_.end(); ++it) {
@@ -78,8 +76,7 @@ class MockStreamCollection : public webrtc::StreamCollectionInterface {
   ~MockStreamCollection() override {}
 
  private:
-  typedef std::vector<rtc::scoped_refptr<MediaStreamInterface> >
-      StreamVector;
+  typedef std::vector<rtc::scoped_refptr<MediaStreamInterface>> StreamVector;
   StreamVector streams_;
 };
 
@@ -323,11 +320,13 @@ MockPeerConnectionImpl::MockPeerConnectionImpl(
       getstats_result_(true),
       sdp_mline_index_(-1),
       observer_(observer) {
-  ON_CALL(*this, SetLocalDescription(_, _)).WillByDefault(testing::Invoke(
-      this, &MockPeerConnectionImpl::SetLocalDescriptionWorker));
+  ON_CALL(*this, SetLocalDescription(_, _))
+      .WillByDefault(testing::Invoke(
+          this, &MockPeerConnectionImpl::SetLocalDescriptionWorker));
   // TODO(hbos): Remove once no longer mandatory to implement.
-  ON_CALL(*this, SetRemoteDescription(_, _)).WillByDefault(testing::Invoke(
-      this, &MockPeerConnectionImpl::SetRemoteDescriptionWorker));
+  ON_CALL(*this, SetRemoteDescription(_, _))
+      .WillByDefault(testing::Invoke(
+          this, &MockPeerConnectionImpl::SetRemoteDescriptionWorker));
   ON_CALL(*this, SetRemoteDescriptionForMock(_, _))
       .WillByDefault(testing::Invoke(
           [this](
@@ -403,15 +402,15 @@ MockPeerConnectionImpl::GetReceivers() const {
 }
 
 rtc::scoped_refptr<webrtc::DataChannelInterface>
-MockPeerConnectionImpl::CreateDataChannel(const std::string& label,
-                      const webrtc::DataChannelInit* config) {
+MockPeerConnectionImpl::CreateDataChannel(
+    const std::string& label,
+    const webrtc::DataChannelInit* config) {
   return new rtc::RefCountedObject<blink::MockDataChannel>(label, config);
 }
 
-bool MockPeerConnectionImpl::GetStats(
-    webrtc::StatsObserver* observer,
-    webrtc::MediaStreamTrackInterface* track,
-    StatsOutputLevel level) {
+bool MockPeerConnectionImpl::GetStats(webrtc::StatsObserver* observer,
+                                      webrtc::MediaStreamTrackInterface* track,
+                                      StatsOutputLevel level) {
   if (!getstats_result_)
     return false;
 
@@ -530,4 +529,4 @@ webrtc::RTCError MockPeerConnectionImpl::SetBitrate(
   return webrtc::RTCError::OK();
 }
 
-}  // namespace content
+}  // namespace blink

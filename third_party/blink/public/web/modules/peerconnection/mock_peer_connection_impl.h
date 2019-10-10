@@ -2,14 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_WEBRTC_MOCK_PEER_CONNECTION_IMPL_H_
-#define CONTENT_RENDERER_MEDIA_WEBRTC_MOCK_PEER_CONNECTION_IMPL_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_PEERCONNECTION_MOCK_PEER_CONNECTION_IMPL_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_PEERCONNECTION_MOCK_PEER_CONNECTION_IMPL_H_
 
 #include <memory>
 #include <string>
 
-#include "base/compiler_specific.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -19,7 +17,7 @@
 #include "third_party/webrtc/api/stats/rtc_stats_report.h"
 #include "third_party/webrtc/api/test/dummy_peer_connection.h"
 
-namespace content {
+namespace blink {
 
 class MockPeerConnectionDependencyFactory;
 class MockStreamCollection;
@@ -212,9 +210,9 @@ class MockPeerConnectionImpl : public webrtc::DummyPeerConnection {
   }
   MOCK_CONST_METHOD0(GetSctpTransport,
                      rtc::scoped_refptr<webrtc::SctpTransportInterface>());
-  rtc::scoped_refptr<webrtc::DataChannelInterface>
-      CreateDataChannel(const std::string& label,
-                        const webrtc::DataChannelInit* config) override;
+  rtc::scoped_refptr<webrtc::DataChannelInterface> CreateDataChannel(
+      const std::string& label,
+      const webrtc::DataChannelInit* config) override;
 
   bool GetStats(webrtc::StatsObserver* observer,
                 webrtc::MediaStreamTrackInterface* track,
@@ -351,9 +349,7 @@ class MockPeerConnectionImpl : public webrtc::DummyPeerConnection {
   webrtc::SessionDescriptionInterface* created_session_description() const {
     return created_sessiondescription_.get();
   }
-  webrtc::PeerConnectionObserver* observer() {
-    return observer_;
-  }
+  webrtc::PeerConnectionObserver* observer() { return observer_; }
   void set_setconfiguration_error_type(webrtc::RTCErrorType error_type) {
     setconfiguration_error_type_ = error_type;
   }
@@ -390,6 +386,6 @@ class MockPeerConnectionImpl : public webrtc::DummyPeerConnection {
   DISALLOW_COPY_AND_ASSIGN(MockPeerConnectionImpl);
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_MEDIA_WEBRTC_MOCK_PEER_CONNECTION_IMPL_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_PEERCONNECTION_MOCK_PEER_CONNECTION_IMPL_H_

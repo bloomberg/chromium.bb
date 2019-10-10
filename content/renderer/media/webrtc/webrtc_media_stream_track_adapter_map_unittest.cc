@@ -14,13 +14,13 @@
 #include "base/test/task_environment.h"
 #include "base/test/test_timeouts.h"
 #include "content/child/child_process.h"
-#include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/web/modules/peerconnection/mock_peer_connection_dependency_factory.h"
 #include "third_party/blink/public/web/web_heap.h"
 
 namespace content {
@@ -28,7 +28,7 @@ namespace content {
 class WebRtcMediaStreamTrackAdapterMapTest : public ::testing::Test {
  public:
   void SetUp() override {
-    dependency_factory_.reset(new MockPeerConnectionDependencyFactory());
+    dependency_factory_.reset(new blink::MockPeerConnectionDependencyFactory());
     main_thread_ = blink::scheduler::GetSingleThreadTaskRunnerForTesting();
     map_ = new blink::WebRtcMediaStreamTrackAdapterMap(
         dependency_factory_.get(), main_thread_);
@@ -116,7 +116,8 @@ class WebRtcMediaStreamTrackAdapterMapTest : public ::testing::Test {
   base::test::TaskEnvironment task_environment_;
   ChildProcess child_process_;
 
-  std::unique_ptr<MockPeerConnectionDependencyFactory> dependency_factory_;
+  std::unique_ptr<blink::MockPeerConnectionDependencyFactory>
+      dependency_factory_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
   scoped_refptr<blink::WebRtcMediaStreamTrackAdapterMap> map_;
 };
@@ -151,8 +152,8 @@ TEST_F(WebRtcMediaStreamTrackAdapterMapTest, AddAndRemoveLocalTrackAdapter) {
 }
 
 TEST_F(WebRtcMediaStreamTrackAdapterMapTest, AddAndRemoveRemoteTrackAdapter) {
-  scoped_refptr<MockWebRtcAudioTrack> webrtc_track =
-      MockWebRtcAudioTrack::Create("remote_track");
+  scoped_refptr<blink::MockWebRtcAudioTrack> webrtc_track =
+      blink::MockWebRtcAudioTrack::Create("remote_track");
   std::unique_ptr<blink::WebRtcMediaStreamTrackAdapterMap::AdapterRef>
       adapter_ref = GetOrCreateRemoteTrackAdapter(webrtc_track.get());
   EXPECT_TRUE(adapter_ref->is_initialized());
@@ -183,8 +184,8 @@ TEST_F(WebRtcMediaStreamTrackAdapterMapTest, AddAndRemoveRemoteTrackAdapter) {
 
 TEST_F(WebRtcMediaStreamTrackAdapterMapTest,
        InitializeRemoteTrackAdapterExplicitly) {
-  scoped_refptr<MockWebRtcAudioTrack> webrtc_track =
-      MockWebRtcAudioTrack::Create("remote_track");
+  scoped_refptr<blink::MockWebRtcAudioTrack> webrtc_track =
+      blink::MockWebRtcAudioTrack::Create("remote_track");
   std::unique_ptr<blink::WebRtcMediaStreamTrackAdapterMap::AdapterRef>
       adapter_ref = GetOrCreateRemoteTrackAdapter(webrtc_track.get(), false);
   EXPECT_FALSE(adapter_ref->is_initialized());
@@ -218,8 +219,8 @@ TEST_F(WebRtcMediaStreamTrackAdapterMapTest,
       map_->GetLocalTrackAdapter(local_web_track)->GetAdapterForTesting());
   EXPECT_EQ(1u, map_->GetLocalTrackCount());
 
-  scoped_refptr<MockWebRtcAudioTrack> remote_webrtc_track =
-      MockWebRtcAudioTrack::Create(id);
+  scoped_refptr<blink::MockWebRtcAudioTrack> remote_webrtc_track =
+      blink::MockWebRtcAudioTrack::Create(id);
   std::unique_ptr<blink::WebRtcMediaStreamTrackAdapterMap::AdapterRef>
       remote_adapter = GetOrCreateRemoteTrackAdapter(remote_webrtc_track.get());
   EXPECT_TRUE(remote_adapter->is_initialized());
@@ -247,8 +248,8 @@ TEST_F(WebRtcMediaStreamTrackAdapterMapTest, GetMissingLocalTrackAdapter) {
 }
 
 TEST_F(WebRtcMediaStreamTrackAdapterMapTest, GetMissingRemoteTrackAdapter) {
-  scoped_refptr<MockWebRtcAudioTrack> webrtc_track =
-      MockWebRtcAudioTrack::Create("missing");
+  scoped_refptr<blink::MockWebRtcAudioTrack> webrtc_track =
+      blink::MockWebRtcAudioTrack::Create("missing");
   EXPECT_EQ(nullptr, map_->GetRemoteTrackAdapter(webrtc_track.get()));
 }
 
@@ -318,7 +319,7 @@ class WebRtcMediaStreamTrackAdapterMapStressTest
         track_refs;
     for (size_t i = 0u; i < 5u; ++i) {
       track_refs.push_back(map_->GetOrCreateRemoteTrackAdapter(
-          MockWebRtcAudioTrack::Create("remote_track_id")));
+          blink::MockWebRtcAudioTrack::Create("remote_track_id")));
     }
     main_thread_->PostTask(
         FROM_HERE,

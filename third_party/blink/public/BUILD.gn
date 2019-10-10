@@ -109,6 +109,8 @@ source_set("test_headers") {
     # below when content/renderer/media/webrtc Onion souping is
     # done.
     "web/modules/peerconnection/mock_data_channel_impl.h",
+    "web/modules/peerconnection/mock_peer_connection_dependency_factory.h",
+    "web/modules/peerconnection/mock_peer_connection_impl.h",
   ]
   deps = [
     ":blink_headers",
@@ -116,6 +118,8 @@ source_set("test_headers") {
     "//cc:cc",
     "//testing/gmock:gmock",
     "//third_party/webrtc/api:libjingle_peerconnection_api",
+    "//third_party/webrtc/api:media_stream_interface",
+    "//third_party/webrtc/api:rtc_stats_api",
   ]
 }
 

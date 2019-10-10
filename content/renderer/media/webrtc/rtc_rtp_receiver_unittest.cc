@@ -14,13 +14,13 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/test/task_environment.h"
 #include "content/child/child_process.h"
-#include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
-#include "content/renderer/media/webrtc/mock_peer_connection_impl.h"
 #include "content/renderer/media/webrtc/test/webrtc_stats_report_obtainer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_rtc_stats.h"
 #include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/web/modules/peerconnection/mock_peer_connection_dependency_factory.h"
+#include "third_party/blink/public/web/modules/peerconnection/mock_peer_connection_impl.h"
 #include "third_party/blink/public/web/modules/peerconnection/webrtc_media_stream_track_adapter_map.h"
 #include "third_party/blink/public/web/web_heap.h"
 #include "third_party/webrtc/api/stats/rtc_stats_report.h"
@@ -32,11 +32,11 @@ namespace content {
 class RTCRtpReceiverTest : public ::testing::Test {
  public:
   void SetUp() override {
-    dependency_factory_.reset(new MockPeerConnectionDependencyFactory());
+    dependency_factory_.reset(new blink::MockPeerConnectionDependencyFactory());
     main_thread_ = blink::scheduler::GetSingleThreadTaskRunnerForTesting();
     track_map_ = new blink::WebRtcMediaStreamTrackAdapterMap(
         dependency_factory_.get(), main_thread_);
-    peer_connection_ = new rtc::RefCountedObject<MockPeerConnectionImpl>(
+    peer_connection_ = new rtc::RefCountedObject<blink::MockPeerConnectionImpl>(
         dependency_factory_.get(), nullptr);
   }
 
@@ -106,17 +106,18 @@ class RTCRtpReceiverTest : public ::testing::Test {
   base::test::TaskEnvironment task_environment_;
   ChildProcess child_process_;
 
-  std::unique_ptr<MockPeerConnectionDependencyFactory> dependency_factory_;
+  std::unique_ptr<blink::MockPeerConnectionDependencyFactory>
+      dependency_factory_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
   scoped_refptr<blink::WebRtcMediaStreamTrackAdapterMap> track_map_;
-  rtc::scoped_refptr<MockPeerConnectionImpl> peer_connection_;
+  rtc::scoped_refptr<blink::MockPeerConnectionImpl> peer_connection_;
   rtc::scoped_refptr<webrtc::MockRtpReceiver> mock_webrtc_receiver_;
   std::unique_ptr<RTCRtpReceiver> receiver_;
 };
 
 TEST_F(RTCRtpReceiverTest, CreateReceiver) {
-  scoped_refptr<MockWebRtcAudioTrack> webrtc_track =
-      MockWebRtcAudioTrack::Create("webrtc_track");
+  scoped_refptr<blink::MockWebRtcAudioTrack> webrtc_track =
+      blink::MockWebRtcAudioTrack::Create("webrtc_track");
   receiver_ = CreateReceiver(webrtc_track);
   EXPECT_FALSE(receiver_->Track().IsNull());
   EXPECT_EQ(receiver_->Track().Id().Utf8(), webrtc_track->id());
@@ -124,8 +125,8 @@ TEST_F(RTCRtpReceiverTest, CreateReceiver) {
 }
 
 TEST_F(RTCRtpReceiverTest, ShallowCopy) {
-  scoped_refptr<MockWebRtcAudioTrack> webrtc_track =
-      MockWebRtcAudioTrack::Create("webrtc_track");
+  scoped_refptr<blink::MockWebRtcAudioTrack> webrtc_track =
+      blink::MockWebRtcAudioTrack::Create("webrtc_track");
   receiver_ = CreateReceiver(webrtc_track);
   auto copy = std::make_unique<RTCRtpReceiver>(*receiver_);
   EXPECT_EQ(receiver_->state().track_ref()->webrtc_track(), webrtc_track);
@@ -143,8 +144,8 @@ TEST_F(RTCRtpReceiverTest, ShallowCopy) {
 }
 
 TEST_F(RTCRtpReceiverTest, GetStats) {
-  scoped_refptr<MockWebRtcAudioTrack> webrtc_track =
-      MockWebRtcAudioTrack::Create("webrtc_track");
+  scoped_refptr<blink::MockWebRtcAudioTrack> webrtc_track =
+      blink::MockWebRtcAudioTrack::Create("webrtc_track");
   receiver_ = CreateReceiver(webrtc_track);
 
   // Make the mock return a blink version of the |webtc_report|. The mock does

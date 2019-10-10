@@ -6,11 +6,11 @@
 
 #include "base/test/task_environment.h"
 #include "content/child/child_process.h"
-#include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/web/modules/mediastream/mock_media_stream_registry.h"
 #include "third_party/blink/public/web/modules/mediastream/video_track_adapter_settings.h"
+#include "third_party/blink/public/web/modules/peerconnection/mock_peer_connection_dependency_factory.h"
 
 namespace content {
 namespace {
@@ -44,7 +44,7 @@ class MediaStreamVideoWebRtcSinkTest : public ::testing::Test {
 
  protected:
   blink::WebMediaStreamTrack track_;
-  MockPeerConnectionDependencyFactory dependency_factory_;
+  blink::MockPeerConnectionDependencyFactory dependency_factory_;
 
  private:
   blink::MockMediaStreamRegistry registry_;

@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
+#include "third_party/blink/public/web/modules/peerconnection/mock_peer_connection_dependency_factory.h"
 
 #include <stddef.h>
 
-#include "base/logging.h"
-#include "base/strings/utf_string_conversions.h"
-#include "content/renderer/media/webrtc/mock_peer_connection_impl.h"
+#include "base/single_thread_task_runner.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
+#include "third_party/blink/public/web/modules/peerconnection/mock_peer_connection_impl.h"
 #include "third_party/webrtc/api/media_stream_interface.h"
 #include "third_party/webrtc/api/scoped_refptr.h"
 
@@ -21,15 +20,14 @@ using webrtc::IceCandidateInterface;
 using webrtc::MediaStreamInterface;
 using webrtc::ObserverInterface;
 using webrtc::SessionDescriptionInterface;
-using webrtc::VideoTrackSourceInterface;
 using webrtc::VideoTrackInterface;
+using webrtc::VideoTrackSourceInterface;
 using webrtc::VideoTrackVector;
 
-namespace content {
+namespace blink {
 
 template <class V>
-static typename V::iterator FindTrack(V* vector,
-                                      const std::string& track_id) {
+static typename V::iterator FindTrack(V* vector, const std::string& track_id) {
   auto it = vector->begin();
   for (; it != vector->end(); ++it) {
     if ((*it)->id() == track_id) {
@@ -219,9 +217,13 @@ std::string MockWebRtcVideoTrack::kind() const {
   return kVideoKind;
 }
 
-std::string MockWebRtcVideoTrack::id() const { return id_; }
+std::string MockWebRtcVideoTrack::id() const {
+  return id_;
+}
 
-bool MockWebRtcVideoTrack::enabled() const { return enabled_; }
+bool MockWebRtcVideoTrack::enabled() const {
+  return enabled_;
+}
 
 MockWebRtcVideoTrack::TrackState MockWebRtcVideoTrack::state() const {
   return state_;
@@ -251,11 +253,8 @@ void MockWebRtcVideoTrack::SetEnded() {
 
 class MockSessionDescription : public SessionDescriptionInterface {
  public:
-  MockSessionDescription(const std::string& type,
-                         const std::string& sdp)
-      : type_(type),
-        sdp_(sdp) {
-  }
+  MockSessionDescription(const std::string& type, const std::string& sdp)
+      : type_(type), sdp_(sdp) {}
   ~MockSessionDescription() override {}
   cricket::SessionDescription* description() override {
     NOTIMPLEMENTED();
@@ -303,9 +302,7 @@ class MockIceCandidate : public IceCandidateInterface {
   MockIceCandidate(const std::string& sdp_mid,
                    int sdp_mline_index,
                    const std::string& sdp)
-      : sdp_mid_(sdp_mid),
-        sdp_mline_index_(sdp_mline_index),
-        sdp_(sdp) {
+      : sdp_mid_(sdp_mid), sdp_mline_index_(sdp_mline_index), sdp_(sdp) {
     // Assign an valid address to |candidate_| to pass assert in code.
     candidate_.set_address(rtc::SocketAddress("127.0.0.1", 5000));
   }
@@ -359,8 +356,7 @@ MockPeerConnectionDependencyFactory::CreateLocalVideoTrack(
     const std::string& id,
     webrtc::VideoTrackSourceInterface* source) {
   scoped_refptr<webrtc::VideoTrackInterface> track(
-      new rtc::RefCountedObject<MockWebRtcVideoTrack>(
-          id, source));
+      new rtc::RefCountedObject<MockWebRtcVideoTrack>(id, source));
   return track;
 }
 
@@ -392,4 +388,4 @@ void MockPeerConnectionDependencyFactory::SetFailToCreateSessionDescription(
   fail_to_create_session_description_ = fail;
 }
 
-}  // namespace content
+}  // namespace blink

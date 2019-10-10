@@ -15,7 +15,6 @@
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/child/child_process.h"
-#include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
 #include "media/base/video_frame.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
@@ -23,6 +22,7 @@
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 #include "third_party/blink/public/web/modules/mediastream/mock_media_stream_video_sink.h"
+#include "third_party/blink/public/web/modules/peerconnection/mock_peer_connection_dependency_factory.h"
 #include "third_party/blink/public/web/web_heap.h"
 #include "third_party/webrtc/api/video/color_space.h"
 #include "third_party/webrtc/api/video/i420_buffer.h"
@@ -50,8 +50,8 @@ class MediaStreamRemoteVideoSourceTest
   MediaStreamRemoteVideoSourceTest()
       : task_environment_(base::test::TaskEnvironment::MainThreadType::UI),
         child_process_(new ChildProcess()),
-        mock_factory_(new MockPeerConnectionDependencyFactory()),
-        webrtc_video_track_(MockWebRtcVideoTrack::Create("test")),
+        mock_factory_(new blink::MockPeerConnectionDependencyFactory()),
+        webrtc_video_track_(blink::MockWebRtcVideoTrack::Create("test")),
         remote_source_(nullptr),
         number_of_successful_track_starts_(0),
         number_of_failed_track_starts_(0) {}
@@ -122,15 +122,16 @@ class MediaStreamRemoteVideoSourceTest
         base::WaitableEvent::ResetPolicy::MANUAL,
         base::WaitableEvent::InitialState::NOT_SIGNALED);
     mock_factory_->GetWebRtcSignalingThread()->PostTask(
-        FROM_HERE, base::BindOnce(
-                       [](MockWebRtcVideoTrack* video_track,
-                          base::WaitableEvent* waitable_event) {
-                         video_track->SetEnded();
-                         waitable_event->Signal();
-                       },
-                       base::Unretained(static_cast<MockWebRtcVideoTrack*>(
-                           webrtc_video_track_.get())),
-                       base::Unretained(&waitable_event)));
+        FROM_HERE,
+        base::BindOnce(
+            [](blink::MockWebRtcVideoTrack* video_track,
+               base::WaitableEvent* waitable_event) {
+              video_track->SetEnded();
+              waitable_event->Signal();
+            },
+            base::Unretained(static_cast<blink::MockWebRtcVideoTrack*>(
+                webrtc_video_track_.get())),
+            base::Unretained(&waitable_event)));
     waitable_event.Wait();
   }
 
@@ -151,7 +152,7 @@ class MediaStreamRemoteVideoSourceTest
 
   base::test::TaskEnvironment task_environment_;
   std::unique_ptr<ChildProcess> child_process_;
-  std::unique_ptr<MockPeerConnectionDependencyFactory> mock_factory_;
+  std::unique_ptr<blink::MockPeerConnectionDependencyFactory> mock_factory_;
   scoped_refptr<webrtc::VideoTrackInterface> webrtc_video_track_;
   // |remote_source_| is owned by |webkit_source_|.
   MediaStreamRemoteVideoSourceUnderTest* remote_source_;

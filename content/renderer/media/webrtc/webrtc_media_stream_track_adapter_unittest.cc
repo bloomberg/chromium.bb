@@ -13,7 +13,6 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/test/task_environment.h"
 #include "content/child/child_process.h"
-#include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
@@ -22,6 +21,7 @@
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 #include "third_party/blink/public/web/modules/mediastream/mock_media_stream_video_source.h"
+#include "third_party/blink/public/web/modules/peerconnection/mock_peer_connection_dependency_factory.h"
 #include "third_party/blink/public/web/web_heap.h"
 
 namespace content {
@@ -29,7 +29,7 @@ namespace content {
 class WebRtcMediaStreamTrackAdapterTest : public ::testing::Test {
  public:
   void SetUp() override {
-    dependency_factory_.reset(new MockPeerConnectionDependencyFactory());
+    dependency_factory_.reset(new blink::MockPeerConnectionDependencyFactory());
     main_thread_ = blink::scheduler::GetSingleThreadTaskRunnerForTesting();
   }
 
@@ -119,7 +119,8 @@ class WebRtcMediaStreamTrackAdapterTest : public ::testing::Test {
   base::test::TaskEnvironment task_environment_;
   ChildProcess child_process_;
 
-  std::unique_ptr<MockPeerConnectionDependencyFactory> dependency_factory_;
+  std::unique_ptr<blink::MockPeerConnectionDependencyFactory>
+      dependency_factory_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
   scoped_refptr<blink::WebRtcMediaStreamTrackAdapter> track_adapter_;
 };
@@ -164,8 +165,8 @@ TEST_F(WebRtcMediaStreamTrackAdapterTest, DISABLED_LocalVideoTrack) {
 }
 
 TEST_F(WebRtcMediaStreamTrackAdapterTest, RemoteAudioTrack) {
-  scoped_refptr<MockWebRtcAudioTrack> webrtc_track =
-      MockWebRtcAudioTrack::Create("remote_audio_track");
+  scoped_refptr<blink::MockWebRtcAudioTrack> webrtc_track =
+      blink::MockWebRtcAudioTrack::Create("remote_audio_track");
   dependency_factory_->GetWebRtcSignalingThread()->PostTask(
       FROM_HERE,
       base::BindOnce(
@@ -189,8 +190,8 @@ TEST_F(WebRtcMediaStreamTrackAdapterTest, RemoteAudioTrack) {
 }
 
 TEST_F(WebRtcMediaStreamTrackAdapterTest, RemoteVideoTrack) {
-  scoped_refptr<MockWebRtcVideoTrack> webrtc_track =
-      MockWebRtcVideoTrack::Create("remote_video_track");
+  scoped_refptr<blink::MockWebRtcVideoTrack> webrtc_track =
+      blink::MockWebRtcVideoTrack::Create("remote_video_track");
   dependency_factory_->GetWebRtcSignalingThread()->PostTask(
       FROM_HERE,
       base::BindOnce(
@@ -214,8 +215,8 @@ TEST_F(WebRtcMediaStreamTrackAdapterTest, RemoteVideoTrack) {
 }
 
 TEST_F(WebRtcMediaStreamTrackAdapterTest, RemoteTrackExplicitlyInitialized) {
-  scoped_refptr<MockWebRtcAudioTrack> webrtc_track =
-      MockWebRtcAudioTrack::Create("remote_audio_track");
+  scoped_refptr<blink::MockWebRtcAudioTrack> webrtc_track =
+      blink::MockWebRtcAudioTrack::Create("remote_audio_track");
   dependency_factory_->GetWebRtcSignalingThread()->PostTask(
       FROM_HERE,
       base::BindOnce(
@@ -243,8 +244,8 @@ TEST_F(WebRtcMediaStreamTrackAdapterTest, RemoteTrackExplicitlyInitialized) {
 }
 
 TEST_F(WebRtcMediaStreamTrackAdapterTest, LastReferenceOnSignalingThread) {
-  scoped_refptr<MockWebRtcAudioTrack> webrtc_track =
-      MockWebRtcAudioTrack::Create("remote_audio_track");
+  scoped_refptr<blink::MockWebRtcAudioTrack> webrtc_track =
+      blink::MockWebRtcAudioTrack::Create("remote_audio_track");
   dependency_factory_->GetWebRtcSignalingThread()->PostTask(
       FROM_HERE,
       base::BindOnce(
