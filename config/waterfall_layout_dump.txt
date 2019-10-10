@@ -77,7 +77,6 @@
     eve-arcvm-mesa-virgl-next-paladin
     eve-arcvm-paladin
     eve-paladin
-    excelsior-paladin
     expresso-paladin
     falco_li-paladin
     fizz-accelerator-paladin
@@ -2513,7 +2512,6 @@
     eve-arcvm-mesa-virgl-next-paladin-tryjob
     eve-arcvm-paladin-tryjob
     eve-paladin-tryjob
-    excelsior-paladin-tryjob
     expresso-paladin-tryjob
     falco_li-paladin-tryjob
     fizz-accelerator-paladin-tryjob

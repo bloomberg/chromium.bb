@@ -2370,7 +2370,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'caroline-arcnext',
       'eve-arcvm',  # New board b/116833948
       'eve-arcvm-mesa-virgl-next',  # New board b/141943184
-      'excelsior',
       'grunt-kernelnext',
       'jacuzzi',
       'kefka-kernelnext',
