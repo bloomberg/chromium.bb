@@ -1738,6 +1738,20 @@ Unknown properties are collapsed to zero. -->
   <int value="2" label="Search engine changed"/>
 </enum>
 
+<enum name="AndroidSearchEngineChoiceEventsV2">
+  <summary>Events related to Search Engine Choice V2 feature.</summary>
+  <int value="0" label="Request recieved from play"/>
+  <int value="1"
+      label="User skipped (didn't complete) Search Engine Choice flow"/>
+  <int value="2" label="Play API returned empty list of providers"/>
+  <int value="3" label="User selected valid search provider"/>
+  <int value="4" label="Search engine metadata value was null"/>
+  <int value="5" label="Failed to parse search engine metadata JSON"/>
+  <int value="6"
+      label="Previous attempt to persist search engine metadata failed"/>
+  <int value="7" label="Request success"/>
+</enum>
+
 <enum name="AndroidSeccompSandboxStatus">
   <int value="0" label="Not Supported"/>
   <int value="1" label="Detection Failed"/>
