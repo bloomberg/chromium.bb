@@ -523,10 +523,11 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
     # Stub out the required functions.
     run_mock = self.PatchObject(paygen_payload_lib.PaygenPayload,
                                 '_RunGeneratorCmd')
-    read_mock = self.PatchObject(osutils, 'ReadFile', return_value='')
+    osutils.WriteFile(gen.payload_hash_file, 'payload')
+    osutils.WriteFile(gen.metadata_hash_file, 'hash')
 
     # Run the test.
-    self.assertEqual(gen._GenerateHashes(), ('', ''))
+    self.assertEqual(gen._GenerateHashes(), (b'payload', b'hash'))
 
     # Check the expected function calls.
     cmd = ['delta_generator',
@@ -534,13 +535,11 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
            '--signature_size=256',
            partial_mock.HasString('--out_hash_file='),
            partial_mock.HasString('--out_metadata_hash_file=')]
-    read_mock.assert_any_call(gen.payload_hash_file)
-    read_mock.assert_any_call(gen.metadata_hash_file)
     run_mock.assert_called_once_with(cmd)
 
   def testSignHashes(self):
     """Test _SignHashes."""
-    hashes = ('foo', 'bar')
+    hashes = (b'foo', b'bar')
     signatures = (('0' * 256,), ('1' * 256,))
 
     gen = self._GetStdGenerator(work_dir='/work')
@@ -595,7 +594,7 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
   def testStoreMetadataSignatures(self):
     """Test how we store metadata signatures."""
     gen = self._GetStdGenerator(payload=self.delta_payload)
-    metadata_signatures = ('1' * 256,)
+    metadata_signatures = (b'1' * 256,)
     encoded_metadata_signature = (
         'MTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMT'
         'ExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTEx'
@@ -606,8 +605,8 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
 
     gen._StoreMetadataSignatures(metadata_signatures)
 
-    with open(gen.metadata_signature_file, 'rb') as f:
-      self.assertEqual(f.read(), encoded_metadata_signature)
+    self.assertEqual(osutils.ReadFile(gen.metadata_signature_file),
+                     encoded_metadata_signature)
 
   def testVerifyPayloadDelta(self):
     """Test _VerifyPayload with delta payload."""

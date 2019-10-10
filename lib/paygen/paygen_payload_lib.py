@@ -554,8 +554,8 @@ class PaygenPayload(object):
 
     self._RunGeneratorCmd(cmd)
 
-    return (osutils.ReadFile(self.payload_hash_file),
-            osutils.ReadFile(self.metadata_hash_file))
+    return (osutils.ReadFile(self.payload_hash_file, mode='rb'),
+            osutils.ReadFile(self.metadata_hash_file, mode='rb'))
 
   def _GenerateSignerResultsError(self, format_str, *args):
     """Helper for reporting errors with signer results."""
@@ -673,7 +673,7 @@ class PaygenPayload(object):
 
     encoded_signature = base64.b64encode(signatures[0])
 
-    with open(self.metadata_signature_file, 'w+') as f:
+    with open(self.metadata_signature_file, 'w+b') as f:
       f.write(encoded_signature)
 
   def GetPayloadPropertiesMap(self, payload_path):
@@ -726,7 +726,7 @@ class PaygenPayload(object):
     # Add the public key if it exists.
     if self._public_key:
       props_map['public_key'] = base64.b64encode(
-          osutils.ReadFile(self._public_key))
+          osutils.ReadFile(self._public_key, mode='rb')).decode('utf-8')
 
     # We need the metadata size later for payload verification. Just grab it
     # from the properties file.

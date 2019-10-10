@@ -205,6 +205,7 @@ PYTHON3_TESTS = {
     'lib/path_util_unittest',
     'lib/paygen/gslock_unittest',
     'lib/paygen/partition_lib_unittest',
+    'lib/paygen/paygen_payload_lib_unittest',
     'lib/paygen/paygen_stateful_payload_lib_unittest',
     'lib/paygen/urilib_unittest',
     'lib/paygen/utils_unittest',
