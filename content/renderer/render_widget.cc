@@ -705,6 +705,12 @@ void RenderWidget::SynchronizeVisualPropertiesFromRenderView(
   TRACE_EVENT0("renderer",
                "RenderWidget::SynchronizeVisualPropertiesFromRenderView");
 
+  // TODO(crbug.com/995981): We shouldn't be sending VisualProperties to undead
+  // RenderWidgets already, but if we do we could crash if the RenderWidget
+  // hasn't been initialized yet. So this acts defensively until we destroy
+  // undead RenderWidgets.
+  DCHECK(!is_undead_);
+
   VisualProperties visual_properties = visual_properties_from_browser;
   // Web tests can override the device scale factor in the renderer.
   if (device_scale_factor_for_testing_) {

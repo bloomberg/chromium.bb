@@ -2044,13 +2044,10 @@ void RenderViewImpl::OnPageWasShown() {
 void RenderViewImpl::OnUpdateVisualProperties(
     const VisualProperties& visual_properties,
     int widget_routing_id) {
-  // TODO(https://crbug.com/998273): We should not forward visual properties to
-  // frozen render widgets.
   // The widget may have been destroyed while the IPC was in flight.
   RenderWidget* widget = RenderWidget::FromRoutingID(widget_routing_id);
-  if (widget) {
+  if (widget && !widget->IsUndeadOrProvisional())
     widget->SynchronizeVisualPropertiesFromRenderView(visual_properties);
-  }
 }
 
 void RenderViewImpl::OnUpdatePageVisualProperties(
