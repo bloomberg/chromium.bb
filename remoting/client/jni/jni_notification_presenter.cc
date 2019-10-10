@@ -62,7 +62,7 @@ void JniNotificationPresenter::OnNotificationFetched(
       ConvertUTF8ToJavaString(env, notification->message_text);
   auto j_link_text = ConvertUTF8ToJavaString(env, notification->link_text);
   auto j_link_url = ConvertUTF8ToJavaString(env, notification->link_url);
-  auto j_allow_silence = notification->allow_dont_show_again;
+  auto j_allow_silence = notification->allow_silence;
   Java_NotificationPresenter_onNotificationFetched(
       env, java_presenter, j_message_id, j_message_text, j_link_text,
       j_link_url, j_allow_silence);
