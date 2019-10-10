@@ -624,9 +624,10 @@ IN_PROC_BROWSER_TEST_F(
       keyed_service->GetTopHostProvider();
   ASSERT_TRUE(top_host_provider);
 
-  std::vector<std::string> top_hosts = top_host_provider->GetTopHosts(1);
-  EXPECT_EQ(1ul, top_hosts.size());
+  std::vector<std::string> top_hosts = top_host_provider->GetTopHosts();
+  EXPECT_EQ(2ul, top_hosts.size());
   EXPECT_EQ("myfavoritesite.com", top_hosts[0]);
+  EXPECT_EQ("myotherfavoritesite.com", top_hosts[1]);
 }
 
 class OptimizationGuideKeyedServiceCommandLineOverridesTest
@@ -653,7 +654,8 @@ IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceCommandLineOverridesTest,
       keyed_service->GetTopHostProvider();
   ASSERT_TRUE(top_host_provider);
 
-  std::vector<std::string> top_hosts = top_host_provider->GetTopHosts(1);
-  EXPECT_EQ(1ul, top_hosts.size());
+  std::vector<std::string> top_hosts = top_host_provider->GetTopHosts();
+  EXPECT_EQ(2ul, top_hosts.size());
   EXPECT_EQ("whatever.com", top_hosts[0]);
+  EXPECT_EQ("somehost.com", top_hosts[1]);
 }
