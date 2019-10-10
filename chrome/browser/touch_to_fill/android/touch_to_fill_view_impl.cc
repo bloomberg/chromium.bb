@@ -38,7 +38,8 @@ CredentialPair ConvertJavaCredential(JNIEnv* env,
                                Java_Credential_getPassword(env, credential)),
       GURL(ConvertJavaStringToUTF8(
           env, Java_Credential_getOriginUrl(env, credential))),
-      Java_Credential_isPublicSuffixMatch(env, credential));
+      CredentialPair::IsPublicSuffixMatch(
+          Java_Credential_isPublicSuffixMatch(env, credential)));
 }
 
 }  // namespace
@@ -70,7 +71,7 @@ void TouchToFillViewImpl::Show(
         ConvertUTF16ToJavaString(env, credential.password),
         ConvertUTF16ToJavaString(env, GetDisplayUsername(credential)),
         ConvertUTF8ToJavaString(env, credential.origin_url.spec()),
-        credential.is_public_suffix_match);
+        credential.is_public_suffix_match.value());
   }
 
   Java_TouchToFillBridge_showCredentials(

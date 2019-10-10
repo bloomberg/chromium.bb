@@ -23,6 +23,8 @@ using ::testing::Eq;
 using ::testing::ReturnRefOfCopy;
 using ::testing::WithArg;
 
+using IsPublicSuffixMatch = CredentialPair::IsPublicSuffixMatch;
+
 constexpr char kExampleCom[] = "https://example.com/";
 
 struct MockPasswordManagerDriver : password_manager::StubPasswordManagerDriver {
@@ -69,7 +71,7 @@ class TouchToFillControllerTest : public testing::Test {
 TEST_F(TouchToFillControllerTest, Show_And_Fill) {
   CredentialPair credentials[] = {
       {base::ASCIIToUTF16("alice"), base::ASCIIToUTF16("p4ssw0rd"),
-       GURL(kExampleCom), /*is_public_suffix_match=*/false}};
+       GURL(kExampleCom), IsPublicSuffixMatch(false)}};
 
   EXPECT_CALL(view(), Show(Eq(base::ASCIIToUTF16("example.com")),
                            ElementsAreArray(credentials)));
@@ -89,11 +91,9 @@ TEST_F(TouchToFillControllerTest, Show_And_Fill_Android_Credential) {
   // Test multiple credentials with one of them being an Android credential.
   CredentialPair credentials[] = {
       {base::ASCIIToUTF16("alice"), base::ASCIIToUTF16("p4ssw0rd"),
-       GURL(kExampleCom),
-       /*is_public_suffix_match=*/false},
+       GURL(kExampleCom), IsPublicSuffixMatch(false)},
       {base::ASCIIToUTF16("bob"), base::ASCIIToUTF16("s3cr3t"),
-       GURL("android://hash@com.example.my"),
-       /*is_public_suffix_match=*/false}};
+       GURL("android://hash@com.example.my"), IsPublicSuffixMatch(false)}};
 
   EXPECT_CALL(view(), Show(Eq(base::ASCIIToUTF16("example.com")),
                            ElementsAreArray(credentials)));
@@ -112,7 +112,7 @@ TEST_F(TouchToFillControllerTest, Show_And_Fill_Android_Credential) {
 TEST_F(TouchToFillControllerTest, Dismiss) {
   CredentialPair credentials[] = {
       {base::ASCIIToUTF16("alice"), base::ASCIIToUTF16("p4ssw0rd"),
-       GURL(kExampleCom), /*is_public_suffix_match=*/false}};
+       GURL(kExampleCom), IsPublicSuffixMatch(false)}};
 
   EXPECT_CALL(view(), Show(Eq(base::ASCIIToUTF16("example.com")),
                            ElementsAreArray(credentials)));
