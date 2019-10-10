@@ -153,8 +153,6 @@ void PendingScript::ExecuteScriptBlock(const KURL& document_url) {
     // such scripts. https://crbug.com/721914
     UseCounter::Count(context_document,
                       WebFeature::kEvaluateScriptMovedBetweenElementDocuments);
-    Dispose();
-    return;
   }
 
   Script* script = GetSource(document_url);
