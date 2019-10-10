@@ -115,7 +115,9 @@ message EntitySpecifics {
     PreferenceSpecifics preference = 37702;
     TypedUrlSpecifics typed_url = 40781;
     ThemeSpecifics theme = 41210;
-    AppNotification app_notification = 45184;
+    // TODO(crbug.com/1012648): |app_notification| isn't used by the client
+    // anymore, but the server still needs it for now.
+    AppNotification app_notification = 45184 [deprecated = true];
     PasswordSpecifics password = 45873;
     NigoriSpecifics nigori = 47745;
     ExtensionSpecifics extension = 48119;
@@ -126,8 +128,13 @@ message EntitySpecifics {
     ExtensionSettingSpecifics extension_setting = 96159;
     AppSettingSpecifics app_setting = 103656;
     HistoryDeleteDirectiveSpecifics history_delete_directive = 150251;
-    SyncedNotificationSpecifics synced_notification = 153108;
-    SyncedNotificationAppInfoSpecifics synced_notification_app_info = 235816;
+    // TODO(crbug.com/1012648): |synced_notification| and
+    // |synced_notification_app_info| aren't used by the client anymore, but the
+    // server still needs them for now.
+    SyncedNotificationSpecifics synced_notification = 153108
+        [deprecated = true];
+    SyncedNotificationAppInfoSpecifics synced_notification_app_info = 235816
+        [deprecated = true];
     DeviceInfoSpecifics device_info = 154522;
     ExperimentsSpecifics experiments = 161496;
     PriorityPreferenceSpecifics priority_preference = 163425;
