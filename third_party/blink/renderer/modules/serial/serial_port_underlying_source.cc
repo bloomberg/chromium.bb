@@ -41,9 +41,11 @@ ScriptPromise SerialPortUnderlyingSource::pull(ScriptState* script_state) {
 
 ScriptPromise SerialPortUnderlyingSource::Cancel(ScriptState* script_state,
                                                  ScriptValue reason) {
-  // TODO(crbug.com/989653): cancel() should trigger a purge of the serial
-  // read buffer.
+  // TODO(crbug.com/989653): Rather than calling Close(), cancel() should
+  // trigger a purge of the serial read buffer and wait for the pipe to close to
+  // indicate the purge has been completed.
   Close();
+  ExpectPipeClose();
   return ScriptPromise::CastUndefined(script_state);
 }
 
@@ -67,17 +69,6 @@ void SerialPortUnderlyingSource::SignalErrorOnClose(DOMException* exception) {
   }
 
   Controller()->Error(exception);
-  serial_port_->UnderlyingSourceClosed();
-}
-
-void SerialPortUnderlyingSource::ExpectClose() {
-  if (data_pipe_) {
-    // Pipe is still open. Wait for PipeClosed() to be called.
-    expect_close_ = true;
-    return;
-  }
-
-  Controller()->Close();
   serial_port_->UnderlyingSourceClosed();
 }
 
@@ -144,6 +135,17 @@ void SerialPortUnderlyingSource::OnHandleReady(
       PipeClosed();
       break;
   }
+}
+
+void SerialPortUnderlyingSource::ExpectPipeClose() {
+  if (data_pipe_) {
+    // The pipe is still open. Wait for PipeClosed() to be called.
+    expect_close_ = true;
+    return;
+  }
+
+  Controller()->Close();
+  serial_port_->UnderlyingSourceClosed();
 }
 
 void SerialPortUnderlyingSource::PipeClosed() {

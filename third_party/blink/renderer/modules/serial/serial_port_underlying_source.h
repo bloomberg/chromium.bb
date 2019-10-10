@@ -27,7 +27,6 @@ class SerialPortUnderlyingSource : public UnderlyingSourceBase {
 
   void SignalErrorImmediately(DOMException*);
   void SignalErrorOnClose(DOMException*);
-  void ExpectClose();
 
   void Trace(Visitor*) override;
 
@@ -38,6 +37,7 @@ class SerialPortUnderlyingSource : public UnderlyingSourceBase {
 
   void ArmWatcher();
   void OnHandleReady(MojoResult, const mojo::HandleSignalsState&);
+  void ExpectPipeClose();
   void PipeClosed();
   void Close();
 
