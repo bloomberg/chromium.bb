@@ -1,10 +1,7 @@
-<!DOCTYPE html>
-<script src="../resources/testharness.js"></script>
-<script src="../resources/testharnessreport.js"></script>
-<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings_lite.js"></script>
-<script src="file:///gen/content/test/data/lite_js_test.mojom-lite.js"></script>
-<script>
 'use strict';
+
+// These tests can be imported as a module or added as a script to tests lite
+// bindings.
 
 const kTestMessage = 'hello there';
 const kTestNumbers = [0, 1, 1, 2, 3, 5, 8, 13, 21];
@@ -37,10 +34,10 @@ promise_test(() => {
   let impl = new TargetImpl;
   let remote = impl.target.$.bindNewPipeAndPassRemote();
   return remote.repeat(kTestMessage, kTestNumbers)
-      .then(reply => {
-        assert_equals(reply.message, kTestMessage);
-        assert_array_equals(reply.numbers, kTestNumbers);
-      });
+               .then(reply => {
+                 assert_equals(reply.message, kTestMessage);
+                 assert_array_equals(reply.numbers, kTestNumbers);
+               });
 }, 'implementations can reply with multiple reply arguments');
 
 promise_test(() => {
@@ -48,7 +45,7 @@ promise_test(() => {
   let remote = impl.target.$.bindNewPipeAndPassRemote();
   const enumValue = liteJsTest.mojom.TestMessageTarget_NestedEnum.kFoo;
   return remote.echo(enumValue)
-      .then(({nested}) => assert_equals(nested, enumValue));
+               .then(({nested}) => assert_equals(nested, enumValue));
 }, 'nested enums are usable as arguments and responses.');
 
 promise_test(async (t) => {
@@ -85,7 +82,7 @@ promise_test(() => {
   // Intercept any browser-bound request for TestMessageTarget and bind it
   // instead to the local |impl| object.
   let interceptor = new MojoInterfaceInterceptor(
-      liteJsTest.mojom.TestMessageTarget.$interfaceName);
+    liteJsTest.mojom.TestMessageTarget.$interfaceName);
   interceptor.oninterfacerequest = e => {
     impl.target.$.bindHandle(e.handle);
   }
@@ -121,12 +118,12 @@ promise_test(() => {
   let router = new liteJsTest.mojom.TestMessageTargetCallbackRouter;
   let remote = router.$.bindNewPipeAndPassRemote();
   router.repeat.addListener(
-      (message, numbers) => ({message: message, numbers: numbers}));
+    (message, numbers) => ({message: message, numbers: numbers}));
   return remote.repeat(kTestMessage, kTestNumbers)
-      .then(reply => {
-        assert_equals(reply.message, kTestMessage);
-        assert_array_equals(reply.numbers, kTestNumbers);
-      });
+               .then(reply => {
+                 assert_equals(reply.message, kTestMessage);
+                 assert_array_equals(reply.numbers, kTestNumbers);
+               });
 }, 'CallbackRouter listeners can reply with multiple reply arguments');
 
 promise_test(() => {
@@ -177,11 +174,11 @@ promise_test(() => {
   });
 
   return targetRemote.flattenUnions(
-      [{x: 1}, {x: 2}, {s: {x: 3}}, {s: {x: 4}}, {x: 5}, {s: {x: 6}}])
-      .then(reply => {
-    assert_array_equals(reply.x, [1, 2, 5]);
-    assert_array_equals(reply.s, [3, 4, 6]);
-  });
+    [{x: 1}, {x: 2}, {s: {x: 3}}, {s: {x: 4}}, {x: 5}, {s: {x: 6}}])
+                     .then(reply => {
+                       assert_array_equals(reply.x, [1, 2, 5]);
+                       assert_array_equals(reply.s, [3, 4, 6]);
+                     });
 }, 'can serialize and deserialize unions');
 
 promise_test(() => {
@@ -213,6 +210,4 @@ promise_test(() => {
   const disconnectPromise = new Promise(resolve => router.onConnectionError.addListener(resolve));
   remote.$.close();
   return disconnectPromise;
-  }, 'InterfaceTarget connection error handler runs when set on an InterfaceCallbackRouter object');
-
-</script>
+}, 'InterfaceTarget connection error handler runs when set on an InterfaceCallbackRouter object');

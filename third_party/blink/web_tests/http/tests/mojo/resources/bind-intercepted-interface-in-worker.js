@@ -1,6 +1,6 @@
-importScripts('../../resources/testharness.js');
-importScripts('file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js');
-importScripts('file:///gen/content/test/data/mojo_web_test_helper_test.mojom.js');
+importScripts('/resources/testharness.js');
+importScripts('/gen/layout_test_data/mojo/public/js/mojo_bindings.js');
+importScripts('/gen/content/test/data/mojo_web_test_helper_test.mojom.js');
 importScripts('helpers.js');
 
 promise_test(async () => {
