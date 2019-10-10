@@ -1893,10 +1893,6 @@ int RenderViewImpl::GetRoutingID() {
   return routing_id_;
 }
 
-float RenderViewImpl::GetDeviceScaleFactor() {
-  return page_properties()->GetDeviceScaleFactor();
-}
-
 float RenderViewImpl::GetZoomLevel() {
   return page_zoom_level_;
 }

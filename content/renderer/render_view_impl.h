@@ -286,7 +286,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   bool Send(IPC::Message* message) override;
   RenderFrameImpl* GetMainRenderFrame() override;
   int GetRoutingID() override;
-  float GetDeviceScaleFactor() override;
   float GetZoomLevel() override;
   const WebPreferences& GetWebkitPreferences() override;
   void SetWebkitPreferences(const WebPreferences& preferences) override;

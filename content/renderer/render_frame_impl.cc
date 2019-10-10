@@ -7607,4 +7607,9 @@ void RenderFrameImpl::ConvertViewportToWindow(blink::WebRect* rect) {
   GetLocalRootRenderWidget()->ConvertViewportToWindow(rect);
 }
 
+float RenderFrameImpl::GetDeviceScaleFactor() {
+  // TODO(danakj): Get this from the RenderWidget.
+  return render_view_->page_properties()->GetDeviceScaleFactor();
+}
+
 }  // namespace content
