@@ -7,13 +7,13 @@
 
 from __future__ import print_function
 
+import base64
 import contextlib
 from datetime import datetime
 import email.utils
 import errno
 import functools
 import getpass
-import hashlib
 import inspect
 import os
 import re
@@ -1605,11 +1605,19 @@ def TimedSection():
     times.delta = times.finish - times.start
 
 
-def GetRandomString(length=20):
-  """Returns a random string of |length|."""
-  md5 = hashlib.md5(os.urandom(length))
-  md5.update(UserDateTimeFormat())
-  return md5.hexdigest()
+def GetRandomString():
+  """Returns a random string.
+
+  It will be 32 characters long, although callers shouldn't rely on this.
+  Only lowercase & numbers are used to avoid case-insensitive collisions.
+  """
+  # Start with current time.  This "scopes" the following random data.
+  stamp = b'%x' % int(time.time())
+  # Add in some entropy.  This reads more bytes than strictly necessary, but
+  # it guarantees that we always have enough bytes below.
+  data = os.urandom(16)
+  # Then convert it to a lowercase base32 string of 32 characters.
+  return base64.b32encode(stamp + data).decode('utf-8')[0:32].lower()
 
 
 def MachineDetails():

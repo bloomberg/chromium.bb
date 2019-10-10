@@ -792,6 +792,12 @@ class HelperMethodSimpleTests(cros_test_lib.OutputTestCase):
     self.assertEqual(cros_build_lib.ParseUserDateTimeFormat(stringtime),
                      100000.0)
 
+  def testGetRandomString(self):
+    """Verify it looks sane."""
+    data = cros_build_lib.GetRandomString()
+    self.assertRegex(data, r'^[a-z0-9]+$')
+    self.assertEqual(32, len(data))
+
   def testMachineDetails(self):
     """Verify we don't crash."""
     contents = cros_build_lib.MachineDetails()
