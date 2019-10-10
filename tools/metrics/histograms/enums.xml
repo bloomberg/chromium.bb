@@ -36274,6 +36274,7 @@ from previous Chrome versions.
   <int value="-450976085"
       label="AutofillSaveCreditCardUsesImprovedMessaging:disabled"/>
   <int value="-449465495" label="disable-browser-task-scheduler"/>
+  <int value="-444867364" label="Metal:enabled"/>
   <int value="-438379844" label="SwapSideVolumeButtonsForOrientation:enabled"/>
   <int value="-436470115" label="TouchpadAndWheelScrollLatching:enabled"/>
   <int value="-435914745" label="ClipboardContentSetting:disabled"/>
@@ -37568,6 +37569,7 @@ from previous Chrome versions.
   <int value="1308537004" label="force-pnacl-subzero"/>
   <int value="1311860720" label="ChromeHomeNtpRedesign:disabled"/>
   <int value="1312025202" label="NTPOfflinePageSuggestions:disabled"/>
+  <int value="1313850691" label="Metal:disabled"/>
   <int value="1314681756" label="NoStatePrefetch:disabled"/>
   <int value="1317562265" label="SeccompSandboxAndroid:disabled"/>
   <int value="1318073661" label="MaterialDesignExtensions:enabled"/>

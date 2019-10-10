@@ -4648,6 +4648,12 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chromeos::features::kExoPointerLock)},
 #endif  // defined(OS_CHROMEOS)
 
+#if defined(OS_MACOSX)
+    {"metal", flag_descriptions::kMetalName,
+     flag_descriptions::kMetalDescription, kOsMac,
+     FEATURE_VALUE_TYPE(features::kMetal)},
+#endif
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

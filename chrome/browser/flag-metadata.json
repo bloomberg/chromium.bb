@@ -2451,6 +2451,11 @@
     "expiry_milestone": 81
   },
   {
+    "name": "metal",
+    "owners": ["ccameron", "jvanverth"],
+    "expiry_milestone": 83
+  },
+  {
     "name": "mime-handler-view-in-cross-process-frame",
     "owners": [ "ekaramad" ],
     "expiry_milestone": 80
