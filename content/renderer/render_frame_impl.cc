@@ -903,7 +903,6 @@ std::unique_ptr<DocumentState> BuildDocumentStateFromParams(
     mojom::FrameNavigationControl::CommitNavigationCallback commit_callback,
     mojom::NavigationClient::CommitNavigationCallback
         per_navigation_mojo_interface_commit_callback,
-    const network::mojom::URLResponseHead* head,
     std::unique_ptr<NavigationClient> navigation_client,
     int request_id,
     bool was_initiated_in_this_frame) {
@@ -935,16 +934,6 @@ std::unique_ptr<DocumentState> BuildDocumentStateFromParams(
       common_params.navigation_type ==
       mojom::NavigationType::RELOAD_ORIGINAL_REQUEST_URL);
   internal_data->set_request_id(request_id);
-
-  if (head) {
-    document_state->set_was_fetched_via_spdy(head->was_fetched_via_spdy);
-    document_state->set_was_alpn_negotiated(head->was_alpn_negotiated);
-    document_state->set_alpn_negotiated_protocol(
-        head->alpn_negotiated_protocol);
-    document_state->set_was_alternate_protocol_available(
-        head->was_alternate_protocol_available);
-    document_state->set_connection_info(head->connection_info);
-  }
 
   bool load_data = !common_params.base_url_for_data_url.is_empty() &&
                    !common_params.history_url_for_data_url.is_empty() &&
@@ -3428,20 +3417,12 @@ void RenderFrameImpl::CommitNavigationInternal(
   DCHECK(common_params->url.SchemeIs(url::kJavaScriptScheme) ||
          common_params->url.IsAboutSrcdoc() || subresource_loader_factories);
 
-  // We only save metrics of the main frame's main resource to the
-  // document state. In view source mode, we effectively let the user
-  // see the source of the server's error page instead of using custom
-  // one derived from the metrics saved to document state.
-  const network::mojom::URLResponseHead* document_state_response_head =
-      (!frame_->Parent() && !frame_->IsViewSourceModeEnabled())
-          ? response_head.get()
-          : nullptr;
   int request_id = ResourceDispatcher::MakeRequestID();
   std::unique_ptr<DocumentState> document_state = BuildDocumentStateFromParams(
       *common_params, *commit_params, base::TimeTicks::Now(),
       std::move(callback), std::move(per_navigation_mojo_interface_callback),
-      document_state_response_head, std::move(navigation_client_impl_),
-      request_id, was_initiated_in_this_frame);
+      std::move(navigation_client_impl_), request_id,
+      was_initiated_in_this_frame);
 
   // Check if the navigation being committed originated as a client redirect.
   bool is_client_redirect =
@@ -3854,7 +3835,7 @@ void RenderFrameImpl::CommitFailedNavigationInternal(
   // |was_initiated_in_this_frame| is false.
   std::unique_ptr<DocumentState> document_state = BuildDocumentStateFromParams(
       *common_params, *commit_params, base::TimeTicks(), std::move(callback),
-      std::move(per_navigation_mojo_interface_callback), nullptr,
+      std::move(per_navigation_mojo_interface_callback),
       std::move(navigation_client_impl_), ResourceDispatcher::MakeRequestID(),
       false /* was_initiated_in_this_frame */);
 
