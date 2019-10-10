@@ -1178,8 +1178,12 @@ void OmniboxEditModel::OnUpOrDownKeyPressed(int count) {
     // If, as a result of the key press, we would select the first result, then
     // we should revert the temporary text same as what pressing escape would
     // have done.
+    //
+    // This doesn't apply for on-focus suggestions, for which the first result
+    // can be completely distinct from the omnibox contents. We enforce that
+    // via user_input_in_progress_, which is false for ZeroSuggest.
     const size_t line_no = GetNewSelectedLine(count);
-    if (has_temporary_text_ && user_input_in_progress_ && line_no == 0) {
+    if (has_temporary_text_ && line_no == 0 && user_input_in_progress_) {
       RevertTemporaryText(true);
     } else {
       popup_model()->MoveTo(line_no);
