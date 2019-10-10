@@ -257,8 +257,7 @@ class CertificateProviderRequestPinTest : public CertificateProviderApiTest {
 
 }  // namespace
 
-// Flaky: crbug.com/1011606.
-IN_PROC_BROWSER_TEST_F(CertificateProviderApiTest, DISABLED_Basic) {
+IN_PROC_BROWSER_TEST_F(CertificateProviderApiTest, Basic) {
   // Start an HTTPS test server that requests a client certificate.
   net::SpawnedTestServer::SSLOptions ssl_options;
   ssl_options.request_client_certificate = true;
