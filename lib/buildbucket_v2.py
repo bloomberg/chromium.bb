@@ -12,15 +12,9 @@ client out of lib/luci/prpc and third_party/infra_libs/buildbucket.
 
 from __future__ import print_function
 
-from httplib import ResponseNotReady  # pylint: disable=deprecated-module
-from ssl import SSLError
 import ast
 import socket
-
-# TODO(vapier): Re-enable check once we upgrade to pylint-1.8+.
-# pylint: disable=no-name-in-module
-from google.protobuf import field_mask_pb2
-# pylint: enable=no-name-in-module
+from ssl import SSLError
 
 from chromite.lib import constants
 from chromite.lib import cros_logging as logging
@@ -28,7 +22,13 @@ from chromite.lib import retry_util
 from chromite.lib.luci import utils
 from chromite.lib.luci.prpc.client import Client, ProtocolError
 
-from infra_libs.buildbucket.proto import rpc_pb2, build_pb2, common_pb2
+# TODO(vapier): Re-enable check once we upgrade to pylint-1.8+.
+# pylint: disable=no-name-in-module
+from google.protobuf import field_mask_pb2
+# pylint: enable=no-name-in-module
+from six.moves import http_client as httplib
+
+from infra_libs.buildbucket.proto import build_pb2, common_pb2, rpc_pb2
 from infra_libs.buildbucket.proto.rpc_prpc_pb2 import BuildsServiceDescription
 
 BBV2_URL_ENDPOINT_PROD = (
@@ -216,7 +216,8 @@ class BuildbucketV2(object):
   # TODO(crbug/1006818): Need to handle ResponseNotReady given by luci prpc.
   @retry_util.WithRetry(max_retry=5, sleep=20.0, exception=SSLError)
   @retry_util.WithRetry(max_retry=5, sleep=20.0, exception=socket.error)
-  @retry_util.WithRetry(max_retry=5, sleep=20.0, exception=ResponseNotReady)
+  @retry_util.WithRetry(max_retry=5, sleep=20.0,
+                        exception=httplib.ResponseNotReady)
   def GetBuild(self, buildbucket_id, properties=None):
     """GetBuild call of a specific build with buildbucket_id.
 
