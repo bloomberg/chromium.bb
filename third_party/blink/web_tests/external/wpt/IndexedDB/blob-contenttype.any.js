@@ -1,24 +1,5 @@
-<!DOCTYPE html>
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
-<script>
-
-function indexeddb_test(upgrade_func, body_func, description) {
-    async_test(function(t) {
-        var dbname = location.pathname + ' - ' + description;
-        var deleteRequest = indexedDB.deleteDatabase(dbname);
-        deleteRequest.onsuccess = t.step_func(function() {
-            var openRequest = indexedDB.open(dbname);
-            openRequest.onupgradeneeded = t.step_func(function() {
-                upgrade_func(t, openRequest.result);
-            });
-            openRequest.onsuccess = t.step_func(function() {
-                body_func(t, openRequest.result);
-            });
-            openRequest.onerror = t.unreached_func('open failed');
-        });
-    }, description);
-}
+// META: title=Blob Content Type
+// META: script=support.js
 
 indexeddb_test(
     function upgrade(t, db) {
@@ -55,5 +36,3 @@ indexeddb_test(
     },
     'Ensure that content type round trips when reading blob data'
 );
-
-</script>
