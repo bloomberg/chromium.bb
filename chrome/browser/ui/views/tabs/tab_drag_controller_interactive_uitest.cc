@@ -81,10 +81,10 @@
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_test_api.h"
+#include "ash/public/cpp/split_view_test_api.h"
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
-#include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/window_state.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "chrome/browser/ui/views/frame/browser_view_layout.h"
@@ -2268,8 +2268,8 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
 
   // Right snap the browser window.
   aura::Window* window = browser()->window()->GetNativeWindow();
-  ash::Shell::Get()->split_view_controller()->SnapWindow(
-      window, ash::SplitViewController::RIGHT);
+  ash::SplitViewTestApi().SnapWindow(
+      window, ash::SplitViewTestApi::SnapPosition::RIGHT);
   EXPECT_NE(gfx::Point(), window->GetBoundsInScreen().origin());
 
   DragWindowAndVerifyOffset(this, GetTabStripForBrowser(browser()), 0);
