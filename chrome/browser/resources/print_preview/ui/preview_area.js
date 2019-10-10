@@ -605,15 +605,16 @@ Polymer({
 
     // Simple settings: ranges, layout, header/footer, pages per sheet, fit to
     // page, css background, selection only, rasterize, scaling, dpi
-    if (!areRangesEqual(
-            /** @type {!Array<{from: number, to: number}>} */ (
-                this.getSettingValue('ranges')),
-            lastTicket.pageRange) ||
+    const isScalingTypeFitToPage = this.getSettingValue('scalingTypePdf') ===
+        print_preview.ScalingType.FIT_TO_PAGE;
+    if (isScalingTypeFitToPage !== lastTicket.fitToPageEnabled ||
+        !areRangesEqual(
+            /** @type {!Array<{from: number, to: number}>} */
+            (this.getSettingValue('ranges')), lastTicket.pageRange) ||
         this.getSettingValue('layout') !== lastTicket.landscape ||
         this.getColorForTicket_() !== lastTicket.color ||
         this.getSettingValue('headerFooter') !==
             lastTicket.headerFooterEnabled ||
-        this.getSettingValue('fitToPage') !== lastTicket.fitToPageEnabled ||
         this.getSettingValue('cssBackground') !==
             lastTicket.shouldPrintBackgrounds ||
         this.getSettingValue('selectionOnly') !==
@@ -659,7 +660,11 @@ Polymer({
 
   /** @return {number} Scale factor. */
   getScaleFactorForTicket_: function() {
-    return this.getSettingValue('customScaling') ?
+    const scalingSettingKey = this.getSetting('scalingTypePdf').available ?
+        'scalingTypePdf' :
+        'scalingType';
+    return this.getSettingValue(scalingSettingKey) ===
+            print_preview.ScalingType.CUSTOM ?
         parseInt(this.getSettingValue('scaling'), 10) :
         100;
   },
@@ -698,7 +703,8 @@ Polymer({
       isFirstRequest: this.inFlightRequestId_ == 0,
       requestID: this.inFlightRequestId_,
       previewModifiable: this.documentModifiable,
-      fitToPageEnabled: this.getSettingValue('fitToPage'),
+      fitToPageEnabled: this.getSettingValue('scalingTypePdf') ===
+          print_preview.ScalingType.FIT_TO_PAGE,
       scaleFactor: this.getScaleFactorForTicket_(),
       shouldPrintBackgrounds: this.getSettingValue('cssBackground'),
       shouldPrintSelectionOnly: this.getSettingValue('selectionOnly'),

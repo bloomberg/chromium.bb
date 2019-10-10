@@ -19,6 +19,7 @@ js_type_check("closure_compile") {
     ":measurement_system",
     ":model",
     ":printable_area",
+    ":scaling",
     ":size",
     ":state",
   ]
@@ -114,6 +115,7 @@ js_library("model") {
     ":destination_match",
     ":document_info",
     ":margins",
+    ":scaling",
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:promise_resolver",
   ]
@@ -123,6 +125,12 @@ js_library("printable_area") {
   deps = [
     ":coordinate2d",
     ":size",
+    "//ui/webui/resources/js:cr",
+  ]
+}
+
+js_library("scaling") {
+  deps = [
     "//ui/webui/resources/js:cr",
   ]
 }

@@ -232,6 +232,7 @@ js_library("scaling_settings") {
   deps = [
     ":number_settings_section",
     ":settings_behavior",
+    "../data:scaling",
   ]
 }
 
