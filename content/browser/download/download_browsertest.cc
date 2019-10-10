@@ -1854,7 +1854,41 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, RedirectDownload) {
   std::unique_ptr<DownloadTestObserver> observer(CreateWaiter(shell(), 1));
   auto download_parameters = std::make_unique<download::DownloadUrlParameters>(
       first_url, TRAFFIC_ANNOTATION_FOR_TESTS);
-  download_parameters->set_follow_cross_origin_redirects(true);
+  download_parameters->set_cross_origin_redirects(
+      network::mojom::RedirectMode::kFollow);
+  DownloadManagerForShell(shell())->DownloadUrl(std::move(download_parameters));
+  observer->WaitForFinished();
+
+  // Verify download failed.
+  std::vector<download::DownloadItem*> downloads;
+  DownloadManagerForShell(shell())->GetAllDownloads(&downloads);
+  EXPECT_EQ(1u, downloads.size());
+  EXPECT_EQ(download::DownloadItem::COMPLETE, downloads[0]->GetState());
+}
+
+// Verify that DownloadUrl can detect and fail a cross-origin URL redirect.
+IN_PROC_BROWSER_TEST_F(DownloadContentTest, FailCrossOriginDownload) {
+  // Setup a cross-origin redirect chain with two URLs.
+  net::EmbeddedTestServer origin_one;
+  net::EmbeddedTestServer origin_two;
+  ASSERT_TRUE(origin_one.InitializeAndListen());
+  ASSERT_TRUE(origin_two.InitializeAndListen());
+
+  GURL first_url = origin_one.GetURL("/first-url");
+  GURL second_url = origin_two.GetURL("/download");
+
+  origin_one.ServeFilesFromDirectory(GetTestFilePath("download", ""));
+  origin_one.RegisterRequestHandler(
+      CreateRedirectHandler("/first-url", second_url));
+  origin_one.StartAcceptingConnections();
+  origin_two.StartAcceptingConnections();
+
+  // Start a download and explicitly specify to fail cross-origin redirect.
+  std::unique_ptr<DownloadTestObserver> observer(CreateWaiter(shell(), 1));
+  auto download_parameters = std::make_unique<download::DownloadUrlParameters>(
+      first_url, TRAFFIC_ANNOTATION_FOR_TESTS);
+  download_parameters->set_cross_origin_redirects(
+      network::mojom::RedirectMode::kError);
   DownloadManagerForShell(shell())->DownloadUrl(std::move(download_parameters));
   observer->WaitForFinished();
 
@@ -1862,7 +1896,10 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, RedirectDownload) {
   std::vector<download::DownloadItem*> downloads;
   DownloadManagerForShell(shell())->GetAllDownloads(&downloads);
   EXPECT_EQ(1u, downloads.size());
-  EXPECT_EQ(download::DownloadItem::COMPLETE, downloads[0]->GetState());
+  EXPECT_EQ(download::DownloadItem::INTERRUPTED, downloads[0]->GetState());
+
+  ASSERT_TRUE(origin_two.ShutdownAndWaitUntilComplete());
+  ASSERT_TRUE(origin_one.ShutdownAndWaitUntilComplete());
 }
 
 // Verify that DownloadUrl() to URL with unsafe scheme should fail.
@@ -1886,7 +1923,8 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, RedirectUnsafeDownload) {
           DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL);
   auto download_parameters = std::make_unique<download::DownloadUrlParameters>(
       first_url, TRAFFIC_ANNOTATION_FOR_TESTS);
-  download_parameters->set_follow_cross_origin_redirects(true);
+  download_parameters->set_cross_origin_redirects(
+      network::mojom::RedirectMode::kFollow);
   download_manager->DownloadUrl(std::move(download_parameters));
   observer->WaitForFinished();
 
