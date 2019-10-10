@@ -94,7 +94,7 @@ class CORE_EXPORT CanvasRenderingContext : public ScriptWrappable,
   virtual bool IsOriginTopLeft() const {
     // Canvas contexts have the origin of coordinates on the top left corner.
     // Accelerated resources (e.g. GPU textures) have their origin of
-    // coordinates in the uppper left corner.
+    // coordinates in the upper left corner.
     return !IsAccelerated();
   }
   virtual bool ShouldAntialias() const { return false; }

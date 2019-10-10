@@ -127,7 +127,10 @@ void CanvasRenderingContext::DidProcessTask(
   // The end of a script task that drew content to the canvas is the point
   // at which the current frame may be considered complete.
   if (Host())
-    Host()->FinalizeFrame();
+    Host()->PreFinalizeFrame();
+  FinalizeFrame();
+  if (Host())
+    Host()->PostFinalizeFrame();
 }
 
 CanvasRenderingContext::ContextType CanvasRenderingContext::ContextTypeFromId(
