@@ -7694,6 +7694,7 @@ histogram as enum -->
   <int value="29" label="kHostCache"/>
   <int value="30" label="kTpmAttestationKeys"/>
   <int value="31" label="kStrikes"/>
+  <int value="32" label="kLeakedCredentials"/>
 </enum>
 
 <enum name="ChromeChannelForHistogram">
