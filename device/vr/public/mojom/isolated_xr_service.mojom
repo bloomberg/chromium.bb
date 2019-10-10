@@ -73,7 +73,7 @@ interface XRRuntime {
   // the browser process.
   RequestSession(XRRuntimeSessionOptions options) => (
                      XRSession? session,
-                     XRSessionController? controller);
+                     pending_remote<XRSessionController>? controller);
 
   // The browser may register for changes to a device. Initial VRDisplayInfo
   // will immediately be returned to the listener to prevent races.

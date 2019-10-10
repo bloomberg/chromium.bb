@@ -11,6 +11,7 @@
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/vr_device_base.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 
 namespace device {
 
@@ -58,7 +59,8 @@ class DEVICE_VR_EXPORT OpenXrDevice
 
   std::unique_ptr<OpenXrRenderLoop> render_loop_;
 
-  mojo::Binding<mojom::XRSessionController> exclusive_controller_binding_;
+  mojo::Receiver<mojom::XRSessionController> exclusive_controller_receiver_{
+      this};
 
   mojo::Binding<mojom::IsolatedXRGamepadProviderFactory>
       gamepad_provider_factory_binding_;

@@ -15,6 +15,7 @@
 #include "device/vr/windows/compositor_base.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 
 namespace device {
 
@@ -65,7 +66,8 @@ class DEVICE_VR_EXPORT MixedRealityDevice
   mojo::Binding<mojom::XRCompositorHost> compositor_host_binding_;
   mojo::PendingReceiver<mojom::ImmersiveOverlay> overlay_receiver_;
 
-  mojo::Binding<mojom::XRSessionController> exclusive_controller_binding_;
+  mojo::Receiver<mojom::XRSessionController> exclusive_controller_receiver_{
+      this};
 
   base::WeakPtrFactory<MixedRealityDevice> weak_ptr_factory_{this};
 

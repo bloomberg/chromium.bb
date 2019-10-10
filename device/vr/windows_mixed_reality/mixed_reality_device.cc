@@ -15,6 +15,7 @@
 #include "build/build_config.h"
 #include "device/vr/util/transform_utils.h"
 #include "device/vr/windows_mixed_reality/mixed_reality_renderloop.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "ui/gfx/geometry/angle_conversions.h"
 
 namespace device {
@@ -63,8 +64,7 @@ mojom::VRDisplayInfoPtr CreateFakeVRDisplayInfo(device::mojom::XRDeviceId id) {
 MixedRealityDevice::MixedRealityDevice()
     : VRDeviceBase(device::mojom::XRDeviceId::WINDOWS_MIXED_REALITY_ID),
       gamepad_provider_factory_binding_(this),
-      compositor_host_binding_(this),
-      exclusive_controller_binding_(this) {
+      compositor_host_binding_(this) {
   SetVRDisplayInfo(CreateFakeVRDisplayInfo(GetId()));
 }
 
@@ -104,7 +104,7 @@ void MixedRealityDevice::RequestSession(
     // memory exhaustion). If the thread fails to start, then we fail to create
     // a session.
     if (!render_loop_->IsRunning()) {
-      std::move(callback).Run(nullptr, nullptr);
+      std::move(callback).Run(nullptr, mojo::NullRemote());
       return;
     }
 
@@ -163,24 +163,22 @@ void MixedRealityDevice::OnRequestSessionResult(
     mojom::XRSessionPtr session) {
   if (!result) {
     OnPresentationEnded();
-    std::move(callback).Run(nullptr, nullptr);
+    std::move(callback).Run(nullptr, mojo::NullRemote());
     return;
   }
 
   OnStartPresenting();
 
-  mojom::XRSessionControllerPtr session_controller;
-  exclusive_controller_binding_.Bind(mojo::MakeRequest(&session_controller));
+  session->display_info = display_info_.Clone();
+  std::move(callback).Run(
+      std::move(session),
+      exclusive_controller_receiver_.BindNewPipeAndPassRemote());
 
   // Use of Unretained is safe because the callback will only occur if the
   // binding is not destroyed.
-  exclusive_controller_binding_.set_connection_error_handler(base::BindOnce(
+  exclusive_controller_receiver_.set_disconnect_handler(base::BindOnce(
       &MixedRealityDevice::OnPresentingControllerMojoConnectionError,
       base::Unretained(this)));
-
-  session->display_info = display_info_.Clone();
-
-  std::move(callback).Run(std::move(session), std::move(session_controller));
 }
 
 void MixedRealityDevice::GetIsolatedXRGamepadProvider(
@@ -228,7 +226,7 @@ void MixedRealityDevice::OnPresentingControllerMojoConnectionError() {
   // TODO(https://crbug.com/875187): Alternatively, we could recreate the
   // provider on the next session, or look into why the callback gets lost.
   OnExitPresent();
-  exclusive_controller_binding_.Close();
+  exclusive_controller_receiver_.reset();
 }
 
 }  // namespace device
