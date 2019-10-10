@@ -36,10 +36,7 @@ message StartArcMiniContainerRequest {
   // Experiment flag for ARC Print Spooler.
   optional bool arc_print_spooler_experiment = 6 [default = false];
 
-  // The number of logical CPU cores that are currently disabled on the host.
-  optional uint32 num_cores_disabled = 7 [default = 0];
-
-  // Next ID to use: 8
+  // Next ID to use: 7
 }
 
 // ARC upgrade options sent from Chrome to session manager. This message is used
