@@ -3902,6 +3902,11 @@ def ApplyCustomOverrides(site_config):
           'hw_tests_override': []
       },
 
+      'betty-arc64-release': {
+          'hw_tests': [],
+          'hw_tests_override': []
+      },
+
       'betty-arcnext-release': {
           'hw_tests': [],
           'hw_tests_override': []
@@ -3921,6 +3926,17 @@ def ApplyCustomOverrides(site_config):
           'hw_tests': [],
           'hw_tests_override': []
       },
+
+      'novato-release': {
+          'hw_tests': [],
+          'hw_tests_override': []
+      },
+
+      'novato-arc64-release': {
+          'hw_tests': [],
+          'hw_tests_override': []
+      },
+
 
       # No hw_tests for arkham, whirlwind, gale, mistral.  See b/140317527.
       'arkham-release': {

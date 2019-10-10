@@ -667,7 +667,7 @@ class CBuildBotTest(ChromeosConfigTestBase):
         # Release tryjobs match their release job.
         if '-release-tryjob' in check_name:
           check_name = check_name.replace('-tryjob', '')
-        if check_name.startswith('betty-'):
+        if check_name.startswith('betty-') or check_name.startswith('novato-'):
           # Betty is vm-only, so never does hardware tests.  See crbug/998427.
           continue
         elif check_name not in expected_exceptions:
@@ -693,6 +693,9 @@ class CBuildBotTest(ChromeosConfigTestBase):
         continue
 
       if build_name.startswith('betty'):
+        continue
+
+      if build_name.startswith('novato'):
         continue
 
       # Jetstream boards currently do not run hwtests in the release builder,
