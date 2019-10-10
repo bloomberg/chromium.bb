@@ -64,8 +64,8 @@ SPLIT_ISOLATE = {
 
 
 TOUCH_ROOT_ISOLATE = {
-  'tests/isolate/touch_root.isolate':
-    """{
+    'tests/isolate/touch_root.isolate':
+        """{
       'conditions': [
         ['(OS=="linux" and chromeos==1) or ((OS=="mac" or OS=="win") and '
          'chromeos==0)', {
@@ -76,22 +76,23 @@ TOUCH_ROOT_ISOLATE = {
         }],
       ],
     }""",
-  'tests/isolate/touch_root.py':
-    "def main():\n"
-    "  import os, sys\n"
-    "  print('child_touch_root: Verify the relative directories')\n"
-    "  root_dir = os.path.dirname(os.path.abspath(__file__))\n"
-    "  parent_dir, base = os.path.split(root_dir)\n"
-    "  parent_dir, base2 = os.path.split(parent_dir)\n"
-    "  if base != 'isolate' or base2 != 'tests':\n"
-    "    print 'Invalid root dir %s' % root_dir\n"
-    "    return 4\n"
-    "  content = open(os.path.join(parent_dir, 'at_root'), 'r').read()\n"
-    "  return int(content != 'foo')\n"
-    "\n"
-    "if __name__ == '__main__':\n"
-    "  sys.exit(main())\n",
-  'at_root': 'foo',
+    'tests/isolate/touch_root.py':
+        "def main():\n"
+        "  import os, sys\n"
+        "  print('child_touch_root: Verify the relative directories')\n"
+        "  root_dir = os.path.dirname(os.path.abspath(__file__))\n"
+        "  parent_dir, base = os.path.split(root_dir)\n"
+        "  parent_dir, base2 = os.path.split(parent_dir)\n"
+        "  if base != 'isolate' or base2 != 'tests':\n"
+        "    print('Invalid root dir %s' % root_dir)\n"
+        "    return 4\n"
+        "  content = open(os.path.join(parent_dir, 'at_root'), 'r').read()\n"
+        "  return int(content != 'foo')\n"
+        "\n"
+        "if __name__ == '__main__':\n"
+        "  sys.exit(main())\n",
+    'at_root':
+        'foo',
 }
 
 

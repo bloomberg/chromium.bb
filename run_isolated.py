@@ -39,7 +39,9 @@ https://chromium.googlesource.com/infra/luci/luci-py.git/+/master/appengine/swar
 for more information about bot_config.py.
 """
 
-__version__ = '1.0.0'
+from __future__ import print_function
+
+__version__ = '1.0.1'
 
 import argparse
 import base64
@@ -1216,7 +1218,7 @@ def parse_args(args):
       # We don't need to error out here - "args" is now empty,
       # so the call below to parser.parse_args(args) will fail
       # and print the full help text.
-      print >> sys.stderr, 'Couldn\'t read arguments: %s' % e
+      print('Couldn\'t read arguments: %s' % e, file=sys.stderr)
 
   # Even if we failed to read the args, just call the normal parser now since it
   # will print the correct help message.
@@ -1438,7 +1440,7 @@ def main(args):
       cipd.Error,
       local_caching.NamedCacheError,
       local_caching.NoMoreSpace) as ex:
-    print >> sys.stderr, ex.message
+    print(ex.message, file=sys.stderr)
     return 1
 
 

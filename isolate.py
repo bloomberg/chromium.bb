@@ -13,7 +13,9 @@ See more information at
 """
 # Run ./isolate.py --help for more detailed information.
 
-__version__ = '0.4.5'
+from __future__ import print_function
+
+__version__ = '0.4.6'
 
 import datetime
 import itertools
@@ -1310,10 +1312,10 @@ def main(argv):
   try:
     return dispatcher.execute(parser, argv)
   except isolated_format.MappingError as e:
-    print >> sys.stderr, 'Failed to find an input file: %s' % e
+    print('Failed to find an input file: %s' % e, file=sys.stderr)
     return 1
   except ExecutionError as e:
-    print >> sys.stderr, 'Execution failure: %s' % e
+    print('Execution failure: %s' % e, file=sys.stderr)
     return 1
 
 

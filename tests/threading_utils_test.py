@@ -297,7 +297,7 @@ class ThreadPoolTest(unittest.TestCase):
     finally:
       # Print debug data if it failed.
       if not completed:
-        print results
+        print(results)
 
 
 class AutoRetryThreadPoolTest(unittest.TestCase):

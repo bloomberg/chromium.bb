@@ -432,8 +432,8 @@ def testing_main():
       port=11111)
   try:
     with luci_context.write(local_auth=ctx):
-      print 'Copy-paste this into another shell:'
-      print 'export LUCI_CONTEXT=%s' % os.getenv('LUCI_CONTEXT')
+      print('Copy-paste this into another shell:')
+      print('export LUCI_CONTEXT=%s' % os.getenv('LUCI_CONTEXT'))
       while True:
         time.sleep(1)
   except KeyboardInterrupt:

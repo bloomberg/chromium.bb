@@ -413,63 +413,65 @@ class IsolateFormatTest(auto_stub.TestCase):
 
   def test_pretty_print_mid_size(self):
     value = {
-      'variables': {
-        'files': [
-          'file1',
-          'file2',
-        ],
-      },
-      'conditions': [
-        ['OS==\"foo\"', {
-          'variables': {
+        'variables': {
             'files': [
-              'dir1/',
-              'dir2/',
-              'file3',
-              'file4',
+                'file1',
+                'file2',
             ],
-            'command': ['python', '-c', 'print "H\\i\'"'],
-            'read_only': 2,
-          },
-        }],
-        ['OS==\"bar\"', {
-          'variables': {},
-        }],
-      ],
+        },
+        'conditions': [
+            [
+                'OS==\"foo\"',
+                {
+                    'variables': {
+                        'files': [
+                            'dir1/',
+                            'dir2/',
+                            'file3',
+                            'file4',
+                        ],
+                        'command': ['python', '-c', 'print("H\\i\'")'],
+                        'read_only': 2,
+                    },
+                }
+            ],
+            ['OS==\"bar\"', {
+                'variables': {},
+            }],
+        ],
     }
     isolate_format.verify_root(value, {})
     # This is an .isolate format.
-    expected = (
-        "{\n"
-        "  'variables': {\n"
-        "    'files': [\n"
-        "      'file1',\n"
-        "      'file2',\n"
-        "    ],\n"
-        "  },\n"
-        "  'conditions': [\n"
-        "    ['OS==\"foo\"', {\n"
-        "      'variables': {\n"
-        "        'command': [\n"
-        "          'python',\n"
-        "          '-c',\n"
-        "          'print \"H\\i\'\"',\n"
-        "        ],\n"
-        "        'files': [\n"
-        "          'dir1/',\n"
-        "          'dir2/',\n"
-        "          'file3',\n"
-        "          'file4',\n"
-        "        ],\n"
-        "        'read_only': 2,\n"
-        "      },\n"
-        "    }],\n"
-        "    ['OS==\"bar\"', {\n"
-        "      'variables': {\n"
-        "      },\n"
-        "    }],\n"
-        "  ],\n"
-        "}\n")
+    expected = ("{\n"
+                "  'variables': {\n"
+                "    'files': [\n"
+                "      'file1',\n"
+                "      'file2',\n"
+                "    ],\n"
+                "  },\n"
+                "  'conditions': [\n"
+                "    ['OS==\"foo\"', {\n"
+                "      'variables': {\n"
+                "        'command': [\n"
+                "          'python',\n"
+                "          '-c',\n"
+                "          'print(\"H\\i\'\")',\n"
+                "        ],\n"
+                "        'files': [\n"
+                "          'dir1/',\n"
+                "          'dir2/',\n"
+                "          'file3',\n"
+                "          'file4',\n"
+                "        ],\n"
+                "        'read_only': 2,\n"
+                "      },\n"
+                "    }],\n"
+                "    ['OS==\"bar\"', {\n"
+                "      'variables': {\n"
+                "      },\n"
+                "    }],\n"
+                "  ],\n"
+                "}\n")
     self._test_pretty_print_impl(value, expected)
 
   def test_convert_old_to_new_else(self):

@@ -4,6 +4,8 @@
 # Use of this source code is governed under the Apache License, Version 2.0
 # that can be found in the LICENSE file.
 
+from __future__ import print_function
+
 import functools
 import json
 import logging
@@ -103,7 +105,7 @@ class TraceInputsBase(unittest.TestCase):
   def tearDown(self):
     if self.tempdir:
       if VERBOSE:
-        print 'Leaking: %s' % self.tempdir
+        print('Leaking: %s' % self.tempdir)
       else:
         file_path.rmtree(self.tempdir)
 
@@ -146,7 +148,7 @@ class TraceInputs(TraceInputsBase):
         universal_newlines=True)
     out, err = p.communicate()
     if VERBOSE:
-      print err
+      print(err)
     if p.returncode:
       raise CalledProcessError(p.returncode, cmd, out + err, cwd)
     return out or ''
@@ -735,6 +737,6 @@ if __name__ == '__main__':
   # Necessary for the dtrace logger to work around execve() hook. See
   # trace_inputs.py for more details.
   os.environ['TRACE_INPUTS_DTRACE_ENABLE_EXECVE'] = '1'
-  print >> sys.stderr, 'Test are currently disabled'
+  print('Test are currently disabled', file=sys.stderr)
   sys.exit(0)
   #unittest.main()

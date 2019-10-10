@@ -18,6 +18,8 @@ information, including the individual child processes and the files accessed
 from the log.
 """
 
+from __future__ import print_function
+
 import codecs
 import csv
 import errno
@@ -2338,7 +2340,7 @@ class Dtrace(ApiBase):
 
         if self._dtrace.returncode != 0:
           # Warn about any dtrace failure but basically ignore it.
-          print 'dtrace failure: %s' % self._dtrace.returncode
+          print('dtrace failure: %s' % self._dtrace.returncode)
       finally:
         os.close(self._dummy_file_id)
         fs.remove(self._dummy_file_name)
@@ -2774,8 +2776,8 @@ class LogmanTrace(ApiBase):
       csv.reader() fails to read them properly, it mangles file names quoted
       with "" with a comma in it.
       """
-        # 0. Had a ',' or one of the following ' ' after a comma, next should
-        # be ' ', '"' or string or ',' for an empty field.
+      # 0. Had a ',' or one of the following ' ' after a comma, next should
+      # be ' ', '"' or string or ',' for an empty field.
       (HAD_DELIMITER,
        # 1. Processing an unquoted field up to ','.
        IN_STR,
@@ -2929,10 +2931,11 @@ class LogmanTrace(ApiBase):
             stderr=subprocess.STDOUT)
       except subprocess.CalledProcessError, e:
         if e.returncode == -2147024891:
-          print >> sys.stderr, 'Please restart with an elevated admin prompt'
+          print('Please restart with an elevated admin prompt', file=sys.stderr)
         elif e.returncode == -2144337737:
-          print >> sys.stderr, (
-              'A kernel trace was already running, stop it and try again')
+          print(
+              'A kernel trace was already running, stop it and try again',
+              file=sys.stderr)
         raise
 
     def trace(self, cmd, cwd, tracename, output):
@@ -3383,9 +3386,10 @@ def CMDread(parser, args):
     for item in data:
       if 'exception' in item:
         # Do not abort the other traces.
-        print >> sys.stderr, (
-            'Trace %s: Got an exception: %s' % (
-              item['trace'], item['exception'][1]))
+        print(
+            'Trace %s: Got an exception: %s' % (item['trace'],
+                                                item['exception'][1]),
+            file=sys.stderr)
         continue
       results = item['results']
       if options.root_dir:

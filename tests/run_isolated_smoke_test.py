@@ -9,6 +9,7 @@ import logging
 import os
 import subprocess
 import sys
+import textwrap
 import time
 import unittest
 
@@ -22,7 +23,9 @@ from utils import file_path
 
 
 CONTENTS = {
-  'check_files.py': """if True:
+    'check_files.py':
+        textwrap.dedent("""
+      from __future__ import print_function
       import os, sys
       ROOT_DIR = os.path.dirname(os.path.abspath(
           __file__.decode(sys.getfilesystemencoding())))
@@ -32,29 +35,40 @@ CONTENTS = {
       ]
       actual = sorted(os.listdir(ROOT_DIR))
       if expected != actual:
-        print >> sys.stderr, 'Expected list doesn\\'t match:'
-        print >> sys.stderr, '%s\\n%s' % (','.join(expected), ','.join(actual))
+        print('Expected list doesn\\'t match:', file=sys.stderr)
+        print(
+             '%s\\n%s' % (','.join(expected), ','.join(actual)),
+             file=sys.stderr)
         sys.exit(1)
       # Check that file2.txt is in reality file3.txt.
       with open(os.path.join(ROOT_DIR, 'file2.txt'), 'rb') as f:
         if f.read() != 'File3\\n':
-          print >> sys.stderr, 'file2.txt should be file3.txt in reality'
+          print('file2.txt should be file3.txt in reality', file=sys.stderr)
           sys.exit(2)
-      print('Success')""",
-  'file1.txt': 'File1\n',
-  'file2.txt': 'File2.txt\n',
-  'file3.txt': 'File3\n',
-  'repeated_files.py': """if True:
+      print('Success')"""),
+    'file1.txt':
+        'File1\n',
+    'file2.txt':
+        'File2.txt\n',
+    'file3.txt':
+        'File3\n',
+    'repeated_files.py':
+        textwrap.dedent("""
+      from __future__ import print_function
       import os, sys
       expected = ['file1.txt', 'file1_copy.txt', 'repeated_files.py']
       actual = sorted(os.listdir(os.path.dirname(os.path.abspath(
           __file__.decode(sys.getfilesystemencoding())))))
       if expected != actual:
-        print >> sys.stderr, 'Expected list doesn\\'t match:'
-        print >> sys.stderr, '%s\\n%s' % (','.join(expected), ','.join(actual))
+        print('Expected list doesn\\'t match:', file=sys.stderr)
+        print(
+            '%s\\n%s' % (','.join(expected), ','.join(actual)),
+            file=sys.stderr)
         sys.exit(1)
-      print('Success')""",
-  'max_path.py': """if True:
+      print('Success')"""),
+    'max_path.py':
+        textwrap.dedent("""
+      from __future__ import print_function
       import os, sys
       prefix = u'\\\\\\\\?\\\\' if sys.platform == 'win32' else u''
       path = os.path.join(os.getcwd().decode(
@@ -62,39 +76,44 @@ CONTENTS = {
       with open(prefix + path, 'rb') as f:
         actual = f.read()
         if actual != 'File1\\n':
-          print >> sys.stderr, 'Unexpected content: %s' % actual
+          print('Unexpected content: %s' % actual, file=sys.stderr)
           sys.exit(1)
-      print('Success')""",
-  'tar_archive': open(os.path.join(test_env.TESTS_DIR, 'archive.tar')).read(),
-  'archive_files.py': """if True:
+      print('Success')"""),
+    'tar_archive':
+        open(os.path.join(test_env.TESTS_DIR, 'archive.tar')).read(),
+    'archive_files.py':
+        textwrap.dedent("""
+      from __future__ import print_function
       import os, sys
       ROOT_DIR = os.path.dirname(os.path.abspath(
           __file__.decode(sys.getfilesystemencoding())))
       expected = ['a', 'archive_files.py', 'b']
       actual = sorted(os.listdir(ROOT_DIR))
       if expected != actual:
-        print >> sys.stderr, 'Expected list doesn\\'t match:'
-        print >> sys.stderr, '%s\\n%s' % (','.join(expected), ','.join(actual))
+        print('Expected list doesn\\'t match:', file=sys.stderr)
+        print('%s\\n%s' % (','.join(expected), ','.join(actual)),
+        file=sys.stderr)
         sys.exit(1)
       expected = ['foo']
       actual = sorted(os.listdir(os.path.join(ROOT_DIR, 'a')))
       if expected != actual:
-        print >> sys.stderr, 'Expected list doesn\\'t match:'
-        print >> sys.stderr, '%s\\n%s' % (','.join(expected), ','.join(actual))
+        print('Expected list doesn\\'t match:', file=sys.stderr)
+        print('%s\\n%s' % (','.join(expected), ','.join(actual)),
+        file=sys.stderr)
         sys.exit(2)
       # Check that a/foo has right contents.
       with open(os.path.join(ROOT_DIR, 'a/foo'), 'rb') as f:
         d = f.read()
         if d != 'Content':
-          print >> sys.stderr, 'a/foo contained %r' % d
+          print('a/foo contained %r' % d, file=sys.stderr)
           sys.exit(3)
       # Check that b has right contents.
       with open(os.path.join(ROOT_DIR, 'b'), 'rb') as f:
         d = f.read()
         if d != 'More content':
-          print >> sys.stderr, 'b contained %r' % d
+          print('b contained %r' % d, file=sys.stderr)
           sys.exit(4)
-      print('Success')""",
+      print('Success')"""),
 }
 
 
@@ -471,9 +490,8 @@ class RunIsolatedTest(unittest.TestCase):
       cmd.extend(('--containment-type', 'JOB_OBJECT'))
     cmd.extend(('--', sys.executable, '-c'))
     if sys.platform == 'win32':
-      cmd.append(
-          'import subprocess,sys; '
-          'subprocess.call([sys.executable, "-c", "print 0"])')
+      cmd.append('import subprocess,sys; '
+                 'subprocess.call([sys.executable, "-c", "print(0)"])')
     else:
       cmd.append('import os,sys; sys.stdout.write(str(os.nice(0)))')
     out, err, returncode = self._run(cmd)

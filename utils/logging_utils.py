@@ -4,6 +4,8 @@
 
 """Utility relating to logging."""
 
+from __future__ import print_function
+
 import argparse
 import codecs
 import ctypes
@@ -186,7 +188,7 @@ def prepare_logging(filename, root=None):
   logger = root or logging.getLogger()
   if not logger:
     # Better print insanity than crash.
-    print >> sys.stderr, 'OMG NO ROOT'
+    print('OMG NO ROOT', file=sys.stderr)
     return
   logger.setLevel(logging.DEBUG)
 
@@ -219,7 +221,7 @@ def set_console_level(level, root=None):
   handler = find_stderr(root)
   if not handler:
     # Better print insanity than crash.
-    print >> sys.stderr, 'OMG NO STDERR'
+    print('OMG NO STDERR', file=sys.stderr)
     return
   handler.setLevel(level)
 

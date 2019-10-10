@@ -6,6 +6,8 @@
 
 """Reproduce one or multiple tasks from one Swarming server on another one."""
 
+from __future__ import print_function
+
 import argparse
 import json
 import logging
@@ -52,7 +54,7 @@ def reproduce(server_old, server_new, task_id):
   inputs = prop['inputs_ref']
   name = request['name']
   if prop.get('secret_bytes'):
-    print >> sys.stderr, 'Can\'t reproduce task %s with secrets' % task_id
+    print('Can\'t reproduce task %s with secrets' % task_id, file=sys.stderr)
     sys.exit(1)
   cmd = [
     'trigger', '--tag', 'testing:1',

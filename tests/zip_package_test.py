@@ -230,15 +230,16 @@ class ZipPackageTest(unittest.TestCase):
     # Build executable zip that calls same functions.
     pkg = zip_package.ZipPackage(self.temp_dir)
     pkg.add_directory(os.path.join(test_env.CLIENT_DIR, 'utils'), 'utils')
-    pkg.add_buffer('__main__.py', '\n'.join([
-      'import sys',
-      '',
-      'from utils import zip_package',
-      '',
-      'print zip_package.is_zipped_module(sys.modules[__name__])',
-      'print zip_package.get_module_zip_archive(sys.modules[__name__])',
-      'print zip_package.get_main_script_path()',
-    ]))
+    pkg.add_buffer(
+        '__main__.py', '\n'.join([
+            'import sys',
+            '',
+            'from utils import zip_package',
+            '',
+            'print(zip_package.is_zipped_module(sys.modules[__name__]))',
+            'print(zip_package.get_module_zip_archive(sys.modules[__name__]))',
+            'print(zip_package.get_main_script_path())',
+        ]))
     zip_file = os.path.join(self.temp_dir, 'out.zip')
     pkg.zip_into_file(zip_file)
 
@@ -250,11 +251,13 @@ class ZipPackageTest(unittest.TestCase):
     pkg = zip_package.ZipPackage(self.temp_dir)
     pkg.add_directory(os.path.join(test_env.CLIENT_DIR, 'utils'), 'utils')
     pkg.add_buffer('cert.pem', 'Certificate\n')
-    pkg.add_buffer('__main__.py', '\n'.join([
-      'import sys',
-      'from utils import zip_package',
-      'print zip_package.extract_resource(sys.modules[__name__], \'cert.pem\')',
-    ]))
+    pkg.add_buffer(
+        '__main__.py', '\n'.join([
+            'import sys',
+            'from utils import zip_package',
+            'print(zip_package.extract_resource(',
+            '    sys.modules[__name__], \'cert.pem\'))',
+        ]))
     zip_file = os.path.join(self.temp_dir, 'out.zip')
     pkg.zip_into_file(zip_file)
     actual = check_output([sys.executable, zip_file]).strip()
@@ -267,12 +270,13 @@ class ZipPackageTest(unittest.TestCase):
     pkg = zip_package.ZipPackage(self.temp_dir)
     pkg.add_directory(os.path.join(test_env.CLIENT_DIR, 'utils'), 'utils')
     pkg.add_buffer('cert.pem', 'Certificate\n')
-    pkg.add_buffer('__main__.py', '\n'.join([
-      'import sys',
-      'from utils import zip_package',
-      'print zip_package.extract_resource(',
-      '  sys.modules[__name__], \'cert.pem\', %r)' % self.temp_dir,
-    ]))
+    pkg.add_buffer(
+        '__main__.py', '\n'.join([
+            'import sys',
+            'from utils import zip_package',
+            'print(zip_package.extract_resource(',
+            '  sys.modules[__name__], \'cert.pem\', %r))' % self.temp_dir,
+        ]))
     zip_file = os.path.join(self.temp_dir, 'out.zip')
     pkg.zip_into_file(zip_file)
     actual = check_output([sys.executable, zip_file]).strip()

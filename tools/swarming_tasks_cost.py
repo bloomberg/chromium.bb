@@ -281,19 +281,14 @@ def stats(tasks, show_cost):
         'Total tasks' % (
           len(tasks), seconds_to_timedelta(duration_total),
           cost if show_cost else ''))
-  print (
-      '        Reliability:    %7g%%    Internal errors: %-4d' % (
-        reliability, len(internal_failures)))
-  print (
-      '        Tasks failures: %-4d (%5.3f%%)' % (
-        len(failures), percent_failures))
-  print (
-      '        Retried:        %-4d (%5.3f%%)  (Upgraded an internal failure '
-      'to a successful task)' %
-        (len(two_tries), percent_two_tries))
-  print (
-      '        Pending  Total: %13s    Avg: %7s    Median: %7s  P99%%: %7s' % (
-        pending_total, pending_avg, pending_med, pending_p99))
+  print('        Reliability:    %7g%%    Internal errors: %-4d' %
+        (reliability, len(internal_failures)))
+  print('        Tasks failures: %-4d (%5.3f%%)' % (len(failures),
+                                                    percent_failures))
+  print('        Retried:        %-4d (%5.3f%%)  (Upgraded an internal failure '
+        'to a successful task)' % (len(two_tries), percent_two_tries))
+  print('        Pending  Total: %13s    Avg: %7s    Median: %7s  P99%%: %7s' %
+        (pending_total, pending_avg, pending_med, pending_p99))
 
 
 def present_task_types(items, bucket_type, show_cost):

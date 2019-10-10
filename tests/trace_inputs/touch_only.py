@@ -14,7 +14,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(
 
 
 def main():
-  print 'Only look if a file exists but do not open it.'
+  print('Only look if a file exists but do not open it.')
   assert len(sys.argv) == 2
   path = os.path.join(BASE_DIR, 'test_file.txt')
   command = sys.argv[1]
