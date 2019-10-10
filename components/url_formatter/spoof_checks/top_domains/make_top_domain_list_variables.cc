@@ -2,9 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This binary generates an array of top domains suitable for edit distance
-// matching. The input is the list of (skeleton, domain) pairs. The output is
-// written as a C array of the domains.
+// This binary generates two C arrays of useful information related to top
+// domains, which we embed directly into
+// the final Chrome binary.  The input is a list of the top domains. The first
+// output is named kTop500EditDistanceSkeletons,
+// containing the skeletons of the top 500 domains suitable for use in the edit
+// distance heuristic. The second output is named kTop500Keywords,
+// containg the top 500 keywords suitable for use with the keyword matching
+// heuristic (for instance, www.google.com -> google). Both outputs are written
+// to the same file, which will be formatted as c++ source file with valid
+// syntax.
+
+// The C-strings in both of the output arrays are guaranteed to be in
+// lexicographically sorted order.
+
+// IMPORTANT: This binary asserts that there are at least enough sites in the
+// input file to generate 500 skeletons and 500 keywords.
 
 #include <iostream>
 #include <string>
@@ -96,29 +109,67 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
-  size_t count = 0;
-  std::string output =
-      R"(#include "components/url_formatter/spoof_checks/top_domains/top500_domains.h"
-namespace top500_domains {
-const char* const kTop500[500] = {
-)";
+  std::set<std::string> skeletons;
+  std::set<std::string> keywords;
+
   for (std::string line : lines) {
+    if (skeletons.size() >= kTopN && keywords.size() >= kTopN) {
+      break;
+    }
     base::TrimWhitespaceASCII(line, base::TRIM_ALL, &line);
     if (line.empty() || line[0] == '#') {
       continue;
     }
-    if (count >= kTopN)
-      break;
-    if (!url_formatter::top_domains::IsEditDistanceCandidate(line)) {
-      continue;
+
+    if (skeletons.size() < kTopN &&
+        url_formatter::top_domains::IsEditDistanceCandidate(line)) {
+      const std::string skeleton = GetSkeleton(line, spoof_checker.get());
+      if (skeletons.find(skeleton) == skeletons.end()) {
+        skeletons.insert(skeleton);
+      }
     }
-    count++;
-    const std::string skeleton = GetSkeleton(line, spoof_checker.get());
-    output += "\"" + skeleton + "\",\n";
+
+    if (keywords.size() < kTopN) {
+      std::string keyword;
+      base::TrimString(
+          url_formatter::top_domains::HostnameWithoutRegistry(line), ".",
+          &keyword);
+      CHECK(keyword.find('.') == std::string::npos);
+      if (keywords.find(keyword) == keywords.end()) {
+        keywords.insert(keyword);
+      }
+    }
+  }
+
+  CHECK_EQ(skeletons.size(), kTopN);
+  CHECK_EQ(keywords.size(), kTopN);
+
+  std::vector<std::string> sorted_skeletons(skeletons.begin(), skeletons.end());
+  std::sort(sorted_skeletons.begin(), sorted_skeletons.end());
+
+  std::vector<std::string> sorted_keywords(keywords.begin(), keywords.end());
+  std::sort(sorted_keywords.begin(), sorted_keywords.end());
+
+  std::string output =
+      R"(#include "components/url_formatter/spoof_checks/top_domains/top500_domains.h"
+namespace top500_domains {
+const char* const kTop500EditDistanceSkeletons[500] = {
+)";
+
+  for (const std::string& skeleton : sorted_skeletons) {
+    output += ("\"" + skeleton + "\"");
+    output += ",\n";
   }
   output += R"(};
-}  // namespace top500_domains
+const char* const kTop500Keywords[500] = {
 )";
+
+  for (const std::string& keyword : sorted_keywords) {
+    output += ("\"" + keyword + "\"");
+    output += ",\n";
+  }
+  output += R"(};
+}  // namespace top500_domains)";
 
   base::FilePath output_path = base::FilePath::FromUTF8Unsafe(argv[2]);
   if (base::WriteFile(output_path, output.c_str(),
