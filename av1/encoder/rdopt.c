@@ -7097,12 +7097,11 @@ static AOM_INLINE void single_motion_search(const AV1_COMP *const cpi,
     switch (mbmi->motion_mode) {
       case SIMPLE_TRANSLATION:
         if (cpi->sf.use_accurate_subpel_search) {
-          int best_mv_var;
           const int try_second = x->second_best_mv.as_int != INVALID_MV &&
                                  x->second_best_mv.as_int != x->best_mv.as_int;
           const int pw = block_size_wide[bsize];
           const int ph = block_size_high[bsize];
-          best_mv_var = cpi->find_fractional_mv_step(
+          const int best_mv_var = cpi->find_fractional_mv_step(
               x, cm, mi_row, mi_col, &ref_mv, cm->allow_high_precision_mv,
               x->errorperbit, &cpi->fn_ptr[bsize], cpi->sf.mv.subpel_force_stop,
               cpi->sf.mv.subpel_iters_per_step, cond_cost_list(cpi, cost_list),
@@ -7118,7 +7117,6 @@ static AOM_INLINE void single_motion_search(const AV1_COMP *const cpi,
                 AOMMAX(x->mv_limits.row_min * 8, ref_mv.row - MV_MAX);
             const int maxr =
                 AOMMIN(x->mv_limits.row_max * 8, ref_mv.row + MV_MAX);
-            int this_var;
             MV best_mv = x->best_mv.as_mv;
 
             x->best_mv = x->second_best_mv;
@@ -7126,7 +7124,7 @@ static AOM_INLINE void single_motion_search(const AV1_COMP *const cpi,
                 x->best_mv.as_mv.row * 8 >= minr &&
                 x->best_mv.as_mv.col * 8 <= maxc &&
                 x->best_mv.as_mv.col * 8 >= minc) {
-              this_var = cpi->find_fractional_mv_step(
+              const int this_var = cpi->find_fractional_mv_step(
                   x, cm, mi_row, mi_col, &ref_mv, cm->allow_high_precision_mv,
                   x->errorperbit, &cpi->fn_ptr[bsize],
                   cpi->sf.mv.subpel_force_stop,
@@ -7135,8 +7133,8 @@ static AOM_INLINE void single_motion_search(const AV1_COMP *const cpi,
                   x->mv_cost_stack, &dis, &x->pred_sse[ref], NULL, NULL, 0, 0,
                   pw, ph, cpi->sf.use_accurate_subpel_search, 0);
               if (this_var < best_mv_var) best_mv = x->best_mv.as_mv;
-              x->best_mv.as_mv = best_mv;
             }
+            x->best_mv.as_mv = best_mv;
           }
         } else {
           cpi->find_fractional_mv_step(
