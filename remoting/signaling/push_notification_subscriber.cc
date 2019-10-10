@@ -56,7 +56,7 @@ void PushNotificationSubscriber::Subscribe(const Subscription& subscription) {
           << subscription.channel << ".";
 
   std::string bare_jid;
-  SplitJidResource(signal_strategy_->GetLocalAddress().jid(), &bare_jid,
+  SplitJidResource(signal_strategy_->GetLocalAddress().id(), &bare_jid,
                    nullptr);
 
   // Build a subscription request.

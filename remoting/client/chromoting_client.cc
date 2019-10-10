@@ -244,7 +244,7 @@ void ChromotingClient::OnSignalStrategyStateChange(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (state == SignalStrategy::CONNECTED) {
-    VLOG(1) << "Connected as: " << signal_strategy_->GetLocalAddress().jid();
+    VLOG(1) << "Connected as: " << signal_strategy_->GetLocalAddress().id();
     // After signaling has been connected we can try connecting to the host.
     if (connection_ &&
         connection_->state() == protocol::ConnectionToHost::INITIALIZING) {
