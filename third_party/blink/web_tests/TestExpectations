@@ -705,6 +705,7 @@ crbug.com/591099 external/wpt/css/css-text/shaping/shaping-010.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-text/shaping/shaping-011.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-text/word-break/word-break-break-all-inline-006.html [ Failure ]
 crbug.com/1002815 external/wpt/css/cssom-view/offsetTopLeft-trailing-space-inline.html [ Failure ]
+crbug.com/1012294 external/wpt/css/css-lists/list-style-type-string-003.html [ Failure ]
 crbug.com/591099 fast/backgrounds/quirks-mode-line-box-backgrounds.html [ Failure ]
 crbug.com/591099 fast/borders/inline-mask-overlay-image-outset-vertical-rl.html [ Failure ]
 crbug.com/835484 fast/css/outline-narrowLine.html [ Failure ]
@@ -1802,6 +1803,7 @@ crbug.com/995106 external/wpt/css/css-lists/inline-block-list-marker.html [ Fail
 crbug.com/995106 external/wpt/css/css-lists/inline-list.html [ Failure ]
 crbug.com/995106 external/wpt/css/css-lists/inline-list-marker.html [ Failure ]
 crbug.com/995106 external/wpt/css/css-lists/inline-list-with-table-child.html [ Failure ]
+crbug.com/1012289 external/wpt/css/css-lists/list-style-type-string-005b.html [ Failure ]
 
 # ====== Style team owned tests to here ======
 
@@ -2949,12 +2951,6 @@ crbug.com/1012600 virtual/threaded/external/wpt/css/css-animations/animation-opa
 crbug.com/1012627 [ Win7 ] external/wpt/css/css-text/line-breaking/line-breaking-021.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
-crbug.com/626703 [ Linux ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/lists-3/list-style-type-string-001a.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/lists-3/list-style-type-string-001a.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/lists-3/list-style-type-string-001a.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/lists-3/list-style-type-string-001b.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/lists-3/list-style-type-string-001b.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/lists-3/list-style-type-string-001b.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/clear-site-data/storage.https.html [ Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/clear-site-data/storage.https.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/clear-site-data/storage.https.html [ Timeout ]
@@ -4066,6 +4062,11 @@ crbug.com/990240 external/wpt/css/css-multicol/multicol-span-all-rule-001.html [
 crbug.com/792446 external/wpt/css/css-multicol/multicol-span-float-001.xht [ Failure ]
 crbug.com/964183 external/wpt/css/css-multicol/multicol-width-005.html [ Failure ]
 
+crbug.com/457718 external/wpt/css/css-pseudo/marker-content-002.html [ Failure ]
+crbug.com/457718 external/wpt/css/css-pseudo/marker-content-003.html [ Failure ]
+crbug.com/457718 external/wpt/css/css-pseudo/marker-content-003b.html [ Failure ]
+crbug.com/457718 external/wpt/css/css-pseudo/marker-content-004.html [ Failure ]
+crbug.com/457718 external/wpt/css/css-pseudo/marker-content-005.html [ Failure ]
 crbug.com/457718 external/wpt/css/css-pseudo/marker-content-006.html [ Failure ]
 crbug.com/457718 external/wpt/css/css-pseudo/marker-content-007.html [ Failure ]
 crbug.com/457718 external/wpt/css/css-pseudo/marker-content-008.html [ Failure ]
