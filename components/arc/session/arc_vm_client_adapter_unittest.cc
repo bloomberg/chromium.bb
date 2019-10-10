@@ -250,6 +250,31 @@ TEST_F(ArcVmClientAdapterTest, StopArcInstance_Fail) {
   EXPECT_TRUE(arc_instance_stopped_called());
 }
 
+// Tests that UpgradeArc() handles arcvm-server-proxy startup failures properly.
+TEST_F(ArcVmClientAdapterTest, UpgradeArc_StartArcVmProxyFailure) {
+  SetValidUserIdHash();
+  StartMiniArc();
+
+  // Inject failure to FakeUpstartClient.
+  auto* upstart_client = chromeos::FakeUpstartClient::Get();
+  upstart_client->set_start_job_result(false);
+
+  UpgradeArc(false);
+  EXPECT_FALSE(GetStartConciergeCalled());
+  EXPECT_FALSE(arc_instance_stopped_called());
+  upstart_client->set_start_job_result(true);
+
+  // Try to stop the VM. StopVm will fail in this case because
+  // no VM is running.
+  vm_tools::concierge::StopVmResponse response;
+  response.set_success(false);
+  GetTestConciergeClient()->set_stop_vm_response(response);
+  adapter()->StopArcInstance();
+  run_loop()->Run();
+  EXPECT_TRUE(GetTestConciergeClient()->stop_vm_called());
+  EXPECT_TRUE(arc_instance_stopped_called());
+}
+
 // Tests that UpgradeArc() handles StartConcierge() failures properly.
 TEST_F(ArcVmClientAdapterTest, UpgradeArc_StartConciergeFailure) {
   SetValidUserIdHash();

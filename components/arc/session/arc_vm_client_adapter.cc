@@ -303,12 +303,6 @@ class ArcVmClientAdapter : public ArcClientAdapter,
     chromeos::UpstartClient::Get()->StartJob(
         kArcVmServerProxyJobName, /*environment=*/{},
         base::BindOnce(&ArcVmClientAdapter::OnArcVmServerProxyJobStarted,
-                       weak_factory_.GetWeakPtr()));
-
-    // TODO(yusukes): Do this in OnArcVmServerProxyJobStarted().
-    VLOG(1) << "Starting Concierge service";
-    chromeos::DBusThreadManager::Get()->GetDebugDaemonClient()->StartConcierge(
-        base::BindOnce(&ArcVmClientAdapter::OnConciergeStarted,
                        weak_factory_.GetWeakPtr(), std::move(callback)));
   }
 
@@ -458,8 +452,18 @@ class ArcVmClientAdapter : public ArcClientAdapter,
     OnArcInstanceStopped();
   }
 
-  void OnArcVmServerProxyJobStarted(bool result) {
-    VLOG(1) << "OnArcVmServerProxyJobStarted result=" << result;
+  void OnArcVmServerProxyJobStarted(chromeos::VoidDBusMethodCallback callback,
+                                    bool result) {
+    if (!result) {
+      LOG(ERROR) << "Failed to start arcvm-server-proxy job";
+      std::move(callback).Run(false);
+      return;
+    }
+
+    VLOG(1) << "Starting Concierge service";
+    chromeos::DBusThreadManager::Get()->GetDebugDaemonClient()->StartConcierge(
+        base::BindOnce(&ArcVmClientAdapter::OnConciergeStarted,
+                       weak_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   void OnArcVmServerProxyJobStopped(bool result) {
