@@ -15,6 +15,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/resource_load_info.mojom.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/views/controls/webview/webview.h"
@@ -50,6 +51,18 @@ void ObservableWebView::DidFinishLoad(
 
   if (delegate_)
     delegate_->OnWebContentsFinishedLoad();
+}
+
+void ObservableWebView::ResourceLoadComplete(
+    content::RenderFrameHost* render_frame_host,
+    const content::GlobalRequestID& request_id,
+    const content::mojom::ResourceLoadInfo& resource_load_info) {
+  // Only listen to the main frame.
+  if (render_frame_host->GetParent())
+    return;
+
+  if (delegate_)
+    delegate_->OnMainFrameResourceLoadComplete(resource_load_info);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
