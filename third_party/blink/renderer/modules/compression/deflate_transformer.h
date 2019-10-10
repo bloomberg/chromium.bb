@@ -5,17 +5,18 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_COMPRESSION_DEFLATE_TRANSFORMER_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_COMPRESSION_DEFLATE_TRANSFORMER_H_
 
+#include "base/util/type_safety/strong_alias.h"
+
 #include "third_party/blink/renderer/core/streams/transform_stream_transformer.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
-
 #include "third_party/zlib/zlib.h"
 
 namespace blink {
 
 class DeflateTransformer final : public TransformStreamTransformer {
  public:
-  enum class Format { Gzip, Deflate };
+  enum class Format { kGzip, kDeflate };
 
   DeflateTransformer(ScriptState*, Format, int level);
   ~DeflateTransformer() override;
@@ -32,18 +33,24 @@ class DeflateTransformer final : public TransformStreamTransformer {
   void Trace(Visitor*) override;
 
  private:
-  void Deflate(const DOMUint8Array* data,
-               bool finished,
+  using IsFinished = util::StrongAlias<class IsFinishedTag, bool>;
+
+  void Deflate(const uint8_t*,
+               wtf_size_t,
+               IsFinished,
                TransformStreamDefaultControllerInterface*,
                ExceptionState&);
 
   Member<ScriptState> script_state_;
 
-  Vector<uint8_t> buffer_;
+  Vector<uint8_t> out_buffer_;
 
   z_stream stream_;
 
-  bool is_stream_freed_ = false;
+  bool was_flush_called_ = false;
+
+  // This buffer size has been experimentally verified to be optimal.
+  static constexpr wtf_size_t kBufferSize = 16384;
 
   DISALLOW_COPY_AND_ASSIGN(DeflateTransformer);
 };

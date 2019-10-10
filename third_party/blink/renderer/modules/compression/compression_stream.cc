@@ -16,8 +16,6 @@ CompressionStream* CompressionStream::Create(ScriptState* script_state,
                                                  exception_state);
 }
 
-CompressionStream::~CompressionStream() = default;
-
 ReadableStream* CompressionStream::readable() const {
   return transform_->Readable();
 }
@@ -35,12 +33,11 @@ CompressionStream::CompressionStream(ScriptState* script_state,
                                      const AtomicString& format,
                                      ExceptionState& exception_state)
     : transform_(MakeGarbageCollected<TransformStream>()) {
-  DeflateTransformer::Format deflate_format;
+  DeflateTransformer::Format deflate_format =
+      DeflateTransformer::Format::kDeflate;
   if (format == "gzip") {
-    deflate_format = DeflateTransformer::Format::Gzip;
-  } else if (format == "deflate") {
-    deflate_format = DeflateTransformer::Format::Deflate;
-  } else {
+    deflate_format = DeflateTransformer::Format::kGzip;
+  } else if (format != "deflate") {
     exception_state.ThrowTypeError("Unsupported format");
     return;
   }

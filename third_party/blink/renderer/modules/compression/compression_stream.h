@@ -19,7 +19,6 @@ class CompressionStream final : public ScriptWrappable {
                                    const AtomicString&,
                                    ExceptionState&);
   CompressionStream(ScriptState*, const AtomicString&, ExceptionState&);
-  ~CompressionStream() override;
 
   ReadableStream* readable() const;
   WritableStream* writable() const;
