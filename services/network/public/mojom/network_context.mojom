@@ -741,7 +741,7 @@ interface NetworkContext {
   SetClient(pending_remote<NetworkContextClient> client);
 
   // Creates a new URLLoaderFactory with the given |params|.
-  CreateURLLoaderFactory(URLLoaderFactory& url_loader_factory,
+  CreateURLLoaderFactory(pending_receiver<URLLoaderFactory> url_loader_factory,
                          URLLoaderFactoryParams params);
 
   // Destroys all URLLoaderFactory bindings, which should then be regenerated.

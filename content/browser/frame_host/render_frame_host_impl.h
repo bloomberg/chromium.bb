@@ -224,7 +224,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // This method must be called either on the UI thread or before threads start.
   // This callback is run on the UI thread.
   using CreateNetworkFactoryCallback = base::RepeatingCallback<void(
-      network::mojom::URLLoaderFactoryRequest request,
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
       int process_id,
       network::mojom::URLLoaderFactoryPtrInfo original_factory)>;
   static void SetNetworkFactoryForTesting(
@@ -299,7 +299,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const gfx::Point&,
       const blink::WebMediaPlayerAction& action) override;
   bool CreateNetworkServiceDefaultFactory(
-      network::mojom::URLLoaderFactoryRequest default_factory_request) override;
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory>
+          default_factory_receiver) override;
   void MarkIsolatedWorldsAsRequiringSeparateURLLoaderFactory(
       base::flat_set<url::Origin> isolated_world_origins,
       bool push_to_renderer_now) override;

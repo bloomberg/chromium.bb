@@ -45,7 +45,7 @@ class TestNetworkContext : public mojom::NetworkContext {
   void SetClient(
       mojo::PendingRemote<mojom::NetworkContextClient> client) override {}
   void CreateURLLoaderFactory(
-      mojom::URLLoaderFactoryRequest request,
+      mojo::PendingReceiver<mojom::URLLoaderFactory> receiver,
       mojom::URLLoaderFactoryParamsPtr params) override {}
   void GetCookieManager(
       mojo::PendingReceiver<mojom::CookieManager> cookie_manager) override {}

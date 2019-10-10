@@ -900,7 +900,7 @@ void WebRequestProxyingURLLoaderFactory::StartProxying(
     int render_process_id,
     scoped_refptr<WebRequestAPI::RequestIDGenerator> request_id_generator,
     std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data,
-    network::mojom::URLLoaderFactoryRequest loader_request,
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory> loader_receiver,
     network::mojom::URLLoaderFactoryPtrInfo target_factory_info,
     mojo::PendingReceiver<network::mojom::TrustedURLLoaderHeaderClient>
         header_client_receiver,
@@ -910,7 +910,7 @@ void WebRequestProxyingURLLoaderFactory::StartProxying(
 
   auto proxy = std::make_unique<WebRequestProxyingURLLoaderFactory>(
       browser_context, render_process_id, std::move(request_id_generator),
-      std::move(navigation_ui_data), std::move(loader_request),
+      std::move(navigation_ui_data), std::move(loader_receiver),
       std::move(target_factory_info), std::move(header_client_receiver),
       proxies, loader_factory_type);
 

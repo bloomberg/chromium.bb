@@ -422,7 +422,7 @@ void MockRenderProcessHost::CreateURLLoaderFactory(
     const net::NetworkIsolationKey& network_isolation_key,
     mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
         header_client,
-    network::mojom::URLLoaderFactoryRequest receiver) {
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver) {
   if (GetNetworkFactoryCallback().is_null()) {
     url_loader_factory_->Clone(std::move(receiver));
     return;

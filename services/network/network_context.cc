@@ -461,12 +461,12 @@ bool NetworkContext::IsPrimaryNetworkContext() const {
 }
 
 void NetworkContext::CreateURLLoaderFactory(
-    mojom::URLLoaderFactoryRequest request,
+    mojo::PendingReceiver<mojom::URLLoaderFactory> receiver,
     mojom::URLLoaderFactoryParamsPtr params,
     scoped_refptr<ResourceSchedulerClient> resource_scheduler_client) {
   url_loader_factories_.emplace(std::make_unique<cors::CorsURLLoaderFactory>(
       this, std::move(params), std::move(resource_scheduler_client),
-      std::move(request), &cors_origin_access_list_, nullptr));
+      std::move(receiver), &cors_origin_access_list_, nullptr));
 }
 
 void NetworkContext::SetClient(
@@ -476,14 +476,14 @@ void NetworkContext::SetClient(
 }
 
 void NetworkContext::CreateURLLoaderFactory(
-    mojom::URLLoaderFactoryRequest request,
+    mojo::PendingReceiver<mojom::URLLoaderFactory> receiver,
     mojom::URLLoaderFactoryParamsPtr params) {
   scoped_refptr<ResourceSchedulerClient> resource_scheduler_client;
   resource_scheduler_client = base::MakeRefCounted<ResourceSchedulerClient>(
       params->process_id, ++current_resource_scheduler_client_id_,
       resource_scheduler_.get(),
       url_request_context_->network_quality_estimator());
-  CreateURLLoaderFactory(std::move(request), std::move(params),
+  CreateURLLoaderFactory(std::move(receiver), std::move(params),
                          std::move(resource_scheduler_client));
 }
 

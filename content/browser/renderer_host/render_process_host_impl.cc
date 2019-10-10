@@ -194,7 +194,6 @@
 #include "media/mojo/services/video_decode_perf_history.h"
 #include "media/webrtc/webrtc_switches.h"
 #include "mojo/public/cpp/bindings/receiver.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ppapi/buildflags/buildflags.h"
@@ -2490,7 +2489,7 @@ mojom::Renderer* RenderProcessHostImpl::GetRendererInterface() {
 }
 
 void RenderProcessHostImpl::CreateURLLoaderFactoryForRendererProcess(
-    network::mojom::URLLoaderFactoryRequest request) {
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   base::Optional<url::Origin> request_initiator_site_lock;
@@ -2511,7 +2510,7 @@ void RenderProcessHostImpl::CreateURLLoaderFactoryForRendererProcess(
                          network::mojom::CrossOriginEmbedderPolicy::kNone,
                          nullptr /* preferences */, net::NetworkIsolationKey(),
                          mojo::NullRemote() /* header_client */,
-                         std::move(request));
+                         std::move(receiver));
 }
 
 void RenderProcessHostImpl::CreateURLLoaderFactory(
@@ -2521,10 +2520,10 @@ void RenderProcessHostImpl::CreateURLLoaderFactory(
     const net::NetworkIsolationKey& network_isolation_key,
     mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
         header_client,
-    network::mojom::URLLoaderFactoryRequest request) {
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver) {
   CreateURLLoaderFactoryInternal(
       origin, embedder_policy, preferences, network_isolation_key,
-      std::move(header_client), std::move(request), false /* is_trusted */);
+      std::move(header_client), std::move(receiver), false /* is_trusted */);
 }
 
 void RenderProcessHostImpl::CreateTrustedURLLoaderFactory(
@@ -2533,10 +2532,10 @@ void RenderProcessHostImpl::CreateTrustedURLLoaderFactory(
     const WebPreferences* preferences,
     mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
         header_client,
-    network::mojom::URLLoaderFactoryRequest request) {
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver) {
   CreateURLLoaderFactoryInternal(origin, embedder_policy, preferences,
                                  base::nullopt, std::move(header_client),
-                                 std::move(request), true /* is_trusted */);
+                                 std::move(receiver), true /* is_trusted */);
 }
 
 void RenderProcessHostImpl::CreateURLLoaderFactoryInternal(
@@ -2546,7 +2545,7 @@ void RenderProcessHostImpl::CreateURLLoaderFactoryInternal(
     const base::Optional<net::NetworkIsolationKey>& network_isolation_key,
     mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
         header_client,
-    network::mojom::URLLoaderFactoryRequest request,
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
     bool is_trusted) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -2557,7 +2556,8 @@ void RenderProcessHostImpl::CreateURLLoaderFactoryInternal(
 
   network::mojom::NetworkContext* network_context =
       storage_partition_impl_->GetNetworkContext();
-  network::mojom::URLLoaderFactoryPtrInfo embedder_provided_factory;
+  mojo::PendingRemote<network::mojom::URLLoaderFactory>
+      embedder_provided_factory;
   if (origin.has_value()) {
     embedder_provided_factory =
         GetContentClient()->browser()->CreateURLLoaderFactoryForNetworkRequests(
@@ -2565,8 +2565,7 @@ void RenderProcessHostImpl::CreateURLLoaderFactoryInternal(
             network_isolation_key);
   }
   if (embedder_provided_factory) {
-    mojo::FuseInterface(std::move(request),
-                        std::move(embedder_provided_factory));
+    mojo::FusePipes(std::move(receiver), std::move(embedder_provided_factory));
   } else {
     network::mojom::URLLoaderFactoryParamsPtr params =
         network::mojom::URLLoaderFactoryParams::New();
@@ -2600,7 +2599,7 @@ void RenderProcessHostImpl::CreateURLLoaderFactoryInternal(
       params->is_corb_enabled = true;
     }
 
-    network_context->CreateURLLoaderFactory(std::move(request),
+    network_context->CreateURLLoaderFactory(std::move(receiver),
                                             std::move(params));
   }
 }
