@@ -65,7 +65,7 @@ class CORE_EXPORT CanvasRenderingContext : public ScriptWrappable,
   enum ContextType {
     // Do not change assigned numbers of existing items: add new features to the
     // end of the list.
-    kContext2d = 0,
+    kContext2D = 0,
     kContextExperimentalWebgl = 2,
     kContextWebgl = 3,
     kContextWebgl2 = 4,

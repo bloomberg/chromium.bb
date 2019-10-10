@@ -136,7 +136,7 @@ void CanvasRenderingContext::DidProcessTask(
 CanvasRenderingContext::ContextType CanvasRenderingContext::ContextTypeFromId(
     const String& id) {
   if (id == "2d")
-    return kContext2d;
+    return kContext2D;
   if (id == "experimental-webgl")
     return kContextExperimentalWebgl;
   if (id == "webgl")

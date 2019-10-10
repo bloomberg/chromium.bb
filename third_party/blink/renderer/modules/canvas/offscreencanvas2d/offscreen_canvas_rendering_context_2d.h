@@ -41,7 +41,7 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
     }
 
     CanvasRenderingContext::ContextType GetContextType() const override {
-      return CanvasRenderingContext::kContext2d;
+      return CanvasRenderingContext::kContext2D;
     }
   };
 
@@ -58,7 +58,7 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
 
   // CanvasRenderingContext implementation
   ~OffscreenCanvasRenderingContext2D() override;
-  ContextType GetContextType() const override { return kContext2d; }
+  ContextType GetContextType() const override { return kContext2D; }
   bool Is2d() const override { return true; }
   bool IsComposited() const override { return false; }
   bool IsAccelerated() const override;
