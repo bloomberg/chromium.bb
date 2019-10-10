@@ -129,6 +129,10 @@ const base::Feature kImplicitRootScroller {
 #endif
 };
 
+// Enable CSSOM View Scroll Coordinates. https://crbug.com/721759.
+const base::Feature kCSSOMViewScrollCoordinates{
+    "CSSOMViewScrollCoordinates", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables usage of getDisplayMedia() that allows capture of web content, see
 // https://crbug.com/865060.
 const base::Feature kRTCGetDisplayMedia{"RTCGetDisplayMedia",

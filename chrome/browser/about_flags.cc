@@ -3843,6 +3843,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableImplicitRootScrollerDescription, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kImplicitRootScroller)},
 
+    {"enable-cssom-view-scroll-coordinates",
+     flag_descriptions::kEnableCSSOMViewScrollCoordinatesName,
+     flag_descriptions::kEnableCSSOMViewScrollCoordinatesDescription, kOsAll,
+     FEATURE_VALUE_TYPE(blink::features::kCSSOMViewScrollCoordinates)},
+
     {"enable-text-fragment-anchor",
      flag_descriptions::kEnableTextFragmentAnchorName,
      flag_descriptions::kEnableTextFragmentAnchorDescription, kOsAll,

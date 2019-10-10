@@ -425,6 +425,9 @@ extern const char kEnableHistoryFaviconsGoogleServerQueryDescription[];
 extern const char kEnableImplicitRootScrollerName[];
 extern const char kEnableImplicitRootScrollerDescription[];
 
+extern const char kEnableCSSOMViewScrollCoordinatesName[];
+extern const char kEnableCSSOMViewScrollCoordinatesDescription[];
+
 extern const char kEnableLitePageServerPreviewsName[];
 extern const char kEnableLitePageServerPreviewsDescription[];
 

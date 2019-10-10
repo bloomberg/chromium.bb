@@ -686,6 +686,9 @@ crbug.com/591099 external/wpt/css/css-ui/text-overflow-015.html [ Failure ]
 
 crbug.com/1003506 external/wpt/css/css-flexbox/percentage-heights-007.html [ Failure ]
 
+crbug.com/680331 external/wpt/css/cssom-view/scrollIntoView-sideways-lr-writing-mode-and-rtl-direction.html [ Failure ]
+crbug.com/680331 external/wpt/css/cssom-view/scrollIntoView-sideways-rl-writing-mode-and-rtl-direction.html [ Failure ]
+
 # ====== Layout team owned tests to here ======
 
 # ====== LayoutNG-only failures from here ======
@@ -5806,8 +5809,6 @@ crbug.com/705583 external/wpt/html/semantics/embedded-content/the-iframe-element
 
 # Sheriff 2019-07-30
 crbug.com/987115 [ Win Linux ] virtual/threaded/fast/scrolling/scrollbars/scrollbar-button-gesture-target.html [ Crash Pass Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/cssom-view/scrollIntoView-sideways-lr-writing-mode-and-rtl-direction.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/cssom-view/scrollIntoView-sideways-rl-writing-mode-and-rtl-direction.html [ Failure ]
 
 # Sheriff 2019-07-31
 crbug.com/979422 [ Mac ] fast/borders/border-radius-mask-canvas-with-shadow.html [ Failure ]

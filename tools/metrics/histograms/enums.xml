@@ -35124,6 +35124,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1894699049" label="AudioFocusEnforcement:disabled"/>
   <int value="-1893668420"
       label="AutofillSaveCreditCardUsesStrikeSystem:enabled"/>
+  <int value="-1893019071" label="CSSOMViewScrollCoordinates:disabled"/>
   <int value="-1892555086" label="disable-compositor-animation-timelines"/>
   <int value="-1892000374" label="SeccompSandboxAndroid:enabled"/>
   <int value="-1890374564" label="OobeRecommendAppsScreen:disabled"/>
@@ -35874,6 +35875,7 @@ from previous Chrome versions.
   <int value="-966290456" label="WebAuthenticationCtap2:enabled"/>
   <int value="-965842218" label="MultiDeviceApi:disabled"/>
   <int value="-964676765" label="enable-accelerated-mjpeg-decode"/>
+  <int value="-964620377" label="CSSOMViewScrollCoordinates:enabled"/>
   <int value="-962030536" label="ChromeDuetLabeled:enabled"/>
   <int value="-960077963" label="EnableAuraTooltipsOnWindows:enabled"/>
   <int value="-958950214" label="AllowDisableMouseAcceleration:disabled"/>
