@@ -52,7 +52,7 @@ class RTCCertificateGeneratorRequest
   void GenerateCertificateAsync(
       const blink::WebRTCKeyParams& key_params,
       const absl::optional<uint64_t>& expires_ms,
-      blink::WebRTCCertificateCallback completion_callback) {
+      blink::RTCCertificateCallback completion_callback) {
     DCHECK(main_thread_->BelongsToCurrentThread());
     DCHECK(completion_callback);
 
@@ -70,7 +70,7 @@ class RTCCertificateGeneratorRequest
   void GenerateCertificateOnWorkerThread(
       const blink::WebRTCKeyParams key_params,
       const absl::optional<uint64_t> expires_ms,
-      blink::WebRTCCertificateCallback completion_callback) {
+      blink::RTCCertificateCallback completion_callback) {
     DCHECK(worker_thread_->BelongsToCurrentThread());
 
     rtc::scoped_refptr<rtc::RTCCertificate> certificate =
@@ -84,7 +84,7 @@ class RTCCertificateGeneratorRequest
   }
 
   void DoCallbackOnMainThread(
-      blink::WebRTCCertificateCallback completion_callback,
+      blink::RTCCertificateCallback completion_callback,
       rtc::scoped_refptr<rtc::RTCCertificate> certificate) {
     DCHECK(main_thread_->BelongsToCurrentThread());
     DCHECK(completion_callback);
@@ -100,7 +100,7 @@ class RTCCertificateGeneratorRequest
 void GenerateCertificateWithOptionalExpiration(
     const blink::WebRTCKeyParams& key_params,
     const absl::optional<uint64_t>& expires_ms,
-    blink::WebRTCCertificateCallback completion_callback,
+    blink::RTCCertificateCallback completion_callback,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   DCHECK(WebRTCKeyParamsToKeyParams(key_params).IsValid());
   auto* pc_dependency_factory =
@@ -118,7 +118,7 @@ void GenerateCertificateWithOptionalExpiration(
 
 void RTCCertificateGenerator::GenerateCertificate(
     const blink::WebRTCKeyParams& key_params,
-    blink::WebRTCCertificateCallback completion_callback,
+    blink::RTCCertificateCallback completion_callback,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   GenerateCertificateWithOptionalExpiration(
       key_params, absl::nullopt, std::move(completion_callback), task_runner);
@@ -127,7 +127,7 @@ void RTCCertificateGenerator::GenerateCertificate(
 void RTCCertificateGenerator::GenerateCertificateWithExpiration(
     const blink::WebRTCKeyParams& key_params,
     uint64_t expires_ms,
-    blink::WebRTCCertificateCallback completion_callback,
+    blink::RTCCertificateCallback completion_callback,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   GenerateCertificateWithOptionalExpiration(
       key_params, expires_ms, std::move(completion_callback), task_runner);

@@ -5,9 +5,11 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_RTC_CERTIFICATE_GENERATOR_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_RTC_CERTIFICATE_GENERATOR_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "third_party/blink/public/platform/web_rtc_certificate_generator.h"
 #include "third_party/blink/public/platform/web_rtc_key_params.h"
+#include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
 
@@ -17,29 +19,42 @@ class SingleThreadTaskRunner;
 
 namespace blink {
 
+using RTCCertificateCallback =
+    base::OnceCallback<void(rtc::scoped_refptr<rtc::RTCCertificate>)>;
+
 // Chromium's WebRTCCertificateGenerator implementation; uses the
 // PeerConnectionIdentityStore/SSLIdentity::Generate to generate the identity,
 // rtc::RTCCertificate and blink::RTCCertificate.
-class MODULES_EXPORT RTCCertificateGenerator
-    : public blink::WebRTCCertificateGenerator {
+//
+// TODO(crbug.com/787254): Convert use of WebString to WTF::String.
+class MODULES_EXPORT RTCCertificateGenerator {
  public:
   RTCCertificateGenerator() {}
-  ~RTCCertificateGenerator() override {}
+  ~RTCCertificateGenerator() {}
 
-  // blink::WebRTCCertificateGenerator implementation.
+  // Start generating a certificate asynchronously. |observer| is invoked on the
+  // same thread that called generateCertificate when the operation is
+  // completed.
   void GenerateCertificate(
       const blink::WebRTCKeyParams& key_params,
-      blink::WebRTCCertificateCallback completion_callback,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
+      blink::RTCCertificateCallback completion_callback,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   void GenerateCertificateWithExpiration(
       const blink::WebRTCKeyParams& key_params,
       uint64_t expires_ms,
-      blink::WebRTCCertificateCallback completion_callback,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
-  bool IsSupportedKeyParams(const blink::WebRTCKeyParams& key_params) override;
+      blink::RTCCertificateCallback completion_callback,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+
+  // Determines if the parameters are supported by |GenerateCertificate|.
+  // For example, if the number of bits of some parameter is too small or too
+  // large we may want to reject it for security or performance reasons.
+  bool IsSupportedKeyParams(const blink::WebRTCKeyParams& key_params);
+
+  // Creates a certificate from the PEM strings. See also
+  // |rtc::RTCCertificate::ToPEM|.
   rtc::scoped_refptr<rtc::RTCCertificate> FromPEM(
       blink::WebString pem_private_key,
-      blink::WebString pem_certificate) override;
+      blink::WebString pem_certificate);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RTCCertificateGenerator);
