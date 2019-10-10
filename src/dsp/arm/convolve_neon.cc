@@ -1595,17 +1595,22 @@ inline void ConvolveKernelHorizontalSigned8Tap(
 }
 
 // This function handles blocks of width 2 or 4.
-template <int num_taps, int grade_y, int width>
-inline void ConvolveVerticalScale4xH(const int16_t* src, const int subpixel_y,
-                                     const int inter_round_bits,
-                                     const int filter_index, const int step_y,
-                                     const int height, uint16_t* dest,
-                                     const ptrdiff_t dest_stride) {
+template <int num_taps, int grade_y, int width, bool is_compound>
+void __attribute__((noinline))
+ConvolveVerticalScale4xH(const int16_t* src, const int subpixel_y,
+                         const int inter_round_bits, const int filter_index,
+                         const int step_y, const int height, void* dest,
+                         const ptrdiff_t dest_stride) {
   const int32x4_t v_inter_round_bits = vdupq_n_s32(-inter_round_bits);
+  const uint16x4_t single_round_offset =
+      vdup_n_u16((1 << kBitdepth8) + (1 << (kBitdepth8 - 1)));
   constexpr ptrdiff_t src_stride = kIntermediateStride;
   constexpr int kernel_offset = (8 - num_taps) / 2;
   src += src_stride * kernel_offset;
   const int16_t* src_y = src;
+  // |dest| is 16-bit in compound mode, Pixel otherwise.
+  uint16_t* dest16_y = reinterpret_cast<uint16_t*>(dest);
+  uint8_t* dest_y = reinterpret_cast<uint8_t*>(dest);
   int16x4_t s[num_taps + grade_y];
 
   int p = subpixel_y & 1023;
@@ -1618,10 +1623,20 @@ inline void ConvolveVerticalScale4xH(const int16_t* src, const int subpixel_y,
     int filter_id = (p >> 6) & kSubPixelMask;
     int16x8_t filter = vld1q_s16(kSubPixelFilters[filter_index][filter_id]);
     uint32x4_t sums = Sum2DVerticalTaps4<num_taps>(s, filter);
-    if (width == 2) {
-      Store2<0>(dest, vmovn_u32(vrshlq_u32(sums, v_inter_round_bits)));
+    uint16x4_t result = vmovn_u32(vrshlq_u32(sums, v_inter_round_bits));
+    if (is_compound) {
+      if (width == 2) {
+        Store2<0>(dest16_y, result);
+      } else {
+        vst1_u16(dest16_y, result);
+      }
     } else {
-      vst1_u16(dest, vmovn_u32(vrshlq_u32(sums, v_inter_round_bits)));
+      result = vqsub_u16(result, single_round_offset);
+      if (width == 2) {
+        Store2<0>(dest_y, vqmovn_u16(vcombine_u16(result, result)));
+      } else {
+        StoreLo4(dest_y, vqmovn_u16(vcombine_u16(result, result)));
+      }
     }
     p += step_y;
     int p_diff = (p >> kScaleSubPixelBits) - (prev_p >> kScaleSubPixelBits);
@@ -1632,46 +1647,64 @@ inline void ConvolveVerticalScale4xH(const int16_t* src, const int subpixel_y,
     if (grade_y > 1) {
       s[num_taps + 1] = vld1_s16(src_y + (num_taps + 1) * src_stride);
     }
-    dest += dest_stride;
+    dest16_y += dest_stride;
+    dest_y += dest_stride;
 
     filter_id = (p >> 6) & kSubPixelMask;
     filter = vld1q_s16(kSubPixelFilters[filter_index][filter_id]);
     sums = Sum2DVerticalTaps4<num_taps>(&s[p_diff], filter);
-    if (width == 2) {
-      Store2<0>(dest, vmovn_u32(vrshlq_u32(sums, v_inter_round_bits)));
+    result = vmovn_u32(vrshlq_u32(sums, v_inter_round_bits));
+    if (is_compound) {
+      if (width == 2) {
+        Store2<0>(dest16_y, result);
+      } else {
+        vst1_u16(dest16_y, result);
+      }
     } else {
-      vst1_u16(dest, vmovn_u32(vrshlq_u32(sums, v_inter_round_bits)));
+      result = vqsub_u16(result, single_round_offset);
+      if (width == 2) {
+        Store2<0>(dest_y, vqmovn_u16(vcombine_u16(result, result)));
+      } else {
+        StoreLo4(dest_y, vqmovn_u16(vcombine_u16(result, result)));
+      }
     }
     p += step_y;
     src_y = src + (p >> kScaleSubPixelBits) * src_stride;
     prev_p = p;
-    dest += dest_stride;
+    dest16_y += dest_stride;
+    dest_y += dest_stride;
 
     y += 2;
   } while (y < height);
 }
 
-template <int num_taps, int grade_y>
+template <int num_taps, int grade_y, bool is_compound>
 inline void ConvolveVerticalScale(const int16_t* src, const int width,
                                   const int subpixel_y,
                                   const int inter_round_bits,
                                   const int filter_index, const int step_y,
-                                  const int height, uint16_t* dest,
+                                  const int height, void* dest,
                                   const ptrdiff_t dest_stride) {
   const int32x4_t v_inter_round_bits = vdupq_n_s32(-inter_round_bits);
   constexpr ptrdiff_t src_stride = kIntermediateStride;
+  const uint16x8_t single_round_offset =
+      vdupq_n_u16((1 << kBitdepth8) + (1 << (kBitdepth8 - 1)));
   constexpr int kernel_offset = (8 - num_taps) / 2;
   src += src_stride * kernel_offset;
   // A possible improvement is to use arithmetic to decide how many times to
   // apply filters to same source before checking whether to load new srcs.
   // However, this will only improve performance with very small step sizes.
   int16x8_t s[num_taps + grade_y];
+  // |dest| is 16-bit in compound mode, Pixel otherwise.
+  uint16_t* dest16_y;
+  uint8_t* dest_y;
 
   int x = 0;
   do {  // x < width
     const int16_t* src_x = src + x;
     const int16_t* src_y = src_x;
-    uint16_t* dest_y = dest + x;
+    dest16_y = reinterpret_cast<uint16_t*>(dest) + x;
+    dest_y = reinterpret_cast<uint8_t*>(dest) + x;
     int p = subpixel_y & 1023;
     int prev_p = p;
     int y = 0;
@@ -1682,10 +1715,15 @@ inline void ConvolveVerticalScale(const int16_t* src, const int width,
       int filter_id = (p >> 6) & kSubPixelMask;
       int16x8_t filter = vld1q_s16(kSubPixelFilters[filter_index][filter_id]);
       uint32x4x2_t sums = Sum2DVerticalTaps<num_taps>(s, filter);
-      vst1q_u16(
-          dest_y,
+      uint16x8_t result =
           vcombine_u16(vmovn_u32(vrshlq_u32(sums.val[0], v_inter_round_bits)),
-                       vmovn_u32(vrshlq_u32(sums.val[1], v_inter_round_bits))));
+                       vmovn_u32(vrshlq_u32(sums.val[1], v_inter_round_bits)));
+      if (is_compound) {
+        vst1q_u16(dest16_y, result);
+      } else {
+        result = vqsubq_u16(result, single_round_offset);
+        vst1_u8(dest_y, vqmovn_u16(result));
+      }
       p += step_y;
       int p_diff = (p >> kScaleSubPixelBits) - (prev_p >> kScaleSubPixelBits);
       // |grade_y| > 1 always means p_diff > 0, so load vectors that may be
@@ -1695,18 +1733,25 @@ inline void ConvolveVerticalScale(const int16_t* src, const int width,
       if (grade_y > 1) {
         s[num_taps + 1] = vld1q_s16(src_y + (num_taps + 1) * src_stride);
       }
+      dest16_y += dest_stride;
       dest_y += dest_stride;
 
       filter_id = (p >> 6) & kSubPixelMask;
       filter = vld1q_s16(kSubPixelFilters[filter_index][filter_id]);
       sums = Sum2DVerticalTaps<num_taps>(&s[p_diff], filter);
-      vst1q_u16(
-          dest_y,
+      result =
           vcombine_u16(vmovn_u32(vrshlq_u32(sums.val[0], v_inter_round_bits)),
-                       vmovn_u32(vrshlq_u32(sums.val[1], v_inter_round_bits))));
+                       vmovn_u32(vrshlq_u32(sums.val[1], v_inter_round_bits)));
+      if (is_compound) {
+        vst1q_u16(dest16_y, result);
+      } else {
+        result = vqsubq_u16(result, single_round_offset);
+        vst1_u8(dest_y, vqmovn_u16(result));
+      }
       p += step_y;
       src_y = src_x + (p >> kScaleSubPixelBits) * src_stride;
       prev_p = p;
+      dest16_y += dest_stride;
       dest_y += dest_stride;
 
       y += 2;
@@ -1715,15 +1760,16 @@ inline void ConvolveVerticalScale(const int16_t* src, const int width,
   } while (x < width);
 }
 
-void ConvolveCompoundScale2D_NEON(
+template <bool is_compound>
+void ConvolveScale2D_NEON(
     const void* const reference, const ptrdiff_t reference_stride,
     const int horizontal_filter_index, const int vertical_filter_index,
     const int inter_round_bits_vertical, const int subpixel_x,
     const int subpixel_y, const int step_x, const int step_y, const int width,
     const int height, void* prediction, const ptrdiff_t pred_stride) {
-  // TODO(petersonab): Reduce the height here by using the vertical filter size
-  // and offset horizontal filter. Reduce intermediate block stride to width
-  // to make smaller blocks faster.
+  // TODO(petersonab): Reduce the height here by using the vertical filter
+  // size and offset horizontal filter. Reduce intermediate block stride to
+  // width to make smaller blocks faster.
   const int intermediate_height =
       (((height - 1) * step_y + (1 << kScaleSubPixelBits) - 1) >>
        kScaleSubPixelBits) +
@@ -1804,100 +1850,99 @@ void ConvolveCompoundScale2D_NEON(
   // Vertical filter.
   filter_index = GetFilterIndex(vertical_filter_index, height);
   intermediate = intermediate_result;
-  auto* dest = static_cast<uint16_t*>(prediction);
 
   switch (filter_index) {
     case 0:
     case 1:
       if (step_y <= 1024) {
         if (width == 2) {
-          ConvolveVerticalScale4xH<6, 1, 2>(
+          ConvolveVerticalScale4xH<6, 1, 2, is_compound>(
               intermediate, subpixel_y, inter_round_bits_vertical, filter_index,
-              step_y, height, dest, pred_stride);
+              step_y, height, prediction, pred_stride);
         } else if (width == 4) {
-          ConvolveVerticalScale4xH<6, 1, 4>(
+          ConvolveVerticalScale4xH<6, 1, 4, is_compound>(
               intermediate, subpixel_y, inter_round_bits_vertical, filter_index,
-              step_y, height, dest, pred_stride);
+              step_y, height, prediction, pred_stride);
         } else {
-          ConvolveVerticalScale<6, 1>(intermediate, width, subpixel_y,
-                                      inter_round_bits_vertical, filter_index,
-                                      step_y, height, dest, pred_stride);
+          ConvolveVerticalScale<6, 1, is_compound>(
+              intermediate, width, subpixel_y, inter_round_bits_vertical,
+              filter_index, step_y, height, prediction, pred_stride);
         }
       } else {
         if (width == 2) {
-          ConvolveVerticalScale4xH<6, 2, 2>(
+          ConvolveVerticalScale4xH<6, 2, 2, is_compound>(
               intermediate, subpixel_y, inter_round_bits_vertical, filter_index,
-              step_y, height, dest, pred_stride);
+              step_y, height, prediction, pred_stride);
         } else if (width == 4) {
-          ConvolveVerticalScale4xH<6, 2, 4>(
+          ConvolveVerticalScale4xH<6, 2, 4, is_compound>(
               intermediate, subpixel_y, inter_round_bits_vertical, filter_index,
-              step_y, height, dest, pred_stride);
+              step_y, height, prediction, pred_stride);
         } else {
-          ConvolveVerticalScale<6, 2>(intermediate, width, subpixel_y,
-                                      inter_round_bits_vertical, filter_index,
-                                      step_y, height, dest, pred_stride);
+          ConvolveVerticalScale<6, 2, is_compound>(
+              intermediate, width, subpixel_y, inter_round_bits_vertical,
+              filter_index, step_y, height, prediction, pred_stride);
         }
       }
       break;
     case 2:
       if (step_y <= 1024) {
         if (width == 2) {
-          ConvolveVerticalScale4xH<8, 1, 2>(
+          ConvolveVerticalScale4xH<8, 1, 2, is_compound>(
               intermediate, subpixel_y, inter_round_bits_vertical, filter_index,
-              step_y, height, dest, pred_stride);
+              step_y, height, prediction, pred_stride);
         } else if (width == 4) {
-          ConvolveVerticalScale4xH<8, 1, 4>(
+          ConvolveVerticalScale4xH<8, 1, 4, is_compound>(
               intermediate, subpixel_y, inter_round_bits_vertical, filter_index,
-              step_y, height, dest, pred_stride);
+              step_y, height, prediction, pred_stride);
         } else {
-          ConvolveVerticalScale<8, 1>(intermediate, width, subpixel_y,
-                                      inter_round_bits_vertical, filter_index,
-                                      step_y, height, dest, pred_stride);
+          ConvolveVerticalScale<8, 1, is_compound>(
+              intermediate, width, subpixel_y, inter_round_bits_vertical,
+              filter_index, step_y, height, prediction, pred_stride);
         }
       } else {
         if (width == 2) {
-          ConvolveVerticalScale4xH<8, 2, 2>(
+          ConvolveVerticalScale4xH<8, 2, 2, is_compound>(
               intermediate, subpixel_y, inter_round_bits_vertical, filter_index,
-              step_y, height, dest, pred_stride);
+              step_y, height, prediction, pred_stride);
         } else if (width == 4) {
-          ConvolveVerticalScale4xH<8, 2, 4>(
+          ConvolveVerticalScale4xH<8, 2, 4, is_compound>(
               intermediate, subpixel_y, inter_round_bits_vertical, filter_index,
-              step_y, height, dest, pred_stride);
+              step_y, height, prediction, pred_stride);
         } else {
-          ConvolveVerticalScale<8, 2>(intermediate, width, subpixel_y,
-                                      inter_round_bits_vertical, filter_index,
-                                      step_y, height, dest, pred_stride);
+          ConvolveVerticalScale<8, 2, is_compound>(
+              intermediate, width, subpixel_y, inter_round_bits_vertical,
+              filter_index, step_y, height, prediction, pred_stride);
         }
       }
       break;
     case 3:
       if (step_y <= 1024) {
         if (width == 2) {
-          ConvolveVerticalScale4xH<2, 1, 2>(
+          ConvolveVerticalScale4xH<2, 1, 2, is_compound>(
               intermediate, subpixel_y, inter_round_bits_vertical, filter_index,
-              step_y, height, dest, pred_stride);
+              step_y, height, prediction, pred_stride);
         } else if (width == 4) {
-          ConvolveVerticalScale4xH<2, 1, 4>(
+          ConvolveVerticalScale4xH<2, 1, 4, is_compound>(
               intermediate, subpixel_y, inter_round_bits_vertical, filter_index,
-              step_y, height, dest, pred_stride);
+              step_y, height, prediction, pred_stride);
         } else {
-          ConvolveVerticalScale<2, 1>(intermediate, width, subpixel_y,
-                                      inter_round_bits_vertical, filter_index,
-                                      step_y, height, dest, pred_stride);
+          ConvolveVerticalScale<2, 1, is_compound>(
+              intermediate, width, subpixel_y, inter_round_bits_vertical,
+              filter_index, step_y, height, prediction, pred_stride);
         }
       } else {
         if (width == 2) {
-          ConvolveVerticalScale4xH<2, 2, 2>(
+          ConvolveVerticalScale4xH<2, 2, 2, is_compound>(
               intermediate, subpixel_y, inter_round_bits_vertical, filter_index,
-              step_y, height, dest, pred_stride);
+              step_y, height, prediction, pred_stride);
         } else if (width == 4) {
-          ConvolveVerticalScale4xH<2, 2, 4>(
+          ConvolveVerticalScale4xH<2, 2, 4, is_compound>(
               intermediate, subpixel_y, inter_round_bits_vertical, filter_index,
-              step_y, height, dest, pred_stride);
+              step_y, height, prediction, pred_stride);
         } else {
-          ConvolveVerticalScale<2, 2>(intermediate, width, subpixel_y,
-                                      inter_round_bits_vertical, filter_index,
-                                      step_y, height, dest, pred_stride);
+          ConvolveVerticalScale<2, 2, is_compound>(
+              intermediate, width, subpixel_y, inter_round_bits_vertical,
+              filter_index, step_y, height, prediction, pred_stride);
         }
       }
       break;
@@ -1907,31 +1952,31 @@ void ConvolveCompoundScale2D_NEON(
       assert(height <= 4);
       if (step_y <= 1024) {
         if (width == 2) {
-          ConvolveVerticalScale4xH<4, 1, 2>(
+          ConvolveVerticalScale4xH<4, 1, 2, is_compound>(
               intermediate, subpixel_y, inter_round_bits_vertical, filter_index,
-              step_y, height, dest, pred_stride);
+              step_y, height, prediction, pred_stride);
         } else if (width == 4) {
-          ConvolveVerticalScale4xH<4, 1, 4>(
+          ConvolveVerticalScale4xH<4, 1, 4, is_compound>(
               intermediate, subpixel_y, inter_round_bits_vertical, filter_index,
-              step_y, height, dest, pred_stride);
+              step_y, height, prediction, pred_stride);
         } else {
-          ConvolveVerticalScale<4, 1>(intermediate, width, subpixel_y,
-                                      inter_round_bits_vertical, filter_index,
-                                      step_y, height, dest, pred_stride);
+          ConvolveVerticalScale<4, 1, is_compound>(
+              intermediate, width, subpixel_y, inter_round_bits_vertical,
+              filter_index, step_y, height, prediction, pred_stride);
         }
       } else {
         if (width == 2) {
-          ConvolveVerticalScale4xH<4, 2, 2>(
+          ConvolveVerticalScale4xH<4, 2, 2, is_compound>(
               intermediate, subpixel_y, inter_round_bits_vertical, filter_index,
-              step_y, height, dest, pred_stride);
+              step_y, height, prediction, pred_stride);
         } else if (width == 4) {
-          ConvolveVerticalScale4xH<4, 2, 4>(
+          ConvolveVerticalScale4xH<4, 2, 4, is_compound>(
               intermediate, subpixel_y, inter_round_bits_vertical, filter_index,
-              step_y, height, dest, pred_stride);
+              step_y, height, prediction, pred_stride);
         } else {
-          ConvolveVerticalScale<4, 2>(intermediate, width, subpixel_y,
-                                      inter_round_bits_vertical, filter_index,
-                                      step_y, height, dest, pred_stride);
+          ConvolveVerticalScale<4, 2, is_compound>(
+              intermediate, width, subpixel_y, inter_round_bits_vertical,
+              filter_index, step_y, height, prediction, pred_stride);
         }
       }
   }
@@ -3004,7 +3049,8 @@ void Init8bpp() {
   dsp->convolve[0][1][1][0] = ConvolveCompoundVertical_NEON;
   dsp->convolve[0][1][1][1] = ConvolveCompound2D_NEON;
 
-  dsp->convolve_scale[1] = ConvolveCompoundScale2D_NEON;
+  dsp->convolve_scale[0] = ConvolveScale2D_NEON<false>;
+  dsp->convolve_scale[1] = ConvolveScale2D_NEON<true>;
 }
 
 }  // namespace
