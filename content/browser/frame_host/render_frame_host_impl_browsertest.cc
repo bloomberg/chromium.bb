@@ -1137,7 +1137,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest, POSTNavigation) {
   http_server.AddDefaultHandlers(GetTestDataFilePath());
   int post_counter = 0;
   http_server.RegisterRequestMonitor(
-      base::Bind(&PostRequestMonitor, &post_counter));
+      base::BindRepeating(&PostRequestMonitor, &post_counter));
   ASSERT_TRUE(http_server.Start());
 
   GURL url(http_server.GetURL("/session_history/form.html"));
