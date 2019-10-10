@@ -136,3 +136,19 @@ blink_modules_sources("peerconnection") {
     "//third_party/webrtc/api:scoped_refptr",
   ]
 }
+
+jumbo_source_set("test_support") {
+  testonly = true
+
+  sources = [
+    "mock_data_channel_impl.cc",
+  ]
+
+  deps = [
+    "//base",
+    "//base/test:test_support",
+    "//testing/gmock",
+    "//third_party/blink/public:test_headers",
+    "//third_party/webrtc_overrides:init_webrtc",
+  ]
+}

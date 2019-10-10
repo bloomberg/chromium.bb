@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_WEBRTC_MOCK_DATA_CHANNEL_IMPL_H_
-#define CONTENT_RENDERER_MEDIA_WEBRTC_MOCK_DATA_CHANNEL_IMPL_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_PEERCONNECTION_MOCK_DATA_CHANNEL_IMPL_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_PEERCONNECTION_MOCK_DATA_CHANNEL_IMPL_H_
 
 #include <stdint.h>
 
@@ -12,8 +12,10 @@
 #include "base/macros.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
 
-namespace content {
+namespace blink {
 
+// TODO(crbug.com/787254): Move this class out of the Blink API
+// when all its clients get Onion souped.
 class MockDataChannel : public webrtc::DataChannelInterface {
  public:
   MockDataChannel(const std::string& label,
@@ -52,6 +54,6 @@ class MockDataChannel : public webrtc::DataChannelInterface {
   DISALLOW_COPY_AND_ASSIGN(MockDataChannel);
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_MEDIA_WEBRTC_MOCK_DATA_CHANNEL_IMPL_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_PEERCONNECTION_MOCK_DATA_CHANNEL_IMPL_H_

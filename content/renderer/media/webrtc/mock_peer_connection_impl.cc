@@ -11,9 +11,9 @@
 
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "content/renderer/media/webrtc/mock_data_channel_impl.h"
 #include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
 #include "third_party/blink/public/platform/modules/peerconnection/webrtc_util.h"
+#include "third_party/blink/public/web/modules/peerconnection/mock_data_channel_impl.h"
 #include "third_party/webrtc/api/rtp_receiver_interface.h"
 #include "third_party/webrtc/rtc_base/ref_counted_object.h"
 
@@ -405,7 +405,7 @@ MockPeerConnectionImpl::GetReceivers() const {
 rtc::scoped_refptr<webrtc::DataChannelInterface>
 MockPeerConnectionImpl::CreateDataChannel(const std::string& label,
                       const webrtc::DataChannelInit* config) {
-  return new rtc::RefCountedObject<MockDataChannel>(label, config);
+  return new rtc::RefCountedObject<blink::MockDataChannel>(label, config);
 }
 
 bool MockPeerConnectionImpl::GetStats(
