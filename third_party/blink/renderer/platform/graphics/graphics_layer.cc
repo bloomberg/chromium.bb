@@ -585,19 +585,6 @@ void GraphicsLayer::SetSize(const gfx::Size& size) {
   // Note that we don't resize m_contentsLayer. It's up the caller to do that.
 }
 
-void GraphicsLayer::SetTransform(const TransformationMatrix& transform) {
-  transform_ = transform;
-  CcLayer()->SetTransform(TransformationMatrix::ToTransform(transform));
-}
-
-void GraphicsLayer::SetTransformOrigin(const gfx::Point3F& transform_origin) {
-  CcLayer()->SetTransformOrigin(transform_origin);
-}
-
-const gfx::Point3F& GraphicsLayer::TransformOrigin() const {
-  return CcLayer()->transform_origin();
-}
-
 
 bool GraphicsLayer::MasksToBounds() const {
   return CcLayer()->masks_to_bounds();
