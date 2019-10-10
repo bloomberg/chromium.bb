@@ -93,6 +93,10 @@ static int dec_alloc_mi(AV1_COMMON *cm) {
         (MB_MODE_INFO **)aom_calloc(mi_grid_size, sizeof(MB_MODE_INFO *));
     if (!cm->mi_grid_base) return 1;
     cm->mi_grid_size = mi_grid_size;
+
+    cm->tx_type_map = aom_calloc(calc_mi_size(cm->mi_rows) * cm->mi_stride,
+                                 sizeof(*cm->tx_type_map));
+    if (!cm->tx_type_map) return 1;
   }
 
   return 0;
@@ -104,6 +108,8 @@ static void dec_free_mi(AV1_COMMON *cm) {
   aom_free(cm->mi_grid_base);
   cm->mi_grid_base = NULL;
   cm->mi_alloc_size = 0;
+  aom_free(cm->tx_type_map);
+  cm->tx_type_map = NULL;
 }
 
 AV1Decoder *av1_decoder_create(BufferPool *const pool) {

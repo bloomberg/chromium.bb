@@ -473,7 +473,12 @@ static AOM_INLINE void reset_tx_size(MACROBLOCK *x, MB_MODE_INFO *mbmi,
   if (is_inter_block(mbmi)) {
     memset(mbmi->inter_tx_size, mbmi->tx_size, sizeof(mbmi->inter_tx_size));
   }
-  memset(mbmi->txk_type, DCT_DCT, sizeof(mbmi->txk_type[0]) * TXK_TYPE_BUF_LEN);
+  const int stride = xd->tx_type_map_stride;
+  const int bw = mi_size_wide[mbmi->sb_type];
+  for (int row = 0; row < mi_size_high[mbmi->sb_type]; ++row) {
+    memset(xd->tx_type_map + row * stride, DCT_DCT,
+           bw * sizeof(xd->tx_type_map[0]));
+  }
   av1_zero(x->blk_skip);
   x->skip = 0;
 }
@@ -508,6 +513,22 @@ static AOM_INLINE void update_state(const AV1_COMP *const cpi, ThreadData *td,
 
   x->skip = ctx->rd_stats.skip;
 
+  xd->tx_type_map = ctx->tx_type_map;
+  xd->tx_type_map_stride = mi_size_wide[bsize];
+  // If not dry_run, copy the transform type data into the frame level buffer.
+  // Encoder will fetch tx types when writing bitstream.
+  if (!dry_run) {
+    const int grid_idx = get_mi_grid_idx(cm, mi_row, mi_col);
+    uint8_t *const tx_type_map = cm->tx_type_map + grid_idx;
+    const int mi_stride = cm->mi_stride;
+    for (int blk_row = 0; blk_row < bh; ++blk_row) {
+      av1_copy_array(tx_type_map + blk_row * mi_stride,
+                     xd->tx_type_map + blk_row * xd->tx_type_map_stride, bw);
+    }
+    xd->tx_type_map = tx_type_map;
+    xd->tx_type_map_stride = mi_stride;
+  }
+
   // If segmentation in use
   if (seg->enabled) {
     // For in frame complexity AQ copy the segment id from the segment map.
@@ -539,12 +560,14 @@ static AOM_INLINE void update_state(const AV1_COMP *const cpi, ThreadData *td,
   for (i = 0; i < 2; ++i) pd[i].color_index_map = ctx->color_index_map[i];
   // Restore the coding context of the MB to that that was in place
   // when the mode was picked for it
-  for (y = 0; y < mi_height; y++)
-    for (x_idx = 0; x_idx < mi_width; x_idx++)
+  for (y = 0; y < mi_height; y++) {
+    for (x_idx = 0; x_idx < mi_width; x_idx++) {
       if ((xd->mb_to_right_edge >> (3 + MI_SIZE_LOG2)) + mi_width > x_idx &&
           (xd->mb_to_bottom_edge >> (3 + MI_SIZE_LOG2)) + mi_height > y) {
         xd->mi[x_idx + y * mis] = mi_addr;
       }
+    }
+  }
 
   if (cpi->oxcf.aq_mode) av1_init_plane_quantizers(cpi, x, mi_addr->segment_id);
 
@@ -709,6 +732,9 @@ static AOM_INLINE void pick_sb_modes(AV1_COMP *const cpi,
   mbmi->mi_row = mi_row;
   mbmi->mi_col = mi_col;
 #endif
+
+  xd->tx_type_map = x->tx_type_map;
+  xd->tx_type_map_stride = mi_size_wide[bsize];
 
   for (i = 0; i < num_planes; ++i) {
     p[i].coeff = ctx->coeff[i];
@@ -1537,7 +1563,7 @@ static AOM_INLINE void encode_b(const AV1_COMP *const cpi,
                                 TOKENEXTRA **tp, int mi_row, int mi_col,
                                 RUN_TYPE dry_run, BLOCK_SIZE bsize,
                                 PARTITION_TYPE partition,
-                                const PICK_MODE_CONTEXT *const ctx, int *rate) {
+                                PICK_MODE_CONTEXT *const ctx, int *rate) {
   TileInfo *const tile = &tile_data->tile_info;
   MACROBLOCK *const x = &td->mb;
   MACROBLOCKD *xd = &x->e_mbd;
@@ -1755,7 +1781,6 @@ static AOM_INLINE void encode_sb(const AV1_COMP *const cpi, ThreadData *td,
       for (i = 0; i < 4; ++i) {
         int this_mi_col = mi_col + i * quarter_step;
         if (i > 0 && this_mi_col >= cm->mi_cols) break;
-
         encode_b(cpi, tile_data, td, tp, mi_row, this_mi_col, dry_run, subsize,
                  partition, &pc_tree->vertical4[i], rate);
       }
@@ -4957,6 +4982,8 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
 
   xd->mi = cm->mi_grid_base;
   xd->mi[0] = cm->mi;
+  xd->tx_type_map = cm->tx_type_map;
+  xd->tx_type_map_stride = cm->mi_stride;
 
   av1_zero(*td->counts);
   av1_zero(rdc->comp_pred_diff);

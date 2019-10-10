@@ -437,6 +437,7 @@ typedef struct AV1Common {
      an extra row on top and column on the left to simplify prediction. */
   int mi_alloc_size, mi_grid_size;
   MB_MODE_INFO *mi; /* Corresponds to upper left visible macroblock */
+  uint8_t *tx_type_map;
 
   // The minimum size each allocated mi can correspond to.
   // For decoder, this is always BLOCK_4X4.

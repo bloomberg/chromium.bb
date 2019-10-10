@@ -237,7 +237,6 @@ typedef struct MB_MODE_INFO {
   INTERINTRA_MODE interintra_mode;
   MOTION_MODE motion_mode;
   PARTITION_TYPE partition;
-  TX_TYPE txk_type[TXK_TYPE_BUF_LEN];
   MV_REFERENCE_FRAME ref_frame[2];
   FILTER_INTRA_MODE_INFO filter_intra_mode_info;
   int8_t skip;
@@ -492,6 +491,9 @@ typedef struct macroblockd {
   MB_MODE_INFO *above_mbmi;
   MB_MODE_INFO *chroma_left_mbmi;
   MB_MODE_INFO *chroma_above_mbmi;
+
+  uint8_t *tx_type_map;
+  int tx_type_map_stride;
 
   int up_available;
   int left_available;
@@ -827,6 +829,7 @@ static INLINE int av1_get_txb_size_index(BLOCK_SIZE bsize, int blk_row,
   return index;
 }
 
+#if CONFIG_INSPECTION
 /*
  * Here is the logic to generate the lookup tables:
  *
@@ -855,12 +858,13 @@ static INLINE int av1_get_txk_type_index(BLOCK_SIZE bsize, int blk_row,
   assert(index < TXK_TYPE_BUF_LEN);
   return index;
 }
+#endif  // CONFIG_INSPECTION
 
-static INLINE void update_txk_array(TX_TYPE *txk_type, BLOCK_SIZE bsize,
-                                    int blk_row, int blk_col, TX_SIZE tx_size,
+static INLINE void update_txk_array(MACROBLOCKD *const xd, int blk_row,
+                                    int blk_col, TX_SIZE tx_size,
                                     TX_TYPE tx_type) {
-  const int txk_type_idx = av1_get_txk_type_index(bsize, blk_row, blk_col);
-  txk_type[txk_type_idx] = tx_type;
+  const int stride = xd->tx_type_map_stride;
+  xd->tx_type_map[blk_row * stride + blk_col] = tx_type;
 
   const int txw = tx_size_wide_unit[tx_size];
   const int txh = tx_size_high_unit[tx_size];
@@ -873,9 +877,7 @@ static INLINE void update_txk_array(TX_TYPE *txk_type, BLOCK_SIZE bsize,
     const int tx_unit = tx_size_wide_unit[TX_16X16];
     for (int idy = 0; idy < txh; idy += tx_unit) {
       for (int idx = 0; idx < txw; idx += tx_unit) {
-        const int this_index =
-            av1_get_txk_type_index(bsize, blk_row + idy, blk_col + idx);
-        txk_type[this_index] = tx_type;
+        xd->tx_type_map[(blk_row + idy) * stride + blk_col + idx] = tx_type;
       }
     }
   }
@@ -892,18 +894,14 @@ static INLINE TX_TYPE av1_get_tx_type(const MACROBLOCKD *xd,
 
   TX_TYPE tx_type;
   if (plane_type == PLANE_TYPE_Y) {
-    const int txk_type_idx =
-        av1_get_txk_type_index(mbmi->sb_type, blk_row, blk_col);
-    tx_type = mbmi->txk_type[txk_type_idx];
+    tx_type = xd->tx_type_map[blk_row * xd->tx_type_map_stride + blk_col];
   } else {
     if (is_inter_block(mbmi)) {
       // scale back to y plane's coordinate
       const struct macroblockd_plane *const pd = &xd->plane[plane_type];
       blk_row <<= pd->subsampling_y;
       blk_col <<= pd->subsampling_x;
-      const int txk_type_idx =
-          av1_get_txk_type_index(mbmi->sb_type, blk_row, blk_col);
-      tx_type = mbmi->txk_type[txk_type_idx];
+      tx_type = xd->tx_type_map[blk_row * xd->tx_type_map_stride + blk_col];
     } else {
       // In intra mode, uv planes don't share the same prediction mode as y
       // plane, so the tx_type should not be shared

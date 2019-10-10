@@ -549,8 +549,8 @@ static void enc_set_mb_mi(AV1_COMMON *cm, int width, int height) {
 static void enc_setup_mi(AV1_COMMON *cm) {
   const int mi_grid_size = cm->mi_stride * calc_mi_size(cm->mi_rows);
   memset(cm->mi, 0, cm->mi_alloc_size * sizeof(*cm->mi));
-
   memset(cm->mi_grid_base, 0, mi_grid_size * sizeof(*cm->mi_grid_base));
+  memset(cm->tx_type_map, 0, mi_grid_size * sizeof(*cm->tx_type_map));
 }
 
 static int enc_alloc_mi(AV1_COMMON *cm) {
@@ -570,6 +570,10 @@ static int enc_alloc_mi(AV1_COMMON *cm) {
         (MB_MODE_INFO **)aom_calloc(mi_grid_size, sizeof(MB_MODE_INFO *));
     if (!cm->mi_grid_base) return 1;
     cm->mi_grid_size = mi_grid_size;
+
+    cm->tx_type_map = aom_calloc(calc_mi_size(cm->mi_rows) * cm->mi_stride,
+                                 sizeof(*cm->tx_type_map));
+    if (!cm->tx_type_map) return 1;
   }
 
   return 0;
@@ -581,6 +585,8 @@ static void enc_free_mi(AV1_COMMON *cm) {
   aom_free(cm->mi_grid_base);
   cm->mi_grid_base = NULL;
   cm->mi_alloc_size = 0;
+  aom_free(cm->tx_type_map);
+  cm->tx_type_map = NULL;
 }
 
 void av1_initialize_enc(void) {

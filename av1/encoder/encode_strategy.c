@@ -887,6 +887,8 @@ void setup_mi(AV1_COMP *const cpi, YV12_BUFFER_CONFIG *src) {
 
   xd->mi = cm->mi_grid_base;
   xd->mi[0] = cm->mi;
+  xd->tx_type_map = cm->tx_type_map;
+  xd->tx_type_map_stride = cm->mi_stride;
 }
 
 // Apply temporal filtering to key frames and encode the filtered frame.

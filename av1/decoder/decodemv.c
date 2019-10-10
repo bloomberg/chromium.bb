@@ -601,9 +601,8 @@ static void read_filter_intra_mode_info(const AV1_COMMON *const cm,
 void av1_read_tx_type(const AV1_COMMON *const cm, MACROBLOCKD *xd, int blk_row,
                       int blk_col, TX_SIZE tx_size, aom_reader *r) {
   MB_MODE_INFO *mbmi = xd->mi[0];
-  const int txk_type_idx =
-      av1_get_txk_type_index(mbmi->sb_type, blk_row, blk_col);
-  TX_TYPE *tx_type = &mbmi->txk_type[txk_type_idx];
+  uint8_t *tx_type =
+      &xd->tx_type_map[blk_row * xd->tx_type_map_stride + blk_col];
   *tx_type = DCT_DCT;
 
   // No need to read transform type if block is skipped.

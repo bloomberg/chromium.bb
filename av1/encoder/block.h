@@ -128,7 +128,7 @@ typedef struct {
   TX_SIZE tx_size;
   TX_SIZE inter_tx_size[INTER_TX_SIZE_BUF_LEN];
   uint8_t blk_skip[MAX_MIB_SIZE * MAX_MIB_SIZE];
-  TX_TYPE txk_type[TXK_TYPE_BUF_LEN];
+  uint8_t tx_type_map[MAX_MIB_SIZE * MAX_MIB_SIZE];
   RD_STATS rd_stats;
   uint32_t hash_value;
 } MB_RD_INFO;
@@ -173,6 +173,7 @@ typedef struct {
   RD_STATS rd_stats_y;
   RD_STATS rd_stats_uv;
   uint8_t blk_skip[MAX_MIB_SIZE * MAX_MIB_SIZE];
+  uint8_t tx_type_map[MAX_MIB_SIZE * MAX_MIB_SIZE];
   uint8_t skip;
   uint8_t disable_skip;
   uint8_t early_skipped;
@@ -328,6 +329,7 @@ struct macroblock {
   MvLimits mv_limits;
 
   uint8_t blk_skip[MAX_MIB_SIZE * MAX_MIB_SIZE];
+  uint8_t tx_type_map[MAX_MIB_SIZE * MAX_MIB_SIZE];
 
   int skip;
   int skip_chroma_rd;

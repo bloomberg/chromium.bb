@@ -884,6 +884,7 @@ static void store_coding_context(MACROBLOCK *x, PICK_MODE_CONTEXT *ctx,
   // restored if we decide to encode this way
   ctx->rd_stats.skip = x->skip;
   memcpy(ctx->blk_skip, x->blk_skip, sizeof(x->blk_skip[0]) * ctx->num_4x4_blk);
+  av1_copy_array(ctx->tx_type_map, xd->tx_type_map, ctx->num_4x4_blk);
   ctx->skippable = x->skip;
   ctx->best_mode_index = mode_index;
   ctx->mic = *xd->mi[0];
@@ -1463,7 +1464,8 @@ void av1_fast_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
                                 tx_mode_to_biggest_tx_size[x->tx_mode]),
                          TX_16X16);
     memset(mi->inter_tx_size, mi->tx_size, sizeof(mi->inter_tx_size));
-    memset(mi->txk_type, DCT_DCT, sizeof(mi->txk_type[0]) * TXK_TYPE_BUF_LEN);
+    memset(xd->tx_type_map, DCT_DCT,
+           sizeof(xd->tx_type_map[0]) * ctx->num_4x4_blk);
     av1_zero(x->blk_skip);
 
     if (ref_frame > usable_ref_frame) continue;

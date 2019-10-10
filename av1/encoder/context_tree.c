@@ -30,7 +30,10 @@ static AOM_INLINE void alloc_mode_context(AV1_COMMON *cm, int num_pix,
   const int num_blk = num_pix / 16;
   ctx->num_4x4_blk = num_blk;
 
-  CHECK_MEM_ERROR(cm, ctx->blk_skip, aom_calloc(num_blk, sizeof(uint8_t)));
+  CHECK_MEM_ERROR(cm, ctx->blk_skip,
+                  aom_calloc(num_blk, sizeof(*ctx->blk_skip)));
+  CHECK_MEM_ERROR(cm, ctx->tx_type_map,
+                  aom_calloc(num_blk, sizeof(*ctx->tx_type_map)));
   for (i = 0; i < num_planes; ++i) {
     ctx->coeff[i] = shared_bufs->coeff_buf[i];
     ctx->qcoeff[i] = shared_bufs->qcoeff_buf[i];
@@ -56,6 +59,8 @@ static AOM_INLINE void free_mode_context(PICK_MODE_CONTEXT *ctx,
   int i;
   aom_free(ctx->blk_skip);
   ctx->blk_skip = 0;
+  aom_free(ctx->tx_type_map);
+  ctx->tx_type_map = 0;
   for (i = 0; i < num_planes; ++i) {
     ctx->coeff[i] = 0;
     ctx->qcoeff[i] = 0;
@@ -222,6 +227,8 @@ void av1_copy_tree_context(PICK_MODE_CONTEXT *dst_ctx,
 
   memcpy(dst_ctx->blk_skip, src_ctx->blk_skip,
          sizeof(uint8_t) * src_ctx->num_4x4_blk);
+  av1_copy_array(dst_ctx->tx_type_map, src_ctx->tx_type_map,
+                 src_ctx->num_4x4_blk);
 
   dst_ctx->hybrid_pred_diff = src_ctx->hybrid_pred_diff;
   dst_ctx->comp_pred_diff = src_ctx->comp_pred_diff;

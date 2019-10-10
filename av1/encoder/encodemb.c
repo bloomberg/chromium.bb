@@ -224,9 +224,10 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
   a = &args->ta[blk_col];
   l = &args->tl[blk_row];
 
+  TX_TYPE tx_type = DCT_DCT;
   if (!is_blk_skip(x, plane, blk_row * bw + blk_col) && !mbmi->skip_mode) {
-    TX_TYPE tx_type = av1_get_tx_type(xd, pd->plane_type, blk_row, blk_col,
-                                      tx_size, cm->reduced_tx_set_used);
+    tx_type = av1_get_tx_type(xd, pd->plane_type, blk_row, blk_col, tx_size,
+                              cm->reduced_tx_set_used);
     if (args->enable_optimize_b != NO_TRELLIS_OPT) {
       av1_xform_quant(
           cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size, tx_type,
@@ -252,9 +253,6 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
 
   if (p->eobs[block]) {
     *(args->skip) = 0;
-
-    TX_TYPE tx_type = av1_get_tx_type(xd, pd->plane_type, blk_row, blk_col,
-                                      tx_size, cm->reduced_tx_set_used);
     av1_inverse_transform_block(xd, dqcoeff, plane, tx_type, tx_size, dst,
                                 pd->dst.stride, p->eobs[block],
                                 cm->reduced_tx_set_used);
@@ -273,13 +271,12 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
       // enable_optimize_b is true to detect potential RD bug.
       const uint8_t disable_txk_check = args->enable_optimize_b;
       if (!disable_txk_check) {
-        assert(mbmi->txk_type[av1_get_txk_type_index(plane_bsize, blk_row,
-                                                     blk_col)] == DCT_DCT);
+        assert(xd->tx_type_map[blk_row * xd->tx_type_map_stride + blk_col)] ==
+            DCT_DCT);
       }
     }
 #endif
-    update_txk_array(mbmi->txk_type, plane_bsize, blk_row, blk_col, tx_size,
-                     DCT_DCT);
+    update_txk_array(xd, blk_row, blk_col, tx_size, DCT_DCT);
   }
 
 #if CONFIG_MISMATCH_DEBUG
@@ -561,7 +558,6 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
   const AV1_COMMON *const cm = &args->cpi->common;
   MACROBLOCK *const x = args->x;
   MACROBLOCKD *const xd = &x->e_mbd;
-  MB_MODE_INFO *mbmi = xd->mi[0];
   struct macroblock_plane *const p = &x->plane[plane];
   struct macroblockd_plane *const pd = &xd->plane[plane];
   tran_low_t *dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
@@ -617,12 +613,11 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
 #if 0
     if (args->cpi->oxcf.aq_mode == NO_AQ
         && args->cpi->oxcf.deltaq_mode == NO_DELTA_Q) {
-      assert(mbmi->txk_type[av1_get_txk_type_index(plane_bsize, blk_row,
-                                                   blk_col)] == DCT_DCT);
+      assert(xd->tx_type_map[blk_row * xd->tx_type_map_stride + blk_col)] ==
+          DCT_DCT);
     }
 #endif
-    update_txk_array(mbmi->txk_type, plane_bsize, blk_row, blk_col, tx_size,
-                     DCT_DCT);
+    update_txk_array(xd, blk_row, blk_col, tx_size, DCT_DCT);
   }
 
   // For intra mode, skipped blocks are so rare that transmitting skip=1 is

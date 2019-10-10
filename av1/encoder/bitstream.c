@@ -1497,9 +1497,12 @@ static AOM_INLINE void write_modes_b(AV1_COMP *cpi, const TileInfo *const tile,
                                      int mi_row, int mi_col) {
   const AV1_COMMON *cm = &cpi->common;
   MACROBLOCKD *xd = &cpi->td.mb.e_mbd;
-  xd->mi = cm->mi_grid_base + (mi_row * cm->mi_stride + mi_col);
+  const int grid_idx = mi_row * cm->mi_stride + mi_col;
+  xd->mi = cm->mi_grid_base + grid_idx;
   cpi->td.mb.mbmi_ext_frame =
       cpi->mbmi_ext_frame_base + get_mi_ext_idx(cm, mi_row, mi_col);
+  xd->tx_type_map = cm->tx_type_map + grid_idx;
+  xd->tx_type_map_stride = cm->mi_stride;
 
   const MB_MODE_INFO *mbmi = xd->mi[0];
   const BLOCK_SIZE bsize = mbmi->sb_type;

@@ -35,6 +35,7 @@ typedef struct {
   tran_low_t *dqcoeff[MAX_MB_PLANE];
   uint16_t *eobs[MAX_MB_PLANE];
   uint8_t *txb_entropy_ctx[MAX_MB_PLANE];
+  uint8_t *tx_type_map;
 
   int num_4x4_blk;
   // For current partition, only if all Y, U, and V transform blocks'
