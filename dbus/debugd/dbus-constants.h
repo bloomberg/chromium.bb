@@ -29,6 +29,7 @@ const char kSystraceStatus[] = "SystraceStatus";
 const char kGetLog[] = "GetLog";
 const char kGetAllLogs[] = "GetAllLogs";
 const char kGetBigFeedbackLogs[] = "GetBigFeedbackLogs";
+const char kKstaledSetRatio[] = "KstaledSetRatio";
 const char kGetJournalLog[] = "GetJournalLog";
 const char kTestICMP[] = "TestICMP";
 const char kTestICMPWithOptions[] = "TestICMPWithOptions";
