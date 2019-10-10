@@ -1221,13 +1221,9 @@ Polymer({
       shouldPrintBackgrounds: this.getSettingValue('cssBackground'),
       shouldPrintSelectionOnly: false,  // only used in print preview
       previewModifiable: this.documentSettings.isModifiable,
-      printToPDF: destination.id ==
-          print_preview.Destination.GooglePromotedId.SAVE_AS_PDF,
       printToGoogleDrive:
           destination.id == print_preview.Destination.GooglePromotedId.DOCS,
-      printWithCloudPrint: !destination.isLocal,
-      printWithPrivet: destination.isPrivet,
-      printWithExtension: destination.isExtension,
+      printerType: print_preview.getPrinterTypeForDestination(destination),
       rasterizePDF: this.getSettingValue('rasterize'),
       scaleFactor: this.getSettingValue('customScaling') ?
           parseInt(this.getSettingValue('scaling'), 10) :

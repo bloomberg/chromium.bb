@@ -643,12 +643,8 @@ Polymer({
     }
 
     // Destination
-    if (this.destination.isPrivet !== lastTicket.printWithPrivet ||
-        this.destination.isExtension !== lastTicket.printWithExtension ||
-        !this.destination.isLocal !== lastTicket.printWithCloudPrint ||
-        (lastTicket.printToPDF &&
-         this.destination.id !==
-             print_preview.Destination.GooglePromotedId.SAVE_AS_PDF)) {
+    if (print_preview.getPrinterTypeForDestination(this.destination) !==
+        lastTicket.printerType) {
       return true;
     }
 
@@ -717,11 +713,7 @@ Polymer({
       duplex: this.getSettingValue('duplex') ?
           print_preview.DuplexMode.LONG_EDGE :
           print_preview.DuplexMode.SIMPLEX,
-      printToPDF: this.destination.id ==
-          print_preview.Destination.GooglePromotedId.SAVE_AS_PDF,
-      printWithCloudPrint: !this.destination.isLocal,
-      printWithPrivet: this.destination.isPrivet,
-      printWithExtension: this.destination.isExtension,
+      printerType: print_preview.getPrinterTypeForDestination(this.destination),
       rasterizePDF: this.getSettingValue('rasterize'),
     };
 

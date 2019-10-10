@@ -317,6 +317,7 @@ js_library("preview_area") {
     "../../pdf:pdf_scripting_api",
     "../data:coordinate2d",
     "../data:destination",
+    "../data:destination_match",
     "../data:margins",
     "../data:model",
     "../data:printable_area",
