@@ -1,8 +1,9 @@
 #!/usr/bin/env python2
 
-import sys
-import re
 import gc
+import pprint
+import re
+import sys
 
 # Purpose: The purpose of this tool is to generate a MSVS style map file from
 # a combination of dumpbin-style map and a llvm-style map.  Some in-house
@@ -47,7 +48,7 @@ def read_dumpbin_map(dumpbin_map, filename):
     ' +' +                        # [whitespace]
     '[^ ]{2,}' +                  # mangled symbol
     ' +' +                        # [whitespace]
-    '[(]([^)]+)[)]' +             # demangled symbol
+    '[(](.+)[)]' +                # demangled symbol
     '\\Z',                        # [end of string]
     re.IGNORECASE)
 
@@ -110,9 +111,7 @@ def read_llvm_map(llvm_map, filename):
     ' +' +               # [whitespace]
     '[0-9]+'             # alignment
     ' {17}' +            # [whitespace]
-    '["]([^"]+)["]' +    # demangled symbol
-    ' +' +               # [whitespace]
-    '[(][^ ]{2,}[)]' +   # mangled symbol
+    '(.+)' +             # demangled symbol
     '\\Z',               # [end of string]
     re.IGNORECASE)
 
@@ -127,18 +126,17 @@ def read_llvm_map(llvm_map, filename):
       if object_name:
         last_object_name = object_name
       else:
-        parse_llvm_symbol_line(
-            llvm_map,
-            c_symbol_pattern.match(stripped_line) or cpp_symbol_pattern.match(stripped_line),
-            last_object_name)
+        match = c_symbol_pattern.match(stripped_line) or\
+                cpp_symbol_pattern.match(stripped_line)
+        parse_llvm_symbol_line(llvm_map, match, last_object_name)
 
       line = fp.readline()
 
 # merge_map consolidates the data collected from the dumpbin-style map file
 # and the llvm-style map file into a merged dataset
 def merge_maps(merged_map, dumpbin_map, llvm_map):
-  # dumpbin_map provides 'addr', 'sym'
-  # llvm_map provides 'sym', obj'
+  # dumpbin_map provides 'rva', 'addr', 'sym'
+  # llvm_map provides 'rva', 'sym', obj'
 
   # Import dumpbin_map and fill in the missing obj field from the llvm_map
   for rva, mapping in dumpbin_map.iteritems():
@@ -264,6 +262,7 @@ def write_msvs_map(msvs_map):
 def main(args):
   llvm_map_filename = None
   dumpbin_map_filename = None
+  status = 0
 
   for i in range(len(args[1:])):
     if args[i] == '--llvm-map':
@@ -271,32 +270,57 @@ def main(args):
     elif args[i] == '--dumpbin-map':
       dumpbin_map_filename = args[i+1]
     elif args[i].startswith('-'):
-      print(
-        "Usage: {0} --llvm-map <input> --dumpbin-map <input>".format(args[0]))
-      return 1
+      llvm_map_filename = None
+      dumpbin_map_filename = None
+      status = 1
+      break
 
-  if not llvm_map_filename or not dumpbin_map_filename:
+  if llvm_map_filename and dumpbin_map_filename:
+    dumpbin_map = {}
+    read_dumpbin_map(dumpbin_map, dumpbin_map_filename)
+    gc.collect()
+
+    llvm_map = {}
+    read_llvm_map(llvm_map, llvm_map_filename)
+    gc.collect()
+
+    merged_map = {}
+    merge_maps(merged_map, dumpbin_map, llvm_map)
+    gc.collect()
+
+    msvs_map = []
+    generate_msvs_map(msvs_map, merged_map)
+    gc.collect()
+
+    write_msvs_map(msvs_map)
+
+  elif llvm_map_filename:
+    sys.stderr.write("Generating parse report for LLVM map since you did "
+                     "not specify the dumpbin map filename\n")
+    sys.stderr.flush()
+
+    llvm_map = {}
+    read_llvm_map(llvm_map, llvm_map_filename)
+
+    pp = pprint.PrettyPrinter(indent=2)
+    pp.pprint(llvm_map)
+
+  elif dumpbin_map_filename:
+    sys.stderr.write("Generating parse report for dumpbin map since you did "
+                     "not specify the LLVM map filename\n")
+    sys.stderr.flush()
+
+    dumpbin_map = {}
+    read_dumpbin_map(dumpbin_map, dumpbin_map_filename)
+
+    pp = pprint.PrettyPrinter(indent=2)
+    pp.pprint(dumpbin_map)
+
+  else:
     print("Usage: {0} --llvm-map <input> --dumpbin-map <input>".format(args[0]))
-    return 1
+    status = 1
 
-  dumpbin_map = {}
-  read_dumpbin_map(dumpbin_map, dumpbin_map_filename)
-  gc.collect()
-
-  llvm_map = {}
-  read_llvm_map(llvm_map, llvm_map_filename)
-  gc.collect()
-
-  merged_map = {}
-  merge_maps(merged_map, dumpbin_map, llvm_map)
-  gc.collect()
-
-  msvs_map = []
-  generate_msvs_map(msvs_map, merged_map)
-  gc.collect()
-
-  write_msvs_map(msvs_map)
-
+  return status
 
 if __name__ == '__main__':
   sys.exit(main(sys.argv))
