@@ -4,22 +4,17 @@
 
 #include "third_party/blink/public/web/modules/peerconnection/media_stream_video_webrtc_sink.h"
 
-#include "base/test/task_environment.h"
-#include "content/child/child_process.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/web/modules/mediastream/mock_media_stream_registry.h"
 #include "third_party/blink/public/web/modules/mediastream/video_track_adapter_settings.h"
 #include "third_party/blink/public/web/modules/peerconnection/mock_peer_connection_dependency_factory.h"
+#include "third_party/blink/renderer/platform/testing/io_task_runner_testing_platform_support.h"
 
-namespace content {
-namespace {
+namespace blink {
 
 class MediaStreamVideoWebRtcSinkTest : public ::testing::Test {
  public:
-  MediaStreamVideoWebRtcSinkTest()
-      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {}
-
   void SetVideoTrack() {
     registry_.Init();
     registry_.AddVideoTrack("test video track");
@@ -47,12 +42,9 @@ class MediaStreamVideoWebRtcSinkTest : public ::testing::Test {
   blink::MockPeerConnectionDependencyFactory dependency_factory_;
 
  private:
+  ScopedTestingPlatformSupport<IOTaskRunnerTestingPlatformSupport> platform_;
+
   blink::MockMediaStreamRegistry registry_;
-  // A ChildProcess is needed to fool the Tracks and Sources into believing they
-  // are on the right threads. A TaskEnvironment must be instantiated
-  // before ChildProcess to prevent it from leaking a ThreadPool.
-  base::test::TaskEnvironment task_environment_;
-  const ChildProcess child_process_;
 };
 
 TEST_F(MediaStreamVideoWebRtcSinkTest, NoiseReductionDefaultsToNotSet) {
@@ -64,5 +56,4 @@ TEST_F(MediaStreamVideoWebRtcSinkTest, NoiseReductionDefaultsToNotSet) {
   EXPECT_FALSE(my_sink.SourceNeedsDenoisingForTesting());
 }
 
-}  // namespace
-}  // namespace content
+}  // namespace blink
