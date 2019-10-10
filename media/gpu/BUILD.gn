@@ -351,7 +351,6 @@ if (use_v4l2_codec || use_vaapi) {
       ":common",
       "//base",
       "//media",
-      "//media/gpu/chromeos:fourcc",
       "//ui/gfx/geometry",
     ]
   }
@@ -658,7 +657,6 @@ if (use_v4l2_codec || use_vaapi) {
       "test:render_helpers",
       "//base/test:test_support",
       "//media:test_support",
-      "//media/gpu/chromeos:fourcc",
       "//mojo/core/embedder",
       "//testing/gtest",
     ]

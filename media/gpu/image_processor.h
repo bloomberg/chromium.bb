@@ -7,7 +7,6 @@
 
 #include <stdint.h>
 
-#include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
@@ -15,9 +14,8 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
-#include "media/base/color_plane_layout.h"
 #include "media/base/video_frame.h"
-#include "media/gpu/chromeos/fourcc.h"
+#include "media/base/video_frame_layout.h"
 #include "media/gpu/media_gpu_export.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -50,43 +48,27 @@ class MEDIA_GPU_EXPORT ImageProcessor {
   };
 
   // Encapsulates ImageProcessor input / output configurations.
+  // Note that |fourcc| is used when format cannot be described in |layout|,
+  // e.g. platform specific format not listed in VideoPixelFormat. The default
+  // value of |fourcc| is kUnassignedFourCC.
   struct MEDIA_GPU_EXPORT PortConfig {
     PortConfig() = delete;
-    PortConfig(const PortConfig&);
     PortConfig(
-        Fourcc fourcc,
-        const gfx::Size& size,
-        const std::vector<ColorPlaneLayout>& planes,
+        const VideoFrameLayout& layout,
+        const gfx::Size& visible_size,
+        const std::vector<VideoFrame::StorageType>& preferred_storage_types);
+    PortConfig(
+        const VideoFrameLayout& layout,
+        uint32_t fourcc,
         const gfx::Size& visible_size,
         const std::vector<VideoFrame::StorageType>& preferred_storage_types);
     ~PortConfig();
 
-    // Get the first |preferred_storage_types|.
-    // If |preferred_storage_types| is empty, return STORAGE_UNKNOWN.
-    VideoFrame::StorageType storage_type() const {
-      return preferred_storage_types.empty() ? VideoFrame::STORAGE_UNKNOWN
-                                             : preferred_storage_types.front();
-    }
+    static const uint32_t kUnassignedFourCC = 0u;
 
-    // Output human readable string of PortConfig.
-    // Example:
-    // PortConfig(format::NV12, size:640x480, planes:[(640, 0, 307200),
-    // (640,0,153600)], visible_size:640x480, storage_types:[DMABUFS])
-    std::string ToString() const;
-
-    // Video frame format represented as fourcc type.
-    const Fourcc fourcc;
-
-    // Width and height of the video frame in pixels. This must include pixel
-    // data for the whole image; i.e. for YUV formats with subsampled chroma
-    // planes. If a visible portion of the image does not line up on a sample
-    // boundary, |size_| must be rounded up appropriately.
-    const gfx::Size size;
-
-    // Layout property (stride, offset, size of bytes) for each color plane.
-    const std::vector<ColorPlaneLayout> planes;
+    const VideoFrameLayout layout;
+    const uint32_t fourcc;
     const gfx::Size visible_size;
-    // List of preferred storage types.
     const std::vector<VideoFrame::StorageType> preferred_storage_types;
   };
 
@@ -113,8 +95,21 @@ class MEDIA_GPU_EXPORT ImageProcessor {
 
   virtual ~ImageProcessor() = default;
 
-  const PortConfig& input_config() const { return input_config_; }
-  const PortConfig& output_config() const { return output_config_; }
+  // Returns input layout of the processor.
+  const VideoFrameLayout& input_layout() const { return input_layout_; }
+
+  // Returns output layout of the processor.
+  const VideoFrameLayout& output_layout() const { return output_layout_; }
+
+  // Returns input storage type.
+  VideoFrame::StorageType input_storage_type() const {
+    return input_storage_type_;
+  }
+
+  // Returns output storage type.
+  VideoFrame::StorageType output_storage_type() const {
+    return output_storage_type_;
+  }
 
   // Returns output mode.
   // TODO(crbug.com/907767): Remove it once ImageProcessor always works as
@@ -154,15 +149,21 @@ class MEDIA_GPU_EXPORT ImageProcessor {
   virtual bool Reset() = 0;
 
  protected:
-  ImageProcessor(const PortConfig& input_config,
-                 const PortConfig& output_config,
+  ImageProcessor(const VideoFrameLayout& input_layout,
+                 VideoFrame::StorageType input_storage_type,
+                 const VideoFrameLayout& output_layout,
+                 VideoFrame::StorageType output_storage_type,
                  OutputMode output_mode);
 
-  const PortConfig input_config_;
-  const PortConfig output_config_;
+  // Stores input frame's layout and storage type.
+  const VideoFrameLayout input_layout_;
+  const VideoFrame::StorageType input_storage_type_;
 
+  // Stores output frame's layout, storage type and output mode.
   // TODO(crbug.com/907767): Remove |output_mode_| once ImageProcessor always
   // works as IMPORT mode for output.
+  const VideoFrameLayout output_layout_;
+  const VideoFrame::StorageType output_storage_type_;
   const OutputMode output_mode_;
 
  private:

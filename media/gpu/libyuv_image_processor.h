@@ -45,12 +45,16 @@ class MEDIA_GPU_EXPORT LibYUVImageProcessor : public ImageProcessor {
   static std::unique_ptr<LibYUVImageProcessor> Create(
       const ImageProcessor::PortConfig& input_config,
       const ImageProcessor::PortConfig& output_config,
-      ImageProcessor::OutputMode output_mode,
+      const ImageProcessor::OutputMode output_mode,
       ErrorCB error_cb);
 
  private:
-  LibYUVImageProcessor(const ImageProcessor::PortConfig& input_config,
-                       const ImageProcessor::PortConfig& output_config,
+  LibYUVImageProcessor(const VideoFrameLayout& input_layout,
+                       const gfx::Size& input_visible_size,
+                       VideoFrame::StorageType input_storage_type,
+                       const VideoFrameLayout& output_layout,
+                       const gfx::Size& output_visible_size,
+                       VideoFrame::StorageType output_storage_type,
                        std::unique_ptr<VideoFrameMapper> video_frame_mapper,
                        ErrorCB error_cb);
 
