@@ -430,9 +430,10 @@ static struct lookahead_entry *setup_arf_frame(
 #if !CONFIG_REALTIME_ONLY
       if (oxcf->arnr_max_frames > 0) {
         // Produce the filtered ARF frame.
-        av1_temporal_filter(cpi, arf_src_index);
-        aom_extend_frame_borders(&cpi->alt_ref_buffer, av1_num_planes(cm));
-        *code_arf = 1;
+        *code_arf = av1_temporal_filter(cpi, arf_src_index);
+        if (*code_arf) {
+          aom_extend_frame_borders(&cpi->alt_ref_buffer, av1_num_planes(cm));
+        }
       }
 #endif
     }

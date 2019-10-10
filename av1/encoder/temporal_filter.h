@@ -34,7 +34,7 @@ extern "C" {
 #define EDGE_THRESHOLD 50
 #define SQRT_PI_BY_2 1.25331413732
 
-void av1_temporal_filter(AV1_COMP *cpi, int distance);
+int av1_temporal_filter(AV1_COMP *cpi, int distance);
 double estimate_noise(const uint8_t *src, int width, int height, int stride,
                       int edge_thresh);
 double highbd_estimate_noise(const uint8_t *src8, int width, int height,
