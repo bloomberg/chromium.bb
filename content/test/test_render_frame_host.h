@@ -90,7 +90,7 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   void SimulateSwapOutACK() override;
   void SimulateFeaturePolicyHeader(
       blink::mojom::FeaturePolicyFeature feature,
-      const std::vector<url::Origin>& whitelist) override;
+      const std::vector<url::Origin>& allowlist) override;
   const std::vector<std::string>& GetConsoleMessages() override;
 
   void SendNavigate(int nav_entry_id,

@@ -231,12 +231,12 @@ void TestRenderFrameHost::SimulateSwapOutACK() {
 // TODO(loonybear): Add a test for non-bool type PolicyValue.
 void TestRenderFrameHost::SimulateFeaturePolicyHeader(
     blink::mojom::FeaturePolicyFeature feature,
-    const std::vector<url::Origin>& whitelist) {
+    const std::vector<url::Origin>& allowlist) {
   blink::ParsedFeaturePolicy header(1);
   header[0].feature = feature;
   header[0].fallback_value = blink::PolicyValue(false);
   header[0].opaque_value = blink::PolicyValue(false);
-  for (const auto& origin : whitelist) {
+  for (const auto& origin : allowlist) {
     header[0].values.insert(std::pair<url::Origin, blink::PolicyValue>(
         origin, blink::PolicyValue(true)));
   }
