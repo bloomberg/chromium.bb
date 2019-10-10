@@ -231,13 +231,6 @@ void FidoRequestHandlerBase::Start() {
     discovery->Start();
 }
 
-void FidoRequestHandlerBase::AuthenticatorAdded(
-    FidoDiscoveryBase* discovery,
-    FidoAuthenticator* authenticator) {
-  DCHECK(!base::Contains(active_authenticators(), authenticator->GetId()));
-  AddAuthenticator(authenticator);
-}
-
 void FidoRequestHandlerBase::AuthenticatorRemoved(
     FidoDiscoveryBase* discovery,
     FidoAuthenticator* authenticator) {
@@ -288,14 +281,15 @@ void FidoRequestHandlerBase::DiscoveryStarted(
     FidoDiscoveryBase* discovery,
     bool success,
     std::vector<FidoAuthenticator*> authenticators) {
-  for (auto* authenticator : authenticators)
-    AddAuthenticator(authenticator);
-
+  for (auto* authenticator : authenticators) {
+    AuthenticatorAdded(discovery, authenticator);
+  }
   DCHECK(notify_observer_callback_);
   notify_observer_callback_.Run();
 }
 
-void FidoRequestHandlerBase::AddAuthenticator(
+void FidoRequestHandlerBase::AuthenticatorAdded(
+    FidoDiscoveryBase* discovery,
     FidoAuthenticator* authenticator) {
   DCHECK(authenticator &&
          !base::Contains(active_authenticators(), authenticator->GetId()));

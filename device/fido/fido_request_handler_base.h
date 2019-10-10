@@ -262,7 +262,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
       const base::flat_set<FidoTransportProtocol>& available_transports);
 #endif
 
-  void AddAuthenticator(FidoAuthenticator* authenticator);
   void NotifyObserverTransportAvailability();
 
   // Invokes FidoAuthenticator::InitializeAuthenticator(), followed by
