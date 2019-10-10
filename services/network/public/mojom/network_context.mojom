@@ -350,7 +350,7 @@ struct NetworkContextParams {
 
   // If true, the built-in cert verifier will be used. If false, the platform
   // cert verifier will be used.
-  [EnableIf=is_chromeos]
+  [EnableIf=is_builtin_cert_verifier_feature_supported]
   bool use_builtin_cert_verifier = false;
 
   // Parameters for the cert verifier comparison trial. This is a temporary
