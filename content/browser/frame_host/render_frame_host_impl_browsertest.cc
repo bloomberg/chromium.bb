@@ -3043,12 +3043,21 @@ class IPAddressSpaceCollector : public DidCommitNavigationInterceptor {
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
-                       ComputeMainFrameIPAddressSpace) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      network::features::kBlockNonSecureExternalRequests);
+class RenderFrameHostImplBrowserTestWithNonSecureExternalRequestsBlocked
+    : public RenderFrameHostImplBrowserTest {
+ public:
+  RenderFrameHostImplBrowserTestWithNonSecureExternalRequestsBlocked() {
+    feature_list_.InitAndEnableFeature(
+        network::features::kBlockNonSecureExternalRequests);
+  }
 
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(
+    RenderFrameHostImplBrowserTestWithNonSecureExternalRequestsBlocked,
+    ComputeMainFrameIPAddressSpace) {
   // TODO(mkwst): `about:`, `file:`, `data:`, `blob:`, and `filesystem:` URLs
   // are all treated as `kUnknown` today. This is ~incorrect, but safe, as their
   // web-facing behavior will be equivalent to "public".
@@ -3079,12 +3088,9 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   }
 }
 
-IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
-                       ComputeIFrameLoopbackIPAddressSpace) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      network::features::kBlockNonSecureExternalRequests);
-
+IN_PROC_BROWSER_TEST_F(
+    RenderFrameHostImplBrowserTestWithNonSecureExternalRequestsBlocked,
+    ComputeIFrameLoopbackIPAddressSpace) {
   {
     IPAddressSpaceCollector collector(shell()->web_contents());
     base::string16 expected_title(base::UTF8ToUTF16("LOADED"));
