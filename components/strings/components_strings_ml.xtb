@@ -128,9 +128,9 @@
 <translation id="155039086686388498">എഞ്ചിനീയറിംഗ്-D</translation>
 <translation id="1555130319947370107">നീല</translation>
 <translation id="1559528461873125649">അത്തരത്തിലുള്ള ഫയലോ ഡയറക്റ്ററിയോ ഇല്ല</translation>
-<translation id="1559572115229829303">&lt;p&gt;നിങ്ങളുടെ ഉപകരണത്തിന്‍റെ തീയതിയും സമയവും (<ph name="DATE_AND_TIME" />) തെറ്റായതിനാൽ <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> എന്നതിലേക്ക് ഒരു സ്വകാര്യ കണക്ഷൻ സ്ഥാപിക്കാനാകില്ല.&lt;/p&gt;
+<translation id="1559572115229829303">&lt;p&gt;നിങ്ങളുടെ ഉപകരണത്തിന്റെ തീയതിയും സമയവും (<ph name="DATE_AND_TIME" />) തെറ്റായതിനാൽ <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> എന്നതിലേക്ക് ഒരു സ്വകാര്യ കണക്ഷൻ സ്ഥാപിക്കാനാകില്ല.&lt;/p&gt;
 
-      &lt;p&gt;&lt;strong&gt;ക്രമീകരണ&lt;/strong&gt; ആപ്പിന്‍റെ &lt;strong&gt;പൊതുവായവ&lt;/strong&gt; വിഭാഗത്തിൽ നിന്ന് തീയതിയും സമയവും ക്രമീകരിക്കുക.&lt;/p&gt;</translation>
+       &lt;p&gt;&lt;strong&gt;ക്രമീകരണ&lt;/strong&gt; ആപ്പിന്റെ &lt;strong&gt;പൊതുവായവ&lt;/strong&gt; വിഭാഗത്തിൽ നിന്ന് തീയതിയും സമയവും ക്രമീകരിക്കുക.&lt;/p&gt;</translation>
 <translation id="1569487616857761740">കാലഹരണപ്പെടുന്ന തീയതി നൽകുക</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">ഈ വെബ്‌പേജ് പ്രദർശിപ്പിക്കുമ്പോൾ എന്തോ കുഴപ്പം സംഭവിച്ചു.</translation>
@@ -388,7 +388,7 @@
 <translation id="2972581237482394796">&amp;വീണ്ടും ചെയ്യുക</translation>
 <translation id="2977665033722899841"><ph name="ROW_NAME" />, നിലവിൽ തിരഞ്ഞെടുത്തു. <ph name="ROW_CONTENT" /></translation>
 <translation id="2982481275546140226">ഡാറ്റ മായ്‌ക്കുക</translation>
-<translation id="2985306909656435243">പ്രവർത്തനക്ഷമമാക്കിയെങ്കിൽ, വേഗത്തിൽ ഫോം പൂരിപ്പിക്കാൻ Chromium ഈ ഉപകരണത്തിൽ നിങ്ങളുടെ കാർഡിന്റെ ഒരു പകർപ്പ് സൂക്ഷിക്കും.</translation>
+<translation id="2985306909656435243">പ്രവർത്തനക്ഷമമാക്കിയെങ്കിൽ, വേഗത്തിൽ ഫോം പൂരിപ്പിക്കാൻ Chromium ഈ ഉപകരണത്തിൽ നിങ്ങളുടെ കാർഡിന്റെ പകർപ്പ് സൂക്ഷിക്കും.</translation>
 <translation id="2985398929374701810">ശരിയായ വിലാസം നല്‍കുക</translation>
 <translation id="2986368408720340940">ഈ പിക്കപ്പ് രീതി ലഭ്യമല്ല. മറ്റൊരു രീതി പരീക്ഷിക്കുക.</translation>
 <translation id="2987034854559945715">പൊരുത്തപ്പെടുന്ന ഫീച്ചറുകളൊന്നുമില്ല</translation>
@@ -1536,7 +1536,7 @@
 <translation id="975560348586398090">{COUNT,plural, =0{ഒന്നുമില്ല}=1{ഒരു ഇനം}other{# ഇനങ്ങൾ}}</translation>
 <translation id="981121421437150478">ഓഫ്‌ലൈൻ</translation>
 <translation id="984275831282074731">പേയ്‌മെന്റ് രീതികൾ</translation>
-<translation id="985199708454569384">&lt;p&gt;നിങ്ങളുടെ കമ്പ്യൂട്ടറിന്റെയോ മൊബൈൽ ഉപകരണത്തിന്റെയോ തീയതിയും സമയവും കൃത്യമല്ലെങ്കിൽ ഈ പിശക് കാണും.&lt;/p&gt;
+<translation id="985199708454569384">&lt;p&gt;നിങ്ങളുടെ കമ്പ്യൂട്ടറിന്റെയോ മൊബൈലിന്‍റെയോ തീയതിയും സമയവും കൃത്യമല്ലെങ്കിൽ ഈ പിശക് കാണും.&lt;/p&gt;
     &lt;p&gt;പിശക് പരിഹരിക്കാൻ, ഉപകരണത്തിന്റെ ക്ലോക്ക് തുറക്കുക. സമയവും തീയതിയും കൃത്യമാണെന്ന് ഉറപ്പാക്കുക.&lt;/p&gt;</translation>
 <translation id="985956168329721395">Prc-32K</translation>
 <translation id="988159990683914416">ഡെവലപ്പർ ബിൽഡ്</translation>

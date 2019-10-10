@@ -52,8 +52,6 @@
 <translation id="2094919256425865063">Искате ли да затворите Chrome въпреки това?</translation>
 <translation id="2120620239521071941"><ph name="ITEMS_COUNT" /> елемента ще се изтрият от това устройство. За да извлечете данните си по-късно, влезте в Chrome като <ph name="USER_EMAIL" />.</translation>
 <translation id="2123055963409958220">Помогнете за подобряването на Chrome, като подадете сигнал за <ph name="BEGIN_LINK" />текущите настройки<ph name="END_LINK" /></translation>
-<translation id="2128103434102193461">За подробности относно Chrome OS, моля, вижте
-<ph name="LINK_BEGIN" />Всичко за Chrome OS<ph name="LINK_END" /></translation>
 <translation id="2151406531797534936">Моля, рестартирайте Chrome сега</translation>
 <translation id="216054706567564023">Инсталирайте Chrome на телефона си. Ще изпратим SMS на телефонния номер за възстановяване на профила ви.</translation>
 <translation id="2246246234298806438">Google Chrome не може да покаже визуализацията за печат, когато вграденият визуализатор на PDF файлове липсва.</translation>
