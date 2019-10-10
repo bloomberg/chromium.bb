@@ -2,21 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_WEBRTC_RTC_CERTIFICATE_GENERATOR_H_
-#define CONTENT_RENDERER_MEDIA_WEBRTC_RTC_CERTIFICATE_GENERATOR_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_RTC_CERTIFICATE_GENERATOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_RTC_CERTIFICATE_GENERATOR_H_
 
 #include "base/macros.h"
-#include "base/single_thread_task_runner.h"
 #include "third_party/blink/public/platform/web_rtc_certificate_generator.h"
 #include "third_party/blink/public/platform/web_rtc_key_params.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
 
-namespace content {
+namespace base {
+class SingleThreadTaskRunner;
+}
+
+namespace blink {
 
 // Chromium's WebRTCCertificateGenerator implementation; uses the
 // PeerConnectionIdentityStore/SSLIdentity::Generate to generate the identity,
-// rtc::RTCCertificate and content::RTCCertificate.
-class RTCCertificateGenerator : public blink::WebRTCCertificateGenerator {
+// rtc::RTCCertificate and blink::RTCCertificate.
+class MODULES_EXPORT RTCCertificateGenerator
+    : public blink::WebRTCCertificateGenerator {
  public:
   RTCCertificateGenerator() {}
   ~RTCCertificateGenerator() override {}
@@ -40,6 +45,6 @@ class RTCCertificateGenerator : public blink::WebRTCCertificateGenerator {
   DISALLOW_COPY_AND_ASSIGN(RTCCertificateGenerator);
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_MEDIA_WEBRTC_RTC_CERTIFICATE_GENERATOR_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_RTC_CERTIFICATE_GENERATOR_H_

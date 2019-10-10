@@ -57,6 +57,8 @@ blink_modules_sources("peerconnection") {
     "peer_connection_dependency_factory.cc",
     "rtc_certificate.cc",
     "rtc_certificate.h",
+    "rtc_certificate_generator.cc",
+    "rtc_certificate_generator.h",
     "rtc_data_channel.cc",
     "rtc_data_channel.h",
     "rtc_data_channel_event.cc",
