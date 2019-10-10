@@ -132,6 +132,12 @@ void SupervisedUserNavigationObserver::DidFinishLoad(
 
     UMA_HISTOGRAM_COUNTS_1000("ManagedUsers.BlockedIframeCount", count);
   }
+
+  if (base::Contains(supervised_user_interstitials_,
+                     render_frame_host->GetFrameTreeNodeId())) {
+    UMA_HISTOGRAM_COUNTS_1000("ManagedUsers.BlockedFrameDepth",
+                              render_frame_host->GetFrameDepth());
+  }
 }
 
 void SupervisedUserNavigationObserver::OnURLFilterChanged() {
