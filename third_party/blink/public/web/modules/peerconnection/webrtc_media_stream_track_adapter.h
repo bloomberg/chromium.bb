@@ -2,16 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_WEBRTC_WEBRTC_MEDIA_STREAM_TRACK_ADAPTER_H_
-#define CONTENT_RENDERER_MEDIA_WEBRTC_WEBRTC_MEDIA_STREAM_TRACK_ADAPTER_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_PEERCONNECTION_WEBRTC_MEDIA_STREAM_TRACK_ADAPTER_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_PEERCONNECTION_WEBRTC_MEDIA_STREAM_TRACK_ADAPTER_H_
 
 #include <memory>
 
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/waitable_event.h"
-#include "content/common/content_export.h"
-#include "content/renderer/media/webrtc/webrtc_media_stream_track_adapter.h"
 #include "third_party/blink/public/platform/modules/peerconnection/webrtc_audio_sink.h"
+#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/web/modules/mediastream/remote_media_stream_track_adapter.h"
@@ -19,11 +18,8 @@
 #include "third_party/webrtc/api/media_stream_interface.h"
 
 namespace blink {
+
 class PeerConnectionDependencyFactory;
-}
-
-namespace content {
-
 struct WebRtcMediaStreamTrackAdapterTraits;
 
 // This is a mapping between a webrtc and blink media stream track. It takes
@@ -32,7 +28,10 @@ struct WebRtcMediaStreamTrackAdapterTraits;
 // There are different sinks/adapters used whether the track is local or remote
 // and whether it is an audio or video track; this adapter hides that fact and
 // lets you use a single class for any type of track.
-class CONTENT_EXPORT WebRtcMediaStreamTrackAdapter
+//
+// TODO(crbug.com/787254): Move the classes below out of the Blink exposed
+// API when all users of it have been Onion souped.
+class BLINK_MODULES_EXPORT WebRtcMediaStreamTrackAdapter
     : public base::RefCountedThreadSafe<WebRtcMediaStreamTrackAdapter,
                                         WebRtcMediaStreamTrackAdapterTraits> {
  public:
@@ -139,7 +138,7 @@ class CONTENT_EXPORT WebRtcMediaStreamTrackAdapter
   DISALLOW_COPY_AND_ASSIGN(WebRtcMediaStreamTrackAdapter);
 };
 
-struct CONTENT_EXPORT WebRtcMediaStreamTrackAdapterTraits {
+struct BLINK_MODULES_EXPORT WebRtcMediaStreamTrackAdapterTraits {
  private:
   friend class base::RefCountedThreadSafe<WebRtcMediaStreamTrackAdapter,
                                           WebRtcMediaStreamTrackAdapterTraits>;
@@ -149,6 +148,6 @@ struct CONTENT_EXPORT WebRtcMediaStreamTrackAdapterTraits {
   static void Destruct(const WebRtcMediaStreamTrackAdapter* adapter);
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_MEDIA_WEBRTC_WEBRTC_MEDIA_STREAM_TRACK_ADAPTER_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_PEERCONNECTION_WEBRTC_MEDIA_STREAM_TRACK_ADAPTER_H_

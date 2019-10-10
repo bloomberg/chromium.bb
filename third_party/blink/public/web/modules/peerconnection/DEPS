@@ -6,5 +6,6 @@ include_rules = [
     # TODO(crbug.com/787254): Replace base::SequenceChecker by base::ThreadChecker.
     "+base/sequence_checker.h",
     "+base/single_thread_task_runner.h",
+    "+base/synchronization/waitable_event.h",
     "+base/threading/thread.h",
 ]

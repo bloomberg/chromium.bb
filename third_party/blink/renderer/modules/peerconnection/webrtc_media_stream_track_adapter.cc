@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/webrtc/webrtc_media_stream_track_adapter.h"
+#include "third_party/blink/public/web/modules/peerconnection/webrtc_media_stream_track_adapter.h"
 
 #include "base/bind.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_track.h"
@@ -10,7 +10,7 @@
 #include "third_party/blink/public/web/modules/peerconnection/media_stream_video_webrtc_sink.h"
 #include "third_party/blink/public/web/modules/peerconnection/peer_connection_dependency_factory.h"
 
-namespace content {
+namespace blink {
 
 // static
 scoped_refptr<WebRtcMediaStreamTrackAdapter>
@@ -335,4 +335,4 @@ void WebRtcMediaStreamTrackAdapter::FinalizeRemoteTrackDisposingOnMainThread() {
   web_track_.Reset();
 }
 
-}  // namespace content
+}  // namespace blink

@@ -843,6 +843,7 @@ _CONFIG = [
         ],
         'allowed': ['crypto::.+'],
     },
+
     {
         'paths': [
             'third_party/blink/renderer/modules/p2p',
@@ -870,6 +871,7 @@ _CONFIG = [
             'base::Bind.*',
             "base::MessageLoopCurrent",
             'base::Unretained',
+            'base::WrapRefCounted',
             'cricket::.*',
             'jingle_glue::JingleThreadWrapper',
             # TODO(crbug.com/787254): Remove GURL usage.
