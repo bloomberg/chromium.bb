@@ -309,10 +309,10 @@
 #include "media/base/media_switches.h"
 #include "media/media_buildflags.h"
 #include "media/mojo/buildflags.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 #include "net/base/load_flags.h"
@@ -4604,12 +4604,13 @@ class FileURLLoaderFactory : public network::mojom::URLLoaderFactory {
                                  /* allow_directory_listing */ true);
   }
 
-  void Clone(network::mojom::URLLoaderFactoryRequest loader) override {
-    bindings_.AddBinding(this, std::move(loader));
+  void Clone(
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory> loader) override {
+    receivers_.Add(this, std::move(loader));
   }
 
   int child_id_;
-  mojo::BindingSet<network::mojom::URLLoaderFactory> bindings_;
+  mojo::ReceiverSet<network::mojom::URLLoaderFactory> receivers_;
   DISALLOW_COPY_AND_ASSIGN(FileURLLoaderFactory);
 };
 
