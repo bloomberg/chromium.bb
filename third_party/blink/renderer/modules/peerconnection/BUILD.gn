@@ -127,6 +127,7 @@ blink_modules_sources("peerconnection") {
     "web_rtc_stats_report_callback_resolver.cc",
     "web_rtc_stats_report_callback_resolver.h",
     "webrtc_media_stream_track_adapter.cc",
+    "webrtc_media_stream_track_adapter_map.cc",
   ]
 
   public_deps = [

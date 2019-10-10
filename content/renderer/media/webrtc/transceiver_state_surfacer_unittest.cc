@@ -44,7 +44,7 @@ class TransceiverStateSurfacerTest : public ::testing::Test {
   void SetUp() override {
     dependency_factory_.reset(new MockPeerConnectionDependencyFactory());
     main_task_runner_ = blink::scheduler::GetSingleThreadTaskRunnerForTesting();
-    track_adapter_map_ = new WebRtcMediaStreamTrackAdapterMap(
+    track_adapter_map_ = new blink::WebRtcMediaStreamTrackAdapterMap(
         dependency_factory_.get(), main_task_runner_);
     surfacer_.reset(new TransceiverStateSurfacer(main_task_runner_,
                                                  signaling_task_runner()));
@@ -66,7 +66,7 @@ class TransceiverStateSurfacerTest : public ::testing::Test {
     return dependency_factory_->GetWebRtcSignalingThread();
   }
 
-  std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef>
+  std::unique_ptr<blink::WebRtcMediaStreamTrackAdapterMap::AdapterRef>
   CreateLocalTrackAndAdapter(const std::string& id) {
     return track_adapter_map_->GetOrCreateLocalTrackAdapter(
         CreateBlinkLocalTrack(id));
@@ -276,7 +276,7 @@ class TransceiverStateSurfacerTest : public ::testing::Test {
   scoped_refptr<webrtc::PeerConnectionInterface> peer_connection_;
   std::unique_ptr<MockPeerConnectionDependencyFactory> dependency_factory_;
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
-  scoped_refptr<WebRtcMediaStreamTrackAdapterMap> track_adapter_map_;
+  scoped_refptr<blink::WebRtcMediaStreamTrackAdapterMap> track_adapter_map_;
   std::unique_ptr<TransceiverStateSurfacer> surfacer_;
 };
 

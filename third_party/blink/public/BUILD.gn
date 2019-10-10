@@ -375,6 +375,7 @@ source_set("blink_headers") {
     "web/modules/peerconnection/media_stream_video_webrtc_sink.h",
     "web/modules/peerconnection/peer_connection_dependency_factory.h",
     "web/modules/peerconnection/webrtc_media_stream_track_adapter.h",
+    "web/modules/peerconnection/webrtc_media_stream_track_adapter_map.h",
     "web/modules/service_worker/web_service_worker_context_client.h",
     "web/modules/service_worker/web_service_worker_context_proxy.h",
     "web/modules/webrtc/webrtc_audio_device_impl.h",

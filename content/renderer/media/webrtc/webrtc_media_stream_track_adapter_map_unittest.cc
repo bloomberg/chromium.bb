@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/webrtc/webrtc_media_stream_track_adapter_map.h"
+#include "third_party/blink/public/web/modules/peerconnection/webrtc_media_stream_track_adapter_map.h"
 
 #include <memory>
 
@@ -30,8 +30,8 @@ class WebRtcMediaStreamTrackAdapterMapTest : public ::testing::Test {
   void SetUp() override {
     dependency_factory_.reset(new MockPeerConnectionDependencyFactory());
     main_thread_ = blink::scheduler::GetSingleThreadTaskRunnerForTesting();
-    map_ = new WebRtcMediaStreamTrackAdapterMap(dependency_factory_.get(),
-                                                main_thread_);
+    map_ = new blink::WebRtcMediaStreamTrackAdapterMap(
+        dependency_factory_.get(), main_thread_);
   }
 
   void TearDown() override { blink::WebHeap::CollectAllGarbageForTesting(); }
@@ -57,11 +57,12 @@ class WebRtcMediaStreamTrackAdapterMapTest : public ::testing::Test {
     return web_track;
   }
 
-  std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef>
+  std::unique_ptr<blink::WebRtcMediaStreamTrackAdapterMap::AdapterRef>
   GetOrCreateRemoteTrackAdapter(webrtc::MediaStreamTrackInterface* webrtc_track,
                                 bool wait_for_initialization = true) {
     DCHECK(main_thread_->BelongsToCurrentThread());
-    std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef> adapter;
+    std::unique_ptr<blink::WebRtcMediaStreamTrackAdapterMap::AdapterRef>
+        adapter;
     signaling_thread()->PostTask(
         FROM_HERE,
         base::BindOnce(&WebRtcMediaStreamTrackAdapterMapTest::
@@ -80,7 +81,8 @@ class WebRtcMediaStreamTrackAdapterMapTest : public ::testing::Test {
 
   void GetOrCreateRemoteTrackAdapterOnSignalingThread(
       webrtc::MediaStreamTrackInterface* webrtc_track,
-      std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef>* adapter) {
+      std::unique_ptr<blink::WebRtcMediaStreamTrackAdapterMap::AdapterRef>*
+          adapter) {
     DCHECK(signaling_thread()->BelongsToCurrentThread());
     *adapter = map_->GetOrCreateRemoteTrackAdapter(webrtc_track);
   }
@@ -116,21 +118,21 @@ class WebRtcMediaStreamTrackAdapterMapTest : public ::testing::Test {
 
   std::unique_ptr<MockPeerConnectionDependencyFactory> dependency_factory_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
-  scoped_refptr<WebRtcMediaStreamTrackAdapterMap> map_;
+  scoped_refptr<blink::WebRtcMediaStreamTrackAdapterMap> map_;
 };
 
 TEST_F(WebRtcMediaStreamTrackAdapterMapTest, AddAndRemoveLocalTrackAdapter) {
   blink::WebMediaStreamTrack web_track = CreateLocalTrack("local_track");
-  std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef> adapter_ref =
-      map_->GetOrCreateLocalTrackAdapter(web_track);
+  std::unique_ptr<blink::WebRtcMediaStreamTrackAdapterMap::AdapterRef>
+      adapter_ref = map_->GetOrCreateLocalTrackAdapter(web_track);
   EXPECT_TRUE(adapter_ref->is_initialized());
   EXPECT_EQ(adapter_ref->GetAdapterForTesting(),
             map_->GetLocalTrackAdapter(web_track)->GetAdapterForTesting());
   EXPECT_EQ(1u, map_->GetLocalTrackCount());
 
   // "GetOrCreate" for already existing track.
-  std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef> adapter_ref2 =
-      map_->GetOrCreateLocalTrackAdapter(web_track);
+  std::unique_ptr<blink::WebRtcMediaStreamTrackAdapterMap::AdapterRef>
+      adapter_ref2 = map_->GetOrCreateLocalTrackAdapter(web_track);
   EXPECT_EQ(adapter_ref->GetAdapterForTesting(),
             adapter_ref2->GetAdapterForTesting());
   EXPECT_EQ(1u, map_->GetLocalTrackCount());
@@ -151,8 +153,8 @@ TEST_F(WebRtcMediaStreamTrackAdapterMapTest, AddAndRemoveLocalTrackAdapter) {
 TEST_F(WebRtcMediaStreamTrackAdapterMapTest, AddAndRemoveRemoteTrackAdapter) {
   scoped_refptr<MockWebRtcAudioTrack> webrtc_track =
       MockWebRtcAudioTrack::Create("remote_track");
-  std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef> adapter_ref =
-      GetOrCreateRemoteTrackAdapter(webrtc_track.get());
+  std::unique_ptr<blink::WebRtcMediaStreamTrackAdapterMap::AdapterRef>
+      adapter_ref = GetOrCreateRemoteTrackAdapter(webrtc_track.get());
   EXPECT_TRUE(adapter_ref->is_initialized());
   EXPECT_EQ(
       adapter_ref->GetAdapterForTesting(),
@@ -160,8 +162,8 @@ TEST_F(WebRtcMediaStreamTrackAdapterMapTest, AddAndRemoveRemoteTrackAdapter) {
   EXPECT_EQ(1u, map_->GetRemoteTrackCount());
 
   // "GetOrCreate" for already existing track.
-  std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef> adapter_ref2 =
-      GetOrCreateRemoteTrackAdapter(webrtc_track.get());
+  std::unique_ptr<blink::WebRtcMediaStreamTrackAdapterMap::AdapterRef>
+      adapter_ref2 = GetOrCreateRemoteTrackAdapter(webrtc_track.get());
   EXPECT_EQ(adapter_ref->GetAdapterForTesting(),
             adapter_ref2->GetAdapterForTesting());
   EXPECT_EQ(1u, map_->GetRemoteTrackCount());
@@ -183,8 +185,8 @@ TEST_F(WebRtcMediaStreamTrackAdapterMapTest,
        InitializeRemoteTrackAdapterExplicitly) {
   scoped_refptr<MockWebRtcAudioTrack> webrtc_track =
       MockWebRtcAudioTrack::Create("remote_track");
-  std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef> adapter_ref =
-      GetOrCreateRemoteTrackAdapter(webrtc_track.get(), false);
+  std::unique_ptr<blink::WebRtcMediaStreamTrackAdapterMap::AdapterRef>
+      adapter_ref = GetOrCreateRemoteTrackAdapter(webrtc_track.get(), false);
   EXPECT_FALSE(adapter_ref->is_initialized());
   adapter_ref->InitializeOnMainThread();
   EXPECT_TRUE(adapter_ref->is_initialized());
@@ -208,8 +210,8 @@ TEST_F(WebRtcMediaStreamTrackAdapterMapTest,
   const char* id = "id";
 
   blink::WebMediaStreamTrack local_web_track = CreateLocalTrack(id);
-  std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef> local_adapter =
-      map_->GetOrCreateLocalTrackAdapter(local_web_track);
+  std::unique_ptr<blink::WebRtcMediaStreamTrackAdapterMap::AdapterRef>
+      local_adapter = map_->GetOrCreateLocalTrackAdapter(local_web_track);
   EXPECT_TRUE(local_adapter->is_initialized());
   EXPECT_EQ(
       local_adapter->GetAdapterForTesting(),
@@ -218,8 +220,8 @@ TEST_F(WebRtcMediaStreamTrackAdapterMapTest,
 
   scoped_refptr<MockWebRtcAudioTrack> remote_webrtc_track =
       MockWebRtcAudioTrack::Create(id);
-  std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef> remote_adapter =
-      GetOrCreateRemoteTrackAdapter(remote_webrtc_track.get());
+  std::unique_ptr<blink::WebRtcMediaStreamTrackAdapterMap::AdapterRef>
+      remote_adapter = GetOrCreateRemoteTrackAdapter(remote_webrtc_track.get());
   EXPECT_TRUE(remote_adapter->is_initialized());
   EXPECT_EQ(remote_adapter->GetAdapterForTesting(),
             map_->GetRemoteTrackAdapter(remote_webrtc_track.get())
@@ -311,7 +313,8 @@ class WebRtcMediaStreamTrackAdapterMapStressTest
   }
 
   void SignalingThreadLoop() {
-    std::vector<std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef>>
+    std::vector<
+        std::unique_ptr<blink::WebRtcMediaStreamTrackAdapterMap::AdapterRef>>
         track_refs;
     for (size_t i = 0u; i < 5u; ++i) {
       track_refs.push_back(map_->GetOrCreateRemoteTrackAdapter(
@@ -333,7 +336,8 @@ class WebRtcMediaStreamTrackAdapterMapStressTest
   }
 
   void DestroyAdapterRefsOnMainThread(
-      std::vector<std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef>>
+      std::vector<
+          std::unique_ptr<blink::WebRtcMediaStreamTrackAdapterMap::AdapterRef>>
           track_refs) {}
 
   void QuitRunLoopOnSignalingThread(base::RunLoop* run_loop) {

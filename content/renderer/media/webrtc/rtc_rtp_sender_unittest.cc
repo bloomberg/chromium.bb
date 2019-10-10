@@ -16,7 +16,6 @@
 #include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc/mock_peer_connection_impl.h"
 #include "content/renderer/media/webrtc/test/webrtc_stats_report_obtainer.h"
-#include "content/renderer/media/webrtc/webrtc_media_stream_track_adapter_map.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
@@ -25,6 +24,7 @@
 #include "third_party/blink/public/platform/web_rtc_stats.h"
 #include "third_party/blink/public/platform/web_rtc_void_request.h"
 #include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/web/modules/peerconnection/webrtc_media_stream_track_adapter_map.h"
 #include "third_party/blink/public/web/web_heap.h"
 #include "third_party/webrtc/api/stats/rtc_stats_report.h"
 #include "third_party/webrtc/api/stats/rtcstats_objects.h"
@@ -40,8 +40,8 @@ class RTCRtpSenderTest : public ::testing::Test {
   void SetUp() override {
     dependency_factory_.reset(new MockPeerConnectionDependencyFactory());
     main_thread_ = blink::scheduler::GetSingleThreadTaskRunnerForTesting();
-    track_map_ = new WebRtcMediaStreamTrackAdapterMap(dependency_factory_.get(),
-                                                      main_thread_);
+    track_map_ = new blink::WebRtcMediaStreamTrackAdapterMap(
+        dependency_factory_.get(), main_thread_);
     peer_connection_ = new rtc::RefCountedObject<MockPeerConnectionImpl>(
         dependency_factory_.get(), nullptr);
     mock_webrtc_sender_ = new rtc::RefCountedObject<webrtc::MockRtpSender>();
@@ -84,7 +84,8 @@ class RTCRtpSenderTest : public ::testing::Test {
 
   std::unique_ptr<RTCRtpSender> CreateSender(
       blink::WebMediaStreamTrack web_track) {
-    std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef> track_ref;
+    std::unique_ptr<blink::WebRtcMediaStreamTrackAdapterMap::AdapterRef>
+        track_ref;
     if (!web_track.IsNull()) {
       track_ref = track_map_->GetOrCreateLocalTrackAdapter(web_track);
       DCHECK(track_ref->is_initialized());
@@ -147,7 +148,7 @@ class RTCRtpSenderTest : public ::testing::Test {
 
   std::unique_ptr<MockPeerConnectionDependencyFactory> dependency_factory_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
-  scoped_refptr<WebRtcMediaStreamTrackAdapterMap> track_map_;
+  scoped_refptr<blink::WebRtcMediaStreamTrackAdapterMap> track_map_;
   rtc::scoped_refptr<MockPeerConnectionImpl> peer_connection_;
   rtc::scoped_refptr<webrtc::MockRtpSender> mock_webrtc_sender_;
   std::unique_ptr<RTCRtpSender> sender_;

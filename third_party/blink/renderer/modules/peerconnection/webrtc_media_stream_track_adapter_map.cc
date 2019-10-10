@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/webrtc/webrtc_media_stream_track_adapter_map.h"
+#include "third_party/blink/public/web/modules/peerconnection/webrtc_media_stream_track_adapter_map.h"
 
 #include <utility>
 
 #include "base/bind.h"
+#include "base/single_thread_task_runner.h"
 #include "third_party/blink/public/web/modules/peerconnection/peer_connection_dependency_factory.h"
 
-namespace content {
+namespace blink {
 
 WebRtcMediaStreamTrackAdapterMap::AdapterRef::AdapterRef(
     scoped_refptr<WebRtcMediaStreamTrackAdapterMap> map,
@@ -211,4 +212,4 @@ size_t WebRtcMediaStreamTrackAdapterMap::GetRemoteTrackCount() const {
   return remote_track_adapters_.PrimarySize();
 }
 
-}  // namespace content
+}  // namespace blink

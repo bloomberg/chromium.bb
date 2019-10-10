@@ -17,11 +17,11 @@
 #include "content/child/child_process.h"
 #include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc/mock_peer_connection_impl.h"
-#include "content/renderer/media/webrtc/webrtc_media_stream_track_adapter_map.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/public/platform/modules/peerconnection/webrtc_util.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
+#include "third_party/blink/public/web/modules/peerconnection/webrtc_media_stream_track_adapter_map.h"
 #include "third_party/blink/public/web/web_heap.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
 #include "third_party/webrtc/api/test/mock_peerconnectioninterface.h"
@@ -78,7 +78,7 @@ class ObserverHandlerWrapper {
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> signaling_task_runner,
       scoped_refptr<webrtc::PeerConnectionInterface> pc,
-      scoped_refptr<WebRtcMediaStreamTrackAdapterMap> track_adapter_map,
+      scoped_refptr<blink::WebRtcMediaStreamTrackAdapterMap> track_adapter_map,
       scoped_refptr<WebRtcSetDescriptionObserver> observer,
       bool surface_receivers_only)
       : signaling_task_runner_(std::move(signaling_task_runner)),
@@ -226,7 +226,7 @@ class WebRtcSetDescriptionObserverHandlerTest
     pc_ = new webrtc::MockPeerConnectionInterface;
     dependency_factory_.reset(new MockPeerConnectionDependencyFactory());
     main_thread_ = blink::scheduler::GetSingleThreadTaskRunnerForTesting();
-    track_adapter_map_ = new WebRtcMediaStreamTrackAdapterMap(
+    track_adapter_map_ = new blink::WebRtcMediaStreamTrackAdapterMap(
         dependency_factory_.get(), main_thread_);
     observer_ = new WebRtcSetDescriptionObserverForTest();
     observer_handler_ = std::make_unique<ObserverHandlerWrapper>(
@@ -370,7 +370,7 @@ class WebRtcSetDescriptionObserverHandlerTest
   scoped_refptr<webrtc::MockPeerConnectionInterface> pc_;
   std::unique_ptr<MockPeerConnectionDependencyFactory> dependency_factory_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
-  scoped_refptr<WebRtcMediaStreamTrackAdapterMap> track_adapter_map_;
+  scoped_refptr<blink::WebRtcMediaStreamTrackAdapterMap> track_adapter_map_;
   scoped_refptr<WebRtcSetDescriptionObserverForTest> observer_;
 
   ObserverHandlerType handler_type_;
@@ -379,7 +379,8 @@ class WebRtcSetDescriptionObserverHandlerTest
 
   std::vector<rtc::scoped_refptr<webrtc::RtpTransceiverInterface>>
       transceivers_;
-  std::vector<std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef>>
+  std::vector<
+      std::unique_ptr<blink::WebRtcMediaStreamTrackAdapterMap::AdapterRef>>
       local_track_adapters_;
   // Used instead of |transceivers_| when |surfacer_type_| is
   // StateSurfacerType::kReceiversOnly.
