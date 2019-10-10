@@ -4594,6 +4594,13 @@
       }
     },
 
+    'opus_roll_validation_tests': {
+      'opus_decoder_unittests': {
+        # Ad-hoc binary which returns 0 on success.
+       'test': 'audio_decoder_unittests',
+      },
+    },
+
     'ozone_linux_gtests': {
       'services_unittests': {},
       'ozone_unittests': {},
