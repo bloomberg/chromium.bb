@@ -178,17 +178,17 @@ void ProfileMenuView::BuildMenu() {
     BuildSyncInfo();
     BuildAccountFeatureButtons();
     BuildAutofillButtons();
-    BuildProfileFeatureButtons();
   } else if (profile->IsIncognitoProfile()) {
     BuildIncognitoIdentity();
-    BuildAutofillButtons();
-  } else {
-    DCHECK(profile->IsGuestSession());
+  } else if (profile->IsGuestSession()) {
     BuildGuestIdentity();
+  } else {
+    NOTREACHED();
   }
 
   BuildProfileHeading();
   BuildSelectableProfiles();
+  BuildProfileFeatureButtons();
 }
 
 void ProfileMenuView::OnAvatarMenuChanged(
@@ -610,6 +610,14 @@ void ProfileMenuView::BuildSelectableProfiles() {
         base::BindRepeating(&ProfileMenuView::OnOtherProfileSelected,
                             base::Unretained(this), profile_entry->GetPath()));
   }
+
+  if (!browser()->profile()->IsGuestSession()) {
+    AddSelectableProfile(
+        profiles::GetGuestAvatar(),
+        l10n_util::GetStringUTF16(IDS_GUEST_PROFILE_NAME),
+        base::BindRepeating(&ProfileMenuView::OnGuestProfileButtonClicked,
+                            base::Unretained(this)));
+  }
 }
 
 void ProfileMenuView::BuildProfileFeatureButtons() {
@@ -617,12 +625,6 @@ void ProfileMenuView::BuildProfileFeatureButtons() {
       ImageForMenu(vector_icons::kSettingsIcon, kShortcutIconToImageRatio),
       l10n_util::GetStringUTF16(IDS_PROFILES_MANAGE_USERS_BUTTON),
       base::BindRepeating(&ProfileMenuView::OnManageProfilesButtonClicked,
-                          base::Unretained(this)));
-
-  AddProfileFeatureButton(
-      profiles::GetGuestAvatar(),
-      l10n_util::GetStringUTF16(IDS_GUEST_PROFILE_NAME),
-      base::BindRepeating(&ProfileMenuView::OnGuestProfileButtonClicked,
                           base::Unretained(this)));
 
   AddProfileFeatureButton(
