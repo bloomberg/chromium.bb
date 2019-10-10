@@ -18961,6 +18961,18 @@
       },
       {
         "isolate_coverage_data": true,
+        "isolate_name": "json_web_key_fuzzer",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "json_web_key_fuzzer",
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        }
+      },
+      {
+        "isolate_coverage_data": true,
         "isolate_name": "language_detection_fuzzer",
         "merge": {
           "args": [],

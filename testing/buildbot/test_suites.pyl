@@ -1172,6 +1172,11 @@
           'can_use_on_swarming_builders': False,
         },
       },
+      'json_web_key_fuzzer': {
+        'swarming': {
+          'can_use_on_swarming_builders': False,
+        },
+      },
       'language_detection_fuzzer': {
         'swarming': {
           'can_use_on_swarming_builders': False,

@@ -1461,6 +1461,10 @@
     "label": "//jingle:jingle_unittests",
     "type": "console_test_launcher",
   },
+  "json_web_key_fuzzer": {
+    "label": "//media:json_web_key_fuzzer",
+    "type": "fuzzer",
+  },
   "junit_unit_tests": {
     "label": "//testing/android/junit:junit_unit_tests",
     "type": "junit_test",
