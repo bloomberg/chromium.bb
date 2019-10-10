@@ -636,7 +636,7 @@ class NamedCacheTest(TestCase, CacheTestMixin):
   def test_trim(self):
     cache = self.get_cache(_get_policies(max_items=2))
     item_count = 12
-    for i in xrange(item_count):
+    for i in range(item_count):
       self._add_one_item(cache, i+1)
     self.assertEqual(len(cache), item_count)
     self.assertEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], cache.trim())
@@ -790,7 +790,7 @@ class FnTest(TestCase):
 
   def _prepare_cache(self, cache):
     now = self._now
-    for i in xrange(1, 11):
+    for i in range(1, 11):
       self._add_one_item(cache, i)
       self._now += 1
     self._now = now
@@ -879,7 +879,7 @@ class FnTest(TestCase):
       local_caching.MemoryContentAddressedCache(),
       local_caching.MemoryContentAddressedCache(),
     ]
-    for i in xrange(100):
+    for i in range(100):
       self._add_one_item(caches[random.randint(0, len(caches)-1)], i+1)
       self._now += 1
     return caches

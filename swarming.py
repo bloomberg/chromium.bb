@@ -286,7 +286,7 @@ def trigger_task_shards(swarming, task_request, shards):
 
     return req, shard_index
 
-  requests = [convert(index) for index in xrange(shards)]
+  requests = [convert(index) for index in range(shards)]
   tasks = {}
   priority_warning = False
   for request, shard_index in requests:
@@ -450,9 +450,9 @@ class TaskOutputCollector(object):
     with self._lock:
       # Write an array of shard results with None for missing shards.
       summary = {
-        'shards': [
-          self._per_shard_results.get(i) for i in xrange(self.shard_count)
-        ],
+          'shards': [
+              self._per_shard_results.get(i) for i in range(self.shard_count)
+          ],
       }
 
       # Don't store stdout in the summary if not requested too.

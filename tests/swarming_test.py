@@ -882,7 +882,7 @@ class TestSwarmingCollection(NetTestCase):
 
     collector = swarming.TaskOutputCollector(
         self.tempdir, ['json', 'console'], 2, '.*')
-    for index in xrange(2):
+    for index in range(2):
       collector.process_shard_result(
           index,
           gen_result_response(
@@ -934,18 +934,18 @@ class TestSwarmingCollection(NetTestCase):
         isolateserver, 'fetch_isolated',
         lambda *args: actual_calls.append(args))
     data = [
-      gen_result_response(
-        outputs_ref={
-          'isolatedserver': 'https://server1',
-          'namespace': 'namespace',
-          'isolated':'hash1',
-        }),
-      gen_result_response(
-        outputs_ref={
-          'isolatedserver': 'https://server2',
-          'namespace': 'namespace',
-          'isolated':'hash1',
-        }),
+        gen_result_response(
+            outputs_ref={
+                'isolatedserver': 'https://server1',
+                'namespace': 'namespace',
+                'isolated': 'hash1',
+            }),
+        gen_result_response(
+            outputs_ref={
+                'isolatedserver': 'https://server2',
+                'namespace': 'namespace',
+                'isolated': 'hash1',
+            }),
     ]
 
     # Feed them to collector.

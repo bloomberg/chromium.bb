@@ -40,7 +40,7 @@ def generate_histogram(data, buckets):
 
   buckets = min(len(data), buckets)
   bucket_size = (maximum-minimum)/buckets
-  out = dict((i, 0) for i in xrange(buckets))
+  out = dict((i, 0) for i in range(buckets))
   for i in data:
     out[min(int((i-minimum)/bucket_size), buckets-1)] += 1
   return dict(((k*bucket_size)+minimum, v) for k, v in out.items())

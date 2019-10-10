@@ -185,13 +185,13 @@ class ThreadPoolTest(unittest.TestCase):
 
     # Generator that yields [i * MULTIPLIER, i * MULTIPLIER + COUNT).
     def generator_task(i):
-      for j in xrange(COUNT):
+      for j in range(COUNT):
         time.sleep(0.001)
         yield i * MULTIPLIER + j
 
     # Arguments for tasks and expected results.
     args = range(0, 10)
-    expected = [i * MULTIPLIER + j for i in args for j in xrange(COUNT)]
+    expected = [i * MULTIPLIER + j for i in args for j in range(COUNT)]
 
     # Test all possible ways to pull results from the thread pool.
     getters = (self.get_results_via_join,
@@ -211,7 +211,7 @@ class ThreadPoolTest(unittest.TestCase):
 
     # Start a bunch of threads, all calling iter_results in parallel.
     pollers = []
-    for _ in xrange(0, 4):
+    for _ in range(0, 4):
       result = []
       poller = threading.Thread(target=poller_proc, args=(result,))
       poller.start()
@@ -281,7 +281,7 @@ class ThreadPoolTest(unittest.TestCase):
           pool.add_task(0, grab_and_return, i)
 
         # Running at 11 would hang.
-        results = [pool.get_one_result() for _ in xrange(10)]
+        results = [pool.get_one_result() for _ in range(10)]
         # At that point, there's 10 completed tasks and 2 tasks hanging, 88
         # pending.
         self.assertEqual(88, pool.abort())

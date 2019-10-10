@@ -103,7 +103,7 @@ class IsolateServerArchiveSmokeTest(unittest.TestCase):
     with open(os.path.join(self.test_data, name), 'wb') as f:
       # Write 2.1gb.
       data = os.urandom(1024)
-      for _ in xrange(2150 * 1024):
+      for _ in range(2150 * 1024):
         f.write(data)
     self._archive_given_files([name])
 
@@ -112,13 +112,13 @@ class IsolateServerArchiveSmokeTest(unittest.TestCase):
       # Create multiple files over 2.5gb. This test exists to stress the virtual
       # address space on 32 bits systems
       files = []
-      for i in xrange(5):
+      for i in range(5):
         name = '512mb_%d.7z' % i
         files.append(name)
         with open(os.path.join(self.test_data, name), 'wb') as f:
           # Write 512mb.
           data = os.urandom(1024)
-          for _ in xrange(512 * 1024):
+          for _ in range(512 * 1024):
             f.write(data)
       self._archive_given_files(files)
 

@@ -697,7 +697,7 @@ class DiskContentAddressedCache(ContentAddressedCache):
 
     # Ensure maximum number of items in the cache.
     if self.policies.max_items and len(self._lru) > self.policies.max_items:
-      for _ in xrange(len(self._lru) - self.policies.max_items):
+      for _ in range(len(self._lru) - self.policies.max_items):
         evicted.append(self._remove_lru_file(True))
 
     # Ensure enough free space.

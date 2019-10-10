@@ -177,7 +177,7 @@ if sys.platform == 'win32':
         self._MAPPING[u'\\Device\\Mup'] = None
         self._MAPPING[u'\\SystemRoot'] = os.environ[u'SystemRoot']
 
-        for letter in (chr(l) for l in xrange(ord('C'), ord('Z')+1)):
+        for letter in (chr(l) for l in range(ord('C'), ord('Z') + 1)):
           try:
             letter = u'%s:' % letter
             mapped = QueryDosDevice(letter)
@@ -1186,7 +1186,7 @@ def rmtree(root):
   # Retries help if test subprocesses outlive main process and try to actively
   # use or write to the directory while it is being deleted.
   max_tries = 3
-  for i in xrange(max_tries):
+  for i in range(max_tries):
     # pylint: disable=cell-var-from-loop
     # errors is a list of tuple(function, path, excinfo).
     errors = []
@@ -1222,7 +1222,7 @@ def rmtree(root):
     six.reraise(errors[0][2][0], errors[0][2][1], errors[0][2][2])
 
   # The soft way was not good enough. Try the hard way.
-  for i in xrange(max_tries):
+  for i in range(max_tries):
     if not kill_children_processes(root):
       break
     if i != max_tries - 1:

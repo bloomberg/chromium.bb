@@ -48,7 +48,7 @@ class RetryLoopMockedTest(auto_stub.TestCase):
 
   def assertAttempts(self, attempts, max_timeout):
     """Asserts that retry loop executed given number of |attempts|."""
-    expected = [(i, max_timeout - i) for i in xrange(attempts)]
+    expected = [(i, max_timeout - i) for i in range(attempts)]
     actual = [(x.attempt, x.remaining) for x in self.attempts]
     self.assertEqual(expected, actual)
 

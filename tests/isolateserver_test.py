@@ -86,7 +86,7 @@ class TestZipCompression(TestCase):
 
   def test_compress_and_decompress(self):
     """Test data === decompress(compress(data))."""
-    original = [str(x) for x in xrange(0, 1000)]
+    original = [str(x) for x in range(0, 1000)]
     processed = isolateserver.zip_decompress(
         isolateserver.zip_compress(original))
     self.assertEqual(''.join(original), ''.join(processed))
@@ -526,7 +526,7 @@ class StorageTest(TestCase):
 
   def test_archive_files_to_storage_tar(self):
     # Create 5 files, which is the minimum to create a tarball.
-    for i in xrange(5):
+    for i in range(5):
       with open(os.path.join(self.tempdir, unicode(i)), 'wb') as f:
         f.write('fooo%d' % i)
     server_ref = isolate_storage.ServerRef('http://localhost:1', 'default')
@@ -613,7 +613,7 @@ class IsolateServerStorageApiTest(TestCase):
 
   def test_fetch_success(self):
     server_ref = isolate_storage.ServerRef('http://example.com', 'default')
-    data = ''.join(str(x) for x in xrange(1000))
+    data = ''.join(str(x) for x in range(1000))
     item = isolateserver_fake.hash_content(data)
     self.expected_requests([self.mock_fetch_request(server_ref, item, data)])
     storage = isolate_storage.IsolateServer(server_ref)
@@ -631,7 +631,7 @@ class IsolateServerStorageApiTest(TestCase):
 
   def test_fetch_offset_success(self):
     server_ref = isolate_storage.ServerRef('http://example.com', 'default')
-    data = ''.join(str(x) for x in xrange(1000))
+    data = ''.join(str(x) for x in range(1000))
     item = isolateserver_fake.hash_content(data)
     offset = 200
     size = len(data)
@@ -650,7 +650,7 @@ class IsolateServerStorageApiTest(TestCase):
 
   def test_fetch_offset_bad_header(self):
     server_ref = isolate_storage.ServerRef('http://example.com', 'default')
-    data = ''.join(str(x) for x in xrange(1000))
+    data = ''.join(str(x) for x in range(1000))
     item = isolateserver_fake.hash_content(data)
     offset = 200
     size = len(data)
@@ -682,7 +682,7 @@ class IsolateServerStorageApiTest(TestCase):
 
   def test_push_success(self):
     server_ref = isolate_storage.ServerRef('http://example.com', 'default')
-    data = ''.join(str(x) for x in xrange(1000))
+    data = ''.join(str(x) for x in range(1000))
     item = FakeItem(data)
     contains_request = {'items': [
         {'digest': item.digest, 'size': item.size, 'is_isolated': 0}]}
@@ -708,7 +708,7 @@ class IsolateServerStorageApiTest(TestCase):
 
   def test_push_failure_upload(self):
     server_ref = isolate_storage.ServerRef('http://example.com', 'default')
-    data = ''.join(str(x) for x in xrange(1000))
+    data = ''.join(str(x) for x in range(1000))
     item = FakeItem(data)
     contains_request = {'items': [
         {'digest': item.digest, 'size': item.size, 'is_isolated': 0}]}
@@ -734,7 +734,7 @@ class IsolateServerStorageApiTest(TestCase):
 
   def test_push_failure_finalize(self):
     server_ref = isolate_storage.ServerRef('http://example.com', 'default')
-    data = ''.join(str(x) for x in xrange(1000))
+    data = ''.join(str(x) for x in range(1000))
     item = FakeItem(data)
     contains_request = {'items': [
         {'digest': item.digest, 'size': item.size, 'is_isolated': 0}]}
@@ -783,9 +783,10 @@ class IsolateServerStorageApiTest(TestCase):
         {'digest': f.digest, 'is_isolated': not i, 'size': f.size}
         for i, f in enumerate(files)]}
     response = {
-        'items': [
-            {'index': str(i), 'upload_ticket': 'ticket_%d' % i}
-            for i in xrange(3)],
+        'items': [{
+            'index': str(i),
+            'upload_ticket': 'ticket_%d' % i
+        } for i in range(3)],
     }
     missing = [
         files[0],
@@ -839,8 +840,8 @@ class IsolateServerStorageSmokeTest(unittest.TestCase):
 
     # Items to upload.
     items = [
-      isolateserver.BufferItem('item %d' % i, storage.server_ref.hash_algo)
-      for i in xrange(10)
+        isolateserver.BufferItem('item %d' % i, storage.server_ref.hash_algo)
+        for i in range(10)
     ]
 
     # Do it.
@@ -849,8 +850,9 @@ class IsolateServerStorageSmokeTest(unittest.TestCase):
 
     # Now ensure upload_items skips existing items.
     more = [
-      isolateserver.BufferItem('more item %d' % i, storage.server_ref.hash_algo)
-      for i in xrange(10)
+        isolateserver.BufferItem('more item %d' % i,
+                                 storage.server_ref.hash_algo)
+        for i in range(10)
     ]
 
     # Uploaded only |more|.
@@ -869,8 +871,8 @@ class IsolateServerStorageSmokeTest(unittest.TestCase):
 
     # Upload items.
     items = [
-      isolateserver.BufferItem('item %d' % i, storage.server_ref.hash_algo)
-      for i in xrange(10)
+        isolateserver.BufferItem('item %d' % i, storage.server_ref.hash_algo)
+        for i in range(10)
     ]
     uploaded = storage.upload_items(items)
     self.assertEqual(set(items), set(uploaded))
@@ -908,7 +910,7 @@ class IsolateServerStorageSmokeTest(unittest.TestCase):
   def _archive_smoke(self, size):
     self.server.store_hash_instead()
     files = {}
-    for i in xrange(5):
+    for i in range(5):
       name = '512mb_%d.%s' % (i, isolateserver.ALREADY_COMPRESSED_TYPES[0])
       logging.info('Writing %s', name)
       p = os.path.join(self.tempdir, name)
@@ -916,7 +918,7 @@ class IsolateServerStorageSmokeTest(unittest.TestCase):
       data = os.urandom(1024)
       with open(p, 'wb') as f:
         # Write 512MiB.
-        for _ in xrange(size / len(data)):
+        for _ in range(size / len(data)):
           f.write(data)
           h.update(data)
       os.chmod(p, 0600)

@@ -323,7 +323,7 @@ def _fetch_cipd_client(disk_cache, instance_id, fetch_url, timeoutfn):
     Error if could not fetch content.
   """
   sleep_time = 1
-  for attempt in xrange(5):
+  for attempt in range(5):
     if attempt > 0:
       if timeoutfn() is not None and timeoutfn() < sleep_time:
         raise Error('Could not fetch CIPD client: timeout')
