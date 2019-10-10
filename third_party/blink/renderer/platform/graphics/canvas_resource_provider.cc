@@ -1145,6 +1145,11 @@ cc::ImageDecodeCache* CanvasResourceProvider::ImageDecodeCacheF16() {
 
 void CanvasResourceProvider::RecycleResource(
     scoped_refptr<CanvasResource> resource) {
+  // We don't want to keep an arbitrary large number of canvases.
+  if (canvas_resources_.size() >
+      canvas_heuristic_parameters::kMaxRecycledCanvasResources)
+    return;
+
   // Need to check HasOneRef() because if there are outstanding references to
   // the resource, it cannot be safely recycled.
   if (resource->HasOneRef() && resource_recycling_enabled_ &&
