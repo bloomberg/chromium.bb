@@ -486,6 +486,11 @@ bool BrowserView::IsTabStripVisible() const {
   if (!browser_->SupportsWindowFeature(Browser::FEATURE_TABSTRIP))
     return false;
 
+#if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
+  if (base::FeatureList::IsEnabled(features::kWebUITabStrip))
+    return false;
+#endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
+
   // Return false if the tabstrip has not yet been created (by InitViews()),
   // since callers may otherwise try to access it. Note that we can't just check
   // this alone, as the tabstrip is created unconditionally even for windows
