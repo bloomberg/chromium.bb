@@ -56,6 +56,7 @@ export class TabElement extends CustomElement {
         this.shadowRoot.querySelector('#titleText'));
 
     this.addEventListener('click', this.onClick_.bind(this));
+    this.addEventListener('contextmenu', this.onContextMenu_.bind(this));
     this.closeButtonEl_.addEventListener('click', this.onClose_.bind(this));
   }
 
@@ -124,6 +125,18 @@ export class TabElement extends CustomElement {
     }
 
     this.tabsApi_.activateTab(this.tab_.id);
+  }
+
+  /** @private */
+  onContextMenu_(event) {
+    event.preventDefault();
+
+    if (!this.tab_) {
+      return;
+    }
+
+    this.tabsApi_.showTabContextMenu(
+        this.tab_.id, event.clientX, event.clientY);
   }
 
   /**

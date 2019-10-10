@@ -18,6 +18,7 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/tabs/tab_menu_model.h"
 #include "chrome/browser/ui/tabs/tab_network_state.h"
 #include "chrome/browser/ui/tabs/tab_renderer_data.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -35,8 +36,10 @@
 #include "content/public/browser/web_ui_message_handler.h"
 #include "third_party/skia/include/core/SkImageEncoder.h"
 #include "third_party/skia/include/core/SkStream.h"
+#include "ui/base/models/simple_menu_model.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/gfx/geometry/point_conversions.h"
 
 namespace {
 
@@ -65,11 +68,32 @@ class BufferWStream : public SkWStream {
   std::vector<unsigned char> result_;
 };
 
+class WebUITabContextMenu : public ui::SimpleMenuModel::Delegate,
+                            public TabMenuModel {
+ public:
+  WebUITabContextMenu(TabStripModel* tab_strip_model, int tab_index)
+      : TabMenuModel(this, tab_strip_model, tab_index),
+        tab_strip_model_(tab_strip_model),
+        tab_index_(tab_index) {}
+  ~WebUITabContextMenu() override = default;
+
+  void ExecuteCommand(int command_id, int event_flags) override {
+    DCHECK_LT(tab_index_, tab_strip_model_->count());
+    tab_strip_model_->ExecuteContextMenuCommand(
+        tab_index_, static_cast<TabStripModel::ContextMenuCommand>(command_id));
+  }
+
+ private:
+  TabStripModel* const tab_strip_model_;
+  const int tab_index_;
+};
+
 class TabStripUIHandler : public content::WebUIMessageHandler,
                           public TabStripModelObserver {
  public:
-  explicit TabStripUIHandler(Browser* browser)
+  explicit TabStripUIHandler(Browser* browser, TabStripUI::Embedder* embedder)
       : browser_(browser),
+        embedder_(embedder),
         thumbnail_tracker_(base::Bind(&TabStripUIHandler::HandleThumbnailUpdate,
                                       base::Unretained(this))) {}
   ~TabStripUIHandler() override = default;
@@ -156,6 +180,10 @@ class TabStripUIHandler : public content::WebUIMessageHandler,
     web_ui()->RegisterMessageCallback(
         "removeTrackedTab", base::Bind(&TabStripUIHandler::RemoveTrackedTab,
                                        base::Unretained(this)));
+    web_ui()->RegisterMessageCallback(
+        "showTabContextMenu",
+        base::Bind(&TabStripUIHandler::HandleShowTabContextMenu,
+                   base::Unretained(this)));
   }
 
  private:
@@ -238,6 +266,33 @@ class TabStripUIHandler : public content::WebUIMessageHandler,
     ResolveJavascriptCallback(callback_id, colors);
   }
 
+  void HandleShowTabContextMenu(const base::ListValue* args) {
+    int tab_id = 0;
+    args->GetInteger(0, &tab_id);
+
+    gfx::PointF point;
+    {
+      double x = 0;
+      args->GetDouble(1, &x);
+      double y = 0;
+      args->GetDouble(2, &y);
+      point = gfx::PointF(x, y);
+    }
+
+    TabStripModel* tab_strip_model = nullptr;
+    int tab_index = -1;
+    const bool got_tab = extensions::ExtensionTabUtil::GetTabById(
+        tab_id, browser_->profile(), true /* include_incognito */, nullptr,
+        &tab_strip_model, nullptr, &tab_index);
+    DCHECK(got_tab);
+    DCHECK_EQ(tab_strip_model, browser_->tab_strip_model());
+
+    DCHECK(embedder_);
+    embedder_->ShowContextMenuAtPoint(
+        gfx::ToRoundedPoint(point),
+        std::make_unique<WebUITabContextMenu>(tab_strip_model, tab_index));
+  }
+
   void AddTrackedTab(const base::ListValue* args) {
     AllowJavascript();
 
@@ -296,6 +351,8 @@ class TabStripUIHandler : public content::WebUIMessageHandler,
   }
 
   Browser* const browser_;
+  TabStripUI::Embedder* const embedder_;
+
   ThumbnailTracker thumbnail_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(TabStripUIHandler);
@@ -341,6 +398,9 @@ TabStripUI::TabStripUI(content::WebUI* web_ui)
 
 TabStripUI::~TabStripUI() {}
 
-void TabStripUI::Initialize(Browser* browser) {
-  web_ui()->AddMessageHandler(std::make_unique<TabStripUIHandler>(browser));
+void TabStripUI::Initialize(Browser* browser, Embedder* embedder) {
+  content::WebUI* const web_ui = TabStripUI::web_ui();
+  DCHECK_EQ(Profile::FromWebUI(web_ui), browser->profile());
+  web_ui->AddMessageHandler(
+      std::make_unique<TabStripUIHandler>(browser, embedder));
 }
