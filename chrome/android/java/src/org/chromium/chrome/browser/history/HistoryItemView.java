@@ -95,8 +95,8 @@ public class HistoryItemView extends SelectableItemView<HistoryItem> implements 
             mTitleView.setTextColor(
                     ApiCompatibilityUtils.getColor(getResources(), R.color.default_red));
         } else {
-            setIconDrawable(
-                    mFaviconHelper.getDefaultFaviconDrawable(getContext(), item.getUrl(), true));
+            setIconDrawable(mFaviconHelper.getDefaultFaviconDrawable(
+                    getContext().getResources(), item.getUrl(), true));
             if (mHistoryManager != null) requestIcon();
 
             mTitleView.setTextColor(

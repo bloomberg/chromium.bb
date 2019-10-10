@@ -92,18 +92,25 @@ public class FaviconUtils {
 
     /**
      * Creates a {@link Drawable} with the provided icon, or a fallback monogram, with bilinear
-     * scaling through {@link Bitmap#createScaledBitmap(Bitmap, int, int, boolean)}.
+     * scaling through {@link Bitmap#createScaledBitmap(Bitmap, int, int, boolean)}, or a fallback
+     * default favicon.
      * @param icon {@link Bitmap} with the icon to display. If null, a fallback monogram will be
      *         generated.
      * @param url Url to generate a monogram. Used only if {@code icon} is null.
      * @param iconGenerator RoundedIconGenerator to generate a monogram. Used only if {@code icon}
      *         is null.
+     * @param defaultFaviconHelper Helper to generate default favicons.
      * @param resources {@link Resources} to create a {@link BitmapDrawable}.
      * @param iconSize Width and height of the returned icon.
      * @return A {@link Drawable} to be displayed as the favicon.
      */
-    public static Drawable getIconDrawableWithFilter(@Nullable Bitmap icon, String url,
-            RoundedIconGenerator iconGenerator, Resources resources, int iconSize) {
+    public static Drawable getIconDrawableWithFilter(@Nullable Bitmap icon, @Nullable String url,
+            RoundedIconGenerator iconGenerator,
+            FaviconHelper.DefaultFaviconHelper defaultFaviconHelper, Resources resources,
+            int iconSize) {
+        if (url == null) {
+            return defaultFaviconHelper.getDefaultFaviconDrawable(resources, url, true);
+        }
         if (icon == null) {
             icon = iconGenerator.generateIconForUrl(url);
             return new BitmapDrawable(
