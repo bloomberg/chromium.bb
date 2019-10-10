@@ -1321,9 +1321,8 @@ void RenderWidget::RequestNewLayerTreeFrameSink(
   // would also be used for other widgets such as popups.
   const char* client_name = for_child_local_root_frame_ ? kOOPIF : kRenderer;
   compositor_deps_->RequestNewLayerTreeFrameSink(
-      routing_id_, frame_swap_message_queue_, std::move(url),
-      std::move(callback), std::move(client_receiver),
-      std::move(observer_remote), client_name);
+      this, frame_swap_message_queue_, std::move(url), std::move(callback),
+      std::move(client_receiver), std::move(observer_remote), client_name);
 }
 
 void RenderWidget::DidCommitAndDrawCompositorFrame() {
@@ -2003,6 +2002,14 @@ void RenderWidget::SetIsUndead(bool is_undead) {
   // compositor since when hidden the compositor is always stopped.
   if (!is_hidden_)
     StartStopCompositor();
+
+  // Remove undead RenderWidgets from the routing map so that they cannot be
+  // looked up with FromRoutingId().
+  if (is_undead) {
+    g_routing_id_widget_map.Get().erase(routing_id_);
+  } else {
+    g_routing_id_widget_map.Get().emplace(routing_id_, this);
+  }
 }
 
 // static
