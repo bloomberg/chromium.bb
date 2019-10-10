@@ -2374,42 +2374,17 @@ int av1_full_pixel_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
       var = full_pixel_diamond(cpi, x, mvp_full, step_param, error_per_bit,
                                MAX_MVSEARCH_STEPS - 1 - step_param, 1,
                                cost_list, fn_ptr, ref_mv, cfg);
-
-      // Should we allow a follow on exhaustive search?
-      if (is_exhaustive_allowed(cpi, x)) {
-        int exhuastive_thr = sf->exhaustive_searches_thresh;
-        exhuastive_thr >>=
-            10 - (mi_size_wide_log2[bsize] + mi_size_high_log2[bsize]);
-
-        // Threshold variance for an exhaustive full search.
-        if (var > exhuastive_thr) {
-          int var_ex;
-          MV tmp_mv_ex;
-          var_ex =
-              full_pixel_exhaustive(cpi, x, &x->best_mv.as_mv, error_per_bit,
-                                    cost_list, fn_ptr, ref_mv, &tmp_mv_ex);
-
-          if (var_ex < var) {
-            var = var_ex;
-            x->best_mv.as_mv = tmp_mv_ex;
-          }
-        }
-      }
       break;
     default: assert(0 && "Invalid search method.");
   }
 
   // Should we allow a follow on exhaustive search?
-  if (!run_mesh_search) {
-    if (method == NSTEP) {
-      if (is_exhaustive_allowed(cpi, x)) {
-        int exhuastive_thr = sf->exhaustive_searches_thresh;
-        exhuastive_thr >>=
-            10 - (mi_size_wide_log2[bsize] + mi_size_high_log2[bsize]);
-        // Threshold variance for an exhaustive full search.
-        if (var > exhuastive_thr) run_mesh_search = 1;
-      }
-    }
+  if (!run_mesh_search && method == NSTEP && is_exhaustive_allowed(cpi, x)) {
+    int exhuastive_thr = sf->exhaustive_searches_thresh;
+    exhuastive_thr >>=
+        10 - (mi_size_wide_log2[bsize] + mi_size_high_log2[bsize]);
+    // Threshold variance for an exhaustive full search.
+    if (var > exhuastive_thr) run_mesh_search = 1;
   }
 
   if (run_mesh_search) {

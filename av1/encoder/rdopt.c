@@ -6976,15 +6976,8 @@ static AOM_INLINE void single_motion_search(const AV1_COMP *const cpi,
   MB_MODE_INFO *mbmi = xd->mi[0];
   struct buf_2d backup_yv12[MAX_MB_PLANE] = { { 0, 0, 0, 0, 0 } };
   int bestsme = INT_MAX;
-  int step_param;
-  int sadpb = x->sadperbit16;
-  MV mvp_full;
-  int ref = mbmi->ref_frame[ref_idx];
-  MV ref_mv = av1_get_ref_mv(x, ref_idx).as_mv;
-
+  const int ref = mbmi->ref_frame[ref_idx];
   MvLimits tmp_mv_limits = x->mv_limits;
-  int cost_list[5];
-
   const YV12_BUFFER_CONFIG *scaled_ref_frame =
       av1_get_scaled_ref_frame(cpi, ref);
 
@@ -7002,6 +6995,7 @@ static AOM_INLINE void single_motion_search(const AV1_COMP *const cpi,
 
   // Work out the size of the first step in the mv step search.
   // 0 here is maximum length first step. 1 is AOMMAX >> 1 etc.
+  int step_param;
   if (cpi->sf.mv.auto_mv_step_size && cm->show_frame) {
     // Take the weighted average of the step_params based on the last frame's
     // max mv magnitude and that based on the best ref mvs of the current
@@ -7050,10 +7044,12 @@ static AOM_INLINE void single_motion_search(const AV1_COMP *const cpi,
     }
   }
 
+  const MV ref_mv = av1_get_ref_mv(x, ref_idx).as_mv;
   // Note: MV limits are modified here. Always restore the original values
   // after full-pixel motion search.
   av1_set_mv_search_range(&x->mv_limits, &ref_mv);
 
+  MV mvp_full;
   if (mbmi->motion_mode != SIMPLE_TRANSLATION)
     mvp_full = mbmi->mv[0].as_mv;
   else
@@ -7062,8 +7058,9 @@ static AOM_INLINE void single_motion_search(const AV1_COMP *const cpi,
   mvp_full.col >>= 3;
   mvp_full.row >>= 3;
 
+  const int sadpb = x->sadperbit16;
+  int cost_list[5];
   x->best_mv.as_int = x->second_best_mv.as_int = INVALID_MV;
-
   switch (mbmi->motion_mode) {
     case SIMPLE_TRANSLATION:
       bestsme = av1_full_pixel_search(
