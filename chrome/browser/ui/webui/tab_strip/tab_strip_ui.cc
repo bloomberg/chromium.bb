@@ -194,8 +194,6 @@ class TabStripUIHandler : public content::WebUIMessageHandler,
                         browser_->tab_strip_model()->active_index() == index);
     tab_data.SetInteger("id", extensions::ExtensionTabUtil::GetTabId(contents));
     tab_data.SetInteger("index", index);
-    tab_data.SetString("status", extensions::ExtensionTabUtil::GetTabStatusText(
-                                     contents->IsLoading()));
 
     // TODO(johntlee): Replace with favicon from TabRendererData
     content::NavigationEntry* visible_entry =
@@ -209,6 +207,10 @@ class TabStripUIHandler : public content::WebUIMessageHandler,
     tab_data.SetBoolean("pinned", tab_renderer_data.pinned);
     tab_data.SetString("title", tab_renderer_data.title);
     tab_data.SetString("url", tab_renderer_data.visible_url.GetContent());
+    tab_data.SetInteger("networkState",
+                        static_cast<int>(tab_renderer_data.network_state));
+    tab_data.SetBoolean("shouldHideThrobber",
+                        tab_renderer_data.should_hide_throbber);
     // TODO(johntlee): Add the rest of TabRendererData
 
     return tab_data;
@@ -253,6 +255,9 @@ class TabStripUIHandler : public content::WebUIMessageHandler,
     colors.SetString("--tabstrip-tab-loading-spinning-color",
                      color_utils::SkColorToRgbaString(tp.GetColor(
                          ThemeProperties::COLOR_TAB_THROBBER_SPINNING)));
+    colors.SetString("--tabstrip-tab-waiting-spinning-color",
+                     color_utils::SkColorToRgbaString(tp.GetColor(
+                         ThemeProperties::COLOR_TAB_THROBBER_WAITING)));
     colors.SetString("--tabstrip-indicator-recording-color",
                      color_utils::SkColorToRgbaString(tp.GetColor(
                          ThemeProperties::COLOR_TAB_ALERT_RECORDING)));

@@ -10,7 +10,7 @@ import {addWebUIListener} from 'chrome://resources/js/cr.m.js';
 import {CustomElement} from './custom_element.js';
 import {TabElement} from './tab.js';
 import {TabStripViewProxy} from './tab_strip_view_proxy.js';
-import {TabsApiProxy} from './tabs_api_proxy.js';
+import {TabData, TabsApiProxy} from './tabs_api_proxy.js';
 
 /**
  * The amount of padding to leave between the edge of the screen and the active
@@ -111,7 +111,7 @@ class TabListElement extends CustomElement {
   }
 
   /**
-   * @param {!Tab} tab
+   * @param {!TabData} tab
    * @return {!TabElement}
    * @private
    */
@@ -248,20 +248,20 @@ class TabListElement extends CustomElement {
   onTabActivated_(tabId) {
     const previouslyActiveTab = this.getActiveTab_();
     if (previouslyActiveTab) {
-      previouslyActiveTab.tab = /** @type {!Tab} */ (
+      previouslyActiveTab.tab = /** @type {!TabData} */ (
           Object.assign({}, previouslyActiveTab.tab, {active: false}));
     }
 
     const newlyActiveTab = this.findTabElement_(tabId);
     if (newlyActiveTab) {
-      newlyActiveTab.tab = /** @type {!Tab} */ (
+      newlyActiveTab.tab = /** @type {!TabData} */ (
           Object.assign({}, newlyActiveTab.tab, {active: true}));
       this.moveOrScrollToActiveTab_();
     }
   }
 
   /**
-   * @param {!Tab} tab
+   * @param {!TabData} tab
    * @private
    */
   onTabCreated_(tab) {
@@ -311,7 +311,7 @@ class TabListElement extends CustomElement {
   }
 
   /**
-   * @param {!Tab} tab
+   * @param {!TabData} tab
    * @private
    */
   onTabUpdated_(tab) {

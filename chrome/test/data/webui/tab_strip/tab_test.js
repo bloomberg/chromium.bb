@@ -5,7 +5,8 @@
 import 'chrome://tab-strip/tab.js';
 
 import {getFavicon, getFaviconForPageURL} from 'chrome://resources/js/icon.m.js';
-import {TabsApiProxy} from 'chrome://tab-strip/tabs_api_proxy.js';
+import {TabNetworkState, TabsApiProxy} from 'chrome://tab-strip/tabs_api_proxy.js';
+
 import {TestTabsApiProxy} from './test_tabs_api_proxy.js';
 
 suite('Tab', function() {
@@ -14,7 +15,7 @@ suite('Tab', function() {
 
   const tab = {
     id: 1001,
-    status: 'complete',
+    networkState: TabNetworkState.NONE,
     title: 'My title',
   };
 
@@ -65,10 +66,21 @@ suite('Tab', function() {
   });
 
   test('toggles a [loading] attribute when loading', () => {
-    tabElement.tab = Object.assign({}, tab, {status: 'loading'});
+    tabElement.tab =
+        Object.assign({}, tab, {networkState: TabNetworkState.LOADING});
     assertTrue(tabElement.hasAttribute('loading'));
-    tabElement.tab = Object.assign({}, tab, {status: 'complete'});
+    tabElement.tab =
+        Object.assign({}, tab, {networkState: TabNetworkState.NONE});
     assertFalse(tabElement.hasAttribute('loading'));
+  });
+
+  test('toggles a [waiting] attribute when waiting', () => {
+    tabElement.tab =
+        Object.assign({}, tab, {networkState: TabNetworkState.WAITING});
+    assertTrue(tabElement.hasAttribute('waiting'));
+    tabElement.tab =
+        Object.assign({}, tab, {networkState: TabNetworkState.NONE});
+    assertFalse(tabElement.hasAttribute('waiting'));
   });
 
   test('clicking on the element activates the tab', () => {
@@ -116,7 +128,8 @@ suite('Tab', function() {
       'removes the favicon if the tab is loading and there is no favicon URL',
       () => {
         delete tab.favIconUrl;
-        tabElement.tab = Object.assign({}, tab, {status: 'loading'});
+        tabElement.tab =
+            Object.assign({}, tab, {networkState: TabNetworkState.LOADING});
         const faviconElement = tabElement.shadowRoot.querySelector('#favicon');
         assertEquals(faviconElement.style.backgroundImage, 'none');
       });
