@@ -332,3 +332,11 @@ D. Local Modifications
     https://unicode-org.atlassian.net/browse/ICU-20784
   - upstream PR:
     https://github.com/unicode-org/icu/pull/770
+
+19. Fix DateInterval::createInstance
+  - patches/DateIntervalInfo.patch
+  - upstream bug:
+    https://unicode-org.atlassian.net/browse/ICU-20706
+  - upstream PR:
+    https://github.com/unicode-org/icu/pull/876
+
