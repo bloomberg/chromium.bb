@@ -97,14 +97,8 @@ PrintingContext::Result PrintingContext::UpdatePrintSettings(
     return OnError();
   }
 
-  base::Optional<int> printer_type_opt =
-      job_settings.FindIntKey(kSettingPrinterType);
-  if (!printer_type_opt.has_value()) {
-    NOTREACHED();
-    return OnError();
-  }
-
-  PrinterType printer_type = static_cast<PrinterType>(printer_type_opt.value());
+  PrinterType printer_type = static_cast<PrinterType>(
+      job_settings.FindIntKey(kSettingPrinterType).value());
   bool print_with_privet = printer_type == kPrivetPrinter;
   bool print_to_cloud = !!job_settings.FindKey(kSettingCloudPrintId);
   bool open_in_external_preview =

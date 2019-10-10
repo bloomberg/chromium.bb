@@ -387,22 +387,20 @@ UserActionBuckets DetermineUserAction(const base::Value& settings) {
   if (settings.FindKey(kSettingCloudPrintId))
     return PRINT_WITH_CLOUD_PRINT;
 
-  base::Optional<int> type_raw = settings.FindIntKey(kSettingPrinterType);
-  if (type_raw.has_value()) {
-    PrinterType type = static_cast<PrinterType>(type_raw.value());
-    switch (type) {
-      case kPrivetPrinter:
-        return PRINT_WITH_PRIVET;
-      case kExtensionPrinter:
-        return PRINT_WITH_EXTENSION;
-      case kPdfPrinter:
-        return PRINT_TO_PDF;
-      case kLocalPrinter:
-        break;
-      default:
-        NOTREACHED();
-        break;
-    }
+  PrinterType type = static_cast<PrinterType>(
+      settings.FindIntKey(kSettingPrinterType).value());
+  switch (type) {
+    case kPrivetPrinter:
+      return PRINT_WITH_PRIVET;
+    case kExtensionPrinter:
+      return PRINT_WITH_EXTENSION;
+    case kPdfPrinter:
+      return PRINT_TO_PDF;
+    case kLocalPrinter:
+      break;
+    default:
+      NOTREACHED();
+      break;
   }
 
   if (settings.FindBoolKey(kSettingShowSystemDialog).value_or(false))
