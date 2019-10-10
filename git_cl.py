@@ -2305,9 +2305,14 @@ class Changelist(object):
 
     # Extract bug number from branch name.
     bug = options.bug
-    match = re.match(r'(?:bug|fix)[_-]?(\d+)', self.GetBranch())
-    if not bug and match:
-      bug = match.group(1)
+    fixed = options.fixed
+    match = re.match(r'(?P<type>bug|fix(?:e[sd])?)[_-]?(?P<bugnum>\d+)',
+                     self.GetBranch())
+    if not bug and not fixed and match:
+      if match.group('type') == 'bug':
+        bug = match.group('bugnum')
+      else:
+        fixed = match.group('bugnum')
 
     if options.squash:
       self._GerritCommitMsgHookCheck(offer_removal=not options.force)
@@ -2346,7 +2351,7 @@ class Changelist(object):
           # Change-Id. Thus, just create a new footer, but let user verify the
           # new description.
           message = '%s\n\nChange-Id: %s' % (message, change_id)
-          change_desc = ChangeDescription(message, bug=bug)
+          change_desc = ChangeDescription(message, bug=bug, fixed=fixed)
           if not options.force:
             print(
                 'WARNING: change %s has Change-Id footer(s):\n'
@@ -2367,7 +2372,7 @@ class Changelist(object):
         # Sanity check of this code - we should end up with proper message
         # footer.
         assert [change_id] == git_footers.get_footer_change_id(message)
-        change_desc = ChangeDescription(message, bug=bug)
+        change_desc = ChangeDescription(message, bug=bug, fixed=fixed)
       else:  # if not self.GetIssue()
         if options.message:
           message = options.message
@@ -2375,7 +2380,7 @@ class Changelist(object):
           message = _create_description_from_log(git_diff_args)
           if options.title:
             message = options.title + '\n\n' + message
-        change_desc = ChangeDescription(message, bug=bug)
+        change_desc = ChangeDescription(message, bug=bug, fixed=fixed)
         if not options.force:
           change_desc.prompt()
 
@@ -2752,13 +2757,14 @@ class ChangeDescription(object):
   R_LINE = r'^[ \t]*(TBR|R)[ \t]*=[ \t]*(.*?)[ \t]*$'
   CC_LINE = r'^[ \t]*(CC)[ \t]*=[ \t]*(.*?)[ \t]*$'
   BUG_LINE = r'^[ \t]*(?:(BUG)[ \t]*=|Bug:)[ \t]*(.*?)[ \t]*$'
+  FIXED_LINE = r'^[ \t]*Fixed[ \t]*:[ \t]*(.*?)[ \t]*$'
   CHERRY_PICK_LINE = r'^\(cherry picked from commit [a-fA-F0-9]{40}\)$'
   STRIP_HASH_TAG_PREFIX = r'^(\s*(revert|reland)( "|:)?\s*)*'
   BRACKET_HASH_TAG = r'\s*\[([^\[\]]+)\]'
   COLON_SEPARATED_HASH_TAG = r'^([a-zA-Z0-9_\- ]+):'
   BAD_HASH_TAG_CHUNK = r'[^a-zA-Z0-9]+'
 
-  def __init__(self, description, bug=None):
+  def __init__(self, description, bug=None, fixed=None):
     self._description_lines = (description or '').strip().splitlines()
     if bug:
       regexp = re.compile(self.BUG_LINE)
@@ -2766,6 +2772,12 @@ class ChangeDescription(object):
       if not any((regexp.match(line) for line in self._description_lines)):
         values = list(_get_bug_line_values(prefix, bug))
         self.append_footer('Bug: %s' % ', '.join(values))
+    if fixed:
+      regexp = re.compile(self.FIXED_LINE)
+      prefix = settings.GetBugPrefix()
+      if not any((regexp.match(line) for line in self._description_lines)):
+        values = list(_get_bug_line_values(prefix, fixed))
+        self.append_footer('Fixed: %s' % ', '.join(values))
 
   @property               # www.logilab.org/ticket/89786
   def description(self):  # pylint: disable=method-hidden
@@ -2869,9 +2881,11 @@ class ChangeDescription(object):
       '#--------------------This line is 72 characters long'
       '--------------------',
     ] + self._description_lines)
-    regexp = re.compile(self.BUG_LINE)
+    bug_regexp = re.compile(self.BUG_LINE)
+    fixed_regexp = re.compile(self.FIXED_LINE)
     prefix = settings.GetBugPrefix()
-    if not any((regexp.match(line) for line in self._description_lines)):
+    has_issue = lambda l: bug_regexp.match(l) or fixed_regexp.match(l)
+    if not any((has_issue(line) for line in self._description_lines)):
       self.append_footer('Bug: %s' % prefix)
 
     content = gclient_utils.RunEditor(self.description, True,
@@ -4358,6 +4372,11 @@ def CMDupload(parser, args):
                          '--use-commit-queue or --cq-dry-run.')
   parser.add_option('--buildbucket-host', default='cr-buildbucket.appspot.com',
                     help='Host of buildbucket. The default host is %default.')
+  parser.add_option('--fixed', '-x',
+                    help='List of bugs that will be commented on and marked '
+                         'fixed (pre-populates "Fixed:" tag). Same format as '
+                         '-b option / "Bug:" tag. If fixing several issues, '
+                         'separate with commas.')
   auth.add_auth_options(parser)
 
   orig_args = args

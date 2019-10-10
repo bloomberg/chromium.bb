@@ -1415,6 +1415,17 @@ class TestGitCl(TestCase):
         title='Title',
         change_id='Izzzz')
 
+  def test_gerrit_upload_force_sets_fixed(self):
+    self._run_gerrit_upload_test(
+        ['-x', '10000', '-f'],
+        u'desc=\n\nFixed: 10000\nChange-Id: Ixxx',
+        [],
+        force=True,
+        expected_upstream_ref='origin/master',
+        fetched_description='desc=\n\nChange-Id: Ixxx',
+        original_title='Initial upload',
+        change_id='Ixxx')
+
   def test_gerrit_reviewer_multiple(self):
     self.mock(git_cl.gerrit_util, 'GetCodeReviewTbrScore',
               lambda *a: self._mocked_call('GetCodeReviewTbrScore', *a))
@@ -2211,6 +2222,34 @@ class TestGitCl(TestCase):
               lambda *args: current_desc)
     self.mock(git_cl.Changelist, 'UpdateDescriptionRemote',
               UpdateDescriptionRemote)
+    self.mock(git_cl.gclient_utils, 'RunEditor', RunEditor)
+
+    self.calls = [
+        ((['git', 'symbolic-ref', 'HEAD'],), 'feature'),
+        ((['git', 'config', 'branch.feature.gerritissue'],), '123'),
+        ((['git', 'config', 'rietveld.autoupdate'],), CERR1),
+        ((['git', 'config', 'rietveld.bug-prefix'],), CERR1),
+        ((['git', 'config', 'core.editor'],), 'vi'),
+    ]
+    self.assertEqual(0, git_cl.main(['description', '--gerrit']))
+
+  def test_description_does_not_append_bug_line_if_fixed_is_present(self):
+    current_desc = 'Some.\n\nFixed: 123\nChange-Id: xxx'
+
+    def RunEditor(desc, _, **kwargs):
+      self.assertEquals(
+          '# Enter a description of the change.\n'
+          '# This will be displayed on the codereview site.\n'
+          '# The first line will also be used as the subject of the review.\n'
+          '#--------------------This line is 72 characters long'
+          '--------------------\n'
+          'Some.\n\nFixed: 123\nChange-Id: xxx',
+          desc)
+      return desc
+
+    self.mock(git_cl.sys, 'stdout', StringIO.StringIO())
+    self.mock(git_cl.Changelist, 'GetDescription',
+              lambda *args: current_desc)
     self.mock(git_cl.gclient_utils, 'RunEditor', RunEditor)
 
     self.calls = [
