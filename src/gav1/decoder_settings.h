@@ -33,6 +33,9 @@ struct DecoderSettings {
   // threads will be created).
   int threads = 1;
   // Do frame parallel decoding.
+  //
+  // NOTE: Frame parallel decoding is not implemented. Don't set frame_parallel
+  // to true.
   bool frame_parallel = false;
   // Get frame buffer callback.
   GetFrameBufferCallback get = nullptr;

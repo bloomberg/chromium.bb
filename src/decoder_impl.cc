@@ -71,6 +71,12 @@ StatusCode DecoderImpl::Create(const DecoderSettings* settings,
     LIBGAV1_DLOG(ERROR, "Invalid settings->threads: %d.", settings->threads);
     return kLibgav1StatusInvalidArgument;
   }
+  if (settings->frame_parallel) {
+    LIBGAV1_DLOG(ERROR,
+                 "Frame parallel decoding is not implemented. Don't set "
+                 "frame_parallel to true in DecoderSettings.");
+    return kLibgav1StatusUnimplemented;
+  }
   std::unique_ptr<DecoderImpl> impl(new (std::nothrow) DecoderImpl(settings));
   if (impl == nullptr) {
     LIBGAV1_DLOG(ERROR, "Failed to allocate DecoderImpl.");
