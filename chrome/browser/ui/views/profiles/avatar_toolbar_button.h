@@ -15,8 +15,6 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
-#include "components/autofill/core/browser/personal_data_manager.h"
-#include "components/autofill/core/browser/personal_data_manager_observer.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/material_design/material_design_controller_observer.h"
@@ -29,8 +27,7 @@ class AvatarToolbarButton : public ToolbarButton,
                             public BrowserListObserver,
                             public ProfileAttributesStorage::Observer,
                             public signin::IdentityManager::Observer,
-                            public ui::MaterialDesignControllerObserver,
-                            public autofill::PersonalDataManagerObserver {
+                            public ui::MaterialDesignControllerObserver {
  public:
   explicit AvatarToolbarButton(Browser* browser);
   ~AvatarToolbarButton() override;
@@ -100,9 +97,6 @@ class AvatarToolbarButton : public ToolbarButton,
   // ui::MaterialDesignControllerObserver:
   void OnTouchUiChanged() override;
 
-  // autofill::PersonalDataManagerObserver:
-  void OnCreditCardSaved() override;
-
   void ShowIdentityAnimation();
   void HideIdentityAnimationWhenNotHoveredOrFocused();
   void HideIdentityAnimation();
@@ -147,9 +141,6 @@ class AvatarToolbarButton : public ToolbarButton,
   ScopedObserver<ui::MaterialDesignController,
                  ui::MaterialDesignControllerObserver>
       md_observer_{this};
-  ScopedObserver<autofill::PersonalDataManager,
-                 autofill::PersonalDataManagerObserver>
-      personal_data_manager_observer_{this};
 
   base::WeakPtrFactory<AvatarToolbarButton> weak_ptr_factory_{this};
 

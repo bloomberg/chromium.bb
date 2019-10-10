@@ -10,7 +10,6 @@
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/vector_icons/vector_icons.h"
-#include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/avatar_menu.h"
 #include "chrome/browser/profiles/profile.h"
@@ -170,9 +169,6 @@ AvatarToolbarButton::AvatarToolbarButton(Browser* browser)
   UpdateText();
 
   md_observer_.Add(ui::MaterialDesignController::GetInstance());
-  personal_data_manager_observer_.Add(
-      autofill::PersonalDataManagerFactory::GetForProfile(
-          profile_->GetOriginalProfile()));
 }
 
 AvatarToolbarButton::~AvatarToolbarButton() {
@@ -396,10 +392,6 @@ void AvatarToolbarButton::OnExtendedAccountInfoRemoved(
 void AvatarToolbarButton::OnTouchUiChanged() {
   SetInsets();
   PreferredSizeChanged();
-}
-
-void AvatarToolbarButton::OnCreditCardSaved() {
-  ShowAvatarHighlightAnimation();
 }
 
 void AvatarToolbarButton::ShowIdentityAnimation() {
