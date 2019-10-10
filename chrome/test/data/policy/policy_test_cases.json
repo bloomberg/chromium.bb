@@ -3868,6 +3868,10 @@
     "pref_mappings": [{ "pref": "browser.shared_clipboard_enabled" }]
   },
 
+  "AudioSandboxEnabled": {
+    "note": "This policy is used directly through the policy service instead of through a pref."
+  },
+
   "----- Chrome OS device policies ---------------------------------------": {},
 
   "DevicePolicyRefreshRate": {
