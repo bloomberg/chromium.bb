@@ -1109,6 +1109,14 @@ def ExecuteReproduceCommand(options):
   SetUpSysrootForFuzzing()
   Reproduce(StripFuzzerPrefixes(options.fuzzer), options.testcase)
 
+def InstallBaseDependencies(options):
+  """ Installs the base packages needed to chroot in board sysroot.
+
+  Args:
+    options: The parsed arguments passed to this program.
+  """
+  build_type = getattr(options, 'build_type', None)
+  BuildPackage('virtual/implicit-system', options.board, build_type)
 
 def ParseArgs(argv):
   """Parses program arguments.
@@ -1207,6 +1215,8 @@ def main(argv):
     return 1
 
   SysrootPath.SetPathToSysroot(options.board)
+
+  InstallBaseDependencies(options)
 
   if options.command == 'cleanup':
     ExecuteCleanupCommand()
