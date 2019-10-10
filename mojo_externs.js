@@ -6,6 +6,7 @@
  * @fileoverview Closure definitions of Mojo service objects. Note that these
  *     definitions are bound only after chrome.mojoPrivate.requireAsync resolves
  *     in mojo.js.
+ * @externs
  */
 
 
