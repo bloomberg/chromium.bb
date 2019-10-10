@@ -640,13 +640,6 @@ void Tile::CompoundInterPrediction(
                              block.scratch_buffer->prediction_buffer[1]};
   switch (prediction_parameters.compound_prediction_type) {
     case kCompoundPredictionTypeWedge:
-      GetMaskBlendFunc(dsp_, prediction_parameters.inter_intra_mode,
-                       prediction_parameters.is_wedge_inter_intra,
-                       subsampling_x, subsampling_y)(
-          prediction[0], prediction_stride, prediction[1], prediction_stride,
-          prediction_mask, prediction_mask_stride, prediction_width,
-          prediction_height, dest, dest_stride);
-      break;
     case kCompoundPredictionTypeDiffWeighted:
       GetMaskBlendFunc(dsp_, prediction_parameters.inter_intra_mode,
                        prediction_parameters.is_wedge_inter_intra,
