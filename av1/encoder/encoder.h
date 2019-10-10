@@ -1470,10 +1470,8 @@ aom_fixed_buf_t *av1_get_global_headers(AV1_COMP *cpi);
 
 static INLINE int is_frame_kf_and_tpl_eligible(AV1_COMP *const cpi) {
   AV1_COMMON *cm = &cpi->common;
-  if (cm->current_frame.frame_type == KEY_FRAME && cm->show_frame)
-    return 1;
-  else
-    return 0;
+  return (cm->current_frame.frame_type == KEY_FRAME) && cm->show_frame &&
+         (cpi->rc.frames_to_key > 1);
 }
 
 static INLINE int is_frame_arf_and_tpl_eligible(const GF_GROUP *gf_group) {
