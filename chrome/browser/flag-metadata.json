@@ -1141,7 +1141,7 @@
   {
     "name": "enable-cups-printers-ui-overhaul",
     "owners": [ "jimmyxgong" ],
-    "expiry_milestone": 79
+    "expiry_milestone": 81
   },
   {
     "name": "enable-custom-mac-paper-sizes",
