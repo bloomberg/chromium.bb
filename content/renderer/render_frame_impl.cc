@@ -913,21 +913,6 @@ std::unique_ptr<DocumentState> BuildDocumentStateFromParams(
   DCHECK(!common_params.navigation_start.is_null());
   DCHECK(!common_params.url.SchemeIs(url::kJavaScriptScheme));
 
-  if (common_params.navigation_type == mojom::NavigationType::RESTORE) {
-    // We're doing a load of a page that was restored from the last session.
-    // By default this prefers the cache over loading
-    // (LOAD_SKIP_CACHE_VALIDATION) which can result in stale data for pages
-    // that are set to expire. We explicitly override that by setting the
-    // policy here so that as necessary we load from the network.
-    //
-    // TODO(davidben): Remove this in favor of passing a cache policy to the
-    // loadHistoryItem call in OnNavigate. That requires not overloading
-    // UseProtocolCachePolicy to mean both "normal load" and "determine cache
-    // policy based on load type, etc".
-    internal_data->set_cache_policy_override(
-        blink::mojom::FetchCacheMode::kDefault);
-  }
-
   internal_data->set_is_overriding_user_agent(
       commit_params.is_overriding_user_agent);
   internal_data->set_must_reset_scroll_and_scale_state(
@@ -1047,6 +1032,21 @@ void FillMiscNavigationParams(
   }
   navigation_params->appcache_host_id =
       commit_params.appcache_host_id.value_or(base::UnguessableToken());
+
+  if (common_params.navigation_type == mojom::NavigationType::RESTORE) {
+    // We're doing a load of a page that was restored from the last session.
+    // By default this prefers the cache over loading
+    // (LOAD_SKIP_CACHE_VALIDATION) which can result in stale data for pages
+    // that are set to expire. We explicitly override that by setting the
+    // policy here so that as necessary we load from the network.
+    //
+    // TODO(davidben): Remove this in favor of passing a cache policy to the
+    // loadHistoryItem call in OnNavigate. That requires not overloading
+    // UseProtocolCachePolicy to mean both "normal load" and "determine cache
+    // policy based on load type, etc".
+    navigation_params->force_fetch_cache_mode =
+        blink::mojom::FetchCacheMode::kDefault;
+  }
 }
 
 // Fills in the origin policy associated with this response, if any is present.
@@ -5289,9 +5289,6 @@ void RenderFrameImpl::WillSendRequestInternal(
       &attach_same_site_cookies);
   if (!new_url.is_empty())
     request.SetUrl(WebURL(new_url));
-
-  if (internal_data->is_cache_policy_override_set())
-    request.SetCacheMode(internal_data->cache_policy_override());
 
   // The request's extra data may indicate that we should set a custom user
   // agent. This needs to be done here, after WebKit is through with setting the
