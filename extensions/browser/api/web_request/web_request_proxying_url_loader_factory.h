@@ -118,7 +118,9 @@ class WebRequestProxyingURLLoaderFactory
     void HandleResponseOrRedirectHeaders(
         net::CompletionOnceCallback continuation);
     void OnRequestError(const network::URLLoaderCompletionStatus& status);
-    bool IsRedirectSafe(const GURL& from_url, const GURL& to_url);
+    bool IsRedirectSafe(const GURL& from_url,
+                        const GURL& to_url,
+                        bool is_navigation_request);
     void HandleBeforeRequestRedirect();
 
     WebRequestProxyingURLLoaderFactory* const factory_;

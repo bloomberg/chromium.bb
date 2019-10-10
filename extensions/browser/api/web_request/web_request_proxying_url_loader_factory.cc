@@ -274,7 +274,8 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
     network::mojom::URLResponseHeadPtr head) {
   if (redirect_url_ != redirect_info.new_url &&
-      !IsRedirectSafe(request_.url, redirect_info.new_url)) {
+      !IsRedirectSafe(request_.url, redirect_info.new_url,
+                      info_->is_navigation_request)) {
     OnRequestError(
         network::URLLoaderCompletionStatus(net::ERR_UNSAFE_REDIRECT));
     return;
@@ -842,8 +843,11 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::OnRequestError(
 // Determines whether it is safe to redirect from |from_url| to |to_url|.
 bool WebRequestProxyingURLLoaderFactory::InProgressRequest::IsRedirectSafe(
     const GURL& from_url,
-    const GURL& to_url) {
-  if (to_url.SchemeIs(extensions::kExtensionScheme)) {
+    const GURL& to_url,
+    bool is_navigation_request) {
+  // For navigations, non-web accessible resources will be blocked by
+  // ExtensionNavigationThrottle.
+  if (!is_navigation_request && to_url.SchemeIs(extensions::kExtensionScheme)) {
     const Extension* extension =
         ExtensionRegistry::Get(factory_->browser_context_)
             ->enabled_extensions()
