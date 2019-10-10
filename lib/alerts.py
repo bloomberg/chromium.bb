@@ -24,7 +24,6 @@ from email.mime.text import MIMEText
 
 import six
 from six.moves import http_client as httplib
-from six.moves import urllib
 
 from chromite.lib import constants
 from chromite.lib import cros_logging as logging
@@ -340,21 +339,6 @@ def SendEmailLog(subject, recipients, server=None, message='',
             attachment=attachment, extra_fields=extra_fields)
 
 
-def GetGardenerEmailAddresses():
-  """Get the email addresses of the gardeners.
-
-  Returns:
-    Gardener email addresses.
-  """
-  try:
-    response = urllib.request.urlopen(constants.CHROME_GARDENER_URL)
-    if response.getcode() == 200:
-      return json.load(response)['emails']
-  except (IOError, ValueError, KeyError) as e:
-    logging.error('Could not get gardener emails: %r', e)
-  return None
-
-
 def GetHealthAlertRecipients(builder_run):
   """Returns a list of email addresses of the health alert recipients."""
   recipients = []
@@ -362,9 +346,6 @@ def GetHealthAlertRecipients(builder_run):
     if '@' in entry:
       # If the entry is an email address, add it to the list.
       recipients.append(entry)
-    elif entry == constants.CHROME_GARDENER:
-      # Add gardener email address.
-      recipients.extend(GetGardenerEmailAddresses())
 
   return recipients
 

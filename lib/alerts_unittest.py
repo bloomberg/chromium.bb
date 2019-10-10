@@ -14,10 +14,8 @@ import smtplib
 import socket
 
 import mock
-from six.moves import urllib
 
 from chromite.lib import alerts
-from chromite.lib import constants
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 
@@ -209,28 +207,6 @@ class SendEmailLogTest(cros_test_lib.MockTestCase):
     self.assertEqual(send_mock.call_count, 1)
 
 
-class GetGardenerEmailAddressesTest(cros_test_lib.MockTestCase):
-  """Tests functions related to retrieving the gardener's email address."""
-
-  def _SetEmails(self, emails):
-    gardener_json = ('{"updated_unix_timestamp":1547254144,'
-                     '"emails":[%s]}' % emails)
-    response = mock.MagicMock(json=gardener_json, getcode=lambda: 200,
-                              read=lambda: gardener_json)
-    self.PatchObject(urllib.request, 'urlopen', autospec=True,
-                     side_effect=[response])
-
-  def testParsingGardenerEmails(self):
-    self._SetEmails('"gardener@google.com"')
-    self.assertEqual(alerts.GetGardenerEmailAddresses(),
-                     ['gardener@google.com'])
-
-    # Test multiple gardeners.
-    self._SetEmails('"gardener@google.com", "gardener2@chromium.org"')
-    self.assertEqual(alerts.GetGardenerEmailAddresses(),
-                     ['gardener@google.com', 'gardener2@chromium.org'])
-
-
 class GetHealthAlertRecipientsTest(cros_test_lib.MockTestCase):
   """Tests for GetHealthAlertRecipients."""
 
@@ -244,13 +220,6 @@ class GetHealthAlertRecipientsTest(cros_test_lib.MockTestCase):
     """Test GetHealthAlertRecipients returns a non-gardener recipient."""
     expected = ['jeff@google.com']
     self.SetRecipients(expected)
-    actual = alerts.GetHealthAlertRecipients(self.builder_run)
-    self.assertEqual(actual, expected)
-
-  def testGardenerRecipient(self):
-    expected = ['gardener@chromium.org']
-    self.PatchObject(alerts, 'GetGardenerEmailAddresses', return_value=expected)
-    self.SetRecipients([constants.CHROME_GARDENER])
     actual = alerts.GetHealthAlertRecipients(self.builder_run)
     self.assertEqual(actual, expected)
 

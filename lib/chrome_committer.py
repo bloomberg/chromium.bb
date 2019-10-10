@@ -9,7 +9,6 @@ from __future__ import print_function
 
 import os
 
-from chromite.lib import alerts
 from chromite.lib import constants
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
@@ -97,14 +96,8 @@ class ChromeCommitter(object):
       # Run 'git cl upload' with --bypass-hooks to skip running scripts that are
       # not part of the shallow checkout, -f to skip editing the CL message,
       upload_args = self._git_committer_args + [
-          'cl', 'upload', '-v', '-m', self._commit_msg, '--bypass-hooks', '-f']
-      # Add the gardener(s) as TBR; fall-back to tbr-owners.
-      gardeners = alerts.GetGardenerEmailAddresses()
-      if gardeners:
-        for tbr in gardeners:
-          upload_args += ['--tbrs', tbr]
-      else:
-        upload_args += ['--tbr-owners']
+          'cl', 'upload', '-v', '-m', self._commit_msg, '--bypass-hooks', '-f',
+          '--tbrs', constants.CHROME_GARDENER_REVIEW_EMAIL]
       # Marks CL as ready.
       upload_args += ['--send-mail']
       if self._dryrun:

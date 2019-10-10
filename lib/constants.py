@@ -1187,10 +1187,9 @@ LAB_STATUS_URL = 'http://chromiumos-lab.appspot.com/current?format=json'
 GOLO_SMTP_SERVER = 'mail.golo.chromium.org'
 
 CHROME_GARDENER = 'chrome'
-# URL to retrieve gardener names from the waterfall.
-CHROME_GARDENER_URL = (
-    'https://rota-ng.appspot.com/legacy/sheriff_cr_cros_gardeners.json'
-)
+# Email alias to add as reviewer in Gerrit, which GWSQ will then automatically
+# assign to the current gardener.
+CHROME_GARDENER_REVIEW_EMAIL = 'chrome-os-gardeners@google.com'
 
 # Useful config targets.
 CQ_MASTER = 'master-paladin'
