@@ -455,7 +455,10 @@ BrowserView* BrowserView::GetBrowserViewForBrowser(const Browser* browser) {
   //
   // Also, tests don't always have a non-null NativeWindow backing the
   // BrowserWindow, so be sure to check for that as well.
-  if (!browser->window()->GetNativeWindow())
+  //
+  // Lastly note that this function can be called during construction of
+  // Browser, at which point browser->window() might return nullptr.
+  if (!browser->window() || !browser->window()->GetNativeWindow())
     return nullptr;
   return GetBrowserViewForNativeWindow(browser->window()->GetNativeWindow());
 }
