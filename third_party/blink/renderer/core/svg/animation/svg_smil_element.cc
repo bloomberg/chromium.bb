@@ -380,9 +380,9 @@ bool SVGSMILElement::ParseCondition(const String& value,
   }
   String condition_string;
   SMILTime offset;
-  if (pos == kNotFound)
+  if (pos == kNotFound) {
     condition_string = parse_string;
-  else {
+  } else {
     condition_string = parse_string.Left(pos).StripWhiteSpace();
     String offset_string = parse_string.Substring(pos + 1).StripWhiteSpace();
     offset = ParseOffsetValue(offset_string);
@@ -397,9 +397,9 @@ bool SVGSMILElement::ParseCondition(const String& value,
 
   String base_id;
   String name_string;
-  if (pos == kNotFound)
+  if (pos == kNotFound) {
     name_string = condition_string;
-  else {
+  } else {
     base_id = condition_string.Left(pos);
     name_string = condition_string.Substring(pos + 1);
   }
