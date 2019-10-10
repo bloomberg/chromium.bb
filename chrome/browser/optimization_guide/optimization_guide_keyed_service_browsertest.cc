@@ -249,6 +249,13 @@ class OptimizationGuideKeyedServiceBrowserTest
 };
 
 IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
+                       PredictionManagerNotCreatedIfFeatureDisabled) {
+  ASSERT_FALSE(
+      OptimizationGuideKeyedServiceFactory::GetForProfile(browser()->profile())
+          ->GetPredictionManager());
+}
+
+IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
                        TopHostProviderNotSetIfNotAllowed) {
   ASSERT_FALSE(
       OptimizationGuideKeyedServiceFactory::GetForProfile(browser()->profile())
@@ -663,4 +670,62 @@ IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceCommandLineOverridesTest,
   EXPECT_EQ(2ul, top_hosts.size());
   EXPECT_EQ("whatever.com", top_hosts[0]);
   EXPECT_EQ("somehost.com", top_hosts[1]);
+}
+
+class OptimizationGuideKeyedServiceTargetPredictionEnabledBrowserTest
+    : public OptimizationGuideKeyedServiceBrowserTest {
+ public:
+  OptimizationGuideKeyedServiceTargetPredictionEnabledBrowserTest() = default;
+  ~OptimizationGuideKeyedServiceTargetPredictionEnabledBrowserTest() override =
+      default;
+
+  void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(
+        optimization_guide::features::kOptimizationTargetPrediction);
+
+    OptimizationGuideKeyedServiceBrowserTest::SetUp();
+  }
+
+  void TearDown() override {
+    OptimizationGuideKeyedServiceBrowserTest::TearDown();
+
+    scoped_feature_list_.Reset();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(
+    OptimizationGuideKeyedServiceTargetPredictionEnabledBrowserTest,
+    PredictionManagerIsCreated) {
+  ASSERT_TRUE(
+      OptimizationGuideKeyedServiceFactory::GetForProfile(browser()->profile())
+          ->GetPredictionManager());
+}
+
+IN_PROC_BROWSER_TEST_F(
+    OptimizationGuideKeyedServiceTargetPredictionEnabledBrowserTest,
+    PredictionManagerDecisionOverridesHintsManager) {
+  PushHintsComponentAndWaitForCompletion();
+  RegisterWithKeyedService();
+
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
+  base::HistogramTester histogram_tester;
+
+  ui_test_utils::NavigateToURL(browser(), url_with_hints());
+
+  EXPECT_EQ(RetryForHistogramUntilCountReached(
+                histogram_tester, "OptimizationGuide.LoadedHint.Result", 1),
+            1);
+  // There should be a hint that matches this URL.
+  histogram_tester.ExpectUniqueSample("OptimizationGuide.LoadedHint.Result",
+                                      true, 1);
+  EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kFalse,
+            last_consumer_decision());
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.TargetDecision.PainfulPageLoad",
+      static_cast<int>(optimization_guide::OptimizationTargetDecision::
+                           kModelNotAvailableOnClient),
+      1);
 }
