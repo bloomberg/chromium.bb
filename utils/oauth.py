@@ -6,8 +6,6 @@
 
 from __future__ import print_function
 
-# pylint: disable=W0613
-
 import base64
 import collections
 import datetime
@@ -19,13 +17,6 @@ import socket
 import sys
 import threading
 import time
-import urllib
-# pylint: disable=ungrouped-imports
-# pylint: disable=no-name-in-module
-if sys.version_info.major == 2:
-  import urlparse # Python 2
-else:
-  from urllib import parse as urlparse # Python 3
 import webbrowser
 
 from utils import tools
@@ -33,16 +24,16 @@ tools.force_local_third_party()
 
 # third_party/
 import httplib2
-import rsa
-from pyasn1.codec.der import decoder
-from pyasn1.type import univ
 from oauth2client import client
 from oauth2client import locked_file
 from oauth2client import multistore_file
+from pyasn1.codec.der import decoder
+from pyasn1.type import univ
 import requests
+import rsa
+from six.moves import BaseHTTPServer, urllib
 
 from libs import luci_context
-from six.moves import BaseHTTPServer
 
 
 # Path to a file with cached OAuth2 credentials used by default. Can be
@@ -321,9 +312,9 @@ def create_access_token(urlhost, config, allow_user_interaction):
       return None
 
     # Body of token refresh request (with JWT assertion signed with secret key).
-    body = urllib.urlencode({
-      'assertion': _make_assertion_jwt(service_account),
-      'grant_type': 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+    body = urllib.parse.urlencode({
+        'assertion': _make_assertion_jwt(service_account),
+        'grant_type': 'urn:ietf:params:oauth:grant-type:jwt-bearer',
     })
 
     # Exchange it for access_token.
@@ -511,8 +502,8 @@ def _parse_private_key(pem):
     der = rsa.pem.load_pem(pem, 'PRIVATE KEY')
     keyinfo, _ = decoder.decode(der)
     if keyinfo[1][0] != univ.ObjectIdentifier('1.2.840.113549.1.1.1'):
-        raise BadServiceAccountCredentials(
-            'Not a DER-encoded OpenSSL private RSA key')
+      raise BadServiceAccountCredentials(
+          'Not a DER-encoded OpenSSL private RSA key')
     private_key_der = keyinfo[2].asOctets()
   except IndexError:
     raise BadServiceAccountCredentials(
@@ -806,7 +797,7 @@ class ClientRedirectHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     self.send_header('Content-type', 'text/html')
     self.end_headers()
     query = self.path.split('?', 1)[-1]
-    query = dict(urlparse.parse_qsl(query))
+    query = dict(urllib.parse.parse_qsl(query))
     self.server.query_params = query
     self.wfile.write('<html><head><title>Authentication Status</title></head>')
     self.wfile.write('<body><p>The authentication flow has completed.</p>')

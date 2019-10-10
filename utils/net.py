@@ -13,18 +13,8 @@ import random
 import re
 import socket
 import ssl
-import sys
 import threading
 import time
-import urllib
-# pylint: disable=ungrouped-imports
-# pylint: disable=no-name-in-module
-if sys.version_info.major == 2:
-  import urlparse
-  urlencode = urllib.urlencode
-else:
-  from urllib import parse as urlparse
-  urlencode = urlparse.urlencode
 
 from utils import tools
 tools.force_local_third_party()
@@ -33,9 +23,10 @@ tools.force_local_third_party()
 import requests
 from requests import adapters
 from requests import structures
+from six.moves import http_cookiejar as cookielib
+from six.moves import urllib
 import urllib3
 
-from six.moves import http_cookiejar as cookielib
 from utils import authenticators
 from utils import oauth
 from utils import tools
@@ -67,10 +58,10 @@ DEFAULT_CONTENT_TYPE = URL_ENCODED_FORM_CONTENT_TYPE
 
 # Content type -> function that encodes a request body.
 CONTENT_ENCODERS = {
-  URL_ENCODED_FORM_CONTENT_TYPE:
-    urlencode,
-  JSON_CONTENT_TYPE:
-    lambda x: json.dumps(x, sort_keys=True, separators=(',', ':')),
+    URL_ENCODED_FORM_CONTENT_TYPE:
+        urllib.parse.urlencode,
+    JSON_CONTENT_TYPE:
+        lambda x: json.dumps(x, sort_keys=True, separators=(',', ':')),
 }
 
 
@@ -268,27 +259,27 @@ def url_retrieve(filepath, url, **kwargs):
 
 def split_server_request_url(url):
   """Splits the url into scheme+netloc and path+params+query+fragment."""
-  url_parts = list(urlparse.urlparse(url))
+  url_parts = list(urllib.parse.urlparse(url))
   urlhost = '%s://%s' % (url_parts[0], url_parts[1])
-  urlpath = urlparse.urlunparse(['', ''] + url_parts[2:])
+  urlpath = urllib.parse.urlunparse(['', ''] + url_parts[2:])
   return urlhost, urlpath
 
 
 def fix_url(url):
   """Fixes an url to https."""
-  parts = urlparse.urlparse(url, 'https')
+  parts = urllib.parse.urlparse(url, 'https')
   if parts.query:
     raise ValueError('doesn\'t support query parameter.')
   if parts.fragment:
     raise ValueError('doesn\'t support fragment in the url.')
-  # urlparse('foo.com') will result in netloc='', path='foo.com', which is not
-  # what is desired here.
+  # urllib.parse.urlparse('foo.com') will result in netloc='', path='foo.com',
+  # which is not what is desired here.
   new = list(parts)
   if not new[1] and new[2]:
     new[1] = new[2].rstrip('/')
     new[2] = ''
   new[2] = new[2].rstrip('/')
-  return urlparse.urlunparse(new)
+  return urllib.parse.urlunparse(new)
 
 
 def get_http_service(urlhost, allow_cached=True):
@@ -499,9 +490,9 @@ class HttpService(object):
       assert not content_type, 'Can\'t use content_type on %s' % method
 
     # Prepare request info.
-    parsed = urlparse.urlparse('/' + urlpath.lstrip('/'))
-    resource_url = urlparse.urljoin(self.urlhost, parsed.path)
-    query_params = urlparse.parse_qsl(parsed.query)
+    parsed = urllib.parse.urlparse('/' + urlpath.lstrip('/'))
+    resource_url = urllib.parse.urljoin(self.urlhost, parsed.path)
+    query_params = urllib.parse.parse_qsl(parsed.query)
 
     # Prepare headers.
     headers = get_case_insensitive_dict(headers or {})
@@ -664,7 +655,7 @@ class HttpRequest(object):
     """Resource URL with url-encoded GET parameters."""
     if not self.params:
       return self.url
-    return '%s?%s' % (self.url, urllib.urlencode(self.params))
+    return '%s?%s' % (self.url, urllib.parse.urlencode(self.params))
 
 
 class HttpResponse(object):

@@ -17,14 +17,13 @@ import ssl
 import subprocess
 import sys
 import threading
-import urllib
-import urlparse
 
 # Mutates sys.path.
 import test_env
 
 # third_party/
 from depot_tools import auto_stub
+from six.moves import urllib
 
 from utils import on_error
 
@@ -69,14 +68,14 @@ class HttpsServer(BaseHTTPServer.HTTPServer):
     while True:
       # Ensures it is up.
       try:
-        urllib.urlopen(self.url + '/_warmup').read()
+        urllib.request.urlopen(self.url + '/_warmup').read()
       except IOError:
         continue
       return
 
   def stop(self):
     self.keep_running = False
-    urllib.urlopen(self.url + '/_quit').read()
+    urllib.request.urlopen(self.url + '/_quit').read()
     self._thread.join()
     self._thread = None
 
@@ -97,7 +96,7 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
       return cgi.parse_multipart(self.rfile, pdict)
     if ctype == 'application/x-www-form-urlencoded':
       length = int(self.headers['Content-Length'])
-      return urlparse.parse_qs(self.rfile.read(length), keep_blank_values=1)
+      return urllib.parse.parse_qs(self.rfile.read(length), True)
     if ctype in ('application/json', 'application/json; charset=utf-8'):
       length = int(self.headers['Content-Length'])
       return json.loads(self.rfile.read(length))

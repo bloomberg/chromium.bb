@@ -5,9 +5,10 @@
 import collections
 import re
 import string
-import types
-import urllib
-import urlparse
+
+# third_party/
+from six.moves import urllib
+
 
 _ALNUM_CHARS = string.ascii_letters + string.digits
 _SEGMENT_RE_BASE = r'[a-zA-Z0-9][a-zA-Z0-9:_\-.]*'
@@ -64,7 +65,7 @@ def normalize(v, prefix=None):
   Raises:
     ValueError: If normalization could not be successfully performed.
   """
-  if len(v) == 0:
+  if not v:
     if not prefix:
       raise ValueError('Cannot normalize empty name with no prefix.')
     v = prefix
@@ -179,12 +180,12 @@ def get_logdog_viewer_url(host, project, *stream_paths):
     stream_paths: A set of StreamPath instances for the stream paths to
         generate the URL for.
   """
-  return urlparse.urlunparse((
-    'https', # Scheme
-    host, # netloc
-    'v/', # path
-    '', # params
-    '&'.join(('s=%s' % (urllib.quote('%s/%s' % (project, path), safe=''))
-              for path in stream_paths)), # query
-    '', # fragment
+  return urllib.parse.urlunparse((
+      'https',  # Scheme
+      host,  # netloc
+      'v/',  # path
+      '',  # params
+      '&'.join(('s=%s' % (urllib.parse.quote('%s/%s' % (project, path), ''))
+                for path in stream_paths)),  # query
+      '',  # fragment
   ))

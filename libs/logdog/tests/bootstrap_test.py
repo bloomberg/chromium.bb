@@ -12,6 +12,10 @@ ROOT_DIR = os.path.dirname(os.path.abspath(os.path.join(
     os.pardir, os.pardir, os.pardir)))
 sys.path.insert(0, ROOT_DIR)
 
+# pylint: disable=no-name-in-module
+from utils import tools
+tools.force_local_third_party(ROOT_DIR)
+
 from libs.logdog import bootstrap, stream
 
 
