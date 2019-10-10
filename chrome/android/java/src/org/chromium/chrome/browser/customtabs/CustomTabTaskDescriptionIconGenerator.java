@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser;
+package org.chromium.chrome.browser.customtabs;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -11,9 +11,9 @@ import android.text.TextUtils;
 import org.chromium.chrome.browser.ui.widget.RoundedIconGenerator;
 
 /**
- * Generates icons suitable for Activities in the recent tasks list.
+ * Generates icons suitable for Custom Tabs in the recent tasks list.
  */
-public class ActivityTaskDescriptionIconGenerator {
+public class CustomTabTaskDescriptionIconGenerator {
     private static final int APP_ICON_MIN_SIZE_DP = 32;
     private static final int APP_ICON_SIZE_DP = 64;
     private static final int APP_ICON_CORNER_RADIUS_DP = 3;
@@ -38,7 +38,7 @@ public class ActivityTaskDescriptionIconGenerator {
      */
     private RoundedIconGenerator mGenerator;
 
-    public ActivityTaskDescriptionIconGenerator(Context context) {
+    public CustomTabTaskDescriptionIconGenerator(Context context) {
         mContext = context;
         mMinSizePx =
                 (int) mContext.getResources().getDisplayMetrics().density * APP_ICON_MIN_SIZE_DP;

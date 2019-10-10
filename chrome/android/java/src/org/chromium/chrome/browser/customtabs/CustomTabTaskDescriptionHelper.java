@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser;
+package org.chromium.chrome.browser.customtabs;
 
 import android.graphics.Bitmap;
 import android.text.TextUtils;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -32,12 +33,12 @@ import java.util.List;
  * <p>
  * The task description is what is shown in Android's Overview/Recents screen for each entry.
  */
-public class ActivityTabTaskDescriptionHelper {
+public class CustomTabTaskDescriptionHelper {
     private final int mDefaultThemeColor;
     private final ChromeActivity mActivity;
     private final TabModelSelector mTabModelSelector;
 
-    private final ActivityTaskDescriptionIconGenerator mIconGenerator;
+    private final CustomTabTaskDescriptionIconGenerator mIconGenerator;
     private final FaviconHelper mFaviconHelper;
 
     private final TabModelSelectorObserver mTabModelSelectorObserver;
@@ -53,13 +54,13 @@ public class ActivityTabTaskDescriptionHelper {
      * @param activity The activity whose descriptions should be updated.
      * @param defaultThemeColor The default theme color to be used if the tab does not override it.
      */
-    public ActivityTabTaskDescriptionHelper(ChromeActivity activity, int defaultThemeColor) {
+    public CustomTabTaskDescriptionHelper(ChromeActivity activity, int defaultThemeColor) {
         mActivity = activity;
         mDefaultThemeColor = defaultThemeColor;
 
         mTabModelSelector = mActivity.getTabModelSelector();
 
-        mIconGenerator = new ActivityTaskDescriptionIconGenerator(activity);
+        mIconGenerator = new CustomTabTaskDescriptionIconGenerator(activity);
         mFaviconHelper = new FaviconHelper();
 
         mTabObserver = new EmptyTabObserver() {
@@ -244,8 +245,7 @@ public class ActivityTabTaskDescriptionHelper {
 
             final String currentUrl = mCurrentTab.getUrl();
             mFaviconHelper.getLocalFaviconImageForURL(
-                    mCurrentTab.getProfile(), mCurrentTab.getUrl(), 0,
-                    (image, iconUrl) -> {
+                    mCurrentTab.getProfile(), mCurrentTab.getUrl(), 0, (image, iconUrl) -> {
                         if (mCurrentTab == null
                                 || !TextUtils.equals(currentUrl, mCurrentTab.getUrl())) {
                             return;
