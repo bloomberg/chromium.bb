@@ -4,6 +4,8 @@
 
 #include "platform/api/platform_client.h"
 
+#include "platform/api/logging.h"
+
 namespace openscreen {
 namespace platform {
 
@@ -12,11 +14,17 @@ PlatformClient::PlatformClient() = default;
 
 // static
 void PlatformClient::ShutDown() {
+  if (!client_) {
+    return;
+  }
+
   delete client_;
+  client_ = nullptr;
 }
 
 // static
 void PlatformClient::SetInstance(PlatformClient* client) {
+  OSP_DCHECK(!client_);
   client_ = client;
 }
 
