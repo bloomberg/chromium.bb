@@ -2,35 +2,54 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-#ifndef CHROME_BROWSER_PAGE_LOAD_METRICS_OBSERVERS_PAGE_LOAD_METRICS_OBSERVER_TESTER_H_
-#define CHROME_BROWSER_PAGE_LOAD_METRICS_OBSERVERS_PAGE_LOAD_METRICS_OBSERVER_TESTER_H_
+#ifndef COMPONENTS_PAGE_LOAD_METRICS_BROWSER_OBSERVERS_PAGE_LOAD_METRICS_OBSERVER_TESTER_H_
+#define COMPONENTS_PAGE_LOAD_METRICS_BROWSER_OBSERVERS_PAGE_LOAD_METRICS_OBSERVER_TESTER_H_
+
+#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "components/page_load_metrics/browser/page_load_metrics_observer.h"
+#include "components/page_load_metrics/common/page_load_metrics.mojom.h"
 #include "components/page_load_metrics/common/test/weak_mock_timer.h"
 #include "components/ukm/test_ukm_recorder.h"
+#include "net/cookies/canonical_cookie.h"
+#include "ui/base/page_transition_types.h"
+
+namespace base {
+class GURL;
+class HistogramTester;
+}  // namespace base
 
 namespace blink {
 class WebInputEvent;
 }  // namespace blink
 
 namespace content {
-struct GlobalRequestID;
+class RenderFrameHost;
 class RenderViewHostTestHarness;
 class WebContents;
+struct GlobalRequestID;
 }  // namespace content
 
 namespace mojom {
+class FrameRenderDataUpdate;
+class PageLoadFeatures;
 class PageLoadMetadata;
 class PageLoadTiming;
 }  // namespace mojom
 
+namespace ukm {
+class TestAutoSetUkmRecorder;
+}  // namespace ukm
+
 namespace page_load_metrics {
 
 class MetricsWebContentsObserver;
+class PageLoadMetricsObserverDelegate;
 class PageLoadTracker;
+struct ExtraRequestCompleteInfo;
 
 // This class creates a MetricsWebContentsObserver and provides methods for
 // interacting with it. This class is designed to be used in unit tests for
@@ -127,7 +146,9 @@ class PageLoadMetricsObserverTester : public test::WeakMockTimerProvider {
                                 bool local,
                                 bool blocked_by_policy);
 
-  MetricsWebContentsObserver* observer() const { return observer_; }
+  MetricsWebContentsObserver* metrics_web_contents_observer() {
+    return metrics_web_contents_observer_;
+  }
   const base::HistogramTester& histogram_tester() const {
     return histogram_tester_;
   }
@@ -152,7 +173,7 @@ class PageLoadMetricsObserverTester : public test::WeakMockTimerProvider {
   RegisterObserversCallback register_callback_;
   content::WebContents* web_contents_;
   content::RenderViewHostTestHarness* rfh_test_harness_;
-  MetricsWebContentsObserver* observer_;
+  MetricsWebContentsObserver* metrics_web_contents_observer_;
   base::HistogramTester histogram_tester_;
   ukm::TestAutoSetUkmRecorder test_ukm_recorder_;
 
@@ -161,4 +182,4 @@ class PageLoadMetricsObserverTester : public test::WeakMockTimerProvider {
 
 }  // namespace page_load_metrics
 
-#endif  // CHROME_BROWSER_PAGE_LOAD_METRICS_OBSERVERS_PAGE_LOAD_METRICS_OBSERVER_TESTER_H_
+#endif  // COMPONENTS_PAGE_LOAD_METRICS_BROWSER_OBSERVERS_PAGE_LOAD_METRICS_OBSERVER_TESTER_H_

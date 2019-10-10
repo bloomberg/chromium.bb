@@ -6,10 +6,11 @@
 
 #include <memory>
 #include <vector>
+
 #include "base/macros.h"
 #include "base/metrics/histogram_base.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
+#include "components/page_load_metrics/browser/observers/page_load_metrics_observer_content_test_harness.h"
 #include "components/page_load_metrics/browser/page_load_tracker.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
 #include "url/gurl.h"
@@ -23,7 +24,7 @@ using CSSSampleId = blink::mojom::CSSSampleId;
 }  // namespace
 
 class UseCounterPageLoadMetricsObserverTest
-    : public page_load_metrics::PageLoadMetricsObserverTestHarness {
+    : public page_load_metrics::PageLoadMetricsObserverContentTestHarness {
  public:
   UseCounterPageLoadMetricsObserverTest() {}
 
@@ -32,45 +33,45 @@ class UseCounterPageLoadMetricsObserverTest
       const page_load_metrics::mojom::PageLoadFeatures& second_features =
           page_load_metrics::mojom::PageLoadFeatures()) {
     NavigateAndCommit(GURL(kTestUrl));
-    SimulateFeaturesUpdate(first_features);
+    tester()->SimulateFeaturesUpdate(first_features);
     // Verify that kPageVisits is observed on commit.
-    histogram_tester().ExpectBucketCount(
+    tester()->histogram_tester().ExpectBucketCount(
         internal::kFeaturesHistogramName,
         static_cast<base::Histogram::Sample>(WebFeature::kPageVisits), 1);
-    histogram_tester().ExpectBucketCount(
+    tester()->histogram_tester().ExpectBucketCount(
         internal::kFeaturesHistogramMainFrameName,
         static_cast<base::Histogram::Sample>(WebFeature::kPageVisits), 1);
     // Verify that page visit is recorded for CSS histograms.
-    histogram_tester().ExpectBucketCount(
+    tester()->histogram_tester().ExpectBucketCount(
         internal::kCssPropertiesHistogramName,
         blink::mojom::CSSSampleId::kTotalPagesMeasured, 1);
-    histogram_tester().ExpectBucketCount(
+    tester()->histogram_tester().ExpectBucketCount(
         internal::kAnimatedCssPropertiesHistogramName,
         blink::mojom::CSSSampleId::kTotalPagesMeasured, 1);
 
     for (auto feature : first_features.features) {
-      histogram_tester().ExpectBucketCount(
+      tester()->histogram_tester().ExpectBucketCount(
           internal::kFeaturesHistogramName,
           static_cast<base::Histogram::Sample>(feature), 1);
-      histogram_tester().ExpectBucketCount(
+      tester()->histogram_tester().ExpectBucketCount(
           internal::kFeaturesHistogramMainFrameName,
           static_cast<base::Histogram::Sample>(feature), 1);
     }
 
-    SimulateFeaturesUpdate(second_features);
+    tester()->SimulateFeaturesUpdate(second_features);
     for (auto feature : first_features.features) {
-      histogram_tester().ExpectBucketCount(
+      tester()->histogram_tester().ExpectBucketCount(
           internal::kFeaturesHistogramName,
           static_cast<base::Histogram::Sample>(feature), 1);
-      histogram_tester().ExpectBucketCount(
+      tester()->histogram_tester().ExpectBucketCount(
           internal::kFeaturesHistogramMainFrameName,
           static_cast<base::Histogram::Sample>(feature), 1);
     }
     for (auto feature : second_features.features) {
-      histogram_tester().ExpectBucketCount(
+      tester()->histogram_tester().ExpectBucketCount(
           internal::kFeaturesHistogramName,
           static_cast<base::Histogram::Sample>(feature), 1);
-      histogram_tester().ExpectBucketCount(
+      tester()->histogram_tester().ExpectBucketCount(
           internal::kFeaturesHistogramMainFrameName,
           static_cast<base::Histogram::Sample>(feature), 1);
     }
@@ -81,24 +82,24 @@ class UseCounterPageLoadMetricsObserverTest
       const page_load_metrics::mojom::PageLoadFeatures& second_features =
           page_load_metrics::mojom::PageLoadFeatures()) {
     NavigateAndCommit(GURL(kTestUrl));
-    SimulateFeaturesUpdate(first_features);
+    tester()->SimulateFeaturesUpdate(first_features);
     // Verify that page visit is recorded for CSS histograms.
-    histogram_tester().ExpectBucketCount(
+    tester()->histogram_tester().ExpectBucketCount(
         internal::kCssPropertiesHistogramName,
         blink::mojom::CSSSampleId::kTotalPagesMeasured, 1);
 
     for (auto feature : first_features.css_properties) {
-      histogram_tester().ExpectBucketCount(
+      tester()->histogram_tester().ExpectBucketCount(
           internal::kCssPropertiesHistogramName, feature, 1);
     }
 
-    SimulateFeaturesUpdate(second_features);
+    tester()->SimulateFeaturesUpdate(second_features);
     for (auto feature : first_features.css_properties) {
-      histogram_tester().ExpectBucketCount(
+      tester()->histogram_tester().ExpectBucketCount(
           internal::kCssPropertiesHistogramName, feature, 1);
     }
     for (auto feature : second_features.css_properties) {
-      histogram_tester().ExpectBucketCount(
+      tester()->histogram_tester().ExpectBucketCount(
           internal::kCssPropertiesHistogramName, feature, 1);
     }
   }
@@ -108,24 +109,24 @@ class UseCounterPageLoadMetricsObserverTest
       const page_load_metrics::mojom::PageLoadFeatures& second_features =
           page_load_metrics::mojom::PageLoadFeatures()) {
     NavigateAndCommit(GURL(kTestUrl));
-    SimulateFeaturesUpdate(first_features);
+    tester()->SimulateFeaturesUpdate(first_features);
     // Verify that page visit is recorded for CSS histograms.
-    histogram_tester().ExpectBucketCount(
+    tester()->histogram_tester().ExpectBucketCount(
         internal::kAnimatedCssPropertiesHistogramName,
         blink::mojom::CSSSampleId::kTotalPagesMeasured, 1);
 
     for (auto feature : first_features.animated_css_properties) {
-      histogram_tester().ExpectBucketCount(
+      tester()->histogram_tester().ExpectBucketCount(
           internal::kAnimatedCssPropertiesHistogramName, feature, 1);
     }
 
-    SimulateFeaturesUpdate(second_features);
+    tester()->SimulateFeaturesUpdate(second_features);
     for (auto feature : first_features.animated_css_properties) {
-      histogram_tester().ExpectBucketCount(
+      tester()->histogram_tester().ExpectBucketCount(
           internal::kAnimatedCssPropertiesHistogramName, feature, 1);
     }
     for (auto feature : second_features.animated_css_properties) {
-      histogram_tester().ExpectBucketCount(
+      tester()->histogram_tester().ExpectBucketCount(
           internal::kAnimatedCssPropertiesHistogramName, feature, 1);
     }
   }

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_tester.h"
+#include "components/page_load_metrics/browser/observers/page_load_metrics_observer_tester.h"
 
 #include <memory>
 #include <string>
@@ -10,8 +10,6 @@
 
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/prerender/prerender_contents.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
 #include "components/page_load_metrics/browser/page_load_metrics_embedder_interface.h"
 #include "content/public/browser/media_player_id.h"
@@ -22,15 +20,10 @@
 #include "content/public/common/resource_type.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_renderer_host.h"
-#include "extensions/buildflags/buildflags.h"
 #include "net/base/ip_endpoint.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "url/gurl.h"
-
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-#include "extensions/common/constants.h"
-#endif
 
 namespace page_load_metrics {
 
@@ -78,9 +71,10 @@ PageLoadMetricsObserverTester::PageLoadMetricsObserverTester(
     : register_callback_(callback),
       web_contents_(web_contents),
       rfh_test_harness_(rfh_test_harness),
-      observer_(MetricsWebContentsObserver::CreateForWebContents(
-          web_contents,
-          std::make_unique<TestPageLoadMetricsEmbedderInterface>(this))) {}
+      metrics_web_contents_observer_(
+          MetricsWebContentsObserver::CreateForWebContents(
+              web_contents,
+              std::make_unique<TestPageLoadMetricsEmbedderInterface>(this))) {}
 
 PageLoadMetricsObserverTester::~PageLoadMetricsObserverTester() {}
 
@@ -188,7 +182,7 @@ void PageLoadMetricsObserverTester::SimulatePageLoadTimingUpdate(
     const mojom::CpuTiming& cpu_timing,
     const mojom::DeferredResourceCounts& new_deferred_resource_data,
     content::RenderFrameHost* rfh) {
-  observer_->OnTimingUpdated(
+  metrics_web_contents_observer_->OnTimingUpdated(
       rfh, timing.Clone(), metadata.Clone(), new_features.Clone(),
       std::vector<mojom::ResourceDataUpdatePtr>(), render_data.Clone(),
       cpu_timing.Clone(), new_deferred_resource_data.Clone());
@@ -210,13 +204,13 @@ void PageLoadMetricsObserverTester::SimulateResourceDataUseUpdate(
     content::RenderFrameHost* render_frame_host) {
   auto timing = mojom::PageLoadTimingPtr(base::in_place);
   InitPageLoadTimingForTest(timing.get());
-  observer_->OnTimingUpdated(render_frame_host, std::move(timing),
-                             mojom::PageLoadMetadataPtr(base::in_place),
-                             mojom::PageLoadFeaturesPtr(base::in_place),
-                             resources,
-                             mojom::FrameRenderDataUpdatePtr(base::in_place),
-                             mojom::CpuTimingPtr(base::in_place),
-                             mojom::DeferredResourceCountsPtr(base::in_place));
+  metrics_web_contents_observer_->OnTimingUpdated(
+      render_frame_host, std::move(timing),
+      mojom::PageLoadMetadataPtr(base::in_place),
+      mojom::PageLoadFeaturesPtr(base::in_place), resources,
+      mojom::FrameRenderDataUpdatePtr(base::in_place),
+      mojom::CpuTimingPtr(base::in_place),
+      mojom::DeferredResourceCountsPtr(base::in_place));
 }
 
 void PageLoadMetricsObserverTester::SimulateLoadedResource(
@@ -247,30 +241,31 @@ void PageLoadMetricsObserverTester::SimulateLoadedResource(
   else
     resource_load_info.load_timing_info.request_start = base::TimeTicks::Now();
 
-  observer_->ResourceLoadComplete(web_contents()->GetMainFrame(), request_id,
-                                  resource_load_info);
+  metrics_web_contents_observer_->ResourceLoadComplete(
+      web_contents()->GetMainFrame(), request_id, resource_load_info);
 }
 
 void PageLoadMetricsObserverTester::SimulateFrameReceivedFirstUserActivation(
     content::RenderFrameHost* render_frame_host) {
-  observer_->FrameReceivedFirstUserActivation(render_frame_host);
+  metrics_web_contents_observer_->FrameReceivedFirstUserActivation(
+      render_frame_host);
 }
 
 void PageLoadMetricsObserverTester::SimulateInputEvent(
     const blink::WebInputEvent& event) {
-  observer_->OnInputEvent(event);
+  metrics_web_contents_observer_->OnInputEvent(event);
 }
 
 void PageLoadMetricsObserverTester::SimulateAppEnterBackground() {
-  observer_->FlushMetricsOnAppEnterBackground();
+  metrics_web_contents_observer_->FlushMetricsOnAppEnterBackground();
 }
 
 void PageLoadMetricsObserverTester::SimulateMediaPlayed() {
   content::WebContentsObserver::MediaPlayerInfo video_type(
       true /* has_video*/, true /* has_audio */);
   content::RenderFrameHost* render_frame_host = web_contents()->GetMainFrame();
-  observer_->MediaStartedPlaying(video_type,
-                                 content::MediaPlayerId(render_frame_host, 0));
+  metrics_web_contents_observer_->MediaStartedPlaying(
+      video_type, content::MediaPlayerId(render_frame_host, 0));
 }
 
 void PageLoadMetricsObserverTester::SimulateCookiesRead(
@@ -278,8 +273,8 @@ void PageLoadMetricsObserverTester::SimulateCookiesRead(
     const GURL& first_party_url,
     const net::CookieList& cookie_list,
     bool blocked_by_policy) {
-  observer_->OnCookiesRead(url, first_party_url, cookie_list,
-                           blocked_by_policy);
+  metrics_web_contents_observer_->OnCookiesRead(url, first_party_url,
+                                                cookie_list, blocked_by_policy);
 }
 
 void PageLoadMetricsObserverTester::SimulateCookieChange(
@@ -287,7 +282,8 @@ void PageLoadMetricsObserverTester::SimulateCookieChange(
     const GURL& first_party_url,
     const net::CanonicalCookie& cookie,
     bool blocked_by_policy) {
-  observer_->OnCookieChange(url, first_party_url, cookie, blocked_by_policy);
+  metrics_web_contents_observer_->OnCookieChange(url, first_party_url, cookie,
+                                                 blocked_by_policy);
 }
 
 void PageLoadMetricsObserverTester::SimulateDomStorageAccess(
@@ -295,13 +291,13 @@ void PageLoadMetricsObserverTester::SimulateDomStorageAccess(
     const GURL& first_party_url,
     bool local,
     bool blocked_by_policy) {
-  observer_->OnDomStorageAccessed(url, first_party_url, local,
-                                  blocked_by_policy);
+  metrics_web_contents_observer_->OnDomStorageAccessed(
+      url, first_party_url, local, blocked_by_policy);
 }
 
 const PageLoadMetricsObserverDelegate&
 PageLoadMetricsObserverTester::GetDelegateForCommittedLoad() const {
-  return observer_->GetDelegateForCommittedLoad();
+  return metrics_web_contents_observer_->GetDelegateForCommittedLoad();
 }
 
 void PageLoadMetricsObserverTester::RegisterObservers(
