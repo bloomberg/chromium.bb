@@ -297,6 +297,14 @@ IN_PROC_BROWSER_TEST_P(
       &histogram_tester, "Previews.DeferAllScript.DenyListMatch", 1);
   histogram_tester.ExpectUniqueSample("Previews.DeferAllScript.DenyListMatch",
                                       true, 1);
+  // Verify UKM entry.
+  using UkmEntry = ukm::builders::Previews;
+  auto entries = test_ukm_recorder.GetEntriesByName(UkmEntry::kEntryName);
+  ASSERT_EQ(1u, entries.size());
+  auto* entry = entries.at(0);
+  test_ukm_recorder.ExpectEntryMetric(
+      entry, UkmEntry::kdefer_all_script_eligibility_reasonName,
+      static_cast<int>(previews::PreviewsEligibilityReason::DENY_LIST_MATCHED));
 
   EXPECT_EQ(kNonDeferredPageExpectedOutput, GetScriptLog());
 }
@@ -439,6 +447,7 @@ IN_PROC_BROWSER_TEST_P(
   histogram_tester.ExpectTotalCount(
       "Navigation.ClientRedirectCycle.RedirectToReferrer", 2);
   histogram_tester.ExpectTotalCount("Previews.PageEndReason.DeferAllScript", 3);
+
   EXPECT_FALSE(previews_service->IsUrlEligibleForDeferAllScriptPreview(
       client_redirect_url()));
   EXPECT_FALSE(previews_service->IsUrlEligibleForDeferAllScriptPreview(
@@ -547,4 +556,14 @@ IN_PROC_BROWSER_TEST_P(
   // preview.
   EXPECT_TRUE(
       previews_service->IsUrlEligibleForDeferAllScriptPreview(https_url()));
+
+  // Verify UKM entry.
+  using UkmEntry = ukm::builders::Previews;
+  auto entries = test_ukm_recorder.GetEntriesByName(UkmEntry::kEntryName);
+  ASSERT_EQ(4u, entries.size());
+  auto* entry = entries.at(3);
+  test_ukm_recorder.ExpectEntryMetric(
+      entry, UkmEntry::kdefer_all_script_eligibility_reasonName,
+      static_cast<int>(
+          previews::PreviewsEligibilityReason::REDIRECT_LOOP_DETECTED));
 }
