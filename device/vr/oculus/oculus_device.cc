@@ -96,7 +96,6 @@ mojom::VRDisplayInfoPtr CreateVRDisplayInfo(mojom::XRDeviceId id,
 OculusDevice::OculusDevice()
     : VRDeviceBase(mojom::XRDeviceId::OCULUS_DEVICE_ID),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      gamepad_provider_factory_binding_(this),
       compositor_host_binding_(this),
       weak_ptr_factory_(this) {
   render_loop_ = std::make_unique<OculusRenderLoop>();
@@ -112,10 +111,9 @@ bool OculusDevice::IsApiAvailable() {
   return result.IsOculusServiceRunning;
 }
 
-mojom::IsolatedXRGamepadProviderFactoryPtr OculusDevice::BindGamepadFactory() {
-  mojom::IsolatedXRGamepadProviderFactoryPtr ret;
-  gamepad_provider_factory_binding_.Bind(mojo::MakeRequest(&ret));
-  return ret;
+mojo::PendingRemote<mojom::IsolatedXRGamepadProviderFactory>
+OculusDevice::BindGamepadFactory() {
+  return gamepad_provider_factory_receiver_.BindNewPipeAndPassRemote();
 }
 
 mojom::XRCompositorHostPtr OculusDevice::BindCompositorHost() {

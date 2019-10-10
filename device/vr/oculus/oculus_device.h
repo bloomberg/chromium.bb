@@ -13,6 +13,7 @@
 #include "device/vr/vr_device_base.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/libovr/src/Include/OVR_CAPI.h"
 
@@ -43,7 +44,8 @@ class DEVICE_VR_EXPORT OculusDevice
 
   bool IsAvailable();
 
-  mojom::IsolatedXRGamepadProviderFactoryPtr BindGamepadFactory();
+  mojo::PendingRemote<mojom::IsolatedXRGamepadProviderFactory>
+  BindGamepadFactory();
   mojom::XRCompositorHostPtr BindCompositorHost();
 
  private:
@@ -74,8 +76,8 @@ class DEVICE_VR_EXPORT OculusDevice
 
   mojo::Receiver<mojom::XRSessionController> exclusive_controller_receiver_{
       this};
-  mojo::Binding<mojom::IsolatedXRGamepadProviderFactory>
-      gamepad_provider_factory_binding_;
+  mojo::Receiver<mojom::IsolatedXRGamepadProviderFactory>
+      gamepad_provider_factory_receiver_{this};
   mojo::PendingReceiver<mojom::IsolatedXRGamepadProvider> provider_receiver_;
 
   mojo::Binding<mojom::XRCompositorHost> compositor_host_binding_;

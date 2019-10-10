@@ -198,7 +198,7 @@ interface IsolatedXRRuntimeProviderClient {
   // Called when runtimes are initially enumerated, or when devices are later
   // attached and become available.
   OnDeviceAdded(XRRuntime runtime,
-      IsolatedXRGamepadProviderFactory gamepad_factory,
+      pending_remote<IsolatedXRGamepadProviderFactory> gamepad_factory,
       XRCompositorHost compositor_host,
       device.mojom.XRDeviceId device_id);
 

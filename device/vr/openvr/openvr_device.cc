@@ -124,7 +124,6 @@ mojom::VRDisplayInfoPtr CreateVRDisplayInfo(vr::IVRSystem* vr_system,
 OpenVRDevice::OpenVRDevice()
     : VRDeviceBase(device::mojom::XRDeviceId::OPENVR_DEVICE_ID),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      gamepad_provider_factory_binding_(this),
       compositor_host_binding_(this) {
   render_loop_ = std::make_unique<OpenVRRenderLoop>();
 
@@ -139,10 +138,9 @@ bool OpenVRDevice::IsApiAvailable() {
   return vr::VR_IsRuntimeInstalled();
 }
 
-mojom::IsolatedXRGamepadProviderFactoryPtr OpenVRDevice::BindGamepadFactory() {
-  mojom::IsolatedXRGamepadProviderFactoryPtr ret;
-  gamepad_provider_factory_binding_.Bind(mojo::MakeRequest(&ret));
-  return ret;
+mojo::PendingRemote<mojom::IsolatedXRGamepadProviderFactory>
+OpenVRDevice::BindGamepadFactory() {
+  return gamepad_provider_factory_receiver_.BindNewPipeAndPassRemote();
 }
 
 mojom::XRCompositorHostPtr OpenVRDevice::BindCompositorHost() {
