@@ -114,13 +114,13 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
       space_.EnsureRareData()->fragmentainer_block_size = size;
   }
 
-  void SetFragmentainerSpaceAtBfcStart(LayoutUnit space) {
+  void SetFragmentainerOffsetAtBfc(LayoutUnit offset) {
 #if DCHECK_IS_ON()
-    DCHECK(!is_fragmentainer_space_at_bfc_start_set_);
-    is_fragmentainer_space_at_bfc_start_set_ = true;
+    DCHECK(!is_fragmentainer_offset_at_bfc_set_);
+    is_fragmentainer_offset_at_bfc_set_ = true;
 #endif
-    if (space != kIndefiniteSize)
-      space_.EnsureRareData()->fragmentainer_space_at_bfc_start = space;
+    if (offset != LayoutUnit())
+      space_.EnsureRareData()->fragmentainer_offset_at_bfc = offset;
   }
 
   void SetTextDirection(TextDirection direction) {
@@ -347,7 +347,7 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   bool is_available_size_set_ = false;
   bool is_percentage_resolution_size_set_ = false;
   bool is_fragmentainer_block_size_set_ = false;
-  bool is_fragmentainer_space_at_bfc_start_set_ = false;
+  bool is_fragmentainer_offset_at_bfc_set_ = false;
   bool is_block_direction_fragmentation_type_set_ = false;
   bool is_margin_strut_set_ = false;
   bool is_optimistic_bfc_block_offset_set_ = false;

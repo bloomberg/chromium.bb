@@ -425,6 +425,8 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   // A or B breakpoint (between block-level siblings or line box siblings).
   bool has_processed_first_child_ = false;
 
+  bool did_break_before_child_ = false;
+
   NGExclusionSpace exclusion_space_;
 
   // When set, this will specify where to break before or inside.

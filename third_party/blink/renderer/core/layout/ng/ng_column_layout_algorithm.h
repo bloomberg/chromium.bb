@@ -72,6 +72,7 @@ class CORE_EXPORT NGColumnLayoutAlgorithm
   LayoutUnit column_inline_size_;
   LayoutUnit column_inline_progression_;
   LayoutUnit intrinsic_block_size_;
+  bool is_constrained_by_outer_fragmentation_context_ = false;
 };
 
 }  // namespace blink
