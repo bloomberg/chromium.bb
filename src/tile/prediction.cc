@@ -832,7 +832,7 @@ void Tile::ObmcBlockPrediction(const Block& block, const MotionVector& mv,
   // prediction blocks.
   // Obmc prediction is used only when is_compound is false. So it is safe to
   // use prediction_buffer[1] as a temporary buffer for the Obmc prediction.
-  static_assert(sizeof(block.scratch_buffer->prediction_buffer[1]) >
+  static_assert(sizeof(block.scratch_buffer->prediction_buffer[1]) >=
                     64 * 64 * sizeof(uint16_t),
                 "");
   auto* const obmc_buffer =
