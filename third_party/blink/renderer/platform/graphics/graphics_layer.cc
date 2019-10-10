@@ -61,7 +61,6 @@
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
-#include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_stream.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -808,8 +807,7 @@ std::unique_ptr<base::trace_event::TracedValue> GraphicsLayer::TakeDebugInfo(
     const cc::Layer* layer) {
   auto traced_value = std::make_unique<base::trace_event::TracedValue>();
 
-  traced_value->SetString(
-      "layer_name", WTF::StringUTF8Adaptor(DebugName(layer)).AsStringPiece());
+  traced_value->SetString("layer_name", LayerDebugName(layer));
 
   traced_value->BeginArray("compositing_reasons");
   for (const char* description :
@@ -832,6 +830,10 @@ std::unique_ptr<base::trace_event::TracedValue> GraphicsLayer::TakeDebugInfo(
   }
 
   return traced_value;
+}
+
+std::string GraphicsLayer::LayerDebugName(const cc::Layer* layer) const {
+  return DebugName(layer).Utf8();
 }
 
 void GraphicsLayer::DidChangeScrollbarsHiddenIfOverlay(bool hidden) {
