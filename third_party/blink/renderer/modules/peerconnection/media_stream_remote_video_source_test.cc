@@ -10,25 +10,22 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/test/task_environment.h"
-#include "base/threading/thread_task_runner_handle.h"
-#include "content/child/child_process.h"
 #include "media/base/video_frame.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
+#include "third_party/blink/public/mojom/mediastream/media_stream.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/webrtc/track_observer.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 #include "third_party/blink/public/web/modules/mediastream/mock_media_stream_video_sink.h"
 #include "third_party/blink/public/web/modules/peerconnection/mock_peer_connection_dependency_factory.h"
 #include "third_party/blink/public/web/web_heap.h"
+#include "third_party/blink/renderer/platform/testing/io_task_runner_testing_platform_support.h"
 #include "third_party/webrtc/api/video/color_space.h"
 #include "third_party/webrtc/api/video/i420_buffer.h"
 #include "ui/gfx/color_space.h"
 
-namespace content {
+namespace blink {
 
 ACTION_P(RunClosure, closure) {
   closure.Run();
@@ -44,13 +41,10 @@ class MediaStreamRemoteVideoSourceUnderTest
   using MediaStreamRemoteVideoSource::StartSourceImpl;
 };
 
-class MediaStreamRemoteVideoSourceTest
-    : public ::testing::Test {
+class MediaStreamRemoteVideoSourceTest : public ::testing::Test {
  public:
   MediaStreamRemoteVideoSourceTest()
-      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI),
-        child_process_(new ChildProcess()),
-        mock_factory_(new blink::MockPeerConnectionDependencyFactory()),
+      : mock_factory_(new blink::MockPeerConnectionDependencyFactory()),
         webrtc_video_track_(blink::MockWebRtcVideoTrack::Create("test")),
         remote_source_(nullptr),
         number_of_successful_track_starts_(0),
@@ -83,22 +77,20 @@ class MediaStreamRemoteVideoSourceTest
 
     remote_source_ =
         new MediaStreamRemoteVideoSourceUnderTest(std::move(track_observer));
-    webkit_source_.Initialize(blink::WebString::FromASCII("dummy_source_id"),
-                              blink::WebMediaStreamSource::kTypeVideo,
-                              blink::WebString::FromASCII("dummy_source_name"),
-                              true /* remote */);
-    webkit_source_.SetPlatformSource(base::WrapUnique(remote_source_));
+    web_source_.Initialize(blink::WebString::FromASCII("dummy_source_id"),
+                           blink::WebMediaStreamSource::kTypeVideo,
+                           blink::WebString::FromASCII("dummy_source_name"),
+                           true /* remote */);
+    web_source_.SetPlatformSource(base::WrapUnique(remote_source_));
   }
 
   void TearDown() override {
     remote_source_->OnSourceTerminated();
-    webkit_source_.Reset();
+    web_source_.Reset();
     blink::WebHeap::CollectAllGarbageForTesting();
   }
 
-  MediaStreamRemoteVideoSourceUnderTest* source() {
-    return remote_source_;
-  }
+  MediaStreamRemoteVideoSourceUnderTest* source() { return remote_source_; }
 
   blink::MediaStreamVideoTrack* CreateTrack() {
     bool enabled = true;
@@ -136,7 +128,7 @@ class MediaStreamRemoteVideoSourceTest
   }
 
   const blink::WebMediaStreamSource& webkit_source() const {
-    return  webkit_source_;
+    return web_source_;
   }
 
  private:
@@ -150,13 +142,12 @@ class MediaStreamRemoteVideoSourceTest
       ++number_of_failed_track_starts_;
   }
 
-  base::test::TaskEnvironment task_environment_;
-  std::unique_ptr<ChildProcess> child_process_;
+  ScopedTestingPlatformSupport<IOTaskRunnerTestingPlatformSupport> platform_;
   std::unique_ptr<blink::MockPeerConnectionDependencyFactory> mock_factory_;
   scoped_refptr<webrtc::VideoTrackInterface> webrtc_video_track_;
-  // |remote_source_| is owned by |webkit_source_|.
+  // |remote_source_| is owned by |web_source_|.
   MediaStreamRemoteVideoSourceUnderTest* remote_source_;
-  blink::WebMediaStreamSource webkit_source_;
+  blink::WebMediaStreamSource web_source_;
   int number_of_successful_track_starts_;
   int number_of_failed_track_starts_;
 };
@@ -240,4 +231,4 @@ TEST_F(MediaStreamRemoteVideoSourceTest, PreservesColorSpace) {
   track->RemoveSink(&sink);
 }
 
-}  // namespace content
+}  // namespace blink
