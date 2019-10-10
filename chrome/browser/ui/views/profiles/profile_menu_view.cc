@@ -517,27 +517,25 @@ void ProfileMenuView::BuildSyncInfo() {
     sync_ui_util::AvatarSyncErrorType error =
         sync_ui_util::GetMessagesForAvatarSyncError(
             browser()->profile(), &description_string_id, &button_string_id);
-    switch (error) {
-      case sync_ui_util::NO_SYNC_ERROR:
-        SetSyncInfo(
-            GetSyncIcon(),
-            /*description=*/base::string16(),
-            l10n_util::GetStringUTF16(IDS_SETTINGS_SYNC_ADVANCED_PAGE_TITLE),
-            base::BindRepeating(&ProfileMenuView::OnSyncSettingsButtonClicked,
-                                base::Unretained(this)));
-        break;
-      case sync_ui_util::MANAGED_USER_UNRECOVERABLE_ERROR:
-      case sync_ui_util::UNRECOVERABLE_ERROR:
-      case sync_ui_util::UPGRADE_CLIENT_ERROR:
-      case sync_ui_util::PASSPHRASE_ERROR:
-      case sync_ui_util::SETTINGS_UNCONFIRMED_ERROR:
-      case sync_ui_util::AUTH_ERROR:
-        SetSyncInfo(
-            GetSyncIcon(), l10n_util::GetStringUTF16(description_string_id),
-            l10n_util::GetStringUTF16(button_string_id),
-            base::BindRepeating(&ProfileMenuView::OnSyncErrorButtonClicked,
-                                base::Unretained(this), error));
-        break;
+
+    if (error == sync_ui_util::NO_SYNC_ERROR) {
+      SetSyncInfo(
+          GetSyncIcon(),
+          /*description=*/base::string16(),
+          l10n_util::GetStringUTF16(IDS_PROFILES_OPEN_SYNC_SETTINGS_BUTTON),
+          base::BindRepeating(&ProfileMenuView::OnSyncSettingsButtonClicked,
+                              base::Unretained(this)));
+    } else {
+      // Overwrite error description with short version for the menu.
+      description_string_id = (error == sync_ui_util::AUTH_ERROR)
+                                  ? IDS_PROFILES_DICE_SYNC_PAUSED_TITLE
+                                  : IDS_SYNC_ERROR_USER_MENU_TITLE;
+
+      SetSyncInfo(
+          GetSyncIcon(), l10n_util::GetStringUTF16(description_string_id),
+          l10n_util::GetStringUTF16(button_string_id),
+          base::BindRepeating(&ProfileMenuView::OnSyncErrorButtonClicked,
+                              base::Unretained(this), error));
     }
     return;
   }
@@ -594,7 +592,8 @@ void ProfileMenuView::BuildAccountFeatureButtons() {
 }
 
 void ProfileMenuView::BuildProfileHeading() {
-  SetProfileHeading(l10n_util::GetStringUTF16(IDS_PROFILES_OPTIONS_GROUP_NAME));
+  SetProfileHeading(
+      l10n_util::GetStringUTF16(IDS_PROFILES_OTHER_PROFILES_TITLE));
 }
 
 void ProfileMenuView::BuildSelectableProfiles() {
