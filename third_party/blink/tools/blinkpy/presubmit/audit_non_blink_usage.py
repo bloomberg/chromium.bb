@@ -856,13 +856,18 @@ _CONFIG = [
     },
     {
         'paths': [
-            'third_party/blink/renderer/modules/peerconnection',
-            'third_party/blink/renderer/bindings/modules/v8/serialization',
+            # TODO(crbug.com/787254): Separate the two paths below and their own
+            # whitelist.
+            'third_party/blink/renderer/modules/peerconnection/',
+            'third_party/blink/renderer/bindings/modules/v8/serialization/',
         ],
         'allowed': [
+            'absl::.+',
+            'base::AutoLock',
+            'base::Lock',
             # TODO(crbug.com/787254): Remove base::BindOnce, base::Unretained,
             # base::MessageLoopCurrent.
-            'base::BindOnce',
+            'base::Bind.*',
             "base::MessageLoopCurrent",
             'base::Unretained',
             'cricket::.*',
@@ -887,7 +892,6 @@ _CONFIG = [
         # AtomicString or HeapVector) are used cross thread. These Blink types
         # are converted to the STL/WebRTC counterparts in the parent directory.
         'allowed': [
-            'absl::.+',
             'base::OnTaskRunnerDeleter',
             'sigslot::.+',
         ],

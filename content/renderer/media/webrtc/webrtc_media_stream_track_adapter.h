@@ -10,12 +10,12 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/waitable_event.h"
 #include "content/common/content_export.h"
-#include "content/renderer/media/webrtc/media_stream_video_webrtc_sink.h"
 #include "content/renderer/media/webrtc/webrtc_media_stream_track_adapter.h"
 #include "third_party/blink/public/platform/modules/peerconnection/webrtc_audio_sink.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/web/modules/mediastream/remote_media_stream_track_adapter.h"
+#include "third_party/blink/public/web/modules/peerconnection/media_stream_video_webrtc_sink.h"
 #include "third_party/webrtc/api/media_stream_interface.h"
 
 namespace blink {
@@ -70,7 +70,7 @@ class CONTENT_EXPORT WebRtcMediaStreamTrackAdapter
   blink::WebRtcAudioSink* GetLocalTrackAudioSinkForTesting() {
     return local_track_audio_sink_.get();
   }
-  MediaStreamVideoWebRtcSink* GetLocalTrackVideoSinkForTesting() {
+  blink::MediaStreamVideoWebRtcSink* GetLocalTrackVideoSinkForTesting() {
     return local_track_video_sink_.get();
   }
   blink::RemoteAudioTrackAdapter* GetRemoteAudioTrackAdapterForTesting() {
@@ -130,7 +130,7 @@ class CONTENT_EXPORT WebRtcMediaStreamTrackAdapter
   // If the track is local, a sink is added to the local webrtc track that is
   // owned by us.
   std::unique_ptr<blink::WebRtcAudioSink> local_track_audio_sink_;
-  std::unique_ptr<MediaStreamVideoWebRtcSink> local_track_video_sink_;
+  std::unique_ptr<blink::MediaStreamVideoWebRtcSink> local_track_video_sink_;
   // If the track is remote, an adapter is used that listens to notifications on
   // the remote webrtc track and notifies Blink.
   scoped_refptr<blink::RemoteAudioTrackAdapter> remote_audio_track_adapter_;

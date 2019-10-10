@@ -2,30 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/webrtc/media_stream_video_webrtc_sink.h"
+#include "third_party/blink/public/web/modules/peerconnection/media_stream_video_webrtc_sink.h"
 
 #include <algorithm>
 #include <memory>
-#include <string>
 
 #include "base/bind.h"
-#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/single_thread_task_runner.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/timer/timer.h"
-#include "content/public/common/content_features.h"
 #include "media/base/limits.h"
 #include "third_party/blink/public/platform/modules/peerconnection/webrtc_video_track_source.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 #include "third_party/blink/public/web/modules/mediastream/web_media_stream_utils.h"
 #include "third_party/blink/public/web/modules/peerconnection/peer_connection_dependency_factory.h"
+#include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 #include "third_party/webrtc/api/video_track_source_proxy.h"
 
-namespace content {
+namespace blink {
 
 namespace {
 
@@ -47,19 +44,19 @@ const int64_t kLowerBoundRefreshIntervalMicros =
     base::Time::kMicrosecondsPerSecond / media::limits::kMaxFramesPerSecond;
 
 webrtc::VideoTrackInterface::ContentHint ContentHintTypeToWebRtcContentHint(
-    blink::WebMediaStreamTrack::ContentHintType content_hint) {
+    WebMediaStreamTrack::ContentHintType content_hint) {
   switch (content_hint) {
-    case blink::WebMediaStreamTrack::ContentHintType::kNone:
+    case WebMediaStreamTrack::ContentHintType::kNone:
       return webrtc::VideoTrackInterface::ContentHint::kNone;
-    case blink::WebMediaStreamTrack::ContentHintType::kAudioSpeech:
-    case blink::WebMediaStreamTrack::ContentHintType::kAudioMusic:
+    case WebMediaStreamTrack::ContentHintType::kAudioSpeech:
+    case WebMediaStreamTrack::ContentHintType::kAudioMusic:
       NOTREACHED();
       break;
-    case blink::WebMediaStreamTrack::ContentHintType::kVideoMotion:
+    case WebMediaStreamTrack::ContentHintType::kVideoMotion:
       return webrtc::VideoTrackInterface::ContentHint::kFluid;
-    case blink::WebMediaStreamTrack::ContentHintType::kVideoDetail:
+    case WebMediaStreamTrack::ContentHintType::kVideoDetail:
       return webrtc::VideoTrackInterface::ContentHint::kDetailed;
-    case blink::WebMediaStreamTrack::ContentHintType::kVideoText:
+    case WebMediaStreamTrack::ContentHintType::kVideoText:
       return webrtc::VideoTrackInterface::ContentHint::kText;
   }
   NOTREACHED();
@@ -73,12 +70,12 @@ webrtc::VideoTrackInterface::ContentHint ContentHintTypeToWebRtcContentHint(
 // on libjingle's worker thread. WebRtcVideoCapturerAdapter implements a video
 // capturer for libjingle.
 class MediaStreamVideoWebRtcSink::WebRtcVideoSourceAdapter
-    : public base::RefCountedThreadSafe<WebRtcVideoSourceAdapter> {
+    : public WTF::ThreadSafeRefCounted<WebRtcVideoSourceAdapter> {
  public:
   WebRtcVideoSourceAdapter(
       const scoped_refptr<base::SingleThreadTaskRunner>&
           libjingle_worker_thread,
-      const scoped_refptr<blink::WebRtcVideoTrackSource>& source,
+      const scoped_refptr<WebRtcVideoTrackSource>& source,
       base::TimeDelta refresh_interval,
       const base::RepeatingClosure& refresh_callback,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
@@ -95,7 +92,7 @@ class MediaStreamVideoWebRtcSink::WebRtcVideoSourceAdapter
                         base::TimeTicks estimated_capture_time);
 
  private:
-  friend class base::RefCountedThreadSafe<WebRtcVideoSourceAdapter>;
+  friend class WTF::ThreadSafeRefCounted<WebRtcVideoSourceAdapter>;
 
   void OnVideoFrameOnWorkerThread(scoped_refptr<media::VideoFrame> frame);
 
@@ -109,15 +106,15 @@ class MediaStreamVideoWebRtcSink::WebRtcVideoSourceAdapter
   scoped_refptr<base::SingleThreadTaskRunner> render_task_runner_;
 
   // |render_thread_checker_| is bound to the main render thread.
-  base::ThreadChecker render_thread_checker_;
+  THREAD_CHECKER(render_thread_checker_);
   // Used to DCHECK that frames are called on the IO-thread.
-  base::ThreadChecker io_thread_checker_;
+  THREAD_CHECKER(io_thread_checker_);
 
   // Used for posting frames to libjingle's worker thread. Accessed on the
   // IO-thread.
   scoped_refptr<base::SingleThreadTaskRunner> libjingle_worker_thread_;
 
-  scoped_refptr<blink::WebRtcVideoTrackSource> video_source_;
+  scoped_refptr<WebRtcVideoTrackSource> video_source_;
 
   // Used to protect |video_source_|. It is taken by libjingle's worker
   // thread for each video frame that is delivered but only taken on the
@@ -142,7 +139,7 @@ class MediaStreamVideoWebRtcSink::WebRtcVideoSourceAdapter
 
 MediaStreamVideoWebRtcSink::WebRtcVideoSourceAdapter::WebRtcVideoSourceAdapter(
     const scoped_refptr<base::SingleThreadTaskRunner>& libjingle_worker_thread,
-    const scoped_refptr<blink::WebRtcVideoTrackSource>& source,
+    const scoped_refptr<WebRtcVideoTrackSource>& source,
     base::TimeDelta refresh_interval,
     const base::RepeatingClosure& refresh_callback,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
@@ -150,7 +147,7 @@ MediaStreamVideoWebRtcSink::WebRtcVideoSourceAdapter::WebRtcVideoSourceAdapter(
       libjingle_worker_thread_(libjingle_worker_thread),
       video_source_(source) {
   DCHECK(render_task_runner_->RunsTasksInCurrentSequence());
-  io_thread_checker_.DetachFromThread();
+  DETACH_FROM_THREAD(io_thread_checker_);
   if (!refresh_interval.is_zero()) {
     VLOG(1) << "Starting frame refresh timer with interval "
             << refresh_interval.InMillisecondsF() << " ms.";
@@ -171,14 +168,14 @@ MediaStreamVideoWebRtcSink::WebRtcVideoSourceAdapter::
 
 void MediaStreamVideoWebRtcSink::WebRtcVideoSourceAdapter::
     ResetRefreshTimerOnMainThread() {
-  DCHECK(render_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(render_thread_checker_);
   if (refresh_timer_.IsRunning())
     refresh_timer_.Reset();
 }
 
 void MediaStreamVideoWebRtcSink::WebRtcVideoSourceAdapter::
     ReleaseSourceOnMainThread() {
-  DCHECK(render_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(render_thread_checker_);
   // Since frames are posted to the worker thread, this object might be deleted
   // on that thread. However, since |video_source_| was created on the render
   // thread, it should be released on the render thread.
@@ -189,7 +186,7 @@ void MediaStreamVideoWebRtcSink::WebRtcVideoSourceAdapter::
 void MediaStreamVideoWebRtcSink::WebRtcVideoSourceAdapter::OnVideoFrameOnIO(
     scoped_refptr<media::VideoFrame> frame,
     base::TimeTicks estimated_capture_time) {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
   render_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&WebRtcVideoSourceAdapter::ResetRefreshTimerOnMainThread,
@@ -209,11 +206,11 @@ void MediaStreamVideoWebRtcSink::WebRtcVideoSourceAdapter::
 }
 
 MediaStreamVideoWebRtcSink::MediaStreamVideoWebRtcSink(
-    const blink::WebMediaStreamTrack& track,
-    blink::PeerConnectionDependencyFactory* factory,
+    const WebMediaStreamTrack& track,
+    PeerConnectionDependencyFactory* factory,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  blink::MediaStreamVideoTrack* video_track =
-      blink::MediaStreamVideoTrack::GetVideoTrack(track);
+  MediaStreamVideoTrack* video_track =
+      MediaStreamVideoTrack::GetVideoTrack(track);
   DCHECK(video_track);
 
   absl::optional<bool> needs_denoising =
@@ -252,9 +249,9 @@ MediaStreamVideoWebRtcSink::MediaStreamVideoWebRtcSink(
 
   // TODO(pbos): Consolidate WebRtcVideoCapturerAdapter into WebRtcVideoSource
   // by removing the need for and dependency on a cricket::VideoCapturer.
-  video_source_ = scoped_refptr<blink::WebRtcVideoTrackSource>(
-      new rtc::RefCountedObject<blink::WebRtcVideoTrackSource>(
-          is_screencast, needs_denoising));
+  video_source_ = scoped_refptr<WebRtcVideoTrackSource>(
+      new rtc::RefCountedObject<WebRtcVideoTrackSource>(is_screencast,
+                                                        needs_denoising));
 
   // TODO(pbos): Consolidate the local video track with the source proxy and
   // move into PeerConnectionDependencyFactory. This now separately holds on a
@@ -269,13 +266,13 @@ MediaStreamVideoWebRtcSink::MediaStreamVideoWebRtcSink(
       ContentHintTypeToWebRtcContentHint(track.ContentHint()));
   video_track_->set_enabled(track.IsEnabled());
 
-  source_adapter_ = new WebRtcVideoSourceAdapter(
+  source_adapter_ = base::MakeRefCounted<WebRtcVideoSourceAdapter>(
       factory->GetWebRtcWorkerThread(), video_source_.get(), refresh_interval,
       base::Bind(&MediaStreamVideoWebRtcSink::RequestRefreshFrame,
                  weak_factory_.GetWeakPtr()),
       std::move(task_runner));
 
-  blink::MediaStreamVideoSink::ConnectToTrack(
+  MediaStreamVideoSink::ConnectToTrack(
       track,
       base::Bind(&WebRtcVideoSourceAdapter::OnVideoFrameOnIO, source_adapter_),
       false);
@@ -285,28 +282,28 @@ MediaStreamVideoWebRtcSink::MediaStreamVideoWebRtcSink(
 }
 
 MediaStreamVideoWebRtcSink::~MediaStreamVideoWebRtcSink() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DVLOG(3) << "MediaStreamVideoWebRtcSink dtor().";
   weak_factory_.InvalidateWeakPtrs();
-  blink::MediaStreamVideoSink::DisconnectFromTrack();
+  MediaStreamVideoSink::DisconnectFromTrack();
   source_adapter_->ReleaseSourceOnMainThread();
 }
 
 void MediaStreamVideoWebRtcSink::OnEnabledChanged(bool enabled) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   video_track_->set_enabled(enabled);
 }
 
 void MediaStreamVideoWebRtcSink::OnContentHintChanged(
-    blink::WebMediaStreamTrack::ContentHintType content_hint) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+    WebMediaStreamTrack::ContentHintType content_hint) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   video_track_->set_content_hint(
       ContentHintTypeToWebRtcContentHint(content_hint));
 }
 
 void MediaStreamVideoWebRtcSink::RequestRefreshFrame() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  blink::RequestRefreshFrameFromVideoTrack(connected_track());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  RequestRefreshFrameFromVideoTrack(connected_track());
 }
 
 absl::optional<bool>
@@ -314,4 +311,4 @@ MediaStreamVideoWebRtcSink::SourceNeedsDenoisingForTesting() const {
   return video_source_->needs_denoising();
 }
 
-}  // namespace content
+}  // namespace blink

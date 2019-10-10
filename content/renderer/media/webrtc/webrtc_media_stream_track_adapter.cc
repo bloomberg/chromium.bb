@@ -5,9 +5,9 @@
 #include "content/renderer/media/webrtc/webrtc_media_stream_track_adapter.h"
 
 #include "base/bind.h"
-#include "content/renderer/media/webrtc/media_stream_video_webrtc_sink.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_track.h"
 #include "third_party/blink/public/web/modules/mediastream/processed_local_audio_source.h"
+#include "third_party/blink/public/web/modules/peerconnection/media_stream_video_webrtc_sink.h"
 #include "third_party/blink/public/web/modules/peerconnection/peer_connection_dependency_factory.h"
 
 namespace content {
@@ -193,8 +193,8 @@ void WebRtcMediaStreamTrackAdapter::InitializeLocalVideoTrack(
   DCHECK_EQ(web_track.Source().GetType(),
             blink::WebMediaStreamSource::kTypeVideo);
   web_track_ = web_track;
-  local_track_video_sink_.reset(
-      new MediaStreamVideoWebRtcSink(web_track_, factory_, main_thread_));
+  local_track_video_sink_.reset(new blink::MediaStreamVideoWebRtcSink(
+      web_track_, factory_, main_thread_));
   webrtc_track_ = local_track_video_sink_->webrtc_video_track();
   DCHECK(webrtc_track_);
   is_initialized_ = true;
