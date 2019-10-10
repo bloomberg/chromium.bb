@@ -28,16 +28,6 @@ enum Type {
 };
 }  // namespace Source
 
-// How the app will be launched after installation.
-enum class LaunchContainer {
-  // When `kDefault` is used, the app will launch in a window if the site is
-  // "installable" (also referred to as Progressive Web App) and in a tab if
-  // the site is not "installable".
-  kDefault,
-  kTab,
-  kWindow,
-};
-
 // The result of an attempted web app installation, uninstallation or update.
 //
 // This is an enum, instead of a struct with multiple fields (e.g. one field for
