@@ -1305,13 +1305,15 @@ bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactory(
       std::move(default_factory_request));
 }
 
-void RenderFrameHostImpl::MarkInitiatorsAsRequiringSeparateURLLoaderFactory(
-    base::flat_set<url::Origin> request_initiators,
+void RenderFrameHostImpl::MarkIsolatedWorldsAsRequiringSeparateURLLoaderFactory(
+    base::flat_set<url::Origin> isolated_world_origins,
     bool push_to_renderer_now) {
-  size_t old_size = initiators_requiring_separate_url_loader_factory_.size();
-  initiators_requiring_separate_url_loader_factory_.insert(
-      request_initiators.begin(), request_initiators.end());
-  size_t new_size = initiators_requiring_separate_url_loader_factory_.size();
+  size_t old_size =
+      isolated_worlds_requiring_separate_url_loader_factory_.size();
+  isolated_worlds_requiring_separate_url_loader_factory_.insert(
+      isolated_world_origins.begin(), isolated_world_origins.end());
+  size_t new_size =
+      isolated_worlds_requiring_separate_url_loader_factory_.size();
   bool insertion_took_place = (old_size != new_size);
 
   // Push the updated set of factories to the renderer, but only if
@@ -1328,8 +1330,8 @@ void RenderFrameHostImpl::MarkInitiatorsAsRequiringSeparateURLLoaderFactory(
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
         subresource_loader_factories =
             std::make_unique<blink::URLLoaderFactoryBundleInfo>();
-    subresource_loader_factories->pending_initiator_specific_factories() =
-        CreateInitiatorSpecificURLLoaderFactories(request_initiators);
+    subresource_loader_factories->pending_isolated_world_factories() =
+        CreateURLLoaderFactoriesForIsolatedWorlds(isolated_world_origins);
     GetNavigationControl()->UpdateSubresourceLoaderFactories(
         std::move(subresource_loader_factories));
   }
@@ -1346,10 +1348,10 @@ bool RenderFrameHostImpl::IsSandboxed(blink::WebSandboxFlags flags) {
 }
 
 blink::URLLoaderFactoryBundleInfo::OriginMap
-RenderFrameHostImpl::CreateInitiatorSpecificURLLoaderFactories(
-    const base::flat_set<url::Origin>& initiator_origins) {
+RenderFrameHostImpl::CreateURLLoaderFactoriesForIsolatedWorlds(
+    const base::flat_set<url::Origin>& isolated_world_origins) {
   blink::URLLoaderFactoryBundleInfo::OriginMap result;
-  for (const url::Origin& initiator : initiator_origins) {
+  for (const url::Origin& initiator : isolated_world_origins) {
     network::mojom::URLLoaderFactoryPtrInfo factory_info;
     CreateNetworkServiceDefaultFactoryAndObserve(
         initiator, network_isolation_key_, mojo::MakeRequest(&factory_info));
@@ -3165,8 +3167,8 @@ void RenderFrameHostImpl::UpdateSubresourceLoaderFactories() {
           std::make_unique<blink::URLLoaderFactoryBundleInfo>(
               std::move(default_factory_info),
               blink::URLLoaderFactoryBundleInfo::SchemeMap(),
-              CreateInitiatorSpecificURLLoaderFactories(
-                  initiators_requiring_separate_url_loader_factory_),
+              CreateURLLoaderFactoriesForIsolatedWorlds(
+                  isolated_worlds_requiring_separate_url_loader_factory_),
               bypass_redirect_checks);
   GetNavigationControl()->UpdateSubresourceLoaderFactories(
       std::move(subresource_loader_factories));
@@ -4125,8 +4127,8 @@ RenderFrameHostImpl::CreateCrossOriginPrefetchLoaderFactoryBundle() {
   return std::make_unique<blink::URLLoaderFactoryBundleInfo>(
       std::move(pending_default_factory),
       blink::URLLoaderFactoryBundleInfo::SchemeMap(),
-      CreateInitiatorSpecificURLLoaderFactories(
-          initiators_requiring_separate_url_loader_factory_),
+      CreateURLLoaderFactoriesForIsolatedWorlds(
+          isolated_worlds_requiring_separate_url_loader_factory_),
       bypass_redirect_checks);
 }
 
@@ -5368,9 +5370,9 @@ void RenderFrameHostImpl::CommitNavigation(
           factory.first, std::move(pending_factory_proxy));
     }
 
-    subresource_loader_factories->pending_initiator_specific_factories() =
-        CreateInitiatorSpecificURLLoaderFactories(
-            initiators_requiring_separate_url_loader_factory_);
+    subresource_loader_factories->pending_isolated_world_factories() =
+        CreateURLLoaderFactoriesForIsolatedWorlds(
+            isolated_worlds_requiring_separate_url_loader_factory_);
   }
 
   // It is imperative that cross-document navigations always provide a set of
