@@ -33,13 +33,13 @@ class WebEngineURLLoaderThrottle : public blink::URLLoaderThrottle {
       CachedRulesProvider* cached_rules_provider);
   ~WebEngineURLLoaderThrottle() override;
 
+ private:
   // blink::URLLoaderThrottle implementation.
   void DetachFromCurrentSequence() override;
   void WillStartRequest(network::ResourceRequest* request,
                         bool* defer) override;
   bool makes_unsafe_redirect() override;
 
- private:
   CachedRulesProvider* const cached_rules_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(WebEngineURLLoaderThrottle);
