@@ -4,8 +4,7 @@
 
 package org.chromium.weblayer_private.aidl;
 
-interface IProfile {
-  void destroy() = 0;
-
-  void clearBrowsingData() = 1;
+/** Keys for the Bundle of arguments with which BrowserFragments are created. */
+public interface BrowserFragmentArgs {
+    String PROFILE_PATH = "profile_path";
 }
