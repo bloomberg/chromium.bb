@@ -20,7 +20,7 @@
 namespace libgav1 {
 namespace dsp {
 
-// Initializes Dsp::cdef_direction and cdef::filter. This function is not
+// Initializes Dsp::cdef_direction and Dsp::cdef_filter. This function is not
 // thread-safe.
 void CdefInit_C();
 
