@@ -804,58 +804,54 @@ void RenderWidget::SynchronizeVisualPropertiesFromRenderView(
 
   gfx::Size old_visible_viewport_size = visible_viewport_size_;
 
-  bool ignore_resize_ipc = false;
-  if (synchronous_resize_mode_for_testing_) {
+  if (delegate_ && page_properties_->ScreenMetricsEmulator()) {
+    DCHECK(!auto_resize_mode_);
+    DCHECK(!synchronous_resize_mode_for_testing_);
+
+    // TODO(danakj): Have RenderWidget grab emulated values from the emulator
+    // instead of making it call back into RenderWidget, then we can do this
+    // with a single UpdateSurfaceAndScreenInfo() call. The emulator may
+    // change the ScreenInfo and then will call back to RenderWidget. Before
+    // that we keep the current (possibly emulated) ScreenInfo.
+    UpdateSurfaceAndScreenInfo(
+        visual_properties.local_surface_id_allocation.value_or(
+            viz::LocalSurfaceIdAllocation()),
+        visual_properties.compositor_viewport_pixel_rect,
+        page_properties_->GetScreenInfo());
+
+    // This will call our SynchronizeVisualProperties() method with a
+    // different set of VisualProperties, holding emulated values. Though not
+    // all VisualProperties are modified by the metrics emulator, so it's a
+    // bit unclear to do this with the full structure. Anything it does not
+    // modify can be consumed directly here instead of in
+    // SynchronizeVisualProperties().
+    page_properties_->ScreenMetricsEmulator()->OnSynchronizeVisualProperties(
+        visual_properties.screen_info, visual_properties.new_size,
+        visual_properties.visible_viewport_size);
+  } else {
     // We can ignore browser-initialized resizing during synchronous
     // (renderer-controlled) mode, unless it is switching us to/from
     // fullsreen mode or changing the device scale factor.
-    // TODO(danakj): Does the browser actually change DSF inside a web test??
-    // TODO(danakj): Isn't the display mode check redundant with the fullscreen
-    // one?
-    if (visual_properties.is_fullscreen_granted == is_fullscreen_granted_ &&
-        visual_properties.display_mode == display_mode_ &&
-        visual_properties.screen_info.device_scale_factor ==
-            page_properties_->GetDeviceScaleFactor())
-      ignore_resize_ipc = true;
-  }
+    bool ignore_resize_ipc = synchronous_resize_mode_for_testing_;
+    if (ignore_resize_ipc) {
+      // TODO(danakj): Does the browser actually change DSF inside a web test??
+      // TODO(danakj): Isn't the display mode check redundant with the
+      // fullscreen one?
+      if (visual_properties.is_fullscreen_granted != is_fullscreen_granted_ ||
+          visual_properties.display_mode != display_mode_ ||
+          visual_properties.screen_info.device_scale_factor !=
+              page_properties_->GetDeviceScaleFactor())
+        ignore_resize_ipc = false;
+    }
 
-  // When controlling the size in the renderer, we should ignore sizes given by
-  // the browser IPC here.
-  // TODO(danakj): There are many things also being ignored that aren't the
-  // widget's size params. It works because tests that use this mode don't
-  // change those parameters, I guess. But it's more complicated then because it
-  // looks like they are related to sync resize mode. Let's move them out of
-  // this block.
-  // TODO(danakj): It would be nice if we can still use the emulator to emulate
-  // things other than the size if we are in sync resize mode - if the emulator
-  // is even used in sync resize tests. It probably isn't though, so either way
-  // it'd be good to get the emulator out of this block (maybe by overwriting
-  // some of |visual_properties| in sync resize mode instead of just
-  // skipping the emulator.
-  if (!ignore_resize_ipc) {
-    if (delegate_ && page_properties_->ScreenMetricsEmulator()) {
-      DCHECK(!auto_resize_mode_);
-      // TODO(danakj): Have RenderWidget grab emulated values from the emulator
-      // instead of making it call back into RenderWidget, then we can do this
-      // with a single UpdateSurfaceAndScreenInfo() call. The emulator may
-      // change the ScreenInfo and then will call back to RenderWidget. Before
-      // that we keep the current (possibly emulated) ScreenInfo.
-      UpdateSurfaceAndScreenInfo(
-          visual_properties.local_surface_id_allocation.value_or(
-              viz::LocalSurfaceIdAllocation()),
-          visual_properties.compositor_viewport_pixel_rect,
-          page_properties_->GetScreenInfo());
-
-      // This will call our SynchronizeVisualProperties() method with a
-      // different set of VisualProperties, holding emulated values. Though not
-      // all VisualProperties are modified by the metrics emulator, so it's a
-      // bit unclear to do this with the full structure. Anything it does not
-      // modify can be consumed directly here instead of in
-      // SynchronizeVisualProperties().
-      page_properties_->ScreenMetricsEmulator()->OnSynchronizeVisualProperties(
-          visual_properties.screen_info, visual_properties.new_size,
-          visual_properties.visible_viewport_size);
-    } else {
+    // When controlling the size in the renderer, we should ignore sizes given
+    // by the browser IPC here.
+    // TODO(danakj): There are many things also being ignored that aren't the
+    // widget's size params. It works because tests that use this mode don't
+    // change those parameters, I guess. But it's more complicated then because
+    // it looks like they are related to sync resize mode. Let's move them out
+    // of this block.
+    if (!ignore_resize_ipc) {
       gfx::Rect new_compositor_viewport_pixel_rect =
           visual_properties.compositor_viewport_pixel_rect;
       if (auto_resize_mode_) {
