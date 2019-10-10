@@ -35044,7 +35044,6 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1998927516" label="enable-md-settings"/>
   <int value="-1996233283"
       label="OmniboxGroupSuggestionsBySearchVsUrl:enabled"/>
-  <int value="-1992319691" label="AvoidFlashBetweenNavigation:enabled"/>
   <int value="-1990614981" label="StoragePressureUI:disabled"/>
   <int value="-1989747818" label="TabStripKeyboardFocus:disabled"/>
   <int value="-1985452239" label="SmartDim20190221:disabled"/>
@@ -35899,6 +35898,7 @@ from previous Chrome versions.
   <int value="-950384924" label="OmniboxDisableInstantExtendedLimit:enabled"/>
   <int value="-949178861" label="enable-new-avatar-menu"/>
   <int value="-945806012" label="DownloadsUi:enabled"/>
+  <int value="-943304570" label="PaintHolding:enabled"/>
   <int value="-938178614" label="enable-suggestions-with-substring-match"/>
   <int value="-933377608"
       label="OmniboxUIExperimentHideSteadyStateUrlScheme:enabled"/>
@@ -36447,7 +36447,6 @@ from previous Chrome versions.
   <int value="-195029497" label="MediaRemoting:disabled"/>
   <int value="-192919826" label="ViewsSimplifiedFullscreenUI:enabled"/>
   <int value="-192389983" label="NoStatePrefetch:enabled"/>
-  <int value="-191256027" label="AvoidFlashBetweenNavigation:disabled"/>
   <int value="-189478545" label="ArcCustomTabsExperiment:enabled"/>
   <int value="-186707397" label="HideArcMediaNotifications:enabled"/>
   <int value="-185162926" label="IncreaseInputAudioBufferSize:enabled"/>
@@ -37161,6 +37160,7 @@ from previous Chrome versions.
   <int value="740056959" label="ImeServiceConnectable:enabled"/>
   <int value="740619684" label="ExtensionsToolbarMenu:enabled"/>
   <int value="742083923" label="MimeHandlerViewInCrossProcessFrame:disabled"/>
+  <int value="745541471" label="PaintHolding:disabled"/>
   <int value="745783589" label="translate-force-trigger-on-english"/>
   <int value="745868416" label="disable-system-timezone-automatic-detection"/>
   <int value="746765012" label="AutofillEnableToolbarStatusChip:disabled"/>

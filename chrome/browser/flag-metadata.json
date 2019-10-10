@@ -1032,11 +1032,6 @@
     "expiry_milestone": 82
   },
   {
-    "name": "enable-avoid-flash-between-navigation",
-    "owners": [ "schenney", "paint-dev" ],
-    "expiry_milestone": 80
-  },
-  {
     "name": "enable-backdrop-filter",
     "owners": [ "masonfreed", "paint-dev@chromium.org" ],
     "expiry_milestone": 78
@@ -1519,6 +1514,11 @@
   {
     "name": "enable-oop-rasterization",
     "owners": [ "enne", "khushalsagar" ],
+    "expiry_milestone": 80
+  },
+    {
+    "name": "enable-paint-holding",
+    "owners": [ "schenney", "paint-dev" ],
     "expiry_milestone": 80
   },
   {

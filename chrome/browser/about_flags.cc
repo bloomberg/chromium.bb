@@ -3908,10 +3908,9 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(media::kHardwareMediaKeyHandling)},
 #endif
 
-    {"enable-avoid-flash-between-navigation",
-     flag_descriptions::kAvoidFlashBetweenNavigationName,
-     flag_descriptions::kAvoidFlahsBetweenNavigationDescription, kOsAll,
-     FEATURE_VALUE_TYPE(blink::features::kAvoidFlashBetweenNavigation)},
+    {"enable-paint-holding", flag_descriptions::kPaintHoldingName,
+     flag_descriptions::kPaintHoldingDescription, kOsAll,
+     FEATURE_VALUE_TYPE(blink::features::kPaintHolding)},
 
 #if !defined(OS_ANDROID)
     {"app-management", flag_descriptions::kAppManagementName,

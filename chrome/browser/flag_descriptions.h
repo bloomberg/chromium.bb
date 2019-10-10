@@ -2354,8 +2354,8 @@ extern const char kAutofillCreditCardUploadDescription[];
 
 #endif  // defined(TOOLKIT_VIEWS) || defined(OS_ANDROID)
 
-extern const char kAvoidFlashBetweenNavigationName[];
-extern const char kAvoidFlahsBetweenNavigationDescription[];
+extern const char kPaintHoldingName[];
+extern const char kPaintHoldingDescription[];
 
 #if defined(WEBRTC_USE_PIPEWIRE)
 

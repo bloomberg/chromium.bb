@@ -18,9 +18,9 @@ const base::Feature kBlockingDownloadsInAdFrameWithoutUserActivation{
     "BlockingDownloadsInAdFrameWithoutUserActivation",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enable defer commits a bit to avoid flash.
-const base::Feature kAvoidFlashBetweenNavigation{
-    "AvoidFlashBetweenNavigation", base::FEATURE_ENABLED_BY_DEFAULT};
+// Enable defer commits to avoid flash of unstyled content.
+const base::Feature kPaintHolding{"PaintHolding",
+                                  base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable eagerly setting up a CacheStorage interface pointer and
 // passing it to service workers on startup as an optimization.

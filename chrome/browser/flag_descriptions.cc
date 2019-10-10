@@ -3894,6 +3894,13 @@ const char kAutofillCreditCardUploadDescription[] =
 
 #endif  // defined(TOOLKIT_VIEWS) || defined(OS_ANDROID)
 
+const char kPaintHoldingName[] =
+    "Delay the commit to screen for same-origin navigations";
+const char kPaintHoldingDescription[] =
+    "Enables a delay before commiting the page to screen when navigating "
+    "between pages in the same origin. This may help avoid a flash of unstyled "
+    "content for same-origin navigations";
+
 #if defined(WEBRTC_USE_PIPEWIRE)
 
 extern const char kWebrtcPipeWireCapturerName[] = "WebRTC PipeWire support";
@@ -3902,13 +3909,6 @@ extern const char kWebrtcPipeWireCapturerDescription[] =
     "capturing the desktop content on the Wayland display server.";
 
 #endif  // #if defined(WEBRTC_USE_PIPEWIRE)
-
-const char kAvoidFlashBetweenNavigationName[] =
-    "Enable flash avoidance between same-origin navigations";
-const char kAvoidFlahsBetweenNavigationDescription[] =
-    "Enables experimental flash avoidance when navigating between pages "
-    "in the same origin. This feature is in the implementation stages and "
-    "currently has no effect.";
 
 // ============================================================================
 // Don't just add flags to the end, put them in the right section in
