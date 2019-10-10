@@ -70,6 +70,8 @@ class SupervisedUserNavigationObserver
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
   void FrameDeleted(content::RenderFrameHost* render_frame_host) override;
+  void DidFinishLoad(content::RenderFrameHost* render_frame_host,
+                     const GURL& validated_url) override;
 
   // SupervisedUserServiceObserver:
   void OnURLFilterChanged() override;

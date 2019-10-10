@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/supervised_user/supervised_user_interstitial.h"
@@ -116,6 +117,21 @@ void SupervisedUserNavigationObserver::FrameDeleted(
     content::RenderFrameHost* render_frame_host) {
   int frame_id = render_frame_host->GetFrameTreeNodeId();
   supervised_user_interstitials_.erase(frame_id);
+}
+
+void SupervisedUserNavigationObserver::DidFinishLoad(
+    content::RenderFrameHost* render_frame_host,
+    const GURL& validated_url) {
+  if (IsMainFrame(render_frame_host)) {
+    bool main_frame_blocked =
+        base::Contains(supervised_user_interstitials_,
+                       render_frame_host->GetFrameTreeNodeId());
+    int count = supervised_user_interstitials_.size();
+    if (main_frame_blocked)
+      count = 0;
+
+    UMA_HISTOGRAM_COUNTS_1000("ManagedUsers.BlockedIframeCount", count);
+  }
 }
 
 void SupervisedUserNavigationObserver::OnURLFilterChanged() {
