@@ -126,8 +126,10 @@ bool IsMainFrameWhitelisted(content::WebContents* web_contents) {
       behavior == SupervisedUserURLFilter::FilteringBehavior::ALLOW;
   bool is_whitelisted =
       reason == supervised_user_error_page::FilteringBehaviorReason::WHITELIST;
+  bool is_manual =
+      reason == supervised_user_error_page::FilteringBehaviorReason::MANUAL;
 
-  return is_allowed && is_whitelisted;
+  return is_allowed && (is_whitelisted || is_manual);
 }
 
 }  // namespace
