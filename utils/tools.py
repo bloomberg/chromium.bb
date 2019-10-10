@@ -426,18 +426,30 @@ def sliding_timeout(timeout):
 _THIRD_PARTY_FIXED = False
 
 
-def force_local_third_party():
+def force_local_third_party(root=None):
   """Put the local third_party in front of sys.path.
 
   This is important for tools, especially the Swarming bot, as we don't know
   what python packages are installed and which version.
+
+  Arguments:
+    root: override base directory as it assumes the root is one directory up
+          from the current executable
   """
   global _THIRD_PARTY_FIXED
   if _THIRD_PARTY_FIXED:
     return
   _THIRD_PARTY_FIXED = True
-  src = os.path.abspath(zip_package.get_main_script_path())
-  root = os.path.dirname(src)
+  if not root:
+    src = zip_package.get_main_script_path()
+    if src:
+      root = os.path.dirname(os.path.abspath(src))
+    else:
+      # The only case where src is not set is when importing at the python
+      # interactive prompt. Make this case work since it's helpful during the
+      # python3 transition, as it makes the edit-debug loop much faster.
+      root = os.path.dirname(os.getcwd())
+      logging.warning('Falling back to current directory %s', root)
   sys.path.insert(0, os.path.join(
       root, 'third_party', 'httplib2', 'python%d' % sys.version_info.major))
   sys.path.insert(0, os.path.join(root, 'third_party', 'pyasn1'))
