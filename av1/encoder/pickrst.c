@@ -440,61 +440,25 @@ static int64_t signed_rounded_divide(int64_t dividend, int64_t divisor) {
     return (dividend + divisor / 2) / divisor;
 }
 
-static AOM_INLINE void get_proj_subspace(const uint8_t *src8, int width,
-                                         int height, int src_stride,
-                                         const uint8_t *dat8, int dat_stride,
-                                         int use_highbitdepth, int32_t *flt0,
-                                         int flt0_stride, int32_t *flt1,
-                                         int flt1_stride, int *xq,
-                                         const sgr_params_type *params) {
-  int i, j;
-  int64_t H[2][2] = { { 0, 0 }, { 0, 0 } };
-  int64_t C[2] = { 0, 0 };
+static AOM_INLINE void calc_proj_params_r0_r1_c(
+    const uint8_t *src8, int width, int height, int src_stride,
+    const uint8_t *dat8, int dat_stride, int32_t *flt0, int flt0_stride,
+    int32_t *flt1, int flt1_stride, int64_t H[2][2], int64_t C[2]) {
   const int size = width * height;
-
-  // Default values to be returned if the problem becomes ill-posed
-  xq[0] = 0;
-  xq[1] = 0;
-
-  if (!use_highbitdepth) {
-    const uint8_t *src = src8;
-    const uint8_t *dat = dat8;
-    for (i = 0; i < height; ++i) {
-      for (j = 0; j < width; ++j) {
-        const int32_t u =
-            (int32_t)(dat[i * dat_stride + j] << SGRPROJ_RST_BITS);
-        const int32_t s =
-            (int32_t)(src[i * src_stride + j] << SGRPROJ_RST_BITS) - u;
-        const int32_t f1 =
-            (params->r[0] > 0) ? (int32_t)flt0[i * flt0_stride + j] - u : 0;
-        const int32_t f2 =
-            (params->r[1] > 0) ? (int32_t)flt1[i * flt1_stride + j] - u : 0;
-        H[0][0] += (int64_t)f1 * f1;
-        H[1][1] += (int64_t)f2 * f2;
-        H[0][1] += (int64_t)f1 * f2;
-        C[0] += (int64_t)f1 * s;
-        C[1] += (int64_t)f2 * s;
-      }
-    }
-  } else {
-    const uint16_t *src = CONVERT_TO_SHORTPTR(src8);
-    const uint16_t *dat = CONVERT_TO_SHORTPTR(dat8);
-    for (i = 0; i < height; ++i) {
-      for (j = 0; j < width; ++j) {
-        const int32_t u =
-            (int32_t)(dat[i * dat_stride + j] << SGRPROJ_RST_BITS);
-        const int32_t s =
-            (int32_t)(src[i * src_stride + j] << SGRPROJ_RST_BITS) - u;
-        const int32_t f1 =
-            (params->r[0] > 0) ? (int32_t)flt0[i * flt0_stride + j] - u : 0;
-        const int32_t f2 =
-            (params->r[1] > 0) ? (int32_t)flt1[i * flt1_stride + j] - u : 0;
-        H[0][0] += (int64_t)f1 * f1;
-        H[1][1] += (int64_t)f2 * f2;
-        H[0][1] += (int64_t)f1 * f2;
-        C[0] += (int64_t)f1 * s;
-        C[1] += (int64_t)f2 * s;
-      }
+  const uint8_t *src = src8;
+  const uint8_t *dat = dat8;
+  for (int i = 0; i < height; ++i) {
+    for (int j = 0; j < width; ++j) {
+      const int32_t u = (int32_t)(dat[i * dat_stride + j] << SGRPROJ_RST_BITS);
+      const int32_t s =
+          (int32_t)(src[i * src_stride + j] << SGRPROJ_RST_BITS) - u;
+      const int32_t f1 = (int32_t)flt0[i * flt0_stride + j] - u;
+      const int32_t f2 = (int32_t)flt1[i * flt1_stride + j] - u;
+      H[0][0] += (int64_t)f1 * f1;
+      H[1][1] += (int64_t)f2 * f2;
+      H[0][1] += (int64_t)f1 * f2;
+      C[0] += (int64_t)f1 * s;
+      C[1] += (int64_t)f2 * s;
     }
   }
   H[0][0] /= size;
@@ -503,6 +467,196 @@ static AOM_INLINE void get_proj_subspace(const uint8_t *src8, int width,
   H[1][0] = H[0][1];
   C[0] /= size;
   C[1] /= size;
+}
+
+static AOM_INLINE void calc_proj_params_r0_r1_high_bd_c(
+    const uint8_t *src8, int width, int height, int src_stride,
+    const uint8_t *dat8, int dat_stride, int32_t *flt0, int flt0_stride,
+    int32_t *flt1, int flt1_stride, int64_t H[2][2], int64_t C[2]) {
+  const int size = width * height;
+  const uint16_t *src = CONVERT_TO_SHORTPTR(src8);
+  const uint16_t *dat = CONVERT_TO_SHORTPTR(dat8);
+  for (int i = 0; i < height; ++i) {
+    for (int j = 0; j < width; ++j) {
+      const int32_t u = (int32_t)(dat[i * dat_stride + j] << SGRPROJ_RST_BITS);
+      const int32_t s =
+          (int32_t)(src[i * src_stride + j] << SGRPROJ_RST_BITS) - u;
+      const int32_t f1 = (int32_t)flt0[i * flt0_stride + j] - u;
+      const int32_t f2 = (int32_t)flt1[i * flt1_stride + j] - u;
+      H[0][0] += (int64_t)f1 * f1;
+      H[1][1] += (int64_t)f2 * f2;
+      H[0][1] += (int64_t)f1 * f2;
+      C[0] += (int64_t)f1 * s;
+      C[1] += (int64_t)f2 * s;
+    }
+  }
+  H[0][0] /= size;
+  H[0][1] /= size;
+  H[1][1] /= size;
+  H[1][0] = H[0][1];
+  C[0] /= size;
+  C[1] /= size;
+}
+
+static AOM_INLINE void calc_proj_params_r0_c(const uint8_t *src8, int width,
+                                             int height, int src_stride,
+                                             const uint8_t *dat8,
+                                             int dat_stride, int32_t *flt0,
+                                             int flt0_stride, int64_t H[2][2],
+                                             int64_t C[2]) {
+  const int size = width * height;
+  const uint8_t *src = src8;
+  const uint8_t *dat = dat8;
+  for (int i = 0; i < height; ++i) {
+    for (int j = 0; j < width; ++j) {
+      const int32_t u = (int32_t)(dat[i * dat_stride + j] << SGRPROJ_RST_BITS);
+      const int32_t s =
+          (int32_t)(src[i * src_stride + j] << SGRPROJ_RST_BITS) - u;
+      const int32_t f1 = (int32_t)flt0[i * flt0_stride + j] - u;
+      H[0][0] += (int64_t)f1 * f1;
+      C[0] += (int64_t)f1 * s;
+    }
+  }
+  H[0][0] /= size;
+  C[0] /= size;
+}
+
+static AOM_INLINE void calc_proj_params_r0_high_bd_c(
+    const uint8_t *src8, int width, int height, int src_stride,
+    const uint8_t *dat8, int dat_stride, int32_t *flt0, int flt0_stride,
+    int64_t H[2][2], int64_t C[2]) {
+  const int size = width * height;
+  const uint16_t *src = CONVERT_TO_SHORTPTR(src8);
+  const uint16_t *dat = CONVERT_TO_SHORTPTR(dat8);
+  for (int i = 0; i < height; ++i) {
+    for (int j = 0; j < width; ++j) {
+      const int32_t u = (int32_t)(dat[i * dat_stride + j] << SGRPROJ_RST_BITS);
+      const int32_t s =
+          (int32_t)(src[i * src_stride + j] << SGRPROJ_RST_BITS) - u;
+      const int32_t f1 = (int32_t)flt0[i * flt0_stride + j] - u;
+      H[0][0] += (int64_t)f1 * f1;
+      C[0] += (int64_t)f1 * s;
+    }
+  }
+  H[0][0] /= size;
+  C[0] /= size;
+}
+
+static AOM_INLINE void calc_proj_params_r1_c(const uint8_t *src8, int width,
+                                             int height, int src_stride,
+                                             const uint8_t *dat8,
+                                             int dat_stride, int32_t *flt1,
+                                             int flt1_stride, int64_t H[2][2],
+                                             int64_t C[2]) {
+  const int size = width * height;
+  const uint8_t *src = src8;
+  const uint8_t *dat = dat8;
+  for (int i = 0; i < height; ++i) {
+    for (int j = 0; j < width; ++j) {
+      const int32_t u = (int32_t)(dat[i * dat_stride + j] << SGRPROJ_RST_BITS);
+      const int32_t s =
+          (int32_t)(src[i * src_stride + j] << SGRPROJ_RST_BITS) - u;
+      const int32_t f2 = (int32_t)flt1[i * flt1_stride + j] - u;
+      H[1][1] += (int64_t)f2 * f2;
+      C[1] += (int64_t)f2 * s;
+    }
+  }
+  H[1][1] /= size;
+  C[1] /= size;
+}
+
+static AOM_INLINE void calc_proj_params_r1_high_bd_c(
+    const uint8_t *src8, int width, int height, int src_stride,
+    const uint8_t *dat8, int dat_stride, int32_t *flt1, int flt1_stride,
+    int64_t H[2][2], int64_t C[2]) {
+  const int size = width * height;
+  const uint16_t *src = CONVERT_TO_SHORTPTR(src8);
+  const uint16_t *dat = CONVERT_TO_SHORTPTR(dat8);
+  for (int i = 0; i < height; ++i) {
+    for (int j = 0; j < width; ++j) {
+      const int32_t u = (int32_t)(dat[i * dat_stride + j] << SGRPROJ_RST_BITS);
+      const int32_t s =
+          (int32_t)(src[i * src_stride + j] << SGRPROJ_RST_BITS) - u;
+      const int32_t f2 = (int32_t)flt1[i * flt1_stride + j] - u;
+      H[1][1] += (int64_t)f2 * f2;
+      C[1] += (int64_t)f2 * s;
+    }
+  }
+  H[1][1] /= size;
+  C[1] /= size;
+}
+
+// The function calls 3 subfunctions for the following cases :
+// 1) When params->r[0] > 0 and params->r[1] > 0. In this case all elements
+// of C and H need to be computed.
+// 2) When only params->r[0] > 0. In this case only H[0][0] and C[0] are
+// non-zero and need to be computed.
+// 3) When only params->r[1] > 0. In this case only H[1][1] and C[1] are
+// non-zero and need to be computed.
+void av1_calc_proj_params_c(const uint8_t *src8, int width, int height,
+                            int src_stride, const uint8_t *dat8, int dat_stride,
+                            int32_t *flt0, int flt0_stride, int32_t *flt1,
+                            int flt1_stride, int64_t H[2][2], int64_t C[2],
+                            const sgr_params_type *params) {
+  if ((params->r[0] > 0) && (params->r[1] > 0)) {
+    calc_proj_params_r0_r1_c(src8, width, height, src_stride, dat8, dat_stride,
+                             flt0, flt0_stride, flt1, flt1_stride, H, C);
+  } else if (params->r[0] > 0) {
+    calc_proj_params_r0_c(src8, width, height, src_stride, dat8, dat_stride,
+                          flt0, flt0_stride, H, C);
+  } else if (params->r[1] > 0) {
+    calc_proj_params_r1_c(src8, width, height, src_stride, dat8, dat_stride,
+                          flt1, flt1_stride, H, C);
+  }
+}
+
+static AOM_INLINE void av1_calc_proj_params_high_bd_c(
+    const uint8_t *src8, int width, int height, int src_stride,
+    const uint8_t *dat8, int dat_stride, int32_t *flt0, int flt0_stride,
+    int32_t *flt1, int flt1_stride, int64_t H[2][2], int64_t C[2],
+    const sgr_params_type *params) {
+  if ((params->r[0] > 0) && (params->r[1] > 0)) {
+    calc_proj_params_r0_r1_high_bd_c(src8, width, height, src_stride, dat8,
+                                     dat_stride, flt0, flt0_stride, flt1,
+                                     flt1_stride, H, C);
+  } else if (params->r[0] > 0) {
+    calc_proj_params_r0_high_bd_c(src8, width, height, src_stride, dat8,
+                                  dat_stride, flt0, flt0_stride, H, C);
+  } else if (params->r[1] > 0) {
+    calc_proj_params_r1_high_bd_c(src8, width, height, src_stride, dat8,
+                                  dat_stride, flt0, flt0_stride, H, C);
+  }
+}
+
+static AOM_INLINE void get_proj_subspace(const uint8_t *src8, int width,
+                                         int height, int src_stride,
+                                         const uint8_t *dat8, int dat_stride,
+                                         int use_highbitdepth, int32_t *flt0,
+                                         int flt0_stride, int32_t *flt1,
+                                         int flt1_stride, int *xq,
+                                         const sgr_params_type *params) {
+  int64_t H[2][2] = { { 0, 0 }, { 0, 0 } };
+  int64_t C[2] = { 0, 0 };
+
+  // Default values to be returned if the problem becomes ill-posed
+  xq[0] = 0;
+  xq[1] = 0;
+
+  if (!use_highbitdepth) {
+    if ((width & 0x7) == 0) {
+      av1_calc_proj_params(src8, width, height, src_stride, dat8, dat_stride,
+                           flt0, flt0_stride, flt1, flt1_stride, H, C, params);
+    } else {
+      av1_calc_proj_params_c(src8, width, height, src_stride, dat8, dat_stride,
+                             flt0, flt0_stride, flt1, flt1_stride, H, C,
+                             params);
+    }
+  } else {
+    av1_calc_proj_params_high_bd_c(src8, width, height, src_stride, dat8,
+                                   dat_stride, flt0, flt0_stride, flt1,
+                                   flt1_stride, H, C, params);
+  }
+
   if (params->r[0] == 0) {
     // H matrix is now only the scalar H[1][1]
     // C vector is now only the scalar C[1]
@@ -1257,7 +1411,7 @@ static int64_t finer_tile_search_wiener(const RestSearchCtxt *rsc,
       } while (1);
     }
   }
-// printf("err post = %"PRId64"\n", err);
+  // printf("err post = %"PRId64"\n", err);
 #endif  // USE_WIENER_REFINEMENT_SEARCH
   return err;
 }
