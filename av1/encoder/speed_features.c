@@ -363,7 +363,7 @@ static void set_good_speed_features_framesize_independent(
     if (cpi->oxcf.enable_smooth_interintra)
       sf->disable_smooth_interintra = boosted ? 0 : 1;
     sf->gm_search_type = GM_DISABLE_SEARCH;
-    sf->prune_comp_search_by_single_result = 2;
+    sf->prune_comp_search_by_single_result = boosted ? 4 : 2;
     sf->prune_motion_mode_level = boosted ? 2 : 3;
     // TODO(yunqing): evaluate this speed feature for speed 1 & 2, and combine
     // it with cpi->sf.disable_wedge_search_var_thresh.
