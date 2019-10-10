@@ -56,6 +56,11 @@ Polymer({
     /** @type {!AndroidAppsInfo|undefined} */
     androidAppsInfo: Object,
 
+    showChangePassword: {
+      type: Boolean,
+      value: false,
+    },
+
     /**
      * Dictionary defining page visibility.
      * @type {!PageVisibility}
@@ -143,6 +148,10 @@ Polymer({
 
     this.allowCrostini_ = loadTimeData.valueExists('allowCrostini') &&
         loadTimeData.getBoolean('allowCrostini');
+
+    this.addWebUIListener('change-password-visibility', visibility => {
+      this.showChangePassword = visibility;
+    });
 
     if (settings.AndroidAppsBrowserProxyImpl) {
       this.addWebUIListener(
