@@ -10,7 +10,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "remoting/base/name_value_map.h"
-#include "remoting/signaling/jid_util.h"
+#include "remoting/signaling/signaling_id_util.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
 
 namespace remoting {
@@ -31,7 +31,7 @@ jingle_xmpp::QName GetIdQName(SignalingAddress::Direction direction) {
 SignalingAddress::Channel GetChannelType(std::string address) {
   std::string email;
   std::string resource;
-  bool has_resource = SplitJidResource(address, &email, &resource);
+  bool has_resource = SplitSignalingIdResource(address, &email, &resource);
   if (has_resource) {
     if (resource.find(kFtlResourcePrefix) == 0) {
       return SignalingAddress::Channel::FTL;
@@ -50,7 +50,7 @@ SignalingAddress::SignalingAddress(const std::string& address) {
   switch (channel_) {
     case Channel::XMPP:
     case Channel::FTL:
-      id_ = NormalizeJid(address);
+      id_ = NormalizeSignalingId(address);
       DCHECK(!id_.empty()) << "Missing signaling ID.";
       break;
     default:
@@ -98,7 +98,7 @@ bool SignalingAddress::GetFtlInfo(std::string* username,
     return false;
   }
   std::string resource;
-  bool has_resource = SplitJidResource(id_, username, &resource);
+  bool has_resource = SplitSignalingIdResource(id_, username, &resource);
   DCHECK(has_resource);
   size_t ftl_resource_prefix_length = strlen(kFtlResourcePrefix);
   DCHECK_LT(ftl_resource_prefix_length, resource.length());
