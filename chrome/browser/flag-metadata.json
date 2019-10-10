@@ -576,6 +576,11 @@
     "expiry_milestone": 82
   },
   {
+    "name": "cryptauth-v2-devicesync",
+    "owners": [ "khorimoto", "nohle" ],
+    "expiry_milestone": 85
+  },
+  {
     "name": "cryptauth-v2-enrollment",
     "owners": [ "khorimoto", "nohle" ],
     "expiry_milestone": 82

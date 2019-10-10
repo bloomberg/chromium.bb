@@ -3282,6 +3282,10 @@ const char kCrostiniWebUIInstallerName[] = "Crostini WebUI Installer";
 const char kCrostiniWebUIInstallerDescription[] =
     "Enable the new WebUI Crostini Installer.";
 
+const char kCryptAuthV2DeviceSyncName[] = "CryptAuth v2 DeviceSync";
+const char kCryptAuthV2DeviceSyncDescription[] =
+    "Use the CryptAuth v2 DeviceSync protocol.";
+
 const char kCryptAuthV2EnrollmentName[] = "CryptAuth v2 Enrollment";
 const char kCryptAuthV2EnrollmentDescription[] =
     "Use the CryptAuth v2 Enrollment protocol.";
