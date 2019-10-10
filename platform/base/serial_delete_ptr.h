@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UTIL_SERIAL_DELETE_PTR_H_
-#define UTIL_SERIAL_DELETE_PTR_H_
+#ifndef PLATFORM_BASE_SERIAL_DELETE_PTR_H_
+#define PLATFORM_BASE_SERIAL_DELETE_PTR_H_
 
 #include <memory>
+#include <utility>
 
 #include "platform/api/task_runner.h"
 
@@ -14,7 +15,7 @@ namespace openscreen {
 template <typename Type, typename DeleterType>
 class SerialDelete {
  public:
-  SerialDelete(platform::TaskRunner* task_runner)
+  explicit SerialDelete(platform::TaskRunner* task_runner)
       : task_runner_(task_runner), deleter_() {
     OSP_DCHECK(task_runner);
   }
@@ -39,7 +40,7 @@ template <typename Type, typename DeleterType = std::default_delete<Type>>
 class SerialDeletePtr
     : public std::unique_ptr<Type, SerialDelete<Type, DeleterType>> {
  public:
-  SerialDeletePtr(platform::TaskRunner* task_runner) noexcept
+  explicit SerialDeletePtr(platform::TaskRunner* task_runner) noexcept
       : std::unique_ptr<Type, SerialDelete<Type, DeleterType>>(
             nullptr,
             SerialDelete<Type, DeleterType>(task_runner)) {
@@ -92,4 +93,4 @@ SerialDeletePtr<Type> MakeSerialDelete(platform::TaskRunner* task_runner,
 
 }  // namespace openscreen
 
-#endif  // UTIL_SERIAL_DELETE_PTR_H_
+#endif  // PLATFORM_BASE_SERIAL_DELETE_PTR_H_

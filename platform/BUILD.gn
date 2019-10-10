@@ -40,6 +40,7 @@ source_set("platform") {
     "base/ip_address.h",
     "base/location.cc",
     "base/location.h",
+    "base/serial_delete_ptr.h",
     "base/socket_state.h",
     "base/tls_connect_options.h",
     "base/tls_credentials.cc",
@@ -79,7 +80,16 @@ source_set("platform") {
         "__APPLE_USE_RFC_3542",
       ]
 
-      sources += [ "impl/network_interface_mac.cc" ]
+      libs = [
+        "CoreFoundation.framework",
+        "IOKit.framework",
+      ]
+
+      sources += [
+        "impl/network_interface_mac.cc",
+        "impl/scoped_wake_lock_mac.cc",
+        "impl/scoped_wake_lock_mac.h",
+      ]
     }
 
     if (is_posix) {
@@ -87,8 +97,6 @@ source_set("platform") {
         "impl/platform_client_posix.cc",
         "impl/platform_client_posix.h",
         "impl/scoped_pipe.h",
-        "impl/scoped_wake_lock_posix.cc",
-        "impl/scoped_wake_lock_posix.h",
         "impl/socket_address_posix.cc",
         "impl/socket_address_posix.h",
         "impl/socket_handle_posix.cc",
@@ -167,6 +175,7 @@ source_set("unittests") {
     "base/error_unittest.cc",
     "base/ip_address_unittest.cc",
     "base/location_unittest.cc",
+    "base/serial_delete_ptr_unittest.cc",
     "base/tls_credentials_unittest.cc",
   ]
 
