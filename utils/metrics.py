@@ -198,7 +198,7 @@ def append_metrics_log(timestamp, name, op, arg=None):
   """
   metrics_log = os.environ.get(UTILS_METRICS_LOG_ENVVAR)
   terms = [timestamp, name.replace('|', '_'), op]
-  if arg:
+  if arg is not None:
     terms.append(arg)
 
   # Format the actual line to log.

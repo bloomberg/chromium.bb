@@ -16,10 +16,12 @@ from chromite.api import controller
 from chromite.api import faux
 from chromite.api import validate
 from chromite.api.gen.chromiumos import common_pb2
+from chromite.api.metrics import deserialize_metrics_log
 from chromite.lib import cros_build_lib
 from chromite.lib import constants
 from chromite.lib import image_lib
 from chromite.service import image
+from chromite.utils import metrics
 
 # The image.proto ImageType enum ids.
 _BASE_ID = common_pb2.BASE
@@ -56,6 +58,7 @@ _VM_IMAGE_MAPPING = {
 @faux.all_empty
 @validate.require('build_target.name')
 @validate.validation_complete
+@metrics.collect_metrics
 def Create(input_proto, output_proto, _config):
   """Build an image.
 
@@ -110,6 +113,9 @@ def Create(input_proto, output_proto, _config):
   new_image.path = vm_path
   new_image.type = vm_type
   new_image.build_target.name = board
+
+  # Read metric events log and pipe them into output_proto.events.
+  deserialize_metrics_log(output_proto.events, prefix=board)
 
 
 def _ParseImagesToCreate(to_build):
