@@ -2048,23 +2048,16 @@ void RenderViewImpl::OnUpdateVisualProperties(
 }
 
 void RenderViewImpl::OnUpdatePageVisualProperties(
-    const gfx::Size& viewport_size) {
+    const gfx::Size& viewport_size_for_blink) {
   // TODO(https://crbug.com/998273): Handle visual_properties appropriately.
   // Using this pathway to update the visual viewport should only happen for
   // remote main frames. Local main frames will update the viewport size by
   // RenderWidget calling RenderViewImpl::ResizeVisualViewport() directly.
-  if (!main_render_frame_) {
-    // Since the viewport size comes directly from the browser, we may
-    // need to adjust it for device scale factor.
-    // TODO(wjmaclean): we should look into having the browser apply this scale
-    // before sending the viewport size.
-    gfx::Size device_scale_factor_scaled_visual_viewport_size = viewport_size;
-    if (RenderThreadImpl::current()->IsUseZoomForDSFEnabled()) {
-      device_scale_factor_scaled_visual_viewport_size = gfx::ScaleToCeiledSize(
-          viewport_size, GetScreenInfo().device_scale_factor);
-    }
-    webview()->Resize(device_scale_factor_scaled_visual_viewport_size);
-  }
+  // TODO(danakj): This should be part of VisualProperties and walk down the
+  // RenderWidget tree like other VisualProperties do, in order to set the
+  // value in each WebView holds a part of the local frame tree.
+  if (!main_render_frame_)
+    webview()->Resize(viewport_size_for_blink);
 }
 
 void RenderViewImpl::ResizeVisualViewportForWidget(
@@ -2160,43 +2153,6 @@ void RenderViewImpl::DidFocus(blink::WebLocalFrame* calling_frame) {
     if (calling_render_frame)
       calling_render_frame->FrameDidCallFocus();
   }
-}
-
-blink::WebScreenInfo RenderViewImpl::GetScreenInfo() {
-  const ScreenInfo& info = page_properties()->GetScreenInfo();
-
-  blink::WebScreenInfo web_screen_info;
-  web_screen_info.device_scale_factor = info.device_scale_factor;
-  web_screen_info.color_space = info.color_space;
-  web_screen_info.depth = info.depth;
-  web_screen_info.depth_per_component = info.depth_per_component;
-  web_screen_info.is_monochrome = info.is_monochrome;
-  web_screen_info.rect = blink::WebRect(info.rect);
-  web_screen_info.available_rect = blink::WebRect(info.available_rect);
-  switch (info.orientation_type) {
-    case SCREEN_ORIENTATION_VALUES_PORTRAIT_PRIMARY:
-      web_screen_info.orientation_type =
-          blink::kWebScreenOrientationPortraitPrimary;
-      break;
-    case SCREEN_ORIENTATION_VALUES_PORTRAIT_SECONDARY:
-      web_screen_info.orientation_type =
-          blink::kWebScreenOrientationPortraitSecondary;
-      break;
-    case SCREEN_ORIENTATION_VALUES_LANDSCAPE_PRIMARY:
-      web_screen_info.orientation_type =
-          blink::kWebScreenOrientationLandscapePrimary;
-      break;
-    case SCREEN_ORIENTATION_VALUES_LANDSCAPE_SECONDARY:
-      web_screen_info.orientation_type =
-          blink::kWebScreenOrientationLandscapeSecondary;
-      break;
-    default:
-      web_screen_info.orientation_type = blink::kWebScreenOrientationUndefined;
-      break;
-  }
-  web_screen_info.orientation_angle = info.orientation_angle;
-
-  return web_screen_info;
 }
 
 #if defined(OS_ANDROID)

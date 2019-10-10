@@ -271,8 +271,6 @@ class CONTENT_EXPORT RenderWidget
 
   int32_t routing_id() const { return routing_id_; }
 
-  // TODO(https://crbug.com/912193): Use CompositorDependencies on
-  // PageProperties instead.
   CompositorDependencies* compositor_deps() const { return compositor_deps_; }
 
   // This can return nullptr while the RenderWidget is closing. When for_frame()
@@ -420,6 +418,7 @@ class CONTENT_EXPORT RenderWidget
   void AutoscrollEnd() override;
   void ClosePopupWidgetSoon() override;
   void Show(blink::WebNavigationPolicy) override;
+  blink::WebScreenInfo GetScreenInfo() override;
   blink::WebRect WindowRect() override;
   blink::WebRect ViewRect() override;
   void SetToolTipText(const blink::WebString& text,
