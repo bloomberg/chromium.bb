@@ -283,7 +283,7 @@ class StorageAreaImplTest : public testing::Test,
   const std::vector<Observation>& observations() { return observations_; }
 
   MockDelegate* delegate() { return &delegate_; }
-  leveldb::mojom::LevelDBDatabase* database() { return db_.get(); }
+  leveldb::LevelDBDatabaseImpl* database() { return db_.get(); }
 
   void should_record_send_old_value_observations(bool value) {
     should_record_send_old_value_observations_ = value;

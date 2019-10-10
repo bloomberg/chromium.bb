@@ -95,7 +95,7 @@ class SessionStorageAreaImplTest : public testing::Test {
   const std::string test_namespace_id2_;
   const url::Origin test_origin1_;
   const url::Origin test_origin2_;
-  std::unique_ptr<leveldb::mojom::LevelDBDatabase> leveldb_database_;
+  std::unique_ptr<leveldb::LevelDBDatabaseImpl> leveldb_database_;
   SessionStorageMetadata metadata_;
 
   testing::StrictMock<MockListener> listener_;

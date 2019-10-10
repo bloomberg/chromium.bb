@@ -137,9 +137,7 @@ class CONTENT_EXPORT SessionStorageContextMojo
 
   void PretendToConnectForTesting();
 
-  leveldb::mojom::LevelDBDatabase* DatabaseForTesting() {
-    return database_.get();
-  }
+  leveldb::LevelDBDatabaseImpl* DatabaseForTesting() { return database_.get(); }
 
   void FlushAreaForTesting(const std::string& namespace_id,
                            const url::Origin& origin);

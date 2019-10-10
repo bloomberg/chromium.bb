@@ -4486,7 +4486,6 @@
           'shards': 3,
         },
       },
-      'leveldb_service_unittests': {},  # https://crbug.com/862709
       'message_center_unittests': {},
       'nacl_loader_unittests': {},
       'native_theme_unittests': {},
