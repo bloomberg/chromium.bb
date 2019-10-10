@@ -9,17 +9,16 @@
 # can obtain it at www.aomedia.org/license/patent.
 #
 cmake_minimum_required(VERSION 3.5)
+project(AOM C CXX)
 
 if(NOT EMSCRIPTEN)
-  if(NOT CMAKE_BUILD_TYPE)
+  if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     set(CMAKE_BUILD_TYPE
         "Release"
-        CACHE "Build type: Debug, Release, RelWithDebInfo or MinSizeRel" STRING
+        CACHE STRING "Build type: Debug, Release, RelWithDebInfo or MinSizeRel"
               FORCE)
   endif()
 endif()
-
-project(AOM C CXX)
 
 set(AOM_ROOT "${CMAKE_CURRENT_SOURCE_DIR}")
 set(AOM_CONFIG_DIR "${CMAKE_CURRENT_BINARY_DIR}")
