@@ -15,6 +15,7 @@ The main parts of unittest include:
 
 from __future__ import print_function
 
+import json
 import os
 
 import mock
@@ -94,7 +95,7 @@ class ChromiumOSUpdaterBaseTest(cros_test_lib.MockTempDirTestCase):
   """
 
   def setUp(self):
-    self.payload_dir = ''
+    self.payload_dir = self.tempdir
     self.base_updater_mock = self.StartPatcher(ChromiumOSBaseUpdaterMock())
     self.transfer_mock = self.StartPatcher(ChromiumOSTransferMock())
     self.PatchObject(remote_access, 'ChromiumOSDevice')
@@ -181,6 +182,31 @@ class ChromiumOSUpdaterRunTest(ChromiumOSUpdaterBaseTest):
                        return_value=True)
       CrOS_AU.RunUpdate()
       self.assertTrue(self.base_updater_mock.patched['RestoreStateful'].called)
+
+  def test_FixPayloadPropertiesFile(self):
+    """Tests _FixPayloadPropertiesFile() correctly fixes the properties file."""
+    payload_filename = ('payloads/chromeos_9334.58.2_reef_stable-'
+                        'channel_full_test.bin-e6a3290274a5b2ae0b9f491712ae1d8')
+    payload_path = os.path.join(self.payload_dir, payload_filename)
+    payload_properties_path = payload_path + '.json'
+    osutils.WriteFile(payload_path, 'dummy-payload', makedirs=True)
+    # Empty properties file.
+    osutils.WriteFile(payload_properties_path, json.dumps({}))
+
+    with remote_access.ChromiumOSDeviceHandler('1.1.1.1') as device:
+      CrOS_AU = auto_updater.ChromiumOSUpdater(
+          device, None, self.payload_dir, payload_filename=payload_filename)
+      CrOS_AU._FixPayloadPropertiesFile() # pylint: disable=protected-access
+
+    # The payload properties file should be updated with new fields.
+    props = json.loads(osutils.ReadFile(payload_properties_path))
+    expected_props = {
+        'appid': '',
+        'is_delta': False,
+        'size': os.path.getsize(payload_path),
+        'target_version': '9334.58.2',
+    }
+    self.assertEqual(props, expected_props)
 
   def testRunRootfs(self):
     """Test the update functions are called correctly.

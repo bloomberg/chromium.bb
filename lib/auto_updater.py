@@ -695,6 +695,51 @@ class ChromiumOSUpdater(BaseUpdater):
       self.ResetStatefulPartition()
       raise StatefulUpdateError('Stateful partition update failed.')
 
+  def _FixPayloadPropertiesFile(self):
+    """Fix the update payload properties file so nebraska can use it.
+
+    Update the payload properties file for end-to-end tests to make sure
+    nebraska can use it. The reason is that very old payloads are still being
+    used for provisioning the AU tests, but those properties files are not
+    compatible with recent nebraska protocols.
+
+    TODO(ahassani): Once we only test delta or full payload with
+    source image of M77 or higher, this function can be deprecated.
+
+    TODO(ahassani): Merge this somehow with ResolveAPPIDMismatchIfAny().
+    """
+    logging.info('Fixing payload properties file.')
+    payload_name = self._GetRootFsPayloadFileName()
+    payload_path = os.path.join(self.payload_dir, payload_name)
+    payload_properties_path = self.GetPayloadPropertiesFileName(payload_path)
+    props = json.loads(osutils.ReadFile(payload_properties_path))
+
+    full_exp = r'payloads/chromeos_(?P<image_version>[^_]+)_.*'
+    m = re.match(full_exp, payload_name)
+    if not m:
+      raise ValueError(
+          'Regular expression %r did not match the payload file name %s' %
+          (full_exp, payload_name))
+    values = m.groupdict()
+
+    # TODO(ahassani): Use the keys form nebraska.py once it is moved to
+    # chromite.
+    valid_entries = {
+        'appid': '',
+        # Since only old payloads don't have this and they are only used for
+        # provisioning, they will be full payloads.
+        'is_delta': False,
+        'size': os.path.getsize(payload_path),
+        'target_version': values['image_version'],
+    }
+
+    for key, value in valid_entries.items():
+      if props.get(key) is None:
+        props[key] = value
+
+    with open(payload_properties_path, 'w') as fp:
+      json.dump(props, fp)
+
   def RunUpdateRootfs(self):
     """Run all processes needed by updating rootfs.
 
@@ -1053,6 +1098,12 @@ class ChromiumOSUpdater(BaseUpdater):
     The corresponding payload are copied to the remote device for rootfs
     update.
     """
+    # TODO(ahassani): This is not the ideal place to do this, but since any
+    # changes to this needs to be reflected in cros_update.py too, just do it
+    # for now here.
+    if self.is_au_endtoendtest:
+      self._FixPayloadPropertiesFile()
+
     retry_util.RetryException(
         cros_build_lib.RunCommandError,
         MAX_RETRY,
