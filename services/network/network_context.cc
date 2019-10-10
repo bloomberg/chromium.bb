@@ -2167,8 +2167,8 @@ void NetworkContext::InitializeCorsParams() {
 }
 
 void NetworkContext::GetOriginPolicyManager(
-    mojom::OriginPolicyManagerRequest request) {
-  origin_policy_manager_->AddBinding(std::move(request));
+    mojo::PendingReceiver<mojom::OriginPolicyManager> receiver) {
+  origin_policy_manager_->AddReceiver(std::move(receiver));
 }
 
 mojom::URLLoaderFactoryPtr

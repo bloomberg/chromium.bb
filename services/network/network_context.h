@@ -361,7 +361,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       LookupBasicAuthCredentialsCallback callback) override;
 
   void GetOriginPolicyManager(
-      mojom::OriginPolicyManagerRequest request) override;
+      mojo::PendingReceiver<mojom::OriginPolicyManager> receiver) override;
 
   // Destroys |request| when a proxy lookup completes.
   void OnProxyLookupComplete(ProxyLookupRequest* proxy_lookup_request);

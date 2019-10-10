@@ -1201,5 +1201,6 @@ interface NetworkContext {
   ForceDomainReliabilityUploadsForTesting() => ();
 
   // Gets the OriginPolicyManager associated with this network context.
-  GetOriginPolicyManager(OriginPolicyManager& origin_policy_manager);
+  GetOriginPolicyManager(
+      pending_receiver<OriginPolicyManager> origin_policy_manager);
 };

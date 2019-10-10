@@ -236,7 +236,7 @@ class TestNetworkContext : public mojom::NetworkContext {
       const GURL& url,
       LookupBasicAuthCredentialsCallback callback) override {}
   void GetOriginPolicyManager(
-      mojom::OriginPolicyManagerRequest request) override {}
+      mojo::PendingReceiver<mojom::OriginPolicyManager> receiver) override {}
 };
 
 }  // namespace network
