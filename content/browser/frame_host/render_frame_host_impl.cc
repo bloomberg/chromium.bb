@@ -1153,6 +1153,11 @@ void RenderFrameHostImpl::LeaveBackForwardCache() {
     child->current_frame_host()->LeaveBackForwardCache();
 }
 
+std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
+RenderFrameHostImpl::TakeLastCommitParams() {
+  return std::move(last_commit_params_);
+}
+
 void RenderFrameHostImpl::StartBackForwardCacheEvictionTimer() {
   DCHECK(is_in_back_forward_cache_);
   base::TimeDelta evict_after =
@@ -2515,7 +2520,8 @@ void RenderFrameHostImpl::DidCommitBackForwardCacheNavigation(
   // been fired.
   is_loading_ = true;
 
-  DidCommitNavigationInternal(std::move(owned_request), validated_params.get(),
+  DidCommitNavigationInternal(std::move(owned_request),
+                              std::move(validated_params),
                               /*is_same_document_navigation=*/false);
 
   // Now that the restored frame has been committed, unfreeze it.
@@ -2584,7 +2590,7 @@ void RenderFrameHostImpl::DidCommitSameDocumentNavigation(
   if (!DidCommitNavigationInternal(
           is_browser_initiated ? std::move(same_document_navigation_request_)
                                : nullptr,
-          validated_params.get(), true /* is_same_document_navigation*/)) {
+          std::move(validated_params), true /* is_same_document_navigation*/)) {
     return;
   }
 
@@ -6949,7 +6955,8 @@ void RenderFrameHostImpl::UpdateSiteURL(const GURL& url,
 
 bool RenderFrameHostImpl::DidCommitNavigationInternal(
     std::unique_ptr<NavigationRequest> navigation_request,
-    FrameHostMsg_DidCommitProvisionalLoad_Params* validated_params,
+    std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
+        validated_params,
     bool is_same_document_navigation) {
   // Sanity-check the page transition for frame type.
   DCHECK_EQ(ui::PageTransitionIsMainFrame(validated_params->transition),
@@ -7003,7 +7010,7 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
     }
   }
 
-  if (!ValidateDidCommitParams(navigation_request.get(), validated_params,
+  if (!ValidateDidCommitParams(navigation_request.get(), validated_params.get(),
                                is_same_document_navigation)) {
     return false;
   }
@@ -7066,6 +7073,12 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
   frame_tree_node()->navigator()->DidNavigate(this, *validated_params,
                                               std::move(navigation_request),
                                               is_same_document_navigation);
+
+  if (IsBackForwardCacheEnabled()) {
+    // Store the Commit params so they can be reused if the page is ever
+    // restored from the BackForwardCache.
+    last_commit_params_ = std::move(validated_params);
+  }
 
   if (!is_same_document_navigation) {
     cookie_no_samesite_deprecation_url_hashes_.clear();
@@ -7374,7 +7387,7 @@ void RenderFrameHostImpl::DidCommitNavigation(
   }
 
   if (!DidCommitNavigationInternal(std::move(committing_navigation_request),
-                                   validated_params.get(),
+                                   std::move(validated_params),
                                    false /* is_same_document_navigation */)) {
     return;
   }

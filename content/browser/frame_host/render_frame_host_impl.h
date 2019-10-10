@@ -949,6 +949,13 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // occurs immediately before a restored document is committed.
   void LeaveBackForwardCache();
 
+  // Take ownership over the DidCommitProvisionalLoad_Params that
+  // were last used to commit this navigation.
+  // This is used by the BackForwardCache to re-commit when navigating to a
+  // restored page.
+  std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
+  TakeLastCommitParams();
+
   // Start a timer that will evict this RenderFrameHost from the
   // BackForwardCache after time to live.
   void StartBackForwardCacheEvictionTimer();
@@ -1793,7 +1800,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // state should be restored to its pre-commit value.
   bool DidCommitNavigationInternal(
       std::unique_ptr<NavigationRequest> navigation_request,
-      FrameHostMsg_DidCommitProvisionalLoad_Params* validated_params,
+      std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
+          validated_params,
       bool is_same_document_navigation);
 
   // Called by the renderer process when it is done processing a same-document
@@ -2416,6 +2424,12 @@ class CONTENT_EXPORT RenderFrameHostImpl
   bool is_evicted_from_back_forward_cache_ = false;
   bool is_back_forward_cache_disallowed_ = false;
   base::OneShotTimer back_forward_cache_eviction_timer_;
+
+  // This used to re-commit when restoring from the BackForwardCache, with the
+  // same params as the original navigation.
+  // Note: If BackForwardCache is not enabled, this field is not set.
+  std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
+      last_commit_params_;
 
   blink::mojom::FrameVisibility visibility_ =
       blink::mojom::FrameVisibility::kRenderedInViewport;
