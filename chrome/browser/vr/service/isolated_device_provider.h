@@ -9,7 +9,7 @@
 #include "device/vr/public/mojom/isolated_xr_service.mojom.h"
 #include "device/vr/vr_device.h"
 #include "device/vr/vr_device_provider.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
 namespace vr {
@@ -58,7 +58,8 @@ class IsolatedVRDeviceProvider
   base::RepeatingCallback<void(device::mojom::XRDeviceId)>
       remove_device_callback_;
   base::OnceClosure initialization_complete_;
-  mojo::Binding<device::mojom::IsolatedXRRuntimeProviderClient> binding_;
+  mojo::Receiver<device::mojom::IsolatedXRRuntimeProviderClient> receiver_{
+      this};
 
   using UiHostMap =
       base::flat_map<device::mojom::XRDeviceId, std::unique_ptr<VRUiHost>>;

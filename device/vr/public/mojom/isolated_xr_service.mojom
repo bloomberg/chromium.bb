@@ -220,7 +220,7 @@ interface IsolatedXRRuntimeProvider {
   // Register a client, and triggers OnDeviceAdded for all available runtimes,
   // followed by OnDevicesEnumerated.
   // Should only be called once.
-  RequestDevices(IsolatedXRRuntimeProviderClient client);
+  RequestDevices(pending_remote<IsolatedXRRuntimeProviderClient> client);
 };
 
 // The main interface for the XR Device Service.
