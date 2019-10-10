@@ -162,7 +162,6 @@ class MockRenderProcessHost : public RenderProcessHost {
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver)
       override;
 
-  void SetIsNeverSuitableForReuse() override;
   bool MayReuseHost() override;
   bool IsUnused() override;
   void SetIsUsed() override;
@@ -257,7 +256,6 @@ class MockRenderProcessHost : public RenderProcessHost {
   bool fast_shutdown_started_;
   bool deletion_callback_called_;
   bool is_for_guests_only_;
-  bool is_never_suitable_for_reuse_;
   bool is_process_backgrounded_;
   bool is_unused_;
   base::Process process;

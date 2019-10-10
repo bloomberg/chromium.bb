@@ -238,7 +238,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver)
       override;
 
-  void SetIsNeverSuitableForReuse() override;
   bool MayReuseHost() override;
   bool IsUnused() override;
   void SetIsUsed() override;
@@ -808,10 +807,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // Set in DisableKeepAliveRefCount(). When true, |keep_alive_ref_count_| must
   // no longer be modified.
   bool is_keep_alive_ref_count_disabled_;
-
-  // Whether this host is never suitable for reuse as determined in the
-  // MayReuseHost() function.
-  bool is_never_suitable_for_reuse_ = false;
 
   // The registered IPC listener objects. When this list is empty, we should
   // delete ourselves.

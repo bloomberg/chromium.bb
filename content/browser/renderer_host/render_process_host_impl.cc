@@ -681,63 +681,6 @@ class SpareRenderProcessHostManager : public RenderProcessHostObserver {
   DISALLOW_COPY_AND_ASSIGN(SpareRenderProcessHostManager);
 };
 
-const void* const kDefaultSubframeProcessHostHolderKey =
-    &kDefaultSubframeProcessHostHolderKey;
-
-class DefaultSubframeProcessHostHolder : public base::SupportsUserData::Data,
-                                         public RenderProcessHostObserver {
- public:
-  explicit DefaultSubframeProcessHostHolder(BrowserContext* browser_context)
-      : browser_context_(browser_context) {}
-  ~DefaultSubframeProcessHostHolder() override {}
-
-  // Gets the correct render process to use for this SiteInstance.
-  RenderProcessHost* GetProcessHost(SiteInstance* site_instance,
-                                    bool is_for_guests_only) {
-    StoragePartitionImpl* default_partition =
-        static_cast<StoragePartitionImpl*>(
-            BrowserContext::GetDefaultStoragePartition(browser_context_));
-    StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
-        BrowserContext::GetStoragePartition(browser_context_, site_instance));
-
-    // Is this the default storage partition? If it isn't, then just give it its
-    // own non-shared process.
-    if (partition != default_partition || is_for_guests_only) {
-      RenderProcessHost* host = RenderProcessHostImpl::CreateRenderProcessHost(
-          browser_context_, partition, site_instance, is_for_guests_only);
-      host->SetIsNeverSuitableForReuse();
-      return host;
-    }
-
-    // If we already have a shared host for the default storage partition, use
-    // it.
-    if (host_)
-      return host_;
-
-    host_ = RenderProcessHostImpl::CreateRenderProcessHost(
-        browser_context_, partition, site_instance,
-        false /* is for guests only */);
-    host_->SetIsNeverSuitableForReuse();
-    host_->AddObserver(this);
-
-    return host_;
-  }
-
-  // Implementation of RenderProcessHostObserver.
-  void RenderProcessHostDestroyed(RenderProcessHost* host) override {
-    DCHECK_EQ(host_, host);
-    host_->RemoveObserver(this);
-    host_ = nullptr;
-  }
-
- private:
-  BrowserContext* browser_context_;
-
-  // The default subframe render process used for the default storage partition
-  // of this BrowserContext.
-  RenderProcessHost* host_ = nullptr;
-};
-
 // Forwards service requests to Service Manager since the renderer cannot launch
 // out-of-process services on is own.
 template <typename Interface>
@@ -2604,14 +2547,7 @@ void RenderProcessHostImpl::CreateURLLoaderFactoryInternal(
   }
 }
 
-void RenderProcessHostImpl::SetIsNeverSuitableForReuse() {
-  is_never_suitable_for_reuse_ = true;
-}
-
 bool RenderProcessHostImpl::MayReuseHost() {
-  if (is_never_suitable_for_reuse_)
-    return false;
-
   return GetContentClient()->browser()->MayReuseHost(this);
 }
 

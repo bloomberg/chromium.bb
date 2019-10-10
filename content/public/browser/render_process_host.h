@@ -446,7 +446,6 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
 
   // Whether this process is locked out from ever being reused for sites other
   // than the ones it currently has.
-  virtual void SetIsNeverSuitableForReuse() = 0;
   virtual bool MayReuseHost() = 0;
 
   // Indicates whether this RenderProcessHost is "unused".  This starts out as
