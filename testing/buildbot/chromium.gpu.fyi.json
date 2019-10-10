@@ -26953,6 +26953,306 @@
       }
     ]
   },
+  "Win10 FYI x64 SkiaRenderer GL (NVIDIA)": {
+    "gtest_tests": [
+      {
+        "args": [
+          "--enable-features=UseSkiaRenderer",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/skia_renderer.content_browsertests.filter"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "skia_renderer_content_browsertests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "nvidia-quadro-p400-win10-stable",
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
+            }
+          ]
+        },
+        "test": "content_browsertests"
+      }
+    ],
+    "isolated_scripts": [
+      {
+        "args": [
+          "context_lost",
+          "--show-stdout",
+          "--browser=release_x64",
+          "--passthrough",
+          "-v",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=UseSkiaRenderer"
+        ],
+        "isolate_name": "telemetry_gpu_integration_test",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "context_lost_tests",
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "nvidia-quadro-p400-win10-stable",
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "idempotent": false
+        }
+      },
+      {
+        "args": [
+          "depth_capture",
+          "--show-stdout",
+          "--browser=release_x64",
+          "--passthrough",
+          "-v",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=UseSkiaRenderer"
+        ],
+        "isolate_name": "telemetry_gpu_integration_test",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "depth_capture_tests",
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "nvidia-quadro-p400-win10-stable",
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "idempotent": false
+        }
+      },
+      {
+        "args": [
+          "gpu_process",
+          "--show-stdout",
+          "--browser=release_x64",
+          "--passthrough",
+          "-v",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=UseSkiaRenderer"
+        ],
+        "isolate_name": "telemetry_gpu_integration_test",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "gpu_process_launch_tests",
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "nvidia-quadro-p400-win10-stable",
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "idempotent": false
+        }
+      },
+      {
+        "args": [
+          "hardware_accelerated_feature",
+          "--show-stdout",
+          "--browser=release_x64",
+          "--passthrough",
+          "-v",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=UseSkiaRenderer"
+        ],
+        "isolate_name": "telemetry_gpu_integration_test",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "hardware_accelerated_feature_tests",
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "nvidia-quadro-p400-win10-stable",
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "idempotent": false
+        }
+      },
+      {
+        "args": [
+          "maps",
+          "--show-stdout",
+          "--browser=release_x64",
+          "--passthrough",
+          "-v",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=UseSkiaRenderer",
+          "--dont-restore-color-profile-after-test",
+          "--build-revision",
+          "${got_revision}",
+          "--test-machine-name",
+          "${buildername}"
+        ],
+        "isolate_name": "telemetry_gpu_integration_test",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "maps_pixel_test",
+        "precommit_args": [
+          "--review-patch-issue",
+          "${patch_issue}",
+          "--review-patch-set",
+          "${patch_set}",
+          "--buildbucket-build-id",
+          "${buildbucket_build_id}"
+        ],
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "nvidia-quadro-p400-win10-stable",
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "idempotent": false,
+          "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
+        }
+      },
+      {
+        "args": [
+          "screenshot_sync",
+          "--show-stdout",
+          "--browser=release_x64",
+          "--passthrough",
+          "-v",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=UseSkiaRenderer",
+          "--dont-restore-color-profile-after-test"
+        ],
+        "isolate_name": "telemetry_gpu_integration_test",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "screenshot_sync_tests",
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "nvidia-quadro-p400-win10-stable",
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "idempotent": false
+        }
+      },
+      {
+        "args": [
+          "--num-retries=3",
+          "--additional-driver-flag=--enable-gpu-rasterization",
+          "--additional-driver-flag=--enable-features=UseSkiaRenderer",
+          "--additional-driver-flag=--use-gl=any",
+          "--additional-driver-flag=--force-gpu-rasterization",
+          "--additional-driver-flag=--enable-oop-rasterization",
+          "--additional-driver-flag=--disable-software-compositing-fallback",
+          "--additional-driver-flag=--disable-headless-mode",
+          "--no-xvfb",
+          "--fuzzy-diff",
+          "--skipped=always",
+          "--test-list=../../testing/buildbot/filters/gpu.skiarenderer_vulkan_blink_web_tests.filter",
+          "--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/enable-features=UseSkiaRenderer",
+          "--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/enable-gpu-rasterization",
+          "--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/use-gl=any"
+        ],
+        "isolate_name": "blink_web_tests_exparchive",
+        "merge": {
+          "args": [
+            "--verbose"
+          ],
+          "script": "//third_party/blink/tools/merge_web_test_results.py"
+        },
+        "name": "skia_renderer_gl_blink_web_tests",
+        "results_handler": "layout tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "nvidia-quadro-p400-win10-stable",
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
+            }
+          ]
+        }
+      },
+      {
+        "args": [
+          "pixel",
+          "--show-stdout",
+          "--browser=release_x64",
+          "--passthrough",
+          "-v",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=UseSkiaRenderer",
+          "--dont-restore-color-profile-after-test",
+          "--build-revision",
+          "${got_revision}",
+          "--test-machine-name",
+          "${buildername}"
+        ],
+        "isolate_name": "telemetry_gpu_integration_test",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "skia_renderer_pixel_skia_gold_test",
+        "precommit_args": [
+          "--review-patch-issue",
+          "${patch_issue}",
+          "--review-patch-set",
+          "${patch_set}",
+          "--buildbucket-build-id",
+          "${buildbucket_build_id}"
+        ],
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "nvidia-quadro-p400-win10-stable",
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "idempotent": false,
+          "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
+        }
+      }
+    ]
+  },
   "Win10 FYI x64 dEQP Release (Intel HD 630)": {
     "gtest_tests": [
       {
