@@ -1037,7 +1037,9 @@ RenderFrameHostManager::SiteInstanceDescriptor::SiteInstanceDescriptor(
       browser_context(browser_context),
       relation(relation_to_current) {}
 
-void RenderFrameHostManager::RenderProcessGone(SiteInstanceImpl* instance) {
+void RenderFrameHostManager::RenderProcessGone(
+    SiteInstanceImpl* instance,
+    const ChildProcessTerminationInfo& info) {
   GetRenderFrameProxyHost(instance)->SetRenderFrameProxyCreated(false);
 }
 

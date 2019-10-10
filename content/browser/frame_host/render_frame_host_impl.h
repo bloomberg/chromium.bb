@@ -34,6 +34,7 @@
 #include "content/browser/bad_message.h"
 #include "content/browser/browser_interface_broker_impl.h"
 #include "content/browser/can_commit_status.h"
+#include "content/browser/frame_host/back_forward_cache_metrics.h"
 #include "content/browser/renderer_host/media/old_render_frame_audio_input_stream_factory.h"
 #include "content/browser/renderer_host/media/old_render_frame_audio_output_stream_factory.h"
 #include "content/browser/renderer_host/media/render_frame_audio_input_stream_factory.h"
@@ -153,7 +154,6 @@ class ResourceRequestBody;
 namespace content {
 class AppCacheNavigationHandle;
 class AuthenticatorImpl;
-class BackForwardCacheMetrics;
 class BundledExchangesHandle;
 class FrameTree;
 class FrameTreeNode;
@@ -317,7 +317,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   void SendAccessibilityEventsToManager(
       const AXEventNotificationDetails& details);
-  void EvictFromBackForwardCache() override;
+
+  void EvictFromBackForwardCacheWithReason(
+      base::Optional<BackForwardCacheMetrics::EvictedReason> reason);
 
   // IPC::Sender
   bool Send(IPC::Message* msg) override;
@@ -347,7 +349,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
                            const ChildProcessTerminationInfo& info) override;
 
   // SiteInstanceImpl::Observer
-  void RenderProcessGone(SiteInstanceImpl* site_instance) override;
+  void RenderProcessGone(SiteInstanceImpl* site_instance,
+                         const ChildProcessTerminationInfo& info) override;
 
   // CSPContext
   void ReportContentSecurityPolicyViolation(
@@ -1440,6 +1443,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
           validated_params,
       mojom::DidCommitProvisionalLoadInterfaceParamsPtr interface_params)
       override;
+  void EvictFromBackForwardCache() override;
 
   // This function mimics DidCommitProvisionalLoad but is a direct mojo
   // callback from NavigationClient::CommitNavigation.
@@ -1901,7 +1905,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Evicts the document from the BackForwardCache if it is in the cache,
   // and ineligible for caching.
-  void MaybeEvictFromBackForwardCache();
+  void MaybeEvictFromBackForwardCache(
+      BackForwardCacheMetrics::EvictedReason reason);
 
   // Helper for handling download-related IPCs.
   void DownloadUrl(
