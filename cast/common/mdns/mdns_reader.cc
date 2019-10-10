@@ -4,7 +4,6 @@
 
 #include "cast/common/mdns/mdns_reader.h"
 
-#include "cast/common/mdns/mdns_constants.h"
 #include "platform/api/logging.h"
 
 namespace cast {

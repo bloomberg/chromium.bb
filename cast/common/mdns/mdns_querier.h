@@ -14,16 +14,16 @@
 namespace cast {
 namespace mdns {
 
-class MdnsSender;
-class MdnsReceiver;
 class MdnsRandom;
-class MdnsQuestionTracker;
+class MdnsReceiver;
 class MdnsRecordChangedCallback;
+class MdnsSender;
+class MdnsQuestionTracker;
 
 class MdnsQuerier {
  public:
-  using TaskRunner = openscreen::platform::TaskRunner;
   using ClockNowFunctionPtr = openscreen::platform::ClockNowFunctionPtr;
+  using TaskRunner = openscreen::platform::TaskRunner;
 
   MdnsQuerier(MdnsSender* sender,
               MdnsReceiver* receiver,

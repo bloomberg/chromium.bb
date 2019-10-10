@@ -5,10 +5,10 @@
 #ifndef CAST_COMMON_MDNS_MDNS_RECORD_CHANGED_CALLBACK_H_
 #define CAST_COMMON_MDNS_MDNS_RECORD_CHANGED_CALLBACK_H_
 
-#include "cast/common/mdns/mdns_records.h"
-
 namespace cast {
 namespace mdns {
+
+class MdnsRecord;
 
 enum class RecordChangedEvent {
   kCreated,

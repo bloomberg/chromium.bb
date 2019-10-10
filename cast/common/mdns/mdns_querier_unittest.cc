@@ -18,15 +18,20 @@
 namespace cast {
 namespace mdns {
 
+using openscreen::IPAddress;
+using openscreen::IPEndpoint;
+using openscreen::platform::Clock;
 using openscreen::platform::FakeClock;
 using openscreen::platform::FakeTaskRunner;
 using openscreen::platform::NetworkInterfaceIndex;
+using openscreen::platform::TaskRunner;
 using openscreen::platform::UdpPacket;
-using ::testing::_;
-using ::testing::Args;
-using ::testing::Invoke;
-using ::testing::Return;
-using ::testing::WithArgs;
+using openscreen::platform::UdpSocket;
+using testing::_;
+using testing::Args;
+using testing::Invoke;
+using testing::Return;
+using testing::WithArgs;
 
 // Only compare NAME, CLASS, TYPE and RDATA
 ACTION_P(PartialCompareRecords, expected) {
@@ -69,7 +74,7 @@ class MockRecordChangedCallback : public MdnsRecordChangedCallback {
               (override));
 };
 
-class MdnsQuerierTest : public ::testing::Test {
+class MdnsQuerierTest : public testing::Test {
  public:
   MdnsQuerierTest()
       : clock_(Clock::now()),

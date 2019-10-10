@@ -12,6 +12,9 @@
 namespace cast {
 namespace mdns {
 
+using openscreen::IPAddress;
+using testing::ElementsAreArray;
+
 namespace {
 
 constexpr std::chrono::seconds kTtl{120};
@@ -24,7 +27,7 @@ void TestWriteEntrySucceeds(const T& entry,
   MdnsWriter writer(buffer.data(), buffer.size());
   EXPECT_TRUE(writer.Write(entry));
   EXPECT_EQ(writer.remaining(), UINT64_C(0));
-  EXPECT_THAT(buffer, testing::ElementsAreArray(expected_data, expected_size));
+  EXPECT_THAT(buffer, ElementsAreArray(expected_data, expected_size));
 }
 
 template <class T>
@@ -75,7 +78,7 @@ TEST(MdnsWriterTest, WriteDomainName_CompressedMessage) {
   ASSERT_TRUE(writer.Write(DomainName{"prefix", "local"}));
   EXPECT_EQ(0UL, writer.remaining());
   EXPECT_THAT(std::vector<uint8_t>(result, result + sizeof(result)),
-              testing::ElementsAreArray(kExpectedResultCompressed));
+              ElementsAreArray(kExpectedResultCompressed));
 }
 
 TEST(MdnsWriterTest, WriteDomainName_NotEnoughSpace) {
@@ -98,7 +101,7 @@ TEST(MdnsWriterTest, WriteDomainName_NotEnoughSpace) {
   ASSERT_TRUE(writer.Write(DomainName{"different", "domain"}));
   EXPECT_EQ(0UL, writer.remaining());
   EXPECT_THAT(std::vector<uint8_t>(result, result + sizeof(result)),
-              testing::ElementsAreArray(kExpectedResultCompressed));
+              ElementsAreArray(kExpectedResultCompressed));
 }
 
 TEST(MdnsWriterTest, WriteDomainName_Long) {
@@ -168,7 +171,7 @@ TEST(MdnsWriterTest, WriteDomainName_NoCompressionForBigOffsets) {
     EXPECT_EQ(0UL, writer.remaining());
   }
   buffer.erase(buffer.begin(), buffer.begin() + 0x4000);
-  EXPECT_THAT(buffer, testing::ElementsAreArray(kExpectedResultCompressed));
+  EXPECT_THAT(buffer, ElementsAreArray(kExpectedResultCompressed));
 }
 
 TEST(MdnsWriterTest, WriteRawRecordRdata) {
@@ -404,7 +407,7 @@ TEST(MdnsWriterTest, WriteMdnsMessage) {
   MdnsWriter writer(buffer.data(), buffer.size());
   EXPECT_TRUE(writer.Write(message));
   EXPECT_EQ(writer.remaining(), UINT64_C(0));
-  EXPECT_THAT(buffer, testing::ElementsAreArray(kExpectedMessage));
+  EXPECT_THAT(buffer, ElementsAreArray(kExpectedMessage));
 }
 
 TEST(MdnsWriterTest, WriteMdnsMessage_InsufficientBuffer) {

@@ -5,31 +5,30 @@
 #ifndef CAST_COMMON_MDNS_MDNS_TRACKERS_H_
 #define CAST_COMMON_MDNS_MDNS_TRACKERS_H_
 
-#include <random>
 #include <unordered_map>
 
 #include "absl/hash/hash.h"
-#include "cast/common/mdns/mdns_random.h"
-#include "cast/common/mdns/mdns_record_changed_callback.h"
-#include "cast/common/mdns/mdns_sender.h"
+#include "cast/common/mdns/mdns_records.h"
 #include "platform/api/task_runner.h"
-#include "platform/api/time.h"
+#include "platform/base/error.h"
 #include "util/alarm.h"
-#include "util/serial_delete_ptr.h"
 
 namespace cast {
 namespace mdns {
 
-using openscreen::Alarm;
-using openscreen::SerialDeletePtr;
-using openscreen::platform::Clock;
-using openscreen::platform::ClockNowFunctionPtr;
-using openscreen::platform::TaskRunner;
+class MdnsRandom;
+class MdnsRecord;
+class MdnsRecordChangedCallback;
+class MdnsSender;
 
 // MdnsTracker is a base class for MdnsRecordTracker and MdnsQuestionTracker for
 // the purposes of common code sharing only
 class MdnsTracker {
  public:
+  using Alarm = openscreen::Alarm;
+  using ClockNowFunctionPtr = openscreen::platform::ClockNowFunctionPtr;
+  using TaskRunner = openscreen::platform::TaskRunner;
+
   // MdnsTracker does not own |sender|, |task_runner| and |random_delay|
   // and expects that the lifetime of these objects exceeds the lifetime of
   // MdnsTracker.
@@ -39,10 +38,9 @@ class MdnsTracker {
               MdnsRandom* random_delay);
   MdnsTracker(const MdnsTracker& other) = delete;
   MdnsTracker(MdnsTracker&& other) noexcept = delete;
-  ~MdnsTracker() = default;
-
   MdnsTracker& operator=(const MdnsTracker& other) = delete;
   MdnsTracker& operator=(MdnsTracker&& other) noexcept = delete;
+  ~MdnsTracker() = default;
 
  protected:
   MdnsSender* const sender_;
@@ -56,6 +54,9 @@ class MdnsTracker {
 // refreshing records as they reach their expiration time.
 class MdnsRecordTracker : public MdnsTracker {
  public:
+  using Clock = openscreen::platform::Clock;
+  using Error = openscreen::Error;
+
   MdnsRecordTracker(
       MdnsSender* sender,
       TaskRunner* task_runner,
@@ -105,6 +106,9 @@ class MdnsRecordTracker : public MdnsTracker {
 // continuous monitoring with exponential back-off as described in RFC 6762
 class MdnsQuestionTracker : public MdnsTracker {
  public:
+  using Clock = openscreen::platform::Clock;
+  using Error = openscreen::Error;
+
   MdnsQuestionTracker(MdnsSender* sender,
                       TaskRunner* task_runner,
                       ClockNowFunctionPtr now_function,

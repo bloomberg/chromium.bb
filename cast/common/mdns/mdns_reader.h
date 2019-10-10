@@ -15,6 +15,7 @@ class MdnsReader : public openscreen::BigEndianReader {
  public:
   using BigEndianReader::BigEndianReader;
   using BigEndianReader::Read;
+  using IPAddress = openscreen::IPAddress;
 
   // The following methods return true if the method was able to successfully
   // read the value to |out| and advances current() to point right past the read

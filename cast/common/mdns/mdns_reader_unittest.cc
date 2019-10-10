@@ -12,6 +12,8 @@
 namespace cast {
 namespace mdns {
 
+using openscreen::IPAddress;
+
 namespace {
 
 constexpr std::chrono::seconds kTtl{120};

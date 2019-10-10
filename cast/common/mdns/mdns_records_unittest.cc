@@ -13,6 +13,9 @@
 namespace cast {
 namespace mdns {
 
+using openscreen::IPAddress;
+using testing::ElementsAreArray;
+
 namespace {
 
 constexpr std::chrono::seconds kTtl{120};
@@ -88,7 +91,7 @@ TEST(MdnsRawRecordRdataTest, Construct) {
   EXPECT_EQ(rdata2.size(), UINT16_C(8));
   EXPECT_THAT(
       std::vector<uint8_t>(rdata2.data(), rdata2.data() + rdata2.size()),
-      testing::ElementsAreArray(kRawRdata));
+      ElementsAreArray(kRawRdata));
 
   RawRecordRdata rdata3(
       std::vector<uint8_t>(kRawRdata, kRawRdata + sizeof(kRawRdata)));
@@ -96,7 +99,7 @@ TEST(MdnsRawRecordRdataTest, Construct) {
   EXPECT_EQ(rdata3.size(), UINT16_C(8));
   EXPECT_THAT(
       std::vector<uint8_t>(rdata3.data(), rdata3.data() + rdata3.size()),
-      testing::ElementsAreArray(kRawRdata));
+      ElementsAreArray(kRawRdata));
 }
 
 TEST(MdnsRawRecordRdataTest, Compare) {

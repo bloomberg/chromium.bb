@@ -46,7 +46,7 @@ void MdnsReceiver::Stop() {
 }
 
 void MdnsReceiver::OnRead(UdpSocket* socket,
-                          openscreen::ErrorOr<UdpPacket> packet_or_error) {
+                          ErrorOr<UdpPacket> packet_or_error) {
   if (state_ != State::kRunning || packet_or_error.is_error()) {
     return;
   }

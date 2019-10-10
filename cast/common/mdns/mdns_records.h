@@ -19,8 +19,6 @@
 namespace cast {
 namespace mdns {
 
-using IPAddress = openscreen::IPAddress;
-
 bool IsValidDomainLabel(absl::string_view label);
 
 // Represents domain name as a collection of labels, ensures label length and
@@ -43,12 +41,6 @@ class DomainName {
 
   explicit DomainName(const std::vector<absl::string_view>& labels);
   explicit DomainName(std::initializer_list<absl::string_view> labels);
-  DomainName(const DomainName& other) = default;
-  DomainName(DomainName&& other) noexcept = default;
-  ~DomainName() = default;
-
-  DomainName& operator=(const DomainName& other) = default;
-  DomainName& operator=(DomainName&& other) noexcept = default;
 
   bool operator==(const DomainName& rhs) const;
   bool operator!=(const DomainName& rhs) const;
@@ -82,12 +74,6 @@ class RawRecordRdata {
   RawRecordRdata() = default;
   explicit RawRecordRdata(std::vector<uint8_t> rdata);
   RawRecordRdata(const uint8_t* begin, size_t size);
-  RawRecordRdata(const RawRecordRdata& other) = default;
-  RawRecordRdata(RawRecordRdata&& other) noexcept = default;
-  ~RawRecordRdata() = default;
-
-  RawRecordRdata& operator=(const RawRecordRdata& other) = default;
-  RawRecordRdata& operator=(RawRecordRdata&& other) noexcept = default;
 
   bool operator==(const RawRecordRdata& rhs) const;
   bool operator!=(const RawRecordRdata& rhs) const;
@@ -117,12 +103,6 @@ class SrvRecordRdata {
                  uint16_t weight,
                  uint16_t port,
                  DomainName target);
-  SrvRecordRdata(const SrvRecordRdata& other) = default;
-  SrvRecordRdata(SrvRecordRdata&& other) noexcept = default;
-  ~SrvRecordRdata() = default;
-
-  SrvRecordRdata& operator=(const SrvRecordRdata& other) = default;
-  SrvRecordRdata& operator=(SrvRecordRdata&& other) noexcept = default;
 
   bool operator==(const SrvRecordRdata& rhs) const;
   bool operator!=(const SrvRecordRdata& rhs) const;
@@ -150,14 +130,10 @@ class SrvRecordRdata {
 // 4 bytes for IP address.
 class ARecordRdata {
  public:
+  using IPAddress = openscreen::IPAddress;
+
   ARecordRdata() = default;
   explicit ARecordRdata(IPAddress ipv4_address);
-  ARecordRdata(const ARecordRdata& other) = default;
-  ARecordRdata(ARecordRdata&& other) noexcept = default;
-  ~ARecordRdata() = default;
-
-  ARecordRdata& operator=(const ARecordRdata& other) = default;
-  ARecordRdata& operator=(ARecordRdata&& other) noexcept = default;
 
   bool operator==(const ARecordRdata& rhs) const;
   bool operator!=(const ARecordRdata& rhs) const;
@@ -178,14 +154,10 @@ class ARecordRdata {
 // 16 bytes for IP address.
 class AAAARecordRdata {
  public:
+  using IPAddress = openscreen::IPAddress;
+
   AAAARecordRdata() = default;
   explicit AAAARecordRdata(IPAddress ipv6_address);
-  AAAARecordRdata(const AAAARecordRdata& other) = default;
-  AAAARecordRdata(AAAARecordRdata&& other) noexcept = default;
-  ~AAAARecordRdata() = default;
-
-  AAAARecordRdata& operator=(const AAAARecordRdata& other) = default;
-  AAAARecordRdata& operator=(AAAARecordRdata&& other) noexcept = default;
 
   bool operator==(const AAAARecordRdata& rhs) const;
   bool operator!=(const AAAARecordRdata& rhs) const;
@@ -208,12 +180,6 @@ class PtrRecordRdata {
  public:
   PtrRecordRdata() = default;
   explicit PtrRecordRdata(DomainName ptr_domain);
-  PtrRecordRdata(const PtrRecordRdata& other) = default;
-  PtrRecordRdata(PtrRecordRdata&& other) noexcept = default;
-  ~PtrRecordRdata() = default;
-
-  PtrRecordRdata& operator=(const PtrRecordRdata& other) = default;
-  PtrRecordRdata& operator=(PtrRecordRdata&& other) noexcept = default;
 
   bool operator==(const PtrRecordRdata& rhs) const;
   bool operator!=(const PtrRecordRdata& rhs) const;
@@ -255,12 +221,6 @@ class TxtRecordRdata {
 
   explicit TxtRecordRdata(const std::vector<absl::string_view>& texts);
   explicit TxtRecordRdata(std::initializer_list<absl::string_view> texts);
-  TxtRecordRdata(const TxtRecordRdata& other) = default;
-  TxtRecordRdata(TxtRecordRdata&& other) noexcept = default;
-  ~TxtRecordRdata() = default;
-
-  TxtRecordRdata& operator=(const TxtRecordRdata& other) = default;
-  TxtRecordRdata& operator=(TxtRecordRdata&& other) noexcept = default;
 
   bool operator==(const TxtRecordRdata& rhs) const;
   bool operator!=(const TxtRecordRdata& rhs) const;
@@ -303,12 +263,6 @@ class MdnsRecord {
              RecordType record_type,
              std::chrono::seconds ttl,
              Rdata rdata);
-  MdnsRecord(const MdnsRecord& other) = default;
-  MdnsRecord(MdnsRecord&& other) noexcept = default;
-  ~MdnsRecord() = default;
-
-  MdnsRecord& operator=(const MdnsRecord& other) = default;
-  MdnsRecord& operator=(MdnsRecord&& other) noexcept = default;
 
   bool operator==(const MdnsRecord& other) const;
   bool operator!=(const MdnsRecord& other) const;
@@ -350,12 +304,6 @@ class MdnsQuestion {
                DnsType dns_type,
                DnsClass dns_class,
                ResponseType response_type);
-  MdnsQuestion(const MdnsQuestion& other) = default;
-  MdnsQuestion(MdnsQuestion&& other) noexcept = default;
-  ~MdnsQuestion() = default;
-
-  MdnsQuestion& operator=(const MdnsQuestion& other) = default;
-  MdnsQuestion& operator=(MdnsQuestion&& other) noexcept = default;
 
   bool operator==(const MdnsQuestion& other) const;
   bool operator!=(const MdnsQuestion& other) const;
@@ -403,12 +351,6 @@ class MdnsMessage {
               std::vector<MdnsRecord> answers,
               std::vector<MdnsRecord> authority_records,
               std::vector<MdnsRecord> additional_records);
-  MdnsMessage(const MdnsMessage& other) = default;
-  MdnsMessage(MdnsMessage&& other) noexcept = default;
-  ~MdnsMessage() = default;
-
-  MdnsMessage& operator=(const MdnsMessage& other) = default;
-  MdnsMessage& operator=(MdnsMessage&& other) noexcept = default;
 
   bool operator==(const MdnsMessage& other) const;
   bool operator!=(const MdnsMessage& other) const;

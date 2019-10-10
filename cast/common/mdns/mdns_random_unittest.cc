@@ -10,6 +10,8 @@
 namespace cast {
 namespace mdns {
 
+using openscreen::platform::Clock;
+
 namespace {
 constexpr int kIterationCount = 100;
 }

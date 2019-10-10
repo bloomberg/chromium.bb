@@ -12,10 +12,10 @@
 namespace cast {
 namespace mdns {
 
-using Clock = openscreen::platform::Clock;
-
 class MdnsRandom {
  public:
+  using Clock = openscreen::platform::Clock;
+
   // RFC 6762 Section 5.2
   // https://tools.ietf.org/html/rfc6762#section-5.2
 
@@ -29,6 +29,7 @@ class MdnsRandom {
 
   // RFC 6762 Section 6
   // https://tools.ietf.org/html/rfc6762#section-6
+
   Clock::duration GetSharedRecordResponseDelay() {
     return std::chrono::milliseconds{
         shared_record_response_delay_(random_engine_)};

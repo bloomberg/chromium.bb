@@ -11,6 +11,9 @@ namespace mdns {
 
 namespace {
 
+using openscreen::IPAddress;
+using openscreen::IPEndpoint;
+
 const IPEndpoint& GetIPv6MdnsMulticastEndpoint() {
   static IPEndpoint endpoint{.address = IPAddress(kDefaultMulticastGroupIPv6),
                              .port = kDefaultMulticastPort};
@@ -29,15 +32,15 @@ MdnsSender::MdnsSender(UdpSocket* socket) : socket_(socket) {
   OSP_DCHECK(socket_ != nullptr);
 }
 
-Error MdnsSender::SendMulticast(const MdnsMessage& message) {
+openscreen::Error MdnsSender::SendMulticast(const MdnsMessage& message) {
   const IPEndpoint& endpoint = socket_->IsIPv6()
                                    ? GetIPv6MdnsMulticastEndpoint()
                                    : GetIPv4MdnsMulticastEndpoint();
   return SendUnicast(message, endpoint);
 }
 
-Error MdnsSender::SendUnicast(const MdnsMessage& message,
-                              const IPEndpoint& endpoint) {
+openscreen::Error MdnsSender::SendUnicast(const MdnsMessage& message,
+                                          const IPEndpoint& endpoint) {
   // Always try to write the message into the buffer even if MaxWireSize is
   // greater than maximum message size. Domain name compression might reduce the
   // on-the-wire size of the message sufficiently for it to fit into the buffer.

@@ -6,6 +6,9 @@
 
 #include <array>
 
+#include "cast/common/mdns/mdns_random.h"
+#include "cast/common/mdns/mdns_record_changed_callback.h"
+#include "cast/common/mdns/mdns_sender.h"
 #include "util/std_util.h"
 
 namespace cast {
@@ -72,7 +75,7 @@ MdnsRecordTracker::MdnsRecordTracker(
   OSP_DCHECK(record_expired_callback);
 }
 
-Error MdnsRecordTracker::Start(MdnsRecord record) {
+openscreen::Error MdnsRecordTracker::Start(MdnsRecord record) {
   OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
 
   if (record_.has_value()) {
@@ -86,7 +89,7 @@ Error MdnsRecordTracker::Start(MdnsRecord record) {
   return Error::None();
 }
 
-Error MdnsRecordTracker::Stop() {
+openscreen::Error MdnsRecordTracker::Stop() {
   OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
 
   if (!record_.has_value()) {
@@ -98,7 +101,7 @@ Error MdnsRecordTracker::Stop() {
   return Error::None();
 }
 
-Error MdnsRecordTracker::Update(const MdnsRecord& new_record) {
+openscreen::Error MdnsRecordTracker::Update(const MdnsRecord& new_record) {
   OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
 
   if (!record_.has_value()) {
@@ -163,7 +166,7 @@ void MdnsRecordTracker::SendQuery() {
   }
 }
 
-Clock::time_point MdnsRecordTracker::GetNextSendTime() {
+openscreen::platform::Clock::time_point MdnsRecordTracker::GetNextSendTime() {
   OSP_DCHECK(send_count_ < openscreen::countof(kTtlFractions));
 
   double ttl_fraction = kTtlFractions[send_count_++];
@@ -184,7 +187,7 @@ MdnsQuestionTracker::MdnsQuestionTracker(MdnsSender* sender,
                                          MdnsRandom* random_delay)
     : MdnsTracker(sender, task_runner, now_function, random_delay) {}
 
-Error MdnsQuestionTracker::Start(MdnsQuestion question) {
+openscreen::Error MdnsQuestionTracker::Start(MdnsQuestion question) {
   OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
 
   if (question_.has_value()) {
@@ -201,7 +204,7 @@ Error MdnsQuestionTracker::Start(MdnsQuestion question) {
   return Error::None();
 }
 
-Error MdnsQuestionTracker::Stop() {
+openscreen::Error MdnsQuestionTracker::Stop() {
   OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
 
   if (!question_.has_value()) {

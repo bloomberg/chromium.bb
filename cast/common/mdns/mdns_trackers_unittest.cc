@@ -4,6 +4,9 @@
 
 #include "cast/common/mdns/mdns_trackers.h"
 
+#include "cast/common/mdns/mdns_random.h"
+#include "cast/common/mdns/mdns_record_changed_callback.h"
+#include "cast/common/mdns/mdns_sender.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "platform/test/fake_clock.h"
@@ -12,14 +15,20 @@
 namespace cast {
 namespace mdns {
 
+using openscreen::Error;
+using openscreen::IPAddress;
+using openscreen::IPEndpoint;
+using openscreen::platform::Clock;
 using openscreen::platform::FakeClock;
 using openscreen::platform::FakeTaskRunner;
 using openscreen::platform::NetworkInterfaceIndex;
-using ::testing::_;
-using ::testing::Args;
-using ::testing::Invoke;
-using ::testing::Return;
-using ::testing::WithArgs;
+using openscreen::platform::TaskRunner;
+using openscreen::platform::UdpSocket;
+using testing::_;
+using testing::Args;
+using testing::Invoke;
+using testing::Return;
+using testing::WithArgs;
 
 ACTION_P2(VerifyMessageBytesWithoutId, expected_data, expected_size) {
   const uint8_t* actual_data = reinterpret_cast<const uint8_t*>(arg0);
@@ -62,7 +71,7 @@ class MockRecordChangedCallback : public MdnsRecordChangedCallback {
               (override));
 };
 
-class MdnsTrackerTest : public ::testing::Test {
+class MdnsTrackerTest : public testing::Test {
  public:
   MdnsTrackerTest()
       : clock_(Clock::now()),

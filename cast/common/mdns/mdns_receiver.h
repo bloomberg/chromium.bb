@@ -5,24 +5,23 @@
 #ifndef CAST_COMMON_MDNS_MDNS_RECEIVER_H_
 #define CAST_COMMON_MDNS_MDNS_RECEIVER_H_
 
-#include "cast/common/mdns/mdns_records.h"
-#include "platform/api/task_runner.h"
 #include "platform/api/udp_packet.h"
 #include "platform/api/udp_socket.h"
 #include "platform/base/error.h"
-#include "platform/base/ip_address.h"
 
 namespace cast {
 namespace mdns {
 
-using Error = openscreen::Error;
-using UdpSocket = openscreen::platform::UdpSocket;
-using UdpPacket = openscreen::platform::UdpPacket;
-using TaskRunner = openscreen::platform::TaskRunner;
-using IPEndpoint = openscreen::IPEndpoint;
+class MdnsMessage;
 
-class MdnsReceiver : UdpSocket::Client {
+class MdnsReceiver : openscreen::platform::UdpSocket::Client {
  public:
+  template <typename T>
+  using ErrorOr = openscreen::ErrorOr<T>;
+  using Error = openscreen::Error;
+  using UdpPacket = openscreen::platform::UdpPacket;
+  using UdpSocket = openscreen::platform::UdpSocket;
+
   // MdnsReceiver does not own |socket| and |delegate|
   // and expects that the lifetime of these objects exceeds the lifetime of
   // MdnsReceiver.
@@ -44,8 +43,7 @@ class MdnsReceiver : UdpSocket::Client {
   void Stop();
 
   // UdpSocket::Client overrides.
-  void OnRead(UdpSocket* socket,
-              openscreen::ErrorOr<UdpPacket> packet) override;
+  void OnRead(UdpSocket* socket, ErrorOr<UdpPacket> packet) override;
   void OnError(UdpSocket* socket, Error error) override;
   void OnSendError(UdpSocket* socket, Error error) override;
 

@@ -7,7 +7,6 @@
 
 #include <unordered_map>
 
-#include "absl/strings/string_view.h"
 #include "cast/common/mdns/mdns_records.h"
 #include "util/big_endian.h"
 
@@ -18,6 +17,7 @@ class MdnsWriter : public openscreen::BigEndianWriter {
  public:
   using BigEndianWriter::BigEndianWriter;
   using BigEndianWriter::Write;
+  using IPAddress = openscreen::IPAddress;
 
   // The following methods return true if the method was able to successfully
   // write the value to the underlying buffer and advances current() to point
