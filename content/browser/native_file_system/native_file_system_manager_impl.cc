@@ -92,6 +92,9 @@ void ShowFilePickerOnUIThread(const url::Origin& requesting_origin,
     return;
   }
 
+  // Drop fullscreen mode so that the user sees the URL bar.
+  web_contents->ForSecurityDropFullscreen();
+
   FileSystemChooser::CreateAndShow(web_contents, options, std::move(callback),
                                    std::move(callback_runner));
 }
