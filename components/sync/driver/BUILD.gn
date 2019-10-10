@@ -90,6 +90,7 @@ jumbo_static_library("driver") {
     "sync_util.h",
     "syncable_service_based_model_type_controller.cc",
     "syncable_service_based_model_type_controller.h",
+    "trusted_vault_client.h",
   ]
 
   configs += [ "//build/config:precompiled_headers" ]
