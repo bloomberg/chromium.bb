@@ -18,7 +18,6 @@ case "$env" in
   mac)        ninja_zipfile="ninja-mac.zip";;
 esac
 
-BUILDTOOLS_REPO_URL="https://chromium.googlesource.com/chromium/src/buildtools"
 GOOGLE_STORAGE_URL="https://storage.googleapis.com"
 BUILDTOOLS_ROOT=$(git rev-parse --show-toplevel)/buildtools/$env
 if [ ! -d $BUILDTOOLS_ROOT ]; then
@@ -27,7 +26,7 @@ fi
 
 pushd $BUILDTOOLS_ROOT
 set -x  # echo on
-sha1=$(curl "$BUILDTOOLS_REPO_URL/+/master/$env/clang-format.sha1?format=TEXT" | base64 --decode)
+sha1=$(tail -c+1 $BUILDTOOLS_ROOT/clang-format.sha1)
 curl -Lo clang-format "$GOOGLE_STORAGE_URL/chromium-clang-format/$sha1"
 chmod +x clang-format
 curl -L "https://github.com/ninja-build/ninja/releases/download/${ninja_version}/${ninja_zipfile}" | funzip > ninja

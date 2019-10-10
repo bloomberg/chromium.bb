@@ -41,28 +41,6 @@ deps = {
         'condition': 'not build_with_chromium',
     },
 
-    'buildtools/linux64': {
-        'packages': [
-            {
-                'package': 'gn/gn/linux-amd64',
-                'version': Var('gn_version'),
-            },
-        ],
-        'dep_type': 'cipd',
-        'condition': 'checkout_linux',
-    },
-
-    'buildtools/mac': {
-        'packages': [
-            {
-                'package': 'gn/gn/mac-amd64',
-                'version': Var('gn_version'),
-            },
-        ],
-        'dep_type': 'cipd',
-        'condition': 'checkout_mac',
-    },
-
     'third_party/protobuf/src': {
         'url': Var('chromium_git') +
             '/external/github.com/protocolbuffers/protobuf.git' +
@@ -123,6 +101,7 @@ deps = {
 
 recursedeps = [
     'third_party/chromium_quic/src',
+    'buildtools',
 ]
 
 include_rules = [
