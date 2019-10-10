@@ -505,25 +505,30 @@ RenderWidget* RenderWidget::FromRoutingID(int32_t routing_id) {
 }
 
 void RenderWidget::InitForPopup(ShowCallback show_callback,
-                                blink::WebPagePopup* web_page_popup) {
+                                blink::WebPagePopup* web_page_popup,
+                                const ScreenInfo& screen_info) {
   popup_ = true;
-  Init(std::move(show_callback), web_page_popup);
+  Init(std::move(show_callback), web_page_popup, &screen_info);
 }
 
 void RenderWidget::InitForPepperFullscreen(ShowCallback show_callback,
-                                           blink::WebWidget* web_widget) {
+                                           blink::WebWidget* web_widget,
+                                           const ScreenInfo& screen_info) {
   pepper_fullscreen_ = true;
-  Init(std::move(show_callback), web_widget);
+  Init(std::move(show_callback), web_widget, &screen_info);
 }
 
-void RenderWidget::InitForMainFrame(ShowCallback show_callback) {
-  Init(std::move(show_callback), /*web_frame_widget=*/nullptr);
+void RenderWidget::InitForMainFrame(ShowCallback show_callback,
+                                    blink::WebFrameWidget* web_frame_widget,
+                                    const ScreenInfo* screen_info) {
+  Init(std::move(show_callback), web_frame_widget, screen_info);
 }
 
 void RenderWidget::InitForChildLocalRoot(
-    blink::WebFrameWidget* web_frame_widget) {
+    blink::WebFrameWidget* web_frame_widget,
+    const ScreenInfo& screen_info) {
   for_child_local_root_frame_ = true;
-  Init(base::NullCallback(), web_frame_widget);
+  Init(base::NullCallback(), web_frame_widget, &screen_info);
 }
 
 void RenderWidget::CloseForFrame(std::unique_ptr<RenderWidget> widget) {
@@ -533,49 +538,27 @@ void RenderWidget::CloseForFrame(std::unique_ptr<RenderWidget> widget) {
   Close(std::move(widget));
 }
 
-void RenderWidget::Init(ShowCallback show_callback, WebWidget* web_widget) {
+void RenderWidget::Init(ShowCallback show_callback,
+                        WebWidget* web_widget,
+                        const ScreenInfo* screen_info) {
+  DCHECK_EQ(is_undead_, !web_widget);  // There is a WebWidget when not undead.
   DCHECK(!webwidget_);
   DCHECK_NE(routing_id_, MSG_ROUTING_NONE);
 
   input_handler_ = std::make_unique<RenderWidgetInputHandler>(this, this);
 
-  LayerTreeView* layer_tree_view = InitializeLayerTreeView();
+  if (!is_undead_) {
+    InitCompositing(*screen_info);
 
-  // TODO(https://crbug.com/995981): This conditional is temporary logic to
-  // handle the case of remote main frame RenderWidgets [which shouldn't exist
-  // to begin with].
-  if (web_widget)
-    web_widget->SetAnimationHost(layer_tree_view->animation_host());
+    // If the widget is hidden, delay starting the compositor until the user
+    // shows it. Also if the RenderWidget is undead, we delay starting the
+    // compositor until we expect to use the widget, which will be signaled
+    // through reviving the undead RenderWidget.
+    if (!is_hidden_)
+      StartStopCompositor();
 
-  blink::scheduler::WebThreadScheduler* main_thread_scheduler =
-      compositor_deps_->GetWebMainThreadScheduler();
-
-  blink::scheduler::WebThreadScheduler* compositor_thread_scheduler =
-      blink::scheduler::WebThreadScheduler::CompositorThreadScheduler();
-  scoped_refptr<base::SingleThreadTaskRunner> compositor_input_task_runner;
-  // Use the compositor thread task runner unless this is a popup or other such
-  // non-frame widgets. The |compositor_thread_scheduler| can be null in tests
-  // without a compositor thread.
-  if (for_frame() && compositor_thread_scheduler) {
-    compositor_input_task_runner =
-        compositor_thread_scheduler->InputTaskRunner();
+    web_widget->SetAnimationHost(layer_tree_view_->animation_host());
   }
-
-  input_event_queue_ = base::MakeRefCounted<MainThreadEventQueue>(
-      this, main_thread_scheduler->InputTaskRunner(), main_thread_scheduler,
-      /*allow_raf_aligned_input=*/!compositor_never_visible_);
-
-  // We only use an external input handler for frame RenderWidgets because only
-  // frames use the compositor for input handling. Other kinds of RenderWidgets
-  // (e.g.  popups, plugins) must forward their input directly through
-  // RenderWidgetInputHandler into Blink.
-  bool uses_input_handler = for_frame();
-  widget_input_handler_manager_ = WidgetInputHandlerManager::Create(
-      weak_ptr_factory_.GetWeakPtr(), std::move(compositor_input_task_runner),
-      main_thread_scheduler, uses_input_handler);
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kAllowPreCommitInput))
-    widget_input_handler_manager_->AllowPreCommitInput();
 
   show_callback_ = std::move(show_callback);
 
@@ -1936,7 +1919,8 @@ void RenderWidget::Show(WebNavigationPolicy policy) {
   SetPendingWindowRect(initial_rect_);
 }
 
-LayerTreeView* RenderWidget::InitializeLayerTreeView() {
+void RenderWidget::InitCompositing(const ScreenInfo& screen_info) {
+  DCHECK(!is_undead_);
   TRACE_EVENT0("blink", "RenderWidget::InitializeLayerTreeView");
 
   layer_tree_view_ = std::make_unique<LayerTreeView>(
@@ -1946,31 +1930,44 @@ LayerTreeView* RenderWidget::InitializeLayerTreeView() {
       compositor_deps_->GetWebMainThreadScheduler());
   layer_tree_view_->Initialize(
       GenerateLayerTreeSettings(compositor_deps_, for_child_local_root_frame_,
-                                page_properties_->GetScreenInfo().rect.size(),
-                                page_properties_->GetDeviceScaleFactor()),
+                                screen_info.rect.size(),
+                                screen_info.device_scale_factor),
       compositor_deps_->CreateUkmRecorderFactory());
   layer_tree_host_ = layer_tree_view_->layer_tree_host();
 
-  ScreenInfo screen_info = page_properties_->GetScreenInfo();
-  // A popup widget does not get emulated. So we hand it the real screen info
-  // and adjust values it gives back into the emulated space later.
-  if (popup_) {
-    RenderWidgetScreenMetricsEmulator* emulator =
-        page_properties_->ScreenMetricsEmulator();
-    if (emulator)
-      screen_info = emulator->original_screen_info();
-  }
-
   UpdateSurfaceAndScreenInfo(local_surface_id_allocation_from_parent_,
                              CompositorViewportRect(), screen_info);
-  // If the widget is hidden, delay starting the compositor until the user shows
-  // it. Also if the RenderWidget is undead, we delay starting the compositor
-  // until we expect to use the widget, which will be signaled through
-  // reviving the undead RenderWidget.
-  if (!is_hidden_ && !is_undead_)
-    StartStopCompositor();
 
-  return layer_tree_view_.get();
+  blink::scheduler::WebThreadScheduler* main_thread_scheduler =
+      compositor_deps_->GetWebMainThreadScheduler();
+
+  blink::scheduler::WebThreadScheduler* compositor_thread_scheduler =
+      blink::scheduler::WebThreadScheduler::CompositorThreadScheduler();
+  scoped_refptr<base::SingleThreadTaskRunner> compositor_input_task_runner;
+  // Use the compositor thread task runner unless this is a popup or other such
+  // non-frame widgets. The |compositor_thread_scheduler| can be null in tests
+  // without a compositor thread.
+  if (for_frame() && compositor_thread_scheduler) {
+    compositor_input_task_runner =
+        compositor_thread_scheduler->InputTaskRunner();
+  }
+
+  input_event_queue_ = base::MakeRefCounted<MainThreadEventQueue>(
+      this, main_thread_scheduler->InputTaskRunner(), main_thread_scheduler,
+      /*allow_raf_aligned_input=*/!compositor_never_visible_);
+
+  // We only use an external input handler for frame RenderWidgets because only
+  // frames use the compositor for input handling. Other kinds of RenderWidgets
+  // (e.g.  popups, plugins) must forward their input directly through
+  // RenderWidgetInputHandler into Blink.
+  bool uses_input_handler = for_frame();
+  widget_input_handler_manager_ = WidgetInputHandlerManager::Create(
+      weak_ptr_factory_.GetWeakPtr(), std::move(compositor_input_task_runner),
+      main_thread_scheduler, uses_input_handler);
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kAllowPreCommitInput))
+    widget_input_handler_manager_->AllowPreCommitInput();
 }
 
 void RenderWidget::StartStopCompositor() {
@@ -1997,9 +1994,9 @@ void RenderWidget::StartStopCompositor() {
   }
 }
 
-void RenderWidget::SetIsUndead(bool is_undead) {
-  DCHECK_NE(is_undead, is_undead_);
-  is_undead_ = is_undead;
+void RenderWidget::SetIsUndead() {
+  DCHECK(!is_undead_);
+  is_undead_ = true;
   // If hidden, then changing undead state doesn't change anything with the
   // compositor since when hidden the compositor is always stopped.
   if (!is_hidden_)
@@ -2007,11 +2004,33 @@ void RenderWidget::SetIsUndead(bool is_undead) {
 
   // Remove undead RenderWidgets from the routing map so that they cannot be
   // looked up with FromRoutingId().
-  if (is_undead) {
-    g_routing_id_widget_map.Get().erase(routing_id_);
-  } else {
-    g_routing_id_widget_map.Get().emplace(routing_id_, this);
-  }
+  g_routing_id_widget_map.Get().erase(routing_id_);
+}
+
+void RenderWidget::SetIsRevivedFromUndead(const ScreenInfo& screen_info) {
+  DCHECK(is_undead_);
+  is_undead_ = false;
+  // If started as undead, the compositor was not created yet.
+  if (!layer_tree_view_)
+    InitCompositing(screen_info);
+  // If hidden, then changing undead state doesn't change anything with the
+  // compositor since when hidden the compositor is always stopped.
+  if (!is_hidden_)
+    StartStopCompositor();
+
+  // Put revived RenderWidgets back into the routing id map so they can be
+  // looked up with FromRoutingId().
+  g_routing_id_widget_map.Get().emplace(routing_id_, this);
+
+  // Reviving from undead is like making a "new" RenderWidget, initialization
+  // that should not bleed across from the last local main frame can happen
+  // here.
+  // TODO(crbug.com/419087): This initialization can be done during
+  // InitCompositing() or when constructing the RenderWidget once there are
+  // no undead RenderWidgets.
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  SetShowFPSCounter(command_line.HasSwitch(cc::switches::kShowFPSCounter));
 }
 
 // static
@@ -2061,29 +2080,35 @@ void RenderWidget::Close(std::unique_ptr<RenderWidget> widget) {
     g_routing_id_widget_map.Get().erase(routing_id_);
   }
 
-  // Stop handling main thread input events immediately so we don't have them
-  // running while things are partly shut down.
-  input_event_queue_->ClearClient();
-
   // The |webwidget_| will be null when the main frame RenderWidget is undead.
   if (webwidget_)
     webwidget_->Close();
   webwidget_ = nullptr;
 
-  // The LayerTreeHost may already be in the call stack, if this RenderWidget is
-  // being destroyed during an animation callback for instance. We can not
-  // delete it here and unwind the stack back up to it, or it will crash. So we
-  // post the deletion to another task, but disconnect the LayerTreeHost (via
-  // the LayerTreeView) from the destroying RenderWidget. The LayerTreeView owns
-  // the LayerTreeHost, and is its client, so they are kept alive together for a
-  // clean call stack.
-  layer_tree_view_->Disconnect();
-  compositor_deps_->GetCleanupTaskRunner()->DeleteSoon(
-      FROM_HERE, std::move(layer_tree_view_));
-  // The |widget_input_handler_manager_| is referenced through the LayerTreeHost
-  // on the compositor thread, so must outlive the LayerTreeHost.
-  compositor_deps_->GetCleanupTaskRunner()->ReleaseSoon(
-      FROM_HERE, std::move(widget_input_handler_manager_));
+  // A RenderWidget can be created as undead and never revived, so never
+  // initialized compositing.
+  if (layer_tree_view_) {
+    // The |input_event_queue_| is refcounted and will live while an event is
+    // being handled. This drops the connection back to this RenderWidget which
+    // is being destroyed.
+    input_event_queue_->ClearClient();
+
+    // The LayerTreeHost may already be in the call stack, if this RenderWidget
+    // is being destroyed during an animation callback for instance. We can not
+    // delete it here and unwind the stack back up to it, or it will crash. So
+    // we post the deletion to another task, but disconnect the LayerTreeHost
+    // (via the LayerTreeView) from the destroying RenderWidget. The
+    // LayerTreeView owns the LayerTreeHost, and is its client, so they are kept
+    // alive together for a clean call stack.
+    layer_tree_view_->Disconnect();
+    compositor_deps_->GetCleanupTaskRunner()->DeleteSoon(
+        FROM_HERE, std::move(layer_tree_view_));
+    // The |widget_input_handler_manager_| is referenced through the
+    // LayerTreeHost on the compositor thread, so must outlive the
+    // LayerTreeHost.
+    compositor_deps_->GetCleanupTaskRunner()->ReleaseSoon(
+        FROM_HERE, std::move(widget_input_handler_manager_));
+  }
 
   // Note the ACK is a control message going to the RenderProcessHost.
   RenderThread::Get()->Send(new WidgetHostMsg_Close_ACK(routing_id()));
@@ -3961,12 +3986,13 @@ base::WeakPtr<RenderWidget> RenderWidget::AsWeakPtr() {
 }
 
 void RenderWidget::SetWebWidgetInternal(blink::WebWidget* webwidget) {
-  // TODO(https://crbug.com/995981): This method should not need to exist, since
-  // we should be creating and destroying a RenderWidget along with the
-  // WebWidget.
-  if (webwidget)
-    webwidget->SetAnimationHost(layer_tree_view_->animation_host());
+  // Undead state is changed first, and the WebWidget is set accordingly. That
+  // means the compositor is always initialized before we get here.
+  DCHECK_EQ(is_undead_, !webwidget);
+
   webwidget_ = webwidget;
+  if (webwidget_)
+    webwidget_->SetAnimationHost(layer_tree_view_->animation_host());
 }
 
 }  // namespace content

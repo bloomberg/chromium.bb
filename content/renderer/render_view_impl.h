@@ -327,7 +327,7 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
 
   // Instead of creating a new RenderWidget, this revives the undead
   // RenderWidget for use with a new local main frame.
-  void ReviveUndeadMainFrameRenderWidget();
+  void ReviveUndeadMainFrameRenderWidget(const ScreenInfo& screen_info);
 
  private:
   // For unit tests.

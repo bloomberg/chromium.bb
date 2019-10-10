@@ -231,23 +231,27 @@ class CONTENT_EXPORT RenderWidget
   // Initialize a new RenderWidget for a popup. The |show_callback| is called
   // when RenderWidget::Show() happens.
   void InitForPopup(ShowCallback show_callback,
-                    blink::WebPagePopup* web_page_popup);
+                    blink::WebPagePopup* web_page_popup,
+                    const ScreenInfo& screen_info);
 
   // Initialize a new RenderWidget for pepper fullscreen. The |show_callback| is
   // called when RenderWidget::Show() happens.
   void InitForPepperFullscreen(ShowCallback show_callback,
-                               blink::WebWidget* web_widget);
+                               blink::WebWidget* web_widget,
+                               const ScreenInfo& screen_info);
 
   // Initialize a new RenderWidget that will be attached to a RenderFrame (via
-  // the WebFrameWidget), for a frame that is a main frame. At the time of
-  // initialization, the WebWidget is not always available, and it will be set
-  // once the main frame is attached.
-  void InitForMainFrame(ShowCallback show_callback);
+  // the WebFrameWidget), for a frame that is a main frame. When WebFrameWidget
+  // is given, a ScreenInfo must be also.
+  void InitForMainFrame(ShowCallback show_callback,
+                        blink::WebFrameWidget* web_frame_widget,
+                        const ScreenInfo* screen_info);
 
   // Initialize a new RenderWidget that will be attached to a RenderFrame (via
   // the WebFrameWidget), for a frame that is a local root, but not the main
   // frame.
-  void InitForChildLocalRoot(blink::WebFrameWidget* web_frame_widget);
+  void InitForChildLocalRoot(blink::WebFrameWidget* web_frame_widget,
+                             const ScreenInfo& screen_info);
 
   // Sets a delegate to handle certain RenderWidget operations that need an
   // escape to the RenderView.
@@ -303,7 +307,8 @@ class CONTENT_EXPORT RenderWidget
   // otherwise act as if it is dead. Only whitelisted new IPC messages will be
   // sent, and it does no compositing. The process is free to exit when there
   // are no other non-undead RenderWidgets.
-  void SetIsUndead(bool is_undead);
+  void SetIsUndead();
+  void SetIsRevivedFromUndead(const ScreenInfo& screen_info);
 
   // A main frame RenderWidget is made undead instead of being deleted. Then
   // when a provisional frame is created, the RenderWidget is recycled and
@@ -714,13 +719,13 @@ class CONTENT_EXPORT RenderWidget
 
   // Called by Create() functions and subclasses to finish initialization.
   // |show_callback| will be invoked once WebWidgetClient::Show() occurs, and
-  // should be null if Show() won't be triggered for this widget.
-  void Init(ShowCallback show_callback, blink::WebWidget* web_widget);
+  // should be null if Show() won't be triggered for this widget. The WebWidget
+  // and ScreenInfo are both null or both not.
+  void Init(ShowCallback show_callback,
+            blink::WebWidget* web_widget,
+            const ScreenInfo* screen_info);
 
-  // Creates the compositor, but leaves it in a stopped state, where it will
-  // not set up IPC channels or begin trying to produce frames until started
-  // via StartStopCompositor().
-  LayerTreeView* InitializeLayerTreeView();
+  void InitCompositing(const ScreenInfo& screen_info);
 
   // If appropriate, initiates the compositor to set up IPC channels and begin
   // its scheduler. Otherwise, pauses the scheduler and tears down its IPC

@@ -1474,9 +1474,10 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
   auto* web_frame_widget =
       blink::WebFrameWidget::CreateForMainFrame(render_widget, web_frame);
 
-  render_widget->InitForMainFrame(std::move(show_callback));
-  render_view->AttachWebFrameWidget(web_frame_widget);
-
+  render_widget->InitForMainFrame(std::move(show_callback), web_frame_widget,
+                                  &params->visual_properties.screen_info);
+  // AttachWebFrameWidget() is not needed here since InitForMainFrame() received
+  // the WebFrameWidget.
   render_widget->SynchronizeVisualPropertiesFromRenderView(
       params->visual_properties);
 
@@ -1628,7 +1629,8 @@ void RenderFrameImpl::CreateFrame(
     // create the RenderWidget if the RenderFrame owned it instead of having the
     // RenderWidget live for eternity on the RenderView (after setting up the
     // WebFrameWidget since that would be part of creating the RenderWidget).
-    render_view->ReviveUndeadMainFrameRenderWidget();
+    render_view->ReviveUndeadMainFrameRenderWidget(
+        widget_params->visual_properties.screen_info);
 
     // The RenderViewImpl and its RenderWidget already exist by the time we
     // get here (we get them from the RenderFrameProxy).
@@ -1681,7 +1683,8 @@ void RenderFrameImpl::CreateFrame(
     // Adds a reference on RenderWidget, making it self-referencing. So it
     // will not be destroyed by scoped_refptr unless Close() has been called
     // and run.
-    render_widget->InitForChildLocalRoot(web_frame_widget);
+    render_widget->InitForChildLocalRoot(
+        web_frame_widget, widget_params->visual_properties.screen_info);
 
     render_frame->render_widget_ = render_widget.get();
     render_frame->owned_render_widget_ = std::move(render_widget);

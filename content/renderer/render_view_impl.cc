@@ -516,7 +516,12 @@ void RenderViewImpl::Initialize(
         page_properties(), params->visual_properties.display_mode,
         /*is_undead=*/true, params->never_visible);
     undead_render_widget_->set_delegate(this);
-    undead_render_widget_->InitForMainFrame(std::move(show_callback));
+    // We intentionally pass in a null webwidget since it is not needed
+    // for remote frames, and we don't have one or a ScreenInfo until we have
+    // a local main frame.
+    undead_render_widget_->InitForMainFrame(std::move(show_callback),
+                                            /*web_frame_widget=*/nullptr,
+                                            /*screen_info=*/nullptr);
 
     RenderFrameProxy::CreateFrameProxy(params->proxy_routing_id, GetRoutingID(),
                                        opener_frame, MSG_ROUTING_NONE,
@@ -1490,7 +1495,8 @@ blink::WebPagePopup* RenderViewImpl::CreatePopup(
   // Adds a self-reference on the |popup_widget| so it will not be destroyed
   // when leaving scope. The WebPagePopup takes responsibility for Close()ing
   // and thus destroying the RenderWidget.
-  popup_widget->InitForPopup(std::move(opener_callback), popup_web_widget);
+  popup_widget->InitForPopup(std::move(opener_callback), popup_web_widget,
+                             render_widget->GetOriginalScreenInfo());
   // TODO(crbug.com/419087): RenderWidget has some weird logic for picking a
   // WebWidget which doesn't apply to this case. So we verify. This can go away
   // when RenderWidget::GetWebWidget() is just a simple accessor.
@@ -1543,16 +1549,10 @@ void RenderViewImpl::AttachWebFrameWidget(blink::WebFrameWidget* frame_widget) {
   // The previous WebFrameWidget must already be detached by
   // DetachWebFrameWidget().
   DCHECK(!render_widget_->GetWebWidget());
-
   render_widget_->SetWebWidgetInternal(frame_widget);
 
-  // Initialization for the WebFrameWidget that should only occur for the main
-  // frame, and that uses types not allowed in blink. This should maybe be
-  // passed to the creation of the WebFrameWidget or the main RenderFrame.
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  render_widget_->SetShowFPSCounter(
-      command_line.HasSwitch(cc::switches::kShowFPSCounter));
+  // Note that when a main frame RenderWidget is created with a main frame, then
+  // this method is not used, so other initialization should not be done here.
 }
 
 void RenderViewImpl::DetachWebFrameWidget() {
@@ -1574,7 +1574,7 @@ void RenderViewImpl::DetachWebFrameWidget() {
     // detached and replaced with a remote frame proxy. We can't close the
     // RenderWidget, and it is marked undead instead, but we do need to close
     // the WebFrameWidget and remove it from the RenderWidget.
-    render_widget_->SetIsUndead(true);
+    render_widget_->SetIsUndead();
     // The WebWidget needs to be closed even though the RenderWidget won't be
     // closed here (since it is marked undead instead).
     render_widget_->GetWebWidget()->Close();
@@ -1925,9 +1925,10 @@ void RenderViewImpl::ApplyPageHidden(bool hidden, bool initial_setting) {
   // does not change when tests override the visibility of the Page.
 }
 
-void RenderViewImpl::ReviveUndeadMainFrameRenderWidget() {
+void RenderViewImpl::ReviveUndeadMainFrameRenderWidget(
+    const ScreenInfo& screen_info) {
   render_widget_ = std::move(undead_render_widget_);
-  render_widget_->SetIsUndead(false);
+  render_widget_->SetIsRevivedFromUndead(screen_info);
 }
 
 void RenderViewImpl::OnUpdateWebPreferences(const WebPreferences& prefs) {
