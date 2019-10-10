@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.compositor.bottombar.ephemeraltab;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
 
@@ -232,14 +231,8 @@ public class EphemeralTabCoordinator {
          */
         private Drawable faviconDrawable(Bitmap image, String url) {
             if (url == null) return null;
-            if (image == null) {
-                image = mIconGenerator.generateIconForUrl(url);
-                return new BitmapDrawable(mContext.getResources(),
-                        Bitmap.createScaledBitmap(image, mFaviconSize, mFaviconSize, true));
-            }
-
-            return FaviconUtils.createRoundedBitmapDrawable(mContext.getResources(),
-                    Bitmap.createScaledBitmap(image, mFaviconSize, mFaviconSize, true));
+            return FaviconUtils.getIconDrawableWithFilter(
+                    image, url, mIconGenerator, mContext.getResources(), mFaviconSize);
         }
     }
 }

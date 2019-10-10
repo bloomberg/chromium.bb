@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.history;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.support.graphics.drawable.VectorDrawableCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.content.res.AppCompatResources;
@@ -163,16 +163,9 @@ public class HistoryItemView extends SelectableItemView<HistoryItem> implements 
     @Override
     public void onLargeIconAvailable(Bitmap icon, int fallbackColor, boolean isFallbackColorDefault,
             @IconType int iconType) {
-        // TODO(twellington): move this somewhere that can be shared with bookmarks.
-        if (icon == null) {
-            mIconGenerator.setBackgroundColor(fallbackColor);
-            icon = mIconGenerator.generateIconForUrl(getItem().getUrl());
-            setIconDrawable(new BitmapDrawable(getResources(), icon));
-        } else {
-            setIconDrawable(FaviconUtils.createRoundedBitmapDrawable(getResources(),
-                    Bitmap.createScaledBitmap(
-                            icon, mDisplayedIconSize, mDisplayedIconSize, false)));
-        }
+        Drawable drawable = FaviconUtils.getIconDrawableWithoutFilter(icon, getItem().getUrl(),
+                fallbackColor, mIconGenerator, getResources(), mDisplayedIconSize);
+        setIconDrawable(drawable);
     }
 
     private void requestIcon() {

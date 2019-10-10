@@ -9,7 +9,6 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.PorterDuff;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
 import android.util.LruCache;
@@ -505,9 +504,11 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
                 viewHolder.textView.setText(R.string.show_full_history);
                 Bitmap historyIcon = BitmapFactory.decodeResource(
                         mActivity.getResources(), R.drawable.ic_watch_later_24dp);
-                Drawable drawable = getRoundedFavicon(historyIcon,
-                        mActivity.getResources().getDimensionPixelSize(
-                                R.dimen.tile_view_icon_size_modern));
+                int size = mActivity.getResources().getDimensionPixelSize(
+                        R.dimen.tile_view_icon_size_modern);
+                Drawable drawable =
+                        FaviconUtils.createRoundedBitmapDrawable(mActivity.getResources(),
+                                Bitmap.createScaledBitmap(historyIcon, size, size, true));
                 drawable.setColorFilter(ApiCompatibilityUtils.getColor(mActivity.getResources(),
                                                 R.color.default_icon_color),
                         PorterDuff.Mode.SRC_IN);
@@ -703,19 +704,8 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
 
     private Drawable faviconDrawable(Bitmap image, String url) {
         if (url == null) return null;
-        if (image == null) {
-            image = mIconGenerator.generateIconForUrl(url);
-            return new BitmapDrawable(mActivity.getResources(),
-                    Bitmap.createScaledBitmap(image, mFaviconSize, mFaviconSize, true));
-        }
-        return getRoundedFavicon(image, mFaviconSize);
-    }
-
-    private Drawable getRoundedFavicon(Bitmap image, int size) {
-        // TODO(injae): Move shared code between Bookmarks/History/Downloads/here to ViewUtils.java.
-        // Also applies to RoundedIconGenerator. crbug.com/829550
-        return FaviconUtils.createRoundedBitmapDrawable(
-                mActivity.getResources(), Bitmap.createScaledBitmap(image, size, size, true));
+        return FaviconUtils.getIconDrawableWithFilter(
+                image, url, mIconGenerator, mActivity.getResources(), mFaviconSize);
     }
 
     private void loadForeignFavicon(final ViewHolder viewHolder, final String url) {
