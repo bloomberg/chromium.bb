@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/loader/source_stream_to_data_pipe.h"
+#include "services/network/public/cpp/source_stream_to_data_pipe.h"
 
 #include "base/bind.h"
 #include "base/optional.h"
@@ -10,7 +10,7 @@
 #include "net/filter/mock_source_stream.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace content {
+namespace network {
 
 namespace {
 
@@ -196,4 +196,4 @@ TEST_P(SourceStreamToDataPipeTest, ConsumerClosed) {
   EXPECT_EQ(*CallbackResult(), net::ERR_ABORTED);
 }
 
-}  // namespace content
+}  // namespace network

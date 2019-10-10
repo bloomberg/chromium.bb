@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/loader/data_pipe_to_source_stream.h"
+#include "services/network/public/cpp/data_pipe_to_source_stream.h"
 
 #include "base/strings/string_piece.h"
 #include "base/test/task_environment.h"
@@ -10,7 +10,7 @@
 #include "net/base/test_completion_callback.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace content {
+namespace network {
 
 namespace {
 
@@ -172,4 +172,4 @@ TEST_P(DataPipeToSourceStreamTest, DestructorClosesConsumerEnd) {
   EXPECT_EQ(result, MOJO_RESULT_FAILED_PRECONDITION);
 }
 
-}  // namespace content
+}  // namespace network

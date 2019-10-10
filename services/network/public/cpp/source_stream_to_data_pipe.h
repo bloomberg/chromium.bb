@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_LOADER_SOURCE_STREAM_TO_DATA_PIPE_H_
-#define CONTENT_BROWSER_LOADER_SOURCE_STREAM_TO_DATA_PIPE_H_
+#ifndef SERVICES_NETWORK_PUBLIC_CPP_SOURCE_STREAM_TO_DATA_PIPE_H_
+#define SERVICES_NETWORK_PUBLIC_CPP_SOURCE_STREAM_TO_DATA_PIPE_H_
 
 #include "base/callback_forward.h"
+#include "base/component_export.h"
 #include "base/memory/weak_ptr.h"
-#include "content/common/content_export.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "services/network/public/cpp/net_adapters.h"
@@ -16,11 +16,11 @@ namespace net {
 class SourceStream;
 }
 
-namespace content {
+namespace network {
 
 // A convenient adapter class to read out data from net::SourceStream
 // and write them into a data pipe.
-class CONTENT_EXPORT SourceStreamToDataPipe {
+class COMPONENT_EXPORT(NETWORK_CPP) SourceStreamToDataPipe {
  public:
   // Reads out the data from |source| and write into |dest|.
   SourceStreamToDataPipe(std::unique_ptr<net::SourceStream> source,
@@ -50,6 +50,6 @@ class CONTENT_EXPORT SourceStreamToDataPipe {
   base::WeakPtrFactory<SourceStreamToDataPipe> weak_factory_{this};
 };
 
-}  // namespace content
+}  // namespace network
 
-#endif  // CONTENT_BROWSER_LOADER_SOURCE_STREAM_TO_DATA_PIPE_H_
+#endif  // SERVICES_NETWORK_PUBLIC_CPP_SOURCE_STREAM_TO_DATA_PIPE_H_

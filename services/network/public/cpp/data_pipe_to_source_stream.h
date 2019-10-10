@@ -2,18 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_LOADER_DATA_PIPE_TO_SOURCE_STREAM_H_
-#define CONTENT_BROWSER_LOADER_DATA_PIPE_TO_SOURCE_STREAM_H_
+#ifndef SERVICES_NETWORK_PUBLIC_CPP_DATA_PIPE_TO_SOURCE_STREAM_H_
+#define SERVICES_NETWORK_PUBLIC_CPP_DATA_PIPE_TO_SOURCE_STREAM_H_
 
-#include "content/common/content_export.h"
+#include "base/component_export.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "net/base/completion_once_callback.h"
 #include "net/filter/source_stream.h"
 
-namespace content {
+namespace network {
 
-class CONTENT_EXPORT DataPipeToSourceStream final : public net::SourceStream {
+class COMPONENT_EXPORT(NETWORK_CPP) DataPipeToSourceStream final
+    : public net::SourceStream {
  public:
   explicit DataPipeToSourceStream(mojo::ScopedDataPipeConsumerHandle body);
   ~DataPipeToSourceStream() override;
@@ -39,6 +40,6 @@ class CONTENT_EXPORT DataPipeToSourceStream final : public net::SourceStream {
   DISALLOW_COPY_AND_ASSIGN(DataPipeToSourceStream);
 };
 
-}  // namespace content
+}  // namespace network
 
-#endif  // CONTENT_BROWSER_LOADER_DATA_PIPE_TO_SOURCE_STREAM_H_
+#endif  // SERVICES_NETWORK_PUBLIC_CPP_DATA_PIPE_TO_SOURCE_STREAM_H_

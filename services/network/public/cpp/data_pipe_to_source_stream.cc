@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/loader/data_pipe_to_source_stream.h"
+#include "services/network/public/cpp/data_pipe_to_source_stream.h"
 
 #include <utility>
 
@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "net/base/io_buffer.h"
 
-namespace content {
+namespace network {
 
 DataPipeToSourceStream::DataPipeToSourceStream(
     mojo::ScopedDataPipeConsumerHandle body)
@@ -103,4 +103,4 @@ void DataPipeToSourceStream::FinishReading() {
   body_.reset();
 }
 
-}  // namespace content
+}  // namespace network

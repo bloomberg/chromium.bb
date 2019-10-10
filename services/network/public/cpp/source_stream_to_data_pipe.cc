@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/loader/source_stream_to_data_pipe.h"
+#include "services/network/public/cpp/source_stream_to_data_pipe.h"
 
 #include "base/bind.h"
 #include "net/filter/source_stream.h"
 
-namespace content {
+namespace network {
 
 SourceStreamToDataPipe::SourceStreamToDataPipe(
     std::unique_ptr<net::SourceStream> source,
@@ -99,4 +99,4 @@ void SourceStreamToDataPipe::OnComplete(int result) {
   std::move(completion_callback_).Run(result);
 }
 
-}  // namespace content
+}  // namespace network
