@@ -55,6 +55,7 @@ WebviewController::WebviewController(content::BrowserContext* browser_context,
   cast_contents_init.delegate = this;
   cast_web_contents_ = std::make_unique<CastWebContentsImpl>(
       contents_.get(), cast_contents_init);
+  cast_web_contents_->AddObserver(this);
 
   std::unique_ptr<webview::WebviewResponse> response =
       std::make_unique<webview::WebviewResponse>();
@@ -65,7 +66,9 @@ WebviewController::WebviewController(content::BrowserContext* browser_context,
   client->EnqueueSend(std::move(response));
 }
 
-WebviewController::~WebviewController() {}
+WebviewController::~WebviewController() {
+  cast_web_contents_->RemoveObserver(this);
+}
 
 std::unique_ptr<content::NavigationThrottle>
 WebviewController::MaybeGetNavigationThrottle(
