@@ -321,10 +321,7 @@ SMILTime SVGSMILElement::ParseOffsetValue(const String& data) {
     result = parse.ToDouble(&ok);
   if (!ok)
     return SMILTime::Unresolved();
-  SMILTime offset_value = SMILTime::FromSecondsD(result);
-  if (!offset_value.IsFinite())
-    return SMILTime::Unresolved();
-  return offset_value;
+  return SMILTime::FromSecondsD(result);
 }
 
 SMILTime SVGSMILElement::ParseClockValue(const String& data) {
@@ -361,10 +358,7 @@ SMILTime SVGSMILElement::ParseClockValue(const String& data) {
 
   if (!ok)
     return SMILTime::Unresolved();
-  SMILTime clock_value = SMILTime::FromSecondsD(result);
-  if (!clock_value.IsFinite())
-    return SMILTime::Unresolved();
-  return clock_value;
+  return SMILTime::FromSecondsD(result);
 }
 
 bool SVGSMILElement::ParseCondition(const String& value,
