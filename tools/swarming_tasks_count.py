@@ -17,7 +17,6 @@ import optparse
 import os
 import subprocess
 import sys
-import urllib
 
 CLIENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(
     __file__.decode(sys.getfilesystemencoding()))))
@@ -28,6 +27,7 @@ tools.force_local_third_party()
 
 # third_party/
 import colorama
+from six.moves import urllib
 
 # pylint: disable=ungrouped-imports
 from utils import graph
@@ -76,7 +76,7 @@ def _get_cmd(swarming, endpoint, start, end, state, tags):
   ]
   data = [('start', start), ('end', end), ('state', state)]
   data.extend(('tags', tag) for tag in tags)
-  return cmd + [endpoint + '?' + urllib.urlencode(data)]
+  return cmd + [endpoint + '?' + urllib.parse.urlencode(data)]
 
 
 def _flatten_dimensions(dimensions):

@@ -13,7 +13,8 @@ import os
 import subprocess
 import sys
 import tempfile
-import urllib
+
+from six.moves import urllib
 
 CLIENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(
     __file__.decode(sys.getfilesystemencoding()))))
@@ -38,7 +39,7 @@ def get_all_by_tags(server, tags):
   # master:tryserver.chromium.win
   # buildername:win_chromium_rel_ng
   # buildnumber:516399
-  url = 'tasks/list?' + '&'.join('tags=' + urllib.quote(t) for t in tags)
+  url = 'tasks/list?' + '&'.join('tags=' + urllib.parse.quote(t) for t in tags)
   tasks = query_swarming(server, url)['items']
   print('Found %d original tasks' % len(tasks))
   return [t['task_id'] for t in tasks]

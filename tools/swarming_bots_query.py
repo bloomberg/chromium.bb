@@ -11,7 +11,8 @@ import optparse
 import os
 import subprocess
 import sys
-import urllib
+
+from six.moves import urllib
 
 
 CLIENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(
@@ -29,9 +30,14 @@ def _run_json(cmd):
 def fetch_bots(swarming, dimensions):
   data = [('dimensions', d) for d in dimensions]
   cmd = [
-    sys.executable, os.path.join(CLIENT_DIR, 'swarming.py'),
-    'query', '-S', swarming, '--limit', '0',
-    'bots/list?' + urllib.urlencode(data),
+      sys.executable,
+      os.path.join(CLIENT_DIR, 'swarming.py'),
+      'query',
+      '-S',
+      swarming,
+      '--limit',
+      '0',
+      'bots/list?' + urllib.parse.urlencode(data),
   ]
   bots = _run_json(cmd)[u'items']
   for b in bots:

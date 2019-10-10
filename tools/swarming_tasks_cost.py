@@ -16,7 +16,8 @@ import optparse
 import os
 import subprocess
 import sys
-import urllib
+
+from six.moves import urllib
 
 
 CLIENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(
@@ -153,11 +154,10 @@ def fetch_data(options):
     options.end = options.start + datetime.timedelta(days=1)
   else:
     options.end = parse_time_option(options.end)
-  url = 'tasks/list?' + urllib.urlencode(
-      {
-        'start': int((options.start - _EPOCH).total_seconds()),
-        'end': int((options.end - _EPOCH).total_seconds()),
-      })
+  url = 'tasks/list?' + urllib.parse.urlencode({
+      'start': int((options.start - _EPOCH).total_seconds()),
+      'end': int((options.end - _EPOCH).total_seconds()),
+  })
   cmd = [
     sys.executable, os.path.join(CLIENT_DIR, 'swarming.py'),
     'query',

@@ -14,7 +14,8 @@ import platform
 import sys
 import tempfile
 import time
-import urllib
+
+from six.moves import urllib
 
 from utils import file_path
 from utils import fs
@@ -282,9 +283,9 @@ def resolve_version(cipd_server, package_name, version, timeout=None):
   """Resolves a package instance version (e.g. a tag) to an instance id."""
   url = '%s/_ah/api/repo/v1/instance/resolve?%s' % (
       cipd_server,
-      urllib.urlencode({
-        'package_name': package_name,
-        'version': version,
+      urllib.parse.urlencode({
+          'package_name': package_name,
+          'version': version,
       }))
   res = net.url_read_json(url, timeout=timeout)
   _check_response(res, 'Could not resolve version %s:%s', package_name, version)
@@ -301,10 +302,11 @@ def get_client_fetch_url(service_url, package_name, instance_id, timeout=None):
     Error if cannot retrieve fetch URL.
   """
   # Fetch the URL of the binary from CIPD backend.
-  url = '%s/_ah/api/repo/v1/client?%s' % (service_url, urllib.urlencode({
-    'package_name': package_name,
-    'instance_id': instance_id,
-  }))
+  url = '%s/_ah/api/repo/v1/client?%s' % (service_url,
+                                          urllib.parse.urlencode({
+                                              'package_name': package_name,
+                                              'instance_id': instance_id,
+                                          }))
   res = net.url_read_json(url, timeout=timeout)
   _check_response(
       res, 'Could not fetch CIPD client %s:%s',package_name, instance_id)

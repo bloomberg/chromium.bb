@@ -20,7 +20,6 @@ import sys
 import textwrap
 import threading
 import time
-import urllib
 
 from utils import tools
 tools.force_local_third_party()
@@ -30,6 +29,7 @@ import colorama
 from chromium import natsort
 from depot_tools import fix_encoding
 from depot_tools import subcommand
+from six.moves import urllib
 
 # pylint: disable=ungrouped-imports
 import auth
@@ -418,8 +418,8 @@ class TaskOutputCollector(object):
       ref = result['outputs_ref']
       result['outputs_ref']['view_url'] = '%s/browse?%s' % (
           ref['isolatedserver'],
-          urllib.urlencode(
-              [('namespace', ref['namespace']), ('hash', ref['isolated'])]))
+          urllib.parse.urlencode([('namespace', ref['namespace']),
+                                  ('hash', ref['isolated'])]))
 
     # Store result dict of that shard, ignore results we've already seen.
     with self._lock:
@@ -872,7 +872,7 @@ def get_yielder(base_url, limit):
     # by looking at the 'cursor' items.
     while cursor and (not limit or total < limit):
       merge_char = '&' if '?' in base_url else '?'
-      url = base_url + '%scursor=%s' % (merge_char, urllib.quote(cursor))
+      url = base_url + '%scursor=%s' % (merge_char, urllib.parse.quote(cursor))
       if limit:
         url += '&limit=%d' % min(CHUNK_SIZE, limit - total)
       new = net.url_read_json(url)
@@ -1398,7 +1398,7 @@ def CMDbots(parser, args):
 
   for key, value in options.dimensions:
     values.append(('dimensions', '%s:%s' % (key, value)))
-  url += urllib.urlencode(values)
+  url += urllib.parse.urlencode(values)
   try:
     data, yielder = get_yielder(url, 0)
     bots = data.get('items') or []
