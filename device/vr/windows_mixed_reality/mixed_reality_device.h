@@ -46,7 +46,7 @@ class DEVICE_VR_EXPORT MixedRealityDevice
 
   // XRCompositorHost
   void CreateImmersiveOverlay(
-      mojom::ImmersiveOverlayRequest overlay_request) override;
+      mojo::PendingReceiver<mojom::ImmersiveOverlay> overlay_receiver) override;
 
   void CreateRenderLoop();
   void Shutdown();
@@ -63,7 +63,7 @@ class DEVICE_VR_EXPORT MixedRealityDevice
   mojo::PendingReceiver<mojom::IsolatedXRGamepadProvider> provider_receiver_;
 
   mojo::Binding<mojom::XRCompositorHost> compositor_host_binding_;
-  mojom::ImmersiveOverlayRequest overlay_request_;
+  mojo::PendingReceiver<mojom::ImmersiveOverlay> overlay_receiver_;
 
   mojo::Binding<mojom::XRSessionController> exclusive_controller_binding_;
 

@@ -58,7 +58,7 @@ class DEVICE_VR_EXPORT OculusDevice
 
   // XRCompositorHost
   void CreateImmersiveOverlay(
-      mojom::ImmersiveOverlayRequest overlay_request) override;
+      mojo::PendingReceiver<mojom::ImmersiveOverlay> overlay_receiver) override;
 
   void OnPresentationEnded();
   bool EnsureValidDisplayInfo();
@@ -77,7 +77,7 @@ class DEVICE_VR_EXPORT OculusDevice
   mojo::PendingReceiver<mojom::IsolatedXRGamepadProvider> provider_receiver_;
 
   mojo::Binding<mojom::XRCompositorHost> compositor_host_binding_;
-  mojom::ImmersiveOverlayRequest overlay_request_;
+  mojo::PendingReceiver<mojom::ImmersiveOverlay> overlay_receiver_;
 
   base::WeakPtrFactory<OculusDevice> weak_ptr_factory_;
 

@@ -188,7 +188,7 @@ interface ImmersiveOverlay {
 // obtain an ImmersiveOverlay to show overlay UI.  The obtained overlay will
 // disconnect when presentation ends.
 interface XRCompositorHost {
-  CreateImmersiveOverlay(ImmersiveOverlay& overlay);
+  CreateImmersiveOverlay(pending_receiver<ImmersiveOverlay> overlay);
 };
 
 // Notify the browser process about a set of runtimes.  The browser process
