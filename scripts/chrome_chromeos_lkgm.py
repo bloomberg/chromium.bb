@@ -29,13 +29,15 @@ class LKGMFileNotFound(chrome_committer.CommitError):
 class ChromeLKGMCommitter(object):
   """Committer object responsible for obtaining a new LKGM and committing it."""
 
-  _COMMIT_MSG_TEMPLATE = (
-      'LKGM %(version)s for chromeos.'
-      # Make all LKGM updates run and pass on the betty trybot before landing.
-      # Since it's an internal trybot, the CQ won't automatically trigger it,
-      # so we have to explicitly tell it to.
-      '\n\nCQ_INCLUDE_TRYBOTS=luci.chrome.try:chromeos-betty-chrome'
-      '\n\nBUG=762641')
+  # The list of trybots we require LKGM updates to run and pass on before
+  # landing. Since they're internal trybots, the CQ won't automatically trigger
+  # them, so we have to explicitly tell it to.
+  _PRESUBMIT_BOTS = [
+      'chromeos-betty-chrome',
+      'chromeos-betty-pi-arc-chrome',
+      'chromeos-eve-compile-chrome',
+      'chromeos-kevin-compile-chrome',
+  ]
   # Files needed in a local checkout to successfully update the LKGM. The OWNERS
   # file allows the --tbr-owners mechanism to select an appropriate OWNER to
   # TBR. TRANSLATION_OWNERS is necesssary to parse CHROMEOS_OWNERS file since
@@ -91,10 +93,22 @@ class ChromeLKGMCommitter(object):
                  self._lkgm, self._old_lkgm)
     osutils.WriteFile(lkgm_file, self._lkgm)
 
+  def ComposeCommitMsg(self):
+    """Constructs and returns the commit message for the LKGM update."""
+    commit_msg_template = (
+        'LKGM %(version)s for chromeos.'
+        '\n\n%(cq_includes)s'
+        '\nBUG=762641')
+    cq_includes = ''
+    for bot in self._PRESUBMIT_BOTS:
+      cq_includes += 'CQ_INCLUDE_TRYBOTS=luci.chrome.try:%s\n' % bot
+    return commit_msg_template % dict(
+        version=self._lkgm, cq_includes=cq_includes)
+
   def CommitNewLKGM(self):
     """Commits the new LKGM file using our template commit message."""
-    commit_msg = self._COMMIT_MSG_TEMPLATE % dict(version=self._lkgm)
-    self._committer.Commit([constants.PATH_TO_CHROME_LKGM], commit_msg)
+    self._committer.Commit([constants.PATH_TO_CHROME_LKGM],
+                           self.ComposeCommitMsg())
 
 
 def GetArgs(argv):

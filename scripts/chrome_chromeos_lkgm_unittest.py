@@ -101,3 +101,12 @@ class ChromeLKGMCommitterTester(cros_test_lib.RunCommandTestCase,
     stripped_lkgm = '1003.0.0'
     self.assertEqual(osutils.ReadFile(self.lkgm_file), stripped_lkgm)
     self.assertEqual(self.committer._old_lkgm, self.old_lkgm)
+
+  def testCommitMsg(self):
+    """Tests format of the commit message."""
+    self.committer._lkgm = '12345.0.0'
+    self.committer._PRESUBMIT_BOTS = ['bot1', 'bot2']
+    commit_msg_lines = self.committer.ComposeCommitMsg().splitlines()
+    self.assertIn('LKGM 12345.0.0 for chromeos.', commit_msg_lines)
+    self.assertIn('CQ_INCLUDE_TRYBOTS=luci.chrome.try:bot1', commit_msg_lines)
+    self.assertIn('CQ_INCLUDE_TRYBOTS=luci.chrome.try:bot2', commit_msg_lines)
