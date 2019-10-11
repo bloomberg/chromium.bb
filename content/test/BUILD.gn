@@ -1938,8 +1938,6 @@ test("content_unittests") {
     "../renderer/media/batching_media_log_unittest.cc",
     "../renderer/media/inspector_media_event_handler_unittest.cc",
     "../renderer/media/renderer_webaudiodevice_impl_unittest.cc",
-    "../renderer/media/webrtc/fake_rtc_rtp_transceiver.cc",
-    "../renderer/media/webrtc/fake_rtc_rtp_transceiver.h",
     "../renderer/media/webrtc/media_stream_track_metrics_unittest.cc",
     "../renderer/media/webrtc/peer_connection_dependency_factory_unittest.cc",
     "../renderer/media/webrtc/peer_connection_tracker_unittest.cc",

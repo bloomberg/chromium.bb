@@ -145,6 +145,7 @@ jumbo_source_set("test_support") {
   testonly = true
 
   sources = [
+    "fake_rtc_rtp_transceiver_impl.cc",
     "mock_data_channel_impl.cc",
     "mock_peer_connection_dependency_factory.cc",
     "mock_peer_connection_impl.cc",

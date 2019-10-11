@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_WEBRTC_FAKE_RTC_RTP_TRANSCEIVER_H_
-#define CONTENT_RENDERER_MEDIA_WEBRTC_FAKE_RTC_RTP_TRANSCEIVER_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_PEERCONNECTION_FAKE_RTC_RTP_TRANSCEIVER_IMPL_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_PEERCONNECTION_FAKE_RTC_RTP_TRANSCEIVER_IMPL_H_
 
 #include <memory>
 #include <string>
@@ -19,22 +19,22 @@
 #include "third_party/blink/public/platform/web_rtc_rtp_source.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_transceiver.h"
 
-namespace content {
+namespace blink {
 
-// TODO(https://crbug.com/868868): Similar methods to this exist in many content
+// TODO(https://crbug.com/868868): Similar methods to this exist in many blink
 // unittests. Move to a separate file and reuse it in all of them.
 blink::WebMediaStreamTrack CreateWebMediaStreamTrack(
     const std::string& id,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
-class FakeRTCRtpSender : public blink::WebRTCRtpSender {
+class FakeRTCRtpSenderImpl : public blink::WebRTCRtpSender {
  public:
-  FakeRTCRtpSender(base::Optional<std::string> track_id,
-                   std::vector<std::string> stream_ids,
-                   scoped_refptr<base::SingleThreadTaskRunner> task_runner);
-  FakeRTCRtpSender(const FakeRTCRtpSender&);
-  ~FakeRTCRtpSender() override;
-  FakeRTCRtpSender& operator=(const FakeRTCRtpSender&);
+  FakeRTCRtpSenderImpl(base::Optional<std::string> track_id,
+                       std::vector<std::string> stream_ids,
+                       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+  FakeRTCRtpSenderImpl(const FakeRTCRtpSenderImpl&);
+  ~FakeRTCRtpSenderImpl() override;
+  FakeRTCRtpSenderImpl& operator=(const FakeRTCRtpSenderImpl&);
 
   std::unique_ptr<blink::WebRTCRtpSender> ShallowCopy() const override;
   uintptr_t Id() const override;
@@ -61,14 +61,15 @@ class FakeRTCRtpSender : public blink::WebRTCRtpSender {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 };
 
-class FakeRTCRtpReceiver : public blink::WebRTCRtpReceiver {
+class FakeRTCRtpReceiverImpl : public blink::WebRTCRtpReceiver {
  public:
-  FakeRTCRtpReceiver(const std::string& track_id,
-                     std::vector<std::string> stream_ids,
-                     scoped_refptr<base::SingleThreadTaskRunner> task_runner);
-  FakeRTCRtpReceiver(const FakeRTCRtpReceiver&);
-  ~FakeRTCRtpReceiver() override;
-  FakeRTCRtpReceiver& operator=(const FakeRTCRtpReceiver&);
+  FakeRTCRtpReceiverImpl(
+      const std::string& track_id,
+      std::vector<std::string> stream_ids,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+  FakeRTCRtpReceiverImpl(const FakeRTCRtpReceiverImpl&);
+  ~FakeRTCRtpReceiverImpl() override;
+  FakeRTCRtpReceiverImpl& operator=(const FakeRTCRtpReceiverImpl&);
 
   std::unique_ptr<blink::WebRTCRtpReceiver> ShallowCopy() const override;
   uintptr_t Id() const override;
@@ -89,16 +90,16 @@ class FakeRTCRtpReceiver : public blink::WebRTCRtpReceiver {
   std::vector<std::string> stream_ids_;
 };
 
-class FakeRTCRtpTransceiver : public blink::WebRTCRtpTransceiver {
+class FakeRTCRtpTransceiverImpl : public blink::WebRTCRtpTransceiver {
  public:
-  FakeRTCRtpTransceiver(
+  FakeRTCRtpTransceiverImpl(
       base::Optional<std::string> mid,
-      FakeRTCRtpSender sender,
-      FakeRTCRtpReceiver receiver,
+      FakeRTCRtpSenderImpl sender,
+      FakeRTCRtpReceiverImpl receiver,
       bool stopped,
       webrtc::RtpTransceiverDirection direction,
       base::Optional<webrtc::RtpTransceiverDirection> current_direction);
-  ~FakeRTCRtpTransceiver() override;
+  ~FakeRTCRtpTransceiverImpl() override;
 
   blink::WebRTCRtpTransceiverImplementationType ImplementationType()
       const override;
@@ -116,13 +117,13 @@ class FakeRTCRtpTransceiver : public blink::WebRTCRtpTransceiver {
 
  private:
   base::Optional<std::string> mid_;
-  FakeRTCRtpSender sender_;
-  FakeRTCRtpReceiver receiver_;
+  FakeRTCRtpSenderImpl sender_;
+  FakeRTCRtpReceiverImpl receiver_;
   bool stopped_;
   webrtc::RtpTransceiverDirection direction_;
   base::Optional<webrtc::RtpTransceiverDirection> current_direction_;
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_MEDIA_WEBRTC_FAKE_RTC_RTP_TRANSCEIVER_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_PEERCONNECTION_FAKE_RTC_RTP_TRANSCEIVER_IMPL_H_
