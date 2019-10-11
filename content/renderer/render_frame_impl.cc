@@ -2159,10 +2159,6 @@ void RenderFrameImpl::SimulateImeCommitText(
                                               replacement_range, 0);
 }
 
-void RenderFrameImpl::SimulateImeFinishComposingText(bool keep_selection) {
-  GetMainFrameRenderWidget()->OnImeFinishComposingText(keep_selection);
-}
-
 void RenderFrameImpl::OnImeSetComposition(
     const base::string16& text,
     const std::vector<blink::WebImeTextSpan>& ime_text_spans,

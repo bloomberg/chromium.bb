@@ -2202,10 +2202,8 @@ void RenderWidget::OnShowContextMenu(ui::MenuSourceType source_type,
                                      const gfx::Point& location) {
   has_host_context_menu_location_ = true;
   host_context_menu_location_ = location;
-  if (GetWebWidget()) {
-    GetWebWidget()->ShowContextMenu(
-        static_cast<blink::WebMenuSourceType>(source_type));
-  }
+  GetWebWidget()->ShowContextMenu(
+      static_cast<blink::WebMenuSourceType>(source_type));
   has_host_context_menu_location_ = false;
 }
 
@@ -2285,8 +2283,6 @@ void RenderWidget::OnImeFinishComposingText(bool keep_selection) {
   }
 #endif
 
-  if (!GetWebWidget())
-    return;
   ImeEventGuard guard(this);
   input_handler_->set_handling_input_event(true);
   if (auto* controller = GetInputMethodController()) {
@@ -2702,8 +2698,6 @@ void RenderWidget::GetSelectionBounds(gfx::Rect* focus, gfx::Rect* anchor) {
 
 void RenderWidget::UpdateSelectionBounds() {
   TRACE_EVENT0("renderer", "RenderWidget::UpdateSelectionBounds");
-  if (!GetWebWidget())
-    return;
   if (ime_event_guard_)
     return;
 
