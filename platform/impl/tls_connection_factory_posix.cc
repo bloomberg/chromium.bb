@@ -36,9 +36,13 @@ std::unique_ptr<TlsConnectionFactory> TlsConnectionFactory::CreateFactory(
       new TlsConnectionFactoryPosix(client, task_runner));
 }
 
-TlsConnectionFactoryPosix::TlsConnectionFactoryPosix(Client* client,
-                                                     TaskRunner* task_runner)
-    : TlsConnectionFactory(client, task_runner), task_runner_(task_runner) {}
+TlsConnectionFactoryPosix::TlsConnectionFactoryPosix(
+    Client* client,
+    TaskRunner* task_runner,
+    PlatformClientPosix* platform_client)
+    : TlsConnectionFactory(client, task_runner),
+      task_runner_(task_runner),
+      platform_client_(platform_client) {}
 
 TlsConnectionFactoryPosix::~TlsConnectionFactoryPosix() = default;
 
@@ -49,7 +53,8 @@ void TlsConnectionFactoryPosix::Connect(const IPEndpoint& remote_address,
   TRACE_SCOPED(TraceCategory::SSL, "TlsConnectionFactoryPosix::Connect");
   IPAddress::Version version = remote_address.address.version();
   std::unique_ptr<TlsConnectionPosix> connection =
-      std::make_unique<TlsConnectionPosix>(version, task_runner_);
+      std::make_unique<TlsConnectionPosix>(version, task_runner_,
+                                           platform_client_);
   Error connect_error = connection->socket_->Connect(remote_address);
   if (!connect_error.ok()) {
     TRACE_SET_RESULT(connect_error.error());
@@ -99,12 +104,14 @@ void TlsConnectionFactoryPosix::Listen(const IPEndpoint& local_address,
   // Credentials must be set before Listen() is called.
   OSP_DCHECK(listen_credentials_set_);
 
-  StreamSocketPosix socket(local_address);
-  socket.Listen(options.backlog_size);
+  auto socket = std::make_unique<StreamSocketPosix>(local_address);
+  socket->Listen(options.backlog_size);
 
-  // TODO(jophba, rwkeane): Call on singleton:
-  // TlsDataRouterPosix::RegisterSocketObserver(std::move(socket), this)
-  OSP_UNIMPLEMENTED();
+  OSP_DCHECK(platform_client_);
+  if (platform_client_) {
+    platform_client_->tls_data_router()->RegisterSocketObserver(
+        std::move(socket), this);
+  }
 }
 
 void TlsConnectionFactoryPosix::OnConnectionPending(StreamSocketPosix* socket) {
@@ -130,8 +137,8 @@ void TlsConnectionFactoryPosix::OnSocketAccepted(
     std::unique_ptr<StreamSocket> socket) {
   TRACE_SCOPED(TraceCategory::SSL,
                "TlsConnectionFactoryPosix::OnSocketAccepted");
-  auto connection =
-      std::make_unique<TlsConnectionPosix>(std::move(socket), task_runner_);
+  auto connection = std::make_unique<TlsConnectionPosix>(
+      std::move(socket), task_runner_, platform_client_);
 
   if (!ConfigureSsl(connection.get())) {
     return;

@@ -42,6 +42,10 @@ class PlatformClientPosix : public PlatformClient {
   // embedder thread.
   static void ShutDown();
 
+  inline static PlatformClientPosix* GetInstance() {
+    return static_cast<PlatformClientPosix*>(PlatformClient::GetInstance());
+  }
+
   // This method is thread-safe.
   TlsDataRouterPosix* tls_data_router();
 

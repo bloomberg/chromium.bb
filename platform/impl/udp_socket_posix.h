@@ -7,6 +7,7 @@
 
 #include "absl/types/optional.h"
 #include "platform/api/udp_socket.h"
+#include "platform/impl/platform_client_posix.h"
 #include "platform/impl/socket_handle_posix.h"
 
 namespace openscreen {
@@ -19,7 +20,9 @@ struct UdpSocketPosix : public UdpSocket {
   UdpSocketPosix(TaskRunner* task_runner,
                  Client* client,
                  SocketHandle handle,
-                 const IPEndpoint& local_endpoint);
+                 const IPEndpoint& local_endpoint,
+                 PlatformClientPosix* platform_client =
+                     PlatformClientPosix::GetInstance());
 
   ~UdpSocketPosix() override;
 
@@ -55,6 +58,9 @@ struct UdpSocketPosix : public UdpSocket {
   // the port is zero, getsockname() is called to try to resolve it. Once the
   // port is non-zero, it is assumed never to change again.
   mutable IPEndpoint local_endpoint_;
+
+  // Instance to use for creation and destruction notifications.
+  PlatformClientPosix* platform_client_;
 };
 
 }  // namespace platform

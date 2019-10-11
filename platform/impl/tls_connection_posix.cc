@@ -30,22 +30,46 @@ namespace platform {
 
 // TODO(jophba, rwkeane): implement write blocking/unblocking
 TlsConnectionPosix::TlsConnectionPosix(IPEndpoint local_address,
-                                       TaskRunner* task_runner)
+                                       TaskRunner* task_runner,
+                                       PlatformClientPosix* platform_client)
     : TlsConnection(task_runner),
       socket_(std::make_unique<StreamSocketPosix>(local_address)),
-      buffer_(this) {}
+      buffer_(this),
+      platform_client_(platform_client) {
+  if (platform_client_) {
+    platform_client_->tls_data_router()->RegisterConnection(this);
+  }
+}
 
 TlsConnectionPosix::TlsConnectionPosix(IPAddress::Version version,
-                                       TaskRunner* task_runner)
+                                       TaskRunner* task_runner,
+                                       PlatformClientPosix* platform_client)
     : TlsConnection(task_runner),
       socket_(std::make_unique<StreamSocketPosix>(version)),
-      buffer_(this) {}
+      buffer_(this),
+      platform_client_(platform_client) {
+  if (platform_client_) {
+    platform_client_->tls_data_router()->RegisterConnection(this);
+  }
+}
 
 TlsConnectionPosix::TlsConnectionPosix(std::unique_ptr<StreamSocket> socket,
-                                       TaskRunner* task_runner)
-    : TlsConnection(task_runner), socket_(std::move(socket)), buffer_(this) {}
+                                       TaskRunner* task_runner,
+                                       PlatformClientPosix* platform_client)
+    : TlsConnection(task_runner),
+      socket_(std::move(socket)),
+      buffer_(this),
+      platform_client_(platform_client) {
+  if (platform_client_) {
+    platform_client_->tls_data_router()->RegisterConnection(this);
+  }
+}
 
-TlsConnectionPosix::~TlsConnectionPosix() = default;
+TlsConnectionPosix::~TlsConnectionPosix() {
+  if (platform_client_) {
+    platform_client_->tls_data_router()->DeregisterConnection(this);
+  }
+}
 
 void TlsConnectionPosix::TryReceiveMessage() {
   const int bytes_available = SSL_pending(ssl_.get());

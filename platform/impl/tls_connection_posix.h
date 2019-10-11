@@ -15,6 +15,7 @@
 #include "platform/api/task_runner.h"
 #include "platform/api/tls_connection.h"
 #include "platform/base/socket_state.h"
+#include "platform/impl/platform_client_posix.h"
 #include "platform/impl/stream_socket_posix.h"
 #include "platform/impl/tls_write_buffer.h"
 
@@ -24,10 +25,18 @@ namespace platform {
 class TlsConnectionPosix : public TlsConnection,
                            public TlsWriteBuffer::Observer {
  public:
-  TlsConnectionPosix(IPEndpoint local_address, TaskRunner* task_runner);
-  TlsConnectionPosix(IPAddress::Version version, TaskRunner* task_runner);
+  TlsConnectionPosix(IPEndpoint local_address,
+                     TaskRunner* task_runner,
+                     PlatformClientPosix* platform_client =
+                         PlatformClientPosix::GetInstance());
+  TlsConnectionPosix(IPAddress::Version version,
+                     TaskRunner* task_runner,
+                     PlatformClientPosix* platform_client =
+                         PlatformClientPosix::GetInstance());
   TlsConnectionPosix(std::unique_ptr<StreamSocket> socket,
-                     TaskRunner* task_runner);
+                     TaskRunner* task_runner,
+                     PlatformClientPosix* platform_client =
+                         PlatformClientPosix::GetInstance());
   ~TlsConnectionPosix();
 
   // Sends any available bytes from this connection's buffer_.
@@ -51,6 +60,8 @@ class TlsConnectionPosix : public TlsConnection,
 
   std::atomic_bool is_buffer_blocked_{false};
   TlsWriteBuffer buffer_;
+
+  PlatformClientPosix* platform_client_;
 
   friend class TlsConnectionFactoryPosix;
 };

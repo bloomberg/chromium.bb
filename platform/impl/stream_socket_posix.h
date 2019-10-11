@@ -22,7 +22,7 @@ namespace platform {
 class StreamSocketPosix : public StreamSocket {
  public:
   StreamSocketPosix(IPAddress::Version version);
-  explicit StreamSocketPosix(const IPEndpoint& local_endpoint);
+  StreamSocketPosix(const IPEndpoint& local_endpoint);
   StreamSocketPosix(SocketAddressPosix local_address, int file_descriptor);
 
   // StreamSocketPosix is non-copyable, due to directly managing the file
