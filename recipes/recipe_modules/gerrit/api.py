@@ -26,6 +26,7 @@ class GerritApi(recipe_api.RecipeApi):
                            self.repo_resource('gerrit_client.py'),
                            cmd,
                            infra_step=infra_step,
+                           venv=True,
                            **kwargs)
 
   def create_gerrit_branch(self, host, project, branch, commit, **kwargs):

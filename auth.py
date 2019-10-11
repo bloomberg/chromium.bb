@@ -9,6 +9,7 @@ from __future__ import print_function
 import collections
 import datetime
 import functools
+import httplib2
 import json
 import logging
 import optparse
@@ -20,7 +21,6 @@ import urlparse
 
 import subprocess2
 
-from third_party import httplib2
 from third_party.oauth2client import client
 
 

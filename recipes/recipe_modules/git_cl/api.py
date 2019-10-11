@@ -18,7 +18,7 @@ class GitClApi(recipe_api.RecipeApi):
     with self.m.context(cwd=self.m.context.cwd or my_loc):
       return self.m.python(
           name, self.repo_resource('git_cl.py'), [subcmd] + args,
-          **kwargs)
+          venv=True, **kwargs)
 
   def get_description(self, patch_url=None, codereview=None, **kwargs):
     """DEPRECATED. Consider using gerrit.get_change_description instead."""
