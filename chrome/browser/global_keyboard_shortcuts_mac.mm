@@ -168,6 +168,9 @@ const std::vector<KeyboardShortcutData>& GetShortcutsNotPresentInMainMenu() {
     {true, false, false, true,  kVK_ANSI_L,             IDC_SHOW_DOWNLOADS},
     {true,  true,  false, false, kVK_ANSI_C,            IDC_DEV_TOOLS_INSPECT},
     {true,  false,  false, true, kVK_ANSI_C,            IDC_DEV_TOOLS_INSPECT},
+
+    {true, false, false, true, kVK_UpArrow,             IDC_FOCUS_NEXT_PANE},
+    {true, true, false, true,  kVK_UpArrow,             IDC_FOCUS_PREVIOUS_PANE},
   });
   // clang-format on
   return *keys;
