@@ -482,12 +482,11 @@ bool JsonPrefStore::SerializeData(std::string* output) {
   const bool success = serializer.Serialize(*prefs_);
   if (!success) {
     // Failed to serialize prefs file. Backup the existing prefs file and
-    // reset our existing prefs.
+    // crash.
     BackupPrefsFile(path_);
     CHECK(false) << "Failed to serialize preferences : " << path_
                  << "\nBacked up under "
                  << path_.ReplaceExtension(kBadExtension);
-    prefs_.reset(new base::DictionaryValue());
   }
   return success;
 }
