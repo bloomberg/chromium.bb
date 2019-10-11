@@ -235,6 +235,7 @@ class TabStripUIHandler : public content::WebUIMessageHandler,
                         static_cast<int>(tab_renderer_data.network_state));
     tab_data.SetBoolean("shouldHideThrobber",
                         tab_renderer_data.should_hide_throbber);
+    tab_data.SetBoolean("crashed", tab_renderer_data.IsCrashed());
     // TODO(johntlee): Add the rest of TabRendererData
 
     return tab_data;

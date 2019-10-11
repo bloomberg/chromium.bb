@@ -92,6 +92,13 @@ suite('Tab', function() {
     assertFalse(tabElement.hasAttribute('waiting_'));
   });
 
+  test('toggles a [crashed] attribute when crashed', () => {
+    tabElement.tab = Object.assign({}, tab, {crashed: true});
+    assertTrue(tabElement.hasAttribute('crashed'));
+    tabElement.tab = Object.assign({}, tab, {crashed: false});
+    assertFalse(tabElement.hasAttribute('crashed'));
+  });
+
   test('clicking on the element activates the tab', () => {
     tabElement.click();
     return testTabsApiProxy.whenCalled('activateTab', tabId => {
