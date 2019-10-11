@@ -21,9 +21,11 @@ namespace blink {
 // Onion Soup is done.
 // Keep this struct consistent with mojom::FetchClientSettingsObject.
 struct WebFetchClientSettingsObject {
-  network::mojom::ReferrerPolicy referrer_policy;
+  network::mojom::ReferrerPolicy referrer_policy =
+      network::mojom::ReferrerPolicy::kDefault;
   WebURL outgoing_referrer;
-  mojom::InsecureRequestsPolicy insecure_requests_policy;
+  mojom::InsecureRequestsPolicy insecure_requests_policy =
+      blink::mojom::InsecureRequestsPolicy::kDoNotUpgrade;
 
   WebFetchClientSettingsObject() {}
 
