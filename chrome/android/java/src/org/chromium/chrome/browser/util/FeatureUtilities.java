@@ -74,7 +74,6 @@ public class FeatureUtilities {
     private static Map<String, Boolean> sFlags = new HashMap<>();
     private static Boolean sHasGoogleAccountAuthenticator;
     private static Boolean sHasRecognitionIntentHandler;
-    private static Boolean sIsTabGroupsAndroidEnabled;
     private static Boolean sIsTabToGtsAnimationEnabled;
     private static String sReachedCodeProfilerTrialGroup;
 
@@ -480,22 +479,15 @@ public class FeatureUtilities {
                                 || ChromeFeatureList.isEnabled(
                                         ChromeFeatureList.TAB_GROUPS_ANDROID))
                         && TabManagementModuleProvider.getDelegate() != null
-                        && ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_GROUPS_ANDROID));
+                        && ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_GROUPS_ANDROID)
+                        && isHighEndPhone());
     }
 
     /**
      * @return Whether the tab group feature is enabled and available for use.
      */
     public static boolean isTabGroupsAndroidEnabled() {
-        if (sIsTabGroupsAndroidEnabled == null) {
-            ChromePreferenceManager preferenceManager = ChromePreferenceManager.getInstance();
-
-            sIsTabGroupsAndroidEnabled = preferenceManager.readBoolean(
-                    ChromePreferenceManager.TAB_GROUPS_ANDROID_ENABLED_KEY, false);
-            sIsTabGroupsAndroidEnabled &= isHighEndPhone();
-        }
-
-        return sIsTabGroupsAndroidEnabled;
+        return isFlagEnabled(ChromePreferenceManager.TAB_GROUPS_ANDROID_ENABLED_KEY, false);
     }
 
     /**
@@ -504,7 +496,7 @@ public class FeatureUtilities {
      */
     @VisibleForTesting
     public static void setTabGroupsAndroidEnabledForTesting(@Nullable Boolean available) {
-        sIsTabGroupsAndroidEnabled = available;
+        sFlags.put(ChromePreferenceManager.TAB_GROUPS_ANDROID_ENABLED_KEY, available);
     }
 
     /**
