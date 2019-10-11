@@ -144,6 +144,7 @@ jumbo_source_set("test_support") {
     "mock_data_channel_impl.cc",
     "mock_peer_connection_dependency_factory.cc",
     "mock_peer_connection_impl.cc",
+    "webrtc_stats_report_obtainer.cc",
   ]
 
   deps = [

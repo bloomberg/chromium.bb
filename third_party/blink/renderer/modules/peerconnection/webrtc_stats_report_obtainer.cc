@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/webrtc/test/webrtc_stats_report_obtainer.h"
+#include "third_party/blink/public/web/modules/peerconnection/webrtc_stats_report_obtainer.h"
 
 #include "base/bind.h"
 #include "base/callback.h"
 
-namespace content {
+namespace blink {
 
 WebRTCStatsReportObtainer::WebRTCStatsReportObtainer() {}
 
@@ -33,4 +33,4 @@ void WebRTCStatsReportObtainer::OnStatsDelivered(
   run_loop_.Quit();
 }
 
-}  // namespace content
+}  // namespace blink
