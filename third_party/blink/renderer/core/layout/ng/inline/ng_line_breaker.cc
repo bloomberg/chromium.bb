@@ -1898,7 +1898,9 @@ void NGLineBreaker::MoveToNextOf(const NGInlineItemResult& item_result) {
 
 scoped_refptr<NGInlineBreakToken> NGLineBreaker::CreateBreakToken(
     const NGLineInfo& line_info) const {
+  DCHECK(current_style_);
   const Vector<NGInlineItem>& items = Items();
+  DCHECK_LE(item_index_, items.size());
   if (item_index_ >= items.size())
     return NGInlineBreakToken::Create(node_);
   return NGInlineBreakToken::Create(
