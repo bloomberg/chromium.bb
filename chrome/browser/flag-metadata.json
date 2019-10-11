@@ -2923,9 +2923,9 @@
     "expiry_milestone": 85
   },
   {
-    "name": "proactive-tab-freeze-and-discard",
+    "name": "proactive-tab-freeze",
     "owners": [ "fdoray" ],
-    "expiry_milestone": 75
+    "expiry_milestone": 80
   },
   {
     "name": "profile-menu-revamp",

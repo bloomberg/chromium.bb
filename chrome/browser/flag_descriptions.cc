@@ -2989,11 +2989,10 @@ const char kOmniboxTabSwitchSuggestionsDedicatedRowDescription[] =
     "Put each tab switch suggestion in a separate suggestion, immediately "
     "following the original suggestion.";
 
-const char kProactiveTabFreezeAndDiscardName[] =
-    "Proactive Tab Freeze and Discard";
-const char kProactiveTabFreezeAndDiscardDescription[] =
-    "Enables proactive tab freezing and discarding. This requires "
-    "#enable-page-almost-idle.";
+const char kTabFreezeName[] = "Tab Freeze";
+const char kTabFreezeDescription[] =
+    "Enables freezing eligible tabs when they have been backgrounded for 5 "
+    "minutes.";
 
 const char kWebUIA11yEnhancementsName[] =
     "Enable accessibility enahncements in WebUI";

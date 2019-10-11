@@ -1749,8 +1749,8 @@ extern const char kOmniboxTabSwitchSuggestionsDescription[];
 extern const char kOmniboxTabSwitchSuggestionsDedicatedRowName[];
 extern const char kOmniboxTabSwitchSuggestionsDedicatedRowDescription[];
 
-extern const char kProactiveTabFreezeAndDiscardName[];
-extern const char kProactiveTabFreezeAndDiscardDescription[];
+extern const char kTabFreezeName[];
+extern const char kTabFreezeDescription[];
 
 extern const char kWebUIA11yEnhancementsName[];
 extern const char kWebUIA11yEnhancementsDescription[];

@@ -1020,31 +1020,26 @@ const FeatureEntry::FeatureVariation kOverscrollHistoryNavigationVariations[] =
 #endif  // defined(OS_ANDROID)
 
 #if !defined(OS_ANDROID)
-const FeatureEntry::FeatureParam kProactiveTabFreezeAndDiscard_FreezeOnly[] = {
+const FeatureEntry::FeatureParam kTabFreeze_FreezeNoUnfreeze[] = {
     {resource_coordinator::
          kProactiveTabFreezeAndDiscard_ShouldProactivelyDiscardParam,
+     "false"},
+    {resource_coordinator::
+         kProactiveTabFreezeAndDiscard_ShouldPeriodicallyUnfreezeParam,
      "false"}};
-const FeatureEntry::FeatureParam
-    kProactiveTabFreezeAndDiscard_FreezeAndDiscard[] = {
-        {resource_coordinator::
-             kProactiveTabFreezeAndDiscard_ShouldProactivelyDiscardParam,
-         "true"}};
-const FeatureEntry::FeatureParam
-    kProactiveTabFreezeAndDiscard_DisableHeuristics[] = {
-        {resource_coordinator::
-             kProactiveTabFreezeAndDiscard_ShouldProactivelyDiscardParam,
-         "true"},
-        {resource_coordinator::
-             kProactiveTabFreezeAndDiscard_DisableHeuristicsParam,
-         "true"}};
-const FeatureEntry::FeatureVariation kProactiveTabFreezeAndDiscardVariations[] =
-    {{"Freeze only", kProactiveTabFreezeAndDiscard_FreezeOnly,
-      base::size(kProactiveTabFreezeAndDiscard_FreezeOnly), nullptr},
-     {"Freeze and discard", kProactiveTabFreezeAndDiscard_FreezeAndDiscard,
-      base::size(kProactiveTabFreezeAndDiscard_FreezeAndDiscard), nullptr},
-     {"Freeze and discard, heuristics disabled",
-      kProactiveTabFreezeAndDiscard_DisableHeuristics,
-      base::size(kProactiveTabFreezeAndDiscard_DisableHeuristics), nullptr}};
+const FeatureEntry::FeatureParam kTabFreeze_FreezeWithUnfreeze[] = {
+    {resource_coordinator::
+         kProactiveTabFreezeAndDiscard_ShouldProactivelyDiscardParam,
+     "false"},
+    {resource_coordinator::
+         kProactiveTabFreezeAndDiscard_ShouldPeriodicallyUnfreezeParam,
+     "true"}};
+const FeatureEntry::FeatureVariation kTabFreezeVariations[] = {
+    {"Freeze - No Unfreeze", kTabFreeze_FreezeNoUnfreeze,
+     base::size(kTabFreeze_FreezeNoUnfreeze), nullptr},
+    {"Freeze - Unfreeze 10 seconds every 15 minutes",
+     kTabFreeze_FreezeWithUnfreeze, base::size(kTabFreeze_FreezeWithUnfreeze),
+     nullptr}};
 #endif
 
 #if defined(OS_ANDROID)
@@ -3519,12 +3514,11 @@ const FeatureEntry kFeatureEntries[] = {
      kOsDesktop,
      FEATURE_VALUE_TYPE(
          features::kSessionRestorePrioritizesBackgroundUseCases)},
-    {"proactive-tab-freeze-and-discard",
-     flag_descriptions::kProactiveTabFreezeAndDiscardName,
-     flag_descriptions::kProactiveTabFreezeAndDiscardDescription, kOsDesktop,
+    {"proactive-tab-freeze", flag_descriptions::kTabFreezeName,
+     flag_descriptions::kTabFreezeDescription, kOsDesktop,
      FEATURE_WITH_PARAMS_VALUE_TYPE(
          features::kProactiveTabFreezeAndDiscard,
-         kProactiveTabFreezeAndDiscardVariations,
+         kTabFreezeVariations,
          resource_coordinator::kProactiveTabFreezeAndDiscardFeatureName)},
 #endif
 
