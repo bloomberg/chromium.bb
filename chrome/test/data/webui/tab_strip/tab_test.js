@@ -108,11 +108,11 @@ suite('Tab', function() {
   });
 
   test('sets the favicon to the favicon URL', () => {
-    const expectedFaviconUrl = 'http://google.com/favicon.ico';
+    const expectedFaviconUrl = 'data:mock-favicon';
     tabElement.tab = Object.assign({}, tab, {favIconUrl: expectedFaviconUrl});
     const faviconElement = tabElement.shadowRoot.querySelector('#favicon');
     assertEquals(
-        faviconElement.style.backgroundImage, getFavicon(expectedFaviconUrl));
+        faviconElement.style.backgroundImage, `url("${expectedFaviconUrl}")`);
   });
 
   test('sets the favicon to the page URL if favicon URL does not exist', () => {

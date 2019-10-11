@@ -79,7 +79,7 @@ export class TabElement extends CustomElement {
 
     if (tab.favIconUrl) {
       if (!this.tab_ || this.tab_.favIconUrl !== tab.favIconUrl) {
-        this.faviconEl_.style.backgroundImage = getFavicon(tab.favIconUrl);
+        this.faviconEl_.style.backgroundImage = `url(${tab.favIconUrl})`;
       }
     } else {
       if (tab.networkState === TabNetworkState.NONE ||
