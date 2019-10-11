@@ -18,7 +18,7 @@ if (process.argv.length <= 2) {
   usage(0);
 }
 
-const myself = 'src/tools/gen.ts';
+const myself = 'src/tools/gen_listings.ts';
 if (!fs.existsSync(myself)) {
   console.error('Must be run from repository root');
   usage(1);

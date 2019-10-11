@@ -1,4 +1,4 @@
-module.exports = function(grunt) {
+module.exports = function (grunt) {
   // Project configuration.
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
@@ -14,13 +14,17 @@ module.exports = function(grunt) {
     },
 
     run: {
-      'generate-listings': {
-        cmd: 'node',
-        args: ['tools/gen', 'cts', 'unittests'],
-      },
       'generate-version': {
         cmd: 'node',
         args: ['tools/gen_version'],
+      },
+      'generate-listings': {
+        cmd: 'node',
+        args: ['tools/gen_listings', 'cts', 'unittests'],
+      },
+      'generate-wpt-cts-html': {
+        cmd: 'node',
+        args: ['tools/gen_wpt_cts_html'],
       },
       test: {
         cmd: 'node',
@@ -62,7 +66,6 @@ module.exports = function(grunt) {
       },
       'out-wpt': {
         files: [
-          { expand: true, cwd: 'wpt', src: 'cts.html', dest: 'out-wpt/' },
           { expand: true, cwd: 'out', src: 'framework/**/*.js', dest: 'out-wpt/' },
           { expand: true, cwd: 'out', src: 'suites/cts/**/*.js', dest: 'out-wpt/' },
           { expand: true, cwd: 'out', src: 'runtime/wpt.js', dest: 'out-wpt/' },
@@ -115,6 +118,7 @@ module.exports = function(grunt) {
     'run:generate-version',
     'run:generate-listings',
     'copy:out-wpt',
+    'run:generate-wpt-cts-html',
   ]);
   registerTaskAndAddToHelp('test', 'Run unittests', ['build', 'run:test']);
   registerTaskAndAddToHelp('serve', 'Serve out/ on 127.0.0.1:8080', ['http-server:.']);

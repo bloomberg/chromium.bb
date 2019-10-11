@@ -1,0 +1,8 @@
+#!/usr/bin/env node
+
+// Generate a top-level cts.html file for WPT.
+// Uses a fixed header plus a generate list of variants.
+// the listing of test files in the suite.
+
+require('../src/tools/setup-ts-in-node.js');
+require('../src/tools/gen_wpt_cts_html.ts');

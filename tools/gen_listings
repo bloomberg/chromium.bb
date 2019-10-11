@@ -4,4 +4,4 @@
 // the listing of test files in the suite.
 
 require('../src/tools/setup-ts-in-node.js');
-require('../src/tools/gen.ts');
+require('../src/tools/gen_listings.ts');
