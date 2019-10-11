@@ -4127,7 +4127,7 @@ static AOM_INLINE void encode_sb_row(AV1_COMP *cpi, ThreadData *td,
   // Code each SB in the row
   for (int mi_col = tile_info->mi_col_start, sb_col_in_tile = 0;
        mi_col < tile_info->mi_col_end; mi_col += mib_size, sb_col_in_tile++) {
-    if (!cpi->sf.use_fast_nonrd_pick_mode)
+    if (!cpi->sf.use_real_time_ref_set)
       memset(x->mbmi_ext, 0, sb_mi_size * sizeof(*x->mbmi_ext));
     (*(cpi->row_mt_sync_read_ptr))(&tile_data->row_mt_sync, sb_row,
                                    sb_col_in_tile);
@@ -4198,15 +4198,15 @@ static AOM_INLINE void encode_sb_row(AV1_COMP *cpi, ThreadData *td,
     x->color_sensitivity[0] = 0;
     x->color_sensitivity[1] = 0;
 
-    if (!use_nonrd_mode) {
+    if (cpi->sf.use_inter_txb_hash) {
       av1_zero(x->txb_rd_record_8X8);
       av1_zero(x->txb_rd_record_16X16);
       av1_zero(x->txb_rd_record_32X32);
       av1_zero(x->txb_rd_record_64X64);
       av1_zero(x->txb_rd_record_intra);
-
+    }
+    if (!use_nonrd_mode) {
       av1_zero(x->picked_ref_frames_mask);
-
       av1_zero(x->pred_mv);
     }
     PC_TREE *const pc_root = td->pc_root[mib_size_log2 - MIN_MIB_SIZE_LOG2];
@@ -4456,8 +4456,7 @@ void av1_encode_tile(AV1_COMP *cpi, ThreadData *td, int tile_row,
   td->mb.m_search_count_ptr = &this_tile->m_search_count;
   td->mb.ex_search_count_ptr = &this_tile->ex_search_count;
 
-  if (!cpi->sf.use_fast_nonrd_pick_mode)
-    cfl_init(&td->mb.e_mbd.cfl, &cm->seq_params);
+  if (cpi->oxcf.enable_cfl_intra) cfl_init(&td->mb.e_mbd.cfl, &cm->seq_params);
 
   av1_crc32c_calculator_init(&td->mb.mb_rd_record.crc_calculator);
 
