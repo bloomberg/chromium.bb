@@ -34,14 +34,6 @@ class DomDistillerServiceInterface {
   typedef base::Callback<void(bool)> ArticleAvailableCallback;
   virtual ~DomDistillerServiceInterface() {}
 
-  // TODO(crbug.com/1007942): Remove these methods; no entries ever exist.
-  virtual bool HasEntry(const std::string& entry_id) = 0;
-  virtual std::string GetUrlForEntry(const std::string& entry_id) = 0;
-  virtual std::unique_ptr<ViewerHandle> ViewEntry(
-      ViewRequestDelegate* delegate,
-      std::unique_ptr<DistillerPage> distiller_page,
-      const std::string& entry_id) = 0;
-
   // Request to view an article by url.
   // Use CreateDefaultDistillerPage() to create a default |distiller_page|.
   // The provided |distiller_page| is only used if there is not already a
@@ -78,12 +70,6 @@ class DomDistillerService : public DomDistillerServiceInterface {
   ~DomDistillerService() override;
 
   // DomDistillerServiceInterface implementation.
-  bool HasEntry(const std::string& entry_id) override;
-  std::string GetUrlForEntry(const std::string& entry_id) override;
-  std::unique_ptr<ViewerHandle> ViewEntry(
-      ViewRequestDelegate* delegate,
-      std::unique_ptr<DistillerPage> distiller_page,
-      const std::string& entry_id) override;
   std::unique_ptr<ViewerHandle> ViewUrl(
       ViewRequestDelegate* delegate,
       std::unique_ptr<DistillerPage> distiller_page,

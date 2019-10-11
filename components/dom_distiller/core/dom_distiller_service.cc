@@ -56,21 +56,6 @@ DomDistillerService::CreateDefaultDistillerPageWithHandle(
       std::move(handle));
 }
 
-bool DomDistillerService::HasEntry(const std::string& entry_id) {
-  return false;
-}
-
-std::string DomDistillerService::GetUrlForEntry(const std::string& entry_id) {
-  return "";
-}
-
-std::unique_ptr<ViewerHandle> DomDistillerService::ViewEntry(
-    ViewRequestDelegate* delegate,
-    std::unique_ptr<DistillerPage> distiller_page,
-    const std::string& entry_id) {
-  return nullptr;
-}
-
 std::unique_ptr<ViewerHandle> DomDistillerService::ViewUrl(
     ViewRequestDelegate* delegate,
     std::unique_ptr<DistillerPage> distiller_page,
