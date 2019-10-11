@@ -36,7 +36,9 @@ list(APPEND libgav1_dsp_sources
             "${libgav1_source}/dsp/obmc.cc"
             "${libgav1_source}/dsp/obmc.h"
             "${libgav1_source}/dsp/warp.cc"
-            "${libgav1_source}/dsp/warp.h")
+            "${libgav1_source}/dsp/warp.h"
+            "${libgav1_source}/dsp/weight_mask.cc"
+            "${libgav1_source}/dsp/weight_mask.h")
 
 list(APPEND libgav1_dsp_sources_neon
             ${libgav1_dsp_sources_neon}

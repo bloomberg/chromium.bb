@@ -37,11 +37,5 @@ constexpr BitMaskSet kIsWedgeCompoundModeAllowed(kBlock8x8, kBlock8x16,
 // 7.11.3.11.
 bool GenerateWedgeMask(WedgeMaskArray* wedge_masks);
 
-// 7.11.3.12.
-void GenerateWeightMask(const uint16_t* prediction_1, ptrdiff_t stride_1,
-                        const uint16_t* prediction_2, ptrdiff_t stride_2,
-                        bool mask_is_inverse, int width, int height,
-                        int bitdepth, uint8_t* mask, ptrdiff_t mask_stride);
-
 }  // namespace libgav1
 #endif  // LIBGAV1_SRC_PREDICTION_MASK_H_

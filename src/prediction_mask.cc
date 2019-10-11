@@ -233,29 +233,4 @@ bool GenerateWedgeMask(WedgeMaskArray* const wedge_masks) {
   return true;
 }
 
-void GenerateWeightMask(const uint16_t* prediction_1, const ptrdiff_t stride_1,
-                        const uint16_t* prediction_2, const ptrdiff_t stride_2,
-                        const bool mask_is_inverse, const int width,
-                        const int height, const int bitdepth, uint8_t* mask,
-                        const ptrdiff_t mask_stride) {
-#if LIBGAV1_MAX_BITDEPTH == 12
-  const int inter_post_round_bits = (bitdepth == 12) ? 2 : 4;
-#else
-  constexpr int inter_post_round_bits = 4;
-#endif
-  for (int y = 0; y < height; ++y) {
-    for (int x = 0; x < width; ++x) {
-      const int rounding_bits = bitdepth - 8 + inter_post_round_bits;
-      const int difference = RightShiftWithRounding(
-          std::abs(prediction_1[x] - prediction_2[x]), rounding_bits);
-      const auto mask_value =
-          static_cast<uint8_t>(std::min(DivideBy16(difference) + 38, 64));
-      mask[x] = mask_is_inverse ? 64 - mask_value : mask_value;
-    }
-    prediction_1 += stride_1;
-    prediction_2 += stride_2;
-    mask += mask_stride;
-  }
-}
-
 }  // namespace libgav1

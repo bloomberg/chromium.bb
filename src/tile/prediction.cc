@@ -786,12 +786,15 @@ void Tile::InterPrediction(const Block& block, const Plane plane, const int x,
   } else if (prediction_parameters.compound_prediction_type ==
              kCompoundPredictionTypeDiffWeighted) {
     if (plane == kPlaneY) {
-      GenerateWeightMask(
-          block.scratch_buffer->prediction_buffer[0], prediction_stride,
-          block.scratch_buffer->prediction_buffer[1], prediction_stride,
-          prediction_parameters.mask_is_inverse, prediction_width,
-          prediction_height, bitdepth, block.scratch_buffer->weight_mask,
-          kMaxSuperBlockSizeInPixels);
+      dsp_.weight_mask[FloorLog2(prediction_width) - 2]
+                      [FloorLog2(prediction_height) - 2]
+                      [BitdepthToArrayIndex(bitdepth)]
+                      [static_cast<int>(prediction_parameters.mask_is_inverse)](
+                          block.scratch_buffer->prediction_buffer[0],
+                          prediction_stride,
+                          block.scratch_buffer->prediction_buffer[1],
+                          prediction_stride, block.scratch_buffer->weight_mask,
+                          kMaxSuperBlockSizeInPixels);
     }
     prediction_mask = block.scratch_buffer->weight_mask;
     prediction_mask_stride = kMaxSuperBlockSizeInPixels;

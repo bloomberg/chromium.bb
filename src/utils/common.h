@@ -287,6 +287,9 @@ inline bool IsBlockDimension4(BlockSize size) {
   return size < kBlock8x8 || size == kBlock16x4;
 }
 
+// Converts bitdepth 8, 10, and 12 to array index 0, 1, and 2, respectively.
+constexpr int BitdepthToArrayIndex(int bitdepth) { return (bitdepth - 8) >> 1; }
+
 // Maps a square transform to an index between [0, 4]. kTransformSize4x4 maps
 // to 0, kTransformSize8x8 maps to 1 and so on.
 inline int TransformSizeToSquareTransformIndex(TransformSize tx_size) {

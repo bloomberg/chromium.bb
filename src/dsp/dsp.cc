@@ -29,6 +29,7 @@
 #include "src/dsp/mask_blend.h"
 #include "src/dsp/obmc.h"
 #include "src/dsp/warp.h"
+#include "src/dsp/weight_mask.h"
 #include "src/utils/cpu.h"
 
 namespace libgav1 {
@@ -70,6 +71,7 @@ void DspInit() {
     MaskBlendInit_C();
     ObmcInit_C();
     WarpInit_C();
+    WeightMaskInit_C();
 #if LIBGAV1_ENABLE_SSE4_1
     const uint32_t cpu_features = GetCpuInfo();
     if ((cpu_features & kSSE4_1) != 0) {

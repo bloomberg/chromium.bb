@@ -141,9 +141,6 @@ constexpr int16_t kAcLookup[][256] = {
 };
 // clang-format on
 
-// Converts bitdepth 8, 10, and 12 to array index 0, 1, and 2, respectively.
-inline int BitdepthToArrayIndex(int bitdepth) { return (bitdepth - 8) >> 1; }
-
 }  // namespace
 
 int GetQIndex(const Segmentation& segmentation, int index, int base_qindex) {

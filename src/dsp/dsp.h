@@ -398,6 +398,25 @@ using ConvolveFuncs = ConvolveFunc[2][2][2][2];
 // 0: single predictor. 1: compound predictor.
 using ConvolveScaleFuncs = ConvolveFunc[2];
 
+// Weight mask function signature. Section 7.11.3.12.
+// |prediction_0| is the first input block.
+// |prediction_1| is the second input block.
+// |prediction_stride_0| and |prediction_stride_1| are corresponding strides.
+// |width| and |height| are the prediction width and height.
+// |mask| is the output buffer. |mask_stride| is the output buffer stride.
+using WeightMaskFunc = void (*)(const uint16_t* prediction_0,
+                                ptrdiff_t stride_0,
+                                const uint16_t* prediction_1,
+                                ptrdiff_t stride_1, uint8_t* mask,
+                                ptrdiff_t mask_stride);
+
+// Weight mask functions signature. The dimensions (in order) are:
+//   * Width index (4 => 0, 8 => 1, 16 => 2 and so on).
+//   * Height index (4 => 0, 8 => 1, 16 => 2 and so on).
+//   * Bitdepth index (8 => 0, 10 => 1, 12 => 2).
+//   * mask_is_inverse.
+using WeightMaskFuncs = WeightMaskFunc[6][6][3][2];
+
 // Average blending function signature.
 // Two predictors are averaged to generate the output.
 // Input predictor values are int16_t. Output type is uint8_t, with actual
@@ -584,6 +603,7 @@ struct Dsp {
   LoopRestorationFuncs loop_restorations;
   ConvolveFuncs convolve;
   ConvolveScaleFuncs convolve_scale;
+  WeightMaskFuncs weight_mask;
   AverageBlendFunc average_blend;
   DistanceWeightedBlendFunc distance_weighted_blend;
   MaskBlendFuncs mask_blend;
