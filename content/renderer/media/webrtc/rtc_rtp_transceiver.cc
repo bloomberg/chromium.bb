@@ -15,7 +15,7 @@ RtpTransceiverState::RtpTransceiverState(
     scoped_refptr<base::SingleThreadTaskRunner> signaling_task_runner,
     scoped_refptr<webrtc::RtpTransceiverInterface> webrtc_transceiver,
     base::Optional<RtpSenderState> sender_state,
-    base::Optional<RtpReceiverState> receiver_state,
+    base::Optional<blink::RtpReceiverState> receiver_state,
     base::Optional<std::string> mid,
     bool stopped,
     webrtc::RtpTransceiverDirection direction,
@@ -127,15 +127,15 @@ RtpSenderState RtpTransceiverState::MoveSenderState() {
   return *std::move(temp);
 }
 
-const base::Optional<RtpReceiverState>& RtpTransceiverState::receiver_state()
-    const {
+const base::Optional<blink::RtpReceiverState>&
+RtpTransceiverState::receiver_state() const {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   return receiver_state_;
 }
 
-RtpReceiverState RtpTransceiverState::MoveReceiverState() {
+blink::RtpReceiverState RtpTransceiverState::MoveReceiverState() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-  base::Optional<RtpReceiverState> temp(base::nullopt);
+  base::Optional<blink::RtpReceiverState> temp(base::nullopt);
   receiver_state_.swap(temp);
   return *std::move(temp);
 }
@@ -188,8 +188,8 @@ class RTCRtpTransceiver::RTCRtpTransceiverInternal
         state_(std::move(state)) {
     sender_ = std::make_unique<RTCRtpSender>(native_peer_connection, track_map,
                                              state_.MoveSenderState());
-    receiver_ = std::make_unique<RTCRtpReceiver>(native_peer_connection,
-                                                 state_.MoveReceiverState());
+    receiver_ = std::make_unique<blink::RTCRtpReceiverImpl>(
+        native_peer_connection, state_.MoveReceiverState());
   }
 
   const RtpTransceiverState& state() const {
@@ -227,7 +227,7 @@ class RTCRtpTransceiver::RTCRtpTransceiverInternal
     return sender_.get();
   }
 
-  RTCRtpReceiver* content_receiver() {
+  blink::RTCRtpReceiverImpl* content_receiver() {
     DCHECK(main_task_runner_->BelongsToCurrentThread());
     return receiver_.get();
   }
@@ -261,7 +261,7 @@ class RTCRtpTransceiver::RTCRtpTransceiverInternal
   const scoped_refptr<webrtc::RtpTransceiverInterface> webrtc_transceiver_;
   RtpTransceiverState state_;
   std::unique_ptr<RTCRtpSender> sender_;
-  std::unique_ptr<RTCRtpReceiver> receiver_;
+  std::unique_ptr<blink::RTCRtpReceiverImpl> receiver_;
 };
 
 struct RTCRtpTransceiver::RTCRtpTransceiverInternalTraits {
@@ -320,7 +320,7 @@ RTCRtpSender* RTCRtpTransceiver::content_sender() {
   return internal_->content_sender();
 }
 
-RTCRtpReceiver* RTCRtpTransceiver::content_receiver() {
+blink::RTCRtpReceiverImpl* RTCRtpTransceiver::content_receiver() {
   return internal_->content_receiver();
 }
 

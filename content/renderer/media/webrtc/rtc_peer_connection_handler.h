@@ -20,7 +20,6 @@
 #include "base/threading/thread.h"
 #include "content/common/content_export.h"
 #include "content/renderer/media/webrtc/media_stream_track_metrics.h"
-#include "content/renderer/media/webrtc/rtc_rtp_receiver.h"
 #include "content/renderer/media/webrtc/rtc_rtp_sender.h"
 #include "content/renderer/media/webrtc/transceiver_state_surfacer.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
@@ -29,6 +28,7 @@
 #include "third_party/blink/public/platform/web_rtc_stats.h"
 #include "third_party/blink/public/platform/web_rtc_stats_request.h"
 #include "third_party/blink/public/platform/web_rtc_stats_response.h"
+#include "third_party/blink/public/web/modules/peerconnection/rtc_rtp_receiver_impl.h"
 #include "third_party/blink/public/web/modules/peerconnection/webrtc_media_stream_track_adapter_map.h"
 #include "third_party/webrtc/api/stats/rtc_stats.h"
 #include "third_party/webrtc/api/stats/rtc_stats_collector_callback.h"
@@ -232,7 +232,7 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   void OnIceGatheringChange(
       webrtc::PeerConnectionInterface::IceGatheringState new_state);
   void OnRenegotiationNeeded();
-  void OnAddReceiverPlanB(RtpReceiverState receiver_state);
+  void OnAddReceiverPlanB(blink::RtpReceiverState receiver_state);
   void OnRemoveReceiverPlanB(uintptr_t receiver_id);
   void OnModifySctpTransport(blink::WebRTCSctpTransportSnapshot state);
   void OnModifyTransceivers(std::vector<RtpTransceiverState> transceiver_states,
@@ -318,8 +318,8 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
       webrtc::PeerConnectionInterface::RTCOfferAnswerOptions offer_options,
       TransceiverStateSurfacer* transceiver_state_surfacer);
   std::vector<std::unique_ptr<RTCRtpSender>>::iterator FindSender(uintptr_t id);
-  std::vector<std::unique_ptr<RTCRtpReceiver>>::iterator FindReceiver(
-      uintptr_t id);
+  std::vector<std::unique_ptr<blink::RTCRtpReceiverImpl>>::iterator
+  FindReceiver(uintptr_t id);
   std::vector<std::unique_ptr<RTCRtpTransceiver>>::iterator FindTransceiver(
       uintptr_t id);
   // For full transceiver implementations, returns the index of
@@ -371,7 +371,7 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   // Content layer correspondents of |webrtc::RtpSenderInterface|.
   std::vector<std::unique_ptr<RTCRtpSender>> rtp_senders_;
   // Content layer correspondents of |webrtc::RtpReceiverInterface|.
-  std::vector<std::unique_ptr<RTCRtpReceiver>> rtp_receivers_;
+  std::vector<std::unique_ptr<blink::RTCRtpReceiverImpl>> rtp_receivers_;
   // Content layer correspondents of |webrtc::RtpTransceiverInterface|.
   std::vector<std::unique_ptr<RTCRtpTransceiver>> rtp_transceivers_;
 

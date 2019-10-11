@@ -112,7 +112,7 @@ std::unique_ptr<blink::WebRTCRtpTransceiver> CreateDefaultTransceiver(
     DCHECK_EQ(
         implementation_type,
         blink::WebRTCRtpTransceiverImplementationType::kPlanBReceiverOnly);
-    transceiver = std::make_unique<RTCRtpReceiverOnlyTransceiver>(
+    transceiver = std::make_unique<blink::RTCRtpReceiverOnlyTransceiver>(
         std::make_unique<FakeRTCRtpReceiver>(receiver));
   }
   return transceiver;

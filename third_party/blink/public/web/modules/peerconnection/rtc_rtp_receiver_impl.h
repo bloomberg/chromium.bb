@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_WEBRTC_RTC_RTP_RECEIVER_H_
-#define CONTENT_RENDERER_MEDIA_WEBRTC_RTC_RTP_RECEIVER_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_PEERCONNECTION_RTC_RTP_RECEIVER_IMPL_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_PEERCONNECTION_RTC_RTP_RECEIVER_IMPL_H_
 
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"
-#include "content/common/content_export.h"
+#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_receiver.h"
@@ -22,7 +22,7 @@
 #include "third_party/webrtc/api/rtp_receiver_interface.h"
 #include "third_party/webrtc/api/stats/rtc_stats.h"
 
-namespace content {
+namespace blink {
 
 // This class represents the state of a receiver; a snapshot of what a
 // webrtc-layer receiver looked like when it was inspected on the signaling
@@ -55,10 +55,12 @@ namespace content {
 // Except for initialization logic and operator=(), the RtpReceiverState is
 // immutable and only accessible on the main thread.
 //
-// TODO(hbos): [Onion Soup] When the sender implementation is moved to blink
-// this will be part of the blink sender instead of the content sender.
-// https://crbug.com/787254
-class CONTENT_EXPORT RtpReceiverState {
+// TODO(crbug.com/787254): Move the classes below out of the Blink exposed API.
+// Also, consider merging RTCRtpReceiverImpl and RTCRtpReceiver, and removing
+// WebRTCRtpReceiver when all its clients are Onion soup'ed.
+//
+// Last, move away from using std::vector.
+class BLINK_MODULES_EXPORT RtpReceiverState {
  public:
   RtpReceiverState(
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
@@ -104,20 +106,21 @@ class CONTENT_EXPORT RtpReceiverState {
 };
 
 // Used to surface |webrtc::RtpReceiverInterface| to blink. Multiple
-// |RTCRtpReceiver|s could reference the same webrtc receiver; |id| is the value
-// of the pointer to the webrtc receiver.
-class CONTENT_EXPORT RTCRtpReceiver : public blink::WebRTCRtpReceiver {
+// |RTCRtpReceiverImpl|s could reference the same webrtc receiver; |id| is the
+// value of the pointer to the webrtc receiver.
+class BLINK_MODULES_EXPORT RTCRtpReceiverImpl
+    : public blink::WebRTCRtpReceiver {
  public:
   static uintptr_t getId(
       const webrtc::RtpReceiverInterface* webrtc_rtp_receiver);
 
-  RTCRtpReceiver(
+  RTCRtpReceiverImpl(
       scoped_refptr<webrtc::PeerConnectionInterface> native_peer_connection,
       RtpReceiverState state);
-  RTCRtpReceiver(const RTCRtpReceiver& other);
-  ~RTCRtpReceiver() override;
+  RTCRtpReceiverImpl(const RTCRtpReceiverImpl& other);
+  ~RTCRtpReceiverImpl() override;
 
-  RTCRtpReceiver& operator=(const RTCRtpReceiver& other);
+  RTCRtpReceiverImpl& operator=(const RTCRtpReceiverImpl& other);
 
   const RtpReceiverState& state() const;
   void set_state(RtpReceiverState state);
@@ -144,7 +147,7 @@ class CONTENT_EXPORT RTCRtpReceiver : public blink::WebRTCRtpReceiver {
   scoped_refptr<RTCRtpReceiverInternal> internal_;
 };
 
-class CONTENT_EXPORT RTCRtpReceiverOnlyTransceiver
+class BLINK_MODULES_EXPORT RTCRtpReceiverOnlyTransceiver
     : public blink::WebRTCRtpTransceiver {
  public:
   RTCRtpReceiverOnlyTransceiver(
@@ -171,6 +174,6 @@ class CONTENT_EXPORT RTCRtpReceiverOnlyTransceiver
   std::unique_ptr<blink::WebRTCRtpReceiver> receiver_;
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_MEDIA_WEBRTC_RTC_RTP_RECEIVER_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_PEERCONNECTION_RTC_RTP_RECEIVER_IMPL_H_

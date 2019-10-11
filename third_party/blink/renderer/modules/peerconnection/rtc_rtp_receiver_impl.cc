@@ -2,16 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/webrtc/rtc_rtp_receiver.h"
+#include "third_party/blink/public/web/modules/peerconnection/rtc_rtp_receiver_impl.h"
 
 #include "base/bind.h"
 #include "base/logging.h"
 #include "third_party/blink/public/platform/modules/peerconnection/webrtc_util.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_source.h"
 #include "third_party/blink/public/platform/web_rtc_stats.h"
+#include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 #include "third_party/webrtc/api/scoped_refptr.h"
 
-namespace content {
+namespace blink {
 
 RtpReceiverState::RtpReceiverState(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
@@ -126,10 +127,10 @@ const std::vector<std::string>& RtpReceiverState::stream_ids() const {
   return stream_ids_;
 }
 
-class RTCRtpReceiver::RTCRtpReceiverInternal
-    : public base::RefCountedThreadSafe<
-          RTCRtpReceiver::RTCRtpReceiverInternal,
-          RTCRtpReceiver::RTCRtpReceiverInternalTraits> {
+class RTCRtpReceiverImpl::RTCRtpReceiverInternal
+    : public WTF::ThreadSafeRefCounted<
+          RTCRtpReceiverImpl::RTCRtpReceiverInternal,
+          RTCRtpReceiverImpl::RTCRtpReceiverInternalTraits> {
  public:
   RTCRtpReceiverInternal(
       scoped_refptr<webrtc::PeerConnectionInterface> native_peer_connection,
@@ -189,7 +190,9 @@ class RTCRtpReceiver::RTCRtpReceiverInternal
   }
 
  private:
-  friend struct RTCRtpReceiver::RTCRtpReceiverInternalTraits;
+  friend class WTF::ThreadSafeRefCounted<RTCRtpReceiverInternal,
+                                         RTCRtpReceiverInternalTraits>;
+  friend struct RTCRtpReceiverImpl::RTCRtpReceiverInternalTraits;
 
   ~RTCRtpReceiverInternal() {
     DCHECK(main_task_runner_->BelongsToCurrentThread());
@@ -214,11 +217,7 @@ class RTCRtpReceiver::RTCRtpReceiverInternal
   RtpReceiverState state_;
 };
 
-struct RTCRtpReceiver::RTCRtpReceiverInternalTraits {
- private:
-  friend class base::RefCountedThreadSafe<RTCRtpReceiverInternal,
-                                          RTCRtpReceiverInternalTraits>;
-
+struct RTCRtpReceiverImpl::RTCRtpReceiverInternalTraits {
   static void Destruct(const RTCRtpReceiverInternal* receiver) {
     // RTCRtpReceiverInternal owns AdapterRefs which have to be destroyed on the
     // main thread, this ensures delete always happens there.
@@ -226,7 +225,7 @@ struct RTCRtpReceiver::RTCRtpReceiverInternalTraits {
       receiver->main_task_runner_->PostTask(
           FROM_HERE,
           base::BindOnce(
-              &RTCRtpReceiver::RTCRtpReceiverInternalTraits::Destruct,
+              &RTCRtpReceiverImpl::RTCRtpReceiverInternalTraits::Destruct,
               base::Unretained(receiver)));
       return;
     }
@@ -234,57 +233,61 @@ struct RTCRtpReceiver::RTCRtpReceiverInternalTraits {
   }
 };
 
-uintptr_t RTCRtpReceiver::getId(
+uintptr_t RTCRtpReceiverImpl::getId(
     const webrtc::RtpReceiverInterface* webrtc_rtp_receiver) {
   return reinterpret_cast<uintptr_t>(webrtc_rtp_receiver);
 }
 
-RTCRtpReceiver::RTCRtpReceiver(
+RTCRtpReceiverImpl::RTCRtpReceiverImpl(
     scoped_refptr<webrtc::PeerConnectionInterface> native_peer_connection,
     RtpReceiverState state)
-    : internal_(new RTCRtpReceiverInternal(std::move(native_peer_connection),
-                                           std::move(state))) {}
+    : internal_(base::MakeRefCounted<RTCRtpReceiverInternal>(
+          std::move(native_peer_connection),
+          std::move(state))) {}
 
-RTCRtpReceiver::RTCRtpReceiver(const RTCRtpReceiver& other)
+RTCRtpReceiverImpl::RTCRtpReceiverImpl(const RTCRtpReceiverImpl& other)
     : internal_(other.internal_) {}
 
-RTCRtpReceiver::~RTCRtpReceiver() {}
+RTCRtpReceiverImpl::~RTCRtpReceiverImpl() {}
 
-RTCRtpReceiver& RTCRtpReceiver::operator=(const RTCRtpReceiver& other) {
+RTCRtpReceiverImpl& RTCRtpReceiverImpl::operator=(
+    const RTCRtpReceiverImpl& other) {
   internal_ = other.internal_;
   return *this;
 }
 
-const RtpReceiverState& RTCRtpReceiver::state() const {
+const RtpReceiverState& RTCRtpReceiverImpl::state() const {
   return internal_->state();
 }
 
-void RTCRtpReceiver::set_state(RtpReceiverState state) {
+void RTCRtpReceiverImpl::set_state(RtpReceiverState state) {
   internal_->set_state(std::move(state));
 }
 
-std::unique_ptr<blink::WebRTCRtpReceiver> RTCRtpReceiver::ShallowCopy() const {
-  return std::make_unique<RTCRtpReceiver>(*this);
+std::unique_ptr<blink::WebRTCRtpReceiver> RTCRtpReceiverImpl::ShallowCopy()
+    const {
+  return std::make_unique<RTCRtpReceiverImpl>(*this);
 }
 
-uintptr_t RTCRtpReceiver::Id() const {
+uintptr_t RTCRtpReceiverImpl::Id() const {
   return getId(internal_->state().webrtc_receiver().get());
 }
 
 rtc::scoped_refptr<webrtc::DtlsTransportInterface>
-RTCRtpReceiver::DtlsTransport() {
+RTCRtpReceiverImpl::DtlsTransport() {
   return internal_->state().webrtc_dtls_transport();
 }
 
-webrtc::DtlsTransportInformation RTCRtpReceiver::DtlsTransportInformation() {
+webrtc::DtlsTransportInformation
+RTCRtpReceiverImpl::DtlsTransportInformation() {
   return internal_->state().webrtc_dtls_transport_information();
 }
 
-const blink::WebMediaStreamTrack& RTCRtpReceiver::Track() const {
+const blink::WebMediaStreamTrack& RTCRtpReceiverImpl::Track() const {
   return internal_->state().track_ref()->web_track();
 }
 
-blink::WebVector<blink::WebString> RTCRtpReceiver::StreamIds() const {
+blink::WebVector<blink::WebString> RTCRtpReceiverImpl::StreamIds() const {
   const auto& stream_ids = internal_->state().stream_ids();
   blink::WebVector<blink::WebString> web_stream_ids(stream_ids.size());
   for (size_t i = 0; i < stream_ids.size(); ++i)
@@ -293,21 +296,22 @@ blink::WebVector<blink::WebString> RTCRtpReceiver::StreamIds() const {
 }
 
 blink::WebVector<std::unique_ptr<blink::WebRTCRtpSource>>
-RTCRtpReceiver::GetSources() {
+RTCRtpReceiverImpl::GetSources() {
   return internal_->GetSources();
 }
 
-void RTCRtpReceiver::GetStats(
+void RTCRtpReceiverImpl::GetStats(
     blink::WebRTCStatsReportCallback callback,
     const blink::WebVector<webrtc::NonStandardGroupId>& exposed_group_ids) {
   internal_->GetStats(std::move(callback), exposed_group_ids);
 }
 
-std::unique_ptr<webrtc::RtpParameters> RTCRtpReceiver::GetParameters() const {
+std::unique_ptr<webrtc::RtpParameters> RTCRtpReceiverImpl::GetParameters()
+    const {
   return internal_->GetParameters();
 }
 
-void RTCRtpReceiver::SetJitterBufferMinimumDelay(
+void RTCRtpReceiverImpl::SetJitterBufferMinimumDelay(
     base::Optional<double> delay_seconds) {
   internal_->SetJitterBufferMinimumDelay(delay_seconds);
 }
@@ -379,4 +383,4 @@ webrtc::RTCError RTCRtpReceiverOnlyTransceiver::SetCodecPreferences(
   NOTIMPLEMENTED();
   return {};
 }
-}  // namespace content
+}  // namespace blink

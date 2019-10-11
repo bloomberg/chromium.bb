@@ -204,8 +204,6 @@ target(link_target_type, "renderer") {
     "media/webrtc/peer_connection_tracker.h",
     "media/webrtc/rtc_peer_connection_handler.cc",
     "media/webrtc/rtc_peer_connection_handler.h",
-    "media/webrtc/rtc_rtp_receiver.cc",
-    "media/webrtc/rtc_rtp_receiver.h",
     "media/webrtc/rtc_rtp_sender.cc",
     "media/webrtc/rtc_rtp_sender.h",
     "media/webrtc/rtc_rtp_transceiver.cc",
