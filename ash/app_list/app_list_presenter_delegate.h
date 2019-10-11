@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_APP_LIST_PRESENTER_APP_LIST_PRESENTER_DELEGATE_H_
-#define ASH_APP_LIST_PRESENTER_APP_LIST_PRESENTER_DELEGATE_H_
+#ifndef ASH_APP_LIST_APP_LIST_PRESENTER_DELEGATE_H_
+#define ASH_APP_LIST_APP_LIST_PRESENTER_DELEGATE_H_
 
 #include <stdint.h>
 
-#include "ash/app_list/presenter/app_list_presenter_export.h"
+#include "ash/app_list/app_list_presenter_export.h"
 
 namespace aura {
 class Window;
@@ -65,4 +65,4 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterDelegate {
 
 }  // namespace ash
 
-#endif  // ASH_APP_LIST_PRESENTER_APP_LIST_PRESENTER_DELEGATE_H_
+#endif  // ASH_APP_LIST_APP_LIST_PRESENTER_DELEGATE_H_

@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_APP_LIST_PRESENTER_APP_LIST_PRESENTER_IMPL_H_
-#define ASH_APP_LIST_PRESENTER_APP_LIST_PRESENTER_IMPL_H_
+#ifndef ASH_APP_LIST_APP_LIST_PRESENTER_IMPL_H_
+#define ASH_APP_LIST_APP_LIST_PRESENTER_IMPL_H_
 
 #include <stdint.h>
 
 #include <memory>
 
 #include "ash/app_list/app_list_metrics.h"
-#include "ash/app_list/presenter/app_list_presenter_delegate.h"
-#include "ash/app_list/presenter/app_list_presenter_export.h"
+#include "ash/app_list/app_list_presenter_delegate.h"
+#include "ash/app_list/app_list_presenter_export.h"
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/public/cpp/pagination/pagination_model_observer.h"
 #include "ash/public/cpp/shelf_types.h"
@@ -48,10 +48,10 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterImpl
       std::unique_ptr<AppListPresenterDelegate> delegate);
   ~AppListPresenterImpl() override;
 
-  // Returns app list window or NULL if it is not visible.
+  // Returns app list window or nullptr if it is not visible.
   aura::Window* GetWindow() const;
 
-  // Returns app list view if one exists, or NULL otherwise.
+  // Returns app list view if one exists, or nullptr otherwise.
   AppListView* GetView() { return view_; }
   const AppListView* GetView() const { return view_; }
 
@@ -180,4 +180,4 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterImpl
 
 }  // namespace ash
 
-#endif  // ASH_APP_LIST_PRESENTER_APP_LIST_PRESENTER_IMPL_H_
+#endif  // ASH_APP_LIST_APP_LIST_PRESENTER_IMPL_H_

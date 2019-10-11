@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_APP_LIST_PRESENTER_APP_LIST_PRESENTER_EXPORT_H_
-#define ASH_APP_LIST_PRESENTER_APP_LIST_PRESENTER_EXPORT_H_
+#ifndef ASH_APP_LIST_APP_LIST_PRESENTER_EXPORT_H_
+#define ASH_APP_LIST_APP_LIST_PRESENTER_EXPORT_H_
 
 // Defines APP_LIST_PRESENTER_EXPORT so that functionality implemented by the
 // app_list presenter module can be exported to consumers.
@@ -20,4 +20,4 @@
 #define APP_LIST_PRESENTER_EXPORT
 #endif
 
-#endif  // ASH_APP_LIST_PRESENTER_APP_LIST_PRESENTER_EXPORT_H_
+#endif  // ASH_APP_LIST_APP_LIST_PRESENTER_EXPORT_H_
