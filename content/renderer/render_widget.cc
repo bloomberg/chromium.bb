@@ -197,24 +197,14 @@ class WebWidgetLockTarget : public content::MouseLockDispatcher::LockTarget {
       : render_widget_(render_widget) {}
 
   void OnLockMouseACK(bool succeeded) override {
-    // TODO(https://crbug.com/995981): Once RenderWidget and WebWidget lifetimes
-    // are synchronized, we should remove these conditionals.
-    WebWidget* web_widget = render_widget_->GetWebWidget();
-    if (!web_widget)
-      return;
-
     if (succeeded)
-      web_widget->DidAcquirePointerLock();
+      render_widget_->GetWebWidget()->DidAcquirePointerLock();
     else
-      web_widget->DidNotAcquirePointerLock();
+      render_widget_->GetWebWidget()->DidNotAcquirePointerLock();
   }
 
   void OnMouseLockLost() override {
-    WebWidget* web_widget = render_widget_->GetWebWidget();
-    if (!web_widget)
-      return;
-
-    web_widget->DidLosePointerLock();
+    render_widget_->GetWebWidget()->DidLosePointerLock();
   }
 
   bool HandleMouseLockedInputEvent(const blink::WebMouseEvent& event) override {
@@ -616,8 +606,7 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
   if (IPC_MESSAGE_CLASS(message) == TextInputClientMsgStart)
     return text_input_client_observer_->OnMessageReceived(message);
 #endif
-  if (mouse_lock_dispatcher_ &&
-      mouse_lock_dispatcher_->OnMessageReceived(message))
+  if (mouse_lock_dispatcher_->OnMessageReceived(message))
     return true;
 
   IPC_BEGIN_MESSAGE_MAP(RenderWidget, message)
