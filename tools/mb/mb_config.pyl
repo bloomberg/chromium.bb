@@ -327,6 +327,7 @@
       'win-password-manager-captured-sites-rel': 'release_bot',
       'win-pixel-builder-rel': 'release_bot',
       'win32-arm64-rel': 'win32_arm64_release_bot',
+      'win10-code-coverage': 'clang_code_coverage_nofuzzer',
     },
 
     'chromium.goma': {
@@ -1321,6 +1322,10 @@
 
     'clang_code_coverage_ios': [
       'use_clang_coverage', 'debug_static_bot', 'x64', 'ios'
+    ],
+
+    'clang_code_coverage_nofuzzer': [
+      'release_bot', 'clang', 'use_clang_coverage', 'no_symbols',
     ],
 
     'clang_tot_asan_lsan_static_release': [
