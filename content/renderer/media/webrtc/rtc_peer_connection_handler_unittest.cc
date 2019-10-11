@@ -420,8 +420,8 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
             error_or_transceiver.value()->ImplementationType(),
             blink::WebRTCRtpTransceiverImplementationType::kPlanBSenderOnly);
         auto sender = error_or_transceiver.value()->Sender();
-        senders_.push_back(std::unique_ptr<RTCRtpSender>(
-            static_cast<RTCRtpSender*>(sender.release())));
+        senders_.push_back(std::unique_ptr<blink::RTCRtpSenderImpl>(
+            static_cast<blink::RTCRtpSenderImpl*>(sender.release())));
       }
     }
     for (const auto& web_video_track : web_stream.VideoTracks()) {
@@ -432,15 +432,15 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
             error_or_transceiver.value()->ImplementationType(),
             blink::WebRTCRtpTransceiverImplementationType::kPlanBSenderOnly);
         auto sender = error_or_transceiver.value()->Sender();
-        senders_.push_back(std::unique_ptr<RTCRtpSender>(
-            static_cast<RTCRtpSender*>(sender.release())));
+        senders_.push_back(std::unique_ptr<blink::RTCRtpSenderImpl>(
+            static_cast<blink::RTCRtpSenderImpl*>(sender.release())));
       }
     }
     return senders_size_before_add < senders_.size();
   }
 
-  std::vector<std::unique_ptr<RTCRtpSender>>::iterator FindSenderForTrack(
-      const blink::WebMediaStreamTrack& web_track) {
+  std::vector<std::unique_ptr<blink::RTCRtpSenderImpl>>::iterator
+  FindSenderForTrack(const blink::WebMediaStreamTrack& web_track) {
     for (auto it = senders_.begin(); it != senders_.end(); ++it) {
       if ((*it)->Track().UniqueId() == web_track.UniqueId())
         return it;
@@ -598,7 +598,7 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
   // Weak reference to the mocked native peer connection implementation.
   blink::MockPeerConnectionImpl* mock_peer_connection_;
 
-  std::vector<std::unique_ptr<RTCRtpSender>> senders_;
+  std::vector<std::unique_ptr<blink::RTCRtpSenderImpl>> senders_;
   std::map<webrtc::MediaStreamTrackInterface*,
            rtc::scoped_refptr<webrtc::RtpReceiverInterface>>
       receivers_by_track_;

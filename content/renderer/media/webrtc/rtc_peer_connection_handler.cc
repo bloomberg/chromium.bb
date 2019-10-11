@@ -568,7 +568,7 @@ std::set<RTCPeerConnectionHandler*>* GetPeerConnectionHandlers() {
 
 // Counts the number of senders that have |stream_id| as an associated stream.
 size_t GetLocalStreamUsageCount(
-    const std::vector<std::unique_ptr<RTCRtpSender>>& rtp_senders,
+    const std::vector<std::unique_ptr<blink::RTCRtpSenderImpl>>& rtp_senders,
     const std::string stream_id) {
   size_t usage_count = 0;
   for (const auto& sender : rtp_senders) {
@@ -1746,14 +1746,14 @@ RTCPeerConnectionHandler::AddTrack(
     // Plan B: Create sender only.
     DCHECK(transceiver_state.sender_state());
     auto webrtc_sender = transceiver_state.sender_state()->webrtc_sender();
-    DCHECK(FindSender(RTCRtpSender::getId(webrtc_sender.get())) ==
+    DCHECK(FindSender(blink::RTCRtpSenderImpl::getId(webrtc_sender.get())) ==
            rtp_senders_.end());
-    RtpSenderState sender_state = transceiver_state.MoveSenderState();
+    blink::RtpSenderState sender_state = transceiver_state.MoveSenderState();
     DCHECK(sender_state.is_initialized());
-    rtp_senders_.push_back(std::make_unique<RTCRtpSender>(
+    rtp_senders_.push_back(std::make_unique<blink::RTCRtpSenderImpl>(
         native_peer_connection_, track_adapter_map_, std::move(sender_state)));
-    web_transceiver = std::make_unique<RTCRtpSenderOnlyTransceiver>(
-        std::make_unique<RTCRtpSender>(*rtp_senders_.back().get()));
+    web_transceiver = std::make_unique<blink::RTCRtpSenderOnlyTransceiver>(
+        std::make_unique<blink::RTCRtpSenderImpl>(*rtp_senders_.back().get()));
   } else {
     DCHECK_EQ(configuration_.sdp_semantics, webrtc::SdpSemantics::kUnifiedPlan);
     // Unified Plan: Create or recycle a transceiver.
@@ -1841,8 +1841,8 @@ bool RTCPeerConnectionHandler::RemoveTrackPlanB(
                              web_track.Id().Utf8());
   if (peer_connection_tracker_) {
     auto sender_only_transceiver =
-        std::make_unique<RTCRtpSenderOnlyTransceiver>(
-            std::make_unique<RTCRtpSender>(*it->get()));
+        std::make_unique<blink::RTCRtpSenderOnlyTransceiver>(
+            std::make_unique<blink::RTCRtpSenderImpl>(*it->get()));
     size_t sender_index = GetTransceiverIndex(*sender_only_transceiver);
     peer_connection_tracker_->TrackRemoveTransceiver(
         this, PeerConnectionTracker::TransceiverUpdatedReason::kRemoveTrack,
@@ -2391,7 +2391,7 @@ void RTCPeerConnectionHandler::ReportFirstSessionDescriptions(
   // video or not.
 }
 
-std::vector<std::unique_ptr<RTCRtpSender>>::iterator
+std::vector<std::unique_ptr<blink::RTCRtpSenderImpl>>::iterator
 RTCPeerConnectionHandler::FindSender(uintptr_t id) {
   for (auto it = rtp_senders_.begin(); it != rtp_senders_.end(); ++it) {
     if ((*it)->Id() == id)
@@ -2468,10 +2468,10 @@ RTCPeerConnectionHandler::CreateOrUpdateTransceiver(
         native_peer_connection_, track_adapter_map_,
         std::move(transceiver_state));
     rtp_transceivers_.push_back(transceiver->ShallowCopy());
-    DCHECK(FindSender(RTCRtpSender::getId(webrtc_sender.get())) ==
+    DCHECK(FindSender(blink::RTCRtpSenderImpl::getId(webrtc_sender.get())) ==
            rtp_senders_.end());
-    rtp_senders_.push_back(
-        std::make_unique<RTCRtpSender>(*transceiver->content_sender()));
+    rtp_senders_.push_back(std::make_unique<blink::RTCRtpSenderImpl>(
+        *transceiver->content_sender()));
     DCHECK(FindReceiver(blink::RTCRtpReceiverImpl::getId(
                webrtc_receiver.get())) == rtp_receivers_.end());
     rtp_receivers_.push_back(std::make_unique<blink::RTCRtpReceiverImpl>(
@@ -2480,7 +2480,7 @@ RTCPeerConnectionHandler::CreateOrUpdateTransceiver(
     // Update the transceiver. This also updates the sender and receiver.
     transceiver = (*it)->ShallowCopy();
     transceiver->set_state(std::move(transceiver_state), update_mode);
-    DCHECK(FindSender(RTCRtpSender::getId(webrtc_sender.get())) !=
+    DCHECK(FindSender(blink::RTCRtpSenderImpl::getId(webrtc_sender.get())) !=
            rtp_senders_.end());
     DCHECK(FindReceiver(blink::RTCRtpReceiverImpl::getId(
                webrtc_receiver.get())) != rtp_receivers_.end());

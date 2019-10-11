@@ -312,7 +312,8 @@ class WebRtcSetDescriptionObserverHandlerTest
                                       transceiver->fired_direction()));
     // Inspect sender states.
     EXPECT_TRUE(transceiver_state.sender_state());
-    const RtpSenderState& sender_state = *transceiver_state.sender_state();
+    const blink::RtpSenderState& sender_state =
+        *transceiver_state.sender_state();
     EXPECT_TRUE(sender_state.is_initialized());
     EXPECT_EQ(sender.get(), sender_state.webrtc_sender());
     EXPECT_EQ(sender->track(), sender_state.track_ref()->webrtc_track());

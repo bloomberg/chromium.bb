@@ -75,7 +75,7 @@ void TransceiverStateSurfacer::Initialize(
 
   for (auto& webrtc_transceiver : webrtc_transceivers) {
     // Create the sender state.
-    base::Optional<RtpSenderState> sender_state;
+    base::Optional<blink::RtpSenderState> sender_state;
     auto webrtc_sender = webrtc_transceiver->sender();
     if (webrtc_sender) {
       std::unique_ptr<blink::WebRtcMediaStreamTrackAdapterMap::AdapterRef>
@@ -91,7 +91,7 @@ void TransceiverStateSurfacer::Initialize(
             track_adapter_map->GetLocalTrackAdapter(webrtc_sender->track());
         CHECK(sender_track_ref);
       }
-      sender_state = RtpSenderState(
+      sender_state = blink::RtpSenderState(
           main_task_runner_, signaling_task_runner_, webrtc_sender.get(),
           std::move(sender_track_ref), webrtc_sender->stream_ids());
     }

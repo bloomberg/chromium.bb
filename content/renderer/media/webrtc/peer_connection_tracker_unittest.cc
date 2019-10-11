@@ -106,7 +106,7 @@ std::unique_ptr<blink::WebRTCRtpTransceiver> CreateDefaultTransceiver(
         base::nullopt /* current_direction */);
   } else if (implementation_type ==
              blink::WebRTCRtpTransceiverImplementationType::kPlanBSenderOnly) {
-    transceiver = std::make_unique<RTCRtpSenderOnlyTransceiver>(
+    transceiver = std::make_unique<blink::RTCRtpSenderOnlyTransceiver>(
         std::make_unique<FakeRTCRtpSender>(sender));
   } else {
     DCHECK_EQ(

@@ -2,17 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/webrtc/rtc_rtp_sender.h"
+#include "third_party/blink/public/web/modules/peerconnection/rtc_rtp_sender_impl.h"
 
 #include <memory>
 
 #include "base/bind.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "base/test/task_environment.h"
 #include "build/build_config.h"
-#include "content/child/child_process.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
@@ -26,6 +24,7 @@
 #include "third_party/blink/public/web/modules/peerconnection/webrtc_media_stream_track_adapter_map.h"
 #include "third_party/blink/public/web/modules/peerconnection/webrtc_stats_report_obtainer.h"
 #include "third_party/blink/public/web/web_heap.h"
+#include "third_party/blink/renderer/platform/testing/io_task_runner_testing_platform_support.h"
 #include "third_party/webrtc/api/stats/rtc_stats_report.h"
 #include "third_party/webrtc/api/stats/rtcstats_objects.h"
 #include "third_party/webrtc/api/test/mock_rtpsender.h"
@@ -33,9 +32,9 @@
 using ::testing::_;
 using ::testing::Return;
 
-namespace content {
+namespace blink {
 
-class RTCRtpSenderTest : public ::testing::Test {
+class RTCRtpSenderImplTest : public ::testing::Test {
  public:
   void SetUp() override {
     dependency_factory_.reset(new blink::MockPeerConnectionDependencyFactory());
@@ -82,7 +81,7 @@ class RTCRtpSenderTest : public ::testing::Test {
     return web_track;
   }
 
-  std::unique_ptr<RTCRtpSender> CreateSender(
+  std::unique_ptr<RTCRtpSenderImpl> CreateSender(
       blink::WebMediaStreamTrack web_track) {
     std::unique_ptr<blink::WebRtcMediaStreamTrackAdapterMap::AdapterRef>
         track_ref;
@@ -95,8 +94,8 @@ class RTCRtpSenderTest : public ::testing::Test {
                                 mock_webrtc_sender_.get(), std::move(track_ref),
                                 std::vector<std::string>());
     sender_state.Initialize();
-    return std::make_unique<RTCRtpSender>(peer_connection_.get(), track_map_,
-                                          std::move(sender_state));
+    return std::make_unique<RTCRtpSenderImpl>(
+        peer_connection_.get(), track_map_, std::move(sender_state));
   }
 
   // Calls replaceTrack(), which is asynchronous, returning a callback that when
@@ -109,12 +108,12 @@ class RTCRtpSenderTest : public ::testing::Test {
     // On complete, |*result_holder| is set with the result of replaceTrack()
     // and the |run_loop| quit.
     sender_->ReplaceTrack(
-        web_track, base::BindOnce(&RTCRtpSenderTest::CallbackOnComplete,
+        web_track, base::BindOnce(&RTCRtpSenderImplTest::CallbackOnComplete,
                                   base::Unretained(this), result_holder.get(),
                                   run_loop.get()));
     // When the resulting callback is invoked, waits for |run_loop| to complete
     // and returns |*result_holder|.
-    return base::BindOnce(&RTCRtpSenderTest::RunLoopAndReturnResult,
+    return base::BindOnce(&RTCRtpSenderImplTest::RunLoopAndReturnResult,
                           base::Unretained(this), std::move(result_holder),
                           std::move(run_loop));
   }
@@ -140,11 +139,7 @@ class RTCRtpSenderTest : public ::testing::Test {
     return *result_holder;
   }
 
-  // Code under test expects to be run in a process with an initialized
-  // ChildProcess, which requires ThreadPool, and a main-thread MessageLoop,
-  // which the TaskEnvironment also provides.
-  base::test::TaskEnvironment task_environment_;
-  ChildProcess child_process_;
+  ScopedTestingPlatformSupport<IOTaskRunnerTestingPlatformSupport> platform_;
 
   std::unique_ptr<blink::MockPeerConnectionDependencyFactory>
       dependency_factory_;
@@ -152,23 +147,23 @@ class RTCRtpSenderTest : public ::testing::Test {
   scoped_refptr<blink::WebRtcMediaStreamTrackAdapterMap> track_map_;
   rtc::scoped_refptr<blink::MockPeerConnectionImpl> peer_connection_;
   rtc::scoped_refptr<webrtc::MockRtpSender> mock_webrtc_sender_;
-  std::unique_ptr<RTCRtpSender> sender_;
+  std::unique_ptr<RTCRtpSenderImpl> sender_;
 };
 
-TEST_F(RTCRtpSenderTest, CreateSender) {
+TEST_F(RTCRtpSenderImplTest, CreateSender) {
   auto web_track = CreateWebTrack("track_id");
   sender_ = CreateSender(web_track);
   EXPECT_FALSE(sender_->Track().IsNull());
   EXPECT_EQ(web_track.UniqueId(), sender_->Track().UniqueId());
 }
 
-TEST_F(RTCRtpSenderTest, CreateSenderWithNullTrack) {
+TEST_F(RTCRtpSenderImplTest, CreateSenderWithNullTrack) {
   blink::WebMediaStreamTrack null_track;
   sender_ = CreateSender(null_track);
   EXPECT_TRUE(sender_->Track().IsNull());
 }
 
-TEST_F(RTCRtpSenderTest, ReplaceTrackSetsTrack) {
+TEST_F(RTCRtpSenderImplTest, ReplaceTrackSetsTrack) {
   auto web_track1 = CreateWebTrack("track1");
   sender_ = CreateSender(web_track1);
 
@@ -180,7 +175,7 @@ TEST_F(RTCRtpSenderTest, ReplaceTrackSetsTrack) {
   EXPECT_EQ(web_track2.UniqueId(), sender_->Track().UniqueId());
 }
 
-TEST_F(RTCRtpSenderTest, ReplaceTrackWithNullTrack) {
+TEST_F(RTCRtpSenderImplTest, ReplaceTrackWithNullTrack) {
   auto web_track = CreateWebTrack("track_id");
   sender_ = CreateSender(web_track);
 
@@ -191,7 +186,7 @@ TEST_F(RTCRtpSenderTest, ReplaceTrackWithNullTrack) {
   EXPECT_TRUE(sender_->Track().IsNull());
 }
 
-TEST_F(RTCRtpSenderTest, ReplaceTrackCanFail) {
+TEST_F(RTCRtpSenderImplTest, ReplaceTrackCanFail) {
   auto web_track = CreateWebTrack("track_id");
   sender_ = CreateSender(web_track);
   ASSERT_FALSE(sender_->Track().IsNull());
@@ -206,7 +201,7 @@ TEST_F(RTCRtpSenderTest, ReplaceTrackCanFail) {
   EXPECT_EQ(web_track.UniqueId(), sender_->Track().UniqueId());
 }
 
-TEST_F(RTCRtpSenderTest, ReplaceTrackIsNotSetSynchronously) {
+TEST_F(RTCRtpSenderImplTest, ReplaceTrackIsNotSetSynchronously) {
   auto web_track1 = CreateWebTrack("track1");
   sender_ = CreateSender(web_track1);
 
@@ -220,7 +215,7 @@ TEST_F(RTCRtpSenderTest, ReplaceTrackIsNotSetSynchronously) {
   std::move(replaceTrackRunLoopAndGetResult).Run();
 }
 
-TEST_F(RTCRtpSenderTest, GetStats) {
+TEST_F(RTCRtpSenderImplTest, GetStats) {
   auto web_track = CreateWebTrack("track_id");
   sender_ = CreateSender(web_track);
 
@@ -246,10 +241,10 @@ TEST_F(RTCRtpSenderTest, GetStats) {
   EXPECT_EQ(stats->Timestamp(), 1.234);
 }
 
-TEST_F(RTCRtpSenderTest, CopiedSenderSharesInternalStates) {
+TEST_F(RTCRtpSenderImplTest, CopiedSenderSharesInternalStates) {
   auto web_track = CreateWebTrack("track_id");
   sender_ = CreateSender(web_track);
-  auto copy = std::make_unique<RTCRtpSender>(*sender_);
+  auto copy = std::make_unique<RTCRtpSenderImpl>(*sender_);
   // Copy shares original's ID.
   EXPECT_EQ(sender_->Id(), copy->Id());
 
@@ -263,4 +258,4 @@ TEST_F(RTCRtpSenderTest, CopiedSenderSharesInternalStates) {
   EXPECT_TRUE(copy->Track().IsNull());
 }
 
-}  // namespace content
+}  // namespace blink

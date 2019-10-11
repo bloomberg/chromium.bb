@@ -8,9 +8,10 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
-#include "content/renderer/media/webrtc/rtc_rtp_sender.h"
+#include "content/common/content_export.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_transceiver.h"
 #include "third_party/blink/public/web/modules/peerconnection/rtc_rtp_receiver_impl.h"
+#include "third_party/blink/public/web/modules/peerconnection/rtc_rtp_sender_impl.h"
 #include "third_party/blink/public/web/modules/peerconnection/webrtc_media_stream_track_adapter_map.h"
 #include "third_party/webrtc/api/rtp_transceiver_interface.h"
 
@@ -58,7 +59,7 @@ class CONTENT_EXPORT RtpTransceiverState {
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> signaling_task_runner,
       scoped_refptr<webrtc::RtpTransceiverInterface> webrtc_transceiver,
-      base::Optional<RtpSenderState> sender_state,
+      base::Optional<blink::RtpSenderState> sender_state,
       base::Optional<blink::RtpReceiverState> receiver_state,
       base::Optional<std::string> mid,
       bool stopped,
@@ -81,8 +82,8 @@ class CONTENT_EXPORT RtpTransceiverState {
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner() const;
   scoped_refptr<base::SingleThreadTaskRunner> signaling_task_runner() const;
   scoped_refptr<webrtc::RtpTransceiverInterface> webrtc_transceiver() const;
-  const base::Optional<RtpSenderState>& sender_state() const;
-  RtpSenderState MoveSenderState();
+  const base::Optional<blink::RtpSenderState>& sender_state() const;
+  blink::RtpSenderState MoveSenderState();
   const base::Optional<blink::RtpReceiverState>& receiver_state() const;
   blink::RtpReceiverState MoveReceiverState();
   base::Optional<std::string> mid() const;
@@ -97,7 +98,7 @@ class CONTENT_EXPORT RtpTransceiverState {
   scoped_refptr<base::SingleThreadTaskRunner> signaling_task_runner_;
   scoped_refptr<webrtc::RtpTransceiverInterface> webrtc_transceiver_;
   bool is_initialized_;
-  base::Optional<RtpSenderState> sender_state_;
+  base::Optional<blink::RtpSenderState> sender_state_;
   base::Optional<blink::RtpReceiverState> receiver_state_;
   base::Optional<std::string> mid_;
   bool stopped_;
@@ -162,7 +163,7 @@ class CONTENT_EXPORT RTCRtpTransceiver : public blink::WebRTCRtpTransceiver {
   const RtpTransceiverState& state() const;
   void set_state(RtpTransceiverState state,
                  TransceiverStateUpdateMode update_mode);
-  RTCRtpSender* content_sender();
+  blink::RTCRtpSenderImpl* content_sender();
   blink::RTCRtpReceiverImpl* content_receiver();
 
   blink::WebRTCRtpTransceiverImplementationType ImplementationType()
