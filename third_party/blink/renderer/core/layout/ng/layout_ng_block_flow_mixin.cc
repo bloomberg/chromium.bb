@@ -189,8 +189,9 @@ void LayoutNGBlockFlowMixin<Base>::AddOutlineRects(
     const PhysicalOffset& additional_offset,
     NGOutlineType include_block_overflows) const {
   if (PaintFragment()) {
-    PaintFragment()->AddSelfOutlineRects(&rects, additional_offset,
-                                         include_block_overflows);
+    To<NGPhysicalBoxFragment>(PaintFragment()->PhysicalFragment())
+        .AddSelfOutlineRects(additional_offset, include_block_overflows,
+                             &rects);
   } else {
     Base::AddOutlineRects(rects, additional_offset, include_block_overflows);
   }
