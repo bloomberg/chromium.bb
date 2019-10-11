@@ -100,6 +100,10 @@ class TouchToFillView implements BottomSheet.BottomSheetContent {
         mCredentialListView.setAdapter(adapter);
     }
 
+    Context getContext() {
+        return mContext;
+    }
+
     private void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
         assert adapterView == mCredentialListView : "Use this click handler only for credentials!";
         assert mEventListener != null;
