@@ -2016,11 +2016,8 @@ crbug.com/636239 [ Win7 ] virtual/audio-service/media/video-zoom-controls.html [
 # The spec for "Propagation to the Initial Containing Block" was changed.
 # https://drafts.csswg.org/css-writing-modes-4/#icb
 crbug.com/988585 external/wpt/css/css-writing-modes/wm-propagation-001.html [ Failure ]
-crbug.com/988585 external/wpt/css/css-writing-modes/wm-propagation-002.html [ Failure ]
-crbug.com/988585 external/wpt/css/css-writing-modes/wm-propagation-body-033.html [ Failure ]
 crbug.com/988585 external/wpt/css/css-writing-modes/wm-propagation-body-034.html [ Failure ]
 crbug.com/988585 external/wpt/css/css-writing-modes/wm-propagation-body-035.html [ Failure ]
-crbug.com/988585 external/wpt/css/css-writing-modes/wm-propagation-body-037.html [ Failure ]
 crbug.com/988585 external/wpt/css/css-writing-modes/wm-propagation-body-038.html [ Failure ]
 crbug.com/988585 external/wpt/css/css-writing-modes/wm-propagation-body-039.html [ Failure ]
 crbug.com/988585 external/wpt/css/css-writing-modes/wm-propagation-body-042.html [ Failure ]

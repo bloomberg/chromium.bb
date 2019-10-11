@@ -121,6 +121,7 @@
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/html/html_frame_element_base.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
+#include "third_party/blink/renderer/core/html/html_html_element.h"
 #include "third_party/blink/renderer/core/html/html_plugin_element.h"
 #include "third_party/blink/renderer/core/html/html_slot_element.h"
 #include "third_party/blink/renderer/core/html/html_table_rows_collection.h"
@@ -3216,9 +3217,14 @@ StyleRecalcChange Element::RecalcOwnStyle(const StyleRecalcChange change) {
 
   if (LayoutObject* layout_object = GetLayoutObject()) {
     DCHECK(new_style);
-    auto* this_element = DynamicTo<PseudoElement>(this);
-    if (this_element && new_style->Display() == EDisplay::kContents) {
-      new_style = this_element->LayoutStyleForDisplayContents(*new_style);
+    scoped_refptr<const ComputedStyle> layout_style(std::move(new_style));
+    if (auto* pseudo_element = DynamicTo<PseudoElement>(this)) {
+      if (layout_style->Display() == EDisplay::kContents) {
+        layout_style =
+            pseudo_element->LayoutStyleForDisplayContents(*layout_style);
+      }
+    } else if (auto* html_element = DynamicTo<HTMLHtmlElement>(this)) {
+      layout_style = html_element->LayoutStyleForElement(layout_style);
     }
     // kEqual means that the computed style didn't change, but there are
     // additional flags in ComputedStyle which may have changed. For instance,
@@ -3229,7 +3235,7 @@ StyleRecalcChange Element::RecalcOwnStyle(const StyleRecalcChange change) {
         diff == ComputedStyle::Difference::kEqual
             ? LayoutObject::ApplyStyleChanges::kNo
             : LayoutObject::ApplyStyleChanges::kYes;
-    layout_object->SetStyle(new_style.get(), apply_changes);
+    layout_object->SetStyle(layout_style.get(), apply_changes);
   }
   return child_change;
 }
