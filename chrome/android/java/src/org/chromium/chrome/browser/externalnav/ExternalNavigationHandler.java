@@ -670,6 +670,24 @@ public class ExternalNavigationHandler {
     }
 
     /**
+     * If some third-party app launched Chrome with an intent, and the URL got redirected, and the
+     * user explicitly chose Chrome over other intent handlers, stay in Chrome unless there was a
+     * new intent handler after redirection or Chrome cannot handle it any more.
+     * Custom tabs are an exception to this rule, since at no point, the user sees an intent picker
+     * and "picking Chrome" is handled inside the support library.
+     */
+    private boolean shouldKeepIntentRedirectInChrome(ExternalNavigationParams params,
+            boolean incomingIntentRedirect, Intent targetIntent, boolean isExternalProtocol) {
+        if (params.getRedirectHandler() != null && incomingIntentRedirect && !isExternalProtocol
+                && !params.getRedirectHandler().isFromCustomTabIntent()
+                && !params.getRedirectHandler().hasNewResolver(targetIntent)) {
+            if (DEBUG) Log.i(TAG, "Custom tab redirect no handled");
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * Returns whether the activity belongs to a WebAPK and the URL is within the scope of the
      * WebAPK. The WebAPK's main activity is a bouncer that redirects to WebApkActivity in Chrome.
      * In order to avoid bouncing indefinitely, we should not override the navigation if we are
@@ -687,6 +705,22 @@ public class ExternalNavigationHandler {
             }
         }
         return false;
+    }
+
+    private boolean launchExternalIntent(Intent targetIntent, boolean shouldProxyForInstantApps) {
+        try {
+            if (!mDelegate.startActivityIfNeeded(targetIntent, shouldProxyForInstantApps)) {
+                if (DEBUG) Log.i(TAG, "The current Activity was the only targeted Activity.");
+                return false;
+            }
+        } catch (ActivityNotFoundException e) {
+            // The targeted app must have been uninstalled/disabled since we queried for Activities
+            // to handle this intent.
+            if (DEBUG) Log.i(TAG, "Activity not found.");
+            return false;
+        }
+        if (DEBUG) Log.i(TAG, "startActivityIfNeeded");
+        return true;
     }
 
     private @OverrideUrlLoadingResult int shouldOverrideUrlLoadingInternal(
@@ -805,18 +839,9 @@ public class ExternalNavigationHandler {
                     targetIntent, params, browserFallbackUrl, shouldProxyForInstantApps);
         }
 
-        // Some third-party app launched Chrome with an intent, and the URL got redirected. The
-        // user has explicitly chosen Chrome over other intent handlers, so stay in Chrome
-        // unless there was a new intent handler after redirection or Chrome cannot handle it
-        // any more.
-        // Custom tabs are an exception to this rule, since at no point, the user sees an intent
-        // picker and "picking Chrome" is handled inside the support library.
-        if (params.getRedirectHandler() != null && incomingIntentRedirect) {
-            if (!isExternalProtocol && !params.getRedirectHandler().isFromCustomTabIntent()
-                    && !params.getRedirectHandler().hasNewResolver(targetIntent)) {
-                if (DEBUG) Log.i(TAG, "Custom tab redirect no handled");
-                return OverrideUrlLoadingResult.NO_OVERRIDE;
-            }
+        if (shouldKeepIntentRedirectInChrome(
+                    params, incomingIntentRedirect, targetIntent, isExternalProtocol)) {
+            return OverrideUrlLoadingResult.NO_OVERRIDE;
         }
 
         if (shouldStayInWebApkCCT(params, resolvingInfos)) {
@@ -827,18 +852,9 @@ public class ExternalNavigationHandler {
         } else if (launchWebApkIfSoleIntentHandler(resolvingInfos, targetIntent)) {
             return OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT;
         }
-
-        try {
-            if (mDelegate.startActivityIfNeeded(targetIntent, shouldProxyForInstantApps)) {
-                // Assume the browser can handle it if there's no activity for this intent.
-                if (DEBUG) Log.i(TAG, "startActivityIfNeeded");
-                return OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT;
-            }
-        } catch (ActivityNotFoundException e) {
-            if (DEBUG) Log.i(TAG, "Activity not found.");
-            return OverrideUrlLoadingResult.NO_OVERRIDE;
+        if (launchExternalIntent(targetIntent, shouldProxyForInstantApps)) {
+            return OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT;
         }
-
         return OverrideUrlLoadingResult.NO_OVERRIDE;
     }
 
