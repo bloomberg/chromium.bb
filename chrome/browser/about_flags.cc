@@ -3077,11 +3077,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kChromeColorsCustomColorPickerDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kChromeColorsCustomColorPicker)},
 
-    {"grid-layout-for-ntp-shortcuts",
-     flag_descriptions::kGridLayoutForNtpShortcutsName,
-     flag_descriptions::kGridLayoutForNtpShortcutsDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kGridLayoutForNtpShortcuts)},
-
     {"ntp-customization-menu-v2",
      flag_descriptions::kNtpCustomizationMenuV2Name,
      flag_descriptions::kNtpCustomizationMenuV2Description, kOsDesktop,

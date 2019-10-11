@@ -2834,24 +2834,6 @@
             ]
         }
     ],
-    "GridLayoutForNtpShortcuts": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "GridLayoutForNtpShortcuts"
-                    ]
-                }
-            ]
-        }
-    ],
     "GwpAsanAndroid": [
         {
             "platforms": [

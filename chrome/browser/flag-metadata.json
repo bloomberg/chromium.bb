@@ -2257,11 +2257,6 @@
     "expiry_milestone": 82
   },
   {
-    "name": "grid-layout-for-ntp-shortcuts",
-    "owners": [ "kristipark", "ramyan" ],
-    "expiry_milestone": 78
-  },
-  {
     "name": "handwriting-gesture",
     "owners": [ "essential-inputs-team@google.com" ],
     "expiry_milestone": 80

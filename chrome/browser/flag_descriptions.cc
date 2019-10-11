@@ -2870,12 +2870,6 @@ const char kDialMediaRouteProviderDescription[] =
     "Enables the native DIAL Media Route Provider implementation to be used "
     "instead of the implementation in the Media Router component extension.";
 
-const char kGridLayoutForNtpShortcutsName[] =
-    "Enable grid layout for NTP shortcuts";
-const char kGridLayoutForNtpShortcutsDescription[] =
-    "Enables better animations for the shortcuts, including improved "
-    "drag-and-drop.";
-
 const char kNtpCustomizationMenuV2Name[] = "NTP customization menu version 2";
 const char kNtpCustomizationMenuV2Description[] =
     "Use the second version of the NTP customization menu.";
