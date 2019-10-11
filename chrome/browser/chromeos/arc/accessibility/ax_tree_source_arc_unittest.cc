@@ -137,12 +137,12 @@ class AXTreeSourceArcTest : public testing::Test,
                         MockAutomationEventRouter* router)
         : AXTreeSourceArc(delegate), router_(router) {}
 
+   private:
     extensions::AutomationEventRouterInterface* GetAutomationEventRouter()
         const override {
       return router_;
     }
 
-   private:
     MockAutomationEventRouter* const router_;
   };
 
