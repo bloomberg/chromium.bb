@@ -171,6 +171,9 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
   if (base::FeatureList::IsEnabled(features::kWebXrPlaneDetection))
     WebRuntimeFeatures::EnableWebXRPlaneDetection(true);
 
+  if (base::FeatureList::IsEnabled(features::kWebXrGamepadModule))
+    WebRuntimeFeatures::EnableWebXrGamepadModule(true);
+
   WebRuntimeFeatures::EnableFetchMetadata(
       base::FeatureList::IsEnabled(network::features::kFetchMetadata));
   WebRuntimeFeatures::EnableFetchMetadataDestination(
