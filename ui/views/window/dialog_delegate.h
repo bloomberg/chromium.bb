@@ -47,6 +47,12 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
     // should use the platform-native frame, and all other dialogs should use
     // the Views-styled one.
     bool custom_frame = true;
+
+    // Text labels for the buttons on this dialog. Any button without a label
+    // here will get the default text for its type from GetDialogButtonLabel.
+    // Prefer to use this field (via set_button_label) rather than override
+    // GetDialogButtonLabel - see https://crbug.com/1011446
+    base::string16 button_labels[ui::DIALOG_BUTTON_LAST + 1];
   };
 
   DialogDelegate();
@@ -158,6 +164,10 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   bool draggable() const { return params_.draggable; }
   void set_use_custom_frame(bool use) { params_.custom_frame = use; }
   bool use_custom_frame() const { return params_.custom_frame; }
+
+  void set_button_label(ui::DialogButton button, base::string16 label) {
+    params_.button_labels[button] = label;
+  }
 
  protected:
   ~DialogDelegate() override;
