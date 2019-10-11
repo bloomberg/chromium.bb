@@ -153,8 +153,8 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
   if (base::FeatureList::IsEnabled(features::kPeriodicBackgroundSync))
     WebRuntimeFeatures::EnablePeriodicBackgroundSync(true);
 
-  if (base::FeatureList::IsEnabled(features::kWebXr))
-    WebRuntimeFeatures::EnableWebXR(true);
+  WebRuntimeFeatures::EnableWebXR(
+      base::FeatureList::IsEnabled(features::kWebXr));
 
   if (base::FeatureList::IsEnabled(features::kWebXrArDOMOverlay))
     WebRuntimeFeatures::EnableWebXRARDOMOverlay(true);
