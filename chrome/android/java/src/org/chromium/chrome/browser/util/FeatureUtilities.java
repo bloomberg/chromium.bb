@@ -285,6 +285,11 @@ public class FeatureUtilities {
                 ChromeFeatureList.DOWNLOADS_AUTO_RESUMPTION_NATIVE);
     }
 
+    @VisibleForTesting
+    public static void setDownloadAutoResumptionEnabledInNativeForTesting(Boolean value) {
+        sFlags.put(ChromePreferenceManager.DOWNLOAD_AUTO_RESUMPTION_IN_NATIVE_KEY, value);
+    }
+
     /**
      * @return Whether or not the bottom toolbar is enabled.
      */
@@ -299,7 +304,8 @@ public class FeatureUtilities {
     /**
      * Set whether the bottom toolbar is enabled for tests. Reset to null at the end of tests.
      */
-    public static void setIsBottomToolbarEnabledForTests(Boolean enabled) {
+    @VisibleForTesting
+    public static void setIsBottomToolbarEnabledForTesting(Boolean enabled) {
         sFlags.put(ChromePreferenceManager.BOTTOM_TOOLBAR_ENABLED_KEY, enabled);
     }
 
@@ -417,6 +423,10 @@ public class FeatureUtilities {
     private static void cacheCommandLineOnNonRootedEnabled() {
         cacheFlag(ChromePreferenceManager.COMMAND_LINE_ON_NON_ROOTED_ENABLED_KEY,
                 ChromeFeatureList.COMMAND_LINE_ON_NON_ROOTED);
+    }
+
+    public static boolean isCommandLineOnNonRootedEnabled() {
+        return isFlagEnabled(ChromePreferenceManager.COMMAND_LINE_ON_NON_ROOTED_ENABLED_KEY, false);
     }
 
     /**
