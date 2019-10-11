@@ -683,9 +683,9 @@ FidoCableDiscovery::GetCableDiscoveryDataFromAuthenticatorEid(
     // Attempt to match |authenticator_eid| as the result of scanning a QR code.
     const int64_t current_tick = CableDiscoveryData::CurrentTimeTick();
     // kNumPreviousTicks is the number of previous ticks that will be accepted
-    // as valid. Ticks are currently 256ms so the value of eight translates to a
-    // couple of seconds.
-    constexpr int kNumPreviousTicks = 8;
+    // as valid. Ticks are currently 256ms so the value of sixteen translates to
+    // about four seconds.
+    constexpr int kNumPreviousTicks = 16;
 
     for (int i = 0; i < kNumPreviousTicks; i++) {
       auto qr_secret = CableDiscoveryData::DeriveQRSecret(*qr_generator_key_,
@@ -694,6 +694,21 @@ FidoCableDiscovery::GetCableDiscoveryDataFromAuthenticatorEid(
       auto maybe_nonce = candidate.Match(authenticator_eid);
       if (maybe_nonce) {
         return Result(candidate, *maybe_nonce, authenticator_eid, i);
+      }
+    }
+
+    if (base::Contains(noted_obsolete_eids_, authenticator_eid)) {
+      for (int i = kNumPreviousTicks; i < 2 * kNumPreviousTicks; i++) {
+        auto qr_secret = CableDiscoveryData::DeriveQRSecret(*qr_generator_key_,
+                                                            current_tick - i);
+        CableDiscoveryData candidate(qr_secret);
+        if (candidate.Match(authenticator_eid)) {
+          noted_obsolete_eids_.insert(authenticator_eid);
+          FIDO_LOG(DEBUG)
+              << "(EID " << base::HexEncode(authenticator_eid) << " is " << i
+              << " ticks old and would be valid but for the cutoff)";
+          break;
+        }
       }
     }
   }
