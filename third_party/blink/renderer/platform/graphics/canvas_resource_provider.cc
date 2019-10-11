@@ -752,9 +752,6 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
       case CanvasResourceType::kDirect3DGpuMemoryBuffer:
         if (!is_gpu_memory_buffer_image_allowed)
           continue;
-        DCHECK_EQ(color_params.GLUnsizedInternalFormat(),
-                  gpu::InternalFormatForGpuMemoryBufferFormat(
-                      color_params.GetBufferFormat()));
         provider = std::make_unique<CanvasResourceProviderPassThrough>(
             size, filter_quality, color_params, context_provider_wrapper,
             resource_dispatcher);
