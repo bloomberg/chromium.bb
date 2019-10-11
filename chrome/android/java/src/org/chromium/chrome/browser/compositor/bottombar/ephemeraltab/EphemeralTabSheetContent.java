@@ -34,6 +34,8 @@ import org.chromium.ui.base.ActivityWindowAndroid;
  * Represents ephemeral tab content and the toolbar, which can be included inside the bottom sheet.
  */
 public class EphemeralTabSheetContent implements BottomSheet.BottomSheetContent {
+    private static final float PEEK_TOOLBAR_HEIGHT_MULTIPLE = 2.f;
+
     private final Context mContext;
     private final Runnable mOpenNewTabCallback;
     private final Runnable mToolbarClickCallback;
@@ -192,8 +194,10 @@ public class EphemeralTabSheetContent implements BottomSheet.BottomSheetContent 
     }
 
     @Override
-    public boolean isPeekStateEnabled() {
-        return true;
+    public int getPeekHeight() {
+        int toolbarHeight =
+                mContext.getResources().getDimensionPixelSize(R.dimen.toolbar_height_no_shadow);
+        return (int) (toolbarHeight * PEEK_TOOLBAR_HEIGHT_MULTIPLE);
     }
 
     @Override

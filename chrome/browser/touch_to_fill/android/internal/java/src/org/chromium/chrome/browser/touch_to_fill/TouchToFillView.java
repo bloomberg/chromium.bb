@@ -39,13 +39,6 @@ class TouchToFillView implements BottomSheet.BottomSheetContent {
             mEventListener.onDismissed();
             mBottomSheetController.getBottomSheet().removeObserver(mBottomSheetObserver);
         }
-
-        @Override
-        public void onSheetFullyPeeked() {
-            super.onSheetFullyPeeked();
-            // Since isPeekStateEnabled doesn't seem to skip the Peek state, force-expand the sheet.
-            mBottomSheetController.expandSheet();
-        }
     };
 
     /**
@@ -150,8 +143,8 @@ class TouchToFillView implements BottomSheet.BottomSheetContent {
     }
 
     @Override
-    public boolean isPeekStateEnabled() {
-        return true; // For some reason, false isn't working properly. Extend it explicitly!
+    public int getPeekHeight() {
+        return BottomSheet.HeightMode.DISABLED;
     }
 
     @Override
