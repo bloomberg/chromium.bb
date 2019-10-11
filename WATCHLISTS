@@ -2214,7 +2214,7 @@
     'certificate_transparency': ['certificate-transparency-chrome@googlegroups.com',
                                  'martijn+crwatch@martijnc.be',
                                  'rsleevi+watch@chromium.org'],
-    'chrome_cleaner': ['joenotcharles+watch@google.com'],
+    'chrome_cleaner': ['joenotcharles+watch@chromium.org'],
     'chrome_elf': ['caitkp+watch@chromium.org',
                    'pmonette+watch@chromium.org'],
     'chrome_grc': ['chrome-grc-reviews@chromium.org'],
