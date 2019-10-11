@@ -246,11 +246,17 @@ class TabListElement extends CustomElement {
    * @private
    */
   onTabActivated_(tabId) {
-    const previouslyActiveTab = this.getActiveTab_();
-    if (previouslyActiveTab) {
-      previouslyActiveTab.tab = /** @type {!TabData} */ (
-          Object.assign({}, previouslyActiveTab.tab, {active: false}));
-    }
+    // There may be more than 1 TabElement marked as active if other events
+    // have updated a Tab to have an active state. For example, if a
+    // tab is created with an already active state, there may be 2 active
+    // TabElements: the newly created tab and the previously active tab.
+    this.shadowRoot.querySelectorAll('tabstrip-tab[active]')
+        .forEach((previouslyActiveTab) => {
+          if (previouslyActiveTab.tab.id !== tabId) {
+            previouslyActiveTab.tab = /** @type {!TabData} */ (
+                Object.assign({}, previouslyActiveTab.tab, {active: false}));
+          }
+        });
 
     const newlyActiveTab = this.findTabElement_(tabId);
     if (newlyActiveTab) {
