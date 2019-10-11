@@ -103,7 +103,8 @@ uint64_t GetDisallowedFeatures() {
       ToFeatureBit(WebSchedulerTrackedFeature::kWebVR) |
       ToFeatureBit(WebSchedulerTrackedFeature::kWebXR) |
       ToFeatureBit(WebSchedulerTrackedFeature::kSharedWorker) |
-      ToFeatureBit(WebSchedulerTrackedFeature::kWebXR);
+      ToFeatureBit(WebSchedulerTrackedFeature::kWebXR) |
+      ToFeatureBit(WebSchedulerTrackedFeature::kWebLocks);
 
   uint64_t result = kAlwaysDisallowedFeatures;
 
