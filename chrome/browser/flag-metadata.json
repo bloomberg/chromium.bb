@@ -2264,7 +2264,7 @@
   {
     "name": "happiness-tracking-surveys-for-desktop",
     "owners": [ "//chrome/browser/ui/hats/OWNERS" ],
-    "expiry_milestone": 78
+    "expiry_milestone": 80
   },
   {
     "name": "happiness-tracking-surveys-for-desktop-demo",
@@ -2272,7 +2272,7 @@
     // A debugging and demo flag to allow UI/dev/testing team to always show the UI
     // components for the survey without being limited by the triggering mechanism.
     // This flag should expire along with the above feature flag.
-    "expiry_milestone": 78
+    "expiry_milestone": 80
   },
   {
     "name": "hardware-media-key-handling",
