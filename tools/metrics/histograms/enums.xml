@@ -61829,6 +61829,7 @@ Full version information for the fingerprint enum values:
 </enum>
 
 <enum name="VariationsFirstRunSeedFetchResult">
+  <int value="-4" label="Invalid Date header when fetching seed"/>
   <int value="-3" label="UnknownHostException fetching seed"/>
   <int value="-2" label="SocketTimeoutException fetching seed"/>
   <int value="-1" label="IOException fetching seed"/>
