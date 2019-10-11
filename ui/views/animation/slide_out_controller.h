@@ -2,47 +2,34 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_MESSAGE_CENTER_VIEWS_SLIDE_OUT_CONTROLLER_H_
-#define UI_MESSAGE_CENTER_VIEWS_SLIDE_OUT_CONTROLLER_H_
+#ifndef UI_VIEWS_ANIMATION_SLIDE_OUT_CONTROLLER_H_
+#define UI_VIEWS_ANIMATION_SLIDE_OUT_CONTROLLER_H_
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/events/scoped_target_handler.h"
-#include "ui/message_center/message_center_export.h"
 #include "ui/views/view.h"
+#include "ui/views/views_export.h"
 
-namespace message_center {
+namespace views {
+
+class SlideOutControllerDelegate;
 
 // This class contains logic to control sliding out of a layer in response to
 // swipes, i.e. gesture scroll events.
-class MESSAGE_CENTER_EXPORT SlideOutController
-    : public ui::EventHandler,
-      public ui::ImplicitAnimationObserver {
+class VIEWS_EXPORT SlideOutController : public ui::EventHandler,
+                                        public ui::ImplicitAnimationObserver {
  public:
+  // Indicates how much the target layer is allowed to slide.
   enum class SlideMode {
-    FULL,
-    PARTIALLY,
-    NO_SLIDE,
+    kFull,
+    kPartial,
+    kNone,
   };
 
-  class Delegate {
-   public:
-    // Returns the layer for slide operations.
-    virtual ui::Layer* GetSlideOutLayer() = 0;
-
-    // Called when a manual slide starts.
-    virtual void OnSlideStarted() {}
-
-    // Called when a manual slide updates or ends. The argument is true if the
-    // slide starts or in progress, false if it ends.
-    virtual void OnSlideChanged(bool in_progress) = 0;
-
-    // Called when user intends to close the View by sliding it out.
-    virtual void OnSlideOut() = 0;
-  };
-
-  SlideOutController(ui::EventTarget* target, Delegate* delegate);
+  SlideOutController(ui::EventTarget* target,
+                     SlideOutControllerDelegate* delegate);
   ~SlideOutController() override;
 
   void set_update_opacity(bool update_opacity) {
@@ -68,7 +55,7 @@ class MESSAGE_CENTER_EXPORT SlideOutController
   float GetGestureAmount() const { return gesture_amount_; }
 
   // Moves slide back to the center position to closes the swipe control.
-  // Effective only when swipe control is enabled by EnableSwipeControl().
+  // Effective only when swipe control is enabled by |SetSwipeControlWidth()|.
   void CloseSwipeControl();
 
   // Slides the view out and closes it after the animation. The sign of
@@ -77,7 +64,7 @@ class MESSAGE_CENTER_EXPORT SlideOutController
 
  private:
   // Positions where the slided view stays after the touch released.
-  enum class SwipeControlOpenState { CLOSED, OPEN_ON_LEFT, OPEN_ON_RIGHT };
+  enum class SwipeControlOpenState { kClosed, kOpenOnLeft, kOpenOnRight };
 
   // Restores the transform and opacity of the view.
   void RestoreVisualState();
@@ -99,26 +86,26 @@ class MESSAGE_CENTER_EXPORT SlideOutController
   ui::ScopedTargetHandler target_handling_;
 
   // Unowned and outlives this object.
-  Delegate* delegate_;
+  SlideOutControllerDelegate* delegate_;
 
   // Cumulative scroll amount since the beginning of current slide gesture.
   // Includes the initial shift when swipe control was open at gesture start.
   float gesture_amount_ = 0.f;
 
   // Whether or not this view can be slided and/or swiped out.
-  SlideMode mode_ = SlideMode::FULL;
+  SlideMode mode_ = SlideMode::kFull;
 
-  // Whether the swipe control is enabled. See EnableSwipeControl().
+  // Whether the swipe control is enabled. See |SetSwipeControlWidth()|.
   // Effective only when |mode_| is FULL.
   bool has_swipe_control_ = false;
 
   // The horizontal position offset to for swipe control.
-  // See |EnableSwipeControl|.
+  // See |SetSwipeControlWidth()|.
   int swipe_control_width_ = 0;
 
   // The position where the slided view stays after the touch released.
   // Changed only when |mode_| is FULL and |has_swipe_control_| is true.
-  SwipeControlOpenState control_open_state_ = SwipeControlOpenState::CLOSED;
+  SwipeControlOpenState control_open_state_ = SwipeControlOpenState::kClosed;
 
   // If false, it doesn't update the opacity.
   bool update_opacity_ = true;
@@ -131,6 +118,6 @@ class MESSAGE_CENTER_EXPORT SlideOutController
   DISALLOW_COPY_AND_ASSIGN(SlideOutController);
 };
 
-}  // namespace message_center
+}  // namespace views
 
-#endif  // UI_MESSAGE_CENTER_VIEWS_SLIDE_OUT_CONTROLLER_H_
+#endif  // UI_VIEWS_ANIMATION_SLIDE_OUT_CONTROLLER_H_
