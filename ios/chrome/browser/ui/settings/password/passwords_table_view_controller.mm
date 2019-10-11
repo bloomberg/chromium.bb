@@ -369,6 +369,7 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
     if (base::FeatureList::IsEnabled(
             password_manager::features::kLeakDetection)) {
       leakCheckItem_ = [self leakCheckItem];
+      [self updateDetailTextLeakCheckItem];
       [model addItem:leakCheckItem_
           toSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch];
     }
@@ -532,6 +533,7 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
     if ([self.tableViewModel
             hasItemForItemType:ItemTypePasswordLeakCheckSwitch
              sectionIdentifier:SectionIdentifierSavePasswordsSwitch]) {
+      [self updateDetailTextLeakCheckItem];
       [self reconfigureCellsForItems:@[ leakCheckItem_ ]];
     }
   } else {
@@ -555,6 +557,8 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
 
   // Update the item.
   leakCheckItem_.on = [passwordLeakCheckEnabled_ value];
+  [self updateDetailTextLeakCheckItem];
+  [self reconfigureCellsForItems:@[ leakCheckItem_ ]];
 }
 
 #pragma mark - SavePasswordsConsumerDelegate
@@ -1258,6 +1262,7 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   AuthenticationService* authService =
       AuthenticationServiceFactory::GetForBrowserState(browserState_);
   [leakCheckItem_ setEnabled:enabled && authService->IsAuthenticated()];
+  [self updateDetailTextLeakCheckItem];
   [self reconfigureCellsForItems:@[ leakCheckItem_ ]];
 }
 
@@ -1271,6 +1276,29 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
     self.navigationItem.searchController.searchBar.alpha =
         kTableViewNavigationAlphaForDisabledSearchBar;
   }
+}
+
+// Updates the detail text of the leak check item based on the state.
+- (void)updateDetailTextLeakCheckItem {
+  if (!leakCheckItem_) {
+    return;
+  }
+  if (self.editing) {
+    // When editing keep the current detail text.
+    return;
+  }
+  if (leakCheckItem_.enabled) {
+    leakCheckItem_.detailText =
+        l10n_util::GetNSString(IDS_IOS_LEAK_CHECK_SIGNED_IN_DESC);
+    return;
+  }
+  if (leakCheckItem_.on) {
+    leakCheckItem_.detailText =
+        l10n_util::GetNSString(IDS_IOS_LEAK_CHECK_SIGNED_OUT_ENABLED_DESC);
+    return;
+  }
+  leakCheckItem_.detailText =
+      l10n_util::GetNSString(IDS_IOS_LEAK_CHECK_SIGNED_OUT_DISABLED_DESC);
 }
 
 #pragma mark - Testing
