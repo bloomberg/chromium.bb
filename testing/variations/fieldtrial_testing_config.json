@@ -7195,21 +7195,6 @@
             ]
         }
     ],
-    "WinOOPSelectFileDialog": [
-        {
-            "platforms": [
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "WinOOPSelectFileDialog"
-                    ]
-                }
-            ]
-        }
-    ],
     "history-manipulation-intervention": [
         {
             "platforms": [
