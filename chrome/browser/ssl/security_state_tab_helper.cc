@@ -140,15 +140,16 @@ SecurityStateTabHelper::GetVisibleSecurityState() {
       // entry.
       int navigation_id =
           web_contents()->GetController().GetVisibleEntry()->GetUniqueID();
-      if (cached_is_legacy_tls_control_site_ &&
-          cached_is_legacy_tls_control_site_.value().first == navigation_id) {
-        state->is_legacy_tls_control_site =
-            cached_is_legacy_tls_control_site_.value().second;
+      if (cached_should_suppress_legacy_tls_warning_ &&
+          cached_should_suppress_legacy_tls_warning_.value().first ==
+              navigation_id) {
+        state->should_suppress_legacy_tls_warning =
+            cached_should_suppress_legacy_tls_warning_.value().second;
       } else {
-        state->is_legacy_tls_control_site =
-            IsTLSDeprecationConfigControlSite(state->url);
-        cached_is_legacy_tls_control_site_ = std::pair<int, bool>(
-            navigation_id, state->is_legacy_tls_control_site);
+        state->should_suppress_legacy_tls_warning =
+            ShouldSuppressLegacyTLSWarning(state->url);
+        cached_should_suppress_legacy_tls_warning_ = std::pair<int, bool>(
+            navigation_id, state->should_suppress_legacy_tls_warning);
       }
     }
   }
