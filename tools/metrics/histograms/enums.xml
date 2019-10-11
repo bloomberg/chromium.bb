@@ -59371,6 +59371,7 @@ would be helpful to identify which type is being sent.
   <int value="10"
       label="[Deprecated in M79] Sharing notification dismiss button"/>
   <int value="11" label="Sharing error notification try again button"/>
+  <int value="12" label="Settings button for notifications."/>
 </enum>
 
 <enum name="SystemNotificationType">
