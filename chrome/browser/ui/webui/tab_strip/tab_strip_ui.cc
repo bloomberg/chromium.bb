@@ -14,6 +14,7 @@
 #include "base/strings/string_piece.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
+#include "chrome/browser/favicon/favicon_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -223,8 +224,13 @@ class TabStripUIHandler : public content::WebUIMessageHandler,
       tab_data.SetString("favIconUrl", EncodePNGAndMakeDataURI(
                                            tab_renderer_data.favicon,
                                            web_ui()->GetDeviceScaleFactor()));
+      tab_data.SetBoolean("isDefaultFavicon",
+                          tab_renderer_data.favicon.BackedBySameObjectAs(
+                              favicon::GetDefaultFavicon().AsImageSkia()));
+    } else {
+      tab_data.SetBoolean("isDefaultFavicon", true);
     }
-
+    tab_data.SetBoolean("showIcon", tab_renderer_data.show_icon);
     tab_data.SetInteger("networkState",
                         static_cast<int>(tab_renderer_data.network_state));
     tab_data.SetBoolean("shouldHideThrobber",
