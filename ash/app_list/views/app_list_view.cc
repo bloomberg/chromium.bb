@@ -809,12 +809,6 @@ SkColor AppListView::GetAppListBackgroundShieldColorForTest() {
 }
 
 void AppListView::UpdateAppListConfig(aura::Window* parent_window) {
-  const gfx::Size non_apps_grid_size = AppsContainerView::GetNonAppsGridSize();
-  gfx::Size available_apps_grid_size = parent_window->bounds().size();
-  available_apps_grid_size.Enlarge(
-      -non_apps_grid_size.width(),
-      -non_apps_grid_size.height() - delegate_->GetShelfHeight());
-
   // Create the app list configuration override if it's needed for the current
   // display bounds and the available apps grid size.
   std::unique_ptr<AppListConfig> new_config =
@@ -823,7 +817,8 @@ void AppListView::UpdateAppListConfig(aura::Window* parent_window) {
               ->GetDisplayNearestView(parent_window)
               .work_area()
               .size(),
-          available_apps_grid_size, app_list_config_.get());
+          AppsContainerView::GetMinimumGridHorizontalMargin(),
+          delegate_->GetShelfHeight(), app_list_config_.get());
 
   if (!new_config)
     return;
