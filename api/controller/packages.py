@@ -117,6 +117,21 @@ def _HasChromePrebuiltSuccess(_input_proto, output_proto, _config):
   output_proto.has_prebuilt = True
 
 
+@faux.all_empty
+@validate.require('build_target.name')
+@validate.validation_complete
+def GetTargetVersions(input_proto, output_proto, _config):
+  """Returns the target versions."""
+  build_target = controller_util.ParseBuildTarget(input_proto.build_target)
+  output_proto.android_version = packages.determine_android_version(
+      build_target)
+  output_proto.android_branch_version = packages.determine_android_branch(
+      build_target)
+  output_proto.android_target_version = packages.determine_android_target(
+      build_target)
+  # TODO(crbug.com/1004438): Implement remaining version fields.
+
+
 @faux.success(_HasChromePrebuiltSuccess)
 @faux.empty_error
 @validate.require('build_target.name')

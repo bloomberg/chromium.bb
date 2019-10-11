@@ -9,6 +9,7 @@ from __future__ import print_function
 
 from chromite.lib import build_target_util
 from chromite.lib import cros_test_lib
+from chromite.lib import osutils
 from chromite.lib import portage_util
 from chromite.lib.chroot_lib import Chroot
 from chromite.service import packages
@@ -100,3 +101,33 @@ class HasPrebuiltTest(cros_test_lib.TestCase):
   def test_empty_atom_fails(self):
     with self.assertRaises(AssertionError):
       packages.has_prebuilt('')
+
+
+class AndroidVersionsTest(cros_test_lib.MockTestCase):
+  """Tests getting android versions."""
+  def setUp(self):
+    package_result = [
+        'chromeos-base/android-container-nyc-4717008-r1',
+        'chromeos-base/update_engine-0.0.3-r3408']
+    self.PatchObject(portage_util, 'GetPackageDependencies',
+                     return_value=package_result)
+    self.board = 'board'
+    self.PatchObject(portage_util, 'FindEbuildForBoardPackage',
+                     return_value='chromeos-base/android-container-nyc')
+    FakeEnvironment = {
+        'ARM_TARGET': '3-linux-target'
+    }
+    self.PatchObject(osutils, 'SourceEnvironment',
+                     return_value=FakeEnvironment)
+
+  def test_determine_android_version(self):
+    version = packages.determine_android_version(self.board)
+    self.assertEqual(version, '4717008')
+
+  def test_determine_android_branch(self):
+    branch = packages.determine_android_branch(self.board)
+    self.assertEqual(branch, '3')
+
+  def test_determine_android_target(self):
+    target = packages.determine_android_target(self.board)
+    self.assertEqual(target, 'cheets')

@@ -12,6 +12,7 @@ import fileinput
 import functools
 import json
 import os
+import re
 import sys
 
 
@@ -19,6 +20,7 @@ from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import git
+from chromite.lib import osutils
 from chromite.lib import portage_util
 from chromite.lib import uprev_lib
 
@@ -39,6 +41,18 @@ class UnknownPackageError(Error):
 
 class UprevError(Error):
   """An error occurred while uprevving packages."""
+
+
+class NoAndroidVersionError(Error):
+  """An error occurred while trying to determine the android version."""
+
+
+class NoAndroidBranchError(Error):
+  """An error occurred while trying to determine the android branch."""
+
+
+class NoAndroidTargetError(Error):
+  """An error occurred while trying to determine the android target."""
 
 
 class AndroidIsPinnedUprevError(UprevError):
@@ -419,3 +433,98 @@ def builds(atom, build_target, packages=None):
 
   graph = dependency.GetBuildDependency(build_target.name, packages)
   return any(atom in package for package in graph['package_deps'])
+
+
+def determine_android_package(board):
+  """Returns the active Android container package in use by the board.
+
+  Args:
+    board: The board name this is specific to.
+  """
+  packages = portage_util.GetPackageDependencies(board, 'virtual/target-os')
+  # We assume there is only one Android package in the depgraph.
+  for package in packages:
+    if package.startswith('chromeos-base/android-container-') or \
+       package.startswith('chromeos-base/android-vm-'):
+      return package
+  return None
+
+
+def determine_android_version(boards=None):
+  """Determine the current Android version in buildroot now and return it.
+
+  This uses the typical portage logic to determine which version of Android
+  is active right now in the buildroot.
+
+  Args:
+    boards: List of boards to check version of.
+
+  Returns:
+    The Android build ID of the container for the boards.
+
+  Raises:
+    NoAndroidVersionError: if no unique Android version can be determined.
+  """
+  if not boards:
+    return None
+  # Verify that all boards have the same version.
+  version = None
+  for board in boards:
+    package = determine_android_package(board)
+    if not package:
+      raise NoAndroidVersionError(
+          'Android version could not be determined for %s' % boards)
+    cpv = portage_util.SplitCPV(package)
+    if not cpv:
+      raise NoAndroidVersionError(
+          'Android version could not be determined for %s' % board)
+    if not version:
+      version = cpv.version_no_rev
+    elif version != cpv.version_no_rev:
+      raise NoAndroidVersionError(
+          'Different Android versions (%s vs %s) for %s' %
+          (version, cpv.version_no_rev, boards))
+  return version
+
+def determine_android_branch(board):
+  """Returns the Android branch in use by the active container ebuild."""
+  try:
+    android_package = determine_android_package(board)
+  except cros_build_lib.RunCommandError:
+    raise NoAndroidBranchError(
+        'Android branch could not be determined for %s' % board)
+  if not android_package:
+    raise NoAndroidBranchError(
+        'Android branch could not be determined for %s (no package?)' % board)
+  ebuild_path = portage_util.FindEbuildForBoardPackage(android_package, board)
+  # We assume all targets pull from the same branch and that we always
+  # have an ARM_TARGET, ARM_USERDEBUG_TARGET, or an X86_USERDEBUG_TARGET.
+  targets = ['ARM_TARGET', 'ARM_USERDEBUG_TARGET', 'X86_USERDEBUG_TARGET']
+  ebuild_content = osutils.SourceEnvironment(ebuild_path, targets)
+  for target in targets:
+    if target in ebuild_content:
+      branch = re.search(r'(.*?)-linux-', ebuild_content[target])
+      if branch is not None:
+        return branch.group(1)
+  raise NoAndroidBranchError(
+      'Android branch could not be determined for %s (ebuild empty?)' % board)
+
+
+def determine_android_target(board):
+  try:
+    android_package = determine_android_package(board)
+  except cros_build_lib.RunCommandError:
+    raise NoAndroidTargetError(
+        'Android Target could not be determined for %s' % board)
+  if not android_package:
+    raise NoAndroidTargetError(
+        'Android Target could not be determined for %s (no package?)' %
+        board)
+  if android_package.startswith('chromeos-base/android-vm-'):
+    return 'bertha'
+  elif android_package.startswith('chromeos-base/android-container-'):
+    return 'cheets'
+
+  raise NoAndroidTargetError(
+      'Android Target cannot be determined for the package: %s' %
+      android_package)

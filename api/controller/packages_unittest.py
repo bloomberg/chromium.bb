@@ -230,6 +230,46 @@ class GetBestVisibleTest(cros_test_lib.MockTestCase, ApiConfigMixin):
     self.assertEqual(package_info.version, cpv.version)
 
 
+class GetTargetVersionsTest(cros_test_lib.MockTestCase, ApiConfigMixin):
+  """GetTargetVersions tests."""
+
+  def setUp(self):
+    self.response = packages_pb2.GetTargetVersionsResponse()
+
+  def _GetRequest(self, board=None):
+    """Helper to build out a request."""
+    request = packages_pb2.GetTargetVersionsRequest()
+
+    if board:
+      request.build_target.name = board
+
+    return request
+
+  def testValidateOnly(self):
+    """Sanity check that a validate only call does not execute any logic."""
+    patch_version = self.PatchObject(packages_service,
+                                     'determine_android_version')
+    patch_branch_version = self.PatchObject(packages_service,
+                                            'determine_android_branch')
+    patch_target_version = self.PatchObject(packages_service,
+                                            'determine_android_target')
+
+    request = self._GetRequest(board='betty')
+    packages_controller.GetTargetVersions(request, self.response,
+                                          self.validate_only_config)
+    patch_version.assert_not_called()
+    patch_branch_version.assert_not_called()
+    patch_target_version.assert_not_called()
+
+  def testNoBuildTargetFails(self):
+    """No build target argument should fail."""
+    request = self._GetRequest()
+
+    with self.assertRaises(cros_build_lib.DieSystemExit):
+      packages_controller.GetTargetVersions(request, self.response,
+                                            self.api_config)
+
+
 class HasChromePrebuiltTest(cros_test_lib.MockTestCase, ApiConfigMixin):
   """HasChromePrebuilt tests."""
 
