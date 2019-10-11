@@ -22,8 +22,8 @@ namespace {
 
 // Returns true if the specified video format can be decoded on hardware.
 bool IsSupportedHardwareVideoCodec(const media::VideoType& type) {
-  // TODO(fxb/36000): Replace these hardcoded checks with a query to the
-  // fuchsia.mediacodec FIDL service.
+  // TODO(crbug.com/1013412): Replace these hardcoded checks with a query to the
+  // fuchsia.mediacodec FIDL service when fxb/36000 is resolved.
   if (type.codec == media::kCodecH264 && type.level <= 41)
     return true;
 
