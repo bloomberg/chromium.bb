@@ -381,11 +381,13 @@ void NativeFileSystemManagerImpl::ResolveTransferToken(
       base::UnguessableToken()));
 }
 
-storage::FileSystemOperationRunner*
+const base::SequenceBound<storage::FileSystemOperationRunner>&
 NativeFileSystemManagerImpl::operation_runner() {
-  if (!operation_runner_)
-    operation_runner_ = context()->CreateFileSystemOperationRunner();
-  return operation_runner_.get();
+  if (!operation_runner_) {
+    operation_runner_ =
+        context()->CreateSequenceBoundFileSystemOperationRunner();
+  }
+  return operation_runner_;
 }
 
 void NativeFileSystemManagerImpl::DidOpenSandboxedFileSystem(
