@@ -842,7 +842,7 @@
     'modifications': {
       'android-asan': {
         'swarming': {
-          'shards': 2,
+          'shards': 5,
         },
       },
     },
