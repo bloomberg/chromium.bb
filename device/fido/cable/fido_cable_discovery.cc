@@ -428,18 +428,15 @@ void FidoCableDiscovery::OnStartDiscoverySessionWithFilter(
 
 void FidoCableDiscovery::StartAdvertisement() {
   DCHECK(adapter());
-  if (discovery_data_.empty() && qr_generator_key_.has_value()) {
-    // If no caBLE extension was provided then there are no BLE advertisements
-    // and discovery starts immediately on the assumption that the user will
-    // scan a QR-code with their phone.
-    NotifyDiscoveryStarted(true);
-    return;
-  }
-
-  FIDO_LOG(DEBUG) << "Starting to advertise clientEID.";
+  bool advertisements_pending = false;
   for (const auto& data : discovery_data_) {
     if (data.version != CableDiscoveryData::Version::V1) {
       continue;
+    }
+
+    if (!advertisements_pending) {
+      FIDO_LOG(DEBUG) << "Starting to advertise clientEIDs.";
+      advertisements_pending = true;
     }
     adapter()->RegisterAdvertisement(
         ConstructAdvertisementData(data.v1->client_eid),
@@ -449,6 +446,13 @@ void FidoCableDiscovery::StartAdvertisement() {
         base::AdaptCallbackForRepeating(
             base::BindOnce(&FidoCableDiscovery::OnAdvertisementRegisterError,
                            weak_factory_.GetWeakPtr())));
+  }
+
+  if (!advertisements_pending) {
+    // If no V1 extensions were provided then this discovery is ready
+    // immediately. Otherwise |NotifyDiscoveryStarted| will be called once
+    // all the advertising requests have been resolved.
+    NotifyDiscoveryStarted(true);
   }
 }
 
