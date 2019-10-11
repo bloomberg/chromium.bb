@@ -11,7 +11,6 @@ import glob
 import multiprocessing
 import os
 
-from chromite.cbuildbot import binhost
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
@@ -88,8 +87,6 @@ _CACHE_PATH = 'var/cache/edb/chromeos'
 _CHROMIUMOS_OVERLAY = '/usr/local/portage/chromiumos'
 _CHROMIUMOS_CONFIG = os.path.join(_CHROMIUMOS_OVERLAY, 'chromeos', 'config')
 _ECLASS_OVERLAY = '/usr/local/portage/eclass-overlay'
-
-_CHROME_BINHOST_SUFFIX = '-LATEST_RELEASE_CHROME_BINHOST.conf'
 
 _INTERNAL_BINHOST_DIR = os.path.join(
     constants.SOURCE_ROOT, 'src/private-overlays/chromeos-partner-overlay/'
@@ -557,7 +554,6 @@ class Sysroot(object):
                         'PORTAGE_BINHOST="$LOCAL_BINHOST"'])
 
     config = []
-    chrome_binhost = board and self._ChromeBinhost(board)
     postsubmit_binhost, postsubmit_binhost_internal = self._PostsubmitBinhosts(
         board)
     # TODO(crbug.com/965244) Remove when full post-submit swap has completed.
@@ -607,47 +603,7 @@ source %s
 PORTAGE_BINHOST="$PORTAGE_BINHOST $PARALLEL_POSTSUBMIT_BINHOST"
 """ % parallel_postsubmit_binhost_internal)
 
-    if chrome_binhost:
-      config.append("""
-# LATEST_RELEASE_CHROME_BINHOST provides prebuilts for chromeos-chrome only.
-source %s
-PORTAGE_BINHOST="$PORTAGE_BINHOST $LATEST_RELEASE_CHROME_BINHOST"
-""" % chrome_binhost)
-
-
     return '\n'.join(config)
-
-  def _ChromeBinhost(self, board):
-    """Gets the latest chrome binhost for |board|.
-
-    Args:
-      board (str): The board to use.
-    """
-    extra_useflags = os.environ.get('USE', '').split()
-    compat_id = binhost.CalculateCompatId(board, extra_useflags)
-    internal_config = binhost.PrebuiltMapping.GetFilename(
-        constants.SOURCE_ROOT, 'chrome')
-    external_config = binhost.PrebuiltMapping.GetFilename(
-        constants.SOURCE_ROOT, 'chromium', internal=False)
-    binhost_dirs = (_INTERNAL_BINHOST_DIR, _EXTERNAL_BINHOST_DIR)
-
-    if os.path.exists(internal_config):
-      pfq_configs = binhost.PrebuiltMapping.Load(internal_config)
-    elif os.path.exists(external_config):
-      pfq_configs = binhost.PrebuiltMapping.Load(external_config)
-    else:
-      return None
-
-    for key in pfq_configs.GetPrebuilts(compat_id):
-      for binhost_dir in binhost_dirs:
-        binhost_file = os.path.join(binhost_dir,
-                                    key.board + _CHROME_BINHOST_SUFFIX)
-        # Make sure the binhost file is not empty. We sometimes empty the file
-        # to force clients to use another binhost.
-        if _NotEmpty(binhost_file):
-          return binhost_file
-
-    return None
 
   def _PostsubmitBinhosts(self, board=None, binhost_type=None):
     """Returns the postsubmit binhost to use.
