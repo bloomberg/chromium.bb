@@ -51,7 +51,9 @@ class PuppetPreCqBuilder(generic_builders.PreCqBuilder):
     """Run Puppet RSpec tests."""
     self._RunStage(build_stages.UprevStage)
     self._RunStage(build_stages.InitSDKStage)
-    self._RunStage(infra_stages.TestPuppetSpecsStage)
+    # TODO(crbug.com/1004844): Restore puppet testing to the puppet pre-cq
+    # builder, once it is no longer broken.
+    # self._RunStage(infra_stages.TestPuppetSpecsStage)
 
 
 class InfraUnittestsPreCqBuilder(generic_builders.PreCqBuilder):
