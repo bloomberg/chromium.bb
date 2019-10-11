@@ -715,8 +715,8 @@ void Tile::InterPrediction(const Block& block, const Plane plane, const int x,
       *block_parameters_holder_.Find(candidate_row, candidate_column);
   const bool is_compound =
       bp_reference.reference_frame[1] > kReferenceFrameIntra;
-  const bool is_inter_intra =
-      bp.is_inter && bp.reference_frame[1] == kReferenceFrameIntra;
+  assert(bp.is_inter);
+  const bool is_inter_intra = bp.reference_frame[1] == kReferenceFrameIntra;
   // This ensures that each row of the prediction buffer is aligned to
   // kMaxAlignment.
   const ptrdiff_t prediction_stride = Align(
