@@ -1766,8 +1766,8 @@
   },
   {
     "name": "enable-surfaces-for-videos",
-    "owners": [ "enne", "lethalantidote", "mlamouri" ],
-    "expiry_milestone": 76
+    "owners": [ "ericrk", "khushalsagar", "mlamouri" ],
+    "expiry_milestone": 85
   },
   {
     "name": "enable-sxg-prefetch-cache-for-navigations",
