@@ -20,7 +20,7 @@ also have a default `jar_excluded_patterns` set (more on that later):
 All targets names must end with "_java" so that the build system can distinguish
 them from non-java targets (or [other variations](https://cs.chromium.org/chromium/src/build/config/android/internal_rules.gni?rcl=ec2c17d7b4e424e060c3c7972842af87343526a1&l=20)).
 
-## Step 1: Compile
+## Step 1a: Compile with javac
 
 This step is the only step that does not apply to prebuilt targets.
 
@@ -38,6 +38,18 @@ This step is the only step that does not apply to prebuilt targets.
   * If one source file changes within a library, then the entire library is
     recompiled.
   * Prefer smaller targets to avoid slow compiles.
+
+## Step 1b: Compile with ErrorProne
+
+This step can be disabled via GN arg: `use_errorprone_java_compiler = false`
+
+* Concurrently with step 1a: [ErrorProne] compiles java files and checks for bug
+  patterns, including some [custom to Chromium][ep_plugins].
+* ErrorProne used to replace step 1a, but was changed to a concurrent step after
+  being identified as being slower.
+
+[ErrorProne]: https://errorprone.info/
+[ep_plugins]: /tools/android/errorprone_plugin/
 
 ## Step 2: Creating an .interface.jar
 
