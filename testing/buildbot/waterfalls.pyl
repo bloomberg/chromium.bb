@@ -1737,7 +1737,8 @@
           'all',
         ],
         'mixins': [
-          'linux-xenial',
+          'fuchsia_aemu',
+	  'linux-xenial',
         ],
         'swarming': {
           'dimension_sets': [
@@ -1755,6 +1756,7 @@
           'all',
         ],
         'mixins': [
+	        'fuchsia_aemu',
           'linux-xenial',
         ],
         'swarming': {
