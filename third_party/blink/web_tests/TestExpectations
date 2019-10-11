@@ -5797,3 +5797,5 @@ crbug.com/1013391 http/tests/devtools/a11y-axe-core/performance/performance-pane
 crbug.com/1013391 http/tests/devtools/a11y-axe-core/settings/shortcuts-a11y-test.js [ Timeout ]
 crbug.com/1013523 [ Release ] virtual/cross-origin-embedder-policy/external/wpt/html/cross-origin-embedder-policy/require-corp.https.html [ Failure Pass ]
 crbug.com/1013523 [ Release Linux Mac ] external/wpt/html/cross-origin-embedder-policy/require-corp.https.html [ Failure Pass ]
+crbug.com/1010472 [ Mac Debug ] virtual/disable-deferred-rendering/fast/canvas/color-space/canvas-drawImage-offscreenCanvas.html [ Failure Pass ]
+crbug.com/1010472 [ Mac Debug ] virtual/disable-deferred-rendering/fast/canvas/OffscreenCanvas-placeholder-createImageBitmap.html [ Failure Pass ]
