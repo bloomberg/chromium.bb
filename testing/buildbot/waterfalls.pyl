@@ -4430,16 +4430,6 @@
         },
         'os_type': 'android',
       },
-      'android-opus-kitkat-arm-rel': {
-        'mixins': [
-          'kitkat',
-          'hammerhead',
-        ],
-        'os_type': 'android',
-        'test_suites': {
-          'isolated_scripts': 'opus_roll_validation_tests',
-        },
-      },
       'android_blink_rel': {
         'mixins': [
           'kitkat',
