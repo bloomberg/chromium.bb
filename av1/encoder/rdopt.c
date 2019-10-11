@@ -12636,8 +12636,7 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     // After we done with single reference modes, find the 2nd best RD
     // for a reference frame. Only search compound modes that have a reference
     // frame at least as good as the 2nd best.
-    if (sf->prune_compound_using_single_ref &&
-        midx == MAX_SINGLE_REF_MODES + 1) {
+    if (sf->prune_compound_using_single_ref && midx == MAX_SINGLE_REF_MODES) {
       find_top_ref(ref_frame_rd);
     }
 
@@ -12655,7 +12654,7 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     const MV_REFERENCE_FRAME second_ref_frame = mode_order->ref_frame[1];
     const int comp_pred = second_ref_frame > INTRA_FRAME;
 
-    if (sf->prune_compound_using_single_ref && midx > MAX_SINGLE_REF_MODES &&
+    if (sf->prune_compound_using_single_ref && midx >= MAX_SINGLE_REF_MODES &&
         comp_pred &&
         !in_single_ref_cutoff(ref_frame_rd, ref_frame, second_ref_frame)) {
       continue;
@@ -12767,7 +12766,7 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
       rate_uv = 0;
     }
 
-    if (sf->prune_compound_using_single_ref && midx <= MAX_SINGLE_REF_MODES &&
+    if (sf->prune_compound_using_single_ref && midx < MAX_SINGLE_REF_MODES &&
         this_rd < ref_frame_rd[ref_frame]) {
       ref_frame_rd[ref_frame] = this_rd;
     }
