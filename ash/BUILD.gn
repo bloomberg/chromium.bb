@@ -1896,6 +1896,7 @@ test("ash_unittests") {
     "window_user_data_unittest.cc",
     "wm/always_on_top_controller_unittest.cc",
     "wm/ash_focus_rules_unittest.cc",
+    "wm/back_gesture_affordance_unittest.cc",
     "wm/client_controlled_state_unittest.cc",
     "wm/collision_detection/collision_detection_utils_unittest.cc",
     "wm/container_finder_unittest.cc",
