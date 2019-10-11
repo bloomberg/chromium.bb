@@ -425,11 +425,18 @@ void TabLifecycleUnitSource::TabLifecycleUnit::UpdateOriginTrialFreezePolicy(
 
 void TabLifecycleUnitSource::TabLifecycleUnit::SetIsHoldingWebLock(
     bool is_holding_weblock) {
+  // Unfreeze the tab if it receive a lock while being frozen.
+  if (is_holding_weblock && IsFrozenOrPendingFreeze(GetState()))
+    Unfreeze();
+
   is_holding_weblock_ = is_holding_weblock;
 }
 
 void TabLifecycleUnitSource::TabLifecycleUnit::SetIsHoldingIndexedDBLock(
     bool is_holding_indexeddb_lock) {
+  // Unfreeze the tab if it receive a lock while being frozen.
+  if (is_holding_indexeddb_lock && IsFrozenOrPendingFreeze(GetState()))
+    Unfreeze();
   is_holding_indexeddb_lock_ = is_holding_indexeddb_lock;
 }
 
