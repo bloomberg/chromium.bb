@@ -102,6 +102,12 @@ const base::Feature kCacheInlineScriptCode{"CacheInlineScriptCode",
 const base::Feature kCacheStorageParallelOps{"CacheStorageParallelOps",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables eagerly reading the response body in cache.match() when the
+// operation was started from a FetchEvent handler with a matching request
+// URL.
+const base::Feature kCacheStorageEagerReading{
+    "CacheStorageEagerReading", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // If Canvas2D Image Chromium is allowed, this feature controls whether it is
 // enabled.
 const base::Feature kCanvas2DImageChromium {
