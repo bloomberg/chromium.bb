@@ -8060,6 +8060,12 @@ histogram as enum -->
 
 </enum>
 
+<enum name="ChromeOSUsbEventTiming">
+  <int value="0" label="kLoggedOut"/>
+  <int value="1" label="kLoggedIn"/>
+  <int value="2" label="kLocked"/>
+</enum>
+
 <enum name="ChromeOSUserImageId">
   <summary>
     Indices of the default images as defined in
