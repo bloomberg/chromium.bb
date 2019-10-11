@@ -197,7 +197,7 @@ class SplitViewControllerTest : public MultiDisplayOverviewAndSplitViewTest {
   }
 
   SplitViewController* split_view_controller() {
-    return Shell::Get()->split_view_controller();
+    return SplitViewController::Get();
   }
 
   SplitViewDivider* split_view_divider() {

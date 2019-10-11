@@ -75,7 +75,7 @@ class AlwaysOnTopWindowTargeter : public aura::WindowTargeter {
 class DividerView : public views::View, public views::ViewTargeterDelegate {
  public:
   explicit DividerView(SplitViewDivider* divider)
-      : controller_(Shell::Get()->split_view_controller()), divider_(divider) {
+      : controller_(SplitViewController::Get()), divider_(divider) {
     divider_view_ = new views::View();
     divider_view_->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
     divider_view_->layer()->SetColor(kSplitviewDividerColor);
