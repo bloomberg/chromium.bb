@@ -44,6 +44,8 @@ namespace {
 constexpr std::array<float, 6> kDisplayCoordinatesForTransform = {
     0.f, 0.f, 1.f, 0.f, 0.f, 1.f};
 
+constexpr uint32_t kInputSourceId = 1;
+
 gfx::Transform ConvertUvsToTransformMatrix(const std::vector<float>& uvs) {
   // We're creating a matrix that transforms viewport UV coordinates (for a
   // screen-filling quad, origin at bottom left, u=1 at right, v=1 at top) to
@@ -367,15 +369,17 @@ void ArCoreGl::GetFrameData(
   have_camera_image_ = true;
   mojom::XRFrameDataPtr frame_data = mojom::XRFrameData::New();
 
-  // Check if floor height estimate has changed. The estimate might eventually
-  // be provided by |arcore_| - for now, use hard-coded value.
-  if (floor_height_estimate_changed_) {
+  // Check if floor height estimate has changed.
+  float new_floor_height_estimate = arcore_->GetEstimatedFloorHeight();
+  if (!floor_height_estimate_ ||
+      *floor_height_estimate_ != new_floor_height_estimate) {
+    floor_height_estimate_ = new_floor_height_estimate;
+
     frame_data->stage_parameters_updated = true;
     frame_data->stage_parameters = mojom::VRStageParameters::New();
     frame_data->stage_parameters->standing_transform = gfx::Transform();
     frame_data->stage_parameters->standing_transform.Translate3d(
-        0, floor_height_estimate_, 0);
-    floor_height_estimate_changed_ = false;
+        0, *floor_height_estimate_, 0);
   }
 
   frame_data->frame_id = webxr_->StartFrameAnimating();
@@ -583,6 +587,46 @@ void ArCoreGl::RequestHitTest(
   hit_test_requests_.push_back(std::move(request));
 }
 
+void ArCoreGl::SubscribeToHitTest(
+    mojom::XRNativeOriginInformationPtr native_origin_information,
+    mojom::XRRayPtr ray,
+    mojom::XREnvironmentIntegrationProvider::SubscribeToHitTestCallback
+        callback) {
+  DVLOG(2) << __func__ << ": ray origin=" << ray->origin.ToString()
+           << ", ray direction=" << ray->direction.ToString();
+
+  // Input source state information is known to ArCoreGl and not to ArCore -
+  // check if we recognize the input source id.
+
+  if (native_origin_information->is_input_source_id()) {
+    if (native_origin_information->get_input_source_id() != kInputSourceId) {
+      DVLOG(1) << __func__ << ": incorrect input source ID passed";
+      std::move(callback).Run(
+          device::mojom::SubscribeToHitTestResult::FAILURE_GENERIC, 0);
+      return;
+    }
+  }
+
+  base::Optional<uint32_t> maybe_subscription_id = arcore_->SubscribeToHitTest(
+      std::move(native_origin_information), std::move(ray));
+
+  if (maybe_subscription_id) {
+    DVLOG(2) << __func__ << ": subscription_id=" << *maybe_subscription_id;
+    std::move(callback).Run(device::mojom::SubscribeToHitTestResult::SUCCESS,
+                            *maybe_subscription_id);
+  } else {
+    DVLOG(1) << __func__ << ": subscription failed";
+    std::move(callback).Run(
+        device::mojom::SubscribeToHitTestResult::FAILURE_GENERIC, 0);
+  }
+}
+
+void ArCoreGl::UnsubscribeFromHitTest(uint32_t subscription_id) {
+  DVLOG(2) << __func__;
+
+  arcore_->UnsubscribeFromHitTest(subscription_id);
+}
+
 void ArCoreGl::CreateAnchor(mojom::VRPosePtr anchor_pose,
                             CreateAnchorCallback callback) {
   DVLOG(2) << __func__;
@@ -646,6 +690,10 @@ void ArCoreGl::ProcessFrame(
       input_states_.push_back(std::move(input_state));
       frame_data->pose->input_state = std::move(input_states_);
     }
+
+    // Get results for hit test subscriptions.
+    frame_data->hit_test_subscription_results =
+        arcore_->GetHitTestSubscriptionResults(frame_data->pose);
   }
 
   // The timing requirements for hit-test are documented here:
@@ -699,7 +747,7 @@ mojom::XRInputSourceStatePtr ArCoreGl::GetInputSourceState() {
       device::mojom::XRInputSourceState::New();
 
   // Only one controller is supported, so the source id can be static.
-  state->source_id = 1;
+  state->source_id = kInputSourceId;
 
   state->primary_input_pressed = screen_touch_active_;
   if (!screen_touch_active_ && screen_touch_pending_) {
