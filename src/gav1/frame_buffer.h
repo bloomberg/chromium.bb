@@ -57,6 +57,13 @@ typedef int (*Libgav1GetFrameBufferCallback)(void* private_data,
                                              size_t uv_plane_min_size,
                                              Libgav1FrameBuffer* frame_buffer);
 
+// After a frame buffer is allocated, the decoder starts to write decoded video
+// to the frame buffer. When the frame buffer is ready for consumption, it is
+// made available to the application in a Decoder::DequeueFrame() call.
+// Afterwards, the decoder may continue to use the frame buffer in read-only
+// mode. When the decoder is finished using the frame buffer, it notifies the
+// application by calling the Libgav1ReleaseFrameBufferCallback.
+
 // This callback is invoked by the decoder to release a frame buffer.
 //
 // Returns 0 on success, -1 on failure.
