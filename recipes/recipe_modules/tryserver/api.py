@@ -89,7 +89,7 @@ class TryserverApi(recipe_api.RecipeApi):
       self._gerrit_change_target_ref = (
           'refs/heads/' + self._gerrit_change_target_ref)
 
-    for rev in res['revisions'].itervalues():
+    for rev in res['revisions'].values():
       if int(rev['_number']) == self.gerrit_change.patchset:
         self._gerrit_change_fetch_ref = rev['ref']
         break

@@ -238,7 +238,7 @@ class CookiesAuthenticator(Authenticator):
     return gitcookies
 
   def _get_auth_for_host(self, host):
-    for domain, creds in self.gitcookies.iteritems():
+    for domain, creds in self.gitcookies.items():
       if cookielib.domain_match(host, domain):
         return (creds[0], None, creds[1])
     return self.netrc.authenticators(host)
@@ -386,7 +386,7 @@ def CreateHttpConn(host, path, reqtype='GET', headers=None, body=None):
     headers.setdefault('Content-Type', 'application/json')
   if LOGGER.isEnabledFor(logging.DEBUG):
     LOGGER.debug('%s %s://%s%s' % (reqtype, GERRIT_PROTOCOL, host, url))
-    for key, val in headers.iteritems():
+    for key, val in headers.items():
       if key == 'Authorization':
         val = 'HIDDEN'
       LOGGER.debug('%s: %s' % (key, val))
@@ -798,7 +798,7 @@ def AddReviewers(host, change, reviewers=None, ccs=None, notify=True,
   resp = ReadHttpJsonResponse(conn, accept_statuses=accept_statuses)
 
   errored = set()
-  for result in resp.get('reviewers', {}).itervalues():
+  for result in resp.get('reviewers', {}).values():
     r = result.get('input')
     state = 'REVIEWER' if r in reviewers else 'CC'
     if result.get('error'):
@@ -845,7 +845,7 @@ def SetReview(host, change, msg=None, labels=None, notify=None, ready=None):
   conn = CreateHttpConn(host, path, reqtype='POST', body=body)
   response = ReadHttpJsonResponse(conn)
   if labels:
-    for key, val in labels.iteritems():
+    for key, val in labels.items():
       if ('labels' not in response or key not in response['labels'] or
           int(response['labels'][key] != int(val))):
         raise GerritError(200, 'Unable to set "%s" label on change %s.' % (

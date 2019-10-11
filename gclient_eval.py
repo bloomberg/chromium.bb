@@ -52,7 +52,7 @@ class _NodeDict(collections.MutableMapping):
   def MoveTokens(self, origin, delta):
     if self.tokens:
       new_tokens = {}
-      for pos, token in six.iteritems(self.tokens):
+      for pos, token in self.tokens.items():
         if pos[0] >= origin:
           pos = (pos[0] + delta, pos[1])
           token = token[:2] + (pos,) + token[3:]
@@ -509,14 +509,14 @@ def Parse(content, validate_syntax, filename, vars_override=None,
 
   if 'deps_os' in result:
     deps = result.setdefault('deps', {})
-    for os_name, os_deps in six.iteritems(result['deps_os']):
+    for os_name, os_deps in result['deps_os'].items():
       os_deps = _StandardizeDeps(os_deps, vars_dict)
       _MergeDepsOs(deps, os_deps, os_name)
     del result['deps_os']
 
   if 'hooks_os' in result:
     hooks = result.setdefault('hooks', [])
-    for os_name, os_hooks in six.iteritems(result['hooks_os']):
+    for os_name, os_hooks in result['hooks_os'].items():
       for hook in os_hooks:
         UpdateCondition(hook, 'and', 'checkout_' + os_name)
       hooks.extend(os_hooks)

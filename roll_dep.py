@@ -171,7 +171,7 @@ def finalize(commit_msg, current_dir, rolls):
 
   # Pull the dependency to the right revision. This is surprising to users
   # otherwise.
-  for _head, roll_to, full_dir in sorted(rolls.itervalues()):
+  for _head, roll_to, full_dir in sorted(rolls.values()):
     check_call(['git', 'checkout', '--quiet', roll_to], cwd=full_dir)
 
 
@@ -249,7 +249,7 @@ def main():
 
     logs = []
     setdep_args = []
-    for dependency, (head, roll_to, full_dir) in sorted(rolls.iteritems()):
+    for dependency, (head, roll_to, full_dir) in sorted(rolls.items()):
       log = generate_commit_message(
           full_dir, dependency, head, roll_to, args.no_log, args.log_limit)
       logs.append(log)

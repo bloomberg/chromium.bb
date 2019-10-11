@@ -5,6 +5,8 @@
 
 # TODO(hinoka): Use logging.
 
+from __future__ import print_function
+
 import cStringIO
 import codecs
 from contextlib import contextmanager
@@ -147,11 +149,11 @@ def call(*args, **kwargs):  # pragma: no cover
   kwargs['env'] = env
 
   if new_env:
-    print '===Injecting Environment Variables==='
+    print('===Injecting Environment Variables===')
     for k, v in sorted(new_env.items()):
-      print '%s: %s' % (k, v)
-  print '===Running %s ===' % (' '.join(args),)
-  print 'In directory: %s' % cwd
+      print('%s: %s' % (k, v))
+  print('===Running %s ===' % (' '.join(args),))
+  print('In directory: %s' % cwd)
   start_time = time.time()
   proc = subprocess.Popen(args, **kwargs)
   if stdin_data:
@@ -183,14 +185,14 @@ def call(*args, **kwargs):  # pragma: no cover
   elapsed_time = ((time.time() - start_time) / 60.0)
   outval = out.getvalue()
   if code:
-    print '===Failed in %.1f mins of %s ===' % (elapsed_time, ' '.join(args))
-    print
+    print('===Failed in %.1f mins of %s ===' % (elapsed_time, ' '.join(args)))
+    print()
     raise SubprocessFailed('%s failed with code %d in %s.' %
                            (' '.join(args), code, cwd),
                            code, outval)
 
-  print '===Succeeded in %.1f mins of %s ===' % (elapsed_time, ' '.join(args))
-  print
+  print('===Succeeded in %.1f mins of %s ===' % (elapsed_time, ' '.join(args)))
+  print()
   return outval
 
 
@@ -222,36 +224,36 @@ def get_gclient_spec(solutions, target_os, target_os_only, target_cpu,
 
 def solutions_printer(solutions):
   """Prints gclient solution to stdout."""
-  print 'Gclient Solutions'
-  print '================='
+  print('Gclient Solutions')
+  print('=================')
   for solution in solutions:
     name = solution.get('name')
     url = solution.get('url')
-    print '%s (%s)' % (name, url)
+    print('%s (%s)' % (name, url))
     if solution.get('deps_file'):
-      print '  Dependencies file is %s' % solution['deps_file']
+      print('  Dependencies file is %s' % solution['deps_file'])
     if 'managed' in solution:
-      print '  Managed mode is %s' % ('ON' if solution['managed'] else 'OFF')
+      print('  Managed mode is %s' % ('ON' if solution['managed'] else 'OFF'))
     custom_vars = solution.get('custom_vars')
     if custom_vars:
-      print '  Custom Variables:'
-      for var_name, var_value in sorted(custom_vars.iteritems()):
-        print '    %s = %s' % (var_name, var_value)
+      print('  Custom Variables:')
+      for var_name, var_value in sorted(custom_vars.items()):
+        print('    %s = %s' % (var_name, var_value))
     custom_deps = solution.get('custom_deps')
     if 'custom_deps' in solution:
-      print '  Custom Dependencies:'
-      for deps_name, deps_value in sorted(custom_deps.iteritems()):
+      print('  Custom Dependencies:')
+      for deps_name, deps_value in sorted(custom_deps.items()):
         if deps_value:
-          print '    %s -> %s' % (deps_name, deps_value)
+          print('    %s -> %s' % (deps_name, deps_value))
         else:
-          print '    %s: Ignore' % deps_name
-    for k, v in solution.iteritems():
+          print('    %s: Ignore' % deps_name)
+    for k, v in solution.items():
       # Print out all the keys we don't know about.
       if k in ['name', 'url', 'deps_file', 'custom_vars', 'custom_deps',
                'managed']:
         continue
-      print '  %s is %s' % (k, v)
-    print
+      print('  %s is %s' % (k, v))
+    print()
 
 
 def modify_solutions(input_solutions):
@@ -270,8 +272,8 @@ def modify_solutions(input_solutions):
     # We don't want gclient to be using a safesync URL. Instead it should
     # using the lkgr/lkcr branch/tags.
     if 'safesync_url' in solution:
-      print 'Removing safesync url %s from %s' % (solution['safesync_url'],
-                                                  parsed_path)
+      print('Removing safesync url %s from %s' % (solution['safesync_url'],
+                                                  parsed_path))
       del solution['safesync_url']
 
   return solutions
@@ -283,11 +285,11 @@ def remove(target, cleanup_dir):
     os.makedirs(cleanup_dir)
   dest = path.join(cleanup_dir, '%s_%s' % (
       path.basename(target), uuid.uuid4().hex))
-  print 'Marking for removal %s => %s' % (target, dest)
+  print('Marking for removal %s => %s' % (target, dest))
   try:
     os.rename(target, dest)
   except Exception as e:
-    print 'Error renaming %s to %s: %s' % (target, dest, str(e))
+    print('Error renaming %s to %s: %s' % (target, dest, str(e)))
     raise
 
 
@@ -299,9 +301,9 @@ def ensure_no_checkout(dir_names, cleanup_dir):
   if has_checkout:
     for filename in os.listdir(build_dir):
       deletion_target = path.join(build_dir, filename)
-      print '.git detected in checkout, deleting %s...' % deletion_target,
+      print('.git detected in checkout, deleting %s...' % deletion_target,)
       remove(deletion_target, cleanup_dir)
-      print 'done'
+      print('done')
 
 
 def call_gclient(*args, **kwargs):
@@ -363,7 +365,7 @@ def gclient_sync(
     args += ['--break_repo_locks']
   if disable_syntax_validation:
     args += ['--disable-syntax-validation']
-  for name, revision in sorted(revisions.iteritems()):
+  for name, revision in sorted(revisions.items()):
     if revision.upper() == 'HEAD':
       revision = 'origin/master'
     args.extend(['--revision', '%s@%s' % (name, revision)])
@@ -432,7 +434,7 @@ def create_manifest_old():
         'revision': match.group(3),
       }
     else:
-      print "WARNING: Couldn't match revinfo line:\n%s" % line
+      print("WARNING: Couldn't match revinfo line:\n%s" % line)
   return manifest
 
 
@@ -456,7 +458,7 @@ def create_manifest(gclient_output, patch_root):
   dirs = {}
   if patch_root:
     patch_root = patch_root.strip('/')  # Normalize directory names.
-  for directory, info in gclient_output.get('solutions', {}).iteritems():
+  for directory, info in gclient_output.get('solutions', {}).items():
     directory = directory.strip('/')  # Normalize the directory name.
     # The format of the url is "https://repo.url/blah.git@abcdefabcdef" or
     # just "https://repo.url/blah.git"
@@ -617,11 +619,11 @@ def _maybe_break_locks(checkout_path, tries=3):
       for filename in filenames:
         if filename.endswith('.lock'):
           to_break = os.path.join(dirpath, filename)
-          print 'breaking lock: %s' % to_break
+          print('breaking lock: %s' % to_break)
           try:
             os.remove(to_break)
           except OSError as ex:
-            print 'FAILED to break lock: %s: %s' % (to_break, ex)
+            print('FAILED to break lock: %s: %s' % (to_break, ex))
             raise
 
   for _ in xrange(tries):
@@ -688,14 +690,14 @@ def _git_checkout(sln, sln_dir, revisions, refs, git_cache_dir, cleanup_dir):
       # Only kick in deadline after second attempt to ensure we retry at least
       # once after initial fetch from not-yet-replicated server.
       if attempt >= 2 and overrun > 0:
-        print 'Ran %s seconds past deadline. Aborting.' % (overrun,)
+        print('Ran %s seconds past deadline. Aborting.' % (overrun,))
         # TODO(tandrii): raise exception immediately here, instead of doing
         # useless step 2 trying to fetch something that we know doesn't exist
         # in cache **after production data gives us confidence to do so**.
         break
 
       sleep_secs = min(60, 2**attempt)
-      print 'waiting %s seconds and trying to fetch again...' % sleep_secs
+      print('waiting %s seconds and trying to fetch again...' % sleep_secs)
       time.sleep(sleep_secs)
 
   # Step 2: populate a checkout from local cache. All operations are local.
@@ -707,7 +709,7 @@ def _git_checkout(sln, sln_dir, revisions, refs, git_cache_dir, cleanup_dir):
       # If repo deletion was aborted midway, it may have left .git in broken
       # state.
       if path.exists(sln_dir) and is_broken_repo_dir(sln_dir):
-        print 'Git repo %s appears to be broken, removing it' % sln_dir
+        print('Git repo %s appears to be broken, removing it' % sln_dir)
         remove(sln_dir, cleanup_dir)
 
       # Use "tries=1", since we retry manually in this loop.
@@ -735,7 +737,7 @@ def _git_checkout(sln, sln_dir, revisions, refs, git_cache_dir, cleanup_dir):
       return
     except SubprocessFailed as e:
       # Exited abnormally, theres probably something wrong.
-      print 'Something failed: %s.' % str(e)
+      print('Something failed: %s.' % str(e))
       if first_try:
         first_try = False
         # Lets wipe the checkout and try again.
@@ -783,9 +785,9 @@ def parse_got_revision(gclient_output, got_revision_mapping):
   solutions_output = {
       # Make sure path always ends with a single slash.
       '%s/' % path.rstrip('/') : solution_output for path, solution_output
-      in gclient_output['solutions'].iteritems()
+      in gclient_output['solutions'].items()
   }
-  for property_name, dir_name in got_revision_mapping.iteritems():
+  for property_name, dir_name in got_revision_mapping.items():
     # Make sure dir_name always ends with a single slash.
     dir_name = '%s/' % dir_name.rstrip('/')
     if dir_name not in solutions_output:
@@ -824,7 +826,7 @@ def ensure_checkout(solutions, revisions, first_sln, target_os, target_os_only,
   # Get a checkout of each solution, without DEPS or hooks.
   # Calling git directly because there is no way to run Gclient without
   # invoking DEPS.
-  print 'Fetching Git checkout'
+  print('Fetching Git checkout')
 
   git_checkouts(solutions, revisions, refs, git_cache_dir, cleanup_dir)
 
@@ -838,7 +840,7 @@ def ensure_checkout(solutions, revisions, first_sln, target_os, target_os_only,
   # We want to pass all non-solution revisions into the gclient sync call.
   solution_dirs = {sln['name'] for sln in solutions}
   gc_revisions = {
-      dirname: rev for dirname, rev in revisions.iteritems()
+      dirname: rev for dirname, rev in revisions.items()
       if dirname not in solution_dirs}
   # Gclient sometimes ignores "unmanaged": "False" in the gclient solution
   # if --revision <anything> is passed (for example, for subrepos).
@@ -903,7 +905,7 @@ def parse_revisions(revisions, root):
         if not normalized_root.endswith('.git'):
           normalized_root += '.git'
       elif parsed_root.scheme:
-        print 'WARNING: Unrecognized scheme %s, ignoring' % parsed_root.scheme
+        print('WARNING: Unrecognized scheme %s, ignoring' % parsed_root.scheme)
         continue
       else:
         # This is probably a local path.
@@ -992,10 +994,9 @@ def parse_args():
     with open(options.revision_mapping_file, 'r') as f:
       options.revision_mapping = json.load(f)
   except Exception as e:
-    print (
+    print(
         'WARNING: Caught execption while parsing revision_mapping*: %s'
-        % (str(e),)
-    )
+        % (str(e),))
 
   # Because we print CACHE_DIR out into a .gclient file, and then later run
   # eval() on it, backslashes need to be escaped, otherwise "E:\b\build" gets
@@ -1026,23 +1027,23 @@ def prepare(options, git_slns, active):
   first_sln = dir_names[0]
 
   # Split all the revision specifications into a nice dict.
-  print 'Revisions: %s' % options.revision
+  print('Revisions: %s' % options.revision)
   revisions = parse_revisions(options.revision, first_sln)
-  print 'Fetching Git checkout at %s@%s' % (first_sln, revisions[first_sln])
+  print('Fetching Git checkout at %s@%s' % (first_sln, revisions[first_sln]))
   return revisions, step_text
 
 
 def checkout(options, git_slns, specs, revisions, step_text):
-  print 'Using Python version: %s' % (sys.version,)
-  print 'Checking git version...'
+  print('Using Python version: %s' % (sys.version,))
+  print('Checking git version...')
   ver = git('version').strip()
-  print 'Using %s' % ver
+  print('Using %s' % ver)
 
   try:
     protocol = git('config', '--get', 'protocol.version')
-    print 'Using git protocol version %s' % protocol
+    print('Using git protocol version %s' % protocol)
   except SubprocessFailed as e:
-    print 'git protocol version is not specified.'
+    print('git protocol version is not specified.')
 
   first_sln = git_slns[0]['name']
   dir_names = [sln.get('name') for sln in git_slns if 'name' in sln]
@@ -1076,7 +1077,7 @@ def checkout(options, git_slns, specs, revisions, step_text):
           disable_syntax_validation=options.disable_syntax_validation)
       gclient_output = ensure_checkout(**checkout_parameters)
     except GclientSyncFailed:
-      print 'We failed gclient sync, lets delete the checkout and retry.'
+      print('We failed gclient sync, lets delete the checkout and retry.')
       ensure_no_checkout(dir_names, options.cleanup_dir)
       gclient_output = ensure_checkout(**checkout_parameters)
   except PatchFailed as e:
@@ -1126,14 +1127,14 @@ def checkout(options, git_slns, specs, revisions, step_text):
 
 
 def print_debug_info():
-  print "Debugging info:"
+  print("Debugging info:")
   debug_params = {
     'CURRENT_DIR': path.abspath(os.getcwd()),
     'THIS_DIR': THIS_DIR,
     'DEPOT_TOOLS_DIR': DEPOT_TOOLS_DIR,
   }
-  for k, v in sorted(debug_params.iteritems()):
-    print "%s: %r" % (k, v)
+  for k, v in sorted(debug_params.items()):
+    print("%s: %r" % (k, v))
 
 
 def main():

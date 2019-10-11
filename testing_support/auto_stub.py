@@ -26,8 +26,8 @@ class AutoStubMixIn(object):
   def tearDown(self):
     """Restore all the mocked members."""
     if self._saved:
-      for obj, items in self._saved.iteritems():
-        for member, previous_value in items.iteritems():
+      for obj, items in self._saved.items():
+        for member, previous_value in items.items():
           setattr(obj, member, previous_value)
 
 
@@ -57,7 +57,7 @@ class SimpleMock(object):
     """Registers the name of the caller function."""
     caller_name = kwargs.pop('caller_name', None) or inspect.stack()[1][3]
     str_args = ', '.join(repr(arg) for arg in args)
-    str_kwargs = ', '.join('%s=%r' % (k, v) for k, v in kwargs.iteritems())
+    str_kwargs = ', '.join('%s=%r' % (k, v) for k, v in kwargs.items())
     self.calls.append('%s(%s)' % (
         caller_name, ', '.join(filter(None, [str_args, str_kwargs]))))
 

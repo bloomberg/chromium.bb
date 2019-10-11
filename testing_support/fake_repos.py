@@ -467,7 +467,7 @@ deps = {
 pre_deps_hooks = [
   {
     'action': ['python', '-c',
-               'print "pre-deps hook"; open(\\'src/git_pre_deps_hooked\\', \\'w\\').write(\\'git_pre_deps_hooked\\')'],
+               'print("pre-deps hook"); open(\\'src/git_pre_deps_hooked\\', \\'w\\').write(\\'git_pre_deps_hooked\\')'],
   }
 ]
 """ % {
@@ -489,7 +489,7 @@ deps = {
 pre_deps_hooks = [
   {
     'action': ['python', '-c',
-               'print "pre-deps hook"; open(\\'src/git_pre_deps_hooked\\', \\'w\\').write(\\'git_pre_deps_hooked\\')'],
+               'print("pre-deps hook"); open(\\'src/git_pre_deps_hooked\\', \\'w\\').write(\\'git_pre_deps_hooked\\')'],
   },
   {
     'action': ['python', '-c', 'import sys; sys.exit(1)'],

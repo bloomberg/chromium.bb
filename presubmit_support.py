@@ -386,7 +386,7 @@ class GerritAccessor(object):
 
     # Find revision info for the patchset we want.
     if patchset is not None:
-      for rev, rev_info in info['revisions'].iteritems():
+      for rev, rev_info in info['revisions'].items():
         if str(rev_info['_number']) == str(patchset):
           break
       else:
@@ -1279,10 +1279,10 @@ class GetPostUploadExecuter(object):
 def _MergeMasters(masters1, masters2):
   """Merges two master maps. Merges also the tests of each builder."""
   result = {}
-  for (master, builders) in itertools.chain(masters1.iteritems(),
-                                            masters2.iteritems()):
+  for (master, builders) in itertools.chain(masters1.items(),
+                                            masters2.items()):
     new_builders = result.setdefault(master, {})
-    for (builder, tests) in builders.iteritems():
+    for (builder, tests) in builders.items():
       new_builders.setdefault(builder, set([])).update(tests)
   return result
 
@@ -1329,7 +1329,7 @@ def DoGetTryMasters(change,
         presubmit_script, filename, project, change))
 
   # Make sets to lists again for later JSON serialization.
-  for builders in results.itervalues():
+  for builders in results.values():
     for builder in builders:
       builders[builder] = list(builders[builder])
 
@@ -1659,7 +1659,7 @@ def canned_check_filter(method_names):
       setattr(presubmit_canned_checks, method_name, lambda *_a, **_kw: [])
     yield
   finally:
-    for name, method in filtered.iteritems():
+    for name, method in filtered.items():
       setattr(presubmit_canned_checks, name, method)
 
 

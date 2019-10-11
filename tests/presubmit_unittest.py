@@ -1922,7 +1922,7 @@ the current line as well!
         "#!/bin/python\n"
         "# Copyright (c) 2037 Nobody.\n"
         "# All Rights Reserved.\n"
-        "print 'foo'\n"
+        "print('foo')\n"
     )
     license_text = (
         r".*? Copyright \(c\) 2037 Nobody." "\n"
@@ -1935,7 +1935,7 @@ the current line as well!
         "#!/bin/python\n"
         "# Copyright (c) 2037 Nobody.\n"
         "# All Rights Reserved.\n"
-        "print 'foo'\n"
+        "print('foo')\n"
     )
     license_text = (
         r".*? Copyright \(c\) 0007 Nobody." "\n"
@@ -1949,7 +1949,7 @@ the current line as well!
         "#!/bin/python\n"
         "# Copyright (c) 2037 Nobody.\n"
         "# All Rights Reserved.\n"
-        "print 'foo'\n"
+        "print('foo')\n"
     )
     license_text = (
         r".*? Copyright \(c\) 0007 Nobody." "\n"

@@ -41,7 +41,7 @@ def parse_got_revision(filename, revision_mapping):
   with open(filename) as f:
     data = json.load(f)
 
-  for path, info in data['solutions'].iteritems():
+  for path, info in data['solutions'].items():
     # gclient json paths always end with a slash
     path = path.rstrip('/')
     if path in revision_mapping:
@@ -52,7 +52,7 @@ def parse_got_revision(filename, revision_mapping):
 
 
 def emit_buildprops(got_revisions):
-  for prop, revision in got_revisions.iteritems():
+  for prop, revision in got_revisions.items():
     print('@@@SET_BUILD_PROPERTY@%s@%s@@@' % (prop, json.dumps(revision)))
 
 

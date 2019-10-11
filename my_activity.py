@@ -603,7 +603,7 @@ class MyActivity(object):
       project, issue_id = issue_uid.split(':')
       missing_issues_by_project[project].append(issue_id)
 
-    for project, issue_ids in missing_issues_by_project.iteritems():
+    for project, issue_ids in missing_issues_by_project.items():
       self.referenced_issues += self.monorail_get_issues(project, issue_ids)
 
   def print_issues(self):
@@ -676,7 +676,7 @@ class MyActivity(object):
         if not url:
           raise Exception('Dumped item %s does not specify url' % item)
         output[url] = dict(
-            (k, v) for k,v in item.iteritems() if k not in ignore_keys)
+            (k, v) for k,v in item.items() if k not in ignore_keys)
       return output
 
     class PythonObjectEncoder(json.JSONEncoder):

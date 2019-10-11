@@ -949,7 +949,7 @@ def CheckBuildbotPendingBuilds(input_api, output_api, url, max_pendings,
                                              'looking up buildbot status')]
 
   out = []
-  for (builder_name, builder) in data.iteritems():
+  for (builder_name, builder) in data.items():
     if builder_name in ignored:
       continue
     if builder.get('state', '') == 'offline':
@@ -1326,7 +1326,7 @@ def CheckCIPDPackages(input_api, output_api, platforms, packages):
   manifest = []
   for p in platforms:
     manifest.append('$VerifiedPlatform %s' % (p,))
-  for k, v in packages.iteritems():
+  for k, v in packages.items():
     manifest.append('%s %s' % (k, v))
   return CheckCIPDManifest(input_api, output_api, content='\n'.join(manifest))
 
@@ -1468,7 +1468,7 @@ def CheckChangedLUCIConfigs(input_api, output_api):
     # windows
     file_path = f.LocalPath().replace(_os.sep, '/')
     logging.debug('Affected file path: %s', file_path)
-    for dr, cs in dir_to_config_set.iteritems():
+    for dr, cs in dir_to_config_set.items():
       if dr == '/' or file_path.startswith(dr):
         cs_to_files[cs].append({
           'path': file_path[len(dr):] if dr != '/' else file_path,
@@ -1476,7 +1476,7 @@ def CheckChangedLUCIConfigs(input_api, output_api):
               '\n'.join(f.NewContents()).encode('utf-8'))
         })
   outputs = []
-  for cs, f in cs_to_files.iteritems():
+  for cs, f in cs_to_files.items():
     try:
       # TODO(myjang): parallelize
       res = request(

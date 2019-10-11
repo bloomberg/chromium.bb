@@ -20,12 +20,12 @@ class BotUpdateTestApi(recipe_test_api.RecipeTestApi):
 
     properties = {
         property_name: self.gen_revision(project_name)
-        for property_name, project_name in revision_mapping.iteritems()
+        for property_name, project_name in revision_mapping.items()
     }
     properties.update({
         '%s_cp' % property_name: ('refs/heads/master@{#%s}' %
                                   self.gen_commit_position(project_name))
-        for property_name, project_name in revision_mapping.iteritems()
+        for property_name, project_name in revision_mapping.items()
     })
 
     output.update({

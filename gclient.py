@@ -590,7 +590,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
 
     # If a line is in custom_deps, but not in the solution, we want to append
     # this line to the solution.
-    for dep_name, dep_info in six.iteritems(self.custom_deps):
+    for dep_name, dep_info in self.custom_deps.items():
       if dep_name not in deps:
         deps[dep_name] = {'url': dep_info, 'dep_type': 'git'}
 
@@ -601,13 +601,13 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     # recursively included by "src/ios_foo/DEPS" should also require
     # "checkout_ios=True".
     if self.condition:
-      for value in six.itervalues(deps):
+      for value in deps.values():
         gclient_eval.UpdateCondition(value, 'and', self.condition)
 
     if rel_prefix:
       logging.warning('use_relative_paths enabled.')
       rel_deps = {}
-      for d, url in six.iteritems(deps):
+      for d, url in deps.items():
         # normpath is required to allow DEPS to use .. in their
         # dependency local path.
         rel_deps[os.path.normpath(os.path.join(rel_prefix, d))] = url
@@ -619,7 +619,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
   def _deps_to_objects(self, deps, use_relative_paths):
     """Convert a deps dict to a dict of Dependency objects."""
     deps_to_add = []
-    for name, dep_value in six.iteritems(deps):
+    for name, dep_value in deps.items():
       should_process = self.should_process
       if dep_value is None:
         continue
@@ -727,7 +727,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
 
     self._vars = local_scope.get('vars', {})
     if self.parent:
-      for key, value in six.iteritems(self.parent.get_vars()):
+      for key, value in self.parent.get_vars().items():
         if key in self._vars:
           self._vars[key] = value
     # Since we heavily post-process things, freeze ones which should
@@ -764,7 +764,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
       if rel_prefix:
         logging.warning('Updating recursedeps by prepending %s.', rel_prefix)
         rel_deps = {}
-        for depname, options in six.iteritems(self.recursedeps):
+        for depname, options in self.recursedeps.items():
           rel_deps[
               os.path.normpath(os.path.join(rel_prefix, depname))] = options
         self.recursedeps = rel_deps
@@ -1600,7 +1600,7 @@ it or fix the checkout.
     full_entries = [os.path.join(self.root_dir, e.replace('/', os.path.sep))
                     for e in entries]
 
-    for entry, prev_url in six.iteritems(self._ReadEntries()):
+    for entry, prev_url in self._ReadEntries().items():
       if not prev_url:
         # entry must have been overridden via .gclient custom_deps
         continue
@@ -1747,7 +1747,7 @@ it or fix the checkout.
           'The following --patch-ref flags were not used. Please fix it:\n%s' %
           ('\n'.join(
               patch_repo + '@' + patch_ref
-              for patch_repo, patch_ref in six.iteritems(patch_refs))))
+              for patch_repo, patch_ref in patch_refs.items())))
 
     # Once all the dependencies have been processed, it's now safe to write
     # out the gn_args_file and run the hooks.
@@ -1834,7 +1834,7 @@ it or fix the checkout.
                 'url': rev.split('@')[0] if rev else None,
                 'rev': rev.split('@')[1] if rev and '@' in rev else None,
             }
-            for name, rev in six.iteritems(entries)
+            for name, rev in entries.items()
         }
         if self._options.output_json == '-':
           print(json.dumps(json_output, indent=2, separators=(',', ': ')))
@@ -2122,7 +2122,7 @@ class Flattener(object):
       self._flatten_dep(solution)
 
     if pin_all_deps:
-      for dep in six.itervalues(self._deps):
+      for dep in self._deps.values():
         self._pin_dep(dep)
 
     def add_deps_file(dep):
@@ -2140,7 +2140,7 @@ class Flattener(object):
           return
       assert dep.url
       self._deps_files.add((dep.url, deps_file, dep.hierarchy_data()))
-    for dep in six.itervalues(self._deps):
+    for dep in self._deps.values():
       add_deps_file(dep)
 
     gn_args_dep = self._deps.get(self._client.dependencies[0]._gn_args_from,
@@ -2183,7 +2183,7 @@ class Flattener(object):
     # Only include vars explicitly listed in the DEPS files or gclient solution,
     # not automatic, local overrides (i.e. not all of dep.get_vars()).
     hierarchy = dep.hierarchy(include_url=False)
-    for key, value in six.iteritems(dep._vars):
+    for key, value in dep._vars.items():
       # Make sure there are no conflicting variables. It is fine however
       # to use same variable name, as long as the value is consistent.
       assert key not in self._vars or self._vars[key][1] == value, (
@@ -2191,7 +2191,7 @@ class Flattener(object):
           dep.name, key, value, self._vars[key][1]))
       self._vars[key] = (hierarchy, value)
     # Override explicit custom variables.
-    for key, value in six.iteritems(dep.custom_vars):
+    for key, value in dep.custom_vars.items():
       # Do custom_vars that don't correspond to DEPS vars ever make sense? DEPS
       # conditionals shouldn't be using vars that aren't also defined in the
       # DEPS (presubmit actually disallows this), so any new custom_var must be
@@ -2344,7 +2344,7 @@ def _HooksOsToLines(hooks_os):
   if not hooks_os:
     return []
   s = ['hooks_os = {']
-  for hook_os, os_hooks in six.iteritems(hooks_os):
+  for hook_os, os_hooks in hooks_os.items():
     s.append('  "%s": [' % hook_os)
     for dep, hook in os_hooks:
       s.extend([

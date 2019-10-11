@@ -271,7 +271,7 @@ class Database(object):
     while True:
       dir_owner_rules = self._paths_to_owners.get(dirname)
       if dir_owner_rules:
-        for owned_path, path_owners in dir_owner_rules.iteritems():
+        for owned_path, path_owners in dir_owner_rules.items():
           if self._fnmatch(objname, owned_path):
             obj_owners |= path_owners
       up_dirname = self.os_path.dirname(dirname)
@@ -539,7 +539,7 @@ class Database(object):
         # Merge the parent information with our information, adjusting
         # distances as necessary, and replacing the parent directory
         # names with our names.
-        for owner, par_dir_and_distances in parent_res.iteritems():
+        for owner, par_dir_and_distances in parent_res.items():
           if owner in res:
             # If the same person is in multiple OWNERS files above a given
             # directory, only count the closest one.
@@ -564,7 +564,7 @@ class Database(object):
       dir_owners = self._all_possible_owners_for_dir_or_file(
         current_dir, author,
         all_possible_owners_for_dir_or_file_cache)
-      for owner, dir_and_distance in dir_owners.iteritems():
+      for owner, dir_and_distance in dir_owners.items():
           if owner in all_possible_owners:
             all_possible_owners[owner].append(dir_and_distance)
           else:
@@ -605,7 +605,7 @@ class Database(object):
     total_costs_by_owner = Database.total_costs_by_owner(all_possible_owners,
                                                          dirs)
     # Return the lowest cost owner. In the case of a tie, pick one randomly.
-    lowest_cost = min(total_costs_by_owner.itervalues())
+    lowest_cost = min(total_costs_by_owner.values())
     lowest_cost_owners = filter(
         lambda owner: total_costs_by_owner[owner] == lowest_cost,
         total_costs_by_owner)

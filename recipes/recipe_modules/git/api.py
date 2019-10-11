@@ -18,7 +18,7 @@ class GitApi(recipe_api.RecipeApi):
     git_cmd = ['git']
 
     options = kwargs.pop('git_config_options', {})
-    for k, v in sorted(options.iteritems()):
+    for k, v in sorted(options.items()):
       git_cmd.extend(['-c', '%s=%s' % (k, v)])
     can_fail_build = kwargs.pop('can_fail_build', True)
     try:
@@ -59,7 +59,7 @@ class GitApi(recipe_api.RecipeApi):
     """
     if previous_result:
       assert isinstance(previous_result, dict)
-      assert all(isinstance(v, long) for v in previous_result.itervalues())
+      assert all(isinstance(v, long) for v in previous_result.values())
       assert 'size' in previous_result
       assert 'size-pack' in previous_result
 
@@ -78,14 +78,14 @@ class GitApi(recipe_api.RecipeApi):
         result[name] = long(value.strip())
 
       def results_to_text(results):
-        return ['  %s: %s' % (k, v) for k, v in results.iteritems()]
+        return ['  %s: %s' % (k, v) for k, v in results.items()]
 
       step_result.presentation.logs['result'] = results_to_text(result)
 
       if previous_result:
         delta = {
             key: value - previous_result[key]
-            for key, value in result.iteritems()
+            for key, value in result.items()
             if key in previous_result}
         step_result.presentation.logs['delta'] = (
             ['before:'] + results_to_text(previous_result) +

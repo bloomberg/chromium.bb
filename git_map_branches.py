@@ -147,7 +147,7 @@ class BranchMapper(object):
     roots = set()
 
     # A map of parents to a list of their children.
-    for branch, branch_info in self.__branches_info.iteritems():
+    for branch, branch_info in self.__branches_info.items():
       if not branch_info:
         continue
 
