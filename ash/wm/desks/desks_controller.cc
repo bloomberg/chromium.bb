@@ -548,6 +548,10 @@ void DesksController::OnRootWindowClosing(aura::Window* root_window) {
     desk->OnRootWindowClosing(root_window);
 }
 
+bool DesksController::BelongsToActiveDesk(aura::Window* window) {
+  return desks_util::BelongsToActiveDesk(window);
+}
+
 void DesksController::OnWindowActivating(ActivationReason reason,
                                          aura::Window* gaining_active,
                                          aura::Window* losing_active) {
