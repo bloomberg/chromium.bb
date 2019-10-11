@@ -1423,6 +1423,17 @@
       'Linux MSan Tests',  # https://crbug.com/831676
     ],
   },
+  'skia_renderer_gl_blink_web_tests': {
+    'modifications': {
+      # chromium.gpu.fyi
+      'Win10 FYI x64 SkiaRenderer GL (NVIDIA)': {
+        'args': [
+          '--target',
+          'Release_x64',
+        ],
+      },
+    },
+  },
   'swiftshader_unittests': {
     'remove_from': [
       # Save capacity on the hardware where we have only a few machines.
