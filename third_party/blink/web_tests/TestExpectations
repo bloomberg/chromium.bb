@@ -5793,3 +5793,4 @@ crbug.com/1013523 [ Release ] virtual/cross-origin-embedder-policy/external/wpt/
 crbug.com/1013523 [ Release Linux Mac ] external/wpt/html/cross-origin-embedder-policy/require-corp.https.html [ Failure Pass ]
 crbug.com/1010472 [ Mac Debug ] virtual/disable-deferred-rendering/fast/canvas/color-space/canvas-drawImage-offscreenCanvas.html [ Failure Pass ]
 crbug.com/1010472 [ Mac Debug ] virtual/disable-deferred-rendering/fast/canvas/OffscreenCanvas-placeholder-createImageBitmap.html [ Failure Pass ]
+crbug.com/1013779 virtual/scalefactor200/fast/hidpi/static/validation-bubble-appearance-hidpi.html [ Failure Pass ]
