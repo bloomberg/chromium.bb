@@ -3517,6 +3517,7 @@ test("unit_tests") {
     "//skia",
     "//testing/gmock",
     "//testing/gtest",
+    "//testing/perf:unit_tests",
     "//third_party/cacheinvalidation",
     "//third_party/icu",
     "//third_party/leveldatabase",
