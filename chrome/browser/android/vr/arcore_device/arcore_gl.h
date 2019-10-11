@@ -130,6 +130,8 @@ class ArCoreGl : public mojom::XRFrameDataProvider,
   // mojom::XRSessionController
   void SetFrameDataRestricted(bool restricted) override;
 
+  void ProcessFrameDrawnIntoTexture(int16_t frame_index,
+                                    const gpu::SyncToken& sync_token);
   void OnWebXrTokenSignaled(int16_t frame_index,
                             std::unique_ptr<gfx::GpuFence> gpu_fence);
 
@@ -147,6 +149,7 @@ class ArCoreGl : public mojom::XRFrameDataProvider,
                     mojom::XRFrameDataProvider::GetFrameDataCallback callback);
 
   bool InitializeGl(gfx::AcceleratedWidget drawing_widget);
+  void OnArImageTransportReady(base::OnceCallback<void(bool)> callback);
   bool IsOnGlThread() const;
   void CopyCameraImageToFramebuffer();
 
@@ -192,8 +195,14 @@ class ArCoreGl : public mojom::XRFrameDataProvider,
   display::Display::Rotation display_rotation_ = display::Display::ROTATE_0;
   bool should_update_display_geometry_ = true;
 
+  // UV transform for drawing the camera texture, this is supplied by ARCore
+  // and can include 90 degree rotations or other nontrivial transforms.
   gfx::Transform uv_transform_;
-  gfx::Transform webxr_transform_;
+
+  // UV transform for drawing received WebGL content from a shared buffer's
+  // texture, this is simply an identity.
+  gfx::Transform shared_buffer_transform_;
+
   gfx::Transform projection_;
   gfx::Transform inverse_projection_;
   // The first run of ProduceFrame should set uv_transform_ and projection_

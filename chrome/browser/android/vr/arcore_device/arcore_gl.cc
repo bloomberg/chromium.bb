@@ -80,11 +80,6 @@ gfx::Transform ConvertUvsToTransformMatrix(const std::vector<float>& uvs) {
   return result;
 }
 
-gfx::Transform WebXRImageTransformMatrix() {
-  gfx::Transform result;
-  return result;
-}
-
 const gfx::Size kDefaultFrameSize = {1, 1};
 const display::Display::Rotation kDefaultRotation = display::Display::ROTATE_0;
 
@@ -108,12 +103,12 @@ ArCoreGl::ArCoreGl(std::unique_ptr<ArImageTransport> ar_image_transport)
       webxr_(std::make_unique<vr::WebXrPresentationState>()),
       environment_binding_(this) {
   DVLOG(1) << __func__;
-  webxr_transform_ = WebXRImageTransformMatrix();
 }
 
 ArCoreGl::~ArCoreGl() {
   DVLOG(1) << __func__;
   DCHECK(IsOnGlThread());
+  ar_image_transport_->DestroySharedBuffers(webxr_.get());
   ar_image_transport_.reset();
   CloseBindingsIfOpen();
 }
@@ -155,13 +150,24 @@ void ArCoreGl::Initialize(vr::ArCoreSessionUtils* session_utils,
     return;
   }
 
-  // Set the texture on ArCore to render the camera.
+  DVLOG(3) << "ar_image_transport_->Initialize()...";
+  ar_image_transport_->Initialize(
+      webxr_.get(),
+      base::BindOnce(&ArCoreGl::OnArImageTransportReady,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+
+  // Set the texture on ArCore to render the camera. Must be after
+  // ar_image_transport_->Initialize().
   arcore_->SetCameraTexture(ar_image_transport_->GetCameraTextureId());
   // Set the Geometry to ensure consistent behaviour.
   arcore_->SetDisplayGeometry(kDefaultFrameSize, kDefaultRotation);
+}
 
+void ArCoreGl::OnArImageTransportReady(
+    base::OnceCallback<void(bool)> callback) {
+  DVLOG(3) << __func__;
   is_initialized_ = true;
-
+  webxr_->NotifyMailboxBridgeReady();
   std::move(callback).Run(true);
 }
 
@@ -237,12 +243,6 @@ bool ArCoreGl::InitializeGl(gfx::AcceleratedWidget drawing_widget) {
   }
   if (!context->MakeCurrent(surface.get())) {
     DLOG(ERROR) << "gl::GLContext::MakeCurrent() failed";
-    return false;
-  }
-
-  DVLOG(3) << "ar_image_transport_->Initialize()...";
-  if (!ar_image_transport_->Initialize(webxr_.get())) {
-    DLOG(ERROR) << "ARImageTransport failed to initialize";
     return false;
   }
 
@@ -391,8 +391,8 @@ void ArCoreGl::GetFrameData(
   }
   // Set up a shared buffer for the renderer to draw into, it'll be sent
   // alongside the frame pose.
-  gpu::MailboxHolder buffer_holder =
-      ar_image_transport_->TransferFrame(transfer_size_, uv_transform_);
+  gpu::MailboxHolder buffer_holder = ar_image_transport_->TransferFrame(
+      webxr_.get(), transfer_size_, uv_transform_);
 
   // Create the frame data to return to the renderer.
   frame_data->pose = std::move(pose);
@@ -443,15 +443,23 @@ bool ArCoreGl::IsSubmitFrameExpected(int16_t frame_index) {
 }
 
 void ArCoreGl::CopyCameraImageToFramebuffer() {
+  DVLOG(2) << __func__;
+
   // Draw the current camera texture to the output default framebuffer now, if
   // available.
-  if (!have_camera_image_)
-    return;
+  if (have_camera_image_) {
+    glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER, 0);
+    ar_image_transport_->CopyCameraImageToFramebuffer(camera_image_size_,
+                                                      uv_transform_);
+    have_camera_image_ = false;
+  }
 
-  glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER, 0);
-  ar_image_transport_->CopyCameraImageToFramebuffer(camera_image_size_,
-                                                    uv_transform_);
-  have_camera_image_ = false;
+  // We're done with the camera image for this frame, start the next ARCore
+  // update if we had deferred it. This will get the next frame's camera image
+  // and pose in parallel while we're waiting for this frame's rendered image.
+  if (pending_getframedata_) {
+    std::move(pending_getframedata_).Run();
+  }
 }
 
 void ArCoreGl::SubmitFrameMissing(int16_t frame_index,
@@ -465,13 +473,6 @@ void ArCoreGl::SubmitFrameMissing(int16_t frame_index,
   ar_image_transport_->WaitSyncToken(sync_token);
 
   CopyCameraImageToFramebuffer();
-
-  // We're done with the camera image for this frame, start the next ARCore
-  // update if we had deferred it. This will get the next frame's camera image
-  // and pose in parallel while we're waiting for this frame's rendered image.
-  if (pending_getframedata_) {
-    std::move(pending_getframedata_).Run();
-  }
 
   surface_->SwapBuffers(base::DoNothing());
   DVLOG(3) << __func__ << ": frame=" << frame_index << " SwapBuffers";
@@ -496,18 +497,19 @@ void ArCoreGl::SubmitFrameDrawnIntoTexture(int16_t frame_index,
   if (!IsSubmitFrameExpected(frame_index))
     return;
 
-  webxr_->TransitionFrameAnimatingToProcessing();
+  // Start processing the frame now if possible. If there's already a current
+  // processing frame, defer it until that frame calls TryDeferredProcessing.
+  webxr_->ProcessOrDefer(base::BindOnce(&ArCoreGl::ProcessFrameDrawnIntoTexture,
+                                        weak_ptr_factory_.GetWeakPtr(),
+                                        frame_index, sync_token));
+}
 
+void ArCoreGl::ProcessFrameDrawnIntoTexture(int16_t frame_index,
+                                            const gpu::SyncToken& sync_token) {
   TRACE_EVENT0("gpu", "ArCore SubmitFrame");
 
+  DCHECK(webxr_->HaveProcessingFrame());
   CopyCameraImageToFramebuffer();
-
-  // We're done with the camera image for this frame, start the next ARCore
-  // update if we had deferred it. This will get the next frame's camera image
-  // and pose in parallel while we're waiting for this frame's rendered image.
-  if (pending_getframedata_) {
-    std::move(pending_getframedata_).Run();
-  }
 
   ar_image_transport_->CreateGpuFenceForSyncToken(
       sync_token, base::BindOnce(&ArCoreGl::OnWebXrTokenSignaled, GetWeakPtr(),
@@ -518,11 +520,12 @@ void ArCoreGl::OnWebXrTokenSignaled(int16_t frame_index,
                                     std::unique_ptr<gfx::GpuFence> gpu_fence) {
   DVLOG(3) << __func__ << ": frame=" << frame_index;
 
+  DCHECK(webxr_->HaveProcessingFrame());
   webxr_->TransitionFrameProcessingToRendering();
 
   glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER, 0);
-  ar_image_transport_->CopyDrawnImageToFramebuffer(camera_image_size_,
-                                                   webxr_transform_);
+  ar_image_transport_->CopyDrawnImageToFramebuffer(
+      webxr_.get(), camera_image_size_, shared_buffer_transform_);
   surface_->SwapBuffers(base::DoNothing());
   DVLOG(3) << __func__ << ": frame=" << frame_index << " SwapBuffers";
 
@@ -535,6 +538,8 @@ void ArCoreGl::OnWebXrTokenSignaled(int16_t frame_index,
     submit_client_->OnSubmitFrameGpuFence(
         gfx::CloneHandleForIPC(gpu_fence2->GetGpuFenceHandle()));
   }
+  // We finished processing a frame, unblock a potentially waiting next frame.
+  webxr_->TryDeferredProcessing();
 }
 
 void ArCoreGl::UpdateLayerBounds(int16_t frame_index,
