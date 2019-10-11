@@ -592,18 +592,23 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
   if (is_undead_)
     return false;
 
+  // The EnableDeviceEmulation message is sent to a provisional RenderWidget
+  // before the navigation completes. Some investigation into why is done in
+  // https://chromium-review.googlesource.com/c/chromium/src/+/1853675/5#message-e6edc3fd708d7d267ee981ffe43cae090b37a906
+  // but it's unclear what would need to be done to delay this until after
+  // navigation.
   bool handled = false;
   IPC_BEGIN_MESSAGE_MAP(RenderWidget, message)
     IPC_MESSAGE_HANDLER(WidgetMsg_EnableDeviceEmulation,
                         OnEnableDeviceEmulation)
-    IPC_MESSAGE_HANDLER(WidgetMsg_DisableDeviceEmulation,
-                        OnDisableDeviceEmulation)
   IPC_END_MESSAGE_MAP()
   if (handled)
     return true;
 
-  // TODO(https://crbug.com/1000502): We shouldn't process IPC messages on
-  // provisional frames.
+  // We shouldn't receive IPC messages on provisional frames. It's possible the
+  // message was destined for a RenderWidget that was made undead and then
+  // revived since it keeps the same routing id. Just drop it here if that
+  // happened.
   if (IsForProvisionalFrame())
     return false;
 
@@ -616,6 +621,8 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
     return true;
 
   IPC_BEGIN_MESSAGE_MAP(RenderWidget, message)
+    IPC_MESSAGE_HANDLER(WidgetMsg_DisableDeviceEmulation,
+                        OnDisableDeviceEmulation)
     IPC_MESSAGE_HANDLER(WidgetMsg_ShowContextMenu, OnShowContextMenu)
     IPC_MESSAGE_HANDLER(WidgetMsg_Close, OnClose)
     IPC_MESSAGE_HANDLER(WidgetMsg_WasHidden, OnWasHidden)
