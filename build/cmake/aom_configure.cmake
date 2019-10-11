@@ -31,7 +31,7 @@ if(DEFINED CONFIG_LOWBITDEPTH)
   if(NOT CONFIG_LOWBITDEPTH)
     set(FORCE_HIGHBITDEPTH_DECODING
         1
-        CACHE NUMBER "${cmake_cmdline_helpstring}" FORCE)
+        CACHE STRING "${cmake_cmdline_helpstring}" FORCE)
   endif()
 endif()
 
