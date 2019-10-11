@@ -754,7 +754,7 @@ v8::Maybe<uint32_t> V8ScriptValueSerializer::GetWasmModuleTransferId(
       // around. Most likely, we'll have one module. The vector approach is
       // simple and should perform sufficiently well under these expectations.
       serialized_script_value_->WasmModules().push_back(
-          module->GetTransferrableModule());
+          module->GetCompiledModule());
       uint32_t size =
           static_cast<uint32_t>(serialized_script_value_->WasmModules().size());
       DCHECK_GE(size, 1u);
