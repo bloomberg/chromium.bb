@@ -63,7 +63,8 @@ void ReportDangerousDownloadWarning(download::DownloadItem* download) {
         ->OnDangerousDownloadWarning(
             download->GetURL(), download->GetTargetFilePath().AsUTF8Unsafe(),
             base::HexEncode(raw_digest_sha256.data(), raw_digest_sha256.size()),
-            DangerTypeToThreatType(download->GetDangerType()));
+            DangerTypeToThreatType(download->GetDangerType()),
+            download->GetMimeType(), download->GetTotalBytes());
   }
 }
 
@@ -79,7 +80,8 @@ void ReportDangerousDownloadWarningBypassed(
         ->OnDangerousDownloadWarningBypassed(
             download->GetURL(), download->GetTargetFilePath().AsUTF8Unsafe(),
             base::HexEncode(raw_digest_sha256.data(), raw_digest_sha256.size()),
-            DangerTypeToThreatType(original_danger_type));
+            DangerTypeToThreatType(original_danger_type),
+            download->GetMimeType(), download->GetTotalBytes());
   }
 }
 
