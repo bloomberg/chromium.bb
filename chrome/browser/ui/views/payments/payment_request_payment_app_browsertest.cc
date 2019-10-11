@@ -469,15 +469,25 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentAppTest, PayWithBasicCard) {
   }
 }
 
-IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentAppTest, SkipUIEnabledWithBobPay) {
+class PaymentRequestPaymentAppTestWithPaymentHandlersAndUiSkip
+    : public PaymentRequestPaymentAppTest {
+ public:
+  PaymentRequestPaymentAppTestWithPaymentHandlersAndUiSkip() {
+    feature_list_.InitWithFeatures(
+        {
+            payments::features::kWebPaymentsSingleAppUiSkip,
+            ::features::kServiceWorkerPaymentApps,
+        },
+        {});
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentAppTestWithPaymentHandlersAndUiSkip,
+                       SkipUIEnabledWithBobPay) {
   base::HistogramTester histogram_tester;
-  base::test::ScopedFeatureList features;
-  features.InitWithFeatures(
-      {
-          payments::features::kWebPaymentsSingleAppUiSkip,
-          ::features::kServiceWorkerPaymentApps,
-      },
-      {});
   InstallBobPayForMethod("https://bobpay.com");
 
   {
@@ -508,15 +518,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentAppTest, SkipUIEnabledWithBobPay) {
   }
 }
 
-IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentAppTest,
+IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentAppTestWithPaymentHandlersAndUiSkip,
                        SkipUIDisabledWithMultipleAcceptedMethods) {
-  base::test::ScopedFeatureList features;
-  features.InitWithFeatures(
-      {
-          payments::features::kWebPaymentsSingleAppUiSkip,
-          ::features::kServiceWorkerPaymentApps,
-      },
-      {});
   InstallBobPayForMethod("https://bobpay.com");
 
   {
@@ -536,15 +539,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentAppTest,
   }
 }
 
-IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentAppTest,
+IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentAppTestWithPaymentHandlersAndUiSkip,
                        SkipUIDisabledWithRequestedPayerEmail) {
-  base::test::ScopedFeatureList features;
-  features.InitWithFeatures(
-      {
-          payments::features::kWebPaymentsSingleAppUiSkip,
-          ::features::kServiceWorkerPaymentApps,
-      },
-      {});
   InstallBobPayForMethod("https://bobpay.com");
   autofill::AutofillProfile profile(autofill::test::GetFullProfile());
   AddAutofillProfile(profile);
