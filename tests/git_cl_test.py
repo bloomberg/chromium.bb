@@ -3037,18 +3037,17 @@ class CMDTestCaseBase(unittest.TestCase):
       },
   }
   _DEFAULT_RESPONSE = {
-      'builds': [
-          {
-              'id': str(100 + idx),
-              'builder': {
-                  'project': 'chromium',
-                  'bucket': 'try',
-                  'builder': 'bot_' + status.lower(),
-              },
-              'status': status,
-          }
-          for idx, status in enumerate(_STATUSES)
-      ]
+      'builds': [{
+          'id': str(100 + idx),
+          'builder': {
+              'project': 'chromium',
+              'bucket': 'try',
+              'builder': 'bot_' + status.lower(),
+          },
+          'createTime': '2019-10-09T08:00:0%d.854286Z' % (idx % 10),
+          'tags': [],
+          'status': status,
+      } for idx, status in enumerate(_STATUSES)]
   }
 
   def setUp(self):
@@ -3073,14 +3072,15 @@ class CMDTestCaseBase(unittest.TestCase):
 class CMDTryResultsTestCase(CMDTestCaseBase):
   _DEFAULT_REQUEST = {
       'predicate': {
-            "gerritChanges": [{
-                "project": "depot_tools",
-                "host": "chromium-review.googlesource.com",
-                "patchset": 7,
-                "change": 123456,
-            }],
+          "gerritChanges": [{
+              "project": "depot_tools",
+              "host": "chromium-review.googlesource.com",
+              "patchset": 7,
+              "change": 123456,
+          }],
       },
-      'fields': 'builds.*.id,builds.*.builder,builds.*.status',
+      'fields': ('builds.*.id,builds.*.builder,builds.*.status' +
+                 ',builds.*.createTime,builds.*.tags'),
   }
 
   def testNoJobs(self):
@@ -3147,11 +3147,58 @@ class CMDTryResultsTestCase(CMDTestCaseBase):
     mockJsonDump.assert_called_once_with(
         'file.json', self._DEFAULT_RESPONSE['builds'])
 
-  def test_filter_failed(self):
-    self.assertEqual({}, git_cl._filter_failed([]))
+  def test_filter_failed_for_one_simple(self):
+    self.assertEqual({}, git_cl._filter_failed_for_retry([]))
     self.assertEqual({
-        'chromium/try': {'bot_failure': [], 'bot_infra_failure': []},
-    }, git_cl._filter_failed(self._DEFAULT_RESPONSE['builds']))
+        'chromium/try': {
+            'bot_failure': [],
+            'bot_infra_failure': []
+        },
+    }, git_cl._filter_failed_for_retry(self._DEFAULT_RESPONSE['builds']))
+
+  def test_filter_failed_for_retry_many_builds(self):
+
+    def _build(name, created_sec, status, experimental=False):
+      assert 0 <= created_sec < 100, created_sec
+      b = {
+          'id': 112112,
+          'builder': {
+              'project': 'chromium',
+              'bucket': 'try',
+              'builder': name,
+          },
+          'createTime': '2019-10-09T08:00:%02d.854286Z' % created_sec,
+          'status': status,
+          'tags': [],
+      }
+      if experimental:
+        b['tags'].append({'key': 'cq_experimental', 'value': 'true'})
+      return b
+
+    builds = [
+        _build('flaky-last-green', 1, 'FAILURE'),
+        _build('flaky-last-green', 2, 'SUCCESS'),
+        _build('flaky', 1, 'SUCCESS'),
+        _build('flaky', 2, 'FAILURE'),
+        _build('running', 1, 'FAILED'),
+        _build('running', 2, 'SCHEDULED'),
+        _build('yep-still-running', 1, 'STARTED'),
+        _build('yep-still-running', 2, 'FAILURE'),
+        _build('cq-experimental', 1, 'SUCCESS', experimental=True),
+        _build('cq-experimental', 2, 'FAILURE', experimental=True),
+
+        # Simulate experimental in CQ builder, which developer decided
+        # to retry manually which resulted in 2nd build non-experimental.
+        _build('sometimes-experimental', 1, 'FAILURE', experimental=True),
+        _build('sometimes-experimental', 2, 'FAILURE', experimental=False),
+    ]
+    builds.sort(key=lambda b: b['status'])  # ~deterministic shuffle.
+    self.assertEqual({
+        'chromium/try': {
+            'flaky': [],
+            'sometimes-experimental': []
+        },
+    }, git_cl._filter_failed_for_retry(builds))
 
 
 class CMDTryTestCase(CMDTestCaseBase):
@@ -3228,11 +3275,10 @@ class CMDTryTestCase(CMDTestCaseBase):
             'builder': {
                 'project': 'chromium',
                 'bucket': 'try',
-                'builder': 'linux',
-            },
-            'status': 'FAILURE',
-        }],
-    }[kw['patchset']]
+                'builder': 'linux',},
+            'createTime': '2019-10-09T08:00:01.854286Z',
+            'tags': [],
+            'status': 'FAILURE',}],}[kw['patchset']]
     mockCallBuildbucket.return_value = {}
 
     self.assertEqual(0, git_cl.main(['try', '--retry-failed']))
@@ -3318,18 +3364,17 @@ class CMDUploadTestCase(CMDTestCaseBase):
         # Latest patchset: No builds.
         [],
         # Patchset before latest: Some builds.
-        [
-            {
-                'id': str(100 + idx),
-                'builder': {
-                    'project': 'chromium',
-                    'bucket': 'try',
-                    'builder': 'bot_' + status.lower(),
-                },
-                'status': status,
-            }
-            for idx, status in enumerate(self._STATUSES)
-        ],
+        [{
+            'id': str(100 + idx),
+            'builder': {
+                'project': 'chromium',
+                'bucket': 'try',
+                'builder': 'bot_' + status.lower(),
+            },
+            'createTime': '2019-10-09T08:00:0%d.854286Z' % (idx % 10),
+            'tags': [],
+            'status': status,
+        } for idx, status in enumerate(self._STATUSES)],
     ]
 
     self.assertEqual(0, git_cl.main(['upload', '--retry-failed']))

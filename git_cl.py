@@ -532,7 +532,7 @@ def fetch_try_jobs(auth_config, changelist, buildbucket_host,
 
   Returns list of buildbucket.v2.Build with the try jobs for the changelist.
   """
-  fields = ['id', 'builder', 'status']
+  fields = ['id', 'builder', 'status', 'createTime', 'tags']
   request = {
       'predicate': {
           'gerritChanges': [changelist.GetGerritChange(patchset)],
@@ -588,11 +588,11 @@ def _fetch_latest_builds(
   return [], 0
 
 
-def _filter_failed(builds):
-  """Returns a list of buckets/builders that had failed builds.
+def _filter_failed_for_retry(all_builds):
+  """Returns a list of buckets/builders that are worth retrying.
 
   Args:
-    builds (list): Builds, in the format returned by fetch_try_jobs,
+    all_builds (list): Builds, in the format returned by fetch_try_jobs,
       i.e. a list of buildbucket.v2.Builds which includes status and builder
       info.
 
@@ -600,14 +600,30 @@ def _filter_failed(builds):
     A dict of bucket to builder to tests (empty list). This is the same format
     accepted by _trigger_try_jobs and returned by _get_bucket_map.
   """
-  buckets = collections.defaultdict(dict)
-  for build in builds:
-    if build['status'] in ('FAILURE', 'INFRA_FAILURE'):
-      project = build['builder']['project']
-      bucket = build['builder']['bucket']
-      builder = build['builder']['builder']
-      buckets[project + '/' + bucket][builder] = []
-  return buckets
+
+  def _builder_of(build):
+    builder = build['builder']
+    return (builder['project'], builder['bucket'], builder['builder'])
+
+  res = collections.defaultdict(dict)
+  ordered = sorted(all_builds, key=lambda b: (_builder_of(b), b['createTime']))
+  for (proj, buck, bldr), builds in itertools.groupby(ordered, key=_builder_of):
+    # If builder had several builds, retry only if the last one failed.
+    # This is a bit different from CQ, which would re-use *any* SUCCESS-full
+    # build, but in case of retrying failed jobs retrying a flaky one makes
+    # sense.
+    builds = list(builds)
+    if builds[-1]['status'] not in ('FAILURE', 'INFRA_FAILURE'):
+      continue
+    if any(t['key'] == 'cq_experimental' and t['value'] == 'true'
+           for t in builds[-1]['tags']):
+      # Don't retry experimental build previously triggered by CQ.
+      continue
+    if any(b['status'] in ('STARTED', 'SCHEDULED') for b in builds):
+      # Don't retry if any are running.
+      continue
+    res[proj + '/' + buck][bldr] = []
+  return res
 
 
 def print_try_jobs(options, builds):
@@ -4429,7 +4445,7 @@ def CMDupload(parser, args):
     builds, _ = _fetch_latest_builds(
         auth_config, cl, options.buildbucket_host,
         latest_patchset=patchset)
-    buckets = _filter_failed(builds)
+    buckets = _filter_failed_for_retry(builds)
     if len(buckets) == 0:
       print('No failed tryjobs, so --retry-failed has no effect.')
       return ret
@@ -4717,7 +4733,7 @@ def CMDtry(parser, args):
         auth_config, cl, options.buildbucket_host)
     if options.verbose:
       print('Got %d builds in patchset #%d' % (len(builds), patchset))
-    buckets = _filter_failed(builds)
+    buckets = _filter_failed_for_retry(builds)
     if not buckets:
       print('There are no failed jobs in the latest set of jobs '
             '(patchset #%d), doing nothing.' % patchset)
