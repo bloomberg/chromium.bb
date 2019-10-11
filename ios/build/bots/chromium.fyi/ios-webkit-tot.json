@@ -12,6 +12,7 @@
     "target_os=\"ios\"",
     "use_goma=true"
   ],
+  "configuration": "Debug",
   "tests": [
     {
       "include": "common_tests.json",
@@ -45,7 +46,6 @@
       "test args": [
         "--run-with-custom-webkit"
       ]
-
     },
     {
       "include": "eg_cq_tests.json",
@@ -90,7 +90,6 @@
       "test args": [
         "--run-with-custom-webkit"
       ]
-
     },
     {
       "include": "eg_cq_tests.json",
