@@ -100,6 +100,14 @@ ScriptPromise CacheStorage::open(ScriptState* script_state,
     return promise;
   }
 
+  // The context may be destroyed and the mojo connection unbound. However the
+  // object may live on, reject any requests after the context is destroyed.
+  if (!cache_storage_remote_) {
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kInvalidStateError));
+    return promise;
+  }
+
   ever_used_ = true;
 
   // Make sure to bind the CacheStorage object to keep the mojo interface
@@ -166,6 +174,14 @@ ScriptPromise CacheStorage::has(ScriptState* script_state,
     return promise;
   }
 
+  // The context may be destroyed and the mojo connection unbound. However the
+  // object may live on, reject any requests after the context is destroyed.
+  if (!cache_storage_remote_) {
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kInvalidStateError));
+    return promise;
+  }
+
   ever_used_ = true;
 
   // Make sure to bind the CacheStorage object to keep the mojo interface
@@ -218,6 +234,14 @@ ScriptPromise CacheStorage::Delete(ScriptState* script_state,
     return promise;
   }
 
+  // The context may be destroyed and the mojo connection unbound. However the
+  // object may live on, reject any requests after the context is destroyed.
+  if (!cache_storage_remote_) {
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kInvalidStateError));
+    return promise;
+  }
+
   ever_used_ = true;
 
   // Make sure to bind the CacheStorage object to keep the mojo interface
@@ -267,6 +291,14 @@ ScriptPromise CacheStorage::keys(ScriptState* script_state) {
   if (!IsAllowed(script_state)) {
     resolver->Reject(
         MakeGarbageCollected<DOMException>(DOMExceptionCode::kSecurityError));
+    return promise;
+  }
+
+  // The context may be destroyed and the mojo connection unbound. However the
+  // object may live on, reject any requests after the context is destroyed.
+  if (!cache_storage_remote_) {
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kInvalidStateError));
     return promise;
   }
 
@@ -330,6 +362,14 @@ ScriptPromise CacheStorage::MatchImpl(ScriptState* script_state,
   if (!IsAllowed(script_state)) {
     resolver->Reject(
         MakeGarbageCollected<DOMException>(DOMExceptionCode::kSecurityError));
+    return promise;
+  }
+
+  // The context may be destroyed and the mojo connection unbound. However the
+  // object may live on, reject any requests after the context is destroyed.
+  if (!cache_storage_remote_) {
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kInvalidStateError));
     return promise;
   }
 
