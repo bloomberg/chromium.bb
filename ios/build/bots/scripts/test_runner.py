@@ -175,6 +175,29 @@ def is_iOS13_or_higher_device(udid):
           distutils.version.LooseVersion('13.0'))
 
 
+def defaults_write(d, key, value):
+  """Run 'defaults write d key value' command.
+
+  Args:
+    d: (str) A dictionary.
+    key: (str) A key.
+    value: (str) A value.
+  """
+  LOGGER.info('Run \'defaults write %s %s %s\'' % (d, key, value))
+  subprocess.call(['defaults', 'write', d, key, value])
+
+
+def defaults_delete(d, key):
+  """Run 'defaults delete d key' command.
+
+  Args:
+    d: (str) A dictionary.
+    key: (str) Key to delete.
+  """
+  LOGGER.info('Run \'defaults delete %s %s\'' % (d, key))
+  subprocess.call(['defaults', 'delete', d, key])
+
+
 def terminate_process(proc):
   """Terminates the process.
 
