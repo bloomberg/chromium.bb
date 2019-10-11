@@ -580,6 +580,19 @@ class NSSInitSingleton {
     }
   }
 
+  void SetSystemKeySlotWithoutInitializingTPMForTesting(ScopedPK11Slot slot) {
+    DCHECK(thread_checker_.CalledOnValidThread());
+
+    // Ensure that a previous value of test_system_slot_ is not overwritten.
+    // Unsetting, i.e. setting a nullptr, however is allowed.
+    DCHECK(!slot || !test_system_slot_);
+    if (tpm_slot_ && tpm_slot_ == test_system_slot_) {
+      // Unset |tpm_slot_| if it was initialized from |test_system_slot_|.
+      tpm_slot_.reset();
+    }
+    test_system_slot_ = std::move(slot);
+  }
+
   void SetPrivateSoftwareSlotForChromeOSUserForTesting(ScopedPK11Slot slot) {
     DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -821,6 +834,11 @@ ScopedPK11Slot GetSystemNSSKeySlot(
 
 void SetSystemKeySlotForTesting(ScopedPK11Slot slot) {
   g_nss_singleton.Get().SetSystemKeySlotForTesting(std::move(slot));
+}
+
+void SetSystemKeySlotWithoutInitializingTPMForTesting(ScopedPK11Slot slot) {
+  g_nss_singleton.Get().SetSystemKeySlotWithoutInitializingTPMForTesting(
+      std::move(slot));
 }
 
 void EnableTPMTokenForNSS() {
