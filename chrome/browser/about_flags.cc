@@ -4365,7 +4365,7 @@ const FeatureEntry kFeatureEntries[] = {
 
     {"safety-tips", flag_descriptions::kSafetyTipName,
      flag_descriptions::kSafetyTipDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kSafetyTipUI)},
+     FEATURE_VALUE_TYPE(security_state::features::kSafetyTipUI)},
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
     {"animated-avatar-button", flag_descriptions::kAnimatedAvatarButtonName,

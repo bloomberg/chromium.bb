@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/singleton.h"
+#include "base/metrics/field_trial_params.h"
 #include "chrome/browser/lookalikes/lookalike_url_interstitial_page.h"
 #include "chrome/browser/lookalikes/lookalike_url_navigation_throttle.h"
 #include "chrome/browser/lookalikes/lookalike_url_service.h"
@@ -17,10 +18,10 @@
 #include "chrome/browser/lookalikes/safety_tips/safety_tips_config.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_features.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
+#include "components/security_state/core/features.h"
 #include "url/url_constants.h"
 
 namespace {
@@ -35,9 +36,10 @@ using safe_browsing::V4ProtocolManagerUtil;
 using safety_tips::ReputationService;
 
 const base::FeatureParam<bool> kEnableLookalikeEditDistance{
-    &features::kSafetyTipUI, "editdistance", false};
+    &security_state::features::kSafetyTipUI, "editdistance", false};
 const base::FeatureParam<bool> kEnableLookalikeEditDistanceSiteEngagement{
-    &features::kSafetyTipUI, "editdistance_siteengagement", false};
+    &security_state::features::kSafetyTipUI, "editdistance_siteengagement",
+    false};
 
 bool ShouldTriggerSafetyTipFromLookalike(
     const GURL& url,

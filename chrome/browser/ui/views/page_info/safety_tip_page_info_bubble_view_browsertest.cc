@@ -32,6 +32,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
+#include "components/security_state/core/features.h"
 #include "components/security_state/core/security_state.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
@@ -159,18 +160,19 @@ class SafetyTipPageInfoBubbleViewBrowserTest
   void SetUp() override {
     switch (ui_status()) {
       case UIStatus::kDisabled:
-        feature_list_.InitAndDisableFeature(features::kSafetyTipUI);
+        feature_list_.InitAndDisableFeature(
+            security_state::features::kSafetyTipUI);
         break;
       case UIStatus::kEnabled:
         feature_list_.InitWithFeaturesAndParameters(
-            {{features::kSafetyTipUI, {}},
+            {{security_state::features::kSafetyTipUI, {}},
              {features::kLookalikeUrlNavigationSuggestionsUI,
               {{"topsites", "true"}}}},
             {});
         break;
       case UIStatus::kEnabledWithEditDistance:
         feature_list_.InitWithFeaturesAndParameters(
-            {{features::kSafetyTipUI,
+            {{security_state::features::kSafetyTipUI,
               {{"editdistance", "true"},
                {"editdistance_siteengagement", "true"}}},
              {features::kLookalikeUrlNavigationSuggestionsUI,

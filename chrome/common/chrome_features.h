@@ -391,9 +391,6 @@ extern const base::Feature kRemoveSupervisedUsersOnStartup;
 #endif
 
 COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kSafetyTipUI;
-
-COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kSecurityKeyAttestationPrompt;
 
 #if defined(OS_ANDROID)
