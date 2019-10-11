@@ -21,6 +21,8 @@
 
 #include <cassert>
 
+#include "src/dsp/dsp.h"
+
 namespace libgav1 {
 namespace dsp {
 namespace low_bitdepth {

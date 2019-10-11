@@ -28,6 +28,7 @@
 #include "src/dsp/arm/common_neon.h"
 #include "src/dsp/arm/film_grain_neon.h"
 #include "src/dsp/common.h"
+#include "src/dsp/dsp.h"
 #include "src/utils/common.h"
 #include "src/utils/logging.h"
 

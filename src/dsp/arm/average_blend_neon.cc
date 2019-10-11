@@ -13,7 +13,7 @@
 // limitations under the License.
 
 #include "src/dsp/average_blend.h"
-#include "src/dsp/dsp.h"
+#include "src/utils/cpu.h"
 
 #if LIBGAV1_ENABLE_NEON
 
@@ -24,6 +24,7 @@
 #include <cstdint>
 
 #include "src/dsp/arm/common_neon.h"
+#include "src/dsp/dsp.h"
 #include "src/utils/common.h"
 
 namespace libgav1 {

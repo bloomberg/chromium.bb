@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "src/dsp/dsp.h"
 #include "src/dsp/intrapred.h"
+#include "src/utils/cpu.h"
 
 #if LIBGAV1_ENABLE_NEON
 
@@ -25,6 +25,7 @@
 
 #include "src/dsp/arm/common_neon.h"
 #include "src/dsp/constants.h"
+#include "src/dsp/dsp.h"
 
 namespace libgav1 {
 namespace dsp {

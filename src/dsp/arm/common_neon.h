@@ -17,7 +17,7 @@
 #ifndef LIBGAV1_SRC_DSP_ARM_COMMON_NEON_H_
 #define LIBGAV1_SRC_DSP_ARM_COMMON_NEON_H_
 
-#include "src/dsp/dsp.h"
+#include "src/utils/cpu.h"
 
 #if LIBGAV1_ENABLE_NEON
 

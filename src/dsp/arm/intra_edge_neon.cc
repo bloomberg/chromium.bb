@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "src/dsp/dsp.h"
 #include "src/dsp/intra_edge.h"
+#include "src/utils/cpu.h"
 
 #if LIBGAV1_ENABLE_NEON
 
@@ -23,6 +23,7 @@
 #include <cassert>
 
 #include "src/dsp/arm/common_neon.h"
+#include "src/dsp/dsp.h"
 #include "src/utils/common.h"  // RightShiftWithRounding()
 
 namespace libgav1 {
