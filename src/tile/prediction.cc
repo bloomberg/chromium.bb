@@ -316,9 +316,14 @@ void Tile::IntraPrediction(const Block& block, Plane plane, int x, int y,
       Memset(top_row, (1 << (bitdepth - 1)) - 1, top_and_left_size);
     } else {
       const int top_limit =
-          std::min(max_x, x - 1 + ((has_top_right ? 2 : 1) * width));
-      for (int i = 0; i < top_and_left_size; ++i) {
-        top_row[i] = buffer[y - 1][std::min(top_limit, x + i)];
+          std::min(max_x - x + 1, (has_top_right ? 2 : 1) * width);
+      memcpy(top_row, &buffer[y - 1][x], top_limit * sizeof(Pixel));
+      // Even though it is safe to call Memset with a size of 0, accessing
+      // buffer[y - 1][top_limit - x + 1] is not allowed when this condition is
+      // false.
+      if (top_and_left_size - top_limit > 0) {
+        Memset(top_row + top_limit, buffer[y - 1][top_limit + x - 1],
+               top_and_left_size - top_limit);
       }
     }
   }
