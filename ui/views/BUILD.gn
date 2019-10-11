@@ -1244,6 +1244,12 @@ test("views_unittests") {
     data_deps +=
         [ "//testing/buildbot/filters:linux_ozone_views_unittests_filters" ]
   }
+
+  if (use_atk) {
+    sources +=
+        [ "accessibility/view_ax_platform_node_delegate_auralinux_unittest.cc" ]
+    configs += [ "//build/config/linux/atk" ]
+  }
 }
 
 # This target is added as a dependency of browser interactive_ui_tests. It must
