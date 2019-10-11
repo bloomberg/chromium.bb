@@ -2711,12 +2711,7 @@ crbug.com/1012600 virtual/threaded/external/wpt/css/css-animations/animation-opa
 crbug.com/1012627 [ Win7 ] external/wpt/css/css-text/line-breaking/line-breaking-021.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
-crbug.com/626703 [ Linux ] external/wpt/webxr/events_referenceSpace_reset.https.html [ Timeout ]
-crbug.com/626703 [ Mac10.10 ] external/wpt/webxr/events_referenceSpace_reset.https.html [ Timeout ]
-crbug.com/626703 [ Mac10.12 ] external/wpt/webxr/events_referenceSpace_reset.https.html [ Timeout ]
-crbug.com/626703 [ Mac10.13 ] external/wpt/webxr/events_referenceSpace_reset.https.html [ Timeout ]
-crbug.com/626703 [ Retina ] external/wpt/webxr/events_referenceSpace_reset.https.html [ Timeout ]
-crbug.com/626703 [ Win ] external/wpt/webxr/events_referenceSpace_reset.https.html [ Timeout ]
+crbug.com/626703 external/wpt/webxr/events_referenceSpace_reset.https.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/clear-site-data/storage.https.html [ Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/clear-site-data/storage.https.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/clear-site-data/storage.https.html [ Timeout ]
