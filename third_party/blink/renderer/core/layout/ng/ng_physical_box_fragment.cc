@@ -190,7 +190,7 @@ PhysicalRect NGPhysicalBoxFragment::ComputeSelfInkOverflow() const {
     ink_overflow.Expand(style.BoxDecorationOutsets());
     if (NGOutlineUtils::HasPaintedOutline(style,
                                           GetLayoutObject()->GetNode()) &&
-        !NGOutlineUtils::IsInlineOutlineNonpaintingFragment(*this)) {
+        NGOutlineUtils::ShouldPaintOutline(*this)) {
       Vector<PhysicalRect> outline_rects;
       // The result rects are in coordinates of this object's border box.
       AddSelfOutlineRects(
@@ -209,7 +209,7 @@ void NGPhysicalBoxFragment::AddSelfOutlineRects(
     const PhysicalOffset& additional_offset,
     NGOutlineType outline_type,
     Vector<PhysicalRect>* outline_rects) const {
-  if (NGOutlineUtils::IsInlineOutlineNonpaintingFragment(*this))
+  if (!NGOutlineUtils::ShouldPaintOutline(*this))
     return;
 
   const LayoutObject* layout_object = GetLayoutObject();

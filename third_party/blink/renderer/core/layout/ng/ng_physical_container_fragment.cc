@@ -158,7 +158,7 @@ void NGPhysicalContainerFragment::AddOutlineRectsForDescendant(
     // for its line box which cover the line boxes of this LayoutInline. So
     // the LayoutInline needs to add rects for children and continuations
     // only.
-    if (!NGOutlineUtils::IsInlineOutlineNonpaintingFragment(*descendant)) {
+    if (NGOutlineUtils::ShouldPaintOutline(*descendant_box)) {
       descendant_layout_inline->AddOutlineRectsForChildrenAndContinuations(
           *outline_rects, additional_offset, outline_type);
     }
