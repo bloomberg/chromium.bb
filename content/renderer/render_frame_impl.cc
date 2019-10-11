@@ -3468,7 +3468,7 @@ void RenderFrameImpl::CommitNavigationInternal(
   } else {
     NavigationBodyLoader::FillNavigationParamsResponseAndBodyLoader(
         std::move(common_params), std::move(commit_params), request_id,
-        response_head, std::move(response_body),
+        response_head.Clone(), std::move(response_body),
         std::move(url_loader_client_endpoints),
         GetTaskRunner(blink::TaskType::kInternalLoading), GetRoutingID(),
         !frame_->Parent(), navigation_params.get());
