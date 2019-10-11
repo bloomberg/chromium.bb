@@ -1254,19 +1254,6 @@ bool ChromeContentRendererClient::ShouldFork(WebLocalFrame* frame,
                                              bool is_server_redirect) {
   DCHECK(!frame->Parent());
 
-#if !defined(OS_ANDROID)
-  // If this is the Instant process, fork all navigations originating from the
-  // renderer.  The destination page will then be bucketed back to this Instant
-  // process if it is an Instant url, or to another process if not.  Conversely,
-  // fork if this is a non-Instant process navigating to an Instant url, so that
-  // such navigations can also be bucketed into an Instant renderer.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kInstantProcess) ||
-      SearchBouncer::GetInstance()->ShouldFork(url)) {
-    return true;
-  }
-#endif
-
   // If |url| matches one of the prerendered URLs, stop this navigation and try
   // to swap in the prerendered page on the browser process. If the prerendered
   // page no longer exists by the time the OpenURL IPC is handled, a normal
