@@ -328,6 +328,12 @@ enum aome_enc_control_id {
    */
   AV1E_SET_ENABLE_TPL_MODEL,
 
+  /*!\brief Codec control function to enable temporal filtering on key frame.
+   *
+   * By default, this feature is on.
+   */
+  AV1E_SET_ENABLE_KEYFRAME_FILTERING,
+
   /*!\brief Codec control function to enable frame parallel decoding feature.
    *
    * AV1 has a bitstream feature to reduce decoding dependency between frames
@@ -1333,6 +1339,9 @@ AOM_CTRL_USE_TYPE(AV1E_SET_TILE_ROWS, unsigned int)
 
 AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_TPL_MODEL, unsigned int)
 #define AOM_CTRL_AV1E_SET_ENABLE_TPL_MODEL
+
+AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_KEYFRAME_FILTERING, unsigned int)
+#define AOM_CTRL_AV1E_SET_ENABLE_KEYFRAME_FILTERING
 
 AOM_CTRL_USE_TYPE(AOME_GET_LAST_QUANTIZER, int *)
 #define AOM_CTRL_AOME_GET_LAST_QUANTIZER

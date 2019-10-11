@@ -336,6 +336,7 @@ typedef struct AV1EncoderConfig {
   int tile_heights[MAX_TILE_ROWS];
 
   int enable_tpl_model;
+  int enable_keyframe_filtering;
 
   int max_threads;
 

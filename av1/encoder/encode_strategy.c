@@ -893,7 +893,8 @@ static int denoise_and_encode(AV1_COMP *const cpi, uint8_t *const dest,
                               EncodeFrameParams *const frame_params,
                               EncodeFrameResults *const frame_results,
                               int *temporal_filtered) {
-  if (frame_params->frame_type != KEY_FRAME) {
+  if (frame_params->frame_type != KEY_FRAME ||
+      !cpi->oxcf.enable_keyframe_filtering) {
     if (av1_encode(cpi, dest, frame_input, frame_params, frame_results) !=
         AOM_CODEC_OK) {
       return AOM_CODEC_ERROR;
@@ -1281,17 +1282,17 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
 #endif
   }
 
-#if TEMPORAL_FILTER_KEY_FRAME
-  if (denoise_and_encode(cpi, dest, &frame_input, &frame_params, &frame_results,
-                         &code_arf) != AOM_CODEC_OK) {
-    return AOM_CODEC_ERROR;
-  }
-#else   // !TEMPORAL_FILTER_KEY_FRAME
+#if CONFIG_REALTIME_ONLY
   if (av1_encode(cpi, dest, &frame_input, &frame_params, &frame_results) !=
       AOM_CODEC_OK) {
     return AOM_CODEC_ERROR;
   }
-#endif  // TEMPORAL_FILTER_KEY_FRAME
+#else
+  if (denoise_and_encode(cpi, dest, &frame_input, &frame_params, &frame_results,
+                         &code_arf) != AOM_CODEC_OK) {
+    return AOM_CODEC_ERROR;
+  }
+#endif  // CONFIG_REALTIME_ONLY
   if (oxcf->pass != 1) cpi->num_gf_group_show_frames += frame_params.show_frame;
 
   if (oxcf->pass == 0 || oxcf->pass == 2) {
