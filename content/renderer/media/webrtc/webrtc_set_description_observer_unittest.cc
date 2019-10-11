@@ -297,7 +297,7 @@ class WebRtcSetDescriptionObserverHandlerTest
     auto sender = transceiver->sender();
     auto receiver = transceiver->receiver();
     EXPECT_EQ(1u, observer_->states().transceiver_states.size());
-    const RtpTransceiverState& transceiver_state =
+    const blink::RtpTransceiverState& transceiver_state =
         observer_->states().transceiver_states[0];
     // Inspect transceiver states.
     EXPECT_TRUE(transceiver_state.is_initialized());
@@ -350,7 +350,7 @@ class WebRtcSetDescriptionObserverHandlerTest
 
     auto receiver = receivers_[0];
     EXPECT_EQ(1u, observer_->states().transceiver_states.size());
-    const RtpTransceiverState& transceiver_state =
+    const blink::RtpTransceiverState& transceiver_state =
         observer_->states().transceiver_states[0];
     EXPECT_FALSE(transceiver_state.sender_state());
     EXPECT_TRUE(transceiver_state.receiver_state());

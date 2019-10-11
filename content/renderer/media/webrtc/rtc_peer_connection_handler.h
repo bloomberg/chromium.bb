@@ -235,8 +235,9 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   void OnAddReceiverPlanB(blink::RtpReceiverState receiver_state);
   void OnRemoveReceiverPlanB(uintptr_t receiver_id);
   void OnModifySctpTransport(blink::WebRTCSctpTransportSnapshot state);
-  void OnModifyTransceivers(std::vector<RtpTransceiverState> transceiver_states,
-                            bool is_remote_description);
+  void OnModifyTransceivers(
+      std::vector<blink::RtpTransceiverState> transceiver_states,
+      bool is_remote_description);
   void OnDataChannel(scoped_refptr<webrtc::DataChannelInterface> channel);
   void OnIceCandidate(const std::string& sdp,
                       const std::string& sdp_mid,
@@ -321,8 +322,8 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
       uintptr_t id);
   std::vector<std::unique_ptr<blink::RTCRtpReceiverImpl>>::iterator
   FindReceiver(uintptr_t id);
-  std::vector<std::unique_ptr<RTCRtpTransceiver>>::iterator FindTransceiver(
-      uintptr_t id);
+  std::vector<std::unique_ptr<blink::RTCRtpTransceiverImpl>>::iterator
+  FindTransceiver(uintptr_t id);
   // For full transceiver implementations, returns the index of
   // |rtp_transceivers_| that correspond to |web_transceiver|.
   // For sender-only transceiver implementations, returns the index of
@@ -332,9 +333,9 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   // NOTREACHED()-crashes if no correspondent is found.
   size_t GetTransceiverIndex(
       const blink::WebRTCRtpTransceiver& web_transceiver);
-  std::unique_ptr<RTCRtpTransceiver> CreateOrUpdateTransceiver(
-      RtpTransceiverState transceiver_state,
-      TransceiverStateUpdateMode update_mode);
+  std::unique_ptr<blink::RTCRtpTransceiverImpl> CreateOrUpdateTransceiver(
+      blink::RtpTransceiverState transceiver_state,
+      blink::TransceiverStateUpdateMode update_mode);
 
   scoped_refptr<base::SingleThreadTaskRunner> signaling_thread() const;
 
@@ -374,7 +375,7 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   // Content layer correspondents of |webrtc::RtpReceiverInterface|.
   std::vector<std::unique_ptr<blink::RTCRtpReceiverImpl>> rtp_receivers_;
   // Content layer correspondents of |webrtc::RtpTransceiverInterface|.
-  std::vector<std::unique_ptr<RTCRtpTransceiver>> rtp_transceivers_;
+  std::vector<std::unique_ptr<blink::RTCRtpTransceiverImpl>> rtp_transceivers_;
 
   base::WeakPtr<PeerConnectionTracker> peer_connection_tracker_;
 

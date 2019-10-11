@@ -5,8 +5,9 @@
 #ifndef CONTENT_RENDERER_MEDIA_WEBRTC_TRANSCEIVER_STATE_SURFACER_H_
 #define CONTENT_RENDERER_MEDIA_WEBRTC_TRANSCEIVER_STATE_SURFACER_H_
 
-#include "content/renderer/media/webrtc/rtc_rtp_transceiver.h"
+#include "content/common/content_export.h"
 #include "third_party/blink/public/platform/web_rtc_peer_connection_handler_client.h"
+#include "third_party/blink/public/web/modules/peerconnection/rtc_rtp_transceiver_impl.h"
 #include "third_party/blink/public/web/modules/peerconnection/webrtc_media_stream_track_adapter_map.h"
 #include "third_party/webrtc/api/rtp_transceiver_interface.h"
 #include "third_party/webrtc/api/sctp_transport_interface.h"
@@ -48,7 +49,7 @@ class CONTENT_EXPORT TransceiverStateSurfacer {
 
   // Must be invoked on the main thread.
   blink::WebRTCSctpTransportSnapshot SctpTransportSnapshot();
-  std::vector<RtpTransceiverState> ObtainStates();
+  std::vector<blink::RtpTransceiverState> ObtainStates();
 
  protected:
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
@@ -56,7 +57,7 @@ class CONTENT_EXPORT TransceiverStateSurfacer {
   bool is_initialized_;
   bool states_obtained_;
   blink::WebRTCSctpTransportSnapshot sctp_transport_snapshot_;
-  std::vector<RtpTransceiverState> transceiver_states_;
+  std::vector<blink::RtpTransceiverState> transceiver_states_;
 };
 
 // A dummy implementation of a transceiver used to surface sender state

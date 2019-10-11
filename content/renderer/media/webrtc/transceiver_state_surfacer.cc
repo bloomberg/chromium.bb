@@ -113,7 +113,7 @@ void TransceiverStateSurfacer::Initialize(
           std::move(receiver_track_ref), std::move(receiver_stream_ids));
     }
     // Create the transceiver state.
-    transceiver_states_.push_back(RtpTransceiverState(
+    transceiver_states_.push_back(blink::RtpTransceiverState(
         main_task_runner_, signaling_task_runner_, webrtc_transceiver.get(),
         std::move(sender_state), std::move(receiver_state),
         blink::ToBaseOptional(webrtc_transceiver->mid()),
@@ -131,7 +131,8 @@ TransceiverStateSurfacer::SctpTransportSnapshot() {
   return sctp_transport_snapshot_;
 }
 
-std::vector<RtpTransceiverState> TransceiverStateSurfacer::ObtainStates() {
+std::vector<blink::RtpTransceiverState>
+TransceiverStateSurfacer::ObtainStates() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   DCHECK(is_initialized_);
   for (auto& transceiver_state : transceiver_states_)

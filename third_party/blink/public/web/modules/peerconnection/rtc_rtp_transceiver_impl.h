@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_WEBRTC_RTC_RTP_TRANSCEIVER_H_
-#define CONTENT_RENDERER_MEDIA_WEBRTC_RTC_RTP_TRANSCEIVER_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_PEERCONNECTION_RTC_RTP_TRANSCEIVER_IMPL_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_PEERCONNECTION_RTC_RTP_TRANSCEIVER_IMPL_H_
 
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
-#include "content/common/content_export.h"
+#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_transceiver.h"
 #include "third_party/blink/public/web/modules/peerconnection/rtc_rtp_receiver_impl.h"
 #include "third_party/blink/public/web/modules/peerconnection/rtc_rtp_sender_impl.h"
 #include "third_party/blink/public/web/modules/peerconnection/webrtc_media_stream_track_adapter_map.h"
 #include "third_party/webrtc/api/rtp_transceiver_interface.h"
 
-namespace content {
+namespace blink {
 
 // This class represents the state of a transceiver; a snapshot of what a
 // webrtc-layer transceiver looked like when it was inspected on the signaling
@@ -50,10 +50,13 @@ namespace content {
 // Except for initialization logic and operator=(), the RtpTransceiverState is
 // immutable and only accessible on the main thread.
 //
-// TODO(hbos): [Onion Soup] When the transceiver implementation is moved to
-// blink this will be part of the blink transceiver instead of the content
-// transceiver. https://crbug.com/787254
-class CONTENT_EXPORT RtpTransceiverState {
+// TODO(crbug.com/787254): Move the classes below out of the Blink exposed API.
+// Also, consider merging RTCRtpTransceiverImpl and RTCRtpTransceiver
+// (requires coordination with senders and receivers) and
+// removing WebRTCRtpTransceiver when all its clients are Onion soup'ed.
+//
+// Last, move away from using std::vector.
+class BLINK_MODULES_EXPORT RtpTransceiverState {
  public:
   RtpTransceiverState(
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
@@ -107,13 +110,13 @@ class CONTENT_EXPORT RtpTransceiverState {
   base::Optional<webrtc::RtpTransceiverDirection> fired_direction_;
 };
 
-// RTCRtpTransceiver::set_state() performs differently depending on the update
-// mode. The update mode exists to get around problems with the webrtc threading
-// model: https://crbug.com/webrtc/8692.
+// RTCRtpTransceiverImpl::set_state() performs differently depending on the
+// update mode. The update mode exists to get around problems with the webrtc
+// threading model: https://crbug.com/webrtc/8692.
 //
 // Transceiver state information can be surfaced as a result of invoking a
 // number of different JavaScript APIs. The way states are surfaced from webrtc
-// to content/blink fall into two categories:
+// to blink fall into two categories:
 //   Blocking operations and callback-based operations.
 //
 // When a blocking operation is invoked, the main thread is blocked on the
@@ -125,7 +128,7 @@ class CONTENT_EXPORT RtpTransceiverState {
 // addTrack() - doesn't happen in-between the posting of the task and the
 // execution of it. In such cases, the state information surfaced might not be
 // up-to-date (in edge cases). Examples of callback-based operations include
-// setLocalDescription() and setRemoteDescription().
+// setLocalDescripti.on() and setRemoteDescription().
 enum class TransceiverStateUpdateMode {
   // In this mode, all state information is updated. Use this enum unless
   // a different update mode applies.
@@ -138,27 +141,25 @@ enum class TransceiverStateUpdateMode {
 };
 
 // Used to surface |webrtc::RtpTransceiverInterface| to blink. Multiple
-// |RTCRtpTransceiver|s could reference the same webrtc transceiver; |id| is
+// |RTCRtpTransceiverImpl|s could reference the same webrtc transceiver; |id| is
 // unique per webrtc transceiver.
 // Its methods are accessed on the main thread, internally also performs
 // operations on the signaling thread.
-// TODO(hbos): [Onion Soup] Remove the content layer versions of this class and
-// rely on webrtc directly from blink. Requires coordination with senders and
-// receivers. https://crbug.com/787254
-class CONTENT_EXPORT RTCRtpTransceiver : public blink::WebRTCRtpTransceiver {
+class BLINK_MODULES_EXPORT RTCRtpTransceiverImpl
+    : public blink::WebRTCRtpTransceiver {
  public:
   static uintptr_t GetId(
       const webrtc::RtpTransceiverInterface* webrtc_transceiver);
 
-  RTCRtpTransceiver(
+  RTCRtpTransceiverImpl(
       scoped_refptr<webrtc::PeerConnectionInterface> native_peer_connection,
       scoped_refptr<blink::WebRtcMediaStreamTrackAdapterMap> track_map,
       RtpTransceiverState state);
-  RTCRtpTransceiver(const RTCRtpTransceiver& other);
-  ~RTCRtpTransceiver() override;
+  RTCRtpTransceiverImpl(const RTCRtpTransceiverImpl& other);
+  ~RTCRtpTransceiverImpl() override;
 
-  RTCRtpTransceiver& operator=(const RTCRtpTransceiver& other);
-  std::unique_ptr<RTCRtpTransceiver> ShallowCopy() const;
+  RTCRtpTransceiverImpl& operator=(const RTCRtpTransceiverImpl& other);
+  std::unique_ptr<RTCRtpTransceiverImpl> ShallowCopy() const;
 
   const RtpTransceiverState& state() const;
   void set_state(RtpTransceiverState state,
@@ -189,6 +190,6 @@ class CONTENT_EXPORT RTCRtpTransceiver : public blink::WebRTCRtpTransceiver {
   scoped_refptr<RTCRtpTransceiverInternal> internal_;
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_MEDIA_WEBRTC_RTC_RTP_TRANSCEIVER_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_PEERCONNECTION_RTC_RTP_TRANSCEIVER_IMPL_H_

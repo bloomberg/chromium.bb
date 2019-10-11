@@ -2,20 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/webrtc/rtc_rtp_transceiver.h"
+#include "third_party/blink/public/web/modules/peerconnection/rtc_rtp_transceiver_impl.h"
 
 #include <memory>
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/test/task_environment.h"
 #include "build/build_config.h"
-#include "content/child/child_process.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/public/platform/modules/peerconnection/webrtc_util.h"
@@ -26,12 +24,13 @@
 #include "third_party/blink/public/web/modules/peerconnection/mock_peer_connection_impl.h"
 #include "third_party/blink/public/web/modules/peerconnection/webrtc_media_stream_track_adapter_map.h"
 #include "third_party/blink/public/web/web_heap.h"
+#include "third_party/blink/renderer/platform/testing/io_task_runner_testing_platform_support.h"
 #include "third_party/webrtc/api/test/mock_rtpreceiver.h"
 #include "third_party/webrtc/api/test/mock_rtpsender.h"
 
-namespace content {
+namespace blink {
 
-class RTCRtpTransceiverTest : public ::testing::Test {
+class RTCRtpTransceiverImplTest : public ::testing::Test {
  public:
   void SetUp() override {
     dependency_factory_.reset(new blink::MockPeerConnectionDependencyFactory());
@@ -78,10 +77,11 @@ class RTCRtpTransceiverTest : public ::testing::Test {
     base::RunLoop run_loop;
     signaling_task_runner()->PostTask(
         FROM_HERE,
-        base::BindOnce(
-            &RTCRtpTransceiverTest::CreateRemoteTrackAdapterOnSignalingThread,
-            base::Unretained(this), std::move(webrtc_track),
-            base::Unretained(&track_ref), base::Unretained(&run_loop)));
+        base::BindOnce(&RTCRtpTransceiverImplTest::
+                           CreateRemoteTrackAdapterOnSignalingThread,
+                       base::Unretained(this), std::move(webrtc_track),
+                       base::Unretained(&track_ref),
+                       base::Unretained(&run_loop)));
     run_loop.Run();
     DCHECK(track_ref);
     return track_ref;
@@ -177,7 +177,7 @@ class RTCRtpTransceiverTest : public ::testing::Test {
   }
 
  private:
-  base::test::SingleThreadTaskEnvironment task_environment_;
+  ScopedTestingPlatformSupport<IOTaskRunnerTestingPlatformSupport> platform_;
 
  protected:
   std::unique_ptr<blink::MockPeerConnectionDependencyFactory>
@@ -187,7 +187,7 @@ class RTCRtpTransceiverTest : public ::testing::Test {
   rtc::scoped_refptr<blink::MockPeerConnectionImpl> peer_connection_;
 };
 
-TEST_F(RTCRtpTransceiverTest, InitializeTransceiverState) {
+TEST_F(RTCRtpTransceiverImplTest, InitializeTransceiverState) {
   auto local_track_adapter = CreateLocalTrackAndAdapter("local_track");
   auto remote_track_adapter = CreateRemoteTrackAndAdapter("remote_track");
   auto webrtc_transceiver = CreateWebRtcTransceiver(
@@ -238,7 +238,7 @@ TEST_F(RTCRtpTransceiverTest, InitializeTransceiverState) {
                                     webrtc_transceiver->fired_direction()));
 }
 
-TEST_F(RTCRtpTransceiverTest, CreateTranceiver) {
+TEST_F(RTCRtpTransceiverImplTest, CreateTranceiver) {
   auto local_track_adapter = CreateLocalTrackAndAdapter("local_track");
   auto remote_track_adapter = CreateRemoteTrackAndAdapter("remote_track");
   auto webrtc_transceiver = CreateWebRtcTransceiver(
@@ -253,8 +253,8 @@ TEST_F(RTCRtpTransceiverTest, CreateTranceiver) {
   EXPECT_FALSE(transceiver_state.is_initialized());
   transceiver_state.Initialize();
 
-  RTCRtpTransceiver transceiver(peer_connection_.get(), track_map_,
-                                std::move(transceiver_state));
+  RTCRtpTransceiverImpl transceiver(peer_connection_.get(), track_map_,
+                                    std::move(transceiver_state));
   EXPECT_TRUE(transceiver.Mid().IsNull());
   EXPECT_TRUE(transceiver.Sender());
   EXPECT_TRUE(transceiver.Receiver());
@@ -265,7 +265,7 @@ TEST_F(RTCRtpTransceiverTest, CreateTranceiver) {
   EXPECT_FALSE(transceiver.FiredDirection());
 }
 
-TEST_F(RTCRtpTransceiverTest, ModifyTransceiver) {
+TEST_F(RTCRtpTransceiverImplTest, ModifyTransceiver) {
   auto local_track_adapter = CreateLocalTrackAndAdapter("local_track");
   auto remote_track_adapter = CreateRemoteTrackAndAdapter("remote_track");
   auto webrtc_sender =
@@ -297,8 +297,8 @@ TEST_F(RTCRtpTransceiverTest, ModifyTransceiver) {
 
   // Modifying the webrtc transceiver after the initial state was created should
   // not have affected the transceiver state.
-  RTCRtpTransceiver transceiver(peer_connection_.get(), track_map_,
-                                std::move(initial_transceiver_state));
+  RTCRtpTransceiverImpl transceiver(peer_connection_.get(), track_map_,
+                                    std::move(initial_transceiver_state));
   EXPECT_TRUE(transceiver.Mid().IsNull());
   EXPECT_TRUE(transceiver.Sender());
   EXPECT_TRUE(transceiver.Receiver());
@@ -322,7 +322,7 @@ TEST_F(RTCRtpTransceiverTest, ModifyTransceiver) {
   EXPECT_FALSE(transceiver.FiredDirection());
 }
 
-TEST_F(RTCRtpTransceiverTest, ShallowCopy) {
+TEST_F(RTCRtpTransceiverImplTest, ShallowCopy) {
   auto local_track_adapter = CreateLocalTrackAndAdapter("local_track");
   auto remote_track_adapter = CreateRemoteTrackAndAdapter("remote_track");
   auto webrtc_sender =
@@ -333,7 +333,7 @@ TEST_F(RTCRtpTransceiverTest, ShallowCopy) {
       webrtc_sender, webrtc_receiver, base::nullopt, false /* stopped */,
       webrtc::RtpTransceiverDirection::kSendRecv, base::nullopt);
 
-  std::unique_ptr<RTCRtpTransceiver> transceiver;
+  std::unique_ptr<RTCRtpTransceiverImpl> transceiver;
   // Create transceiver.
   {
     RtpTransceiverState transceiver_state =
@@ -341,13 +341,14 @@ TEST_F(RTCRtpTransceiverTest, ShallowCopy) {
                                remote_track_adapter->Copy());
     EXPECT_FALSE(transceiver_state.is_initialized());
     transceiver_state.Initialize();
-    transceiver.reset(new RTCRtpTransceiver(peer_connection_.get(), track_map_,
-                                            std::move(transceiver_state)));
+    transceiver.reset(new RTCRtpTransceiverImpl(
+        peer_connection_.get(), track_map_, std::move(transceiver_state)));
   }
   DCHECK(transceiver);
   EXPECT_FALSE(transceiver->Stopped());
 
-  std::unique_ptr<RTCRtpTransceiver> shallow_copy = transceiver->ShallowCopy();
+  std::unique_ptr<RTCRtpTransceiverImpl> shallow_copy =
+      transceiver->ShallowCopy();
   // Modifying the shallow copy should modify the original too since they have a
   // shared internal state.
   {
@@ -368,7 +369,7 @@ TEST_F(RTCRtpTransceiverTest, ShallowCopy) {
   EXPECT_TRUE(transceiver->Stopped());
 }
 
-TEST_F(RTCRtpTransceiverTest, TransceiverStateUpdateModeSetDescription) {
+TEST_F(RTCRtpTransceiverImplTest, TransceiverStateUpdateModeSetDescription) {
   auto local_track_adapter = CreateLocalTrackAndAdapter("local_track");
   auto remote_track_adapter = CreateRemoteTrackAndAdapter("remote_track");
   auto webrtc_sender =
@@ -400,8 +401,8 @@ TEST_F(RTCRtpTransceiverTest, TransceiverStateUpdateModeSetDescription) {
   modified_transceiver_state.Initialize();
 
   // Construct a transceiver from the initial state.
-  RTCRtpTransceiver transceiver(peer_connection_.get(), track_map_,
-                                std::move(initial_transceiver_state));
+  RTCRtpTransceiverImpl transceiver(peer_connection_.get(), track_map_,
+                                    std::move(initial_transceiver_state));
   // Setting the state with TransceiverStateUpdateMode::kSetDescription should
   // make the transceiver state up-to-date, except leaving
   // "transceiver.direction" and "transceiver.sender.track" unmodified.
@@ -422,4 +423,4 @@ TEST_F(RTCRtpTransceiverTest, TransceiverStateUpdateModeSetDescription) {
             webrtc::RtpTransceiverDirection::kSendRecv);
 }
 
-}  // namespace content
+}  // namespace blink
