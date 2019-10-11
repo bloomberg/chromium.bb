@@ -24920,6 +24920,10 @@ Called by update_net_error_codes.py.-->
   <int value="3053" label="UserTimingL3"/>
   <int value="3054" label="GetGamepadsFromCrossOriginSubframe"/>
   <int value="3055" label="GetGamepadsFromInsecureContext"/>
+  <int value="3056" label="OriginCleanImageBitmapSerialization"/>
+  <int value="3057" label="NonOriginCleanImageBitmapSerialization"/>
+  <int value="3058" label="OriginCleanImageBitmapTransfer"/>
+  <int value="3059" label="NonOriginCleanImageBitmapTransfer"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
