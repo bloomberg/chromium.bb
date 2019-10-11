@@ -179,10 +179,6 @@ void DialogDelegate::UpdateButton(LabelButton* button, ui::DialogButton type) {
   button->SetIsDefault(is_default);
 }
 
-bool DialogDelegate::ShouldSnapFrameWidth() const {
-  return GetDialogButtons() != ui::DIALOG_BUTTON_NONE;
-}
-
 View* DialogDelegate::GetInitiallyFocusedView() {
   // Focus the default button if any.
   const DialogClientView* dcv = GetDialogClientView();
