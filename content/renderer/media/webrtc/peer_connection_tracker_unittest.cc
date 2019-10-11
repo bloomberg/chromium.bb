@@ -8,7 +8,6 @@
 #include "content/common/media/peer_connection_tracker.mojom.h"
 #include "content/common/media/peer_connection_tracker_messages.h"
 #include "content/public/test/mock_render_thread.h"
-#include "content/renderer/media/webrtc/mock_web_rtc_peer_connection_handler_client.h"
 #include "content/renderer/media/webrtc/rtc_peer_connection_handler.h"
 #include "ipc/ipc_message_macros.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
@@ -22,6 +21,7 @@
 #include "third_party/blink/public/platform/web_rtc_rtp_transceiver.h"
 #include "third_party/blink/public/web/modules/peerconnection/fake_rtc_rtp_transceiver_impl.h"
 #include "third_party/blink/public/web/modules/peerconnection/mock_peer_connection_dependency_factory.h"
+#include "third_party/blink/public/web/modules/peerconnection/mock_web_rtc_peer_connection_handler_client.h"
 
 using ::testing::_;
 
@@ -132,7 +132,7 @@ class MockPeerConnectionHandler : public RTCPeerConnectionHandler {
 
  private:
   blink::MockPeerConnectionDependencyFactory dependency_factory_;
-  MockWebRTCPeerConnectionHandlerClient client_;
+  blink::MockWebRTCPeerConnectionHandlerClient client_;
 };
 
 class PeerConnectionTrackerTest : public ::testing::Test {

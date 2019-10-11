@@ -1,17 +1,16 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#include "content/renderer/media/webrtc/mock_web_rtc_peer_connection_handler_client.h"
+#include "third_party/blink/public/web/modules/peerconnection/mock_web_rtc_peer_connection_handler_client.h"
 
 #include "base/logging.h"
-#include "base/strings/utf_string_conversions.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_receiver.h"
 #include "third_party/blink/public/platform/web_string.h"
 
 using testing::_;
 
-namespace content {
+namespace blink {
 
 MockWebRTCPeerConnectionHandlerClient::MockWebRTCPeerConnectionHandlerClient() {
   ON_CALL(*this, DidGenerateICECandidate(_))
@@ -28,7 +27,7 @@ MockWebRTCPeerConnectionHandlerClient::MockWebRTCPeerConnectionHandlerClient() {
 }
 
 MockWebRTCPeerConnectionHandlerClient::
-~MockWebRTCPeerConnectionHandlerClient() {}
+    ~MockWebRTCPeerConnectionHandlerClient() {}
 
 void MockWebRTCPeerConnectionHandlerClient::didGenerateICECandidateWorker(
     scoped_refptr<blink::WebRTCICECandidate> candidate) {
@@ -50,4 +49,4 @@ void MockWebRTCPeerConnectionHandlerClient::didRemoveReceiverWorker(
   remote_stream_id_ = blink::WebString();
 }
 
-}  // namespace content
+}  // namespace blink

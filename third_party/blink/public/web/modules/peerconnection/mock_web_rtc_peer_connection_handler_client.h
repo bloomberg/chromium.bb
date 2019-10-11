@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_WEBRTC_MOCK_WEB_RTC_PEER_CONNECTION_HANDLER_CLIENT_H_
-#define CONTENT_RENDERER_MEDIA_WEBRTC_MOCK_WEB_RTC_PEER_CONNECTION_HANDLER_CLIENT_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_PEERCONNECTION_MOCK_WEB_RTC_PEER_CONNECTION_HANDLER_CLIENT_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_PEERCONNECTION_MOCK_WEB_RTC_PEER_CONNECTION_HANDLER_CLIENT_H_
 
 #include <memory>
 #include <string>
 #include <vector>
 
-#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
@@ -18,7 +17,7 @@
 #include "third_party/blink/public/platform/web_rtc_rtp_receiver.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_transceiver.h"
 
-namespace content {
+namespace blink {
 
 class MockWebRTCPeerConnectionHandlerClient
     : public blink::WebRTCPeerConnectionHandlerClient {
@@ -87,7 +86,7 @@ class MockWebRTCPeerConnectionHandlerClient
   const base::Optional<uint16_t>& candidate_mlineindex() const {
     return candidate_mline_index_;
   }
-  const std::string& candidate_mid() const { return candidate_mid_ ; }
+  const std::string& candidate_mid() const { return candidate_mid_; }
   const blink::WebString& remote_stream_id() const { return remote_stream_id_; }
 
  private:
@@ -99,6 +98,6 @@ class MockWebRTCPeerConnectionHandlerClient
   DISALLOW_COPY_AND_ASSIGN(MockWebRTCPeerConnectionHandlerClient);
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_MEDIA_WEBRTC_MOCK_WEB_RTC_PEER_CONNECTION_HANDLER_CLIENT_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_PEERCONNECTION_MOCK_WEB_RTC_PEER_CONNECTION_HANDLER_CLIENT_H_
