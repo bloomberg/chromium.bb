@@ -446,11 +446,10 @@ void JsonPrefStore::OnFileRead(std::unique_ptr<ReadResult> read_result) {
 
   if (pref_filter_) {
     filtering_in_progress_ = true;
-    const PrefFilter::PostFilterOnLoadCallback post_filter_on_load_callback(
-        base::Bind(
-            &JsonPrefStore::FinalizeFileRead, AsWeakPtr(),
-            initialization_successful));
-    pref_filter_->FilterOnLoad(post_filter_on_load_callback,
+    PrefFilter::PostFilterOnLoadCallback post_filter_on_load_callback(
+        base::BindOnce(&JsonPrefStore::FinalizeFileRead, AsWeakPtr(),
+                       initialization_successful));
+    pref_filter_->FilterOnLoad(std::move(post_filter_on_load_callback),
                                std::move(unfiltered_prefs));
   } else {
     FinalizeFileRead(initialization_successful, std::move(unfiltered_prefs),
