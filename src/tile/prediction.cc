@@ -342,9 +342,16 @@ void Tile::IntraPrediction(const Block& block, Plane plane, int x, int y,
       Memset(left_column, (1 << (bitdepth - 1)) + 1, top_and_left_size);
     } else {
       const int left_limit =
-          std::min(max_y, y - 1 + ((has_bottom_left ? 2 : 1) * height));
-      for (int i = 0; i < top_and_left_size; ++i) {
-        left_column[i] = buffer[std::min(left_limit, y + i)][x - 1];
+          std::min(max_y - y + 1, (has_bottom_left ? 2 : 1) * height);
+      for (int i = 0; i < left_limit; ++i) {
+        left_column[i] = buffer[y + i][x - 1];
+      }
+      // Even though it is safe to call Memset with a size of 0, accessing
+      // buffer[left_limit - y + 1][x - 1] is not allowed when this condition is
+      // false.
+      if (top_and_left_size - left_limit > 0) {
+        Memset(left_column + left_limit, buffer[left_limit + y - 1][x - 1],
+               top_and_left_size - left_limit);
       }
     }
   }
