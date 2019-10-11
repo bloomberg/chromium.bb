@@ -13,8 +13,11 @@
 #include "helpers_array.h"
 
 uint32_t drv_height_from_format(uint32_t format, uint32_t height, size_t plane);
+uint32_t drv_vertical_subsampling_from_format(uint32_t format, size_t plane);
 uint32_t drv_size_from_format(uint32_t format, uint32_t stride, uint32_t height, size_t plane);
 int drv_bo_from_format(struct bo *bo, uint32_t stride, uint32_t aligned_height, uint32_t format);
+int drv_bo_from_format_and_padding(struct bo *bo, uint32_t stride, uint32_t aligned_height,
+				   uint32_t format, uint32_t padding[DRV_MAX_PLANES]);
 int drv_dumb_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_t format,
 		       uint64_t use_flags);
 int drv_dumb_bo_create_ex(struct bo *bo, uint32_t width, uint32_t height, uint32_t format,

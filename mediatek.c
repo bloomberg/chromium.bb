@@ -115,7 +115,21 @@ static int mediatek_bo_create_with_modifiers(struct bo *bo, uint32_t width, uint
 	 */
 	stride = drv_stride_from_format(format, width, 0);
 	stride = ALIGN(stride, 64);
-	drv_bo_from_format(bo, stride, height, format);
+
+	if (bo->meta.use_flags & BO_USE_HW_VIDEO_ENCODER) {
+		uint32_t aligned_height = ALIGN(height, 32);
+		uint32_t padding[DRV_MAX_PLANES] = { 0 };
+
+		for (plane = 0; plane < bo->meta.num_planes; ++plane) {
+			uint32_t plane_stride = drv_stride_from_format(format, stride, plane);
+			padding[plane] = plane_stride *
+					 (32 / drv_vertical_subsampling_from_format(format, plane));
+		}
+
+		drv_bo_from_format_and_padding(bo, stride, aligned_height, format, padding);
+	} else {
+		drv_bo_from_format(bo, stride, height, format);
+	}
 
 	memset(&gem_create, 0, sizeof(gem_create));
 	gem_create.size = bo->meta.total_size;
@@ -252,9 +266,10 @@ static uint32_t mediatek_resolve_format(struct driver *drv, uint32_t format, uin
 	case DRM_FORMAT_FLEX_YCbCr_420_888:
 #ifdef MTK_MT8183
 		/* MT8183 camera and decoder subsystems require NV12. */
-		if (use_flags &
-		    (BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE | BO_USE_HW_VIDEO_DECODER))
+		if (use_flags & (BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE |
+				 BO_USE_HW_VIDEO_DECODER | BO_USE_HW_VIDEO_ENCODER)) {
 			return DRM_FORMAT_NV12;
+		}
 #endif
 		return DRM_FORMAT_YVU420;
 	default:

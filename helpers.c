@@ -186,6 +186,15 @@ uint32_t drv_height_from_format(uint32_t format, uint32_t height, size_t plane)
 	return DIV_ROUND_UP(height, layout->vertical_subsampling[plane]);
 }
 
+uint32_t drv_vertical_subsampling_from_format(uint32_t format, size_t plane)
+{
+	const struct planar_layout *layout = layout_from_format(format);
+
+	assert(plane < layout->num_planes);
+
+	return layout->vertical_subsampling[plane];
+}
+
 uint32_t drv_bytes_per_pixel_from_format(uint32_t format, size_t plane)
 {
 	const struct planar_layout *layout = layout_from_format(format);
@@ -242,7 +251,13 @@ static uint32_t subsample_stride(uint32_t stride, uint32_t format, size_t plane)
  */
 int drv_bo_from_format(struct bo *bo, uint32_t stride, uint32_t aligned_height, uint32_t format)
 {
+	uint32_t padding[DRV_MAX_PLANES] = { 0 };
+	return drv_bo_from_format_and_padding(bo, stride, aligned_height, format, padding);
+}
 
+int drv_bo_from_format_and_padding(struct bo *bo, uint32_t stride, uint32_t aligned_height,
+				   uint32_t format, uint32_t padding[DRV_MAX_PLANES])
+{
 	size_t p, num_planes;
 	uint32_t offset = 0;
 
@@ -263,7 +278,8 @@ int drv_bo_from_format(struct bo *bo, uint32_t stride, uint32_t aligned_height, 
 	for (p = 0; p < num_planes; p++) {
 		bo->meta.strides[p] = subsample_stride(stride, format, p);
 		bo->meta.sizes[p] =
-		    drv_size_from_format(format, bo->meta.strides[p], aligned_height, p);
+		    drv_size_from_format(format, bo->meta.strides[p], aligned_height, p) +
+		    padding[p];
 		bo->meta.offsets[p] = offset;
 		offset += bo->meta.sizes[p];
 	}
