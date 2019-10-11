@@ -675,23 +675,14 @@ bool RenderWidget::Send(IPC::Message* message) {
   CHECK(!is_undead_);
   // Provisional frames don't send IPCs until they are swapped in/committed.
   CHECK(!IsForProvisionalFrame());
-
-  // Don't send any messages after the browser has told us to close.
-  if (closing_) {
-    delete message;
-    return false;
-  }
+  // Don't send any messages during shutdown.
+  DCHECK(!closing_);
 
   // If given a messsage without a routing ID, then assign our routing ID.
   if (message->routing_id() == MSG_ROUTING_NONE)
     message->set_routing_id(routing_id_);
 
   return RenderThread::Get()->Send(message);
-}
-
-void RenderWidget::SendOrCrash(IPC::Message* message) {
-  bool result = Send(message);
-  CHECK(closing_ || result) << "Failed to send message";
 }
 
 bool RenderWidget::ShouldHandleImeEvents() const {
@@ -1121,8 +1112,6 @@ bool RenderWidget::HandleInputEvent(
     const blink::WebCoalescedInputEvent& input_event,
     const ui::LatencyInfo& latency_info,
     HandledEventCallback callback) {
-  if (closing_)
-    return false;
   if (IsUndeadOrProvisional())
     return false;
   input_handler_->HandleInputEvent(input_event, latency_info,
@@ -1143,8 +1132,7 @@ void RenderWidget::OnCursorVisibilityChange(bool is_visible) {
   if (IsUndeadOrProvisional())
     return;
 
-  if (GetWebWidget())
-    GetWebWidget()->SetCursorVisibilityState(is_visible);
+  GetWebWidget()->SetCursorVisibilityState(is_visible);
 }
 
 void RenderWidget::OnFallbackCursorModeToggled(bool is_on) {
@@ -1152,8 +1140,7 @@ void RenderWidget::OnFallbackCursorModeToggled(bool is_on) {
   if (IsUndeadOrProvisional())
     return;
 
-  if (GetWebWidget())
-    GetWebWidget()->OnFallbackCursorModeToggled(is_on);
+  GetWebWidget()->OnFallbackCursorModeToggled(is_on);
 }
 
 void RenderWidget::OnMouseCaptureLost() {
@@ -1161,8 +1148,7 @@ void RenderWidget::OnMouseCaptureLost() {
   if (IsUndeadOrProvisional())
     return;
 
-  if (GetWebWidget())
-    GetWebWidget()->MouseCaptureLost();
+  GetWebWidget()->MouseCaptureLost();
 }
 
 void RenderWidget::OnSetEditCommandsForNextKeyEvent(
@@ -1186,19 +1172,15 @@ void RenderWidget::OnSetFocus(bool enable) {
 
   if (delegate())
     delegate()->DidReceiveSetFocusEventForWidget();
-  SetFocus(enable);
-}
 
-void RenderWidget::SetFocus(bool enable) {
   has_focus_ = enable;
 
-  if (GetWebWidget())
-    GetWebWidget()->SetFocus(enable);
+  GetWebWidget()->SetFocus(enable);
 
   for (auto& observer : render_frames_)
     observer.RenderWidgetSetFocus(enable);
 
-  // Notify all BrowserPlugins of the RenderView's focus state.
+  // Notify all BrowserPlugins of the RenderWidget's focus state.
   if (BrowserPluginManager::Get())
     BrowserPluginManager::Get()->UpdateFocusState();
 }
@@ -1208,46 +1190,25 @@ void RenderWidget::SetFocus(bool enable) {
 
 void RenderWidget::ApplyViewportChanges(
     const cc::ApplyViewportChangesArgs& args) {
-  // TODO(danakj): This should never be null now that LayerTreeView disconnects
-  // during Close().
-  if (!GetWebWidget())
-    return;
   GetWebWidget()->ApplyViewportChanges(args);
 }
 
 void RenderWidget::RecordManipulationTypeCounts(cc::ManipulationInfo info) {
-  // TODO(danakj): This should never be null now that LayerTreeView disconnects
-  // during Close().
-  if (!GetWebWidget())
-    return;
   GetWebWidget()->RecordManipulationTypeCounts(info);
 }
 
 void RenderWidget::SendOverscrollEventFromImplSide(
     const gfx::Vector2dF& overscroll_delta,
     cc::ElementId scroll_latched_element_id) {
-  // TODO(danakj): This should never be null now that LayerTreeView disconnects
-  // during Close().
-  if (!GetWebWidget())
-    return;
   GetWebWidget()->SendOverscrollEventFromImplSide(overscroll_delta,
                                                   scroll_latched_element_id);
 }
 void RenderWidget::SendScrollEndEventFromImplSide(
     cc::ElementId scroll_latched_element_id) {
-  // TODO(danakj): This should never be null now that LayerTreeView disconnects
-  // during Close().
-  if (!GetWebWidget())
-    return;
   GetWebWidget()->SendScrollEndEventFromImplSide(scroll_latched_element_id);
 }
 
 void RenderWidget::BeginMainFrame(base::TimeTicks frame_time) {
-  // TODO(danakj): This should never be null now that LayerTreeView disconnects
-  // during Close().
-  if (!GetWebWidget())
-    return;
-
   DCHECK(!is_undead_);
   DCHECK(!IsForProvisionalFrame());
 
@@ -1267,29 +1228,30 @@ void RenderWidget::BeginMainFrame(base::TimeTicks frame_time) {
 }
 
 void RenderWidget::OnDeferMainFrameUpdatesChanged(bool deferral_state) {
+  // LayerTreeHost::CreateThreaded() will defer main frame updates immediately
+  // until it gets a LocalSurfaceIdAllocation. That's before the
+  // |widget_input_handler_manager_| is created, so it can be null here. We
+  // detect that by seeing a null LayerTreeHost.
+  // TODO(schenney): To avoid ping-ponging between defer main frame states
+  // during initialization, and requiring null checks here, we should probably
+  // pass the LocalSurfaceIdAllocation to the compositor while it is
+  // initialized so that it doesn't have to immediately switch into deferred
+  // mode without being requested to.
+  if (!layer_tree_host_)
+    return;
+
   // The input handler wants to know about the mainframe update status to
   // enable/disable input and for metrics.
-  // TODO(danakj): This should never be null now that LayerTreeView disconnects
-  // during Close().
-  if (widget_input_handler_manager_)
-    widget_input_handler_manager_->OnDeferMainFrameUpdatesChanged(
-        deferral_state);
+  widget_input_handler_manager_->OnDeferMainFrameUpdatesChanged(deferral_state);
 }
 
 void RenderWidget::OnDeferCommitsChanged(bool deferral_state) {
   // The input handler wants to know about the commit status for metric purposes
   // and to enable/disable input.
-  // TODO(danakj): This should never be null now that LayerTreeView disconnects
-  // during Close().
-  if (widget_input_handler_manager_)
-    widget_input_handler_manager_->OnDeferCommitsChanged(deferral_state);
+  widget_input_handler_manager_->OnDeferCommitsChanged(deferral_state);
 }
 
 void RenderWidget::DidBeginMainFrame() {
-  // TODO(danakj): This should never be null now that LayerTreeView disconnects
-  // during Close().
-  if (!GetWebWidget())
-    return;
   GetWebWidget()->DidBeginFrame();
 }
 
@@ -1301,18 +1263,6 @@ void RenderWidget::RequestNewLayerTreeFrameSink(
   // Undead RenderWidgets should not be doing any compositing. However note that
   // widgets for provisional frames do start their compositor.
   DCHECK(!is_undead_);
-
-  // If we early out, we drop the request which means the compositor waits
-  // forever, which is fine since we're going to destroy it soon.
-  // TODO(danakj): This should never be true now that LayerTreeView disconnects
-  // during Close().
-  if (closing_)
-    return;
-
-  // TODO:(https://crbug.com/995981): If there is no WebWidget, then the
-  // RenderWidget should also be destroyed, and this DCHECK should not be
-  // necessary.
-  DCHECK(GetWebWidget());
 
   // TODO(jonross): have this generated by the LayerTreeFrameSink itself, which
   // would then handle binding.
@@ -1355,24 +1305,19 @@ void RenderWidget::DidCommitAndDrawCompositorFrame() {
 }
 
 void RenderWidget::WillCommitCompositorFrame() {
-  // TODO(danakj): This should never be true now that LayerTreeView disconnects
-  // during Close().
-  if (GetWebWidget())
-    GetWebWidget()->BeginCommitCompositorFrame();
+  DCHECK(!is_undead_);
+  GetWebWidget()->BeginCommitCompositorFrame();
 }
 
 void RenderWidget::DidCommitCompositorFrame() {
+  DCHECK(!is_undead_);
   if (delegate())
     delegate()->DidCommitCompositorFrameForWidget();
-  // TODO(danakj): This should never be true now that LayerTreeView disconnects
-  // during Close().
-  if (GetWebWidget())
-    GetWebWidget()->EndCommitCompositorFrame();
+  GetWebWidget()->EndCommitCompositorFrame();
 }
 
 void RenderWidget::DidCompletePageScaleAnimation() {
-  // TODO(danakj): This should never be true now that LayerTreeView disconnects
-  // during Close().
+  DCHECK(!is_undead_);
   if (delegate())
     delegate()->DidCompletePageScaleAnimationForWidget();
 }
@@ -1444,9 +1389,6 @@ void RenderWidget::SetBackgroundColor(SkColor color) {
 }
 
 void RenderWidget::UpdateVisualState() {
-  if (!GetWebWidget())
-    return;
-
   DCHECK(!is_undead_);
   DCHECK(!IsForProvisionalFrame());
 
@@ -1490,47 +1432,34 @@ void RenderWidget::RecordTimeToFirstActivePaint() {
 }
 
 void RenderWidget::RecordStartOfFrameMetrics() {
-  // TODO(danakj): This should never be true now that LayerTreeView disconnects
-  // during Close().
-  if (GetWebWidget())
-    GetWebWidget()->RecordStartOfFrameMetrics();
+  DCHECK(!is_undead_);
+  GetWebWidget()->RecordStartOfFrameMetrics();
 }
 
 void RenderWidget::RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) {
-  // TODO(danakj): This should never be true now that LayerTreeView disconnects
-  // during Close().
-  if (GetWebWidget())
-    GetWebWidget()->RecordEndOfFrameMetrics(frame_begin_time);
+  DCHECK(!is_undead_);
+  GetWebWidget()->RecordEndOfFrameMetrics(frame_begin_time);
 }
 
 std::unique_ptr<cc::BeginMainFrameMetrics>
 RenderWidget::GetBeginMainFrameMetrics() {
-  if (GetWebWidget())
-    return GetWebWidget()->GetBeginMainFrameMetrics();
-  return nullptr;
+  DCHECK(!is_undead_);
+  return GetWebWidget()->GetBeginMainFrameMetrics();
 }
 
 void RenderWidget::BeginUpdateLayers() {
-  // TODO(danakj): This should never be true now that LayerTreeView disconnects
-  // during Close().
-  if (GetWebWidget())
-    GetWebWidget()->BeginUpdateLayers();
+  DCHECK(!is_undead_);
+  GetWebWidget()->BeginUpdateLayers();
 }
 
 void RenderWidget::EndUpdateLayers() {
-  // TODO(danakj): This should never be true now that LayerTreeView disconnects
-  // during Close().
-  if (GetWebWidget())
-    GetWebWidget()->EndUpdateLayers();
+  DCHECK(!is_undead_);
+  GetWebWidget()->EndUpdateLayers();
 }
 
 void RenderWidget::WillBeginCompositorFrame() {
   TRACE_EVENT0("gpu", "RenderWidget::willBeginCompositorFrame");
-
-  // TODO(danakj): This should never be true now that LayerTreeView disconnects
-  // during Close().
-  if (!GetWebWidget())
-    return;
+  DCHECK(!is_undead_);
 
   GetWebWidget()->SetSuppressFrameRequestsWorkaroundFor704763Only(true);
 
@@ -1603,10 +1532,6 @@ void RenderWidget::SetInputHandler(RenderWidgetInputHandler* input_handler) {
 }
 
 void RenderWidget::ShowVirtualKeyboard() {
-  // Blink can continue running and change input state between the Close IPC
-  // and the task that actually closes this class.
-  if (closing_)
-    return;
   UpdateTextInputStateInternal(true, false);
 }
 
@@ -1620,10 +1545,6 @@ void RenderWidget::ClearTextInputState() {
 }
 
 void RenderWidget::UpdateTextInputState() {
-  // Blink can continue running and change input state between the Close IPC
-  // and the task that actually closes this class.
-  if (closing_)
-    return;
   UpdateTextInputStateInternal(false, false);
 }
 
@@ -1874,9 +1795,6 @@ void RenderWidget::SetHandlingInputEvent(bool handling_input_event) {
 }
 
 void RenderWidget::QueueMessage(std::unique_ptr<IPC::Message> msg) {
-  if (closing_)
-    return;
-
   // RenderThreadImpl::current() is NULL in some tests.
   if (!RenderThreadImpl::current()) {
     Send(msg.release());
@@ -2120,10 +2038,6 @@ void RenderWidget::Close(std::unique_ptr<RenderWidget> widget) {
 blink::WebFrameWidget* RenderWidget::GetFrameWidget() const {
   // TODO(danakj): Remove this check and don't call this method for non-frames.
   if (!for_frame())
-    return nullptr;
-  // TODO(danakj): Is this needed? IPCs stop after closing, but code used to
-  // check for a null WebWidget.
-  if (closing_)
     return nullptr;
   return static_cast<blink::WebFrameWidget*>(webwidget_);
 }
@@ -2686,10 +2600,6 @@ void RenderWidget::ConvertWindowToViewport(blink::WebFloatRect* rect) {
 
 void RenderWidget::OnRequestTextInputStateUpdate() {
 #if defined(OS_ANDROID)
-  // This task may run between the Close IPC and the task that actually closes
-  // this class.
-  if (closing_)
-    return;
   DCHECK(!ime_event_guard_);
   UpdateSelectionBounds();
   UpdateTextInputStateInternal(false, true /* reply_to_request */);
@@ -2831,11 +2741,6 @@ void RenderWidget::UpdateSelectionBounds() {
 }
 
 void RenderWidget::DidAutoResize(const gfx::Size& new_size) {
-  // Blink can continue running and do a layout/resize between the Close IPC
-  // and the task that actually closes this class.
-  if (closing_)
-    return;
-
   WebRect new_size_in_window(0, 0, new_size.width(), new_size.height());
   ConvertViewportToWindow(&new_size_in_window);
   if (size_.width() != new_size_in_window.width ||
@@ -3848,12 +3753,6 @@ void RenderWidget::StartDragging(network::mojom::ReferrerPolicy policy,
 }
 
 void RenderWidget::DidNavigate() {
-  // Blink may be navigating still between the Close IPC and the task that
-  // actually closes this class, and for a main frame that would come through
-  // this method. But since we are closing we can skip it.
-  if (closing_)
-    return;
-
   // The input handler wants to know about navigation so that it can
   // suppress input until the newly navigated page has a committed frame.
   // It also resets the state for UMA reporting of input arrival with respect

@@ -654,10 +654,6 @@ class CONTENT_EXPORT RenderWidget
                        int relative_cursor_pos);
   void OnImeFinishComposingText(bool keep_selection);
 
-  // This does the actual focus change, but is called in more situations than
-  // just as an IPC message.
-  void SetFocus(bool enable);
-
   // Called by the browser process to update text input state.
   void OnRequestTextInputStateUpdate();
 
@@ -878,13 +874,6 @@ class CONTENT_EXPORT RenderWidget
 
   // Used to force the size of a window when running web tests.
   void SetWindowRectSynchronously(const gfx::Rect& new_window_rect);
-
-  // A variant of Send but is fatal if it fails. The browser may
-  // be waiting for this IPC Message and if the send fails the browser will
-  // be left in a state waiting for something that never comes. And if it
-  // never comes then it may later determine this is a hung renderer; so
-  // instead fail right away.
-  void SendOrCrash(IPC::Message* msg);
 
   // Determines whether or not RenderWidget should process IME events from the
   // browser. It always returns true unless there is no WebFrameWidget to
