@@ -4,6 +4,9 @@
 
 #include "platform/impl/tls_write_buffer.h"
 
+#include <algorithm>
+#include <cstring>
+
 #include "platform/api/logging.h"
 #include "platform/api/tls_connection.h"
 
@@ -18,25 +21,78 @@ TlsWriteBuffer::TlsWriteBuffer(TlsWriteBuffer::Observer* observer)
 }
 
 size_t TlsWriteBuffer::Write(const void* data, size_t len) {
-  // TODO(rwkeane): Implement this method.
-  OSP_UNIMPLEMENTED();
-  return 0;
+  const size_t currently_written_bytes =
+      bytes_written_so_far_.load(std::memory_order_relaxed);
+  const size_t current_read_bytes =
+      bytes_read_so_far_.load(std::memory_order_acquire);
+
+  // Calculates the current size of the buffer.
+  const size_t bytes_currently_used =
+      currently_written_bytes - current_read_bytes;
+
+  // Calculates how many bytes out of the requested |len| can be written without
+  // causing a buffer overflow.
+  const size_t write_len =
+      std::min(kBufferSizeBytes - bytes_currently_used, len);
+
+  // Calculates the number of bytes out of |write_len| to write in the first
+  // memcpy operation, which is either all |write_len| or the number that can be
+  // written before wrapping around to the beginning of the underlying array.
+  const size_t current_write_index = currently_written_bytes % kBufferSizeBytes;
+  const size_t first_write_len =
+      std::min(write_len, kBufferSizeBytes - current_write_index);
+  memcpy(&buffer_[current_write_index], data, first_write_len);
+
+  // If we didn't write all |write_len| bytes in the previous memcpy, copy any
+  // remaining bytes to the array, starting at 0 (since the last write must have
+  // finished at the end of the array).
+  if (first_write_len != write_len) {
+    const uint8_t* new_start =
+        static_cast<const uint8_t*>(data) + first_write_len;
+    memcpy(buffer_, new_start, write_len - first_write_len);
+  }
+
+  // Store and return updated values.
+  const size_t new_write_size = currently_written_bytes + write_len;
+  bytes_written_so_far_.store(new_write_size, std::memory_order_release);
+  NotifyWriteBufferFill(new_write_size, bytes_read_so_far_);
+  return write_len;
 }
 
 absl::Span<const uint8_t> TlsWriteBuffer::GetReadableRegion() {
-  // TODO(rwkeane): Implement this method.
-  OSP_UNIMPLEMENTED();
-  return absl::Span<const uint8_t>();
+  const size_t current_read_bytes =
+      bytes_read_so_far_.load(std::memory_order_relaxed);
+  const size_t currently_written_bytes =
+      bytes_written_so_far_.load(std::memory_order_acquire);
+
+  // Stop reading at either the end of the array or the current write index,
+  // whichever is sooner. While there may be more data wrapped around after the
+  // end of the array, the API for GetReadableRegion() only guarantees to return
+  // a subset of all available read data, so there is no reason to introduce
+  // this additional level of complexity.
+  const size_t avail = currently_written_bytes - current_read_bytes;
+  const size_t begin = current_read_bytes % kBufferSizeBytes;
+  const size_t end = std::min(begin + avail, kBufferSizeBytes - 1);
+  return absl::Span<const uint8_t>(&buffer_[begin], end - begin);
 }
 
 void TlsWriteBuffer::Consume(size_t byte_count) {
-  // TODO(rwkeane): Implement this method.
-  OSP_UNIMPLEMENTED();
+  const size_t current_read_bytes =
+      bytes_read_so_far_.load(std::memory_order_relaxed);
+  const size_t currently_written_bytes =
+      bytes_written_so_far_.load(std::memory_order_acquire);
+
+  OSP_DCHECK_GE(currently_written_bytes - current_read_bytes, byte_count);
+  const size_t new_read_index = current_read_bytes + byte_count;
+  bytes_read_so_far_.store(new_read_index, std::memory_order_release);
+
+  NotifyWriteBufferFill(currently_written_bytes, new_read_index);
 }
 
-// NOTE: In follow-up CL, it will be useful to have this as its own method, so
-// please tolerate it for now.
-void TlsWriteBuffer::NotifyWriteBufferFill(double fraction) {
+void TlsWriteBuffer::NotifyWriteBufferFill(size_t write_index,
+                                           size_t read_index) {
+  double fraction =
+      static_cast<double>(write_index - read_index) / kBufferSizeBytes;
   observer_->NotifyWriteBufferFill(fraction);
 }
 

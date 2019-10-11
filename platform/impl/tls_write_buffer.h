@@ -5,6 +5,7 @@
 #ifndef PLATFORM_IMPL_TLS_WRITE_BUFFER_H_
 #define PLATFORM_IMPL_TLS_WRITE_BUFFER_H_
 
+#include <atomic>
 #include <memory>
 
 #include "absl/types/span.h"
@@ -48,8 +49,19 @@ class TlsWriteBuffer {
   static constexpr size_t kBufferSizeBytes = 1 << 20;  // 1 MB space.
 
  private:
-  // Signals that the write buffer has reached some percentage of being filled.
-  void NotifyWriteBufferFill(double fraction);
+  // Signals that the write buffer has reached some percentage of being filled,
+  // as calculated based on the provided write and read indices.
+  void NotifyWriteBufferFill(size_t write_index, size_t read_index);
+
+  // Buffer where data to be written over the TLS connection is stored.
+  uint8_t buffer_[kBufferSizeBytes];
+
+  // Total number of bytes read or written so far. Atomics are used both to
+  // ensure that read and write operations are atomic for uint64s on all systems
+  // and to ensure that different values for these values aren't loaded from
+  // each CPU's physical cache.
+  std::atomic_size_t bytes_read_so_far_{0};
+  std::atomic_size_t bytes_written_so_far_{0};
 
   Observer* const observer_;
 
