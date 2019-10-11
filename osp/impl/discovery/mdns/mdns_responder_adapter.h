@@ -31,9 +31,9 @@ struct QueryEventHeader {
 
   QueryEventHeader();
   QueryEventHeader(Type response_type, platform::UdpSocket* socket);
-  QueryEventHeader(const QueryEventHeader&);
+  QueryEventHeader(QueryEventHeader&&) noexcept;
   ~QueryEventHeader();
-  QueryEventHeader& operator=(const QueryEventHeader&);
+  QueryEventHeader& operator=(QueryEventHeader&&) noexcept;
 
   Type response_type;
   platform::UdpSocket* socket;
@@ -41,7 +41,7 @@ struct QueryEventHeader {
 
 struct PtrEvent {
   PtrEvent();
-  PtrEvent(const QueryEventHeader& header, DomainName service_instance);
+  PtrEvent(QueryEventHeader header, DomainName service_instance);
   PtrEvent(PtrEvent&&) noexcept;
   ~PtrEvent();
   PtrEvent& operator=(PtrEvent&&) noexcept;
@@ -52,7 +52,7 @@ struct PtrEvent {
 
 struct SrvEvent {
   SrvEvent();
-  SrvEvent(const QueryEventHeader& header,
+  SrvEvent(QueryEventHeader header,
            DomainName service_instance,
            DomainName domain_name,
            uint16_t port);
@@ -68,7 +68,7 @@ struct SrvEvent {
 
 struct TxtEvent {
   TxtEvent();
-  TxtEvent(const QueryEventHeader& header,
+  TxtEvent(QueryEventHeader header,
            DomainName service_instance,
            std::vector<std::string> txt_info);
   TxtEvent(TxtEvent&&) noexcept;
@@ -85,9 +85,7 @@ struct TxtEvent {
 
 struct AEvent {
   AEvent();
-  AEvent(const QueryEventHeader& header,
-         DomainName domain_name,
-         const IPAddress& address);
+  AEvent(QueryEventHeader header, DomainName domain_name, IPAddress address);
   AEvent(AEvent&&) noexcept;
   ~AEvent();
   AEvent& operator=(AEvent&&) noexcept;
@@ -99,9 +97,7 @@ struct AEvent {
 
 struct AaaaEvent {
   AaaaEvent();
-  AaaaEvent(const QueryEventHeader& header,
-            DomainName domain_name,
-            const IPAddress& address);
+  AaaaEvent(QueryEventHeader header, DomainName domain_name, IPAddress address);
   AaaaEvent(AaaaEvent&&) noexcept;
   ~AaaaEvent();
   AaaaEvent& operator=(AaaaEvent&&) noexcept;
