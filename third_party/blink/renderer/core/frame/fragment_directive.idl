@@ -4,5 +4,5 @@
 
 // https://github.com/WICG/ScrollToTextFragment
 [RuntimeEnabled=TextFragmentIdentifiers]
-interface Selector {
+interface FragmentDirective {
 };
