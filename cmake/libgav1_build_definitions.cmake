@@ -96,7 +96,7 @@ macro(libgav1_set_build_definitions)
   if(NOT LIBGAV1_MAX_BITDEPTH)
     set(LIBGAV1_MAX_BITDEPTH 10)
   elseif(NOT LIBGAV1_MAX_BITDEPTH EQUAL 8 AND NOT LIBGAV1_MAX_BITDEPTH EQUAL 10)
-    libgav1_die("LIBGAV1_MAX_BITDEPTH MUST be 8 or 10.")
+    libgav1_die("LIBGAV1_MAX_BITDEPTH must be 8 or 10.")
   endif()
 
   list(APPEND libgav1_defines "LIBGAV1_MAX_BITDEPTH=${LIBGAV1_MAX_BITDEPTH}")
