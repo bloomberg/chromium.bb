@@ -7,13 +7,11 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/bind_test_util.h"
-#include "base/test/task_environment.h"
 #include "base/test/test_timeouts.h"
-#include "content/child/child_process.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
@@ -22,8 +20,9 @@
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/modules/peerconnection/mock_peer_connection_dependency_factory.h"
 #include "third_party/blink/public/web/web_heap.h"
+#include "third_party/blink/renderer/platform/testing/io_task_runner_testing_platform_support.h"
 
-namespace content {
+namespace blink {
 
 class WebRtcMediaStreamTrackAdapterMapTest : public ::testing::Test {
  public:
@@ -111,10 +110,7 @@ class WebRtcMediaStreamTrackAdapterMapTest : public ::testing::Test {
   }
 
  protected:
-  // The TaskEnvironment prevents the ChildProcess from leaking a
-  // ThreadPool.
-  base::test::TaskEnvironment task_environment_;
-  ChildProcess child_process_;
+  ScopedTestingPlatformSupport<IOTaskRunnerTestingPlatformSupport> platform_;
 
   std::unique_ptr<blink::MockPeerConnectionDependencyFactory>
       dependency_factory_;
@@ -358,4 +354,4 @@ TEST_F(WebRtcMediaStreamTrackAdapterMapStressTest, StressTest) {
   RunStressTest(kNumStressTestIterations);
 }
 
-}  // namespace content
+}  // namespace blink
