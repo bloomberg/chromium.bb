@@ -1974,11 +1974,11 @@
     "DefaultPassthroughCommandDecoder": [
         {
             "platforms": [
-                "windows"
+                "linux"
             ],
             "experiments": [
                 {
-                    "name": "Enabled",
+                    "name": "Enabled_20191004",
                     "enable_features": [
                         "DefaultPassthroughCommandDecoder"
                     ]
