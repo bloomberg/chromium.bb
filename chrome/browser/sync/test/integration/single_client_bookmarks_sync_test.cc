@@ -789,14 +789,8 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
 
 // TODO(crbug.com/1012222): re-enable this test on all builders once flakiness
 // is addressed.
-#if defined(THREAD_SANITIZER)
-#define MAYBE_ApplyRemoteCreationWithValidGUID \
-  DISABLED_ApplyRemoteCreationWithValidGUID
-#else
-#define MAYBE_ApplyRemoteCreationWithValidGUID ApplyRemoteCreationWithValidGUID
-#endif
 IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
-                       MAYBE_ApplyRemoteCreationWithValidGUID) {
+                       DISABLED_ApplyRemoteCreationWithValidGUID) {
   // This test is only relevant for USS code path.
   if (!base::FeatureList::IsEnabled(switches::kSyncUSSBookmarks))
     return;
