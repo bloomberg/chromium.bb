@@ -2875,11 +2875,6 @@
     "label": "//testing/libfuzzer/fuzzers:v8_wasm_fuzzer",
     "type": "fuzzer",
   },
-  "video_decode_accelerator_unittest": {
-    "args": [],
-    "label": "//media/gpu:video_decode_accelerator_unittest",
-    "type": "raw",
-  },
   "views_perftests": {
     "args": [
       "--xvfb",

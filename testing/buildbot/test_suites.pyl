@@ -3623,22 +3623,6 @@
         ],
         'test': 'gles2_conform_test',
       },
-      'video_decode_accelerator_d3d9_unittest': {
-        'args': [
-          '--use-angle=d3d9',
-          '--use-test-data-path',
-          '--test_video_data=test-25fps.h264:320:240:250:258:::1',
-        ],
-        'test': 'video_decode_accelerator_unittest',
-      },
-      'video_decode_accelerator_gl_unittest': {
-        'args': [
-          '--use-angle=gl',
-          '--use-test-data-path',
-          '--test_video_data=test-25fps.h264:320:240:250:258:::1',
-        ],
-        'test': 'video_decode_accelerator_unittest',
-      },
     },
 
     'gpu_fyi_mac_specific_gtests': {
@@ -4180,14 +4164,6 @@
           '--use-gpu-in-tests',
           '--use-cmd-decoder=passthrough',
         ],
-      },
-      'video_decode_accelerator_d3d11_unittest': {
-        'args': [
-          '--use-angle=d3d11',
-          '--use-test-data-path',
-          '--test_video_data=test-25fps.h264:320:240:250:258:::1',
-        ],
-        'test': 'video_decode_accelerator_unittest',
       },
     },
 
