@@ -2,18 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/webrtc/transceiver_state_surfacer.h"
+#include "third_party/blink/public/web/modules/peerconnection/transceiver_state_surfacer.h"
 
 #include <memory>
 #include <tuple>
 
 #include "base/bind.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/test/task_environment.h"
-#include "content/child/child_process.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/public/platform/modules/peerconnection/webrtc_util.h"
@@ -28,7 +26,10 @@
 using testing::AnyNumber;
 using testing::Return;
 
-namespace content {
+namespace blink {
+
+// To avoid name collision on jumbo builds.
+namespace transceiver_state_surfacer_test {
 
 class MockSctpTransport : public webrtc::SctpTransportInterface {
  public:
@@ -271,8 +272,6 @@ class TransceiverStateSurfacerTest : public ::testing::Test {
     run_loop->Quit();
   }
 
-  base::test::TaskEnvironment task_environment_;
-
  protected:
   scoped_refptr<webrtc::PeerConnectionInterface> peer_connection_;
   std::unique_ptr<blink::MockPeerConnectionDependencyFactory>
@@ -385,4 +384,5 @@ TEST_F(TransceiverStateSurfacerTest, SurfaceTransceiverWithSctpTransport) {
   ObtainStatesAndExpectInitialized(webrtc_transceiver);
 }
 
-}  // namespace content
+}  // namespace transceiver_state_surfacer_test
+}  // namespace blink

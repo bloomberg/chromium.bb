@@ -20,7 +20,6 @@
 #include "base/threading/thread.h"
 #include "content/common/content_export.h"
 #include "content/renderer/media/webrtc/media_stream_track_metrics.h"
-#include "content/renderer/media/webrtc/transceiver_state_surfacer.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_rtc_peer_connection_handler.h"
 #include "third_party/blink/public/platform/web_rtc_peer_connection_handler_client.h"
@@ -29,6 +28,7 @@
 #include "third_party/blink/public/platform/web_rtc_stats_response.h"
 #include "third_party/blink/public/web/modules/peerconnection/rtc_rtp_receiver_impl.h"
 #include "third_party/blink/public/web/modules/peerconnection/rtc_rtp_sender_impl.h"
+#include "third_party/blink/public/web/modules/peerconnection/transceiver_state_surfacer.h"
 #include "third_party/blink/public/web/modules/peerconnection/webrtc_media_stream_track_adapter_map.h"
 #include "third_party/webrtc/api/stats/rtc_stats.h"
 #include "third_party/webrtc/api/stats/rtc_stats_collector_callback.h"
@@ -289,19 +289,19 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   void AddTransceiverWithTrackOnSignalingThread(
       rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> webrtc_track,
       webrtc::RtpTransceiverInit init,
-      TransceiverStateSurfacer* transceiver_state_surfacer,
+      blink::TransceiverStateSurfacer* transceiver_state_surfacer,
       webrtc::RTCErrorOr<rtc::scoped_refptr<webrtc::RtpTransceiverInterface>>*
           error_or_transceiver);
   void AddTransceiverWithMediaTypeOnSignalingThread(
       cricket::MediaType media_type,
       webrtc::RtpTransceiverInit init,
-      TransceiverStateSurfacer* transceiver_state_surfacer,
+      blink::TransceiverStateSurfacer* transceiver_state_surfacer,
       webrtc::RTCErrorOr<rtc::scoped_refptr<webrtc::RtpTransceiverInterface>>*
           error_or_transceiver);
   void AddTrackOnSignalingThread(
       rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> track,
       std::vector<std::string> stream_ids,
-      TransceiverStateSurfacer* transceiver_state_surfacer,
+      blink::TransceiverStateSurfacer* transceiver_state_surfacer,
       webrtc::RTCErrorOr<rtc::scoped_refptr<webrtc::RtpSenderInterface>>*
           error_or_sender);
   bool RemoveTrackPlanB(blink::WebRTCRtpSender* web_sender);
@@ -309,7 +309,7 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   RemoveTrackUnifiedPlan(blink::WebRTCRtpSender* web_sender);
   void RemoveTrackUnifiedPlanOnSignalingThread(
       rtc::scoped_refptr<webrtc::RtpSenderInterface> sender,
-      TransceiverStateSurfacer* transceiver_state_surfacer,
+      blink::TransceiverStateSurfacer* transceiver_state_surfacer,
       bool* result);
   std::vector<std::unique_ptr<blink::WebRTCRtpTransceiver>> CreateOfferInternal(
       const blink::WebRTCSessionDescriptionRequest& request,
@@ -317,7 +317,7 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   void CreateOfferOnSignalingThread(
       webrtc::CreateSessionDescriptionObserver* observer,
       webrtc::PeerConnectionInterface::RTCOfferAnswerOptions offer_options,
-      TransceiverStateSurfacer* transceiver_state_surfacer);
+      blink::TransceiverStateSurfacer* transceiver_state_surfacer);
   std::vector<std::unique_ptr<blink::RTCRtpSenderImpl>>::iterator FindSender(
       uintptr_t id);
   std::vector<std::unique_ptr<blink::RTCRtpReceiverImpl>>::iterator

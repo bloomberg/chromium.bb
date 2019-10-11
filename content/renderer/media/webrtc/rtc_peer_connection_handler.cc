@@ -1129,8 +1129,8 @@ RTCPeerConnectionHandler::CreateOfferInternal(
           peer_connection_tracker_,
           PeerConnectionTracker::ACTION_CREATE_OFFER));
 
-  TransceiverStateSurfacer transceiver_state_surfacer(task_runner_,
-                                                      signaling_thread());
+  blink::TransceiverStateSurfacer transceiver_state_surfacer(
+      task_runner_, signaling_thread());
   RunSynchronousRepeatingClosureOnSignalingThread(
       base::BindRepeating(
           &RTCPeerConnectionHandler::CreateOfferOnSignalingThread,
@@ -1152,7 +1152,7 @@ RTCPeerConnectionHandler::CreateOfferInternal(
 void RTCPeerConnectionHandler::CreateOfferOnSignalingThread(
     webrtc::CreateSessionDescriptionObserver* observer,
     webrtc::PeerConnectionInterface::RTCOfferAnswerOptions offer_options,
-    TransceiverStateSurfacer* transceiver_state_surfacer) {
+    blink::TransceiverStateSurfacer* transceiver_state_surfacer) {
   native_peer_connection_->CreateOffer(observer, offer_options);
   std::vector<rtc::scoped_refptr<webrtc::RtpTransceiverInterface>>
       transceivers =
@@ -1605,8 +1605,8 @@ RTCPeerConnectionHandler::AddTransceiverWithTrack(
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   std::unique_ptr<blink::WebRtcMediaStreamTrackAdapterMap::AdapterRef>
       track_ref = track_adapter_map_->GetOrCreateLocalTrackAdapter(web_track);
-  TransceiverStateSurfacer transceiver_state_surfacer(task_runner_,
-                                                      signaling_thread());
+  blink::TransceiverStateSurfacer transceiver_state_surfacer(
+      task_runner_, signaling_thread());
   webrtc::RTCErrorOr<rtc::scoped_refptr<webrtc::RtpTransceiverInterface>>
       error_or_transceiver;
   RunSynchronousRepeatingClosureOnSignalingThread(
@@ -1634,7 +1634,7 @@ RTCPeerConnectionHandler::AddTransceiverWithTrack(
 void RTCPeerConnectionHandler::AddTransceiverWithTrackOnSignalingThread(
     rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> webrtc_track,
     webrtc::RtpTransceiverInit init,
-    TransceiverStateSurfacer* transceiver_state_surfacer,
+    blink::TransceiverStateSurfacer* transceiver_state_surfacer,
     webrtc::RTCErrorOr<rtc::scoped_refptr<webrtc::RtpTransceiverInterface>>*
         error_or_transceiver) {
   *error_or_transceiver =
@@ -1659,8 +1659,8 @@ RTCPeerConnectionHandler::AddTransceiverWithKind(
     DCHECK_EQ(kind, webrtc::MediaStreamTrackInterface::kVideoKind);
     media_type = cricket::MEDIA_TYPE_VIDEO;
   }
-  TransceiverStateSurfacer transceiver_state_surfacer(task_runner_,
-                                                      signaling_thread());
+  blink::TransceiverStateSurfacer transceiver_state_surfacer(
+      task_runner_, signaling_thread());
   webrtc::RTCErrorOr<rtc::scoped_refptr<webrtc::RtpTransceiverInterface>>
       error_or_transceiver;
   RunSynchronousRepeatingClosureOnSignalingThread(
@@ -1689,7 +1689,7 @@ RTCPeerConnectionHandler::AddTransceiverWithKind(
 void RTCPeerConnectionHandler::AddTransceiverWithMediaTypeOnSignalingThread(
     cricket::MediaType media_type,
     webrtc::RtpTransceiverInit init,
-    TransceiverStateSurfacer* transceiver_state_surfacer,
+    blink::TransceiverStateSurfacer* transceiver_state_surfacer,
     webrtc::RTCErrorOr<rtc::scoped_refptr<webrtc::RtpTransceiverInterface>>*
         error_or_transceiver) {
   *error_or_transceiver =
@@ -1718,8 +1718,8 @@ RTCPeerConnectionHandler::AddTrack(
   // transceiver (Plan B: sender only).
   // TODO(hbos): Implement and surface full transceiver support under Unified
   // Plan. https://crbug.com/777617
-  TransceiverStateSurfacer transceiver_state_surfacer(task_runner_,
-                                                      signaling_thread());
+  blink::TransceiverStateSurfacer transceiver_state_surfacer(
+      task_runner_, signaling_thread());
   webrtc::RTCErrorOr<rtc::scoped_refptr<webrtc::RtpSenderInterface>>
       error_or_sender;
   RunSynchronousRepeatingClosureOnSignalingThread(
@@ -1782,7 +1782,7 @@ RTCPeerConnectionHandler::AddTrack(
 void RTCPeerConnectionHandler::AddTrackOnSignalingThread(
     rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> track,
     std::vector<std::string> stream_ids,
-    TransceiverStateSurfacer* transceiver_state_surfacer,
+    blink::TransceiverStateSurfacer* transceiver_state_surfacer,
     webrtc::RTCErrorOr<rtc::scoped_refptr<webrtc::RtpSenderInterface>>*
         error_or_sender) {
   *error_or_sender = native_peer_connection_->AddTrack(track, stream_ids);
@@ -1790,7 +1790,7 @@ void RTCPeerConnectionHandler::AddTrackOnSignalingThread(
   if (error_or_sender->ok()) {
     auto sender = error_or_sender->value();
     if (configuration_.sdp_semantics == webrtc::SdpSemantics::kPlanB) {
-      transceivers = {new SurfaceSenderStateOnly(sender)};
+      transceivers = {new blink::SurfaceSenderStateOnly(sender)};
     } else {
       DCHECK_EQ(configuration_.sdp_semantics,
                 webrtc::SdpSemantics::kUnifiedPlan);
@@ -1873,8 +1873,8 @@ RTCPeerConnectionHandler::RemoveTrackUnifiedPlan(
   const auto& sender = *it;
   auto webrtc_sender = sender->state().webrtc_sender();
 
-  TransceiverStateSurfacer transceiver_state_surfacer(task_runner_,
-                                                      signaling_thread());
+  blink::TransceiverStateSurfacer transceiver_state_surfacer(
+      task_runner_, signaling_thread());
   bool result;
   RunSynchronousRepeatingClosureOnSignalingThread(
       base::BindRepeating(
@@ -1912,7 +1912,7 @@ RTCPeerConnectionHandler::RemoveTrackUnifiedPlan(
 
 void RTCPeerConnectionHandler::RemoveTrackUnifiedPlanOnSignalingThread(
     rtc::scoped_refptr<webrtc::RtpSenderInterface> sender,
-    TransceiverStateSurfacer* transceiver_state_surfacer,
+    blink::TransceiverStateSurfacer* transceiver_state_surfacer,
     bool* result) {
   *result = native_peer_connection_->RemoveTrack(sender);
   std::vector<rtc::scoped_refptr<webrtc::RtpTransceiverInterface>> transceivers;
