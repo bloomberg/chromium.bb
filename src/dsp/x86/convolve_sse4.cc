@@ -13,7 +13,7 @@
 // limitations under the License.
 
 #include "src/dsp/convolve.h"
-#include "src/dsp/dsp.h"
+#include "src/utils/cpu.h"
 
 #if LIBGAV1_ENABLE_SSE4_1
 namespace libgav1 {

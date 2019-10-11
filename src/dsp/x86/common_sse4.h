@@ -17,7 +17,7 @@
 #ifndef LIBGAV1_SRC_DSP_X86_COMMON_SSE4_H_
 #define LIBGAV1_SRC_DSP_X86_COMMON_SSE4_H_
 
-#include "src/dsp/dsp.h"
+#include "src/utils/cpu.h"
 
 #if LIBGAV1_ENABLE_SSE4_1
 
