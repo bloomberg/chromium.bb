@@ -27,7 +27,13 @@ struct WebFetchClientSettingsObject {
   mojom::InsecureRequestsPolicy insecure_requests_policy =
       blink::mojom::InsecureRequestsPolicy::kDoNotUpgrade;
 
-  WebFetchClientSettingsObject() {}
+  WebFetchClientSettingsObject(
+      network::mojom::ReferrerPolicy referrer_policy,
+      WebURL outgoing_referrer,
+      mojom::InsecureRequestsPolicy insecure_requests_policy)
+      : referrer_policy(referrer_policy),
+        outgoing_referrer(outgoing_referrer),
+        insecure_requests_policy(insecure_requests_policy) {}
 
 #if INSIDE_BLINK
   explicit WebFetchClientSettingsObject(
