@@ -505,10 +505,19 @@ RenderWidget* RenderWidget::FromRoutingID(int32_t routing_id) {
 }
 
 void RenderWidget::InitForPopup(ShowCallback show_callback,
+                                RenderWidget* opener_widget,
                                 blink::WebPagePopup* web_page_popup,
                                 const ScreenInfo& screen_info) {
   popup_ = true;
   Init(std::move(show_callback), web_page_popup, &screen_info);
+
+  if (opener_widget->device_emulator_) {
+    opener_widget_screen_origin_ =
+        opener_widget->device_emulator_->ViewRectOrigin();
+    opener_original_widget_screen_origin_ =
+        opener_widget->device_emulator_->original_view_rect().origin();
+    opener_emulator_scale_ = opener_widget->GetEmulatorScale();
+  }
 }
 
 void RenderWidget::InitForPepperFullscreen(ShowCallback show_callback,
@@ -787,7 +796,7 @@ void RenderWidget::SynchronizeVisualPropertiesFromRenderView(
 
   gfx::Size old_visible_viewport_size = visible_viewport_size_;
 
-  if (delegate_ && page_properties_->ScreenMetricsEmulator()) {
+  if (device_emulator_) {
     DCHECK(!auto_resize_mode_);
     DCHECK(!synchronous_resize_mode_for_testing_);
 
@@ -802,13 +811,10 @@ void RenderWidget::SynchronizeVisualPropertiesFromRenderView(
         visual_properties.compositor_viewport_pixel_rect,
         page_properties_->GetScreenInfo());
 
-    // This will call our SynchronizeVisualProperties() method with a
-    // different set of VisualProperties, holding emulated values. Though not
-    // all VisualProperties are modified by the metrics emulator, so it's a
-    // bit unclear to do this with the full structure. Anything it does not
-    // modify can be consumed directly here instead of in
-    // SynchronizeVisualProperties().
-    page_properties_->ScreenMetricsEmulator()->OnSynchronizeVisualProperties(
+    // This will call back into this class to set the widget size, visible
+    // viewport size, screen info and screen rects, based on the device
+    // emulation.
+    device_emulator_->OnSynchronizeVisualProperties(
         visual_properties.screen_info, visual_properties.new_size,
         visual_properties.visible_viewport_size);
   } else {
@@ -932,29 +938,36 @@ void RenderWidget::SynchronizeVisualPropertiesFromRenderView(
 void RenderWidget::OnEnableDeviceEmulation(
     const blink::WebDeviceEmulationParams& params) {
   // Device emulation can only be applied to the local main frame render widget.
-  // TODO(https://crbug.com/1006052): We should fix the IPC to send to
-  // RenderView instead.
+  // TODO(https://crbug.com/1006052): We should move emulation into the browser
+  // and send consistent ScreenInfo and ScreenRects to all RenderWidgets based
+  // on emulation.
   if (!delegate_)
     return;
 
-  if (!page_properties_->ScreenMetricsEmulator()) {
-    page_properties_->SetScreenMetricsEmulator(
-        std::make_unique<RenderWidgetScreenMetricsEmulator>(
-            this, page_properties_->GetScreenInfo(), size_,
-            visible_viewport_size_, widget_screen_rect_, window_screen_rect_));
+  if (!device_emulator_) {
+    device_emulator_ = std::make_unique<RenderWidgetScreenMetricsEmulator>(
+        this, page_properties_->GetScreenInfo(), size_, visible_viewport_size_,
+        widget_screen_rect_, window_screen_rect_);
   }
-  page_properties_->ScreenMetricsEmulator()->ChangeEmulationParams(params);
+  device_emulator_->ChangeEmulationParams(params);
 }
 
 void RenderWidget::OnDisableDeviceEmulation() {
   // Device emulation can only be applied to the local main frame render widget.
-  // TODO(https://crbug.com/1006052): We should fix the IPC to send to
-  // RenderView instead.
+  // TODO(https://crbug.com/1006052): We should move emulation into the browser
+  // and send consistent ScreenInfo and ScreenRects to all RenderWidgets based
+  // on emulation.
   if (!delegate_)
     return;
-  DCHECK(page_properties_->ScreenMetricsEmulator());
-  page_properties_->ScreenMetricsEmulator()->DisableAndApply();
-  page_properties_->SetScreenMetricsEmulator(nullptr);
+  DCHECK(device_emulator_);
+  device_emulator_->DisableAndApply();
+  device_emulator_.reset();
+}
+
+float RenderWidget::GetEmulatorScale() const {
+  if (device_emulator_)
+    return device_emulator_->scale();
+  return 1;
 }
 
 void RenderWidget::SetAutoResizeMode(bool auto_resize,
@@ -2136,42 +2149,24 @@ bool RenderWidget::IsForProvisionalFrame() const {
   return frame_widget->LocalRoot()->IsProvisional();
 }
 
-void RenderWidget::ScreenRectToEmulatedIfNeeded(WebRect* window_rect) const {
-  DCHECK(window_rect);
-
-  if (!popup_)
-    return;
-  RenderWidgetScreenMetricsEmulator* emulator =
-      page_properties_->ScreenMetricsEmulator();
-  if (!emulator)
-    return;
-
-  window_rect->x =
-      emulator->ViewRectOrigin().x() +
-      (window_rect->x - emulator->original_view_rect().origin().x()) /
-          emulator->scale();
-  window_rect->y =
-      emulator->ViewRectOrigin().y() +
-      (window_rect->y - emulator->original_view_rect().origin().y()) /
-          emulator->scale();
+void RenderWidget::ScreenRectToEmulated(gfx::Rect* screen_rect) const {
+  screen_rect->set_x(
+      opener_widget_screen_origin_.x() +
+      (screen_rect->x() - opener_original_widget_screen_origin_.x()) /
+          opener_emulator_scale_);
+  screen_rect->set_y(
+      opener_widget_screen_origin_.y() +
+      (screen_rect->y() - opener_original_widget_screen_origin_.y()) /
+          opener_emulator_scale_);
 }
 
-void RenderWidget::EmulatedToScreenRectIfNeeded(WebRect* window_rect) const {
-  DCHECK(window_rect);
-
-  if (!popup_)
-    return;
-  RenderWidgetScreenMetricsEmulator* emulator =
-      page_properties_->ScreenMetricsEmulator();
-  if (!emulator)
-    return;
-
-  window_rect->x =
-      emulator->original_view_rect().origin().x() +
-      (window_rect->x - emulator->ViewRectOrigin().x()) * emulator->scale();
-  window_rect->y =
-      emulator->original_view_rect().origin().y() +
-      (window_rect->y - emulator->ViewRectOrigin().y()) * emulator->scale();
+void RenderWidget::EmulatedToScreenRect(gfx::Rect* screen_rect) const {
+  screen_rect->set_x(opener_original_widget_screen_origin_.x() +
+                     (screen_rect->x() - opener_widget_screen_origin_.x()) *
+                         opener_emulator_scale_);
+  screen_rect->set_y(opener_original_widget_screen_origin_.y() +
+                     (screen_rect->y() - opener_widget_screen_origin_.y()) *
+                         opener_emulator_scale_);
 }
 
 blink::WebScreenInfo RenderWidget::GetScreenInfo() {
@@ -2212,7 +2207,7 @@ blink::WebScreenInfo RenderWidget::GetScreenInfo() {
 }
 
 WebRect RenderWidget::WindowRect() {
-  WebRect rect;
+  gfx::Rect rect;
   if (pending_window_rect_count_) {
     // NOTE(mbelshe): If there is a pending_window_rect_, then getting
     // the RootWindowRect is probably going to return wrong results since the
@@ -2224,13 +2219,24 @@ WebRect RenderWidget::WindowRect() {
     rect = window_screen_rect_;
   }
 
-  ScreenRectToEmulatedIfNeeded(&rect);
+  // Popup widgets aren't emulated, but the WindowRect (aka WindowScreenRect)
+  // given to them should be.
+  if (opener_emulator_scale_) {
+    DCHECK(popup_);
+    ScreenRectToEmulated(&rect);
+  }
   return rect;
 }
 
 WebRect RenderWidget::ViewRect() {
-  WebRect rect = widget_screen_rect_;
-  ScreenRectToEmulatedIfNeeded(&rect);
+  gfx::Rect rect = widget_screen_rect_;
+
+  // Popup widgets aren't emulated, but the ViewRect (aka WidgetScreenRect)
+  // given to them should be.
+  if (opener_emulator_scale_) {
+    DCHECK(popup_);
+    ScreenRectToEmulated(&rect);
+  }
   return rect;
 }
 
@@ -2248,8 +2254,15 @@ void RenderWidget::SetWindowRect(const WebRect& rect_in_screen) {
   if (for_child_local_root_frame_)
     return;
 
-  WebRect window_rect = rect_in_screen;
-  EmulatedToScreenRectIfNeeded(&window_rect);
+  gfx::Rect window_rect = rect_in_screen;
+
+  // Popups aren't emulated, but the WidgetScreenRect and WindowScreenRect
+  // given to them are. When they set the WindowScreenRect it is based on those
+  // emulated values, so we reverse the emulation.
+  if (opener_emulator_scale_) {
+    DCHECK(popup_);
+    EmulatedToScreenRect(&window_rect);
+  }
 
   if (synchronous_resize_mode_for_testing_) {
     // This is a web-test-only path. At one point, it was planned to be
@@ -2485,9 +2498,9 @@ void RenderWidget::OnSetTextDirection(WebTextDirection direction) {
 
 void RenderWidget::OnUpdateScreenRects(const gfx::Rect& widget_screen_rect,
                                        const gfx::Rect& window_screen_rect) {
-  if (delegate_ && page_properties_->ScreenMetricsEmulator()) {
-    page_properties_->ScreenMetricsEmulator()->OnUpdateScreenRects(
-        widget_screen_rect, window_screen_rect);
+  if (device_emulator_) {
+    device_emulator_->OnUpdateScreenRects(widget_screen_rect,
+                                          window_screen_rect);
   } else {
     SetScreenRects(widget_screen_rect, window_screen_rect);
   }
@@ -3801,8 +3814,8 @@ void RenderWidget::OnWaitNextFrameForTests(
 }
 
 const ScreenInfo& RenderWidget::GetOriginalScreenInfo() const {
-  if (page_properties_->ScreenMetricsEmulator())
-    return page_properties_->ScreenMetricsEmulator()->original_screen_info();
+  if (device_emulator_)
+    return device_emulator_->original_screen_info();
   return page_properties_->GetScreenInfo();
 }
 

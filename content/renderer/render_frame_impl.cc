@@ -135,7 +135,6 @@
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/render_widget_fullscreen_pepper.h"
-#include "content/renderer/render_widget_screen_metrics_emulator.h"
 #include "content/renderer/renderer_blink_platform_impl.h"
 #include "content/renderer/resource_timing_info_conversions.h"
 #include "content/renderer/savable_resources.h"
@@ -4175,14 +4174,8 @@ WebExternalPopupMenu* RenderFrameImpl::CreateExternalPopupMenu(
     return nullptr;
   external_popup_menu_ = std::make_unique<ExternalPopupMenu>(
       this, popup_menu_info, popup_menu_client);
-
-  // Emulation has never worked appropriately for subframes. Don't bother
-  // applying them if this is not a main frame.
-  if (IsMainFrame() &&
-      render_view_->page_properties()->ScreenMetricsEmulator()) {
-    external_popup_menu_->SetOriginScaleForEmulation(
-        render_view_->page_properties()->ScreenMetricsEmulator()->scale());
-  }
+  external_popup_menu_->SetOriginScaleForEmulation(
+      GetLocalRootRenderWidget()->GetEmulatorScale());
   return external_popup_menu_.get();
 #else
   return nullptr;
@@ -5200,14 +5193,9 @@ void RenderFrameImpl::ShowContextMenu(const blink::WebContextMenuData& data) {
     // them to DIP coordiates relative to the WindowScreenRect.
     blink::WebRect position_in_window(params.x, params.y, 0, 0);
     GetLocalRootRenderWidget()->ConvertViewportToWindow(&position_in_window);
-    if (render_view_->page_properties()->ScreenMetricsEmulator()) {
-      const float scale =
-          render_view_->page_properties()->ScreenMetricsEmulator()->scale();
-      position_in_window.x *= scale;
-      position_in_window.y *= scale;
-    }
-    params.x = position_in_window.x;
-    params.y = position_in_window.y;
+    const float scale = GetLocalRootRenderWidget()->GetEmulatorScale();
+    params.x = position_in_window.x * scale;
+    params.y = position_in_window.y * scale;
   }
 
   // Serializing a GURL longer than kMaxURLChars will fail, so don't do

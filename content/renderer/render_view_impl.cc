@@ -78,7 +78,6 @@
 #include "content/renderer/render_process.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_widget_fullscreen_pepper.h"
-#include "content/renderer/render_widget_screen_metrics_emulator.h"
 #include "content/renderer/renderer_blink_platform_impl.h"
 #include "content/renderer/savable_resources.h"
 #include "content/renderer/v8_value_converter_impl.h"
@@ -1054,15 +1053,6 @@ void RenderViewImpl::Destroy() {
   // to do it here.
   bool close_render_widget_here = !main_render_frame_;
 
-  // Disable emulation before destroying everything. Turning off emulation
-  // accesses the WebViewImpl and the main frame (if it exists).
-  // TODO(danakj): Since we are being destroyed, is there even a reason to turn
-  // emulation off before closing?
-  if (page_properties()->ScreenMetricsEmulator()) {
-    page_properties()->ScreenMetricsEmulator()->DisableAndApply();
-    page_properties()->SetScreenMetricsEmulator(nullptr);
-  }
-
   webview_->Close();
   // The webview_ is already destroyed by the time we get here, remove any
   // references to it.
@@ -1478,12 +1468,12 @@ blink::WebPagePopup* RenderViewImpl::CreatePopup(
   RenderWidget::ShowCallback opener_callback = base::BindOnce(
       &RenderViewImpl::ShowCreatedPopupWidget, weak_ptr_factory_.GetWeakPtr());
 
-  RenderWidget* render_widget =
+  RenderWidget* opener_render_widget =
       RenderFrameImpl::FromWebFrame(creator)->GetLocalRootRenderWidget();
 
   RenderWidget* popup_widget = RenderWidget::CreateForPopup(
-      widget_routing_id, render_widget->compositor_deps(), page_properties(),
-      blink::mojom::DisplayMode::kUndefined,
+      widget_routing_id, opener_render_widget->compositor_deps(),
+      page_properties(), blink::mojom::DisplayMode::kUndefined,
       /*hidden=*/false,
       /*never_visible=*/false, std::move(widget_channel_receiver));
 
@@ -1495,8 +1485,9 @@ blink::WebPagePopup* RenderViewImpl::CreatePopup(
   // Adds a self-reference on the |popup_widget| so it will not be destroyed
   // when leaving scope. The WebPagePopup takes responsibility for Close()ing
   // and thus destroying the RenderWidget.
-  popup_widget->InitForPopup(std::move(opener_callback), popup_web_widget,
-                             render_widget->GetOriginalScreenInfo());
+  popup_widget->InitForPopup(std::move(opener_callback), opener_render_widget,
+                             popup_web_widget,
+                             opener_render_widget->GetOriginalScreenInfo());
   // TODO(crbug.com/419087): RenderWidget has some weird logic for picking a
   // WebWidget which doesn't apply to this case. So we verify. This can go away
   // when RenderWidget::GetWebWidget() is just a simple accessor.
