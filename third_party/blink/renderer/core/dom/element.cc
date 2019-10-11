@@ -1054,7 +1054,7 @@ static ScrollAlignment ToPhysicalAlignment(const ScrollIntoViewOptions* options,
 }
 
 void Element::scrollIntoViewWithOptions(const ScrollIntoViewOptions* options) {
-  ActivateDisplayLockIfNeeded();
+  ActivateDisplayLockIfNeeded(DisplayLockActivationReason::kUser);
   GetDocument().EnsurePaintLocationDataValidForNode(this);
   ScrollIntoViewNoVisualUpdate(options);
 }
@@ -1064,7 +1064,7 @@ void Element::ScrollIntoViewNoVisualUpdate(
   if (!GetLayoutObject() || !GetDocument().GetPage())
     return;
 
-  if (DisplayLockPreventsActivation())
+  if (DisplayLockPreventsActivation(DisplayLockActivationReason::kUser))
     return;
 
   ScrollBehavior behavior = (options->behavior() == "smooth")
@@ -2362,8 +2362,18 @@ void Element::AttributeChanged(const AttributeModificationParams& params) {
       SetNeedsStyleRecalc(kLocalStyleChange,
                           StyleChangeReasonForTracing::FromAttribute(name));
       SpaceSplitString tokens(params.new_value.LowerASCII());
-      const bool should_be_activatable = tokens.Contains("activatable");
-      EnsureDisplayLockContext().SetActivatable(should_be_activatable);
+      unsigned char activation_mask =
+          static_cast<unsigned char>(DisplayLockActivationReason::kAny);
+
+      // Figure out the activation mask.
+      if (tokens.Contains("skip-activation"))
+        activation_mask = 0;
+      if (tokens.Contains("skip-viewport-activation")) {
+        activation_mask &=
+            ~static_cast<unsigned char>(DisplayLockActivationReason::kViewport);
+      }
+
+      EnsureDisplayLockContext().SetActivatable(activation_mask);
       const bool should_be_invisible = tokens.Contains("invisible");
       if (should_be_invisible) {
         if (!GetDisplayLockContext()->IsLocked())
@@ -4025,7 +4035,7 @@ void Element::focus(const FocusParams& params) {
       return;
     }
   }
-  ActivateDisplayLockIfNeeded();
+  ActivateDisplayLockIfNeeded(DisplayLockActivationReason::kUser);
   DispatchActivateInvisibleEventIfNeeded();
   if (IsInsideInvisibleSubtree()) {
     // The element stays invisible because the default event action is
@@ -4179,7 +4189,7 @@ bool Element::IsKeyboardFocusable() const {
          ((SupportsFocus() && tabIndex() >= 0) ||
           (RuntimeEnabledFeatures::KeyboardFocusableScrollersEnabled() &&
            IsScrollableNode(this))) &&
-         !DisplayLockPreventsActivation();
+         !DisplayLockPreventsActivation(DisplayLockActivationReason::kUser);
 }
 
 bool Element::IsMouseFocusable() const {
@@ -4188,7 +4198,7 @@ bool Element::IsMouseFocusable() const {
   DCHECK(!GetDocument().IsActive() ||
          !GetDocument().NeedsLayoutTreeUpdateForNode(*this));
   return isConnected() && !IsInert() && IsFocusableStyle() && SupportsFocus() &&
-         !DisplayLockPreventsActivation();
+         !DisplayLockPreventsActivation(DisplayLockActivationReason::kUser);
 }
 
 bool Element::IsAutofocusable() const {
@@ -4198,7 +4208,7 @@ bool Element::IsAutofocusable() const {
          FastHasAttribute(html_names::kAutofocusAttr);
 }
 
-bool Element::ActivateDisplayLockIfNeeded() {
+bool Element::ActivateDisplayLockIfNeeded(DisplayLockActivationReason reason) {
   if (!RuntimeEnabledFeatures::DisplayLockingEnabled(GetExecutionContext()) ||
       GetDocument().LockedDisplayLockCount() ==
           GetDocument().ActivationBlockingDisplayLockCount())
@@ -4211,8 +4221,9 @@ bool Element::ActivateDisplayLockIfNeeded() {
     if (!ancestor_element)
       continue;
     if (auto* context = ancestor_element->GetDisplayLockContext()) {
-      // If any of the ancestors is not activatable, we can't activate.
-      if (!context->IsActivatable())
+      // If any of the ancestors is not activatable for the given reason, we
+      // can't activate.
+      if (!context->IsActivatable(reason))
         return false;
       activatable_targets.push_back(std::make_pair(
           ancestor_element, &ancestor.GetTreeScope().Retarget(*this)));
@@ -4224,7 +4235,7 @@ bool Element::ActivateDisplayLockIfNeeded() {
     // Dispatch event on activatable ancestor (target.first), with
     // the retargeted element (target.second) as the |activatedElement|.
     if (auto* context = target.first->GetDisplayLockContext()) {
-      if (context->ShouldCommitForActivation()) {
+      if (context->ShouldCommitForActivation(reason)) {
         activated = true;
         context->CommitForActivationWithSignal(target.second);
       }
@@ -4233,7 +4244,8 @@ bool Element::ActivateDisplayLockIfNeeded() {
   return activated;
 }
 
-bool Element::DisplayLockPreventsActivation() const {
+bool Element::DisplayLockPreventsActivation(
+    DisplayLockActivationReason reason) const {
   if (!RuntimeEnabledFeatures::DisplayLockingEnabled(GetExecutionContext()))
     return false;
 
@@ -4252,7 +4264,7 @@ bool Element::DisplayLockPreventsActivation() const {
     if (!current_element)
       continue;
     if (auto* context = current_element->GetDisplayLockContext()) {
-      if (!context->IsActivatable())
+      if (!context->IsActivatable(reason))
         return true;
     }
   }
