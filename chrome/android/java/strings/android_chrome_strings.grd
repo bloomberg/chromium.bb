@@ -170,9 +170,6 @@ CHAR-LIMIT guidelines:
       <message name="IDS_DELETE" desc="Label for a delete button. Used in multiple contexts. [CHAR-LIMIT=20]">
         Delete
       </message>
-      <message name="IDS_DELETE_GROUP" desc="Label for button that deletes a group of items. [CHAR-LIMIT=20]">
-        Delete group
-      </message>
       <message name="IDS_REMOVE" desc="Label for a button to remove an item (e.g. a bookmark) from a list. [CHAR-LIMIT=20]">
         Remove
       </message>
@@ -229,9 +226,6 @@ CHAR-LIMIT guidelines:
       </message>
       <message name="IDS_SHARE" desc="Content description for a button to share item(s). [CHAR-LIMIT=20]">
         Share
-      </message>
-      <message name="IDS_SHARE_GROUP" desc="Content description for a button to share a group item(s). [CHAR-LIMIT=20]">
-        Share group
       </message>
       <message name="IDS_SEARCH" desc="The label for a search button.">
         Search

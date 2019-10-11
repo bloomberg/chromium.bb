@@ -1241,6 +1241,10 @@ Unknown properties are collapsed to zero. -->
 </enum>
 
 <enum name="Android.DownloadManager.List.Section.Menu.Actions">
+  <obsolete>
+    Deprecated 10/2019. Section menu button was removed during Download Home V2
+    implementation review.
+  </obsolete>
   <int value="0" label="START_SELECTING"/>
   <int value="1" label="SHARE_ALL"/>
   <int value="2" label="DELETE_ALL"/>
