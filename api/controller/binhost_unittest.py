@@ -97,8 +97,10 @@ class SetBinhostTest(cros_test_lib.MockTestCase, api_config.ApiConfigMixin):
 
     self.assertEqual(self.response.output_file, '/path/to/BINHOST.conf')
     set_binhost.assert_called_once_with(
-        'target', 'PARALLEL_POSTSUBMIT_BINHOST',
-        'gs://chromeos-prebuilt/target', private=True)
+        'target',
+        'POSTSUBMIT_BINHOST',
+        'gs://chromeos-prebuilt/target',
+        private=True)
 
 
 class RegenBuildCacheTest(cros_test_lib.MockTestCase,
