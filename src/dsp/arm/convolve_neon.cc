@@ -312,9 +312,9 @@ uint16x8_t SumHorizontalTaps2x2(const uint8_t* src, const ptrdiff_t src_stride,
                                 const uint8x8_t* const v_tap) {
   constexpr int positive_offset_bits = kBitdepth8 + kFilterBits - 1;
   uint16x8_t sum = vdupq_n_u16(1 << positive_offset_bits);
-  uint8x8_t input0 = vld1_u8(src);
+  const uint8x8_t input0 = vld1_u8(src);
   src += src_stride;
-  uint8x8_t input1 = vld1_u8(src);
+  const uint8x8_t input1 = vld1_u8(src);
   uint8x8x2_t input = vzip_u8(input0, input1);
 
   if (num_taps == 2) {
@@ -451,7 +451,7 @@ void FilterHorizontal(const uint8_t* src, const ptrdiff_t src_stride,
         int16x8_t sum_signed = vreinterpretq_s16_u16(vsubq_u16(
             sum, vdupq_n_u16(
                      1 << (positive_offset_bits - kInterRoundBitsHorizontal))));
-        uint8x8_t result =
+        const uint8x8_t result =
             vqrshrun_n_s16(sum_signed, kFilterBits - kInterRoundBitsHorizontal);
 
         // Could de-interleave and vst1_lane_u16().
@@ -473,7 +473,7 @@ void FilterHorizontal(const uint8_t* src, const ptrdiff_t src_stride,
     if (is_2d) {
       assert(height % 2 == 1);
       uint16x8_t sum = vdupq_n_u16(1 << positive_offset_bits);
-      uint8x8_t input = vld1_u8(src);
+      const uint8x8_t input = vld1_u8(src);
       if (filter_index == 3) {  // |num_taps| == 2
         sum = vmlal_u8(sum, RightShift<3 * 8>(input), v_tap[3]);
         sum = vmlal_u8(sum, RightShift<4 * 8>(input), v_tap[4]);
@@ -1640,7 +1640,8 @@ ConvolveVerticalScale4xH(const int16_t* src, const int subpixel_y,
       }
     }
     p += step_y;
-    int p_diff = (p >> kScaleSubPixelBits) - (prev_p >> kScaleSubPixelBits);
+    const int p_diff =
+        (p >> kScaleSubPixelBits) - (prev_p >> kScaleSubPixelBits);
     prev_p = p;
     // Here we load extra source in case it is needed. If |p_diff| == 0, these
     // values will be unused, but it's faster to load than to branch.
@@ -1726,7 +1727,8 @@ inline void ConvolveVerticalScale(const int16_t* src, const int width,
         vst1_u8(dest_y, vqmovn_u16(result));
       }
       p += step_y;
-      int p_diff = (p >> kScaleSubPixelBits) - (prev_p >> kScaleSubPixelBits);
+      const int p_diff =
+          (p >> kScaleSubPixelBits) - (prev_p >> kScaleSubPixelBits);
       // |grade_y| > 1 always means p_diff > 0, so load vectors that may be
       // needed. Otherwise, we only need to load one vector because |p_diff|
       // can't exceed 1.
