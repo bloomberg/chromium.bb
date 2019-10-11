@@ -508,6 +508,15 @@ public class FeatureUtilities {
     }
 
     /**
+     * Toggles whether the StartSurface is enabled for testing. Should be reset back to null after
+     * the test has finished.
+     */
+    @VisibleForTesting
+    public static void setStartSurfaceEnabledForTesting(@Nullable Boolean isEnabled) {
+        sFlags.put(ChromePreferenceManager.START_SURFACE_ENABLED_KEY, isEnabled);
+    }
+
+    /**
      * Toggles whether the Tab-to-GTS animation is enabled for testing. Should be reset back to
      * null after the test has finished.
      */
