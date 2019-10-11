@@ -135,3 +135,14 @@ simplify this check for optimized code.
   #ifndef LIBGAV1_Dsp8bpp_TransformSize4x4_IntraPredictorDcFill
   ...
 ```
+
+## Bugs
+
+Please report all bugs to the issue tracker:
+https://issuetracker.google.com/issues/new?component=750480&template=1355007
+
+## Discussion
+
+Email: gav1-devel@googlegroups.com
+
+Web: https://groups.google.com/forum/#!forum/gav1-devel
