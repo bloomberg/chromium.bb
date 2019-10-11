@@ -575,7 +575,7 @@ FidoCableDiscovery::GetCableDiscoveryData(const BluetoothDevice* device) const {
   auto data = std::make_unique<ObservedDeviceData>();
   data->service_data = maybe_eid_from_service_data;
   data->uuids = uuids;
-  observed_devices_.emplace(std::make_pair(address, std::move(data)));
+  observed_devices_.insert_or_assign(address, std::move(data));
 
   // New or updated device information.
   if (known) {
