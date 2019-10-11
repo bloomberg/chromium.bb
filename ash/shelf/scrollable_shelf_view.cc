@@ -677,6 +677,10 @@ void ScrollableShelfView::Layout() {
   // transformation.
   UpdateVisibleSpace();
   shelf_container_view_->layer()->SetClipRect(visible_space_);
+  if (IsInTabletMode() && chromeos::switches::ShouldShowShelfHotseat()) {
+    shelf_container_view_->layer()->SetRoundedCornerRadius(
+        CalculateShelfContainerRoundedCorners());
+  }
 
   gfx::Vector2dF total_offset = scroll_offset_;
   if (ShouldAdaptToRTL())
@@ -1323,11 +1327,34 @@ gfx::Insets ScrollableShelfView::CalculateRipplePaddingInsets() const {
 
   if (ShouldAdaptToRTL())
     return gfx::Insets(0, after_padding, 0, before_padding);
-  else {
-    return GetShelf()->IsHorizontalAlignment()
-               ? gfx::Insets(0, before_padding, 0, after_padding)
-               : gfx::Insets(before_padding, 0, after_padding, 0);
-  }
+
+  return GetShelf()->IsHorizontalAlignment()
+             ? gfx::Insets(0, before_padding, 0, after_padding)
+             : gfx::Insets(before_padding, 0, after_padding, 0);
+}
+
+gfx::RoundedCornersF
+ScrollableShelfView::CalculateShelfContainerRoundedCorners() const {
+  const bool is_horizontal_alignment = GetShelf()->IsHorizontalAlignment();
+  const float radius = (is_horizontal_alignment ? height() : width()) / 2.f;
+
+  const int upper_left = left_arrow_->GetVisible() ? 0 : radius;
+
+  int upper_right;
+  if (is_horizontal_alignment)
+    upper_right = right_arrow_->GetVisible() ? 0 : radius;
+  else
+    upper_right = left_arrow_->GetVisible() ? 0 : radius;
+
+  const int lower_right = right_arrow_->GetVisible() ? 0 : radius;
+
+  int lower_left;
+  if (is_horizontal_alignment)
+    lower_left = left_arrow_->GetVisible() ? 0 : radius;
+  else
+    lower_left = right_arrow_->GetVisible() ? 0 : radius;
+
+  return gfx::RoundedCornersF(upper_left, upper_right, lower_right, lower_left);
 }
 
 }  // namespace ash

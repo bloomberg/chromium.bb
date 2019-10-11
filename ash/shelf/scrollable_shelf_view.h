@@ -265,6 +265,11 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   // ripple ring correctly.
   gfx::Insets CalculateRipplePaddingInsets() const;
 
+  // Calculates the rounded corners for |shelf_container_view_|. It contributes
+  // to cut off the child view out of the scrollable shelf's bounds, such as
+  // ripple ring.
+  gfx::RoundedCornersF CalculateShelfContainerRoundedCorners() const;
+
   LayoutStrategy layout_strategy_ = kNotShowArrowButtons;
 
   // Child views Owned by views hierarchy.
