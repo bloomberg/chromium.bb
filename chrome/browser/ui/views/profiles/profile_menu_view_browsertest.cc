@@ -912,12 +912,12 @@ constexpr ProfileMenuView::ActionableItem
     ProfileMenuClickTest_WithUnconsentedPrimaryAccount::kOrderedActionableItems
         [];
 
+// TODO(crbug.com/1012167): Flaky.
 IN_PROC_BROWSER_TEST_P(ProfileMenuClickTest_WithUnconsentedPrimaryAccount,
-                       SetupAndRunTest) {
+                       DISABLED_SetupAndRunTest) {
   signin::MakeAccountAvailableWithCookies(identity_manager(),
                                           &test_url_loader_factory_,
                                           "user@example.com", "gaia_id");
-  ASSERT_TRUE(sync_harness()->AwaitSyncTransportActive());
   // Check that the setup was successful.
   ASSERT_FALSE(identity_manager()->HasPrimaryAccount());
   ASSERT_TRUE(identity_manager()->HasUnconsentedPrimaryAccount());
