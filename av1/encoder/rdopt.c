@@ -4176,6 +4176,24 @@ static int64_t intra_model_yrd(const AV1_COMP *const cpi, MACROBLOCK *const x,
   return this_rd;
 }
 
+// Update the intra model yrd and prune the current mode if the new estimate
+// y_rd > 1.5 * best_model_rd.
+static AOM_INLINE int model_intra_yrd_and_prune(const AV1_COMP *const cpi,
+                                                MACROBLOCK *x, BLOCK_SIZE bsize,
+                                                int mi_row, int mi_col,
+                                                int mode_info_cost,
+                                                int64_t *best_model_rd) {
+  const int64_t this_model_rd =
+      intra_model_yrd(cpi, x, bsize, mode_info_cost, mi_row, mi_col);
+  if (*best_model_rd != INT64_MAX &&
+      this_model_rd > *best_model_rd + (*best_model_rd >> 1)) {
+    return 1;
+  } else if (this_model_rd < *best_model_rd) {
+    *best_model_rd = this_model_rd;
+  }
+  return 0;
+}
+
 // Extends 'color_map' array from 'orig_width x orig_height' to 'new_width x
 // new_height'. Extra rows and columns are filled in by copying last valid
 // row/column.
@@ -4298,14 +4316,14 @@ static AOM_INLINE void palette_rd_y(
                            &cols);
   av1_calc_indices(data, centroids, color_map, rows * cols, k, 1);
   extend_palette_color_map(color_map, cols, rows, block_width, block_height);
+
   const int palette_mode_cost =
       intra_mode_info_cost_y(cpi, x, mbmi, bsize, dc_mode_cost);
-  int64_t this_model_rd =
-      intra_model_yrd(cpi, x, bsize, palette_mode_cost, mi_row, mi_col);
-  if (*best_model_rd != INT64_MAX &&
-      this_model_rd > *best_model_rd + (*best_model_rd >> 1))
+  if (model_intra_yrd_and_prune(cpi, x, bsize, mi_row, mi_col,
+                                palette_mode_cost, best_model_rd)) {
     return;
-  if (this_model_rd < *best_model_rd) *best_model_rd = this_model_rd;
+  }
+
   RD_STATS tokenonly_rd_stats;
   super_block_yrd(cpi, x, &tokenonly_rd_stats, bsize, *best_rd);
   if (tokenonly_rd_stats.rate == INT_MAX) return;
@@ -4482,14 +4500,14 @@ static int rd_pick_filter_intra_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
   mbmi->palette_mode_info.palette_size[0] = 0;
 
   for (mode = 0; mode < FILTER_INTRA_MODES; ++mode) {
-    int64_t this_rd, this_model_rd;
+    int64_t this_rd;
     RD_STATS tokenonly_rd_stats;
     mbmi->filter_intra_mode_info.filter_intra_mode = mode;
-    this_model_rd = intra_model_yrd(cpi, x, bsize, mode_cost, mi_row, mi_col);
-    if (*best_model_rd != INT64_MAX &&
-        this_model_rd > *best_model_rd + (*best_model_rd >> 1))
+
+    if (model_intra_yrd_and_prune(cpi, x, bsize, mi_row, mi_col, mode_cost,
+                                  best_model_rd)) {
       continue;
-    if (this_model_rd < *best_model_rd) *best_model_rd = this_model_rd;
+    }
     super_block_yrd(cpi, x, &tokenonly_rd_stats, bsize, *best_rd);
     if (tokenonly_rd_stats.rate == INT_MAX) continue;
     const int this_rate =
@@ -4537,17 +4555,16 @@ static int64_t calc_rd_given_intra_angle(
     TX_SIZE *best_tx_size, int64_t *best_rd, int64_t *best_model_rd,
     TX_TYPE *best_txk_type, uint8_t *best_blk_skip, int skip_model_rd) {
   RD_STATS tokenonly_rd_stats;
-  int64_t this_rd, this_model_rd;
+  int64_t this_rd;
   MB_MODE_INFO *mbmi = x->e_mbd.mi[0];
   const int n4 = bsize_to_num_blk(bsize);
   assert(!is_inter_block(mbmi));
   mbmi->angle_delta[PLANE_TYPE_Y] = angle_delta;
   if (!skip_model_rd) {
-    this_model_rd = intra_model_yrd(cpi, x, bsize, mode_cost, mi_row, mi_col);
-    if (*best_model_rd != INT64_MAX &&
-        this_model_rd > *best_model_rd + (*best_model_rd >> 1))
+    if (model_intra_yrd_and_prune(cpi, x, bsize, mi_row, mi_col, mode_cost,
+                                  best_model_rd)) {
       return INT64_MAX;
-    if (this_model_rd < *best_model_rd) *best_model_rd = this_model_rd;
+    }
   }
   super_block_yrd(cpi, x, &tokenonly_rd_stats, bsize, best_rd_in);
   if (tokenonly_rd_stats.rate == INT_MAX) return INT64_MAX;
@@ -4852,7 +4869,7 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   for (int mode_idx = INTRA_MODE_START; mode_idx < INTRA_MODE_END; ++mode_idx) {
     RD_STATS this_rd_stats;
     int this_rate, this_rate_tokenonly, s;
-    int64_t this_distortion, this_rd, this_model_rd;
+    int64_t this_distortion, this_rd;
     mbmi->mode = intra_rd_search_mode_order[mode_idx];
     if ((!cpi->oxcf.enable_smooth_intra || cpi->sf.disable_smooth_intra) &&
         (mbmi->mode == SMOOTH_PRED || mbmi->mode == SMOOTH_H_PRED ||
@@ -4860,12 +4877,12 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
       continue;
     if (!cpi->oxcf.enable_paeth_intra && mbmi->mode == PAETH_PRED) continue;
     mbmi->angle_delta[PLANE_TYPE_Y] = 0;
-    this_model_rd =
-        intra_model_yrd(cpi, x, bsize, bmode_costs[mbmi->mode], mi_row, mi_col);
-    if (best_model_rd != INT64_MAX &&
-        this_model_rd > best_model_rd + (best_model_rd >> 1))
+
+    if (model_intra_yrd_and_prune(cpi, x, bsize, mi_row, mi_col,
+                                  bmode_costs[mbmi->mode], &best_model_rd)) {
       continue;
-    if (this_model_rd < best_model_rd) best_model_rd = this_model_rd;
+    }
+
     is_directional_mode = av1_is_directional_mode(mbmi->mode);
     if (is_directional_mode && directional_mode_skip_mask[mbmi->mode]) continue;
     if (is_directional_mode && av1_use_angle_delta(bsize) &&
