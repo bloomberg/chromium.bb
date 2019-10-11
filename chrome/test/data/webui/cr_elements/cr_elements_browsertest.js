@@ -376,7 +376,7 @@ CrElementsFingerprintProgressArcTest.prototype = {
   ]),
 };
 
-TEST_F('CrElementsFingerprintProgressArcTest', 'All', function() {
+TEST_F('CrElementsFingerprintProgressArcTest', 'DISABLED_All', function() {
   mocha.run();
 });
 
