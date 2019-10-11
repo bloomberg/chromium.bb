@@ -174,13 +174,13 @@ class InteractiveRenderWidget : public RenderWidget {
                      compositor_deps,
                      page_properties,
                      blink::mojom::DisplayMode::kUndefined,
-                     false,
-                     false,
-                     false,
+                     /*is_undead=*/false,
+                     /*is_hidden=*/false,
+                     /*never_visible=*/false,
                      mojo::NullReceiver()),
         always_overscroll_(false) {
-    Init(base::NullCallback(), &mock_webwidget_,
-         &page_properties->GetScreenInfo());
+    UnconditionalInit(base::NullCallback());
+    LivingInit(&mock_webwidget_, page_properties->GetScreenInfo());
 
     mock_input_handler_host_ = std::make_unique<MockWidgetInputHandlerHost>();
 

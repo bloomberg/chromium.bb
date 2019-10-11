@@ -1628,21 +1628,21 @@ void RenderFrameImpl::CreateFrame(
     // create the RenderWidget if the RenderFrame owned it instead of having the
     // RenderWidget live for eternity on the RenderView (after setting up the
     // WebFrameWidget since that would be part of creating the RenderWidget).
-    render_view->ReviveUndeadMainFrameRenderWidget(
-        widget_params->visual_properties.screen_info);
-
-    // The RenderViewImpl and its RenderWidget already exist by the time we
-    // get here (we get them from the RenderFrameProxy).
-    // TODO(crbug.com/419087): We probably want to create the RenderWidget
-    // here though (when we make the WebFrameWidget?).
-    RenderWidget* render_widget = render_view->GetWidget();
+    //
+    // This is equivalent to creating a new RenderWidget if it wasn't undead.
+    RenderWidget* render_widget =
+        render_view->ReviveUndeadMainFrameRenderWidget();
+    DCHECK(!render_widget->GetWebWidget());
 
     // Non-owning pointer that is self-referencing and destroyed by calling
     // Close(). The RenderViewImpl has a RenderWidget already, but not a
     // WebFrameWidget, which is now attached here.
     auto* web_frame_widget = blink::WebFrameWidget::CreateForMainFrame(
         render_view->GetWidget(), web_frame);
-    render_view->AttachWebFrameWidget(web_frame_widget);
+    // This is equivalent to calling InitForMainFrame() on a new RenderWidget
+    // if it wasn't undead.
+    render_widget->InitForRevivedMainFrame(
+        web_frame_widget, widget_params->visual_properties.screen_info);
 
     // Note that we do *not* call WebViewImpl's DidAttachLocalMainFrame() here
     // yet because this frame is provisional and not attached to the Page yet.
@@ -4413,12 +4413,11 @@ void RenderFrameImpl::FrameDetached(DetachType type) {
   if (is_main_frame_) {
     DCHECK(!owned_render_widget_);
     // TODO(crbug.com/419087): The RenderWidget for the main frame can't be
-    // closed/destroyed since there is no way to recreate it without also
-    // fixing the lifetimes of the related browser side objects. To simulate
-    // this "swap out", the pointer is moved off to the side until it is
-    // swapped back in. The renderer is then told that the WebFrameWidget is
-    // dropped which should remove all reference to this object.
-    render_view_->DetachWebFrameWidget();
+    // closed/destroyed here, since there is no way to recreate it without also
+    // fixing the lifetimes of the related browser side objects. Closing is
+    // delegated to the RenderViewImpl which will stash the RenderWidget away
+    // as undead if needed.
+    render_view_->CloseMainFrameRenderWidget();
   } else if (render_widget_) {
     DCHECK(owned_render_widget_);
     // This closes/deletes the RenderWidget if this frame was a local root.

@@ -499,7 +499,8 @@ void RenderWidget::InitForPopup(ShowCallback show_callback,
                                 blink::WebPagePopup* web_page_popup,
                                 const ScreenInfo& screen_info) {
   popup_ = true;
-  Init(std::move(show_callback), web_page_popup, &screen_info);
+  UnconditionalInit(std::move(show_callback));
+  LivingInit(web_page_popup, screen_info);
 
   if (opener_widget->device_emulator_) {
     opener_widget_screen_origin_ =
@@ -514,20 +515,39 @@ void RenderWidget::InitForPepperFullscreen(ShowCallback show_callback,
                                            blink::WebWidget* web_widget,
                                            const ScreenInfo& screen_info) {
   pepper_fullscreen_ = true;
-  Init(std::move(show_callback), web_widget, &screen_info);
+  UnconditionalInit(std::move(show_callback));
+  LivingInit(web_widget, screen_info);
 }
 
 void RenderWidget::InitForMainFrame(ShowCallback show_callback,
                                     blink::WebFrameWidget* web_frame_widget,
                                     const ScreenInfo* screen_info) {
-  Init(std::move(show_callback), web_frame_widget, screen_info);
+  UnconditionalInit(std::move(show_callback));
+  // Main frame widgets can be created as undead. Then LivingInit() is deferred.
+  DCHECK_EQ(is_undead_, !web_frame_widget);
+  if (web_frame_widget)
+    LivingInit(web_frame_widget, *screen_info);
+}
+
+void RenderWidget::InitForRevivedMainFrame(
+    blink::WebFrameWidget* web_frame_widget,
+    const ScreenInfo& screen_info) {
+  DCHECK(web_frame_widget);
+  DCHECK(!is_undead_);
+
+  // UnconditionalInit() has already been done. LivingInit() may have previously
+  // occured if the RenderWidget was living previously, but we call it each time
+  // the RenderWidget transitions out of an undead state.
+  LivingInit(web_frame_widget, screen_info);
 }
 
 void RenderWidget::InitForChildLocalRoot(
     blink::WebFrameWidget* web_frame_widget,
     const ScreenInfo& screen_info) {
   for_child_local_root_frame_ = true;
-  Init(base::NullCallback(), web_frame_widget, &screen_info);
+  UnconditionalInit(base::NullCallback());
+  // Child local roots can not be undead.
+  LivingInit(web_frame_widget, screen_info);
 }
 
 void RenderWidget::CloseForFrame(std::unique_ptr<RenderWidget> widget) {
@@ -537,27 +557,10 @@ void RenderWidget::CloseForFrame(std::unique_ptr<RenderWidget> widget) {
   Close(std::move(widget));
 }
 
-void RenderWidget::Init(ShowCallback show_callback,
-                        WebWidget* web_widget,
-                        const ScreenInfo* screen_info) {
-  DCHECK_EQ(is_undead_, !web_widget);  // There is a WebWidget when not undead.
-  DCHECK(!webwidget_);
+void RenderWidget::UnconditionalInit(ShowCallback show_callback) {
   DCHECK_NE(routing_id_, MSG_ROUTING_NONE);
 
   input_handler_ = std::make_unique<RenderWidgetInputHandler>(this, this);
-
-  if (!is_undead_) {
-    InitCompositing(*screen_info);
-
-    // If the widget is hidden, delay starting the compositor until the user
-    // shows it. Also if the RenderWidget is undead, we delay starting the
-    // compositor until we expect to use the widget, which will be signaled
-    // through reviving the undead RenderWidget.
-    if (!is_hidden_)
-      StartStopCompositor();
-
-    web_widget->SetAnimationHost(layer_tree_view_->animation_host());
-  }
 
   show_callback_ = std::move(show_callback);
 
@@ -566,11 +569,36 @@ void RenderWidget::Init(ShowCallback show_callback,
       std::make_unique<TextInputClientObserver>(for_frame() ? this : nullptr);
 #endif
 
-  webwidget_ = web_widget;
   webwidget_mouse_lock_target_.reset(new WebWidgetLockTarget(this));
   mouse_lock_dispatcher_.reset(new RenderWidgetMouseLockDispatcher(this));
 
   RenderThread::Get()->AddRoute(routing_id_, this);
+}
+
+void RenderWidget::LivingInit(WebWidget* web_widget,
+                              const ScreenInfo& screen_info) {
+  DCHECK(!is_undead_);
+  DCHECK(!webwidget_);
+  DCHECK(web_widget);
+
+  if (!layer_tree_view_)
+    InitCompositing(screen_info);
+
+  const auto& command_line = *base::CommandLine::ForCurrentProcess();
+  SetShowFPSCounter(command_line.HasSwitch(cc::switches::kShowFPSCounter));
+
+  // If the widget is hidden, delay starting the compositor until the user
+  // shows it. Also if the RenderWidget is undead, we delay starting the
+  // compositor until we expect to use the widget, which will be signaled
+  // through reviving the undead RenderWidget.
+  if (!is_hidden_)
+    StartStopCompositor();
+
+  webwidget_ = web_widget;
+  web_widget->SetAnimationHost(layer_tree_view_->animation_host());
+  // Note that this calls into the WebWidget.
+  UpdateSurfaceAndScreenInfo(local_surface_id_allocation_from_parent_,
+                             CompositorViewportRect(), screen_info);
 }
 
 bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
@@ -850,25 +878,20 @@ void RenderWidget::SynchronizeVisualPropertiesFromRenderView(
           new_compositor_viewport_pixel_rect, visual_properties.screen_info);
 
       if (for_frame()) {
-        // TODO(danakj): This should not need to go through RenderFrame to set
-        // Page-level properties.
-        blink::WebFrameWidget* frame_widget = GetFrameWidget();
-        // TODO(danakj): Stop doing SynchronizeVisualProperties() (due to
-        // emulation) while undead, and change this to a DCHECK.
-        if (frame_widget) {
-          RenderFrameImpl* render_frame =
-              RenderFrameImpl::FromWebFrame(frame_widget->LocalRoot());
-
-          // This causes compositing state to be modified which dirties the
-          // document lifecycle. Android Webview relies on the document
-          // lifecycle being clean after the RenderWidget is initialized, in
-          // order to send IPCs that query and change compositing state. So
-          // ResizeWebWidget() must come after this call, as it runs the entire
-          // document lifecycle.
-          render_frame->SetPreferCompositingToLCDTextEnabledOnRenderView(
-              ComputePreferCompositingToLCDText(
-                  compositor_deps_, page_properties_->GetDeviceScaleFactor()));
-        }
+        RenderFrameImpl* render_frame =
+            RenderFrameImpl::FromWebFrame(GetFrameWidget()->LocalRoot());
+        // This causes compositing state to be modified which dirties the
+        // document lifecycle. Android Webview relies on the document
+        // lifecycle being clean after the RenderWidget is initialized, in
+        // order to send IPCs that query and change compositing state. So
+        // ResizeWebWidget() must come after this call, as it runs the entire
+        // document lifecycle.
+        //
+        // TODO(danakj): Only the top-most RenderWidget per RenderView should
+        // be responsible for setting values onto the RenderView.
+        render_frame->SetPreferCompositingToLCDTextEnabledOnRenderView(
+            ComputePreferCompositingToLCDText(
+                compositor_deps_, page_properties_->GetDeviceScaleFactor()));
       }
 
       if (!auto_resize_mode_) {
@@ -992,17 +1015,17 @@ void RenderWidget::SetAutoResizeMode(bool auto_resize,
 }
 
 void RenderWidget::SetZoomLevel(double zoom_level) {
-  // TODO(danakj): This should not need to go through RenderFrame to set
-  // Page-level properties.
-  blink::WebFrameWidget* frame_widget = GetFrameWidget();
-  DCHECK(frame_widget);
   RenderFrameImpl* render_frame =
-      RenderFrameImpl::FromWebFrame(frame_widget->LocalRoot());
+      RenderFrameImpl::FromWebFrame(GetFrameWidget()->LocalRoot());
 
+  // TODO(danakj): Only the top-most RenderWidget per RenderView should be
+  // responsible for setting values onto the RenderView.
   bool zoom_level_changed = render_frame->SetZoomLevelOnRenderView(zoom_level);
   if (zoom_level_changed) {
     // Hide popups when the zoom changes.
-    blink::WebView* web_view = frame_widget->LocalRoot()->View();
+    // TODO(danakj): This should go through RenderFrame, and the Delegate path
+    // should be replaced.
+    blink::WebView* web_view = GetFrameWidget()->LocalRoot()->View();
     web_view->CancelPagePopup();
 
     // Propagate changes down to child local root RenderWidgets and
@@ -1777,29 +1800,22 @@ void RenderWidget::SetScreenInfoAndSize(
   UpdateSurfaceAndScreenInfo(local_surface_id_allocation_from_parent_,
                              CompositorViewportRect(), screen_info);
 
+  RenderFrameImpl* render_frame =
+      RenderFrameImpl::FromWebFrame(GetFrameWidget()->LocalRoot());
   // UpdateSurfaceAndScreenInfo() changes PageProperties including the device
   // scale factor, which changes PreferCompositingToLCDText decisions.
   // TODO(danakj): Do this in UpdateSurfaceAndScreenInfo? But requires a Resize
   // to happen after (see comment on
   // SetPreferCompositingToLCDTextEnabledOnRenderView).
-  // TODO(danakj): This should not need to go through RenderFrame to set
-  // Page-level properties.
-  blink::WebFrameWidget* frame_widget = GetFrameWidget();
-  // TODO(danakj): Stop handling emulation changes while undead, and change this
-  // to a DCHECK.
-  if (frame_widget) {
-    RenderFrameImpl* render_frame =
-        RenderFrameImpl::FromWebFrame(frame_widget->LocalRoot());
-
-    // This causes compositing state to be modified which dirties the document
-    // lifecycle. Android Webview relies on the document lifecycle being clean
-    // after the RenderWidget is initialized, in order to send IPCs that query
-    // and change compositing state. So ResizeWebWidget() must come after this
-    // call, as it runs the entire document lifecycle.
-    render_frame->SetPreferCompositingToLCDTextEnabledOnRenderView(
-        ComputePreferCompositingToLCDText(
-            compositor_deps_, page_properties_->GetDeviceScaleFactor()));
-  }
+  //
+  // This causes compositing state to be modified which dirties the document
+  // lifecycle. Android Webview relies on the document lifecycle being clean
+  // after the RenderWidget is initialized, in order to send IPCs that query
+  // and change compositing state. So ResizeWebWidget() must come after this
+  // call, as it runs the entire document lifecycle.
+  render_frame->SetPreferCompositingToLCDTextEnabledOnRenderView(
+      ComputePreferCompositingToLCDText(
+          compositor_deps_, page_properties_->GetDeviceScaleFactor()));
 
   visible_viewport_size_ = visible_viewport_size;
   size_ = widget_size;
@@ -1944,9 +1960,6 @@ void RenderWidget::InitCompositing(const ScreenInfo& screen_info) {
       compositor_deps_->CreateUkmRecorderFactory());
   layer_tree_host_ = layer_tree_view_->layer_tree_host();
 
-  UpdateSurfaceAndScreenInfo(local_surface_id_allocation_from_parent_,
-                             CompositorViewportRect(), screen_info);
-
   blink::scheduler::WebThreadScheduler* main_thread_scheduler =
       compositor_deps_->GetWebMainThreadScheduler();
 
@@ -2003,43 +2016,24 @@ void RenderWidget::StartStopCompositor() {
   }
 }
 
-void RenderWidget::SetIsUndead() {
-  DCHECK(!is_undead_);
-  is_undead_ = true;
-  // If hidden, then changing undead state doesn't change anything with the
-  // compositor since when hidden the compositor is always stopped.
-  if (!is_hidden_)
+void RenderWidget::SetIsUndead(bool is_undead) {
+  DCHECK_NE(is_undead, is_undead_);
+  is_undead_ = is_undead;
+
+  if (is_undead_) {
     StartStopCompositor();
 
-  // Remove undead RenderWidgets from the routing map so that they cannot be
-  // looked up with FromRoutingId().
-  g_routing_id_widget_map.Get().erase(routing_id_);
-}
-
-void RenderWidget::SetIsRevivedFromUndead(const ScreenInfo& screen_info) {
-  DCHECK(is_undead_);
-  is_undead_ = false;
-  // If started as undead, the compositor was not created yet.
-  if (!layer_tree_view_)
-    InitCompositing(screen_info);
-  // If hidden, then changing undead state doesn't change anything with the
-  // compositor since when hidden the compositor is always stopped.
-  if (!is_hidden_)
-    StartStopCompositor();
-
-  // Put revived RenderWidgets back into the routing id map so they can be
-  // looked up with FromRoutingId().
-  g_routing_id_widget_map.Get().emplace(routing_id_, this);
-
-  // Reviving from undead is like making a "new" RenderWidget, initialization
-  // that should not bleed across from the last local main frame can happen
-  // here.
-  // TODO(crbug.com/419087): This initialization can be done during
-  // InitCompositing() or when constructing the RenderWidget once there are
-  // no undead RenderWidgets.
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  SetShowFPSCounter(command_line.HasSwitch(cc::switches::kShowFPSCounter));
+    webwidget_->Close();
+    webwidget_ = nullptr;
+    // Remove undead RenderWidgets from the routing map so that they cannot be
+    // looked up with FromRoutingId().
+    g_routing_id_widget_map.Get().erase(routing_id_);
+  } else {
+    // When revived from undead, act like a "new RenderWidget". This method is
+    // equivalent to the constructor, and initialization comes separately
+    // through InitForRevivedMainFrame().
+    g_routing_id_widget_map.Get().emplace(routing_id_, this);
+  }
 }
 
 // static
@@ -2421,24 +2415,20 @@ void RenderWidget::UpdateSurfaceAndScreenInfo(
     OnOrientationChange();
 
   if (for_frame()) {
-    // TODO(danakj): This should not need to go through RenderFrame to set
-    // Page-level properties.
-    blink::WebFrameWidget* frame_widget = GetFrameWidget();
-    // TODO(danakj): Stop sending/receiving visual properties while undead, and
-    // change this to a DCHECK.
-    if (frame_widget) {
-      RenderFrameImpl* render_frame =
-          RenderFrameImpl::FromWebFrame(frame_widget->LocalRoot());
-      // TODO(danakj): RenderWidget knows the DSF and could avoid calling into
-      // blink when it hasn't changed, but it sets an initial |screen_info_|
-      // during construction, so it is hard to tell if the value is not the
-      // default value once we get to OnSynchronizeVisualProperties. Thus we
-      // call into blink unconditionally and let it early out if it's already
-      // set.
-      render_frame->SetDeviceScaleFactorOnRenderView(
-          compositor_deps_->IsUseZoomForDSFEnabled(),
-          page_properties_->GetDeviceScaleFactor());
-    }
+    RenderFrameImpl* render_frame =
+        RenderFrameImpl::FromWebFrame(GetFrameWidget()->LocalRoot());
+    // TODO(danakj): RenderWidget knows the DSF and could avoid calling into
+    // blink when it hasn't changed, but it sets an initial |screen_info_|
+    // during construction, so it is hard to tell if the value is not the
+    // default value once we get to OnSynchronizeVisualProperties. Thus we
+    // call into blink unconditionally and let it early out if it's already
+    // set.
+    //
+    // TODO(danakj): Only the top-most RenderWidget per RenderView should
+    // be responsible for setting values onto the RenderView.
+    render_frame->SetDeviceScaleFactorOnRenderView(
+        compositor_deps_->IsUseZoomForDSFEnabled(),
+        page_properties_->GetDeviceScaleFactor());
   }
 
   // Propagate changes down to child local root RenderWidgets and BrowserPlugins
@@ -3923,11 +3913,8 @@ void RenderWidget::SetDeviceScaleFactorForTesting(float factor) {
   if (!auto_resize_mode_)
     ResizeWebWidget();  // This picks up the new device scale factor in |info|.
 
-  // TODO(danakj): This should not need to go through RenderFrame to set
-  // Page-level properties.
-  blink::WebFrameWidget* frame_widget = GetFrameWidget();
   RenderFrameImpl* render_frame =
-      RenderFrameImpl::FromWebFrame(frame_widget->LocalRoot());
+      RenderFrameImpl::FromWebFrame(GetFrameWidget()->LocalRoot());
   render_frame->SetPreferCompositingToLCDTextEnabledOnRenderView(
       ComputePreferCompositingToLCDText(
           compositor_deps_, page_properties_->GetDeviceScaleFactor()));
@@ -4029,16 +4016,6 @@ gfx::Rect RenderWidget::ViewportVisibleRect() {
 
 base::WeakPtr<RenderWidget> RenderWidget::AsWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
-}
-
-void RenderWidget::SetWebWidgetInternal(blink::WebWidget* webwidget) {
-  // Undead state is changed first, and the WebWidget is set accordingly. That
-  // means the compositor is always initialized before we get here.
-  DCHECK_EQ(is_undead_, !webwidget);
-
-  webwidget_ = webwidget;
-  if (webwidget_)
-    webwidget_->SetAnimationHost(layer_tree_view_->animation_host());
 }
 
 }  // namespace content
