@@ -589,4 +589,32 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentAppTest,
   // kylepay should be installed just-in-time and used for testing.
   ExpectBodyContains({"kylepay.com/webpay"});
 }
+
+IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentAppTest,
+                       ReadSupportedDelegationsFromAppManifest) {
+  SetDownloaderAndIgnorePortInOriginComparisonForTesting();
+
+  // Trigger a request that specifies kylepay.com and asks for shipping address
+  // as well as payer's contact information. kylepay.com hosts an installable
+  // payment app which handles both shipping address and payer's contact
+  // information.
+  NavigateTo("/payment_request_bobpay_and_cards_test.html");
+  ResetEventWaiterForDialogOpened();
+  ASSERT_TRUE(content::ExecuteScript(
+      GetActiveWebContents(),
+      "testPaymentMethods([{supportedMethods: 'https://kylepay.com/webpay'}], "
+      "true /*= requestShippingContact */);"));
+  WaitForObservedEvent();
+
+  // Pay button should be enabled without any autofill profiles since the
+  // selected payment instrument (kylepay) handles all merchant required
+  // information.
+  EXPECT_TRUE(IsPayButtonEnabled());
+
+  ResetEventWaiterForSequence({DialogEvent::DIALOG_CLOSED});
+  ClickOnDialogViewAndWait(DialogViewID::PAY_BUTTON, dialog_view());
+
+  // kylepay should be installed just-in-time and used for testing.
+  ExpectBodyContains({"kylepay.com/webpay"});
+}
 }  // namespace payments
