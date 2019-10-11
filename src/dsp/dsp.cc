@@ -88,6 +88,7 @@ void DspInit() {
 #endif  // LIBGAV1_ENABLE_SSE4_1
 #if LIBGAV1_ENABLE_NEON
     AverageBlendInit_NEON();
+    CdefInit_NEON();
     ConvolveInit_NEON();
     DistanceWeightedBlendInit_NEON();
     FilmGrainInit_NEON();

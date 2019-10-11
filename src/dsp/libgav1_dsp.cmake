@@ -42,6 +42,8 @@ list(APPEND libgav1_dsp_sources_neon
             ${libgav1_dsp_sources_neon}
             "${libgav1_source}/dsp/arm/average_blend_neon.cc"
             "${libgav1_source}/dsp/arm/average_blend_neon.h"
+            "${libgav1_source}/dsp/arm/cdef_neon.cc"
+            "${libgav1_source}/dsp/arm/cdef_neon.h"
             "${libgav1_source}/dsp/arm/common_neon.h"
             "${libgav1_source}/dsp/arm/convolve_neon.cc"
             "${libgav1_source}/dsp/arm/convolve_neon.h"
