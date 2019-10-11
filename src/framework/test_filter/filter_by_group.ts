@@ -1,4 +1,3 @@
-import { TestCaseID, TestSpecID } from '../id.js';
 import { ReadmeFile, TestFileLoader, TestSpec } from '../loader.js';
 
 import { TestFilterResult } from './index.js';
@@ -11,10 +10,6 @@ export class FilterByGroup implements TestFilter {
   constructor(suite: string, groupPrefix: string) {
     this.suite = suite;
     this.groupPrefix = groupPrefix;
-  }
-
-  matches(spec: TestSpecID, testcase: TestCaseID): boolean {
-    throw new Error('unimplemented');
   }
 
   async iterate(loader: TestFileLoader): Promise<TestFilterResult[]> {

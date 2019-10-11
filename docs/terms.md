@@ -146,18 +146,15 @@ Provides utilities useful in WebGPU CTS tests.
 ## Query
 
 A query is a string which denotes a subset of a test suite to run.
-It is comprised of a list of positive and negative filters.
-
-A case is included in the subset if it matches any of the positive filters
-and none of the negative filters.
-
-(TODO: implement negative filters and update these docs if needed; syntax may change.)
+It is comprised of a list of filters.
+A case is included in the subset if it matches any of the filters.
 
 In the WPT and standalone harnesses, the query is stored in the URL.
 
 Queries are selectively URL-encoded for readability and compatibility with browsers.
 
-**Example:** `?q=unittests:param_helpers:combine/&not=unittests:param_helpers:combine/mixed`
+**Example:** `?q=unittests:param_helpers:combine/=`
+**Example:** `?q=unittests:param_helpers:combine/mixed=`
 
 **Type:** None yet. TODO
 

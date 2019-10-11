@@ -15,7 +15,6 @@ abstract class FilterOneFile implements TestFilter {
   }
 
   abstract getCases(spec: TestSpec): RunCaseIterable;
-  abstract matches(spec: TestSpecID, testcase: TestCaseID): boolean;
 
   async iterate(loader: TestFileLoader): Promise<TestFilterResult[]> {
     const spec = (await loader.import(
@@ -57,10 +56,6 @@ export class FilterByTestMatch extends FilterOneFile {
   getCases(spec: TestSpec): RunCaseIterable {
     return filterTestGroup(spec.g, testcase => testcase.test.startsWith(this.testPrefix));
   }
-
-  matches(spec: TestSpecID, testcase: TestCaseID): boolean {
-    throw new Error('unimplemented');
-  }
 }
 
 export class FilterByParamsMatch extends FilterOneFile {
@@ -79,10 +74,6 @@ export class FilterByParamsMatch extends FilterOneFile {
       testcase => testcase.test === this.test && paramsSupersets(testcase.params, this.params)
     );
   }
-
-  matches(spec: TestSpecID, testcase: TestCaseID): boolean {
-    throw new Error('unimplemented');
-  }
 }
 
 export class FilterByParamsExact extends FilterOneFile {
@@ -100,9 +91,5 @@ export class FilterByParamsExact extends FilterOneFile {
       spec.g,
       testcase => testcase.test === this.test && paramsEquals(testcase.params, this.params)
     );
-  }
-
-  matches(spec: TestSpecID, testcase: TestCaseID): boolean {
-    throw new Error('unimplemented');
   }
 }
