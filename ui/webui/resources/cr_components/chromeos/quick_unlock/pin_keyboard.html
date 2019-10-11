@@ -133,20 +133,22 @@
 
       .digit-button inner-text {
         font-family: 'Roboto';
-      }
-
-      inner-text.letter {
-        color: var(--pin-keyboard-letter-color, var(--google-grey-700));
-        font-size: 12px;
-        margin-top: 8px;
-
-        @apply --pin-keyboard-digit-button-letter;
+        position: absolute;
       }
 
       .number {
         color: var(--pin-keyboard-number-color, var(--paper-blue-grey-700));
         font-size: 18px;
-        height: 16px;
+        top: 0;
+      }
+
+      .letter {
+        bottom: 0;
+        color: var(--pin-keyboard-letter-color, var(--google-grey-700));
+        font-size: 12px;
+        margin-top: 8px;
+
+        @apply --pin-keyboard-digit-button-letter;
       }
 
       #pinInput {
