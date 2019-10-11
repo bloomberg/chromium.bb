@@ -15,7 +15,6 @@
 #include "absl/strings/ascii.h"
 #include "absl/strings/match.h"
 #include "absl/types/optional.h"
-#include "platform/api/logging.h"
 #include "tools/cddl/logging.h"
 
 static_assert(sizeof(absl::string_view::size_type) == sizeof(size_t),
@@ -79,8 +78,7 @@ absl::string_view SkipComment(absl::string_view view) {
   if (view[index] == ';') {
     ++index;
     while (!IsNewline(view[index]) && index < view.length()) {
-      OSP_CHECK(absl::ascii_isprint(view[index]))
-          << "Comments should only contain printable characters";
+      CHECK(absl::ascii_isprint(view[index]));
       ++index;
     }
 
@@ -176,8 +174,7 @@ void SkipUint(Parser* p) {
 
   while (index < view.length() && absl::ascii_isdigit(view[index])) {
     if (is_binary) {
-      OSP_CHECK(IsBinaryDigit(view[index]))
-          << "Binary numbers should be comprised of only 0 or 1";
+      CHECK(IsBinaryDigit(view[index]));
     }
 
     ++index;
