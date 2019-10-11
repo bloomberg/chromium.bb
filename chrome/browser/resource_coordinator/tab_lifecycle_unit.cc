@@ -602,12 +602,16 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::CanDiscard(
 // NOTE: These do not currently provide DecisionDetails!
 #if !defined(OS_CHROMEOS)
   if (reason == LifecycleUnitDiscardReason::URGENT) {
-    // Limit urgent discarding to once only.
-    if (GetDiscardCount() > 0)
+    // Limit urgent discarding to once only, unless discarding for the
+    // enterprise memory limit feature.
+    if (GetDiscardCount() > 0 &&
+        !GetTabSource()->memory_limit_enterprise_policy())
       return false;
     // Protect non-visible tabs from urgent discarding for a period of time.
     if (web_contents()->GetVisibility() != content::Visibility::VISIBLE) {
       base::TimeDelta time_in_bg = NowTicks() - GetWallTimeWhenHidden();
+      // TODO(sebmarchand): Check if this should be lowered when the enterprise
+      // memory limit feature is set.
       if (time_in_bg < kBackgroundUrgentProtectionTime)
         return false;
     }

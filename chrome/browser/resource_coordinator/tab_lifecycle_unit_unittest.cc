@@ -373,6 +373,11 @@ TEST_F(TabLifecycleUnitTest, UrgentDiscardProtections) {
                        LifecycleUnitDiscardReason::PROACTIVE);
   ExpectCanDiscardFalseTrivial(&tab_lifecycle_unit,
                                LifecycleUnitDiscardReason::URGENT);
+
+  // The tab should be discardable a second time when the memory limit
+  // enterprise policy is set.
+  GetTabLifecycleUnitSource()->SetMemoryLimitEnterprisePolicyFlag(true);
+  ExpectCanDiscardTrue(&tab_lifecycle_unit, LifecycleUnitDiscardReason::URGENT);
 }
 #endif  // !defined(OS_CHROMEOS)
 
