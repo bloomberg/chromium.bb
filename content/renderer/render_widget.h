@@ -1067,6 +1067,10 @@ class CONTENT_EXPORT RenderWidget
   int pending_window_rect_count_ = 0;
   gfx::Rect pending_window_rect_;
 
+  // Properties of the screen hosting the RenderWidget. Rects in this structure
+  // do not include any scaling by device scale factor, so are logical pixels
+  // not physical device pixels.
+  ScreenInfo screen_info_;
   // The screen rects of the view and the window that contains it. These do not
   // include any scaling by device scale factor, so are logical pixels not
   // physical device pixels.

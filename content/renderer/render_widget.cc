@@ -823,8 +823,7 @@ void RenderWidget::SynchronizeVisualPropertiesFromRenderView(
     UpdateSurfaceAndScreenInfo(
         visual_properties.local_surface_id_allocation.value_or(
             viz::LocalSurfaceIdAllocation()),
-        visual_properties.compositor_viewport_pixel_rect,
-        page_properties_->GetScreenInfo());
+        visual_properties.compositor_viewport_pixel_rect, screen_info_);
 
     // This will call back into this class to set the widget size, visible
     // viewport size, screen info and screen rects, based on the device
@@ -844,7 +843,7 @@ void RenderWidget::SynchronizeVisualPropertiesFromRenderView(
       if (visual_properties.is_fullscreen_granted != is_fullscreen_granted_ ||
           visual_properties.display_mode != display_mode_ ||
           visual_properties.screen_info.device_scale_factor !=
-              page_properties_->GetDeviceScaleFactor())
+              screen_info_.device_scale_factor)
         ignore_resize_ipc = false;
     }
 
@@ -882,7 +881,7 @@ void RenderWidget::SynchronizeVisualPropertiesFromRenderView(
         // be responsible for setting values onto the RenderView.
         render_frame->SetPreferCompositingToLCDTextEnabledOnRenderView(
             ComputePreferCompositingToLCDText(
-                compositor_deps_, page_properties_->GetDeviceScaleFactor()));
+                compositor_deps_, screen_info_.device_scale_factor));
       }
 
       if (!auto_resize_mode_) {
@@ -956,8 +955,8 @@ void RenderWidget::OnEnableDeviceEmulation(
 
   if (!device_emulator_) {
     device_emulator_ = std::make_unique<RenderWidgetScreenMetricsEmulator>(
-        this, page_properties_->GetScreenInfo(), size_, visible_viewport_size_,
-        widget_screen_rect_, window_screen_rect_);
+        this, screen_info_, size_, visible_viewport_size_, widget_screen_rect_,
+        window_screen_rect_);
   }
   device_emulator_->ChangeEmulationParams(params);
 }
@@ -1735,8 +1734,8 @@ void RenderWidget::SetScreenInfoAndSize(
   // and change compositing state. So ResizeWebWidget() must come after this
   // call, as it runs the entire document lifecycle.
   render_frame->SetPreferCompositingToLCDTextEnabledOnRenderView(
-      ComputePreferCompositingToLCDText(
-          compositor_deps_, page_properties_->GetDeviceScaleFactor()));
+      ComputePreferCompositingToLCDText(compositor_deps_,
+                                        screen_info_.device_scale_factor));
 
   visible_viewport_size_ = visible_viewport_size;
   size_ = widget_size;
@@ -2074,7 +2073,7 @@ void RenderWidget::EmulatedToScreenRect(gfx::Rect* screen_rect) const {
 }
 
 blink::WebScreenInfo RenderWidget::GetScreenInfo() {
-  const ScreenInfo& info = page_properties_->GetScreenInfo();
+  const ScreenInfo& info = screen_info_;
 
   blink::WebScreenInfo web_screen_info;
   web_screen_info.device_scale_factor = info.device_scale_factor;
@@ -2299,15 +2298,12 @@ void RenderWidget::UpdateSurfaceAndScreenInfo(
     const gfx::Rect& compositor_viewport_pixel_rect,
     const ScreenInfo& new_screen_info) {
   bool orientation_changed =
-      page_properties_->GetScreenInfo().orientation_angle !=
-          new_screen_info.orientation_angle ||
-      page_properties_->GetScreenInfo().orientation_type !=
-          new_screen_info.orientation_type;
+      screen_info_.orientation_angle != new_screen_info.orientation_angle ||
+      screen_info_.orientation_type != new_screen_info.orientation_type;
   ScreenInfo previous_original_screen_info = GetOriginalScreenInfo();
 
   local_surface_id_allocation_from_parent_ = new_local_surface_id_allocation;
-
-  page_properties_->SetScreenInfo(new_screen_info);
+  screen_info_ = new_screen_info;
 
   // Note carefully that the DSF specified in |new_screen_info| is not the
   // DSF used by the compositor during device emulation!
@@ -2319,7 +2315,7 @@ void RenderWidget::UpdateSurfaceAndScreenInfo(
   // which is set above.
   layer_tree_host_->SetViewportVisibleRect(ViewportVisibleRect());
   layer_tree_host_->SetRasterColorSpace(
-      page_properties_->GetScreenInfo().color_space.GetRasterColorSpace());
+      screen_info_.color_space.GetRasterColorSpace());
 
   if (orientation_changed)
     OnOrientationChange();
@@ -2338,7 +2334,7 @@ void RenderWidget::UpdateSurfaceAndScreenInfo(
     // be responsible for setting values onto the RenderView.
     render_frame->SetDeviceScaleFactorOnRenderView(
         compositor_deps_->IsUseZoomForDSFEnabled(),
-        page_properties_->GetDeviceScaleFactor());
+        screen_info_.device_scale_factor);
   }
 
   // Propagate changes down to child local root RenderWidgets and BrowserPlugins
@@ -2368,10 +2364,9 @@ void RenderWidget::SetWindowRectSynchronously(
   layer_tree_host_->RequestNewLocalSurfaceId();
 
   gfx::Rect compositor_viewport_pixel_rect(gfx::ScaleToCeiledSize(
-      new_window_rect.size(), page_properties_->GetDeviceScaleFactor()));
+      new_window_rect.size(), screen_info_.device_scale_factor));
   UpdateSurfaceAndScreenInfo(local_surface_id_allocation_from_parent_,
-                             compositor_viewport_pixel_rect,
-                             page_properties_->GetScreenInfo());
+                             compositor_viewport_pixel_rect, screen_info_);
 
   visible_viewport_size_ = new_window_rect.size();
   size_ = new_window_rect.size();
@@ -2753,12 +2748,11 @@ void RenderWidget::DidAutoResize(const gfx::Size& new_size) {
     // calculation of |new_compositor_viewport_pixel_rect| does not appear to
     // take into account device emulation.
     layer_tree_host_->RequestNewLocalSurfaceId();
-    gfx::Rect new_compositor_viewport_pixel_rect =
-        gfx::Rect(gfx::ScaleToCeiledSize(
-            size_, page_properties_->GetDeviceScaleFactor()));
+    gfx::Rect new_compositor_viewport_pixel_rect = gfx::Rect(
+        gfx::ScaleToCeiledSize(size_, screen_info_.device_scale_factor));
     UpdateSurfaceAndScreenInfo(local_surface_id_allocation_from_parent_,
                                new_compositor_viewport_pixel_rect,
-                               page_properties_->GetScreenInfo());
+                               screen_info_);
   }
 }
 
@@ -3701,7 +3695,7 @@ void RenderWidget::OnWaitNextFrameForTests(
 const ScreenInfo& RenderWidget::GetOriginalScreenInfo() const {
   if (device_emulator_)
     return device_emulator_->original_screen_info();
-  return page_properties_->GetScreenInfo();
+  return screen_info_;
 }
 
 gfx::PointF RenderWidget::ConvertWindowPointToViewport(
@@ -3798,7 +3792,7 @@ void RenderWidget::SetDeviceScaleFactorForTesting(float factor) {
   // new viz::LocalSurfaceId to avoid surface invariants violations in tests.
   layer_tree_host_->RequestNewLocalSurfaceId();
 
-  ScreenInfo info = page_properties_->GetScreenInfo();
+  ScreenInfo info = screen_info_;
   info.device_scale_factor = factor;
   gfx::Size viewport_pixel_size = gfx::ScaleToCeiledSize(size_, factor);
   UpdateSurfaceAndScreenInfo(local_surface_id_allocation_from_parent_,
@@ -3809,8 +3803,8 @@ void RenderWidget::SetDeviceScaleFactorForTesting(float factor) {
   RenderFrameImpl* render_frame =
       RenderFrameImpl::FromWebFrame(GetFrameWidget()->LocalRoot());
   render_frame->SetPreferCompositingToLCDTextEnabledOnRenderView(
-      ComputePreferCompositingToLCDText(
-          compositor_deps_, page_properties_->GetDeviceScaleFactor()));
+      ComputePreferCompositingToLCDText(compositor_deps_,
+                                        screen_info_.device_scale_factor));
 
   // Make sure to override any future OnSynchronizeVisualProperties IPCs.
   device_scale_factor_for_testing_ = factor;
@@ -3835,7 +3829,7 @@ void RenderWidget::SetDeviceColorSpaceForTesting(
   // new viz::LocalSurfaceId to avoid surface invariants violations in tests.
   layer_tree_host_->RequestNewLocalSurfaceId();
 
-  ScreenInfo info = page_properties_->GetScreenInfo();
+  ScreenInfo info = screen_info_;
   info.color_space = color_space;
   UpdateSurfaceAndScreenInfo(local_surface_id_allocation_from_parent_,
                              CompositorViewportRect(), info);
@@ -3848,8 +3842,7 @@ void RenderWidget::SetWindowRectSynchronouslyForTesting(
 
 void RenderWidget::EnableAutoResizeForTesting(const gfx::Size& min_size,
                                               const gfx::Size& max_size) {
-  SetAutoResizeMode(true, min_size, max_size,
-                    page_properties_->GetDeviceScaleFactor());
+  SetAutoResizeMode(true, min_size, max_size, screen_info_.device_scale_factor);
 }
 
 void RenderWidget::DisableAutoResizeForTesting(const gfx::Size& new_size) {
@@ -3857,7 +3850,7 @@ void RenderWidget::DisableAutoResizeForTesting(const gfx::Size& new_size) {
     return;
 
   SetAutoResizeMode(false, gfx::Size(), gfx::Size(),
-                    page_properties_->GetDeviceScaleFactor());
+                    screen_info_.device_scale_factor);
 
   // The |new_size| is empty when resetting auto resize in between tests. In
   // this case the current size should just be preserved.

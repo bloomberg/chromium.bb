@@ -2117,8 +2117,9 @@ RenderWidgetFullscreenPepper* RenderFrameImpl::CreatePepperFullscreenContainer(
   RenderWidgetFullscreenPepper* widget = RenderWidgetFullscreenPepper::Create(
       fullscreen_widget_routing_id, std::move(show_callback),
       GetLocalRootRenderWidget()->compositor_deps(),
-      render_view()->page_properties(), plugin, std::move(main_frame_url),
-      std::move(widget_channel_receiver));
+      render_view()->page_properties(),
+      GetLocalRootRenderWidget()->GetOriginalScreenInfo(), plugin,
+      std::move(main_frame_url), std::move(widget_channel_receiver));
   // TODO(nick): The show() handshake seems like unnecessary complexity here,
   // since there's no real delay between CreateFullscreenWidget and
   // ShowCreatedFullscreenWidget. Would it be simpler to have the
@@ -5957,7 +5958,7 @@ void RenderFrameImpl::UpdateStateForCommit(
     //     suite).
     render_view_->PropagatePageZoomToNewlyAttachedFrame(
         render_widget_->compositor_deps()->IsUseZoomForDSFEnabled(),
-        render_view_->page_properties()->GetDeviceScaleFactor());
+        render_widget_->GetScreenInfo().device_scale_factor);
   }
 
   // Remember that we've already processed this request, so we don't update
@@ -7536,8 +7537,7 @@ void RenderFrameImpl::ConvertViewportToWindow(blink::WebRect* rect) {
 }
 
 float RenderFrameImpl::GetDeviceScaleFactor() {
-  // TODO(danakj): Get this from the RenderWidget.
-  return render_view_->page_properties()->GetDeviceScaleFactor();
+  return GetLocalRootRenderWidget()->GetScreenInfo().device_scale_factor;
 }
 
 }  // namespace content

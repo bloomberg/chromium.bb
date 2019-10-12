@@ -482,8 +482,6 @@ void RenderViewImpl::Initialize(
   bool has_show_callback = !!show_callback;
 #endif
 
-  page_properties()->SetScreenInfo(params->visual_properties.screen_info);
-
   WebFrame* opener_frame =
       RenderFrameImpl::ResolveOpener(params->opener_frame_route_id);
 
@@ -1394,9 +1392,6 @@ WebView* RenderViewImpl::CreateView(
   // TODO(vangelis): Can we tell if the new view will be a background page?
   bool never_visible = false;
 
-  VisualProperties visual_properties = VisualProperties();
-  visual_properties.screen_info = page_properties()->GetScreenInfo();
-
   // The initial hidden state for the RenderViewImpl here has to match what the
   // browser will eventually decide for the given disposition. Since we have to
   // return from this call synchronously, we just have to make our best guess
@@ -1433,7 +1428,7 @@ WebView* RenderViewImpl::CreateView(
   view_params->devtools_main_frame_token = reply->devtools_main_frame_token;
   view_params->hidden = is_background_tab;
   view_params->never_visible = never_visible;
-  view_params->visual_properties = visual_properties;
+  view_params->visual_properties = reply->visual_properties;
 
   // Unretained() is safe here because our calling function will also call
   // show().
