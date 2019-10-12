@@ -883,7 +883,13 @@ void SVGSMILElement::DiscardOrRevalidateCurrentInterval(
   // end time.
   if (interval_.EndsAfter(presentation_time)) {
     SMILTime new_end = FindInstanceTime(kEnd, interval_.begin, false);
-    DCHECK(!new_end.IsUnresolved());
+    if (new_end.IsUnresolved()) {
+      // If we have no pending end conditions, discard the current interval.
+      if (!end_times_.IsEmpty() && !has_end_event_conditions_) {
+        interval_ = {SMILTime::Unresolved(), SMILTime::Unresolved()};
+        return;
+      }
+    }
     new_end = ResolveActiveEnd(interval_.begin, new_end);
     if (new_end != interval_.end)
       SetNewIntervalEnd(new_end, presentation_time);
