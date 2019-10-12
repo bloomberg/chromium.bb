@@ -465,6 +465,20 @@ typedef struct /* one state */
 	widechar numTrans;
 } HyphenationState;
 
+typedef struct CharacterClass {
+	struct CharacterClass *next;
+	TranslationTableCharacterAttributes attribute;
+	widechar length;
+	widechar name[1];
+} CharacterClass;
+
+typedef struct RuleName {
+	struct RuleName *next;
+	TranslationTableOffset ruleOffset;
+	widechar length;
+	widechar name[1];
+} RuleName;
+
 typedef struct {
 	TranslationTableOffset tableSize;
 	TranslationTableOffset bytesUsed;
@@ -498,6 +512,11 @@ typedef struct { /* translation table */
 
 	/* emphRules, including caps. */
 	TranslationTableOffset emphRules[MAX_EMPH_CLASSES + 1][9];
+
+	/* state needed during compilation */
+	CharacterClass *characterClasses;
+	TranslationTableCharacterAttributes nextCharacterClassAttribute;
+	RuleName *ruleNames;
 
 	TranslationTableOffset begComp;
 	TranslationTableOffset compBegEmph1;

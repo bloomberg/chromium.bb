@@ -107,6 +107,7 @@ typedef struct DisplayTableChainEntry {
 
 static DisplayTableChainEntry *displayTableChain = NULL;
 
+/* predifined character classes */
 static const char *characterClassNames[] = {
 	"space",
 	"letter",
@@ -119,17 +120,6 @@ static const char *characterClassNames[] = {
 	"litdigit",
 	NULL,
 };
-
-typedef struct CharacterClass {
-	struct CharacterClass *next;
-	TranslationTableCharacterAttributes attribute;
-	widechar length;
-	widechar name[1];
-} CharacterClass;
-
-static CharacterClass *gCharacterClasses;
-
-static TranslationTableCharacterAttributes gCharacterClassAttribute;
 
 static const char *opcodeNames[CTO_None] = {
 	"include",
@@ -982,9 +972,9 @@ addRule(FileInfo *nested, TranslationTableOpcode opcode, CharsString *ruleChars,
 }
 
 static const CharacterClass *
-findCharacterClass(const CharsString *name, CharacterClass *characterClasses) {
+findCharacterClass(const CharsString *name, const TranslationTableHeader *table) {
 	/* Find a character class, whether predefined or user-defined */
-	const CharacterClass *class = characterClasses;
+	const CharacterClass *class = table->characterClasses;
 	while (class) {
 		if ((name->length == class->length) &&
 				(memcmp(&name->chars[0], class->name, CHARSIZE * name->length) == 0))
@@ -996,25 +986,28 @@ findCharacterClass(const CharsString *name, CharacterClass *characterClasses) {
 
 static CharacterClass *
 addCharacterClass(FileInfo *nested, const widechar *name, int length,
-		CharacterClass **characterClasses,
-		TranslationTableCharacterAttributes *characterClassAttribute) {
+		TranslationTableHeader *table) {
 	/* Define a character class, Whether predefined or user-defined */
+	CharacterClass **classes = &table->characterClasses;
+	;
+	TranslationTableCharacterAttributes *nextAttribute =
+			&table->nextCharacterClassAttribute;
 	CharacterClass *class;
-	if (*characterClassAttribute) {
+	if (*nextAttribute) {
 		if (!(class = malloc(sizeof(*class) + CHARSIZE * (length - 1))))
 			_lou_outOfMemory();
 		else {
 			memset(class, 0, sizeof(*class));
 			memcpy(class->name, name, CHARSIZE * (class->length = length));
-			class->attribute = *characterClassAttribute;
-			if (*characterClassAttribute == CTC_Class4)
-				*characterClassAttribute = CTC_UserDefined0;
-			else if (*characterClassAttribute == CTC_UserDefined7)
-				*characterClassAttribute = CTC_Class13;
+			class->attribute = *nextAttribute;
+			if (*nextAttribute == CTC_Class4)
+				*nextAttribute = CTC_UserDefined0;
+			else if (*nextAttribute == CTC_UserDefined7)
+				*nextAttribute = CTC_Class13;
 			else
-				*characterClassAttribute <<= 1;
-			class->next = *characterClasses;
-			*characterClasses = class;
+				*nextAttribute <<= 1;
+			class->next = *classes;
+			*classes = class;
 			return class;
 		}
 	}
@@ -1023,29 +1016,28 @@ addCharacterClass(FileInfo *nested, const widechar *name, int length,
 }
 
 static void
-deallocateCharacterClasses(CharacterClass **characterClasses) {
-	while (*characterClasses) {
-		CharacterClass *class = *characterClasses;
-		*characterClasses = (*characterClasses)->next;
+deallocateCharacterClasses(TranslationTableHeader *table) {
+	CharacterClass **classes = &table->characterClasses;
+	while (*classes) {
+		CharacterClass *class = *classes;
+		*classes = (*classes)->next;
 		if (class) free(class);
 	}
 }
 
 static int
-allocateCharacterClasses(CharacterClass **characterClasses,
-		TranslationTableCharacterAttributes *characterClassAttribute) {
+allocateCharacterClasses(TranslationTableHeader *table) {
 	/* Allocate memory for predifined character classes */
 	int k = 0;
-	*characterClasses = NULL;
-	*characterClassAttribute = 1;
+	table->characterClasses = NULL;
+	table->nextCharacterClassAttribute = 1;
 	while (characterClassNames[k]) {
 		widechar wname[MAXSTRING];
 		int length = (int)strlen(characterClassNames[k]);
 		int kk;
 		for (kk = 0; kk < length; kk++) wname[kk] = (widechar)characterClassNames[k][kk];
-		if (!addCharacterClass(
-					NULL, wname, length, characterClasses, characterClassAttribute)) {
-			deallocateCharacterClasses(characterClasses);
+		if (!addCharacterClass(NULL, wname, length, table)) {
+			deallocateCharacterClasses(table);
 			return 0;
 		}
 		k++;
@@ -1429,34 +1421,22 @@ getRuleDotsPattern(FileInfo *nested, CharsString *ruleDots, int *lastToken) {
 
 static int
 getCharacterClass(FileInfo *nested, const CharacterClass **class,
-		CharacterClass *characterClasses, int *lastToken) {
+		const TranslationTableHeader *table, int *lastToken) {
 	CharsString token;
 	if (getToken(nested, &token, "character class name", lastToken)) {
-		if ((*class = findCharacterClass(&token, characterClasses))) return 1;
+		if ((*class = findCharacterClass(&token, table))) return 1;
 		compileError(nested, "character class not defined.");
 	}
 	return 0;
 }
 
-typedef struct RuleName {
-	struct RuleName *next;
-	TranslationTableOffset ruleOffset;
-	widechar length;
-	widechar name[1];
-} RuleName;
-
 static int
-includeFile(FileInfo *nested, CharsString *includedFile,
-		CharacterClass **characterClasses,
-		TranslationTableCharacterAttributes *characterClassAttribute,
-		RuleName **ruleNames, TranslationTableHeader **table,
+includeFile(FileInfo *nested, CharsString *includedFile, TranslationTableHeader **table,
 		DisplayTableHeader **displayTable);
 
-static struct RuleName *gRuleNames = NULL;
-
 static TranslationTableOffset
-findRuleName(const CharsString *name, RuleName *ruleNames) {
-	const struct RuleName *nameRule = ruleNames;
+findRuleName(const CharsString *name, const TranslationTableHeader *table) {
+	const RuleName *nameRule = table->ruleNames;
 	while (nameRule) {
 		if ((name->length == nameRule->length) &&
 				(memcmp(&name->chars[0], nameRule->name, CHARSIZE * name->length) == 0))
@@ -1468,9 +1448,9 @@ findRuleName(const CharsString *name, RuleName *ruleNames) {
 
 static int
 addRuleName(FileInfo *nested, CharsString *name, TranslationTableOffset newRuleOffset,
-		RuleName **ruleNames) {
+		TranslationTableHeader *table) {
 	int k;
-	struct RuleName *nameRule;
+	RuleName *nameRule;
 	if (!(nameRule = malloc(sizeof(*nameRule) + CHARSIZE * (name->length - 1)))) {
 		compileError(nested, "not enough memory");
 		_lou_outOfMemory();
@@ -1488,15 +1468,16 @@ addRuleName(FileInfo *nested, CharsString *name, TranslationTableOffset newRuleO
 	}
 	nameRule->length = name->length;
 	nameRule->ruleOffset = newRuleOffset;
-	nameRule->next = *ruleNames;
-	*ruleNames = nameRule;
+	nameRule->next = table->ruleNames;
+	table->ruleNames = nameRule;
 	return 1;
 }
 
 static void
-deallocateRuleNames(RuleName **ruleNames) {
+deallocateRuleNames(TranslationTableHeader *table) {
+	RuleName **ruleNames = &table->ruleNames;
 	while (*ruleNames) {
-		struct RuleName *nameRule = *ruleNames;
+		RuleName *nameRule = *ruleNames;
 		*ruleNames = nameRule->next;
 		if (nameRule) free(nameRule);
 	}
@@ -1528,7 +1509,7 @@ compileSwapDots(FileInfo *nested, CharsString *source, CharsString *dest) {
 static int
 compileSwap(FileInfo *nested, TranslationTableOpcode opcode, int *lastToken,
 		TranslationTableOffset *newRuleOffset, TranslationTableRule **newRule, int noback,
-		int nofor, RuleName **ruleNames, TranslationTableHeader **table) {
+		int nofor, TranslationTableHeader **table) {
 	CharsString ruleChars;
 	CharsString ruleDots;
 	CharsString name;
@@ -1551,7 +1532,7 @@ compileSwap(FileInfo *nested, TranslationTableOpcode opcode, int *lastToken,
 	if (!addRule(nested, opcode, &ruleChars, &ruleDots, 0, 0, &ruleOffset, newRule,
 				noback, nofor, table))
 		return 0;
-	if (!addRuleName(nested, &name, ruleOffset, ruleNames)) return 0;
+	if (!addRuleName(nested, &name, ruleOffset, *table)) return 0;
 	if (newRuleOffset) *newRuleOffset = ruleOffset;
 	return 1;
 }
@@ -1725,9 +1706,8 @@ verifyStringOrDots(FileInfo *nested, TranslationTableOpcode opcode, int isString
 
 static int
 compilePassOpcode(FileInfo *nested, TranslationTableOpcode opcode,
-		CharacterClass *characterClasses, TranslationTableOffset *newRuleOffset,
-		TranslationTableRule **newRule, int noback, int nofor, RuleName *ruleNames,
-		TranslationTableHeader **table) {
+		TranslationTableOffset *newRuleOffset, TranslationTableRule **newRule, int noback,
+		int nofor, TranslationTableHeader **table) {
 	static CharsString passRuleChars;
 	static CharsString passRuleDots;
 	/* Compile the operands of a pass opcode */
@@ -1905,7 +1885,7 @@ compilePassOpcode(FileInfo *nested, TranslationTableOpcode opcode,
 		case pass_groupend:
 			passLinepos++;
 			passGetName(&passLine, &passLinepos, &passHoldString);
-			ruleOffset = findRuleName(&passHoldString, ruleNames);
+			ruleOffset = findRuleName(&passHoldString, *table);
 			if (ruleOffset)
 				rule = (TranslationTableRule *)&(*table)->ruleArea[ruleOffset];
 			if (rule && rule->opcode == CTO_Grouping) {
@@ -1923,11 +1903,11 @@ compilePassOpcode(FileInfo *nested, TranslationTableOpcode opcode,
 		case pass_swap:
 			passLinepos++;
 			passGetName(&passLine, &passLinepos, &passHoldString);
-			if ((class = findCharacterClass(&passHoldString, characterClasses))) {
+			if ((class = findCharacterClass(&passHoldString, *table))) {
 				passAttributes = class->attribute;
 				goto insertAttributes;
 			}
-			ruleOffset = findRuleName(&passHoldString, ruleNames);
+			ruleOffset = findRuleName(&passHoldString, *table);
 			if (ruleOffset)
 				rule = (TranslationTableRule *)&(*table)->ruleArea[ruleOffset];
 			if (rule &&
@@ -2029,7 +2009,7 @@ compilePassOpcode(FileInfo *nested, TranslationTableOpcode opcode,
 		case pass_groupend:
 			passLinepos++;
 			passGetName(&passLine, &passLinepos, &passHoldString);
-			ruleOffset = findRuleName(&passHoldString, ruleNames);
+			ruleOffset = findRuleName(&passHoldString, *table);
 			if (ruleOffset)
 				rule = (TranslationTableRule *)&(*table)->ruleArea[ruleOffset];
 			if (rule && rule->opcode == CTO_Grouping) {
@@ -2044,7 +2024,7 @@ compilePassOpcode(FileInfo *nested, TranslationTableOpcode opcode,
 		case pass_swap:
 			passLinepos++;
 			passGetName(&passLine, &passLinepos, &passHoldString);
-			ruleOffset = findRuleName(&passHoldString, ruleNames);
+			ruleOffset = findRuleName(&passHoldString, *table);
 			if (ruleOffset)
 				rule = (TranslationTableRule *)&(*table)->ruleArea[ruleOffset];
 			if (rule &&
@@ -2120,7 +2100,7 @@ compileNumber(FileInfo *nested, int *lastToken) {
 
 static int
 compileGrouping(FileInfo *nested, int *lastToken, TranslationTableOffset *newRuleOffset,
-		TranslationTableRule **newRule, int noback, int nofor, RuleName **ruleNames,
+		TranslationTableRule **newRule, int noback, int nofor,
 		TranslationTableHeader **table, DisplayTableHeader **displayTable) {
 	int k;
 	CharsString name;
@@ -2166,7 +2146,7 @@ compileGrouping(FileInfo *nested, int *lastToken, TranslationTableOffset *newRul
 		if (!addRule(nested, CTO_Grouping, &groupChars, &dotsParsed, 0, 0, &ruleOffset,
 					newRule, noback, nofor, table))
 			return 0;
-		if (!addRuleName(nested, &name, ruleOffset, ruleNames)) return 0;
+		if (!addRuleName(nested, &name, ruleOffset, *table)) return 0;
 		if (newRuleOffset) *newRuleOffset = ruleOffset;
 	}
 	if (displayTable) {
@@ -2574,10 +2554,8 @@ compileBeforeAfter(FileInfo *nested, int *lastToken) {
 }
 
 static int
-compileRule(FileInfo *nested, CharacterClass **characterClasses,
-		TranslationTableCharacterAttributes *characterClassAttribute,
-		TranslationTableOffset *newRuleOffset, TranslationTableRule **newRule,
-		RuleName **ruleNames, TranslationTableHeader **table,
+compileRule(FileInfo *nested, TranslationTableOffset *newRuleOffset,
+		TranslationTableRule **newRule, TranslationTableHeader **table,
 		DisplayTableHeader **displayTable) {
 	int lastToken = 0;
 	int ok = 1;
@@ -2644,7 +2622,7 @@ doOpcode:
 		break;
 	case CTO_Grouping:
 		ok = compileGrouping(nested, &lastToken, newRuleOffset, newRule, noback, nofor,
-				ruleNames, table, displayTable);
+				table, displayTable);
 		break;
 	case CTO_UpLow:
 		ok = compileUplow(nested, &lastToken, newRuleOffset, newRule, noback, nofor,
@@ -2671,9 +2649,7 @@ doOpcode:
 			CharsString includedFile;
 			if (getToken(nested, &token, "include file name", &lastToken))
 				if (parseChars(nested, &includedFile, &token))
-					if (!includeFile(nested, &includedFile, characterClasses,
-								characterClassAttribute, ruleNames, table, displayTable))
-						ok = 0;
+					if (!includeFile(nested, &includedFile, table, displayTable)) ok = 0;
 			break;
 		}
 		case CTO_Locale:
@@ -3613,8 +3589,8 @@ doOpcode:
 				ok = 0;
 				break;
 			}
-			if (!compilePassOpcode(nested, opcode, *characterClasses, newRuleOffset,
-						newRule, noback, nofor, *ruleNames, table))
+			if (!compilePassOpcode(
+						nested, opcode, newRuleOffset, newRule, noback, nofor, table))
 				ok = 0;
 			break;
 		case CTO_Contraction:
@@ -3661,16 +3637,15 @@ doOpcode:
 		case CTO_Class: {
 			CharsString characters;
 			const CharacterClass *class;
-			if (!*characterClasses) {
-				if (!allocateCharacterClasses(characterClasses, characterClassAttribute))
-					ok = 0;
+			if (!(*table)->characterClasses) {
+				if (!allocateCharacterClasses(*table)) ok = 0;
 			}
 			if (getToken(nested, &token, "character class name", &lastToken)) {
-				class = findCharacterClass(&token, *characterClasses);
+				class = findCharacterClass(&token, *table);
 				if (!class)
 					// no class with that name: create one
-					class = addCharacterClass(nested, &token.chars[0], token.length,
-							characterClasses, characterClassAttribute);
+					class = addCharacterClass(
+							nested, &token.chars[0], token.length, *table);
 				if (class) {
 					// there is a class with that name or a new class was successfully
 					// created
@@ -3712,13 +3687,10 @@ doOpcode:
 			case CTO_Before:
 				attributes = &before;
 			doClass:
-
-				if (!*characterClasses) {
-					if (!allocateCharacterClasses(
-								characterClasses, characterClassAttribute))
-						ok = 0;
+				if (!(*table)->characterClasses) {
+					if (!allocateCharacterClasses(*table)) ok = 0;
 				}
-				if (getCharacterClass(nested, &class, *characterClasses, &lastToken)) {
+				if (getCharacterClass(nested, &class, *table, &lastToken)) {
 					*attributes |= class->attribute;
 					goto doOpcode;
 				}
@@ -3755,7 +3727,7 @@ doOpcode:
 		case CTO_SwapCd:
 		case CTO_SwapDd:
 			if (!compileSwap(nested, opcode, &lastToken, newRuleOffset, newRule, noback,
-						nofor, ruleNames, table))
+						nofor, table))
 				ok = 0;
 			break;
 		case CTO_Hyphen:
@@ -3827,9 +3799,7 @@ lou_readCharFromFile(const char *fileName, int *mode) {
 }
 
 static int
-compileString(const char *inString, CharacterClass **characterClasses,
-		TranslationTableCharacterAttributes *characterClassAttribute,
-		RuleName **ruleNames, TranslationTableHeader **table,
+compileString(const char *inString, TranslationTableHeader **table,
 		DisplayTableHeader **displayTable) {
 	/* This function can be used to make changes to tables on the fly. */
 	int k;
@@ -3844,8 +3814,7 @@ compileString(const char *inString, CharacterClass **characterClasses,
 	for (k = 0; inString[k]; k++) nested.line[k] = inString[k];
 	nested.line[k] = 0;
 	nested.linelen = k;
-	return compileRule(&nested, characterClasses, characterClassAttribute, NULL, NULL,
-			ruleNames, table, displayTable);
+	return compileRule(&nested, NULL, NULL, table, displayTable);
 }
 
 static int
@@ -4099,9 +4068,7 @@ static int fileCount = 0;
  *
  */
 static int
-compileFile(const char *fileName, CharacterClass **characterClasses,
-		TranslationTableCharacterAttributes *characterClassAttribute,
-		RuleName **ruleNames, TranslationTableHeader **table,
+compileFile(const char *fileName, TranslationTableHeader **table,
 		DisplayTableHeader **displayTable) {
 	FileInfo nested;
 	fileCount++;
@@ -4111,8 +4078,7 @@ compileFile(const char *fileName, CharacterClass **characterClasses,
 	nested.lineNumber = 0;
 	if ((nested.in = fopen(nested.fileName, "rb"))) {
 		while (_lou_getALine(&nested))
-			compileRule(&nested, characterClasses, characterClassAttribute, NULL, NULL,
-					ruleNames, table, displayTable);
+			compileRule(&nested, NULL, NULL, table, displayTable);
 		fclose(nested.in);
 		return 1;
 	} else
@@ -4137,10 +4103,7 @@ free_tablefiles(char **tables) {
  *
  */
 static int
-includeFile(FileInfo *nested, CharsString *includedFile,
-		CharacterClass **characterClasses,
-		TranslationTableCharacterAttributes *characterClassAttribute,
-		RuleName **ruleNames, TranslationTableHeader **table,
+includeFile(FileInfo *nested, CharsString *includedFile, TranslationTableHeader **table,
 		DisplayTableHeader **displayTable) {
 	int k;
 	char includeThis[MAXSTRING];
@@ -4165,8 +4128,7 @@ includeFile(FileInfo *nested, CharsString *includedFile,
 				includeThis);
 		return 0;
 	}
-	rv = compileFile(*tableFiles, characterClasses, characterClassAttribute, ruleNames,
-			table, displayTable);
+	rv = compileFile(*tableFiles, table, displayTable);
 	free_tablefiles(tableFiles);
 	return rv;
 }
@@ -4177,16 +4139,12 @@ includeFile(FileInfo *nested, CharsString *includedFile,
  */
 static int
 compileTable(const char *tableList, TranslationTableHeader **translationTable,
-		DisplayTableHeader **displayTable, CharacterClass **characterClasses,
-		TranslationTableCharacterAttributes *characterClassAttribute,
-		RuleName **ruleNames) {
+		DisplayTableHeader **displayTable) {
 	if (translationTable) *translationTable = NULL;
 	if (displayTable) *displayTable = NULL;
 	char **tableFiles;
 	char **subTable;
 	errorCount = warningCount = fileCount = 0;
-	*characterClasses = NULL;
-	*ruleNames = NULL;
 	if (tableList == NULL) return 0;
 	if (!opcodeLengths[0]) {
 		TranslationTableOpcode opcode;
@@ -4196,16 +4154,19 @@ compileTable(const char *tableList, TranslationTableHeader **translationTable,
 	if (translationTable) allocateTranslationTable(NULL, translationTable);
 	if (displayTable) allocateDisplayTable(NULL, displayTable);
 
-	/* Initialize emphClasses array */
-	if (translationTable) (*translationTable)->emphClasses[0] = NULL;
+	if (translationTable) {
+		(*translationTable)->emphClasses[0] = NULL;
+		(*translationTable)->characterClasses = NULL;
+		(*translationTable)->ruleNames = NULL;
+	}
 
 	/* Compile things that are necesary for the proper operation of
 	 * liblouis or liblouisxml or liblouisutdml */
 	/* TODO: These definitions seem to be necessary for proper functioning of
 	   liblouisutdml. Find a way to satisfy those requirements without hard coding
 	   some characters in every table notably behind the users back */
-	compileString("space \\xffff 123456789abcdef LOU_ENDSEGMENT", characterClasses,
-			characterClassAttribute, ruleNames, translationTable, displayTable);
+	compileString("space \\xffff 123456789abcdef LOU_ENDSEGMENT", translationTable,
+			displayTable);
 
 	/* Compile all subtables in the list */
 	if (!(tableFiles = _lou_resolveTable(tableList, NULL))) {
@@ -4213,15 +4174,11 @@ compileTable(const char *tableList, TranslationTableHeader **translationTable,
 		goto cleanup;
 	}
 	for (subTable = tableFiles; *subTable; subTable++)
-		if (!compileFile(*subTable, characterClasses, characterClassAttribute, ruleNames,
-					translationTable, displayTable))
-			goto cleanup;
+		if (!compileFile(*subTable, translationTable, displayTable)) goto cleanup;
 
 /* Clean up after compiling files */
 cleanup:
 	free_tablefiles(tableFiles);
-	if (*characterClasses) deallocateCharacterClasses(characterClasses);
-	if (*ruleNames) deallocateRuleNames(ruleNames);
 	if (warningCount) _lou_logMessage(LOU_LOG_WARN, "%d warnings issued", warningCount);
 	if (!errorCount) {
 		if (translationTable) setDefaults(*translationTable);
@@ -4320,8 +4277,7 @@ lou_getTable(const char *tableList) {
 		DisplayTableHeader **newDisplayTable = NULL;
 		if (translationTable == NULL) newTranslationTable = &translationTable;
 		if (displayTable == NULL) newDisplayTable = &displayTable;
-		if (compileTable(tableList, newTranslationTable, newDisplayTable,
-					&gCharacterClasses, &gCharacterClassAttribute, &gRuleNames)) {
+		if (compileTable(tableList, newTranslationTable, newDisplayTable)) {
 			/* Add a new entry to the top of the table chain. */
 			if (newTranslationTable != NULL) {
 				int entrySize = sizeof(TranslationTableChainEntry) + tableListLen;
@@ -4494,6 +4450,8 @@ lou_free(void) {
 			int i;
 			TranslationTableHeader *t = (TranslationTableHeader *)currentEntry->table;
 			for (i = 0; t->emphClasses[i]; i++) free(t->emphClasses[i]);
+			if (t->characterClasses) deallocateCharacterClasses(t);
+			if (t->ruleNames) deallocateRuleNames(t);
 			free(t);
 			previousEntry = currentEntry;
 			currentEntry = currentEntry->next;
@@ -4547,8 +4505,7 @@ lou_compileString(const char *tableList, const char *inString) {
 	int r;
 	TranslationTableHeader *table = lou_getTable(tableList);
 	if (!table) return 0;
-	r = compileString(inString, &gCharacterClasses, &gCharacterClassAttribute,
-			&gRuleNames, &table, &currentDisplayTable);
+	r = compileString(inString, &table, &currentDisplayTable);
 	return r;
 }
 
