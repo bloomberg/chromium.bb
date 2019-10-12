@@ -223,7 +223,6 @@
 #include "components/page_load_metrics/browser/page_load_metrics_util.h"
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
 #include "components/payments/content/payment_request_display_manager.h"
-#include "components/performance_manager/public/performance_manager.h"
 #include "components/policy/content/policy_blacklist_navigation_throttle.h"
 #include "components/policy/content/policy_blacklist_service.h"
 #include "components/policy/core/common/policy_service.h"
@@ -2844,7 +2843,8 @@ content::MediaObserver* ChromeContentBrowserClient::GetMediaObserver() {
 }
 
 content::LockObserver* ChromeContentBrowserClient::GetLockObserver() {
-  return performance_manager::PerformanceManager::GetLockObserver();
+  return ChromeBrowserMainExtraPartsPerformanceManager::GetInstance()
+      ->GetLockObserver();
 }
 
 content::PlatformNotificationService*
