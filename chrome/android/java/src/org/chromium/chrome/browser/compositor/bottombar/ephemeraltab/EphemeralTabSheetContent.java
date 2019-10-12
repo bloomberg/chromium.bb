@@ -215,24 +215,23 @@ public class EphemeralTabSheetContent implements BottomSheet.BottomSheetContent 
         return 0.9f;
     }
 
-    // TODO(shaktisahu): Provide correct strings for the following methods.
     @Override
     public int getSheetContentDescriptionStringId() {
-        return R.string.send_tab_to_self_content_description;
+        return R.string.ephemeral_tab_sheet_description;
     }
 
     @Override
     public int getSheetHalfHeightAccessibilityStringId() {
-        return R.string.send_tab_to_self_sheet_half_height;
+        return R.string.ephemeral_tab_sheet_opened_half;
     }
 
     @Override
     public int getSheetFullHeightAccessibilityStringId() {
-        return R.string.send_tab_to_self_sheet_full_height;
+        return R.string.ephemeral_tab_sheet_opened_full;
     }
 
     @Override
     public int getSheetClosedAccessibilityStringId() {
-        return R.string.send_tab_to_self_sheet_closed;
+        return R.string.ephemeral_tab_sheet_closed;
     }
 }

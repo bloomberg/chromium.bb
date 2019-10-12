@@ -3357,6 +3357,20 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
         Navigation history is closed
       </message>
 
+      <!-- Ephemeral Tab -->
+      <message name="IDS_EPHEMERAL_TAB_SHEET_DESCRIPTION" desc="The content description of the preview tab bottom sheet.">
+        Preview tab
+      </message>
+      <message name="IDS_EPHEMERAL_TAB_SHEET_OPENED_HALF" desc="Accessibility string read when the preview tab bottom sheet is opened at half height. The sheet will occupy up to half the screen.">
+        Preview tab is half-opened
+      </message>
+      <message name="IDS_EPHEMERAL_TAB_SHEET_OPENED_FULL" desc="Accessibility string read when the preview tab bottom sheet is opened at full height. The sheet will occupy up to the full screen.">
+        Preview tab is opened
+      </message>
+      <message name="IDS_EPHEMERAL_TAB_SHEET_CLOSED" desc="Accessibility string read when the preview tab bottom sheet is closed.">
+        Preview tab is closed
+      </message>
+
       <!-- Storage Preference UI strings for clearing storage. -->
       <message name="IDS_STORAGE_MANAGEMENT_ACTIVITY_LABEL" desc="Title for Chrome's Manage Space Activity.">
          Google <ph name="APP_NAME">%1$s<ex>Chrome</ex></ph> storage
