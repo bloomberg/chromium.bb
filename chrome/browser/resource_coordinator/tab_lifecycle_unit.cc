@@ -632,8 +632,8 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::CanDiscard(
   bool check_heuristics = !GetStaticProactiveTabFreezeAndDiscardParams()
                                .disable_heuristics_protections;
 
-  if (check_heuristics)
-    CanDiscardHeuristicsChecks(decision_details, reason);
+  if (reason == LifecycleUnitDiscardReason::PROACTIVE && check_heuristics)
+    CanProactivelyDiscardHeuristicsChecks(decision_details);
 
 #if defined(OS_CHROMEOS)
   if (web_contents()->GetVisibility() == content::Visibility::VISIBLE)
@@ -1060,9 +1060,9 @@ void TabLifecycleUnitSource::TabLifecycleUnit::CanFreezeHeuristicsChecks(
   }
 }
 
-void TabLifecycleUnitSource::TabLifecycleUnit::CanDiscardHeuristicsChecks(
-    DecisionDetails* decision_details,
-    LifecycleUnitDiscardReason reason) const {
+void TabLifecycleUnitSource::TabLifecycleUnit::
+    CanProactivelyDiscardHeuristicsChecks(
+        DecisionDetails* decision_details) const {
   // We deliberately run through all of the logic without early termination.
   // This ensures that the decision details lists all possible reasons that
   // the transition can be denied.
@@ -1071,21 +1071,19 @@ void TabLifecycleUnitSource::TabLifecycleUnit::CanDiscardHeuristicsChecks(
         DecisionFailureReason::LIFECYCLES_ENTERPRISE_POLICY_OPT_OUT);
   }
 
-  if (reason == LifecycleUnitDiscardReason::PROACTIVE) {
-    auto intervention_policy =
-        GetTabSource()->intervention_policy_database()->GetDiscardingPolicy(
-            url::Origin::Create(web_contents()->GetLastCommittedURL()));
+  auto intervention_policy =
+      GetTabSource()->intervention_policy_database()->GetDiscardingPolicy(
+          url::Origin::Create(web_contents()->GetLastCommittedURL()));
 
-    switch (intervention_policy) {
-      case OriginInterventions::OPT_IN:
-        decision_details->AddReason(DecisionSuccessReason::GLOBAL_WHITELIST);
-        break;
-      case OriginInterventions::OPT_OUT:
-        decision_details->AddReason(DecisionFailureReason::GLOBAL_BLACKLIST);
-        break;
-      case OriginInterventions::DEFAULT:
-        break;
-    }
+  switch (intervention_policy) {
+    case OriginInterventions::OPT_IN:
+      decision_details->AddReason(DecisionSuccessReason::GLOBAL_WHITELIST);
+      break;
+    case OriginInterventions::OPT_OUT:
+      decision_details->AddReason(DecisionFailureReason::GLOBAL_BLACKLIST);
+      break;
+    case OriginInterventions::DEFAULT:
+      break;
   }
 }
 

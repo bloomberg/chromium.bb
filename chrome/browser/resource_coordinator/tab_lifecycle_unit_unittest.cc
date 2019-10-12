@@ -810,9 +810,17 @@ TEST_F(TabLifecycleUnitTest, CannotDiscardIfEnterpriseOptOutUsed) {
 
   {
     ScopedEnterpriseOptOut enterprise_opt_out;
-    ExpectCanDiscardFalseAllReasons(
-        &tab_lifecycle_unit,
-        DecisionFailureReason::LIFECYCLES_ENTERPRISE_POLICY_OPT_OUT);
+    DecisionDetails decision_details;
+    EXPECT_FALSE(tab_lifecycle_unit.CanDiscard(
+        LifecycleUnitDiscardReason::PROACTIVE, &decision_details));
+    EXPECT_EQ(DecisionFailureReason::LIFECYCLES_ENTERPRISE_POLICY_OPT_OUT,
+              decision_details.FailureReason());
+    EXPECT_FALSE(decision_details.IsPositive());
+
+    decision_details.Clear();
+    EXPECT_TRUE(tab_lifecycle_unit.CanDiscard(
+        LifecycleUnitDiscardReason::URGENT, &decision_details));
+    EXPECT_TRUE(decision_details.IsPositive());
   }
 
   ExpectCanDiscardTrueAllReasons(&tab_lifecycle_unit);
