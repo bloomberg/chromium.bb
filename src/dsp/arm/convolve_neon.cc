@@ -1165,9 +1165,7 @@ inline uint8x16_t GetPositive4TapFilter(const int tap_index) {
       {0, 34, 36, 40, 42, 44, 46, 48, 52, 54, 56, 58, 60, 62, 62, 62},
       {0, 2, 4, 4, 6, 8, 10, 12, 12, 14, 16, 18, 20, 22, 26, 30}};
 
-  uint8x16_t filter_taps =
-      vld1q_u8(kSubPixel4TapPositiveFilterColumns[tap_index]);
-  return filter_taps;
+  return vld1q_u8(kSubPixel4TapPositiveFilterColumns[tap_index]);
 }
 
 // This filter is only possible when width <= 4.
@@ -1244,9 +1242,7 @@ inline uint8x16_t GetSigned4TapFilter(const int tap_index) {
       {0, 8, 18, 28, 38, 48, 58, 66, 76, 84, 94, 102, 110, 116, 122, 126},
       {0, 2, 4, 6, 8, 10, 10, 10, 12, 12, 14, 12, 12, 10, 8, 4}};
 
-  uint8x16_t filter_taps =
-      vld1q_u8(kSubPixel4TapSignedFilterColumns[tap_index]);
-  return filter_taps;
+  return vld1q_u8(kSubPixel4TapSignedFilterColumns[tap_index]);
 }
 
 // This filter is only possible when width <= 4.
@@ -1324,9 +1320,7 @@ inline uint8x16_t GetSigned6TapFilter(const int tap_index) {
       {0, 2, 4, 8, 10, 12, 12, 12, 14, 14, 16, 14, 14, 12, 10, 6},
       {0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2}};
 
-  const uint8x16_t filter_taps =
-      vld1q_u8(kSubPixel6TapSignedFilterColumns[tap_index]);
-  return filter_taps;
+  return vld1q_u8(kSubPixel6TapSignedFilterColumns[tap_index]);
 }
 
 // This filter is only possible when width >= 8.
@@ -1410,9 +1404,7 @@ inline uint8x16_t GetPositive6TapFilter(const int tap_index) {
       {0, 34, 36, 40, 42, 44, 46, 48, 52, 54, 56, 58, 60, 62, 62, 62},
       {0, 2, 4, 4, 6, 8, 10, 12, 14, 16, 16, 18, 20, 22, 26, 28}};
 
-  const uint8x16_t filter_taps =
-      vld1q_u8(kSubPixel6TapPositiveFilterColumns[tap_index]);
-  return filter_taps;
+  return vld1q_u8(kSubPixel6TapPositiveFilterColumns[tap_index]);
 }
 
 // Mixed indicates that each column has both positive and negative values, so
@@ -1423,9 +1415,7 @@ inline int8x16_t GetMixed6TapFilter(const int tap_index) {
       {0, 2, 0, 0, 0, 0, 0, -2, -2, 0, 0, 0, 0, 0, 0, 0},
       {0, 0, 0, 0, 0, 0, 0, 0, -2, -2, 0, 0, 0, 0, 0, 2}};
 
-  const int8x16_t filter_taps =
-      vld1q_s8(kSubPixel6TapMixedFilterColumns[tap_index]);
-  return filter_taps;
+  return vld1q_s8(kSubPixel6TapMixedFilterColumns[tap_index]);
 }
 
 // This filter is only possible when width >= 8.
@@ -1521,9 +1511,7 @@ inline uint8x16_t GetSigned8TapFilter(const int tap_index) {
       {0, 2, 4, 6, 6, 8, 8, 10, 12, 10, 10, 10, 10, 8, 6, 2},
       {0, 0, 2, 2, 2, 2, 2, 2, 4, 4, 4, 4, 4, 2, 2, 2}};
 
-  const uint8x16_t filter_taps =
-      vld1q_u8(kSubPixel8TapSignedFilterColumns[tap_index]);
-  return filter_taps;
+  return vld1q_u8(kSubPixel8TapSignedFilterColumns[tap_index]);
 }
 
 // This filter is only possible when width >= 8.
