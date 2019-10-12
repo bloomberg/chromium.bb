@@ -1036,12 +1036,12 @@ void NetworkContext::CreateTCPConnectedSocket(
 void NetworkContext::CreateTCPBoundSocket(
     const net::IPEndPoint& local_addr,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
-    mojom::TCPBoundSocketRequest request,
+    mojo::PendingReceiver<mojom::TCPBoundSocket> receiver,
     CreateTCPBoundSocketCallback callback) {
   socket_factory_->CreateTCPBoundSocket(
       local_addr,
       static_cast<net::NetworkTrafficAnnotationTag>(traffic_annotation),
-      std::move(request), std::move(callback));
+      std::move(receiver), std::move(callback));
 }
 
 void NetworkContext::CreateProxyResolvingSocketFactory(

@@ -1000,7 +1000,7 @@ interface NetworkContext {
   // consumers can mimic Berkeley sockets semantics.
   CreateTCPBoundSocket(IPEndPoint local_addr,
                        MutableNetworkTrafficAnnotationTag traffic_annotation,
-                       TCPBoundSocket& socket)
+                       pending_receiver<TCPBoundSocket> socket)
       => (int32 result, IPEndPoint? local_addr);
 
   // Creates a ProxyResolvingSocketFactory that shares some configuration params
