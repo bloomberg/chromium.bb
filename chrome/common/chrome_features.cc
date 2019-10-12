@@ -646,11 +646,19 @@ const base::Feature kSitePerProcess {
 // Controls a mode for dynamically process-isolating sites where the user has
 // entered a password.  This is intended to be used primarily when full site
 // isolation is turned off.  To check whether this mode is enabled, use
-// ChromeSiteIsolationPolicy::IsIsolationForPasswordSitesEnabled() rather than
+// SiteIsolationPolicy::IsIsolationForPasswordSitesEnabled() rather than
 // checking the feature directly, since that decision is influenced by other
 // factors as well.
 const base::Feature kSiteIsolationForPasswordSites{
-    "site-isolation-for-password-sites", base::FEATURE_DISABLED_BY_DEFAULT};
+  "site-isolation-for-password-sites",
+// Enabled by default on Android; see https://crbug.com/849815.  Note that this
+// should not affect Android Webview, which does not include this code.
+#if defined(OS_ANDROID)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
 // kSitePerProcessOnlyForHighMemoryClients is checked before kSitePerProcess,
 // and (if enabled) can restrict if kSitePerProcess feature is checked at all -
