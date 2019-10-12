@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_PRESENTATION_RECEIVER_FLAGS_H_
-#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_PRESENTATION_RECEIVER_FLAGS_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_COMMON_PRESENTATION_PRESENTATION_RECEIVER_FLAGS_H_
+#define THIRD_PARTY_BLINK_PUBLIC_COMMON_PRESENTATION_PRESENTATION_RECEIVER_FLAGS_H_
 
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
 
@@ -38,10 +38,10 @@ namespace blink {
 // Disable popups, modals, and top-level navigation for presentation receivers.
 // See:
 // https://w3c.github.io/presentation-api/#creating-a-receiving-browsing-context
-static constexpr WebSandboxFlags kPresentationReceiverSandboxFlags =
+constexpr WebSandboxFlags kPresentationReceiverSandboxFlags =
     WebSandboxFlags::kPopups | WebSandboxFlags::kModals |
     WebSandboxFlags::kTopNavigation;
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_PRESENTATION_RECEIVER_FLAGS_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_COMMON_PRESENTATION_PRESENTATION_RECEIVER_FLAGS_H_
