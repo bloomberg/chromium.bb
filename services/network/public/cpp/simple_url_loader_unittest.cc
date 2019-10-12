@@ -600,6 +600,9 @@ class SimpleURLLoaderTestBase {
         mojom::URLLoaderFactoryParams::New();
     params->process_id = mojom::kBrowserProcessId;
     params->is_corb_enabled = false;
+    url::Origin origin = url::Origin::Create(test_server_.base_url());
+    params->network_isolation_key = net::NetworkIsolationKey(origin, origin);
+    params->is_trusted = true;
     network_context_->CreateURLLoaderFactory(
         mojo::MakeRequest(&url_loader_factory_), std::move(params));
 
@@ -673,6 +676,11 @@ class SimpleURLLoaderTest
     resource_request->url = url;
     resource_request->method = method;
     resource_request->enable_upload_progress = true;
+    resource_request->trusted_params =
+        network::ResourceRequest::TrustedParams();
+    url::Origin request_origin = url::Origin::Create(url);
+    resource_request->trusted_params->network_isolation_key =
+        net::NetworkIsolationKey(request_origin, request_origin);
     return std::make_unique<SimpleLoaderTestHelper>(std::move(resource_request),
                                                     GetParam());
   }
