@@ -7,7 +7,6 @@
 
 import __builtin__
 import datetime
-import httplib2
 import json
 import logging
 import os
@@ -19,6 +18,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
 from testing_support import auto_stub
+from third_party import httplib2
 from third_party import mock
 
 import auth
