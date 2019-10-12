@@ -1973,7 +1973,7 @@
   {
     "name": "enable-webgl2-compute-context",
     "owners": [ "webgl-team@google.com" ],
-    "expiry_milestone": 77
+    "expiry_milestone": 81
   },
   {
     "name": "enable-webnfc",
