@@ -10548,6 +10548,7 @@
       }
     ]
   },
+  "ios-simulator-cr-recipe": {},
   "linux-annotator-rel": {
     "scripts": [
       {
