@@ -2171,12 +2171,12 @@ void NetworkContext::GetOriginPolicyManager(
   origin_policy_manager_->AddReceiver(std::move(receiver));
 }
 
-mojom::URLLoaderFactoryPtr
+mojo::PendingRemote<mojom::URLLoaderFactory>
 NetworkContext::CreateUrlLoaderFactoryForNetworkService() {
   auto url_loader_factory_params = mojom::URLLoaderFactoryParams::New();
   url_loader_factory_params->process_id = network::mojom::kBrowserProcessId;
-  mojom::URLLoaderFactoryPtr url_loader_factory;
-  CreateURLLoaderFactory(mojo::MakeRequest(&url_loader_factory),
+  mojo::PendingRemote<mojom::URLLoaderFactory> url_loader_factory;
+  CreateURLLoaderFactory(url_loader_factory.InitWithNewPipeAndPassReceiver(),
                          std::move(url_loader_factory_params));
   return url_loader_factory;
 }
