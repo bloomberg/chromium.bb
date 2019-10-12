@@ -759,8 +759,13 @@ SMILTime SVGSMILElement::RepeatingDuration() const {
   return repeat_dur;
 }
 
-SMILTime SVGSMILElement::ResolveActiveEnd(SMILTime resolved_begin,
-                                          SMILTime resolved_end) const {
+SMILTime SVGSMILElement::ResolveActiveEnd(SMILTime resolved_begin) const {
+  SMILTime resolved_end = FindInstanceTime(kEnd, resolved_begin, false);
+  if (resolved_end.IsUnresolved()) {
+    // If we have no pending end conditions, don't generate a new interval.
+    if (!end_times_.IsEmpty() && !has_end_event_conditions_)
+      return SMILTime::Unresolved();
+  }
   // Computing the active duration
   // http://www.w3.org/TR/SMIL2/smil-timing.html#Timing-ComputingActiveDur
   SMILTime preliminary_active_duration;
@@ -793,15 +798,10 @@ SMILInterval SVGSMILElement::ResolveInterval(SMILTime begin_after,
     SMILTime temp_begin = FindInstanceTime(kBegin, begin_after, true);
     if (temp_begin.IsUnresolved())
       break;
-    SMILTime temp_end = FindInstanceTime(kEnd, temp_begin, false);
-    if (temp_end.IsUnresolved()) {
-      // If we have no pending end conditions, don't generate a new interval.
-      if (!end_times_.IsEmpty() && !has_end_event_conditions_)
-        break;
-    }
-    temp_end = ResolveActiveEnd(temp_begin, temp_end);
-    // If this is the first interval being resolved, don't allow it to end
-    // before the origin of the timeline.
+    SMILTime temp_end = ResolveActiveEnd(temp_begin);
+    if (temp_end.IsUnresolved())
+      break;
+    // Don't allow the interval to end in the past.
     if (temp_end > end_after) {
       DCHECK(!temp_begin.IsIndefinite());
       return SMILInterval(temp_begin, temp_end);
@@ -882,15 +882,12 @@ void SVGSMILElement::DiscardOrRevalidateCurrentInterval(
   // If we have a current interval but it has not yet ended, re-resolve the
   // end time.
   if (interval_.EndsAfter(presentation_time)) {
-    SMILTime new_end = FindInstanceTime(kEnd, interval_.begin, false);
+    SMILTime new_end = ResolveActiveEnd(interval_.begin);
     if (new_end.IsUnresolved()) {
-      // If we have no pending end conditions, discard the current interval.
-      if (!end_times_.IsEmpty() && !has_end_event_conditions_) {
-        interval_ = SMILInterval::Unresolved();
-        return;
-      }
+      // No active duration, discard the current interval.
+      interval_ = SMILInterval::Unresolved();
+      return;
     }
-    new_end = ResolveActiveEnd(interval_.begin, new_end);
     if (new_end != interval_.end)
       SetNewIntervalEnd(new_end, presentation_time);
   }
