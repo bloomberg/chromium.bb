@@ -186,8 +186,8 @@ SVGSMILElement::SVGSMILElement(const QualifiedName& tag_name, Document& doc)
       has_end_event_conditions_(false),
       is_waiting_for_first_interval_(true),
       is_scheduled_(false),
-      interval_{SMILTime::Unresolved(), SMILTime::Unresolved()},
-      previous_interval_{SMILTime::Unresolved(), SMILTime::Unresolved()},
+      interval_(SMILInterval::Unresolved()),
+      previous_interval_(SMILInterval::Unresolved()),
       next_interval_time_(SMILTime::Earliest()),
       active_state_(kInactive),
       restart_(kRestartAlways),
@@ -255,8 +255,8 @@ static inline void RemoveInstanceTimesWithOrigin(
 void SVGSMILElement::Reset() {
   active_state_ = kInactive;
   is_waiting_for_first_interval_ = true;
-  interval_ = {SMILTime::Unresolved(), SMILTime::Unresolved()};
-  previous_interval_ = {SMILTime::Unresolved(), SMILTime::Unresolved()};
+  interval_ = SMILInterval::Unresolved();
+  previous_interval_ = SMILInterval::Unresolved();
   next_interval_time_ = SMILTime::Earliest();
   last_progress_ = {0.0f, 0};
 }
@@ -809,7 +809,7 @@ SMILInterval SVGSMILElement::ResolveInterval(SMILTime begin_after,
 
     begin_after = temp_end;
   }
-  return SMILInterval(SMILTime::Unresolved(), SMILTime::Unresolved());
+  return SMILInterval::Unresolved();
 }
 
 void SVGSMILElement::SetNewInterval(const SMILInterval& interval,
@@ -875,7 +875,7 @@ void SVGSMILElement::DiscardOrRevalidateCurrentInterval(
     return;
   // If the current interval has not yet started, discard it and re-resolve.
   if (interval_.BeginsAfter(presentation_time)) {
-    interval_ = {SMILTime::Unresolved(), SMILTime::Unresolved()};
+    interval_ = SMILInterval::Unresolved();
     return;
   }
 
@@ -886,7 +886,7 @@ void SVGSMILElement::DiscardOrRevalidateCurrentInterval(
     if (new_end.IsUnresolved()) {
       // If we have no pending end conditions, discard the current interval.
       if (!end_times_.IsEmpty() && !has_end_event_conditions_) {
-        interval_ = {SMILTime::Unresolved(), SMILTime::Unresolved()};
+        interval_ = SMILInterval::Unresolved();
         return;
       }
     }
