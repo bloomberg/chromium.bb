@@ -249,7 +249,7 @@ static const char *opcodeNames[CTO_None] = {
 	"attribute",
 };
 
-static short gOpcodeLengths[CTO_None] = { 0 };
+static short opcodeLengths[CTO_None] = { 0 };
 
 static void
 compileError(FileInfo *nested, const char *format, ...);
@@ -1057,7 +1057,7 @@ allocateCharacterClasses(CharacterClass **characterClasses,
 }
 
 static TranslationTableOpcode
-getOpcode(FileInfo *nested, const CharsString *token, short opcodeLengths[]) {
+getOpcode(FileInfo *nested, const CharsString *token) {
 	static TranslationTableOpcode lastOpcode = 0;
 	TranslationTableOpcode opcode = lastOpcode;
 
@@ -1083,7 +1083,7 @@ _lou_findOpcodeNumber(const char *toFind) {
 	TranslationTableOpcode opcode = lastOpcode;
 	int length = (int)strlen(toFind);
 	do {
-		if (length == gOpcodeLengths[opcode] &&
+		if (length == opcodeLengths[opcode] &&
 				strcasecmp(toFind, opcodeNames[opcode]) == 0) {
 			lastOpcode = opcode;
 			return opcode;
@@ -1452,9 +1452,9 @@ static int
 includeFile(FileInfo *nested, CharsString *includedFile,
 		CharacterClass **characterClasses,
 		TranslationTableCharacterAttributes *characterClassAttribute,
-		short opcodeLengths[], TranslationTableOffset *newRuleOffset,
-		TranslationTableRule **newRule, RuleName **ruleNames,
-		TranslationTableHeader **table, DisplayTableHeader **displayTable);
+		TranslationTableOffset *newRuleOffset, TranslationTableRule **newRule,
+		RuleName **ruleNames, TranslationTableHeader **table,
+		DisplayTableHeader **displayTable);
 
 static struct RuleName *gRuleNames = NULL;
 
@@ -2577,9 +2577,9 @@ compileBeforeAfter(FileInfo *nested, int *lastToken) {
 static int
 compileRule(FileInfo *nested, CharacterClass **characterClasses,
 		TranslationTableCharacterAttributes *characterClassAttribute,
-		short opcodeLengths[], TranslationTableOffset *newRuleOffset,
-		TranslationTableRule **newRule, RuleName **ruleNames,
-		TranslationTableHeader **table, DisplayTableHeader **displayTable) {
+		TranslationTableOffset *newRuleOffset, TranslationTableRule **newRule,
+		RuleName **ruleNames, TranslationTableHeader **table,
+		DisplayTableHeader **displayTable) {
 	int lastToken = 0;
 	int ok = 1;
 	CharsString token;
@@ -2606,7 +2606,7 @@ doOpcode:
 		if (table) compileHyphenation(nested, &token, &lastToken, table);
 		return 1;
 	}
-	opcode = getOpcode(nested, &token, opcodeLengths);
+	opcode = getOpcode(nested, &token);
 	switch (opcode) { /* Carry out operations */
 	case CTO_Space:
 		compileCharDef(nested, opcode, CTC_Space, &lastToken, newRuleOffset, newRule,
@@ -2674,8 +2674,8 @@ doOpcode:
 			if (getToken(nested, &token, "include file name", &lastToken))
 				if (parseChars(nested, &includedFile, &token))
 					if (!includeFile(nested, &includedFile, characterClasses,
-								characterClassAttribute, opcodeLengths, newRuleOffset,
-								newRule, ruleNames, table, displayTable))
+								characterClassAttribute, newRuleOffset, newRule,
+								ruleNames, table, displayTable))
 						ok = 0;
 			break;
 		}
@@ -3575,7 +3575,7 @@ doOpcode:
 			if (getToken(nested, &token, "multiple braille indicators", &lastToken) &&
 					parseDots(nested, &cells, &token)) {
 				while ((t = getToken(nested, &token, "multind opcodes", &lastToken))) {
-					opcode = getOpcode(nested, &token, opcodeLengths);
+					opcode = getOpcode(nested, &token);
 					if (opcode >= CTO_CapsLetter && opcode < CTO_MultInd)
 						ruleChars.chars[ruleChars.length++] = (widechar)opcode;
 					else {
@@ -3763,9 +3763,9 @@ lou_readCharFromFile(const char *fileName, int *mode) {
 static int
 compileString(const char *inString, CharacterClass **characterClasses,
 		TranslationTableCharacterAttributes *characterClassAttribute,
-		short opcodeLengths[], TranslationTableOffset *newRuleOffset,
-		TranslationTableRule **newRule, RuleName **ruleNames,
-		TranslationTableHeader **table, DisplayTableHeader **displayTable) {
+		TranslationTableOffset *newRuleOffset, TranslationTableRule **newRule,
+		RuleName **ruleNames, TranslationTableHeader **table,
+		DisplayTableHeader **displayTable) {
 	/* This function can be used to make changes to tables on the fly. */
 	int k;
 	FileInfo nested;
@@ -3779,8 +3779,8 @@ compileString(const char *inString, CharacterClass **characterClasses,
 	for (k = 0; inString[k]; k++) nested.line[k] = inString[k];
 	nested.line[k] = 0;
 	nested.linelen = k;
-	return compileRule(&nested, characterClasses, characterClassAttribute, opcodeLengths,
-			newRuleOffset, newRule, ruleNames, table, displayTable);
+	return compileRule(&nested, characterClasses, characterClassAttribute, newRuleOffset,
+			newRule, ruleNames, table, displayTable);
 }
 
 static int
@@ -4036,9 +4036,9 @@ static int fileCount = 0;
 static int
 compileFile(const char *fileName, CharacterClass **characterClasses,
 		TranslationTableCharacterAttributes *characterClassAttribute,
-		short opcodeLengths[], TranslationTableOffset *newRuleOffset,
-		TranslationTableRule **newRule, RuleName **ruleNames,
-		TranslationTableHeader **table, DisplayTableHeader **displayTable) {
+		TranslationTableOffset *newRuleOffset, TranslationTableRule **newRule,
+		RuleName **ruleNames, TranslationTableHeader **table,
+		DisplayTableHeader **displayTable) {
 	FileInfo nested;
 	fileCount++;
 	nested.fileName = fileName;
@@ -4047,8 +4047,8 @@ compileFile(const char *fileName, CharacterClass **characterClasses,
 	nested.lineNumber = 0;
 	if ((nested.in = fopen(nested.fileName, "rb"))) {
 		while (_lou_getALine(&nested))
-			compileRule(&nested, characterClasses, characterClassAttribute, opcodeLengths,
-					newRuleOffset, newRule, ruleNames, table, displayTable);
+			compileRule(&nested, characterClasses, characterClassAttribute, newRuleOffset,
+					newRule, ruleNames, table, displayTable);
 		fclose(nested.in);
 		return 1;
 	} else
@@ -4076,9 +4076,9 @@ static int
 includeFile(FileInfo *nested, CharsString *includedFile,
 		CharacterClass **characterClasses,
 		TranslationTableCharacterAttributes *characterClassAttribute,
-		short opcodeLengths[], TranslationTableOffset *newRuleOffset,
-		TranslationTableRule **newRule, RuleName **ruleNames,
-		TranslationTableHeader **table, DisplayTableHeader **displayTable) {
+		TranslationTableOffset *newRuleOffset, TranslationTableRule **newRule,
+		RuleName **ruleNames, TranslationTableHeader **table,
+		DisplayTableHeader **displayTable) {
 	int k;
 	char includeThis[MAXSTRING];
 	char **tableFiles;
@@ -4103,7 +4103,7 @@ includeFile(FileInfo *nested, CharsString *includedFile,
 		return 0;
 	}
 	rv = compileFile(*tableFiles, characterClasses, characterClassAttribute,
-			opcodeLengths, newRuleOffset, newRule, ruleNames, table, displayTable);
+			newRuleOffset, newRule, ruleNames, table, displayTable);
 	free_tablefiles(tableFiles);
 	return rv;
 }
@@ -4116,8 +4116,8 @@ static int
 compileTable(const char *tableList, TranslationTableHeader **translationTable,
 		DisplayTableHeader **displayTable, CharacterClass **characterClasses,
 		TranslationTableCharacterAttributes *characterClassAttribute,
-		short opcodeLengths[], TranslationTableOffset *newRuleOffset,
-		TranslationTableRule **newRule, RuleName **ruleNames) {
+		TranslationTableOffset *newRuleOffset, TranslationTableRule **newRule,
+		RuleName **ruleNames) {
 	if (translationTable) *translationTable = NULL;
 	if (displayTable) *displayTable = NULL;
 	char **tableFiles;
@@ -4143,8 +4143,8 @@ compileTable(const char *tableList, TranslationTableHeader **translationTable,
 	   liblouisutdml. Find a way to satisfy those requirements without hard coding
 	   some characters in every table notably behind the users back */
 	compileString("space \\xffff 123456789abcdef LOU_ENDSEGMENT", characterClasses,
-			characterClassAttribute, opcodeLengths, newRuleOffset, newRule, ruleNames,
-			translationTable, displayTable);
+			characterClassAttribute, newRuleOffset, newRule, ruleNames, translationTable,
+			displayTable);
 
 	/* Compile all subtables in the list */
 	if (!(tableFiles = _lou_resolveTable(tableList, NULL))) {
@@ -4153,8 +4153,7 @@ compileTable(const char *tableList, TranslationTableHeader **translationTable,
 	}
 	for (subTable = tableFiles; *subTable; subTable++)
 		if (!compileFile(*subTable, characterClasses, characterClassAttribute,
-					opcodeLengths, newRuleOffset, newRule, ruleNames, translationTable,
-					displayTable))
+					newRuleOffset, newRule, ruleNames, translationTable, displayTable))
 			goto cleanup;
 
 /* Clean up after compiling files */
@@ -4261,8 +4260,8 @@ lou_getTable(const char *tableList) {
 		if (translationTable == NULL) newTranslationTable = &translationTable;
 		if (displayTable == NULL) newDisplayTable = &displayTable;
 		if (compileTable(tableList, newTranslationTable, newDisplayTable,
-					&gCharacterClasses, &gCharacterClassAttribute, gOpcodeLengths,
-					&gNewRuleOffset, &gNewRule, &gRuleNames)) {
+					&gCharacterClasses, &gCharacterClassAttribute, &gNewRuleOffset,
+					&gNewRule, &gRuleNames)) {
 			/* Add a new entry to the top of the table chain. */
 			if (newTranslationTable != NULL) {
 				int entrySize = sizeof(TranslationTableChainEntry) + tableListLen;
@@ -4469,7 +4468,7 @@ lou_free(void) {
 	if (posMapping3 != NULL) free(posMapping3);
 	posMapping3 = NULL;
 	sizePosMapping3 = 0;
-	gOpcodeLengths[0] = 0;
+	opcodeLengths[0] = 0;
 }
 
 const char *EXPORT_CALL
@@ -4489,8 +4488,7 @@ lou_compileString(const char *tableList, const char *inString) {
 	TranslationTableHeader *table = lou_getTable(tableList);
 	if (!table) return 0;
 	r = compileString(inString, &gCharacterClasses, &gCharacterClassAttribute,
-			gOpcodeLengths, &gNewRuleOffset, &gNewRule, &gRuleNames, &table,
-			&currentDisplayTable);
+			&gNewRuleOffset, &gNewRule, &gRuleNames, &table, &currentDisplayTable);
 	return r;
 }
 
