@@ -2915,8 +2915,6 @@ crbug.com/626703 external/wpt/css/css-ui/webkit-appearance-auto-001.html [ Failu
 crbug.com/626703 external/wpt/web-animations/interfaces/Animation/persist.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-writing-modes/text-combine-upright-digits-004-manual.html [ Skip ]
 crbug.com/626703 external/wpt/html/semantics/scripting-1/the-script-element/json-module/parse-error.tentative.html [ Timeout ]
-crbug.com/626703 [ Mac10.13 ] external/wpt/preload/preload-with-type.html [ Failure Timeout ]
-crbug.com/626703 [ Retina ] external/wpt/preload/preload-with-type.html [ Timeout ]
 crbug.com/626703 [ Mac10.13 ] external/wpt/preload/onload-event.html [ Failure Timeout ]
 crbug.com/626703 [ Retina ] external/wpt/preload/onload-event.html [ Timeout ]
 crbug.com/626703 external/wpt/html/rendering/widgets/button-layout/anonymous-button-content-box.html [ Failure ]
