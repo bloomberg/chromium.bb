@@ -38,7 +38,7 @@ constexpr int kMinFramesForThroughputMetric = 4;
 enum class ThreadType {
   kMain,
   kCompositor,
-  kSlowerThread,
+  kSlower,
 };
 
 constexpr int kBuiltinSequenceNum =
@@ -254,8 +254,7 @@ void FrameSequenceTracker::ReportMetrics() {
   }
   if (slower_throughput.has_value()) {
     ThroughputData::ReportHistogram(
-        type_, "SlowerThread",
-        GetIndexForMetric(ThreadType::kSlowerThread, type_),
+        type_, "SlowerThread", GetIndexForMetric(ThreadType::kSlower, type_),
         slower_throughput.value());
   }
 
