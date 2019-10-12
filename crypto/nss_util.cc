@@ -645,11 +645,7 @@ class NSSInitSingleton {
  private:
   friend struct base::LazyInstanceTraitsBase<NSSInitSingleton>;
 
-  NSSInitSingleton()
-      : tpm_token_enabled_for_nss_(false),
-        initializing_tpm_token_(false),
-        chaps_module_(nullptr),
-        root_(nullptr) {
+  NSSInitSingleton() {
     // Initializing NSS causes us to do blocking IO.
     // Temporarily allow it until we fix
     //   http://code.google.com/p/chromium/issues/detail?id=59847
@@ -768,14 +764,14 @@ class NSSInitSingleton {
     return module;
   }
 
-  bool tpm_token_enabled_for_nss_;
-  bool initializing_tpm_token_;
-  typedef std::vector<base::OnceClosure> TPMReadyCallbackList;
-  TPMReadyCallbackList tpm_ready_callback_list_;
-  SECMODModule* chaps_module_;
-  crypto::ScopedPK11Slot tpm_slot_;
-  SECMODModule* root_;
+  SECMODModule* root_ = nullptr;
 #if defined(OS_CHROMEOS)
+  bool tpm_token_enabled_for_nss_ = false;
+  bool initializing_tpm_token_ = false;
+  using TPMReadyCallbackList = std::vector<base::OnceClosure>;
+  TPMReadyCallbackList tpm_ready_callback_list_;
+  SECMODModule* chaps_module_ = nullptr;
+  crypto::ScopedPK11Slot tpm_slot_;
   std::map<std::string, std::unique_ptr<ChromeOSUserData>> chromeos_user_map_;
   ScopedPK11Slot test_system_slot_;
   ScopedPK11Slot prepared_test_private_slot_;
