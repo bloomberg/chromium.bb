@@ -49,29 +49,14 @@ constexpr int kAngleStep = 3;
 constexpr int kPredictionModeToAngle[kIntraPredictionModesUV] = {
     0, 90, 180, 45, 135, 113, 157, 203, 67, 0, 0, 0, 0};
 
-enum : uint8_t {
-  kNeedsLeft = 1,
-  kNeedsTop = 2,
-};
-
-// The values for directional and dc modes are not used since the left/top
-// requirement for those modes depend on the prediction angle and the type of dc
-// mode.
-constexpr BitMaskSet kPredictionModeNeedsMask[kIntraPredictionModesY] = {
-    BitMaskSet(0),                      // kPredictionModeDc
-    BitMaskSet(kNeedsTop),              // kPredictionModeVertical
-    BitMaskSet(kNeedsLeft),             // kPredictionModeHorizontal
-    BitMaskSet(kNeedsTop),              // kPredictionModeD45
-    BitMaskSet(kNeedsLeft, kNeedsTop),  // kPredictionModeD135
-    BitMaskSet(kNeedsLeft, kNeedsTop),  // kPredictionModeD113
-    BitMaskSet(kNeedsLeft, kNeedsTop),  // kPredictionModeD157
-    BitMaskSet(kNeedsLeft),             // kPredictionModeD203
-    BitMaskSet(kNeedsTop),              // kPredictionModeD67
-    BitMaskSet(kNeedsLeft, kNeedsTop),  // kPredictionModeSmooth
-    BitMaskSet(kNeedsLeft, kNeedsTop),  // kPredictionModeSmoothVertical
-    BitMaskSet(kNeedsLeft, kNeedsTop),  // kPredictionModeSmoothHorizontal
-    BitMaskSet(kNeedsLeft, kNeedsTop)   // kPredictionModePaeth
-};
+// The following modes need both the left_column and top_row for intra
+// prediction. For directional modes left/top requirement is inferred based on
+// the prediction angle. For Dc modes, left/top requirement is inferred based on
+// whether or not left/top is available.
+constexpr BitMaskSet kNeedsLeftAndTop(kPredictionModeSmooth,
+                                      kPredictionModeSmoothHorizontal,
+                                      kPredictionModeSmoothVertical,
+                                      kPredictionModePaeth);
 
 int16_t GetDirectionalIntraPredictorDerivative(const int angle) {
   assert(angle >= 3);
@@ -298,8 +283,7 @@ void Tile::IntraPrediction(const Block& block, Plane plane, int x, int y,
                 prediction_parameters.angle_delta[GetPlaneType(plane)] *
                     kAngleStep
           : 0;
-  const bool needs_top = use_filter_intra ||
-                         kPredictionModeNeedsMask[mode].Contains(kNeedsTop) ||
+  const bool needs_top = use_filter_intra || kNeedsLeftAndTop.Contains(mode) ||
                          (is_directional_mode && prediction_angle < 180) ||
                          (mode == kPredictionModeDc && has_top);
   Array2DView<Pixel> buffer(buffer_[plane].rows(),
@@ -327,8 +311,7 @@ void Tile::IntraPrediction(const Block& block, Plane plane, int x, int y,
       }
     }
   }
-  const bool needs_left = use_filter_intra ||
-                          kPredictionModeNeedsMask[mode].Contains(kNeedsLeft) ||
+  const bool needs_left = use_filter_intra || kNeedsLeftAndTop.Contains(mode) ||
                           (is_directional_mode && prediction_angle > 90) ||
                           (mode == kPredictionModeDc && has_left);
   if (needs_left) {
@@ -364,9 +347,9 @@ void Tile::IntraPrediction(const Block& block, Plane plane, int x, int y,
                                 prediction_parameters.filter_intra_mode, width,
                                 height);
   } else if (is_directional_mode) {
-    DirectionalPrediction(block, plane, x, y, has_left, has_top,
-                          prediction_angle, width, height, max_x, max_y,
-                          tx_size, top_row, left_column);
+    DirectionalPrediction(block, plane, x, y, has_left, has_top, needs_left,
+                          needs_top, prediction_angle, width, height, max_x,
+                          max_y, tx_size, top_row, left_column);
   } else {
     const dsp::IntraPredictor predictor =
         GetIntraPredictor(mode, has_left, has_top);
@@ -436,10 +419,10 @@ int Tile::GetIntraEdgeFilterType(const Block& block, Plane plane) const {
 
 template <typename Pixel>
 void Tile::DirectionalPrediction(const Block& block, Plane plane, int x, int y,
-                                 bool has_left, bool has_top,
-                                 int prediction_angle, int width, int height,
-                                 int max_x, int max_y, TransformSize tx_size,
-                                 Pixel* const top_row,
+                                 bool has_left, bool has_top, bool needs_left,
+                                 bool needs_top, int prediction_angle,
+                                 int width, int height, int max_x, int max_y,
+                                 TransformSize tx_size, Pixel* const top_row,
                                  Pixel* const left_column) {
   bool upsampled_top = false;
   bool upsampled_left = false;
@@ -452,7 +435,7 @@ void Tile::DirectionalPrediction(const Block& block, Plane plane, int x, int y,
         left_column[-1] = top_row[-1] = RightShiftWithRounding(
             left_column[0] * 5 + top_row[-1] * 6 + top_row[0] * 5, 4);
       }
-      if (has_top) {
+      if (has_top && needs_top) {
         const int strength = GetIntraEdgeFilterStrength(
             width, height, filter_type, prediction_angle - 90);
         if (strength > 0) {
@@ -461,7 +444,7 @@ void Tile::DirectionalPrediction(const Block& block, Plane plane, int x, int y,
           dsp_.intra_edge_filter(top_row - 1, num_pixels, strength);
         }
       }
-      if (has_left) {
+      if (has_left && needs_left) {
         const int strength = GetIntraEdgeFilterStrength(
             width, height, filter_type, prediction_angle - 180);
         if (strength > 0) {
@@ -473,13 +456,13 @@ void Tile::DirectionalPrediction(const Block& block, Plane plane, int x, int y,
     }
     upsampled_top = DoIntraEdgeUpsampling(width, height, filter_type,
                                           prediction_angle - 90);
-    if (upsampled_top) {
+    if (upsampled_top && needs_top) {
       const int num_pixels = width + ((prediction_angle < 90) ? height : 0);
       dsp_.intra_edge_upsampler(top_row, num_pixels);
     }
     upsampled_left = DoIntraEdgeUpsampling(width, height, filter_type,
                                            prediction_angle - 180);
-    if (upsampled_left) {
+    if (upsampled_left && needs_left) {
       const int num_pixels = height + ((prediction_angle > 180) ? width : 0);
       dsp_.intra_edge_upsampler(left_column, num_pixels);
     }

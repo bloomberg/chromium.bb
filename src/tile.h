@@ -469,8 +469,9 @@ class Tile : public Allocable {
                              Plane plane) const;  // 7.11.2.8.
   template <typename Pixel>
   void DirectionalPrediction(const Block& block, Plane plane, int x, int y,
-                             bool has_left, bool has_top, int prediction_angle,
-                             int width, int height, int max_x, int max_y,
+                             bool has_left, bool has_top, bool needs_left,
+                             bool needs_top, int prediction_angle, int width,
+                             int height, int max_x, int max_y,
                              TransformSize tx_size, Pixel* top_row,
                              Pixel* left_column);  // 7.11.2.4.
   template <typename Pixel>
