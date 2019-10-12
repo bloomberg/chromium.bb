@@ -6305,29 +6305,13 @@ void RenderFrameImpl::BeginNavigation(
     // All navigations to or from WebUI URLs or within WebUI-enabled
     // RenderProcesses must be handled by the browser process so that the
     // correct bindings and data sources can be registered.
-    // Similarly, navigations to view-source URLs or within ViewSource mode
-    // must be handled by the browser process (except for reloads - those are
-    // safe to leave within the renderer).
-    // Lastly, access to file:// URLs from non-file:// URL pages must be
-    // handled by the browser so that ordinary renderer processes don't get
-    // blessed with file permissions.
     int cumulative_bindings = RenderProcess::current()->GetEnabledBindings();
-    bool is_initial_navigation = render_view_->history_list_length_ == 0;
-    bool should_fork =
-        HasWebUIScheme(url) || HasWebUIScheme(old_url) ||
-        (cumulative_bindings & kWebUIBindingsPolicyMask) ||
-        url.SchemeIs(kViewSourceScheme) ||
-        (frame_->IsViewSourceModeEnabled() &&
-         info->navigation_type != blink::kWebNavigationTypeReload);
-    if (!should_fork && url.SchemeIs(url::kFileScheme)) {
-      // Fork non-file to file opens.  Note that this may fork unnecessarily if
-      // another tab (hosting a file or not) targeted this one before its
-      // initial navigation, but that shouldn't cause a problem.
-      should_fork = !old_url.SchemeIs(url::kFileScheme);
-    }
+    bool should_fork = HasWebUIScheme(url) || HasWebUIScheme(old_url) ||
+                       (cumulative_bindings & kWebUIBindingsPolicyMask);
 
     if (!should_fork) {
       // Give the embedder a chance.
+      bool is_initial_navigation = render_view_->history_list_length_ == 0;
       should_fork = GetContentClient()->renderer()->ShouldFork(
           frame_, url, info->url_request.HttpMethod().Utf8(),
           is_initial_navigation, false /* is_redirect */);
