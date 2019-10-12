@@ -1689,8 +1689,7 @@ void PaintLayerScrollableArea::PositionOverflowControls() {
 }
 
 void PaintLayerScrollableArea::UpdateScrollCornerStyle() {
-  bool can_update = HasScrollbar() && !HasOverlayScrollbars();
-  if (!can_update) {
+  if (!HasNonOverlayOverflowControls()) {
     if (scroll_corner_) {
       scroll_corner_->Destroy();
       scroll_corner_ = nullptr;
