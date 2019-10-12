@@ -1458,26 +1458,8 @@ static int estimate_strength(AV1_COMP *cpi, int distance, int group_boost,
 // Apply buffer limits and context specific adjustments to arnr filter.
 static void adjust_arnr_filter(AV1_COMP *cpi, int distance, int group_boost,
                                int *arnr_frames, int *arnr_strength,
-                               double *sigma) {
-  const AV1EncoderConfig *const oxcf = &cpi->oxcf;
-  const int frames_after_arf =
-      av1_lookahead_depth(cpi->lookahead) - distance - 1;
-  int frames_fwd = (cpi->oxcf.arnr_max_frames - 1) >> 1;
-  int frames_bwd;
-  int frames;
-
-  // Define the forward and backwards filter limits for this arnr group.
-  if (frames_fwd > frames_after_arf) frames_fwd = frames_after_arf;
-  if (frames_fwd > distance) frames_fwd = distance;
-
-  frames_bwd = frames_fwd;
-
-  // For even length filter there is one more frame backward
-  // than forward: e.g. len=6 ==> bbbAff, len=7 ==> bbbAfff.
-  if (frames_bwd < distance) frames_bwd += (oxcf->arnr_max_frames + 1) & 0x1;
-
-  // Set the baseline active filter size.
-  frames = frames_bwd + 1 + frames_fwd;
+                               double *sigma, int *frm_bwd, int *frm_fwd) {
+  int frames = cpi->oxcf.arnr_max_frames;
 
   // Adjust number of frames in filter and strength based on gf boost level.
   if (frames > group_boost / 150) {
@@ -1485,8 +1467,22 @@ static void adjust_arnr_filter(AV1_COMP *cpi, int distance, int group_boost,
     frames += !(frames & 1);
   }
 
+  const int frames_after_arf =
+      av1_lookahead_depth(cpi->lookahead) - distance - 1;
+  int frames_fwd = (frames - 1) >> 1;
+  int frames_bwd = frames >> 1;
+
+  // Define the forward and backwards filter limits for this arnr group.
+  if (frames_fwd > frames_after_arf) frames_fwd = frames_after_arf;
+  if (frames_bwd > distance) frames_bwd = distance;
+
+  // Set the baseline active filter size.
+  frames = frames_bwd + 1 + frames_fwd;
+
   *arnr_frames = frames;
   *arnr_strength = estimate_strength(cpi, distance, group_boost, sigma);
+  *frm_bwd = frames_bwd;
+  *frm_fwd = frames_fwd;
 }
 
 int av1_temporal_filter(AV1_COMP *cpi, int distance) {
@@ -1533,11 +1529,8 @@ int av1_temporal_filter(AV1_COMP *cpi, int distance) {
     start_frame = distance + frames_to_blur_forward;
   } else {
     adjust_arnr_filter(cpi, distance, rc->gfu_boost, &frames_to_blur, &strength,
-                       &sigma);
-    // TODO(yunqing): frames_to_blur_backward calculation below isn't
-    // consistent with the calculation in adjust_arnr_filter(). Will fix it.
-    frames_to_blur_backward = (frames_to_blur / 2);
-    frames_to_blur_forward = ((frames_to_blur - 1) / 2);
+                       &sigma, &frames_to_blur_backward,
+                       &frames_to_blur_forward);
     start_frame = distance + frames_to_blur_forward;
   }
 
