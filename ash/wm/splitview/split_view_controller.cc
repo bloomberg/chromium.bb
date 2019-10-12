@@ -703,7 +703,6 @@ void SplitViewController::EndSplitView(EndReason end_reason) {
 
   StopObserving(LEFT);
   StopObserving(RIGHT);
-  split_view_divider_.reset();
   black_scrim_layer_.reset();
   default_snap_position_ = NONE;
   divider_position_ = -1;
@@ -711,6 +710,10 @@ void SplitViewController::EndSplitView(EndReason end_reason) {
   snapping_window_transformed_bounds_map_.clear();
 
   UpdateStateAndNotifyObservers();
+  // Close splitview divider widget after updating state so that
+  // OnDisplayMetricsChanged triggered by the widget closing correctly
+  // finds out !InSplitViewMode().
+  split_view_divider_.reset();
   base::RecordAction(base::UserMetricsAction("SplitView_EndSplitView"));
   UMA_HISTOGRAM_LONG_TIMES("Ash.SplitView.TimeInSplitView",
                            base::Time::Now() - splitview_start_time_);

@@ -340,10 +340,6 @@ TEST_P(TabletModeWindowManagerTest,
   EXPECT_FALSE(WindowState::Get(fixed_window.get())->IsMaximized());
   EXPECT_EQ(rect.ToString(), fixed_window->bounds().ToString());
 
-  gfx::Size workspace_size =
-      screen_util::GetMaximizedWindowBoundsInParent(unlimited_window.get())
-          .size();
-
   // Create the manager and make sure that all qualifying windows were detected
   // and changed.
   TabletModeWindowManager* manager = CreateTabletModeWindowManager();
@@ -352,7 +348,10 @@ TEST_P(TabletModeWindowManagerTest,
   // The unlimited window should have the size of the workspace / parent window.
   EXPECT_FALSE(WindowState::Get(unlimited_window.get())->IsMaximized());
   EXPECT_EQ("0,0", unlimited_window->bounds().origin().ToString());
-  EXPECT_EQ(workspace_size.ToString(),
+  const gfx::Size workspace_size_tablet_mode =
+      screen_util::GetMaximizedWindowBoundsInParent(unlimited_window.get())
+          .size();
+  EXPECT_EQ(workspace_size_tablet_mode.ToString(),
             unlimited_window->bounds().size().ToString());
   // The limited window should have the size of the upper possible bounds.
   EXPECT_FALSE(WindowState::Get(limited_window.get())->IsMaximized());

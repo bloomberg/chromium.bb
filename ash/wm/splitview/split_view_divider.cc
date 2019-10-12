@@ -364,6 +364,9 @@ void SplitViewDivider::OnWindowBoundsChanged(aura::Window* window,
                                              const gfx::Rect& old_bounds,
                                              const gfx::Rect& new_bounds,
                                              ui::PropertyChangeReason reason) {
+  if (!controller_->InSplitViewMode())
+    return;
+
   // We only care about the bounds change of windows in
   // |transient_windows_observer_|.
   if (!transient_windows_observer_.IsObserving(window))

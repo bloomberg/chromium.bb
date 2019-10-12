@@ -4041,6 +4041,7 @@ TEST_P(SplitViewTabDraggingTest, BoundsTest) {
       CreateWindowWithType(bounds, AppType::BROWSER));
   std::unique_ptr<aura::Window> window3(
       CreateWindowWithType(bounds, AppType::BROWSER));
+  wm::ActivateWindow(window1.get());
   const gfx::Rect bounds1 = window1->bounds();
   const gfx::Rect bounds2 = window2->bounds();
   EXPECT_EQ(bounds1, bounds2);

@@ -39,6 +39,7 @@
 #include "base/test/metrics/user_action_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/test_window_delegate.h"
@@ -1544,6 +1545,11 @@ TEST_P(TabletModeControllerTest, TabletModeTransitionHistogramsNotLogged) {
     histogram_tester.ExpectTotalCount(kExitHistogram, 0);
   }
 
+  // The workspace size changes when going between clamshell and tablet mode.
+  // This means there will be an animation during the transition.
+  if (chromeos::switches::ShouldShowShelfHotseat())
+    return;
+
   // Test that we get no animation smoothness histograms when entering or
   // exiting tablet mode with a maximized window as no animation will take
   // place.
@@ -1674,6 +1680,10 @@ TEST_P(TabletModeControllerScreenshotTest, NoAnimationNoScreenshot) {
 
   waiter.Wait();
   EXPECT_FALSE(IsScreenshotShown());
+  // The window will animate if the hotseat is enabled because the workspace
+  // area will change. As long as a screenshot is not shown, this is ok.
+  if (chromeos::switches::ShouldShowShelfHotseat())
+    return;
   EXPECT_FALSE(window->layer()->GetAnimator()->is_animating());
 }
 
