@@ -1247,25 +1247,6 @@ bool ChromeContentRendererClient::AllowPopup() {
 #endif
 }
 
-bool ChromeContentRendererClient::ShouldFork(WebLocalFrame* frame,
-                                             const GURL& url,
-                                             const std::string& http_method,
-                                             bool is_initial_navigation,
-                                             bool is_server_redirect) {
-  DCHECK(!frame->Parent());
-
-  // If |url| matches one of the prerendered URLs, stop this navigation and try
-  // to swap in the prerendered page on the browser process. If the prerendered
-  // page no longer exists by the time the OpenURL IPC is handled, a normal
-  // navigation is attempted.
-  if (prerender_dispatcher_.get() &&
-      prerender_dispatcher_->IsPrerenderURL(url)) {
-    return true;
-  }
-
-  return false;
-}
-
 void ChromeContentRendererClient::WillSendRequest(
     WebLocalFrame* frame,
     ui::PageTransition transition_type,
