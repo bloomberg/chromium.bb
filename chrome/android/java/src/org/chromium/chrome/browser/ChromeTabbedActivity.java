@@ -2267,7 +2267,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
             return;
         }
         mNavigationSheet = NavigationSheet.create(
-                getWindow().getDecorView().findViewById(android.R.id.content),
+                getWindow().getDecorView().findViewById(android.R.id.content), this,
                 this::getBottomSheetController, new TabbedSheetDelegate(tab));
         mNavigationSheet.startAndExpand(/* forward=*/false, /* animate=*/true);
         getBottomSheet().addObserver(new EmptyBottomSheetObserver() {
