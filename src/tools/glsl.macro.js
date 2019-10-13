@@ -41,7 +41,7 @@ module.exports = createMacro(({ references, state, babel }) => {
       .substring(path.parent.start, path.parent.end)
       .trim()
       .split('\n')
-      .map(x => (x ? ' ' + x : x))
+      .map(x => x.trim().length === 0 ? '' : ' ' + x)
       .join('\n *');
     path.context.parentPath.addComment('leading', glslMacroText + '\n ');
   }
