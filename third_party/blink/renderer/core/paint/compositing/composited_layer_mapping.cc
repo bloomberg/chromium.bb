@@ -2413,7 +2413,7 @@ void CompositedLayerMapping::SetOverlayScrollbarsHidden(bool hidden) {
 void CompositedLayerMapping::GraphicsLayersDidChange() {
   LocalFrameView* frame_view = GetLayoutObject().GetFrameView();
   DCHECK(frame_view);
-  frame_view->GraphicsLayersDidChange();
+  frame_view->SetForeignLayerListNeedsUpdate();
 }
 
 bool CompositedLayerMapping::PaintBlockedByDisplayLockIncludingAncestors(
