@@ -2643,7 +2643,7 @@ void PaintLayerScrollableArea::DidAddScrollbar(
 void PaintLayerScrollableArea::WillRemoveScrollbar(
     Scrollbar& scrollbar,
     ScrollbarOrientation orientation) {
-  if (layer_->NeedsReorderOverlayScrollbars()) {
+  if (layer_->NeedsReorderOverlayOverflowControls()) {
     // Z-order of reparented scrollbar is updated along with the z-order lists.
     DCHECK(scrollbar.IsOverlayScrollbar());
     layer_->DirtyStackingContextZOrderLists();

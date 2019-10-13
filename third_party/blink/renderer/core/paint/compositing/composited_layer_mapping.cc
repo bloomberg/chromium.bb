@@ -1863,7 +1863,7 @@ PhysicalRect CompositedLayerMapping::ContentsBox() const {
 }
 
 bool CompositedLayerMapping::NeedsToReparentOverflowControls() const {
-  return owning_layer_.NeedsReorderOverlayScrollbars();
+  return owning_layer_.NeedsReorderOverlayOverflowControls();
 }
 
 GraphicsLayer* CompositedLayerMapping::DetachLayerForOverflowControls() {
