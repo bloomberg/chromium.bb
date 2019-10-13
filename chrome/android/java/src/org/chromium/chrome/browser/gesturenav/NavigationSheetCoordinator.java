@@ -112,12 +112,11 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
     /**
      * Construct a new NavigationSheet.
      */
-    NavigationSheetCoordinator(
-            View parent, Supplier<BottomSheetController> bottomSheetController, Delegate delegate) {
+    NavigationSheetCoordinator(View parent, Context context,
+            Supplier<BottomSheetController> bottomSheetController, Delegate delegate) {
         mParentView = parent;
         mBottomSheetController = bottomSheetController;
         mDelegate = delegate;
-        Context context = parent.getContext();
         mLayoutInflater = LayoutInflater.from(context);
         mToolbarView = mLayoutInflater.inflate(R.layout.navigation_sheet_toolbar, null);
         mMediator = new NavigationSheetMediator(context, mModelList, (position, index) -> {
