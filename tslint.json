@@ -1,6 +1,7 @@
 {
   "extends": "gts/tslint.json",
   "rules": {
+    "linebreak-style": [true, "LF"],
     "no-console": [true],
     "ordered-imports": [
       true,
