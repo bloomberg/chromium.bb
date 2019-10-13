@@ -1598,8 +1598,8 @@ ConvolveVerticalScale4xH(const int16_t* src, const int subpixel_y,
   src += src_stride * kernel_offset;
   const int16_t* src_y = src;
   // |dest| is 16-bit in compound mode, Pixel otherwise.
-  uint16_t* dest16_y = reinterpret_cast<uint16_t*>(dest);
-  uint8_t* dest_y = reinterpret_cast<uint8_t*>(dest);
+  uint16_t* dest16_y = static_cast<uint16_t*>(dest);
+  uint8_t* dest_y = static_cast<uint8_t*>(dest);
   int16x4_t s[num_taps + grade_y];
 
   int p = subpixel_y & 1023;
@@ -1693,8 +1693,8 @@ inline void ConvolveVerticalScale(const int16_t* src, const int width,
   do {  // x < width
     const int16_t* src_x = src + x;
     const int16_t* src_y = src_x;
-    dest16_y = reinterpret_cast<uint16_t*>(dest) + x;
-    dest_y = reinterpret_cast<uint8_t*>(dest) + x;
+    dest16_y = static_cast<uint16_t*>(dest) + x;
+    dest_y = static_cast<uint8_t*>(dest) + x;
     int p = subpixel_y & 1023;
     int prev_p = p;
     int y = 0;
