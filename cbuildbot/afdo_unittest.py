@@ -352,8 +352,8 @@ class AfdoTest(cros_test_lib.MockTempDirTestCase):
           compression_suffix=False)
 
     expected_unordered_args = [
-        '-output=/tmp/' + _afdo_name(
-            major=10, build=13, patch=2, merged_suffix=True),
+        '-output=/tmp/' +
+        _afdo_name(major=10, build=13, patch=2, merged_suffix=True),
         '-weighted-input=1,/tmp/' + _afdo_name(major=10, build=11),
         '-weighted-input=1,/tmp/' + _afdo_name(major=10, build=12),
         '-weighted-input=1,/tmp/' + _afdo_name(major=10, build=13),
@@ -578,8 +578,8 @@ class AfdoTest(cros_test_lib.MockTempDirTestCase):
               url=(path % ('3.8', 'R61-9765.70-1506575230')), **unused),
       ]
 
-    self.PatchObject(gs.GSContext,
-                     'List', lambda _, path, **kwargs: MockGsList(path))
+    self.PatchObject(gs.GSContext, 'List',
+                     lambda _, path, **kwargs: MockGsList(path))
     profiles = afdo.GetAvailableKernelProfiles()
     self.assertIn([63, 9901, 21, 1506581597], profiles['4.4'])
     self.assertIn([61, 9765, 70, 1506575230], profiles['3.8'])
@@ -614,8 +614,8 @@ class AfdoTest(cros_test_lib.MockTempDirTestCase):
           gs.GSListResult(url=os.path.join(path, f), **unused) for f in profiles
       ]
 
-    self.PatchObject(gs.GSContext,
-                     'List', lambda _, path, **kwargs: MockGsList(path))
+    self.PatchObject(gs.GSContext, 'List',
+                     lambda _, path, **kwargs: MockGsList(path))
 
     def _test(version, idx):
       unused = {

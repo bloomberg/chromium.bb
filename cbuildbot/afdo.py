@@ -1064,8 +1064,7 @@ def CWPProfileToVersionTuple(url):
     A tuple of (milestone, major, minor, timestamp)
   """
   fn_mat = (
-      CWP_CHROME_PROFILE_NAME_PATTERN % tuple(
-          r'([0-9]+)' for _ in range(0, 4)))
+      CWP_CHROME_PROFILE_NAME_PATTERN % tuple(r'([0-9]+)' for _ in range(0, 4)))
   fn_mat.replace('.', '\\.')
   return [int(x) for x in re.match(fn_mat, os.path.basename(url)).groups()]
 
@@ -1149,8 +1148,7 @@ def GetAvailableKernelProfiles():
   matches = [x for x in all_matches if x]
   versions = {}
   for m in matches:
-    versions.setdefault(m.group(1), []).append(
-        [int(x) for x in m.groups()[1:]])
+    versions.setdefault(m.group(1), []).append([int(x) for x in m.groups()[1:]])
   for v in versions:
     versions[v].sort()
   return versions
@@ -1195,8 +1193,8 @@ def ProfileAge(profile_version):
   Returns:
     Age of profile_version in days.
   """
-  return (datetime.datetime.utcnow() - datetime.datetime.utcfromtimestamp(
-      profile_version[3])).days
+  return (datetime.datetime.utcnow() -
+          datetime.datetime.utcfromtimestamp(profile_version[3])).days
 
 
 PROFILE_SOURCES = {
