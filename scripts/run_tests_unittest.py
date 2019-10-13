@@ -114,6 +114,7 @@ class MainTest(cros_test_lib.MockOutputTestCase):
   def setUp(self):
     self.PatchObject(run_tests, '_ReExecuteIfNeeded')
     self.PatchObject(run_tests, 'ChrootAvailable', return_value=True)
+    self.PatchObject(run_tests, 'ClearPythonCacheFiles')
 
   def testList(self):
     """Verify --list works"""
