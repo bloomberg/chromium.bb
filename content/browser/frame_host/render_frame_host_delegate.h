@@ -59,7 +59,7 @@ class Origin;
 }
 
 namespace blink {
-struct WebFullscreenOptions;
+struct FullScreenOptions;
 namespace mojom {
 class FileChooserParams;
 }
@@ -265,8 +265,7 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // Notification that the frame wants to go into fullscreen mode.
   // |origin| represents the origin of the frame that requests fullscreen.
   virtual void EnterFullscreenMode(const GURL& origin,
-                                   const blink::WebFullscreenOptions& options) {
-  }
+                                   const blink::FullScreenOptions& options) {}
 
   // Notification that the frame wants to go out of fullscreen mode.
   // |will_cause_resize| indicates whether the fullscreen change causes a

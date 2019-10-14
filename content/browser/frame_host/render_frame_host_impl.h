@@ -135,7 +135,7 @@ class AssociatedInterfaceProvider;
 class AssociatedInterfaceRegistry;
 struct FramePolicy;
 struct TransferableMessage;
-struct WebFullscreenOptions;
+struct FullScreenOptions;
 struct WebScrollIntoViewParams;
 
 namespace mojom {
@@ -1382,7 +1382,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       ax::mojom::Event event_to_fire);
   void OnAccessibilitySnapshotResponse(int callback_id,
                                        const AXContentTreeUpdate& snapshot);
-  void OnEnterFullscreen(const blink::WebFullscreenOptions& options);
+  void OnEnterFullscreen(const blink::FullScreenOptions& options);
   void OnExitFullscreen();
   void OnSuddenTerminationDisablerChanged(
       bool present,

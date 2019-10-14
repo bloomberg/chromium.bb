@@ -2533,7 +2533,7 @@ RenderWidgetHostImpl* WebContentsImpl::GetRenderWidgetHostWithPageFocus() {
 
 void WebContentsImpl::EnterFullscreenMode(
     const GURL& origin,
-    const blink::WebFullscreenOptions& options) {
+    const blink::FullScreenOptions& options) {
   // This method is being called to enter renderer-initiated fullscreen mode.
   // Make sure any existing fullscreen widget is shut down first.
   RenderWidgetHostView* const widget_view = GetFullscreenRenderWidgetHostView();
@@ -3142,7 +3142,7 @@ void WebContentsImpl::ShowCreatedWidget(int process_id,
     if (delegate_ && delegate_->EmbedsFullscreenWidget()) {
       widget_host_view->InitAsChild(GetRenderWidgetHostView()->GetNativeView());
       delegate_->EnterFullscreenModeForTab(this, GURL(),
-                                           blink::WebFullscreenOptions());
+                                           blink::FullScreenOptions());
     } else {
       widget_host_view->InitAsFullscreen(view);
     }

@@ -5697,8 +5697,7 @@ void RenderFrameImpl::HandleAccessibilityFindInPageTermination() {
     render_accessibility_->HandleAccessibilityFindInPageTermination();
 }
 
-void RenderFrameImpl::EnterFullscreen(
-    const blink::WebFullscreenOptions& options) {
+void RenderFrameImpl::EnterFullscreen(const blink::FullScreenOptions& options) {
   Send(new FrameHostMsg_EnterFullscreen(routing_id_, options));
 }
 

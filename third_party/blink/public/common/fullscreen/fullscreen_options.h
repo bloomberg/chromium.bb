@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_FULLSCREEN_OPTIONS_H_
-#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_FULLSCREEN_OPTIONS_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_COMMON_FULLSCREEN_FULLSCREEN_OPTIONS_H_
+#define THIRD_PARTY_BLINK_PUBLIC_COMMON_FULLSCREEN_FULLSCREEN_OPTIONS_H_
 
 namespace blink {
 
 // Options used when requesting fullscreen.
-struct WebFullscreenOptions {
+struct FullScreenOptions {
   // Prefer that the bottom navigation bar be shown when in fullscreen
   // mode on devices with overlay navigation bars.
   bool prefers_navigation_bar = false;
 
-  bool operator==(const WebFullscreenOptions& rhs) {
+  bool operator==(const FullScreenOptions& rhs) {
     return prefers_navigation_bar == rhs.prefers_navigation_bar;
   }
 };
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_PUBLIC_COMMON_FULLSCREEN_FULLSCREEN_OPTIONS_H_
