@@ -258,8 +258,8 @@ gfx::Rect GetGridBoundsInScreen(aura::Window* root_window,
        SplitViewController::LEFT)
           ? SplitViewController::RIGHT
           : SplitViewController::LEFT;
-  gfx::Rect bounds = split_view_controller->GetSnappedWindowBoundsInScreen(
-      root_window, opposite_position);
+  gfx::Rect bounds =
+      split_view_controller->GetSnappedWindowBoundsInScreen(opposite_position);
   if (!divider_changed)
     return bounds;
 
@@ -316,10 +316,10 @@ gfx::Rect GetGridBoundsInScreenForSplitview(
   switch (state) {
     case SplitViewController::State::kLeftSnapped:
       return split_view_controller->GetSnappedWindowBoundsInScreen(
-          window, SplitViewController::RIGHT);
+          SplitViewController::RIGHT);
     case SplitViewController::State::kRightSnapped:
       return split_view_controller->GetSnappedWindowBoundsInScreen(
-          window, SplitViewController::LEFT);
+          SplitViewController::LEFT);
     default:
       return screen_util::
           GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(window);
