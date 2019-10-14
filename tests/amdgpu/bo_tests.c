@@ -267,7 +267,6 @@ static void amdgpu_memory_alloc(void)
 
 static void amdgpu_mem_fail_alloc(void)
 {
-	amdgpu_bo_handle bo;
 	int r;
 	struct amdgpu_bo_alloc_request req = {0};
 	amdgpu_bo_handle buf_handle;
@@ -282,7 +281,7 @@ static void amdgpu_mem_fail_alloc(void)
 	CU_ASSERT_EQUAL(r, -ENOMEM);
 
 	if (!r) {
-		r = amdgpu_bo_free(bo);
+		r = amdgpu_bo_free(buf_handle);
 		CU_ASSERT_EQUAL(r, 0);
 	}
 }
