@@ -597,6 +597,10 @@ void ExtensionApps::OnPackageListInitialRefreshed() {
   }
 }
 
+void ExtensionApps::OnArcAppListPrefsDestroyed() {
+  arc_prefs_ = nullptr;
+}
+
 // static
 bool ExtensionApps::IsBlacklisted(const std::string& app_id) {
   // We blacklist (meaning we don't publish the app, in the App Service sense)
