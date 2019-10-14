@@ -501,17 +501,23 @@ class SingleTestRunner(object):
         if driver_output.image_hash != expected_driver_output.image_hash:
             diff, err_str = self._port.diff_image(
                 expected_driver_output.image, driver_output.image)
+
+            if diff:
+                driver_output.image_diff = diff
+
             if err_str:
-                _log.warning('  %s : %s', self._test_name, err_str)
+                _log.error('  %s : %s', self._test_name, err_str)
                 driver_output.error = (driver_output.error or '') + err_str
+
+            if diff or err_str:
+                return [
+                    test_failures.FailureImageHashMismatch(
+                        driver_output, expected_driver_output)]
             else:
-                # See https://bugs.webkit.org/show_bug.cgi?id=69444 for why this isn't a full failure.
+                # See https://bugs.webkit.org/show_bug.cgi?id=69444 for why this
+                # isn't a full failure.
                 _log.warning(
                     '  %s -> pixel hash failed (but diff passed)', self._test_name)
-                driver_output.image_diff = diff
-            if err_str or diff:
-                return [test_failures.FailureImageHashMismatch(
-                    driver_output, expected_driver_output, diff)]
 
         return []
 
@@ -619,7 +625,7 @@ class SingleTestRunner(object):
                         reference_filename))
             elif err_str:
                 # TODO(rmhasan) Should we include this error message in the artifacts ?
-                _log.error(err_str)
+                _log.error('  %s : %s', self._test_name, err_str)
             else:
                 _log.warning("  %s -> ref test hashes didn't match but diff passed", self._test_name)
 
