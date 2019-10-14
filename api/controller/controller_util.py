@@ -7,8 +7,6 @@
 
 from __future__ import print_function
 
-import os
-
 from chromite.api.gen.chromiumos import common_pb2
 from chromite.cbuildbot import goma_util
 from chromite.lib import portage_util
@@ -65,7 +63,7 @@ def ParseChroot(chroot_message):
                           chroot_message.goma.goma_client_json,
                           stage_name='BuildAPI',
                           chromeos_goma_dir=chromeos_goma_dir,
-                          chroot_tmp=os.path.join(path, 'tmp'))
+                          chroot_dir=path)
 
   return Chroot(path=path, cache_dir=cache_dir, chrome_root=chrome_root,
                 env=env, goma=goma)
