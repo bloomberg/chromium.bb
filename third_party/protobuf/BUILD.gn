@@ -18,7 +18,6 @@ config("protobuf_warnings") {
     "-Wno-enum-compare",
     "-Wno-unused-function",
     "-Wno-sign-compare",
-    "-Wno-inconsistent-missing-override",
   ]
 
   if (is_clang) {
@@ -27,6 +26,7 @@ config("protobuf_warnings") {
       "-Wno-exit-time-destructors",
       "-Wno-extra-semi",
       "-Wno-unused-const-variable",
+      "-Wno-inconsistent-missing-override",
     ]
 
     if (is_mac) {
