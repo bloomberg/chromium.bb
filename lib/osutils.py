@@ -64,7 +64,8 @@ def IsChildProcess(pid, name=None):
     an incorrect match might be possible.
   """
   cmd = ['pstree', '-Ap', str(os.getpid())]
-  pstree = cros_build_lib.run(cmd, capture_output=True, print_cmd=False).output
+  pstree = cros_build_lib.run(cmd, capture_output=True, print_cmd=False,
+                              encoding='utf-8').stdout
   if name is None:
     match = '(%d)' % pid
   else:
@@ -307,8 +308,8 @@ def SafeMakedirs(path, mode=0o775, sudo=False, user='root'):
     if os.path.isdir(path):
       return False
     cros_build_lib.sudo_run(
-        ['mkdir', '-p', '--mode', oct(mode), path], user=user, print_cmd=False,
-        redirect_stderr=True, redirect_stdout=True)
+        ['mkdir', '-p', '--mode', '%o' % mode, path], user=user,
+        print_cmd=False, redirect_stderr=True, redirect_stdout=True)
     return True
 
   try:
@@ -984,6 +985,7 @@ def SourceEnvironment(script, whitelist, ifs=',', env=None, multiline=False):
     env = None
   output = cros_build_lib.run(['bash'], env=env, redirect_stdout=True,
                               redirect_stderr=True, print_cmd=False,
+                              encoding='utf-8',
                               input='\n'.join(dump_script)).output
   return key_value_store.LoadData(output, multiline=multiline)
 
@@ -1010,10 +1012,9 @@ def ListBlockDevices(device_path=None, in_bytes=False):
     cmd.append(device_path)
 
   cmd += ['--output', ','.join(keys)]
-  output = cros_build_lib.run(
-      cmd, debug_level=logging.DEBUG, capture_output=True).output.strip()
+  result = cros_build_lib.dbg_run(cmd, capture_output=True, encoding='utf-8')
   devices = []
-  for line in output.splitlines():
+  for line in result.stdout.strip().splitlines():
     d = {}
     for k, v in re.findall(r'(\S+?)=\"(.+?)\"', line):
       d[k] = v
