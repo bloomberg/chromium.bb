@@ -219,6 +219,7 @@ PYTHON3_TESTS = {
     'lib/upgrade_table_unittest',
     'lib/uri_lib_unittest',
     'lib/user_db_unittest',
+    'lib/vm_unittest',
     'scripts/cros_extract_deps_unittest',
     'scripts/cros_fuzz_unittest',
     'scripts/cros_generate_android_breakpad_symbols_unittest',

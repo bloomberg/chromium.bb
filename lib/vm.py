@@ -156,7 +156,7 @@ class VM(device.Device):
     self.qemu_cpu = opts.qemu_cpu
     self.qemu_smp = opts.qemu_smp
     if self.qemu_smp == 0:
-      self.qemu_smp = min(8, multiprocessing.cpu_count)
+      self.qemu_smp = min(8, multiprocessing.cpu_count())
     self.qemu_hostfwd = opts.qemu_hostfwd
     self.qemu_args = opts.qemu_args
 
@@ -233,7 +233,7 @@ class VM(device.Device):
       QEMU version.
     """
     version_str = self.RunCommand([self.qemu_path, '--version'],
-                                  capture_output=True).output
+                                  capture_output=True, encoding='utf-8').stdout
     # version string looks like one of these:
     # QEMU emulator version 2.0.0 (Debian 2.0.0+dfsg-2ubuntu1.36), Copyright (c)
     # 2003-2008 Fabrice Bellard
