@@ -203,9 +203,9 @@ class BotUpdateUnittests(unittest.TestCase):
     idx_second_revision = args.index(
         '--revision', idx_first_revision+1)
     idx_third_revision = args.index('--revision', idx_second_revision+1)
-    self.assertEquals(args[idx_first_revision+1], 'somename@unmanaged')
-    self.assertEquals(args[idx_second_revision+1], 'src@origin/master')
-    self.assertEquals(args[idx_third_revision+1], 'src/v8@deadbeef')
+    self.assertEqual(args[idx_first_revision+1], 'somename@unmanaged')
+    self.assertEqual(args[idx_second_revision+1], 'src@origin/master')
+    self.assertEqual(args[idx_third_revision+1], 'src/v8@deadbeef')
     return self.call.records
 
   def testApplyPatchOnGclient(self):
@@ -280,17 +280,17 @@ class BotUpdateUnittests(unittest.TestCase):
         }
     }
     out = bot_update.create_manifest(gclient_output, None)
-    self.assertEquals(len(out['directories']), 2)
-    self.assertEquals(
+    self.assertEqual(len(out['directories']), 2)
+    self.assertEqual(
         out['directories']['src']['git_checkout']['revision'],
         'f671d3baeb64d9dba628ad582e867cf1aebc0207')
-    self.assertEquals(
+    self.assertEqual(
         out['directories']['src']['git_checkout']['repo_url'],
         'https://chromium.googlesource.com/chromium/src')
-    self.assertEquals(
+    self.assertEqual(
         out['directories']['breakpad']['git_checkout']['revision'],
         '5f638d532312685548d5033618c8a36f73302d0a')
-    self.assertEquals(
+    self.assertEqual(
         out['directories']['breakpad']['git_checkout']['repo_url'],
         'https://chromium.googlesource.com/breakpad')
     self.assertNotIn('src/overridden', out['directories'])

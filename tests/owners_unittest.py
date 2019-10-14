@@ -112,7 +112,7 @@ class OwnersDatabaseTest(_BaseTestCase):
 
   def assert_files_not_covered_by(self, files, reviewers, unreviewed_files):
     db = self.db()
-    self.assertEquals(db.files_not_covered_by(set(files), set(reviewers)),
+    self.assertEqual(db.files_not_covered_by(set(files), set(reviewers)),
                       set(unreviewed_files))
 
   def test_files_not_covered_by__owners_propagates_down(self):
@@ -241,8 +241,8 @@ class OwnersDatabaseTest(_BaseTestCase):
   def test_mock_relpath(self):
     # This test ensures the mock relpath has the arguments in the right
     # order; this should probably live someplace else.
-    self.assertEquals(self.repo.relpath('foo/bar.c', 'foo/'), 'bar.c')
-    self.assertEquals(self.repo.relpath('/bar.c', '/'), 'bar.c')
+    self.assertEqual(self.repo.relpath('foo/bar.c', 'foo/'), 'bar.c')
+    self.assertEqual(self.repo.relpath('/bar.c', '/'), 'bar.c')
 
   def test_per_file_glob_across_dirs_not_allowed(self):
     self.files['/OWNERS'] = 'per-file content/*=john@example.org\n'

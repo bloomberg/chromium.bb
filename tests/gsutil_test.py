@@ -90,10 +90,10 @@ class GsutilUnitTests(unittest.TestCase):
     url = '%s%s' % (gsutil.GSUTIL_URL, filename)
     self.fake.add_expectation(url, _returns=Buffer(fake_file))
 
-    self.assertEquals(
+    self.assertEqual(
         gsutil.download_gsutil(version, self.tempdir), full_filename)
     with open(full_filename, 'r') as f:
-      self.assertEquals(fake_file, f.read())
+      self.assertEqual(fake_file, f.read())
 
     metadata_url = gsutil.API_URL + filename
     md5_calc = hashlib.md5()
@@ -102,21 +102,21 @@ class GsutilUnitTests(unittest.TestCase):
     self.fake.add_expectation(metadata_url, _returns=Buffer(json.dumps({
         'md5Hash': b64_md5
     })))
-    self.assertEquals(
+    self.assertEqual(
         gsutil.download_gsutil(version, self.tempdir), full_filename)
     with open(full_filename, 'r') as f:
-      self.assertEquals(fake_file, f.read())
-    self.assertEquals(self.fake.expectations, [])
+      self.assertEqual(fake_file, f.read())
+    self.assertEqual(self.fake.expectations, [])
 
     self.fake.add_expectation(metadata_url, _returns=Buffer(json.dumps({
         'md5Hash': base64.b64encode('aaaaaaa')  # Bad MD5
     })))
     self.fake.add_expectation(url, _returns=Buffer(fake_file2))
-    self.assertEquals(
+    self.assertEqual(
         gsutil.download_gsutil(version, self.tempdir), full_filename)
     with open(full_filename, 'r') as f:
-      self.assertEquals(fake_file2, f.read())
-    self.assertEquals(self.fake.expectations, [])
+      self.assertEqual(fake_file2, f.read())
+    self.assertEqual(self.fake.expectations, [])
 
   def test_ensure_gsutil_full(self):
     version = '4.2'
@@ -138,9 +138,9 @@ class GsutilUnitTests(unittest.TestCase):
     gsutil.ensure_gsutil(version, self.tempdir, False)
     self.assertTrue(os.path.exists(gsutil_bin))
     with open(gsutil_bin, 'r') as f:
-      self.assertEquals(f.read(), fake_gsutil)
+      self.assertEqual(f.read(), fake_gsutil)
     self.assertTrue(os.path.exists(gsutil_flag))
-    self.assertEquals(self.fake.expectations, [])
+    self.assertEqual(self.fake.expectations, [])
 
   def test_ensure_gsutil_short(self):
     version = '4.2'
@@ -153,7 +153,7 @@ class GsutilUnitTests(unittest.TestCase):
       f.write('Foobar')
     with open(gsutil_flag, 'w') as f:
       f.write('Barbaz')
-    self.assertEquals(
+    self.assertEqual(
         gsutil.ensure_gsutil(version, self.tempdir, False), gsutil_bin)
 
 if __name__ == '__main__':

@@ -60,7 +60,7 @@ class TestLuciContext(auto_stub.TestCase):
     self._mock_loc_server_resp(200, json.dumps(resp_content))
     params = auth._get_luci_context_local_auth_params()
     token = auth._get_luci_context_access_token(params, datetime.datetime.min)
-    self.assertEquals(token.token, 'token')
+    self.assertEqual(token.token, 'token')
 
   def test_no_account_id(self):
     self._mock_local_auth(None, 'secret', 8080)

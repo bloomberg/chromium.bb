@@ -397,9 +397,9 @@ class DownloadTests(unittest.TestCase):
     self.assertTrue(q.empty())
     msg = ('1> ERROR remote sha1 (%s) does not match expected sha1 (%s).' %
            ('8843d7f92416211de9ebb963ff4ce28125932878', sha1_hash))
-    self.assertEquals(out_q.get(), '1> Downloading %s...' % output_filename)
-    self.assertEquals(out_q.get(), msg)
-    self.assertEquals(ret_codes.get(), (20, msg))
+    self.assertEqual(out_q.get(), '1> Downloading %s...' % output_filename)
+    self.assertEqual(out_q.get(), msg)
+    self.assertEqual(ret_codes.get(), (20, msg))
     self.assertTrue(out_q.empty())
     self.assertTrue(ret_codes.empty())
 

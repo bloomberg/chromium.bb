@@ -37,7 +37,7 @@ class FixEncodingTest(unittest.TestCase):
     print(self.text, file=sys.stderr)
 
   def test_default_encoding(self):
-    self.assertEquals('utf-8', sys.getdefaultencoding())
+    self.assertEqual('utf-8', sys.getdefaultencoding())
 
   def test_win_console(self):
     if sys.platform != 'win32':
@@ -45,16 +45,16 @@ class FixEncodingTest(unittest.TestCase):
     # This should fail if not redirected, e.g. run directly instead of through
     # the presubmit check. Can be checked with:
     # python tests\fix_encoding_test.py
-    self.assertEquals(
+    self.assertEqual(
         sys.stdout.__class__, fix_encoding.WinUnicodeOutput)
-    self.assertEquals(
+    self.assertEqual(
         sys.stderr.__class__, fix_encoding.WinUnicodeOutput)
-    self.assertEquals(sys.stdout.encoding, sys.getdefaultencoding())
-    self.assertEquals(sys.stderr.encoding, sys.getdefaultencoding())
+    self.assertEqual(sys.stdout.encoding, sys.getdefaultencoding())
+    self.assertEqual(sys.stderr.encoding, sys.getdefaultencoding())
 
   def test_multiple_calls(self):
     # Shouldn't do anything.
-    self.assertEquals(False, fix_encoding.fix_encoding())
+    self.assertEqual(False, fix_encoding.fix_encoding())
 
 
 if __name__ == '__main__':

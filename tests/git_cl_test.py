@@ -166,9 +166,9 @@ class TestGitClBasic(unittest.TestCase):
     cl.description = 'x'
     cl.has_description = True
     cl.FetchDescription = lambda *a, **kw: 'y'
-    self.assertEquals(cl.GetDescription(), 'x')
-    self.assertEquals(cl.GetDescription(force=True), 'y')
-    self.assertEquals(cl.GetDescription(), 'y')
+    self.assertEqual(cl.GetDescription(), 'x')
+    self.assertEqual(cl.GetDescription(force=True), 'y')
+    self.assertEqual(cl.GetDescription(), 'y')
 
   def test_description_footers(self):
     cl = git_cl.Changelist(issue=1, codereview_host='host')
@@ -184,14 +184,14 @@ class TestGitClBasic(unittest.TestCase):
     cl.has_description = True
     cl.UpdateDescriptionRemote = lambda *a, **kw: 'y'
     msg, footers = cl.GetDescriptionFooters()
-    self.assertEquals(
+    self.assertEqual(
       msg, ['This is some message', '', 'It has some lines', 'and, also'])
-    self.assertEquals(footers, [('Some', 'Really'), ('Awesome', 'Footers')])
+    self.assertEqual(footers, [('Some', 'Really'), ('Awesome', 'Footers')])
 
     msg.append('wut')
     footers.append(('gnarly-dude', 'beans'))
     cl.UpdateDescriptionFooters(msg, footers)
-    self.assertEquals(cl.GetDescription().splitlines(), [
+    self.assertEqual(cl.GetDescription().splitlines(), [
       'This is some message',
       '',
       'It has some lines',
@@ -667,7 +667,7 @@ class TestGitCl(TestCase):
 
   def tearDown(self):
     try:
-      self.assertEquals([], self.calls)
+      self.assertEqual([], self.calls)
     except AssertionError:
       if not self.has_failed():
         raise
@@ -1585,8 +1585,8 @@ class TestGitCl(TestCase):
 
     ret = git_cl.upload_branch_deps(MockChangelist(), [])
     # CMDupload should have been called 5 times because of 5 dependent branches.
-    self.assertEquals(5, record_calls.times_called)
-    self.assertEquals(0, ret)
+    self.assertEqual(5, record_calls.times_called)
+    self.assertEqual(0, ret)
 
   def test_gerrit_change_id(self):
     self.calls = [
@@ -2146,7 +2146,7 @@ class TestGitCl(TestCase):
     self.mock(git_cl.sys, 'stdout', out)
 
     def assertIssue(cl_self, *_args):
-      self.assertEquals(cl_self.issue, 1)
+      self.assertEqual(cl_self.issue, 1)
       return 'foobar'
 
     self.mock(git_cl.Changelist, 'GetDescription', assertIssue)
@@ -2158,7 +2158,7 @@ class TestGitCl(TestCase):
   def test_SetCloseOverrideIssue(self):
 
     def assertIssue(cl_self, *_args):
-      self.assertEquals(cl_self.issue, 1)
+      self.assertEqual(cl_self.issue, 1)
       return 'foobar'
 
     self.mock(git_cl.Changelist, 'GetDescription', assertIssue)
@@ -2204,7 +2204,7 @@ class TestGitCl(TestCase):
     current_desc = 'Some.\n\nChange-Id: xxx'
 
     def RunEditor(desc, _, **kwargs):
-      self.assertEquals(
+      self.assertEqual(
           '# Enter a description of the change.\n'
           '# This will be displayed on the codereview site.\n'
           '# The first line will also be used as the subject of the review.\n'
@@ -2216,7 +2216,7 @@ class TestGitCl(TestCase):
       return 'Some.\n\nChange-Id: xxx\nBug: 123'
 
     def UpdateDescriptionRemote(_, desc, force=False):
-      self.assertEquals(desc, 'Some.\n\nChange-Id: xxx\nBug: 123')
+      self.assertEqual(desc, 'Some.\n\nChange-Id: xxx\nBug: 123')
 
     self.mock(git_cl.sys, 'stdout', StringIO.StringIO())
     self.mock(git_cl.Changelist, 'GetDescription',
@@ -2238,7 +2238,7 @@ class TestGitCl(TestCase):
     current_desc = 'Some.\n\nFixed: 123\nChange-Id: xxx'
 
     def RunEditor(desc, _, **kwargs):
-      self.assertEquals(
+      self.assertEqual(
           '# Enter a description of the change.\n'
           '# This will be displayed on the codereview site.\n'
           '# The first line will also be used as the subject of the review.\n'
