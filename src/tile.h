@@ -344,7 +344,7 @@ class Tile : public Allocable {
   void SetEntropyContexts(int x4, int y4, int w4, int h4, Plane plane,
                           uint8_t coefficient_level, int8_t dc_category);
   void InterIntraPrediction(
-      uint16_t* prediction[2], ptrdiff_t prediction_stride,
+      uint16_t* prediction_0, ptrdiff_t prediction_stride,
       const uint8_t* prediction_mask, ptrdiff_t prediction_mask_stride,
       const PredictionParameters& prediction_parameters, int prediction_width,
       int prediction_height, int subsampling_x, int subsampling_y,

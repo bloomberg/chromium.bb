@@ -30,7 +30,8 @@
 namespace libgav1 {
 namespace dsp {
 
-// Initializes Dsp::mask_blend. This function is not thread-safe.
+// Initializes Dsp::mask_blend and Dsp::inter_intra_mask_blend_8bpp. This
+// function is not thread-safe.
 void MaskBlendInit_C();
 
 }  // namespace dsp

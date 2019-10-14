@@ -496,6 +496,20 @@ using MaskBlendFunc = void (*)(const uint16_t* prediction_0,
 // MaskBlendFunc[subsampling_x + subsampling_y][is_inter_intra].
 using MaskBlendFuncs = MaskBlendFunc[3][2];
 
+// This function is similar to the MaskBlendFunc with the only difference that
+// |prediction_1| is of type uint8_t instead of uint16_t. This function is used
+// only when bitdepth is 8 and is_inter_intra is true.
+using InterIntraMaskBlendFunc8bpp =
+    void (*)(const uint16_t* prediction_0, ptrdiff_t prediction_stride_0,
+             const uint8_t* prediction_1, ptrdiff_t prediction_stride_1,
+             const uint8_t* mask, ptrdiff_t mask_stride, int width, int height,
+             void* dest, ptrdiff_t dest_stride);
+
+// InterIntra8bpp mask blending functions signature. When is_wedge_inter_intra
+// is false, the function at index 0 must be used. Otherwise, the function at
+// index subsampling_x + subsampling_y must be used.
+using InterIntraMaskBlendFuncs8bpp = InterIntraMaskBlendFunc8bpp[3];
+
 // Obmc (overlapped block motion compensation) blending function signature.
 // Section 7.11.3.10.
 // This function takes two blocks and produces a blended output stored into the
@@ -607,6 +621,7 @@ struct Dsp {
   AverageBlendFunc average_blend;
   DistanceWeightedBlendFunc distance_weighted_blend;
   MaskBlendFuncs mask_blend;
+  InterIntraMaskBlendFuncs8bpp inter_intra_mask_blend_8bpp;
   ObmcBlendFuncs obmc_blend;
   WarpFunc warp;
   FilmGrainSynthesisFunc film_grain_synthesis;

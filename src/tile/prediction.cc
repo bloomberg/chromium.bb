@@ -579,7 +579,7 @@ template void Tile::ChromaFromLumaPrediction<uint16_t>(
 #endif
 
 void Tile::InterIntraPrediction(
-    uint16_t* prediction[2], const ptrdiff_t prediction_stride,
+    uint16_t* const prediction_0, const ptrdiff_t prediction_stride,
     const uint8_t* const prediction_mask,
     const ptrdiff_t prediction_mask_stride,
     const PredictionParameters& prediction_parameters,
@@ -593,33 +593,22 @@ void Tile::InterIntraPrediction(
              kCompoundPredictionTypeWedge);
   // The first buffer of InterIntra is from inter prediction.
   // The second buffer is from intra prediction.
-  ptrdiff_t intra_stride;
-  const int bitdepth = sequence_header_.color_config.bitdepth;
-  if (bitdepth == 8) {
-    // Both the input predictors must be of type uint16_t. For bitdepth ==
-    // 8, |buffer_| is uint8_t and hence a copy has to be made. For higher
-    // bitdepths, the |buffer_| itself can act as an uint16_t buffer so no
-    // copy is necessary.
-    uint8_t* dest_ptr = dest;
-    Array2DView<uint16_t> intra_prediction(
-        kMaxSuperBlockSizeInPixels, kMaxSuperBlockSizeInPixels, prediction[1]);
-    for (int r = 0; r < prediction_height; ++r) {
-      for (int c = 0; c < prediction_width; ++c) {
-        intra_prediction[r][c] = dest_ptr[c];
-      }
-      dest_ptr += dest_stride;
-    }
-    intra_stride = kMaxSuperBlockSizeInPixels;
-  } else {
-    prediction[1] = reinterpret_cast<uint16_t*>(dest);
-    intra_stride = dest_stride / sizeof(uint16_t);
+  if (sequence_header_.color_config.bitdepth == 8) {
+    const int function_index = prediction_parameters.is_wedge_inter_intra
+                                   ? subsampling_x + subsampling_y
+                                   : 0;
+    dsp_.inter_intra_mask_blend_8bpp[function_index](
+        prediction_0, prediction_stride, dest, dest_stride, prediction_mask,
+        prediction_mask_stride, prediction_width, prediction_height, dest,
+        dest_stride);
+    return;
   }
   GetMaskBlendFunc(dsp_, prediction_parameters.inter_intra_mode,
                    prediction_parameters.is_wedge_inter_intra, subsampling_x,
-                   subsampling_y)(prediction[0], prediction_stride,
-                                  prediction[1], intra_stride, prediction_mask,
-                                  prediction_mask_stride, prediction_width,
-                                  prediction_height, dest, dest_stride);
+                   subsampling_y)(
+      prediction_0, prediction_stride, reinterpret_cast<uint16_t*>(dest),
+      dest_stride / sizeof(uint16_t), prediction_mask, prediction_mask_stride,
+      prediction_width, prediction_height, dest, dest_stride);
 }
 
 void Tile::CompoundInterPrediction(
@@ -801,9 +790,8 @@ void Tile::InterPrediction(const Block& block, const Plane plane, const int x,
                    round_bits);
   } else if (is_inter_intra) {
     // InterIntra and obmc must be mutually exclusive.
-    uint16_t* prediction_ptr[2] = {block.scratch_buffer->prediction_buffer[0],
-                                   block.scratch_buffer->prediction_buffer[1]};
-    InterIntraPrediction(prediction_ptr, prediction_stride, prediction_mask,
+    InterIntraPrediction(block.scratch_buffer->prediction_buffer[0],
+                         prediction_stride, prediction_mask,
                          prediction_mask_stride, prediction_parameters,
                          prediction_width, prediction_height, subsampling_x,
                          subsampling_y, dest, dest_stride);
