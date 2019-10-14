@@ -178,7 +178,7 @@ bool UnifiedSystemTray::IsSliderBubbleShown() const {
 
 bool UnifiedSystemTray::IsMessageCenterBubbleShown() const {
   if (message_center_bubble_)
-    return !!message_center_bubble_->GetBubbleWidget();
+    return message_center_bubble_->IsMessageCenterVisible();
 
   return false;
 }

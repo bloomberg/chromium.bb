@@ -93,6 +93,10 @@ bool UnifiedMessageCenterBubble::FocusOut(bool reverse) {
   return tray_->FocusQuickSettings(reverse);
 }
 
+bool UnifiedMessageCenterBubble::IsMessageCenterVisible() {
+  return message_center_view_->GetVisible();
+}
+
 TrayBackgroundView* UnifiedMessageCenterBubble::GetTray() const {
   return tray_;
 }

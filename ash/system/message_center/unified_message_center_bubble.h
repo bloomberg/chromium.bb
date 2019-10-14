@@ -38,6 +38,9 @@ class ASH_EXPORT UnifiedMessageCenterBubble : public TrayBubbleBase,
   // Relinquish focus and transfer it to the quick settings widget.
   bool FocusOut(bool reverse);
 
+  // Returns true if notifications are shown.
+  bool IsMessageCenterVisible();
+
   // TrayBubbleBase:
   TrayBackgroundView* GetTray() const override;
   TrayBubbleView* GetBubbleView() const override;
