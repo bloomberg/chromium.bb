@@ -1585,11 +1585,11 @@ inline void ConvolveKernelHorizontalSigned8Tap(
 
 // This function handles blocks of width 2 or 4.
 template <int num_taps, int grade_y, int width, bool is_compound>
-void __attribute__((noinline))
-ConvolveVerticalScale4xH(const int16_t* src, const int subpixel_y,
-                         const int inter_round_bits, const int filter_index,
-                         const int step_y, const int height, void* dest,
-                         const ptrdiff_t dest_stride) {
+void ConvolveVerticalScale4xH(const int16_t* src, const int subpixel_y,
+                              const int inter_round_bits,
+                              const int filter_index, const int step_y,
+                              const int height, void* dest,
+                              const ptrdiff_t dest_stride) {
   const int32x4_t v_inter_round_bits = vdupq_n_s32(-inter_round_bits);
   const uint16x4_t single_round_offset =
       vdup_n_u16((1 << kBitdepth8) + (1 << (kBitdepth8 - 1)));
