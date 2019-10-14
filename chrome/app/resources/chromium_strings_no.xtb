@@ -209,6 +209,7 @@ Chromium kan ikke gjenopprette innstillingen dine.</translation>
 <translation id="7790626492778995050"><ph name="PAGE_TITLE" /> – Chromium Canary</translation>
 <translation id="7827169012280634081">Slett informasjonskapsler og nettstedsdata når du avslutter Chromium</translation>
 <translation id="7867198900892795913">Chromium kunne ikke oppdateres til den nyeste versjonen, så du går glipp av nye funksjoner og sikkerhetsforbedringer.</translation>
+<translation id="7898472181347242998">For å se om enheten er oppdatert, gå til <ph name="LINK_BEGIN" />Innstillinger for Chromium OS<ph name="LINK_END" /></translation>
 <translation id="7901117350626490574">En ny oppdatering for Chromium er tilgjengelig og tas i bruk når du starter Chromium på nytt.</translation>
 <translation id="7937630085815544518">Du ble logget på Chromium som <ph name="USER_EMAIL_ADDRESS" />. Du må logge deg på igjen med samme konto.</translation>
 <translation id="7962572577636132072">Chromium oppdateres automatisk, sånn at du alltid har den nyeste versjonen.</translation>

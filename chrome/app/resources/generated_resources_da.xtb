@@ -4107,7 +4107,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7085389578340536476">Vil du tillade, at Chrome optager lyd?</translation>
 <translation id="7088434364990739311">Der kunne ikke søges efter opdateringer (fejlkode <ph name="ERROR" />).</translation>
 <translation id="7088561041432335295">Zip Archiver – åbn og opret ZIP-filer i appen Filer.</translation>
-<translation id="7088674813905715446">Denne enhed er blevet sat i tilstanden Fjernet af administratoren. Hvis du vil have, at den aktiveres med henblik på tilmelding, skal du bede administratoren om at sætte enheden i tilstanden Afventer.</translation>
+<translation id="7088674813905715446">Denne enhed er blevet sat i en deprovisioneret tilstand af administratoren. Hvis den skal kunne tilmeldes, skal du bede administratoren om at sætte enheden i en afventende tilstand.</translation>
 <translation id="7092474863625458670">Med Voice Match kan du få direkte adgang til din Google-assistent ved at bruge stemmen.
     <ph name="BR" />
     <ph name="BEGIN_BOLD" />Husk!<ph name="END_BOLD" /> En lignende stemme eller en optagelse din egen stemme kan muligvis også få adgang til din assistent. Du kan fjerne tilladelsen til Voice Match på et senere tidspunkt ved at deaktivere funktionen i indstillingerne for Google Assistent.</translation>

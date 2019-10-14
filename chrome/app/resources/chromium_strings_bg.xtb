@@ -202,6 +202,7 @@
 <translation id="7790626492778995050"><ph name="PAGE_TITLE" /> – Chromium Canary</translation>
 <translation id="7827169012280634081">Изчистване на „бисквитките“ и данните за сайтовете при излизане от Chromium</translation>
 <translation id="7867198900892795913">Chromium не можа да се актуализира до най-новата версия. Това означава, че пропускате нови функции и корекции за сигурност.</translation>
+<translation id="7898472181347242998">За да разберете дали устройството ви е актуално, отворете <ph name="LINK_BEGIN" />настройките на Chromium OS<ph name="LINK_END" /></translation>
 <translation id="7901117350626490574">Налице е актуализация на Chromium, която ще бъде приложена веднага щом рестартирате.</translation>
 <translation id="7937630085815544518">Бяхте влезли в Chromium като <ph name="USER_EMAIL_ADDRESS" />. Моля, използвайте същия профил, за да влезете отново.</translation>
 <translation id="7962572577636132072">Chromium се актуализира автоматично, така че винаги да имате най-новата версия.</translation>

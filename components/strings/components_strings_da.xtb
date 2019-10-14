@@ -465,7 +465,7 @@
 <translation id="3362968246557010467">Denne politik blev automatisk kopieret fra den udfasede politik <ph name="OLD_POLICY" />. Du bør bruge denne politik i stedet.</translation>
 <translation id="3366477098757335611">Se kort</translation>
 <translation id="3369192424181595722">Urfejl</translation>
-<translation id="337363190475750230">Fjernet</translation>
+<translation id="337363190475750230">Deprovisioneret</translation>
 <translation id="3377188786107721145">Det opstod en fejl ved parsing af politik</translation>
 <translation id="3380365263193509176">Ukendt fejl</translation>
 <translation id="3380864720620200369">Klient-id:</translation>

@@ -204,6 +204,7 @@
 <translation id="7790626492778995050"><ph name="PAGE_TITLE" /> – Chromium Canary</translation>
 <translation id="7827169012280634081">Удалять файлы cookie и данные сайтов при выходе из Chromium</translation>
 <translation id="7867198900892795913">Не удалось установить последнюю версию Chromium, в которой добавлены новые функции и обновления системы безопасности.</translation>
+<translation id="7898472181347242998">Чтобы посмотреть, обновлена ли операционная система устройства, перейдите в <ph name="LINK_BEGIN" />настройки Chromium OS<ph name="LINK_END" />.</translation>
 <translation id="7901117350626490574">Для Chromium доступно обновление. Оно будет установлено при перезапуске браузера.</translation>
 <translation id="7937630085815544518">Ранее вы входили в Chromium как <ph name="USER_EMAIL_ADDRESS" />. Войдите снова, используя тот же аккаунт.</translation>
 <translation id="7962572577636132072">Chromium обновляется автоматически, поэтому у вас всегда будет установлена последняя версия.</translation>

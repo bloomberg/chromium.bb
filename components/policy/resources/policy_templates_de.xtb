@@ -2128,7 +2128,7 @@ Wenn die Richtlinie auf "FALSE" gesetzt oder nicht festgelegt wird, führt die T
 <translation id="4752880493649142945">Clientzertifikat zur Herstellung einer Verbindung zu RemoteAccessHostTokenValidationUrl</translation>
 <translation id="4757053978738874325">Mit dieser Richtlinie wird die Bedienungshilfe "Mono-Audio" aktiviert.
 
-          Diese Funktion regelt die Ausgabe von Stereo-Audio, das separate linke und rechte Kanäle umfasst. So kann man auf beiden Ohren unterschiedliche Töne hören.
+          Mit dieser Funktion kann die Audio-Ausgabe von der Standardeinstellung Stereo auf Mono-Audio umgestellt werden. Bei Stereo-Audio können über separate linke und rechte Kanäle auf beiden Ohren unterschiedliche Töne gehört werden, bei Mono-Audio werden auf beiden Kanälen die gleichen Töne ausgegeben.
 
           Wenn diese Richtlinie aktiviert ist, ist "Mono-Audio" immer aktiviert.
 

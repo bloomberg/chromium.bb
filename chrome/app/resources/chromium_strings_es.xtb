@@ -211,6 +211,7 @@ Chromium no puede recuperar tu configuración.</translation>
 <translation id="7790626492778995050"><ph name="PAGE_TITLE" /> ‑ Chromium Canary</translation>
 <translation id="7827169012280634081">Borrar las cookies y los datos de sitios web al salir de Chromium</translation>
 <translation id="7867198900892795913">No se ha podido actualizar Chromium a la versión más reciente, por lo que no disfrutas de las últimas funciones y correcciones de seguridad.</translation>
+<translation id="7898472181347242998">Para comprobar si tu dispositivo está actualizado, ve a la <ph name="LINK_BEGIN" />configuración de Chromium OS<ph name="LINK_END" /></translation>
 <translation id="7901117350626490574">Hay una nueva actualización de Chromium disponible que se aplicará cuando reinicies el dispositivo.</translation>
 <translation id="7937630085815544518">Habías iniciado sesión en Chromium como <ph name="USER_EMAIL_ADDRESS" />. Utiliza la misma cuenta para volver a iniciar sesión.</translation>
 <translation id="7962572577636132072">Chromium se actualiza automáticamente para que siempre dispongas de la última versión.</translation>
