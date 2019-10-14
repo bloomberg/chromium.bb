@@ -10,27 +10,20 @@ from __future__ import print_function
 import json
 import os
 import tarfile
-import sys
 
 import mock
 
 from chromite.cbuildbot import commands
 from chromite.lib import config_lib_unittest
-from chromite.lib import constants
 from chromite.lib import cros_test_lib
 from chromite.lib import gs
 from chromite.lib import parallel
-
 from chromite.lib.paygen import gslock
 from chromite.lib.paygen import gspaths
 from chromite.lib.paygen import paygen_build_lib
 from chromite.lib.paygen import paygen_payload_lib
+from chromite.lib.paygen import test_params
 
-AUTOTEST_DIR = os.path.join(constants.SOURCE_ROOT, 'src', 'third_party',
-                            'autotest', 'files')
-sys.path.insert(0, AUTOTEST_DIR)
-# pylint: disable=import-error,wrong-import-position
-from site_utils.autoupdate.lib import test_params
 
 # We access a lot of protected members during testing.
 # pylint: disable=protected-access

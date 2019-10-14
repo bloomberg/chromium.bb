@@ -18,14 +18,12 @@ import functools
 import json
 import operator
 import os
-import sys
 
 from six.moves import urllib
 
 from chromite.api.gen.chromite.api import test_metadata_pb2
 from chromite.api.gen.test_platform import request_pb2
 from chromite.cbuildbot import commands
-from chromite.lib import constants
 from chromite.lib import config_lib
 from chromite.lib import failures_lib
 from chromite.lib import cros_build_lib
@@ -36,32 +34,14 @@ from chromite.lib import retry_util
 from chromite.lib.paygen import gslock
 from chromite.lib.paygen import gspaths
 from chromite.lib.paygen import paygen_payload_lib
+from chromite.lib.paygen import test_control
+from chromite.lib.paygen import test_params
 from chromite.lib.paygen import utils
 
 # TODO(vapier): Re-enable check once we upgrade to pylint-1.8+.
 # pylint: disable=no-name-in-module
 from google.protobuf import json_format
 # pylint: enable=no-name-in-module
-
-
-# For crostools access.
-sys.path.insert(0, constants.SOURCE_ROOT)
-
-AUTOTEST_DIR = os.path.join(constants.SOURCE_ROOT, 'src', 'third_party',
-                            'autotest', 'files')
-sys.path.insert(0, AUTOTEST_DIR)
-
-# If we are an external only checkout, or a bootstrap environemnt these imports
-# will fail. We quietly ignore the failure, but leave bombs around that will
-# explode if people try to really use this library.
-try:
-  # pylint: disable=import-error
-  from site_utils.autoupdate.lib import test_params
-  from site_utils.autoupdate.lib import test_control
-
-except ImportError:
-  test_params = None
-  test_control = None
 
 
 # The oldest release milestone for which run_suite should be attempted.
