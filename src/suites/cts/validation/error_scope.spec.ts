@@ -42,7 +42,7 @@ class F extends Fixture {
 
       return Promise.race([
         promise,
-        rejectOnTimeout(TIMEOUT_IN_MS, 'Uncaptured error timeout occurred'),
+        rejectOnTimeout(TIMEOUT_IN_MS, 'Timeout occurred waiting for uncaptured error'),
       ]);
     });
   }

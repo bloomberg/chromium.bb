@@ -1,3 +1,5 @@
+import { timeout } from './timeout.js';
+
 export * from './stack.js';
 
 // performance.now() is available in all browsers, but not in scope by default in Node.
@@ -10,7 +12,7 @@ export function now(): number {
 
 export function rejectOnTimeout(ms: number, msg: string): Promise<never> {
   return new Promise((resolve, reject) => {
-    setTimeout(() => {
+    timeout(() => {
       reject(new Error(msg));
     }, ms);
   });
