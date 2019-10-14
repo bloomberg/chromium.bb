@@ -52,7 +52,8 @@ class SummaryLog(object):
 
   def __init__(self, log_contents):
     self.package_logs = sorted(
-        PackageLog(cpv, logs) for cpv, logs in six.iteritems(log_contents))
+        (PackageLog(cpv, logs) for cpv, logs in six.iteritems(log_contents)),
+        key=lambda x: x.cpv)
 
   def has_failed_packages(self):
     return any(log.has_errors() for log in self.package_logs)
