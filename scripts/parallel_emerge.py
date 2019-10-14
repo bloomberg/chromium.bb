@@ -22,8 +22,7 @@ if not _USE_NEW:
 
 def main(argv):
   if _USE_NEW:
-    cros_logging.notice('Using new parallel_emerge implementation.'
-                        ' Please report any issues at crbug.com/989962')
+    cros_logging.notice('Using new parallel_emerge implementation.')
     NEW_WRAPPER.main(argv)
   else:
     PARALLEL_EMERGE_OLD.main(argv)
