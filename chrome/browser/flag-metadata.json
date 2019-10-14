@@ -2008,7 +2008,7 @@
   {
     "name": "enable-webrtc-new-encode-cpu-load-estimator",
     "owners": [ "nisse" ],
-    "expiry_milestone": 77
+    "expiry_milestone": 85
   },
   {
     "name": "enable-webrtc-pipewire-capturer",
