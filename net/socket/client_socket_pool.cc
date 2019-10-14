@@ -71,7 +71,8 @@ ClientSocketPool::GroupId::GroupId()
 ClientSocketPool::GroupId::GroupId(const HostPortPair& destination,
                                    SocketType socket_type,
                                    PrivacyMode privacy_mode,
-                                   NetworkIsolationKey network_isolation_key)
+                                   NetworkIsolationKey network_isolation_key,
+                                   bool disable_secure_dns)
     : destination_(destination),
       socket_type_(socket_type),
       privacy_mode_(privacy_mode),
@@ -79,7 +80,8 @@ ClientSocketPool::GroupId::GroupId(const HostPortPair& destination,
           base::FeatureList::IsEnabled(
               features::kPartitionConnectionsByNetworkIsolationKey)
               ? network_isolation_key
-              : NetworkIsolationKey()) {}
+              : NetworkIsolationKey()),
+      disable_secure_dns_(disable_secure_dns) {}
 
 ClientSocketPool::GroupId::GroupId(const GroupId& group_id) = default;
 
@@ -110,6 +112,9 @@ std::string ClientSocketPool::GroupId::ToString() const {
     result += network_isolation_key_.ToDebugString();
     result += ">";
   }
+
+  if (disable_secure_dns_)
+    result = "dsd/" + result;
 
   return result;
 }
@@ -183,8 +188,8 @@ std::unique_ptr<ConnectJob> ClientSocketPool::CreateConnectJob(
       socket_params->ssl_config_for_origin(),
       socket_params->ssl_config_for_proxy(), is_for_websockets,
       group_id.privacy_mode(), resolution_callback, request_priority,
-      socket_tag, group_id.network_isolation_key(), common_connect_job_params,
-      delegate);
+      socket_tag, group_id.network_isolation_key(),
+      group_id.disable_secure_dns(), common_connect_job_params, delegate);
 }
 
 }  // namespace net

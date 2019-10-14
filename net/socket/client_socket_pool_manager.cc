@@ -69,7 +69,8 @@ ClientSocketPool::GroupId CreateGroupId(
     const HostPortPair& endpoint,
     const ProxyInfo& proxy_info,
     PrivacyMode privacy_mode,
-    const NetworkIsolationKey& network_isolation_key) {
+    const NetworkIsolationKey& network_isolation_key,
+    bool disable_secure_dns) {
   // Build the string used to uniquely identify connections of this type.
   // Determine the host and port to connect to.
   DCHECK(!endpoint.IsEmpty());
@@ -80,7 +81,7 @@ ClientSocketPool::GroupId CreateGroupId(
     socket_type = ClientSocketPool::SocketType::kSsl;
 
   return ClientSocketPool::GroupId(endpoint, socket_type, privacy_mode,
-                                   network_isolation_key);
+                                   network_isolation_key, disable_secure_dns);
 }
 
 // TODO(https://crbug.com/921369) In order to resolve longstanding issues
@@ -129,7 +130,7 @@ int InitSocketPoolHelper(
 
   ClientSocketPool::GroupId connection_group =
       CreateGroupId(group_type, origin_host_port, proxy_info, privacy_mode,
-                    network_isolation_key);
+                    network_isolation_key, false /* disable_secure_dns */);
   scoped_refptr<ClientSocketPool::SocketParams> socket_params =
       CreateSocketParams(connection_group, proxy_info.proxy_server(),
                          ssl_config_for_origin, ssl_config_for_proxy);

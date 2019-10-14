@@ -104,28 +104,34 @@ class HttpProxyConnectJobTest : public ::testing::TestWithParam<HttpProxyType>,
     HttpProxyConnectJob::UpdateFieldTrialParametersForTesting();
   }
 
-  scoped_refptr<TransportSocketParams> CreateHttpProxyParams() const {
+  scoped_refptr<TransportSocketParams> CreateHttpProxyParams(
+      bool disable_secure_dns) const {
     if (GetParam() != HTTP)
       return nullptr;
     return base::MakeRefCounted<TransportSocketParams>(
-        HostPortPair(kHttpProxyHost, 80), OnHostResolutionCallback());
+        HostPortPair(kHttpProxyHost, 80), disable_secure_dns,
+        OnHostResolutionCallback());
   }
 
-  scoped_refptr<SSLSocketParams> CreateHttpsProxyParams() const {
+  scoped_refptr<SSLSocketParams> CreateHttpsProxyParams(
+      bool disable_secure_dns) const {
     if (GetParam() == HTTP)
       return nullptr;
     return base::MakeRefCounted<SSLSocketParams>(
         base::MakeRefCounted<TransportSocketParams>(
-            HostPortPair(kHttpsProxyHost, 443), OnHostResolutionCallback()),
+            HostPortPair(kHttpsProxyHost, 443), disable_secure_dns,
+            OnHostResolutionCallback()),
         nullptr, nullptr, HostPortPair(kHttpsProxyHost, 443), SSLConfig(),
         PRIVACY_MODE_DISABLED, NetworkIsolationKey());
   }
 
   // Returns a correctly constructed HttpProxyParams for the HTTP or HTTPS
   // proxy.
-  scoped_refptr<HttpProxySocketParams> CreateParams(bool tunnel) {
+  scoped_refptr<HttpProxySocketParams> CreateParams(bool tunnel,
+                                                    bool disable_secure_dns) {
     return base::MakeRefCounted<HttpProxySocketParams>(
-        CreateHttpProxyParams(), CreateHttpsProxyParams(), false /* is_quic */,
+        CreateHttpProxyParams(disable_secure_dns),
+        CreateHttpsProxyParams(disable_secure_dns), false /* is_quic */,
         HostPortPair(kEndpointHost, tunnel ? 443 : 80),
         /*is_trusted_proxy=*/false, tunnel, TRAFFIC_ANNOTATION_FOR_TESTS,
         NetworkIsolationKey());
@@ -133,16 +139,19 @@ class HttpProxyConnectJobTest : public ::testing::TestWithParam<HttpProxyType>,
 
   std::unique_ptr<HttpProxyConnectJob> CreateConnectJobForHttpRequest(
       ConnectJob::Delegate* delegate,
-      RequestPriority priority = DEFAULT_PRIORITY) {
-    return CreateConnectJob(CreateParams(false /* tunnel */), delegate,
-                            priority);
+      RequestPriority priority = DEFAULT_PRIORITY,
+      bool disable_secure_dns = false) {
+    return CreateConnectJob(
+        CreateParams(false /* tunnel */, disable_secure_dns), delegate,
+        priority);
   }
 
   std::unique_ptr<HttpProxyConnectJob> CreateConnectJobForTunnel(
       ConnectJob::Delegate* delegate,
-      RequestPriority priority = DEFAULT_PRIORITY) {
-    return CreateConnectJob(CreateParams(true /* tunnel */), delegate,
-                            priority);
+      RequestPriority priority = DEFAULT_PRIORITY,
+      bool disable_secure_dns = false) {
+    return CreateConnectJob(CreateParams(true /* tunnel */, disable_secure_dns),
+                            delegate, priority);
   }
 
   std::unique_ptr<HttpProxyConnectJob> CreateConnectJob(
@@ -220,7 +229,8 @@ class HttpProxyConnectJobTest : public ::testing::TestWithParam<HttpProxyType>,
     // since tunnels need an extra round trip.
     base::TimeDelta alternate_connection_timeout =
         HttpProxyConnectJob::AlternateNestedConnectionTimeout(
-            *CreateParams(true /* tunnel */), network_quality_estimator_.get());
+            *CreateParams(true /* tunnel */, false /* disable_secure_dns */),
+            network_quality_estimator_.get());
 
     // If there's an alternate connection timeout, and it's less than the
     // standard TCP+SSL timeout (Which is also applied by the nested connect
@@ -829,6 +839,24 @@ TEST_P(HttpProxyConnectJobTest, RequestPriority) {
       connect_job->ChangePriority(
           static_cast<RequestPriority>(initial_priority));
       EXPECT_EQ(initial_priority, host_resolver->request_priority(request_id));
+    }
+  }
+}
+
+TEST_P(HttpProxyConnectJobTest, DisableSecureDns) {
+  for (bool disable_secure_dns : {false, true}) {
+    TestConnectJobDelegate test_delegate;
+    std::unique_ptr<ConnectJob> connect_job = CreateConnectJobForHttpRequest(
+        &test_delegate, DEFAULT_PRIORITY, disable_secure_dns);
+
+    EXPECT_THAT(connect_job->Connect(), test::IsError(ERR_IO_PENDING));
+    EXPECT_EQ(disable_secure_dns,
+              session_deps_.host_resolver->last_secure_dns_mode_override()
+                  .has_value());
+    if (disable_secure_dns) {
+      EXPECT_EQ(
+          net::DnsConfig::SecureDnsMode::OFF,
+          session_deps_.host_resolver->last_secure_dns_mode_override().value());
     }
   }
 }
@@ -1516,7 +1544,7 @@ TEST_P(HttpProxyConnectJobTest, ConnectionTimeoutNoNQE) {
   // since tunnels need an extra round trip.
   base::TimeDelta alternate_connection_timeout =
       HttpProxyConnectJob::AlternateNestedConnectionTimeout(
-          *CreateParams(true /* tunnel */),
+          *CreateParams(true /* tunnel */, false /* disable_secure_dns */),
           nullptr /* network_quality_estimator */);
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
