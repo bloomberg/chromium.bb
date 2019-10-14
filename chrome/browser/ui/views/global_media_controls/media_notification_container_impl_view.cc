@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/global_media_controls/media_notification_container_impl.h"
+#include "chrome/browser/ui/views/global_media_controls/media_notification_container_impl_view.h"
 
+#include "chrome/browser/ui/global_media_controls/media_notification_container_observer.h"
 #include "chrome/browser/ui/global_media_controls/media_toolbar_button_controller.h"
 #include "chrome/browser/ui/views/global_media_controls/media_dialog_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/animation/ink_drop_mask.h"
+#include "ui/views/animation/slide_out_controller.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
@@ -33,7 +35,7 @@ constexpr int kMinVisibleActionsForExpanding = 4;
 
 }  // anonymous namespace
 
-class MediaNotificationContainerImpl::DismissButton
+class MediaNotificationContainerImplView::DismissButton
     : public views::ImageButton {
  public:
   explicit DismissButton(views::ButtonListener* listener)
@@ -52,22 +54,22 @@ class MediaNotificationContainerImpl::DismissButton
   DISALLOW_COPY_AND_ASSIGN(DismissButton);
 };
 
-MediaNotificationContainerImpl::MediaNotificationContainerImpl(
-    MediaDialogView* parent,
-    MediaToolbarButtonController* controller,
+MediaNotificationContainerImplView::MediaNotificationContainerImplView(
     const std::string& id,
     base::WeakPtr<media_message_center::MediaNotificationItem> item)
-    : parent_(parent),
-      controller_(controller),
-      id_(id),
+    : id_(id),
       foreground_color_(kDefaultForegroundColor),
       background_color_(kDefaultBackgroundColor) {
-  DCHECK(parent_);
-  DCHECK(controller_);
-
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
   SetPreferredSize(kNormalSize);
+
+  swipeable_container_ = std::make_unique<views::View>();
+  swipeable_container_->set_owned_by_client();
+  swipeable_container_->SetLayoutManager(std::make_unique<views::FillLayout>());
+  swipeable_container_->SetPaintToLayer();
+  swipeable_container_->layer()->SetFillsBoundsOpaquely(false);
+  AddChildView(swipeable_container_.get());
 
   dismiss_button_container_ = std::make_unique<views::View>();
   dismiss_button_container_->set_owned_by_client();
@@ -90,35 +92,44 @@ MediaNotificationContainerImpl::MediaNotificationContainerImpl(
   view_->set_owned_by_client();
   ForceExpandedState();
 
-  AddChildView(view_.get());
+  swipeable_container_->AddChildView(view_.get());
+
+  slide_out_controller_ =
+      std::make_unique<views::SlideOutController>(this, this);
 }
 
-MediaNotificationContainerImpl::~MediaNotificationContainerImpl() = default;
+MediaNotificationContainerImplView::~MediaNotificationContainerImplView() {
+  for (auto& observer : observers_)
+    observer.OnContainerDestroyed(id_);
+}
 
-void MediaNotificationContainerImpl::OnExpanded(bool expanded) {
+void MediaNotificationContainerImplView::OnExpanded(bool expanded) {
   SetPreferredSize(expanded ? kExpandedSize : kNormalSize);
   PreferredSizeChanged();
-  parent_->OnAnchorBoundsChanged();
+
+  for (auto& observer : observers_)
+    observer.OnContainerExpanded(expanded);
 }
 
-void MediaNotificationContainerImpl::OnMediaSessionInfoChanged(
+void MediaNotificationContainerImplView::OnMediaSessionInfoChanged(
     const media_session::mojom::MediaSessionInfoPtr& session_info) {
   dismiss_button_container_->SetVisible(
       !session_info || session_info->playback_state !=
                            media_session::mojom::MediaPlaybackState::kPlaying);
 }
 
-void MediaNotificationContainerImpl::OnMediaSessionMetadataChanged() {
-  parent_->OnMediaSessionMetadataChanged();
+void MediaNotificationContainerImplView::OnMediaSessionMetadataChanged() {
+  for (auto& observer : observers_)
+    observer.OnContainerMetadataChanged();
 }
 
-void MediaNotificationContainerImpl::OnVisibleActionsChanged(
+void MediaNotificationContainerImplView::OnVisibleActionsChanged(
     const std::set<media_session::mojom::MediaSessionAction>& actions) {
   has_many_actions_ = actions.size() >= kMinVisibleActionsForExpanding;
   ForceExpandedState();
 }
 
-void MediaNotificationContainerImpl::OnMediaArtworkChanged(
+void MediaNotificationContainerImplView::OnMediaArtworkChanged(
     const gfx::ImageSkia& image) {
   has_artwork_ = !image.isNull();
 
@@ -126,8 +137,8 @@ void MediaNotificationContainerImpl::OnMediaArtworkChanged(
   ForceExpandedState();
 }
 
-void MediaNotificationContainerImpl::OnColorsChanged(SkColor foreground,
-                                                     SkColor background) {
+void MediaNotificationContainerImplView::OnColorsChanged(SkColor foreground,
+                                                         SkColor background) {
   if (foreground_color_ != foreground) {
     foreground_color_ = foreground;
     UpdateDismissButtonIcon();
@@ -138,19 +149,42 @@ void MediaNotificationContainerImpl::OnColorsChanged(SkColor foreground,
   }
 }
 
-void MediaNotificationContainerImpl::ButtonPressed(views::Button* sender,
-                                                   const ui::Event& event) {
-  DCHECK_EQ(dismiss_button_, sender);
-  controller_->OnDismissButtonClicked(id_);
+ui::Layer* MediaNotificationContainerImplView::GetSlideOutLayer() {
+  return swipeable_container_->layer();
 }
 
-void MediaNotificationContainerImpl::UpdateDismissButtonIcon() {
+void MediaNotificationContainerImplView::OnSlideOut() {
+  DismissNotification();
+}
+
+void MediaNotificationContainerImplView::ButtonPressed(views::Button* sender,
+                                                       const ui::Event& event) {
+  DCHECK_EQ(dismiss_button_, sender);
+  DismissNotification();
+}
+
+void MediaNotificationContainerImplView::AddObserver(
+    MediaNotificationContainerObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void MediaNotificationContainerImplView::RemoveObserver(
+    MediaNotificationContainerObserver* observer) {
+  observers_.RemoveObserver(observer);
+}
+
+views::ImageButton*
+MediaNotificationContainerImplView::GetDismissButtonForTesting() {
+  return dismiss_button_;
+}
+
+void MediaNotificationContainerImplView::UpdateDismissButtonIcon() {
   views::SetImageFromVectorIconWithColor(
       dismiss_button_, vector_icons::kCloseRoundedIcon, kDismissButtonIconSize,
       foreground_color_);
 }
 
-void MediaNotificationContainerImpl::UpdateDismissButtonBackground() {
+void MediaNotificationContainerImplView::UpdateDismissButtonBackground() {
   if (!has_artwork_) {
     dismiss_button_container_->SetBackground(nullptr);
     return;
@@ -160,7 +194,12 @@ void MediaNotificationContainerImpl::UpdateDismissButtonBackground() {
       background_color_, kDismissButtonBackgroundRadius));
 }
 
-void MediaNotificationContainerImpl::ForceExpandedState() {
+void MediaNotificationContainerImplView::DismissNotification() {
+  for (auto& observer : observers_)
+    observer.OnContainerDismissed(id_);
+}
+
+void MediaNotificationContainerImplView::ForceExpandedState() {
   if (view_) {
     bool should_expand = has_many_actions_ || has_artwork_;
     view_->SetForcedExpandedState(&should_expand);
