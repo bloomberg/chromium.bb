@@ -134,7 +134,7 @@ def FindVolumeGroupForDevice(chroot_path, chroot_dev):
   cmd = ['pvs', '-q', '--noheadings', '-o', 'vg_name,pv_name', '--unbuffered',
          '--separator', '\t']
   result = cros_build_lib.sudo_run(
-      cmd, capture_output=True, print_cmd=False)
+      cmd, capture_output=True, print_cmd=False, encoding='utf-8')
   existing_vgs = set()
   for line in result.output.strip().splitlines():
     # Typical lines are '  vg_name\tpv_name\n'.  Match with a regex
@@ -168,7 +168,8 @@ def _DeviceFromFile(chroot_image):
   chroot_dev = None
   cmd = ['losetup', '-j', chroot_image]
   result = cros_build_lib.sudo_run(
-      cmd, capture_output=True, error_code_ok=True, print_cmd=False)
+      cmd, capture_output=True, error_code_ok=True, print_cmd=False,
+      encoding='utf-8')
   if result.returncode == 0:
     match = re.match(r'/dev/loop\d+', result.output)
     if match:
@@ -188,7 +189,7 @@ def _AttachDeviceToFile(chroot_image):
   cmd = ['losetup', '--show', '-f', chroot_image]
   # Result should be '/dev/loopN\n' for whatever loop device is chosen.
   result = cros_build_lib.sudo_run(
-      cmd, capture_output=True, print_cmd=False)
+      cmd, capture_output=True, print_cmd=False, encoding='utf-8')
   chroot_dev = result.output.strip()
 
   # Force rescanning the new device in case lvmetad doesn't pick it up.
@@ -278,7 +279,8 @@ def MountChroot(chroot=None, buildroot=None, create=True,
     return False
   cmd = ['vgs', chroot_vg]
   result = cros_build_lib.sudo_run(
-      cmd, capture_output=True, error_code_ok=True, print_cmd=False)
+      cmd, capture_output=True, error_code_ok=True, print_cmd=False,
+      encoding='utf-8')
   if result.returncode == 0:
     logging.debug('Activating existing VG %s', chroot_vg)
     cmd = ['vgchange', '-q', '-ay', chroot_vg]
@@ -304,7 +306,8 @@ def MountChroot(chroot=None, buildroot=None, create=True,
   chroot_dev_path = '/dev/%s' % chroot_lv
   cmd = ['lvs', chroot_lv]
   result = cros_build_lib.sudo_run(
-      cmd, capture_output=True, error_code_ok=True, print_cmd=False)
+      cmd, capture_output=True, error_code_ok=True, print_cmd=False,
+      encoding='utf-8')
   if result.returncode != 0:
     cmd = ['lvcreate', '-q', '-L499G', '-T',
            '%s/%s' % (chroot_vg, CHROOT_THINPOOL_NAME), '-V500G',
@@ -413,7 +416,8 @@ def CleanupChrootMount(chroot=None, buildroot=None, delete=False,
     cmd = ['vgs', '-q', '--noheadings', '-o', 'pv_name', '--unbuffered',
            vg_name]
     result = cros_build_lib.sudo_run(
-        cmd, capture_output=True, error_code_ok=True, print_cmd=False)
+        cmd, capture_output=True, error_code_ok=True, print_cmd=False,
+        encoding='utf-8')
     if result.returncode == 0:
       chroot_dev = result.output.strip()
     else:
@@ -428,7 +432,8 @@ def CleanupChrootMount(chroot=None, buildroot=None, delete=False,
     if vg_name:
       cmd = ['vgs', vg_name]
       result = cros_build_lib.sudo_run(
-          cmd, capture_output=True, error_code_ok=True, print_cmd=False)
+          cmd, capture_output=True, error_code_ok=True, print_cmd=False,
+          encoding='utf-8')
       if result.returncode != 0:
         vg_name = None
 
