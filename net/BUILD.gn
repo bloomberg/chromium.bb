@@ -3277,7 +3277,7 @@ if (is_linux) {
     ]
   }
 
-  executable("quic_client_for_interop_test") {
+  executable("quic_client_interop_test") {
     sources = [
       "third_party/quiche/src/quic/tools/fake_proof_verifier.h",
       "third_party/quiche/src/quic/tools/quic_client_interop_test_bin.cc",
