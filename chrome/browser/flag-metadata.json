@@ -105,7 +105,7 @@
   {
     "name": "animated-avatar-button",
     "owners": ["jkrcal"],
-    "expiry_milestone": 78
+    "expiry_milestone": 79
   },
   {
     "name": "app-management",
@@ -1340,7 +1340,7 @@
   {
     "name": "enable-history-favicons-google-server-query",
     "owners": ["victorvianna", "jkrcal"],
-    "expiry_milestone": 78
+    "expiry_milestone": 79
   },
   {
     "name": "enable-history-manipulation-intervention",
