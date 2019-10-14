@@ -193,8 +193,8 @@ def _JsonLintFile(path, _output_format, _debug):
   data = osutils.ReadFile(path)
 
   # Strip off leading UTF-8 BOM if it exists.
-  if data.startswith(b'\xef\xbb\xbf'):
-    data = data[3:]
+  if data.startswith(u'\ufeff'):
+    data = data[1:]
 
   # Strip out comments for JSON parsing.
   stripped_data = re.sub(r'^\s*#.*', '', data, flags=re.M)
