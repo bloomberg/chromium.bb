@@ -88,7 +88,8 @@ class InputInsns(object):
     self.buildroot = buildroot or constants.SOURCE_ROOT
 
     config = configparser.ConfigParser()
-    config.readfp(open(self.GetInsnFile('DEFAULT')))
+    with open(self.GetInsnFile('DEFAULT')) as fp:
+      config.readfp(fp)
 
     # What pushimage internally refers to as 'recovery', are the basic signing
     # instructions in practice, and other types are stacked on top.
@@ -99,7 +100,8 @@ class InputInsns(object):
     if not os.path.exists(input_insns):
       # This board doesn't have any signing instructions.
       raise MissingBoardInstructions(self.board, image_type, input_insns)
-    config.readfp(open(input_insns))
+    with open(input_insns) as fp:
+      config.readfp(fp)
 
     if image_type is not None:
       input_insns = self.GetInsnFile(image_type)
@@ -108,7 +110,8 @@ class InputInsns(object):
         raise MissingBoardInstructions(self.board, image_type, input_insns)
 
       self.image_type = image_type
-      config.readfp(open(input_insns))
+      with open(input_insns) as fp:
+        config.readfp(fp)
 
     self.cfg = config
 

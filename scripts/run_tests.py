@@ -287,6 +287,7 @@ PYTHON3_TESTS = {
     'scripts/gconv_strip_unittest',
     'scripts/gen_luci_scheduler_unittest',
     'scripts/install_toolchain_unittest',
+    'scripts/pushimage_unittest',
     'scripts/security_test_image_unittest',
     'scripts/sysmon/git_metrics_unittest',
     'scripts/sysmon/loop_unittest',

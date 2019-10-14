@@ -7,6 +7,7 @@
 
 from __future__ import print_function
 
+import collections
 import os
 
 import mock
@@ -102,10 +103,10 @@ config_board = test.board
         'channel': 'dev',
         'keyset': 'batman',
     }
-    sect_general = {
-        'config_board': 'test.board',
-        'board': 'board',
-    }
+    sect_general = collections.OrderedDict((
+        ('board', 'board'),
+        ('config_board', 'test.board'),
+    ))
 
     insns = pushimage.InputInsns('test.board')
     m = self.PatchObject(osutils, 'WriteFile')
@@ -147,10 +148,10 @@ config_board = test.board
         'override': 'sect_insns',
     }
     sect_insns_copy = sect_insns.copy()
-    sect_general = {
-        'config_board': 'test.board',
-        'board': 'board',
-    }
+    sect_general = collections.OrderedDict((
+        ('board', 'board'),
+        ('config_board', 'test.board'),
+    ))
 
     insns = pushimage.InputInsns('test.multi')
     self.assertEqual(insns.GetAltInsnSets(), exp_alts)
