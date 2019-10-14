@@ -58,7 +58,7 @@ class UseAddressActionTest : public testing::Test {
           checker->Run(&mock_web_controller_);
         }));
     ON_CALL(mock_action_delegate_, OnShortWaitForElement(_, _))
-        .WillByDefault(RunOnceCallback<1>(true));
+        .WillByDefault(RunOnceCallback<1>(OkClientStatus()));
   }
 
  protected:
@@ -159,7 +159,7 @@ TEST_F(UseAddressActionTest, ShortWaitForElementVisible) {
   EXPECT_CALL(
       mock_action_delegate_,
       OnShortWaitForElement(Selector({kFakeSelector}).MustBeVisible(), _))
-      .WillOnce(RunOnceCallback<1>(true));
+      .WillOnce(RunOnceCallback<1>(OkClientStatus()));
 
   ActionProto action_proto = CreateUseAddressAction();
   // Autofill succeeds.
@@ -168,7 +168,7 @@ TEST_F(UseAddressActionTest, ShortWaitForElementVisible) {
 
   // Validation succeeds.
   ON_CALL(mock_web_controller_, OnGetFieldValue(_, _))
-      .WillByDefault(RunOnceCallback<1>(true, "not empty"));
+      .WillByDefault(RunOnceCallback<1>(OkClientStatus(), "not empty"));
 
   EXPECT_EQ(ProcessedActionStatusProto::ACTION_APPLIED,
             ProcessAction(action_proto));
@@ -193,7 +193,7 @@ TEST_F(UseAddressActionTest, ValidationSucceeds) {
 
   // Validation succeeds.
   ON_CALL(mock_web_controller_, OnGetFieldValue(_, _))
-      .WillByDefault(RunOnceCallback<1>(true, "not empty"));
+      .WillByDefault(RunOnceCallback<1>(OkClientStatus(), "not empty"));
 
   EXPECT_EQ(ProcessedActionStatusProto::ACTION_APPLIED,
             ProcessAction(action_proto));
@@ -219,13 +219,13 @@ TEST_F(UseAddressActionTest, FallbackFails) {
   // Validation fails when getting FIRST_NAME.
   EXPECT_CALL(mock_web_controller_,
               OnGetFieldValue(Eq(Selector({"#email"})), _))
-      .WillOnce(RunOnceCallback<1>(true, "not empty"));
+      .WillOnce(RunOnceCallback<1>(OkClientStatus(), "not empty"));
   EXPECT_CALL(mock_web_controller_,
               OnGetFieldValue(Eq(Selector({"#first_name"})), _))
-      .WillOnce(RunOnceCallback<1>(true, ""));
+      .WillOnce(RunOnceCallback<1>(OkClientStatus(), ""));
   EXPECT_CALL(mock_web_controller_,
               OnGetFieldValue(Eq(Selector({"#last_name"})), _))
-      .WillOnce(RunOnceCallback<1>(true, "not empty"));
+      .WillOnce(RunOnceCallback<1>(OkClientStatus(), "not empty"));
 
   // Fallback fails.
   EXPECT_CALL(mock_action_delegate_,
@@ -259,13 +259,13 @@ TEST_F(UseAddressActionTest, FallbackSucceeds) {
     // Validation fails when getting FIRST_NAME.
     EXPECT_CALL(mock_web_controller_,
                 OnGetFieldValue(Eq(Selector({"#email"})), _))
-        .WillOnce(RunOnceCallback<1>(true, "not empty"));
+        .WillOnce(RunOnceCallback<1>(OkClientStatus(), "not empty"));
     EXPECT_CALL(mock_web_controller_,
                 OnGetFieldValue(Eq(Selector({"#first_name"})), _))
-        .WillOnce(RunOnceCallback<1>(true, ""));
+        .WillOnce(RunOnceCallback<1>(OkClientStatus(), ""));
     EXPECT_CALL(mock_web_controller_,
                 OnGetFieldValue(Eq(Selector({"#last_name"})), _))
-        .WillOnce(RunOnceCallback<1>(true, "not empty"));
+        .WillOnce(RunOnceCallback<1>(OkClientStatus(), "not empty"));
 
     // Fallback succeeds.
     EXPECT_CALL(mock_action_delegate_,
@@ -274,7 +274,7 @@ TEST_F(UseAddressActionTest, FallbackSucceeds) {
 
     // Second validation succeeds.
     EXPECT_CALL(mock_web_controller_, OnGetFieldValue(_, _))
-        .WillRepeatedly(RunOnceCallback<1>(true, "not empty"));
+        .WillRepeatedly(RunOnceCallback<1>(OkClientStatus(), "not empty"));
   }
   EXPECT_EQ(ProcessedActionStatusProto::ACTION_APPLIED,
             ProcessAction(action_proto));

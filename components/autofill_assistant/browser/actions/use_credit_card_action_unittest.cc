@@ -57,7 +57,7 @@ class UseCreditCardActionTest : public testing::Test {
           checker->Run(&mock_web_controller_);
         }));
     ON_CALL(mock_action_delegate_, OnShortWaitForElement(_, _))
-        .WillByDefault(RunOnceCallback<1>(true));
+        .WillByDefault(RunOnceCallback<1>(OkClientStatus()));
   }
 
  protected:
@@ -134,7 +134,7 @@ TEST_F(UseCreditCardActionTest, FillCreditCard) {
 TEST_F(UseCreditCardActionTest, FillCreditCardRequiredFieldsFilled) {
   // Validation succeeds.
   ON_CALL(mock_web_controller_, OnGetFieldValue(_, _))
-      .WillByDefault(RunOnceCallback<1>(true, "not empty"));
+      .WillByDefault(RunOnceCallback<1>(OkClientStatus(), "not empty"));
 
   ActionProto action = CreateUseCreditCardAction();
   AddRequiredField(
@@ -174,13 +174,13 @@ TEST_F(UseCreditCardActionTest, FillCreditCardWithFallback) {
 
   // First validation fails.
   EXPECT_CALL(mock_web_controller_, OnGetFieldValue(Selector({"#cvc"}), _))
-      .WillOnce(RunOnceCallback<1>(true, ""));
+      .WillOnce(RunOnceCallback<1>(OkClientStatus(), ""));
   EXPECT_CALL(mock_web_controller_, OnGetFieldValue(Selector({"#expmonth"}), _))
-      .WillOnce(RunOnceCallback<1>(true, ""));
+      .WillOnce(RunOnceCallback<1>(OkClientStatus(), ""));
   EXPECT_CALL(mock_web_controller_, OnGetFieldValue(Selector({"#expyear2"}), _))
-      .WillOnce(RunOnceCallback<1>(true, ""));
+      .WillOnce(RunOnceCallback<1>(OkClientStatus(), ""));
   EXPECT_CALL(mock_web_controller_, OnGetFieldValue(Selector({"#expyear4"}), _))
-      .WillOnce(RunOnceCallback<1>(true, ""));
+      .WillOnce(RunOnceCallback<1>(OkClientStatus(), ""));
 
   // Expect fields to be filled
   Expectation set_cvc =
@@ -203,16 +203,16 @@ TEST_F(UseCreditCardActionTest, FillCreditCardWithFallback) {
   // After fallback, second validation succeeds.
   EXPECT_CALL(mock_web_controller_, OnGetFieldValue(Selector({"#cvc"}), _))
       .After(set_cvc)
-      .WillOnce(RunOnceCallback<1>(true, "not empty"));
+      .WillOnce(RunOnceCallback<1>(OkClientStatus(), "not empty"));
   EXPECT_CALL(mock_web_controller_, OnGetFieldValue(Selector({"#expmonth"}), _))
       .After(set_expmonth)
-      .WillOnce(RunOnceCallback<1>(true, "not empty"));
+      .WillOnce(RunOnceCallback<1>(OkClientStatus(), "not empty"));
   EXPECT_CALL(mock_web_controller_, OnGetFieldValue(Selector({"#expyear2"}), _))
       .After(set_expyear2)
-      .WillOnce(RunOnceCallback<1>(true, "not empty"));
+      .WillOnce(RunOnceCallback<1>(OkClientStatus(), "not empty"));
   EXPECT_CALL(mock_web_controller_, OnGetFieldValue(Selector({"#expyear4"}), _))
       .After(set_expyear4)
-      .WillOnce(RunOnceCallback<1>(true, "not empty"));
+      .WillOnce(RunOnceCallback<1>(OkClientStatus(), "not empty"));
 
   autofill::CreditCard credit_card;
   credit_card.SetExpirationMonth(9);
@@ -240,7 +240,7 @@ TEST_F(UseCreditCardActionTest, ForcedFallback) {
 
   // No field is ever empty
   ON_CALL(mock_web_controller_, OnGetFieldValue(_, _))
-      .WillByDefault(RunOnceCallback<1>(true, "not empty"));
+      .WillByDefault(RunOnceCallback<1>(OkClientStatus(), "not empty"));
 
   // But we still want the CVC filled, with simulated keypresses.
   Expectation set_cvc =

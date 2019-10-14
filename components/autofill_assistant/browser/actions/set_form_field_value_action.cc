@@ -112,9 +112,10 @@ void SetFormFieldValueAction::InternalProcessAction(
                                 weak_ptr_factory_.GetWeakPtr()));
 }
 
-void SetFormFieldValueAction::OnWaitForElement(bool element_found) {
-  if (!element_found) {
-    EndAction(ClientStatus(ELEMENT_RESOLUTION_FAILED));
+void SetFormFieldValueAction::OnWaitForElement(
+    const ClientStatus& element_status) {
+  if (!element_status.ok()) {
+    EndAction(ClientStatus(element_status.proto_status()));
     return;
   }
   // Start with first value, then call OnSetFieldValue() recursively until done.
@@ -181,10 +182,10 @@ void SetFormFieldValueAction::OnSetFieldValueAndCheckFallback(
 void SetFormFieldValueAction::OnGetFieldValue(
     int field_index,
     const std::string& requested_value,
-    bool get_value_status,
+    const ClientStatus& element_status,
     const std::string& actual_value) {
   // Move to next value if |GetFieldValue| failed.
-  if (!get_value_status) {
+  if (!element_status.ok()) {
     OnSetFieldValue(field_index + 1, OkClientStatus());
     return;
   }

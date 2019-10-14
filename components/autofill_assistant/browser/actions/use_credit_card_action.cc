@@ -75,9 +75,9 @@ void UseCreditCardAction::FillFormWithData() {
                                 weak_ptr_factory_.GetWeakPtr()));
 }
 
-void UseCreditCardAction::OnWaitForElement(bool element_found) {
-  if (!element_found) {
-    EndAction(ELEMENT_RESOLUTION_FAILED);
+void UseCreditCardAction::OnWaitForElement(const ClientStatus& element_status) {
+  if (!element_status.ok()) {
+    EndAction(element_status.proto_status());
     return;
   }
 
@@ -141,9 +141,10 @@ void UseCreditCardAction::CheckRequiredFields(
   delegate_->RunElementChecks(batch_element_checker_.get());
 }
 
-void UseCreditCardAction::OnGetRequiredFieldValue(size_t required_fields_index,
-                                                  bool exists,
-                                                  const std::string& value) {
+void UseCreditCardAction::OnGetRequiredFieldValue(
+    size_t required_fields_index,
+    const ClientStatus& element_status,
+    const std::string& value) {
   required_fields_[required_fields_index].status =
       value.empty() ? EMPTY : NOT_EMPTY;
 }

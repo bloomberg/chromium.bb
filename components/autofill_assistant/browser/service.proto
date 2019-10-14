@@ -588,6 +588,7 @@ message AutofillErrorInfoProto {
   optional bool address_pointee_was_null = 3;
 }
 
+// Next: 22
 enum ProcessedActionStatusProto {
   UNKNOWN_ACTION_STATUS = 0;
 

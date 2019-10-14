@@ -126,7 +126,7 @@ class ControllerTest : public content::RenderViewHostTestHarness {
         .WillByDefault(RunOnceCallback<4>(true, ""));
 
     ON_CALL(*mock_web_controller_, OnElementCheck(_, _))
-        .WillByDefault(RunOnceCallback<1>(false));
+        .WillByDefault(RunOnceCallback<1>(ClientStatus()));
 
     ON_CALL(mock_observer_, OnStateChanged(_))
         .WillByDefault(Invoke([this](AutofillAssistantState state) {
@@ -761,7 +761,7 @@ TEST_F(ControllerTest, KeepCheckingForElement) {
   }
 
   EXPECT_CALL(*mock_web_controller_, OnElementCheck(_, _))
-      .WillRepeatedly(RunOnceCallback<1>(true));
+      .WillRepeatedly(RunOnceCallback<1>(OkClientStatus()));
   task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(1));
 
   EXPECT_EQ(AutofillAssistantState::AUTOSTART_FALLBACK_PROMPT,

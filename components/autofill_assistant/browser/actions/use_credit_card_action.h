@@ -73,7 +73,7 @@ class UseCreditCardAction : public Action {
   // Fill the form using data in client memory. Return whether filling succeeded
   // or not through OnFormFilled.
   void FillFormWithData();
-  void OnWaitForElement(bool element_found);
+  void OnWaitForElement(const ClientStatus& element_status);
 
   // Called after getting full credit card with its cvc.
   void OnGetFullCard(std::unique_ptr<autofill::CreditCard> card,
@@ -97,7 +97,7 @@ class UseCreditCardAction : public Action {
 
   // Updates |required_fields_value_status_|.
   void OnGetRequiredFieldValue(size_t required_fields_index,
-                               bool exists,
+                               const ClientStatus& element_status,
                                const std::string& value);
 
   // Called when all required fields have been checked.
