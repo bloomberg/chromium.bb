@@ -455,7 +455,7 @@ void SafeBrowsingUrlCheckerImpl::OnRTLookupResponse(
     OnUrlResult(url, SB_THREAT_TYPE_SAFE, ThreatMetadata());
   }
 
-  // TODO(vakh): Log |response| to chrome://safe-browsing
+  // TODO(crbug.com/1013370): Log |response| to chrome://safe-browsing
 }
 
 }  // namespace safe_browsing
