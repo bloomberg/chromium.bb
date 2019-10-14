@@ -222,24 +222,13 @@ def MultipleStringMatch(patterns, corpus):
   """
   result = [False] * len(patterns)
 
-  if hasattr(ahocorasick, 'KeywordTree'):
-    tree = ahocorasick.KeywordTree()
-    for word in patterns:
-      tree.add(word)
-    tree.make()
+  tree = ahocorasick.Automaton()
+  for i, word in enumerate(patterns):
+    tree.add_word(word, i)
+  tree.make_automaton()
 
-    for i, j in tree.findall(corpus):
-      match = corpus[i:j]
-      result[patterns.index(match)] = True
-
-  else:
-    tree = ahocorasick.Automaton()
-    for i, word in enumerate(patterns):
-      tree.add_word(word, i)
-    tree.make_automaton()
-
-    for _, i in tree.iter(corpus):
-      result[i] = True
+  for _, i in tree.iter(corpus):
+    result[i] = True
 
   return result
 
