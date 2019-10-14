@@ -18292,6 +18292,7 @@ Called by update_net_error_codes.py.-->
   <int value="625" label="PrintJobHistoryExpirationPeriod"/>
   <int value="626" label="TLS13HardeningForLocalAnchorsEnabled"/>
   <int value="627" label="ForceDisableAudioSandbox"/>
+  <int value="628" label="DeviceLoginScreenScreenMagnifierType"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
