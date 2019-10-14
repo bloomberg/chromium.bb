@@ -19,6 +19,7 @@
 #include "components/sync_device_info/device_info.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/border.h"
@@ -171,8 +172,7 @@ void SharingDialogView::ButtonPressed(views::Button* sender,
   DCHECK(data_.app_callback);
   if (!sender || sender->tag() < 0)
     return;
-  size_t index = static_cast<size_t>(sender->tag());
-  DCHECK(index < data_.devices.size() + data_.apps.size());
+  size_t index{sender->tag()};
 
   if (index < data_.devices.size()) {
     LogSharingSelectedDeviceIndex(data_.prefix, kSharingUiDialog, index);
@@ -195,7 +195,7 @@ void SharingDialogView::MaybeShowHeaderImage() {
   if (!frame_view)
     return;
 
-  int image_id = GetNativeTheme()->ShouldUseDarkColors()
+  int image_id = color_utils::IsDark(frame_view->GetBackgroundColor())
                      ? data_.header_image_dark
                      : data_.header_image_light;
   if (!image_id) {
