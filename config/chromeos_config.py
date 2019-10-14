@@ -2273,7 +2273,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'fizz',
       'fizz-accelerator',
       'flapjack',
-      'gale',
       'gandof',
       'glados',
       'gnawty',
@@ -2390,6 +2389,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'cave',  # temporary hack for crbug.com/1008674
       'elm',  # temporary hack for crbug.com/1008674
       'fizz-moblab', # crbug.com/995170
+      'gale',  # crbug.com/1014100
       'mistral', # b/140536001
       'moblab-generic-vm', # crbug.com/960998, crbug.com/976297
       'samus-kernelnext', # https://crbug.com/1004618
