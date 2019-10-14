@@ -172,7 +172,7 @@ class Repository(object):
       raise NotInRepoError('cannot run `repo` outside of Repository root '
                            '(cwd=%r root=%r)' % (cwd, self.root))
     return cros_build_lib.run(cmd, cwd=cwd, capture_output=capture_output,
-                              debug_level=logging.DEBUG)
+                              debug_level=logging.DEBUG, encoding='utf-8')
 
   def Sync(self, projects=None, local_only=False, current_branch=False,
            jobs=None, manifest_path=None, cwd=None):

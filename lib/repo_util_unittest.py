@@ -153,6 +153,7 @@ class RepositoryCommandMethodTest(cros_test_lib.RunCommandTempDirTestCase):
     kwargs.setdefault('cwd', self.root)
     kwargs.setdefault('capture_output', False)
     kwargs.setdefault('debug_level', logging.DEBUG)
+    kwargs.setdefault('encoding', 'utf-8')
     self.assertCommandCalled([RepoCmdPath(self.root)] + repo_args, **kwargs)
 
   def AddRepoResult(self, repo_args, **kwargs):
