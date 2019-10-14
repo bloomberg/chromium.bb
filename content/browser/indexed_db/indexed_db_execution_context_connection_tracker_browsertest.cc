@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <string>
+#include "content/browser/indexed_db/indexed_db_execution_context_connection_tracker.h"
 
 #include "base/macros.h"
 #include "base/test/test_timeouts.h"
 #include "build/build_config.h"
+#include "components/network_session_configurator/common/network_switches.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/lock_observer.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
-#include "content/public/test/content_mock_cert_verifier.h"
 #include "content/shell/browser/shell.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -27,6 +27,13 @@
 namespace content {
 
 namespace {
+
+void RunLoopWithTimeout() {
+  base::RunLoop run_loop;
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
+  run_loop.Run();
+}
 
 class TestBrowserClient : public ContentBrowserClient {
  public:
@@ -59,30 +66,15 @@ class MockObserver : public LockObserver {
                void(int render_process_id, int render_frame_id));
 };
 
-void RunLoopWithTimeout() {
-  base::RunLoop run_loop;
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
-  run_loop.Run();
-}
-
-}  // namespace
-
-class LockManagerBrowserTest : public ContentBrowserTest {
+class IndexedDBExecutionContextConnectionTrackerBrowserTest
+    : public ContentBrowserTest {
  public:
-  LockManagerBrowserTest() = default;
-  ~LockManagerBrowserTest() override = default;
+  IndexedDBExecutionContextConnectionTrackerBrowserTest() = default;
+  ~IndexedDBExecutionContextConnectionTrackerBrowserTest() override = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ContentBrowserTest::SetUpCommandLine(command_line);
-    // This is required to allow navigation to test https:// URLs. Service
-    // workers are not exposed to http:// URLs.
-    cert_verifier_.SetUpCommandLine(command_line);
-  }
-
-  void SetUpInProcessBrowserTestFixture() override {
-    ContentBrowserTest::SetUpInProcessBrowserTestFixture();
-    cert_verifier_.SetUpInProcessBrowserTestFixture();
+    command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
   }
 
   void SetUpOnMainThread() override {
@@ -95,16 +87,10 @@ class LockManagerBrowserTest : public ContentBrowserTest {
     original_client_ = SetBrowserClientForTesting(&test_browser_client_);
 
     host_resolver()->AddRule("*", "127.0.0.1");
-    cert_verifier_.mock_cert_verifier()->set_default_result(net::OK);
     server_.ServeFilesFromSourceDirectory(GetTestDataFilePath());
     ASSERT_TRUE(server_.Start());
 
-    ASSERT_TRUE(NavigateToURL(shell(), GetLocksURL("a.com")));
-  }
-
-  void TearDownInProcessBrowserTestFixture() override {
-    ContentBrowserTest::TearDownInProcessBrowserTestFixture();
-    cert_verifier_.TearDownInProcessBrowserTestFixture();
+    ASSERT_TRUE(NavigateToURL(shell(), GetTestURL("a.com")));
   }
 
   void TearDownOnMainThread() override {
@@ -129,25 +115,48 @@ class LockManagerBrowserTest : public ContentBrowserTest {
     return true;
   }
 
-  GURL GetLocksURL(const std::string& hostname) const {
-    return server_.GetURL(hostname, "/locks/locks.html");
+  GURL GetTestURL(const std::string& hostname) const {
+    return server_.GetURL(hostname,
+                          "/indexeddb/open_connection/open_connection.html");
   }
 
   testing::StrictMock<MockObserver> mock_observer_;
 
  private:
-  ContentMockCertVerifier cert_verifier_;
   net::EmbeddedTestServer server_{net::EmbeddedTestServer::TYPE_HTTPS};
   ContentBrowserClient* original_client_ = nullptr;
   TestBrowserClient test_browser_client_{&mock_observer_};
 
-  LockManagerBrowserTest(const LockManagerBrowserTest&) = delete;
-  LockManagerBrowserTest& operator=(const LockManagerBrowserTest&) = delete;
+  IndexedDBExecutionContextConnectionTrackerBrowserTest(
+      const IndexedDBExecutionContextConnectionTrackerBrowserTest&) = delete;
+  IndexedDBExecutionContextConnectionTrackerBrowserTest& operator=(
+      const IndexedDBExecutionContextConnectionTrackerBrowserTest&) = delete;
 };
 
-// Verify that content::LockObserver is notified when a frame acquires a single
-// locks.
-IN_PROC_BROWSER_TEST_F(LockManagerBrowserTest, ObserverSingleLock) {
+bool OpenConnectionA(RenderFrameHost* rfh) {
+  return EvalJs(rfh, R"(
+      (async () => {
+        return await OpenConnection('A');
+      }) ();
+  )")
+      .ExtractBool();
+}
+
+bool OpenConnectionB(RenderFrameHost* rfh) {
+  return EvalJs(rfh, R"(
+      (async () => {
+        return await OpenConnection('B');
+      }) ();
+  )")
+      .ExtractBool();
+}
+
+}  // namespace
+
+// Verify that content::LockObserver is notified when a frame opens/closes an
+// IndexedDB connection.
+IN_PROC_BROWSER_TEST_F(IndexedDBExecutionContextConnectionTrackerBrowserTest,
+                       ObserverSingleConnection) {
   if (!ShouldRunTest())
     return;
 
@@ -156,32 +165,35 @@ IN_PROC_BROWSER_TEST_F(LockManagerBrowserTest, ObserverSingleLock) {
   int process_id = rfh->GetProcess()->GetID();
 
   {
-    // Acquire a lock. Expect observer notification.
+    // Open a connection. Expect observer notification.
     base::RunLoop run_loop;
     EXPECT_CALL(mock_observer_,
-                OnFrameStartsHoldingWebLocks(process_id, frame_id))
+                OnFrameStartsHoldingIndexedDBConnections(process_id, frame_id))
         .WillOnce([&](int, int) { run_loop.Quit(); });
-    EXPECT_TRUE(ExecJs(rfh, "AcquireLock('lock_a');"));
-    // Quit when OnFrameStartsHoldingWebLocks(process_id, frame_id) is invoked.
+    EXPECT_TRUE(OpenConnectionA(rfh));
+    // Quit when OnFrameStartsHoldingIndexedDBConnections(process_id, frame_id)
+    // is invoked.
     run_loop.Run();
   }
 
   {
-    // Release a lock. Expect observer notification.
+    // Close the connection. Expect observer notification.
     base::RunLoop run_loop;
     EXPECT_CALL(mock_observer_,
-                OnFrameStopsHoldingWebLocks(process_id, frame_id))
+                OnFrameStopsHoldingIndexedDBConnections(process_id, frame_id))
         .WillOnce([&](int, int) { run_loop.Quit(); });
-    EXPECT_TRUE(ExecJs(rfh, "ReleaseLock('lock_a');"));
-    // Quit when OnFrameStopsHoldingWebLocks(process_id, frame_id) is invoked.
+    EXPECT_TRUE(ExecJs(rfh, "CloseConnection('A');"));
+    // Quit when OnFrameStopsHoldingIndexedDBConnections(process_id, frame_id)
+    // is invoked.
     run_loop.Run();
   }
 }
 
-// Verify that content::LockObserver is notified when a frame acquires multiple
-// locks (notifications only when the number of held locks switches between zero
-// and non-zero).
-IN_PROC_BROWSER_TEST_F(LockManagerBrowserTest, ObserverTwoLocks) {
+// Verify that content::LockObserver is notified when a frame opens multiple
+// IndexedDB connections (notifications only when the number of held connections
+// switches between zero and non-zero).
+IN_PROC_BROWSER_TEST_F(IndexedDBExecutionContextConnectionTrackerBrowserTest,
+                       ObserverTwoLocks) {
   if (!ShouldRunTest())
     return;
 
@@ -190,42 +202,44 @@ IN_PROC_BROWSER_TEST_F(LockManagerBrowserTest, ObserverTwoLocks) {
   int process_id = rfh->GetProcess()->GetID();
 
   {
-    // Acquire a lock. Expect observer notification.
+    // Open a connection. Expect observer notification.
     base::RunLoop run_loop;
     EXPECT_CALL(mock_observer_,
-                OnFrameStartsHoldingWebLocks(process_id, frame_id))
+                OnFrameStartsHoldingIndexedDBConnections(process_id, frame_id))
         .WillOnce([&](int, int) { run_loop.Quit(); });
-    EXPECT_TRUE(ExecJs(rfh, "AcquireLock('lock_a');"));
-    // Quit when OnFrameStartsHoldingWebLocks(process_id, frame_id) is invoked.
+    EXPECT_TRUE(OpenConnectionA(rfh));
+    // Quit when OnFrameStartsHoldingIndexedDBConnections(process_id, frame_id)
+    // is invoked.
     run_loop.Run();
   }
 
-  // Acquire a second lock. Don't expect a notification.
-  EXPECT_TRUE(ExecJs(rfh, "AcquireLock('lock_b');"));
+  // Open a second connection. Don't expect a notification.
+  EXPECT_TRUE(OpenConnectionB(rfh));
   // Wait a short timeout to make sure that the observer is not notified.
   RunLoopWithTimeout();
 
-  // Release a lock. Don't expect a notification.
-  EXPECT_TRUE(ExecJs(rfh, "ReleaseLock('lock_a');"));
+  // Close the connection. Don't expect a notification.
+  EXPECT_TRUE(ExecJs(rfh, "CloseConnection('B');"));
   // Wait a short timeout to make sure that the observer is not notified.
   RunLoopWithTimeout();
 
   {
-    // Release a lock. Expect observer notification, because number of held
-    // locks is now zero.
+    // Close the connection. Expect observer notification.
     base::RunLoop run_loop;
     EXPECT_CALL(mock_observer_,
-                OnFrameStopsHoldingWebLocks(process_id, frame_id))
+                OnFrameStopsHoldingIndexedDBConnections(process_id, frame_id))
         .WillOnce([&](int, int) { run_loop.Quit(); });
-    EXPECT_TRUE(ExecJs(rfh, "ReleaseLock('lock_b');"));
-    // Quit when OnFrameStopsHoldingWebLocks(process_id, frame_id) is invoked.
+    EXPECT_TRUE(ExecJs(rfh, "CloseConnection('A');"));
+    // Quit when OnFrameStopsHoldingIndexedDBConnections(process_id, frame_id)
+    // is invoked.
     run_loop.Run();
   }
 }
 
-// Verify that content::LockObserver is notified that a frame stopped holding
-// locks when it is navigated away.
-IN_PROC_BROWSER_TEST_F(LockManagerBrowserTest, ObserverNavigate) {
+// Verify that content::LockObserver is notified when a frame with active
+// IndexedDB connections is navigated away.
+IN_PROC_BROWSER_TEST_F(IndexedDBExecutionContextConnectionTrackerBrowserTest,
+                       ObserverNavigate) {
   if (!ShouldRunTest())
     return;
 
@@ -234,78 +248,34 @@ IN_PROC_BROWSER_TEST_F(LockManagerBrowserTest, ObserverNavigate) {
   int process_id = rfh->GetProcess()->GetID();
 
   {
-    // Acquire a lock. Expect observer notification.
+    // Open a connection. Expect observer notification.
     base::RunLoop run_loop;
     EXPECT_CALL(mock_observer_,
-                OnFrameStartsHoldingWebLocks(process_id, frame_id))
+                OnFrameStartsHoldingIndexedDBConnections(process_id, frame_id))
         .WillOnce([&](int, int) { run_loop.Quit(); });
-    EXPECT_TRUE(ExecJs(rfh, "AcquireLock('lock_a');"));
-    // Quit when OnFrameStartsHoldingWebLocks(process_id, frame_id) is invoked.
+    EXPECT_TRUE(OpenConnectionA(rfh));
+    // Quit when OnFrameStartsHoldingIndexedDBConnections(process_id, frame_id)
+    // is invoked.
     run_loop.Run();
   }
+
   {
     // Navigate away. Expect observer notification.
     base::RunLoop run_loop;
     EXPECT_CALL(mock_observer_,
-                OnFrameStopsHoldingWebLocks(process_id, frame_id))
+                OnFrameStopsHoldingIndexedDBConnections(process_id, frame_id))
         .WillOnce([&](int, int) { run_loop.Quit(); });
-    EXPECT_TRUE(NavigateToURL(shell(), GetLocksURL("b.com")));
-    // Quit when OnFrameStopsHoldingWebLocks(process_id, frame_id) is invoked.
+    EXPECT_TRUE(NavigateToURL(shell(), GetTestURL("b.com")));
+    // Quit when OnFrameStopsHoldingIndexedDBConnections(process_id, frame_id)
+    // is invoked.
     run_loop.Run();
   }
 }
 
-// Verify that content::LockObserver is notified when a frame steals a lock from
-// another frame.
-IN_PROC_BROWSER_TEST_F(LockManagerBrowserTest, ObserverStealLock) {
-  if (!ShouldRunTest())
-    return;
-
-  RenderFrameHost* rfh = shell()->web_contents()->GetMainFrame();
-  int frame_id = rfh->GetRoutingID();
-  int process_id = rfh->GetProcess()->GetID();
-
-  {
-    // Acquire a lock in first WebContents lock. Expect observer notification.
-    base::RunLoop run_loop;
-    EXPECT_CALL(mock_observer_,
-                OnFrameStartsHoldingWebLocks(process_id, frame_id))
-        .WillOnce([&](int, int) { run_loop.Quit(); });
-    EXPECT_TRUE(ExecJs(rfh, "AcquireLock('lock_a');"));
-    // Quit when OnFrameStartsHoldingWebLocks(process_id, frame_id) is invoked.
-    run_loop.Run();
-  }
-
-  // Open another WebContents and navigate.
-  Shell* other_shell =
-      Shell::CreateNewWindow(shell()->web_contents()->GetBrowserContext(),
-                             GURL(), nullptr, gfx::Size());
-  EXPECT_TRUE(NavigateToURL(other_shell, GetLocksURL("a.com")));
-  RenderFrameHost* other_rfh = other_shell->web_contents()->GetMainFrame();
-  int other_frame_id = other_rfh->GetRoutingID();
-  int other_process_id = other_rfh->GetProcess()->GetID();
-
-  {
-    // Steal the lock from other WebContents. Expect observer notifications.
-    base::RunLoop run_loop;
-    EXPECT_CALL(mock_observer_,
-                OnFrameStopsHoldingWebLocks(process_id, frame_id))
-        .WillOnce([&](int, int) {
-          EXPECT_CALL(mock_observer_, OnFrameStartsHoldingWebLocks(
-                                          other_process_id, other_frame_id))
-              .WillOnce([&](int, int) { run_loop.Quit(); });
-        });
-    EXPECT_TRUE(ExecJs(other_rfh, "StealLock('lock_a');"));
-    // Quit when OnFrameStopsHoldingWebLocks(process_id, frame_id) and
-    // OnFrameStartsHoldingWebLocks(other_process_id, other_frame_id) are
-    // invoked.
-    run_loop.Run();
-  }
-}
-
-// Verify that content::LockObserver is *not* notified when a lock is acquired
-// by a dedicated worker.
-IN_PROC_BROWSER_TEST_F(LockManagerBrowserTest, ObserverDedicatedWorker) {
+// Verify that content::LockObserver is *not* notified when a dedicated worker
+// opens/closes an IndexedDB connection.
+IN_PROC_BROWSER_TEST_F(IndexedDBExecutionContextConnectionTrackerBrowserTest,
+                       ObserverDedicatedWorker) {
   if (!ShouldRunTest())
     return;
 
@@ -315,7 +285,7 @@ IN_PROC_BROWSER_TEST_F(LockManagerBrowserTest, ObserverDedicatedWorker) {
   // the lock is acquired and released by the worker.
   EXPECT_TRUE(EvalJs(rfh, R"(
       (async () => {
-        await AcquireReleaseLockFromDedicatedWorker();
+        await OpenConnectionFromDedicatedWorker();
         return true;
       }) ();
   )")
@@ -327,9 +297,10 @@ IN_PROC_BROWSER_TEST_F(LockManagerBrowserTest, ObserverDedicatedWorker) {
 
 // SharedWorkers are not enabled on Android. https://crbug.com/154571
 #if !defined(OS_ANDROID)
-// Verify that content::LockObserver is *not* notified when a lock is acquired
-// by a shared worker.
-IN_PROC_BROWSER_TEST_F(LockManagerBrowserTest, ObserverSharedWorker) {
+// Verify that content::LockObserver is *not* notified when a shared worker
+// opens/closes an IndexedDB connection.
+IN_PROC_BROWSER_TEST_F(IndexedDBExecutionContextConnectionTrackerBrowserTest,
+                       ObserverSharedWorker) {
   if (!ShouldRunTest())
     return;
 
@@ -339,7 +310,7 @@ IN_PROC_BROWSER_TEST_F(LockManagerBrowserTest, ObserverSharedWorker) {
   // the lock is acquired and released by the worker.
   EXPECT_TRUE(EvalJs(rfh, R"(
       (async () => {
-        await AcquireReleaseLockFromSharedWorker();
+        await OpenConnectionFromSharedWorker();
         return true;
       }) ();
   )")
@@ -350,9 +321,10 @@ IN_PROC_BROWSER_TEST_F(LockManagerBrowserTest, ObserverSharedWorker) {
 }
 #endif  // !defined(OS_ANDROID)
 
-// Verify that content::LockObserver is *not* notified when a lock is acquired
-// by a service worker.
-IN_PROC_BROWSER_TEST_F(LockManagerBrowserTest, ObserverServiceWorker) {
+// Verify that content::LockObserver is *not* notified when a service worker
+// opens/closes an IndexedDB connection.
+IN_PROC_BROWSER_TEST_F(IndexedDBExecutionContextConnectionTrackerBrowserTest,
+                       ObserverServiceWorker) {
   if (!ShouldRunTest())
     return;
 
@@ -362,7 +334,7 @@ IN_PROC_BROWSER_TEST_F(LockManagerBrowserTest, ObserverServiceWorker) {
   // the lock is acquired and released by the worker.
   EXPECT_TRUE(EvalJs(rfh, R"(
       (async () => {
-        await AcquireReleaseLockFromServiceWorker();
+        await OpenConnectionFromServiceWorker();
         return true;
       }) ();
   )")
