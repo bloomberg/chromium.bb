@@ -71,7 +71,7 @@ class UploadTests(unittest.TestCase):
            '%s/%s' % (self.base_url, self.lorem_ipsum_sha1)))])
     self.assertTrue(os.path.exists(output_filename))
     self.assertEqual(
-        open(output_filename, 'rb').read(),
+        open(output_filename, 'rb').read().decode(),
         '7871c8e24da15bad8b0be2c36edc9dc77e37727f')
     os.remove(output_filename)
     self.assertEqual(code, 0)
@@ -103,9 +103,9 @@ class UploadTests(unittest.TestCase):
   def test_upload_single_file_remote_exists(self):
     filenames = [self.lorem_ipsum]
     output_filename = '%s.sha1'  % self.lorem_ipsum
-    etag_string = 'ETag: 634d7c1ed3545383837428f031840a1e'
-    self.gsutil.add_expected(0, '', '')
-    self.gsutil.add_expected(0, etag_string, '')
+    etag_string = b'ETag: 634d7c1ed3545383837428f031840a1e'
+    self.gsutil.add_expected(0, b'', b'')
+    self.gsutil.add_expected(0, etag_string, b'')
     code = upload_to_google_storage.upload_to_google_storage(
         filenames, self.base_url, self.gsutil, False, False, 1, False, None)
     self.assertEqual(
@@ -116,7 +116,7 @@ class UploadTests(unittest.TestCase):
           ('ls', '-L', '%s/%s' % (self.base_url, self.lorem_ipsum_sha1)))])
     self.assertTrue(os.path.exists(output_filename))
     self.assertEqual(
-        open(output_filename, 'rb').read(),
+        open(output_filename, 'rb').read().decode(),
         '7871c8e24da15bad8b0be2c36edc9dc77e37727f')
     os.remove(output_filename)
     self.assertEqual(code, 0)
@@ -150,7 +150,7 @@ class UploadTests(unittest.TestCase):
     output_filename = '%s.sha1' % self.lorem_ipsum
     fake_hash = '6871c8e24da15bad8b0be2c36edc9dc77e37727f'
     with open(output_filename, 'wb') as f:
-      f.write(fake_hash)  # Fake hash.
+      f.write(fake_hash.encode())  # Fake hash.
     code = upload_to_google_storage.upload_to_google_storage(
         filenames, self.base_url, self.gsutil, False, False, 1, True, None)
     self.assertEqual(
@@ -162,7 +162,7 @@ class UploadTests(unittest.TestCase):
          ('check_call',
           ('cp', filenames[0], '%s/%s' % (self.base_url, fake_hash)))])
     self.assertEqual(
-        open(output_filename, 'rb').read(), fake_hash)
+        open(output_filename, 'rb').read().decode(), fake_hash)
     os.remove(output_filename)
     self.assertEqual(code, 0)
 

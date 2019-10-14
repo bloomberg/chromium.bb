@@ -63,13 +63,13 @@ def get_md5_cached(filename):
   # See if we can find an existing MD5 sum stored in a file.
   if os.path.exists('%s.md5' % filename):
     with open('%s.md5' % filename, 'rb') as f:
-      md5_match = re.search('([a-z0-9]{32})', f.read())
+      md5_match = re.search('([a-z0-9]{32})', f.read().decode())
       if md5_match:
         return md5_match.group(1)
   else:
     md5_hash = get_md5(filename)
     with open('%s.md5' % filename, 'wb') as f:
-      f.write(md5_hash)
+      f.write(md5_hash.encode())
     return md5_hash
 
 
@@ -84,7 +84,7 @@ def _upload_worker(
     if gsutil.check_call('ls', file_url)[0] == 0 and not force:
       # File exists, check MD5 hash.
       _, out, _ = gsutil.check_call_with_retries('ls', '-L', file_url)
-      etag_match = re.search(r'ETag:\s+([a-z0-9]{32})', out)
+      etag_match = re.search(r'ETag:\s+([a-z0-9]{32})', out.decode())
       if etag_match:
         remote_md5 = etag_match.group(1)
         # Calculate the MD5 checksum to match it to Google Storage's ETag.
@@ -176,15 +176,15 @@ def upload_to_google_storage(
           'Main> Found hash for %s, sha1 calculation skipped.' % filename)
       with open(filename + '.sha1', 'rb') as f:
         sha1_file = f.read(1024)
-      if not re.match('^([a-z0-9]{40})$', sha1_file):
+      if not re.match('^([a-z0-9]{40})$', sha1_file.decode()):
         print('Invalid sha1 hash file %s.sha1' % filename, file=sys.stderr)
         return 1
-      upload_queue.put((filename, sha1_file))
+      upload_queue.put((filename, sha1_file.decode()))
       continue
     stdout_queue.put('Main> Calculating hash for %s...' % filename)
     sha1_sum = get_sha1(filename)
     with open(filename + '.sha1', 'wb') as f:
-      f.write(sha1_sum)
+      f.write(sha1_sum.encode())
     stdout_queue.put('Main> Done calculating hash for %s.' % filename)
     upload_queue.put((filename, sha1_sum))
   hashing_duration = time.time() - hashing_start
