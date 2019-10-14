@@ -676,20 +676,20 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("saveFileDialogDefaultFilter").WithBrowser(),
         TestCase("openFileDialogFileListShowContextMenu").WithBrowser()));
 
+#if defined(NDEBUG)
+#define MAYBE_CopyBetweenWindows CopyBetweenWindows
+#else
 // Flaky on Chrome OS Debug. TODO(crbug.com/1008909).
+#define MAYBE_CopyBetweenWindows DISABLED_CopyBetweenWindows
+#endif
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
-    DISABLED_CopyBetweenWindows, /* copy_between_windows.js */
-    FilesAppBrowserTest,
-    ::testing::Values(TestCase("copyBetweenWindowsDriveToUsb")));
-
-WRAPPED_INSTANTIATE_TEST_SUITE_P(
-    CopyBetweenWindows, /* copy_between_windows.js */
+    MAYBE_CopyBetweenWindows, /* copy_between_windows.js */
     FilesAppBrowserTest,
     ::testing::Values(TestCase("copyBetweenWindowsLocalToDrive"),
                       TestCase("copyBetweenWindowsLocalToUsb"),
                       TestCase("copyBetweenWindowsUsbToDrive"),
                       TestCase("copyBetweenWindowsDriveToLocal"),
-//                      TestCase("copyBetweenWindowsDriveToUsb"),
+                      TestCase("copyBetweenWindowsDriveToUsb"),
                       TestCase("copyBetweenWindowsUsbToLocal")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
