@@ -634,7 +634,6 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->mode_search_skip_flags |= FLAG_SKIP_INTRA_DIRMISMATCH;
     sf->use_real_time_ref_set = 1;
     sf->tx_type_search.prune_mode = PRUNE_2D_MORE;
-
     // Can't use LARGEST TX mode with pre-calculated partition
     // and disabled TX64
     if (!cpi->oxcf.enable_tx64) sf->tx_size_search_level = 1;
@@ -643,6 +642,7 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->cdef_pick_method = CDEF_PICK_FROM_Q;
     sf->max_intra_bsize = BLOCK_16X16;
     sf->use_inter_txb_hash = 0;
+    sf->skip_interp_filter_search = 1;
   }
   if (speed >= 7) {
     sf->lpf_pick = LPF_PICK_FROM_Q;
@@ -813,6 +813,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   sf->disable_sb_level_coeff_cost_upd = 0;
   sf->disable_sb_level_mv_cost_upd = 0;
   sf->disable_overlay_frames = 0;
+  sf->skip_interp_filter_search = 0;
 
   for (i = 0; i < TX_SIZES; i++) {
     sf->intra_y_mode_mask[i] = INTRA_ALL;

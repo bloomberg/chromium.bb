@@ -8868,8 +8868,9 @@ static int64_t interpolation_filter_search(
   const int num_planes = av1_num_planes(cm);
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = xd->mi[0];
-  const int need_search =
-      av1_is_interp_needed(xd) && av1_is_interp_search_needed(xd);
+  const int need_search = av1_is_interp_needed(xd) &&
+                          av1_is_interp_search_needed(xd) &&
+                          !cpi->sf.skip_interp_filter_search;
   const int ref_frame = xd->mi[0]->ref_frame[0];
   RD_STATS rd_stats_luma, rd_stats;
 

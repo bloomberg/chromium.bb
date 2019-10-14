@@ -782,6 +782,9 @@ typedef struct SPEED_FEATURES {
 
   // Use ALTREF frame in non-RD mode decision.
   int use_nonrd_altref_frame;
+
+  // If set forces interpolation filter to EIGHTTAP_REGULAR
+  int skip_interp_filter_search;
 } SPEED_FEATURES;
 
 struct AV1_COMP;
