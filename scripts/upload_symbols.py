@@ -25,25 +25,9 @@ import requests
 from six.moves import http_client as httplib
 from six.moves import urllib
 
-from chromite.lib import constants
-
-# pylint: disable=ungrouped-imports
-third_party = os.path.join(constants.CHROMITE_DIR, 'third_party')
-while True:
-  try:
-    sys.path.remove(third_party)
-  except ValueError:
-    break
-sys.path.insert(0, os.path.join(third_party, 'upload_symbols'))
-del third_party
-
-# Has to be after sys.path manipulation above.
-# And our sys.path muckery confuses pylint.
-# pylint: disable=wrong-import-position
-import poster  # pylint: disable=import-error
-
 from chromite.lib import cache
 from chromite.lib import commandline
+from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import gs
@@ -56,14 +40,6 @@ from chromite.scripts import cros_generate_breakpad_symbols
 # We don't want to import the general keyring module as that will implicitly
 # try to import & connect to a dbus server.  That's a waste of time.
 sys.modules['keyring'] = None
-
-
-# We need this to run once per process. Do it at module import time as that
-# will let us avoid doing it inline at function call time (see UploadSymbolFile)
-# as that func might be called by the multiprocessing module which means we'll
-# do the opener logic multiple times overall. Plus, if you're importing this
-# module, it's a pretty good chance that you're going to need this.
-poster.streaminghttp.register_openers()
 
 
 # URLs used for uploading symbols.
