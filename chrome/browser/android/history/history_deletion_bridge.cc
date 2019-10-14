@@ -13,7 +13,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "components/history/core/browser/history_service.h"
-#include "content/public/browser/browser_thread.h"
 
 using base::android::JavaParamRef;
 using base::android::JavaRef;

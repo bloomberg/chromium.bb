@@ -10,15 +10,17 @@
 #include <memory>
 #include <string>
 
-#include "base/files/file_path.h"
+#include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_refptr.h"
+#include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "chrome/browser/profiles/profile_key.h"
+#include "components/domain_reliability/clear_mode.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/content_browser_client.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/network/public/mojom/network_context.mojom-forward.h"
-#include "url/gurl.h"
+#include "services/network/public/mojom/network_service.mojom-forward.h"
 
 #if !defined(OS_ANDROID)
 class ChromeZoomLevelPrefs;
@@ -27,7 +29,6 @@ class ChromeZoomLevelPrefs;
 class ExtensionSpecialStoragePolicy;
 class PrefService;
 class PrefStore;
-class ProfileKey;
 class TestingProfile;
 
 namespace base {

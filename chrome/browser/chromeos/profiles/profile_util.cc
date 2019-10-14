@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/profiles/profile_util.h"
 
-#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"

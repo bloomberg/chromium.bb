@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/values.h"
 #include "chrome/browser/devtools/device/android_device_manager.h"
 #include "content/public/browser/devtools_agent_host.h"
 
