@@ -81,30 +81,32 @@ class GconvModules(object):
 
   def Load(self):
     """Load the charsets from gconv-modules."""
-    for line in open(self._filename):
-      line = line.split('#', 1)[0].strip()
-      if not line: # Comment
-        continue
+    with open(self._filename) as fp:
+      for line in fp:
+        line = line.split('#', 1)[0].strip()
+        if not line:
+          # Ignore blank lines & comments.
+          continue
 
-      lst = line.split()
-      if lst[0] == 'module':
-        _, fromset, toset, filename = lst[:4]
-        for charset in (fromset, toset):
-          charset = charset.rstrip('/')
-          mods = self._modules.get(charset, set())
-          mods.add(filename)
-          self._modules[charset] = mods
-      elif lst[0] == 'alias':
-        _, fromset, toset = lst
-        fromset = fromset.rstrip('/')
-        toset = toset.rstrip('/')
-        # Warn if the same charset is defined as two different aliases.
-        if self._alias.get(fromset, toset) != toset:
-          logging.error('charset "%s" already defined as "%s".', fromset,
-                        self._alias[fromset])
-        self._alias[fromset] = toset
-      else:
-        cros_build_lib.Die('Unknown line: %s', line)
+        lst = line.split()
+        if lst[0] == 'module':
+          _, fromset, toset, filename = lst[:4]
+          for charset in (fromset, toset):
+            charset = charset.rstrip('/')
+            mods = self._modules.get(charset, set())
+            mods.add(filename)
+            self._modules[charset] = mods
+        elif lst[0] == 'alias':
+          _, fromset, toset = lst
+          fromset = fromset.rstrip('/')
+          toset = toset.rstrip('/')
+          # Warn if the same charset is defined as two different aliases.
+          if self._alias.get(fromset, toset) != toset:
+            logging.error('charset "%s" already defined as "%s".', fromset,
+                          self._alias[fromset])
+          self._alias[fromset] = toset
+        else:
+          cros_build_lib.Die('Unknown line: %s', line)
 
     logging.debug('Found %d modules and %d alias in %s', len(self._modules),
                   len(self._alias), self._filename)
@@ -180,24 +182,28 @@ class GconvModules(object):
 
     # Recompute the gconv-modules file with only the included gconv modules.
     result = []
-    for line in open(self._filename):
-      lst = line.split('#', 1)[0].strip().split()
+    with open(self._filename) as fp:
+      for line in fp:
+        lst = line.split('#', 1)[0].strip().split()
 
-      if not lst:
-        result.append(line)  # Keep comments and copyright headers.
-      elif lst[0] == 'module':
-        _, _, _, filename = lst[:4]
-        if filename in used_modules:
-          result.append(line)  # Used module
-      elif lst[0] == 'alias':
-        _, charset, _ = lst
-        charset = charset.rstrip('/')
-        while charset in self._alias:
-          charset = self._alias[charset]
-        if used_modules.intersection(self._modules[charset]):
-          result.append(line)  # Alias to an used module
-      else:
-        cros_build_lib.Die('Unknown line: %s', line)
+        if not lst:
+          # Keep comments and copyright headers.
+          result.append(line)
+        elif lst[0] == 'module':
+          _, _, _, filename = lst[:4]
+          if filename in used_modules:
+            # Used module
+            result.append(line)
+        elif lst[0] == 'alias':
+          _, charset, _ = lst
+          charset = charset.rstrip('/')
+          while charset in self._alias:
+            charset = self._alias[charset]
+          if used_modules.intersection(self._modules[charset]):
+            # Alias to an used module
+            result.append(line)
+        else:
+          cros_build_lib.Die('Unknown line: %s', line)
 
     if not dry_run:
       osutils.WriteFile(self._filename, ''.join(result))
@@ -214,15 +220,26 @@ def MultipleStringMatch(patterns, corpus):
     A list of Booleans stating whether each pattern string was found in the
     corpus or not.
   """
-  tree = ahocorasick.KeywordTree()
-  for word in patterns:
-    tree.add(word)
-  tree.make()
-
   result = [False] * len(patterns)
-  for i, j in tree.findall(corpus):
-    match = corpus[i:j]
-    result[patterns.index(match)] = True
+
+  if hasattr(ahocorasick, 'KeywordTree'):
+    tree = ahocorasick.KeywordTree()
+    for word in patterns:
+      tree.add(word)
+    tree.make()
+
+    for i, j in tree.findall(corpus):
+      match = corpus[i:j]
+      result[patterns.index(match)] = True
+
+  else:
+    tree = ahocorasick.Automaton()
+    for i, word in enumerate(patterns):
+      tree.add_word(word, i)
+    tree.make_automaton()
+
+    for _, i in tree.iter(corpus):
+      result[i] = True
 
   return result
 

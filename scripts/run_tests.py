@@ -235,6 +235,7 @@ PYTHON3_TESTS = {
     'scripts/cros_run_unit_tests_unittest',
     'scripts/cros_show_waterfall_layout_unittest',
     'scripts/cros_unittest',
+    'scripts/gconv_strip_unittest',
     'scripts/gen_luci_scheduler_unittest',
     'service/binhost_unittest',
     'service/dependency_unittest',
