@@ -5256,7 +5256,6 @@ void WebContentsImpl::LoadingStateChanged(bool to_different_document,
 
 void WebContentsImpl::NotifyViewSwapped(RenderViewHost* old_host,
                                         RenderViewHost* new_host) {
-  DCHECK_NE(old_host, new_host);
   // After sending out a swap notification, we need to send a disconnect
   // notification so that clients that pick up a pointer to |this| can NULL the
   // pointer.  See Bug 1230284.
@@ -6504,14 +6503,8 @@ void WebContentsImpl::NotifySwappedFromRenderManager(RenderFrameHost* old_host,
                                                      RenderFrameHost* new_host,
                                                      bool is_main_frame) {
   if (is_main_frame) {
-    RenderViewHost* old_rvh =
-        old_host ? old_host->GetRenderViewHost() : nullptr;
-    RenderViewHost* new_rvh = new_host->GetRenderViewHost();
-    // |old_rvh| and |new_rvh| might be equal when navigating from a crashed
-    // RenderFrameHost to a new same-site one. With RenderDocument, this will
-    // happen for every same-site navigation.
-    if (old_rvh != new_rvh)
-      NotifyViewSwapped(old_rvh, new_rvh);
+    NotifyViewSwapped(old_host ? old_host->GetRenderViewHost() : nullptr,
+                      new_host->GetRenderViewHost());
 
     // Make sure the visible RVH reflects the new delegate's preferences.
     if (delegate_)

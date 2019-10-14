@@ -663,11 +663,6 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
   // The SiteInstance determines whether to switch RenderFrameHost or not.
   bool use_current_rfh = current_site_instance == dest_site_instance;
 
-  // A crashed RenderFrameHost is never reused, but replaced by a new one
-  // immediately.
-  if (render_frame_host_->render_process_has_died())
-    use_current_rfh = false;
-
   bool notify_webui_of_rf_creation = false;
   if (use_current_rfh) {
     // GetFrameHostForNavigation will be called more than once during a
@@ -719,8 +714,7 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
     // create a new one if needed.
     if (!speculative_render_frame_host_ ||
         speculative_render_frame_host_->GetSiteInstance() !=
-            dest_site_instance.get() ||
-        speculative_render_frame_host_->render_process_has_died()) {
+            dest_site_instance.get()) {
       // If there is a speculative RenderFrameHost trying to commit a
       // navigation, inform the NavigationController that the load of the
       // corresponding NavigationEntry stopped if needed. This is the case if
@@ -764,11 +758,6 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
     }
     navigation_rfh = speculative_render_frame_host_.get();
 
-    // Ensure that if the current RenderFrameHost is crashed, the following code
-    // path will always be used.
-    DCHECK(!render_frame_host_->render_process_has_died() ||
-           !render_frame_host_->IsRenderFrameLive());
-
     // Check if our current RFH is live.
     if (!render_frame_host_->IsRenderFrameLive()) {
       // The current RFH is not live. There's no reason to sit around with a
@@ -803,11 +792,9 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
   DCHECK(navigation_rfh &&
          (navigation_rfh == render_frame_host_.get() ||
           navigation_rfh == speculative_render_frame_host_.get()));
-  DCHECK(!render_frame_host_->render_process_has_died());
-  DCHECK(!navigation_rfh->render_process_has_died());
 
   // If the RenderFrame that needs to navigate is not live (its process was just
-  // created), initialize it.
+  // created or has crashed), initialize it.
   if (!navigation_rfh->IsRenderFrameLive()) {
     if (!ReinitializeRenderFrame(navigation_rfh))
       return nullptr;
@@ -1981,16 +1968,7 @@ bool RenderFrameHostManager::CreateSpeculativeRenderFrameHost(
     SiteInstance* old_instance,
     SiteInstance* new_instance) {
   CHECK(new_instance);
-  // We are creating a speculative RFH here. We should never create it in the
-  // same SiteInstance as our current RFH.
-  //
-  // This DCHECK is going to be fully removed as part of RenderDocument [1].
-  // Right now, the only case where a speculative RFH is created for a same-site
-  // navigation is when the old RenderFramehost has crashed.
-  //
-  // [1] http://crbug.com/936696
-  DCHECK(old_instance != new_instance ||
-         render_frame_host_->render_process_has_died());
+  CHECK_NE(old_instance, new_instance);
 
   // The process for the new SiteInstance may (if we're sharing a process with
   // another host that already initialized it) or may not (we have our own
@@ -2019,16 +1997,10 @@ bool RenderFrameHostManager::CreateSpeculativeRenderFrameHost(
 std::unique_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrame(
     SiteInstance* instance) {
   CHECK(instance);
+
   // We are creating a pending or speculative RFH here. We should never create
   // it in the same SiteInstance as our current RFH.
-  //
-  // This DCHECK is going to be fully removed as part of RenderDocument [1].
-  // Right now, the only case where a speculative RFH is created for a same-site
-  // navigation is when the old RenderFramehost has crashed.
-  //
-  // [1] http://crbug.com/936696
-  DCHECK(render_frame_host_->GetSiteInstance() != instance ||
-         render_frame_host_->render_process_has_died());
+  CHECK_NE(render_frame_host_->GetSiteInstance(), instance);
 
   // A RenderFrame in a different process from its parent RenderFrame
   // requires a RenderWidget for input/layout/painting.
@@ -2052,15 +2024,6 @@ std::unique_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrame(
   RenderViewHostImpl* render_view_host =
       new_render_frame_host->render_view_host();
   if (frame_tree_node_->IsMainFrame()) {
-    // Same-site navigation from a crashed RenderFrameHost is reinitializing
-    // the RenderViewHost with a new main RenderFrame with a new routing ID.
-    SiteInstance* current_site_instance = render_frame_host_->GetSiteInstance();
-    bool is_same_site = current_site_instance == instance;
-    if (is_same_site && render_frame_host_->render_process_has_died()) {
-      render_view_host->SetMainFrameRoutingId(
-          new_render_frame_host->GetRoutingID());
-    }
-
     if (!InitRenderView(render_view_host, GetRenderFrameProxyHost(instance)))
       return nullptr;
 
@@ -2520,10 +2483,9 @@ void RenderFrameHostManager::CommitPending(
   // without success in r426913 (https://crbug.com/658688) and r438516 (broke
   // assumptions about RenderWidgetHosts not changing RenderWidgetHostViews over
   // time).
-  // |old_view| and |new_view| can be the same when navigating same-site from a
-  // crashed RenderFrameHost. When RenderDocument will be implemented, this will
-  // happen for each same-site navigation.
-  if (is_main_frame && old_view && old_view != new_view) {
+  RenderViewHostImpl* old_rvh = old_render_frame_host->render_view_host();
+  RenderViewHostImpl* new_rvh = render_frame_host_->render_view_host();
+  if (is_main_frame && old_view) {
     // Note that this hides the RenderWidget but does not hide the Page. If it
     // did hide the Page then making a new RenderFrameHost on another call to
     // here would need to make sure it showed the RenderView when the
@@ -2566,11 +2528,8 @@ void RenderFrameHostManager::CommitPending(
 
   // Make the new view show the contents of old view until it has something
   // useful to show.
-  if (is_main_frame && old_view && new_view && old_view != new_view)
+  if (is_main_frame && old_view && new_view)
     new_view->TakeFallbackContentFrom(old_view);
-
-  RenderViewHostImpl* old_rvh = old_render_frame_host->render_view_host();
-  RenderViewHostImpl* new_rvh = render_frame_host_->render_view_host();
 
   // The RenderViewHost keeps track of the main RenderFrameHost routing id.
   // If this is committing a main frame navigation, update it and set the
@@ -2592,8 +2551,7 @@ void RenderFrameHostManager::CommitPending(
 
     new_rvh->set_is_swapped_out(false);
     new_rvh->SetMainFrameRoutingId(render_frame_host_->routing_id());
-    if (old_rvh != new_rvh)
-      old_rvh->SetMainFrameRoutingId(MSG_ROUTING_NONE);
+    old_rvh->SetMainFrameRoutingId(MSG_ROUTING_NONE);
   }
 
   // Store the old_render_frame_host's current frame size so that it can be used
