@@ -266,7 +266,14 @@ let delayedHideNotification = null;
 let isDarkModeEnabled = false;
 
 /** Used to prevent inline autocompleting recently deleted output. */
-let isDeleting = false;
+let isDeletingInput = false;
+
+/**
+ * The rendered autocomplete match currently being deleted, or null if there
+ * isn't one.
+ * @type {?Element}
+ */
+let matchElBeingDeleted = null;
 
 /**
  * The last blacklisted tile rid if any, which by definition should not be
@@ -1075,6 +1082,7 @@ function onAddCustomLinkDone(success) {
 /** @param {!DeleteAutocompleteMatchResult} result */
 function onDeleteAutocompleteMatch(result) {
   if (!result.success) {
+    matchElBeingDeleted = null;
     return;
   }
 
@@ -1086,6 +1094,7 @@ function onDeleteAutocompleteMatch(result) {
   const wasFocused = matchEls[selected].contains(document.activeElement);
 
   populateAutocompleteMatches(result.matches);
+  matchElBeingDeleted = null;
 
   if (result.matches.length === 0) {
     if (wasFocused) {
@@ -1172,7 +1181,7 @@ function onQueryAutocompleteDone(result) {
 
   // If the user is deleting content, don't quickly re-suggest the same
   // output.
-  if (!isDeleting) {
+  if (!isDeletingInput) {
     const first = result.matches[0];
     if (first.allowedToBeDefaultMatch && first.inlineAutocompletion) {
       updateRealboxOutput({inline: first.inlineAutocompletion});
@@ -1242,6 +1251,7 @@ function onRealboxKeyDown(e) {
 
   if (key === 'Delete' && e.shiftKey && !e.altKey && !e.ctrlKey && !e.metaKey) {
     if (autocompleteMatches[selected].supportsDeletion) {
+      matchElBeingDeleted = matchEls[selected];
       window.chrome.embeddedSearch.searchBox.deleteAutocompleteMatch(selected);
       e.preventDefault();
     }
@@ -1326,6 +1336,13 @@ function onRealboxWrapperFocusIn(e) {
 
 /** @param {Event} e */
 function onRealboxWrapperFocusOut(e) {
+  const target = /** @type {Element} */ (e.target);
+  if (matchElBeingDeleted && matchElBeingDeleted.contains(target)) {
+    // When a match is being deleted, the focus gets dropped temporariliy as the
+    // element is deleted from the DOM. Don't stop autocomplete in those cases.
+    return;
+  }
+
   const relatedTarget = /** @type {Element} */ (e.relatedTarget);
   if (!$(IDS.REALBOX_INPUT_WRAPPER).contains(relatedTarget)) {
     hideRealboxMatches();  // Hide but don't clear input.
@@ -1452,6 +1469,7 @@ function populateAutocompleteMatches(matches) {
       icon.title = configData.translatedStrings.removeSuggestion;
       icon.classList.add(CLASSES.REMOVE_ICON);
       icon.onclick = e => {
+        matchElBeingDeleted = matchEl;
         window.chrome.embeddedSearch.searchBox.deleteAutocompleteMatch(i);
         e.preventDefault();
       };
@@ -1878,7 +1896,7 @@ function updateRealboxOutput(update) {
         preserveSelection ? oldSelectionStart : newAll.length;
   }
 
-  isDeleting = userDeletedOutput(lastOutput, newOutput);
+  isDeletingInput = userDeletedOutput(lastOutput, newOutput);
   lastOutput = newOutput;
 }
 

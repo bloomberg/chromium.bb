@@ -104,17 +104,21 @@ test.realbox.setUp = function() {
   chrome.embeddedSearch = {
     newTabPage: {},
     searchBox: {
+      deleteAutocompleteMatch(line) {
+        test.realbox.deletedLines.push(line);
+      },
       queryAutocomplete(query) {
         test.realbox.queries.push(query);
       },
-      deleteAutocompleteMatch(line) {
-        test.realbox.deletedLines.push(line);
-      }
+      stopAutocomplete(clearResult) {
+        test.realbox.stops.push(clearResult);
+      },
     },
   };
 
-  test.realbox.queries = [];
   test.realbox.deletedLines = [];
+  test.realbox.queries = [];
+  test.realbox.stops = [];
 
   initLocalNTP(/*isGooglePage=*/ true);
 
@@ -604,6 +608,15 @@ test.realbox.testRemoveIcon = function() {
 
   assertEquals(1, test.realbox.deletedLines.length);
   assertEquals(0, test.realbox.deletedLines[0]);
+
+  assertEquals(0, test.realbox.stops.length);
+  icon.dispatchEvent(new Event('focusout', {
+    bubbles: true,
+    cancelable: true,
+    target: icon,
+    relatedTarget: document.body,
+  }));
+  assertEquals(0, test.realbox.stops.length);
 
   chrome.embeddedSearch.searchBox.ondeleteautocompletematch(
       {success: true, matches: []});
