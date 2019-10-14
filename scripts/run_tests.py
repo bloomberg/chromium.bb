@@ -188,6 +188,7 @@ PYTHON3_TESTS = {
     'lib/cros_event_unittest',
     'lib/cros_import_unittest',
     'lib/cros_logging_unittest',
+    'lib/cts_helper_unittest',
     'lib/factory_unittest',
     'lib/failures_lib_unittest',
     'lib/gce_unittest',

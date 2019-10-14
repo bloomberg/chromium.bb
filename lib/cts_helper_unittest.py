@@ -8,9 +8,10 @@
 from __future__ import print_function
 
 import os
-import osutils
+
 from chromite.lib import cts_helper
 from chromite.lib import cros_test_lib
+from chromite.lib import osutils
 
 
 class CtsHelperTestCase(cros_test_lib.MockTestCase):
