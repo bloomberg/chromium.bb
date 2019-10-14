@@ -861,6 +861,62 @@ TEST_P(HttpProxyConnectJobTest, DisableSecureDns) {
   }
 }
 
+TEST_P(HttpProxyConnectJobTest, SpdySessionKeyDisableSecureDns) {
+  if (GetParam() != SPDY)
+    return;
+
+  SSLSocketDataProvider ssl_data(ASYNC, OK);
+  InitializeSpdySsl(&ssl_data);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_data);
+
+  // SPDY proxy CONNECT request / response, with a pause during the read.
+  spdy::SpdySerializedFrame req(spdy_util_.ConstructSpdyConnect(
+      nullptr, 0, 1, HttpProxyConnectJob::kH2QuicTunnelPriority,
+      HostPortPair(kEndpointHost, 443)));
+  MockWrite spdy_writes[] = {CreateMockWrite(req, 0)};
+  spdy::SpdySerializedFrame resp(
+      spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
+  MockRead spdy_reads[] = {CreateMockRead(resp, 1), MockRead(ASYNC, 0, 2)};
+  SequencedSocketData spdy_data(spdy_reads, spdy_writes);
+  spdy_data.set_connect_data(MockConnect(ASYNC, OK));
+  SequencedSocketData* sequenced_data = &spdy_data;
+  session_deps_.socket_factory->AddSocketDataProvider(sequenced_data);
+
+  TestConnectJobDelegate test_delegate;
+  auto ssl_params = base::MakeRefCounted<SSLSocketParams>(
+      base::MakeRefCounted<TransportSocketParams>(
+          HostPortPair(kHttpsProxyHost, 443), true /* disable_secure_dns */,
+          OnHostResolutionCallback()),
+      nullptr, nullptr, HostPortPair(kHttpsProxyHost, 443), SSLConfig(),
+      PRIVACY_MODE_DISABLED, NetworkIsolationKey());
+  auto http_proxy_params = base::MakeRefCounted<HttpProxySocketParams>(
+      nullptr /* tcp_params */, std::move(ssl_params), false /* is_quic */,
+      HostPortPair(kEndpointHost, 443), /*is_trusted_proxy=*/false,
+      /*tunnel=*/true, TRAFFIC_ANNOTATION_FOR_TESTS, NetworkIsolationKey());
+
+  std::unique_ptr<ConnectJob> connect_job = CreateConnectJob(
+      std::move(http_proxy_params), &test_delegate, DEFAULT_PRIORITY);
+
+  EXPECT_THAT(connect_job->Connect(), test::IsError(ERR_IO_PENDING));
+  EXPECT_THAT(test_delegate.WaitForResult(), test::IsOk());
+  EXPECT_TRUE(
+      common_connect_job_params_->spdy_session_pool->FindAvailableSession(
+          SpdySessionKey(HostPortPair(kHttpsProxyHost, 443),
+                         ProxyServer::Direct(), PRIVACY_MODE_DISABLED,
+                         SpdySessionKey::IsProxySession::kTrue, SocketTag(),
+                         NetworkIsolationKey(), true /* disable_secure_dns */),
+          /* enable_ip_based_pooling = */ false,
+          /* is_websocket = */ false, NetLogWithSource()));
+  EXPECT_FALSE(
+      common_connect_job_params_->spdy_session_pool->FindAvailableSession(
+          SpdySessionKey(HostPortPair(kHttpsProxyHost, 443),
+                         ProxyServer::Direct(), PRIVACY_MODE_DISABLED,
+                         SpdySessionKey::IsProxySession::kTrue, SocketTag(),
+                         NetworkIsolationKey(), false /* disable_secure_dns */),
+          /* enable_ip_based_pooling = */ false,
+          /* is_websocket = */ false, NetLogWithSource()));
+}
+
 // Make sure that HttpProxyConnectJob does not pass on its priority to its
 // SPDY session's socket request on Init, or on SetPriority.
 TEST_P(HttpProxyConnectJobTest, SetSpdySessionSocketRequestPriority) {
