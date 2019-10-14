@@ -2,20 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/learning/common/experiment_helper.h"
+#include "media/blink/learning_experiment_helper.h"
 
 namespace media {
-namespace learning {
 
-ExperimentHelper::ExperimentHelper(
+using learning::FeatureDictionary;
+using learning::FeatureVector;
+using learning::LearningTask;
+using learning::LearningTaskController;
+using learning::TargetValue;
+
+LearningExperimentHelper::LearningExperimentHelper(
     std::unique_ptr<LearningTaskController> controller)
     : controller_(std::move(controller)) {}
 
-ExperimentHelper::~ExperimentHelper() {
+LearningExperimentHelper::~LearningExperimentHelper() {
   CancelObservationIfNeeded();
 }
 
-void ExperimentHelper::BeginObservation(const FeatureDictionary& dictionary) {
+void LearningExperimentHelper::BeginObservation(
+    const FeatureDictionary& dictionary) {
   if (!controller_)
     return;
 
@@ -29,7 +35,8 @@ void ExperimentHelper::BeginObservation(const FeatureDictionary& dictionary) {
   controller_->BeginObservation(observation_id_, features);
 }
 
-void ExperimentHelper::CompleteObservationIfNeeded(const TargetValue& target) {
+void LearningExperimentHelper::CompleteObservationIfNeeded(
+    const TargetValue& target) {
   if (!observation_id_)
     return;
 
@@ -37,7 +44,7 @@ void ExperimentHelper::CompleteObservationIfNeeded(const TargetValue& target) {
   observation_id_ = base::UnguessableToken::Null();
 }
 
-void ExperimentHelper::CancelObservationIfNeeded() {
+void LearningExperimentHelper::CancelObservationIfNeeded() {
   if (!observation_id_)
     return;
 
@@ -45,5 +52,4 @@ void ExperimentHelper::CancelObservationIfNeeded() {
   observation_id_ = base::UnguessableToken::Null();
 }
 
-}  // namespace learning
 }  // namespace media

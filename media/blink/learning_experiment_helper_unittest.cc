@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/learning/common/experiment_helper.h"
+#include "media/blink/learning_experiment_helper.h"
 
 #include <memory>
 
@@ -10,10 +10,16 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using media::learning::FeatureDictionary;
+using media::learning::FeatureValue;
+using media::learning::FeatureVector;
+using media::learning::LearningTask;
+using media::learning::LearningTaskController;
+using media::learning::ObservationCompletion;
+using media::learning::TargetValue;
 using testing::_;
 
 namespace media {
-namespace learning {
 
 class MockLearningTaskController : public LearningTaskController {
  public:
@@ -36,7 +42,7 @@ class MockLearningTaskController : public LearningTaskController {
   DISALLOW_COPY_AND_ASSIGN(MockLearningTaskController);
 };
 
-class ExperimentHelperTest : public testing::Test {
+class LearningExperimentHelperTest : public testing::Test {
  public:
   void SetUp() override {
     const std::string feature_name_1("feature 1");
@@ -59,17 +65,17 @@ class ExperimentHelperTest : public testing::Test {
         std::make_unique<MockLearningTaskController>(task_);
     controller_raw_ = controller.get();
 
-    helper_ = std::make_unique<ExperimentHelper>(std::move(controller));
+    helper_ = std::make_unique<LearningExperimentHelper>(std::move(controller));
   }
 
   LearningTask task_;
   MockLearningTaskController* controller_raw_ = nullptr;
-  std::unique_ptr<ExperimentHelper> helper_;
+  std::unique_ptr<LearningExperimentHelper> helper_;
 
   FeatureDictionary dict_;
 };
 
-TEST_F(ExperimentHelperTest, BeginComplete) {
+TEST_F(LearningExperimentHelperTest, BeginComplete) {
   EXPECT_CALL(*controller_raw_, BeginObservation(_, _, _));
   helper_->BeginObservation(dict_);
   TargetValue target(123);
@@ -86,30 +92,30 @@ TEST_F(ExperimentHelperTest, BeginComplete) {
   helper_->CompleteObservationIfNeeded(target);
 }
 
-TEST_F(ExperimentHelperTest, BeginCancel) {
+TEST_F(LearningExperimentHelperTest, BeginCancel) {
   EXPECT_CALL(*controller_raw_, BeginObservation(_, _, _));
   helper_->BeginObservation(dict_);
   EXPECT_CALL(*controller_raw_, CancelObservation(_));
   helper_->CancelObservationIfNeeded();
 }
 
-TEST_F(ExperimentHelperTest, CompleteWithoutBeginDoesNothing) {
+TEST_F(LearningExperimentHelperTest, CompleteWithoutBeginDoesNothing) {
   EXPECT_CALL(*controller_raw_, BeginObservation(_, _, _)).Times(0);
   EXPECT_CALL(*controller_raw_, CompleteObservation(_, _)).Times(0);
   EXPECT_CALL(*controller_raw_, CancelObservation(_)).Times(0);
   helper_->CompleteObservationIfNeeded(TargetValue(123));
 }
 
-TEST_F(ExperimentHelperTest, CancelWithoutBeginDoesNothing) {
+TEST_F(LearningExperimentHelperTest, CancelWithoutBeginDoesNothing) {
   EXPECT_CALL(*controller_raw_, BeginObservation(_, _, _)).Times(0);
   EXPECT_CALL(*controller_raw_, CompleteObservation(_, _)).Times(0);
   EXPECT_CALL(*controller_raw_, CancelObservation(_)).Times(0);
   helper_->CancelObservationIfNeeded();
 }
 
-TEST_F(ExperimentHelperTest, DoesNothingWithoutController) {
+TEST_F(LearningExperimentHelperTest, DoesNothingWithoutController) {
   // Make sure that nothing crashes if there's no controller.
-  ExperimentHelper helper(nullptr);
+  LearningExperimentHelper helper(nullptr);
 
   // Begin / complete.
   helper_->BeginObservation(dict_);
@@ -124,5 +130,4 @@ TEST_F(ExperimentHelperTest, DoesNothingWithoutController) {
   helper_->CancelObservationIfNeeded();
 }
 
-}  // namespace learning
 }  // namespace media
