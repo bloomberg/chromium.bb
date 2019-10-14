@@ -6647,7 +6647,7 @@ fuzzer_test("net_unescape_url_component_fuzzer") {
     "//base",
     "//net",
   ]
-  dict = "base/unescape_url_component_fuzzer.dict"
+  dict = "data/fuzzer_dictionaries/unescape_url_component_fuzzer.dict"
   libfuzzer_options = [ "max_len = 2048" ]
 }
 
@@ -6695,6 +6695,7 @@ fuzzer_test("net_http_chunked_decoder_fuzzer") {
     ":net_fuzzer_test_support",
     "//net",
   ]
+  dict = "data/fuzzer_dictionaries/http_chunked_decoder_fuzzer.dict"
 }
 
 fuzzer_test("net_http_content_disposition_fuzzer") {
