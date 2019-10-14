@@ -59,10 +59,6 @@ class DialogClientViewTest : public test::WidgetTest,
   gfx::Size CalculatePreferredSize() const override { return preferred_size_; }
   gfx::Size GetMinimumSize() const override { return min_size_; }
   gfx::Size GetMaximumSize() const override { return max_size_; }
-  ClientView* CreateClientView(Widget* widget) override {
-    client_view_ = new DialogClientView(widget, this);
-    return client_view_;
-  }
 
   void DeleteDelegate() override {
     // DialogDelegateView would delete this, but |this| is owned by the test.
@@ -87,9 +83,9 @@ class DialogClientViewTest : public test::WidgetTest,
 
  protected:
   gfx::Rect GetUpdatedClientBounds() {
-    client_view_->SizeToPreferredSize();
-    client_view_->Layout();
-    return client_view_->bounds();
+    client_view()->SizeToPreferredSize();
+    client_view()->Layout();
+    return client_view()->bounds();
   }
 
   // Makes sure that the content view is sized correctly. Width must be at least
@@ -148,16 +144,15 @@ class DialogClientViewTest : public test::WidgetTest,
     cancel_label_ = base::ASCIIToUTF16("Cancel Cancel Cancel");
   }
 
-  DialogClientView* client_view() { return client_view_; }
+  DialogClientView* client_view() {
+    return static_cast<DialogClientView*>(widget_->client_view());
+  }
 
   Widget* widget() { return widget_; }
 
  private:
   // The dialog Widget.
   Widget* widget_ = nullptr;
-
-  // The DialogClientView that's being tested. Owned by |widget_|.
-  DialogClientView* client_view_;
 
   // The bitmask of buttons to show in the dialog.
   int dialog_buttons_ = ui::DIALOG_BUTTON_NONE;
