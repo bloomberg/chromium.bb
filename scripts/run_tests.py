@@ -235,6 +235,7 @@ PYTHON3_TESTS = {
     'lib/signing_unittest',
     'lib/som_unittest',
     'lib/table_unittest',
+    'lib/timeout_util_unittest',
     'lib/triage_lib_unittest',
     'lib/upgrade_table_unittest',
     'lib/uri_lib_unittest',
