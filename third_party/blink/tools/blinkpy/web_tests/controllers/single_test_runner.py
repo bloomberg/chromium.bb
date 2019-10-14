@@ -538,19 +538,6 @@ class SingleTestRunner(object):
                 _log.warning(
                     '  %s -> pixel hash failed (but diff passed)', self._test_name)
 
-            if err_str:
-                _log.error(err_str)
-                driver_output.error = (driver_output.error or '') + err_str
-
-            if diff or err_str:
-                return [
-                    test_failures.FailureImageHashMismatch(
-                        driver_output, expected_driver_output)]
-            else:
-                # See https://bugs.webkit.org/show_bug.cgi?id=69444 for why this
-                # isn't a full failure.
-                _log.warning(
-                    '  %s -> pixel hash failed (but diff passed)', self._test_name)
         return []
 
     def _run_reftest(self):
