@@ -263,6 +263,7 @@ PYTHON3_TESTS = {
     'lib/uri_lib_unittest',
     'lib/user_db_unittest',
     'lib/vm_unittest',
+    'scripts/autotest_quickmerge_unittest',
     'scripts/build_dlc_unittest',
     'scripts/cbuildbot_unittest',
     'scripts/chrome_chromeos_lkgm_unittest',

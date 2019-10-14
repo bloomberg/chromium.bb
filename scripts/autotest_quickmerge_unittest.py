@@ -7,8 +7,6 @@
 
 from __future__ import print_function
 
-import types
-
 import mock
 
 from chromite.lib import cros_test_lib
@@ -192,6 +190,6 @@ class PortageAPITest(cros_test_lib.TestCase):
       self.fail('Required writeContentsToContentsFile function does '
                 'not exist.')
 
-    self.assertIsInstance(f, types.UnboundMethodType,
-                          'Required writeContentsToContentsFile is not '
-                          'a function.')
+    self.assertTrue(
+        callable(f),
+        msg='Required writeContentsToContentsFile is not a function.')
