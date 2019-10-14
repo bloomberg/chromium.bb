@@ -5,11 +5,8 @@
 package org.chromium.chrome.browser.customtabs;
 
 import android.content.Intent;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatDelegate;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.browser.customtabs.CustomTabsIntent;
 
 import org.chromium.base.ObserverList;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
@@ -20,6 +17,8 @@ import org.chromium.chrome.browser.night_mode.PowerSavingModeMonitor;
 import org.chromium.chrome.browser.night_mode.SystemNightModeMonitor;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.IntentUtils;
+
+import androidx.browser.customtabs.CustomTabsIntent;
 
 /**
  * Maintains and provides the night mode state for {@link CustomTabActivity}.
@@ -39,8 +38,7 @@ public class CustomTabNightModeStateController implements Destroyable, NightMode
     private int mRequestedColorScheme;
     private AppCompatDelegate mAppCompatDelegate;
 
-    @Nullable // Null initially, so that the first update is always applied (see updateNightMode()).
-    private Boolean mIsInNightMode;
+    private boolean mIsInNightMode;
 
     CustomTabNightModeStateController(ActivityLifecycleDispatcher lifecycleDispatcher,
             SystemNightModeMonitor systemNightModeMonitor,
@@ -87,7 +85,8 @@ public class CustomTabNightModeStateController implements Destroyable, NightMode
     // NightModeStateProvider implementation.
     @Override
     public boolean isInNightMode() {
-        return mIsInNightMode != null && mIsInNightMode;
+        return mIsInNightMode;
+
     }
 
     @Override
@@ -109,7 +108,7 @@ public class CustomTabNightModeStateController implements Destroyable, NightMode
 
     private void updateNightMode() {
         boolean shouldBeInNightMode = shouldBeInNightMode();
-        if (mIsInNightMode != null && mIsInNightMode == shouldBeInNightMode) return;
+        if (mIsInNightMode == shouldBeInNightMode) return;
 
         mIsInNightMode = shouldBeInNightMode;
         mAppCompatDelegate.setLocalNightMode(mIsInNightMode ? AppCompatDelegate.MODE_NIGHT_YES
