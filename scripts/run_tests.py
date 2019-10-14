@@ -254,6 +254,7 @@ PYTHON3_TESTS = {
     'service/dependency_unittest',
     'service/image_unittest',
     'service/sdk_unittest',
+    'service/sysroot_unittest',
     'service/test_unittest',
     'signing/bin/dump_image_config_unittest',
     'signing/bin/sign_image_unittest',

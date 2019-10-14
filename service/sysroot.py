@@ -78,7 +78,7 @@ class SetupBoardRunConfig(object):
     else:
       args += ['--nousepkg']
 
-    if self.jobs > 0:
+    if self.jobs:
       args += ['--jobs', str(self.jobs)]
 
     if not self.update_toolchain:
