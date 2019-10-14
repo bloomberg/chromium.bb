@@ -29,6 +29,7 @@
 #include "ui/views/layout/fill_layout.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/ui/page_action/page_action_icon_type.h"
 #include "chrome/browser/ui/views/intent_picker_bubble_view.h"
 #endif
 
@@ -315,9 +316,18 @@ void SharingDialogView::WindowClosing() {
 // static
 views::BubbleDialogDelegateView* SharingDialogView::GetAsBubble(
     SharingDialog* dialog) {
+  return static_cast<SharingDialogView*>(dialog);
+}
+
+// static
+views::BubbleDialogDelegateView* SharingDialogView::GetAsBubbleForClickToCall(
+    SharingDialog* dialog) {
 #if defined(OS_CHROMEOS)
-  if (!dialog)
-    return IntentPickerBubbleView::intent_picker_bubble();
+  if (!dialog) {
+    auto* bubble = IntentPickerBubbleView::intent_picker_bubble();
+    if (bubble && bubble->icon_type() == PageActionIconType::kClickToCall)
+      return bubble;
+  }
 #endif
   return static_cast<SharingDialogView*>(dialog);
 }
