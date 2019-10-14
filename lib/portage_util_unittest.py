@@ -790,6 +790,24 @@ class EBuildRevWorkonTest(cros_test_lib.MockTempDirTestCase):
     # Sanity check.
     self.assertEqual(exists.call_count, 1)
 
+  def testVersionScriptInvalidVersionPostfix(self):
+    """Reject scripts that output bad version numbers."""
+    exists = self.PatchObject(os.path, 'exists', return_value=True)
+    self.PatchObject(
+        portage_util.EBuild,
+        'GetSourceInfo',
+        return_value=portage_util.SourceInfo(
+            projects=None, srcdirs=[], subdirs=[], subtrees=[]))
+    self.PatchObject(
+        cros_build_lib,
+        'run',
+        return_value=cros_build_lib.CommandResult(
+            returncode=0, output='4.4.21_baseline', error='STDERR'))
+    with self.assertRaises(portage_util.EbuildVersionError):
+      self.m_ebuild.GetVersion(None, None, '1234')
+    # Sanity check.
+    self.assertEqual(exists.call_count, 1)
+
   def testUpdateEBuildRecovery(self):
     """Make sure UpdateEBuild can be called more than once even w/failures."""
     ebuild = os.path.join(self.tempdir, 'test.ebuild')

@@ -97,6 +97,10 @@ class Error(Exception):
   """Base exception class for portage_util."""
 
 
+class EbuildVersionError(Error):
+  """Error for when an invalid version is generated for an ebuild."""
+
+
 class MissingOverlayError(Error):
   """This exception indicates that a needed overlay is missing."""
 
@@ -946,6 +950,12 @@ class EBuild(object):
     if main_pv >= int(WORKON_EBUILD_VERSION):
       raise ValueError('cros-workon packages must have a PV < %s; not %s'
                        % (WORKON_EBUILD_VERSION, output))
+
+    # Sanity check: We should be able to parse a CPV string with the produced
+    # version number.
+    if not SplitCPV('foo/bar-%s' % output):
+      raise EbuildVersionError(
+          'PV returned does not match the version spec: %s' % output)
 
     return output
 
