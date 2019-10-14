@@ -2681,11 +2681,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "omnibox-reverse-tab-switch-logic",
-    "owners": [ "krb", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 77
-  },
-  {
     "name": "omnibox-rich-entity-suggestions",
     "owners": [ "jdonnelly", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 80
@@ -2713,7 +2708,7 @@
   {
     "name": "omnibox-tab-switch-suggestions",
     "owners": [ "krb", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 82
   },
   {
     "name": "omnibox-tab-switch-suggestions-dedicated-row",
