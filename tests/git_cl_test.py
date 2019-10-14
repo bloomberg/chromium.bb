@@ -9,6 +9,7 @@ import datetime
 import json
 import logging
 import os
+import shutil
 import StringIO
 import sys
 import tempfile
@@ -3387,6 +3388,93 @@ class CMDUploadTestCase(CMDTestCaseBase):
     }
     git_cl._trigger_try_jobs.assert_called_once_with(
         mock.ANY, mock.ANY, expected_buckets, mock.ANY, 8)
+
+
+class CMDFormatTestCase(TestCase):
+
+  def setUp(self):
+    super(CMDFormatTestCase, self).setUp()
+    self._top_dir = tempfile.mkdtemp()
+
+  def tearDown(self):
+    shutil.rmtree(self._top_dir)
+    super(CMDFormatTestCase, self).tearDown()
+
+  def _make_yapfignore(self, contents):
+    with open(os.path.join(self._top_dir, '.yapfignore'), 'w') as yapfignore:
+      yapfignore.write('\n'.join(contents))
+
+  def _make_files(self, file_dict):
+    for directory, files in file_dict.iteritems():
+      subdir = os.path.join(self._top_dir, directory)
+      if not os.path.exists(subdir):
+        os.makedirs(subdir)
+      for f in files:
+        with open(os.path.join(subdir, f), 'w'):
+          pass
+
+  def testYapfignoreBasic(self):
+    self._make_yapfignore(['test.py', '*/bar.py'])
+    self._make_files({
+        '.': ['test.py', 'bar.py'],
+        'foo': ['bar.py'],
+    })
+    self.assertEqual(
+        set(['test.py', 'foo/bar.py']),
+        git_cl._GetYapfIgnoreFilepaths(self._top_dir))
+
+  def testYapfignoreMissingYapfignore(self):
+    self.assertEqual(set(), git_cl._GetYapfIgnoreFilepaths(self._top_dir))
+
+  def testYapfignoreMissingFile(self):
+    self._make_yapfignore(['test.py', 'test2.py', 'test3.py'])
+    self._make_files({
+        '.': ['test.py', 'test3.py'],
+    })
+    self.assertEqual(
+        set(['test.py', 'test3.py']),
+        git_cl._GetYapfIgnoreFilepaths(self._top_dir))
+
+  def testYapfignoreComments(self):
+    self._make_yapfignore(['test.py', '#test2.py'])
+    self._make_files({
+        '.': ['test.py', 'test2.py'],
+    })
+    self.assertEqual(
+        set(['test.py']), git_cl._GetYapfIgnoreFilepaths(self._top_dir))
+
+  def testYapfignoreBlankLines(self):
+    self._make_yapfignore(['test.py', '', '', 'test2.py'])
+    self._make_files({'.': ['test.py', 'test2.py']})
+    self.assertEqual(
+        set(['test.py', 'test2.py']),
+        git_cl._GetYapfIgnoreFilepaths(self._top_dir))
+
+  def testYapfignoreWhitespace(self):
+    self._make_yapfignore([' test.py '])
+    self._make_files({'.': ['test.py']})
+    self.assertEqual(
+        set(['test.py']), git_cl._GetYapfIgnoreFilepaths(self._top_dir))
+
+  def testYapfignoreMultiWildcard(self):
+    self._make_yapfignore(['*es*.py'])
+    self._make_files({
+        '.': ['test.py', 'test2.py'],
+    })
+    self.assertEqual(
+        set(['test.py', 'test2.py']),
+        git_cl._GetYapfIgnoreFilepaths(self._top_dir))
+
+  def testYapfignoreRestoresDirectory(self):
+    self._make_yapfignore(['test.py'])
+    self._make_files({
+        '.': ['test.py'],
+    })
+    old_cwd = os.getcwd()
+    self.assertEqual(
+        set(['test.py']), git_cl._GetYapfIgnoreFilepaths(self._top_dir))
+    self.assertEqual(old_cwd, os.getcwd())
+
 
 if __name__ == '__main__':
   logging.basicConfig(

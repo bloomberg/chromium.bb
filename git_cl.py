@@ -14,6 +14,7 @@ from multiprocessing.pool import ThreadPool
 import base64
 import collections
 import datetime
+import glob
 import httplib
 import itertools
 import json
@@ -761,6 +762,44 @@ def _FindYapfConfigFile(fpath, yapf_config_cache, top_dir=None):
       ret = _FindYapfConfigFile(parent_dir, yapf_config_cache, top_dir)
   yapf_config_cache[fpath] = ret
   return ret
+
+
+def _GetYapfIgnoreFilepaths(top_dir):
+  """Returns all filepaths that match the ignored files in the .yapfignore file.
+
+  yapf is supposed to handle the ignoring of files listed in .yapfignore itself,
+  but this functionality appears to break when explicitly passing files to
+  yapf for formatting. According to
+  https://github.com/google/yapf/blob/master/README.rst#excluding-files-from-formatting-yapfignore,
+  the .yapfignore file should be in the directory that yapf is invoked from,
+  which we assume to be the top level directory in this case.
+
+  Args:
+    top_dir: The top level directory for the repository being formatted.
+
+  Returns:
+    A set of all filepaths that should be ignored by yapf.
+  """
+  yapfignore_file = os.path.join(top_dir, '.yapfignore')
+  ignore_filepaths = set()
+  if not os.path.exists(yapfignore_file):
+    return ignore_filepaths
+
+  # glob works relative to the current working directory, so we need to ensure
+  # that we're at the top level directory.
+  old_cwd = os.getcwd()
+  try:
+    os.chdir(top_dir)
+    with open(yapfignore_file) as f:
+      for line in f.readlines():
+        stripped_line = line.strip()
+        # Comments and blank lines should be ignored.
+        if stripped_line.startswith('#') or stripped_line == '':
+          continue
+        ignore_filepaths |= set(glob.glob(stripped_line))
+    return ignore_filepaths
+  finally:
+    os.chdir(old_cwd)
 
 
 def print_stats(args):
@@ -5202,7 +5241,11 @@ def CMDformat(parser, args):
     if not opts.full and filtered_py_files:
       py_line_diffs = _ComputeDiffLineRanges(filtered_py_files, upstream_commit)
 
+    ignored_yapf_files = _GetYapfIgnoreFilepaths(top_dir)
+
     for f in filtered_py_files:
+      if f in ignored_yapf_files:
+        continue
       yapf_config = _FindYapfConfigFile(f, yapf_configs, top_dir)
       if yapf_config is None:
         yapf_config = chromium_default_yapf_style
