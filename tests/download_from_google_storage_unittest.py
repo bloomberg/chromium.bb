@@ -71,7 +71,7 @@ class GsutilMock(object):
           fn()
         return code, out, err
       else:
-        return (0, '', '')
+        return (0, b'', b'')
 
   def check_call_with_retries(self, *args):
     return self.check_call(*args)
@@ -159,7 +159,7 @@ class GstoolsUnitTests(unittest.TestCase):
     self.assertEqual(gsutil.path, GSUTIL_DEFAULT_PATH)
     code, _, err = gsutil.check_call()
     self.assertEqual(code, 0)
-    self.assertEqual(err, '')
+    self.assertEqual(err, b'')
 
   def test_get_sha1(self):
     lorem_ipsum = os.path.join(self.base_path, 'lorem_ipsum.txt')
@@ -191,7 +191,7 @@ class GstoolsUnitTests(unittest.TestCase):
         '4c02d1eb455a0f22c575265d17b84b6d')
     self.assertTrue(os.path.exists(lorem_ipsum2_md5))
     self.assertEqual(
-        open(lorem_ipsum2_md5, 'rb').read(),
+        open(lorem_ipsum2_md5, 'rb').read().decode(),
         '4c02d1eb455a0f22c575265d17b84b6d')
     os.remove(lorem_ipsum2_md5)  # Clean up.
     self.assertFalse(os.path.exists(lorem_ipsum2_md5))
@@ -245,8 +245,8 @@ class DownloadTests(unittest.TestCase):
     sha1_hash = self.lorem_ipsum_sha1
     input_filename = '%s/%s' % (self.base_url, sha1_hash)
     output_filename = os.path.join(self.base_path, 'uploaded_lorem_ipsum.txt')
-    self.gsutil.add_expected(0, '', '')  # ls
-    self.gsutil.add_expected(0, '', '', lambda: shutil.copyfile(
+    self.gsutil.add_expected(0, b'', b'')  # ls
+    self.gsutil.add_expected(0, b'', b'', lambda: shutil.copyfile(
         self.lorem_ipsum, output_filename))  # cp
     self.queue.put((sha1_hash, output_filename))
     self.queue.put((None, None))
@@ -329,7 +329,7 @@ class DownloadTests(unittest.TestCase):
     self.queue.put((sha1_hash, output_filename))
     self.queue.put((None, None))
     stdout_queue = queue.Queue()
-    self.gsutil.add_expected(1, '', '')  # Return error when 'ls' is called.
+    self.gsutil.add_expected(1, b'', b'')  # Return error when 'ls' is called.
     download_from_google_storage._downloader_worker_thread(
         0, self.queue, False, self.base_url, self.gsutil,
         stdout_queue, self.ret_codes, True, False)
@@ -353,8 +353,8 @@ class DownloadTests(unittest.TestCase):
     sha1_hash = '7871c8e24da15bad8b0be2c36edc9dc77e37727f'
     input_filename = '%s/%s' % (self.base_url, sha1_hash)
     output_filename = os.path.join(self.base_path, 'uploaded_lorem_ipsum.txt')
-    self.gsutil.add_expected(0, '', '')  # ls
-    self.gsutil.add_expected(101, '', 'Test error message.')
+    self.gsutil.add_expected(0, b'', b'')  # ls
+    self.gsutil.add_expected(101, b'', b'Test error message.')
     code = download_from_google_storage.download_from_google_storage(
         input_filename=sha1_hash,
         base_url=self.base_url,
