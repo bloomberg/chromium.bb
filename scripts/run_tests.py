@@ -198,6 +198,7 @@ PYTHON3_TESTS = {
     'lib/buildbucket_lib_unittest',
     'lib/buildstore_unittest',
     'lib/cache_unittest',
+    'lib/cgpt_unittest',
     'lib/chrome_committer_unittest',
     'lib/chrome_util_unittest',
     'lib/chroot_lib_unittest',
