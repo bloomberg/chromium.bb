@@ -1269,6 +1269,7 @@ function onRealboxKeyDown(e) {
       // this forwards key modifiers. This enables Shift+Enter to open a match
       // in a new window, for example.
       matchEls[selected].dispatchEvent(new MouseEvent('click', e));
+      e.preventDefault();
     }
     return;
   }

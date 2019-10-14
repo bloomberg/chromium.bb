@@ -623,3 +623,30 @@ test.realbox.testRemoveIcon = function() {
 
   assertEquals(0, $(test.realbox.IDS.REALBOX_MATCHES).children.length);
 };
+
+test.realbox.testPressEnterOnResult = function() {
+  test.realbox.realboxEl.value = 'hello world';
+  test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
+
+  const matches = [test.realbox.getSearchMatch({supportsDeletion: true})];
+  chrome.embeddedSearch.searchBox.onqueryautocompletedone(
+      {input: test.realbox.realboxEl.value, matches});
+
+  const matchEls = $(test.realbox.IDS.REALBOX_MATCHES).children;
+  assertEquals(1, matchEls.length);
+
+  let clicked = false;
+  matchEls[0].onclick = () => clicked = true;
+
+  const shiftEnter = new KeyboardEvent('keydown', {
+    bubbles: true,
+    cancelable: true,
+    key: 'Enter',
+    target: matchEls[0],
+    shiftKey: true,
+  });
+  test.realbox.realboxEl.dispatchEvent(shiftEnter);
+  assertTrue(shiftEnter.defaultPrevented);
+
+  assertTrue(clicked);
+};
