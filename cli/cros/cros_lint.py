@@ -245,8 +245,13 @@ def _ShellLintFile(path, output_format, debug, gentoo_format=False):
   if syntax_check.returncode != 0:
     return syntax_check
 
-  # Try using shellcheck if it exists.
-  shellcheck = osutils.Which('shellcheck')
+  # Try using shellcheck if it exists, with a preference towards finding it
+  # inside the chroot. This is OK as it is statically linked.
+  shellcheck = (
+      osutils.Which('shellcheck', path='/usr/bin',
+                    root=os.path.join(constants.SOURCE_ROOT, 'chroot'))
+      or osutils.Which('shellcheck'))
+
   if not shellcheck:
     logging.notice('Install shellcheck for additional shell linting.')
     return syntax_check
