@@ -1160,7 +1160,7 @@ static void build_intra_predictors_high(
   int base = 128 << (xd->bd - 8);
 
   // The default values if ref pixels are not available:
-  // base-1 base-1 base-1 .. base-1 base-1 base-1 base-1 base-1 base-1
+  // base   base-1 base-1 .. base-1 base-1 base-1 base-1 base-1 base-1
   // base+1   A      B  ..     Y      Z
   // base+1   C      D  ..     W      X
   // base+1   E      F  ..     U      V
@@ -1345,7 +1345,7 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
   const int use_filter_intra = filter_intra_mode != FILTER_INTRA_MODES;
 
   // The default values if ref pixels are not available:
-  // 127 127 127 .. 127 127 127 127 127 127
+  // 128 127 127 .. 127 127 127 127 127 127
   // 129  A   B  ..  Y   Z
   // 129  C   D  ..  W   X
   // 129  E   F  ..  U   V
