@@ -4178,4 +4178,162 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   histogram_tester.ExpectBucketCount(kMaxFrameCountUMA, /* bucket */ 3,
                                      /* count */ 1);
 }
+
+namespace {
+
+class LoadingObserver : public WebContentsObserver {
+ public:
+  explicit LoadingObserver(WebContents* web_contents)
+      : WebContentsObserver(web_contents) {}
+
+  std::vector<std::string>& GetEvents() { return events_; }
+
+  void DidStartNavigation(NavigationHandle* navigation_handle) override {
+    events_.push_back("DidStartNavigation");
+  }
+
+  void DidFinishNavigation(NavigationHandle* navigation_handle) override {
+    events_.push_back("DidFinishNavigation");
+  }
+
+  void DidStartLoading() override { events_.push_back("DidStartLoading"); }
+
+  void DidStopLoading() override {
+    events_.push_back("DidStopLoading");
+    run_loop_.Quit();
+  }
+
+  void DocumentAvailableInMainFrame() override {
+    events_.push_back("DocumentAvailableInMainFrame");
+  }
+
+  void DocumentOnLoadCompletedInMainFrame() override {
+    events_.push_back("DocumentOnLoadCompletedInMainFrame");
+  }
+
+  void DOMContentLoaded(RenderFrameHost* render_frame_host) override {
+    events_.push_back("DOMContentLoaded");
+  }
+
+  void DidFinishLoad(RenderFrameHost* render_frame_host,
+                     const GURL& url) override {
+    events_.push_back("DidFinishLoad");
+  }
+
+  void DidFailLoad(RenderFrameHost* render_frame_host,
+                   const GURL& url,
+                   int error_code,
+                   const base::string16& error_description) override {
+    events_.push_back("DidFailLoad");
+  }
+
+  void Wait() { run_loop_.Run(); }
+
+ private:
+  std::vector<std::string> events_;
+  base::RepeatingClosure completion_callback_;
+  base::RunLoop run_loop_;
+};
+
+}  // namespace
+
+// These tests provide a reference points for simulating the navigation events
+// for unittests.
+//
+// Keep in sync with TestRenderFrameHostTest.LoadingCallbacksOrder_*.
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
+                       LoadingCallbacksOrder_CrossDocumentNavigation) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+
+  LoadingObserver loading_observer(web_contents);
+
+  GURL url = embedded_test_server()->GetURL("a.com", "/title1.html");
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  loading_observer.Wait();
+
+  EXPECT_THAT(loading_observer.GetEvents(),
+              testing::ElementsAre(
+                  "DidStartLoading", "DidStartNavigation",
+                  "DidFinishNavigation", "DocumentAvailableInMainFrame",
+                  "DOMContentLoaded", "DocumentOnLoadCompletedInMainFrame",
+                  "DidFinishLoad", "DidStopLoading"));
+}
+
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
+                       LoadingCallbacksOrder_SameDocumentNavigation) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+
+  GURL url1 = embedded_test_server()->GetURL("a.com", "/title1.html");
+  GURL url2 = embedded_test_server()->GetURL("a.com", "/title1.html#foo");
+
+  LoadingObserver loading_observer1(web_contents);
+  EXPECT_TRUE(NavigateToURL(shell(), url1));
+  loading_observer1.Wait();
+
+  LoadingObserver loading_observer2(web_contents);
+  EXPECT_TRUE(NavigateToURL(shell(), url2));
+  loading_observer2.Wait();
+
+  EXPECT_THAT(loading_observer2.GetEvents(),
+              testing::ElementsAre("DidStartLoading", "DidStartNavigation",
+                                   "DidFinishNavigation", "DidStopLoading"));
+}
+
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
+                       LoadingCallbacksOrder_AbortedNavigation) {
+  const char kPageURL[] = "/controlled_page_load.html";
+  net::test_server::ControllableHttpResponse response(embedded_test_server(),
+                                                      kPageURL);
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL url = embedded_test_server()->GetURL("a.com", kPageURL);
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+
+  LoadingObserver loading_observer(web_contents);
+  shell()->LoadURL(url);
+  response.WaitForRequest();
+  response.Send(net::HttpStatusCode::HTTP_NO_CONTENT);
+  response.Done();
+
+  loading_observer.Wait();
+
+  EXPECT_THAT(loading_observer.GetEvents(),
+              testing::ElementsAre("DidStartLoading", "DidStartNavigation",
+                                   "DidFinishNavigation", "DidStopLoading"));
+}
+
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
+                       LoadingCallbacksOrder_ErrorPage) {
+  const char kPageURL[] = "/controlled_page_load.html";
+  net::test_server::ControllableHttpResponse response(embedded_test_server(),
+                                                      kPageURL);
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL url = embedded_test_server()->GetURL("a.com", kPageURL);
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+
+  LoadingObserver loading_observer(web_contents);
+  shell()->LoadURL(url);
+  response.WaitForRequest();
+  response.Send(net::HttpStatusCode::HTTP_REQUEST_TIMEOUT);
+  response.Done();
+
+  loading_observer.Wait();
+
+  EXPECT_THAT(loading_observer.GetEvents(),
+              testing::ElementsAre(
+                  "DidStartLoading", "DidStartNavigation",
+                  "DidFinishNavigation", "DocumentAvailableInMainFrame",
+                  "DOMContentLoaded", "DidFinishLoad", "DidStartNavigation",
+                  "DidFinishNavigation", "DocumentAvailableInMainFrame",
+                  "DOMContentLoaded", "DocumentOnLoadCompletedInMainFrame",
+                  "DidFinishLoad", "DidStopLoading"));
+}
+
 }  // namespace content

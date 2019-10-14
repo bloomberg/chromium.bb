@@ -1963,6 +1963,7 @@ test("content_unittests") {
     "../test/renderer_audio_output_stream_factory_context_impl_unittest.cc",
     "navigation_simulator_unittest.cc",
     "proxy_service_mojo_unittest.cc",
+    "test_render_frame_host_unittest.cc",
     "url_request_context_builder_mojo_unittest.cc",
   ]
 
