@@ -808,8 +808,6 @@ int QuicStreamFactory::Job::DoResolveHost() {
     parameters.cache_usage =
         HostResolver::ResolveHostParameters::CacheUsage::STALE_ALLOWED;
   }
-  if (key_.session_key().disable_secure_dns())
-    parameters.secure_dns_mode_override = DnsConfig::SecureDnsMode::OFF;
   resolve_host_request_ =
       host_resolver_->CreateRequest(key_.destination(), net_log_, parameters);
   // Unretained is safe because |this| owns the request, ensuring cancellation
@@ -1067,7 +1065,6 @@ int QuicStreamRequest::Request(
     RequestPriority priority,
     const SocketTag& socket_tag,
     const NetworkIsolationKey& network_isolation_key,
-    bool disable_secure_dns,
     int cert_verify_flags,
     const GURL& url,
     const NetLogWithSource& net_log,
@@ -1083,9 +1080,8 @@ int QuicStreamRequest::Request(
   net_error_details_ = net_error_details;
   failed_on_default_network_callback_ =
       std::move(failed_on_default_network_callback);
-  session_key_ =
-      QuicSessionKey(HostPortPair::FromURL(url), privacy_mode, socket_tag,
-                     network_isolation_key, disable_secure_dns);
+  session_key_ = QuicSessionKey(HostPortPair::FromURL(url), privacy_mode,
+                                socket_tag, network_isolation_key);
 
   int rv = factory_->Create(session_key_, destination, quic_version, priority,
                             cert_verify_flags, url, net_log, this);
@@ -1279,8 +1275,7 @@ bool QuicStreamFactory::CanUseExistingSession(const QuicSessionKey& session_key,
     if (destination.Equals(all_sessions_[session].destination()) &&
         session->CanPool(session_key.host(), session_key.privacy_mode(),
                          session_key.socket_tag(),
-                         session_key.network_isolation_key(),
-                         session_key.disable_secure_dns())) {
+                         session_key.network_isolation_key())) {
       return true;
     }
   }
@@ -1357,8 +1352,7 @@ int QuicStreamFactory::Create(const QuicSessionKey& session_key,
                                ? PRIVACY_MODE_ENABLED
                                : PRIVACY_MODE_DISABLED,
                            session_key.socket_tag(),
-                           session_key.network_isolation_key(),
-                           session_key.disable_secure_dns())) {
+                           session_key.network_isolation_key())) {
         request->SetSession(session->CreateHandle(destination));
         return OK;
       }
@@ -1793,8 +1787,7 @@ bool QuicStreamFactory::HasMatchingIpSession(const QuicSessionAliasKey& key,
     for (QuicChromiumClientSession* session : sessions) {
       if (!session->CanPool(server_id.host(), key.session_key().privacy_mode(),
                             key.session_key().socket_tag(),
-                            key.session_key().network_isolation_key(),
-                            key.session_key().disable_secure_dns())) {
+                            key.session_key().network_isolation_key())) {
         continue;
       }
       active_sessions_[key.session_key()] = session;

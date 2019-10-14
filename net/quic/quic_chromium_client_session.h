@@ -572,8 +572,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   bool CanPool(const std::string& hostname,
                PrivacyMode privacy_mode,
                const SocketTag& socket_tag,
-               const NetworkIsolationKey& network_isolation_key,
-               bool disable_secure_dns) const;
+               const NetworkIsolationKey& network_isolation_key) const;
 
   const quic::QuicServerId& server_id() const {
     return session_key_.server_id();

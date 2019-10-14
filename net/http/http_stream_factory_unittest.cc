@@ -363,7 +363,6 @@ TestCase kTests[] = {
 void PreconnectHelperForURL(int num_streams,
                             const GURL& url,
                             NetworkIsolationKey network_isolation_key,
-                            bool disable_secure_dns,
                             HttpNetworkSession* session) {
   HttpNetworkSessionPeer peer(session);
   MockHttpStreamFactoryForPreconnect* mock_factory =
@@ -375,7 +374,6 @@ void PreconnectHelperForURL(int num_streams,
   request.url = url;
   request.load_flags = 0;
   request.network_isolation_key = network_isolation_key;
-  request.disable_secure_dns = disable_secure_dns;
   request.traffic_annotation =
       MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
 
@@ -386,8 +384,7 @@ void PreconnectHelperForURL(int num_streams,
 void PreconnectHelper(const TestCase& test, HttpNetworkSession* session) {
   GURL url =
       test.ssl ? GURL("https://www.google.com") : GURL("http://www.google.com");
-  PreconnectHelperForURL(test.num_streams, url, NetworkIsolationKey(),
-                         false /* disable_secure_dns */, session);
+  PreconnectHelperForURL(test.num_streams, url, NetworkIsolationKey(), session);
 }
 
 ClientSocketPool::GroupId GetGroupId(const TestCase& test) {
@@ -619,8 +616,7 @@ TEST_F(HttpStreamFactoryTest, PreconnectUnsafePort) {
   peer.SetClientSocketPoolManager(std::move(mock_pool_manager));
 
   PreconnectHelperForURL(1, GURL("http://www.google.com:7"),
-                         NetworkIsolationKey(), false /* disable_secure_dns */,
-                         session.get());
+                         NetworkIsolationKey(), session.get());
   EXPECT_EQ(-1, transport_conn_pool->last_num_streams());
 }
 
@@ -652,50 +648,15 @@ TEST_F(HttpStreamFactoryTest, PreconnectNetworkIsolationKey) {
   const auto kOriginBar = url::Origin::Create(GURL("http://bar.test"));
   const NetworkIsolationKey kKey1(kOriginFoo, kOriginFoo);
   const NetworkIsolationKey kKey2(kOriginBar, kOriginBar);
-  PreconnectHelperForURL(1, kURL, kKey1, false /* disable_secure_dns */,
-                         session.get());
+  PreconnectHelperForURL(1, kURL, kKey1, session.get());
   EXPECT_EQ(1, transport_conn_pool->last_num_streams());
   EXPECT_EQ(kKey1,
             transport_conn_pool->last_group_id().network_isolation_key());
 
-  PreconnectHelperForURL(2, kURL, kKey2, false /* disable_secure_dns */,
-                         session.get());
+  PreconnectHelperForURL(2, kURL, kKey2, session.get());
   EXPECT_EQ(2, transport_conn_pool->last_num_streams());
   EXPECT_EQ(kKey2,
             transport_conn_pool->last_group_id().network_isolation_key());
-}
-
-// Verify that preconnects use the specified disable_secure_dns field.
-TEST_F(HttpStreamFactoryTest, PreconnectDisableSecureDns) {
-  SpdySessionDependencies session_deps(ProxyResolutionService::CreateDirect());
-  std::unique_ptr<HttpNetworkSession> session(
-      SpdySessionDependencies::SpdyCreateSession(&session_deps));
-  HttpNetworkSessionPeer peer(session.get());
-  CommonConnectJobParams common_connect_job_params =
-      session->CreateCommonConnectJobParams();
-  std::unique_ptr<CapturePreconnectsTransportSocketPool>
-      owned_transport_conn_pool =
-          std::make_unique<CapturePreconnectsTransportSocketPool>(
-              &common_connect_job_params);
-  CapturePreconnectsTransportSocketPool* transport_conn_pool =
-      owned_transport_conn_pool.get();
-  auto mock_pool_manager = std::make_unique<MockClientSocketPoolManager>();
-  mock_pool_manager->SetSocketPool(ProxyServer::Direct(),
-                                   std::move(owned_transport_conn_pool));
-  peer.SetClientSocketPoolManager(std::move(mock_pool_manager));
-
-  const GURL kURL("http://foo.test/");
-  const auto kOriginFoo = url::Origin::Create(GURL("http://foo.test"));
-  const auto kOriginBar = url::Origin::Create(GURL("http://bar.test"));
-  PreconnectHelperForURL(1, kURL, NetworkIsolationKey(),
-                         false /* disable_secure_dns */, session.get());
-  EXPECT_EQ(1, transport_conn_pool->last_num_streams());
-  EXPECT_FALSE(transport_conn_pool->last_group_id().disable_secure_dns());
-
-  PreconnectHelperForURL(2, kURL, NetworkIsolationKey(),
-                         true /* disable_secure_dns */, session.get());
-  EXPECT_EQ(2, transport_conn_pool->last_num_streams());
-  EXPECT_TRUE(transport_conn_pool->last_group_id().disable_secure_dns());
 }
 
 TEST_F(HttpStreamFactoryTest, JobNotifiesProxy) {
@@ -1250,7 +1211,7 @@ TEST_F(HttpStreamFactoryTest, UsePreConnectIfNoZeroRTT) {
                                      base::WrapUnique(http_proxy_pool));
     peer.SetClientSocketPoolManager(std::move(mock_pool_manager));
     PreconnectHelperForURL(num_streams, url, NetworkIsolationKey(),
-                           false /* disable_secure_dns */, session.get());
+                           session.get());
     EXPECT_EQ(num_streams, http_proxy_pool->last_num_streams());
   }
 }
@@ -1362,81 +1323,6 @@ TEST_F(HttpStreamFactoryTest, PrivacyModeUsesDifferentSocketPoolGroup) {
           /* enable_alternative_services = */ true, NetLogWithSource()));
   waiter.WaitForStream();
 
-  EXPECT_EQ(GetSocketPoolGroupCount(ssl_pool), 2);
-}
-
-TEST_F(HttpStreamFactoryTest, DisableSecureDnsUsesDifferentSocketPoolGroup) {
-  SpdySessionDependencies session_deps(ProxyResolutionService::CreateDirect());
-
-  StaticSocketDataProvider socket_data_1;
-  socket_data_1.set_connect_data(MockConnect(ASYNC, OK));
-  session_deps.socket_factory->AddSocketDataProvider(&socket_data_1);
-  StaticSocketDataProvider socket_data_2;
-  socket_data_2.set_connect_data(MockConnect(ASYNC, OK));
-  session_deps.socket_factory->AddSocketDataProvider(&socket_data_2);
-  StaticSocketDataProvider socket_data_3;
-  socket_data_3.set_connect_data(MockConnect(ASYNC, OK));
-  session_deps.socket_factory->AddSocketDataProvider(&socket_data_3);
-
-  SSLSocketDataProvider ssl_1(ASYNC, OK);
-  session_deps.socket_factory->AddSSLSocketDataProvider(&ssl_1);
-  SSLSocketDataProvider ssl_2(ASYNC, OK);
-  session_deps.socket_factory->AddSSLSocketDataProvider(&ssl_2);
-  SSLSocketDataProvider ssl_3(ASYNC, OK);
-  session_deps.socket_factory->AddSSLSocketDataProvider(&ssl_3);
-
-  std::unique_ptr<HttpNetworkSession> session(
-      SpdySessionDependencies::SpdyCreateSession(&session_deps));
-  ClientSocketPool* ssl_pool = session->GetSocketPool(
-      HttpNetworkSession::NORMAL_SOCKET_POOL, ProxyServer::Direct());
-
-  EXPECT_EQ(GetSocketPoolGroupCount(ssl_pool), 0);
-
-  HttpRequestInfo request_info;
-  request_info.method = "GET";
-  request_info.url = GURL("https://www.google.com");
-  request_info.load_flags = 0;
-  request_info.privacy_mode = PRIVACY_MODE_DISABLED;
-  request_info.traffic_annotation =
-      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
-  request_info.disable_secure_dns = false;
-
-  SSLConfig ssl_config;
-  StreamRequestWaiter waiter;
-
-  std::unique_ptr<HttpStreamRequest> request1(
-      session->http_stream_factory()->RequestStream(
-          request_info, DEFAULT_PRIORITY, ssl_config, ssl_config, &waiter,
-          /* enable_ip_based_pooling = */ true,
-          /* enable_alternative_services = */ true, NetLogWithSource()));
-  waiter.WaitForStream();
-
-  EXPECT_FALSE(
-      session_deps.host_resolver->last_secure_dns_mode_override().has_value());
-  EXPECT_EQ(GetSocketPoolGroupCount(ssl_pool), 1);
-
-  std::unique_ptr<HttpStreamRequest> request2(
-      session->http_stream_factory()->RequestStream(
-          request_info, DEFAULT_PRIORITY, ssl_config, ssl_config, &waiter,
-          /* enable_ip_based_pooling = */ true,
-          /* enable_alternative_services = */ true, NetLogWithSource()));
-  waiter.WaitForStream();
-
-  EXPECT_FALSE(
-      session_deps.host_resolver->last_secure_dns_mode_override().has_value());
-  EXPECT_EQ(GetSocketPoolGroupCount(ssl_pool), 1);
-
-  request_info.disable_secure_dns = true;
-  std::unique_ptr<HttpStreamRequest> request3(
-      session->http_stream_factory()->RequestStream(
-          request_info, DEFAULT_PRIORITY, ssl_config, ssl_config, &waiter,
-          /* enable_ip_based_pooling = */ true,
-          /* enable_alternative_services = */ true, NetLogWithSource()));
-  waiter.WaitForStream();
-
-  EXPECT_EQ(
-      net::DnsConfig::SecureDnsMode::OFF,
-      session_deps.host_resolver->last_secure_dns_mode_override().value());
   EXPECT_EQ(GetSocketPoolGroupCount(ssl_pool), 2);
 }
 

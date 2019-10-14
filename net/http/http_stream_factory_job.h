@@ -336,8 +336,7 @@ class HttpStreamFactory::Job
       const GURL& origin_url,
       PrivacyMode privacy_mode,
       const SocketTag& socket_tag,
-      const NetworkIsolationKey& network_isolation_key,
-      bool disable_secure_dns);
+      const NetworkIsolationKey& network_isolation_key);
 
   // Returns true if the current request can use an existing spdy session.
   bool CanUseExistingSpdySession() const;

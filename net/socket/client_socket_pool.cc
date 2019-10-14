@@ -168,10 +168,10 @@ std::unique_ptr<ConnectJob> ClientSocketPool::CreateConnectJob(
   if (using_ssl && proxy_server.is_direct()) {
     resolution_callback = base::BindRepeating(
         &OnHostResolution, common_connect_job_params->spdy_session_pool,
-        SpdySessionKey(
-            group_id.destination(), proxy_server, group_id.privacy_mode(),
-            SpdySessionKey::IsProxySession::kFalse, socket_tag,
-            group_id.network_isolation_key(), group_id.disable_secure_dns()),
+        SpdySessionKey(group_id.destination(), proxy_server,
+                       group_id.privacy_mode(),
+                       SpdySessionKey::IsProxySession::kFalse, socket_tag,
+                       group_id.network_isolation_key()),
         is_for_websockets);
   } else if (proxy_server.is_https()) {
     resolution_callback = base::BindRepeating(
@@ -179,8 +179,7 @@ std::unique_ptr<ConnectJob> ClientSocketPool::CreateConnectJob(
         SpdySessionKey(proxy_server.host_port_pair(), ProxyServer::Direct(),
                        group_id.privacy_mode(),
                        SpdySessionKey::IsProxySession::kTrue, socket_tag,
-                       group_id.network_isolation_key(),
-                       group_id.disable_secure_dns()),
+                       group_id.network_isolation_key()),
         is_for_websockets);
   }
 

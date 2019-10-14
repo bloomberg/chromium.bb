@@ -19,26 +19,22 @@ class QUIC_EXPORT_PRIVATE QuicSessionKey {
  public:
   // TODO(mmenke): Remove default NetworkIsolationKey() values, which are only
   // used in tests.
-  QuicSessionKey();
+  QuicSessionKey() = default;
   QuicSessionKey(
       const HostPortPair& host_port_pair,
       PrivacyMode privacy_mode,
       const SocketTag& socket_tag,
-      const NetworkIsolationKey& network_isolation_key = NetworkIsolationKey(),
-      bool disable_secure_dns = false);
+      const NetworkIsolationKey& network_isolation_key = NetworkIsolationKey());
   QuicSessionKey(
       const std::string& host,
       uint16_t port,
       PrivacyMode privacy_mode,
       const SocketTag& socket_tag,
-      const NetworkIsolationKey& network_isolation_key = NetworkIsolationKey(),
-      bool disable_secure_dns = false);
+      const NetworkIsolationKey& network_isolation_key = NetworkIsolationKey());
   QuicSessionKey(
       const quic::QuicServerId& server_id,
       const SocketTag& socket_tag,
-      const NetworkIsolationKey& network_isolation_key = NetworkIsolationKey(),
-      bool disable_secure_dns = false);
-  QuicSessionKey(const QuicSessionKey& other);
+      const NetworkIsolationKey& network_isolation_key = NetworkIsolationKey());
   ~QuicSessionKey() = default;
 
   // Needed to be an element of std::set.
@@ -60,8 +56,6 @@ class QUIC_EXPORT_PRIVATE QuicSessionKey {
     return network_isolation_key_;
   }
 
-  bool disable_secure_dns() const { return disable_secure_dns_; }
-
   size_t EstimateMemoryUsage() const;
 
  private:
@@ -69,7 +63,6 @@ class QUIC_EXPORT_PRIVATE QuicSessionKey {
   SocketTag socket_tag_;
   // Used to separate requests made in different contexts.
   NetworkIsolationKey network_isolation_key_;
-  bool disable_secure_dns_;
 };
 
 }  // namespace net
