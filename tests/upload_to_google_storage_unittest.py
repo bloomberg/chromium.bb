@@ -14,7 +14,6 @@ except ImportError:  # For Py3 compatibility
   import queue
 
 import shutil
-import StringIO
 import sys
 import tarfile
 import tempfile
@@ -26,6 +25,13 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import upload_to_google_storage
 from download_from_google_storage_unittest import GsutilMock
 from download_from_google_storage_unittest import ChangedWorkingDirectory
+from third_party import six
+
+if six.PY2:
+  from cStringIO import StringIO
+else:
+  from io import StringIO
+
 
 # ../third_party/gsutil/gsutil
 GSUTIL_DEFAULT_PATH = os.path.join(
@@ -176,7 +182,7 @@ class UploadTests(unittest.TestCase):
 
   def test_get_targets_multiple_stdin(self):
     inputs = ['a', 'b', 'c', 'd', 'e']
-    sys.stdin = StringIO.StringIO(os.linesep.join(inputs))
+    sys.stdin = StringIO(os.linesep.join(inputs))
     result = upload_to_google_storage.get_targets(
         ['-'],
         self.parser,
@@ -185,7 +191,7 @@ class UploadTests(unittest.TestCase):
 
   def test_get_targets_multiple_stdin_null(self):
     inputs = ['a', 'b', 'c', 'd', 'e']
-    sys.stdin = StringIO.StringIO('\0'.join(inputs))
+    sys.stdin = StringIO('\0'.join(inputs))
     result = upload_to_google_storage.get_targets(
         ['-'],
         self.parser,
