@@ -138,12 +138,12 @@ class CollapsibleListView : public views::View, public views::ButtonListener {
     label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     label_layout->SetFlexForView(label, 1);
     auto button = views::CreateVectorToggleImageButton(this);
-    views::SetImageFromVectorIcon(button.get(), kCaretDownIcon,
-                                  ui::TableModel::kIconSize, icon_color);
+    views::SetImageFromVectorIconWithColor(
+        button.get(), kCaretDownIcon, ui::TableModel::kIconSize, icon_color);
     button->SetTooltipText(
         l10n_util::GetStringUTF16(IDS_NATIVE_FILE_SYSTEM_USAGE_EXPAND));
-    views::SetToggledImageFromVectorIcon(button.get(), kCaretUpIcon,
-                                         ui::TableModel::kIconSize, icon_color);
+    views::SetToggledImageFromVectorIconWithColor(
+        button.get(), kCaretUpIcon, ui::TableModel::kIconSize, icon_color);
     button->SetToggledTooltipText(
         l10n_util::GetStringUTF16(IDS_NATIVE_FILE_SYSTEM_USAGE_COLLAPSE));
     expand_collapse_button_ = label_container->AddChildView(std::move(button));
