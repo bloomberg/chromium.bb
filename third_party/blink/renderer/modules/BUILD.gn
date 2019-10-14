@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import("//build/config/chromecast_build.gni")
-import("//build/split_static_library.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//third_party/blink/renderer/bindings/bindings.gni")
 import("//third_party/blink/renderer/bindings/modules/v8/generated.gni")
@@ -18,16 +17,6 @@ if (is_android) {
 
 visibility = [ "//third_party/blink/renderer/*" ]
 
-if (!is_component_build && is_win) {
-  # This target as a static library (for non-component builds) is >2GB for
-  # official builds and some goma builds on Windows. This causes linking to
-  # fail. As a workaround, force using a split static library for these
-  # configurations.
-  modules_target_type = "split_static_library"
-} else {
-  modules_target_type = "component"
-}
-
 config("modules_implementation") {
   defines = [ "BLINK_MODULES_IMPLEMENTATION=1" ]
 }
@@ -38,12 +27,8 @@ make_names("module_names") {
   deps = []  # Don't use default deps (otherwise it will be circular).
 }
 
-target("jumbo_" + modules_target_type, "modules") {
+jumbo_component("modules") {
   output_name = "blink_modules"
-
-  if (modules_target_type == "split_static_library") {
-    split_count = 5
-  }
 
   visibility = []  # Allow re-assignment of list.
   visibility = [ "//third_party/blink/*" ]
