@@ -1494,14 +1494,15 @@ function populateAutocompleteMatches(matches) {
   const realboxWrapper = $(IDS.REALBOX_INPUT_WRAPPER);
   realboxWrapper.appendChild(realboxMatchesEl);
 
-  const hasMatches = matches.length > 0;
-  realboxWrapper.classList.toggle(CLASSES.SHOW_MATCHES, hasMatches);
-
-  if (hasMatches) {
+  if (matches.length > 0) {
+    realboxWrapper.classList.add(CLASSES.SHOW_MATCHES);
     realboxWrapper.addEventListener('keydown', onRealboxKeyDown);
+    autocompleteMatches = matches;
+  } else {
+    // removesEventListener('keydown', onRealboxKeyDown) and also clears
+    // |autocompleteMatches|.
+    hideRealboxMatches();
   }
-
-  autocompleteMatches = matches;
 }
 
 /**
