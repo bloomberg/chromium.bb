@@ -233,7 +233,7 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
 
   def testRunGeneratorCmd(self):
     """Test the specialized command to run programs in chroot."""
-    mock_result = cros_build_lib.CommandResult(output='foo output')
+    mock_result = cros_build_lib.CommandResult(stdout=b'foo output')
     run_mock = self.PatchObject(cros_build_lib, 'run',
                                 return_value=mock_result)
 
@@ -248,7 +248,8 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
         combine_stdout_stderr=True)
 
     self.assertIn(mock_result.output,
-                  osutils.ReadFile(os.path.join(self.tempdir, 'delta.log')))
+                  osutils.ReadFile(os.path.join(self.tempdir, 'delta.log'),
+                                   mode='rb'))
 
   def testBuildArg(self):
     """Make sure the function semantics is satisfied."""

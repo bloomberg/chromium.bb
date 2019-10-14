@@ -357,8 +357,8 @@ class PaygenPayload(object):
                     e.result.returncode, e.result.output)
       raise
 
-    self._StoreLog('Output of command: ' + ' '.join(cmd))
-    self._StoreLog(result.output)
+    self._StoreLog('Output of command: ' + result.cmdstr)
+    self._StoreLog(result.output.decode('utf-8', 'replace'))
 
   @staticmethod
   def _BuildArg(flag, dict_obj, key, default=None):
