@@ -1967,8 +1967,8 @@
   },
   {
     "name": "enable-webrtc-hide-local-ips-with-mdns",
-    "owners": [ "qingsi", "jeroendb" ],
-    "expiry_milestone": 78
+    "owners": [ "qingsi" ],
+    "expiry_milestone": 81
   },
   {
     "name": "enable-webrtc-hw-h264-encoding",
