@@ -736,3 +736,21 @@ TEST_F(WebStateListTest, CloseAllWebStates) {
   EXPECT_TRUE(observer_.will_close_all_webstates_called());
   EXPECT_TRUE(observer_.did_close_all_webstates_called());
 }
+
+// Test closing one webstate.
+TEST_F(WebStateListTest, CloseWebState) {
+  AppendNewWebState(kURL0);
+  AppendNewWebState(kURL1);
+  AppendNewWebState(kURL2);
+
+  // Sanity check before closing WebState.
+  EXPECT_EQ(3, web_state_list_.count());
+
+  observer_.ResetStatistics();
+  web_state_list_.CloseWebStateAt(0, WebStateList::CLOSE_USER_ACTION);
+
+  EXPECT_EQ(2, web_state_list_.count());
+  EXPECT_TRUE(observer_.web_state_detached_called());
+  EXPECT_FALSE(observer_.will_close_all_webstates_called());
+  EXPECT_FALSE(observer_.did_close_all_webstates_called());
+}
