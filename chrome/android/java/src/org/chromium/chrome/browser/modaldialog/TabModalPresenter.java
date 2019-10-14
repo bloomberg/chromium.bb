@@ -289,6 +289,8 @@ public class TabModalPresenter
      * @param restricted Whether the browser controls access should be restricted.
      */
     private void setBrowserControlsAccess(boolean restricted) {
+        if (mChromeActivity.getToolbarManager() == null) return;
+
         View menuButton = mChromeActivity.getToolbarManager().getMenuButtonView();
 
         if (restricted) {

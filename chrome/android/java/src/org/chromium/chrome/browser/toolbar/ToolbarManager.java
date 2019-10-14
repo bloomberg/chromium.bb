@@ -57,7 +57,6 @@ import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.findinpage.FindToolbarManager;
 import org.chromium.chrome.browser.findinpage.FindToolbarObserver;
 import org.chromium.chrome.browser.fullscreen.BrowserStateBrowserControlsVisibilityDelegate;
-import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
 import org.chromium.chrome.browser.metrics.OmniboxStartupMetrics;
 import org.chromium.chrome.browser.native_page.NativePage;
@@ -122,6 +121,7 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.PageTransition;
+import org.chromium.ui.util.TokenHolder;
 import org.chromium.ui.widget.Toast;
 import org.chromium.ui.widget.ViewRectProvider;
 
@@ -216,10 +216,10 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
     private UrlFocusChangeListener mLocationBarFocusObserver;
 
     private BrowserStateBrowserControlsVisibilityDelegate mControlsVisibilityDelegate;
-    private int mFullscreenFocusToken = FullscreenManager.INVALID_TOKEN;
-    private int mFullscreenFindInPageToken = FullscreenManager.INVALID_TOKEN;
-    private int mFullscreenMenuToken = FullscreenManager.INVALID_TOKEN;
-    private int mFullscreenHighlightToken = FullscreenManager.INVALID_TOKEN;
+    private int mFullscreenFocusToken = TokenHolder.INVALID_TOKEN;
+    private int mFullscreenFindInPageToken = TokenHolder.INVALID_TOKEN;
+    private int mFullscreenMenuToken = TokenHolder.INVALID_TOKEN;
+    private int mFullscreenHighlightToken = TokenHolder.INVALID_TOKEN;
 
     private int mPreselectedTabId = Tab.INVALID_TAB_ID;
 
