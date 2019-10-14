@@ -38,6 +38,14 @@ class SplitShebangTest(cros_test_lib.TestCase):
     self.assertEqual(('/bin/sh', '-i'),
                      filetype.SplitShebang('#!  /bin/sh  -i   \n'))
 
+  def testValidBytes(self):
+    """Test bytes inputs."""
+    self.assertEqual(('/foo', '-v'), filetype.SplitShebang(b'#!/foo -v'))
+
+  def testInvalidBytes(self):
+    """Test bytes input but not valid UTF-8."""
+    self.assertRaises(ValueError, filetype.SplitShebang, b'#!/fo\xff')
+
   def testInvalidCases(self):
     """Thes invalid cases."""
     self.assertRaises(ValueError, filetype.SplitShebang, '/bin/sh -i')
@@ -178,24 +186,26 @@ or10mrNRF3tyGy8e/sw88a74Q/6v/PgChZHmq6QjOOU=
 
     # `echo hola | gzip -9`
     osutils.WriteFile(compressed,
-                      '\x1f\x8b\x08\x00<\xce\x07T\x02\x03\xcb\xc8\xcfI\xe4\x02'
-                      '\x00x\xad\xdb\xd1\x05\x00\x00\x00')
+                      b'\x1f\x8b\x08\x00<\xce\x07T\x02\x03\xcb\xc8\xcfI\xe4\x02'
+                      b'\x00x\xad\xdb\xd1\x05\x00\x00\x00', mode='wb')
     self.assertEqual('binary/compressed/gzip',
                      filetype.FileTypeDecoder.DecodeFile(compressed))
 
     # `echo hola | bzip2 -9`
     osutils.WriteFile(compressed,
-                      'BZh91AY&SY\xfa\xd4\xdb5\x00\x00\x01A\x00\x00\x10 D\xa0'
-                      '\x00!\x83A\x9a\t\xa8qw$S\x85\t\x0f\xadM\xb3P')
+                      b'BZh91AY&SY\xfa\xd4\xdb5\x00\x00\x01A\x00\x00\x10 D\xa0'
+                      b'\x00!\x83A\x9a\t\xa8qw$S\x85\t\x0f\xadM\xb3P',
+                      mode='wb')
     self.assertEqual('binary/compressed/bzip2',
                      filetype.FileTypeDecoder.DecodeFile(compressed))
 
     # `echo hola | xz -9`
     osutils.WriteFile(
         compressed,
-        '\xfd7zXZ\x00\x00\x04\xe6\xd6\xb4F\x02\x00!\x01\x16\x00\x00\x00t/\xe5'
-        '\xa3\x01\x00\x04hola\n\x00\x00\x00\x00\xdd\xb0\x00\xac6w~\x9d\x00\x01'
-        '\x1d\x05\xb8-\x80\xaf\x1f\xb6\xf3}\x01\x00\x00\x00\x00\x04YZ')
+        b'\xfd7zXZ\x00\x00\x04\xe6\xd6\xb4F\x02\x00!\x01\x16\x00\x00\x00t/\xe5'
+        b'\xa3\x01\x00\x04hola\n\x00\x00\x00\x00\xdd\xb0\x00\xac6w~\x9d\x00\x01'
+        b'\x1d\x05\xb8-\x80\xaf\x1f\xb6\xf3}\x01\x00\x00\x00\x00\x04YZ',
+        mode='wb')
     self.assertEqual('binary/compressed/xz',
                      filetype.FileTypeDecoder.DecodeFile(compressed))
 
@@ -205,17 +215,18 @@ or10mrNRF3tyGy8e/sw88a74Q/6v/PgChZHmq6QjOOU=
     some_timezone = os.path.join(self.tempdir, 'some_timezone')
     osutils.WriteFile(
         some_timezone,
-        'TZif2\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-        '\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-        '\x00\x01\x00\x00\x00\x04\x00\x00\x00\x00\x00\x00UTC\x00\x00\x00TZif2'
-        '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-        '\x00\x01\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-        '\x01\x00\x00\x00\x04\x00\x00\x00\x00\x00\x00UTC\x00\x00\x00\nUTC0\n')
+        b'TZif2\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+        b'\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+        b'\x00\x01\x00\x00\x00\x04\x00\x00\x00\x00\x00\x00UTC\x00\x00\x00TZif2'
+        b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+        b'\x00\x01\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+        b'\x01\x00\x00\x00\x04\x00\x00\x00\x00\x00\x00UTC\x00\x00\x00\nUTC0\n',
+        mode='wb')
     self.assertEqual('binary/tzfile',
                      filetype.FileTypeDecoder.DecodeFile(some_timezone))
 
     # A x86 boot sector with just nops.
     bootsec = os.path.join(self.tempdir, 'bootsec')
-    osutils.WriteFile(bootsec, '\x90' * 510 + '\x55\xaa')
+    osutils.WriteFile(bootsec, b'\x90' * 510 + b'\x55\xaa', mode='wb')
     self.assertEqual('binary/bootsector/x86',
                      filetype.FileTypeDecoder.DecodeFile(bootsec))

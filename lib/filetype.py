@@ -31,6 +31,7 @@ import stat
 import sys
 
 import magic  # pylint: disable=import-error
+import six
 
 from chromite.lib import parseelf
 
@@ -54,9 +55,18 @@ def SplitShebang(header):
   Raises:
     ValueError if the passed header is not a valid shebang line.
   """
-  m = re.match(r'#!\s*(/[a-z/0-9\.-]+)\s*(.*)$', header)
+  # We convert strings to bytes and then scan the bytes so we don't have to
+  # worry about being given non-UTF-8 binary data.  If we're unable to decode
+  # back into UTF-8, we'll just ignore the shebang.  There's no situation that
+  # we care to support that would matter here.
+  if isinstance(header, six.string_types):
+    header = header.encode('utf-8')
+  m = re.match(br'#!\s*(/[^\s]+)\s*(.*)$', header)
   if m:
-    return m.group(1), m.group(2).strip()
+    try:
+      return m.group(1).decode('utf-8'), m.group(2).strip().decode('utf-8')
+    except UnicodeDecodeError:
+      raise ValueError('shebang (#!) line is not valid UTF-8')
   raise ValueError('shebang (#!) line expected')
 
 
@@ -177,14 +187,14 @@ class FileTypeDecoder(object):
     if is_binary:
       # The elf argument was not passed, so compute it now if the file is an
       # ELF.
-      if first_kib.startswith('\x7fELF'):
+      if first_kib.startswith(b'\x7fELF'):
         return self._GetELFType(parseelf.ParseELF(self._root, rel_path,
                                                   parse_symbols=False))
 
-      if first_kib.startswith('MZ\x90\0'):
+      if first_kib.startswith(b'MZ\x90\0'):
         return 'binary/dos-bin'
 
-      if len(first_kib) >= 512 and first_kib[510:512] == '\x55\xaa':
+      if len(first_kib) >= 512 and first_kib[510:512] == b'\x55\xaa':
         return 'binary/bootsector/x86'
 
       # Firmware file depend on the technical details of the device they run on,
@@ -196,9 +206,9 @@ class FileTypeDecoder(object):
         return 'binary/firmware'
 
       # TZif (timezone) files. See tzfile(5) for details.
-      if (first_kib.startswith('TZif' + '\0' * 16) or
-          first_kib.startswith('TZif2' + '\0' * 15) or
-          first_kib.startswith('TZif3' + '\0' * 15)):
+      if (first_kib.startswith(b'TZif' + b'\0' * 16) or
+          first_kib.startswith(b'TZif2' + b'\0' * 15) or
+          first_kib.startswith(b'TZif3' + b'\0' * 15)):
         return 'binary/tzfile'
 
       # Whitelist some binary mime types.
@@ -219,7 +229,7 @@ class FileTypeDecoder(object):
     # except on the last one if it is not present on that line. At this point
     # we know that the file is not empty, so at least one line existst.
     fmap.seek(0)
-    first_lines = list(itertools.islice(iter(fmap.readline, ''), 0, 10))
+    first_lines = list(itertools.islice(iter(fmap.readline, b''), 0, 10))
     head_line = first_lines[0]
 
     # #! or "shebangs". Only those files with a single line are considered
@@ -255,13 +265,13 @@ class FileTypeDecoder(object):
       pass
 
     # PEM files.
-    if head_line.strip() == '-----BEGIN CERTIFICATE-----':
+    if head_line.strip() == b'-----BEGIN CERTIFICATE-----':
       return 'text/pem/cert'
-    if head_line.strip() == '-----BEGIN RSA PRIVATE KEY-----':
+    if head_line.strip() == b'-----BEGIN RSA PRIVATE KEY-----':
       return 'text/pem/rsa-private'
 
     # Linker script.
-    if head_line.strip() == '/* GNU ld script':
+    if head_line.strip() == b'/* GNU ld script':
       return 'text/ld-script'
 
     # Protobuf files.
@@ -269,7 +279,7 @@ class FileTypeDecoder(object):
       return 'text/proto'
 
     if len(first_lines) == 1:
-      if re.match(r'[0-9\.]+$', head_line):
+      if re.match(br'[0-9\.]+$', head_line):
         return 'text/oneline/number'
       return 'text/oneline'
 
