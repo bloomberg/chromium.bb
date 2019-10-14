@@ -4893,7 +4893,7 @@ static INLINE void update_valid_ref_frames_for_gm(
           order_hint_info, buf->display_order_hint,
           cm->cur_frame->display_order_hint);
       // Populate past and future ref frames
-      if (relative_frame_dist < 0) {
+      if (relative_frame_dist <= 0) {
         past_ref_frame[*num_past_ref_frames].distance =
             abs(relative_frame_dist);
         past_ref_frame[*num_past_ref_frames].frame = frame;
