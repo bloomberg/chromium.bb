@@ -4316,16 +4316,10 @@ void RenderFrameImpl::DidAccessInitialDocument() {
   // NOTE: Do not call back into JavaScript here, since this call is made from a
   // V8 security check.
 
-  // If the request hasn't yet committed, notify the browser process that it is
-  // no longer safe to show the pending URL of the main frame, since a URL spoof
-  // is now possible. (If the request has committed, the browser already knows.)
-  if (!has_accessed_initial_document_) {
-    NavigationState* navigation_state =
-        NavigationState::FromDocumentLoader(frame_->GetDocumentLoader());
-    if (!navigation_state->request_committed()) {
-      Send(new FrameHostMsg_DidAccessInitialDocument(routing_id_));
-    }
-  }
+  // Notify the browser process that it is no longer safe to show the pending
+  // URL of the main frame, since a URL spoof is now possible.
+  if (!has_accessed_initial_document_)
+    Send(new FrameHostMsg_DidAccessInitialDocument(routing_id_));
 
   has_accessed_initial_document_ = true;
 }
@@ -6074,13 +6068,6 @@ void RenderFrameImpl::UpdateStateForCommit(
         render_widget_->compositor_deps()->IsUseZoomForDSFEnabled(),
         render_widget_->GetScreenInfo().device_scale_factor);
   }
-
-  // Remember that we've already processed this request, so we don't update
-  // the session history again.  We do this regardless of whether this is
-  // a session history navigation, because if we attempted a session history
-  // navigation without valid HistoryItem state, WebCore will think it is a
-  // new navigation.
-  navigation_state->set_request_committed(true);
 
   // If we are a top frame navigation to another document we should clear any
   // existing autoplay flags on the Page. This is because flags are stored at
