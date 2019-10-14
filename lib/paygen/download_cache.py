@@ -131,7 +131,7 @@ class DownloadCache(object):
     # store all cache files in a single directory, which removes race
     # conditions around directories.
     m = hashlib.md5()
-    m.update(uri)
+    m.update(uri.encode('utf-8'))
     return os.path.join(self._file_dir, m.hexdigest())
 
   def _PurgeLock(self, blocking=False, shared=False):

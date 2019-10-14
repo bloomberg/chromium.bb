@@ -65,11 +65,11 @@ class DownloadCachePickleTest(cros_test_lib.TempDirTestCase):
     pickle_path = os.path.join(self.tempdir, 'cache.pickle')
 
     # Do pickle dump.
-    with open(pickle_path, 'w') as pickle_fh:
+    with open(pickle_path, 'wb') as pickle_fh:
       pickle.dump(cache, pickle_fh)
 
     # Load pickle file.
-    with open(pickle_path, 'r') as pickle_fh:
+    with open(pickle_path, 'rb') as pickle_fh:
       pickle.load(pickle_fh)
 
 
@@ -94,19 +94,19 @@ class FetchFuncTest(cros_test_lib.TempDirTestCase):
     cache.GetFileObject(self.dummy_uri, dummyFetchFunction)
     self.assertEqual(call_count[0], 1)
     with cache.GetFileObject(self.dummy_uri, dummyFetchFunction) as f:
-      self.assertEqual(f.read(), self.dummy_uri)
+      self.assertEqual(f.read(), self.dummy_uri.encode('utf-8'))
     self.assertEqual(call_count[0], 1)
 
     cache.GetFileObject(self.dummy_uri2, dummyFetchFunction)
     self.assertEqual(call_count[0], 2)
     with cache.GetFileObject(self.dummy_uri2, dummyFetchFunction) as f:
-      self.assertEqual(f.read(), self.dummy_uri2)
+      self.assertEqual(f.read(), self.dummy_uri2.encode('utf-8'))
     self.assertEqual(call_count[0], 2)
 
     with cache.GetFileObject(self.dummy_uri, dummyFetchFunction) as f:
-      self.assertEqual(f.read(), self.dummy_uri)
+      self.assertEqual(f.read(), self.dummy_uri.encode('utf-8'))
     with cache.GetFileObject(self.dummy_uri2, dummyFetchFunction) as f:
-      self.assertEqual(f.read(), self.dummy_uri2)
+      self.assertEqual(f.read(), self.dummy_uri2.encode('utf-8'))
     self.assertEqual(call_count[0], 2)
 
 

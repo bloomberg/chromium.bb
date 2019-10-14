@@ -203,6 +203,7 @@ PYTHON3_TESTS = {
     'lib/parseelf_unittest',
     'lib/partial_mock_unittest',
     'lib/path_util_unittest',
+    'lib/paygen/download_cache_unittest',
     'lib/paygen/gslock_unittest',
     'lib/paygen/partition_lib_unittest',
     'lib/paygen/paygen_payload_lib_unittest',
