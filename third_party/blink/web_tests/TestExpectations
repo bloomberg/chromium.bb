@@ -686,9 +686,6 @@ crbug.com/591099 external/wpt/css/css-ui/text-overflow-015.html [ Failure ]
 
 crbug.com/1003506 external/wpt/css/css-flexbox/percentage-heights-007.html [ Failure ]
 
-crbug.com/680331 external/wpt/css/cssom-view/scrollIntoView-sideways-lr-writing-mode-and-rtl-direction.html [ Failure ]
-crbug.com/680331 external/wpt/css/cssom-view/scrollIntoView-sideways-rl-writing-mode-and-rtl-direction.html [ Failure ]
-
 # ====== Layout team owned tests to here ======
 
 # ====== LayoutNG-only failures from here ======
@@ -2008,23 +2005,7 @@ crbug.com/636239 [ Win7 ] virtual/audio-service/media/video-zoom-controls.html [
 # The spec for "Propagation to the Initial Containing Block" was changed.
 # https://drafts.csswg.org/css-writing-modes-4/#icb
 crbug.com/988585 external/wpt/css/css-writing-modes/wm-propagation-001.html [ Failure ]
-crbug.com/988585 external/wpt/css/css-writing-modes/wm-propagation-body-034.html [ Failure ]
-crbug.com/988585 external/wpt/css/css-writing-modes/wm-propagation-body-035.html [ Failure ]
-crbug.com/988585 external/wpt/css/css-writing-modes/wm-propagation-body-038.html [ Failure ]
-crbug.com/988585 external/wpt/css/css-writing-modes/wm-propagation-body-039.html [ Failure ]
-crbug.com/988585 external/wpt/css/css-writing-modes/wm-propagation-body-042.html [ Failure ]
-crbug.com/988585 external/wpt/css/css-writing-modes/wm-propagation-body-043.html [ Failure ]
 crbug.com/988585 external/wpt/css/css-writing-modes/wm-propagation-body-044.html [ Failure ]
-crbug.com/988585 external/wpt/css/css-writing-modes/wm-propagation-body-046.html [ Failure ]
-crbug.com/988585 external/wpt/css/css-writing-modes/wm-propagation-body-047.html [ Failure ]
-crbug.com/988585 external/wpt/css/css-writing-modes/wm-propagation-body-048.html [ Failure ]
-crbug.com/988585 external/wpt/css/css-writing-modes/wm-propagation-body-049.html [ Failure ]
-crbug.com/988585 external/wpt/css/css-writing-modes/wm-propagation-body-050.html [ Failure ]
-crbug.com/988585 external/wpt/css/css-writing-modes/wm-propagation-body-051.html [ Failure ]
-crbug.com/988585 external/wpt/css/css-writing-modes/wm-propagation-body-052.html [ Failure ]
-crbug.com/988585 external/wpt/css/css-writing-modes/wm-propagation-body-053.html [ Failure ]
-crbug.com/988585 external/wpt/css/css-writing-modes/wm-propagation-body-054.html [ Failure ]
-crbug.com/988585 external/wpt/css/css-writing-modes/wm-propagation-body-055.html [ Failure ]
 
 # Printing Layout broken in these tests.
 crbug.com/377696 printing/setPrinting.html [ Skip ]
