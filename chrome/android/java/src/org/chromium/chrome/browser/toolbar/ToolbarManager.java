@@ -19,6 +19,7 @@ import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
 
+import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 
@@ -26,6 +27,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.CachedMetrics.ActionEvent;
+import org.chromium.base.metrics.CachedMetrics.EnumeratedHistogramSample;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
@@ -123,6 +125,8 @@ import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.widget.Toast;
 import org.chromium.ui.widget.ViewRectProvider;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.List;
 
 /**
@@ -143,6 +147,23 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
         void updateReloadButtonState(boolean isLoading);
     }
 
+    /** A means of tracking which mechanism is being used to focus the omnibox. */
+    @IntDef({OmniboxFocusReason.OMNIBOX_TAP, OmniboxFocusReason.OMNIBOX_LONG_PRESS,
+            OmniboxFocusReason.FAKE_BOX_TAP, OmniboxFocusReason.FAKE_BOX_LONG_PRESS,
+            OmniboxFocusReason.ACCELERATOR_TAP, OmniboxFocusReason.TAB_SWITCHER_OMNIBOX_TAP})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface OmniboxFocusReason {
+        int OMNIBOX_TAP = 0;
+        int OMNIBOX_LONG_PRESS = 1;
+        int FAKE_BOX_TAP = 2;
+        int FAKE_BOX_LONG_PRESS = 3;
+        int ACCELERATOR_TAP = 4;
+        int TAB_SWITCHER_OMNIBOX_TAP = 5;
+        int NUM_ENTRIES = 6;
+    }
+    private static final EnumeratedHistogramSample ENUMERATED_FOCUS_REASON =
+            new EnumeratedHistogramSample(
+                    "Android.OmniboxFocusReason", OmniboxFocusReason.NUM_ENTRIES);
     private static final ActionEvent ACCELERATOR_BUTTON_TAP_ACTION =
             new ActionEvent("MobileToolbarOmniboxAcceleratorTap");
 
@@ -725,7 +746,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
 
     @Override
     public void onScrimClick() {
-        setUrlBarFocus(false, LocationBar.OmniboxFocusReason.UNFOCUS);
+        setUrlBarFocus(false);
     }
 
     /**
@@ -733,6 +754,17 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
      */
     public boolean isUrlBarFocused() {
         return mLocationBar.isUrlBarFocused();
+    }
+
+    /**
+     * @param reason A {@link OmniboxFocusReason} that the omnibox was focused.
+     */
+    public static void recordOmniboxFocusReason(@OmniboxFocusReason int reason) {
+        if (OmniboxFocusReason.OMNIBOX_TAP == reason
+                && ReturnToChromeExperimentsUtil.isInOverviewWithOmnibox()) {
+            reason = OmniboxFocusReason.TAB_SWITCHER_OMNIBOX_TAP;
+        }
+        ENUMERATED_FOCUS_REASON.record(reason);
     }
 
     /**
@@ -747,8 +779,9 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
 
         final OnClickListener searchAcceleratorListener = v -> {
             recordBottomToolbarUseForIPH();
+            recordOmniboxFocusReason(OmniboxFocusReason.ACCELERATOR_TAP);
             ACCELERATOR_BUTTON_TAP_ACTION.record();
-            setUrlBarFocus(true, LocationBar.OmniboxFocusReason.ACCELERATOR_TAP);
+            setUrlBarFocus(true);
         };
 
         final OnClickListener shareButtonListener = v -> {
@@ -1341,7 +1374,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
                 if (isVisible) {
                     // Defocus here to avoid handling focus in multiple places, e.g., when the
                     // forward button is pressed. (see crbug.com/414219)
-                    setUrlBarFocus(false, LocationBar.OmniboxFocusReason.UNFOCUS);
+                    setUrlBarFocus(false);
 
                     if (!mActivity.isInOverviewMode() && isShowingAppMenuUpdateBadge()) {
                         // The app menu badge should be removed the first time the menu is opened.
@@ -1642,12 +1675,11 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
      * If you request focus and the UrlBar was already focused, this will select all of the text.
      *
      * @param focused Whether URL bar should be focused.
-     * @param reason The given reason.
      */
-    public void setUrlBarFocus(boolean focused, @LocationBar.OmniboxFocusReason int reason) {
+    public void setUrlBarFocus(boolean focused) {
         if (!isInitialized()) return;
         boolean wasFocused = mLocationBar.isUrlBarFocused();
-        mLocationBar.setUrlBarFocus(focused, null, reason);
+        mLocationBar.setUrlBarFocus(focused);
         if (wasFocused && focused) {
             mLocationBar.selectAll();
         }
@@ -1657,10 +1689,9 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
      * See {@link #setUrlBarFocus}, but if native is not loaded it will queue the request instead
      * of dropping it.
      */
-    public void setUrlBarFocusOnceNativeInitialized(
-            boolean focused, @LocationBar.OmniboxFocusReason int reason) {
+    public void setUrlBarFocusOnceNativeInitialized(boolean focused) {
         if (isInitialized()) {
-            setUrlBarFocus(focused, reason);
+            setUrlBarFocus(focused);
             return;
         }
 
@@ -1669,7 +1700,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
             // initialized. This is important for the Launch to Incognito Tab flow (see
             // IncognitoTabLauncher.
             mOnInitializedRunnable = () -> {
-                setUrlBarFocus(focused, reason);
+                setUrlBarFocus(focused);
             };
         } else {
             mOnInitializedRunnable = null;
@@ -1828,7 +1859,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
 
             // Ensure the URL bar loses focus if the tab it was interacting with is changed from
             // underneath it.
-            setUrlBarFocus(false, LocationBar.OmniboxFocusReason.UNFOCUS);
+            setUrlBarFocus(false);
 
             // Place the cursor in the Omnibox if applicable.  We always clear the focus above to
             // ensure the shield placed over the content is dismissed when switching tabs.  But if
