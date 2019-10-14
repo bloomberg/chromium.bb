@@ -4291,6 +4291,8 @@ TEST_F(AutofillMetricsTest, CreditCardUnmaskingPreflightCall) {
       features::kAutofillCreditCardAuthentication);
   std::string preflight_call_metric =
       "Autofill.BetterAuth.CardUnmaskPreflightCalled";
+  std::string preflight_latency_metric =
+      "Autofill.BetterAuth.CardUnmaskPreflightDuration";
 
   // Set up our form data.
   FormData form;
@@ -4315,6 +4317,7 @@ TEST_F(AutofillMetricsTest, CreditCardUnmaskingPreflightCall) {
                                           form.fields[0]);
     // If no masked server cards are available, then no preflight call is made.
     histogram_tester.ExpectTotalCount(preflight_call_metric, 0);
+    histogram_tester.ExpectTotalCount(preflight_latency_metric, 0);
   }
 
   {
@@ -4329,6 +4332,7 @@ TEST_F(AutofillMetricsTest, CreditCardUnmaskingPreflightCall) {
                                           form.fields[0]);
     // If user is not verifiable, then no preflight call is made.
     histogram_tester.ExpectTotalCount(preflight_call_metric, 0);
+    histogram_tester.ExpectTotalCount(preflight_latency_metric, 0);
   }
 
   {
@@ -4343,6 +4347,7 @@ TEST_F(AutofillMetricsTest, CreditCardUnmaskingPreflightCall) {
                                           form.fields[0]);
     // If no masked server cards are available, then no preflight call is made.
     histogram_tester.ExpectTotalCount(preflight_call_metric, 0);
+    histogram_tester.ExpectTotalCount(preflight_latency_metric, 0);
   }
 
   {
@@ -4359,8 +4364,10 @@ TEST_F(AutofillMetricsTest, CreditCardUnmaskingPreflightCall) {
     // user is eligible for FIDO authentication (except iOS).
 #if defined(OS_IOS)
     histogram_tester.ExpectTotalCount(preflight_call_metric, 0);
+    histogram_tester.ExpectTotalCount(preflight_latency_metric, 0);
 #else
     histogram_tester.ExpectTotalCount(preflight_call_metric, 1);
+    histogram_tester.ExpectTotalCount(preflight_latency_metric, 1);
 #endif
   }
 
@@ -4378,8 +4385,10 @@ TEST_F(AutofillMetricsTest, CreditCardUnmaskingPreflightCall) {
     // user is eligible for FIDO authentication (except iOS).
 #if defined(OS_IOS)
     histogram_tester.ExpectTotalCount(preflight_call_metric, 0);
+    histogram_tester.ExpectTotalCount(preflight_latency_metric, 0);
 #else
     histogram_tester.ExpectTotalCount(preflight_call_metric, 1);
+    histogram_tester.ExpectTotalCount(preflight_latency_metric, 1);
 #endif
   }
 }
