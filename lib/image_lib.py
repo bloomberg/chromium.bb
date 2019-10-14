@@ -78,7 +78,7 @@ class LoopbackPartitions(object):
     try:
       cmd = ['losetup', '--show', '-f', self.path]
       ret = cros_build_lib.sudo_run(
-          cmd, debug_level=logging.DEBUG, capture_output=True)
+          cmd, debug_level=logging.DEBUG, capture_output=True, encoding='utf-8')
       self.dev = ret.output.strip()
       cmd = ['partx', '-d', self.dev]
       cros_build_lib.sudo_run(cmd, quiet=True, error_code_ok=True)
@@ -637,5 +637,6 @@ def GetImageDiskPartitionInfo(image_path):
       cmd,
       extra_env={'PATH': '/sbin:%s' % os.environ['PATH'], 'LC_ALL': 'C'},
       capture_output=True,
-      input='I').output.splitlines()
+      encoding='utf-8',
+      input=b'I').stdout.splitlines()
   return func(lines)

@@ -203,6 +203,7 @@ PYTHON3_TESTS = {
     'lib/git_unittest',
     'lib/gob_util_unittest',
     'lib/hwtest_results_unittest',
+    'lib/image_lib_unittest',
     'lib/iter_utils_unittest',
     'lib/json_lib_unittest',
     'lib/launch_control/processed_builds_unittest',

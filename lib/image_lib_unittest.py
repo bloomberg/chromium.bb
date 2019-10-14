@@ -7,6 +7,7 @@
 
 from __future__ import print_function
 
+import collections
 import gc
 import glob
 import os
@@ -326,10 +327,12 @@ class LsbUtilsTest(cros_test_lib.MockTempDirTestCase):
   def testWriteLsbRelease(self):
     """Tests writing out the lsb_release file using WriteLsbRelease(..)."""
     rc_mock = self.PatchObject(cros_build_lib, 'sudo_run')
-    fields = {'x': '1', 'y': '2', 'foo': 'bar'}
+    fields = collections.OrderedDict((
+        ('x', '1'), ('y', '2'), ('foo', 'bar'),
+    ))
     image_lib.WriteLsbRelease(self.tempdir, fields)
     lsb_release_file = os.path.join(self.tempdir, 'etc', 'lsb-release')
-    expected_content = 'y=2\nx=1\nfoo=bar\n'
+    expected_content = 'x=1\ny=2\nfoo=bar\n'
     self.assertFileContents(lsb_release_file, expected_content)
     rc_mock.assert_called_once_with([
         'setfattr', '-n', 'security.selinux', '-v',
@@ -338,10 +341,12 @@ class LsbUtilsTest(cros_test_lib.MockTempDirTestCase):
 
     # Test that WriteLsbRelease(..) correctly handles an existing file.
     rc_mock = self.PatchObject(cros_build_lib, 'sudo_run')
-    fields = {'newkey1': 'value1', 'newkey2': 'value2', 'a': '3', 'b': '4'}
+    fields = collections.OrderedDict((
+        ('newkey1', 'value1'), ('newkey2', 'value2'), ('a', '3'), ('b', '4'),
+    ))
     image_lib.WriteLsbRelease(self.tempdir, fields)
-    expected_content = ('y=2\nx=1\nfoo=bar\nnewkey2=value2\na=3\n'
-                        'newkey1=value1\nb=4\n')
+    expected_content = ('x=1\ny=2\nfoo=bar\nnewkey1=value1\nnewkey2=value2\n'
+                        'a=3\nb=4\n')
     self.assertFileContents(lsb_release_file, expected_content)
     rc_mock.assert_called_once_with([
         'setfattr', '-n', 'security.selinux', '-v',
