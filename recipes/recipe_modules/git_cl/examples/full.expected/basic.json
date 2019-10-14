@@ -1,7 +1,7 @@
 [
   {
     "cmd": [
-      "python",
+      "vpython",
       "-u",
       "RECIPE_REPO[depot_tools]/git_cl.py",
       "upload",
@@ -12,7 +12,7 @@
   },
   {
     "cmd": [
-      "python",
+      "vpython",
       "-u",
       "RECIPE_REPO[depot_tools]/git_cl.py",
       "issue"
@@ -21,7 +21,7 @@
   },
   {
     "cmd": [
-      "python",
+      "vpython",
       "-u",
       "RECIPE_REPO[depot_tools]/git_cl.py",
       "description",
@@ -33,7 +33,7 @@
   },
   {
     "cmd": [
-      "python",
+      "vpython",
       "-u",
       "RECIPE_REPO[depot_tools]/git_cl.py",
       "description",
@@ -54,7 +54,7 @@
   },
   {
     "cmd": [
-      "python",
+      "vpython",
       "-u",
       "RECIPE_REPO[depot_tools]/git_cl.py",
       "description",
@@ -72,7 +72,7 @@
   },
   {
     "cmd": [
-      "python",
+      "vpython",
       "-u",
       "RECIPE_REPO[depot_tools]/git_cl.py",
       "description",
@@ -85,7 +85,7 @@
   },
   {
     "cmd": [
-      "python",
+      "vpython",
       "-u",
       "RECIPE_REPO[depot_tools]/git_cl.py",
       "description",
