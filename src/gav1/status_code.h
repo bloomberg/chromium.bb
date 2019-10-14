@@ -17,6 +17,8 @@
 #ifndef LIBGAV1_SRC_GAV1_STATUS_CODE_H_
 #define LIBGAV1_SRC_GAV1_STATUS_CODE_H_
 
+#include "gav1/symbol_visibility.h"
+
 // All the declarations in this file are part of the public ABI. This file may
 // be included by both C and C++ files.
 
@@ -75,7 +77,7 @@ using StatusCode = Libgav1StatusCode;
 
 // Returns a human readable error string in en-US for the status code |status|.
 // Always returns a valid (non-NULL) string.
-const char* GetErrorString(StatusCode status);
+LIBGAV1_PUBLIC const char* GetErrorString(StatusCode status);
 
 }  // namespace libgav1
 #endif  // defined(__cplusplus)
