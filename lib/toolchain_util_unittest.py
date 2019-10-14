@@ -15,6 +15,7 @@ import re
 import time
 
 import mock
+from six.moves import builtins
 
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
@@ -1206,7 +1207,7 @@ class UploadReleaseChromeAFDOTest(cros_test_lib.MockTempDirTestCase):
     self.gs_copy = self.PatchObject(gs.GSContext, 'Copy')
     self.PatchObject(osutils.TempDir, '__enter__', return_value=self.tempdir)
 
-  @mock.patch('__builtin__.open')
+  @mock.patch.object(builtins, 'open')
   def testRedactAFDOProfile(self, mock_open):
     """Test _RedactAFDOProfile() handles calls correctly."""
     input_name = os.path.join(self.tempdir, self.merged_name)
