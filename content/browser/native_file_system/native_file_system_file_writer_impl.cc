@@ -14,6 +14,7 @@
 #include "crypto/secure_hash.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/fileapi/file_system_operation_runner.h"
+#include "third_party/blink/public/common/blob/blob_utils.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_error.mojom.h"
 
@@ -193,32 +194,31 @@ void NativeFileSystemFileWriterImpl::WriteImpl(
     return;
   }
 
-  blob_context()->GetBlobDataFromBlobRemote(
-      std::move(data),
-      base::BindOnce(&NativeFileSystemFileWriterImpl::DoWriteBlob,
-                     weak_factory_.GetWeakPtr(), std::move(callback), offset));
-}
+  MojoCreateDataPipeOptions options;
+  options.struct_size = sizeof(MojoCreateDataPipeOptions);
+  options.flags = MOJO_CREATE_DATA_PIPE_FLAG_NONE;
+  options.element_num_bytes = 1;
+  options.capacity_num_bytes =
+      blink::BlobUtils::GetDataPipeCapacity(blink::BlobUtils::kUnknownSize);
 
-void NativeFileSystemFileWriterImpl::DoWriteBlob(
-    WriteCallback callback,
-    uint64_t position,
-    std::unique_ptr<BlobDataHandle> blob) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  if (!blob) {
+  mojo::ScopedDataPipeProducerHandle producer_handle;
+  mojo::ScopedDataPipeConsumerHandle consumer_handle;
+  MojoResult rv =
+      mojo::CreateDataPipe(&options, &producer_handle, &consumer_handle);
+  if (rv != MOJO_RESULT_OK) {
     std::move(callback).Run(
         native_file_system_error::FromStatus(
-            NativeFileSystemStatus::kInvalidArgument, "Blob does not exist"),
+            NativeFileSystemStatus::kOperationFailed,
+            "Internal read error: failed to create mojo data pipe."),
         /*bytes_written=*/0);
     return;
   }
 
-  DoFileSystemOperation(
-      FROM_HERE, &FileSystemOperationRunner::Write,
-      base::BindRepeating(&NativeFileSystemFileWriterImpl::DidWrite,
-                          weak_factory_.GetWeakPtr(),
-                          base::Owned(new WriteState{std::move(callback)})),
-      swap_url(), std::move(blob), position);
+  // TODO(mek): We can do this transformation from Blob to DataPipe in the
+  // renderer, and simplify the mojom exposed interface.
+  mojo::Remote<blink::mojom::Blob> blob(std::move(data));
+  blob->ReadAll(std::move(producer_handle), mojo::NullRemote());
+  WriteStreamImpl(offset, std::move(consumer_handle), std::move(callback));
 }
 
 void NativeFileSystemFileWriterImpl::WriteStreamImpl(

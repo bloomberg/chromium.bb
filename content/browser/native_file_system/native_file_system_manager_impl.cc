@@ -37,6 +37,7 @@ using blink::mojom::NativeFileSystemStatus;
 using PermissionStatus = NativeFileSystemPermissionGrant::PermissionStatus;
 using SensitiveDirectoryResult =
     NativeFileSystemPermissionContext::SensitiveDirectoryResult;
+using storage::FileSystemContext;
 
 namespace {
 
@@ -182,14 +183,29 @@ void NativeFileSystemManagerImpl::BindReceiverFromUIThread(
 void NativeFileSystemManagerImpl::GetSandboxedFileSystem(
     GetSandboxedFileSystemCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  url::Origin origin = receivers_.current_context().origin;
 
-  context()->OpenFileSystem(
-      origin.GetURL(), storage::kFileSystemTypeTemporary,
-      storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
-      base::BindOnce(&NativeFileSystemManagerImpl::DidOpenSandboxedFileSystem,
-                     weak_factory_.GetWeakPtr(), receivers_.current_context(),
-                     std::move(callback)));
+  auto response_callback = base::BindOnce(
+      [](base::WeakPtr<NativeFileSystemManagerImpl> manager,
+         const BindingContext& binding_context,
+         GetSandboxedFileSystemCallback callback,
+         scoped_refptr<base::SequencedTaskRunner> task_runner, const GURL& root,
+         const std::string& fs_name, base::File::Error result) {
+        task_runner->PostTask(
+            FROM_HERE,
+            base::BindOnce(
+                &NativeFileSystemManagerImpl::DidOpenSandboxedFileSystem,
+                std::move(manager), binding_context, std::move(callback), root,
+                fs_name, result));
+      },
+      weak_factory_.GetWeakPtr(), receivers_.current_context(),
+      std::move(callback), base::SequencedTaskRunnerHandle::Get());
+
+  GURL origin = receivers_.current_context().origin.GetURL();
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(&FileSystemContext::OpenFileSystem, context(),
+                                origin, storage::kFileSystemTypeTemporary,
+                                storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
+                                std::move(response_callback)));
 }
 
 void NativeFileSystemManagerImpl::ChooseEntries(

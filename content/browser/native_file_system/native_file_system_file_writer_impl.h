@@ -76,9 +76,6 @@ class CONTENT_EXPORT NativeFileSystemFileWriterImpl
   void WriteImpl(uint64_t offset,
                  mojo::PendingRemote<blink::mojom::Blob> data,
                  WriteCallback callback);
-  void DoWriteBlob(WriteCallback callback,
-                   uint64_t position,
-                   std::unique_ptr<storage::BlobDataHandle> blob);
   void WriteStreamImpl(uint64_t offset,
                        mojo::ScopedDataPipeConsumerHandle stream,
                        WriteStreamCallback callback);

@@ -19,7 +19,6 @@
 namespace storage {
 class FileSystemContext;
 class FileSystemOperationRunner;
-class BlobStorageContext;
 }  // namespace storage
 
 namespace content {
@@ -82,9 +81,6 @@ class CONTENT_EXPORT NativeFileSystemHandleBase
   const BindingContext& context() { return context_; }
   storage::FileSystemContext* file_system_context() {
     return manager()->context();
-  }
-  storage::BlobStorageContext* blob_context() {
-    return manager()->blob_context();
   }
 
   virtual base::WeakPtr<NativeFileSystemHandleBase> AsWeakPtr() = 0;

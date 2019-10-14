@@ -158,9 +158,7 @@ class CONTENT_EXPORT NativeFileSystemManagerImpl
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     return context_.get();
   }
-  storage::BlobStorageContext* blob_context() {
-    return blob_context_->context();
-  }
+  ChromeBlobStorageContext* blob_context() { return blob_context_.get(); }
   const base::SequenceBound<storage::FileSystemOperationRunner>&
   operation_runner();
 
