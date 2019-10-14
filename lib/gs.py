@@ -20,6 +20,7 @@ import shutil
 import subprocess
 import tempfile
 
+import six
 from six.moves import urllib
 
 from chromite.lib import constants
@@ -654,6 +655,7 @@ class GSContext(object):
   def Cat(self, path, **kwargs):
     """Returns the contents of a GS object."""
     kwargs.setdefault('redirect_stdout', True)
+    kwargs.setdefault('encoding', None)
     if not PathIsGs(path):
       # gsutil doesn't support cat-ting a local path, so read it ourselves.
       try:
@@ -681,7 +683,7 @@ class GSContext(object):
         at a time. The default value is 1 MB.
 
     Yields:
-      The file content, chunk by chunk.
+      The file content, chunk by chunk, as bytes.
     """
     assert PathIsGs(path)
 
@@ -879,6 +881,7 @@ class GSContext(object):
     """
     kwargs = kwargs.copy()
     kwargs.setdefault('redirect_stderr', True)
+    kwargs.setdefault('encoding', 'utf-8')
 
     cmd = [self.gsutil_bin]
     cmd += self.gsutil_flags
@@ -961,10 +964,14 @@ class GSContext(object):
 
     with cros_build_lib.ContextManagerStack() as stack:
       # Write the input into a tempfile if possible. This is needed so that
-      # gsutil can retry failed requests.
+      # gsutil can retry failed requests.  We allow the input to be a string
+      # or bytes regardless of the output encoding.
       if src_path == '-' and kwargs.get('input') is not None:
-        f = stack.Add(tempfile.NamedTemporaryFile)
-        f.write(kwargs['input'])
+        f = stack.Add(tempfile.NamedTemporaryFile, mode='wb')
+        data = kwargs['input']
+        if isinstance(data, six.text_type):
+          data = data.encode('utf-8')
+        f.write(data)
         f.flush()
         del kwargs['input']
         src_path = f.name
@@ -1007,7 +1014,7 @@ class GSContext(object):
 
     Args:
       gs_uri: The URI of a file on Google Storage.
-      contents: String with contents to write to the file.
+      contents: String or bytes with contents to write to the file.
       kwargs: See additional options that Copy takes.
 
     Raises:
@@ -1035,6 +1042,7 @@ class GSContext(object):
       kwargs.pop('retries', None)
       kwargs.pop('headers', None)
       kwargs['capture_output'] = True
+      kwargs.setdefault('encoding', 'utf-8')
       result = cros_build_lib.run(['ls', path], **kwargs)
       return result.output.splitlines()
     else:

@@ -15,6 +15,7 @@ import os
 import string
 
 import mock
+import six
 
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
@@ -851,6 +852,7 @@ class GSDoCommandTest(cros_test_lib.TestCase):
           cmd, sleep=sleep,
           redirect_stderr=True,
           capture_output=True,
+          encoding='utf-8',
           extra_env=mock.ANY)
 
   def testDoCommandDefault(self):
@@ -1433,7 +1435,7 @@ class UnmockedStatTest(cros_test_lib.TempDirTestCase):
     self.assertEqual(result.content_type, 'application/octet-stream')
     self.assertEqual(result.hash_crc32c, 'wUc4sQ==')
     self.assertEqual(result.hash_md5, 'iRvNNwBhmvUVG/lbg2/5sQ==')
-    self.assertIsInstance(result.etag, str)
+    self.assertIsInstance(result.etag, six.string_types)
     self.assertIsInstance(result.generation, int)
     self.assertEqual(result.metageneration, 1)
 
