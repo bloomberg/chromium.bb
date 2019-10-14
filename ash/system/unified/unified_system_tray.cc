@@ -217,6 +217,14 @@ void UnifiedSystemTray::SetTrayBubbleHeight(int height) {
   ui_delegate_->SetTrayBubbleHeight(height);
 }
 
+void UnifiedSystemTray::FocusFirstNotification() {
+  if (!features::IsUnifiedMessageCenterRefactorEnabled())
+    return;
+
+  FocusMessageCenter(false /*reverse*/);
+  message_center_bubble()->FocusFirstNotification();
+}
+
 bool UnifiedSystemTray::FocusMessageCenter(bool reverse) {
   if (!IsMessageCenterBubbleShown())
     return false;
