@@ -229,11 +229,6 @@
     "expiry_milestone": 87
   },
   {
-    "name": "autofill-always-show-server-cards-in-sync-transport",
-    "owners": [ "sebsg" ],
-    "expiry_milestone": 74
-  },
-  {
     "name": "autofill-assistant-chrome-entry",
     "owners": [ "gogerald,wuandy" ],
     "expiry_milestone": 79
@@ -1777,12 +1772,12 @@
   {
     "name": "enable-sync-uss-nigori",
     "owners": [ "mmoskvitin@google.com", "//components/sync/OWNERS" ],
-    "expiry_milestone": 78
+    "expiry_milestone": 80
   },
   {
     "name": "enable-sync-uss-passwords",
     "owners": [ "mamir", "//components/sync/OWNERS" ],
-    "expiry_milestone": 77
+    "expiry_milestone": 80
   },
   {
     "name": "enable-system-webapps",
@@ -2097,11 +2092,6 @@
     "name": "extensions-toolbar-menu",
     "owners": [ "//extensions/OWNERS", "pbos" ],
     "expiry_milestone": 82
-  },
-  {
-    "name": "fcm-invalidations",
-    "owners": [ "melandory", "chrome-sync-dev@google.com" ],
-    "expiry_milestone": 76
   },
   {
     "name": "file-handling-api",
