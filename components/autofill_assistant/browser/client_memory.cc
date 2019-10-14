@@ -62,6 +62,23 @@ const WebsiteLoginFetcher::Login* ClientMemory::selected_login() const {
   return nullptr;
 }
 
+const std::string* ClientMemory::additional_value(const std::string& key) {
+  auto it = additional_values_.find(key);
+  if (it == additional_values_.end()) {
+    return nullptr;
+  }
+  return &it->second;
+}
+
+bool ClientMemory::has_additional_value(const std::string& key) {
+  return additional_values_.find(key) != additional_values_.end();
+}
+
+void ClientMemory::set_additional_value(const std::string& key,
+                                        const std::string& value) {
+  additional_values_[key] = value;
+}
+
 std::string ClientMemory::GetAllAddressKeyNames() const {
   std::vector<std::string> entries;
   for (const auto& entry : selected_addresses_) {

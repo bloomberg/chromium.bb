@@ -100,6 +100,24 @@ void SetFormFieldValueAction::InternalProcessAction(
         // Currently no check required.
         field_inputs_.emplace_back(/* value = */ keypress.text());
         break;
+      case SetFormFieldValueProto_KeyPress::kClientMemoryKey:
+        if (keypress.client_memory_key().empty()) {
+          DVLOG(1) << "SetFormFieldValueAction: empty |client_memory_key|";
+          EndAction(ClientStatus(INVALID_ACTION));
+          return;
+        }
+        if (!delegate_->GetClientMemory()->has_additional_value(
+                keypress.client_memory_key())) {
+          DVLOG(1) << "SetFormFieldValueAction: requested key '"
+                   << keypress.client_memory_key()
+                   << "' not available in client memory";
+          EndAction(ClientStatus(PRECONDITION_FAILED));
+          return;
+        }
+        field_inputs_.emplace_back(
+            /* value = */ *delegate_->GetClientMemory()->additional_value(
+                keypress.client_memory_key()));
+        break;
       default:
         DVLOG(1) << "Unrecognized field for SetFormFieldValueProto_KeyPress";
         EndAction(ClientStatus(INVALID_ACTION));

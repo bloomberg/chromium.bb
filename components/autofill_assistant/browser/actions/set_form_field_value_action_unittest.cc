@@ -191,6 +191,33 @@ TEST_F(SetFormFieldValueActionTest, Text) {
   action.ProcessAction(callback_.Get());
 }
 
+TEST_F(SetFormFieldValueActionTest, ClientMemoryKey) {
+  auto* value = set_form_field_proto_->add_value();
+  value->set_client_memory_key("key");
+  client_memory_.set_additional_value("key", "SomeText𠜎");
+  SetFormFieldValueAction action(&mock_action_delegate_, proto_);
+  ON_CALL(mock_action_delegate_, OnGetFieldValue(_, _))
+      .WillByDefault(RunOnceCallback<1>(OkClientStatus(), "SomeText𠜎"));
+  EXPECT_CALL(mock_action_delegate_,
+              OnSetFieldValue(fake_selector_, "SomeText𠜎", _, _, _))
+      .WillOnce(RunOnceCallback<4>(OkClientStatus()));
+
+  EXPECT_CALL(
+      callback_,
+      Run(Pointee(Property(&ProcessedActionProto::status, ACTION_APPLIED))));
+  action.ProcessAction(callback_.Get());
+}
+
+TEST_F(SetFormFieldValueActionTest, ClientMemoryKeyFailsIfNotInClientMemory) {
+  auto* value = set_form_field_proto_->add_value();
+  value->set_client_memory_key("key");
+  SetFormFieldValueAction action(&mock_action_delegate_, proto_);
+
+  EXPECT_CALL(callback_, Run(Pointee(Property(&ProcessedActionProto::status,
+                                              PRECONDITION_FAILED))));
+  action.ProcessAction(callback_.Get());
+}
+
 // Test that automatic fallback to simulate keystrokes works.
 TEST_F(SetFormFieldValueActionTest, Fallback) {
   auto* value = set_form_field_proto_->add_value();
