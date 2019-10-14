@@ -85,6 +85,9 @@ void ShowWritePermissionPromptOnUIThread(
     return;
   }
 
+  // Drop fullscreen mode so that the user sees the URL bar.
+  web_contents->ForSecurityDropFullscreen();
+
   request_manager->AddRequest(
       {origin, path, is_directory},
       base::BindOnce(
@@ -130,6 +133,9 @@ void ShowDirectoryAccessConfirmationPromptOnUIThread(
     // Requested from a worker, or a no longer existing tab.
     std::move(callback).Run(PermissionAction::DISMISSED);
   }
+
+  // Drop fullscreen mode so that the user sees the URL bar.
+  web_contents->ForSecurityDropFullscreen();
 
   ShowNativeFileSystemDirectoryAccessConfirmationDialog(
       origin, path, std::move(callback), web_contents);
