@@ -110,7 +110,7 @@
   {
     "name": "app-management",
     "owners": [ "//chrome/browser/resources/app_management/OWNERS" ],
-    "expiry_milestone": 79
+    "expiry_milestone": 81
   },
   {
     "name": "app-service-ash",
