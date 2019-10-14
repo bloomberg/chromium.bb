@@ -19,6 +19,7 @@ from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import failures_lib
+from chromite.lib import image_lib
 from chromite.lib import moblab_vm
 from chromite.lib import osutils
 from chromite.lib import portage_util
@@ -343,19 +344,13 @@ def _TestDeployChrome(sdk_cmd, out_board_dir):
 
 def _VMTestChrome(board, sdk_cmd):
   """Run cros_run_test."""
-
-  # This is how  generic_stages.py creates an image_dir_symlink in
-  # GetImageDirSymlink
-  image_dir_symlink = os.path.join(constants.SOURCE_ROOT, 'src', 'build',
-                                   'images', board, 'latest-cbuildbot')
-
+  image_dir_symlink = image_lib.GetLatestImageLink(board)
   image_path = os.path.join(image_dir_symlink,
                             constants.VM_IMAGE_BIN)
 
   # Run VM test for boards where we've built a VM.
   if image_path and os.path.exists(image_path):
     sdk_cmd.VMTest(image_path)
-
 
 
 def ValidateMoblabVmTest(results_dir):

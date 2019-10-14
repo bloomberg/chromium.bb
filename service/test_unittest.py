@@ -18,9 +18,11 @@ from chromite.cbuildbot import commands
 from chromite.cbuildbot import goma_util
 from chromite.lib import build_target_util
 from chromite.lib import chroot_lib
+from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import failures_lib
+from chromite.lib import image_lib
 from chromite.lib import moblab_vm
 from chromite.lib import osutils
 from chromite.lib import portage_util
@@ -306,14 +308,21 @@ class SimpleChromeWorkflowTestTest(cros_test_lib.MockTempDirTestCase):
     self.chrome_sdk_run_mock.assert_any_call(
         ['env', '--null'], run_args=mock.ANY)
     self.chrome_sdk_run_mock.assert_any_call('ninja command', run_args=mock.ANY)
+
+    # Create expected paths from constants so that the tests work inside or
+    # outside the SDK.
+    deploy_chrome_path = os.path.join(constants.SOURCE_ROOT,
+                                      constants.CHROMITE_BIN_SUBDIR,
+                                      'deploy_chrome')
+    image_dir_symlink = image_lib.GetLatestImageLink(self.build_target)
+    image_path = os.path.join(image_dir_symlink, constants.VM_IMAGE_BIN)
+
     self.chrome_sdk_run_mock.assert_any_call(
-        ['/mnt/host/source/chromite/bin/deploy_chrome',
-         '--build-dir', board_out_dir, '--staging-only',
+        [deploy_chrome_path, '--build-dir', board_out_dir, '--staging-only',
          '--staging-dir', mock.ANY])
     self.chrome_sdk_run_mock.assert_any_call(
         ['cros_run_test', '--copy-on-write', '--deploy', '--board=board',
-         ('--image-path=/mnt/host/source/src/build/images/'
-          'board/latest-cbuildbot/chromiumos_qemu_image.bin'),
+         ('--image-path=%s' % (image_path)),
          '--build-dir=out_board/Release'])
 
     # Verify goma mock was started and stopped.
