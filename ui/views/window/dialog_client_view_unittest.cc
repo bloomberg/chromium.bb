@@ -68,12 +68,6 @@ class DialogClientViewTest : public test::WidgetTest,
     return std::move(next_extra_view_);
   }
 
-  bool GetExtraViewPadding(int* padding) override {
-    if (extra_view_padding_)
-      *padding = *extra_view_padding_;
-    return extra_view_padding_.get() != nullptr;
-  }
-
   int GetDialogButtons() const override { return dialog_buttons_; }
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override {
     return button == ui::DIALOG_BUTTON_CANCEL && !cancel_label_.empty()
@@ -115,13 +109,6 @@ class DialogClientViewTest : public test::WidgetTest,
     EXPECT_FALSE(next_extra_view_);
   }
 
-  // Sets the extra view padding.
-  void SetExtraViewPadding(int padding) {
-    DCHECK(!extra_view_padding_);
-    extra_view_padding_ = std::make_unique<int>(padding);
-    DialogModelChanged();
-  }
-
   void SetSizeConstraints(const gfx::Size& min_size,
                           const gfx::Size& preferred_size,
                           const gfx::Size& max_size) {
@@ -159,8 +146,6 @@ class DialogClientViewTest : public test::WidgetTest,
 
   // Set and cleared in SetExtraView().
   std::unique_ptr<View> next_extra_view_;
-
-  std::unique_ptr<int> extra_view_padding_;
 
   gfx::Size preferred_size_;
   gfx::Size min_size_;
@@ -297,22 +282,17 @@ TEST_F(DialogClientViewTest, LayoutWithButtons) {
   SetExtraView(extra_view);
   CheckContentsIsSetToPreferredSize();
   EXPECT_GT(client_view()->bounds().height(), no_extra_view_size.height());
-  const int width_of_dialog_small_padding = client_view()->width();
 
-  // Try with an adjusted padding for the extra view.
-  SetExtraViewPadding(250);
-  CheckContentsIsSetToPreferredSize();
-  EXPECT_GT(client_view()->bounds().width(), width_of_dialog_small_padding);
-
+  // The dialog is bigger with the extra view than without it.
   const gfx::Size with_extra_view_size = client_view()->size();
   EXPECT_NE(no_extra_view_size, with_extra_view_size);
 
-  // Hiding the extra view removes it as well as the extra padding.
+  // Hiding the extra view removes it.
   extra_view->SetVisible(false);
   CheckContentsIsSetToPreferredSize();
   EXPECT_EQ(no_extra_view_size, client_view()->size());
 
-  // Making it visible again adds it all back.
+  // Making it visible again adds it back.
   extra_view->SetVisible(true);
   CheckContentsIsSetToPreferredSize();
   EXPECT_EQ(with_extra_view_size, client_view()->size());
