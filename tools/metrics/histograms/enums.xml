@@ -32279,6 +32279,17 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="7" label="Cache write failed"/>
 </enum>
 
+<enum name="InstallDateBackfill">
+  <int value="0"
+      label="Valid install date was already persisted (no backfill)"/>
+  <int value="1"
+      label="Unable to get a valid install date from Android PackageManager
+             (no backfill)"/>
+  <int value="2"
+      label="Backfilled the install date by looking up a value in
+             PackageManager"/>
+</enum>
+
 <enum name="InstallStatus">
   <int value="0" label="FIRST_INSTALL_SUCCESS"/>
   <int value="1" label="INSTALL_REPAIRED"/>
