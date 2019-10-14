@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill_assistant/browser/actions/autofill_action.h"
+#include "components/autofill_assistant/browser/actions/use_credit_card_action.h"
 
 #include <utility>
 
@@ -30,7 +30,7 @@ using ::testing::NotNull;
 using ::testing::Return;
 using ::testing::SaveArgPointee;
 
-class AutofillActionTest : public testing::Test {
+class UseCreditCardActionTest : public testing::Test {
  public:
   void SetUp() override {
     // Build two identical autofill profiles. One for the memory, one for the
@@ -68,29 +68,11 @@ class AutofillActionTest : public testing::Test {
   const char* const kLastName = "LastName";
   const char* const kEmail = "foobar@gmail.com";
 
-  ActionProto CreateUseAddressAction() {
-    ActionProto action;
-    UseAddressProto* use_address = action.mutable_use_address();
-    use_address->set_name(kAddressName);
-    use_address->mutable_form_field_element()->add_selectors(kFakeSelector);
-    return action;
-  }
-
   ActionProto CreateUseCreditCardAction() {
     ActionProto action;
     action.mutable_use_card()->mutable_form_field_element()->add_selectors(
         kFakeSelector);
     return action;
-  }
-
-  UseAddressProto::RequiredField* AddRequiredField(
-      ActionProto* action,
-      UseAddressProto::RequiredField::AddressField type,
-      std::string selector) {
-    auto* required_field = action->mutable_use_address()->add_required_fields();
-    required_field->set_address_field(type);
-    required_field->mutable_element()->add_selectors(selector);
-    return required_field;
   }
 
   UseCreditCardProto::RequiredField* AddRequiredField(
@@ -111,7 +93,7 @@ class AutofillActionTest : public testing::Test {
   }
 
   ProcessedActionStatusProto ProcessAction(const ActionProto& action_proto) {
-    AutofillAction action(&mock_action_delegate_, action_proto);
+    UseCreditCardAction action(&mock_action_delegate_, action_proto);
     ProcessedActionProto capture;
     EXPECT_CALL(callback_, Run(_)).WillOnce(SaveArgPointee<0>(&capture));
     action.ProcessAction(callback_.Get());
@@ -127,189 +109,13 @@ class AutofillActionTest : public testing::Test {
   autofill::AutofillProfile autofill_profile_;
 };
 
-#if !defined(OS_ANDROID)
-#define MAYBE_FillManually FillManually
-#else
-#define MAYBE_FillManually DISABLED_FillManually
-#endif
-TEST_F(AutofillActionTest, MAYBE_FillManually) {
-  InSequence seq;
-
-  ActionProto action_proto = CreateUseAddressAction();
-  action_proto.mutable_use_address()->set_prompt(kSelectionPrompt);
-
-  EXPECT_EQ(ProcessedActionStatusProto::MANUAL_FALLBACK,
-            ProcessAction(action_proto));
-}
-
-TEST_F(AutofillActionTest, NoSelectedAddress) {
-  InSequence seq;
-
-  ActionProto action_proto = CreateUseAddressAction();
-  action_proto.mutable_use_address()->set_prompt(kSelectionPrompt);
-
-  client_memory_.set_selected_address(kAddressName, nullptr);
-
-  EXPECT_EQ(ProcessedActionStatusProto::PRECONDITION_FAILED,
-            ProcessAction(action_proto));
-}
-
-TEST_F(AutofillActionTest, PreconditionFailedPopulatesUnexpectedErrorInfo) {
-  InSequence seq;
-
-  ActionProto action_proto = CreateUseAddressAction();
-  action_proto.mutable_use_address()->set_prompt(kSelectionPrompt);
-  client_memory_.set_selected_address(kAddressName, nullptr);
-  client_memory_.set_selected_address("one_more", nullptr);
-
-  AutofillAction action(&mock_action_delegate_, action_proto);
-
-  ProcessedActionProto processed_action;
-  EXPECT_CALL(callback_, Run(_)).WillOnce(SaveArgPointee<0>(&processed_action));
-  action.ProcessAction(callback_.Get());
-
-  EXPECT_EQ(ProcessedActionStatusProto::PRECONDITION_FAILED,
-            processed_action.status());
-  const auto& error_info =
-      processed_action.status_details().autofill_error_info();
-  EXPECT_EQ(base::JoinString({kAddressName, "one_more"}, ","),
-            error_info.client_memory_address_key_names());
-  EXPECT_EQ(kAddressName, error_info.address_key_requested());
-  EXPECT_TRUE(error_info.address_pointee_was_null());
-}
-
-TEST_F(AutofillActionTest, ShortWaitForElementVisible) {
-  EXPECT_CALL(
-      mock_action_delegate_,
-      OnShortWaitForElement(Selector({kFakeSelector}).MustBeVisible(), _))
-      .WillOnce(RunOnceCallback<1>(true));
-
-  ActionProto action_proto = CreateUseAddressAction();
-  // Autofill succeeds.
-  EXPECT_CALL(mock_action_delegate_, OnFillAddressForm(NotNull(), _, _))
-      .WillOnce(RunOnceCallback<2>(OkClientStatus()));
-
-  // Validation succeeds.
-  ON_CALL(mock_web_controller_, OnGetFieldValue(_, _))
-      .WillByDefault(RunOnceCallback<1>(true, "not empty"));
-
-  EXPECT_EQ(ProcessedActionStatusProto::ACTION_APPLIED,
-            ProcessAction(action_proto));
-}
-
-TEST_F(AutofillActionTest, ValidationSucceeds) {
-  InSequence seq;
-
-  ActionProto action_proto = CreateUseAddressAction();
-  AddRequiredField(&action_proto, UseAddressProto::RequiredField::FIRST_NAME,
-                   "#first_name");
-  AddRequiredField(&action_proto, UseAddressProto::RequiredField::LAST_NAME,
-                   "#last_name");
-  AddRequiredField(&action_proto, UseAddressProto::RequiredField::EMAIL,
-                   "#email");
-
-  // Autofill succeeds.
-  EXPECT_CALL(mock_action_delegate_,
-              OnFillAddressForm(
-                  NotNull(), Eq(Selector({kFakeSelector}).MustBeVisible()), _))
-      .WillOnce(RunOnceCallback<2>(OkClientStatus()));
-
-  // Validation succeeds.
-  ON_CALL(mock_web_controller_, OnGetFieldValue(_, _))
-      .WillByDefault(RunOnceCallback<1>(true, "not empty"));
-
-  EXPECT_EQ(ProcessedActionStatusProto::ACTION_APPLIED,
-            ProcessAction(action_proto));
-}
-
-TEST_F(AutofillActionTest, FallbackFails) {
-  InSequence seq;
-
-  ActionProto action_proto = CreateUseAddressAction();
-  AddRequiredField(&action_proto, UseAddressProto::RequiredField::FIRST_NAME,
-                   "#first_name");
-  AddRequiredField(&action_proto, UseAddressProto::RequiredField::LAST_NAME,
-                   "#last_name");
-  AddRequiredField(&action_proto, UseAddressProto::RequiredField::EMAIL,
-                   "#email");
-
-  // Autofill succeeds.
-  EXPECT_CALL(mock_action_delegate_,
-              OnFillAddressForm(
-                  NotNull(), Eq(Selector({kFakeSelector}).MustBeVisible()), _))
-      .WillOnce(RunOnceCallback<2>(OkClientStatus()));
-
-  // Validation fails when getting FIRST_NAME.
-  EXPECT_CALL(mock_web_controller_,
-              OnGetFieldValue(Eq(Selector({"#email"})), _))
-      .WillOnce(RunOnceCallback<1>(true, "not empty"));
-  EXPECT_CALL(mock_web_controller_,
-              OnGetFieldValue(Eq(Selector({"#first_name"})), _))
-      .WillOnce(RunOnceCallback<1>(true, ""));
-  EXPECT_CALL(mock_web_controller_,
-              OnGetFieldValue(Eq(Selector({"#last_name"})), _))
-      .WillOnce(RunOnceCallback<1>(true, "not empty"));
-
-  // Fallback fails.
-  EXPECT_CALL(mock_action_delegate_,
-              OnSetFieldValue(Eq(Selector({"#first_name"})), kFirstName, _))
-      .WillOnce(RunOnceCallback<2>(ClientStatus(OTHER_ACTION_STATUS)));
-
-  EXPECT_EQ(ProcessedActionStatusProto::MANUAL_FALLBACK,
-            ProcessAction(action_proto));
-}
-
-TEST_F(AutofillActionTest, FallbackSucceeds) {
-  InSequence seq;
-
-  ActionProto action_proto = CreateUseAddressAction();
-  AddRequiredField(&action_proto, UseAddressProto::RequiredField::FIRST_NAME,
-                   "#first_name");
-  AddRequiredField(&action_proto, UseAddressProto::RequiredField::LAST_NAME,
-                   "#last_name");
-  AddRequiredField(&action_proto, UseAddressProto::RequiredField::EMAIL,
-                   "#email");
-
-  // Autofill succeeds.
-  EXPECT_CALL(mock_action_delegate_,
-              OnFillAddressForm(
-                  NotNull(), Eq(Selector({kFakeSelector}).MustBeVisible()), _))
-      .WillOnce(RunOnceCallback<2>(OkClientStatus()));
-
-  {
-    InSequence seq;
-
-    // Validation fails when getting FIRST_NAME.
-    EXPECT_CALL(mock_web_controller_,
-                OnGetFieldValue(Eq(Selector({"#email"})), _))
-        .WillOnce(RunOnceCallback<1>(true, "not empty"));
-    EXPECT_CALL(mock_web_controller_,
-                OnGetFieldValue(Eq(Selector({"#first_name"})), _))
-        .WillOnce(RunOnceCallback<1>(true, ""));
-    EXPECT_CALL(mock_web_controller_,
-                OnGetFieldValue(Eq(Selector({"#last_name"})), _))
-        .WillOnce(RunOnceCallback<1>(true, "not empty"));
-
-    // Fallback succeeds.
-    EXPECT_CALL(mock_action_delegate_,
-                OnSetFieldValue(Eq(Selector({"#first_name"})), kFirstName, _))
-        .WillOnce(RunOnceCallback<2>(OkClientStatus()));
-
-    // Second validation succeeds.
-    EXPECT_CALL(mock_web_controller_, OnGetFieldValue(_, _))
-        .WillRepeatedly(RunOnceCallback<1>(true, "not empty"));
-  }
-  EXPECT_EQ(ProcessedActionStatusProto::ACTION_APPLIED,
-            ProcessAction(action_proto));
-}
-
-TEST_F(AutofillActionTest, FillCreditCardNoCardSelected) {
+TEST_F(UseCreditCardActionTest, FillCreditCardNoCardSelected) {
   ActionProto action = CreateUseCreditCardAction();
   EXPECT_EQ(ProcessedActionStatusProto::PRECONDITION_FAILED,
             ProcessAction(action));
 }
 
-TEST_F(AutofillActionTest, FillCreditCard) {
+TEST_F(UseCreditCardActionTest, FillCreditCard) {
   ActionProto action = CreateUseCreditCardAction();
 
   autofill::CreditCard credit_card;
@@ -325,7 +131,7 @@ TEST_F(AutofillActionTest, FillCreditCard) {
   EXPECT_EQ(ProcessedActionStatusProto::ACTION_APPLIED, ProcessAction(action));
 }
 
-TEST_F(AutofillActionTest, FillCreditCardRequiredFieldsFilled) {
+TEST_F(UseCreditCardActionTest, FillCreditCardRequiredFieldsFilled) {
   // Validation succeeds.
   ON_CALL(mock_web_controller_, OnGetFieldValue(_, _))
       .WillByDefault(RunOnceCallback<1>(true, "not empty"));
@@ -351,7 +157,7 @@ TEST_F(AutofillActionTest, FillCreditCardRequiredFieldsFilled) {
   EXPECT_EQ(ProcessedActionStatusProto::ACTION_APPLIED, ProcessAction(action));
 }
 
-TEST_F(AutofillActionTest, FillCreditCardWithFallback) {
+TEST_F(UseCreditCardActionTest, FillCreditCardWithFallback) {
   ActionProto action = CreateUseCreditCardAction();
   AddRequiredField(
       &action, UseCreditCardProto::RequiredField::CREDIT_CARD_VERIFICATION_CODE,
@@ -423,7 +229,7 @@ TEST_F(AutofillActionTest, FillCreditCardWithFallback) {
   EXPECT_EQ(ProcessedActionStatusProto::ACTION_APPLIED, ProcessAction(action));
 }
 
-TEST_F(AutofillActionTest, ForcedFallback) {
+TEST_F(UseCreditCardActionTest, ForcedFallback) {
   ActionProto action = CreateUseCreditCardAction();
   auto* cvc_required = AddRequiredField(
       &action, UseCreditCardProto::RequiredField::CREDIT_CARD_VERIFICATION_CODE,

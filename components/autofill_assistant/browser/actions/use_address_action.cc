@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill_assistant/browser/actions/autofill_action.h"
+#include "components/autofill_assistant/browser/actions/use_address_action.h"
 
 #include <utility>
 #include <vector>
@@ -14,7 +14,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
-#include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
 #include "components/autofill_assistant/browser/batch_element_checker.h"
 #include "components/autofill_assistant/browser/client_memory.h"
@@ -22,61 +21,39 @@
 
 namespace autofill_assistant {
 
-AutofillAction::AutofillAction(ActionDelegate* delegate,
-                               const ActionProto& proto)
+UseAddressAction::UseAddressAction(ActionDelegate* delegate,
+                                   const ActionProto& proto)
     : Action(delegate, proto) {
-  if (proto.has_use_address()) {
-    is_autofill_card_ = false;
-    prompt_ = proto.use_address().prompt();
-    name_ = proto.use_address().name();
-    selector_ = Selector(proto.use_address().form_field_element());
-    for (const auto& required_field_proto :
-         proto_.use_address().required_fields()) {
-      required_fields_.emplace_back();
-      RequiredField& required_field = required_fields_.back();
-      required_field.address_field = required_field_proto.address_field();
-      required_field.selector = Selector(required_field_proto.element());
-      required_field.simulate_key_presses =
-          required_field_proto.simulate_key_presses();
-      required_field.delay_in_millisecond =
-          required_field_proto.delay_in_millisecond();
-      required_field.forced = required_field_proto.forced();
-    }
-  } else {
-    DCHECK(proto.has_use_card());
-    is_autofill_card_ = true;
-    prompt_ = proto.use_card().prompt();
-    name_ = "";
-    selector_ = Selector(proto.use_card().form_field_element());
-    for (const auto& required_field_proto :
-         proto_.use_card().required_fields()) {
-      required_fields_.emplace_back();
-      RequiredField& required_field = required_fields_.back();
-      required_field.card_field = required_field_proto.card_field();
-      required_field.selector = Selector(required_field_proto.element());
-      required_field.simulate_key_presses =
-          required_field_proto.simulate_key_presses();
-      required_field.delay_in_millisecond =
-          required_field_proto.delay_in_millisecond();
-      required_field.forced = required_field_proto.forced();
-    }
+  DCHECK(proto.has_use_address());
+  prompt_ = proto.use_address().prompt();
+  name_ = proto.use_address().name();
+  for (const auto& required_field_proto :
+       proto_.use_address().required_fields()) {
+    required_fields_.emplace_back();
+    RequiredField& required_field = required_fields_.back();
+    required_field.address_field = required_field_proto.address_field();
+    required_field.selector = Selector(required_field_proto.element());
+    required_field.simulate_key_presses =
+        required_field_proto.simulate_key_presses();
+    required_field.delay_in_millisecond =
+        required_field_proto.delay_in_millisecond();
+    required_field.forced = required_field_proto.forced();
   }
+
+  selector_ = Selector(proto.use_address().form_field_element());
   selector_.MustBeVisible();
   DCHECK(!selector_.empty());
 }
 
-AutofillAction::~AutofillAction() = default;
+UseAddressAction::~UseAddressAction() = default;
 
-void AutofillAction::InternalProcessAction(
+void UseAddressAction::InternalProcessAction(
     ProcessActionCallback action_callback) {
   process_action_callback_ = std::move(action_callback);
 
   // Ensure data already selected in a previous action.
   auto* client_memory = delegate_->GetClientMemory();
-  bool has_valid_data =
-      (is_autofill_card_ && client_memory->selected_card()) ||
-      (!is_autofill_card_ && client_memory->selected_address(name_));
-  if (!has_valid_data) {
+  if (!client_memory->has_selected_address(name_)) {
     auto* error_info = processed_action_proto_->mutable_status_details()
                            ->mutable_autofill_error_info();
     error_info->set_address_key_requested(name_);
@@ -92,34 +69,28 @@ void AutofillAction::InternalProcessAction(
   FillFormWithData();
 }
 
-void AutofillAction::EndAction(ProcessedActionStatusProto status) {
+void UseAddressAction::EndAction(ProcessedActionStatusProto status) {
   EndAction(ClientStatus(status));
 }
 
-void AutofillAction::EndAction(const ClientStatus& status) {
+void UseAddressAction::EndAction(const ClientStatus& status) {
   UpdateProcessedAction(status);
   std::move(process_action_callback_).Run(std::move(processed_action_proto_));
 }
 
-void AutofillAction::FillFormWithData() {
+void UseAddressAction::FillFormWithData() {
   delegate_->ShortWaitForElement(
-      selector_, base::BindOnce(&AutofillAction::OnWaitForElement,
+      selector_, base::BindOnce(&UseAddressAction::OnWaitForElement,
                                 weak_ptr_factory_.GetWeakPtr()));
 }
 
-void AutofillAction::OnWaitForElement(bool element_found) {
+void UseAddressAction::OnWaitForElement(bool element_found) {
   if (!element_found) {
     EndAction(ELEMENT_RESOLUTION_FAILED);
     return;
   }
 
   DCHECK(!selector_.empty());
-  if (is_autofill_card_) {
-    delegate_->GetFullCard(base::BindOnce(&AutofillAction::OnGetFullCard,
-                                          weak_ptr_factory_.GetWeakPtr()));
-    return;
-  }
-
   DVLOG(3) << "Retrieving address from client memory under '" << name_ << "'.";
   const autofill::AutofillProfile* profile =
       delegate_->GetClientMemory()->selected_address(name_);
@@ -128,30 +99,12 @@ void AutofillAction::OnWaitForElement(bool element_found) {
   fallback_data->profile = profile;
   delegate_->FillAddressForm(
       profile, selector_,
-      base::BindOnce(&AutofillAction::OnFormFilled,
+      base::BindOnce(&UseAddressAction::OnFormFilled,
                      weak_ptr_factory_.GetWeakPtr(), std::move(fallback_data)));
 }
 
-void AutofillAction::OnGetFullCard(std::unique_ptr<autofill::CreditCard> card,
-                                   const base::string16& cvc) {
-  if (!card) {
-    EndAction(GET_FULL_CARD_FAILED);
-    return;
-  }
-
-  auto fallback_data = std::make_unique<FallbackData>();
-  fallback_data->cvc = base::UTF16ToUTF8(cvc);
-  fallback_data->expiration_month = card->expiration_month();
-  fallback_data->expiration_year = card->expiration_year();
-
-  delegate_->FillCardForm(
-      std::move(card), cvc, selector_,
-      base::BindOnce(&AutofillAction::OnFormFilled,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(fallback_data)));
-}
-
-void AutofillAction::OnFormFilled(std::unique_ptr<FallbackData> fallback_data,
-                                  const ClientStatus& status) {
+void UseAddressAction::OnFormFilled(std::unique_ptr<FallbackData> fallback_data,
+                                    const ClientStatus& status) {
   // In case Autofill failed, we fail the action.
   if (!status.ok()) {
     EndAction(status);
@@ -160,7 +113,7 @@ void AutofillAction::OnFormFilled(std::unique_ptr<FallbackData> fallback_data,
   CheckRequiredFields(std::move(fallback_data));
 }
 
-void AutofillAction::CheckRequiredFields(
+void UseAddressAction::CheckRequiredFields(
     std::unique_ptr<FallbackData> fallback_data) {
   // If there are no required fields, finish the action successfully.
   if (required_fields_.empty()) {
@@ -176,23 +129,23 @@ void AutofillAction::CheckRequiredFields(
 
     batch_element_checker_->AddFieldValueCheck(
         required_fields_[i].selector,
-        base::BindOnce(&AutofillAction::OnGetRequiredFieldValue,
+        base::BindOnce(&UseAddressAction::OnGetRequiredFieldValue,
                        weak_ptr_factory_.GetWeakPtr(), i));
   }
   batch_element_checker_->AddAllDoneCallback(
-      base::BindOnce(&AutofillAction::OnCheckRequiredFieldsDone,
+      base::BindOnce(&UseAddressAction::OnCheckRequiredFieldsDone,
                      weak_ptr_factory_.GetWeakPtr(), std::move(fallback_data)));
   delegate_->RunElementChecks(batch_element_checker_.get());
 }
 
-void AutofillAction::OnGetRequiredFieldValue(size_t required_fields_index,
-                                             bool exists,
-                                             const std::string& value) {
+void UseAddressAction::OnGetRequiredFieldValue(size_t required_fields_index,
+                                               bool exists,
+                                               const std::string& value) {
   required_fields_[required_fields_index].status =
       value.empty() ? EMPTY : NOT_EMPTY;
 }
 
-void AutofillAction::OnCheckRequiredFieldsDone(
+void UseAddressAction::OnCheckRequiredFieldsDone(
     std::unique_ptr<FallbackData> fallback_data) {
   batch_element_checker_.reset();
 
@@ -237,7 +190,7 @@ void AutofillAction::OnCheckRequiredFieldsDone(
   SetFallbackFieldValuesSequentially(0, std::move(fallback_data));
 }
 
-void AutofillAction::SetFallbackFieldValuesSequentially(
+void UseAddressAction::SetFallbackFieldValuesSequentially(
     size_t required_fields_index,
     std::unique_ptr<FallbackData> fallback_data) {
   // Skip non-empty fields.
@@ -271,12 +224,12 @@ void AutofillAction::SetFallbackFieldValuesSequentially(
   delegate_->SetFieldValue(
       required_field.selector, fallback_value,
       required_field.simulate_key_presses, required_field.delay_in_millisecond,
-      base::BindOnce(&AutofillAction::OnSetFallbackFieldValue,
+      base::BindOnce(&UseAddressAction::OnSetFallbackFieldValue,
                      weak_ptr_factory_.GetWeakPtr(), required_fields_index,
                      std::move(fallback_data)));
 }
 
-void AutofillAction::OnSetFallbackFieldValue(
+void UseAddressAction::OnSetFallbackFieldValue(
     size_t required_fields_index,
     std::unique_ptr<FallbackData> fallback_data,
     const ClientStatus& status) {
@@ -289,7 +242,7 @@ void AutofillAction::OnSetFallbackFieldValue(
                                      std::move(fallback_data));
 }
 
-std::string AutofillAction::GetFallbackValue(
+std::string UseAddressAction::GetFallbackValue(
     const RequiredField& required_field,
     const FallbackData& fallback_data) {
   if (required_field.address_field !=
@@ -298,44 +251,12 @@ std::string AutofillAction::GetFallbackValue(
     return base::UTF16ToUTF8(GetAddressFieldValue(
         fallback_data.profile, required_field.address_field));
   }
-  if (required_field.card_field !=
-      UseCreditCardProto::RequiredField::UNDEFINED) {
-    return GetCreditCardFieldValue(required_field.card_field, fallback_data);
-  }
+
   NOTREACHED() << "Unsupported field type for " << required_field.selector;
   return "";
 }
 
-std::string AutofillAction::GetCreditCardFieldValue(
-    UseCreditCardProto::RequiredField::CardField field,
-    const FallbackData& fallback_data) {
-  switch (field) {
-    case UseCreditCardProto::RequiredField::CREDIT_CARD_VERIFICATION_CODE:
-      return fallback_data.cvc;
-
-    case UseCreditCardProto::RequiredField::CREDIT_CARD_EXP_MONTH:
-      if (fallback_data.expiration_month > 0)
-        return base::StringPrintf("%02d", fallback_data.expiration_month);
-      break;
-
-    case UseCreditCardProto::RequiredField::CREDIT_CARD_EXP_2_DIGIT_YEAR:
-      if (fallback_data.expiration_year > 0)
-        return base::StringPrintf("%02d", fallback_data.expiration_year % 100);
-      break;
-
-    case UseCreditCardProto::RequiredField::CREDIT_CARD_EXP_4_DIGIT_YEAR:
-      if (fallback_data.expiration_year > 0)
-        return base::NumberToString(fallback_data.expiration_year);
-      break;
-
-    case UseCreditCardProto::RequiredField::UNDEFINED:
-      NOTREACHED();
-      return "";
-  }
-  return "";
-}
-
-base::string16 AutofillAction::GetAddressFieldValue(
+base::string16 UseAddressAction::GetAddressFieldValue(
     const autofill::AutofillProfile* profile,
     const UseAddressProto::RequiredField::AddressField& address_field) {
   // TODO(crbug.com/806868): Get the actual application locale.

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ACTIONS_AUTOFILL_ACTION_H_
-#define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ACTIONS_AUTOFILL_ACTION_H_
+#ifndef COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ACTIONS_USE_ADDRESS_ACTION_H_
+#define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ACTIONS_USE_ADDRESS_ACTION_H_
 
 #include <memory>
 #include <string>
@@ -17,17 +17,16 @@
 
 namespace autofill {
 class AutofillProfile;
-class CreditCard;
 }  // namespace autofill
 
 namespace autofill_assistant {
 class ClientStatus;
 
-// An action to autofill a form using a local address or credit card.
-class AutofillAction : public Action {
+// An action to autofill a form using a local address.
+class UseAddressAction : public Action {
  public:
-  explicit AutofillAction(ActionDelegate* delegate, const ActionProto& proto);
-  ~AutofillAction() override;
+  explicit UseAddressAction(ActionDelegate* delegate, const ActionProto& proto);
+  ~UseAddressAction() override;
 
  private:
   enum FieldValueStatus { UNKNOWN, EMPTY, NOT_EMPTY };
@@ -38,10 +37,7 @@ class AutofillAction : public Action {
     bool forced = false;
     FieldValueStatus status = UNKNOWN;
 
-    // When filling in credit card, card_field must be set. When filling in
-    // address, address_field must be set.
-    UseCreditCardProto::RequiredField::CardField card_field =
-        UseCreditCardProto::RequiredField::UNDEFINED;
+    // When filling in address, address_field must be set.
     UseAddressProto::RequiredField::AddressField address_field =
         UseAddressProto::RequiredField::UNDEFINED;
 
@@ -61,11 +57,6 @@ class AutofillAction : public Action {
     // Profile for UseAddress fallback.
     const autofill::AutofillProfile* profile = nullptr;
 
-    // Card information for UseCreditCard fallback.
-    std::string cvc;
-    int expiration_year = 0;
-    int expiration_month = 0;
-
    private:
     DISALLOW_COPY_AND_ASSIGN(FallbackData);
   };
@@ -77,15 +68,11 @@ class AutofillAction : public Action {
   void EndAction(const ClientStatus& status);
 
   // Fill the form using data in client memory. Return whether filling succeeded
-  // or not through OnAddressFormFilled or OnCardFormFilled.
+  // or not through OnFormFilled.
   void FillFormWithData();
   void OnWaitForElement(bool element_found);
 
-  // Called after getting full credit card with its cvc.
-  void OnGetFullCard(std::unique_ptr<autofill::CreditCard> card,
-                     const base::string16& cvc);
-
-  // Called when the form, credit card or address, has been filled.
+  // Called when the address has been filled.
   void OnFormFilled(std::unique_ptr<FallbackData> fallback_data,
                     const ClientStatus& status);
 
@@ -113,12 +100,6 @@ class AutofillAction : public Action {
   std::string GetFallbackValue(const RequiredField& required_field,
                                const FallbackData& fallback_data);
 
-  // Gets the value of |field| from |fallback_data|, if available. Returns an
-  // empty string otherwise.
-  std::string GetCreditCardFieldValue(
-      UseCreditCardProto::RequiredField::CardField field,
-      const FallbackData& fallback_data);
-
   // Get the value of |address_field| associated to profile |profile|. Return
   // empty string if there is no data available.
   base::string16 GetAddressFieldValue(
@@ -137,21 +118,19 @@ class AutofillAction : public Action {
                                std::unique_ptr<FallbackData> fallback_data,
                                const ClientStatus& status);
 
-  // Usage of the autofilled address. Ignored if autofilling a card.
+  // Usage of the autofilled address.
   std::string name_;
   std::string prompt_;
   Selector selector_;
 
-  // True if autofilling a card, otherwise we are autofilling an address.
-  bool is_autofill_card_;
   std::vector<RequiredField> required_fields_;
 
   std::unique_ptr<BatchElementChecker> batch_element_checker_;
 
   ProcessActionCallback process_action_callback_;
-  base::WeakPtrFactory<AutofillAction> weak_ptr_factory_{this};
+  base::WeakPtrFactory<UseAddressAction> weak_ptr_factory_{this};
 
-  DISALLOW_COPY_AND_ASSIGN(AutofillAction);
+  DISALLOW_COPY_AND_ASSIGN(UseAddressAction);
 };
 
 }  // namespace autofill_assistant

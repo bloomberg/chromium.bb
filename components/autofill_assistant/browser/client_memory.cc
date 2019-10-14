@@ -20,7 +20,7 @@ const autofill::CreditCard* ClientMemory::selected_card() const {
 }
 
 bool ClientMemory::has_selected_card() const {
-  return selected_card_.has_value();
+  return selected_card() != nullptr;
 }
 
 const autofill::AutofillProfile* ClientMemory::selected_address(
@@ -44,7 +44,7 @@ void ClientMemory::set_selected_address(
 }
 
 bool ClientMemory::has_selected_address(const std::string& name) const {
-  return selected_addresses_.find(name) != selected_addresses_.end();
+  return selected_address(name) != nullptr;
 }
 
 void ClientMemory::set_selected_login(const WebsiteLoginFetcher::Login& login) {
@@ -52,7 +52,7 @@ void ClientMemory::set_selected_login(const WebsiteLoginFetcher::Login& login) {
 }
 
 bool ClientMemory::has_selected_login() const {
-  return selected_login_.has_value();
+  return selected_login() != nullptr;
 }
 
 const WebsiteLoginFetcher::Login* ClientMemory::selected_login() const {
