@@ -120,8 +120,8 @@ class DlcGeneratorTest(cros_test_lib.RunCommandTempDirTestCase):
 
     expected_lsb_release = '\n'.join([
         'DLC_ID=%s' % _ID,
-        'DLC_NAME=%s' % _NAME,
         'DLC_PACKAGE=%s' % _PACKAGE,
+        'DLC_NAME=%s' % _NAME,
         'DLC_RELEASE_APPID=foo_%s' % _ID,
     ]) + '\n'
 
