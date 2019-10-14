@@ -903,8 +903,6 @@ bool WebContentsImpl::OnMessageReceived(RenderFrameHostImpl* render_frame_host,
   IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(WebContentsImpl, message, render_frame_host)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DomOperationResponse,
                         OnDomOperationResponse)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_DidChangeThemeColor,
-                        OnThemeColorChanged)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidFinishLoad, OnDidFinishLoad)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidLoadResourceFromMemoryCache,
                         OnDidLoadResourceFromMemoryCache)
@@ -4629,8 +4627,9 @@ bool WebContentsImpl::CanOverscrollContent() const {
   return false;
 }
 
-void WebContentsImpl::OnThemeColorChanged(RenderFrameHostImpl* source,
-                                          base::Optional<SkColor> theme_color) {
+void WebContentsImpl::OnThemeColorChanged(
+    RenderFrameHostImpl* source,
+    const base::Optional<SkColor>& theme_color) {
   if (source != GetMainFrame()) {
     // Only the main frame may control the theme.
     return;

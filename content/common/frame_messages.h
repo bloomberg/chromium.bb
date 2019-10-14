@@ -1328,10 +1328,6 @@ IPC_SYNC_MESSAGE_ROUTED1_2(FrameHostMsg_RunBeforeUnloadConfirm,
                            bool /* out - success */,
                            base::string16 /* out - This is ignored.*/)
 
-// Notify browser the theme color has been changed.
-IPC_MESSAGE_ROUTED1(FrameHostMsg_DidChangeThemeColor,
-                    base::Optional<SkColor> /* theme_color */)
-
 // Register a new handler for URL requests with the given scheme.
 IPC_MESSAGE_ROUTED4(FrameHostMsg_RegisterProtocolHandler,
                     std::string /* scheme */,

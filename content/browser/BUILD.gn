@@ -187,6 +187,7 @@ jumbo_source_set("browser") {
     "//services/viz/public/cpp/gpu",
     "//services/viz/public/mojom",
     "//skia",
+    "//skia/public/mojom",
     "//sql",
     "//storage/browser",
     "//storage/common",

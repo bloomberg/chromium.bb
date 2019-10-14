@@ -3375,6 +3375,11 @@ void RenderFrameHostImpl::VisibilityChanged(
   UpdateFrameFrozenState();
 }
 
+void RenderFrameHostImpl::DidChangeThemeColor(
+    const base::Optional<SkColor>& theme_color) {
+  delegate_->OnThemeColorChanged(this, theme_color);
+}
+
 void RenderFrameHostImpl::SetCommitCallbackInterceptorForTesting(
     CommitCallbackInterceptor* interceptor) {
   // This DCHECK's aims to avoid unexpected replacement of an interceptor.

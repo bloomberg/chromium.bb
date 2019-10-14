@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/i18n/rtl.h"
+#include "base/optional.h"
 #include "build/build_config.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "content/browser/webui/web_ui_impl.h"
@@ -31,6 +32,7 @@
 #include "third_party/blink/public/common/frame/blocked_navigation_types.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_mode.h"
 #include "ui/base/window_open_disposition.h"
 
@@ -448,6 +450,11 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // exists.
   virtual RenderFrameHostImpl* GetMainFrameForInnerDelegate(
       FrameTreeNode* frame_tree_node);
+
+  // Notifies that the given frame has changed theme color.
+  virtual void OnThemeColorChanged(RenderFrameHostImpl* source,
+                                   const base::Optional<SkColor>& theme_color) {
+  }
 
  protected:
   virtual ~RenderFrameHostDelegate() {}
