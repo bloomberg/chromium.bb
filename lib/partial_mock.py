@@ -575,23 +575,39 @@ class PartialCmdMock(PartialMock):
         returncode=returncode, output=output, error=error)
     self._results[mock_attr].SetDefaultResult(result, side_effect)
 
+  # TODO(crbug.com/1006587): Drop redundant arguments & backwards compat APIs.
   @CheckAttr
-  def AddCmdResult(self, cmd, returncode=0, output='', error='',
-                   kwargs=None, strict=False, side_effect=None, mock_attr=None):
+  def AddCmdResult(self, cmd, returncode=0, output=None, error=None,
+                   stdout=None, stderr=None, kwargs=None, strict=False,
+                   side_effect=None, mock_attr=None):
     """Specify the result to simulate for a given command.
 
     Args:
       cmd: The command string or list to record a result for.
       returncode: The returncode of the command (on the command line).
-      output: The stdout output of the command.
-      error: The stderr output of the command.
+      output: (Deprecated) Alias to stdout.
+      error: (Deprecated) Alias to stderr.
+      stdout: The stdout output of the command.
+      stderr: The stderr output of the command.
       kwargs: Keyword arguments that the function needs to be invoked with.
       strict: Defaults to False.  See MockedCallResults.AddResultForParams.
       side_effect: See MockedCallResults.AddResultForParams
       mock_attr: Which attributes's mock is being referenced.
     """
+    if stdout is None:
+      stdout = output
+    elif output is not None:
+      raise TypeError('Only specify |stdout|, not |output|')
+    if stdout is None:
+      stdout = ''
+    if stderr is None:
+      stderr = error
+    elif error is not None:
+      raise TypeError('Only specify |stderr|, not |error|')
+    if stderr is None:
+      stderr = ''
     result = cros_build_lib.CommandResult(
-        returncode=returncode, output=output, error=error)
+        returncode=returncode, stdout=stdout, stderr=stderr)
     self._results[mock_attr].AddResultForParams(
         (cmd,), result, kwargs=kwargs, side_effect=side_effect, strict=strict)
 
