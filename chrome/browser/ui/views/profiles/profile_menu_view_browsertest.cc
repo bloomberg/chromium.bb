@@ -600,7 +600,7 @@ INSTANTIATE_TEST_SUITE_P(,
 // the correct action of the buttons in the profile menu. This is done by
 // advancing the focus to each button and simulating a click. It is expected
 // that each button records a histogram sample from
-// |ProfileMenuView::ActionableItem|.
+// |ProfileMenuViewBase::ActionableItem|.
 //
 // Subclasses have to implement |GetExpectedActionableItemAtIndex|. The test
 // itself should contain the setup and a call to |RunTest|. Example test suite
@@ -608,7 +608,7 @@ INSTANTIATE_TEST_SUITE_P(,
 //
 // class ProfileMenuClickTest_WithPrimaryAccount : public ProfileMenuClickTest {
 //   ...
-//   ProfileMenuView::ActionableItem GetExpectedActionableItemAtIndex(
+//   ProfileMenuViewBase::ActionableItem GetExpectedActionableItemAtIndex(
 //      size_t index) override {
 //     return ...;
 //   }
@@ -643,7 +643,7 @@ class ProfileMenuClickTest : public SyncTest,
         ProfileSyncServiceHarness::SigninType::FAKE_SIGNIN);
   }
 
-  virtual ProfileMenuView::ActionableItem GetExpectedActionableItemAtIndex(
+  virtual ProfileMenuViewBase::ActionableItem GetExpectedActionableItemAtIndex(
       size_t index) = 0;
 
   // This should be called in the test body.
@@ -737,40 +737,41 @@ class ProfileMenuClickTest : public SyncTest,
   DISALLOW_COPY_AND_ASSIGN(ProfileMenuClickTest);
 };
 
-#define PROFILE_MENU_CLICK_TEST(actionable_item_list, test_case_name) \
-  class test_case_name : public ProfileMenuClickTest {                \
-   public:                                                            \
-    test_case_name() = default;                                       \
-                                                                      \
-    ProfileMenuView::ActionableItem GetExpectedActionableItemAtIndex( \
-        size_t index) override {                                      \
-      return actionable_item_list[index];                             \
-    }                                                                 \
-                                                                      \
-    DISALLOW_COPY_AND_ASSIGN(test_case_name);                         \
-  };                                                                  \
-                                                                      \
-  INSTANTIATE_TEST_SUITE_P(                                           \
-      , test_case_name,                                               \
-      ::testing::Range(size_t(0), base::size(actionable_item_list))); \
-                                                                      \
+#define PROFILE_MENU_CLICK_TEST(actionable_item_list, test_case_name)     \
+  class test_case_name : public ProfileMenuClickTest {                    \
+   public:                                                                \
+    test_case_name() = default;                                           \
+                                                                          \
+    ProfileMenuViewBase::ActionableItem GetExpectedActionableItemAtIndex( \
+        size_t index) override {                                          \
+      return actionable_item_list[index];                                 \
+    }                                                                     \
+                                                                          \
+    DISALLOW_COPY_AND_ASSIGN(test_case_name);                             \
+  };                                                                      \
+                                                                          \
+  INSTANTIATE_TEST_SUITE_P(                                               \
+      , test_case_name,                                                   \
+      ::testing::Range(size_t(0), base::size(actionable_item_list)));     \
+                                                                          \
   IN_PROC_BROWSER_TEST_P(test_case_name, test_case_name)
 
 // List of actionable items in the correct order as they appear in the menu.
 // If a new button is added to the menu, it should also be added to this list.
-constexpr ProfileMenuView::ActionableItem kActionableItems_MultipleProfiles[] =
-    {ProfileMenuView::ActionableItem::kPasswordsButton,
-     ProfileMenuView::ActionableItem::kCreditCardsButton,
-     ProfileMenuView::ActionableItem::kAddressesButton,
-     ProfileMenuView::ActionableItem::kSigninButton,
-     ProfileMenuView::ActionableItem::kManageProfilesButton,
-     ProfileMenuView::ActionableItem::kOtherProfileButton,
-     ProfileMenuView::ActionableItem::kOtherProfileButton,
-     ProfileMenuView::ActionableItem::kGuestProfileButton,
-     ProfileMenuView::ActionableItem::kAddNewProfileButton,
-     // The first button is added again to finish the cycle and test that
-     // there are no other buttons at the end.
-     ProfileMenuView::ActionableItem::kPasswordsButton};
+constexpr ProfileMenuViewBase::ActionableItem
+    kActionableItems_MultipleProfiles[] = {
+        ProfileMenuViewBase::ActionableItem::kPasswordsButton,
+        ProfileMenuViewBase::ActionableItem::kCreditCardsButton,
+        ProfileMenuViewBase::ActionableItem::kAddressesButton,
+        ProfileMenuViewBase::ActionableItem::kSigninButton,
+        ProfileMenuViewBase::ActionableItem::kManageProfilesButton,
+        ProfileMenuViewBase::ActionableItem::kOtherProfileButton,
+        ProfileMenuViewBase::ActionableItem::kOtherProfileButton,
+        ProfileMenuViewBase::ActionableItem::kGuestProfileButton,
+        ProfileMenuViewBase::ActionableItem::kAddNewProfileButton,
+        // The first button is added again to finish the cycle and test that
+        // there are no other buttons at the end.
+        ProfileMenuViewBase::ActionableItem::kPasswordsButton};
 
 PROFILE_MENU_CLICK_TEST(kActionableItems_MultipleProfiles,
                         ProfileMenuClickTest_MultipleProfiles) {
@@ -782,18 +783,18 @@ PROFILE_MENU_CLICK_TEST(kActionableItems_MultipleProfiles,
 
 // List of actionable items in the correct order as they appear in the menu.
 // If a new button is added to the menu, it should also be added to this list.
-constexpr ProfileMenuView::ActionableItem kActionableItems_SyncEnabled[] = {
-    ProfileMenuView::ActionableItem::kPasswordsButton,
-    ProfileMenuView::ActionableItem::kCreditCardsButton,
-    ProfileMenuView::ActionableItem::kAddressesButton,
-    ProfileMenuView::ActionableItem::kSyncSettingsButton,
-    ProfileMenuView::ActionableItem::kManageGoogleAccountButton,
-    ProfileMenuView::ActionableItem::kManageProfilesButton,
-    ProfileMenuView::ActionableItem::kGuestProfileButton,
-    ProfileMenuView::ActionableItem::kAddNewProfileButton,
+constexpr ProfileMenuViewBase::ActionableItem kActionableItems_SyncEnabled[] = {
+    ProfileMenuViewBase::ActionableItem::kPasswordsButton,
+    ProfileMenuViewBase::ActionableItem::kCreditCardsButton,
+    ProfileMenuViewBase::ActionableItem::kAddressesButton,
+    ProfileMenuViewBase::ActionableItem::kSyncSettingsButton,
+    ProfileMenuViewBase::ActionableItem::kManageGoogleAccountButton,
+    ProfileMenuViewBase::ActionableItem::kManageProfilesButton,
+    ProfileMenuViewBase::ActionableItem::kGuestProfileButton,
+    ProfileMenuViewBase::ActionableItem::kAddNewProfileButton,
     // The first button is added again to finish the cycle and test that
     // there are no other buttons at the end.
-    ProfileMenuView::ActionableItem::kPasswordsButton};
+    ProfileMenuViewBase::ActionableItem::kPasswordsButton};
 
 PROFILE_MENU_CLICK_TEST(kActionableItems_SyncEnabled,
                         ProfileMenuClickTest_SyncEnabled) {
@@ -807,18 +808,18 @@ PROFILE_MENU_CLICK_TEST(kActionableItems_SyncEnabled,
 
 // List of actionable items in the correct order as they appear in the menu.
 // If a new button is added to the menu, it should also be added to this list.
-constexpr ProfileMenuView::ActionableItem kActionableItems_SyncError[] = {
-    ProfileMenuView::ActionableItem::kPasswordsButton,
-    ProfileMenuView::ActionableItem::kCreditCardsButton,
-    ProfileMenuView::ActionableItem::kAddressesButton,
-    ProfileMenuView::ActionableItem::kSyncErrorButton,
-    ProfileMenuView::ActionableItem::kManageGoogleAccountButton,
-    ProfileMenuView::ActionableItem::kManageProfilesButton,
-    ProfileMenuView::ActionableItem::kGuestProfileButton,
-    ProfileMenuView::ActionableItem::kAddNewProfileButton,
+constexpr ProfileMenuViewBase::ActionableItem kActionableItems_SyncError[] = {
+    ProfileMenuViewBase::ActionableItem::kPasswordsButton,
+    ProfileMenuViewBase::ActionableItem::kCreditCardsButton,
+    ProfileMenuViewBase::ActionableItem::kAddressesButton,
+    ProfileMenuViewBase::ActionableItem::kSyncErrorButton,
+    ProfileMenuViewBase::ActionableItem::kManageGoogleAccountButton,
+    ProfileMenuViewBase::ActionableItem::kManageProfilesButton,
+    ProfileMenuViewBase::ActionableItem::kGuestProfileButton,
+    ProfileMenuViewBase::ActionableItem::kAddNewProfileButton,
     // The first button is added again to finish the cycle and test that
     // there are no other buttons at the end.
-    ProfileMenuView::ActionableItem::kPasswordsButton};
+    ProfileMenuViewBase::ActionableItem::kPasswordsButton};
 
 PROFILE_MENU_CLICK_TEST(kActionableItems_SyncError,
                         ProfileMenuClickTest_SyncError) {
@@ -832,20 +833,20 @@ PROFILE_MENU_CLICK_TEST(kActionableItems_SyncError,
 
 // List of actionable items in the correct order as they appear in the menu.
 // If a new button is added to the menu, it should also be added to this list.
-constexpr ProfileMenuView::ActionableItem
+constexpr ProfileMenuViewBase::ActionableItem
     kActionableItems_WithUnconsentedPrimaryAccount[] = {
-        ProfileMenuView::ActionableItem::kPasswordsButton,
-        ProfileMenuView::ActionableItem::kCreditCardsButton,
-        ProfileMenuView::ActionableItem::kAddressesButton,
-        ProfileMenuView::ActionableItem::kSigninAccountButton,
-        ProfileMenuView::ActionableItem::kManageGoogleAccountButton,
-        ProfileMenuView::ActionableItem::kSignoutButton,
-        ProfileMenuView::ActionableItem::kManageProfilesButton,
-        ProfileMenuView::ActionableItem::kGuestProfileButton,
-        ProfileMenuView::ActionableItem::kAddNewProfileButton,
+        ProfileMenuViewBase::ActionableItem::kPasswordsButton,
+        ProfileMenuViewBase::ActionableItem::kCreditCardsButton,
+        ProfileMenuViewBase::ActionableItem::kAddressesButton,
+        ProfileMenuViewBase::ActionableItem::kSigninAccountButton,
+        ProfileMenuViewBase::ActionableItem::kManageGoogleAccountButton,
+        ProfileMenuViewBase::ActionableItem::kSignoutButton,
+        ProfileMenuViewBase::ActionableItem::kManageProfilesButton,
+        ProfileMenuViewBase::ActionableItem::kGuestProfileButton,
+        ProfileMenuViewBase::ActionableItem::kAddNewProfileButton,
         // The first button is added again to finish the cycle and test that
         // there are no other buttons at the end.
-        ProfileMenuView::ActionableItem::kPasswordsButton};
+        ProfileMenuViewBase::ActionableItem::kPasswordsButton};
 
 // TODO(crbug.com/1012167): Flaky.
 PROFILE_MENU_CLICK_TEST(
@@ -861,7 +862,7 @@ PROFILE_MENU_CLICK_TEST(
   RunTest();
 
   if (GetExpectedActionableItemAtIndex(GetParam()) ==
-      ProfileMenuView::ActionableItem::kSigninAccountButton) {
+      ProfileMenuViewBase::ActionableItem::kSigninAccountButton) {
     // The sync confirmation dialog was opened after clicking the signin button
     // in the profile menu. It needs to be manually dismissed to not cause any
     // crashes during shutdown.
@@ -872,13 +873,13 @@ PROFILE_MENU_CLICK_TEST(
 
 // List of actionable items in the correct order as they appear in the menu.
 // If a new button is added to the menu, it should also be added to this list.
-constexpr ProfileMenuView::ActionableItem kActionableItems_GuestProfile[] = {
-    ProfileMenuView::ActionableItem::kManageProfilesButton,
-    ProfileMenuView::ActionableItem::kOtherProfileButton,
-    ProfileMenuView::ActionableItem::kAddNewProfileButton,
-    // The first button is added again to finish the cycle and test that
-    // there are no other buttons at the end.
-    ProfileMenuView::ActionableItem::kManageProfilesButton};
+constexpr ProfileMenuViewBase::ActionableItem kActionableItems_GuestProfile[] =
+    {ProfileMenuViewBase::ActionableItem::kManageProfilesButton,
+     ProfileMenuViewBase::ActionableItem::kOtherProfileButton,
+     ProfileMenuViewBase::ActionableItem::kAddNewProfileButton,
+     // The first button is added again to finish the cycle and test that
+     // there are no other buttons at the end.
+     ProfileMenuViewBase::ActionableItem::kManageProfilesButton};
 
 PROFILE_MENU_CLICK_TEST(kActionableItems_GuestProfile,
                         ProfileMenuClickTest_GuestProfile) {
@@ -894,17 +895,15 @@ PROFILE_MENU_CLICK_TEST(kActionableItems_GuestProfile,
 
 // List of actionable items in the correct order as they appear in the menu.
 // If a new button is added to the menu, it should also be added to this list.
-constexpr ProfileMenuView::ActionableItem kActionableItems_IncognitoProfile[] =
-    {ProfileMenuView::ActionableItem::kPasswordsButton,
-     ProfileMenuView::ActionableItem::kCreditCardsButton,
-     ProfileMenuView::ActionableItem::kAddressesButton,
-     // The first button is added again to finish the cycle and test that
-     // there are no other buttons at the end.
-     ProfileMenuView::ActionableItem::kPasswordsButton};
+constexpr ProfileMenuViewBase::ActionableItem
+    kActionableItems_IncognitoProfile[] = {
+        ProfileMenuViewBase::ActionableItem::kExitProfileButton,
+        // The first button is added again to finish the cycle and test that
+        // there are no other buttons at the end.
+        ProfileMenuViewBase::ActionableItem::kExitProfileButton};
 
-// TODO(crbug.com/1012167): Flaky.
 PROFILE_MENU_CLICK_TEST(kActionableItems_IncognitoProfile,
-                        DISABLED_ProfileMenuClickTest_IncognitoProfile) {
+                        ProfileMenuClickTest_IncognitoProfile) {
   SetTargetBrowser(CreateIncognitoBrowser(browser()->profile()));
 
   RunTest();
