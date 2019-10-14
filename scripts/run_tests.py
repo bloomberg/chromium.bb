@@ -744,7 +744,12 @@ def main(argv):
 
   # Process list output quickly as it takes no privileges.
   if opts.list:
-    print('\n'.join(sorted(opts.tests or FindTests((constants.CHROMITE_DIR,)))))
+    tests = set(opts.tests or FindTests((constants.CHROMITE_DIR,)))
+    if opts.pyver == 'py3':
+      tests &= PYTHON3_TESTS
+    elif opts.pyver == 'py2':
+      tests -= PYTHON3_TESTS
+    print('\n'.join(sorted(tests)))
     return
 
   # Many of our tests require a valid chroot to run. Make sure it's created
