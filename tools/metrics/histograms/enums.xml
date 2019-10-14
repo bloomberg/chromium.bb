@@ -36014,6 +36014,7 @@ from previous Chrome versions.
   <int value="-885601782" label="enable-contextual-search"/>
   <int value="-884864731" label="WebPaymentsSingleAppUiSkip:enabled"/>
   <int value="-883694393" label="SyncPseudoUSSSupervisedUsers:disabled"/>
+  <int value="-882434910" label="EnableAggregatedMlSearchRanking:enabled"/>
   <int value="-881447505" label="ash-disable-shelf-model-synchronization"/>
   <int value="-881054479" label="WebAssemblyStreaming:disabled"/>
   <int value="-879055117" label="ClipboardContentSetting:enabled"/>
@@ -36093,6 +36094,7 @@ from previous Chrome versions.
   <int value="-787238455" label="OmniboxZeroSuggestionsOnSERP:disabled"/>
   <int value="-780798969" label="disable-single-click-autofill"/>
   <int value="-778126349" label="DownloadsLocationChange:enabled"/>
+  <int value="-778098896" label="EnableAggregatedMlSearchRanking:disabled"/>
   <int value="-777126951" label="FontSrcLocalMatching:enabled"/>
   <int value="-776686417" label="SiteExplorationUi:disabled"/>
   <int value="-775321548" label="UseNewDoodleApi:disabled"/>

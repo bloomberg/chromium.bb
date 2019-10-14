@@ -3124,6 +3124,11 @@ const char kAggregatedMlAppRankingName[] = "Rank suggested apps with ML.";
 const char kAggregatedMlAppRankingDescription[] =
     "Use the aggregated ML model to rank the suggested apps.";
 
+const char kAggregatedMlSearchRankingName[] = "Rank search results with ML.";
+const char kAggregatedMlSearchRankingDescription[] =
+    "Use the aggregated ML model to rank the non-app search results for "
+    "non-empty queries.";
+
 const char kAllowDisableMouseAccelerationName[] =
     "Allow disabling mouse acceleration";
 const char kAllowDisableMouseAccelerationDescription[] =

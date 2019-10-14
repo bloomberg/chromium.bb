@@ -1845,6 +1845,9 @@ extern const char kAcceleratedMjpegDecodeDescription[];
 extern const char kAggregatedMlAppRankingName[];
 extern const char kAggregatedMlAppRankingDescription[];
 
+extern const char kAggregatedMlSearchRankingName[];
+extern const char kAggregatedMlSearchRankingDescription[];
+
 extern const char kAllowDisableMouseAccelerationName[];
 extern const char kAllowDisableMouseAccelerationDescription[];
 

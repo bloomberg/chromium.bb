@@ -44,6 +44,11 @@
     "expiry_milestone": 81
   },
   {
+    "name": "aggregated-ml-search-ranking",
+    "owners": [ "thanhdng", "jiameng" ],
+    "expiry_milestone": 82
+  },
+  {
     "name": "allow-disable-mouse-acceleration",
     "owners": [ "zentaro" ],
     "expiry_milestone": 82
