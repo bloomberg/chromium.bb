@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/ntp/cookie_controls_handler.h"
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
