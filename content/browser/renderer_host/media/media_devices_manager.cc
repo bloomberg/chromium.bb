@@ -1080,6 +1080,9 @@ void MediaDevicesManager::MaybeStopRemovedInputDevices(
   // identify if an audio device was default, it checks whether the old
   // snapshot contained an audio device with the same group ID and device ID
   // matching either "default" or "communications".
+  // NOTE: ChromeOS is able to seamlessly redirect streams to the new default
+  // device, hence the event should not be triggered.
+#if !defined(OS_CHROMEOS)
   for (const auto& removed_audio_device : removed_audio_devices) {
     for (const auto& old_device_info : current_snapshot_[type]) {
       if (removed_audio_device.group_id == old_device_info.group_id &&
@@ -1091,6 +1094,7 @@ void MediaDevicesManager::MaybeStopRemovedInputDevices(
       }
     }
   }
+#endif  // !defined(OS_CHROMEOS)
 }
 
 void MediaDevicesManager::NotifyDeviceChangeSubscribers(
