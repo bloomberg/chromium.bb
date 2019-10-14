@@ -160,8 +160,9 @@ from :3
   def checkstdout(self, expected):
     value = sys.stdout.getvalue()
     sys.stdout.close()
+    # Check that the expected output appears.
     # pylint: disable=no-member
-    self.assertEqual(expected, strip_timestamps(value))
+    self.assertIn(expected, strip_timestamps(value))
 
   @staticmethod
   def CreateGitRepo(git_import, path):
@@ -604,8 +605,9 @@ class ManagedGitWrapperTestCaseMock(unittest.TestCase):
   def checkstdout(self, expected):
     value = sys.stdout.getvalue()
     sys.stdout.close()
+    # Check that the expected output appears.
     # pylint: disable=no-member
-    self.assertEqual(expected, strip_timestamps(value))
+    self.assertIn(expected, strip_timestamps(value))
 
   def setUp(self):
     self.fake_hash_1 = 't0ta11yf4k3'

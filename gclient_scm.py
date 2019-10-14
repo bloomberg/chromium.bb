@@ -1275,6 +1275,7 @@ class GitWrapper(SCMWrapper):
         ['git'] + args, env=env, **kwargs).decode('utf-8')
     if strip:
       ret = ret.strip()
+    self.Print('Finished running: %s %s' % ('git', ' '.join(args)))
     return ret
 
   def _Checkout(self, options, ref, force=False, quiet=None):

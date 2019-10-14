@@ -12,6 +12,7 @@ import codecs
 from contextlib import contextmanager
 import copy
 import ctypes
+from datetime import datetime
 import json
 import optparse
 import os
@@ -152,7 +153,7 @@ def call(*args, **kwargs):  # pragma: no cover
     print('===Injecting Environment Variables===')
     for k, v in sorted(new_env.items()):
       print('%s: %s' % (k, v))
-  print('===Running %s ===' % (' '.join(args),))
+  print('%s ===Running %s ===' % (datetime.now(), ' '.join(args),))
   print('In directory: %s' % cwd)
   start_time = time.time()
   proc = subprocess.Popen(args, **kwargs)
@@ -185,13 +186,15 @@ def call(*args, **kwargs):  # pragma: no cover
   elapsed_time = ((time.time() - start_time) / 60.0)
   outval = out.getvalue()
   if code:
-    print('===Failed in %.1f mins of %s ===' % (elapsed_time, ' '.join(args)))
+    print('%s ===Failed in %.1f mins of %s ===' %
+          (datetime.now(), elapsed_time, ' '.join(args)))
     print()
     raise SubprocessFailed('%s failed with code %d in %s.' %
                            (' '.join(args), code, cwd),
                            code, outval)
 
-  print('===Succeeded in %.1f mins of %s ===' % (elapsed_time, ' '.join(args)))
+  print('%s ===Succeeded in %.1f mins of %s ===' %
+        (datetime.now(), elapsed_time, ' '.join(args)))
   print()
   return outval
 
