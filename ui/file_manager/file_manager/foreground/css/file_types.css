@@ -2,6 +2,10 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
+/* TODO(crbug.com/992819): unify root-type-icon and volume-type-icon into one
+ type, called file-type-icon or entry_type-icon say, since there is no real
+ need for the root/volume icon distinction. */
+
 /* Small icons for file types, used in lists and menus. */
 [file-type-icon] {
   background-image: -webkit-image-set(
