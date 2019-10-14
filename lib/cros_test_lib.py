@@ -1582,8 +1582,17 @@ class PopenMock(partial_mock.PartialCmdMock):
     script = os.path.join(self.tempdir, 'mock_cmd.sh')
     stdout = os.path.join(self.tempdir, 'output')
     stderr = os.path.join(self.tempdir, 'error')
-    osutils.WriteFile(stdout, result.output)
-    osutils.WriteFile(stderr, result.error)
+    # This encoding handling might appear a bit wonky, but it's OK, I promise.
+    # The purpose of this mock is to stuff data into files so that we can run a
+    # fake script in place of the real command.  So any cros_build_lib.run()
+    # settings will still be fully checked including encoding.  This code just
+    # takes care of writing the data from AddCmdResult objects.  Those might be
+    # specified in strings or in bytes, but there's no value in forcing all code
+    # to use the same encoding with the mocks.
+    def _MaybeEncode(src):
+      return src.encode('utf-8') if isinstance(src, six.text_type) else src
+    osutils.WriteFile(stdout, _MaybeEncode(result.output), mode='wb')
+    osutils.WriteFile(stderr, _MaybeEncode(result.error), mode='wb')
     osutils.WriteFile(
         script,
         ['#!/bin/bash\n', 'cat %s\n' % stdout, 'cat %s >&2\n' % stderr,

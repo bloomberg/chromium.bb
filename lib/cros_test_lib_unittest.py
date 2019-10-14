@@ -271,3 +271,36 @@ class OutputTestCaseTest(cros_test_lib.OutputTestCase,
     # Verify that output is actually written to the correct files.
     self.assertEqual('foo\n', osutils.ReadFile(stdout_path))
     self.assertEqual('bar\n', osutils.ReadFile(stderr_path))
+
+
+class RunCommandTestCase(cros_test_lib.RunCommandTestCase):
+  """Verify the test case behavior."""
+
+  def testPopenMockEncodingEmptyStrings(self):
+    """Verify our automatic encoding in PopenMock works with default output."""
+    self.rc.AddCmdResult(['/x'])
+    result = cros_build_lib.run(['/x'], capture_output=True)
+    self.assertEqual(b'', result.stdout)
+    self.assertEqual(b'', result.stderr)
+    result = cros_build_lib.run(['/x'], capture_output=True, encoding='utf-8')
+    self.assertEqual('', result.stdout)
+    self.assertEqual('', result.stderr)
+
+  def testPopenMockBinaryData(self):
+    """Verify our automatic encoding in PopenMock works with bytes."""
+    self.rc.AddCmdResult(['/x'], error=b'\xff')
+    result = cros_build_lib.run(['/x'], capture_output=True)
+    self.assertEqual(b'', result.stdout)
+    self.assertEqual(b'\xff', result.stderr)
+    with self.assertRaises(UnicodeDecodeError):
+      cros_build_lib.run(['/x'], capture_output=True, encoding='utf-8')
+
+  def testPopenMockMixedData(self):
+    """Verify our automatic encoding in PopenMock works with mixed data."""
+    self.rc.AddCmdResult(['/x'], error=b'abc\x00', output=u'Yes\u20a0')
+    result = cros_build_lib.run(['/x'], capture_output=True)
+    self.assertEqual(b'Yes\xe2\x82\xa0', result.stdout)
+    self.assertEqual(b'abc\x00', result.stderr)
+    result = cros_build_lib.run(['/x'], capture_output=True, encoding='utf-8')
+    self.assertEqual(u'Yes\u20a0', result.stdout)
+    self.assertEqual(u'abc\x00', result.stderr)
