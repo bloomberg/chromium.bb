@@ -30,7 +30,7 @@
 #define MAX_NUM_ENHANCEMENT_LAYERS 3
 
 struct av1_extracfg {
-  int cpu_used;  // available cpu percentage in 1/16
+  int cpu_used;
   unsigned int enable_auto_alt_ref;
   unsigned int enable_auto_bwd_ref;
   unsigned int noise_sensitivity;

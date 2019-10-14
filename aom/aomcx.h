@@ -173,9 +173,9 @@ enum aome_enc_control_id {
 
   /*!\brief Codec control function to set encoder internal speed settings.
    *
-   * Changes in this value influences, among others, the encoder's selection
-   * of motion estimation methods. Values greater than 0 will increase encoder
-   * speed at the expense of quality.
+   * Changes in this value influences the complexity of algorithms used in
+   * encoding process, values greater than 0 will increase encoder speed at
+   * the expense of quality.
    *
    * \note Valid range: 0..8
    */
