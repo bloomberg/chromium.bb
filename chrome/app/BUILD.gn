@@ -49,7 +49,10 @@ source_set("chrome_dll_resources") {
 
   if (is_win) {
     sources += [ "chrome_dll.rc" ]
-    deps += [ "//printing/buildflags" ]
+    deps += [
+      "//build:branding_buildflags",
+      "//printing/buildflags",
+    ]
   }
 }
 
