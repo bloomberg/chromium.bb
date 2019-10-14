@@ -120,7 +120,7 @@ void NativeFileSystemFileWriterImpl::Write(
     uint64_t offset,
     mojo::PendingRemote<blink::mojom::Blob> data,
     WriteCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   RunWithWritePermission(
       base::BindOnce(&NativeFileSystemFileWriterImpl::WriteImpl,
@@ -137,7 +137,7 @@ void NativeFileSystemFileWriterImpl::WriteStream(
     uint64_t offset,
     mojo::ScopedDataPipeConsumerHandle stream,
     WriteStreamCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   RunWithWritePermission(
       base::BindOnce(&NativeFileSystemFileWriterImpl::WriteStreamImpl,
@@ -152,7 +152,7 @@ void NativeFileSystemFileWriterImpl::WriteStream(
 
 void NativeFileSystemFileWriterImpl::Truncate(uint64_t length,
                                               TruncateCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   RunWithWritePermission(
       base::BindOnce(&NativeFileSystemFileWriterImpl::TruncateImpl,
@@ -165,7 +165,7 @@ void NativeFileSystemFileWriterImpl::Truncate(uint64_t length,
 }
 
 void NativeFileSystemFileWriterImpl::Close(CloseCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   RunWithWritePermission(
       base::BindOnce(&NativeFileSystemFileWriterImpl::CloseImpl,
@@ -181,7 +181,7 @@ void NativeFileSystemFileWriterImpl::WriteImpl(
     uint64_t offset,
     mojo::PendingRemote<blink::mojom::Blob> data,
     WriteCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(GetWritePermissionStatus(),
             blink::mojom::PermissionStatus::GRANTED);
 
@@ -225,7 +225,7 @@ void NativeFileSystemFileWriterImpl::WriteStreamImpl(
     uint64_t offset,
     mojo::ScopedDataPipeConsumerHandle stream,
     WriteStreamCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(GetWritePermissionStatus(),
             blink::mojom::PermissionStatus::GRANTED);
 
@@ -250,7 +250,7 @@ void NativeFileSystemFileWriterImpl::DidWrite(WriteState* state,
                                               base::File::Error result,
                                               int64_t bytes,
                                               bool complete) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   DCHECK(state);
   state->bytes_written += bytes;
@@ -263,7 +263,7 @@ void NativeFileSystemFileWriterImpl::DidWrite(WriteState* state,
 
 void NativeFileSystemFileWriterImpl::TruncateImpl(uint64_t length,
                                                   TruncateCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(GetWritePermissionStatus(),
             blink::mojom::PermissionStatus::GRANTED);
 
@@ -286,7 +286,7 @@ void NativeFileSystemFileWriterImpl::TruncateImpl(uint64_t length,
 }
 
 void NativeFileSystemFileWriterImpl::CloseImpl(CloseCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(GetWritePermissionStatus(),
             blink::mojom::PermissionStatus::GRANTED);
   if (is_closed()) {
@@ -332,6 +332,8 @@ void NativeFileSystemFileWriterImpl::DoAfterWriteCheck(
     return;
   }
 
+  DCHECK_CALLED_ON_VALID_SEQUENCE(file_writer->sequence_checker_);
+
   auto item = std::make_unique<NativeFileSystemWriteItem>();
   item->target_file_path = file_writer->url().path();
   item->full_path = file_writer->swap_url().path();
@@ -373,7 +375,7 @@ void NativeFileSystemFileWriterImpl::DidAfterWriteCheck(
 
 void NativeFileSystemFileWriterImpl::DidPassAfterWriteCheck(
     CloseCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // If the move operation succeeds, the path pointing to the swap file
   // will not exist anymore.
   // In case of error, the swap file URL will point to a valid filesystem
@@ -389,7 +391,7 @@ void NativeFileSystemFileWriterImpl::DidPassAfterWriteCheck(
 void NativeFileSystemFileWriterImpl::DidSwapFileBeforeClose(
     CloseCallback callback,
     base::File::Error result) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (result != base::File::FILE_OK) {
     state_ = State::kCloseError;
     DLOG(ERROR) << "Swap file move operation failed source: "
@@ -421,7 +423,7 @@ void NativeFileSystemFileWriterImpl::DidSwapFileBeforeClose(
 void NativeFileSystemFileWriterImpl::DidAnnotateFile(
     CloseCallback callback,
     quarantine::mojom::QuarantineFileResult result) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   state_ = State::kClosed;
 
   if (result != quarantine::mojom::QuarantineFileResult::OK &&
@@ -441,6 +443,7 @@ void NativeFileSystemFileWriterImpl::DidAnnotateFile(
 
 void NativeFileSystemFileWriterImpl::ComputeHashForSwapFile(
     HashCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(swap_url().type(), storage::kFileSystemTypeNativeLocal);
   base::PostTaskAndReplyWithResult(
       FROM_HERE, {base::ThreadPool(), base::MayBlock()},

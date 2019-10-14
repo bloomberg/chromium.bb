@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
+#include "base/sequence_checker.h"
 #include "base/threading/sequence_bound.h"
 #include "content/browser/native_file_system/native_file_system_manager_impl.h"
 #include "content/common/content_export.h"
@@ -28,10 +29,10 @@ namespace content {
 // such as permission requests. Instances of this class should be owned by the
 // NativeFileSystemManagerImpl instance passed in to the constructor.
 //
-// This class is not thread safe, all methods should only be called on the IO
-// thread. This is because code interacts directly with the file system backends
-// (via storage::FileSystemContext and store::FileSystemOperationRunner, which
-// both expect some of their methods to only be called on the IO thread).
+// This class is not thread safe, all methods must be called from the same
+// sequence. That sequence also has to be the same sequence on which the
+// NativeFileSystemPermissionContext expects to be interacted with, which
+// is the UI thread.
 class CONTENT_EXPORT NativeFileSystemHandleBase
     : public NativeFileSystemPermissionGrant::Observer {
  public:
@@ -109,6 +110,7 @@ class CONTENT_EXPORT NativeFileSystemHandleBase
           storage::FileSystemOperationRunner::*method)(MethodArgs...),
       base::OnceCallback<void(CallbackArgs...)> callback,
       ArgsMinusCallback&&... args) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     // Wrap the passed in callback in one that posts a task back to the current
     // sequence.
     auto wrapped_callback = base::BindOnce(
@@ -147,6 +149,7 @@ class CONTENT_EXPORT NativeFileSystemHandleBase
           storage::FileSystemOperationRunner::*method)(MethodArgs...),
       base::RepeatingCallback<void(CallbackArgs...)> callback,
       ArgsMinusCallback&&... args) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     // Wrap the passed in callback in one that posts a task back to the current
     // sequence.
     auto wrapped_callback = base::BindRepeating(
@@ -174,6 +177,8 @@ class CONTENT_EXPORT NativeFileSystemHandleBase
             std::forward<ArgsMinusCallback>(args)...,
             std::move(wrapped_callback)));
   }
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
  private:
   void DidRequestPermission(
@@ -203,6 +208,7 @@ void NativeFileSystemHandleBase::RunWithWritePermission(
     base::OnceCallback<void(CallbackArgType)> callback,
     base::OnceCallback<void(CallbackArgType)> no_permission_callback,
     CallbackArgType callback_arg) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DoRequestPermission(
       /*writable=*/true,
       base::BindOnce(

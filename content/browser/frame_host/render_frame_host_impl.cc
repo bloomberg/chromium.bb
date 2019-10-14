@@ -4597,9 +4597,10 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
         [](RenderFrameHostImpl* frame,
            mojo::PendingReceiver<blink::mojom::NativeFileSystemManager>
                receiver) {
-          NativeFileSystemManagerImpl::BindReceiverFromUIThread(
-              static_cast<StoragePartitionImpl*>(
-                  frame->GetProcess()->GetStoragePartition()),
+          auto* storage_partition = static_cast<StoragePartitionImpl*>(
+              frame->GetProcess()->GetStoragePartition());
+          auto* manager = storage_partition->GetNativeFileSystemManager();
+          manager->BindReceiver(
               NativeFileSystemManagerImpl::BindingContext(
                   frame->GetLastCommittedOrigin(), frame->GetLastCommittedURL(),
                   frame->GetProcess()->GetID(), frame->GetRoutingID()),

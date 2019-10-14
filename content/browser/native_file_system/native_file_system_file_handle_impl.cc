@@ -56,7 +56,8 @@ void NativeFileSystemFileHandleImpl::RequestPermission(
 }
 
 void NativeFileSystemFileHandleImpl::AsBlob(AsBlobCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (GetReadPermissionStatus() != PermissionStatus::GRANTED) {
     std::move(callback).Run(native_file_system_error::FromStatus(
                                 NativeFileSystemStatus::kPermissionDenied),
@@ -79,7 +80,7 @@ void NativeFileSystemFileHandleImpl::AsBlob(AsBlobCallback callback) {
 void NativeFileSystemFileHandleImpl::CreateFileWriter(
     bool keep_existing_data,
     CreateFileWriterCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   RunWithWritePermission(
       base::BindOnce(&NativeFileSystemFileHandleImpl::CreateFileWriterImpl,
@@ -94,7 +95,7 @@ void NativeFileSystemFileHandleImpl::CreateFileWriter(
 
 void NativeFileSystemFileHandleImpl::Transfer(
     mojo::PendingReceiver<blink::mojom::NativeFileSystemTransferToken> token) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   manager()->CreateTransferToken(*this, std::move(token));
 }
@@ -139,7 +140,7 @@ void NativeFileSystemFileHandleImpl::DidGetMetaDataForBlob(
     AsBlobCallback callback,
     base::File::Error result,
     const base::File::Info& info) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (result != base::File::FILE_OK) {
     std::move(callback).Run(native_file_system_error::FromFileError(result),
@@ -184,7 +185,7 @@ void NativeFileSystemFileHandleImpl::DidGetMetaDataForBlob(
 void NativeFileSystemFileHandleImpl::CreateFileWriterImpl(
     bool keep_existing_data,
     CreateFileWriterCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(GetWritePermissionStatus(),
             blink::mojom::PermissionStatus::GRANTED);
 
@@ -202,7 +203,7 @@ void NativeFileSystemFileHandleImpl::CreateSwapFile(
     int count,
     bool keep_existing_data,
     CreateFileWriterCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(count >= 0);
   DCHECK(max_swap_files_ >= 0);
 
@@ -274,7 +275,7 @@ void NativeFileSystemFileHandleImpl::DidCreateSwapFile(
     bool keep_existing_data,
     CreateFileWriterCallback callback,
     base::File::Error result) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (result == base::File::FILE_ERROR_EXISTS) {
     // Creation attempt failed. We need to find an unused filename.
     CreateSwapFile(count + 1, keep_existing_data, std::move(callback));
@@ -318,7 +319,7 @@ void NativeFileSystemFileHandleImpl::DidCopySwapFile(
     storage::IsolatedContext::ScopedFSHandle swap_file_system,
     CreateFileWriterCallback callback,
     base::File::Error result) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (result != base::File::FILE_OK) {
     DLOG(ERROR) << "Error Creating Swap File, status: "
                 << base::File::ErrorToString(result)
