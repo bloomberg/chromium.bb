@@ -10,7 +10,12 @@ from __future__ import print_function
 
 import optparse
 import os
-import Queue
+
+try:
+  import Queue as queue
+except ImportError:  # For Py3 compatibility
+  import queue
+
 import shutil
 import sys
 import tarfile
@@ -203,8 +208,8 @@ class DownloadTests(unittest.TestCase):
     shutil.copytree(self.checkout_test_files, self.base_path)
     self.base_url = 'gs://sometesturl'
     self.parser = optparse.OptionParser()
-    self.queue = Queue.Queue()
-    self.ret_codes = Queue.Queue()
+    self.queue = queue.Queue()
+    self.ret_codes = queue.Queue()
     self.lorem_ipsum = os.path.join(TEST_DIR, 'gstools', 'lorem_ipsum.txt')
     self.lorem_ipsum_sha1 = '7871c8e24da15bad8b0be2c36edc9dc77e37727f'
     self.maxDiff = None
@@ -245,7 +250,7 @@ class DownloadTests(unittest.TestCase):
         self.lorem_ipsum, output_filename))  # cp
     self.queue.put((sha1_hash, output_filename))
     self.queue.put((None, None))
-    stdout_queue = Queue.Queue()
+    stdout_queue = queue.Queue()
     download_from_google_storage._downloader_worker_thread(
         0, self.queue, False, self.base_url, self.gsutil,
         stdout_queue, self.ret_codes, True, False)
@@ -271,7 +276,7 @@ class DownloadTests(unittest.TestCase):
     output_filename = os.path.join(self.base_path, 'rootfolder_text.txt')
     self.queue.put((sha1_hash, output_filename))
     self.queue.put((None, None))
-    stdout_queue = Queue.Queue()
+    stdout_queue = queue.Queue()
     download_from_google_storage._downloader_worker_thread(
         0, self.queue, False, self.base_url, self.gsutil,
         stdout_queue, self.ret_codes, True, False)
@@ -291,7 +296,7 @@ class DownloadTests(unittest.TestCase):
     input_filename = '%s/%s' % (self.base_url, sha1_hash)
     self.queue.put((sha1_hash, output_filename))
     self.queue.put((None, None))
-    stdout_queue = Queue.Queue()
+    stdout_queue = queue.Queue()
     download_from_google_storage._downloader_worker_thread(
         0, self.queue, True, self.base_url, self.gsutil,
         stdout_queue, self.ret_codes, True, True, delete=False)
@@ -323,7 +328,7 @@ class DownloadTests(unittest.TestCase):
     output_filename = os.path.join(self.base_path, 'uploaded_lorem_ipsum.txt')
     self.queue.put((sha1_hash, output_filename))
     self.queue.put((None, None))
-    stdout_queue = Queue.Queue()
+    stdout_queue = queue.Queue()
     self.gsutil.add_expected(1, '', '')  # Return error when 'ls' is called.
     download_from_google_storage._downloader_worker_thread(
         0, self.queue, False, self.base_url, self.gsutil,
@@ -374,9 +379,9 @@ class DownloadTests(unittest.TestCase):
     self.assertEqual(code, 101)
 
   def test_corrupt_download(self):
-    q = Queue.Queue()
-    out_q = Queue.Queue()
-    ret_codes = Queue.Queue()
+    q = queue.Queue()
+    out_q = queue.Queue()
+    ret_codes = queue.Queue()
     tmp_dir = tempfile.mkdtemp()
     sha1_hash = '7871c8e24da15bad8b0be2c36edc9dc77e37727f'
     output_filename = os.path.join(tmp_dir, 'lorem_ipsum.txt')

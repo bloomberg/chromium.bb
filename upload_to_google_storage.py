@@ -10,7 +10,12 @@ from __future__ import print_function
 import hashlib
 import optparse
 import os
-import Queue
+
+try:
+  import Queue as queue
+except ImportError:  # For Py3 compatibility
+  import queue
+
 import re
 import stat
 import sys
@@ -142,11 +147,11 @@ def upload_to_google_storage(
 
   # Start up all the worker threads plus the printer thread.
   all_threads = []
-  ret_codes = Queue.Queue()
+  ret_codes = queue.Queue()
   ret_codes.put((0, None))
-  upload_queue = Queue.Queue()
+  upload_queue = queue.Queue()
   upload_timer = time.time()
-  stdout_queue = Queue.Queue()
+  stdout_queue = queue.Queue()
   printer_thread = PrinterThread(stdout_queue)
   printer_thread.daemon = True
   printer_thread.start()

@@ -7,7 +7,12 @@
 
 import optparse
 import os
-import Queue
+
+try:
+  import Queue as queue
+except ImportError:  # For Py3 compatibility
+  import queue
+
 import shutil
 import StringIO
 import sys
@@ -37,8 +42,8 @@ class UploadTests(unittest.TestCase):
     shutil.copytree(os.path.join(TEST_DIR, 'gstools'), self.base_path)
     self.base_url = 'gs://sometesturl'
     self.parser = optparse.OptionParser()
-    self.ret_codes = Queue.Queue()
-    self.stdout_queue = Queue.Queue()
+    self.ret_codes = queue.Queue()
+    self.stdout_queue = queue.Queue()
     self.lorem_ipsum = os.path.join(self.base_path, 'lorem_ipsum.txt')
     self.lorem_ipsum_sha1 = '7871c8e24da15bad8b0be2c36edc9dc77e37727f'
 
@@ -111,7 +116,7 @@ class UploadTests(unittest.TestCase):
     self.assertEqual(code, 0)
 
   def test_upload_worker_errors(self):
-    work_queue = Queue.Queue()
+    work_queue = queue.Queue()
     work_queue.put((self.lorem_ipsum, self.lorem_ipsum_sha1))
     work_queue.put((None, None))
     self.gsutil.add_expected(1, '', '')  # For the first ls call.
