@@ -1219,6 +1219,13 @@ RenderFrameHostImpl* RenderFrameHostImpl::GetParent() {
   return parent_;
 }
 
+std::vector<RenderFrameHost*> RenderFrameHostImpl::GetFramesInSubtree() {
+  std::vector<RenderFrameHost*> frame_hosts;
+  for (FrameTreeNode* node : frame_tree_->SubtreeNodes(frame_tree_node()))
+    frame_hosts.push_back(node->current_frame_host());
+  return frame_hosts;
+}
+
 bool RenderFrameHostImpl::IsDescendantOf(RenderFrameHost* ancestor) {
   if (!ancestor || !static_cast<RenderFrameHostImpl*>(ancestor)->child_count())
     return false;
@@ -3056,11 +3063,16 @@ void RenderFrameHostImpl::OnRunBeforeUnloadConfirm(bool is_reload,
 }
 
 void RenderFrameHostImpl::RequestTextSurroundingSelection(
-    TextSurroundingSelectionCallback callback,
+    blink::mojom::Frame::GetTextSurroundingSelectionCallback callback,
     int max_length) {
   DCHECK(!callback.is_null());
   GetAssociatedFrameRemote()->GetTextSurroundingSelection(max_length,
                                                           std::move(callback));
+}
+
+void RenderFrameHostImpl::SendInterventionReport(const std::string& id,
+                                                 const std::string& message) {
+  GetAssociatedFrameRemote()->SendInterventionReport(id, message);
 }
 
 void RenderFrameHostImpl::AllowBindings(int bindings_flags) {

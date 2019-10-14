@@ -243,6 +243,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   RenderProcessHost* GetProcess() override;
   RenderWidgetHostView* GetView() override;
   RenderFrameHostImpl* GetParent() override;
+  std::vector<RenderFrameHost*> GetFramesInSubtree() override;
   bool IsDescendantOf(RenderFrameHost*) override;
   int GetFrameTreeNodeId() override;
   base::UnguessableToken GetDevToolsFrameToken() override;
@@ -282,8 +283,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   size_t GetProxyCount() override;
   bool HasSelection() override;
   void RequestTextSurroundingSelection(
-      TextSurroundingSelectionCallback callback,
+      blink::mojom::Frame::GetTextSurroundingSelectionCallback callback,
       int max_length) override;
+  void SendInterventionReport(const std::string& id,
+                              const std::string& message) override;
   void AllowBindings(int binding_flags) override;
   int GetEnabledBindings() override;
   void DisableBeforeUnloadHangMonitorForTesting() override;
