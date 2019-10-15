@@ -930,6 +930,13 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::BOOLEAN },
 #endif  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
 
+#if !defined(OS_ANDROID)
+  { key::kCloudExtensionRequestEnabled,
+    prefs::kCloudExtensionRequestEnabled,
+    base::Value::Type::BOOLEAN
+  },
+#endif
+
 #if defined(OS_WIN)
   { key::kChromeCleanupEnabled,
     prefs::kSwReporterEnabled,

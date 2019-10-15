@@ -647,7 +647,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   StartupBrowserCreator::RegisterLocalStatePrefs(registry);
   task_manager::TaskManagerInterface::RegisterPrefs(registry);
   UpgradeDetector::RegisterPrefs(registry);
-  enterprise_reporting::RegisterPrefs(registry);
+  enterprise_reporting::RegisterLocalStatePrefs(registry);
 #if !defined(OS_CHROMEOS)
   RegisterDefaultBrowserPromptPrefs(registry);
 #endif  // !defined(OS_CHROMEOS)
@@ -997,6 +997,10 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
 
 #if !defined(OS_CHROMEOS) && BUILDFLAG(ENABLE_EXTENSIONS)
   extensions::enterprise_reporting::RegisterProfilePrefs(registry);
+#endif
+
+#if !defined(OS_ANDROID)
+  enterprise_reporting::RegisterProfilePrefs(registry);
 #endif
 
   RegisterProfilePrefsForMigration(registry);

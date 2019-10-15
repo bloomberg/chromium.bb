@@ -2467,6 +2467,10 @@ const char kRegisteredSupervisedUserWhitelists[] =
 // or not.
 const char kCloudReportingEnabled[] =
     "enterprise_reporting.chrome_cloud_reporting";
+// Boolean that indicates whether Chrome enterprise extension request is enabled
+// or not.
+const char kCloudExtensionRequestEnabled[] =
+    "enterprise_reporting.extension_request.enabled";
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)

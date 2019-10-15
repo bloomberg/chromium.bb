@@ -844,6 +844,7 @@ extern const char kRegisteredSupervisedUserWhitelists[];
 
 #if !defined(OS_ANDROID)
 extern const char kCloudReportingEnabled[];
+extern const char kCloudExtensionRequestEnabled[];
 #endif
 
 #if BUILDFLAG(ENABLE_BACKGROUND_MODE)
