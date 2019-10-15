@@ -125,7 +125,7 @@ target("mac_app_bundle", "remoting_me2me_host") {
   }
   deps += [
     ":remoting_host_resources",
-    ":remoting_me2me_host_service_bundle_data",
+    #":remoting_me2me_host_service_bundle_data",
     ":remoting_me2me_script",
     "//remoting/host:remoting_infoplist_strings",
     "//remoting/resources:copy_locales",
