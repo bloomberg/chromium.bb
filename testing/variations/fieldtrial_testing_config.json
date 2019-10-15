@@ -478,7 +478,10 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled",
+                    "name": "EnabledWithSafetyStory",
+                    "params": {
+                        "story": "safety"
+                    },
                     "enable_features": [
                         "PasswordManagerOnboardingAndroid"
                     ]
