@@ -106,7 +106,7 @@ class PresubmitApi(recipe_api.RecipeApi):
       '--upstream', upstream,  # '' if not in bot_update mode.
     ])
 
-    venv = True
+    venv = None
     # TODO(iannucci): verify that presubmit_support.py correctly finds and
     # uses .vpython files, then remove this configuration.
     if self._vpython_spec_path:
