@@ -889,6 +889,7 @@ void av1_tpl_setup_stats(AV1_COMP *cpi,
   int bottom_index, top_index;
   EncodeFrameParams this_frame_params = *frame_params;
 
+  cm->current_frame.frame_type = frame_params->frame_type;
   for (int gf_index = gf_group->index; gf_index < gf_group->size; ++gf_index) {
     av1_configure_buffer_updates(cpi, &this_frame_params,
                                  gf_group->update_type[gf_index], 0);
