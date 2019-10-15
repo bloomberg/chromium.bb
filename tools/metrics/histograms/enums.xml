@@ -8032,6 +8032,16 @@ histogram as enum -->
   <int value="255" label="Unspecified/unknown error in user-mode"/>
 </enum>
 
+<enum name="ChromeOSSamlApiUsed">
+  <summary>
+    ChromeOS login flow by Identity Provider. Can be either GAIA-based, SAML
+    with API or pure SAML with password scraping.
+  </summary>
+  <int value="0" label="Default GAIA authentication"/>
+  <int value="1" label="SAML Chrome Credentials Passing API used"/>
+  <int value="2" label="SAML Chrome Credentials Passing API not used"/>
+</enum>
+
 <enum name="ChromeOSUICommands">
 <!-- Please put in checks to ensure Command IDs are stable before adding them to this enum. -->
 
