@@ -35,17 +35,11 @@ namespace device {
 
 using mojom::SensorType;
 
-template <class Interface>
-class MockCOMInterface
+// Mock class for ISensorManager COM interface.
+class MockISensorManager
     : public Microsoft::WRL::RuntimeClass<
           Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>,
-          Interface> {
- protected:
-  ~MockCOMInterface() override = default;
-};
-
-// Mock class for ISensorManager COM interface.
-class MockISensorManager : public MockCOMInterface<ISensorManager> {
+          ISensorManager> {
  public:
   // ISensorManager interface
   MOCK_METHOD2_WITH_CALLTYPE(STDMETHODCALLTYPE,
@@ -73,7 +67,10 @@ class MockISensorManager : public MockCOMInterface<ISensorManager> {
 };
 
 // Mock class for ISensorCollection COM interface.
-class MockISensorCollection : public MockCOMInterface<ISensorCollection> {
+class MockISensorCollection
+    : public Microsoft::WRL::RuntimeClass<
+          Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>,
+          ISensorCollection> {
  public:
   // ISensorCollection interface
   MOCK_METHOD2_WITH_CALLTYPE(STDMETHODCALLTYPE,
@@ -96,7 +93,10 @@ class MockISensorCollection : public MockCOMInterface<ISensorCollection> {
 };
 
 // Mock class for ISensor COM interface.
-class MockISensor : public MockCOMInterface<ISensor> {
+class MockISensor
+    : public Microsoft::WRL::RuntimeClass<
+          Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>,
+          ISensor> {
  public:
   // ISensor interface
   MOCK_METHOD1_WITH_CALLTYPE(STDMETHODCALLTYPE, GetID, HRESULT(SENSOR_ID* id));
@@ -153,7 +153,10 @@ class MockISensor : public MockCOMInterface<ISensor> {
 };
 
 // Mock class for ISensorDataReport COM interface.
-class MockISensorDataReport : public MockCOMInterface<ISensorDataReport> {
+class MockISensorDataReport
+    : public Microsoft::WRL::RuntimeClass<
+          Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>,
+          ISensorDataReport> {
  public:
   // ISensorDataReport interface
   MOCK_METHOD1_WITH_CALLTYPE(STDMETHODCALLTYPE,
