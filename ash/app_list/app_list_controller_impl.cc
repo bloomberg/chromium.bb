@@ -1499,4 +1499,8 @@ void AppListControllerImpl::NotifyHomeLauncherAnimationTransition(
       CalculateAnimationTransitionForMetrics(trigger, launcher_will_show));
 }
 
+bool AppListControllerImpl::IsHomeScreenVisible() {
+  return IsVisible();
+}
+
 }  // namespace ash
