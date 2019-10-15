@@ -96,6 +96,12 @@ inline void ComputeCanBreakAfter(NGInlineItemResult* item_result,
       auto_wrap && break_iterator.IsBreakable(item_result->end_offset);
 }
 
+inline void RemoveLastItem(NGLineInfo* line_info) {
+  NGInlineItemResults* item_results = line_info->MutableResults();
+  DCHECK_GT(item_results->size(), 0u);
+  item_results->Shrink(item_results->size() - 1);
+}
+
 // To correctly determine if a float is allowed to be on the same line as its
 // content, we need to determine if it has any ancestors with inline-end
 // padding, border, or margin.
@@ -227,6 +233,8 @@ NGLineBreaker::~NGLineBreaker() = default;
 inline NGInlineItemResult* NGLineBreaker::AddItem(const NGInlineItem& item,
                                                   unsigned end_offset,
                                                   NGLineInfo* line_info) {
+  DCHECK_GE(offset_, item.StartOffset());
+  DCHECK_GE(end_offset, offset_);
   DCHECK_LE(end_offset, item.EndOffset());
   NGInlineItemResults* item_results = line_info->MutableResults();
   return &item_results->emplace_back(
@@ -1338,11 +1346,22 @@ void NGLineBreaker::HandleAtomicInline(
   DCHECK(item.Style());
   const ComputedStyle& style = *item.Style();
 
-  if (HandleOverflowIfNeeded(line_info))
-    return;
-
+  // Compute margins before computing overflow, because even when the current
+  // position is beyond the end, negative margins can bring this item back to on
+  // the current line.
   NGInlineItemResult* item_result = AddItem(item, line_info);
-  item_result->should_create_line_box = true;
+  item_result->margins =
+      ComputeLineMarginsForVisualContainer(constraint_space_, style);
+  LayoutUnit inline_margins = item_result->margins.InlineSum();
+  LayoutUnit remaining_width = RemainingAvailableWidth();
+  bool is_overflow_before =
+      state_ == LineBreakState::kContinue && remaining_width < 0;
+  if (UNLIKELY(is_overflow_before && inline_margins > remaining_width)) {
+    RemoveLastItem(line_info);
+    HandleOverflow(line_info);
+    return;
+  }
+
   // When we're just computing min/max content sizes, we can skip the full
   // layout and just compute those sizes. On the other hand, for regular
   // layout we need to do the full layout and get the layout result.
@@ -1358,20 +1377,16 @@ void NGLineBreaker::HandleAtomicInline(
         NGFragment(constraint_space_.GetWritingMode(),
                    item_result->layout_result->PhysicalFragment())
             .InlineSize();
-    item_result->margins =
-        ComputeLineMarginsForVisualContainer(constraint_space_, style);
-    item_result->inline_size += item_result->margins.InlineSum();
+    item_result->inline_size += inline_margins;
   } else if (mode_ == NGLineBreakerMode::kMaxContent && max_size_cache_) {
     unsigned item_index = &item - Items().begin();
     item_result->inline_size = (*max_size_cache_)[item_index];
   } else {
+    DCHECK(mode_ == NGLineBreakerMode::kMinContent || !max_size_cache_);
     NGBlockNode child(ToLayoutBox(item.GetLayoutObject()));
     MinMaxSizeInput input(percentage_resolution_block_size_for_min_max);
     MinMaxSize sizes =
         ComputeMinAndMaxContentContribution(node_.Style(), child, input);
-    LayoutUnit inline_margins =
-        ComputeLineMarginsForVisualContainer(constraint_space_, style)
-            .InlineSum();
     if (mode_ == NGLineBreakerMode::kMinContent) {
       item_result->inline_size = sizes.min_size + inline_margins;
       if (max_size_cache_) {
@@ -1385,13 +1400,14 @@ void NGLineBreaker::HandleAtomicInline(
     }
   }
 
-  trailing_whitespace_ = WhitespaceState::kNone;
-  position_ += item_result->inline_size;
+  item_result->should_create_line_box = true;
   ComputeCanBreakAfter(item_result, auto_wrap_, break_iterator_);
   if (!item_result->can_break_after && auto_wrap_ &&
       IsAtomicInlineBeforeNoBreakSpace(*item_result))
     item_result->can_break_after = true;
 
+  position_ += item_result->inline_size;
+  trailing_whitespace_ = WhitespaceState::kNone;
   MoveToNextOf(item);
 }
 
