@@ -2301,6 +2301,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOfflineIndicatorAlwaysHttpProbeDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(
          offline_pages::kOfflineIndicatorAlwaysHttpProbeFeature)},
+    {"offline-home", flag_descriptions::kOfflineHomeName,
+     flag_descriptions::kOfflineHomeDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kOfflineHome)},
     {"offline-indicator-v2", flag_descriptions::kOfflineIndicatorV2Name,
      flag_descriptions::kOfflineIndicatorV2Description, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kOfflineIndicatorV2)},

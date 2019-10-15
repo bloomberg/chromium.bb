@@ -2688,6 +2688,9 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       </message>
 
       <!-- New Tab Page strings -->
+      <message name="IDS_EXPLORE_OFFLINE_CARD_MESSAGE" desc="Text informing the user that they are currently offline and they can tap here to explore the offline feed. ">
+        You are currently offline.\n<ph name="BEGIN_LINK">&lt;link&gt;</ph>Explore your offline feed.<ph name="END_LINK">&lt;/link&gt;</ph>
+      </message>
       <message name="IDS_RECENT_TABS" desc="Text for button to show 'Recent tabs', i.e. recently closed tabs and tabs that are open on other devices [CHAR-LIMIT=20]">
         Recent tabs
       </message>

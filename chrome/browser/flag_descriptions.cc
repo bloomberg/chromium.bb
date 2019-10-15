@@ -2586,6 +2586,9 @@ const char kOfflineIndicatorChoiceName[] = "Offline indicator choices";
 const char kOfflineIndicatorChoiceDescription[] =
     "Show an offline indicator while offline.";
 
+const char kOfflineHomeName[] = "Offline Home";
+const char kOfflineHomeDescription[] = "Show offline home UI when offline.";
+
 const char kOfflineIndicatorV2Name[] = "Offline indicator V2";
 const char kOfflineIndicatorV2Description[] =
     "Show a persistent offline indicator when offline.";

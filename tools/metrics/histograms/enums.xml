@@ -35741,6 +35741,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1230610048" label="SyncWifiConfigurations:disabled"/>
   <int value="-1228035246" label="PasswordEditingAndroid:enabled"/>
   <int value="-1227660915" label="WebContentsOcclusion:disabled"/>
+  <int value="-1225772151" label="OfflineHome:disabled"/>
   <int value="-1225629234" label="SyncPseudoUSSFavicons:enabled"/>
   <int value="-1225198073" label="ReaderModeInCCT:disabled"/>
   <int value="-1224962996" label="PwaImprovedSplashScreen:disabled"/>
@@ -35753,6 +35754,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
       label="OmniboxUIExperimentHideSteadyStateUrlTrivialSubdomains:disabled"/>
   <int value="-1217425153" label="ChromeHomeClearUrlOnOpen:enabled"/>
   <int value="-1216837777" label="clear-data-reduction-proxy-data-savings"/>
+  <int value="-1216570731" label="OfflineHome:enabled"/>
   <int value="-1214870820" label="EnableNewStyleLauncher:enabled"/>
   <int value="-1212855900" label="enable-all-bookmarks-view"/>
   <int value="-1212273428" label="enable-experimental-app-list"/>
