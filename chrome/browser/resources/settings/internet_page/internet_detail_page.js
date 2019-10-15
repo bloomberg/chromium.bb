@@ -254,6 +254,7 @@ Polymer({
     this.guid = guid;
     // Set default properties until they are loaded.
     this.propertiesReceived_ = false;
+    this.deviceState_ = null;
     this.managedProperties_ = OncMojo.getDefaultManagedProperties(
         OncMojo.getNetworkTypeFromString(type), this.guid, name);
     this.didSetFocus_ = false;
@@ -376,11 +377,10 @@ Polymer({
     if (!this.managedProperties_) {
       return;
     }
+    const type = this.managedProperties_.type;
     this.networkConfig_.getDeviceStateList().then(response => {
       const devices = response.result;
-      this.deviceState_ =
-          devices.find(device => device.type == this.managedProperties_.type) ||
-          null;
+      this.deviceState_ = devices.find(device => device.type == type) || null;
     });
   },
 
