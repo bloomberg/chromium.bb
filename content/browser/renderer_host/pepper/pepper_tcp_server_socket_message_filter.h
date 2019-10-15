@@ -19,6 +19,7 @@
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/ip_endpoint.h"
 #include "ppapi/c/pp_instance.h"
@@ -148,7 +149,7 @@ class CONTENT_EXPORT PepperTCPServerSocketMessageFilter
   PP_Instance instance_;
 
   State state_;
-  network::mojom::TCPServerSocketPtr socket_;
+  mojo::Remote<network::mojom::TCPServerSocket> socket_;
 
   PP_NetAddress_Private bound_addr_;
 

@@ -52,7 +52,7 @@ void SocketFactory::CreateTCPServerSocket(
     const net::IPEndPoint& local_addr,
     int backlog,
     const net::NetworkTrafficAnnotationTag& traffic_annotation,
-    mojom::TCPServerSocketRequest request,
+    mojo::PendingReceiver<mojom::TCPServerSocket> receiver,
     mojom::NetworkContext::CreateTCPServerSocketCallback callback) {
   auto socket =
       std::make_unique<TCPServerSocket>(this, net_log_, traffic_annotation);
@@ -62,7 +62,7 @@ void SocketFactory::CreateTCPServerSocket(
     std::move(callback).Run(result, base::nullopt);
     return;
   }
-  tcp_server_socket_bindings_.AddBinding(std::move(socket), std::move(request));
+  tcp_server_socket_receivers_.Add(std::move(socket), std::move(receiver));
   std::move(callback).Run(result, local_addr_out);
 }
 
@@ -109,9 +109,9 @@ void SocketFactory::DestroyBoundSocket(mojo::BindingId bound_socket_id) {
 void SocketFactory::OnBoundSocketListening(
     mojo::BindingId bound_socket_id,
     std::unique_ptr<TCPServerSocket> server_socket,
-    mojom::TCPServerSocketRequest server_socket_request) {
-  tcp_server_socket_bindings_.AddBinding(std::move(server_socket),
-                                         std::move(server_socket_request));
+    mojo::PendingReceiver<mojom::TCPServerSocket> server_socket_receiver) {
+  tcp_server_socket_receivers_.Add(std::move(server_socket),
+                                   std::move(server_socket_receiver));
   tcp_bound_socket_receivers_.Remove(bound_socket_id);
 }
 

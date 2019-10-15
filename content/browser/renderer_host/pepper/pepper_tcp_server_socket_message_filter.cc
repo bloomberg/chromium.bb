@@ -175,7 +175,7 @@ int32_t PepperTCPServerSocketMessageFilter::OnMsgListen(
   network_context->CreateTCPServerSocket(
       net::IPEndPoint(net::IPAddress(address), port), backlog,
       pepper_socket_utils::PepperTCPNetworkAnnotationTag(),
-      mojo::MakeRequest(&socket_),
+      socket_.BindNewPipeAndPassReceiver(),
       mojo::WrapCallbackWithDefaultInvokeIfNotRun(
           base::BindOnce(&PepperTCPServerSocketMessageFilter::OnListenCompleted,
                          weak_ptr_factory_.GetWeakPtr(), reply_context),

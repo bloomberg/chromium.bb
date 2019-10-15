@@ -128,7 +128,7 @@ class TestNetworkContext : public mojom::NetworkContext {
       const net::IPEndPoint& local_addr,
       uint32_t backlog,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
-      mojom::TCPServerSocketRequest socket,
+      mojo::PendingReceiver<mojom::TCPServerSocket> socket,
       CreateTCPServerSocketCallback callback) override {}
   void CreateTCPConnectedSocket(
       const base::Optional<net::IPEndPoint>& local_addr,

@@ -590,7 +590,7 @@ int32_t PepperTCPSocketMessageFilter::OnMsgListen(
   state_.SetPendingTransition(TCPSocketState::LISTEN);
 
   bound_socket_->Listen(
-      backlog, mojo::MakeRequest(&server_socket_),
+      backlog, server_socket_.BindNewPipeAndPassReceiver(),
       mojo::WrapCallbackWithDefaultInvokeIfNotRun(
           base::BindOnce(&PepperTCPSocketMessageFilter::OnListenCompleted,
                          base::Unretained(this),

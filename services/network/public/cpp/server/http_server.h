@@ -17,6 +17,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_piece.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/mojom/network_service.mojom.h"
@@ -56,7 +57,7 @@ class COMPONENT_EXPORT(NETWORK_CPP) HttpServer {
   // listening, but not accepting.  This constructor schedules accepting
   // connections asynchronously in case when |delegate| is not ready to get
   // callbacks yet.
-  HttpServer(mojom::TCPServerSocketPtr server_socket,
+  HttpServer(mojo::PendingRemote<mojom::TCPServerSocket> server_socket,
              HttpServer::Delegate* delegate);
   ~HttpServer();
 
@@ -136,7 +137,7 @@ class COMPONENT_EXPORT(NETWORK_CPP) HttpServer {
   // Whether or not Close() has been called during delegate callback processing.
   bool HasClosedConnection(HttpConnection* connection);
 
-  const mojom::TCPServerSocketPtr server_socket_;
+  const mojo::Remote<mojom::TCPServerSocket> server_socket_;
   HttpServer::Delegate* const delegate_;
 
   int last_id_;

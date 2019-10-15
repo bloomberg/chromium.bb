@@ -19,6 +19,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/unique_receiver_set.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "net/base/completion_once_callback.h"
@@ -151,7 +152,7 @@ class TestServer {
     base::RunLoop run_loop;
     factory_.CreateTCPServerSocket(
         server_addr_, backlog, TRAFFIC_ANNOTATION_FOR_TESTS,
-        mojo::MakeRequest(&server_socket_),
+        server_socket_.BindNewPipeAndPassReceiver(),
         base::BindLambdaForTesting(
             [&](int result, const base::Optional<net::IPEndPoint>& local_addr) {
               net_error = result;
@@ -245,7 +246,7 @@ class TestServer {
 
   net::TestURLRequestContext url_request_context_;
   SocketFactory factory_;
-  mojom::TCPServerSocketPtr server_socket_;
+  mojo::Remote<mojom::TCPServerSocket> server_socket_;
   std::vector<mojo::Remote<mojom::TCPConnectedSocket>> connected_sockets_;
   mojo::ScopedDataPipeConsumerHandle server_socket_receive_handle_;
   mojo::ScopedDataPipeProducerHandle server_socket_send_handle_;
@@ -297,7 +298,7 @@ class TCPSocketTest : public testing::Test {
   // Creates a TCPServerSocket with the mock server socket, |socket|.
   void CreateServerSocketWithMockSocket(
       uint32_t backlog,
-      mojom::TCPServerSocketRequest request,
+      mojo::PendingReceiver<mojom::TCPServerSocket> receiver,
       std::unique_ptr<net::ServerSocket> socket) {
     auto server_socket_impl = std::make_unique<TCPServerSocket>(
         factory_.get(), nullptr /*netlog*/, TRAFFIC_ANNOTATION_FOR_TESTS);
@@ -305,8 +306,8 @@ class TCPSocketTest : public testing::Test {
     net::IPEndPoint local_addr;
     EXPECT_EQ(net::OK,
               server_socket_impl->Listen(local_addr, backlog, &local_addr));
-    tcp_server_socket_bindings_.AddBinding(std::move(server_socket_impl),
-                                           std::move(request));
+    tcp_server_socket_receiver_.Add(std::move(server_socket_impl),
+                                    std::move(receiver));
   }
 
   int CreateTCPConnectedSocketSync(
@@ -351,7 +352,7 @@ class TCPSocketTest : public testing::Test {
   net::TestURLRequestContext url_request_context_;
   std::unique_ptr<SocketFactory> factory_;
   TestSocketObserver test_observer_;
-  mojo::StrongBindingSet<mojom::TCPServerSocket> tcp_server_socket_bindings_;
+  mojo::UniqueReceiverSet<mojom::TCPServerSocket> tcp_server_socket_receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(TCPSocketTest);
 };
@@ -698,10 +699,11 @@ TEST_P(TCPSocketWithMockSocketTest,
       std::make_unique<MockServerSocket>(std::move(data_providers));
 
   MockServerSocket* mock_server_socket_raw = mock_server_socket.get();
-  mojom::TCPServerSocketPtr server_socket;
+  mojo::Remote<mojom::TCPServerSocket> server_socket;
 
   // Use a mock socket to control net::ServerSocket::Accept() behavior.
-  CreateServerSocketWithMockSocket(kBacklog, mojo::MakeRequest(&server_socket),
+  CreateServerSocketWithMockSocket(kBacklog,
+                                   server_socket.BindNewPipeAndPassReceiver(),
                                    std::move(mock_server_socket));
 
   // Complete first Accept() using manual completion via CompleteAccept().
@@ -767,9 +769,9 @@ TEST_P(TCPSocketWithMockSocketTest, ServerAcceptWithObserverReadError) {
 
   auto mock_server_socket =
       std::make_unique<MockServerSocket>(std::move(data_providers));
-  mojom::TCPServerSocketPtr server_socket;
+  mojo::Remote<mojom::TCPServerSocket> server_socket;
   CreateServerSocketWithMockSocket(1 /*backlog*/,
-                                   mojo::MakeRequest(&server_socket),
+                                   server_socket.BindNewPipeAndPassReceiver(),
                                    std::move(mock_server_socket));
 
   auto callback = std::make_unique<net::TestCompletionCallback>();
@@ -815,9 +817,9 @@ TEST_P(TCPSocketWithMockSocketTest, ServerAcceptWithObserverWriteError) {
 
   auto mock_server_socket =
       std::make_unique<MockServerSocket>(std::move(data_providers));
-  mojom::TCPServerSocketPtr server_socket;
+  mojo::Remote<mojom::TCPServerSocket> server_socket;
   CreateServerSocketWithMockSocket(1 /*backlog*/,
-                                   mojo::MakeRequest(&server_socket),
+                                   server_socket.BindNewPipeAndPassReceiver(),
                                    std::move(mock_server_socket));
 
   auto callback = std::make_unique<net::TestCompletionCallback>();

@@ -251,7 +251,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       const net::IPEndPoint& local_addr,
       uint32_t backlog,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
-      mojom::TCPServerSocketRequest request,
+      mojo::PendingReceiver<mojom::TCPServerSocket> receiver,
       CreateTCPServerSocketCallback callback) override;
   void CreateTCPConnectedSocket(
       const base::Optional<net::IPEndPoint>& local_addr,

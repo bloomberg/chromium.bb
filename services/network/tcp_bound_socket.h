@@ -52,7 +52,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) TCPBoundSocket
 
   // mojom::TCPBoundSocket implementation.
   void Listen(uint32_t backlog,
-              mojom::TCPServerSocketRequest request,
+              mojo::PendingReceiver<mojom::TCPServerSocket> receiver,
               ListenCallback callback) override;
   void Connect(const net::AddressList& remote_addr,
                mojom::TCPConnectedSocketOptionsPtr tcp_connected_socket_options,

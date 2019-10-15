@@ -642,10 +642,10 @@ class MockTCPServerSocket : public network::mojom::TCPServerSocket {
   // CreateTCPServerSocket constructor.
   MockTCPServerSocket(
       TCPFailureType tcp_failure_type,
-      network::mojom::TCPServerSocketRequest request,
+      mojo::PendingReceiver<network::mojom::TCPServerSocket> receiver,
       network::mojom::NetworkContext::CreateTCPServerSocketCallback callback)
-      : tcp_failure_type_(tcp_failure_type), binding_(this) {
-    binding_.Bind(std::move(request));
+      : tcp_failure_type_(tcp_failure_type),
+        receiver_(this, std::move(receiver)) {
     if (tcp_failure_type_ == TCPFailureType::kCreateTCPServerSocketError) {
       std::move(callback).Run(net::ERR_FAILED, base::nullopt /* local_addr */);
       return;
@@ -658,11 +658,12 @@ class MockTCPServerSocket : public network::mojom::TCPServerSocket {
   }
 
   // TCPBoundSocket::Listen constructor.
-  MockTCPServerSocket(TCPFailureType tcp_failure_type,
-                      network::mojom::TCPServerSocketRequest request,
-                      network::mojom::TCPBoundSocket::ListenCallback callback)
-      : tcp_failure_type_(tcp_failure_type), binding_(this) {
-    binding_.Bind(std::move(request));
+  MockTCPServerSocket(
+      TCPFailureType tcp_failure_type,
+      mojo::PendingReceiver<network::mojom::TCPServerSocket> receiver,
+      network::mojom::TCPBoundSocket::ListenCallback callback)
+      : tcp_failure_type_(tcp_failure_type),
+        receiver_(this, std::move(receiver)) {
     if (tcp_failure_type_ == TCPFailureType::kCreateTCPServerSocketError) {
       std::move(callback).Run(net::ERR_FAILED);
       return;
@@ -681,7 +682,7 @@ class MockTCPServerSocket : public network::mojom::TCPServerSocket {
               AcceptCallback callback) override {
     // This falls through just to keep the observer alive.
     if (tcp_failure_type_ == TCPFailureType::kAcceptDropPipe)
-      binding_.Close();
+      receiver_.reset();
     connected_socket_ = std::make_unique<MockTCPConnectedSocket>(
         tcp_failure_type_, std::move(observer), std::move(callback));
   }
@@ -696,7 +697,7 @@ class MockTCPServerSocket : public network::mojom::TCPServerSocket {
       create_server_socket_callback_;
   network::mojom::TCPBoundSocket::ListenCallback listen_callback_;
 
-  mojo::Binding<network::mojom::TCPServerSocket> binding_;
+  mojo::Receiver<network::mojom::TCPServerSocket> receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(MockTCPServerSocket);
 };
@@ -724,15 +725,15 @@ class MockTCPBoundSocket : public network::mojom::TCPBoundSocket {
 
   // mojom::TCPBoundSocket implementation:
   void Listen(uint32_t backlog,
-              network::mojom::TCPServerSocketRequest request,
+              mojo::PendingReceiver<network::mojom::TCPServerSocket> receiver,
               ListenCallback callback) override {
-    // If closing the pipe, create ServerSocket anyways, to keep |request|
+    // If closing the pipe, create ServerSocket anyways, to keep |receiver|
     // alive. The callback invocation will have no effect, since it uses the
     // TCPBoundSocket's pipe, which was just closed.
     if (tcp_failure_type_ == TCPFailureType::kCreateTCPServerSocketClosePipe)
       receiver_.reset();
     server_socket_ = std::make_unique<MockTCPServerSocket>(
-        tcp_failure_type_, std::move(request), std::move(callback));
+        tcp_failure_type_, std::move(receiver), std::move(callback));
   }
 
   void Connect(
@@ -780,15 +781,15 @@ class MockNetworkContext : public network::TestNetworkContext {
       const net::IPEndPoint& local_addr,
       uint32_t backlog,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
-      network::mojom::TCPServerSocketRequest request,
+      mojo::PendingReceiver<network::mojom::TCPServerSocket> receiver,
       CreateTCPServerSocketCallback callback) override {
-    // If closing the pipe, create ServerSocket anyways, to keep |request|
+    // If closing the pipe, create ServerSocket anyways, to keep |receiver|
     // alive. The callback invocation will have no effect, since it uses the
     // TCPBoundSocket's pipe, which was just closed.
     if (tcp_failure_type_ == TCPFailureType::kCreateTCPServerSocketClosePipe)
       receiver_.reset();
     server_sockets_.emplace_back(std::make_unique<MockTCPServerSocket>(
-        tcp_failure_type_, std::move(request), std::move(callback)));
+        tcp_failure_type_, std::move(receiver), std::move(callback)));
   }
 
   void CreateTCPConnectedSocket(

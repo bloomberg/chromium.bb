@@ -52,8 +52,9 @@ constexpr net::NetworkTrafficAnnotationTag
 
 }  // namespace
 
-HttpServer::HttpServer(mojom::TCPServerSocketPtr server_socket,
-                       HttpServer::Delegate* delegate)
+HttpServer::HttpServer(
+    mojo::PendingRemote<mojom::TCPServerSocket> server_socket,
+    HttpServer::Delegate* delegate)
     : server_socket_(std::move(server_socket)),
       delegate_(delegate),
       last_id_(0) {

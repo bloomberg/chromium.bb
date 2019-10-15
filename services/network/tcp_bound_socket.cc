@@ -54,9 +54,10 @@ int TCPBoundSocket::Bind(const net::IPEndPoint& local_addr,
   return socket_->GetLocalAddress(local_addr_out);
 }
 
-void TCPBoundSocket::Listen(uint32_t backlog,
-                            mojom::TCPServerSocketRequest request,
-                            ListenCallback callback) {
+void TCPBoundSocket::Listen(
+    uint32_t backlog,
+    mojo::PendingReceiver<mojom::TCPServerSocket> receiver,
+    ListenCallback callback) {
   DCHECK(socket_->IsValid());
 
   if (!socket_) {
@@ -84,7 +85,7 @@ void TCPBoundSocket::Listen(uint32_t backlog,
           std::make_unique<net::TCPServerSocket>(std::move(socket_)), backlog,
           socket_factory_, traffic_annotation_);
   socket_factory_->OnBoundSocketListening(binding_id_, std::move(server_socket),
-                                          std::move(request));
+                                          std::move(receiver));
   // The above call will have destroyed |this|.
 }
 

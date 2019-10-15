@@ -1011,12 +1011,12 @@ void NetworkContext::CreateTCPServerSocket(
     const net::IPEndPoint& local_addr,
     uint32_t backlog,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
-    mojom::TCPServerSocketRequest request,
+    mojo::PendingReceiver<mojom::TCPServerSocket> receiver,
     CreateTCPServerSocketCallback callback) {
   socket_factory_->CreateTCPServerSocket(
       local_addr, backlog,
       static_cast<net::NetworkTrafficAnnotationTag>(traffic_annotation),
-      std::move(request), std::move(callback));
+      std::move(receiver), std::move(callback));
 }
 
 void NetworkContext::CreateTCPConnectedSocket(

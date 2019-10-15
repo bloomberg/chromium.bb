@@ -76,14 +76,15 @@ class TCPBoundSocketTest : public testing::Test {
   }
 
   int Listen(mojo::Remote<mojom::TCPBoundSocket> bound_socket,
-             mojom::TCPServerSocketPtr* server_socket) {
+             mojo::Remote<mojom::TCPServerSocket>* server_socket) {
     base::RunLoop bound_socket_destroyed_run_loop;
     bound_socket.set_disconnect_handler(
         bound_socket_destroyed_run_loop.QuitClosure());
 
     base::RunLoop run_loop;
     int listen_result = net::ERR_IO_PENDING;
-    bound_socket->Listen(1 /* backlog */, mojo::MakeRequest(server_socket),
+    bound_socket->Listen(1 /* backlog */,
+                         server_socket->BindNewPipeAndPassReceiver(),
                          base::BindLambdaForTesting([&](int net_error) {
                            listen_result = net_error;
                            run_loop.Quit();
@@ -94,10 +95,9 @@ class TCPBoundSocketTest : public testing::Test {
     bound_socket_destroyed_run_loop.Run();
 
     // On error, |server_socket| should be closed.
-    if (listen_result != net::OK && !server_socket->encountered_error()) {
+    if (listen_result != net::OK && server_socket->is_connected()) {
       base::RunLoop close_pipe_run_loop;
-      server_socket->set_connection_error_handler(
-          close_pipe_run_loop.QuitClosure());
+      server_socket->set_disconnect_handler(close_pipe_run_loop.QuitClosure());
       close_pipe_run_loop.Run();
     }
 
@@ -207,7 +207,7 @@ TEST_F(TCPBoundSocketTest, BindError) {
   net::IPEndPoint bound_address1;
   ASSERT_EQ(net::OK, BindSocket(LocalHostWithAnyPort(), &bound_socket1,
                                 &bound_address1));
-  mojom::TCPServerSocketPtr server_socket;
+  mojo::Remote<mojom::TCPServerSocket> server_socket;
   ASSERT_EQ(net::OK, Listen(std::move(bound_socket1), &server_socket));
 
   // Try to bind another socket to the listening socket's address.
@@ -274,11 +274,11 @@ TEST_F(TCPBoundSocketTest, ListenError) {
             BindSocket(bound_address1, &bound_socket2, &bound_address2));
 
   // Listen on the first socket, which should also succeed.
-  mojom::TCPServerSocketPtr server_socket1;
+  mojo::Remote<mojom::TCPServerSocket> server_socket1;
   ASSERT_EQ(net::OK, Listen(std::move(bound_socket1), &server_socket1));
 
   // Listen on the second socket should fail.
-  mojom::TCPServerSocketPtr server_socket2;
+  mojo::Remote<mojom::TCPServerSocket> server_socket2;
   int result = Listen(std::move(bound_socket2), &server_socket2);
   // Depending on platform, can get different errors. Some platforms can return
   // either error.
@@ -294,7 +294,7 @@ TEST_F(TCPBoundSocketTest, ReadWrite) {
   net::IPEndPoint server_address;
   ASSERT_EQ(net::OK, BindSocket(LocalHostWithAnyPort(), &bound_socket1,
                                 &server_address));
-  mojom::TCPServerSocketPtr server_socket;
+  mojo::Remote<mojom::TCPServerSocket> server_socket;
   ASSERT_EQ(net::OK, Listen(std::move(bound_socket1), &server_socket));
 
   // Connect to the socket with another socket.
@@ -373,7 +373,7 @@ TEST_F(TCPBoundSocketTest, ConnectWithOptions) {
   net::IPEndPoint server_address;
   ASSERT_EQ(net::OK, BindSocket(LocalHostWithAnyPort(), &bound_socket1,
                                 &server_address));
-  network::mojom::TCPServerSocketPtr server_socket;
+  mojo::Remote<mojom::TCPServerSocket> server_socket;
   ASSERT_EQ(net::OK, Listen(std::move(bound_socket1), &server_socket));
 
   // Connect to the socket with another socket.

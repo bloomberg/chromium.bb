@@ -131,7 +131,7 @@ class TCPSocket : public Socket {
       content::BrowserContext* browser_context,
       const net::IPEndPoint& local_addr,
       int backlog,
-      network::mojom::TCPServerSocketRequest request,
+      mojo::PendingReceiver<network::mojom::TCPServerSocket> receiver,
       network::mojom::NetworkContext::CreateTCPServerSocketCallback callback);
   static void OnListenCompleteOnUIThread(
       const scoped_refptr<base::SequencedTaskRunner>& original_task_runner,
@@ -174,7 +174,7 @@ class TCPSocket : public Socket {
   // CLIENT mode.
   mojo::Remote<network::mojom::TCPConnectedSocket> client_socket_;
   // SERVER mode.
-  network::mojom::TCPServerSocketPtr server_socket_;
+  mojo::Remote<network::mojom::TCPServerSocket> server_socket_;
 
   net::CompletionOnceCallback connect_callback_;
   ListenCallback listen_callback_;
