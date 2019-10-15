@@ -23,7 +23,7 @@ constexpr int kMinDialogWidthPx = 650;
 
 // The name of the host service as it appears in the system's Accessibility
 // permission dialog.
-constexpr NSString* kHostServiceName = @"remoting_me2me_host";
+constexpr NSString* kHostServiceName = @"ChromeRemoteDesktopHost";
 
 void ShowPermissionDialog() {
   base::scoped_nsobject<NSAlert> alert([[NSAlert alloc] init]);
