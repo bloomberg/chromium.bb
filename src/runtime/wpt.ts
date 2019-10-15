@@ -1,6 +1,7 @@
 import { TestLoader } from '../framework/loader.js';
 import { Logger } from '../framework/logger.js';
 import { makeQueryString } from '../framework/url_query.js';
+import { AsyncMutex } from '../framework/util/async_mutex.js';
 
 declare interface WptTestObject {
   step(f: () => void): void;
@@ -15,7 +16,8 @@ declare function async_test(f: (this: WptTestObject) => Promise<void>, name: str
   const files = await loader.loadTestsFromQuery(window.location.search);
 
   const log = new Logger();
-  const running = [];
+  const mutex = new AsyncMutex();
+  const running: Array<Promise<void>> = [];
 
   for (const f of files) {
     if (!('g' in f.spec)) {
@@ -23,19 +25,21 @@ declare function async_test(f: (this: WptTestObject) => Promise<void>, name: str
     }
 
     const [rec] = log.record(f.id);
-    // TODO: don't run all tests all at once
     for (const t of f.spec.g.iterate(rec)) {
-      const run = t.run();
-      running.push(run);
       // Note: apparently, async_tests must ALL be added within the same task.
-      async_test(async function(this: WptTestObject): Promise<void> {
-        const r = await run;
-        this.step(() => {
-          if (r.status === 'fail') {
-            throw (r.logs || []).join('\n');
-          }
+      async_test(function(this: WptTestObject): Promise<void> {
+        const p = mutex.with(async () => {
+          const r = await t.run();
+          this.step(() => {
+            if (r.status === 'fail') {
+              throw (r.logs || []).join('\n');
+            }
+          });
+          this.done();
         });
-        this.done();
+
+        running.push(p);
+        return p;
       }, makeQueryString(f.id, t.id));
     }
   }
