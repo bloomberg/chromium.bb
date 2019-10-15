@@ -253,6 +253,8 @@ class GetTargetVersionsTest(cros_test_lib.MockTestCase, ApiConfigMixin):
                                             'determine_android_branch')
     patch_target_version = self.PatchObject(packages_service,
                                             'determine_android_target')
+    chrome_version = self.PatchObject(packages_service,
+                                      'determine_chrome_version')
 
     request = self._GetRequest(board='betty')
     packages_controller.GetTargetVersions(request, self.response,
@@ -260,6 +262,7 @@ class GetTargetVersionsTest(cros_test_lib.MockTestCase, ApiConfigMixin):
     patch_version.assert_not_called()
     patch_branch_version.assert_not_called()
     patch_target_version.assert_not_called()
+    chrome_version.assert_not_called()
 
   def testNoBuildTargetFails(self):
     """No build target argument should fail."""
@@ -268,6 +271,28 @@ class GetTargetVersionsTest(cros_test_lib.MockTestCase, ApiConfigMixin):
     with self.assertRaises(cros_build_lib.DieSystemExit):
       packages_controller.GetTargetVersions(request, self.response,
                                             self.api_config)
+
+  def testGetTargetVersions(self):
+    """Verify basic return values."""
+    chrome_version = '76.0.1.2'
+    self.PatchObject(packages_service, 'determine_chrome_version',
+                     return_value=chrome_version)
+    android_version = 'android_test_version'
+    self.PatchObject(packages_service, 'determine_android_version',
+                     return_value=android_version)
+    android_branch = 'android_test_branch'
+    self.PatchObject(packages_service, 'determine_android_branch',
+                     return_value=android_branch)
+    android_target = 'android_test_target'
+    self.PatchObject(packages_service, 'determine_android_target',
+                     return_value=android_target)
+    request = self._GetRequest(board='betty')
+    packages_controller.GetTargetVersions(request, self.response,
+                                          self.api_config)
+    self.assertEqual(self.response.android_version, android_version)
+    self.assertEqual(self.response.android_branch_version, android_branch)
+    self.assertEqual(self.response.android_target_version, android_target)
+    self.assertEqual(self.response.chrome_version, chrome_version)
 
 
 class HasChromePrebuiltTest(cros_test_lib.MockTestCase, ApiConfigMixin):

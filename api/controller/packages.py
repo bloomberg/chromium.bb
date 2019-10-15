@@ -105,11 +105,7 @@ def GetBestVisible(input_proto, output_proto, _config):
 def GetChromeVersion(input_proto, output_proto, _config):
   """Returns the chrome version."""
   build_target = controller_util.ParseBuildTarget(input_proto.build_target)
-  cpv = packages.get_best_visible(
-      constants.CHROME_CP, build_target=build_target)
-
-  # Something like 1.2.3.4_rc -> 1.2.3.4.
-  output_proto.version = cpv.version_no_rev.split('_')[0]
+  output_proto.version = packages.determine_chrome_version(build_target)
 
 
 def _HasChromePrebuiltSuccess(_input_proto, output_proto, _config):
@@ -129,6 +125,7 @@ def GetTargetVersions(input_proto, output_proto, _config):
       build_target)
   output_proto.android_target_version = packages.determine_android_target(
       build_target)
+  output_proto.chrome_version = packages.determine_chrome_version(build_target)
   # TODO(crbug.com/1004438): Implement remaining version fields.
 
 

@@ -435,6 +435,18 @@ def builds(atom, build_target, packages=None):
   return any(atom in package for package in graph['package_deps'])
 
 
+def determine_chrome_version(board):
+  """Returns the current Chrome version for the board (or in buildroot).
+
+  Args:
+    board: The board name this is specific to.
+  """
+  cpv = portage_util.PortageqBestVisible(constants.CHROME_CP, board,
+                                         cwd=constants.SOURCE_ROOT)
+  # Something like 78.0.3877.4_rc -> 78.0.3877.4
+  return cpv.version_no_rev.partition('_')[0]
+
+
 def determine_android_package(board):
   """Returns the active Android container package in use by the board.
 
