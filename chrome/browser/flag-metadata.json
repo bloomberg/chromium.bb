@@ -1380,7 +1380,7 @@
   {
     "name": "enable-intent-picker",
     "owners": [ "chromeos-apps-foundation-team@google.com" ],
-    "expiry_milestone": 78
+    "expiry_milestone": 80
   },
   {
     "name": "enable-javascript-harmony",
