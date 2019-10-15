@@ -754,17 +754,19 @@ TEST_F(NigoriSyncBridgeImplTest, ShouldTransitToCustomPassphrase) {
   EXPECT_TRUE(bridge()->HasPendingKeysForTesting());
 }
 
-// Tests that we don't try to overwrite default passphrase type and report
-// ModelError unless we received default Nigori node (which is determined by
-// the size of encryption_keybag). It's a requirement because receiving default
-// passphrase type might mean that some newer client switched to the new
-// passphrase type.
+// Tests that bridge doesn't try to overwrite unknown passphrase type and
+// report ModelError unless it received default Nigori node (which is
+// determined by the size of encryption_keybag). It's a requirement because
+// receiving unknown passphrase type might mean that some newer client switched
+// to the new passphrase type.
 TEST_F(NigoriSyncBridgeImplTest, ShouldFailOnUnknownPassprase) {
   EntityData entity_data;
   *entity_data.specifics.mutable_nigori() =
       sync_pb::NigoriSpecifics::default_instance();
   entity_data.specifics.mutable_nigori()->mutable_encryption_keybag()->set_blob(
       "data");
+  entity_data.specifics.mutable_nigori()->set_passphrase_type(
+      sync_pb::NigoriSpecifics::TRUSTED_VAULT_PASSPHRASE + 1);
   ASSERT_TRUE(bridge()->SetKeystoreKeys({"keystore_key"}));
 
   EXPECT_CALL(*processor(), Put(_)).Times(0);
