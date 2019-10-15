@@ -1246,9 +1246,9 @@ function onRealboxKeyDown(e) {
     return matchEl.classList.contains(CLASSES.SELECTED);
   });
 
-  if (key === 'Delete' && e.shiftKey && !e.altKey && !e.ctrlKey && !e.metaKey) {
-    if (autocompleteMatches[selected].supportsDeletion) {
-      matchElBeingDeleted = matchEls[selected];
+  if (key === 'Delete') {
+    if (e.shiftKey && !e.altKey && !e.ctrlKey && !e.metaKey &&
+        autocompleteMatches[selected].supportsDeletion) {
       window.chrome.embeddedSearch.searchBox.deleteAutocompleteMatch(selected);
       e.preventDefault();
     }

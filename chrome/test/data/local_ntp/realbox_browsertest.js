@@ -579,6 +579,24 @@ test.realbox.testSupportedDeletion = function() {
   assertEquals(newMatchesEl.children[0], document.activeElement);
 };
 
+test.realbox.testNonShiftDelete = function() {
+  test.realbox.realboxEl.value = 'hello world';
+  test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
+
+  chrome.embeddedSearch.searchBox.onqueryautocompletedone({
+    input: test.realbox.realboxEl.value,
+    matches: [test.realbox.getSearchMatch(), test.realbox.getUrlMatch()],
+  });
+
+  const deleteKey = new KeyboardEvent('keydown', {
+    bubbles: true,
+    cancelable: true,
+    key: 'Delete',
+  });
+  test.realbox.realboxEl.dispatchEvent(deleteKey);  // Previously threw error.
+  assertFalse(deleteKey.defaultPrevented);
+};
+
 test.realbox.testRemoveIcon = function() {
   test.realbox.realboxEl.value = 'hello world';
   test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
