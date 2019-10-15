@@ -1181,18 +1181,8 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       'benchmark_afdo_generate',
       site_config.templates.afdo_toolchain,
       images=['test'],
-      hw_tests=[
-          config_lib.HWTestConfig(constants.HWTEST_AFDO_SUITE,
-                                  pool=constants.HWTEST_MACH_POOL,
-                                  timeout=constants.AFDO_GENERATE_TIMEOUT,
-                                  priority=constants.HWTEST_BUILD_PRIORITY,
-                                  file_bugs=True)],
-      hw_tests_override=[
-          config_lib.HWTestConfig(constants.HWTEST_AFDO_SUITE,
-                                  pool=constants.HWTEST_MACH_POOL,
-                                  timeout=constants.AFDO_GENERATE_TIMEOUT,
-                                  priority=constants.HWTEST_BUILD_PRIORITY,
-                                  file_bugs=True)],
+      hw_tests=[hw_test_list.AFDORecordTest()],
+      hw_tests_override=[hw_test_list.AFDORecordTest()],
       afdo_generate_async=True,
       # FIXME(tcwang): Might need to revisit this later.
       # For now, use the same useflags as PFQ AFDO generator:
@@ -4302,7 +4292,7 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       afdo_update_ebuild=True,
       sync_chrome=True,
       chrome_rev=constants.CHROME_REV_STICKY,
-      hw_tests=[hw_test_list.AFDORecordTest()],
+      hw_tests=[hw_test_list.AFDORecordTest(warn_only=True)],
       useflags=config_lib.append_useflags(['-transparent_hugepage',
                                            '-debug_fission',
                                            '-thinlto',
@@ -4320,7 +4310,7 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       afdo_update_ebuild=True,
       sync_chrome=True,
       chrome_rev=constants.CHROME_REV_STICKY,
-      hw_tests=[hw_test_list.AFDORecordTest()],
+      hw_tests=[hw_test_list.AFDORecordTest(warn_only=True)],
       useflags=config_lib.append_useflags(['-transparent_hugepage',
                                            '-debug_fission',
                                            '-thinlto',

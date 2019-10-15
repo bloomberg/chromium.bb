@@ -271,8 +271,9 @@ class HWTestList(object):
     return suite_list
 
   def AFDORecordTest(self, **kwargs):
-    default_dict = dict(pool=constants.HWTEST_MACH_POOL,
-                        warn_only=True, file_bugs=True,
+    default_dict = dict(pool=constants.HWTEST_QUOTA_POOL,
+                        quota_account='toolchain',
+                        file_bugs=True,
                         timeout=constants.AFDO_GENERATE_TIMEOUT,
                         priority=constants.HWTEST_PFQ_PRIORITY)
     # Allows kwargs overrides to default_dict for cq.
@@ -866,10 +867,11 @@ def GeneralTemplates(site_config, ge_build_config):
 
   site_config.templates.release_afdo_generate.apply(
       site_config.templates.default_hw_tests_override,
-      hw_tests=[hw_test_list.AFDORecordTest()],
+      hw_tests=[hw_test_list.AFDORecordTest(warn_only=True)],
       hw_tests_override=[hw_test_list.AFDORecordTest(
           pool=constants.HWTEST_TRYBOT_POOL,
           file_bugs=False,
+          warn_only=True,
           priority=constants.HWTEST_DEFAULT_PRIORITY,
       )],
   )
