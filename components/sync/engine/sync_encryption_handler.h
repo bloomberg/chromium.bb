@@ -45,8 +45,6 @@ enum BootstrapTokenType {
 // TODO(crbug.com/1010397): Rename this class.
 class SyncEncryptionHandler {
  public:
-  class NigoriState;
-
   static constexpr PassphraseType kInitialPassphraseType =
       PassphraseType::kImplicitPassphrase;
 
@@ -132,15 +130,9 @@ class SyncEncryptionHandler {
 
     // The user has set a passphrase using this device.
     // TODO(treib): This method is only overridden in tests which use it to
-    // capture the NigoriState; we should find a better way to do that.
+    // capture the Nigori state; we should find a better way to do that.
     virtual void OnLocalSetPassphraseEncryption(
-        const NigoriState& nigori_state) {}
-  };
-
-  class NigoriState {
-   public:
-    NigoriState() {}
-    sync_pb::NigoriSpecifics nigori_specifics;
+        const sync_pb::NigoriSpecifics& specifics) {}
   };
 
   SyncEncryptionHandler();

@@ -106,7 +106,8 @@ class SyncEncryptionHandlerImpl : public KeystoreKeysHandler,
   // Restore a saved nigori obtained from OnLocalSetPassphraseEncryption.
   //
   // Writes the nigori to the Directory and updates the Cryptographer.
-  void RestoreNigori(const SyncEncryptionHandler::NigoriState& nigori_state);
+  void RestoreNigoriForTesting(
+      const sync_pb::NigoriSpecifics& nigori_specifics);
 
   // Returns mutable DirectoryCryptographer, used only in tests to manipulate it
   // directly.
