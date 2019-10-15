@@ -11147,11 +11147,12 @@ Called by update_net_error_codes.py.-->
   <int value="15" label="CRAS_METRICS_DEVICE_HFP"/>
   <int value="16" label="CRAS_METRICS_DEVICE_HSP"/>
   <int value="17" label="CRAS_METRICS_DEVICE_BLUETOOTH"/>
-  <int value="18" label="CRAS_METRICS_DEVICE_NO_DEVICE"/>
-  <int value="19" label="CRAS_METRICS_DEVICE_NORMAL_FALLBACK"/>
-  <int value="20" label="CRAS_METRICS_DEVICE_ABNORMAL_FALLBACK"/>
-  <int value="21" label="CRAS_METRICS_DEVICE_SILENT_HOTWORD"/>
-  <int value="22" label="CRAS_METRICS_DEVICE_UNKNOWN"/>
+  <int value="18" label="CRAS_METRICS_DEVICE_BLUETOOTH_NB_MIC"/>
+  <int value="19" label="CRAS_METRICS_DEVICE_NO_DEVICE"/>
+  <int value="20" label="CRAS_METRICS_DEVICE_NORMAL_FALLBACK"/>
+  <int value="21" label="CRAS_METRICS_DEVICE_ABNORMAL_FALLBACK"/>
+  <int value="22" label="CRAS_METRICS_DEVICE_SILENT_HOTWORD"/>
+  <int value="23" label="CRAS_METRICS_DEVICE_UNKNOWN"/>
 </enum>
 
 <enum name="CrashExitCodes">
