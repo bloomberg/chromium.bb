@@ -3,7 +3,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-
 """Deps analysis service."""
 
 from __future__ import print_function
@@ -86,12 +85,13 @@ def GenerateSourcePathMapping(packages, board):
   results = {}
 
   packages_to_ebuild_paths = portage_util.FindEbuildsForPackages(
-      packages, sysroot=cros_build_lib.GetSysroot(board),
-      error_code_ok=False)
+      packages, sysroot=cros_build_lib.GetSysroot(board), error_code_ok=False)
 
   # Source paths which are the directory of ebuild files.
   for package, ebuild_path in packages_to_ebuild_paths.items():
-    results[package] = [ebuild_path]
+    # Include the entire directory that contains the ebuild as the package's
+    # FILESDIR probably lives there too.
+    results[package] = [os.path.dirname(ebuild_path)]
 
   # Source paths which are cros workon source paths.
   buildroot = os.path.join(constants.CHROOT_SOURCE_ROOT, 'src')
@@ -112,8 +112,17 @@ def GenerateSourcePathMapping(packages, board):
   # For now, we just include all the whole eclass directory.
   # TODO(crbug.com/917174): for each package, expand the enalysis to output
   # only the path to eclass files which the packakge depends on.
-  _ECLASS_DIRS = [os.path.join(constants.CHROOT_SOURCE_ROOT,
-                               constants.CHROMIUMOS_OVERLAY_DIR, 'eclass')]
+  # Eclasses can live in either chromiumos-overlay, portage-stable, or
+  # eclass-overlay. Without inspecting which eclasses are actually inherited
+  # by a given ebuild we must pessimistically include all three.
+  _ECLASS_DIRS = [
+      os.path.join(constants.CHROOT_SOURCE_ROOT,
+                   constants.CHROMIUMOS_OVERLAY_DIR, 'eclass'),
+      os.path.join(constants.CHROOT_SOURCE_ROOT,
+                   constants.PORTAGE_STABLE_OVERLAY_DIR, 'eclass'),
+      os.path.join(constants.CHROOT_SOURCE_ROOT, constants.ECLASS_OVERLAY_DIR,
+                   'eclass'),
+  ]
   for package, ebuild_path in packages_to_ebuild_paths.items():
     use_inherit = False
     for line in fileinput.input(ebuild_path):
@@ -127,8 +136,38 @@ def GenerateSourcePathMapping(packages, board):
   if board:
     overlay_directories = portage_util.FindOverlays(
         overlay_type='both', board=board)
+
+    # The only parts of the overlay that affect every package are the current
+    # profile (which lives somewhere in the profiles/ subdir) and a top-level
+    # make.conf (if it exists).
+    profile_directories = [
+        os.path.join(x, 'profiles') for x in overlay_directories
+    ]
+    make_conf_paths = [
+        os.path.join(x, 'make.conf') for x in overlay_directories
+    ]
+
+    # These directories *might* affect a build, so we include them for now to
+    # be safe.
+    metadata_directories = [
+        os.path.join(x, 'metadata') for x in overlay_directories
+    ]
+    scripts_directories = [
+        os.path.join(x, 'scripts') for x in overlay_directories
+    ]
+
     for package in results:
-      results[package].extend(overlay_directories)
+      results[package].extend(profile_directories)
+      results[package].extend(make_conf_paths)
+      results[package].extend(metadata_directories)
+      results[package].extend(scripts_directories)
+
+  # chromiumos-overlay specifies default settings for every target in
+  # chromeos/config  and so can potentially affect every board.
+  for package in results:
+    results[package].append(
+        os.path.join(constants.CHROOT_SOURCE_ROOT,
+                     constants.CHROMIUMOS_OVERLAY_DIR, 'chromeos', 'config'))
 
   for p in results:
     results[p] = NormalizeSourcePaths(results[p])
@@ -161,15 +200,17 @@ def GetBuildDependency(board, packages=None):
     board_specific_packages.extend([cpv.cp for cpv in packages])
   else:
     board_specific_packages.extend([
-        'virtual/target-os', 'virtual/target-os-dev',
-        'virtual/target-os-test', 'virtual/target-os-factory'])
+        'virtual/target-os', 'virtual/target-os-dev', 'virtual/target-os-test',
+        'virtual/target-os-factory'
+    ])
     # Since we don’t have a clear mapping from autotests to git repos
     # and/or portage packages, we assume every board run all autotests.
     board_specific_packages += ['chromeos-base/autotest-all']
 
   non_board_specific_packages = [
       'virtual/target-sdk', 'chromeos-base/chromite',
-      'virtual/target-sdk-post-cross']
+      'virtual/target-sdk-post-cross'
+  ]
 
   board_specific_deps = cros_extract_deps.ExtractDeps(
       sysroot=cros_build_lib.GetSysroot(board),

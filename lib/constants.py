@@ -857,6 +857,8 @@ VALID_GCE_TEST_SUITES = ['gce-smoke', 'gce-sanity']
 MOBLAB_VM_SMOKE_TEST_TYPE = 'moblab_smoke_test'
 
 CHROMIUMOS_OVERLAY_DIR = 'src/third_party/chromiumos-overlay'
+PORTAGE_STABLE_OVERLAY_DIR = 'src/third_party/portage-stable'
+ECLASS_OVERLAY_DIR = 'src/third_party/eclass-overlay'
 CHROMEOS_PARTNER_OVERLAY_DIR = 'src/private-overlays/chromeos-partner-overlay/'
 PUBLIC_BINHOST_CONF_DIR = os.path.join(CHROMIUMOS_OVERLAY_DIR,
                                        'chromeos/binhost')
