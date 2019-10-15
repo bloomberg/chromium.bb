@@ -2850,6 +2850,8 @@ jumbo_split_static_library("browser") {
       "sync/profile_sync_service_android.cc",
       "sync/profile_sync_service_android.h",
       "translate/android/translate_bridge.cc",
+      "updates/update_notification_client.cc",
+      "updates/update_notification_client.h",
     ]
     public_deps += [
       "//chrome/android/features/dev_ui:buildflags",
@@ -2865,6 +2867,7 @@ jumbo_split_static_library("browser") {
       "//chrome/android/modules/extra_icu/provider:native",
       "//chrome/browser/android/thin_webview/internal",
       "//chrome/browser/android/webapk:proto",
+      "//chrome/browser/notifications/scheduler/public",
       "//chrome/services/media_gallery_util/public/cpp",
       "//components/autofill_assistant/browser",
       "//components/cdm/browser",
