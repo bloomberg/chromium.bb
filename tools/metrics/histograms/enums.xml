@@ -15520,6 +15520,11 @@ Called by update_net_error_codes.py.-->
   <int value="9" label="WHITELISTED_BY_POLICY"/>
   <int value="10" label="ASYNC_SCANNING"/>
   <int value="11" label="BLOCKED_PASSWORD_PROTECTED"/>
+  <int value="12" label="BLOCKED_TOO_LARGE"/>
+  <int value="13" label="SENSITIVE_CONTENT_WARNING"/>
+  <int value="14" label="SENSITIVE_CONTENT_BLOCK"/>
+  <int value="15" label="DEEP_SCANNED_SAFE"/>
+  <int value="16" label="DEEP_SCANNED_OPENED_DANGEROUS"/>
 </enum>
 
 <enum name="DownloadLocationDialogResult">
@@ -53600,6 +53605,11 @@ Called by update_net_trust_anchors.py.-->
   <int value="27" label="VERDICT_UNKNOWN"/>
   <int value="28" label="DOWNLOAD_DESTROYED"/>
   <int value="29" label="BLOCKED_PASSWORD_PROTECTED"/>
+  <int value="30" label="BLOCKED_TOO_LARGE"/>
+  <int value="31" label="SENSITIVE_CONTENT_WARNING"/>
+  <int value="32" label="SENSITIVE_CONTENT_BLOCK"/>
+  <int value="33" label="DEEP_SCANNED_SAFE"/>
+  <int value="34" label="DEEP_SCANNED_OPENED_DANGEROUS"/>
 </enum>
 
 <enum name="SBClientDownloadCheckResult">
