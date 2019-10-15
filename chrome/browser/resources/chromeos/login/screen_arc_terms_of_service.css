@@ -82,7 +82,7 @@ html[dir='rtl'] .arc-tos-overlay-close-top {
 }
 
 .arc-overlay-url .oobe-popup {
-  width: 640px;
+  max-width: 640px;
 }
 
 .arc-overlay-text #arc-tos-overlay-webview-container,
