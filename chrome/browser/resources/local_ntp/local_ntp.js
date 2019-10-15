@@ -1462,7 +1462,7 @@ function populateAutocompleteMatches(matches) {
       col.forEach(colEl => matchEl.appendChild(colEl));
     }
 
-    if (match.supportsDeletion) {
+    if (match.supportsDeletion && configData.suggestionTransparencyEnabled) {
       const icon = document.createElement('button');
       icon.title = configData.translatedStrings.removeSuggestion;
       icon.classList.add(CLASSES.REMOVE_ICON);

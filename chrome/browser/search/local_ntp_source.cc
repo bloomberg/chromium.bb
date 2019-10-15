@@ -619,6 +619,10 @@ class LocalNtpSource::SearchConfigurationProvider
                              base::FeatureList::IsEnabled(
                                  features::kChromeColorsCustomColorPicker));
       config_data.SetBoolean("realboxEnabled", features::IsNtpRealboxEnabled());
+      config_data.SetBoolean(
+          "suggestionTransparencyEnabled",
+          base::FeatureList::IsEnabled(
+              omnibox::kOmniboxSuggestionTransparencyOptions));
     }
 
     // Serialize the dictionary.
