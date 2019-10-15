@@ -3055,16 +3055,10 @@ class RenderFrameHostImplBrowserTestWithNonSecureExternalRequestsBlocked
   base::test::ScopedFeatureList feature_list_;
 };
 
-// TODO(https://crbug.com/1014325): Flaky on Win bots.
-#if defined(OS_WIN)
-#define MAYBE_ComputeMainFrameIPAddressSpace \
-  DISABLED_ComputeMainFrameIPAddressSpace
-#else
-#define MAYBE_ComputeMainFrameIPAddressSpace ComputeMainFrameIPAddressSpace
-#endif
+// TODO(https://crbug.com/1014325): Flaky on multiple bots.
 IN_PROC_BROWSER_TEST_F(
     RenderFrameHostImplBrowserTestWithNonSecureExternalRequestsBlocked,
-    MAYBE_ComputeMainFrameIPAddressSpace) {
+    DISABLED_ComputeMainFrameIPAddressSpace) {
   // TODO(mkwst): `about:`, `file:`, `data:`, `blob:`, and `filesystem:` URLs
   // are all treated as `kUnknown` today. This is ~incorrect, but safe, as their
   // web-facing behavior will be equivalent to "public".
