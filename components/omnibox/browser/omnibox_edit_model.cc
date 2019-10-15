@@ -1071,11 +1071,8 @@ void OmniboxEditModel::OnSetFocus(bool control_down) {
 
   // Try to get ZeroSuggest suggestions if a page is loaded and the user has
   // not been typing in the omnibox.  The |user_input_in_progress_| check is
-  // used to detect the case where this function is called after right-clicking
-  // in the omnibox and selecting paste in Linux (in which case we actually get
-  // the OnSetFocus() call after the process of handling the paste has kicked
-  // off).
-  // TODO(hfung): Remove this when crbug/271590 is fixed.
+  // used to prevent on-focus suggestions from appearing if the user already
+  // has a navigation or search query in mind.
   if (client_->CurrentPageExists() && !user_input_in_progress_) {
     // Send the textfield contents exactly as-is, as otherwise the verbatim
     // match can be wrong. The full page URL is anyways in set_current_url().
