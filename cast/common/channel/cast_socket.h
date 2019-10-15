@@ -17,6 +17,8 @@ using TlsConnection = openscreen::platform::TlsConnection;
 
 class CastMessage;
 
+uint32_t GetNextSocketId();
+
 // Represents a simple message-oriented socket for communicating with the Cast
 // V2 protocol.  It isn't thread-safe, so it should only be used on the same
 // TaskRunner thread as its TlsConnection.
@@ -38,9 +40,9 @@ class CastSocket : public TlsConnection::Client {
   ~CastSocket();
 
   // Sends |message| immediately unless the underlying TLS connection is
-  // write-blocked, in which case |message| will be queued.  No error is
-  // returned for both queueing and successful sending.  An error will be
-  // returned if |message| cannot be serialized for any reason.
+  // write-blocked, in which case |message| will be queued.  An error will be
+  // returned if |message| cannot be serialized for any reason, even while
+  // write-blocked.
   Error SendMessage(const CastMessage& message);
 
   void set_client(Client* client) {

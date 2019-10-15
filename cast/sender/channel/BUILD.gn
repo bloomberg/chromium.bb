@@ -6,6 +6,10 @@ source_set("channel") {
   sources = [
     "cast_auth_util.cc",
     "cast_auth_util.h",
+    "message_util.cc",
+    "message_util.h",
+    "sender_socket_factory.cc",
+    "sender_socket_factory.h",
   ]
 
   deps = [

@@ -8,6 +8,7 @@ source_set("channel") {
     "cast_socket.h",
     "message_framer.cc",
     "message_framer.h",
+    "message_util.h",
   ]
 
   deps = [

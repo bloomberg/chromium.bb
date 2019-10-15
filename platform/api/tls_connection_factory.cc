@@ -8,19 +8,23 @@ namespace openscreen {
 namespace platform {
 
 void TlsConnectionFactory::OnAccepted(
+    X509* peer_cert,
     std::unique_ptr<TlsConnection> connection) {
-  task_runner_->PostTask([c = std::move(connection), this]() mutable {
-    // TODO(issues/71): |this| may be invalid at this point.
-    this->client_->OnAccepted(this, std::move(c));
-  });
+  task_runner_->PostTask(
+      [peer_cert, c = std::move(connection), this]() mutable {
+        // TODO(issues/71): |this| may be invalid at this point.
+        this->client_->OnAccepted(this, peer_cert, std::move(c));
+      });
 }
 
 void TlsConnectionFactory::OnConnected(
+    X509* peer_cert,
     std::unique_ptr<TlsConnection> connection) {
-  task_runner_->PostTask([c = std::move(connection), this]() mutable {
-    // TODO(issues/71): |this| may be invalid at this point.
-    this->client_->OnConnected(this, std::move(c));
-  });
+  task_runner_->PostTask(
+      [peer_cert, c = std::move(connection), this]() mutable {
+        // TODO(issues/71): |this| may be invalid at this point.
+        this->client_->OnConnected(this, peer_cert, std::move(c));
+      });
 }
 
 void TlsConnectionFactory::OnConnectionFailed(

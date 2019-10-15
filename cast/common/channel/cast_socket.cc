@@ -4,6 +4,8 @@
 
 #include "cast/common/channel/cast_socket.h"
 
+#include <atomic>
+
 #include "cast/common/channel/message_framer.h"
 #include "platform/api/logging.h"
 
@@ -13,6 +15,11 @@ namespace channel {
 using message_serialization::DeserializeResult;
 using openscreen::ErrorOr;
 using openscreen::platform::TlsConnection;
+
+uint32_t GetNextSocketId() {
+  static std::atomic<uint32_t> id(1);
+  return id++;
+}
 
 CastSocket::CastSocket(std::unique_ptr<TlsConnection> connection,
                        Client* client,

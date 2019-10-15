@@ -218,6 +218,8 @@ std::ostream& operator<<(std::ostream& os, const Error::Code& code) {
       return os << "Failure: kCastV2ConnectTimeout";
     case Error::Code::kCastV2PingTimeout:
       return os << "Failure: kCastV2PingTimeout";
+    case Error::Code::kCastV2ChannelPolicyMismatch:
+      return os << "Failure: kCastV2ChannelPolicyMismatch";
   }
 
   // Unused 'return' to get around failure on GCC.

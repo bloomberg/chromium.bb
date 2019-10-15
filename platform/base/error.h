@@ -153,6 +153,7 @@ class Error {
     kCastV2InvalidChannelId,
     kCastV2ConnectTimeout,
     kCastV2PingTimeout,
+    kCastV2ChannelPolicyMismatch,
 
     // Generic errors.
     kUnknownError,

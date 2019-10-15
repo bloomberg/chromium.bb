@@ -28,9 +28,11 @@ class TlsConnectionFactory {
   class Client {
    public:
     virtual void OnAccepted(TlsConnectionFactory* factory,
+                            X509* peer_cert,
                             std::unique_ptr<TlsConnection> connection) = 0;
 
     virtual void OnConnected(TlsConnectionFactory* factory,
+                             X509* peer_cert,
                              std::unique_ptr<TlsConnection> connection) = 0;
 
     virtual void OnConnectionFailed(TlsConnectionFactory* factory,
@@ -69,9 +71,9 @@ class TlsConnectionFactory {
       : client_(client), task_runner_(task_runner) {}
 
   // The below methods proxy calls to this TlsConnectionFactory's Client.
-  void OnAccepted(std::unique_ptr<TlsConnection> connection);
+  void OnAccepted(X509* peer_cert, std::unique_ptr<TlsConnection> connection);
 
-  void OnConnected(std::unique_ptr<TlsConnection> connection);
+  void OnConnected(X509* peer_cert, std::unique_ptr<TlsConnection> connection);
 
   void OnConnectionFailed(const IPEndpoint& remote_address);
 
