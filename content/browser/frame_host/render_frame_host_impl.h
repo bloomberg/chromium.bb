@@ -136,7 +136,6 @@ class AssociatedInterfaceProvider;
 class AssociatedInterfaceRegistry;
 struct FramePolicy;
 struct TransferableMessage;
-struct FullScreenOptions;
 struct WebScrollIntoViewParams;
 
 namespace mojom {
@@ -203,6 +202,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       public SiteInstanceImpl::Observer,
       public service_manager::mojom::InterfaceProvider,
       public blink::mojom::DocumentInterfaceBroker,
+      public blink::mojom::LocalFrameHost,
       public CSPContext,
       public ui::AXActionHandler {
  public:
@@ -1192,6 +1192,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   base::WeakPtr<RenderFrameHostImpl> GetWeakPtr();
 
+  // blink::mojom::LocalFrameHost
+  void EnterFullscreen(blink::mojom::FullscreenOptionsPtr options) override;
+  void ExitFullscreen() override;
+  void FullscreenStateChanged(bool is_fullscreen) override;
+
  protected:
   friend class RenderFrameHostFactory;
 
@@ -1390,8 +1395,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
       ax::mojom::Event event_to_fire);
   void OnAccessibilitySnapshotResponse(int callback_id,
                                        const AXContentTreeUpdate& snapshot);
-  void OnEnterFullscreen(const blink::FullScreenOptions& options);
-  void OnExitFullscreen();
   void OnSuddenTerminationDisablerChanged(
       bool present,
       blink::WebSuddenTerminationDisablerType disabler_type);
@@ -1489,7 +1492,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void CancelInitialHistoryLoad() override;
   void UpdateEncoding(const std::string& encoding) override;
   void FrameSizeChanged(const gfx::Size& frame_size) override;
-  void FullscreenStateChanged(bool is_fullscreen) override;
   void LifecycleStateChanged(blink::mojom::FrameLifecycleState state) override;
   void DocumentOnLoadCompleted() override;
   void UpdateActiveSchedulerTrackedFeatures(uint64_t features_mask) override;
@@ -2215,6 +2217,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   mojo::Remote<mojom::Frame> frame_;
   mojo::AssociatedRemote<mojom::FrameBindingsControl> frame_bindings_control_;
   mojo::AssociatedRemote<mojom::FrameNavigationControl> navigation_control_;
+  mojo::AssociatedReceiver<blink::mojom::LocalFrameHost>
+      local_frame_host_receiver_{this};
 
   // If this is true then this object was created in response to a renderer
   // initiated request. Init() will be called, and until then navigation

@@ -199,6 +199,7 @@
 #include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom.h"
 #include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame_host_test_interface.mojom.h"
+#include "third_party/blink/public/mojom/frame/fullscreen.mojom.h"
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom.h"
 #include "third_party/blink/public/mojom/loader/url_loader_factory_bundle.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
@@ -1599,8 +1600,6 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnAccessibilityChildFrameHitTestResult)
     IPC_MESSAGE_HANDLER(AccessibilityHostMsg_SnapshotResponse,
                         OnAccessibilitySnapshotResponse)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_EnterFullscreen, OnEnterFullscreen)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_ExitFullscreen, OnExitFullscreen)
     IPC_MESSAGE_HANDLER(FrameHostMsg_SuddenTerminationDisablerChanged,
                         OnSuddenTerminationDisablerChanged)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidFinishDocumentLoad,
@@ -3803,8 +3802,8 @@ void RenderFrameHostImpl::OnAccessibilitySnapshotResponse(
 
 // TODO(alexmos): When the allowFullscreen flag is known in the browser
 // process, use it to double-check that fullscreen can be entered here.
-void RenderFrameHostImpl::OnEnterFullscreen(
-    const blink::FullScreenOptions& options) {
+void RenderFrameHostImpl::EnterFullscreen(
+    blink::mojom::FullscreenOptionsPtr options) {
   // Entering fullscreen from a cross-process subframe also affects all
   // renderers for ancestor frames, which will need to apply fullscreen CSS to
   // appropriate ancestor <iframe> elements, fire fullscreenchange events, etc.
@@ -3833,7 +3832,7 @@ void RenderFrameHostImpl::OnEnterFullscreen(
   }
 
   // TODO(alexmos): See if this can use the last committed origin instead.
-  delegate_->EnterFullscreenMode(GetLastCommittedURL().GetOrigin(), options);
+  delegate_->EnterFullscreenMode(GetLastCommittedURL().GetOrigin(), *options);
   delegate_->FullscreenStateChanged(this, true /* is_fullscreen */);
 
   // The previous call might change the fullscreen state. We need to make sure
@@ -3849,7 +3848,7 @@ void RenderFrameHostImpl::OnEnterFullscreen(
 
 // TODO(alexmos): When the allowFullscreen flag is known in the browser
 // process, use it to double-check that fullscreen can be entered here.
-void RenderFrameHostImpl::OnExitFullscreen() {
+void RenderFrameHostImpl::ExitFullscreen() {
   delegate_->ExitFullscreenMode(/* will_cause_resize */ true);
 
   // The previous call might change the fullscreen state. We need to make sure
@@ -5717,6 +5716,15 @@ void RenderFrameHostImpl::SetUpMojoIfNeeded() {
       },
       base::Unretained(this)));
 
+  associated_registry_->AddInterface(base::BindRepeating(
+      [](RenderFrameHostImpl* impl,
+         mojo::PendingAssociatedReceiver<blink::mojom::LocalFrameHost>
+             receiver) {
+        impl->local_frame_host_receiver_.Bind(std::move(receiver));
+        impl->local_frame_host_receiver_.SetFilter(
+            std::make_unique<ActiveURLMessageFilter>(impl));
+      },
+      base::Unretained(this)));
   RegisterMojoInterfaces();
   mojo::PendingRemote<mojom::FrameFactory> frame_factory;
   BindInterface(GetProcess(), &frame_factory);
@@ -5750,6 +5758,9 @@ void RenderFrameHostImpl::InvalidateMojoConnection() {
   // removed.
   geolocation_service_.reset();
   sensor_provider_proxy_.reset();
+
+  local_frame_host_receiver_.reset();
+  associated_registry_.reset();
 }
 
 bool RenderFrameHostImpl::IsFocused() {

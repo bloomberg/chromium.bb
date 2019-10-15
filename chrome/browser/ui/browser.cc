@@ -1726,7 +1726,7 @@ bool Browser::EmbedsFullscreenWidget() {
 void Browser::EnterFullscreenModeForTab(
     WebContents* web_contents,
     const GURL& origin,
-    const blink::FullScreenOptions& options) {
+    const blink::mojom::FullscreenOptions& options) {
   exclusive_access_manager_->fullscreen_controller()->EnterFullscreenModeForTab(
       web_contents, origin);
 }
