@@ -201,7 +201,9 @@ typedef struct {
 } BEST_COMP_TYPE_STATS;
 
 #define LAST_NEW_MV_INDEX 6
-static const MODE_DEFINITION av1_mode_order[MAX_MODES] = {
+// This array defines the mapping from the enums in THR_MODES to the actual
+// prediction modes and refrence frames
+static const MODE_DEFINITION av1_mode_defs[MAX_MODES] = {
   { NEARESTMV, { LAST_FRAME, NONE_FRAME } },
   { NEARESTMV, { LAST2_FRAME, NONE_FRAME } },
   { NEARESTMV, { LAST3_FRAME, NONE_FRAME } },
@@ -397,6 +399,216 @@ static const MODE_DEFINITION av1_mode_order[MAX_MODES] = {
   { D113_PRED, { INTRA_FRAME, NONE_FRAME } },
   { D45_PRED, { INTRA_FRAME, NONE_FRAME } },
 };
+
+static const THR_MODES av1_default_mode_order[MAX_MODES] = {
+  THR_NEARESTMV,
+  THR_NEARESTL2,
+  THR_NEARESTL3,
+  THR_NEARESTB,
+  THR_NEARESTA2,
+  THR_NEARESTA,
+  THR_NEARESTG,
+
+  THR_NEWMV,
+  THR_NEWL2,
+  THR_NEWL3,
+  THR_NEWB,
+  THR_NEWA2,
+  THR_NEWA,
+  THR_NEWG,
+
+  THR_NEARMV,
+  THR_NEARL2,
+  THR_NEARL3,
+  THR_NEARB,
+  THR_NEARA2,
+  THR_NEARA,
+  THR_NEARG,
+
+  THR_GLOBALMV,
+  THR_GLOBALL2,
+  THR_GLOBALL3,
+  THR_GLOBALB,
+  THR_GLOBALA2,
+  THR_GLOBALA,
+  THR_GLOBALG,
+
+  THR_COMP_NEAREST_NEARESTLA,
+  THR_COMP_NEAREST_NEARESTL2A,
+  THR_COMP_NEAREST_NEARESTL3A,
+  THR_COMP_NEAREST_NEARESTGA,
+  THR_COMP_NEAREST_NEARESTLB,
+  THR_COMP_NEAREST_NEARESTL2B,
+  THR_COMP_NEAREST_NEARESTL3B,
+  THR_COMP_NEAREST_NEARESTGB,
+  THR_COMP_NEAREST_NEARESTLA2,
+  THR_COMP_NEAREST_NEARESTL2A2,
+  THR_COMP_NEAREST_NEARESTL3A2,
+  THR_COMP_NEAREST_NEARESTGA2,
+  THR_COMP_NEAREST_NEARESTLL2,
+  THR_COMP_NEAREST_NEARESTLL3,
+  THR_COMP_NEAREST_NEARESTLG,
+  THR_COMP_NEAREST_NEARESTBA,
+
+  THR_COMP_NEAR_NEARLA,
+  THR_COMP_NEW_NEARESTLA,
+  THR_COMP_NEAREST_NEWLA,
+  THR_COMP_NEW_NEARLA,
+  THR_COMP_NEAR_NEWLA,
+  THR_COMP_NEW_NEWLA,
+  THR_COMP_GLOBAL_GLOBALLA,
+
+  THR_COMP_NEAR_NEARL2A,
+  THR_COMP_NEW_NEARESTL2A,
+  THR_COMP_NEAREST_NEWL2A,
+  THR_COMP_NEW_NEARL2A,
+  THR_COMP_NEAR_NEWL2A,
+  THR_COMP_NEW_NEWL2A,
+  THR_COMP_GLOBAL_GLOBALL2A,
+
+  THR_COMP_NEAR_NEARL3A,
+  THR_COMP_NEW_NEARESTL3A,
+  THR_COMP_NEAREST_NEWL3A,
+  THR_COMP_NEW_NEARL3A,
+  THR_COMP_NEAR_NEWL3A,
+  THR_COMP_NEW_NEWL3A,
+  THR_COMP_GLOBAL_GLOBALL3A,
+
+  THR_COMP_NEAR_NEARGA,
+  THR_COMP_NEW_NEARESTGA,
+  THR_COMP_NEAREST_NEWGA,
+  THR_COMP_NEW_NEARGA,
+  THR_COMP_NEAR_NEWGA,
+  THR_COMP_NEW_NEWGA,
+  THR_COMP_GLOBAL_GLOBALGA,
+
+  THR_COMP_NEAR_NEARLB,
+  THR_COMP_NEW_NEARESTLB,
+  THR_COMP_NEAREST_NEWLB,
+  THR_COMP_NEW_NEARLB,
+  THR_COMP_NEAR_NEWLB,
+  THR_COMP_NEW_NEWLB,
+  THR_COMP_GLOBAL_GLOBALLB,
+
+  THR_COMP_NEAR_NEARL2B,
+  THR_COMP_NEW_NEARESTL2B,
+  THR_COMP_NEAREST_NEWL2B,
+  THR_COMP_NEW_NEARL2B,
+  THR_COMP_NEAR_NEWL2B,
+  THR_COMP_NEW_NEWL2B,
+  THR_COMP_GLOBAL_GLOBALL2B,
+
+  THR_COMP_NEAR_NEARL3B,
+  THR_COMP_NEW_NEARESTL3B,
+  THR_COMP_NEAREST_NEWL3B,
+  THR_COMP_NEW_NEARL3B,
+  THR_COMP_NEAR_NEWL3B,
+  THR_COMP_NEW_NEWL3B,
+  THR_COMP_GLOBAL_GLOBALL3B,
+
+  THR_COMP_NEAR_NEARGB,
+  THR_COMP_NEW_NEARESTGB,
+  THR_COMP_NEAREST_NEWGB,
+  THR_COMP_NEW_NEARGB,
+  THR_COMP_NEAR_NEWGB,
+  THR_COMP_NEW_NEWGB,
+  THR_COMP_GLOBAL_GLOBALGB,
+
+  THR_COMP_NEAR_NEARLA2,
+  THR_COMP_NEW_NEARESTLA2,
+  THR_COMP_NEAREST_NEWLA2,
+  THR_COMP_NEW_NEARLA2,
+  THR_COMP_NEAR_NEWLA2,
+  THR_COMP_NEW_NEWLA2,
+  THR_COMP_GLOBAL_GLOBALLA2,
+
+  THR_COMP_NEAR_NEARL2A2,
+  THR_COMP_NEW_NEARESTL2A2,
+  THR_COMP_NEAREST_NEWL2A2,
+  THR_COMP_NEW_NEARL2A2,
+  THR_COMP_NEAR_NEWL2A2,
+  THR_COMP_NEW_NEWL2A2,
+  THR_COMP_GLOBAL_GLOBALL2A2,
+
+  THR_COMP_NEAR_NEARL3A2,
+  THR_COMP_NEW_NEARESTL3A2,
+  THR_COMP_NEAREST_NEWL3A2,
+  THR_COMP_NEW_NEARL3A2,
+  THR_COMP_NEAR_NEWL3A2,
+  THR_COMP_NEW_NEWL3A2,
+  THR_COMP_GLOBAL_GLOBALL3A2,
+
+  THR_COMP_NEAR_NEARGA2,
+  THR_COMP_NEW_NEARESTGA2,
+  THR_COMP_NEAREST_NEWGA2,
+  THR_COMP_NEW_NEARGA2,
+  THR_COMP_NEAR_NEWGA2,
+  THR_COMP_NEW_NEWGA2,
+  THR_COMP_GLOBAL_GLOBALGA2,
+
+  THR_COMP_NEAR_NEARLL2,
+  THR_COMP_NEW_NEARESTLL2,
+  THR_COMP_NEAREST_NEWLL2,
+  THR_COMP_NEW_NEARLL2,
+  THR_COMP_NEAR_NEWLL2,
+  THR_COMP_NEW_NEWLL2,
+  THR_COMP_GLOBAL_GLOBALLL2,
+
+  THR_COMP_NEAR_NEARLL3,
+  THR_COMP_NEW_NEARESTLL3,
+  THR_COMP_NEAREST_NEWLL3,
+  THR_COMP_NEW_NEARLL3,
+  THR_COMP_NEAR_NEWLL3,
+  THR_COMP_NEW_NEWLL3,
+  THR_COMP_GLOBAL_GLOBALLL3,
+
+  THR_COMP_NEAR_NEARLG,
+  THR_COMP_NEW_NEARESTLG,
+  THR_COMP_NEAREST_NEWLG,
+  THR_COMP_NEW_NEARLG,
+  THR_COMP_NEAR_NEWLG,
+  THR_COMP_NEW_NEWLG,
+  THR_COMP_GLOBAL_GLOBALLG,
+
+  THR_COMP_NEAR_NEARBA,
+  THR_COMP_NEW_NEARESTBA,
+  THR_COMP_NEAREST_NEWBA,
+  THR_COMP_NEW_NEARBA,
+  THR_COMP_NEAR_NEWBA,
+  THR_COMP_NEW_NEWBA,
+  THR_COMP_GLOBAL_GLOBALBA,
+
+  THR_DC,
+  THR_PAETH,
+  THR_SMOOTH,
+  THR_SMOOTH_V,
+  THR_SMOOTH_H,
+  THR_H_PRED,
+  THR_V_PRED,
+  THR_D135_PRED,
+  THR_D203_PRED,
+  THR_D157_PRED,
+  THR_D67_PRED,
+  THR_D113_PRED,
+  THR_D45_PRED,
+};
+
+static int find_last_single_ref_mode_idx(const THR_MODES *mode_order) {
+  uint8_t mode_found[NUM_SINGLE_REF_MODES];
+  av1_zero(mode_found);
+  int num_single_ref_modes_left = NUM_SINGLE_REF_MODES;
+
+  for (int idx = 0; idx < MAX_MODES; idx++) {
+    const THR_MODES curr_mode = mode_order[idx];
+    if (curr_mode < SINGLE_REF_MODE_END) {
+      num_single_ref_modes_left--;
+    }
+    if (!num_single_ref_modes_left) {
+      return idx;
+    }
+  }
+  return -1;
+}
 
 static const int16_t intra_to_mode_idx[INTRA_MODE_NUM] = {
   THR_DC,         // DC_PRED,
@@ -11890,12 +12102,13 @@ static bool mask_says_skip(const mode_skip_mask_t *mode_skip_mask,
 }
 
 static int inter_mode_compatible_skip(const AV1_COMP *cpi, const MACROBLOCK *x,
-                                      BLOCK_SIZE bsize, int mode_index) {
-  const MV_REFERENCE_FRAME *ref_frame = av1_mode_order[mode_index].ref_frame;
-  const int comp_pred = ref_frame[1] > INTRA_FRAME;
+                                      BLOCK_SIZE bsize,
+                                      PREDICTION_MODE curr_mode,
+                                      const MV_REFERENCE_FRAME *ref_frames) {
+  const int comp_pred = ref_frames[1] > INTRA_FRAME;
   if (comp_pred) {
     if (!is_comp_ref_allowed(bsize)) return 1;
-    if (!(cpi->ref_frame_flags & av1_ref_frame_flag_list[ref_frame[1]])) {
+    if (!(cpi->ref_frame_flags & av1_ref_frame_flag_list[ref_frames[1]])) {
       return 1;
     }
 
@@ -11912,11 +12125,10 @@ static int inter_mode_compatible_skip(const AV1_COMP *cpi, const MACROBLOCK *x,
     if (segfeature_active(seg, segment_id, SEG_LVL_REF_FRAME)) return 1;
   }
 
-  if (ref_frame[0] > INTRA_FRAME && ref_frame[1] == INTRA_FRAME) {
+  if (ref_frames[0] > INTRA_FRAME && ref_frames[1] == INTRA_FRAME) {
     // Mode must be compatible
     if (!is_interintra_allowed_bsize(bsize)) return 1;
-    const PREDICTION_MODE this_mode = av1_mode_order[mode_index].mode;
-    if (!is_interintra_allowed_mode(this_mode)) return 1;
+    if (!is_interintra_allowed_mode(curr_mode)) return 1;
   }
 
   return 0;
@@ -12020,15 +12232,15 @@ static int inter_mode_search_order_independent_skip(
   return 0;
 }
 
-static INLINE void init_mbmi(MB_MODE_INFO *mbmi, int mode_index,
+static INLINE void init_mbmi(MB_MODE_INFO *mbmi, PREDICTION_MODE curr_mode,
+                             const MV_REFERENCE_FRAME *ref_frames,
                              const AV1_COMMON *cm) {
   PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
-  PREDICTION_MODE this_mode = av1_mode_order[mode_index].mode;
   mbmi->ref_mv_idx = 0;
-  mbmi->mode = this_mode;
+  mbmi->mode = curr_mode;
   mbmi->uv_mode = UV_DC_PRED;
-  mbmi->ref_frame[0] = av1_mode_order[mode_index].ref_frame[0];
-  mbmi->ref_frame[1] = av1_mode_order[mode_index].ref_frame[1];
+  mbmi->ref_frame[0] = ref_frames[0];
+  mbmi->ref_frame[1] = ref_frames[1];
   pmi->palette_size[0] = 0;
   pmi->palette_size[1] = 0;
   mbmi->filter_intra_mode_info.use_filter_intra = 0;
@@ -12554,8 +12766,8 @@ static int analyze_simple_trans_states(const AV1_COMP *cpi, MACROBLOCK *x) {
                                   INT64_MAX, INT64_MAX, INT64_MAX, INT64_MAX };
   int skip_ref = 0;
   int64_t min_rd = INT64_MAX;
-  for (int i = 0; i < SINGLE_REF_MODES; ++i) {
-    const MODE_DEFINITION *mode_order = &av1_mode_order[i];
+  for (THR_MODES i = SINGLE_REF_MODE_START; i < SINGLE_REF_MODE_END; ++i) {
+    const MODE_DEFINITION *mode_order = &av1_mode_defs[i];
     const MV_REFERENCE_FRAME ref_frame = mode_order->ref_frame[0];
     for (int k = 0; k < MAX_REF_MV_SEARCH; ++k) {
       const int64_t rd = x->simple_rd_state[i][k].rd_stats.rdcost;
@@ -12743,29 +12955,45 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     }
   }
 
+  const int last_single_ref_mode_idx =
+      find_last_single_ref_mode_idx(av1_default_mode_order);
+  int prune_cpd_using_sr_stats_ready = 0;
+
+  // Here midx is just an interator index that should not be used by itself
+  // except to keep track of the number of modes searched. It should be used
+  // with av1_default_mode_order to get the enum that defines the mode, which
+  // can be used with av1_mode_defs to get the prediction mode and the ref
+  // frames.
   for (int midx = 0; midx < MAX_MODES; ++midx) {
     // After we done with single reference modes, find the 2nd best RD
     // for a reference frame. Only search compound modes that have a reference
     // frame at least as good as the 2nd best.
-    if (sf->prune_compound_using_single_ref && midx == MAX_SINGLE_REF_MODES) {
+    if (sf->prune_compound_using_single_ref &&
+        midx == last_single_ref_mode_idx + 1) {
       find_top_ref(ref_frame_rd);
+      prune_cpd_using_sr_stats_ready = 1;
     }
 
-    if (inter_mode_compatible_skip(cpi, x, bsize, midx)) continue;
+    const THR_MODES mode_enum = av1_default_mode_order[midx];
+    const MODE_DEFINITION *mode_def = &av1_mode_defs[mode_enum];
+    const PREDICTION_MODE this_mode = mode_def->mode;
+    const MV_REFERENCE_FRAME *ref_frames = mode_def->ref_frame;
 
-    const MODE_DEFINITION *mode_order = &av1_mode_order[midx];
-    const PREDICTION_MODE this_mode = mode_order->mode;
+    if (inter_mode_compatible_skip(cpi, x, bsize, this_mode, ref_frames))
+      continue;
     const int ret = inter_mode_search_order_independent_skip(
         cpi, x, &mode_skip_mask, &search_state, skip_ref_frame_mask, this_mode,
-        mode_order->ref_frame);
+        mode_def->ref_frame);
     if (ret == 1) continue;
     args.skip_motion_mode = (ret == 2);
 
-    const MV_REFERENCE_FRAME ref_frame = mode_order->ref_frame[0];
-    const MV_REFERENCE_FRAME second_ref_frame = mode_order->ref_frame[1];
+    const MV_REFERENCE_FRAME ref_frame = ref_frames[0];
+    const MV_REFERENCE_FRAME second_ref_frame = ref_frames[1];
+    const int is_single_pred =
+        ref_frame > INTRA_FRAME && second_ref_frame == NONE_FRAME;
     const int comp_pred = second_ref_frame > INTRA_FRAME;
 
-    if (sf->prune_compound_using_single_ref && midx >= MAX_SINGLE_REF_MODES &&
+    if (sf->prune_compound_using_single_ref && prune_cpd_using_sr_stats_ready &&
         comp_pred &&
         !in_single_ref_cutoff(ref_frame_rd, ref_frame, second_ref_frame)) {
       continue;
@@ -12778,18 +13006,18 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
       reach_first_comp_mode = 1;
     }
 
-    init_mbmi(mbmi, midx, cm);
+    init_mbmi(mbmi, this_mode, ref_frames, cm);
 
     x->skip = 0;
     set_ref_ptrs(cm, xd, ref_frame, second_ref_frame);
 
     if (sf->drop_ref && comp_pred) {
-      if (sf_check_is_drop_ref(mode_order, &search_state)) {
+      if (sf_check_is_drop_ref(mode_def, &search_state)) {
         continue;
       }
     }
 
-    if (search_state.best_rd < search_state.mode_threshold[midx]) continue;
+    if (search_state.best_rd < search_state.mode_threshold[mode_enum]) continue;
 
     if (sf->prune_comp_search_by_single_result > 0 && comp_pred) {
       if (compound_skip_by_single_states(cpi, &search_state, this_mode,
@@ -12817,7 +13045,7 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
 
       // Intra modes will be handled in another loop later.
       assert(intra_mode_num < INTRA_MODES);
-      intra_mode_idx_ls[intra_mode_num++] = midx;
+      intra_mode_idx_ls[intra_mode_num++] = mode_enum;
       continue;
     }
 
@@ -12846,8 +13074,8 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     args.single_newmv_valid = search_state.single_newmv_valid;
     args.single_comp_cost = real_compmode_cost;
     args.ref_frame_cost = ref_frame_cost;
-    if (midx < MAX_SINGLE_REF_MODES) {
-      args.simple_rd_state = x->simple_rd_state[midx];
+    if (is_single_pred) {
+      args.simple_rd_state = x->simple_rd_state[mode_enum];
     }
 
     int64_t this_rd = handle_inter_mode(
@@ -12875,7 +13103,7 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
       rate_uv = 0;
     }
 
-    if (sf->prune_compound_using_single_ref && midx < MAX_SINGLE_REF_MODES &&
+    if (sf->prune_compound_using_single_ref && is_single_pred &&
         this_rd < ref_frame_rd[ref_frame]) {
       ref_frame_rd[ref_frame] = this_rd;
     }
@@ -12885,7 +13113,7 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
       assert(IMPLIES(comp_pred,
                      cm->current_frame.reference_mode != SINGLE_REFERENCE));
       // Note index of best mode so far
-      search_state.best_mode_index = midx;
+      search_state.best_mode_index = mode_enum;
       search_state.best_pred_sse = x->pred_sse[ref_frame];
       rd_cost->rate = rate2;
       rd_cost->dist = distortion2;
@@ -12935,7 +13163,7 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     }
     if (sf->drop_ref && second_ref_frame == NONE_FRAME) {
       // Collect data from single ref mode, and analyze data.
-      sf_drop_ref_analyze(&search_state, mode_order, distortion2);
+      sf_drop_ref_analyze(&search_state, mode_def, distortion2);
     }
 
     if (x->skip && !comp_pred) break;
@@ -13067,13 +13295,13 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   const int intra_ref_frame_cost = ref_costs_single[INTRA_FRAME];
   for (int j = 0; j < intra_mode_num; ++j) {
     if (sf->skip_intra_in_interframe && search_state.skip_intra_modes) break;
-    const int mode_index = intra_mode_idx_ls[j];
-    const MODE_DEFINITION *mode_order = &av1_mode_order[mode_index];
-    const PREDICTION_MODE this_mode = mode_order->mode;
+    const THR_MODES mode_enum = intra_mode_idx_ls[j];
+    const MODE_DEFINITION *mode_def = &av1_mode_defs[mode_enum];
+    const PREDICTION_MODE this_mode = mode_def->mode;
 
-    assert(av1_mode_order[mode_index].ref_frame[0] == INTRA_FRAME);
-    assert(av1_mode_order[mode_index].ref_frame[1] == NONE_FRAME);
-    init_mbmi(mbmi, mode_index, cm);
+    assert(av1_mode_defs[mode_enum].ref_frame[0] == INTRA_FRAME);
+    assert(av1_mode_defs[mode_enum].ref_frame[1] == NONE_FRAME);
+    init_mbmi(mbmi, this_mode, av1_mode_defs[mode_enum].ref_frame, cm);
     x->skip = 0;
 
     if (this_mode != DC_PRED) {
@@ -13098,7 +13326,7 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     if (intra_rd_stats.rdcost < search_state.best_rd) {
       search_state.best_rd = intra_rd_stats.rdcost;
       // Note index of best mode so far
-      search_state.best_mode_index = mode_index;
+      search_state.best_mode_index = mode_enum;
       *rd_cost = intra_rd_stats;
       search_state.best_rd = intra_rd_stats.rdcost;
       search_state.best_mbmode = *mbmi;
@@ -13323,7 +13551,6 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = xd->mi[0];
   const struct segmentation *const seg = &cm->seg;
-  PREDICTION_MODE this_mode;
   unsigned char segment_id = mbmi->segment_id;
   int i;
   struct buf_2d yv12_mb[REF_FRAMES][MAX_MB_PLANE];
@@ -13383,18 +13610,24 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   uint8_t *const tmp_buf = get_buf_by_bd(xd, x->tmp_obmc_bufs[0]);
 
   for (int midx = 0; midx < MAX_MODES; ++midx) {
-    if (inter_mode_compatible_skip(cpi, x, bsize, midx)) continue;
+    const THR_MODES mode_enum = av1_default_mode_order[midx];
+    const MODE_DEFINITION *mode_def = &av1_mode_defs[mode_enum];
+    const PREDICTION_MODE this_mode = mode_def->mode;
+    const MV_REFERENCE_FRAME *ref_frames = mode_def->ref_frame;
 
-    const MODE_DEFINITION *mode_order = &av1_mode_order[midx];
-    this_mode = mode_order->mode;
+    if (inter_mode_compatible_skip(cpi, x, bsize, this_mode, ref_frames))
+      continue;
+
     const int ret = inter_mode_search_order_independent_skip(
         cpi, x, &mode_skip_mask, &search_state, skip_ref_frame_mask, this_mode,
-        mode_order->ref_frame);
+        mode_def->ref_frame);
     if (ret == 1) continue;
     args.skip_motion_mode = (ret == 2);
 
-    const MV_REFERENCE_FRAME ref_frame = mode_order->ref_frame[0];
-    const MV_REFERENCE_FRAME second_ref_frame = mode_order->ref_frame[1];
+    const MV_REFERENCE_FRAME ref_frame = ref_frames[0];
+    const MV_REFERENCE_FRAME second_ref_frame = ref_frames[1];
+    const int is_single_pred =
+        ref_frame > INTRA_FRAME && second_ref_frame == NONE_FRAME;
     const int comp_pred = second_ref_frame > INTRA_FRAME;
 
     if (second_ref_frame != NONE_FRAME) continue;
@@ -13415,8 +13648,8 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
         if (args.single_ref_first_pass) {
           // clear stats
           for (int k = 0; k < MAX_REF_MV_SEARCH; ++k) {
-            x->simple_rd_state[midx][k].rd_stats.rdcost = INT64_MAX;
-            x->simple_rd_state[midx][k].early_skipped = 0;
+            x->simple_rd_state[mode_enum][k].rd_stats.rdcost = INT64_MAX;
+            x->simple_rd_state[mode_enum][k].early_skipped = 0;
           }
         } else {
           if (motion_mode_skip_mask & (1 << ref_frame)) {
@@ -13439,18 +13672,18 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     int skippable = 0;
     int this_skip2 = 0;
 
-    init_mbmi(mbmi, midx, cm);
+    init_mbmi(mbmi, this_mode, ref_frames, cm);
 
     x->skip = 0;
     set_ref_ptrs(cm, xd, ref_frame, second_ref_frame);
 
     if (sf->drop_ref && comp_pred) {
-      if (sf_check_is_drop_ref(mode_order, &search_state)) {
+      if (sf_check_is_drop_ref(mode_def, &search_state)) {
         continue;
       }
     }
 
-    if (search_state.best_rd < search_state.mode_threshold[midx]) continue;
+    if (search_state.best_rd < search_state.mode_threshold[mode_enum]) continue;
 
     if (sf->prune_comp_search_by_single_result > 0 && comp_pred) {
       if (compound_skip_by_single_states(cpi, &search_state, this_mode,
@@ -13494,7 +13727,7 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     }
 
     if (ref_frame == INTRA_FRAME) {
-      intra_mode_idx_ls[intra_mode_num++] = midx;
+      intra_mode_idx_ls[intra_mode_num++] = mode_enum;
       continue;
     } else {
       mbmi->angle_delta[PLANE_TYPE_Y] = 0;
@@ -13513,8 +13746,8 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
         args.single_newmv_valid = search_state.single_newmv_valid;
         args.single_comp_cost = real_compmode_cost;
         args.ref_frame_cost = ref_frame_cost;
-        if (midx < MAX_SINGLE_REF_MODES) {
-          args.simple_rd_state = x->simple_rd_state[midx];
+        if (is_single_pred) {
+          args.simple_rd_state = x->simple_rd_state[mode_enum];
         }
         this_rd = handle_inter_mode(
             cpi, tile_data, x, bsize, &rd_stats, &rd_stats_y, &rd_stats_uv,
@@ -13544,7 +13777,7 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
       }
       if (!mode_excluded) {
         // Note index of best mode so far
-        search_state.best_mode_index = midx;
+        search_state.best_mode_index = mode_enum;
 
         if (ref_frame == INTRA_FRAME) {
           /* required for left and above block mv */
@@ -13592,7 +13825,7 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     }
     if (sf->drop_ref && second_ref_frame == NONE_FRAME) {
       // Collect data from single ref mode, and analyze data.
-      sf_drop_ref_analyze(&search_state, mode_order, distortion2);
+      sf_drop_ref_analyze(&search_state, mode_def, distortion2);
     }
 
     if (x->skip && !comp_pred) break;
@@ -13659,12 +13892,11 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   }
 
   for (int j = 0; j < intra_mode_num; ++j) {
-    const int mode_index = intra_mode_idx_ls[j];
-    const MODE_DEFINITION *mode_order = &av1_mode_order[mode_index];
-    const PREDICTION_MODE curr_mode = mode_order->mode;
-    const MV_REFERENCE_FRAME ref_frame =
-        av1_mode_order[mode_index].ref_frame[0];
-    assert(av1_mode_order[mode_index].ref_frame[1] == NONE_FRAME);
+    const THR_MODES mode_enum = intra_mode_idx_ls[j];
+    const MODE_DEFINITION *mode_def = &av1_mode_defs[mode_enum];
+    const PREDICTION_MODE curr_mode = mode_def->mode;
+    const MV_REFERENCE_FRAME ref_frame = av1_mode_defs[mode_enum].ref_frame[0];
+    assert(av1_mode_defs[mode_enum].ref_frame[1] == NONE_FRAME);
     assert(ref_frame == INTRA_FRAME);
     if (sf->skip_intra_in_interframe && search_state.skip_intra_modes) break;
     if (curr_mode != DC_PRED) {
@@ -13681,7 +13913,7 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
           continue;
       }
     }
-    init_mbmi(mbmi, mode_index, cm);
+    init_mbmi(mbmi, curr_mode, mode_def->ref_frame, cm);
     x->skip = 0;
     set_ref_ptrs(cm, xd, INTRA_FRAME, NONE_FRAME);
 
@@ -13699,7 +13931,7 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     if (intra_rd_stats.rdcost < search_state.best_rd) {
       search_state.best_rd = intra_rd_stats.rdcost;
       // Note index of best mode so far
-      search_state.best_mode_index = mode_index;
+      search_state.best_mode_index = mode_enum;
       *rd_cost = intra_rd_stats;
       search_state.best_rd = intra_rd_stats.rdcost;
       search_state.best_mbmode = *mbmi;

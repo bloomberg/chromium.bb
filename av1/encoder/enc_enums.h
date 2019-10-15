@@ -17,7 +17,7 @@ extern "C" {
 #endif
 
 // This enumerator type needs to be kept aligned with the mode order in
-// const MODE_DEFINITION av1_mode_order[MAX_MODES] used in the rd code.
+// const MODE_DEFINITION av1_mode_defs[MAX_MODES] used in the rd code.
 enum {
   THR_NEARESTMV,
   THR_NEARESTL2,
@@ -211,11 +211,9 @@ enum {
   THR_D45_PRED,
 
   MAX_MODES,
-
-  LAST_SINGLE_REF_MODES = THR_GLOBALG,
-  MAX_SINGLE_REF_MODES = LAST_SINGLE_REF_MODES + 1,
-  LAST_COMP_REF_MODES = THR_COMP_GLOBAL_GLOBALBA,
-  MAX_COMP_REF_MODES = LAST_COMP_REF_MODES + 1
+  SINGLE_REF_MODE_START = THR_NEARESTMV,
+  SINGLE_REF_MODE_END = THR_COMP_NEAREST_NEARESTLA,
+  NUM_SINGLE_REF_MODES = SINGLE_REF_MODE_END - SINGLE_REF_MODE_START,
 } UENUM1BYTE(THR_MODES);
 
 enum {
