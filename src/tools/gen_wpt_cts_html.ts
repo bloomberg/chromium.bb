@@ -14,7 +14,7 @@ import { listing } from '../suites/cts/index.js';
 
   const ls = (await listing) as TestSuiteListingEntry[];
   for (const l of ls) {
-    result += `<meta name="variant" content="?q=cts:${l.path}:">\n`;
+    result += `<meta name=variant content='?q=cts:${l.path}:'>\n`;
   }
 
   return fs.writeFile('./out-wpt/cts.html', result);
