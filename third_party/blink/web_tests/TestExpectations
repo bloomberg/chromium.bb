@@ -352,6 +352,7 @@ crbug.com/981719 [ Win ] external/wpt/css/css-ui/webkit-appearance-textfield-001
 # WebGPU tests are only run on GPU bots, so they are skipped by default and run
 # separately from other Web Tests.
 Bug(intentional) external/wpt/webgpu/ [ Skip ]
+Bug(intentional) wpt_internal/webgpu/ [ Skip ]
 
 # ====== Paint team owned tests to here ======
 

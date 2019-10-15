@@ -4121,7 +4121,7 @@
           '--driver-logging',
           '--ignore-default-expectations',
           '--additional-expectations=../../third_party/blink/web_tests/WebGPUExpectations',
-          '--isolated-script-test-filter=external/wpt/webgpu/*',
+          '--isolated-script-test-filter=wpt_internal/webgpu/*',
         ],
         'linux_args': [ '--no-xvfb' ],
         'merge': {
@@ -4144,7 +4144,7 @@
           '--ignore-default-expectations',
           '--additional-expectations=../../third_party/blink/web_tests/WebGPUExpectations',
           '-t', 'Release_x64',
-          '--isolated-script-test-filter=external/wpt/webgpu/*',
+          '--isolated-script-test-filter=wpt_internal/webgpu/*',
         ],
         'merge': {
           'args': [
