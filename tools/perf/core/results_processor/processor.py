@@ -96,10 +96,6 @@ def _LoadIntermediateResults(intermediate_file):
         results['benchmarkRun'].update(record['benchmarkRun'])
       if 'testResult' in record:
         test_result = record['testResult']
-        # TODO(crbug.com/1011813): This is for compatibility with old version
-        # of LUCI format. Remove it when Telemetry switches to a new version.
-        if 'artifacts' in test_result:
-          test_result['outputArtifacts'] = test_result.pop('artifacts')
         results['testResults'].append(test_result)
   return results
 
