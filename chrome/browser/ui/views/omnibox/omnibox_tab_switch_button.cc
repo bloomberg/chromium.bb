@@ -37,8 +37,6 @@ OmniboxTabSwitchButton::OmniboxTabSwitchButton(
     : MdTextButton(result_view, views::style::CONTEXT_BUTTON_MD),
       popup_contents_view_(popup_contents_view),
       result_view_(result_view),
-      initialized_(false),
-      animation_(new gfx::SlideAnimation(this)),
       hint_(hint),
       hint_short_(hint_short),
       theme_provider_(theme_provider) {
@@ -58,9 +56,9 @@ OmniboxTabSwitchButton::OmniboxTabSwitchButton(
   } else {
     SetText(hint_);
   }
+  SetPreferredSize({full_text_width_, kButtonHeight});
   SetTooltipText(hint_);
   SetCornerRadius(kButtonHeight / 2.f);
-  animation_->SetSlideDuration(base::TimeDelta::FromMilliseconds(500));
   SetElideBehavior(gfx::FADE_TAIL);
 
   SetInstallFocusRingOnFocus(true);
@@ -71,29 +69,6 @@ OmniboxTabSwitchButton::OmniboxTabSwitchButton(
 }
 
 OmniboxTabSwitchButton::~OmniboxTabSwitchButton() = default;
-
-gfx::Size OmniboxTabSwitchButton::CalculatePreferredSize() const {
-  gfx::Size size = MdTextButton::CalculatePreferredSize();
-  size.set_height(kButtonHeight);
-  int current_width =
-      animation_->CurrentValueBetween(start_width_, goal_width_);
-  size.set_width(current_width);
-  return size;
-}
-
-void OmniboxTabSwitchButton::AnimationProgressed(
-    const gfx::Animation* animation) {
-  if (animation != animation_.get()) {
-    MdTextButton::AnimationProgressed(animation);
-    return;
-  }
-
-  // If done shrinking, correct text.
-  if (animation_->GetCurrentValue() == 1 && goal_width_ < start_width_)
-    SetText(goal_text_);
-  result_view_->Layout();
-  result_view_->SchedulePaint();
-}
 
 void OmniboxTabSwitchButton::StateChanged(ButtonState old_state) {
   if (state() == STATE_NORMAL) {
@@ -124,23 +99,10 @@ void OmniboxTabSwitchButton::UpdateBackground() {
 }
 
 void OmniboxTabSwitchButton::ProvideWidthHint(int parent_width) {
-  int preferred_width = CalculateGoalWidth(parent_width, &goal_text_);
-  if (!initialized_) {
-    initialized_ = true;
-    goal_width_ = start_width_ = preferred_width;
-    animation_->Reset(1);
-    SetText(goal_text_);
-    return;
-  }
-  if (preferred_width != goal_width_) {
-    goal_width_ = preferred_width;
-    start_width_ = width();
-    // If growing/showing, set text-to-be and grow into it.
-    if (goal_width_ > start_width_)
-      SetText(goal_text_);
-    animation_->Reset(0);
-    animation_->Show();
-  }
+  base::string16 text;
+  int preferred_width = CalculateGoalWidth(parent_width, &text);
+  SetText(text);
+  SetPreferredSize({preferred_width, kButtonHeight});
 }
 
 void OmniboxTabSwitchButton::ProvideFocusHint() {
