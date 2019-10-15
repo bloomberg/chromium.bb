@@ -5,7 +5,6 @@
 #include "gpu/command_buffer/tests/webgpu_test.h"
 
 #include <dawn/dawn.h>
-#include <dawn/dawn_proc.h>
 
 #include "base/test/test_simple_task_runner.h"
 #include "build/build_config.h"
@@ -82,7 +81,7 @@ void WebGPUTest::Initialize(const Options& options) {
   webgpu()->RequestAdapter(webgpu::PowerPreference::kHighPerformance);
 
   DawnProcTable procs = webgpu()->GetProcs();
-  dawnProcSetProcs(&procs);
+  dawnSetProcs(&procs);
 }
 
 webgpu::WebGPUInterface* WebGPUTest::webgpu() const {
