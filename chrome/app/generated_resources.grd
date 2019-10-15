@@ -3783,6 +3783,9 @@ are declared in tools/grit/grit_rule.gni.
         <message name="IDS_EXTENSION_PROMPT_WARNING_NETWORKING_PRIVATE" desc="Permission string for Networking Private API.">
           Manage network connections
         </message>
+        <message name="IDS_EXTENSION_PROMPT_WARNING_PRINTING_METRICS" desc="Permission string for access to printing metrics.">
+          See your printing history
+        </message>
         <message name="IDS_EXTENSION_PROMPT_WARNING_SEARCH_SETTINGS_OVERRIDE" desc="Permission string for search settings override.">
           Change your search settings to: <ph name="SEARCH_HOST">$1<ex>url.search.com</ex></ph>
         </message>
