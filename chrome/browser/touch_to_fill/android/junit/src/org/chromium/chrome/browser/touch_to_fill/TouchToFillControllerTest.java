@@ -13,10 +13,12 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import static org.chromium.chrome.browser.touch_to_fill.CredentialProperties.DEFAULT_ITEM_TYPE;
-import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CREDENTIAL_LIST;
+import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.CREDENTIAL;
+import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.FAVICON;
+import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.ON_CLICK_LISTENER;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.FORMATTED_URL;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.ORIGIN_SECURE;
+import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.SHEET_ITEMS;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.VIEW_EVENT_LISTENER;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.VISIBLE;
 
@@ -34,7 +36,9 @@ import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.Callback;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.ItemType;
 import org.chromium.chrome.browser.touch_to_fill.data.Credential;
+import org.chromium.ui.modelutil.ListModel;
 import org.chromium.ui.modelutil.MVCListAdapter;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -77,7 +81,7 @@ public class TouchToFillControllerTest {
 
     @Test
     public void testCreatesValidDefaultModel() {
-        assertNotNull(mModel.get(CREDENTIAL_LIST));
+        assertNotNull(mModel.get(SHEET_ITEMS));
         assertNotNull(mModel.get(VIEW_EVENT_LISTENER));
         assertThat(mModel.get(VISIBLE), is(false));
         assertThat(mModel.get(FORMATTED_URL), is(nullValue()));
@@ -94,18 +98,19 @@ public class TouchToFillControllerTest {
     @Test
     public void testShowCredentialsSetsCredentialListAndRequestsFavicons() {
         mMediator.showCredentials(TEST_URL, true, Arrays.asList(ANA, CARL, BOB));
-        MVCListAdapter.ModelList credentialList = mModel.get(CREDENTIAL_LIST);
+        ListModel<MVCListAdapter.ListItem> credentialList = mModel.get(SHEET_ITEMS);
         assertThat(credentialList.size(), is(3));
         // TODO(https://crbug.com/1013209): Simplify this after adding equals to ModelList.
-        assertThat(credentialList.get(0).type, is(DEFAULT_ITEM_TYPE));
-        assertThat(credentialList.get(0).model.get(CredentialProperties.CREDENTIAL), is(ANA));
-        assertThat(credentialList.get(0).model.get(CredentialProperties.FAVICON), is(nullValue()));
-        assertThat(credentialList.get(1).type, is(DEFAULT_ITEM_TYPE));
-        assertThat(credentialList.get(1).model.get(CredentialProperties.CREDENTIAL), is(CARL));
-        assertThat(credentialList.get(1).model.get(CredentialProperties.FAVICON), is(nullValue()));
-        assertThat(credentialList.get(2).type, is(DEFAULT_ITEM_TYPE));
-        assertThat(credentialList.get(2).model.get(CredentialProperties.CREDENTIAL), is(BOB));
-        assertThat(credentialList.get(2).model.get(CredentialProperties.FAVICON), is(nullValue()));
+        assertThat(credentialList.size(), is(3));
+        assertThat(credentialList.get(0).type, is(ItemType.CREDENTIAL));
+        assertThat(credentialList.get(0).model.get(CREDENTIAL), is(ANA));
+        assertThat(credentialList.get(0).model.get(FAVICON), is(nullValue()));
+        assertThat(credentialList.get(1).type, is(TouchToFillProperties.ItemType.CREDENTIAL));
+        assertThat(credentialList.get(1).model.get(CREDENTIAL), is(CARL));
+        assertThat(credentialList.get(1).model.get(FAVICON), is(nullValue()));
+        assertThat(credentialList.get(2).type, is(TouchToFillProperties.ItemType.CREDENTIAL));
+        assertThat(credentialList.get(2).model.get(CREDENTIAL), is(BOB));
+        assertThat(credentialList.get(2).model.get(FAVICON), is(nullValue()));
 
         // ANA and CARL both have TEST_URL as their origin URL
         verify(mMockDelegate, times(2)).fetchFavicon(eq(TEST_URL), eq(DESIRED_FAVICON_SIZE), any());
@@ -115,12 +120,12 @@ public class TouchToFillControllerTest {
     @Test
     public void testFetchFaviconUpdatesModel() {
         mMediator.showCredentials(TEST_URL, true, Collections.singletonList(CARL));
-        MVCListAdapter.ModelList credentialList = mModel.get(CREDENTIAL_LIST);
+        ListModel<MVCListAdapter.ListItem> credentialList = mModel.get(SHEET_ITEMS);
         assertThat(credentialList.size(), is(1));
         // TODO(https://crbug.com/1013209): Simplify this after adding equals to ModelList.
-        assertThat(credentialList.get(0).type, is(DEFAULT_ITEM_TYPE));
-        assertThat(credentialList.get(0).model.get(CredentialProperties.CREDENTIAL), is(CARL));
-        assertThat(credentialList.get(0).model.get(CredentialProperties.FAVICON), is(nullValue()));
+        assertThat(credentialList.get(0).type, is(TouchToFillProperties.ItemType.CREDENTIAL));
+        assertThat(credentialList.get(0).model.get(CREDENTIAL), is(CARL));
+        assertThat(credentialList.get(0).model.get(FAVICON), is(nullValue()));
 
         // ANA and CARL both have TEST_URL as their origin URL
         verify(mMockDelegate)
@@ -130,27 +135,27 @@ public class TouchToFillControllerTest {
         Bitmap bitmap = Bitmap.createBitmap(
                 DESIRED_FAVICON_SIZE, DESIRED_FAVICON_SIZE, Bitmap.Config.ARGB_8888);
         callback.onResult(bitmap);
-        assertThat(credentialList.get(0).model.get(CredentialProperties.FAVICON), is(bitmap));
+        assertThat(credentialList.get(0).model.get(FAVICON), is(bitmap));
     }
 
     @Test
     public void testClearsCredentialListWhenShowingAgain() {
         mMediator.showCredentials(TEST_URL, true, Collections.singletonList(ANA));
-        MVCListAdapter.ModelList credentialList = mModel.get(CREDENTIAL_LIST);
+        ListModel<MVCListAdapter.ListItem> credentialList = mModel.get(SHEET_ITEMS);
         // TODO(https://crbug.com/1013209): Simplify this after adding equals to ModelList.
         assertThat(credentialList.size(), is(1));
-        assertThat(credentialList.get(0).type, is(DEFAULT_ITEM_TYPE));
-        assertThat(credentialList.get(0).model.get(CredentialProperties.CREDENTIAL), is(ANA));
-        assertThat(credentialList.get(0).model.get(CredentialProperties.FAVICON), is(nullValue()));
+        assertThat(credentialList.get(0).type, is(ItemType.CREDENTIAL));
+        assertThat(credentialList.get(0).model.get(CREDENTIAL), is(ANA));
+        assertThat(credentialList.get(0).model.get(FAVICON), is(nullValue()));
 
         // Showing the sheet a second time should replace all changed credentials.
         mMediator.showCredentials(TEST_URL, true, Collections.singletonList(BOB));
-        credentialList = mModel.get(CREDENTIAL_LIST);
+        credentialList = mModel.get(SHEET_ITEMS);
         // TODO(https://crbug.com/1013209): Simplify this after adding equals to ModelList.
         assertThat(credentialList.size(), is(1));
-        assertThat(credentialList.get(0).type, is(DEFAULT_ITEM_TYPE));
-        assertThat(credentialList.get(0).model.get(CredentialProperties.CREDENTIAL), is(BOB));
-        assertThat(credentialList.get(0).model.get(CredentialProperties.FAVICON), is(nullValue()));
+        assertThat(credentialList.get(0).type, is(ItemType.CREDENTIAL));
+        assertThat(credentialList.get(0).model.get(CREDENTIAL), is(BOB));
+        assertThat(credentialList.get(0).model.get(FAVICON), is(nullValue()));
     }
 
     @Test
@@ -162,7 +167,10 @@ public class TouchToFillControllerTest {
     @Test
     public void testCallsCallbackAndHidesOnSelectingItem() {
         mMediator.showCredentials(TEST_URL, true, Arrays.asList(ANA, CARL));
-        mMediator.onSelectItemAt(1);
+        assertThat(mModel.get(VISIBLE), is(true));
+        assertNotNull(mModel.get(SHEET_ITEMS).get(1).model.get(ON_CLICK_LISTENER));
+
+        mModel.get(SHEET_ITEMS).get(1).model.get(ON_CLICK_LISTENER).onResult(CARL);
         verify(mMockDelegate).onCredentialSelected(CARL);
         assertThat(mModel.get(VISIBLE), is(false));
     }
