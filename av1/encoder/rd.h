@@ -227,12 +227,6 @@ void av1_model_rd_surffit(BLOCK_SIZE bsize, double sse_norm, double xm,
 int av1_get_switchable_rate(const AV1_COMMON *const cm, MACROBLOCK *x,
                             const MACROBLOCKD *xd);
 
-int av1_raster_block_offset(BLOCK_SIZE plane_bsize, int raster_block,
-                            int stride);
-
-int16_t *av1_raster_block_offset_int16(BLOCK_SIZE plane_bsize, int raster_block,
-                                       int16_t *base);
-
 YV12_BUFFER_CONFIG *av1_get_scaled_ref_frame(const struct AV1_COMP *cpi,
                                              int ref_frame);
 

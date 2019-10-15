@@ -1070,20 +1070,6 @@ void av1_setup_pred_block(const MACROBLOCKD *xd,
   }
 }
 
-int av1_raster_block_offset(BLOCK_SIZE plane_bsize, int raster_block,
-                            int stride) {
-  const int bw = mi_size_wide_log2[plane_bsize];
-  const int y = 4 * (raster_block >> bw);
-  const int x = 4 * (raster_block & ((1 << bw) - 1));
-  return y * stride + x;
-}
-
-int16_t *av1_raster_block_offset_int16(BLOCK_SIZE plane_bsize, int raster_block,
-                                       int16_t *base) {
-  const int stride = block_size_wide[plane_bsize];
-  return base + av1_raster_block_offset(plane_bsize, raster_block, stride);
-}
-
 YV12_BUFFER_CONFIG *av1_get_scaled_ref_frame(const AV1_COMP *cpi,
                                              int ref_frame) {
   assert(ref_frame >= LAST_FRAME && ref_frame <= ALTREF_FRAME);
