@@ -898,6 +898,15 @@ void OverviewGrid::OnWindowDragEnded(aura::Window* dragged_window,
                               /*animate=*/true);
 }
 
+void OverviewGrid::SetVisibleDuringWindowDragging(bool visible) {
+  for (const auto& window_item : window_list_)
+    window_item->SetVisibleDuringWindowDragging(visible);
+
+  // Update |desks_widget_|.
+  if (desks_widget_)
+    desks_widget_->GetNativeWindow()->layer()->SetOpacity(visible ? 1.f : 0.f);
+}
+
 bool OverviewGrid::IsDropTargetWindow(aura::Window* window) const {
   return drop_target_widget_ &&
          drop_target_widget_->GetNativeWindow() == window;
