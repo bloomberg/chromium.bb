@@ -645,6 +645,8 @@ jumbo_split_static_library("browser") {
     "lookalikes/lookalike_url_service.h",
     "lookalikes/lookalike_url_tab_storage.cc",
     "lookalikes/lookalike_url_tab_storage.h",
+    "lookalikes/safety_tips/local_heuristics.cc",
+    "lookalikes/safety_tips/local_heuristics.h",
     "lookalikes/safety_tips/reputation_service.cc",
     "lookalikes/safety_tips/reputation_service.h",
     "lookalikes/safety_tips/reputation_web_contents_observer.cc",
