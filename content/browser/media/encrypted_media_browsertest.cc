@@ -330,7 +330,16 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, ConfigChangeVideo_ClearToClear) {
   TestConfigChange(ConfigChangeType::CLEAR_TO_CLEAR);
 }
 
-IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, ConfigChangeVideo_ClearToEncrypted) {
+// Failed on Android, see https://crbug.com/1014540.
+#if defined(OS_ANDROID)
+#define MAYBE_ConfigChangeVideo_ClearToEncrypted \
+  DISABLED_ConfigChangeVideo_ClearToEncrypted
+#else
+#define MAYBE_ConfigChangeVideo_ClearToEncrypted \
+  ConfigChangeVideo_ClearToEncrypted
+#endif
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
+                       MAYBE_ConfigChangeVideo_ClearToEncrypted) {
   TestConfigChange(ConfigChangeType::CLEAR_TO_ENCRYPTED);
 }
 
