@@ -53,11 +53,6 @@ struct TestCase {
     return *this;
   }
 
-  TestCase& EnableFormatDialog() {
-    enable_format_dialog.emplace(true);
-    return *this;
-  }
-
   TestCase& EnableArc() {
     enable_arc = true;
     return *this;
@@ -124,7 +119,6 @@ struct TestCase {
   bool tablet_mode = false;
   base::Optional<bool> enable_myfiles_volume;
   base::Optional<bool> enable_documents_provider;
-  base::Optional<bool> enable_format_dialog;
   bool enable_arc = false;
   bool with_browser = false;
   bool needs_zip = false;
@@ -175,11 +169,6 @@ class FilesAppBrowserTest : public FileManagerBrowserTestBase,
   bool GetEnableDocumentsProvider() const override {
     return GetParam().enable_documents_provider.value_or(
         FileManagerBrowserTestBase::GetEnableDocumentsProvider());
-  }
-
-  bool GetEnableFormatDialog() const override {
-    return GetParam().enable_format_dialog.value_or(
-        FileManagerBrowserTestBase::GetEnableFormatDialog());
   }
 
   bool GetEnableArc() const override { return GetParam().enable_arc; }
@@ -825,11 +814,11 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     FormatDialog, /* format_dialog.js */
     FilesAppBrowserTest,
-    ::testing::Values(TestCase("formatDialog").EnableFormatDialog(),
-                      TestCase("formatDialogEmpty").EnableFormatDialog(),
-                      TestCase("formatDialogCancel").EnableFormatDialog(),
-                      TestCase("formatDialogNameLength").EnableFormatDialog(),
-                      TestCase("formatDialogNameInvalid").EnableFormatDialog(),
-                      TestCase("formatDialogGearMenu").EnableFormatDialog()));
+    ::testing::Values(TestCase("formatDialog"),
+                      TestCase("formatDialogEmpty"),
+                      TestCase("formatDialogCancel"),
+                      TestCase("formatDialogNameLength"),
+                      TestCase("formatDialogNameInvalid"),
+                      TestCase("formatDialogGearMenu")));
 
 }  // namespace file_manager

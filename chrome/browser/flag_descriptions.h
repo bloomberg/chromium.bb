@@ -2073,9 +2073,6 @@ extern const char kExperimentalAccessibilitySwitchAccessTextDescription[];
 extern const char kFileManagerFeedbackPanelDescription[];
 extern const char kFileManagerFeedbackPanelName[];
 
-extern const char kFileManagerFormatDialogDescription[];
-extern const char kFileManagerFormatDialogName[];
-
 extern const char kFileManagerPiexWasmName[];
 extern const char kFileManagerPiexWasmDescription[];
 
