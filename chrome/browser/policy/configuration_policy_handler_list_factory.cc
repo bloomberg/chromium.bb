@@ -1586,13 +1586,11 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       prefs::kNoteTakingAppsLockScreenWhitelist, false /*allow_wildcards*/));
   handlers->AddHandler(
       std::make_unique<SecondaryGoogleAccountSigninPolicyHandler>());
-  if (base::FeatureList::IsEnabled(features::kUsageTimeLimitPolicy)) {
-    handlers->AddHandler(std::make_unique<SimpleSchemaValidatingPolicyHandler>(
-        key::kUsageTimeLimit, prefs::kUsageTimeLimit, chrome_schema,
-        SCHEMA_ALLOW_UNKNOWN,
-        SimpleSchemaValidatingPolicyHandler::RECOMMENDED_PROHIBITED,
-        SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED));
-  }
+  handlers->AddHandler(std::make_unique<SimpleSchemaValidatingPolicyHandler>(
+      key::kUsageTimeLimit, prefs::kUsageTimeLimit, chrome_schema,
+      SCHEMA_ALLOW_UNKNOWN,
+      SimpleSchemaValidatingPolicyHandler::RECOMMENDED_PROHIBITED,
+      SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED));
   handlers->AddHandler(std::make_unique<ArcServicePolicyHandler>(
       key::kArcBackupRestoreServiceEnabled,
       arc::prefs::kArcBackupRestoreEnabled));
