@@ -594,8 +594,16 @@ void NigoriSyncBridgeImpl::SetEncryptionPassphrase(
       return;
     case NigoriSpecifics::KEYSTORE_PASSPHRASE:
     case NigoriSpecifics::TRUSTED_VAULT_PASSPHRASE:
+      if (state_.pending_keys.has_value()) {
+        // TODO(crbug.com/922900): investigate whether we need to call
+        // MaybeNotifyOfPendingKeys() to prompt for decryption passphrase.
+        DVLOG(1) << "Attempt to set explicit passphrase failed, because there "
+                 << "are pending keys.";
+        return;
+      }
       break;
   }
+  DCHECK(!state_.pending_keys.has_value());
   DCHECK(state_.cryptographer->CanEncrypt());
 
   const KeyDerivationParams custom_passphrase_key_derivation_params =
@@ -645,7 +653,10 @@ void NigoriSyncBridgeImpl::SetDecryptionPassphrase(
   // |passphrase| should be a valid one already (verified by SyncServiceCrypto,
   // using pending keys exposed by OnPassphraseRequired()).
   DCHECK(!passphrase.empty());
-  DCHECK(state_.pending_keys);
+  if (!state_.pending_keys) {
+    DCHECK_EQ(state_.passphrase_type, NigoriSpecifics::KEYSTORE_PASSPHRASE);
+    return;
+  }
 
   const std::string new_key_name = state_.cryptographer->EmplaceKey(
       passphrase, GetKeyDerivationParamsForPendingKeys());
@@ -656,14 +667,11 @@ void NigoriSyncBridgeImpl::SetDecryptionPassphrase(
   }
 
   if (!TryDecryptPendingKeys()) {
-    // TODO(crbug.com/922900): old implementation assumes that pending keys
-    // encryption key may change in between of OnPassphraseRequired() and
-    // SetDecryptionPassphrase() calls, verify whether it's really possible.
-    // Hypothetical cases are transition from FROZEN_IMPLICIT_PASSPHRASE to
-    // CUSTOM_PASSPHRASE and changing of passphrase due to conflict resolution.
-    processor_->ReportError(ModelError(
-        FROM_HERE,
-        "Failed to decrypt pending keys with provided explicit passphrase."));
+    // |pending_keys| could be changed in between of OnPassphraseRequired()
+    // and SetDecryptionPassphrase() calls (remote update with different
+    // keystore Nigori or with transition from keystore to custom passphrase
+    // Nigori).
+    MaybeNotifyOfPendingKeys();
     return;
   }
 
@@ -783,7 +791,6 @@ bool NigoriSyncBridgeImpl::SetKeystoreKeys(
     // Newly arrived keystore keys could resolve pending encryption state in
     // keystore mode.
     DCHECK_EQ(state_.passphrase_type, NigoriSpecifics::KEYSTORE_PASSPHRASE);
-    DCHECK(state_.pending_keys.has_value());
     UpdateCryptographerFromKeystoreNigori(
         sync_pb::EncryptedData(*state_.pending_keys),
         sync_pb::EncryptedData(*state_.pending_keystore_decryptor_token));
@@ -998,7 +1005,12 @@ NigoriSyncBridgeImpl::UpdateCryptographerFromKeystoreNigori(
   state_.cryptographer->EmplaceKeysFrom(NigoriKeyBag::CreateFromProto(key_bag));
   state_.cryptographer->SelectDefaultEncryptionKey(
       encryption_keybag.key_name());
-  state_.pending_keys.reset();
+  if (state_.pending_keys) {
+    state_.pending_keys.reset();
+    for (auto& observer : observers_) {
+      observer.OnPassphraseAccepted();
+    }
+  }
   return base::nullopt;
 }
 
@@ -1207,9 +1219,9 @@ KeyDerivationParams NigoriSyncBridgeImpl::GetKeyDerivationParamsForPendingKeys()
   switch (state_.passphrase_type) {
     case NigoriSpecifics::UNKNOWN:
     case NigoriSpecifics::IMPLICIT_PASSPHRASE:
-    case NigoriSpecifics::KEYSTORE_PASSPHRASE:
       NOTREACHED();
       return KeyDerivationParams::CreateWithUnsupportedMethod();
+    case NigoriSpecifics::KEYSTORE_PASSPHRASE:
     case NigoriSpecifics::FROZEN_IMPLICIT_PASSPHRASE:
     case NigoriSpecifics::TRUSTED_VAULT_PASSPHRASE:
       return KeyDerivationParams::CreateForPbkdf2();
@@ -1229,11 +1241,6 @@ void NigoriSyncBridgeImpl::MaybeNotifyOfPendingKeys() const {
     case NigoriSpecifics::IMPLICIT_PASSPHRASE:
       return;
     case NigoriSpecifics::KEYSTORE_PASSPHRASE:
-      // TODO(crbug.com/922900): in backward-compatible keystore mode,
-      // |pending_keys| could be decrypted with user-provided passphrase.
-      // Consider calling OnPassphraseRequired() together with decryption
-      // logic.
-      return;
     case NigoriSpecifics::CUSTOM_PASSPHRASE:
     case NigoriSpecifics::FROZEN_IMPLICIT_PASSPHRASE:
       for (auto& observer : observers_) {
