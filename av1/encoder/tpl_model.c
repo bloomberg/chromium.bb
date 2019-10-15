@@ -639,7 +639,6 @@ static AOM_INLINE void mc_flow_dispenser(AV1_COMP *cpi, int frame_idx,
   }
 
   // Make a temporary mbmi for tpl model
-  MB_MODE_INFO **backup_mi_grid = xd->mi;
   MB_MODE_INFO mbmi;
   memset(&mbmi, 0, sizeof(mbmi));
   MB_MODE_INFO *mbmi_ptr = &mbmi;
@@ -688,9 +687,6 @@ static AOM_INLINE void mc_flow_dispenser(AV1_COMP *cpi, int frame_idx,
                       tpl_frame->stride, &tpl_stats);
     }
   }
-
-  // Restore the mi_grid
-  xd->mi = backup_mi_grid;
 }
 
 static void mc_flow_synthesizer(AV1_COMP *cpi, int frame_idx) {
