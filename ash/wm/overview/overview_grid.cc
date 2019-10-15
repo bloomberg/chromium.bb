@@ -249,7 +249,8 @@ gfx::Rect GetGridBoundsInScreen(aura::Window* root_window,
     }
   }
 
-  SplitViewController* split_view_controller = SplitViewController::Get();
+  SplitViewController* split_view_controller =
+      SplitViewController::Get(root_window);
   if (!split_view_controller->InSplitViewMode())
     return work_area;
 
@@ -301,7 +302,7 @@ gfx::Rect GetGridBoundsInScreen(aura::Window* root_window,
 gfx::Rect GetGridBoundsInScreenForSplitview(
     aura::Window* window,
     base::Optional<IndicatorState> indicator_state = base::nullopt) {
-  auto* split_view_controller = SplitViewController::Get();
+  SplitViewController* split_view_controller = SplitViewController::Get(window);
   auto state = split_view_controller->state();
 
   // If we are in splitview mode already just use the given state, otherwise
@@ -357,7 +358,7 @@ gfx::Rect GetDesksWidgetBounds(aura::Window* root,
       split_view_drag_indicators->current_indicator_state() ==
           IndicatorState::kDragArea &&
       !IsCurrentScreenOrientationLandscape() &&
-      !SplitViewController::Get()->InSplitViewMode()) {
+      !SplitViewController::Get(root)->InSplitViewMode()) {
     desks_widget_root_bounds.Offset(0,
                                     overview_grid_screen_bounds.height() *
                                             kHighlightScreenPrimaryAxisRatio +
@@ -472,7 +473,7 @@ OverviewGrid::OverviewGrid(aura::Window* root_window,
 OverviewGrid::~OverviewGrid() = default;
 
 void OverviewGrid::Shutdown() {
-  SplitViewController::Get()->RemoveObserver(this);
+  SplitViewController::Get(root_window_)->RemoveObserver(this);
   ScreenRotationAnimator::GetForRootWindow(root_window_)->RemoveObserver(this);
   Shell::Get()->wallpaper_controller()->RemoveObserver(this);
   grid_event_handler_.reset();
@@ -493,7 +494,8 @@ void OverviewGrid::Shutdown() {
       !Shell::Get()->tablet_mode_controller()->InTabletMode();
 
   // OverviewGrid in splitscreen does not include the window to be activated.
-  if (!window_list_.empty() || SplitViewController::Get()->InSplitViewMode()) {
+  if (!window_list_.empty() ||
+      SplitViewController::Get(root_window_)->InSplitViewMode()) {
     // The following instance self-destructs when shutdown animation ends.
     new ShutdownAnimationFpsCounterObserver(
         root_window_->layer()->GetCompositor(), single_animation_in_clamshell);
@@ -512,7 +514,7 @@ void OverviewGrid::PrepareForOverview() {
 
   for (const auto& window : window_list_)
     window->PrepareForOverview();
-  SplitViewController::Get()->AddObserver(this);
+  SplitViewController::Get(root_window_)->AddObserver(this);
   if (Shell::Get()->tablet_mode_controller()->InTabletMode())
     ScreenRotationAnimator::GetForRootWindow(root_window_)->AddObserver(this);
 
@@ -921,7 +923,7 @@ OverviewItem* OverviewGrid::GetDropTarget() {
 void OverviewGrid::OnDisplayMetricsChanged() {
   // In case of split view mode, the grid bounds and item positions will be
   // updated in |OnSplitViewDividerPositionChanged|.
-  if (SplitViewController::Get()->InSplitViewMode())
+  if (SplitViewController::Get(root_window_)->InSplitViewMode())
     return;
   SetBoundsAndUpdatePositions(
       GetGridBoundsInScreen(root_window_, /*divider_changed=*/false),
@@ -936,7 +938,8 @@ void OverviewGrid::OnSplitViewStateChanged(
   if (!overview_controller->InOverviewSession())
     return;
 
-  SplitViewController* split_view_controller = SplitViewController::Get();
+  SplitViewController* split_view_controller =
+      SplitViewController::Get(root_window_);
   const bool unsnappable_window_activated =
       state == SplitViewController::State::kNoSnap &&
       split_view_controller->end_reason() ==
@@ -1089,7 +1092,7 @@ void OverviewGrid::CalculateWindowListAnimationStates(
             });
 
   SkRegion occluded_region;
-  auto* split_view_controller = SplitViewController::Get();
+  auto* split_view_controller = SplitViewController::Get(root_window_);
   if (split_view_controller->InSplitViewMode()) {
     // Snapped windows and the split view divider are not included in
     // |target_bounds| or |window_list_|, but can occlude other windows, so add
