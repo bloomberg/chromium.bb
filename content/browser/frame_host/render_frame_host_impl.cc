@@ -901,11 +901,11 @@ RenderFrameHostImpl::RenderFrameHostImpl(
 
   SetUpMojoIfNeeded();
 
-  swapout_event_monitor_timeout_.reset(new TimeoutMonitor(base::Bind(
+  swapout_event_monitor_timeout_.reset(new TimeoutMonitor(base::BindRepeating(
       &RenderFrameHostImpl::OnSwappedOut, weak_ptr_factory_.GetWeakPtr())));
-  beforeunload_timeout_.reset(
-      new TimeoutMonitor(base::Bind(&RenderFrameHostImpl::BeforeUnloadTimeout,
-                                    weak_ptr_factory_.GetWeakPtr())));
+  beforeunload_timeout_.reset(new TimeoutMonitor(
+      base::BindRepeating(&RenderFrameHostImpl::BeforeUnloadTimeout,
+                          weak_ptr_factory_.GetWeakPtr())));
 
   if (widget_routing_id != MSG_ROUTING_NONE) {
     mojo::PendingRemote<mojom::Widget> widget;
@@ -4513,14 +4513,14 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
       // |interface_registry_| is declared after |geolocation_service_|, so it
       // will be destroyed prior to |geolocation_service_|.
       registry_->AddInterface(
-          base::Bind(&GeolocationServiceImpl::Bind,
-                     base::Unretained(geolocation_service_.get())));
+          base::BindRepeating(&GeolocationServiceImpl::Bind,
+                              base::Unretained(geolocation_service_.get())));
     }
   }
 
-  registry_->AddInterface<media::mojom::InterfaceFactory>(
-      base::Bind(&RenderFrameHostImpl::BindMediaInterfaceFactoryRequest,
-                 base::Unretained(this)));
+  registry_->AddInterface<media::mojom::InterfaceFactory>(base::BindRepeating(
+      &RenderFrameHostImpl::BindMediaInterfaceFactoryRequest,
+      base::Unretained(this)));
 
   registry_->AddInterface(base::BindRepeating(
       &RenderFrameHostImpl::CreateWebSocketConnector, base::Unretained(this)));
@@ -4541,8 +4541,8 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
                           base::Unretained(this)));
 
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING)
-  registry_->AddInterface(base::Bind(&RemoterFactoryImpl::Bind,
-                                     GetProcess()->GetID(), GetRoutingID()));
+  registry_->AddInterface(base::BindRepeating(
+      &RemoterFactoryImpl::Bind, GetProcess()->GetID(), GetRoutingID()));
 #endif  // BUILDFLAG(ENABLE_MEDIA_REMOTING)
 
   // Only save decode stats when BrowserContext provides a VideoPerfHistory.
@@ -4591,8 +4591,8 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
           weak_ptr_factory_.GetWeakPtr())));
 
   if (command_line->HasSwitch(cc::switches::kEnableGpuBenchmarking)) {
-    registry_->AddInterface(
-        base::Bind(&InputInjectorImpl::Create, weak_ptr_factory_.GetWeakPtr()));
+    registry_->AddInterface(base::BindRepeating(
+        &InputInjectorImpl::Create, weak_ptr_factory_.GetWeakPtr()));
   }
 
   // TODO(crbug.com/775792): Move to RendererInterfaceBinders.
@@ -6399,8 +6399,9 @@ void RenderFrameHostImpl::BindMediaInterfaceFactoryRequest(
   DCHECK(!media_interface_proxy_);
   media_interface_proxy_.reset(new MediaInterfaceProxy(
       this, std::move(request),
-      base::Bind(&RenderFrameHostImpl::OnMediaInterfaceFactoryConnectionError,
-                 base::Unretained(this))));
+      base::BindOnce(
+          &RenderFrameHostImpl::OnMediaInterfaceFactoryConnectionError,
+          base::Unretained(this))));
 }
 
 void RenderFrameHostImpl::CreateWebSocketConnector(
@@ -6732,7 +6733,8 @@ class RenderFrameHostImpl::JavaInterfaceProvider
     : public service_manager::mojom::InterfaceProvider {
  public:
   using BindCallback =
-      base::Callback<void(const std::string&, mojo::ScopedMessagePipeHandle)>;
+      base::RepeatingCallback<void(const std::string&,
+                                   mojo::ScopedMessagePipeHandle)>;
 
   JavaInterfaceProvider(
       const BindCallback& bind_callback,
@@ -6761,8 +6763,9 @@ RenderFrameHostImpl::GetJavaRenderFrameHost() {
   if (!render_frame_host_android) {
     service_manager::mojom::InterfaceProviderPtr interface_provider_ptr;
     java_interface_registry_ = std::make_unique<JavaInterfaceProvider>(
-        base::Bind(&RenderFrameHostImpl::ForwardGetInterfaceToRenderFrame,
-                   weak_ptr_factory_.GetWeakPtr()),
+        base::BindRepeating(
+            &RenderFrameHostImpl::ForwardGetInterfaceToRenderFrame,
+            weak_ptr_factory_.GetWeakPtr()),
         mojo::MakeRequest(&interface_provider_ptr));
     render_frame_host_android =
         new RenderFrameHostAndroid(this, std::move(interface_provider_ptr));
@@ -6790,7 +6793,7 @@ void RenderFrameHostImpl::ForwardGetInterfaceToRenderFrame(
 #endif
 
 void RenderFrameHostImpl::ForEachImmediateLocalRoot(
-    const base::Callback<void(RenderFrameHostImpl*)>& callback) {
+    const base::RepeatingCallback<void(RenderFrameHostImpl*)>& callback) {
   if (!frame_tree_node_->child_count())
     return;
 
@@ -6810,7 +6813,7 @@ void RenderFrameHostImpl::ForEachImmediateLocalRoot(
 }
 
 void RenderFrameHostImpl::SetVisibilityForChildViews(bool visible) {
-  ForEachImmediateLocalRoot(base::Bind(
+  ForEachImmediateLocalRoot(base::BindRepeating(
       [](bool is_visible, RenderFrameHostImpl* frame_host) {
         if (auto* view = frame_host->GetView())
           return is_visible ? view->Show() : view->Hide();
