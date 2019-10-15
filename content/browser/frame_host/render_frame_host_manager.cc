@@ -655,7 +655,7 @@ void RenderFrameHostManager::ClearWebUIInstances() {
 
 void RenderFrameHostManager::DidCreateNavigationRequest(
     NavigationRequest* request) {
-  if (request->is_served_from_back_forward_cache()) {
+  if (request->IsServedFromBackForwardCache()) {
     // Since the frame from the back-forward cache is being committed to the
     // SiteInstance we already have, it is treated as current.
     request->set_associated_site_instance_type(
