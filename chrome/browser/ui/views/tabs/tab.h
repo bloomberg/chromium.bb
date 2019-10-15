@@ -175,8 +175,9 @@ class Tab : public gfx::AnimationDelegate,
   // Returns the text to show in a tab's tooltip: The contents |title|, followed
   // by a break, followed by a localized string describing the |alert_state|.
   // Exposed publicly for tests.
-  static base::string16 GetTooltipText(const base::string16& title,
-                                       TabAlertState alert_state);
+  static base::string16 GetTooltipText(
+      const base::string16& title,
+      base::Optional<TabAlertState> alert_state);
 
  private:
   class TabCloseButtonObserver;

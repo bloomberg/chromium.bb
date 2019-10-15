@@ -744,7 +744,6 @@ SkColor Tab::GetAlertIndicatorColor(TabAlertState state) const {
     case TabAlertState::BLUETOOTH_CONNECTED:
     case TabAlertState::USB_CONNECTED:
     case TabAlertState::SERIAL_CONNECTED:
-    case TabAlertState::NONE:
     case TabAlertState::VR_PRESENTING_IN_HEADSET:
       return foreground_color_;
     default:
@@ -839,14 +838,14 @@ void Tab::SetTabNeedsAttention(bool attention) {
 
 // static
 base::string16 Tab::GetTooltipText(const base::string16& title,
-                                   TabAlertState alert_state) {
-  if (alert_state == TabAlertState::NONE)
+                                   base::Optional<TabAlertState> alert_state) {
+  if (!alert_state)
     return title;
 
   base::string16 result = title;
   if (!result.empty())
     result.append(1, '\n');
-  result.append(chrome::GetTabAlertStateText(alert_state));
+  result.append(chrome::GetTabAlertStateText(alert_state.value()));
   return result;
 }
 
@@ -889,7 +888,8 @@ void Tab::UpdateIconVisibility() {
   const bool has_favicon = data().show_icon;
   const bool has_alert_icon =
       (alert_indicator_ ? alert_indicator_->showing_alert_state()
-                        : data().alert_state) != TabAlertState::NONE;
+                        : data().alert_state)
+          .has_value();
 
   if (data().pinned) {
     // When the tab is pinned, we can show one of the two icons; the alert icon

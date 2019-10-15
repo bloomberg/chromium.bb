@@ -940,7 +940,7 @@ bool TabStrip::TabHasNetworkError(int tab_index) const {
   return tab_at(tab_index)->data().network_state == TabNetworkState::kError;
 }
 
-TabAlertState TabStrip::GetTabAlertState(int tab_index) const {
+base::Optional<TabAlertState> TabStrip::GetTabAlertState(int tab_index) const {
   return tab_at(tab_index)->data().alert_state;
 }
 
