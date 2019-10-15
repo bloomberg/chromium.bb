@@ -1,0 +1,14 @@
+This is a testharness.js-based test.
+PASS [data-expected-height] 1
+FAIL [data-expected-height] 2 assert_equals: 
+<inline-block data-expected-height="10">123 <span style="margin-left: -8ch">123 </span></inline-block>
+height expected 10 but got 20
+PASS [data-expected-height] 3
+PASS [data-expected-height] 4
+PASS [data-expected-height] 5
+FAIL [data-expected-height] 6 assert_equals: 
+<div class="w4" data-expected-height="10"><img class="w5"><span style="margin-left: -5ch">123</span></div>
+height expected 10 but got 20
+PASS [data-expected-height] 7
+Harness: the test ran to completion.
+
