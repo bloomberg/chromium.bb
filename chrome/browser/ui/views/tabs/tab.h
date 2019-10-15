@@ -79,7 +79,6 @@ class Tab : public gfx::AnimationDelegate,
   // TabSlotView:
   void Layout() override;
   const char* GetClassName() const override;
-  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   bool OnMouseDragged(const ui::MouseEvent& event) override;
