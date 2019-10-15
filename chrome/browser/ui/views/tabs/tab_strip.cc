@@ -2025,6 +2025,13 @@ void TabStrip::OnThemeChanged() {
   FrameColorsChanged();
 }
 
+views::View* TabStrip::GetDefaultFocusableChild() {
+  int active = controller_->GetActiveIndex();
+  return active != TabStripModel::kNoTab
+             ? tab_at(active)
+             : AccessiblePaneView::GetDefaultFocusableChild();
+}
+
 BrowserRootView::DropIndex TabStrip::GetDropIndex(
     const ui::DropTargetEvent& event) {
   // Force animations to stop, otherwise it makes the index calculation tricky.
