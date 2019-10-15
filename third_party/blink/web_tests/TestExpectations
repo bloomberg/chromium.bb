@@ -260,7 +260,6 @@ crbug.com/1004547 external/wpt/intersection-observer/cross-origin-iframe.sub.htm
 crbug.com/1004650 http/tests/security/contentSecurityPolicy/frame-src-cross-origin-load.html [ Pass Failure ]
 
 # Display locking failures
-crbug.com/955533 wpt_internal/display-lock/sizing/overflow-auto-with-overflow.html [ Failure ]
 
 # MSAN failure
 crbug.com/996625 inspector-protocol/accessibility/accessibility-getFullAXTree-display-locked.js [ Skip ]

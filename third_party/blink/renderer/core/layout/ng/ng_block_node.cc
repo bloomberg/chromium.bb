@@ -839,7 +839,8 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
 
   LayoutBlock* block = DynamicTo<LayoutBlock>(box_);
   if (LIKELY(block && is_last_fragment)) {
-    LayoutUnit intrinsic_block_size = layout_result.IntrinsicBlockSize();
+    LayoutUnit intrinsic_block_size =
+        layout_result.UnconstrainedIntrinsicBlockSize();
     if (UNLIKELY(previous_break_token))
       intrinsic_block_size += previous_break_token->ConsumedBlockSize();
 
