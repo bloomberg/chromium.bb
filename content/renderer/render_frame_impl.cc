@@ -5174,6 +5174,7 @@ void RenderFrameImpl::DidBlockNavigation(
 
 void RenderFrameImpl::NavigateBackForwardSoon(int offset,
                                               bool has_user_gesture) {
+  render_view()->NavigateBackForwardSoon(offset, has_user_gesture);
   Send(new FrameHostMsg_GoToEntryAtOffset(GetRoutingID(), offset,
                                           has_user_gesture));
 }
@@ -6007,6 +6008,9 @@ bool RenderFrameImpl::UpdateNavigationHistory(
     render_view_->history_list_offset_ =
         navigation_state->commit_params().pending_history_list_offset;
   }
+
+  if (commit_type == blink::WebHistoryCommitType::kWebBackForwardCommit)
+    render_view_->DidCommitProvisionalHistoryLoad();
 
   return is_new_navigation;
 }
