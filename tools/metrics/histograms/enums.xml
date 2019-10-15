@@ -4681,6 +4681,7 @@ Unknown properties are collapsed to zero. -->
   <int value="8" label="MissingPersonalCurve"/>
   <int value="9" label="WaitingForTrainedPersonalCurve"/>
   <int value="10" label="WaitingForReopenAls"/>
+  <int value="11" label="NoNewModel"/>
 </enum>
 
 <enum name="AutoScreenBrightnessParameterError">
