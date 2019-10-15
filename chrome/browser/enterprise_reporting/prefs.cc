@@ -23,6 +23,7 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
 
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(prefs::kCloudExtensionRequestEnabled, false);
+  registry->RegisterListPref(prefs::kCloudExtensionRequestIds);
 }
 
 }  // namespace enterprise_reporting

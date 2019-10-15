@@ -2471,6 +2471,12 @@ const char kCloudReportingEnabled[] =
 // or not.
 const char kCloudExtensionRequestEnabled[] =
     "enterprise_reporting.extension_request.enabled";
+
+// A list of extension ids represents pending extension request. The ids are
+// stored once user sent the request until the request is canceled, approved or
+// denied.
+const char kCloudExtensionRequestIds[] =
+    "enterprise_reporting.extension_request.ids";
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
