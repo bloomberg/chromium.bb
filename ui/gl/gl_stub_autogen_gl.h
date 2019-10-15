@@ -373,6 +373,7 @@ void glEGLImageTargetTexture2DOESFn(GLenum target,
 void glEnableFn(GLenum cap) override {}
 void glEnableVertexAttribArrayFn(GLuint index) override {}
 void glEndQueryFn(GLenum target) override {}
+void glEndTilingQCOMFn(GLbitfield preserveMask) override {}
 void glEndTransformFeedbackFn() override {}
 GLsync glFenceSyncFn(GLenum condition, GLbitfield flags) override;
 GLsync glFenceSyncAPPLEFn(GLenum condition, GLbitfield flags) override;
@@ -1222,6 +1223,11 @@ void glSignalSemaphoreEXTFn(GLuint semaphore,
                             GLuint numTextureBarriers,
                             const GLuint* textures,
                             const GLenum* dstLayouts) override {}
+void glStartTilingQCOMFn(GLuint x,
+                         GLuint y,
+                         GLuint width,
+                         GLuint height,
+                         GLbitfield preserveMask) override {}
 void glStencilFillPathInstancedNVFn(GLsizei numPaths,
                                     GLenum pathNameType,
                                     const void* paths,

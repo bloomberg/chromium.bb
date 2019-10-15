@@ -330,6 +330,7 @@ MOCK_METHOD2(EGLImageTargetTexture2DOES,
 MOCK_METHOD1(Enable, void(GLenum cap));
 MOCK_METHOD1(EnableVertexAttribArray, void(GLuint index));
 MOCK_METHOD1(EndQuery, void(GLenum target));
+MOCK_METHOD1(EndTilingQCOM, void(GLbitfield preserveMask));
 MOCK_METHOD0(EndTransformFeedback, void());
 MOCK_METHOD2(FenceSync, GLsync(GLenum condition, GLbitfield flags));
 MOCK_METHOD2(FenceSyncAPPLE, GLsync(GLenum condition, GLbitfield flags));
@@ -1179,6 +1180,12 @@ MOCK_METHOD6(SignalSemaphoreEXT,
                   GLuint numTextureBarriers,
                   const GLuint* textures,
                   const GLenum* dstLayouts));
+MOCK_METHOD5(StartTilingQCOM,
+             void(GLuint x,
+                  GLuint y,
+                  GLuint width,
+                  GLuint height,
+                  GLbitfield preserveMask));
 MOCK_METHOD8(StencilFillPathInstancedNV,
              void(GLsizei numPaths,
                   GLenum pathNameType,

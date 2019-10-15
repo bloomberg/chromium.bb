@@ -576,6 +576,10 @@ GL_FUNCTIONS = [
                  'extensions': ['GL_EXT_occlusion_query_boolean'] }],
   'arguments': 'GLenum target', },
 { 'return_type': 'void',
+  'versions': [{ 'name': 'glEndTilingQCOM',
+                 'extension': ['GL_QCOM_tiled_rendering'] }],
+  'arguments': 'GLbitfield preserveMask', },
+{ 'return_type': 'void',
   'versions': [{ 'name': 'glEndTransformFeedback' },
                { 'name': 'glEndTransformFeedbackEXT',
                  'extension': ['GL_EXT_transform_feedback'] }],
@@ -1793,6 +1797,13 @@ GL_FUNCTIONS = [
  'arguments': 'GLuint semaphore, GLuint numBufferBarriers, '
  'const GLuint* buffers, GLuint numTextureBarriers, '
  'const GLuint* textures, const GLenum* dstLayouts', },
+{ 'return_type': 'void',
+  'names': ['glStartTilingQCOM'],
+  'versions': [{ 'name': 'glStartTilingQCOM',
+                 'extension': ['GL_QCOM_tiled_rendering'] }],
+  'arguments':
+      'GLuint x, GLuint y, GLuint width, GLuint height, '
+      'GLbitfield preserveMask', },
 { 'return_type': 'void',
   'names': ['glStencilFillPathInstancedNV'],
   'versions': [{ 'name': 'glStencilFillPathInstancedNV',

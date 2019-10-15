@@ -1303,6 +1303,12 @@ void GL_BINDING_CALL MockGLInterface::Mock_glEndQueryEXT(GLenum target) {
   interface_->EndQuery(target);
 }
 
+void GL_BINDING_CALL
+MockGLInterface::Mock_glEndTilingQCOM(GLbitfield preserveMask) {
+  MakeGlMockFunctionUnique("glEndTilingQCOM");
+  interface_->EndTilingQCOM(preserveMask);
+}
+
 void GL_BINDING_CALL MockGLInterface::Mock_glEndTransformFeedback(void) {
   MakeGlMockFunctionUnique("glEndTransformFeedback");
   interface_->EndTransformFeedback();
@@ -3948,6 +3954,16 @@ MockGLInterface::Mock_glSignalSemaphoreEXT(GLuint semaphore,
 }
 
 void GL_BINDING_CALL
+MockGLInterface::Mock_glStartTilingQCOM(GLuint x,
+                                        GLuint y,
+                                        GLuint width,
+                                        GLuint height,
+                                        GLbitfield preserveMask) {
+  MakeGlMockFunctionUnique("glStartTilingQCOM");
+  interface_->StartTilingQCOM(x, y, width, height, preserveMask);
+}
+
+void GL_BINDING_CALL
 MockGLInterface::Mock_glStencilFillPathCHROMIUM(GLuint path,
                                                 GLenum fillMode,
                                                 GLuint mask) {
@@ -5396,6 +5412,8 @@ MockGLInterface::GetGLProcAddress(const char* name) {
     return reinterpret_cast<GLFunctionPointerType>(Mock_glEndQueryARB);
   if (strcmp(name, "glEndQueryEXT") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_glEndQueryEXT);
+  if (strcmp(name, "glEndTilingQCOM") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glEndTilingQCOM);
   if (strcmp(name, "glEndTransformFeedback") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_glEndTransformFeedback);
   if (strcmp(name, "glEndTransformFeedbackEXT") == 0)
@@ -6165,6 +6183,8 @@ MockGLInterface::GetGLProcAddress(const char* name) {
     return reinterpret_cast<GLFunctionPointerType>(Mock_glShaderSource);
   if (strcmp(name, "glSignalSemaphoreEXT") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_glSignalSemaphoreEXT);
+  if (strcmp(name, "glStartTilingQCOM") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glStartTilingQCOM);
   if (strcmp(name, "glStencilFillPathCHROMIUM") == 0)
     return reinterpret_cast<GLFunctionPointerType>(
         Mock_glStencilFillPathCHROMIUM);
