@@ -9,12 +9,14 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.CREDENTIAL;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.FAVICON;
+import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.FORMATTED_ORIGIN;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.ON_CLICK_LISTENER;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.FORMATTED_URL;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.ORIGIN_SECURE;
@@ -27,6 +29,7 @@ import android.graphics.Bitmap;
 import androidx.annotation.Px;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -36,8 +39,11 @@ import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.Callback;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.ItemType;
 import org.chromium.chrome.browser.touch_to_fill.data.Credential;
+import org.chromium.components.url_formatter.UrlFormatter;
+import org.chromium.components.url_formatter.UrlFormatterJni;
 import org.chromium.ui.modelutil.ListModel;
 import org.chromium.ui.modelutil.MVCListAdapter;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -53,13 +59,19 @@ import java.util.Collections;
 public class TouchToFillControllerTest {
     private static final String TEST_URL = "www.example.xyz";
     private static final String TEST_SUBDOMAIN_URL = "subdomain.example.xyz";
-    private static final Credential ANA = new Credential("Ana", "S3cr3t", "Ana", TEST_URL, false);
+    private static final String TEST_MOBILE_URL = "www.example.xyz";
+    private static final Credential ANA =
+            new Credential("Ana", "S3cr3t", "Ana", "https://m.a.xyz/", true);
     private static final Credential BOB =
             new Credential("Bob", "*****", "Bob", TEST_SUBDOMAIN_URL, true);
     private static final Credential CARL =
             new Credential("Carl", "G3h3!m", "Carl", TEST_URL, false);
     private static final @Px int DESIRED_FAVICON_SIZE = 64;
 
+    @Rule
+    public JniMocker mJniMocker = new JniMocker();
+    @Mock
+    private UrlFormatter.Natives mUrlFormatterJniMock;
     @Mock
     private TouchToFillComponent.Delegate mMockDelegate;
 
@@ -72,6 +84,9 @@ public class TouchToFillControllerTest {
 
     public TouchToFillControllerTest() {
         MockitoAnnotations.initMocks(this);
+        mJniMocker.mock(UrlFormatterJni.TEST_HOOKS, mUrlFormatterJniMock);
+        when(mUrlFormatterJniMock.formatUrlForDisplayOmitScheme(anyString()))
+                .then(inv -> format(inv.getArgument(0)));
     }
 
     @Before
@@ -99,7 +114,6 @@ public class TouchToFillControllerTest {
     public void testShowCredentialsSetsCredentialListAndRequestsFavicons() {
         mMediator.showCredentials(TEST_URL, true, Arrays.asList(ANA, CARL, BOB));
         ListModel<MVCListAdapter.ListItem> credentialList = mModel.get(SHEET_ITEMS);
-        assertThat(credentialList.size(), is(3));
         // TODO(https://crbug.com/1013209): Simplify this after adding equals to ModelList.
         assertThat(credentialList.size(), is(3));
         assertThat(credentialList.get(0).type, is(ItemType.CREDENTIAL));
@@ -112,8 +126,9 @@ public class TouchToFillControllerTest {
         assertThat(credentialList.get(2).model.get(CREDENTIAL), is(BOB));
         assertThat(credentialList.get(2).model.get(FAVICON), is(nullValue()));
 
-        // ANA and CARL both have TEST_URL as their origin URL
-        verify(mMockDelegate, times(2)).fetchFavicon(eq(TEST_URL), eq(DESIRED_FAVICON_SIZE), any());
+        verify(mMockDelegate).fetchFavicon(eq("https://m.a.xyz/"), eq(DESIRED_FAVICON_SIZE), any());
+        verify(mMockDelegate).fetchFavicon(eq(TEST_URL), eq(DESIRED_FAVICON_SIZE), any());
+        verify(mMockDelegate).fetchFavicon(eq(TEST_SUBDOMAIN_URL), eq(DESIRED_FAVICON_SIZE), any());
         verify(mMockDelegate).fetchFavicon(eq(BOB.getOriginUrl()), eq(DESIRED_FAVICON_SIZE), any());
     }
 
@@ -136,6 +151,18 @@ public class TouchToFillControllerTest {
                 DESIRED_FAVICON_SIZE, DESIRED_FAVICON_SIZE, Bitmap.Config.ARGB_8888);
         callback.onResult(bitmap);
         assertThat(credentialList.get(0).model.get(FAVICON), is(bitmap));
+    }
+
+    @Test
+    public void testShowCredentialsFormatPslOrigins() {
+        mMediator.showCredentials(TEST_URL, true, Arrays.asList(ANA, BOB));
+        assertThat(mModel.get(SHEET_ITEMS).size(), is(2));
+        assertThat(mModel.get(SHEET_ITEMS).get(0).type, is(ItemType.CREDENTIAL));
+        assertThat(mModel.get(SHEET_ITEMS).get(0).model.get(FORMATTED_ORIGIN),
+                is(format(ANA.getOriginUrl())));
+        assertThat(mModel.get(SHEET_ITEMS).get(1).type, is(ItemType.CREDENTIAL));
+        assertThat(mModel.get(SHEET_ITEMS).get(1).model.get(FORMATTED_ORIGIN),
+                is(format(BOB.getOriginUrl())));
     }
 
     @Test
@@ -181,5 +208,15 @@ public class TouchToFillControllerTest {
         mMediator.onDismissed();
         verify(mMockDelegate).onDismissed();
         assertThat(mModel.get(VISIBLE), is(false));
+    }
+
+    /**
+     * Helper to verify formatted URLs. The real implementation calls {@link UrlFormatter}. It's not
+     * useful to actually reimplement the formatter, so just modify the string in a trivial way.
+     * @param originUrl A URL {@link String} to "format".
+     * @return A "formatted" URL {@link String}.
+     */
+    private static String format(String originUrl) {
+        return "formatted_" + originUrl + "_formatted";
     }
 }

@@ -13,6 +13,7 @@ import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.CREDENTIAL;
+import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.FORMATTED_ORIGIN;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.ON_CLICK_LISTENER;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.FORMATTED_URL;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.ORIGIN_SECURE;
@@ -60,9 +61,9 @@ import java.util.Collections;
 public class TouchToFillViewTest {
     private static final Credential ANA = new Credential("Ana", "S3cr3t", "Ana", "", false);
     private static final Credential NO_ONE =
-            new Credential("", "***", "No Username", "http://m.example.xyz/", true);
+            new Credential("", "***", "No Username", "m.example.xyz", true);
     private static final Credential BOB =
-            new Credential("Bob", "***", "Bob", "http://mobile.example.xyz", true);
+            new Credential("Bob", "***", "Bob", "mobile.example.xyz", true);
 
     @Mock
     private TouchToFillProperties.ViewEventListener mMockListener;
@@ -219,6 +220,7 @@ public class TouchToFillViewTest {
                 new PropertyModel.Builder(TouchToFillProperties.CredentialProperties.ALL_KEYS)
                         .with(CREDENTIAL, credential)
                         .with(ON_CLICK_LISTENER, mCredentialCallback)
+                        .with(FORMATTED_ORIGIN, credential.getOriginUrl())
                         .build());
     }
 }

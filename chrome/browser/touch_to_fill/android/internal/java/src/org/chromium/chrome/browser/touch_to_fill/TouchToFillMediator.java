@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.touch_to_fill;
 
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.CREDENTIAL;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.FAVICON;
+import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.FORMATTED_ORIGIN;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.ON_CLICK_LISTENER;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.FORMATTED_URL;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.ORIGIN_SECURE;
@@ -16,6 +17,7 @@ import androidx.annotation.Px;
 
 import org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties;
 import org.chromium.chrome.browser.touch_to_fill.data.Credential;
+import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.ui.modelutil.ListModel;
 import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -52,6 +54,9 @@ class TouchToFillMediator implements TouchToFillProperties.ViewEventListener {
             PropertyModel propertyModel =
                     new PropertyModel.Builder(CredentialProperties.ALL_KEYS)
                             .with(CREDENTIAL, credential)
+                            .with(FORMATTED_ORIGIN,
+                                    UrlFormatter.formatUrlForDisplayOmitScheme(
+                                            credential.getOriginUrl()))
                             .with(ON_CLICK_LISTENER, this::onSelectedCredential)
                             .build();
             sheetItems.add(new ListItem(TouchToFillProperties.ItemType.CREDENTIAL, propertyModel));

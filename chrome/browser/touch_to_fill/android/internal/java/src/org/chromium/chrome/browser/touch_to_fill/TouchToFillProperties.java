@@ -52,11 +52,14 @@ class TouchToFillProperties {
                 new PropertyModel.WritableObjectPropertyKey<>("favicon");
         static final PropertyModel.ReadableObjectPropertyKey<Credential> CREDENTIAL =
                 new PropertyModel.ReadableObjectPropertyKey<>("credential");
+        static final PropertyModel.ReadableObjectPropertyKey<String> FORMATTED_ORIGIN =
+                new PropertyModel.ReadableObjectPropertyKey<>("formatted_url");
         static final PropertyModel
                 .ReadableObjectPropertyKey<Callback<Credential>> ON_CLICK_LISTENER =
                 new PropertyModel.ReadableObjectPropertyKey<>("on_click_listener");
 
-        static final PropertyKey[] ALL_KEYS = {FAVICON, CREDENTIAL, ON_CLICK_LISTENER};
+        static final PropertyKey[] ALL_KEYS = {
+                FAVICON, CREDENTIAL, FORMATTED_ORIGIN, ON_CLICK_LISTENER};
 
         private CredentialProperties() {}
     }

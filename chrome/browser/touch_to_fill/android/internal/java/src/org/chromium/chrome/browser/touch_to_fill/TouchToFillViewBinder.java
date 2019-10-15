@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.touch_to_fill;
 
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.CREDENTIAL;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.FAVICON;
+import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.FORMATTED_ORIGIN;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.ON_CLICK_LISTENER;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.FORMATTED_URL;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.ORIGIN_SECURE;
@@ -100,16 +101,19 @@ class TouchToFillViewBinder {
      */
     private static void bindCredentialView(
             PropertyModel model, ViewGroup view, PropertyKey propertyKey) {
+        Credential credential = model.get(CREDENTIAL);
         if (propertyKey == FAVICON) {
             ImageView imageView = view.findViewById(R.id.favicon);
             imageView.setImageBitmap(model.get(FAVICON));
         } else if (propertyKey == ON_CLICK_LISTENER) {
-            view.setOnClickListener(clickedView -> {
-                model.get(ON_CLICK_LISTENER).onResult(model.get(CREDENTIAL));
-            });
+            view.setOnClickListener(
+                    clickedView -> { model.get(ON_CLICK_LISTENER).onResult(credential); });
+        } else if (propertyKey == FORMATTED_ORIGIN) {
+            TextView pslOriginText = view.findViewById(R.id.credential_origin);
+            pslOriginText.setText(model.get(FORMATTED_ORIGIN));
+            pslOriginText.setVisibility(
+                    credential.isPublicSuffixMatch() ? View.VISIBLE : View.GONE);
         } else if (propertyKey == CREDENTIAL) {
-            Credential credential = model.get(CREDENTIAL);
-
             TextView pslOriginText = view.findViewById(R.id.credential_origin);
             String formattedOrigin = stripScheme(credential.getOriginUrl());
             formattedOrigin =
