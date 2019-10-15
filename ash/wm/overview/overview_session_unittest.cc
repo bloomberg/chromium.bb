@@ -3121,6 +3121,58 @@ TEST_P(OverviewSessionNewLayoutTest, CheckWindowActivateOnTap) {
       0, user_action_tester.GetActionCount(kActiveWindowChangedFromOverview));
 }
 
+TEST_P(OverviewSessionNewLayoutTest, LayoutValidAfterRotation) {
+  UpdateDisplay("1366x768");
+  display::test::ScopedSetInternalDisplayId set_internal(
+      Shell::Get()->display_manager(),
+      display::Screen::GetScreen()->GetPrimaryDisplay().id());
+  auto windows = CreateTestWindows(7);
+
+  // Helper to determine whether a grid layout is valid. It is considered valid
+  // if the left edge of the first item is close enough to the left edge of the
+  // grid bounds and if the right edge of the last item is close enough to the
+  // right edge of the grid bounds. Either of these being false would mean there
+  // is a large padding which shouldn't be there.
+  auto layout_valid = [&windows, this](int expected_padding) {
+    OverviewItem* first_item = GetOverviewItemForWindow(windows.front().get());
+    OverviewItem* last_item = GetOverviewItemForWindow(windows.back().get());
+
+    const gfx::Rect first_bounds =
+        gfx::ToEnclosedRect(first_item->target_bounds());
+    const gfx::Rect last_bounds =
+        gfx::ToEnclosedRect(last_item->target_bounds());
+
+    const gfx::Rect grid_bounds = GetGridBounds();
+    const bool first_bounds_valid =
+        first_bounds.x() <= (grid_bounds.x() + expected_padding);
+    const bool last_bounds_valid =
+        last_bounds.right() >= (grid_bounds.right() - expected_padding);
+    return first_bounds_valid && last_bounds_valid;
+  };
+
+  // Enter overview and scroll to the edge of the grid. The layout should remain
+  // valid.
+  ToggleOverview();
+  ASSERT_TRUE(InOverviewSession());
+  // The expected padding should be the x position of the first item, before the
+  // grid gets shifted.
+  const int expected_padding =
+      GetOverviewItemForWindow(windows.front().get())->target_bounds().x();
+  GenerateScrollSequence(gfx::Point(1300, 10), gfx::Point(100, 10));
+  EXPECT_TRUE(layout_valid(expected_padding));
+
+  // Tests that the layout is still valid after a couple rotations.
+  ScreenOrientationControllerTestApi test_api(
+      Shell::Get()->screen_orientation_controller());
+  test_api.SetDisplayRotation(display::Display::ROTATE_90,
+                              display::Display::RotationSource::ACTIVE);
+  EXPECT_TRUE(layout_valid(expected_padding));
+
+  test_api.SetDisplayRotation(display::Display::ROTATE_180,
+                              display::Display::RotationSource::ACTIVE);
+  EXPECT_TRUE(layout_valid(expected_padding));
+}
+
 // Tests that windows snap through long press and drag to left or right side of
 // the screen.
 TEST_P(OverviewSessionNewLayoutTest, DragOverviewWindowToSnap) {
