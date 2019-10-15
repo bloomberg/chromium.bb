@@ -77,9 +77,6 @@ DriveQuickAccessProvider::DriveQuickAccessProvider(Profile* profile)
   task_runner_ = base::CreateSequencedTaskRunner(
       {base::ThreadPool(), base::TaskPriority::BEST_EFFORT, base::MayBlock(),
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
-
-  // Warm up the cache.
-  AppListShown();
 }
 
 DriveQuickAccessProvider::~DriveQuickAccessProvider() = default;
