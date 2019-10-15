@@ -113,7 +113,7 @@ class SDKFetcherMock(partial_mock.PartialMock):
 
   TARGET = 'chromite.cli.cros.cros_chrome_sdk.SDKFetcher'
   ATTRS = ('__init__', 'GetFullVersion', '_GetMetadata', '_UpdateTarball',
-           '_GetManifest', 'UpdateDefaultVersion')
+           '_GetManifest', 'UpdateDefaultVersion', '_GetTarballCacheKey')
 
   FAKE_METADATA = """
 {
@@ -187,6 +187,10 @@ class SDKFetcherMock(partial_mock.PartialMock):
             'sys-firmware/seabios': [['1.11.0', {}]]
         }
     }
+
+  @_DependencyMockCtx
+  def _GetTarballCacheKey(self, _inst, component, _url):
+    return (os.path.join(component, 'some-fake-hash'),)
 
 
 class RunThroughTest(cros_test_lib.MockTempDirTestCase,
@@ -415,10 +419,10 @@ class RunThroughTest(cros_test_lib.MockTempDirTestCase,
     """
     qemu_share = os.path.join(
         self.tempdir,
-        'chrome-sdk/tarballs/eve+4567.8.9+app-emulation/qemu/usr/share')
+        'chrome-sdk/tarballs/app-emulation/qemu/some-fake-hash/usr/share')
     seabios_share = os.path.join(
         self.tempdir,
-        'chrome-sdk/tarballs/eve+4567.8.9+sys-firmware/seabios/usr/share')
+        'chrome-sdk/tarballs/sys-firmware/seabios/some-fake-hash/usr/share')
 
     # Create qemu subdirectories.
     for share_dir in ['qemu', 'seabios', 'seavgabios']:
@@ -458,6 +462,33 @@ class RunThroughTest(cros_test_lib.MockTempDirTestCase,
     self.SetupCommandMock(extra_args=['--download-vm'])
     self.cmd_mock.inst.Run()
     _VerifyLinks(broken=False)
+
+  def testSymlinkCache(self):
+    """Ensures the symlink cache contains valid links to the tarball cache."""
+    self.SetupCommandMock()
+    self.cmd_mock.inst.Run()
+
+    board, version, _ = self.VERSION_KEY
+    toolchain_dir = os.path.join(
+        self.tempdir,
+        'chrome-sdk/tarballs/target_toolchain/some-fake-hash')
+    sysroot_dir = os.path.join(
+        self.tempdir,
+        'chrome-sdk/tarballs/sysroot_chromeos-base_chromeos-chrome.tar.xz/'
+        'some-fake-hash')
+    self.assertExists(toolchain_dir)
+    self.assertExists(sysroot_dir)
+    toolchain_link = os.path.join(
+        self.tempdir,
+        'chrome-sdk/symlinks/%s+%s+target_toolchain' % (board, version))
+    sysroot_link = os.path.join(
+        self.tempdir,
+        'chrome-sdk/symlinks/%s+%s+sysroot_chromeos-base_chromeos-'
+        'chrome.tar.xz' % (board, version))
+    self.assertTrue(os.path.islink(toolchain_link))
+    self.assertTrue(os.path.islink(sysroot_link))
+    self.assertEqual(os.path.realpath(toolchain_link), toolchain_dir)
+    self.assertEqual(os.path.realpath(sysroot_link), sysroot_dir)
 
 
 class GomaTest(cros_test_lib.MockTempDirTestCase,

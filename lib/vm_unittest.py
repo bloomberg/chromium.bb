@@ -117,15 +117,15 @@ class VMTester(cros_test_lib.RunCommandTempDirTestCase):
   def testSDKVMImagePath(self):
     """Verify vm.VM picks up the downloaded VM in the SDK."""
     self._vm.image_path = None
-    cache_dir = cros_test_lib.FakeSDKCache(
+    vm_image_dir = cros_test_lib.FakeSDKCache(
         self._vm.cache_dir).CreateCacheReference(self._vm.board,
                                                  constants.VM_IMAGE_TAR)
-    vm_cache_path = os.path.join(cache_dir, constants.VM_IMAGE_BIN)
-    osutils.Touch(vm_cache_path, makedirs=True)
+    vm_image_path = os.path.join(vm_image_dir, constants.VM_IMAGE_BIN)
+    osutils.Touch(vm_image_path, makedirs=True)
     self._vm.Start()
     expected_vm_image_path = os.path.join(
         self._vm.cache_dir,
-        'chrome-sdk/tarballs/%s+12225.0.0+chromiumos_qemu_image.tar.xz/'
+        'chrome-sdk/symlinks/%s+12225.0.0+chromiumos_qemu_image.tar.xz/'
         'chromiumos_qemu_image.bin' % self._vm.board)
     self.assertTrue(self.FindPathInArgs(self.rc.call_args_list,
                                         expected_vm_image_path))

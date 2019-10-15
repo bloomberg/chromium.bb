@@ -1194,11 +1194,12 @@ class FakeSDKCache(object):
     # Sets the SDK Version.
     self.sdk_version = sdk_version
     os.environ['%SDK_VERSION'] = sdk_version
-    # Defines the path for the fake SDK Cache.
-    self.tarball_cache_path = os.path.join(self.cache_dir, 'chrome-sdk',
-                                           'tarballs')
-    # Creates an SDK TarballCache instance.
-    self.tarball_cache = cache.TarballCache(self.tarball_cache_path)
+    # Defines the path for the fake SDK Symlink Cache. (No backing tarball cache
+    # is needed.)
+    self.symlink_cache_path = os.path.join(self.cache_dir, 'chrome-sdk',
+                                           'symlinks')
+    # Creates an SDK SymlinkCache instance.
+    self.symlink_cache = cache.DiskCache(self.symlink_cache_path)
 
   def CreateCacheReference(self, board, key):
     """Creates the Cache Reference.
@@ -1210,12 +1211,8 @@ class FakeSDKCache(object):
     Returns:
       Path to the cache directory.
     """
-    # Creates the cache key required for accessing the fake SDK cache.
-    cache_key = (board, self.sdk_version, key)
     # Adds the cache path at the key.
-    cache.CacheReference(self.tarball_cache,
-                         cache_key).Assign(self.tarball_cache_path)
-    return self.tarball_cache.Lookup(cache_key).path
+    return self.symlink_cache.Lookup((board, self.sdk_version, key)).path
 
 
 class MockTestCase(TestCase):
