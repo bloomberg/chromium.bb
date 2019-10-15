@@ -31,7 +31,7 @@
 <translation id="1302880136325416935">Mostrar configurações de Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1316069254387866896">Sempre mostrar estante</translation>
 <translation id="1341651618736211726">Botão flutuante</translation>
-<translation id="1346748346194534595">Para a direita</translation>
+<translation id="1346748346194534595">À direita</translation>
 <translation id="1351937230027495976">Recolher menu</translation>
 <translation id="1383876407941801731">Pesquisar</translation>
 <translation id="1419738280318246476">Desbloqueie o dispositivo para executar a ação de notificação</translation>
@@ -39,7 +39,7 @@
 <translation id="1426410128494586442">Sim</translation>
 <translation id="1455242230282523554">Mostrar configurações de idioma</translation>
 <translation id="1460620680449458626">O som está desativado.</translation>
-<translation id="1467432559032391204">Para a esquerda</translation>
+<translation id="1467432559032391204">À esquerda</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Mostrar configurações de notificação. As notificações estão desativadas para um app}one{Mostrar configurações de notificação. As notificações estão desativadas para # app}other{Mostrar configurações de notificação. As notificações estão desativadas para # apps}}</translation>
 <translation id="1525508553941733066">DISPENSAR</translation>

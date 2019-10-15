@@ -2335,6 +2335,7 @@
 <translation id="4434045419905280838">팝업 및 리디렉션</translation>
 <translation id="443454694385851356">이전(안전하지 않음)</translation>
 <translation id="443475966875174318">호환되지 않는 애플리케이션 업데이트 또는 삭제</translation>
+<translation id="4438043733494739848">투명</translation>
 <translation id="4441124369922430666">컴퓨터를 켤 때 이 앱을 자동으로 시작하시겠습니까?</translation>
 <translation id="444134486829715816">펼치기...</translation>
 <translation id="4442424173763614572">DNS 조회 실패</translation>
@@ -3203,7 +3204,6 @@ VR로 들어가기 전에 이 사이트를 신뢰할 수 있는지 확인하세�
 <translation id="5747552184818312860">만료</translation>
 <translation id="5747785204778348146">개발자 - 불안정</translation>
 <translation id="5747809636523347288"><ph name="URL" /> 붙여넣기 및 이동(&amp;S)</translation>
-<translation id="5750288053043553775">0</translation>
 <translation id="5750324801516359607">멀리 있음</translation>
 <translation id="5756163054456765343">고객센터(H)</translation>
 <translation id="5759728514498647443"><ph name="APP_NAME" />을(를) 통해 인쇄하려고 전송한 문서를 <ph name="APP_NAME" />에서 읽을 수 있습니다.</translation>
@@ -3254,6 +3254,7 @@ VR로 들어가기 전에 이 사이트를 신뢰할 수 있는지 확인하세�
 <translation id="5825412242012995131">사용(권장)</translation>
 <translation id="5826395379250998812">휴대전화와 <ph name="DEVICE_TYPE" />을(를) 연결하세요. <ph name="LINK_BEGIN" />자세히 알아보기<ph name="LINK_END" /></translation>
 <translation id="5826507051599432481">일반 이름(CN)</translation>
+<translation id="5826993284769733527">반투명</translation>
 <translation id="5827266244928330802">Safari</translation>
 <translation id="5828633471261496623">인쇄 중...</translation>
 <translation id="5830410401012830739">위치 설정 관리...</translation>
@@ -5211,7 +5212,6 @@ VR로 들어가기 전에 이 사이트를 신뢰할 수 있는지 확인하세�
 <translation id="8688579245973331962">이름이 표시되지 않습니까?</translation>
 <translation id="8688591111840995413">비밀번호가 잘못됨</translation>
 <translation id="8688672835843460752">사용 가능</translation>
-<translation id="8689998525144040851">100</translation>
 <translation id="8695825812785969222">위치 열기(&amp;L)...</translation>
 <translation id="869884720829132584">애플리케이션 메뉴</translation>
 <translation id="869891660844655955">유효기간</translation>
@@ -5327,6 +5327,7 @@ VR로 들어가기 전에 이 사이트를 신뢰할 수 있는지 확인하세�
 <translation id="8831140208248705279"><ph name="DEVICE_TYPE" /> 기기를 Android 휴대전화와 함께 사용하면 더 좋습니다. 두 기기를 연결한 다음 컴퓨터에서 문자 메시지를 보내고, 인터넷 연결을 공유하고, 휴대전화로 <ph name="DEVICE_TYPE" /> 잠금을 해제하세요.<ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />자세히 알아보기<ph name="LINK_END" /></translation>
 <translation id="8831664945713891930">확장 프로그램 설정 열기</translation>
 <translation id="8834039744648160717">네트워크 구성은 <ph name="USER_EMAIL" />님이 관리합니다.</translation>
+<translation id="8838601485495657486">불투명</translation>
 <translation id="8838770651474809439">햄버거</translation>
 <translation id="883911313571074303">이미지에 주석 달기</translation>
 <translation id="8845001906332463065">도움말 보기</translation>

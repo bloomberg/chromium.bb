@@ -2337,6 +2337,7 @@
 <translation id="4434045419905280838">Αναδυόμενα παράθυρα και ανακατευθύνσεις</translation>
 <translation id="443454694385851356">Παλαιού τύπου (μη ασφαλές)</translation>
 <translation id="443475966875174318">Ενημέρωση ή κατάργηση μη συμβατών εφαρμογών</translation>
+<translation id="4438043733494739848">Διαφανές</translation>
 <translation id="4441124369922430666">Θέλετε να ξεκινά αυτόματα αυτή η εφαρμογή όταν η συσκευή τίθεται σε λειτουργία;</translation>
 <translation id="444134486829715816">Ανάπτυξη...</translation>
 <translation id="4442424173763614572">Η αναζήτηση DNS απέτυχε</translation>
@@ -3206,7 +3207,6 @@
 <translation id="5747552184818312860">Λήγει</translation>
 <translation id="5747785204778348146">Προγραμματιστής - ασταθές</translation>
 <translation id="5747809636523347288">Επικόλληση και μετάβαση στη διεύθυνση <ph name="URL" /></translation>
-<translation id="5750288053043553775">0</translation>
 <translation id="5750324801516359607">Μακριά</translation>
 <translation id="5756163054456765343">Κέντρο βοήθειας</translation>
 <translation id="5759728514498647443">Είναι δυνατή η ανάγνωση των εγγράφων που στέλνετε για εκτύπωση μέσω <ph name="APP_NAME" /> με την εφαρμογή <ph name="APP_NAME" />.</translation>
@@ -3257,6 +3257,7 @@
 <translation id="5825412242012995131">Ενεργοποίηση (Συνιστάται)</translation>
 <translation id="5826395379250998812">Συνδέστε τη συσκευή <ph name="DEVICE_TYPE" /> με το τηλέφωνό σας. <ph name="LINK_BEGIN" />Μάθετε περισσότερα<ph name="LINK_END" /></translation>
 <translation id="5826507051599432481">Κοινό όνομα (CN)</translation>
+<translation id="5826993284769733527">Ημιδιαφανές</translation>
 <translation id="5827266244928330802">Safari</translation>
 <translation id="5828633471261496623">Εκτύπωση...</translation>
 <translation id="5830410401012830739">Διαχείριση ρυθμίσεων τοποθεσίας...</translation>
@@ -5214,7 +5215,6 @@
 <translation id="8688579245973331962">Δεν βλέπετε το όνομά σας;</translation>
 <translation id="8688591111840995413">Μη αποδεκτός κωδικός πρόσβασης</translation>
 <translation id="8688672835843460752">Διαθέσιμο</translation>
-<translation id="8689998525144040851">100</translation>
 <translation id="8695825812785969222">Άνοιγμα τοποθεσίας...</translation>
 <translation id="869884720829132584">Μενού εφαρμογών</translation>
 <translation id="869891660844655955">Ημερομηνία λήξης</translation>
@@ -5328,6 +5328,7 @@
 <translation id="8831140208248705279">Η συσκευή <ph name="DEVICE_TYPE" /> και το τηλέφωνό σας Android λειτουργούν καλύτερα μαζί, με το Better Together. Συνδέστε τα, για να μπορείτε να στέλνετε μηνύματα κειμένου από τον υπολογιστή σας, να μοιράζεστε τη σύνδεσή σας στο διαδίκτυο και να ξεκλειδώνετε τη συσκευή <ph name="DEVICE_TYPE" /> με το τηλέφωνό σας.<ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />Μάθετε περισσότερα<ph name="LINK_END" /></translation>
 <translation id="8831664945713891930">Άνοιγμα ρυθμίσεων επεκτάσεων</translation>
 <translation id="8834039744648160717">Η διαμόρφωση δικτύου ελέγχεται από τον χρήστη <ph name="USER_EMAIL" />.</translation>
+<translation id="8838601485495657486">Αδιαφανές</translation>
 <translation id="8838770651474809439">Χάμπουργκερ</translation>
 <translation id="883911313571074303">Σχολιασμός εικόνας</translation>
 <translation id="8845001906332463065">Λήψη βοήθειας</translation>
