@@ -2665,6 +2665,10 @@ if (!is_android) {
       sources +=
           [ "../browser/net/trial_comparison_cert_verifier_browsertest.cc" ]
     }
+
+    if (enable_webui_tab_strip) {
+      sources += [ "../browser/ui/webui/tab_strip/tab_strip_ui_browsertest.cc" ]
+    }
   }
 }
 
