@@ -41,9 +41,10 @@ void BindImeControllerReceiverOnMainThread(
     Shell::Get()->ime_controller()->BindReceiver(std::move(receiver));
 }
 
-void BindTrayActionRequestOnMainThread(mojom::TrayActionRequest request) {
+void BindTrayActionReceiverOnMainThread(
+    mojo::PendingReceiver<mojom::TrayAction> receiver) {
   if (Shell::HasInstance())
-    Shell::Get()->tray_action()->BindRequest(std::move(request));
+    Shell::Get()->tray_action()->BindReceiver(std::move(receiver));
 }
 
 }  // namespace
@@ -58,7 +59,7 @@ void RegisterInterfaces(
       base::BindRepeating(&BindImeControllerReceiverOnMainThread),
       main_thread_task_runner);
   registry->AddInterface(
-      base::BindRepeating(&BindTrayActionRequestOnMainThread),
+      base::BindRepeating(&BindTrayActionReceiverOnMainThread),
       main_thread_task_runner);
 
   // Inject additional optional interfaces.

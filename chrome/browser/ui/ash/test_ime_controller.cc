@@ -16,7 +16,9 @@ TestImeController::~TestImeController() = default;
 
 mojo::PendingRemote<ash::mojom::ImeController>
 TestImeController::CreateRemote() {
-  return receiver_.BindNewPipeAndPassRemote();
+  mojo::PendingRemote<ash::mojom::ImeController> remote;
+  receiver_.Bind(remote.InitWithNewPipeAndPassReceiver());
+  return remote;
 }
 
 void TestImeController::SetClient(
