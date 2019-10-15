@@ -6103,15 +6103,6 @@ void RenderFrameHostImpl::UpdatePermissionsForNavigation(
     GrantFileAccessFromResourceRequestBody(*common_params.post_data);
 }
 
-std::set<int> RenderFrameHostImpl::GetNavigationEntryIdsPendingCommit() {
-  std::set<int> result;
-  if (navigation_request_)
-    result.insert(navigation_request_->nav_entry_id());
-  for (auto const& requests : navigation_requests_)
-    result.insert(requests.second->nav_entry_id());
-  return result;
-}
-
 mojo::AssociatedRemote<mojom::NavigationClient>
 RenderFrameHostImpl::GetNavigationClientFromInterfaceProvider() {
   mojo::AssociatedRemote<mojom::NavigationClient> navigation_client_remote;
@@ -7904,6 +7895,10 @@ BackForwardCacheMetrics* RenderFrameHostImpl::GetBackForwardCacheMetrics() {
   if (!navigation_entry)
     return nullptr;
   return navigation_entry->back_forward_cache_metrics();
+}
+
+bool RenderFrameHostImpl::HasPendingCommitNavigationForTesting() {
+  return navigation_request_ || !navigation_requests_.empty();
 }
 
 }  // namespace content
