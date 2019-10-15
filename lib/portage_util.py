@@ -1027,6 +1027,8 @@ class EBuild(object):
     subtrees = info.subtrees
     commit_ids = [self.GetCommitId(x) for x in srcdirs]
     tree_ids = [self.GetTreeId(x) for x in subtrees]
+    # Make sure they are all valid (e.g. a deleted repo).
+    tree_ids = [tree_id for tree_id in tree_ids if tree_id]
     variables = dict(CROS_WORKON_COMMIT=self.FormatBashArray(commit_ids),
                      CROS_WORKON_TREE=self.FormatBashArray(tree_ids))
 
