@@ -35,9 +35,10 @@ void BindCrosDisplayConfigControllerReceiverOnMainThread(
     Shell::Get()->cros_display_config()->BindReceiver(std::move(receiver));
 }
 
-void BindImeControllerRequestOnMainThread(mojom::ImeControllerRequest request) {
+void BindImeControllerReceiverOnMainThread(
+    mojo::PendingReceiver<mojom::ImeController> receiver) {
   if (Shell::HasInstance())
-    Shell::Get()->ime_controller()->BindRequest(std::move(request));
+    Shell::Get()->ime_controller()->BindReceiver(std::move(receiver));
 }
 
 void BindTrayActionRequestOnMainThread(mojom::TrayActionRequest request) {
@@ -54,7 +55,7 @@ void RegisterInterfaces(
       base::BindRepeating(&BindCrosDisplayConfigControllerReceiverOnMainThread),
       main_thread_task_runner);
   registry->AddInterface(
-      base::BindRepeating(&BindImeControllerRequestOnMainThread),
+      base::BindRepeating(&BindImeControllerReceiverOnMainThread),
       main_thread_task_runner);
   registry->AddInterface(
       base::BindRepeating(&BindTrayActionRequestOnMainThread),

@@ -10,16 +10,17 @@
 
 #include "ash/public/mojom/ime_info.mojom.h"
 
-TestImeController::TestImeController() : binding_(this) {}
+TestImeController::TestImeController() = default;
+
 TestImeController::~TestImeController() = default;
 
-ash::mojom::ImeControllerPtr TestImeController::CreateInterfacePtr() {
-  ash::mojom::ImeControllerPtr ptr;
-  binding_.Bind(mojo::MakeRequest(&ptr));
-  return ptr;
+mojo::PendingRemote<ash::mojom::ImeController>
+TestImeController::CreateRemote() {
+  return receiver_.BindNewPipeAndPassRemote();
 }
 
-void TestImeController::SetClient(ash::mojom::ImeControllerClientPtr client) {}
+void TestImeController::SetClient(
+    mojo::PendingRemote<ash::mojom::ImeControllerClient> client) {}
 
 void TestImeController::RefreshIme(
     const std::string& current_ime_id,
