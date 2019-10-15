@@ -60,31 +60,33 @@ OmniboxResultView::OmniboxResultView(
   CHECK_GE(model_index, 0);
 
   AddChildView(suggestion_view_ = new OmniboxMatchCellView(this));
-  AddChildView(keyword_view_ = new OmniboxMatchCellView(this));
 
+  AddChildView(
+      suggestion_tab_switch_button_ = new OmniboxTabSwitchButton(
+          popup_contents_view_, this,
+          l10n_util::GetStringUTF16(IDS_OMNIBOX_TAB_SUGGEST_HINT),
+          l10n_util::GetStringUTF16(IDS_OMNIBOX_TAB_SUGGEST_SHORT_HINT),
+          omnibox::kSwitchIcon, theme_provider_));
+
+  // This is intentionally not in the tab order by default, but should be
+  // if the user has full-acessibility mode on. This is because this is a
+  // tertiary priority button, which already has a Shift+Delete shortcut.
+  // TODO(tommycli): Make sure we announce the Shift+Delete capability in the
+  // accessibility node data for removable suggestions.
+  AddChildView(remove_suggestion_button_ =
+                   views::CreateVectorImageButton(this).release());
+  views::InstallCircleHighlightPathGenerator(remove_suggestion_button_);
+  // TODO(tommycli): We may need to update the color for theme changes.
+  views::SetImageFromVectorIcon(remove_suggestion_button_,
+                                vector_icons::kCloseRoundedIcon,
+                                GetColor(OmniboxPart::RESULTS_ICON));
+
+  AddChildView(keyword_view_ = new OmniboxMatchCellView(this));
   keyword_view_->icon()->EnableCanvasFlippingForRTLUI(true);
   keyword_view_->icon()->SetImage(gfx::CreateVectorIcon(
       omnibox::kKeywordSearchIcon, GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
       GetColor(OmniboxPart::RESULTS_ICON)));
   keyword_view_->icon()->SizeToPreferredSize();
-
-  if (base::FeatureList::IsEnabled(
-          omnibox::kOmniboxSuggestionTransparencyOptions)) {
-    // This is intentionally not in the tab order by default, but should be
-    // if the user has full-acessibility mode on. This is because this is a
-    // tertiary priority button, which already has a Shift+Delete shortcut.
-    // TODO(tommycli): Make sure we announce the Shift+Delete capability in the
-    // accessibility node data for removable suggestions.
-    AddChildView(remove_suggestion_button_ =
-                     views::CreateVectorImageButton(this).release());
-
-    views::InstallCircleHighlightPathGenerator(remove_suggestion_button_);
-
-    // TODO(tommycli): We may need to update the color for theme changes.
-    views::SetImageFromVectorIcon(remove_suggestion_button_,
-                                  vector_icons::kCloseRoundedIcon,
-                                  GetColor(OmniboxPart::RESULTS_ICON));
-  }
 }
 
 OmniboxResultView::~OmniboxResultView() {}
@@ -97,27 +99,15 @@ void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
   match_ = match.GetMatchWithContentsAndDescriptionPossiblySwapped();
   animation_->Reset();
   is_hovered_ = false;
+
   suggestion_view_->OnMatchUpdate(this, match_);
   keyword_view_->OnMatchUpdate(this, match_);
-
-  // Set up possible button.
-  if (match.ShouldShowTabMatchButton()) {
-    suggestion_tab_switch_button_ = std::make_unique<OmniboxTabSwitchButton>(
-        popup_contents_view_, this,
-        l10n_util::GetStringUTF16(IDS_OMNIBOX_TAB_SUGGEST_HINT),
-        l10n_util::GetStringUTF16(IDS_OMNIBOX_TAB_SUGGEST_SHORT_HINT),
-        omnibox::kSwitchIcon, theme_provider_);
-    suggestion_tab_switch_button_->set_owned_by_client();
-    AddChildView(suggestion_tab_switch_button_.get());
-  } else {
-    suggestion_tab_switch_button_.reset();
-  }
-
-  if (remove_suggestion_button_) {
-    // To avoid clutter, don't show the Remove button for matches with keyword.
-    remove_suggestion_button_->SetVisible(match.SupportsDeletion() &&
-                                          !match.associated_keyword);
-  }
+  suggestion_tab_switch_button_->SetVisible(match.ShouldShowTabMatchButton());
+  // To avoid clutter, don't show the Remove button for matches with keyword.
+  remove_suggestion_button_->SetVisible(
+      match_.SupportsDeletion() && !match.associated_keyword &&
+      base::FeatureList::IsEnabled(
+          omnibox::kOmniboxSuggestionTransparencyOptions));
 
   Invalidate();
   Layout();
@@ -144,7 +134,7 @@ void OmniboxResultView::Invalidate(bool force_reapply_styles) {
   suggestion_view_->separator()->ApplyTextColor(
       OmniboxPart::RESULTS_TEXT_DIMMED);
   keyword_view_->separator()->ApplyTextColor(OmniboxPart::RESULTS_TEXT_DIMMED);
-  if (suggestion_tab_switch_button_)
+  if (suggestion_tab_switch_button_->GetVisible())
     suggestion_tab_switch_button_->UpdateBackground();
 
   // Recreate the icons in case the color needs to change.
@@ -253,7 +243,7 @@ void OmniboxResultView::SetRichSuggestionImage(const gfx::ImageSkia& image) {
 // |button| is the tab switch button.
 void OmniboxResultView::ButtonPressed(views::Button* button,
                                       const ui::Event& event) {
-  if (button == suggestion_tab_switch_button_.get()) {
+  if (button == suggestion_tab_switch_button_) {
     OpenMatch(WindowOpenDisposition::SWITCH_TO_TAB, event.time_stamp());
   } else if (button == remove_suggestion_button_) {
     // Temporarily inhibit the popup closing on blur while we open the remove
@@ -296,7 +286,7 @@ void OmniboxResultView::Layout() {
 
   // Add buttons from right to left, shrinking the suggestion width as we go.
   // TODO(tommycli): We should probably use a layout manager here.
-  if (remove_suggestion_button_ && remove_suggestion_button_->GetVisible()) {
+  if (remove_suggestion_button_->GetVisible()) {
     const gfx::Size button_size = remove_suggestion_button_->GetPreferredSize();
     suggestion_width -=
         button_size.width() + OmniboxMatchCellView::kMarginRight;
@@ -308,7 +298,7 @@ void OmniboxResultView::Layout() {
                                          button_size.width(),
                                          button_size.height());
   }
-  if (suggestion_tab_switch_button_) {
+  if (match_.ShouldShowTabMatchButton()) {
     suggestion_tab_switch_button_->ProvideWidthHint(suggestion_width);
     const gfx::Size ts_button_size =
         suggestion_tab_switch_button_->GetPreferredSize();
@@ -357,11 +347,11 @@ bool OmniboxResultView::OnMouseDragged(const ui::MouseEvent& event) {
         popup_contents_view_->SetSelectedLine(model_index_);
       if (suggestion_tab_switch_button_) {
         gfx::Point point_in_child_coords(event.location());
-        View::ConvertPointToTarget(this, suggestion_tab_switch_button_.get(),
+        View::ConvertPointToTarget(this, suggestion_tab_switch_button_,
                                    &point_in_child_coords);
         if (suggestion_tab_switch_button_->HitTestPoint(
                 point_in_child_coords)) {
-          SetMouseHandler(suggestion_tab_switch_button_.get());
+          SetMouseHandler(suggestion_tab_switch_button_);
           return false;
         }
       }
