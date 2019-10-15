@@ -484,6 +484,20 @@ group("mediastream_unittests_data") {
   ]
 }
 
+fuzzer_test("web_app_manifest_fuzzer") {
+  sources = [
+    "manifest/manifest_fuzzer.cc",
+  ]
+
+  dict = "manifest/manifest_fuzzer.dict"
+  seed_corpus = "manifest/fuzzer_seed_corpus"
+
+  deps = [
+    ":modules",
+    "//third_party/blink/renderer/platform:blink_fuzzer_test_support",
+  ]
+}
+
 if (use_libfuzzer) {
   fuzzer_test("media_capabilities_fuzzer") {
     sources = [
