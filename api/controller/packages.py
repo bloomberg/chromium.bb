@@ -124,7 +124,7 @@ def GetTargetVersions(input_proto, output_proto, _config):
   """Returns the target versions."""
   build_target = controller_util.ParseBuildTarget(input_proto.build_target)
   output_proto.android_version = packages.determine_android_version(
-      build_target)
+      [build_target])
   output_proto.android_branch_version = packages.determine_android_branch(
       build_target)
   output_proto.android_target_version = packages.determine_android_target(
