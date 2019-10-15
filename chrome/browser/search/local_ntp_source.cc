@@ -611,9 +611,6 @@ class LocalNtpSource::SearchConfigurationProvider
 
     if (is_google) {
       config_data.SetBoolean(
-          "enableShortcutsGrid",
-          base::FeatureList::IsEnabled(features::kGridLayoutForNtpShortcuts));
-      config_data.SetBoolean(
           "richerPicker",
           base::FeatureList::IsEnabled(features::kNtpCustomizationMenuV2));
       config_data.SetBoolean("chromeColors", base::FeatureList::IsEnabled(

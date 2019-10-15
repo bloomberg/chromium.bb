@@ -27,7 +27,6 @@ let MostVisitedData;
  * chrome/browser/search/local_ntp_source.cc:
  *     LocalNtpSource::SearchConfigurationProvider::UpdateConfigData()
  * @typedef {{chromeColors: boolean,
- *            enableShortcutsGrid: boolean,
  *            googleBaseUrl: string,
  *            isAccessibleBrowser: boolean,
  *            isGooglePage: boolean,
