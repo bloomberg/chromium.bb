@@ -25,7 +25,6 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
-from chromite.lib import signals as cros_signals
 
 
 class RunCommandErrorStrTest(cros_test_lib.TestCase):
@@ -259,7 +258,6 @@ class TestRunCommand(cros_test_lib.MockTestCase):
 
     self.signal_mock = self.PatchObject(signal, 'signal')
     self.getsignal_mock = self.PatchObject(signal, 'getsignal')
-    self.PatchObject(cros_signals, 'SignalModuleUsable', return_value=True)
 
   def tearDown(self):
     # Restore hidden ENVs.
