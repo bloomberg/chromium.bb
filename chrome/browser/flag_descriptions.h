@@ -1034,9 +1034,6 @@ extern const char kRequestUnbufferedDispatchDescription[];
 extern const char kRequestTabletSiteName[];
 extern const char kRequestTabletSiteDescription[];
 
-extern const char kResourceLoadSchedulerName[];
-extern const char kResourceLoadSchedulerDescription[];
-
 extern const char kPrefetchPrivacyChangesName[];
 extern const char kPrefetchPrivacyChangesDescription[];
 

@@ -258,9 +258,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
       base::FeatureList::IsEnabled(
           features::kAllowContentInitiatedDataUrlNavigations));
 
-  WebRuntimeFeatures::EnableResourceLoadScheduler(
-      base::FeatureList::IsEnabled(features::kResourceLoadScheduler));
-
   if (base::FeatureList::IsEnabled(features::kBuiltInModuleAll))
     WebRuntimeFeatures::EnableBuiltInModuleAll(true);
 

@@ -2989,11 +2989,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDisableKeepaliveFetchDescription, kOsAll,
      FEATURE_VALUE_TYPE(network::features::kDisableKeepaliveFetch)},
 
-    {"enable-resource-load-scheduler",
-     flag_descriptions::kResourceLoadSchedulerName,
-     flag_descriptions::kResourceLoadSchedulerDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kResourceLoadScheduler)},
-
     {"prefetch-privacy-changes", flag_descriptions::kPrefetchPrivacyChangesName,
      flag_descriptions::kPrefetchPrivacyChangesDescription, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kPrefetchPrivacyChanges)},

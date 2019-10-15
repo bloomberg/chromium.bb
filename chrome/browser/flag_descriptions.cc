@@ -1737,11 +1737,6 @@ const char kRequestTabletSiteDescription[] =
     "changed to indicate a tablet device. Web content optimized for tablets is "
     "received there after for the current tab.";
 
-const char kResourceLoadSchedulerName[] = "Enable resource load throttling";
-const char kResourceLoadSchedulerDescription[] =
-    "Uses the resource load scheduler in blink to throttle resource load "
-    "requests.";
-
 const char kPrefetchPrivacyChangesName[] =
     "Prefetch request properties are updated to be privacy-preserving";
 const char kPrefetchPrivacyChangesDescription[] =

@@ -1616,11 +1616,6 @@
     "expiry_milestone": 80
   },
   {
-    "name": "enable-resource-load-scheduler",
-    "owners": [ "toyoshim" ],
-    "expiry_milestone": 78
-  },
-  {
     "name": "enable-resource-loading-hints",
     "owners": [ "//components/data_reduction_proxy/OWNERS" ],
     // This flag is used for frequent manual testing and should not be removed.
