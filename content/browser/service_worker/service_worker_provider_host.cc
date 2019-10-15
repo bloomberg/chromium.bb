@@ -224,7 +224,7 @@ ServiceWorkerProviderHost::PreCreateNavigationHost(
 
 // static
 base::WeakPtr<ServiceWorkerProviderHost>
-ServiceWorkerProviderHost::PreCreateForController(
+ServiceWorkerProviderHost::CreateForServiceWorker(
     base::WeakPtr<ServiceWorkerContextCore> context,
     scoped_refptr<ServiceWorkerVersion> version,
     blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr*
@@ -243,7 +243,7 @@ ServiceWorkerProviderHost::PreCreateForController(
 
 // static
 base::WeakPtr<ServiceWorkerProviderHost>
-ServiceWorkerProviderHost::PreCreateForWebWorker(
+ServiceWorkerProviderHost::CreateForWebWorker(
     base::WeakPtr<ServiceWorkerContextCore> context,
     int process_id,
     blink::mojom::ServiceWorkerProviderType provider_type,

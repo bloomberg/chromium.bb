@@ -104,8 +104,8 @@ class WebContents;
 // pre-created by the browser process and the provider info is sent in the
 // navigation commit IPC.
 //
-// 2) For shared workers and for service workers, the provider host is
-// pre-created by the browser process and the provider info is sent in the start
+// 2) For web workers and for service workers, the provider host is
+// created by the browser process and the provider info is sent in the start
 // worker IPC message.
 class CONTENT_EXPORT ServiceWorkerProviderHost
     : public ServiceWorkerRegistration::Listener,
@@ -141,7 +141,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // |out_provider_info->host_remote| stays alive).
   // CompleteStartWorkerPreparation() must be called later to get a full info to
   // send to the renderer.
-  static base::WeakPtr<ServiceWorkerProviderHost> PreCreateForController(
+  static base::WeakPtr<ServiceWorkerProviderHost> CreateForServiceWorker(
       base::WeakPtr<ServiceWorkerContextCore> context,
       scoped_refptr<ServiceWorkerVersion> version,
       blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr*
@@ -150,7 +150,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // Used for starting a web worker (dedicated worker or shared worker). Returns
   // a provider host for the worker. The host stays alive as long as the
   // corresponding host for |host_receiver| stays alive.
-  static base::WeakPtr<ServiceWorkerProviderHost> PreCreateForWebWorker(
+  static base::WeakPtr<ServiceWorkerProviderHost> CreateForWebWorker(
       base::WeakPtr<ServiceWorkerContextCore> context,
       int process_id,
       blink::mojom::ServiceWorkerProviderType provider_type,
