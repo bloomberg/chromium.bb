@@ -191,6 +191,10 @@ class SyncEncryptionHandler {
   // check whether keystore keys need to be requested from the server.
   virtual KeystoreKeysHandler* GetKeystoreKeysHandler() = 0;
 
+  // Returns the last known keystore key or an empty string if none available.
+  // TODO(crbug.com/1012226): Remove API when VAPID migration is over.
+  virtual std::string GetLastKeystoreKey() const = 0;
+
   // The set of types that are always encrypted.
   static ModelTypeSet SensitiveTypes();
 };

@@ -73,6 +73,7 @@ class SyncEncryptionHandlerImpl : public KeystoreKeysHandler,
   bool IsEncryptEverythingEnabled() const override;
   base::Time GetKeystoreMigrationTime() const override;
   KeystoreKeysHandler* GetKeystoreKeysHandler() override;
+  std::string GetLastKeystoreKey() const override;
 
   // NigoriHandler implementation.
   // Note: all methods are invoked while the caller holds a transaction.
