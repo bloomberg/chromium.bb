@@ -4801,8 +4801,7 @@ ChromeContentBrowserClient::WillCreateURLLoaderRequestInterceptors(
   // TODO(ryansturm): Once this is on the UI thread, stop passing
   // |network_loader_factory| and have interceptors create one themselves.
   // https://crbug.com/931786
-  if (base::FeatureList::IsEnabled(
-          previews::features::kLitePageServerPreviews)) {
+  if (previews::params::IsLitePageServerPreviewsEnabled()) {
     interceptors.push_back(
         std::make_unique<
             previews::PreviewsLitePageRedirectURLLoaderInterceptor>(
