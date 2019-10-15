@@ -1501,7 +1501,7 @@ void AppListControllerImpl::NotifyHomeLauncherAnimationTransition(
 }
 
 bool AppListControllerImpl::IsHomeScreenVisible() {
-  return IsVisible();
+  return IsTabletMode() && IsVisible();
 }
 
 }  // namespace ash
