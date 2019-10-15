@@ -24962,6 +24962,8 @@ Called by update_net_error_codes.py.-->
   <int value="3057" label="NonOriginCleanImageBitmapSerialization"/>
   <int value="3058" label="OriginCleanImageBitmapTransfer"/>
   <int value="3059" label="NonOriginCleanImageBitmapTransfer"/>
+  <int value="3060" label="CompressionStreamConstructor"/>
+  <int value="3061" label="DecompressionStreamConstructor"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
