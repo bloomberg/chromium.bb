@@ -4259,6 +4259,12 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chromeos::features::kSplitSettings)},
 #endif  // defined(OS_CHROMEOS)
 
+    {"privacy-settings-redesign",
+     flag_descriptions::kPrivacySettingsRedesignName,
+     flag_descriptions::kPrivacySettingsRedesignDescription,
+     kOsWin | kOsMac | kOsLinux,
+     FEATURE_VALUE_TYPE(features::kPrivacySettingsRedesign)},
+
 #if defined(OS_CHROMEOS)
     {"gesture-properties-dbus-service",
      flag_descriptions::kEnableGesturePropertiesDBusServiceName,

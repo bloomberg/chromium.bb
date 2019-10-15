@@ -36717,6 +36717,7 @@ from previous Chrome versions.
   <int value="36422284"
       label="AutofillSaveCardDialogUnlabeledExpirationDate:enabled"/>
   <int value="37024318" label="disable-affiliation-based-matching"/>
+  <int value="38213894" label="PrivacySettingsRedesign:enabled"/>
   <int value="38904620" label="TabSwitcherLongpressMenu:enabled"/>
   <int value="42098736" label="TranslateAndroidManualTrigger:disabled"/>
   <int value="42844603" label="AndroidSurfaceControl:disabled"/>
@@ -37601,6 +37602,7 @@ from previous Chrome versions.
   <int value="1247293682" label="topchrome-md"/>
   <int value="1250071868" label="disable-timezone-tracking-option"/>
   <int value="1253698118" label="ash-disable-stable-overview-order"/>
+  <int value="1254472299" label="PrivacySettingsRedesign:disabled"/>
   <int value="1257482622" label="PageAlmostIdle:enabled"/>
   <int value="1257533754" label="UseDownloadOfflineContentProvider:disabled"/>
   <int value="1257980502" label="disable-accelerated-video-decode"/>

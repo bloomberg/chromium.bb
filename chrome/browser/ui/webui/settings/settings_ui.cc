@@ -257,6 +257,10 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
       "a11yEnhancements",
       base::FeatureList::IsEnabled(features::kWebUIA11yEnhancements));
 
+  html_source->AddBoolean(
+      "privacySettingsRedesignEnabled",
+      base::FeatureList::IsEnabled(features::kPrivacySettingsRedesign));
+
   html_source->AddBoolean("unifiedConsentEnabled",
                           unified_consent::IsUnifiedConsentFeatureEnabled());
 

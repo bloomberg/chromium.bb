@@ -1675,6 +1675,11 @@ const char kPrintPreviewRegisterPromosName[] =
 const char kPrintPreviewRegisterPromosDescription[] =
     "Enable registering unregistered cloud printers from print preview.";
 
+const char kPrivacySettingsRedesignName[] = "Privacy Settings Redesign";
+const char kPrivacySettingsRedesignDescription[] =
+    "Redesign of the privacy settings card to make it more prominent and "
+    "and easier to use.";
+
 const char kProminentDarkModeActiveTabTitleName[] =
     "Prominent Dark Mode Active Tab Titles";
 const char kProminentDarkModeActiveTabTitleDescription[] =

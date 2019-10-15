@@ -2903,6 +2903,12 @@
     "expiry_milestone": 85
   },
   {
+    "name": "privacy-settings-redesign",
+    "owners": ["harrisonsean", "msramek",
+      "chrome-privacy-core@google.com"],
+    "expiry_milestone": 82
+  },
+  {
     "name": "proactive-tab-freeze",
     "owners": [ "fdoray" ],
     "expiry_milestone": 80
