@@ -6,8 +6,8 @@
 """Watchlists
 
 Watchlists is a mechanism that allow a developer (a "watcher") to watch over
-portions of code that he is interested in. A "watcher" will be cc-ed to
-changes that modify that portion of code, thereby giving him an opportunity
+portions of code that they are interested in. A "watcher" will be cc-ed to
+changes that modify that portion of code, thereby giving them an opportunity
 to make comments on codereview.chromium.org even before the change is
 committed.
 Refer: http://dev.chromium.org/developers/contributing-code/watchlists
