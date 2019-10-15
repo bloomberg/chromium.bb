@@ -638,6 +638,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       FrameTreeNode* frame_tree_node) override;
   void OnThemeColorChanged(RenderFrameHostImpl* source,
                            const base::Optional<SkColor>& theme_color) override;
+  bool IsFrameLowPriority(const RenderFrameHost* render_frame_host) override;
 
   // RenderViewHostDelegate ----------------------------------------------------
   RenderViewHostDelegateView* GetDelegateView() override;
