@@ -1421,6 +1421,7 @@ jumbo_split_static_library("browser") {
     "profiles/profile_manager_observer.h",
     "profiles/profile_metrics.cc",
     "profiles/profile_metrics.h",
+    "profiles/profile_observer.h",
     "profiles/profile_shortcut_manager_win.cc",
     "profiles/profile_shortcut_manager_win.h",
     "profiles/profiles_state.cc",
