@@ -322,6 +322,39 @@ class ScopedCommitStateResetter {
   bool disabled_;
 };
 
+class ActiveURLMessageFilter : public mojo::MessageFilter {
+ public:
+  explicit ActiveURLMessageFilter(RenderFrameHostImpl* render_frame_host)
+      : render_frame_host_(render_frame_host) {}
+
+  ~ActiveURLMessageFilter() override {
+    if (debug_url_set_) {
+      GetContentClient()->SetActiveURL(GURL(), "");
+    }
+  }
+
+  // mojo::MessageFilter overrides.
+  bool WillDispatch(mojo::Message* message) override {
+    debug_url_set_ = true;
+    auto* frame_tree_node = render_frame_host_->frame_tree_node();
+    GetContentClient()->SetActiveURL(frame_tree_node->current_url(),
+                                     frame_tree_node->frame_tree()
+                                         ->root()
+                                         ->current_origin()
+                                         .GetDebugString());
+    return true;
+  }
+
+  void DidDispatchOrReject(mojo::Message* message, bool accepted) override {
+    GetContentClient()->SetActiveURL(GURL(), "");
+    debug_url_set_ = false;
+  }
+
+ private:
+  RenderFrameHostImpl* render_frame_host_;
+  bool debug_url_set_ = false;
+};
+
 void GrantFileAccess(int child_id,
                      const std::vector<base::FilePath>& file_paths) {
   ChildProcessSecurityPolicyImpl* policy =
@@ -1512,8 +1545,6 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message& msg) {
 
   // Crash reports triggered by IPC messages for this frame should be associated
   // with its URL.
-  // TODO(lukasza): Also call SetActiveURL for mojo messages dispatched to
-  // either the FrameHost interface or to interfaces bound by this frame.
   ScopedActiveURL scoped_active_url(this);
 
   if (delegate_->OnMessageReceived(this, msg))
@@ -4110,6 +4141,8 @@ void RenderFrameHostImpl::BindInterfaceProviderRequest(
       FilterRendererExposedInterfaces(mojom::kNavigation_FrameSpec,
                                       GetProcess()->GetID(),
                                       std::move(interface_provider_request)));
+  document_scoped_interface_provider_binding_.SetFilter(
+      std::make_unique<ActiveURLMessageFilter>(this));
 }
 
 void RenderFrameHostImpl::BindDocumentInterfaceBrokerReceiver(
@@ -4120,15 +4153,20 @@ void RenderFrameHostImpl::BindDocumentInterfaceBrokerReceiver(
   DCHECK(!document_interface_broker_content_receiver_.is_bound());
   DCHECK(content_receiver.is_valid());
   document_interface_broker_content_receiver_.Bind(std::move(content_receiver));
+  document_interface_broker_content_receiver_.SetFilter(
+      std::make_unique<ActiveURLMessageFilter>(this));
   DCHECK(!document_interface_broker_blink_receiver_.is_bound());
   DCHECK(blink_receiver.is_valid());
   document_interface_broker_blink_receiver_.Bind(std::move(blink_receiver));
+  document_interface_broker_blink_receiver_.SetFilter(
+      std::make_unique<ActiveURLMessageFilter>(this));
 }
 
 void RenderFrameHostImpl::BindBrowserInterfaceBrokerReceiver(
     mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker> receiver) {
   DCHECK(receiver.is_valid());
   broker_receiver_.Bind(std::move(receiver));
+  broker_receiver_.SetFilter(std::make_unique<ActiveURLMessageFilter>(this));
 }
 
 void RenderFrameHostImpl::SetKeepAliveTimeoutForTesting(
@@ -5650,6 +5688,8 @@ void RenderFrameHostImpl::SetUpMojoIfNeeded() {
       [](RenderFrameHostImpl* impl,
          mojo::PendingAssociatedReceiver<mojom::FrameHost> receiver) {
         impl->frame_host_associated_receiver_.Bind(std::move(receiver));
+        impl->frame_host_associated_receiver_.SetFilter(
+            std::make_unique<ActiveURLMessageFilter>(impl));
       };
   associated_registry_->AddInterface(
       base::BindRepeating(bind_frame_host_receiver, base::Unretained(this)));
