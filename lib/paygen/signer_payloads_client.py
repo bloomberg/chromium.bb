@@ -305,7 +305,7 @@ versionrev = %(version)s
         sig_file_name = sig_file.name
       try:
         self._ctx.Copy(uri, sig_file_name)
-        results.append(osutils.ReadFile(sig_file_name))
+        results.append(osutils.ReadFile(sig_file_name, mode='rb'))
       finally:
         # Cleanup the temp file, in case it's still there.
         if os.path.exists(sig_file_name):
