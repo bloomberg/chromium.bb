@@ -6676,9 +6676,8 @@ static INLINE PREDICTION_MODE get_single_mode(PREDICTION_MODE this_mode,
 static AOM_INLINE void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
                                            BLOCK_SIZE bsize, int_mv *cur_mv,
                                            int mi_row, int mi_col,
-                                           int_mv *ref_mv_sub8x8[2],
                                            const uint8_t *mask, int mask_stride,
-                                           int *rate_mv, const int block) {
+                                           int *rate_mv) {
   const AV1_COMMON *const cm = &cpi->common;
   const int num_planes = av1_num_planes(cm);
   const int pw = block_size_wide[bsize];
@@ -6692,12 +6691,9 @@ static AOM_INLINE void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
   const int refs[2] = { mbmi->ref_frame[0], mbmi->ref_frame[1] };
   int_mv ref_mv[2];
   int ite, ref;
-  // ic and ir are the 4x4 coordinates of the sub8x8 at index "block"
-  const int ic = block & 1;
-  const int ir = (block - ic) >> 1;
   struct macroblockd_plane *const pd = &xd->plane[0];
-  const int p_col = ((mi_col * MI_SIZE) >> pd->subsampling_x) + 4 * ic;
-  const int p_row = ((mi_row * MI_SIZE) >> pd->subsampling_y) + 4 * ir;
+  const int p_col = ((mi_col * MI_SIZE) >> pd->subsampling_x);
+  const int p_row = ((mi_row * MI_SIZE) >> pd->subsampling_y);
 
   ConvolveParams conv_params = get_conv_params(0, plane, xd->bd);
   conv_params.use_dist_wtd_comp_avg = 0;
@@ -6721,7 +6717,6 @@ static AOM_INLINE void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
   // Prediction buffer from second frame.
   DECLARE_ALIGNED(16, uint8_t, second_pred16[MAX_SB_SQUARE * sizeof(uint16_t)]);
   uint8_t *second_pred = get_buf_by_bd(xd, second_pred16);
-  (void)ref_mv_sub8x8;
 
   MV *const best_mv = &x->best_mv.as_mv;
   const int search_range = SEARCH_RANGE_8P;
@@ -7495,8 +7490,8 @@ static AOM_INLINE void do_masked_motion_search_indexed(
                                              mi_col, mask, mask_stride, rate_mv,
                                              0, which);
   } else if (which == 2) {
-    joint_motion_search(cpi, x, bsize, tmp_mv, mi_row, mi_col, NULL, mask,
-                        mask_stride, rate_mv, 0);
+    joint_motion_search(cpi, x, bsize, tmp_mv, mi_row, mi_col, mask,
+                        mask_stride, rate_mv);
   }
 }
 
@@ -8187,8 +8182,8 @@ static int64_t handle_newmv(const AV1_COMP *const cpi, MACROBLOCK *const x,
       // aomenc1
       if (cpi->sf.comp_inter_joint_search_thresh <= bsize || !valid_mv0 ||
           !valid_mv1) {
-        joint_motion_search(cpi, x, bsize, cur_mv, mi_row, mi_col, NULL, NULL,
-                            0, rate_mv, 0);
+        joint_motion_search(cpi, x, bsize, cur_mv, mi_row, mi_col, NULL, 0,
+                            rate_mv);
       } else {
         *rate_mv = 0;
         for (i = 0; i < 2; ++i) {
