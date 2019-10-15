@@ -39679,6 +39679,7 @@ Called by update_use_counter_css.py.-->
   <int value="644" label="overscroll-behavior-inline"/>
   <int value="645" label="overscroll-behavior-block"/>
   <int value="646" label="content-size"/>
+  <int value="647" label="font-optical-sizing"/>
 </enum>
 
 <enum name="MappedEditingCommands">
