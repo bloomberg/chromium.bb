@@ -795,8 +795,8 @@ void ShelfLayoutManager::OnOverviewModeEndingAnimationComplete(bool canceled) {
   overview_suspend_visibility_update_.reset();
 }
 
-void ShelfLayoutManager::OnAppListTargetVisibilityChanged(bool shown,
-                                                          int64_t display_id) {
+void ShelfLayoutManager::OnAppListVisibilityWillChange(bool shown,
+                                                       int64_t display_id) {
   if (!IsTabletModeEnabled())
     return;
 
