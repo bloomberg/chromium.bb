@@ -14,6 +14,7 @@
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
