@@ -27,7 +27,7 @@ namespace libgav1 {
 namespace dsp {
 namespace {
 
-constexpr uint16_t kCdefLargeValue = 30000;
+constexpr uint16_t kCdefLargeValue = 0x4000;
 
 constexpr int16_t kDivisionTable[] = {0,   840, 420, 280, 210,
                                       168, 140, 120, 105};

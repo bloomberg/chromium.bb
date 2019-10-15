@@ -54,7 +54,7 @@ namespace libgav1 {
 // and restoration together to only filter frame buffer once.
 class PostFilter {
  public:
-  static constexpr int kCdefLargeValue = 30000;
+  static constexpr int kCdefLargeValue = 0x4000;
 
   // This class does not take ownership of the masks/restoration_info, but it
   // may change their values.
