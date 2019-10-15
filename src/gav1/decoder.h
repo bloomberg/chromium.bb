@@ -50,9 +50,7 @@ class LIBGAV1_PUBLIC Decoder {
   // enqueue'ing up to |GetMaxAllowedFrames()|. The decoder can be thought of as
   // a queue of size |GetMaxAllowedFrames()|. Returns kLibgav1StatusOk on
   // success and an error status otherwise. Returning an error status here isn't
-  // a fatal error and the decoder can continue decoding further frames. To
-  // signal EOF, call this function with |data| as nullptr and |size| as 0. That
-  // will release all the frames held by the decoder.
+  // a fatal error and the decoder can continue decoding further frames.
   //
   // |user_private_data| may be used to associate application specific private
   // data with the compressed frame. It will be copied to the user_private_data
@@ -70,6 +68,18 @@ class LIBGAV1_PUBLIC Decoder {
   // compressed frame. If there are no displayable frames available, sets
   // |*out_ptr| to nullptr. Returns an error status if there is an error.
   StatusCode DequeueFrame(const DecoderBuffer** out_ptr);
+
+  // Signals the end of stream.
+  //
+  // In non-frame-parallel mode, this function will release all the frames held
+  // by the decoder. If the frame buffers were allocated by libgav1, then the
+  // pointer obtained by the prior DequeueFrame call will no longer be valid. If
+  // the frame buffers were allocated by the application, then any references
+  // that libgav1 is holding on to will be released.
+  //
+  // Once this function returns successfully, the decoder state will be reset
+  // and the decoder is ready to start decoding a new coded video sequence.
+  StatusCode SignalEOS();
 
   // Returns the maximum number of frames allowed to be enqueued at a time. The
   // decoder will reject frames beyond this count. If |settings_.frame_parallel|

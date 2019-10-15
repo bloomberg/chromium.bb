@@ -119,10 +119,7 @@ StatusCode DecoderImpl::Init() {
 
 StatusCode DecoderImpl::EnqueueFrame(const uint8_t* data, size_t size,
                                      int64_t user_private_data) {
-  if (data == nullptr) {
-    // This has to actually flush the decoder.
-    return kLibgav1StatusOk;
-  }
+  if (data == nullptr || size == 0) return kLibgav1StatusInvalidArgument;
   if (encoded_frames_.Full()) {
     return kLibgav1StatusResourceExhausted;
   }

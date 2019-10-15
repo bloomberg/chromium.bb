@@ -42,6 +42,17 @@ StatusCode Decoder::DequeueFrame(const DecoderBuffer** out_ptr) {
   return impl_->DequeueFrame(out_ptr);
 }
 
+StatusCode Decoder::SignalEOS() {
+  if (!initialized_) return kLibgav1StatusNotInitialized;
+  // In non-frame-parallel mode, we have to release all the references. This
+  // simply means replacing the |impl_| with a new instance so that all the
+  // existing references are released and the state is cleared.
+  impl_ = nullptr;
+  const StatusCode status = DecoderImpl::Create(&settings_, &impl_);
+  if (status != kLibgav1StatusOk) initialized_ = false;
+  return status;
+}
+
 int Decoder::GetMaxAllowedFrames() const {
   if (!initialized_) return 1;
   return impl_->GetMaxAllowedFrames();
