@@ -12585,16 +12585,6 @@ static int analyze_simple_trans_states(const AV1_COMP *cpi, MACROBLOCK *x) {
   return skip_ref;
 }
 
-// Enables do_tx_search on a per-mode basis.
-static int do_tx_search_mode(int do_tx_search_global, int midx, int adaptive) {
-  if (!adaptive || do_tx_search_global) {
-    return do_tx_search_global;
-  }
-  // A value of 2 indicates it is being turned on conditionally
-  // for the mode. Turn it on for the first 7 modes.
-  return midx < 7 ? 2 : 0;
-}
-
 static int compare_int64(const void *a, const void *b) {
   int64_t a64 = *((int64_t *)a);
   int64_t b64 = *((int64_t *)b);
@@ -12696,10 +12686,10 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
 
   int64_t best_est_rd = INT64_MAX;
   const InterModeRdModel *md = &tile_data->inter_mode_rd_models[bsize];
-  // If do_tx_search_global is 0, only estimated RD should be computed.
-  // If do_tx_search_global is 1, all modes have TX search performed.
-  // If do_tx_search_global is 2, some modes will have TX search performed.
-  const int do_tx_search_global =
+  // If do_tx_search is 0, only estimated RD should be computed.
+  // If do_tx_search is 1, all modes have TX search performed.
+  // If do_tx_search is 2, some modes will have TX search performed.
+  const int do_tx_search =
       !((cpi->sf.inter_mode_rd_model_estimation == 1 && md->ready) ||
         (cpi->sf.inter_mode_rd_model_estimation == 2 &&
          num_pels_log2_lookup[bsize] > 8));
@@ -12843,8 +12833,6 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     mbmi->ref_mv_idx = 0;
 
     const int64_t ref_best_rd = search_state.best_rd;
-    const int do_tx_search = do_tx_search_mode(
-        do_tx_search_global, midx, sf->inter_mode_rd_model_estimation_adaptive);
     int disable_skip = 0;
     RD_STATS rd_stats, rd_stats_y, rd_stats_uv;
     av1_init_rd_stats(&rd_stats);
@@ -12956,7 +12944,7 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
 #if CONFIG_COLLECT_COMPONENT_TIMING
   start_timing(cpi, do_tx_search_time);
 #endif
-  if (do_tx_search_global != 1) {
+  if (do_tx_search != 1) {
     inter_modes_info_sort(inter_modes_info, inter_modes_info->rd_idx_pair_arr);
     search_state.best_rd = best_rd_so_far;
     search_state.best_mode_index = -1;

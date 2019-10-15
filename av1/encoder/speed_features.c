@@ -248,7 +248,6 @@ static void set_good_speed_features_framesize_independent(
 
   // TODO(debargha): Test, tweak and turn on either 1 or 2
   sf->inter_mode_rd_model_estimation = 1;
-  sf->inter_mode_rd_model_estimation_adaptive = 0;
   sf->prune_compound_using_single_ref = 1;
 
   sf->prune_mode_search_simple_translation = 1;
@@ -464,7 +463,6 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
 
   // TODO(debargha): Test, tweak and turn on either 1 or 2
   sf->inter_mode_rd_model_estimation = 0;
-  sf->inter_mode_rd_model_estimation_adaptive = 0;
   sf->prune_compound_using_single_ref = 0;
   sf->prune_mode_search_simple_translation = 1;
 
@@ -865,7 +863,6 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   sf->dual_sgr_penalty_level = 0;
 
   sf->inter_mode_rd_model_estimation = 0;
-  sf->inter_mode_rd_model_estimation_adaptive = 0;
   sf->prune_compound_using_single_ref = 0;
 
   sf->prune_mode_search_simple_translation = 0;
@@ -1004,7 +1001,6 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
     if (sf->inter_mode_rd_model_estimation == 1) {
       // Revert to type 2
       sf->inter_mode_rd_model_estimation = 2;
-      sf->inter_mode_rd_model_estimation_adaptive = 0;
     }
   }
 }

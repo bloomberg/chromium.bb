@@ -715,8 +715,8 @@ typedef struct SPEED_FEATURES {
   int use_real_time_ref_set;
 
   // Perform a full TX search on some modes while using the
-  // inter-mode RD model for others. Only enabled when
-  // inter_mode_rd_model_estimation != 0
+  // inter-mode RD model for others. Currently not in use.
+  // TODO(any): Find out when we can actually skip tx_search on some modes.
   int inter_mode_rd_model_estimation_adaptive;
 
   // Use very reduced set of inter mode checks and fast non-rd mode cost
