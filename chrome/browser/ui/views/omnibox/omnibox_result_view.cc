@@ -87,6 +87,12 @@ OmniboxResultView::OmniboxResultView(
       omnibox::kKeywordSearchIcon, GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
       GetColor(OmniboxPart::RESULTS_ICON)));
   keyword_view_->icon()->SizeToPreferredSize();
+
+  // Calling SetMatch() will result in the child OmniboxMatchCellViews
+  // constructing their RenderTexts.  Without this, the first time the popup is
+  // opened, it will call Invalidate() before SetMatch(), which will try to
+  // apply styles to nonexistent RenderTexts, which will crash.
+  SetMatch(AutocompleteMatch());
 }
 
 OmniboxResultView::~OmniboxResultView() {}
@@ -108,6 +114,28 @@ void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
       match_.SupportsDeletion() && !match.associated_keyword &&
       base::FeatureList::IsEnabled(
           omnibox::kOmniboxSuggestionTransparencyOptions));
+
+  suggestion_view_->content()->SetText(match_.contents, match_.contents_class);
+  if (match_.answer) {
+    suggestion_view_->content()->AppendExtraText(match_.answer->first_line());
+    suggestion_view_->description()->SetText(match_.answer->second_line(),
+                                             true);
+  } else {
+    const bool deemphasize =
+        match_.type == AutocompleteMatchType::SEARCH_SUGGEST_ENTITY ||
+        match_.type == AutocompleteMatchType::PEDAL;
+    suggestion_view_->description()->SetText(
+        match_.description, match_.description_class, deemphasize);
+  }
+
+  AutocompleteMatch* keyword_match = match_.associated_keyword.get();
+  keyword_view_->SetVisible(keyword_match);
+  if (keyword_match) {
+    keyword_view_->content()->SetText(keyword_match->contents,
+                                      keyword_match->contents_class);
+    keyword_view_->description()->SetText(keyword_match->description,
+                                          keyword_match->description_class);
+  }
 
   Invalidate();
   Layout();
@@ -147,52 +175,22 @@ void OmniboxResultView::Invalidate(bool force_reapply_styles) {
       omnibox::kKeywordSearchIcon, GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
       GetColor(OmniboxPart::RESULTS_ICON)));
 
-  // Answers use their own styling for additional content text and the
-  // description text, whereas non-answer suggestions use the match text and
-  // calculated classifications for the description text.
   if (match_.answer) {
-    suggestion_view_->content()->SetText(match_.contents,
-                                         match_.contents_class);
     suggestion_view_->content()->ApplyTextColor(
         OmniboxPart::RESULTS_TEXT_DEFAULT);
-    suggestion_view_->content()->AppendExtraText(match_.answer->first_line());
-    suggestion_view_->description()->SetText(match_.answer->second_line(),
-                                             true);
   } else if (match_.type == AutocompleteMatchType::SEARCH_SUGGEST_ENTITY ||
              match_.type == AutocompleteMatchType::PEDAL) {
-    // Entities use match text and calculated classifications, but with style
-    // adjustments like answers above.  Pedals do likewise.
-    suggestion_view_->content()->SetText(match_.contents,
-                                         match_.contents_class);
-    suggestion_view_->description()->SetText(match_.description,
-                                             match_.description_class, -1);
     suggestion_view_->description()->ApplyTextColor(
         OmniboxPart::RESULTS_TEXT_DIMMED);
-  } else {
-    // Content and description use match text and calculated classifications.
-    suggestion_view_->content()->SetText(match_.contents,
-                                         match_.contents_class);
-    suggestion_view_->description()->SetText(match_.description,
-                                             match_.description_class);
-
+  } else if (high_contrast || force_reapply_styles) {
     // Normally, OmniboxTextView caches its appearance, but in high contrast,
     // selected-ness changes the text colors, so the styling of the text part of
     // the results needs to be recomputed.
-    if (high_contrast || force_reapply_styles) {
-      suggestion_view_->content()->ReapplyStyling();
-      suggestion_view_->description()->ReapplyStyling();
-    }
+    suggestion_view_->content()->ReapplyStyling();
+    suggestion_view_->description()->ReapplyStyling();
   }
 
-  AutocompleteMatch* keyword_match = match_.associated_keyword.get();
-  // Setting the keyword_view_ invisible is a minor optimization (it avoids
-  // some OnPaint calls); it is not required.
-  keyword_view_->SetVisible(keyword_match);
-  if (keyword_match) {
-    keyword_view_->content()->SetText(keyword_match->contents,
-                                      keyword_match->contents_class);
-    keyword_view_->description()->SetText(keyword_match->description,
-                                          keyword_match->description_class);
+  if (keyword_view_->GetVisible()) {
     keyword_view_->description()->ApplyTextColor(
         OmniboxPart::RESULTS_TEXT_DIMMED);
   }
@@ -277,11 +275,12 @@ void OmniboxResultView::Layout() {
   views::View::Layout();
   // NOTE: While animating the keyword match, both matches may be visible.
   int suggestion_width = width();
-  AutocompleteMatch* keyword_match = match_.associated_keyword.get();
-  if (keyword_match) {
+  if (keyword_view_->GetVisible()) {
     const int max_kw_x =
         suggestion_width - OmniboxMatchCellView::GetTextIndent();
     suggestion_width = animation_->CurrentValueBetween(max_kw_x, 0);
+    keyword_view_->SetBounds(suggestion_width, 0, width() - suggestion_width,
+                             height());
   }
 
   // Add buttons from right to left, shrinking the suggestion width as we go.
@@ -320,8 +319,6 @@ void OmniboxResultView::Layout() {
     }
   }
 
-  keyword_view_->SetBounds(suggestion_width, 0, width() - suggestion_width,
-                           height());
   if (popup_contents_view_->InExplicitExperimentalKeywordMode() ||
       match_.IsSubMatch()) {
     suggestion_view_->SetBounds(kKeywordSuggestionIndent, 0,
