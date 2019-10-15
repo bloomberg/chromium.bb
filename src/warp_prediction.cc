@@ -97,7 +97,8 @@ int NonDiagonalClamp(int64_t value, int16_t division_factor,
 
 int16_t GetShearParameter(int value) {
   return static_cast<int16_t>(
-      LeftShift(RightShiftWithRoundingSigned(value, kWarpParamRoundingBits),
+      LeftShift(RightShiftWithRoundingSigned(Clip3(value, INT16_MIN, INT16_MAX),
+                                             kWarpParamRoundingBits),
                 kWarpParamRoundingBits));
 }
 
@@ -109,19 +110,16 @@ bool SetupShear(GlobalMotion* const warp_params) {
   const auto* const params = warp_params->params;
   GenerateApproximateDivisor<int32_t>(params[2], &division_factor,
                                       &division_shift);
-  const int alpha =
-      Clip3(params[2] - (1 << kWarpedModelPrecisionBits), INT16_MIN, INT16_MAX);
-  const int beta = Clip3(params[3], INT16_MIN, INT16_MAX);
+  const int alpha = params[2] - (1 << kWarpedModelPrecisionBits);
+  const int beta = params[3];
   const int64_t v = LeftShift(params[4], kWarpedModelPrecisionBits);
   const int gamma =
-      Clip3(RightShiftWithRoundingSigned(v * division_factor, division_shift),
-            INT16_MIN, INT16_MAX);
+      RightShiftWithRoundingSigned(v * division_factor, division_shift);
   const int64_t w = static_cast<int64_t>(params[3]) * params[4];
-  const int delta = Clip3(
+  const int delta =
       params[5] -
-          RightShiftWithRoundingSigned(w * division_factor, division_shift) -
-          (1 << kWarpedModelPrecisionBits),
-      INT16_MIN, INT16_MAX);
+      RightShiftWithRoundingSigned(w * division_factor, division_shift) -
+      (1 << kWarpedModelPrecisionBits);
 
   warp_params->alpha = GetShearParameter(alpha);
   warp_params->beta = GetShearParameter(beta);
