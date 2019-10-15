@@ -74,7 +74,6 @@ PepperTCPSocketMessageFilter::PepperTCPSocketMessageFilter(
       external_plugin_(host->external_plugin()),
       render_process_id_(0),
       render_frame_id_(0),
-      binding_(this),
       state_(TCPSocketState::INITIAL),
       bind_input_addr_(NetAddressPrivateImpl::kInvalidNetAddress),
       socket_options_(SOCKET_OPTION_NODELAY),
@@ -249,7 +248,7 @@ void PepperTCPSocketMessageFilter::OnComplete(
     int result,
     const base::Optional<net::AddressList>& resolved_addresses) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  binding_.Close();
+  receiver_.reset();
 
   if (!host_resolve_context_.is_valid())
     return;
@@ -404,13 +403,11 @@ int32_t PepperTCPSocketMessageFilter::OnMsgConnect(
   if (!network_context)
     return PP_ERROR_FAILED;
 
-  network::mojom::ResolveHostClientPtr client_ptr;
-  binding_.Bind(mojo::MakeRequest(&client_ptr));
-  binding_.set_connection_error_handler(
+  network_context->ResolveHost(net::HostPortPair(host, port), nullptr,
+                               receiver_.BindNewPipeAndPassRemote());
+  receiver_.set_disconnect_handler(
       base::BindOnce(&PepperTCPSocketMessageFilter::OnComplete,
                      base::Unretained(this), net::ERR_FAILED, base::nullopt));
-  network_context->ResolveHost(net::HostPortPair(host, port), nullptr,
-                               std::move(client_ptr));
 
   state_.SetPendingTransition(TCPSocketState::CONNECT);
   host_resolve_context_ = context->MakeReplyMessageContext();
@@ -1357,7 +1354,7 @@ void PepperTCPSocketMessageFilter::Close() {
   connected_socket_.reset();
   tls_client_socket_.reset();
   server_socket_.reset();
-  binding_.Close();
+  receiver_.reset();
   socket_observer_receiver_.reset();
 
   read_watcher_.reset();

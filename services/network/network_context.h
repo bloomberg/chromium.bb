@@ -287,9 +287,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       mojo::PendingRemote<mojom::TrustedHeaderClient> header_client) override;
   void CreateNetLogExporter(
       mojo::PendingReceiver<mojom::NetLogExporter> receiver) override;
-  void ResolveHost(const net::HostPortPair& host,
-                   mojom::ResolveHostParametersPtr optional_parameters,
-                   mojom::ResolveHostClientPtr response_client) override;
+  void ResolveHost(
+      const net::HostPortPair& host,
+      mojom::ResolveHostParametersPtr optional_parameters,
+      mojo::PendingRemote<mojom::ResolveHostClient> response_client) override;
   void CreateHostResolver(
       const base::Optional<net::DnsConfigOverrides>& config_overrides,
       mojo::PendingReceiver<mojom::HostResolver> receiver) override;

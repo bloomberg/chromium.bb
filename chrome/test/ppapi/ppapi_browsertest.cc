@@ -818,10 +818,12 @@ class MockNetworkContext : public network::TestNetworkContext {
         tcp_failure_type_, std::move(receiver), std::move(callback)));
   }
 
-  void ResolveHost(
-      const net::HostPortPair& host,
-      network::mojom::ResolveHostParametersPtr optional_parameters,
-      network::mojom::ResolveHostClientPtr response_client) override {
+  void ResolveHost(const net::HostPortPair& host,
+                   network::mojom::ResolveHostParametersPtr optional_parameters,
+                   mojo::PendingRemote<network::mojom::ResolveHostClient>
+                       pending_response_client) override {
+    mojo::Remote<network::mojom::ResolveHostClient> response_client(
+        std::move(pending_response_client));
     response_client->OnComplete(net::OK, net::AddressList(LocalAddress()));
   }
 

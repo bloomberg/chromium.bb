@@ -1089,7 +1089,7 @@ interface NetworkContext {
   // Such requests will receive ERR_FAILED via |response_client|.
   ResolveHost(HostPortPair host,
               ResolveHostParameters? optional_parameters,
-              ResolveHostClient response_client);
+              pending_remote<ResolveHostClient> response_client);
 
   // Creates a HostResolver interface that can be passed to code/processes
   // without direct access to NetworkContext to make ResolveHost requests.

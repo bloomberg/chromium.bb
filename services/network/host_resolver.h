@@ -14,6 +14,7 @@
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "net/dns/public/dns_query_type.h"
 #include "services/network/public/mojom/host_resolver.mojom.h"
@@ -48,9 +49,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) HostResolver
   HostResolver(net::HostResolver* internal_resolver, net::NetLog* net_log);
   ~HostResolver() override;
 
-  void ResolveHost(const net::HostPortPair& host,
-                   mojom::ResolveHostParametersPtr optional_parameters,
-                   mojom::ResolveHostClientPtr response_client) override;
+  void ResolveHost(
+      const net::HostPortPair& host,
+      mojom::ResolveHostParametersPtr optional_parameters,
+      mojo::PendingRemote<mojom::ResolveHostClient> response_client) override;
   void MdnsListen(const net::HostPortPair& host,
                   net::DnsQueryType query_type,
                   mojom::MdnsListenClientPtr response_client,

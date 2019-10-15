@@ -176,8 +176,8 @@ void SocketAsyncApiFunction::OnFirewallHoleOpened(
 
 #endif  // OS_CHROMEOS
 
-SocketExtensionWithDnsLookupFunction::SocketExtensionWithDnsLookupFunction()
-    : binding_(this) {}
+SocketExtensionWithDnsLookupFunction::SocketExtensionWithDnsLookupFunction() =
+    default;
 
 SocketExtensionWithDnsLookupFunction::~SocketExtensionWithDnsLookupFunction() {
 }
@@ -196,14 +196,13 @@ bool SocketExtensionWithDnsLookupFunction::PrePrepare() {
 void SocketExtensionWithDnsLookupFunction::StartDnsLookup(
     const net::HostPortPair& host_port_pair) {
   DCHECK(pending_host_resolver_);
-  DCHECK(!binding_);
-  network::mojom::ResolveHostClientPtr client_ptr;
-  binding_.Bind(mojo::MakeRequest(&client_ptr));
-  binding_.set_connection_error_handler(
+  DCHECK(!receiver_.is_bound());
+  host_resolver_.Bind(std::move(pending_host_resolver_));
+  host_resolver_->ResolveHost(host_port_pair, nullptr,
+                              receiver_.BindNewPipeAndPassRemote());
+  receiver_.set_disconnect_handler(
       base::BindOnce(&SocketExtensionWithDnsLookupFunction::OnComplete,
                      base::Unretained(this), net::ERR_FAILED, base::nullopt));
-  host_resolver_.Bind(std::move(pending_host_resolver_));
-  host_resolver_->ResolveHost(host_port_pair, nullptr, std::move(client_ptr));
 
   // Balanced in OnComplete().
   AddRef();
@@ -213,7 +212,7 @@ void SocketExtensionWithDnsLookupFunction::OnComplete(
     int result,
     const base::Optional<net::AddressList>& resolved_addresses) {
   host_resolver_.reset();
-  binding_.Close();
+  receiver_.reset();
   if (result == net::OK) {
     DCHECK(resolved_addresses && !resolved_addresses->empty());
     addresses_ = resolved_addresses.value();

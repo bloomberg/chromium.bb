@@ -20,7 +20,6 @@
 #include "build/build_config.h"
 #include "content/browser/renderer_host/pepper/browser_ppapi_host_impl.h"
 #include "content/common/content_export.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -300,9 +299,9 @@ class CONTENT_EXPORT PepperTCPSocketMessageFilter
   int render_process_id_;
   int render_frame_id_;
 
-  // A reference to |this| must always be taken while |binding_| is bound to
+  // A reference to |this| must always be taken while |receiver_| is bound to
   // ensure that if the error callback is called the object is alive.
-  mojo::Binding<network::mojom::ResolveHostClient> binding_;
+  mojo::Receiver<network::mojom::ResolveHostClient> receiver_{this};
   mojo::Receiver<network::mojom::SocketObserver> socket_observer_receiver_{
       this};
 

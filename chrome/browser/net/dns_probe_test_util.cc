@@ -51,10 +51,13 @@ FakeHostResolver::~FakeHostResolver() = default;
 void FakeHostResolver::ResolveHost(
     const net::HostPortPair& host,
     network::mojom::ResolveHostParametersPtr optional_parameters,
-    network::mojom::ResolveHostClientPtr response_client) {
+    mojo::PendingRemote<network::mojom::ResolveHostClient>
+        pending_response_client) {
   const SingleResult& cur_result = result_list_[next_result_];
   if (next_result_ + 1 < result_list_.size())
     next_result_++;
+  mojo::Remote<network::mojom::ResolveHostClient> response_client(
+      std::move(pending_response_client));
   response_client->OnComplete(cur_result.result,
                               AddressListForResponse(cur_result.response));
 }
@@ -76,11 +79,11 @@ HangingHostResolver::~HangingHostResolver() = default;
 void HangingHostResolver::ResolveHost(
     const net::HostPortPair& host,
     network::mojom::ResolveHostParametersPtr optional_parameters,
-    network::mojom::ResolveHostClientPtr response_client) {
+    mojo::PendingRemote<network::mojom::ResolveHostClient> response_client) {
   // Intentionally do not call response_client->OnComplete, but hang onto the
   // |response_client| since destroying that also causes the mojo
   // set_connection_error_handler handler to be called.
-  response_client_ = std::move(response_client);
+  response_client_.Bind(std::move(response_client));
 }
 
 void HangingHostResolver::MdnsListen(

@@ -74,7 +74,7 @@ HostResolver::~HostResolver() {
 void HostResolver::ResolveHost(
     const net::HostPortPair& host,
     mojom::ResolveHostParametersPtr optional_parameters,
-    mojom::ResolveHostClientPtr response_client) {
+    mojo::PendingRemote<mojom::ResolveHostClient> response_client) {
 #if !BUILDFLAG(ENABLE_MDNS)
   // TODO(crbug.com/821021): Handle without crashing if we create restricted
   // HostResolvers for passing to untrusted processes.
