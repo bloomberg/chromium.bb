@@ -108,7 +108,7 @@ class TCPBoundSocketTest : public testing::Test {
               const net::IPEndPoint& expected_local_addr,
               const net::IPEndPoint& connect_to_addr,
               mojom::TCPConnectedSocketOptionsPtr tcp_connected_socket_options,
-              mojom::TCPConnectedSocketPtr* connected_socket,
+              mojo::Remote<mojom::TCPConnectedSocket>* connected_socket,
               mojo::PendingRemote<mojom::SocketObserver> socket_observer,
               mojo::ScopedDataPipeConsumerHandle* client_socket_receive_handle,
               mojo::ScopedDataPipeProducerHandle* client_socket_send_handle) {
@@ -121,7 +121,8 @@ class TCPBoundSocketTest : public testing::Test {
     bound_socket->Connect(
         net::AddressList(connect_to_addr),
         std::move(tcp_connected_socket_options),
-        mojo::MakeRequest(connected_socket), std::move(socket_observer),
+        connected_socket->BindNewPipeAndPassReceiver(),
+        std::move(socket_observer),
         base::BindLambdaForTesting(
             [&](int net_error,
                 const base::Optional<net::IPEndPoint>& local_addr,
@@ -148,9 +149,9 @@ class TCPBoundSocketTest : public testing::Test {
     bound_socket_destroyed_run_loop.Run();
 
     // On error, |connected_socket| should be closed.
-    if (connect_result != net::OK && !connected_socket->encountered_error()) {
+    if (connect_result != net::OK && connected_socket->is_connected()) {
       base::RunLoop close_pipe_run_loop;
-      connected_socket->set_connection_error_handler(
+      connected_socket->set_disconnect_handler(
           close_pipe_run_loop.QuitClosure());
       close_pipe_run_loop.Run();
     }
@@ -238,7 +239,7 @@ TEST_F(TCPBoundSocketTest, ConnectError) {
   net::IPEndPoint bound_address2;
   ASSERT_EQ(net::OK, BindSocket(LocalHostWithAnyPort(), &bound_socket2,
                                 &bound_address2));
-  mojom::TCPConnectedSocketPtr connected_socket;
+  mojo::Remote<mojom::TCPConnectedSocket> connected_socket;
   mojo::ScopedDataPipeConsumerHandle client_socket_receive_handle;
   mojo::ScopedDataPipeProducerHandle client_socket_send_handle;
   EXPECT_EQ(net::ERR_CONNECTION_REFUSED,
@@ -301,7 +302,7 @@ TEST_F(TCPBoundSocketTest, ReadWrite) {
   net::IPEndPoint client_address;
   ASSERT_EQ(net::OK, BindSocket(LocalHostWithAnyPort(), &bound_socket2,
                                 &client_address));
-  mojom::TCPConnectedSocketPtr client_socket;
+  mojo::Remote<mojom::TCPConnectedSocket> client_socket;
   TestSocketObserver socket_observer;
   mojo::ScopedDataPipeConsumerHandle client_socket_receive_handle;
   mojo::ScopedDataPipeProducerHandle client_socket_send_handle;
@@ -312,19 +313,19 @@ TEST_F(TCPBoundSocketTest, ReadWrite) {
                     &client_socket_receive_handle, &client_socket_send_handle));
 
   base::RunLoop run_loop;
-  mojom::TCPConnectedSocketPtr accept_socket;
+  mojo::Remote<mojom::TCPConnectedSocket> accept_socket;
   mojo::ScopedDataPipeConsumerHandle accept_socket_receive_handle;
   mojo::ScopedDataPipeProducerHandle accept_socket_send_handle;
   server_socket->Accept(
       mojo::NullRemote() /* ovserver */,
       base::BindLambdaForTesting(
           [&](int net_error, const base::Optional<net::IPEndPoint>& remote_addr,
-              mojom::TCPConnectedSocketPtr connected_socket,
+              mojo::PendingRemote<mojom::TCPConnectedSocket> connected_socket,
               mojo::ScopedDataPipeConsumerHandle receive_stream,
               mojo::ScopedDataPipeProducerHandle send_stream) {
             EXPECT_EQ(net_error, net::OK);
             EXPECT_EQ(*remote_addr, client_address);
-            accept_socket = std::move(connected_socket);
+            accept_socket.Bind(std::move(connected_socket));
             accept_socket_receive_handle = std::move(receive_stream);
             accept_socket_send_handle = std::move(send_stream);
             run_loop.Quit();
@@ -380,7 +381,7 @@ TEST_F(TCPBoundSocketTest, ConnectWithOptions) {
   net::IPEndPoint client_address;
   ASSERT_EQ(net::OK, BindSocket(LocalHostWithAnyPort(), &bound_socket2,
                                 &client_address));
-  network::mojom::TCPConnectedSocketPtr client_socket;
+  mojo::Remote<mojom::TCPConnectedSocket> client_socket;
   TestSocketObserver socket_observer;
   mojo::ScopedDataPipeConsumerHandle client_socket_receive_handle;
   mojo::ScopedDataPipeProducerHandle client_socket_send_handle;
@@ -397,19 +398,19 @@ TEST_F(TCPBoundSocketTest, ConnectWithOptions) {
                     &client_socket_receive_handle, &client_socket_send_handle));
 
   base::RunLoop run_loop;
-  network::mojom::TCPConnectedSocketPtr accept_socket;
+  mojo::Remote<mojom::TCPConnectedSocket> accept_socket;
   mojo::ScopedDataPipeConsumerHandle accept_socket_receive_handle;
   mojo::ScopedDataPipeProducerHandle accept_socket_send_handle;
   server_socket->Accept(
       mojo::NullRemote() /* ovserver */,
       base::BindLambdaForTesting(
           [&](int net_error, const base::Optional<net::IPEndPoint>& remote_addr,
-              network::mojom::TCPConnectedSocketPtr connected_socket,
+              mojo::PendingRemote<mojom::TCPConnectedSocket> connected_socket,
               mojo::ScopedDataPipeConsumerHandle receive_stream,
               mojo::ScopedDataPipeProducerHandle send_stream) {
             EXPECT_EQ(net_error, net::OK);
             EXPECT_EQ(*remote_addr, client_address);
-            accept_socket = std::move(connected_socket);
+            accept_socket.Bind(std::move(connected_socket));
             accept_socket_receive_handle = std::move(receive_stream);
             accept_socket_send_handle = std::move(send_stream);
             run_loop.Quit();
@@ -443,7 +444,7 @@ TEST_F(TCPBoundSocketTest, UpgradeToTLS) {
   net::IPEndPoint client_address;
   ASSERT_EQ(net::OK,
             BindSocket(LocalHostWithAnyPort(), &bound_socket, &client_address));
-  network::mojom::TCPConnectedSocketPtr client_socket;
+  mojo::Remote<mojom::TCPConnectedSocket> client_socket;
   TestSocketObserver socket_observer;
   mojo::ScopedDataPipeConsumerHandle client_socket_receive_handle;
   mojo::ScopedDataPipeProducerHandle client_socket_send_handle;

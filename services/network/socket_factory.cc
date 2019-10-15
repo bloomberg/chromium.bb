@@ -71,15 +71,14 @@ void SocketFactory::CreateTCPConnectedSocket(
     const net::AddressList& remote_addr_list,
     mojom::TCPConnectedSocketOptionsPtr tcp_connected_socket_options,
     const net::NetworkTrafficAnnotationTag& traffic_annotation,
-    mojom::TCPConnectedSocketRequest request,
+    mojo::PendingReceiver<mojom::TCPConnectedSocket> receiver,
     mojo::PendingRemote<mojom::SocketObserver> observer,
     mojom::NetworkContext::CreateTCPConnectedSocketCallback callback) {
   auto socket = std::make_unique<TCPConnectedSocket>(
       std::move(observer), net_log_, &tls_socket_factory_,
       client_socket_factory_, traffic_annotation);
   TCPConnectedSocket* socket_raw = socket.get();
-  tcp_connected_socket_bindings_.AddBinding(std::move(socket),
-                                            std::move(request));
+  tcp_connected_socket_receiver_.Add(std::move(socket), std::move(receiver));
   socket_raw->Connect(local_addr, remote_addr_list,
                       std::move(tcp_connected_socket_options),
                       std::move(callback));
@@ -119,16 +118,17 @@ void SocketFactory::OnBoundSocketListening(
 void SocketFactory::OnBoundSocketConnected(
     mojo::BindingId bound_socket_id,
     std::unique_ptr<TCPConnectedSocket> connected_socket,
-    mojom::TCPConnectedSocketRequest connected_socket_request) {
-  tcp_connected_socket_bindings_.AddBinding(
-      std::move(connected_socket), std::move(connected_socket_request));
+    mojo::PendingReceiver<mojom::TCPConnectedSocket>
+        connected_socket_receiver) {
+  tcp_connected_socket_receiver_.Add(std::move(connected_socket),
+                                     std::move(connected_socket_receiver));
   tcp_bound_socket_receivers_.Remove(bound_socket_id);
 }
 
-void SocketFactory::OnAccept(std::unique_ptr<TCPConnectedSocket> socket,
-                             mojom::TCPConnectedSocketRequest request) {
-  tcp_connected_socket_bindings_.AddBinding(std::move(socket),
-                                            std::move(request));
+void SocketFactory::OnAccept(
+    std::unique_ptr<TCPConnectedSocket> socket,
+    mojo::PendingReceiver<mojom::TCPConnectedSocket> receiver) {
+  tcp_connected_socket_receiver_.Add(std::move(socket), std::move(receiver));
 }
 
 }  // namespace network

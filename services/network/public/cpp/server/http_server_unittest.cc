@@ -16,6 +16,7 @@
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "net/base/address_list.h"
 #include "net/base/io_buffer.h"
@@ -48,7 +49,7 @@ class TestHttpClient {
     factory_.CreateTCPConnectedSocket(
         base::nullopt /* local address */, addresses,
         nullptr /* tcp_connected_socket_options */,
-        TRAFFIC_ANNOTATION_FOR_TESTS, mojo::MakeRequest(&socket_),
+        TRAFFIC_ANNOTATION_FOR_TESTS, socket_.BindNewPipeAndPassReceiver(),
         mojo::NullRemote() /* observer */,
         base::BindOnce(
             [](base::RunLoop* run_loop, int* result_out,
@@ -148,7 +149,7 @@ class TestHttpClient {
   mojo::ScopedDataPipeConsumerHandle receive_pipe_handle_;
   mojo::ScopedDataPipeProducerHandle send_pipe_handle_;
 
-  network::mojom::TCPConnectedSocketPtr socket_;
+  mojo::Remote<network::mojom::TCPConnectedSocket> socket_;
 };
 
 }  // namespace

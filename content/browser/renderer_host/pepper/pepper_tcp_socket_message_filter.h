@@ -22,6 +22,7 @@
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
@@ -77,7 +78,7 @@ class CONTENT_EXPORT PepperTCPSocketMessageFilter
   // Switches state to CONNECTED using the provided pipes. May only be called
   // before any messages are received,
   void SetConnectedSocket(
-      network::mojom::TCPConnectedSocketPtrInfo connected_socket,
+      mojo::PendingRemote<network::mojom::TCPConnectedSocket> connected_socket,
       mojo::PendingReceiver<network::mojom::SocketObserver>
           socket_observer_receiver,
       mojo::ScopedDataPipeConsumerHandle receive_stream,
@@ -100,7 +101,7 @@ class CONTENT_EXPORT PepperTCPSocketMessageFilter
   ~PepperTCPSocketMessageFilter() override;
 
   void SetConnectedSocketOnUIThread(
-      network::mojom::TCPConnectedSocketPtrInfo connected_socket,
+      mojo::PendingRemote<network::mojom::TCPConnectedSocket> connected_socket,
       mojo::PendingReceiver<network::mojom::SocketObserver>
           socket_observer_receiver,
       mojo::ScopedDataPipeConsumerHandle receive_stream,
@@ -199,18 +200,19 @@ class CONTENT_EXPORT PepperTCPSocketMessageFilter
                        int net_result,
                        const base::Optional<net::IPEndPoint>& local_addr);
 
-  void OnAcceptCompleted(const ppapi::host::ReplyMessageContext& context,
-                         mojo::PendingReceiver<network::mojom::SocketObserver>
-                             socket_observer_receiver,
-                         int net_result,
-                         const base::Optional<net::IPEndPoint>& remote_addr,
-                         network::mojom::TCPConnectedSocketPtr connected_socket,
-                         mojo::ScopedDataPipeConsumerHandle receive_stream,
-                         mojo::ScopedDataPipeProducerHandle send_stream);
+  void OnAcceptCompleted(
+      const ppapi::host::ReplyMessageContext& context,
+      mojo::PendingReceiver<network::mojom::SocketObserver>
+          socket_observer_receiver,
+      int net_result,
+      const base::Optional<net::IPEndPoint>& remote_addr,
+      mojo::PendingRemote<network::mojom::TCPConnectedSocket> connected_socket,
+      mojo::ScopedDataPipeConsumerHandle receive_stream,
+      mojo::ScopedDataPipeProducerHandle send_stream);
 
   void OnAcceptCompletedOnIOThread(
       const ppapi::host::ReplyMessageContext& context,
-      network::mojom::TCPConnectedSocketPtrInfo connected_socket,
+      mojo::PendingRemote<network::mojom::TCPConnectedSocket> connected_socket,
       mojo::PendingReceiver<network::mojom::SocketObserver>
           socket_observer_receiver,
       mojo::ScopedDataPipeConsumerHandle receive_stream,
@@ -332,7 +334,7 @@ class CONTENT_EXPORT PepperTCPSocketMessageFilter
   // server socket, depending on the next call.
   mojo::Remote<network::mojom::TCPBoundSocket> bound_socket_;
   // Holds socket if Connect() is called.
-  network::mojom::TCPConnectedSocketPtr connected_socket_;
+  mojo::Remote<network::mojom::TCPConnectedSocket> connected_socket_;
   // Holds socket if socket was upgraded to SSL.
   network::mojom::TLSClientSocketPtr tls_client_socket_;
   // Holds socket if Listen() is called.

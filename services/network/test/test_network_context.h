@@ -135,7 +135,7 @@ class TestNetworkContext : public mojom::NetworkContext {
       const net::AddressList& remote_addr_list,
       mojom::TCPConnectedSocketOptionsPtr tcp_connected_socket_options,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
-      mojom::TCPConnectedSocketRequest socket,
+      mojo::PendingReceiver<mojom::TCPConnectedSocket> socket,
       mojo::PendingRemote<mojom::SocketObserver> observer,
       CreateTCPConnectedSocketCallback callback) override {}
   void CreateTCPBoundSocket(

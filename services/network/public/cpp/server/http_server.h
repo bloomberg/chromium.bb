@@ -16,7 +16,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_piece.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/mojom/network_service.mojom.h"
@@ -103,11 +103,12 @@ class COMPONENT_EXPORT(NETWORK_CPP) HttpServer {
   friend class HttpServerTest;
 
   void DoAcceptLoop();
-  void OnAcceptCompleted(int rv,
-                         const base::Optional<net::IPEndPoint>& remote_addr,
-                         mojom::TCPConnectedSocketPtr connected_socket,
-                         mojo::ScopedDataPipeConsumerHandle receive_pipe_handle,
-                         mojo::ScopedDataPipeProducerHandle send_pipe_handle);
+  void OnAcceptCompleted(
+      int rv,
+      const base::Optional<net::IPEndPoint>& remote_addr,
+      mojo::PendingRemote<mojom::TCPConnectedSocket> connected_socket,
+      mojo::ScopedDataPipeConsumerHandle receive_pipe_handle,
+      mojo::ScopedDataPipeProducerHandle send_pipe_handle);
 
   void OnReadable(int connection_id,
                   MojoResult result,

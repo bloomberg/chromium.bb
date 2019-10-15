@@ -187,7 +187,7 @@ void HttpServer::DoAcceptLoop() {
 void HttpServer::OnAcceptCompleted(
     int rv,
     const base::Optional<net::IPEndPoint>& remote_addr,
-    mojom::TCPConnectedSocketPtr connected_socket,
+    mojo::PendingRemote<mojom::TCPConnectedSocket> connected_socket,
     mojo::ScopedDataPipeConsumerHandle receive_pipe_handle,
     mojo::ScopedDataPipeProducerHandle send_pipe_handle) {
   if (rv != net::OK) {

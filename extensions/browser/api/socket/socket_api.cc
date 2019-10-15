@@ -510,7 +510,7 @@ void SocketAcceptFunction::AsyncWorkStart() {
     socket->Accept(base::BindOnce(&SocketAcceptFunction::OnAccept, this));
   } else {
     error_ = kSocketNotFoundError;
-    OnAccept(net::ERR_FAILED, nullptr, base::nullopt,
+    OnAccept(net::ERR_FAILED, mojo::NullRemote(), base::nullopt,
              mojo::ScopedDataPipeConsumerHandle(),
              mojo::ScopedDataPipeProducerHandle());
   }
@@ -518,7 +518,7 @@ void SocketAcceptFunction::AsyncWorkStart() {
 
 void SocketAcceptFunction::OnAccept(
     int result_code,
-    network::mojom::TCPConnectedSocketPtr socket,
+    mojo::PendingRemote<network::mojom::TCPConnectedSocket> socket,
     const base::Optional<net::IPEndPoint>& remote_addr,
     mojo::ScopedDataPipeConsumerHandle receive_pipe_handle,
     mojo::ScopedDataPipeProducerHandle send_pipe_handle) {

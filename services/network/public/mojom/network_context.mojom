@@ -979,7 +979,7 @@ interface NetworkContext {
       AddressList remote_addr_list,
       TCPConnectedSocketOptions? tcp_connected_socket_options,
       MutableNetworkTrafficAnnotationTag traffic_annotation,
-      TCPConnectedSocket& socket,
+      pending_receiver<TCPConnectedSocket> socket,
       pending_remote<SocketObserver>? observer)
       => (int32 result,
           IPEndPoint? local_addr,

@@ -91,7 +91,7 @@ void TCPBoundSocket::Listen(uint32_t backlog,
 void TCPBoundSocket::Connect(
     const net::AddressList& remote_addr_list,
     mojom::TCPConnectedSocketOptionsPtr tcp_connected_socket_options,
-    mojom::TCPConnectedSocketRequest request,
+    mojo::PendingReceiver<mojom::TCPConnectedSocket> receiver,
     mojo::PendingRemote<mojom::SocketObserver> observer,
     ConnectCallback callback) {
   DCHECK(socket_->IsValid());
@@ -105,10 +105,10 @@ void TCPBoundSocket::Connect(
   }
 
   DCHECK(!connect_callback_);
-  DCHECK(!connected_socket_request_);
+  DCHECK(!connected_socket_receiver_);
   DCHECK(!connecting_socket_);
 
-  connected_socket_request_ = std::move(request);
+  connected_socket_receiver_ = std::move(receiver);
   connect_callback_ = std::move(callback);
 
   // Create a TCPConnectedSocket and have it do the work of connecting and
@@ -145,9 +145,9 @@ void TCPBoundSocket::OnConnectComplete(
     return;
   }
 
-  socket_factory_->OnBoundSocketConnected(binding_id_,
-                                          std::move(connecting_socket_),
-                                          std::move(connected_socket_request_));
+  socket_factory_->OnBoundSocketConnected(
+      binding_id_, std::move(connecting_socket_),
+      std::move(connected_socket_receiver_));
   // The above call will have destroyed |this|.
 }
 

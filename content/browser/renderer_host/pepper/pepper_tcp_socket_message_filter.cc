@@ -101,7 +101,7 @@ PepperTCPSocketMessageFilter::PepperTCPSocketMessageFilter(
 }
 
 void PepperTCPSocketMessageFilter::SetConnectedSocket(
-    network::mojom::TCPConnectedSocketPtrInfo connected_socket,
+    mojo::PendingRemote<network::mojom::TCPConnectedSocket> connected_socket,
     mojo::PendingReceiver<network::mojom::SocketObserver>
         socket_observer_receiver,
     mojo::ScopedDataPipeConsumerHandle receive_stream,
@@ -135,7 +135,7 @@ PepperTCPSocketMessageFilter::~PepperTCPSocketMessageFilter() {
 }
 
 void PepperTCPSocketMessageFilter::SetConnectedSocketOnUIThread(
-    network::mojom::TCPConnectedSocketPtrInfo connected_socket,
+    mojo::PendingRemote<network::mojom::TCPConnectedSocket> connected_socket,
     mojo::PendingReceiver<network::mojom::SocketObserver>
         socket_observer_receiver,
     mojo::ScopedDataPipeConsumerHandle receive_stream,
@@ -625,8 +625,7 @@ int32_t PepperTCPSocketMessageFilter::OnMsgAccept(
                          base::Unretained(this),
                          context->MakeReplyMessageContext(),
                          std::move(socket_observer_receiver)),
-          net::ERR_FAILED, base::nullopt /* remote_addr */,
-          network::mojom::TCPConnectedSocketPtr(),
+          net::ERR_FAILED, base::nullopt /* remote_addr */, mojo::NullRemote(),
           mojo::ScopedDataPipeConsumerHandle(),
           mojo::ScopedDataPipeProducerHandle()));
   return PP_OK_COMPLETIONPENDING;
@@ -890,7 +889,7 @@ void PepperTCPSocketMessageFilter::StartConnect(
           mojo::ScopedDataPipeProducerHandle());
   if (bound_socket_) {
     bound_socket_->Connect(address_list, std::move(socket_options),
-                           mojo::MakeRequest(&connected_socket_),
+                           connected_socket_.BindNewPipeAndPassReceiver(),
                            std::move(socket_observer), std::move(callback));
   } else {
     network::mojom::NetworkContext* network_context = GetNetworkContext();
@@ -902,8 +901,8 @@ void PepperTCPSocketMessageFilter::StartConnect(
     network_context->CreateTCPConnectedSocket(
         base::nullopt /* local_addr */, address_list, std::move(socket_options),
         pepper_socket_utils::PepperTCPNetworkAnnotationTag(),
-        mojo::MakeRequest(&connected_socket_), std::move(socket_observer),
-        std::move(callback));
+        connected_socket_.BindNewPipeAndPassReceiver(),
+        std::move(socket_observer), std::move(callback));
   }
 }
 
@@ -1078,7 +1077,7 @@ void PepperTCPSocketMessageFilter::OnAcceptCompleted(
         socket_observer_receiver,
     int net_result,
     const base::Optional<net::IPEndPoint>& remote_addr,
-    network::mojom::TCPConnectedSocketPtr connected_socket,
+    mojo::PendingRemote<network::mojom::TCPConnectedSocket> connected_socket,
     mojo::ScopedDataPipeConsumerHandle receive_stream,
     mojo::ScopedDataPipeProducerHandle send_stream) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -1090,7 +1089,7 @@ void PepperTCPSocketMessageFilter::OnAcceptCompleted(
     return;
   }
 
-  if (!remote_addr || !connected_socket.is_bound()) {
+  if (!remote_addr || !connected_socket.is_valid()) {
     SendAcceptError(context, NetErrorToPepperError(net_result));
     return;
   }
@@ -1119,7 +1118,7 @@ void PepperTCPSocketMessageFilter::OnAcceptCompleted(
   base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&PepperTCPSocketMessageFilter::OnAcceptCompletedOnIOThread,
-                     this, context, connected_socket.PassInterface(),
+                     this, context, std::move(connected_socket),
                      std::move(socket_observer_receiver),
                      std::move(receive_stream), std::move(send_stream),
                      bound_address, pp_remote_addr));
@@ -1127,7 +1126,7 @@ void PepperTCPSocketMessageFilter::OnAcceptCompleted(
 
 void PepperTCPSocketMessageFilter::OnAcceptCompletedOnIOThread(
     const ppapi::host::ReplyMessageContext& context,
-    network::mojom::TCPConnectedSocketPtrInfo connected_socket,
+    mojo::PendingRemote<network::mojom::TCPConnectedSocket> connected_socket,
     mojo::PendingReceiver<network::mojom::SocketObserver>
         socket_observer_receiver,
     mojo::ScopedDataPipeConsumerHandle receive_stream,

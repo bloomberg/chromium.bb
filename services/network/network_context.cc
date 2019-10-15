@@ -1024,13 +1024,13 @@ void NetworkContext::CreateTCPConnectedSocket(
     const net::AddressList& remote_addr_list,
     mojom::TCPConnectedSocketOptionsPtr tcp_connected_socket_options,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
-    mojom::TCPConnectedSocketRequest request,
+    mojo::PendingReceiver<mojom::TCPConnectedSocket> receiver,
     mojo::PendingRemote<mojom::SocketObserver> observer,
     CreateTCPConnectedSocketCallback callback) {
   socket_factory_->CreateTCPConnectedSocket(
       local_addr, remote_addr_list, std::move(tcp_connected_socket_options),
       static_cast<net::NetworkTrafficAnnotationTag>(traffic_annotation),
-      std::move(request), std::move(observer), std::move(callback));
+      std::move(receiver), std::move(observer), std::move(callback));
 }
 
 void NetworkContext::CreateTCPBoundSocket(
