@@ -912,6 +912,9 @@ extern const char kOnTheFlyMhtmlHashComputationDescription[];
 extern const char kOopRasterizationName[];
 extern const char kOopRasterizationDescription[];
 
+extern const char kEnableDeJellyName[];
+extern const char kEnableDeJellyDescription[];
+
 extern const char kOverlayNewLayoutName[];
 extern const char kOverlayNewLayoutDescription[];
 

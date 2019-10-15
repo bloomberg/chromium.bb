@@ -115,6 +115,17 @@ public class DeJellyUtils implements DisplayManager.DisplayListener, ComponentCa
     public void onLowMemory() {}
 
     /**
+     * @return Whether de-jelly is externally enabled. This indicates whether
+     *         de-jelly may be used on a device in certain orientations /
+     *         configurations, not whether it is actively being used.
+     */
+    public static boolean externallyEnableDeJelly() {
+        return Global.getInt(ContextUtils.getApplicationContext().getContentResolver(),
+                       "enable_de_jelly_for_chrome", 0)
+                != 0;
+    }
+
+    /**
      * @return Whether the current screen / configuration should use the de-jelly effect.
      */
     @CalledByNative

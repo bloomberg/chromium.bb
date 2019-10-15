@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "build/build_config.h"
+#include "components/viz/common/features.h"
 #include "components/viz/common/switches.h"
 
 #if defined(OS_ANDROID)
@@ -18,6 +19,9 @@
 namespace viz {
 
 bool DeJellyEnabled() {
+  if (base::FeatureList::IsEnabled(features::kDisableDeJelly))
+    return false;
+
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableDeJelly);
 }

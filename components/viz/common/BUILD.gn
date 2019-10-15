@@ -407,6 +407,7 @@ if (is_android) {
     ]
     java_files = [
       "java/src/org/chromium/components/viz/common/display/DeJellyUtils.java",
+      "java/src/org/chromium/components/viz/common/VizSwitches.java",
     ]
   }
 

@@ -4640,6 +4640,10 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kMetal)},
 #endif
 
+    {"enable-de-jelly", flag_descriptions::kEnableDeJellyName,
+     flag_descriptions::kEnableDeJellyDescription, kOsAll,
+     SINGLE_VALUE_TYPE(switches::kEnableDeJelly)},
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the
