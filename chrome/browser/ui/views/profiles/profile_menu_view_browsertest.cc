@@ -907,8 +907,9 @@ constexpr ProfileMenuViewBase::ActionableItem
         // there are no other buttons at the end.
         ProfileMenuViewBase::ActionableItem::kExitProfileButton};
 
+// TODO(crbug.com/1012167, 1014343): This crashes on Linux CFI bot.
 PROFILE_MENU_CLICK_TEST(kActionableItems_IncognitoProfile,
-                        ProfileMenuClickTest_IncognitoProfile) {
+                        DISABLED_ProfileMenuClickTest_IncognitoProfile) {
   SetTargetBrowser(CreateIncognitoBrowser(browser()->profile()));
 
   RunTest();
