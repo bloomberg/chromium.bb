@@ -1513,7 +1513,7 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
   // RenderFrame.
   render_view->render_widget_ = RenderWidget::CreateForFrame(
       params->main_frame_widget_routing_id, compositor_deps,
-      render_view->page_properties(), params->visual_properties.display_mode,
+      params->visual_properties.display_mode,
       /*is_undead=*/params->main_frame_routing_id == MSG_ROUTING_NONE,
       params->never_visible);
 
@@ -1722,7 +1722,7 @@ void RenderFrameImpl::CreateFrame(
     // space/context.
     std::unique_ptr<RenderWidget> render_widget = RenderWidget::CreateForFrame(
         widget_params->routing_id, compositor_deps,
-        render_view->page_properties(), blink::mojom::DisplayMode::kUndefined,
+        blink::mojom::DisplayMode::kUndefined,
         /*is_undead=*/false, /*never_visible=*/false);
 
     // Non-owning pointer that is self-referencing and destroyed by calling
@@ -2170,7 +2170,6 @@ RenderWidgetFullscreenPepper* RenderFrameImpl::CreatePepperFullscreenContainer(
   RenderWidgetFullscreenPepper* widget = RenderWidgetFullscreenPepper::Create(
       fullscreen_widget_routing_id, std::move(show_callback),
       GetLocalRootRenderWidget()->compositor_deps(),
-      render_view()->page_properties(),
       GetLocalRootRenderWidget()->GetOriginalScreenInfo(), plugin,
       std::move(main_frame_url), std::move(widget_channel_receiver));
   // TODO(nick): The show() handshake seems like unnecessary complexity here,

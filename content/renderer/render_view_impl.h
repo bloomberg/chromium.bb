@@ -144,11 +144,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   // future].
   RenderWidget* GetWidget();
 
-  // Returns a |page_properties| interface. The lifetime is scoped to
-  // the RenderViewImpl.
-  PageProperties* page_properties() { return &page_properties_; }
-  const PageProperties* page_properties() const { return &page_properties_; }
-
   const WebPreferences& webkit_preferences() const {
     return webkit_preferences_;
   }
@@ -567,6 +562,10 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   // beyond the usual opener-relationship-based BrowsingInstance boundaries).
   const bool renderer_wide_named_frame_lookup_;
 
+  // Dependency injection for RenderWidget and compositing to inject behaviour
+  // and not depend on RenderThreadImpl in tests.
+  CompositorDependencies* const compositor_deps_;
+
   // Settings ------------------------------------------------------------------
 
   WebPreferences webkit_preferences_;
@@ -587,10 +586,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   // Whether the preferred size may have changed and |UpdatePreferredSize| needs
   // to be called.
   bool needs_preferred_size_update_ = true;
-
-  // Properties about the page that are of interest to subframes. These persist
-  // across main-frame navigations.
-  PageProperties page_properties_;
 
   // Loading state -------------------------------------------------------------
 
