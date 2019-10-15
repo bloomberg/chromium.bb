@@ -24,6 +24,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/address_list.h"
 #include "net/base/network_change_notifier.h"
 #include "net/socket/tcp_client_socket.h"
@@ -171,8 +172,8 @@ class SocketExtensionWithDnsLookupFunction
       int result,
       const base::Optional<net::AddressList>& resolved_addresses) override;
 
-  network::mojom::HostResolverPtrInfo host_resolver_info_;
-  network::mojom::HostResolverPtr host_resolver_;
+  mojo::PendingRemote<network::mojom::HostResolver> pending_host_resolver_;
+  mojo::Remote<network::mojom::HostResolver> host_resolver_;
 
   // A reference to |this| must be taken while the request is being made on this
   // binding so the object is alive when the request completes.

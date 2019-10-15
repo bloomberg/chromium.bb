@@ -292,7 +292,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
                    mojom::ResolveHostClientPtr response_client) override;
   void CreateHostResolver(
       const base::Optional<net::DnsConfigOverrides>& config_overrides,
-      mojom::HostResolverRequest request) override;
+      mojo::PendingReceiver<mojom::HostResolver> receiver) override;
   void VerifyCertForSignedExchange(
       const scoped_refptr<net::X509Certificate>& certificate,
       const GURL& url,

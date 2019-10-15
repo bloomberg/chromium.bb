@@ -14,7 +14,8 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/task_environment.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/address_list.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/ip_address.h"
@@ -991,7 +992,7 @@ TEST_F(HostResolverTest, CloseClient_SubsequentRequest) {
 }
 
 TEST_F(HostResolverTest, Binding) {
-  mojom::HostResolverPtr resolver_ptr;
+  mojo::Remote<mojom::HostResolver> resolver_remote;
   HostResolver* shutdown_resolver = nullptr;
   HostResolver::ConnectionShutdownCallback shutdown_callback =
       base::BindLambdaForTesting(
@@ -1001,7 +1002,7 @@ TEST_F(HostResolverTest, Binding) {
   std::unique_ptr<net::HostResolver> inner_resolver =
       net::HostResolver::CreateStandaloneResolver(&net_log);
 
-  HostResolver resolver(mojo::MakeRequest(&resolver_ptr),
+  HostResolver resolver(resolver_remote.BindNewPipeAndPassReceiver(),
                         std::move(shutdown_callback), inner_resolver.get(),
                         &net_log);
 
@@ -1015,9 +1016,9 @@ TEST_F(HostResolverTest, Binding) {
 
   // Resolve "localhost" because it should always resolve fast and locally, even
   // when using a real HostResolver.
-  resolver_ptr->ResolveHost(net::HostPortPair("localhost", 160),
-                            std::move(optional_parameters),
-                            std::move(response_client_ptr));
+  resolver_remote->ResolveHost(net::HostPortPair("localhost", 160),
+                               std::move(optional_parameters),
+                               std::move(response_client_ptr));
   run_loop.Run();
 
   EXPECT_EQ(net::OK, response_client.result_error());
@@ -1030,7 +1031,7 @@ TEST_F(HostResolverTest, Binding) {
 }
 
 TEST_F(HostResolverTest, CloseBinding) {
-  mojom::HostResolverPtr resolver_ptr;
+  mojo::Remote<mojom::HostResolver> resolver_remote;
   HostResolver* shutdown_resolver = nullptr;
   HostResolver::ConnectionShutdownCallback shutdown_callback =
       base::BindLambdaForTesting(
@@ -1041,7 +1042,7 @@ TEST_F(HostResolverTest, CloseBinding) {
   auto inner_resolver = std::make_unique<net::HangingHostResolver>();
   net::NetLog net_log;
 
-  HostResolver resolver(mojo::MakeRequest(&resolver_ptr),
+  HostResolver resolver(resolver_remote.BindNewPipeAndPassReceiver(),
                         std::move(shutdown_callback), inner_resolver.get(),
                         &net_log);
 
@@ -1054,15 +1055,15 @@ TEST_F(HostResolverTest, CloseBinding) {
   optional_parameters->control_handle = mojo::MakeRequest(&control_handle);
   mojom::ResolveHostClientPtr response_client_ptr;
   TestResolveHostClient response_client(&response_client_ptr, &run_loop);
-  resolver_ptr->ResolveHost(net::HostPortPair("localhost", 160),
-                            std::move(optional_parameters),
-                            std::move(response_client_ptr));
+  resolver_remote->ResolveHost(net::HostPortPair("localhost", 160),
+                               std::move(optional_parameters),
+                               std::move(response_client_ptr));
   bool control_handle_closed = false;
   auto connection_error_callback =
       base::BindLambdaForTesting([&]() { control_handle_closed = true; });
   control_handle.set_connection_error_handler(connection_error_callback);
 
-  resolver_ptr = nullptr;
+  resolver_remote.reset();
   run_loop.Run();
 
   // Request should be cancelled.
@@ -1077,7 +1078,7 @@ TEST_F(HostResolverTest, CloseBinding) {
 }
 
 TEST_F(HostResolverTest, CloseBinding_SubsequentRequest) {
-  mojom::HostResolverPtr resolver_ptr;
+  mojo::Remote<mojom::HostResolver> resolver_remote;
   HostResolver* shutdown_resolver = nullptr;
   HostResolver::ConnectionShutdownCallback shutdown_callback =
       base::BindLambdaForTesting(
@@ -1087,17 +1088,17 @@ TEST_F(HostResolverTest, CloseBinding_SubsequentRequest) {
   std::unique_ptr<net::HostResolver> inner_resolver =
       net::HostResolver::CreateStandaloneResolver(&net_log);
 
-  HostResolver resolver(mojo::MakeRequest(&resolver_ptr),
+  HostResolver resolver(resolver_remote.BindNewPipeAndPassReceiver(),
                         std::move(shutdown_callback), inner_resolver.get(),
                         &net_log);
 
   base::RunLoop run_loop;
   mojom::ResolveHostClientPtr response_client_ptr;
   TestResolveHostClient response_client(&response_client_ptr, nullptr);
-  resolver_ptr->ResolveHost(net::HostPortPair("localhost", 160), nullptr,
-                            std::move(response_client_ptr));
+  resolver_remote->ResolveHost(net::HostPortPair("localhost", 160), nullptr,
+                               std::move(response_client_ptr));
 
-  resolver_ptr = nullptr;
+  resolver_remote.reset();
   run_loop.RunUntilIdle();
 
   // Not using a hanging resolver, so could be ERR_FAILED or OK depending on

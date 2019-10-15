@@ -131,7 +131,7 @@ void DnsProbeRunner::OnComplete(
 void DnsProbeRunner::CreateHostResolver() {
   host_resolver_.reset();
   network_context_getter_.Run()->CreateHostResolver(
-      dns_config_overrides_, mojo::MakeRequest(&host_resolver_));
+      dns_config_overrides_, host_resolver_.BindNewPipeAndPassReceiver());
 }
 
 void DnsProbeRunner::OnMojoConnectionError() {

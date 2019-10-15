@@ -3014,9 +3014,9 @@ TEST_F(NetworkContextTest, CreateHostResolver) {
   EXPECT_EQ(1u, factory->resolvers().size());
   factory->ForgetResolvers();
 
-  mojom::HostResolverPtr resolver;
+  mojo::Remote<mojom::HostResolver> resolver;
   network_context->CreateHostResolver(base::nullopt,
-                                      mojo::MakeRequest(&resolver));
+                                      resolver.BindNewPipeAndPassReceiver());
 
   // Expected to reuse shared (within the NetworkContext) internal HostResolver.
   EXPECT_TRUE(factory->resolvers().empty());
@@ -3047,9 +3047,9 @@ TEST_F(NetworkContextTest, CreateHostResolver_CloseResolver) {
   network_context->url_request_context()->set_host_resolver(
       internal_resolver.get());
 
-  mojom::HostResolverPtr resolver;
+  mojo::Remote<mojom::HostResolver> resolver;
   network_context->CreateHostResolver(base::nullopt,
-                                      mojo::MakeRequest(&resolver));
+                                      resolver.BindNewPipeAndPassReceiver());
 
   ASSERT_EQ(0, internal_resolver->num_cancellations());
 
@@ -3069,7 +3069,7 @@ TEST_F(NetworkContextTest, CreateHostResolver_CloseResolver) {
       base::BindLambdaForTesting([&]() { control_handle_closed = true; });
   control_handle.set_connection_error_handler(connection_error_callback);
 
-  resolver = nullptr;
+  resolver.reset();
   run_loop.Run();
 
   // On resolver destruction, should receive an ERR_FAILED result, and the
@@ -3089,9 +3089,9 @@ TEST_F(NetworkContextTest, CreateHostResolver_CloseContext) {
   network_context->url_request_context()->set_host_resolver(
       internal_resolver.get());
 
-  mojom::HostResolverPtr resolver;
+  mojo::Remote<mojom::HostResolver> resolver;
   network_context->CreateHostResolver(base::nullopt,
-                                      mojo::MakeRequest(&resolver));
+                                      resolver.BindNewPipeAndPassReceiver());
 
   ASSERT_EQ(0, internal_resolver->num_cancellations());
 
@@ -3118,7 +3118,7 @@ TEST_F(NetworkContextTest, CreateHostResolver_CloseContext) {
   bool resolver_closed = false;
   auto resolver_closed_callback =
       base::BindLambdaForTesting([&]() { resolver_closed = true; });
-  resolver.set_connection_error_handler(resolver_closed_callback);
+  resolver.set_disconnect_handler(resolver_closed_callback);
 
   network_context = nullptr;
   run_loop.Run();
@@ -3150,8 +3150,9 @@ TEST_F(NetworkContextTest, CreateHostResolverWithConfigOverrides) {
   overrides.nameservers = std::vector<net::IPEndPoint>{
       CreateExpectedEndPoint("100.100.100.100", 22)};
 
-  mojom::HostResolverPtr resolver;
-  network_context->CreateHostResolver(overrides, mojo::MakeRequest(&resolver));
+  mojo::Remote<mojom::HostResolver> resolver;
+  network_context->CreateHostResolver(overrides,
+                                      resolver.BindNewPipeAndPassReceiver());
 
   // Should create 1 private resolver with a DnsClient (if DnsClient is
   // enablable for the build config).

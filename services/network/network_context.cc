@@ -1118,7 +1118,7 @@ void NetworkContext::ResolveHost(
 
 void NetworkContext::CreateHostResolver(
     const base::Optional<net::DnsConfigOverrides>& config_overrides,
-    mojom::HostResolverRequest request) {
+    mojo::PendingReceiver<mojom::HostResolver> receiver) {
   net::HostResolver* internal_resolver = url_request_context_->host_resolver();
   std::unique_ptr<net::HostResolver> private_internal_resolver;
 
@@ -1145,7 +1145,7 @@ void NetworkContext::CreateHostResolver(
 
   host_resolvers_.emplace(
       std::make_unique<HostResolver>(
-          std::move(request),
+          std::move(receiver),
           base::BindOnce(&NetworkContext::OnHostResolverShutdown,
                          base::Unretained(this)),
           internal_resolver, url_request_context_->net_log()),

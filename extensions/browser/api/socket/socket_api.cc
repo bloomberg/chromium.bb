@@ -187,22 +187,22 @@ bool SocketExtensionWithDnsLookupFunction::PrePrepare() {
     return false;
   content::BrowserContext::GetDefaultStoragePartition(browser_context())
       ->GetNetworkContext()
-      ->CreateHostResolver(base::nullopt,
-                           mojo::MakeRequest(&host_resolver_info_));
+      ->CreateHostResolver(
+          base::nullopt,
+          pending_host_resolver_.InitWithNewPipeAndPassReceiver());
   return true;
 }
 
 void SocketExtensionWithDnsLookupFunction::StartDnsLookup(
     const net::HostPortPair& host_port_pair) {
-  DCHECK(host_resolver_info_);
+  DCHECK(pending_host_resolver_);
   DCHECK(!binding_);
   network::mojom::ResolveHostClientPtr client_ptr;
   binding_.Bind(mojo::MakeRequest(&client_ptr));
   binding_.set_connection_error_handler(
       base::BindOnce(&SocketExtensionWithDnsLookupFunction::OnComplete,
                      base::Unretained(this), net::ERR_FAILED, base::nullopt));
-  host_resolver_ =
-      network::mojom::HostResolverPtr(std::move(host_resolver_info_));
+  host_resolver_.Bind(std::move(pending_host_resolver_));
   host_resolver_->ResolveHost(host_port_pair, nullptr, std::move(client_ptr));
 
   // Balanced in OnComplete().

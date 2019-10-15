@@ -1106,7 +1106,7 @@ interface NetworkContext {
   // the contained ResolveHost method, consider adding the ability for this to
   // be a restricted resolver with some functionality disabled (eg maybe MDNS).
   CreateHostResolver(DnsConfigOverrides? config_overrides,
-                     HostResolver& host_resolver);
+                     pending_receiver<HostResolver> host_resolver);
 
   // Checks the given certificate against the CertVerifier and CTVerifier. This
   // implementation is currently specific for use by Signed Exchange.

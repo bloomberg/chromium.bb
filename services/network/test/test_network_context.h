@@ -168,7 +168,7 @@ class TestNetworkContext : public mojom::NetworkContext {
                    mojom::ResolveHostClientPtr response_client) override {}
   void CreateHostResolver(
       const base::Optional<net::DnsConfigOverrides>& config_overrides,
-      mojom::HostResolverRequest request) override {}
+      mojo::PendingReceiver<mojom::HostResolver> receiver) override {}
   void NotifyExternalCacheHit(const GURL& url,
                               const std::string& http_method,
                               const net::NetworkIsolationKey& key) override {}

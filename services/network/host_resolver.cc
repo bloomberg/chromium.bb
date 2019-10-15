@@ -49,27 +49,26 @@ ConvertOptionalParameters(
 }  // namespace
 
 HostResolver::HostResolver(
-    mojom::HostResolverRequest resolver_request,
+    mojo::PendingReceiver<mojom::HostResolver> resolver_receiver,
     ConnectionShutdownCallback connection_shutdown_callback,
     net::HostResolver* internal_resolver,
     net::NetLog* net_log)
-    : binding_(this, std::move(resolver_request)),
+    : receiver_(this, std::move(resolver_receiver)),
       connection_shutdown_callback_(std::move(connection_shutdown_callback)),
       internal_resolver_(internal_resolver),
       net_log_(net_log) {
-  binding_.set_connection_error_handler(
+  receiver_.set_disconnect_handler(
       base::BindOnce(&HostResolver::OnConnectionError, base::Unretained(this)));
 }
 
 HostResolver::HostResolver(net::HostResolver* internal_resolver,
                            net::NetLog* net_log)
-    : binding_(this),
+    : receiver_(this),
       internal_resolver_(internal_resolver),
       net_log_(net_log) {}
 
 HostResolver::~HostResolver() {
-  if (binding_)
-    binding_.Close();
+  receiver_.reset();
 }
 
 void HostResolver::ResolveHost(
