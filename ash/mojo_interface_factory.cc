@@ -12,6 +12,7 @@
 #include "ash/login/login_screen_controller.h"
 #include "ash/media/media_controller_impl.h"
 #include "ash/public/cpp/ash_features.h"
+#include "ash/public/mojom/cros_display_config.mojom.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/tray_action/tray_action.h"
@@ -19,6 +20,7 @@
 #include "base/lazy_instance.h"
 #include "base/single_thread_task_runner.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 
 namespace ash {
 namespace mojo_interface_factory {
@@ -27,10 +29,10 @@ namespace {
 base::LazyInstance<RegisterInterfacesCallback>::Leaky
     g_register_interfaces_callback = LAZY_INSTANCE_INITIALIZER;
 
-void BindCrosDisplayConfigControllerRequestOnMainThread(
-    mojom::CrosDisplayConfigControllerRequest request) {
+void BindCrosDisplayConfigControllerReceiverOnMainThread(
+    mojo::PendingReceiver<mojom::CrosDisplayConfigController> receiver) {
   if (Shell::HasInstance())
-    Shell::Get()->cros_display_config()->BindRequest(std::move(request));
+    Shell::Get()->cros_display_config()->BindReceiver(std::move(receiver));
 }
 
 void BindImeControllerRequestOnMainThread(mojom::ImeControllerRequest request) {
@@ -49,7 +51,7 @@ void RegisterInterfaces(
     service_manager::BinderRegistry* registry,
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner) {
   registry->AddInterface(
-      base::BindRepeating(&BindCrosDisplayConfigControllerRequestOnMainThread),
+      base::BindRepeating(&BindCrosDisplayConfigControllerReceiverOnMainThread),
       main_thread_task_runner);
   registry->AddInterface(
       base::BindRepeating(&BindImeControllerRequestOnMainThread),

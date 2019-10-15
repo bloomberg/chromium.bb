@@ -381,6 +381,7 @@ jumbo_split_static_library("ui") {
     "//components/sync_user_events",
     "//components/translate/content/browser",
     "//content/public/browser",
+    "//mojo/public/cpp/bindings",
   ]
   deps = [
     "//base",
