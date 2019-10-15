@@ -196,12 +196,8 @@ int main(int argc, char* argv[]) {
       fprintf(stderr, "enqueue frame (length %zu)\n", temporal_unit.size());
     }
 
-    // If temporal_unit is empty, temporal_unit.data() may or may not return a
-    // null pointer. Use nullptr for consistent behavior (to make EnqueueFrame
-    // flush the decoder).
-    const uint8_t* const temporal_unit_data =
-        temporal_unit.empty() ? nullptr : temporal_unit.data();
-    status = decoder.EnqueueFrame(temporal_unit_data, temporal_unit.size(),
+    if (temporal_unit.empty()) continue;
+    status = decoder.EnqueueFrame(temporal_unit.data(), temporal_unit.size(),
                                   /*user_private_data=*/0);
     if (status != kLibgav1StatusOk) {
       fprintf(stderr, "Unable to enqueue frame: %s\n",
