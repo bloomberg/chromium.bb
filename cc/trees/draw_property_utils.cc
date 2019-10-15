@@ -21,6 +21,7 @@
 #include "cc/trees/property_tree_builder.h"
 #include "cc/trees/scroll_node.h"
 #include "cc/trees/transform_node.h"
+#include "components/viz/common/display/de_jelly.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
 namespace cc {
@@ -643,6 +644,13 @@ static gfx::Rect LayerVisibleRect(PropertyTrees* property_trees,
   clip_in_layer_space.Offset(-layer->offset_to_transform_parent());
 
   gfx::Rect visible_rect = ToEnclosingClipRect(clip_in_layer_space);
+  if (layer->layer_tree_impl()->settings().allow_de_jelly_effect) {
+    float padding_amount = viz::MaxDeJellyHeight();
+    if (layer->IsAffectedByPageScale()) {
+      padding_amount /= layer->layer_tree_impl()->current_page_scale_factor();
+    }
+    visible_rect.Inset(0.0f, -padding_amount);
+  }
   visible_rect.Intersect(layer_content_rect);
   return visible_rect;
 }

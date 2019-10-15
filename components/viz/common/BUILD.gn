@@ -114,6 +114,8 @@ viz_component("common") {
   sources = [
     "constants.cc",
     "constants.h",
+    "display/de_jelly.cc",
+    "display/de_jelly.h",
     "display/overlay_strategy.cc",
     "display/overlay_strategy.h",
     "display/renderer_settings.cc",
@@ -275,7 +277,10 @@ viz_component("common") {
   }
 
   if (is_android) {
-    deps += [ "//gpu/config" ]
+    deps += [
+      ":common_jni_headers",
+      "//gpu/config",
+    ]
   }
 
   if (is_chromecast) {
@@ -392,4 +397,22 @@ viz_source_set("perf_tests") {
     "//testing/gtest",
     "//testing/perf",
   ]
+}
+
+if (is_android) {
+  android_library("common_java") {
+    deps = [
+      "//base:base_java",
+    ]
+    java_files = [
+      "java/src/org/chromium/components/viz/common/display/DeJellyUtils.java",
+      "java/src/org/chromium/components/viz/common/VizSwitches.java",
+    ]
+  }
+
+  generate_jni("common_jni_headers") {
+    sources = [
+      "java/src/org/chromium/components/viz/common/display/DeJellyUtils.java",
+    ]
+  }
 }

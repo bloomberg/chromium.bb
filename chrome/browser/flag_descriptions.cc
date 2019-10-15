@@ -1474,6 +1474,13 @@ const char kOopRasterizationDescription[] =
     "Perform Ganesh raster in the GPU Process instead of the renderer.  "
     "Must also enable GPU rasterization";
 
+const char kEnableDeJellyName[] = "Experimental de-jelly effect";
+const char kEnableDeJellyDescription[] =
+    "Enables an experimental effect which attempts to mitigate "
+    "\"jelly-scrolling\". This is an experimental implementation with known "
+    "bugs, visual artifacts, and performance cost. This implementation may be "
+    "removed at any time.";
+
 const char kOverlayNewLayoutName[] = "Overlay new layout";
 const char kOverlayNewLayoutDescription[] =
     "Enables a new layout for the "

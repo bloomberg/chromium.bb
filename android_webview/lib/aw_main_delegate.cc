@@ -217,6 +217,9 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
     // TODO(https://crbug.com/963653): SmsReceiver is not yet supported on
     // WebView.
     features.DisableIfNotSet(::features::kSmsReceiver);
+
+    // De-jelly is never supported on WebView.
+    features.EnableIfNotSet(::features::kDisableDeJelly);
   }
 
   android_webview::RegisterPathProvider();

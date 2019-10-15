@@ -36176,6 +36176,7 @@ from previous Chrome versions.
   <int value="-99781021" label="disable-roboto-font-ui"/>
   <int value="-97145978" label="DesktopPWAsStayInWindow:enabled"/>
   <int value="-92116820" label="InlineUpdateFlow:enabled"/>
+  <int value="-91767554" label="enable-de-jelly"/>
   <int value="-90032223" label="BuiltInModuleInfra:disabled"/>
   <int value="-89690053" label="MaterialDesignUserManager:enabled"/>
   <int value="-89567017" label="ChromeColorsCustomColorPicker:enabled"/>
