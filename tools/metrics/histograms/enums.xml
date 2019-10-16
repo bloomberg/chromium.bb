@@ -50280,6 +50280,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="22" label="DEFAULT_DPI"/>
   <int value="23" label="NON_DEFAULT_DPI"/>
   <int value="24" label="PIN"/>
+  <int value="25" label="FIT_TO_PAPER"/>
 </enum>
 
 <enum name="PrivetNotificationsEvent">
