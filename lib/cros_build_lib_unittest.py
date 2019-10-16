@@ -1041,12 +1041,6 @@ class TestGetHostname(cros_test_lib.MockTestCase):
         fq_hostname=fq_hostname_gce_1, golo_only=True))
 
 
-class DummyOutput(object):
-  """Object with a component called output."""
-  def __init__(self, output):
-    self.output = output
-
-
 class CreateTarballTests(cros_test_lib.TempDirTestCase):
   """Test the CreateTarball function."""
 
