@@ -688,12 +688,28 @@ static AOM_INLINE void pick_sb_modes(AV1_COMP *const cpi,
                                      PARTITION_TYPE partition, BLOCK_SIZE bsize,
                                      PICK_MODE_CONTEXT *ctx, RD_STATS best_rd,
                                      int pick_mode_type) {
+  if (best_rd.rdcost < 0) {
+    ctx->rd_stats.rdcost = INT64_MAX;
+    ctx->rd_stats.skip = 0;
+    av1_invalid_rd_stats(rd_cost);
+    return;
+  }
+
+  set_offsets(cpi, &tile_data->tile_info, x, mi_row, mi_col, bsize);
+
+  if (ctx->rd_mode_is_ready) {
+    assert(ctx->mic.sb_type == bsize);
+    assert(ctx->mic.partition == partition);
+    rd_cost->rate = ctx->rd_stats.rate;
+    rd_cost->dist = ctx->rd_stats.dist;
+    rd_cost->rdcost = ctx->rd_stats.rdcost;
+    return;
+  }
+
   AV1_COMMON *const cm = &cpi->common;
   const int num_planes = av1_num_planes(cm);
-  TileInfo *const tile_info = &tile_data->tile_info;
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *mbmi;
-  MB_MODE_INFO *ctx_mbmi = &ctx->mic;
   struct macroblock_plane *const p = x->plane;
   struct macroblockd_plane *const pd = xd->plane;
   const AQ_MODE aq_mode = cpi->oxcf.aq_mode;
@@ -703,30 +719,11 @@ static AOM_INLINE void pick_sb_modes(AV1_COMP *const cpi,
   start_timing(cpi, rd_pick_sb_modes_time);
 #endif
 
-  if (best_rd.rdcost < 0) {
-    ctx->rd_stats.rdcost = INT64_MAX;
-    ctx->rd_stats.skip = 0;
-    av1_invalid_rd_stats(rd_cost);
-    return;
-  }
-
   aom_clear_system_state();
 
-  set_offsets(cpi, tile_info, x, mi_row, mi_col, bsize);
-
   mbmi = xd->mi[0];
-
-  if (ctx->rd_mode_is_ready) {
-    assert(ctx_mbmi->sb_type == bsize);
-    assert(ctx_mbmi->partition == partition);
-    *mbmi = *ctx_mbmi;
-    rd_cost->rate = ctx->rd_stats.rate;
-    rd_cost->dist = ctx->rd_stats.dist;
-    rd_cost->rdcost = ctx->rd_stats.rdcost;
-  } else {
-    mbmi->sb_type = bsize;
-    mbmi->partition = partition;
-  }
+  mbmi->sb_type = bsize;
+  mbmi->partition = partition;
 
 #if CONFIG_RD_DEBUG
   mbmi->mi_row = mi_row;
@@ -746,25 +743,14 @@ static AOM_INLINE void pick_sb_modes(AV1_COMP *const cpi,
 
   for (i = 0; i < 2; ++i) pd[i].color_index_map = ctx->color_index_map[i];
 
-  if (!ctx->rd_mode_is_ready) {
-    ctx->skippable = 0;
-
-    // Set to zero to make sure we do not use the previous encoded frame stats
-    mbmi->skip = 0;
-
-    // Reset skip mode flag.
-    mbmi->skip_mode = 0;
-  }
-
+  ctx->skippable = 0;
+  // Set to zero to make sure we do not use the previous encoded frame stats
+  mbmi->skip = 0;
+  // Reset skip mode flag.
+  mbmi->skip_mode = 0;
   x->skip_chroma_rd =
       !is_chroma_reference(mi_row, mi_col, bsize, xd->plane[1].subsampling_x,
                            xd->plane[1].subsampling_y);
-
-  if (ctx->rd_mode_is_ready) {
-    x->skip = ctx->rd_stats.skip;
-    *x->mbmi_ext = ctx->mbmi_ext;
-    return;
-  }
 
   if (is_cur_buf_hbd(xd)) {
     x->source_variance = av1_high_get_sby_perpixel_variance(
