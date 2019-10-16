@@ -2238,7 +2238,7 @@ RenderFrameHostManager::GetSiteInstanceForNavigationRequest(
     // Subframe navigations will use the current renderer, unless specifically
     // allowed to swap processes.
     no_renderer_swap_allowed |= !CanSubframeSwapProcess(
-        request->common_params().url, request->source_site_instance(),
+        request->common_params().url, request->GetSourceSiteInstance(),
         request->dest_site_instance());
   }
 
@@ -2255,7 +2255,7 @@ RenderFrameHostManager::GetSiteInstanceForNavigationRequest(
           : nullptr;
 
   scoped_refptr<SiteInstance> dest_site_instance = GetSiteInstanceForNavigation(
-      request->common_params().url, request->source_site_instance(),
+      request->common_params().url, request->GetSourceSiteInstance(),
       request->dest_site_instance(), candidate_site_instance,
       request->common_params().transition,
       request->state() == NavigationRequest::FAILED,
