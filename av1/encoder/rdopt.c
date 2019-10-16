@@ -2279,7 +2279,7 @@ static AOM_INLINE void inverse_transform_block_facade(MACROBLOCKD *xd,
                                                       int eob,
                                                       int reduced_tx_set) {
   struct macroblockd_plane *const pd = &xd->plane[plane];
-  tran_low_t *dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
+  tran_low_t *dqcoeff = pd->dqcoeff + BLOCK_OFFSET(block);
   const PLANE_TYPE plane_type = get_plane_type(plane);
   const TX_SIZE tx_size = av1_get_tx_size(plane, xd);
   const TX_TYPE tx_type = av1_get_tx_type(xd, plane_type, blk_row, blk_col,
@@ -2330,8 +2330,9 @@ static INLINE void dist_block_tx_domain(MACROBLOCK *x, int plane, int block,
   // TX-domain results need to shift down to Q2/D10 to match pixel
   // domain distortion values which are in Q2^2
   int shift = (MAX_TX_SCALE - av1_get_tx_scale(tx_size)) * 2;
-  tran_low_t *const coeff = BLOCK_OFFSET(p->coeff, block);
-  tran_low_t *const dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
+  const int block_offset = BLOCK_OFFSET(block);
+  tran_low_t *const coeff = p->coeff + block_offset;
+  tran_low_t *const dqcoeff = pd->dqcoeff + block_offset;
 #if CONFIG_AV1_HIGHBITDEPTH
   if (is_cur_buf_hbd(xd))
     *out_dist = av1_highbd_block_error(coeff, dqcoeff, buffer_length, &this_sse,
@@ -2363,7 +2364,7 @@ static INLINE int64_t dist_block_px_domain(const AV1_COMP *cpi, MACROBLOCK *x,
   const int dst_idx = (blk_row * dst_stride + blk_col) << tx_size_wide_log2[0];
   const uint8_t *src = &x->plane[plane].src.buf[src_idx];
   const uint8_t *dst = &xd->plane[plane].dst.buf[dst_idx];
-  const tran_low_t *dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
+  const tran_low_t *dqcoeff = pd->dqcoeff + BLOCK_OFFSET(block);
 
   assert(cpi != NULL);
   assert(tx_size_wide_log2[0] == tx_size_high_log2[0]);

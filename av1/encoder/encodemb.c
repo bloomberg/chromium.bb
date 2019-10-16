@@ -134,10 +134,10 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
   const struct macroblock_plane *const p = &x->plane[plane];
   const struct macroblockd_plane *const pd = &xd->plane[plane];
   const SCAN_ORDER *const scan_order = get_scan(tx_size, tx_type);
-
-  tran_low_t *const coeff = BLOCK_OFFSET(p->coeff, block);
-  tran_low_t *const qcoeff = BLOCK_OFFSET(p->qcoeff, block);
-  tran_low_t *const dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
+  const int block_offset = BLOCK_OFFSET(block);
+  tran_low_t *const coeff = p->coeff + block_offset;
+  tran_low_t *const qcoeff = p->qcoeff + block_offset;
+  tran_low_t *const dqcoeff = pd->dqcoeff + block_offset;
   uint16_t *const eob = &p->eobs[block];
   const int diff_stride = block_size_wide[plane_bsize];
   int seg_id = mbmi->segment_id;
@@ -212,7 +212,7 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
   MB_MODE_INFO *mbmi = xd->mi[0];
   struct macroblock_plane *const p = &x->plane[plane];
   struct macroblockd_plane *const pd = &xd->plane[plane];
-  tran_low_t *const dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
+  tran_low_t *const dqcoeff = pd->dqcoeff + BLOCK_OFFSET(block);
   uint8_t *dst;
   ENTROPY_CONTEXT *a, *l;
   int dummy_rate_cost = 0;
@@ -423,7 +423,7 @@ static void encode_block_pass1(int plane, int block, int blk_row, int blk_col,
   MACROBLOCKD *const xd = &x->e_mbd;
   struct macroblock_plane *const p = &x->plane[plane];
   struct macroblockd_plane *const pd = &xd->plane[plane];
-  tran_low_t *const dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
+  tran_low_t *const dqcoeff = pd->dqcoeff + BLOCK_OFFSET(block);
   TxfmParam txfm_param;
   uint8_t *dst;
   dst = &pd->dst
@@ -560,7 +560,7 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
   MACROBLOCKD *const xd = &x->e_mbd;
   struct macroblock_plane *const p = &x->plane[plane];
   struct macroblockd_plane *const pd = &xd->plane[plane];
-  tran_low_t *dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
+  tran_low_t *dqcoeff = pd->dqcoeff + BLOCK_OFFSET(block);
   PLANE_TYPE plane_type = get_plane_type(plane);
   const TX_TYPE tx_type = av1_get_tx_type(xd, plane_type, blk_row, blk_col,
                                           tx_size, cm->reduced_tx_set_used);

@@ -582,7 +582,7 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCK *const x,
   uint8_t *const levels = set_levels(levels_buf, width);
   const tran_low_t *tcoeff_txb =
       cb_coef_buff->tcoeff[plane] + x->mbmi_ext_frame->cb_offset;
-  const tran_low_t *tcoeff = BLOCK_OFFSET(tcoeff_txb, block);
+  const tran_low_t *tcoeff = tcoeff_txb + BLOCK_OFFSET(block);
   av1_txb_init_levels(tcoeff, width, height, levels);
   const SCAN_ORDER *const scan_order = get_scan(tx_size, tx_type);
   const int16_t *const scan = scan_order->scan;
@@ -732,7 +732,7 @@ static AOM_FORCE_INLINE int warehouse_efficients_txb(
     const PLANE_TYPE plane_type, const LV_MAP_COEFF_COST *const coeff_costs,
     const MACROBLOCKD *const xd, const TX_TYPE tx_type,
     const TX_CLASS tx_class) {
-  const tran_low_t *const qcoeff = BLOCK_OFFSET(p->qcoeff, block);
+  const tran_low_t *const qcoeff = p->qcoeff + BLOCK_OFFSET(block);
   const int txb_skip_ctx = txb_ctx->txb_skip_ctx;
   const int bwl = get_txb_bwl(tx_size);
   const int width = get_txb_wide(tx_size);
@@ -1655,9 +1655,10 @@ int av1_optimize_txb_new(const struct AV1_COMP *cpi, MACROBLOCK *x, int plane,
       IS_2D_TRANSFORM(tx_type)
           ? pd->seg_iqmatrix[xd->mi[0]->segment_id][qm_tx_size]
           : cpi->common.giqmatrix[NUM_QM_LEVELS - 1][0][qm_tx_size];
-  tran_low_t *qcoeff = BLOCK_OFFSET(p->qcoeff, block);
-  tran_low_t *dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
-  const tran_low_t *tcoeff = BLOCK_OFFSET(p->coeff, block);
+  const int block_offset = BLOCK_OFFSET(block);
+  tran_low_t *qcoeff = p->qcoeff + block_offset;
+  tran_low_t *dqcoeff = pd->dqcoeff + block_offset;
+  const tran_low_t *tcoeff = p->coeff + block_offset;
 
   // This function is not called if eob = 0.
   assert(eob > 0);
@@ -1822,9 +1823,10 @@ int av1_optimize_txb(const struct AV1_COMP *cpi, MACROBLOCK *x, int plane,
   const struct macroblock_plane *p = &x->plane[plane];
   struct macroblockd_plane *pd = &xd->plane[plane];
   const int eob = p->eobs[block];
-  tran_low_t *qcoeff = BLOCK_OFFSET(p->qcoeff, block);
-  tran_low_t *dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
-  const tran_low_t *tcoeff = BLOCK_OFFSET(p->coeff, block);
+  const int block_offset = BLOCK_OFFSET(block);
+  tran_low_t *qcoeff = p->qcoeff + block_offset;
+  tran_low_t *dqcoeff = pd->dqcoeff + block_offset;
+  const tran_low_t *tcoeff = p->coeff + block_offset;
   const int16_t *dequant = p->dequant_QTX;
   const int seg_eob = av1_get_max_eob(tx_size);
   const int bwl = get_txb_bwl(tx_size);
@@ -1913,7 +1915,7 @@ void av1_update_txb_context_b(int plane, int block, int blk_row, int blk_col,
   struct macroblock_plane *p = &x->plane[plane];
   struct macroblockd_plane *pd = &xd->plane[plane];
   const uint16_t eob = p->eobs[block];
-  const tran_low_t *qcoeff = BLOCK_OFFSET(p->qcoeff, block);
+  const tran_low_t *qcoeff = p->qcoeff + BLOCK_OFFSET(block);
   const PLANE_TYPE plane_type = pd->plane_type;
   const TX_TYPE tx_type = av1_get_tx_type(xd, plane_type, blk_row, blk_col,
                                           tx_size, cm->reduced_tx_set_used);
@@ -2040,13 +2042,13 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
     av1_set_contexts(xd, pd, plane, plane_bsize, tx_size, 0, blk_col, blk_row);
     return;
   }
-
-  tran_low_t *tcoeff_txb =
-      cb_coef_buff->tcoeff[plane] + x->mbmi_ext_frame->cb_offset;
-  tran_low_t *tcoeff = BLOCK_OFFSET(tcoeff_txb, block);
   const int segment_id = mbmi->segment_id;
   const int seg_eob = av1_get_tx_eob(&cpi->common.seg, segment_id, tx_size);
-  const tran_low_t *qcoeff = BLOCK_OFFSET(p->qcoeff, block);
+  tran_low_t *tcoeff_txb =
+      cb_coef_buff->tcoeff[plane] + x->mbmi_ext_frame->cb_offset;
+  const int block_offset = BLOCK_OFFSET(block);
+  tran_low_t *tcoeff = tcoeff_txb + block_offset;
+  const tran_low_t *qcoeff = p->qcoeff + block_offset;
   memcpy(tcoeff, qcoeff, sizeof(*tcoeff) * seg_eob);
 
   uint8_t levels_buf[TX_PAD_2D];

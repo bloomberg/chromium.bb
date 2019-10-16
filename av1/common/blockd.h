@@ -411,8 +411,8 @@ typedef struct macroblockd_plane {
   qm_val_t *seg_qmatrix[MAX_SEGMENTS][TX_SIZES_ALL];
 } MACROBLOCKD_PLANE;
 
-#define BLOCK_OFFSET(x, i) \
-  ((x) + (i) * (1 << (tx_size_wide_log2[0] + tx_size_high_log2[0])))
+#define BLOCK_OFFSET(i) \
+  ((i) * (1 << (tx_size_wide_log2[0] + tx_size_high_log2[0])))
 
 typedef struct {
   DECLARE_ALIGNED(16, InterpKernel, vfilter);
