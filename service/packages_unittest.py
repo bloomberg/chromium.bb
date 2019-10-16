@@ -124,13 +124,34 @@ class AndroidVersionsTest(cros_test_lib.MockTestCase):
     version = packages.determine_android_version(self.board)
     self.assertEqual(version, '4717008')
 
+  def test_determine_android_version_when_not_present(self):
+    package_result = ['chromeos-base/update_engine-0.0.3-r3408']
+    self.PatchObject(portage_util, 'GetPackageDependencies',
+                     return_value=package_result)
+    version = packages.determine_android_version(self.board)
+    self.assertEqual(version, None)
+
   def test_determine_android_branch(self):
     branch = packages.determine_android_branch(self.board)
     self.assertEqual(branch, '3')
 
+  def test_determine_android_branch_when_not_present(self):
+    package_result = ['chromeos-base/update_engine-0.0.3-r3408']
+    self.PatchObject(portage_util, 'GetPackageDependencies',
+                     return_value=package_result)
+    branch = packages.determine_android_branch(self.board)
+    self.assertEqual(branch, None)
+
   def test_determine_android_target(self):
     target = packages.determine_android_target(self.board)
     self.assertEqual(target, 'cheets')
+
+  def test_determine_android_target_when_not_present(self):
+    package_result = ['chromeos-base/update_engine-0.0.3-r3408']
+    self.PatchObject(portage_util, 'GetPackageDependencies',
+                     return_value=package_result)
+    target = packages.determine_android_target(self.board)
+    self.assertEqual(target, None)
 
 class ChromeVersionsTest(cros_test_lib.MockTestCase):
   """Tests getting chrome version."""

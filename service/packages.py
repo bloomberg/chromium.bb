@@ -484,8 +484,7 @@ def determine_android_version(boards=None):
   for board in boards:
     package = determine_android_package(board)
     if not package:
-      raise NoAndroidVersionError(
-          'Android version could not be determined for %s' % boards)
+      return None
     cpv = portage_util.SplitCPV(package)
     if not cpv:
       raise NoAndroidVersionError(
@@ -506,8 +505,7 @@ def determine_android_branch(board):
     raise NoAndroidBranchError(
         'Android branch could not be determined for %s' % board)
   if not android_package:
-    raise NoAndroidBranchError(
-        'Android branch could not be determined for %s (no package?)' % board)
+    return None
   ebuild_path = portage_util.FindEbuildForBoardPackage(android_package, board)
   # We assume all targets pull from the same branch and that we always
   # have an ARM_TARGET, ARM_USERDEBUG_TARGET, or an X86_USERDEBUG_TARGET.
@@ -529,9 +527,7 @@ def determine_android_target(board):
     raise NoAndroidTargetError(
         'Android Target could not be determined for %s' % board)
   if not android_package:
-    raise NoAndroidTargetError(
-        'Android Target could not be determined for %s (no package?)' %
-        board)
+    return None
   if android_package.startswith('chromeos-base/android-vm-'):
     return 'bertha'
   elif android_package.startswith('chromeos-base/android-container-'):

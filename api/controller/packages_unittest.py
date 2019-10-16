@@ -294,6 +294,24 @@ class GetTargetVersionsTest(cros_test_lib.MockTestCase, ApiConfigMixin):
     self.assertEqual(self.response.android_target_version, android_target)
     self.assertEqual(self.response.chrome_version, chrome_version)
 
+  def testGetTargetVersionNoAndroid(self):
+    """Verify return values on a board that does not have android."""
+    chrome_version = '76.0.1.2'
+    self.PatchObject(packages_service, 'determine_chrome_version',
+                     return_value=chrome_version)
+    self.PatchObject(packages_service, 'determine_android_version',
+                     return_value=None)
+    self.PatchObject(packages_service, 'determine_android_branch',
+                     return_value=None)
+    self.PatchObject(packages_service, 'determine_android_target',
+                     return_value=None)
+    request = self._GetRequest(board='betty')
+    packages_controller.GetTargetVersions(request, self.response,
+                                          self.api_config)
+    self.assertEqual(self.response.chrome_version, chrome_version)
+    self.assertFalse(self.response.android_version)
+    self.assertFalse(self.response.android_branch_version)
+    self.assertFalse(self.response.android_target_version)
 
 class HasChromePrebuiltTest(cros_test_lib.MockTestCase, ApiConfigMixin):
   """HasChromePrebuilt tests."""

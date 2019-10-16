@@ -119,12 +119,15 @@ def _HasChromePrebuiltSuccess(_input_proto, output_proto, _config):
 def GetTargetVersions(input_proto, output_proto, _config):
   """Returns the target versions."""
   build_target = controller_util.ParseBuildTarget(input_proto.build_target)
-  output_proto.android_version = packages.determine_android_version(
-      [build_target])
-  output_proto.android_branch_version = packages.determine_android_branch(
-      build_target)
-  output_proto.android_target_version = packages.determine_android_target(
-      build_target)
+  android_version = packages.determine_android_version([build_target])
+  if android_version:
+    output_proto.android_version = android_version
+  android_branch_version = packages.determine_android_branch(build_target)
+  if android_branch_version:
+    output_proto.android_branch_version = android_branch_version
+  android_target_version = packages.determine_android_target(build_target)
+  if android_target_version:
+    output_proto.android_target_version = android_target_version
   output_proto.chrome_version = packages.determine_chrome_version(build_target)
   # TODO(crbug.com/1004438): Implement remaining version fields.
 
