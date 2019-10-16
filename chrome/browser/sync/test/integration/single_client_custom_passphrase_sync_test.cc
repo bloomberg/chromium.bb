@@ -38,33 +38,40 @@ using syncer::ModelTypeSet;
 using syncer::PassphraseType;
 using syncer::ProtoPassphraseInt32ToEnum;
 using syncer::SyncService;
+using testing::ElementsAre;
 using testing::SizeIs;
 
-class DatatypeCommitCountingFakeServerObserver : public FakeServer::Observer {
+// Intercepts all bookmark entity names as committed to the FakeServer.
+class CommittedBookmarkEntityNameObserver : public FakeServer::Observer {
  public:
-  explicit DatatypeCommitCountingFakeServerObserver(FakeServer* fake_server)
+  explicit CommittedBookmarkEntityNameObserver(FakeServer* fake_server)
       : fake_server_(fake_server) {
     fake_server->AddObserver(this);
   }
 
-  void OnCommit(const std::string& committer_id,
-                ModelTypeSet committed_model_types) override {
-    for (ModelType type : committed_model_types) {
-      ++datatype_commit_counts_[type];
-    }
-  }
-
-  int GetCommitCountForDatatype(ModelType type) {
-    return datatype_commit_counts_[type];
-  }
-
-  ~DatatypeCommitCountingFakeServerObserver() override {
+  ~CommittedBookmarkEntityNameObserver() override {
     fake_server_->RemoveObserver(this);
   }
 
+  void OnCommit(const std::string& committer_id,
+                ModelTypeSet committed_model_types) override {
+    sync_pb::ClientToServerMessage message;
+    fake_server_->GetLastCommitMessage(&message);
+    for (const sync_pb::SyncEntity& entity : message.commit().entries()) {
+      if (syncer::GetModelTypeFromSpecifics(entity.specifics()) ==
+          syncer::BOOKMARKS) {
+        committed_names_.insert(entity.name());
+      }
+    }
+  }
+
+  const std::set<std::string> GetCommittedEntityNames() const {
+    return committed_names_;
+  }
+
  private:
-  FakeServer* fake_server_;
-  std::map<syncer::ModelType, int> datatype_commit_counts_;
+  FakeServer* const fake_server_;
+  std::set<std::string> committed_names_;
 };
 
 // These tests use a gray-box testing approach to verify that the data committed
@@ -387,11 +394,14 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_P(SingleClientCustomPassphraseDoNotUseScryptSyncTest,
                        DoesNotLeakUnencryptedData) {
   SetEncryptionPassphraseForClient(/*index=*/0, "hunter2");
-  DatatypeCommitCountingFakeServerObserver observer(GetFakeServer());
-  ASSERT_TRUE(SetupSync());
+  ASSERT_TRUE(SetupClients());
 
+  // Create local bookmarks before sync is enabled.
   ASSERT_TRUE(AddURL(/*profile=*/0, "Should be encrypted",
                      GURL("https://google.com/encrypted")));
+
+  CommittedBookmarkEntityNameObserver observer(GetFakeServer());
+  ASSERT_TRUE(SetupSync());
 
   ASSERT_TRUE(WaitForNigori(PassphraseType::kCustomPassphrase));
   // If WaitForEncryptedServerBookmarks() succeeds, that means that a
@@ -404,9 +414,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientCustomPassphraseDoNotUseScryptSyncTest,
   EXPECT_TRUE(WaitForEncryptedServerBookmarks(
       {{"Should be encrypted", GURL("https://google.com/encrypted")}},
       {KeyDerivationParams::CreateForPbkdf2(), "hunter2"}));
-  // Initial bookmarks sync would actually create and commit the permanent
-  // bookmark folders. Therefore, should be 2 commits by now.
-  EXPECT_EQ(observer.GetCommitCountForDatatype(syncer::BOOKMARKS), 2);
+  EXPECT_THAT(observer.GetCommittedEntityNames(), ElementsAre("encrypted"));
 }
 
 IN_PROC_BROWSER_TEST_P(SingleClientCustomPassphraseDoNotUseScryptSyncTest,
