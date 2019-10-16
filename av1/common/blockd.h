@@ -696,6 +696,11 @@ static const uint16_t av1_ext_tx_used_flag[EXT_TX_SET_TYPES] = {
   0xFFFF,  // 1111 1111 1111 1111
 };
 
+static const TxSetType av1_ext_tx_set_lookup[2][2] = {
+  { EXT_TX_SET_DTT4_IDTX_1DDCT, EXT_TX_SET_DTT4_IDTX },
+  { EXT_TX_SET_ALL16, EXT_TX_SET_DTT9_IDTX_1DDCT },
+};
+
 static INLINE TxSetType av1_get_ext_tx_set_type(TX_SIZE tx_size, int is_inter,
                                                 int use_reduced_set) {
   const TX_SIZE tx_size_sqr_up = txsize_sqr_up_map[tx_size];
@@ -705,13 +710,7 @@ static INLINE TxSetType av1_get_ext_tx_set_type(TX_SIZE tx_size, int is_inter,
   if (use_reduced_set)
     return is_inter ? EXT_TX_SET_DCT_IDTX : EXT_TX_SET_DTT4_IDTX;
   const TX_SIZE tx_size_sqr = txsize_sqr_map[tx_size];
-  if (is_inter) {
-    return (tx_size_sqr == TX_16X16 ? EXT_TX_SET_DTT9_IDTX_1DDCT
-                                    : EXT_TX_SET_ALL16);
-  } else {
-    return (tx_size_sqr == TX_16X16 ? EXT_TX_SET_DTT4_IDTX
-                                    : EXT_TX_SET_DTT4_IDTX_1DDCT);
-  }
+  return av1_ext_tx_set_lookup[is_inter][tx_size_sqr == TX_16X16];
 }
 
 // Maps tx set types to the indices.
