@@ -333,6 +333,7 @@ gfx::Size OmniboxMatchCellView::CalculatePreferredSize() const {
 
 void OmniboxMatchCellView::SetTailSuggestCommonPrefixWidth(
     const base::string16& common_prefix) {
+  InvalidateLayout();
   if (common_prefix.empty()) {
     tail_suggest_common_prefix_width_ = 0;
     return;

@@ -137,8 +137,8 @@ void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
                                           keyword_match->description_class);
   }
 
+  InvalidateLayout();
   Invalidate();
-  Layout();
 }
 
 void OmniboxResultView::ShowKeyword(bool show_keyword) {
@@ -226,13 +226,10 @@ OmniboxPartState OmniboxResultView::GetThemeState() const {
 void OmniboxResultView::OnMatchIconUpdated() {
   // The new icon will be fetched during Invalidate().
   Invalidate();
-  SchedulePaint();
 }
 
 void OmniboxResultView::SetRichSuggestionImage(const gfx::ImageSkia& image) {
   suggestion_view_->SetImage(image);
-  Layout();
-  SchedulePaint();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -418,7 +415,6 @@ gfx::Size OmniboxResultView::CalculatePreferredSize() const {
 
 void OmniboxResultView::OnThemeChanged() {
   Invalidate(true);
-  SchedulePaint();
 }
 
 void OmniboxResultView::ProvideButtonFocusHint() {
@@ -461,7 +457,6 @@ void OmniboxResultView::SetHovered(bool hovered) {
   if (is_hovered_ != hovered) {
     is_hovered_ = hovered;
     Invalidate();
-    SchedulePaint();
   }
 }
 
@@ -480,13 +475,12 @@ const char* OmniboxResultView::GetClassName() const {
 
 void OmniboxResultView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   animation_->SetSlideDuration(base::TimeDelta::FromMilliseconds(width() / 4));
-  Layout();
+  InvalidateLayout();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // OmniboxResultView, gfx::AnimationProgressed overrides, private:
 
 void OmniboxResultView::AnimationProgressed(const gfx::Animation* animation) {
-  Layout();
-  SchedulePaint();
+  InvalidateLayout();
 }

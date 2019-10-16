@@ -228,7 +228,6 @@ bool OmniboxPopupContentsView::IsOpen() const {
 void OmniboxPopupContentsView::InvalidateLine(size_t line) {
   OmniboxResultView* result = result_view_at(line);
   result->Invalidate();
-  result->SchedulePaint();
 
   if (HasMatchAt(line) && GetMatchAtIndex(line).associated_keyword.get()) {
     result->ShowKeyword(IsSelectedIndex(line) &&

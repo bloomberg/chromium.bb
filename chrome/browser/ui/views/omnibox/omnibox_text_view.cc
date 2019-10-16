@@ -158,6 +158,7 @@ void OmniboxTextView::OnPaint(gfx::Canvas* canvas) {
 
 void OmniboxTextView::ApplyTextColor(OmniboxPart part) {
   render_text_->SetColor(result_view_->GetColor(part));
+  SchedulePaint();
 }
 
 const base::string16& OmniboxTextView::text() const {
