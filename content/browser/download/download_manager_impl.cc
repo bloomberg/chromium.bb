@@ -61,6 +61,7 @@
 #include "content/public/browser/system_connector.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_ui_url_loader_factory.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/origin_util.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/referrer.h"

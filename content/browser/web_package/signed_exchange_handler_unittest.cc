@@ -20,6 +20,7 @@
 #include "content/browser/web_package/signed_exchange_test_utils.h"
 #include "content/browser/web_package/signed_exchange_utils.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/test/browser_task_environment.h"

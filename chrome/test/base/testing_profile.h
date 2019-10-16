@@ -45,6 +45,10 @@ class ZoomLevelDelegate;
 #endif  // !defined(OS_ANDROID)
 }  // namespace content
 
+namespace net {
+class CookieStore;
+}
+
 namespace policy {
 class PolicyService;
 class ProfilePolicyConnector;
