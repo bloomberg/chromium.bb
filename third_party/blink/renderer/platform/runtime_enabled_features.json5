@@ -570,6 +570,10 @@
       implied_by: ["FormAssociatedCustomElements"],
     },
     {
+      name: "EmbeddedVTTStylesheets",
+      status: "experimental",
+    },
+    {
       name: "EncryptedMediaEncryptionSchemeQuery",
       status: "test",
     },
