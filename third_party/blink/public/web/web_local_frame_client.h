@@ -40,6 +40,7 @@
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
 #include "third_party/blink/public/common/frame/user_activation_update_type.h"
+#include "third_party/blink/public/common/loader/loading_behavior_flag.h"
 #include "third_party/blink/public/common/loader/url_loader_factory_bundle.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-shared.h"
 #include "third_party/blink/public/mojom/use_counter/css_property_id.mojom-shared.h"
@@ -52,7 +53,6 @@
 #include "third_party/blink/public/platform/web_effective_connection_type.h"
 #include "third_party/blink/public/platform/web_file_system_type.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
-#include "third_party/blink/public/platform/web_loading_behavior_flag.h"
 #include "third_party/blink/public/platform/web_scroll_types.h"
 #include "third_party/blink/public/platform/web_set_sink_id_callbacks.h"
 #include "third_party/blink/public/platform/web_source_location.h"
@@ -637,7 +637,7 @@ class BLINK_EXPORT WebLocalFrameClient {
   // UseCounter ----------------------------------------------------------
   // Blink exhibited a certain loading behavior that the browser process will
   // use for segregated histograms.
-  virtual void DidObserveLoadingBehavior(WebLoadingBehaviorFlag) {}
+  virtual void DidObserveLoadingBehavior(LoadingBehaviorFlag) {}
   // Blink UseCounter should only track feature usage for non NTP activities.
   // ShouldTrackUseCounter checks the url of a page's main frame is not a new
   // tab page url.

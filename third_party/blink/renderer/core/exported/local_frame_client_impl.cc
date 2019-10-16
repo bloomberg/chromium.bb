@@ -729,7 +729,7 @@ void LocalFrameClientImpl::DidChangeActiveSchedulerTrackedFeatures(
 }
 
 void LocalFrameClientImpl::DidObserveLoadingBehavior(
-    WebLoadingBehaviorFlag behavior) {
+    LoadingBehaviorFlag behavior) {
   if (web_frame_->Client())
     web_frame_->Client()->DidObserveLoadingBehavior(behavior);
 }

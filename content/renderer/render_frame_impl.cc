@@ -5526,7 +5526,7 @@ void RenderFrameImpl::DidChangeActiveSchedulerTrackedFeatures(
 }
 
 void RenderFrameImpl::DidObserveLoadingBehavior(
-    blink::WebLoadingBehaviorFlag behavior) {
+    blink::LoadingBehaviorFlag behavior) {
   for (auto& observer : observers_)
     observer.DidObserveLoadingBehavior(behavior);
 }

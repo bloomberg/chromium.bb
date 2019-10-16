@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_LOADING_BEHAVIOR_FLAG_H_
-#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_LOADING_BEHAVIOR_FLAG_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_COMMON_LOADER_LOADING_BEHAVIOR_FLAG_H_
+#define THIRD_PARTY_BLINK_PUBLIC_COMMON_LOADER_LOADING_BEHAVIOR_FLAG_H_
 
 namespace blink {
 
@@ -12,33 +12,33 @@ namespace blink {
 // features and potential areas of improvement in the loading stack. The main
 // consumer is the page_load_metrics component, which sends bit flags to the
 // browser process for histogram splitting.
-enum WebLoadingBehaviorFlag {
-  kWebLoadingBehaviorNone = 0,
+enum LoadingBehaviorFlag {
+  kLoadingBehaviorNone = 0,
   // Indicates that the page used the document.write evaluator to preload scan
   // for resources inserted via document.write.
   // DEPRECATED, feature has been turned down.
-  kWebLoadingBehaviorDocumentWriteEvaluator = 1 << 0,
+  kLoadingBehaviorDocumentWriteEvaluator = 1 << 0,
   // Indicates that the page is controlled by a Service Worker.
-  kWebLoadingBehaviorServiceWorkerControlled = 1 << 1,
+  kLoadingBehaviorServiceWorkerControlled = 1 << 1,
   // Indicates that the page has a synchronous, cross-origin document.written
   // script.
-  kWebLoadingBehaviorDocumentWriteBlock = 1 << 2,
+  kLoadingBehaviorDocumentWriteBlock = 1 << 2,
   // Indicates that the page is a reload and has a synchronous, cross-origin
   // document.written script.
-  kWebLoadingBehaviorDocumentWriteBlockReload = 1 << 3,
+  kLoadingBehaviorDocumentWriteBlockReload = 1 << 3,
   // The page loaded external CSS that generated a PreloadRequest via the
   // CSSPreloaderResourceClient.
-  kWebLoadingBehaviorCSSPreloadFound = 1 << 4,
+  kLoadingBehaviorCSSPreloadFound = 1 << 4,
   // Indicates that the page has a synchronous, same-origin document.written
   // script with different protocol.
-  kWebLoadingBehaviorDocumentWriteBlockDifferentScheme = 1 << 5,
+  kLoadingBehaviorDocumentWriteBlockDifferentScheme = 1 << 5,
   // Indicates that a subresource on the page matched the subresource filtering
   // rules.
-  kWebLoadingBehaviorSubresourceFilterMatch = 1 << 6,
+  kLoadingBehaviorSubresourceFilterMatch = 1 << 6,
   // Indicates that the page is an AMP document, with <html amp> tag.
-  kWebLoadingBehaviorAmpDocumentLoaded = 1 << 7,
+  kLoadingBehaviorAmpDocumentLoaded = 1 << 7,
 };
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_LOADING_BEHAVIOR_FLAG_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_COMMON_LOADER_LOADING_BEHAVIOR_FLAG_H_
