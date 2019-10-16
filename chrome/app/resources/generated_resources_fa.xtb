@@ -1896,7 +1896,7 @@
 <translation id="3771294271822695279">فایل‌های ویدئویی</translation>
 <translation id="3775432569830822555">‏گواهی سرور SSL</translation>
 <translation id="3775705724665058594">ارسال به دستگاه‌هایتان</translation>
-<translation id="3776796446459804932">‏این برنامه افزودنی حریم خصوصی فروشگاه وب Chrome را نقض می‌کند.</translation>
+<translation id="3776796446459804932">‏این افزونه حریم خصوصی «نت‌بازار Chrome» را نقض می‌کند.</translation>
 <translation id="3777483481409781352">دستگاه تلفن همراه فعال نشد</translation>
 <translation id="3777806571986431400">برنامه افزودنی فعال شد</translation>
 <translation id="3778152852029592020">بارگیری لغو شد.</translation>
@@ -2530,7 +2530,7 @@
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />با نحوه به‌روزرسانی برنامه‌ها آشنا شوید<ph name="END_LINK" /></translation>
 <translation id="4744981231093950366">{NUM_TABS,plural, =1{باصدا کردن سایت}one{باصدا کردن سایت‌ها}other{باصدا کردن سایت‌ها}}</translation>
 <translation id="4746351372139058112">پیام‌ها</translation>
-<translation id="4748762018725435655">‏نیازمند افزونه از فروشگاه وب Chrome است</translation>
+<translation id="4748762018725435655">‏به افزونه‌ای از «نت‌بازار Chrome» نیاز است</translation>
 <translation id="4750394297954878236">پیشنهادات</translation>
 <translation id="475088594373173692">کاربر اول</translation>
 <translation id="4751476147751820511">حسگرهای نوری یا حرکتی</translation>
@@ -2606,7 +2606,7 @@
 <translation id="48704129375571883">افزودن قابلیت‌های بیشتر</translation>
 <translation id="4870758487381879312">برای دریافت اطلاعات پیکربندی، گذرواژه ارائه‌شده توسط سرپرست را وارد کنید</translation>
 <translation id="4870903493621965035">دستگاه مرتبطی وجود ندارد</translation>
-<translation id="4871308555310586478">‏از فروشگاه وب Chrome نیست.</translation>
+<translation id="4871308555310586478">‏از «نت‌بازار Chrome» نیست.</translation>
 <translation id="4871322859485617074">پین حاوی نویسه‌های نامعتبر است</translation>
 <translation id="4871370605780490696">افزودن نشانک</translation>
 <translation id="4873312501243535625">بررسی‌کننده فایل رسانه‌ای</translation>
