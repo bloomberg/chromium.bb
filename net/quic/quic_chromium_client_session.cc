@@ -790,7 +790,7 @@ QuicChromiumClientSession::QuicChromiumClientSession(
   DCHECK(!(migrate_session_early_v2_ && go_away_on_path_degrading_));
   DCHECK(!(allow_port_migration_ && go_away_on_path_degrading_));
 
-  quic::QuicSpdyClientSessionBase::set_max_allowed_push_id(max_allowed_push_id);
+  quic::QuicSpdyClientSessionBase::SetMaxAllowedPushId(max_allowed_push_id);
   default_network_ = default_network;
   auto* socket_raw = socket.get();
   sockets_.push_back(std::move(socket));
