@@ -2645,6 +2645,7 @@ crbug.com/618969 external/wpt/css/css-grid/subgrid/ [ Skip ]
 crbug.com/1012627 [ Win7 ] external/wpt/css/css-text/line-breaking/line-breaking-021.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Mac10.12 ] external/wpt/html/semantics/embedded-content/media-elements/track/track-element/track-cues-enter-exit.html [ Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/preload/preload-with-type.html [ Pass Timeout ]
 crbug.com/626703 [ Win10 ] virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/threaded/external/wpt/css/css-animations/animation-opacity-pause-and-set-time.html [ Failure ]
