@@ -16162,6 +16162,7 @@ Called by update_net_error_codes.py.-->
   <int value="4" label="ANGLE D3D11"/>
   <int value="5" label="ANGLE OpenGL"/>
   <int value="6" label="ANGLE OpenGL ES"/>
+  <int value="13" label="Angle D3D11on12"/>
 </enum>
 
 <enum name="EmbeddedWorkerStartingPhase">
