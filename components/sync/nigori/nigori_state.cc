@@ -303,4 +303,19 @@ sync_pb::NigoriSpecifics NigoriState::ToSpecificsProto() const {
   return specifics;
 }
 
+NigoriState NigoriState::Clone() const {
+  NigoriState result;
+  result.cryptographer = cryptographer->CloneImpl();
+  result.pending_keys = pending_keys;
+  result.passphrase_type = passphrase_type;
+  result.keystore_migration_time = keystore_migration_time;
+  result.custom_passphrase_time = custom_passphrase_time;
+  result.custom_passphrase_key_derivation_params =
+      custom_passphrase_key_derivation_params;
+  result.encrypt_everything = encrypt_everything;
+  result.keystore_keys = keystore_keys;
+  result.pending_keystore_decryptor_token = pending_keystore_decryptor_token;
+  return result;
+}
+
 }  // namespace syncer
