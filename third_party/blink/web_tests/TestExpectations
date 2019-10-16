@@ -2662,7 +2662,7 @@ crbug.com/626703 [ Win ] external/wpt/css/css-align/baseline-rules/grid-item-inp
 crbug.com/626703 [ Linux ] external/wpt/css/css-align/baseline-rules/grid-item-input-type-text.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-align/baseline-rules/grid-item-input-type-text.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-align/baseline-rules/grid-item-input-type-text.html [ Failure ]
-crbug.com/626703 external/wpt/webxr/events_referenceSpace_reset.https.html [ Timeout ]
+crbug.com/626703 external/wpt/webxr/events_referenceSpace_reset_inline.https.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/clear-site-data/storage.https.html [ Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/clear-site-data/storage.https.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/clear-site-data/storage.https.html [ Timeout ]
