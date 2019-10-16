@@ -146,18 +146,18 @@ AppCacheJob* AppCacheRequestHandler::MaybeLoadFallbackForRedirect(
 
   std::unique_ptr<AppCacheJob> job;
   if (found_fallback_entry_.has_response_id()) {
-    // 6.9.6, step 4: If this results in a redirect to another origin,
+    // 7.9.6, step 4: If this results in a redirect to another origin,
     // get the resource of the fallback entry.
     job = CreateJob(network_delegate);
     DeliverAppCachedResponse(found_fallback_entry_, found_cache_id_,
                              found_manifest_url_, true,
                              found_namespace_entry_url_);
   } else if (!found_network_namespace_) {
-    // 6.9.6, step 6: Fail the resource load.
+    // 7.9.6, step 6: Fail the resource load.
     job = CreateJob(network_delegate);
     DeliverErrorResponse();
   } else {
-    // 6.9.6 step 3 and 5: Fetch the resource normally.
+    // 7.9.6 step 3 and 5: Fetch the resource normally.
   }
 
   return job.release();
@@ -173,7 +173,7 @@ AppCacheJob* AppCacheRequestHandler::MaybeLoadFallbackForResponse(
     return nullptr;
 
   if (request_->IsCancelled()) {
-    // 6.9.6, step 4: But not if the user canceled the download.
+    // 7.9.6, step 4: But not if the user canceled the download.
     return nullptr;
   }
 
@@ -201,7 +201,7 @@ AppCacheJob* AppCacheRequestHandler::MaybeLoadFallbackForResponse(
       return nullptr;
   }
 
-  // 6.9.6, step 4: If this results in a 4xx or 5xx status code
+  // 7.9.6, step 4: If this results in a 4xx or 5xx status code
   // or there were network errors, get the resource of the fallback entry.
 
   std::unique_ptr<AppCacheJob> job = CreateJob(network_delegate);
@@ -441,7 +441,7 @@ std::unique_ptr<AppCacheJob> AppCacheRequestHandler::MaybeLoadSubResource(
 }
 
 void AppCacheRequestHandler::ContinueMaybeLoadSubResource() {
-  // 6.9.6 Changes to the networking model
+  // 7.9.6 Changes to the networking model
   // If the resource is not to be fetched using the HTTP GET mechanism or
   // equivalent ... then fetch the resource normally.
   DCHECK(job_.get());
