@@ -1332,9 +1332,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   FRIEND_TEST_ALL_PREFIXES(
       SitePerProcessBrowserTest,
       IsDetachedSubframeObservableDuringUnloadHandlerCrossProcess);
-  FRIEND_TEST_ALL_PREFIXES(SitePerProcessSSLBrowserTest,
+  FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
                            UnloadHandlersArePowerful);
-  FRIEND_TEST_ALL_PREFIXES(SitePerProcessSSLBrowserTest,
+  FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
                            UnloadHandlersArePowerfulGrandChild);
 
   class DroppedInterfaceRequestLogger;
