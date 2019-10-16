@@ -410,10 +410,10 @@ void OmniboxResultView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 }
 
 gfx::Size OmniboxResultView::CalculatePreferredSize() const {
-  // The keyword_view_ is not added because keyword_view_ uses the same space as
-  // suggestion_view_. So the 'preferred' size is just the suggestion_view_
-  // size.
-  return suggestion_view_->CalculatePreferredSize();
+  gfx::Size size = suggestion_view_->GetPreferredSize();
+  if (keyword_view_->GetVisible())
+    size.SetToMax(keyword_view_->GetPreferredSize());
+  return size;
 }
 
 void OmniboxResultView::OnThemeChanged() {
