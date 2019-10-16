@@ -136,13 +136,14 @@ int NetworkServiceNetworkDelegate::OnHeadersReceived(
     net::CompletionOnceCallback callback,
     const net::HttpResponseHeaders* original_response_headers,
     scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
+    const net::IPEndPoint& endpoint,
     GURL* allowed_unsafe_redirect_url) {
   auto chain = base::MakeRefCounted<PendingCallbackChain>(std::move(callback));
   URLLoader* url_loader = URLLoader::ForRequest(*request);
   if (url_loader) {
     chain->AddResult(url_loader->OnHeadersReceived(
         chain->CreateCallback(), original_response_headers,
-        override_response_headers, allowed_unsafe_redirect_url));
+        override_response_headers, endpoint, allowed_unsafe_redirect_url));
   }
 
 #if !defined(OS_IOS)

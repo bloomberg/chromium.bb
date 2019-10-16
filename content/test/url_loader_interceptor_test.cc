@@ -176,6 +176,10 @@ class TestBrowserClientWithHeaderClient
       int32_t request_id,
       mojo::PendingReceiver<network::mojom::TrustedHeaderClient> receiver)
       override {}
+  void OnLoaderForCorsPreflightCreated(
+      const network::ResourceRequest& request,
+      mojo::PendingReceiver<network::mojom::TrustedHeaderClient> receiver)
+      override {}
 
   mojo::ReceiverSet<network::mojom::TrustedURLLoaderHeaderClient> receivers_;
 };

@@ -49,6 +49,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkServiceNetworkDelegate
       net::CompletionOnceCallback callback,
       const net::HttpResponseHeaders* original_response_headers,
       scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
+      const net::IPEndPoint& endpoint,
       GURL* allowed_unsafe_redirect_url) override;
   void OnBeforeRedirect(net::URLRequest* request,
                         const GURL& new_location) override;

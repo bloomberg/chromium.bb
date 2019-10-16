@@ -93,6 +93,7 @@ class WebRequestProxyingURLLoaderFactory
     void OnBeforeSendHeaders(const net::HttpRequestHeaders& headers,
                              OnBeforeSendHeadersCallback callback) override;
     void OnHeadersReceived(const std::string& headers,
+                           const net::IPEndPoint& endpoint,
                            OnHeadersReceivedCallback callback) override;
 
    private:
@@ -228,6 +229,10 @@ class WebRequestProxyingURLLoaderFactory
   // network::mojom::TrustedURLLoaderHeaderClient:
   void OnLoaderCreated(
       int32_t request_id,
+      mojo::PendingReceiver<network::mojom::TrustedHeaderClient> receiver)
+      override;
+  void OnLoaderForCorsPreflightCreated(
+      const network::ResourceRequest& request,
       mojo::PendingReceiver<network::mojom::TrustedHeaderClient> receiver)
       override;
 

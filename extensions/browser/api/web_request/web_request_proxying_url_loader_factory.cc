@@ -391,6 +391,7 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::OnBeforeSendHeaders(
 
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::OnHeadersReceived(
     const std::string& headers,
+    const net::IPEndPoint& remote_endpoint,
     OnHeadersReceivedCallback callback) {
   if (!current_request_uses_header_client_) {
     std::move(callback).Run(net::OK, base::nullopt, GURL());
@@ -977,6 +978,12 @@ void WebRequestProxyingURLLoaderFactory::OnLoaderCreated(
   auto request_it = requests_.find(it->second);
   DCHECK(request_it != requests_.end());
   request_it->second->OnLoaderCreated(std::move(receiver));
+}
+
+void WebRequestProxyingURLLoaderFactory::OnLoaderForCorsPreflightCreated(
+    const network::ResourceRequest& request,
+    mojo::PendingReceiver<network::mojom::TrustedHeaderClient> receiver) {
+  // TODO(yhirano): Implement this.
 }
 
 void WebRequestProxyingURLLoaderFactory::HandleAuthRequest(

@@ -4513,6 +4513,7 @@ class TestURLLoaderHeaderClient : public mojom::TrustedURLLoaderHeaderClient {
     }
 
     void OnHeadersReceived(const std::string& headers,
+                           const net::IPEndPoint& endpoint,
                            OnHeadersReceivedCallback callback) override {
       auto new_headers =
           base::MakeRefCounted<net::HttpResponseHeaders>(headers);
@@ -4552,6 +4553,11 @@ class TestURLLoaderHeaderClient : public mojom::TrustedURLLoaderHeaderClient {
       int32_t request_id,
       mojo::PendingReceiver<network::mojom::TrustedHeaderClient> receiver)
       override {
+    header_client_.Bind(std::move(receiver));
+  }
+  void OnLoaderForCorsPreflightCreated(
+      const ResourceRequest& request,
+      mojo::PendingReceiver<mojom::TrustedHeaderClient> receiver) override {
     header_client_.Bind(std::move(receiver));
   }
 
@@ -4706,6 +4712,7 @@ class HangingTestURLLoaderHeaderClient
     }
 
     void OnHeadersReceived(const std::string& headers,
+                           const net::IPEndPoint& endpoint,
                            OnHeadersReceivedCallback callback) override {
       saved_received_headers_ = headers;
       saved_on_headers_received_callback_ = std::move(callback);
@@ -4758,6 +4765,11 @@ class HangingTestURLLoaderHeaderClient
       int32_t request_id,
       mojo::PendingReceiver<network::mojom::TrustedHeaderClient> receiver)
       override {
+    header_client_.Bind(std::move(receiver));
+  }
+  void OnLoaderForCorsPreflightCreated(
+      const ResourceRequest& request,
+      mojo::PendingReceiver<mojom::TrustedHeaderClient> receiver) override {
     header_client_.Bind(std::move(receiver));
   }
 
