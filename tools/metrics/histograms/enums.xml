@@ -1744,7 +1744,7 @@ Unknown properties are collapsed to zero. -->
 
 <enum name="AndroidSearchEngineChoiceEventsV2">
   <summary>Events related to Search Engine Choice V2 feature.</summary>
-  <int value="0" label="Request recieved from play"/>
+  <int value="0" label="Request received from play"/>
   <int value="1"
       label="User skipped (didn't complete) Search Engine Choice flow"/>
   <int value="2" label="Play API returned empty list of providers"/>
