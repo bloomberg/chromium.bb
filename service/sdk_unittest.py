@@ -112,6 +112,22 @@ class CreateTest(cros_test_lib.RunCommandTempDirTestCase):
       sdk.Create(arguments)
 
 
+class DeleteTest(cros_test_lib.RunCommandTestCase):
+  """Delete function tests."""
+
+  def testDeleteNoChroot(self):
+    """Test no chroot provided."""
+    sdk.Delete()
+    self.assertCommandContains(['--chroot'], expected=False)
+    self.assertCommandContains(['--delete'])
+
+  def testDeleteWithChroot(self):
+    """Test with chroot provided."""
+    path = '/some/path'
+    sdk.Delete(chroot_path=path)
+    self.assertCommandContains(['--delete', '--chroot', path])
+
+
 class UpdateTest(cros_test_lib.RunCommandTestCase):
   """Update function tests."""
 

@@ -150,6 +150,19 @@ def Create(arguments):
   return GetChrootVersion(arguments.chroot_path)
 
 
+def Delete(chroot_path=None):
+  """Delete the chroot.
+
+  Args:
+    chroot_path: The chroot directory, or None to use the default.
+  """
+  cmd = [os.path.join(constants.CHROMITE_BIN_DIR, 'cros_sdk'), '--delete']
+  if chroot_path:
+    cmd.extend(['--chroot', chroot_path])
+
+  cros_build_lib.run(cmd)
+
+
 def GetChrootVersion(chroot_path=None):
   """Get the chroot version.
 

@@ -82,3 +82,10 @@ def Update(input_proto, output_proto, _config):
     # This should be very rare, if ever used, but worth noting.
     cros_build_lib.Die('No chroot version could be found. There was likely an'
                        'error creating the chroot that was not detected.')
+
+
+@faux.all_empty
+@validate.validation_complete
+def Delete(input_proto, _output_proto, _config):
+  """Delete a chroot."""
+  sdk.Delete(chroot_path=input_proto.chroot.path)
