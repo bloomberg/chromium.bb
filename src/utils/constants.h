@@ -27,6 +27,12 @@ namespace libgav1 {
 // Returns the number of elements between begin (inclusive) and end (inclusive).
 constexpr int EnumRangeLength(int begin, int end) { return end - begin + 1; }
 
+#if defined(ENABLE_DEBLOCK_BIT_MASK)
+constexpr bool kDeblockFilterBitMask = true;
+#else
+constexpr bool kDeblockFilterBitMask = false;
+#endif  // defined(ENABLE_DEBLOCK_BIT_MASK)
+
 enum {
   kCdfMaxProbability = 32768,
   kBlockWidthCount = 5,

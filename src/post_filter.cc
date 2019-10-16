@@ -216,8 +216,9 @@ bool PostFilter::ApplyDeblockFilterThreaded() {
   //
   // The only synchronization involved is to know when the each directional
   // filter is complete for the entire frame.
-  for (DeblockFilter deblock_filter : {&PostFilter::VerticalDeblockFilter,
-                                       &PostFilter::HorizontalDeblockFilter}) {
+  for (auto& type : {kLoopFilterTypeVertical, kLoopFilterTypeHorizontal}) {
+    const DeblockFilter deblock_filter =
+        deblock_filter_type_table_[kDeblockFilterBitMask][type];
     int job_index = 0;
     for (int i = 0; i < num_planes; ++i) {
       const int plane = planes[i];
@@ -255,6 +256,13 @@ bool PostFilter::ApplyDeblockFilter() {
     return ApplyDeblockFilterThreaded();
   }
 
+  const DeblockFilter vertical_deblock_filter_func =
+      deblock_filter_type_table_[kDeblockFilterBitMask]
+                                [kLoopFilterTypeVertical];
+  const DeblockFilter horizontal_deblock_filter_func =
+      deblock_filter_type_table_[kDeblockFilterBitMask]
+                                [kLoopFilterTypeHorizontal];
+
   for (int plane = kPlaneY; plane < planes_; ++plane) {
     if (plane != kPlaneY && frame_header_.loop_filter.level[plane + 1] == 0) {
       continue;
@@ -269,20 +277,21 @@ bool PostFilter::ApplyDeblockFilter() {
            column4x4 += kNum4x4InLoopFilterMaskUnit, ++column_unit) {
         // First apply vertical filtering
         const int unit_id = GetDeblockUnitId(row_unit, column_unit);
-        VerticalDeblockFilter(static_cast<Plane>(plane), row4x4, column4x4,
-                              unit_id);
+        (this->*vertical_deblock_filter_func)(static_cast<Plane>(plane), row4x4,
+                                              column4x4, unit_id);
 
         // Delay one superblock to apply horizontal filtering.
         if (column4x4 != 0) {
-          HorizontalDeblockFilter(static_cast<Plane>(plane), row4x4,
-                                  column4x4 - kNum4x4InLoopFilterMaskUnit,
-                                  unit_id - 1);
+          (this->*horizontal_deblock_filter_func)(
+              static_cast<Plane>(plane), row4x4,
+              column4x4 - kNum4x4InLoopFilterMaskUnit, unit_id - 1);
         }
       }
       // Horizontal filtering for the last 64x64 block.
       const int unit_id = GetDeblockUnitId(row_unit, column_unit - 1);
-      HorizontalDeblockFilter(static_cast<Plane>(plane), row4x4,
-                              column4x4 - kNum4x4InLoopFilterMaskUnit, unit_id);
+      (this->*horizontal_deblock_filter_func)(
+          static_cast<Plane>(plane), row4x4,
+          column4x4 - kNum4x4InLoopFilterMaskUnit, unit_id);
     }
   }
   return true;
@@ -1567,6 +1576,155 @@ void PostFilter::VerticalDeblockFilter(Plane plane, int row4x4_start,
     }
     src += two_row_stride;
   }
+}
+
+void PostFilter::HorizontalDeblockFilterNoMask(Plane plane, int row4x4_start,
+                                               int column4x4_start,
+                                               int unit_id) {
+  static_cast<void>(unit_id);
+  const int8_t subsampling_x = (plane == kPlaneY) ? 0 : subsampling_x_;
+  const int8_t subsampling_y = (plane == kPlaneY) ? 0 : subsampling_y_;
+  const int column_step = 1 << subsampling_x;
+  const size_t src_step = MultiplyBy4(pixel_size_);
+  const ptrdiff_t src_stride = source_buffer_->stride(plane);
+  uint8_t* src = SetBufferOffset(source_buffer_, plane, row4x4_start,
+                                 column4x4_start, subsampling_x, subsampling_y);
+  const LoopFilterType type = kLoopFilterTypeHorizontal;
+  int row_step;
+  uint8_t level;
+  int filter_length;
+
+  for (int column4x4 = 0; MultiplyBy4(column4x4_start + column4x4) < width_ &&
+                          column4x4 < kNum4x4InLoopFilterMaskUnit;
+       column4x4 += column_step, src += src_step) {
+    uint8_t* src_row = src;
+    for (int row4x4 = 0; MultiplyBy4(row4x4_start + row4x4) < height_ &&
+                         row4x4 < kNum4x4InLoopFilterMaskUnit;
+         row4x4 += row_step) {
+      const bool need_filter = GetDeblockFilterEdgeInfo(
+          plane, row4x4_start + row4x4, column4x4_start + column4x4,
+          subsampling_x, subsampling_y, type, &level, &row_step,
+          &filter_length);
+      if (need_filter) {
+        int outer_thresh;
+        int inner_thresh;
+        int hev_thresh;
+        GetDeblockFilterParams(level, &outer_thresh, &inner_thresh,
+                               &hev_thresh);
+        const dsp::LoopFilterSize size =
+            GetLoopFilterSize(plane, filter_length);
+        const dsp::LoopFilterFunc filter_func = dsp_.loop_filters[size][type];
+        filter_func(src_row, src_stride, outer_thresh, inner_thresh,
+                    hev_thresh);
+      }
+      // TODO(chengchen): use shifts instead of multiplication.
+      src_row += row_step * src_stride;
+      row_step = DivideBy4(row_step << subsampling_y);
+    }
+  }
+}
+
+void PostFilter::VerticalDeblockFilterNoMask(Plane plane, int row4x4_start,
+                                             int column4x4_start, int unit_id) {
+  static_cast<void>(unit_id);
+  const int8_t subsampling_x = (plane == kPlaneY) ? 0 : subsampling_x_;
+  const int8_t subsampling_y = (plane == kPlaneY) ? 0 : subsampling_y_;
+  const int row_step = 1 << subsampling_y;
+  const ptrdiff_t row_stride = MultiplyBy4(source_buffer_->stride(plane));
+  const ptrdiff_t src_stride = source_buffer_->stride(plane);
+  uint8_t* src = SetBufferOffset(source_buffer_, plane, row4x4_start,
+                                 column4x4_start, subsampling_x, subsampling_y);
+  const LoopFilterType type = kLoopFilterTypeVertical;
+  int column_step;
+  uint8_t level;
+  int filter_length;
+
+  for (int row4x4 = 0; MultiplyBy4(row4x4_start + row4x4) < height_ &&
+                       row4x4 < kNum4x4InLoopFilterMaskUnit;
+       row4x4 += row_step, src += row_stride) {
+    uint8_t* src_row = src;
+    for (int column4x4 = 0; MultiplyBy4(column4x4_start + column4x4) < width_ &&
+                            column4x4 < kNum4x4InLoopFilterMaskUnit;
+         column4x4 += column_step) {
+      const bool need_filter = GetDeblockFilterEdgeInfo(
+          plane, row4x4_start + row4x4, column4x4_start + column4x4,
+          subsampling_x, subsampling_y, type, &level, &column_step,
+          &filter_length);
+      if (need_filter) {
+        int outer_thresh;
+        int inner_thresh;
+        int hev_thresh;
+        GetDeblockFilterParams(level, &outer_thresh, &inner_thresh,
+                               &hev_thresh);
+        const dsp::LoopFilterSize size =
+            GetLoopFilterSize(plane, filter_length);
+        const dsp::LoopFilterFunc filter_func = dsp_.loop_filters[size][type];
+        filter_func(src_row, src_stride, outer_thresh, inner_thresh,
+                    hev_thresh);
+      }
+      src_row += column_step * pixel_size_;
+      column_step = DivideBy4(column_step << subsampling_x);
+    }
+  }
+}
+
+bool PostFilter::GetDeblockFilterEdgeInfo(
+    const Plane plane, int row4x4, int column4x4, const int8_t subsampling_x,
+    const int8_t subsampling_y, const LoopFilterType type, uint8_t* level,
+    int* step, int* filter_length) {
+  row4x4 = GetDeblockPosition(row4x4, subsampling_y);
+  column4x4 = GetDeblockPosition(column4x4, subsampling_x);
+  const BlockParameters* bp = block_parameters_.Find(row4x4, column4x4);
+  const TransformSize transform_size =
+      (plane == kPlaneY) ? inter_transform_sizes_[row4x4][column4x4]
+                         : bp->uv_transform_size;
+  *step = (type == kLoopFilterTypeHorizontal) ? kTransformHeight[transform_size]
+                                              : kTransformWidth[transform_size];
+  if ((type == kLoopFilterTypeHorizontal && row4x4 == subsampling_y) ||
+      (type == kLoopFilterTypeVertical && column4x4 == subsampling_x)) {
+    return false;
+  }
+
+  const int filter_id = kDeblockFilterLevelIndex[plane][type];
+  const uint8_t level_this = bp->deblock_filter_level[filter_id];
+  const int row4x4_prev = (type == kLoopFilterTypeHorizontal)
+                              ? row4x4 - (1 << subsampling_y)
+                              : row4x4;
+  const int column4x4_prev = (type == kLoopFilterTypeHorizontal)
+                                 ? column4x4
+                                 : column4x4 - (1 << subsampling_x);
+  assert(row4x4_prev >= 0 && column4x4_prev >= 0);
+  const BlockParameters* bp_prev =
+      block_parameters_.Find(row4x4_prev, column4x4_prev);
+  const uint8_t level_prev = bp_prev->deblock_filter_level[filter_id];
+  *level = level_this;
+  if (level_this == 0) {
+    if (level_prev == 0) return false;
+    *level = level_prev;
+  }
+
+  const BlockSize size =
+      kPlaneResidualSize[bp->size][subsampling_x][subsampling_y];
+  const int prediction_masks = (type == kLoopFilterTypeHorizontal)
+                                   ? kBlockHeightPixels[size] - 1
+                                   : kBlockWidthPixels[size] - 1;
+  const int pixel_position = MultiplyBy4((type == kLoopFilterTypeHorizontal)
+                                             ? row4x4 >> subsampling_y
+                                             : column4x4 >> subsampling_x);
+  const bool is_border = (pixel_position & prediction_masks) == 0;
+  const bool skip = bp->skip && bp->is_inter;
+  const bool skip_prev = bp_prev->skip && bp_prev->is_inter;
+  if (!skip || !skip_prev || is_border) {
+    const TransformSize transform_size_prev =
+        (plane == kPlaneY) ? inter_transform_sizes_[row4x4_prev][column4x4_prev]
+                           : bp_prev->uv_transform_size;
+    const int step_prev = (type == kLoopFilterTypeHorizontal)
+                              ? kTransformHeight[transform_size_prev]
+                              : kTransformWidth[transform_size_prev];
+    *filter_length = std::min(*step, step_prev);
+    return true;
+  }
+  return false;
 }
 
 void PostFilter::InitDeblockFilterParams() {

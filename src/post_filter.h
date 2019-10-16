@@ -61,6 +61,7 @@ class PostFilter {
   PostFilter(const ObuFrameHeader& frame_header,
              const ObuSequenceHeader& sequence_header,
              LoopFilterMask* const masks, const Array2D<int16_t>& cdef_index,
+             const Array2D<TransformSize>& inter_transform_sizes,
              LoopRestorationInfo* const restoration_info,
              BlockParametersHolder* block_parameters,
              YuvBuffer* const source_buffer, const dsp::Dsp* dsp,
@@ -84,6 +85,7 @@ class PostFilter {
                                                       : sizeof(uint16_t))),
         masks_(masks),
         cdef_index_(cdef_index),
+        inter_transform_sizes_(inter_transform_sizes),
         threaded_window_buffer_(threaded_window_buffer),
         restoration_info_(restoration_info),
         window_buffer_width_(GetWindowBufferWidth(thread_pool, frame_header)),
@@ -230,6 +232,14 @@ class PostFilter {
   // functions.
   using DeblockFilter = void (PostFilter::*)(Plane plane, int row4x4_start,
                                              int column4x4_start, int unit_id);
+  // The lookup table for picking the deblock filter, according to:
+  // kDeblockFilterBitMask (first dimension), and deblock filter type (second).
+  DeblockFilter deblock_filter_type_table_[2][2] = {
+      {&PostFilter::VerticalDeblockFilterNoMask,
+       &PostFilter::HorizontalDeblockFilterNoMask},
+      {&PostFilter::VerticalDeblockFilter,
+       &PostFilter::HorizontalDeblockFilter},
+  };
   // Represents a job for a worker thread to apply the deblock filter.
   struct DeblockFilterJob : public Allocable {
     int plane;
@@ -342,6 +352,27 @@ class PostFilter {
                                int column4x4_start, int unit_id);
   void VerticalDeblockFilter(Plane plane, int row4x4_start, int column4x4_start,
                              int unit_id);
+  // |unit_id| is not used, keep it to match the same interface as
+  // HorizontalDeblockFilter().
+  void HorizontalDeblockFilterNoMask(Plane plane, int row4x4_start,
+                                     int column4x4_start, int unit_id);
+  // |unit_id| is not used, keep it to match the same interface as
+  // VerticalDeblockFilter().
+  void VerticalDeblockFilterNoMask(Plane plane, int row4x4_start,
+                                   int column4x4_start, int unit_id);
+  bool GetDeblockFilterEdgeInfo(Plane plane, int row4x4, int column4x4,
+                                int8_t subsampling_x, int8_t subsampling_y,
+                                LoopFilterType type, uint8_t* level, int* step,
+                                int* filter_length);
+  static dsp::LoopFilterSize GetLoopFilterSize(Plane plane, int step) {
+    if (step == 4) {
+      return dsp::kLoopFilterSize4;
+    }
+    if (step == 8) {
+      return (plane == kPlaneY) ? dsp::kLoopFilterSize8 : dsp::kLoopFilterSize6;
+    }
+    return (plane == kPlaneY) ? dsp::kLoopFilterSize14 : dsp::kLoopFilterSize6;
+  }
   // HorizontalDeblockFilter and VerticalDeblockFilter must have the correct
   // signature.
   static_assert(std::is_same<decltype(&PostFilter::HorizontalDeblockFilter),
@@ -381,6 +412,7 @@ class PostFilter {
   uint8_t deblock_filter_levels_[kMaxSegments][kFrameLfCount]
                                 [kNumReferenceFrameTypes][2];
   const Array2D<int16_t>& cdef_index_;
+  const Array2D<TransformSize>& inter_transform_sizes_;
   // Pointer to the data buffer used for multi-threaded cdef or loop
   // restoration. The size of this buffer must be at least
   // |window_buffer_width_| * |window_buffer_height_| * |pixel_size_|.

@@ -356,11 +356,13 @@ void DecoderImpl::ReleaseOutputFrame() {
 }
 
 StatusCode DecoderImpl::DecodeTiles(const ObuParser* obu) {
-  if (PostFilter::DoDeblock(obu->frame_header(), settings_.post_filter_mask) &&
-      !loop_filter_mask_.Reset(obu->frame_header().width,
-                               obu->frame_header().height)) {
-    LIBGAV1_DLOG(ERROR, "Failed to allocate memory for loop filter masks.");
-    return kLibgav1StatusOutOfMemory;
+  if (PostFilter::DoDeblock(obu->frame_header(), settings_.post_filter_mask)) {
+    if (kDeblockFilterBitMask &&
+        !loop_filter_mask_.Reset(obu->frame_header().width,
+                                 obu->frame_header().height)) {
+      LIBGAV1_DLOG(ERROR, "Failed to allocate memory for loop filter masks.");
+      return kLibgav1StatusOutOfMemory;
+    }
   }
   LoopRestorationInfo loop_restoration_info(
       obu->frame_header().loop_restoration, obu->frame_header().upscaled_width,
@@ -531,8 +533,8 @@ StatusCode DecoderImpl::DecodeTiles(const ObuParser* obu) {
 
   PostFilter post_filter(
       obu->frame_header(), obu->sequence_header(), &loop_filter_mask_,
-      cdef_index_, &loop_restoration_info, &block_parameters_holder,
-      state_.current_frame->buffer(), dsp,
+      cdef_index_, inter_transform_sizes_, &loop_restoration_info,
+      &block_parameters_holder, state_.current_frame->buffer(), dsp,
       threading_strategy_.post_filter_thread_pool(),
       threaded_window_buffer_.get(), settings_.post_filter_mask);
   SymbolDecoderContext saved_symbol_decoder_context;
@@ -655,7 +657,7 @@ StatusCode DecoderImpl::DecodeTiles(const ObuParser* obu) {
     symbol_decoder_context_ = saved_symbol_decoder_context;
   }
   state_.current_frame->SetFrameContext(symbol_decoder_context_);
-  if (post_filter.DoDeblock()) {
+  if (post_filter.DoDeblock() && kDeblockFilterBitMask) {
     loop_filter_mask_.Build(obu->sequence_header(), obu->frame_header(),
                             obu->tile_groups().front().start,
                             obu->tile_groups().back().end,

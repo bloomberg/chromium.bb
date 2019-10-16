@@ -1893,7 +1893,8 @@ bool Tile::ProcessBlock(int row4x4, int column4x4, BlockSize block_size,
     current_frame_.segmentation_map()->FillBlock(row4x4, column4x4, x_limit,
                                                  y_limit, bp.segment_id);
   }
-  if (build_bit_mask_when_parsing_ || !split_parse_and_decode_) {
+  if (kDeblockFilterBitMask &&
+      (build_bit_mask_when_parsing_ || !split_parse_and_decode_)) {
     BuildBitMask(block);
   }
   if (!split_parse_and_decode_) {
@@ -1917,7 +1918,7 @@ bool Tile::DecodeBlock(ParameterTree* const tree,
               tree->parameters());
   ComputePrediction(block);
   if (!Residual(block, kProcessingModeDecodeOnly)) return false;
-  if (!build_bit_mask_when_parsing_) {
+  if (kDeblockFilterBitMask && !build_bit_mask_when_parsing_) {
     BuildBitMask(block);
   }
   StoreMotionFieldMvsIntoCurrentFrame(block);
