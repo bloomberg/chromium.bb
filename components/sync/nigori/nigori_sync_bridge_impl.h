@@ -146,10 +146,10 @@ class NigoriSyncBridgeImpl : public KeystoreKeysHandler,
 
   syncer::NigoriState state_;
 
-  // TODO(crbug/922900): consider using checked ObserverList once
-  // SyncEncryptionHandlerImpl is no longer needed or consider refactoring old
-  // implementation to use checked ObserverList as well.
-  base::ObserverList<SyncEncryptionHandler::Observer>::Unchecked observers_;
+  // Observer that owns the list of actual observers, and broadcasts
+  // notifications to all observers in the list.
+  class BroadcastingObserver;
+  const std::unique_ptr<BroadcastingObserver> broadcasting_observer_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
