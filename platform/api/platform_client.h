@@ -21,7 +21,7 @@ class PlatformClient {
  public:
   // Returns the TaskRunner associated with this PlatformClient.
   // NOTE: This method is expected to be thread safe.
-  virtual TaskRunner* task_runner() = 0;
+  virtual TaskRunner* GetTaskRunner() = 0;
 
   // Shuts down and deletes the PlatformClient instance currently stored as a
   // singleton. This method is expected to be called before program exit. After

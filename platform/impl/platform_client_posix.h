@@ -53,7 +53,7 @@ class PlatformClientPosix : public PlatformClient {
   UdpSocketReaderPosix* udp_socket_reader();
 
   // PlatformClient overrides.
-  TaskRunner* task_runner() override;
+  TaskRunner* GetTaskRunner() override;
 
  private:
   PlatformClientPosix(Clock::duration networking_operation_timeout,

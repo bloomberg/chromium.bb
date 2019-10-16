@@ -64,7 +64,7 @@ SocketHandleWaiterPosix* PlatformClientPosix::socket_handle_waiter() {
   return waiter_.get();
 }
 
-TaskRunner* PlatformClientPosix::task_runner() {
+TaskRunner* PlatformClientPosix::GetTaskRunner() {
   return &task_runner_;
 }
 
