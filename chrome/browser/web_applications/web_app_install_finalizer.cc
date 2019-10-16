@@ -221,13 +221,6 @@ void WebAppInstallFinalizer::RevealAppShim(const AppId& app_id) {
   NOTIMPLEMENTED();
 }
 
-bool WebAppInstallFinalizer::CanSkipAppUpdateForSync(
-    const AppId& app_id,
-    const WebApplicationInfo& web_app_info) const {
-  NOTIMPLEMENTED();
-  return true;
-}
-
 bool WebAppInstallFinalizer::CanUserUninstallFromSync(
     const AppId& app_id) const {
   // TODO(crbug.com/901226): Implement it.
