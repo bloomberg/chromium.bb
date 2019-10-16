@@ -861,6 +861,12 @@ need to be translated for each locale.-->
       <message name="IDS_SHELF_STATE_AUTO_HIDE" desc="Accessibility announcement notifying users that the shelf will now hide itself automatically">
         Shelf auto hidden
       </message>
+      <message name="IDS_SHELF_NEXT" desc="Tooltip for the shelf arrow button that scrolls the shelf forward">
+        Next
+      </message>
+      <message name="IDS_SHELF_PREVIOUS" desc="Tooltip for the shelf arrow button that scrolls the shelf backward">
+        Previous
+      </message>
       <message name="IDS_REMOVE_ZERO_STATE_SUGGESTION_TITLE" desc="Titlebar of removing zero state suggestion confirmation dialog">
         Delete this search from your history?
       </message>
