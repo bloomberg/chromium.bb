@@ -81,8 +81,7 @@ ScreenTimeController::ScreenTimeController(content::BrowserContext* context)
                        ->CreateDeepCopy()),
       time_limit_notifier_(context) {
   session_manager::SessionManager::Get()->AddObserver(this);
-  if (base::FeatureList::IsEnabled(features::kUsageTimeStateNotifier))
-    UsageTimeStateNotifier::GetInstance()->AddObserver(this);
+  UsageTimeStateNotifier::GetInstance()->AddObserver(this);
 
   system::TimezoneSettings::GetInstance()->AddObserver(this);
   chromeos::SystemClockClient::Get()->AddObserver(this);
@@ -101,8 +100,7 @@ ScreenTimeController::~ScreenTimeController() {
     parent_access::ParentAccessService::Get().RemoveObserver(this);
 
   session_manager::SessionManager::Get()->RemoveObserver(this);
-  if (base::FeatureList::IsEnabled(features::kUsageTimeStateNotifier))
-    UsageTimeStateNotifier::GetInstance()->RemoveObserver(this);
+  UsageTimeStateNotifier::GetInstance()->RemoveObserver(this);
 
   system::TimezoneSettings::GetInstance()->RemoveObserver(this);
   SystemClockClient::Get()->RemoveObserver(this);
@@ -191,8 +189,7 @@ void ScreenTimeController::CheckTimeLimit(const std::string& source) {
           notification_type.value(), remaining_time);
     }
 
-    if (base::FeatureList::IsEnabled(features::kUsageTimeStateNotifier))
-      ScheduleUsageTimeLimitWarning(state);
+    ScheduleUsageTimeLimitWarning(state);
   }
 
   // Trigger policy update notifications.
@@ -507,25 +504,11 @@ ScreenTimeController::ConvertPolicyType(
 void ScreenTimeController::OnSessionStateChanged() {
   session_manager::SessionState session_state =
       session_manager::SessionManager::Get()->session_state();
-  if (base::FeatureList::IsEnabled(features::kUsageTimeStateNotifier)) {
-    base::Optional<usage_time_limit::State> last_state = GetLastStateFromPref();
-    if (session_state == session_manager::SessionState::LOCKED && last_state &&
-        last_state->is_locked) {
-      OnScreenLockByPolicy(last_state->active_policy,
-                           last_state->next_unlock_time);
-    }
-    return;
-  }
-
-  if (session_state == session_manager::SessionState::LOCKED) {
-    base::Optional<usage_time_limit::State> last_state = GetLastStateFromPref();
-    if (last_state && last_state->is_locked) {
-      OnScreenLockByPolicy(last_state->active_policy,
-                           last_state->next_unlock_time);
-    }
-    ResetInSessionTimers();
-  } else if (session_state == session_manager::SessionState::ACTIVE) {
-    CheckTimeLimit("OnSessionStateChanged");
+  base::Optional<usage_time_limit::State> last_state = GetLastStateFromPref();
+  if (session_state == session_manager::SessionState::LOCKED && last_state &&
+      last_state->is_locked) {
+    OnScreenLockByPolicy(last_state->active_policy,
+                         last_state->next_unlock_time);
   }
 }
 
