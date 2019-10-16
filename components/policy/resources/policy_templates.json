@@ -15764,25 +15764,24 @@
       This policy does not apply for channel switches.''',
     },
     {
-      'name': 'TabLifecyclesEnabled',
-      'owners': ['chrisha@chromium.org', 'pastarmovj@chromium.org'],
+      'name': 'TabFreezingEnabled',
+      'owners': ['catan-team@chromium.org'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.win:69-'],
-      'future': True,
+      'supported_on': ['chrome.win:79-'],
       'features': {
         'dynamic_refresh': False,
         'per_profile': False,
       },
       'example_value': False,
       'id': 460,
-      'caption': '''Enables or disables tab lifecycles''',
+      'caption': '''Allow background tabs freeze''',
       'tags': [],
-      'desc': '''The tab lifecyles feature reclaims CPU and eventually memory associated with running tabs that have not been used in a long period of time, by first throttling them, then freezing them and finally discarding them.
+      'desc': '''Controls whether <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> can freeze tabs that have been in the background for at least 5 minutes.
 
-      If the policy is set to false then tab lifecycles are disabled, and all tabs will be left running normally.
+      If the policy is set to true, tabs that have been in the background for at least 5 minutes may be frozen. Tab freezing reduces CPU, battery and memory usage. <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> uses heuristics to avoid freezing tabs that do useful work in the background (e.g. display notifications, play sound, stream video). Web developers can also opt-out their site from freezing (https://chromium.googlesource.com/chromium/src/+/HEAD/chrome/browser/performance_manager/docs/freezing_opt_out_opt_in.md).
 
-      If the policy is set to true or left unspecified then tab lifecycles are enabled.''',
+      If the policy is set to false, no tabs will be frozen.''',
     },
     {
       'name': 'UrlKeyedAnonymizedDataCollectionEnabled',

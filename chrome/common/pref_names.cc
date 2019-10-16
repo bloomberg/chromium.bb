@@ -2757,9 +2757,8 @@ const char kNotificationNextPersistentId[] = "persistent_notifications.next_id";
 const char kNotificationNextTriggerTime[] =
     "persistent_notifications.next_trigger";
 
-// Preference for controlling whether tab lifecycles
-// (throttling/freezing/discarding) are enabled.
-const char kTabLifecyclesEnabled[] = "tab_lifecycles_enabled";
+// Preference for controlling whether tab freezing is enabled.
+const char kTabFreezingEnabled[] = "tab_freezing_enabled";
 
 // Boolean that enables the Enterprise Hardware Platform Extension API for
 // extensions installed by enterprise policy.

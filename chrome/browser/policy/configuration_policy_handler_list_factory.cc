@@ -1099,8 +1099,8 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kManagedWebUsbBlockedForUrls,
     base::Value::Type::LIST },
 
-  { key::kTabLifecyclesEnabled,
-    prefs::kTabLifecyclesEnabled,
+  { key::kTabFreezingEnabled,
+    prefs::kTabFreezingEnabled,
     base::Value::Type::BOOLEAN },
   { key::kCoalesceH2ConnectionsWithClientCertificatesForHosts,
     prefs::kH2ClientCertCoalescingHosts,

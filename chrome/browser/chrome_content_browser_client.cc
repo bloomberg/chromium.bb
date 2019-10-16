@@ -1120,7 +1120,7 @@ void ChromeContentBrowserClient::RegisterLocalStatePrefs(
   registry->RegisterIntegerPref(prefs::kDiskCacheSize, 0);
   registry->RegisterStringPref(prefs::kIsolateOrigins, std::string());
   registry->RegisterBooleanPref(prefs::kSitePerProcess, false);
-  registry->RegisterBooleanPref(prefs::kTabLifecyclesEnabled, true);
+  registry->RegisterBooleanPref(prefs::kTabFreezingEnabled, true);
   registry->RegisterBooleanPref(prefs::kWebDriverOverridesIncompatiblePolicies,
                                 false);
 }
