@@ -592,26 +592,6 @@ RendererBlinkPlatformImpl::CreateWebRtcAsyncResolverFactory() {
 
 //------------------------------------------------------------------------------
 
-std::unique_ptr<webrtc::RtpCapabilities>
-RendererBlinkPlatformImpl::GetRtpSenderCapabilities(
-    const blink::WebString& kind) {
-  auto* pc_dependency_factory =
-      blink::PeerConnectionDependencyFactory::GetInstance();
-  pc_dependency_factory->EnsureInitialized();
-  return pc_dependency_factory->GetSenderCapabilities(kind.Utf8());
-}
-
-std::unique_ptr<webrtc::RtpCapabilities>
-RendererBlinkPlatformImpl::GetRtpReceiverCapabilities(
-    const blink::WebString& kind) {
-  auto* pc_dependency_factory =
-      blink::PeerConnectionDependencyFactory::GetInstance();
-  pc_dependency_factory->EnsureInitialized();
-  return pc_dependency_factory->GetReceiverCapabilities(kind.Utf8());
-}
-
-//------------------------------------------------------------------------------
-
 base::Optional<double>
 RendererBlinkPlatformImpl::GetWebRtcMaxCaptureFrameRate() {
   const std::string max_fps_str =
