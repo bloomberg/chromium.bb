@@ -856,7 +856,7 @@
     },
     {
       name: "LayoutNG",
-      implied_by: ["LayoutNGBlockFragmentation", "LayoutNGFieldset", "LayoutNGFlexBox", "LayoutNGFragmentItem", "LayoutNGLineCache", "EditingNG", "BidiCaretAffinity", "LayoutNGTable"],
+      implied_by: ["LayoutNGBlockFragmentation", "LayoutNGFieldset", "LayoutNGFlexBox", "LayoutNGFragmentItem", "LayoutNGFragmentPaint", "LayoutNGLineCache", "EditingNG", "BidiCaretAffinity", "LayoutNGTable"],
       status: "stable",
     },
     {
@@ -874,6 +874,9 @@
     },
     {
       name: "LayoutNGFragmentItem",
+    },
+    {
+      name: "LayoutNGFragmentPaint",
     },
     {
       name: "LayoutNGLineCache",
