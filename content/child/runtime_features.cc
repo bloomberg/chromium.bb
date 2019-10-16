@@ -195,9 +195,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
   WebRuntimeFeatures::EnableUserActivationV2(
       base::FeatureList::IsEnabled(features::kUserActivationV2));
 
-  if (base::FeatureList::IsEnabled(features::kScrollAnchorSerialization))
-    WebRuntimeFeatures::EnableScrollAnchorSerialization(true);
-
   WebRuntimeFeatures::EnableFeatureFromString(
       "CSSBackdropFilter",
       base::FeatureList::IsEnabled(blink::features::kCSSBackdropFilter));

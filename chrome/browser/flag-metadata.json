@@ -1638,11 +1638,6 @@
     "expiry_milestone": -1
   },
   {
-    "name": "enable-scroll-anchor-serialization",
-    "owners": [ "pnoland" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-search-box-selection",
     "owners": [ "ginko", "newcomer" ],
     "expiry_milestone": 78
