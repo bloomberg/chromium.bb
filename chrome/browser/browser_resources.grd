@@ -514,9 +514,8 @@
         <include name="IDR_DEVICE_EMULATOR_SHARED_STYLES_HTML" file="resources\chromeos\emulator\shared_styles.html" type="BINDATA" />
       </if>
       <if expr="chromeos">
-        <include name="IDR_SET_TIME_DIALOG_HTML" file="resources\chromeos\set_time_dialog\set_time_dialog.html" type="BINDATA" compress="gzip" />
-        <include name="IDR_SET_TIME_DIALOG_JS" file="resources\chromeos\set_time_dialog\set_time_dialog.js" type="BINDATA" compress="gzip" />
-        <include name="IDR_SET_TIME_BROWSER_PROXY_HTML" file="resources\chromeos\set_time_dialog\set_time_browser_proxy.html" type="BINDATA" compress="gzip" />
+        <include name="IDR_SET_TIME_HTML" file="resources\chromeos\set_time_dialog\set_time.html" type="BINDATA" compress="gzip" />
+        <include name="IDR_SET_TIME_DIALOG_JS" file="${root_gen_dir}\chrome\browser\resources\chromeos\set_time_dialog\set_time_dialog.js" use_base_dir="false" type="BINDATA" compress="gzip" />
         <include name="IDR_SET_TIME_BROWSER_PROXY_JS" file="resources\chromeos\set_time_dialog\set_time_browser_proxy.js" type="BINDATA" compress="gzip" />
       </if>
       <if expr="chromeos">
