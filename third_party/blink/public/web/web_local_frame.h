@@ -674,6 +674,9 @@ class WebLocalFrame : public WebFrame {
   // Returns true if the contents (minus scrollbars) has non-zero area.
   virtual bool HasVisibleContent() const = 0;
 
+  // Returns the visible content rect (minus scrollbars, in absolute coordinate)
+  virtual WebRect VisibleContentRect() const = 0;
+
   // Printing ------------------------------------------------------------
 
   // Dispatch |beforeprint| event, and execute event handlers. They might detach
