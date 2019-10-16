@@ -369,10 +369,35 @@ static AOM_INLINE void set_vbp_thresholds(AV1_COMP *cpi, int64_t thresholds[],
     thresholds[3] = threshold_base << cpi->oxcf.speed;
     if (cm->width >= 1280 && cm->height >= 720)
       thresholds[3] = thresholds[3] << 1;
-    if (cm->width <= 352 && cm->height <= 288) {
-      thresholds[1] = threshold_base >> 3;
-      thresholds[2] = threshold_base >> 1;
-      thresholds[3] = threshold_base << 3;
+    if (cm->width * cm->height <= 352 * 288) {
+      int last_qindex = cpi->rc.last_q[INTER_FRAME];
+      if (last_qindex >= QINDEX_HIGH_THR) {
+        threshold_base = (5 * threshold_base) >> 1;
+        thresholds[1] = threshold_base >> 3;
+        thresholds[2] = threshold_base;
+        thresholds[3] = threshold_base << 5;
+      } else if (last_qindex < QINDEX_LOW_THR) {
+        thresholds[1] = threshold_base >> 3;
+        thresholds[2] = threshold_base >> 1;
+        thresholds[3] = threshold_base << 3;
+      } else {
+        int64_t qi_diff_low = last_qindex - QINDEX_LOW_THR;
+        int64_t qi_diff_high = QINDEX_HIGH_THR - last_qindex;
+        int64_t threshold_diff = QINDEX_HIGH_THR - QINDEX_LOW_THR;
+        int64_t threshold_base_high = (5 * threshold_base) >> 1;
+
+        threshold_diff = threshold_diff > 0 ? threshold_diff : 1;
+        threshold_base = (qi_diff_low * threshold_base_high +
+                          qi_diff_high * threshold_base) /
+                         threshold_diff;
+        thresholds[1] = threshold_base >> 3;
+        thresholds[2] = ((qi_diff_low * threshold_base) +
+                         qi_diff_high * (threshold_base >> 1)) /
+                        threshold_diff;
+        thresholds[3] = ((qi_diff_low * (threshold_base << 5)) +
+                         qi_diff_high * (threshold_base << 3)) /
+                        threshold_diff;
+      }
     } else if (cm->width < 1280 && cm->height < 720) {
       thresholds[2] = (5 * threshold_base) >> 2;
     } else if (cm->width < 1920 && cm->height < 1080) {
