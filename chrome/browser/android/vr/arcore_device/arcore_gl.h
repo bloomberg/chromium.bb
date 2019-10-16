@@ -18,7 +18,8 @@
 #include "device/vr/public/mojom/isolated_xr_service.mojom.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/util/fps_meter.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -87,7 +88,7 @@ class ArCoreGl : public mojom::XRFrameDataProvider,
                     GetFrameDataCallback callback) override;
 
   void GetEnvironmentIntegrationProvider(
-      mojom::XREnvironmentIntegrationProviderAssociatedRequest
+      mojo::PendingAssociatedReceiver<mojom::XREnvironmentIntegrationProvider>
           environment_provider) override;
   void SetInputSourceButtonListener(
       mojo::PendingAssociatedRemote<device::mojom::XRInputSourceButtonListener>)
@@ -226,8 +227,8 @@ class ArCoreGl : public mojom::XRFrameDataProvider,
 
   mojo::Receiver<mojom::XRFrameDataProvider> frame_data_receiver_{this};
   mojo::Receiver<mojom::XRSessionController> session_controller_receiver_{this};
-  mojo::AssociatedBinding<mojom::XREnvironmentIntegrationProvider>
-      environment_binding_;
+  mojo::AssociatedReceiver<mojom::XREnvironmentIntegrationProvider>
+      environment_receiver_{this};
 
   void OnBindingDisconnect();
   void CloseBindingsIfOpen();

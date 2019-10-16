@@ -44,8 +44,8 @@ void VROrientationSession::GetFrameData(
 }
 
 void VROrientationSession::GetEnvironmentIntegrationProvider(
-    mojom::XREnvironmentIntegrationProviderAssociatedRequest
-        environment_request) {
+    mojo::PendingAssociatedReceiver<mojom::XREnvironmentIntegrationProvider>
+        environment_provider) {
   // Environment integration is not supported. This call should not
   // be made on this device.
   mojo::ReportBadMessage("Environment integration is not supported.");

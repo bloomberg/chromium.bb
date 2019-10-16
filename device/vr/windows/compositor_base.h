@@ -14,6 +14,7 @@
 #include "device/vr/util/sliding_average.h"
 #include "device/vr/vr_device.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -75,8 +76,9 @@ class XRCompositorCommon : public base::Thread,
       mojom::XRFrameDataPtr frame_data);
 
   void GetEnvironmentIntegrationProvider(
-      device::mojom::XREnvironmentIntegrationProviderAssociatedRequest
-          environment_provider) final;
+      mojo::PendingAssociatedReceiver<
+          device::mojom::XREnvironmentIntegrationProvider> environment_provider)
+      final;
 
   void RequestGamepadProvider(
       mojo::PendingReceiver<mojom::IsolatedXRGamepadProvider> receiver);

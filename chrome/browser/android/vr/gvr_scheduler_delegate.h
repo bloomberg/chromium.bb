@@ -20,6 +20,7 @@
 #include "chrome/browser/vr/base_scheduler_delegate.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/util/sliding_average.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -140,8 +141,9 @@ class GvrSchedulerDelegate : public BaseSchedulerDelegate,
                     device::mojom::XRFrameDataProvider::GetFrameDataCallback
                         callback) override;
   void GetEnvironmentIntegrationProvider(
-      device::mojom::XREnvironmentIntegrationProviderAssociatedRequest
-          environment_provider) override;
+      mojo::PendingAssociatedReceiver<
+          device::mojom::XREnvironmentIntegrationProvider> environment_provider)
+      override;
   void SetInputSourceButtonListener(
       mojo::PendingAssociatedRemote<device::mojom::XRInputSourceButtonListener>)
       override;

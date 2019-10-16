@@ -412,7 +412,7 @@ ScriptPromise XRSession::CreateAnchor(ScriptState* script_state,
   }
 
   // Reject the promise if device doesn't support the anchors API.
-  if (!xr_->xrEnvironmentProviderPtr()) {
+  if (!xr_->xrEnvironmentProviderRemote()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       kAnchorsNotSupported);
     return ScriptPromise();
@@ -473,12 +473,12 @@ ScriptPromise XRSession::CreateAnchor(ScriptState* script_state,
            << pose_ptr->position->y << ", " << pose_ptr->position->z << "]";
 
   if (plane) {
-    xr_->xrEnvironmentProviderPtr()->CreatePlaneAnchor(
+    xr_->xrEnvironmentProviderRemote()->CreatePlaneAnchor(
         std::move(pose_ptr), plane->id(),
         WTF::Bind(&XRSession::OnCreateAnchorResult, WrapPersistent(this),
                   WrapPersistent(resolver)));
   } else {
-    xr_->xrEnvironmentProviderPtr()->CreateAnchor(
+    xr_->xrEnvironmentProviderRemote()->CreateAnchor(
         std::move(pose_ptr),
         WTF::Bind(&XRSession::OnCreateAnchorResult, WrapPersistent(this),
                   WrapPersistent(resolver)));
@@ -541,7 +541,7 @@ ScriptPromise XRSession::requestHitTest(ScriptState* script_state,
   }
 
   // Reject the promise if device doesn't support the hit-test API.
-  if (!xr_->xrEnvironmentProviderPtr()) {
+  if (!xr_->xrEnvironmentProviderRemote()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
                                       kHitTestNotSupported);
     return ScriptPromise();
@@ -558,7 +558,7 @@ ScriptPromise XRSession::requestHitTest(ScriptState* script_state,
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  xr_->xrEnvironmentProviderPtr()->RequestHitTest(
+  xr_->xrEnvironmentProviderRemote()->RequestHitTest(
       std::move(ray_mojo),
       WTF::Bind(&XRSession::OnHitTestResults, WrapPersistent(this),
                 WrapPersistent(resolver)));
@@ -622,7 +622,7 @@ ScriptPromise XRSession::requestHitTestSource(
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  xr_->xrEnvironmentProviderPtr()->SubscribeToHitTest(
+  xr_->xrEnvironmentProviderRemote()->SubscribeToHitTest(
       maybe_native_origin->ToMojo(), std::move(ray_mojo),
       WTF::Bind(&XRSession::OnSubscribeToHitTestResult, WrapPersistent(this),
                 WrapPersistent(resolver), WrapPersistent(options)));
@@ -698,7 +698,7 @@ void XRSession::EnsureEnvironmentErrorHandler() {
   // Install error handler on environment provider to ensure that we get
   // notified so that we can clean up all relevant pending promises.
   if (!environment_error_handler_subscribed_ &&
-      xr_->xrEnvironmentProviderPtr()) {
+      xr_->xrEnvironmentProviderRemote()) {
     environment_error_handler_subscribed_ = true;
     xr_->AddEnvironmentProviderErrorHandler(WTF::Bind(
         &XRSession::OnEnvironmentProviderError, WrapWeakPersistent(this)));
