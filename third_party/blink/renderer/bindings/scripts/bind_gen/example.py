@@ -15,7 +15,7 @@ def run_example(web_idl_database, output_dirs):
     filename = 'v8_example.cc'
     filepath = os.path.join(output_dirs['core'], filename)
 
-    root_node = code_node.SequenceNode(renderer=renderer)
+    root_node = code_node.SymbolScopeNode(renderer=renderer)
     root_node.extend([
         code_node.SimpleNode(template_text="${z} = ${x} + ${y};"),
         code_node.SimpleNode(template_text="print ${z};"),
