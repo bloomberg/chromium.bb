@@ -57452,21 +57452,26 @@ Called by update_net_trust_anchors.py.-->
   <int value="65546" label="Custom | UndisplayableExtension"/>
 <!-- Common errors for ReadVersion operation: (2 shiftleft 16) + Windows error -->
 
+  <int value="131078" label="ReadVersion | ERROR_INVALID_HANDLE"/>
   <int value="131181" label="ReadVersion | ERROR_BROKEN_PIPE"/>
   <int value="131306" label="ReadVersion | ERROR_MORE_DATA"/>
 <!-- Common errors for ReadRequestLength operation: (3 shiftleft 16) + Windows error -->
 
+  <int value="196614" label="ReadRequestLength | ERROR_INVALID_HANDLE"/>
   <int value="196717" label="ReadRequestLength | ERROR_BROKEN_PIPE"/>
   <int value="196842" label="ReadRequestLength | ERROR_MORE_DATA"/>
 <!-- Common errors for ReadRequest operation: (4 shiftleft 16) + Windows error -->
 
+  <int value="262150" label="ReadRequest | ERROR_INVALID_HANDLE"/>
   <int value="262253" label="ReadRequest | ERROR_BROKEN_PIPE"/>
   <int value="262378" label="ReadRequest | ERROR_MORE_DATA"/>
 <!-- Common error for WriteResponse operation: (5 shiftleft 16) + Windows error -->
 
+  <int value="327686" label="WriteResponse | ERROR_INVALID_HANDLE"/>
   <int value="327789" label="WriteResponse | ERROR_BROKEN_PIPE"/>
 <!-- Common error for WriteResponseLength operation: (6 shiftleft 16) + Windows error -->
 
+  <int value="393222" label="WriteResponseLength | ERROR_INVALID_HANDLE"/>
   <int value="393325" label="WriteResponseLength | ERROR_BROKEN_PIPE"/>
 </enum>
 
