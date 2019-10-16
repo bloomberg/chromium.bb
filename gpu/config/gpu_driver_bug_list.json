@@ -3350,6 +3350,19 @@
       ]
     },
     {
+      "id": 313,
+      "description": "Context lost recovery often fails on PowerVR on CrOS.",
+      "cr_bugs": [1010121],
+      "os": {
+        "type": "chromeos"
+      },
+      "gl_vendor": "Imagination.*",
+      "gl_renderer": "PowerVR.*",
+      "features": [
+        "exit_on_context_lost"
+      ]
+    },
+    {
       "id": 314,
       "cr_bugs": [1010338],
       "description": "Crash on Adreno when using GL_EXT_shader_framebuffer_fetch",
