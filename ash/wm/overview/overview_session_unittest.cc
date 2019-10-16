@@ -17,7 +17,6 @@
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/drag_drop/drag_drop_controller.h"
-#include "ash/home_screen/home_screen_controller.h"
 #include "ash/magnifier/docked_magnifier_controller_impl.h"
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/ash_features.h"
@@ -2791,46 +2790,6 @@ TEST_P(OverviewSessionTest, ShelfAlignmentChangeWhileInOverview) {
   EXPECT_FALSE(InOverviewSession());
 }
 
-// The class to test overview behavior with kDragFromShelfToHomeOrOverview flag
-// enabled.
-class OverviewSessionWithDragFromShelfFeatureTest : public OverviewSessionTest {
- public:
-  OverviewSessionWithDragFromShelfFeatureTest() = default;
-  ~OverviewSessionWithDragFromShelfFeatureTest() override = default;
-
-  void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kDragFromShelfToHomeOrOverview);
-    OverviewSessionTest::SetUp();
-    EnterTabletMode();
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(OverviewSessionWithDragFromShelfFeatureTest);
-};
-
-// Tests that in tablet mode, tapping on the background will always go to home
-// screen.
-TEST_P(OverviewSessionWithDragFromShelfFeatureTest, TapOnBackgroundGoToHome) {
-  UpdateDisplay("800x600");
-  std::unique_ptr<aura::Window> window(CreateTestWindow());
-  WindowState* window_state = WindowState::Get(window.get());
-
-  EXPECT_FALSE(window_state->IsMinimized());
-  EXPECT_FALSE(Shell::Get()->home_screen_controller()->IsHomeScreenVisible());
-  ToggleOverview();
-  EXPECT_TRUE(InOverviewSession());
-
-  // Tap on the background.
-  GetEventGenerator()->GestureTapAt(gfx::Point(10, 10));
-  base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(InOverviewSession());
-  EXPECT_TRUE(window_state->IsMinimized());
-  EXPECT_TRUE(Shell::Get()->home_screen_controller()->IsHomeScreenVisible());
-}
-
 // TODO(sammiequon): Merge this into SplitViewOverviewSessionTest and rename
 // that to TabletModeOverviewSessionTest.
 class OverviewSessionNewLayoutTest : public OverviewSessionTest {
@@ -5292,8 +5251,5 @@ INSTANTIATE_TEST_SUITE_P(
     ,
     SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
     testing::Values(true));
-INSTANTIATE_TEST_SUITE_P(,
-                         OverviewSessionWithDragFromShelfFeatureTest,
-                         testing::Bool());
 
 }  // namespace ash
