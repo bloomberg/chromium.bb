@@ -416,7 +416,8 @@ void HTMLInputElement::UpdateType() {
   SetForceReattachLayoutTree();
 
   // In this function, we should not do force to do style recalc and layout.
-  DocumentLifecycle::DisallowTransitionScope(GetDocument().Lifecycle());
+  DocumentLifecycle::DisallowTransitionScope disallow_transition(
+      GetDocument().Lifecycle());
 
   if (input_type_->SupportsRequired() != new_type->SupportsRequired() &&
       IsRequired()) {
