@@ -462,6 +462,7 @@
 #if !defined(OS_ANDROID)
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/apps/intent_helper/chromeos_apps_navigation_throttle.h"
+#include "chrome/browser/chromeos/apps/intent_helper/common_apps_navigation_throttle.h"
 #else
 #include "chrome/browser/apps/intent_helper/apps_navigation_throttle.h"
 #endif
@@ -3850,7 +3851,9 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
   if (base::FeatureList::IsEnabled(features::kIntentPicker)) {
     auto url_to_apps_throttle =
 #if defined(OS_CHROMEOS)
-        chromeos::ChromeOsAppsNavigationThrottle::MaybeCreate(handle);
+        base::FeatureList::IsEnabled(features::kAppServiceIntentHandling)
+            ? apps::CommonAppsNavigationThrottle::MaybeCreate(handle)
+            : chromeos::ChromeOsAppsNavigationThrottle::MaybeCreate(handle);
 #else
         apps::AppsNavigationThrottle::MaybeCreate(handle);
 #endif
