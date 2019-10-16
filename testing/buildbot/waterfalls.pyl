@@ -4403,6 +4403,13 @@
         },
         'os_type': 'android',
       },
+      'android-opus-kitkat-arm-rel': {
+        'mixins': [
+          'kitkat',
+          'hammerhead',
+        ],
+        'os_type': 'android',
+      },
       'android_blink_rel': {
         'mixins': [
           'kitkat',

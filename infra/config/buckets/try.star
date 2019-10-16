@@ -121,6 +121,10 @@ android_builder(
 )
 
 android_builder(
+    name = 'android-opus-kitkat-arm-rel',
+)
+
+android_builder(
     name = 'android-oreo-arm64-cts-networkservice-dbg',
 )
 
