@@ -4885,7 +4885,7 @@ TEST_F(NetworkContextTest, HangingHeaderClientAbortDuringOnBeforeSendHeaders) {
 
   // The reported error differs, but eventually URLLoader returns
   // net::ERR_ABORTED once OOR-CORS clean-up is finished.
-  if (features::ShouldEnableOutOfBlinkCors())
+  if (features::ShouldEnableOutOfBlinkCorsForTesting())
     EXPECT_EQ(client.completion_status().error_code, net::ERR_ABORTED);
   else
     EXPECT_EQ(client.completion_status().error_code, net::ERR_FAILED);
@@ -4938,7 +4938,7 @@ TEST_F(NetworkContextTest, HangingHeaderClientAbortDuringOnHeadersReceived) {
 
   // The reported error differs, but eventually URLLoader returns
   // net::ERR_ABORTED once OOR-CORS clean-up is finished.
-  if (features::ShouldEnableOutOfBlinkCors())
+  if (features::ShouldEnableOutOfBlinkCorsForTesting())
     EXPECT_EQ(client.completion_status().error_code, net::ERR_ABORTED);
   else
     EXPECT_EQ(client.completion_status().error_code, net::ERR_FAILED);

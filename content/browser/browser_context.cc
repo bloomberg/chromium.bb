@@ -787,6 +787,10 @@ SharedCorsOriginAccessList* BrowserContext::GetSharedCorsOriginAccessList() {
   return empty_list->get();
 }
 
+bool BrowserContext::ShouldEnableOutOfBlinkCors() {
+  return base::FeatureList::IsEnabled(network::features::kOutOfBlinkCors);
+}
+
 NativeFileSystemPermissionContext*
 BrowserContext::GetNativeFileSystemPermissionContext() {
   return nullptr;

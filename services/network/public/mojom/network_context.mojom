@@ -413,6 +413,9 @@ struct NetworkContextParams {
   // Extra CORS safelisted request headers names.
   array<string> cors_extra_safelisted_request_header_names;
 
+  // Specifies to enable OOR-CORS.
+  bool enable_cors = false;
+
   // Points to a sqlite database containing persisted Reporting clients and NEL
   // policies. If Reporting and NEL persistence is disabled, then we'll ignore
   // this field. If this field is null then persistence will be disabled
@@ -1142,6 +1145,10 @@ interface NetworkContext {
   SetCorsOriginAccessListsForOrigin(
       url.mojom.Origin source_origin, array<CorsOriginPattern> allow_patterns,
       array<CorsOriginPattern> block_patterns) => ();
+
+  // Sets extra CORS safelisted request headers names dynamically.
+  SetCorsExtraSafelistedRequestHeaderNames(
+      array<string> cors_extra_safelisted_request_header_names);
 
   // Deletes any dynamic data stored for |host| from the transport
   // security state. Returns true iff an entry was deleted.

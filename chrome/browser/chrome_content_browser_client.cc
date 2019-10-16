@@ -311,6 +311,7 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "ppapi/host/ppapi_host.h"
 #include "printing/buildflags/buildflags.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/public/cpp/resource_request.h"
@@ -1141,6 +1142,8 @@ void ChromeContentBrowserClient::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kAutoplayAllowed, false);
   registry->RegisterListPref(prefs::kAutoplayWhitelist);
 #endif
+  registry->RegisterListPref(prefs::kCorsMitigationList);
+  registry->RegisterBooleanPref(prefs::kCorsLegacyModeEnabled, false);
 }
 
 // static
@@ -2079,6 +2082,12 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
           prefs->GetBoolean(prefs::kAllowSyncXHRInPageDismissal)) {
         command_line->AppendSwitch(switches::kAllowSyncXHRInPageDismissal);
       }
+
+      if (profile->ShouldEnableOutOfBlinkCors())
+        command_line->AppendSwitch(network::switches::kEnableOutOfBlinkCors);
+    } else if (base::FeatureList::IsEnabled(
+                   network::features::kOutOfBlinkCors)) {
+      command_line->AppendSwitch(network::switches::kEnableOutOfBlinkCors);
     }
 
     if (IsAutoReloadEnabled())
