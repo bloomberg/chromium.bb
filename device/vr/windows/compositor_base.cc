@@ -138,7 +138,7 @@ void XRCompositorCommon::CleanUp() {
   frame_data_receiver_.reset();
   gamepad_provider_receiver_.reset();
   overlay_receiver_.reset();
-  input_event_listener_ = nullptr;
+  input_event_listener_.reset();
   StopRuntime();
 }
 
@@ -381,10 +381,11 @@ void XRCompositorCommon::GetFrameData(
 }
 
 void XRCompositorCommon::SetInputSourceButtonListener(
-    device::mojom::XRInputSourceButtonListenerAssociatedPtrInfo
-        input_listener_info) {
+    mojo::PendingAssociatedRemote<device::mojom::XRInputSourceButtonListener>
+        input_listener_remote) {
   DCHECK(UsesInputEventing());
-  input_event_listener_.Bind(std::move(input_listener_info));
+  input_event_listener_.reset();
+  input_event_listener_.Bind(std::move(input_listener_remote));
 }
 
 void XRCompositorCommon::GetControllerDataAndSendFrameData(

@@ -1325,7 +1325,7 @@ void GvrSchedulerDelegate::GetEnvironmentIntegrationProvider(
 }
 
 void GvrSchedulerDelegate::SetInputSourceButtonListener(
-    device::mojom::XRInputSourceButtonListenerAssociatedPtrInfo) {
+    mojo::PendingAssociatedRemote<device::mojom::XRInputSourceButtonListener>) {
   // Input eventing is not supported. This call should not
   // be made on this device.
   mojo::ReportBadMessage("Input eventing is not supported.");

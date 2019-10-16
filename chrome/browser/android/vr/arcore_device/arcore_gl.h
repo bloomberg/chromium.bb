@@ -19,6 +19,7 @@
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/util/fps_meter.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -89,7 +90,8 @@ class ArCoreGl : public mojom::XRFrameDataProvider,
       mojom::XREnvironmentIntegrationProviderAssociatedRequest
           environment_provider) override;
   void SetInputSourceButtonListener(
-      device::mojom::XRInputSourceButtonListenerAssociatedPtrInfo) override;
+      mojo::PendingAssociatedRemote<device::mojom::XRInputSourceButtonListener>)
+      override;
 
   // XRPresentationProvider
   void SubmitFrameMissing(int16_t frame_index, const gpu::SyncToken&) override;

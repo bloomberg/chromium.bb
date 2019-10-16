@@ -172,7 +172,6 @@ XRSession::XRSession(
       enabled_features_(std::move(enabled_features)),
       input_sources_(MakeGarbageCollected<XRInputSourceArray>()),
       client_receiver_(this, std::move(client_receiver)),
-      input_binding_(this),
       callback_collection_(
           MakeGarbageCollected<XRFrameRequestCallbackCollection>(
               xr_->GetExecutionContext())),
@@ -236,13 +235,10 @@ const AtomicString& XRSession::InterfaceName() const {
   return event_target_names::kXRSession;
 }
 
-device::mojom::blink::XRInputSourceButtonListenerAssociatedPtrInfo
+mojo::PendingAssociatedRemote<device::mojom::blink::XRInputSourceButtonListener>
 XRSession::GetInputClickListener() {
-  DCHECK(!input_binding_);
-  device::mojom::blink::XRInputSourceButtonListenerAssociatedPtrInfo
-      input_listener;
-  input_binding_.Bind(MakeRequest(&input_listener));
-  return input_listener;
+  DCHECK(!input_receiver_.is_bound());
+  return input_receiver_.BindNewEndpointAndPassRemote();
 }
 
 void XRSession::updateRenderState(XRRenderStateInit* init,

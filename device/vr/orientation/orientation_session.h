@@ -13,7 +13,7 @@
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/vr_device.h"
 #include "device/vr/vr_export.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "ui/display/display.h"
@@ -39,7 +39,8 @@ class DEVICE_VR_EXPORT VROrientationSession
       mojom::XREnvironmentIntegrationProviderAssociatedRequest
           environment_provider) override;
   void SetInputSourceButtonListener(
-      device::mojom::XRInputSourceButtonListenerAssociatedPtrInfo) override;
+      mojo::PendingAssociatedRemote<device::mojom::XRInputSourceButtonListener>)
+      override;
 
   // Accessible to tests.
  protected:

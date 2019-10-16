@@ -604,7 +604,7 @@ interface XRFrameDataProvider {
   GetEnvironmentIntegrationProvider(
       associated XREnvironmentIntegrationProvider& environment_provider);
   SetInputSourceButtonListener(
-      associated XRInputSourceButtonListener? event_listener);
+      pending_associated_remote<XRInputSourceButtonListener>? event_listener);
 };
 
 // Provides the necessary functionality for sending frames to a headset.
