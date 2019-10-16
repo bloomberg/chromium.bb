@@ -2911,13 +2911,12 @@ jumbo_split_static_library("browser") {
     }
 
     if (dfmify_dev_ui) {
+      # TODO(huangs): Extracting this to a separate target.
       sources += [
-        "android/dev_ui/dev_ui_url_handler.cc",
-        "android/dev_ui/dev_ui_url_handler.h",
-        "ui/webui/android/dev_ui_loader/dev_ui_loader_message_handler.cc",
-        "ui/webui/android/dev_ui_loader/dev_ui_loader_message_handler.h",
-        "ui/webui/android/dev_ui_loader/dev_ui_loader_ui.cc",
-        "ui/webui/android/dev_ui_loader/dev_ui_loader_ui.h",
+        "dev_ui/android/dev_ui_loader_error_page.cc",
+        "dev_ui/android/dev_ui_loader_error_page.h",
+        "dev_ui/android/dev_ui_loader_throttle.cc",
+        "dev_ui/android/dev_ui_loader_throttle.h",
       ]
       deps += [ "//chrome/android/modules/dev_ui/provider:native" ]
     }
