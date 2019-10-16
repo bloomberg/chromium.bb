@@ -4,12 +4,14 @@
 
 import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
 
-export class TestTabStripViewProxy extends TestBrowserProxy {
+export class TestTabStripEmbedderProxy extends TestBrowserProxy {
   constructor() {
     super([
+      'closeContainer',
       'getColors',
       'isVisible',
       'observeThemeChanges',
+      'showTabContextMenu',
     ]);
 
     this.visible_ = false;
@@ -35,5 +37,14 @@ export class TestTabStripViewProxy extends TestBrowserProxy {
 
   observeThemeChanges() {
     this.methodCalled('observeThemeChanges');
+  }
+
+  closeContainer() {
+    this.methodCalled('closeContainer');
+    return Promise.resolve();
+  }
+
+  showTabContextMenu(tabId, locationX, locationY) {
+    this.methodCalled('showTabContextMenu', [tabId, locationX, locationY]);
   }
 }

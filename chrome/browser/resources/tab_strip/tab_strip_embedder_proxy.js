@@ -4,7 +4,7 @@
 
 import {addSingletonGetter, addWebUIListener, sendWithPromise} from 'chrome://resources/js/cr.m.js';
 
-export class TabStripViewProxy {
+export class TabStripEmbedderProxy {
   /** @return {boolean} */
   isVisible() {
     return document.visibilityState === 'visible';
@@ -21,6 +21,19 @@ export class TabStripViewProxy {
   observeThemeChanges() {
     chrome.send('observeThemeChanges');
   }
+
+  /**
+   * @param {number} tabId
+   * @param {number} locationX
+   * @param {number} locationY
+   */
+  showTabContextMenu(tabId, locationX, locationY) {
+    chrome.send('showTabContextMenu', [tabId, locationX, locationY]);
+  }
+
+  closeContainer() {
+    chrome.send('closeContainer');
+  }
 }
 
-addSingletonGetter(TabStripViewProxy);
+addSingletonGetter(TabStripEmbedderProxy);
