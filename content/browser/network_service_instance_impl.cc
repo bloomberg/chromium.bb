@@ -42,6 +42,7 @@
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/public/mojom/net_log.mojom.h"
 #include "services/network/public/mojom/network_change_manager.mojom.h"
+#include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/network_service_test.mojom.h"
 
 namespace content {
@@ -162,8 +163,12 @@ void CreateNetworkServiceOnIOForTesting(
     return;
   }
 
-  GetLocalNetworkService() =
-      std::make_unique<network::NetworkService>(nullptr, std::move(receiver));
+  GetLocalNetworkService() = std::make_unique<network::NetworkService>(
+      nullptr /* registry */, std::move(receiver),
+      true /* delay_initialization_until_set_client */);
+  GetLocalNetworkService()->Initialize(
+      network::mojom::NetworkServiceParams::New(),
+      true /* mock_network_change_notifier */);
   if (completion_event)
     completion_event->Signal();
 }
