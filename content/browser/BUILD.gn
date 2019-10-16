@@ -943,6 +943,8 @@ jumbo_source_set("browser") {
     "gpu/gpu_memory_buffer_manager_singleton.h",
     "gpu/gpu_process_host.cc",
     "gpu/gpu_process_host.h",
+    "gpu/peak_gpu_memory_tracker_impl.cc",
+    "gpu/peak_gpu_memory_tracker_impl.h",
     "gpu/shader_cache_factory.cc",
     "gpu/shader_cache_factory.h",
     "hid/hid_service.cc",
