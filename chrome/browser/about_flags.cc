@@ -422,6 +422,7 @@ const FeatureEntry::FeatureVariation kCCTModuleCacheVariations[] = {
 
 #endif  // OS_ANDROID
 
+#if !defined(OS_CHROMEOS)
 const FeatureEntry::FeatureParam kForceDark_SimpleHsl[] = {
     {"inversion_method", "hsl_based"},
     {"image_behavior", "none"},
@@ -473,6 +474,7 @@ const FeatureEntry::FeatureVariation kForceDarkVariations[] = {
     {"with selective inversion of everything",
      kForceDark_SelectiveGeneralInversion,
      base::size(kForceDark_SelectiveGeneralInversion), nullptr}};
+#endif  // !OS_CHROMEOS
 
 #if defined(OS_ANDROID)
 const FeatureEntry::FeatureParam kCloseTabSuggestionsStale_4Hours[] = {
@@ -2433,11 +2435,16 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPasswordEditingAndroidDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(password_manager::features::kPasswordEditingAndroid)},
 #endif  // OS_ANDROID
+#if !defined(OS_CHROMEOS)
+    // TODO(https://crbug.com/1011696): Investigate crash reports and re-enable
+    // for ChromeOS.
     {"enable-force-dark", flag_descriptions::kForceWebContentsDarkModeName,
-     flag_descriptions::kForceWebContentsDarkModeDescription, kOsAll,
+     flag_descriptions::kForceWebContentsDarkModeDescription,
+     kOsWin | kOsLinux | kOsMac | kOsAndroid,
      FEATURE_WITH_PARAMS_VALUE_TYPE(blink::features::kForceWebContentsDarkMode,
                                     kForceDarkVariations,
                                     "ForceDarkVariations")},
+#endif  // !OS_CHROMEOS
 #if defined(OS_ANDROID)
 #if BUILDFLAG(ENABLE_ANDROID_NIGHT_MODE)
     {"enable-android-night-mode", flag_descriptions::kAndroidNightModeName,
