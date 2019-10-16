@@ -263,8 +263,11 @@ ProfileMenuViewBase::~ProfileMenuViewBase() {
   DCHECK(menu_item_groups_.empty());
 }
 
-void ProfileMenuViewBase::SetHeading(const base::string16& heading) {
-  constexpr int kVerticalPadding = 8;
+void ProfileMenuViewBase::SetHeading(const base::string16& heading,
+                                     const gfx::ImageSkia& clickable_icon,
+                                     const base::string16& tooltip_text,
+                                     base::RepeatingClosure action) {
+  constexpr int kInsidePadding = 4;
   const SkColor kBackgroundColor =
       ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
           ui::NativeTheme::kColorId_HighlightedMenuItemBackgroundColor);
@@ -272,16 +275,37 @@ void ProfileMenuViewBase::SetHeading(const base::string16& heading) {
       views::LayoutProvider::Get()->GetCornerRadiusMetric(views::EMPHASIS_HIGH);
 
   heading_container_->RemoveAllChildViews(/*delete_children=*/true);
-  heading_container_->SetLayoutManager(std::make_unique<views::FillLayout>());
-  heading_container_->SetBackground(
-      views::CreateRoundedRectBackground(kBackgroundColor, kCornerRadius));
+  views::BoxLayout* heading_layout = heading_container_->SetLayoutManager(
+      CreateBoxLayout(views::BoxLayout::Orientation::kHorizontal,
+                      views::BoxLayout::CrossAxisAlignment::kCenter,
+                      gfx::Insets(kInsidePadding)));
+  if (!heading.empty()) {
+    heading_container_->SetBackground(
+        views::CreateRoundedRectBackground(kBackgroundColor, kCornerRadius));
+  }
 
+  // Add the label even if |heading| is empty. This needs to be done so the icon
+  // button gets pushed to the right.
   views::Label* label =
       heading_container_->AddChildView(std::make_unique<views::Label>(
           heading, views::style::CONTEXT_LABEL, STYLE_HINT));
   label->SetHandlesTooltips(false);
+  // Stretch the label.
+  heading_layout->SetFlexForView(label, 1);
+
+  // Add icon button.
+  views::Button* button =
+      heading_container_->AddChildView(CreateCircularImageButton(
+          this, clickable_icon, tooltip_text, /*show_border=*/false));
+  // Don't stretch the button, so it only takes the space it needs.
+  heading_layout->SetFlexForView(button, 0);
+  RegisterClickAction(button, std::move(action));
+
+  // Center the label by adding a left padding.
+  button->SizeToPreferredSize();
+  int left_label_padding = button->GetContentsBounds().width();
   label->SetBorder(
-      views::CreateEmptyBorder(gfx::Insets(kVerticalPadding, kMenuEdgeMargin)));
+      views::CreateEmptyBorder(gfx::Insets(0, left_label_padding, 0, 0)));
 }
 
 void ProfileMenuViewBase::SetIdentityInfo(const gfx::ImageSkia& image,

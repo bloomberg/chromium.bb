@@ -50758,6 +50758,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="14" label="Cookies cleared on exit link"/>
   <int value="15" label="Add new profile button"/>
   <int value="16" label="Sync settings(sync on) button"/>
+  <int value="17" label="Edit profile button"/>
 </enum>
 
 <enum name="ProfileNetUserCount">
