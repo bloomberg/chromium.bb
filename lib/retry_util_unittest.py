@@ -11,6 +11,7 @@ import functools
 import itertools
 import os
 import time
+import sys
 
 import mock
 
@@ -196,11 +197,12 @@ class TestRetries(cros_test_lib.MockTempDirTestCase):
     }
     osutils.WriteFile(
         path,
+        'from __future__ import print_function\n'
         'import sys\n'
         'val = int(open(%(store)r).read())\n'
         'stop_val = int(open(%(stop)r).read())\n'
         "open(%(store)r, 'w').write(str(val + 1))\n"
-        'print val\n'
+        'print(val)\n'
         'sys.exit(0 if val == stop_val else 1)\n' % paths)
 
     os.chmod(path, 0o755)
@@ -217,23 +219,23 @@ class TestRetries(cros_test_lib.MockTempDirTestCase):
     sleep_mock = self.PatchObject(time, 'sleep')
 
     _SetupCounters(0, 0)
-    command = ['python2', path]
+    command = [sys.executable, path]
     kwargs = {'redirect_stdout': True, 'print_cmd': False}
-    self.assertEqual(cros_build_lib.run(command, **kwargs).output, '0\n')
+    self.assertEqual(cros_build_lib.run(command, **kwargs).output, b'0\n')
     _AssertCounters(0, 0)
 
     func = retry_util.RunCommandWithRetries
 
     _SetupCounters(2, 2)
-    self.assertEqual(func(0, command, sleep=0, **kwargs).output, '2\n')
+    self.assertEqual(func(0, command, sleep=0, **kwargs).output, b'2\n')
     _AssertCounters(0, 0)
 
     _SetupCounters(0, 2)
-    self.assertEqual(func(2, command, sleep=1, **kwargs).output, '2\n')
+    self.assertEqual(func(2, command, sleep=1, **kwargs).output, b'2\n')
     _AssertCounters(1, 2)
 
     _SetupCounters(0, 1)
-    self.assertEqual(func(1, command, sleep=2, **kwargs).output, '1\n')
+    self.assertEqual(func(1, command, sleep=2, **kwargs).output, b'1\n')
     _AssertCounters(2, 1)
 
     _SetupCounters(0, 3)

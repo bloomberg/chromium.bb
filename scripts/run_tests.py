@@ -225,6 +225,7 @@ PYTHON3_TESTS = {
     'lib/repo_util_unittest',
     'lib/request_build_unittest',
     'lib/retry_stats_unittest',
+    'lib/retry_util_unittest',
     'lib/signing_unittest',
     'lib/som_unittest',
     'lib/table_unittest',
