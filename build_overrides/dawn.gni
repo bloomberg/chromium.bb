@@ -9,3 +9,5 @@ dawn_googletest_dir = "//third_party/googletest/src"
 dawn_shaderc_dir = "//third_party/shaderc/src"
 dawn_spirv_cross_dir = "//third_party/spirv-cross/spirv-cross"
 dawn_spirv_tools_dir = "//third_party/SPIRV-Tools/src"
+dawn_vulkan_validation_layers_dir =
+    "//third_party/angle/third_party/vulkan-validation-layers/src"
