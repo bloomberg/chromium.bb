@@ -625,14 +625,14 @@ void AppCacheHost::MaybePassSubresourceFactory() {
   if (subresource_url_factory_.get())
     return;
 
-  network::mojom::URLLoaderFactoryPtr factory_ptr = nullptr;
-
+  mojo::PendingRemote<network::mojom::URLLoaderFactory> factory_remote;
   AppCacheSubresourceURLFactory::CreateURLLoaderFactory(GetWeakPtr(),
-                                                        &factory_ptr);
+                                                        &factory_remote);
 
-  // We may not have bound |factory_ptr| if the storage partition has shut down.
-  if (factory_ptr)
-    frontend()->SetSubresourceFactory(std::move(factory_ptr));
+  // We may not have bound |factory_remote| if the storage partition has shut
+  // down.
+  if (factory_remote)
+    frontend()->SetSubresourceFactory(std::move(factory_remote));
 }
 
 void AppCacheHost::SetAppCacheSubresourceFactory(

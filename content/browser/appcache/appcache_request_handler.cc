@@ -17,6 +17,7 @@
 #include "content/browser/appcache/appcache_subresource_url_factory.h"
 #include "content/browser/appcache/appcache_url_loader_job.h"
 #include "content/browser/navigation_subresource_loader_params.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job.h"
 #include "third_party/blink/public/common/features.h"
@@ -589,14 +590,13 @@ AppCacheRequestHandler::MaybeCreateSubresourceLoaderParams() {
     return base::nullopt;
 
   // The factory is destroyed when the renderer drops the connection.
-  // TODO(crbug.com/955171): Replace this with Remote.
-  network::mojom::URLLoaderFactoryPtr factory_ptr;
+  mojo::PendingRemote<network::mojom::URLLoaderFactory> factory_remote;
 
   AppCacheSubresourceURLFactory::CreateURLLoaderFactory(appcache_host_,
-                                                        &factory_ptr);
+                                                        &factory_remote);
 
   SubresourceLoaderParams params;
-  params.pending_appcache_loader_factory = factory_ptr.PassInterface();
+  params.pending_appcache_loader_factory = std::move(factory_remote);
   return base::Optional<SubresourceLoaderParams>(std::move(params));
 }
 
