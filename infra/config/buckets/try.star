@@ -24,6 +24,8 @@ luci.bucket(
     ],
 )
 
+exec('./try/cq.star')
+
 luci.recipe.defaults.cipd_package.set('infra/recipe_bundles/chromium.googlesource.com/chromium/tools/build')
 
 defaults.bucket.set('try')

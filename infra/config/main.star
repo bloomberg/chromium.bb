@@ -7,6 +7,7 @@ lucicfg.config(
     config_dir = 'generated',
     tracked_files = [
         'commit-queue.cfg',
+        'cq-builders.md',
         'cr-buildbucket.cfg',
         'luci-logdog.cfg',
         'luci-milo.cfg',
@@ -21,7 +22,6 @@ lucicfg.config(
 # Copy the not-yet migrated files to the generated outputs
 # TODO(https://crbug.com/1011908) Migrate the configuration in these files to starlark
 [lucicfg.emit(dest = f, data = io.read_file(f)) for f in (
-    'commit-queue.cfg',
     'luci-milo.cfg',
     # TODO(https://crbug.com/1015148) lucicfg generates luci-notify.cfg very
     # differently from our hand-written file and doesn't do any normalization
@@ -61,6 +61,12 @@ luci.project(
     ],
 )
 
+luci.cq(
+    submit_max_burst = 2,
+    submit_burst_delay = time.minute,
+    status_host = 'chromium-cq-status.appspot.com',
+)
+
 luci.logdog(
     gs_bucket = 'chromium-luci-logdog',
 )
@@ -70,3 +76,5 @@ exec('//buckets/findit.star')
 exec('//buckets/try.star')
 exec('//buckets/webrtc.star')
 exec('//buckets/webrtc.fyi.star')
+
+exec('//cq-builders-md.star')
