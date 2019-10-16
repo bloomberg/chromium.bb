@@ -2531,24 +2531,6 @@
             ]
         }
     ],
-    "FFmpegDecodeOpaqueVP8": [
-        {
-            "platforms": [
-                "chromeos",
-                "mac",
-                "linux",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "libvpx_for_vp8",
-                    "disable_features": [
-                        "FFmpegDecodeOpaqueVP8"
-                    ]
-                }
-            ]
-        }
-    ],
     "FastBorderRadius": [
         {
             "platforms": [
@@ -7251,6 +7233,24 @@
                     "name": "HistoryManipulationIntervention",
                     "enable_features": [
                         "HistoryManipulationIntervention"
+                    ]
+                }
+            ]
+        }
+    ],
+    "libvpx_for_vp8": [
+        {
+            "platforms": [
+                "chromeos",
+                "mac",
+                "linux",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "libvpx_for_vp8",
+                    "disable_features": [
+                        "FFmpegDecodeOpaqueVP8"
                     ]
                 }
             ]
