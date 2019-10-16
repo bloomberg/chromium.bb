@@ -14,7 +14,6 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/task_environment.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -124,8 +123,9 @@ class TestMdnsListenClient : public mojom::MdnsListenClient {
   using UpdateType = net::HostResolver::MdnsListener::Delegate::UpdateType;
   using UpdateKey = std::pair<UpdateType, net::DnsQueryType>;
 
-  explicit TestMdnsListenClient(mojom::MdnsListenClientPtr* interface_ptr)
-      : binding_(this, mojo::MakeRequest(interface_ptr)) {}
+  explicit TestMdnsListenClient(
+      mojo::PendingRemote<mojom::MdnsListenClient>* remote)
+      : receiver_(this, remote->InitWithNewPipeAndPassReceiver()) {}
 
   void OnAddressResult(UpdateType update_type,
                        net::DnsQueryType result_type,
@@ -177,7 +177,7 @@ class TestMdnsListenClient : public mojom::MdnsListenClient {
   }
 
  private:
-  mojo::Binding<mojom::MdnsListenClient> binding_;
+  mojo::Receiver<mojom::MdnsListenClient> receiver_;
 
   std::multimap<UpdateKey, net::IPEndPoint> address_results_;
   std::multimap<UpdateKey, std::string> text_results_;
@@ -1268,7 +1268,7 @@ TEST_F(HostResolverTest, MdnsListener_AddressResult) {
   auto inner_resolver = std::make_unique<net::MockHostResolver>();
   HostResolver resolver(inner_resolver.get(), &net_log);
 
-  mojom::MdnsListenClientPtr pending_response_client;
+  mojo::PendingRemote<mojom::MdnsListenClient> pending_response_client;
   TestMdnsListenClient response_client(&pending_response_client);
 
   int error = net::ERR_FAILED;
@@ -1306,7 +1306,7 @@ TEST_F(HostResolverTest, MdnsListener_TextResult) {
   auto inner_resolver = std::make_unique<net::MockHostResolver>();
   HostResolver resolver(inner_resolver.get(), &net_log);
 
-  mojom::MdnsListenClientPtr pending_response_client;
+  mojo::PendingRemote<mojom::MdnsListenClient> pending_response_client;
   TestMdnsListenClient response_client(&pending_response_client);
 
   int error = net::ERR_FAILED;
@@ -1348,7 +1348,7 @@ TEST_F(HostResolverTest, MdnsListener_HostnameResult) {
   auto inner_resolver = std::make_unique<net::MockHostResolver>();
   HostResolver resolver(inner_resolver.get(), &net_log);
 
-  mojom::MdnsListenClientPtr pending_response_client;
+  mojo::PendingRemote<mojom::MdnsListenClient> pending_response_client;
   TestMdnsListenClient response_client(&pending_response_client);
 
   int error = net::ERR_FAILED;
@@ -1386,7 +1386,7 @@ TEST_F(HostResolverTest, MdnsListener_UnhandledResult) {
   auto inner_resolver = std::make_unique<net::MockHostResolver>();
   HostResolver resolver(inner_resolver.get(), &net_log);
 
-  mojom::MdnsListenClientPtr pending_response_client;
+  mojo::PendingRemote<mojom::MdnsListenClient> pending_response_client;
   TestMdnsListenClient response_client(&pending_response_client);
 
   int error = net::ERR_FAILED;

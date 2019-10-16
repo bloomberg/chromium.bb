@@ -107,10 +107,11 @@ void HostResolver::ResolveHost(
   DCHECK(insertion_result);
 }
 
-void HostResolver::MdnsListen(const net::HostPortPair& host,
-                              net::DnsQueryType query_type,
-                              mojom::MdnsListenClientPtr response_client,
-                              MdnsListenCallback callback) {
+void HostResolver::MdnsListen(
+    const net::HostPortPair& host,
+    net::DnsQueryType query_type,
+    mojo::PendingRemote<mojom::MdnsListenClient> response_client,
+    MdnsListenCallback callback) {
 #if !BUILDFLAG(ENABLE_MDNS)
   NOTREACHED();
 #endif  // !BUILDFLAG(ENABLE_MDNS)

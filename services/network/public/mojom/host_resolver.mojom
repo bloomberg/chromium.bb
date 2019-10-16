@@ -287,7 +287,8 @@ interface HostResolver {
   // notifications if the HostResolver or parent NetworkContext are destroyed.
   MdnsListen(HostPortPair host,
              DnsQueryType query_type,
-             MdnsListenClient response_client) => (int32 result);
+             pending_remote<MdnsListenClient> response_client)
+      => (int32 result);
 };
 
 // A client interface that subscribes to DNS config change events from
