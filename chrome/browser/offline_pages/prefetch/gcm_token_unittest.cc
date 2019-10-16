@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/offline_pages/prefetch/prefetch_instance_id_proxy.h"
+#include "chrome/browser/offline_pages/prefetch/gcm_token.h"
 
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
+#include "build/build_config.h"
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/gcm_driver/fake_gcm_profile_service.h"
@@ -42,14 +43,11 @@ class PrefetchInstanceIDProxyTest : public testing::Test {
   // Sync wrapper for async version.
   std::string GetToken();
 
-  PrefetchInstanceIDProxy* proxy() { return proxy_.get(); }
-
- private:
+ protected:
   void GetTokenCompleted(const std::string& token, InstanceID::Result result);
 
   content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
-  std::unique_ptr<PrefetchInstanceIDProxy> proxy_;
 
   gcm::FakeGCMProfileService* gcm_profile_service_;
 
@@ -71,7 +69,6 @@ class PrefetchInstanceIDProxyTest : public testing::Test {
 
 void PrefetchInstanceIDProxyTest::SetUp() {
   scoped_feature_list_.InitAndEnableFeature(kPrefetchingOfflinePagesFeature);
-  proxy_ = std::make_unique<PrefetchInstanceIDProxy>(kAppIdForTest, &profile_);
   gcm_profile_service_ = static_cast<gcm::FakeGCMProfileService*>(
       gcm::GCMProfileServiceFactory::GetInstance()->SetTestingFactoryAndUse(
           &profile_, base::BindRepeating(&gcm::FakeGCMProfileService::Build)));
@@ -95,8 +92,9 @@ std::string PrefetchInstanceIDProxyTest::GetToken() {
   token_.clear();
   result_ = InstanceID::UNKNOWN_ERROR;
 
-  proxy()->GetGCMToken(base::Bind(
-      &PrefetchInstanceIDProxyTest::GetTokenCompleted, base::Unretained(this)));
+  GetGCMToken(&profile_, kAppIdForTest,
+              base::Bind(&PrefetchInstanceIDProxyTest::GetTokenCompleted,
+                         base::Unretained(this)));
   WaitForAsyncOperation();
   return token_;
 }

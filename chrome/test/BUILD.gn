@@ -3599,7 +3599,7 @@ test("unit_tests") {
     sources += [
       "../browser/offline_pages/offline_page_request_handler_unittest.cc",
       "../browser/offline_pages/offline_page_utils_unittest.cc",
-      "../browser/offline_pages/prefetch/prefetch_instance_id_proxy_unittest.cc",
+      "../browser/offline_pages/prefetch/gcm_token_unittest.cc",
     ]
   }
 
