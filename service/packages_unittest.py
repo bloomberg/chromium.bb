@@ -135,7 +135,7 @@ class AndroidVersionsTest(cros_test_lib.MockTestCase):
 class ChromeVersionsTest(cros_test_lib.MockTestCase):
   """Tests getting chrome version."""
   def setUp(self):
-    self.board = 'board'
+    self.build_target = build_target_util.BuildTarget('board')
 
   def test_determine_chrome_version(self):
     # Mock PortageqBestVisible to return a valid chrome version string.
@@ -144,7 +144,7 @@ class ChromeVersionsTest(cros_test_lib.MockTestCase):
     self.PatchObject(portage_util, 'PortageqBestVisible',
                      return_value=r1_cpv)
 
-    chrome_version = packages.determine_chrome_version(self.board)
+    chrome_version = packages.determine_chrome_version(self.build_target)
     version_numbers = chrome_version.split('.')
     self.assertEqual(len(version_numbers), 4)
     self.assertEqual(int(version_numbers[0]), 78)

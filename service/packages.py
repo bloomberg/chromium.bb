@@ -435,13 +435,13 @@ def builds(atom, build_target, packages=None):
   return any(atom in package for package in graph['package_deps'])
 
 
-def determine_chrome_version(board):
+def determine_chrome_version(build_target):
   """Returns the current Chrome version for the board (or in buildroot).
 
   Args:
-    board: The board name this is specific to.
+    build_target (build_target_util.BuildTarget): The board build target.
   """
-  cpv = portage_util.PortageqBestVisible(constants.CHROME_CP, board,
+  cpv = portage_util.PortageqBestVisible(constants.CHROME_CP, build_target.name,
                                          cwd=constants.SOURCE_ROOT)
   # Something like 78.0.3877.4_rc -> 78.0.3877.4
   return cpv.version_no_rev.partition('_')[0]
