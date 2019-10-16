@@ -13,6 +13,7 @@
 #include "base/path_service.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/web_package/signed_exchange_cert_fetcher_factory.h"
 #include "content/browser/web_package/signed_exchange_devtools_proxy.h"
 #include "content/browser/web_package/signed_exchange_signature_verifier.h"
@@ -336,7 +337,7 @@ class SignedExchangeHandlerTest
         std::make_unique<blink::SignedExchangeRequestMatcher>(
             net::HttpRequestHeaders(), std::string() /* accept_langs */),
         nullptr /* devtools_proxy */, nullptr /* reporter */,
-        base::RepeatingCallback<int(void)>());
+        FrameTreeNode::kFrameTreeNodeInvalidId);
   }
 
   void WaitForHeader() {
