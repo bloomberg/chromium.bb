@@ -47,9 +47,6 @@
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/prefs/testing_pref_service.h"
 #include "crypto/sha2.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
-#include "mojo/public/cpp/bindings/receiver.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "net/base/cache_type.h"
@@ -4104,7 +4101,7 @@ class TestProxyErrorClient final : public mojom::ProxyErrorClient {
     std::string details;
   };
 
-  TestProxyErrorClient() : binding_(this) {}
+  TestProxyErrorClient() = default;
 
   ~TestProxyErrorClient() override {}
 
@@ -4125,14 +4122,13 @@ class TestProxyErrorClient final : public mojom::ProxyErrorClient {
     return on_pac_script_error_calls_;
   }
 
-  // Creates an InterfacePtrInfo, binds it to |*this| and returns it.
-  mojom::ProxyErrorClientPtrInfo CreateInterfacePtrInfo() {
-    mojom::ProxyErrorClientPtrInfo client_ptr_info;
-
-    binding_.Bind(mojo::MakeRequest(&client_ptr_info));
-    binding_.set_connection_error_handler(base::BindOnce(
+  // Creates an mojo::PendingRemote, binds it to |*this| and returns it.
+  mojo::PendingRemote<mojom::ProxyErrorClient> CreateRemote() {
+    mojo::PendingRemote<mojom::ProxyErrorClient> client_remote =
+        receiver_.BindNewPipeAndPassRemote();
+    receiver_.set_disconnect_handler(base::BindOnce(
         &TestProxyErrorClient::OnMojoPipeError, base::Unretained(this)));
-    return client_ptr_info;
+    return client_remote;
   }
 
   // Runs until the message pipe is closed due to an error.
@@ -4153,7 +4149,7 @@ class TestProxyErrorClient final : public mojom::ProxyErrorClient {
       std::move(quit_closure_for_on_mojo_pipe_error_).Run();
   }
 
-  mojo::Binding<mojom::ProxyErrorClient> binding_;
+  mojo::Receiver<mojom::ProxyErrorClient> receiver_{this};
 
   base::OnceClosure quit_closure_for_on_mojo_pipe_error_;
   bool has_received_mojo_pipe_error_ = false;
@@ -4191,8 +4187,7 @@ TEST_F(NetworkContextTest, ProxyErrorClientNotifiedOfProxyConnection) {
   TestProxyErrorClient proxy_error_client;
   mojom::NetworkContextParamsPtr context_params =
       mojom::NetworkContextParams::New();
-  context_params->proxy_error_client =
-      proxy_error_client.CreateInterfacePtrInfo();
+  context_params->proxy_error_client = proxy_error_client.CreateRemote();
   net::ProxyConfig proxy_config;
   // Set the proxy to an unreachable address (host resolution fails).
   proxy_config.proxy_rules().ParseFromString("proxy.bad.dns");
@@ -4253,8 +4248,7 @@ TEST_F(NetworkContextTest, ProxyErrorClientNotNotifiedOfUnreachableError) {
   // configuration.
   TestProxyErrorClient proxy_error_client;
   mojom::NetworkContextParamsPtr context_params = CreateContextParams();
-  context_params->proxy_error_client =
-      proxy_error_client.CreateInterfacePtrInfo();
+  context_params->proxy_error_client = proxy_error_client.CreateRemote();
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(std::move(context_params));
 
@@ -4373,8 +4367,7 @@ TEST_F(NetworkContextTest, ProxyErrorClientNotifiedOfPacError) {
   TestProxyErrorClient proxy_error_client;
   mojom::NetworkContextParamsPtr context_params =
       mojom::NetworkContextParams::New();
-  context_params->proxy_error_client =
-      proxy_error_client.CreateInterfacePtrInfo();
+  context_params->proxy_error_client = proxy_error_client.CreateRemote();
 
 #if defined(OS_CHROMEOS)
   context_params->dhcp_wpad_url_client =

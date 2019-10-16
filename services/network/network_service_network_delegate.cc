@@ -38,14 +38,14 @@ const char kClearSiteDataHeader[] = "Clear-Site-Data";
 NetworkServiceNetworkDelegate::NetworkServiceNetworkDelegate(
     bool enable_referrers,
     bool validate_referrer_policy_on_initial_request,
-    mojom::ProxyErrorClientPtrInfo proxy_error_client_info,
+    mojo::PendingRemote<mojom::ProxyErrorClient> proxy_error_client_remote,
     NetworkContext* network_context)
     : enable_referrers_(enable_referrers),
       validate_referrer_policy_on_initial_request_(
           validate_referrer_policy_on_initial_request),
       network_context_(network_context) {
-  if (proxy_error_client_info)
-    proxy_error_client_.Bind(std::move(proxy_error_client_info));
+  if (proxy_error_client_remote)
+    proxy_error_client_.Bind(std::move(proxy_error_client_remote));
 }
 
 NetworkServiceNetworkDelegate::~NetworkServiceNetworkDelegate() = default;
