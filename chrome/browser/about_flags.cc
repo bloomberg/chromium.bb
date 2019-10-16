@@ -3497,12 +3497,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif
 
 #if !defined(OS_ANDROID)
-    {"session-restore-prioritizes-background-use-cases",
-     flag_descriptions::kSessionRestorePrioritizesBackgroundUseCasesName,
-     flag_descriptions::kSessionRestorePrioritizesBackgroundUseCasesDescription,
-     kOsDesktop,
-     FEATURE_VALUE_TYPE(
-         features::kSessionRestorePrioritizesBackgroundUseCases)},
     {"proactive-tab-freeze", flag_descriptions::kTabFreezeName,
      flag_descriptions::kTabFreezeDescription, kOsDesktop,
      FEATURE_WITH_PARAMS_VALUE_TYPE(

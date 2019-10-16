@@ -2993,11 +2993,6 @@
     "expiry_milestone": 79
   },
   {
-    "name": "session-restore-prioritizes-background-use-cases",
-    "owners": [ "chrisha" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "set-market-url-for-testing",
     "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/omaha/OWNERS" ],
      // This is required by test teams to verify functionality on devices which

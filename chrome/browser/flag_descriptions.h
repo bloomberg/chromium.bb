@@ -1082,9 +1082,6 @@ extern const char kServiceWorkerLongRunningMessageDescription[];
 extern const char kServiceWorkerOnUIName[];
 extern const char kServiceWorkerOnUIDescription[];
 
-extern const char kSessionRestorePrioritizesBackgroundUseCasesName[];
-extern const char kSessionRestorePrioritizesBackgroundUseCasesDescription[];
-
 extern const char kSettingsWindowName[];
 extern const char kSettingsWindowDescription[];
 
