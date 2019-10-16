@@ -124,7 +124,7 @@ void DoCdef(const uint16_t* src, const ptrdiff_t src_stride, const int height,
             const int direction, const int primary_strength,
             const int secondary_strength, const int damping, uint8_t* dst,
             const ptrdiff_t dst_stride) {
-  assert(width == 8 || width == 4);
+  static_assert(width == 8 || width == 4, "");
   const uint16x8_t cdef_large_value_mask =
       vdupq_n_u16(static_cast<uint16_t>(~kCdefLargeValue));
   const int16x8_t primary_threshold = vdupq_n_s16(primary_strength);
