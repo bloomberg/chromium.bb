@@ -693,19 +693,19 @@ void av1_write_coeffs_mb(const AV1_COMMON *const cm, MACROBLOCK *x, int mi_row,
 }
 
 // TODO(angiebird): use this function whenever it's possible
-static int get_tx_type_cost(const AV1_COMMON *cm, const MACROBLOCK *x,
-                            const MACROBLOCKD *xd, int plane, TX_SIZE tx_size,
-                            TX_TYPE tx_type) {
+static int get_tx_type_cost(const MACROBLOCK *x, const MACROBLOCKD *xd,
+                            int plane, TX_SIZE tx_size, TX_TYPE tx_type,
+                            int reduced_tx_set_used) {
   if (plane > 0) return 0;
 
   const TX_SIZE square_tx_size = txsize_sqr_map[tx_size];
 
   const MB_MODE_INFO *mbmi = xd->mi[0];
   const int is_inter = is_inter_block(mbmi);
-  if (get_ext_tx_types(tx_size, is_inter, cm->reduced_tx_set_used) > 1 &&
+  if (get_ext_tx_types(tx_size, is_inter, reduced_tx_set_used) > 1 &&
       !xd->lossless[xd->mi[0]->segment_id]) {
     const int ext_tx_set =
-        get_ext_tx_set(tx_size, is_inter, cm->reduced_tx_set_used);
+        get_ext_tx_set(tx_size, is_inter, reduced_tx_set_used);
     if (is_inter) {
       if (ext_tx_set > 0)
         return x->inter_tx_type_costs[ext_tx_set][square_tx_size][tx_type];
@@ -749,7 +749,8 @@ static AOM_FORCE_INLINE int warehouse_efficients_txb(
 
   av1_txb_init_levels(qcoeff, width, height, levels);
 
-  cost += get_tx_type_cost(cm, x, xd, plane, tx_size, tx_type);
+  cost +=
+      get_tx_type_cost(x, xd, plane, tx_size, tx_type, cm->reduced_tx_set_used);
 
   cost += get_eob_cost(eob, eob_costs, coeff_costs, tx_class);
 
@@ -1790,7 +1791,8 @@ int av1_optimize_txb_new(const struct AV1_COMP *cpi, MACROBLOCK *x, int plane,
                          levels, iqmatrix);
   }
 
-  const int tx_type_cost = get_tx_type_cost(cm, x, xd, plane, tx_size, tx_type);
+  const int tx_type_cost =
+      get_tx_type_cost(x, xd, plane, tx_size, tx_type, cm->reduced_tx_set_used);
   if (eob == 0)
     accu_rate += skip_cost;
   else
@@ -1810,11 +1812,12 @@ int av1_optimize_txb(const struct AV1_COMP *cpi, MACROBLOCK *x, int plane,
                      int blk_row, int blk_col, int block, TX_SIZE tx_size,
                      TXB_CTX *txb_ctx, int fast_mode, int *rate_cost) {
   const AV1_COMMON *cm = &cpi->common;
+  const int reduced_tx_set_used = cm->reduced_tx_set_used;
   MACROBLOCKD *const xd = &x->e_mbd;
   const PLANE_TYPE plane_type = get_plane_type(plane);
   const TX_SIZE txs_ctx = get_txsize_entropy_ctx(tx_size);
   const TX_TYPE tx_type = av1_get_tx_type(xd, plane_type, blk_row, blk_col,
-                                          tx_size, cm->reduced_tx_set_used);
+                                          tx_size, reduced_tx_set_used);
   const MB_MODE_INFO *mbmi = xd->mi[0];
   const struct macroblock_plane *p = &x->plane[plane];
   struct macroblockd_plane *pd = &xd->plane[plane];
@@ -1848,7 +1851,8 @@ int av1_optimize_txb(const struct AV1_COMP *cpi, MACROBLOCK *x, int plane,
           ? pd->seg_iqmatrix[mbmi->segment_id][qm_tx_size]
           : cm->giqmatrix[NUM_QM_LEVELS - 1][0][qm_tx_size];
   assert(width == (1 << bwl));
-  const int tx_type_cost = get_tx_type_cost(cm, x, xd, plane, tx_size, tx_type);
+  const int tx_type_cost =
+      get_tx_type_cost(x, xd, plane, tx_size, tx_type, reduced_tx_set_used);
   TxbInfo txb_info = {
     qcoeff,     levels,  dqcoeff, tcoeff,   dequant,      shift, tx_size,
     txs_ctx,    tx_type, bwl,     width,    height,       eob,   seg_eob,
@@ -1926,6 +1930,7 @@ static void update_tx_type_count(const AV1_COMP *cpi, const AV1_COMMON *cm,
                                  uint8_t allow_update_cdf) {
   MB_MODE_INFO *mbmi = xd->mi[0];
   int is_inter = is_inter_block(mbmi);
+  const int reduced_tx_set_used = cm->reduced_tx_set_used;
   FRAME_CONTEXT *fc = xd->tile_ctx;
 #if !CONFIG_ENTROPY_STATS
   (void)counts;
@@ -1934,7 +1939,7 @@ static void update_tx_type_count(const AV1_COMP *cpi, const AV1_COMMON *cm,
   // Only y plane's tx_type is updated
   if (plane > 0) return;
   const TX_TYPE tx_type = av1_get_tx_type(xd, PLANE_TYPE_Y, blk_row, blk_col,
-                                          tx_size, cm->reduced_tx_set_used);
+                                          tx_size, reduced_tx_set_used);
   if (is_inter) {
     if (cpi->oxcf.use_inter_dct_only) {
       assert(tx_type == DCT_DCT);
@@ -1950,13 +1955,13 @@ static void update_tx_type_count(const AV1_COMP *cpi, const AV1_COMMON *cm,
     }
   }
 
-  if (get_ext_tx_types(tx_size, is_inter, cm->reduced_tx_set_used) > 1 &&
+  if (get_ext_tx_types(tx_size, is_inter, reduced_tx_set_used) > 1 &&
       cm->base_qindex > 0 && !mbmi->skip &&
       !segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP)) {
-    const int eset = get_ext_tx_set(tx_size, is_inter, cm->reduced_tx_set_used);
+    const int eset = get_ext_tx_set(tx_size, is_inter, reduced_tx_set_used);
     if (eset > 0) {
       const TxSetType tx_set_type =
-          av1_get_ext_tx_set_type(tx_size, is_inter, cm->reduced_tx_set_used);
+          av1_get_ext_tx_set_type(tx_size, is_inter, reduced_tx_set_used);
       if (is_inter) {
         if (allow_update_cdf) {
           update_cdf(fc->inter_ext_tx_cdf[eset][txsize_sqr_map[tx_size]],
