@@ -198,17 +198,21 @@ void RequestPeerReceiver::OnReceivedResponse(
 
 void RequestPeerReceiver::OnReceivedData(const char* data,
                                         std::size_t data_length) {
-  mojo::DataPipe data_pipe(data_length);
-  peer_->OnStartLoadingResponseBody(std::move(data_pipe.consumer_handle));
-  uint32_t len = data_length;
-  MojoResult result = data_pipe.producer_handle->WriteData(data, &len, MOJO_WRITE_DATA_FLAG_NONE);
-  DCHECK(result == MOJO_RESULT_OK);
-  data_pipe.producer_handle.reset();
+  received_data_.insert(received_data_.end(), data, data + data_length);
 }
 
 void RequestPeerReceiver::OnCompletedRequest(
     const network::URLLoaderCompletionStatus& completeStatus,
     const GURL&) {
+  mojo::DataPipe data_pipe(received_data_.size());
+  peer_->OnStartLoadingResponseBody(std::move(data_pipe.consumer_handle));
+  uint32_t len = received_data_.size();
+  MojoResult result = data_pipe.producer_handle->WriteData(
+      received_data_.data(), &len, MOJO_WRITE_DATA_FLAG_NONE);
+  // when peer_ does not have a client, consumer_handle would be closed that
+  // results in MOJO_RESULT_FAILED_PRECONDITION
+  DCHECK(result == MOJO_RESULT_OK || result == MOJO_RESULT_FAILED_PRECONDITION);
+  data_pipe.producer_handle.reset();
   peer_->OnCompletedRequest(completeStatus);
   if (RenderThreadImpl* thread_impl = RenderThreadImpl::current()) {
     if (ResourceDispatcher* dispatcher = thread_impl->resource_dispatcher()) {
