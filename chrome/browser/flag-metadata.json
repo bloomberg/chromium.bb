@@ -2944,8 +2944,8 @@
   },
   {
     "name": "reduced-referrer-granularity",
-    "owners": [ "jochen", "mkwst" ],
-    "expiry_milestone": 78
+    "owners": [ "davidvc", "mkwst", "jochen" ],
+    "expiry_milestone": 81
   },
   {
     "name": "release-notes",
