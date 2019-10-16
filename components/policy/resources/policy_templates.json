@@ -987,6 +987,7 @@
         'PrintPreviewUseSystemDefaultPrinter',
         'UserNativePrintersAllowed',
         'ExternalPrintServers',
+        'ExternalPrintServersWhitelist',
       ]
     },
     {
@@ -17811,7 +17812,7 @@
 
       This policy allows you to provide configuration of external print servers to <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> devices as JSON file.
 
-      The size of the file must not exceed 1MB and must contain an array of records (JSON objects). Each record must contain fields "url" and "display_name".
+      The size of the file must not exceed 1MB and must contain an array of records (JSON objects). Each record must contain fields "id", "url" and "display_name" with strings as values. Values of "id" fields must be unique.
 
       The file is downloaded and cached. The cryptographic hash is used to verify the integrity of the download. The file will be re-downloaded whenever the URL or the hash changes.
 
@@ -18471,6 +18472,31 @@
       This policy will be removed after a couple of milestones.
 
       For details on <ph name="CORS">CORS</ph>, visit: <ph name="CORS_HELP_URL">https://www.chromestatus.com/feature/5768642492891136</ph>.'''
+    },
+    {
+      'name': 'ExternalPrintServersWhitelist',
+      'owners': ['file://chromeos/printing/OWNERS'],
+      'supported_on': ['chrome_os:79-'],
+      'id': 631,
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'example_value':  ["id1", "id2", "id3"],
+      'caption': '''Enabled external print servers''',
+      'tags': [],
+      'desc': '''Specifies the subset of print servers that will be queried for server printers.
+
+      If this policy is used, only the server printers with ids matching the values in this policy are available to the user.
+
+      The ids must correspond to the "id" field in the file specified in <ph name="EXTERNAL_PRINT_SERVERS_POLICY">ExternalPrintServers</ph>.
+
+      If this policy is not set, filtering is omitted and all print servers are taken into account.'''
     }
   ],
 
@@ -19293,6 +19319,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562, 569],
-  'highest_id_currently_used': 630,
+  'highest_id_currently_used': 631,
   'highest_atomic_group_id_currently_used': 38
 }

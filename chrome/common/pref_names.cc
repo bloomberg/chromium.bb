@@ -1303,6 +1303,10 @@ const char kPrintPreviewUseSystemDefaultPrinter[] =
 #endif  // !OS_CHROMEOS && !OS_ANDROID
 
 #if defined(OS_CHROMEOS)
+// List of print servers ids that are allowed. List of strings.
+const char kExternalPrintServersWhitelist[] =
+    "native_printing.external_print_servers_whitelist";
+
 // List of printers configured by policy.
 const char kRecommendedNativePrinters[] =
     "native_printing.recommended_printers";
