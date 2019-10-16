@@ -34,7 +34,6 @@ using test::GetAllCallback;
 using test::MakeGetAllCallback;
 using test::MakeSuccessCallback;
 using CacheMode = StorageAreaImpl::CacheMode;
-using DatabaseError = leveldb::mojom::DatabaseError;
 
 const char* kTestSource = "source";
 const size_t kTestSizeLimit = 512;
@@ -59,7 +58,7 @@ class MockDelegate : public StorageAreaImpl::Delegate {
     if (committed_)
       std::move(committed_).Run();
   }
-  void OnMapLoaded(DatabaseError error) override { map_load_count_++; }
+  void OnMapLoaded(leveldb::Status) override { map_load_count_++; }
   std::vector<StorageAreaImpl::Change> FixUpData(
       const StorageAreaImpl::ValueMap& data) override {
     return std::move(mock_changes_);
@@ -128,7 +127,7 @@ class StorageAreaImplTest : public testing::Test,
         base::nullopt, "StorageAreaImplTest",
         base::CreateSequencedTaskRunner({base::MayBlock(), base::ThreadPool()}),
         base::BindLambdaForTesting(
-            [&](leveldb::mojom::DatabaseError error) { loop.Quit(); }));
+            [&](leveldb::Status status) { loop.Quit(); }));
     loop.Run();
 
     StorageAreaImpl::Options options =

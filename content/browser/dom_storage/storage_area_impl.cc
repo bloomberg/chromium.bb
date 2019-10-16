@@ -19,10 +19,6 @@
 
 namespace content {
 
-namespace {
-using leveldb::mojom::DatabaseError;
-}  // namespace
-
 StorageAreaImpl::Delegate::~Delegate() {}
 
 void StorageAreaImpl::Delegate::PrepareToCommit(
@@ -40,7 +36,7 @@ std::vector<StorageAreaImpl::Change> StorageAreaImpl::Delegate::FixUpData(
   return std::vector<Change>();
 }
 
-void StorageAreaImpl::Delegate::OnMapLoaded(DatabaseError) {}
+void StorageAreaImpl::Delegate::OnMapLoaded(leveldb::Status) {}
 
 bool StorageAreaImpl::s_aggressive_flushing_enabled_ = false;
 
@@ -104,7 +100,7 @@ StorageAreaImpl::~StorageAreaImpl() {
 void StorageAreaImpl::InitializeAsEmpty() {
   DCHECK_EQ(map_state_, MapState::UNLOADED);
   map_state_ = MapState::LOADING_FROM_DATABASE;
-  OnMapLoaded(leveldb::mojom::DatabaseError::OK,
+  OnMapLoaded(leveldb::Status::OK(),
               std::vector<leveldb::mojom::KeyValuePtr>());
 }
 
@@ -576,7 +572,7 @@ void StorageAreaImpl::LoadMap(base::OnceClosure completion_callback) {
   map_state_ = MapState::LOADING_FROM_DATABASE;
 
   if (!database_) {
-    OnMapLoaded(DatabaseError::IO_ERROR,
+    OnMapLoaded(leveldb::Status::IOError(""),
                 std::vector<leveldb::mojom::KeyValuePtr>());
     return;
   }
@@ -587,12 +583,12 @@ void StorageAreaImpl::LoadMap(base::OnceClosure completion_callback) {
 }
 
 void StorageAreaImpl::OnMapLoaded(
-    DatabaseError status,
+    leveldb::Status status,
     std::vector<leveldb::mojom::KeyValuePtr> data) {
   DCHECK(keys_values_map_.empty());
   DCHECK_EQ(map_state_, MapState::LOADING_FROM_DATABASE);
 
-  if (data.empty() && status == DatabaseError::OK) {
+  if (data.empty() && status.ok()) {
     delegate_->MigrateData(base::BindOnce(&StorageAreaImpl::OnGotMigrationData,
                                           weak_ptr_factory_.GetWeakPtr()));
     return;
@@ -638,7 +634,7 @@ void StorageAreaImpl::OnMapLoaded(
   // We proceed without using a backing store, nothing will be persisted but the
   // class is functional for the lifetime of the object.
   delegate_->OnMapLoaded(status);
-  if (status != DatabaseError::OK) {
+  if (!status.ok()) {
     database_ = nullptr;
     SetCacheMode(CacheMode::KEYS_AND_VALUES);
   }
@@ -654,7 +650,7 @@ void StorageAreaImpl::OnGotMigrationData(std::unique_ptr<ValueMap> data) {
   keys_values_map_ = data ? std::move(*data) : ValueMap();
   map_state_ = MapState::LOADED_KEYS_AND_VALUES;
   CalculateStorageAndMemoryUsed();
-  delegate_->OnMapLoaded(leveldb::mojom::DatabaseError::OK);
+  delegate_->OnMapLoaded(leveldb::Status::OK());
 
   if (database_ && !empty()) {
     CreateCommitBatchIfNeeded();

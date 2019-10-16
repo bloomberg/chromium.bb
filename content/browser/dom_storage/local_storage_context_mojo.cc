@@ -93,8 +93,7 @@ void SuccessResponse(base::OnceClosure callback, bool success) {
   std::move(callback).Run();
 }
 
-void DatabaseErrorResponse(base::OnceClosure callback,
-                           leveldb::mojom::DatabaseError error) {
+void IgnoreStatus(base::OnceClosure callback, leveldb::Status status) {
   std::move(callback).Run();
 }
 
@@ -283,7 +282,7 @@ class LocalStorageContextMojo::StorageAreaHolder final
                          sql_db_path()));
     }
 
-    context_->OnCommitResult(leveldb::LeveldbStatusToError(status));
+    context_->OnCommitResult(status);
   }
 
   void MigrateData(StorageAreaImpl::ValueMapCallback callback) override {
@@ -351,11 +350,12 @@ class LocalStorageContextMojo::StorageAreaHolder final
     return changes;
   }
 
-  void OnMapLoaded(leveldb::mojom::DatabaseError error) override {
-    if (error != leveldb::mojom::DatabaseError::OK)
+  void OnMapLoaded(leveldb::Status status) override {
+    if (!status.ok()) {
       UMA_HISTOGRAM_ENUMERATION("LocalStorageContext.MapLoadError",
-                                leveldb::GetLevelDBStatusUMAValue(error),
+                                leveldb_env::GetLevelDBStatusUMAValue(status),
                                 leveldb_env::LEVELDB_STATUS_MAX);
+    }
   }
 
   void Bind(mojo::PendingReceiver<blink::mojom::StorageArea> receiver) {
@@ -488,8 +488,7 @@ void LocalStorageContextMojo::PerformStorageCleanup(
     // an area is not ready to commit its changes, nothing breaks but the
     // rewrite doesn't remove all traces of old data.
     Flush();
-    database_->RewriteDB(
-        base::BindOnce(&DatabaseErrorResponse, std::move(callback)));
+    database_->RewriteDB(base::BindOnce(&IgnoreStatus, std::move(callback)));
   } else {
     std::move(callback).Run();
   }
@@ -744,19 +743,18 @@ void LocalStorageContextMojo::InitiateConnection(bool in_memory_only) {
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-void LocalStorageContextMojo::OnDatabaseOpened(
-    leveldb::mojom::DatabaseError status) {
-  if (status != leveldb::mojom::DatabaseError::OK) {
+void LocalStorageContextMojo::OnDatabaseOpened(leveldb::Status status) {
+  if (!status.ok()) {
     UMA_HISTOGRAM_ENUMERATION("LocalStorageContext.DatabaseOpenError",
-                              leveldb::GetLevelDBStatusUMAValue(status),
+                              leveldb_env::GetLevelDBStatusUMAValue(status),
                               leveldb_env::LEVELDB_STATUS_MAX);
     if (in_memory_) {
       UMA_HISTOGRAM_ENUMERATION("LocalStorageContext.DatabaseOpenError.Memory",
-                                leveldb::GetLevelDBStatusUMAValue(status),
+                                leveldb_env::GetLevelDBStatusUMAValue(status),
                                 leveldb_env::LEVELDB_STATUS_MAX);
     } else {
       UMA_HISTOGRAM_ENUMERATION("LocalStorageContext.DatabaseOpenError.Disk",
-                                leveldb::GetLevelDBStatusUMAValue(status),
+                                leveldb_env::GetLevelDBStatusUMAValue(status),
                                 leveldb_env::LEVELDB_STATUS_MAX);
     }
     LogDatabaseOpenResult(OpenResult::DATABASE_OPEN_FAILED);
@@ -779,12 +777,12 @@ void LocalStorageContextMojo::OnDatabaseOpened(
 }
 
 void LocalStorageContextMojo::OnGotDatabaseVersion(
-    leveldb::mojom::DatabaseError status,
+    leveldb::Status status,
     const std::vector<uint8_t>& value) {
-  if (status == leveldb::mojom::DatabaseError::NOT_FOUND) {
+  if (status.IsNotFound()) {
     // New database, nothing more to do. Current version will get written
     // when first data is committed.
-  } else if (status == leveldb::mojom::DatabaseError::OK) {
+  } else if (status.ok()) {
     // Existing database, check if version number matches current schema
     // version.
     int64_t db_version;
@@ -802,7 +800,7 @@ void LocalStorageContextMojo::OnGotDatabaseVersion(
   } else {
     // Other read error. Possibly database corruption.
     UMA_HISTOGRAM_ENUMERATION("LocalStorageContext.ReadVersionError",
-                              leveldb::GetLevelDBStatusUMAValue(status),
+                              leveldb_env::GetLevelDBStatusUMAValue(status),
                               leveldb_env::LEVELDB_STATUS_MAX);
     LogDatabaseOpenResult(OpenResult::VERSION_READ_ERROR);
     DeleteAndRecreateDatabase(
@@ -935,7 +933,7 @@ void LocalStorageContextMojo::RetrieveStorageUsage(
 
 void LocalStorageContextMojo::OnGotMetaData(
     GetStorageUsageCallback callback,
-    leveldb::mojom::DatabaseError status,
+    leveldb::Status status,
     std::vector<leveldb::mojom::KeyValuePtr> data) {
   std::vector<StorageUsageInfo> result;
   std::set<url::Origin> origins;
@@ -1010,12 +1008,11 @@ void LocalStorageContextMojo::GetStatistics(size_t* total_cache_size,
   }
 }
 
-void LocalStorageContextMojo::OnCommitResult(
-    leveldb::mojom::DatabaseError error) {
+void LocalStorageContextMojo::OnCommitResult(leveldb::Status status) {
   DCHECK(connection_state_ == CONNECTION_FINISHED ||
          connection_state_ == CONNECTION_SHUTDOWN)
       << connection_state_;
-  if (error == leveldb::mojom::DatabaseError::OK) {
+  if (status.ok()) {
     commit_error_count_ = 0;
     return;
   }

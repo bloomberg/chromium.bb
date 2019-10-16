@@ -40,7 +40,7 @@ scoped_refptr<SessionStorageDataMap> SessionStorageDataMap::CreateClone(
 }
 
 void SessionStorageDataMap::DidCommit(leveldb::Status status) {
-  listener_->OnCommitResult(leveldb::LeveldbStatusToError(status));
+  listener_->OnCommitResult(status);
 }
 
 SessionStorageDataMap::SessionStorageDataMap(
@@ -95,7 +95,7 @@ void SessionStorageDataMap::RemoveBindingReference() {
   storage_area()->ScheduleImmediateCommit();
 }
 
-void SessionStorageDataMap::OnMapLoaded(leveldb::mojom::DatabaseError) {
+void SessionStorageDataMap::OnMapLoaded(leveldb::Status) {
   clone_from_data_map_.reset();
 }
 

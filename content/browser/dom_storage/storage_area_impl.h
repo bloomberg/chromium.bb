@@ -69,7 +69,7 @@ class CONTENT_EXPORT StorageAreaImpl : public blink::mojom::StorageArea {
     // Called during loading to give delegate a chance to modify the data as
     // stored in the database.
     virtual std::vector<Change> FixUpData(const ValueMap& data);
-    virtual void OnMapLoaded(leveldb::mojom::DatabaseError error);
+    virtual void OnMapLoaded(leveldb::Status status);
   };
 
   enum class CacheMode {
@@ -288,7 +288,7 @@ class CONTENT_EXPORT StorageAreaImpl : public blink::mojom::StorageArea {
   // Then if the |cache_mode_| is keys-only, it unloads the map to the
   // |keys_only_map_| and sets the |map_state_| to LOADED_KEYS_ONLY
   void LoadMap(base::OnceClosure completion_callback);
-  void OnMapLoaded(leveldb::mojom::DatabaseError status,
+  void OnMapLoaded(leveldb::Status status,
                    std::vector<leveldb::mojom::KeyValuePtr> data);
   void OnGotMigrationData(std::unique_ptr<ValueMap> data);
   void CalculateStorageAndMemoryUsed();
