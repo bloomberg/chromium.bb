@@ -17,14 +17,17 @@
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/user_agent.h"
+#include "content/public/common/web_preferences.h"
 #include "services/network/network_service.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "url/gurl.h"
 #include "url/origin.h"
+#include "weblayer/browser/browser_controller_impl.h"
 #include "weblayer/browser/browser_main_parts_impl.h"
 #include "weblayer/browser/weblayer_content_browser_overlay_manifest.h"
+#include "weblayer/public/fullscreen_delegate.h"
 #include "weblayer/public/main.h"
 
 #if defined(OS_ANDROID)
@@ -97,6 +100,19 @@ blink::UserAgentMetadata ContentBrowserClientImpl::GetUserAgentMetadata() {
   metadata.model = "";
 
   return metadata;
+}
+
+void ContentBrowserClientImpl::OverrideWebkitPrefs(
+    content::RenderViewHost* render_view_host,
+    content::WebPreferences* prefs) {
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderViewHost(render_view_host);
+  if (!web_contents)
+    return;
+  BrowserControllerImpl* browser_controller =
+      BrowserControllerImpl::FromWebContents(web_contents);
+  prefs->fullscreen_supported =
+      browser_controller && browser_controller->fullscreen_delegate();
 }
 
 mojo::Remote<network::mojom::NetworkContext>
