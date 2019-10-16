@@ -1356,6 +1356,18 @@ const FeatureEntry::FeatureVariation kBackForwardCacheVariations[] = {
      kBackForwardCache_ServiceWorkerSupport, 1, nullptr},
 };
 
+#if defined(OS_CHROMEOS)
+const FeatureEntry::FeatureParam kCrOSActionRecorderLogWithHash[] = {
+    {"CrOSActionRecorderType", "1"}};
+const FeatureEntry::FeatureParam kCrOSActionRecorderLogWithoutHash[] = {
+    {"CrOSActionRecorderType", "2"}};
+const FeatureEntry::FeatureVariation kCrOSActionRecorderVariations[] = {
+    {"Log with Hash", kCrOSActionRecorderLogWithHash,
+     base::size(kCrOSActionRecorderLogWithHash), nullptr},
+    {"Log without Hash", kCrOSActionRecorderLogWithoutHash,
+     base::size(kCrOSActionRecorderLogWithoutHash), nullptr}};
+#endif  // defined(OS_CHROMEOS)
+
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the entry is the internal name.
@@ -4643,6 +4655,16 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-de-jelly", flag_descriptions::kEnableDeJellyName,
      flag_descriptions::kEnableDeJellyDescription, kOsAll,
      SINGLE_VALUE_TYPE(switches::kEnableDeJelly)},
+
+#if defined(OS_CHROMEOS)
+    {"enable-cros-action-recorder",
+     flag_descriptions::kEnableCrOSActionRecorderName,
+     flag_descriptions::kEnableCrOSActionRecorderDescription, kOsCrOS,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         app_list_features::kEnableCrOSActionRecorder,
+         kCrOSActionRecorderVariations,
+         "CrOSActionRecorderTypeVariations")},
+#endif  // defined(OS_CHROMEOS)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

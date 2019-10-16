@@ -36781,6 +36781,7 @@ from previous Chrome versions.
   <int value="83422372"
       label="ChromeHomePersonalizedOmniboxSuggestions:enabled"/>
   <int value="84911198" label="ScanCardsInWebPayments:disabled"/>
+  <int value="88412508" label="EnableCrOSActionRecorder:enabled"/>
   <int value="88437020" label="FeaturePolicy:enabled"/>
   <int value="89785725"
       label="DataReductionProxyEnabledWithNetworkService:disabled"/>
@@ -36868,6 +36869,7 @@ from previous Chrome versions.
   <int value="217455219" label="SyncStandaloneTransport:enabled"/>
   <int value="218890378" label="ManualSaving:disabled"/>
   <int value="219117936" label="AllowReaderForAccessibility:enabled"/>
+  <int value="220418174" label="EnableCrOSActionRecorder:disabled"/>
   <int value="221212638" label="StartSurfaceAndroid:enabled"/>
   <int value="222184258"
       label="AutofillEnforceMinRequiredFieldsForHeuristics:disabled"/>

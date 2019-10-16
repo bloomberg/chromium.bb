@@ -2005,6 +2005,9 @@ extern const char kEnableAssistantRoutinesDescription[];
 extern const char kEnableBackgroundBlurName[];
 extern const char kEnableBackgroundBlurDescription[];
 
+extern const char kEnableCrOSActionRecorderName[];
+extern const char kEnableCrOSActionRecorderDescription[];
+
 extern const char kEnableDiscoverAppName[];
 extern const char kEnableDiscoverAppDescription[];
 

@@ -3374,6 +3374,12 @@ const char kEnableBackgroundBlurName[] = "Enable background blur.";
 const char kEnableBackgroundBlurDescription[] =
     "Enables background blur for the Launcher, Shelf, Unified System Tray etc.";
 
+const char kEnableCrOSActionRecorderName[] = "Enable CrOS action recorder";
+const char kEnableCrOSActionRecorderDescription[] =
+    "When enabled, each app launching, file opening, setting change, and url "
+    "visiting will be logged locally into an encrypted file. Should not be "
+    "enabled.";
+
 const char kEnableDiscoverAppName[] = "Enable Discover App";
 const char kEnableDiscoverAppDescription[] =
     "Enable Discover App icon in launcher.";
