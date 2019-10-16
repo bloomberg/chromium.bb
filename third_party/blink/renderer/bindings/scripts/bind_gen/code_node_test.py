@@ -4,6 +4,7 @@
 
 import unittest
 
+from .code_node import LiteralNode
 from .code_node import SequenceNode
 from .code_node import SimpleNode
 from .code_node import SymbolDefinitionNode
@@ -30,36 +31,55 @@ class CodeNodeTest(unittest.TestCase):
 
         self.assertEqual(actual, expected)
 
+    def test_literal_node(self):
+        """
+        Tests that, in LiteralNode, the special characters of template (%, ${},
+        etc) are not processed.
+        """
+        renderer = MakoRenderer()
+        text = "% for ${x}"
+        root = LiteralNode(text, renderer=renderer)
+        self.assertRenderResult(root, text)
+
     def test_list_operations_of_sequence_node(self):
+        """
+        Tests that list operations (insert, append, and extend) of SequenceNode
+        work just same as Python built-in list.
+        """
         renderer = MakoRenderer()
         root = SequenceNode(renderer=renderer)
         root.extend([
-            SimpleNode(template_text="2"),
-            SimpleNode(template_text="4"),
+            LiteralNode("2"),
+            LiteralNode("4"),
         ])
-        root.insert(1, SimpleNode(template_text="3"))
-        root.insert(0, SimpleNode(template_text="1"))
-        root.insert(100, SimpleNode(template_text="5"))
-        root.append(SimpleNode(template_text="6"))
+        root.insert(1, LiteralNode("3"))
+        root.insert(0, LiteralNode("1"))
+        root.insert(100, LiteralNode("5"))
+        root.append(LiteralNode("6"))
         self.assertRenderResult(root, "1 2 3 4 5 6")
 
     def test_nested_sequence(self):
+        """Tests nested SequenceNodes."""
         renderer = MakoRenderer()
         root = SequenceNode(renderer=renderer)
         nested = SequenceNode()
         nested.extend([
-            SimpleNode(template_text="2"),
-            SimpleNode(template_text="3"),
-            SimpleNode(template_text="4"),
+            LiteralNode("2"),
+            LiteralNode("3"),
+            LiteralNode("4"),
         ])
         root.extend([
-            SimpleNode(template_text="1"),
+            LiteralNode("1"),
             nested,
-            SimpleNode(template_text="5"),
+            LiteralNode("5"),
         ])
         self.assertRenderResult(root, "1 2 3 4 5")
 
     def test_symbol_definition_chains(self):
+        """
+        Tests that use of SymbolNode inserts necessary SymbolDefinitionNode
+        appropriately.
+        """
         renderer = MakoRenderer()
         root = SymbolScopeNode(renderer=renderer)
 

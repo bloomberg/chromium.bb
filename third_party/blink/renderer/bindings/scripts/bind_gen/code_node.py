@@ -262,6 +262,27 @@ class CodeNode(object):
         state.code_symbols_used[symbol_node.name] = symbol_node
 
 
+class LiteralNode(CodeNode):
+    """
+    Represents a literal text, which will be rendered as is without any template
+    magic applied.
+    """
+
+    def __init__(self, literal_text, renderer=None):
+        assert isinstance(literal_text, str)
+
+        literal_text_gensym = CodeNode.gensym()
+        template_text = CodeNode.format_template(
+            "${{{literal_text}}}", literal_text=literal_text_gensym)
+        template_vars = {literal_text_gensym: literal_text}
+
+        CodeNode.__init__(
+            self,
+            template_text=template_text,
+            template_vars=template_vars,
+            renderer=renderer)
+
+
 class SimpleNode(CodeNode):
     """
     Represents a simple node that never contains a branch nor sequence.
