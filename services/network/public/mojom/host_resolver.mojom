@@ -205,7 +205,7 @@ struct ResolveHostParameters {
 
   // If set, the outstanding request can be controlled, eg cancelled, via the
   // handle.
-  ResolveHostHandle&? control_handle;
+  pending_receiver<ResolveHostHandle>? control_handle;
 
   // If |true|, requests that the resolver include AddressList::canonical_name
   // in the results. If the resolver can do so without significant performance

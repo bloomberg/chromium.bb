@@ -2672,10 +2672,11 @@ TEST_F(NetworkContextTest, ResolveHost_Sync) {
   resolver->set_synchronous_mode(true);
 
   base::RunLoop run_loop;
-  mojom::ResolveHostHandlePtr control_handle;
+  mojo::Remote<mojom::ResolveHostHandle> control_handle;
   mojom::ResolveHostParametersPtr optional_parameters =
       mojom::ResolveHostParameters::New();
-  optional_parameters->control_handle = mojo::MakeRequest(&control_handle);
+  optional_parameters->control_handle =
+      control_handle.BindNewPipeAndPassReceiver();
   mojo::PendingRemote<mojom::ResolveHostClient> pending_response_client;
   TestResolveHostClient response_client(&pending_response_client, &run_loop);
 
@@ -2701,10 +2702,11 @@ TEST_F(NetworkContextTest, ResolveHost_Async) {
   resolver->set_synchronous_mode(false);
 
   base::RunLoop run_loop;
-  mojom::ResolveHostHandlePtr control_handle;
+  mojo::Remote<mojom::ResolveHostHandle> control_handle;
   mojom::ResolveHostParametersPtr optional_parameters =
       mojom::ResolveHostParameters::New();
-  optional_parameters->control_handle = mojo::MakeRequest(&control_handle);
+  optional_parameters->control_handle =
+      control_handle.BindNewPipeAndPassReceiver();
   mojo::PendingRemote<mojom::ResolveHostClient> pending_response_client;
   TestResolveHostClient response_client(&pending_response_client, &run_loop);
 
@@ -2715,7 +2717,7 @@ TEST_F(NetworkContextTest, ResolveHost_Async) {
   bool control_handle_closed = false;
   auto connection_error_callback =
       base::BindLambdaForTesting([&]() { control_handle_closed = true; });
-  control_handle.set_connection_error_handler(connection_error_callback);
+  control_handle.set_disconnect_handler(connection_error_callback);
   run_loop.Run();
 
   EXPECT_EQ(net::OK, response_client.result_error());
@@ -2737,10 +2739,11 @@ TEST_F(NetworkContextTest, ResolveHost_Failure_Sync) {
   resolver->set_synchronous_mode(true);
 
   base::RunLoop run_loop;
-  mojom::ResolveHostHandlePtr control_handle;
+  mojo::Remote<mojom::ResolveHostHandle> control_handle;
   mojom::ResolveHostParametersPtr optional_parameters =
       mojom::ResolveHostParameters::New();
-  optional_parameters->control_handle = mojo::MakeRequest(&control_handle);
+  optional_parameters->control_handle =
+      control_handle.BindNewPipeAndPassReceiver();
   mojo::PendingRemote<mojom::ResolveHostClient> pending_response_client;
   TestResolveHostClient response_client(&pending_response_client, &run_loop);
 
@@ -2765,10 +2768,11 @@ TEST_F(NetworkContextTest, ResolveHost_Failure_Async) {
   resolver->set_synchronous_mode(false);
 
   base::RunLoop run_loop;
-  mojom::ResolveHostHandlePtr control_handle;
+  mojo::Remote<mojom::ResolveHostHandle> control_handle;
   mojom::ResolveHostParametersPtr optional_parameters =
       mojom::ResolveHostParameters::New();
-  optional_parameters->control_handle = mojo::MakeRequest(&control_handle);
+  optional_parameters->control_handle =
+      control_handle.BindNewPipeAndPassReceiver();
   mojo::PendingRemote<mojom::ResolveHostClient> pending_response_client;
   TestResolveHostClient response_client(&pending_response_client, &run_loop);
 
@@ -2779,7 +2783,7 @@ TEST_F(NetworkContextTest, ResolveHost_Failure_Async) {
   bool control_handle_closed = false;
   auto connection_error_callback =
       base::BindLambdaForTesting([&]() { control_handle_closed = true; });
-  control_handle.set_connection_error_handler(connection_error_callback);
+  control_handle.set_disconnect_handler(connection_error_callback);
   run_loop.Run();
 
   EXPECT_EQ(net::ERR_NAME_NOT_RESOLVED, response_client.result_error());
@@ -2817,10 +2821,11 @@ TEST_F(NetworkContextTest, ResolveHost_CloseControlHandle) {
       CreateContextWithParams(CreateContextParams());
 
   base::RunLoop run_loop;
-  mojom::ResolveHostHandlePtr control_handle;
+  mojo::Remote<mojom::ResolveHostHandle> control_handle;
   mojom::ResolveHostParametersPtr optional_parameters =
       mojom::ResolveHostParameters::New();
-  optional_parameters->control_handle = mojo::MakeRequest(&control_handle);
+  optional_parameters->control_handle =
+      control_handle.BindNewPipeAndPassReceiver();
   mojo::PendingRemote<mojom::ResolveHostClient> pending_response_client;
   TestResolveHostClient response_client(&pending_response_client, &run_loop);
 
@@ -2829,7 +2834,7 @@ TEST_F(NetworkContextTest, ResolveHost_CloseControlHandle) {
   network_context->ResolveHost(net::HostPortPair("localhost", 160),
                                std::move(optional_parameters),
                                std::move(pending_response_client));
-  control_handle = nullptr;
+  control_handle.reset();
   run_loop.Run();
 
   EXPECT_EQ(net::OK, response_client.result_error());
@@ -2852,10 +2857,11 @@ TEST_F(NetworkContextTest, ResolveHost_Cancellation) {
   ASSERT_EQ(0, resolver->num_cancellations());
 
   base::RunLoop run_loop;
-  mojom::ResolveHostHandlePtr control_handle;
+  mojo::Remote<mojom::ResolveHostHandle> control_handle;
   mojom::ResolveHostParametersPtr optional_parameters =
       mojom::ResolveHostParameters::New();
-  optional_parameters->control_handle = mojo::MakeRequest(&control_handle);
+  optional_parameters->control_handle =
+      control_handle.BindNewPipeAndPassReceiver();
   mojo::PendingRemote<mojom::ResolveHostClient> pending_response_client;
   TestResolveHostClient response_client(&pending_response_client, &run_loop);
 
@@ -2865,7 +2871,7 @@ TEST_F(NetworkContextTest, ResolveHost_Cancellation) {
   bool control_handle_closed = false;
   auto connection_error_callback =
       base::BindLambdaForTesting([&]() { control_handle_closed = true; });
-  control_handle.set_connection_error_handler(connection_error_callback);
+  control_handle.set_disconnect_handler(connection_error_callback);
 
   control_handle->Cancel(net::ERR_ABORTED);
   run_loop.Run();
@@ -2891,10 +2897,11 @@ TEST_F(NetworkContextTest, ResolveHost_DestroyContext) {
   ASSERT_EQ(0, resolver->num_cancellations());
 
   base::RunLoop run_loop;
-  mojom::ResolveHostHandlePtr control_handle;
+  mojo::Remote<mojom::ResolveHostHandle> control_handle;
   mojom::ResolveHostParametersPtr optional_parameters =
       mojom::ResolveHostParameters::New();
-  optional_parameters->control_handle = mojo::MakeRequest(&control_handle);
+  optional_parameters->control_handle =
+      control_handle.BindNewPipeAndPassReceiver();
   mojo::PendingRemote<mojom::ResolveHostClient> pending_response_client;
   TestResolveHostClient response_client(&pending_response_client, &run_loop);
 
@@ -2904,7 +2911,7 @@ TEST_F(NetworkContextTest, ResolveHost_DestroyContext) {
   bool control_handle_closed = false;
   auto connection_error_callback =
       base::BindLambdaForTesting([&]() { control_handle_closed = true; });
-  control_handle.set_connection_error_handler(connection_error_callback);
+  control_handle.set_disconnect_handler(connection_error_callback);
 
   network_context = nullptr;
   run_loop.Run();
@@ -2928,10 +2935,11 @@ TEST_F(NetworkContextTest, ResolveHost_CloseClient) {
   ASSERT_EQ(0, resolver->num_cancellations());
 
   base::RunLoop run_loop;
-  mojom::ResolveHostHandlePtr control_handle;
+  mojo::Remote<mojom::ResolveHostHandle> control_handle;
   mojom::ResolveHostParametersPtr optional_parameters =
       mojom::ResolveHostParameters::New();
-  optional_parameters->control_handle = mojo::MakeRequest(&control_handle);
+  optional_parameters->control_handle =
+      control_handle.BindNewPipeAndPassReceiver();
   mojo::PendingRemote<mojom::ResolveHostClient> pending_response_client;
   TestResolveHostClient response_client(&pending_response_client, &run_loop);
 
@@ -2941,7 +2949,7 @@ TEST_F(NetworkContextTest, ResolveHost_CloseClient) {
   bool control_handle_closed = false;
   auto connection_error_callback =
       base::BindLambdaForTesting([&]() { control_handle_closed = true; });
-  control_handle.set_connection_error_handler(connection_error_callback);
+  control_handle.set_disconnect_handler(connection_error_callback);
 
   response_client.CloseReceiver();
   run_loop.RunUntilIdle();
@@ -3052,10 +3060,11 @@ TEST_F(NetworkContextTest, CreateHostResolver_CloseResolver) {
   ASSERT_EQ(0, internal_resolver->num_cancellations());
 
   base::RunLoop run_loop;
-  mojom::ResolveHostHandlePtr control_handle;
+  mojo::Remote<mojom::ResolveHostHandle> control_handle;
   mojom::ResolveHostParametersPtr optional_parameters =
       mojom::ResolveHostParameters::New();
-  optional_parameters->control_handle = mojo::MakeRequest(&control_handle);
+  optional_parameters->control_handle =
+      control_handle.BindNewPipeAndPassReceiver();
   mojo::PendingRemote<mojom::ResolveHostClient> pending_response_client;
   TestResolveHostClient response_client(&pending_response_client, &run_loop);
 
@@ -3065,7 +3074,7 @@ TEST_F(NetworkContextTest, CreateHostResolver_CloseResolver) {
   bool control_handle_closed = false;
   auto connection_error_callback =
       base::BindLambdaForTesting([&]() { control_handle_closed = true; });
-  control_handle.set_connection_error_handler(connection_error_callback);
+  control_handle.set_disconnect_handler(connection_error_callback);
 
   resolver.reset();
   run_loop.Run();
@@ -3094,10 +3103,11 @@ TEST_F(NetworkContextTest, CreateHostResolver_CloseContext) {
   ASSERT_EQ(0, internal_resolver->num_cancellations());
 
   base::RunLoop run_loop;
-  mojom::ResolveHostHandlePtr control_handle;
+  mojo::Remote<mojom::ResolveHostHandle> control_handle;
   mojom::ResolveHostParametersPtr optional_parameters =
       mojom::ResolveHostParameters::New();
-  optional_parameters->control_handle = mojo::MakeRequest(&control_handle);
+  optional_parameters->control_handle =
+      control_handle.BindNewPipeAndPassReceiver();
   mojo::PendingRemote<mojom::ResolveHostClient> pending_response_client;
   TestResolveHostClient response_client(&pending_response_client, &run_loop);
 
@@ -3112,7 +3122,7 @@ TEST_F(NetworkContextTest, CreateHostResolver_CloseContext) {
   bool control_handle_closed = false;
   auto connection_error_callback =
       base::BindLambdaForTesting([&]() { control_handle_closed = true; });
-  control_handle.set_connection_error_handler(connection_error_callback);
+  control_handle.set_disconnect_handler(connection_error_callback);
   bool resolver_closed = false;
   auto resolver_closed_callback =
       base::BindLambdaForTesting([&]() { resolver_closed = true; });
