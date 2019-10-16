@@ -1511,6 +1511,19 @@
                     ]
                 }
             ]
+        },
+        {
+            "platforms": [
+                "linux"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_V2",
+                    "enable_features": [
+                        "CertVerifierBuiltin"
+                    ]
+                }
+            ]
         }
     ],
     "ChromeCleanupDistribution": [
