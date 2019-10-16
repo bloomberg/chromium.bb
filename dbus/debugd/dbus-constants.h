@@ -93,6 +93,7 @@ constexpr char kU2f[] = "u2f";
 constexpr char kG2f[] = "g2f";
 constexpr char kVerbose[] = "verbose";
 constexpr char kUserKeys[] = "user_keys";
+constexpr char kAllowlistData[] = "allowlist_data";
 }  // namespace u2f_flags
 
 }  // namespace debugd
