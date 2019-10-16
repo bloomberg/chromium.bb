@@ -54305,6 +54305,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="6" label="WHITELISTED_BY_POLICY"/>
   <int value="7" label="ASYNC_SCANNING"/>
   <int value="8" label="BLOCKED_PASSWORD_PROTECTED"/>
+  <int value="9" label="BLOCKED_TOO_LARGE"/>
 </enum>
 
 <enum name="SBClientDownloadExtensions">

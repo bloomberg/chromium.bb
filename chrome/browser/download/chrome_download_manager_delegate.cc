@@ -1135,6 +1135,9 @@ void ChromeDownloadManagerDelegate::CheckClientDownloadDone(
       case safe_browsing::DownloadCheckResult::BLOCKED_PASSWORD_PROTECTED:
         danger_type = download::DOWNLOAD_DANGER_TYPE_BLOCKED_PASSWORD_PROTECTED;
         break;
+      case safe_browsing::DownloadCheckResult::BLOCKED_TOO_LARGE:
+        danger_type = download::DOWNLOAD_DANGER_TYPE_BLOCKED_TOO_LARGE;
+        break;
     }
     DCHECK_NE(danger_type,
               download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT);
@@ -1265,6 +1268,11 @@ bool ChromeDownloadManagerDelegate::ShouldBlockFile(
   DownloadPrefs::DownloadRestriction download_restriction =
       download_prefs_->download_restriction();
 
+  if (danger_type ==
+          download::DOWNLOAD_DANGER_TYPE_BLOCKED_PASSWORD_PROTECTED ||
+      danger_type == download::DOWNLOAD_DANGER_TYPE_BLOCKED_TOO_LARGE)
+    return true;
+
   if (item &&
       base::FeatureList::IsEnabled(features::kDisallowUnsafeHttpDownloads)) {
     // Check field trial for an override of the default unsafe mime-type.
@@ -1312,17 +1320,6 @@ bool ChromeDownloadManagerDelegate::ShouldBlockFile(
       }
     }
   }
-
-  if (danger_type == download::DOWNLOAD_DANGER_TYPE_BLOCKED_PASSWORD_PROTECTED)
-    return true;
-
-#if BUILDFLAG(FULL_SAFE_BROWSING)
-  if (item && item->GetTotalBytes() >= 0 &&
-      safe_browsing::BinaryUploadService::ShouldBlockFileSize(
-          size_t(item->GetTotalBytes()))) {
-    return true;
-  }
-#endif
 
   switch (download_restriction) {
     case (DownloadPrefs::DownloadRestriction::NONE):
