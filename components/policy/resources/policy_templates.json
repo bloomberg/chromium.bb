@@ -5477,7 +5477,6 @@
     },
     {
       'name': 'LegacySameSiteCookieBehaviorEnabled',
-      'future': True,
       'owners': [ 'chlily@chromium.org', ],
       'type': 'int-enum',
       'schema': {
@@ -5515,7 +5514,6 @@
     },
     {
       'name': 'LegacySameSiteCookieBehaviorEnabledForDomainList',
-      'future': True,
       'owners': [ 'chlily@chromium.org', ],
       'type': 'list',
       'schema': {
