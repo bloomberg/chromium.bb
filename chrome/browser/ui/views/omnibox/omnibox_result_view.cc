@@ -42,8 +42,6 @@
 #include "base/win/atl.h"
 #endif
 
-static size_t kKeywordSuggestionIndent = 70;
-
 ////////////////////////////////////////////////////////////////////////////////
 // OmniboxResultView, public:
 
@@ -59,29 +57,29 @@ OmniboxResultView::OmniboxResultView(
       animation_(new gfx::SlideAnimation(this)) {
   CHECK_GE(model_index, 0);
 
-  AddChildView(suggestion_view_ = new OmniboxMatchCellView(this));
+  suggestion_view_ = AddChildView(std::make_unique<OmniboxMatchCellView>(this));
 
-  AddChildView(
-      suggestion_tab_switch_button_ = new OmniboxTabSwitchButton(
+  suggestion_tab_switch_button_ =
+      AddChildView(std::make_unique<OmniboxTabSwitchButton>(
           popup_contents_view_, this,
           l10n_util::GetStringUTF16(IDS_OMNIBOX_TAB_SUGGEST_HINT),
           l10n_util::GetStringUTF16(IDS_OMNIBOX_TAB_SUGGEST_SHORT_HINT),
           omnibox::kSwitchIcon, theme_provider_));
 
-  // This is intentionally not in the tab order by default, but should be
-  // if the user has full-acessibility mode on. This is because this is a
-  // tertiary priority button, which already has a Shift+Delete shortcut.
+  // This is intentionally not in the tab order by default, but should be if the
+  // user has full-acessibility mode on. This is because this is a tertiary
+  // priority button, which already has a Shift+Delete shortcut.
   // TODO(tommycli): Make sure we announce the Shift+Delete capability in the
   // accessibility node data for removable suggestions.
-  AddChildView(remove_suggestion_button_ =
-                   views::CreateVectorImageButton(this).release());
+  remove_suggestion_button_ =
+      AddChildView(views::CreateVectorImageButton(this));
   views::InstallCircleHighlightPathGenerator(remove_suggestion_button_);
   // TODO(tommycli): We may need to update the color for theme changes.
   views::SetImageFromVectorIcon(remove_suggestion_button_,
                                 vector_icons::kCloseRoundedIcon,
                                 GetColor(OmniboxPart::RESULTS_ICON));
 
-  AddChildView(keyword_view_ = new OmniboxMatchCellView(this));
+  keyword_view_ = AddChildView(std::make_unique<OmniboxMatchCellView>(this));
   keyword_view_->icon()->EnableCanvasFlippingForRTLUI(true);
   keyword_view_->icon()->SetImage(gfx::CreateVectorIcon(
       omnibox::kKeywordSearchIcon, GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
@@ -316,14 +314,13 @@ void OmniboxResultView::Layout() {
     }
   }
 
-  if (popup_contents_view_->InExplicitExperimentalKeywordMode() ||
-      match_.IsSubMatch()) {
-    suggestion_view_->SetBounds(kKeywordSuggestionIndent, 0,
-                                suggestion_width - kKeywordSuggestionIndent,
-                                height());
-  } else {
-    suggestion_view_->SetBounds(0, 0, suggestion_width, height());
-  }
+  const int suggestion_indent =
+      (popup_contents_view_->InExplicitExperimentalKeywordMode() ||
+       match_.IsSubMatch())
+          ? 70
+          : 0;
+  suggestion_view_->SetBounds(suggestion_indent, 0,
+                              suggestion_width - suggestion_indent, height());
 }
 
 bool OmniboxResultView::OnMousePressed(const ui::MouseEvent& event) {
@@ -479,7 +476,7 @@ void OmniboxResultView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// OmniboxResultView, gfx::AnimationProgressed overrides, private:
+// OmniboxResultView, views::AnimationDelegateViews overrides, private:
 
 void OmniboxResultView::AnimationProgressed(const gfx::Animation* animation) {
   InvalidateLayout();

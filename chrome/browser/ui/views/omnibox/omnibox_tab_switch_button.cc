@@ -22,6 +22,7 @@
 #include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/controls/highlight_path_generator.h"
 
+// static
 bool OmniboxTabSwitchButton::calculated_widths_ = false;
 int OmniboxTabSwitchButton::icon_only_width_;
 int OmniboxTabSwitchButton::short_text_width_;
@@ -56,9 +57,10 @@ OmniboxTabSwitchButton::OmniboxTabSwitchButton(
   } else {
     SetText(hint_);
   }
-  SetPreferredSize({full_text_width_, kButtonHeight});
+  SetPreferredSize({full_text_width_, 32});
+  SetCornerRadius(views::LayoutProvider::Get()->GetCornerRadiusMetric(
+      views::EMPHASIS_MAXIMUM, GetPreferredSize()));
   SetTooltipText(hint_);
-  SetCornerRadius(kButtonHeight / 2.f);
   SetElideBehavior(gfx::FADE_TAIL);
 
   SetInstallFocusRingOnFocus(true);
@@ -82,14 +84,13 @@ void OmniboxTabSwitchButton::StateChanged(ButtonState old_state) {
       // Otherwise, the button was hovered. Update color if not selected.
       SetBgColorOverride(GetBackgroundColor());
     }
-  }
-  if (state() == STATE_HOVERED) {
+  } else if (state() == STATE_HOVERED) {
     if (old_state == STATE_NORMAL) {
       SetBgColorOverride(GetBackgroundColor());
     }
-  }
-  if (state() == STATE_PRESSED)
+  } else if (state() == STATE_PRESSED) {
     SetPressed();
+  }
   MdTextButton::StateChanged(old_state);
 }
 
@@ -102,7 +103,7 @@ void OmniboxTabSwitchButton::ProvideWidthHint(int parent_width) {
   base::string16 text;
   int preferred_width = CalculateGoalWidth(parent_width, &text);
   SetText(text);
-  SetPreferredSize({preferred_width, kButtonHeight});
+  SetPreferredSize({preferred_width, GetPreferredSize().height()});
 }
 
 void OmniboxTabSwitchButton::ProvideFocusHint() {
@@ -121,13 +122,6 @@ void OmniboxTabSwitchButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 bool OmniboxTabSwitchButton::IsSelected() const {
   // Is this result selected and is button selected?
   return result_view_->IsSelected() && popup_contents_view_->IsButtonSelected();
-}
-
-SkPath OmniboxTabSwitchButton::GetFocusRingPath() const {
-  SkPath path;
-  path.addRRect(SkRRect::MakeRectXY(RectToSkRect(GetLocalBounds()),
-                                    height() / 2.f, height() / 2.f));
-  return path;
 }
 
 SkColor OmniboxTabSwitchButton::GetBackgroundColor() const {
@@ -154,7 +148,5 @@ int OmniboxTabSwitchButton::CalculateGoalWidth(int parent_width,
     return short_text_width_;
   }
   *goal_text = base::string16();
-  if (icon_only_width_ * 5 <= parent_width)
-    return icon_only_width_;
-  return 0;
+  return (icon_only_width_ * 5 <= parent_width) ? icon_only_width_ : 0;
 }

@@ -55,8 +55,6 @@ class OmniboxTabSwitchButton : public views::MdTextButton {
   // pass back the text at that width.
   int CalculateGoalWidth(int parent_width, base::string16* goal_text);
 
-  static constexpr int kButtonHeight = 32;
-
   // The ancestor views.
   OmniboxPopupContentsView* const popup_contents_view_;
   OmniboxResultView* const result_view_;
