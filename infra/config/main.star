@@ -23,7 +23,15 @@ lucicfg.config(
 [lucicfg.emit(dest = f, data = io.read_file(f)) for f in (
     'commit-queue.cfg',
     'luci-milo.cfg',
+    # TODO(https://crbug.com/1015148) lucicfg generates luci-notify.cfg very
+    # differently from our hand-written file and doesn't do any normalization
+    # for luci-notify.cfg so the semantic diff is large and confusing
     'luci-notify.cfg',
+    # TODO(https://crbug.com/819899) There are a number of noop jobs for dummy
+    # builders defined due to legacy requirements that trybots mirror CI bots
+    # and noop scheduler jobs cannot be created in lucicfg, so the trybots need
+    # to be updated to not rely on dummy builders and the noop jobs need to be
+    # removed
     'luci-scheduler.cfg',
 )]
 
