@@ -448,7 +448,7 @@ void ChromeDownloadManagerDelegate::DisableSafeBrowsing(DownloadItem* item) {
 
 bool ChromeDownloadManagerDelegate::IsDownloadReadyForCompletion(
     DownloadItem* item,
-    const base::Closure& internal_complete_callback) {
+    base::OnceClosure internal_complete_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 #if BUILDFLAG(FULL_SAFE_BROWSING)
   if (!download_prefs_->safebrowsing_for_trusted_sources_enabled() &&
@@ -465,7 +465,7 @@ bool ChromeDownloadManagerDelegate::IsDownloadReadyForCompletion(
       DVLOG(2) << __func__ << "() Start SB download check for download = "
                << item->DebugString(false);
       state = new SafeBrowsingState();
-      state->set_callback(internal_complete_callback);
+      state->set_callback(std::move(internal_complete_callback));
       item->SetUserData(&SafeBrowsingState::kSafeBrowsingUserDataKey,
                         base::WrapUnique(state));
       service->CheckClientDownload(
@@ -499,12 +499,12 @@ bool ChromeDownloadManagerDelegate::IsDownloadReadyForCompletion(
             download::DOWNLOAD_INTERRUPT_REASON_NONE);
       }
       base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                     internal_complete_callback);
+                     std::move(internal_complete_callback));
       return false;
     }
   } else if (!state->is_complete()) {
     // Don't complete the download until we have an answer.
-    state->set_callback(internal_complete_callback);
+    state->set_callback(std::move(internal_complete_callback));
     return false;
   }
 
@@ -514,20 +514,29 @@ bool ChromeDownloadManagerDelegate::IsDownloadReadyForCompletion(
 
 void ChromeDownloadManagerDelegate::ShouldCompleteDownloadInternal(
     uint32_t download_id,
-    const base::Closure& user_complete_callback) {
+    base::OnceClosure user_complete_callback) {
   DownloadItem* item = download_manager_->GetDownload(download_id);
   if (!item)
     return;
-  if (ShouldCompleteDownload(item, user_complete_callback))
-    user_complete_callback.Run();
+  // This should be called only once.
+  base::RepeatingClosure callback = base::BindRepeating(
+      [](base::OnceClosure callback) { std::move(callback).Run(); },
+      base::Passed(&user_complete_callback));
+  if (ShouldCompleteDownload(item, callback)) {
+    // |callback| should not have run when ShouldCompleteDownload() returns
+    // true.
+    std::move(callback).Run();
+  }
 }
 
 bool ChromeDownloadManagerDelegate::ShouldCompleteDownload(
     DownloadItem* item,
-    const base::Closure& user_complete_callback) {
-  return IsDownloadReadyForCompletion(item, base::Bind(
-      &ChromeDownloadManagerDelegate::ShouldCompleteDownloadInternal,
-      weak_ptr_factory_.GetWeakPtr(), item->GetId(), user_complete_callback));
+    base::OnceClosure user_complete_callback) {
+  return IsDownloadReadyForCompletion(
+      item, base::BindOnce(
+                &ChromeDownloadManagerDelegate::ShouldCompleteDownloadInternal,
+                weak_ptr_factory_.GetWeakPtr(), item->GetId(),
+                std::move(user_complete_callback)));
 }
 
 bool ChromeDownloadManagerDelegate::ShouldOpenDownload(
