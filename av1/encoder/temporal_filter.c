@@ -1485,7 +1485,8 @@ static void adjust_arnr_filter(AV1_COMP *cpi, int distance, int group_boost,
   *frm_fwd = frames_fwd;
 }
 
-int av1_temporal_filter(AV1_COMP *cpi, int distance) {
+int av1_temporal_filter(AV1_COMP *cpi, int distance,
+                        int *show_existing_alt_ref) {
   RATE_CONTROL *const rc = &cpi->rc;
   int frame;
   int frames_to_blur;
@@ -1562,6 +1563,7 @@ int av1_temporal_filter(AV1_COMP *cpi, int distance) {
   temporal_filter_iterate_c(cpi, frames, frames_to_blur,
                             frames_to_blur_backward, strength, sigma,
                             distance == -1, &sf);
+  (void)show_existing_alt_ref;
 
   return 1;
 }

@@ -405,7 +405,7 @@ static int get_arf_src_index(GF_GROUP *gf_group, int pass) {
 // the correct post-filter buffer can be used.
 static struct lookahead_entry *setup_arf_frame(
     AV1_COMP *const cpi, const int arf_src_index, int *code_arf,
-    EncodeFrameParams *const frame_params) {
+    EncodeFrameParams *const frame_params, int *show_existing_alt_ref) {
   AV1_COMMON *const cm = &cpi->common;
   RATE_CONTROL *const rc = &cpi->rc;
 #if !CONFIG_REALTIME_ONLY
@@ -430,11 +430,14 @@ static struct lookahead_entry *setup_arf_frame(
 #if !CONFIG_REALTIME_ONLY
       if (oxcf->arnr_max_frames > 0) {
         // Produce the filtered ARF frame.
-        *code_arf = av1_temporal_filter(cpi, arf_src_index);
+        *code_arf =
+            av1_temporal_filter(cpi, arf_src_index, show_existing_alt_ref);
         if (*code_arf) {
           aom_extend_frame_borders(&cpi->alt_ref_buffer, av1_num_planes(cm));
         }
       }
+#else
+      (void)show_existing_alt_ref;
 #endif
     }
     frame_params->show_frame = 0;
@@ -467,8 +470,8 @@ static int is_forced_keyframe_pending(struct lookahead_ctx *lookahead,
 // Return the frame source, or NULL if we couldn't find one
 static struct lookahead_entry *choose_frame_source(
     AV1_COMP *const cpi, int *const code_arf, int *const flush,
-    struct lookahead_entry **last_source,
-    EncodeFrameParams *const frame_params) {
+    struct lookahead_entry **last_source, EncodeFrameParams *const frame_params,
+    int *show_existing_alt_ref) {
   AV1_COMMON *const cm = &cpi->common;
   struct lookahead_entry *source = NULL;
   *code_arf = 0;
@@ -482,7 +485,8 @@ static struct lookahead_entry *choose_frame_source(
   }
 
   if (arf_src_index)
-    source = setup_arf_frame(cpi, arf_src_index, code_arf, frame_params);
+    source = setup_arf_frame(cpi, arf_src_index, code_arf, frame_params,
+                             show_existing_alt_ref);
 
   if (!source) {
     // Get last frame source.
@@ -946,7 +950,7 @@ static int denoise_and_encode(AV1_COMP *const cpi, uint8_t *const dest,
     // Keep a copy of the source image.
     aom_yv12_copy_frame(frame_input->source, &cpi->source_kf_buffer,
                         num_planes);
-    av1_temporal_filter(cpi, -1);
+    av1_temporal_filter(cpi, -1, NULL);
     aom_extend_frame_borders(&cpi->alt_ref_buffer, num_planes);
     // Use the filtered frame for encoding.
     frame_input->source = &cpi->alt_ref_buffer;
@@ -1119,8 +1123,9 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
     source = av1_lookahead_pop(cpi->lookahead, flush);
     frame_params.show_frame = 1;
   } else {
+    int show_existing_alt_ref = 0;
     source = choose_frame_source(cpi, &code_arf, &flush, &last_source,
-                                 &frame_params);
+                                 &frame_params, &show_existing_alt_ref);
   }
 
   if (source == NULL) {  // If no source was found, we can't encode a frame.
