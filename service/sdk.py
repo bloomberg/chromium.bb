@@ -119,6 +119,8 @@ class UpdateArguments(object):
 
     if self.toolchain_targets:
       args.extend(['--toolchain_boards', ','.join(self.toolchain_targets)])
+    else:
+      args.append('--skip_toolchain_update')
 
     return args
 

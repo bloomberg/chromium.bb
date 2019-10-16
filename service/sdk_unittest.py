@@ -74,14 +74,25 @@ class UpdateArgumentsTest(cros_test_lib.TestCase):
     instance = sdk.UpdateArguments(**kwargs)
     return instance.GetArgList()
 
-  def testGetArgList(self):
-    """Test the GetArgList method."""
+  def testBuildSource(self):
+    """Test the build_source argument."""
     self.assertIn('--nousepkg', self._GetArgList(build_source=True))
 
+  def testNoBuildSource(self):
+    """Test using binpkgs."""
+    self.assertNotIn('--nousepkg', self._GetArgList(build_source=False))
+
+  def testToolchainTargets(self):
+    """Test the toolchain boards argument."""
     expected = ['--toolchain_boards', 'board1,board2']
     result = self._GetArgList(toolchain_targets=['board1', 'board2'])
     for arg in expected:
       self.assertIn(arg, result)
+
+  def testNoToolchainTargets(self):
+    """Test no toolchain boards argument."""
+    self.assertIn('--skip_toolchain_update',
+                  self._GetArgList(toolchain_targets=None))
 
 
 class CreateTest(cros_test_lib.RunCommandTempDirTestCase):
