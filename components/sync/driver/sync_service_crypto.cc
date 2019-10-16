@@ -33,12 +33,12 @@ class EmptyTrustedVaultClient : public TrustedVaultClient {
 
   // TrustedVaultClient implementatio.
   void FetchKeys(
-      const CoreAccountId& account_id,
+      const std::string& gaia_id,
       base::OnceCallback<void(const std::vector<std::string>&)> cb) override {
     std::move(cb).Run({});
   }
 
-  void StoreKeys(const CoreAccountId& account_id,
+  void StoreKeys(const std::string& gaia_id,
                  const std::vector<std::string>& keys) override {}
 };
 
@@ -317,11 +317,11 @@ bool SyncServiceCrypto::SetDecryptionPassphrase(const std::string& passphrase) {
 }
 
 void SyncServiceCrypto::AddTrustedVaultDecryptionKeys(
-    const CoreAccountId& account_id,
+    const std::string& gaia_id,
     const std::vector<std::string>& keys) {
-  trusted_vault_client_->StoreKeys(account_id, keys);
+  trusted_vault_client_->StoreKeys(gaia_id, keys);
 
-  if (state_.engine && state_.account_id == account_id) {
+  if (state_.engine && state_.account_info.gaia == gaia_id) {
     state_.engine->AddTrustedVaultDecryptionKeys(keys, base::DoNothing());
   }
 }
@@ -398,7 +398,7 @@ void SyncServiceCrypto::OnTrustedVaultKeyRequired() {
   state_.required_user_action = RequiredUserAction::kFetchingTrustedVaultKeys;
 
   trusted_vault_client_->FetchKeys(
-      state_.account_id,
+      state_.account_info.gaia,
       base::BindOnce(&SyncServiceCrypto::TrustedVaultKeysFetched,
                      weak_factory_.GetWeakPtr()));
 }
@@ -477,10 +477,10 @@ void SyncServiceCrypto::OnPassphraseTypeChanged(PassphraseType type,
   notify_observers_.Run();
 }
 
-void SyncServiceCrypto::SetSyncEngine(const CoreAccountId& account_id,
+void SyncServiceCrypto::SetSyncEngine(const CoreAccountInfo& account_info,
                                       SyncEngine* engine) {
   DCHECK(engine);
-  state_.account_id = account_id;
+  state_.account_info = account_info;
   state_.engine = engine;
 }
 
