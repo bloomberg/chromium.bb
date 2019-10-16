@@ -603,8 +603,9 @@ rtc::Thread* PeerConnectionDependencyFactory::GetWebRtcWorkerThreadRtcThread() {
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
-PeerConnectionDependencyFactory::GetWebRtcSignalingThread() const {
+PeerConnectionDependencyFactory::GetWebRtcSignalingTaskRunner() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  EnsureInitialized();
   return chrome_signaling_thread_.IsRunning()
              ? chrome_signaling_thread_.task_runner()
              : nullptr;

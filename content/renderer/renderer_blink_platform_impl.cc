@@ -558,14 +558,6 @@ RendererBlinkPlatformImpl::GetWebRtcWorkerThread() {
   return rtc_dependency_factory->GetWebRtcWorkerThread();
 }
 
-scoped_refptr<base::SingleThreadTaskRunner>
-RendererBlinkPlatformImpl::GetWebRtcSignalingTaskRunner() {
-  auto* rtc_dependency_factory =
-      blink::PeerConnectionDependencyFactory::GetInstance();
-  rtc_dependency_factory->EnsureInitialized();
-  return rtc_dependency_factory->GetWebRtcSignalingThread();
-}
-
 std::unique_ptr<cricket::PortAllocator>
 RendererBlinkPlatformImpl::CreateWebRtcPortAllocator(
     blink::WebLocalFrame* frame) {

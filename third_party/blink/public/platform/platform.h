@@ -576,11 +576,6 @@ class BLINK_PLATFORM_EXPORT Platform {
     return nullptr;
   }
 
-  virtual scoped_refptr<base::SingleThreadTaskRunner>
-  GetWebRtcSignalingTaskRunner() {
-    return nullptr;
-  }
-
   // May return null if WebRTC functionality is not implemented.
   virtual std::unique_ptr<cricket::PortAllocator> CreateWebRtcPortAllocator(
       WebLocalFrame* frame);
