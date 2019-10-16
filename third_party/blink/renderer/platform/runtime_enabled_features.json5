@@ -395,6 +395,7 @@
       // Support for CSS content-size property.
       // http://tabatkins.github.io/specs/css-content-size/
       name: "CSSContentSize",
+      implied_by: ["DisplayLocking"],
       status: "experimental",
     },
     {
@@ -544,7 +545,6 @@
     {
       name: "DisplayLocking",
       origin_trial_feature_name: "DisplayLocking",
-      depends_on: ["CSSContentSize"],
       status: "experimental",
     },
     {
