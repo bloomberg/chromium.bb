@@ -25,6 +25,7 @@
 #include <cstdint>
 #include <cstdlib>
 
+#include "src/dsp/arm/common_neon.h"
 #include "src/dsp/dsp.h"
 #include "src/utils/common.h"
 
@@ -78,6 +79,24 @@ void LoadDirection(const uint16_t* const src, const ptrdiff_t stride,
   output[3] = vld1q_u16(src - y_1 * stride - x_1);
 }
 
+// Load 4 vectors based on the given |direction|. Use when |block_width| == 4 to
+// do 2 rows at a time.
+void LoadDirection4(const uint16_t* const src, const ptrdiff_t stride,
+                    uint16x8_t* output, const int direction) {
+  const int y_0 = kCdefDirections[direction][0][0];
+  const int x_0 = kCdefDirections[direction][0][1];
+  const int y_1 = kCdefDirections[direction][1][0];
+  const int x_1 = kCdefDirections[direction][1][1];
+  output[0] = vcombine_u16(vld1_u16(src + y_0 * stride + x_0),
+                           vld1_u16(src + y_0 * stride + stride + x_0));
+  output[1] = vcombine_u16(vld1_u16(src - y_0 * stride - x_0),
+                           vld1_u16(src - y_0 * stride + stride - x_0));
+  output[2] = vcombine_u16(vld1_u16(src + y_1 * stride + x_1),
+                           vld1_u16(src + y_1 * stride + stride + x_1));
+  output[3] = vcombine_u16(vld1_u16(src - y_1 * stride - x_1),
+                           vld1_u16(src - y_1 * stride + stride - x_1));
+}
+
 int16x8_t Constrain(const uint16x8_t pixel, const uint16x8_t reference,
                     const int16x8_t threshold, const int16x8_t damping) {
   const int16x8_t zero = vdupq_n_s16(0);
@@ -100,6 +119,171 @@ int16x8_t Constrain(const uint16x8_t pixel, const uint16x8_t reference,
   return vsubq_s16(veorq_s16(clamp_abs_diff, sign), sign);
 }
 
+template <int width>
+void DoCdef(const uint16_t* src, const ptrdiff_t src_stride, const int height,
+            const int direction, const int primary_strength,
+            const int secondary_strength, const int damping, uint8_t* dst,
+            const ptrdiff_t dst_stride) {
+  assert(width == 8 || width == 4);
+  const uint16x8_t cdef_large_value_mask =
+      vdupq_n_u16(static_cast<uint16_t>(~kCdefLargeValue));
+  const int16x8_t primary_threshold = vdupq_n_s16(primary_strength);
+  const int16x8_t secondary_threshold = vdupq_n_s16(secondary_strength);
+
+  int16x8_t primary_damping_shift, secondary_damping_shift;
+  // FloorLog2() requires input to be > 0.
+  if (primary_strength == 0) {
+    primary_damping_shift = vdupq_n_s16(0);
+  } else {
+    primary_damping_shift =
+        vdupq_n_s16(-std::max(0, damping - FloorLog2(primary_strength)));
+  }
+
+  if (secondary_strength == 0) {
+    secondary_damping_shift = vdupq_n_s16(0);
+  } else {
+    secondary_damping_shift =
+        vdupq_n_s16(-std::max(0, damping - FloorLog2(secondary_strength)));
+  }
+
+  const int primary_tap_0 = kPrimaryTaps[primary_strength & 1][0];
+  const int primary_tap_1 = kPrimaryTaps[primary_strength & 1][1];
+  const int secondary_tap_0 = kSecondaryTaps[0];
+  const int secondary_tap_1 = kSecondaryTaps[1];
+
+  int y = 0;
+  do {
+    uint16x8_t pixel;
+    if (width == 8) {
+      pixel = vld1q_u16(src);
+    } else {
+      pixel = vcombine_u16(vld1_u16(src), vld1_u16(src + src_stride));
+    }
+    uint16x8_t min = pixel;
+    uint16x8_t max = pixel;
+
+    // Primary |direction|.
+    uint16x8_t primary_val[4];
+    if (width == 8) {
+      LoadDirection(src, src_stride, primary_val, direction);
+    } else {
+      LoadDirection4(src, src_stride, primary_val, direction);
+    }
+
+    min = vminq_u16(min, primary_val[0]);
+    min = vminq_u16(min, primary_val[1]);
+    min = vminq_u16(min, primary_val[2]);
+    min = vminq_u16(min, primary_val[3]);
+
+    // Convert kCdefLargeValue to 0 before calculating max.
+    max = vmaxq_u16(max, vandq_u16(primary_val[0], cdef_large_value_mask));
+    max = vmaxq_u16(max, vandq_u16(primary_val[1], cdef_large_value_mask));
+    max = vmaxq_u16(max, vandq_u16(primary_val[2], cdef_large_value_mask));
+    max = vmaxq_u16(max, vandq_u16(primary_val[3], cdef_large_value_mask));
+
+    int16x8_t sum = Constrain(primary_val[0], pixel, primary_threshold,
+                              primary_damping_shift);
+    sum = vmulq_n_s16(sum, primary_tap_0);
+    sum = vmlaq_n_s16(sum,
+                      Constrain(primary_val[1], pixel, primary_threshold,
+                                primary_damping_shift),
+                      primary_tap_0);
+    sum = vmlaq_n_s16(sum,
+                      Constrain(primary_val[2], pixel, primary_threshold,
+                                primary_damping_shift),
+                      primary_tap_1);
+    sum = vmlaq_n_s16(sum,
+                      Constrain(primary_val[3], pixel, primary_threshold,
+                                primary_damping_shift),
+                      primary_tap_1);
+
+    // Secondary |direction| values (+/- 2). Clamp |direction|.
+    uint16x8_t secondary_val[8];
+    if (width == 8) {
+      LoadDirection(src, src_stride, secondary_val, (direction + 2) & 0x7);
+      LoadDirection(src, src_stride, secondary_val + 4, (direction - 2) & 0x7);
+    } else {
+      LoadDirection4(src, src_stride, secondary_val, (direction + 2) & 0x7);
+      LoadDirection4(src, src_stride, secondary_val + 4, (direction - 2) & 0x7);
+    }
+
+    min = vminq_u16(min, secondary_val[0]);
+    min = vminq_u16(min, secondary_val[1]);
+    min = vminq_u16(min, secondary_val[2]);
+    min = vminq_u16(min, secondary_val[3]);
+    min = vminq_u16(min, secondary_val[4]);
+    min = vminq_u16(min, secondary_val[5]);
+    min = vminq_u16(min, secondary_val[6]);
+    min = vminq_u16(min, secondary_val[7]);
+
+    max = vmaxq_u16(max, vandq_u16(secondary_val[0], cdef_large_value_mask));
+    max = vmaxq_u16(max, vandq_u16(secondary_val[1], cdef_large_value_mask));
+    max = vmaxq_u16(max, vandq_u16(secondary_val[2], cdef_large_value_mask));
+    max = vmaxq_u16(max, vandq_u16(secondary_val[3], cdef_large_value_mask));
+    max = vmaxq_u16(max, vandq_u16(secondary_val[4], cdef_large_value_mask));
+    max = vmaxq_u16(max, vandq_u16(secondary_val[5], cdef_large_value_mask));
+    max = vmaxq_u16(max, vandq_u16(secondary_val[6], cdef_large_value_mask));
+    max = vmaxq_u16(max, vandq_u16(secondary_val[7], cdef_large_value_mask));
+
+    sum = vmlaq_n_s16(sum,
+                      Constrain(secondary_val[0], pixel, secondary_threshold,
+                                secondary_damping_shift),
+                      secondary_tap_0);
+    sum = vmlaq_n_s16(sum,
+                      Constrain(secondary_val[1], pixel, secondary_threshold,
+                                secondary_damping_shift),
+                      secondary_tap_0);
+    sum = vmlaq_n_s16(sum,
+                      Constrain(secondary_val[2], pixel, secondary_threshold,
+                                secondary_damping_shift),
+                      secondary_tap_1);
+    sum = vmlaq_n_s16(sum,
+                      Constrain(secondary_val[3], pixel, secondary_threshold,
+                                secondary_damping_shift),
+                      secondary_tap_1);
+    sum = vmlaq_n_s16(sum,
+                      Constrain(secondary_val[4], pixel, secondary_threshold,
+                                secondary_damping_shift),
+                      secondary_tap_0);
+    sum = vmlaq_n_s16(sum,
+                      Constrain(secondary_val[5], pixel, secondary_threshold,
+                                secondary_damping_shift),
+                      secondary_tap_0);
+    sum = vmlaq_n_s16(sum,
+                      Constrain(secondary_val[6], pixel, secondary_threshold,
+                                secondary_damping_shift),
+                      secondary_tap_1);
+    sum = vmlaq_n_s16(sum,
+                      Constrain(secondary_val[7], pixel, secondary_threshold,
+                                secondary_damping_shift),
+                      secondary_tap_1);
+
+    // Clip3(pixel + ((8 + sum - (sum < 0)) >> 4), min, max))
+    const int16x8_t sum_lt_0 = vshrq_n_s16(sum, 15);
+    sum = vaddq_s16(sum, vdupq_n_s16(8));
+    sum = vaddq_s16(sum, sum_lt_0);
+    sum = vshrq_n_s16(sum, 4);
+    sum = vaddq_s16(sum, vreinterpretq_s16_u16(pixel));
+    sum = vminq_s16(sum, vreinterpretq_s16_u16(max));
+    sum = vmaxq_s16(sum, vreinterpretq_s16_u16(min));
+
+    const uint8x8_t result = vqmovun_s16(sum);
+    if (width == 8) {
+      src += src_stride;
+      vst1_u8(dst, result);
+      dst += dst_stride;
+      ++y;
+    } else {
+      src += 2 * src_stride;
+      StoreLo4(dst, result);
+      dst += dst_stride;
+      StoreHi4(dst, result);
+      dst += dst_stride;
+      y += 2;
+    }
+  } while (y < height);
+}
+
 // Filters the source block. It doesn't check whether the candidate pixel is
 // inside the frame. However it requires the source input to be padded with a
 // constant large value if at the boundary. The input must be uint16_t.
@@ -118,141 +302,13 @@ void CdefFilter_NEON(const void* const source, const ptrdiff_t source_stride,
   auto* dst = static_cast<uint8_t*>(dest);
 
   if (block_width == 8) {
-    const uint16x8_t cdef_large_value_mask =
-        vdupq_n_u16(static_cast<uint16_t>(~kCdefLargeValue));
-    const int16x8_t primary_threshold = vdupq_n_s16(primary_strength);
-    const int16x8_t secondary_threshold = vdupq_n_s16(secondary_strength);
-
-    int16x8_t primary_damping_shift, secondary_damping_shift;
-    // FloorLog2() requires input to be > 0.
-    if (primary_strength == 0) {
-      primary_damping_shift = vdupq_n_s16(0);
-    } else {
-      primary_damping_shift =
-          vdupq_n_s16(-std::max(0, damping - FloorLog2(primary_strength)));
-    }
-
-    if (secondary_strength == 0) {
-      secondary_damping_shift = vdupq_n_s16(0);
-    } else {
-      secondary_damping_shift =
-          vdupq_n_s16(-std::max(0, damping - FloorLog2(secondary_strength)));
-    }
-
-    const int primary_tap_0 = kPrimaryTaps[primary_strength & 1][0];
-    const int primary_tap_1 = kPrimaryTaps[primary_strength & 1][1];
-    const int secondary_tap_0 = kSecondaryTaps[0];
-    const int secondary_tap_1 = kSecondaryTaps[1];
-
-    int y = 0;
-    do {
-      const uint16x8_t pixel = vld1q_u16(src);
-      uint16x8_t min = pixel;
-      uint16x8_t max = pixel;
-
-      // Primary |direction|.
-      uint16x8_t primary_val[4];
-      LoadDirection(src, source_stride, primary_val, direction);
-
-      min = vminq_u16(min, primary_val[0]);
-      min = vminq_u16(min, primary_val[1]);
-      min = vminq_u16(min, primary_val[2]);
-      min = vminq_u16(min, primary_val[3]);
-
-      // Convert kCdefLargeValue to 0 before calculating max.
-      max = vmaxq_u16(max, vandq_u16(primary_val[0], cdef_large_value_mask));
-      max = vmaxq_u16(max, vandq_u16(primary_val[1], cdef_large_value_mask));
-      max = vmaxq_u16(max, vandq_u16(primary_val[2], cdef_large_value_mask));
-      max = vmaxq_u16(max, vandq_u16(primary_val[3], cdef_large_value_mask));
-
-      int16x8_t sum = Constrain(primary_val[0], pixel, primary_threshold,
-                                primary_damping_shift);
-      sum = vmulq_n_s16(sum, primary_tap_0);
-      sum = vmlaq_n_s16(sum,
-                        Constrain(primary_val[1], pixel, primary_threshold,
-                                  primary_damping_shift),
-                        primary_tap_0);
-      sum = vmlaq_n_s16(sum,
-                        Constrain(primary_val[2], pixel, primary_threshold,
-                                  primary_damping_shift),
-                        primary_tap_1);
-      sum = vmlaq_n_s16(sum,
-                        Constrain(primary_val[3], pixel, primary_threshold,
-                                  primary_damping_shift),
-                        primary_tap_1);
-
-      // Secondary |direction| values (+/- 2). Clamp |direction|.
-      uint16x8_t secondary_val[8];
-      LoadDirection(src, source_stride, secondary_val, (direction + 2) & 0x7);
-      LoadDirection(src, source_stride, secondary_val + 4,
-                    (direction - 2) & 0x7);
-
-      min = vminq_u16(min, secondary_val[0]);
-      min = vminq_u16(min, secondary_val[1]);
-      min = vminq_u16(min, secondary_val[2]);
-      min = vminq_u16(min, secondary_val[3]);
-      min = vminq_u16(min, secondary_val[4]);
-      min = vminq_u16(min, secondary_val[5]);
-      min = vminq_u16(min, secondary_val[6]);
-      min = vminq_u16(min, secondary_val[7]);
-
-      max = vmaxq_u16(max, vandq_u16(secondary_val[0], cdef_large_value_mask));
-      max = vmaxq_u16(max, vandq_u16(secondary_val[1], cdef_large_value_mask));
-      max = vmaxq_u16(max, vandq_u16(secondary_val[2], cdef_large_value_mask));
-      max = vmaxq_u16(max, vandq_u16(secondary_val[3], cdef_large_value_mask));
-      max = vmaxq_u16(max, vandq_u16(secondary_val[4], cdef_large_value_mask));
-      max = vmaxq_u16(max, vandq_u16(secondary_val[5], cdef_large_value_mask));
-      max = vmaxq_u16(max, vandq_u16(secondary_val[6], cdef_large_value_mask));
-      max = vmaxq_u16(max, vandq_u16(secondary_val[7], cdef_large_value_mask));
-
-      sum = vmlaq_n_s16(sum,
-                        Constrain(secondary_val[0], pixel, secondary_threshold,
-                                  secondary_damping_shift),
-                        secondary_tap_0);
-      sum = vmlaq_n_s16(sum,
-                        Constrain(secondary_val[1], pixel, secondary_threshold,
-                                  secondary_damping_shift),
-                        secondary_tap_0);
-      sum = vmlaq_n_s16(sum,
-                        Constrain(secondary_val[2], pixel, secondary_threshold,
-                                  secondary_damping_shift),
-                        secondary_tap_1);
-      sum = vmlaq_n_s16(sum,
-                        Constrain(secondary_val[3], pixel, secondary_threshold,
-                                  secondary_damping_shift),
-                        secondary_tap_1);
-      sum = vmlaq_n_s16(sum,
-                        Constrain(secondary_val[4], pixel, secondary_threshold,
-                                  secondary_damping_shift),
-                        secondary_tap_0);
-      sum = vmlaq_n_s16(sum,
-                        Constrain(secondary_val[5], pixel, secondary_threshold,
-                                  secondary_damping_shift),
-                        secondary_tap_0);
-      sum = vmlaq_n_s16(sum,
-                        Constrain(secondary_val[6], pixel, secondary_threshold,
-                                  secondary_damping_shift),
-                        secondary_tap_1);
-      sum = vmlaq_n_s16(sum,
-                        Constrain(secondary_val[7], pixel, secondary_threshold,
-                                  secondary_damping_shift),
-                        secondary_tap_1);
-
-      // Clip3(pixel + ((8 + sum - (sum < 0)) >> 4), min, max))
-      const int16x8_t sum_lt_0 = vshrq_n_s16(sum, 15);
-      sum = vaddq_s16(sum, vdupq_n_s16(8));
-      sum = vaddq_s16(sum, sum_lt_0);
-      sum = vshrq_n_s16(sum, 4);
-      sum = vaddq_s16(sum, vreinterpretq_s16_u16(pixel));
-      sum = vminq_s16(sum, vreinterpretq_s16_u16(max));
-      sum = vmaxq_s16(sum, vreinterpretq_s16_u16(min));
-
-      vst1_u8(dst, vqmovun_s16(sum));
-
-      src += source_stride;
-      dst += dest_stride;
-    } while (++y < block_height);
+    DoCdef<8>(src, source_stride, block_height, direction, primary_strength,
+              secondary_strength, damping, dst, dest_stride);
+  } else if (block_width == 4) {
+    DoCdef<4>(src, source_stride, block_height, direction, primary_strength,
+              secondary_strength, damping, dst, dest_stride);
   } else {
+    // TODO(johannkoenig): Fix the tests so they don't run 2xH.
     int y = 0;
     do {
       int x = 0;
