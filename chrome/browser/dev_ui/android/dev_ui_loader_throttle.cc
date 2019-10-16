@@ -2,15 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/dev_ui/dev_ui_url_handler.h"
+#include "chrome/browser/dev_ui/android/dev_ui_loader_throttle.h"
 
 #include <string>
+#include <utility>
 
+#include "base/logging.h"
 #include "chrome/android/modules/dev_ui/provider/dev_ui_module_provider.h"
+#include "chrome/browser/dev_ui/android/dev_ui_loader_error_page.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/safe_browsing/web_ui/constants.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/common/url_constants.h"
-#include "net/base/url_util.h"
+#include "net/base/net_errors.h"
 #include "url/gurl.h"
 
 namespace {
@@ -71,30 +76,65 @@ bool IsWebUiHostInDevUiDfm(const std::string& host) {
 
 }  // namespace
 
-namespace chrome {
-namespace android {
+namespace dev_ui {
 
-bool HandleDfmifiedDevUiPageURL(
-    GURL* url,
-    content::BrowserContext* /* browser_context */) {
-  if (!url->SchemeIs(content::kChromeUIScheme) ||
-      !IsWebUiHostInDevUiDfm(url->host())) {
-    return false;
-  }
+// static
+bool DevUiLoaderThrottle::ShouldInstallDevUiDfm(const GURL& url) {
+  return url.SchemeIs(content::kChromeUIScheme) &&
+         IsWebUiHostInDevUiDfm(url.host());
+}
+
+// static
+std::unique_ptr<content::NavigationThrottle>
+DevUiLoaderThrottle::MaybeCreateThrottleFor(content::NavigationHandle* handle) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(handle);
+  if (!handle->IsInMainFrame())
+    return nullptr;
+
+  if (!ShouldInstallDevUiDfm(handle->GetURL()))
+    return nullptr;
 
   // If module is already installed, ensure that it is loaded.
   if (dev_ui::DevUiModuleProvider::GetInstance()->ModuleInstalled()) {
     // Synchronously load module (if not already loaded).
     dev_ui::DevUiModuleProvider::GetInstance()->LoadModule();
-    return false;
+    return nullptr;
   }
-  // Create URL to the DevUI loader with "?url=<escaped original URL>" so that
-  // after install, the loader can redirect to the original URL.
-  *url = net::AppendQueryParameter(
-      GURL(std::string(kChromeUIDevUiLoaderURL) + "dev_ui_loader.html"), "url",
-      url->spec());
-  return true;
+
+  return std::make_unique<DevUiLoaderThrottle>(handle);
 }
 
-}  // namespace android
-}  // namespace chrome
+DevUiLoaderThrottle::DevUiLoaderThrottle(
+    content::NavigationHandle* navigation_handle)
+    : content::NavigationThrottle(navigation_handle) {}
+
+DevUiLoaderThrottle::~DevUiLoaderThrottle() = default;
+
+const char* DevUiLoaderThrottle::GetNameForLogging() {
+  return "DevUiLoaderThrottle";
+}
+
+content::NavigationThrottle::ThrottleCheckResult
+DevUiLoaderThrottle::WillStartRequest() {
+  if (!dev_ui::DevUiModuleProvider::GetInstance()->ModuleInstalled()) {
+    // Can handle multiple install requests.
+    dev_ui::DevUiModuleProvider::GetInstance()->InstallModule(
+        base::BindOnce(&DevUiLoaderThrottle::OnDevUiDfmInstallWithStatus,
+                       weak_ptr_factory_.GetWeakPtr()));
+    return DEFER;
+  }
+  return PROCEED;
+}
+
+void DevUiLoaderThrottle::OnDevUiDfmInstallWithStatus(bool success) {
+  if (success) {
+    dev_ui::DevUiModuleProvider::GetInstance()->LoadModule();
+    Resume();
+  } else {
+    std::string html = BuildErrorPageHtml();
+    CancelDeferredNavigation({BLOCK_REQUEST, net::ERR_CONNECTION_FAILED, html});
+  }
+}
+
+}  // namespace dev_ui

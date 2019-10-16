@@ -3651,6 +3651,10 @@ test("unit_tests") {
       deps += [ "//v8:v8_external_startup_data_assets" ]
     }
     if (dfmify_dev_ui) {
+      sources += [
+        "//chrome/browser/dev_ui/android/dev_ui_loader_throttle_unittest.cc",
+      ]
+
       # If DevUI DFM is on, include Java classes and native resource split so
       # that DevUI page tests would work.
       deps += [
