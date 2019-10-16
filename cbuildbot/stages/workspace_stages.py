@@ -296,8 +296,6 @@ class WorkspaceSyncChromeStage(WorkspaceStageBase):
 
     sync_chrome = os.path.join(
         self._orig_root, 'chromite', 'bin', 'sync_chrome')
-    gclient = os.path.join(
-        self._build_root, constants.DEPOT_TOOLS_SUBPATH, 'gclient')
 
     # Branched gclient can use git-cache incompatibly, so use a temp one.
     with osutils.TempDir(prefix='dummy') as git_cache:
@@ -305,9 +303,10 @@ class WorkspaceSyncChromeStage(WorkspaceStageBase):
       # free to delete any directories that get in the way of syncing. This
       # is needed for unattended operation.
       # --ignore-locks tells sync_chrome to ignore git-cache locks.
+      # --gclient is not specified here, sync_chrome will locate the one
+      # on the $PATH.
       cmd = [sync_chrome,
              '--reset', '--ignore_locks',
-             '--gclient', gclient,
              '--tag', chrome_version,
              '--git_cache_dir', git_cache]
 
