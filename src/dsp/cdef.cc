@@ -27,26 +27,8 @@ namespace libgav1 {
 namespace dsp {
 namespace {
 
-constexpr uint16_t kCdefLargeValue = 0x4000;
-
 constexpr int16_t kDivisionTable[] = {0,   840, 420, 280, 210,
                                       168, 140, 120, 105};
-
-constexpr uint8_t kPrimaryTaps[2][2] = {{4, 2}, {3, 3}};
-
-constexpr uint8_t kSecondaryTaps[2] = {2, 1};
-
-constexpr int8_t kCdefDirections[8][2][2] = {
-    {{-1, 1}, {-2, 2}}, {{0, 1}, {-1, 2}}, {{0, 1}, {0, 2}}, {{0, 1}, {1, 2}},
-    {{1, 1}, {2, 2}},   {{1, 0}, {2, 1}},  {{1, 0}, {2, 0}}, {{1, 0}, {2, -1}}};
-
-int Constrain(int diff, int threshold, int damping) {
-  if (threshold == 0) return 0;
-  damping = std::max(0, damping - FloorLog2(threshold));
-  const int sign = (diff < 0) ? -1 : 1;
-  return sign *
-         Clip3(threshold - (std::abs(diff) >> damping), 0, std::abs(diff));
-}
 
 int32_t Square(int32_t x) { return x * x; }
 
@@ -108,6 +90,28 @@ void CdefDirection_C(const void* const source, ptrdiff_t stride,
     }
   }
   *variance = (best_cost - cost[(*direction + 4) & 7]) >> 10;
+}
+
+// Silence unused function warnings when CdefFilter_C is obviated.
+#if LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS ||     \
+    !defined(LIBGAV1_Dsp8bpp_CdefFilter) || \
+    (LIBGAV1_MAX_BITDEPTH >= 10 && !defined(LIBGAV1_Dsp10bpp_CdefFilter))
+constexpr uint16_t kCdefLargeValue = 0x4000;
+
+constexpr uint8_t kPrimaryTaps[2][2] = {{4, 2}, {3, 3}};
+
+constexpr uint8_t kSecondaryTaps[2] = {2, 1};
+
+constexpr int8_t kCdefDirections[8][2][2] = {
+    {{-1, 1}, {-2, 2}}, {{0, 1}, {-1, 2}}, {{0, 1}, {0, 2}}, {{0, 1}, {1, 2}},
+    {{1, 1}, {2, 2}},   {{1, 0}, {2, 1}},  {{1, 0}, {2, 0}}, {{1, 0}, {2, -1}}};
+
+int Constrain(int diff, int threshold, int damping) {
+  if (threshold == 0) return 0;
+  damping = std::max(0, damping - FloorLog2(threshold));
+  const int sign = (diff < 0) ? -1 : 1;
+  return sign *
+         Clip3(threshold - (std::abs(diff) >> damping), 0, std::abs(diff));
 }
 
 // Filters the source block. It doesn't check whether the candidate pixel is
@@ -178,6 +182,9 @@ void CdefFilter_C(const void* const source, const ptrdiff_t source_stride,
     dst += dst_stride;
   } while (++y < block_height);
 }
+#endif  // LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS ||
+        // !defined(LIBGAV1_Dsp8bpp_CdefFilter) ||
+        // (LIBGAV1_MAX_BITDEPTH >= 10 && !defined(LIBGAV1_Dsp10bpp_CdefFilter))
 
 void Init8bpp() {
   Dsp* const dsp = dsp_internal::GetWritableDspTable(8);
