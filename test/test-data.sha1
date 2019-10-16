@@ -4,6 +4,10 @@ b87815bf86020c592ccc7a846ba2e28ec8043902 *hantro_odd.yuv
 d3964f9dad9f60363c81b688324d95b4ec7c8038 *invalid-bug-1814.ivf.res
 09aa07e5325b3bb5462182eb30b8ecc914630740 *invalid-chromium-906381.ivf
 09d2af8dd22201dd8d48e5dcfcaed281ff9422c7 *invalid-chromium-906381.ivf.res
+f7c83c14aa35b928ba8b70f3eaa3b92070be4519 *invalid-google-142530197-1.ivf
+d3964f9dad9f60363c81b688324d95b4ec7c8038 *invalid-google-142530197-1.ivf.res
+703c05720d5d67053bcee44987635cd78af2f971 *invalid-google-142530197.ivf
+d3964f9dad9f60363c81b688324d95b4ec7c8038 *invalid-google-142530197.ivf.res
 fa06784f23751d8c37be94160fb821e855199af4 *invalid-oss-fuzz-10061.ivf
 b055f06b9a95aaa5697fa26497b592a47843a7c8 *invalid-oss-fuzz-10061.ivf.res
 c9e06c4c7fb7d69fd635a1f606a5e478d60e99cf *invalid-oss-fuzz-10117-mc-buf-use-highbd.ivf

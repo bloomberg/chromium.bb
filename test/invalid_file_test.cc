@@ -128,6 +128,8 @@ const DecodeParam kAV1InvalidFileTests[] = {
   // { threads, filename, res_filename }
   { 1, "invalid-bug-1814.ivf", NULL },
   { 1, "invalid-chromium-906381.ivf", NULL },
+  { 1, "invalid-google-142530197.ivf", NULL },
+  { 1, "invalid-google-142530197-1.ivf", NULL },
   { 4, "invalid-oss-fuzz-9463.ivf", "invalid-oss-fuzz-9463.ivf.res.2" },
   { 1, "invalid-oss-fuzz-9720.ivf", NULL },
   { 1, "invalid-oss-fuzz-10389.ivf", "invalid-oss-fuzz-10389.ivf.res.2" },

@@ -826,6 +826,11 @@ int aom_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
       case OBU_SEQUENCE_HEADER:
         decoded_payload_size = read_sequence_header_obu(pbi, &rb);
         if (cm->error.error_code != AOM_CODEC_OK) return -1;
+        // The sequence header should not change in the middle of a frame.
+        if (pbi->sequence_header_changed && pbi->seen_frame_header) {
+          cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
+          return -1;
+        }
         break;
       case OBU_FRAME_HEADER:
       case OBU_REDUNDANT_FRAME_HEADER:
