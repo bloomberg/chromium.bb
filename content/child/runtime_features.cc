@@ -187,7 +187,7 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
           {wf::EnableWebXRPlaneDetection, features::kWebXrPlaneDetection,
            kEnableOnly},
           {wf::EnableWebXrGamepadModule, features::kWebXrGamepadModule,
-           kEnableOnly},
+           kUseFeatureState},
           {wf::EnableFetchMetadata, network::features::kFetchMetadata,
            kUseFeatureState},
           {wf::EnableFetchMetadataDestination,

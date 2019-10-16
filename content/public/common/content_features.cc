@@ -710,7 +710,7 @@ const base::Feature kWebXrAnchors{"WebXRAnchors",
 
 // Enables access to the WebXR Device API gamepad module.
 const base::Feature kWebXrGamepadModule{"WebXrGamepadModule",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
+                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables access to raycasting against estimated XR scene geometry.
 const base::Feature kWebXrHitTest{"WebXRHitTest",
