@@ -63478,6 +63478,7 @@ Full version information for the fingerprint enum values:
   <int value="0" label="Omnibox"/>
   <int value="1" label="NTP"/>
   <int value="2" label="Search widget"/>
+  <int value="3" label="Tasks surface"/>
 </enum>
 
 <enum name="VPNDriver">
