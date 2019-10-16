@@ -694,7 +694,8 @@ def _ComputeDiffLineRanges(files, upstream_commit):
     return {}
 
   # Take the git diff and find the line ranges where there are changes.
-  diff_cmd = BuildGitDiffCmd('-U0', upstream_commit, files, allow_prefix=True)
+  lines = '-U%s' % settings.GetDiffLinesOfContext()
+  diff_cmd = BuildGitDiffCmd(lines, upstream_commit, files, allow_prefix=True)
   diff_output = RunGit(diff_cmd)
 
   pattern = r'(?:^diff --git a/(?:.*) b/(.*))|(?:^@@.*\+(.*) @@)'
@@ -942,6 +943,10 @@ class Settings(object):
   def GetLintIgnoreRegex(self):
     return (self._GetConfig('rietveld.cpplint-ignore-regex', error_ok=True) or
             DEFAULT_LINT_IGNORE_REGEX)
+
+  def GetDiffLinesOfContext(self):
+    return (self._GetConfig('rietveld.diff-lines-of-context', error_ok=True) or
+            "0")
 
   def _GetConfig(self, param, **kwargs):
     self.LazyUpdateIfNeeded()
@@ -3154,6 +3159,8 @@ def LoadCodereviewSettingsFromFile(fileobj):
   SetProperty('cpplint-ignore-regex', 'LINT_IGNORE_REGEX', unset_error_ok=True)
   SetProperty('run-post-upload-hook', 'RUN_POST_UPLOAD_HOOK',
               unset_error_ok=True)
+  SetProperty(
+      'diff-lines-of-context', 'DIFF_LINES_OF_CONTEXT', unset_error_ok=True)
 
   if 'GERRIT_HOST' in keyvals:
     RunGit(['config', 'gerrit.host', keyvals['GERRIT_HOST']])
@@ -5195,7 +5202,8 @@ def CMDformat(parser, args):
       if not opts.dry_run and not opts.diff:
         cmd.append('-i')
 
-      diff_cmd = BuildGitDiffCmd('-U0', upstream_commit, clang_diff_files)
+      lines = '-U%s' % settings.GetDiffLinesOfContext()
+      diff_cmd = BuildGitDiffCmd(lines, upstream_commit, clang_diff_files)
       diff_output = RunGit(diff_cmd)
 
       stdout = RunCommand(cmd, stdin=diff_output, cwd=top_dir, env=env)
