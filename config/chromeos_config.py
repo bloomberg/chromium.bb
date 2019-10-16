@@ -2280,9 +2280,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'kevin64',
       'kip',
       'kukui',
-      'lakitu',
-      'lakitu-gpu',
-      'lakitu-st',
       'lars',
       'lasilla-ground',
       'littlejoe',
@@ -2380,6 +2377,9 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'elm',  # temporary hack for crbug.com/1008674
       'fizz-moblab', # crbug.com/995170
       'gale',  # crbug.com/1014100
+      'lakitu',  # crbug.com/1015040  review on 2019-10-17
+      'lakitu-gpu',  # crbug.com/1015040  review on 2019-10-17
+      'lakitu-st',  # crbug.com/1015040  review on 2019-10-17
       'mistral', # b/140536001
       'moblab-generic-vm', # crbug.com/960998, crbug.com/976297
       'samus-kernelnext', # https://crbug.com/1004618
