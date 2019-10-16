@@ -146,7 +146,7 @@
       // from CSS.
       // https://github.com/WICG/intrinsicsize-attribute/issues/16
       name: "AspectRatioFromWidthAndHeight",
-      status: "test",
+      status: "stable",
     },
     {
       name: "AsyncClipboard",
