@@ -605,8 +605,16 @@ class ChromiumOSUpdater(BaseUpdater):
 
       # Loop until update is complete.
       while True:
-        op, progress = self.GetUpdateStatus(self.device,
-                                            ['CURRENT_OP', 'PROGRESS'])[0:2]
+        # Number of times to retry `update_engine_client --status`. See
+        # crbug.com/744212.
+        update_engine_status_retry = 30
+        op, progress = retry_util.RetryException(
+            cros_build_lib.RunCommandError,
+            update_engine_status_retry,
+            self.GetUpdateStatus,
+            self.device,
+            ['CURRENT_OP', 'PROGRESS'],
+            delay_sec=DELAY_SEC_FOR_RETRY)[0:2]
         logging.info('Waiting for update...status: %s at progress %s',
                      op, progress)
 
