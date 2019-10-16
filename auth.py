@@ -27,22 +27,6 @@ from third_party.oauth2client import client
 # depot_tools/.
 DEPOT_TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
 
-
-# Google OAuth2 clients always have a secret, even if the client is an installed
-# application/utility such as this. Of course, in such cases the "secret" is
-# actually publicly known; security depends entirely on the secrecy of refresh
-# tokens, which effectively become bearer tokens. An attacker can impersonate
-# service's identity in OAuth2 flow. But that's generally fine as long as a list
-# of allowed redirect_uri's associated with client_id is limited to 'localhost'
-# or 'urn:ietf:wg:oauth:2.0:oob'. In that case attacker needs some process
-# running on user's machine to successfully complete the flow and grab refresh
-# token. When you have a malicious code running on your machine, you're screwed
-# anyway.
-# This particular set is managed by API Console project "chrome-infra-auth".
-OAUTH_CLIENT_ID = (
-    '446450136466-2hr92jrq8e6i4tnsa56b52vacp7t3936.apps.googleusercontent.com')
-OAUTH_CLIENT_SECRET = 'uBfbay2KCy9t4QveJ-dOqHtp'
-
 # This is what most GAE apps require for authentication.
 OAUTH_SCOPE_EMAIL = 'https://www.googleapis.com/auth/userinfo.email'
 # Gerrit and Git on *.googlesource.com require this scope.
@@ -58,7 +42,6 @@ AuthConfig = collections.namedtuple('AuthConfig', [
     'save_cookies', # deprecated, will be removed
     'use_local_webserver',
     'webserver_port',
-    'refresh_token_json',
 ])
 
 
@@ -77,14 +60,6 @@ class AccessToken(collections.namedtuple('AccessToken', [
       return now >= self.expires_at
     # Token without expiration time never expires.
     return False
-
-
-# Refresh token passed via --auth-refresh-token-json.
-RefreshToken = collections.namedtuple('RefreshToken', [
-    'client_id',
-    'client_secret',
-    'refresh_token',
-])
 
 
 class AuthenticationError(Exception):
@@ -271,8 +246,7 @@ def make_auth_config(
     use_oauth2=None,
     save_cookies=None,
     use_local_webserver=None,
-    webserver_port=None,
-    refresh_token_json=None):
+    webserver_port=None):
   """Returns new instance of AuthConfig.
 
   If some config option is None, it will be set to a reasonable default value.
@@ -284,8 +258,7 @@ def make_auth_config(
       default(use_oauth2, True),
       default(save_cookies, True),
       default(use_local_webserver, not _is_headless()),
-      default(webserver_port, 8090),
-      default(refresh_token_json, ''))
+      default(webserver_port, 8090))
 
 
 def add_auth_options(parser, default_config=None):
@@ -332,8 +305,7 @@ def add_auth_options(parser, default_config=None):
           '--auth-no-local-webserver is not set. [default: %default]')
   parser.auth_group.add_option(
       '--auth-refresh-token-json',
-      default=default_config.refresh_token_json,
-      help='Path to a JSON file with role account refresh token to use.')
+      help='DEPRECATED. Do not use')
 
 
 def extract_auth_config_from_options(options):
@@ -345,8 +317,7 @@ def extract_auth_config_from_options(options):
       use_oauth2=options.use_oauth2,
       save_cookies=False if options.use_oauth2 else options.save_cookies,
       use_local_webserver=options.use_local_webserver,
-      webserver_port=options.auth_host_port,
-      refresh_token_json=options.auth_refresh_token_json)
+      webserver_port=options.auth_host_port)
 
 
 def auth_config_to_command_options(auth_config):
@@ -368,9 +339,6 @@ def auth_config_to_command_options(auth_config):
       opts.append('--auth-no-local-webserver')
   if auth_config.webserver_port != defaults.webserver_port:
     opts.extend(['--auth-host-port', str(auth_config.webserver_port)])
-  if auth_config.refresh_token_json != defaults.refresh_token_json:
-    opts.extend([
-        '--auth-refresh-token-json', str(auth_config.refresh_token_json)])
   return opts
 
 
@@ -400,10 +368,7 @@ class Authenticator(object):
     self._access_token = None
     self._config = config
     self._lock = threading.Lock()
-    self._external_token = None
     self._scopes = scopes
-    if config.refresh_token_json:
-      self._external_token = _read_refresh_token_json(config.refresh_token_json)
     logging.debug('Using auth config %r', config)
 
   def has_cached_credentials(self):
@@ -527,35 +492,6 @@ class Authenticator(object):
     else:
       _log_credentials_info('cached token', credentials)
 
-    # Is using --auth-refresh-token-json?
-    if self._external_token:
-      # Cached credentials are valid and match external token -> use them. It is
-      # important to reuse credentials from the storage because they contain
-      # cached access token.
-      valid = (
-          credentials and not credentials.invalid and
-          credentials.refresh_token == self._external_token.refresh_token and
-          credentials.client_id == self._external_token.client_id and
-          credentials.client_secret == self._external_token.client_secret)
-      if valid:
-        logging.debug('Cached credentials match external refresh token')
-        return credentials
-      # Construct new credentials from externally provided refresh token,
-      # associate them with cache storage (so that access_token will be placed
-      # in the cache later too).
-      logging.debug('Putting external refresh token into the cache')
-      credentials = client.OAuth2Credentials(
-          access_token=None,
-          client_id=self._external_token.client_id,
-          client_secret=self._external_token.client_secret,
-          refresh_token=self._external_token.refresh_token,
-          token_expiry=None,
-          token_uri='https://accounts.google.com/o/oauth2/token',
-          user_agent=None,
-          revoke_uri=None)
-      return credentials
-
-    # Not using external refresh token -> return whatever is cached.
     return credentials if (credentials and not credentials.invalid) else None
 
   def _load_access_token(self):
@@ -606,10 +542,6 @@ class Authenticator(object):
 
     # Refresh token is missing or invalid, go through the full flow.
     if not refreshed:
-      # Can't refresh externally provided token.
-      if self._external_token:
-        raise AuthenticationError(
-            'Token provided via --auth-refresh-token-json is no longer valid.')
       if not allow_user_interaction:
         logging.debug('Requesting user to login')
         raise LoginRequiredError(self._scopes)
@@ -629,23 +561,6 @@ class Authenticator(object):
 def _is_headless():
   """True if machine doesn't seem to have a display."""
   return sys.platform == 'linux2' and not os.environ.get('DISPLAY')
-
-
-def _read_refresh_token_json(path):
-  """Returns RefreshToken by reading it from the JSON file."""
-  try:
-    with open(path, 'r') as f:
-      data = json.load(f)
-      return RefreshToken(
-          client_id=str(data.get('client_id', OAUTH_CLIENT_ID)),
-          client_secret=str(data.get('client_secret', OAUTH_CLIENT_SECRET)),
-          refresh_token=str(data['refresh_token']))
-  except (IOError, ValueError) as e:
-    raise AuthenticationError(
-        'Failed to read refresh token from %s: %s' % (path, e))
-  except KeyError as e:
-    raise AuthenticationError(
-        'Failed to read refresh token from %s: missing key %s' % (path, e))
 
 
 def _log_credentials_info(title, credentials):
@@ -670,8 +585,8 @@ def _get_luci_auth_credentials(scopes):
 
   return client.OAuth2Credentials(
       access_token=token_info['token'],
-      client_id=OAUTH_CLIENT_ID,
-      client_secret=OAUTH_CLIENT_SECRET,
+      client_id=None,
+      client_secret=None,
       refresh_token=None,
       token_expiry=datetime.datetime.utcfromtimestamp(token_info['expiry']),
       token_uri=None,
