@@ -912,9 +912,6 @@
       status: "stable",
     },
     {
-      name: "LongTaskV2",
-    },
-    {
       name:"ManualSlotting",
       status:"experimental",
     },
