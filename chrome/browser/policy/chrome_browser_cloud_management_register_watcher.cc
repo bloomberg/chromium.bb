@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/policy/machine_level_user_cloud_policy_register_watcher.h"
+#include "chrome/browser/policy/chrome_browser_cloud_management_register_watcher.h"
 
 #include <utility>
 
@@ -20,21 +20,21 @@ namespace policy {
 using RegisterResult = MachineLevelUserCloudPolicyController::RegisterResult;
 
 const char
-    MachineLevelUserCloudPolicyRegisterWatcher::kStartupDialogHistogramName[] =
+    ChromeBrowserCloudManagementRegisterWatcher::kStartupDialogHistogramName[] =
         "Enterprise.MachineLevelUserCloudPolicyEnrollment.StartupDialog";
 
-MachineLevelUserCloudPolicyRegisterWatcher::
-    MachineLevelUserCloudPolicyRegisterWatcher(
+ChromeBrowserCloudManagementRegisterWatcher::
+    ChromeBrowserCloudManagementRegisterWatcher(
         MachineLevelUserCloudPolicyController* controller)
     : controller_(controller) {
   controller_->AddObserver(this);
 }
-MachineLevelUserCloudPolicyRegisterWatcher::
-    ~MachineLevelUserCloudPolicyRegisterWatcher() {
+ChromeBrowserCloudManagementRegisterWatcher::
+    ~ChromeBrowserCloudManagementRegisterWatcher() {
   controller_->RemoveObserver(this);
 }
 
-RegisterResult MachineLevelUserCloudPolicyRegisterWatcher::
+RegisterResult ChromeBrowserCloudManagementRegisterWatcher::
     WaitUntilCloudPolicyEnrollmentFinished() {
   BrowserDMTokenStorage* token_storage = BrowserDMTokenStorage::Get();
 
@@ -46,7 +46,7 @@ RegisterResult MachineLevelUserCloudPolicyRegisterWatcher::
     return RegisterResult::kEnrollmentSuccessBeforeDialogDisplayed;
 
   EnterpriseStartupDialog::DialogResultCallback callback = base::BindOnce(
-      &MachineLevelUserCloudPolicyRegisterWatcher::OnDialogClosed,
+      &ChromeBrowserCloudManagementRegisterWatcher::OnDialogClosed,
       base::Unretained(this));
   if (dialog_creation_callback_)
     dialog_ = std::move(dialog_creation_callback_).Run(std::move(callback));
@@ -77,11 +77,11 @@ RegisterResult MachineLevelUserCloudPolicyRegisterWatcher::
 
   if (!token_storage->ShouldDisplayErrorMessageOnFailure() &&
       register_result_) {
-    SYSLOG(ERROR) << "Machine level user cloud policy enrollment has failed.";
+    SYSLOG(ERROR) << "Chrome browser cloud management enrollment has failed.";
     return RegisterResult::kEnrollmentFailedSilently;
   }
 
-  SYSLOG(ERROR) << "Can not start Chrome as machine level user cloud policy "
+  SYSLOG(ERROR) << "Can not start Chrome as chrome browser cloud management "
                    "enrollment has failed. Please double check network "
                    "connection and the status of enrollment token then open "
                    "Chrome again.";
@@ -91,22 +91,22 @@ RegisterResult MachineLevelUserCloudPolicyRegisterWatcher::
   return RegisterResult::kQuitDueToFailure;
 }
 
-bool MachineLevelUserCloudPolicyRegisterWatcher::IsDialogShowing() {
+bool ChromeBrowserCloudManagementRegisterWatcher::IsDialogShowing() {
   return (dialog_ && dialog_->IsShowing()) || run_loop_.running();
 }
 
-void MachineLevelUserCloudPolicyRegisterWatcher::
+void ChromeBrowserCloudManagementRegisterWatcher::
     SetDialogCreationCallbackForTesting(DialogCreationCallback callback) {
   dialog_creation_callback_ = std::move(callback);
 }
 
 // static
-void MachineLevelUserCloudPolicyRegisterWatcher::RecordEnrollmentStartDialog(
+void ChromeBrowserCloudManagementRegisterWatcher::RecordEnrollmentStartDialog(
     EnrollmentStartupDialog dialog_startup) {
   UMA_HISTOGRAM_ENUMERATION(kStartupDialogHistogramName, dialog_startup);
 }
 
-void MachineLevelUserCloudPolicyRegisterWatcher::OnPolicyRegisterFinished(
+void ChromeBrowserCloudManagementRegisterWatcher::OnPolicyRegisterFinished(
     bool succeeded) {
   register_result_ = succeeded;
 
@@ -123,7 +123,7 @@ void MachineLevelUserCloudPolicyRegisterWatcher::OnPolicyRegisterFinished(
   }
 }
 
-void MachineLevelUserCloudPolicyRegisterWatcher::OnDialogClosed(
+void ChromeBrowserCloudManagementRegisterWatcher::OnDialogClosed(
     bool is_accepted,
     bool can_show_browser_window) {
   if (can_show_browser_window) {
@@ -157,7 +157,7 @@ void MachineLevelUserCloudPolicyRegisterWatcher::OnDialogClosed(
   run_loop_.Quit();
 }
 
-void MachineLevelUserCloudPolicyRegisterWatcher::DisplayErrorMessage() {
+void ChromeBrowserCloudManagementRegisterWatcher::DisplayErrorMessage() {
   dialog_->DisplayErrorMessage(
       l10n_util::GetStringUTF16(
           IDS_ENTERPRISE_STARTUP_CLOUD_POLICY_ENROLLMENT_ERROR),

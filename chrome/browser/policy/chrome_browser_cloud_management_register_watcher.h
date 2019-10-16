@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_POLICY_MACHINE_LEVEL_USER_CLOUD_POLICY_REGISTER_WATCHER_H_
-#define CHROME_BROWSER_POLICY_MACHINE_LEVEL_USER_CLOUD_POLICY_REGISTER_WATCHER_H_
+#ifndef CHROME_BROWSER_POLICY_CHROME_BROWSER_CLOUD_MANAGEMENT_REGISTER_WATCHER_H_
+#define CHROME_BROWSER_POLICY_CHROME_BROWSER_CLOUD_MANAGEMENT_REGISTER_WATCHER_H_
 
 #include <memory>
 #include <string>
@@ -17,24 +17,24 @@
 #include "chrome/browser/policy/machine_level_user_cloud_policy_controller.h"
 #include "chrome/browser/ui/enterprise_startup_dialog.h"
 
-class MachineLevelUserCloudPolicyRegisterWatcherTest;
+class ChromeBrowserCloudManagementRegisterWatcherTest;
 
 namespace policy {
 
-// Watches the status of machine level user cloud policy enrollment.
+// Watches the status of chrome browser cloud management enrollment.
 // Shows the blocking dialog for ongoing enrollment and failed enrollment.
-class MachineLevelUserCloudPolicyRegisterWatcher
+class ChromeBrowserCloudManagementRegisterWatcher
     : public MachineLevelUserCloudPolicyController::Observer {
  public:
   using DialogCreationCallback =
       base::OnceCallback<std::unique_ptr<EnterpriseStartupDialog>(
           EnterpriseStartupDialog::DialogResultCallback)>;
 
-  explicit MachineLevelUserCloudPolicyRegisterWatcher(
+  explicit ChromeBrowserCloudManagementRegisterWatcher(
       MachineLevelUserCloudPolicyController* controller);
-  ~MachineLevelUserCloudPolicyRegisterWatcher() override;
+  ~ChromeBrowserCloudManagementRegisterWatcher() override;
 
-  // Blocks until the machine level user cloud policy enrollment process
+  // Blocks until the  chrome browser cloud management enrollment process
   // finishes. Returns the result of enrollment.
   MachineLevelUserCloudPolicyController::RegisterResult
   WaitUntilCloudPolicyEnrollmentFinished();
@@ -45,25 +45,25 @@ class MachineLevelUserCloudPolicyRegisterWatcher
   void SetDialogCreationCallbackForTesting(DialogCreationCallback callback);
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(MachineLevelUserCloudPolicyRegisterWatcherTest,
+  FRIEND_TEST_ALL_PREFIXES(ChromeBrowserCloudManagementRegisterWatcherTest,
                            EnrollmentSucceed);
-  FRIEND_TEST_ALL_PREFIXES(MachineLevelUserCloudPolicyRegisterWatcherTest,
+  FRIEND_TEST_ALL_PREFIXES(ChromeBrowserCloudManagementRegisterWatcherTest,
                            EnrollmentSucceedWithNoErrorMessageSetup);
-  FRIEND_TEST_ALL_PREFIXES(MachineLevelUserCloudPolicyRegisterWatcherTest,
+  FRIEND_TEST_ALL_PREFIXES(ChromeBrowserCloudManagementRegisterWatcherTest,
                            EnrollmentFailedAndQuit);
-  FRIEND_TEST_ALL_PREFIXES(MachineLevelUserCloudPolicyRegisterWatcherTest,
+  FRIEND_TEST_ALL_PREFIXES(ChromeBrowserCloudManagementRegisterWatcherTest,
                            EnrollmentFailedAndRestart);
-  FRIEND_TEST_ALL_PREFIXES(MachineLevelUserCloudPolicyRegisterWatcherTest,
+  FRIEND_TEST_ALL_PREFIXES(ChromeBrowserCloudManagementRegisterWatcherTest,
                            EnrollmentCanceledBeforeFinish);
   FRIEND_TEST_ALL_PREFIXES(
-      MachineLevelUserCloudPolicyRegisterWatcherTest,
+      ChromeBrowserCloudManagementRegisterWatcherTest,
       EnrollmentCanceledBeforeFinishWithNoErrorMessageSetup);
-  FRIEND_TEST_ALL_PREFIXES(MachineLevelUserCloudPolicyRegisterWatcherTest,
+  FRIEND_TEST_ALL_PREFIXES(ChromeBrowserCloudManagementRegisterWatcherTest,
                            EnrollmentFailedBeforeDialogDisplay);
-  FRIEND_TEST_ALL_PREFIXES(MachineLevelUserCloudPolicyRegisterWatcherTest,
+  FRIEND_TEST_ALL_PREFIXES(ChromeBrowserCloudManagementRegisterWatcherTest,
                            EnrollmentFailedWithoutErrorMessage);
   FRIEND_TEST_ALL_PREFIXES(
-      MachineLevelUserCloudPolicyRegisterWatcherTest,
+      ChromeBrowserCloudManagementRegisterWatcherTest,
       EnrollmentFailedBeforeDialogDisplayWithoutErrorMessage);
 
   // Enum used with kStartupDialogHistogramName.
@@ -119,9 +119,9 @@ class MachineLevelUserCloudPolicyRegisterWatcher
 
   base::Time visible_start_time_;
 
-  DISALLOW_COPY_AND_ASSIGN(MachineLevelUserCloudPolicyRegisterWatcher);
+  DISALLOW_COPY_AND_ASSIGN(ChromeBrowserCloudManagementRegisterWatcher);
 };
 
 }  // namespace policy
 
-#endif  // CHROME_BROWSER_POLICY_MACHINE_LEVEL_USER_CLOUD_POLICY_REGISTER_WATCHER_H_
+#endif  // CHROME_BROWSER_POLICY_CHROME_BROWSER_CLOUD_MANAGEMENT_REGISTER_WATCHER_H_

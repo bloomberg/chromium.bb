@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/policy/machine_level_user_cloud_policy_register_watcher.h"
+#include "chrome/browser/policy/chrome_browser_cloud_management_register_watcher.h"
 
 #include <utility>
 
@@ -17,9 +17,9 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using ::testing::_;
 using ::testing::InvokeWithoutArgs;
 using ::testing::Return;
-using ::testing::_;
 using RegisterResult =
     policy::MachineLevelUserCloudPolicyController::RegisterResult;
 
@@ -83,9 +83,9 @@ class MockEnterpriseStartupDialog : public EnterpriseStartupDialog {
 
 }  // namespace
 
-class MachineLevelUserCloudPolicyRegisterWatcherTest : public ::testing::Test {
+class ChromeBrowserCloudManagementRegisterWatcherTest : public ::testing::Test {
  public:
-  MachineLevelUserCloudPolicyRegisterWatcherTest()
+  ChromeBrowserCloudManagementRegisterWatcherTest()
       : watcher_(&controller_),
         dialog_(std::make_unique<MockEnterpriseStartupDialog>()),
         dialog_ptr_(dialog_.get()) {
@@ -93,7 +93,7 @@ class MachineLevelUserCloudPolicyRegisterWatcherTest : public ::testing::Test {
     storage_.SetDMToken(std::string());
     storage_.SetClientId(kClientId);
     watcher_.SetDialogCreationCallbackForTesting(
-        base::BindOnce(&MachineLevelUserCloudPolicyRegisterWatcherTest::
+        base::BindOnce(&ChromeBrowserCloudManagementRegisterWatcherTest::
                            CreateEnterpriseStartupDialog,
                        base::Unretained(this)));
   }
@@ -103,7 +103,7 @@ class MachineLevelUserCloudPolicyRegisterWatcherTest : public ::testing::Test {
   FakeMachineLevelUserCloudPolicyController* controller() {
     return &controller_;
   }
-  MachineLevelUserCloudPolicyRegisterWatcher* watcher() { return &watcher_; }
+  ChromeBrowserCloudManagementRegisterWatcher* watcher() { return &watcher_; }
   MockEnterpriseStartupDialog* dialog() { return dialog_ptr_; }
 
   std::unique_ptr<EnterpriseStartupDialog> CreateEnterpriseStartupDialog(
@@ -116,22 +116,22 @@ class MachineLevelUserCloudPolicyRegisterWatcherTest : public ::testing::Test {
   content::BrowserTaskEnvironment task_environment_;
 
   FakeMachineLevelUserCloudPolicyController controller_;
-  MachineLevelUserCloudPolicyRegisterWatcher watcher_;
+  ChromeBrowserCloudManagementRegisterWatcher watcher_;
   FakeBrowserDMTokenStorage storage_;
   std::unique_ptr<MockEnterpriseStartupDialog> dialog_;
   MockEnterpriseStartupDialog* dialog_ptr_;
 
-  DISALLOW_COPY_AND_ASSIGN(MachineLevelUserCloudPolicyRegisterWatcherTest);
+  DISALLOW_COPY_AND_ASSIGN(ChromeBrowserCloudManagementRegisterWatcherTest);
 };
 
-TEST_F(MachineLevelUserCloudPolicyRegisterWatcherTest,
+TEST_F(ChromeBrowserCloudManagementRegisterWatcherTest,
        NoEnrollmentNeededWithDMToken) {
   storage()->SetDMToken(kDMToken);
   EXPECT_EQ(RegisterResult::kEnrollmentSuccessBeforeDialogDisplayed,
             watcher()->WaitUntilCloudPolicyEnrollmentFinished());
 }
 
-TEST_F(MachineLevelUserCloudPolicyRegisterWatcherTest,
+TEST_F(ChromeBrowserCloudManagementRegisterWatcherTest,
        NoEnrollmentNeededWithoutEnrollmentToken) {
   storage()->SetEnrollmentToken(std::string());
   storage()->SetDMToken(std::string());
@@ -139,7 +139,7 @@ TEST_F(MachineLevelUserCloudPolicyRegisterWatcherTest,
             watcher()->WaitUntilCloudPolicyEnrollmentFinished());
 }
 
-TEST_F(MachineLevelUserCloudPolicyRegisterWatcherTest, EnrollmentSucceed) {
+TEST_F(ChromeBrowserCloudManagementRegisterWatcherTest, EnrollmentSucceed) {
   base::HistogramTester histogram_tester;
 
   EXPECT_CALL(*dialog(), DisplayLaunchingInformationWithThrobber(_));
@@ -152,18 +152,18 @@ TEST_F(MachineLevelUserCloudPolicyRegisterWatcherTest, EnrollmentSucceed) {
   EXPECT_EQ(RegisterResult::kEnrollmentSuccess,
             watcher()->WaitUntilCloudPolicyEnrollmentFinished());
   histogram_tester.ExpectBucketCount(
-      MachineLevelUserCloudPolicyRegisterWatcher::kStartupDialogHistogramName,
-      MachineLevelUserCloudPolicyRegisterWatcher::EnrollmentStartupDialog::
+      ChromeBrowserCloudManagementRegisterWatcher::kStartupDialogHistogramName,
+      ChromeBrowserCloudManagementRegisterWatcher::EnrollmentStartupDialog::
           kShown,
       1);
   histogram_tester.ExpectBucketCount(
-      MachineLevelUserCloudPolicyRegisterWatcher::kStartupDialogHistogramName,
-      MachineLevelUserCloudPolicyRegisterWatcher::EnrollmentStartupDialog::
+      ChromeBrowserCloudManagementRegisterWatcher::kStartupDialogHistogramName,
+      ChromeBrowserCloudManagementRegisterWatcher::EnrollmentStartupDialog::
           kClosedSuccess,
       1);
 }
 
-TEST_F(MachineLevelUserCloudPolicyRegisterWatcherTest,
+TEST_F(ChromeBrowserCloudManagementRegisterWatcherTest,
        EnrollmentSucceedWithNoErrorMessageSetup) {
   base::HistogramTester histogram_tester;
 
@@ -178,18 +178,18 @@ TEST_F(MachineLevelUserCloudPolicyRegisterWatcherTest,
   EXPECT_EQ(RegisterResult::kEnrollmentSuccess,
             watcher()->WaitUntilCloudPolicyEnrollmentFinished());
   histogram_tester.ExpectBucketCount(
-      MachineLevelUserCloudPolicyRegisterWatcher::kStartupDialogHistogramName,
-      MachineLevelUserCloudPolicyRegisterWatcher::EnrollmentStartupDialog::
+      ChromeBrowserCloudManagementRegisterWatcher::kStartupDialogHistogramName,
+      ChromeBrowserCloudManagementRegisterWatcher::EnrollmentStartupDialog::
           kShown,
       1);
   histogram_tester.ExpectBucketCount(
-      MachineLevelUserCloudPolicyRegisterWatcher::kStartupDialogHistogramName,
-      MachineLevelUserCloudPolicyRegisterWatcher::EnrollmentStartupDialog::
+      ChromeBrowserCloudManagementRegisterWatcher::kStartupDialogHistogramName,
+      ChromeBrowserCloudManagementRegisterWatcher::EnrollmentStartupDialog::
           kClosedSuccess,
       1);
 }
 
-TEST_F(MachineLevelUserCloudPolicyRegisterWatcherTest,
+TEST_F(ChromeBrowserCloudManagementRegisterWatcherTest,
        EnrollmentFailedAndQuit) {
   base::HistogramTester histogram_tester;
 
@@ -206,18 +206,18 @@ TEST_F(MachineLevelUserCloudPolicyRegisterWatcherTest,
   EXPECT_EQ(RegisterResult::kQuitDueToFailure,
             watcher()->WaitUntilCloudPolicyEnrollmentFinished());
   histogram_tester.ExpectBucketCount(
-      MachineLevelUserCloudPolicyRegisterWatcher::kStartupDialogHistogramName,
-      MachineLevelUserCloudPolicyRegisterWatcher::EnrollmentStartupDialog::
+      ChromeBrowserCloudManagementRegisterWatcher::kStartupDialogHistogramName,
+      ChromeBrowserCloudManagementRegisterWatcher::EnrollmentStartupDialog::
           kShown,
       1);
   histogram_tester.ExpectBucketCount(
-      MachineLevelUserCloudPolicyRegisterWatcher::kStartupDialogHistogramName,
-      MachineLevelUserCloudPolicyRegisterWatcher::EnrollmentStartupDialog::
+      ChromeBrowserCloudManagementRegisterWatcher::kStartupDialogHistogramName,
+      ChromeBrowserCloudManagementRegisterWatcher::EnrollmentStartupDialog::
           kClosedFail,
       1);
 }
 
-TEST_F(MachineLevelUserCloudPolicyRegisterWatcherTest,
+TEST_F(ChromeBrowserCloudManagementRegisterWatcherTest,
        EnrollmentFailedAndRestart) {
   base::HistogramTester histogram_tester;
 
@@ -234,18 +234,18 @@ TEST_F(MachineLevelUserCloudPolicyRegisterWatcherTest,
   EXPECT_EQ(RegisterResult::kRestartDueToFailure,
             watcher()->WaitUntilCloudPolicyEnrollmentFinished());
   histogram_tester.ExpectBucketCount(
-      MachineLevelUserCloudPolicyRegisterWatcher::kStartupDialogHistogramName,
-      MachineLevelUserCloudPolicyRegisterWatcher::EnrollmentStartupDialog::
+      ChromeBrowserCloudManagementRegisterWatcher::kStartupDialogHistogramName,
+      ChromeBrowserCloudManagementRegisterWatcher::EnrollmentStartupDialog::
           kShown,
       1);
   histogram_tester.ExpectBucketCount(
-      MachineLevelUserCloudPolicyRegisterWatcher::kStartupDialogHistogramName,
-      MachineLevelUserCloudPolicyRegisterWatcher::EnrollmentStartupDialog::
+      ChromeBrowserCloudManagementRegisterWatcher::kStartupDialogHistogramName,
+      ChromeBrowserCloudManagementRegisterWatcher::EnrollmentStartupDialog::
           kClosedRelaunch,
       1);
 }
 
-TEST_F(MachineLevelUserCloudPolicyRegisterWatcherTest,
+TEST_F(ChromeBrowserCloudManagementRegisterWatcherTest,
        EnrollmentCanceledBeforeFinish) {
   base::HistogramTester histogram_tester;
 
@@ -257,18 +257,18 @@ TEST_F(MachineLevelUserCloudPolicyRegisterWatcherTest,
   EXPECT_EQ(RegisterResult::kQuitDueToFailure,
             watcher()->WaitUntilCloudPolicyEnrollmentFinished());
   histogram_tester.ExpectBucketCount(
-      MachineLevelUserCloudPolicyRegisterWatcher::kStartupDialogHistogramName,
-      MachineLevelUserCloudPolicyRegisterWatcher::EnrollmentStartupDialog::
+      ChromeBrowserCloudManagementRegisterWatcher::kStartupDialogHistogramName,
+      ChromeBrowserCloudManagementRegisterWatcher::EnrollmentStartupDialog::
           kShown,
       1);
   histogram_tester.ExpectBucketCount(
-      MachineLevelUserCloudPolicyRegisterWatcher::kStartupDialogHistogramName,
-      MachineLevelUserCloudPolicyRegisterWatcher::EnrollmentStartupDialog::
+      ChromeBrowserCloudManagementRegisterWatcher::kStartupDialogHistogramName,
+      ChromeBrowserCloudManagementRegisterWatcher::EnrollmentStartupDialog::
           kClosedAbort,
       1);
 }
 
-TEST_F(MachineLevelUserCloudPolicyRegisterWatcherTest,
+TEST_F(ChromeBrowserCloudManagementRegisterWatcherTest,
        EnrollmentCanceledBeforeFinishWithNoErrorMessageSetup) {
   base::HistogramTester histogram_tester;
 
@@ -282,18 +282,18 @@ TEST_F(MachineLevelUserCloudPolicyRegisterWatcherTest,
   EXPECT_EQ(RegisterResult::kQuitDueToFailure,
             watcher()->WaitUntilCloudPolicyEnrollmentFinished());
   histogram_tester.ExpectBucketCount(
-      MachineLevelUserCloudPolicyRegisterWatcher::kStartupDialogHistogramName,
-      MachineLevelUserCloudPolicyRegisterWatcher::EnrollmentStartupDialog::
+      ChromeBrowserCloudManagementRegisterWatcher::kStartupDialogHistogramName,
+      ChromeBrowserCloudManagementRegisterWatcher::EnrollmentStartupDialog::
           kShown,
       1);
   histogram_tester.ExpectBucketCount(
-      MachineLevelUserCloudPolicyRegisterWatcher::kStartupDialogHistogramName,
-      MachineLevelUserCloudPolicyRegisterWatcher::EnrollmentStartupDialog::
+      ChromeBrowserCloudManagementRegisterWatcher::kStartupDialogHistogramName,
+      ChromeBrowserCloudManagementRegisterWatcher::EnrollmentStartupDialog::
           kClosedAbort,
       1);
 }
 
-TEST_F(MachineLevelUserCloudPolicyRegisterWatcherTest,
+TEST_F(ChromeBrowserCloudManagementRegisterWatcherTest,
        EnrollmentFailedBeforeDialogDisplay) {
   base::HistogramTester histogram_tester;
 
@@ -304,18 +304,18 @@ TEST_F(MachineLevelUserCloudPolicyRegisterWatcherTest,
   EXPECT_EQ(RegisterResult::kQuitDueToFailure,
             watcher()->WaitUntilCloudPolicyEnrollmentFinished());
   histogram_tester.ExpectBucketCount(
-      MachineLevelUserCloudPolicyRegisterWatcher::kStartupDialogHistogramName,
-      MachineLevelUserCloudPolicyRegisterWatcher::EnrollmentStartupDialog::
+      ChromeBrowserCloudManagementRegisterWatcher::kStartupDialogHistogramName,
+      ChromeBrowserCloudManagementRegisterWatcher::EnrollmentStartupDialog::
           kShown,
       1);
   histogram_tester.ExpectBucketCount(
-      MachineLevelUserCloudPolicyRegisterWatcher::kStartupDialogHistogramName,
-      MachineLevelUserCloudPolicyRegisterWatcher::EnrollmentStartupDialog::
+      ChromeBrowserCloudManagementRegisterWatcher::kStartupDialogHistogramName,
+      ChromeBrowserCloudManagementRegisterWatcher::EnrollmentStartupDialog::
           kClosedFail,
       1);
 }
 
-TEST_F(MachineLevelUserCloudPolicyRegisterWatcherTest,
+TEST_F(ChromeBrowserCloudManagementRegisterWatcherTest,
        EnrollmentFailedWithoutErrorMessage) {
   base::HistogramTester histogram_tester;
 
@@ -330,18 +330,18 @@ TEST_F(MachineLevelUserCloudPolicyRegisterWatcherTest,
   EXPECT_EQ(RegisterResult::kEnrollmentFailedSilently,
             watcher()->WaitUntilCloudPolicyEnrollmentFinished());
   histogram_tester.ExpectBucketCount(
-      MachineLevelUserCloudPolicyRegisterWatcher::kStartupDialogHistogramName,
-      MachineLevelUserCloudPolicyRegisterWatcher::EnrollmentStartupDialog::
+      ChromeBrowserCloudManagementRegisterWatcher::kStartupDialogHistogramName,
+      ChromeBrowserCloudManagementRegisterWatcher::EnrollmentStartupDialog::
           kShown,
       1);
   histogram_tester.ExpectBucketCount(
-      MachineLevelUserCloudPolicyRegisterWatcher::kStartupDialogHistogramName,
-      MachineLevelUserCloudPolicyRegisterWatcher::EnrollmentStartupDialog::
+      ChromeBrowserCloudManagementRegisterWatcher::kStartupDialogHistogramName,
+      ChromeBrowserCloudManagementRegisterWatcher::EnrollmentStartupDialog::
           kClosedFailAndIgnore,
       1);
 }
 
-TEST_F(MachineLevelUserCloudPolicyRegisterWatcherTest,
+TEST_F(ChromeBrowserCloudManagementRegisterWatcherTest,
        EnrollmentFailedBeforeDialogDisplayWithoutErrorMessage) {
   base::HistogramTester histogram_tester;
 
@@ -350,7 +350,7 @@ TEST_F(MachineLevelUserCloudPolicyRegisterWatcherTest,
   EXPECT_EQ(RegisterResult::kEnrollmentFailedSilentlyBeforeDialogDisplayed,
             watcher()->WaitUntilCloudPolicyEnrollmentFinished());
   histogram_tester.ExpectTotalCount(
-      MachineLevelUserCloudPolicyRegisterWatcher::kStartupDialogHistogramName,
+      ChromeBrowserCloudManagementRegisterWatcher::kStartupDialogHistogramName,
       0);
 }
 
