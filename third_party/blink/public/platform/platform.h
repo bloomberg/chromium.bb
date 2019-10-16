@@ -87,10 +87,6 @@ class MediaPermission;
 class GpuVideoAcceleratorFactories;
 }
 
-namespace rtc {
-class Thread;
-}
-
 namespace service_manager {
 class InterfaceProvider;
 }
@@ -579,11 +575,6 @@ class BLINK_PLATFORM_EXPORT Platform {
   virtual scoped_refptr<base::SingleThreadTaskRunner> GetWebRtcWorkerThread() {
     return nullptr;
   }
-
-  // Returns the rtc::Thread instance associated with the WebRTC worker thread.
-  // TODO(bugs.webrtc.org/9419): Remove once WebRTC can be built as a component.
-  // May return null if WebRTC functionality is not implemented.
-  virtual rtc::Thread* GetWebRtcWorkerThreadRtcThread() { return nullptr; }
 
   virtual scoped_refptr<base::SingleThreadTaskRunner>
   GetWebRtcSignalingTaskRunner() {

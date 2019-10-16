@@ -558,13 +558,6 @@ RendererBlinkPlatformImpl::GetWebRtcWorkerThread() {
   return rtc_dependency_factory->GetWebRtcWorkerThread();
 }
 
-rtc::Thread* RendererBlinkPlatformImpl::GetWebRtcWorkerThreadRtcThread() {
-  auto* rtc_dependency_factory =
-      blink::PeerConnectionDependencyFactory::GetInstance();
-  rtc_dependency_factory->EnsureInitialized();
-  return rtc_dependency_factory->GetWebRtcWorkerThreadRtcThread();
-}
-
 scoped_refptr<base::SingleThreadTaskRunner>
 RendererBlinkPlatformImpl::GetWebRtcSignalingTaskRunner() {
   auto* rtc_dependency_factory =

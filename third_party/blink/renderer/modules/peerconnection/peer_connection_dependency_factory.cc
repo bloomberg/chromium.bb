@@ -596,9 +596,9 @@ PeerConnectionDependencyFactory::GetWebRtcWorkerThread() const {
                                            : nullptr;
 }
 
-rtc::Thread* PeerConnectionDependencyFactory::GetWebRtcWorkerThreadRtcThread()
-    const {
+rtc::Thread* PeerConnectionDependencyFactory::GetWebRtcWorkerThreadRtcThread() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  EnsureInitialized();
   return chrome_worker_thread_.IsRunning() ? worker_thread_ : nullptr;
 }
 
