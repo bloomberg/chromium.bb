@@ -31,6 +31,7 @@
 #include "content/browser/web_contents/web_contents_view.h"
 #include "content/common/frame_messages.h"
 #include "content/common/unfreezable_frame_messages.h"
+#include "content/public/browser/back_forward_cache.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/file_select_listener.h"
 #include "content/public/browser/invalidate_type.h"
@@ -1052,11 +1053,13 @@ class WebContentsSplitCacheBrowserTest : public WebContentsImplBrowserTest {
                               const GURL& worker) {
     DCHECK(url.is_valid());
 
-    // Do a cross-process navigation to clear the in-memory cache.
-    // We assume that we don't start this call from "chrome://gpu", as
-    // otherwise it won't be a cross-process navigation. We are relying
-    // on this navigation to discard the old process.
-    EXPECT_TRUE(NavigateToURL(shell(), GetWebUIURL("gpu")));
+    // Clear the in-memory cache held by the current process:
+    // 1) Prevent the old page from entering the back-forward cache. Otherwise
+    //    the old process will be kept alive, because it is still being used.
+    // 2) Navigate to a WebUI URL, which uses a new process.
+    BackForwardCache::DisableForRenderFrameHost(
+        shell()->web_contents()->GetMainFrame(), "test");
+    EXPECT_TRUE(NavigateToURL(shell(), GetWebUIURL(kChromeUIGpuHost)));
 
     // Observe network requests.
     ResourceLoadObserver observer(shell());
