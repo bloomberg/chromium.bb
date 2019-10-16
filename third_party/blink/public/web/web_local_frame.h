@@ -236,9 +236,6 @@ class WebLocalFrame : public WebFrame {
 
   // Navigation State -------------------------------------------------------
 
-  // Returns true if the current frame's load event has not completed.
-  bool IsLoading() const override = 0;
-
   // Returns true if there is a pending redirect or location change
   // within specified interval. This could be caused by:
   // * an HTTP Refresh header
@@ -271,13 +268,6 @@ class WebLocalFrame : public WebFrame {
 
   // Notify the frame that the screen orientation has changed.
   virtual void SendOrientationChangeEvent() = 0;
-
-  // Printing ------------------------------------------------------------
-
-  // Returns true on success and sets the out parameter to the print preset
-  // options for the document.
-  virtual bool GetPrintPresetOptionsForPlugin(const WebNode&,
-                                              WebPrintPresetOptions*) = 0;
 
   // CSS3 Paged Media ----------------------------------------------------
 
@@ -712,6 +702,11 @@ class WebLocalFrame : public WebFrame {
   // This function should be called after pairs of PrintBegin() and PrintEnd().
   virtual void DispatchAfterPrintEvent() = 0;
 
+  // Returns true on success and sets the out parameter to the print preset
+  // options for the document.
+  virtual bool GetPrintPresetOptionsForPlugin(const WebNode&,
+                                              WebPrintPresetOptions*) = 0;
+
   // Focus --------------------------------------------------------------
 
   // Advance the focus of the WebView to next text input element from current
@@ -776,13 +771,12 @@ class WebLocalFrame : public WebFrame {
   explicit WebLocalFrame(WebTreeScopeType scope) : WebFrame(scope) {}
 
   // Inherited from WebFrame, but intentionally hidden: it never makes sense
-  // to call these on a WebLocalFrame.
+  // to directly call these on a WebLocalFrame.
   bool IsWebLocalFrame() const override = 0;
   WebLocalFrame* ToWebLocalFrame() override = 0;
   bool IsWebRemoteFrame() const override = 0;
   WebRemoteFrame* ToWebRemoteFrame() override = 0;
 
- private:
   virtual void AddMessageToConsoleImpl(const WebConsoleMessage&,
                                        bool discard_duplicates) = 0;
 };
