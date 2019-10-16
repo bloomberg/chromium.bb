@@ -97,6 +97,9 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer {
     kTrustedVaultKeyRequired,
   };
 
+  // Reads trusted vault keys from the client and feeds them to the sync engine.
+  void FetchTrustedVaultKeys();
+
   // Called at various stages of asynchronously fetching and processing trusted
   // vault encryption keys.
   void TrustedVaultKeysFetched(const std::vector<std::string>& keys);

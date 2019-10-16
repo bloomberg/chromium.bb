@@ -162,7 +162,58 @@ TEST_F(SyncServiceCryptoTest,
                                         kSyncingAccountKeys);
 }
 
-TEST_F(SyncServiceCryptoTest, ShouldReadValidTrustedVaultKeysFromClient) {
+TEST_F(SyncServiceCryptoTest,
+       ShouldReadValidTrustedVaultKeysFromClientBeforeInitialization) {
+  const CoreAccountInfo kSyncingAccount =
+      MakeAccountInfoWithGaia("syncingaccount");
+  const std::vector<std::string> kFetchedKeys = {"key1"};
+
+  EXPECT_CALL(reconfigure_cb_, Run(_)).Times(0);
+  ASSERT_FALSE(crypto_.IsTrustedVaultKeyRequired());
+
+  // OnTrustedVaultKeyRequired() called during initialization of the sync
+  // engine (i.e. before SetSyncEngine()).
+  EXPECT_CALL(trusted_vault_client_, FetchKeys(_, _)).Times(0);
+  crypto_.OnTrustedVaultKeyRequired();
+
+  base::OnceCallback<void(const std::vector<std::string>&)> fetch_keys_cb;
+  EXPECT_CALL(trusted_vault_client_, FetchKeys(kSyncingAccount.gaia, _))
+      .WillOnce(
+          [&](const std::string& gaia_id,
+              base::OnceCallback<void(const std::vector<std::string>&)> cb) {
+            fetch_keys_cb = std::move(cb);
+          });
+
+  // Trusted vault keys should be fetched only after the engine initialization
+  // is completed.
+  crypto_.SetSyncEngine(kSyncingAccount, &engine_);
+  VerifyAndClearExpectations();
+
+  // While there is an ongoing fetch, there should be no user action required.
+  ASSERT_TRUE(fetch_keys_cb);
+  EXPECT_FALSE(crypto_.IsTrustedVaultKeyRequired());
+
+  base::OnceClosure add_keys_cb;
+  EXPECT_CALL(engine_, AddTrustedVaultDecryptionKeys(kFetchedKeys, _))
+      .WillOnce(
+          [&](const std::vector<std::string>& keys, base::OnceClosure done_cb) {
+            add_keys_cb = std::move(done_cb);
+          });
+
+  // Mimic completion of the fetch.
+  std::move(fetch_keys_cb).Run(kFetchedKeys);
+  ASSERT_TRUE(add_keys_cb);
+  EXPECT_FALSE(crypto_.IsTrustedVaultKeyRequired());
+
+  // Mimic completion of the engine.
+  EXPECT_CALL(reconfigure_cb_, Run(CONFIGURE_REASON_CRYPTO));
+  crypto_.OnTrustedVaultKeyAccepted();
+  std::move(add_keys_cb).Run();
+  EXPECT_FALSE(crypto_.IsTrustedVaultKeyRequired());
+}
+
+TEST_F(SyncServiceCryptoTest,
+       ShouldReadValidTrustedVaultKeysFromClientAfterInitialization) {
   const CoreAccountInfo kSyncingAccount =
       MakeAccountInfoWithGaia("syncingaccount");
   const std::vector<std::string> kFetchedKeys = {"key1"};

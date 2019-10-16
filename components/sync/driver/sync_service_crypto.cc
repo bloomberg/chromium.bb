@@ -397,10 +397,16 @@ void SyncServiceCrypto::OnTrustedVaultKeyRequired() {
 
   state_.required_user_action = RequiredUserAction::kFetchingTrustedVaultKeys;
 
-  trusted_vault_client_->FetchKeys(
-      state_.account_info.gaia,
-      base::BindOnce(&SyncServiceCrypto::TrustedVaultKeysFetched,
-                     weak_factory_.GetWeakPtr()));
+  if (!state_.engine) {
+    // If SetSyncEngine() hasn't been called yet, it means
+    // OnTrustedVaultKeyRequired() was called as part of the engine's
+    // initialization. Fetching the keys is not useful right now because there
+    // is known engine to feed the keys to, so let's defer fetching until
+    // SetSyncEngine() is called.
+    return;
+  }
+
+  FetchTrustedVaultKeys();
 }
 
 void SyncServiceCrypto::OnTrustedVaultKeyAccepted() {
@@ -482,6 +488,13 @@ void SyncServiceCrypto::SetSyncEngine(const CoreAccountInfo& account_info,
   DCHECK(engine);
   state_.account_info = account_info;
   state_.engine = engine;
+
+  // This indicates OnTrustedVaultKeyRequired() was called as part of the
+  // engine's initialization.
+  if (state_.required_user_action ==
+      RequiredUserAction::kFetchingTrustedVaultKeys) {
+    FetchTrustedVaultKeys();
+  }
 }
 
 std::unique_ptr<SyncEncryptionHandler::Observer>
@@ -489,6 +502,17 @@ SyncServiceCrypto::GetEncryptionObserverProxy() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return std::make_unique<SyncEncryptionObserverProxy>(
       weak_factory_.GetWeakPtr(), base::SequencedTaskRunnerHandle::Get());
+}
+
+void SyncServiceCrypto::FetchTrustedVaultKeys() {
+  DCHECK(state_.engine);
+  DCHECK_EQ(state_.required_user_action,
+            RequiredUserAction::kFetchingTrustedVaultKeys);
+
+  trusted_vault_client_->FetchKeys(
+      state_.account_info.gaia,
+      base::BindOnce(&SyncServiceCrypto::TrustedVaultKeysFetched,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void SyncServiceCrypto::TrustedVaultKeysFetched(
