@@ -21,19 +21,11 @@ def run_example(web_idl_database, output_dirs):
         code_node.SimpleNode(template_text="print ${z};"),
     ])
 
-    def make_symbol(name, template_text):
-        def constructor(symbol_node):
-            return code_node.SymbolDefinitionNode(
-                symbol_node, template_text=template_text)
-
-        return code_node.SymbolNode(
-            name=name, definition_node_constructor=constructor)
-
-    root_node.add_template_vars({
-        'x': make_symbol('x', "int ${x} = 1;"),
-        'y': make_symbol('y', "int ${y} = 2;"),
-        'z': make_symbol('z', "int ${z};"),
-    })
+    root_node.register_code_symbols([
+        code_node.SymbolNode('x', "int ${x} = 1;"),
+        code_node.SymbolNode('y', "int ${y} = 2;"),
+        code_node.SymbolNode('z', "int ${z};"),
+    ])
 
     prev = ''
     current = str(root_node)

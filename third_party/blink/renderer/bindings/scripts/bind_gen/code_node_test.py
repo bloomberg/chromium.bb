@@ -7,7 +7,6 @@ import unittest
 from .code_node import LiteralNode
 from .code_node import SequenceNode
 from .code_node import SimpleNode
-from .code_node import SymbolDefinitionNode
 from .code_node import SymbolNode
 from .code_node import SymbolScopeNode
 from .mako_renderer import MakoRenderer
@@ -83,20 +82,12 @@ class CodeNodeTest(unittest.TestCase):
         renderer = MakoRenderer()
         root = SymbolScopeNode(renderer=renderer)
 
-        def make_symbol(name, template_text):
-            def constructor(symbol_node):
-                return SymbolDefinitionNode(
-                    symbol_node, template_text=template_text)
-
-            return SymbolNode(
-                name=name, definition_node_constructor=constructor)
-
         root.register_code_symbols([
-            make_symbol("var1", "int var1 = ${var2} + ${var3};"),
-            make_symbol("var2", "int var2 = ${var5};"),
-            make_symbol("var3", "int var3 = ${var4};"),
-            make_symbol("var4", "int var4 = 1;"),
-            make_symbol("var5", "int var5 = 2;"),
+            SymbolNode("var1", "int var1 = ${var2} + ${var3};"),
+            SymbolNode("var2", "int var2 = ${var5};"),
+            SymbolNode("var3", "int var3 = ${var4};"),
+            SymbolNode("var4", "int var4 = 1;"),
+            SymbolNode("var5", "int var5 = 2;"),
         ])
 
         root.append(SimpleNode(template_text="(void)${var1};"))

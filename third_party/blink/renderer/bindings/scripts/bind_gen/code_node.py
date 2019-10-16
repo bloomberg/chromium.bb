@@ -386,20 +386,42 @@ class SymbolNode(CodeNode):
     will be automatically inserted iff this symbol is referenced.
     """
 
-    def __init__(self, name, definition_node_constructor):
+    def __init__(self,
+                 name,
+                 template_text=None,
+                 definition_node_constructor=None):
         """
         Args:
             name: The name of this code symbol.
+            template_text: Template text to be used to define the code symbol.
             definition_node_constructor: A callable that creates and returns a
-                new definition node.  This node will be passed as the argument.
+                new definition node.  This SymbolNode will be passed as the
+                argument.
+                Either of |template_text| or |definition_node_constructor| must
+                be given.
         """
         assert isinstance(name, str) and name
-        assert callable(definition_node_constructor)
+        assert (template_text is not None
+                or definition_node_constructor is not None)
+        assert template_text is None or definition_node_constructor is None
+        if template_text is not None:
+            assert isinstance(template_text, str)
+        if definition_node_constructor is not None:
+            assert callable(definition_node_constructor)
 
         CodeNode.__init__(self)
 
         self._name = name
-        self._definition_node_constructor = definition_node_constructor
+
+        if template_text is not None:
+
+            def constructor(symbol_node):
+                return SymbolDefinitionNode(
+                    symbol_node, template_text=template_text)
+
+            self._definition_node_constructor = constructor
+        else:
+            self._definition_node_constructor = definition_node_constructor
 
     def _render(self, renderer, last_render_state):
         if not renderer.last_caller.is_code_symbol_defined(self):
@@ -460,7 +482,7 @@ class SymbolScopeNode(SequenceNode):
     """
 
     def _render(self, renderer, last_render_state):
-        # Sort nodes in order to generate reproducible code.
+        # Sort nodes in order to render reproducible results.
         symbol_nodes = sorted(
             last_render_state.code_symbols_used.itervalues(),
             key=lambda symbol_node: symbol_node.name)
