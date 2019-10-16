@@ -57,10 +57,11 @@ gfx::NativeWindow PermissionPromptAndroid::GetNativeWindow() {
   return nullptr;
 }
 
-bool PermissionPromptAndroid::ShouldDestroyOnTabSwitching() {
+PermissionPrompt::TabSwitchingBehavior
+PermissionPromptAndroid::GetTabSwitchingBehavior() {
   if (permission_request_notification_)
-    return true;
-  return false;
+    return permission_request_notification_->GetTabSwitchingBehavior();
+  return TabSwitchingBehavior::kKeepPromptAlive;
 }
 
 void PermissionPromptAndroid::Closing() {

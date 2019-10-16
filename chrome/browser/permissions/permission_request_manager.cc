@@ -239,8 +239,21 @@ void PermissionRequestManager::OnVisibilityChanged(
     return;
 
   if (tab_is_hidden_) {
-    if (view_ && view_->ShouldDestroyOnTabSwitching())
-      DeleteBubble();
+    if (view_) {
+      switch (view_->GetTabSwitchingBehavior()) {
+        case PermissionPrompt::TabSwitchingBehavior::
+            kDestroyPromptButKeepRequestPending:
+          DeleteBubble();
+          break;
+        case PermissionPrompt::TabSwitchingBehavior::
+            kDestroyPromptAndIgnoreRequest:
+          FinalizeBubble(PermissionAction::IGNORED);
+          break;
+        case PermissionPrompt::TabSwitchingBehavior::kKeepPromptAlive:
+          break;
+      }
+    }
+
     return;
   }
 
@@ -254,7 +267,8 @@ void PermissionRequestManager::OnVisibilityChanged(
 
   if (view_) {
     // We switched tabs away and back while a prompt was active.
-    DCHECK(!view_->ShouldDestroyOnTabSwitching());
+    DCHECK_EQ(view_->GetTabSwitchingBehavior(),
+              PermissionPrompt::TabSwitchingBehavior::kKeepPromptAlive);
   } else {
     ShowBubble(/*is_reshow=*/true);
   }
