@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env vpython
 # Copyright 2013 The LUCI Authors. All rights reserved.
 # Use of this source code is governed under the Apache License, Version 2.0
 # that can be found in the LICENSE file.
@@ -249,7 +249,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
         })
     isolated_hash = isolateserver_fake.hash_content(isolated)
     def get_storage(server_ref):
-      return StorageFake({isolated_hash:isolated}, server_ref)
+      return StorageFake({isolated_hash: isolated}, server_ref)
     self.mock(isolateserver, 'get_storage', get_storage)
 
     cmd = [
@@ -282,7 +282,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
     isolated = json_dumps({'command': ['foo.exe', 'cmd w/ space']})
     isolated_hash = isolateserver_fake.hash_content(isolated)
     def get_storage(server_ref):
-      return StorageFake({isolated_hash:isolated}, server_ref)
+      return StorageFake({isolated_hash: isolated}, server_ref)
     self.mock(isolateserver, 'get_storage', get_storage)
 
     cmd = [
@@ -354,7 +354,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
   def test_run_tha_test_naked(self):
     isolated = json_dumps({'command': ['invalid', 'command']})
     isolated_hash = isolateserver_fake.hash_content(isolated)
-    files = {isolated_hash:isolated}
+    files = {isolated_hash: isolated}
     make_tree_call = self._run_tha_test(isolated_hash, files)
     self.assertEqual(
         [
@@ -384,7 +384,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
           'read_only': 0,
         })
     isolated_hash = isolateserver_fake.hash_content(isolated)
-    files = {isolated_hash:isolated}
+    files = {isolated_hash: isolated}
     make_tree_call = self._run_tha_test(isolated_hash, files)
     self.assertEqual(
         [
@@ -414,7 +414,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
           'read_only': 1,
         })
     isolated_hash = isolateserver_fake.hash_content(isolated)
-    files = {isolated_hash:isolated}
+    files = {isolated_hash: isolated}
     make_tree_call = self._run_tha_test(isolated_hash, files)
     self.assertEqual(
         [
@@ -444,7 +444,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
           'read_only': 2,
         })
     isolated_hash = isolateserver_fake.hash_content(isolated)
-    files = {isolated_hash:isolated}
+    files = {isolated_hash: isolated}
     make_tree_call = self._run_tha_test(isolated_hash, files)
     self.assertEqual(
         [
@@ -481,7 +481,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
     isolated = json_dumps({'command': ['invalid', 'command']})
     isolated_hash = isolateserver_fake.hash_content(isolated)
     def get_storage(server_ref):
-      return StorageFake({isolated_hash:isolated}, server_ref)
+      return StorageFake({isolated_hash: isolated}, server_ref)
     self.mock(isolateserver, 'get_storage', get_storage)
 
     cmd = [
@@ -819,7 +819,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
         'relative_cwd': 'some',
     })
     isolated_hash = isolateserver_fake.hash_content(isolated)
-    files = {isolated_hash:isolated}
+    files = {isolated_hash: isolated}
     _ = self._run_tha_test(isolated_hash, files)
     self.assertEqual(
         [
@@ -842,7 +842,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
         'relative_cwd': 'some',
     })
     isolated_hash = isolateserver_fake.hash_content(isolated)
-    files = {isolated_hash:isolated}
+    files = {isolated_hash: isolated}
     _ = self._run_tha_test(isolated_hash, files, lower_priority=True)
     # Injects sys.executable but on macOS, the path may be different than
     # sys.executable due to symlinks.
@@ -1466,7 +1466,7 @@ class RunIsolatedJsonTest(RunIsolatedTestBase):
     isolated_in_json = json_dumps({'command': sub_cmd})
     isolated_in_hash = isolateserver_fake.hash_content(isolated_in_json)
     def get_storage(server_ref):
-      return StorageFake({isolated_in_hash:isolated_in_json}, server_ref)
+      return StorageFake({isolated_in_hash: isolated_in_json}, server_ref)
     self.mock(isolateserver, 'get_storage', get_storage)
 
     out = os.path.join(self.tempdir, 'res.json')
