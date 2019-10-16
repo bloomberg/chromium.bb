@@ -7,6 +7,7 @@
 #include "base/system/sys_info.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "components/services/leveldb/public/cpp/util.h"
 #include "content/browser/dom_storage/dom_storage_types.h"
 
 namespace content {
@@ -38,13 +39,8 @@ scoped_refptr<SessionStorageDataMap> SessionStorageDataMap::CreateClone(
       listener, std::move(map_data), std::move(clone_from)));
 }
 
-std::vector<leveldb::mojom::BatchedOperationPtr>
-SessionStorageDataMap::PrepareToCommit() {
-  return std::vector<leveldb::mojom::BatchedOperationPtr>();
-}
-
-void SessionStorageDataMap::DidCommit(leveldb::mojom::DatabaseError error) {
-  listener_->OnCommitResult(error);
+void SessionStorageDataMap::DidCommit(leveldb::Status status) {
+  listener_->OnCommitResult(leveldb::LeveldbStatusToError(status));
 }
 
 SessionStorageDataMap::SessionStorageDataMap(

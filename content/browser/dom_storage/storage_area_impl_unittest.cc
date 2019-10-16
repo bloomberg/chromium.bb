@@ -53,11 +53,8 @@ class MockDelegate : public StorageAreaImpl::Delegate {
   ~MockDelegate() override {}
 
   void OnNoBindings() override {}
-  std::vector<leveldb::mojom::BatchedOperationPtr> PrepareToCommit() override {
-    return std::vector<leveldb::mojom::BatchedOperationPtr>();
-  }
-  void DidCommit(DatabaseError error) override {
-    if (error != DatabaseError::OK)
+  void DidCommit(leveldb::Status status) override {
+    if (!status.ok())
       LOG(ERROR) << "error committing!";
     if (committed_)
       std::move(committed_).Run();

@@ -77,9 +77,7 @@ class CONTENT_EXPORT SessionStorageDataMap final
   // Note: this is irrelevant, as the parent area is handling binding.
   void OnNoBindings() override {}
 
-  std::vector<leveldb::mojom::BatchedOperationPtr> PrepareToCommit() override;
-
-  void DidCommit(leveldb::mojom::DatabaseError error) override;
+  void DidCommit(leveldb::Status status) override;
 
  private:
   friend class base::RefCounted<SessionStorageDataMap>;

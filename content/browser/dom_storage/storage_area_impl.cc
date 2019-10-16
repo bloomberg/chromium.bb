@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/containers/span.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
@@ -14,15 +15,20 @@
 #include "components/services/leveldb/public/cpp/util.h"
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
+#include "third_party/leveldatabase/env_chromium.h"
 
 namespace content {
+
 namespace {
-using leveldb::mojom::BatchedOperation;
-using leveldb::mojom::BatchedOperationPtr;
 using leveldb::mojom::DatabaseError;
 }  // namespace
 
 StorageAreaImpl::Delegate::~Delegate() {}
+
+void StorageAreaImpl::Delegate::PrepareToCommit(
+    std::vector<storage::DomStorageDatabase::KeyValuePair>*
+        extra_entries_to_add,
+    std::vector<storage::DomStorageDatabase::Key>* extra_keys_to_delete) {}
 
 void StorageAreaImpl::Delegate::MigrateData(
     base::OnceCallback<void(std::unique_ptr<ValueMap>)> callback) {
@@ -756,56 +762,60 @@ void StorageAreaImpl::CommitChanges() {
   commit_rate_limiter_.add_samples(1);
 
   // Commit all our changes in a single batch.
-  std::vector<BatchedOperationPtr> operations = delegate_->PrepareToCommit();
-  bool has_changes = !operations.empty() ||
-                     !commit_batch_->changed_values.empty() ||
-                     !commit_batch_->changed_keys.empty();
-  if (commit_batch_->clear_all_first) {
-    BatchedOperationPtr item = BatchedOperation::New();
-    item->type = leveldb::mojom::BatchOperationType::DELETE_PREFIXED_KEY;
-    item->key = prefix_;
-    operations.push_back(std::move(item));
-  }
+  struct Commit {
+    storage::DomStorageDatabase::Key prefix;
+    bool clear_all_first;
+    std::vector<storage::DomStorageDatabase::KeyValuePair> entries_to_add;
+    std::vector<storage::DomStorageDatabase::Key> keys_to_delete;
+    base::Optional<storage::DomStorageDatabase::Key> copy_to_prefix;
+  };
+
+  Commit commit;
+  commit.prefix = prefix_;
+  commit.clear_all_first = commit_batch_->clear_all_first;
+  delegate_->PrepareToCommit(&commit.entries_to_add, &commit.keys_to_delete);
+
+  const bool has_changes = !commit.entries_to_add.empty() ||
+                           !commit.keys_to_delete.empty() ||
+                           !commit_batch_->changed_values.empty() ||
+                           !commit_batch_->changed_keys.empty();
   size_t data_size = 0;
   if (map_state_ == MapState::LOADED_KEYS_AND_VALUES) {
     DCHECK(commit_batch_->changed_values.empty())
         << "Map state and commit state out of sync.";
     for (const auto& key : commit_batch_->changed_keys) {
       data_size += key.size();
-      BatchedOperationPtr item = BatchedOperation::New();
-      item->key.reserve(prefix_.size() + key.size());
-      item->key.insert(item->key.end(), prefix_.begin(), prefix_.end());
-      item->key.insert(item->key.end(), key.begin(), key.end());
-      auto kv_it = keys_values_map_.find(key);
-      if (kv_it != keys_values_map_.end()) {
-        item->type = leveldb::mojom::BatchOperationType::PUT_KEY;
-        data_size += kv_it->second.size();
-        item->value = kv_it->second;
+      storage::DomStorageDatabase::Key prefixed_key;
+      prefixed_key.reserve(prefix_.size() + key.size());
+      prefixed_key.insert(prefixed_key.end(), prefix_.begin(), prefix_.end());
+      prefixed_key.insert(prefixed_key.end(), key.begin(), key.end());
+      auto it = keys_values_map_.find(key);
+      if (it != keys_values_map_.end()) {
+        data_size += it->second.size();
+        commit.entries_to_add.emplace_back(std::move(prefixed_key), it->second);
       } else {
-        item->type = leveldb::mojom::BatchOperationType::DELETE_KEY;
+        commit.keys_to_delete.push_back(std::move(prefixed_key));
       }
-      operations.push_back(std::move(item));
     }
   } else {
     DCHECK(commit_batch_->changed_keys.empty())
         << "Map state and commit state out of sync.";
     DCHECK_EQ(map_state_, MapState::LOADED_KEYS_ONLY);
-    for (auto& it : commit_batch_->changed_values) {
-      const auto& key = it.first;
+    for (auto& entry : commit_batch_->changed_values) {
+      const auto& key = entry.first;
       data_size += key.size();
-      BatchedOperationPtr item = BatchedOperation::New();
-      item->key.reserve(prefix_.size() + key.size());
-      item->key.insert(item->key.end(), prefix_.begin(), prefix_.end());
-      item->key.insert(item->key.end(), key.begin(), key.end());
-      auto kv_it = keys_only_map_.find(key);
-      if (kv_it != keys_only_map_.end()) {
-        item->type = leveldb::mojom::BatchOperationType::PUT_KEY;
-        data_size += it.second.size();
-        item->value = std::move(it.second);
+      storage::DomStorageDatabase::Key prefixed_key;
+      prefixed_key.reserve(prefix_.size() + key.size());
+      prefixed_key.insert(prefixed_key.end(), prefix_.begin(), prefix_.end());
+      prefixed_key.insert(prefixed_key.end(), key.begin(), key.end());
+      auto it = keys_only_map_.find(key);
+      if (it != keys_only_map_.end()) {
+        data_size += entry.second.size();
+        commit.entries_to_add.emplace_back(std::move(prefixed_key),
+                                           std::move(entry.second));
       } else {
-        item->type = leveldb::mojom::BatchOperationType::DELETE_KEY;
+        commit.keys_to_delete.push_back(std::move(prefixed_key));
       }
-      operations.push_back(std::move(item));
     }
   }
   // Schedule the copy, and ignore if |clear_all_first| is specified and there
@@ -813,11 +823,7 @@ void StorageAreaImpl::CommitChanges() {
   if (commit_batch_->copy_to_prefix) {
     DCHECK(!has_changes);
     DCHECK(!commit_batch_->clear_all_first);
-    BatchedOperationPtr item = BatchedOperation::New();
-    item->type = leveldb::mojom::BatchOperationType::COPY_PREFIXED_KEY;
-    item->key = prefix_;
-    item->value = std::move(commit_batch_->copy_to_prefix.value());
-    operations.push_back(std::move(item));
+    commit.copy_to_prefix = std::move(commit_batch_->copy_to_prefix);
   }
   commit_batch_.reset();
 
@@ -825,26 +831,41 @@ void StorageAreaImpl::CommitChanges() {
 
   ++commit_batches_in_flight_;
 
-  // TODO(michaeln): Currently there is no guarantee LevelDBDatabaseImpl::Write
-  // will run during a clean shutdown. We need that to avoid dataloss.
-  database_->Write(std::move(operations),
-                   base::BindOnce(&StorageAreaImpl::OnCommitComplete,
-                                  weak_ptr_factory_.GetWeakPtr()));
+  database_->RunDatabaseTask(
+      base::BindOnce(
+          [](Commit commit, const storage::DomStorageDatabase& db) {
+            leveldb::WriteBatch batch;
+            if (commit.clear_all_first)
+              db.DeletePrefixed(commit.prefix, &batch);
+            for (const auto& entry : commit.entries_to_add) {
+              batch.Put(leveldb_env::MakeSlice(entry.key),
+                        leveldb_env::MakeSlice(entry.value));
+            }
+            for (const auto& key : commit.keys_to_delete)
+              batch.Delete(leveldb_env::MakeSlice(key));
+            if (commit.copy_to_prefix) {
+              db.CopyPrefixed(commit.prefix, commit.copy_to_prefix.value(),
+                              &batch);
+            }
+            return db.Commit(&batch);
+          },
+          std::move(commit)),
+      base::BindOnce(&StorageAreaImpl::OnCommitComplete,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
-void StorageAreaImpl::OnCommitComplete(DatabaseError error) {
+void StorageAreaImpl::OnCommitComplete(leveldb::Status status) {
   has_committed_data_ = true;
   --commit_batches_in_flight_;
   StartCommitTimer();
 
-  if (error != DatabaseError::OK) {
+  if (!status.ok())
     SetCacheMode(CacheMode::KEYS_AND_VALUES);
-  }
 
   // Call before |DidCommit| as delegate can destroy this object.
   UnloadMapIfPossible();
 
-  delegate_->DidCommit(error);
+  delegate_->DidCommit(status);
 }
 
 void StorageAreaImpl::UnloadMapIfPossible() {

@@ -156,7 +156,7 @@ class CONTENT_EXPORT LocalStorageContextMojo
                      std::vector<leveldb::mojom::KeyValuePtr> data);
 
   void OnGotStorageUsageForShutdown(std::vector<StorageUsageInfo> usage);
-  void OnShutdownComplete(leveldb::mojom::DatabaseError error);
+  void OnShutdownComplete(leveldb::Status status);
 
   void GetStatistics(size_t* total_cache_size, size_t* unused_area_count);
   void OnCommitResult(leveldb::mojom::DatabaseError error);
