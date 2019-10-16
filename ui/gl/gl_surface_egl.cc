@@ -20,6 +20,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/system/sys_info.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "ui/events/platform/platform_event_source.h"
@@ -38,6 +39,7 @@
 #include "ui/gl/sync_control_vsync_provider.h"
 
 #if defined(USE_X11)
+#include "ui/base/x/x11_display_util.h"
 #include "ui/base/x/x11_util_internal.h"  // nogncheck
 #include "ui/gfx/x/x11.h"
 #endif
@@ -198,6 +200,37 @@ struct TraceSwapEventsInitializer {
 
 static base::LazyInstance<TraceSwapEventsInitializer>::Leaky
     g_trace_swap_enabled = LAZY_INSTANCE_INITIALIZER;
+
+#if defined(USE_X11)
+class XrandrIntervalOnlyVSyncProvider : public gfx::VSyncProvider {
+ public:
+  XrandrIntervalOnlyVSyncProvider(Display* display)
+      : display_(display), interval_(base::TimeDelta::FromSeconds(1 / 60.)) {}
+
+  void GetVSyncParameters(UpdateVSyncCallback callback) override {
+    if (++calls_since_last_update_ >= kCallsBetweenUpdates) {
+      calls_since_last_update_ = 0;
+      interval_ = ui::GetPrimaryDisplayRefreshIntervalFromXrandr(display_);
+    }
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(callback), base::TimeTicks(), interval_));
+  }
+
+  bool GetVSyncParametersIfAvailable(base::TimeTicks* timebase,
+                                     base::TimeDelta* interval) override {
+    return false;
+  }
+  bool SupportGetVSyncParametersIfAvailable() const override { return false; }
+  bool IsHWClock() const override { return false; }
+
+ private:
+  Display* const display_ = nullptr;
+  base::TimeDelta interval_;
+  static const int kCallsBetweenUpdates = 100;
+  int calls_since_last_update_ = kCallsBetweenUpdates;
+};
+#endif
 
 class EGLSyncControlVSyncProvider : public SyncControlVSyncProvider {
  public:
@@ -1204,6 +1237,21 @@ bool NativeViewGLSurfaceEGL::Initialize(GLSurfaceFormat format) {
     return false;
   }
 
+  if (g_driver_egl.ext.b_EGL_NV_post_sub_buffer) {
+    EGLint surfaceVal;
+    EGLBoolean retVal = eglQuerySurface(
+        GetDisplay(), surface_, EGL_POST_SUB_BUFFER_SUPPORTED_NV, &surfaceVal);
+    supports_post_sub_buffer_ = (surfaceVal && retVal) == EGL_TRUE;
+  }
+
+  supports_swap_buffer_with_damage_ =
+      g_driver_egl.ext.b_EGL_KHR_swap_buffers_with_damage;
+
+  if (!vsync_provider_external_ && EGLSyncControlVSyncProvider::IsSupported()) {
+    vsync_provider_internal_ =
+        std::make_unique<EGLSyncControlVSyncProvider>(surface_);
+  }
+
 #if defined(USE_X11)
   // Query all child windows and store them. ANGLE creates a child window when
   // eglCreateWidnowSurface is called on X11 and expose events from this window
@@ -1226,22 +1274,13 @@ bool NativeViewGLSurfaceEGL::Initialize(GLSurfaceFormat format) {
   if (PlatformEventSource* source = PlatformEventSource::GetInstance()) {
     source->AddPlatformEventDispatcher(this);
   }
+
+  if (!vsync_provider_external_ && !vsync_provider_internal_) {
+    vsync_provider_internal_ =
+        std::make_unique<XrandrIntervalOnlyVSyncProvider>(x11_display);
+  }
 #endif
 
-  if (g_driver_egl.ext.b_EGL_NV_post_sub_buffer) {
-    EGLint surfaceVal;
-    EGLBoolean retVal = eglQuerySurface(
-        GetDisplay(), surface_, EGL_POST_SUB_BUFFER_SUPPORTED_NV, &surfaceVal);
-    supports_post_sub_buffer_ = (surfaceVal && retVal) == EGL_TRUE;
-  }
-
-  supports_swap_buffer_with_damage_ =
-      g_driver_egl.ext.b_EGL_KHR_swap_buffers_with_damage;
-
-  if (!vsync_provider_external_ && EGLSyncControlVSyncProvider::IsSupported()) {
-    vsync_provider_internal_ =
-        std::make_unique<EGLSyncControlVSyncProvider>(surface_);
-  }
   presentation_helper_ =
       std::make_unique<GLSurfacePresentationHelper>(GetVSyncProvider());
   return true;
