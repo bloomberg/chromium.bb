@@ -128,6 +128,7 @@ source_set("headers") {
     "service_worker/service_worker_types.h",
     "service_worker/service_worker_utils.h",
     "sms/sms_receiver_outcome.h",
+    "sudden_termination_disabler_type.h",
     "user_agent/user_agent_metadata.h",
     "web_cache/web_cache_resource_type_stats.h",
     "web_package/signed_exchange_consts.h",

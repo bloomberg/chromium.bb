@@ -42,6 +42,7 @@
 #include "third_party/blink/public/common/frame/user_activation_update_type.h"
 #include "third_party/blink/public/common/loader/loading_behavior_flag.h"
 #include "third_party/blink/public/common/loader/url_loader_factory_bundle.h"
+#include "third_party/blink/public/common/sudden_termination_disabler_type.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-shared.h"
 #include "third_party/blink/public/mojom/use_counter/css_property_id.mojom-shared.h"
 #include "third_party/blink/public/platform/blame_context.h"
@@ -56,7 +57,6 @@
 #include "third_party/blink/public/platform/web_scroll_types.h"
 #include "third_party/blink/public/platform/web_set_sink_id_callbacks.h"
 #include "third_party/blink/public/platform/web_source_location.h"
-#include "third_party/blink/public/platform/web_sudden_termination_disabler_type.h"
 #include "third_party/blink/public/platform/web_url_error.h"
 #include "third_party/blink/public/platform/web_url_loader_factory.h"
 #include "third_party/blink/public/platform/web_url_request.h"
@@ -774,9 +774,9 @@ class BLINK_EXPORT WebLocalFrameClient {
   // Called when elements preventing the sudden termination of the frame
   // become present or stop being present. |type| is the type of element
   // (BeforeUnload handler, Unload handler).
-  virtual void SuddenTerminationDisablerChanged(
-      bool present,
-      WebSuddenTerminationDisablerType) {}
+  virtual void SuddenTerminationDisablerChanged(bool present,
+                                                SuddenTerminationDisablerType) {
+  }
 
   // Navigator Content Utils  --------------------------------------------
 
