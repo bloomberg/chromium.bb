@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PERFORMANCE_MANAGER_FRAME_PRIORITY_UNITTEST_UTIL_H_
-#define COMPONENTS_PERFORMANCE_MANAGER_FRAME_PRIORITY_UNITTEST_UTIL_H_
+#ifndef COMPONENTS_PERFORMANCE_MANAGER_TEST_SUPPORT_FRAME_PRIORITY_H_
+#define COMPONENTS_PERFORMANCE_MANAGER_TEST_SUPPORT_FRAME_PRIORITY_H_
 
 #include "components/performance_manager/public/frame_priority/frame_priority.h"
 
@@ -72,4 +72,4 @@ class DummyVoter {
 }  // namespace frame_priority
 }  // namespace performance_manager
 
-#endif  // COMPONENTS_PERFORMANCE_MANAGER_FRAME_PRIORITY_UNITTEST_UTIL_H_
+#endif  // COMPONENTS_PERFORMANCE_MANAGER_TEST_SUPPORT_FRAME_PRIORITY_H_
