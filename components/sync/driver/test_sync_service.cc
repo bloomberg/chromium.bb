@@ -11,6 +11,7 @@
 #include "components/sync/base/progress_marker_map.h"
 #include "components/sync/driver/sync_token_status.h"
 #include "components/sync/engine/cycle/model_neutral_state.h"
+#include "crypto/ec_private_key.h"
 
 namespace syncer {
 
@@ -170,8 +171,9 @@ bool TestSyncService::RequiresClientUpgrade() const {
          syncer::UPGRADE_CLIENT;
 }
 
-std::string TestSyncService::GetExperimentalAuthenticationId() const {
-  return std::string();
+std::unique_ptr<crypto::ECPrivateKey>
+TestSyncService::GetExperimentalAuthenticationKey() const {
+  return nullptr;
 }
 
 std::unique_ptr<SyncSetupInProgressHandle>
