@@ -280,6 +280,12 @@ void ConnectToQuarantineService(
                               std::move(receiver));
 }
 
+bool IsDownloadTooLargeOrEncrypted(download::DownloadDangerType danger_type) {
+  return (danger_type == download::DOWNLOAD_DANGER_TYPE_BLOCKED_TOO_LARGE ||
+          danger_type ==
+              download::DOWNLOAD_DANGER_TYPE_BLOCKED_PASSWORD_PROTECTED);
+}
+
 }  // namespace
 
 ChromeDownloadManagerDelegate::ChromeDownloadManagerDelegate(Profile* profile)
@@ -1163,11 +1169,14 @@ void ChromeDownloadManagerDelegate::CheckClientDownloadDone(
         item->OnAsyncScanningCompleted(danger_type);
       }
     } else if (ShouldBlockFile(danger_type, item)) {
+      // Specifying a dangerous type here would take precedence over the
+      // blocking of the file. For BLOCKED_TOO_LARGE and
+      // BLOCKED_PASSWORD_PROTECTED, we want to display more clear UX, so
+      // allow those danger types.
+      if (!IsDownloadTooLargeOrEncrypted(danger_type))
+        danger_type = download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS;
       item->OnContentCheckCompleted(
-          // Specifying a dangerous type here would take precedence over the
-          // blocking of the file.
-          download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
-          download::DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED);
+          danger_type, download::DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED);
     } else {
       item->OnContentCheckCompleted(danger_type,
                                     download::DOWNLOAD_INTERRUPT_REASON_NONE);
@@ -1277,9 +1286,7 @@ bool ChromeDownloadManagerDelegate::ShouldBlockFile(
   DownloadPrefs::DownloadRestriction download_restriction =
       download_prefs_->download_restriction();
 
-  if (danger_type ==
-          download::DOWNLOAD_DANGER_TYPE_BLOCKED_PASSWORD_PROTECTED ||
-      danger_type == download::DOWNLOAD_DANGER_TYPE_BLOCKED_TOO_LARGE)
+  if (IsDownloadTooLargeOrEncrypted(danger_type))
     return true;
 
   if (item &&
