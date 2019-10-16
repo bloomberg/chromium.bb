@@ -224,8 +224,7 @@ RenderViewHostImpl::RenderViewHostImpl(
       instance_(static_cast<SiteInstanceImpl*>(instance)),
       is_swapped_out_(swapped_out),
       routing_id_(routing_id),
-      main_frame_routing_id_(main_frame_routing_id),
-      visual_properties_manager_(this) {
+      main_frame_routing_id_(main_frame_routing_id) {
   DCHECK(instance_.get());
   CHECK(delegate_);  // http://crbug.com/82827
   DCHECK_NE(GetRoutingID(), render_widget_host_->GetRoutingID());
