@@ -837,18 +837,9 @@ int av1_cost_coeffs_txb(const AV1_COMMON *const cm, const MACROBLOCK *x,
   const MACROBLOCKD *const xd = &x->e_mbd;
   const TX_CLASS tx_class = tx_type_to_class[tx_type];
 
-#define WAREHOUSE_EFFICIENTS_TXB_CASE(tx_class_literal)                        \
-  case tx_class_literal:                                                       \
-    return warehouse_efficients_txb(cm, x, plane, block, tx_size, txb_ctx, p,  \
-                                    eob, plane_type, coeff_costs, xd, tx_type, \
-                                    tx_class_literal);
-  switch (tx_class) {
-    WAREHOUSE_EFFICIENTS_TXB_CASE(TX_CLASS_2D);
-    WAREHOUSE_EFFICIENTS_TXB_CASE(TX_CLASS_HORIZ);
-    WAREHOUSE_EFFICIENTS_TXB_CASE(TX_CLASS_VERT);
-#undef WAREHOUSE_EFFICIENTS_TXB_CASE
-    default: assert(false); return 0;
-  }
+  return warehouse_efficients_txb(cm, x, plane, block, tx_size, txb_ctx, p, eob,
+                                  plane_type, coeff_costs, xd, tx_type,
+                                  tx_class);
 }
 
 static int optimize_txb(TxbInfo *txb_info, const LV_MAP_COEFF_COST *txb_costs,
