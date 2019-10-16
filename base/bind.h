@@ -191,12 +191,14 @@ template <bool is_once, typename Invoker>
 struct InvokeFuncImpl;
 
 template <typename Invoker>
-struct InvokeFuncImpl<true, Invoker>
-    : std::integral_constant<decltype(&Invoker::RunOnce), &Invoker::RunOnce> {};
+struct InvokeFuncImpl<true, Invoker> {
+  static constexpr auto Value = &Invoker::RunOnce;
+};
 
 template <typename Invoker>
-struct InvokeFuncImpl<false, Invoker>
-    : std::integral_constant<decltype(&Invoker::Run), &Invoker::Run> {};
+struct InvokeFuncImpl<false, Invoker> {
+  static constexpr auto Value = &Invoker::Run;
+};
 
 template <template <typename> class CallbackT,
           typename Functor,
@@ -227,7 +229,7 @@ decltype(auto) BindImpl(Functor&& functor, Args&&... args) {
   // InvokeFuncStorage, so that we can ensure its type matches to
   // PolymorphicInvoke, to which CallbackType will cast back.
   using PolymorphicInvoke = typename CallbackType::PolymorphicInvoke;
-  PolymorphicInvoke invoke_func = InvokeFuncImpl<kIsOnce, Invoker>::value;
+  PolymorphicInvoke invoke_func = InvokeFuncImpl<kIsOnce, Invoker>::Value;
 
   using InvokeFuncStorage = internal::BindStateBase::InvokeFuncStorage;
   return CallbackType(BindState::Create(
