@@ -3362,7 +3362,7 @@ bool AXObject::NameFromSelectedOption(bool recursive) const {
     // This can be either a button widget with a non-false value of
     // aria-haspopup or a select element with size of 1.
     case ax::mojom::Role::kPopUpButton:
-      return ToHTMLSelectElementOrNull(*GetNode()) ? recursive : false;
+      return DynamicTo<HTMLSelectElement>(*GetNode()) ? recursive : false;
     default:
       return false;
   }

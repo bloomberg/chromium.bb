@@ -581,7 +581,7 @@ ax::mojom::Role AXNodeObject::NativeRoleIgnoringAria() const {
     return ax::mojom::Role::kTextField;
   }
 
-  if (auto* select_element = ToHTMLSelectElementOrNull(*GetNode())) {
+  if (auto* select_element = DynamicTo<HTMLSelectElement>(*GetNode())) {
     return select_element->IsMultiple() ? ax::mojom::Role::kListBox
                                         : ax::mojom::Role::kPopUpButton;
   }
@@ -1062,8 +1062,8 @@ bool AXNodeObject::IsMultiSelectable() const {
       break;
   }
 
-  return IsHTMLSelectElement(GetNode()) &&
-         ToHTMLSelectElement(*GetNode()).IsMultiple();
+  auto* html_select_element = DynamicTo<HTMLSelectElement>(GetNode());
+  return html_select_element && html_select_element->IsMultiple();
 }
 
 bool AXNodeObject::IsNativeCheckboxOrRadio() const {
@@ -1909,7 +1909,7 @@ String AXNodeObject::StringValue() const {
   if (!node)
     return String();
 
-  if (auto* select_element = ToHTMLSelectElementOrNull(*node)) {
+  if (auto* select_element = DynamicTo<HTMLSelectElement>(*node)) {
     int selected_index = select_element->selectedIndex();
     const HeapVector<Member<HTMLElement>>& list_items =
         select_element->GetListItems();
@@ -2066,7 +2066,7 @@ String AXNodeObject::TextAlternative(bool recursive,
   // Step 2F / 2G from: http://www.w3.org/TR/accname-aam-1.1
   if (in_aria_labelled_by_traversal || NameFromContents(recursive)) {
     Node* node = GetNode();
-    if (!IsHTMLSelectElement(node)) {  // Avoid option descendant text
+    if (!IsA<HTMLSelectElement>(node)) {  // Avoid option descendant text
       name_from = ax::mojom::NameFrom::kContents;
       if (name_sources) {
         name_sources->push_back(NameSource(found_text_alternative));
@@ -2790,8 +2790,7 @@ void AXNodeObject::UpdateChildrenIfNecessary() {
 }
 
 void AXNodeObject::SelectedOptions(AXObjectVector& options) const {
-  if (IsHTMLSelectElement(GetNode())) {
-    HTMLSelectElement* select = ToHTMLSelectElement(GetNode());
+  if (auto* select = DynamicTo<HTMLSelectElement>(GetNode())) {
     for (auto* const option : *select->selectedOptions()) {
       AXObject* ax_option = AXObjectCache().GetOrCreate(option);
       if (ax_option)

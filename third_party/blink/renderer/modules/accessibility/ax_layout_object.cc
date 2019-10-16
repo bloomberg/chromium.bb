@@ -1428,8 +1428,7 @@ String AXLayoutObject::StringValue() const {
     // LayoutMenuList will go straight to the text() of its selected item.
     // This has to be overridden in the case where the selected item has an ARIA
     // label.
-    HTMLSelectElement* select_element =
-        ToHTMLSelectElement(layout_object_->GetNode());
+    auto* select_element = To<HTMLSelectElement>(layout_object_->GetNode());
     int selected_index = select_element->selectedIndex();
     const HeapVector<Member<HTMLElement>>& list_items =
         select_element->GetListItems();
