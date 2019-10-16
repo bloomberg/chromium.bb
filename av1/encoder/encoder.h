@@ -553,16 +553,6 @@ typedef struct inter_modes_info {
   int64_t sse_arr[MAX_INTER_MODES];
   int64_t est_rd_arr[MAX_INTER_MODES];
   RdIdxPair rd_idx_pair_arr[MAX_INTER_MODES];
-  bool true_rd_arr[MAX_INTER_MODES];
-  // Right now the inter_mode_rd_model_estimation_adaptive speed feature is not
-  // enabled, so we don't need to allocate memory for blk_skip and tx_type_map.
-#if 1
-  uint8_t blk_skip_arr[MAX_INTER_MODES][1];
-  uint8_t tx_type_map[MAX_INTER_MODES][1];
-#else
-  uint8_t blk_skip_arr[MAX_INTER_MODES][MAX_MIB_SIZE * MAX_MIB_SIZE];
-  uint8_t tx_type_map[MAX_INTER_MODES][MAX_MIB_SIZE * MAX_MIB_SIZE];
-#endif
   RD_STATS rd_cost_arr[MAX_INTER_MODES];
   RD_STATS rd_cost_y_arr[MAX_INTER_MODES];
   RD_STATS rd_cost_uv_arr[MAX_INTER_MODES];
