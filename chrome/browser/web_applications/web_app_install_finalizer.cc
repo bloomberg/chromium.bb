@@ -67,7 +67,7 @@ Source::Type InferSourceFromMetricsInstallSource(
 void SetIcons(const WebApplicationInfo& web_app_info, WebApp* web_app) {
   WebApp::Icons web_app_icons;
 
-  for (const WebApplicationInfo::IconInfo& icon_info : web_app_info.icons) {
+  for (const WebApplicationIconInfo& icon_info : web_app_info.icons) {
     // Skip unfetched bitmaps.
     if (icon_info.data.colorType() == kUnknown_SkColorType)
       continue;
