@@ -4402,9 +4402,6 @@
         },
         'test': 'browser_tests',
       },
-      'weblayer_browsertests': {
-        'test': 'weblayer_browsertests',
-      },
     },
 
     'network_service_gtests': {
@@ -4927,6 +4924,11 @@
       },
     },
 
+    'weblayer_gtests': {
+      'weblayer_browsertests': {
+      },
+    },
+
     # TODO(crbug.com/888429): Port remaining WebRTC tests to swarming.
     'webrtc_chromium_baremetal_gtests': {
       # Run capture unittests as well since our bots have real webcams.
@@ -5241,6 +5243,7 @@
       'vr_platform_specific_chromium_gtests',
       'network_service_android_gtests',
       'weblayer_android_gtests',
+      'weblayer_gtests',
     ],
 
     'android_nougat_gtests': [
@@ -5285,6 +5288,7 @@
       'vr_platform_specific_chromium_gtests',
       'network_service_android_gtests',
       'weblayer_android_gtests',
+      'weblayer_gtests',
     ],
 
     'android_wpt_scripts': [
@@ -5407,6 +5411,7 @@
       'non_android_and_cast_and_chromeos_chromium_gtests',
       'skia_renderer_gtests',
       'vr_platform_specific_chromium_gtests',
+      'weblayer_gtests',
     ],
 
     'chromium_linux_rel_isolated_scripts': [
@@ -5450,6 +5455,7 @@
       'non_android_chromium_gtests',
       'non_android_and_cast_and_chromeos_chromium_gtests',
       'vr_platform_specific_chromium_gtests',
+      'weblayer_gtests',
       'win_specific_chromium_gtests',
     ],
 
@@ -5954,6 +5960,7 @@
     'mojo_android_gtests': [
       'network_service_android_gtests',
       'weblayer_android_gtests',
+      'weblayer_gtests',
     ],
 
     'mojo_chromiumos_fyi_gtests': [
@@ -5967,12 +5974,14 @@
     'mojo_linux_gtests': [
       'network_service_fyi_gtests',
       'network_service_in_process_gtests',
+      'weblayer_gtests',
     ],
 
     'mojo_windows_gtests': [
       'mojo_windows_specific_gtests',
       'network_service_fyi_gtests',
       'network_service_in_process_gtests',
+      'weblayer_gtests',
     ],
 
     'sandboxed_chromium_memory_linux_gtests': [

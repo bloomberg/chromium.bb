@@ -135,6 +135,14 @@ ContentBrowserClientImpl::CreateNetworkContext(
   return network_context;
 }
 
+void ContentBrowserClientImpl::OnNetworkServiceCreated(
+    network::mojom::NetworkService* network_service) {
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  network::mojom::CryptConfigPtr config = network::mojom::CryptConfig::New();
+  content::GetNetworkService()->SetCryptConfig(std::move(config));
+#endif
+}
+
 #if defined(OS_LINUX) || defined(OS_ANDROID)
 void ContentBrowserClientImpl::GetAdditionalMappedFilesForChildProcess(
     const base::CommandLine& command_line,
