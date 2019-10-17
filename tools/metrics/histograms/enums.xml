@@ -63629,6 +63629,13 @@ Full version information for the fingerprint enum values:
   </int>
 </enum>
 
+<enum name="VRStartReason">
+  <int value="1" label="Headset Activation"/>
+  <int value="2" label="Presentation Requset"/>
+  <int value="3" label="(obsolete) Deep linked app"/>
+  <int value="4" label="Intent Launch"/>
+</enum>
+
 <enum name="VRSuppressedElement">
   <int value="0" label="File chooser was suppressed in VR"/>
   <int value="1" label="Bluetooth picker was suppressed in VR"/>
@@ -67304,11 +67311,29 @@ Full version information for the fingerprint enum values:
   <int value="1" label="OpenVR"/>
 </enum>
 
+<enum name="XRSessionMode">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Inline"/>
+  <int value="2" label="Immersive VR"/>
+  <int value="3" label="Immersive AR"/>
+</enum>
+
+<enum name="XRSessionModeRequest">
+  <int value="0" label="Inline"/>
+  <int value="1" label="Immersive VR"/>
+  <int value="2" label="Immersive AR"/>
+</enum>
+
 <enum name="XRSessionRequestDialogAction">
   <int value="0" label="UserConsented"/>
   <int value="1" label="UserDenied"/>
   <int value="2" label="UserAbortedConsentFlow"/>
   <int value="3" label="UserConsentedAfterBounce"/>
+</enum>
+
+<enum name="XRSessionRequestStatus">
+  <int value="0" label="Success"/>
+  <int value="1" label="Error"/>
 </enum>
 
 <enum name="YoungGenerationHandling">
