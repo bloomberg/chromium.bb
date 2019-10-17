@@ -32,6 +32,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
+#include "components/security_interstitials/core/common_string_util.h"
 #include "components/security_state/core/features.h"
 #include "components/security_state/core/security_state.h"
 #include "components/strings/grit/components_strings.h"
@@ -232,7 +233,10 @@ class SafetyTipPageInfoBubbleViewBrowserTest
                                                             : !IsUIShowing();
   }
 
-  void CheckPageInfoShowsSafetyTipInfo(Browser* browser) {
+  void CheckPageInfoShowsSafetyTipInfo(
+      Browser* browser,
+      security_state::SafetyTipStatus expected_safety_tip_status,
+      const GURL& expected_safe_url) {
     if (ui_status() == UIStatus::kDisabled) {
       return;
     }
@@ -241,9 +245,28 @@ class SafetyTipPageInfoBubbleViewBrowserTest
     views::BubbleDialogDelegateView* page_info =
         PageInfoBubbleViewBase::GetPageInfoBubbleForTesting();
     ASSERT_TRUE(page_info);
-    EXPECT_EQ(page_info->GetWindowTitle(),
-              l10n_util::GetStringUTF16(
-                  IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_TITLE));
+
+    switch (expected_safety_tip_status) {
+      case security_state::SafetyTipStatus::kBadReputation:
+        EXPECT_EQ(page_info->GetWindowTitle(),
+                  l10n_util::GetStringUTF16(
+                      IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_TITLE));
+        break;
+
+      case security_state::SafetyTipStatus::kLookalike:
+        EXPECT_EQ(page_info->GetWindowTitle(),
+                  l10n_util::GetStringFUTF16(
+                      IDS_PAGE_INFO_SAFETY_TIP_LOOKALIKE_TITLE,
+                      security_interstitials::common_string_util::
+                          GetFormattedHostName(expected_safe_url)));
+        break;
+
+      case security_state::SafetyTipStatus::kBadKeyword:
+      case security_state::SafetyTipStatus::kUnknown:
+      case security_state::SafetyTipStatus::kNone:
+        NOTREACHED();
+        break;
+    }
   }
 
   void CheckPageInfoDoesNotShowSafetyTipInfo(Browser* browser) {
@@ -298,7 +321,8 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest, ShowOnBlock) {
   NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
   EXPECT_TRUE(IsUIShowingIfEnabled());
 
-  ASSERT_NO_FATAL_FAILURE(CheckPageInfoShowsSafetyTipInfo(browser()));
+  ASSERT_NO_FATAL_FAILURE(CheckPageInfoShowsSafetyTipInfo(
+      browser(), security_state::SafetyTipStatus::kBadReputation, GURL()));
 }
 
 // Ensure explicitly-allowed sites don't get blocked when the site is otherwise
@@ -311,7 +335,8 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
   SetSafetyTipBadRepPatterns({"site1.com/"});
   NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
   EXPECT_TRUE(IsUIShowingIfEnabled());
-  ASSERT_NO_FATAL_FAILURE(CheckPageInfoShowsSafetyTipInfo(browser()));
+  ASSERT_NO_FATAL_FAILURE(CheckPageInfoShowsSafetyTipInfo(
+      browser(), security_state::SafetyTipStatus::kBadReputation, GURL()));
 
   // ...but suppressed by the allowlist.
   SetSafetyTipAllowlistPatterns({"site1.com/"});
@@ -368,7 +393,8 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
   EXPECT_EQ(kNavigatedUrl,
             browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
 
-  ASSERT_NO_FATAL_FAILURE(CheckPageInfoShowsSafetyTipInfo(browser()));
+  ASSERT_NO_FATAL_FAILURE(CheckPageInfoShowsSafetyTipInfo(
+      browser(), security_state::SafetyTipStatus::kBadReputation, GURL()));
 }
 
 // After the user closes the warning, they should still be on the same domain.
@@ -385,7 +411,8 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
   EXPECT_EQ(kNavigatedUrl,
             browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
 
-  ASSERT_NO_FATAL_FAILURE(CheckPageInfoShowsSafetyTipInfo(browser()));
+  ASSERT_NO_FATAL_FAILURE(CheckPageInfoShowsSafetyTipInfo(
+      browser(), security_state::SafetyTipStatus::kBadReputation, GURL()));
 }
 
 // If the user closes the bubble, the warning should not re-appear when the user
@@ -422,7 +449,8 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
   NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
   EXPECT_TRUE(IsUIShowingIfEnabled());
 
-  ASSERT_NO_FATAL_FAILURE(CheckPageInfoShowsSafetyTipInfo(browser()));
+  ASSERT_NO_FATAL_FAILURE(CheckPageInfoShowsSafetyTipInfo(
+      browser(), security_state::SafetyTipStatus::kBadReputation, GURL()));
 }
 
 // Background tabs shouldn't open a bubble initially, but should when they
@@ -460,7 +488,14 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
   SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
   NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
   EXPECT_TRUE(IsUIShowingOnlyIfFeaturesEnabled());
-  ASSERT_NO_FATAL_FAILURE(CheckPageInfoDoesNotShowSafetyTipInfo(browser()));
+
+  if (ui_status() == UIStatus::kEnabledWithAllFeatures) {
+    ASSERT_NO_FATAL_FAILURE(CheckPageInfoShowsSafetyTipInfo(
+        browser(), security_state::SafetyTipStatus::kLookalike,
+        GURL("https://google.sk")));
+  } else {
+    ASSERT_NO_FATAL_FAILURE(CheckPageInfoDoesNotShowSafetyTipInfo(browser()));
+  }
 }
 
 // Tests that Safety Tips don't trigger on lookalike domains that are explicitly
