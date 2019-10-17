@@ -2446,6 +2446,11 @@
     "expiry_milestone": 83
   },
   {
+    "name": "mixed-content-setting",
+    "owners": [ "carlosil", "estark" ],
+    "expiry_milestone": 82
+  },
+  {
     "name": "mobile-identity-consistency",
     "owners": [ "bsazonov", "droger", "msarda" ],
     "expiry_milestone": 80

@@ -4669,6 +4669,12 @@ const FeatureEntry kFeatureEntries[] = {
          "CrOSActionRecorderTypeVariations")},
 #endif  // defined(OS_CHROMEOS)
 
+#if !defined(OS_ANDROID)
+    {"mixed-content-setting", flag_descriptions::kMixedContentSiteSettingName,
+     flag_descriptions::kMixedContentSiteSettingDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kMixedContentSiteSetting)},
+#endif  // !defined(OS_ANDROID)
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

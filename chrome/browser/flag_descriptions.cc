@@ -1273,6 +1273,12 @@ const char kMimeHandlerViewInCrossProcessFrameDescription[] =
     "Loads the MimeHandlerView (the extension viewer for certain MIME types "
     "such as PDF) in a cross-process frame as opposed to a BrowserPlugin.";
 
+const char kMixedContentSiteSettingName[] =
+    "Blockable mixed content switch as site setting";
+const char kMixedContentSiteSettingDescription[] =
+    "Removes the blockable mixed content shield, and adds an 'Insecure "
+    "Content' site setting to allow blockable mixed content.";
+
 const char kMobileIdentityConsistencyName[] = "Mobile identity consistency";
 const char kMobileIdentityConsistencyDescription[] =
     "Enables stronger identity consistency on mobile";

@@ -770,6 +770,9 @@ extern const char kMediaRouterCastAllowAllIPsDescription[];
 extern const char kMimeHandlerViewInCrossProcessFrameName[];
 extern const char kMimeHandlerViewInCrossProcessFrameDescription[];
 
+extern const char kMixedContentSiteSettingName[];
+extern const char kMixedContentSiteSettingDescription[];
+
 extern const char kMobileIdentityConsistencyName[];
 extern const char kMobileIdentityConsistencyDescription[];
 
