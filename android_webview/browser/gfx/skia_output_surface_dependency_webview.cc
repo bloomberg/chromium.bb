@@ -118,4 +118,11 @@ void SkiaOutputSurfaceDependencyWebView::UnregisterDisplayContext(
   // No GpuChannelManagerDelegate here, so leave it no-op for now.
 }
 
+void SkiaOutputSurfaceDependencyWebView::DidLoseContext(
+    bool offscreen,
+    gpu::error::ContextLostReason reason,
+    const GURL& active_url) {
+  // No GpuChannelManagerDelegate here, so leave it no-op for now.
+}
+
 }  // namespace android_webview

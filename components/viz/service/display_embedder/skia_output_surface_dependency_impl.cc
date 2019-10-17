@@ -125,4 +125,11 @@ void SkiaOutputSurfaceDependencyImpl::UnregisterDisplayContext(
   gpu_service_impl_->UnregisterDisplayContext(display_context);
 }
 
+void SkiaOutputSurfaceDependencyImpl::DidLoseContext(
+    bool offscreen,
+    gpu::error::ContextLostReason reason,
+    const GURL& active_url) {
+  gpu_service_impl_->DidLoseContext(offscreen, reason, active_url);
+}
+
 }  // namespace viz

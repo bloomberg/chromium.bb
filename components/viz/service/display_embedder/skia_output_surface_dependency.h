@@ -12,8 +12,11 @@
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "components/viz/service/viz_service_export.h"
+#include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/service/sequence_id.h"
 #include "gpu/ipc/common/surface_handle.h"
+
+class GURL;
 
 namespace gl {
 class GLSurface;
@@ -91,6 +94,9 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceDependency {
   virtual void RegisterDisplayContext(gpu::DisplayContext* display_context) = 0;
   virtual void UnregisterDisplayContext(
       gpu::DisplayContext* display_context) = 0;
+  virtual void DidLoseContext(bool offscreen,
+                              gpu::error::ContextLostReason reason,
+                              const GURL& active_url) = 0;
 };
 
 }  // namespace viz

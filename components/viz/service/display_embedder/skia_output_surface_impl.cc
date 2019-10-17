@@ -86,6 +86,12 @@ base::OnceCallback<void(Args...)> CreateSafeOnceCallback(
                         std::move(callback));
 }
 
+gpu::ContextUrl& GetActiveUrl() {
+  static base::NoDestructor<gpu::ContextUrl> active_url(
+      GURL("chrome://gpu/SkiaRenderer"));
+  return *active_url;
+}
+
 }  // namespace
 
 SkiaOutputSurfaceImpl::ScopedPaint::ScopedPaint(
@@ -787,9 +793,7 @@ void SkiaOutputSurfaceImpl::ScheduleGpuTask(
     std::vector<gpu::SyncToken> sync_tokens) {
   auto wrapped_closure = base::BindOnce(
       [](base::OnceClosure callback) {
-        static base::NoDestructor<gpu::ContextUrl> active_url(
-            GURL("chrome://gpu/SkiaRenderer"));
-        gpu::ContextUrl::SetActiveUrl(*active_url);
+        gpu::ContextUrl::SetActiveUrl(GetActiveUrl());
         std::move(callback).Run();
       },
       std::move(callback));

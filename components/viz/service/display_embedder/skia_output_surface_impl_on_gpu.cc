@@ -1372,6 +1372,9 @@ bool SkiaOutputSurfaceImplOnGpu::MakeCurrent(bool need_fbo0) {
     // fbo0.
     if (!context_state_->MakeCurrent(need_fbo0 ? gl_surface_.get() : nullptr)) {
       LOG(ERROR) << "Failed to make current.";
+      dependency_->DidLoseContext(
+          !need_fbo0 /* offscreen */, gpu::error::kMakeCurrentFailed,
+          GURL("chrome://gpu/SkiaOutputSurfaceImplOnGpu::MakeCurrent"));
       MarkContextLost();
       return false;
     }
