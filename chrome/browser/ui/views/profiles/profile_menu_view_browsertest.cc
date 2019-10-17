@@ -29,6 +29,7 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/secondary_account_helper.h"
+#include "chrome/browser/sync/test/integration/status_change_checker.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
@@ -63,6 +64,37 @@
 #include "ui/views/test/widget_test.h"
 
 namespace {
+
+class UnconsentedPrimaryAccountChecker
+    : public StatusChangeChecker,
+      public signin::IdentityManager::Observer {
+ public:
+  explicit UnconsentedPrimaryAccountChecker(
+      signin::IdentityManager* identity_manager)
+      : identity_manager_(identity_manager) {
+    identity_manager_->AddObserver(this);
+  }
+  ~UnconsentedPrimaryAccountChecker() override {
+    identity_manager_->RemoveObserver(this);
+  }
+
+  // StatusChangeChecker overrides:
+  bool IsExitConditionSatisfied() override {
+    return identity_manager_->HasUnconsentedPrimaryAccount();
+  }
+  std::string GetDebugMessage() const override {
+    return "Unconsented primary account checker";
+  }
+
+  // signin::IdentityManager::Observer overrides:
+  void OnUnconsentedPrimaryAccountChanged(
+      const CoreAccountInfo& unconsented_primary_account_info) override {
+    CheckExitCondition();
+  }
+
+ private:
+  signin::IdentityManager* identity_manager_;
+};
 
 Profile* CreateTestingProfile(const base::FilePath& path) {
   base::ScopedAllowBlockingForTesting allow_blocking;
@@ -856,13 +888,12 @@ constexpr ProfileMenuViewBase::ActionableItem
         // there are no other buttons at the end.
         ProfileMenuViewBase::ActionableItem::kEditProfileButton};
 
-// TODO(crbug.com/1012167): Flaky.
-PROFILE_MENU_CLICK_TEST(
-    kActionableItems_WithUnconsentedPrimaryAccount,
-    DISABLED_ProfileMenuClickTest_WithUnconsentedPrimaryAccount) {
+PROFILE_MENU_CLICK_TEST(kActionableItems_WithUnconsentedPrimaryAccount,
+                        ProfileMenuClickTest_WithUnconsentedPrimaryAccount) {
   signin::MakeAccountAvailableWithCookies(identity_manager(),
                                           &test_url_loader_factory_,
                                           "user@example.com", "gaia_id");
+  UnconsentedPrimaryAccountChecker(identity_manager()).Wait();
   // Check that the setup was successful.
   ASSERT_FALSE(identity_manager()->HasPrimaryAccount());
   ASSERT_TRUE(identity_manager()->HasUnconsentedPrimaryAccount());
