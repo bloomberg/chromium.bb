@@ -101,6 +101,35 @@ void BookmarkAppInstallFinalizer::FinalizeInstall(
   crx_installer->InstallWebApp(web_app_info);
 }
 
+void BookmarkAppInstallFinalizer::FinalizeUpdate(
+    const WebApplicationInfo& web_app_info,
+    InstallFinalizedCallback callback) {
+  web_app::AppId expected_app_id =
+      web_app::GenerateAppIdFromURL(web_app_info.app_url);
+
+  const Extension* existing_extension = GetEnabledExtension(expected_app_id);
+  if (!existing_extension) {
+    DCHECK(ExtensionRegistry::Get(profile_)->GetInstalledExtension(
+        expected_app_id));
+    std::move(callback).Run(web_app::AppId(),
+                            web_app::InstallResultCode::kWebAppDisabled);
+    return;
+  }
+  DCHECK(existing_extension->from_bookmark());
+
+  scoped_refptr<CrxInstaller> crx_installer =
+      crx_installer_factory_.Run(profile_);
+  crx_installer->set_installer_callback(
+      base::BindOnce(&BookmarkAppInstallFinalizer::OnExtensionUpdated,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(expected_app_id),
+                     std::move(callback), crx_installer));
+  crx_installer->InitializeCreationFlagsForUpdate(existing_extension,
+                                                  Extension::NO_FLAGS);
+  crx_installer->set_install_source(existing_extension->location());
+
+  crx_installer->InstallWebApp(web_app_info);
+}
+
 void BookmarkAppInstallFinalizer::UninstallExternalWebApp(
     const GURL& app_url,
     UninstallWebAppCallback callback) {
@@ -199,7 +228,7 @@ void BookmarkAppInstallFinalizer::OnExtensionInstalled(
     const GURL& app_url,
     LaunchType launch_type,
     bool is_locally_installed,
-    web_app::InstallFinalizer::InstallFinalizedCallback callback,
+    InstallFinalizedCallback callback,
     scoped_refptr<CrxInstaller> crx_installer,
     const base::Optional<CrxInstallError>& error) {
   if (error) {
@@ -227,6 +256,31 @@ void BookmarkAppInstallFinalizer::OnExtensionInstalled(
 
   std::move(callback).Run(extension->id(),
                           web_app::InstallResultCode::kSuccessNewInstall);
+}
+
+void BookmarkAppInstallFinalizer::OnExtensionUpdated(
+    const web_app::AppId& expected_app_id,
+    InstallFinalizedCallback callback,
+    scoped_refptr<CrxInstaller> crx_installer,
+    const base::Optional<CrxInstallError>& error) {
+  if (error) {
+    std::move(callback).Run(web_app::AppId(),
+                            web_app::InstallResultCode::kFailedUnknownReason);
+    return;
+  }
+
+  const Extension* extension = crx_installer->extension();
+  DCHECK(extension);
+  DCHECK_EQ(extension->id(), expected_app_id);
+
+  if (extension != GetEnabledExtension(extension->id())) {
+    std::move(callback).Run(web_app::AppId(),
+                            web_app::InstallResultCode::kWebAppDisabled);
+    return;
+  }
+
+  std::move(callback).Run(extension->id(),
+                          web_app::InstallResultCode::kSuccessAlreadyInstalled);
 }
 
 }  // namespace extensions

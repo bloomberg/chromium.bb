@@ -64004,6 +64004,18 @@ Full version information for the fingerprint enum values:
   <int value="15" label="Install icon in the Omnibox"/>
 </enum>
 
+<enum name="WebAppManifestUpdateResult">
+  <int value="0" label="No app in scope"/>
+  <int value="1" label="Updating throttled"/>
+  <int value="2" label="WebContents destroyed"/>
+  <int value="3" label="App uninstalled during update"/>
+  <int value="4" label="App is placeholder"/>
+  <int value="5" label="App is up to date"/>
+  <int value="6" label="App manifest invalid"/>
+  <int value="7" label="App update failed"/>
+  <int value="8" label="App updated"/>
+</enum>
+
 <enum name="WebappUninstallDialogAction">
   <int value="0" label="Uninstall only"/>
   <int value="1" label="Uninstall and remove data"/>
