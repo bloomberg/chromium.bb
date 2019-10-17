@@ -2239,9 +2239,16 @@ void RenderFrameHostImpl::SetLastCommittedOriginForTesting(
 
 const url::Origin& RenderFrameHostImpl::ComputeTopFrameOrigin(
     const url::Origin& frame_origin) const {
-  return frame_tree_node_->IsMainFrame()
-             ? frame_origin
-             : frame_tree_->root()->current_origin();
+  if (frame_tree_node_->IsMainFrame()) {
+    return frame_origin;
+  }
+
+  DCHECK(parent_);
+  RenderFrameHostImpl* host = parent_;
+  while (host->parent_) {
+    host = host->parent_;
+  }
+  return host->GetLastCommittedOrigin();
 }
 
 GURL RenderFrameHostImpl::ComputeSiteForCookiesForNavigation(

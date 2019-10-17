@@ -475,6 +475,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Return the http status code of the last committed navigation.
   int last_http_status_code() { return last_http_status_code_; }
 
+  // Returns |frame_origin| if this frame is the top (i.e. root) frame in the
+  // frame tree. Otherwise, it returns the top frame's origin.
   const url::Origin& ComputeTopFrameOrigin(
       const url::Origin& frame_origin) const;
 
