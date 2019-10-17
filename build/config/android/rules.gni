@@ -2140,6 +2140,10 @@ if (enable_java_templates) {
   #     LocaleConfig.java file will be generated for each package, and will
   #     contain the list of compressed and uncompressed locale pak files.
   #   disable_r8_outlining: Turn off outlining during the proguard step.
+  #   annotation_processor_deps: List of java_annotation_processor targets to
+  #     use when compiling the java_files given to this target (optional).
+  #   processor_args_javac: List of args to pass to annotation processors when
+  #     compiling java_files given to this target (optional).
   template("android_apk_or_module") {
     forward_variables_from(invoker, [ "testonly" ])
     assert(defined(invoker.android_manifest))
@@ -2773,10 +2777,10 @@ if (enable_java_templates) {
                                "alternative_android_sdk_dep",
                                "android_manifest",
                                "android_manifest_dep",
+                               "annotation_processor_deps",
                                "apk_under_test",
                                "base_module_target",
                                "chromium_code",
-                               "classpath_deps",
                                "jacoco_never_instrument",
                                "java_files",
                                "javac_args",
@@ -2784,6 +2788,7 @@ if (enable_java_templates) {
                                "manifest_package",
                                "native_lib_placeholders",
                                "no_build_hooks",
+                               "processor_args_javac",
                                "secondary_abi_loadable_modules",
                                "secondary_native_lib_placeholders",
                                "static_library_dependent_targets",
@@ -3365,6 +3370,7 @@ if (enable_java_templates) {
                                "alternative_android_sdk_dep",
                                "android_manifest",
                                "android_manifest_dep",
+                               "annotation_processor_deps",
                                "apk_under_test",
                                "app_as_shared_lib",
                                "build_hooks_android_impl_deps",
@@ -3407,6 +3413,7 @@ if (enable_java_templates) {
                                "no_xml_namespaces",
                                "png_to_webp",
                                "post_process_package_resources_script",
+                               "processor_args_javac",
                                "product_version_resources_dep",
                                "proguard_configs",
                                "proguard_enabled",
@@ -3497,6 +3504,7 @@ if (enable_java_templates) {
                                "alternative_android_sdk_dep",
                                "android_manifest",
                                "android_manifest_dep",
+                               "annotation_processor_deps",
                                "app_as_shared_lib",
                                "base_module_target",
                                "bundle_target",
@@ -3529,6 +3537,7 @@ if (enable_java_templates) {
                                "package_id",
                                "package_name",
                                "png_to_webp",
+                               "processor_args_javac",
                                "product_version_resources_dep",
                                "proguard_configs",
                                "proguard_enabled",
