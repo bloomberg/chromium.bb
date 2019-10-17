@@ -607,9 +607,6 @@ void Node::CallDistributeScroll(ScrollState& scroll_state) {
 
 void Node::CallApplyScroll(ScrollState& scroll_state) {
   TRACE_EVENT0("input", "Node::CallApplyScroll");
-  // Hits ASSERTs when trying to determine whether we need to scroll on main
-  // or CC. http://crbug.com/625676.
-  DisableCompositingQueryAsserts disabler;
 
   if (!GetDocument().GetPage()) {
     // We should always have a Page if we're scrolling. See
