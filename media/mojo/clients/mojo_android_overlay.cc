@@ -5,12 +5,13 @@
 #include "media/mojo/clients/mojo_android_overlay.h"
 
 #include "gpu/ipc/common/gpu_surface_lookup.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/connect.h"
 
 namespace media {
 
 MojoAndroidOverlay::MojoAndroidOverlay(
-    mojom::AndroidOverlayProviderPtr provider_ptr,
+    mojo::PendingRemote<mojom::AndroidOverlayProvider> pending_provider,
     AndroidOverlayConfig config,
     const base::UnguessableToken& routing_token)
     : config_(std::move(config)), binding_(this) {
@@ -25,8 +26,11 @@ MojoAndroidOverlay::MojoAndroidOverlay(
 
   mojom::AndroidOverlayClientPtr ptr;
   binding_.Bind(mojo::MakeRequest(&ptr));
-  provider_ptr->CreateOverlay(mojo::MakeRequest(&overlay_ptr_), std::move(ptr),
-                              std::move(mojo_config));
+
+  mojo::Remote<mojom::AndroidOverlayProvider> provider(
+      std::move(pending_provider));
+  provider->CreateOverlay(mojo::MakeRequest(&overlay_ptr_), std::move(ptr),
+                          std::move(mojo_config));
 }
 
 MojoAndroidOverlay::~MojoAndroidOverlay() {

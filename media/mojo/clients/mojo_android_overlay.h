@@ -10,6 +10,7 @@
 #include "media/base/android/android_overlay.h"
 #include "media/mojo/mojom/android_overlay.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace media {
 
@@ -17,9 +18,10 @@ namespace media {
 class MojoAndroidOverlay : public AndroidOverlay,
                            public mojom::AndroidOverlayClient {
  public:
-  MojoAndroidOverlay(mojom::AndroidOverlayProviderPtr provider_ptr,
-                     AndroidOverlayConfig config,
-                     const base::UnguessableToken& routing_token);
+  MojoAndroidOverlay(
+      mojo::PendingRemote<mojom::AndroidOverlayProvider> pending_provider,
+      AndroidOverlayConfig config,
+      const base::UnguessableToken& routing_token);
 
   ~MojoAndroidOverlay() override;
 

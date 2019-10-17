@@ -13,8 +13,8 @@
 #include "gpu/ipc/common/gpu_surface_tracker.h"
 #include "media/base/mock_filters.h"
 #include "media/mojo/clients/mojo_android_overlay.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/android/scoped_java_surface.h"
@@ -70,7 +70,7 @@ class MojoAndroidOverlayTest : public ::testing::Test {
 
  public:
   MojoAndroidOverlayTest()
-      : provider_binding_(&mock_provider_), overlay_binding_(&mock_overlay_) {}
+      : provider_receiver_(&mock_provider_), overlay_binding_(&mock_overlay_) {}
 
   ~MojoAndroidOverlayTest() override {}
 
@@ -107,11 +107,10 @@ class MojoAndroidOverlayTest : public ::testing::Test {
     EXPECT_CALL(mock_provider_, OverlayCreated());
 
     base::UnguessableToken routing_token = base::UnguessableToken::Create();
-    mojom::AndroidOverlayProviderPtr provider_ptr;
-    provider_binding_.Bind(mojo::MakeRequest(&provider_ptr));
 
-    overlay_client_.reset(new MojoAndroidOverlay(
-        std::move(provider_ptr), std::move(config_), routing_token));
+    overlay_client_.reset(
+        new MojoAndroidOverlay(provider_receiver_.BindNewPipeAndPassRemote(),
+                               std::move(config_), routing_token));
     overlay_client_->AddSurfaceDestroyedCallback(base::Bind(
         &MockClientCallbacks::OnDestroyed, base::Unretained(&callbacks_)));
     base::RunLoop().RunUntilIdle();
@@ -161,8 +160,8 @@ class MojoAndroidOverlayTest : public ::testing::Test {
   // |interface_provider_| will bind it.
   MockAndroidOverlayProvider mock_provider_;
 
-  // Binding for |mock_provider_|.
-  mojo::Binding<mojom::AndroidOverlayProvider> provider_binding_;
+  // Receiver for |mock_provider_|.
+  mojo::Receiver<mojom::AndroidOverlayProvider> provider_receiver_;
 
   // The mock overlay impl that |mock_provider_| will provide.
   MockAndroidOverlay mock_overlay_;
