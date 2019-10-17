@@ -3,13 +3,12 @@
  * found in the LICENSE file. */
 
 :host {
-  --title-font-size: 28px;
   --title-font-distance-to-baseline: 7px;
-  --subtitle-font-size: 13px;
+  --subtitle-font-size: --oobe-default-font-size;
   --subtitle-font-distance-to-baseline: 3px;
   --subtitle-line-height: 18px;
   --offline-gaia-dialog-width: 768px;
-  font-family: var(--oobe-default-font-family);
+  @apply --oobe-default-font;
 }
 
 #header-container {
@@ -28,10 +27,8 @@
 }
 
 #oobe-title ::slotted(h1) {
-  color: var(--google-grey-900);
-  font-family: var(--oobe-title-font-family);
-  font-size: var(--title-font-size);
-  font-weight: normal;
+  color: var(--oobe-header-text-color);
+  @apply --oobe-header-font;
   margin: 0;
 }
 
@@ -40,8 +37,7 @@
 }
 
 #oobe-subtitle ::slotted(*) {
-  color: var(--google-grey-700);
-  font-size: var(--subtitle-font-size);
+  color: var(--oobe-subheader-text-color);
   line-height: var(--subtitle-line-height);
   /* margin 12px = 32 - line-height
                    - 5 (line height - font size)
