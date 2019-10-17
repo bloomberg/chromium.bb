@@ -12,9 +12,7 @@ import os
 import sys
 import time
 
-from chromite.lib import cros_build_lib
-from chromite.lib import cros_event
-
+# These aren't available outside the SDK.
 # pylint: disable=import-error
 from _emerge.actions import adjust_configs
 from _emerge.actions import load_emerge_config
@@ -25,6 +23,10 @@ from _emerge.Package import Package
 from _emerge.stdout_spinner import stdout_spinner
 from portage._global_updates import _global_updates
 import portage
+# pylint: enable=import-error
+
+from chromite.lib import cros_build_lib
+from chromite.lib import cros_event
 
 
 class DepGraphGenerator(object):

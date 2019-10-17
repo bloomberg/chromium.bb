@@ -26,11 +26,11 @@ import os
 import re
 import sys
 
-from chromite.utils import memoize
-
 import pylint.checkers
 from pylint.config import ConfigurationMixIn
 import pylint.interfaces
+
+from chromite.utils import memoize
 
 
 _THIRD_PARTY = os.path.join(

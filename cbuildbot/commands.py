@@ -20,6 +20,7 @@ import shutil
 import sys
 import tempfile
 
+from google.protobuf import json_format
 import six
 
 from chromite.api.gen.chromite.api import android_pb2
@@ -51,11 +52,6 @@ from chromite.lib.paygen import filelib
 
 from chromite.scripts import pushimage
 from chromite.service import artifacts as artifacts_service
-
-# TODO(vapier): Re-enable check once we upgrade to pylint-1.8+.
-# pylint: disable=no-name-in-module
-from google.protobuf import json_format
-# pylint: enable=no-name-in-module
 
 
 _PACKAGE_FILE = '%(buildroot)s/src/scripts/cbuildbot_package.list'

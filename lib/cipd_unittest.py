@@ -11,10 +11,10 @@ import hashlib
 import json
 import mock
 
+import httplib2
+
 from chromite.lib import cipd
 from chromite.lib import cros_test_lib
-
-import httplib2
 
 
 class CIPDTest(cros_test_lib.MockTestCase):

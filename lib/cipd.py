@@ -17,6 +17,7 @@ import os
 import pprint
 import tempfile
 
+import httplib2
 import six
 from six.moves import urllib
 
@@ -26,8 +27,6 @@ from chromite.lib import osutils
 from chromite.lib import path_util
 from chromite.lib import cros_build_lib
 from chromite.utils import memoize
-
-import httplib2
 
 # pylint: disable=line-too-long
 # CIPD client to download.

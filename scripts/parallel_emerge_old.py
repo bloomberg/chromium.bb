@@ -41,6 +41,7 @@ from chromite.lib import proctitle
 
 # This script is being killed off, so just suppress this warning in general.
 # pylint: disable=protected-access
+# pylint: disable=wrong-import-order
 
 # If PORTAGE_USERNAME isn't specified, scrape it from the $HOME variable. On
 # Chromium OS, the default "portage" user doesn't have the necessary
@@ -1439,7 +1440,7 @@ class EmergeQueue(object):
     # Schedule our jobs.
     self._state_map.update(
         (pkg, TargetState(pkg, data)) for pkg, data in deps_map.items())
-    self._fetch_ready.multi_put(self._state_map.values())
+    self._fetch_ready.multi_put(list(self._state_map.values()))
 
   def _SetupSession(self):
     """Set up a session so we can easily terminate all children."""

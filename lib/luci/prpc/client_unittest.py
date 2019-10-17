@@ -11,12 +11,9 @@ import contextlib
 import sys
 import unittest
 
-# TODO(vapier): Re-enable check once we upgrade to pylint-1.8+.
-# pylint: disable=no-name-in-module
 from google.protobuf import empty_pb2
-# pylint: enable=no-name-in-module
-
 import mock
+
 from chromite.lib.luci import net
 from chromite.lib.luci.prpc import client as prpc_client
 from chromite.lib.luci.prpc import codes

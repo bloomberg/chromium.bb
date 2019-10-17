@@ -9,12 +9,13 @@ from __future__ import print_function
 
 import os
 
-from chromite.lib import cros_test_lib
-from chromite.lib import gce
-from chromite.lib import osutils
 from googleapiclient.errors import HttpError
 from googleapiclient.http import HttpMockSequence
 from oauth2client.client import GoogleCredentials
+
+from chromite.lib import cros_test_lib
+from chromite.lib import gce
+from chromite.lib import osutils
 
 
 class GceTest(cros_test_lib.MockTempDirTestCase):

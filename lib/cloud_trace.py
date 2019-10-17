@@ -14,10 +14,7 @@ import os
 import random
 import re
 
-# TODO(vapier): Re-enable check once we upgrade to pylint-1.8+.
-# pylint: disable=no-name-in-module
 import google.protobuf.internal.well_known_types as types
-# pylint: enable=no-name-in-module
 from infra_libs import ts_mon
 
 from chromite.lib import cros_logging as log

@@ -7,10 +7,10 @@
 
 from __future__ import print_function
 
+import six
+
 from chromite.lib import cros_test_lib
 from chromite.utils import attrs_freezer
-
-import six
 
 
 class FrozenAttributesTest(cros_test_lib.TestCase):

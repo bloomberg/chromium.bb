@@ -23,10 +23,7 @@ import os
 import sys
 import threading
 
-# TODO(vapier): Re-enable check once we upgrade to pylint-1.8+.
-# pylint: disable=no-name-in-module
 from google.protobuf import timestamp_pb2
-# pylint: enable=no-name-in-module
 import six
 from six.moves import urllib
 

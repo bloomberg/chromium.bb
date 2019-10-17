@@ -18,19 +18,17 @@ import socket
 from ssl import SSLError
 import sys
 
+from google.protobuf import field_mask_pb2
+from six.moves import http_client as httplib
+
 from chromite.lib import constants
 from chromite.lib import cros_logging as logging
 from chromite.lib import retry_util
 from chromite.lib.luci import utils
 from chromite.lib.luci.prpc.client import Client, ProtocolError
 
-# TODO(vapier): Re-enable check once we upgrade to pylint-1.8+.
-# pylint: disable=no-name-in-module
-from google.protobuf import field_mask_pb2
-# pylint: enable=no-name-in-module
-from six.moves import http_client as httplib
-
 # Hack so the relative imports the pb2 files use work.
+# pylint: disable=wrong-import-position
 sys.path.insert(0, os.path.join(constants.CHROMITE_DIR, 'third_party',
                                 'infra_libs', 'buildbucket', 'proto'))
 from infra_libs.buildbucket.proto import build_pb2, common_pb2, rpc_pb2

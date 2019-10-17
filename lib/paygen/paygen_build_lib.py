@@ -19,6 +19,7 @@ import json
 import operator
 import os
 
+from google.protobuf import json_format
 from six.moves import urllib
 
 from chromite.api.gen.chromite.api import test_metadata_pb2
@@ -37,11 +38,6 @@ from chromite.lib.paygen import paygen_payload_lib
 from chromite.lib.paygen import test_control
 from chromite.lib.paygen import test_params
 from chromite.lib.paygen import utils
-
-# TODO(vapier): Re-enable check once we upgrade to pylint-1.8+.
-# pylint: disable=no-name-in-module
-from google.protobuf import json_format
-# pylint: enable=no-name-in-module
 
 
 # The oldest release milestone for which run_suite should be attempted.

@@ -11,10 +11,10 @@ import io
 import os
 import struct
 
-from chromite.scripts import lddtree
-
 from elftools.elf import elffile
 from elftools.common import utils
+
+from chromite.scripts import lddtree
 
 
 def GetSymbolTableSize(elf):

@@ -9,9 +9,8 @@ from __future__ import print_function
 
 import os
 
-import yaml # pylint: disable=import-error
-
 from six.moves import configparser
+import yaml # pylint: disable=import-error
 
 from chromite.lib import commandline
 from chromite.lib import cros_logging as logging

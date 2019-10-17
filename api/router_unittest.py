@@ -9,10 +9,7 @@ from __future__ import print_function
 
 import os
 
-# TODO(vapier): Re-enable check once we upgrade to pylint-1.8+.
-# pylint: disable=no-name-in-module
 from google.protobuf import json_format
-# pylint: enable=no-name-in-module
 
 from chromite.api import api_config
 from chromite.api import router
