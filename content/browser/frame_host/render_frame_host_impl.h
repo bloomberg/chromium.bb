@@ -186,8 +186,6 @@ struct PendingNavigation;
 struct ResourceTimingInfo;
 struct SubresourceLoaderParams;
 
-class MediaStreamDispatcherHost;
-
 // To be called when a RenderFrameHostImpl receives an event.
 // Provides the host, the event fired, and which node id the event was for.
 typedef base::RepeatingCallback<
@@ -1186,6 +1184,12 @@ class CONTENT_EXPORT RenderFrameHostImpl
   BackForwardCacheMetrics* GetBackForwardCacheMetrics();
 
   const std::string& GetEncoding() const { return canonical_encoding_; }
+
+  // Returns a base salt used to generate frame-specific IDs for media-device
+  // enumerations.
+  const std::string& GetMediaDeviceIDSaltBase() const {
+    return media_device_id_salt_base_;
+  }
 
   // Return true if this contains at least one NavigationRequest waiting to
   // commit in this RenderFrameHost.
@@ -2247,9 +2251,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
       audio_service_audio_input_stream_factory_;
   UniqueAudioInputStreamFactoryPtr in_content_audio_input_stream_factory_;
 
-  std::unique_ptr<MediaStreamDispatcherHost, BrowserThread::DeleteOnIOThread>
-      media_stream_dispatcher_host_;
-
   // Hosts media::mojom::InterfaceFactory for the RenderFrame and forwards
   // media::mojom::InterfaceFactory calls to the remote "media" service.
   std::unique_ptr<MediaInterfaceProxy> media_interface_proxy_;
@@ -2501,6 +2502,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Tainted once MediaStream access was granted.
   bool was_granted_media_access_ = false;
+
+  // Salt for generating frame-specific media device IDs.
+  std::string media_device_id_salt_base_;
 
   // NOTE: This must be the last member.
   base::WeakPtrFactory<RenderFrameHostImpl> weak_ptr_factory_{this};

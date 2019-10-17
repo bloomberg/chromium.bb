@@ -87,7 +87,6 @@
 #include "content/browser/renderer_host/input/input_router.h"
 #include "content/browser/renderer_host/input/timeout_monitor.h"
 #include "content/browser/renderer_host/media/audio_input_delegate_impl.h"
-#include "content/browser/renderer_host/media/media_stream_dispatcher_host.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_delegate_view.h"
@@ -911,7 +910,9 @@ RenderFrameHostImpl::RenderFrameHostImpl(
       keep_alive_timeout_(base::TimeDelta::FromSeconds(30)),
       subframe_unload_timeout_(base::TimeDelta::FromMilliseconds(
           RenderViewHostImpl::kUnloadTimeoutMS)),
-      commit_callback_interceptor_(nullptr) {
+      commit_callback_interceptor_(nullptr),
+      media_device_id_salt_base_(
+          BrowserContext::CreateRandomMediaDeviceIDSalt()) {
   GetProcess()->AddRoute(routing_id_, this);
   g_routing_id_frame_map.Get().emplace(
       GlobalFrameRoutingId(GetProcess()->GetID(), routing_id_), this);
@@ -2220,6 +2221,10 @@ void RenderFrameHostImpl::DidNavigate(
     ResetFeaturePolicy();
     active_sandbox_flags_ = frame_tree_node()->active_sandbox_flags();
   }
+
+  // Reset the salt so that media device IDs are reset after the new navigation
+  // if necessary.
+  media_device_id_salt_base_ = BrowserContext::CreateRandomMediaDeviceIDSalt();
 }
 
 void RenderFrameHostImpl::SetLastCommittedOrigin(const url::Origin& origin) {
