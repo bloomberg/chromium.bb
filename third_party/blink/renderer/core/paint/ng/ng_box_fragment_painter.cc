@@ -762,9 +762,21 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackgroundWithRect(
   }
 
   if (box_decoration_data.ShouldPaintShadow()) {
-    PaintInsetBoxShadowWithBorderRect(paint_info, paint_rect, style,
-                                      border_edges.line_left,
-                                      border_edges.line_right);
+    if (layout_box.IsTableCell()) {
+      PhysicalRect inner_rect = paint_rect;
+      inner_rect.Contract(layout_box.BorderBoxOutsets());
+      // PaintInsetBoxShadowWithInnerRect doesn't subtract borders before
+      // painting. We have to use it here after subtracting collapsed borders
+      // above. PaintInsetBoxShadowWithBorderRect below subtracts the borders
+      // specified on the style object, which doesn't account for border
+      // collapsing.
+      BoxPainterBase::PaintInsetBoxShadowWithInnerRect(paint_info, inner_rect,
+                                                       style);
+    } else {
+      PaintInsetBoxShadowWithBorderRect(paint_info, paint_rect, style,
+                                        border_edges.line_left,
+                                        border_edges.line_right);
+    }
   }
 
   // The theme will tell us whether or not we should also paint the CSS
