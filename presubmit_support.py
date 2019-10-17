@@ -16,20 +16,16 @@ __version__ = '1.8.0'
 
 import ast  # Exposed through the API.
 import contextlib
-import cPickle  # Exposed through the API.
 import cpplint
-import cStringIO  # Exposed through the API.
 import fnmatch  # Exposed through the API.
 import glob
 import inspect
 import itertools
 import json  # Exposed through the API.
 import logging
-import marshal  # Exposed through the API.
 import multiprocessing
 import optparse
 import os  # Somewhat exposed through the API.
-import pickle  # Exposed through the API.
 import random
 import re  # Exposed through the API.
 import signal
@@ -37,11 +33,8 @@ import sys  # Parts exposed through API.
 import tempfile  # Exposed through the API.
 import threading
 import time
-import traceback  # Exposed through the API.
 import types
 import unittest  # Exposed through the API.
-import urllib2  # Exposed through the API.
-import urlparse
 from warnings import warn
 
 # Local imports.
@@ -56,6 +49,16 @@ import presubmit_canned_checks
 import scm
 import subprocess2 as subprocess  # Exposed through the API.
 
+if sys.version_info.major == 2:
+  # TODO(1009814): Expose urllib2 only through urllib_request and urllib_error
+  import urllib2  # Exposed through the API.
+  import urlparse
+  import urllib2 as urllib_request
+  import urllib2 as urllib_error
+else:
+  import urllib.parse as urlparse
+  import urllib.request as urllib_request
+  import urllib.error as urllib_error
 
 # Ask for feedback only once in program lifetime.
 _ASKED_FOR_FEEDBACK = False
@@ -524,9 +527,7 @@ class InputApi(object):
     # so that presubmit scripts don't have to import them.
     self.ast = ast
     self.basename = os.path.basename
-    self.cPickle = cPickle
     self.cpplint = cpplint
-    self.cStringIO = cStringIO
     self.fnmatch = fnmatch
     self.gclient_paths = gclient_paths
     # TODO(yyanagisawa): stop exposing this when python3 become default.
@@ -535,19 +536,18 @@ class InputApi(object):
     self.glob = glob.glob
     self.json = json
     self.logging = logging.getLogger('PRESUBMIT')
-    self.marshal = marshal
     self.os_listdir = os.listdir
     self.os_path = os.path
     self.os_stat = os.stat
     self.os_walk = os.walk
-    self.pickle = pickle
     self.re = re
     self.subprocess = subprocess
     self.tempfile = tempfile
     self.time = time
-    self.traceback = traceback
     self.unittest = unittest
     self.urllib2 = urllib2
+    self.urllib_request = urllib_request
+    self.urllib_error = urllib_error
 
     self.is_windows = sys.platform == 'win32'
 

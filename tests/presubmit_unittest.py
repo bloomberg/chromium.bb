@@ -1425,7 +1425,6 @@ class CannedChecksUnittest(PresubmitTestsBase):
     input_api = mock.MagicMock(presubmit.InputApi)
     input_api.thread_pool = presubmit.ThreadPool()
     input_api.parallel = False
-    input_api.cStringIO = presubmit.cStringIO
     input_api.json = presubmit.json
     input_api.logging = logging
     input_api.os_listdir = mock.Mock()
@@ -1433,8 +1432,9 @@ class CannedChecksUnittest(PresubmitTestsBase):
     input_api.os_path = os.path
     input_api.re = presubmit.re
     input_api.gerrit = mock.MagicMock(presubmit.GerritAccessor)
-    input_api.traceback = presubmit.traceback
     input_api.urllib2 = mock.MagicMock(presubmit.urllib2)
+    input_api.urllib_request = mock.MagicMock(presubmit.urllib_request)
+    input_api.urllib_error = mock.MagicMock(presubmit.urllib_error)
     input_api.unittest = unittest
     input_api.subprocess = subprocess
     class fake_CalledProcessError(Exception):
@@ -2041,7 +2041,6 @@ the current line as well!
   def testRunPythonUnitTestsFailureUpload(self):
     input_api = self.MockInputApi(None, False)
     input_api.unittest = mock.MagicMock(unittest)
-    input_api.cStringIO = mock.MagicMock(presubmit.cStringIO)
     subprocess.Popen().returncode = 1  # pylint: disable=no-value-for-parameter
     presubmit.sigint_handler.wait.return_value = ('foo', None)
 
@@ -2065,7 +2064,6 @@ the current line as well!
 
   def testRunPythonUnitTestsSuccess(self):
     input_api = self.MockInputApi(None, False)
-    input_api.cStringIO = mock.MagicMock(presubmit.cStringIO)
     input_api.unittest = mock.MagicMock(unittest)
     subprocess.Popen().returncode = 0  # pylint: disable=no-value-for-parameter
     presubmit.sigint_handler.wait.return_value = ('', None)
@@ -2157,7 +2155,7 @@ the current line as well!
 
     os.path.exists = lambda _: True
 
-    owners_file = presubmit.cStringIO.StringIO(owners_content)
+    owners_file = StringIO.StringIO(owners_content)
     fopen = lambda *args: owners_file
 
     input_api.owners_db = owners.Database('', fopen, os.path)
