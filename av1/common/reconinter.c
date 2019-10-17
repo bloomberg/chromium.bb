@@ -27,9 +27,6 @@
 #include "av1/common/onyxc_int.h"
 #include "av1/common/obmc.h"
 
-#define USE_PRECOMPUTED_WEDGE_MASK 1
-#define USE_PRECOMPUTED_WEDGE_SIGN 1
-
 // This function will determine whether or not to create a warped
 // prediction.
 int av1_allow_warp(const MB_MODE_INFO *const mbmi,
@@ -105,7 +102,6 @@ void av1_make_inter_predictor(const uint8_t *src, int src_stride, uint8_t *dst,
   }
 }
 
-#if USE_PRECOMPUTED_WEDGE_MASK
 static const uint8_t wedge_master_oblique_odd[MASK_MASTER_SIZE] = {
   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  2,  6,  18,
@@ -136,9 +132,7 @@ static AOM_INLINE void shift_copy(const uint8_t *src, uint8_t *dst, int shift,
     memset(dst + width - shift, src[width - 1], shift);
   }
 }
-#endif  // USE_PRECOMPUTED_WEDGE_MASK
 
-#if USE_PRECOMPUTED_WEDGE_SIGN
 /* clang-format off */
 DECLARE_ALIGNED(16, static uint8_t,
                 wedge_signflip_lookup[BLOCK_SIZES_ALL][MAX_WEDGE_TYPES]) = {
@@ -166,10 +160,6 @@ DECLARE_ALIGNED(16, static uint8_t,
   { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, },  // not used
 };
 /* clang-format on */
-#else
-DECLARE_ALIGNED(16, static uint8_t,
-                wedge_signflip_lookup[BLOCK_SIZES_ALL][MAX_WEDGE_TYPES]);
-#endif  // USE_PRECOMPUTED_WEDGE_SIGN
 
 // [negative][direction]
 DECLARE_ALIGNED(
@@ -434,8 +424,7 @@ static AOM_INLINE void init_wedge_master_masks() {
   const int w = MASK_MASTER_SIZE;
   const int h = MASK_MASTER_SIZE;
   const int stride = MASK_MASTER_STRIDE;
-// Note: index [0] stores the masters, and [1] its complement.
-#if USE_PRECOMPUTED_WEDGE_MASK
+  // Note: index [0] stores the masters, and [1] its complement.
   // Generate prototype by shifting the masters
   int shift = h / 4;
   for (i = 0; i < h; i += 2) {
@@ -453,22 +442,7 @@ static AOM_INLINE void init_wedge_master_masks() {
            wedge_master_vertical,
            MASK_MASTER_SIZE * sizeof(wedge_master_vertical[0]));
   }
-#else
-  static const double smoother_param = 2.85;
-  const int a[2] = { 2, 1 };
-  const double asqrt = sqrt(a[0] * a[0] + a[1] * a[1]);
-  for (i = 0; i < h; i++) {
-    for (j = 0; j < w; ++j) {
-      int x = (2 * j + 1 - w);
-      int y = (2 * i + 1 - h);
-      double d = (a[0] * x + a[1] * y) / asqrt;
-      const int msk = (int)rint((1.0 + tanh(d / smoother_param)) * 32);
-      wedge_mask_obl[0][WEDGE_OBLIQUE63][i * stride + j] = msk;
-      const int mskx = (int)rint((1.0 + tanh(x / smoother_param)) * 32);
-      wedge_mask_obl[0][WEDGE_VERTICAL][i * stride + j] = mskx;
-    }
-  }
-#endif  // USE_PRECOMPUTED_WEDGE_MASK
+
   for (i = 0; i < h; ++i) {
     for (j = 0; j < w; ++j) {
       const int msk = wedge_mask_obl[0][WEDGE_OBLIQUE63][i * stride + j];
@@ -489,44 +463,6 @@ static AOM_INLINE void init_wedge_master_masks() {
     }
   }
 }
-
-#if !USE_PRECOMPUTED_WEDGE_SIGN
-// If the signs for the wedges for various blocksizes are
-// inconsistent flip the sign flag. Do it only once for every
-// wedge codebook.
-static AOM_INLINE void init_wedge_signs() {
-  BLOCK_SIZE sb_type;
-  memset(wedge_signflip_lookup, 0, sizeof(wedge_signflip_lookup));
-  for (sb_type = BLOCK_4X4; sb_type < BLOCK_SIZES_ALL; ++sb_type) {
-    const int bw = block_size_wide[sb_type];
-    const int bh = block_size_high[sb_type];
-    const wedge_params_type wedge_params = av1_wedge_params_lookup[sb_type];
-    const int wbits = wedge_params.bits;
-    const int wtypes = 1 << wbits;
-    int i, w;
-    if (wbits) {
-      for (w = 0; w < wtypes; ++w) {
-        // Get the mask master, i.e. index [0]
-        const uint8_t *mask = get_wedge_mask_inplace(w, 0, sb_type);
-        int avg = 0;
-        for (i = 0; i < bw; ++i) avg += mask[i];
-        for (i = 1; i < bh; ++i) avg += mask[i * MASK_MASTER_STRIDE];
-        avg = (avg + (bw + bh - 1) / 2) / (bw + bh - 1);
-        // Default sign of this wedge is 1 if the average < 32, 0 otherwise.
-        // If default sign is 1:
-        //   If sign requested is 0, we need to flip the sign and return
-        //   the complement i.e. index [1] instead. If sign requested is 1
-        //   we need to flip the sign and return index [0] instead.
-        // If default sign is 0:
-        //   If sign requested is 0, we need to return index [0] the master
-        //   if sign requested is 1, we need to return the complement index [1]
-        //   instead.
-        wedge_params.signflip[w] = (avg < 32);
-      }
-    }
-  }
-}
-#endif  // !USE_PRECOMPUTED_WEDGE_SIGN
 
 static AOM_INLINE void init_wedge_masks() {
   uint8_t *dst = wedge_mask_buf;
@@ -561,9 +497,6 @@ static AOM_INLINE void init_wedge_masks() {
 // Equation of line: f(x, y) = a[0]*(x - a[2]*w/8) + a[1]*(y - a[3]*h/8) = 0
 void av1_init_wedge_masks() {
   init_wedge_master_masks();
-#if !USE_PRECOMPUTED_WEDGE_SIGN
-  init_wedge_signs();
-#endif  // !USE_PRECOMPUTED_WEDGE_SIGN
   init_wedge_masks();
 }
 
