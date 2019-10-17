@@ -114,14 +114,15 @@ void MediaPerceptionAPIDelegateChromeOS::SetMediaPerceptionRequestHandler(
   handler_ = std::move(handler);
 }
 
-void MediaPerceptionAPIDelegateChromeOS::ForwardMediaPerceptionRequest(
-    chromeos::media_perception::mojom::MediaPerceptionRequest request,
+void MediaPerceptionAPIDelegateChromeOS::ForwardMediaPerceptionReceiver(
+    mojo::PendingReceiver<chromeos::media_perception::mojom::MediaPerception>
+        receiver,
     content::RenderFrameHost* render_frame_host) {
   if (!handler_) {
-    DLOG(ERROR) << "Got request but the handler is not set.";
+    DLOG(ERROR) << "Got receiver but the handler is not set.";
     return;
   }
-  handler_.Run(std::move(request));
+  handler_.Run(std::move(receiver));
 }
 
 }  // namespace extensions
