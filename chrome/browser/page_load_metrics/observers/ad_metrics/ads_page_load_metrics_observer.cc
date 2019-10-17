@@ -687,6 +687,10 @@ void AdsPageLoadMetricsObserver::RecordAggregateHistogramsForCpuUsage() {
           FrameData::InteractiveStatus::kPostInteractive);
   base::TimeDelta task_duration_total = task_duration_pre + task_duration_post;
   if (total_duration.InMilliseconds() > 0) {
+    ADS_HISTOGRAM("Cpu.AdFrames.Aggregate.TotalUsage", PAGE_LOAD_HISTOGRAM,
+                  visibility,
+                  aggregate_ad_info_by_visibility_[static_cast<int>(visibility)]
+                      .cpu_time);
     ADS_HISTOGRAM("Cpu.FullPage.TotalUsage", PAGE_LOAD_HISTOGRAM, visibility,
                   task_duration_total);
     ADS_HISTOGRAM("Cpu.FullPage.PeakWindowedPercent", UMA_HISTOGRAM_PERCENTAGE,

@@ -1366,6 +1366,9 @@ TEST_F(AdsPageLoadMetricsObserverTest, TestCpuTimingMetrics) {
   CheckCpuHistograms("Cpu.AdFrames.PerFrame", "Unactivated", /*pre_tasks=*/500,
                      /*pre_time=*/2000, /*post_tasks=*/1000,
                      /*post_time=*/2000);
+  histogram_tester().ExpectUniqueSample(
+      SuffixedHistogram("Cpu.AdFrames.Aggregate.TotalUsage"),
+      /*total_task_time=*/500 + 1000, 1);
 
   auto entries = test_ukm_recorder().GetEntriesByName(
       ukm::builders::AdFrameLoad::kEntryName);
@@ -1424,6 +1427,9 @@ TEST_F(AdsPageLoadMetricsObserverTest,
   CheckCpuHistograms("Cpu.AdFrames.PerFrame", "Unactivated", /*pre_tasks=*/500,
                      /*pre_time=*/2000, /*post_tasks=*/1000,
                      /*post_time=*/1500);
+  histogram_tester().ExpectUniqueSample(
+      SuffixedHistogram("Cpu.AdFrames.Aggregate.TotalUsage"),
+      /*total_task_time=*/500 + 1000, 1);
 
   auto entries = test_ukm_recorder().GetEntriesByName(
       ukm::builders::AdFrameLoad::kEntryName);
@@ -1485,6 +1491,9 @@ TEST_F(AdsPageLoadMetricsObserverTest, TestCpuTimingMetricsOnActivation) {
                      /*pre_tasks=*/500 + 500, /*pre_time=*/2500,
                      /*post_tasks=*/500,
                      /*post_time=*/1500);
+  histogram_tester().ExpectUniqueSample(
+      SuffixedHistogram("Cpu.AdFrames.Aggregate.TotalUsage"),
+      /*total_task_time=*/1000 + 500, 1);
 
   auto entries = test_ukm_recorder().GetEntriesByName(
       ukm::builders::AdFrameLoad::kEntryName);
@@ -1540,6 +1549,8 @@ TEST_F(AdsPageLoadMetricsObserverTest, TestNoReportingWhenAlwaysBackgrounded) {
   CheckCpuHistograms("Cpu.AdFrames.PerFrame", "Unactivated", 0, 0, 0, 0);
   CheckCpuHistograms("Cpu.AdFrames.PerFrame", "Activated", 0, 0, 0, 0);
   histogram_tester().ExpectTotalCount(
+      SuffixedHistogram("Cpu.AdFrames.Aggregate.TotalUsage"), 0);
+  histogram_tester().ExpectTotalCount(
       SuffixedHistogram("Cpu.AdFrames.PerFrame.PeakWindowedPercent"), 0);
   histogram_tester().ExpectTotalCount(
       SuffixedHistogram("Cpu.AdFrames.PerFrame.PeakWindowStartTime"), 0);
@@ -1587,6 +1598,9 @@ TEST_F(AdsPageLoadMetricsObserverTest, TestCpuTimingMetricsNoInteractive) {
   CheckCpuHistograms("Cpu.AdFrames.PerFrame", "Activated", 0, 0, 0, 0);
   CheckCpuHistograms("Cpu.AdFrames.PerFrame", "Unactivated", /*pre_tasks=*/500,
                      /*pre_time=*/2000, /*post_tasks=*/0, /*post_time=*/0);
+  histogram_tester().ExpectUniqueSample(
+      SuffixedHistogram("Cpu.AdFrames.Aggregate.TotalUsage"),
+      /*total_task_time=*/500, 1);
 
   auto entries = test_ukm_recorder().GetEntriesByName(
       ukm::builders::AdFrameLoad::kEntryName);
@@ -1634,6 +1648,8 @@ TEST_F(AdsPageLoadMetricsObserverTest, TestCpuTimingMetricsShortTimeframes) {
       SuffixedHistogram("Cpu.AdFrames.PerFrame.PeakWindowedPercent"), 0);
   histogram_tester().ExpectTotalCount(
       SuffixedHistogram("Cpu.AdFrames.PerFrame.PeakWindowStartTime"), 0);
+  histogram_tester().ExpectTotalCount(
+      SuffixedHistogram("Cpu.AdFrames.Aggregate.TotalUsage"), 0);
   histogram_tester().ExpectTotalCount(
       SuffixedHistogram("Cpu.FullPage.PeakWindowedPercent"), 0);
   histogram_tester().ExpectTotalCount(
