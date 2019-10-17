@@ -65,10 +65,6 @@ struct CYCLIC_REFRESH {
   int qindex_delta[3];
   double weight_segment;
   int apply_cyclic_refresh;
-  // Indicate whether cyclic refresh is turned off for last frame. Used to
-  // disable temporal update for segment map when cyclic refresh is turned back
-  // on.
-  int last_frame_apply_cr;
 };
 
 struct AV1_COMP;

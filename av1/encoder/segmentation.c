@@ -168,8 +168,7 @@ static void count_segs_sb(const AV1_COMMON *cm, MACROBLOCKD *xd,
 #undef CSEGS
 }
 
-void av1_choose_segmap_coding_method(AV1_COMP *cpi, MACROBLOCKD *xd) {
-  AV1_COMMON *const cm = &cpi->common;
+void av1_choose_segmap_coding_method(AV1_COMMON *cm, MACROBLOCKD *xd) {
   struct segmentation *seg = &cm->seg;
   struct segmentation_probs *segp = &cm->fc->seg;
   int no_pred_cost;
@@ -235,13 +234,6 @@ void av1_choose_segmap_coding_method(AV1_COMP *cpi, MACROBLOCKD *xd) {
     assert(!cm->error_resilient_mode);
     seg->temporal_update = 1;
   } else {
-    seg->temporal_update = 0;
-  }
-
-  // Turn off temporal update when cyclic refresh is turned back on.
-  // See aomedia:2512.
-  if (!cpi->cyclic_refresh->last_frame_apply_cr &&
-      cpi->cyclic_refresh->apply_cyclic_refresh) {
     seg->temporal_update = 0;
   }
 }

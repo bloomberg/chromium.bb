@@ -2052,10 +2052,9 @@ static AOM_INLINE void encode_quantization(const AV1_COMMON *const cm,
   }
 }
 
-static AOM_INLINE void encode_segmentation(AV1_COMP *cpi, MACROBLOCKD *xd,
+static AOM_INLINE void encode_segmentation(AV1_COMMON *cm, MACROBLOCKD *xd,
                                            struct aom_write_bit_buffer *wb) {
   int i, j;
-  AV1_COMMON *const cm = &cpi->common;
   struct segmentation *seg = &cm->seg;
 
   aom_wb_write_bit(wb, seg->enabled);
@@ -2070,7 +2069,7 @@ static AOM_INLINE void encode_segmentation(AV1_COMP *cpi, MACROBLOCKD *xd,
     aom_wb_write_bit(wb, seg->update_map);
     if (seg->update_map) {
       // Select the coding strategy (temporal or spatial)
-      av1_choose_segmap_coding_method(cpi, xd);
+      av1_choose_segmap_coding_method(cm, xd);
       aom_wb_write_bit(wb, seg->temporal_update);
     }
     aom_wb_write_bit(wb, seg->update_data);
@@ -3063,7 +3062,7 @@ static AOM_INLINE void write_uncompressed_header_obu(
 
   write_tile_info(cm, saved_wb, wb);
   encode_quantization(cm, wb);
-  encode_segmentation(cpi, xd, wb);
+  encode_segmentation(cm, xd, wb);
 
   const DeltaQInfo *const delta_q_info = &cm->delta_q_info;
   if (delta_q_info->delta_q_present_flag) assert(cm->base_qindex > 0);

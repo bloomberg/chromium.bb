@@ -76,6 +76,7 @@ static INLINE void segfeatures_copy(struct segmentation *dst,
   }
   dst->segid_preskip = src->segid_preskip;
   dst->last_active_segid = src->last_active_segid;
+  dst->enabled = src->enabled;
 }
 
 void av1_clearall_segfeatures(struct segmentation *seg);

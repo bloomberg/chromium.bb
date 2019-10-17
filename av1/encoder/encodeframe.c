@@ -5118,7 +5118,7 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
 
   init_encode_frame_mb_context(cpi);
   set_default_interp_skip_flags(cpi);
-  if (cm->prev_frame)
+  if (cm->prev_frame && cm->prev_frame->seg.enabled)
     cm->last_frame_seg_map = cm->prev_frame->seg_map;
   else
     cm->last_frame_seg_map = NULL;
