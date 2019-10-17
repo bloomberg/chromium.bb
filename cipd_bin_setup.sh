@@ -19,6 +19,4 @@ function cipd_bin_setup {
         -log-level warning \
         -ensure-file "$ENSURE" \
         -root "$ROOT"
-
-    "$MYPATH/goma_ctl" update_hook
 }
