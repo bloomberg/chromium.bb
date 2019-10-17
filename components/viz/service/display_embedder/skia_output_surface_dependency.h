@@ -21,6 +21,7 @@ class GLSurface;
 
 namespace gpu {
 
+class DisplayContext;
 class GpuDriverBugWorkarounds;
 class ImageFactory;
 class ImageTransportSurfaceDelegate;
@@ -86,6 +87,10 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceDependency {
       gpu::SurfaceHandle parent_window,
       gpu::SurfaceHandle child_window) = 0;
 #endif
+
+  virtual void RegisterDisplayContext(gpu::DisplayContext* display_context) = 0;
+  virtual void UnregisterDisplayContext(
+      gpu::DisplayContext* display_context) = 0;
 };
 
 }  // namespace viz

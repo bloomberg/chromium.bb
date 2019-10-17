@@ -108,4 +108,14 @@ SkiaOutputSurfaceDependencyWebView::CreateGLSurface(
   return gl_surface_;
 }
 
+void SkiaOutputSurfaceDependencyWebView::RegisterDisplayContext(
+    gpu::DisplayContext* display_context) {
+  // No GpuChannelManagerDelegate here, so leave it no-op for now.
+}
+
+void SkiaOutputSurfaceDependencyWebView::UnregisterDisplayContext(
+    gpu::DisplayContext* display_context) {
+  // No GpuChannelManagerDelegate here, so leave it no-op for now.
+}
+
 }  // namespace android_webview
