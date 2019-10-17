@@ -561,9 +561,8 @@ def GenerateBlameList(source_repo, lkgm_path, only_print_chumps=False):
       continue
 
     revision = checkout['revision']
-    cmd = ['log', '--pretty=full', '%s..HEAD' % revision]
     try:
-      result = git.RunGit(src_path, cmd)
+      stdout = git.Log(src_path, format='full', rev='%s..HEAD' % revision)
     except cros_build_lib.RunCommandError as ex:
       # Git returns 128 when the revision does not exist.
       if ex.result.returncode != 128:
@@ -573,8 +572,7 @@ def GenerateBlameList(source_repo, lkgm_path, only_print_chumps=False):
       return has_chump_cls
     current_author = None
     current_committer = None
-    for line in result.output.encode('utf-8').decode(
-        'utf-8', 'replace').splitlines():
+    for line in stdout.splitlines():
       author_match = author_re.match(line)
       if author_match:
         current_author = author_match.group(1)
