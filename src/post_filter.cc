@@ -355,7 +355,9 @@ void PostFilter::ApplyCdefForOneUnit(uint16_t* cdef_block, const int index,
                                      const int column4x4_start) {
   const int coeff_shift = bitdepth_ - 8;
   const int step = kNum4x4BlocksWide[kBlock8x8];
-  const int horizontal_shift = -source_buffer_->alignment() / pixel_size_;
+  // abs(horizontal_shift) must be at least kCdefBorder. Increase it to
+  // preserve buffer alignment.
+  const int horizontal_shift = -source_buffer_->alignment();
   const int vertical_shift = -kCdefBorder;
   const int window_buffer_plane_size =
       window_buffer_width_ * window_buffer_height_ * pixel_size_;
@@ -515,7 +517,9 @@ template <typename Pixel>
 bool PostFilter::ApplyCdefThreaded() {
   assert((window_buffer_height_ & 63) == 0);
   const int num_workers = thread_pool_->num_threads();
-  const int horizontal_shift = -source_buffer_->alignment() / pixel_size_;
+  // abs(horizontal_shift) must be at least kCdefBorder. Increase it to
+  // preserve buffer alignment.
+  const int horizontal_shift = -source_buffer_->alignment();
   const int vertical_shift = -kCdefBorder;
   const int window_buffer_plane_size =
       window_buffer_width_ * window_buffer_height_ * pixel_size_;
@@ -634,7 +638,9 @@ bool PostFilter::ApplyCdef() {
     }
   }
   if (!DoRestoration()) {
-    const int horizontal_shift = -source_buffer_->alignment() / pixel_size_;
+    // abs(horizontal_shift) must be at least kCdefBorder. Increase it to
+    // preserve buffer alignment.
+    const int horizontal_shift = -source_buffer_->alignment();
     const int vertical_shift = -kCdefBorder;
     for (int plane = kPlaneY; plane < planes_; ++plane) {
       if (!source_buffer_->ShiftBuffer(plane, horizontal_shift,
@@ -864,7 +870,9 @@ bool PostFilter::ApplyLoopRestorationThreaded() {
       kRestorationProcessingUnitSize >> subsampling_y_,
       kRestorationProcessingUnitSize >> subsampling_y_};
 
-  const int horizontal_shift = -source_buffer_->alignment() / pixel_size_;
+  // abs(horizontal_shift) must be at least kRestorationBorder. Increase it to
+  // preserve buffer alignment.
+  const int horizontal_shift = -source_buffer_->alignment();
   const int vertical_shift = -kRestorationBorder;
   for (int plane = kPlaneY; plane < planes_; ++plane) {
     if (loop_restoration_.type[plane] == kLoopRestorationTypeNone) {
@@ -1085,7 +1093,9 @@ bool PostFilter::ApplyLoopRestoration() {
     }
 
     int loop_restored_rows = 0;
-    const int horizontal_shift = -source_buffer_->alignment() / pixel_size_;
+    // abs(horizontal_shift) must be at least kRestorationBorder. Increase it
+    // to preserve buffer alignment.
+    const int horizontal_shift = -source_buffer_->alignment();
     const int vertical_shift = -kRestorationBorder;
     const ptrdiff_t src_unit_buffer_offset =
         vertical_shift * src_stride + horizontal_shift * pixel_size_;
