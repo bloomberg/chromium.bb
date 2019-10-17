@@ -6739,6 +6739,11 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="Registration is a duplicate"/>
 </enum>
 
+<enum name="BooleanReloaded">
+  <int value="0" label="Didn't reload"/>
+  <int value="1" label="Reloaded"/>
+</enum>
+
 <enum name="BooleanRemoved">
   <int value="0" label="Not removed"/>
   <int value="1" label="Removed"/>
