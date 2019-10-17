@@ -3154,13 +3154,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          download::features::kAllowDownloadResumptionWithoutStrongValidators)},
 
-#if defined(OS_ANDROID)
-    {"auto-fetch-on-net-error-page",
-     flag_descriptions::kAutoFetchOnNetErrorPageName,
-     flag_descriptions::kAutoFetchOnNetErrorPageDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(features::kAutoFetchOnNetErrorPage)},
-#endif  // defined(OS_ANDROID)
-
     {"tab-hover-cards", flag_descriptions::kTabHoverCardsName,
      flag_descriptions::kTabHoverCardsDescription, kOsDesktop,
      FEATURE_WITH_PARAMS_VALUE_TYPE(features::kTabHoverCards,
