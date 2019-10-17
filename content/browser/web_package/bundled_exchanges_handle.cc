@@ -214,8 +214,8 @@ class InterceptorForFile final : public NavigationLoaderInterceptor {
     }
     DCHECK(reader_);
     primary_url_ = reader_->GetPrimaryURL();
-    url_loader_factory_ =
-        std::make_unique<BundledExchangesURLLoaderFactory>(std::move(reader_));
+    url_loader_factory_ = std::make_unique<BundledExchangesURLLoaderFactory>(
+        std::move(reader_), frame_tree_node_id_);
 
     const GURL new_url =
         bundled_exchanges_utils::GetSynthesizedUrlForBundledExchanges(
@@ -349,7 +349,7 @@ class InterceptorForTrustableFile final : public NavigationLoaderInterceptor {
     } else {
       primary_url_ = reader_->GetPrimaryURL();
       url_loader_factory_ = std::make_unique<BundledExchangesURLLoaderFactory>(
-          std::move(reader_));
+          std::move(reader_), frame_tree_node_id_);
     }
 
     if (pending_request_) {
@@ -395,9 +395,11 @@ class InterceptorForTrackedNavigationFromTrustableFile final
  public:
   InterceptorForTrackedNavigationFromTrustableFile(
       scoped_refptr<BundledExchangesReader> reader,
-      DoneCallback done_callback)
+      DoneCallback done_callback,
+      int frame_tree_node_id)
       : url_loader_factory_(std::make_unique<BundledExchangesURLLoaderFactory>(
-            std::move(reader))),
+            std::move(reader),
+            frame_tree_node_id)),
         done_callback_(std::move(done_callback)) {}
   ~InterceptorForTrackedNavigationFromTrustableFile() override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -456,9 +458,11 @@ class InterceptorForTrackedNavigationFromFile final
  public:
   InterceptorForTrackedNavigationFromFile(
       scoped_refptr<BundledExchangesReader> reader,
-      DoneCallback done_callback)
+      DoneCallback done_callback,
+      int frame_tree_node_id)
       : url_loader_factory_(std::make_unique<BundledExchangesURLLoaderFactory>(
-            std::move(reader))),
+            std::move(reader),
+            frame_tree_node_id)),
         done_callback_(std::move(done_callback)) {}
   ~InterceptorForTrackedNavigationFromFile() override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -601,7 +605,7 @@ class InterceptorForNavigationInfo final : public NavigationLoaderInterceptor {
       metadata_error_ = std::move(error);
     } else {
       url_loader_factory_ = std::make_unique<BundledExchangesURLLoaderFactory>(
-          std::move(reader_));
+          std::move(reader_), frame_tree_node_id_);
     }
 
     if (pending_request_) {
@@ -661,7 +665,8 @@ BundledExchangesHandle::CreateForTrustableFile(
 // static
 std::unique_ptr<BundledExchangesHandle>
 BundledExchangesHandle::CreateForTrackedNavigation(
-    scoped_refptr<BundledExchangesReader> reader) {
+    scoped_refptr<BundledExchangesReader> reader,
+    int frame_tree_node_id) {
   auto handle = base::WrapUnique(new BundledExchangesHandle());
   if (reader->source().is_trusted()) {
     handle->SetInterceptor(
@@ -669,14 +674,16 @@ BundledExchangesHandle::CreateForTrackedNavigation(
             std::move(reader),
             base::BindOnce(
                 &BundledExchangesHandle::OnBundledExchangesFileLoaded,
-                handle->weak_factory_.GetWeakPtr())));
+                handle->weak_factory_.GetWeakPtr()),
+            frame_tree_node_id));
   } else {
     handle->SetInterceptor(
         std::make_unique<InterceptorForTrackedNavigationFromFile>(
             std::move(reader),
             base::BindOnce(
                 &BundledExchangesHandle::OnBundledExchangesFileLoaded,
-                handle->weak_factory_.GetWeakPtr())));
+                handle->weak_factory_.GetWeakPtr()),
+            frame_tree_node_id));
   }
   return handle;
 }

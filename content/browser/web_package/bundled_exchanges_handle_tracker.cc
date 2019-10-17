@@ -25,8 +25,10 @@ std::unique_ptr<BundledExchangesHandle>
 BundledExchangesHandleTracker::MaybeCreateBundledExchangesHandle(
     const GURL& url,
     int frame_tree_node_id) {
-  if (reader_->HasEntry(url))
-    return BundledExchangesHandle::CreateForTrackedNavigation(reader_);
+  if (reader_->HasEntry(url)) {
+    return BundledExchangesHandle::CreateForTrackedNavigation(
+        reader_, frame_tree_node_id);
+  }
   if (!reader_->source().is_trusted() &&
       url == bundled_exchanges_utils::GetSynthesizedUrlForBundledExchanges(
                  reader_->source().url(), target_inner_url_)) {

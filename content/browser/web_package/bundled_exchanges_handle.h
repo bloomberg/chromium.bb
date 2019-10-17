@@ -33,7 +33,8 @@ class BundledExchangesHandle {
       std::unique_ptr<BundledExchangesSource> source,
       int frame_tree_node_id);
   static std::unique_ptr<BundledExchangesHandle> CreateForTrackedNavigation(
-      scoped_refptr<BundledExchangesReader> reader);
+      scoped_refptr<BundledExchangesReader> reader,
+      int frame_tree_node_id);
   static std::unique_ptr<BundledExchangesHandle> CreateForNavigationInfo(
       std::unique_ptr<BundledExchangesNavigationInfo> navigation_info,
       int frame_tree_node_id);
