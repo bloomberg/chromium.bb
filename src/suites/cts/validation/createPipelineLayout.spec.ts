@@ -13,10 +13,10 @@ function clone(descriptor: GPUBindGroupLayoutDescriptor): GPUBindGroupLayoutDesc
 export const g = new TestGroup(ValidationTest);
 
 g.test('number of dynamic buffers exceeds the maximum value', async t => {
-  const { type, maxDynamicBufferCount } = t.params;
+  const { type, _expectedMaxDynamicBufferCount } = t.params;
 
   const maxDynamicBufferBindings: GPUBindGroupLayoutBinding[] = [];
-  for (let i = 0; i < maxDynamicBufferCount; i++) {
+  for (let i = 0; i < _expectedMaxDynamicBufferCount; i++) {
     maxDynamicBufferBindings.push({
       binding: i,
       visibility: GPUShaderStage.COMPUTE,
@@ -65,8 +65,8 @@ g.test('number of dynamic buffers exceeds the maximum value', async t => {
     t.device.createPipelineLayout(badPipelineLayoutDescriptor);
   });
 }).params([
-  { type: 'storage-buffer', maxDynamicBufferCount: 4 },
-  { type: 'uniform-buffer', maxDynamicBufferCount: 8 },
+  { type: 'storage-buffer', _expectedMaxDynamicBufferCount: 4 },
+  { type: 'uniform-buffer', _expectedMaxDynamicBufferCount: 8 },
 ]);
 
 g.test('number of bind group layouts exceeds the maximum value', async t => {

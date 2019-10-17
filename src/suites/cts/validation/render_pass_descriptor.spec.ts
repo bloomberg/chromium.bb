@@ -98,7 +98,7 @@ g.test('a render pass with only one depth attachment is ok', t => {
 });
 
 g.test('OOB color attachment indices are handled', async t => {
-  const { colorAttachmentsCount, success } = t.params;
+  const { colorAttachmentsCount, _success } = t.params;
 
   const colorAttachments = [];
   for (let i = 0; i < colorAttachmentsCount; i++) {
@@ -106,10 +106,10 @@ g.test('OOB color attachment indices are handled', async t => {
     colorAttachments.push(t.getColorAttachment(colorTexture));
   }
 
-  await t.tryRenderPass(success, { colorAttachments });
+  await t.tryRenderPass(_success, { colorAttachments });
 }).params([
-  { colorAttachmentsCount: 4, success: true }, // Control case
-  { colorAttachmentsCount: 5, success: false }, // Out of bounds
+  { colorAttachmentsCount: 4, _success: true }, // Control case
+  { colorAttachmentsCount: 5, _success: false }, // Out of bounds
 ]);
 
 g.test('attachments must have the same size', async t => {
@@ -188,7 +188,7 @@ g.test('attachments must match whether they are used for color or depth stencil'
 });
 
 g.test('check layer count for color or depth stencil', async t => {
-  const { arrayLayerCount, baseArrayLayer, success } = t.params;
+  const { arrayLayerCount, baseArrayLayer, _success } = t.params;
 
   const ARRAY_LAYER_COUNT = 10;
   const MIP_LEVEL_COUNT = 1;
@@ -229,7 +229,7 @@ g.test('check layer count for color or depth stencil', async t => {
       colorAttachments: [t.getColorAttachment(colorTexture, textureViewDescriptor)],
     };
 
-    await t.tryRenderPass(success, descriptor);
+    await t.tryRenderPass(_success, descriptor);
   }
   {
     // Check 2D array texture view for depth stencil
@@ -246,16 +246,16 @@ g.test('check layer count for color or depth stencil', async t => {
       ),
     };
 
-    await t.tryRenderPass(success, descriptor);
+    await t.tryRenderPass(_success, descriptor);
   }
 }).params([
-  { arrayLayerCount: 5, baseArrayLayer: 0, success: false }, // using 2D array texture view with arrayLayerCount > 1 is not allowed
-  { arrayLayerCount: 1, baseArrayLayer: 0, success: true }, // using 2D array texture view that covers the first layer of the texture is OK
-  { arrayLayerCount: 1, baseArrayLayer: 9, success: true }, // using 2D array texture view that covers the last layer is OK for depth stencil
+  { arrayLayerCount: 5, baseArrayLayer: 0, _success: false }, // using 2D array texture view with arrayLayerCount > 1 is not allowed
+  { arrayLayerCount: 1, baseArrayLayer: 0, _success: true }, // using 2D array texture view that covers the first layer of the texture is OK
+  { arrayLayerCount: 1, baseArrayLayer: 9, _success: true }, // using 2D array texture view that covers the last layer is OK for depth stencil
 ]);
 
 g.test('check mip level count for color or depth stencil', async t => {
-  const { mipLevelCount, baseMipLevel, success } = t.params;
+  const { mipLevelCount, baseMipLevel, _success } = t.params;
 
   const ARRAY_LAYER_COUNT = 1;
   const MIP_LEVEL_COUNT = 4;
@@ -296,7 +296,7 @@ g.test('check mip level count for color or depth stencil', async t => {
       colorAttachments: [t.getColorAttachment(colorTexture, textureViewDescriptor)],
     };
 
-    await t.tryRenderPass(success, descriptor);
+    await t.tryRenderPass(_success, descriptor);
   }
   {
     // Check 2D texture view for depth stencil
@@ -313,12 +313,12 @@ g.test('check mip level count for color or depth stencil', async t => {
       ),
     };
 
-    await t.tryRenderPass(success, descriptor);
+    await t.tryRenderPass(_success, descriptor);
   }
 }).params([
-  { mipLevelCount: 2, baseMipLevel: 0, success: false }, // using 2D texture view with mipLevelCount > 1 is not allowed
-  { mipLevelCount: 1, baseMipLevel: 0, success: true }, // using 2D texture view that covers the first level of the texture is OK
-  { mipLevelCount: 1, baseMipLevel: 3, success: true }, // using 2D texture view that covers the last level of the texture is OK
+  { mipLevelCount: 2, baseMipLevel: 0, _success: false }, // using 2D texture view with mipLevelCount > 1 is not allowed
+  { mipLevelCount: 1, baseMipLevel: 0, _success: true }, // using 2D texture view that covers the first level of the texture is OK
+  { mipLevelCount: 1, baseMipLevel: 3, _success: true }, // using 2D texture view that covers the last level of the texture is OK
 ]);
 
 g.test('it is invalid to set resolve target if color attachment is non multisampled', async t => {

@@ -118,7 +118,7 @@ g.test('number of dynamic buffers exceeds the maximum value', async t => {
 ]);
 
 g.test('dynamic set to true is allowed only for buffers', async t => {
-  const { type, success } = t.params;
+  const { type, _success } = t.params;
 
   const descriptor = {
     bindings: [
@@ -131,7 +131,7 @@ g.test('dynamic set to true is allowed only for buffers', async t => {
     ],
   };
 
-  if (success) {
+  if (_success) {
     // Control case
     t.device.createBindGroupLayout(descriptor);
   } else {
@@ -141,10 +141,10 @@ g.test('dynamic set to true is allowed only for buffers', async t => {
     });
   }
 }).params([
-  { type: 'uniform-buffer', success: true },
-  { type: 'storage-buffer', success: true },
-  { type: 'readonly-storage-buffer', success: true },
-  { type: 'sampler', success: false },
-  { type: 'sampled-texture', success: false },
-  { type: 'storage-texture', success: false },
+  { type: 'uniform-buffer', _success: true },
+  { type: 'storage-buffer', _success: true },
+  { type: 'readonly-storage-buffer', _success: true },
+  { type: 'sampler', _success: false },
+  { type: 'sampled-texture', _success: false },
+  { type: 'storage-texture', _success: false },
 ]);

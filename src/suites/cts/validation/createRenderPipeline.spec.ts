@@ -124,11 +124,11 @@ g.test('at least one color state is required', async t => {
 });
 
 g.test('color formats must be renderable', async t => {
-  const { format, success } = t.params;
+  const { format, _success } = t.params;
 
   const descriptor = t.getDescriptor({ colorStates: [{ format }] });
 
-  if (success) {
+  if (_success) {
     // Succeeds when format is renderable
     t.device.createRenderPipeline(descriptor);
   } else {
@@ -139,54 +139,54 @@ g.test('color formats must be renderable', async t => {
   }
 }).params([
   // 8-bit formats
-  { format: 'r8unorm', success: true },
-  { format: 'r8snorm', success: false },
-  { format: 'r8uint', success: true },
-  { format: 'r8sint', success: true },
+  { format: 'r8unorm', _success: true },
+  { format: 'r8snorm', _success: false },
+  { format: 'r8uint', _success: true },
+  { format: 'r8sint', _success: true },
   // 16-bit formats
-  { format: 'r16uint', success: true },
-  { format: 'r16sint', success: true },
-  { format: 'r16float', success: true },
-  { format: 'rg8unorm', success: true },
-  { format: 'rg8snorm', success: false },
-  { format: 'rg8uint', success: true },
-  { format: 'rg8sint', success: true },
+  { format: 'r16uint', _success: true },
+  { format: 'r16sint', _success: true },
+  { format: 'r16float', _success: true },
+  { format: 'rg8unorm', _success: true },
+  { format: 'rg8snorm', _success: false },
+  { format: 'rg8uint', _success: true },
+  { format: 'rg8sint', _success: true },
   // 32-bit formats
-  { format: 'r32uint', success: true },
-  { format: 'r32sint', success: true },
-  { format: 'r32float', success: true },
-  { format: 'rg16uint', success: true },
-  { format: 'rg16sint', success: true },
-  { format: 'rg16float', success: true },
-  { format: 'rgba8unorm', success: true },
-  { format: 'rgba8unorm-srgb', success: true },
-  { format: 'rgba8snorm', success: false },
-  { format: 'rgba8uint', success: true },
-  { format: 'rgba8sint', success: true },
-  { format: 'bgra8unorm', success: true },
-  { format: 'bgra8unorm-srgb', success: true },
+  { format: 'r32uint', _success: true },
+  { format: 'r32sint', _success: true },
+  { format: 'r32float', _success: true },
+  { format: 'rg16uint', _success: true },
+  { format: 'rg16sint', _success: true },
+  { format: 'rg16float', _success: true },
+  { format: 'rgba8unorm', _success: true },
+  { format: 'rgba8unorm-srgb', _success: true },
+  { format: 'rgba8snorm', _success: false },
+  { format: 'rgba8uint', _success: true },
+  { format: 'rgba8sint', _success: true },
+  { format: 'bgra8unorm', _success: true },
+  { format: 'bgra8unorm-srgb', _success: true },
   // Packed 32-bit formats
-  { format: 'rgb10a2unorm', success: true },
-  { format: 'rg11b10float', success: false },
+  { format: 'rgb10a2unorm', _success: true },
+  { format: 'rg11b10float', _success: false },
   // 64-bit formats
-  { format: 'rg32uint', success: true },
-  { format: 'rg32sint', success: true },
-  { format: 'rg32float', success: true },
-  { format: 'rgba16uint', success: true },
-  { format: 'rgba16sint', success: true },
-  { format: 'rgba16float', success: true },
+  { format: 'rg32uint', _success: true },
+  { format: 'rg32sint', _success: true },
+  { format: 'rg32float', _success: true },
+  { format: 'rgba16uint', _success: true },
+  { format: 'rgba16sint', _success: true },
+  { format: 'rgba16float', _success: true },
   // 128-bit formats
-  { format: 'rgba32uint', success: true },
-  { format: 'rgba32sint', success: true },
-  { format: 'rgba32float', success: true },
+  { format: 'rgba32uint', _success: true },
+  { format: 'rgba32sint', _success: true },
+  { format: 'rgba32float', _success: true },
 ]);
 
 g.test('sample count must be valid', async t => {
-  const { sampleCount, success } = t.params;
+  const { sampleCount, _success } = t.params;
 
   const descriptor = t.getDescriptor({ sampleCount });
 
-  if (success) {
+  if (_success) {
     // Succeeds when sample count is valid
     t.device.createRenderPipeline(descriptor);
   } else {
@@ -196,17 +196,17 @@ g.test('sample count must be valid', async t => {
     });
   }
 }).params([
-  { sampleCount: 0, success: false },
-  { sampleCount: 1, success: true },
-  { sampleCount: 2, success: false },
-  { sampleCount: 3, success: false },
-  { sampleCount: 4, success: true },
-  { sampleCount: 8, success: false },
-  { sampleCount: 16, success: false },
+  { sampleCount: 0, _success: false },
+  { sampleCount: 1, _success: true },
+  { sampleCount: 2, _success: false },
+  { sampleCount: 3, _success: false },
+  { sampleCount: 4, _success: true },
+  { sampleCount: 8, _success: false },
+  { sampleCount: 16, _success: false },
 ]);
 
 g.test('sample count must be equal to the one of every attachment in the render pass', async t => {
-  const { attachmentSamples, pipelineSamples, success } = t.params;
+  const { attachmentSamples, pipelineSamples, _success } = t.params;
 
   const colorTexture = t.createTexture({
     format: 'rgba8unorm',
@@ -265,10 +265,10 @@ g.test('sample count must be equal to the one of every attachment in the render 
 
     await t.expectValidationError(() => {
       commandEncoder.finish();
-    }, !success);
+    }, !_success);
   }
 }).params([
-  { attachmentSamples: 4, pipelineSamples: 4, success: true }, // It is allowed to use multisampled render pass and multisampled render pipeline.
-  { attachmentSamples: 4, pipelineSamples: 1, success: false }, // It is not allowed to use multisampled render pass and non-multisampled render pipeline.
-  { attachmentSamples: 1, pipelineSamples: 4, success: false }, // It is not allowed to use non-multisampled render pass and multisampled render pipeline.
+  { attachmentSamples: 4, pipelineSamples: 4, _success: true }, // It is allowed to use multisampled render pass and multisampled render pipeline.
+  { attachmentSamples: 4, pipelineSamples: 1, _success: false }, // It is not allowed to use multisampled render pass and non-multisampled render pipeline.
+  { attachmentSamples: 1, pipelineSamples: 4, _success: false }, // It is not allowed to use non-multisampled render pass and multisampled render pipeline.
 ]);

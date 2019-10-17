@@ -396,7 +396,7 @@ g.test('texture must have correct dimension', async t => {
 });
 
 g.test('buffer offset and size for bind groups match', async t => {
-  const { offset, size, success } = t.params;
+  const { offset, size, _success } = t.params;
 
   const bindGroupLayout = t.device.createBindGroupLayout({
     bindings: [
@@ -423,7 +423,7 @@ g.test('buffer offset and size for bind groups match', async t => {
     layout: bindGroupLayout,
   };
 
-  if (success) {
+  if (_success) {
     // Control case
     t.device.createBindGroup(descriptor);
   } else {
@@ -433,22 +433,22 @@ g.test('buffer offset and size for bind groups match', async t => {
     });
   }
 }).params([
-  { offset: 0, size: 512, success: true }, // offset 0 is valid
-  { offset: 256, size: 256, success: true }, // offset 256 (aligned) is valid
+  { offset: 0, size: 512, _success: true }, // offset 0 is valid
+  { offset: 256, size: 256, _success: true }, // offset 256 (aligned) is valid
 
   // unaligned buffer offset is invalid
-  { offset: 1, size: 256, success: false },
-  { offset: 1, size: undefined, success: false },
-  { offset: 128, size: 256, success: false },
-  { offset: 255, size: 256, success: false },
+  { offset: 1, size: 256, _success: false },
+  { offset: 1, size: undefined, _success: false },
+  { offset: 128, size: 256, _success: false },
+  { offset: 255, size: 256, _success: false },
 
-  { offset: 0, size: 256, success: true }, // touching the start of the buffer works
-  { offset: 256 * 3, size: 256, success: true }, // touching the end of the buffer works
-  { offset: 1024, size: 0, success: true }, // touching the end of the buffer works
-  { offset: 0, size: 1024, success: true }, // touching the full buffer works
-  { offset: 0, size: undefined, success: true }, // touching the full buffer works
-  { offset: 256 * 5, size: 0, success: false }, // offset is OOB
-  { offset: 0, size: 256 * 5, success: false }, // size is OOB
-  { offset: 1024, size: 1, success: false }, // offset+size is OOB
-  { offset: 256, size: -256, success: false }, // offset+size overflows to be 0
+  { offset: 0, size: 256, _success: true }, // touching the start of the buffer works
+  { offset: 256 * 3, size: 256, _success: true }, // touching the end of the buffer works
+  { offset: 1024, size: 0, _success: true }, // touching the end of the buffer works
+  { offset: 0, size: 1024, _success: true }, // touching the full buffer works
+  { offset: 0, size: undefined, _success: true }, // touching the full buffer works
+  { offset: 256 * 5, size: 0, _success: false }, // offset is OOB
+  { offset: 0, size: 256 * 5, _success: false }, // size is OOB
+  { offset: 1024, size: 1, _success: false }, // offset+size is OOB
+  { offset: 256, size: -256, _success: false }, // offset+size overflows to be 0
 ]);
