@@ -349,7 +349,7 @@ luci.cq_group(
         ),
         luci.cq_tryjob_verifier(
             builder = 'try/fuchsia-compile-x64-dbg',
-            experiment_percentage = 5,
+            experiment_percentage = 20,
         ),
         # https://crbug.com/739556; make this non-experimental ASAP.
         luci.cq_tryjob_verifier(
