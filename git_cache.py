@@ -355,6 +355,14 @@ class Mirror(object):
     if cwd is None:
       cwd = self.mirror_path
 
+    # Print diagnostics and ignore errors.
+    try:
+      self.print('git exe: %s' % (self.git_exe,))
+      self.RunGit(['version'], cwd=cwd)
+      self.RunGit(['config', 'protocol.version'], cwd=cwd)
+    except subprocess.CalledProcessError as e:
+      pass
+
     if reset_fetch_config:
       try:
         self.RunGit(['config', '--unset-all', 'remote.origin.fetch'], cwd=cwd)
@@ -544,8 +552,32 @@ class Mirror(object):
       spec = spec.decode()
       try:
         self.print('Fetching %s' % spec)
+        env = os.environ.copy()
+        env.update({
+            'GIT_TRACE_PACKET': '1',
+            'GIT_TRACE_PERFORMANCE': '1',
+            'GIT_TRACE_SETUP': '1'
+        })
+        # Only print first 30 packets. We can use nonlocal keyword once we
+        # switch to python 3.
+        packet_count = [0]
+
+        def FilterPacket(log_line):
+          if 'packet:' in log_line:
+            packet_count[0] += 1
+            if packet_count[0] == 30:
+              self.print('Truncating remaining packets')
+            if packet_count[0] >= 30:
+              return
+          self.print(log_line)
+
         with self.print_duration_of('fetch %s' % spec):
-          self.RunGit(fetch_cmd + [spec], cwd=rundir, retry=True)
+          self.RunGit(
+              fetch_cmd + [spec],
+              cwd=rundir,
+              retry=True,
+              env=env,
+              filter_fn=FilterPacket)
       except subprocess.CalledProcessError:
         if spec == '+refs/heads/*:refs/heads/*':
           raise ClobberNeeded()  # Corrupted cache.
