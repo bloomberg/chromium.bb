@@ -2176,7 +2176,7 @@ class BackForwardCacheBrowserTestWithServiceWorkerEnabled
 
  protected:
   base::FieldTrialParams GetFeatureParams() override {
-    return {{"service_worker_supported", "true"}};
+    return {{"experimental extended supported feature set", "true"}};
   }
 };
 
@@ -2278,6 +2278,10 @@ class GeolocationBackForwardCacheBrowserTest
     : public BackForwardCacheBrowserTest {
  protected:
   GeolocationBackForwardCacheBrowserTest() : geo_override_(0.0, 0.0) {}
+
+  base::FieldTrialParams GetFeatureParams() override {
+    return {{"experimental extended supported feature set", "true"}};
+  }
 
   device::ScopedGeolocationOverrider geo_override_;
 };

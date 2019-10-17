@@ -1345,15 +1345,15 @@ const FeatureEntry::FeatureVariation kQuietNotificationPromptsVariations[] = {
 };
 #endif  // !OS_ANDROID
 
-// TODO(crbug.com/991082): Remove after proper service worker support for
-// back-forward cache is implemented.
-const FeatureEntry::FeatureParam kBackForwardCache_ServiceWorkerSupport[] = {
-    {"service_worker_supported", "true"},
+// TODO(crbug.com/991082,1015377): Remove after proper support for back-forward
+// cache is implemented.
+const FeatureEntry::FeatureParam kBackForwardCache_ExtendedSupport[] = {
+    {"experimental extended supported feature set", "true"},
 };
 
 const FeatureEntry::FeatureVariation kBackForwardCacheVariations[] = {
-    {" even for ServiceWorker-controlled pages",
-     kBackForwardCache_ServiceWorkerSupport, 1, nullptr},
+    {"experimental extended supported feature set",
+     kBackForwardCache_ExtendedSupport, 1, nullptr},
 };
 
 #if defined(OS_CHROMEOS)
