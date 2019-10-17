@@ -273,6 +273,62 @@ bool EnumTraits<network::mojom::CookieSameSiteContext,
   return false;
 }
 
+network::mojom::CookieChangeCause
+EnumTraits<network::mojom::CookieChangeCause, net::CookieChangeCause>::ToMojom(
+    net::CookieChangeCause input) {
+  switch (input) {
+    case net::CookieChangeCause::INSERTED:
+      return network::mojom::CookieChangeCause::INSERTED;
+    case net::CookieChangeCause::EXPLICIT:
+      return network::mojom::CookieChangeCause::EXPLICIT;
+    case net::CookieChangeCause::UNKNOWN_DELETION:
+      return network::mojom::CookieChangeCause::UNKNOWN_DELETION;
+    case net::CookieChangeCause::OVERWRITE:
+      return network::mojom::CookieChangeCause::OVERWRITE;
+    case net::CookieChangeCause::EXPIRED:
+      return network::mojom::CookieChangeCause::EXPIRED;
+    case net::CookieChangeCause::EVICTED:
+      return network::mojom::CookieChangeCause::EVICTED;
+    case net::CookieChangeCause::EXPIRED_OVERWRITE:
+      return network::mojom::CookieChangeCause::EXPIRED_OVERWRITE;
+    default:
+      break;
+  }
+  NOTREACHED();
+  return static_cast<network::mojom::CookieChangeCause>(input);
+}
+
+bool EnumTraits<network::mojom::CookieChangeCause, net::CookieChangeCause>::
+    FromMojom(network::mojom::CookieChangeCause input,
+              net::CookieChangeCause* output) {
+  switch (input) {
+    case network::mojom::CookieChangeCause::INSERTED:
+      *output = net::CookieChangeCause::INSERTED;
+      return true;
+    case network::mojom::CookieChangeCause::EXPLICIT:
+      *output = net::CookieChangeCause::EXPLICIT;
+      return true;
+    case network::mojom::CookieChangeCause::UNKNOWN_DELETION:
+      *output = net::CookieChangeCause::UNKNOWN_DELETION;
+      return true;
+    case network::mojom::CookieChangeCause::OVERWRITE:
+      *output = net::CookieChangeCause::OVERWRITE;
+      return true;
+    case network::mojom::CookieChangeCause::EXPIRED:
+      *output = net::CookieChangeCause::EXPIRED;
+      return true;
+    case network::mojom::CookieChangeCause::EVICTED:
+      *output = net::CookieChangeCause::EVICTED;
+      return true;
+    case network::mojom::CookieChangeCause::EXPIRED_OVERWRITE:
+      *output = net::CookieChangeCause::EXPIRED_OVERWRITE;
+      return true;
+    default:
+      break;
+  }
+  return false;
+}
+
 bool StructTraits<network::mojom::CookieOptionsDataView, net::CookieOptions>::
     Read(network::mojom::CookieOptionsDataView mojo_options,
          net::CookieOptions* cookie_options) {
@@ -392,6 +448,25 @@ bool StructTraits<network::mojom::CookieAndLineWithStatusDataView,
 
   *out = {cookie, cookie_string, status};
 
+  return true;
+}
+
+bool StructTraits<
+    network::mojom::CookieChangeInfoDataView,
+    net::CookieChangeInfo>::Read(network::mojom::CookieChangeInfoDataView info,
+                                 net::CookieChangeInfo* out) {
+  net::CanonicalCookie cookie;
+  net::CookieAccessSemantics access_semantics =
+      net::CookieAccessSemantics::UNKNOWN;
+  net::CookieChangeCause cause = net::CookieChangeCause::EXPLICIT;
+  if (!info.ReadCookie(&cookie))
+    return false;
+  if (!info.ReadAccessSemantics(&access_semantics))
+    return false;
+  if (!info.ReadCause(&cause))
+    return false;
+
+  *out = net::CookieChangeInfo(cookie, access_semantics, cause);
   return true;
 }
 
