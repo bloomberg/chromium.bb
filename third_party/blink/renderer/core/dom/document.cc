@@ -345,8 +345,6 @@ bool IsInIndeterminateObjectAncestor(const Element* element) {
 
 }  // namespace
 
-using namespace html_names;
-
 class DocumentOutliveTimeReporter : public BlinkGCObserver {
  public:
   explicit DocumentOutliveTimeReporter(Document* document)
@@ -4635,12 +4633,13 @@ void Document::ProcessBaseElement() {
        base && (!href || !target);
        base = Traversal<HTMLBaseElement>::Next(*base)) {
     if (!href) {
-      const AtomicString& value = base->FastGetAttribute(kHrefAttr);
+      const AtomicString& value = base->FastGetAttribute(html_names::kHrefAttr);
       if (!value.IsNull())
         href = &value;
     }
     if (!target) {
-      const AtomicString& value = base->FastGetAttribute(kTargetAttr);
+      const AtomicString& value =
+          base->FastGetAttribute(html_names::kTargetAttr);
       if (!value.IsNull())
         target = &value;
     }
@@ -5817,12 +5816,14 @@ void Document::WillChangeFrameOwnerProperties(int margin_width,
   // check before each call.
   if (margin_width != owner->MarginWidth()) {
     if (auto* body_element = body()) {
-      body_element->SetIntegralAttribute(kMarginwidthAttr, margin_width);
+      body_element->SetIntegralAttribute(html_names::kMarginwidthAttr,
+                                         margin_width);
     }
   }
   if (margin_height != owner->MarginHeight()) {
     if (auto* body_element = body()) {
-      body_element->SetIntegralAttribute(kMarginheightAttr, margin_height);
+      body_element->SetIntegralAttribute(html_names::kMarginheightAttr,
+                                         margin_height);
     }
   }
   if (scrolling_mode != owner->ScrollingMode() && View()) {
@@ -7915,48 +7916,48 @@ void Document::SetBodyAttribute(const QualifiedName& name,
 }
 
 const AtomicString& Document::bgColor() const {
-  return BodyAttributeValue(kBgcolorAttr);
+  return BodyAttributeValue(html_names::kBgcolorAttr);
 }
 
 void Document::setBgColor(const AtomicString& value) {
   if (!IsFrameSet())
-    SetBodyAttribute(kBgcolorAttr, value);
+    SetBodyAttribute(html_names::kBgcolorAttr, value);
 }
 
 const AtomicString& Document::fgColor() const {
-  return BodyAttributeValue(kTextAttr);
+  return BodyAttributeValue(html_names::kTextAttr);
 }
 
 void Document::setFgColor(const AtomicString& value) {
   if (!IsFrameSet())
-    SetBodyAttribute(kTextAttr, value);
+    SetBodyAttribute(html_names::kTextAttr, value);
 }
 
 const AtomicString& Document::alinkColor() const {
-  return BodyAttributeValue(kAlinkAttr);
+  return BodyAttributeValue(html_names::kAlinkAttr);
 }
 
 void Document::setAlinkColor(const AtomicString& value) {
   if (!IsFrameSet())
-    SetBodyAttribute(kAlinkAttr, value);
+    SetBodyAttribute(html_names::kAlinkAttr, value);
 }
 
 const AtomicString& Document::linkColor() const {
-  return BodyAttributeValue(kLinkAttr);
+  return BodyAttributeValue(html_names::kLinkAttr);
 }
 
 void Document::setLinkColor(const AtomicString& value) {
   if (!IsFrameSet())
-    SetBodyAttribute(kLinkAttr, value);
+    SetBodyAttribute(html_names::kLinkAttr, value);
 }
 
 const AtomicString& Document::vlinkColor() const {
-  return BodyAttributeValue(kVlinkAttr);
+  return BodyAttributeValue(html_names::kVlinkAttr);
 }
 
 void Document::setVlinkColor(const AtomicString& value) {
   if (!IsFrameSet())
-    SetBodyAttribute(kVlinkAttr, value);
+    SetBodyAttribute(html_names::kVlinkAttr, value);
 }
 
 template <unsigned type>
