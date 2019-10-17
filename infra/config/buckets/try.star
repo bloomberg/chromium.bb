@@ -1441,6 +1441,11 @@ linux_builder(
     ),
 )
 
+linux_builder(
+    name = 'tricium-metrics-analysis',
+    executable = luci.recipe(name = 'tricium_metrics'),
+)
+
 
 def mac_builder(*, name, cores=None, os=os.MAC_ANY, **kwargs):
   return try_builder(

@@ -155,6 +155,7 @@ luci.list_view(
         'try/mac_chromium_dbg_ng',
         'try/mac_optional_gpu_tests_rel',
         'try/mac_upload_clang',
+        'try/tricium-metrics-analysis',
         'try/try-nougat-phone-tester',
         'try/android-oreo-arm64-dbg',
         'try/android-pie-arm64-dbg',
