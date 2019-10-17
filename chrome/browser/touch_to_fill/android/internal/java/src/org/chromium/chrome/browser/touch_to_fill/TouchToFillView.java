@@ -103,7 +103,7 @@ class TouchToFillView implements BottomSheet.BottomSheetContent {
 
     @Override
     public int getVerticalScrollOffset() {
-        return 0;
+        return mSheetItemListView.computeVerticalScrollOffset();
     }
 
     @Override
@@ -123,12 +123,13 @@ class TouchToFillView implements BottomSheet.BottomSheetContent {
 
     @Override
     public int getPeekHeight() {
-        return BottomSheet.HeightMode.DISABLED;
+        return Math.min(mContentView.getMinimumHeight(),
+                (int) mBottomSheetController.getBottomSheet().getSheetContainerHeight());
     }
 
     @Override
     public boolean wrapContentEnabled() {
-        return true;
+        return false;
     }
 
     @Override
