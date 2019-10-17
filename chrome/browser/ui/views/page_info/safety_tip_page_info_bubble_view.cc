@@ -35,18 +35,35 @@ using security_state::SafetyTipStatus;
 namespace {
 
 int GetSafetyTipBannerId(security_state::SafetyTipStatus safety_tip_status) {
-  switch (safety_tip_status) {
-    case security_state::SafetyTipStatus::kBadReputation:
-      return IDR_SAFETY_TIP_SUSPICIOUS_ILLUSTRATION;
-    case security_state::SafetyTipStatus::kLookalike:
-      return IDR_SAFETY_TIP_LOOKALIKE_ILLUSTRATION;
-    case security_state::SafetyTipStatus::kBadKeyword:
-    case security_state::SafetyTipStatus::kUnknown:
-    case security_state::SafetyTipStatus::kNone:
-      NOTREACHED();
+  const ui::NativeTheme* native_theme =
+      ui::NativeTheme::GetInstanceForNativeUi();
+  bool is_dark = native_theme && native_theme->ShouldUseDarkColors();
+
+  if (is_dark) {
+    switch (safety_tip_status) {
+      case security_state::SafetyTipStatus::kBadReputation:
+        return IDR_SAFETY_TIP_SUSPICIOUS_ILLUSTRATION_DARK;
+      case security_state::SafetyTipStatus::kLookalike:
+        return IDR_SAFETY_TIP_LOOKALIKE_ILLUSTRATION_DARK;
+      case security_state::SafetyTipStatus::kBadKeyword:
+      case security_state::SafetyTipStatus::kUnknown:
+      case security_state::SafetyTipStatus::kNone:
+        NOTREACHED();
+    }
+  } else {
+    switch (safety_tip_status) {
+      case security_state::SafetyTipStatus::kBadReputation:
+        return IDR_SAFETY_TIP_SUSPICIOUS_ILLUSTRATION_LIGHT;
+      case security_state::SafetyTipStatus::kLookalike:
+        return IDR_SAFETY_TIP_LOOKALIKE_ILLUSTRATION_LIGHT;
+      case security_state::SafetyTipStatus::kBadKeyword:
+      case security_state::SafetyTipStatus::kUnknown:
+      case security_state::SafetyTipStatus::kNone:
+        NOTREACHED();
+    }
   }
   NOTREACHED();
-  return IDR_SAFETY_TIP_SUSPICIOUS_ILLUSTRATION;
+  return IDR_SAFETY_TIP_SUSPICIOUS_ILLUSTRATION_LIGHT;
 }
 
 }  // namespace
