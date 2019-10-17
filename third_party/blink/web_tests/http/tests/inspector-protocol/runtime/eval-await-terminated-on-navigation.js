@@ -1,13 +1,11 @@
 (async function(testRunner) {
   var {page, session, dp} = await testRunner.startURL(
     'http://first.test:8000/inspector-protocol/resources/test-page.html',
-    `Tests that not finished asynchronous Runtime.evaluate calls are temintated on navigation.`);
-  let error;
+    `Tests that not finished asynchronous Runtime.evaluate calls are terminated on navigation.`);
   const evalPromise = dp.Runtime.evaluate({
     expression: `new Promise(() => console.log('Never resolving promise created'))`,
     awaitPromise: true
-  }).catch(e => error = e);
-  await Promise.resolve();
+  });
   testRunner.log('Evaluated promise in page');
   await page.navigate('http://second.test:8000/inspector-protocol/resources/test-page.html');
   testRunner.log('Navigated to another domain');

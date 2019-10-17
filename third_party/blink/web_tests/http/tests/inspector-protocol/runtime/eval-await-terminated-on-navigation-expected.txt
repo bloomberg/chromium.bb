@@ -1,4 +1,4 @@
-Tests that not finished asynchronous Runtime.evaluate calls are temintated on navigation.
+Tests that not finished asynchronous Runtime.evaluate calls are terminated on navigation.
 Evaluated promise in page
 Navigated to another domain
 Evaluation response received:
