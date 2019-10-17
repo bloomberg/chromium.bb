@@ -15,7 +15,7 @@
 #include "content/public/browser/chromeos/delegate_to_browser_gpu_service_accelerator_factory.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/video_capture_service.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/video_capture/public/mojom/device_factory.mojom.h"
 
 namespace extensions {
@@ -97,11 +97,12 @@ void MediaPerceptionAPIDelegateChromeOS::LoadCrOSComponent(
 void MediaPerceptionAPIDelegateChromeOS::BindVideoSourceProvider(
     mojo::PendingReceiver<video_capture::mojom::VideoSourceProvider> receiver) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  video_capture::mojom::AcceleratorFactoryPtr accelerator_factory;
-  mojo::MakeStrongBinding(
+  mojo::PendingRemote<video_capture::mojom::AcceleratorFactory>
+      accelerator_factory;
+  mojo::MakeSelfOwnedReceiver(
       std::make_unique<
           content::DelegateToBrowserGpuServiceAcceleratorFactory>(),
-      mojo::MakeRequest(&accelerator_factory));
+      accelerator_factory.InitWithNewPipeAndPassReceiver());
 
   auto& service = content::GetVideoCaptureService();
   service.InjectGpuDependencies(std::move(accelerator_factory));
