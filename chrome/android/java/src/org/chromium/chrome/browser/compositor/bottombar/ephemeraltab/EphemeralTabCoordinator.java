@@ -219,6 +219,7 @@ public class EphemeralTabCoordinator implements View.OnLayoutChangeListener {
 
         @Override
         public void onSSLStateUpdated() {
+            if (mSheetContent == null) return;
             int securityLevel = SecurityStateModel.getSecurityLevelForWebContents(
                     mPanelContent.getWebContents());
             mSheetContent.setSecurityIcon(getSecurityIconResource(securityLevel));
@@ -281,9 +282,15 @@ public class EphemeralTabCoordinator implements View.OnLayoutChangeListener {
          */
         public void loadFavicon(final String url, Callback<Drawable> callback) {
             FaviconHelper.FaviconImageCallback imageCallback = (bitmap, iconUrl) -> {
-                Drawable drawable =
-                        FaviconUtils.getIconDrawableWithFilter(bitmap, url, mIconGenerator,
-                                mDefaultFaviconHelper, mContext.getResources(), mFaviconSize);
+                Drawable drawable;
+                if (bitmap != null) {
+                    drawable = FaviconUtils.createRoundedBitmapDrawable(
+                            mContext.getResources(), bitmap);
+                } else {
+                    drawable = mDefaultFaviconHelper.getDefaultFaviconDrawable(
+                            mContext.getResources(), iconUrl, true);
+                }
+
                 callback.onResult(drawable);
             };
 

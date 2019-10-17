@@ -130,7 +130,11 @@ public class EphemeralTabSheetContent implements BottomSheet.BottomSheetContent 
 
     /** Method to be called to start the favicon anmiation. */
     public void startFaviconAnimation(Drawable favicon) {
-        assert favicon != null;
+        if (favicon == null) {
+            mCurrentFavicon = null;
+            mFaviconView.setImageDrawable(null);
+            return;
+        }
 
         // TODO(shaktisahu): Find out if there is a better way for this animation.
         Drawable presentedDrawable = favicon;
