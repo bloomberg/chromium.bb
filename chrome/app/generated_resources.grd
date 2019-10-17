@@ -6690,6 +6690,9 @@ the Bookmarks menu.">
         <message name="IDS_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_NOTIFICATION_DESCRIPTION" desc="The description of the notification shown when a clipboard was shared.">
           Copied to your clipboard
         </message>
+        <message name="IDS_OMNIBOX_TOOLTIP_SHARED_CLIPBOARD" desc="The tooltip for the shared clipboard omnibox icon.">
+          Copy to your device
+        </message>
       </if>
 
       <if expr="use_titlecase">
@@ -6713,6 +6716,9 @@ the Bookmarks menu.">
         </message>
         <message name="IDS_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_NOTIFICATION_DESCRIPTION" desc="In Title Case: The description of the notification shown when a clipboard was shared.">
           Copied to Your Clipboard
+        </message>
+        <message name="IDS_OMNIBOX_TOOLTIP_SHARED_CLIPBOARD" desc="The tooltip for the shared clipboard omnibox icon.">
+          Copy to Your Device
         </message>
       </if>
 
