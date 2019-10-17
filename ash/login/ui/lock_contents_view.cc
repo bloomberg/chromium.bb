@@ -897,6 +897,11 @@ void LockContentsView::OnAuthDisabledForUser(
   disable_lock_screen_note_ = state->disable_auth;
   OnLockScreenNoteStateChanged(mojom::TrayActionState::kNotAvailable);
 
+  if (auth_disabled_data.disable_lock_screen_media) {
+    Shell::Get()->media_controller()->SuspendMediaSessions();
+    HideMediaControlsLayout();
+  }
+
   LoginBigUserView* big_user =
       TryToFindBigUser(user, true /*require_auth_active*/);
   if (big_user && big_user->auth_user()) {

@@ -20,7 +20,6 @@
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/ash/media_client_impl.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
@@ -280,16 +279,14 @@ void ScreenTimeController::OnScreenLockByPolicy(
   ScreenLocker::default_screen_locker()->DisableAuthForUser(
       account_id,
       ash::AuthDisabledData(ConvertLockReason(active_policy), next_unlock_time,
-                            GetScreenTimeDuration()));
+                            GetScreenTimeDuration(),
+                            true /*disable_lock_screen_media*/));
 
   // Add parent access code button.
   // TODO(agawronska): Once feature flag is removed, showing shelf button could
   // be moved to ash.
   if (base::FeatureList::IsEnabled(features::kParentAccessCode))
     ash::LoginScreen::Get()->ShowParentAccessButton(true);
-
-  // Prevent media from continuing to play after device is locked.
-  MediaClientImpl::Get()->SuspendMediaSessions();
 }
 
 void ScreenTimeController::OnScreenLockByPolicyEnd() {
