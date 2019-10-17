@@ -9,7 +9,10 @@
 #include <map>
 #include <string>
 
+#include "base/observer_list.h"
 #import "base/time/time.h"
+
+class BreadcrumbManagerObserver;
 
 // Stores events logged with |AddEvent| in memory which can later be retrieved
 // with |GetEvents|. Events will be silently dropped after a certain amount of
@@ -27,6 +30,10 @@ class BreadcrumbManager {
   // Logs a breadcrumb event with message data |event|.
   void AddEvent(const std::string& event);
 
+  // Adds and removes observers.
+  void AddObserver(BreadcrumbManagerObserver* observer);
+  void RemoveObserver(BreadcrumbManagerObserver* observer);
+
   BreadcrumbManager();
   virtual ~BreadcrumbManager();
 
@@ -39,6 +46,9 @@ class BreadcrumbManager {
   // List of events, paired with the time which they were logged to minute
   // resolution. Newer events are at the end of the list.
   std::list<std::pair<base::Time, std::list<std::string>>> event_buckets_;
+
+  base::ObserverList<BreadcrumbManagerObserver, /*check_empty=*/true>
+      observers_;
 
   DISALLOW_COPY_AND_ASSIGN(BreadcrumbManager);
 };

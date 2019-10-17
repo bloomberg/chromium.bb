@@ -6,6 +6,7 @@
 
 #include "base/strings/stringprintf.h"
 #include "base/time/time_to_iso8601.h"
+#include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_observer.h"
 
 namespace {
 
@@ -62,6 +63,10 @@ void BreadcrumbManager::AddEvent(const std::string& event) {
   event_buckets_.back().second.push_back(event_log);
 
   DropOldEvents();
+
+  for (auto& observer : observers_) {
+    observer.EventAdded(this, event_log);
+  }
 }
 
 void BreadcrumbManager::DropOldEvents() {
@@ -81,3 +86,11 @@ void BreadcrumbManager::DropOldEvents() {
 BreadcrumbManager::BreadcrumbManager() = default;
 
 BreadcrumbManager::~BreadcrumbManager() = default;
+
+void BreadcrumbManager::AddObserver(BreadcrumbManagerObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void BreadcrumbManager::RemoveObserver(BreadcrumbManagerObserver* observer) {
+  observers_.RemoveObserver(observer);
+}

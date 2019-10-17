@@ -23,6 +23,7 @@ source_set("breadcrumbs") {
   sources = [
     "breadcrumb_manager.cc",
     "breadcrumb_manager.h",
+    "breadcrumb_manager_observer.h",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
@@ -39,6 +40,7 @@ source_set("unit_tests") {
   ]
 
   sources = [
+    "breadcrumb_manager_observer_unittest.mm",
     "breadcrumb_manager_unittest.mm",
   ]
 }
