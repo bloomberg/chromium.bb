@@ -86,6 +86,32 @@ g.test('duplicate test name', t => {
   });
 });
 
+g.test('duplicate test params', t => {
+  const g = new TestGroup(UnitTest);
+
+  t.shouldThrow('Error', () => {
+    g.test('abc', () => {
+      //
+    }).params([
+      { a: 1 }, //
+      { a: 1 },
+    ]);
+  });
+});
+
+g.test('duplicate test params/with different private params', t => {
+  const g = new TestGroup(UnitTest);
+
+  t.shouldThrow('Error', () => {
+    g.test('abc', () => {
+      //
+    }).params([
+      { a: 1, _b: 1 }, //
+      { a: 1, _b: 2 },
+    ]);
+  });
+});
+
 const badChars = Array.from('"`~@#$+=\\|!^&*[]<>{}-\'.,');
 g.test('invalid test name', t => {
   const g = new TestGroup(UnitTest);

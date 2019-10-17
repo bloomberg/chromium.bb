@@ -3,6 +3,7 @@ import { Fixture } from './fixture.js';
 import { TestCaseID } from './id.js';
 import { LiveTestCaseResult, TestCaseRecorder, TestSpecRecorder } from './logger.js';
 import { ParamSpecIterable, ParamsAny, paramsEquals } from './params/index.js';
+import { extractPublicParams } from './url_query.js';
 
 export interface RunCase {
   readonly id: TestCaseID;
@@ -80,16 +81,18 @@ class Test<F extends Fixture> {
     const seen: ParamsAny[] = [];
     // This is n^2.
     for (const spec of cases) {
-      if (seen.some(x => paramsEquals(x, spec))) {
+      const publicParams = extractPublicParams(spec);
+      if (seen.some(x => paramsEquals(x, publicParams))) {
         throw new Error('Duplicate test case params');
       }
-      seen.push(spec);
+      seen.push(publicParams);
     }
     this.cases = cases;
   }
 
   *iterate(rec: TestSpecRecorder): IterableIterator<RunCase> {
-    for (const params of this.cases || [null]) {
+    for (const p of this.cases || [null]) {
+      const params = p ? extractPublicParams(p) : null;
       yield new RunCaseSpecific(rec, { test: this.name, params }, this.fixture, this.fn);
     }
   }

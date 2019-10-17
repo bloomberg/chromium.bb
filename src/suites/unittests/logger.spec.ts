@@ -4,7 +4,7 @@ Unit tests for namespaced logging system.
 Also serves as a larger test of async test functions, and of the logging system.
 `;
 
-import { TestGroup } from '../../framework/index.js';
+import { TestGroup, paramsEquals } from '../../framework/index.js';
 import { Logger } from '../../framework/logger.js';
 
 import { UnitTest } from './unit_test.js';
@@ -28,10 +28,18 @@ g.test('construct', t => {
   t.expect(res1.status === 'running');
   t.expect(res1.timems < 0);
   t.expect(res2.test === 'qux');
-  t.expect(res2.params === params2);
+  t.expect(paramsEquals(res2.params, params2));
   t.expect(res2.logs === undefined);
   t.expect(res2.status === 'running');
   t.expect(res2.timems < 0);
+});
+
+g.test('private params', t => {
+  const mylog = new Logger();
+  const [testrec] = mylog.record({ suite: 'a', path: 'foo/bar' });
+  const [, res] = testrec.record('baz', { a: 1, _b: 2 });
+
+  t.expect(paramsEquals(res.params, { a: 1 }));
 });
 
 g.test('empty', t => {

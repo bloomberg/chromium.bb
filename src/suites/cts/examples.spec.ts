@@ -55,13 +55,21 @@ g.test('basic/async', async t => {
   );
 });
 
+// A test can be parameterized with a simple array of objects.
+//
+// Parameters can be public (x, y) which means they're part of the case name.
+// They can also be private by starting with an underscore (_result), which passes
+// them into the test but does not make them part of the case name:
+//
+// - cts:examples:basic/params={"x":2,"y":4}    runs with t.params = {x: 2, y: 5, _result: 6}.
+// - cts:examples:basic/params={"x":-10,"y":18} runs with t.params = {x: -10, y: 18, _result: 8}.
 g.test('basic/params', t => {
-  t.expect(t.params.x + t.params.y === t.params.result);
+  t.expect(t.params.x + t.params.y === t.params._result);
 }).params([
-  { x: 2, y: 4, result: 6 }, //
-  { x: -10, y: 18, result: 8 },
+  { x: 2, y: 4, _result: 6 }, //
+  { x: -10, y: 18, _result: 8 },
 ]);
-// (note blank comment above to enforce newlines on autoformat)
+// (note the blank comment above to enforce newlines on autoformat)
 
 g.test('gpu/async', async t => {
   const fence = t.queue.createFence();

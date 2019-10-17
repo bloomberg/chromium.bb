@@ -49,8 +49,8 @@ const specsData: { [k: string]: TestSpecOrReadme } = {
     g: (() => {
       const g = new TestGroup(UnitTest);
       g.test('zed', () => {}).params([
-        { a: 1, b: 2 }, //
-        { a: 1, b: 3 },
+        { a: 1, b: 2, _c: 0 }, //
+        { a: 1, b: 3, _c: 0 },
       ]);
       return g;
     })(),
@@ -155,6 +155,8 @@ g.test('partial test/exact', async t => {
   t.expect((await t.singleGroup('suite1:baz:zed=')).length === 0);
   t.expect((await t.singleGroup('suite1:baz:zed={}')).length === 0);
   t.expect((await t.singleGroup('suite1:baz:zed={"a":1,"b":2}')).length === 1);
+  t.expect((await t.singleGroup('suite1:baz:zed={"b":2,"a":1}')).length === 1);
+  t.expect((await t.singleGroup('suite1:baz:zed={"a":1,"b":2,"_c":0}')).length === 0);
 });
 
 g.test('partial test/makeQueryString', async t => {
@@ -173,7 +175,8 @@ g.test('partial test/match', async t => {
   t.expect((await t.singleGroup('suite1:baz:zed~{"b":2,"a":1}')).length === 1);
   t.expect((await t.singleGroup('suite1:baz:zed~{"b":2}')).length === 1);
   t.expect((await t.singleGroup('suite1:baz:zed~{"a":2}')).length === 0);
-  t.expect((await t.singleGroup('suite1:baz:zed~{"c":3}')).length === 0);
+  t.expect((await t.singleGroup('suite1:baz:zed~{"c":0}')).length === 0);
+  t.expect((await t.singleGroup('suite1:baz:zed~{"_c":0}')).length === 0);
 });
 
 g.test('end2end', async t => {

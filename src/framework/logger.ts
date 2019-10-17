@@ -1,6 +1,7 @@
 import { TestSpecID } from './id.js';
 import { ParamsSpec } from './params/index.js';
 import { makeQueryString } from './url_query.js';
+import { extractPublicParams } from './url_query.js';
 import { getStackTrace, now } from './util/index.js';
 import { version } from './version.js';
 
@@ -42,7 +43,12 @@ export class TestSpecRecorder {
   }
 
   record(test: string, params: ParamsSpec | null): [TestCaseRecorder, LiveTestCaseResult] {
-    const result: LiveTestCaseResult = { test, params, status: 'running', timems: -1 };
+    const result: LiveTestCaseResult = {
+      test,
+      params: params ? extractPublicParams(params) : null,
+      status: 'running',
+      timems: -1,
+    };
     this.result.cases.push(result);
     return [new TestCaseRecorder(result), result];
   }

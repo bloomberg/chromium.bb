@@ -1,4 +1,5 @@
 import { TestCaseID, TestSpecID } from './id.js';
+import { ParamsSpec } from './params/index.js';
 
 export function encodeSelectively(s: string): string {
   let ret = encodeURIComponent(s);
@@ -15,13 +16,23 @@ export function encodeSelectively(s: string): string {
   return ret;
 }
 
+export function extractPublicParams(params: ParamsSpec): ParamsSpec {
+  const publicParams: ParamsSpec = {};
+  for (const k of Object.keys(params)) {
+    if (!k.startsWith('_')) {
+      publicParams[k] = params[k];
+    }
+  }
+  return publicParams;
+}
+
 export function makeQueryString(spec: TestSpecID, testcase?: TestCaseID): string {
   let s = spec.suite + ':';
   s += spec.path + ':';
   if (testcase !== undefined) {
     s += testcase.test + '=';
     if (testcase.params) {
-      s += JSON.stringify(testcase.params);
+      s += JSON.stringify(extractPublicParams(testcase.params));
     }
   }
   return encodeSelectively(s);
