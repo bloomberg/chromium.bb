@@ -27,7 +27,7 @@ void RecordSafetyTipInteractionHistogram(content::WebContents* web_contents,
   base::UmaHistogramEnumeration(
       security_state::GetSafetyTipHistogramName(
           "Security.SafetyTips.Interaction",
-          helper->GetVisibleSecurityState()->safety_tip_status),
+          helper->GetVisibleSecurityState()->safety_tip_info.status),
       interaction);
 }
 

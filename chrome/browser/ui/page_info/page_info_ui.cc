@@ -234,7 +234,7 @@ PageInfoUI::ChosenObjectInfo::~ChosenObjectInfo() {}
 PageInfoUI::IdentityInfo::IdentityInfo()
     : identity_status(PageInfo::SITE_IDENTITY_STATUS_UNKNOWN),
       safe_browsing_status(PageInfo::SAFE_BROWSING_STATUS_NONE),
-      safety_tip_status(security_state::SafetyTipStatus::kUnknown),
+      safety_tip_info({security_state::SafetyTipStatus::kUnknown, GURL()}),
       connection_status(PageInfo::SITE_CONNECTION_STATUS_UNKNOWN),
       show_ssl_decision_revoke_button(false),
       show_change_password_buttons(false) {}
@@ -279,7 +279,7 @@ PageInfoUI::GetSecurityDescription(const IdentityInfo& identity_info) const {
                                        IDS_PAGE_INFO_BILLING_DETAILS);
   }
 
-  switch (identity_info.safety_tip_status) {
+  switch (identity_info.safety_tip_info.status) {
     case security_state::SafetyTipStatus::kBadReputation:
       return CreateSecurityDescription(
           SecuritySummaryColor::RED,
