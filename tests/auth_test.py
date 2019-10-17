@@ -5,7 +5,7 @@
 
 """Unit Tests for auth.py"""
 
-import __builtin__
+import contextlib
 import datetime
 import json
 import logging
@@ -16,37 +16,35 @@ import time
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-
-from testing_support import auto_stub
-from third_party import httplib2
 from third_party import mock
+from third_party import httplib2
 
 import auth
 
 
-class TestLuciContext(auto_stub.TestCase):
+def _mockLocalAuth(account_id, secret, rpc_port):
+  mock_luci_context = {
+      'local_auth': {
+          'default_account_id': account_id,
+          'secret': secret,
+          'rpc_port': rpc_port,
+      }
+  }
+  mock.patch('auth._load_luci_context', return_value=mock_luci_context).start()
+  mock.patch('os.environ', {'LUCI_CONTEXT': 'default/test/path'}).start()
+
+
+def _mockResponse(status, content):
+  mock_response = (mock.Mock(status=status), content)
+  mock.patch('auth.httplib2.Http.request', return_value=mock_response).start()
+
+
+class TestLuciContext(unittest.TestCase):
   def setUp(self):
     auth._get_luci_context_local_auth_params.clear_cache()
 
-  def _mock_local_auth(self, account_id, secret, rpc_port):
-    self.mock(os, 'environ', {'LUCI_CONTEXT': 'default/test/path'})
-    self.mock(auth, '_load_luci_context', mock.Mock())
-    auth._load_luci_context.return_value = {
-      'local_auth': {
-        'default_account_id': account_id,
-        'secret': secret,
-        'rpc_port': rpc_port,
-      }
-    }
-
-  def _mock_loc_server_resp(self, status, content):
-    mock_resp = mock.Mock()
-    mock_resp.status = status
-    self.mock(httplib2.Http, 'request', mock.Mock())
-    httplib2.Http.request.return_value = (mock_resp, content)
-
   def test_all_good(self):
-    self._mock_local_auth('account', 'secret', 8080)
+    _mockLocalAuth('account', 'secret', 8080)
     self.assertTrue(auth.has_luci_context_local_auth())
 
     expiry_time = datetime.datetime.min + datetime.timedelta(hours=1)
@@ -57,18 +55,18 @@ class TestLuciContext(auto_stub.TestCase):
       'expiry': (expiry_time
                  - datetime.datetime.utcfromtimestamp(0)).total_seconds(),
     }
-    self._mock_loc_server_resp(200, json.dumps(resp_content))
+    _mockResponse(200, json.dumps(resp_content))
     params = auth._get_luci_context_local_auth_params()
     token = auth._get_luci_context_access_token(params, datetime.datetime.min)
     self.assertEqual(token.token, 'token')
 
   def test_no_account_id(self):
-    self._mock_local_auth(None, 'secret', 8080)
+    _mockLocalAuth(None, 'secret', 8080)
     self.assertFalse(auth.has_luci_context_local_auth())
     self.assertIsNone(auth.get_luci_context_access_token())
 
   def test_incorrect_port_format(self):
-    self._mock_local_auth('account', 'secret', 'port')
+    _mockLocalAuth('account', 'secret', 'port')
     self.assertFalse(auth.has_luci_context_local_auth())
     with self.assertRaises(auth.LuciContextAuthError):
       auth.get_luci_context_access_token()
@@ -81,7 +79,7 @@ class TestLuciContext(auto_stub.TestCase):
       'access_token': 'token',
       'expiry': 1,
     }
-    self._mock_loc_server_resp(200, json.dumps(resp_content))
+    _mockResponse(200, json.dumps(resp_content))
     with self.assertRaises(auth.LuciContextAuthError):
       auth._get_luci_context_access_token(
           params, datetime.datetime.utcfromtimestamp(1))
@@ -94,13 +92,13 @@ class TestLuciContext(auto_stub.TestCase):
       'access_token': 'token',
       'expiry': 'dead',
     }
-    self._mock_loc_server_resp(200, json.dumps(resp_content))
+    _mockResponse(200, json.dumps(resp_content))
     with self.assertRaises(auth.LuciContextAuthError):
       auth._get_luci_context_access_token(params, datetime.datetime.min)
 
   def test_incorrect_response_content_format(self):
     params = auth._LuciContextLocalAuthParams('account', 'secret', 8080)
-    self._mock_loc_server_resp(200, '5')
+    _mockResponse(200, '5')
     with self.assertRaises(auth.LuciContextAuthError):
       auth._get_luci_context_access_token(params, datetime.datetime.min)
 
