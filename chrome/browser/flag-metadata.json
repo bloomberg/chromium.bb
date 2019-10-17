@@ -1765,6 +1765,11 @@
     "expiry_milestone": 80
   },
   {
+    "name": "enable-sync-device-info-in-transport-mode",
+    "owners": ["//components/sync/OWNERS", "//chrome/browser/sharing/OWNERS"],
+    "expiry_milestone": 81
+  },
+  {
     "name": "enable-sync-uss-bookmarks",
     "owners": [ "mamir", "//components/sync/OWNERS" ],
     "expiry_milestone": 80

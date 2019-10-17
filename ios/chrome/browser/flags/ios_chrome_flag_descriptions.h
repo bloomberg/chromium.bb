@@ -300,6 +300,11 @@ extern const char kSnapshotDrawViewDescription[];
 extern const char kForceStartupSigninPromoName[];
 extern const char kForceStartupSigninPromoDescription[];
 
+// Title and description for the flag to allow syncing DeviceInfo in
+// transport-only mode.
+extern const char kSyncDeviceInfoInTransportModeName[];
+extern const char kSyncDeviceInfoInTransportModeDescription[];
+
 // Title and description for the flag to control if Chrome Sync should use the
 // sandbox servers.
 extern const char kSyncSandboxName[];
