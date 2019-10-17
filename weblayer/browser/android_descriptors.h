@@ -12,9 +12,7 @@ namespace weblayer {
 // This is a list of global descriptor keys to be used with the
 // base::GlobalDescriptors object (see base/posix/global_descriptors.h)
 enum {
-  kWebLayerLocalePakDescriptor = kContentIPCDescriptorMax + 1,
-  kWebLayerMainPakDescriptor,
-  kWebLayer100PercentPakDescriptor,
+  kPakDescriptor = kContentIPCDescriptorMax + 1,
 };
 
 }  // namespace weblayer

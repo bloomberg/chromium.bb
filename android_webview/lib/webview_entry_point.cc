@@ -13,7 +13,7 @@ bool NativeInit(base::android::LibraryProcessType library_process_type) {
   switch (library_process_type) {
     case base::android::PROCESS_WEBLAYER:
     case base::android::PROCESS_WEBLAYER_CHILD:
-      return weblayer::OnJNIOnLoadInit();
+      return weblayer::OnJNIOnLoadInit("resources.pak");
       break;
     default:
       return android_webview::OnJNIOnLoadInit();
