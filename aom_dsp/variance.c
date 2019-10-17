@@ -356,13 +356,18 @@ void aom_upsampled_pred_c(MACROBLOCKD *xd, const AV1_COMMON *const cm,
       const int_interpfilters filters =
           av1_broadcast_interp_filter(EIGHTTAP_REGULAR);
 
+      InterPredParams inter_pred_params;
+      av1_init_inter_params(&inter_pred_params, width, height,
+                            mi_y >> pd->subsampling_y,
+                            mi_x >> pd->subsampling_x, sf);
+
       // Get the inter predictor.
       const int build_for_obmc = 0;
-      av1_make_inter_predictor(pre, pre_buf->stride, comp_pred, width,
-                               &subpel_params, sf, width, height, &conv_params,
-                               filters, &warp_types, mi_x >> pd->subsampling_x,
-                               mi_y >> pd->subsampling_y, plane, ref_num, mi,
-                               build_for_obmc, xd, cm->allow_warped_motion);
+      av1_make_inter_predictor(
+          pre, pre_buf->stride, comp_pred, width, &inter_pred_params,
+          &subpel_params, sf, width, height, &conv_params, filters, &warp_types,
+          mi_x >> pd->subsampling_x, mi_y >> pd->subsampling_y, plane, ref_num,
+          mi, build_for_obmc, xd, cm->allow_warped_motion);
 
       return;
     }
@@ -949,13 +954,18 @@ void aom_highbd_upsampled_pred_c(MACROBLOCKD *xd,
       const int_interpfilters filters =
           av1_broadcast_interp_filter(EIGHTTAP_REGULAR);
 
+      InterPredParams inter_pred_params;
+      av1_init_inter_params(&inter_pred_params, width, height,
+                            mi_y >> pd->subsampling_y,
+                            mi_x >> pd->subsampling_x, sf);
+
       // Get the inter predictor.
       const int build_for_obmc = 0;
-      av1_make_inter_predictor(pre, pre_buf->stride, comp_pred8, width,
-                               &subpel_params, sf, width, height, &conv_params,
-                               filters, &warp_types, mi_x >> pd->subsampling_x,
-                               mi_y >> pd->subsampling_y, plane, ref_num, mi,
-                               build_for_obmc, xd, cm->allow_warped_motion);
+      av1_make_inter_predictor(
+          pre, pre_buf->stride, comp_pred8, width, &inter_pred_params,
+          &subpel_params, sf, width, height, &conv_params, filters, &warp_types,
+          mi_x >> pd->subsampling_x, mi_y >> pd->subsampling_y, plane, ref_num,
+          mi, build_for_obmc, xd, cm->allow_warped_motion);
 
       return;
     }

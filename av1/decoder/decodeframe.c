@@ -705,6 +705,7 @@ static INLINE void dec_build_inter_predictors(const AV1_COMMON *cm,
         MB_MODE_INFO *this_mbmi = xd->mi[row * xd->mi_stride + col];
         is_compound = has_second_ref(this_mbmi);
         int tmp_dst_stride = 8;
+        InterPredParams inter_pred_params;
         assert(bw < 8 || bh < 8);
         ConvolveParams conv_params = get_conv_params_no_round(
             0, plane, xd->tmp_conv_dst, tmp_dst_stride, is_compound, xd->bd);
@@ -759,9 +760,14 @@ static INLINE void dec_build_inter_predictors(const AV1_COMMON *cm,
           conv_params.do_average = 0;
         }
 
+        av1_init_inter_params(&inter_pred_params, b4_w, b4_h,
+                              (mi_y >> pd->subsampling_y) + y,
+                              (mi_x >> pd->subsampling_x) + x, sf);
+
         av1_make_inter_predictor(
-            pre, src_stride, dst, dst_buf->stride, &subpel_params, sf, b4_w,
-            b4_h, &conv_params, this_mbmi->interp_filters, &warp_types,
+            pre, src_stride, dst, dst_buf->stride, &inter_pred_params,
+            &subpel_params, sf, b4_w, b4_h, &conv_params,
+            this_mbmi->interp_filters, &warp_types,
             (mi_x >> pd->subsampling_x) + x, (mi_y >> pd->subsampling_y) + y,
             plane, ref, mi, build_for_obmc, xd, cm->allow_warped_motion);
 
@@ -778,6 +784,7 @@ static INLINE void dec_build_inter_predictors(const AV1_COMMON *cm,
     struct buf_2d *const dst_buf = &pd->dst;
     uint8_t *const dst = dst_buf->buf;
     uint8_t *pre[2];
+    InterPredParams inter_pred_params;
     SubpelParams subpel_params[2];
     int src_stride[2];
     for (ref = 0; ref < 1 + is_compound; ++ref) {
@@ -829,15 +836,23 @@ static INLINE void dec_build_inter_predictors(const AV1_COMMON *cm,
         conv_params.do_average = 0;
       }
 
+      av1_init_inter_params(&inter_pred_params, bw, bh,
+                            mi_y >> pd->subsampling_y,
+                            mi_x >> pd->subsampling_x, sf);
+
+      if (!build_for_obmc)
+        av1_init_warp_params(&inter_pred_params, &pd->pre[ref], &warp_types,
+                             ref, xd, mi);
+
       if (ref && is_masked_compound_type(mi->interinter_comp.type))
         av1_make_masked_inter_predictor(
-            pre[ref], src_stride[ref], dst, dst_buf->stride,
+            pre[ref], src_stride[ref], dst, dst_buf->stride, &inter_pred_params,
             &subpel_params[ref], sf, bw, bh, &conv_params, mi->interp_filters,
             plane, &warp_types, mi_x >> pd->subsampling_x,
             mi_y >> pd->subsampling_y, ref, xd, cm->allow_warped_motion);
       else
         av1_make_inter_predictor(
-            pre[ref], src_stride[ref], dst, dst_buf->stride,
+            pre[ref], src_stride[ref], dst, dst_buf->stride, &inter_pred_params,
             &subpel_params[ref], sf, bw, bh, &conv_params, mi->interp_filters,
             &warp_types, mi_x >> pd->subsampling_x, mi_y >> pd->subsampling_y,
             plane, ref, mi, build_for_obmc, xd, cm->allow_warped_motion);
