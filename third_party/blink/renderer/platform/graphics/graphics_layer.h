@@ -199,11 +199,6 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   // For hosting this GraphicsLayer in a native layer hierarchy.
   cc::PictureLayer* CcLayer() const;
 
-  // Return a string with a human readable form of the layer tree. If debug is
-  // true, pointers for the layers and timing data will be included in the
-  // returned string.
-  String GetLayerTreeAsTextForTesting(LayerTreeFlags = kLayerTreeNormal) const;
-
   void UpdateTrackingRasterInvalidations();
   void ResetTrackedRasterInvalidations();
   bool HasTrackedRasterInvalidations() const;
