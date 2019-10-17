@@ -7,6 +7,7 @@
 
 from __future__ import print_function
 
+import errno
 import os
 import time
 
@@ -121,7 +122,7 @@ class DeployChromeMock(partial_mock.PartialMock):
     self.rsh_mock.SetDefaultCmdResult(0)
     self.MockMountCmd(1)
     self.rsh_mock.AddCmdResult(
-        deploy_chrome.LSOF_COMMAND % (deploy_chrome._CHROME_DIR,), 1)
+        deploy_chrome.LSOF_COMMAND_CHROME % (deploy_chrome._CHROME_DIR,), 1)
 
   def MockMountCmd(self, returnvalue):
     self.rsh_mock.AddCmdResult(deploy_chrome.MOUNT_RW_COMMAND,
@@ -155,7 +156,7 @@ class DeployTest(cros_test_lib.MockTempDirTestCase):
   def setUp(self):
     self.deploy_mock = self.StartPatcher(DeployChromeMock())
     self.deploy = self._GetDeployChrome(
-        list(_REGULAR_TO) + ['--gs-path', _GS_PATH, '--force'])
+        list(_REGULAR_TO) + ['--gs-path', _GS_PATH, '--force', '--mount'])
     self.remote_reboot_mock = \
       self.PatchObject(remote_access.RemoteAccess, 'RemoteReboot',
                        return_value=True)
@@ -212,6 +213,35 @@ class TestMount(DeployTest):
                      return_value=True, autospec=True)
     self.deploy._MountRootfsAsWritable()
     self.assertFalse(self.deploy._root_dir_is_still_readonly.is_set())
+
+
+class TestMountTarget(DeployTest):
+  """ Testing mount and umount command handling. """
+
+  def testMountTargetUmountFailure(self):
+    """Test error being thrown if umount fails.
+
+    Test that 'lsof' is run on mount-dir and 'mount -rbind' command is not run
+    if 'umount' cmd fails.
+    """
+    mount_dir = self.deploy.options.mount_dir
+    target_dir = self.deploy.options.target_dir
+    self.deploy_mock.rsh_mock.AddCmdResult(
+        deploy_chrome._UMOUNT_DIR_IF_MOUNTPOINT_CMD %
+        {'dir': mount_dir}, returncode=errno.EBUSY, stderr='Target is Busy')
+    self.deploy_mock.rsh_mock.AddCmdResult(deploy_chrome.LSOF_COMMAND %
+                                           (mount_dir,), returncode=0,
+                                           stdout='process ' + mount_dir)
+    # Check for RunCommandError being thrown.
+    self.assertRaises(cros_build_lib.RunCommandError,
+                      self.deploy._MountTarget)
+    # Check for the 'mount -rbind' command not run.
+    self.deploy_mock.rsh_mock.assertCommandContains(
+        (deploy_chrome._BIND_TO_FINAL_DIR_CMD % (target_dir, mount_dir)),
+        expected=False)
+    # Check for lsof command being called.
+    self.deploy_mock.rsh_mock.assertCommandContains(
+        (deploy_chrome.LSOF_COMMAND % (mount_dir,)))
 
 
 class TestUiJobStarted(DeployTest):
