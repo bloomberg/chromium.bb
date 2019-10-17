@@ -3722,7 +3722,6 @@ crbug.com/626703 external/wpt/html/cross-origin-embedder-policy/none.https.html 
 crbug.com/626703 external/wpt/html/cross-origin-opener-policy/coop-sandbox.https.html [ Failure ]
 crbug.com/626703 [ Debug ] external/wpt/html/cross-origin-embedder-policy/require-corp.https.html [ Failure ]
 crbug.com/626703 [ Debug ] virtual/cross-origin-embedder-policy/external/wpt/html/cross-origin-embedder-policy/require-corp.https.html [ Pass Failure ]
-crbug.com/626703 [ Linux Mac10.10 ] virtual/cross-origin-embedder-policy/external/wpt/html/cross-origin-embedder-policy/none.https.html [ Pass Failure ]
 
 # Failure due to on-going off-thread paint worklet project.
 crbug.com/957457 virtual/threaded/external/wpt/css/css-paint-api/invalid-image-pending-script.https.html [ Crash ]
@@ -5727,3 +5726,4 @@ crbug.com/1014812 external/wpt/animation-worklet/playback-rate.https.html [ Pass
 crbug.com/1014812 virtual/threaded/external/wpt/animation-worklet/playback-rate.https.html [ Pass Timeout Failure ]
 crbug.com/1014950 [ Mac ] http/tests/devtools/tracing/timeline-js/timeline-js-line-level-profile-no-url-end-to-end.js [ Pass Timeout ]
 crbug.com/1014950 [ Mac ] virtual/threaded/http/tests/devtools/tracing/timeline-js/timeline-js-line-level-profile-no-url-end-to-end.js [ Pass Timeout ]
+crbug.com/1015187 [ Linux Mac ] virtual/cross-origin-embedder-policy/external/wpt/html/cross-origin-embedder-policy/none.https.html [ Pass Failure ]
