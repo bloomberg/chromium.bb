@@ -34,17 +34,11 @@ namespace test {
 namespace {
 base::Optional<VideoFrameLayout> CreateLayout(
     const ImageProcessor::PortConfig& config) {
-  // V4L2 specific format hack:
-  // If VDA's output format is V4L2_PIX_FMT_MT21C, which is a platform specific
-  // format and now is only used for MT8173 VDA output and its image processor
-  // input, we set VideoFrameLayout for image processor's input with format
-  // PIXEL_FORMAT_NV12 as NV12's layout is the same as MT21.
   const VideoPixelFormat pixel_format = config.fourcc.ToVideoPixelFormat();
   if (config.planes.empty())
     return base::nullopt;
 
-  // TODO(hiroh): Check if config is multi planar by Fourcc.
-  if (config.planes.size() == 1) {
+  if (config.fourcc.IsMultiPlanar()) {
     return VideoFrameLayout::CreateWithPlanes(pixel_format, config.size,
                                               config.planes);
   } else {
