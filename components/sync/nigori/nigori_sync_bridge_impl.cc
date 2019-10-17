@@ -33,29 +33,6 @@ using sync_pb::NigoriSpecifics;
 
 const char kNigoriNonUniqueName[] = "Nigori";
 
-// Creates keystore Nigori specifics given |keystore_keys_cryptographer|.
-// Returns NigoriSpecifics that contain:
-// 1. passphrase_type = KEYSTORE_PASSPHRASE.
-// 2. encryption_keybag contains all keystore keys and encrypted with the
-// latest keystore key.
-// 3. keystore_decryptor_token contains latest keystore key encrypted with
-// itself.
-// 4. keybag_is_frozen = true.
-// 5. keystore_migration_time is current time.
-// 6. Other fields are default.
-NigoriSpecifics MakeDefaultKeystoreNigori(
-    const KeystoreKeysCryptographer& keystore_keys_cryptographer) {
-  DCHECK(!keystore_keys_cryptographer.IsEmpty());
-
-  NigoriState state;
-  state.passphrase_type = NigoriSpecifics::KEYSTORE_PASSPHRASE;
-  state.keystore_migration_time = base::Time::Now();
-  state.cryptographer = keystore_keys_cryptographer.ToCryptographerImpl();
-  state.keystore_keys_cryptographer = keystore_keys_cryptographer.Clone();
-
-  return state.ToSpecificsProto();
-}
-
 KeyDerivationMethod GetKeyDerivationMethodFromSpecifics(
     const sync_pb::NigoriSpecifics& specifics) {
   KeyDerivationMethod key_derivation_method = ProtoKeyDerivationMethodToEnum(
@@ -175,8 +152,9 @@ bool IsValidPassphraseTransition(
   }
   switch (old_passphrase_type) {
     case NigoriSpecifics::UNKNOWN:
-      // This can happen iff we have not synced local state yet, so we accept
-      // any valid passphrase type (invalid filtered before).
+      // This can happen iff we have not synced local state yet or synced with
+      // default NigoriSpecifics, so we accept any valid passphrase type
+      // (invalid filtered before).
     case NigoriSpecifics::IMPLICIT_PASSPHRASE:
       return true;
     case NigoriSpecifics::KEYSTORE_PASSPHRASE:
@@ -700,20 +678,14 @@ base::Optional<ModelError> NigoriSyncBridgeImpl::MergeSyncData(
   }
   // We received uninitialized Nigori and need to initialize it as default
   // keystore Nigori.
-  // TODO(crbug.com/922900): Adopt QueuePendingLocalCommit().
-  NigoriSpecifics initialized_specifics =
-      MakeDefaultKeystoreNigori(*state_.keystore_keys_cryptographer);
-  DCHECK(IsValidNigoriSpecifics(initialized_specifics));
-
-  *data->specifics.mutable_nigori() = initialized_specifics;
-  processor_->Put(std::make_unique<EntityData>(std::move(*data)));
-  return UpdateLocalState(initialized_specifics);
+  QueuePendingLocalCommit(
+      PendingLocalNigoriCommit::ForKeystoreInitialization());
+  return base::nullopt;
 }
 
 base::Optional<ModelError> NigoriSyncBridgeImpl::ApplySyncChanges(
     base::Optional<EntityData> data) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_NE(state_.passphrase_type, NigoriSpecifics::UNKNOWN);
 
   if (data) {
     DCHECK(data->specifics.has_nigori());
@@ -1126,11 +1098,7 @@ sync_pb::NigoriLocalData NigoriSyncBridgeImpl::SerializeAsNigoriLocalData()
 
 void NigoriSyncBridgeImpl::QueuePendingLocalCommit(
     std::unique_ptr<PendingLocalNigoriCommit> local_commit) {
-  NigoriState tmp_state = state_.Clone();
-  if (state_.passphrase_type == NigoriSpecifics::UNKNOWN) {
-    local_commit->OnFailure(broadcasting_observer_.get());
-    return;
-  }
+  DCHECK(processor_->IsTrackingMetadata());
 
   pending_local_commit_queue_.push_back(std::move(local_commit));
 
