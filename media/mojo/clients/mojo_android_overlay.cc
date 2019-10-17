@@ -26,13 +26,13 @@ MojoAndroidOverlay::MojoAndroidOverlay(
 
   mojo::Remote<mojom::AndroidOverlayProvider> provider(
       std::move(pending_provider));
-  provider->CreateOverlay(mojo::MakeRequest(&overlay_ptr_),
+  provider->CreateOverlay(overlay_.BindNewPipeAndPassReceiver(),
                           receiver_.BindNewPipeAndPassRemote(),
                           std::move(mojo_config));
 }
 
 MojoAndroidOverlay::~MojoAndroidOverlay() {
-  // Dropping |overlay_ptr_| will signal to the implementation that we're done
+  // Dropping |overlay_| will signal to the implementation that we're done
   // with the surface.  If a synchronous destroy is pending, then it can be
   // allowed to continue.
 }
@@ -42,7 +42,7 @@ void MojoAndroidOverlay::ScheduleLayout(const gfx::Rect& rect) {
   if (!received_surface_)
     return;
 
-  overlay_ptr_->ScheduleLayout(rect);
+  overlay_->ScheduleLayout(rect);
 }
 
 const base::android::JavaRef<jobject>& MojoAndroidOverlay::GetJavaSurface()
@@ -70,7 +70,7 @@ void MojoAndroidOverlay::OnSurfaceReady(uint64_t surface_key) {
 }
 
 void MojoAndroidOverlay::OnDestroyed() {
-  // Note that |overlay_ptr_| might not be bound yet, or we might not have ever
+  // Note that |overlay_| might not be bound yet, or we might not have ever
   // gotten a surface.  Regardless, the overlay cannot be used.
 
   if (!received_surface_)
@@ -78,7 +78,7 @@ void MojoAndroidOverlay::OnDestroyed() {
   else
     RunSurfaceDestroyedCallbacks();
 
-  // Note: we do not delete |overlay_ptr_| here.  Our client must delete us to
+  // Note: we do not delete |overlay_| here.  Our client must delete us to
   // signal that we should do that, since it still might be in use.
 }
 

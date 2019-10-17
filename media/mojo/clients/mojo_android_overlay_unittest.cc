@@ -13,7 +13,7 @@
 #include "gpu/ipc/common/gpu_surface_tracker.h"
 #include "media/base/mock_filters.h"
 #include "media/mojo/clients/mojo_android_overlay.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -54,10 +54,11 @@ class MojoAndroidOverlayTest : public ::testing::Test {
       : public StrictMock<mojom::AndroidOverlayProvider> {
    public:
     // These argument types lack default constructors, so gmock can't mock them.
-    void CreateOverlay(mojom::AndroidOverlayRequest overlay_request,
-                       mojo::PendingRemote<mojom::AndroidOverlayClient> client,
-                       mojom::AndroidOverlayConfigPtr config) override {
-      overlay_request_ = std::move(overlay_request);
+    void CreateOverlay(
+        mojo::PendingReceiver<mojom::AndroidOverlay> overlay_receiver,
+        mojo::PendingRemote<mojom::AndroidOverlayClient> client,
+        mojom::AndroidOverlayConfigPtr config) override {
+      overlay_receiver_ = std::move(overlay_receiver);
       client_.Bind(std::move(client));
       config_ = std::move(config);
       OverlayCreated();
@@ -65,14 +66,15 @@ class MojoAndroidOverlayTest : public ::testing::Test {
 
     MOCK_METHOD0(OverlayCreated, void(void));
 
-    mojom::AndroidOverlayRequest overlay_request_;
+    mojo::PendingReceiver<mojom::AndroidOverlay> overlay_receiver_;
     mojo::Remote<mojom::AndroidOverlayClient> client_;
     mojom::AndroidOverlayConfigPtr config_;
   };
 
  public:
   MojoAndroidOverlayTest()
-      : provider_receiver_(&mock_provider_), overlay_binding_(&mock_overlay_) {}
+      : provider_receiver_(&mock_provider_),
+        overlay_receiver_(&mock_overlay_) {}
 
   ~MojoAndroidOverlayTest() override {}
 
@@ -104,7 +106,7 @@ class MojoAndroidOverlayTest : public ::testing::Test {
   }
 
   // Create an overlay in |overlay_client_| using the current config, but do
-  // not bind anything to |overlay_request_| yet.
+  // not bind anything to |overlay_receiver_| yet.
   void CreateOverlay() {
     EXPECT_CALL(mock_provider_, OverlayCreated());
 
@@ -123,7 +125,7 @@ class MojoAndroidOverlayTest : public ::testing::Test {
     CreateOverlay();
 
     // Bind an overlay to the request.
-    overlay_binding_.Bind(std::move(mock_provider_.overlay_request_));
+    overlay_receiver_.Bind(std::move(mock_provider_.overlay_receiver_));
     base::RunLoop().RunUntilIdle();
   }
 
@@ -167,7 +169,7 @@ class MojoAndroidOverlayTest : public ::testing::Test {
 
   // The mock overlay impl that |mock_provider_| will provide.
   MockAndroidOverlay mock_overlay_;
-  mojo::Binding<mojom::AndroidOverlay> overlay_binding_;
+  mojo::Receiver<mojom::AndroidOverlay> overlay_receiver_;
 
   // The client under test.
   std::unique_ptr<AndroidOverlay> overlay_client_;
