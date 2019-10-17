@@ -292,7 +292,10 @@ void SearchTabHelper::FocusOmnibox(bool focus) {
     return;
 
   if (focus) {
-    omnibox_view->SetFocus();
+    // This is an invisible focus to support "realbox" implementations on NTPs
+    // (including other search providers). We shouldn't consider it as the user
+    // explicitly focusing the omnibox.
+    omnibox_view->SetFocus(/*is_user_initiated=*/false);
     omnibox_view->model()->SetCaretVisibility(false);
     // If the user clicked on the fakebox, any text already in the omnibox
     // should get cleared when they start typing. Selecting all the existing
@@ -421,8 +424,11 @@ void SearchTabHelper::PasteIntoOmnibox(const base::string16& text) {
   if (text_to_paste.empty())
     return;
 
-  if (!omnibox_view->model()->has_focus())
-    omnibox_view->SetFocus();
+  if (!omnibox_view->model()->has_focus()) {
+    // Pasting into a "realbox" should not be considered the user explicitly
+    // focusing the omnibox.
+    omnibox_view->SetFocus(/*is_user_initiated=*/false);
+  }
 
   omnibox_view->OnBeforePossibleChange();
   omnibox_view->model()->OnPaste();

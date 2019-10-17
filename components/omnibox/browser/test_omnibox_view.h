@@ -48,7 +48,7 @@ class TestOmniboxView : public OmniboxView {
   void SelectAll(bool reversed) override;
   void RevertAll() override {}
   void UpdatePopup() override {}
-  void SetFocus() override {}
+  void SetFocus(bool is_user_initiated) override {}
   void ApplyCaretVisibility() override {}
   void OnTemporaryTextMaybeChanged(const base::string16& display_text,
                                    const AutocompleteMatch& match,
