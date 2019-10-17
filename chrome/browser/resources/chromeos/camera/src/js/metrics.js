@@ -16,21 +16,18 @@ cca.metrics = cca.metrics || {};
 
 /**
  * Event builder for basic metrics.
- * @type {analytics.EventBuilder}
+ * @type {?analytics.EventBuilder}
  * @private
  */
 cca.metrics.base_ = null;
 
-/**
- * @type {analytics}
- */
 var analytics = window['analytics'] || {};
 
 /**
  * Fixes analytics.EventBuilder's dimension() method.
  * @param {number} i
  * @param {string} v
- * @return {analytics.EventBuilder}
+ * @return {!analytics.EventBuilder}
  */
 analytics.EventBuilder.prototype.dimen = function(i, v) {
   return this.dimension({index: i, value: v});
@@ -39,6 +36,7 @@ analytics.EventBuilder.prototype.dimen = function(i, v) {
 /**
  * Promise for Google Analytics tracker.
  * @type {Promise<analytics.Tracker>}
+ * @suppress {checkTypes}
  * @private
  */
 cca.metrics.ga_ = (function() {
@@ -83,7 +81,7 @@ cca.metrics.ga_ = (function() {
 /**
  * Returns event builder for the metrics type: launch.
  * @param {boolean} ackMigrate Whether acknowledged to migrate during launch.
- * @return {analytics.EventBuilder}
+ * @return {!analytics.EventBuilder}
  * @private
  */
 cca.metrics.launchType_ = function(ackMigrate) {
@@ -95,13 +93,12 @@ cca.metrics.launchType_ = function(ackMigrate) {
  * Returns event builder for the metrics type: capture.
  * @param {?string} facingMode Camera facing-mode of the capture.
  * @param {number} length Length of 1 minute buckets for captured video.
- * @param {number} width The width of the capture resolution.
- * @param {number} height The height of the capture resolution.
- * @return {analytics.EventBuilder}
+ * @param {!{width: number, height: number}} resolution Capture resolution.
+ * @return {!analytics.EventBuilder}
  * @private
  */
 cca.metrics.captureType_ = function(facingMode, length, {width, height}) {
-  var condState = (states, cond, strict) => {
+  var condState = (states, cond = undefined, strict = undefined) => {
     // Return the first existing state among the given states only if there is
     // no gate condition or the condition is met.
     const prerequisite = !cond || cca.state.get(cond);
@@ -130,7 +127,7 @@ cca.metrics.captureType_ = function(facingMode, length, {width, height}) {
 
 /**
  * Metrics types.
- * @enum {function(*=)}
+ * @enum {function(...): !analytics.EventBuilder}
  */
 cca.metrics.Type = {
   LAUNCH: cca.metrics.launchType_,
@@ -139,7 +136,7 @@ cca.metrics.Type = {
 
 /**
  * Logs the given metrics.
- * @param {cca.metrics.Type} type Metrics type.
+ * @param {!cca.metrics.Type} type Metrics type.
  * @param {...*} args Optional rest parameters for logging metrics.
  */
 cca.metrics.log = function(type, ...args) {
