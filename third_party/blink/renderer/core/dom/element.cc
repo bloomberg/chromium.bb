@@ -35,10 +35,9 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/scroll_into_view_options_or_boolean.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_html.h"
-#include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_html_or_trusted_script_or_trusted_script_url_or_trusted_url.h"
+#include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_html_or_trusted_script_or_trusted_script_url.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_script.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_script_url.h"
-#include "third_party/blink/renderer/bindings/core/v8/usv_string_or_trusted_url.h"
 #include "third_party/blink/renderer/core/accessibility/ax_context.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/animation/css/css_animations.h"
@@ -2168,8 +2167,7 @@ void Element::SetSynchronizedLazyAttribute(const QualifiedName& name,
 
 void Element::setAttribute(
     const AtomicString& local_name,
-    const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURLOrTrustedURL&
-        string_or_TT,
+    const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURL& string_or_TT,
     ExceptionState& exception_state) {
   if (!Document::IsValidName(local_name)) {
     exception_state.ThrowDOMException(
@@ -2250,16 +2248,6 @@ void Element::setAttribute(const QualifiedName& name,
                            ExceptionState& exception_state) {
   String valueString = GetStringFromTrustedScriptURL(
       stringOrURL, &GetDocument(), exception_state);
-  if (!exception_state.HadException()) {
-    setAttribute(name, AtomicString(valueString));
-  }
-}
-
-void Element::setAttribute(const QualifiedName& name,
-                           const USVStringOrTrustedURL& stringOrURL,
-                           ExceptionState& exception_state) {
-  String valueString =
-      GetStringFromTrustedURL(stringOrURL, &GetDocument(), exception_state);
   if (!exception_state.HadException()) {
     setAttribute(name, AtomicString(valueString));
   }
@@ -3877,8 +3865,7 @@ bool Element::ParseAttributeName(QualifiedName& out,
 void Element::setAttributeNS(
     const AtomicString& namespace_uri,
     const AtomicString& qualified_name,
-    const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURLOrTrustedURL&
-        string_or_TT,
+    const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURL& string_or_TT,
     ExceptionState& exception_state) {
   QualifiedName parsed_name = g_any_name;
   if (!ParseAttributeName(parsed_name, namespace_uri, qualified_name,
@@ -5297,18 +5284,6 @@ void Element::GetURLAttribute(const QualifiedName& name,
                               StringOrTrustedScriptURL& result) const {
   KURL url = GetURLAttribute(name);
   result.SetString(url.GetString());
-}
-
-void Element::GetURLAttribute(const QualifiedName& name,
-                              USVStringOrTrustedURL& result) const {
-  String url = GetURLAttribute(name);
-  result.SetUSVString(url);
-}
-
-void Element::FastGetAttribute(const QualifiedName& name,
-                               USVStringOrTrustedURL& result) const {
-  String attr = FastGetAttribute(name);
-  result.SetUSVString(attr);
 }
 
 void Element::FastGetAttribute(const QualifiedName& name,

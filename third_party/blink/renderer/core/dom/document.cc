@@ -67,7 +67,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_element_creation_options.h"
-#include "third_party/blink/renderer/bindings/core/v8/usv_string_or_trusted_url.h"
 #include "third_party/blink/renderer/bindings/core/v8/v0_custom_element_constructor_builder.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_element_creation_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/window_proxy.h"
@@ -278,7 +277,6 @@
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_html.h"
-#include "third_party/blink/renderer/core/trustedtypes/trusted_url.h"
 #include "third_party/blink/renderer/core/xml/parser/xml_document_parser.h"
 #include "third_party/blink/renderer/core/xml_names.h"
 #include "third_party/blink/renderer/core/xmlns_names.h"
@@ -3864,7 +3862,7 @@ Document* Document::open(v8::Isolate* isolate,
 }
 
 DOMWindow* Document::open(v8::Isolate* isolate,
-                          const USVStringOrTrustedURL& string_or_url,
+                          const String& url_string,
                           const AtomicString& name,
                           const AtomicString& features,
                           ExceptionState& exception_state) {
@@ -3874,7 +3872,7 @@ DOMWindow* Document::open(v8::Isolate* isolate,
     return nullptr;
   }
 
-  return domWindow()->open(isolate, string_or_url, name, features,
+  return domWindow()->open(isolate, url_string, name, features,
                            exception_state);
 }
 
