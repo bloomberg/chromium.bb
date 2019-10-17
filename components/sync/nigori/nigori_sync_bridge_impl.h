@@ -80,8 +80,6 @@ class NigoriSyncBridgeImpl : public KeystoreKeysHandler,
   base::Optional<ModelError> ApplySyncChanges(
       base::Optional<EntityData> data) override;
   std::unique_ptr<EntityData> GetData() override;
-  ConflictResolution ResolveConflict(const EntityData& local_data,
-                                     const EntityData& remote_data) override;
   void ApplyDisableSyncChanges() override;
 
   // TODO(crbug.com/922900): investigate whether we need this getter outside of

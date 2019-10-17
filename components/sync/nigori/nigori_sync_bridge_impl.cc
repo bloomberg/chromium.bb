@@ -794,14 +794,9 @@ base::Optional<ModelError> NigoriSyncBridgeImpl::UpdateLocalState(
 
   MaybeNotifyOfPendingKeys();
 
-  // TODO(crbug.com/): Instead of issuing errors for local commits, call
-  // PutNextApplicablePendingLocalCommit() to verify pending local changes
-  // (relevant for the conflict case). Issue failures if they are no longer
-  // applicable, or call Put() otherwise.
-  for (const auto& pending_local_commit : pending_local_commit_queue_) {
-    pending_local_commit->OnFailure(broadcasting_observer_.get());
-  }
-  pending_local_commit_queue_.clear();
+  // There might be pending local commits, so make attempt to apply them on top
+  // of new |state_|.
+  PutNextApplicablePendingLocalCommit();
 
   storage_->StoreData(SerializeAsNigoriLocalData());
 
@@ -935,14 +930,6 @@ std::unique_ptr<EntityData> NigoriSyncBridgeImpl::GetData() {
   entity_data->name = kNigoriNonUniqueName;
   entity_data->is_folder = true;
   return entity_data;
-}
-
-ConflictResolution NigoriSyncBridgeImpl::ResolveConflict(
-    const EntityData& local_data,
-    const EntityData& remote_data) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  NOTIMPLEMENTED();
-  return ConflictResolution::kUseLocal;
 }
 
 void NigoriSyncBridgeImpl::ApplyDisableSyncChanges() {

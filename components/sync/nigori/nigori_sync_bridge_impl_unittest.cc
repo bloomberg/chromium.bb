@@ -921,6 +921,68 @@ TEST_F(NigoriSyncBridgeImplTest,
   // salt to check expectations about cryptographer state.
 }
 
+// Tests that pending local change with setting custom passphrase is applied,
+// when there was a conflicting remote update and remote update is respected.
+TEST_F(NigoriSyncBridgeImplTest,
+       ShouldSetCustomPassphraseAfterConflictingUpdates) {
+  // Start with simple keystore Nigori.
+  const std::string kRawKeystoreKey1 = "keystore_key1";
+  const KeyParams kKeystoreKeyParams1 = KeystoreKeyParams(kRawKeystoreKey1);
+  EntityData simple_keystore_entity_data;
+  *simple_keystore_entity_data.specifics.mutable_nigori() =
+      BuildKeystoreNigoriSpecifics(
+          /*keybag_keys_params=*/{kKeystoreKeyParams1},
+          /*keystore_decryptor_params=*/kKeystoreKeyParams1,
+          /*keystore_key_params=*/kKeystoreKeyParams1);
+  bridge()->SetKeystoreKeys({kRawKeystoreKey1});
+  ASSERT_THAT(bridge()->MergeSyncData(std::move(simple_keystore_entity_data)),
+              Eq(base::nullopt));
+
+  // Set up custom passphrase locally, but don't emulate commit completion.
+  const std::string kCustomPassphrase = "custom_passphrase";
+  bridge()->SetEncryptionPassphrase(kCustomPassphrase);
+
+  // Emulate conflict with rotated keystore Nigori.
+  const std::string kRawKeystoreKey2 = "keystore_key2";
+  const KeyParams kKeystoreKeyParams2 = KeystoreKeyParams(kRawKeystoreKey2);
+  EntityData rotated_keystore_entity_data;
+  *rotated_keystore_entity_data.specifics.mutable_nigori() =
+      BuildKeystoreNigoriSpecifics(
+          /*keybag_keys_params=*/{kKeystoreKeyParams1, kKeystoreKeyParams2},
+          /*keystore_decryptor_params=*/kKeystoreKeyParams2,
+          /*keystore_key_params=*/kKeystoreKeyParams2);
+  bridge()->SetKeystoreKeys({kRawKeystoreKey1, kRawKeystoreKey2});
+
+  // Verify that custom passphrase is set on top of
+  // |rotated_keystore_entity_data|.
+  EXPECT_CALL(*processor(), Put(HasCustomPassphraseNigori()));
+  EXPECT_THAT(
+      bridge()->ApplySyncChanges(std::move(rotated_keystore_entity_data)),
+      Eq(base::nullopt));
+  EXPECT_THAT(bridge()->GetData(), HasCustomPassphraseNigori());
+
+  // Mimic commit completion.
+  EXPECT_CALL(*observer(), OnPassphraseAccepted());
+  EXPECT_CALL(*observer(), OnEncryptedTypesChanged(
+                               /*encrypted_types=*/EncryptableUserTypes(),
+                               /*encrypt_everything=*/true));
+  EXPECT_CALL(*observer(), OnCryptographerStateChanged(
+                               NotNull(), /*has_pending_keys=*/false));
+  EXPECT_CALL(*observer(),
+              OnPassphraseTypeChanged(PassphraseType::kCustomPassphrase,
+                                      /*passphrase_time=*/Not(NullTime())));
+  EXPECT_CALL(*observer(), OnBootstrapTokenUpdated(Ne(std::string()),
+                                                   PASSPHRASE_BOOTSTRAP_TOKEN));
+  EXPECT_THAT(bridge()->ApplySyncChanges(base::nullopt), Eq(base::nullopt));
+  EXPECT_THAT(bridge()->GetData(), HasCustomPassphraseNigori());
+
+  const Cryptographer& cryptographer = bridge()->GetCryptographerForTesting();
+  EXPECT_THAT(cryptographer, CanDecryptWith(kKeystoreKeyParams1));
+  EXPECT_THAT(cryptographer, CanDecryptWith(kKeystoreKeyParams2));
+  // TODO(crbug.com/922900): find a good way to get key derivation method and
+  // salt to check expectations about cryptographer state.
+}
+
 // Tests that SetEncryptionPassphrase() call doesn't lead to custom passphrase
 // change in case we already have one.
 TEST_F(NigoriSyncBridgeImplTest, ShouldNotAllowCustomPassphraseChange) {
