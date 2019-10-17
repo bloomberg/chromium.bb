@@ -90,14 +90,26 @@ cca.metrics.launchType_ = function(ackMigrate) {
 };
 
 /**
+ * Types of intent result dimension.
+ * @enum {string}
+ */
+cca.metrics.IntentResultType = {
+  NOT_INTENT: '',
+  CANCELED: 'canceled',
+  CONFIRMED: 'confirmed',
+};
+
+/**
  * Returns event builder for the metrics type: capture.
  * @param {?string} facingMode Camera facing-mode of the capture.
  * @param {number} length Length of 1 minute buckets for captured video.
  * @param {!{width: number, height: number}} resolution Capture resolution.
+ * @param {!cca.metrics.IntentResultType} intentResult
  * @return {!analytics.EventBuilder}
  * @private
  */
-cca.metrics.captureType_ = function(facingMode, length, {width, height}) {
+cca.metrics.captureType_ = function(
+    facingMode, length, {width, height}, intentResult) {
   var condState = (states, cond = undefined, strict = undefined) => {
     // Return the first existing state among the given states only if there is
     // no gate condition or the condition is met.
@@ -122,6 +134,7 @@ cca.metrics.captureType_ = function(facingMode, length, {width, height}) {
       .dimen(9, condState(['tall']))
       .dimen(10, `${width}x${height}`)
       .dimen(11, condState(['_30fps', '_60fps'], 'video-mode', true))
+      .dimen(12, intentResult)
       .value(length || 0);
 };
 
