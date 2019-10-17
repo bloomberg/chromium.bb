@@ -4,3 +4,4 @@
 :: found in the LICENSE file.
 
 "%~dp0\cipd.bat" ensure -log-level warning -ensure-file "%~dp0\cipd_manifest.txt" -root "%~dp0\.cipd_bin"
+"%~dp0\goma_ctl.bat" update_hook
