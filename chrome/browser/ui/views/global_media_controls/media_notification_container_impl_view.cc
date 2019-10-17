@@ -57,12 +57,16 @@ class MediaNotificationContainerImplView::DismissButton
 MediaNotificationContainerImplView::MediaNotificationContainerImplView(
     const std::string& id,
     base::WeakPtr<media_message_center::MediaNotificationItem> item)
-    : id_(id),
+    : views::Button(this),
+      id_(id),
       foreground_color_(kDefaultForegroundColor),
       background_color_(kDefaultBackgroundColor) {
   SetLayoutManager(std::make_unique<views::FillLayout>());
   SetPreferredSize(kNormalSize);
   set_notify_enter_exit_on_child(true);
+  SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
+  SetTooltipText(
+      l10n_util::GetStringUTF16(IDS_GLOBAL_MEDIA_CONTROLS_BACK_TO_TAB));
 
   swipeable_container_ = std::make_unique<views::View>();
   swipeable_container_->set_owned_by_client();
@@ -179,8 +183,14 @@ void MediaNotificationContainerImplView::OnSlideOut() {
 
 void MediaNotificationContainerImplView::ButtonPressed(views::Button* sender,
                                                        const ui::Event& event) {
-  DCHECK_EQ(dismiss_button_, sender);
-  DismissNotification();
+  if (sender == dismiss_button_) {
+    DismissNotification();
+  } else if (sender == this) {
+    for (auto& observer : observers_)
+      observer.OnContainerClicked(id_);
+  } else {
+    NOTREACHED();
+  }
 }
 
 void MediaNotificationContainerImplView::AddObserver(

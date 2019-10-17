@@ -35,6 +35,7 @@ class MockMediaNotificationContainerObserver
   // MediaNotificationContainerObserver implementation.
   MOCK_METHOD1(OnContainerExpanded, void(bool expanded));
   MOCK_METHOD0(OnContainerMetadataChanged, void());
+  MOCK_METHOD1(OnContainerClicked, void(const std::string& id));
   MOCK_METHOD1(OnContainerDismissed, void(const std::string& id));
   MOCK_METHOD1(OnContainerDestroyed, void(const std::string& id));
 
@@ -122,6 +123,12 @@ class MediaNotificationContainerImplViewTest : public views::ViewsTestBase {
     ui::MouseEvent event(ui::ET_MOUSE_EXITED, gfx::Point(), gfx::Point(),
                          ui::EventTimeForNow(), 0, 0);
     notification_container_->OnMouseExited(event);
+  }
+
+  void SimulateContainerClicked() {
+    ui::MouseEvent event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
+                         ui::EventTimeForNow(), 0, 0);
+    views::test::ButtonTestApi(notification_container_).NotifyClick(event);
   }
 
   void SimulateDismissButtonClicked() {
@@ -345,4 +352,9 @@ TEST_F(MediaNotificationContainerImplViewTest, SendsDestroyedUpdates) {
   EXPECT_CALL(observer, OnContainerDestroyed(kOtherTestNotificationId));
   container.reset();
   testing::Mock::VerifyAndClearExpectations(&observer);
+}
+
+TEST_F(MediaNotificationContainerImplViewTest, SendsClicks) {
+  EXPECT_CALL(observer(), OnContainerClicked(kTestNotificationId));
+  SimulateContainerClicked();
 }

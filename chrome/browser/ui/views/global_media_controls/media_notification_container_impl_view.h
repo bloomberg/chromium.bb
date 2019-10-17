@@ -15,7 +15,6 @@
 #include "ui/views/animation/slide_out_controller_delegate.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/focus/focus_manager.h"
-#include "ui/views/view.h"
 
 namespace media_message_center {
 class MediaNotificationItem;
@@ -31,7 +30,7 @@ class MediaNotificationContainerObserver;
 // within the MediaDialogView. The media notification shows metadata for a media
 // session and can control playback.
 class MediaNotificationContainerImplView
-    : public views::View,
+    : public views::Button,
       public media_message_center::MediaNotificationContainer,
       public MediaNotificationContainerImpl,
       public views::SlideOutControllerDelegate,
@@ -43,7 +42,7 @@ class MediaNotificationContainerImplView
       base::WeakPtr<media_message_center::MediaNotificationItem> item);
   ~MediaNotificationContainerImplView() override;
 
-  // views::View:
+  // views::Button:
   void AddedToWidget() override;
   void RemovedFromWidget() override;
   void OnMouseEntered(const ui::MouseEvent& event) override;
