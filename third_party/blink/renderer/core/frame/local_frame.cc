@@ -793,7 +793,7 @@ String LocalFrame::GetLayerTreeAsTextForTesting(unsigned flags) const {
     return String();
 
   std::unique_ptr<JSONObject> layers;
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+  if (!(flags & kOutputAsLayerTree)) {
     layers = View()->CompositedLayersAsJSON(static_cast<LayerTreeFlags>(flags));
   } else {
     if (const auto* root_layer =

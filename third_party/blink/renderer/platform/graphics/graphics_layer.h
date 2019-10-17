@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/platform/geometry/float_size.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
+#include "third_party/blink/renderer/platform/graphics/compositing/layers_as_json.h"
 #include "third_party/blink/renderer/platform/graphics/compositing_reasons.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
@@ -75,6 +76,7 @@ typedef Vector<GraphicsLayer*, 64> GraphicsLayerVector;
 // which may have associated transformation and animations.
 class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
                                       public DisplayItemClient,
+                                      public LayerAsJSONClient,
                                       private cc::ContentLayerClient {
   USING_FAST_MALLOC(GraphicsLayer);
 
@@ -228,6 +230,11 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   // DisplayItemClient methods
   String DebugName() const final { return client_.DebugName(this); }
   IntRect VisualRect() const override;
+
+  // LayerAsJSONClient implementation.
+  void AppendAdditionalInfoAsJSON(LayerTreeFlags,
+                                  const cc::Layer&,
+                                  JSONObject&) const override;
 
   void SetHasWillChangeTransformHint(bool);
 
