@@ -4949,6 +4949,28 @@ static int compare_distance(const void *a, const void *b) {
   return 0;
 }
 
+static INLINE void compute_global_motion_for_references(
+    AV1_COMP *cpi, YV12_BUFFER_CONFIG *ref_buf[REF_FRAMES],
+    FrameDistPair reference_frame[REF_FRAMES - 1], int num_ref_frames,
+    int *num_frm_corners, int *frm_corners, unsigned char *frm_buffer,
+    MotionModel *params_by_motion, uint8_t *segment_map,
+    const int segment_map_w, const int segment_map_h) {
+  AV1_COMMON *const cm = &cpi->common;
+  // Compute global motion w.r.t. reference frames
+  for (int frame = 0; frame < num_ref_frames; frame++) {
+    int ref_frame = reference_frame[frame].frame;
+    compute_gm_for_valid_ref_frames(cpi, ref_buf, ref_frame, num_frm_corners,
+                                    frm_corners, frm_buffer, params_by_motion,
+                                    segment_map, segment_map_w, segment_map_h);
+    // If farthest ref frame yields INVALID/TRANSLATION/IDENTITY  global
+    // motion, skip evaluation of global motion w.r.t to other ref frames in
+    // that direction
+    if (cpi->sf.prune_ref_frame_for_gm_search && frame == 0 &&
+        cm->global_motion[ref_frame].wmtype != ROTZOOM)
+      break;
+  }
+}
+
 static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
   ThreadData *const td = &cpi->td;
   MACROBLOCK *const x = &td->mb;
@@ -5173,33 +5195,19 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
           compare_distance);
 
     // Compute global motion w.r.t. past reference frames
-    for (int past_frame = 0; past_frame < num_past_ref_frames; past_frame++) {
-      int frame = past_ref_frame[past_frame].frame;
-      compute_gm_for_valid_ref_frames(
-          cpi, ref_buf, frame, &num_frm_corners, frm_corners, frm_buffer,
-          params_by_motion, segment_map, segment_map_w, segment_map_h);
-      // If farthest ref frame yields INVALID/TRANSLATION/IDENTITY  global
-      // motion, skip evaluation of global motion w.r.t to other ref frames in
-      // that direction
-      if (cpi->sf.prune_ref_frame_for_gm_search && past_frame == 0 &&
-          cm->global_motion[frame].wmtype != ROTZOOM)
-        break;
-    }
+    if (num_past_ref_frames > 0)
+      compute_global_motion_for_references(
+          cpi, ref_buf, past_ref_frame, num_past_ref_frames, &num_frm_corners,
+          frm_corners, frm_buffer, params_by_motion, segment_map, segment_map_w,
+          segment_map_h);
 
     // Compute global motion w.r.t. future reference frames
-    for (int future_frame = 0; future_frame < num_future_ref_frames;
-         future_frame++) {
-      int frame = future_ref_frame[future_frame].frame;
-      compute_gm_for_valid_ref_frames(
-          cpi, ref_buf, frame, &num_frm_corners, frm_corners, frm_buffer,
-          params_by_motion, segment_map, segment_map_w, segment_map_h);
-      // If farthest ref frame yields INVALID/TRANSLATION/IDENTITY  global
-      // motion, skip evaluation of global motion w.r.t to other ref frames in
-      // that direction
-      if (cpi->sf.prune_ref_frame_for_gm_search && future_frame == 0 &&
-          cm->global_motion[frame].wmtype != ROTZOOM)
-        break;
-    }
+    if (num_future_ref_frames > 0)
+      compute_global_motion_for_references(
+          cpi, ref_buf, future_ref_frame, num_future_ref_frames,
+          &num_frm_corners, frm_corners, frm_buffer, params_by_motion,
+          segment_map, segment_map_w, segment_map_h);
+
     aom_free(segment_map);
 
     cpi->global_motion_search_done = 1;
