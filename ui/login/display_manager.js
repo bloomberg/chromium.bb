@@ -786,10 +786,6 @@ cr.define('cr.ui.login', function() {
         screen.style.height = height + 'px';
         screen.style.margin = 'auto';
       }
-
-      if (this.showingViewsLogin) {
-        chrome.send('updateOobeDialogSize', [width, height]);
-      }
     },
 
     /**
