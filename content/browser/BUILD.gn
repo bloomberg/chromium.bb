@@ -2042,6 +2042,7 @@ jumbo_source_set("browser") {
   }
 
   if (is_mac) {
+    libs += [ "AppKit.framework" ]
     sources += [
       "../app_shim_remote_cocoa/web_contents_ns_view_bridge.h",
       "../app_shim_remote_cocoa/web_contents_ns_view_bridge.mm",
