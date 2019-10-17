@@ -191,6 +191,30 @@ EnumTraits<network::mojom::CookieSameSiteContext,
       return network::mojom::CookieSameSiteContext::SAME_SITE_LAX_METHOD_UNSAFE;
     case net::CookieOptions::SameSiteCookieContext::CROSS_SITE:
       return network::mojom::CookieSameSiteContext::CROSS_SITE;
+    case net::CookieOptions::SameSiteCookieContext::
+        SAME_SITE_LAX_METHOD_UNSAFE_CROSS_SCHEME_SECURE_URL:
+      return network::mojom::CookieSameSiteContext::
+          SAME_SITE_LAX_METHOD_UNSAFE_CROSS_SCHEME_SECURE_URL;
+    case net::CookieOptions::SameSiteCookieContext::
+        SAME_SITE_LAX_CROSS_SCHEME_SECURE_URL:
+      return network::mojom::CookieSameSiteContext::
+          SAME_SITE_LAX_CROSS_SCHEME_SECURE_URL;
+    case net::CookieOptions::SameSiteCookieContext::
+        SAME_SITE_STRICT_CROSS_SCHEME_SECURE_URL:
+      return network::mojom::CookieSameSiteContext::
+          SAME_SITE_STRICT_CROSS_SCHEME_SECURE_URL;
+    case net::CookieOptions::SameSiteCookieContext::
+        SAME_SITE_LAX_METHOD_UNSAFE_CROSS_SCHEME_INSECURE_URL:
+      return network::mojom::CookieSameSiteContext::
+          SAME_SITE_LAX_METHOD_UNSAFE_CROSS_SCHEME_INSECURE_URL;
+    case net::CookieOptions::SameSiteCookieContext::
+        SAME_SITE_LAX_CROSS_SCHEME_INSECURE_URL:
+      return network::mojom::CookieSameSiteContext::
+          SAME_SITE_LAX_CROSS_SCHEME_INSECURE_URL;
+    case net::CookieOptions::SameSiteCookieContext::
+        SAME_SITE_STRICT_CROSS_SCHEME_INSECURE_URL:
+      return network::mojom::CookieSameSiteContext::
+          SAME_SITE_STRICT_CROSS_SCHEME_INSECURE_URL;
     default:
       NOTREACHED();
       return network::mojom::CookieSameSiteContext::CROSS_SITE;
@@ -214,6 +238,36 @@ bool EnumTraits<network::mojom::CookieSameSiteContext,
       return true;
     case network::mojom::CookieSameSiteContext::CROSS_SITE:
       *output = net::CookieOptions::SameSiteCookieContext::CROSS_SITE;
+      return true;
+    case network::mojom::CookieSameSiteContext::
+        SAME_SITE_LAX_METHOD_UNSAFE_CROSS_SCHEME_SECURE_URL:
+      *output = net::CookieOptions::SameSiteCookieContext::
+          SAME_SITE_LAX_METHOD_UNSAFE_CROSS_SCHEME_SECURE_URL;
+      return true;
+    case network::mojom::CookieSameSiteContext::
+        SAME_SITE_LAX_CROSS_SCHEME_SECURE_URL:
+      *output = net::CookieOptions::SameSiteCookieContext::
+          SAME_SITE_LAX_CROSS_SCHEME_SECURE_URL;
+      return true;
+    case network::mojom::CookieSameSiteContext::
+        SAME_SITE_STRICT_CROSS_SCHEME_SECURE_URL:
+      *output = net::CookieOptions::SameSiteCookieContext::
+          SAME_SITE_STRICT_CROSS_SCHEME_SECURE_URL;
+      return true;
+    case network::mojom::CookieSameSiteContext::
+        SAME_SITE_LAX_METHOD_UNSAFE_CROSS_SCHEME_INSECURE_URL:
+      *output = net::CookieOptions::SameSiteCookieContext::
+          SAME_SITE_LAX_METHOD_UNSAFE_CROSS_SCHEME_INSECURE_URL;
+      return true;
+    case network::mojom::CookieSameSiteContext::
+        SAME_SITE_LAX_CROSS_SCHEME_INSECURE_URL:
+      *output = net::CookieOptions::SameSiteCookieContext::
+          SAME_SITE_LAX_CROSS_SCHEME_INSECURE_URL;
+      return true;
+    case network::mojom::CookieSameSiteContext::
+        SAME_SITE_STRICT_CROSS_SCHEME_INSECURE_URL:
+      *output = net::CookieOptions::SameSiteCookieContext::
+          SAME_SITE_STRICT_CROSS_SCHEME_INSECURE_URL;
       return true;
   }
   return false;

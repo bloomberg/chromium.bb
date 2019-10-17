@@ -142,7 +142,20 @@ TEST(CookieManagerTraitsTest, Roundtrips_CookieSameSiteContext) {
   for (net::CookieOptions::SameSiteCookieContext context_state :
        {net::CookieOptions::SameSiteCookieContext::CROSS_SITE,
         net::CookieOptions::SameSiteCookieContext::SAME_SITE_LAX,
-        net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT}) {
+        net::CookieOptions::SameSiteCookieContext::SAME_SITE_LAX_METHOD_UNSAFE,
+        net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT,
+        net::CookieOptions::SameSiteCookieContext::
+            SAME_SITE_LAX_METHOD_UNSAFE_CROSS_SCHEME_SECURE_URL,
+        net::CookieOptions::SameSiteCookieContext::
+            SAME_SITE_LAX_CROSS_SCHEME_SECURE_URL,
+        net::CookieOptions::SameSiteCookieContext::
+            SAME_SITE_STRICT_CROSS_SCHEME_SECURE_URL,
+        net::CookieOptions::SameSiteCookieContext::
+            SAME_SITE_LAX_METHOD_UNSAFE_CROSS_SCHEME_INSECURE_URL,
+        net::CookieOptions::SameSiteCookieContext::
+            SAME_SITE_LAX_CROSS_SCHEME_INSECURE_URL,
+        net::CookieOptions::SameSiteCookieContext::
+            SAME_SITE_STRICT_CROSS_SCHEME_INSECURE_URL}) {
     net::CookieOptions::SameSiteCookieContext roundtrip;
     ASSERT_TRUE(SerializeAndDeserializeEnum<mojom::CookieSameSiteContext>(
         context_state, &roundtrip));
