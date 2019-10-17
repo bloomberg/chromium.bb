@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_POLICY_MACHINE_LEVEL_USER_CLOUD_POLICY_CONTROLLER_H_
-#define CHROME_BROWSER_POLICY_MACHINE_LEVEL_USER_CLOUD_POLICY_CONTROLLER_H_
+#ifndef CHROME_BROWSER_POLICY_CHROME_BROWSER_CLOUD_MANAGEMENT_CONTROLLER_H_
+#define CHROME_BROWSER_POLICY_CHROME_BROWSER_CLOUD_MANAGEMENT_CONTROLLER_H_
 
 #include <memory>
 #include <string>
@@ -31,10 +31,10 @@ class MachineLevelUserCloudPolicyManager;
 class MachineLevelUserCloudPolicyFetcher;
 class ChromeBrowserCloudManagementRegisterWatcher;
 
-// A class that setups and manages MachineLevelUserCloudPolicy.
-class MachineLevelUserCloudPolicyController {
+// A class that setups and manages all CBCM related features.
+class ChromeBrowserCloudManagementController {
  public:
-  // Machine level user cloud policy enrollment result.
+  // Chrome browser cloud management enrollment result.
   enum class RegisterResult {
     kNoEnrollmentNeeded,  // The device won't be enrolled without an enrollment
                           // token.
@@ -66,13 +66,13 @@ class MachineLevelUserCloudPolicyController {
   // Directory name under the user-data-dir where the policy data is stored.
   static const base::FilePath::CharType kPolicyDir[];
 
-  // The MachineLevelUserCloudPolicy is only enabled on Chrome by default.
+  // The Chrome browser cloud management is only enabled on Chrome by default.
   // However, it can be enabled on Chromium by command line switch for test and
   // development purpose.
   static bool IsMachineLevelUserCloudPolicyEnabled();
 
-  MachineLevelUserCloudPolicyController();
-  virtual ~MachineLevelUserCloudPolicyController();
+  ChromeBrowserCloudManagementController();
+  virtual ~ChromeBrowserCloudManagementController();
 
   static std::unique_ptr<MachineLevelUserCloudPolicyManager>
   CreatePolicyManager(ConfigurationPolicyProvider* platform_provider);
@@ -107,8 +107,8 @@ class MachineLevelUserCloudPolicyController {
   std::unique_ptr<ChromeBrowserCloudManagementRegistrar>
       cloud_management_registrar_;
   std::unique_ptr<MachineLevelUserCloudPolicyFetcher> policy_fetcher_;
-    // This is an observer of the controller and needs to be declared after the
-    // |observers_|.
+  // This is an observer of the controller and needs to be declared after the
+  // |observers_|.
   std::unique_ptr<ChromeBrowserCloudManagementRegisterWatcher>
       cloud_management_register_watcher_;
 
@@ -117,9 +117,9 @@ class MachineLevelUserCloudPolicyController {
 
   std::unique_ptr<enterprise_reporting::ReportScheduler> report_scheduler_;
 
-  DISALLOW_COPY_AND_ASSIGN(MachineLevelUserCloudPolicyController);
+  DISALLOW_COPY_AND_ASSIGN(ChromeBrowserCloudManagementController);
 };
 
 }  // namespace policy
 
-#endif  // CHROME_BROWSER_POLICY_MACHINE_LEVEL_USER_CLOUD_POLICY_CONTROLLER_H_
+#endif  // CHROME_BROWSER_POLICY_CHROME_BROWSER_CLOUD_MANAGEMENT_CONTROLLER_H_

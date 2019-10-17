@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/policy/machine_level_user_cloud_policy_controller.h"
+#include "chrome/browser/policy/chrome_browser_cloud_management_controller.h"
 
 #include <utility>
 
@@ -28,9 +28,9 @@
 #include "chrome/browser/policy/cloud/chrome_browser_cloud_management_helper.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
+#include "components/policy/core/common/cloud/chrome_browser_cloud_management_metrics.h"
 #include "components/policy/core/common/cloud/cloud_external_data_manager.h"
 #include "components/policy/core/common/cloud/machine_level_user_cloud_policy_manager.h"
-#include "components/policy/core/common/cloud/machine_level_user_cloud_policy_metrics.h"
 #include "components/policy/core/common/cloud/machine_level_user_cloud_policy_store.h"
 #include "components/policy/core/common/configuration_policy_provider.h"
 #include "components/policy/core/common/policy_types.h"
@@ -57,7 +57,7 @@ namespace policy {
 namespace {
 
 void RecordEnrollmentResult(
-    MachineLevelUserCloudPolicyEnrollmentResult result) {
+    ChromeBrowserCloudManagementEnrollmentResult result) {
   UMA_HISTOGRAM_ENUMERATION(
       "Enterprise.MachineLevelUserCloudPolicyEnrollment.Result", result);
 }
@@ -83,10 +83,10 @@ bool DoesCloudPolicyHasPriority(
 }  // namespace
 
 const base::FilePath::CharType
-    MachineLevelUserCloudPolicyController::kPolicyDir[] =
+    ChromeBrowserCloudManagementController::kPolicyDir[] =
         FILE_PATH_LITERAL("Policy");
 
-bool MachineLevelUserCloudPolicyController::
+bool ChromeBrowserCloudManagementController::
     IsMachineLevelUserCloudPolicyEnabled() {
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   return true;
@@ -96,14 +96,14 @@ bool MachineLevelUserCloudPolicyController::
 #endif
 }
 
-MachineLevelUserCloudPolicyController::MachineLevelUserCloudPolicyController() {
-}
-MachineLevelUserCloudPolicyController::
-    ~MachineLevelUserCloudPolicyController() {}
+ChromeBrowserCloudManagementController::
+    ChromeBrowserCloudManagementController() {}
+ChromeBrowserCloudManagementController::
+    ~ChromeBrowserCloudManagementController() {}
 
 // static
 std::unique_ptr<MachineLevelUserCloudPolicyManager>
-MachineLevelUserCloudPolicyController::CreatePolicyManager(
+ChromeBrowserCloudManagementController::CreatePolicyManager(
     ConfigurationPolicyProvider* platform_provider) {
   if (!IsMachineLevelUserCloudPolicyEnabled())
     return nullptr;
@@ -124,7 +124,7 @@ MachineLevelUserCloudPolicyController::CreatePolicyManager(
   if (!base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir))
     return nullptr;
 
-  DVLOG(1) << "Creating machine level cloud policy manager";
+  DVLOG(1) << "Creating machine level user cloud policy manager";
 
   bool cloud_policy_has_priority =
       DoesCloudPolicyHasPriority(platform_provider);
@@ -134,7 +134,7 @@ MachineLevelUserCloudPolicyController::CreatePolicyManager(
   }
 
   base::FilePath policy_dir =
-      user_data_dir.Append(MachineLevelUserCloudPolicyController::kPolicyDir);
+      user_data_dir.Append(ChromeBrowserCloudManagementController::kPolicyDir);
   std::unique_ptr<MachineLevelUserCloudPolicyStore> policy_store =
       MachineLevelUserCloudPolicyStore::Create(
           dm_token, client_id, policy_dir, cloud_policy_has_priority,
@@ -150,10 +150,9 @@ MachineLevelUserCloudPolicyController::CreatePolicyManager(
       base::BindRepeating(&content::GetNetworkConnectionTracker));
 }
 
-void MachineLevelUserCloudPolicyController::Init(
+void ChromeBrowserCloudManagementController::Init(
     PrefService* local_state,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
-
   if (!IsMachineLevelUserCloudPolicyEnabled())
     return;
 
@@ -162,7 +161,7 @@ void MachineLevelUserCloudPolicyController::Init(
       {base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN, base::ThreadPool()},
       base::BindOnce(
-          &MachineLevelUserCloudPolicyController::CreateReportSchedulerAsync,
+          &ChromeBrowserCloudManagementController::CreateReportSchedulerAsync,
           base::Unretained(this), base::ThreadTaskRunnerHandle::Get()));
 
   MachineLevelUserCloudPolicyManager* policy_manager =
@@ -212,7 +211,7 @@ void MachineLevelUserCloudPolicyController::Init(
     // Not registered already, so do it now.
     cloud_management_registrar_->RegisterForCloudManagementWithEnrollmentToken(
         enrollment_token, client_id,
-        base::Bind(&MachineLevelUserCloudPolicyController::
+        base::Bind(&ChromeBrowserCloudManagementController::
                        RegisterForCloudManagementWithEnrollmentTokenCallback,
                    base::Unretained(this)));
 #if defined(OS_WIN)
@@ -228,7 +227,7 @@ void MachineLevelUserCloudPolicyController::Init(
   }
 }
 
-bool MachineLevelUserCloudPolicyController::
+bool ChromeBrowserCloudManagementController::
     WaitUntilPolicyEnrollmentFinished() {
   if (cloud_management_register_watcher_) {
     switch (cloud_management_register_watcher_
@@ -254,27 +253,29 @@ bool MachineLevelUserCloudPolicyController::
   return true;
 }
 
-void MachineLevelUserCloudPolicyController::AddObserver(Observer* observer) {
+void ChromeBrowserCloudManagementController::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }
 
-void MachineLevelUserCloudPolicyController::RemoveObserver(Observer* observer) {
+void ChromeBrowserCloudManagementController::RemoveObserver(
+    Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-bool MachineLevelUserCloudPolicyController::IsEnterpriseStartupDialogShowing() {
+bool ChromeBrowserCloudManagementController::
+    IsEnterpriseStartupDialogShowing() {
   return cloud_management_register_watcher_ &&
          cloud_management_register_watcher_->IsDialogShowing();
 }
 
-void MachineLevelUserCloudPolicyController::NotifyPolicyRegisterFinished(
+void ChromeBrowserCloudManagementController::NotifyPolicyRegisterFinished(
     bool succeeded) {
   for (auto& observer : observers_) {
     observer.OnPolicyRegisterFinished(succeeded);
   }
 }
 
-bool MachineLevelUserCloudPolicyController::GetEnrollmentTokenAndClientId(
+bool ChromeBrowserCloudManagementController::GetEnrollmentTokenAndClientId(
     std::string* enrollment_token,
     std::string* client_id) {
   *client_id = BrowserDMTokenStorage::Get()->RetrieveClientId();
@@ -285,7 +286,7 @@ bool MachineLevelUserCloudPolicyController::GetEnrollmentTokenAndClientId(
   return !enrollment_token->empty();
 }
 
-void MachineLevelUserCloudPolicyController::
+void ChromeBrowserCloudManagementController::
     RegisterForCloudManagementWithEnrollmentTokenCallback(
         const std::string& dm_token,
         const std::string& client_id) {
@@ -294,7 +295,7 @@ void MachineLevelUserCloudPolicyController::
   if (dm_token.empty()) {
     VLOG(1) << "No DM token returned from browser registration.";
     RecordEnrollmentResult(
-        MachineLevelUserCloudPolicyEnrollmentResult::kFailedToFetch);
+        ChromeBrowserCloudManagementEnrollmentResult::kFailedToFetch);
     UMA_HISTOGRAM_TIMES(
         "Enterprise.MachineLevelUserCloudPolicyEnrollment.RequestFailureTime",
         enrollment_time);
@@ -319,11 +320,11 @@ void MachineLevelUserCloudPolicyController::
         if (!success) {
           DVLOG(1) << "Failed to store the DM token";
           RecordEnrollmentResult(
-              MachineLevelUserCloudPolicyEnrollmentResult::kFailedToStore);
+              ChromeBrowserCloudManagementEnrollmentResult::kFailedToStore);
         } else {
           DVLOG(1) << "Successfully stored the DM token";
           RecordEnrollmentResult(
-              MachineLevelUserCloudPolicyEnrollmentResult::kSuccess);
+              ChromeBrowserCloudManagementEnrollmentResult::kSuccess);
         }
       }));
 
@@ -337,16 +338,16 @@ void MachineLevelUserCloudPolicyController::
   NotifyPolicyRegisterFinished(true);
 }
 
-void MachineLevelUserCloudPolicyController::CreateReportSchedulerAsync(
+void ChromeBrowserCloudManagementController::CreateReportSchedulerAsync(
     scoped_refptr<base::SequencedTaskRunner> task_runner) {
   task_runner->PostTask(
       FROM_HERE,
       base::BindOnce(
-          &MachineLevelUserCloudPolicyController::CreateReportScheduler,
+          &ChromeBrowserCloudManagementController::CreateReportScheduler,
           base::Unretained(this)));
 }
 
-void MachineLevelUserCloudPolicyController::CreateReportScheduler() {
+void ChromeBrowserCloudManagementController::CreateReportScheduler() {
   if (!base::FeatureList::IsEnabled(features::kEnterpriseReportingInBrowser))
     return;
 
