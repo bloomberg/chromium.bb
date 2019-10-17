@@ -468,6 +468,13 @@ size_t KeyframeEffect::TickingKeyframeModelsCount() const {
   return ticking_keyframe_models_count;
 }
 
+bool KeyframeEffect::AffectsCustomProperty() const {
+  for (const auto& it : keyframe_models_)
+    if (it->target_property_id() == TargetProperty::CSS_CUSTOM_PROPERTY)
+      return true;
+  return false;
+}
+
 bool KeyframeEffect::HasNonDeletedKeyframeModel() const {
   for (const auto& keyframe_model : keyframe_models_) {
     if (keyframe_model->run_state() != KeyframeModel::WAITING_FOR_DELETION)

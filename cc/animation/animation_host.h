@@ -208,6 +208,7 @@ class CC_ANIMATION_EXPORT AnimationHost : public MutatorHost,
 
   size_t CompositedAnimationsCount() const override;
   size_t MainThreadAnimationsCount() const override;
+  bool HasCustomPropertyAnimations() const override;
   bool CurrentFrameHadRAF() const override;
   bool NextFrameHasPendingRAF() const override;
   void SetAnimationCounts(size_t total_animations_count,

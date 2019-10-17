@@ -790,6 +790,13 @@ size_t AnimationHost::MainThreadAnimationsCount() const {
   return main_thread_animations_count_;
 }
 
+bool AnimationHost::HasCustomPropertyAnimations() const {
+  for (const auto& it : ticking_animations_)
+    if (it->AffectsCustomProperty())
+      return true;
+  return false;
+}
+
 bool AnimationHost::CurrentFrameHadRAF() const {
   return current_frame_had_raf_;
 }

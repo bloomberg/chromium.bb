@@ -107,6 +107,7 @@ class CC_ANIMATION_EXPORT Animation : public base::RefCounted<Animation> {
   void NotifyKeyframeModelAborted(const AnimationEvent& event);
   void NotifyKeyframeModelTakeover(const AnimationEvent& event);
   size_t TickingKeyframeModelsCount() const;
+  bool AffectsCustomProperty() const;
 
   void SetNeedsPushProperties();
 
