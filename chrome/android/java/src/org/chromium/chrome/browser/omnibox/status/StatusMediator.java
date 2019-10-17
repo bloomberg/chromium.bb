@@ -21,8 +21,8 @@ import org.chromium.chrome.browser.omnibox.SearchEngineLogoUtils;
 import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinatorFactory;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.toolbar.ToolbarColors;
 import org.chromium.chrome.browser.toolbar.ToolbarCommonPropertiesModel;
-import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -336,7 +336,7 @@ class StatusMediator {
         }
 
         @ColorRes
-        int tintColor = ColorUtils.getThemedToolbarIconTintRes(!mDarkTheme);
+        int tintColor = ToolbarColors.getThemedToolbarIconTintRes(!mDarkTheme);
 
         mModel.set(StatusProperties.SEPARATOR_COLOR_RES, separatorColor);
         mNavigationIconTintRes = tintColor;
@@ -500,7 +500,7 @@ class StatusMediator {
             tint = 0;
         } else {
             tint = mDarkTheme ? R.color.default_icon_color_secondary_list
-                              : ColorUtils.getThemedToolbarIconTintRes(!mDarkTheme);
+                              : ToolbarColors.getThemedToolbarIconTintRes(!mDarkTheme);
         }
 
         return tint;
