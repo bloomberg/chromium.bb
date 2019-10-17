@@ -2530,6 +2530,7 @@ jumbo_static_library("browser") {
       "android/rappor/rappor_service_bridge.cc",
       "android/recently_closed_tabs_bridge.cc",
       "android/recently_closed_tabs_bridge.h",
+      "android/reparenting_task.cc",
       "android/resource_id.h",
       "android/resource_mapper.cc",
       "android/resource_mapper.h",
