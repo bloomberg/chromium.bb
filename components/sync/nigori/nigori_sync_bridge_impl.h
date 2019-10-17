@@ -127,6 +127,9 @@ class NigoriSyncBridgeImpl : public KeystoreKeysHandler,
   // just won't be updated.
   void MaybeNotifyBootstrapTokenUpdated() const;
 
+  // Queues keystore rotation if current state assume it should happen.
+  void MaybeTriggerKeystoreKeyRotation();
+
   // Serializes state of the bridge and sync metadata into the proto.
   sync_pb::NigoriLocalData SerializeAsNigoriLocalData() const;
 
