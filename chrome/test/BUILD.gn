@@ -6469,6 +6469,18 @@ if (is_win) {
   }
 }
 
+if (is_chromeos) {
+  fuzzer_test("tokenized_string_fuzzer") {
+    sources = [
+      "../browser/ui/app_list/search/tests/tokenized_string_fuzzer.cc",
+    ]
+    deps = [
+      "//ash/public/cpp",
+      "//base",
+    ]
+  }
+}
+
 if (is_win) {
   test("pixel_browser_tests") {
     sources = [
