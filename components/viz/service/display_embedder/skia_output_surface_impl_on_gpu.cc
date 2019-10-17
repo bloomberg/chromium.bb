@@ -624,7 +624,8 @@ SkiaOutputSurfaceImplOnGpu::SkiaOutputSurfaceImplOnGpu(
       buffer_presented_callback_(std::move(buffer_presented_callback)),
       context_lost_callback_(std::move(context_lost_callback)),
       gpu_vsync_callback_(std::move(gpu_vsync_callback)),
-      gpu_preferences_(dependency_->GetGpuPreferences()) {
+      gpu_preferences_(dependency_->GetGpuPreferences()),
+      copier_active_url_(GURL("chrome://gpu/SkiaRendererGLRendererCopier")) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   dependency_->RegisterDisplayContext(this);
 }
@@ -950,6 +951,9 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
 
   bool use_gl_renderer_copier =
       !is_using_vulkan() && !features::IsUsingSkiaForGLReadback();
+  if (use_gl_renderer_copier)
+    gpu::ContextUrl::SetActiveUrl(copier_active_url_);
+
   // Lazy initialize GLRendererCopier before draw because
   // DirectContextProvider ctor the backbuffer.
   if (use_gl_renderer_copier && !copier_) {
@@ -1159,6 +1163,7 @@ void SkiaOutputSurfaceImplOnGpu::ScheduleDelayedWork() {
 
 void SkiaOutputSurfaceImplOnGpu::PerformDelayedWork() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  gpu::ContextUrl::SetActiveUrl(copier_active_url_);
   ScopedUseContextProvider use_context_provider(this, /*texture_client_id=*/0);
 
   delayed_work_pending_ = false;

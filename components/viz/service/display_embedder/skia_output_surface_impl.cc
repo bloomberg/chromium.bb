@@ -28,6 +28,7 @@
 #include "gpu/command_buffer/service/scheduler.h"
 #include "gpu/command_buffer/service/shared_image_representation.h"
 #include "gpu/command_buffer/service/skia_utils.h"
+#include "gpu/ipc/service/context_url.h"
 #include "gpu/ipc/single_task_sequence.h"
 #include "gpu/vulkan/buildflags.h"
 #include "ui/gfx/skia_util.h"
@@ -784,7 +785,16 @@ void SkiaOutputSurfaceImpl::ScheduleGpuTaskForTesting(
 void SkiaOutputSurfaceImpl::ScheduleGpuTask(
     base::OnceClosure callback,
     std::vector<gpu::SyncToken> sync_tokens) {
-  task_sequence_->ScheduleTask(std::move(callback), std::move(sync_tokens));
+  auto wrapped_closure = base::BindOnce(
+      [](base::OnceClosure callback) {
+        static base::NoDestructor<gpu::ContextUrl> active_url(
+            GURL("chrome://gpu/SkiaRenderer"));
+        gpu::ContextUrl::SetActiveUrl(*active_url);
+        std::move(callback).Run();
+      },
+      std::move(callback));
+  task_sequence_->ScheduleTask(std::move(wrapped_closure),
+                               std::move(sync_tokens));
 }
 
 GrBackendFormat SkiaOutputSurfaceImpl::GetGrBackendFormatForTexture(

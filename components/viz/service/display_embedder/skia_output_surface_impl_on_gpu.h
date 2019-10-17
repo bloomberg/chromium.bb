@@ -26,6 +26,7 @@
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/ipc/in_process_command_buffer.h"
+#include "gpu/ipc/service/context_url.h"
 #include "gpu/ipc/service/display_context.h"
 #include "gpu/ipc/service/image_transport_surface_delegate.h"
 #include "third_party/skia/include/core/SkPromiseImageTexture.h"
@@ -289,6 +290,8 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate,
 
   // Micro-optimization to get to issuing GPU SwapBuffers as soon as possible.
   std::vector<std::unique_ptr<SkDeferredDisplayList>> destroy_after_swap_;
+
+  const gpu::ContextUrl copier_active_url_;
 
   THREAD_CHECKER(thread_checker_);
 
