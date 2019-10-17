@@ -496,19 +496,25 @@ CookieOptions::SameSiteCookieContext ComputeSameSiteContextForResponse(
     const base::Optional<url::Origin>& initiator) {
   // |initiator| is here in case it'll be decided to ignore |site_for_cookies|
   // for entirely browser-side requests (see https://crbug.com/958335).
-  if (MatchesSiteForCookies(url, site_for_cookies))
-    return CookieOptions::SameSiteCookieContext::SAME_SITE_LAX;
-  else
+  if (MatchesSiteForCookies(url, site_for_cookies)) {
+    return ComputeSchemeChange(
+        CookieOptions::SameSiteCookieContext::SAME_SITE_LAX, url,
+        site_for_cookies);
+  } else {
     return CookieOptions::SameSiteCookieContext::CROSS_SITE;
+  }
 }
 
 CookieOptions::SameSiteCookieContext ComputeSameSiteContextForScriptSet(
     const GURL& url,
     const GURL& site_for_cookies) {
-  if (MatchesSiteForCookies(url, site_for_cookies))
-    return CookieOptions::SameSiteCookieContext::SAME_SITE_LAX;
-  else
+  if (MatchesSiteForCookies(url, site_for_cookies)) {
+    return ComputeSchemeChange(
+        CookieOptions::SameSiteCookieContext::SAME_SITE_LAX, url,
+        site_for_cookies);
+  } else {
     return CookieOptions::SameSiteCookieContext::CROSS_SITE;
+  }
 }
 
 NET_EXPORT CookieOptions::SameSiteCookieContext
