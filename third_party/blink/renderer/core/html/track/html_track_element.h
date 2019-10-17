@@ -44,6 +44,9 @@ class HTMLTrackElement final : public HTMLElement,
  public:
   explicit HTMLTrackElement(Document&);
 
+  // Returns attributes that should be checked against Trusted Types
+  const AttrNameToTrustedType& GetCheckedAttributeTypes() const override;
+
   const AtomicString& kind();
   void setKind(const AtomicString&);
 

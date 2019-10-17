@@ -71,6 +71,7 @@ class SerializedScriptValue;
 class SourceLocation;
 class StyleMedia;
 class TrustedTypePolicyFactory;
+class USVStringOrTrustedURL;
 class V8FrameRequestCallback;
 class V8IdleRequestCallback;
 class V8VoidFunction;
@@ -264,7 +265,7 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   Element* frameElement() const;
 
   DOMWindow* open(v8::Isolate*,
-                  const String& url_string,
+                  const USVStringOrTrustedURL& string_or_url,
                   const AtomicString& target,
                   const String& features,
                   ExceptionState&);

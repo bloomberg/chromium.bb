@@ -189,6 +189,7 @@ class StyleSheetList;
 class TextAutosizer;
 class TransformSource;
 class TreeWalker;
+class USVStringOrTrustedURL;
 class V8NodeFilter;
 class ViewportData;
 class VisitedLinkState;
@@ -628,7 +629,7 @@ class CORE_EXPORT Document : public ContainerNode,
                  const AtomicString& replace,
                  ExceptionState&);
   DOMWindow* open(v8::Isolate*,
-                  const String& url_string,
+                  const USVStringOrTrustedURL& string_or_url,
                   const AtomicString& name,
                   const AtomicString& features,
                   ExceptionState&);

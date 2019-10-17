@@ -61,6 +61,10 @@ class SVGUseElement final : public SVGGraphicsElement,
   void DispatchPendingEvent();
   Path ToClipPath() const;
 
+  const AttrNameToTrustedType& GetCheckedAttributeTypes() const override {
+    return SVGURIReference::GetCheckedAttributeTypes();
+  }
+
   void Trace(blink::Visitor*) override;
 
  private:
