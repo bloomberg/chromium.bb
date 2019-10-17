@@ -55,7 +55,7 @@ namespace {
 enum class UIStatus {
   kDisabled,
   kEnabled,
-  kEnabledWithEditDistance,
+  kEnabledWithAllFeatures,
 };
 
 // An engagement score above MEDIUM.
@@ -170,10 +170,11 @@ class SafetyTipPageInfoBubbleViewBrowserTest
               {{"topsites", "true"}}}},
             {});
         break;
-      case UIStatus::kEnabledWithEditDistance:
+      case UIStatus::kEnabledWithAllFeatures:
         feature_list_.InitWithFeaturesAndParameters(
             {{security_state::features::kSafetyTipUI,
-              {{"editdistance", "true"},
+              {{"topsites", "true"},
+               {"editdistance", "true"},
                {"editdistance_siteengagement", "true"}}},
              {features::kLookalikeUrlNavigationSuggestionsUI,
               {{"topsites", "true"}}}},
@@ -226,6 +227,11 @@ class SafetyTipPageInfoBubbleViewBrowserTest
     return ui_status() == UIStatus::kDisabled ? true : IsUIShowing();
   }
 
+  bool IsUIShowingOnlyIfFeaturesEnabled() {
+    return ui_status() == UIStatus::kEnabledWithAllFeatures ? IsUIShowing()
+                                                            : !IsUIShowing();
+  }
+
   void CheckPageInfoShowsSafetyTipInfo(Browser* browser) {
     if (ui_status() == UIStatus::kDisabled) {
       return;
@@ -258,7 +264,7 @@ INSTANTIATE_TEST_SUITE_P(,
                          SafetyTipPageInfoBubbleViewBrowserTest,
                          ::testing::Values(UIStatus::kDisabled,
                                            UIStatus::kEnabled,
-                                           UIStatus::kEnabledWithEditDistance));
+                                           UIStatus::kEnabledWithAllFeatures));
 
 // Ensure normal sites with low engagement are not blocked.
 IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
@@ -453,7 +459,7 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
   const GURL kNavigatedUrl = GetURL("googlé.sk");
   SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
   NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
-  EXPECT_TRUE(IsUIShowingIfEnabled());
+  EXPECT_TRUE(IsUIShowingOnlyIfFeaturesEnabled());
   ASSERT_NO_FATAL_FAILURE(CheckPageInfoDoesNotShowSafetyTipInfo(browser()));
 }
 
@@ -467,7 +473,7 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
   // Ensure a Safety Tip is triggered initially...
   SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
   NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
-  EXPECT_TRUE(IsUIShowingIfEnabled());
+  EXPECT_TRUE(IsUIShowingOnlyIfFeaturesEnabled());
 
   // ...but suppressed by the allowlist.
   SetSafetyTipAllowlistPatterns({"xn--googl-fsa.sk/"});
@@ -484,7 +490,7 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
   const GURL kNavigatedUrl = GetURL("goooglé.com");
   SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
   NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
-  EXPECT_EQ(IsUIShowing(), ui_status() == UIStatus::kEnabledWithEditDistance);
+  EXPECT_EQ(IsUIShowing(), ui_status() == UIStatus::kEnabledWithAllFeatures);
 }
 
 // Tests that the SafetyTipShown histogram triggers correctly.
@@ -508,8 +514,9 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
   const GURL kLookalikeUrl = GetURL("googlé.sk");
   SetEngagementScore(browser(), kLookalikeUrl, kLowEngagement);
   NavigateToURL(browser(), kLookalikeUrl, WindowOpenDisposition::CURRENT_TAB);
-  histograms.ExpectBucketCount(kHistogramName,
-                               security_state::SafetyTipStatus::kLookalike, 1);
+  histograms.ExpectBucketCount(
+      kHistogramName, security_state::SafetyTipStatus::kLookalike,
+      ui_status() == UIStatus::kEnabledWithAllFeatures ? 1 : 0);
   histograms.ExpectTotalCount(kHistogramName, 3);
 }
 
@@ -536,7 +543,7 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
 
   // These histograms are only recorded when the UI feature is enabled, so bail
   // out when disabled.
-  if (ui_status() != UIStatus::kEnabledWithEditDistance) {
+  if (ui_status() != UIStatus::kEnabledWithAllFeatures) {
     return;
   }
 
