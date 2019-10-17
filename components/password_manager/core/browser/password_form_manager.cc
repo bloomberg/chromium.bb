@@ -30,6 +30,7 @@
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/possible_username_data.h"
 #include "components/password_manager/core/browser/statistics_table.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 
 using autofill::FormData;
 using autofill::FormFieldData;
@@ -143,6 +144,10 @@ bool FormContainsFieldWithName(const FormData& form,
       return true;
   }
   return false;
+}
+
+bool IsUsernameFirstFlowFeatureEnabled() {
+  return base::FeatureList::IsEnabled(features::kUsernameFirstFlow);
 }
 
 }  // namespace
@@ -691,7 +696,8 @@ bool PasswordFormManager::ProvisionallySave(
   metrics_recorder_->set_possible_username_used(false);
   votes_uploader_.clear_single_username_vote_data();
 
-  if (parsed_submitted_form_->username_value.empty() && possible_username &&
+  if (IsUsernameFirstFlowFeatureEnabled() &&
+      parsed_submitted_form_->username_value.empty() && possible_username &&
       IsPossibleUsernameValid(*possible_username,
                               parsed_submitted_form_->signon_realm,
                               base::Time::Now())) {
