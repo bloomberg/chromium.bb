@@ -424,6 +424,8 @@ void PasswordFormManager::OnNeverClicked() {
   votes_uploader_.UploadPasswordVote(*parsed_submitted_form_,
                                      *parsed_submitted_form_,
                                      autofill::UNKNOWN_TYPE, std::string());
+
+  votes_uploader_.MaybeSendSingleUsernameVote(false /* credentials_saved */);
   PermanentlyBlacklist();
 }
 
@@ -434,6 +436,8 @@ void PasswordFormManager::OnNoInteraction(bool is_update) {
       *parsed_submitted_form_, *parsed_submitted_form_,
       is_update ? autofill::PROBABLY_NEW_PASSWORD : autofill::UNKNOWN_TYPE,
       std::string());
+
+  votes_uploader_.MaybeSendSingleUsernameVote(false /* credentials_saved */);
 }
 
 void PasswordFormManager::PermanentlyBlacklist() {
@@ -685,6 +689,7 @@ bool PasswordFormManager::ProvisionallySave(
   is_submitted_ = true;
   CalculateFillingAssistanceMetric(submitted_form);
   metrics_recorder_->set_possible_username_used(false);
+  votes_uploader_.clear_single_username_vote_data();
 
   if (parsed_submitted_form_->username_value.empty() && possible_username &&
       IsPossibleUsernameValid(*possible_username,
@@ -692,6 +697,8 @@ bool PasswordFormManager::ProvisionallySave(
                               base::Time::Now())) {
     parsed_submitted_form_->username_value = possible_username->value;
     metrics_recorder_->set_possible_username_used(true);
+    votes_uploader_.set_single_username_vote_data(
+        possible_username->renderer_id, possible_username->form_predictions);
   }
   CreatePendingCredentials();
   return true;
