@@ -44,6 +44,7 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.HeaderProperties;
 import org.chromium.chrome.browser.touch_to_fill.data.Credential;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.SheetState;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.StateChangeReason;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
@@ -67,7 +68,7 @@ public class TouchToFillViewTest {
             new Credential("Bob", "***", "Bob", "mobile.example.xyz", true);
 
     @Mock
-    private TouchToFillProperties.ViewEventListener mMockListener;
+    private Callback<Integer> mDismissHandler;
     @Mock
     private Callback<Credential> mCredentialCallback;
 
@@ -81,7 +82,7 @@ public class TouchToFillViewTest {
     public void setUp() throws InterruptedException {
         MockitoAnnotations.initMocks(this);
         mActivityTestRule.startMainActivityOnBlankPage();
-        mModel = TouchToFillProperties.createDefaultModel(mMockListener);
+        mModel = TouchToFillProperties.createDefaultModel(mDismissHandler);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mTouchToFillView =
                     new TouchToFillView(getActivity(), getActivity().getBottomSheetController());
@@ -195,7 +196,7 @@ public class TouchToFillViewTest {
         pollUiThread(() -> getBottomSheetState() == SheetState.FULL);
         TestThreadUtils.runOnUiThreadBlocking(() -> mModel.set(VISIBLE, false));
         pollUiThread(() -> getBottomSheetState() == SheetState.HIDDEN);
-        verify(mMockListener).onDismissed();
+        verify(mDismissHandler).onResult(StateChangeReason.NONE);
     }
 
     private ChromeActivity getActivity() {

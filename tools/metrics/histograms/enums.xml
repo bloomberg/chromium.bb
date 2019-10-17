@@ -7034,6 +7034,16 @@ Unknown properties are collapsed to zero. -->
   </details>
 </enum>
 
+<enum name="BottomSheet.StateChangeReason">
+  <int value="0" label="None"/>
+  <int value="1" label="Swipe"/>
+  <int value="2" label="Back press"/>
+  <int value="3" label="Tap scrim"/>
+  <int value="4" label="Navigation"/>
+  <int value="5" label="Composited UI"/>
+  <int value="6" label="VR"/>
+</enum>
+
 <enum name="BrokenAlternateProtocolLocation">
   <int value="0" label="HTTP_STREAM_FACTORY_JOB"/>
   <int value="1" label="QUIC_STREAM_FACTORY"/>

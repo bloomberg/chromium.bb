@@ -12,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.LinearLayout;
 
+import org.chromium.base.Callback;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetObserver;
@@ -27,14 +28,14 @@ class TouchToFillView implements BottomSheet.BottomSheetContent {
     private final BottomSheetController mBottomSheetController;
     private final RecyclerView mSheetItemListView;
     private final LinearLayout mContentView;
-    private TouchToFillProperties.ViewEventListener mEventListener;
+    private Callback<Integer> mDismissHandler;
 
     private final BottomSheetObserver mBottomSheetObserver = new EmptyBottomSheetObserver() {
         @Override
-        public void onSheetClosed(int reason) {
+        public void onSheetClosed(@BottomSheet.StateChangeReason int reason) {
             super.onSheetClosed(reason);
-            assert mEventListener != null;
-            mEventListener.onDismissed();
+            assert mDismissHandler != null;
+            mDismissHandler.onResult(reason);
             mBottomSheetController.getBottomSheet().removeObserver(mBottomSheetObserver);
         }
     };
@@ -57,10 +58,10 @@ class TouchToFillView implements BottomSheet.BottomSheetContent {
 
     /**
      * Sets a new listener that reacts to events like item selection or dismissal.
-     * @param viewEventListener A {@link TouchToFillProperties.ViewEventListener}.
+     * @param dismissHandler A {@link Callback<Integer>}.
      */
-    void setEventListener(TouchToFillProperties.ViewEventListener viewEventListener) {
-        mEventListener = viewEventListener;
+    void setDismissHandler(Callback<Integer> dismissHandler) {
+        mDismissHandler = dismissHandler;
     }
 
     /**
