@@ -343,7 +343,7 @@ network::mojom::NetworkContext* SystemNetworkContextManager::GetContext() {
 network::mojom::URLLoaderFactory*
 SystemNetworkContextManager::GetURLLoaderFactory() {
   // Create the URLLoaderFactory as needed.
-  if (url_loader_factory_ && !url_loader_factory_.encountered_error()) {
+  if (url_loader_factory_ && url_loader_factory_.is_connected()) {
     return url_loader_factory_.get();
   }
 
@@ -352,8 +352,9 @@ SystemNetworkContextManager::GetURLLoaderFactory() {
   params->process_id = network::mojom::kBrowserProcessId;
   params->is_corb_enabled = false;
   params->is_trusted = true;
-  GetContext()->CreateURLLoaderFactory(mojo::MakeRequest(&url_loader_factory_),
-                                       std::move(params));
+  url_loader_factory_.reset();
+  GetContext()->CreateURLLoaderFactory(
+      url_loader_factory_.BindNewPipeAndPassReceiver(), std::move(params));
   return url_loader_factory_.get();
 }
 
