@@ -14,7 +14,9 @@
 #include "media/base/mock_filters.h"
 #include "media/mojo/clients/mojo_android_overlay.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/android/scoped_java_surface.h"
@@ -53,10 +55,10 @@ class MojoAndroidOverlayTest : public ::testing::Test {
    public:
     // These argument types lack default constructors, so gmock can't mock them.
     void CreateOverlay(mojom::AndroidOverlayRequest overlay_request,
-                       mojom::AndroidOverlayClientPtr client,
+                       mojo::PendingRemote<mojom::AndroidOverlayClient> client,
                        mojom::AndroidOverlayConfigPtr config) override {
       overlay_request_ = std::move(overlay_request);
-      client_ = std::move(client);
+      client_.Bind(std::move(client));
       config_ = std::move(config);
       OverlayCreated();
     }
@@ -64,7 +66,7 @@ class MojoAndroidOverlayTest : public ::testing::Test {
     MOCK_METHOD0(OverlayCreated, void(void));
 
     mojom::AndroidOverlayRequest overlay_request_;
-    mojom::AndroidOverlayClientPtr client_;
+    mojo::Remote<mojom::AndroidOverlayClient> client_;
     mojom::AndroidOverlayConfigPtr config_;
   };
 

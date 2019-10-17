@@ -14,7 +14,7 @@ MojoAndroidOverlay::MojoAndroidOverlay(
     mojo::PendingRemote<mojom::AndroidOverlayProvider> pending_provider,
     AndroidOverlayConfig config,
     const base::UnguessableToken& routing_token)
-    : config_(std::move(config)), binding_(this) {
+    : config_(std::move(config)) {
   // Fill in details of |config| into |mojo_config|.  Our caller could do this
   // too, but since we want to retain |config_| anyway, we do it here.
   mojom::AndroidOverlayConfigPtr mojo_config =
@@ -24,12 +24,10 @@ MojoAndroidOverlay::MojoAndroidOverlay(
   mojo_config->secure = config_.secure;
   mojo_config->power_efficient = config_.power_efficient;
 
-  mojom::AndroidOverlayClientPtr ptr;
-  binding_.Bind(mojo::MakeRequest(&ptr));
-
   mojo::Remote<mojom::AndroidOverlayProvider> provider(
       std::move(pending_provider));
-  provider->CreateOverlay(mojo::MakeRequest(&overlay_ptr_), std::move(ptr),
+  provider->CreateOverlay(mojo::MakeRequest(&overlay_ptr_),
+                          receiver_.BindNewPipeAndPassRemote(),
                           std::move(mojo_config));
 }
 

@@ -9,8 +9,8 @@
 #include "base/unguessable_token.h"
 #include "media/base/android/android_overlay.h"
 #include "media/mojo/mojom/android_overlay.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 
 namespace media {
 
@@ -37,7 +37,7 @@ class MojoAndroidOverlay : public AndroidOverlay,
  private:
   AndroidOverlayConfig config_;
   mojom::AndroidOverlayPtr overlay_ptr_;
-  mojo::Binding<mojom::AndroidOverlayClient> binding_;
+  mojo::Receiver<mojom::AndroidOverlayClient> receiver_{this};
   gl::ScopedJavaSurface surface_;
 
   // Have we received OnSurfaceReady yet?
