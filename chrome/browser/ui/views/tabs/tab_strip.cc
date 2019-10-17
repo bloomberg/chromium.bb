@@ -1827,6 +1827,23 @@ void TabStrip::SetVisualDataForGroup(TabGroupId group,
   controller_->SetVisualDataForGroup(group, visual_data);
 }
 
+void TabStrip::CloseAllTabsInGroup(TabGroupId group) {
+  UpdateHoverCard(nullptr);
+
+  std::vector<int> tabs = controller_->ListTabsInGroup(group);
+  for (int i = tabs.size() - 1; i >= 0; i--) {
+    controller_->CloseTab(tabs[i], CLOSE_TAB_FROM_MOUSE);
+  }
+}
+
+void TabStrip::UngroupAllTabsInGroup(TabGroupId group) {
+  UpdateHoverCard(nullptr);
+  controller_->UngroupAllTabsInGroup(group);
+}
+
+void TabStrip::AddNewTabInGroup(TabGroupId group) {
+  controller_->AddNewTabInGroup(group);
+}
 ///////////////////////////////////////////////////////////////////////////////
 // TabStrip, views::AccessiblePaneView overrides:
 

@@ -6216,6 +6216,30 @@ the Bookmarks menu.">
         </message>
       </if>
 
+      <!-- Tab Group Header Context Menu -->
+      <if expr="not use_titlecase">
+        <message name="IDS_TAB_GROUP_HEADER_CXMENU_NEW_TAB_IN_GROUP" desc="The label of the tab group header context menu item for adding a new tab into the current group.">
+          New tab in group
+        </message>
+        <message name="IDS_TAB_GROUP_HEADER_CXMENU_UNGROUP" desc="The label of the tab group header context menu item for ungrouping the current group.">
+          Ungroup
+        </message>
+        <message name="IDS_TAB_GROUP_HEADER_CXMENU_CLOSE_GROUP" desc="The label of the tab group header context menu item for closing all tabs in the current group.">
+          Close group
+        </message>
+      </if>
+      <if expr="use_titlecase">
+        <message name="IDS_TAB_GROUP_HEADER_CXMENU_NEW_TAB_IN_GROUP" desc="In Title Case: The label of the tab group header context menu item for adding a new tab into the current group.">
+          New Tab in Group
+        </message>
+        <message name="IDS_TAB_GROUP_HEADER_CXMENU_UNGROUP" desc="In Title Case: The label of the tab group header context menu item for ungrouping the current group.">
+          Ungroup
+        </message>
+        <message name="IDS_TAB_GROUP_HEADER_CXMENU_CLOSE_GROUP" desc="In Title Case: The label of the tab group header context menu item for closing all tabs in the current group.">
+          Close Group
+        </message>
+      </if>
+
       <!-- Application window menu -->
       <if expr="not use_titlecase">
         <message name="IDS_APP_MENU_RELOAD" desc="The reload menu in application windows">
