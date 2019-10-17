@@ -722,29 +722,35 @@ def run(cmd, print_cmd=True, redirect_stdout=False,
   cmd_result.args = cmd
 
   proc = None
+  # Verify that the signals modules is actually usable, and won't segfault
+  # upon invocation of getsignal.  See signals.SignalModuleUsable for the
+  # details and upstream python bug.
+  use_signals = signals.SignalModuleUsable()
   try:
     proc = _Popen(cmd, cwd=cwd, stdin=stdin, stdout=stdout,
                   stderr=stderr, shell=False, env=env,
                   close_fds=True)
 
-    if ignore_sigint:
-      old_sigint = signal.signal(signal.SIGINT, signal.SIG_IGN)
-    else:
-      old_sigint = signal.getsignal(signal.SIGINT)
-      signal.signal(signal.SIGINT,
-                    functools.partial(_KillChildProcess, proc, int_timeout,
-                                      kill_timeout, cmd, old_sigint))
+    if use_signals:
+      if ignore_sigint:
+        old_sigint = signal.signal(signal.SIGINT, signal.SIG_IGN)
+      else:
+        old_sigint = signal.getsignal(signal.SIGINT)
+        signal.signal(signal.SIGINT,
+                      functools.partial(_KillChildProcess, proc, int_timeout,
+                                        kill_timeout, cmd, old_sigint))
 
-    old_sigterm = signal.getsignal(signal.SIGTERM)
-    signal.signal(signal.SIGTERM,
-                  functools.partial(_KillChildProcess, proc, int_timeout,
-                                    kill_timeout, cmd, old_sigterm))
+      old_sigterm = signal.getsignal(signal.SIGTERM)
+      signal.signal(signal.SIGTERM,
+                    functools.partial(_KillChildProcess, proc, int_timeout,
+                                      kill_timeout, cmd, old_sigterm))
 
     try:
       (cmd_result.stdout, cmd_result.stderr) = proc.communicate(input)
     finally:
-      signal.signal(signal.SIGINT, old_sigint)
-      signal.signal(signal.SIGTERM, old_sigterm)
+      if use_signals:
+        signal.signal(signal.SIGINT, old_sigint)
+        signal.signal(signal.SIGTERM, old_sigterm)
 
       if stdout and not log_stdout_to_file and not stdout_to_pipe:
         stdout.seek(0)
