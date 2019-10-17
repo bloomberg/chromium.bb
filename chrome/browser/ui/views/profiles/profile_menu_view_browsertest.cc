@@ -809,9 +809,13 @@ constexpr ProfileMenuViewBase::ActionableItem
 
 PROFILE_MENU_CLICK_TEST(kActionableItems_MultipleProfiles,
                         ProfileMenuClickTest_MultipleProfiles) {
+  // Add two additional profiles.
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   CreateTestingProfile(profile_manager->GenerateNextProfileDirectoryPath());
   CreateTestingProfile(profile_manager->GenerateNextProfileDirectoryPath());
+  // Open a second browser window for the current profile, so the
+  // ExitProfileButton is shown.
+  SetTargetBrowser(CreateBrowser(browser()->profile()));
   RunTest();
 }
 
@@ -824,7 +828,6 @@ constexpr ProfileMenuViewBase::ActionableItem kActionableItems_SyncEnabled[] = {
     ProfileMenuViewBase::ActionableItem::kAddressesButton,
     ProfileMenuViewBase::ActionableItem::kSyncSettingsButton,
     ProfileMenuViewBase::ActionableItem::kManageGoogleAccountButton,
-    ProfileMenuViewBase::ActionableItem::kExitProfileButton,
     ProfileMenuViewBase::ActionableItem::kManageProfilesButton,
     ProfileMenuViewBase::ActionableItem::kGuestProfileButton,
     ProfileMenuViewBase::ActionableItem::kAddNewProfileButton,
@@ -851,7 +854,6 @@ constexpr ProfileMenuViewBase::ActionableItem kActionableItems_SyncError[] = {
     ProfileMenuViewBase::ActionableItem::kAddressesButton,
     ProfileMenuViewBase::ActionableItem::kSyncErrorButton,
     ProfileMenuViewBase::ActionableItem::kManageGoogleAccountButton,
-    ProfileMenuViewBase::ActionableItem::kExitProfileButton,
     ProfileMenuViewBase::ActionableItem::kManageProfilesButton,
     ProfileMenuViewBase::ActionableItem::kGuestProfileButton,
     ProfileMenuViewBase::ActionableItem::kAddNewProfileButton,
@@ -879,7 +881,6 @@ constexpr ProfileMenuViewBase::ActionableItem
         ProfileMenuViewBase::ActionableItem::kAddressesButton,
         ProfileMenuViewBase::ActionableItem::kSigninAccountButton,
         ProfileMenuViewBase::ActionableItem::kManageGoogleAccountButton,
-        ProfileMenuViewBase::ActionableItem::kExitProfileButton,
         ProfileMenuViewBase::ActionableItem::kSignoutButton,
         ProfileMenuViewBase::ActionableItem::kManageProfilesButton,
         ProfileMenuViewBase::ActionableItem::kGuestProfileButton,
@@ -928,7 +929,8 @@ PROFILE_MENU_CLICK_TEST(kActionableItems_GuestProfile,
   Profile* guest = g_browser_process->profile_manager()->GetProfileByPath(
       ProfileManager::GetGuestProfilePath());
   ASSERT_TRUE(guest);
-  SetTargetBrowser(chrome::FindAnyBrowser(guest, true));
+  // Open a second guest browser window, so the ExitProfileButton is shown.
+  SetTargetBrowser(CreateIncognitoBrowser(guest));
 
   RunTest();
 }
