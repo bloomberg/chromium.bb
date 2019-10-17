@@ -88,11 +88,6 @@ const base::Feature kBlockCredentialedSubresources{
 const base::Feature kBrowserVerifiedUserActivation{
     "BrowserVerifiedUserActivation", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Controls whether Bundled HTTP Exchanges is enabled.
-// https://wicg.github.io/webpackage/draft-yasskin-wpack-bundled-exchanges.html
-const base::Feature kBundledHTTPExchanges{"BundledHTTPExchanges",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables code caching for inline scripts.
 const base::Feature kCacheInlineScriptCode{"CacheInlineScriptCode",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
@@ -662,6 +657,11 @@ const base::Feature kWebAuthCable {
       base::FEATURE_ENABLED_BY_DEFAULT
 #endif
 };
+
+// Controls whether Web Bundles (Bundled HTTP Exchanges) is enabled.
+// https://wicg.github.io/webpackage/draft-yasskin-wpack-bundled-exchanges.html
+const base::Feature kWebBundles{"WebBundles",
+                                base::FEATURE_DISABLED_BY_DEFAULT};
 
 // If WebGL Image Chromium is allowed, this feature controls whether it is
 // enabled.

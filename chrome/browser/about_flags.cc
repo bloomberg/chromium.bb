@@ -4481,9 +4481,9 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chrome::android::kTabSwitcherLongpressMenu)},
 #endif  // defined(OS_ANDROID)
 
-    {"bundled-exchanges", flag_descriptions::kBundledHTTPExchangesName,
-     flag_descriptions::kBundledHTTPExchangesDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kBundledHTTPExchanges)},
+    {"web-bundles", flag_descriptions::kWebBundlesName,
+     flag_descriptions::kWebBundlesDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kWebBundles)},
 
 #if defined(OS_ANDROID)
     {"darken-websites-checkbox-in-themes-setting",

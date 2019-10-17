@@ -356,11 +356,6 @@
     "expiry_milestone": 80
   },
   {
-    "name": "bundled-exchanges",
-    "owners": [ "toyoshim", "ksakamoto", "horo", "kinuko" ],
-    "expiry_milestone": 83
-  },
-  {
     "name": "BundledConnectionHelp",
     "owners": [ "carlosil" ],
     "expiry_milestone": 76
@@ -3433,6 +3428,11 @@
     // This flag is used by testing teams to run Google Payments calls against
     // the development server environment.
     "expiry_milestone": -1
+  },
+  {
+    "name": "web-bundles",
+    "owners": [ "toyoshim", "ksakamoto", "horo", "kinuko" ],
+    "expiry_milestone": 83
   },
   {
     "name": "web-contents-occlusion",

@@ -294,10 +294,6 @@ const char kBundledConnectionHelpDescription[] =
     "an interstitial after clicking the 'Learn More' link on a previous "
     "interstitial.";
 
-const char kBundledHTTPExchangesName[] = "Bundled HTTP Exchanges";
-const char kBundledHTTPExchangesDescription[] =
-    "Enables experimental supports for Bundled HTTP Exchanges core navigation.";
-
 const char kBypassAppBannerEngagementChecksName[] =
     "Bypass user engagement checks";
 const char kBypassAppBannerEngagementChecksDescription[] =
@@ -2204,6 +2200,11 @@ const char kWalletServiceUseSandboxName[] =
     "Use Google Payments sandbox servers";
 const char kWalletServiceUseSandboxDescription[] =
     "For developers: use the sandbox service for Google Payments API calls.";
+
+const char kWebBundlesName[] = "Web Bundles";
+const char kWebBundlesDescription[] =
+    "Enables experimental supports for Web Bundles (Bundled HTTP Exchanges) "
+    "navigation.";
 
 const char kWebglDraftExtensionsName[] = "WebGL Draft Extensions";
 const char kWebglDraftExtensionsDescription[] =

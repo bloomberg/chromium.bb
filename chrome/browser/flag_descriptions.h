@@ -184,9 +184,6 @@ extern const char kBrowserTaskSchedulerDescription[];
 extern const char kBundledConnectionHelpName[];
 extern const char kBundledConnectionHelpDescription[];
 
-extern const char kBundledHTTPExchangesName[];
-extern const char kBundledHTTPExchangesDescription[];
-
 extern const char kBypassAppBannerEngagementChecksName[];
 extern const char kBypassAppBannerEngagementChecksDescription[];
 
@@ -1290,6 +1287,9 @@ extern const char kV8VmFutureDescription[];
 
 extern const char kWalletServiceUseSandboxName[];
 extern const char kWalletServiceUseSandboxDescription[];
+
+extern const char kWebBundlesName[];
+extern const char kWebBundlesDescription[];
 
 extern const char kWebglDraftExtensionsName[];
 extern const char kWebglDraftExtensionsDescription[];
