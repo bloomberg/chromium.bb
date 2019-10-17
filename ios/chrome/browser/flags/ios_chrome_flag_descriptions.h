@@ -97,11 +97,6 @@ extern const char kCollectionsCardPresentationStyleDescription[];
 extern const char kConfirmInfobarMessagesUIName[];
 extern const char kConfirmInfobarMessagesUIDescription[];
 
-// Title and description for the flag to diffentiate between copied
-// urls, strings, and images.
-extern const char kCopiedContentBehaviorName[];
-extern const char kCopiedContentBehaviorDescription[];
-
 // Title and description for the flag to scan a new credit card using the
 // camera.
 extern const char kCreditCardScannerName[];

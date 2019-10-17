@@ -124,12 +124,6 @@ const char kConfirmInfobarMessagesUIName[] = "Confirm Infobars Messages UI";
 const char kConfirmInfobarMessagesUIDescription[] =
     "When enabled Confirm Infobars use the new Messages UI.";
 
-const char kCopiedContentBehaviorName[] =
-    "Enable differentiating between copied urls, text, and images";
-const char kCopiedContentBehaviorDescription[] =
-    "When enabled, places that handled copied urls (omnibox long-press, toolbar"
-    "menus) will differentiate between copied urls, text, and images.";
-
 const char kCreditCardScannerName[] = "Enable the 'Use Camera' button";
 const char kCreditCardScannerDescription[] =
     "Allow a user to scan a credit card using the credit card camera scanner."
