@@ -679,7 +679,7 @@ def ExpandTargets(targets_wanted):
   # Verify user input.
   nonexistent = targets_wanted.difference(all_targets)
   if nonexistent:
-    raise ValueError('Invalid targets: %s', ','.join(nonexistent))
+    raise ValueError('Invalid targets: %s' % (','.join(nonexistent),))
   return {t: all_targets[t] for t in targets_wanted}
 
 

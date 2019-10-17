@@ -582,7 +582,7 @@ being scraped currently).""",
     logging.debug('%s -> %s', ' '.join(args), path)
 
     if not os.access(path, os.F_OK):
-      raise AssertionError("Can't access %s", path)
+      raise AssertionError("Can't access %s" % (path,))
 
     return path
 

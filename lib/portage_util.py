@@ -937,8 +937,8 @@ class EBuild(object):
     if result.returncode or not output:
       raise Error(
           'Package %s has a chromeos-version.sh script but failed:\n'
-          'return code = %s\nstdout = %s\nstderr = %s\n',
-          self.pkgname, result.returncode, result.output, result.error)
+          'return code = %s\nstdout = %s\nstderr = %s\n' %
+          (self.pkgname, result.returncode, result.output, result.error))
 
     # Sanity check: disallow versions that will be larger than the 9999 ebuild
     # used by cros-workon.

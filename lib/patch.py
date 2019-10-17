@@ -91,7 +91,7 @@ def ParseSHA1(text, error_ok=True):
   """
   valid = git.IsSHA1(text)
   if not error_ok and not valid:
-    raise ValueError('%s is not a valid SHA1', text)
+    raise ValueError('%s is not a valid SHA1' % (text,))
 
   return text if valid else None
 
@@ -111,7 +111,7 @@ def ParseGerritNumber(text, error_ok=True):
   """
   valid = text.isdigit() and len(text) <= _MAXIMUM_GERRIT_NUMBER_LENGTH
   if not error_ok and not valid:
-    raise ValueError('%s is not a valid Gerrit number', text)
+    raise ValueError('%s is not a valid Gerrit number' % (text,))
 
   return text if valid else None
 
@@ -137,7 +137,7 @@ def ParseChangeID(text, error_ok=True):
            git.IsSHA1(text[len(_GERRIT_CHANGE_ID_PREFIX):].lower()))
 
   if not error_ok and not valid:
-    raise ValueError('%s is not a valid change-ID', text)
+    raise ValueError('%s is not a valid change-ID' % (text,))
 
   return text if valid else None
 
@@ -165,7 +165,7 @@ def ParseFullChangeID(text, error_ok=True):
   fields = text.split('~')
   if not len(fields) == 3:
     if not error_ok:
-      raise ValueError('%s is not a valid full change-ID', text)
+      raise ValueError('%s is not a valid full change-ID' % (text,))
 
     return None
 
@@ -174,7 +174,7 @@ def ParseFullChangeID(text, error_ok=True):
       not BRANCH_NAME_RE.match(branch) or
       not ParseChangeID(change_id)):
     if not error_ok:
-      raise ValueError('%s is not a valid full change-ID', text)
+      raise ValueError('%s is not a valid full change-ID' % (text,))
 
     return None
 

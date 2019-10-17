@@ -572,14 +572,15 @@ class GenerateChromeOrderfile(object):
     """Make sure the arguments received are correct."""
     if not os.path.isdir(self.output_dir):
       raise GenerateChromeOrderfileError(
-          'Non-existent directory %s specified for --out-dir', self.output_dir)
+          'Non-existent directory %s specified for --out-dir' %
+          (self.output_dir,))
 
     chrome_binary_path_outside = os.path.join(self.chroot_path,
                                               self.chrome_binary[1:])
     if not os.path.exists(chrome_binary_path_outside):
       raise GenerateChromeOrderfileError(
-          'Chrome binary does not exist at %s in chroot',
-          chrome_binary_path_outside)
+          'Chrome binary does not exist at %s in chroot' %
+          (chrome_binary_path_outside,))
 
     chrome_orderfile_path_outside = os.path.join(self.chroot_path,
                                                  self.input_orderfile[1:])

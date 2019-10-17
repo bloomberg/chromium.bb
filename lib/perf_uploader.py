@@ -108,14 +108,15 @@ def OutputPerfValue(filename, description, value, units,
   """
   def ValidateString(param_name, value, max_len):
     if len(value) > max_len:
-      raise ValueError('%s must be at most %d characters.', param_name, max_len)
+      raise ValueError('%s must be at most %d characters.' %
+                       (param_name, max_len))
 
     allowed_chars = string.ascii_letters + string.digits + '-._'
     if not set(value).issubset(set(allowed_chars)):
       raise ValueError(
           '%s may only contain letters, digits, hyphens, periods, and '
-          'underscores. Its current value is %s.',
-          param_name, value
+          'underscores. Its current value is %s.' %
+          (param_name, value)
       )
 
   ValidateString('description', description, _MAX_DESCRIPTION_LENGTH)

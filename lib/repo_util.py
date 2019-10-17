@@ -144,7 +144,7 @@ class Repository(object):
     """
     repo = cls.Find(path)
     if repo is None:
-      raise NotInRepoError('no repo found from %r', path)
+      raise NotInRepoError('no repo found from %r' % (path,))
     return repo
 
   def _Run(self, repo_cmd, cwd=None, capture_output=False):

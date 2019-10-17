@@ -125,7 +125,7 @@ def CbuildbotArgs(options):
       args.append('--buildbot')
 
   else:
-    raise Exception('Unknown options.where: %s', options.where)
+    raise Exception('Unknown options.where: %s' % (options.where,))
 
 
   if options.branch:
@@ -662,4 +662,4 @@ List Examples:
     elif self.options.where == CBUILDBOT:
       return RunCbuildbot(self.options)
     else:
-      raise Exception('Unknown options.where: %s', self.options.where)
+      raise Exception('Unknown options.where: %s' % (self.options.where,))

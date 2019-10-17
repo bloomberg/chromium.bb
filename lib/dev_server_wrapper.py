@@ -97,7 +97,7 @@ def GetXbuddyPath(path):
     logging.debug('Assuming %s is an xbuddy path.', path)
     return path
   else:
-    raise ValueError('Do not support scheme %s.', parsed.scheme)
+    raise ValueError('Do not support scheme %s.' % (parsed.scheme,))
 
 
 def GetImagePathWithXbuddy(path, board, version=None,

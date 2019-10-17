@@ -472,6 +472,6 @@ class Keyset(object):
 
     if not found:
       raise SignerRootOfTrustKeyMissingError(
-          'Unable to find %s', root_of_trust_name)
+          'Unable to find %s' % (root_of_trust_name,))
 
     return ks

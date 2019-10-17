@@ -239,7 +239,7 @@ def NamedTupleWithDefaults(name, fields, field_defaults=None):
             kwargs[k] = field_defaults[k]
         except KeyError:
           raise TypeError(
-              'Field %s is not optional when constructiong %s', k, name)
+              'Field %s is not optional when constructiong %s' % (k, name))
       return to_wrap.__new__(cls, *args, **kwargs)
 
   DefaultWrapped.__name__ = name

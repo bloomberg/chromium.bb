@@ -407,8 +407,8 @@ def CleanupChrootMount(chroot=None, buildroot=None, delete=False,
     lsof = cros_build_lib.sudo_run(['lsof', chroot], error_code_ok=True)
     ps = cros_build_lib.run(['ps', 'auxf'], error_code_ok=True)
     raise Error(
-        'Umount failed: %s.\nfuser output=%s\nlsof output=%s\nps output=%s\n',
-        e.result.error, fuser.output, lsof.output, ps.output)
+        'Umount failed: %s.\nfuser output=%s\nlsof output=%s\nps output=%s\n' %
+        (e.result.error, fuser.output, lsof.output, ps.output))
 
   # Find the loopback device by either matching the VG or the image.
   chroot_dev = None
