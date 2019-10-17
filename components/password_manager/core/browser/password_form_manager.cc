@@ -344,9 +344,6 @@ void PasswordFormManager::Update(const PasswordForm& credentials_to_update) {
   metrics_recorder_->SetSubmissionIndicatorEvent(
       parsed_submitted_form_->submission_event);
 
-  std::unique_ptr<PasswordForm> parsed_observed_form =
-      parser_.Parse(observed_form_, FormDataParser::Mode::kFilling);
-
   base::string16 password_to_save = pending_credentials_.password_value;
   bool skip_zero_click = pending_credentials_.skip_zero_click;
   pending_credentials_ = credentials_to_update;
