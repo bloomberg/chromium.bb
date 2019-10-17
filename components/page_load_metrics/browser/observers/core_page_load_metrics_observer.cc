@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/page_load_metrics/observers/core_page_load_metrics_observer.h"
+#include "components/page_load_metrics/browser/observers/core_page_load_metrics_observer.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -11,8 +11,6 @@
 
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/page_load_metrics/observers/largest_contentful_paint_handler.h"
 #include "components/page_load_metrics/browser/page_load_metrics_util.h"
 #include "content/public/common/process_type.h"
 #include "net/http/http_response_headers.h"

@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/page_load_metrics/observers/core_page_load_metrics_observer.h"
+#include "components/page_load_metrics/browser/observers/core_page_load_metrics_observer.h"
 
 #include <memory>
 
-#include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
-#include "chrome/test/base/testing_browser_process.h"
 #include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
+#include "components/page_load_metrics/browser/observers/page_load_metrics_observer_content_test_harness.h"
 #include "components/page_load_metrics/browser/page_load_metrics_util.h"
 #include "components/page_load_metrics/browser/page_load_tracker.h"
 #include "components/page_load_metrics/common/test/page_load_metrics_test_util.h"
@@ -33,14 +32,14 @@ const char kDefaultTestUrl2[] = "https://whatever.com";
 }  // namespace
 
 class CorePageLoadMetricsObserverTest
-    : public page_load_metrics::PageLoadMetricsObserverTestHarness {
+    : public page_load_metrics::PageLoadMetricsObserverContentTestHarness {
  protected:
   void RegisterObservers(page_load_metrics::PageLoadTracker* tracker) override {
     tracker->AddObserver(std::make_unique<CorePageLoadMetricsObserver>());
   }
 
   void SetUp() override {
-    page_load_metrics::PageLoadMetricsObserverTestHarness::SetUp();
+    page_load_metrics::PageLoadMetricsObserverContentTestHarness::SetUp();
     page_load_metrics::LargestContentfulPaintHandler::SetTestMode(true);
   }
 };
