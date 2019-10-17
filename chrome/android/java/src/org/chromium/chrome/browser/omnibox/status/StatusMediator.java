@@ -523,15 +523,23 @@ class StatusMediator {
     }
 
     /** @see android.text.TextWatcher#onTextChanged */
-    void onTextChanged(CharSequence charSequence) {
-        // TODO (crbug.com/1012870): This is a workaround for the linked bug. Once the bug is fixed,
-        //                           it should be removed.
-        String urlTextWithAutocomplete = TextUtils.isEmpty(charSequence)
-                ? ""
-                : mUrlBarEditingTextStateProvider.getTextWithAutocomplete();
-        if (TextUtils.equals(mUrlBarTextWithAutocomplete, urlTextWithAutocomplete)) {
-            return;
+    void onTextChanged(CharSequence urlBarText) {
+        String currentAutocompleteText = mUrlBarEditingTextStateProvider.getTextWithAutocomplete();
+        String urlTextWithAutocomplete;
+        if (TextUtils.isEmpty(urlBarText)) {
+            // TODO (crbug.com/1012870): This is to workaround the UrlBar text being empty but the
+            // autocomplete text still pointing at the previous url's autocomplete text.
+            urlTextWithAutocomplete = "";
+        } else if (TextUtils.indexOf(currentAutocompleteText, urlBarText) > -1) {
+            // TODO(crbug.com/1015147): This is to workaround the UrlBar text pointing to the
+            // "current" url and the the autocomplete text pointing to the "previous" url.
+            urlTextWithAutocomplete = currentAutocompleteText;
+        } else {
+            // If the above cases don't apply, then we should use the UrlBar text itself.
+            urlTextWithAutocomplete = urlBarText.toString();
         }
+
+        if (TextUtils.equals(mUrlBarTextWithAutocomplete, urlTextWithAutocomplete)) return;
 
         mUrlBarTextWithAutocomplete = urlTextWithAutocomplete;
         boolean isValid = mDelegate.isUrlValid(mUrlBarTextWithAutocomplete);
