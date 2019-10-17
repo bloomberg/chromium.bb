@@ -2938,4 +2938,35 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, RestoreWhilePendingCommit) {
   EXPECT_EQ(rfh1, current_frame_host());
 }
 
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
+                       DoesNotCacheCrossSiteHttpPost) {
+  SetupCrossSiteRedirector(embedded_test_server());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Note we do a cross-site post because same-site navigations of any kind
+  // aren't cached currently.
+  GURL form_url(embedded_test_server()->GetURL(
+      "a.com", "/form_that_posts_cross_site.html"));
+  GURL redirect_target_url(embedded_test_server()->GetURL("x.com", "/echoall"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  // Navigate to the page with form that posts via 307 redirection to
+  // |redirect_target_url| (cross-site from |form_url|).
+  EXPECT_TRUE(NavigateToURL(shell(), form_url));
+
+  // Submit the form.
+  TestNavigationObserver form_post_observer(shell()->web_contents(), 1);
+  EXPECT_TRUE(ExecJs(shell(), "document.getElementById('text-form').submit()"));
+  form_post_observer.Wait();
+
+  // Verify that we arrived at the expected, redirected location.
+  EXPECT_EQ(redirect_target_url,
+            shell()->web_contents()->GetLastCommittedURL());
+  RenderFrameDeletedObserver delete_observer_rfh(current_frame_host());
+
+  // Navigate away. |redirect_target_url|'s page should not be cached.
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+  delete_observer_rfh.WaitUntilDeleted();
+}
+
 }  // namespace content

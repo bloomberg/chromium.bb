@@ -469,6 +469,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // cases, use GetLastCommittedURL instead.
   const GURL& last_successful_url() { return last_successful_url_; }
 
+  // Return the http method of the last committed navigation.
+  const std::string& last_http_method() { return last_http_method_; }
+
   // Return the http status code of the last committed navigation.
   int last_http_status_code() { return last_http_status_code_; }
 
@@ -1994,6 +1997,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // TODO(clamy): Remove this in favor of GetLastCommittedURL().
   // See https://crbug.com/588314.
   GURL last_successful_url_;
+
+  // The http method of the last committed navigation.
+  std::string last_http_method_;
 
   // The http status code of the last committed navigation.
   int last_http_status_code_ = 0;

@@ -7129,6 +7129,7 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
                                            NavigationGestureUser);
 
   last_http_status_code_ = validated_params->http_status_code;
+  last_http_method_ = validated_params->method;
   UpdateSiteURL(validated_params->url, validated_params->url_is_unreachable);
 
   // Set the state whether this navigation is to an MHTML document, since there
