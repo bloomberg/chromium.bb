@@ -247,6 +247,8 @@ class GetTargetVersionsTest(cros_test_lib.MockTestCase, ApiConfigMixin):
 
   def testValidateOnly(self):
     """Sanity check that a validate only call does not execute any logic."""
+    builds_chrome = self.PatchObject(
+        packages_service, 'builds', return_value=True)
     patch_version = self.PatchObject(packages_service,
                                      'determine_android_version')
     patch_branch_version = self.PatchObject(packages_service,
@@ -262,6 +264,7 @@ class GetTargetVersionsTest(cros_test_lib.MockTestCase, ApiConfigMixin):
     patch_version.assert_not_called()
     patch_branch_version.assert_not_called()
     patch_target_version.assert_not_called()
+    builds_chrome.assert_not_called()
     chrome_version.assert_not_called()
 
   def testNoBuildTargetFails(self):
@@ -274,6 +277,8 @@ class GetTargetVersionsTest(cros_test_lib.MockTestCase, ApiConfigMixin):
 
   def testGetTargetVersions(self):
     """Verify basic return values."""
+    # Mock that chrome is built and set the chrome_version.
+    self.PatchObject(packages_service, 'builds', return_value=True)
     chrome_version = '76.0.1.2'
     self.PatchObject(packages_service, 'determine_chrome_version',
                      return_value=chrome_version)
@@ -298,14 +303,12 @@ class GetTargetVersionsTest(cros_test_lib.MockTestCase, ApiConfigMixin):
     self.assertEqual(self.response.chrome_version, chrome_version)
     self.assertEqual(self.response.platform_version, platform_version)
 
-  def testGetTargetVersionNoAndroid(self):
+  def testGetTargetVersionNoAndroidNoChrome(self):
     """Verify return values on a board that does not have android."""
-    chrome_version = '76.0.1.2'
-    self.PatchObject(packages_service, 'determine_chrome_version',
-                     return_value=chrome_version)
     platform_version = '12345.1.2'
     self.PatchObject(packages_service, 'determine_platform_version',
                      return_value=platform_version)
+    self.PatchObject(packages_service, 'builds', return_value=False)
     self.PatchObject(packages_service, 'determine_android_version',
                      return_value=None)
     self.PatchObject(packages_service, 'determine_android_branch',
@@ -315,7 +318,7 @@ class GetTargetVersionsTest(cros_test_lib.MockTestCase, ApiConfigMixin):
     request = self._GetRequest(board='betty')
     packages_controller.GetTargetVersions(request, self.response,
                                           self.api_config)
-    self.assertEqual(self.response.chrome_version, chrome_version)
+    self.assertFalse(self.response.chrome_version)
     self.assertFalse(self.response.android_version)
     self.assertFalse(self.response.android_branch_version)
     self.assertFalse(self.response.android_target_version)

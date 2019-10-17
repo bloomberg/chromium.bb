@@ -128,7 +128,10 @@ def GetTargetVersions(input_proto, output_proto, _config):
   android_target_version = packages.determine_android_target(build_target)
   if android_target_version:
     output_proto.android_target_version = android_target_version
-  output_proto.chrome_version = packages.determine_chrome_version(build_target)
+  builds_chrome = packages.builds(constants.CHROME_CP, build_target)
+  if builds_chrome:
+    output_proto.chrome_version = packages.determine_chrome_version(
+        build_target)
   output_proto.platform_version = packages.determine_platform_version()
   # TODO(crbug.com/1004438): Implement remaining version fields.
 
