@@ -169,3 +169,17 @@ class ChromeVersionsTest(cros_test_lib.MockTestCase):
     version_numbers = chrome_version.split('.')
     self.assertEqual(len(version_numbers), 4)
     self.assertEqual(int(version_numbers[0]), 78)
+
+
+class PlatformVersionsTest(cros_test_lib.MockTestCase):
+  """Tests getting platform version."""
+
+  def test_determine_platform_version(self):
+    """Test checking that a valid platform version is returned."""
+    platform_version = packages.determine_platform_version()
+    # The returned platform version is something like 12603.0.0.
+    version_string_list = platform_version.split('.')
+    self.assertEqual(len(version_string_list), 3)
+    # We don't want to check an exact version, but the first number should be
+    # non-zero.
+    self.assertGreaterEqual(int(version_string_list[0]), 1)

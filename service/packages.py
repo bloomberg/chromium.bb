@@ -16,6 +16,7 @@ import re
 import sys
 
 
+from chromite.cbuildbot import manifest_version
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
@@ -536,3 +537,9 @@ def determine_android_target(board):
   raise NoAndroidTargetError(
       'Android Target cannot be determined for the package: %s' %
       android_package)
+
+
+def determine_platform_version():
+  """Returns the platform version from the source root."""
+  version = manifest_version.VersionInfo.from_repo(constants.SOURCE_ROOT)
+  return version.VersionString()
