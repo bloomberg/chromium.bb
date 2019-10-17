@@ -1935,6 +1935,7 @@ struct ExtensionsGL {
   bool b_GL_KHR_debug;
   bool b_GL_KHR_parallel_shader_compile;
   bool b_GL_KHR_robustness;
+  bool b_GL_MESA_framebuffer_flip_y;
   bool b_GL_NV_blend_equation_advanced;
   bool b_GL_NV_fence;
   bool b_GL_NV_framebuffer_mixed_samples;

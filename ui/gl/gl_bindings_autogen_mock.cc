@@ -1382,6 +1382,14 @@ MockGLInterface::Mock_glFramebufferParameteri(GLenum target,
 }
 
 void GL_BINDING_CALL
+MockGLInterface::Mock_glFramebufferParameteriMESA(GLenum target,
+                                                  GLenum pname,
+                                                  GLint param) {
+  MakeGlMockFunctionUnique("glFramebufferParameteriMESA");
+  interface_->FramebufferParameteri(target, pname, param);
+}
+
+void GL_BINDING_CALL
 MockGLInterface::Mock_glFramebufferRenderbuffer(GLenum target,
                                                 GLenum attachment,
                                                 GLenum renderbuffertarget,
@@ -5449,6 +5457,9 @@ MockGLInterface::GetGLProcAddress(const char* name) {
   if (strcmp(name, "glFramebufferParameteri") == 0)
     return reinterpret_cast<GLFunctionPointerType>(
         Mock_glFramebufferParameteri);
+  if (strcmp(name, "glFramebufferParameteriMESA") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glFramebufferParameteriMESA);
   if (strcmp(name, "glFramebufferRenderbuffer") == 0)
     return reinterpret_cast<GLFunctionPointerType>(
         Mock_glFramebufferRenderbuffer);

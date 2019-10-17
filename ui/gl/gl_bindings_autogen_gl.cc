@@ -417,6 +417,8 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
   ext.b_GL_KHR_parallel_shader_compile =
       gfx::HasExtension(extensions, "GL_KHR_parallel_shader_compile");
   ext.b_GL_KHR_robustness = gfx::HasExtension(extensions, "GL_KHR_robustness");
+  ext.b_GL_MESA_framebuffer_flip_y =
+      gfx::HasExtension(extensions, "GL_MESA_framebuffer_flip_y");
   ext.b_GL_NV_blend_equation_advanced =
       gfx::HasExtension(extensions, "GL_NV_blend_equation_advanced");
   ext.b_GL_NV_fence = gfx::HasExtension(extensions, "GL_NV_fence");
@@ -1055,6 +1057,10 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
     fn.glFramebufferParameteriFn =
         reinterpret_cast<glFramebufferParameteriProc>(
             GetGLProcAddress("glFramebufferParameteri"));
+  } else if (ext.b_GL_MESA_framebuffer_flip_y) {
+    fn.glFramebufferParameteriFn =
+        reinterpret_cast<glFramebufferParameteriProc>(
+            GetGLProcAddress("glFramebufferParameteriMESA"));
   }
 
   if (ver->IsAtLeastGL(3u, 0u) || ver->is_es) {

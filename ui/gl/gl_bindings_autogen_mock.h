@@ -576,6 +576,9 @@ static void GL_BINDING_CALL Mock_glFlushMappedBufferRangeEXT(GLenum target,
 static void GL_BINDING_CALL Mock_glFramebufferParameteri(GLenum target,
                                                          GLenum pname,
                                                          GLint param);
+static void GL_BINDING_CALL Mock_glFramebufferParameteriMESA(GLenum target,
+                                                             GLenum pname,
+                                                             GLint param);
 static void GL_BINDING_CALL
 Mock_glFramebufferRenderbuffer(GLenum target,
                                GLenum attachment,
