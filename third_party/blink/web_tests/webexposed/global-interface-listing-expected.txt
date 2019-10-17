@@ -8139,10 +8139,6 @@ interface TrustedTypePolicyFactory
     method getAttributeType
     method getPropertyType
     method getTypeMapping
-interface TrustedURL
-    attribute @@toStringTag
-    method constructor
-    method toString
 interface UIEvent : Event
     attribute @@toStringTag
     getter detail
