@@ -140,8 +140,8 @@ void SVGAElement::DefaultEventHandler(Event& event) {
           &GetDocument(), ResourceRequest(GetDocument().CompleteURL(url)));
       frame_request.SetNavigationPolicy(NavigationPolicyFromEvent(&event));
       frame_request.SetTriggeringEventInfo(
-          event.isTrusted() ? WebTriggeringEventInfo::kFromTrustedEvent
-                            : WebTriggeringEventInfo::kFromUntrustedEvent);
+          event.isTrusted() ? TriggeringEventInfo::kFromTrustedEvent
+                            : TriggeringEventInfo::kFromUntrustedEvent);
       frame_request.GetResourceRequest().SetHasUserGesture(
           LocalFrame::HasTransientUserActivation(GetDocument().GetFrame()));
 
