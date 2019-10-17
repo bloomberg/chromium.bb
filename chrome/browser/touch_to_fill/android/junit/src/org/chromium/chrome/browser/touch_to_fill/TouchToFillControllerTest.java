@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.touch_to_fill;
 
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
@@ -21,6 +22,7 @@ import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.Cr
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.DISMISS_HANDLER;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.HeaderProperties.FORMATTED_URL;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.HeaderProperties.ORIGIN_SECURE;
+import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.ON_CLICK_MANAGE;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.SHEET_ITEMS;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.VISIBLE;
 
@@ -236,6 +238,15 @@ public class TouchToFillControllerTest {
                            TouchToFillMediator.UMA_TOUCH_TO_FILL_DISMISSAL_REASON,
                            BottomSheet.StateChangeReason.BACK_PRESS),
                 is(1));
+    }
+
+    @Test
+    public void testHidesWhenSelectingManagePasswords() {
+        mMediator.showCredentials(TEST_URL, true, Arrays.asList(ANA, CARL, BOB));
+        assertThat(mModel.get(ON_CLICK_MANAGE), is(notNullValue()));
+        mModel.get(ON_CLICK_MANAGE).run();
+        verify(mMockDelegate).onManagePasswordsSelected();
+        assertThat(mModel.get(VISIBLE), is(false));
     }
 
     /**

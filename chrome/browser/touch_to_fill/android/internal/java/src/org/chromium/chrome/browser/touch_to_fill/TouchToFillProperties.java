@@ -29,9 +29,10 @@ class TouchToFillProperties {
             new PropertyModel.ReadableObjectPropertyKey<>("sheet_items");
     static final PropertyModel.ReadableObjectPropertyKey<Callback<Integer>> DISMISS_HANDLER =
             new PropertyModel.ReadableObjectPropertyKey<>("dismiss_handler");
-
+    static final PropertyModel.WritableObjectPropertyKey<Runnable> ON_CLICK_MANAGE =
+            new PropertyModel.WritableObjectPropertyKey<>("on_click_manage");
     static PropertyModel createDefaultModel(Callback<Integer> handler) {
-        return new PropertyModel.Builder(VISIBLE, SHEET_ITEMS, DISMISS_HANDLER)
+        return new PropertyModel.Builder(VISIBLE, SHEET_ITEMS, DISMISS_HANDLER, ON_CLICK_MANAGE)
                 .with(VISIBLE, false)
                 .with(SHEET_ITEMS, new ListModel<>())
                 .with(DISMISS_HANDLER, handler)

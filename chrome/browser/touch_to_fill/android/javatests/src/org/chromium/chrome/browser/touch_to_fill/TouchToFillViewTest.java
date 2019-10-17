@@ -17,6 +17,7 @@ import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.Cr
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.ON_CLICK_LISTENER;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.HeaderProperties.FORMATTED_URL;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.HeaderProperties.ORIGIN_SECURE;
+import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.ON_CLICK_MANAGE;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.SHEET_ITEMS;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.VISIBLE;
 import static org.chromium.content_public.browser.test.util.CriteriaHelper.pollUiThread;
@@ -54,6 +55,7 @@ import org.chromium.ui.modelutil.MVCListAdapter;
 import org.chromium.ui.modelutil.PropertyModel;
 
 import java.util.Collections;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * View tests for the Touch To Fill component ensure that model changes are reflected in the sheet.
@@ -187,6 +189,27 @@ public class TouchToFillViewTest {
         TouchCommon.singleClickView(getCredentials().getChildAt(0));
 
         waitForEvent(mCredentialCallback).onResult(eq(ANA));
+    }
+
+    @Test
+    @MediumTest
+    public void testManagePasswordsIsClickable() {
+        final AtomicBoolean manageButtonClicked = new AtomicBoolean(false);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mModel.set(ON_CLICK_MANAGE, () -> manageButtonClicked.set(true));
+            mModel.set(VISIBLE, true);
+        });
+        pollUiThread(() -> getBottomSheetState() == SheetState.PEEK);
+
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { getActivity().getBottomSheet().setSheetState(SheetState.FULL, false); });
+        pollUiThread(() -> getBottomSheetState() == SheetState.FULL);
+
+        TextView manageButton = mTouchToFillView.getContentView().findViewById(
+                R.id.touch_to_fill_sheet_manage_passwords);
+        TouchCommon.singleClickView(manageButton);
+
+        pollUiThread(manageButtonClicked::get);
     }
 
     @Test

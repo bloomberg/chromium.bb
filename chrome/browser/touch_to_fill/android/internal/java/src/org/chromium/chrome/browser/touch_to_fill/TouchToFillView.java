@@ -81,6 +81,11 @@ class TouchToFillView implements BottomSheet.BottomSheetContent {
         mSheetItemListView.setAdapter(adapter);
     }
 
+    void setOnManagePasswordClick(Runnable runnable) {
+        mContentView.findViewById(R.id.touch_to_fill_sheet_manage_passwords)
+                .setOnClickListener((v) -> runnable.run());
+    }
+
     Context getContext() {
         return mContext;
     }

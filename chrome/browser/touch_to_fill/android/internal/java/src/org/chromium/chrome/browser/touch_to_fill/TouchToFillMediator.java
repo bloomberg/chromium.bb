@@ -10,6 +10,7 @@ import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.Cr
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.ON_CLICK_LISTENER;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.HeaderProperties.FORMATTED_URL;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.HeaderProperties.ORIGIN_SECURE;
+import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.ON_CLICK_MANAGE;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.SHEET_ITEMS;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.VISIBLE;
 
@@ -53,6 +54,7 @@ class TouchToFillMediator {
     void showCredentials(
             String formattedUrl, boolean isOriginSecure, List<Credential> credentials) {
         assert credentials != null;
+        mModel.set(ON_CLICK_MANAGE, this::onManagePasswordSelected);
         mModel.set(VISIBLE, true);
 
         ListModel<ListItem> sheetItems = mModel.get(SHEET_ITEMS);
@@ -98,5 +100,10 @@ class TouchToFillMediator {
         RecordHistogram.recordEnumeratedHistogram(
                 UMA_TOUCH_TO_FILL_DISMISSAL_REASON, reason, StateChangeReason.MAX_VALUE + 1);
         mDelegate.onDismissed();
+    }
+
+    private void onManagePasswordSelected() {
+        mModel.set(VISIBLE, false);
+        mDelegate.onManagePasswordsSelected();
     }
 }
