@@ -22,6 +22,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/web_application_info.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/uninstall_reason.h"
@@ -241,6 +242,9 @@ void BookmarkAppInstallFinalizer::OnExtensionInstalled(
   DCHECK(extension);
 
   if (extension != GetEnabledExtension(extension->id())) {
+    LOG(ERROR) << "Installed extension was disabled: "
+               << ExtensionPrefs::Get(profile_)->GetDisableReasons(
+                      extension->id());
     std::move(callback).Run(web_app::AppId(),
                             web_app::InstallResultCode::kWebAppDisabled);
     return;
