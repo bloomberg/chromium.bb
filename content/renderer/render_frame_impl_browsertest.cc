@@ -298,7 +298,7 @@ TEST_F(RenderFrameImplTest, LocalChildFrameWasShown) {
 
 TEST_F(RenderFrameImplTest, SaveImageFromDataURL) {
   const IPC::Message* msg1 = render_thread_->sink().GetFirstMessageMatching(
-      FrameHostMsg_SaveImageFromDataURL::ID);
+      FrameHostMsg_DownloadUrl::ID);
   EXPECT_FALSE(msg1);
   render_thread_->sink().ClearMessages();
 
@@ -308,38 +308,30 @@ TEST_F(RenderFrameImplTest, SaveImageFromDataURL) {
   frame()->SaveImageFromDataURL(WebString::FromUTF8(image_data_url));
   base::RunLoop().RunUntilIdle();
   const IPC::Message* msg2 = render_thread_->sink().GetFirstMessageMatching(
-      FrameHostMsg_SaveImageFromDataURL::ID);
+      FrameHostMsg_DownloadUrl::ID);
   EXPECT_TRUE(msg2);
 
-  FrameHostMsg_SaveImageFromDataURL::Param param1;
-  FrameHostMsg_SaveImageFromDataURL::Read(msg2, &param1);
-  EXPECT_EQ(std::get<0>(param1), image_data_url);
+  FrameHostMsg_DownloadUrl::Param param1;
+  FrameHostMsg_DownloadUrl::Read(msg2, &param1);
+  EXPECT_EQ(std::get<0>(param1).url, GURL());
 
   base::RunLoop().RunUntilIdle();
   render_thread_->sink().ClearMessages();
 
-  const std::string large_data_url(1024 * 1024 * 20 - 1, 'd');
+  const std::string large_data_url(1024 * 1024 * 20, 'd');
 
   frame()->SaveImageFromDataURL(WebString::FromUTF8(large_data_url));
   base::RunLoop().RunUntilIdle();
   const IPC::Message* msg3 = render_thread_->sink().GetFirstMessageMatching(
-      FrameHostMsg_SaveImageFromDataURL::ID);
+      FrameHostMsg_DownloadUrl::ID);
   EXPECT_TRUE(msg3);
 
-  FrameHostMsg_SaveImageFromDataURL::Param param2;
-  FrameHostMsg_SaveImageFromDataURL::Read(msg3, &param2);
-  EXPECT_EQ(std::get<0>(param2), large_data_url);
+  FrameHostMsg_DownloadUrl::Param param2;
+  FrameHostMsg_DownloadUrl::Read(msg3, &param2);
+  EXPECT_EQ(std::get<0>(param2).url, GURL());
 
   base::RunLoop().RunUntilIdle();
   render_thread_->sink().ClearMessages();
-
-  const std::string exceeded_data_url(1024 * 1024 * 20 + 1, 'd');
-
-  frame()->SaveImageFromDataURL(WebString::FromUTF8(exceeded_data_url));
-  base::RunLoop().RunUntilIdle();
-  const IPC::Message* msg4 = render_thread_->sink().GetFirstMessageMatching(
-      FrameHostMsg_SaveImageFromDataURL::ID);
-  EXPECT_FALSE(msg4);
 }
 
 // Tests that url download are throttled when reaching the limit.

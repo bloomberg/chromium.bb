@@ -1938,7 +1938,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const base::string16& suggested_name,
       const bool use_prompt,
       const network::mojom::RedirectMode cross_origin_redirects,
-      mojo::PendingRemote<blink::mojom::BlobURLToken> blob_url_token);
+      mojo::PendingRemote<blink::mojom::BlobURLToken> blob_url_token,
+      mojo::PendingRemote<blink::mojom::Blob> data_url_blob);
 
   // The RenderViewHost that this RenderFrameHost is associated with.
   //

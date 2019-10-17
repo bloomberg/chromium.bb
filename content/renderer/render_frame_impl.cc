@@ -174,6 +174,7 @@
 #include "third_party/blink/public/common/logging/logging_utils.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
+#include "third_party/blink/public/mojom/blob/blob.mojom.h"
 #include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom.h"
@@ -4681,9 +4682,16 @@ void RenderFrameImpl::DownloadURL(
     mojo::ScopedMessagePipeHandle blob_url_token) {
   if (ShouldThrottleDownload())
     return;
-
   FrameHostMsg_DownloadUrl_Params params;
-  params.url = request.Url();
+  const WebURL& url = request.Url();
+  // Pass data URL through blob.
+  if (url.ProtocolIs("data")) {
+    params.url = GURL();
+    params.data_url_blob =
+        blink::DataURLToMessagePipeHandle(url.GetString()).release();
+  } else {
+    params.url = url;
+  }
   params.referrer = RenderViewImpl::GetReferrerFromRequest(frame_, request);
   params.initiator_origin = request.RequestorOrigin();
   if (request.GetSuggestedFilename().has_value())
@@ -5319,11 +5327,9 @@ void RenderFrameImpl::ShowDeferredContextMenu(const ContextMenuParams& params) {
 }
 
 void RenderFrameImpl::SaveImageFromDataURL(const blink::WebString& data_url) {
-  // Note: We should basically send GURL but we use size-limited string instead
-  // in order to send a larger data url to save a image for <canvas> or <img>.
-  if (data_url.length() < kMaxLengthOfDataURLString) {
-    Send(new FrameHostMsg_SaveImageFromDataURL(routing_id_, data_url.Utf8()));
-  }
+  FrameHostMsg_DownloadUrl_Params params;
+  params.data_url_blob = blink::DataURLToMessagePipeHandle(data_url).release();
+  Send(new FrameHostMsg_DownloadUrl(routing_id_, params));
 }
 
 void RenderFrameImpl::FrameRectsChanged(const blink::WebRect& frame_rect) {
