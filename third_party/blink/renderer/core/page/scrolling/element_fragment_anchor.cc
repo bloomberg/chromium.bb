@@ -34,8 +34,7 @@ Node* FindAnchorFromFragment(const String& fragment, Document& doc) {
 }  // namespace
 
 ElementFragmentAnchor* ElementFragmentAnchor::TryCreate(const KURL& url,
-                                                        LocalFrame& frame,
-                                                        bool should_scroll) {
+                                                        LocalFrame& frame) {
   DCHECK(frame.GetDocument());
   Document& doc = *frame.GetDocument();
 
@@ -82,10 +81,6 @@ ElementFragmentAnchor* ElementFragmentAnchor::TryCreate(const KURL& url,
     return nullptr;
 
   if (!anchor_node)
-    return nullptr;
-
-  // Element fragment anchors only need to be kept alive if they need scrolling.
-  if (!should_scroll)
     return nullptr;
 
   return MakeGarbageCollected<ElementFragmentAnchor>(*anchor_node, frame);
