@@ -2870,6 +2870,12 @@ const char kDialMediaRouteProviderDescription[] =
     "Enables the native DIAL Media Route Provider implementation to be used "
     "instead of the implementation in the Media Router component extension.";
 
+const char kNtpConfirmSuggestionRemovalsName[] =
+    "Confirm removing \"realbox\" suggestions on New Tab page";
+const char kNtpConfirmSuggestionRemovalsDescription[] =
+    "Show a confirmation dialog when removing suggestions from the \"realbox\" "
+    "on the New Tab page. Requires #ntp-realbox to be enabled.";
+
 const char kNtpCustomizationMenuV2Name[] = "NTP customization menu version 2";
 const char kNtpCustomizationMenuV2Description[] =
     "Use the second version of the NTP customization menu.";

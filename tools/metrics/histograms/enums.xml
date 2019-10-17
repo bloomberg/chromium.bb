@@ -37329,6 +37329,7 @@ from previous Chrome versions.
   <int value="807447752" label="ChromeMemex:disabled"/>
   <int value="807734471" label="tab-management-experiment-type-disabled"/>
   <int value="809698565" label="WebRtcHybridAgc:enabled"/>
+  <int value="811057677" label="ConfirmNtpSuggestionRemovals:disabled"/>
   <int value="811374216" label="disable-new-bookmark-apps"/>
   <int value="811726957" label="SlideTopChromeWithPageScrolls:enabled"/>
   <int value="812710781" label="SyncUSSBookmarks:disabled"/>
@@ -38030,6 +38031,7 @@ from previous Chrome versions.
   <int value="1766676896" label="affiliation-based-matching:disabled"/>
   <int value="1767411597" label="DisallowUnsafeHttpDownloads:enabled"/>
   <int value="1768759000" label="AutofillProfileServerValidation:disabled"/>
+  <int value="1770189877" label="ConfirmNtpSuggestionRemovals:enabled"/>
   <int value="1771548551" label="DisableKeepaliveFetch:enabled"/>
   <int value="1772454319" label="enable-storage-manager"/>
   <int value="1775475563" label="malware-interstitial-v3"/>

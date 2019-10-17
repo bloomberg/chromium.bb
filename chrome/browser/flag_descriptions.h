@@ -1685,6 +1685,9 @@ extern const char kChromeColorsCustomColorPickerDescription[];
 extern const char kDialMediaRouteProviderName[];
 extern const char kDialMediaRouteProviderDescription[];
 
+extern const char kNtpConfirmSuggestionRemovalsName[];
+extern const char kNtpConfirmSuggestionRemovalsDescription[];
+
 extern const char kNtpCustomizationMenuV2Name[];
 extern const char kNtpCustomizationMenuV2Description[];
 

@@ -3080,6 +3080,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kChromeColorsCustomColorPickerDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kChromeColorsCustomColorPicker)},
 
+    {"ntp-confirm-suggestion-removals",
+     flag_descriptions::kNtpConfirmSuggestionRemovalsName,
+     flag_descriptions::kNtpConfirmSuggestionRemovalsDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kConfirmNtpSuggestionRemovals)},
+
     {"ntp-customization-menu-v2",
      flag_descriptions::kNtpCustomizationMenuV2Name,
      flag_descriptions::kNtpCustomizationMenuV2Description, kOsDesktop,

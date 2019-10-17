@@ -2501,6 +2501,11 @@
     "expiry_milestone": 81
   },
   {
+    "name": "ntp-confirm-suggestion-removals",
+    "owners": ["dbeam"],
+    "expiry_milestone": 82
+  },
+  {
     "name": "ntp-customization-menu-v2",
     "owners": ["kmilka", "ramyan"],
     "expiry_milestone": 79
