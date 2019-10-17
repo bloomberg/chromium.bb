@@ -78,16 +78,31 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
 }
 
 - (BOOL)isCompactWidth {
-#if defined(CHROME_EARL_GREY_1)
   UIUserInterfaceSizeClass horizontalSpace =
+#if defined(CHROME_EARL_GREY_1)
       [[[[UIApplication sharedApplication] keyWindow] traitCollection]
           horizontalSizeClass];
 #elif defined(CHROME_EARL_GREY_2)
-  UIUserInterfaceSizeClass horizontalSpace =
       [[[[GREY_REMOTE_CLASS_IN_APP(UIApplication) sharedApplication] keyWindow]
           traitCollection] horizontalSizeClass];
 #endif
   return horizontalSpace == UIUserInterfaceSizeClassCompact;
+}
+
+- (BOOL)isCompactHeight {
+  UIUserInterfaceSizeClass verticalSpace =
+#if defined(CHROME_EARL_GREY_1)
+      [[[[UIApplication sharedApplication] keyWindow] traitCollection]
+          verticalSizeClass];
+#elif defined(CHROME_EARL_GREY_2)
+      [[[[GREY_REMOTE_CLASS_IN_APP(UIApplication) sharedApplication] keyWindow]
+          traitCollection] verticalSizeClass];
+#endif
+  return verticalSpace == UIUserInterfaceSizeClassCompact;
+}
+
+- (BOOL)isSplitToolbarMode {
+  return [self isCompactWidth] && ![self isCompactHeight];
 }
 
 #pragma mark - History Utilities (EG2)

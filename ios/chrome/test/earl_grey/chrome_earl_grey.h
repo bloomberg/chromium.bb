@@ -47,6 +47,14 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // horizontal size class.
 - (BOOL)isCompactWidth;
 
+// Returns YES if the main application window's rootViewController has a compact
+// vertical size class.
+- (BOOL)isCompactHeight;
+
+// Returns whether the toolbar is split between top and bottom toolbar or if it
+// is displayed as only one toolbar.
+- (BOOL)isSplitToolbarMode;
+
 #pragma mark - History Utilities (EG2)
 // Clears browsing history. Raises an EarlGrey exception if history is not
 // cleared within a timeout.
