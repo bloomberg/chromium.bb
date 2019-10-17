@@ -20899,6 +20899,9 @@ Called by update_net_error_codes.py.-->
   <int value="1391" label="AUTOTESTPRIVATE_WAITFORDISPLAYROTATION"/>
   <int value="1392" label="AUTOTESTPRIVATE_ARCAPPTRACINGSTART"/>
   <int value="1393" label="AUTOTESTPRIVATE_ARCAPPTRACINGSTOPANDANALYZE"/>
+  <int value="1394" label="AUTOTESTPRIVATE_GETAPPWINDOWLIST"/>
+  <int value="1395" label="AUTOTESTPRIVATE_SETAPPWINDOWSTATE"/>
+  <int value="1396" label="AUTOTESTPRIVATE_CLOSEAPPWINDOW"/>
 </enum>
 
 <enum name="ExtensionIconState">
