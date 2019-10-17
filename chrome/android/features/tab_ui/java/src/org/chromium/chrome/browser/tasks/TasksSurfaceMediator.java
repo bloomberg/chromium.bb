@@ -17,6 +17,7 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
 
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.ntp.FakeboxDelegate;
 import org.chromium.chrome.browser.omnibox.LocationBar;
 import org.chromium.chrome.browser.omnibox.LocationBarVoiceRecognitionHandler;
@@ -42,6 +43,7 @@ class TasksSurfaceMediator {
             public void onClick(View v) {
                 mFakeboxDelegate.setUrlBarFocus(
                         true, null, LocationBar.OmniboxFocusReason.TASKS_SURFACE_FAKE_BOX_TAP);
+                RecordUserAction.record("TasksSurface.FakeBox.Tapped");
             }
         });
         mModel.set(FAKE_SEARCH_BOX_TEXT_WATCHER, new TextWatcher() {
@@ -56,6 +58,7 @@ class TasksSurfaceMediator {
                 if (s.length() == 0) return;
                 mFakeboxDelegate.setUrlBarFocus(true, s.toString(),
                         LocationBar.OmniboxFocusReason.TASKS_SURFACE_FAKE_BOX_LONG_PRESS);
+                RecordUserAction.record("TasksSurface.FakeBox.LongPressed");
 
                 // This won't cause infinite loop since we checked s.length() == 0 above.
                 s.clear();
@@ -66,6 +69,7 @@ class TasksSurfaceMediator {
             public void onClick(View v) {
                 mFakeboxDelegate.getLocationBarVoiceRecognitionHandler().startVoiceRecognition(
                         LocationBarVoiceRecognitionHandler.VoiceInteractionSource.TASKS_SURFACE);
+                RecordUserAction.record("TasksSurface.FakeBox.VoiceSearch");
             }
         });
 
