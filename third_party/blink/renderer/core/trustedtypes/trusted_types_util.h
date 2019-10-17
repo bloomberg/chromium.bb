@@ -15,27 +15,29 @@ class ExecutionContext;
 class ExceptionState;
 class Node;
 class StringOrTrustedHTML;
-class StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURL;
+class StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURLOrTrustedURL;
 class StringOrTrustedScript;
 class StringOrTrustedScriptURL;
+class USVStringOrTrustedURL;
 
 enum class SpecificTrustedType {
   kNone,
   kTrustedHTML,
   kTrustedScript,
   kTrustedScriptURL,
+  kTrustedURL,
 };
 
 String CORE_EXPORT GetStringFromTrustedType(
-    const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURL&,
+    const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURLOrTrustedURL&,
     const ExecutionContext*,
     ExceptionState&);
 
 String CORE_EXPORT GetStringFromTrustedTypeWithoutCheck(
-    const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURL&);
+    const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURLOrTrustedURL&);
 
 String CORE_EXPORT GetStringFromSpecificTrustedType(
-    const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURL&,
+    const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURLOrTrustedURL&,
     SpecificTrustedType,
     const ExecutionContext*,
     ExceptionState&);
@@ -59,6 +61,10 @@ String GetStringFromTrustedScript(const String&,
 String CORE_EXPORT GetStringFromTrustedScriptURL(StringOrTrustedScriptURL,
                                                  const ExecutionContext*,
                                                  ExceptionState&);
+
+String CORE_EXPORT GetStringFromTrustedURL(USVStringOrTrustedURL,
+                                           const ExecutionContext*,
+                                           ExceptionState&);
 
 // For <script> elements, we need to treat insertion of DOM text nodes
 // as equivalent to string assignment. This checks the child-node to be

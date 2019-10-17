@@ -85,11 +85,12 @@ class ShadowRoot;
 class ShadowRootInit;
 class SpaceSplitString;
 class StringOrTrustedHTML;
-class StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURL;
+class StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURLOrTrustedURL;
 class StringOrTrustedScript;
 class StringOrTrustedScriptURL;
 class StylePropertyMap;
 class StylePropertyMapReadOnly;
+class USVStringOrTrustedURL;
 class V0CustomElementDefinition;
 
 enum class CSSPropertyID;
@@ -241,9 +242,10 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   void setAttribute(const AtomicString& name, const AtomicString& value);
 
   // Trusted Types variant for explicit setAttribute() use.
-  void setAttribute(const AtomicString&,
-                    const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURL&,
-                    ExceptionState&);
+  void setAttribute(
+      const AtomicString&,
+      const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURLOrTrustedURL&,
+      ExceptionState&);
 
   // Returns attributes that should be checked against Trusted Types
   virtual const AttrNameToTrustedType& GetCheckedAttributeTypes() const;
@@ -263,6 +265,11 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
                     const StringOrTrustedScriptURL&,
                     ExceptionState&);
 
+  // Trusted Type URL variant
+  void setAttribute(const QualifiedName&,
+                    const USVStringOrTrustedURL&,
+                    ExceptionState&);
+
   static bool ParseAttributeName(QualifiedName&,
                                  const AtomicString& namespace_uri,
                                  const AtomicString& qualified_name,
@@ -270,7 +277,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   void setAttributeNS(
       const AtomicString& namespace_uri,
       const AtomicString& qualified_name,
-      const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURL&,
+      const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURLOrTrustedURL&,
       ExceptionState&);
 
   bool toggleAttribute(const AtomicString&, ExceptionState&);
@@ -636,6 +643,8 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
 
   KURL GetURLAttribute(const QualifiedName&) const;
   void GetURLAttribute(const QualifiedName&, StringOrTrustedScriptURL&) const;
+  void GetURLAttribute(const QualifiedName&, USVStringOrTrustedURL&) const;
+  void FastGetAttribute(const QualifiedName&, USVStringOrTrustedURL&) const;
   void FastGetAttribute(const QualifiedName&, StringOrTrustedHTML&) const;
 
   KURL GetNonEmptyURLAttribute(const QualifiedName&) const;

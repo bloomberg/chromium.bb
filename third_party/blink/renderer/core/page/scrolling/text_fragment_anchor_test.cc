@@ -20,6 +20,7 @@
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
+#include "third_party/blink/renderer/core/trustedtypes/trusted_url.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 namespace blink {
@@ -898,9 +899,10 @@ TEST_F(TextFragmentAnchorTest, DisabledInWindowOpen) {
   ScriptState* script_state =
       ToScriptStateForMainWorld(main_window->GetFrame());
   ScriptState::Scope entered_context_scope(script_state);
-  LocalDOMWindow* child_window = To<LocalDOMWindow>(
-      main_window->open(script_state->GetIsolate(), destination, "frame1", "",
-                        ASSERT_NO_EXCEPTION));
+  auto url = USVStringOrTrustedURL::FromTrustedURL(
+      MakeGarbageCollected<TrustedURL>(destination));
+  LocalDOMWindow* child_window = To<LocalDOMWindow>(main_window->open(
+      script_state->GetIsolate(), url, "frame1", "", ASSERT_NO_EXCEPTION));
   ASSERT_TRUE(child_window);
 
   RunPendingTasks();

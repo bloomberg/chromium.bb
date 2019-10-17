@@ -6,7 +6,7 @@
 
 interface mixin HTMLHyperlinkElementUtils {
 
-    [CEReactions] stringifier attribute USVString href;
+    [CEReactions, RaisesException=Setter] stringifier attribute URLString href;
     readonly attribute USVString origin;
 
     [CEReactions] attribute USVString protocol;

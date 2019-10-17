@@ -42,6 +42,9 @@ class HTMLSourceElement final : public HTMLElement {
   explicit HTMLSourceElement(Document&);
   ~HTMLSourceElement() override;
 
+  // Returns attributes that should be checked against Trusted Types
+  const AttrNameToTrustedType& GetCheckedAttributeTypes() const override;
+
   const AtomicString& type() const;
   void setType(const AtomicString&);
 

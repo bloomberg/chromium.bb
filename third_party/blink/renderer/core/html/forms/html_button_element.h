@@ -34,6 +34,8 @@ class HTMLButtonElement final : public HTMLFormControlElement {
  public:
   explicit HTMLButtonElement(Document&);
 
+  const AttrNameToTrustedType& GetCheckedAttributeTypes() const override;
+
   void setType(const AtomicString&);
 
   const AtomicString& Value() const;
