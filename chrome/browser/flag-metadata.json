@@ -2382,7 +2382,7 @@
   {
     "name": "manual-password-generation-android",
     "owners": [ "ioanap" ],
-    "expiry_milestone": 78
+    "expiry_milestone": 80
   },
   {
     "name": "media-router-cast-allow-all-ips",
