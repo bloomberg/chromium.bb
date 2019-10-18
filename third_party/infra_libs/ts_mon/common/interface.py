@@ -33,13 +33,19 @@ Library usage:
 
 import datetime
 import logging
+import os
 import random
+import sys
 import threading
 import time
 
 from infra_libs.ts_mon.common import errors
 from infra_libs.ts_mon.common import metric_store
+# Hack so the relative imports the pb2 files use work.
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(
+    os.path.realpath(__file__))), 'protos'))
 from infra_libs.ts_mon.protos import metrics_pb2
+sys.path.pop(0)
 
 # The maximum number of MetricsData messages to include in each HTTP request.
 # MetricsCollections larger than this will be split into multiple requests.

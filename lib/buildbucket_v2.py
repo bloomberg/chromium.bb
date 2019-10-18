@@ -13,8 +13,10 @@ client out of lib/luci/prpc and third_party/infra_libs/buildbucket.
 from __future__ import print_function
 
 import ast
+import os
 import socket
 from ssl import SSLError
+import sys
 
 from chromite.lib import constants
 from chromite.lib import cros_logging as logging
@@ -28,7 +30,11 @@ from google.protobuf import field_mask_pb2
 # pylint: enable=no-name-in-module
 from six.moves import http_client as httplib
 
+# Hack so the relative imports the pb2 files use work.
+sys.path.insert(0, os.path.join(constants.CHROMITE_DIR, 'third_party',
+                                'infra_libs', 'buildbucket', 'proto'))
 from infra_libs.buildbucket.proto import build_pb2, common_pb2, rpc_pb2
+sys.path.pop(0)
 from infra_libs.buildbucket.proto.rpc_prpc_pb2 import BuildsServiceDescription
 
 BBV2_URL_ENDPOINT_PROD = (
