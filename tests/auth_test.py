@@ -5,104 +5,97 @@
 
 """Unit Tests for auth.py"""
 
-import __builtin__
+import calendar
 import datetime
 import json
-import logging
 import os
 import unittest
 import sys
-import time
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-
-from testing_support import auto_stub
-from third_party import httplib2
 from third_party import mock
 
 import auth
+import subprocess2
 
 
-class TestLuciContext(auto_stub.TestCase):
+NOW = datetime.datetime(2019, 10, 17, 12, 30, 59, 0)
+VALID_EXPIRY = NOW + datetime.timedelta(seconds=31)
+
+
+class AuthenticatorTest(unittest.TestCase):
   def setUp(self):
-    auth._get_luci_context_local_auth_params.clear_cache()
+    mock.patch('subprocess2.check_call').start()
+    mock.patch('subprocess2.check_call_out').start()
+    mock.patch('auth.datetime_now', return_value=NOW).start()
+    self.addCleanup(mock.patch.stopall)
 
-  def _mock_local_auth(self, account_id, secret, rpc_port):
-    self.mock(os, 'environ', {'LUCI_CONTEXT': 'default/test/path'})
-    self.mock(auth, '_load_luci_context', mock.Mock())
-    auth._load_luci_context.return_value = {
-      'local_auth': {
-        'default_account_id': account_id,
-        'secret': secret,
-        'rpc_port': rpc_port,
-      }
-    }
+  def testHasCachedCredentials_NotLoggedIn(self):
+    subprocess2.check_call_out.side_effect = [
+        subprocess2.CalledProcessError(1, ['cmd'], 'cwd', 'stdout', 'stderr')]
+    authenticator = auth.get_authenticator(auth.make_auth_config())
+    self.assertFalse(authenticator.has_cached_credentials())
 
-  def _mock_loc_server_resp(self, status, content):
-    mock_resp = mock.Mock()
-    mock_resp.status = status
-    self.mock(httplib2.Http, 'request', mock.Mock())
-    httplib2.Http.request.return_value = (mock_resp, content)
+  def testHasCachedCredentials_LoggedIn(self):
+    subprocess2.check_call_out.return_value = (
+        json.dumps({'token': 'token', 'expiry': 12345678}), '')
+    authenticator = auth.get_authenticator(auth.make_auth_config())
+    self.assertTrue(authenticator.has_cached_credentials())
 
-  def test_all_good(self):
-    self._mock_local_auth('account', 'secret', 8080)
-    self.assertTrue(auth.has_luci_context_local_auth())
+  def testGetAccessToken_NotLoggedIn(self):
+    subprocess2.check_call_out.side_effect = [
+        subprocess2.CalledProcessError(1, ['cmd'], 'cwd', 'stdout', 'stderr')]
+    authenticator = auth.get_authenticator(auth.make_auth_config())
+    self.assertRaises(auth.LoginRequiredError, authenticator.get_access_token)
 
-    expiry_time = datetime.datetime.min + datetime.timedelta(hours=1)
-    resp_content = {
-      'error_code': None,
-      'error_message': None,
-      'access_token': 'token',
-      'expiry': (expiry_time
-                 - datetime.datetime.utcfromtimestamp(0)).total_seconds(),
-    }
-    self._mock_loc_server_resp(200, json.dumps(resp_content))
-    params = auth._get_luci_context_local_auth_params()
-    token = auth._get_luci_context_access_token(params, datetime.datetime.min)
-    self.assertEqual(token.token, 'token')
+  def testGetAccessToken_CachedToken(self):
+    authenticator = auth.get_authenticator(auth.make_auth_config())
+    authenticator._access_token = auth.AccessToken('token', None)
+    self.assertEqual(
+        auth.AccessToken('token', None), authenticator.get_access_token())
 
-  def test_no_account_id(self):
-    self._mock_local_auth(None, 'secret', 8080)
-    self.assertFalse(auth.has_luci_context_local_auth())
-    self.assertIsNone(auth.get_luci_context_access_token())
+  def testGetAccesstoken_LoggedIn(self):
+    expiry = calendar.timegm(VALID_EXPIRY.timetuple())
+    subprocess2.check_call_out.return_value = (
+        json.dumps({'token': 'token', 'expiry': expiry}), '')
+    authenticator = auth.get_authenticator(auth.make_auth_config())
+    self.assertEqual(
+        auth.AccessToken('token', VALID_EXPIRY),
+        authenticator.get_access_token())
 
-  def test_incorrect_port_format(self):
-    self._mock_local_auth('account', 'secret', 'port')
-    self.assertFalse(auth.has_luci_context_local_auth())
-    with self.assertRaises(auth.LuciContextAuthError):
-      auth.get_luci_context_access_token()
+  def testAuthorize(self):
+    http = mock.Mock()
+    http_request = http.request
+    http_request.__name__ = '__name__'
 
-  def test_expired_token(self):
-    params = auth._LuciContextLocalAuthParams('account', 'secret', 8080)
-    resp_content = {
-      'error_code': None,
-      'error_message': None,
-      'access_token': 'token',
-      'expiry': 1,
-    }
-    self._mock_loc_server_resp(200, json.dumps(resp_content))
-    with self.assertRaises(auth.LuciContextAuthError):
-      auth._get_luci_context_access_token(
-          params, datetime.datetime.utcfromtimestamp(1))
+    authenticator = auth.get_authenticator(auth.make_auth_config())
+    authenticator._access_token = auth.AccessToken('token', None)
 
-  def test_incorrect_expiry_format(self):
-    params = auth._LuciContextLocalAuthParams('account', 'secret', 8080)
-    resp_content = {
-      'error_code': None,
-      'error_message': None,
-      'access_token': 'token',
-      'expiry': 'dead',
-    }
-    self._mock_loc_server_resp(200, json.dumps(resp_content))
-    with self.assertRaises(auth.LuciContextAuthError):
-      auth._get_luci_context_access_token(params, datetime.datetime.min)
+    authorized = authenticator.authorize(http)
+    authorized.request(
+        'https://example.com', method='POST', body='body',
+        headers={'header': 'value'})
+    http_request.assert_called_once_with(
+        'https://example.com', 'POST', 'body',
+        {'header': 'value', 'Authorization': 'Bearer token'}, mock.ANY,
+        mock.ANY)
 
-  def test_incorrect_response_content_format(self):
-    params = auth._LuciContextLocalAuthParams('account', 'secret', 8080)
-    self._mock_loc_server_resp(200, '5')
-    with self.assertRaises(auth.LuciContextAuthError):
-      auth._get_luci_context_access_token(params, datetime.datetime.min)
+
+class AccessTokenTest(unittest.TestCase):
+  def setUp(self):
+    mock.patch('auth.datetime_now', return_value=NOW).start()
+    self.addCleanup(mock.patch.stopall)
+
+  def testNeedsRefresh_NoExpiry(self):
+    self.assertFalse(auth.AccessToken('token', None).needs_refresh())
+
+  def testNeedsRefresh_Expired(self):
+    expired = NOW + datetime.timedelta(seconds=30)
+    self.assertTrue(auth.AccessToken('token', expired).needs_refresh())
+
+  def testNeedsRefresh_Valid(self):
+    self.assertFalse(auth.AccessToken('token', VALID_EXPIRY).needs_refresh())
 
 
 if __name__ == '__main__':
