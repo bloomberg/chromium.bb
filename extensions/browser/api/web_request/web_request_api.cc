@@ -510,12 +510,16 @@ bool FilterResponseHeaders(net::HttpResponseHeaders* response_headers,
 void OnDNRActionMatched(content::BrowserContext* browser_context,
                         const DNRRequestAction& action,
                         int tab_id) {
+  if (action.tracked)
+    return;
+
   declarative_net_request::ActionTracker& action_tracker =
       declarative_net_request::RulesMonitorService::Get(browser_context)
           ->ruleset_manager()
           ->action_tracker();
 
   action_tracker.OnRuleMatched(action.extension_id, tab_id);
+  action.tracked = true;
 }
 
 // Helper to remove request headers based on a matched DNR action. Returns
