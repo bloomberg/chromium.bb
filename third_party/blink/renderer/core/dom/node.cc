@@ -88,6 +88,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element.h"
 #include "third_party/blink/renderer/core/html/html_dialog_element.h"
@@ -544,12 +545,38 @@ void Node::NativeApplyScroll(ScrollState& scroll_state) {
   ScrollableArea* scrollable_area =
       box_to_scroll->EnclosingBox()->GetScrollableArea();
 
-  if (!scrollable_area)
+  // TODO(bokan): This is a hack to fix https://crbug.com/977954. If we have a
+  // non-default root scroller, scrolling from one of its siblings or a fixed
+  // element will chain up to the root node without passing through the root
+  // scroller. This should scroll the visual viewport (so we can still pan
+  // while zoomed) but not by using the RootFrameViewport, which would cause
+  // scrolling in the root scroller element. Implementing this on the main
+  // thread is awkward since we assume only Nodes are scrollable but the
+  // VisualViewport isn't a Node. See LTHI::ApplyScroll for the equivalent
+  // behavior in CC.
+  bool also_scroll_visual_viewport = GetDocument().GetFrame() &&
+                                     GetDocument().GetFrame()->IsMainFrame() &&
+                                     box_to_scroll->IsLayoutView();
+  DCHECK(!also_scroll_visual_viewport ||
+         !box_to_scroll->IsGlobalRootScroller());
+
+  if (!scrollable_area) {
+    // The LayoutView should always create a ScrollableArea.
+    DCHECK(!also_scroll_visual_viewport);
     return;
+  }
 
   ScrollResult result = scrollable_area->UserScroll(
       ScrollGranularity(static_cast<int>(scroll_state.deltaGranularity())),
       delta, ScrollableArea::ScrollCallback());
+
+  // Also try scrolling the visual viewport if we're at the end of the scroll
+  // chain.
+  if (!result.DidScroll() && also_scroll_visual_viewport) {
+    result = GetDocument().GetPage()->GetVisualViewport().UserScroll(
+        ScrollGranularity(static_cast<int>(scroll_state.deltaGranularity())),
+        delta, ScrollableArea::ScrollCallback());
+  }
 
   if (!result.DidScroll())
     return;

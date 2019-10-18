@@ -2218,11 +2218,6 @@ crbug.com/249112 external/wpt/css/css-flexbox/flex-minimum-width-flex-items-007.
 crbug.com/336604 external/wpt/css/css-flexbox/flexbox_visibility-collapse-line-wrapping.html [ Failure ]
 crbug.com/336604 external/wpt/css/css-flexbox/flexbox_visibility-collapse.html [ Failure ]
 
-# Broken for main thread scrolling only. Not worth fixing in the short term but
-# should be addressed by scroll unification.
-crbug.com/977954 rootscroller/fixed-chaining-with-implicit.html [ Failure ]
-crbug.com/977954 rootscroller/fixed-scroller-chaining-with-implicit.html [ Failure ]
-
 # Requires support for hit-testing based on flex order.
 crbug.com/844505 external/wpt/css/css-flexbox/hittest-overlapping-order.html [ Failure ]
 
