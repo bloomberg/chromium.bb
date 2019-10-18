@@ -5764,3 +5764,5 @@ crbug.com/996250 external/wpt/web-nfc/NFCReader_scan_iframe.https.html [ Timeout
 crbug.com/1015254 [ Mac ] external/wpt/pointerevents/extension/pointerevent_coalesced_events_attributes.html [ Pass Failure ]
 crbug.com/1015859 [ Linux ] http/tests/devtools/a11y-axe-core/performance/landing-page-a11y-test.js [ Pass Failure ]
 crbug.com/1015764 compositing/video/video-poster.html [ Pass Crash ]
+crbug.com/1015975 media/video-currentTime.html [ Pass Failure ]
+crbug.com/1015975 virtual/audio-service/media/video-currentTime.html [ Pass Failure ]
