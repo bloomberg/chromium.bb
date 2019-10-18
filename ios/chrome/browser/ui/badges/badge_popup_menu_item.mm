@@ -55,6 +55,12 @@ const CGFloat kBadgeCornerRadius = 5.0;
         _actionIdentifier = PopupMenuActionShowUpdatePasswordOptions;
         _title = @"Update Password";
         break;
+      case BadgeType::kBadgeTypeSaveCard:
+        _actionIdentifier = PopupMenuActionShowSaveCardOptions;
+        // TODO(crbug.com/1014652): Replace with final String. Its currently
+        // "Save Card" on the delegate and "Save Credit Card on mocks.
+        _title = @"Save Credit Card";
+        break;
       case BadgeType::kBadgeTypeIncognito:
         NOTREACHED() << "A BadgePopupMenuItem should not be an Incognito badge";
         break;
@@ -79,6 +85,10 @@ const CGFloat kBadgeCornerRadius = 5.0;
     case BadgeType::kBadgeTypePasswordSave:
     case BadgeType::kBadgeTypePasswordUpdate:
       badgeImage = [[UIImage imageNamed:@"infobar_passwords_icon"]
+          imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+      break;
+    case BadgeType::kBadgeTypeSaveCard:
+      badgeImage = [[UIImage imageNamed:@"infobar_save_card_icon"]
           imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
       break;
     case BadgeType::kBadgeTypeIncognito:
