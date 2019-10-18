@@ -695,8 +695,6 @@ SystemNetworkContextManager::CreateDefaultNetworkContextParams() {
       network::mojom::NetworkContextParams::New();
   content::UpdateCorsExemptHeader(network_context_params.get());
   variations::UpdateCorsExemptHeaderForVariations(network_context_params.get());
-  network_context_params->enable_cors =
-      base::FeatureList::IsEnabled(network::features::kOutOfBlinkCors);
 
   network_context_params->enable_brotli = true;
 
