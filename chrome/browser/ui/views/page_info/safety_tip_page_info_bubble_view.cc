@@ -154,8 +154,9 @@ SafetyTipPageInfoBubbleView::SafetyTipPageInfoBubbleView(
       layout_provider->GetDistanceMetric(DISTANCE_CONTROL_LIST_VERTICAL);
   bottom_layout->StartRowWithPadding(views::GridLayout::kFixedSize, kColumnId,
                                      views::GridLayout::kFixedSize, spacing);
-  auto text_label = std::make_unique<views::Label>(
-      safety_tips::GetSafetyTipDescription(safety_tip_status, suggested_url_));
+  auto text_label =
+      std::make_unique<views::Label>(safety_tips::GetSafetyTipDescription(
+          safety_tip_status, url_, suggested_url_));
   text_label->SetMultiLine(true);
   text_label->SetLineHeight(20);
   text_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
