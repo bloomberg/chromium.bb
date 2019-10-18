@@ -1103,15 +1103,13 @@ bool RenderFrameHostManager::ShouldSwapBrowsingInstancesForNavigation(
     bool new_is_view_source_mode,
     bool is_failure) const {
   // A subframe must stay in the same BrowsingInstance as its parent.
-  // TODO(nasko): Ensure that SiteInstance swap is still triggered for subframes
-  // in the cases covered by the rest of the checks in this method.
   if (!frame_tree_node_->IsMainFrame())
     return false;
 
   // If the navigation has resulted in an error page, do not swap
   // BrowsingInstance and keep the error page in a related SiteInstance. If
-  // later a reload of this navigation is successful, it  will correctly
-  // create a new BrowsingInstance.
+  // later a reload of this navigation is successful, it will correctly
+  // create a new BrowsingInstance if needed.
   if (is_failure && SiteIsolationPolicy::IsErrorPageIsolationEnabled(
                         frame_tree_node_->IsMainFrame())) {
     return false;
@@ -1126,12 +1124,12 @@ bool RenderFrameHostManager::ShouldSwapBrowsingInstancesForNavigation(
 
   // Check for reasons to swap processes even if we are in a process model that
   // doesn't usually swap (e.g., process-per-tab).  Any time we return true,
-  // the new_entry will be rendered in a new SiteInstance AND BrowsingInstance.
+  // the new URL will be rendered in a new SiteInstance AND BrowsingInstance.
   BrowserContext* browser_context =
       delegate_->GetControllerForRenderManager().GetBrowserContext();
 
-  // Don't force a new BrowsingInstance for debug URLs that are handled in the
-  // renderer process, like javascript: or chrome://crash.
+  // Don't force a new BrowsingInstance for URLs that are handled in the
+  // renderer process, like javascript: or debug URLs like chrome://crash.
   if (IsRendererDebugURL(new_effective_url))
     return false;
 
@@ -1399,8 +1397,8 @@ RenderFrameHostManager::DetermineSiteInstanceForURL(
       delegate_->GetControllerForRenderManager();
   BrowserContext* browser_context = controller.GetBrowserContext();
 
-  // If the entry has an instance already we should use it, unless it is no
-  // longer suitable.
+  // If the entry has an instance already we should usually use it, unless it is
+  // no longer suitable.
   if (dest_instance) {
     // When error page isolation is enabled, don't reuse |dest_instance| if it's
     // an error page SiteInstance, but the navigation will no longer fail.
@@ -1436,9 +1434,10 @@ RenderFrameHostManager::DetermineSiteInstanceForURL(
 
   // If a swap is required, we need to force the SiteInstance AND
   // BrowsingInstance to be different ones, using CreateForURL.
-  if (force_browsing_instance_swap)
+  if (force_browsing_instance_swap) {
     return SiteInstanceDescriptor(browser_context, dest_url,
                                   SiteInstanceRelation::UNRELATED);
+  }
 
   // If error page navigations should be isolated, ensure a dedicated
   // SiteInstance is used for them.
@@ -1452,21 +1451,21 @@ RenderFrameHostManager::DetermineSiteInstanceForURL(
                                   SiteInstanceRelation::RELATED);
   }
 
+  // TODO(https://crbug.com/566091): Don't create OOPIFs on the NTP.  Remove
+  // this when the NTP supports OOPIFs or is otherwise omitted from site
+  // isolation policy.
   if (!frame_tree_node_->IsMainFrame()) {
     SiteInstance* parent_site_instance =
         frame_tree_node_->parent()->current_frame_host()->GetSiteInstance();
-    // TEMPORARY HACK: Don't create OOPIFs on the NTP.  Remove this when the NTP
-    // supports OOPIFs or is otherwise omitted from site isolation policy.
-    // See https://crbug.com/566091.
     if (GetContentClient()->browser()->ShouldStayInParentProcessForNTP(
             dest_url, parent_site_instance)) {
       return SiteInstanceDescriptor(parent_site_instance);
     }
   }
 
-  // If we haven't used our SiteInstance (and thus RVH) yet, then we can use it
-  // for this entry.  We won't commit the SiteInstance to this site until the
-  // navigation commits (in DidNavigate), unless the navigation entry was
+  // If we haven't used our SiteInstance yet, then we can use it for this
+  // entry.  We won't commit the SiteInstance to this site until the response
+  // is received (in OnResponseStarted), unless the navigation entry was
   // restored or it's a Web UI as described below.
   if (!current_instance_impl->HasSite()) {
     // If we've already created a SiteInstance for our destination, we don't
@@ -1493,19 +1492,21 @@ RenderFrameHostManager::DetermineSiteInstanceForURL(
 
     // For extensions, Web UI URLs (such as the new tab page), and apps we do
     // not want to use the |current_instance_impl| if it has no site, since it
-    // will have a RenderProcessHost of PRIV_NORMAL. Create a new SiteInstance
+    // will have a non-privileged RenderProcessHost. Create a new SiteInstance
     // for this URL instead (with the correct process type).
-    if (current_instance_impl->HasWrongProcessForURL(dest_url))
+    if (current_instance_impl->HasWrongProcessForURL(dest_url)) {
       return SiteInstanceDescriptor(browser_context, dest_url,
                                     SiteInstanceRelation::RELATED);
+    }
 
     // View-source URLs must use a new SiteInstance and BrowsingInstance.
     // TODO(nasko): This is the same condition as later in the function. This
     // should be taken into account when refactoring this method as part of
     // http://crbug.com/123007.
-    if (dest_is_view_source_mode)
+    if (dest_is_view_source_mode) {
       return SiteInstanceDescriptor(browser_context, dest_url,
                                     SiteInstanceRelation::UNRELATED);
+    }
 
     // If we are navigating from a blank SiteInstance to a WebUI, make sure we
     // create a new SiteInstance.
@@ -1592,7 +1593,6 @@ RenderFrameHostManager::DetermineSiteInstanceForURL(
 
   // Shortcut some common cases for reusing an existing frame's SiteInstance.
   // There are several reasons for this:
-  // - looking at the main frame and openers is required for TDI mode.
   // - with hosted apps, this allows same-site, non-app subframes to be kept
   //   inside the hosted app process.
   // - this avoids putting same-site iframes into different processes after
