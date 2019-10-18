@@ -13,15 +13,24 @@
 extern const base::Feature kInfobarUIReboot;
 
 // Feature to choose whether Confirm Infobars use the new Messages UI or the
-// legacy one. In order for it to work kInfobarUIReboot also needs to be
+// legacy one. Also, in order for it to work kInfobarUIReboot needs to be
 // enabled.
 // Use IsConfirmInfobarMessagesUIEnabled() instead of this constant directly.
 extern const base::Feature kConfirmInfobarMessagesUI;
+
+// Feature to choose whether Save Card Infobar uses the new Messages UI or the
+// legacy one. Also, in order for it to work kInfobarUIReboot needs to be
+// enabled.
+// Use IsSaveCardInfobarMessagesUIEnabled() instead of this constant directly.
+extern const base::Feature kSaveCardInfobarMessagesUI;
 
 // Whether the Messages Infobar UI is enabled.
 bool IsInfobarUIRebootEnabled();
 
 // Whether the Confirm Infobar Messages UI is enabled.
 bool IsConfirmInfobarMessagesUIEnabled();
+
+// Whether the SaveCard Infobar Messages UI is enabled.
+bool IsSaveCardInfobarMessagesUIEnabled();
 
 #endif  // IOS_CHROME_BROWSER_UI_INFOBARS_INFOBAR_FEATURE_H_

@@ -249,6 +249,11 @@ extern const char kOptionalArticleThumbnailDescription[];
 extern const char kPasswordLeakDetectionName[];
 extern const char kPasswordLeakDetectionDescription[];
 
+// Title and description for the flag that enables Messages UI on
+// SaveCard Infobars.
+extern const char kSaveCardInfobarMessagesUIName[];
+extern const char kSaveCardInfobarMessagesUIDescription[];
+
 // Title and description for the flag to toggle the flag of the search button.
 extern const char kSearchIconToggleName[];
 extern const char kSearchIconToggleDescription[];

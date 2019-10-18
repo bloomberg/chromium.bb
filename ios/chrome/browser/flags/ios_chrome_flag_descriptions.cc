@@ -292,6 +292,10 @@ const char kPasswordLeakDetectionName[] = "Password Leak Detection";
 const char kPasswordLeakDetectionDescription[] =
     "Enables the detection of leaked passwords.";
 
+const char kSaveCardInfobarMessagesUIName[] = "Save Card Infobar Messages UI";
+const char kSaveCardInfobarMessagesUIDescription[] =
+    "When enabled, Save Card Infobar uses the new Messages UI.";
+
 const char kSearchIconToggleName[] = "Change the icon for the search button";
 const char kSearchIconToggleDescription[] =
     "Different icons for the search button.";
