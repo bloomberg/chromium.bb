@@ -5770,3 +5770,4 @@ crbug.com/1015187 [ Linux Mac ] virtual/cross-origin-embedder-policy/external/wp
 
 # Sheriff 2019-10-18
 crbug.com/996250 external/wpt/web-nfc/NFCReader_scan_iframe.https.html [ Timeout ]
+crbug.com/1015254 [ Mac ] external/wpt/pointerevents/extension/pointerevent_coalesced_events_attributes.html [ Pass Failure ]
