@@ -601,7 +601,6 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
       is_overlay_content_(false),
       showing_context_menu_(false),
       text_autosizer_page_info_({0, 0, 1.f}),
-      native_theme_observer_(this),
       had_inner_webcontents_(false) {
   frame_tree_.SetFrameRemoveListener(
       base::Bind(&WebContentsImpl::OnFrameRemoved,
@@ -616,11 +615,6 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
 
   binders_.Add(base::BindRepeating(
       &WebContentsImpl::OnColorChooserFactoryRequest, base::Unretained(this)));
-
-  ui::NativeTheme* native_theme = ui::NativeTheme::GetInstanceForWeb();
-  native_theme_observer_.Add(native_theme);
-  using_dark_colors_ = native_theme->ShouldUseDarkColors();
-  preferred_color_scheme_ = native_theme->GetPreferredColorScheme();
 }
 
 WebContentsImpl::~WebContentsImpl() {
@@ -7362,27 +7356,6 @@ void WebContentsImpl::MediaMutedStatusChanged(const MediaPlayerId& id,
 
 void WebContentsImpl::SetVisibilityForChildViews(bool visible) {
   GetMainFrame()->SetVisibilityForChildViews(visible);
-}
-
-void WebContentsImpl::OnNativeThemeUpdated(ui::NativeTheme* observed_theme) {
-  DCHECK(native_theme_observer_.IsObserving(observed_theme));
-
-  bool using_dark_colors = observed_theme->ShouldUseDarkColors();
-  ui::NativeTheme::PreferredColorScheme preferred_color_scheme =
-      observed_theme->GetPreferredColorScheme();
-  bool preferences_changed = false;
-
-  if (using_dark_colors_ != using_dark_colors) {
-    using_dark_colors_ = using_dark_colors;
-    preferences_changed = true;
-  }
-  if (preferred_color_scheme_ != preferred_color_scheme) {
-    preferred_color_scheme_ = preferred_color_scheme;
-    preferences_changed = true;
-  }
-
-  if (preferences_changed)
-    NotifyPreferencesChanged();
 }
 
 mojom::FrameInputHandler* WebContentsImpl::GetFocusedFrameInputHandler() {

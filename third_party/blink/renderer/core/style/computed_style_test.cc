@@ -23,6 +23,7 @@
 #include "third_party/blink/renderer/core/style/shape_value.h"
 #include "third_party/blink/renderer/core/style/style_difference.h"
 #include "third_party/blink/renderer/core/style/style_generated_image.h"
+#include "third_party/blink/renderer/core/testing/color_scheme_helper.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
@@ -512,8 +513,9 @@ TEST(ComputedStyleTest, ApplyColorSchemeLightOnDark) {
       std::make_unique<DummyPageHolder>(IntSize(0, 0), nullptr);
   const ComputedStyle* initial = &ComputedStyle::InitialStyle();
 
-  dummy_page_holder_->GetDocument().GetSettings()->SetPreferredColorScheme(
-      PreferredColorScheme::kDark);
+  ColorSchemeHelper color_scheme_helper;
+  color_scheme_helper.SetPreferredColorScheme(dummy_page_holder_->GetDocument(),
+                                              PreferredColorScheme::kDark);
   StyleResolverState state(dummy_page_holder_->GetDocument(),
                            *dummy_page_holder_->GetDocument().documentElement(),
                            initial, initial);
@@ -549,8 +551,9 @@ TEST(ComputedStyleTest, ApplyInternalLightDarkColor) {
       CSSPropertyID::kColor, "-internal-light-dark-color(black, white)",
       ua_context);
 
-  dummy_page_holder_->GetDocument().GetSettings()->SetPreferredColorScheme(
-      PreferredColorScheme::kDark);
+  ColorSchemeHelper color_scheme_helper;
+  color_scheme_helper.SetPreferredColorScheme(dummy_page_holder_->GetDocument(),
+                                              PreferredColorScheme::kDark);
   StyleResolverState state(dummy_page_holder_->GetDocument(),
                            *dummy_page_holder_->GetDocument().documentElement(),
                            initial, initial);

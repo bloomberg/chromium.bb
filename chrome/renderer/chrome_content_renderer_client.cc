@@ -170,9 +170,9 @@
 #include "extensions/renderer/dispatcher.h"
 #include "extensions/renderer/guest_view/mime_handler_view/mime_handler_view_container_manager.h"
 #include "extensions/renderer/renderer_extension_registry.h"
-#include "third_party/blink/public/common/css/preferred_color_scheme.h"
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/public/web/web_view.h"
+#include "ui/native_theme/native_theme.h"
 #endif
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -881,12 +881,8 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         if (GURL(frame->GetDocument().Url()).host_piece() ==
             extension_misc::kPdfExtensionId) {
           if (!base::FeatureList::IsEnabled(features::kWebUIDarkMode)) {
-            auto* render_view = render_frame->GetRenderView();
-            auto* web_view = render_view ? render_view->GetWebView() : nullptr;
-            if (web_view) {
-              web_view->GetSettings()->SetPreferredColorScheme(
-                  blink::PreferredColorScheme::kLight);
-            }
+            ui::NativeTheme::GetInstanceForWeb()->set_preferred_color_scheme(
+                ui::NativeTheme::PreferredColorScheme::kLight);
           }
         } else if (info.name ==
                    ASCIIToUTF16(ChromeContentClient::kPDFExtensionPluginName)) {
