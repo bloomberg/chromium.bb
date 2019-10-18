@@ -518,7 +518,7 @@ class _Popen(subprocess.Popen):
 def run(cmd, print_cmd=True, stdout=None, stderr=None,
         cwd=None, input=None, enter_chroot=False,
         shell=False, env=None, extra_env=None, ignore_sigint=False,
-        append_to_file=False, chroot_args=None, debug_level=logging.INFO,
+        chroot_args=None, debug_level=logging.INFO,
         check=True, int_timeout=1, kill_timeout=1,
         log_output=False, capture_output=False,
         quiet=False, mute_output=None, encoding=None, errors=None, **kwargs):
@@ -556,8 +556,6 @@ def run(cmd, print_cmd=True, stdout=None, stderr=None,
       child.  This is the desired behavior if we know our child will handle
       Ctrl-C.  If we don't do this, I think we and the child will both get
       Ctrl-C at the same time, which means we'll forcefully kill the child.
-    append_to_file: If True, the stdout streams are appended to the end of log
-      stdout_to_file.
     chroot_args: An array of arguments for the chroot environment wrapper.
     debug_level: The debug level of run's output.
     check: Whether to raise an exception when command returns a non-zero exit
@@ -609,6 +607,12 @@ def run(cmd, print_cmd=True, stdout=None, stderr=None,
     log_stdout_to_file = kwargs.pop('log_stdout_to_file')
     if log_stdout_to_file is not None:
       stdout = log_stdout_to_file
+  stdout_file_mode = 'w+b'
+  if 'append_to_file' in kwargs:
+    # TODO(vapier): Enable this warning once chromite & users migrate.
+    # logging.warning('run: append_to_file is now part of stdout')
+    if kwargs.pop('append_to_file'):
+      stdout_file_mode = 'a+b'
   assert not kwargs, 'Unknown arguments to run: %s' % (list(kwargs),)
 
   if capture_output:
@@ -663,10 +667,7 @@ def run(cmd, print_cmd=True, stdout=None, stderr=None,
   # view of the file.
   log_stdout_to_file = False
   if isinstance(stdout, six.string_types):
-    if append_to_file:
-      popen_stdout = open(stdout, 'a+b')
-    else:
-      popen_stdout = open(stdout, 'w+b')
+    popen_stdout = open(stdout, stdout_file_mode)
     log_stdout_to_file = True
   elif stdout_to_pipe:
     popen_stdout = subprocess.PIPE
