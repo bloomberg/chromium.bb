@@ -77,12 +77,13 @@ class CONTENT_EXPORT BackForwardCacheImpl : public BackForwardCache {
     ~CanStoreDocumentResult();
 
     bool can_store;
-    base::Optional<BackForwardCacheMetrics::CanNotStoreDocumentReason> reason;
+    // TODO(hajimehoshi): Accept multiple reasons.
+    base::Optional<BackForwardCacheMetrics::NotRestoredReason> reason;
     uint64_t blocklisted_features;
 
     static CanStoreDocumentResult Yes();
     static CanStoreDocumentResult No(
-        BackForwardCacheMetrics::CanNotStoreDocumentReason reason);
+        BackForwardCacheMetrics::NotRestoredReason reason);
     static CanStoreDocumentResult NoDueToFeatures(uint64_t features);
 
     std::string ToString();
@@ -92,8 +93,7 @@ class CONTENT_EXPORT BackForwardCacheImpl : public BackForwardCache {
    private:
     CanStoreDocumentResult(
         bool can_store,
-        base::Optional<BackForwardCacheMetrics::CanNotStoreDocumentReason>
-            reason,
+        base::Optional<BackForwardCacheMetrics::NotRestoredReason> reason,
         uint64_t blocklisted_features);
   };
 

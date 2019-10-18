@@ -4740,20 +4740,32 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="By JavaScript"/>
 </enum>
 
-<enum name="BackForwardCacheEvictedReason">
-  <int value="0" label="Timeout"/>
-  <int value="1" label="Cache limit"/>
-  <int value="2" label="JavaScript execution"/>
-  <int value="3" label="Renderer process killed"/>
-  <int value="4" label="Renderer process crashed"/>
-  <int value="5" label="Dialog"/>
-  <int value="6" label="Granted media stream access"/>
-  <int value="7" label="Scheduler tracked feature used"/>
-</enum>
-
 <enum name="BackForwardCacheHistoryNavigationOutcome">
   <int value="0" label="Restored"/>
   <int value="1" label="Not restored"/>
+</enum>
+
+<enum name="BackForwardCacheNotRestoredReason">
+  <int value="0" label="Not main frame. This shouldn't be recorded."/>
+  <int value="1" label="Back forward cache disabled"/>
+  <int value="2" label="Related active contents exist"/>
+  <int value="3" label="HTTP status not OK"/>
+  <int value="4" label="Scheme not HTTP or HTTPS"/>
+  <int value="5" label="Loading"/>
+  <int value="6" label="Was granted media access"/>
+  <int value="7" label="Blocklisted features"/>
+  <int value="8" label="Disable for render frame host called"/>
+  <int value="9" label="Domain not allowed"/>
+  <int value="10" label="HTTP method not GET"/>
+  <int value="11" label="Subframe is navigating"/>
+  <int value="12" label="Timeout"/>
+  <int value="13" label="Cache limit"/>
+  <int value="14" label="JavaScript execution"/>
+  <int value="15" label="Renderer process killed"/>
+  <int value="16" label="Renderer process crashed"/>
+  <int value="17" label="Dialog"/>
+  <int value="18" label="Granted media stream access"/>
+  <int value="19" label="Scheduler tracked feature used"/>
 </enum>
 
 <enum name="BackForwardNavigationType">
