@@ -75,6 +75,8 @@ void av1_init_warp_params(InterPredParams *inter_pred_params,
   if (inter_pred_params->block_height < 8 || inter_pred_params->block_width < 8)
     return;
 
+  if (xd->cur_frame_force_integer_mv) return;
+
   if (av1_allow_warp(mi, warp_types, &xd->global_motion[mi->ref_frame[ref]], 0,
                      inter_pred_params->scale_factors,
                      &inter_pred_params->warp_params))
@@ -103,16 +105,16 @@ void av1_make_inter_predictor(
   const int is_intrabc = mi->use_intrabc;
   assert(IMPLIES(is_intrabc, !do_warp));
 
-  (void)inter_pred_params;
+  (void)do_warp;
 
-  if (do_warp && xd->cur_frame_force_integer_mv == 0) {
+  if (inter_pred_params->mode == WARP_PRED) {
     const struct macroblockd_plane *const pd = &xd->plane[plane];
     const struct buf_2d *const pre_buf = &pd->pre[ref];
     av1_warp_plane(&final_warp_params, is_cur_buf_hbd(xd), xd->bd,
                    pre_buf->buf0, pre_buf->width, pre_buf->height,
                    pre_buf->stride, dst, p_col, p_row, w, h, dst_stride,
                    pd->subsampling_x, pd->subsampling_y, conv_params);
-  } else {
+  } else if (inter_pred_params->mode == UNIFORM_PRED) {
 #if CONFIG_AV1_HIGHBITDEPTH
     if (is_cur_buf_hbd(xd)) {
       highbd_inter_predictor(src, src_stride, dst, dst_stride, subpel_params,

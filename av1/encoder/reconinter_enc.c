@@ -505,6 +505,9 @@ static void build_inter_predictors_single_buf(MACROBLOCKD *xd, int plane,
 
   av1_init_inter_params(&inter_pred_params, bw, bh, pre_y + y, pre_x + x, sf);
 
+  av1_init_warp_params(&inter_pred_params, &pd->pre[ref], &warp_types, ref, xd,
+                       mi);
+
   av1_make_inter_predictor(
       pre, pre_buf->stride, dst, ext_dst_stride, &inter_pred_params,
       &subpel_params, sf, w, h, &conv_params, mi->interp_filters, &warp_types,
