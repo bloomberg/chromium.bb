@@ -518,7 +518,7 @@ class _Popen(subprocess.Popen):
 def run(cmd, print_cmd=True, stdout=None, stderr=None,
         cwd=None, input=None, enter_chroot=False,
         shell=False, env=None, extra_env=None, ignore_sigint=False,
-        combine_stdout_stderr=False, log_stdout_to_file=None,
+        log_stdout_to_file=None,
         append_to_file=False, chroot_args=None, debug_level=logging.INFO,
         check=True, int_timeout=1, kill_timeout=1,
         log_output=False, capture_output=False,
@@ -535,7 +535,8 @@ def run(cmd, print_cmd=True, stdout=None, stderr=None,
         * None is the default; the existing stdout is used.
         * A boolean to indicate whether to capture the output.
           True will capture the output via a tempfile (good for large output).
-    stderr: Where to send stderr.  See |stdout| for possible values.
+    stderr: Where to send stderr.  See |stdout| for possible values.  This also
+      may be subprocess.STDOUT to indicate stderr & stdout should be combined.
     cwd: the working directory to run this cmd.
     input: The data to pipe into this command through stdin.  If a file object
       or file descriptor, stdin will be connected directly to that.
@@ -555,9 +556,8 @@ def run(cmd, print_cmd=True, stdout=None, stderr=None,
       child.  This is the desired behavior if we know our child will handle
       Ctrl-C.  If we don't do this, I think we and the child will both get
       Ctrl-C at the same time, which means we'll forcefully kill the child.
-    combine_stdout_stderr: Combines stdout and stderr streams into stdout.
     log_stdout_to_file: If set, redirects stdout to file specified by this path.
-      If |combine_stdout_stderr| is set to True, then stderr will also be logged
+      If |stderr| is subprocess.STDOUT, then stderr will also be logged
       to the specified file.
     append_to_file: If True, the stdout streams are appended to the end of log
       stdout_to_file.
@@ -572,8 +572,8 @@ def run(cmd, print_cmd=True, stdout=None, stderr=None,
       invoked process to shutdown from a SIGTERM before we SIGKILL it.
     log_output: Log the command and its output automatically.
     capture_output: Set |stdout| and |stderr| to True.
-    quiet: Set |print_cmd| to False, |stdout| to True, and
-      |combine_stdout_stderr| to True.
+    quiet: Set |print_cmd| to False, |stdout| to True, and |stderr| to
+      subprocess.STDOUT.
     mute_output: Mute subprocess printing to parent stdout/stderr. Defaults to
       None, which bases muting on |debug_level|.
     encoding: Encoding for stdin/stdout/stderr, otherwise bytes are used.  Most
@@ -600,15 +600,31 @@ def run(cmd, print_cmd=True, stdout=None, stderr=None,
     # TODO(vapier): Enable this warning once chromite & users migrate.
     # logging.warning('run: redirect_stderr=True is now stderr=True')
     stderr = True if kwargs.pop('redirect_stderr') else None
+  if 'combine_stdout_stderr' in kwargs:
+    # TODO(vapier): Enable this warning once chromite & users migrate.
+    # logging.warning('run: combine_stdout_stderr=True is now '
+    #                 'stderr=subprocess.STDOUT')
+    if kwargs.pop('combine_stdout_stderr'):
+      stderr = subprocess.STDOUT
   assert not kwargs, 'Unknown arguments to run: %s' % (list(kwargs),)
 
   if capture_output:
-    stdout, stderr = True, True
+    # TODO(vapier): Enable this once we migrate all the legacy arguments above.
+    # if stdout is not None or stderr is not None:
+    #   raise ValueError('capture_output may not be used with stdout & stderr')
+    # TODO(vapier): Drop this specialization once we're Python 3-only as we can
+    # pass this argument down to Popen directly.
+    if stdout is None:
+      stdout = True
+    if stderr is None:
+      stderr = True
 
   stdout_to_pipe = False
   if quiet:
     debug_level = logging.DEBUG
-    stdout_to_pipe, combine_stdout_stderr = True, True
+    stdout_to_pipe = True
+    if stderr is None:
+      stderr = subprocess.STDOUT
 
   if encoding is not None and errors is None:
     errors = 'strict'
@@ -652,7 +668,7 @@ def run(cmd, print_cmd=True, stdout=None, stderr=None,
   elif stdout or mute_output or log_output:
     popen_stdout = _get_tempfile()
 
-  if combine_stdout_stderr:
+  if stderr == subprocess.STDOUT:
     popen_stderr = subprocess.STDOUT
   elif stderr or mute_output or log_output:
     popen_stderr = _get_tempfile()
