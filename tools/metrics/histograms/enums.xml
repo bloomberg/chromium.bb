@@ -10979,6 +10979,45 @@ Called by update_net_error_codes.py.-->
   <int value="3" label="Hash Mismatch"/>
 </enum>
 
+<enum name="CorsAccessCheckError">
+  <summary>The CORS check results for each request.</summary>
+  <int value="0" label="CORS request was permitted"/>
+  <int value="1" label="CORS request was not permitted"/>
+  <int value="2" label="CORS preflight permitted a CORS request"/>
+  <int value="3" label="CORS preflight didn't permit a CORS request"/>
+</enum>
+
+<enum name="CorsAccessCheckResult">
+  <summary>
+    The detailed error type for CORS check failures. See
+    services/network/public/mojom/cors.mojom for detailed information.
+  </summary>
+  <int value="0" label="kDisallowedByMode"/>
+  <int value="1" label="kInvalidResponse"/>
+  <int value="2" label="kWildcardOriginNotAllowed"/>
+  <int value="3" label="kMissingAllowOriginHeader"/>
+  <int value="4" label="kMultipleAllowOriginValues"/>
+  <int value="5" label="kInvalidAllowOriginValue"/>
+  <int value="6" label="kAllowOriginMismatch"/>
+  <int value="7" label="kInvalidAllowCredentials"/>
+  <int value="8" label="kCorsDisabledScheme"/>
+  <int value="9" label="kPreflightInvalidStatus"/>
+  <int value="10" label="kPreflightDisallowedRedirect"/>
+  <int value="11" label="kPreflightWildcardOriginNotAllowed"/>
+  <int value="12" label="kPreflightMissingAllowOriginHeader"/>
+  <int value="13" label="kPreflightMultipleAllowOriginValues"/>
+  <int value="14" label="kPreflightInvalidAllowOriginValue"/>
+  <int value="15" label="kPreflightAllowOriginMismatch"/>
+  <int value="16" label="kPreflightInvalidAllowCredentials"/>
+  <int value="17" label="kPreflightMissingAllowExternal"/>
+  <int value="18" label="kPreflightInvalidAllowExternal"/>
+  <int value="19" label="kInvalidAllowMethodsPreflightResponse"/>
+  <int value="20" label="kInvalidAllowHeadersPreflightResponse"/>
+  <int value="21" label="kMethodDisallowedByPreflightResponse"/>
+  <int value="22" label="kHeaderDisallowedByPreflightResponse"/>
+  <int value="23" label="kRedirectContainsCredentials"/>
+</enum>
+
 <enum name="CorsCompletionStatus">
   <summary>The completion status of CorsURLLoader request.</summary>
   <int value="0"
