@@ -373,6 +373,13 @@ LayoutSize BackgroundImageGeometry::GetBackgroundObjectDimensions(
   return LayoutSize(width, column_height);
 }
 
+bool BackgroundImageGeometry::ShouldUseFixedAttachment(
+    const FillLayer& fill_layer) {
+  // Solid color background should use default attachment.
+  return fill_layer.GetImage() &&
+         fill_layer.Attachment() == EFillAttachment::kFixed;
+}
+
 namespace {
 
 LayoutRect FixedAttachmentPositioningArea(const LayoutBoxModelObject& obj,
@@ -642,7 +649,7 @@ void BackgroundImageGeometry::ComputePositioningArea(
     LayoutRect& snapped_positioning_area,
     LayoutPoint& unsnapped_box_offset,
     LayoutPoint& snapped_box_offset) {
-  if (fill_layer.Attachment() == EFillAttachment::kFixed) {
+  if (ShouldUseFixedAttachment(fill_layer)) {
     // No snapping for fixed attachment.
     SetHasNonLocalGeometry();
     offset_in_background_ = LayoutPoint();
@@ -1029,7 +1036,7 @@ void BackgroundImageGeometry::Calculate(const LayoutBoxModelObject* container,
       unsnapped_dest_rect_ = snapped_dest_rect_ = LayoutRect();
   }
 
-  if (fill_layer.Attachment() == EFillAttachment::kFixed)
+  if (ShouldUseFixedAttachment(fill_layer))
     UseFixedAttachment(paint_rect.Location());
 
   // Clip the final output rect to the paint rect, maintaining snapping.

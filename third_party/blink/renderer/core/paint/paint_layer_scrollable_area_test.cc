@@ -959,6 +959,59 @@ TEST_P(PaintLayerScrollableAreaTest, ViewScrollWithFixedAttachmentBackground) {
 }
 
 TEST_P(PaintLayerScrollableAreaTest,
+       ViewScrollWithSolidColorFixedAttachmentBackground) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      html, #fixed-background {
+        background: green fixed;
+      }
+      #fixed-background {
+        width: 200px;
+        height: 200px;
+        overflow: scroll;
+      }
+    </style>
+    <div id="fixed-background">
+      <div style="height: 3000px"></div>
+    </div>
+    <div style="height: 3000px"></div>
+  )HTML");
+
+  // Fixed-attachment solid-color background should be treated as default
+  // attachment.
+  EXPECT_EQ(kBackgroundPaintInScrollingContents,
+            GetLayoutView().GetBackgroundPaintLocation());
+  auto* fixed_background_div =
+      ToLayoutBox(GetLayoutObjectByElementId("fixed-background"));
+  EXPECT_EQ(kBackgroundPaintInScrollingContents,
+            fixed_background_div->GetBackgroundPaintLocation());
+  auto* div_scrollable_area = fixed_background_div->GetScrollableArea();
+  auto* view_scrollable_area = GetLayoutView().GetScrollableArea();
+
+  // Programmatically changing the view's scroll offset. Should invalidate all
+  // objects with fixed attachment background.
+  view_scrollable_area->SetScrollOffset(ScrollOffset(0, 1),
+                                        kProgrammaticScroll);
+  EXPECT_FALSE(fixed_background_div->ShouldDoFullPaintInvalidation());
+  EXPECT_FALSE(fixed_background_div->BackgroundNeedsFullPaintInvalidation());
+  EXPECT_FALSE(fixed_background_div->NeedsPaintPropertyUpdate());
+  EXPECT_FALSE(GetLayoutView().ShouldDoFullPaintInvalidation());
+  EXPECT_FALSE(GetLayoutView().BackgroundNeedsFullPaintInvalidation());
+  EXPECT_TRUE(GetLayoutView().NeedsPaintPropertyUpdate());
+  UpdateAllLifecyclePhasesForTest();
+
+  // Programmatically changing the div's scroll offset. Should invalidate the
+  // scrolled div with fixed attachment background.
+  div_scrollable_area->SetScrollOffset(ScrollOffset(0, 1), kProgrammaticScroll);
+  EXPECT_FALSE(fixed_background_div->ShouldDoFullPaintInvalidation());
+  EXPECT_FALSE(fixed_background_div->BackgroundNeedsFullPaintInvalidation());
+  EXPECT_TRUE(fixed_background_div->NeedsPaintPropertyUpdate());
+  EXPECT_FALSE(GetLayoutView().ShouldDoFullPaintInvalidation());
+  EXPECT_FALSE(GetLayoutView().BackgroundNeedsFullPaintInvalidation());
+  EXPECT_TRUE(GetLayoutView().NeedsPaintPropertyUpdate());
+}
+
+TEST_P(PaintLayerScrollableAreaTest,
        ViewScrollWithFixedAttachmentBackgroundPreferCompositingToLCDText) {
   GetDocument().GetFrame()->GetSettings()->SetPreferCompositingToLCDTextEnabled(
       true);
