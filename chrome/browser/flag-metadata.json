@@ -3356,6 +3356,11 @@
     "expiry_milestone": -1
   },
   {
+    "name": "update-notification-scheduling-integration",
+    "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/updates/OWNERS" ],
+    "expiry_milestone": 86
+  },
+  {
     "name": "updated_cellular_activation_ui",
     "owners": [ "azeemarshad", "khorimoto" ],
     "expiry_milestone": 80

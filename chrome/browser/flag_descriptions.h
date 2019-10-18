@@ -1639,6 +1639,9 @@ extern const char kUpdateMenuTypeInlineUpdateDownloadFailed[];
 extern const char kUpdateMenuTypeInlineUpdateDownloadCanceled[];
 extern const char kUpdateMenuTypeInlineUpdateInstallFailed[];
 
+extern const char kUpdateNotificationSchedulingIntegrationName[];
+extern const char kUpdateNotificationSchedulingIntegrationDescription[];
+
 extern const char kUsageStatsDescription[];
 extern const char kUsageStatsName[];
 

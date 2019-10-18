@@ -2805,6 +2805,12 @@ const char kUpdateMenuTypeInlineUpdateDownloadCanceled[] =
 const char kUpdateMenuTypeInlineUpdateInstallFailed[] =
     "Inline Update Error: Install Failed";
 
+const char kUpdateNotificationSchedulingIntegrationName[] =
+    "Enable update notification using notification scheduling system";
+const char kUpdateNotificationSchedulingIntegrationDescription[] =
+    "if enable update notification will hook up to notification scheduling "
+    "system in native side";
+
 const char kUsageStatsDescription[] =
     "When set, enables sharing of per-domain usage stats with the Digital "
     "Wellbeing app on Android, and allows Digital Wellbeing to suspend access "

@@ -3147,6 +3147,15 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chrome::android::kDownloadRename)},
 #endif
 
+#if defined(OS_ANDROID)
+    {"update-notification-scheduling-integration",
+     flag_descriptions::kUpdateNotificationSchedulingIntegrationName,
+     flag_descriptions::kUpdateNotificationSchedulingIntegrationDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(
+         chrome::android::kUpdateNotificationSchedulingIntegration)},
+#endif
+
     {"download-resumption-without-strong-validators",
      flag_descriptions::kDownloadResumptionWithoutStrongValidatorsName,
      flag_descriptions::kDownloadResumptionWithoutStrongValidatorsDescription,
