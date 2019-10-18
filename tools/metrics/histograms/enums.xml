@@ -6689,6 +6689,11 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="Present"/>
 </enum>
 
+<enum name="BooleanPreviouslyVisited">
+  <int value="0" label="Was not visited before"/>
+  <int value="1" label="Was visited before"/>
+</enum>
+
 <enum name="BooleanProcessReuseDisallowed">
   <int value="0" label="Process reuse allowed"/>
   <int value="1" label="Process reuse disallowed"/>
