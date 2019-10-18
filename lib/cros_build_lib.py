@@ -583,6 +583,12 @@ def run(cmd, print_cmd=True, redirect_stdout=False,
   Raises:
     RunCommandError: Raised on error.
   """
+  if 'error_code_ok' in kwargs:
+    # TODO(vapier): Enable this warning once chromite & users migrate.
+    # logging.warning('run: error_code_ok= is renamed/inverted to check=')
+    check = not kwargs.pop('error_code_ok')
+  assert not kwargs, 'Unknown arguments to run: %s' % (list(kwargs),)
+
   if capture_output:
     redirect_stdout, redirect_stderr = True, True
 
@@ -591,18 +597,12 @@ def run(cmd, print_cmd=True, redirect_stdout=False,
     debug_level = logging.DEBUG
     stdout_to_pipe, combine_stdout_stderr = True, True
 
-  if 'error_code_ok' in kwargs:
-    # TODO(vapier): Enable this warning once chromite & users migrate.
-    # logging.warning('run: error_code_ok= is renamed/inverted to check=')
-    check = not kwargs.pop('error_code_ok')
-  assert not kwargs, 'Unknown arguments to run: %s' % (list(kwargs),)
-
   if encoding is not None and errors is None:
     errors = 'strict'
 
   # Set default for variables.
-  stdout = None
-  stderr = None
+  popen_stdout = None
+  popen_stderr = None
   stdin = None
   cmd_result = CommandResult()
 
@@ -631,22 +631,22 @@ def run(cmd, print_cmd=True, redirect_stdout=False,
   # view of the file.
   if log_stdout_to_file:
     if append_to_file:
-      stdout = open(log_stdout_to_file, 'a+')
+      popen_stdout = open(log_stdout_to_file, 'a+')
     else:
-      stdout = open(log_stdout_to_file, 'w+')
+      popen_stdout = open(log_stdout_to_file, 'w+')
   elif stdout_to_pipe:
-    stdout = subprocess.PIPE
+    popen_stdout = subprocess.PIPE
   elif redirect_stdout or mute_output or log_output:
-    stdout = _get_tempfile()
+    popen_stdout = _get_tempfile()
 
   if combine_stdout_stderr:
-    stderr = subprocess.STDOUT
+    popen_stderr = subprocess.STDOUT
   elif redirect_stderr or mute_output or log_output:
-    stderr = _get_tempfile()
+    popen_stderr = _get_tempfile()
 
   # If subprocesses have direct access to stdout or stderr, they can bypass
   # our buffers, so we need to flush to ensure that output is not interleaved.
-  if stdout is None or stderr is None:
+  if popen_stdout is None or popen_stderr is None:
     sys.stdout.flush()
     sys.stderr.flush()
 
@@ -729,8 +729,8 @@ def run(cmd, print_cmd=True, redirect_stdout=False,
   # details and upstream python bug.
   use_signals = signals.SignalModuleUsable()
   try:
-    proc = _Popen(cmd, cwd=cwd, stdin=stdin, stdout=stdout,
-                  stderr=stderr, shell=False, env=env,
+    proc = _Popen(cmd, cwd=cwd, stdin=stdin, stdout=popen_stdout,
+                  stderr=popen_stderr, shell=False, env=env,
                   close_fds=True)
 
     if use_signals:
@@ -754,15 +754,15 @@ def run(cmd, print_cmd=True, redirect_stdout=False,
         signal.signal(signal.SIGINT, old_sigint)
         signal.signal(signal.SIGTERM, old_sigterm)
 
-      if stdout and not log_stdout_to_file and not stdout_to_pipe:
-        stdout.seek(0)
-        cmd_result.stdout = stdout.read()
-        stdout.close()
+      if popen_stdout and not log_stdout_to_file and not stdout_to_pipe:
+        popen_stdout.seek(0)
+        cmd_result.stdout = popen_stdout.read()
+        popen_stdout.close()
 
-      if stderr and stderr != subprocess.STDOUT:
-        stderr.seek(0)
-        cmd_result.stderr = stderr.read()
-        stderr.close()
+      if popen_stderr and popen_stderr != subprocess.STDOUT:
+        popen_stderr.seek(0)
+        cmd_result.stderr = popen_stderr.read()
+        popen_stderr.close()
 
     cmd_result.returncode = proc.returncode
 
