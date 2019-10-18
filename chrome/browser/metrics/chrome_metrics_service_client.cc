@@ -424,6 +424,13 @@ class ProfileClientImpl
   DISALLOW_COPY_AND_ASSIGN(ProfileClientImpl);
 };
 
+std::unique_ptr<metrics::DemographicMetricsProvider>
+MakeDemographicMetricsProvider(
+    metrics::MetricsLogUploader::MetricServiceType metrics_service_type) {
+  return std::make_unique<metrics::DemographicMetricsProvider>(
+      std::make_unique<ProfileClientImpl>(), metrics_service_type);
+}
+
 }  // namespace
 
 // UKM suffix for field trial recording.
@@ -600,8 +607,10 @@ void ChromeMetricsServiceClient::Initialize() {
     // We only need to restrict to whitelisted Entries if metrics reporting
     // is not forced.
     bool restrict_to_whitelist_entries = !IsMetricsReportingForceEnabled();
-    ukm_service_.reset(
-        new ukm::UkmService(local_state, this, restrict_to_whitelist_entries));
+    ukm_service_.reset(new ukm::UkmService(
+        local_state, this, restrict_to_whitelist_entries,
+        MakeDemographicMetricsProvider(
+            metrics::MetricsLogUploader::MetricServiceType::UKM)));
     ukm_service_->SetIsWebstoreExtensionCallback(
         base::BindRepeating(&IsWebstoreExtension));
     RegisterUKMProviders();
@@ -663,9 +672,8 @@ void ChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
   metrics_service_->RegisterMetricsProvider(
       std::make_unique<tracing::BackgroundTracingMetricsProvider>());
 
-  metrics_service_->RegisterMetricsProvider(
-      std::make_unique<metrics::DemographicMetricsProvider>(
-          std::make_unique<ProfileClientImpl>()));
+  metrics_service_->RegisterMetricsProvider(MakeDemographicMetricsProvider(
+      metrics::MetricsLogUploader::MetricServiceType::UMA));
 
 #if defined(OS_ANDROID)
   metrics_service_->RegisterMetricsProvider(

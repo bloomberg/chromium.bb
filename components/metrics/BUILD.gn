@@ -113,6 +113,7 @@ jumbo_static_library("metrics") {
     "system_memory_stats_recorder_linux.cc",
     "system_session_analyzer_win.cc",
     "system_session_analyzer_win.h",
+    "ukm_demographic_metrics_provider.h",
     "unsent_log_store.cc",
     "unsent_log_store.h",
     "unsent_log_store_metrics.h",
