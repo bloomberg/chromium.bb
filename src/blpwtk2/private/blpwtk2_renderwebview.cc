@@ -1426,7 +1426,8 @@ void RenderWebView::didFinishLoad(WebView *source, const StringRef& url)
 void RenderWebView::didFailLoad(WebView *source, const StringRef& url)
 {
     if (d_delegate) {
-        d_delegate->didFinishLoad(this, url);
+        LOG(ERROR) << "didFailLoad RenderWebView, url=" << url.data();
+        d_delegate->didFailLoad(this, url);
     }
 }
 
