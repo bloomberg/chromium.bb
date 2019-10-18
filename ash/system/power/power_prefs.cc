@@ -70,7 +70,7 @@ PrefService* GetPrefService() {
 
 // Registers power prefs whose default values are the same in user prefs and
 // signin prefs.
-void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test) {
+void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(prefs::kPowerAcScreenBrightnessPercent, -1);
   registry->RegisterIntegerPref(prefs::kPowerAcScreenDimDelayMs, 420000);
   registry->RegisterIntegerPref(prefs::kPowerAcScreenOffDelayMs, 450000);
@@ -105,12 +105,10 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test) {
   registry->RegisterBooleanPref(prefs::kPowerSmartDimEnabled, true);
   registry->RegisterBooleanPref(prefs::kPowerAlsLoggingEnabled, false);
 
-  if (for_test) {
-    registry->RegisterBooleanPref(prefs::kAllowScreenLock, true);
-    registry->RegisterBooleanPref(
-        prefs::kEnableAutoScreenLock, false,
-        user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  }
+  registry->RegisterBooleanPref(prefs::kAllowScreenLock, true);
+  registry->RegisterBooleanPref(
+      prefs::kEnableAutoScreenLock, false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
 }  // namespace
@@ -158,9 +156,8 @@ void PowerPrefs::RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
 }
 
 // static
-void PowerPrefs::RegisterSigninProfilePrefs(PrefRegistrySimple* registry,
-                                            bool for_test) {
-  RegisterProfilePrefs(registry, for_test);
+void PowerPrefs::RegisterSigninProfilePrefs(PrefRegistrySimple* registry) {
+  RegisterProfilePrefs(registry);
 
   registry->RegisterIntegerPref(
       prefs::kPowerBatteryIdleAction,
@@ -171,9 +168,8 @@ void PowerPrefs::RegisterSigninProfilePrefs(PrefRegistrySimple* registry,
 }
 
 // static
-void PowerPrefs::RegisterUserProfilePrefs(PrefRegistrySimple* registry,
-                                          bool for_test) {
-  RegisterProfilePrefs(registry, for_test);
+void PowerPrefs::RegisterUserProfilePrefs(PrefRegistrySimple* registry) {
+  RegisterProfilePrefs(registry);
 
   registry->RegisterIntegerPref(
       prefs::kPowerBatteryIdleAction,

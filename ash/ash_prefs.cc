@@ -64,12 +64,12 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry, bool for_test) {
 
 void RegisterSigninProfilePrefs(PrefRegistrySimple* registry, bool for_test) {
   RegisterProfilePrefs(registry, for_test);
-  PowerPrefs::RegisterSigninProfilePrefs(registry, for_test);
+  PowerPrefs::RegisterSigninProfilePrefs(registry);
 }
 
 void RegisterUserProfilePrefs(PrefRegistrySimple* registry, bool for_test) {
   RegisterProfilePrefs(registry, for_test);
-  PowerPrefs::RegisterUserProfilePrefs(registry, for_test);
+  PowerPrefs::RegisterUserProfilePrefs(registry);
 }
 
 }  // namespace ash
