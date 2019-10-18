@@ -348,7 +348,6 @@ class DatarateTestSVC
     cfg_.rc_max_quantizer = 63;
     cfg_.rc_end_usage = AOM_CBR;
     cfg_.g_lag_in_frames = 0;
-    cfg_.g_usage = AOM_USAGE_REALTIME;
     cfg_.g_error_resilient = 1;
 
     ::libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352,
@@ -378,7 +377,6 @@ class DatarateTestSVC
     cfg_.rc_max_quantizer = 63;
     cfg_.rc_end_usage = AOM_CBR;
     cfg_.g_lag_in_frames = 0;
-    cfg_.g_usage = AOM_USAGE_REALTIME;
     cfg_.g_error_resilient = 1;
 
     ::libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352,
@@ -408,7 +406,6 @@ class DatarateTestSVC
     cfg_.rc_max_quantizer = 63;
     cfg_.rc_end_usage = AOM_CBR;
     cfg_.g_lag_in_frames = 0;
-    cfg_.g_usage = AOM_USAGE_REALTIME;
     cfg_.g_error_resilient = 1;
 
     ::libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352,
@@ -439,7 +436,6 @@ class DatarateTestSVC
     cfg_.rc_max_quantizer = 63;
     cfg_.rc_end_usage = AOM_CBR;
     cfg_.g_lag_in_frames = 0;
-    cfg_.g_usage = AOM_USAGE_REALTIME;
     cfg_.g_error_resilient = 1;
 
     ::libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352,
@@ -482,7 +478,6 @@ class DatarateTestSVC
     cfg_.rc_max_quantizer = 63;
     cfg_.rc_end_usage = AOM_CBR;
     cfg_.g_lag_in_frames = 0;
-    cfg_.g_usage = AOM_USAGE_REALTIME;
     cfg_.g_error_resilient = 1;
     cfg_.kf_mode = AOM_KF_AUTO;
     cfg_.kf_min_dist = cfg_.kf_max_dist = 100;

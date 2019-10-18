@@ -92,7 +92,11 @@ void EncoderTest::SetMode(TestMode mode) {
   switch (mode) {
     case kOnePassGood:
     case kTwoPassGood: break;
-    case kRealTime: cfg_.g_lag_in_frames = 0; break;
+    case kRealTime: {
+      cfg_.g_lag_in_frames = 0;
+      cfg_.g_usage = AOM_USAGE_REALTIME;
+      break;
+    }
     default: ASSERT_TRUE(false) << "Unexpected mode " << mode;
   }
   mode_ = mode;

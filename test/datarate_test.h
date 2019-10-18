@@ -53,6 +53,14 @@ class DatarateTest : public ::libaom_test::EncoderTest {
     if (video->frame() == 0) {
       encoder->Control(AOME_SET_CPUUSED, set_cpu_used_);
       encoder->Control(AV1E_SET_AQ_MODE, aq_mode_);
+      if (cfg_.g_usage == AOM_USAGE_REALTIME) {
+        encoder->Control(AV1E_SET_DELTAQ_MODE, 0);
+        encoder->Control(AV1E_SET_ENABLE_TPL_MODEL, 0);
+        encoder->Control(AV1E_SET_ENABLE_CDEF, 1);
+        encoder->Control(AV1E_SET_COEFF_COST_UPD_FREQ, 2);
+        encoder->Control(AV1E_SET_MODE_COST_UPD_FREQ, 2);
+        encoder->Control(AV1E_SET_MV_COST_UPD_FREQ, 2);
+      }
     }
 
     if (denoiser_offon_test_) {
