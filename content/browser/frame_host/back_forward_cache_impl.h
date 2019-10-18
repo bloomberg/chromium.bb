@@ -150,6 +150,11 @@ class CONTENT_EXPORT BackForwardCacheImpl : public BackForwardCache {
   // via experiment.
   static base::TimeDelta GetTimeToLiveInBackForwardCache();
 
+  // Checks if the url's host and path matches with the |allowed_urls_| host and
+  // path. This is controlled by "allowed_websites" param on BackForwardCache
+  // feature and if the param is not set, it will allow all websites by default.
+  bool IsAllowed(const GURL& current_url);
+
   // Returns the task runner that should be used by the eviction timer.
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() {
     return task_runner_for_testing_ ? task_runner_for_testing_
@@ -179,11 +184,6 @@ class CONTENT_EXPORT BackForwardCacheImpl : public BackForwardCache {
   // Helper for recursively checking each child.
   CanStoreDocumentResult CanStoreRenderFrameHost(
       RenderFrameHostImpl* render_frame_host);
-
-  // Checks if the url's host and path matches with the |allowed_urls_| host and
-  // path. This is controlled by "allowed_websites" param on BackForwardCache
-  // feature and if the param is not set, it will allow all websites by default.
-  bool IsAllowed(const GURL& current_url);
 
   // Contains the set of stored Entries.
   // Invariant:

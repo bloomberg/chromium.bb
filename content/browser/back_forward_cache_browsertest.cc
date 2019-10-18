@@ -3047,6 +3047,14 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestWithDomainControlEnabled,
   // not be stored in back-forward cache.
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   delete_observer_rfh_b.WaitUntilDeleted();
+
+  // 6) Go back to B.
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  // Nothing is recorded when the domain does not match.
+  ExpectOutcomeIsEmpty(FROM_HERE);
+  ExpectNotRestoredIsEmpty(FROM_HERE);
 }
 
 // Check the BackForwardCache is disabled when the WebUSB feature is used.
