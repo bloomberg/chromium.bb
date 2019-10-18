@@ -766,7 +766,7 @@ class DirectoryItem extends TreeItem {
 // SubDirectoryItem
 
 /**
- * A sub directory in the tree. Each element represents a directory which is not
+ * A subdirectory in the tree. Each element represents a directory that is not
  * a volume's root.
  */
 class SubDirectoryItem extends DirectoryItem {
@@ -784,6 +784,7 @@ class SubDirectoryItem extends DirectoryItem {
     if (window.IN_TEST) {
       this.setAttribute('dir-type', 'SubDirectoryItem');
     }
+
     this.dirEntry_ = dirEntry;
     this.entry = dirEntry;
     this.delayExpansion = parentDirItem.delayExpansion;
@@ -796,6 +797,8 @@ class SubDirectoryItem extends DirectoryItem {
     // Sets up icons of the item.
     const icon = this.querySelector('.icon');
     icon.classList.add('item-icon');
+
+    // Add volume-dependent attributes / icon.
     const location = tree.volumeManager.getLocationInfo(this.entry);
     if (location && location.rootType && location.isRootEntry) {
       icon.setAttribute('volume-type-icon', location.rootType);
@@ -816,12 +819,12 @@ class SubDirectoryItem extends DirectoryItem {
       this.updateDriveSpecificIcons();
     }
 
-    // Sets up context menu of the item.
+    // Setup the item context menu.
     if (tree.contextMenuForSubitems) {
       this.setContextMenu_(tree.contextMenuForSubitems);
     }
 
-    // Populates children now if needed.
+    // Update children now if needed.
     if (parentDirItem.expanded) {
       this.updateSubDirectories(false /* recursive */);
     }
@@ -832,24 +835,36 @@ class SubDirectoryItem extends DirectoryItem {
    * @override
    */
   updateDriveSpecificIcons() {
-    const icon = this.querySelector('.icon');
     const metadata = this.parentTree_.metadataModel.getCache(
         [this.dirEntry_], ['shared', 'isMachineRoot', 'isExternalMedia']);
+
+    const icon = this.querySelector('.icon');
     icon.classList.toggle('shared', !!(metadata[0] && metadata[0].shared));
+
     if (metadata[0] && metadata[0].isMachineRoot) {
       icon.setAttribute(
           'volume-type-icon', VolumeManagerCommon.RootType.COMPUTER);
     }
+
     if (metadata[0] && metadata[0].isExternalMedia) {
       icon.setAttribute(
           'volume-type-icon', VolumeManagerCommon.RootType.EXTERNAL_MEDIA);
     }
   }
 
+  /**
+   * The DirectoryEntry corresponding to this DirectoryItem.
+   * @type {DirectoryEntry}
+   * @override
+   */
   get entry() {
     return this.dirEntry_;
   }
 
+  /**
+   * Sets the DirectoryEntry corresponding to this DirectoryItem.
+   * @param {DirectoryEntry} value The directory entry.
+   */
   set entry(value) {
     this.dirEntry_ = value;
 
@@ -877,12 +892,10 @@ class EntryListItem extends DirectoryItem {
     if (window.IN_TEST) {
       this.setAttribute('dir-type', 'EntryListItem');
     }
-    this.entries_ = [];
 
-    this.rootType_ = rootType;
-    this.modelItem_ = modelItem;
     this.dirEntry_ = modelItem.entry;
-    this.parentTree_ = tree;
+    this.modelItem_ = modelItem;
+    this.rootType_ = rootType;
 
     if (rootType === VolumeManagerCommon.RootType.REMOVABLE) {
       this.setupEjectButton_(this.rowElement);
@@ -898,7 +911,7 @@ class EntryListItem extends DirectoryItem {
       }
     }
 
-    const icon = queryRequiredElement('.icon', this);
+    const icon = this.querySelector('.icon');
     icon.classList.add('item-icon');
     icon.setAttribute('root-type-icon', rootType);
 
@@ -913,7 +926,7 @@ class EntryListItem extends DirectoryItem {
       this.expanded = true;
     }
 
-    // Populate children of this volume.
+    // Update children of this volume.
     this.updateSubDirectories(false /* recursive */);
   }
 
@@ -982,21 +995,12 @@ class EntryListItem extends DirectoryItem {
   }
 
   /**
-   * The DirectoryEntry corresponding to this DirectoryItem. This may be
-   * a dummy DirectoryEntry.
-   * @type {DirectoryEntry|Object}
+   * The DirectoryEntry corresponding to this DirectoryItem.
+   * @type {DirectoryEntry}
+   * @override
    */
   get entry() {
     return this.dirEntry_;
-  }
-
-  /**
-   * The element containing the label text and the icon.
-   * @type {!HTMLElement}
-   * @override
-   */
-  get labelElement() {
-    return this.firstElementChild.querySelector('.label');
   }
 
   /**
