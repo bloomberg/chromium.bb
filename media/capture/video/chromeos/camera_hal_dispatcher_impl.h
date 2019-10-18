@@ -68,7 +68,8 @@ class CAPTURE_EXPORT CameraHalDispatcherImpl final
   // CameraHalDispatcher implementations.
   void RegisterServer(
       mojo::PendingRemote<cros::mojom::CameraHalServer> server) final;
-  void RegisterClient(cros::mojom::CameraHalClientPtr client) final;
+  void RegisterClient(
+      mojo::PendingRemote<cros::mojom::CameraHalClient> client) final;
   void GetJpegDecodeAccelerator(
       mojo::PendingReceiver<chromeos_camera::mojom::MjpegDecodeAccelerator>
           jda_receiver) final;
@@ -99,7 +100,7 @@ class CAPTURE_EXPORT CameraHalDispatcherImpl final
   void StartServiceLoop(base::ScopedFD socket_fd, base::WaitableEvent* started);
 
   void RegisterClientOnProxyThread(
-      mojo::InterfacePtrInfo<cros::mojom::CameraHalClient> client_ptr_info);
+      mojo::PendingRemote<cros::mojom::CameraHalClient> client);
   void AddClientObserverOnProxyThread(
       std::unique_ptr<CameraClientObserver> observer);
 

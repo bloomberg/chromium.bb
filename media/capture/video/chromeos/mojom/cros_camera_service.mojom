@@ -25,7 +25,7 @@ interface CameraHalDispatcher {
 
   // A CameraHalClient calls RegisterClient to register itself with the
   // dispatcher.
-  RegisterClient@1(CameraHalClient client);
+  RegisterClient@1(pending_remote<CameraHalClient> client);
 
   // Get JpegDecodeAccelerator from dispatcher.
   [MinVersion=1] GetJpegDecodeAccelerator@2(

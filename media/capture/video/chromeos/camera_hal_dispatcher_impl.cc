@@ -66,17 +66,18 @@ bool WaitForSocketReadable(int raw_socket_fd, int raw_cancel_fd) {
 
 class MojoCameraClientObserver : public CameraClientObserver {
  public:
-  explicit MojoCameraClientObserver(cros::mojom::CameraHalClientPtr client)
+  explicit MojoCameraClientObserver(
+      mojo::PendingRemote<cros::mojom::CameraHalClient> client)
       : client_(std::move(client)) {}
 
   void OnChannelCreated(cros::mojom::CameraModulePtr camera_module) override {
     client_->SetUpChannel(std::move(camera_module));
   }
 
-  cros::mojom::CameraHalClientPtr& client() { return client_; }
+  mojo::Remote<cros::mojom::CameraHalClient>& client() { return client_; }
 
  private:
-  cros::mojom::CameraHalClientPtr client_;
+  mojo::Remote<cros::mojom::CameraHalClient> client_;
   DISALLOW_IMPLICIT_CONSTRUCTORS(MojoCameraClientObserver);
 };
 
@@ -185,14 +186,14 @@ void CameraHalDispatcherImpl::RegisterServer(
 }
 
 void CameraHalDispatcherImpl::RegisterClient(
-    cros::mojom::CameraHalClientPtr client) {
+    mojo::PendingRemote<cros::mojom::CameraHalClient> client) {
   // RegisterClient can be called locally by ArcCameraBridge. Unretained
   // reference is safe here because CameraHalDispatcherImpl owns
   // |proxy_thread_|.
   proxy_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&CameraHalDispatcherImpl::RegisterClientOnProxyThread,
-                     base::Unretained(this), client.PassInterface()));
+                     base::Unretained(this), std::move(client)));
 }
 
 void CameraHalDispatcherImpl::GetJpegDecodeAccelerator(
@@ -333,12 +334,11 @@ void CameraHalDispatcherImpl::StartServiceLoop(base::ScopedFD socket_fd,
 }
 
 void CameraHalDispatcherImpl::RegisterClientOnProxyThread(
-    mojo::InterfacePtrInfo<cros::mojom::CameraHalClient> client_ptr_info) {
+    mojo::PendingRemote<cros::mojom::CameraHalClient> client) {
   DCHECK(proxy_task_runner_->BelongsToCurrentThread());
-  cros::mojom::CameraHalClientPtr client_ptr(std::move(client_ptr_info));
   auto client_observer =
-      std::make_unique<MojoCameraClientObserver>(std::move(client_ptr));
-  client_observer->client().set_connection_error_handler(base::BindOnce(
+      std::make_unique<MojoCameraClientObserver>(std::move(client));
+  client_observer->client().set_disconnect_handler(base::BindOnce(
       &CameraHalDispatcherImpl::OnCameraHalClientConnectionError,
       base::Unretained(this), base::Unretained(client_observer.get())));
   AddClientObserver(std::move(client_observer));

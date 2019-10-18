@@ -15,7 +15,6 @@
 #include "media/capture/video/chromeos/mojom/cros_camera_service.mojom.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -51,7 +50,7 @@ class MockCameraHalServer : public cros::mojom::CameraHalServer {
 
 class MockCameraHalClient : public cros::mojom::CameraHalClient {
  public:
-  MockCameraHalClient() : binding_(this) {}
+  MockCameraHalClient() = default;
 
   ~MockCameraHalClient() = default;
 
@@ -61,16 +60,12 @@ class MockCameraHalClient : public cros::mojom::CameraHalClient {
   MOCK_METHOD1(DoSetUpChannel,
                void(cros::mojom::CameraModulePtr& camera_module_ptr));
 
-  cros::mojom::CameraHalClientPtrInfo GetInterfacePtrInfo() {
-    cros::mojom::CameraHalClientPtrInfo camera_hal_client_ptr_info;
-    cros::mojom::CameraHalClientRequest camera_hal_client_request =
-        mojo::MakeRequest(&camera_hal_client_ptr_info);
-    binding_.Bind(std::move(camera_hal_client_request));
-    return camera_hal_client_ptr_info;
+  mojo::PendingRemote<cros::mojom::CameraHalClient> GetPendingRemote() {
+    return receiver_.BindNewPipeAndPassRemote();
   }
 
  private:
-  mojo::Binding<cros::mojom::CameraHalClient> binding_;
+  mojo::Receiver<cros::mojom::CameraHalClient> receiver_{this};
   DISALLOW_COPY_AND_ASSIGN(MockCameraHalClient);
 };
 
@@ -110,9 +105,10 @@ class CameraHalDispatcherImplTest : public ::testing::Test {
     dispatcher->RegisterServer(std::move(server));
   }
 
-  static void RegisterClient(CameraHalDispatcherImpl* dispatcher,
-                             cros::mojom::CameraHalClientPtrInfo client) {
-    dispatcher->RegisterClient(mojo::MakeProxy(std::move(client)));
+  static void RegisterClient(
+      CameraHalDispatcherImpl* dispatcher,
+      mojo::PendingRemote<cros::mojom::CameraHalClient> client) {
+    dispatcher->RegisterClient(std::move(client));
   }
 
  protected:
@@ -145,11 +141,11 @@ TEST_F(CameraHalDispatcherImplTest, ServerConnectionError) {
       FROM_HERE,
       base::BindOnce(&CameraHalDispatcherImplTest::RegisterServer,
                      base::Unretained(dispatcher_), std::move(server)));
-  auto client_ptr = mock_client->GetInterfacePtrInfo();
+  auto client = mock_client->GetPendingRemote();
   GetProxyTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(&CameraHalDispatcherImplTest::RegisterClient,
-                     base::Unretained(dispatcher_), base::Passed(&client_ptr)));
+                     base::Unretained(dispatcher_), std::move(client)));
 
   // Wait until the client gets the established Mojo channel.
   DoLoop();
@@ -194,11 +190,11 @@ TEST_F(CameraHalDispatcherImplTest, ClientConnectionError) {
       FROM_HERE,
       base::BindOnce(&CameraHalDispatcherImplTest::RegisterServer,
                      base::Unretained(dispatcher_), std::move(server)));
-  auto client_ptr = mock_client->GetInterfacePtrInfo();
+  auto client = mock_client->GetPendingRemote();
   GetProxyTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(&CameraHalDispatcherImplTest::RegisterClient,
-                     base::Unretained(dispatcher_), base::Passed(&client_ptr)));
+                     base::Unretained(dispatcher_), std::move(client)));
 
   // Wait until the client gets the established Mojo channel.
   DoLoop();
@@ -214,11 +210,11 @@ TEST_F(CameraHalDispatcherImplTest, ClientConnectionError) {
       .WillOnce(
           InvokeWithoutArgs(this, &CameraHalDispatcherImplTest::QuitRunLoop));
 
-  client_ptr = mock_client->GetInterfacePtrInfo();
+  client = mock_client->GetPendingRemote();
   GetProxyTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(&CameraHalDispatcherImplTest::RegisterClient,
-                     base::Unretained(dispatcher_), base::Passed(&client_ptr)));
+                     base::Unretained(dispatcher_), std::move(client)));
 
   // Wait until the clients gets the newly established Mojo channel.
   DoLoop();
