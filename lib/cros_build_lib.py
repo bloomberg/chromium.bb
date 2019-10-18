@@ -592,8 +592,10 @@ def run(cmd, print_cmd=True, stdout=None, stderr=None,
         * None is the default; the existing stdout is used.
         * An existing file object (must be opened with mode 'w' or 'wb').
         * A string to a file (will be truncated & opened automatically).
+        * subprocess.PIPE to capture & return the output.
         * A boolean to indicate whether to capture the output.
           True will capture the output via a tempfile (good for large output).
+        * An open file descriptor (as a positive integer).
     stderr: Where to send stderr.  See |stdout| for possible values.  This also
       may be subprocess.STDOUT to indicate stderr & stdout should be combined.
     cwd: the working directory to run this cmd.
@@ -685,10 +687,10 @@ def run(cmd, print_cmd=True, stdout=None, stderr=None,
     if stderr is None:
       stderr = True
 
-  stdout_to_pipe = False
   if quiet:
     debug_level = logging.DEBUG
-    stdout_to_pipe = True
+    if stdout is None:
+      stdout = subprocess.PIPE
     if stderr is None:
       stderr = subprocess.STDOUT
 
@@ -736,21 +738,23 @@ def run(cmd, print_cmd=True, stdout=None, stderr=None,
   elif hasattr(stdout, 'fileno'):
     popen_stdout = stdout
     log_stdout_to_file = True
-  elif stdout_to_pipe:
-    popen_stdout = subprocess.PIPE
   elif isinstance(stdout, bool):
+    # This check must come before isinstance(int) because bool subclasses int.
     if stdout:
       popen_stdout = _get_tempfile()
+  elif isinstance(stdout, int):
+    popen_stdout = stdout
 
   log_stderr_to_file = False
-  if stderr == subprocess.STDOUT:
-    popen_stderr = subprocess.STDOUT
-  elif hasattr(stderr, 'fileno'):
+  if hasattr(stderr, 'fileno'):
     popen_stderr = stderr
     log_stderr_to_file = True
   elif isinstance(stderr, bool):
+    # This check must come before isinstance(int) because bool subclasses int.
     if stderr:
       popen_stderr = _get_tempfile()
+  elif isinstance(stderr, int):
+    popen_stderr = stderr
 
   # If subprocesses have direct access to stdout or stderr, they can bypass
   # our buffers, so we need to flush to ensure that output is not interleaved.
@@ -862,15 +866,16 @@ def run(cmd, print_cmd=True, stdout=None, stderr=None,
         signal.signal(signal.SIGINT, old_sigint)
         signal.signal(signal.SIGTERM, old_sigterm)
 
-      if popen_stdout and not log_stdout_to_file and not stdout_to_pipe:
+      if (popen_stdout and not isinstance(popen_stdout, int) and
+          not log_stdout_to_file):
         popen_stdout.seek(0)
         cmd_result.stdout = popen_stdout.read()
         popen_stdout.close()
       elif log_stdout_to_file:
         popen_stdout.close()
 
-      if (popen_stderr and not log_stderr_to_file and
-          popen_stderr != subprocess.STDOUT):
+      if (popen_stderr and not isinstance(popen_stderr, int) and
+          not log_stderr_to_file):
         popen_stderr.seek(0)
         cmd_result.stderr = popen_stderr.read()
         popen_stderr.close()
