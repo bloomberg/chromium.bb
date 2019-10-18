@@ -1579,6 +1579,22 @@ are declared in tools/grit/grit_rule.gni.
         desc="Message shown in the download shelf when a download is blocked for being encrypted">
         <ph name="FILE_NAME">$1<ex>bla.exe</ex></ph> is encrypted and has been blocked from opening.
       </message>
+      <message name="IDS_PROMPT_DOWNLOAD_DEEP_SCANNED_SAFE"
+        desc="Message shown in the download shelf when a download is finished being scanned, and no issues were found">
+        Scan complete, no issues identified.
+      </message>
+      <message name="IDS_PROMPT_DOWNLOAD_SENSITIVE_CONTENT_WARNING"
+        desc="Message shown in the download shelf when a download contains sensitive content, and the admin has chosen to warn the user">
+        <ph name="FILE_NAME">$1<ex>bla.exe</ex></ph> contains sensitive content.
+      </message>
+      <message name="IDS_PROMPT_DOWNLOAD_SENSITIVE_CONTENT_BLOCKED"
+        desc="Message shown in the download shelf when a download contains sensitive content, and the admin has chosen to block the file">
+        <ph name="FILE_NAME">$1<ex>bla.exe</ex></ph> contains sensitive content, and has been blocked.
+      </message>
+      <message name="IDS_PROMPT_DOWNLOAD_DEEP_SCANNED_OPENED_DANGEROUS"
+        desc="Message shown in the download shelf when a download is finished being scanned, and issues were found">
+        Download contains malware.
+      </message>
       <message name="IDS_BLOCK_REASON_UNCOMMON_DOWNLOAD"
          desc="Message shown to the user on chrome://downloads page to explain that this download is blocked because it is uncommon.">
         This file is not commonly downloaded and may be dangerous.
