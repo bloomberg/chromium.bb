@@ -24,6 +24,7 @@
 #include "base/process/launch.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
@@ -191,6 +192,7 @@ std::string MonotonicTimestamp() {
 
 std::vector<std::string> GenerateKernelCmdline(
     const StartParams& start_params,
+    const UpgradeParams& upgrade_params,
     const FileSystemStatus& file_system_status,
     bool is_dev_mode,
     bool is_host_on_vm,
@@ -218,8 +220,25 @@ std::vector<std::string> GenerateKernelCmdline(
       "androidboot.boottime_offset=" + MonotonicTimestamp(),
       // TODO(yusukes): remove this once arcvm supports SELinux.
       "androidboot.selinux=permissive",
-  };
 
+      // Since we don't do mini VM yet, set not only |start_params| but also
+      // |upgrade_params| here for now.
+      base::StringPrintf("androidboot.disable_boot_completed=%d",
+                         upgrade_params.skip_boot_completed_broadcast),
+      base::StringPrintf("androidboot.copy_packages_cache=%d",
+                         static_cast<int>(upgrade_params.packages_cache_mode)),
+      base::StringPrintf("androidboot.skip_gms_core_cache=%d",
+                         upgrade_params.skip_gms_core_cache),
+      base::StringPrintf("androidboot.arc_demo_mode=%d",
+                         upgrade_params.is_demo_session),
+      base::StringPrintf(
+          "androidboot.supervision.transition=%d",
+          static_cast<int>(upgrade_params.supervision_transition)),
+  };
+  // TODO(yusukes): Check if we need to set ro.serialno, ro.boot.serialno,
+  // ro.boot.container_boot_type, and ro.boot.enable_adb_sideloading for ARCVM.
+
+  // Conditionally sets some properties based on |start_params|.
   switch (start_params.play_store_auto_update) {
     case StartParams::PlayStoreAutoUpdate::AUTO_UPDATE_DEFAULT:
       break;
@@ -231,6 +250,17 @@ std::vector<std::string> GenerateKernelCmdline(
       break;
   }
 
+  // Conditionally sets more properties based on |upgrade_params|.
+  if (!upgrade_params.locale.empty()) {
+    result.push_back("androidboot.locale=" + upgrade_params.locale);
+    if (!upgrade_params.preferred_languages.empty()) {
+      result.push_back(
+          "androidboot.preferred_languages=" +
+          base::JoinString(upgrade_params.preferred_languages, ","));
+    }
+  }
+
+  // TODO(yusukes): Handle |demo_session_apps_path| in |upgrade_params|.
   return result;
 }
 
@@ -479,11 +509,10 @@ class ArcVmClientAdapter : public ArcClientAdapter,
         base::SysInfo::NumberOfProcessors() - start_params_.num_cores_disabled;
     DCHECK_LT(0, cpus);
 
-    // TODO(yusukes): Use |params| for generating kernel command line too.
     DCHECK(is_dev_mode_);
     std::vector<std::string> kernel_cmdline = GenerateKernelCmdline(
-        start_params_, file_system_status, *is_dev_mode_, is_host_on_vm_,
-        version_info::GetChannelString(channel_));
+        start_params_, params, file_system_status, *is_dev_mode_,
+        is_host_on_vm_, version_info::GetChannelString(channel_));
     auto start_request =
         CreateStartArcVmRequest(user_id_hash_, cpus, data_disk_path,
                                 file_system_status, std::move(kernel_cmdline));
