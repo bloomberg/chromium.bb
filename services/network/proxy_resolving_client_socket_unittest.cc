@@ -465,15 +465,15 @@ TEST_P(ProxyResolvingClientSocketTest, MultiroundAuth) {
           ->GetSession()
           ->http_auth_cache();
 
-  auth_cache->Add(GURL("http://bad:99"), "test_realm",
-                  net::HttpAuth::AUTH_SCHEME_BASIC,
+  auth_cache->Add(GURL("http://bad:99"), net::HttpAuth::AUTH_PROXY,
+                  "test_realm", net::HttpAuth::AUTH_SCHEME_BASIC,
                   "Basic realm=\"test_realm\"",
                   net::AuthCredentials(base::ASCIIToUTF16("user"),
                                        base::ASCIIToUTF16("password")),
                   std::string());
 
-  auth_cache->Add(GURL("http://bad:99"), "test_realm2",
-                  net::HttpAuth::AUTH_SCHEME_BASIC,
+  auth_cache->Add(GURL("http://bad:99"), net::HttpAuth::AUTH_PROXY,
+                  "test_realm2", net::HttpAuth::AUTH_SCHEME_BASIC,
                   "Basic realm=\"test_realm2\"",
                   net::AuthCredentials(base::ASCIIToUTF16("user2"),
                                        base::ASCIIToUTF16("password2")),
@@ -529,8 +529,8 @@ TEST_P(ProxyResolvingClientSocketTest, ReusesHTTPAuthCache_Lookup) {
   // We are adding these credentials at an empty path so that it won't be picked
   // up by the preemptive authentication step and will only be picked up via
   // origin + realm + scheme lookup.
-  auth_cache->Add(GURL("http://bad:99"), "test_realm",
-                  net::HttpAuth::AUTH_SCHEME_BASIC,
+  auth_cache->Add(GURL("http://bad:99"), net::HttpAuth::AUTH_PROXY,
+                  "test_realm", net::HttpAuth::AUTH_SCHEME_BASIC,
                   "Basic realm=\"test_realm\"",
                   net::AuthCredentials(base::ASCIIToUTF16("user"),
                                        base::ASCIIToUTF16("password")),
@@ -563,8 +563,8 @@ TEST_P(ProxyResolvingClientSocketTest, FactoryUsesLatestHTTPAuthCache) {
   // We are adding these credentials at an empty path so that it won't be picked
   // up by the preemptive authentication step and will only be picked up via
   // origin + realm + scheme lookup.
-  auth_cache->Add(GURL("http://bad:99"), "test_realm",
-                  net::HttpAuth::AUTH_SCHEME_BASIC,
+  auth_cache->Add(GURL("http://bad:99"), net::HttpAuth::AUTH_PROXY,
+                  "test_realm", net::HttpAuth::AUTH_SCHEME_BASIC,
                   "Basic realm=\"test_realm\"",
                   net::AuthCredentials(base::ASCIIToUTF16("user"),
                                        base::ASCIIToUTF16("password")),
@@ -627,8 +627,8 @@ TEST_P(ProxyResolvingClientSocketTest, ReusesHTTPAuthCache_Preemptive) {
           ->GetSession()
           ->http_auth_cache();
 
-  auth_cache->Add(GURL("http://bad:99"), "test_realm",
-                  net::HttpAuth::AUTH_SCHEME_BASIC,
+  auth_cache->Add(GURL("http://bad:99"), net::HttpAuth::AUTH_PROXY,
+                  "test_realm", net::HttpAuth::AUTH_SCHEME_BASIC,
                   "Basic realm=\"test_realm\"",
                   net::AuthCredentials(base::ASCIIToUTF16("user"),
                                        base::ASCIIToUTF16("password")),

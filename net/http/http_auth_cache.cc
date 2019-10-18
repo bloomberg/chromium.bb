@@ -72,19 +72,21 @@ HttpAuthCache::~HttpAuthCache() = default;
 // Performance: O(logN+n), where N is the total number of entries, n is the
 // number of realm entries for the given origin.
 HttpAuthCache::Entry* HttpAuthCache::Lookup(const GURL& origin,
+                                            HttpAuth::Target target,
                                             const std::string& realm,
                                             HttpAuth::Scheme scheme) {
-  EntryMap::iterator entry_it = LookupEntryIt(origin, realm, scheme);
+  EntryMap::iterator entry_it = LookupEntryIt(origin, target, realm, scheme);
   if (entry_it == entries_.end())
     return nullptr;
   return &(entry_it->second);
 }
 
 // Performance: O(logN+n*m), where N is the total number of entries, n is the
-// number of realm entries for the given origin, m is the number of path entries
-// per realm. Both n amd m are expected to be small; m is kept small because
-// AddPath() only keeps the shallowest entry.
+// number of realm entries for the given origin and NIK, m is the number of path
+// entries per realm. Both n and m are expected to be small; m is kept small
+// because AddPath() only keeps the shallowest entry.
 HttpAuthCache::Entry* HttpAuthCache::LookupByPath(const GURL& origin,
+                                                  HttpAuth::Target target,
                                                   const std::string& path) {
 #if DCHECK_IS_ON()
   CheckOriginIsValid(origin);
@@ -98,7 +100,7 @@ HttpAuthCache::Entry* HttpAuthCache::LookupByPath(const GURL& origin,
   std::string parent_dir = GetParentDirectory(path);
 
   // Linear scan through the <scheme, realm> entries for the given origin.
-  auto entry_range = entries_.equal_range(origin);
+  auto entry_range = entries_.equal_range(EntryMapKey(origin, target));
   auto best_match_it = entries_.end();
   size_t best_match_length = 0;
   for (auto it = entry_range.first; it != entry_range.second; ++it) {
@@ -120,6 +122,7 @@ HttpAuthCache::Entry* HttpAuthCache::LookupByPath(const GURL& origin,
 }
 
 HttpAuthCache::Entry* HttpAuthCache::Add(const GURL& origin,
+                                         HttpAuth::Target target,
                                          const std::string& realm,
                                          HttpAuth::Scheme scheme,
                                          const std::string& auth_challenge,
@@ -133,7 +136,7 @@ HttpAuthCache::Entry* HttpAuthCache::Add(const GURL& origin,
   base::TimeTicks now_ticks = tick_clock_->NowTicks();
 
   // Check for existing entry (we will re-use it if present).
-  HttpAuthCache::Entry* entry = Lookup(origin, realm, scheme);
+  HttpAuthCache::Entry* entry = Lookup(origin, target, realm, scheme);
   if (!entry) {
     bool evicted = false;
     // Failsafe to prevent unbounded memory growth of the cache.
@@ -147,7 +150,9 @@ HttpAuthCache::Entry* HttpAuthCache::Add(const GURL& origin,
       EvictLeastRecentlyUsedEntry();
       evicted = true;
     }
-    entry = &(entries_.emplace(std::make_pair(origin, Entry()))->second);
+    entry = &(
+        entries_.emplace(std::make_pair(EntryMapKey(origin, target), Entry()))
+            ->second);
     entry->origin_ = origin;
     entry->realm_ = realm;
     entry->scheme_ = scheme;
@@ -245,10 +250,11 @@ bool HttpAuthCache::Entry::HasEnclosingPath(const std::string& dir,
 }
 
 bool HttpAuthCache::Remove(const GURL& origin,
+                           HttpAuth::Target target,
                            const std::string& realm,
                            HttpAuth::Scheme scheme,
                            const AuthCredentials& credentials) {
-  EntryMap::iterator entry_it = LookupEntryIt(origin, realm, scheme);
+  EntryMap::iterator entry_it = LookupEntryIt(origin, target, realm, scheme);
   if (entry_it == entries_.end())
     return false;
   Entry& entry = entry_it->second;
@@ -275,10 +281,11 @@ void HttpAuthCache::ClearAllEntries() {
 }
 
 bool HttpAuthCache::UpdateStaleChallenge(const GURL& origin,
+                                         HttpAuth::Target target,
                                          const std::string& realm,
                                          HttpAuth::Scheme scheme,
                                          const std::string& auth_challenge) {
-  HttpAuthCache::Entry* entry = Lookup(origin, realm, scheme);
+  HttpAuthCache::Entry* entry = Lookup(origin, target, realm, scheme);
   if (!entry)
     return false;
   entry->UpdateStaleChallenge(auth_challenge);
@@ -291,8 +298,8 @@ void HttpAuthCache::UpdateAllFrom(const HttpAuthCache& other) {
     // Add an Entry with one of the original entry's paths.
     const Entry& e = it->second;
     DCHECK(e.paths_.size() > 0);
-    Entry* entry = Add(e.origin(), e.realm(), e.scheme(), e.auth_challenge(),
-                       e.credentials(), e.paths_.back());
+    Entry* entry = Add(e.origin(), it->first.target, e.realm(), e.scheme(),
+                       e.auth_challenge(), e.credentials(), e.paths_.back());
     // Copy all other paths.
     for (auto it2 = std::next(e.paths_.rbegin()); it2 != e.paths_.rend(); ++it2)
       entry->AddPath(*it2);
@@ -301,20 +308,32 @@ void HttpAuthCache::UpdateAllFrom(const HttpAuthCache& other) {
   }
 }
 
+HttpAuthCache::EntryMapKey::EntryMapKey(const GURL& url,
+                                        HttpAuth::Target target)
+    : url(url), target(target) {}
+
+HttpAuthCache::EntryMapKey::~EntryMapKey() = default;
+
+bool HttpAuthCache::EntryMapKey::operator<(const EntryMapKey& other) const {
+  return std::tie(url, target) < std::tie(other.url, other.target);
+}
+
 size_t HttpAuthCache::GetEntriesSizeForTesting() {
   return entries_.size();
 }
 
 HttpAuthCache::EntryMap::iterator HttpAuthCache::LookupEntryIt(
     const GURL& origin,
+    HttpAuth::Target target,
     const std::string& realm,
     HttpAuth::Scheme scheme) {
 #if DCHECK_IS_ON()
   CheckOriginIsValid(origin);
 #endif
 
-  // Linear scan through the <scheme, realm> entries for the given origin.
-  auto entry_range = entries_.equal_range(origin);
+  // Linear scan through the <scheme, realm> entries for the given origin and
+  // NetworkIsolationKey.
+  auto entry_range = entries_.equal_range(EntryMapKey(origin, target));
   for (auto it = entry_range.first; it != entry_range.second; ++it) {
     Entry& entry = it->second;
     DCHECK(entry.origin() == origin);

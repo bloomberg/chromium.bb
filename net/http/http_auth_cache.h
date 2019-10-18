@@ -129,10 +129,12 @@ class NET_EXPORT HttpAuthCache {
   // in the entries list, so that more frequently used entries migrate to the
   // front of the list.
   //   |origin| - the {scheme, host, port} of the server.
+  //   |target| - whether this is for server or proxy auth.
   //   |realm|  - case sensitive realm string.
   //   |scheme| - the authentication scheme (i.e. basic, negotiate).
   //   returns  - the matched entry or nullptr.
   Entry* Lookup(const GURL& origin,
+                HttpAuth::Target target,
                 const std::string& realm,
                 HttpAuth::Scheme scheme);
 
@@ -145,7 +147,9 @@ class NET_EXPORT HttpAuthCache {
   //   |path|   - absolute path of the resource, or empty string in case of
   //              proxy auth (which does not use the concept of paths).
   //   returns  - the matched entry or nullptr.
-  Entry* LookupByPath(const GURL& origin, const std::string& path);
+  Entry* LookupByPath(const GURL& origin,
+                      HttpAuth::Target target,
+                      const std::string& path);
 
   // Add an entry on server |origin| for realm |handler->realm()| and
   // scheme |handler->scheme()|.  If an entry for this (realm,scheme)
@@ -159,6 +163,7 @@ class NET_EXPORT HttpAuthCache {
   //                space; this will be added to the list of known paths.
   //   returns    - the entry that was just added/updated.
   Entry* Add(const GURL& origin,
+             HttpAuth::Target target,
              const std::string& realm,
              HttpAuth::Scheme scheme,
              const std::string& auth_challenge,
@@ -173,6 +178,7 @@ class NET_EXPORT HttpAuthCache {
   //   |credentials| - the credentials to match.
   //   returns    - true if an entry was removed.
   bool Remove(const GURL& origin,
+              HttpAuth::Target target,
               const std::string& realm,
               HttpAuth::Scheme scheme,
               const AuthCredentials& credentials);
@@ -190,6 +196,7 @@ class NET_EXPORT HttpAuthCache {
   // |UpdateStaleChallenge()| returns true if a matching entry exists in the
   // cache, false otherwise.
   bool UpdateStaleChallenge(const GURL& origin,
+                            HttpAuth::Target target,
                             const std::string& realm,
                             HttpAuth::Scheme scheme,
                             const std::string& auth_challenge);
@@ -204,16 +211,30 @@ class NET_EXPORT HttpAuthCache {
   void set_clock_for_testing(const base::Clock* clock) { clock_ = clock; }
 
  private:
-  using EntryMap = std::multimap<GURL, Entry>;
-  EntryMap entries_;
+  struct EntryMapKey {
+    EntryMapKey(const GURL& url, HttpAuth::Target target);
+    ~EntryMapKey();
+
+    bool operator<(const EntryMapKey& other) const;
+
+    GURL url;
+    HttpAuth::Target target;
+  };
+
+  using EntryMap = std::multimap<EntryMapKey, Entry>;
 
   const base::TickClock* tick_clock_ = base::DefaultTickClock::GetInstance();
   const base::Clock* clock_ = base::DefaultClock::GetInstance();
 
   EntryMap::iterator LookupEntryIt(const GURL& origin,
+                                   HttpAuth::Target target,
                                    const std::string& realm,
                                    HttpAuth::Scheme scheme);
   void EvictLeastRecentlyUsedEntry();
+
+  EntryMap entries_;
+
+  DISALLOW_COPY_AND_ASSIGN(HttpAuthCache);
 };
 
 // An authentication realm entry.

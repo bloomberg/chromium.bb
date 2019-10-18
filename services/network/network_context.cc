@@ -50,6 +50,7 @@
 #include "net/dns/mapped_host_resolver.h"
 #include "net/extras/sqlite/sqlite_persistent_cookie_store.h"
 #include "net/http/failing_http_transaction_factory.h"
+#include "net/http/http_auth.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_auth_preferences.h"
 #include "net/http/http_cache.h"
@@ -1501,7 +1502,10 @@ void NetworkContext::AddAuthCacheEntry(const net::AuthChallengeInfo& challenge,
         url_request_context_->http_transaction_factory()
             ->GetSession()
             ->http_auth_cache();
-    http_auth_cache->Add(challenge.challenger.GetURL(), challenge.realm,
+    http_auth_cache->Add(challenge.challenger.GetURL(),
+                         challenge.is_proxy ? net::HttpAuth::AUTH_PROXY
+                                            : net::HttpAuth::AUTH_SERVER,
+                         challenge.realm,
                          net::HttpAuth::StringToScheme(challenge.scheme),
                          challenge.challenge, credentials, challenge.path);
   }
@@ -1515,8 +1519,8 @@ void NetworkContext::LookupBasicAuthCredentials(
       url_request_context_->http_transaction_factory()
           ->GetSession()
           ->http_auth_cache();
-  net::HttpAuthCache::Entry* entry =
-      http_auth_cache->LookupByPath(url.GetOrigin(), url.path());
+  net::HttpAuthCache::Entry* entry = http_auth_cache->LookupByPath(
+      url.GetOrigin(), net::HttpAuth::AUTH_SERVER, url.path());
   if (entry && entry->scheme() == net::HttpAuth::AUTH_SCHEME_BASIC)
     std::move(callback).Run(entry->credentials());
   else

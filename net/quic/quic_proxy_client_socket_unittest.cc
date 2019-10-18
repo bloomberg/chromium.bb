@@ -680,9 +680,9 @@ TEST_P(QuicProxyClientSocketTest, ConnectWithAuthCredentials) {
   // Add auth to cache
   const base::string16 kFoo(base::ASCIIToUTF16("foo"));
   const base::string16 kBar(base::ASCIIToUTF16("bar"));
-  http_auth_cache_.Add(GURL(kProxyUrl), "MyRealm1", HttpAuth::AUTH_SCHEME_BASIC,
-                       "Basic realm=MyRealm1", AuthCredentials(kFoo, kBar),
-                       "/");
+  http_auth_cache_.Add(GURL(kProxyUrl), HttpAuth::AUTH_PROXY, "MyRealm1",
+                       HttpAuth::AUTH_SCHEME_BASIC, "Basic realm=MyRealm1",
+                       AuthCredentials(kFoo, kBar), "/");
 
   AssertConnectSucceeds();
 

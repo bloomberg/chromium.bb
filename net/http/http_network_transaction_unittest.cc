@@ -3338,6 +3338,14 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyNoKeepAliveHttp10) {
   EXPECT_EQ(5, response->headers->GetContentLength());
   EXPECT_TRUE(HttpVersion(1, 1) == response->headers->GetHttpVersion());
 
+  // Check that credentials were successfully cached, with the right target.
+  HttpAuthCache::Entry* entry = session->http_auth_cache()->Lookup(
+      GURL("http://myproxy:70"), HttpAuth::AUTH_PROXY, "MyRealm1",
+      HttpAuth::AUTH_SCHEME_BASIC);
+  ASSERT_TRUE(entry);
+  ASSERT_EQ(kFoo, entry->credentials().username());
+  ASSERT_EQ(kBar, entry->credentials().password());
+
   // The password prompt info should not be set.
   EXPECT_FALSE(response->auth_challenge.has_value());
 
@@ -3971,6 +3979,145 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyCancelTunnel) {
   EXPECT_THAT(rv, IsError(ERR_TUNNEL_CONNECTION_FAILED));
 
   // Flush the idle socket before the HttpNetworkTransaction goes out of scope.
+  session->CloseAllConnections();
+}
+
+// Test the no-tunnel HTTP auth case where proxy and server origins and realms
+// are the same, but the user/passwords are different. Serves to verify
+// credentials are correctly separated based on HttpAuth::Target.
+TEST_F(HttpNetworkTransactionTest, BasicAuthProxyMatchesServerAuthNoTunnel) {
+  HttpRequestInfo request;
+  request.method = "GET";
+  request.url = GURL("http://myproxy:70/");
+  request.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  // Proxy matches request URL.
+  session_deps_.proxy_resolution_service =
+      ProxyResolutionService::CreateFixedFromPacResult(
+          "PROXY myproxy:70", TRAFFIC_ANNOTATION_FOR_TESTS);
+  BoundTestNetLog log;
+  session_deps_.net_log = log.bound().net_log();
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+
+  MockWrite data_writes[] = {
+      // Initial request gets a proxy auth challenge.
+      MockWrite("GET http://myproxy:70/ HTTP/1.1\r\n"
+                "Host: myproxy:70\r\n"
+                "Proxy-Connection: keep-alive\r\n\r\n"),
+      // Rety with proxy auth credentials, which will result in a server auth
+      // challenge.
+      MockWrite("GET http://myproxy:70/ HTTP/1.1\r\n"
+                "Host: myproxy:70\r\n"
+                "Proxy-Connection: keep-alive\r\n"
+                "Proxy-Authorization: Basic Zm9vOmJhcg==\r\n\r\n"),
+      // Rety with proxy and server auth credentials, which gets a response.
+      MockWrite("GET http://myproxy:70/ HTTP/1.1\r\n"
+                "Host: myproxy:70\r\n"
+                "Proxy-Connection: keep-alive\r\n"
+                "Proxy-Authorization: Basic Zm9vOmJhcg==\r\n"
+                "Authorization: Basic Zm9vMjpiYXIy\r\n\r\n"),
+      // A second request should preemptively send the correct proxy and server
+      // auth headers.
+      MockWrite("GET http://myproxy:70/ HTTP/1.1\r\n"
+                "Host: myproxy:70\r\n"
+                "Proxy-Connection: keep-alive\r\n"
+                "Proxy-Authorization: Basic Zm9vOmJhcg==\r\n"
+                "Authorization: Basic Zm9vMjpiYXIy\r\n\r\n"),
+  };
+
+  MockRead data_reads[] = {
+      // Proxy auth challenge.
+      MockRead("HTTP/1.0 407 Proxy Authentication Required\r\n"
+               "Proxy-Connection: keep-alive\r\n"
+               "Proxy-Authenticate: Basic realm=\"MyRealm1\"\r\n"
+               "Content-Length: 0\r\n\r\n"),
+      // Server auth challenge.
+      MockRead("HTTP/1.0 401 Authentication Required\r\n"
+               "Proxy-Connection: keep-alive\r\n"
+               "WWW-Authenticate: Basic realm=\"MyRealm1\"\r\n"
+               "Content-Length: 0\r\n\r\n"),
+      // Response.
+      MockRead("HTTP/1.1 200 OK\r\n"
+               "Proxy-Connection: keep-alive\r\n"
+               "Content-Length: 5\r\n\r\n"
+               "hello"),
+      // Response to second request.
+      MockRead("HTTP/1.1 200 OK\r\n"
+               "Proxy-Connection: keep-alive\r\n"
+               "Content-Length: 2\r\n\r\n"
+               "hi"),
+  };
+
+  StaticSocketDataProvider data(data_reads, data_writes);
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  TestCompletionCallback callback;
+
+  auto trans =
+      std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
+  int rv = trans->Start(&request, callback.callback(), log.bound());
+  EXPECT_THAT(callback.GetResult(rv), IsOk());
+  const HttpResponseInfo* response = trans->GetResponseInfo();
+  ASSERT_TRUE(response);
+  ASSERT_TRUE(response->headers);
+  EXPECT_EQ(407, response->headers->response_code());
+  EXPECT_TRUE(CheckBasicProxyAuth(response->auth_challenge));
+
+  rv = trans->RestartWithAuth(AuthCredentials(kFoo, kBar), callback.callback());
+  EXPECT_THAT(callback.GetResult(rv), IsOk());
+  response = trans->GetResponseInfo();
+  ASSERT_TRUE(response);
+  EXPECT_EQ(401, response->headers->response_code());
+  EXPECT_FALSE(response->auth_challenge->is_proxy);
+  EXPECT_EQ("http://myproxy:70",
+            response->auth_challenge->challenger.Serialize());
+  EXPECT_EQ("MyRealm1", response->auth_challenge->realm);
+  EXPECT_EQ(kBasicAuthScheme, response->auth_challenge->scheme);
+
+  rv = trans->RestartWithAuth(AuthCredentials(kFoo2, kBar2),
+                              callback.callback());
+  EXPECT_THAT(callback.GetResult(rv), IsOk());
+  response = trans->GetResponseInfo();
+  ASSERT_TRUE(response);
+  EXPECT_EQ(200, response->headers->response_code());
+  // The password prompt info should not be set.
+  EXPECT_FALSE(response->auth_challenge.has_value());
+
+  std::string response_data;
+  EXPECT_THAT(ReadTransaction(trans.get(), &response_data), IsOk());
+  EXPECT_EQ("hello", response_data);
+
+  // Check that the credentials were cached correctly.
+  HttpAuthCache::Entry* entry = session->http_auth_cache()->Lookup(
+      GURL("http://myproxy:70"), HttpAuth::AUTH_PROXY, "MyRealm1",
+      HttpAuth::AUTH_SCHEME_BASIC);
+  ASSERT_TRUE(entry);
+  ASSERT_EQ(kFoo, entry->credentials().username());
+  ASSERT_EQ(kBar, entry->credentials().password());
+  entry = session->http_auth_cache()->Lookup(GURL("http://myproxy:70"),
+                                             HttpAuth::AUTH_SERVER, "MyRealm1",
+                                             HttpAuth::AUTH_SCHEME_BASIC);
+  ASSERT_TRUE(entry);
+  ASSERT_EQ(kFoo2, entry->credentials().username());
+  ASSERT_EQ(kBar2, entry->credentials().password());
+
+  // Make another request, which should automatically send the correct proxy and
+  // server auth credentials and get another response.
+  trans =
+      std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
+  rv = trans->Start(&request, callback.callback(), log.bound());
+  EXPECT_THAT(callback.GetResult(rv), IsOk());
+  response = trans->GetResponseInfo();
+  ASSERT_TRUE(response);
+  EXPECT_EQ(200, response->headers->response_code());
+  // The password prompt info should not be set.
+  EXPECT_FALSE(response->auth_challenge.has_value());
+
+  EXPECT_THAT(ReadTransaction(trans.get(), &response_data), IsOk());
+  EXPECT_EQ("hi", response_data);
+
+  trans.reset();
   session->CloseAllConnections();
 }
 
@@ -18224,8 +18371,9 @@ TEST_F(HttpNetworkTransactionTest, ProxyHeadersNotSentOverWsTunnel) {
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   session->http_auth_cache()->Add(
-      GURL("http://myproxy:70/"), "MyRealm1", HttpAuth::AUTH_SCHEME_BASIC,
-      "Basic realm=MyRealm1", AuthCredentials(kFoo, kBar), "/");
+      GURL("http://myproxy:70/"), HttpAuth::AUTH_PROXY, "MyRealm1",
+      HttpAuth::AUTH_SCHEME_BASIC, "Basic realm=MyRealm1",
+      AuthCredentials(kFoo, kBar), "/");
 
   TestWebSocketHandshakeStreamCreateHelper websocket_stream_create_helper;
 
