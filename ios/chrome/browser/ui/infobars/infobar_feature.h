@@ -24,6 +24,12 @@ extern const base::Feature kConfirmInfobarMessagesUI;
 // Use IsSaveCardInfobarMessagesUIEnabled() instead of this constant directly.
 extern const base::Feature kSaveCardInfobarMessagesUI;
 
+// Feature to choose whether Translate Infobar uses the new Messages UI or the
+// legacy one. In order for it to work, kInfobarUIReboot needs to also be
+// enabled.
+// Use IsTranslateInfobarMessagesUIEnabled() instead of this constant directly.
+extern const base::Feature kTranslateInfobarMessagesUI;
+
 // Whether the Messages Infobar UI is enabled.
 bool IsInfobarUIRebootEnabled();
 
@@ -32,5 +38,8 @@ bool IsConfirmInfobarMessagesUIEnabled();
 
 // Whether the SaveCard Infobar Messages UI is enabled.
 bool IsSaveCardInfobarMessagesUIEnabled();
+
+// Whether the Translate Infobar Messages UI is enabled.
+bool IsTranslateInfobarMessagesUIEnabled();
 
 #endif  // IOS_CHROME_BROWSER_UI_INFOBARS_INFOBAR_FEATURE_H_

@@ -365,6 +365,11 @@ const char kToolbarNewTabButtonName[] =
 const char kToolbarNewTabButtonDescription[] =
     "When enabled, the bottom toolbar middle button opens a new tab";
 
+const char kTranslateInfobarMessagesUIName[] =
+    "Enable Translate Infobar Messages UI";
+const char kTranslateInfobarMessagesUIDescription[] =
+    "When enabled, the Translate Infobar uses the new Messages UI.";
+
 const char kUseDdljsonApiName[] = "Use new ddljson API for Doodles";
 const char kUseDdljsonApiDescription[] =
     "Enables the new ddljson API to fetch Doodles for the NTP.";

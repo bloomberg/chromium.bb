@@ -564,6 +564,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSaveCardInfobarMessagesUIName,
      flag_descriptions::kSaveCardInfobarMessagesUIDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kSaveCardInfobarMessagesUI)},
+    {"messages-translate-infobar",
+     flag_descriptions::kTranslateInfobarMessagesUIName,
+     flag_descriptions::kTranslateInfobarMessagesUIDescription,
+     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kTranslateInfobarMessagesUI)},
 };
 
 // Add all switches from experimental flags to |command_line|.
