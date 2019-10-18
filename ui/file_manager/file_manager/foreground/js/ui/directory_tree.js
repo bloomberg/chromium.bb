@@ -1709,40 +1709,32 @@ class AndroidAppItem extends TreeItem {
 /**
  * FakeItem is used by Recent and Linux files.
  */
-class FakeItem extends cr.ui.TreeItem {
+class FakeItem extends TreeItem {
   /**
    * @param {!VolumeManagerCommon.RootType} rootType root type.
    * @param {!NavigationModelFakeItem} modelItem
    * @param {!DirectoryTree} tree Current tree, which contains this item.
    */
   constructor(rootType, modelItem, tree) {
-    super();
-    // Get the original label id defined by TreeItem, before overwriting
-    // prototype.
-    const labelId = this.labelElement.id;
+    super(modelItem.label, tree);
     this.__proto__ = FakeItem.prototype;
 
     if (window.IN_TEST) {
       this.setAttribute('dir-type', 'FakeItem');
-      this.setAttribute('entry-label', modelItem.label);
     }
 
-    this.rootType_ = rootType;
-    this.parentTree_ = tree;
-    this.modelItem_ = modelItem;
-    this.dirEntry_ = modelItem.entry;
-    this.innerHTML = TREE_ITEM_INNER_HTML;
-    this.labelElement.id = labelId;
-    this.label = modelItem.label;
     this.directoryModel_ = tree.directoryModel;
+    this.dirEntry_ = modelItem.entry;
+    this.modelItem_ = modelItem;
+    this.rootType_ = rootType;
+
+    const icon = this.querySelector('.icon');
+    icon.classList.add('item-icon');
+    icon.setAttribute('root-type-icon', rootType);
 
     if (tree.disabledContextMenu) {
       cr.ui.contextMenuHandler.setContextMenu(this, tree.disabledContextMenu);
     }
-
-    const icon = queryRequiredElement('.icon', this);
-    icon.classList.add('item-icon');
-    icon.setAttribute('root-type-icon', rootType);
   }
 
   /**
@@ -1788,18 +1780,22 @@ class FakeItem extends cr.ui.TreeItem {
   }
 
   /**
-   * FakeItem doesn't really have shared status/icon so we define here as no-op.
+   * FakeItem's do not have shared status/icon.
    */
   updateDriveSpecificIcons() {}
 
+  /**
+   * The DirectoryEntry corresponding to this DirectoryItem.
+   */
   get entry() {
     return this.dirEntry_;
   }
+
+  /**
+   * @type {!NavigationModelVolumeItem}
+   */
   get modelItem() {
     return this.modelItem_;
-  }
-  get labelElement() {
-    return this.firstElementChild.querySelector('.label');
   }
 }
 
