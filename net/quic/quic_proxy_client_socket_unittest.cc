@@ -175,8 +175,6 @@ class QuicProxyClientSocketTest : public ::testing::TestWithParam<TestParams>,
         user_agent_(kUserAgent),
         proxy_host_port_(kProxyHost, kProxyPort),
         endpoint_host_port_(kOriginHost, kOriginPort),
-        http_auth_cache_(
-            false /* key_server_entries_by_network_isolation_key */),
         host_resolver_(new MockCachingHostResolver()),
         http_auth_handler_factory_(HttpAuthHandlerFactory::CreateDefault()) {
     IPAddress ip(192, 0, 2, 33);
@@ -296,8 +294,7 @@ class QuicProxyClientSocketTest : public ::testing::TestWithParam<TestParams>,
         endpoint_host_port_, net_log_.bound(),
         new HttpAuthController(
             HttpAuth::AUTH_PROXY,
-            GURL("https://" + proxy_host_port_.ToString()),
-            NetworkIsolationKey(), &http_auth_cache_,
+            GURL("https://" + proxy_host_port_.ToString()), &http_auth_cache_,
             http_auth_handler_factory_.get(), host_resolver_.get(),
             HttpAuthPreferences::ALLOW_DEFAULT_CREDENTIALS)));
 
@@ -684,9 +681,8 @@ TEST_P(QuicProxyClientSocketTest, ConnectWithAuthCredentials) {
   const base::string16 kFoo(base::ASCIIToUTF16("foo"));
   const base::string16 kBar(base::ASCIIToUTF16("bar"));
   http_auth_cache_.Add(GURL(kProxyUrl), HttpAuth::AUTH_PROXY, "MyRealm1",
-                       HttpAuth::AUTH_SCHEME_BASIC, NetworkIsolationKey(),
-                       "Basic realm=MyRealm1", AuthCredentials(kFoo, kBar),
-                       "/");
+                       HttpAuth::AUTH_SCHEME_BASIC, "Basic realm=MyRealm1",
+                       AuthCredentials(kFoo, kBar), "/");
 
   AssertConnectSucceeds();
 

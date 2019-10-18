@@ -181,11 +181,10 @@ HttpProxyConnectJob::HttpProxyConnectJob(
       has_established_connection_(false),
       http_auth_controller_(
           params_->tunnel()
-              ? base::MakeRefCounted<HttpAuthController>(
+              ? new HttpAuthController(
                     HttpAuth::AUTH_PROXY,
                     GURL((params_->ssl_params() ? "https://" : "http://") +
                          GetDestination().ToString()),
-                    params_->network_isolation_key(),
                     common_connect_job_params->http_auth_cache,
                     common_connect_job_params->http_auth_handler_factory,
                     host_resolver(),

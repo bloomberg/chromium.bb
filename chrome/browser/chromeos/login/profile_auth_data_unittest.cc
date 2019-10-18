@@ -23,7 +23,6 @@
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "net/base/network_isolation_key.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_constants.h"
 #include "net/http/http_auth.h"
@@ -171,8 +170,7 @@ void ProfileAuthDataTest::VerifyTransferredUserProxyAuthEntry() {
   net::HttpAuthCache::Entry* entry =
       GetProxyAuth(user_browser_context_.network_context())
           ->Lookup(GURL(kProxyAuthURL), net::HttpAuth::AUTH_SERVER,
-                   kProxyAuthRealm, net::HttpAuth::AUTH_SCHEME_BASIC,
-                   net::NetworkIsolationKey());
+                   kProxyAuthRealm, net::HttpAuth::AUTH_SCHEME_BASIC);
   ASSERT_TRUE(entry);
   EXPECT_EQ(base::ASCIIToUTF16(kProxyAuthPassword1),
             entry->credentials().password());
@@ -207,8 +205,7 @@ void ProfileAuthDataTest::PopulateBrowserContext(
     const std::string& cookie_value) {
   GetProxyAuth(browser_context->network_context())
       ->Add(GURL(kProxyAuthURL), net::HttpAuth::AUTH_SERVER, kProxyAuthRealm,
-            net::HttpAuth::AUTH_SCHEME_BASIC, net::NetworkIsolationKey(),
-            kProxyAuthChallenge,
+            net::HttpAuth::AUTH_SCHEME_BASIC, kProxyAuthChallenge,
             net::AuthCredentials(base::string16(),
                                  base::ASCIIToUTF16(proxy_auth_password)),
             std::string());

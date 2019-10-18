@@ -17,7 +17,6 @@
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
 #include "net/base/net_export.h"
-#include "net/base/network_isolation_key.h"
 #include "net/http/http_auth.h"
 #include "url/gurl.h"
 
@@ -122,10 +121,7 @@ class NET_EXPORT HttpAuthCache {
   enum { kMaxNumPathsPerRealmEntry = 10 };
   enum { kMaxNumRealmEntries = 20 };
 
-  // If |key_server_entries_by_network_isolation_key| is true, all
-  // HttpAuth::AUTH_SERVER operations are keyed by NetworkIsolationKey.
-  // Otherwise, NetworkIsolationKey arguments are ignored.
-  explicit HttpAuthCache(bool key_server_entries_by_network_isolation_key);
+  HttpAuthCache();
   ~HttpAuthCache();
 
   // Find the realm entry on server |origin| for realm |realm| and
@@ -140,8 +136,7 @@ class NET_EXPORT HttpAuthCache {
   Entry* Lookup(const GURL& origin,
                 HttpAuth::Target target,
                 const std::string& realm,
-                HttpAuth::Scheme scheme,
-                const NetworkIsolationKey& network_isolation_key);
+                HttpAuth::Scheme scheme);
 
   // Find the entry on server |origin| whose protection space includes
   // |path|. This uses the assumption in RFC 2617 section 2 that deeper
@@ -154,7 +149,6 @@ class NET_EXPORT HttpAuthCache {
   //   returns  - the matched entry or nullptr.
   Entry* LookupByPath(const GURL& origin,
                       HttpAuth::Target target,
-                      const NetworkIsolationKey& network_isolation_key,
                       const std::string& path);
 
   // Add an entry on server |origin| for realm |handler->realm()| and
@@ -172,7 +166,6 @@ class NET_EXPORT HttpAuthCache {
              HttpAuth::Target target,
              const std::string& realm,
              HttpAuth::Scheme scheme,
-             const NetworkIsolationKey& network_isolation_key,
              const std::string& auth_challenge,
              const AuthCredentials& credentials,
              const std::string& path);
@@ -188,7 +181,6 @@ class NET_EXPORT HttpAuthCache {
               HttpAuth::Target target,
               const std::string& realm,
               HttpAuth::Scheme scheme,
-              const NetworkIsolationKey& network_isolation_key,
               const AuthCredentials& credentials);
 
   // Clears cache entries added since |begin_time| or all entries if
@@ -207,11 +199,9 @@ class NET_EXPORT HttpAuthCache {
                             HttpAuth::Target target,
                             const std::string& realm,
                             HttpAuth::Scheme scheme,
-                            const NetworkIsolationKey& network_isolation_key,
                             const std::string& auth_challenge);
 
-  // Copies all entries from |other| cache. Both |this| and |other| must have
-  // the same key_server_entries_by_network_isolation_key() value.
+  // Copies all entries from |other| cache.
   void UpdateAllFrom(const HttpAuthCache& other);
 
   size_t GetEntriesSizeForTesting();
@@ -220,26 +210,15 @@ class NET_EXPORT HttpAuthCache {
   }
   void set_clock_for_testing(const base::Clock* clock) { clock_ = clock; }
 
-  bool key_server_entries_by_network_isolation_key() const {
-    return key_server_entries_by_network_isolation_key_;
-  }
-
  private:
   struct EntryMapKey {
-    EntryMapKey(const GURL& url,
-                HttpAuth::Target target,
-                const NetworkIsolationKey& network_isolation_key,
-                bool key_server_entries_by_network_isolation_key);
+    EntryMapKey(const GURL& url, HttpAuth::Target target);
     ~EntryMapKey();
 
     bool operator<(const EntryMapKey& other) const;
 
     GURL url;
     HttpAuth::Target target;
-    // Empty if |key_server_entries_by_network_isolation_key| is false, |target|
-    // is HttpAuth::AUTH_PROXY, or an empty NetworkIsolationKey is passed in to
-    // the EntryMap constructor.
-    NetworkIsolationKey network_isolation_key;
   };
 
   using EntryMap = std::multimap<EntryMapKey, Entry>;
@@ -247,16 +226,11 @@ class NET_EXPORT HttpAuthCache {
   const base::TickClock* tick_clock_ = base::DefaultTickClock::GetInstance();
   const base::Clock* clock_ = base::DefaultClock::GetInstance();
 
-  EntryMap::iterator LookupEntryIt(
-      const GURL& origin,
-      HttpAuth::Target target,
-      const std::string& realm,
-      HttpAuth::Scheme scheme,
-      const NetworkIsolationKey& network_isolation_key);
-
+  EntryMap::iterator LookupEntryIt(const GURL& origin,
+                                   HttpAuth::Target target,
+                                   const std::string& realm,
+                                   HttpAuth::Scheme scheme);
   void EvictLeastRecentlyUsedEntry();
-
-  const bool key_server_entries_by_network_isolation_key_;
 
   EntryMap entries_;
 
