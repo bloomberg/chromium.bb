@@ -737,6 +737,16 @@ class TestRunCommandOutput(cros_test_lib.TempDirTestCase,
     self.assertIs(ret.output, None)
     self.assertIs(ret.error, None)
 
+  def testOutputFileHandle(self):
+    """Verify writing to existing file handles."""
+    stdout = os.path.join(self.tempdir, 'stdout')
+    stderr = os.path.join(self.tempdir, 'stderr')
+    with open(stdout, 'wb') as outfp:
+      with open(stderr, 'wb') as errfp:
+        cros_build_lib.run(['sh', '-c', 'echo out; echo err >&2'],
+                           stdout=outfp, stderr=errfp)
+    self.assertEqual('out\n', osutils.ReadFile(stdout))
+    self.assertEqual('err\n', osutils.ReadFile(stderr))
 
   def _CaptureRunCommand(self, command, mute_output):
     """Capture a run() output with the specified |mute_output|.

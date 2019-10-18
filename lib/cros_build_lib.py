@@ -595,6 +595,7 @@ def run(cmd, print_cmd=True, stdout=None, stderr=None,
     stdout: Where to send stdout.  This may be many things to control
       redirection:
         * None is the default; the existing stdout is used.
+        * An existing file object (must be opened with mode 'w' or 'wb').
         * A string to a file (will be truncated & opened automatically).
         * A boolean to indicate whether to capture the output.
           True will capture the output via a tempfile (good for large output).
@@ -732,13 +733,20 @@ def run(cmd, print_cmd=True, stdout=None, stderr=None,
   if isinstance(stdout, six.string_types):
     popen_stdout = open(stdout, stdout_file_mode)
     log_stdout_to_file = True
+  elif hasattr(stdout, 'fileno'):
+    popen_stdout = stdout
+    log_stdout_to_file = True
   elif stdout_to_pipe:
     popen_stdout = subprocess.PIPE
   elif stdout or mute_output or log_output:
     popen_stdout = _get_tempfile()
 
+  log_stderr_to_file = False
   if stderr == subprocess.STDOUT:
     popen_stderr = subprocess.STDOUT
+  elif hasattr(stderr, 'fileno'):
+    popen_stderr = stderr
+    log_stderr_to_file = True
   elif stderr or mute_output or log_output:
     popen_stderr = _get_tempfile()
 
@@ -859,7 +867,8 @@ def run(cmd, print_cmd=True, stdout=None, stderr=None,
       elif log_stdout_to_file:
         popen_stdout.close()
 
-      if popen_stderr and popen_stderr != subprocess.STDOUT:
+      if (popen_stderr and not log_stderr_to_file and
+          popen_stderr != subprocess.STDOUT):
         popen_stderr.seek(0)
         cmd_result.stderr = popen_stderr.read()
         popen_stderr.close()
