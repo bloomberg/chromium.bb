@@ -763,13 +763,14 @@ void PageInfo::ComputeUIInputs(
   }
 
   safety_tip_info_ = visible_security_state.safety_tip_info;
-  if (visible_security_state.safety_tip_info.status !=
-          security_state::SafetyTipStatus::kNone &&
-      visible_security_state.safety_tip_info.status !=
-          security_state::SafetyTipStatus::kUnknown &&
-      base::FeatureList::IsEnabled(security_state::features::kSafetyTipUI)) {
-    site_details_message_ = l10n_util::GetStringUTF16(
-        IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_DESCRIPTION);
+  if (base::FeatureList::IsEnabled(security_state::features::kSafetyTipUI)) {
+    // site_details_message_ is only displayed on Android when the user taps
+    // "Details" link on the page info. Reuse the description from page info UI.
+    std::unique_ptr<PageInfoUI::SecurityDescription> security_description =
+        PageInfoUI::CreateSafetyTipSecurityDescription(safety_tip_info_);
+    if (security_description) {
+      site_details_message_ = security_description->details;
+    }
   }
 
   // Site Connection

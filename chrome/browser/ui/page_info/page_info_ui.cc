@@ -296,25 +296,10 @@ PageInfoUI::GetSecurityDescription(const IdentityInfo& identity_info) const {
                                        IDS_PAGE_INFO_BILLING_DETAILS);
   }
 
-  switch (identity_info.safety_tip_info.status) {
-    case security_state::SafetyTipStatus::kBadReputation:
-      return CreateSecurityDescription(
-          SecuritySummaryColor::RED,
-          IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_TITLE,
-          IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_DESCRIPTION);
-    case security_state::SafetyTipStatus::kLookalike:
-      return CreateSecurityDescriptionForLookalikeSafetyTip(
-          identity_info.safety_tip_info.safe_url);
-
-    case security_state::SafetyTipStatus::kBadKeyword:
-      // Keyword safety tips are only used to collect metrics for now and are
-      // not visible to the user, so don't affect Page Info.
-      NOTREACHED();
-      break;
-
-    case security_state::SafetyTipStatus::kNone:
-    case security_state::SafetyTipStatus::kUnknown:
-      break;
+  std::unique_ptr<SecurityDescription> safety_tip_security_desc =
+      CreateSafetyTipSecurityDescription(identity_info.safety_tip_info);
+  if (safety_tip_security_desc) {
+    return safety_tip_security_desc;
   }
 
   switch (identity_info.identity_status) {
@@ -700,4 +685,30 @@ bool PageInfoUI::ContentSettingsTypeInPageInfo(ContentSettingsType type) {
       return true;
   }
   return false;
+}
+
+// static
+std::unique_ptr<PageInfoUI::SecurityDescription>
+PageInfoUI::CreateSafetyTipSecurityDescription(
+    const security_state::SafetyTipInfo& info) {
+  switch (info.status) {
+    case security_state::SafetyTipStatus::kBadReputation:
+      return CreateSecurityDescription(
+          SecuritySummaryColor::RED,
+          IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_TITLE,
+          IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_DESCRIPTION);
+    case security_state::SafetyTipStatus::kLookalike:
+      return CreateSecurityDescriptionForLookalikeSafetyTip(info.safe_url);
+
+    case security_state::SafetyTipStatus::kBadKeyword:
+      // Keyword safety tips are only used to collect metrics for now and are
+      // not visible to the user, so don't affect Page Info.
+      NOTREACHED();
+      break;
+
+    case security_state::SafetyTipStatus::kNone:
+    case security_state::SafetyTipStatus::kUnknown:
+      break;
+  }
+  return nullptr;
 }
