@@ -28,6 +28,9 @@ import org.chromium.chrome.browser.download.home.StableIds;
 import org.chromium.chrome.browser.download.home.filter.OfflineItemFilterSource;
 import org.chromium.chrome.browser.download.home.list.ListItem.OfflineItemListItem;
 import org.chromium.chrome.browser.download.home.list.ListItem.SectionHeaderListItem;
+import org.chromium.chrome.browser.download.home.list.mutator.DateComparator;
+import org.chromium.chrome.browser.download.home.list.mutator.DateLabelAdder;
+import org.chromium.chrome.browser.download.home.list.mutator.DateOrderedListMutator;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItemFilter;
 import org.chromium.components.offline_items_collection.OfflineItemState;
@@ -218,7 +221,7 @@ public class DateOrderedListMutatorTest {
         // Complete the download.
         OfflineItem update2 = buildItem("1", buildCalendar(2018, 1, 1, 1), OfflineItemFilter.VIDEO);
         update2.state = OfflineItemState.COMPLETE;
-        update2.completionTimeMs = update2.creationTimeMs;
+        update2.completionTimeMs = new Date().getTime();
         when(mSource.getItems()).thenReturn(CollectionUtil.newArrayList(update2));
         list.onItemUpdated(update1, update2);
 
@@ -884,12 +887,15 @@ public class DateOrderedListMutatorTest {
                 return false;
             }
         };
-        return new DateOrderedListMutator(mSource, mModel, config, justNowProvider);
+        return new DateOrderedListMutator(mSource, mModel, justNowProvider,
+                new DateComparator(justNowProvider), new DateLabelAdder(config, justNowProvider));
     }
 
     private DateOrderedListMutator createMutatorWithJustNowProvider() {
         DownloadManagerUiConfig config = new DownloadManagerUiConfig.Builder().build();
-        return new DateOrderedListMutator(mSource, mModel, config, new JustNowProvider(config));
+        JustNowProvider justNowProvider = new JustNowProvider(config);
+        return new DateOrderedListMutator(mSource, mModel, justNowProvider,
+                new DateComparator(justNowProvider), new DateLabelAdder(config, justNowProvider));
     }
 
     private static void assertDatesAreEqual(Date date, Calendar calendar) {

@@ -20,6 +20,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 /** Utility methods for representing {@link ListItem}s in a {@link RecyclerView} list. */
@@ -164,6 +165,41 @@ public class ListUtils {
         int aPriority = getVisualPriorityForFilter(a);
         int bPriority = getVisualPriorityForFilter(b);
         return (aPriority < bPriority) ? -1 : ((aPriority == bPriority) ? 0 : 1);
+    }
+
+    /**
+     * Helper method to compare list items based on date. Two items have equal if they both got
+     * created on the same day.
+     * @return -1 if {@code a} should be shown before {@code b}.
+     *          0 if {@code a} == {@code b}.
+     *          1 if {@code a} should be shown after {@code b}.
+     */
+    public static int compareItemByDate(OfflineItem a, OfflineItem b) {
+        Date aDay = CalendarUtils.getStartOfDay(a.creationTimeMs).getTime();
+        Date bDay = CalendarUtils.getStartOfDay(b.creationTimeMs).getTime();
+        return bDay.compareTo(aDay);
+    }
+
+    /**
+     * Helper method to compare list items based on timestamp.
+     * @return -1 if {@code a} should be shown before {@code b}.
+     *          0 if {@code a} == {@code b}.
+     *          1 if {@code a} should be shown after {@code b}.
+     */
+    public static int compareItemByTimestamp(OfflineItem a, OfflineItem b) {
+        return Long.compare(b.creationTimeMs, a.creationTimeMs);
+    }
+
+    /**
+     * Helper method to compare list items based on ID.
+     * @return -1 if {@code a} should be shown before {@code b}.
+     *          0 if {@code a} == {@code b}.
+     *          1 if {@code a} should be shown after {@code b}.
+     */
+    public static int compareItemByID(OfflineItem a, OfflineItem b) {
+        int comparison = a.id.namespace.compareTo(b.id.namespace);
+        if (comparison != 0) return comparison;
+        return a.id.id.compareTo(b.id.id);
     }
 
     private static int getVisualPriorityForFilter(@FilterType int type) {

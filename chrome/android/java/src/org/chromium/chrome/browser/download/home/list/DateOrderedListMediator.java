@@ -13,6 +13,7 @@ import androidx.annotation.Nullable;
 import org.chromium.base.Callback;
 import org.chromium.base.CollectionUtil;
 import org.chromium.chrome.browser.GlobalDiscardableReferencePool;
+import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.download.home.DownloadManagerUiConfig;
 import org.chromium.chrome.browser.download.home.JustNowProvider;
 import org.chromium.chrome.browser.download.home.OfflineItemSource;
@@ -29,6 +30,12 @@ import org.chromium.chrome.browser.download.home.glue.OfflineContentProviderGlue
 import org.chromium.chrome.browser.download.home.glue.ThumbnailRequestGlue;
 import org.chromium.chrome.browser.download.home.list.DateOrderedListCoordinator.DateOrderedListObserver;
 import org.chromium.chrome.browser.download.home.list.DateOrderedListCoordinator.DeleteController;
+import org.chromium.chrome.browser.download.home.list.mutator.DateComparator;
+import org.chromium.chrome.browser.download.home.list.mutator.DateLabelAdder;
+import org.chromium.chrome.browser.download.home.list.mutator.DateOrderedListMutator;
+import org.chromium.chrome.browser.download.home.list.mutator.DateOrderedListMutator.LabelAdder;
+import org.chromium.chrome.browser.download.home.list.mutator.NoopLabelAdder;
+import org.chromium.chrome.browser.download.home.list.mutator.ScoreComparator;
 import org.chromium.chrome.browser.download.home.metrics.OfflineItemStartupLogger;
 import org.chromium.chrome.browser.download.home.metrics.UmaUtils;
 import org.chromium.chrome.browser.download.home.metrics.UmaUtils.ViewAction;
@@ -45,6 +52,7 @@ import org.chromium.components.offline_items_collection.VisualsCallback;
 import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -107,6 +115,11 @@ class DateOrderedListMediator {
     private final DeleteUndoOfflineItemFilter mDeleteUndoFilter;
     private final TypeOfflineItemFilter mTypeFilter;
     private final SearchOfflineItemFilter mSearchFilter;
+
+    private final Comparator<OfflineItem> mDateComparator;
+    private final Comparator<OfflineItem> mScoreComparator;
+    private final LabelAdder mDateLabelAdder;
+    private final LabelAdder mNoopLabelAdder;
 
     /**
      * A selection observer that correctly updates the selection state for each item in the list.
@@ -176,8 +189,14 @@ class DateOrderedListMediator {
         mDeleteUndoFilter = new DeleteUndoOfflineItemFilter(mInvalidStateFilter);
         mSearchFilter = new SearchOfflineItemFilter(mDeleteUndoFilter);
         mTypeFilter = new TypeOfflineItemFilter(mSearchFilter);
+
+        JustNowProvider justNowProvider = new JustNowProvider(config);
+        mDateComparator = new DateComparator(justNowProvider);
+        mScoreComparator = new ScoreComparator();
+        mDateLabelAdder = new DateLabelAdder(config, justNowProvider);
+        mNoopLabelAdder = new NoopLabelAdder();
         mListMutator = new DateOrderedListMutator(
-                mTypeFilter, mModel, config, new JustNowProvider(config));
+                mTypeFilter, mModel, justNowProvider, mDateComparator, mDateLabelAdder);
 
         new OfflineItemStartupLogger(config, mInvalidStateFilter);
 
@@ -213,7 +232,13 @@ class DateOrderedListMediator {
      * @see TypeOfflineItemFilter#onFilterSelected(int)
      */
     public void onFilterTypeSelected(@FilterType int filter) {
-        mListMutator.onFilterTypeSelected(filter);
+        Comparator<OfflineItem> comparator = mDateComparator;
+        LabelAdder labelAdder = mDateLabelAdder;
+        if (filter == FilterType.PREFETCHED && DownloadUtils.shouldShowOfflineHome()) {
+            comparator = mScoreComparator;
+            labelAdder = mNoopLabelAdder;
+        }
+        mListMutator.setMutators(comparator, labelAdder);
         try (AnimationDisableClosable closeable = new AnimationDisableClosable()) {
             mTypeFilter.onFilterSelected(filter);
         }
