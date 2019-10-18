@@ -1570,19 +1570,21 @@ TEST_F(NetworkContextTest, ClearHttpAuthCache) {
   base::string16 user = base::ASCIIToUTF16("user");
   base::string16 password = base::ASCIIToUTF16("pass");
   cache->Add(origin, net::HttpAuth::AUTH_SERVER, "Realm1",
-             net::HttpAuth::AUTH_SCHEME_BASIC, "basic realm=Realm1",
-             net::AuthCredentials(user, password), "/");
+             net::HttpAuth::AUTH_SCHEME_BASIC, net::NetworkIsolationKey(),
+             "basic realm=Realm1", net::AuthCredentials(user, password), "/");
 
   test_clock.Advance(base::TimeDelta::FromHours(1));  // Time now 13:00
   cache->Add(origin, net::HttpAuth::AUTH_PROXY, "Realm2",
-             net::HttpAuth::AUTH_SCHEME_BASIC, "basic realm=Realm2",
-             net::AuthCredentials(user, password), "/");
+             net::HttpAuth::AUTH_SCHEME_BASIC, net::NetworkIsolationKey(),
+             "basic realm=Realm2", net::AuthCredentials(user, password), "/");
 
   ASSERT_EQ(2u, cache->GetEntriesSizeForTesting());
   ASSERT_NE(nullptr, cache->Lookup(origin, net::HttpAuth::AUTH_SERVER, "Realm1",
-                                   net::HttpAuth::AUTH_SCHEME_BASIC));
+                                   net::HttpAuth::AUTH_SCHEME_BASIC,
+                                   net::NetworkIsolationKey()));
   ASSERT_NE(nullptr, cache->Lookup(origin, net::HttpAuth::AUTH_PROXY, "Realm2",
-                                   net::HttpAuth::AUTH_SCHEME_BASIC));
+                                   net::HttpAuth::AUTH_SCHEME_BASIC,
+                                   net::NetworkIsolationKey()));
 
   base::RunLoop run_loop;
   base::Time test_time;
@@ -1592,9 +1594,11 @@ TEST_F(NetworkContextTest, ClearHttpAuthCache) {
 
   EXPECT_EQ(1u, cache->GetEntriesSizeForTesting());
   EXPECT_NE(nullptr, cache->Lookup(origin, net::HttpAuth::AUTH_SERVER, "Realm1",
-                                   net::HttpAuth::AUTH_SCHEME_BASIC));
+                                   net::HttpAuth::AUTH_SCHEME_BASIC,
+                                   net::NetworkIsolationKey()));
   EXPECT_EQ(nullptr, cache->Lookup(origin, net::HttpAuth::AUTH_PROXY, "Realm2",
-                                   net::HttpAuth::AUTH_SCHEME_BASIC));
+                                   net::HttpAuth::AUTH_SCHEME_BASIC,
+                                   net::NetworkIsolationKey()));
 }
 
 TEST_F(NetworkContextTest, ClearAllHttpAuthCache) {
@@ -1615,19 +1619,21 @@ TEST_F(NetworkContextTest, ClearAllHttpAuthCache) {
   base::string16 user = base::ASCIIToUTF16("user");
   base::string16 password = base::ASCIIToUTF16("pass");
   cache->Add(origin, net::HttpAuth::AUTH_SERVER, "Realm1",
-             net::HttpAuth::AUTH_SCHEME_BASIC, "basic realm=Realm1",
-             net::AuthCredentials(user, password), "/");
+             net::HttpAuth::AUTH_SCHEME_BASIC, net::NetworkIsolationKey(),
+             "basic realm=Realm1", net::AuthCredentials(user, password), "/");
 
   test_clock.Advance(base::TimeDelta::FromHours(1));  // Time now 13:00
   cache->Add(origin, net::HttpAuth::AUTH_PROXY, "Realm2",
-             net::HttpAuth::AUTH_SCHEME_BASIC, "basic realm=Realm2",
-             net::AuthCredentials(user, password), "/");
+             net::HttpAuth::AUTH_SCHEME_BASIC, net::NetworkIsolationKey(),
+             "basic realm=Realm2", net::AuthCredentials(user, password), "/");
 
   ASSERT_EQ(2u, cache->GetEntriesSizeForTesting());
   ASSERT_NE(nullptr, cache->Lookup(origin, net::HttpAuth::AUTH_SERVER, "Realm1",
-                                   net::HttpAuth::AUTH_SCHEME_BASIC));
+                                   net::HttpAuth::AUTH_SCHEME_BASIC,
+                                   net::NetworkIsolationKey()));
   ASSERT_NE(nullptr, cache->Lookup(origin, net::HttpAuth::AUTH_PROXY, "Realm2",
-                                   net::HttpAuth::AUTH_SCHEME_BASIC));
+                                   net::HttpAuth::AUTH_SCHEME_BASIC,
+                                   net::NetworkIsolationKey()));
 
   base::RunLoop run_loop;
   network_context->ClearHttpAuthCache(base::Time(), run_loop.QuitClosure());
@@ -1635,9 +1641,11 @@ TEST_F(NetworkContextTest, ClearAllHttpAuthCache) {
 
   EXPECT_EQ(0u, cache->GetEntriesSizeForTesting());
   EXPECT_EQ(nullptr, cache->Lookup(origin, net::HttpAuth::AUTH_SERVER, "Realm1",
-                                   net::HttpAuth::AUTH_SCHEME_BASIC));
+                                   net::HttpAuth::AUTH_SCHEME_BASIC,
+                                   net::NetworkIsolationKey()));
   EXPECT_EQ(nullptr, cache->Lookup(origin, net::HttpAuth::AUTH_PROXY, "Realm2",
-                                   net::HttpAuth::AUTH_SCHEME_BASIC));
+                                   net::HttpAuth::AUTH_SCHEME_BASIC,
+                                   net::NetworkIsolationKey()));
 }
 
 TEST_F(NetworkContextTest, ClearEmptyHttpAuthCache) {
@@ -1672,11 +1680,11 @@ TEST_F(NetworkContextTest, LookupBasicAuthCredentials) {
   base::string16 user = base::ASCIIToUTF16("user");
   base::string16 password = base::ASCIIToUTF16("pass");
   cache->Add(origin, net::HttpAuth::AUTH_SERVER, "Realm",
-             net::HttpAuth::AUTH_SCHEME_BASIC, "basic realm=Realm",
-             net::AuthCredentials(user, password), "/");
+             net::HttpAuth::AUTH_SCHEME_BASIC, net::NetworkIsolationKey(),
+             "basic realm=Realm", net::AuthCredentials(user, password), "/");
   cache->Add(origin2, net::HttpAuth::AUTH_PROXY, "Realm",
-             net::HttpAuth::AUTH_SCHEME_BASIC, "basic realm=Realm",
-             net::AuthCredentials(user, password), "/");
+             net::HttpAuth::AUTH_SCHEME_BASIC, net::NetworkIsolationKey(),
+             "basic realm=Realm", net::AuthCredentials(user, password), "/");
 
   base::RunLoop run_loop1;
   base::Optional<net::AuthCredentials> result;
@@ -5826,7 +5834,8 @@ TEST_F(NetworkContextTest, AddHttpAuthCacheEntry) {
   const char kUsername[] = "test_user";
   const char kPassword[] = "test_pass";
   ASSERT_FALSE(cache->Lookup(url, net::HttpAuth::AUTH_SERVER, challenge.realm,
-                             net::HttpAuth::AUTH_SCHEME_BASIC));
+                             net::HttpAuth::AUTH_SCHEME_BASIC,
+                             net::NetworkIsolationKey()));
   base::RunLoop run_loop;
   network_context->AddAuthCacheEntry(
       challenge,
@@ -5834,9 +5843,9 @@ TEST_F(NetworkContextTest, AddHttpAuthCacheEntry) {
                            base::ASCIIToUTF16(kPassword)),
       run_loop.QuitClosure());
   run_loop.Run();
-  net::HttpAuthCache::Entry* entry =
-      cache->Lookup(url, net::HttpAuth::AUTH_SERVER, challenge.realm,
-                    net::HttpAuth::AUTH_SCHEME_BASIC);
+  net::HttpAuthCache::Entry* entry = cache->Lookup(
+      url, net::HttpAuth::AUTH_SERVER, challenge.realm,
+      net::HttpAuth::AUTH_SCHEME_BASIC, net::NetworkIsolationKey());
   ASSERT_TRUE(entry);
   EXPECT_EQ(url, entry->origin());
   EXPECT_EQ(challenge.realm, entry->realm());
@@ -5845,7 +5854,8 @@ TEST_F(NetworkContextTest, AddHttpAuthCacheEntry) {
   EXPECT_EQ(base::ASCIIToUTF16(kPassword), entry->credentials().password());
   // Entry should only have been added for server auth.
   EXPECT_FALSE(cache->Lookup(url, net::HttpAuth::AUTH_PROXY, challenge.realm,
-                             net::HttpAuth::AUTH_SCHEME_BASIC));
+                             net::HttpAuth::AUTH_SCHEME_BASIC,
+                             net::NetworkIsolationKey()));
 
   // Add an AUTH_PROXY cache entry.
   GURL proxy_url("http://proxy.test/");
@@ -5854,8 +5864,8 @@ TEST_F(NetworkContextTest, AddHttpAuthCacheEntry) {
   const char kProxyUsername[] = "test_proxy_user";
   const char kProxyPassword[] = "test_proxy_pass";
   ASSERT_FALSE(cache->Lookup(proxy_url, net::HttpAuth::AUTH_PROXY,
-                             challenge.realm,
-                             net::HttpAuth::AUTH_SCHEME_BASIC));
+                             challenge.realm, net::HttpAuth::AUTH_SCHEME_BASIC,
+                             net::NetworkIsolationKey()));
   base::RunLoop run_loop2;
   network_context->AddAuthCacheEntry(
       challenge,
@@ -5864,7 +5874,8 @@ TEST_F(NetworkContextTest, AddHttpAuthCacheEntry) {
       run_loop2.QuitClosure());
   run_loop2.Run();
   entry = cache->Lookup(proxy_url, net::HttpAuth::AUTH_PROXY, challenge.realm,
-                        net::HttpAuth::AUTH_SCHEME_BASIC);
+                        net::HttpAuth::AUTH_SCHEME_BASIC,
+                        net::NetworkIsolationKey());
   ASSERT_TRUE(entry);
   EXPECT_EQ(proxy_url, entry->origin());
   EXPECT_EQ(challenge.realm, entry->realm());
@@ -5875,8 +5886,8 @@ TEST_F(NetworkContextTest, AddHttpAuthCacheEntry) {
             entry->credentials().password());
   // Entry should only have been added for proxy auth.
   EXPECT_FALSE(cache->Lookup(proxy_url, net::HttpAuth::AUTH_SERVER,
-                             challenge.realm,
-                             net::HttpAuth::AUTH_SCHEME_BASIC));
+                             challenge.realm, net::HttpAuth::AUTH_SCHEME_BASIC,
+                             net::NetworkIsolationKey()));
 }
 
 TEST_F(NetworkContextTest, HSTSPolicyBypassList) {
