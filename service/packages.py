@@ -522,6 +522,7 @@ def determine_android_branch(board):
 
 
 def determine_android_target(board):
+  """Returns the Android target in use by the active container ebuild."""
   try:
     android_package = determine_android_package(board)
   except cros_build_lib.RunCommandError:
