@@ -10143,6 +10143,7 @@ Called by update_net_error_codes.py.-->
   <int value="55" label="System wake lock"/>
   <int value="56" label="Legacy cookie access"/>
   <int value="57" label="Native file system write guard"/>
+  <int value="58" label="Installed web app metadata"/>
 </enum>
 
 <enum name="ContentTypeParseableResult">
