@@ -689,7 +689,8 @@ WebContentsImpl::~WebContentsImpl() {
   // destroyed.
   RenderFrameHostManager* root = GetRenderManager();
 
-  GetController().GetBackForwardCache().Flush();
+  GetController().GetBackForwardCache().Shutdown();
+
   root->current_frame_host()->SetRenderFrameCreated(false);
   root->current_frame_host()->ResetNavigationRequests();
 

@@ -129,12 +129,16 @@ class CONTENT_EXPORT BackForwardCacheImpl : public BackForwardCache {
   // knowing its |navigation_entry_id|. Returns nullptr when none is found.
   std::unique_ptr<Entry> RestoreEntry(int navigation_entry_id);
 
-  // Remove all entries from the BackForwardCache.
+  // Evict all entries from the BackForwardCache.
   void Flush();
 
   // Evict all cached pages in the same BrowsingInstance as
   // |site_instance|.
   void EvictFramesInRelatedSiteInstances(SiteInstance* site_instance);
+
+  // Immediately deletes all frames in the cache. This should only be called
+  // when WebContents is being destroyed.
+  void Shutdown();
 
   // Posts a task to destroy all frames in the BackForwardCache that have been
   // marked as evicted.

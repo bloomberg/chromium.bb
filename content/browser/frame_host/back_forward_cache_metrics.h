@@ -59,7 +59,8 @@ class BackForwardCacheMetrics
     kGrantedMediaStreamAccess = 18,
     kSchedulerTrackedFeatureUsed = 19,
     kConflictingBrowsingInstance = 20,
-    kMaxValue = kConflictingBrowsingInstance,
+    kCacheFlushed = 21,
+    kMaxValue = kCacheFlushed,
   };
 
   // Please keep in sync with BackForwardCacheHistoryNavigationOutcome in

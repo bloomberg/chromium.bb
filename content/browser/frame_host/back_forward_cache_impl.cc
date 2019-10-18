@@ -224,6 +224,8 @@ std::string BackForwardCacheImpl::CanStoreDocumentResult::ToString() {
       return "No: scheduler tracked feature is used";
     case Reason::kConflictingBrowsingInstance:
       return "No: conflicting BrowsingInstance";
+    case Reason::kCacheFlushed:
+      return "No: cache flushed";
   }
 }
 
@@ -463,6 +465,13 @@ std::unique_ptr<BackForwardCacheImpl::Entry> BackForwardCacheImpl::RestoreEntry(
 
 void BackForwardCacheImpl::Flush() {
   TRACE_EVENT0("navigation", "BackForwardCache::Flush");
+  for (std::unique_ptr<Entry>& entry : entries_) {
+    entry->render_frame_host->EvictFromBackForwardCacheWithReason(
+        BackForwardCacheMetrics::NotRestoredReason::kCacheFlushed);
+  }
+}
+
+void BackForwardCacheImpl::Shutdown() {
   entries_.clear();
 }
 
