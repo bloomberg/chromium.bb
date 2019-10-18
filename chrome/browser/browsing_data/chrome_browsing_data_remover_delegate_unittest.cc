@@ -94,6 +94,7 @@
 #include "content/public/test/mock_download_manager.h"
 #include "content/public/test/test_utils.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "net/base/network_isolation_key.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/http/http_auth.h"
 #include "net/http/http_auth_cache.h"
@@ -2461,20 +2462,23 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
 
   net::HttpAuthCache* http_auth_cache = http_session->http_auth_cache();
   http_auth_cache->Add(kOrigin1, net::HttpAuth::AUTH_SERVER, kTestRealm,
-                       net::HttpAuth::AUTH_SCHEME_BASIC, "test challenge",
+                       net::HttpAuth::AUTH_SCHEME_BASIC,
+                       net::NetworkIsolationKey(), "test challenge",
                        net::AuthCredentials(base::ASCIIToUTF16("foo"),
                                             base::ASCIIToUTF16("bar")),
                        "/");
   CHECK(http_auth_cache->Lookup(kOrigin1, net::HttpAuth::AUTH_SERVER,
-                                kTestRealm, net::HttpAuth::AUTH_SCHEME_BASIC));
+                                kTestRealm, net::HttpAuth::AUTH_SCHEME_BASIC,
+                                net::NetworkIsolationKey()));
 
   BlockUntilBrowsingDataRemoved(
       base::Time(), base::Time::Max(),
       ChromeBrowsingDataRemoverDelegate::DATA_TYPE_PASSWORDS, false);
 
-  EXPECT_EQ(nullptr, http_auth_cache->Lookup(
-                         kOrigin1, net::HttpAuth::AUTH_SERVER, kTestRealm,
-                         net::HttpAuth::AUTH_SCHEME_BASIC));
+  EXPECT_EQ(nullptr,
+            http_auth_cache->Lookup(
+                kOrigin1, net::HttpAuth::AUTH_SERVER, kTestRealm,
+                net::HttpAuth::AUTH_SCHEME_BASIC, net::NetworkIsolationKey()));
 }
 
 TEST_F(ChromeBrowsingDataRemoverDelegateTest, ClearPermissionPromptCounts) {
