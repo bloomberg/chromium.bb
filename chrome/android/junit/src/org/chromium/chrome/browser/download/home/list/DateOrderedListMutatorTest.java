@@ -31,6 +31,7 @@ import org.chromium.chrome.browser.download.home.list.ListItem.SectionHeaderList
 import org.chromium.chrome.browser.download.home.list.mutator.DateComparator;
 import org.chromium.chrome.browser.download.home.list.mutator.DateLabelAdder;
 import org.chromium.chrome.browser.download.home.list.mutator.DateOrderedListMutator;
+import org.chromium.chrome.browser.download.home.list.mutator.Paginator;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItemFilter;
 import org.chromium.components.offline_items_collection.OfflineItemState;
@@ -888,14 +889,16 @@ public class DateOrderedListMutatorTest {
             }
         };
         return new DateOrderedListMutator(mSource, mModel, justNowProvider,
-                new DateComparator(justNowProvider), new DateLabelAdder(config, justNowProvider));
+                new DateComparator(justNowProvider), new DateLabelAdder(config, justNowProvider),
+                new Paginator());
     }
 
     private DateOrderedListMutator createMutatorWithJustNowProvider() {
         DownloadManagerUiConfig config = new DownloadManagerUiConfig.Builder().build();
         JustNowProvider justNowProvider = new JustNowProvider(config);
         return new DateOrderedListMutator(mSource, mModel, justNowProvider,
-                new DateComparator(justNowProvider), new DateLabelAdder(config, justNowProvider));
+                new DateComparator(justNowProvider), new DateLabelAdder(config, justNowProvider),
+                new Paginator());
     }
 
     private static void assertDatesAreEqual(Date date, Calendar calendar) {

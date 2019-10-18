@@ -44,6 +44,7 @@ public class DateOrderedListMutator implements OfflineItemFilterObserver {
     private final OfflineItemFilterSource mSource;
     private final JustNowProvider mJustNowProvider;
     private final ListItemModel mModel;
+    private final Paginator mPaginator;
     private final ArrayList<OfflineItem> mSortedItems = new ArrayList<>();
 
     private Comparator<OfflineItem> mComparator;
@@ -56,13 +57,15 @@ public class DateOrderedListMutator implements OfflineItemFilterObserver {
      * @param justNowProvider The provider for Just Now section.
      * @param comparator The default comparator to be used for list item comparison
      * @param labelAdder The label adder used for producing the final list.
+     * @param paginator The paginator to handle pagination.
      */
     public DateOrderedListMutator(OfflineItemFilterSource source, ListItemModel model,
             JustNowProvider justNowProvider, Comparator<OfflineItem> comparator,
-            LabelAdder labelAdder) {
+            LabelAdder labelAdder, Paginator paginator) {
         mSource = source;
         mModel = model;
         mJustNowProvider = justNowProvider;
+        mPaginator = paginator;
         mSource.addObserver(this);
         setMutators(comparator, labelAdder);
         onItemsAdded(mSource.getItems());
@@ -78,6 +81,14 @@ public class DateOrderedListMutator implements OfflineItemFilterObserver {
         mComparator = comparator;
         mLabelAdder = labelAdder;
         Collections.sort(mSortedItems, mComparator);
+    }
+
+    /**
+     * Called to add more pages to show in the list.
+     */
+    public void loadMorePages() {
+        mPaginator.loadMorePages();
+        pushItemsToModel();
     }
 
     // OfflineItemFilterObserver implementation.
@@ -136,6 +147,7 @@ public class DateOrderedListMutator implements OfflineItemFilterObserver {
     }
 
     private void pushItemsToModel() {
+        // TODO(shaktisahu): Add paginated list after finalizing UX.
         mModel.set(mLabelAdder.addLabels(mSortedItems));
         mModel.dispatchLastEvent();
     }

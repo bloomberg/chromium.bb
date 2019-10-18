@@ -28,7 +28,8 @@ public class ListUtils {
     /** The potential types of list items that could be displayed. */
     @IntDef({ViewType.DATE, ViewType.IN_PROGRESS, ViewType.GENERIC, ViewType.VIDEO, ViewType.IMAGE,
             ViewType.IMAGE_FULL_WIDTH, ViewType.CUSTOM_VIEW, ViewType.PREFETCH,
-            ViewType.SECTION_HEADER, ViewType.IN_PROGRESS_VIDEO, ViewType.IN_PROGRESS_IMAGE})
+            ViewType.SECTION_HEADER, ViewType.IN_PROGRESS_VIDEO, ViewType.IN_PROGRESS_IMAGE,
+            ViewType.PAGINATION_HEADER})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ViewType {
         int DATE = 0;
@@ -42,6 +43,7 @@ public class ListUtils {
         int SECTION_HEADER = 8;
         int IN_PROGRESS_VIDEO = 9;
         int IN_PROGRESS_IMAGE = 10;
+        int PAGINATION_HEADER = 11;
     }
 
     /**
@@ -77,6 +79,7 @@ public class ListUtils {
     public static @ViewType int getViewTypeForItem(ListItem item, DownloadManagerUiConfig config) {
         if (item instanceof ViewListItem) return ViewType.CUSTOM_VIEW;
         if (item instanceof ListItem.SectionHeaderListItem) return ViewType.SECTION_HEADER;
+        if (item instanceof ListItem.PaginationListItem) return ViewType.PAGINATION_HEADER;
 
         if (item instanceof OfflineItemListItem) {
             OfflineItemListItem offlineItem = (OfflineItemListItem) item;

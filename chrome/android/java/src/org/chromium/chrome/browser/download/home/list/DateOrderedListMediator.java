@@ -35,6 +35,7 @@ import org.chromium.chrome.browser.download.home.list.mutator.DateLabelAdder;
 import org.chromium.chrome.browser.download.home.list.mutator.DateOrderedListMutator;
 import org.chromium.chrome.browser.download.home.list.mutator.DateOrderedListMutator.LabelAdder;
 import org.chromium.chrome.browser.download.home.list.mutator.NoopLabelAdder;
+import org.chromium.chrome.browser.download.home.list.mutator.Paginator;
 import org.chromium.chrome.browser.download.home.list.mutator.ScoreComparator;
 import org.chromium.chrome.browser.download.home.metrics.OfflineItemStartupLogger;
 import org.chromium.chrome.browser.download.home.metrics.UmaUtils;
@@ -120,6 +121,7 @@ class DateOrderedListMediator {
     private final Comparator<OfflineItem> mScoreComparator;
     private final LabelAdder mDateLabelAdder;
     private final LabelAdder mNoopLabelAdder;
+    private final Paginator mPaginator;
 
     /**
      * A selection observer that correctly updates the selection state for each item in the list.
@@ -174,6 +176,8 @@ class DateOrderedListMediator {
         //                         [TypeOfflineItemFilter] ->
         //                             [DateOrderedListMutator] ->
         //                                 [ListItemModel]
+        // TODO(shaktisahu): Look into replacing mutator chain by
+        // sorter -> label adder -> property setter -> paginator -> model
 
         mProvider = new OfflineContentProviderGlue(provider, config);
         mShareController = shareController;
@@ -195,8 +199,9 @@ class DateOrderedListMediator {
         mScoreComparator = new ScoreComparator();
         mDateLabelAdder = new DateLabelAdder(config, justNowProvider);
         mNoopLabelAdder = new NoopLabelAdder();
+        mPaginator = new Paginator();
         mListMutator = new DateOrderedListMutator(
-                mTypeFilter, mModel, justNowProvider, mDateComparator, mDateLabelAdder);
+                mTypeFilter, mModel, justNowProvider, mDateComparator, mDateLabelAdder, mPaginator);
 
         new OfflineItemStartupLogger(config, mInvalidStateFilter);
 
@@ -218,6 +223,8 @@ class DateOrderedListMediator {
         mModel.getProperties().set(ListProperties.CALLBACK_SELECTION, this ::onSelection);
         mModel.getProperties().set(ListProperties.CALLBACK_RENAME,
                 mUiConfig.isRenameEnabled ? this::onRenameItem : null);
+        mModel.getProperties().set(
+                ListProperties.CALLBACK_PAGINATION_CLICK, mListMutator::loadMorePages);
     }
 
     /** Tears down this mediator. */
@@ -232,6 +239,7 @@ class DateOrderedListMediator {
      * @see TypeOfflineItemFilter#onFilterSelected(int)
      */
     public void onFilterTypeSelected(@FilterType int filter) {
+        mPaginator.reset();
         Comparator<OfflineItem> comparator = mDateComparator;
         LabelAdder labelAdder = mDateLabelAdder;
         if (filter == FilterType.PREFETCHED && DownloadUtils.shouldShowOfflineHome()) {
