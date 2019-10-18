@@ -4766,6 +4766,7 @@ Unknown properties are collapsed to zero. -->
   <int value="17" label="Dialog"/>
   <int value="18" label="Granted media stream access"/>
   <int value="19" label="Scheduler tracked feature used"/>
+  <int value="20" label="Conflicting BrowsingInstance"/>
 </enum>
 
 <enum name="BackForwardNavigationType">

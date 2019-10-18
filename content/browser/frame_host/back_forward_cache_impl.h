@@ -27,6 +27,7 @@ namespace content {
 class RenderFrameHostImpl;
 class RenderFrameProxyHost;
 class RenderViewHostImpl;
+class SiteInstance;
 
 // BackForwardCache:
 //
@@ -130,6 +131,10 @@ class CONTENT_EXPORT BackForwardCacheImpl : public BackForwardCache {
 
   // Remove all entries from the BackForwardCache.
   void Flush();
+
+  // Evict all cached pages in the same BrowsingInstance as
+  // |site_instance|.
+  void EvictFramesInRelatedSiteInstances(SiteInstance* site_instance);
 
   // Posts a task to destroy all frames in the BackForwardCache that have been
   // marked as evicted.

@@ -58,7 +58,8 @@ class BackForwardCacheMetrics
     kDialog = 17,
     kGrantedMediaStreamAccess = 18,
     kSchedulerTrackedFeatureUsed = 19,
-    kMaxValue = kSchedulerTrackedFeatureUsed,
+    kConflictingBrowsingInstance = 20,
+    kMaxValue = kConflictingBrowsingInstance,
   };
 
   // Please keep in sync with BackForwardCacheHistoryNavigationOutcome in
