@@ -372,9 +372,7 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest,
   ASSERT_FALSE(MagnificationManager::Get()->IsMagnifierEnabled());
 }
 
-// Flaky. http://crbug.com/1010676
-IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest,
-                       DISABLED_A11yDockedMagnifierDisabled) {
+IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest, A11yDockedMagnifierDisabled) {
   welcome_screen_->Show();
   OobeScreenWaiter(WelcomeView::kScreenId).Wait();
   test::OobeJS().ExpectHiddenPath({"connect", "dockedMagnifierOobeOption"});
