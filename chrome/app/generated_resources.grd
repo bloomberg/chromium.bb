@@ -8954,9 +8954,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
           <message name="IDS_MEDIA_GALLERIES_DIALOG_ADD_GALLERY" desc="In title case: Button for adding a new gallery by choosing a folder.">
             Add Location...
           </message>
-          <message name="IDS_MEDIA_GALLERIES_DIALOG_CANCEL" desc="In title case: The text for the cancel button on the media galleries configuration dialog.">
-            Cancel
-          </message>
           <message name="IDS_MEDIA_GALLERIES_DIALOG_CONFIRM" desc="In title case: The text for the accept button on the media galleries configuration dialog.">
             Apply
           </message>
@@ -8965,9 +8962,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
           <message name="IDS_MEDIA_GALLERIES_DIALOG_ADD_GALLERY" desc="In sentence case: Button for adding a new gallery by choosing a folder."
                    meaning="In sentence case: Button for adding a new gallery by choosing a folder.">
             Add location...
-          </message>
-          <message name="IDS_MEDIA_GALLERIES_DIALOG_CANCEL" desc="In sentence case: The text for the cancel button on the media galleries configuration dialog.">
-            Cancel
           </message>
           <message name="IDS_MEDIA_GALLERIES_DIALOG_CONFIRM" desc="In sentence case: The text for the accept button on the media galleries configuration dialog."
                    meaning="In sentence case: The text for the accept button on the media galleries configuration dialog.">
