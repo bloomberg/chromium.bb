@@ -843,9 +843,8 @@ static INLINE void dec_build_inter_predictors(const AV1_COMMON *cm,
       if (ref && is_masked_compound_type(mi->interinter_comp.type))
         av1_make_masked_inter_predictor(
             pre[ref], src_stride[ref], dst, dst_buf->stride, &inter_pred_params,
-            &subpel_params[ref], sf, bw, bh, &conv_params, mi->interp_filters,
-            plane, &warp_types, mi_x >> pd->subsampling_x,
-            mi_y >> pd->subsampling_y, ref, xd, cm->allow_warped_motion);
+            &subpel_params[ref], bw, bh, &conv_params, mi->interp_filters,
+            plane, xd);
       else
         av1_make_inter_predictor(
             pre[ref], src_stride[ref], dst, dst_buf->stride, &inter_pred_params,

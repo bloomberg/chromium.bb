@@ -230,11 +230,10 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
       if (ref && is_masked_compound_type(mi->interinter_comp.type)) {
         // masked compound type has its own average mechanism
         conv_params.do_average = 0;
-        av1_make_masked_inter_predictor(
-            pre, pre_buf->stride, dst, dst_buf->stride, &inter_pred_params,
-            &subpel_params, sf, bw, bh, &conv_params, mi->interp_filters, plane,
-            &warp_types, mi_x >> pd->subsampling_x, mi_y >> pd->subsampling_y,
-            ref, xd, cm->allow_warped_motion);
+        av1_make_masked_inter_predictor(pre, pre_buf->stride, dst,
+                                        dst_buf->stride, &inter_pred_params,
+                                        &subpel_params, bw, bh, &conv_params,
+                                        mi->interp_filters, plane, xd);
       } else {
         conv_params.do_average = ref;
         av1_make_inter_predictor(pre, pre_buf->stride, dst, dst_buf->stride,

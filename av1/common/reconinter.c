@@ -564,35 +564,21 @@ static AOM_INLINE void build_masked_compound_no_round(
 #endif
 }
 
-void av1_make_masked_inter_predictor(
-    const uint8_t *pre, int pre_stride, uint8_t *dst, int dst_stride,
-    InterPredParams *inter_pred_params, const SubpelParams *subpel_params,
-    const struct scale_factors *sf, int w, int h, ConvolveParams *conv_params,
-    int_interpfilters interp_filters, int plane,
-    const WarpTypesAllowed *warp_types, int p_col, int p_row, int ref,
-    MACROBLOCKD *xd, int can_use_previous) {
+void av1_make_masked_inter_predictor(const uint8_t *pre, int pre_stride,
+                                     uint8_t *dst, int dst_stride,
+                                     InterPredParams *inter_pred_params,
+                                     const SubpelParams *subpel_params, int w,
+                                     int h, ConvolveParams *conv_params,
+                                     int_interpfilters interp_filters,
+                                     int plane, MACROBLOCKD *xd) {
   MB_MODE_INFO *mi = xd->mi[0];
-  (void)dst;
-  (void)dst_stride;
-  (void)sf;
-  (void)warp_types;
-  (void)p_col;
-  (void)p_row;
-  (void)ref;
-  (void)can_use_previous;
   mi->interinter_comp.seg_mask = xd->seg_mask;
   const INTERINTER_COMPOUND_DATA *comp_data = &mi->interinter_comp;
 
-// We're going to call av1_make_inter_predictor to generate a prediction into
-// a temporary buffer, then will blend that temporary buffer with that from
-// the other reference.
-//
-#define INTER_PRED_BYTES_PER_PIXEL 2
-
-  DECLARE_ALIGNED(32, uint8_t,
-                  tmp_buf[INTER_PRED_BYTES_PER_PIXEL * MAX_SB_SQUARE]);
-#undef INTER_PRED_BYTES_PER_PIXEL
-
+  // We're going to call av1_make_inter_predictor to generate a prediction into
+  // a temporary buffer, then will blend that temporary buffer with that from
+  // the other reference.
+  DECLARE_ALIGNED(32, uint8_t, tmp_buf[2 * MAX_SB_SQUARE]);
   uint8_t *tmp_dst = get_buf_by_bd(xd, tmp_buf);
 
   const int tmp_buf_stride = MAX_SB_SIZE;
