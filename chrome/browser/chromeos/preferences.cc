@@ -255,7 +255,7 @@ void Preferences::RegisterProfilePrefs(
       ash::prefs::kDictationAcceleratorDialogHasBeenAccepted, false,
       PrefRegistry::PUBLIC);
   registry->RegisterBooleanPref(
-      ash::prefs::kDisplayRotationAcceleratorDialogHasBeenAccepted, false,
+      ash::prefs::kDisplayRotationAcceleratorDialogHasBeenAccepted2, false,
       PrefRegistry::PUBLIC);
   registry->RegisterBooleanPref(
       ash::prefs::kAccessibilityScreenMagnifierEnabled, false,

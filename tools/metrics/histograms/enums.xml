@@ -54999,6 +54999,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="9" label="Rollback: SBER2 absent so SBER1 must be cleared"/>
 </enum>
 
+<enum name="ScreenRotationAcceleratorAction">
+  <int value="0" label="CancelledDialog"/>
+  <int value="1" label="AcceptedDialog"/>
+  <int value="2" label="AlreadyAcceptedDialog"/>
+</enum>
+
 <enum name="ScriptSchedulingType">
   <int value="0" label="NotSet"/>
   <int value="1" label="Defer"/>
