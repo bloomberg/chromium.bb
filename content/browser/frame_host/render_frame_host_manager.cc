@@ -144,8 +144,8 @@ bool ShouldProactivelySwapBrowsingInstance(RenderFrameHostImpl* current_rfh,
   // of ProactivelySwapBrowsingInstance experiment doesn't include them. The
   // cost of getting a new process on same-site navigation would (probably?) be
   // too high.
-  if (SiteInstanceImpl::IsSameWebSite(current_instance->GetIsolationContext(),
-                                      current_url, dest_url, true)) {
+  if (SiteInstanceImpl::IsSameSite(current_instance->GetIsolationContext(),
+                                   current_url, dest_url, true)) {
     return false;
   }
 
@@ -1854,7 +1854,7 @@ bool RenderFrameHostManager::IsCurrentlySameSite(RenderFrameHostImpl* candidate,
   // In the common case, we use the RenderFrameHost's last successful URL. Thus,
   // we compare against the last successful commit when deciding whether to swap
   // this time.
-  if (SiteInstanceImpl::IsSameWebSite(
+  if (SiteInstanceImpl::IsSameSite(
           candidate->GetSiteInstance()->GetIsolationContext(),
           candidate->last_successful_url(), dest_url,
           should_compare_effective_urls)) {
@@ -1865,7 +1865,7 @@ bool RenderFrameHostManager::IsCurrentlySameSite(RenderFrameHostImpl* candidate,
   // example, "about:blank"). If so, examine the replicated origin to determine
   // the site.
   if (!candidate->GetLastCommittedOrigin().opaque() &&
-      SiteInstanceImpl::IsSameWebSite(
+      SiteInstanceImpl::IsSameSite(
           candidate->GetSiteInstance()->GetIsolationContext(),
           GURL(candidate->GetLastCommittedOrigin().Serialize()), dest_url,
           should_compare_effective_urls)) {

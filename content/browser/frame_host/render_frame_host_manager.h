@@ -605,7 +605,7 @@ class CONTENT_EXPORT RenderFrameHostManager
   // should be the same as |new_is_view_source_mode|.
   //
   // We use the effective URL here, since that's what is used in the
-  // SiteInstance's site and when we later call IsSameWebSite.  If there is no
+  // SiteInstance's site and when we later call IsSameSite.  If there is no
   // current NavigationEntry, check the current SiteInstance's site, which might
   // already be committed to a Web UI URL (such as the NTP).
   bool ShouldSwapBrowsingInstancesForNavigation(
