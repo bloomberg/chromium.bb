@@ -397,7 +397,7 @@ const base::Feature kIgnoreCrossOriginWindowWhenNamedAccessOnWindow{
 // are force deferred by the intervention.
 const base::Feature kLowerJavaScriptPriorityWhenForceDeferred{
     "LowerJavaScriptPriorityWhenForceDeferred",
-    base::FEATURE_ENABLED_BY_DEFAULT};
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kHtmlImportsRequestInitiatorLock{
     "HtmlImportsRequestInitiatorLock", base::FEATURE_ENABLED_BY_DEFAULT};

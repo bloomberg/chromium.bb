@@ -3262,6 +3262,21 @@
             ]
         }
     ],
+    "LowerJavaScriptPriorityWhenForceDeferred": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Control_20190905",
+                    "disable_features": [
+                        "LowerJavaScriptPriorityWhenForceDeferred"
+                    ]
+                }
+            ]
+        }
+    ],
     "LsdPermissionPrompt": [
         {
             "platforms": [
