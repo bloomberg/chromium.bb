@@ -165,6 +165,15 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
   chrome_test_util::CloseAllTabsInCurrentMode();
 }
 
++ (NSError*)closeAllNormalTabs {
+  bool success = chrome_test_util::CloseAllNormalTabs();
+  if (!success) {
+    return testing::NSErrorWithLocalizedDescription(
+        @"Could not close all normal tabs");
+  }
+  return nil;
+}
+
 + (NSError*)closeAllIncognitoTabs {
   bool success = chrome_test_util::CloseAllIncognitoTabs();
   if (!success) {

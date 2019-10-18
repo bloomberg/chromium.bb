@@ -97,6 +97,10 @@
 // normal after closing all tabs.
 + (void)closeAllTabsInCurrentMode;
 
+// Closes all normal (non-incognito) tabs. If not succeed returns an NSError
+// indicating why the operation failed, otherwise nil.
++ (NSError*)closeAllNormalTabs;
+
 // Closes all incognito tabs. If not succeed returns an NSError indicating  why
 // the operation failed, otherwise nil.
 + (NSError*)closeAllIncognitoTabs;

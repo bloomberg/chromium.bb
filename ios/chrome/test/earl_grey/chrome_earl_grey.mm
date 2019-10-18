@@ -213,6 +213,12 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 }
 
+- (void)closeAllNormalTabs {
+  EG_TEST_HELPER_ASSERT_NO_ERROR(
+      [ChromeEarlGreyAppInterface closeAllNormalTabs]);
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+}
+
 - (void)closeAllIncognitoTabs {
   EG_TEST_HELPER_ASSERT_NO_ERROR(
       [ChromeEarlGreyAppInterface closeAllIncognitoTabs]);
