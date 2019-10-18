@@ -518,7 +518,6 @@ class _Popen(subprocess.Popen):
 def run(cmd, print_cmd=True, stdout=None, stderr=None,
         cwd=None, input=None, enter_chroot=False,
         shell=False, env=None, extra_env=None, ignore_sigint=False,
-        log_stdout_to_file=None,
         append_to_file=False, chroot_args=None, debug_level=logging.INFO,
         check=True, int_timeout=1, kill_timeout=1,
         log_output=False, capture_output=False,
@@ -533,6 +532,7 @@ def run(cmd, print_cmd=True, stdout=None, stderr=None,
     stdout: Where to send stdout.  This may be many things to control
       redirection:
         * None is the default; the existing stdout is used.
+        * A string to a file (will be truncated & opened automatically).
         * A boolean to indicate whether to capture the output.
           True will capture the output via a tempfile (good for large output).
     stderr: Where to send stderr.  See |stdout| for possible values.  This also
@@ -556,9 +556,6 @@ def run(cmd, print_cmd=True, stdout=None, stderr=None,
       child.  This is the desired behavior if we know our child will handle
       Ctrl-C.  If we don't do this, I think we and the child will both get
       Ctrl-C at the same time, which means we'll forcefully kill the child.
-    log_stdout_to_file: If set, redirects stdout to file specified by this path.
-      If |stderr| is subprocess.STDOUT, then stderr will also be logged
-      to the specified file.
     append_to_file: If True, the stdout streams are appended to the end of log
       stdout_to_file.
     chroot_args: An array of arguments for the chroot environment wrapper.
@@ -606,6 +603,12 @@ def run(cmd, print_cmd=True, stdout=None, stderr=None,
     #                 'stderr=subprocess.STDOUT')
     if kwargs.pop('combine_stdout_stderr'):
       stderr = subprocess.STDOUT
+  if 'log_stdout_to_file' in kwargs:
+    # TODO(vapier): Enable this warning once chromite & users migrate.
+    # logging.warning('run: log_stdout_to_file=X is now stdout=X')
+    log_stdout_to_file = kwargs.pop('log_stdout_to_file')
+    if log_stdout_to_file is not None:
+      stdout = log_stdout_to_file
   assert not kwargs, 'Unknown arguments to run: %s' % (list(kwargs),)
 
   if capture_output:
@@ -658,11 +661,13 @@ def run(cmd, print_cmd=True, stdout=None, stderr=None,
   # Note that tempfiles must be unbuffered else attempts to read
   # what a separate process did to that file can result in a bad
   # view of the file.
-  if log_stdout_to_file:
+  log_stdout_to_file = False
+  if isinstance(stdout, six.string_types):
     if append_to_file:
-      popen_stdout = open(log_stdout_to_file, 'a+')
+      popen_stdout = open(stdout, 'a+')
     else:
-      popen_stdout = open(log_stdout_to_file, 'w+')
+      popen_stdout = open(stdout, 'w+')
+    log_stdout_to_file = True
   elif stdout_to_pipe:
     popen_stdout = subprocess.PIPE
   elif stdout or mute_output or log_output:
