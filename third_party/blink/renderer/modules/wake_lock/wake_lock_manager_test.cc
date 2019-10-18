@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/modules/wake_lock/wake_lock_state_record.h"
+#include "third_party/blink/renderer/modules/wake_lock/wake_lock_manager.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
@@ -18,22 +18,22 @@ namespace blink {
 
 namespace {
 
-WakeLockStateRecord* MakeStateRecord(WakeLockTestingContext& context,
-                                     WakeLockType type) {
-  return MakeGarbageCollected<WakeLockStateRecord>(context.GetDocument(), type);
+WakeLockManager* MakeManager(WakeLockTestingContext& context,
+                             WakeLockType type) {
+  return MakeGarbageCollected<WakeLockManager>(context.GetDocument(), type);
 }
 
 }  // namespace
 
-TEST(WakeLockStateRecordTest, AcquireWakeLock) {
+TEST(WakeLockManagerTest, AcquireWakeLock) {
   MockWakeLockService wake_lock_service;
   WakeLockTestingContext context(&wake_lock_service);
-  auto* state_record = MakeStateRecord(context, WakeLockType::kScreen);
+  auto* manager = MakeManager(context, WakeLockType::kScreen);
 
   MockWakeLock& screen_lock =
       wake_lock_service.get_wake_lock(WakeLockType::kScreen);
   EXPECT_FALSE(screen_lock.is_acquired());
-  EXPECT_FALSE(state_record->wake_lock_.is_bound());
+  EXPECT_FALSE(manager->wake_lock_.is_bound());
 
   auto* resolver1 =
       MakeGarbageCollected<ScriptPromiseResolver>(context.GetScriptState());
@@ -42,8 +42,8 @@ TEST(WakeLockStateRecordTest, AcquireWakeLock) {
       MakeGarbageCollected<ScriptPromiseResolver>(context.GetScriptState());
   ScriptPromise promise2 = resolver2->Promise();
 
-  state_record->AcquireWakeLock(resolver1);
-  state_record->AcquireWakeLock(resolver2);
+  manager->AcquireWakeLock(resolver1);
+  manager->AcquireWakeLock(resolver2);
   screen_lock.WaitForRequest();
 
   context.WaitForPromiseFulfillment(promise1);
@@ -54,17 +54,17 @@ TEST(WakeLockStateRecordTest, AcquireWakeLock) {
   auto* sentinel2 =
       ScriptPromiseUtils::GetPromiseResolutionAsWakeLockSentinel(promise2);
 
-  EXPECT_TRUE(state_record->wake_lock_sentinels_.Contains(sentinel1));
-  EXPECT_TRUE(state_record->wake_lock_sentinels_.Contains(sentinel2));
-  EXPECT_EQ(2U, state_record->wake_lock_sentinels_.size());
+  EXPECT_TRUE(manager->wake_lock_sentinels_.Contains(sentinel1));
+  EXPECT_TRUE(manager->wake_lock_sentinels_.Contains(sentinel2));
+  EXPECT_EQ(2U, manager->wake_lock_sentinels_.size());
   EXPECT_TRUE(screen_lock.is_acquired());
-  EXPECT_TRUE(state_record->wake_lock_.is_bound());
+  EXPECT_TRUE(manager->wake_lock_.is_bound());
 }
 
-TEST(WakeLockStateRecordTest, ReleaseAllWakeLocks) {
+TEST(WakeLockManagerTest, ReleaseAllWakeLocks) {
   MockWakeLockService wake_lock_service;
   WakeLockTestingContext context(&wake_lock_service);
-  auto* state_record = MakeStateRecord(context, WakeLockType::kScreen);
+  auto* manager = MakeManager(context, WakeLockType::kScreen);
 
   MockWakeLock& screen_lock =
       wake_lock_service.get_wake_lock(WakeLockType::kScreen);
@@ -73,28 +73,28 @@ TEST(WakeLockStateRecordTest, ReleaseAllWakeLocks) {
       MakeGarbageCollected<ScriptPromiseResolver>(context.GetScriptState());
   ScriptPromise promise = resolver->Promise();
 
-  state_record->AcquireWakeLock(resolver);
+  manager->AcquireWakeLock(resolver);
   screen_lock.WaitForRequest();
   context.WaitForPromiseFulfillment(promise);
 
-  EXPECT_EQ(1U, state_record->wake_lock_sentinels_.size());
+  EXPECT_EQ(1U, manager->wake_lock_sentinels_.size());
   EXPECT_TRUE(screen_lock.is_acquired());
 
   auto* sentinel =
       ScriptPromiseUtils::GetPromiseResolutionAsWakeLockSentinel(promise);
 
-  state_record->UnregisterSentinel(sentinel);
+  manager->UnregisterSentinel(sentinel);
   screen_lock.WaitForCancelation();
 
-  EXPECT_EQ(0U, state_record->wake_lock_sentinels_.size());
+  EXPECT_EQ(0U, manager->wake_lock_sentinels_.size());
   EXPECT_FALSE(screen_lock.is_acquired());
-  EXPECT_FALSE(state_record->wake_lock_.is_bound());
+  EXPECT_FALSE(manager->wake_lock_.is_bound());
 }
 
-TEST(WakeLockStateRecordTest, ReleaseOneWakeLock) {
+TEST(WakeLockManagerTest, ReleaseOneWakeLock) {
   MockWakeLockService wake_lock_service;
   WakeLockTestingContext context(&wake_lock_service);
-  auto* state_record = MakeStateRecord(context, WakeLockType::kScreen);
+  auto* manager = MakeManager(context, WakeLockType::kScreen);
 
   MockWakeLock& screen_lock =
       wake_lock_service.get_wake_lock(WakeLockType::kScreen);
@@ -106,46 +106,46 @@ TEST(WakeLockStateRecordTest, ReleaseOneWakeLock) {
       MakeGarbageCollected<ScriptPromiseResolver>(context.GetScriptState());
   ScriptPromise promise2 = resolver2->Promise();
 
-  state_record->AcquireWakeLock(resolver1);
-  state_record->AcquireWakeLock(resolver2);
+  manager->AcquireWakeLock(resolver1);
+  manager->AcquireWakeLock(resolver2);
   screen_lock.WaitForRequest();
 
   context.WaitForPromiseFulfillment(promise1);
   context.WaitForPromiseFulfillment(promise2);
 
   EXPECT_TRUE(screen_lock.is_acquired());
-  EXPECT_EQ(2U, state_record->wake_lock_sentinels_.size());
+  EXPECT_EQ(2U, manager->wake_lock_sentinels_.size());
 
   auto* sentinel1 =
       ScriptPromiseUtils::GetPromiseResolutionAsWakeLockSentinel(promise1);
-  EXPECT_TRUE(state_record->wake_lock_sentinels_.Contains(sentinel1));
+  EXPECT_TRUE(manager->wake_lock_sentinels_.Contains(sentinel1));
 
-  state_record->UnregisterSentinel(sentinel1);
-  EXPECT_FALSE(state_record->wake_lock_sentinels_.Contains(sentinel1));
-  EXPECT_TRUE(state_record->wake_lock_.is_bound());
-  EXPECT_EQ(1U, state_record->wake_lock_sentinels_.size());
+  manager->UnregisterSentinel(sentinel1);
+  EXPECT_FALSE(manager->wake_lock_sentinels_.Contains(sentinel1));
+  EXPECT_TRUE(manager->wake_lock_.is_bound());
+  EXPECT_EQ(1U, manager->wake_lock_sentinels_.size());
   EXPECT_TRUE(screen_lock.is_acquired());
 }
 
-TEST(WakeLockStateRecordTest, ClearEmptyWakeLockSentinelList) {
+TEST(WakeLockManagerTest, ClearEmptyWakeLockSentinelList) {
   MockWakeLockService wake_lock_service;
   WakeLockTestingContext context(&wake_lock_service);
-  auto* state_record = MakeStateRecord(context, WakeLockType::kSystem);
+  auto* manager = MakeManager(context, WakeLockType::kSystem);
 
   MockWakeLock& system_lock =
       wake_lock_service.get_wake_lock(WakeLockType::kSystem);
   EXPECT_FALSE(system_lock.is_acquired());
 
-  state_record->ClearWakeLocks();
+  manager->ClearWakeLocks();
   test::RunPendingTasks();
 
   EXPECT_FALSE(system_lock.is_acquired());
 }
 
-TEST(WakeLockStateRecordTest, ClearWakeLocks) {
+TEST(WakeLockManagerTest, ClearWakeLocks) {
   MockWakeLockService wake_lock_service;
   WakeLockTestingContext context(&wake_lock_service);
-  auto* state_record = MakeStateRecord(context, WakeLockType::kSystem);
+  auto* manager = MakeManager(context, WakeLockType::kSystem);
 
   auto* resolver1 =
       MakeGarbageCollected<ScriptPromiseResolver>(context.GetScriptState());
@@ -157,25 +157,25 @@ TEST(WakeLockStateRecordTest, ClearWakeLocks) {
   MockWakeLock& system_lock =
       wake_lock_service.get_wake_lock(WakeLockType::kSystem);
 
-  state_record->AcquireWakeLock(resolver1);
-  state_record->AcquireWakeLock(resolver2);
+  manager->AcquireWakeLock(resolver1);
+  manager->AcquireWakeLock(resolver2);
   system_lock.WaitForRequest();
   context.WaitForPromiseFulfillment(promise1);
   context.WaitForPromiseFulfillment(promise2);
 
-  EXPECT_EQ(2U, state_record->wake_lock_sentinels_.size());
+  EXPECT_EQ(2U, manager->wake_lock_sentinels_.size());
 
-  state_record->ClearWakeLocks();
+  manager->ClearWakeLocks();
   system_lock.WaitForCancelation();
 
-  EXPECT_EQ(0U, state_record->wake_lock_sentinels_.size());
+  EXPECT_EQ(0U, manager->wake_lock_sentinels_.size());
   EXPECT_FALSE(system_lock.is_acquired());
 }
 
-TEST(WakeLockStateRecordTest, WakeLockConnectionError) {
+TEST(WakeLockManagerTest, WakeLockConnectionError) {
   MockWakeLockService wake_lock_service;
   WakeLockTestingContext context(&wake_lock_service);
-  auto* state_record = MakeStateRecord(context, WakeLockType::kSystem);
+  auto* manager = MakeManager(context, WakeLockType::kSystem);
 
   auto* resolver1 =
       MakeGarbageCollected<ScriptPromiseResolver>(context.GetScriptState());
@@ -187,21 +187,21 @@ TEST(WakeLockStateRecordTest, WakeLockConnectionError) {
   MockWakeLock& system_lock =
       wake_lock_service.get_wake_lock(WakeLockType::kSystem);
 
-  state_record->AcquireWakeLock(resolver1);
-  state_record->AcquireWakeLock(resolver2);
+  manager->AcquireWakeLock(resolver1);
+  manager->AcquireWakeLock(resolver2);
   system_lock.WaitForRequest();
   context.WaitForPromiseFulfillment(promise1);
   context.WaitForPromiseFulfillment(promise2);
 
-  EXPECT_EQ(2U, state_record->wake_lock_sentinels_.size());
+  EXPECT_EQ(2U, manager->wake_lock_sentinels_.size());
 
   // Unbind and wait for the disconnection to reach |wake_lock_|'s
   // disconnection handler.
   system_lock.Unbind();
-  state_record->wake_lock_.FlushForTesting();
+  manager->wake_lock_.FlushForTesting();
 
-  EXPECT_EQ(0U, state_record->wake_lock_sentinels_.size());
-  EXPECT_FALSE(state_record->wake_lock_);
+  EXPECT_EQ(0U, manager->wake_lock_sentinels_.size());
+  EXPECT_FALSE(manager->wake_lock_);
   EXPECT_FALSE(system_lock.is_acquired());
 }
 

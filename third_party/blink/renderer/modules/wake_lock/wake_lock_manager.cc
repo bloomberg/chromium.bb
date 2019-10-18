@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/modules/wake_lock/wake_lock_state_record.h"
+#include "third_party/blink/renderer/modules/wake_lock/wake_lock_manager.h"
 
 #include "base/logging.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
@@ -15,13 +15,13 @@
 
 namespace blink {
 
-WakeLockStateRecord::WakeLockStateRecord(ExecutionContext* execution_context,
-                                         WakeLockType type)
+WakeLockManager::WakeLockManager(ExecutionContext* execution_context,
+                                 WakeLockType type)
     : wake_lock_type_(type), execution_context_(execution_context) {
   DCHECK_NE(execution_context, nullptr);
 }
 
-void WakeLockStateRecord::AcquireWakeLock(ScriptPromiseResolver* resolver) {
+void WakeLockManager::AcquireWakeLock(ScriptPromiseResolver* resolver) {
   // https://w3c.github.io/wake-lock/#acquire-wake-lock-algorithm
   // 1. If the wake lock for type type is not applicable, return false.
   // 2. Set active to true if the platform wake lock has an active wake lock for
@@ -34,7 +34,7 @@ void WakeLockStateRecord::AcquireWakeLock(ScriptPromiseResolver* resolver) {
   //      object.
   // 4.2. Let record be the platform wake lock's state record associated with
   //      document and type.
-  // 4.3. Add lockPromise to record.[[WakeLockStateRecord]].
+  // 4.3. Add lockPromise to record.[[ActiveLocks]].
   // 5. Return active.
   if (!wake_lock_) {
     mojo::Remote<mojom::blink::WakeLockService> wake_lock_service;
@@ -45,9 +45,8 @@ void WakeLockStateRecord::AcquireWakeLock(ScriptPromiseResolver* resolver) {
                                    device::mojom::blink::WakeLockReason::kOther,
                                    "Blink Wake Lock",
                                    wake_lock_.BindNewPipeAndPassReceiver());
-    wake_lock_.set_disconnect_handler(
-        WTF::Bind(&WakeLockStateRecord::OnWakeLockConnectionError,
-                  WrapWeakPersistent(this)));
+    wake_lock_.set_disconnect_handler(WTF::Bind(
+        &WakeLockManager::OnWakeLockConnectionError, WrapWeakPersistent(this)));
     wake_lock_->RequestWakeLock();
   }
   auto* sentinel = MakeGarbageCollected<WakeLockSentinel>(
@@ -56,7 +55,7 @@ void WakeLockStateRecord::AcquireWakeLock(ScriptPromiseResolver* resolver) {
   resolver->Resolve(sentinel);
 }
 
-void WakeLockStateRecord::UnregisterSentinel(WakeLockSentinel* sentinel) {
+void WakeLockManager::UnregisterSentinel(WakeLockSentinel* sentinel) {
   auto iterator = wake_lock_sentinels_.find(sentinel);
   DCHECK(iterator != wake_lock_sentinels_.end());
   wake_lock_sentinels_.erase(iterator);
@@ -67,17 +66,17 @@ void WakeLockStateRecord::UnregisterSentinel(WakeLockSentinel* sentinel) {
   }
 }
 
-void WakeLockStateRecord::ClearWakeLocks() {
+void WakeLockManager::ClearWakeLocks() {
   while (!wake_lock_sentinels_.IsEmpty())
     (*wake_lock_sentinels_.begin())->DoRelease();
 }
 
-void WakeLockStateRecord::OnWakeLockConnectionError() {
+void WakeLockManager::OnWakeLockConnectionError() {
   wake_lock_.reset();
   ClearWakeLocks();
 }
 
-void WakeLockStateRecord::Trace(blink::Visitor* visitor) {
+void WakeLockManager::Trace(blink::Visitor* visitor) {
   visitor->Trace(execution_context_);
   visitor->Trace(wake_lock_sentinels_);
 }

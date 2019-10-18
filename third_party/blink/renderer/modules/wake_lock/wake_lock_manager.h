@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WAKE_LOCK_WAKE_LOCK_STATE_RECORD_H_
-#define THIRD_PARTY_BLINK_RENDERER_MODULES_WAKE_LOCK_WAKE_LOCK_STATE_RECORD_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WAKE_LOCK_WAKE_LOCK_MANAGER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WAKE_LOCK_WAKE_LOCK_MANAGER_H_
 
 #include "base/gtest_prod_util.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -20,10 +20,10 @@ class WakeLockSentinel;
 
 // https://w3c.github.io/wake-lock/#concepts-and-state-record
 // Per-document and per-wake lock type internal data.
-class MODULES_EXPORT WakeLockStateRecord final
-    : public GarbageCollected<WakeLockStateRecord> {
+class MODULES_EXPORT WakeLockManager final
+    : public GarbageCollected<WakeLockManager> {
  public:
-  WakeLockStateRecord(ExecutionContext*, WakeLockType);
+  WakeLockManager(ExecutionContext*, WakeLockType);
 
   void AcquireWakeLock(ScriptPromiseResolver*);
   void ClearWakeLocks();
@@ -48,13 +48,13 @@ class MODULES_EXPORT WakeLockStateRecord final
   // ExecutionContext from which we will connect to |wake_lock_service_|.
   Member<ExecutionContext> execution_context_;
 
-  FRIEND_TEST_ALL_PREFIXES(WakeLockStateRecordTest, AcquireWakeLock);
-  FRIEND_TEST_ALL_PREFIXES(WakeLockStateRecordTest, ReleaseAllWakeLocks);
-  FRIEND_TEST_ALL_PREFIXES(WakeLockStateRecordTest, ReleaseOneWakeLock);
-  FRIEND_TEST_ALL_PREFIXES(WakeLockStateRecordTest, ClearWakeLocks);
-  FRIEND_TEST_ALL_PREFIXES(WakeLockStateRecordTest, WakeLockConnectionError);
+  FRIEND_TEST_ALL_PREFIXES(WakeLockManagerTest, AcquireWakeLock);
+  FRIEND_TEST_ALL_PREFIXES(WakeLockManagerTest, ReleaseAllWakeLocks);
+  FRIEND_TEST_ALL_PREFIXES(WakeLockManagerTest, ReleaseOneWakeLock);
+  FRIEND_TEST_ALL_PREFIXES(WakeLockManagerTest, ClearWakeLocks);
+  FRIEND_TEST_ALL_PREFIXES(WakeLockManagerTest, WakeLockConnectionError);
 };
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WAKE_LOCK_WAKE_LOCK_STATE_RECORD_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WAKE_LOCK_WAKE_LOCK_MANAGER_H_
