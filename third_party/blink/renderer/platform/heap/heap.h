@@ -534,11 +534,6 @@ class GarbageCollected {
 
   template <typename Derived>
   static void* AllocateObject(size_t size) {
-    if (IsGarbageCollectedMixin<T>::value) {
-      // Ban large mixin so we can use PageFromObject() on them.
-      CHECK_GE(kLargeObjectSizeThreshold, size)
-          << "GarbageCollectedMixin may not be a large object";
-    }
     return ThreadHeap::Allocate<GCInfoFoldedType<Derived>>(size);
   }
 
@@ -587,7 +582,10 @@ T* MakeGarbageCollected(Args&&... args) {
                     internal::IsGarbageCollectedContainer<T>::value ||
                     internal::HasFinalizeGarbageCollectedObject<T>::value,
                 "Finalized GarbageCollected class should either have a virtual "
-                "destructor or be marked as final.");
+                "destructor or be marked as final");
+  static_assert(!IsGarbageCollectedMixin<T>::value ||
+                    sizeof(T) <= kLargeObjectSizeThreshold,
+                "GarbageCollectedMixin may not be a large object");
   void* memory = T::template AllocateObject<T>(sizeof(T));
   HeapObjectHeader* header = HeapObjectHeader::FromPayload(memory);
   // Placement new as regular operator new() is deleted.
@@ -615,8 +613,13 @@ T* MakeGarbageCollected(AdditionalBytes additional_bytes, Args&&... args) {
                     internal::HasFinalizeGarbageCollectedObject<T>::value,
                 "Finalized GarbageCollected class should either have a virtual "
                 "destructor or be marked as final.");
-  void* memory =
-      T::template AllocateObject<T>(sizeof(T) + additional_bytes.value);
+  const size_t size = sizeof(T) + additional_bytes.value;
+  if (IsGarbageCollectedMixin<T>::value) {
+    // Ban large mixin so we can use PageFromObject() on them.
+    CHECK_GE(kLargeObjectSizeThreshold, size)
+        << "GarbageCollectedMixin may not be a large object";
+  }
+  void* memory = T::template AllocateObject<T>(size);
   HeapObjectHeader* header = HeapObjectHeader::FromPayload(memory);
   // Placement new as regular operator new() is deleted.
   T* object = ::new (memory) T(std::forward<Args>(args)...);
