@@ -8035,19 +8035,17 @@ static int interinter_compound_motion_search(const AV1_COMP *const cpi,
 }
 
 static AOM_INLINE void get_inter_predictors_masked_compound(
-    const AV1_COMP *const cpi, MACROBLOCK *x, const BLOCK_SIZE bsize,
-    int mi_row, int mi_col, uint8_t **preds0, uint8_t **preds1,
-    int16_t *residual1, int16_t *diff10, int *strides) {
-  const AV1_COMMON *cm = &cpi->common;
+    MACROBLOCK *x, const BLOCK_SIZE bsize, int mi_row, int mi_col,
+    uint8_t **preds0, uint8_t **preds1, int16_t *residual1, int16_t *diff10,
+    int *strides) {
   MACROBLOCKD *xd = &x->e_mbd;
   const int bw = block_size_wide[bsize];
   const int bh = block_size_high[bsize];
-  int can_use_previous = cm->allow_warped_motion;
   // get inter predictors to use for masked compound modes
-  av1_build_inter_predictors_for_planes_single_buf(
-      xd, bsize, 0, 0, mi_row, mi_col, 0, preds0, strides, can_use_previous);
-  av1_build_inter_predictors_for_planes_single_buf(
-      xd, bsize, 0, 0, mi_row, mi_col, 1, preds1, strides, can_use_previous);
+  av1_build_inter_predictors_for_planes_single_buf(xd, bsize, 0, 0, mi_row,
+                                                   mi_col, 0, preds0, strides);
+  av1_build_inter_predictors_for_planes_single_buf(xd, bsize, 0, 0, mi_row,
+                                                   mi_col, 1, preds1, strides);
   const struct buf_2d *const src = &x->plane[0].src;
 #if CONFIG_AV1_HIGHBITDEPTH
   if (is_cur_buf_hbd(xd)) {
@@ -8101,7 +8099,7 @@ static int64_t masked_compound_type_rd(
   // this may increase memory requirements as compound segment mask needs to be
   // stored in each record.
   if (*calc_pred_masked_compound) {
-    get_inter_predictors_masked_compound(cpi, x, bsize, mi_row, mi_col, preds0,
+    get_inter_predictors_masked_compound(x, bsize, mi_row, mi_col, preds0,
                                          preds1, residual1, diff10, strides);
     *calc_pred_masked_compound = 0;
   }
@@ -8164,9 +8162,9 @@ static int64_t masked_compound_type_rd(
       uint8_t *tmp_preds0[1] = { tmp_buf.pred0 };
       uint8_t *tmp_preds1[1] = { tmp_buf.pred1 };
 
-      get_inter_predictors_masked_compound(
-          cpi, x, bsize, mi_row, mi_col, tmp_preds0, tmp_preds1,
-          tmp_buf.residual1, tmp_buf.diff10, strides);
+      get_inter_predictors_masked_compound(x, bsize, mi_row, mi_col, tmp_preds0,
+                                           tmp_preds1, tmp_buf.residual1,
+                                           tmp_buf.diff10, strides);
 
       tmp_rd = pick_interinter_mask[compound_type - COMPOUND_WEDGE](
           cpi, x, bsize, *tmp_preds0, *tmp_preds1, tmp_buf.residual1,

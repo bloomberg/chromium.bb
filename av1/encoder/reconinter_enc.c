@@ -476,21 +476,16 @@ void av1_build_obmc_inter_predictors_sb(const AV1_COMMON *cm, MACROBLOCKD *xd,
 // Builds the inter-predictor for the single ref case
 // for use in the encoder to search the wedges efficiently.
 static void build_inter_predictors_single_buf(MACROBLOCKD *xd, int plane,
-                                              int bw, int bh, int x, int y,
-                                              int w, int h, int mi_x, int mi_y,
-                                              int ref, uint8_t *const ext_dst,
-                                              int ext_dst_stride,
-                                              int can_use_previous) {
-  (void)w;
-  (void)h;
-  (void)can_use_previous;
-
+                                              int bw, int bh, int mi_x,
+                                              int mi_y, int ref,
+                                              uint8_t *const ext_dst,
+                                              int ext_dst_stride) {
   struct macroblockd_plane *const pd = &xd->plane[plane];
   const MB_MODE_INFO *mi = xd->mi[0];
 
   const struct scale_factors *const sf = xd->block_ref_scale_factors[ref];
   struct buf_2d *const pre_buf = &pd->pre[ref];
-  uint8_t *const dst = get_buf_by_bd(xd, ext_dst) + ext_dst_stride * y + x;
+  uint8_t *const dst = get_buf_by_bd(xd, ext_dst);
   const MV mv = mi->mv[ref].as_mv;
 
   InterPredParams inter_pred_params;
@@ -503,10 +498,10 @@ static void build_inter_predictors_single_buf(MACROBLOCKD *xd, int plane,
   const int pre_y = (mi_y) >> pd->subsampling_y;
   uint8_t *pre;
   SubpelParams subpel_params;
-  calc_subpel_params(xd, sf, mv, plane, pre_x, pre_y, x, y, pre_buf, &pre,
+  calc_subpel_params(xd, sf, mv, plane, pre_x, pre_y, 0, 0, pre_buf, &pre,
                      &subpel_params, bw, bh);
 
-  av1_init_inter_params(&inter_pred_params, bw, bh, pre_y + y, pre_x + x,
+  av1_init_inter_params(&inter_pred_params, bw, bh, pre_y, pre_x,
                         pd->subsampling_x, pd->subsampling_y, xd->bd,
                         is_cur_buf_hbd(xd), mi->use_intrabc, sf);
 
@@ -520,8 +515,7 @@ static void build_inter_predictors_single_buf(MACROBLOCKD *xd, int plane,
 
 void av1_build_inter_predictors_for_planes_single_buf(
     MACROBLOCKD *xd, BLOCK_SIZE bsize, int plane_from, int plane_to, int mi_row,
-    int mi_col, int ref, uint8_t *ext_dst[3], int ext_dst_stride[3],
-    int can_use_previous) {
+    int mi_col, int ref, uint8_t *ext_dst[3], int ext_dst_stride[3]) {
   assert(bsize < BLOCK_SIZES_ALL);
   int plane;
   const int mi_x = mi_col * MI_SIZE;
@@ -531,9 +525,8 @@ void av1_build_inter_predictors_for_planes_single_buf(
         bsize, xd->plane[plane].subsampling_x, xd->plane[plane].subsampling_y);
     const int bw = block_size_wide[plane_bsize];
     const int bh = block_size_high[plane_bsize];
-    build_inter_predictors_single_buf(xd, plane, bw, bh, 0, 0, bw, bh, mi_x,
-                                      mi_y, ref, ext_dst[plane],
-                                      ext_dst_stride[plane], can_use_previous);
+    build_inter_predictors_single_buf(xd, plane, bw, bh, mi_x, mi_y, ref,
+                                      ext_dst[plane], ext_dst_stride[plane]);
   }
 }
 
