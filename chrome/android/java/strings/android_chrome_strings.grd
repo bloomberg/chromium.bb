@@ -3988,6 +3988,11 @@ The site does NOT gain access to the camera. The camera images are only visible 
         Extra ICU
       </message>
 
+      <!-- QR Code -->
+      <message name="IDS_QR_CODE_SHARE_ICON_LABEL" desc="Icon label for sharing qith QR Code activity.">
+        QR Code
+      </message>
+
     </messages>
   </release>
 </grit>
