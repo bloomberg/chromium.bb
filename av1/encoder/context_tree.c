@@ -189,13 +189,13 @@ void av1_setup_pc_tree(AV1_COMMON *cm, ThreadData *td) {
   i = MAX_MIB_SIZE_LOG2 - MIN_MIB_SIZE_LOG2;
   td->pc_root[i] = &td->pc_tree[tree_nodes - 1];
 #if CONFIG_INTERNAL_STATS
-  td->pc_root[i]->none.best_mode_index = 2;
+  td->pc_root[i]->none.best_mode_index = THR_INVALID;
 #endif  // CONFIG_INTERNAL_STATS
   // Set up the root nodes for the rest of the possible superblock sizes
   while (--i >= 0) {
     td->pc_root[i] = td->pc_root[i + 1]->split[0];
 #if CONFIG_INTERNAL_STATS
-    td->pc_root[i]->none.best_mode_index = 2;
+    td->pc_root[i]->none.best_mode_index = THR_INVALID;
 #endif  // CONFIG_INTERNAL_STATS
   }
 }

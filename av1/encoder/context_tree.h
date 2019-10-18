@@ -44,7 +44,7 @@ typedef struct {
   // coefficients are quantized to 0, skippable is set to 1.
   int skippable;
 #if CONFIG_INTERNAL_STATS
-  int best_mode_index;
+  THR_MODES best_mode_index;
 #endif  // CONFIG_INTERNAL_STATS
   int hybrid_pred_diff;
   int comp_pred_diff;
