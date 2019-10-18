@@ -727,13 +727,22 @@ void GpuServiceImpl::EstablishGpuChannel(int32_t client_id,
                                          bool is_gpu_host,
                                          bool cache_shaders_on_disk,
                                          EstablishGpuChannelCallback callback) {
-  if (gpu::IsReservedClientId(client_id)) {
-    // This returns a null handle, which is treated by the client as a failure
-    // case.
-    std::move(callback).Run(mojo::ScopedMessagePipeHandle());
-    return;
-  }
+  // This should always be called on the IO thread first.
   if (io_runner_->BelongsToCurrentThread()) {
+    if (IsExiting()) {
+      // We are already exiting so there is no point in responding. Close the
+      // receiver so we can safely drop the callback.
+      bindings_->CloseAllBindings();
+      return;
+    }
+
+    if (gpu::IsReservedClientId(client_id)) {
+      // This returns a null handle, which is treated by the client as a failure
+      // case.
+      std::move(callback).Run(mojo::ScopedMessagePipeHandle());
+      return;
+    }
+
     EstablishGpuChannelCallback wrap_callback = base::BindOnce(
         [](scoped_refptr<base::SingleThreadTaskRunner> runner,
            EstablishGpuChannelCallback cb,

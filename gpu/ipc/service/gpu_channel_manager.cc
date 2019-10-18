@@ -516,16 +516,16 @@ void GpuChannelManager::OnContextLost(bool synthetic_loss) {
   if (synthetic_loss)
     return;
 
-  // Work around issues with recovery by allowing a new GPU process to launch.
-  if (gpu_driver_bug_workarounds_.exit_on_context_lost)
-    delegate_->MaybeExitOnContextLost();
-
   // Lose all other contexts.
   if (gl::GLContext::LosesAllContextsOnContextLost() ||
       (shared_context_state_ &&
        shared_context_state_->use_virtualized_gl_contexts())) {
     delegate_->LoseAllContexts();
   }
+
+  // Work around issues with recovery by allowing a new GPU process to launch.
+  if (gpu_driver_bug_workarounds_.exit_on_context_lost)
+    delegate_->MaybeExitOnContextLost();
 }
 
 void GpuChannelManager::ScheduleGrContextCleanup() {

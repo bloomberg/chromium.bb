@@ -892,16 +892,16 @@ void InProcessCommandBuffer::OnParseError() {
         GpuDriverBugWorkarounds workarounds(
             GetGpuFeatureInfo().enabled_gpu_driver_bug_workarounds);
 
-        // Work around issues with recovery by allowing a new GPU process to
-        // launch.
-        if (workarounds.exit_on_context_lost)
-          gpu_channel_manager_delegate_->MaybeExitOnContextLost();
-
         // Lose all other contexts.
         if (gl::GLContext::LosesAllContextsOnContextLost() ||
             (context_state_ && context_state_->use_virtualized_gl_contexts())) {
           gpu_channel_manager_delegate_->LoseAllContexts();
         }
+
+        // Work around issues with recovery by allowing a new GPU process to
+        // launch.
+        if (workarounds.exit_on_context_lost)
+          gpu_channel_manager_delegate_->MaybeExitOnContextLost();
       }
     }
   }
