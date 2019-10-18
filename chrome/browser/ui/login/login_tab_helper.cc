@@ -121,6 +121,7 @@ void LoginTabHelper::DidFinishNavigation(
   }
 
   challenge_ = navigation_handle->GetAuthChallengeInfo().value();
+  network_isolation_key_ = navigation_handle->GetNetworkIsolationKey();
 
   url_for_delegate_ = navigation_handle->GetURL();
   delegate_ = CreateLoginPrompt(
@@ -202,7 +203,8 @@ void LoginTabHelper::HandleCredentials(
     content::BrowserContext::GetDefaultStoragePartition(
         web_contents()->GetBrowserContext())
         ->GetNetworkContext()
-        ->AddAuthCacheEntry(challenge_, credentials.value(),
+        ->AddAuthCacheEntry(challenge_, network_isolation_key_,
+                            credentials.value(),
                             base::BindOnce(&LoginTabHelper::Reload,
                                            weak_ptr_factory_.GetWeakPtr()));
   }

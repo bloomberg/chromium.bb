@@ -698,6 +698,12 @@ const base::Feature kNativeSmb{"NativeSmb", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kSoundContentSetting{"SoundContentSetting",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables or defaults splittup up server (not proxy) entries in the
+// HttpAuthCache.
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kSplitAuthCacheByNetworkIsolationKey{
+    "SplitAuthCacheByNetworkIsolationKey", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables filtering URLs by suffix to include subresources that look
 // like image resources for compression. For example,
 // http://chromium.org/image.jpg would be included.
