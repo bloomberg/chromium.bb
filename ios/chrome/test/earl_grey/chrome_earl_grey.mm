@@ -105,6 +105,18 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
   return [self isCompactWidth] && ![self isCompactHeight];
 }
 
+- (BOOL)isRegularXRegularSizeClass {
+  UITraitCollection* traitCollection =
+#if defined(CHROME_EARL_GREY_1)
+      [[[UIApplication sharedApplication] keyWindow] traitCollection];
+#elif defined(CHROME_EARL_GREY_2)
+      [[[GREY_REMOTE_CLASS_IN_APP(UIApplication) sharedApplication] keyWindow]
+          traitCollection];
+#endif
+  return traitCollection.verticalSizeClass == UIUserInterfaceSizeClassRegular &&
+         traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassRegular;
+}
+
 #pragma mark - History Utilities (EG2)
 
 - (void)clearBrowsingHistory {

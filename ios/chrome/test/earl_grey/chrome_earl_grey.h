@@ -55,6 +55,10 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // is displayed as only one toolbar.
 - (BOOL)isSplitToolbarMode;
 
+// Whether the the main application window's rootViewController has a regular
+// vertical and regular horizontal size class.
+- (BOOL)isRegularXRegularSizeClass;
+
 #pragma mark - History Utilities (EG2)
 // Clears browsing history. Raises an EarlGrey exception if history is not
 // cleared within a timeout.
