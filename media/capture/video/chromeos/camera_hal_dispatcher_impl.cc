@@ -164,17 +164,17 @@ CameraHalDispatcherImpl::~CameraHalDispatcherImpl() {
 }
 
 void CameraHalDispatcherImpl::RegisterServer(
-    cros::mojom::CameraHalServerPtr camera_hal_server) {
+    mojo::PendingRemote<cros::mojom::CameraHalServer> camera_hal_server) {
   DCHECK(proxy_task_runner_->BelongsToCurrentThread());
 
   if (camera_hal_server_) {
     LOG(ERROR) << "Camera HAL server is already registered";
     return;
   }
-  camera_hal_server.set_connection_error_handler(
+  camera_hal_server_.Bind(std::move(camera_hal_server));
+  camera_hal_server_.set_disconnect_handler(
       base::BindOnce(&CameraHalDispatcherImpl::OnCameraHalServerConnectionError,
                      base::Unretained(this)));
-  camera_hal_server_ = std::move(camera_hal_server);
   VLOG(1) << "Camera HAL server registered";
 
   // Set up the Mojo channels for clients which registered before the server

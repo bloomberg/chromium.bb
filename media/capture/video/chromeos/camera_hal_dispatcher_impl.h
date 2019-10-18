@@ -20,6 +20,8 @@
 #include "media/capture/video/video_capture_device_factory.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/platform/platform_channel_server_endpoint.h"
 
 namespace base {
@@ -64,7 +66,8 @@ class CAPTURE_EXPORT CameraHalDispatcherImpl final
   bool IsStarted();
 
   // CameraHalDispatcher implementations.
-  void RegisterServer(cros::mojom::CameraHalServerPtr server) final;
+  void RegisterServer(
+      mojo::PendingRemote<cros::mojom::CameraHalServer> server) final;
   void RegisterClient(cros::mojom::CameraHalClientPtr client) final;
   void GetJpegDecodeAccelerator(
       mojo::PendingReceiver<chromeos_camera::mojom::MjpegDecodeAccelerator>
@@ -124,7 +127,7 @@ class CAPTURE_EXPORT CameraHalDispatcherImpl final
 
   mojo::BindingSet<cros::mojom::CameraHalDispatcher> binding_set_;
 
-  cros::mojom::CameraHalServerPtr camera_hal_server_;
+  mojo::Remote<cros::mojom::CameraHalServer> camera_hal_server_;
 
   std::set<std::unique_ptr<CameraClientObserver>, base::UniquePtrComparator>
       client_observers_;
