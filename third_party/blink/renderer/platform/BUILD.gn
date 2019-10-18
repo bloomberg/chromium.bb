@@ -1255,6 +1255,7 @@ jumbo_component("platform") {
     "p2p/socket_dispatcher.cc",
     "p2p/socket_dispatcher.h",
     "peerconnection/audio_codec_factory.cc",
+    "peerconnection/audio_codec_factory.h",
     "peerconnection/rtc_answer_options_platform.h",
     "peerconnection/rtc_dtmf_sender_handler.cc",
     "peerconnection/rtc_dtmf_sender_handler.h",
