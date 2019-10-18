@@ -204,6 +204,7 @@ LockScreenMediaControlsView::LockScreenMediaControlsView(
     const Callbacks& callbacks)
     : connector_(connector),
       hide_controls_timer_(new base::OneShotTimer()),
+      hide_artwork_timer_(new base::OneShotTimer()),
       media_controls_enabled_(callbacks.media_controls_enabled),
       hide_media_controls_(callbacks.hide_media_controls),
       show_media_controls_(callbacks.show_media_controls) {
@@ -253,6 +254,7 @@ LockScreenMediaControlsView::LockScreenMediaControlsView(
   session_artwork->SetPreferredSize(
       gfx::Size(kDesiredArtworkSize, kDesiredArtworkSize));
   session_artwork_ = artwork_row->AddChildView(std::move(session_artwork));
+  session_artwork_->SetVisible(false);
 
   // |track_column| contains the title and artist labels of the current media
   // session.
@@ -603,8 +605,9 @@ void LockScreenMediaControlsView::MediaControllerImageChanged(
 
   switch (type) {
     case media_session::mojom::MediaSessionImageType::kArtwork: {
-      base::Optional<gfx::ImageSkia> session_artwork =
-          gfx::ImageSkia::CreateFrom1xBitmap(converted_bitmap);
+      base::Optional<gfx::ImageSkia> session_artwork;
+      if (!converted_bitmap.empty())
+        session_artwork = gfx::ImageSkia::CreateFrom1xBitmap(converted_bitmap);
       SetArtwork(session_artwork);
       break;
     }
@@ -733,6 +736,12 @@ void LockScreenMediaControlsView::Hide(HideReason reason) {
   hide_media_controls_.Run();
 }
 
+void LockScreenMediaControlsView::HideArtwork() {
+  session_artwork_->SetVisible(false);
+  session_artwork_->SetImage(nullptr);
+  session_artwork_->InvalidateLayout();
+}
+
 void LockScreenMediaControlsView::SetShown(Shown shown) {
   DCHECK(!shown_);
   shown_ = shown;
@@ -758,13 +767,25 @@ void LockScreenMediaControlsView::Dismiss() {
 void LockScreenMediaControlsView::SetArtwork(
     base::Optional<gfx::ImageSkia> img) {
   if (!img.has_value()) {
-    session_artwork_->SetImage(nullptr);
+    if (!session_artwork_->GetVisible() || hide_artwork_timer_->IsRunning())
+      return;
+
+    hide_artwork_timer_->Start(
+        FROM_HERE, kNextMediaDelay,
+        base::BindOnce(&LockScreenMediaControlsView::HideArtwork,
+                       base::Unretained(this)));
     return;
   }
 
+  if (hide_artwork_timer_->IsRunning())
+    hide_artwork_timer_->Stop();
+
+  session_artwork_->SetVisible(true);
   session_artwork_->SetImageSize(
       ScaleSizeToFitView(img->size(), session_artwork_->GetPreferredSize()));
   session_artwork_->SetImage(*img);
+
+  Layout();
   session_artwork_->set_clip_path(GetArtworkClipPath());
 }
 

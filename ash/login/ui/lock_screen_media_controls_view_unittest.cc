@@ -796,6 +796,27 @@ TEST_F(LockScreenMediaControlsViewTest, UpdateArtwork) {
   }
 }
 
+TEST_F(LockScreenMediaControlsViewTest, ArtworkVisibility) {
+  SimulateMediaSessionChanged(
+      media_session::mojom::MediaPlaybackState::kPlaying);
+
+  EXPECT_FALSE(artwork_view()->GetVisible());
+
+  SkBitmap image;
+  image.allocN32Pixels(10, 10);
+  image.eraseColor(SK_ColorMAGENTA);
+
+  media_controls_view_->MediaControllerImageChanged(
+      media_session::mojom::MediaSessionImageType::kArtwork, image);
+  EXPECT_TRUE(artwork_view()->GetVisible());
+
+  // Don't hide artwork immediately after getting null image.
+  image.reset();
+  media_controls_view_->MediaControllerImageChanged(
+      media_session::mojom::MediaSessionImageType::kArtwork, image);
+  EXPECT_TRUE(artwork_view()->GetVisible());
+}
+
 TEST_F(LockScreenMediaControlsViewTest, AccessibleNodeData) {
   SimulateMediaSessionChanged(
       media_session::mojom::MediaPlaybackState::kPlaying);
