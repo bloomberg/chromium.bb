@@ -323,7 +323,7 @@ static void set_good_speed_features_framesize_independent(
 
   if (speed >= 2) {
     sf->gm_erroradv_type = GM_ERRORADV_TR_2;
-    sf->prune_ref_frame_for_gm_search = 1;
+    sf->prune_ref_frame_for_gm_search = boosted ? 0 : 1;
 
     sf->selective_ref_frame = 3;
 

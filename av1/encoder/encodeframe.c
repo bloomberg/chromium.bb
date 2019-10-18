@@ -4942,9 +4942,9 @@ static INLINE void compute_gm_for_valid_ref_frames(
 static int compare_distance(const void *a, const void *b) {
   const int diff =
       ((FrameDistPair *)a)->distance - ((FrameDistPair *)b)->distance;
-  if (diff < 0)
+  if (diff > 0)
     return 1;
-  else if (diff > 0)
+  else if (diff < 0)
     return -1;
   return 0;
 }
@@ -4956,16 +4956,20 @@ static INLINE void compute_global_motion_for_references(
     MotionModel *params_by_motion, uint8_t *segment_map,
     const int segment_map_w, const int segment_map_h) {
   AV1_COMMON *const cm = &cpi->common;
-  // Compute global motion w.r.t. reference frames
+  // Compute global motion w.r.t. reference frames starting from the nearest ref
+  // frame in a given direction
   for (int frame = 0; frame < num_ref_frames; frame++) {
     int ref_frame = reference_frame[frame].frame;
     compute_gm_for_valid_ref_frames(cpi, ref_buf, ref_frame, num_frm_corners,
                                     frm_corners, frm_buffer, params_by_motion,
                                     segment_map, segment_map_w, segment_map_h);
-    // If farthest ref frame yields INVALID/TRANSLATION/IDENTITY  global
-    // motion, skip evaluation of global motion w.r.t to other ref frames in
-    // that direction
-    if (cpi->sf.prune_ref_frame_for_gm_search && frame == 0 &&
+    // If global motion w.r.t. current ref frame is
+    // INVALID/TRANSLATION/IDENTITY, skip the evaluation of global motion w.r.t
+    // the remaining ref frames in that direction. The below exit is disabled
+    // when ref frame distance w.r.t. current frame is zero. E.g.:
+    // source_alt_ref_frame w.r.t. ARF frames
+    if (cpi->sf.prune_ref_frame_for_gm_search &&
+        reference_frame[frame].distance != 0 &&
         cm->global_motion[ref_frame].wmtype != ROTZOOM)
       break;
   }
@@ -5188,7 +5192,8 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
                                    future_ref_frame, &num_past_ref_frames,
                                    &num_future_ref_frames);
 
-    // Sort the ref frames based on the distance from current frame
+    // Sort the ref frames in the ascending order of their distance from the
+    // current frame
     qsort(past_ref_frame, num_past_ref_frames, sizeof(past_ref_frame[0]),
           compare_distance);
     qsort(future_ref_frame, num_future_ref_frames, sizeof(future_ref_frame[0]),
