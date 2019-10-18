@@ -323,14 +323,8 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
 #pragma mark - WebState Utilities (EG2)
 
 - (void)tapWebStateElementWithID:(NSString*)elementID {
-  NSError* error = nil;
-  bool success = [ChromeEarlGreyAppInterface tapWebStateElementWithID:elementID
-                                                                error:error];
-  EG_TEST_HELPER_ASSERT_NO_ERROR(error);
-  NSString* description =
-      [NSString stringWithFormat:@"Failed to tap web state element with ID: %@",
-                                 elementID];
-  EG_TEST_HELPER_ASSERT_TRUE(success, description);
+  EG_TEST_HELPER_ASSERT_NO_ERROR(
+      [ChromeEarlGreyAppInterface tapWebStateElementWithID:elementID]);
 }
 
 - (void)tapWebStateElementInIFrameWithID:(const std::string&)elementID {

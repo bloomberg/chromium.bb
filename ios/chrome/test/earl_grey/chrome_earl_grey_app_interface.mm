@@ -219,10 +219,19 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
   return nil;
 }
 
-+ (BOOL)tapWebStateElementWithID:(NSString*)elementID error:(NSError*)error {
-  return web::test::TapWebViewElementWithId(
++ (NSError*)tapWebStateElementWithID:(NSString*)elementID {
+  NSError* error = nil;
+  bool success = web::test::TapWebViewElementWithId(
       chrome_test_util::GetCurrentWebState(),
       base::SysNSStringToUTF8(elementID), &error);
+  if (!success || error) {
+    NSString* errorDescription =
+        [NSString stringWithFormat:
+                      @"Failed to tap web state element with ID=%@! Error: %@",
+                      elementID, error];
+    return testing::NSErrorWithLocalizedDescription(errorDescription);
+  }
+  return nil;
 }
 
 + (NSError*)waitForWebStateContainingElement:(ElementSelector*)selector {
