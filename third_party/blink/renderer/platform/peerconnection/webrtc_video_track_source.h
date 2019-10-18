@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_PEERCONNECTION_WEBRTC_VIDEO_TRACK_SOURCE_H_
-#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_PEERCONNECTION_WEBRTC_VIDEO_TRACK_SOURCE_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_WEBRTC_VIDEO_TRACK_SOURCE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_WEBRTC_VIDEO_TRACK_SOURCE_H_
 
 #include "base/memory/scoped_refptr.h"
 #include "base/threading/thread_checker.h"
 #include "media/base/video_frame_pool.h"
-#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/webrtc/media/base/adapted_video_track_source.h"
 #include "third_party/webrtc/rtc_base/timestamp_aligner.h"
 
@@ -18,10 +18,7 @@ namespace blink {
 // the webrtc video pipeline, each received a media::VideoFrame is converted to
 // a webrtc::VideoFrame, taking any adaptation requested by downstream classes
 // into account.
-//
-// TODO(crbug.com/787254): Move this class out of the Blink exposed API when its
-// clients get Onion soup'ed.
-class BLINK_PLATFORM_EXPORT WebRtcVideoTrackSource
+class PLATFORM_EXPORT WebRtcVideoTrackSource
     : public rtc::AdaptedVideoTrackSource {
  public:
   struct FrameAdaptationParams {
@@ -88,4 +85,4 @@ class BLINK_PLATFORM_EXPORT WebRtcVideoTrackSource
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_PEERCONNECTION_WEBRTC_VIDEO_TRACK_SOURCE_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_WEBRTC_VIDEO_TRACK_SOURCE_H_
