@@ -172,9 +172,7 @@ bool AreLocalAndRemotePasswordsEqual(
 }
 
 bool ShouldRecoverPasswordsDuringMerge() {
-  return base::FeatureList::IsEnabled(
-             features::kRecoverPasswordsForSyncUsers) &&
-         !base::FeatureList::IsEnabled(features::kDeleteCorruptedPasswords);
+  return !base::FeatureList::IsEnabled(features::kDeleteCorruptedPasswords);
 }
 
 // A simple class for scoping a password store sync transaction. If the

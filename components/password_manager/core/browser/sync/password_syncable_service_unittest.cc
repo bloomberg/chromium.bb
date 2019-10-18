@@ -518,10 +518,8 @@ TEST_F(PasswordSyncableServiceTest, FailedReadFromPasswordStore) {
                           syncer::PASSWORDS);
   EXPECT_CALL(*password_store(), FillAutofillableLogins(_))
       .WillOnce(Return(false));
-  if (base::FeatureList::IsEnabled(features::kRecoverPasswordsForSyncUsers)) {
-    EXPECT_CALL(*password_store(), DeleteUndecryptableLogins())
-        .WillOnce(Return(DatabaseCleanupResult::kDatabaseUnavailable));
-  }
+  EXPECT_CALL(*password_store(), DeleteUndecryptableLogins())
+      .WillOnce(Return(DatabaseCleanupResult::kDatabaseUnavailable));
   EXPECT_CALL(*error_factory, CreateAndUploadError(_, _))
       .WillOnce(Return(error));
   // ActOnPasswordStoreChanges() below shouldn't generate any changes for Sync.
@@ -539,37 +537,13 @@ TEST_F(PasswordSyncableServiceTest, FailedReadFromPasswordStore) {
   service()->ActOnPasswordStoreChanges(list);
 }
 
-// Disable feature for deleting undecryptable logins.
-TEST_F(PasswordSyncableServiceTest, RecoverPasswordsForSyncUsersDisabled) {
+// Test that passwords are recovered for Sync users using the older logic (i.e.
+// recover passwords only for Sync users) when the feature for deleting
+// corrupted passwords for all users is disabled.
+TEST_F(PasswordSyncableServiceTest, RecoverPasswordsOnlyForSyncUsers) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndDisableFeature(
-      features::kRecoverPasswordsForSyncUsers);
-  auto error_factory = std::make_unique<syncer::SyncErrorFactoryMock>();
-  syncer::SyncError error(FROM_HERE, syncer::SyncError::DATATYPE_ERROR,
-                          "Failed to get passwords from store.",
-                          syncer::PASSWORDS);
-  EXPECT_CALL(*error_factory, CreateAndUploadError(_, _))
-      .WillOnce(Return(error));
-
-  EXPECT_CALL(*password_store(), FillAutofillableLogins(_))
-      .WillOnce(Return(false));
-  EXPECT_CALL(*password_store(), DeleteUndecryptableLogins()).Times(0);
-
-  syncer::SyncMergeResult result = service()->MergeDataAndStartSyncing(
-      syncer::PASSWORDS, SyncDataList(), std::move(processor_),
-      std::move(error_factory));
-  EXPECT_TRUE(result.error().IsSet());
-}
-
-// Test that passwords are recovered for Sync users using the older feature
-// (kRecoverPasswordsForSyncUsers) when feature for recovering passwords for
-// Sync users is enabled, while feature for deleting corrupted passwords for
-// all users is disabled.
-TEST_F(PasswordSyncableServiceTest, RecoverPasswordsForSyncUsersEnabled) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {features::kRecoverPasswordsForSyncUsers},
-      {features::kDeleteCorruptedPasswords});
+      features::kDeleteCorruptedPasswords);
 
   EXPECT_CALL(*processor_, ProcessSyncChanges(_, IsEmpty()));
   EXPECT_CALL(*password_store(), FillAutofillableLogins(_))
@@ -585,15 +559,11 @@ TEST_F(PasswordSyncableServiceTest, RecoverPasswordsForSyncUsersEnabled) {
   EXPECT_FALSE(result.error().IsSet());
 }
 
-// Test that passwords are not recovered using the older feature
-// (kRecoverPasswordForSyncUsers) when merging data if both features for
-// recovering passwords for Sync users and deleting passwords for all users
-// are enabled.
+// Test that passwords are not recovered when merging data if the feature for
+// deleting passwords for all users is enabled.
 TEST_F(PasswordSyncableServiceTest, PasswordRecoveryForAllUsersEnabled) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures({features::kRecoverPasswordsForSyncUsers,
-                                        features::kDeleteCorruptedPasswords},
-                                       {});
+  scoped_feature_list.InitAndEnableFeature(features::kDeleteCorruptedPasswords);
 
   auto error_factory = std::make_unique<syncer::SyncErrorFactoryMock>();
   syncer::SyncError error(FROM_HERE, syncer::SyncError::DATATYPE_ERROR,
@@ -622,9 +592,8 @@ TEST_F(PasswordSyncableServiceTest, PasswordRecoveryForAllUsersEnabled) {
 #endif
 TEST_F(PasswordSyncableServiceTest, MAYBE_FailedDeleteUndecryptableLogins) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {features::kRecoverPasswordsForSyncUsers},
-      {features::kDeleteCorruptedPasswords});
+  scoped_feature_list.InitAndDisableFeature(
+      features::kDeleteCorruptedPasswords);
   auto error_factory = std::make_unique<syncer::SyncErrorFactoryMock>();
   syncer::SyncError error(
       FROM_HERE, syncer::SyncError::DATATYPE_ERROR,
