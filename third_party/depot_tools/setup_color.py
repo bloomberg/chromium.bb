@@ -5,12 +5,42 @@
 
 from __future__ import print_function
 
+import ctypes
 import os
+import platform
+import subprocess
 import sys
 import colorama
 
 IS_TTY = None
 OUT_TYPE = 'unknown'
+
+
+def enable_native_ansi():
+  """Enables native ANSI sequences in console. Windows 10 only.
+
+  Returns whether successful.
+  """
+  kernel32 = ctypes.windll.kernel32
+  ENABLE_VIRTUAL_TERMINAL_PROCESSING = 0x04
+
+  out_handle = kernel32.GetStdHandle(subprocess.STD_OUTPUT_HANDLE)
+
+  # GetConsoleMode fails if the terminal isn't native.
+  mode = ctypes.wintypes.DWORD()
+  if kernel32.GetConsoleMode(out_handle, ctypes.byref(mode)) == 0:
+    return False
+
+  if not (mode.value & ENABLE_VIRTUAL_TERMINAL_PROCESSING):
+    if kernel32.SetConsoleMode(
+        out_handle, mode.value | ENABLE_VIRTUAL_TERMINAL_PROCESSING) == 0:
+      print(
+          'kernel32.SetConsoleMode to enable ANSI sequences failed',
+          file=sys.stderr)
+      return False
+
+  return True
+
 
 def init():
   # should_wrap instructs colorama to wrap stdout/stderr with an ASNI colorcode
@@ -30,7 +60,6 @@ def init():
     OUT_TYPE = 'file (win)'
 
     import msvcrt
-    import ctypes
     h = msvcrt.get_osfhandle(sys.stdout.fileno())
     # h is the win32 HANDLE for stdout.
     ftype = ctypes.windll.kernel32.GetFileType(h)
@@ -67,7 +96,7 @@ def init():
         _fields_ = [('Name', UNICODE_STRING),
                     ('NameBuffer', ctypes.c_wchar_p)]
 
-      buf = ctypes.create_string_buffer('\0', 1024)
+      buf = ctypes.create_string_buffer(1024)
       # Ask NT what the name of the object our stdout HANDLE is. It would be
       # possible to use GetFileInformationByHandleEx, but it's only available
       # on Vista+. If you're reading this in 2017 or later, feel free to
@@ -87,6 +116,11 @@ def init():
   else:
     # This is non-windows, so we trust isatty.
     OUT_TYPE = 'pipe or file'
+
+  # Enable native ANSI color codes on Windows 10.
+  if IS_TTY and platform.release() == '10':
+    if enable_native_ansi():
+      should_wrap = False
 
   colorama.init(wrap=should_wrap)
 
