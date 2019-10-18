@@ -20970,6 +20970,7 @@ Called by update_net_error_codes.py.-->
   <int value="1394" label="AUTOTESTPRIVATE_GETAPPWINDOWLIST"/>
   <int value="1395" label="AUTOTESTPRIVATE_SETAPPWINDOWSTATE"/>
   <int value="1396" label="AUTOTESTPRIVATE_CLOSEAPPWINDOW"/>
+  <int value="1397" label="AUTOTESTPRIVATE_REFRESHENTERPRISEPOLICIES"/>
 </enum>
 
 <enum name="ExtensionIconState">
