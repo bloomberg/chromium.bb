@@ -1348,8 +1348,8 @@ const FeatureEntry::FeatureVariation kQuietNotificationPromptsVariations[] = {
 // TODO(crbug.com/991082,1015377): Remove after proper support for back-forward
 // cache is implemented.
 const FeatureEntry::FeatureParam kBackForwardCache_ExtendedSupport[] = {
-    {"experimental extended supported feature set", "true"},
-};
+    {"service_worker_supported", "true"},
+    {"geolocation_supported", "true"}};
 
 const FeatureEntry::FeatureVariation kBackForwardCacheVariations[] = {
     {"experimental extended supported feature set",
