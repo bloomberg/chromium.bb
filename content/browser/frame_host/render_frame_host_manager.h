@@ -590,11 +590,6 @@ class CONTENT_EXPORT RenderFrameHostManager
   // Delete a RenderFrameProxyHost owned by this object.
   void DeleteRenderFrameProxyHost(SiteInstance* site_instance);
 
-  // Returns whether this tab should transition to a new renderer for
-  // cross-site URLs.  Enabled unless we see the --single-process command line
-  // switch.
-  bool ShouldTransitionCrossSite();
-
   // Returns true if for the navigation from |current_effective_url| to
   // |new_effective_url|, a new SiteInstance and BrowsingInstance should be
   // created (even if we are in a process model that doesn't usually swap).

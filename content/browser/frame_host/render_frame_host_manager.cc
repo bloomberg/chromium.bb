@@ -1088,13 +1088,6 @@ void RenderFrameHostManager::DeleteRenderFrameProxyHost(
   proxy_hosts_.erase(site_instance->GetId());
 }
 
-bool RenderFrameHostManager::ShouldTransitionCrossSite() {
-  // False in single-process mode, which does not support cross-process
-  // navigations or OOPIFs.
-  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kSingleProcess);
-}
-
 bool RenderFrameHostManager::ShouldSwapBrowsingInstancesForNavigation(
     const GURL& current_effective_url,
     bool current_is_view_source_mode,
@@ -1278,12 +1271,10 @@ RenderFrameHostManager::GetSiteInstanceForNavigation(
       dest_is_view_source_mode, is_failure);
   SiteInstanceDescriptor new_instance_descriptor =
       SiteInstanceDescriptor(current_instance);
-  if (ShouldTransitionCrossSite() || force_swap) {
-    new_instance_descriptor = DetermineSiteInstanceForURL(
-        dest_url, source_instance, current_instance, dest_instance, transition,
-        is_failure, dest_is_restore, dest_is_view_source_mode, force_swap,
-        was_server_redirect);
-  }
+  new_instance_descriptor = DetermineSiteInstanceForURL(
+      dest_url, source_instance, current_instance, dest_instance, transition,
+      is_failure, dest_is_restore, dest_is_view_source_mode, force_swap,
+      was_server_redirect);
 
   scoped_refptr<SiteInstance> new_instance =
       ConvertToSiteInstance(new_instance_descriptor, candidate_instance);
