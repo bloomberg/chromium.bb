@@ -12,6 +12,7 @@ import glob
 import grp
 import os
 import pwd
+import sys
 
 import mock
 
@@ -145,7 +146,11 @@ class TestOsutils(cros_test_lib.TempDirTestCase):
 
   def testSafeMakedirs_error(self):
     """Check error paths."""
-    self.assertRaises(OSError, osutils.SafeMakedirs, '/foo/bar/cow/moo/wee')
+    with self.assertRaises(OSError):
+      osutils.SafeMakedirs('/foo/bar/cow/moo/wee')
+      ret = cros_build_lib.run(['ls', '-Rla', '/foo'], check=False,
+                               capture_output=True)
+      print('ls output of /foo:\n{{{%s}}}' % (ret.stdout,), file=sys.stderr)
     self.assertRaises(OSError, osutils.SafeMakedirs, '')
 
   def testSafeMakedirsSudo(self):
