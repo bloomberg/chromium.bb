@@ -188,11 +188,15 @@ void av1_setup_pc_tree(AV1_COMMON *cm, ThreadData *td) {
   // Set up the root node for the largest superblock size
   i = MAX_MIB_SIZE_LOG2 - MIN_MIB_SIZE_LOG2;
   td->pc_root[i] = &td->pc_tree[tree_nodes - 1];
+#if CONFIG_INTERNAL_STATS
   td->pc_root[i]->none.best_mode_index = 2;
+#endif  // CONFIG_INTERNAL_STATS
   // Set up the root nodes for the rest of the possible superblock sizes
   while (--i >= 0) {
     td->pc_root[i] = td->pc_root[i + 1]->split[0];
+#if CONFIG_INTERNAL_STATS
     td->pc_root[i]->none.best_mode_index = 2;
+#endif  // CONFIG_INTERNAL_STATS
   }
 }
 
@@ -223,7 +227,9 @@ void av1_copy_tree_context(PICK_MODE_CONTEXT *dst_ctx,
 
   dst_ctx->num_4x4_blk = src_ctx->num_4x4_blk;
   dst_ctx->skippable = src_ctx->skippable;
+#if CONFIG_INTERNAL_STATS
   dst_ctx->best_mode_index = src_ctx->best_mode_index;
+#endif  // CONFIG_INTERNAL_STATS
 
   memcpy(dst_ctx->blk_skip, src_ctx->blk_skip,
          sizeof(uint8_t) * src_ctx->num_4x4_blk);

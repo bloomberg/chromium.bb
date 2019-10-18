@@ -7218,7 +7218,11 @@ static AOM_INLINE void estimate_ref_frame_costs(
 }
 
 static AOM_INLINE void store_coding_context(
+#if CONFIG_INTERNAL_STATS
     MACROBLOCK *x, PICK_MODE_CONTEXT *ctx, int mode_index,
+#else
+    MACROBLOCK *x, PICK_MODE_CONTEXT *ctx,
+#endif  // CONFIG_INTERNAL_STATS
     int64_t comp_pred_diff[REFERENCE_MODES], int skippable) {
   MACROBLOCKD *const xd = &x->e_mbd;
 
@@ -7226,7 +7230,9 @@ static AOM_INLINE void store_coding_context(
   // restored if we decide to encode this way
   ctx->rd_stats.skip = x->skip;
   ctx->skippable = skippable;
+#if CONFIG_INTERNAL_STATS
   ctx->best_mode_index = mode_index;
+#endif  // CONFIG_INTERNAL_STATS
   ctx->mic = *xd->mi[0];
   ctx->mbmi_ext = *x->mbmi_ext;
   ctx->single_pred_diff = (int)comp_pred_diff[SINGLE_REFERENCE];
@@ -13407,9 +13413,14 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
 
   assert(search_state.best_mode_index >= 0);
 
+#if CONFIG_INTERNAL_STATS
   store_coding_context(x, ctx, search_state.best_mode_index,
                        search_state.best_pred_diff,
                        search_state.best_mode_skippable);
+#else
+  store_coding_context(x, ctx, search_state.best_pred_diff,
+                       search_state.best_mode_skippable);
+#endif  // CONFIG_INTERNAL_STATS
 
   if (pmi->palette_size[1] > 0) {
     assert(try_palette);
@@ -13966,9 +13977,14 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
 
   assert(search_state.best_mode_index >= 0);
 
+#if CONFIG_INTERNAL_STATS
   store_coding_context(x, ctx, search_state.best_mode_index,
                        search_state.best_pred_diff,
                        search_state.best_mode_skippable);
+#else
+  store_coding_context(x, ctx, search_state.best_pred_diff,
+                       search_state.best_mode_skippable);
+#endif  // CONFIG_INTERNAL_STATS
 }
 
 void av1_rd_pick_inter_mode_sb_seg_skip(const AV1_COMP *cpi,
@@ -14090,7 +14106,11 @@ void av1_rd_pick_inter_mode_sb_seg_skip(const AV1_COMP *cpi,
 
   av1_zero(best_pred_diff);
 
+#if CONFIG_INTERNAL_STATS
   store_coding_context(x, ctx, THR_GLOBALMV, best_pred_diff, 0);
+#else
+  store_coding_context(x, ctx, best_pred_diff, 0);
+#endif  // CONFIG_INTERNAL_STATS
 }
 
 struct calc_target_weighted_pred_ctxt {

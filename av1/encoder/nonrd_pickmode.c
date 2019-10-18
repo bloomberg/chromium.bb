@@ -878,8 +878,12 @@ static INLINE void init_mbmi(MB_MODE_INFO *mbmi, PREDICTION_MODE pred_mode,
   set_default_interp_filters(mbmi, cm->interp_filter);
 }
 
+#if CONFIG_INTERNAL_STATS
 static void store_coding_context(MACROBLOCK *x, PICK_MODE_CONTEXT *ctx,
                                  int mode_index) {
+#else
+static void store_coding_context(MACROBLOCK *x, PICK_MODE_CONTEXT *ctx) {
+#endif  // CONFIG_INTERNAL_STATS
   MACROBLOCKD *const xd = &x->e_mbd;
 
   // Take a snapshot of the coding context so it can be
@@ -888,7 +892,9 @@ static void store_coding_context(MACROBLOCK *x, PICK_MODE_CONTEXT *ctx,
   memcpy(ctx->blk_skip, x->blk_skip, sizeof(x->blk_skip[0]) * ctx->num_4x4_blk);
   av1_copy_array(ctx->tx_type_map, xd->tx_type_map, ctx->num_4x4_blk);
   ctx->skippable = x->skip;
+#if CONFIG_INTERNAL_STATS
   ctx->best_mode_index = mode_index;
+#endif  // CONFIG_INTERNAL_STATS
   ctx->mic = *xd->mi[0];
   ctx->mbmi_ext = *x->mbmi_ext;
   ctx->comp_pred_diff = 0;
@@ -1944,7 +1950,11 @@ void av1_fast_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     }
   }
 
+#if CONFIG_INTERNAL_STATS
   store_coding_context(x, ctx, mi->mode);
+#else
+  store_coding_context(x, ctx);
+#endif  // CONFIG_INTERNAL_STATS
 #if COLLECT_PICK_MODE_STAT
   aom_usec_timer_mark(&ms_stat.timer2);
   ms_stat.avg_block_times[bsize] += aom_usec_timer_elapsed(&ms_stat.timer2);
