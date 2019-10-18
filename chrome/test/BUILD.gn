@@ -3011,6 +3011,8 @@ test("unit_tests") {
     "../browser/mac/keystone_glue_unittest.mm",
     "../browser/media/android/router/media_router_android_unittest.cc",
     "../browser/media/cast_mirroring_service_host_unittest.cc",
+    "../browser/media/history/media_history_keyed_service_factory_unittest.cc",
+    "../browser/media/history/media_history_store_unittest.cc",
     "../browser/media/media_engagement_contents_observer_unittest.cc",
     "../browser/media/media_engagement_preloaded_list_unittest.cc",
     "../browser/media/media_engagement_score_unittest.cc",
