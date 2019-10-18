@@ -83,8 +83,8 @@ bool IsExtendedSupportEnabled() {
 }
 
 uint64_t GetDisallowedFeatures(RenderFrameHostImpl* rfh) {
-  // TODO(lowell): Finalize disallowed feature list, and test for each
-  // disallowed feature.
+  // TODO(https://crbug.com/1015784): Finalize disallowed feature list, and test
+  // for each disallowed feature.
   constexpr uint64_t kAlwaysDisallowedFeatures =
       ToFeatureBit(WebSchedulerTrackedFeature::kWebRTC) |
       ToFeatureBit(WebSchedulerTrackedFeature::kContainsPlugins) |
