@@ -157,6 +157,10 @@ class TabHoverCardEventSniffer : public ui::EventHandler {
       hover_card_->FadeOutToHide();
   }
 
+  void OnGestureEvent(ui::GestureEvent* event) override {
+    hover_card_->FadeOutToHide();
+  }
+
  private:
   TabHoverCardBubbleView* const hover_card_;
   TabStrip* tab_strip_;
