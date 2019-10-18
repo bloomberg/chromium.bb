@@ -1,16 +1,16 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_METRICS_ANDROID_METRICS_PROVIDER_H_
-#define CHROME_BROWSER_METRICS_ANDROID_METRICS_PROVIDER_H_
+#ifndef COMPONENTS_METRICS_ANDROID_METRICS_PROVIDER_H_
+#define COMPONENTS_METRICS_ANDROID_METRICS_PROVIDER_H_
 
 #include "base/macros.h"
 #include "components/metrics/metrics_provider.h"
 
 namespace metrics {
+
 class ChromeUserMetricsExtension;
-}
 
 // AndroidMetricsProvider provides Android-specific stability metrics.
 class AndroidMetricsProvider : public metrics::MetricsProvider {
@@ -28,4 +28,6 @@ class AndroidMetricsProvider : public metrics::MetricsProvider {
   DISALLOW_COPY_AND_ASSIGN(AndroidMetricsProvider);
 };
 
-#endif  // CHROME_BROWSER_METRICS_ANDROID_METRICS_PROVIDER_H_
+}  // namespace metrics
+
+#endif  // COMPONENTS_METRICS_ANDROID_METRICS_PROVIDER_H_

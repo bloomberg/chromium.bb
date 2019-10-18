@@ -105,8 +105,9 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/metrics/android_metrics_provider.h"
+#include "chrome/browser/metrics/chrome_android_metrics_provider.h"
 #include "chrome/browser/metrics/page_load_metrics_provider.h"
+#include "components/metrics/android_metrics_provider.h"
 #else
 #include "chrome/browser/metrics/browser_activity_watcher.h"
 #endif
@@ -677,7 +678,9 @@ void ChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
 
 #if defined(OS_ANDROID)
   metrics_service_->RegisterMetricsProvider(
-      std::make_unique<AndroidMetricsProvider>());
+      std::make_unique<metrics::AndroidMetricsProvider>());
+  metrics_service_->RegisterMetricsProvider(
+      std::make_unique<ChromeAndroidMetricsProvider>());
   metrics_service_->RegisterMetricsProvider(
       std::make_unique<PageLoadMetricsProvider>());
 #endif  // defined(OS_ANDROID)
