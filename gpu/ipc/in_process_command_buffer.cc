@@ -680,7 +680,8 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
       if (!context_state_) {
         context_state_ = base::MakeRefCounted<SharedContextState>(
             gl_share_group_, surface_, real_context,
-            use_virtualized_gl_context_, base::DoNothing());
+            use_virtualized_gl_context_, base::DoNothing(),
+            task_executor_->gpu_preferences().gr_context_type);
         context_state_->InitializeGL(task_executor_->gpu_preferences(),
                                      context_group_->feature_info());
         context_state_->InitializeGrContext(workarounds, params.gr_shader_cache,

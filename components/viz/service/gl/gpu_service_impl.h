@@ -255,7 +255,10 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
   }
 
 #if BUILDFLAG(ENABLE_VULKAN)
-  bool is_using_vulkan() const { return !!vulkan_context_provider_; }
+  bool is_using_vulkan() const {
+    return !!vulkan_context_provider_ &&
+           gpu_preferences_.gr_context_type == gpu::GrContextType::kVulkan;
+  }
   VulkanContextProvider* vulkan_context_provider() {
     return vulkan_context_provider_.get();
   }

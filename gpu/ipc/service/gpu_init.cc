@@ -377,6 +377,9 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
     }
   }
   if (!vulkan_implementation_) {
+    if (gpu_preferences_.gr_context_type == gpu::GrContextType::kVulkan) {
+      gpu_preferences_.gr_context_type = gpu::GrContextType::kGL;
+    }
     gpu_preferences_.use_vulkan = gpu::VulkanImplementationName::kNone;
     gpu_feature_info_.status_values[gpu::GPU_FEATURE_TYPE_VULKAN] =
         gpu::kGpuFeatureStatusDisabled;

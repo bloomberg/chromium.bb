@@ -481,6 +481,7 @@ scoped_refptr<SharedContextState> GpuChannelManager::GetSharedContextState(
       use_virtualized_gl_contexts,
       base::BindOnce(&GpuChannelManager::OnContextLost, base::Unretained(this),
                      /*synthetic_loss=*/false),
+      gpu_preferences_.gr_context_type,
       vulkan_context_provider_, metal_context_provider_);
 
   // OOP-R needs GrContext for raster tiles.
@@ -492,7 +493,7 @@ scoped_refptr<SharedContextState> GpuChannelManager::GetSharedContextState(
   need_gr_context |= features::IsUsingSkiaRenderer();
 
   if (need_gr_context) {
-    if (!vulkan_context_provider_ && !metal_context_provider_) {
+    if (gpu_preferences_.gr_context_type == gpu::GrContextType::kGL) {
       auto feature_info = base::MakeRefCounted<gles2::FeatureInfo>(
           gpu_driver_bug_workarounds(), gpu_feature_info());
       if (!shared_context_state_->InitializeGL(gpu_preferences_,
