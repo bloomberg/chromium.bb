@@ -181,8 +181,6 @@ shared_library("blpwtk2") {
     "private/blpwtk2_queuepumpscheduler.h",
     "private/blpwtk2_rendercompositor.cc",
     "private/blpwtk2_rendercompositor.h",
-    "private/blpwtk2_rendereriothread.cc",
-    "private/blpwtk2_rendereriothread.h",
     "private/blpwtk2_rendererutil.cc",
     "private/blpwtk2_rendererutil.h",
     "private/blpwtk2_rendermessagedelegate.cc",

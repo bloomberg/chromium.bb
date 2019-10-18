@@ -70,7 +70,6 @@
 #include <content/browser/browser_main_loop.h>
 #include <content/browser/browser_thread_impl.h>
 #include <gin/public/v8_platform.h>
-#include <mojo/public/cpp/system/wait_set.h>
 #include <sandbox/win/src/win_utils.h>
 #include <services/service_manager/public/cpp/service_executable/switches.h>
 #include <services/service_manager/sandbox/switches.h>
@@ -666,9 +665,6 @@ ToolkitImpl::ToolkitImpl(const std::string&              dictionaryPath,
         DCHECK(!currentHostChannel.empty());
         ContentBrowserClientImpl* pBrowserClientImpl = d_mainDelegate.GetContentBrowserClientImpl();
         startRenderer(isHost, channelInfo, pBrowserClientImpl ? pBrowserClientImpl->GetClientInvitation() : nullptr);
-
-        renderer_io_thread_ = std::make_unique<RendererIOThread>();
-        mojo::WaitSet::SetProxy(renderer_io_thread_->proxy());
     }
 
     else if (isHost && browserV8Enabled && Statics::isOriginalThreadMode()) {
@@ -698,9 +694,6 @@ ToolkitImpl::~ToolkitImpl()
     detachGPUDataLogObserver();
 
     if (Statics::isRendererMainThreadMode()) {
-        mojo::WaitSet::SetProxy(nullptr);
-        renderer_io_thread_.reset();
-
         if (d_browserThread.get()) {
             d_browserThread->task_runner()->PostTask(
                 FROM_HERE,
