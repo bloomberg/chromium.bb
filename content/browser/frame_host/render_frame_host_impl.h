@@ -1207,6 +1207,13 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void EnterFullscreen(blink::mojom::FullscreenOptionsPtr options) override;
   void ExitFullscreen() override;
   void FullscreenStateChanged(bool is_fullscreen) override;
+  void RegisterProtocolHandler(const std::string& scheme,
+                               const GURL& url,
+                               const base::string16& title,
+                               bool user_gesture) override;
+  void UnregisterProtocolHandler(const std::string& scheme,
+                                 const GURL& url,
+                                 bool user_gesture) override;
 
  protected:
   friend class RenderFrameHostFactory;

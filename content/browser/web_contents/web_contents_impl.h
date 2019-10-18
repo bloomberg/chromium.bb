@@ -638,6 +638,15 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void OnThemeColorChanged(RenderFrameHostImpl* source,
                            const base::Optional<SkColor>& theme_color) override;
   bool IsFrameLowPriority(const RenderFrameHost* render_frame_host) override;
+  void RegisterProtocolHandler(RenderFrameHostImpl* source,
+                               const std::string& protocol,
+                               const GURL& url,
+                               const base::string16& title,
+                               bool user_gesture) override;
+  void UnregisterProtocolHandler(RenderFrameHostImpl* source,
+                                 const std::string& protocol,
+                                 const GURL& url,
+                                 bool user_gesture) override;
 
   // RenderViewHostDelegate ----------------------------------------------------
   RenderViewHostDelegateView* GetDelegateView() override;
@@ -1304,15 +1313,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       RenderViewHostImpl* source,
       const blink::WebTextAutosizerPageInfo& page_info);
 
-  void OnRegisterProtocolHandler(RenderFrameHostImpl* source,
-                                 const std::string& protocol,
-                                 const GURL& url,
-                                 const base::string16& title,
-                                 bool user_gesture);
-  void OnUnregisterProtocolHandler(RenderFrameHostImpl* source,
-                                   const std::string& protocol,
-                                   const GURL& url,
-                                   bool user_gesture);
   void OnDomOperationResponse(RenderFrameHostImpl* source,
                               const std::string& json_string);
   void OnUpdatePageImportanceSignals(RenderFrameHostImpl* source,

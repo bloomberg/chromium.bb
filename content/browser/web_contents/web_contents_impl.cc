@@ -912,10 +912,6 @@ bool WebContentsImpl::OnMessageReceived(RenderFrameHostImpl* render_frame_host,
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidRunContentWithCertificateErrors,
                         OnDidRunContentWithCertificateErrors)
     IPC_MESSAGE_HANDLER(FrameHostMsg_GoToEntryAtOffset, OnGoToEntryAtOffset)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_RegisterProtocolHandler,
-                        OnRegisterProtocolHandler)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_UnregisterProtocolHandler,
-                        OnUnregisterProtocolHandler)
     IPC_MESSAGE_HANDLER(FrameHostMsg_UpdatePageImportanceSignals,
                         OnUpdatePageImportanceSignals)
     IPC_MESSAGE_HANDLER(FrameHostMsg_UpdateFaviconURL, OnUpdateFaviconURL)
@@ -4930,11 +4926,11 @@ void WebContentsImpl::EnumerateDirectory(
     listener->FileSelectionCanceled();
 }
 
-void WebContentsImpl::OnRegisterProtocolHandler(RenderFrameHostImpl* source,
-                                                const std::string& protocol,
-                                                const GURL& url,
-                                                const base::string16& title,
-                                                bool user_gesture) {
+void WebContentsImpl::RegisterProtocolHandler(RenderFrameHostImpl* source,
+                                              const std::string& protocol,
+                                              const GURL& url,
+                                              const base::string16& title,
+                                              bool user_gesture) {
   // TODO(nick): Should we consider |source| here or pass it to the delegate?
   // TODO(nick): Do we need to apply FilterURL to |url|?
   if (!delegate_)
@@ -4950,10 +4946,10 @@ void WebContentsImpl::OnRegisterProtocolHandler(RenderFrameHostImpl* source,
   delegate_->RegisterProtocolHandler(this, protocol, url, user_gesture);
 }
 
-void WebContentsImpl::OnUnregisterProtocolHandler(RenderFrameHostImpl* source,
-                                                  const std::string& protocol,
-                                                  const GURL& url,
-                                                  bool user_gesture) {
+void WebContentsImpl::UnregisterProtocolHandler(RenderFrameHostImpl* source,
+                                                const std::string& protocol,
+                                                const GURL& url,
+                                                bool user_gesture) {
   // TODO(nick): Should we consider |source| here or pass it to the delegate?
   // TODO(nick): Do we need to apply FilterURL to |url|?
   if (!delegate_)
