@@ -126,14 +126,6 @@ DirectoryItemTreeBaseMethods.recordUMASelectedEntry =
 
 Object.freeze(DirectoryItemTreeBaseMethods);
 
-const TREE_ITEM_INNER_HTML = '<div class="tree-row">' +
-    ' <paper-ripple fit class="recenteringTouch"></paper-ripple>' +
-    ' <span class="expand-icon"></span>' +
-    ' <span class="icon"></span>' +
-    ' <span class="label entry-name"></span>' +
-    '</div>' +
-    '<div class="tree-children" role="group"></div>';
-
 ////////////////////////////////////////////////////////////////////////////////
 // TreeItem
 
@@ -223,7 +215,7 @@ class TreeItem extends cr.ui.TreeItem {
    * @override
    */
   get labelElement() {
-    return this.firstElementChild.querySelector('.label');
+    return this.rowElement.querySelector('.label');
   }
 }
 
@@ -273,7 +265,6 @@ class DirectoryItem extends TreeItem {
     // metadata update events.
     this.onMetadataUpdateBound_ = undefined;
   }
-
 
   /**
    * The DirectoryEntry corresponding to this DirectoryItem. This may be
