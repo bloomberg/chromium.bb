@@ -303,12 +303,12 @@
   {
     "name": "autofill-profile-client-validation",
     "owners": [ "parastoog" ],
-    "expiry_milestone": 77
+    "expiry_milestone": 79
   },
   {
     "name": "autofill-profile-server-validation",
     "owners": [ "parastoog" ],
-    "expiry_milestone": 77
+    "expiry_milestone": 79
   },
   {
     "name": "autofill-prune-suggestions",
