@@ -1188,10 +1188,11 @@ class DriveVolumeItem extends VolumeItem {
     super(modelItem, tree);
     this.__proto__ = DriveVolumeItem.prototype;
 
-    this.classList.add('drive-volume');
     if (window.IN_TEST) {
       this.setAttribute('dir-type', 'DriveVolumeItem');
     }
+
+    this.classList.add('drive-volume');
   }
 
   /**
