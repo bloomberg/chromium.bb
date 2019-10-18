@@ -3269,8 +3269,8 @@
             ],
             "experiments": [
                 {
-                    "name": "Control_20190905",
-                    "disable_features": [
+                    "name": "Enabled_20190905",
+                    "enable_features": [
                         "LowerJavaScriptPriorityWhenForceDeferred"
                     ]
                 }
