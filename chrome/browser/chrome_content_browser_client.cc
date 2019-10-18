@@ -2083,11 +2083,10 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
         command_line->AppendSwitch(switches::kAllowSyncXHRInPageDismissal);
       }
 
-      if (profile->ShouldEnableOutOfBlinkCors())
-        command_line->AppendSwitch(network::switches::kEnableOutOfBlinkCors);
-    } else if (base::FeatureList::IsEnabled(
-                   network::features::kOutOfBlinkCors)) {
-      command_line->AppendSwitch(network::switches::kEnableOutOfBlinkCors);
+      if (!profile->ShouldEnableOutOfBlinkCors()) {
+        command_line->AppendSwitch(
+            network::switches::kForceToDisableOutOfBlinkCors);
+      }
     }
 
     if (IsAutoReloadEnabled())
