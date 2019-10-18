@@ -550,7 +550,9 @@ void SVGAnimateElement::WillChangeAnimationTarget() {
   SVGAnimationElement::WillChangeAnimationTarget();
   // Should be cleared by the above.
   DCHECK(!animated_value_);
-  ResetCachedAnimationState();
+  from_property_.Clear();
+  to_property_.Clear();
+  to_at_end_of_duration_property_.Clear();
 }
 
 void SVGAnimateElement::DidChangeAnimationTarget() {
@@ -580,14 +582,6 @@ void SVGAnimateElement::SetAttributeType(
   WillChangeAnimationTarget();
   attribute_type_ = attribute_type;
   DidChangeAnimationTarget();
-}
-
-void SVGAnimateElement::ResetCachedAnimationState() {
-  DCHECK(!animated_value_);
-  InvalidatedValuesCache();
-  from_property_.Clear();
-  to_property_.Clear();
-  to_at_end_of_duration_property_.Clear();
 }
 
 void SVGAnimateElement::Trace(blink::Visitor* visitor) {

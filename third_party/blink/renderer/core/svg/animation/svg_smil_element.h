@@ -139,8 +139,6 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   virtual void WillChangeAnimationTarget();
   virtual void DidChangeAnimationTarget();
 
-  virtual void StartedActiveInterval();
-
   QualifiedName attribute_name_;
 
  private:
@@ -148,6 +146,7 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   void ClearResourceAndEventBaseReferences();
   void ClearConditions();
 
+  void StartedActiveInterval();
   void EndedActiveInterval();
   virtual void UpdateAnimation(float percent,
                                unsigned repeat,
