@@ -15,6 +15,7 @@ from utils import tools
 tools.force_local_third_party()
 
 # third_party/
+import six
 from six.moves import builtins
 
 if sys.platform == 'win32':
@@ -157,14 +158,14 @@ if sys.platform == 'win32':
     not enforced.
     """
     assert os.path.isabs(path), path
-    assert isinstance(path, unicode), path
+    assert isinstance(path, six.text_type), path
     prefix = u'\\\\?\\'
     return path if path.startswith(prefix) else prefix + path
 
 
   def trim(path):
     """Removes '\\\\?\\' when receiving a path."""
-    assert isinstance(path, unicode), path
+    assert isinstance(path, six.text_type), path
     prefix = u'\\\\?\\'
     if path.startswith(prefix):
       path = path[len(prefix):]
@@ -202,7 +203,7 @@ if sys.platform == 'win32':
     """
     # Accept relative links, and implicitly promote source to unicode.
     if isinstance(source, str):
-      source = unicode(source)
+      source = six.text_type(source)
     f = extend(link_name)
     # We need to convert to absolute path, so we can test if it points to a
     # directory or a file.
@@ -270,7 +271,7 @@ if sys.platform == 'win32':
 
   def readlink(path):
     """Reads a symlink on Windows."""
-    path = unicode(path)
+    path = six.text_type(path)
     # Interestingly, when using FILE_FLAG_OPEN_REPARSE_POINT and the destination
     # is not a reparse point, the actual file will be opened. It's the
     # DeviceIoControl() below that will fail with 4390.
@@ -360,7 +361,7 @@ else:
     UnicodeEncodeError because the default encoding is 'ascii'.
     """
     assert os.path.isabs(path), path
-    assert isinstance(path, unicode), path
+    assert isinstance(path, six.text_type), path
     return path.encode('utf-8')
 
 

@@ -102,7 +102,7 @@ if sys.platform == 'win32':
   def QueryDosDevice(drive_letter):
     """Returns the Windows 'native' path for a DOS drive letter."""
     assert re.match(r'^[a-zA-Z]:$', drive_letter), drive_letter
-    assert isinstance(drive_letter, unicode)
+    assert isinstance(drive_letter, six.text_type)
     # Guesswork. QueryDosDeviceW never returns the required number of bytes.
     chars = 1024
     drive_letter = drive_letter
@@ -268,7 +268,7 @@ if sys.platform == 'win32':
 
     On Windows, removes any leading '\\?\'.
     """
-    assert isinstance(p, unicode), repr(p)
+    assert isinstance(p, six.text_type), repr(p)
     if not isabs(p):
       raise ValueError(
           'get_native_path_case(%r): Require an absolute path' % p, p)
@@ -322,7 +322,7 @@ if sys.platform == 'win32':
   def get_luid(name):
     """Returns the LUID for a privilege."""
     luid = LUID()
-    if not LookupPrivilegeValue(None, unicode(name), ctypes.byref(luid)):
+    if not LookupPrivilegeValue(None, six.text_type(name), ctypes.byref(luid)):
       # pylint: disable=undefined-variable
       raise WindowsError('Couldn\'t lookup privilege value')
     return luid
@@ -428,9 +428,9 @@ if sys.platform == 'win32':
     """
     def normalize_path(filename):
       try:
-        return GetLongPathName(unicode(filename)).lower()
+        return GetLongPathName(six.text_type(filename)).lower()
       except:  # pylint: disable=W0702
-        return unicode(filename).lower()
+        return six.text_type(filename).lower()
 
     root_dir = normalize_path(root_dir)
 
@@ -525,7 +525,7 @@ elif sys.platform == 'darwin':
     Technically, it's only HFS+ on OSX that is case preserving and
     insensitive. It's the default setting on HFS+ but can be changed.
     """
-    assert isinstance(path, unicode), repr(path)
+    assert isinstance(path, six.text_type), repr(path)
     if not isabs(path):
       raise ValueError(
           'get_native_path_case(%r): Require an absolute path' % path, path)
@@ -634,7 +634,7 @@ else:  # OSes other than Windows and OSX.
 
     TODO(maruel): This is not strictly true. Implement if necessary.
     """
-    assert isinstance(path, unicode), repr(path)
+    assert isinstance(path, six.text_type), repr(path)
     if not isabs(path):
       raise ValueError(
           'get_native_path_case(%r): Require an absolute path' % path, path)
@@ -865,8 +865,8 @@ def hardlink(source, link_name):
 
   Add support for os.link() on Windows.
   """
-  assert isinstance(source, unicode), source
-  assert isinstance(link_name, unicode), link_name
+  assert isinstance(source, six.text_type), source
+  assert isinstance(link_name, six.text_type), link_name
   if sys.platform == 'win32':
     if not windll.kernel32.CreateHardLinkW(
         fs.extend(link_name), fs.extend(source), 0):
@@ -1019,7 +1019,7 @@ def atomic_replace(path, body):
       os.rename(tmp_name, path)
     else:
       # Flags are MOVEFILE_REPLACE_EXISTING|MOVEFILE_WRITE_THROUGH.
-      MoveFileEx(unicode(tmp_name), unicode(path), 0x1|0x8)
+      MoveFileEx(six.text_type(tmp_name), six.text_type(path), 0x1 | 0x8)
     tmp_name = None # no need to remove it in 'finally' block anymore
   finally:
     if tmp_name:
@@ -1174,9 +1174,10 @@ def rmtree(root):
     processes) had to be used.
   """
   logging.info('rmtree(%s)', root)
-  assert isinstance(root, unicode) or sys.getdefaultencoding() == 'utf-8', (
-      repr(root), sys.getdefaultencoding())
-  root = unicode(root)
+  assert isinstance(root,
+                    six.text_type) or sys.getdefaultencoding() == 'utf-8', (
+                        repr(root), sys.getdefaultencoding())
+  root = six.text_type(root)
   try:
     make_tree_deleteable(root)
   except OSError as e:

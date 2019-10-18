@@ -17,6 +17,8 @@ import sys
 import tempfile
 import time
 
+import six
+
 from utils import file_path
 
 # This works around file locking issue on Windows specifically in the case of
@@ -53,7 +55,7 @@ if sys.platform == 'win32':
 
     See https://bugs.python.org/issue15244 for inspiration.
     """
-    path = unicode(path)
+    path = six.text_type(path)
     handle = ctypes.windll.kernel32.CreateFileW(
         path,
         GENERIC_READ|GENERIC_WRITE,
@@ -202,7 +204,8 @@ def prepare_logging(filename, root=None):
   # Setup up logging to a constant file so we can debug issues where
   # the results aren't properly sent to the result URL.
   if filename:
-    file_path.ensure_tree(os.path.dirname(os.path.abspath(unicode(filename))))
+    file_path.ensure_tree(
+        os.path.dirname(os.path.abspath(six.text_type(filename))))
     try:
       rotating_file = NoInheritRotatingFileHandler(
           filename, maxBytes=10 * 1024 * 1024, backupCount=5,
