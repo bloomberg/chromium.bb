@@ -14,9 +14,6 @@ import android.net.Uri;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.rule.ActivityTestRule;
 
-import org.json.JSONObject;
-
-import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -24,7 +21,6 @@ import org.chromium.weblayer.NavigationController;
 import org.chromium.weblayer.shell.WebLayerShellActivity;
 
 import java.lang.reflect.Field;
-import java.util.concurrent.TimeoutException;
 
 /**
  * ActivityTestRule for WebLayerShellActivity.
@@ -33,19 +29,6 @@ import java.util.concurrent.TimeoutException;
  */
 public class WebLayerShellActivityTestRule extends ActivityTestRule<WebLayerShellActivity> {
     private static final long WAIT_FOR_NAVIGATION_TIMEOUT = 10000L;
-
-    private static final class JSONCallbackHelper extends CallbackHelper {
-        private JSONObject mResult;
-
-        public JSONObject getResult() {
-            return mResult;
-        }
-
-        public void notifyCalled(JSONObject result) {
-            mResult = result;
-            notifyCalled();
-        }
-    }
 
     public WebLayerShellActivityTestRule() {
         super(WebLayerShellActivity.class, false, false);
@@ -118,23 +101,5 @@ public class WebLayerShellActivityTestRule extends ActivityTestRule<WebLayerShel
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    /**
-     * Executes the script passed in and waits for the result.
-     */
-    public JSONObject executeScriptSync(String script) {
-        JSONCallbackHelper callbackHelper = new JSONCallbackHelper();
-        int count = callbackHelper.getCallCount();
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            getActivity().getBrowserController().executeScript(
-                    script, (JSONObject result) -> { callbackHelper.notifyCalled(result); });
-        });
-        try {
-            callbackHelper.waitForCallback(count);
-        } catch (TimeoutException e) {
-            throw new RuntimeException(e);
-        }
-        return callbackHelper.getResult();
     }
 }

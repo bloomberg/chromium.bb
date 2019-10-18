@@ -54,9 +54,6 @@ class BrowserControllerImpl : public BrowserController,
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& caller,
       jlong native_top_controls_container_view);
-  void ExecuteScript(JNIEnv* env,
-                     const base::android::JavaParamRef<jstring>& script,
-                     const base::android::JavaParamRef<jobject>& callback);
 #endif
 
   DownloadDelegate* download_delegate() { return download_delegate_; }
