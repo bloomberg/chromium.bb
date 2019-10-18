@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_PEERCONNECTION_WEBRTC_STATS_REPORT_OBTAINER_H_
-#define THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_PEERCONNECTION_WEBRTC_STATS_REPORT_OBTAINER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_TEST_WEBRTC_STATS_REPORT_OBTAINER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_TEST_WEBRTC_STATS_REPORT_OBTAINER_H_
 
 #include <memory>
 
-#include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "third_party/blink/public/platform/web_rtc_stats.h"
+#include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 
 namespace blink {
 
@@ -20,13 +20,10 @@ namespace blink {
 // thread are executed (see base::RunLoop::Run()) making it safe to wait on the
 // same thread that the stats report callback occurs on without blocking the
 // callback.
-//
-// TODO(crbug.com/787254): Move this class out of the Blink API
-// when all its clients get Onion souped.
-class WebRTCStatsReportObtainer
-    : public base::RefCountedThreadSafe<WebRTCStatsReportObtainer> {
+class TestWebRTCStatsReportObtainer
+    : public WTF::ThreadSafeRefCounted<TestWebRTCStatsReportObtainer> {
  public:
-  WebRTCStatsReportObtainer();
+  TestWebRTCStatsReportObtainer();
 
   blink::WebRTCStatsReportCallback GetStatsCallbackWrapper();
 
@@ -34,9 +31,9 @@ class WebRTCStatsReportObtainer
   blink::WebRTCStatsReport* WaitForReport();
 
  private:
-  friend class base::RefCountedThreadSafe<WebRTCStatsReportObtainer>;
+  friend class WTF::ThreadSafeRefCounted<TestWebRTCStatsReportObtainer>;
   friend class CallbackWrapper;
-  virtual ~WebRTCStatsReportObtainer();
+  virtual ~TestWebRTCStatsReportObtainer();
 
   void OnStatsDelivered(std::unique_ptr<blink::WebRTCStatsReport> report);
 
@@ -46,4 +43,4 @@ class WebRTCStatsReportObtainer
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_PEERCONNECTION_WEBRTC_STATS_REPORT_OBTAINER_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_TEST_WEBRTC_STATS_REPORT_OBTAINER_H_
