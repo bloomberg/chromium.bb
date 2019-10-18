@@ -18,9 +18,9 @@
 #include "media/capture/video/chromeos/mojom/cros_camera_service.mojom.h"
 #include "media/capture/video/chromeos/video_capture_device_factory_chromeos.h"
 #include "media/capture/video/video_capture_device_factory.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/platform/platform_channel_server_endpoint.h"
 
@@ -126,7 +126,7 @@ class CAPTURE_EXPORT CameraHalDispatcherImpl final
   scoped_refptr<base::SingleThreadTaskRunner> proxy_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> blocking_io_task_runner_;
 
-  mojo::BindingSet<cros::mojom::CameraHalDispatcher> binding_set_;
+  mojo::ReceiverSet<cros::mojom::CameraHalDispatcher> receiver_set_;
 
   mojo::Remote<cros::mojom::CameraHalServer> camera_hal_server_;
 

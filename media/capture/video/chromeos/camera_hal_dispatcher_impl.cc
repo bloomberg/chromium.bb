@@ -367,8 +367,9 @@ void CameraHalDispatcherImpl::EstablishMojoChannel(
 void CameraHalDispatcherImpl::OnPeerConnected(
     mojo::ScopedMessagePipeHandle message_pipe) {
   DCHECK(proxy_task_runner_->BelongsToCurrentThread());
-  binding_set_.AddBinding(
-      this, cros::mojom::CameraHalDispatcherRequest(std::move(message_pipe)));
+  receiver_set_.Add(this,
+                    mojo::PendingReceiver<cros::mojom::CameraHalDispatcher>(
+                        std::move(message_pipe)));
   VLOG(1) << "New CameraHalDispatcher binding added";
 }
 
@@ -398,7 +399,7 @@ void CameraHalDispatcherImpl::StopOnProxyThread() {
   cancel_pipe_.reset();
   client_observers_.clear();
   camera_hal_server_.reset();
-  binding_set_.CloseAllBindings();
+  receiver_set_.Clear();
 }
 
 void CameraHalDispatcherImpl::OnTraceLogEnabledOnProxyThread() {
