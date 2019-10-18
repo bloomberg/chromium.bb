@@ -5642,7 +5642,6 @@ if (!is_android) {
         "../browser/ui/views/passwords/password_bubble_interactive_uitest.cc",
         "../browser/ui/views/sad_tab_view_interactive_uitest.cc",
         "../browser/ui/views/status_icons/status_tray_state_changer_interactive_uitest_win.cc",
-        "../browser/ui/views/tab_sharing/tab_sharing_ui_views_browsertest.cc",
         "../browser/ui/views/tabs/tab_drag_controller_interactive_uitest.cc",
         "../browser/ui/views/tabs/tab_drag_controller_interactive_uitest.h",
         "../browser/ui/views/tabs/tab_hover_card_bubble_view_interactive_uitest.cc",
