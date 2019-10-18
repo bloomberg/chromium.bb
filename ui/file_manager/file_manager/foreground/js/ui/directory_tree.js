@@ -1656,38 +1656,30 @@ class ShortcutItem extends cr.ui.TreeItem {
  * A TreeItem representing an Android picker app. These Android app items are
  * shown as top-level volume entries of the DirectoryTree.
  */
-class AndroidAppItem extends cr.ui.TreeItem {
+class AndroidAppItem extends TreeItem {
   /**
    * @param {!NavigationModelAndroidAppItem} modelItem NavigationModelItem
    *     associated with this volume.
    * @param {!DirectoryTree} tree Directory tree.
    */
   constructor(modelItem, tree) {
-    super();
-    // Get the original label id defined by TreeItem, before overwriting
-    // prototype.
-    const labelId = this.labelElement.id;
+    super(modelItem.androidApp.name, tree);
     this.__proto__ = AndroidAppItem.prototype;
 
-    /** @private {!DirectoryTree} */
-    this.parentTree_ = tree;
+    if (window.IN_TEST) {
+      this.setAttribute('dir-type', 'AndroidAppItem');
+    }
 
-    /** @private {!NavigationModelAndroidAppItem} */
     this.modelItem_ = modelItem;
 
-    this.innerHTML = TREE_ITEM_INNER_HTML;
-    this.labelElement.id = labelId;
+    const icon = this.querySelector('.icon');
+    icon.classList.add('item-icon');
 
-    /** @public {string} */
-    this.label = modelItem.androidApp.name;
-
-    const appIcon = this.querySelector('.icon');
-    appIcon.classList.add('item-icon');
     if (modelItem.androidApp.iconSet) {
       const backgroundImage =
           util.iconSetToCSSBackgroundImageValue(modelItem.androidApp.iconSet);
       if (backgroundImage !== 'none') {
-        appIcon.setAttribute('style', 'background-image: ' + backgroundImage);
+        icon.setAttribute('style', 'background-image: ' + backgroundImage);
       }
     }
 
