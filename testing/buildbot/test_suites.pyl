@@ -4117,35 +4117,22 @@
       'webgpu_blink_web_tests': {
         'name': 'webgpu_blink_web_tests',
         'args': [
-          '--additional-driver-flag', '--enable-unsafe-webgpu',
-          '--additional-driver-flag', '--disable-gpu-sandbox',
+          '--additional-driver-flag=--enable-unsafe-webgpu',
           '--driver-logging',
           '--ignore-default-expectations',
           '--additional-expectations=../../third_party/blink/web_tests/WebGPUExpectations',
           '--isolated-script-test-filter=wpt_internal/webgpu/*',
         ],
-        'linux_args': [ '--no-xvfb' ],
-        'merge': {
-          'args': [
-            '--verbose',
-          ],
-          'script': '//third_party/blink/tools/merge_web_test_results.py',
-        },
-        'isolate_name': 'blink_web_tests_exparchive',
-      },
-    },
-
-    'gpu_webgpu_integration_win_x64_isolated_scripts': {
-      'webgpu_blink_web_tests': {
-        'name': 'webgpu_blink_web_tests',
-        'args': [
-          '--additional-driver-flag', '--enable-unsafe-webgpu',
-          '--additional-driver-flag', '--disable-gpu-sandbox',
-          '--driver-logging',
-          '--ignore-default-expectations',
-          '--additional-expectations=../../third_party/blink/web_tests/WebGPUExpectations',
-          '-t', 'Release_x64',
-          '--isolated-script-test-filter=wpt_internal/webgpu/*',
+        'win_args': [ '--additional-driver-flag=--disable-gpu-sandbox' ],
+        'win64_args': [ '--target=Release_x64' ],
+        'mac_args': [
+          # These tests run on 10.14, but web_tests [ Mac ] expectations don't
+          # work correctly yet under 10.14. Pretend it's 10.13.
+          '--platform=mac-mac10.13'
+        ],
+        'linux_args': [
+          '--no-xvfb',
+          '--additional-driver-flag=--disable-gpu-sandbox',
         ],
         'merge': {
           'args': [
@@ -5644,11 +5631,6 @@
     'gpu_dawn_deps_isolated_scripts': [
       'gpu_dawn_perf_smoke_isolated_scripts',
       'gpu_webgpu_integration_isolated_scripts',
-    ],
-
-    'gpu_dawn_deps_win_x64_isolated_scripts': [
-      'gpu_dawn_perf_smoke_isolated_scripts',
-      'gpu_webgpu_integration_win_x64_isolated_scripts',
     ],
 
     'gpu_dawn_tot_isolated_scripts': [
