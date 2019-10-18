@@ -39131,6 +39131,7 @@ from previous Chrome versions.
   <int value="4" label="Password Generation Confirmation"/>
   <int value="5" label="Profile Chooser"/>
   <int value="6" label="Passwords Accessory Sheet"/>
+  <int value="7" label="Touch To Fill"/>
 </enum>
 
 <enum name="ManifestFetchResultType">
