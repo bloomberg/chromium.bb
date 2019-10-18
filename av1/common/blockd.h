@@ -1101,19 +1101,6 @@ motion_mode_allowed(const WarpedMotionParams *gm_params, const MACROBLOCKD *xd,
   }
 }
 
-static INLINE void assert_motion_mode_valid(MOTION_MODE mode,
-                                            const WarpedMotionParams *gm_params,
-                                            const MACROBLOCKD *xd,
-                                            const MB_MODE_INFO *mbmi,
-                                            int allow_warped_motion) {
-  const MOTION_MODE last_motion_mode_allowed =
-      motion_mode_allowed(gm_params, xd, mbmi, allow_warped_motion);
-
-  // Check that the input mode is not illegal
-  if (last_motion_mode_allowed < mode)
-    assert(0 && "Illegal motion mode selected");
-}
-
 static INLINE int is_neighbor_overlappable(const MB_MODE_INFO *mbmi) {
   return (is_inter_block(mbmi));
 }

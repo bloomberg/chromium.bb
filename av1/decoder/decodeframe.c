@@ -741,9 +741,6 @@ static INLINE void dec_build_inter_predictors(const AV1_COMMON *cm,
         MV32 scaled_mv;
         int subpel_x_mv, subpel_y_mv;
         int highbd;
-        WarpTypesAllowed warp_types;
-        warp_types.global_warp_allowed = is_global[ref];
-        warp_types.local_warp_allowed = this_mbmi->motion_mode == WARPED_CAUSAL;
 
         dec_calc_subpel_params(xd, sf, mv, plane, pre_x, pre_y, x, y, pre_buf,
                                &subpel_params, bw, bh, &block, mi_x, mi_y,
@@ -760,16 +757,14 @@ static INLINE void dec_build_inter_predictors(const AV1_COMMON *cm,
           conv_params.do_average = 0;
         }
 
-        av1_init_inter_params(&inter_pred_params, b4_w, b4_h,
-                              (mi_y >> pd->subsampling_y) + y,
-                              (mi_x >> pd->subsampling_x) + x, sf);
+        av1_init_inter_params(
+            &inter_pred_params, b4_w, b4_h, (mi_y >> pd->subsampling_y) + y,
+            (mi_x >> pd->subsampling_x) + x, pd->subsampling_x,
+            pd->subsampling_y, xd->bd, is_cur_buf_hbd(xd), mi->use_intrabc, sf);
 
-        av1_make_inter_predictor(
-            pre, src_stride, dst, dst_buf->stride, &inter_pred_params,
-            &subpel_params, sf, b4_w, b4_h, &conv_params,
-            this_mbmi->interp_filters, &warp_types,
-            (mi_x >> pd->subsampling_x) + x, (mi_y >> pd->subsampling_y) + y,
-            plane, ref, mi, build_for_obmc, xd, cm->allow_warped_motion);
+        av1_make_inter_predictor(pre, src_stride, dst, dst_buf->stride,
+                                 &inter_pred_params, &subpel_params,
+                                 &conv_params, this_mbmi->interp_filters);
 
         ++col;
       }
@@ -836,9 +831,10 @@ static INLINE void dec_build_inter_predictors(const AV1_COMMON *cm,
         conv_params.do_average = 0;
       }
 
-      av1_init_inter_params(&inter_pred_params, bw, bh,
-                            mi_y >> pd->subsampling_y,
-                            mi_x >> pd->subsampling_x, sf);
+      av1_init_inter_params(
+          &inter_pred_params, bw, bh, mi_y >> pd->subsampling_y,
+          mi_x >> pd->subsampling_x, pd->subsampling_x, pd->subsampling_y,
+          xd->bd, is_cur_buf_hbd(xd), mi->use_intrabc, sf);
 
       if (!build_for_obmc)
         av1_init_warp_params(&inter_pred_params, &pd->pre[ref], &warp_types,
@@ -853,9 +849,7 @@ static INLINE void dec_build_inter_predictors(const AV1_COMMON *cm,
       else
         av1_make_inter_predictor(
             pre[ref], src_stride[ref], dst, dst_buf->stride, &inter_pred_params,
-            &subpel_params[ref], sf, bw, bh, &conv_params, mi->interp_filters,
-            &warp_types, mi_x >> pd->subsampling_x, mi_y >> pd->subsampling_y,
-            plane, ref, mi, build_for_obmc, xd, cm->allow_warped_motion);
+            &subpel_params[ref], &conv_params, mi->interp_filters);
     }
   }
 }

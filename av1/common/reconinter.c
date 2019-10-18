@@ -58,13 +58,19 @@ int av1_allow_warp(const MB_MODE_INFO *const mbmi,
 
 void av1_init_inter_params(InterPredParams *inter_pred_params, int block_width,
                            int block_height, int pix_row, int pix_col,
+                           int subsampling_x, int subsampling_y, int bit_depth,
+                           int use_hbd_buf, int is_intrabc,
                            const struct scale_factors *sf) {
   inter_pred_params->block_width = block_width;
   inter_pred_params->block_height = block_height;
   inter_pred_params->pix_row = pix_row;
   inter_pred_params->pix_col = pix_col;
+  inter_pred_params->subsampling_x = subsampling_x;
+  inter_pred_params->subsampling_y = subsampling_y;
+  inter_pred_params->bit_depth = bit_depth;
+  inter_pred_params->use_hbd_buf = use_hbd_buf;
+  inter_pred_params->is_intrabc = is_intrabc;
   inter_pred_params->scale_factors = sf;
-
   inter_pred_params->mode = UNIFORM_PRED;
 }
 
@@ -85,48 +91,49 @@ void av1_init_warp_params(InterPredParams *inter_pred_params,
   inter_pred_params->ref_frame_buf = *ref_buf;
 }
 
-void av1_make_inter_predictor(
-    const uint8_t *src, int src_stride, uint8_t *dst, int dst_stride,
-    const InterPredParams *inter_pred_params, const SubpelParams *subpel_params,
-    const struct scale_factors *sf, int w, int h, ConvolveParams *conv_params,
-    int_interpfilters interp_filters, const WarpTypesAllowed *warp_types,
-    int p_col, int p_row, int plane, int ref, const MB_MODE_INFO *mi,
-    int build_for_obmc, const MACROBLOCKD *xd, int can_use_previous) {
-  // Make sure the selected motion mode is valid for this configuration
-  assert_motion_mode_valid(mi->motion_mode, xd->global_motion, xd, mi,
-                           can_use_previous);
+void av1_make_inter_predictor(const uint8_t *src, int src_stride, uint8_t *dst,
+                              int dst_stride,
+                              InterPredParams *inter_pred_params,
+                              const SubpelParams *subpel_params,
+                              ConvolveParams *conv_params,
+                              int_interpfilters interp_filters) {
   assert(IMPLIES(conv_params->is_compound, conv_params->dst != NULL));
 
-  WarpedMotionParams final_warp_params;
-  const int do_warp =
-      (w >= 8 && h >= 8 &&
-       av1_allow_warp(mi, warp_types, &xd->global_motion[mi->ref_frame[ref]],
-                      build_for_obmc, sf, &final_warp_params));
-  const int is_intrabc = mi->use_intrabc;
-  assert(IMPLIES(is_intrabc, !do_warp));
-
-  (void)do_warp;
-
+  // TODO(jingning): av1_warp_plane() can be further cleaned up.
   if (inter_pred_params->mode == WARP_PRED) {
-    const struct macroblockd_plane *const pd = &xd->plane[plane];
-    const struct buf_2d *const pre_buf = &pd->pre[ref];
-    av1_warp_plane(&final_warp_params, is_cur_buf_hbd(xd), xd->bd,
-                   pre_buf->buf0, pre_buf->width, pre_buf->height,
-                   pre_buf->stride, dst, p_col, p_row, w, h, dst_stride,
-                   pd->subsampling_x, pd->subsampling_y, conv_params);
+    av1_warp_plane(
+        &inter_pred_params->warp_params, inter_pred_params->use_hbd_buf,
+        inter_pred_params->bit_depth, inter_pred_params->ref_frame_buf.buf0,
+        inter_pred_params->ref_frame_buf.width,
+        inter_pred_params->ref_frame_buf.height,
+        inter_pred_params->ref_frame_buf.stride, dst,
+        inter_pred_params->pix_col, inter_pred_params->pix_row,
+        inter_pred_params->block_width, inter_pred_params->block_height,
+        dst_stride, inter_pred_params->subsampling_x,
+        inter_pred_params->subsampling_y, conv_params);
   } else if (inter_pred_params->mode == UNIFORM_PRED) {
+    // TODO(jingning): is_intrabc related convolve function can be refactored
+    // and streamlined.
 #if CONFIG_AV1_HIGHBITDEPTH
-    if (is_cur_buf_hbd(xd)) {
-      highbd_inter_predictor(src, src_stride, dst, dst_stride, subpel_params,
-                             sf, w, h, conv_params, interp_filters, is_intrabc,
-                             xd->bd);
+    if (inter_pred_params->use_hbd_buf) {
+      highbd_inter_predictor(
+          src, src_stride, dst, dst_stride, subpel_params,
+          inter_pred_params->scale_factors, inter_pred_params->block_width,
+          inter_pred_params->block_height, conv_params, interp_filters,
+          inter_pred_params->is_intrabc, inter_pred_params->bit_depth);
     } else {
-      inter_predictor(src, src_stride, dst, dst_stride, subpel_params, sf, w, h,
-                      conv_params, interp_filters, is_intrabc);
+      inter_predictor(src, src_stride, dst, dst_stride, subpel_params,
+                      inter_pred_params->scale_factors,
+                      inter_pred_params->block_width,
+                      inter_pred_params->block_height, conv_params,
+                      interp_filters, inter_pred_params->is_intrabc);
     }
 #else
-    inter_predictor(src, src_stride, dst, dst_stride, subpel_params, sf, w, h,
-                    conv_params, interp_filters, is_intrabc);
+    inter_predictor(src, src_stride, dst, dst_stride, subpel_params,
+                    inter_pred_params->scale_factors,
+                    inter_pred_params->block_width,
+                    inter_pred_params->block_height, conv_params,
+                    interp_filters, inter_pred_params->is_intrabc);
 #endif
   }
 }
@@ -559,7 +566,7 @@ static AOM_INLINE void build_masked_compound_no_round(
 
 void av1_make_masked_inter_predictor(
     const uint8_t *pre, int pre_stride, uint8_t *dst, int dst_stride,
-    const InterPredParams *inter_pred_params, const SubpelParams *subpel_params,
+    InterPredParams *inter_pred_params, const SubpelParams *subpel_params,
     const struct scale_factors *sf, int w, int h, ConvolveParams *conv_params,
     int_interpfilters interp_filters, int plane,
     const WarpTypesAllowed *warp_types, int p_col, int p_row, int ref,
@@ -567,6 +574,12 @@ void av1_make_masked_inter_predictor(
   MB_MODE_INFO *mi = xd->mi[0];
   (void)dst;
   (void)dst_stride;
+  (void)sf;
+  (void)warp_types;
+  (void)p_col;
+  (void)p_row;
+  (void)ref;
+  (void)can_use_previous;
   mi->interinter_comp.seg_mask = xd->seg_mask;
   const INTERINTER_COMPOUND_DATA *comp_data = &mi->interinter_comp;
 
@@ -592,9 +605,8 @@ void av1_make_masked_inter_predictor(
 
   // This will generate a prediction in tmp_buf for the second reference
   av1_make_inter_predictor(pre, pre_stride, tmp_dst, MAX_SB_SIZE,
-                           inter_pred_params, subpel_params, sf, w, h,
-                           conv_params, interp_filters, warp_types, p_col,
-                           p_row, plane, ref, mi, 0, xd, can_use_previous);
+                           inter_pred_params, subpel_params, conv_params,
+                           interp_filters);
 
   if (!plane && comp_data->type == COMPOUND_DIFFWTD) {
     av1_build_compound_diffwtd_mask_d16(
