@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_TRANSLATE_TRANSLATE_INFOBAR_MEDIATOR_H_
-#define IOS_CHROME_BROWSER_UI_TRANSLATE_TRANSLATE_INFOBAR_MEDIATOR_H_
+#ifndef IOS_CHROME_BROWSER_UI_TRANSLATE_LEGACY_TRANSLATE_INFOBAR_MEDIATOR_H_
+#define IOS_CHROME_BROWSER_UI_TRANSLATE_LEGACY_TRANSLATE_INFOBAR_MEDIATOR_H_
 
 #import <Foundation/Foundation.h>
 
@@ -28,7 +28,7 @@ typedef NS_ENUM(NSInteger, TranslatePopupMenuType) {
 // the translate infobar's language selection popup menu as well as translate
 // options popup menus. Also installs the UI handler for the translate options
 // notfications.
-@interface TranslateInfobarMediator : NSObject
+@interface LegacyTranslateInfobarMediator : NSObject
 
 // |selectionHandler| presents and dismisses the language selection UI as well
 // as the translate option selection UI. |notificationHandler| presents and
@@ -65,4 +65,4 @@ typedef NS_ENUM(NSInteger, TranslatePopupMenuType) {
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_TRANSLATE_TRANSLATE_INFOBAR_MEDIATOR_H_
+#endif  // IOS_CHROME_BROWSER_UI_TRANSLATE_LEGACY_TRANSLATE_INFOBAR_MEDIATOR_H_

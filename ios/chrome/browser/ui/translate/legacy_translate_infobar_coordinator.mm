@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/translate/translate_infobar_coordinator.h"
+#import "ios/chrome/browser/ui/translate/legacy_translate_infobar_coordinator.h"
 
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
@@ -19,7 +19,7 @@
 #import "ios/chrome/browser/ui/popup_menu/public/popup_menu_table_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/popup_menu/public/popup_menu_ui_constants.h"
 #import "ios/chrome/browser/ui/translate/cells/select_language_popup_menu_item.h"
-#import "ios/chrome/browser/ui/translate/translate_infobar_mediator.h"
+#import "ios/chrome/browser/ui/translate/legacy_translate_infobar_mediator.h"
 #import "ios/chrome/browser/ui/translate/translate_notification_presenter.h"
 #import "ios/chrome/browser/ui/util/layout_guide_names.h"
 
@@ -30,17 +30,18 @@
 NSString* const kLanguageSelectorPopupMenuId = @"kLanguageSelectorPopupMenuId";
 NSString* const kTranslateOptionsPopupMenuId = @"kTranslateOptionsPopupMenuId";
 
-@interface TranslateInfobarCoordinator () <LanguageSelectionHandler,
-                                           PopupMenuPresenterDelegate,
-                                           PopupMenuTableViewControllerDelegate,
-                                           TranslateOptionSelectionHandler>
+@interface LegacyTranslateInfobarCoordinator () <
+    LanguageSelectionHandler,
+    PopupMenuPresenterDelegate,
+    PopupMenuTableViewControllerDelegate,
+    TranslateOptionSelectionHandler>
 
 // The WebStateList this coordinator observes.
 @property(nonatomic, assign) WebStateList* webStateList;
 // Presenter for the popup menu, managing the animations.
 @property(nonatomic, strong) PopupMenuPresenter* popupMenuPresenter;
 // Mediator for the popup menu.
-@property(nonatomic, strong) TranslateInfobarMediator* mediator;
+@property(nonatomic, strong) LegacyTranslateInfobarMediator* mediator;
 // Presenter for the translate notifications.
 @property(nonatomic, strong)
     TranslateNotificationPresenter* notificationPresenter;
@@ -59,7 +60,7 @@ NSString* const kTranslateOptionsPopupMenuId = @"kTranslateOptionsPopupMenuId";
 
 @end
 
-@implementation TranslateInfobarCoordinator
+@implementation LegacyTranslateInfobarCoordinator
 
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
                               browserState:
@@ -85,7 +86,7 @@ NSString* const kTranslateOptionsPopupMenuId = @"kTranslateOptionsPopupMenuId";
   self.notificationPresenter = [[TranslateNotificationPresenter alloc]
       initWithDispatcher:self.dispatcher];
 
-  self.mediator = [[TranslateInfobarMediator alloc]
+  self.mediator = [[LegacyTranslateInfobarMediator alloc]
       initWithSelectionHandler:self
            notificationHandler:self.notificationPresenter];
   self.mediator.webStateList = self.webStateList;
