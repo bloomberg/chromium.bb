@@ -27,6 +27,10 @@ _GOMA_COMPILER_PROXY_LOG_URL_TEMPLATE = (
     'https://chromium-build-stats.appspot.com/compiler_proxy_log/%s/%s')
 _GOMA_NINJA_LOG_URL_TEMPLATE = (
     'https://chromium-build-stats.appspot.com/ninja_log/%s/%s')
+GomaApproach = collections.namedtuple(
+    'GomaApproach', ['rpc_extra_params',
+                     'server_host',
+                     'arbitrary_toolchain_support'])
 
 
 class Goma(object):
@@ -74,7 +78,8 @@ class Goma(object):
   }
 
   def __init__(self, goma_dir, goma_client_json, goma_tmp_dir=None,
-               stage_name=None, chromeos_goma_dir=None, chroot_dir=None):
+               stage_name=None, chromeos_goma_dir=None, chroot_dir=None,
+               goma_approach=None):
     """Initializes Goma instance.
 
     This ensures that |self.goma_log_dir| directory exists (if missing,
@@ -98,6 +103,8 @@ class Goma(object):
                          If None, goma_dir will be used instead.
       chroot_dir: The base chroot path to use when the chroot path is not at
         the default location.
+      goma_approach: Indicates some extra environment variables to set when
+        testing alternative goma approaches.
 
     Raises:
       ValueError if 1) |goma_dir| does not point to a directory, 2)
@@ -127,6 +134,7 @@ class Goma(object):
 
     self.linux_goma_dir = goma_dir
     self.chromeos_goma_dir = chromeos_goma_dir
+    self.goma_approach = goma_approach
     # If Goma dir for ChromeOS SDK does not set, fallback to use goma_dir.
     if self.chromeos_goma_dir is None:
       self.chromeos_goma_dir = goma_dir
@@ -195,6 +203,11 @@ class Goma(object):
       result['GOMA_SERVICE_ACCOUNT_JSON_FILE'] = self.goma_client_json
     if self.goma_cache:
       result['GOMA_CACHE_DIR'] = self.goma_cache
+    if self.goma_approach:
+      result['GOMA_RPC_EXTRA_PARAMS'] = self.goma_approach.rpc_extra_params
+      result['GOMA_SERVER_HOST'] = self.goma_approach.server_host
+      result['GOMA_ARBITRARY_TOOLCHAIN_SUPPORT'] = (
+          'true' if self.goma_approach.arbitrary_toolchain_support else 'false')
     return result
 
   def GetChrootExtraEnv(self):

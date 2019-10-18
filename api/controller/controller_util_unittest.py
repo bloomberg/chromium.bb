@@ -68,7 +68,8 @@ class ParseChrootTest(cros_test_lib.MockTestCase):
     controller_util.ParseChroot(chroot_message)
     patch.assert_called_with(goma_test_dir, goma_test_json_string,
                              stage_name='BuildAPI', chromeos_goma_dir=None,
-                             chroot_dir=path)
+                             chroot_dir=path,
+                             goma_approach=None)
 
     goma_config.chromeos_goma_dir = chromeos_goma_test_dir
     chroot_message = common_pb2.Chroot(path=path, cache_dir=cache_dir,
@@ -81,8 +82,38 @@ class ParseChrootTest(cros_test_lib.MockTestCase):
     patch.assert_called_with(goma_test_dir, goma_test_json_string,
                              stage_name='BuildAPI',
                              chromeos_goma_dir=chromeos_goma_test_dir,
-                             chroot_dir=path)
+                             chroot_dir=path,
+                             goma_approach=None)
 
+    goma_config.goma_approach = common_pb2.GomaConfig.RBE_PROD
+    chroot_message = common_pb2.Chroot(path=path, cache_dir=cache_dir,
+                                       chrome_dir=chrome_root,
+                                       env={'use_flags': use_flags,
+                                            'features': features},
+                                       goma=goma_config)
+
+    controller_util.ParseChroot(chroot_message)
+    patch.assert_called_with(goma_test_dir, goma_test_json_string,
+                             stage_name='BuildAPI',
+                             chromeos_goma_dir=chromeos_goma_test_dir,
+                             chroot_dir=path,
+                             goma_approach=goma_util.GomaApproach(
+                                 '?prod', 'goma.chromium.org', True))
+
+    goma_config.goma_approach = common_pb2.GomaConfig.RBE_STAGING
+    chroot_message = common_pb2.Chroot(path=path, cache_dir=cache_dir,
+                                       chrome_dir=chrome_root,
+                                       env={'use_flags': use_flags,
+                                            'features': features},
+                                       goma=goma_config)
+
+    controller_util.ParseChroot(chroot_message)
+    patch.assert_called_with(goma_test_dir, goma_test_json_string,
+                             stage_name='BuildAPI',
+                             chromeos_goma_dir=chromeos_goma_test_dir,
+                             chroot_dir=path,
+                             goma_approach=goma_util.GomaApproach(
+                                 '?staging', 'staging-goma.chromium.org', True))
 
   def testWrongMessage(self):
     """Test invalid message type given."""
