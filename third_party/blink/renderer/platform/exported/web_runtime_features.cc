@@ -292,6 +292,10 @@ void WebRuntimeFeatures::EnableNetInfoDownlinkMax(bool enable) {
   RuntimeEnabledFeatures::SetNetInfoDownlinkMaxEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableNeverSlowMode(bool enable) {
+  RuntimeEnabledFeatures::SetNeverSlowModeEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableOnDeviceChange(bool enable) {
   RuntimeEnabledFeatures::SetOnDeviceChangeEnabled(enable);
 }
