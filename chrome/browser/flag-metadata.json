@@ -2101,7 +2101,7 @@
   {
     "name": "file-handling-api",
     "owners": ["harrisjay@chromium.org", "raymes@chromium.org"],
-    "expiry_milestone": 79
+    "expiry_milestone": 82
   },
   {
     "name": "file-manager-feedback-panel",
