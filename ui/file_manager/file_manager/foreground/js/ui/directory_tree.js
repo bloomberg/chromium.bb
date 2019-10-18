@@ -223,7 +223,7 @@ class TreeItem extends cr.ui.TreeItem {
    * @override
    */
   get labelElement() {
-    return this.rowElement.querySelector('.label');
+    return this.firstElementChild.querySelector('.label');
   }
 }
 
@@ -234,28 +234,23 @@ class TreeItem extends cr.ui.TreeItem {
  * An expandable directory in the tree. Each element represents one folder (sub
  * directory) or one volume (root directory).
  */
-class DirectoryItem extends cr.ui.TreeItem {
+class DirectoryItem extends TreeItem {
   /**
    * @param {string} label Label for this item.
    * @param {DirectoryTree} tree Current tree, which contains this item.
    */
   constructor(label, tree) {
-    super();
-    // Get the original label id defined by TreeItem, before overwriting
-    // prototype.
-    const labelId = this.labelElement.id;
+    super(label, tree);
     this.__proto__ = DirectoryItem.prototype;
 
     if (window.IN_TEST) {
       this.setAttribute('dir-type', 'DirectoryItem');
-      this.setAttribute('entry-label', label);
     }
-    this.parentTree_ = tree;
+
     this.directoryModel_ = tree.directoryModel;
     this.fileFilter_ = tree.directoryModel.getFileFilter();
 
-    this.innerHTML = TREE_ITEM_INNER_HTML;
-    this.labelElement.id = labelId;
+    // Listen for expand.
     this.addEventListener('expand', this.onExpand_.bind(this), false);
 
     // Listen for collapse because for the delayed expansion case all
@@ -270,8 +265,6 @@ class DirectoryItem extends cr.ui.TreeItem {
     // Sets hasChildren=false tentatively. This will be overridden after
     // scanning sub-directories in updateSubElementsFromList().
     this.hasChildren = false;
-
-    this.label = label;
 
     // @type {!Array<Entry>} Filled after updateSubDirectories read entries.
     this.entries_ = [];
@@ -289,15 +282,6 @@ class DirectoryItem extends cr.ui.TreeItem {
    */
   get entry() {
     return null;
-  }
-
-  /**
-   * The element containing the label text and the icon.
-   * @type {!HTMLElement}
-   * @override
-   */
-  get labelElement() {
-    return this.firstElementChild.querySelector('.label');
   }
 
   /**
