@@ -515,8 +515,8 @@ class _Popen(subprocess.Popen):
 
 
 # pylint: disable=redefined-builtin
-def run(cmd, print_cmd=True, redirect_stdout=False,
-        redirect_stderr=False, cwd=None, input=None, enter_chroot=False,
+def run(cmd, print_cmd=True, stdout=None, stderr=None,
+        cwd=None, input=None, enter_chroot=False,
         shell=False, env=None, extra_env=None, ignore_sigint=False,
         combine_stdout_stderr=False, log_stdout_to_file=None,
         append_to_file=False, chroot_args=None, debug_level=logging.INFO,
@@ -530,8 +530,12 @@ def run(cmd, print_cmd=True, redirect_stdout=False,
       must be true. Otherwise the command must be an array of arguments, and
       shell must be false.
     print_cmd: prints the command before running it.
-    redirect_stdout: returns the stdout.
-    redirect_stderr: holds stderr output until input is communicated.
+    stdout: Where to send stdout.  This may be many things to control
+      redirection:
+        * None is the default; the existing stdout is used.
+        * A boolean to indicate whether to capture the output.
+          True will capture the output via a tempfile (good for large output).
+    stderr: Where to send stderr.  See |stdout| for possible values.
     cwd: the working directory to run this cmd.
     input: The data to pipe into this command through stdin.  If a file object
       or file descriptor, stdin will be connected directly to that.
@@ -567,8 +571,8 @@ def run(cmd, print_cmd=True, redirect_stdout=False,
     kill_timeout: If we're interrupted, how long (in seconds) should we give the
       invoked process to shutdown from a SIGTERM before we SIGKILL it.
     log_output: Log the command and its output automatically.
-    capture_output: Set |redirect_stdout| and |redirect_stderr| to True.
-    quiet: Set |print_cmd| to False, |redirect_stdout| to True, and
+    capture_output: Set |stdout| and |stderr| to True.
+    quiet: Set |print_cmd| to False, |stdout| to True, and
       |combine_stdout_stderr| to True.
     mute_output: Mute subprocess printing to parent stdout/stderr. Defaults to
       None, which bases muting on |debug_level|.
@@ -583,14 +587,23 @@ def run(cmd, print_cmd=True, redirect_stdout=False,
   Raises:
     RunCommandError: Raised on error.
   """
+  # Handle backwards compatible settings.
   if 'error_code_ok' in kwargs:
     # TODO(vapier): Enable this warning once chromite & users migrate.
     # logging.warning('run: error_code_ok= is renamed/inverted to check=')
     check = not kwargs.pop('error_code_ok')
+  if 'redirect_stdout' in kwargs:
+    # TODO(vapier): Enable this warning once chromite & users migrate.
+    # logging.warning('run: redirect_stdout=True is now stdout=True')
+    stdout = True if kwargs.pop('redirect_stdout') else None
+  if 'redirect_stderr' in kwargs:
+    # TODO(vapier): Enable this warning once chromite & users migrate.
+    # logging.warning('run: redirect_stderr=True is now stderr=True')
+    stderr = True if kwargs.pop('redirect_stderr') else None
   assert not kwargs, 'Unknown arguments to run: %s' % (list(kwargs),)
 
   if capture_output:
-    redirect_stdout, redirect_stderr = True, True
+    stdout, stderr = True, True
 
   stdout_to_pipe = False
   if quiet:
@@ -636,12 +649,12 @@ def run(cmd, print_cmd=True, redirect_stdout=False,
       popen_stdout = open(log_stdout_to_file, 'w+')
   elif stdout_to_pipe:
     popen_stdout = subprocess.PIPE
-  elif redirect_stdout or mute_output or log_output:
+  elif stdout or mute_output or log_output:
     popen_stdout = _get_tempfile()
 
   if combine_stdout_stderr:
     popen_stderr = subprocess.STDOUT
-  elif redirect_stderr or mute_output or log_output:
+  elif stderr or mute_output or log_output:
     popen_stderr = _get_tempfile()
 
   # If subprocesses have direct access to stdout or stderr, they can bypass
