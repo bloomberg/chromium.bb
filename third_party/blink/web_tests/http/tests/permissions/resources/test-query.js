@@ -82,7 +82,7 @@ async_test(function(test) {
     }).catch(function() {
         assert_unreached('querying camera permission should not fail.')
     });
-}, 'Test geolocation permission in ' + get_current_scope() + ' scope.');
+}, 'Test camera permission in ' + get_current_scope() + ' scope.');
 
 async_test(function(test) {
     navigator.permissions.query({name:'microphone'}).then(function(result) {
@@ -92,7 +92,7 @@ async_test(function(test) {
     }).catch(function() {
         assert_unreached('querying microphone permission should not fail.')
     });
-}, 'Test geolocation permission in ' + get_current_scope() + ' scope.');
+}, 'Test microphone permission in ' + get_current_scope() + ' scope.');
 
 async_test(function(test) {
     navigator.permissions.query({name:'midi'}).then(function(result) {
