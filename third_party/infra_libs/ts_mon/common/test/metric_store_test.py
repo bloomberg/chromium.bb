@@ -192,7 +192,7 @@ class MetricStoreTestBase(object):
     self.store.incr('foo', (), None, 42, modify_fn)
 
     # Get its value from get_all.  We should get a copy of the distribution.
-    dist = list(list(self.store.get_all())[0][4].iteritems())[0][1]
+    dist = list(list(self.store.get_all())[0][4].items())[0][1]
     self.assertEqual(1, dist.count)
     self.assertEqual(42, dist.sum)
 
@@ -219,7 +219,7 @@ class MetricStoreTestBase(object):
       start.wait()
       while not stop.is_set():
         for _, _, _, _, fields_values in self.store.get_all():
-          list(fields_values.iteritems())
+          list(fields_values.items())
       successful_workers.append(True)
 
     # Create 10 modify threads and 10 get_all threads.
