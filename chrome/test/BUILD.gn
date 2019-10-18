@@ -2096,6 +2096,7 @@ if (!is_android) {
         "../browser/chromeos/input_method/textinput_test_helper.h",
         "../browser/chromeos/lock_screen_apps/note_taking_browsertest.cc",
         "../browser/chromeos/logging_browsertest.cc",
+        "../browser/chromeos/login/accessibility_browsertest.cc",
         "../browser/chromeos/login/active_directory_login_browsertest.cc",
         "../browser/chromeos/login/arc_terms_of_service_browsertest.cc",
         "../browser/chromeos/login/auto_launched_kiosk_browsertest.cc",
