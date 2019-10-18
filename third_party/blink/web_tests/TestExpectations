@@ -5767,3 +5767,6 @@ crbug.com/1014812 virtual/threaded/external/wpt/animation-worklet/playback-rate.
 crbug.com/1014950 [ Mac ] http/tests/devtools/tracing/timeline-js/timeline-js-line-level-profile-no-url-end-to-end.js [ Pass Timeout ]
 crbug.com/1014950 [ Mac ] virtual/threaded/http/tests/devtools/tracing/timeline-js/timeline-js-line-level-profile-no-url-end-to-end.js [ Pass Timeout ]
 crbug.com/1015187 [ Linux Mac ] virtual/cross-origin-embedder-policy/external/wpt/html/cross-origin-embedder-policy/none.https.html [ Pass Failure ]
+
+# Sheriff 2019-10-18
+crbug.com/996250 external/wpt/web-nfc/NFCReader_scan_iframe.https.html [ Timeout ]
