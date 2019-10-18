@@ -664,9 +664,9 @@ def run(cmd, print_cmd=True, stdout=None, stderr=None,
   log_stdout_to_file = False
   if isinstance(stdout, six.string_types):
     if append_to_file:
-      popen_stdout = open(stdout, 'a+')
+      popen_stdout = open(stdout, 'a+b')
     else:
-      popen_stdout = open(stdout, 'w+')
+      popen_stdout = open(stdout, 'w+b')
     log_stdout_to_file = True
   elif stdout_to_pipe:
     popen_stdout = subprocess.PIPE
