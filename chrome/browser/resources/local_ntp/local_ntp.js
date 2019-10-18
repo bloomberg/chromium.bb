@@ -1328,7 +1328,10 @@ function onRealboxWrapperKeydown(e) {
   }
 
   if (!areRealboxMatchesVisible()) {
-    // Only update output if matches are showing.
+    if (key === 'ArrowUp' || key === 'ArrowDown') {
+      setRealboxMatchesVisible(true);
+      e.preventDefault();
+    }
     return;
   }
 
