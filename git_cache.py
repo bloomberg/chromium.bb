@@ -558,16 +558,16 @@ class Mirror(object):
             'GIT_TRACE_PERFORMANCE': '1',
             'GIT_TRACE_SETUP': '1'
         })
-        # Only print first 30 packets. We can use nonlocal keyword once we
+        # Only print first 30000 packets. We can use nonlocal keyword once we
         # switch to python 3.
         packet_count = [0]
 
         def FilterPacket(log_line):
           if 'packet:' in log_line:
             packet_count[0] += 1
-            if packet_count[0] == 30:
+            if packet_count[0] == 30000:
               self.print('Truncating remaining packets')
-            if packet_count[0] >= 30:
+            if packet_count[0] >= 30000:
               return
           self.print(log_line)
 
