@@ -6028,6 +6028,11 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="Chose CONTINUE"/>
 </enum>
 
+<enum name="BooleanCorrect">
+  <int value="0" label="Incorrect"/>
+  <int value="1" label="Correct"/>
+</enum>
+
 <enum name="BooleanCorrupt">
   <int value="0" label="Not Corrupt"/>
   <int value="1" label="Corrupt"/>
@@ -26417,6 +26422,27 @@ Called by update_net_error_codes.py.-->
   <int value="0" label="Other error"/>
   <int value="1" label="Found"/>
   <int value="2" label="Not found"/>
+</enum>
+
+<enum name="FingerprintRecordFormatVersion">
+  <int value="0" label="None"/>
+  <int value="1" label="Record format version without validation value"/>
+  <int value="2" label="Record format version with validation value"/>
+</enum>
+
+<enum name="FingerprintSensorMode">
+  <int value="0" label="None"/>
+  <int value="1" label="Deepsleep"/>
+  <int value="2" label="FingerDown"/>
+  <int value="3" label="FingerUp"/>
+  <int value="4" label="Capture"/>
+  <int value="5" label="EnrollSession"/>
+  <int value="6" label="EnrollSessionFingerUp"/>
+  <int value="7" label="EnrollSessionEnrollImage"/>
+  <int value="8" label="EnrollImage"/>
+  <int value="9" label="Match"/>
+  <int value="10" label="ResetSensor"/>
+  <int value="11" label="DontChange"/>
 </enum>
 
 <enum name="FingerprintUpdaterReason">
