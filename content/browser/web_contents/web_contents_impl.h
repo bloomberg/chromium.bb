@@ -861,7 +861,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       RenderFrameHost* old_host,
       RenderFrameHost* new_host) override;
   NavigationControllerImpl& GetControllerForRenderManager() override;
-  NavigationEntry* GetLastCommittedNavigationEntryForRenderManager() override;
   InterstitialPageImpl* GetInterstitialForRenderManager() override;
   bool FocusLocationBarByDefault() override;
   void SetFocusToLocationBar() override;

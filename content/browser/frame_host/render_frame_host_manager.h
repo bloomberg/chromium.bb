@@ -147,11 +147,6 @@ class CONTENT_EXPORT RenderFrameHostManager
         RenderFrameHost* new_host) = 0;
     virtual NavigationControllerImpl& GetControllerForRenderManager() = 0;
 
-    // Returns the navigation entry of the current navigation, or NULL if there
-    // is none.
-    virtual NavigationEntry*
-    GetLastCommittedNavigationEntryForRenderManager() = 0;
-
     // Returns the interstitial page showing in the delegate, or null if there
     // is none.
     virtual InterstitialPageImpl* GetInterstitialForRenderManager() = 0;

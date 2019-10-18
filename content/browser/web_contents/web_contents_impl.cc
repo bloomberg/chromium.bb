@@ -6555,11 +6555,6 @@ std::unique_ptr<WebUIImpl> WebContentsImpl::CreateWebUIForRenderFrameHost(
   return CreateWebUI(url);
 }
 
-NavigationEntry*
-    WebContentsImpl::GetLastCommittedNavigationEntryForRenderManager() {
-  return controller_.GetLastCommittedEntry();
-}
-
 InterstitialPageImpl* WebContentsImpl::GetInterstitialForRenderManager() {
   return interstitial_page_;
 }

@@ -1260,7 +1260,7 @@ RenderFrameHostManager::GetSiteInstanceForNavigation(
   // RenderFrameHost was swapped in at the beginning of the navigation. See
   // https://crbug.com/766630.
   NavigationEntry* current_entry =
-      delegate_->GetLastCommittedNavigationEntryForRenderManager();
+      delegate_->GetControllerForRenderManager().GetLastCommittedEntry();
   bool current_is_view_source_mode = current_entry
                                          ? current_entry->IsViewSourceMode()
                                          : dest_is_view_source_mode;
@@ -2456,8 +2456,8 @@ void RenderFrameHostManager::CommitPending(
   // This is done in ~FrameTreeNode, but this is needed here as well. For
   // instance if the user navigates from A(B) to C and B is deleted after C
   // commits, then the last committed navigation entry wouldn't match anymore.
-  NavigationEntryImpl* navigation_entry = static_cast<NavigationEntryImpl*>(
-      delegate_->GetLastCommittedNavigationEntryForRenderManager());
+  NavigationEntryImpl* navigation_entry =
+      delegate_->GetControllerForRenderManager().GetLastCommittedEntry();
   if (navigation_entry) {
     render_frame_host_->frame_tree_node()->PruneChildFrameNavigationEntries(
         navigation_entry);
