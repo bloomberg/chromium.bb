@@ -492,6 +492,7 @@
       'policies': [
         'DefaultCookiesSetting',
         'DefaultImagesSetting',
+        'DefaultInsecureContentSetting',
         'DefaultJavaScriptSetting',
         'DefaultPluginsSetting',
         'DefaultPopupsSetting',
@@ -507,6 +508,8 @@
         'CookiesSessionOnlyForUrls',
         'ImagesAllowedForUrls',
         'ImagesBlockedForUrls',
+        'InsecureContentAllowedForUrls',
+        'InsecureContentBlockedForUrls',
         'JavaScriptAllowedForUrls',
         'JavaScriptBlockedForUrls',
         'KeygenAllowedForUrls',
@@ -18540,6 +18543,83 @@
       If this policy is set to True, when an external protocol confirmation is shown, the user may choose to "Always open" the protocol without future confirmation prompts.
 
       If this policy is set to False or not set, the "Always open" checkbox is not displayed and the user will be prompted each time an external protocol is invoked.'''
+    },
+    {
+      'name': 'DefaultInsecureContentSetting',
+      'owners': ['carlosil@chromium.org', 'estark@chromium.org'],
+      'type': 'int-enum',
+      'schema': {
+        'type': 'integer',
+        'enum': [ 2, 3 ],
+      },
+      'items': [
+        {
+          'name': 'BlockInsecureContent',
+          'value': 2,
+          'caption': '''Do not allow any site to load blockable mixed content''',
+        },
+        {
+          'name': 'AllowExceptionsInsecureContent',
+          'value': 3,
+          'caption': '''Allow users to add exceptions to allow blockable mixed content''',
+        },
+      ],
+      'supported_on': ['chrome.*:79-', 'chrome_os:79-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': 2,
+      'id': 633,
+      'caption': '''Control use of insecure content exceptions''',
+      'tags': [],
+      'desc': '''Allows you to set whether users can add exceptions to allow mixed content for specific sites.
+
+          This policy can be overridden for specific URL patterns using the 'InsecureContentAllowedForUrls' and 'InsecureContentBlockedForUrls' policies.
+
+          If this policy is left not set, users will be allowed to add exceptions to allow blockable mixed content"''',
+    },
+    {
+      'name': 'InsecureContentAllowedForUrls',
+      'owners': ['carlosil@chromium.org', 'estark@chromium.org'],
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'supported_on': ['chrome.*:79-', 'chrome_os:79-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': ['https://www.example.com', '[*.]example.edu'],
+      'id': 634,
+      'caption': '''Allow insecure content on these sites''',
+      'tags': [],
+      'desc': '''Allows you to set a list of url patterns that specify sites which are allowed to display blockable (i.e. active) mixed content (i.e. HTTP content on HTTPS sites).
+
+          If this policy is left not set blockable mixed content will be blocked, but users will be allowed to set exceptions to allow it for specific sites.''',
+    },
+    {
+      'name': 'InsecureContentBlockedForUrls',
+      'owners': ['carlosil@chromium.org', 'estark@chromium.org'],
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'supported_on': ['chrome.*:79-', 'chrome_os:79-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': ['https://www.example.com', '[*.]example.edu'],
+      'id': 635,
+      'caption': '''Block insecure content on these sites''',
+      'tags': [],
+      'desc': '''Allows you to set a list of url patterns that specify sites which are not allowed to display blockable (i.e. active) mixed content (i.e. HTTP content on HTTPS sites).
+
+          If this policy is left not set blockable mixed content will be blocked, but users will be allowed to set exceptions to allow it for specific sites.''',
     }
   ],
 
@@ -19362,6 +19442,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562, 569],
-  'highest_id_currently_used': 632,
+  'highest_id_currently_used': 635,
   'highest_atomic_group_id_currently_used': 38
 }
