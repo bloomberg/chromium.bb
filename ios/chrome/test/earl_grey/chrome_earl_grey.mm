@@ -20,16 +20,16 @@
 #import <WebKit/WebKit.h>
 
 #import "ios/chrome/browser/ui/static_content/static_html_view_controller.h"  // nogncheck
-#import "ios/chrome/test/app/chrome_test_util.h"                   // nogncheck
-#import "ios/chrome/test/app/history_test_util.h"                  // nogncheck
-#include "ios/chrome/test/app/navigation_test_util.h"              // nogncheck
-#import "ios/chrome/test/app/sync_test_util.h"                     // nogncheck
-#import "ios/chrome/test/app/tab_test_util.h"                      // nogncheck
-#import "ios/web/public/deprecated/crw_js_injection_receiver.h"    // nogncheck
-#import "ios/web/public/test/earl_grey/js_test_util.h"             // nogncheck
-#import "ios/web/public/test/web_view_content_test_util.h"         // nogncheck
-#import "ios/web/public/test/web_view_interaction_test_util.h"     // nogncheck
-#import "ios/web/public/web_state.h"                               // nogncheck
+#import "ios/chrome/test/app/browsing_data_test_util.h"          // nogncheck
+#import "ios/chrome/test/app/chrome_test_util.h"                 // nogncheck
+#include "ios/chrome/test/app/navigation_test_util.h"            // nogncheck
+#import "ios/chrome/test/app/sync_test_util.h"                   // nogncheck
+#import "ios/chrome/test/app/tab_test_util.h"                    // nogncheck
+#import "ios/web/public/deprecated/crw_js_injection_receiver.h"  // nogncheck
+#import "ios/web/public/test/earl_grey/js_test_util.h"           // nogncheck
+#import "ios/web/public/test/web_view_content_test_util.h"       // nogncheck
+#import "ios/web/public/test/web_view_interaction_test_util.h"   // nogncheck
+#import "ios/web/public/web_state.h"                             // nogncheck
 #endif
 
 using base::test::ios::kWaitForJSCompletionTimeout;
