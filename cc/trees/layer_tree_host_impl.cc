@@ -2241,6 +2241,7 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
     frame_trackers_.NotifyImplFrameCausedNoDamage(frame->begin_frame_ack);
     TRACE_EVENT_INSTANT0("cc", "EarlyOut_NoDamage", TRACE_EVENT_SCOPE_THREAD);
     active_tree()->BreakSwapPromises(SwapPromise::SWAP_FAILS);
+    active_tree()->ResetAllChangeTracking();
     return false;
   }
 
