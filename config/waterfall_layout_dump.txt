@@ -470,7 +470,6 @@
     eve-userdebug-release
     excelsior-release
     expresso-release
-    falco_li-release
     fizz-accelerator-release
     fizz-cfm-release
     fizz-labstation-release
@@ -2674,7 +2673,6 @@
     eve-userdebug-release-tryjob
     excelsior-release-tryjob
     expresso-release-tryjob
-    falco_li-release-tryjob
     fizz-accelerator-release-tryjob
     fizz-cfm-release-tryjob
     fizz-labstation-release-tryjob
