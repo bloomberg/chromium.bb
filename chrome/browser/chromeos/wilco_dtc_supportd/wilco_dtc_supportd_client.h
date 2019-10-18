@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_DBUS_WILCO_DTC_SUPPORTD_CLIENT_H_
-#define CHROMEOS_DBUS_WILCO_DTC_SUPPORTD_CLIENT_H_
+#ifndef CHROME_BROWSER_CHROMEOS_WILCO_DTC_SUPPORTD_WILCO_DTC_SUPPORTD_CLIENT_H_
+#define CHROME_BROWSER_CHROMEOS_WILCO_DTC_SUPPORTD_WILCO_DTC_SUPPORTD_CLIENT_H_
 
 #include <memory>
 
@@ -16,11 +16,18 @@
 
 namespace chromeos {
 
-class COMPONENT_EXPORT(CHROMEOS_DBUS) WilcoDtcSupportdClient
-    : public DBusClient {
+class WilcoDtcSupportdClient : public DBusClient {
  public:
-  // Factory function.
-  static std::unique_ptr<WilcoDtcSupportdClient> Create();
+  // Creates and initializes the global instance. |bus| must not be null.
+  static void Initialize(dbus::Bus* bus);
+  // Creates and initializes a fake global instance if not already created.
+  static void InitializeFake();
+  // Destroys the global instance which must have been initialized.
+  static void Shutdown();
+  // Checks if initialization was performed
+  static bool IsInitialized();
+  // Returns the global instance if initialized.
+  static WilcoDtcSupportdClient* Get();
 
   // Registers |callback| to run when the wilco_dtc_supportd service becomes
   // available.
@@ -35,6 +42,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) WilcoDtcSupportdClient
  protected:
   // Create() should be used instead.
   WilcoDtcSupportdClient();
+  ~WilcoDtcSupportdClient() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WilcoDtcSupportdClient);
@@ -42,4 +50,4 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) WilcoDtcSupportdClient
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_DBUS_WILCO_DTC_SUPPORTD_CLIENT_H_
+#endif  // CHROME_BROWSER_CHROMEOS_WILCO_DTC_SUPPORTD_WILCO_DTC_SUPPORTD_CLIENT_H_

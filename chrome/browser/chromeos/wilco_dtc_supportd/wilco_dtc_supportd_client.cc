@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/dbus/wilco_dtc_supportd_client.h"
+#include "chrome/browser/chromeos/wilco_dtc_supportd/wilco_dtc_supportd_client.h"
 
 #include <utility>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/chromeos/wilco_dtc_supportd/fake_wilco_dtc_supportd_client.h"
+#include "chrome/common/chrome_features.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -15,6 +18,8 @@
 namespace chromeos {
 
 namespace {
+
+WilcoDtcSupportdClient* g_instance = nullptr;
 
 void OnVoidDBusMethod(VoidDBusMethodCallback callback,
                       dbus::Response* response) {
@@ -32,9 +37,6 @@ class WilcoDtcSupportdClientImpl final : public WilcoDtcSupportdClient {
       WaitForServiceToBeAvailableCallback callback) override;
   void BootstrapMojoConnection(base::ScopedFD fd,
                                VoidDBusMethodCallback callback) override;
-
- protected:
-  // WilcoDtcSupportdClient overrides:
   void Init(dbus::Bus* bus) override;
 
  private:
@@ -75,11 +77,46 @@ void WilcoDtcSupportdClientImpl::Init(dbus::Bus* bus) {
 
 }  // namespace
 
-// static
-std::unique_ptr<WilcoDtcSupportdClient> WilcoDtcSupportdClient::Create() {
-  return std::make_unique<WilcoDtcSupportdClientImpl>();
+WilcoDtcSupportdClient::WilcoDtcSupportdClient() {
+  DCHECK(!g_instance);
+  g_instance = this;
 }
 
-WilcoDtcSupportdClient::WilcoDtcSupportdClient() = default;
+WilcoDtcSupportdClient::~WilcoDtcSupportdClient() {
+  DCHECK_EQ(this, g_instance);
+  g_instance = nullptr;
+}
+
+// static
+void WilcoDtcSupportdClient::Initialize(dbus::Bus* bus) {
+  DCHECK(bus);
+#if defined(OS_CHROMEOS)
+  if (base::FeatureList::IsEnabled(::features::kWilcoDtc)) {
+    (new WilcoDtcSupportdClientImpl())->Init(bus);
+  }
+#endif
+}
+
+// static
+void WilcoDtcSupportdClient::InitializeFake() {
+  new FakeWilcoDtcSupportdClient();
+}
+
+// static
+void WilcoDtcSupportdClient::Shutdown() {
+  if (g_instance)
+    delete g_instance;
+}
+
+// static
+bool WilcoDtcSupportdClient::IsInitialized() {
+  return g_instance;
+}
+
+// static
+WilcoDtcSupportdClient* WilcoDtcSupportdClient::Get() {
+  CHECK(IsInitialized());
+  return g_instance;
+}
 
 }  // namespace chromeos
