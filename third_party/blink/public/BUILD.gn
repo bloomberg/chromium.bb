@@ -381,7 +381,6 @@ source_set("blink_headers") {
     "web/modules/mediastream/web_media_stream_renderer_factory.h",
     "web/modules/mediastream/web_media_stream_utils.h",
     "web/modules/mediastream/webmediaplayer_ms.h",
-    "web/modules/peerconnection/media_stream_remote_video_source.h",
     "web/modules/peerconnection/media_stream_video_webrtc_sink.h",
     "web/modules/peerconnection/peer_connection_dependency_factory.h",
     "web/modules/peerconnection/rtc_rtp_receiver_impl.h",

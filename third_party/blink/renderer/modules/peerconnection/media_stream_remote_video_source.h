@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_PEERCONNECTION_MEDIA_STREAM_REMOTE_VIDEO_SOURCE_H_
-#define THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_PEERCONNECTION_MEDIA_STREAM_REMOTE_VIDEO_SOURCE_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_MEDIA_STREAM_REMOTE_VIDEO_SOURCE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_MEDIA_STREAM_REMOTE_VIDEO_SOURCE_H_
 
 #include <memory>
 
 #include "base/macros.h"
-#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/webrtc/api/media_stream_interface.h"
 
 namespace blink {
@@ -22,10 +22,7 @@ class TrackObserver;
 // class is to make sure there is no difference between a video track where the
 // source is a local source and a video track where the source is a remote video
 // track.
-//
-// TODO(crbug.com/787254): Move the classes below out of the Blink exposed
-// API when all users of it have been Onion souped.
-class BLINK_MODULES_EXPORT MediaStreamRemoteVideoSource
+class MODULES_EXPORT MediaStreamRemoteVideoSource
     : public MediaStreamVideoSource {
  public:
   explicit MediaStreamRemoteVideoSource(
@@ -62,4 +59,4 @@ class BLINK_MODULES_EXPORT MediaStreamRemoteVideoSource
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_PEERCONNECTION_MEDIA_STREAM_REMOTE_VIDEO_SOURCE_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_MEDIA_STREAM_REMOTE_VIDEO_SOURCE_H_
