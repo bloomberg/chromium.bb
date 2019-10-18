@@ -854,8 +854,6 @@ class SubDirectoryItem extends DirectoryItem {
 
   /**
    * The DirectoryEntry corresponding to this DirectoryItem.
-   * @type {DirectoryEntry}
-   * @override
    */
   get entry() {
     return this.dirEntry_;
@@ -863,7 +861,6 @@ class SubDirectoryItem extends DirectoryItem {
 
   /**
    * Sets the DirectoryEntry corresponding to this DirectoryItem.
-   * @param {DirectoryEntry} value The directory entry.
    */
   set entry(value) {
     this.dirEntry_ = value;
@@ -1522,25 +1519,22 @@ class DriveVolumeItem extends VolumeItem {
  * A TreeItem which represents a shortcut for Drive folder.
  * Shortcut items are displayed as top-level children of DirectoryTree.
  */
-class ShortcutItem extends cr.ui.TreeItem {
+class ShortcutItem extends TreeItem {
   /**
    * @param {!NavigationModelShortcutItem} modelItem NavigationModelItem of this
    *     volume.
    * @param {!DirectoryTree} tree Current tree, which contains this item.
    */
   constructor(modelItem, tree) {
-    super();
-    // Get the original label id defined by TreeItem, before overwriting
-    // prototype.
-    const labelId = this.labelElement.id;
+    super(modelItem.entry.name, tree);
     this.__proto__ = ShortcutItem.prototype;
 
-    this.parentTree_ = tree;
+    if (window.IN_TEST) {
+      this.setAttribute('dir-type', 'ShortcutItem');
+    }
+
     this.dirEntry_ = modelItem.entry;
     this.modelItem_ = modelItem;
-
-    this.innerHTML = TREE_ITEM_INNER_HTML;
-    this.labelElement.id = labelId;
 
     const icon = this.querySelector('.icon');
     icon.classList.add('item-icon');
@@ -1548,13 +1542,6 @@ class ShortcutItem extends cr.ui.TreeItem {
 
     if (tree.contextMenuForRootItems) {
       this.setContextMenu_(tree.contextMenuForRootItems);
-    }
-
-    this.label = modelItem.entry.name;
-
-    if (window.IN_TEST) {
-      this.setAttribute('dir-type', 'ShortcutItem');
-      this.setAttribute('entry-label', this.label);
     }
   }
 
@@ -1637,17 +1624,20 @@ class ShortcutItem extends cr.ui.TreeItem {
         });
   }
 
+  /**
+   * The DirectoryEntry corresponding to this DirectoryItem.
+   */
   get entry() {
     return this.dirEntry_;
   }
+
+  /**
+   * @type {!NavigationModelVolumeItem}
+   */
   get modelItem() {
     return this.modelItem_;
   }
-  get labelElement() {
-    return this.firstElementChild.querySelector('.label');
-  }
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // AndroidAppItem
