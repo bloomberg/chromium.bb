@@ -32780,6 +32780,12 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="5" label="Invalid GUID"/>
 </enum>
 
+<enum name="InvalidDevicePolicyFilesStatus">
+  <int value="0" label="All valid"/>
+  <int value="1" label="Some invalid"/>
+  <int value="2" label="All invalid"/>
+</enum>
+
 <enum name="InvalidOriginReason">
   <int value="0" label="Opaque Origin"/>
   <int value="1" label="Empty URL"/>
