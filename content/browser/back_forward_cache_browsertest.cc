@@ -1100,6 +1100,32 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   delete_rfh_a.WaitUntilDeleted();
 }
 
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
+                       SubframeWithOngoingNavigationNotCached) {
+  net::test_server::ControllableHttpResponse response(embedded_test_server(),
+                                                      "/hung");
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Navigate to a page with an iframe.
+  TestNavigationObserver navigation_observer1(web_contents());
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/back_forward_cache/page_with_hung_iframe.html"));
+  shell()->LoadURL(main_url);
+  navigation_observer1.WaitForNavigationFinished();
+
+  RenderFrameHostImpl* main_frame = current_frame_host();
+  RenderFrameDeletedObserver frame_deleted_observer(main_frame);
+  response.WaitForRequest();
+
+  // Navigate away.
+  TestNavigationObserver navigation_observer2(web_contents());
+  shell()->LoadURL(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  navigation_observer2.WaitForNavigationFinished();
+
+  // The page with the unsupported feature should be deleted (not cached).
+  frame_deleted_observer.WaitUntilDeleted();
+}
+
 // Check that unload event handlers are not dispatched when the page goes
 // into BackForwardCache.
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,

@@ -204,6 +204,8 @@ std::string BackForwardCacheImpl::CanStoreDocumentResult::ToString() {
       return "No: This domain is not allowed to be stored in BackForwardCache";
     case Reason::kHTTPMethodNotGET:
       return "No: HTTP method is not GET";
+    case Reason::kSubframeIsNavigating:
+      return "No: subframe navigation is in progress";
   }
 }
 
@@ -360,6 +362,15 @@ BackForwardCacheImpl::CanStoreRenderFrameHost(RenderFrameHostImpl* rfh) {
   if (uint64_t banned_features =
           GetDisallowedFeatures(rfh) & rfh->scheduler_tracked_features()) {
     return CanStoreDocumentResult::NoDueToFeatures(banned_features);
+  }
+
+  bool has_navigation_request = rfh->frame_tree_node()->navigation_request() ||
+                                rfh->HasPendingCommitNavigation();
+  // Do not cache if we have navigations in any of the subframes.
+  if (rfh->GetParent() && has_navigation_request) {
+    return CanStoreDocumentResult::No(
+        BackForwardCacheMetrics::CanNotStoreDocumentReason::
+            kSubframeIsNavigating);
   }
 
   for (size_t i = 0; i < rfh->child_count(); i++) {

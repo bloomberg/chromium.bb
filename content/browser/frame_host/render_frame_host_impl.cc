@@ -2754,6 +2754,11 @@ GlobalFrameRoutingId RenderFrameHostImpl::GetGlobalFrameRoutingId() {
   return GlobalFrameRoutingId(GetProcess()->GetID(), GetRoutingID());
 }
 
+bool RenderFrameHostImpl::HasPendingCommitNavigation() const {
+  return navigation_request_ || same_document_navigation_request_ ||
+         !navigation_requests_.empty();
+}
+
 void RenderFrameHostImpl::ResetNavigationRequests() {
   navigation_request_.reset();
   same_document_navigation_request_.reset();
@@ -7990,10 +7995,6 @@ BackForwardCacheMetrics* RenderFrameHostImpl::GetBackForwardCacheMetrics() {
   if (!navigation_entry)
     return nullptr;
   return navigation_entry->back_forward_cache_metrics();
-}
-
-bool RenderFrameHostImpl::HasPendingCommitNavigationForTesting() {
-  return navigation_request_ || !navigation_requests_.empty();
 }
 
 }  // namespace content
