@@ -1882,18 +1882,16 @@ static int full_pixel_diamond(const AV1_COMP *const cpi, MACROBLOCK *x,
 #define MIN_INTERVAL 1
 // Runs an limited range exhaustive mesh search using a pattern set
 // according to the encode speed profile.
-static int full_pixel_exhaustive(const AV1_COMP *const cpi, MACROBLOCK *x,
-                                 const MV *centre_mv_full, int sadpb,
-                                 int *cost_list,
-                                 const aom_variance_fn_ptr_t *fn_ptr,
-                                 const MV *ref_mv, MV *dst_mv) {
-  const SPEED_FEATURES *const sf = &cpi->sf;
+static int full_pixel_exhaustive(
+    MACROBLOCK *x, const MV *centre_mv_full, int sadpb, int *cost_list,
+    const aom_variance_fn_ptr_t *fn_ptr, const MV *ref_mv, MV *dst_mv,
+    const struct MESH_PATTERN *const mesh_patterns) {
   MV temp_mv = { centre_mv_full->row, centre_mv_full->col };
   MV f_ref_mv = { ref_mv->row >> 3, ref_mv->col >> 3 };
   int bestsme;
   int i;
-  int interval = sf->mesh_patterns[0].interval;
-  int range = sf->mesh_patterns[0].range;
+  int interval = mesh_patterns[0].interval;
+  int range = mesh_patterns[0].range;
   int baseline_interval_divisor;
 
   // Keep track of number of exhaustive calls (this frame in this thread).
@@ -1922,10 +1920,10 @@ static int full_pixel_exhaustive(const AV1_COMP *const cpi, MACROBLOCK *x,
     for (i = 1; i < MAX_MESH_STEP; ++i) {
       // First pass with coarser step and longer range
       bestsme = exhuastive_mesh_search(
-          x, &f_ref_mv, &temp_mv, sf->mesh_patterns[i].range,
-          sf->mesh_patterns[i].interval, sadpb, fn_ptr, &temp_mv);
+          x, &f_ref_mv, &temp_mv, mesh_patterns[i].range,
+          mesh_patterns[i].interval, sadpb, fn_ptr, &temp_mv);
 
-      if (sf->mesh_patterns[i].interval == 1) break;
+      if (mesh_patterns[i].interval == 1) break;
     }
   }
 
@@ -2104,7 +2102,8 @@ int av1_refining_search_8p_c(MACROBLOCK *x, int error_per_bit, int search_range,
 }
 
 #define MIN_EX_SEARCH_LIMIT 128
-static int is_exhaustive_allowed(const AV1_COMP *const cpi, MACROBLOCK *x) {
+static int is_exhaustive_allowed(const AV1_COMP *const cpi, MACROBLOCK *x,
+                                 int max_exaustive_pct) {
   const SPEED_FEATURES *const sf = &cpi->sf;
   int is_allowed = sf->allow_exhaustive_searches &&
                    (sf->exhaustive_searches_thresh < INT_MAX) &&
@@ -2112,7 +2111,7 @@ static int is_exhaustive_allowed(const AV1_COMP *const cpi, MACROBLOCK *x) {
   if (x->m_search_count_ptr != NULL && x->ex_search_count_ptr != NULL) {
     const int max_ex =
         AOMMAX(MIN_EX_SEARCH_LIMIT,
-               (*x->m_search_count_ptr * sf->max_exaustive_pct) / 100);
+               (*x->m_search_count_ptr * max_exaustive_pct) / 100);
     is_allowed = *x->ex_search_count_ptr <= max_ex && is_allowed;
   }
   return is_allowed;
@@ -2333,7 +2332,8 @@ int av1_full_pixel_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
                           int run_mesh_search, int error_per_bit,
                           int *cost_list, const MV *ref_mv, int var_max, int rd,
                           int x_pos, int y_pos, int intra,
-                          const search_site_config *cfg) {
+                          const search_site_config *cfg,
+                          int use_intrabc_mesh_pattern) {
   const SPEED_FEATURES *const sf = &cpi->sf;
   const aom_variance_fn_ptr_t *fn_ptr = &cpi->fn_ptr[bsize];
   int var = 0;
@@ -2379,7 +2379,13 @@ int av1_full_pixel_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
   }
 
   // Should we allow a follow on exhaustive search?
-  if (!run_mesh_search && method == NSTEP && is_exhaustive_allowed(cpi, x)) {
+  // Pick the threshold for decision on the evaluation of exhaustive search
+  // based on the toolset (intraBC or non-intraBC)
+  const int max_exaustive_pct = use_intrabc_mesh_pattern
+                                    ? sf->intrabc_max_exaustive_pct
+                                    : sf->max_exaustive_pct;
+  if (!run_mesh_search && method == NSTEP &&
+      is_exhaustive_allowed(cpi, x, max_exaustive_pct)) {
     int exhuastive_thr = sf->exhaustive_searches_thresh;
     exhuastive_thr >>=
         10 - (mi_size_wide_log2[bsize] + mi_size_high_log2[bsize]);
@@ -2390,8 +2396,14 @@ int av1_full_pixel_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
   if (run_mesh_search) {
     int var_ex;
     MV tmp_mv_ex;
-    var_ex = full_pixel_exhaustive(cpi, x, &x->best_mv.as_mv, error_per_bit,
-                                   cost_list, fn_ptr, ref_mv, &tmp_mv_ex);
+    // Pick the mesh pattern for exhaustive search based on the toolset (intraBC
+    // or non-intraBC)
+    const MESH_PATTERN *const mesh_patterns = use_intrabc_mesh_pattern
+                                                  ? sf->intrabc_mesh_patterns
+                                                  : sf->mesh_patterns;
+    var_ex =
+        full_pixel_exhaustive(x, &x->best_mv.as_mv, error_per_bit, cost_list,
+                              fn_ptr, ref_mv, &tmp_mv_ex, mesh_patterns);
     if (var_ex < var) {
       var = var_ex;
       x->best_mv.as_mv = tmp_mv_ex;
@@ -3118,7 +3130,7 @@ void av1_simple_motion_search(AV1_COMP *const cpi, MACROBLOCK *x, int mi_row,
   var = av1_full_pixel_search(
       cpi, x, bsize, &ref_mv_full, step_param, search_methods, do_mesh_search,
       sadpb, cond_cost_list(cpi, cost_list), &ref_mv, INT_MAX, 1,
-      mi_col * MI_SIZE, mi_row * MI_SIZE, 0, &cpi->ss_cfg[SS_CFG_SRC]);
+      mi_col * MI_SIZE, mi_row * MI_SIZE, 0, &cpi->ss_cfg[SS_CFG_SRC], 0);
   // Restore
   x->mv_limits = tmp_mv_limits;
 

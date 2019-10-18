@@ -162,7 +162,7 @@ static int combined_motion_search(AV1_COMP *cpi, MACROBLOCK *x,
   av1_full_pixel_search(
       cpi, x, bsize, &mvp_full, step_param, cpi->sf.mv.search_method, 0, sadpb,
       cond_cost_list(cpi, cost_list), &center_mv, INT_MAX, 0,
-      (MI_SIZE * mi_col), (MI_SIZE * mi_row), 0, &cpi->ss_cfg[SS_CFG_SRC]);
+      (MI_SIZE * mi_col), (MI_SIZE * mi_row), 0, &cpi->ss_cfg[SS_CFG_SRC], 0);
 
   x->mv_limits = tmp_mv_limits;
   *tmp_mv = x->best_mv;
