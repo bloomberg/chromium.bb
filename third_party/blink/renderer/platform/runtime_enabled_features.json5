@@ -651,10 +651,6 @@
       status: "experimental",
     },
     {
-      name: "FastMobileScrolling",
-      status: {"Android": "stable"},
-    },
-    {
       name: "FeaturePolicyForClientHints",
       status: "experimental",
     },

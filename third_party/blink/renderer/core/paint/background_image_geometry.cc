@@ -375,17 +375,6 @@ LayoutSize BackgroundImageGeometry::GetBackgroundObjectDimensions(
 
 namespace {
 
-bool ShouldUseFixedAttachment(const FillLayer& fill_layer) {
-  if (RuntimeEnabledFeatures::FastMobileScrollingEnabled()) {
-    // As a side effect of an optimization to blit on scroll, we do not honor
-    // the CSS property "background-attachment: fixed" because it may result in
-    // rendering artifacts. Note, these artifacts only appear if we are blitting
-    // on scroll of a page that has fixed background images.
-    return false;
-  }
-  return fill_layer.Attachment() == EFillAttachment::kFixed;
-}
-
 LayoutRect FixedAttachmentPositioningArea(const LayoutBoxModelObject& obj,
                                           const LayoutBoxModelObject* container,
                                           const GlobalPaintFlags flags) {
@@ -653,7 +642,7 @@ void BackgroundImageGeometry::ComputePositioningArea(
     LayoutRect& snapped_positioning_area,
     LayoutPoint& unsnapped_box_offset,
     LayoutPoint& snapped_box_offset) {
-  if (ShouldUseFixedAttachment(fill_layer)) {
+  if (fill_layer.Attachment() == EFillAttachment::kFixed) {
     // No snapping for fixed attachment.
     SetHasNonLocalGeometry();
     offset_in_background_ = LayoutPoint();
@@ -1040,7 +1029,7 @@ void BackgroundImageGeometry::Calculate(const LayoutBoxModelObject* container,
       unsnapped_dest_rect_ = snapped_dest_rect_ = LayoutRect();
   }
 
-  if (ShouldUseFixedAttachment(fill_layer))
+  if (fill_layer.Attachment() == EFillAttachment::kFixed)
     UseFixedAttachment(paint_rect.Location());
 
   // Clip the final output rect to the paint rect, maintaining snapping.

@@ -192,10 +192,6 @@ void WebRuntimeFeatures::EnableFallbackCursorMode(bool enable) {
   RuntimeEnabledFeatures::SetFallbackCursorModeEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableFastMobileScrolling(bool enable) {
-  RuntimeEnabledFeatures::SetFastMobileScrollingEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableFeaturePolicyForSandbox(bool enable) {
   RuntimeEnabledFeatures::SetFeaturePolicyForSandboxEnabled(enable);
 }
