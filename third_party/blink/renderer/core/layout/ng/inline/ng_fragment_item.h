@@ -238,6 +238,17 @@ class CORE_EXPORT NGFragmentItem : public DisplayItemClient {
     return StyleVariant() == NGStyleVariant::kEllipsis;
   }
 
+  // Returns true if the text is generated (from, e.g., list marker,
+  // pseudo-element, ...) instead of from a DOM text node.
+  //  * CSS content         kText
+  //  * ellipsis            kGeneratedText
+  //  * first-letter-part   kText
+  //  * list marker         kGeneratedText
+  //  * soft hyphen         kGeneratedText
+  // TODO(yosin): When we implement |kGeneratedText|, we rename this function
+  // to avoid confliction with |kGeneratedText|.
+  bool IsGeneratedText() const;
+
   bool IsSymbolMarker() const {
     return TextType() == NGTextType::kSymbolMarker;
   }
@@ -324,6 +335,10 @@ class CORE_EXPORT NGFragmentItem : public DisplayItemClient {
   unsigned type_ : 2;           // ItemType
   unsigned sub_type_ : 3;       // NGTextType
   unsigned style_variant_ : 2;  // NGStyleVariant
+  // TODO(yosin): We'll remove |is_generated_text_| field when we construct
+  // |NGFragmentItem| without |NGPhysicalTextFragment| because usage of this
+  // varaible, IsGeneratedText(), is not hot.
+  unsigned is_generated_text_ : 1;  // NGPhysicalTextFragment::IsGenerated()
   unsigned is_hidden_for_paint_ : 1;
   // Note: For |TextItem| and |GeneratedTextItem|, |text_direction_| equals to
   // |ShapeResult::Direction()|.

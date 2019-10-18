@@ -16,6 +16,7 @@ NGFragmentItem::NGFragmentItem(const NGPhysicalTextFragment& text)
       type_(kText),
       sub_type_(static_cast<unsigned>(text.TextType())),
       style_variant_(static_cast<unsigned>(text.StyleVariant())),
+      is_generated_text_(text.IsGeneratedText()),
       is_hidden_for_paint_(false),
       text_direction_(static_cast<unsigned>(text.ResolvedDirection())) {
   DCHECK_LE(text_.start_offset, text_.end_offset);
@@ -79,6 +80,13 @@ bool NGFragmentItem::IsAtomicInline() const {
     return false;
   if (const NGPhysicalBoxFragment* box = BoxFragment())
     return box->IsAtomicInline();
+  return false;
+}
+
+bool NGFragmentItem::IsGeneratedText() const {
+  if (Type() == kText || Type() == kGeneratedText)
+    return is_generated_text_;
+  NOTREACHED();
   return false;
 }
 
