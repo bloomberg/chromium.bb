@@ -687,9 +687,10 @@ BUILDERS = {
     'platform': 'win',
     'target_bits': 64,
     'dimension': {
-      'pool': 'chrome.tests.perf',
-      'os': 'Windows-2008ServerR2-SP1',
-      'gpu': '10de:1cb3'
+        'gpu': '10de:1cb3-23.21.13.8792',
+        'os': 'Windows-2008ServerR2-SP1',
+        'pool': 'chrome.tests.perf',
+        'synthetic_product_name': 'PowerEdge R220 [01] (Dell Inc.)'
     },
   },
   'mac-10_12_laptop_low_end-perf': {
