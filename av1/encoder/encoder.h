@@ -896,6 +896,9 @@ typedef struct AV1_COMP {
 
   YV12_BUFFER_CONFIG alt_ref_buffer;
 
+  // Tell if OVERLAY frame shows existing alt_ref frame.
+  int show_existing_alt_ref;
+
 #if CONFIG_INTERNAL_STATS
   unsigned int mode_chosen_counts[MAX_MODES];
 

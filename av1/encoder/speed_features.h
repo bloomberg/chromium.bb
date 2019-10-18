@@ -780,6 +780,10 @@ typedef struct SPEED_FEATURES {
   // overiding oxcf->enable_overlay flag set as 1.
   int disable_overlay_frames;
 
+  // Enable/disable adaptively deciding whether or not to encode ALTREF overlay
+  // frame.
+  int adaptive_overlay_encoding;
+
   // Use ALTREF frame in non-RD mode decision.
   int use_nonrd_altref_frame;
 

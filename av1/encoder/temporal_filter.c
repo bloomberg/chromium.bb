@@ -33,6 +33,7 @@
 #include "aom_mem/aom_mem.h"
 #include "aom_ports/mem.h"
 #include "aom_ports/aom_timer.h"
+#include "aom_ports/system_state.h"
 #include "aom_scale/aom_scale.h"
 
 #define EXPERIMENT_TEMPORAL_FILTER 1
@@ -985,19 +986,25 @@ static int temporal_filter_find_matching_mb_c(AV1_COMP *cpi,
   return bestsme;
 }
 
-static void temporal_filter_iterate_c(AV1_COMP *cpi,
-                                      YV12_BUFFER_CONFIG **frames,
-                                      int frame_count, int alt_ref_index,
-                                      int strength, double sigma,
-                                      int is_key_frame,
-                                      struct scale_factors *ref_scale_factors) {
+static int get_rows(int h) { return (h + BH - 1) >> BH_LOG2; }
+static int get_cols(int w) { return (w + BW - 1) >> BW_LOG2; }
+
+typedef struct {
+  int64_t sum;
+  int64_t sse;
+} FRAME_DIFF;
+
+static FRAME_DIFF temporal_filter_iterate_c(
+    AV1_COMP *cpi, YV12_BUFFER_CONFIG **frames, int frame_count,
+    int alt_ref_index, int strength, double sigma, int is_key_frame,
+    struct scale_factors *ref_scale_factors) {
   const AV1_COMMON *cm = &cpi->common;
   const int num_planes = av1_num_planes(cm);
+  const int mb_cols = get_cols(frames[alt_ref_index]->y_crop_width);
+  const int mb_rows = get_rows(frames[alt_ref_index]->y_crop_height);
   int byte;
   int frame;
   int mb_col, mb_row;
-  int mb_cols = (frames[alt_ref_index]->y_crop_width + BW - 1) >> BW_LOG2;
-  int mb_rows = (frames[alt_ref_index]->y_crop_height + BH - 1) >> BH_LOG2;
   int mb_y_offset = 0;
   int mb_y_src_offset = 0;
   int mb_uv_offset = 0;
@@ -1042,6 +1049,8 @@ static void temporal_filter_iterate_c(AV1_COMP *cpi,
   memset(&mbmi, 0, sizeof(mbmi));
   MB_MODE_INFO *mbmi_ptr = &mbmi;
   mbd->mi = &mbmi_ptr;
+
+  FRAME_DIFF diff = { 0, 0 };
 
   for (mb_row = 0; mb_row < mb_rows; mb_row++) {
     // Source frames are extended to 16 pixels. This is different than
@@ -1305,6 +1314,21 @@ static void temporal_filter_iterate_c(AV1_COMP *cpi,
           }
         }
       }
+
+      if (!is_key_frame && cpi->sf.adaptive_overlay_encoding) {
+        // Calculate the difference(dist) between source and filtered source.
+        dst1 = cpi->alt_ref_buffer.y_buffer + mb_y_offset;
+        stride = cpi->alt_ref_buffer.y_stride;
+        const uint8_t *src = f->y_buffer + mb_y_src_offset;
+        const int src_stride = f->y_stride;
+        const BLOCK_SIZE bsize = dims_to_size(BW, BH);
+        unsigned int sse = 0;
+        cpi->fn_ptr[bsize].vf(src, src_stride, dst1, stride, &sse);
+
+        diff.sum += sse;
+        diff.sse += sse * sse;
+      }
+
       mb_y_offset += BW;
       mb_y_src_offset += BW;
       mb_uv_offset += mb_uv_width;
@@ -1321,6 +1345,7 @@ static void temporal_filter_iterate_c(AV1_COMP *cpi,
   for (i = 0; i < num_planes; i++) mbd->plane[i].pre[0].buf = input_buffer[i];
 
   mbd->mi = backup_mi_grid;
+  return diff;
 }
 
 // This is an adaptation of the mehtod in the following paper:
@@ -1560,10 +1585,38 @@ int av1_temporal_filter(AV1_COMP *cpi, int distance,
         frames[0]->y_crop_width, frames[0]->y_crop_height);
   }
 
-  temporal_filter_iterate_c(cpi, frames, frames_to_blur,
-                            frames_to_blur_backward, strength, sigma,
-                            distance == -1, &sf);
-  (void)show_existing_alt_ref;
+  FRAME_DIFF diff = temporal_filter_iterate_c(cpi, frames, frames_to_blur,
+                                              frames_to_blur_backward, strength,
+                                              sigma, distance == -1, &sf);
+
+  if (distance == -1) return 1;
+
+  if (show_existing_alt_ref != NULL && cpi->sf.adaptive_overlay_encoding) {
+    AV1_COMMON *const cm = &cpi->common;
+    int top_index = 0, bottom_index = 0;
+
+    aom_clear_system_state();
+    // TODO(yunqing): This can be combined with TPL q calculation later.
+    cpi->rc.base_frame_target = gf_group->bit_allocation[gf_group->index];
+    av1_set_target_rate(cpi, cm->width, cm->height);
+    const int q = av1_rc_pick_q_and_bounds(cpi, &cpi->rc, cpi->oxcf.width,
+                                           cpi->oxcf.height, gf_group->index,
+                                           &bottom_index, &top_index);
+    const int ac_q = av1_ac_quant_QTX(q, 0, cm->seq_params.bit_depth);
+    const int ac_q_2 = ac_q * ac_q;
+    const int mb_cols = get_cols(frames[frames_to_blur_backward]->y_crop_width);
+    const int mb_rows =
+        get_rows(frames[frames_to_blur_backward]->y_crop_height);
+    const int mbs = AOMMAX(1, mb_rows * mb_cols);
+    const float mean = (float)diff.sum / mbs;
+    const float std = (float)sqrt((float)diff.sse / mbs - mean * mean);
+    const float threshold = 0.7f;
+
+    *show_existing_alt_ref = 0;
+    if (mean / ac_q_2 < threshold && std < mean * 1.2)
+      *show_existing_alt_ref = 1;
+    cpi->common.showable_frame |= *show_existing_alt_ref;
+  }
 
   return 1;
 }

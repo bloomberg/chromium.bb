@@ -34,6 +34,19 @@ extern "C" {
 #define EDGE_THRESHOLD 50
 #define SQRT_PI_BY_2 1.25331413732
 
+static INLINE BLOCK_SIZE dims_to_size(int w, int h) {
+  if (w != h) return -1;
+  switch (w) {
+    case 4: return BLOCK_4X4;
+    case 8: return BLOCK_8X8;
+    case 16: return BLOCK_16X16;
+    case 32: return BLOCK_32X32;
+    case 64: return BLOCK_64X64;
+    case 128: return BLOCK_128X128;
+    default: assert(0); return -1;
+  }
+}
+
 int av1_temporal_filter(AV1_COMP *cpi, int distance,
                         int *show_existing_alt_ref);
 double estimate_noise(const uint8_t *src, int width, int height, int stride,
