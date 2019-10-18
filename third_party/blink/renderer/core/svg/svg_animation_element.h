@@ -114,7 +114,6 @@ class CORE_EXPORT SVGAnimationElement : public SVGSMILElement {
   SVGAnimationElement(const QualifiedName&, Document&);
 
   void ParseAttribute(const AttributeModificationParams&) override;
-  void SvgAttributeChanged(const QualifiedName&) override;
 
   String ToValue() const;
   String ByValue() const;
@@ -141,13 +140,12 @@ class CORE_EXPORT SVGAnimationElement : public SVGSMILElement {
   // http://www.w3.org/TR/SVG/animate.html#ValuesAttribute .
   static bool ParseValues(const String&, Vector<String>& result);
 
-  void InvalidatedValuesCache();
-  void AnimationAttributeChanged() override;
   void WillChangeAnimationTarget() override;
 
  private:
   bool IsValid() const final { return SVGTests::IsValid(); }
 
+  void AnimationAttributeChanged();
   bool CheckAnimationParameters();
   virtual bool CalculateToAtEndOfDurationValue(
       const String& to_at_end_of_duration_string) = 0;

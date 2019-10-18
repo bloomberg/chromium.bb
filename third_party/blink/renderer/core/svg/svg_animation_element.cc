@@ -171,6 +171,7 @@ void SVGAnimationElement::ParseAttribute(
       return;
     }
     UpdateAnimationMode();
+    AnimationAttributeChanged();
     return;
   }
 
@@ -179,6 +180,7 @@ void SVGAnimationElement::ParseAttribute(
       ReportAttributeParsingError(SVGParseStatus::kParsingFailed, name,
                                   params.new_value);
     }
+    AnimationAttributeChanged();
     return;
   }
 
@@ -191,6 +193,7 @@ void SVGAnimationElement::ParseAttribute(
                                     params.new_value);
       }
     }
+    AnimationAttributeChanged();
     return;
   }
 
@@ -199,53 +202,36 @@ void SVGAnimationElement::ParseAttribute(
       ReportAttributeParsingError(SVGParseStatus::kParsingFailed, name,
                                   params.new_value);
     }
+    AnimationAttributeChanged();
     return;
   }
 
   if (name == svg_names::kCalcModeAttr) {
     SetCalcMode(params.new_value);
+    AnimationAttributeChanged();
     return;
   }
 
   if (name == svg_names::kFromAttr || name == svg_names::kToAttr ||
       name == svg_names::kByAttr) {
     UpdateAnimationMode();
+    AnimationAttributeChanged();
     return;
   }
 
   SVGSMILElement::ParseAttribute(params);
 }
 
-void SVGAnimationElement::SvgAttributeChanged(const QualifiedName& attr_name) {
-  if (attr_name == svg_names::kValuesAttr || attr_name == svg_names::kByAttr ||
-      attr_name == svg_names::kFromAttr || attr_name == svg_names::kToAttr ||
-      attr_name == svg_names::kCalcModeAttr ||
-      attr_name == svg_names::kKeySplinesAttr ||
-      attr_name == svg_names::kKeyPointsAttr ||
-      attr_name == svg_names::kKeyTimesAttr) {
-    AnimationAttributeChanged();
-    return;
-  }
-
-  SVGSMILElement::SvgAttributeChanged(attr_name);
-}
-
-void SVGAnimationElement::InvalidatedValuesCache() {
+void SVGAnimationElement::AnimationAttributeChanged() {
+  // Assumptions may not hold after an attribute change.
+  animation_valid_ = AnimationValidity::kUnknown;
   last_values_animation_from_ = String();
   last_values_animation_to_ = String();
 }
 
-void SVGAnimationElement::AnimationAttributeChanged() {
-  // Assumptions may not hold after an attribute change.
-  animation_valid_ = AnimationValidity::kUnknown;
-  InvalidatedValuesCache();
-  SetInactive();
-}
-
 void SVGAnimationElement::WillChangeAnimationTarget() {
   SVGSMILElement::WillChangeAnimationTarget();
-  animation_valid_ = AnimationValidity::kUnknown;
-  InvalidatedValuesCache();
+  AnimationAttributeChanged();
 }
 
 float SVGAnimationElement::getStartTime(ExceptionState& exception_state) const {

@@ -56,7 +56,6 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   void RemovedFrom(ContainerNode&) override;
 
   virtual bool HasValidTarget() const;
-  virtual void AnimationAttributeChanged() = 0;
 
   SMILTimeContainer* TimeContainer() const { return time_container_.Get(); }
 
@@ -130,8 +129,6 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   enum BeginOrEnd { kBegin, kEnd };
 
   void AddInstanceTimeAndUpdate(BeginOrEnd, SMILTime, SMILTimeOrigin);
-
-  void SetInactive() { active_state_ = kInactive; }
 
   void SetTargetElement(SVGElement*);
 

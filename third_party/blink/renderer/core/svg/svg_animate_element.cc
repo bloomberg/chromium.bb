@@ -155,12 +155,10 @@ void SVGAnimateElement::ParseAttribute(
     const AttributeModificationParams& params) {
   if (params.name == svg_names::kAttributeTypeAttr) {
     SetAttributeType(params.new_value);
-    AnimationAttributeChanged();
     return;
   }
   if (params.name == svg_names::kAttributeNameAttr) {
     SetAttributeName(ConstructQualifiedName(*this, params.new_value));
-    AnimationAttributeChanged();
     return;
   }
   SVGAnimationElement::ParseAttribute(params);
