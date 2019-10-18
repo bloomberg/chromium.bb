@@ -1141,6 +1141,15 @@ Unknown properties are collapsed to zero. -->
   <int value="2" label="Malformed response"/>
 </enum>
 
+<enum name="AggregatedSearchRankerError">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="LoadModelFailed"/>
+  <int value="2" label="CreateGraphFailed"/>
+  <int value="3" label="LoadExamplePreprocessorConfigFailed"/>
+  <int value="4" label="VectorizeFeaturesFailed"/>
+  <int value="5" label="InferenceExecutionFailed"/>
+</enum>
+
 <enum name="AlsaSampleFormatType">
   <int value="-1" label="SND_PCM_FORMAT_UNKNOWN"/>
   <int value="0" label="SND_PCM_FORMAT_S8"/>
