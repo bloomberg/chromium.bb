@@ -36,6 +36,9 @@ class NGInlineCursorTest : public NGLayoutTest,
   }
 
   String ToDebugString(const NGInlineCursor& cursor) {
+    if (cursor.IsLineBox())
+      return "#linebox";
+
     const String text_content =
         cursor.GetLayoutBlockFlow()->GetNGInlineNodeData()->text_content;
     if (const LayoutObject* layout_object = cursor.CurrentLayoutObject()) {
@@ -55,8 +58,6 @@ class NGInlineCursorTest : public NGLayoutTest,
       return layout_object->DebugName();
     }
 
-    if (cursor.IsLineBox())
-      return "#linebox";
     return "#null";
   }
 };

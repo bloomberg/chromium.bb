@@ -29,9 +29,8 @@ NGFragmentItem::NGFragmentItem(const NGPhysicalTextFragment& text)
 
 NGFragmentItem::NGFragmentItem(const NGPhysicalLineBoxFragment& line,
                                wtf_size_t item_count)
-    : layout_object_(nullptr),
-      line_({line.Metrics(), To<NGInlineBreakToken>(line.BreakToken()),
-             item_count}),
+    : layout_object_(line.ContainerLayoutObject()),
+      line_({&line, item_count}),
       rect_({PhysicalOffset(), line.Size()}),
       type_(kLine),
       style_variant_(static_cast<unsigned>(line.StyleVariant())),
@@ -152,6 +151,7 @@ String NGFragmentItem::DebugName() const {
 IntRect NGFragmentItem::VisualRect() const {
   // TODO(kojii): Need to reconsider the storage of |VisualRect|, to integrate
   // better with |FragmentData| and to avoid dependency to |LayoutObject|.
+  DCHECK(GetLayoutObject());
   return GetLayoutObject()->VisualRectForInlineBox();
 }
 

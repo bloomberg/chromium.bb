@@ -41,8 +41,7 @@ class CORE_EXPORT NGFragmentItem : public DisplayItemClient {
   };
   // A start marker of a line box.
   struct LineItem {
-    NGLineHeightMetrics metrics;
-    scoped_refptr<const NGInlineBreakToken> inline_break_token;
+    scoped_refptr<const NGPhysicalLineBoxFragment> line_box_fragment;
     wtf_size_t descendants_count;
   };
   // Represents a box fragment appeared in a line. This includes inline boxes
@@ -115,6 +114,25 @@ class CORE_EXPORT NGFragmentItem : public DisplayItemClient {
   const NGPhysicalBoxFragment* BoxFragment() const {
     if (Type() == kBox)
       return box_.box_fragment.get();
+    return nullptr;
+  }
+
+  // TODO(kojii): Avoid using this function in outside of this class as much as
+  // possible, because |NGPhysicalLineBoxFragment| is likely to be removed. Add
+  // functions to access data in |NGPhysicalLineBoxFragment| rather than using
+  // this function. See |InlineBreakToken()| for example.
+  const NGPhysicalLineBoxFragment* LineBoxFragment() const {
+    if (Type() == kLine)
+      return line_.line_box_fragment.get();
+    return nullptr;
+  }
+
+  // Returns |NGInlineBreakToken| associated with this line, for line items.
+  // Calling this function for other types is not valid.
+  const NGInlineBreakToken* InlineBreakToken() const {
+    if (const NGPhysicalLineBoxFragment* line_box = LineBoxFragment())
+      return To<NGInlineBreakToken>(line_box->BreakToken());
+    NOTREACHED();
     return nullptr;
   }
 
