@@ -2985,21 +2985,6 @@
             ]
         }
     ],
-    "IOSSettingsAddPaymentMethod": [
-        {
-            "platforms": [
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "SettingsAddPaymentMethod"
-                    ]
-                }
-            ]
-        }
-    ],
     "ImprovedRecoveryComponent": [
         {
             "platforms": [
