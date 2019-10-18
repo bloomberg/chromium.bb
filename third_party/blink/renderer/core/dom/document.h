@@ -833,6 +833,7 @@ class CORE_EXPORT Document : public ContainerNode,
                                 bool matches);
   void EnqueueAutofocusCandidate(Element&);
   bool HasAutofocusCandidates() const;
+  void FlushAutofocusCandidates();
   void SetSequentialFocusNavigationStartingPoint(Node*);
   Element* SequentialFocusNavigationStartingPoint(WebFocusType) const;
 
@@ -1740,7 +1741,6 @@ class CORE_EXPORT Document : public ContainerNode,
 
   void ClearFocusedElementSoon();
   void ClearFocusedElementTimerFired(TimerBase*);
-  void FlushAutofocusCandidates();
   bool HasNonEmptyFragment() const;
 
   bool HaveScriptBlockingStylesheetsLoaded() const;

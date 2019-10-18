@@ -7413,8 +7413,6 @@ void Document::CancelPostAnimationFrame(int id) {
 }
 
 void Document::RunPostAnimationFrameCallbacks() {
-  FlushAutofocusCandidates();
-
   bool was_throttled = current_frame_is_throttled_;
   current_frame_is_throttled_ = false;
   if (was_throttled || !scripted_animation_controller_)
@@ -7761,6 +7759,8 @@ void Document::EnqueueAutofocusCandidate(Element& element) {
   if (index != WTF::kNotFound)
     autofocus_candidates_.EraseAt(index);
   autofocus_candidates_.push_back(element);
+  // ScriptedAnimationController invokes FlushAutofocusCandidates().
+  EnsureScriptedAnimationController();
 }
 
 bool Document::HasAutofocusCandidates() const {
@@ -7826,7 +7826,6 @@ void Document::FlushAutofocusCandidates() {
     // fallback state is not fixed yet.
     // TODO(tkent): Standardize this behavior.
     if (IsInIndeterminateObjectAncestor(&element)) {
-      GetPage()->Animator().ScheduleVisualUpdate(GetFrame());
       return;
     }
 
@@ -7868,6 +7867,7 @@ void Document::FlushAutofocusCandidates() {
     }
 
     // 9. If element is a focusable area, then:
+    element.GetDocument().UpdateStyleAndLayoutTree();
     if (element.IsFocusable()) {
       // 9.1. Empty candidates.
       autofocus_candidates_.clear();
