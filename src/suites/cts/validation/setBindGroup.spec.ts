@@ -155,27 +155,24 @@ g.test('dynamic offsets match expectations in pass encoder', async t => {
     t.testComputePass(bindGroup, dynamicOffsets);
   }, !_success);
 }).params(
-  pcombine([
-    poptions('type', ['compute', 'renderpass', 'renderbundle']),
-    [
-      { dynamicOffsets: [256, 0], _success: true }, // Dynamic offsets aligned
-      { dynamicOffsets: [1, 2], _success: false }, // Dynamic offsets not aligned
+  pcombine(poptions('type', ['compute', 'renderpass', 'renderbundle']), [
+    { dynamicOffsets: [256, 0], _success: true }, // Dynamic offsets aligned
+    { dynamicOffsets: [1, 2], _success: false }, // Dynamic offsets not aligned
 
-      // Wrong number of dynamic offsets
-      { dynamicOffsets: [256, 0, 0], _success: false },
-      { dynamicOffsets: [256], _success: false },
-      { dynamicOffsets: [], _success: false },
+    // Wrong number of dynamic offsets
+    { dynamicOffsets: [256, 0, 0], _success: false },
+    { dynamicOffsets: [256], _success: false },
+    { dynamicOffsets: [], _success: false },
 
-      // Dynamic uniform buffer out of bounds because of binding size
-      { dynamicOffsets: [512, 0], _success: false },
-      { dynamicOffsets: [1024, 0], _success: false },
-      { dynamicOffsets: [Number.MAX_SAFE_INTEGER, 0], _success: false },
+    // Dynamic uniform buffer out of bounds because of binding size
+    { dynamicOffsets: [512, 0], _success: false },
+    { dynamicOffsets: [1024, 0], _success: false },
+    { dynamicOffsets: [Number.MAX_SAFE_INTEGER, 0], _success: false },
 
-      // Dynamic storage buffer out of bounds because of binding size
-      { dynamicOffsets: [0, 512], _success: false },
-      { dynamicOffsets: [0, 1024], _success: false },
-      { dynamicOffsets: [0, Number.MAX_SAFE_INTEGER], _success: false },
-    ],
+    // Dynamic storage buffer out of bounds because of binding size
+    { dynamicOffsets: [0, 512], _success: false },
+    { dynamicOffsets: [0, 1024], _success: false },
+    { dynamicOffsets: [0, Number.MAX_SAFE_INTEGER], _success: false },
   ])
 );
 

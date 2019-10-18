@@ -29,28 +29,28 @@ g.test('options', t => {
 });
 
 g.test('combine/none', t => {
-  t.expectSpecEqual(pcombine([]), []);
+  t.expectSpecEqual(pcombine(), []);
 });
 
 g.test('combine/zeroes and ones', t => {
-  t.expectSpecEqual(pcombine([[], []]), []);
-  t.expectSpecEqual(pcombine([[], [{}]]), []);
-  t.expectSpecEqual(pcombine([[{}], []]), []);
-  t.expectSpecEqual(pcombine([[{}], [{}]]), [{}]);
+  t.expectSpecEqual(pcombine([], []), []);
+  t.expectSpecEqual(pcombine([], [{}]), []);
+  t.expectSpecEqual(pcombine([{}], []), []);
+  t.expectSpecEqual(pcombine([{}], [{}]), [{}]);
 });
 
 g.test('combine/mixed', t => {
   t.expectSpecEqual(
-    pcombine([poptions('x', [1, 2]), poptions('y', ['a', 'b']), [{ p: 4 }, { q: 5 }], [{}]]),
+    pcombine(poptions('x', [1, 2]), poptions('y', ['a', 'b']), [{ p: 4 }, { q: 5 }], [{}]),
     [
-      { p: 4, x: 1, y: 'a' },
-      { q: 5, x: 1, y: 'a' },
-      { p: 4, x: 1, y: 'b' },
-      { q: 5, x: 1, y: 'b' },
-      { p: 4, x: 2, y: 'a' },
-      { q: 5, x: 2, y: 'a' },
-      { p: 4, x: 2, y: 'b' },
-      { q: 5, x: 2, y: 'b' },
+      { x: 1, y: 'a', p: 4 },
+      { x: 1, y: 'a', q: 5 },
+      { x: 1, y: 'b', p: 4 },
+      { x: 1, y: 'b', q: 5 },
+      { x: 2, y: 'a', p: 4 },
+      { x: 2, y: 'a', q: 5 },
+      { x: 2, y: 'b', p: 4 },
+      { x: 2, y: 'b', q: 5 },
     ]
   );
 });

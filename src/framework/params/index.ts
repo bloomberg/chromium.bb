@@ -1,7 +1,7 @@
 export * from './combine.js';
+export * from './exclude.js';
 export * from './filter.js';
 export * from './options.js';
-export * from './exclude.js';
 
 // tslint:disable-next-line: no-any
 export type ParamArgument = any;

@@ -57,12 +57,12 @@ g.test('create mapped', async t => {
   t.expect(arrayBuffer.byteLength === 0, 'ArrayBuffer should be detached');
   t.expect(view.byteLength === 0, 'ArrayBufferView should be detached');
 }).params(
-  pcombine([
+  pcombine(
     pbool('async'), //
     [
       { unmap: true, destroy: false },
       { unmap: false, destroy: true },
       { unmap: true, destroy: true },
-    ],
-  ])
+    ]
+  )
 );

@@ -1,6 +1,6 @@
 import { ParamSpec, ParamSpecIterable, ParamSpecIterator } from './index.js';
 
-export function pcombine(params: ParamSpecIterable[]): PCombine {
+export function pcombine(...params: ParamSpecIterable[]): ParamSpecIterable {
   return new PCombine(params);
 }
 

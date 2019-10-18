@@ -183,7 +183,7 @@ g.test('buffer binding must contain exactly one buffer of its type', async t => 
     });
   }, shouldError);
 }).params(
-  pcombine([
+  pcombine(
     poptions('bindingType', [
       'uniform-buffer',
       'storage-buffer',
@@ -199,8 +199,8 @@ g.test('buffer binding must contain exactly one buffer of its type', async t => 
       'sampler',
       'sampled-texture',
       'storage-texture',
-    ]),
-  ])
+    ])
+  )
 );
 
 g.test('texture binding must have correct usage', async t => {

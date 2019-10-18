@@ -44,10 +44,10 @@ g.test('createBufferMapped', async t => {
   });
   await t.checkMapWrite(buffer, arrayBuffer, size);
 }).params(
-  pcombine([
+  pcombine(
     poptions('size', [12, 512 * 1024]), //
-    pbool('mappable'),
-  ])
+    pbool('mappable')
+  )
 );
 
 g.test('createBufferMappedAsync', async t => {
@@ -58,8 +58,8 @@ g.test('createBufferMappedAsync', async t => {
   });
   await t.checkMapWrite(buffer, arrayBuffer, size);
 }).params(
-  pcombine([
+  pcombine(
     poptions('size', [12, 512 * 1024]), //
-    pbool('mappable'),
-  ])
+    pbool('mappable')
+  )
 );
