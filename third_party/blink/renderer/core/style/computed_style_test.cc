@@ -30,8 +30,6 @@
 
 namespace blink {
 
-using namespace css_test_helpers;
-
 TEST(ComputedStyleTest, ShapeOutsideBoxEqual) {
   ShapeValue* shape1 = ShapeValue::CreateBoxShapeValue(CSSBoxType::kContent);
   ShapeValue* shape2 = ShapeValue::CreateBoxShapeValue(CSSBoxType::kContent);
@@ -452,7 +450,8 @@ TEST(ComputedStyleTest, AnimationFlags) {
 
 TEST(ComputedStyleTest, CustomPropertiesEqual_Values) {
   auto* document = MakeGarbageCollected<Document>();
-  RegisterProperty(*document, "--x", "<length>", "0px", false);
+  css_test_helpers::RegisterProperty(*document, "--x", "<length>", "0px",
+                                     false);
 
   scoped_refptr<ComputedStyle> style1 = ComputedStyle::Create();
   scoped_refptr<ComputedStyle> style2 = ComputedStyle::Create();
@@ -481,14 +480,15 @@ TEST(ComputedStyleTest, CustomPropertiesEqual_Values) {
 
 TEST(ComputedStyleTest, CustomPropertiesEqual_Data) {
   auto* document = MakeGarbageCollected<Document>();
-  RegisterProperty(*document, "--x", "<length>", "0px", false);
+  css_test_helpers::RegisterProperty(*document, "--x", "<length>", "0px",
+                                     false);
 
   scoped_refptr<ComputedStyle> style1 = ComputedStyle::Create();
   scoped_refptr<ComputedStyle> style2 = ComputedStyle::Create();
 
-  auto value1 = CreateVariableData("foo");
-  auto value2 = CreateVariableData("bar");
-  auto value3 = CreateVariableData("foo");
+  auto value1 = css_test_helpers::CreateVariableData("foo");
+  auto value2 = css_test_helpers::CreateVariableData("bar");
+  auto value3 = css_test_helpers::CreateVariableData("foo");
 
   Vector<AtomicString> properties;
   properties.push_back("--x");
