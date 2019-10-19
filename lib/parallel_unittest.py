@@ -13,6 +13,7 @@ import numbers
 import os
 import signal
 import sys
+import tempfile
 import time
 import unittest
 
@@ -20,7 +21,6 @@ import mock
 from six.moves import cPickle as pickle
 from six.moves import queue as Queue
 
-from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
@@ -167,9 +167,6 @@ class TestManager(cros_test_lib.TestCase):
 class TestBackgroundWrapper(cros_test_lib.TestCase):
   """Unittests for background wrapper."""
 
-  def setUp(self):
-    self.tempfile = None
-
   def tearDown(self):
     # Wait for children to exit.
     try:
@@ -191,12 +188,11 @@ class TestBackgroundWrapper(cros_test_lib.TestCase):
     # Set _PRINT_INTERVAL to a smaller number to make it easier to
     # reproduce bugs.
     with mock.patch.multiple(parallel._BackgroundTask, PRINT_INTERVAL=0.01):
-      with cros_build_lib.UnbufferedNamedTemporaryFile() as output:
-        with mock.patch.multiple(sys, stdout=output):
-          func()
-        with open(output.name, 'r', 0) as tmp:
-          tmp.seek(0)
-          return tmp.read()
+      with tempfile.NamedTemporaryFile() as temp:
+        with open(temp.name, 'w') as output:
+          with mock.patch.multiple(sys, stdout=output):
+            func()
+        return osutils.ReadFile(temp.name)
 
 
 class TestHelloWorld(TestBackgroundWrapper):
@@ -295,7 +291,7 @@ class TestFastPrinting(TestBackgroundWrapper):
     # because it can trigger race conditions.
     for _ in range(_NUM_WRITES - 1):
       sys.stdout.write('x' * _BUFSIZE)
-    sys.stdout.write('x' * (_BUFSIZE - 1) + '\n')
+    sys.stderr.write('x' * (_BUFSIZE - 1) + '\n')
 
   def _ParallelPrinter(self):
     parallel.RunParallelSteps([self._FastPrinter] * _NUM_THREADS)
@@ -420,11 +416,12 @@ class TestExceptions(cros_test_lib.MockOutputTestCase):
         queue.put([])
         raise self._TestException()
 
+  # We can't test for PickleError with Python 3.5+ due to bugs in Python.
+  @unittest.skipIf(sys.version_info >= (3, 5),
+                   'https://bugs.python.org/issue29187')
   def testFailedPickle(self):
     """PicklingError should be thrown when an argument fails to pickle."""
-    # TODO: We have to refer to cPickle because Python internals throw it.
-    # Once we migrate to Python 3, we can switch to pickle directly.
-    with self.assertRaises(pickle.PicklingError):
+    with self.assertRaises(pickle.PickleError):
       parallel.RunTasksInProcessPool(self._SystemExit, [[self._SystemExit]])
 
   def testFailedPickleOnReturn(self):

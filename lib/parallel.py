@@ -418,7 +418,7 @@ class _BackgroundTask(multiprocessing.Process):
     sys.stderr.flush()
     errors = []
     # Send all output to a named temporary file.
-    with open(self._output.name, 'w', 0) as output:
+    with open(self._output.name, 'wb', 0) as output:
       # Back up sys.std{err,out}. These aren't used, but we keep a copy so
       # that they aren't garbage collected. We intentionally don't restore
       # the old stdout and stderr at the end, because we want shutdown errors
@@ -428,8 +428,13 @@ class _BackgroundTask(multiprocessing.Process):
       # Replace std{out,err} with unbuffered file objects.
       os.dup2(output.fileno(), sys.__stdout__.fileno())
       os.dup2(output.fileno(), sys.__stderr__.fileno())
-      sys.stdout = os.fdopen(sys.__stdout__.fileno(), 'w', 0)
-      sys.stderr = os.fdopen(sys.__stderr__.fileno(), 'w', 0)
+      # The API of these funcs changed between versions.
+      if sys.version_info.major < 3:
+        sys.stdout = os.fdopen(sys.__stdout__.fileno(), 'w', 0)
+        sys.stderr = os.fdopen(sys.__stderr__.fileno(), 'w', 0)
+      else:
+        sys.stdout = os.fdopen(sys.__stdout__.fileno(), 'w', closefd=False)
+        sys.stderr = os.fdopen(sys.__stderr__.fileno(), 'w', closefd=False)
 
       try:
         self._started.set()
