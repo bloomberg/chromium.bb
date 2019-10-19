@@ -29,6 +29,7 @@ BLINK_COMMON_EXPORT extern const base::Feature kImplicitRootScroller;
 BLINK_COMMON_EXPORT extern const base::Feature kCSSOMViewScrollCoordinates;
 BLINK_COMMON_EXPORT extern const base::Feature kCSSBackdropFilter;
 BLINK_COMMON_EXPORT extern const base::Feature kDisplayLocking;
+BLINK_COMMON_EXPORT extern const base::Feature kDoNotCompositeTrivial3D;
 BLINK_COMMON_EXPORT extern const base::Feature kFastBorderRadius;
 BLINK_COMMON_EXPORT extern const base::Feature kLayoutNG;
 BLINK_COMMON_EXPORT extern const base::Feature kMixedContentAutoupgrade;

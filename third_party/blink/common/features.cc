@@ -52,6 +52,10 @@ const base::Feature kFreezeUserAgent{"FreezeUserAgent",
 const base::Feature kCSSBackdropFilter{"CSSBackdropFilter",
                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
+// When enabled, the compositing of trivial 3D transforms is disabled.
+const base::Feature kDoNotCompositeTrivial3D{"DoNotCompositeTrivial3D",
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Enable Display Locking JavaScript APIs.
 const base::Feature kDisplayLocking{"DisplayLocking",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
