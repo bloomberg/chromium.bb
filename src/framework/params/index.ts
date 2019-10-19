@@ -4,13 +4,13 @@ export * from './options.js';
 export * from './exclude.js';
 
 export interface ParamsAny {
-  // tslint:disable-next-line: no-any // Too annoying to force every test to type convert params
-  [k: string]: any;
+  [k: string]: ParamArgument;
 }
 export type ParamAnyIterable = Iterable<ParamsAny>;
 export type ParamAnyIterator = IterableIterator<ParamsAny>;
 
-export type ParamArgument = undefined | boolean | number | string | number[];
+// tslint:disable-next-line: no-any
+export type ParamArgument = any;
 export interface ParamsSpec {
   [k: string]: ParamArgument;
 }

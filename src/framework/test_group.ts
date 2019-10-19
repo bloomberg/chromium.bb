@@ -3,7 +3,7 @@ import { Fixture } from './fixture.js';
 import { TestCaseID } from './id.js';
 import { LiveTestCaseResult, TestCaseRecorder, TestSpecRecorder } from './logger.js';
 import { ParamSpecIterable, ParamsAny, paramsEquals } from './params/index.js';
-import { extractPublicParams } from './url_query.js';
+import { checkPublicParamType, extractPublicParams } from './url_query.js';
 
 export interface RunCase {
   readonly id: TestCaseID;
@@ -82,6 +82,13 @@ class Test<F extends Fixture> {
     // This is n^2.
     for (const spec of cases) {
       const publicParams = extractPublicParams(spec);
+
+      // Check type of public params: can only be (currently):
+      // number, string, boolean, undefined, number[]
+      for (const v of Object.values(publicParams)) {
+        checkPublicParamType(v);
+      }
+
       if (seen.some(x => paramsEquals(x, publicParams))) {
         throw new Error('Duplicate test case params');
       }

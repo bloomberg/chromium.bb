@@ -1,5 +1,5 @@
 import { TestCaseID, TestSpecID } from './id.js';
-import { ParamsSpec } from './params/index.js';
+import { ParamArgument, ParamsSpec } from './params/index.js';
 
 export function encodeSelectively(s: string): string {
   let ret = encodeURIComponent(s);
@@ -24,6 +24,21 @@ export function extractPublicParams(params: ParamsSpec): ParamsSpec {
     }
   }
   return publicParams;
+}
+
+export function checkPublicParamType(v: ParamArgument): void {
+  if (typeof v === 'number' || typeof v === 'string' || typeof v === 'boolean' || v === undefined) {
+    return;
+  }
+  if (v instanceof Array) {
+    for (const x of v) {
+      if (typeof x !== 'number') {
+        break;
+      }
+    }
+    return;
+  }
+  throw new Error('Invalid type for test case params ' + v);
 }
 
 export function makeQueryString(spec: TestSpecID, testcase?: TestCaseID): string {
