@@ -92,17 +92,30 @@ class SubresourceRedirectBrowserTest : public InProcessBrowserTest {
     command_line->AppendSwitchASCII("host-rules", "MAP * 127.0.0.1");
   }
 
-  bool RunScriptExtractBool(const std::string& script) {
+  void EnableDataSaver(bool enabled) {
+    Profile* profile = Profile::FromBrowserContext(browser()->profile());
+
+    data_reduction_proxy::DataReductionProxySettings::
+        SetDataSaverEnabledForTesting(profile->GetPrefs(), enabled);
+    base::RunLoop().RunUntilIdle();
+  }
+
+  bool RunScriptExtractBool(const std::string& script,
+                            content::WebContents* web_contents = nullptr) {
     bool result;
-    EXPECT_TRUE(ExecuteScriptAndExtractBool(
-        browser()->tab_strip_model()->GetActiveWebContents(), script, &result));
+    if (!web_contents)
+      web_contents = browser()->tab_strip_model()->GetActiveWebContents();
+    EXPECT_TRUE(ExecuteScriptAndExtractBool(web_contents, script, &result));
     return result;
   }
 
-  std::string RunScriptExtractString(const std::string& script) {
+  std::string RunScriptExtractString(
+      const std::string& script,
+      content::WebContents* web_contents = nullptr) {
+    if (!web_contents)
+      web_contents = browser()->tab_strip_model()->GetActiveWebContents();
     std::string result;
-    EXPECT_TRUE(ExecuteScriptAndExtractString(
-        browser()->tab_strip_model()->GetActiveWebContents(), script, &result));
+    EXPECT_TRUE(ExecuteScriptAndExtractString(web_contents, script, &result));
     return result;
   }
 
@@ -198,7 +211,7 @@ class DifferentMediaInclusionSubresourceRedirectBrowserTest
 //  compression server, which responds with HTTP_OK.
 IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest,
                        TestHTMLLoadRedirectSuccess) {
-  base::RunLoop().RunUntilIdle();
+  EnableDataSaver(true);
   ui_test_utils::NavigateToURL(browser(),
                                HttpsURLWithPath("/load_image/image.html"));
 
@@ -224,6 +237,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest,
 //  mock compression server creates a redirect to the original resource.
 IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest,
                        TestHTMLLoadRedirectBypass) {
+  EnableDataSaver(true);
   ui_test_utils::NavigateToURL(
       browser(), HttpsURLWithPath("/load_image/private_url_image.html"));
 
@@ -241,24 +255,17 @@ IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest,
             https_url().port());
 }
 
-//  This test loads image_js.html, which triggers a javascript request
-//  for image.png.  This triggers an internal redirect to the mocked
-//  compression server, which responds with HTTP_OK.
 IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest,
-                       TestJavaScriptRedirectSuccess) {
+                       NoTriggerWhenDataSaverOff) {
+  EnableDataSaver(false);
   ui_test_utils::NavigateToURL(browser(),
-                               HttpsURLWithPath("/load_image/image_js.html"));
+                               HttpsURLWithPath("/load_image/image.html"));
 
-  RetryForHistogramUntilCountReached(
-      histogram_tester(), "SubresourceRedirect.CompressionAttempt.ResponseCode",
-      2);
+  content::FetchHistogramsFromChildProcesses();
+  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
 
-  histogram_tester()->ExpectBucketCount(
-      "SubresourceRedirect.CompressionAttempt.ResponseCode", net::HTTP_OK, 1);
-
-  histogram_tester()->ExpectBucketCount(
-      "SubresourceRedirect.CompressionAttempt.ResponseCode",
-      net::HTTP_TEMPORARY_REDIRECT, 1);
+  histogram_tester()->ExpectTotalCount(
+      "SubresourceRedirect.CompressionAttempt.ResponseCode", 0);
 
   EXPECT_TRUE(RunScriptExtractBool("checkImage()"));
 
@@ -266,27 +273,28 @@ IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest,
             https_url().port());
 }
 
-//  This test loads private_url_image.html, which triggers a javascript
-//  request for private_url_image.png.  This triggers an internal redirect
-//  to the mock compression server, which bypasses the request. The
-//  mock compression server creates a redirect to the original resource.
-IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest,
-                       TestJavaScriptRedirectBypass) {
-  ui_test_utils::NavigateToURL(
-      browser(), HttpsURLWithPath("/load_image/private_url_image_js.html"));
+IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest, NoTriggerInIncognito) {
+  EnableDataSaver(true);
+  auto* incognito_browser = CreateIncognitoBrowser();
+  ui_test_utils::NavigateToURL(incognito_browser,
+                               HttpsURLWithPath("/load_image/image.html"));
 
-  RetryForHistogramUntilCountReached(
-      histogram_tester(), "SubresourceRedirect.CompressionAttempt.ResponseCode",
-      2);
+  content::FetchHistogramsFromChildProcesses();
+  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
 
-  histogram_tester()->ExpectBucketCount(
-      "SubresourceRedirect.CompressionAttempt.ResponseCode",
-      net::HTTP_TEMPORARY_REDIRECT, 2);
+  histogram_tester()->ExpectTotalCount(
+      "SubresourceRedirect.CompressionAttempt.ResponseCode", 0);
 
-  EXPECT_TRUE(RunScriptExtractBool("checkImage()"));
+  EXPECT_TRUE(RunScriptExtractBool(
+      "checkImage()",
+      incognito_browser->tab_strip_model()->GetActiveWebContents()));
 
-  EXPECT_EQ(GURL(RunScriptExtractString("imageSrc()")).port(),
-            https_url().port());
+  EXPECT_EQ(
+      GURL(RunScriptExtractString(
+               "imageSrc()",
+               incognito_browser->tab_strip_model()->GetActiveWebContents()))
+          .port(),
+      https_url().port());
 }
 
 //  This test loads image.html, from a non secure site. This triggers a
@@ -294,6 +302,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest,
 //  non-secure sites.
 IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest,
                        NoTriggerOnNonSecureSite) {
+  EnableDataSaver(true);
   ui_test_utils::NavigateToURL(browser(),
                                HttpURLWithPath("/load_image/image.html"));
 
@@ -313,6 +322,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest,
 //  request for icon.png.  There should be no internal redirect as favicons
 //  are not considered images by chrome.
 IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest, NoTriggerOnNonImage) {
+  EnableDataSaver(true);
   ui_test_utils::NavigateToURL(
       browser(), HttpsURLWithPath("/favicon/page_with_favicon.html"));
 
@@ -332,6 +342,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest, NoTriggerOnNonImage) {
 // 200 ok from the original resource.
 IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest,
                        FallbackOnServerNotFound) {
+  EnableDataSaver(true);
   ui_test_utils::NavigateToURL(browser(),
                                HttpsURLWithPath("/load_image/fail_image.html"));
 
@@ -359,6 +370,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest,
 //  server/network fails and returns nothing.
 IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest,
                        FallbackOnServerFailure) {
+  EnableDataSaver(true);
   SetCompressionServerToFail();
 
   base::RunLoop().RunUntilIdle();
@@ -378,11 +390,32 @@ IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest,
             https_url().port());
 }
 
+//  This test loads image_js.html, which triggers a javascript request
+//  for image.png for which subresource redirect will not be attempted.
+IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest,
+                       NoTriggerOnJavaScriptImageRequest) {
+  EnableDataSaver(true);
+  ui_test_utils::NavigateToURL(browser(),
+                               HttpsURLWithPath("/load_image/image_js.html"));
+
+  content::FetchHistogramsFromChildProcesses();
+  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+
+  histogram_tester()->ExpectTotalCount(
+      "SubresourceRedirect.CompressionAttempt.ResponseCode", 0);
+
+  EXPECT_TRUE(RunScriptExtractBool("checkImage()"));
+
+  EXPECT_EQ(GURL(RunScriptExtractString("imageSrc()")).port(),
+            https_url().port());
+}
+
 //  This test loads image.html, but with
 //  SubresourceRedirectIncludedMediaSuffixes set to only allow .svg, so no
 //  internal redirect should occur.
 IN_PROC_BROWSER_TEST_F(DifferentMediaInclusionSubresourceRedirectBrowserTest,
                        NoTriggerWhenNotIncludedInMediaSuffixes) {
+  EnableDataSaver(true);
   ui_test_utils::NavigateToURL(browser(),
                                HttpsURLWithPath("/load_image/image.html"));
 

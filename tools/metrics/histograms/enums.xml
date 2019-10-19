@@ -35883,6 +35883,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1268836676" label="disable-out-of-process-pdf"/>
   <int value="-1267958145" label="disable-pdf-material-ui"/>
   <int value="-1262730949" label="EnableDspHotword:enabled"/>
+  <int value="-1262303946" label="SubresourceRedirectPreviews:disabled"/>
   <int value="-1262152606" label="disable-lock-screen-apps"/>
   <int value="-1261972671" label="OmniboxDocumentProvider:disabled"/>
   <int value="-1261263046"
@@ -36666,6 +36667,7 @@ from previous Chrome versions.
   <int value="-258081634" label="AutofillAssistantDirectActions:disabled"/>
   <int value="-255264176" label="OmniboxSearchEngineLogo:disabled"/>
   <int value="-254887599" label="google-profile-info"/>
+  <int value="-254158542" label="SubresourceRedirectPreviews:enabled"/>
   <int value="-250822813" label="PwaImprovedSplashScreen:enabled"/>
   <int value="-250721831" label="AndroidAutofillAccessibility:disabled"/>
   <int value="-250543540" label="DeferAllScript:enabled"/>

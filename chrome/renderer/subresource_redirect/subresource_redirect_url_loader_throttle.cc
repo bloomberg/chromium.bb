@@ -28,6 +28,8 @@ SubresourceRedirectURLLoaderThrottle::MaybeCreateThrottle(
     content::ResourceType resource_type) {
   if (base::FeatureList::IsEnabled(blink::features::kSubresourceRedirect) &&
       resource_type == content::ResourceType::kImage &&
+      (request.GetPreviewsState() &
+       blink::WebURLRequest::kSubresourceRedirectOn) &&
       request.Url().ProtocolIs(url::kHttpsScheme)) {
     // TODO(rajendrant): Verify that data saver is enabled as well, to not
     // trigger the subresource redirect for incognito profiles.
@@ -48,7 +50,8 @@ void SubresourceRedirectURLLoaderThrottle::WillStartRequest(
   DCHECK(base::FeatureList::IsEnabled(blink::features::kSubresourceRedirect));
   DCHECK_EQ(request->resource_type,
             static_cast<int>(content::ResourceType::kImage));
-
+  DCHECK(request->previews_state &
+         content::PreviewsTypes::SUBRESOURCE_REDIRECT_ON);
   DCHECK(request->url.SchemeIs(url::kHttpsScheme));
 
   // Image subresources that have paths that do not end in one of the

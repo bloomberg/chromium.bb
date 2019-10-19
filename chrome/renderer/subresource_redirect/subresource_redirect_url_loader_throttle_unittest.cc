@@ -18,11 +18,12 @@ namespace subresource_redirect {
 namespace {
 
 std::unique_ptr<SubresourceRedirectURLLoaderThrottle>
-CreateSubresourceRedirectURLLoaderThrottle(
-    const GURL& url,
-    content::ResourceType resource_type) {
+CreateSubresourceRedirectURLLoaderThrottle(const GURL& url,
+                                           content::ResourceType resource_type,
+                                           int previews_state) {
   blink::WebURLRequest request;
   request.SetUrl(url);
+  request.SetPreviewsState(previews_state);
   return SubresourceRedirectURLLoaderThrottle::MaybeCreateThrottle(
       request, resource_type);
 }
@@ -31,19 +32,33 @@ TEST(SubresourceRedirectURLLoaderThrottleTest, TestMaybeCreateThrottle) {
   struct TestCase {
     bool is_subresource_redirect_feature_enabled;
     content::ResourceType resource_type;
+    int previews_state;
     const std::string url;
     bool expected_is_throttle_created;
   };
 
   const TestCase kTestCases[]{
-      {true, content::ResourceType::kImage, "https://www.test.com/test.jpg",
-       true},
+      {true, content::ResourceType::kImage,
+       content::PreviewsTypes::SUBRESOURCE_REDIRECT_ON,
+       "https://www.test.com/test.jpg", true},
+      {true, content::ResourceType::kImage,
+       content::PreviewsTypes::SUBRESOURCE_REDIRECT_ON |
+           content::PreviewsTypes::LAZY_IMAGE_AUTO_RELOAD,
+       "https://www.test.com/test.jpg", true},
 
       // Failure cases
-      {false, content::ResourceType::kImage, "https://www.test.com/test.jpg",
-       false},
-      {true, content::ResourceType::kScript, "https://www.test.com/test.jpg",
-       false},
+      {false, content::ResourceType::kImage,
+       content::PreviewsTypes::SUBRESOURCE_REDIRECT_ON,
+       "https://www.test.com/test.jpg", false},
+      {true, content::ResourceType::kScript,
+       content::PreviewsTypes::SUBRESOURCE_REDIRECT_ON,
+       "https://www.test.com/test.jpg", false},
+      {true, content::ResourceType::kImage,
+       content::PreviewsTypes::LAZY_IMAGE_AUTO_RELOAD,
+       "https://www.test.com/test.jpg", false},
+      {true, content::ResourceType::kImage,
+       content::PreviewsTypes::SUBRESOURCE_REDIRECT_ON,
+       "http://www.test.com/test.jpg", false},
   };
 
   for (const TestCase& test_case : kTestCases) {
@@ -57,6 +72,7 @@ TEST(SubresourceRedirectURLLoaderThrottleTest, TestMaybeCreateThrottle) {
     }
 
     blink::WebURLRequest request;
+    request.SetPreviewsState(test_case.previews_state);
     request.SetUrl(GURL(test_case.url));
     EXPECT_EQ(test_case.expected_is_throttle_created,
               SubresourceRedirectURLLoaderThrottle::MaybeCreateThrottle(
@@ -91,10 +107,12 @@ TEST(SubresourceRedirectURLLoaderThrottleTest, TestGetSubresourceURL) {
 
   for (const TestCase& test_case : kTestCases) {
     auto throttle = CreateSubresourceRedirectURLLoaderThrottle(
-        test_case.original_url, content::ResourceType::kImage);
+        test_case.original_url, content::ResourceType::kImage,
+        content::PreviewsTypes::SUBRESOURCE_REDIRECT_ON);
     network::ResourceRequest request;
     request.url = test_case.original_url;
     request.resource_type = static_cast<int>(content::ResourceType::kImage);
+    request.previews_state = content::PreviewsTypes::SUBRESOURCE_REDIRECT_ON;
     bool defer = false;
     throttle->WillStartRequest(&request, &defer);
 
@@ -109,10 +127,12 @@ TEST(SubresourceRedirectURLLoaderThrottleTest, DeferOverridenToFalse) {
       blink::features::kSubresourceRedirect);
 
   auto throttle = CreateSubresourceRedirectURLLoaderThrottle(
-      GURL("https://www.test.com/test.jpg"), content::ResourceType::kImage);
+      GURL("https://www.test.com/test.jpg"), content::ResourceType::kImage,
+      content::PreviewsTypes::SUBRESOURCE_REDIRECT_ON);
   network::ResourceRequest request;
   request.url = GURL("https://www.test.com/test.jpg");
   request.resource_type = static_cast<int>(content::ResourceType::kImage);
+  request.previews_state = content::PreviewsTypes::SUBRESOURCE_REDIRECT_ON;
   bool defer = true;
 
   throttle->WillStartRequest(&request, &defer);
