@@ -35508,6 +35508,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1732561795" label="ConsistentOmniboxGeolocation:enabled"/>
   <int value="-1731149013" label="AndroidMessagesIntegration:enabled"/>
   <int value="-1729926412" label="enable-webusb-notifications"/>
+  <int value="-1729808721" label="SubresourceRedirect:enabled"/>
   <int value="-1727530898" label="LookalikeUrlNavigationSuggestionsUI:enabled"/>
   <int value="-1727173228" label="OmniboxZeroSuggestionsOnNTP:enabled"/>
   <int value="-1725507605" label="enable-web-midi"/>
@@ -36481,7 +36482,6 @@ from previous Chrome versions.
   <int value="-510488450" label="disable-pnacl"/>
   <int value="-508250572" label="ServiceWorkerLongRunningMessage:disabled"/>
   <int value="-508143738" label="disable-accelerated-fixed-root-background"/>
-  <int value="-506743105" label="enable-subresource-redirect"/>
   <int value="-506706655" label="respect-autocomplete-off-autofill"/>
   <int value="-506366023" label="VizHitTest:enabled"/>
   <int value="-505679399" label="FontCacheScaling:enabled"/>
@@ -38155,6 +38155,7 @@ from previous Chrome versions.
   <int value="1745053254" label="ClickToCallOpenDialerDirectly:enabled"/>
   <int value="1747279677" label="disable-delegated-renderer"/>
   <int value="1748481830" label="AppManagement:enabled"/>
+  <int value="1749028785" label="SubresourceRedirect:disabled"/>
   <int value="1750822869" label="CrostiniBackup:disabled"/>
   <int value="1752168018" label="enable-stale-while-revalidate"/>
   <int value="1755024316" label="HostWindowsInAppShimProcess:disabled"/>

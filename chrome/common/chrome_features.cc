@@ -704,13 +704,6 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kSplitAuthCacheByNetworkIsolationKey{
     "SplitAuthCacheByNetworkIsolationKey", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables filtering URLs by suffix to include subresources that look
-// like image resources for compression. For example,
-// http://chromium.org/image.jpg would be included.
-const base::Feature kSubresourceRedirectIncludedMediaSuffixes{
-    "SubresourceRedirectIncludedMediaSuffixes",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
 #if !defined(OS_ANDROID)
 // Enables or disables the Javascript API to propagate sync encryption keys.
 const base::Feature kSyncEncryptionKeysWebApi{

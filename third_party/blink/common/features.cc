@@ -410,5 +410,10 @@ const base::Feature kHtmlImportsRequestInitiatorLock{
 const base::Feature kDisableDirectlyCompositedImages{
     "DisableDirectlyCompositedImages", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables redirecting subresources in the page to better compressed and
+// optimized versions to provide data savings.
+const base::Feature kSubresourceRedirect{"SubresourceRedirect",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace blink

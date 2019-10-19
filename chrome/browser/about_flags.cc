@@ -2095,7 +2095,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-subresource-redirect",
      flag_descriptions::kEnableSubresourceRedirectName,
      flag_descriptions::kEnableSubresourceRedirectDescription, kOsAll,
-     SINGLE_VALUE_TYPE(switches::kEnableSubresourceRedirect)},
+     FEATURE_VALUE_TYPE(blink::features::kSubresourceRedirect)},
 #if defined(OS_ANDROID)
     {"enable-offline-previews", flag_descriptions::kEnableOfflinePreviewsName,
      flag_descriptions::kEnableOfflinePreviewsDescription, kOsAndroid,
