@@ -1166,7 +1166,12 @@ export class PDFViewer {
       } else {
         targetOrigin = this.originalUrl_;
       }
-      this.parentWindow_.postMessage(message, targetOrigin);
+      try {
+        this.parentWindow_.postMessage(message, targetOrigin);
+      } catch (ok) {
+        // TODO(crbug.com/1004425): targetOrigin probably was rejected, such as
+        // a "data:" URL. This shouldn't cause this method to throw, though.
+      }
     }
   }
 
