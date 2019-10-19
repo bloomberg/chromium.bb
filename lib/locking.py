@@ -357,7 +357,7 @@ class PipeLock(object):
     """
     return os.read(self.read_fd, size)
 
-  def Post(self, data='!'):
+  def Post(self, data=b'!'):
     """Write |data| to the pipe.
 
     Args:
