@@ -171,7 +171,7 @@ to be run inside the isolate.
 Tries your change on the trybots. Right now this is essentially a fancy tryjob,
 like one you could trigger via `git cl try` or via CQ dry runs. Basic usage is
 
-`mb.py try -m tryserver.chromium.linux -b linux-rel //base:base_unittests`
+`mb.py try -m tryserver.chromium.linux -b linux-rel base_unittests`
 
 Your change must be uploaded to Gerrit. Local changes will not be uploaded for
 you. It uses the gerrit CL associated with your given git branch.
@@ -182,7 +182,7 @@ for a mapping of which bots are on which tryservers, and what those bots mirror.
 Any trybot in `trybots.py` is supported; you can test your code on windows, for
 example. The tryjob will compile and run your code on windows.
 
-The target (`base_unittests`) in the example is a GN build target. Most GN
+The target (`base_unittests`) in the example is a ninja build target. Most ninja
 unittest targets can be put here which currently runs on the bots.
 
 ### mb validate

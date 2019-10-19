@@ -384,19 +384,10 @@ class MetaBuildWrapper(object):
     return 0
 
   def CmdTry(self):
-    target = self.args.target
-    if not target.startswith('//'):
-      self.Print("Expected a GN target like //:foo, got %s" % target)
+    ninja_target = self.args.target
+    if ninja_target.startswith('//'):
+      self.Print("Expected a nijna target like base_unittests, got %s" % target)
       return 1
-
-    recipe_name = None
-    isolate_map = self.ReadIsolateMap()
-    for name, config in isolate_map.iteritems():
-      if 'label' in config and config['label'] == target:
-        recipe_name = name
-        break
-    if not recipe_name:
-      self.Print("Unable to find a recipe entry for %s." % target)
 
     json_path = self.PathJoin(self.chromium_src_dir, 'out.json')
     try:
@@ -430,7 +421,7 @@ class MetaBuildWrapper(object):
       # TODO(martiniss): maybe don't always assume the bucket?
       'led', 'get-builder', 'luci.chromium.try:%s' % self.args.builder).then(
       'led', 'edit', '-r', 'chromium_trybot_experimental',
-        '-p', 'tests=["%s"]' % recipe_name).then(
+        '-p', 'tests=["%s"]' % ninja_target).then(
       'led', 'edit-cr-cl', issue_data['issue_url']).then(
       'led', 'launch').result
 
