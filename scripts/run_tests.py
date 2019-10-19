@@ -801,6 +801,16 @@ def main(argv):
   # run any tests.
   ClearPythonCacheFiles()
 
+  # Sanity check the environment.  https://crbug.com/1015450
+  st = os.stat('/')
+  if st.st_mode & 0o7777 != 0o755:
+    cros_build_lib.Die('The root directory has broken permissions: %o\n'
+                       'Fix with: sudo chmod 755 /' % (st.st_mode,))
+  if st.st_uid or st.st_gid:
+    cros_build_lib.Die('The root directory has broken ownership: %i:%i'
+                       ' (should be 0:0)\nFix with: sudo chown 0:0 /' %
+                       (st.st_uid, st.st_gid))
+
   if opts.quick:
     SPECIAL_TESTS.update(SLOW_TESTS)
 

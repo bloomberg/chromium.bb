@@ -541,7 +541,27 @@ class TestCase(unittest.TestCase):
     # This is set to keep pylint from complaining.
     self.__test_was_run__ = False
 
+  @staticmethod
+  def _CheckTestEnv(msg):
+    """Sanity check the environment.  https://crbug.com/1015450"""
+    # Note: We use print+sys.exit here instead of logging/Die because it might
+    # cause errors in tests that expect their own setUp to run before their own
+    # tearDown executes.  By failing in the core funcs, we violate that.
+    st = os.stat('/')
+    if st.st_mode & 0o7777 != 0o755:
+      print('%s %s\nError: The root directory has broken permissions: %o\n'
+            'Fix with: sudo chmod 755 /' % (sys.argv[0], msg, st.st_mode),
+            file=sys.stderr)
+      sys.exit(1)
+    if st.st_uid or st.st_gid:
+      print('%s %s\nError: The root directory has broken ownership: %i:%i'
+            ' (should be 0:0)\nFix with: sudo chown 0:0 /' %
+            (sys.argv[0], msg, st.st_uid, st.st_gid), file=sys.stderr)
+      sys.exit(1)
+
   def setUp(self):
+    self._CheckTestEnv('%s.setUp' % (self.id(),))
+
     self.__saved_env__ = os.environ.copy()
     self.__saved_cwd__ = os.getcwd()
     self.__saved_umask__ = os.umask(0o22)
@@ -549,6 +569,8 @@ class TestCase(unittest.TestCase):
       os.environ.pop(x, None)
 
   def tearDown(self):
+    self._CheckTestEnv('%s.tearDown' % (self.id(),))
+
     osutils.SetEnvironment(self.__saved_env__)
     os.chdir(self.__saved_cwd__)
     os.umask(self.__saved_umask__)
