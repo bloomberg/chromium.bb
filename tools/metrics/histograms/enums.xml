@@ -3012,6 +3012,8 @@ Unknown properties are collapsed to zero. -->
   <int value="3" label="kStylus"/>
   <int value="4" label="kSuggestionChip"/>
   <int value="5" label="kVoiceInput"/>
+  <int value="6" label="kProactiveSuggestions"/>
+  <int value="7" label="kLibAssistantInitiated"/>
 </enum>
 
 <enum name="AsyncDNSConfigParsePosix">
