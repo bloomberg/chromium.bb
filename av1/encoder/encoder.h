@@ -898,8 +898,6 @@ typedef struct AV1_COMP {
 
   YV12_BUFFER_CONFIG alt_ref_buffer;
 
-  YV12_BUFFER_CONFIG source_kf_buffer;
-
 #if CONFIG_INTERNAL_STATS
   unsigned int mode_chosen_counts[MAX_MODES];
 

@@ -730,7 +730,6 @@ static void dealloc_compressor_data(AV1_COMP *cpi) {
   aom_free_frame_buffer(&cpi->scaled_source);
   aom_free_frame_buffer(&cpi->scaled_last_source);
   aom_free_frame_buffer(&cpi->alt_ref_buffer);
-  aom_free_frame_buffer(&cpi->source_kf_buffer);
   av1_lookahead_destroy(cpi->lookahead);
 
   aom_free(cpi->tile_tok[0][0]);
@@ -941,16 +940,6 @@ static void alloc_raw_frame_buffers(AV1_COMP *cpi) {
           seq_params->subsampling_x, seq_params->subsampling_y,
           seq_params->use_highbitdepth,
           is_scale ? oxcf->border_in_pixels : AOM_ENC_LOOKAHEAD_BORDER,
-          cm->byte_alignment, NULL, NULL, NULL))
-    aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
-                       "Failed to allocate altref buffer");
-
-  // Allocate frame buffer to hold source frame whey key frame filtering
-  // is applied.
-  if (aom_realloc_frame_buffer(
-          &cpi->source_kf_buffer, oxcf->width, oxcf->height,
-          seq_params->subsampling_x, seq_params->subsampling_y,
-          seq_params->use_highbitdepth, oxcf->border_in_pixels,
           cm->byte_alignment, NULL, NULL, NULL))
     aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate altref buffer");
