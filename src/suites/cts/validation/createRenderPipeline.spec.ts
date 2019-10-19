@@ -4,6 +4,7 @@ createRenderPipeline validation tests.
 
 import { TestGroup } from '../../../framework/index.js';
 import GLSL from '../../../tools/glsl.macro.js';
+import { textureFormatInfo, textureFormatParams } from '../format_info.js';
 
 import { ValidationTest } from './validation_test.js';
 
@@ -124,11 +125,12 @@ g.test('at least one color state is required', async t => {
 });
 
 g.test('color formats must be renderable', async t => {
-  const { format, _success } = t.params;
+  const { format } = t.params;
+  const info = textureFormatInfo[format];
 
   const descriptor = t.getDescriptor({ colorStates: [{ format }] });
 
-  if (_success) {
+  if (info.renderable) {
     // Succeeds when format is renderable
     t.device.createRenderPipeline(descriptor);
   } else {
@@ -137,49 +139,7 @@ g.test('color formats must be renderable', async t => {
       t.device.createRenderPipeline(descriptor);
     });
   }
-}).params([
-  // 8-bit formats
-  { format: 'r8unorm', _success: true },
-  { format: 'r8snorm', _success: false },
-  { format: 'r8uint', _success: true },
-  { format: 'r8sint', _success: true },
-  // 16-bit formats
-  { format: 'r16uint', _success: true },
-  { format: 'r16sint', _success: true },
-  { format: 'r16float', _success: true },
-  { format: 'rg8unorm', _success: true },
-  { format: 'rg8snorm', _success: false },
-  { format: 'rg8uint', _success: true },
-  { format: 'rg8sint', _success: true },
-  // 32-bit formats
-  { format: 'r32uint', _success: true },
-  { format: 'r32sint', _success: true },
-  { format: 'r32float', _success: true },
-  { format: 'rg16uint', _success: true },
-  { format: 'rg16sint', _success: true },
-  { format: 'rg16float', _success: true },
-  { format: 'rgba8unorm', _success: true },
-  { format: 'rgba8unorm-srgb', _success: true },
-  { format: 'rgba8snorm', _success: false },
-  { format: 'rgba8uint', _success: true },
-  { format: 'rgba8sint', _success: true },
-  { format: 'bgra8unorm', _success: true },
-  { format: 'bgra8unorm-srgb', _success: true },
-  // Packed 32-bit formats
-  { format: 'rgb10a2unorm', _success: true },
-  { format: 'rg11b10float', _success: false },
-  // 64-bit formats
-  { format: 'rg32uint', _success: true },
-  { format: 'rg32sint', _success: true },
-  { format: 'rg32float', _success: true },
-  { format: 'rgba16uint', _success: true },
-  { format: 'rgba16sint', _success: true },
-  { format: 'rgba16float', _success: true },
-  // 128-bit formats
-  { format: 'rgba32uint', _success: true },
-  { format: 'rgba32sint', _success: true },
-  { format: 'rgba32float', _success: true },
-]);
+}).params(textureFormatParams);
 
 g.test('sample count must be valid', async t => {
   const { sampleCount, _success } = t.params;
