@@ -170,6 +170,7 @@ PYTHON3_TESTS = {
     'cbuildbot/swarming_lib_unittest',
     'cbuildbot/topology_unittest',
     'cli/cros/cros_bisect_unittest',
+    'cli/cros/cros_branch_unittest',
     'cli/cros/cros_build_unittest',
     'cli/cros/cros_buildresult_unittest',
     'cli/cros/cros_chroot_unittest',

@@ -1567,7 +1567,7 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
       right_dir: Path to the right dir.
     """
     result = cros_build_lib.run(['diff', '-rq', left_dir, right_dir],
-                                capture_output=True)
+                                check=False, encoding='utf-8')
     self.assertFalse(result.output)
 
   def AssertNoRemoteDiff(self):
@@ -1639,7 +1639,7 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
         self.repo_url, '--repo-branch', 'default', '--manifest-url',
         self.manifest_internal_root, 'create', '--file',
         self.full_manifest_path, '--custom', 'old-branch'
-    ], input='yes', error_code_ok=True, capture_output=True)
+    ], input='yes', check=False, capture_output=True, encoding='utf-8')
 
     self.assertIn('Branch old-branch exists', result.error)
     self.AssertNoRemoteDiff()
@@ -1654,7 +1654,7 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
         self.repo_url, '--repo-branch', 'default', '--manifest-url',
         self.manifest_internal_root, 'create', '--file',
         self.full_manifest_path, '--stabilize'
-    ], input='yes', error_code_ok=True, capture_output=True)
+    ], input='yes', check=False, capture_output=True, encoding='utf-8')
 
     self.assertIn('Already branched 3.0.0.', result.error)
     self.AssertNoRemoteDiff()
@@ -1722,7 +1722,7 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
         'cros', 'branch', '--push', '--root', self.local_root, '--repo-url',
         self.repo_url, '--repo-branch', 'default', '--manifest-url',
         self.manifest_internal_root, 'rename', 'master', 'old-branch'
-    ], error_code_ok=True, capture_output=True)
+    ], check=False, capture_output=True, encoding='utf-8')
 
     self.assertIn('Branch old-branch exists', result.error)
     self.AssertNoRemoteDiff()
@@ -1753,7 +1753,7 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
         'cros', 'branch', '--push', '--root', self.local_root, '--repo-url',
         self.repo_url, '--repo-branch', 'default', '--manifest-url',
         self.manifest_internal_root, 'delete', 'old-branch'
-    ], error_code_ok=True, capture_output=True)
+    ], check=False, capture_output=True, encoding='utf-8')
 
     self.assertIn('Must set --force to delete remote branches.', result.error)
     self.AssertNoRemoteDiff()
