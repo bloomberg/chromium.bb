@@ -11,6 +11,7 @@ import io
 import os
 import pickle
 
+# TODO(vapier): Use ElementTree directly once we're Python 3-only.
 from xml.etree import cElementTree as ElementTree
 
 from chromite.lib import cros_test_lib
@@ -59,7 +60,7 @@ def ManifestToString(manifest):
   """Return the given Manifest's XML data as a string."""
   buf = io.BytesIO()
   manifest.Write(buf)
-  return buf.getvalue()
+  return buf.getvalue().decode('utf-8')
 
 
 class XMLTestCase(cros_test_lib.TestCase):
@@ -69,7 +70,8 @@ class XMLTestCase(cros_test_lib.TestCase):
     """Check that two XML strings are semanitcally equal."""
     def Normalize(xml):
       elem = ElementTree.fromstring(xml)
-      return ElementTree.tostring(elem)
+      return ElementTree.tostring(
+          elem, encoding=repo_manifest.TOSTRING_ENCODING)
     self.assertMultiLineEqual(Normalize(xml1), Normalize(xml2))
 
   def ETreeFromString(self, xml_data):

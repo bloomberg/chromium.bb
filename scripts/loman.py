@@ -14,6 +14,8 @@ import xml.etree.ElementTree as ElementTree
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import git
+from chromite.lib import osutils
+from chromite.lib import repo_manifest
 
 
 class LocalManifest(object):
@@ -22,8 +24,7 @@ class LocalManifest(object):
   @classmethod
   def FromPath(cls, path, empty_if_missing=False):
     if os.path.isfile(path):
-      with open(path) as f:
-        return cls(f.read())
+      return cls(osutils.ReadFile(path))
     elif empty_if_missing:
       cros_build_lib.Die('Manifest file, %r, not found' % path)
     return cls()
@@ -67,7 +68,8 @@ class LocalManifest(object):
     # Fix manifest tag text and tail.
     self.nodes.text = '\n  '
     self.nodes.tail = '\n'
-    return ElementTree.tostring(self.nodes)
+    return ElementTree.tostring(
+        self.nodes, encoding=repo_manifest.TOSTRING_ENCODING)
 
   def GetProjects(self):
     return list(self.nodes.findall('project'))
