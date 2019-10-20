@@ -7,9 +7,10 @@ import os
 import sys
 import unittest
 
+import six
+
 # Directory client/tests/
-TESTS_DIR = os.path.dirname(os.path.abspath(
-    __file__.decode(sys.getfilesystemencoding())))
+TESTS_DIR = os.path.dirname(os.path.abspath(six.text_type(__file__)))
 
 # Directory client/
 CLIENT_DIR = os.path.dirname(TESTS_DIR)
@@ -59,7 +60,7 @@ def umask():
   """Returns current process umask without modifying it."""
   global _UMASK
   if _UMASK is None:
-    _UMASK = os.umask(0777)
+    _UMASK = os.umask(0o777)
     os.umask(_UMASK)
   return _UMASK
 
@@ -69,11 +70,11 @@ def make_tree(out, contents):
     filepath = os.path.join(out, relpath.replace('/', os.path.sep))
     dirpath = os.path.dirname(filepath)
     if not fs.isdir(dirpath):
-      fs.makedirs(dirpath, 0700)
+      fs.makedirs(dirpath, 0o700)
     if isinstance(content, SymLink):
       fs.symlink(content, filepath)
     else:
-      mode = 0700 if relpath.endswith('.py') else 0600
+      mode = 0o700 if relpath.endswith('.py') else 0o600
       flags = os.O_WRONLY | os.O_CREAT
       if sys.platform == 'win32':
         # pylint: disable=no-member
@@ -91,6 +92,6 @@ def main():
   if '-v' in sys.argv:
     unittest.TestCase.maxDiff = None
   # Use an unusual umask.
-  os.umask(0070)
+  os.umask(0o070)
   fs.chdir(TESTS_DIR)
   unittest.main()
