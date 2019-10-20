@@ -1,4 +1,4 @@
-import { ParamsSpec } from './params/index.js';
+import { ParamSpec } from './params/index.js';
 
 // Identifies a test spec file.
 export interface TestSpecID {
@@ -11,5 +11,5 @@ export interface TestSpecID {
 // Identifies a test case (a specific parameterization of a test), within its spec file.
 export interface TestCaseID {
   readonly test: string;
-  readonly params: ParamsSpec | null;
+  readonly params: ParamSpec | null;
 }

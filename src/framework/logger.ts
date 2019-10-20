@@ -1,5 +1,5 @@
 import { TestSpecID } from './id.js';
-import { ParamsSpec } from './params/index.js';
+import { ParamSpec } from './params/index.js';
 import { makeQueryString } from './url_query.js';
 import { extractPublicParams } from './url_query.js';
 import { getStackTrace, now } from './util/index.js';
@@ -13,7 +13,7 @@ export interface LiveTestSpecResult {
 
 export interface LiveTestCaseResult {
   readonly test: string;
-  readonly params: ParamsSpec | null;
+  readonly params: ParamSpec | null;
   status: Status;
   logs?: string[];
   timems: number;
@@ -42,7 +42,7 @@ export class TestSpecRecorder {
     this.result = result;
   }
 
-  record(test: string, params: ParamsSpec | null): [TestCaseRecorder, LiveTestCaseResult] {
+  record(test: string, params: ParamSpec | null): [TestCaseRecorder, LiveTestCaseResult] {
     const result: LiveTestCaseResult = {
       test,
       params: params ? extractPublicParams(params) : null,

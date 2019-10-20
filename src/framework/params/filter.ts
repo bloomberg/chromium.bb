@@ -1,6 +1,6 @@
-import { ParamSpecIterable, ParamSpecIterator, ParamsAny } from './index.js';
+import { ParamSpec, ParamSpecIterable, ParamSpecIterator } from './index.js';
 
-type Predicate = (o: ParamsAny) => boolean;
+type Predicate = (o: ParamSpec) => boolean;
 
 export function pfilter(cases: ParamSpecIterable, pred: Predicate): PFilter {
   return new PFilter(cases, pred);

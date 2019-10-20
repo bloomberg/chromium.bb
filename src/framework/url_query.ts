@@ -1,5 +1,5 @@
 import { TestCaseID, TestSpecID } from './id.js';
-import { ParamArgument, ParamsSpec } from './params/index.js';
+import { ParamArgument, ParamSpec } from './params/index.js';
 
 export function encodeSelectively(s: string): string {
   let ret = encodeURIComponent(s);
@@ -16,8 +16,8 @@ export function encodeSelectively(s: string): string {
   return ret;
 }
 
-export function extractPublicParams(params: ParamsSpec): ParamsSpec {
-  const publicParams: ParamsSpec = {};
+export function extractPublicParams(params: ParamSpec): ParamSpec {
+  const publicParams: ParamSpec = {};
   for (const k of Object.keys(params)) {
     if (!k.startsWith('_')) {
       publicParams[k] = params[k];

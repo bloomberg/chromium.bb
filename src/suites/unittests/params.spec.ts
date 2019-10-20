@@ -2,14 +2,7 @@ export const description = `
 Unit tests for parameterization.
 `;
 
-import {
-  ParamsAny,
-  ParamsSpec,
-  TestGroup,
-  pcombine,
-  pexclude,
-  pfilter,
-} from '../../framework/index.js';
+import { ParamSpec, TestGroup, pcombine, pexclude, pfilter } from '../../framework/index.js';
 
 import { TestGroupTest } from './test_group_test.js';
 import { UnitTest } from './unit_test.js';
@@ -54,12 +47,12 @@ g.test('exclude', t => {
 g.test('generator', t0 => {
   const g = new TestGroup(UnitTest);
 
-  const ran: ParamsAny[] = [];
+  const ran: ParamSpec[] = [];
 
   g.test('generator', t => {
     ran.push(t.params);
   }).params(
-    (function*(): IterableIterator<ParamsSpec> {
+    (function*(): IterableIterator<ParamSpec> {
       for (let x = 0; x < 3; ++x) {
         for (let y = 0; y < 2; ++y) {
           yield { x, y };

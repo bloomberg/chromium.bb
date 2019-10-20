@@ -2,7 +2,7 @@ import { allowedTestNameCharacters } from './allowed_characters.js';
 import { Fixture } from './fixture.js';
 import { TestCaseID } from './id.js';
 import { LiveTestCaseResult, TestCaseRecorder, TestSpecRecorder } from './logger.js';
-import { ParamSpecIterable, ParamsAny, paramsEquals } from './params/index.js';
+import { ParamSpec, ParamSpecIterable, paramsEquals } from './params/index.js';
 import { checkPublicParamType, extractPublicParams } from './url_query.js';
 
 export interface RunCase {
@@ -14,7 +14,7 @@ export interface RunCaseIterable {
   iterate(rec: TestSpecRecorder): Iterable<RunCase>;
 }
 
-type FixtureClass<F extends Fixture> = new (log: TestCaseRecorder, params: ParamsAny) => F;
+type FixtureClass<F extends Fixture> = new (log: TestCaseRecorder, params: ParamSpec) => F;
 type TestFn<F extends Fixture> = (t: F) => Promise<void> | void;
 
 const validNames = new RegExp('^[' + allowedTestNameCharacters + ']+$');
@@ -78,7 +78,7 @@ class Test<F extends Fixture> {
       throw new Error('test case is already parameterized');
     }
     const cases = Array.from(specs);
-    const seen: ParamsAny[] = [];
+    const seen: ParamSpec[] = [];
     // This is n^2.
     for (const spec of cases) {
       const publicParams = extractPublicParams(spec);

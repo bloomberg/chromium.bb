@@ -1,6 +1,6 @@
 import { allowedTestNameCharacters } from '../allowed_characters.js';
 import { TestFileLoader } from '../loader.js';
-import { ParamsAny } from '../params/index.js';
+import { ParamSpec } from '../params/index.js';
 
 import { FilterByGroup } from './filter_by_group.js';
 import { FilterByParamsExact, FilterByParamsMatch, FilterByTestMatch } from './filter_one_file.js';
@@ -43,7 +43,7 @@ export async function loadFilter(
 
   let params = null;
   if (i3 + 1 < filter.length) {
-    params = JSON.parse(filter.substring(i3 + 1)) as ParamsAny;
+    params = JSON.parse(filter.substring(i3 + 1)) as ParamSpec;
   }
 
   if (token === '~') {

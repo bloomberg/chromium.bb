@@ -1,7 +1,7 @@
 import { TestCaseID, TestSpecID } from '../id.js';
 import { TestFileLoader, TestSpec } from '../loader.js';
 import { TestSpecRecorder } from '../logger.js';
-import { ParamsAny, paramsEquals, paramsSupersets } from '../params/index.js';
+import { ParamSpec, paramsEquals, paramsSupersets } from '../params/index.js';
 import { RunCase, RunCaseIterable } from '../test_group.js';
 
 import { TestFilterResult } from './index.js';
@@ -60,9 +60,9 @@ export class FilterByTestMatch extends FilterOneFile {
 
 export class FilterByParamsMatch extends FilterOneFile {
   private readonly test: string;
-  private readonly params: ParamsAny | null;
+  private readonly params: ParamSpec | null;
 
-  constructor(specId: TestSpecID, test: string, params: ParamsAny | null) {
+  constructor(specId: TestSpecID, test: string, params: ParamSpec | null) {
     super(specId);
     this.test = test;
     this.params = params;
@@ -78,9 +78,9 @@ export class FilterByParamsMatch extends FilterOneFile {
 
 export class FilterByParamsExact extends FilterOneFile {
   private readonly test: string;
-  private readonly params: ParamsAny | null;
+  private readonly params: ParamSpec | null;
 
-  constructor(specId: TestSpecID, test: string, params: ParamsAny | null) {
+  constructor(specId: TestSpecID, test: string, params: ParamSpec | null) {
     super(specId);
     this.test = test;
     this.params = params;

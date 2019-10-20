@@ -3,8 +3,8 @@ Unit tests for parameterization helpers.
 `;
 
 import {
+  ParamSpec,
   ParamSpecIterable,
-  ParamsSpec,
   TestGroup,
   paramsEquals,
   pcombine,
@@ -16,7 +16,7 @@ import {
 import { UnitTest } from './unit_test.js';
 
 class ParamsTest extends UnitTest {
-  expectSpecEqual(act: ParamSpecIterable, exp: ParamsSpec[]): void {
+  expectSpecEqual(act: ParamSpecIterable, exp: ParamSpec[]): void {
     const a = Array.from(act);
     this.expect(a.length === exp.length && a.every((x, i) => paramsEquals(x, exp[i])));
   }

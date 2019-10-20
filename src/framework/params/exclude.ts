@@ -1,4 +1,4 @@
-import { ParamSpecIterable, ParamSpecIterator, ParamsSpec, paramsEquals } from './index.js';
+import { ParamSpec, ParamSpecIterable, ParamSpecIterator, paramsEquals } from './index.js';
 
 export function pexclude(params: ParamSpecIterable, exclude: ParamSpecIterable): PExclude {
   return new PExclude(params, exclude);
@@ -6,7 +6,7 @@ export function pexclude(params: ParamSpecIterable, exclude: ParamSpecIterable):
 
 class PExclude implements ParamSpecIterable {
   private cases: ParamSpecIterable;
-  private exclude: ParamsSpec[];
+  private exclude: ParamSpec[];
 
   constructor(cases: ParamSpecIterable, exclude: ParamSpecIterable) {
     this.cases = cases;
