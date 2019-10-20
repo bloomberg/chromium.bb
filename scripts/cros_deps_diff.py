@@ -110,7 +110,7 @@ def BuildDependencyGraph(pkg, input_deps, version_map, divergent_set):
   outer_subgraph = graph.AddNewSubgraph('source')
 
   emitted = set()
-  for i in range(0, len(input_deps)):
+  for i, input_dep in enumerate(input_deps):
     try:
       pkg_name = version_map[pkg][i]
     except KeyError:
@@ -125,15 +125,15 @@ def BuildDependencyGraph(pkg, input_deps, version_map, divergent_set):
     # Add one subgraph per version for generally better layout.
     subgraph = graph.AddNewSubgraph()
 
-    nodes = GetReverseDependencyClosure(pkg_name, input_deps[i], divergent_set)
+    nodes = GetReverseDependencyClosure(pkg_name, input_dep, divergent_set)
     for node_name in nodes:
       if node_name not in emitted:
         subgraph.AddNode(node_name, node_name, color, None)
         emitted.add(node_name)
 
       # Add outer packages, and all the arcs.
-      for dep in input_deps[i][node_name]['rev_deps']:
-        dep_node = input_deps[i][dep]
+      for dep in input_dep[node_name]['rev_deps']:
+        dep_node = input_dep[dep]
         if (UnversionedName(dep_node) not in divergent_set
             and dep not in emitted):
           outer_subgraph.AddNode(dep, dep, NORMAL_COLOR, None)

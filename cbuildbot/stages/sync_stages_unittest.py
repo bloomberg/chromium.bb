@@ -966,9 +966,9 @@ pre-cq-configs: grunt-pre-cq
     configs = configs or constants.PRE_CQ_DEFAULT_CONFIGS
     config_buildbucket_id_map = {}
 
-    for i in range(0, len(configs)):
+    for i, config in enumerate(configs):
       bb_id = 'bb_id_%s' % str(i)
-      config_buildbucket_id_map[configs[i]] = bb_id
+      config_buildbucket_id_map[config] = bb_id
 
     self.PatchObject(
         sync_stages.PreCQLauncherStage,
