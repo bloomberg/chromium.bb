@@ -116,7 +116,11 @@ def GetParser():
   """Return a command line parser."""
   parser = commandline.ArgumentParser(description=__doc__)
 
+  # Subparsers are required by default under Python 2.  Python 3 changed to
+  # not required, but didn't include a required option until 3.7.  Setting
+  # the required member works in all versions (and setting dest name).
   subparsers = parser.add_subparsers(dest='command')
+  subparsers.required = True
 
   subparser = subparsers.add_parser(
       'add',
