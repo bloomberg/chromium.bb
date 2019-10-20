@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/app_list/search/cros_action_history/cros_action_recorder.h"
 
-#include "ash/public/cpp/app_list/app_list_features.h"
+#include "ash/public/cpp/app_list/app_list_switches.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -143,16 +143,20 @@ void CrOSActionRecorder::MaybeFlushToDisk() {
 }
 
 void CrOSActionRecorder::SetCrOSActionRecorderType() {
-  if (!app_list_features::IsCrOSActionRecorderEnabled())
-    return;
-  const CrOSActionRecorderType type = static_cast<CrOSActionRecorderType>(
-      app_list_features::GetCrOSActionRecorderType());
-  if (type == CrOSActionRecorderType::kLogWithHash) {
-    should_log_ = true;
-    should_hash_ = true;
-  } else if (type == CrOSActionRecorderType::kLogWithoutHash) {
-    should_log_ = true;
-    should_hash_ = false;
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+
+  if (command_line->HasSwitch(ash::switches::kEnableCrOSActionRecorder)) {
+    std::string cros_action_flag = command_line->GetSwitchValueASCII(
+        ash::switches::kEnableCrOSActionRecorder);
+
+    if (cros_action_flag == ash::switches::kCrOSActionRecorderWithHash) {
+      should_log_ = true;
+      should_hash_ = true;
+    } else if (cros_action_flag ==
+               ash::switches::kCrOSActionRecorderWithoutHash) {
+      should_log_ = true;
+      should_hash_ = false;
+    }
   }
 }
 
