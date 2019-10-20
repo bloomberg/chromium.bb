@@ -656,7 +656,7 @@ class ManifestCheckout(Manifest):
     Returns:
       A list of ProjectCheckout objects.
     """
-    return self.checkouts_by_path.values()
+    return list(self.checkouts_by_path.values())
 
   def FindCheckoutFromPath(self, path, strict=True):
     """Find the associated checkouts for a given |path|.

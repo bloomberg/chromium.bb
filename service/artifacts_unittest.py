@@ -183,7 +183,7 @@ class ArchiveImagesTest(cros_test_lib.TempDirTestCase):
   def testAllImages(self):
     """Test each image gets picked up."""
     created = artifacts.ArchiveImages(self.image_dir, self.output_dir)
-    self.assertCountEqual(artifacts.IMAGE_TARS.values(), created)
+    self.assertCountEqual(list(artifacts.IMAGE_TARS.values()), created)
 
 
 class CreateChromeRootTest(cros_test_lib.RunCommandTempDirTestCase):

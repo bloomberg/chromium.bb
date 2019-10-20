@@ -101,7 +101,7 @@ class DbApiFake(object):
           'SLOT': slot, 'RDEPEND': rdeps_raw, 'BUILD_TIME': build_time}
 
   def cpv_all(self):
-    return self.pkg_db.keys()
+    return list(self.pkg_db)
 
   def aux_get(self, cpv, keys):
     pkg_info = self.pkg_db[cpv]

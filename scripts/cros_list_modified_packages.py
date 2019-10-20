@@ -164,7 +164,7 @@ def ListWorkonPackagesInfo(sysroot):
       results[cp] = WorkonPackageInfo(cp, pkg_mtime, projects, srcpaths,
                                       src_ebuild_mtime)
 
-  return results.values()
+  return list(results.values())
 
 
 def WorkonProjectsMonitor(projects):

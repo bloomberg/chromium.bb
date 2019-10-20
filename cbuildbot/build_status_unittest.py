@@ -1321,7 +1321,7 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
     new_buildbucket_info = slave_status._GetNewSlaveBuildbucketInfo(
         all_buildbucket_info_dict, completed)
 
-    self.assertCountEqual(new_buildbucket_info.keys(),
+    self.assertCountEqual(list(new_buildbucket_info),
                           ['completed_canceled', 'completed_failure'])
 
   def test_GetNewSlaveCIDBStatusInfoWithCompletedBuilds(self):
@@ -1334,7 +1334,7 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
         all_cidb_status_dict, set(['completed_success']))
 
     self.assertCountEqual(
-        cidb_status_dict.keys(),
+        list(cidb_status_dict),
         ['started', 'completed_failure', 'completed_canceled'])
 
   def test_GetNewSlaveCIDBStatusInfoWithEmptyCompletedBuilds(self):

@@ -261,7 +261,7 @@ class PrebuiltCompatibilityTest(cros_test_lib.TestCase):
       pfq_configs = binhost.PrebuiltMapping.Load(filename)
     else:
       logging.info('Checking config_lib.GetConfig().site_config')
-      keys = binhost.GetChromePrebuiltConfigs(self.site_config).keys()
+      keys = list(binhost.GetChromePrebuiltConfigs(self.site_config))
       pfq_configs = binhost.PrebuiltMapping.Get(keys, self.COMPAT_IDS)
 
     for compat_id, pfqs in sorted(pfq_configs.by_compat_id.items(),
@@ -308,7 +308,7 @@ class PrebuiltCompatibilityTest(cros_test_lib.TestCase):
     Chrome PFQ run from disk and verifies that it is sufficient.
     """
     with osutils.TempDir() as tempdir:
-      keys = binhost.GetChromePrebuiltConfigs(self.site_config).keys()
+      keys = list(binhost.GetChromePrebuiltConfigs(self.site_config))
       pfq_configs = binhost.PrebuiltMapping.Get(keys, self.COMPAT_IDS)
       filename = os.path.join(tempdir, 'foo.json')
       pfq_configs.Dump(filename)

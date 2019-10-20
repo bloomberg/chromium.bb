@@ -73,7 +73,7 @@ def get_services():
     services[final_service]['methods'].append({'name': final_method,
                                                'full_name': method})
 
-  return services.values()
+  return list(services.values())
 
 
 def write_script(filename, service, method):

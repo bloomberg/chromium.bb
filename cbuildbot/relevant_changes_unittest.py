@@ -443,7 +443,7 @@ class TriageRelevantChangesTest(cros_test_lib.MockTestCase):
     triage_changes = self.GetTriageRelevantChanges()
     slave_stages = triage_changes.GetChildStages()
 
-    self.assertCountEqual(slave_stages.keys(), self.slaves)
+    self.assertCountEqual(list(slave_stages), self.slaves)
     self.assertEqual(len(slave_stages['slave_1']), 1)
     self.assertEqual(len(slave_stages['slave_2']), 1)
     self.assertEqual(len(slave_stages['slave_3']), 1)
@@ -472,7 +472,7 @@ class TriageRelevantChangesTest(cros_test_lib.MockTestCase):
     slave_stages_dict = triage_changes.GetChildStages()
     slave_changes_dict = triage_changes._GetRelevantChanges(slave_stages_dict)
 
-    self.assertEqual(len(slave_changes_dict.keys()), 4)
+    self.assertEqual(len(slave_changes_dict), 4)
     self.assertCountEqual(slave_changes_dict['slave_1'], self.changes)
     for slave in ['slave_2', 'slave_3', 'slave_4']:
       self.assertEqual(slave_changes_dict[slave], set())
@@ -499,7 +499,7 @@ class TriageRelevantChangesTest(cros_test_lib.MockTestCase):
     slave_stages_dict = triage_changes.GetChildStages()
     slave_changes_dict = triage_changes._GetRelevantChanges(slave_stages_dict)
 
-    self.assertEqual(len(slave_changes_dict.keys()), 4)
+    self.assertEqual(len(slave_changes_dict), 4)
     self.assertCountEqual(slave_changes_dict['slave_1'], self.changes)
     self.assertCountEqual(slave_changes_dict['slave_2'], self.changes)
     self.assertCountEqual(slave_changes_dict['slave_3'], self.changes[0:2])

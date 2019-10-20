@@ -758,7 +758,7 @@ being scraped currently).""",
       save_file: File to save the yaml contents into.
     """
     logging.debug('Saving license to %s', save_file)
-    yaml_dump = self.__dict__.items()
+    yaml_dump = list(self.__dict__.items())
     osutils.WriteFile(save_file, yaml.dump(yaml_dump), makedirs=True)
 
 
@@ -816,7 +816,7 @@ class Licensing(object):
 
   @property
   def sorted_licenses(self):
-    return sorted(self.licenses.keys(), key=lambda x: x.lower)
+    return sorted(self.licenses, key=lambda x: x.lower)
 
   def _LoadLicenseDump(self, pkg):
     save_file = pkg.license_dump_path
@@ -1051,9 +1051,9 @@ after fixing the license.""" % (license_name, '\n'.join(set(stock + custom))))
         self.licenses.setdefault(sln, []).append(pkg.fullnamerev)
 
     # Find licenses only used once, and roll them in the package that uses them.
-    # We use keys() because licenses is modified in the loop, so we can't use
+    # We use list() because licenses is modified in the loop, so we can't use
     # an iterator.
-    for sln in self.licenses.keys():
+    for sln in list(self.licenses):
       if len(self.licenses[sln]) == 1:
         pkg_fullnamerev = self.licenses[sln][0]
         logging.info('Collapsing shared license %s into single use license '

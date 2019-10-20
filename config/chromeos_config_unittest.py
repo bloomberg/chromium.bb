@@ -99,7 +99,7 @@ class ConfigDumpTest(ChromeosConfigTestBase):
     loaded = config_lib.LoadConfigFromString(site_config_str)
 
     self.longMessage = True
-    for name in self.site_config.keys():
+    for name in self.site_config:
       self.assertDictEqual(loaded[name], self.site_config[name], name)
 
     # This includes templates and the default build config.
@@ -355,9 +355,9 @@ class CBuildBotTest(ChromeosConfigTestBase):
 
     This checks for mispelled keys, or keys that are somehow removed.
     """
-    expected_keys = set(self.site_config.GetDefault().keys())
+    expected_keys = set(self.site_config.GetDefault())
     for build_name, config in self.site_config.items():
-      config_keys = set(config.keys())
+      config_keys = set(config)
 
       extra_keys = config_keys.difference(expected_keys)
       self.assertFalse(extra_keys, ('Config %s has extra values %s' %
@@ -1225,12 +1225,12 @@ class BoardConfigsTest(ChromeosConfigTestBase):
 
   def testBoardConfigsSuperset(self):
     """Ensure all external boards are listed as internal, also."""
-    for board in self.external_board_configs.keys():
+    for board in self.external_board_configs:
       self.assertIn(board, self.internal_board_configs)
 
-  def verifyNoTests(self, board_configs_iter):
+  def _verifyNoTests(self, board_configs):
     """Defining tests in board specific templates doesn't work as expected."""
-    for board, template in board_configs_iter:
+    for board, template in board_configs.items():
       self.assertFalse(
           'vm_tests' in template and template.vm_tests,
           'Per-board template for %s defining vm_tests' % board)
@@ -1249,16 +1249,16 @@ class BoardConfigsTest(ChromeosConfigTestBase):
 
   def testExternalsDontDefineTests(self):
     """Verify no external boards define tests at the board level."""
-    self.verifyNoTests(self.external_board_configs.items())
+    self._verifyNoTests(self.external_board_configs)
 
   def testInternalsDontDefineTests(self):
     """Verify no internal boards define tests at the board level."""
-    self.verifyNoTests(self.internal_board_configs.items())
+    self._verifyNoTests(self.internal_board_configs)
 
   def testUpdateBoardConfigs(self):
     """Test UpdateBoardConfigs."""
     pre_test = copy.deepcopy(self.internal_board_configs)
-    update_boards = pre_test.keys()[2:5]
+    update_boards = list(pre_test)[2:5]
 
     result = chromeos_config.UpdateBoardConfigs(
         self.internal_board_configs, update_boards,
@@ -1269,7 +1269,7 @@ class BoardConfigsTest(ChromeosConfigTestBase):
     self.assertEqual(self.internal_board_configs, pre_test)
 
     # The result as the same list of boards.
-    self.assertCountEqual(result.keys(), pre_test.keys())
+    self.assertCountEqual(list(result), list(pre_test))
 
     # And only appropriate values were updated.
     for b in pre_test:

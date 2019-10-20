@@ -43,7 +43,7 @@ def main(argv):
 
   # Fetch all compat IDs.
   fetcher = binhost.CompatIdFetcher()
-  keys = binhost.GetChromePrebuiltConfigs(site_config).keys()
+  keys = list(binhost.GetChromePrebuiltConfigs(site_config))
   compat_ids = fetcher.FetchCompatIds(keys)
 
   # Save the PFQ configs.

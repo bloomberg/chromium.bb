@@ -318,7 +318,7 @@ class SlaveBuilderStatusTest(cros_test_lib.MockTestCase):
     cidb_status = (
         builder_status_lib.SlaveBuilderStatus.GetAllSlaveCIDBStatusInfo(
             self.buildstore, self.master_build_id, buildbucket_info_dict))
-    self.assertEqual(set(cidb_status.keys()), set(['slave1']))
+    self.assertEqual(set(cidb_status), {'slave1'})
     self.assertEqual(cidb_status['slave1'].status, 'inflight')
 
 
@@ -369,7 +369,7 @@ class SlaveBuilderStatusTest(cros_test_lib.MockTestCase):
     manager = self.ConstructBuilderStatusManager(db=mock_db)
     slave_failures_dict = manager._GetSlaveFailures(fake_buildbucket_info_dict)
 
-    self.assertCountEqual(slave_failures_dict.keys(),
+    self.assertCountEqual(list(slave_failures_dict),
                           [self.slave_1, self.slave_2])
     self.assertEqual(len(slave_failures_dict[self.slave_1]), 1)
     self.assertEqual(len(slave_failures_dict[self.slave_2]), 1)
@@ -641,7 +641,7 @@ class BuilderStatusesFetcherTests(cros_test_lib.MockTestCase):
     fetcher = self.CreateBuilderStatusesFetcher()
 
     local_builder_status = fetcher._FetchLocalBuilderStatus()
-    self.assertTrue('master-paladin' in local_builder_status.keys())
+    self.assertIn('master-paladin', local_builder_status)
 
   def testFetchSlaveBuilderStatusesWithEmptySlaveList(self):
     """Test _FetchSlaveBuilderStatuses with an empty slave list."""
@@ -690,12 +690,12 @@ class BuilderStatusesFetcherTests(cros_test_lib.MockTestCase):
     }
     self._PatchesForGetSlaveBuilderStatus(status_dict)
     fetcher = self.CreateBuilderStatusesFetcher(
-        builders_array=status_dict.keys())
+        builders_array=list(status_dict))
 
     important, experimental = fetcher.GetBuilderStatuses()
     self.assertCountEqual(['build1', 'build2', 'build3', 'master-paladin'],
-                          important.keys())
-    self.assertCountEqual([], experimental.keys())
+                          list(important))
+    self.assertCountEqual([], list(experimental))
 
     # Update the experimental_builders in metadata
     self.metadata.UpdateWithDict({
@@ -703,8 +703,8 @@ class BuilderStatusesFetcherTests(cros_test_lib.MockTestCase):
     })
     important, experimental = fetcher.GetBuilderStatuses()
     self.assertCountEqual(['build2', 'build3', 'master-paladin'],
-                          important.keys())
-    self.assertCountEqual(['build1'], experimental.keys())
+                          list(important))
+    self.assertCountEqual(['build1'], list(experimental))
 
   def _CreateBuilderStatusDict(self):
     passed = builder_status_lib.BuilderStatus(

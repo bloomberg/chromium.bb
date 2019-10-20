@@ -237,7 +237,7 @@ def GetParser():
                       help='Prints out debug info.')
   parser.add_argument('--staging_branch',
                       help='The staging branch to push changes')
-  parser.add_argument('command', choices=COMMAND_DICTIONARY.keys(),
+  parser.add_argument('command', choices=sorted(COMMAND_DICTIONARY),
                       help='Command to run.')
   return parser
 

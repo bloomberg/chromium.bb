@@ -1055,7 +1055,7 @@ class ValidationPool(object):
     assert self.is_master, 'Non-master builder calling SubmitPool'
     assert not self.pre_cq_trybot, 'Trybot calling SubmitPool'
 
-    changes = verified_cls.keys()
+    changes = list(verified_cls)
     # Filter out changes that were modified during the CQ run.
     filtered_changes, errors = self.FilterModifiedChanges(changes)
 
@@ -1115,7 +1115,7 @@ class ValidationPool(object):
       submitted, and errors is a map {change: error} containing changes that
       failed to submit.
     """
-    changes = verified_cls.keys()
+    changes = list(verified_cls)
     plans, failed = patches.CreateDisjointTransactions(
         changes, merge_projects=True)
     errors = {}
@@ -1132,7 +1132,7 @@ class ValidationPool(object):
               plan, reason=verified_cls[change]))
       parallel.RunTasksInProcessPool(_SubmitPlan, plans, processes=4)
 
-      submitted_changes = set(changes) - set(p_errors.keys())
+      submitted_changes = set(changes) - set(list(p_errors.keys()))
       return (submitted_changes, dict(p_errors))
 
   def SubmitLocalChanges(self, by_repo):
@@ -1175,7 +1175,7 @@ class ValidationPool(object):
       submitted, and errors is a map {change: error} containing changes that
       failed to submit.
     """
-    changes = verified_cls.keys()
+    changes = list(verified_cls)
     branches = set((change.tracking_branch,) for change in changes)
     push_branch = functools.partial(self.PushRepoBranch, repo, changes)
     push_results = parallel.RunTasksInProcessPool(push_branch, branches)
@@ -1555,7 +1555,7 @@ class ValidationPool(object):
     fully_verified = triage_lib.CalculateSuspects.GetFullyVerifiedChanges(
         changes, changes_by_config, passed_in_history_slaves_by_change,
         failing, inflight, no_stat, messages, self.build_root)
-    fully_verified_cls = fully_verified.keys()
+    fully_verified_cls = list(fully_verified)
     if fully_verified_cls:
       logging.info('The following changes will be submitted using '
                    'board-aware submission logic: %s',
@@ -1790,7 +1790,7 @@ class ValidationPool(object):
       no_stat: A list of builders which failed prematurely without reporting
         status.
     """
-    retry = not sanity or lab_fail or change not in suspects.keys()
+    retry = not sanity or lab_fail or change not in suspects
     if self._ShouldSendFailureNotification(change, retry):
       msg = cl_messages.CreateValidationFailureMessage(self.pre_cq_trybot,
                                                        change, suspects,

@@ -224,9 +224,9 @@ def GetBuildDependency(board, packages=None):
   results['package_deps'].update(non_board_specific_deps)
 
   results['source_path_mapping'].update(
-      GenerateSourcePathMapping(board_specific_deps.keys(), board))
+      GenerateSourcePathMapping(list(board_specific_deps), board))
 
   results['source_path_mapping'].update(
-      GenerateSourcePathMapping(non_board_specific_deps.keys(), board=None))
+      GenerateSourcePathMapping(list(non_board_specific_deps), None))
 
   return results

@@ -106,7 +106,7 @@ class RelevantChanges(object):
         master_build_identifier, buildstore, config, changes,
         slave_buildbucket_ids, include_master=include_master)
     changes_by_build_id = clactions.GetRelevantChangesForBuilds(
-        changes, action_history, config_map.keys())
+        changes, action_history, list(config_map))
 
     # Convert index from build_ids to config names.
     changes_by_config = dict()
@@ -395,7 +395,7 @@ class TriageRelevantChanges(object):
     # If a build passed the sync stage, the picked up change stats are recorded.
     builds_passed_sync_stage = self.GetBuildsPassedAnyOfStages(
         slave_stages_dict, self.STAGE_SYNC)
-    builds_not_passed_sync_stage = (set(self.buildbucket_info_dict.keys()) -
+    builds_not_passed_sync_stage = (set(self.buildbucket_info_dict) -
                                     builds_passed_sync_stage)
     slave_buildbucket_ids = [bb_info.buildbucket_id
                              for bb_info in self.buildbucket_info_dict.values()]

@@ -199,7 +199,7 @@ class BundleAutotestFilesTest(BundleTestCase):
     # Verify the output proto is being populated correctly.
     self.assertTrue(self.response.artifacts)
     paths = [artifact.path for artifact in self.response.artifacts]
-    self.assertCountEqual(files.values(), paths)
+    self.assertCountEqual(list(files.values()), paths)
 
   def testBundleAutotestFiles(self):
     """BundleAutotestFiles calls service correctly."""
@@ -219,7 +219,7 @@ class BundleAutotestFilesTest(BundleTestCase):
     # Verify the output proto is being populated correctly.
     self.assertTrue(self.response.artifacts)
     paths = [artifact.path for artifact in self.response.artifacts]
-    self.assertCountEqual(files.values(), paths)
+    self.assertCountEqual(list(files.values()), paths)
 
   def testInvalidOutputDir(self):
     """Test invalid output directory argument."""

@@ -355,7 +355,7 @@ class SlaveBuilderStatus(object):
     self.buildbucket_info_dict = self.GetAllSlaveBuildbucketInfo(
         self.buildbucket_client, scheduled_buildbucket_info_dict,
         dry_run=self.dry_run)
-    self.builders_array = self.buildbucket_info_dict.keys()
+    self.builders_array = list(self.buildbucket_info_dict)
 
     self.cidb_info_dict = self.GetAllSlaveCIDBStatusInfo(
         self.buildstore, self.master_build_identifier,

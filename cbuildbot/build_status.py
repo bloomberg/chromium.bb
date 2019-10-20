@@ -155,7 +155,7 @@ class SlaveStatus(object):
       # It's possible that CQ-master has a list of important slaves configured
       # but doesn't schedule any slaves as no CLs were picked up in SyncStage.
       # These are set to include only important builds.
-      self.all_builders = scheduled_buildbucket_info_dict.keys()
+      self.all_builders = list(scheduled_buildbucket_info_dict)
       self.all_buildbucket_info_dict = (
           builder_status_lib.SlaveBuilderStatus.GetAllSlaveBuildbucketInfo(
               self.buildbucket_client, scheduled_buildbucket_info_dict,
@@ -227,7 +227,7 @@ class SlaveStatus(object):
                  if info.status is None)
     else:
       return (set(self._GetExpectedBuilders()) -
-              set(self.new_cidb_status_dict.keys()) -
+              set(self.new_cidb_status_dict) -
               self.completed_builds)
 
   def _GetScheduledBuilds(self):

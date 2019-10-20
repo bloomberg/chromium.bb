@@ -1256,8 +1256,7 @@ class Upgrader(object):
       err_msgs = []
 
       # Go over files with pre-existing git statuses.
-      filelist = self._stable_repo_status.keys()
-      ebuilds = [e for e in filelist if e.endswith('.ebuild')]
+      ebuilds = [x for x in self._stable_repo_status if x.endswith('.ebuild')]
 
       for ebuild in ebuilds:
         status = self._stable_repo_status[ebuild]

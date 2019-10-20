@@ -190,7 +190,7 @@ def FetchCurrentSlaveBuilders(config, metadata, builders_array,
   if config and metadata:
     scheduled_buildbucket_info_dict = GetBuildInfoDict(
         metadata, exclude_experimental=exclude_experimental)
-    return scheduled_buildbucket_info_dict.keys()
+    return list(scheduled_buildbucket_info_dict)
   else:
     return builders_array
 

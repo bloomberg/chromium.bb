@@ -455,7 +455,7 @@ class EasyAttr(dict):
     self[attr] = value
 
   def __dir__(self):
-    return self.keys()
+    return list(self.keys())
 
 
 class LogFilter(logging.Filter):

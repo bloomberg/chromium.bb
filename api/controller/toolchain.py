@@ -30,7 +30,7 @@ def _GetMethodForUpdatingArtifacts(artifact_type):
 
 @faux.all_empty
 @validate.require('build_target.name')
-@validate.is_in('artifact_type', _NAMES_FOR_ARTIFACTS.keys())
+@validate.is_in('artifact_type', _NAMES_FOR_ARTIFACTS)
 @validate.validation_complete
 def UpdateEbuildWithAFDOArtifacts(input_proto, output_proto, _config):
   """Update Chrome or kernel ebuild with most recent unvetted artifacts.
@@ -48,7 +48,7 @@ def UpdateEbuildWithAFDOArtifacts(input_proto, output_proto, _config):
 
 @faux.all_empty
 @validate.require('build_target.name')
-@validate.is_in('artifact_type', _NAMES_FOR_ARTIFACTS.keys())
+@validate.is_in('artifact_type', _NAMES_FOR_ARTIFACTS)
 @validate.validation_complete
 def UploadVettedAFDOArtifacts(input_proto, output_proto, _config):
   """Upload a vetted orderfile to GS bucket.

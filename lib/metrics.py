@@ -433,7 +433,7 @@ def SecondsTimer(name, fields=None, description=None, field_spec=_MISSING,
       name, scale=scale, description=description, field_spec=field_spec)
   f = fields or {}
   f = dict(f)
-  keys = f.keys()
+  keys = list(f)
   t0 = datetime.datetime.now()
 
   error = True
@@ -555,7 +555,7 @@ def SecondsInstanceTimer(name, fields=None, description=None,
 
   m = FloatMetric(name, description=description, field_spec=field_spec)
   f = dict(fields or {})
-  keys = f.keys()
+  keys = list(f)
   t0 = datetime.datetime.utcnow()
 
   error = True
@@ -640,7 +640,8 @@ def SuccessCounter(name, fields=None, description=None, field_spec=_MISSING):
   c = Counter(name)
   f = fields or {}
   f = f.copy()
-  keys = f.keys() + ['success']  # We add in the additional field success.
+  # We add in the additional field success.
+  keys = list(f) + ['success']
   success = False
   try:
     yield f
@@ -815,7 +816,7 @@ class RuntimeBreakdownTimer(object):
 
     Must be called after |_RecordTotalTime|.
     """
-    reported = self._GetStepBreakdowns().values()
+    reported = list(self._GetStepBreakdowns().values())
     reported.append(self._GetUnaccountedBreakdown())
     bucket_width = 100 / self.PERCENT_BUCKET_COUNT
     return sum(x % bucket_width for x in reported)

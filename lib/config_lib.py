@@ -1464,7 +1464,7 @@ class SiteConfig(dict):
     """
     slave_map = self.GetSlaveConfigMapForMaster(
         master_config, options=options, important_only=important_only)
-    return slave_map.values()
+    return list(slave_map.values())
 
   #
   # Methods used when creating a Config programatically.

@@ -205,7 +205,7 @@ class PrebuiltMapping(_PrebuiltMapping):
       key = BoardKey(**d['key'])
       compat_ids[key] = CompatId(**d['compat_id'])
 
-    return cls.Get(compat_ids.keys(), compat_ids)
+    return cls.Get(list(compat_ids), compat_ids)
 
   def GetPrebuilts(self, compat_id):
     """Get the matching BoardKey objects associated with |compat_id|.

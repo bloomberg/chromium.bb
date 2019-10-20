@@ -24,7 +24,7 @@ class LintCommandTest(cros_test_lib.TestCase):
     """Tests that the --output argument mapping for cpplint is complete."""
     self.assertEqual(
         set(cros_lint.LintCommand.OUTPUT_FORMATS),
-        set(cros_lint.CPPLINT_OUTPUT_FORMAT_MAP.keys() + ['default']))
+        set(cros_lint.CPPLINT_OUTPUT_FORMAT_MAP.keys()) | {'default'})
 
 
 class JsonTest(cros_test_lib.TempDirTestCase):

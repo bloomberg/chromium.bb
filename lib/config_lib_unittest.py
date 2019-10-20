@@ -500,11 +500,11 @@ class SiteConfigTest(cros_test_lib.TestCase):
     }
 
     # Make sure our expected build configs exist.
-    self.assertCountEqual(self.site_config.keys(), expected.keys())
+    self.assertCountEqual(list(self.site_config), list(expected))
 
     # Make sure each one contains
     self.longMessage = True
-    for name in expected.keys():
+    for name in expected:
       self.assertDictContainsSubset(expected[name],
                                     self.site_config[name],
                                     name)
@@ -662,7 +662,7 @@ class SiteConfigTest(cros_test_lib.TestCase):
 
     # This for loop is to make differences easier to find/read.
     self.longMessage = True
-    for name in site_config.keys():
+    for name in site_config:
       self.assertDictEqual(loaded[name], site_config[name], name)
 
     # This includes templates and the default build config.
@@ -690,8 +690,8 @@ class SiteConfigTest(cros_test_lib.TestCase):
 
     loaded = self._verifyLoadSave(site_config)
 
-    self.assertEqual(loaded.keys(), [])
-    self.assertEqual(loaded._templates.keys(), [])
+    self.assertEqual(list(loaded), [])
+    self.assertEqual(list(loaded._templates), [])
     self.assertDictEqual(
         loaded.GetDefault(), config_lib.DefaultSettings())
 
@@ -706,7 +706,8 @@ class SiteConfigTest(cros_test_lib.TestCase):
     self.assertDictEqual(loaded.GetDefault(), expected_defaults)
 
     # Ensure that expected templates are present.
-    self.assertCountEqual(loaded.templates.keys(), ['template', 'callable'])
+    self.assertCountEqual(list(loaded.templates),
+                          ['template', 'callable'])
 
   def testTemplatesToSave(self):
     def _invert(x):

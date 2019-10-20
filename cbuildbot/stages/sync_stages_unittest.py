@@ -809,7 +809,7 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
 
   def testVerificationsForChangeValidConfig(self):
     change = MockPatch()
-    configs_to_test = config_lib.GetConfig().keys()[:5]
+    configs_to_test = list(config_lib.GetConfig())[:5]
     return_string = ' '.join(configs_to_test)
     self.PatchObject(
         cq_config.CQConfigParser, 'GetOption', return_value=return_string)

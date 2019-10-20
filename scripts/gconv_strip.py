@@ -132,8 +132,8 @@ class GconvModules(object):
       while charset in self._alias:
         charset = self._alias[charset]
       used_modules.update(self._modules[charset])
-    unused_modules = (functools.reduce(set.union, self._modules.values()) -
-                      used_modules)
+    unused_modules = (functools.reduce(set.union, list(self._modules.values()))
+                      - used_modules)
 
     modules_dir = os.path.dirname(self._filename)
 

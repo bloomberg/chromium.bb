@@ -515,7 +515,7 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
         StringIO(self._PassString()))
 
     previous = results_lib.Results.GetPrevious()
-    self.assertEqual(previous.keys(), ['Pass'])
+    self.assertEqual(list(previous), ['Pass'])
 
   def testRunAfterRestore(self):
     """Tests that we skip previously completed stages."""

@@ -1536,9 +1536,9 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
       branch: Name of the chromiumos branch to expect in revision attributes.
     """
     self.AssertManifestProjectRepaired(self.manifest_root,
-                                       MANIFEST_FILES.keys(), branch)
+                                       list(MANIFEST_FILES), branch)
     self.AssertManifestProjectRepaired(self.manifest_internal_root,
-                                       MANIFEST_INTERNAL_FILES.keys(), branch)
+                                       list(MANIFEST_INTERNAL_FILES), branch)
 
   def AssertVersion(self, version_branch, expected_milestone, expected_build,
                     expected_branch, expected_patch):
