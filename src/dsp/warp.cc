@@ -45,9 +45,14 @@ void Warp_C(const void* const source, ptrdiff_t source_stride,
   constexpr int kRoundBitsHorizontal = (bitdepth == 12)
                                            ? kInterRoundBitsHorizontal12bpp
                                            : kInterRoundBitsHorizontal;
-  // Intermediate_result is the output of the horizontal filtering and rounding.
-  // The range is within 16 bits (unsigned).
-  uint16_t intermediate_result[15][8];  // 15 rows, 8 columns.
+  union {
+    // Intermediate_result is the output of the horizontal filtering and
+    // rounding. The range is within 16 bits (unsigned).
+    uint16_t intermediate_result[15][8];  // 15 rows, 8 columns.
+    // In the simple special cases where the samples in each row are all the
+    // same, store one sample per row in a column vector.
+    uint16_t intermediate_result_column[15];
+  };
   const int horizontal_offset = 1 << (bitdepth + kFilterBits - 1);
   const int vertical_offset =
       1 << (bitdepth + 2 * kFilterBits - kRoundBitsHorizontal);
@@ -73,6 +78,73 @@ void Warp_C(const void* const source, ptrdiff_t source_stride,
       const int ix4 = x4 >> kWarpedModelPrecisionBits;
       const int iy4 = y4 >> kWarpedModelPrecisionBits;
 
+      // Check for two simple special cases, where the horizontal filter can
+      // be significantly simplified.
+      //
+      // In general, for each row, the horizontal filter is calculated as
+      // follows:
+      //   for (int x = -4; x < 4; ++x) {
+      //     const int offset = ...;
+      //     int sum = horizontal_offset;
+      //     for (int k = 0; k < 8; ++k) {
+      //       const int column = Clip3(ix4 + x + k - 3, 0, source_width - 1);
+      //       sum += kWarpedFilters[offset][k] * src_row[column];
+      //     }
+      //     ...
+      //   }
+      // The column index before clipping, ix4 + x + k - 3, varies in the range
+      // ix4 - 7 <= ix4 + x + k - 3 <= ix4 + 7. If ix4 - 7 >= source_width - 1
+      // or ix4 + 7 <= 0, then all the column indexes are clipped to the same
+      // border index (source_width - 1 or 0, respectively). Then for each x,
+      // the inner for loop of the horizontal filter is reduced to multiplying
+      // the border pixel by the sum of the filter coefficients.
+      if (ix4 - 7 >= source_width - 1 || ix4 + 7 <= 0) {
+        // Points to the left or right border of the first row of |src|.
+        const Pixel* first_row_border =
+            (ix4 + 7 <= 0) ? src : src + source_width - 1;
+        // Horizontal filter.
+        for (int y = -7; y < 8; ++y) {
+          const int row = Clip3(iy4 + y, 0, source_height - 1);
+          const Pixel row_border_pixel = first_row_border[row * source_stride];
+          // Every sample is equal to |row_border_pixel|. Since the sum of the
+          // warped filter coefficients is 128 (= 2^7), the filtering is
+          // equivalent to multiplying |row_border_pixel| by 128.
+          intermediate_result_column[y + 7] =
+              (horizontal_offset >> kInterRoundBitsHorizontal) +
+              (row_border_pixel << (7 - kInterRoundBitsHorizontal));
+        }
+        // Vertical filter.
+        uint16_t* dst_row = dest + start_x - block_start_x;
+        int sy4 =
+            (y4 & ((1 << kWarpedModelPrecisionBits) - 1)) - MultiplyBy4(delta);
+        for (int y = 0; y < 8; ++y) {
+          int sy = sy4 - MultiplyBy4(gamma);
+          for (int x = 0; x < 8; ++x) {
+            const int offset =
+                RightShiftWithRounding(sy, kWarpedDiffPrecisionBits) +
+                kWarpedPixelPrecisionShifts;
+            assert(offset >= 0);
+            assert(offset < 3 * kWarpedPixelPrecisionShifts + 1);
+            int sum = vertical_offset;
+            for (int k = 0; k < 8; ++k) {
+              sum +=
+                  kWarpedFilters[offset][k] * intermediate_result_column[y + k];
+            }
+            assert(sum >= 0 && sum < (vertical_offset << 2));
+            sum = RightShiftWithRounding(sum, inter_round_bits_vertical);
+            dst_row[x] = static_cast<uint16_t>(sum);
+            sy += gamma;
+          }
+          dst_row += dest_stride;
+          sy4 += delta;
+        }
+        continue;
+      }
+
+      // At this point, we know ix4 - 7 < source_width - 1 and ix4 + 7 > 0.
+      // It follows that -6 <= ix4 <= source_width + 5. This inequality is
+      // used below.
+
       // Horizontal filter.
       int sx4 = (x4 & ((1 << kWarpedModelPrecisionBits) - 1)) - beta * 7;
       for (int y = -7; y < 8; ++y) {
@@ -84,31 +156,6 @@ void Warp_C(const void* const source, ptrdiff_t source_stride,
         // filtering.
         const int row = Clip3(iy4 + y, 0, source_height - 1);
         const Pixel* const src_row = src + row * source_stride;
-        // Check for two simple special cases.
-        if (ix4 - 7 >= source_width - 1) {
-          // Every sample is equal to src_row[source_width - 1]. Since the sum
-          // of the warped filter coefficients is 128 (= 2^7), the filtering is
-          // equivalent to multiplying src_row[source_width - 1] by 128.
-          const int s =
-              (horizontal_offset >> kInterRoundBitsHorizontal) +
-              (src_row[source_width - 1] << (7 - kInterRoundBitsHorizontal));
-          Memset(intermediate_result[y + 7], s, 8);
-          sx4 += beta;
-          continue;
-        }
-        if (ix4 + 7 <= 0) {
-          // Every sample is equal to src_row[0]. Since the sum of the warped
-          // filter coefficients is 128 (= 2^7), the filtering is equivalent to
-          // multiplying src_row[0] by 128.
-          const int s = (horizontal_offset >> kInterRoundBitsHorizontal) +
-                        (src_row[0] << (7 - kInterRoundBitsHorizontal));
-          Memset(intermediate_result[y + 7], s, 8);
-          sx4 += beta;
-          continue;
-        }
-        // At this point, we know ix4 - 7 < source_width - 1 and ix4 + 7 > 0.
-        // It follows that -6 <= ix4 <= source_width + 5. This inequality is
-        // used below.
         int sx = sx4 - MultiplyBy4(alpha);
         for (int x = -4; x < 4; ++x) {
           const int offset =
@@ -156,22 +203,28 @@ void Warp_C(const void* const source, ptrdiff_t source_stride,
       // implies std::min(4, block_start_y + block_height - start_y - 4) = 4.
       // So the loop condition is simply y < 4.
       //
-      // Proof:
-      //    start_y < block_start_y + block_height
-      // => block_start_y + block_height - start_y > 0
-      // => block_height - (start_y - block_start_y) > 0
+      //   Proof:
+      //      start_y < block_start_y + block_height
+      //   => block_start_y + block_height - start_y > 0
+      //   => block_height - (start_y - block_start_y) > 0
       //
-      // Since block_height >= 8 and is a power of 2, it follows that
-      // block_height is a multiple of 8. start_y - block_start_y is also a
-      // multiple of 8. Therefore their difference is a multiple of 8. Since
-      // their difference is > 0, their difference must be >= 8.
-      for (int y = -4; y < 4; ++y) {
+      //   Since block_height >= 8 and is a power of 2, it follows that
+      //   block_height is a multiple of 8. start_y - block_start_y is also a
+      //   multiple of 8. Therefore their difference is a multiple of 8. Since
+      //   their difference is > 0, their difference must be >= 8.
+      //
+      // We then add an offset of 4 to y so that the loop starts with y = 0
+      // and continues if y < 8.
+      for (int y = 0; y < 8; ++y) {
         int sy = sy4 - MultiplyBy4(gamma);
         // The spec says we should use the following loop condition:
         //   x < std::min(4, block_start_x + block_width - start_x - 4);
         // Similar to the above, we can prove that the loop condition can be
         // simplified to x < 4.
-        for (int x = -4; x < 4; ++x) {
+        //
+        // We then add an offset of 4 to x so that the loop starts with x = 0
+        // and continues if x < 8.
+        for (int x = 0; x < 8; ++x) {
           const int offset =
               RightShiftWithRounding(sy, kWarpedDiffPrecisionBits) +
               kWarpedPixelPrecisionShifts;
@@ -183,15 +236,14 @@ void Warp_C(const void* const source, ptrdiff_t source_stride,
           // before shifting is non negative:
           int sum = vertical_offset;
           for (int k = 0; k < 8; ++k) {
-            sum += kWarpedFilters[offset][k] *
-                   intermediate_result[y + 4 + k][x + 4];
+            sum += kWarpedFilters[offset][k] * intermediate_result[y + k][x];
           }
           assert(sum >= 0 && sum < (vertical_offset << 2));
           sum = RightShiftWithRounding(sum, inter_round_bits_vertical);
           // Warp output is a predictor, whose type is uint16_t.
           // Do not clip it here. The clipping is applied at the stage of
           // final pixel value output.
-          dst_row[x + 4] = static_cast<uint16_t>(sum);
+          dst_row[x] = static_cast<uint16_t>(sum);
           sy += gamma;
         }
         dst_row += dest_stride;
