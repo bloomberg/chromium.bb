@@ -487,7 +487,7 @@ class InputHandlerProxyEventQueueTest : public testing::Test {
   void DeliverInputForBeginFrame() {
     constexpr base::TimeDelta interval = base::TimeDelta::FromMilliseconds(16);
     base::TimeTicks frame_time =
-        base::TimeTicks() +
+        WebInputEvent::GetStaticTimeStampForTests() +
         (next_begin_frame_number_ - viz::BeginFrameArgs::kStartingFrameNumber) *
             interval;
     input_handler_proxy_.DeliverInputForBeginFrame(viz::BeginFrameArgs::Create(

@@ -11,6 +11,7 @@
 #include "ui/events/blink/event_with_callback.h"
 #include "ui/events/blink/prediction/filter_factory.h"
 #include "ui/events/blink/prediction/input_predictor.h"
+#include "ui/events/blink/prediction/prediction_metrics_handler.h"
 
 namespace ui {
 
@@ -56,6 +57,10 @@ class ScrollPredictor {
                      blink::WebInputEvent* event,
                      LatencyInfo* latency_info);
 
+  // Reports metrics scores UMA histogram based on the metrics defined
+  // in |PredictionMetricsHandler|
+  void EvaluatePrediction();
+
   // Reports prediction accuracy UMA histogram. Calculates position in current
   // event time and compute the distance between real event and predicted event.
   void ComputeAccuracy(const WebScopedInputEvent& event);
@@ -84,6 +89,9 @@ class ScrollPredictor {
   // Total scroll data, similar as current_event_accumulated_delta_, used for
   // calculating accuracy.
   gfx::PointF temporary_accumulated_delta_;
+
+  // Handler used for evaluating the prediction
+  PredictionMetricsHandler metrics_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(ScrollPredictor);
 };

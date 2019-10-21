@@ -84,6 +84,9 @@ std::unique_ptr<EventWithCallback> ScrollPredictor::ResampleScrollEvents(
     if (should_resample_scroll_events_)
       ResampleEvent(frame_time, event_with_callback->event_pointer(),
                     event_with_callback->mutable_latency_info());
+
+    metrics_handler_.EvaluatePrediction();
+
   } else if (event_with_callback->event().GetType() ==
              WebInputEvent::kGestureScrollEnd) {
     should_resample_scroll_events_ = false;
@@ -98,6 +101,7 @@ void ScrollPredictor::Reset() {
     filter_->Reset();
   current_event_accumulated_delta_ = gfx::PointF();
   last_predicted_accumulated_delta_ = gfx::PointF();
+  metrics_handler_.Reset();
 }
 
 void ScrollPredictor::UpdatePrediction(const WebScopedInputEvent& event,
@@ -120,9 +124,13 @@ void ScrollPredictor::UpdatePrediction(const WebScopedInputEvent& event,
 
   predictor_->Update(data);
   last_event_timestamp_ = gesture_event.TimeStamp();
+
+  metrics_handler_.AddRealEvent(current_event_accumulated_delta_,
+                                gesture_event.TimeStamp(), frame_time,
+                                true /* Scrolling */);
 }
 
-void ScrollPredictor::ResampleEvent(base::TimeTicks time_stamp,
+void ScrollPredictor::ResampleEvent(base::TimeTicks frame_time,
                                     WebInputEvent* event,
                                     LatencyInfo* latency_info) {
   DCHECK(event->GetType() == WebInputEvent::kGestureScrollUpdate);
@@ -136,7 +144,7 @@ void ScrollPredictor::ResampleEvent(base::TimeTicks time_stamp,
   gfx::PointF predicted_accumulated_delta = current_event_accumulated_delta_;
   InputPredictor::InputData result;
 
-  base::TimeDelta prediction_delta = time_stamp - gesture_event->TimeStamp();
+  base::TimeDelta prediction_delta = frame_time - gesture_event->TimeStamp();
   bool predicted = false;
 
   // For resampling, we don't want to predict too far away because the result
@@ -158,7 +166,7 @@ void ScrollPredictor::ResampleEvent(base::TimeTicks time_stamp,
   // Feed the filter with the first non-predicted events but only apply
   // filtering on predicted events
   gfx::PointF filtered_pos = predicted_accumulated_delta;
-  if (filtering_enabled_ && filter_->Filter(time_stamp, &filtered_pos) &&
+  if (filtering_enabled_ && filter_->Filter(prediction_time, &filtered_pos) &&
       predicted)
     predicted_accumulated_delta = filtered_pos;
 
@@ -176,6 +184,7 @@ void ScrollPredictor::ResampleEvent(base::TimeTicks time_stamp,
       (new_delta.y() * gesture_event->data.scroll_update.delta_y < 0)
           ? 0
           : new_delta.y();
+
   // Sync the predicted delta_y to latency_info for AverageLag metric.
   latency_info->set_predicted_scroll_update_delta(new_delta.y());
 
@@ -187,6 +196,12 @@ void ScrollPredictor::ResampleEvent(base::TimeTicks time_stamp,
   last_predicted_accumulated_delta_.Offset(
       gesture_event->data.scroll_update.delta_x,
       gesture_event->data.scroll_update.delta_y);
+
+  if (predicted) {
+    metrics_handler_.AddPredictedEvent(predicted_accumulated_delta,
+                                       prediction_time, frame_time,
+                                       true /* Scrolling */);
+  }
 }
 
 void ScrollPredictor::ComputeAccuracy(const WebScopedInputEvent& event) {
