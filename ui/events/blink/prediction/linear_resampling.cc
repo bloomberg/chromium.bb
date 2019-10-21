@@ -85,6 +85,7 @@ bool LinearResampling::GeneratePrediction(base::TimeTicks frame_time,
       std::min(sample_time, events_queue_[0].time_stamp + max_prediction);
 
   result->pos = lerp(events_queue_[0], events_queue_[1], sample_time);
+  result->time_stamp = sample_time;
   return true;
 }
 

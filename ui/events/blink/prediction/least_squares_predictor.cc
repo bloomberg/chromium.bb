@@ -91,6 +91,7 @@ bool LeastSquaresPredictor::GeneratePrediction(base::TimeTicks predict_time,
       SolveLeastSquares(time_matrix, y_queue_, b2)) {
     gfx::Vector3dF prediction_time(1, pred_dt, pred_dt * pred_dt);
 
+    result->time_stamp = predict_time;
     result->pos.set_x(gfx::DotProduct(prediction_time, b1));
     result->pos.set_y(gfx::DotProduct(prediction_time, b2));
     return true;

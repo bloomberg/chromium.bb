@@ -94,6 +94,7 @@ bool LinearPredictor::GeneratePrediction(base::TimeTicks predict_time,
     // Add the acceleration term to the current result
     GeneratePredictionSecondOrder(pred_dt, result);
 
+  result->time_stamp = predict_time;
   return true;
 }
 

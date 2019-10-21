@@ -107,8 +107,8 @@ bool KalmanPredictor::GeneratePrediction(base::TimeTicks predict_time,
         ScaleVector2d(acceleration, kAccelerationInfluence * pred_dt * pred_dt);
   }
 
-  result->pos.set_x(position.x());
-  result->pos.set_y(position.y());
+  result->pos.SetPoint(position.x(), position.y());
+  result->time_stamp = predict_time;
   return true;
 }
 

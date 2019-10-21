@@ -35,6 +35,7 @@ bool EmptyPredictor::GeneratePrediction(base::TimeTicks predict_time,
     return false;
 
   result->pos = last_input_.value().pos;
+  result->time_stamp = last_input_.value().time_stamp;
   return true;
 }
 

@@ -147,14 +147,13 @@ void ScrollPredictor::ResampleEvent(base::TimeTicks frame_time,
   // maximum available for the current predictor
   prediction_delta = std::min(prediction_delta, predictor_->MaxResampleTime());
 
-  // Compute the prediction timestamp
   base::TimeTicks prediction_time =
       gesture_event->TimeStamp() + prediction_delta;
 
   if (predictor_->HasPrediction() &&
       predictor_->GeneratePrediction(prediction_time, &result)) {
     predicted_accumulated_delta = result.pos;
-    gesture_event->SetTimeStamp(prediction_time);
+    gesture_event->SetTimeStamp(result.time_stamp);
     predicted = true;
   }
 
@@ -194,7 +193,7 @@ void ScrollPredictor::ResampleEvent(base::TimeTicks frame_time,
 
   if (predicted) {
     metrics_handler_.AddPredictedEvent(predicted_accumulated_delta,
-                                       prediction_time, frame_time,
+                                       result.time_stamp, frame_time,
                                        true /* Scrolling */);
   }
 }

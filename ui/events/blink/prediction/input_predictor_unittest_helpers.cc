@@ -31,26 +31,28 @@ void InputPredictorTest::ValidatePredictor(
 void InputPredictorTest::ValidatePredictor(
     const std::vector<double>& events_x,
     const std::vector<double>& events_y,
-    const std::vector<double>& events_ts_ms,
-    const std::vector<double>& prediction_ts_ms,
+    const std::vector<double>& events_time_ms,
+    const std::vector<double>& prediction_time_ms,
     const std::vector<double>& predicted_x,
     const std::vector<double>& predicted_y) {
   predictor_->Reset();
   std::vector<double> computed_x;
   std::vector<double> computed_y;
-  size_t current_prediction_ts = 0;
-  for (size_t i = 0; i < events_ts_ms.size(); i++) {
+  size_t current_prediction_index = 0;
+  for (size_t i = 0; i < events_time_ms.size(); i++) {
     InputPredictor::InputData data = {gfx::PointF(events_x[i], events_y[i]),
-                                      FromMilliseconds(events_ts_ms[i])};
+                                      FromMilliseconds(events_time_ms[i])};
     predictor_->Update(data);
 
     if (predictor_->HasPrediction()) {
       InputPredictor::InputData result;
       EXPECT_TRUE(predictor_->GeneratePrediction(
-          FromMilliseconds(prediction_ts_ms[current_prediction_ts]), &result));
+          FromMilliseconds(prediction_time_ms[current_prediction_index]),
+          &result));
       computed_x.push_back(result.pos.x());
       computed_y.push_back(result.pos.y());
-      current_prediction_ts++;
+      EXPECT_GT(result.time_stamp, base::TimeTicks());
+      current_prediction_index++;
     }
   }
 
