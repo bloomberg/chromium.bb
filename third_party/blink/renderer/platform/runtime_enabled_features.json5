@@ -502,12 +502,12 @@
       name: "CustomElementDefaultStyle",
       status: "experimental",
     },
-    // Introduced this flag as stable so web developers can test their sites
-    // without native Custom Elements v0 support.
+    // TODO(937746): Web Components v0 is disabled by default, and will be
+    // removed after M87.
     {
       name: "CustomElementsV0",
       origin_trial_feature_name: "WebComponentsV0",
-      status: "stable",
+      status: "test",
     },
     {
       name: "CustomStatePseudoClass",
@@ -763,7 +763,8 @@
       origin_trial_feature_name: "HrefTranslate",
       status: "experimental",
     },
-    // https://crbug.com/766694 for testing disabling the feature.
+    // TODO(911943): HTML Imports is temporarily being left enabled after
+    // the planned removal milestone of M80.
     {
       name: "HTMLImports",
       origin_trial_feature_name: "WebComponentsV0",
@@ -773,10 +774,11 @@
     {
       name: "HTMLImportsOnlyChrome",
     },
-    // https://crbug.com/523952 for testing disabling the feature.
+    // TODO(937746): Web Components v0 is disabled by default, and will be
+    // removed after M87.
     {
       name: "HTMLImportsStyleApplication",
-      status: "stable",
+      status: "test",
     },
     {
       name: "IDBObserver",
@@ -1499,12 +1501,12 @@
       name: "SetRootScroller",
       status: "experimental",
     },
-    // Introduced this flag as stable so web developers can test their sites
-    // without native Shadow DOM v0 support
+    // TODO(937746): Web Components v0 is disabled by default, and will be
+    // removed after M87.
     {
       name: "ShadowDOMV0",
       origin_trial_feature_name: "WebComponentsV0",
-      status: "stable",
+      status: "test",
     },
     {
       name: "ShadowPiercingDescendantCombinator",
