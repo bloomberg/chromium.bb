@@ -712,3 +712,79 @@ class UnlikelyExitNode(ConditionalExitNode):
     def __init__(self, cond, body):
         ConditionalExitNode.__init__(
             self, cond=cond, body=body, body_likeliness=Likeliness.UNLIKELY)
+
+
+class FunctionDefinitionNode(CodeNode):
+    """Represents a function definition."""
+
+    def __init__(self,
+                 name,
+                 arg_decls,
+                 return_type,
+                 local_vars=None,
+                 body=None,
+                 comment=None,
+                 renderer=None):
+        """
+        Args:
+            name: Function name node, which may include nested-name-specifier
+                (i.e. 'namespace_name::' and/or 'type_name::').
+            arg_decls: List of argument declaration nodes.
+            return_type: Return type node.
+            local_vars: List of SymbolNodes that can be used in the function
+                body.
+            body: Function body node (of type SymbolScopeNode).
+            comment: Function header comment node.
+        """
+        assert isinstance(name, CodeNode)
+        assert isinstance(arg_decls, (list, tuple))
+        assert all(isinstance(arg_decl, CodeNode) for arg_decl in arg_decls)
+        assert isinstance(return_type, CodeNode)
+        if local_vars is None:
+            local_vars = []
+        assert isinstance(local_vars, (list, tuple))
+        assert all(
+            isinstance(local_var, SymbolNode) for local_var in local_vars)
+        if body is None:
+            body = SymbolScopeNode()
+        assert isinstance(body, CodeNode)
+        if comment is None:
+            comment = LiteralNode("")
+        assert isinstance(comment, CodeNode)
+
+        gensyms = {
+            "name": CodeNode.gensym(),
+            "arg_decls": CodeNode.gensym(),
+            "return_type": CodeNode.gensym(),
+            "body": CodeNode.gensym(),
+            "comment": CodeNode.gensym(),
+        }
+
+        template_text = CodeNode.format_template(
+            """\
+${{{comment} | trim}}
+${{{return_type}}} ${{{name}}}(${{{arg_decls}}}) {{
+  ${{{body} | trim}}
+}}
+""", **gensyms)
+        template_vars = {
+            gensyms["name"]: name,
+            gensyms["arg_decls"]: SequenceNode(arg_decls, separator=", "),
+            gensyms["return_type"]: return_type,
+            gensyms["body"]: body,
+            gensyms["comment"]: comment,
+        }
+
+        CodeNode.__init__(
+            self,
+            template_text=template_text,
+            template_vars=template_vars,
+            renderer=renderer)
+
+        self._body_node = body
+
+        self._body_node.register_code_symbols(local_vars)
+
+    @property
+    def body(self):
+        return self._body_node

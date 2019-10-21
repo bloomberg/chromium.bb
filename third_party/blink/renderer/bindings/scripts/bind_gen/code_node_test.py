@@ -4,6 +4,7 @@
 
 import unittest
 
+from .code_node import FunctionDefinitionNode
 from .code_node import LikelyExitNode
 from .code_node import LiteralNode
 from .code_node import SequenceNode
@@ -219,5 +220,62 @@ if (true) {
     return var2;
   }
   return;
+}
+""")
+
+    def test_function_definition_minimum(self):
+        renderer = MakoRenderer()
+        root = FunctionDefinitionNode(
+            name=LiteralNode("blink::bindings::func"),
+            arg_decls=[],
+            return_type=LiteralNode("void"),
+            renderer=renderer)
+
+        self.assertRenderResult(root, """\
+
+void blink::bindings::func() {
+
+}
+""")
+
+    def test_function_definition_full(self):
+        renderer = MakoRenderer()
+
+        local_vars = [
+            SymbolNode("var1", "int ${var1} = 1;"),
+            SymbolNode("var2", "int ${var2} = 2;"),
+        ]
+
+        func_body = SymbolScopeNode([
+            UnlikelyExitNode(
+                cond=TextNode("${var1}"),
+                body=SymbolScopeNode([TextNode("return ${var1};")])),
+            TextNode("return ${var2};"),
+        ])
+
+        root = FunctionDefinitionNode(
+            name=LiteralNode("blink::bindings::func"),
+            arg_decls=[LiteralNode("int arg1"),
+                       LiteralNode("int arg2")],
+            return_type=LiteralNode("void"),
+            local_vars=local_vars,
+            body=func_body,
+            comment=LiteralNode("""\
+// comment1
+// comment2
+"""),
+            renderer=renderer)
+
+        self.assertRenderResult(
+            root, """\
+// comment1
+// comment2
+void blink::bindings::func(int arg1, int arg2) {
+  int var1 = 1;
+  if (var1) {
+    return var1;
+  }
+  int var2 = 2;
+  return var2;
 }
 """)
