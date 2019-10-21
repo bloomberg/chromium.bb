@@ -407,9 +407,9 @@ float SVGAnimationElement::CalculatePercentForSpline(
 }
 
 float SVGAnimationElement::CalculatePercentFromKeyPoints(float percent) const {
-  DCHECK(!key_points_.IsEmpty());
   DCHECK_NE(GetCalcMode(), kCalcModePaced);
   DCHECK_GT(KeyTimes().size(), 1u);
+  DCHECK(!key_points_.IsEmpty());
   DCHECK_EQ(key_points_.size(), KeyTimes().size());
 
   if (percent == 1)
@@ -442,27 +442,25 @@ float SVGAnimationElement::CalculatePercentForFromTo(float percent) const {
   return percent;
 }
 
-void SVGAnimationElement::CurrentValuesFromKeyPoints(float percent,
-                                                     float& effective_percent,
-                                                     String& from,
-                                                     String& to) const {
+float SVGAnimationElement::CurrentValuesFromKeyPoints(float percent,
+                                                      String& from,
+                                                      String& to) const {
+  DCHECK_NE(GetCalcMode(), kCalcModePaced);
   DCHECK(!key_points_.IsEmpty());
   DCHECK_EQ(key_points_.size(), KeyTimes().size());
-  DCHECK_NE(GetCalcMode(), kCalcModePaced);
-  effective_percent = CalculatePercentFromKeyPoints(percent);
+  float effective_percent = CalculatePercentFromKeyPoints(percent);
   unsigned index =
       effective_percent == 1
           ? values_.size() - 2
           : static_cast<unsigned>(effective_percent * (values_.size() - 1));
   from = values_[index];
   to = values_[index + 1];
+  return effective_percent;
 }
 
-void SVGAnimationElement::CurrentValuesForValuesAnimation(
-    float percent,
-    float& effective_percent,
-    String& from,
-    String& to) {
+float SVGAnimationElement::CurrentValuesForValuesAnimation(float percent,
+                                                           String& from,
+                                                           String& to) const {
   unsigned values_count = values_.size();
   DCHECK_EQ(animation_valid_, AnimationValidity::kValid);
   DCHECK_GE(values_count, 1u);
@@ -470,8 +468,7 @@ void SVGAnimationElement::CurrentValuesForValuesAnimation(
   if (percent == 1 || values_count == 1) {
     from = values_[values_count - 1];
     to = values_[values_count - 1];
-    effective_percent = 1;
-    return;
+    return 1;
   }
 
   CalcMode calc_mode = GetCalcMode();
@@ -480,7 +477,7 @@ void SVGAnimationElement::CurrentValuesForValuesAnimation(
       calc_mode = kCalcModeDiscrete;
   }
   if (!key_points_.IsEmpty() && calc_mode != kCalcModePaced)
-    return CurrentValuesFromKeyPoints(percent, effective_percent, from, to);
+    return CurrentValuesFromKeyPoints(percent, from, to);
 
   unsigned key_times_count = KeyTimes().size();
   DCHECK(!key_times_count || values_count == key_times_count);
@@ -492,8 +489,7 @@ void SVGAnimationElement::CurrentValuesForValuesAnimation(
       index = static_cast<unsigned>(percent * values_count);
     from = values_[index];
     to = values_[index];
-    effective_percent = 0;
-    return;
+    return 0;
   }
 
   float from_percent;
@@ -512,12 +508,14 @@ void SVGAnimationElement::CurrentValuesForValuesAnimation(
   from = values_[index];
   to = values_[index + 1];
   DCHECK_GT(to_percent, from_percent);
-  effective_percent = (percent - from_percent) / (to_percent - from_percent);
+  float effective_percent =
+      (percent - from_percent) / (to_percent - from_percent);
 
   if (calc_mode == kCalcModeSpline) {
     DCHECK_EQ(key_splines_.size(), values_.size() - 1);
     effective_percent = CalculatePercentForSpline(effective_percent, index);
   }
+  return effective_percent;
 }
 
 bool SVGAnimationElement::CalculateValuesAnimation() {
@@ -631,7 +629,7 @@ void SVGAnimationElement::UpdateAnimation(float percent,
   if (animation_mode == kValuesAnimation) {
     String from;
     String to;
-    CurrentValuesForValuesAnimation(percent, effective_percent, from, to);
+    effective_percent = CurrentValuesForValuesAnimation(percent, from, to);
     if (from != last_values_animation_from_ ||
         to != last_values_animation_to_) {
       if (!CalculateFromAndToValues(from, to)) {
@@ -641,17 +639,18 @@ void SVGAnimationElement::UpdateAnimation(float percent,
       last_values_animation_from_ = from;
       last_values_animation_to_ = to;
     }
-  } else if (!key_points_.IsEmpty() && calc_mode != kCalcModePaced)
+  } else if (calc_mode != kCalcModePaced && !key_points_.IsEmpty()) {
     effective_percent = CalculatePercentFromKeyPoints(percent);
-  else if (key_points_.IsEmpty() && calc_mode == kCalcModeSpline &&
-           KeyTimes().size() > 1)
+  } else if (calc_mode == kCalcModeSpline && key_points_.IsEmpty() &&
+             KeyTimes().size() > 1) {
     effective_percent =
         CalculatePercentForSpline(percent, CalculateKeyTimesIndex(percent));
-  else if (animation_mode == kFromToAnimation || animation_mode == kToAnimation)
+  } else if (animation_mode == kFromToAnimation ||
+             animation_mode == kToAnimation) {
     effective_percent = CalculatePercentForFromTo(percent);
-  else
+  } else {
     effective_percent = percent;
-
+  }
   CalculateAnimatedValue(effective_percent, repeat_count, result_element);
 }
 
