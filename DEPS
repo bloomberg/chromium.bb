@@ -240,6 +240,10 @@ vars = {
   # and whatever else without interference from each other.
   'devtools_node_modules_revision': '207c67362bdb7e135dc5735fb46b9c508d4e4c5e',
   # Three lines of non-changing comments so that
+  # the commit queue can handle CLs rolling devtools-frontend
+  # and whatever else without interference from each other.
+  'devtools_frontend_revision': '4fd355cc40e2392987a17339663fa86d3c472a8d',
+  # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
   'libprotobuf-mutator': '439e81f8f4847ec6e2bf11b3aa634a5d8485633d',
@@ -891,6 +895,9 @@ deps = {
 
   'src/third_party/devtools-node-modules':
     Var('chromium_git') + '/external/github.com/ChromeDevTools/devtools-node-modules' + '@' + Var('devtools_node_modules_revision'),
+
+  'src/third_party/devtools-frontend/src':
+    Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
 
   'src/third_party/dom_distiller_js/dist':
     Var('chromium_git') + '/chromium/dom-distiller/dist.git' + '@' + '3093c3e238768ab27ff756bd7563ccbb12129d9f',
