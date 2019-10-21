@@ -2203,9 +2203,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kViewsTaskManager)},
 #endif  // OS_MACOSX
 #if BUILDFLAG(ENABLE_VR)
-    {"enable-webvr", flag_descriptions::kWebvrName,
-     flag_descriptions::kWebvrDescription, kOsAll,
-     SINGLE_VALUE_TYPE(switches::kEnableWebVR)},
     {"webxr", flag_descriptions::kWebXrName,
      flag_descriptions::kWebXrDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kWebXr)},

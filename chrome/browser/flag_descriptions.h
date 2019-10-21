@@ -1347,9 +1347,6 @@ extern const char kWebUITabStripDemoOptionsName[];
 extern const char kWebUITabStripDemoOptionsDescription[];
 #endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
 
-extern const char kWebvrName[];
-extern const char kWebvrDescription[];
-
 extern const char kWebXrName[];
 extern const char kWebXrDescription[];
 

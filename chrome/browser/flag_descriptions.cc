@@ -2297,16 +2297,6 @@ const char kWebUITabStripDemoOptionsDescription[] =
     "enabled.";
 #endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
 
-const char kWebvrName[] = "WebVR";
-const char kWebvrDescription[] =
-    "Enables access to experimental Virtual Reality functionality via the "
-    "WebVR 1.1 API. This flag is deprecated and will be removed as soon as "
-    "Chrome 79. This feature will eventually be replaced by the WebXR "
-    "Device API. Warning: Enabling this will also allow WebVR content on "
-    "insecure origins to access these powerful APIs, and may pose a security "
-    "risk. Controllers are exposed as Gamepads, and WebVR-specific attributes "
-    "are exposed.";
-
 const char kWebXrName[] = "WebXR Device API";
 const char kWebXrDescription[] =
     "Enables access to experimental APIs to interact with Virtual Reality (VR) "

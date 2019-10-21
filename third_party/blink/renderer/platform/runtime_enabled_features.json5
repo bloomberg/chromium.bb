@@ -1790,8 +1790,7 @@
     },
     {
       name: "WebVR",
-      origin_trial_feature_name: "WebVR1.1M62",
-      status: "experimental",
+      status: "test",
     },
     {
       name: "WebVTTRegions",
