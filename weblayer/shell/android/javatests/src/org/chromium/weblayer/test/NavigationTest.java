@@ -6,7 +6,6 @@ package org.chromium.weblayer.test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import static org.chromium.content_public.browser.test.util.TestThreadUtils.runOnUiThreadBlocking;
@@ -79,27 +78,15 @@ public class NavigationTest {
 
     @Test
     @SmallTest
-    public void testBaseStartup() {
-        WebLayerShellActivity activity = mActivityTestRule.launchShellWithUrl(URL1);
-
-        assertNotNull(activity);
-
-        mActivityTestRule.waitForNavigation(URL1);
-    }
-
-    @Test
-    @SmallTest
     public void testNavigationEvents() throws Exception {
         WebLayerShellActivity activity = mActivityTestRule.launchShellWithUrl(URL1);
-        mActivityTestRule.waitForNavigation(URL1);
 
         setNavigationObserver(activity);
         int curStartedCount = mObserver.onStartedCallback.getCallCount();
         int curCommittedCount = mObserver.onCommittedCallback.getCallCount();
         int curCompletedCount = mObserver.onCompletedCallback.getCallCount();
 
-        mActivityTestRule.loadUrl(URL2);
-        mActivityTestRule.waitForNavigation(URL2);
+        mActivityTestRule.navigateAndWait(URL2);
 
         mObserver.onStartedCallback.assertCalledWith(curStartedCount, URL2);
         mObserver.onCommittedCallback.assertCalledWith(curCommittedCount, URL2);
@@ -110,13 +97,10 @@ public class NavigationTest {
     @SmallTest
     public void testGoBackAndForward() throws Exception {
         WebLayerShellActivity activity = mActivityTestRule.launchShellWithUrl(URL1);
-        mActivityTestRule.waitForNavigation(URL1);
         setNavigationObserver(activity);
 
-        mActivityTestRule.loadUrl(URL2);
-        mActivityTestRule.waitForNavigation(URL2);
-        mActivityTestRule.loadUrl(URL3);
-        mActivityTestRule.waitForNavigation(URL3);
+        mActivityTestRule.navigateAndWait(URL2);
+        mActivityTestRule.navigateAndWait(URL3);
 
         NavigationController navigationController =
                     activity.getBrowserController().getNavigationController();
