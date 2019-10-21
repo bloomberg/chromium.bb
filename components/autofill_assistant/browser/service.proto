@@ -42,6 +42,9 @@ message ClientContextProto {
   // Assistant.
   optional bool is_cct = 8;
 
+  // True if the onboarding screen was shown to the user.
+  optional bool is_onboarding_shown = 10;
+
   // True if the script was triggered by a direct action.
   optional bool is_direct_action = 9;
 }
