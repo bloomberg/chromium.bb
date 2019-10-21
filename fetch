@@ -9,4 +9,8 @@ base_dir=$(dirname "$0")
 # standalone, but allow other PATH manipulations to take priority.
 PATH=$PATH:$base_dir
 
-PYTHONDONTWRITEBYTECODE=1 exec vpython "$base_dir/fetch.py" "$@"
+if [[ $GCLIENT_PY3 == 1 ]]; then
+  PYTHONDONTWRITEBYTECODE=1 exec vpython3 "$base_dir/fetch.py" "$@"
+else
+  PYTHONDONTWRITEBYTECODE=1 exec vpython "$base_dir/fetch.py" "$@"
+fi
