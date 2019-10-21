@@ -13,7 +13,6 @@
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "components/services/leveldb/leveldb_database_impl.h"
-#include "components/services/leveldb/public/cpp/util.h"
 #include "components/services/storage/dom_storage/dom_storage_database.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/dom_storage/session_storage_data_map.h"
@@ -34,12 +33,15 @@ namespace content {
 
 namespace {
 
-using leveldb::StdStringToUint8Vector;
 using NamespaceEntry = SessionStorageMetadata::NamespaceEntry;
 
 constexpr const int kTestProcessIdOrigin1 = 11;
 constexpr const int kTestProcessIdAllOrigins = 12;
 constexpr const int kTestProcessIdOrigin3 = 13;
+
+std::vector<uint8_t> StdStringToUint8Vector(const std::string& s) {
+  return std::vector<uint8_t>(s.begin(), s.end());
+}
 
 MATCHER(OKStatus, "Equality matcher for type OK leveldb::Status") {
   return arg.ok();

@@ -17,7 +17,6 @@
 #include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "components/services/leveldb/leveldb_database_impl.h"
-#include "components/services/leveldb/public/cpp/util.h"
 #include "content/browser/dom_storage/session_storage_data_map.h"
 #include "content/browser/dom_storage/session_storage_metadata.h"
 #include "content/browser/dom_storage/test/storage_area_test_util.h"
@@ -36,8 +35,9 @@ namespace content {
 
 namespace {
 
-using leveldb::StdStringToUint8Vector;
-using leveldb::Uint8VectorToStdString;
+std::vector<uint8_t> StdStringToUint8Vector(const std::string& s) {
+  return std::vector<uint8_t>(s.begin(), s.end());
+}
 
 MATCHER(OKStatus, "Equality matcher for type OK leveldb::Status") {
   return arg.ok();

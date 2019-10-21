@@ -9,7 +9,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "components/services/leveldb/public/cpp/util.h"
 #include "content/browser/child_process_security_policy_impl.h"
 
 namespace content {

@@ -16,7 +16,6 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
 #include "components/services/leveldb/leveldb_database_impl.h"
-#include "components/services/leveldb/public/cpp/util.h"
 #include "components/services/storage/dom_storage/dom_storage_database.h"
 #include "content/browser/dom_storage/dom_storage_types.h"
 #include "content/browser/dom_storage/session_storage_database.h"
@@ -33,8 +32,15 @@
 
 namespace content {
 namespace {
-using leveldb::StdStringToUint8Vector;
-using leveldb::Uint8VectorToStdString;
+
+std::vector<uint8_t> StdStringToUint8Vector(const std::string& s) {
+  return std::vector<uint8_t>(s.begin(), s.end());
+}
+
+std::vector<uint8_t> SliceToVector(const leveldb::Slice& s) {
+  auto span = base::make_span(s.data(), s.size());
+  return std::vector<uint8_t>(span.begin(), span.end());
+}
 
 void ErrorCallback(leveldb::Status* status_out, leveldb::Status status) {
   *status_out = status;
@@ -494,7 +500,7 @@ TEST_F(SessionStorageMetadataMigrationTest, MigrateV0ToV1) {
   // Grab the next map id, verify it doesn't crash.
   s = db()->Get(options, leveldb::Slice("next-map-id"), &db_value);
   EXPECT_TRUE(s.ok());
-  metadata.ParseNextMapId(leveldb::StdStringToUint8Vector(db_value));
+  metadata.ParseNextMapId(StdStringToUint8Vector(db_value));
 
   // Get all keys-value pairs with the given key prefix
   std::vector<storage::DomStorageDatabase::KeyValuePair> values;
@@ -504,8 +510,7 @@ TEST_F(SessionStorageMetadataMigrationTest, MigrateV0ToV1) {
     for (; it->Valid(); it->Next()) {
       if (!it->key().starts_with(leveldb::Slice("namespace-")))
         break;
-      values.emplace_back(leveldb::GetVectorFor(it->key()),
-                          leveldb::GetVectorFor(it->value()));
+      values.emplace_back(SliceToVector(it->key()), SliceToVector(it->value()));
     }
     EXPECT_TRUE(it->status().ok());
   }

@@ -9,7 +9,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "components/services/leveldb/leveldb_database_impl.h"
-#include "components/services/leveldb/public/cpp/util.h"
 #include "third_party/blink/public/common/dom_storage/session_storage_namespace_id.h"
 #include "url/gurl.h"
 
@@ -46,12 +45,18 @@ constexpr const size_t kPrefixBeforeOriginLength =
     kNamespacePrefixLength + blink::kSessionStorageNamespaceIdLength +
     kNamespaceOriginSeperatorLength;
 
+base::StringPiece Uint8VectorToStringPiece(const std::vector<uint8_t>& bytes) {
+  return base::StringPiece(reinterpret_cast<const char*>(bytes.data()),
+                           bytes.size());
+}
+
 bool ValueToNumber(const std::vector<uint8_t>& value, int64_t* out) {
-  return base::StringToInt64(leveldb::Uint8VectorToStringPiece(value), out);
+  return base::StringToInt64(Uint8VectorToStringPiece(value), out);
 }
 
 std::vector<uint8_t> NumberToValue(int64_t map_number) {
-  return leveldb::StdStringToUint8Vector(base::NumberToString(map_number));
+  auto str = base::NumberToString(map_number);
+  return std::vector<uint8_t>(str.begin(), str.end());
 }
 
 }  // namespace
@@ -136,8 +141,7 @@ bool SessionStorageMetadata::ParseNamespaces(
   for (const storage::DomStorageDatabase::KeyValuePair& key_value : values) {
     size_t key_size = key_value.key.size();
 
-    base::StringPiece key_as_string =
-        leveldb::Uint8VectorToStringPiece(key_value.key);
+    base::StringPiece key_as_string = Uint8VectorToStringPiece(key_value.key);
 
     if (key_size < kNamespacePrefixLength) {
       LOG(ERROR) << "Key size is less than prefix length: " << key_as_string;
@@ -181,7 +185,7 @@ bool SessionStorageMetadata::ParseNamespaces(
     if (!ValueToNumber(key_value.value, &map_number)) {
       error = true;
       LOG(ERROR) << "Could not parse map number "
-                 << leveldb::Uint8VectorToStringPiece(key_value.value);
+                 << Uint8VectorToStringPiece(key_value.value);
       break;
     }
 

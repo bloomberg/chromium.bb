@@ -15,7 +15,6 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
 #include "components/services/leveldb/leveldb_database_impl.h"
-#include "components/services/leveldb/public/cpp/util.h"
 #include "components/services/storage/dom_storage/dom_storage_database.h"
 #include "content/public/test/browser_task_environment.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
@@ -29,8 +28,9 @@ namespace content {
 
 namespace {
 
-using leveldb::StdStringToUint8Vector;
-using leveldb::Uint8VectorToStdString;
+std::vector<uint8_t> StdStringToUint8Vector(const std::string& s) {
+  return std::vector<uint8_t>(s.begin(), s.end());
+}
 
 MATCHER(OKStatus, "Equality matcher for type OK leveldb::Status") {
   return arg.ok();

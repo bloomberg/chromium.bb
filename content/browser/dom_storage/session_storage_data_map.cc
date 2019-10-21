@@ -7,7 +7,6 @@
 #include "base/system/sys_info.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "components/services/leveldb/public/cpp/util.h"
 #include "content/browser/dom_storage/dom_storage_types.h"
 
 namespace content {
