@@ -27,6 +27,7 @@ group("all") {
     ":system_api-power_manager-goprotos",
     ":system_api-power_manager-protos",
     ":system_api-protos",
+    ":system_api-runtime_probe-goprotos",
     ":system_api-runtime_probe-protos",
     ":system_api-seneschal-goprotos",
     ":system_api-seneschal-protos",
@@ -322,6 +323,14 @@ proto_library("system_api-runtime_probe-protos") {
     "${proto_in_dir}/runtime_probe.proto",
   ]
   standalone = true
+}
+
+goproto_library("system_api-runtime_probe-goprotos") {
+  proto_in_dir = "dbus/runtime_probe"
+  proto_out_dir = "go/src/chromiumos/system_api/runtime_probe_proto"
+  sources = [
+    "${proto_in_dir}/runtime_probe.proto",
+  ]
 }
 
 proto_library("system_api-bootlockbox-protos") {
