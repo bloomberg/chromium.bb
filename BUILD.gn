@@ -153,6 +153,12 @@ proto_library("system_api-login_manager-protos") {
     "${proto_in_dir}/policy_descriptor.proto",
   ]
   standalone = true
+
+  # Override optimize_for option in proto file.
+  # Needed for fuzz targets using libprotobuf-mutator.
+  if (use.fuzzer) {
+    gen_cpp_mode = "speed"
+  }
 }
 
 goproto_library("system_api-login_manager-goprotos") {
