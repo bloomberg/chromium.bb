@@ -80,9 +80,31 @@ def Create(input_proto, output_proto, _config):
                        config=build_config)
 
   output_proto.success = result.success
+
   if result.success:
     # Success -- we need to list out the images we built in the output.
     _PopulateBuiltImages(board, image_types, output_proto)
+
+    if vm_types:
+      # There are VMs to build.
+      assert len(vm_types) == 1
+
+      vm_type = vm_types.pop()
+      is_test = vm_type == _TEST_VM_ID
+      try:
+        vm_path = image.CreateVm(board, is_test=is_test)
+      except image.ImageToVmError as e:
+        cros_build_lib.Die(e)
+
+      new_image = output_proto.images.add()
+      new_image.path = vm_path
+      new_image.type = vm_type
+      new_image.build_target.name = board
+
+    # Read metric events log and pipe them into output_proto.events.
+    deserialize_metrics_log(output_proto.events, prefix=board)
+    return controller.RETURN_CODE_SUCCESS
+
   else:
     # Failure, include all of the failed packages in the output when available.
     if not result.failed_packages:
@@ -96,26 +118,6 @@ def Create(input_proto, output_proto, _config):
         current.version = package.version
 
     return controller.RETURN_CODE_UNSUCCESSFUL_RESPONSE_AVAILABLE
-
-  if not vm_types:
-    # No VMs to build, we can exit now.
-    return controller.RETURN_CODE_SUCCESS
-
-  # There can be only one.
-  vm_type = vm_types.pop()
-  is_test = vm_type == _TEST_VM_ID
-  try:
-    vm_path = image.CreateVm(board, is_test=is_test)
-  except image.ImageToVmError as e:
-    cros_build_lib.Die(e)
-
-  new_image = output_proto.images.add()
-  new_image.path = vm_path
-  new_image.type = vm_type
-  new_image.build_target.name = board
-
-  # Read metric events log and pipe them into output_proto.events.
-  deserialize_metrics_log(output_proto.events, prefix=board)
 
 
 def _ParseImagesToCreate(to_build):
