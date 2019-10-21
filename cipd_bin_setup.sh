@@ -19,4 +19,6 @@ function cipd_bin_setup {
         -log-level warning \
         -ensure-file "$ENSURE" \
         -root "$ROOT"
+
+    PYTHONDONTWRITEBYTECODE=1 python "$MYPATH/.cipd_bin/goma_ctl.py" update_hook
 }
