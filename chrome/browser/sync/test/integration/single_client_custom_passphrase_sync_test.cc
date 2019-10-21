@@ -212,10 +212,21 @@ class SingleClientCustomPassphraseForceDisableScryptSyncTest
     : public SingleClientCustomPassphraseSyncTest {
  public:
   SingleClientCustomPassphraseForceDisableScryptSyncTest()
-      : features_(/*force_disabled=*/true, /*use_for_new_passphrases=*/false) {}
+      : features_(/*force_disabled=*/true, /*use_for_new_passphrases=*/false) {
+    // Creation of NigoriSpecifics with scrypt derivation method requires
+    // |force_disabled| temporary set to false.
+    ScopedScryptFeatureToggler toggler(/*force_disabled=*/false,
+                                       /*use_for_new_passphrases_=*/false);
+    KeyParams key_params = {
+        KeyDerivationParams::CreateForScrypt("someConstantSalt"), "hunter2"};
+    scrypt_nigori_ = CreateCustomPassphraseNigori(key_params);
+  }
+
+  const sync_pb::NigoriSpecifics& scrypt_nigori() { return scrypt_nigori_; }
 
  private:
   ScopedScryptFeatureToggler features_;
+  sync_pb::NigoriSpecifics scrypt_nigori_;
 };
 
 class SingleClientCustomPassphraseDoNotUseScryptSyncTest
@@ -373,27 +384,9 @@ IN_PROC_BROWSER_TEST_P(SingleClientCustomPassphraseDoNotUseScryptSyncTest,
   EXPECT_TRUE(WaitForClientBookmarkWithTitle("scypt-encrypted bookmark"));
 }
 
-// See crbug.com/915219. This test needs to be rewritten to not rely on
-// FeatureList mutation after browser threads have started.
-IN_PROC_BROWSER_TEST_F(
-    SingleClientCustomPassphraseForceDisableScryptSyncTest,
-    DISABLED_CannotDecryptScryptKeyEncryptedDataWhenScryptDisabled) {
-  sync_pb::NigoriSpecifics nigori;
-  {
-    // Creating a Nigori and injecting an encrypted bookmark both require key
-    // derivation using scrypt, so temporarily enable it. This overrides the
-    // feature toggle in the test fixture, which will be restored after this
-    // block.
-    ScopedScryptFeatureToggler toggler(/*force_disabled=*/false,
-                                       /*use_for_new_passphrases_=*/false);
-    KeyParams key_params = {
-        KeyDerivationParams::CreateForScrypt("someConstantSalt"), "hunter2"};
-    nigori = CreateCustomPassphraseNigori(key_params);
-    InjectEncryptedServerBookmark("scypt-encrypted bookmark",
-                                  GURL("http://example.com/doesnt-matter"),
-                                  key_params);
-  }
-  SetNigoriInFakeServer(GetFakeServer(), nigori);
+IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseForceDisableScryptSyncTest,
+                       CannotDecryptScryptKeyEncryptedDataWhenScryptDisabled) {
+  SetNigoriInFakeServer(GetFakeServer(), scrypt_nigori());
   SetDecryptionPassphraseForClient(/*index=*/0, "hunter2");
 
   SetupSyncNoWaitingForCompletion();
