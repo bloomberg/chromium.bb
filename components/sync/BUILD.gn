@@ -584,7 +584,6 @@ source_set("unit_tests") {
     "driver/async_directory_type_controller_unittest.cc",
     "driver/backend_migrator_unittest.cc",
     "driver/data_type_manager_impl_unittest.cc",
-    "driver/frontend_data_type_controller_unittest.cc",
     "driver/generic_change_processor_unittest.cc",
     "driver/glue/sync_engine_impl_unittest.cc",
     "driver/model_association_manager_unittest.cc",
