@@ -803,9 +803,6 @@ extern const char kOnlyNewPasswordFormParsingDescription[];
 extern const char kUsernameFirstFlowName[];
 extern const char kUsernameFirstFlowDescription[];
 
-extern const char kNewPrintPreviewLayoutName[];
-extern const char kNewPrintPreviewLayoutDescription[];
-
 extern const char kUseSurfaceLayerForVideoName[];
 extern const char kUseSurfaceLayerForVideoDescription[];
 

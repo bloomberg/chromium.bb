@@ -2639,10 +2639,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCloudPrinterHandlerName,
      flag_descriptions::kCloudPrinterHandlerDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kCloudPrinterHandler)},
-    {"enable-new-print-preview-layout",
-     flag_descriptions::kNewPrintPreviewLayoutName,
-     flag_descriptions::kNewPrintPreviewLayoutDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kNewPrintPreviewLayout)},
 #endif
 
 #if defined(OS_CHROMEOS)

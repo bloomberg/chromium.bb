@@ -1323,10 +1323,6 @@ const char kNewPasswordFormParsingForSavingDescription[] =
     "version, currently under development. WARNING: when enabled, Password "
     "Manager might stop working";
 
-const char kNewPrintPreviewLayoutName[] = "Enable New Print Preview UI Layout";
-const char kNewPrintPreviewLayoutDescription[] =
-    "If enabled, Print Preview will display a new UI layout.";
-
 const char kUseSurfaceLayerForVideoName[] =
     "Enable the use of SurfaceLayer objects for videos.";
 const char kUseSurfaceLayerForVideoDescription[] =
