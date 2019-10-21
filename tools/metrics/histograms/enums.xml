@@ -39218,7 +39218,7 @@ from previous Chrome versions.
   <int value="0" label="Fetch succeeded"/>
   <int value="1" label="Fetch failed because of empty URL"/>
   <int value="2" label="Fetch failed (unspecified reason)"/>
-  <int value="3" label="Fetch failed because the document origin is unique"/>
+  <int value="3" label="Fetch failed because the document origin is opaque"/>
 </enum>
 
 <enum name="MappedCSSProperties">
