@@ -153,8 +153,7 @@ static void CreateMediaService(CastContentBrowserClient* browser_client,
       base::Bind(&CastContentBrowserClient::CreateCdmFactory,
                  base::Unretained(browser_client)),
       browser_client->GetVideoModeSwitcher(),
-      browser_client->GetVideoResolutionPolicy(),
-      browser_client->media_resource_tracker());
+      browser_client->GetVideoResolutionPolicy());
   service = std::make_unique<::media::MediaService>(
       std::move(mojo_media_client), std::move(request));
   service_manager::Service::RunAsyncUntilTermination(std::move(service));
@@ -1047,8 +1046,7 @@ void CastContentBrowserClient::BindMediaRenderer(
       std::make_unique<media::CastRenderer>(
           GetCmaBackendFactory(), std::move(media_task_runner),
           GetVideoModeSwitcher(), GetVideoResolutionPolicy(),
-          media_resource_tracker(), nullptr /* connector */,
-          nullptr /* host_interfaces */),
+          nullptr /* connector */, nullptr /* host_interfaces */),
       std::move(request));
 }
 

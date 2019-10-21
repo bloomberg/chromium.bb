@@ -409,7 +409,8 @@ CastBrowserMainParts::media_pipeline_backend_manager() {
   if (!media_pipeline_backend_manager_) {
     media_pipeline_backend_manager_ =
         std::make_unique<media::MediaPipelineBackendManager>(
-            cast_content_browser_client_->GetMediaTaskRunner());
+            cast_content_browser_client_->GetMediaTaskRunner(),
+            cast_content_browser_client_->media_resource_tracker());
   }
   return media_pipeline_backend_manager_.get();
 }
