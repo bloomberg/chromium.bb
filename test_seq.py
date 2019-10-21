@@ -20,6 +20,7 @@ def main():
   test_files = [
       'tests/swarming_test.py',
       'tests/run_isolated_test.py',
+      'tests/isolateserver_test.py',
       'tests/logging_utils_test.py',
   ]
   abs_test_files = [os.path.join(ROOT_DIR, t) for t in test_files]

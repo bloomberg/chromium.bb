@@ -242,6 +242,10 @@ class NetTestCase(net_utils.TestCase, Common):
 
 
 class TestIsolated(auto_stub.TestCase, Common):
+  # These test fail when running in parallel
+  # Need to run in test_seq.py as an executable
+  no_run = 1
+
   """Test functions with isolated_ prefix."""
   def setUp(self):
     auto_stub.TestCase.setUp(self)

@@ -41,6 +41,10 @@ CONTENTS = {
 
 
 class TestCase(net_utils.TestCase):
+  # These tests fail when running with other tests
+  # Need to run in test_seq.py
+  no_run = 1
+
   """Mocks out url_open() calls and sys.stdout/stderr."""
   _tempdir = None
 
@@ -821,6 +825,9 @@ class IsolateServerStorageApiTest(TestCase):
 
 class IsolateServerStorageSmokeTest(unittest.TestCase):
   """Tests public API of Storage class using file system as a store."""
+  # These tests fail when running with other tests
+  # Need to run in test_seq.py
+  no_run = 1
 
   def setUp(self):
     super(IsolateServerStorageSmokeTest, self).setUp()
