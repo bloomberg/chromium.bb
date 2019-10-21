@@ -1483,6 +1483,10 @@
           'name': 'Forced',
           'value': 2,
           'caption': '''Incognito mode forced''',
+          'supported_on': [
+            'chrome.*:14-',
+            'chrome_os:14-',
+          ],
         },
       ],
       'supported_on': [
@@ -1504,7 +1508,7 @@
 
       If 'Disabled' is selected, pages may not be opened in Incognito mode.
 
-      If 'Forced' is selected, pages may be opened ONLY in Incognito mode.''',
+      If 'Forced' is selected, pages may be opened ONLY in Incognito mode. Note that 'Forced' does not work for Android-on-Chrome''',
     },
     {
       'name': 'SavingBrowserHistoryDisabled',
