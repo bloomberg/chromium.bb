@@ -1730,6 +1730,8 @@ template("monochrome_public_apk_or_module_tmpl") {
                              "target_type",
                              "use_trichrome_library",
                              "verify_manifest",
+                             "failed_manifest_expectation_file",
+                             "failed_proguard_expectation_file",
                              "version_code",
                              "version_name",
                            ])
@@ -2329,6 +2331,8 @@ template("monochrome_or_trichrome_public_bundle_tmpl") {
     if (defined(invoker.verify_android_configuration) &&
         invoker.verify_android_configuration) {
       verify_manifest = true
+      failed_manifest_expectation_file =
+          "monochrome_public_bundle.android_manifest.failed"
     }
 
     if (_is_trichrome && trichrome_synchronized_proguard) {
@@ -2355,6 +2359,8 @@ template("monochrome_or_trichrome_public_bundle_tmpl") {
       if (defined(invoker.verify_android_configuration) &&
           invoker.verify_android_configuration) {
         verify_proguard_flags = true
+        failed_proguard_expectation_file =
+            "monochrome_public_bundle.proguard_flags.failed"
       }
     }
 
