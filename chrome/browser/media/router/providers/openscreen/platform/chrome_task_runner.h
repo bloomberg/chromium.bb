@@ -2,16 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_MEDIA_ROUTER_PROVIDERS_OPENSCREEN_PLATFORM_TASK_RUNNER_H_
-#define CHROME_BROWSER_MEDIA_ROUTER_PROVIDERS_OPENSCREEN_PLATFORM_TASK_RUNNER_H_
+#ifndef CHROME_BROWSER_MEDIA_ROUTER_PROVIDERS_OPENSCREEN_PLATFORM_CHROME_TASK_RUNNER_H_
+#define CHROME_BROWSER_MEDIA_ROUTER_PROVIDERS_OPENSCREEN_PLATFORM_CHROME_TASK_RUNNER_H_
 
 #include "base/single_thread_task_runner.h"
 #include "third_party/openscreen/src/platform/api/task_runner.h"
 
-namespace openscreen {
-namespace platform {
+namespace media_router {
 
-class ChromeTaskRunner final : public TaskRunner {
+class ChromeTaskRunner final : public openscreen::platform::TaskRunner {
  public:
   explicit ChromeTaskRunner(
       scoped_refptr<base::SequencedTaskRunner> task_runner);
@@ -23,15 +22,15 @@ class ChromeTaskRunner final : public TaskRunner {
 
   // TaskRunner overrides
   ~ChromeTaskRunner() final;
-  void PostPackagedTask(TaskRunner::Task task) final;
-  void PostPackagedTaskWithDelay(TaskRunner::Task task,
-                                 Clock::duration delay) final;
+  void PostPackagedTask(openscreen::platform::TaskRunner::Task task) final;
+  void PostPackagedTaskWithDelay(
+      openscreen::platform::TaskRunner::Task task,
+      openscreen::platform::Clock::duration delay) final;
 
  private:
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 };
 
-}  // namespace platform
-}  // namespace openscreen
+}  // namespace media_router
 
-#endif  // CHROME_BROWSER_MEDIA_ROUTER_PROVIDERS_OPENSCREEN_PLATFORM_TASK_RUNNER_H_
+#endif  // CHROME_BROWSER_MEDIA_ROUTER_PROVIDERS_OPENSCREEN_PLATFORM_CHROME_TASK_RUNNER_H_

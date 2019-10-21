@@ -4,13 +4,11 @@
 
 #include "chrome/browser/media/router/providers/openscreen/platform/chrome_platform_client.h"
 
-#include <mutex>
+#include <utility>
 
 namespace media_router {
 
-ChromePlatformClient::~ChromePlatformClient() {
-  // TODO(jophba, rwkeane): Handle threads and safely shutting down singletons.
-}
+ChromePlatformClient::~ChromePlatformClient() = default;
 
 // static
 void ChromePlatformClient::Create(
@@ -38,7 +36,6 @@ ChromePlatformClient::ChromePlatformClient(
     std::unique_ptr<network::mojom::NetworkContext> network_context,
     scoped_refptr<base::SequencedTaskRunner> task_runner)
     : network_context_(std::move(network_context)),
-      task_runner_(
-          new openscreen::platform::ChromeTaskRunner(std::move(task_runner))) {}
+      task_runner_(new ChromeTaskRunner(std::move(task_runner))) {}
 
 }  // namespace media_router

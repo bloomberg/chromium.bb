@@ -11,10 +11,12 @@
 #include "base/task/task_traits.h"
 #include "base/time/time.h"
 
-#include "chrome/browser/media/router/providers/openscreen/platform/task_runner.h"
+#include "chrome/browser/media/router/providers/openscreen/platform/chrome_task_runner.h"
 
-namespace openscreen {
-namespace platform {
+namespace media_router {
+
+using openscreen::platform::Clock;
+using openscreen::platform::TaskRunner;
 
 namespace {
 void ExecuteTask(TaskRunner::Task task) {
@@ -42,5 +44,4 @@ void ChromeTaskRunner::PostPackagedTaskWithDelay(TaskRunner::Task task,
       FROM_HERE, base::BindOnce(ExecuteTask, std::move(task)), time_delta);
 }
 
-}  // namespace platform
-}  // namespace openscreen
+}  // namespace media_router

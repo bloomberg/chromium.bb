@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "chrome/browser/media/router/providers/openscreen/platform/task_runner.h"
+#include "chrome/browser/media/router/providers/openscreen/platform/chrome_task_runner.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "third_party/openscreen/src/platform/api/platform_client.h"
 
@@ -39,7 +39,7 @@ class ChromePlatformClient : public openscreen::platform::PlatformClient {
       scoped_refptr<base::SequencedTaskRunner> task_runner);
 
   const std::unique_ptr<network::mojom::NetworkContext> network_context_;
-  const std::unique_ptr<openscreen::platform::ChromeTaskRunner> task_runner_;
+  const std::unique_ptr<ChromeTaskRunner> task_runner_;
 };
 
 }  // namespace media_router
