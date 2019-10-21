@@ -24,8 +24,9 @@ class CodeNodeTest(unittest.TestCase):
         return current
 
     def assertRenderResult(self, node, expected):
-        def simplify(s):
-            return " ".join(s.split())
+        def simplify(text):
+            return "\n".join(
+                [" ".join(line.split()) for line in text.split("\n")])
 
         actual = simplify(self.render(node))
         expected = simplify(expected)
@@ -63,7 +64,7 @@ class CodeNodeTest(unittest.TestCase):
         work just same as Python built-in list.
         """
         renderer = MakoRenderer()
-        root = SequenceNode(renderer=renderer)
+        root = SequenceNode(separator=",", renderer=renderer)
         root.extend([
             LiteralNode("2"),
             LiteralNode("4"),
@@ -72,13 +73,13 @@ class CodeNodeTest(unittest.TestCase):
         root.insert(0, LiteralNode("1"))
         root.insert(100, LiteralNode("5"))
         root.append(LiteralNode("6"))
-        self.assertRenderResult(root, "1 2 3 4 5 6")
+        self.assertRenderResult(root, "1,2,3,4,5,6")
 
     def test_nested_sequence(self):
         """Tests nested SequenceNodes."""
         renderer = MakoRenderer()
-        root = SequenceNode(renderer=renderer)
-        nested = SequenceNode()
+        root = SequenceNode(separator=",", renderer=renderer)
+        nested = SequenceNode(separator=",")
         nested.extend([
             LiteralNode("2"),
             LiteralNode("3"),
@@ -89,7 +90,7 @@ class CodeNodeTest(unittest.TestCase):
             nested,
             LiteralNode("5"),
         ])
-        self.assertRenderResult(root, "1 2 3 4 5")
+        self.assertRenderResult(root, "1,2,3,4,5")
 
     def test_symbol_definition_chains(self):
         """
@@ -110,14 +111,14 @@ class CodeNodeTest(unittest.TestCase):
         root.append(TextNode("(void)${var1};"))
 
         self.assertRenderResult(
-            root, """
+            root, """\
 int var5 = 2;
 int var2 = var5;
 int var4 = 1;
 int var3 = var4;
 int var1 = var2 + var3;
 (void)var1;
-        """)
+""")
 
     def test_symbol_definition_with_exit_branches(self):
         renderer = MakoRenderer()
@@ -135,21 +136,21 @@ int var1 = var2 + var3;
         root.extend([
             TextNode("${var1};"),
             UnlikelyExitNode(
-                cond_node=TextNode("${var2}"),
-                body_node=SymbolScopeNode([
+                cond=TextNode("${var2}"),
+                body=SymbolScopeNode([
                     TextNode("${var3};"),
                     TextNode("return ${var4};"),
                 ])),
             LikelyExitNode(
-                cond_node=TextNode("${var5}"),
-                body_node=SymbolScopeNode([
+                cond=TextNode("${var5}"),
+                body=SymbolScopeNode([
                     TextNode("return ${var6};"),
                 ])),
             TextNode("${var3};"),
         ])
 
         self.assertRenderResult(
-            root, """
+            root, """\
 int var1 = 1;
 var1;
 int var2 = 2;
@@ -182,21 +183,21 @@ var3;
 
         root.extend([
             UnlikelyExitNode(
-                cond_node=LiteralNode("false"),
-                body_node=SymbolScopeNode([
+                cond=LiteralNode("false"),
+                body=SymbolScopeNode([
                     UnlikelyExitNode(
-                        cond_node=LiteralNode("false"),
-                        body_node=SymbolScopeNode([
+                        cond=LiteralNode("false"),
+                        body=SymbolScopeNode([
                             TextNode("return ${var1};"),
                         ])),
                     LiteralNode("return;"),
                 ])),
             LikelyExitNode(
-                cond_node=LiteralNode("true"),
-                body_node=SymbolScopeNode([
+                cond=LiteralNode("true"),
+                body=SymbolScopeNode([
                     LikelyExitNode(
-                        cond_node=LiteralNode("true"),
-                        body_node=SymbolScopeNode([
+                        cond=LiteralNode("true"),
+                        body=SymbolScopeNode([
                             TextNode("return ${var2};"),
                         ])),
                     LiteralNode("return;"),
@@ -204,7 +205,7 @@ var3;
         ])
 
         self.assertRenderResult(
-            root, """
+            root, """\
 if (false) {
   if (false) {
     int var1 = 1;
