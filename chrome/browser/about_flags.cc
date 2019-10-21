@@ -596,15 +596,20 @@ const FeatureEntry::FeatureParam
     kInterestFeedLargerImagesFeatureVariationConstant[] = {
         {"feed_ui_enabled", "true"}};
 const FeatureEntry::FeatureParam
-    kInterestFeedSnippetsEnabledFeatureVariationConstant[] = {
+    kInterestFeedSnippetsFeatureVariationConstant[] = {
+        {"snippets_enabled", "true"}};
+const FeatureEntry::FeatureParam
+    kInterestFeedLargeImagesAndSnippetsFeatureVariationConstant[] = {
         {"feed_ui_enabled", "true"},
         {"snippets_enabled", "true"}};
 const FeatureEntry::FeatureVariation kInterestFeedFeatureVariations[] = {
     {"(larger images)", kInterestFeedLargerImagesFeatureVariationConstant,
      base::size(kInterestFeedLargerImagesFeatureVariationConstant), nullptr},
+    {"(snippets)", kInterestFeedSnippetsFeatureVariationConstant,
+     base::size(kInterestFeedSnippetsFeatureVariationConstant), nullptr},
     {"(larger images and snippets)",
-     kInterestFeedSnippetsEnabledFeatureVariationConstant,
-     base::size(kInterestFeedSnippetsEnabledFeatureVariationConstant),
+     kInterestFeedLargeImagesAndSnippetsFeatureVariationConstant,
+     base::size(kInterestFeedLargeImagesAndSnippetsFeatureVariationConstant),
      nullptr}};
 
 const FeatureEntry::FeatureVariation kRemoteSuggestionsFeatureVariations[] = {
