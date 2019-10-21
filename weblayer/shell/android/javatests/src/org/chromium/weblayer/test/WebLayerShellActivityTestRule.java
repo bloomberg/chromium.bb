@@ -14,6 +14,7 @@ import android.net.Uri;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.rule.ActivityTestRule;
 
+import org.json.JSONObject;
 import org.junit.Assert;
 
 import org.chromium.base.test.util.CallbackHelper;
@@ -88,6 +89,19 @@ public class WebLayerShellActivityTestRule extends ActivityTestRule<WebLayerShel
         }
     }
 
+    private static final class JSONCallbackHelper extends CallbackHelper {
+        private JSONObject mResult;
+
+        public JSONObject getResult() {
+            return mResult;
+        }
+
+        public void notifyCalled(JSONObject result) {
+            mResult = result;
+            notifyCalled();
+        }
+    }
+
     public WebLayerShellActivityTestRule() {
         super(WebLayerShellActivity.class, false, false);
     }
@@ -148,5 +162,23 @@ public class WebLayerShellActivityTestRule extends ActivityTestRule<WebLayerShel
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * Executes the script passed in and waits for the result.
+     */
+    public JSONObject executeScriptSync(String script) {
+        JSONCallbackHelper callbackHelper = new JSONCallbackHelper();
+        int count = callbackHelper.getCallCount();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            getActivity().getBrowserController().executeScript(
+                    script, (JSONObject result) -> { callbackHelper.notifyCalled(result); });
+        });
+        try {
+            callbackHelper.waitForCallback(count);
+        } catch (TimeoutException e) {
+            throw new RuntimeException(e);
+        }
+        return callbackHelper.getResult();
     }
 }
