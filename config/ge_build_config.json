@@ -198,7 +198,7 @@
       "configs": [
         {
           "builder": "RELEASE",
-          "experimental": false,
+          "experimental": true,
           "leader_board": true,
           "board_group": "vm builds",
           "arch": "X86_INTERNAL"
