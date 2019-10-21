@@ -520,41 +520,68 @@ void SVGAnimationElement::CurrentValuesForValuesAnimation(
   }
 }
 
+bool SVGAnimationElement::CalculateValuesAnimation() {
+  if (values_.IsEmpty())
+    return false;
+  CalcMode calc_mode = GetCalcMode();
+  if (calc_mode != kCalcModePaced &&
+      FastHasAttribute(svg_names::kKeyTimesAttr) &&
+      !FastHasAttribute(svg_names::kKeyPointsAttr) &&
+      values_.size() != KeyTimes().size())
+    return false;
+  if (calc_mode != kCalcModeDiscrete && !KeyTimes().IsEmpty() &&
+      KeyTimes().back() != 1)
+    return false;
+  if (calc_mode == kCalcModeSpline) {
+    if ((key_splines_.IsEmpty() || key_splines_.size() != values_.size() - 1) &&
+        key_splines_.size() != key_points_.size() - 1)
+      return false;
+  }
+  if (FastHasAttribute(svg_names::kKeyPointsAttr) &&
+      (KeyTimes().size() < 2 || KeyTimes().size() != key_points_.size()))
+    return false;
+  if (!CalculateToAtEndOfDurationValue(values_.back()))
+    return false;
+  if (calc_mode == kCalcModePaced)
+    CalculateKeyTimesForCalcModePaced();
+  return true;
+}
+
 bool SVGAnimationElement::CheckAnimationParameters() {
   if (!IsValid() || !HasValidTarget())
     return false;
 
-  // These validations are appropriate for all animation modes.
-  if (FastHasAttribute(svg_names::kKeyPointsAttr) &&
-      key_points_.size() != KeyTimes().size())
+  AnimationMode animation_mode = GetAnimationMode();
+  if (animation_mode == kNoAnimation)
     return false;
 
-  AnimationMode animation_mode = GetAnimationMode();
+  // These validations are appropriate for all animation modes.
+  if (FastHasAttribute(svg_names::kKeyPointsAttr) &&
+      KeyTimes().size() != key_points_.size())
+    return false;
+
   CalcMode calc_mode = GetCalcMode();
   if (calc_mode == kCalcModeSpline) {
-    unsigned splines_count = key_splines_.size();
-    if (!splines_count ||
+    if (key_splines_.IsEmpty() ||
         (FastHasAttribute(svg_names::kKeyPointsAttr) &&
-         key_points_.size() - 1 != splines_count) ||
+         key_splines_.size() != key_points_.size() - 1) ||
         (animation_mode == kValuesAnimation &&
-         values_.size() - 1 != splines_count) ||
+         key_splines_.size() != values_.size() - 1) ||
         (FastHasAttribute(svg_names::kKeyTimesAttr) &&
-         KeyTimes().size() - 1 != splines_count))
+         key_splines_.size() != KeyTimes().size() - 1))
       return false;
   }
 
-  String from = FromValue();
-  String to = ToValue();
-  String by = ByValue();
-  if (animation_mode == kNoAnimation)
-    return false;
   if ((animation_mode == kFromToAnimation ||
        animation_mode == kFromByAnimation || animation_mode == kToAnimation ||
        animation_mode == kByAnimation) &&
-      (FastHasAttribute(svg_names::kKeyPointsAttr) &&
-       FastHasAttribute(svg_names::kKeyTimesAttr) &&
+      (FastHasAttribute(svg_names::kKeyTimesAttr) &&
+       FastHasAttribute(svg_names::kKeyPointsAttr) &&
        (KeyTimes().size() < 2 || KeyTimes().size() != key_points_.size())))
     return false;
+  const String& from = FromValue();
+  const String& to = ToValue();
+  const String& by = ByValue();
   if (animation_mode == kFromToAnimation)
     return CalculateFromAndToValues(from, to);
   if (animation_mode == kToAnimation) {
@@ -567,32 +594,13 @@ bool SVGAnimationElement::CheckAnimationParameters() {
     return CalculateFromAndByValues(from, by);
   if (animation_mode == kByAnimation)
     return CalculateFromAndByValues(g_empty_string, by);
-  if (animation_mode == kValuesAnimation) {
-    // o_O - TODO(fs): move this to a helper function.
-    bool animation_valid =
-        values_.size() >= 1 &&
-        (calc_mode == kCalcModePaced ||
-         !FastHasAttribute(svg_names::kKeyTimesAttr) ||
-         FastHasAttribute(svg_names::kKeyPointsAttr) ||
-         (values_.size() == KeyTimes().size())) &&
-        (calc_mode == kCalcModeDiscrete || !KeyTimes().size() ||
-         KeyTimes().back() == 1) &&
-        (calc_mode != kCalcModeSpline ||
-         ((key_splines_.size() &&
-           (key_splines_.size() == values_.size() - 1)) ||
-          key_splines_.size() == key_points_.size() - 1)) &&
-        (!FastHasAttribute(svg_names::kKeyPointsAttr) ||
-         (KeyTimes().size() > 1 && KeyTimes().size() == key_points_.size()));
-    if (animation_valid)
-      animation_valid = CalculateToAtEndOfDurationValue(values_.back());
-    if (calc_mode == kCalcModePaced && animation_valid)
-      CalculateKeyTimesForCalcModePaced();
-    return animation_valid;
-  }
+  if (animation_mode == kValuesAnimation)
+    return CalculateValuesAnimation();
   if (animation_mode == kPathAnimation) {
     return calc_mode == kCalcModePaced ||
-           !FastHasAttribute(svg_names::kKeyPointsAttr) ||
-           (KeyTimes().size() > 1 && KeyTimes().size() == key_points_.size());
+           !(FastHasAttribute(svg_names::kKeyPointsAttr) &&
+             (KeyTimes().size() < 2 ||
+              KeyTimes().size() != key_points_.size()));
   }
   return false;
 }

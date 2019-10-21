@@ -115,10 +115,6 @@ class CORE_EXPORT SVGAnimationElement : public SVGSMILElement {
 
   void ParseAttribute(const AttributeModificationParams&) override;
 
-  String ToValue() const;
-  String ByValue() const;
-  String FromValue() const;
-
   // from SVGSMILElement
   void UpdateAnimation(float percent,
                        unsigned repeat,
@@ -145,6 +141,10 @@ class CORE_EXPORT SVGAnimationElement : public SVGSMILElement {
  private:
   bool IsValid() const final { return SVGTests::IsValid(); }
 
+  String ToValue() const;
+  String ByValue() const;
+  String FromValue() const;
+
   void AnimationAttributeChanged();
   bool CheckAnimationParameters();
   virtual bool CalculateToAtEndOfDurationValue(
@@ -161,6 +161,7 @@ class CORE_EXPORT SVGAnimationElement : public SVGSMILElement {
     return -1.f;
   }
 
+  bool CalculateValuesAnimation();
   void CurrentValuesForValuesAnimation(float percent,
                                        float& effective_percent,
                                        String& from,
