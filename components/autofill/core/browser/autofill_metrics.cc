@@ -934,6 +934,13 @@ void AutofillMetrics::LogCardUnmaskPreflightDuration(
 }
 
 // static
+void AutofillMetrics::LogCardUnmaskTypeDecision(
+    CardUnmaskTypeDecisionMetric metric) {
+  base::UmaHistogramEnumeration("Autofill.BetterAuth.CardUnmaskTypeDecision",
+                                metric);
+}
+
+// static
 void AutofillMetrics::LogUserPerceivedLatencyOnCardSelection(
     PreflightCallEvent event,
     bool fido_auth_enabled) {

@@ -3789,6 +3789,11 @@ Unknown properties are collapsed to zero. -->
   <int value="2" label="Preflight call ignored"/>
 </enum>
 
+<enum name="AutofillCreditCardUnmaskDecisionMetric">
+  <int value="0" label="WebAuthn only"/>
+  <int value="1" label="CVC followed by WebAuthn"/>
+</enum>
+
 <enum name="AutofillDeveloperEngagement">
   <int value="0" label="Fillable form parsed without type hints"/>
   <int value="1" label="Fillable form parsed with type hints"/>

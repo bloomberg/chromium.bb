@@ -699,6 +699,16 @@ class AutofillMetrics {
     kMaxValue = kDidNotChooseMaskedCard,
   };
 
+  // Metric for tracking which authentication method was used for a user with
+  // FIDO authentication enabled.
+  enum class CardUnmaskTypeDecisionMetric {
+    // Only WebAuthn prompt was shown.
+    kFidoOnly = 0,
+    // CVC authentication was required in addition to WebAuthn.
+    kCvcThenFido = 1,
+    kMaxValue = kCvcThenFido,
+  };
+
   // Possible results of Payments RPCs.
   enum PaymentsRpcResult {
     // Request succeeded.
@@ -1054,6 +1064,10 @@ class AutofillMetrics {
   // Logs the duration of the PaymentsClient::GetUnmaskDetails() call (aka
   // GetDetailsForGetRealPan).
   static void LogCardUnmaskPreflightDuration(const base::TimeDelta& duration);
+
+  // Logs which unmask type was used for a user with FIDO authentication
+  // enabled.
+  static void LogCardUnmaskTypeDecision(CardUnmaskTypeDecisionMetric metric);
 
   // Logs the existence of any user-perceived latency between selecting a Google
   // Payments server card and seeing a card unmask prompt.
