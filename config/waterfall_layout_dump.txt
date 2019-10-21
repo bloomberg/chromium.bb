@@ -214,6 +214,8 @@
     gru-factory-gru-9017.B-factorybranch
   factory-grunt-11164.B-buildspec
     grunt-factory-grunt-11164.B-factorybranch
+  factory-kukui-12587.B-buildspec
+    kukui-factory-kukui-12587.B-factorybranch
   factory-mistral-12361.B-buildspec
     mistral-factory-mistral-12361.B-factorybranch
   factory-nami-10715.B-buildspec
@@ -1578,6 +1580,8 @@
     gru-factory-gru-9017.B-factorybranch-tryjob
   factory-grunt-11164.B-buildspec-tryjob
     grunt-factory-grunt-11164.B-factorybranch-tryjob
+  factory-kukui-12587.B-buildspec-tryjob
+    kukui-factory-kukui-12587.B-factorybranch-tryjob
   factory-mistral-12361.B-buildspec-tryjob
     mistral-factory-mistral-12361.B-factorybranch-tryjob
   factory-nami-10715.B-buildspec-tryjob
@@ -2264,6 +2268,7 @@
   kukui-chrome-pfq-tryjob
   kukui-chromium-pfq-tryjob
   kukui-compile-only-pre-cq
+  kukui-factory-kukui-12587.B-factorybranch-tryjob
   kukui-full-tryjob
   kukui-llvm-next-toolchain-tryjob
   kukui-llvm-toolchain-tryjob
