@@ -11,7 +11,6 @@
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/metrics/user_metrics.h"
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/profiles/profile.h"
@@ -575,8 +574,7 @@ void ProfileMenuViewBase::StyledLabelLinkClicked(views::StyledLabel* link,
 
 void ProfileMenuViewBase::OnClick(views::View* clickable_view) {
   DCHECK(!click_actions_[clickable_view].is_null());
-  base::RecordAction(
-      base::UserMetricsAction("ProfileMenu_ActionableItemClicked"));
+  signin_ui_util::RecordProfileMenuClick(browser()->profile());
   click_actions_[clickable_view].Run();
 }
 
