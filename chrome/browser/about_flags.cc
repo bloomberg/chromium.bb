@@ -4700,7 +4700,9 @@ const FeatureEntry kFeatureEntries[] = {
 class FlagsStateSingleton {
  public:
   FlagsStateSingleton()
-      : flags_state_(kFeatureEntries, base::size(kFeatureEntries)) {}
+      : flags_state_(std::make_unique<flags_ui::FlagsState>(
+            kFeatureEntries,
+            base::size(kFeatureEntries))) {}
   ~FlagsStateSingleton() {}
 
   static FlagsStateSingleton* GetInstance() {
@@ -4708,11 +4710,16 @@ class FlagsStateSingleton {
   }
 
   static flags_ui::FlagsState* GetFlagsState() {
-    return &GetInstance()->flags_state_;
+    return GetInstance()->flags_state_.get();
+  }
+
+  void RebuildState(const std::vector<flags_ui::FeatureEntry>& entries) {
+    flags_state_ =
+        std::make_unique<flags_ui::FlagsState>(entries.data(), entries.size());
   }
 
  private:
-  flags_ui::FlagsState flags_state_;
+  std::unique_ptr<flags_ui::FlagsState> flags_state_;
 
   DISALLOW_COPY_AND_ASSIGN(FlagsStateSingleton);
 };
@@ -4911,9 +4918,25 @@ namespace testing {
 
 const base::HistogramBase::Sample kBadSwitchFormatHistogramId = 0;
 
+std::vector<FeatureEntry>* GetEntriesForTesting() {
+  static base::NoDestructor<std::vector<FeatureEntry>> entries;
+  return entries.get();
+}
+
 const FeatureEntry* GetFeatureEntries(size_t* count) {
+  if (!GetEntriesForTesting()->empty()) {
+    *count = GetEntriesForTesting()->size();
+    return GetEntriesForTesting()->data();
+  }
   *count = base::size(kFeatureEntries);
   return kFeatureEntries;
+}
+
+void SetFeatureEntries(const std::vector<FeatureEntry>& entries) {
+  GetEntriesForTesting()->clear();
+  for (const auto& entry : entries)
+    GetEntriesForTesting()->push_back(entry);
+  FlagsStateSingleton::GetInstance()->RebuildState(*GetEntriesForTesting());
 }
 
 }  // namespace testing
