@@ -1198,7 +1198,7 @@ crbug.com/874506 virtual/layout_ng_experimental/fast/multicol/scrollable-basic.h
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/scrolling-overflow.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/shadow-breaking.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/single-line.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/abspos-containing-block-outside-spanner.html [ Crash Failure ]
+crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/abspos-containing-block-outside-spanner.html [ Crash Failure Timeout ]
 crbug.com/829028 virtual/layout_ng_experimental/fast/multicol/span/after-float.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/after-row-with-uneven-height-nested-multicol.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/as-inner-multicol.html [ Failure ]
