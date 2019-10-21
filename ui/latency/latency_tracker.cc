@@ -284,19 +284,6 @@ void LatencyTracker::ComputeEndToEndLatencyHistograms(
   if (!IsInertialScroll(latency) && input_modality == "Touch") {
     average_lag_tracker_.AddLatencyInFrame(latency, gpu_swap_begin_timestamp,
                                            scroll_name);
-
-    base::TimeTicks last_scroll_event_timestamp;
-    if (!rendering_scheduled_on_main &&
-        latency.FindLatency(
-            ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_LAST_EVENT_COMPONENT,
-            &last_scroll_event_timestamp)) {
-      UMA_HISTOGRAM_SCROLL_LATENCY_LONG_2(
-          "Event.Latency." + scroll_name + ".Touch.EventTimeToRAFTime",
-          last_scroll_event_timestamp, rendering_scheduled_timestamp);
-      UMA_HISTOGRAM_SCROLL_LATENCY_LONG_2(
-          "Event.Latency." + scroll_name + ".Touch.RAFTimeToFrameSwapEnd",
-          rendering_scheduled_timestamp, gpu_swap_end_timestamp);
-    }
   }
 
   // Inertial and scrollbar scrolls are excluded from Ukm metrics.
