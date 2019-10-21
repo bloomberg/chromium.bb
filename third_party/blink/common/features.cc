@@ -54,7 +54,7 @@ const base::Feature kCSSBackdropFilter{"CSSBackdropFilter",
 
 // When enabled, the compositing of trivial 3D transforms is disabled.
 const base::Feature kDoNotCompositeTrivial3D{"DoNotCompositeTrivial3D",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable Display Locking JavaScript APIs.
 const base::Feature kDisplayLocking{"DisplayLocking",
