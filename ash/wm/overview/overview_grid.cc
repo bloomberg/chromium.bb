@@ -1660,9 +1660,13 @@ std::vector<gfx::RectF> OverviewGrid::GetWindowRectsForTabletModeLayout(
       continue;
     }
 
-    // Calculate the width and y position of the item.
+    // Maintains the aspect ratio from the original window. The window's
+    // original height will be shrunk to fit into |height|, minus the margin and
+    // overview header.
+    const float ratio = float{height - kHeaderHeightDp - kOverviewMargin} /
+                        item->GetWindow()->bounds().height();
     const int width =
-        CalculateWidthAndMaybeSetUnclippedBounds(window_list_[i].get(), height);
+        item->GetWindow()->bounds().width() * ratio + kOverviewMargin;
     const int y =
         height * (window_position % kTabletLayoutRow) + total_bounds.y();
 
@@ -1707,14 +1711,85 @@ bool OverviewGrid::FitWindowRectsInBounds(
 
   // All elements are of same height and only the height is necessary to
   // determine each item's scale.
+  const gfx::Size item_size(0, height);
   for (size_t i = 0u; i < window_count; ++i) {
     if (window_list_[i]->animating_to_close() ||
         ignored_items.contains(window_list_[i].get())) {
       continue;
     }
 
-    int width =
-        CalculateWidthAndMaybeSetUnclippedBounds(window_list_[i].get(), height);
+    gfx::RectF target_bounds = window_list_[i]->GetTargetBoundsInScreen();
+    float scale = window_list_[i]->GetItemScale(item_size);
+
+    // The drop target, unlike the other windows has its bounds set directly, so
+    // |GetTargetBoundsInScreen()| won't return the value we want. Instead, get
+    // the scale from the window it was meant to be a placeholder for.
+    if (IsDropTargetWindow(window_list_[i]->GetWindow())) {
+      aura::Window* dragged_window = nullptr;
+      OverviewItem* item =
+          overview_session_->window_drag_controller()
+              ? overview_session_->window_drag_controller()->item()
+              : nullptr;
+      if (item)
+        dragged_window = item->GetWindow();
+      else if (dragged_window_)
+        dragged_window = dragged_window_;
+
+      if (dragged_window && dragged_window->parent()) {
+        target_bounds = ::ash::GetTargetBoundsInScreen(dragged_window);
+        const gfx::SizeF inset_size(item_size.width(),
+                                    item_size.height() - 2 * kWindowMargin);
+        scale = ScopedOverviewTransformWindow::GetItemScale(
+            target_bounds.size(), inset_size,
+            dragged_window->GetProperty(aura::client::kTopViewInset),
+            kHeaderHeightDp);
+      }
+    }
+
+    int width = std::max(1, gfx::ToFlooredInt(target_bounds.width() * scale) +
+                                2 * kWindowMargin);
+    switch (window_list_[i]->GetWindowDimensionsType()) {
+      case ScopedOverviewTransformWindow::GridWindowFillMode::kLetterBoxed:
+        width = ScopedOverviewTransformWindow::kExtremeWindowRatioThreshold *
+                height;
+        break;
+      case ScopedOverviewTransformWindow::GridWindowFillMode::kPillarBoxed:
+        width = height /
+                ScopedOverviewTransformWindow::kExtremeWindowRatioThreshold;
+        break;
+      default:
+        break;
+    }
+
+    const bool is_landscape = IsCurrentScreenOrientationLandscape();
+    // Get the bounds of the window if there is a snapped window or a window
+    // about to be snapped.
+    base::Optional<gfx::RectF> split_view_bounds =
+        GetSplitviewBoundsMaintainingAspectRatio(window_list_[i]->GetWindow());
+    gfx::Size unclipped_size;
+    if (split_view_bounds) {
+      if (is_landscape) {
+        unclipped_size.set_width(width - 2 * kWindowMargin);
+        unclipped_size.set_height(height - 2 * kWindowMargin);
+        // For landscape mode, shrink |width| so that the aspect ratio matches
+        // that of |split_view_bounds|.
+        width =
+            std::max(1, gfx::ToFlooredInt(split_view_bounds->width() * scale) +
+                            2 * kWindowMargin);
+      } else {
+        // For portrait mode, we want |height| to stay the same, so calculate
+        // what the unclipped height would be based on |split_view_bounds|.
+        width =
+            split_view_bounds->width() * height / split_view_bounds->height();
+        int unclipped_height =
+            (target_bounds.height() * width) / target_bounds.width();
+        unclipped_size.set_width(width);
+        unclipped_size.set_height(unclipped_height);
+      }
+    }
+    window_list_[i]->set_unclipped_size(
+        unclipped_size.IsEmpty() ? base::nullopt
+                                 : base::make_optional(unclipped_size));
 
     if (left + width > bounds.right()) {
       // Move to the next row if possible.
@@ -1796,84 +1871,6 @@ void OverviewGrid::AddDraggedWindowIntoOverviewOnDragEnd(
 
   overview_session_->AddItem(dragged_window, /*reposition=*/false,
                              /*animate=*/false);
-}
-
-int OverviewGrid::CalculateWidthAndMaybeSetUnclippedBounds(OverviewItem* item,
-                                                           int height) {
-  const gfx::Size item_size(0, height);
-  gfx::RectF target_bounds = item->GetTargetBoundsInScreen();
-  float scale = item->GetItemScale(item_size);
-
-  // The drop target, unlike the other windows has its bounds set directly, so
-  // |GetTargetBoundsInScreen()| won't return the value we want. Instead, get
-  // the scale from the window it was meant to be a placeholder for.
-  if (IsDropTargetWindow(item->GetWindow())) {
-    aura::Window* dragged_window = nullptr;
-    OverviewItem* item =
-        overview_session_->window_drag_controller()
-            ? overview_session_->window_drag_controller()->item()
-            : nullptr;
-    if (item)
-      dragged_window = item->GetWindow();
-    else if (dragged_window_)
-      dragged_window = dragged_window_;
-
-    if (dragged_window && dragged_window->parent()) {
-      target_bounds = ::ash::GetTargetBoundsInScreen(dragged_window);
-      const gfx::SizeF inset_size(0, height - 2 * kWindowMargin);
-      scale = ScopedOverviewTransformWindow::GetItemScale(
-          target_bounds.size(), inset_size,
-          dragged_window->GetProperty(aura::client::kTopViewInset),
-          kHeaderHeightDp);
-    }
-  }
-
-  int width = std::max(
-      1, gfx::ToFlooredInt(target_bounds.width() * scale) + 2 * kWindowMargin);
-  switch (item->GetWindowDimensionsType()) {
-    case ScopedOverviewTransformWindow::GridWindowFillMode::kLetterBoxed:
-      width =
-          ScopedOverviewTransformWindow::kExtremeWindowRatioThreshold * height;
-      break;
-    case ScopedOverviewTransformWindow::GridWindowFillMode::kPillarBoxed:
-      width =
-          height / ScopedOverviewTransformWindow::kExtremeWindowRatioThreshold;
-      break;
-    default:
-      break;
-  }
-
-  // Get the bounds of the window if there is a snapped window or a window
-  // about to be snapped.
-  base::Optional<gfx::RectF> split_view_bounds =
-      GetSplitviewBoundsMaintainingAspectRatio(item->GetWindow());
-  if (!split_view_bounds) {
-    item->set_unclipped_size(base::nullopt);
-    return width;
-  }
-
-  const bool is_landscape = IsCurrentScreenOrientationLandscape();
-  gfx::Size unclipped_size;
-  if (is_landscape) {
-    unclipped_size.set_width(width - 2 * kWindowMargin);
-    unclipped_size.set_height(height - 2 * kWindowMargin);
-    // For landscape mode, shrink |width| so that the aspect ratio matches
-    // that of |split_view_bounds|.
-    width = std::max(1, gfx::ToFlooredInt(split_view_bounds->width() * scale) +
-                            2 * kWindowMargin);
-  } else {
-    // For portrait mode, we want |height| to stay the same, so calculate
-    // what the unclipped height would be based on |split_view_bounds|.
-    width = split_view_bounds->width() * height / split_view_bounds->height();
-    int unclipped_height =
-        (target_bounds.height() * width) / target_bounds.width();
-    unclipped_size.set_width(width);
-    unclipped_size.set_height(unclipped_height);
-  }
-
-  DCHECK(!unclipped_size.IsEmpty());
-  item->set_unclipped_size(base::make_optional(unclipped_size));
-  return width;
 }
 
 }  // namespace ash
