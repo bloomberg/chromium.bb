@@ -83,15 +83,19 @@ def make_tree(out, contents):
         f.write(content)
 
 
+def setup():
+  fix_encoding.fix_encoding()
+  # Use an unusual umask.
+  os.umask(0o070)
+  fs.chdir(TESTS_DIR)
+
+
 def main():
   """Improvement over unittest.main()."""
-  fix_encoding.fix_encoding()
   logging.basicConfig(
       level=logging.DEBUG if '-v' in sys.argv else logging.ERROR,
       format='%(levelname)5s %(filename)15s(%(lineno)3d): %(message)s')
   if '-v' in sys.argv:
     unittest.TestCase.maxDiff = None
-  # Use an unusual umask.
-  os.umask(0o070)
-  fs.chdir(TESTS_DIR)
+  setup()
   unittest.main()

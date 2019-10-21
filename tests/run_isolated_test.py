@@ -107,6 +107,11 @@ class StorageFake(object):
 
 
 class RunIsolatedTestBase(auto_stub.TestCase):
+  # These tests fail with the following error
+  # 'AssertionError: Items in the first set but not the second'
+  # Need to run in test_seq.py as an executable
+  no_run = 1
+
   @classmethod
   def setUpClass(cls):
     if not file_path.enable_symlink():

@@ -228,6 +228,10 @@ class Common(object):
 
 
 class NetTestCase(net_utils.TestCase, Common):
+  # These test fail when running in parallel
+  # Need to run in test_seq.py as an executable
+  no_run = 1
+
   """Base class that defines the url_open mock."""
   def setUp(self):
     net_utils.TestCase.setUp(self)

@@ -63,6 +63,9 @@ class CalledProcessError(subprocess.CalledProcessError):
 
 
 class TraceInputsBase(unittest.TestCase):
+  # This test is currently disabled
+  no_run = 1
+
   def setUp(self):
     self.tempdir = None
     self.trace_inputs_path = os.path.join(

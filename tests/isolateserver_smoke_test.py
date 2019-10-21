@@ -30,6 +30,11 @@ CONTENTS = {
 
 
 class IsolateServerArchiveSmokeTest(unittest.TestCase):
+  # This test is touching the live infrastructure. It's a pain if your IP
+  # is not whitelisted so do not run them for now. They should use a local fake
+  # web service instead.
+  no_run = 1
+
   def setUp(self):
     super(IsolateServerArchiveSmokeTest, self).setUp()
     # The namespace must end in '-gzip' since all files are now compressed
