@@ -4,4 +4,3 @@
 :: found in the LICENSE file.
 
 "%~dp0\cipd.bat" ensure -log-level warning -ensure-file "%~dp0\cipd_manifest.txt" -root "%~dp0\.cipd_bin"
-call python.bat "%~dp0\.cipd_bin\goma_ctl.py" update_hook
