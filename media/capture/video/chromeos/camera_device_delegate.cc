@@ -202,17 +202,15 @@ void CameraDeviceDelegate::AllocateAndStart(
   }
   device_context_->SetSensorOrientation(sensor_orientation[0]);
 
-  // |device_ops_| is bound after the MakeRequest call.
-  cros::mojom::Camera3DeviceOpsRequest device_ops_request =
-      mojo::MakeRequest(&device_ops_);
-  device_ops_.set_connection_error_handler(base::BindOnce(
-      &CameraDeviceDelegate::OnMojoConnectionError, GetWeakPtr()));
+  // |device_ops_| is bound after the BindNewPipeAndPassReceiver call.
   camera_hal_delegate_->OpenDevice(
       camera_hal_delegate_->GetCameraIdFromDeviceId(
           device_descriptor_.device_id),
-      std::move(device_ops_request),
+      device_ops_.BindNewPipeAndPassReceiver(),
       BindToCurrentLoop(
           base::BindOnce(&CameraDeviceDelegate::OnOpenedDevice, GetWeakPtr())));
+  device_ops_.set_disconnect_handler(base::BindOnce(
+      &CameraDeviceDelegate::OnMojoConnectionError, GetWeakPtr()));
 }
 
 void CameraDeviceDelegate::StopAndDeAllocate(
