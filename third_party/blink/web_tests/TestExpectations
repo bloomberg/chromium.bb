@@ -5766,3 +5766,6 @@ crbug.com/1015859 [ Linux ] http/tests/devtools/a11y-axe-core/performance/landin
 crbug.com/1015764 compositing/video/video-poster.html [ Pass Crash ]
 crbug.com/1015975 media/video-currentTime.html [ Pass Failure ]
 crbug.com/1015975 virtual/audio-service/media/video-currentTime.html [ Pass Failure ]
+
+# Sheriff 2019-10-21
+crbug.com/1016364 [ Linux Mac Debug ] http/tests/devtools/console/console-search.js [ Pass Timeout ]
