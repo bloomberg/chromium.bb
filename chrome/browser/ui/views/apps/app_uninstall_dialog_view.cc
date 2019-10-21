@@ -36,9 +36,13 @@ void apps::UninstallDialog::UiBase::Create(
     const std::string& app_id,
     const std::string& app_name,
     gfx::ImageSkia image,
+    gfx::NativeWindow parent_window,
     apps::UninstallDialog* uninstall_dialog) {
-  new AppUninstallDialogView(profile, app_type, app_id, app_name, image,
-                             uninstall_dialog);
+  constrained_window::CreateBrowserModalDialogViews(
+      (new AppUninstallDialogView(profile, app_type, app_id, app_name, image,
+                                  uninstall_dialog)),
+      parent_window)
+      ->Show();
 }
 
 AppUninstallDialogView::AppUninstallDialogView(
@@ -53,7 +57,6 @@ AppUninstallDialogView::AppUninstallDialogView(
       app_type_(app_type),
       app_name_(app_name) {
   InitializeView(profile, app_id);
-  constrained_window::CreateBrowserModalDialogViews(this, nullptr)->Show();
 
   chrome::RecordDialogCreation(chrome::DialogIdentifier::APP_UNINSTALL);
 }
