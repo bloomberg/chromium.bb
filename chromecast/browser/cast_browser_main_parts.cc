@@ -455,13 +455,6 @@ void CastBrowserMainParts::ToolkitInitialized() {
 #endif  // defined(USE_AURA)
 
 #if defined(OS_LINUX)
-  // Setting rescan interval to 0 will disable re-scan. More details in
-  // b/141204302#comment41.
-  // TODO(crbug/1015146): move re-scan disable logic to GetGlobalFontConfig().
-  if (!FcConfigSetRescanInterval(gfx::GetGlobalFontConfig(), 0)) {
-    LOG(WARNING) << "Cannot disable fontconfig rescan.";
-  }
-
   base::FilePath dir_font = GetApplicationFontsDir();
   const FcChar8 *dir_font_char8 = reinterpret_cast<const FcChar8*>(dir_font.value().data());
   if (!FcConfigAppFontAddDir(gfx::GetGlobalFontConfig(), dir_font_char8)) {
