@@ -24,7 +24,9 @@
 #include "media/capture/video/chromeos/video_capture_device_factory_chromeos.h"
 #include "media/capture/video/mock_gpu_memory_buffer_manager.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -45,13 +47,15 @@ class MockCameraDevice : public cros::mojom::Camera3DeviceOps {
 
   ~MockCameraDevice() = default;
 
-  void Initialize(cros::mojom::Camera3CallbackOpsPtr callback_ops,
-                  InitializeCallback callback) override {
-    DoInitialize(callback_ops, callback);
+  void Initialize(
+      mojo::PendingRemote<cros::mojom::Camera3CallbackOps> callback_ops,
+      InitializeCallback callback) override {
+    DoInitialize(std::move(callback_ops), callback);
   }
-  MOCK_METHOD2(DoInitialize,
-               void(cros::mojom::Camera3CallbackOpsPtr& callback_ops,
-                    InitializeCallback& callback));
+  MOCK_METHOD2(
+      DoInitialize,
+      void(mojo::PendingRemote<cros::mojom::Camera3CallbackOps> callback_ops,
+           InitializeCallback& callback));
 
   void ConfigureStreams(cros::mojom::Camera3StreamConfigurationPtr config,
                         ConfigureStreamsCallback callback) override {
@@ -253,9 +257,9 @@ class CameraDeviceDelegateTest : public ::testing::Test {
   }
 
   void InitializeMockCameraDevice(
-      cros::mojom::Camera3CallbackOpsPtr& callback_ops,
+      mojo::PendingRemote<cros::mojom::Camera3CallbackOps> callback_ops,
       base::OnceCallback<void(int32_t)>& callback) {
-    callback_ops_ = std::move(callback_ops);
+    callback_ops_.Bind(std::move(callback_ops));
     std::move(callback).Run(0);
   }
 
@@ -472,7 +476,7 @@ class CameraDeviceDelegateTest : public ::testing::Test {
 
   testing::StrictMock<MockCameraDevice> mock_camera_device_;
   mojo::Receiver<cros::mojom::Camera3DeviceOps> mock_camera_device_receiver_;
-  cros::mojom::Camera3CallbackOpsPtr callback_ops_;
+  mojo::Remote<cros::mojom::Camera3CallbackOps> callback_ops_;
 
   base::Thread device_delegate_thread_;
 

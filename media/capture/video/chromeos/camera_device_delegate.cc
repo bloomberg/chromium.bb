@@ -25,6 +25,7 @@
 #include "media/capture/video/chromeos/camera_hal_delegate.h"
 #include "media/capture/video/chromeos/camera_metadata_utils.h"
 #include "media/capture/video/chromeos/request_manager.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace media {
 
@@ -476,11 +477,9 @@ void CameraDeviceDelegate::Initialize() {
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(device_context_->GetState(), CameraDeviceContext::State::kStarting);
 
-  cros::mojom::Camera3CallbackOpsPtr callback_ops_ptr;
-  cros::mojom::Camera3CallbackOpsRequest callback_ops_request =
-      mojo::MakeRequest(&callback_ops_ptr);
+  mojo::PendingRemote<cros::mojom::Camera3CallbackOps> callback_ops;
   request_manager_ = std::make_unique<RequestManager>(
-      std::move(callback_ops_request),
+      callback_ops.InitWithNewPipeAndPassReceiver(),
       std::make_unique<StreamCaptureInterfaceImpl>(GetWeakPtr()),
       device_context_, chrome_capture_params_.buffer_type,
       std::make_unique<CameraBufferFactory>(),
@@ -489,7 +488,7 @@ void CameraDeviceDelegate::Initialize() {
   camera_3a_controller_ = std::make_unique<Camera3AController>(
       static_metadata_, request_manager_.get(), ipc_task_runner_);
   device_ops_->Initialize(
-      std::move(callback_ops_ptr),
+      std::move(callback_ops),
       base::BindOnce(&CameraDeviceDelegate::OnInitialized, GetWeakPtr()));
 }
 
