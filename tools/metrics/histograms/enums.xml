@@ -64184,6 +64184,7 @@ Full version information for the fingerprint enum values:
   <int value="12" label="WebAppDisabled"/>
   <int value="13" label="InstallURLRedirected"/>
   <int value="14" label="InstallURLLoadFailed"/>
+  <int value="15" label="ExpectedAppIdCheckFailed"/>
 </enum>
 
 <enum name="WebAppInstallSource">
