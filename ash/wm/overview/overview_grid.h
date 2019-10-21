@@ -465,6 +465,10 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
   // Records the presentation time of scrolling the grid in overview mode.
   std::unique_ptr<PresentationTimeRecorder> presentation_time_recorder_;
 
+  // Weak pointer to the window that is being dragged from the top, if there is
+  // one.
+  aura::Window* dragged_window_ = nullptr;
+
   DISALLOW_COPY_AND_ASSIGN(OverviewGrid);
 };
 
