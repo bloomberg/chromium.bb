@@ -18439,10 +18439,10 @@
       'id': 627,
       'caption': '''Allow the audio sandbox to run''',
       'tags': ['system-security'],
-      'desc': '''This policy controls the audio process sandboxed.
+      'desc': '''This policy controls the audio process sandbox.
       If this policy is enabled, the audio process will run sandboxed.
       If this policy is disabled, the audio process will run unsandboxed and the WebRTC audio-processing module will run in the renderer process.
-      This leaves users open to security risks related to running the audio stack unsandboxed.
+      This leaves users open to security risks related to running the audio subsystem unsandboxed.
       If this policy is not set, the default configuration for the audio sandbox will be used, which may differ per platform.
       This policy is intended to give enterprises flexibility to disable the audio sandbox if they use security software setups that interfere with the sandbox.'''
     },
