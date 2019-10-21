@@ -45,6 +45,7 @@ void AssistantAshTestBase::SetUp() {
 
 void AssistantAshTestBase::TearDown() {
   AshTestBase::TearDown();
+  scoped_feature_list_.Reset();
   ReenableAnimations();
 }
 
