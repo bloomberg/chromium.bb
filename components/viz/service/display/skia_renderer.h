@@ -139,11 +139,19 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
       DrawQuadParams* params);
 
   bool MustFlushBatchedQuads(const DrawQuad* new_quad,
+                             const DrawRPDQParams* rpdq_params,
                              const DrawQuadParams& params);
   void AddQuadToBatch(const SkImage* image,
                       const gfx::RectF& valid_texel_bounds,
                       DrawQuadParams* params);
   void FlushBatchedQuads();
+
+  // Utility function that calls appropriate draw function based on quad
+  // material. If |rpdq_params| is not null, then |quad| is assumed to be the
+  // bypass quad associated with the RenderPass that defined the |rpdq_params|.
+  void DrawQuadInternal(const DrawQuad* quad,
+                        const DrawRPDQParams* rpdq_params,
+                        DrawQuadParams* params);
 
   // Utility to draw a single quad as a filled color, and optionally apply the
   // effects defined in |rpdq_params| when the quad is bypassing the render pass

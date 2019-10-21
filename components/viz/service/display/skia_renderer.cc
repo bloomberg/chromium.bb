@@ -897,37 +897,64 @@ void SkiaRenderer::DoDrawQuad(const DrawQuad* quad,
     return;
   TRACE_EVENT0("viz", "SkiaRenderer::DoDrawQuad");
   DrawQuadParams params = CalculateDrawQuadParams(quad, draw_region);
-  if (MustFlushBatchedQuads(quad, params)) {
+  // The outer DrawQuad will never have RPDQ params
+  DrawQuadInternal(quad, /* rpdq */ nullptr, &params);
+}
+
+void SkiaRenderer::DrawQuadInternal(const DrawQuad* quad,
+                                    const DrawRPDQParams* rpdq_params,
+                                    DrawQuadParams* params) {
+  if (MustFlushBatchedQuads(quad, rpdq_params, *params)) {
     FlushBatchedQuads();
   }
 
   switch (quad->material) {
     case DrawQuad::Material::kDebugBorder:
-      DrawDebugBorderQuad(DebugBorderDrawQuad::MaterialCast(quad), &params);
+      // DebugBorders draw directly into the device space, so are not compatible
+      // with image filters, so should never have been promoted as a bypass quad
+      DCHECK(rpdq_params == nullptr);
+      DrawDebugBorderQuad(DebugBorderDrawQuad::MaterialCast(quad), params);
       break;
     case DrawQuad::Material::kPictureContent:
-      DrawPictureQuad(PictureDrawQuad::MaterialCast(quad), &params);
+      // PictureQuads represent a collection of drawn elements that are
+      // dynamically rasterized by Skia; bypassing a RenderPass to redraw the
+      // N elements doesn't make much sense.
+      DCHECK(rpdq_params == nullptr);
+      DrawPictureQuad(PictureDrawQuad::MaterialCast(quad), params);
       break;
     case DrawQuad::Material::kRenderPass:
-      DrawRenderPassQuad(RenderPassDrawQuad::MaterialCast(quad), &params);
+      // RPDQ should only ever be encountered as a top-level quad, not when
+      // bypassing another renderpass
+      DCHECK(rpdq_params == nullptr);
+      DrawRenderPassQuad(RenderPassDrawQuad::MaterialCast(quad), params);
       break;
     case DrawQuad::Material::kSolidColor:
-      DrawSolidColorQuad(SolidColorDrawQuad::MaterialCast(quad), &params);
+      // TODO(michaelludwig) - Support solid color quads bypassing a renderpass
+      DCHECK(rpdq_params == nullptr);
+      DrawSolidColorQuad(SolidColorDrawQuad::MaterialCast(quad), params);
       break;
     case DrawQuad::Material::kStreamVideoContent:
-      DrawStreamVideoQuad(StreamVideoDrawQuad::MaterialCast(quad), &params);
+      // TODO(michaelludwig) - Support video quads bypassing a renderpass
+      DCHECK(rpdq_params == nullptr);
+      DrawStreamVideoQuad(StreamVideoDrawQuad::MaterialCast(quad), params);
       break;
     case DrawQuad::Material::kTextureContent:
-      DrawTextureQuad(TextureDrawQuad::MaterialCast(quad), &params);
+      // TODO(michaelludwig) - Support video quads bypassing a renderpass
+      DCHECK(rpdq_params == nullptr);
+      DrawTextureQuad(TextureDrawQuad::MaterialCast(quad), params);
       break;
     case DrawQuad::Material::kTiledContent:
-      DrawTileDrawQuad(TileDrawQuad::MaterialCast(quad), nullptr, &params);
+      DrawTileDrawQuad(TileDrawQuad::MaterialCast(quad), rpdq_params, params);
       break;
     case DrawQuad::Material::kYuvVideoContent:
-      DrawYUVVideoQuad(YUVVideoDrawQuad::MaterialCast(quad), &params);
+      // TODO(michaelludwig) - Support yuv video quads bypassing a renderpass
+      DCHECK(rpdq_params == nullptr);
+      DrawYUVVideoQuad(YUVVideoDrawQuad::MaterialCast(quad), params);
       break;
     case DrawQuad::Material::kInvalid:
-      DrawUnsupportedQuad(quad, &params);
+      // TODO(michaelludwig) - Support unsupported quads bypassing a renderpass
+      DCHECK(rpdq_params == nullptr);
+      DrawUnsupportedQuad(quad, params);
       NOTREACHED();
       break;
     case DrawQuad::Material::kVideoHole:
@@ -937,12 +964,14 @@ void SkiaRenderer::DoDrawQuad(const DrawQuad* quad,
       // Quad and the quad would then reach here unexpectedly. Therefore
       // we should skip NOTREACHED() so an untrusted render is not capable
       // of causing a crash.
-      DrawUnsupportedQuad(quad, &params);
+      DCHECK(rpdq_params == nullptr);
+      DrawUnsupportedQuad(quad, params);
       break;
     default:
       // If we've reached here, it's a new quad type that needs a
       // dedicated implementation
-      DrawUnsupportedQuad(quad, &params);
+      DCHECK(rpdq_params == nullptr);
+      DrawUnsupportedQuad(quad, params);
       NOTREACHED();
       break;
   }
@@ -1237,9 +1266,15 @@ SkCanvas::SrcRectConstraint SkiaRenderer::ResolveTextureConstraints(
 }
 
 bool SkiaRenderer::MustFlushBatchedQuads(const DrawQuad* new_quad,
+                                         const DrawRPDQParams* rpdq_params,
                                          const DrawQuadParams& params) {
   if (batched_quads_.empty())
     return false;
+
+  // If |new_quad| is the bypass quad for a renderpass with filters, it must be
+  // drawn by itself, regardless of if it could otherwise would've been batched.
+  if (rpdq_params)
+    return true;
 
   if (new_quad->material != DrawQuad::Material::kRenderPass &&
       new_quad->material != DrawQuad::Material::kStreamVideoContent &&
@@ -1480,7 +1515,7 @@ void SkiaRenderer::DrawSolidColorQuad(const SolidColorDrawQuad* quad,
 
 void SkiaRenderer::DrawStreamVideoQuad(const StreamVideoDrawQuad* quad,
                                        DrawQuadParams* params) {
-  DCHECK(!MustFlushBatchedQuads(quad, *params));
+  DCHECK(!MustFlushBatchedQuads(quad, nullptr, *params));
 
   ScopedSkImageBuilder builder(this, quad->resource_id(),
                                kUnpremul_SkAlphaType);
@@ -1537,7 +1572,7 @@ void SkiaRenderer::DrawTextureQuad(const TextureDrawQuad* quad,
 
   if (!blend_background && !vertex_alpha) {
     // This is a simple texture draw and can go into the batching system
-    DCHECK(!MustFlushBatchedQuads(quad, *params));
+    DCHECK(!MustFlushBatchedQuads(quad, nullptr, *params));
     AddQuadToBatch(image, valid_texel_bounds, params);
     return;
   }
@@ -1621,6 +1656,7 @@ void SkiaRenderer::DrawTextureQuad(const TextureDrawQuad* quad,
 void SkiaRenderer::DrawTileDrawQuad(const TileDrawQuad* quad,
                                     const DrawRPDQParams* rpdq_params,
                                     DrawQuadParams* params) {
+  DCHECK(!MustFlushBatchedQuads(quad, rpdq_params, *params));
   // |resource_provider_| can be NULL in resourceless software draws, which
   // should never produce tile quads in the first place.
   DCHECK(resource_provider_);
@@ -1648,13 +1684,9 @@ void SkiaRenderer::DrawTileDrawQuad(const TileDrawQuad* quad,
   }
 
   if (rpdq_params) {
-    // Bypassed quad used optimistic flushing rules
-    if (!batched_quads_.empty())
-      FlushBatchedQuads();
     SkPaint paint = params->paint();
     DrawSingleImage(image, valid_texel_bounds, rpdq_params, &paint, params);
   } else {
-    DCHECK(!MustFlushBatchedQuads(quad, *params));
     AddQuadToBatch(image, valid_texel_bounds, params);
   }
 }
@@ -1967,9 +1999,7 @@ void SkiaRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad,
   auto bypass = render_pass_bypass_quads_.find(quad->render_pass_id);
   // When Render Pass has a single quad inside we would draw that directly.
   if (bypass != render_pass_bypass_quads_.end()) {
-    DCHECK(bypass->second->material == DrawQuad::Material::kTiledContent);
-    const TileDrawQuad* tile_quad = TileDrawQuad::MaterialCast(bypass->second);
-    DrawTileDrawQuad(tile_quad, &rpdq_params, params);
+    DrawQuadInternal(bypass->second, &rpdq_params, params);
     return;
   }
 
@@ -2012,7 +2042,7 @@ void SkiaRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad,
   // advanced filtering/effects at which point it's basically a tiled quad.
   if (!rpdq_params.image_filter && !rpdq_params.backdrop_filter &&
       !rpdq_params.mask_image) {
-    DCHECK(!MustFlushBatchedQuads(quad, *params));
+    DCHECK(!MustFlushBatchedQuads(quad, nullptr, *params));
     AddQuadToBatch(content_image.get(), valid_texel_bounds, params);
     return;
   }
