@@ -51,7 +51,10 @@ void WakeLockSentinel::Trace(blink::Visitor* visitor) {
 }
 
 bool WakeLockSentinel::HasPendingActivity() const {
-  return HasEventListeners();
+  // This WakeLockSentinel needs to remain alive as long as:
+  // 1. DoRelease() has not not been called yet AND
+  // 2. It has at least one event listener.
+  return manager_ && HasEventListeners();
 }
 
 void WakeLockSentinel::ContextDestroyed(ExecutionContext*) {
