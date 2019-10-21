@@ -1214,6 +1214,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void UnregisterProtocolHandler(const std::string& scheme,
                                  const GURL& url,
                                  bool user_gesture) override;
+  void DidDisplayInsecureContent() override;
+  void DidContainInsecureFormAction() override;
 
  protected:
   friend class RenderFrameHostFactory;
