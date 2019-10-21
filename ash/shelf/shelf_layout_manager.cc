@@ -1067,7 +1067,12 @@ HotseatState ShelfLayoutManager::CalculateHotseatState(
             return HotseatState::kShown;
           if (Shell::Get()->overview_controller() &&
               Shell::Get()->overview_controller()->InOverviewSession()) {
-            return HotseatState::kShown;
+            auto* split_view_controller =
+                SplitViewController::Get(Shell::GetPrimaryRootWindow());
+            return split_view_controller &&
+                           split_view_controller->InSplitViewMode()
+                       ? HotseatState::kHidden
+                       : HotseatState::kExtended;
           }
           if (visibility_state == SHELF_AUTO_HIDE) {
             if (auto_hide_state == SHELF_AUTO_HIDE_HIDDEN ||

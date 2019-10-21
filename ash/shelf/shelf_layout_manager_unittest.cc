@@ -3487,7 +3487,7 @@ TEST_P(HotseatShelfLayoutManagerTest, ReleasingSlowDragAboveThreshold) {
 }
 
 // Tests that showing overview after showing the hotseat results in only one
-// animation, to |kShown|.
+// animation, to |kExtended|.
 TEST_P(HotseatShelfLayoutManagerTest, ShowingOverviewFromShownAnimatesOnce) {
   GetPrimaryShelf()->SetAutoHideBehavior(GetParam());
   TabletModeControllerTestApi().EnterTabletMode();
@@ -3508,7 +3508,7 @@ TEST_P(HotseatShelfLayoutManagerTest, ShowingOverviewFromShownAnimatesOnce) {
                                                 .CenterPoint();
   GetEventGenerator()->GestureTapAt(overview_button_center);
 
-  state_watcher_->CheckEqual({HotseatState::kExtended, HotseatState::kShown});
+  state_watcher_->CheckEqual({HotseatState::kExtended});
 }
 
 // Tests that the hotseat is not flush with the bottom of the screen when home
