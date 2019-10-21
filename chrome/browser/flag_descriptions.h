@@ -1239,9 +1239,6 @@ extern const char kTouchSelectionStrategyDescription[];
 extern const char kTouchSelectionStrategyCharacter[];
 extern const char kTouchSelectionStrategyDirection[];
 
-extern const char kTouchToFillAndroidName[];
-extern const char kTouchToFillAndroidDescription[];
-
 extern const char kTraceUploadUrlName[];
 extern const char kTraceUploadUrlDescription[];
 extern const char kTraceUploadUrlChoiceOther[];
@@ -1396,6 +1393,9 @@ extern const char kAutofillAccessoryViewDescription[];
 
 extern const char kAutofillAssistantDirectActionsName[];
 extern const char kAutofillAssistantDirectActionsDescription[];
+
+extern const char kAutofillTouchToFillName[];
+extern const char kAutofillTouchToFillDescription[];
 
 extern const char kAutofillUseMobileLabelDisambiguationName[];
 extern const char kAutofillUseMobileLabelDisambiguationDescription[];

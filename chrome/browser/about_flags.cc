@@ -4337,9 +4337,9 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kMouseSubframeNoImplicitCapture)},
 
 #if defined(OS_ANDROID)
-    {"touch-to-fill", flag_descriptions::kTouchToFillAndroidName,
-     flag_descriptions::kTouchToFillAndroidDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(autofill::features::kTouchToFillAndroid)},
+    {"touch-to-fill", flag_descriptions::kAutofillTouchToFillName,
+     flag_descriptions::kAutofillTouchToFillDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(autofill::features::kAutofillTouchToFill)},
 #endif  // defined(OS_ANDROID)
 
     {"enable-sync-uss-nigori", flag_descriptions::kEnableSyncUSSNigoriName,
