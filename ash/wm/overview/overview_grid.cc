@@ -36,7 +36,6 @@
 #include "ash/wm/overview/overview_item.h"
 #include "ash/wm/overview/overview_session.h"
 #include "ash/wm/overview/overview_utils.h"
-#include "ash/wm/overview/overview_window_drag_controller.h"
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
 #include "ash/wm/resize_shadow_controller.h"
 #include "ash/wm/splitview/split_view_constants.h"
@@ -303,6 +302,36 @@ gfx::Rect GetGridBoundsInScreen(aura::Window* root_window,
   }
 
   return bounds;
+}
+
+// Get the grid bounds if a window is snapped in splitview, or what they will be
+// when snapped based on |indicator_state|.
+gfx::Rect GetGridBoundsInScreenForSplitview(
+    aura::Window* window,
+    base::Optional<IndicatorState> indicator_state = base::nullopt) {
+  SplitViewController* split_view_controller = SplitViewController::Get(window);
+  auto state = split_view_controller->state();
+
+  // If we are in splitview mode already just use the given state, otherwise
+  // convert |indicator_state| to a splitview state.
+  if (!split_view_controller->InSplitViewMode() && indicator_state) {
+    if (*indicator_state == IndicatorState::kPreviewAreaLeft)
+      state = SplitViewController::State::kLeftSnapped;
+    else if (*indicator_state == IndicatorState::kPreviewAreaRight)
+      state = SplitViewController::State::kRightSnapped;
+  }
+
+  switch (state) {
+    case SplitViewController::State::kLeftSnapped:
+      return split_view_controller->GetSnappedWindowBoundsInScreen(
+          SplitViewController::RIGHT);
+    case SplitViewController::State::kRightSnapped:
+      return split_view_controller->GetSnappedWindowBoundsInScreen(
+          SplitViewController::LEFT);
+    default:
+      return screen_util::
+          GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(window);
+  }
 }
 
 gfx::Insets GetGridInsets(const gfx::Rect& grid_bounds) {
@@ -782,7 +811,6 @@ void OverviewGrid::OnWindowDragStarted(aura::Window* dragged_window,
                                        bool animate) {
   DCHECK_EQ(dragged_window->GetRootWindow(), root_window_);
   DCHECK(!drop_target_widget_);
-  dragged_window_ = dragged_window;
   drop_target_widget_ = CreateDropTargetWidget(dragged_window, animate);
   overview_session_->AddItem(drop_target_widget_->GetNativeWindow(),
                              /*reposition=*/true, animate);
@@ -797,7 +825,6 @@ void OverviewGrid::OnWindowDragStarted(aura::Window* dragged_window,
 void OverviewGrid::OnWindowDragContinued(aura::Window* dragged_window,
                                          const gfx::PointF& location_in_screen,
                                          IndicatorState indicator_state) {
-  DCHECK_EQ(dragged_window_, dragged_window);
   DCHECK_EQ(dragged_window->GetRootWindow(), root_window_);
 
   RearrangeDuringDrag(dragged_window, indicator_state);
@@ -842,10 +869,8 @@ void OverviewGrid::OnWindowDragEnded(aura::Window* dragged_window,
                                      const gfx::PointF& location_in_screen,
                                      bool should_drop_window_into_overview,
                                      bool snap) {
-  DCHECK_EQ(dragged_window_, dragged_window);
   DCHECK_EQ(dragged_window->GetRootWindow(), root_window_);
   DCHECK(drop_target_widget_.get());
-  dragged_window_ = nullptr;
 
   // Add the dragged window into drop target in overview if
   // |should_drop_window_into_overview| is true. Only consider add the dragged
@@ -1486,8 +1511,7 @@ void OverviewGrid::EndScroll() {
   items_scrolling_bounds_.clear();
   presentation_time_recorder_.reset();
 
-  if (!overview_session_->is_shutting_down())
-    PositionWindows(/*animate=*/false);
+  PositionWindows(/*animate=*/false);
 }
 
 void OverviewGrid::MaybeInitDesksWidget() {
@@ -1718,36 +1742,11 @@ bool OverviewGrid::FitWindowRectsInBounds(
       continue;
     }
 
-    gfx::RectF target_bounds = window_list_[i]->GetTargetBoundsInScreen();
-    float scale = window_list_[i]->GetItemScale(item_size);
-
-    // The drop target, unlike the other windows has its bounds set directly, so
-    // |GetTargetBoundsInScreen()| won't return the value we want. Instead, get
-    // the scale from the window it was meant to be a placeholder for.
-    if (IsDropTargetWindow(window_list_[i]->GetWindow())) {
-      aura::Window* dragged_window = nullptr;
-      OverviewItem* item =
-          overview_session_->window_drag_controller()
-              ? overview_session_->window_drag_controller()->item()
-              : nullptr;
-      if (item)
-        dragged_window = item->GetWindow();
-      else if (dragged_window_)
-        dragged_window = dragged_window_;
-
-      if (dragged_window && dragged_window->parent()) {
-        target_bounds = ::ash::GetTargetBoundsInScreen(dragged_window);
-        const gfx::SizeF inset_size(item_size.width(),
-                                    item_size.height() - 2 * kWindowMargin);
-        scale = ScopedOverviewTransformWindow::GetItemScale(
-            target_bounds.size(), inset_size,
-            dragged_window->GetProperty(aura::client::kTopViewInset),
-            kHeaderHeightDp);
-      }
-    }
-
-    int width = std::max(1, gfx::ToFlooredInt(target_bounds.width() * scale) +
-                                2 * kWindowMargin);
+    const gfx::RectF target_bounds = window_list_[i]->GetTargetBoundsInScreen();
+    int width = std::max(
+        1, gfx::ToFlooredInt(target_bounds.width() *
+                             window_list_[i]->GetItemScale(item_size)) +
+               2 * kWindowMargin);
     switch (window_list_[i]->GetWindowDimensionsType()) {
       case ScopedOverviewTransformWindow::GridWindowFillMode::kLetterBoxed:
         width = ScopedOverviewTransformWindow::kExtremeWindowRatioThreshold *
@@ -1760,36 +1759,6 @@ bool OverviewGrid::FitWindowRectsInBounds(
       default:
         break;
     }
-
-    const bool is_landscape = IsCurrentScreenOrientationLandscape();
-    // Get the bounds of the window if there is a snapped window or a window
-    // about to be snapped.
-    base::Optional<gfx::RectF> split_view_bounds =
-        GetSplitviewBoundsMaintainingAspectRatio(window_list_[i]->GetWindow());
-    gfx::Size unclipped_size;
-    if (split_view_bounds) {
-      if (is_landscape) {
-        unclipped_size.set_width(width - 2 * kWindowMargin);
-        unclipped_size.set_height(height - 2 * kWindowMargin);
-        // For landscape mode, shrink |width| so that the aspect ratio matches
-        // that of |split_view_bounds|.
-        width =
-            std::max(1, gfx::ToFlooredInt(split_view_bounds->width() * scale) +
-                            2 * kWindowMargin);
-      } else {
-        // For portrait mode, we want |height| to stay the same, so calculate
-        // what the unclipped height would be based on |split_view_bounds|.
-        width =
-            split_view_bounds->width() * height / split_view_bounds->height();
-        int unclipped_height =
-            (target_bounds.height() * width) / target_bounds.width();
-        unclipped_size.set_width(width);
-        unclipped_size.set_height(unclipped_height);
-      }
-    }
-    window_list_[i]->set_unclipped_size(
-        unclipped_size.IsEmpty() ? base::nullopt
-                                 : base::make_optional(unclipped_size));
 
     if (left + width > bounds.right()) {
       // Move to the next row if possible.
@@ -1809,10 +1778,10 @@ bool OverviewGrid::FitWindowRectsInBounds(
     }
 
     // Position the current rect.
-    (*out_rects)[i] = gfx::RectF(left, top, width, height);
+    (*out_rects)[i] = gfx::RectF(gfx::Rect(left, top, width, height));
 
-    // Increment horizontal position using sanitized positive |width|.
-    left += width;
+    // Increment horizontal position using sanitized positive |width()|.
+    left += gfx::ToRoundedInt((*out_rects)[i].width());
 
     *out_max_bottom = top + height;
   }
