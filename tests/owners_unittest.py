@@ -52,6 +52,7 @@ def test_repo():
     '/chrome/renderer/OWNERS': owners_file(peter),
     '/chrome/renderer/gpu/gpu_channel_host.h': '',
     '/chrome/renderer/safe_browsing/scorer.h': '',
+    '/chrome/tools/OWNERS': owners_file(file='../OWNERS'),
     '/content/OWNERS': owners_file(john, darin, comment='foo', noparent=True),
     '/content/comment/OWNERS': owners_file(john + '  # for comments',
                                            darin + '  # for everything else'),
@@ -414,6 +415,10 @@ class ReviewersForTest(_BaseTestCase):
     self.assert_reviewers_for(['content/content.gyp'],
                               [[john],
                                [darin]])
+
+  def test_reviewers_for__relative_owners_file(self):
+    self.assert_reviewers_for(['chrome/tools/OWNERS'],
+                              [[ben], [brett]])
 
   def test_reviewers_for__valid_inputs(self):
     db = self.db()

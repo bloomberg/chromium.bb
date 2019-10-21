@@ -441,7 +441,7 @@ class Database(object):
     else:
       assert start.startswith(self.root)
       start = self.os_path.dirname(self.os_path.relpath(start, self.root))
-      include_path = self.os_path.join(start, path)
+      include_path = self.os_path.normpath(self.os_path.join(start, path))
 
     if include_path in self.override_files:
       return include_path

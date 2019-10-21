@@ -77,6 +77,19 @@ class MockFileSystem(object):
   def open_for_reading(self, path):
     return StringIO.StringIO(self.read_binary_file(path))
 
+  def normpath(self, path):
+    # This is not a complete implementation of normpath. Only covers what we
+    # use in tests.
+    result = []
+    for part in path.split(self.sep):
+      if part == '..':
+        result.pop()
+      elif part == '.':
+        continue
+      else:
+        result.append(part)
+    return self.sep.join(result)
+
   def read_binary_file(self, path):
     # Intentionally raises KeyError if we don't recognize the path.
     if self.files[path] is None:
