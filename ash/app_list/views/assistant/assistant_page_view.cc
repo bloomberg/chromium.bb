@@ -154,10 +154,6 @@ void AssistantPageView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 void AssistantPageView::ChildPreferredSizeChanged(views::View* child) {
   MaybeUpdateAppListState(child->GetHeightForWidth(width()));
   PreferredSizeChanged();
-
-  // After layout events, focus can be lost so we need to explicitly request
-  // on behalf of the child views.
-  RequestFocus();
 }
 
 void AssistantPageView::ChildVisibilityChanged(views::View* child) {
@@ -294,7 +290,7 @@ void AssistantPageView::OnUiVisibilityChanged(
   }
 }
 
-const AssistantMainView* AssistantPageView::GetMainViewForTest() const {
+AssistantMainView* AssistantPageView::GetMainViewForTest() {
   return assistant_main_view_;
 }
 
