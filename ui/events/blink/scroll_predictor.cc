@@ -137,7 +137,6 @@ void ScrollPredictor::ResampleEvent(base::TimeTicks frame_time,
                                  gesture_event->data.scroll_update.delta_y)
                          .ToString());
   gfx::PointF predicted_accumulated_delta = current_event_accumulated_delta_;
-  InputPredictor::InputData result;
 
   base::TimeDelta prediction_delta = frame_time - gesture_event->TimeStamp();
   bool predicted = false;
@@ -150,10 +149,10 @@ void ScrollPredictor::ResampleEvent(base::TimeTicks frame_time,
   base::TimeTicks prediction_time =
       gesture_event->TimeStamp() + prediction_delta;
 
-  if (predictor_->HasPrediction() &&
-      predictor_->GeneratePrediction(prediction_time, &result)) {
-    predicted_accumulated_delta = result.pos;
-    gesture_event->SetTimeStamp(result.time_stamp);
+  auto result = predictor_->GeneratePrediction(prediction_time);
+  if (result) {
+    predicted_accumulated_delta = result->pos;
+    gesture_event->SetTimeStamp(result->time_stamp);
     predicted = true;
   }
 
@@ -193,7 +192,7 @@ void ScrollPredictor::ResampleEvent(base::TimeTicks frame_time,
 
   if (predicted) {
     metrics_handler_.AddPredictedEvent(predicted_accumulated_delta,
-                                       result.time_stamp, frame_time,
+                                       result->time_stamp, frame_time,
                                        true /* Scrolling */);
   }
 }

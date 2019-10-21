@@ -243,11 +243,9 @@ bool InputEventPrediction::GetPointerPrediction(base::TimeTicks predict_time,
   if (event->pointer_type != WebPointerProperties::PointerType::kMouse)
     mouse_predictor_->Reset();
 
-  ui::InputPredictor::InputData predict_result;
   if (auto* predictor = GetPredictor(*event)) {
-    if (predictor->HasPrediction() &&
-        predictor->GeneratePrediction(predict_time, &predict_result)) {
-      event->SetPositionInWidget(predict_result.pos);
+    if (auto predict_result = predictor->GeneratePrediction(predict_time)) {
+      event->SetPositionInWidget(predict_result->pos);
       return true;
     }
   }

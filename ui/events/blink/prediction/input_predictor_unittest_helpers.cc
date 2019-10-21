@@ -16,11 +16,11 @@ void InputPredictorTest::ValidatePredictor(
   predictor_->Reset();
   for (size_t i = 0; i < timestamp_ms.size(); i++) {
     if (predictor_->HasPrediction()) {
-      ui::InputPredictor::InputData result;
-      EXPECT_TRUE(predictor_->GeneratePrediction(
-          FromMilliseconds(timestamp_ms[i]), &result));
-      EXPECT_NEAR(result.pos.x(), x[i], kEpsilon);
-      EXPECT_NEAR(result.pos.y(), y[i], kEpsilon);
+      auto result =
+          predictor_->GeneratePrediction(FromMilliseconds(timestamp_ms[i]));
+      EXPECT_TRUE(result);
+      EXPECT_NEAR(result->pos.x(), x[i], kEpsilon);
+      EXPECT_NEAR(result->pos.y(), y[i], kEpsilon);
     }
     InputPredictor::InputData data = {gfx::PointF(x[i], y[i]),
                                       FromMilliseconds(timestamp_ms[i])};
@@ -45,13 +45,12 @@ void InputPredictorTest::ValidatePredictor(
     predictor_->Update(data);
 
     if (predictor_->HasPrediction()) {
-      InputPredictor::InputData result;
-      EXPECT_TRUE(predictor_->GeneratePrediction(
-          FromMilliseconds(prediction_time_ms[current_prediction_index]),
-          &result));
-      computed_x.push_back(result.pos.x());
-      computed_y.push_back(result.pos.y());
-      EXPECT_GT(result.time_stamp, base::TimeTicks());
+      auto result = predictor_->GeneratePrediction(
+          FromMilliseconds(prediction_time_ms[current_prediction_index]));
+      EXPECT_TRUE(result);
+      computed_x.push_back(result->pos.x());
+      computed_y.push_back(result->pos.y());
+      EXPECT_GT(result->time_stamp, base::TimeTicks());
       current_prediction_index++;
     }
   }
