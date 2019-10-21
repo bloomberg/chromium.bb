@@ -56254,6 +56254,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="Ack"/>
   <int value="3" label="ClickToCall"/>
   <int value="4" label="SharedClipboard"/>
+  <int value="5" label="SmsFetchRequest"/>
 </enum>
 
 <enum name="SharingSendMessageResult">
