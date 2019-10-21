@@ -62598,6 +62598,7 @@ Full version information for the fingerprint enum values:
   <int value="6" label="Regular Supervised"/>
   <int value="7" label="ARC Kiosk"/>
   <int value="8" label="Active Directory"/>
+  <int value="9" label="Web App Kiosk"/>
 </enum>
 
 <enum name="UserTypeChanged">
