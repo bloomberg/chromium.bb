@@ -951,6 +951,27 @@ void AutofillMetrics::LogUserPerceivedLatencyOnCardSelection(
 }
 
 // static
+void AutofillMetrics::LogWebauthnResult(WebauthnFlowEvent event,
+                                        WebauthnResultMetric metric) {
+  std::string histogram_name = "Autofill.BetterAuth.WebauthnResult.";
+  switch (event) {
+    case WebauthnFlowEvent::kImmediateAuthentication:
+      histogram_name += "ImmediateAuthentication";
+      break;
+    case WebauthnFlowEvent::kAuthenticationAfterCvc:
+      histogram_name += "AuthenticationAfterCVC";
+      break;
+    case WebauthnFlowEvent::kCheckoutOptIn:
+      histogram_name += "CheckoutOptIn";
+      break;
+    case WebauthnFlowEvent::kSettingsPageOptIn:
+      histogram_name += "SettingsPageOptIn";
+      break;
+  }
+  base::UmaHistogramEnumeration(histogram_name, metric);
+}
+
+// static
 void AutofillMetrics::LogUnmaskPromptEvent(UnmaskPromptEvent event) {
   UMA_HISTOGRAM_ENUMERATION("Autofill.UnmaskPrompt.Events", event,
                             NUM_UNMASK_PROMPT_EVENTS);

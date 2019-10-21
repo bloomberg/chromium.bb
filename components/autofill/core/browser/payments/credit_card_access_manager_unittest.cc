@@ -591,7 +591,10 @@ TEST_F(CreditCardAccessManagerTest, CardUnmaskPreflightCalledMetric) {
 // WebAuthn verification and response from payments.
 TEST_F(CreditCardAccessManagerTest, FetchServerCardFIDOSuccess) {
   base::HistogramTester histogram_tester;
-  std::string histogram_name = "Autofill.BetterAuth.CardUnmaskTypeDecision";
+  std::string unmask_decision_histogram_name =
+      "Autofill.BetterAuth.CardUnmaskTypeDecision";
+  std::string webauthn_result_histogram_name =
+      "Autofill.BetterAuth.WebauthnResult.ImmediateAuthentication";
 
   CreateServerCard(kTestGUID, kTestNumber);
   CreditCard* card = credit_card_access_manager_->GetCreditCard(kTestGUID);
@@ -619,12 +622,19 @@ TEST_F(CreditCardAccessManagerTest, FetchServerCardFIDOSuccess) {
   EXPECT_EQ(ASCIIToUTF16(kTestNumber), accessor_->number());
 
   histogram_tester.ExpectUniqueSample(
-      histogram_name, AutofillMetrics::CardUnmaskTypeDecisionMetric::kFidoOnly,
-      1);
+      unmask_decision_histogram_name,
+      AutofillMetrics::CardUnmaskTypeDecisionMetric::kFidoOnly, 1);
+  histogram_tester.ExpectUniqueSample(
+      webauthn_result_histogram_name,
+      AutofillMetrics::WebauthnResultMetric::kSuccess, 1);
 }
 
 // Ensures that CVC prompt is invoked after WebAuthn fails.
 TEST_F(CreditCardAccessManagerTest, FetchServerCardFIDOFailureCVCFallback) {
+  base::HistogramTester histogram_tester;
+  std::string histogram_name =
+      "Autofill.BetterAuth.WebauthnResult.ImmediateAuthentication";
+
   CreateServerCard(kTestGUID, kTestNumber);
   CreditCard* card = credit_card_access_manager_->GetCreditCard(kTestGUID);
   GetFIDOAuthenticator()->SetUserVerifiable(true);
@@ -652,6 +662,10 @@ TEST_F(CreditCardAccessManagerTest, FetchServerCardFIDOFailureCVCFallback) {
   EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::SUCCESS, kTestNumber));
   EXPECT_TRUE(accessor_->did_succeed());
   EXPECT_EQ(ASCIIToUTF16(kTestNumber), accessor_->number());
+
+  histogram_tester.ExpectUniqueSample(
+      histogram_name, AutofillMetrics::WebauthnResultMetric::kNotAllowedError,
+      1);
 }
 
 // Ensures WebAuthn call is not made if Request Options is missing a Credential
@@ -783,7 +797,10 @@ TEST_F(CreditCardAccessManagerTest,
 // opted-in.
 TEST_F(CreditCardAccessManagerTest, FIDONewCardAuthorization) {
   base::HistogramTester histogram_tester;
-  std::string histogram_name = "Autofill.BetterAuth.CardUnmaskTypeDecision";
+  std::string unmask_decision_histogram_name =
+      "Autofill.BetterAuth.CardUnmaskTypeDecision";
+  std::string webauthn_result_histogram_name =
+      "Autofill.BetterAuth.WebauthnResult.AuthenticationAfterCVC";
 
   CreateServerCard(kTestGUID, kTestNumber);
   CreditCard* card = credit_card_access_manager_->GetCreditCard(kTestGUID);
@@ -813,13 +830,20 @@ TEST_F(CreditCardAccessManagerTest, FIDONewCardAuthorization) {
   OptChange(AutofillClient::SUCCESS, true);
 
   histogram_tester.ExpectUniqueSample(
-      histogram_name,
+      unmask_decision_histogram_name,
       AutofillMetrics::CardUnmaskTypeDecisionMetric::kCvcThenFido, 1);
+  histogram_tester.ExpectUniqueSample(
+      webauthn_result_histogram_name,
+      AutofillMetrics::WebauthnResultMetric::kSuccess, 1);
 }
 
 #if defined(OS_ANDROID)
 // Ensures that the WebAuthn enrollment prompt is invoked after user opts in.
 TEST_F(CreditCardAccessManagerTest, FIDOEnrollmentSuccess_Android) {
+  base::HistogramTester histogram_tester;
+  std::string histogram_name =
+      "Autofill.BetterAuth.WebauthnResult.CheckoutOptIn";
+
   CreateServerCard(kTestGUID, kTestNumber);
   CreditCard* card = credit_card_access_manager_->GetCreditCard(kTestGUID);
   GetFIDOAuthenticator()->SetUserVerifiable(true);
@@ -844,10 +868,17 @@ TEST_F(CreditCardAccessManagerTest, FIDOEnrollmentSuccess_Android) {
   EXPECT_EQ(kTestChallenge,
             BytesToBase64(GetFIDOAuthenticator()->GetChallenge()));
   EXPECT_TRUE(GetFIDOAuthenticator()->IsUserOptedIn());
+
+  histogram_tester.ExpectUniqueSample(
+      histogram_name, AutofillMetrics::WebauthnResultMetric::kSuccess, 1);
 }
 
 // Ensures that the failed user verification disallows enrollment.
 TEST_F(CreditCardAccessManagerTest, FIDOEnrollmentUserVerificationFailure) {
+  base::HistogramTester histogram_tester;
+  std::string histogram_name =
+      "Autofill.BetterAuth.WebauthnResult.CheckoutOptIn";
+
   CreateServerCard(kTestGUID, kTestNumber);
   CreditCard* card = credit_card_access_manager_->GetCreditCard(kTestGUID);
   GetFIDOAuthenticator()->SetUserVerifiable(true);
@@ -865,6 +896,10 @@ TEST_F(CreditCardAccessManagerTest, FIDOEnrollmentUserVerificationFailure) {
                                                   /*did_succeed=*/false);
 
   EXPECT_FALSE(GetFIDOAuthenticator()->IsUserOptedIn());
+
+  histogram_tester.ExpectUniqueSample(
+      histogram_name, AutofillMetrics::WebauthnResultMetric::kNotAllowedError,
+      1);
 }
 
 // Ensures that enrollment does not happen if the server returns a failure.
@@ -896,21 +931,26 @@ TEST_F(CreditCardAccessManagerTest, FIDOEnrollmentServerFailure) {
 TEST_F(CreditCardAccessManagerTest,
        FIDOEnrollmentSuccess_CreationOptions_Desktop) {
   ClearStrikes();
+
+  base::HistogramTester histogram_tester;
+  std::string histogram_name =
+      "Autofill.BetterAuth.WebauthnResult.CheckoutOptIn";
+
   CreateServerCard(kTestGUID, kTestNumber);
   CreditCard* card = credit_card_access_manager_->GetCreditCard(kTestGUID);
   GetFIDOAuthenticator()->SetUserVerifiable(true);
   SetUserOptedIn(false);
   payments_client_->AllowFidoRegistration(true);
 
+  credit_card_access_manager_->PrepareToFetchCreditCard();
   credit_card_access_manager_->FetchCreditCard(card, accessor_->GetWeakPtr());
-  InvokeUnmaskDetailsTimeout();
   WaitForCallbacks();
 
   // Mock user and payments response.
-  AcceptWebauthnOfferDialog(/*did_accept=*/true);
   EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::SUCCESS, kTestNumber,
                                    /*fido_opt_in=*/false));
   WaitForCallbacks();
+  AcceptWebauthnOfferDialog(/*did_accept=*/true);
 
   OptChange(AutofillClient::SUCCESS, /*user_is_opted_in=*/false,
             /*include_creation_options=*/true);
@@ -927,6 +967,8 @@ TEST_F(CreditCardAccessManagerTest,
             BytesToBase64(GetFIDOAuthenticator()->GetChallenge()));
   EXPECT_TRUE(GetFIDOAuthenticator()->IsUserOptedIn());
   EXPECT_EQ(0, GetStrikes());
+  histogram_tester.ExpectUniqueSample(
+      histogram_name, AutofillMetrics::WebauthnResultMetric::kSuccess, 1);
 }
 
 // Ensures that the correct number of strikes are added when the user declines
@@ -955,31 +997,40 @@ TEST_F(CreditCardAccessManagerTest, FIDOEnrollment_OfferDeclined_Desktop) {
 TEST_F(CreditCardAccessManagerTest,
        FIDOEnrollment_UserVerificationFailed_Desktop) {
   ClearStrikes();
+
+  base::HistogramTester histogram_tester;
+  std::string histogram_name =
+      "Autofill.BetterAuth.WebauthnResult.CheckoutOptIn";
+
   CreateServerCard(kTestGUID, kTestNumber);
   CreditCard* card = credit_card_access_manager_->GetCreditCard(kTestGUID);
   GetFIDOAuthenticator()->SetUserVerifiable(true);
   SetUserOptedIn(false);
   payments_client_->AllowFidoRegistration(true);
 
+  credit_card_access_manager_->PrepareToFetchCreditCard();
   credit_card_access_manager_->FetchCreditCard(card, accessor_->GetWeakPtr());
   InvokeUnmaskDetailsTimeout();
   WaitForCallbacks();
 
   // Mock user and payments response.
-  AcceptWebauthnOfferDialog(/*did_accept=*/true);
   EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::SUCCESS, kTestNumber,
                                    /*fido_opt_in=*/false));
   WaitForCallbacks();
+  AcceptWebauthnOfferDialog(/*did_accept=*/true);
 
   OptChange(AutofillClient::SUCCESS, /*user_is_opted_in=*/false,
             /*include_creation_options=*/true);
 
-  // Mock user response and OptChange payments call.
+  // Mock user response.
   TestCreditCardFIDOAuthenticator::MakeCredential(GetFIDOAuthenticator(),
                                                   /*did_succeed=*/false);
   EXPECT_EQ(FidoAuthenticationStrikeDatabase::
                 kStrikesToAddWhenUserVerificationFailsOnOptInAttempt,
             GetStrikes());
+  histogram_tester.ExpectUniqueSample(
+      histogram_name, AutofillMetrics::WebauthnResultMetric::kNotAllowedError,
+      1);
 }
 
 // Ensures that the WebAuthn enrollment prompt is invoked after user opts in. In
@@ -987,21 +1038,25 @@ TEST_F(CreditCardAccessManagerTest,
 // |request_options|.
 TEST_F(CreditCardAccessManagerTest,
        FIDOEnrollmentSuccess_RequestOptions_Desktop) {
+  base::HistogramTester histogram_tester;
+  std::string histogram_name =
+      "Autofill.BetterAuth.WebauthnResult.CheckoutOptIn";
+
   CreateServerCard(kTestGUID, kTestNumber);
   CreditCard* card = credit_card_access_manager_->GetCreditCard(kTestGUID);
   GetFIDOAuthenticator()->SetUserVerifiable(true);
   SetUserOptedIn(false);
   payments_client_->AllowFidoRegistration(true);
 
+  credit_card_access_manager_->PrepareToFetchCreditCard();
   credit_card_access_manager_->FetchCreditCard(card, accessor_->GetWeakPtr());
-  InvokeUnmaskDetailsTimeout();
   WaitForCallbacks();
 
   // Mock user and payments response.
-  AcceptWebauthnOfferDialog(/*did_accept=*/true);
   EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::SUCCESS, kTestNumber,
                                    /*fido_opt_in=*/false));
   WaitForCallbacks();
+  AcceptWebauthnOfferDialog(/*did_accept=*/true);
 
   OptChange(AutofillClient::SUCCESS, /*user_is_opted_in=*/false,
             /*include_creation_options=*/false,
@@ -1018,6 +1073,38 @@ TEST_F(CreditCardAccessManagerTest,
   EXPECT_EQ(kTestChallenge,
             BytesToBase64(GetFIDOAuthenticator()->GetChallenge()));
   EXPECT_TRUE(GetFIDOAuthenticator()->IsUserOptedIn());
+
+  histogram_tester.ExpectUniqueSample(
+      histogram_name, AutofillMetrics::WebauthnResultMetric::kSuccess, 1);
+}
+
+// Ensures WebAuthn result is logged correctly for a settings page opt-in.
+TEST_F(CreditCardAccessManagerTest, SettingsPage_FIDOEnrollment) {
+  base::HistogramTester histogram_tester;
+  std::string histogram_name =
+      "Autofill.BetterAuth.WebauthnResult.SettingsPageOptIn";
+  GetFIDOAuthenticator()->SetUserVerifiable(true);
+
+  for (bool did_succeed : {false, true}) {
+    SetUserOptedIn(false);
+    credit_card_access_manager_->OnSettingsPageFIDOAuthToggled(true);
+
+    // Mock user and payments response.
+    AcceptWebauthnOfferDialog(/*did_accept=*/true);
+    OptChange(AutofillClient::SUCCESS, /*user_is_opted_in=*/false,
+              /*include_creation_options=*/true);
+    // Mock user response and payments response.
+    TestCreditCardFIDOAuthenticator::MakeCredential(GetFIDOAuthenticator(),
+                                                    did_succeed);
+
+    histogram_tester.ExpectBucketCount(
+        histogram_name,
+        did_succeed ? AutofillMetrics::WebauthnResultMetric::kSuccess
+                    : AutofillMetrics::WebauthnResultMetric::kNotAllowedError,
+        1);
+  }
+
+  histogram_tester.ExpectTotalCount(histogram_name, 2);
 }
 
 #endif  // defined(OS_ANDROID)

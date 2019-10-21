@@ -709,6 +709,31 @@ class AutofillMetrics {
     kMaxValue = kCvcThenFido,
   };
 
+  // Possible scenarios where a WebAuthn prompt may show.
+  enum class WebauthnFlowEvent {
+    // WebAuthn is immediately prompted for unmasking.
+    kImmediateAuthentication = 0,
+    // WebAuthn is prompted after a CVC check.
+    kAuthenticationAfterCvc = 1,
+    // WebAuthn is prompted after being offered to opt-in from a checkout flow.
+    kCheckoutOptIn = 2,
+    // WebAuthn is prompted after being offered to opt-in from the settings
+    // page.
+    kSettingsPageOptIn = 3,
+    kMaxValue = kSettingsPageOptIn,
+  };
+
+  // The result of a WebAuthn user-verification prompt.
+  enum class WebauthnResultMetric {
+    // User-verification succeeded.
+    kSuccess = 0,
+    // Other checks failed (e.g. invalid domain, algorithm unsupported, etc.)
+    kOtherError = 1,
+    // User either failed verification or cancelled.
+    kNotAllowedError = 2,
+    kMaxValue = kNotAllowedError,
+  };
+
   // Possible results of Payments RPCs.
   enum PaymentsRpcResult {
     // Request succeeded.
@@ -1073,6 +1098,10 @@ class AutofillMetrics {
   // Payments server card and seeing a card unmask prompt.
   static void LogUserPerceivedLatencyOnCardSelection(PreflightCallEvent event,
                                                      bool fido_auth_enabled);
+
+  // Logs the result of a WebAuthn prompt.
+  static void LogWebauthnResult(WebauthnFlowEvent event,
+                                WebauthnResultMetric metric);
 
   // Logs |event| to the unmask prompt events histogram.
   static void LogUnmaskPromptEvent(UnmaskPromptEvent event);
