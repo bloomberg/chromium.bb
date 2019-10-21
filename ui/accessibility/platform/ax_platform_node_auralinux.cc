@@ -351,16 +351,23 @@ AtkObject* GetActiveDescendantOfCurrentFocused() {
   return nullptr;
 }
 
-void PrependTextAttributeToSet(const AtkTextAttribute attribute,
+void PrependTextAttributeToSet(const std::string& attribute,
                                const std::string& value,
                                AtkAttributeSet** attributes) {
   DCHECK(attributes);
 
   AtkAttribute* new_attribute =
       static_cast<AtkAttribute*>(g_malloc(sizeof(AtkAttribute)));
-  new_attribute->name = g_strdup(atk_text_attribute_get_name(attribute));
+  new_attribute->name = g_strdup(attribute.c_str());
   new_attribute->value = g_strdup(value.c_str());
   *attributes = g_slist_prepend(*attributes, new_attribute);
+}
+
+void PrependAtkTextAttributeToSet(const AtkTextAttribute attribute,
+                                  const std::string& value,
+                                  AtkAttributeSet** attributes) {
+  PrependTextAttributeToSet(atk_text_attribute_get_name(attribute), value,
+                            attributes);
 }
 
 std::string ToAtkTextAttributeColor(const std::string color) {
@@ -376,41 +383,44 @@ AtkAttributeSet* ToAtkAttributeSet(const TextAttributeList& attributes) {
   AtkAttributeSet* copied_attributes = nullptr;
   for (const auto& attribute : attributes) {
     if (attribute.first == "background-color") {
-      PrependTextAttributeToSet(ATK_TEXT_ATTR_BG_COLOR,
-                                ToAtkTextAttributeColor(attribute.second),
-                                &copied_attributes);
+      PrependAtkTextAttributeToSet(ATK_TEXT_ATTR_BG_COLOR,
+                                   ToAtkTextAttributeColor(attribute.second),
+                                   &copied_attributes);
     } else if (attribute.first == "color") {
-      PrependTextAttributeToSet(ATK_TEXT_ATTR_FG_COLOR,
-                                ToAtkTextAttributeColor(attribute.second),
-                                &copied_attributes);
+      PrependAtkTextAttributeToSet(ATK_TEXT_ATTR_FG_COLOR,
+                                   ToAtkTextAttributeColor(attribute.second),
+                                   &copied_attributes);
     } else if (attribute.first == "font-family") {
-      PrependTextAttributeToSet(ATK_TEXT_ATTR_FAMILY_NAME, attribute.second,
-                                &copied_attributes);
+      PrependAtkTextAttributeToSet(ATK_TEXT_ATTR_FAMILY_NAME, attribute.second,
+                                   &copied_attributes);
     } else if (attribute.first == "font-size") {
-      PrependTextAttributeToSet(ATK_TEXT_ATTR_SIZE, attribute.second,
-                                &copied_attributes);
+      PrependAtkTextAttributeToSet(ATK_TEXT_ATTR_SIZE, attribute.second,
+                                   &copied_attributes);
     } else if (attribute.first == "font-weight" && attribute.second == "bold") {
-      PrependTextAttributeToSet(ATK_TEXT_ATTR_WEIGHT, "700",
-                                &copied_attributes);
+      PrependAtkTextAttributeToSet(ATK_TEXT_ATTR_WEIGHT, "700",
+                                   &copied_attributes);
     } else if (attribute.first == "font-style") {
-      PrependTextAttributeToSet(ATK_TEXT_ATTR_STYLE, "italic",
-                                &copied_attributes);
+      PrependAtkTextAttributeToSet(ATK_TEXT_ATTR_STYLE, "italic",
+                                   &copied_attributes);
     } else if (attribute.first == "text-line-through-style") {
-      PrependTextAttributeToSet(ATK_TEXT_ATTR_STRIKETHROUGH, "true",
-                                &copied_attributes);
+      PrependAtkTextAttributeToSet(ATK_TEXT_ATTR_STRIKETHROUGH, "true",
+                                   &copied_attributes);
     } else if (attribute.first == "text-underline-style") {
-      PrependTextAttributeToSet(ATK_TEXT_ATTR_UNDERLINE, "single",
-                                &copied_attributes);
+      PrependAtkTextAttributeToSet(ATK_TEXT_ATTR_UNDERLINE, "single",
+                                   &copied_attributes);
     } else if (attribute.first == "invalid") {
-      PrependTextAttributeToSet(ATK_TEXT_ATTR_INVALID, attribute.second,
-                                &copied_attributes);
-      PrependTextAttributeToSet(ATK_TEXT_ATTR_UNDERLINE, "error",
-                                &copied_attributes);
+      PrependAtkTextAttributeToSet(ATK_TEXT_ATTR_INVALID, attribute.second,
+                                   &copied_attributes);
+      PrependAtkTextAttributeToSet(ATK_TEXT_ATTR_UNDERLINE, "error",
+                                   &copied_attributes);
     } else if (attribute.first == "language") {
-      PrependTextAttributeToSet(ATK_TEXT_ATTR_LANGUAGE, attribute.second,
-                                &copied_attributes);
+      PrependAtkTextAttributeToSet(ATK_TEXT_ATTR_LANGUAGE, attribute.second,
+                                   &copied_attributes);
     } else if (attribute.first == "writing-mode") {
-      PrependTextAttributeToSet(ATK_TEXT_ATTR_DIRECTION, attribute.second,
+      PrependAtkTextAttributeToSet(ATK_TEXT_ATTR_DIRECTION, attribute.second,
+                                   &copied_attributes);
+    } else if (attribute.first == "text-position") {
+      PrependTextAttributeToSet(attribute.first, attribute.second,
                                 &copied_attributes);
     }
   }
