@@ -365,6 +365,9 @@ extern const char kEnableDeferAllScriptDescription[];
 extern const char kEnableDeferAllScriptWithoutOptimizationHintsName[];
 extern const char kEnableDeferAllScriptWithoutOptimizationHintsDescription[];
 
+extern const char kEnableEduCoexistenceName[];
+extern const char kEnableEduCoexistenceDescription[];
+
 extern const char kEnableSaveDataName[];
 extern const char kEnableSaveDataDescription[];
 

@@ -597,6 +597,11 @@ const char kEnableDeferAllScriptWithoutOptimizationHintsDescription[] =
     "that the ECT trigger threshold is set to 4G (which is otherwise provided "
     "by the optimization hints). Rest of the checks are still executed.";
 
+extern const char kEnableEduCoexistenceName[] =
+    "Enable Family Link managed accounts and EDU accounts coexistence";
+extern const char kEnableEduCoexistenceDescription[] =
+    "Allows Family Link managed users to add secondary EDU accounts.";
+
 const char kEnableSaveDataName[] = "Enables save data feature";
 const char kEnableSaveDataDescription[] =
     "Enables save data feature. May cause user's traffic to be proxied via "

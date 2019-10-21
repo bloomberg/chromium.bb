@@ -1196,6 +1196,11 @@
     "expiry_milestone": 80
   },
   {
+    "name": "enable-edu-coexistence",
+    "owners": [ "anastasiian@chromium.org", "sinhak@chromium.org" ],
+    "expiry_milestone": 83
+  },
+  {
     "name": "enable-encryption-migration",
     "owners": [ "fukino" ],
     "expiry_milestone": 76

@@ -4414,6 +4414,12 @@ const FeatureEntry kFeatureEntries[] = {
          previews::switches::kEnableDeferAllScriptWithoutOptimizationHints)},
 
 #if defined(OS_CHROMEOS)
+    {"enable-edu-coexistence", flag_descriptions::kEnableEduCoexistenceName,
+     flag_descriptions::kEnableEduCoexistenceDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kEduCoexistence)},
+#endif  // OS_CHROMEOS
+
+#if defined(OS_CHROMEOS)
     {"enable-assistant-routines",
      flag_descriptions::kEnableAssistantRoutinesName,
      flag_descriptions::kEnableAssistantRoutinesDescription, kOsCrOS,
