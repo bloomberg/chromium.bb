@@ -14,6 +14,7 @@ import base64
 import contextlib
 import cookielib
 import httplib  # Still used for its constants.
+import httplib2
 import json
 import logging
 import netrc
@@ -35,7 +36,6 @@ import gclient_utils
 import metrics
 import metrics_utils
 import subprocess2
-from third_party import httplib2
 
 LOGGER = logging.getLogger()
 # With a starting sleep time of 1.5 seconds, 2^n exponential backoff, and seven

@@ -21,23 +21,13 @@ Example:
 # check those details to determine if there was activity in the given period.
 # This means that query time scales mostly with (today() - begin).
 
-# [VPYTHON:BEGIN]
-# wheel: <
-#   name: "infra/python/wheels/python-dateutil-py2_py3"
-#   version: "version:2.7.3"
-# >
-# wheel: <
-#   name: "infra/python/wheels/six-py2_py3"
-#   version: "version:1.10.0"
-# >
-# [VPYTHON:END]
-
 from __future__ import print_function
 
 import collections
 import contextlib
 from datetime import datetime
 from datetime import timedelta
+import httplib2
 import itertools
 import json
 import logging
@@ -54,7 +44,6 @@ import auth
 import fix_encoding
 import gerrit_util
 
-from third_party import httplib2
 
 try:
   import dateutil  # pylint: disable=import-error
