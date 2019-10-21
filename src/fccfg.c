@@ -686,7 +686,7 @@ FcConfigAddConfigFile (FcConfig	    *config,
 		       const FcChar8   *f)
 {
     FcBool	ret;
-    FcChar8	*file = FcConfigFilename (f);
+    FcChar8	*file = FcConfigGetFilename (config, f);
 
     if (!file)
 	return FcFalse;
@@ -2284,10 +2284,19 @@ FcConfigEnableHome (FcBool enable)
 }
 
 FcChar8 *
-FcConfigFilename (const FcChar8 *url)
+FcConfigGetFilename (FcConfig      *config,
+		     const FcChar8 *url)
 {
     FcChar8    *file, *dir, **path, **p;
+    const FcChar8 *sysroot;
 
+    if (!config)
+    {
+	config = FcConfigGetCurrent ();
+	if (!config)
+	    return NULL;
+    }
+    sysroot = FcConfigGetSysRoot (config);
     if (!url || !*url)
     {
 	url = (FcChar8 *) getenv ("FONTCONFIG_FILE");
@@ -2297,13 +2306,23 @@ FcConfigFilename (const FcChar8 *url)
     file = 0;
 
     if (FcStrIsAbsoluteFilename(url))
-	return FcConfigFileExists (0, url);
+	return FcConfigFileExists (sysroot, url);
 
     if (*url == '~')
     {
 	dir = FcConfigHome ();
 	if (dir)
-	    file = FcConfigFileExists (dir, url + 1);
+	{
+	    FcChar8 *s;
+
+	    if (sysroot)
+		s = FcStrBuildFilename (sysroot, dir, NULL);
+	    else
+		s = dir;
+	    file = FcConfigFileExists (s, url + 1);
+	    if (sysroot)
+		FcStrFree (s);
+	}
 	else
 	    file = 0;
     }
@@ -2314,7 +2333,15 @@ FcConfigFilename (const FcChar8 *url)
 	    return NULL;
 	for (p = path; *p; p++)
 	{
-	    file = FcConfigFileExists (*p, url);
+	    FcChar8 *s;
+
+	    if (sysroot)
+		s = FcStrBuildFilename (sysroot, *p, NULL);
+	    else
+		s = *p;
+	    file = FcConfigFileExists (s, url);
+	    if (sysroot)
+		FcStrFree (s);
 	    if (file)
 		break;
 	}
@@ -2324,32 +2351,30 @@ FcConfigFilename (const FcChar8 *url)
 }
 
 FcChar8 *
+FcConfigFilename (const FcChar8 *url)
+{
+    return FcConfigGetFilename (NULL, url);
+}
+
+FcChar8 *
 FcConfigRealFilename (FcConfig		*config,
 		      const FcChar8	*url)
 {
-    const FcChar8 *sysroot = FcConfigGetSysRoot (config);
-    FcChar8 *n = FcConfigFilename (url);
-    FcChar8 *nn = NULL;
+    FcChar8 *n = FcConfigGetFilename (config, url);
 
     if (n)
     {
 	FcChar8 buf[FC_PATH_MAX];
 	ssize_t len;
 
-	if (sysroot)
-	    nn = FcStrBuildFilename (sysroot, n, NULL);
-	else
-	    nn = FcStrdup (n);
-	FcStrFree (n);
-
-	if ((len = FcReadLink (nn, buf, sizeof (buf) - 1)) != -1)
+	if ((len = FcReadLink (n, buf, sizeof (buf) - 1)) != -1)
 	{
 	    buf[len] = 0;
 
 	    if (!FcStrIsAbsoluteFilename (buf))
 	    {
-		FcChar8 *dirname = FcStrDirname (nn);
-		FcStrFree (nn);
+		FcChar8 *dirname = FcStrDirname (n);
+		FcStrFree (n);
 		if (!dirname)
 		    return NULL;
 
@@ -2358,18 +2383,18 @@ FcConfigRealFilename (FcConfig		*config,
 		if (!path)
 		    return NULL;
 
-		nn = FcStrCanonFilename (path);
+		n = FcStrCanonFilename (path);
 		FcStrFree (path);
 	    }
 	    else
 	    {
-		FcStrFree (nn);
-		nn = FcStrdup (buf);
+		FcStrFree (n);
+		n = FcStrdup (buf);
 	    }
 	}
     }
 
-    return nn;
+    return n;
 }
 
 /*

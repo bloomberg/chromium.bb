@@ -394,6 +394,10 @@ FcPublic FcBool
 FcConfigEnableHome (FcBool enable);
 
 FcPublic FcChar8 *
+FcConfigGetFilename (FcConfig      *config,
+		     const FcChar8 *url);
+
+FcPublic FcChar8 *
 FcConfigFilename (const FcChar8 *url);
     
 FcPublic FcConfig *

@@ -344,6 +344,15 @@ to be up to date, and used.
 @TYPE1@         const FcChar8 *			@ARG1@          name
 @PURPOSE@	Find a config file
 @DESC@
+This function is deprecated and is replaced by <function>FcConfigGetFilename</function>.
+@@
+
+@RET@           FcChar8 *
+@FUNC@          FcConfigGetFilename
+@TYPE1@         FcConfig *			@ARG1@          config
+@TYPE2@         const FcChar8 *			@ARG2@          name
+@PURPOSE@	Find a config file
+@DESC@
 Given the specified external entity name, return the associated filename.
 This provides applications a way to convert various configuration file
 references into filename form.
@@ -355,6 +364,8 @@ refers to a file in the current users home directory.  Otherwise if the name
 doesn't start with '/', it refers to a file in the default configuration
 directory; the built-in default directory can be overridden with the
 FONTCONFIG_PATH environment variable.
+    </para><para>
+The result of this function is affected by the FONTCONFIG_SYSROOT environment variable or equivalent functionality.
 @@
 
 @RET@		FcBool
