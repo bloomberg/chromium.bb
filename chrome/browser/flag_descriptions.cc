@@ -475,10 +475,11 @@ const char kEnableAccessibilityImageDescriptionsDescription[] =
     "Enables screen reader users to request computer-generated descriptions "
     "of unlabeled images using the page context menu.";
 
-const char kEnableAccessibilityObjectModelName[] = "Accessibility Object Model";
+const char kEnableAccessibilityObjectModelName[] =
+    "Accessibility Object Model v0 (deprecated)";
 const char kEnableAccessibilityObjectModelDescription[] =
-    "Enables experimental support for Accessibility Object Model APIs "
-    "that are in development.";
+    "Enables experimental support for an earlier version of Accessibility"
+    "Object Model APIs that are now deprecated.";
 
 const char kEnableAmbientAuthenticationInIncognitoName[] =
     "Enable Ambient Authentication in Incognito mode";

@@ -2492,10 +2492,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kImeInputLogicFstName,
      flag_descriptions::kImeInputLogicFstDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kImeInputLogicFst)},
-    {"enable-experimental-accessibility-autoclick",
-     flag_descriptions::kExperimentalAccessibilityAutoclickName,
-     flag_descriptions::kExperimentalAccessibilityAutoclickDescription, kOsCrOS,
-     SINGLE_VALUE_TYPE(::switches::kEnableExperimentalAccessibilityAutoclick)},
     {"enable-experimental-accessibility-switch-access",
      flag_descriptions::kExperimentalAccessibilitySwitchAccessName,
      flag_descriptions::kExperimentalAccessibilitySwitchAccessDescription,
@@ -3477,12 +3473,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableSearchBoxSelectionDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(app_list_features::kEnableSearchBoxSelection)},
 #endif  // OS_CHROMEOS
-
-    {"enable-accessibility-image-descriptions",
-     flag_descriptions::kEnableAccessibilityImageDescriptionsName,
-     flag_descriptions::kEnableAccessibilityImageDescriptionsDescription,
-     kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kExperimentalAccessibilityLabels)},
 
     {"enable-accessibility-expose-aria-annotations",
      flag_descriptions::kAccessibilityExposeARIAAnnotationsName,
