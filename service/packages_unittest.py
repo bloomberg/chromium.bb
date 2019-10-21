@@ -7,6 +7,9 @@
 
 from __future__ import print_function
 
+import re
+
+from chromite.cbuildbot import manifest_version
 from chromite.lib import build_target_util
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
@@ -192,3 +195,35 @@ class PlatformVersionsTest(cros_test_lib.MockTestCase):
     # We don't want to check an exact version, but the first number should be
     # non-zero.
     self.assertGreaterEqual(int(version_string_list[0]), 1)
+
+  def test_determine_milestone_version(self):
+    """Test checking that a valid milestone version is returned."""
+    milestone_version = packages.determine_milestone_version()
+    # Milestone version should be non-zero
+    self.assertGreaterEqual(int(milestone_version), 1)
+
+  def test_determine_full_version(self):
+    """Test checking that a valid full version is returned."""
+    full_version = packages.determine_full_version()
+    pattern = r'^R(\d+)-(\d+.\d+.\d+(-rc\d+)*)'
+    m = re.match(pattern, full_version)
+    self.assertTrue(m)
+    milestone_version = m.group(1)
+    self.assertGreaterEqual(int(milestone_version), 1)
+
+  def test_versions_based_on_mock(self):
+    # Create a test version_info object, and than mock VersionInfo.from_repo
+    # return it.
+    test_platform_version = '12575.0.0'
+    test_chrome_branch = '75'
+    version_info_mock = manifest_version.VersionInfo(test_platform_version)
+    version_info_mock.chrome_branch = test_chrome_branch
+    self.PatchObject(manifest_version.VersionInfo, 'from_repo',
+                     return_value=version_info_mock)
+    test_full_version = 'R' + test_chrome_branch + '-' + test_platform_version
+    platform_version = packages.determine_platform_version()
+    milestone_version = packages.determine_milestone_version()
+    full_version = packages.determine_full_version()
+    self.assertEqual(platform_version, test_platform_version)
+    self.assertEqual(milestone_version, test_chrome_branch)
+    self.assertEqual(full_version, test_full_version)

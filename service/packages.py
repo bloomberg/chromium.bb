@@ -542,5 +542,21 @@ def determine_android_target(board):
 
 def determine_platform_version():
   """Returns the platform version from the source root."""
+  # Platform version is something like '12575.0.0'.
   version = manifest_version.VersionInfo.from_repo(constants.SOURCE_ROOT)
   return version.VersionString()
+
+
+def determine_milestone_version():
+  """Returns the platform version from the source root."""
+  # Milestone version is something like '79'.
+  version = manifest_version.VersionInfo.from_repo(constants.SOURCE_ROOT)
+  return version.chrome_branch
+
+def determine_full_version():
+  """Returns the full version from the source root."""
+  # Full version is something like 'R79-12575.0.0'.
+  milestone_version = determine_milestone_version()
+  platform_version = determine_platform_version()
+  full_version = ('R%s-%s' % (milestone_version, platform_version))
+  return full_version

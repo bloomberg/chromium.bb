@@ -133,7 +133,8 @@ def GetTargetVersions(input_proto, output_proto, _config):
     output_proto.chrome_version = packages.determine_chrome_version(
         build_target)
   output_proto.platform_version = packages.determine_platform_version()
-  # TODO(crbug.com/1004438): Implement remaining version fields.
+  output_proto.milestone_version = packages.determine_milestone_version()
+  output_proto.full_version = packages.determine_full_version()
 
 
 @faux.success(_HasChromePrebuiltSuccess)

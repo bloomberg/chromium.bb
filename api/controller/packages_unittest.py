@@ -257,6 +257,12 @@ class GetTargetVersionsTest(cros_test_lib.MockTestCase, ApiConfigMixin):
                                             'determine_android_target')
     chrome_version = self.PatchObject(packages_service,
                                       'determine_chrome_version')
+    platform_version = self.PatchObject(packages_service,
+                                        'determine_platform_version')
+    milestone_version = self.PatchObject(packages_service,
+                                         'determine_milestone_version')
+    full_version = self.PatchObject(packages_service,
+                                    'determine_full_version')
 
     request = self._GetRequest(board='betty')
     packages_controller.GetTargetVersions(request, self.response,
@@ -266,6 +272,9 @@ class GetTargetVersionsTest(cros_test_lib.MockTestCase, ApiConfigMixin):
     patch_target_version.assert_not_called()
     builds_chrome.assert_not_called()
     chrome_version.assert_not_called()
+    platform_version.assert_not_called()
+    milestone_version.assert_not_called()
+    full_version.assert_not_called()
 
   def testNoBuildTargetFails(self):
     """No build target argument should fail."""
@@ -294,6 +303,12 @@ class GetTargetVersionsTest(cros_test_lib.MockTestCase, ApiConfigMixin):
     platform_version = '12345.1.2'
     self.PatchObject(packages_service, 'determine_platform_version',
                      return_value=platform_version)
+    milestone_version = '79'
+    self.PatchObject(packages_service, 'determine_milestone_version',
+                     return_value=milestone_version)
+    full_version = 'R79-12345.1.2'
+    self.PatchObject(packages_service, 'determine_full_version',
+                     return_value=full_version)
     request = self._GetRequest(board='betty')
     packages_controller.GetTargetVersions(request, self.response,
                                           self.api_config)
@@ -302,6 +317,8 @@ class GetTargetVersionsTest(cros_test_lib.MockTestCase, ApiConfigMixin):
     self.assertEqual(self.response.android_target_version, android_target)
     self.assertEqual(self.response.chrome_version, chrome_version)
     self.assertEqual(self.response.platform_version, platform_version)
+    self.assertEqual(self.response.milestone_version, milestone_version)
+    self.assertEqual(self.response.full_version, full_version)
 
   def testGetTargetVersionNoAndroidNoChrome(self):
     """Verify return values on a board that does not have android."""
