@@ -145,6 +145,33 @@ IN_PROC_BROWSER_TEST_P(SingleClientNigoriSyncTestWithUssTests,
   EXPECT_TRUE(specifics.has_keystore_migration_time());
 }
 
+// Tests that client can decrypt passwords, encrypted with implicit passphrase.
+// Test first injects implicit passphrase Nigori and encrypted password form to
+// fake server and then checks that client successfully received and decrypted
+// this password form.
+IN_PROC_BROWSER_TEST_P(SingleClientNigoriSyncTestWithUssTests,
+                       ShouldDecryptWithImplicitPassphraseNigori) {
+  const KeyParams kKeyParams = {syncer::KeyDerivationParams::CreateForPbkdf2(),
+                                "passphrase"};
+  sync_pb::NigoriSpecifics specifics;
+  std::unique_ptr<syncer::CryptographerImpl> cryptographer =
+      syncer::CryptographerImpl::FromSingleKeyForTesting(
+          kKeyParams.password, kKeyParams.derivation_params);
+  ASSERT_TRUE(cryptographer->Encrypt(cryptographer->ToProto().key_bag(),
+                                     specifics.mutable_encryption_keybag()));
+  SetNigoriInFakeServer(GetFakeServer(), specifics);
+
+  const autofill::PasswordForm password_form =
+      passwords_helper::CreateTestPasswordForm(0);
+  passwords_helper::InjectEncryptedServerPassword(
+      password_form, kKeyParams.password, kKeyParams.derivation_params,
+      GetFakeServer());
+
+  SetDecryptionPassphraseForClient(/*index=*/0, kKeyParams.password);
+  ASSERT_TRUE(SetupSync());
+  EXPECT_TRUE(WaitForPasswordForms({password_form}));
+}
+
 // Tests that client can decrypt passwords, encrypted with keystore key in case
 // Nigori node contains only this key. We first inject keystore Nigori and
 // encrypted password form to fake server and then check that client
