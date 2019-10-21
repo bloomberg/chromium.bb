@@ -79,7 +79,6 @@ CtapMakeCredentialRequest MakeCredentialTask::GetTouchRequest(
       PublicKeyCredentialParams(
           {{CredentialType::kPublicKey,
             base::strict_cast<int>(CoseAlgorithmIdentifier::kCoseEs256)}}));
-  req.exclude_list.reset();
 
   // If a device supports CTAP2 and has PIN support then setting an empty
   // pinAuth should trigger just a touch[1]. Our U2F code also understands
@@ -128,12 +127,11 @@ void MakeCredentialTask::StartTask() {
 }
 
 CtapGetAssertionRequest MakeCredentialTask::NextSilentSignRequest() {
-  DCHECK(request_.exclude_list &&
-         current_credential_ < request_.exclude_list->size());
+  DCHECK(current_credential_ < request_.exclude_list.size());
   CtapGetAssertionRequest request(
       probing_alternative_rp_id_ ? *request_.app_id : request_.rp.id,
       /*client_data_json=*/"");
-  request.allow_list = {{request_.exclude_list->at(current_credential_)}};
+  request.allow_list = {{request_.exclude_list.at(current_credential_)}};
   request.user_presence_required = false;
   request.user_verification = UserVerificationRequirement::kDiscouraged;
   return request;
@@ -144,9 +142,8 @@ void MakeCredentialTask::MakeCredential() {
   // authenticators rejecting lists over a certain size. Also do this if a
   // second RP ID needs to be tested because the site used the appidExclude
   // extension.
-  if (request_.exclude_list &&
-      (request_.exclude_list->size() > 1 ||
-       (!request_.exclude_list->empty() && request_.app_id))) {
+  if (request_.exclude_list.size() > 1 ||
+      (!request_.exclude_list.empty() && request_.app_id)) {
     silent_sign_operation_ = std::make_unique<Ctap2DeviceOperation<
         CtapGetAssertionRequest, AuthenticatorGetAssertionResponse>>(
         device(), NextSilentSignRequest(),
@@ -170,7 +167,7 @@ void MakeCredentialTask::MakeCredential() {
 void MakeCredentialTask::HandleResponseToSilentSignRequest(
     CtapDeviceResponseCode response_code,
     base::Optional<AuthenticatorGetAssertionResponse> response_data) {
-  DCHECK(request_.exclude_list && request_.exclude_list->size() > 0);
+  DCHECK(!request_.exclude_list.empty());
 
   if (canceled_) {
     return;
@@ -181,7 +178,7 @@ void MakeCredentialTask::HandleResponseToSilentSignRequest(
   // touch and and the CTAP2_ERR_CREDENTIAL_EXCLUDED error code.
   if (response_code == CtapDeviceResponseCode::kSuccess) {
     CtapMakeCredentialRequest request = request_;
-    request.exclude_list = {{request_.exclude_list->at(current_credential_)}};
+    request.exclude_list = {{request_.exclude_list.at(current_credential_)}};
     if (probing_alternative_rp_id_) {
       request.rp.id = *request_.app_id;
     }
@@ -216,7 +213,7 @@ void MakeCredentialTask::HandleResponseToSilentSignRequest(
   // The authenticator doesn't recognize this particular credential from the
   // exclude list. Try the next one.
   current_credential_++;
-  if (current_credential_ == request_.exclude_list->size() &&
+  if (current_credential_ == request_.exclude_list.size() &&
       !probing_alternative_rp_id_ && request_.app_id) {
     // All elements of |request_.exclude_list| have been tested, but there's a
     // second RP ID so they need to be tested again.
@@ -224,7 +221,7 @@ void MakeCredentialTask::HandleResponseToSilentSignRequest(
     probing_alternative_rp_id_ = true;
   }
 
-  if (current_credential_ < request_.exclude_list->size()) {
+  if (current_credential_ < request_.exclude_list.size()) {
     silent_sign_operation_ = std::make_unique<Ctap2DeviceOperation<
         CtapGetAssertionRequest, AuthenticatorGetAssertionResponse>>(
         device(), NextSilentSignRequest(),
@@ -240,7 +237,7 @@ void MakeCredentialTask::HandleResponseToSilentSignRequest(
   // register request may proceed but without the exclude list present in case
   // it exceeds the device's size limit.
   CtapMakeCredentialRequest request = request_;
-  request.exclude_list.reset();
+  request.exclude_list = {};
   register_operation_ = std::make_unique<Ctap2DeviceOperation<
       CtapMakeCredentialRequest, AuthenticatorMakeCredentialResponse>>(
       device(), std::move(request), std::move(callback_),

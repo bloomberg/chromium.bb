@@ -722,13 +722,13 @@ base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnMakeCredential(
 
   // 6. Check for already registered credentials.
   const auto rp_id_hash = fido_parsing_utils::CreateSHA256Hash(request.rp.id);
-  if (request.exclude_list) {
+  if (!request.exclude_list.empty()) {
     if (config_.reject_large_allow_and_exclude_lists &&
-        request.exclude_list->size() > 1) {
+        request.exclude_list.size() > 1) {
       return CtapDeviceResponseCode::kCtap2ErrLimitExceeded;
     }
 
-    for (const auto& excluded_credential : *request.exclude_list) {
+    for (const auto& excluded_credential : request.exclude_list) {
       const RegistrationData* found =
           FindRegistrationData(excluded_credential.id(), rp_id_hash);
       if (found) {
