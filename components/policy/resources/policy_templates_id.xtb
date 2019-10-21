@@ -2362,7 +2362,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
       Perhatikan bahwa kebijakan ini mengganti DisabledPlugins dan DisabledPluginsExceptions.
 
       Jika kebijakan ini tidak ditetapkan, pengguna dapat menonaktifkan plugin apa pun yang diinstal pada sistem.</translation>
-<translation id="5247006254130721952">Blokir download yang berbahaya</translation>
+<translation id="5247006254130721952">Blokir download berbahaya</translation>
 <translation id="5248863213023520115">Menyetel jenis enkripsi yang diizinkan saat meminta tiket Kerberos dari server <ph name="MS_AD_NAME" />.
 
       Jika kebijakan disetel ke 'All', jenis enkripsi AES 'aes256-cts-hmac-sha1-96' dan 'aes128-cts-hmac-sha1-96' serta jenis enkripsi RC4 'rc4-hmac' diizinkan. Enkripsi AES diprioritaskan jika server mendukung kedua jenis tersebut. Perlu diperhatikan bahwa RC4 tidak aman dan server harus dikonfigurasi ulang jika memungkinkan untuk mendukung enkripsi AES.
@@ -2528,7 +2528,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="5464816904705580310">Mengonfigurasi setelan untuk pengguna yang dikelola.</translation>
 <translation id="546726650689747237">Penundaan peredupan layar saat menggunakan daya AC</translation>
 <translation id="5469143988693423708">Pengguna diaktifkan untuk menjalankan Crostini</translation>
-<translation id="5469825884154817306">Cekal gambar pada situs ini</translation>
+<translation id="5469825884154817306">Blokir gambar di situs ini</translation>
 <translation id="5472668698895343595">Kebijakan ini mengontrol daftar situs yang akan dibuka di browser alternatif.
 
       Perlu diketahui bahwa elemen juga dapat ditambahkan ke daftar ini melalui kebijakan <ph name="USE_IE_SITELIST_POLICY_NAME" /> dan <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" />.
@@ -3208,7 +3208,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="6856743875250214792">Kebijakan ini tidak digunakan lagi dan dihapus di M66, karena hanya digunakan untuk uji coba internal dan merupakan beban keamanan.
 
       Menentukan tanda yang harus diterapkan ke <ph name="PRODUCT_NAME" /> saat dimulai. Tanda yang ditentukan hanya diterapkan di layar login. Tanda yang disetel melalui kebijakan ini tidak diterapkan ke dalam sesi pengguna.</translation>
-<translation id="685769593149966548">Terapkan Mode Terbatas Ketat YouTube</translation>
+<translation id="685769593149966548">Terapkan Mode Terbatas Ketat untuk YouTube</translation>
 <translation id="6857824281777105940">Kebijakan ini mengontrol apakah akan melaporkan informasi Safe Browsing, termasuk jumlah peringatan Safe Browsing dan jumlah peringatan Safe Browsing yang diklik.
 
       Jika kebijakan ini tidak disetel atau disetel ke True, data Safe Browsing akan dikumpulkan.

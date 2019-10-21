@@ -2616,7 +2616,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 <translation id="5464816904705580310">Permite establecer opciones de configuración de usuarios administrados.</translation>
 <translation id="546726650689747237">Retraso de atenuación de pantalla cuando el dispositivo está conectado a la red</translation>
 <translation id="5469143988693423708">El usuario tiene permiso para ejecutar Crostini</translation>
-<translation id="5469825884154817306">Bloquear imágenes de estos sitios</translation>
+<translation id="5469825884154817306">Bloquear imágenes en estos sitios web</translation>
 <translation id="5472668698895343595">Esta política controla la lista de sitios web que se abren en un navegador alternativo.
 
       Ten en cuenta que también se pueden añadir elementos a la lista a través de las políticas <ph name="USE_IE_SITELIST_POLICY_NAME" /> y <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" />.
