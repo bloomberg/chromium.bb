@@ -999,6 +999,14 @@ bool NigoriSyncBridgeImpl::HasPendingKeysForTesting() const {
   return state_.pending_keys.has_value();
 }
 
+KeyDerivationParams
+NigoriSyncBridgeImpl::GetCustomPassphraseKeyDerivationParamsForTesting() const {
+  if (!state_.custom_passphrase_key_derivation_params) {
+    return KeyDerivationParams::CreateForPbkdf2();
+  }
+  return *state_.custom_passphrase_key_derivation_params;
+}
+
 std::string NigoriSyncBridgeImpl::PackExplicitPassphraseKeyForTesting(
     const Encryptor& encryptor,
     const CryptographerImpl& cryptographer) {
