@@ -18457,6 +18457,7 @@ Called by update_net_error_codes.py.-->
   <int value="633" label="DefaultInsecureContentSetting"/>
   <int value="634" label="InsecureContentAllowedForUrls"/>
   <int value="635" label="InsecureContentBlockedForUrls"/>
+  <int value="636" label="DeviceWebBasedAttestationAllowedUrls"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
