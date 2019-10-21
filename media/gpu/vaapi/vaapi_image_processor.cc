@@ -135,6 +135,12 @@ std::unique_ptr<VaapiImageProcessor> VaapiImageProcessor::Create(
     return nullptr;
   }
 
+  // Size is irrelevant for a VPP context.
+  if (!vaapi_wrapper->CreateContext(gfx::Size())) {
+    VLOGF(1) << "Failed to create context for VPP";
+    return nullptr;
+  }
+
   // We should restrict the acceptable PortConfig for input and output both to
   // the one returned by GetPlatformVideoFrameLayout(). However,
   // ImageProcessorFactory interface doesn't provide information about what
