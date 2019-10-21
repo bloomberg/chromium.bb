@@ -14,7 +14,7 @@
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
-#include "components/services/leveldb/leveldb_database_impl.h"
+#include "components/services/storage/dom_storage/async_dom_storage_database.h"
 #include "components/services/storage/dom_storage/dom_storage_database.h"
 #include "content/public/test/browser_task_environment.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
@@ -95,7 +95,7 @@ class SessionStorageDataMapTest : public testing::Test {
   SessionStorageDataMapTest()
       : test_origin_(url::Origin::Create(GURL("http://host1.com:1"))) {
     base::RunLoop loop;
-    database_ = leveldb::LevelDBDatabaseImpl::OpenInMemory(
+    database_ = storage::AsyncDomStorageDatabase::OpenInMemory(
         base::nullopt, "SessionStorageDataMapTest",
         base::CreateSequencedTaskRunner({base::MayBlock(), base::ThreadPool()}),
         base::BindLambdaForTesting([&](leveldb::Status status) {
@@ -144,7 +144,7 @@ class SessionStorageDataMapTest : public testing::Test {
   BrowserTaskEnvironment task_environment_;
   testing::StrictMock<MockListener> listener_;
   url::Origin test_origin_;
-  std::unique_ptr<leveldb::LevelDBDatabaseImpl> database_;
+  std::unique_ptr<storage::AsyncDomStorageDatabase> database_;
 };
 
 }  // namespace

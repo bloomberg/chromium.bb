@@ -2005,7 +2005,7 @@ test("content_unittests") {
     "//components/offline_pages/buildflags",
     "//components/payments/mojom",
     "//components/rappor:test_support",
-    "//components/services/leveldb:lib",
+    "//components/services/storage",
     "//components/ukm:test_support",
     "//components/viz/client",
     "//components/viz/common",

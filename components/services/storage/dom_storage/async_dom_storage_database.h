@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SERVICES_LEVELDB_LEVELDB_DATABASE_IMPL_H_
-#define COMPONENTS_SERVICES_LEVELDB_LEVELDB_DATABASE_IMPL_H_
+#ifndef COMPONENTS_SERVICES_STORAGE_DOM_STORAGE_ASYNC_DOM_STORAGE_DATABASE_H_
+#define COMPONENTS_SERVICES_STORAGE_DOM_STORAGE_ASYNC_DOM_STORAGE_DATABASE_H_
 
 #include <memory>
 #include <tuple>
@@ -18,25 +18,22 @@
 #include "third_party/leveldatabase/src/include/leveldb/cache.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 
-namespace leveldb {
+namespace storage {
 
 namespace internal {
 template <typename ResultType>
 struct DatabaseTaskTraits;
 }  // namespace internal
 
-// A temporary wrapper around the Storage Service's DomStorageDatabase class,
-// consumed by LocalStorageContextMojo, SessionStorageContextMojo, and related
-// classes.
-//
-// TODO(https://crbug.com/1000959): Delete this class.
-class LevelDBDatabaseImpl {
+// A wrapper around DomStorageDatabase which simplifies usage by queueing
+// database operations until the database is opened.
+class AsyncDomStorageDatabase {
  public:
-  using StatusCallback = base::OnceCallback<void(Status)>;
+  using StatusCallback = base::OnceCallback<void(leveldb::Status)>;
 
-  ~LevelDBDatabaseImpl();
+  ~AsyncDomStorageDatabase();
 
-  static std::unique_ptr<LevelDBDatabaseImpl> OpenDirectory(
+  static std::unique_ptr<AsyncDomStorageDatabase> OpenDirectory(
       const leveldb_env::Options& options,
       const base::FilePath& directory,
       const std::string& dbname,
@@ -45,21 +42,18 @@ class LevelDBDatabaseImpl {
       scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
       StatusCallback callback);
 
-  static std::unique_ptr<LevelDBDatabaseImpl> OpenInMemory(
+  static std::unique_ptr<AsyncDomStorageDatabase> OpenInMemory(
       const base::Optional<base::trace_event::MemoryAllocatorDumpGuid>&
           memory_dump_id,
       const std::string& tracking_name,
       scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
       StatusCallback callback);
 
-  base::SequenceBound<storage::DomStorageDatabase>& database() {
-    return database_;
-  }
-  const base::SequenceBound<storage::DomStorageDatabase>& database() const {
+  base::SequenceBound<DomStorageDatabase>& database() { return database_; }
+  const base::SequenceBound<DomStorageDatabase>& database() const {
     return database_;
   }
 
-  // Overridden from LevelDBDatabase:
   void Put(const std::vector<uint8_t>& key,
            const std::vector<uint8_t>& value,
            StatusCallback callback);
@@ -71,8 +65,8 @@ class LevelDBDatabaseImpl {
 
   void RewriteDB(StatusCallback callback);
 
-  using GetCallback =
-      base::OnceCallback<void(Status status, const std::vector<uint8_t>&)>;
+  using GetCallback = base::OnceCallback<void(leveldb::Status status,
+                                              const std::vector<uint8_t>&)>;
   void Get(const std::vector<uint8_t>& key, GetCallback callback);
 
   void CopyPrefixed(const std::vector<uint8_t>& source_key_prefix,
@@ -81,7 +75,7 @@ class LevelDBDatabaseImpl {
 
   template <typename ResultType>
   using DatabaseTask =
-      base::OnceCallback<ResultType(const storage::DomStorageDatabase&)>;
+      base::OnceCallback<ResultType(const DomStorageDatabase&)>;
 
   template <typename ResultType>
   using TaskTraits = internal::DatabaseTaskTraits<ResultType>;
@@ -93,7 +87,7 @@ class LevelDBDatabaseImpl {
         [](DatabaseTask<ResultType> task,
            typename TaskTraits<ResultType>::CallbackType callback,
            scoped_refptr<base::SequencedTaskRunner> callback_task_runner,
-           const storage::DomStorageDatabase& db) {
+           const DomStorageDatabase& db) {
           callback_task_runner->PostTask(
               FROM_HERE, TaskTraits<ResultType>::RunTaskAndBindCallbackToResult(
                              db, std::move(task), std::move(callback)));
@@ -108,29 +102,26 @@ class LevelDBDatabaseImpl {
   }
 
   using BatchDatabaseTask =
-      base::OnceCallback<void(leveldb::WriteBatch*,
-                              const storage::DomStorageDatabase&)>;
+      base::OnceCallback<void(leveldb::WriteBatch*, const DomStorageDatabase&)>;
   void RunBatchDatabaseTasks(
       std::vector<BatchDatabaseTask> tasks,
       base::OnceCallback<void(leveldb::Status)> callback);
 
  private:
-  void OnDatabaseOpened(
-      StatusCallback callback,
-      base::SequenceBound<storage::DomStorageDatabase> database,
-      leveldb::Status status);
+  void OnDatabaseOpened(StatusCallback callback,
+                        base::SequenceBound<DomStorageDatabase> database,
+                        leveldb::Status status);
 
-  explicit LevelDBDatabaseImpl();
+  explicit AsyncDomStorageDatabase();
 
-  base::SequenceBound<storage::DomStorageDatabase> database_;
+  base::SequenceBound<DomStorageDatabase> database_;
 
-  using BoundDatabaseTask =
-      base::OnceCallback<void(const storage::DomStorageDatabase&)>;
+  using BoundDatabaseTask = base::OnceCallback<void(const DomStorageDatabase&)>;
   std::vector<BoundDatabaseTask> tasks_to_run_on_open_;
 
-  base::WeakPtrFactory<LevelDBDatabaseImpl> weak_ptr_factory_{this};
+  base::WeakPtrFactory<AsyncDomStorageDatabase> weak_ptr_factory_{this};
 
-  DISALLOW_COPY_AND_ASSIGN(LevelDBDatabaseImpl);
+  DISALLOW_COPY_AND_ASSIGN(AsyncDomStorageDatabase);
 };
 
 namespace internal {
@@ -139,8 +130,8 @@ template <typename ResultType>
 struct DatabaseTaskTraits {
   using CallbackType = base::OnceCallback<void(ResultType)>;
   static base::OnceClosure RunTaskAndBindCallbackToResult(
-      const storage::DomStorageDatabase& db,
-      LevelDBDatabaseImpl::DatabaseTask<ResultType> task,
+      const DomStorageDatabase& db,
+      AsyncDomStorageDatabase::DatabaseTask<ResultType> task,
       CallbackType callback) {
     return base::BindOnce(std::move(callback), std::move(task).Run(db));
   }
@@ -155,8 +146,8 @@ struct DatabaseTaskTraits<std::tuple<Args...>> {
   using CallbackType = base::OnceCallback<void(Args...)>;
 
   static base::OnceClosure RunTaskAndBindCallbackToResult(
-      const storage::DomStorageDatabase& db,
-      LevelDBDatabaseImpl::DatabaseTask<ResultType> task,
+      const DomStorageDatabase& db,
+      AsyncDomStorageDatabase::DatabaseTask<ResultType> task,
       CallbackType callback) {
     return BindTupleAsArgs(
         std::move(callback), std::move(task).Run(db),
@@ -175,6 +166,6 @@ struct DatabaseTaskTraits<std::tuple<Args...>> {
 
 }  // namespace internal
 
-}  // namespace leveldb
+}  // namespace storage
 
-#endif  // COMPONENTS_SERVICES_LEVELDB_LEVELDB_DATABASE_IMPL_H_
+#endif  // COMPONENTS_SERVICES_STORAGE_DOM_STORAGE_ASYNC_DOM_STORAGE_DATABASE_H_
