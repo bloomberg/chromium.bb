@@ -37,7 +37,7 @@ struct MockPasswordManagerDriver : password_manager::StubPasswordManagerDriver {
 
 struct MockTouchToFillView : TouchToFillView {
   MOCK_METHOD3(Show,
-               void(base::StringPiece16,
+               void(const GURL&,
                     IsOriginSecure,
                     base::span<const CredentialPair>));
   MOCK_METHOD1(OnCredentialSelected, void(const CredentialPair&));
@@ -76,9 +76,8 @@ TEST_F(TouchToFillControllerTest, Show_And_Fill) {
       {base::ASCIIToUTF16("alice"), base::ASCIIToUTF16("p4ssw0rd"),
        GURL(kExampleCom), IsPublicSuffixMatch(false)}};
 
-  EXPECT_CALL(view(),
-              Show(Eq(base::ASCIIToUTF16("example.com")), IsOriginSecure(true),
-                   ElementsAreArray(credentials)));
+  EXPECT_CALL(view(), Show(Eq(GURL(kExampleCom)), IsOriginSecure(true),
+                           ElementsAreArray(credentials)));
   touch_to_fill_controller().Show(credentials, driver().AsWeakPtr());
 
   // Test that we correctly log the absence of an Android credential.
@@ -100,7 +99,7 @@ TEST_F(TouchToFillControllerTest, Show_Insecure_Origin) {
        GURL(kExampleCom), IsPublicSuffixMatch(false)}};
 
   EXPECT_CALL(view(),
-              Show(Eq(base::ASCIIToUTF16("example.com")), IsOriginSecure(false),
+              Show(Eq(GURL("http://example.com")), IsOriginSecure(false),
                    ElementsAreArray(credentials)));
   touch_to_fill_controller().Show(credentials, driver().AsWeakPtr());
 }
@@ -113,9 +112,8 @@ TEST_F(TouchToFillControllerTest, Show_And_Fill_Android_Credential) {
       {base::ASCIIToUTF16("bob"), base::ASCIIToUTF16("s3cr3t"),
        GURL("android://hash@com.example.my"), IsPublicSuffixMatch(false)}};
 
-  EXPECT_CALL(view(),
-              Show(Eq(base::ASCIIToUTF16("example.com")), IsOriginSecure(true),
-                   ElementsAreArray(credentials)));
+  EXPECT_CALL(view(), Show(Eq(GURL(kExampleCom)), IsOriginSecure(true),
+                           ElementsAreArray(credentials)));
   touch_to_fill_controller().Show(credentials, driver().AsWeakPtr());
 
   // Test that we correctly log the presence of an Android credential.
@@ -133,9 +131,8 @@ TEST_F(TouchToFillControllerTest, Dismiss) {
       {base::ASCIIToUTF16("alice"), base::ASCIIToUTF16("p4ssw0rd"),
        GURL(kExampleCom), IsPublicSuffixMatch(false)}};
 
-  EXPECT_CALL(view(),
-              Show(Eq(base::ASCIIToUTF16("example.com")), IsOriginSecure(true),
-                   ElementsAreArray(credentials)));
+  EXPECT_CALL(view(), Show(Eq(GURL(kExampleCom)), IsOriginSecure(true),
+                           ElementsAreArray(credentials)));
   touch_to_fill_controller().Show(credentials, driver().AsWeakPtr());
 
   EXPECT_CALL(driver(), TouchToFillDismissed);

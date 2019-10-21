@@ -48,8 +48,7 @@ void TouchToFillController::Show(base::span<const CredentialPair> credentials,
     view_ = TouchToFillViewFactory::Create(this);
 
   const GURL& url = driver_->GetLastCommittedURL();
-  view_->Show(url_formatter::FormatUrlForSecurityDisplay(
-                  url, url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS),
+  view_->Show(url,
               TouchToFillView::IsOriginSecure(
                   network::IsUrlPotentiallyTrustworthy(url)),
               credentials);
@@ -84,12 +83,14 @@ gfx::NativeView TouchToFillController::GetNativeView() {
 }
 
 void TouchToFillController::FetchFavicon(
-    const std::string& credential_origin,
+    const GURL& credential_origin,
+    const GURL& frame_origin,
     int desired_size_in_pixel,
     base::OnceCallback<void(const gfx::Image&)> callback) {
   favicon_service_->GetRawFaviconForPageURL(
-      GURL(credential_origin), {favicon_base::IconType::kFavicon},
-      desired_size_in_pixel,
+      url::Origin::Create(credential_origin).opaque() ? frame_origin
+                                                      : credential_origin,
+      {favicon_base::IconType::kFavicon}, desired_size_in_pixel,
       /* fallback_to_host = */ true,
       base::BindOnce(&OnImageFetched, std::move(callback)), &favicon_tracker_);
 }
