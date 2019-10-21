@@ -544,7 +544,7 @@ if (is_android) {
       "$root_gen_dir/chrome/android/chrome_apk_paks/resources.pak",
       "$root_gen_dir/components/components_resources.pak",
       "$root_out_dir/browser_tests.pak",
-      "//components/test/data/payments",
+      "//components/test/data/payments/",
     ]
   }
 
