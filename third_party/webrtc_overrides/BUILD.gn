@@ -10,6 +10,10 @@ group("webrtc_overrides") {
   ]
 }
 
+component("webrtc_component") {
+  public_deps = []
+}
+
 source_set("webrtc") {
   public_deps = [
     # TODO(kjellander): Start cleaning up this target as soon as
