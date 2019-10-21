@@ -9,6 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/important_file_writer.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/metrics_hashes.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
@@ -34,16 +35,41 @@ enum CrOSActionRecorderType {
   kLogWithoutHash = 2,
 };
 
+// Represents the events of the CrOSActionRecorder.
+// This enum is used for a histogram and should not be renumbered and the old
+// values should not be reused.
+enum CrOSActionRecorderEvent {
+  kDisabled = 0,
+  kRecordAction = 1,
+  kFlushToDisk = 2,
+  kReadFromFileFail = 3,
+  kParseFromStringFail = 4,
+  kCreateDirectoryFail = 5,
+  kWriteFileAtomicallyFail = 6,
+  kMaxValue = kWriteFileAtomicallyFail,
+};
+
+// Records CrOSActionRecorder event.
+void RecordCrOSActionEvent(const CrOSActionRecorderEvent val) {
+  UMA_HISTOGRAM_ENUMERATION("Cros.CrOSActionRecorderEvent", val,
+                            CrOSActionRecorderEvent::kMaxValue);
+}
+
+// Append the |actions| to the |action_filepath|.
 void SaveToDiskOnWorkerThread(const CrOSActionHistoryProto actions,
                               const base::FilePath action_filepath) {
   // Loads proto string from local disk.
   std::string proto_str;
-  if (!base::ReadFileToString(action_filepath, &proto_str))
+  if (!base::ReadFileToString(action_filepath, &proto_str)) {
     proto_str.clear();
+    RecordCrOSActionEvent(CrOSActionRecorderEvent::kReadFromFileFail);
+  }
 
   CrOSActionHistoryProto actions_to_write;
-  if (!actions_to_write.ParseFromString(proto_str))
+  if (!actions_to_write.ParseFromString(proto_str)) {
     actions_to_write.Clear();
+    RecordCrOSActionEvent(CrOSActionRecorderEvent::kParseFromStringFail);
+  }
 
   if (actions_to_write.actions_size() > kActionLimitPerFile)
     return;
@@ -54,11 +80,18 @@ void SaveToDiskOnWorkerThread(const CrOSActionHistoryProto actions,
   // Create directory if it's not there yet.
   const bool create_directory_sucess =
       base::CreateDirectory(action_filepath.DirName());
-  DCHECK(create_directory_sucess)
-      << "Error create directory for " << action_filepath;
+  if (!create_directory_sucess) {
+    RecordCrOSActionEvent(CrOSActionRecorderEvent::kCreateDirectoryFail);
+    DCHECK(create_directory_sucess)
+        << "Error create directory for " << action_filepath;
+  }
+
   const bool write_success = base::ImportantFileWriter::WriteFileAtomically(
       action_filepath, proto_str_to_write, "CrOSActionHistory");
-  DCHECK(write_success) << "Error writing action_file " << action_filepath;
+  if (!write_success) {
+    RecordCrOSActionEvent(CrOSActionRecorderEvent::kWriteFileAtomicallyFail);
+    DCHECK(write_success) << "Error writing action_file " << action_filepath;
+  }
 }
 
 }  // namespace
@@ -101,6 +134,7 @@ void CrOSActionRecorder::RecordAction(
   if (!should_log_)
     return;
 
+  RecordCrOSActionEvent(CrOSActionRecorderEvent::kRecordAction);
   CrOSActionProto& cros_action_proto = *actions_.add_actions();
 
   // Record action.
@@ -127,8 +161,9 @@ void CrOSActionRecorder::MaybeFlushToDisk() {
   const base::Time now = base::Time::Now();
   if (now - last_save_timestamp_ >= kSaveInternal ||
       actions_.actions_size() > kActionLimitInMemory) {
-    last_save_timestamp_ = now;
+    RecordCrOSActionEvent(CrOSActionRecorderEvent::kFlushToDisk);
 
+    last_save_timestamp_ = now;
     // Writes the predictor proto to disk asynchronously.
     const std::string day = base::NumberToString(
         static_cast<int>(now.ToDoubleT() / kSecondsPerDay));
