@@ -546,9 +546,6 @@ extern const char kEnableResourceLoadingHintsDescription[];
 extern const char kEnableSubresourceRedirectName[];
 extern const char kEnableSubresourceRedirectDescription[];
 
-extern const char kEnableSyncUSSBookmarksName[];
-extern const char kEnableSyncUSSBookmarksDescription[];
-
 extern const char kEnableSyncUSSNigoriName[];
 extern const char kEnableSyncUSSNigoriDescription[];
 

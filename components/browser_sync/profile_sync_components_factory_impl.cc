@@ -39,7 +39,6 @@
 #include "components/sync/model_impl/forwarding_model_type_controller_delegate.h"
 #include "components/sync/model_impl/proxy_model_type_controller_delegate.h"
 #include "components/sync_bookmarks/bookmark_change_processor.h"
-#include "components/sync_bookmarks/bookmark_data_type_controller.h"
 #include "components/sync_bookmarks/bookmark_model_associator.h"
 #include "components/sync_bookmarks/bookmark_sync_service.h"
 #include "components/sync_device_info/device_info_sync_service.h"
@@ -55,7 +54,6 @@
 using base::FeatureList;
 using bookmarks::BookmarkModel;
 using sync_bookmarks::BookmarkChangeProcessor;
-using sync_bookmarks::BookmarkDataTypeController;
 using sync_bookmarks::BookmarkModelAssociator;
 using syncer::DataTypeController;
 using syncer::DataTypeManager;
@@ -214,7 +212,6 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
   // Bookmark sync is enabled by default.  Register unless explicitly
   // disabled.
   if (!disabled_types.Has(syncer::BOOKMARKS)) {
-    if (FeatureList::IsEnabled(switches::kSyncUSSBookmarks)) {
       controllers.push_back(std::make_unique<ModelTypeController>(
           syncer::BOOKMARKS,
           std::make_unique<syncer::ProxyModelTypeControllerDelegate>(
@@ -223,11 +220,6 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
                                       GetBookmarkSyncControllerDelegate,
                                   base::Unretained(bookmark_sync_service_),
                                   sync_client_->GetFaviconService()))));
-    } else {
-      controllers.push_back(std::make_unique<BookmarkDataTypeController>(
-          dump_stack, sync_service, sync_client_->GetBookmarkModel(),
-          sync_client_->GetHistoryService(), this));
-    }
   }
 
   // These features are enabled only if history is not disabled.

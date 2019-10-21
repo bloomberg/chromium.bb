@@ -924,10 +924,6 @@ const char kEnableResourceLoadingHintsDescription[] =
     "Enable using server-provided resource loading hints to provide a preview "
     "over slow network connections.";
 
-const char kEnableSyncUSSBookmarksName[] = "Enable USS for bookmarks sync";
-const char kEnableSyncUSSBookmarksDescription[] =
-    "Enables the new, experimental implementation of bookmark sync";
-
 const char kEnableSyncUSSNigoriName[] = "Enable USS for sync encryption keys";
 const char kEnableSyncUSSNigoriDescription[] =
     "Enables the new, experimental implementation of sync encryption keys";

@@ -3601,11 +3601,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSyncDeviceInfoInTransportModeDescription, kOsAll,
      FEATURE_VALUE_TYPE(switches::kSyncDeviceInfoInTransportMode)},
 
-    {"enable-sync-uss-bookmarks",
-     flag_descriptions::kEnableSyncUSSBookmarksName,
-     flag_descriptions::kEnableSyncUSSBookmarksDescription, kOsAll,
-     FEATURE_VALUE_TYPE(switches::kSyncUSSBookmarks)},
-
     {"enable-lookalike-url-navigation-suggestions",
      flag_descriptions::kLookalikeUrlNavigationSuggestionsName,
      flag_descriptions::kLookalikeUrlNavigationSuggestionsDescription, kOsAll,

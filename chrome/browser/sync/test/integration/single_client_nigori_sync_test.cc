@@ -103,8 +103,7 @@ class SingleClientNigoriSyncTestWithUssTests
       // USS Nigori requires USS implementations to be enabled for all
       // datatypes.
       override_features_.InitWithFeatures(
-          /*enabled_features=*/{switches::kSyncUSSBookmarks,
-                                switches::kSyncUSSPasswords,
+          /*enabled_features=*/{switches::kSyncUSSPasswords,
                                 switches::kSyncUSSNigori},
           /*disabled_features=*/{});
     } else {
