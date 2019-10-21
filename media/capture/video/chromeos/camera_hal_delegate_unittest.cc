@@ -47,7 +47,7 @@ class CameraHalDelegateTest : public ::testing::Test {
     camera_hal_delegate_ =
         new CameraHalDelegate(hal_delegate_thread_.task_runner());
     camera_hal_delegate_->SetCameraModule(
-        mock_camera_module_.GetInterfacePtrInfo());
+        mock_camera_module_.GetPendingRemote());
   }
 
   void TearDown() override {
