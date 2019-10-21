@@ -95,7 +95,6 @@ class BrowserControllerImpl : public BrowserController,
       const content::WebContents* web_contents) override;
 
   // content::WebContentsObserver:
-  void DidFirstVisuallyNonEmptyPaint() override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
 

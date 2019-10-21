@@ -238,11 +238,6 @@ blink::mojom::DisplayMode BrowserControllerImpl::GetDisplayMode(
                         : blink::mojom::DisplayMode::kBrowser;
 }
 
-void BrowserControllerImpl::DidFirstVisuallyNonEmptyPaint() {
-  for (auto& observer : observers_)
-    observer.FirstContentfulPaint();
-}
-
 void BrowserControllerImpl::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
 #if defined(OS_ANDROID)

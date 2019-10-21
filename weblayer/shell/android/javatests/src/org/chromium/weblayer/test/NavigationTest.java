@@ -57,6 +57,7 @@ public class NavigationTest {
         public NavigationCallbackHelper onStartedCallback = new NavigationCallbackHelper();
         public NavigationCallbackHelper onCommittedCallback = new NavigationCallbackHelper();
         public NavigationCallbackHelper onCompletedCallback = new NavigationCallbackHelper();
+        public CallbackHelper onFirstContentfulPaintCallback = new CallbackHelper();
 
         @Override
         public void navigationStarted(Navigation navigation) {
@@ -72,6 +73,11 @@ public class NavigationTest {
         public void navigationCompleted(Navigation navigation) {
             onCompletedCallback.notifyCalled(navigation.getUri());
         }
+
+        @Override
+        public void onFirstContentfulPaint() {
+            onFirstContentfulPaintCallback.notifyCalled();
+        }
     }
 
     private final Observer mObserver = new Observer();
@@ -85,12 +91,15 @@ public class NavigationTest {
         int curStartedCount = mObserver.onStartedCallback.getCallCount();
         int curCommittedCount = mObserver.onCommittedCallback.getCallCount();
         int curCompletedCount = mObserver.onCompletedCallback.getCallCount();
+        int curOnFirstContentfulPaintCount =
+                mObserver.onFirstContentfulPaintCallback.getCallCount();
 
         mActivityTestRule.navigateAndWait(URL2);
 
         mObserver.onStartedCallback.assertCalledWith(curStartedCount, URL2);
         mObserver.onCommittedCallback.assertCalledWith(curCommittedCount, URL2);
         mObserver.onCompletedCallback.assertCalledWith(curCompletedCount, URL2);
+        mObserver.onFirstContentfulPaintCallback.waitForCallback(curOnFirstContentfulPaintCount);
     }
 
     @Test
