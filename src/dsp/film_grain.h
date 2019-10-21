@@ -61,6 +61,16 @@ class FilmGrain {
   static constexpr int kGrainMin = -(1 << (bitdepth - 1));
   // The maximum value of film grain noise.
   static constexpr int kGrainMax = (1 << (bitdepth - 1)) - 1;
+  // The width of the luma noise array.
+  static constexpr int kLumaWidth = 82;
+  // The height of the luma noise array.
+  static constexpr int kLumaHeight = 73;
+  // The two possible widths of the chroma noise array
+  static constexpr int kMinChromaWidth = 44;
+  static constexpr int kMaxChromaWidth = 82;
+  // The two possible heights of the chroma noise array.
+  static constexpr int kMinChromaHeight = 38;
+  static constexpr int kMaxChromaHeight = 73;
 
   FilmGrain(const FilmGrainParams& params, bool is_monochrome,
             bool color_matrix_is_identity, int subsampling_x, int subsampling_y,
@@ -150,17 +160,6 @@ class FilmGrain {
       const void* source_plane_v, ptrdiff_t source_stride_v, void* dest_plane_y,
       ptrdiff_t dest_stride_y, void* dest_plane_u, ptrdiff_t dest_stride_u,
       void* dest_plane_v, ptrdiff_t dest_stride_v) const;
-
-  // The width of the luma noise array.
-  static constexpr int kLumaWidth = 82;
-  // The height of the luma noise array.
-  static constexpr int kLumaHeight = 73;
-  // The two possible widths of the chroma noise array
-  static constexpr int kMinChromaWidth = 44;
-  static constexpr int kMaxChromaWidth = 82;
-  // The two possible heights of the chroma noise array.
-  static constexpr int kMinChromaHeight = 38;
-  static constexpr int kMaxChromaHeight = 73;
 
   const FilmGrainParams& params_;
   const bool is_monochrome_;
