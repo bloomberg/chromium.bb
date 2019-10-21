@@ -347,7 +347,8 @@ void MdnsResponderService::StopListening() {
 }
 
 void MdnsResponderService::StartService() {
-  // TODO(issue/45): This should really be a library-wide whitelist.
+  // TODO(crbug.com/openscreen/45): This should really be a library-wide
+  // whitelist.
   if (!bound_interfaces_.empty() && !interface_index_whitelist_.empty()) {
     // TODO(btolsch): New interfaces won't be picked up on this path, but this
     // also highlights a larger issue of the interface list being frozen while

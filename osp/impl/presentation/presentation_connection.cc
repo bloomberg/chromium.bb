@@ -18,7 +18,7 @@
 #include "platform/api/logging.h"
 #include "util/std_util.h"
 
-// TODO(issue/27): Address TODOs in this file
+// TODO(crbug.com/openscreen/27): Address TODOs in this file
 namespace openscreen {
 namespace presentation {
 

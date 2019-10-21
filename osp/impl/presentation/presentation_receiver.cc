@@ -321,9 +321,9 @@ ErrorOr<size_t> Receiver::OnStreamMessage(uint64_t endpoint_id,
   }
 }
 
-// TODO(issue/31): Remove singletons in the embedder API and protocol
-// implementation layers and in presentation_connection, as well as unit tests.
-// static
+// TODO(crbug.com/openscreen/31): Remove singletons in the embedder API and
+// protocol implementation layers and in presentation_connection, as well as
+// unit tests. static
 Receiver* Receiver::Get() {
   static Receiver& receiver = *new Receiver();
   return &receiver;

@@ -216,7 +216,7 @@ void InternalServices::OnError(platform::UdpSocket* socket, Error error) {
 }
 
 void InternalServices::OnSendError(platform::UdpSocket* socket, Error error) {
-  // TODO(issue/67): Implement this method.
+  // TODO(crbug.com/openscreen/67): Implement this method.
   OSP_UNIMPLEMENTED();
 }
 

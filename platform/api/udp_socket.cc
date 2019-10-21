@@ -38,7 +38,7 @@ void UdpSocket::OnError(Error error) {
   }
 
   task_runner_->PostTask([e = std::move(error), this]() mutable {
-    // TODO(issues/71): |this| may be invalid at this point.
+    // TODO(crbug.com/openscreen/71): |this| may be invalid at this point.
     this->client_->OnError(this, std::move(e));
   });
 }
@@ -49,7 +49,7 @@ void UdpSocket::OnSendError(Error error) {
   }
 
   task_runner_->PostTask([e = std::move(error), this]() mutable {
-    // TODO(issues/71): |this| may be invalid at this point.
+    // TODO(crbug.com/openscreen/71): |this| may be invalid at this point.
     this->client_->OnSendError(this, std::move(e));
   });
 }
@@ -60,7 +60,7 @@ void UdpSocket::OnRead(ErrorOr<UdpPacket> read_data) {
   }
 
   task_runner_->PostTask([data = std::move(read_data), this]() mutable {
-    // TODO(issues/71): |this| may be invalid at this point.
+    // TODO(crbug.com/openscreen/71): |this| may be invalid at this point.
     this->client_->OnRead(this, std::move(data));
   });
 }

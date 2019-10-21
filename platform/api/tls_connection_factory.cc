@@ -12,7 +12,7 @@ void TlsConnectionFactory::OnAccepted(
     std::unique_ptr<TlsConnection> connection) {
   task_runner_->PostTask(
       [peer_cert, c = std::move(connection), this]() mutable {
-        // TODO(issues/71): |this| may be invalid at this point.
+        // TODO(crbug.com/openscreen/71): |this| may be invalid at this point.
         this->client_->OnAccepted(this, peer_cert, std::move(c));
       });
 }
@@ -22,7 +22,7 @@ void TlsConnectionFactory::OnConnected(
     std::unique_ptr<TlsConnection> connection) {
   task_runner_->PostTask(
       [peer_cert, c = std::move(connection), this]() mutable {
-        // TODO(issues/71): |this| may be invalid at this point.
+        // TODO(crbug.com/openscreen/71): |this| may be invalid at this point.
         this->client_->OnConnected(this, peer_cert, std::move(c));
       });
 }
@@ -30,14 +30,14 @@ void TlsConnectionFactory::OnConnected(
 void TlsConnectionFactory::OnConnectionFailed(
     const IPEndpoint& remote_address) {
   task_runner_->PostTask([remote_address, this]() {
-    // TODO(issues/71): |this| may be invalid at this point.
+    // TODO(crbug.com/openscreen/71): |this| may be invalid at this point.
     this->client_->OnConnectionFailed(this, remote_address);
   });
 }
 
 void TlsConnectionFactory::OnError(Error error) {
   task_runner_->PostTask([e = std::move(error), this]() mutable {
-    // TODO(issues/71): |this| may be invalid at this point.
+    // TODO(crbug.com/openscreen/71): |this| may be invalid at this point.
     this->client_->OnError(this, std::move(e));
   });
 }

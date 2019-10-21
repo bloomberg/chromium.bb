@@ -269,7 +269,7 @@ const uint64_t* YetAnotherBitVector::Select(int* pos) const {
 // constexpr members have storage (against the C++14 spec), and this confuses
 // the linker.
 //
-// TODO(issues/40): Remove these once toolchains are upgraded.
+// TODO(crbug.com/openscreen/40): Remove these once toolchains are upgraded.
 constexpr int YetAnotherBitVector::kBitsPerInteger;
 constexpr uint64_t YetAnotherBitVector::kAllBitsSet;
 constexpr uint64_t YetAnotherBitVector::kNoBitsSet;

@@ -14,7 +14,8 @@
 #include "platform/api/trace_logging.h"
 #include "platform/test/trace_logging_helpers.h"
 
-// TODO(issue/52): Remove duplicate code from trace logging+internal unit tests
+// TODO(crbug.com/openscreen/52): Remove duplicate code from trace
+// logging+internal unit tests
 namespace openscreen {
 namespace platform {
 namespace {

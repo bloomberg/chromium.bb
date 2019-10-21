@@ -17,8 +17,8 @@ uint64_t EndpointRequestIds::GetNextRequestId(uint64_t endpoint_id) {
 }
 
 void EndpointRequestIds::ResetRequestId(uint64_t endpoint_id) {
-  // TODO(issue/42): Consider using a timeout to drop the request id counter,
-  // and/or possibly set the initial value as part of the handshake.
+  // TODO(crbug.com/openscreen/42): Consider using a timeout to drop the request
+  // id counter, and/or possibly set the initial value as part of the handshake.
   request_ids_by_endpoint_id_.erase(endpoint_id);
 }
 

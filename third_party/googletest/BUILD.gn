@@ -34,7 +34,8 @@ if (build_with_chromium) {
 
     cflags_cc = []
     if (is_clang) {
-      # issue/15: GMock does not support the override keyword.
+      # NOTE(crbug.com/openscreen/15): GMock does not support the override
+      # keyword.
       cflags_cc += [
         "-Wno-exit-time-destructors",
         "-Wno-inconsistent-missing-override",

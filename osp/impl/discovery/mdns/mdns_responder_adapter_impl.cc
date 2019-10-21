@@ -339,13 +339,13 @@ void MdnsResponderAdapterImpl::OnRead(
 
 void MdnsResponderAdapterImpl::OnSendError(platform::UdpSocket* socket,
                                            Error error) {
-  // TODO(issue/67): Implement this method.
+  // TODO(crbug.com/openscreen/67): Implement this method.
   OSP_UNIMPLEMENTED();
 }
 
 void MdnsResponderAdapterImpl::OnError(platform::UdpSocket* socket,
                                        Error error) {
-  // TODO(issue/67): Implement this method.
+  // TODO(crbug.com/openscreen/67): Implement this method.
   OSP_UNIMPLEMENTED();
 }
 

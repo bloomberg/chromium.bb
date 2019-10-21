@@ -117,7 +117,8 @@ void TlsConnectionFactoryPosix::Listen(const IPEndpoint& local_address,
 
 void TlsConnectionFactoryPosix::OnConnectionPending(StreamSocketPosix* socket) {
   task_runner_->PostTask([socket, this]() mutable {
-    // TODO(issues/71): |this|, |socket| may be invalid at this point.
+    // TODO(crbug.com/openscreen/71): |this|, |socket| may be invalid at this
+    // point.
     ErrorOr<std::unique_ptr<StreamSocket>> accepted = socket->Accept();
     if (accepted.is_error()) {
       // Check for special error code. Because this call doesn't get executed

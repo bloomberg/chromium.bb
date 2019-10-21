@@ -141,9 +141,9 @@ void QuicServer::OnConnectionClosed(uint64_t endpoint_id,
 
   delete_connections_.emplace_back(connection_entry);
 
-  // TODO(issue/42): If we reset request IDs when a connection is closed, we
-  // might end up re-using request IDs when a new connection is created to the
-  // same endpoint.
+  // TODO(crbug.com/openscreen/42): If we reset request IDs when a connection is
+  // closed, we might end up re-using request IDs when a new connection is
+  // created to the same endpoint.
   endpoint_request_ids_.ResetRequestId(endpoint_id);
 }
 

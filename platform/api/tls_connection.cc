@@ -15,7 +15,7 @@ void TlsConnection::OnWriteBlocked() {
   }
 
   task_runner_->PostTask([this]() {
-    // TODO(issues/71): |this| may be invalid at this point.
+    // TODO(crbug.com/openscreen/71): |this| may be invalid at this point.
     this->client_->OnWriteBlocked(this);
   });
 }
@@ -26,7 +26,7 @@ void TlsConnection::OnWriteUnblocked() {
   }
 
   task_runner_->PostTask([this]() {
-    // TODO(issues/71): |this| may be invalid at this point.
+    // TODO(crbug.com/openscreen/71): |this| may be invalid at this point.
     this->client_->OnWriteUnblocked(this);
   });
 }
@@ -37,7 +37,7 @@ void TlsConnection::OnError(Error error) {
   }
 
   task_runner_->PostTask([e = std::move(error), this]() mutable {
-    // TODO(issues/71): |this| may be invalid at this point.
+    // TODO(crbug.com/openscreen/71): |this| may be invalid at this point.
     this->client_->OnError(this, std::move(e));
   });
 }
@@ -48,7 +48,7 @@ void TlsConnection::OnRead(std::vector<uint8_t> block) {
   }
 
   task_runner_->PostTask([b = std::move(block), this]() mutable {
-    // TODO(issues/71): |this| may be invalid at this point.
+    // TODO(crbug.com/openscreen/71): |this| may be invalid at this point.
     this->client_->OnRead(this, std::move(b));
   });
 }

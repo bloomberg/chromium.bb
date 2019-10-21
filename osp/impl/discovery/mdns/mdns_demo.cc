@@ -59,7 +59,7 @@ class DemoSocketClient : public platform::UdpSocket::Client {
   DemoSocketClient(mdns::MdnsResponderAdapterImpl* mdns) : mdns_(mdns) {}
 
   void OnError(platform::UdpSocket* socket, Error error) override {
-    // TODO(issue/66): Change to OSP_LOG_FATAL.
+    // TODO(crbug.com/openscreen/66): Change to OSP_LOG_FATAL.
     OSP_LOG_ERROR << "configuration failed for interface " << error.message();
     OSP_CHECK(false);
   }

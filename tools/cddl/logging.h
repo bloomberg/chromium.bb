@@ -22,7 +22,7 @@
 #define CHECK_GT(a, b) CHECK((a) > (b))
 #define CHECK_GE(a, b) CHECK((a) >= (b))
 
-// TODO(openscreen:75):
+// TODO(crbug.com/openscreen/75):
 // #1: This class has no state, so it doesn't need to be a singleton, just
 // a collection of static functions.
 //

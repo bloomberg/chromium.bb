@@ -428,9 +428,9 @@ Controller::Controller(platform::ClockNowFunctionPtr now_function) {
   const std::vector<ServiceInfo>& receivers =
       NetworkServiceManager::Get()->GetMdnsServiceListener()->GetReceivers();
   for (const auto& info : receivers) {
-    // TODO(issue/33): Replace service_id with endpoint_id when endpoint_id is
-    // more than just an IPEndpoint counter and actually relates to a device's
-    // identity.
+    // TODO(crbug.com/openscreen/33): Replace service_id with endpoint_id when
+    // endpoint_id is more than just an IPEndpoint counter and actually relates
+    // to a device's identity.
     receiver_endpoints_.emplace(info.service_id, info.v4_endpoint.port
                                                      ? info.v4_endpoint
                                                      : info.v6_endpoint);
