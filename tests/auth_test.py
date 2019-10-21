@@ -34,42 +34,57 @@ class AuthenticatorTest(unittest.TestCase):
   def testHasCachedCredentials_NotLoggedIn(self):
     subprocess2.check_call_out.side_effect = [
         subprocess2.CalledProcessError(1, ['cmd'], 'cwd', 'stdout', 'stderr')]
-    authenticator = auth.get_authenticator(auth.make_auth_config())
-    self.assertFalse(authenticator.has_cached_credentials())
+    self.assertFalse(auth.Authenticator().has_cached_credentials())
 
   def testHasCachedCredentials_LoggedIn(self):
     subprocess2.check_call_out.return_value = (
         json.dumps({'token': 'token', 'expiry': 12345678}), '')
-    authenticator = auth.get_authenticator(auth.make_auth_config())
-    self.assertTrue(authenticator.has_cached_credentials())
+    self.assertTrue(auth.Authenticator().has_cached_credentials())
 
   def testGetAccessToken_NotLoggedIn(self):
     subprocess2.check_call_out.side_effect = [
         subprocess2.CalledProcessError(1, ['cmd'], 'cwd', 'stdout', 'stderr')]
-    authenticator = auth.get_authenticator(auth.make_auth_config())
-    self.assertRaises(auth.LoginRequiredError, authenticator.get_access_token)
+    self.assertRaises(
+        auth.LoginRequiredError, auth.Authenticator().get_access_token)
 
   def testGetAccessToken_CachedToken(self):
-    authenticator = auth.get_authenticator(auth.make_auth_config())
+    authenticator = auth.Authenticator()
     authenticator._access_token = auth.AccessToken('token', None)
     self.assertEqual(
         auth.AccessToken('token', None), authenticator.get_access_token())
+    self.assertEqual(0, len(subprocess2.check_call_out.mock_calls))
 
   def testGetAccesstoken_LoggedIn(self):
     expiry = calendar.timegm(VALID_EXPIRY.timetuple())
     subprocess2.check_call_out.return_value = (
         json.dumps({'token': 'token', 'expiry': expiry}), '')
-    authenticator = auth.get_authenticator(auth.make_auth_config())
     self.assertEqual(
         auth.AccessToken('token', VALID_EXPIRY),
-        authenticator.get_access_token())
+        auth.Authenticator().get_access_token())
+    subprocess2.check_call_out.assert_called_with(
+        ['luci-auth',
+         'token',
+         '-scopes', auth.OAUTH_SCOPE_EMAIL,
+         '-json-output', '-'],
+        stdout=subprocess2.PIPE, stderr=subprocess2.PIPE)
+
+  def testGetAccessToken_DifferentScope(self):
+    expiry = calendar.timegm(VALID_EXPIRY.timetuple())
+    subprocess2.check_call_out.return_value = (
+        json.dumps({'token': 'token', 'expiry': expiry}), '')
+    self.assertEqual(
+        auth.AccessToken('token', VALID_EXPIRY),
+        auth.Authenticator('custom scopes').get_access_token())
+    subprocess2.check_call_out.assert_called_with(
+        ['luci-auth', 'token', '-scopes', 'custom scopes', '-json-output', '-'],
+        stdout=subprocess2.PIPE, stderr=subprocess2.PIPE)
 
   def testAuthorize(self):
     http = mock.Mock()
     http_request = http.request
     http_request.__name__ = '__name__'
 
-    authenticator = auth.get_authenticator(auth.make_auth_config())
+    authenticator = auth.Authenticator()
     authenticator._access_token = auth.AccessToken('token', None)
 
     authorized = authenticator.authorize(http)

@@ -351,17 +351,11 @@ class LuciContextAuthenticator(Authenticator):
     return auth.has_luci_context_local_auth()
 
   def __init__(self):
-    self._access_token = None
-    self._ensure_fresh()
-
-  def _ensure_fresh(self):
-    if not self._access_token or self._access_token.needs_refresh():
-      self._access_token = auth.get_luci_context_access_token(
-          scopes=' '.join([auth.OAUTH_SCOPE_EMAIL, auth.OAUTH_SCOPE_GERRIT]))
+    self._authenticator = auth.Authenticator(
+        ' '.join([auth.OAUTH_SCOPE_EMAIL, auth.OAUTH_SCOPE_GERRIT]))
 
   def get_auth_header(self, _host):
-    self._ensure_fresh()
-    return 'Bearer %s' % self._access_token.token
+    return 'Bearer %s' % self._authenticator.get_access_token().token
 
 
 def CreateHttpConn(host, path, reqtype='GET', headers=None, body=None):

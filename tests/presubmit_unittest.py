@@ -1642,7 +1642,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
                      presubmit.OutputApi.PresubmitPromptWarning)
 
   @mock.patch('git_cl.Changelist')
-  @mock.patch('auth.get_authenticator')
+  @mock.patch('auth.Authenticator')
   def testCannedCheckChangedLUCIConfigs(self, mockGetAuth, mockChangelist):
     affected_file1 = mock.MagicMock(presubmit.GitAffectedFile)
     affected_file1.LocalPath.return_value = 'foo.cfg'

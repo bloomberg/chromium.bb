@@ -443,11 +443,10 @@ def _parse_bucket(raw_bucket):
   return project, bucket
 
 
-def _trigger_try_jobs(auth_config, changelist, buckets, options, patchset):
+def _trigger_try_jobs(changelist, buckets, options, patchset):
   """Sends a request to Buildbucket to trigger tryjobs for a changelist.
 
   Args:
-    auth_config: AuthConfig for Buildbucket.
     changelist: Changelist that the tryjobs are associated with.
     buckets: A nested dict mapping bucket names to builders to tests.
     options: Command-line options.
@@ -466,7 +465,7 @@ def _trigger_try_jobs(auth_config, changelist, buckets, options, patchset):
   if not requests:
     return
 
-  http = auth.get_authenticator(auth_config).authorize(httplib2.Http())
+  http = auth.Authenticator().authorize(httplib2.Http())
   http.force_exception_to_status_code = True
 
   batch_request = {'requests': requests}
@@ -527,8 +526,7 @@ def _make_try_job_schedule_requests(changelist, buckets, options, patchset):
   return requests
 
 
-def fetch_try_jobs(auth_config, changelist, buildbucket_host,
-                   patchset=None):
+def fetch_try_jobs(changelist, buildbucket_host, patchset=None):
   """Fetches tryjobs from buildbucket.
 
   Returns list of buildbucket.v2.Build with the try jobs for the changelist.
@@ -541,7 +539,7 @@ def fetch_try_jobs(auth_config, changelist, buildbucket_host,
       'fields': ','.join('builds.*.' + field for field in fields),
   }
 
-  authenticator = auth.get_authenticator(auth_config)
+  authenticator = auth.Authenticator()
   if authenticator.has_cached_credentials():
     http = authenticator.authorize(httplib2.Http())
   else:
@@ -554,13 +552,11 @@ def fetch_try_jobs(auth_config, changelist, buildbucket_host,
   response = _call_buildbucket(http, buildbucket_host, 'SearchBuilds', request)
   return response.get('builds', [])
 
-def _fetch_latest_builds(
-    auth_config, changelist, buildbucket_host, latest_patchset=None):
+def _fetch_latest_builds(changelist, buildbucket_host, latest_patchset=None):
   """Fetches builds from the latest patchset that has builds (within
   the last few patchsets).
 
   Args:
-    auth_config (auth.AuthConfig): Auth info for Buildbucket
     changelist (Changelist): The CL to fetch builds for
     buildbucket_host (str): Buildbucket host, e.g. "cr-buildbucket.appspot.com"
     lastest_patchset(int|NoneType): the patchset to start fetching builds from.
@@ -581,8 +577,7 @@ def _fetch_latest_builds(
 
   min_ps = max(1, ps - 5)
   while ps >= min_ps:
-    builds = fetch_try_jobs(
-        auth_config, changelist, buildbucket_host, patchset=ps)
+    builds = fetch_try_jobs(changelist, buildbucket_host, patchset=ps)
     if len(builds):
       return builds, ps
     ps -= 1
@@ -4439,7 +4434,6 @@ def CMDupload(parser, args):
                          'fixed (pre-populates "Fixed:" tag). Same format as '
                          '-b option / "Bug:" tag. If fixing several issues, '
                          'separate with commas.')
-  auth.add_auth_options(parser)
 
   orig_args = args
   _add_codereview_select_options(parser)
@@ -4487,15 +4481,13 @@ def CMDupload(parser, args):
     if ret != 0:
       print('Upload failed, so --retry-failed has no effect.')
       return ret
-    auth_config = auth.extract_auth_config_from_options(options)
     builds, _ = _fetch_latest_builds(
-        auth_config, cl, options.buildbucket_host,
-        latest_patchset=patchset)
+        cl, options.buildbucket_host, latest_patchset=patchset)
     buckets = _filter_failed_for_retry(builds)
     if len(buckets) == 0:
       print('No failed tryjobs, so --retry-failed has no effect.')
       return ret
-    _trigger_try_jobs(auth_config, cl, buckets, options, patchset + 1)
+    _trigger_try_jobs(cl, buckets, options, patchset + 1)
 
   return ret
 
@@ -4745,10 +4737,8 @@ def CMDtry(parser, args):
       '-R', '--retry-failed', action='store_true', default=False,
       help='Retry failed jobs from the latest set of tryjobs. '
            'Not allowed with --bucket and --bot options.')
-  auth.add_auth_options(parser)
   _add_codereview_issue_select_options(parser)
   options, args = parser.parse_args(args)
-  auth_config = auth.extract_auth_config_from_options(options)
 
   # Make sure that all properties are prop=value pairs.
   bad_params = [x for x in options.properties if '=' not in x]
@@ -4775,8 +4765,7 @@ def CMDtry(parser, args):
             '-B, -b, --bucket, or --bot.', file=sys.stderr)
       return 1
     print('Searching for failed tryjobs...')
-    builds, patchset = _fetch_latest_builds(
-        auth_config, cl, options.buildbucket_host)
+    builds, patchset = _fetch_latest_builds(cl, options.buildbucket_host)
     if options.verbose:
       print('Got %d builds in patchset #%d' % (len(builds), patchset))
     buckets = _filter_failed_for_retry(builds)
@@ -4812,7 +4801,7 @@ def CMDtry(parser, args):
 
   patchset = cl.GetMostRecentPatchset()
   try:
-    _trigger_try_jobs(auth_config, cl, buckets, options, patchset)
+    _trigger_try_jobs(cl, buckets, options, patchset)
   except BuildbucketResponseException as ex:
     print('ERROR: %s' % ex)
     return 1
@@ -4837,13 +4826,11 @@ def CMDtry_results(parser, args):
       '--json', help=('Path of JSON output file to write tryjob results to,'
                       'or "-" for stdout.'))
   parser.add_option_group(group)
-  auth.add_auth_options(parser)
   _add_codereview_issue_select_options(parser)
   options, args = parser.parse_args(args)
   if args:
     parser.error('Unrecognized args: %s' % ' '.join(args))
 
-  auth_config = auth.extract_auth_config_from_options(options)
   cl = Changelist(issue=options.issue)
   if not cl.GetIssue():
     parser.error('Need to upload first.')
@@ -4858,7 +4845,7 @@ def CMDtry_results(parser, args):
                    cl.GetIssue())
 
   try:
-    jobs = fetch_try_jobs(auth_config, cl, options.buildbucket_host, patchset)
+    jobs = fetch_try_jobs(cl, options.buildbucket_host, patchset)
   except BuildbucketResponseException as ex:
     print('Buildbucket error: %s' % ex)
     return 1
@@ -5470,7 +5457,7 @@ def main(argv):
   dispatcher = subcommand.CommandDispatcher(__name__)
   try:
     return dispatcher.execute(OptionParser(), argv)
-  except auth.AuthenticationError as e:
+  except auth.LoginRequiredError as e:
     DieWithError(str(e))
   except urllib2.HTTPError as e:
     if e.code != 500:
