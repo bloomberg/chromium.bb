@@ -684,7 +684,6 @@ WebInputEventResult ScrollManager::HandleGestureScrollEnd(
     const WebGestureEvent& gesture_event) {
   TRACE_EVENT0("input", "ScrollManager::handleGestureScrollEnd");
   Node* node = scroll_gesture_handling_node_;
-  bool snap_at_gesture_scroll_end = false;
 
   if (node && node->GetLayoutObject()) {
     // If the GSE is for a scrollable area that has an in-progress animation,
@@ -722,27 +721,32 @@ WebInputEventResult ScrollManager::HandleGestureScrollEnd(
         ScrollState::Create(std::move(scroll_state_data));
     CustomizedScroll(*scroll_state);
 
-    snap_at_gesture_scroll_end = SnapAtGestureScrollEnd(gesture_event);
-    NotifyScrollPhaseEndForCustomizedScroll();
+    // We add a callback to set the hover state dirty and send a scroll end
+    // event when the scroll ends without snap or the snap point is the same as
+    // the scroll position.
+    base::ScopedClosureRunner callback(WTF::Bind(
+        [](WeakPersistent<LocalFrame> local_frame,
+           WeakPersistent<ScrollManager> scroll_manager) {
+          if (RuntimeEnabledFeatures::UpdateHoverAtBeginFrameEnabled() &&
+              local_frame) {
+            local_frame->GetEventHandler().MarkHoverStateDirty();
+          }
 
-    if (RuntimeEnabledFeatures::OverscrollCustomizationEnabled() &&
-        !snap_at_gesture_scroll_end) {
-      if (Node* scroll_end_target = GetScrollEventTarget()) {
-        scroll_end_target->GetDocument().EnqueueScrollEndEventForNode(
-            scroll_end_target);
-      }
-    }
+          Node* scroll_end_target = scroll_manager->GetScrollEventTarget();
+          if (RuntimeEnabledFeatures::OverscrollCustomizationEnabled() &&
+              scroll_end_target) {
+            scroll_end_target->GetDocument().EnqueueScrollEndEventForNode(
+                scroll_end_target);
+          }
+        },
+        WrapWeakPersistent(&(frame_->LocalFrameRoot())),
+        WrapWeakPersistent(this)));
+
+    SnapAtGestureScrollEnd(gesture_event, std::move(callback));
+    NotifyScrollPhaseEndForCustomizedScroll();
   }
 
   ClearGestureScrollState();
-
-  // If we are performing a snap at the scrollend gesture, we should update
-  // hover state dirty at the end of the programmatic scroll animation caused
-  // by the snap, and we should avoid marking the hover state dirty here.
-  if (!snap_at_gesture_scroll_end &&
-      RuntimeEnabledFeatures::UpdateHoverAtBeginFrameEnabled()) {
-    frame_->LocalFrameRoot().GetEventHandler().MarkHoverStateDirty();
-  }
 
   return WebInputEventResult::kNotHandled;
 }
@@ -757,7 +761,9 @@ ScrollOffset GetScrollDirection(FloatSize delta) {
   return delta.ShrunkTo(FloatSize(1, 1)).ExpandedTo(FloatSize(-1, -1));
 }
 
-bool ScrollManager::SnapAtGestureScrollEnd(const WebGestureEvent& end_event) {
+bool ScrollManager::SnapAtGestureScrollEnd(
+    const WebGestureEvent& end_event,
+    base::ScopedClosureRunner on_finish) {
   if (!previous_gesture_scrolled_node_ ||
       (!did_scroll_x_for_scroll_gesture_ && !did_scroll_y_for_scroll_gesture_))
     return false;
@@ -787,11 +793,13 @@ bool ScrollManager::SnapAtGestureScrollEnd(const WebGestureEvent& end_event) {
     // limit the miscalculation to 1px.
     ScrollOffset scroll_direction =
         GetScrollDirection(last_scroll_delta_for_scroll_gesture_);
-    return scrollable_area->SnapForDirection(scroll_direction);
+    return scrollable_area->SnapForDirection(scroll_direction,
+                                             std::move(on_finish));
   }
 
   return scrollable_area->SnapAtCurrentPosition(
-      did_scroll_x_for_scroll_gesture_, did_scroll_y_for_scroll_gesture_);
+      did_scroll_x_for_scroll_gesture_, did_scroll_y_for_scroll_gesture_,
+      std::move(on_finish));
 }
 
 bool ScrollManager::GetSnapFlingInfo(

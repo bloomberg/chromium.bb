@@ -864,27 +864,33 @@ void ScrollableArea::SnapAfterScrollbarScrolling(
                         orientation == kVerticalScrollbar);
 }
 
-bool ScrollableArea::SnapAtCurrentPosition(bool scrolled_x, bool scrolled_y) {
+bool ScrollableArea::SnapAtCurrentPosition(
+    bool scrolled_x,
+    bool scrolled_y,
+    base::ScopedClosureRunner on_finish) {
   FloatPoint current_position = ScrollPosition();
-  return SnapForEndPosition(current_position, scrolled_x, scrolled_y);
+  return SnapForEndPosition(current_position, scrolled_x, scrolled_y,
+                            std::move(on_finish));
 }
 
 bool ScrollableArea::SnapForEndPosition(const FloatPoint& end_position,
                                         bool scrolled_x,
-                                        bool scrolled_y) {
+                                        bool scrolled_y,
+                                        base::ScopedClosureRunner on_finish) {
   std::unique_ptr<cc::SnapSelectionStrategy> strategy =
       cc::SnapSelectionStrategy::CreateForEndPosition(
           gfx::ScrollOffset(end_position), scrolled_x, scrolled_y);
-  return PerformSnapping(*strategy);
+  return PerformSnapping(*strategy, std::move(on_finish));
 }
 
-bool ScrollableArea::SnapForDirection(const ScrollOffset& delta) {
+bool ScrollableArea::SnapForDirection(const ScrollOffset& delta,
+                                      base::ScopedClosureRunner on_finish) {
   FloatPoint current_position = ScrollPosition();
   std::unique_ptr<cc::SnapSelectionStrategy> strategy =
       cc::SnapSelectionStrategy::CreateForDirection(
           gfx::ScrollOffset(current_position),
           gfx::ScrollOffset(delta.Width(), delta.Height()));
-  return PerformSnapping(*strategy);
+  return PerformSnapping(*strategy, std::move(on_finish));
 }
 
 bool ScrollableArea::SnapForEndAndDirection(const ScrollOffset& delta) {
@@ -896,8 +902,8 @@ bool ScrollableArea::SnapForEndAndDirection(const ScrollOffset& delta) {
   return PerformSnapping(*strategy);
 }
 
-bool ScrollableArea::PerformSnapping(
-    const cc::SnapSelectionStrategy& strategy) {
+bool ScrollableArea::PerformSnapping(const cc::SnapSelectionStrategy& strategy,
+                                     base::ScopedClosureRunner on_finish) {
   base::Optional<FloatPoint> snap_point = GetSnapPosition(strategy);
   if (!snap_point)
     return false;
@@ -905,7 +911,8 @@ bool ScrollableArea::PerformSnapping(
   CancelScrollAnimation();
   CancelProgrammaticScrollAnimation();
   SetScrollOffset(ScrollPositionToOffset(snap_point.value()),
-                  kProgrammaticScroll, kScrollBehaviorSmooth);
+                  kProgrammaticScroll, kScrollBehaviorSmooth,
+                  on_finish.Release());
   return true;
 }
 
