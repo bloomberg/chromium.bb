@@ -41,10 +41,10 @@ void MockCameraModule::GetCameraInfo(int32_t camera_id,
 }
 
 void MockCameraModule::SetCallbacks(
-    cros::mojom::CameraModuleCallbacksPtr callbacks,
+    mojo::PendingRemote<cros::mojom::CameraModuleCallbacks> callbacks,
     SetCallbacksCallback callback) {
   DoSetCallbacks(callbacks, callback);
-  callbacks_ = std::move(callbacks);
+  callbacks_.Bind(std::move(callbacks));
   std::move(callback).Run(0);
 }
 

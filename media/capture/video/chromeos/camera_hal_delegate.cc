@@ -363,9 +363,7 @@ void CameraHalDelegate::SetCameraModuleOnIpcThread(
 void CameraHalDelegate::ResetMojoInterfaceOnIpcThread() {
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
   camera_module_.reset();
-  if (camera_module_callbacks_.is_bound()) {
-    camera_module_callbacks_.Close();
-  }
+  camera_module_callbacks_.reset();
   vendor_tag_ops_delegate_.Reset();
   builtin_camera_info_updated_.Reset();
   camera_module_has_been_set_.Reset();
@@ -416,12 +414,8 @@ void CameraHalDelegate::OnGotNumberOfCamerasOnIpcThread(int32_t num_cameras) {
   // Per camera HAL v3 specification SetCallbacks() should be called after the
   // first time GetNumberOfCameras() is called, and before other CameraModule
   // functions are called.
-  cros::mojom::CameraModuleCallbacksPtr camera_module_callbacks_ptr;
-  cros::mojom::CameraModuleCallbacksRequest camera_module_callbacks_request =
-      mojo::MakeRequest(&camera_module_callbacks_ptr);
-  camera_module_callbacks_.Bind(std::move(camera_module_callbacks_request));
   camera_module_->SetCallbacks(
-      std::move(camera_module_callbacks_ptr),
+      camera_module_callbacks_.BindNewPipeAndPassRemote(),
       base::BindOnce(&CameraHalDelegate::OnSetCallbacksOnIpcThread, this));
 
   camera_module_->GetVendorTagOps(

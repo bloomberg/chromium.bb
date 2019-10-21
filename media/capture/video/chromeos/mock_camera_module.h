@@ -13,6 +13,8 @@
 #include "media/capture/video/chromeos/mojom/camera_common.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace media {
@@ -41,11 +43,13 @@ class MockCameraModule : public cros::mojom::CameraModule {
   MOCK_METHOD2(DoGetCameraInfo,
                void(int32_t camera_id, GetCameraInfoCallback& callback));
 
-  void SetCallbacks(cros::mojom::CameraModuleCallbacksPtr callbacks,
-                    SetCallbacksCallback callback) override;
-  MOCK_METHOD2(DoSetCallbacks,
-               void(cros::mojom::CameraModuleCallbacksPtr& callbacks,
-                    SetCallbacksCallback& callback));
+  void SetCallbacks(
+      mojo::PendingRemote<cros::mojom::CameraModuleCallbacks> callbacks,
+      SetCallbacksCallback callback) override;
+  MOCK_METHOD2(
+      DoSetCallbacks,
+      void(mojo::PendingRemote<cros::mojom::CameraModuleCallbacks>& callbacks,
+           SetCallbacksCallback& callback));
 
   void Init(InitCallback callback) override;
   MOCK_METHOD1(DoInit, void(InitCallback& callback));
@@ -82,7 +86,7 @@ class MockCameraModule : public cros::mojom::CameraModule {
 
   base::Thread mock_module_thread_;
   mojo::Binding<cros::mojom::CameraModule> binding_;
-  cros::mojom::CameraModuleCallbacksPtr callbacks_;
+  mojo::Remote<cros::mojom::CameraModuleCallbacks> callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(MockCameraModule);
 };
