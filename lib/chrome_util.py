@@ -498,7 +498,9 @@ def GetChromeRuntimeDeps(build_dir, build_target):
   for f in runtime_deps:
     rebased = os.path.relpath(os.path.abspath(os.path.join(build_dir, f)),
                               src_dir)
-    if f.endswith('/') and not rebased.endswith('/'):
+    # Dirs from a "data" rule in gn file do not have trailing '/' in runtime
+    # deps. Ensures such dirs are ended with a trailing '/'.
+    if os.path.isdir(rebased) and not rebased.endswith('/'):
       rebased += '/'
 
     rebased_runtime_deps.append(rebased)
