@@ -22,6 +22,8 @@ import sys
 import tempfile
 import threading
 
+import six
+
 _LOGGER = logging.getLogger(__name__)
 
 # _ENV_KEY is the environment variable that we look for to find out where the
@@ -40,8 +42,8 @@ _WRITE_LOCK = threading.RLock()
 
 @contextlib.contextmanager
 def _tf(data, data_raw=False, workdir=None):
-  tf = tempfile.NamedTemporaryFile(prefix='luci_ctx.', suffix='.json',
-                                   delete=False, dir=workdir)
+  tf = tempfile.NamedTemporaryFile(
+      mode='w', prefix='luci_ctx.', suffix='.json', delete=False, dir=workdir)
   _LOGGER.debug('Writing LUCI_CONTEXT file %r', tf.name)
   try:
     if not data_raw:
@@ -64,7 +66,7 @@ def _to_utf8(obj):
     return {_to_utf8(key): _to_utf8(value) for key, value in obj.items()}
   if isinstance(obj, list):
     return [_to_utf8(item) for item in obj]
-  if isinstance(obj, unicode):
+  if isinstance(obj, six.text_type):
     return obj.encode('utf-8')
   return obj
 
@@ -98,7 +100,8 @@ def _initial_load():
 
   ctx_path = os.environ.get(_ENV_KEY)
   if ctx_path:
-    ctx_path = ctx_path.decode(sys.getfilesystemencoding())
+    if six.PY2:
+      ctx_path = ctx_path.decode(sys.getfilesystemencoding())
     _LOGGER.debug('Loading LUCI_CONTEXT: %r', ctx_path)
     try:
       with open(ctx_path, 'r') as f:
@@ -232,8 +235,10 @@ def write(_tmpdir=None, **section_values):
       try:
         old_value = _CUR_CONTEXT
         old_envvar = os.environ.get(_ENV_KEY, None)
-
-        os.environ[_ENV_KEY] = name.encode(sys.getfilesystemencoding())
+        if six.PY2:
+          os.environ[_ENV_KEY] = name.encode(sys.getfilesystemencoding())
+        else:
+          os.environ[_ENV_KEY] = name
         _CUR_CONTEXT = new_val
         yield
       finally:
