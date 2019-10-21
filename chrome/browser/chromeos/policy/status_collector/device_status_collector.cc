@@ -92,7 +92,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
-#include "storage/browser/fileapi/external_mount_points.h"
+#include "storage/browser/file_system/external_mount_points.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 using base::Time;
