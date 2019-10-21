@@ -104,7 +104,7 @@ OmniboxPageActionIconContainerView::OmniboxPageActionIconContainerView(
                   ClickToCallUiController::GetOrCreateFromWebContents(
                       contents));
             }),
-            base::BindRepeating(SharingDialogView::GetAsBubble));
+            base::BindRepeating(SharingDialogView::GetAsBubbleForClickToCall));
         page_action_icons_.push_back(click_to_call_icon_view_);
         break;
       case PageActionIconType::kSharedClipboard:
