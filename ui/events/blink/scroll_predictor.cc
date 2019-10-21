@@ -74,10 +74,6 @@ std::unique_ptr<EventWithCallback> ScrollPredictor::ResampleScrollEvents(
     if (original_events.empty())
       return event_with_callback;
 
-    temporary_accumulated_delta_ = current_event_accumulated_delta_;
-    for (auto& coalesced_event : original_events)
-      ComputeAccuracy(coalesced_event.event_);
-
     for (auto& coalesced_event : original_events)
       UpdatePrediction(coalesced_event.event_, frame_time);
 
@@ -123,7 +119,6 @@ void ScrollPredictor::UpdatePrediction(const WebScopedInputEvent& event,
                                     gesture_event.TimeStamp()};
 
   predictor_->Update(data);
-  last_event_timestamp_ = gesture_event.TimeStamp();
 
   metrics_handler_.AddRealEvent(current_event_accumulated_delta_,
                                 gesture_event.TimeStamp(), frame_time,
@@ -201,49 +196,6 @@ void ScrollPredictor::ResampleEvent(base::TimeTicks frame_time,
     metrics_handler_.AddPredictedEvent(predicted_accumulated_delta,
                                        prediction_time, frame_time,
                                        true /* Scrolling */);
-  }
-}
-
-void ScrollPredictor::ComputeAccuracy(const WebScopedInputEvent& event) {
-  const WebGestureEvent& gesture_event =
-      static_cast<const WebGestureEvent&>(*event);
-
-  base::TimeDelta time_delta = event->TimeStamp() - last_event_timestamp_;
-  std::string suffix;
-  if (time_delta < base::TimeDelta::FromMilliseconds(10))
-    suffix = "Short";
-  else if (time_delta < base::TimeDelta::FromMilliseconds(20))
-    suffix = "Middle";
-  else if (time_delta < base::TimeDelta::FromMilliseconds(35))
-    suffix = "Long";
-  else
-    return;
-
-  InputPredictor::InputData predict_result;
-  temporary_accumulated_delta_.Offset(gesture_event.data.scroll_update.delta_x,
-                                      gesture_event.data.scroll_update.delta_y);
-  if (predictor_->HasPrediction() &&
-      predictor_->GeneratePrediction(event->TimeStamp(), &predict_result)) {
-    float distance =
-        (predict_result.pos - gfx::PointF(temporary_accumulated_delta_))
-            .Length();
-    base::UmaHistogramCounts1000(
-        "Event.InputEventPrediction.Accuracy.Scroll." + suffix,
-        static_cast<int>(distance));
-
-    // If the distance from predicted position to actual position is in same
-    // direction as the delta_y, the result is under predicted, otherwise over
-    // predict.
-    float dist_y = temporary_accumulated_delta_.y() - predict_result.pos.y();
-    if (gesture_event.data.scroll_update.delta_y * dist_y < 0) {
-      base::UmaHistogramCounts1000(
-          "Event.InputEventPrediction.Accuracy.Scroll.OverPredict." + suffix,
-          static_cast<int>(std::abs(dist_y)));
-    } else {
-      base::UmaHistogramCounts1000(
-          "Event.InputEventPrediction.Accuracy.Scroll.UnderPredict." + suffix,
-          static_cast<int>(std::abs(dist_y)));
-    }
   }
 }
 

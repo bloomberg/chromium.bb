@@ -61,10 +61,6 @@ class ScrollPredictor {
   // in |PredictionMetricsHandler|
   void EvaluatePrediction();
 
-  // Reports prediction accuracy UMA histogram. Calculates position in current
-  // event time and compute the distance between real event and predicted event.
-  void ComputeAccuracy(const WebScopedInputEvent& event);
-
   std::unique_ptr<InputPredictor> predictor_;
   std::unique_ptr<InputFilter> filter_;
 
@@ -82,13 +78,6 @@ class ScrollPredictor {
 
   // Whether current scroll event should be resampled.
   bool should_resample_scroll_events_ = false;
-
-  // Records the timestamp for last event added to predictor. Use for
-  // reporting the accuracy metrics.
-  base::TimeTicks last_event_timestamp_;
-  // Total scroll data, similar as current_event_accumulated_delta_, used for
-  // calculating accuracy.
-  gfx::PointF temporary_accumulated_delta_;
 
   // Handler used for evaluating the prediction
   PredictionMetricsHandler metrics_handler_;
