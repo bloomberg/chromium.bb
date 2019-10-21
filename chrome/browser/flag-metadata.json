@@ -3480,6 +3480,11 @@
     "expiry_milestone": 82
   },
   {
+    "name": "webui-tab-strip-demo-options",
+    "owners": [ "johntlee", "dpapad" ],
+    "expiry_milestone": 82
+  },
+  {
     "name": "webxr",
     "owners": [ "//third_party/blink/renderer/modules/xr/OWNERS", "xr-dev@chromium.org" ],
     "expiry_milestone": 82

@@ -1339,8 +1339,13 @@ extern const char kWebrtcSrtpAesGcmDescription[];
 extern const char kWebrtcStunOriginName[];
 extern const char kWebrtcStunOriginDescription[];
 
+#if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
 extern const char kWebUITabStripName[];
 extern const char kWebUITabStripDescription[];
+
+extern const char kWebUITabStripDemoOptionsName[];
+extern const char kWebUITabStripDemoOptionsDescription[];
+#endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
 
 extern const char kWebvrName[];
 extern const char kWebvrDescription[];
