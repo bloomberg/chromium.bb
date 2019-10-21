@@ -24,10 +24,7 @@
 
 #include <limits.h>
 #include <string.h>
-#include "aom/aom_encoder.h"
 #include "aom/internal/aom_codec_internal.h"
-
-extern void init_config(cfg_options_t *pConfig);
 
 #define SAVE_STATUS(ctx, var) (ctx ? (ctx->err = var) : var)
 
@@ -170,12 +167,10 @@ aom_codec_err_t aom_codec_enc_config_default(aom_codec_iface_t *iface,
     }
   }
 
-#if CONFIG_FILEOPTIONS
   /* default values */
   if (cfg) {
-    init_config(&cfg->encoder_cfg);
+    cfg->cfg.ext_partition = 1;
   }
-#endif
 
   return res;
 }

@@ -369,6 +369,7 @@ typedef struct AV1EncoderConfig {
   unsigned int full_still_picture_hdr;
   int enable_dual_filter;
   unsigned int motion_vector_unit_test;
+  const cfg_options_t *cfg;
   int enable_rect_partitions;
   int enable_ab_partitions;
   int enable_1to4_partitions;
@@ -427,9 +428,6 @@ typedef struct AV1EncoderConfig {
   unsigned int tier_mask;
   // min_cr / 100 is the target minimum compression ratio for each frame.
   unsigned int min_cr;
-#if CONFIG_FILEOPTIONS
-  const cfg_options_t *encoder_cfg;
-#endif
 } AV1EncoderConfig;
 
 static INLINE int is_lossless_requested(const AV1EncoderConfig *cfg) {
