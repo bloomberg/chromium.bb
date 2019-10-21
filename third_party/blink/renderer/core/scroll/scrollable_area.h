@@ -141,7 +141,24 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
     return nullptr;
   }
   virtual void SetSnapContainerData(base::Optional<cc::SnapContainerData>) {}
-  virtual void SnapAfterScrollbarScrolling(ScrollbarOrientation) {}
+  void SnapAfterScrollbarScrolling(ScrollbarOrientation);
+
+  // SnapAtCurrentPosition(), SnapForEndPosition(), SnapForDirection(), and
+  // SnapForEndAndDirection() return true if snapping was performed, and false
+  // otherwise. Note that this does not necessarily mean that any scrolling was
+  // performed as a result e.g., if we are already at the snap point.
+  //
+  // SnapAtCurrentPosition() calls SnapForEndPosition() with the current
+  // scroll position.
+  bool SnapAtCurrentPosition(bool scrolled_x, bool scrolled_y);
+  bool SnapForEndPosition(const FloatPoint& end_position,
+                          bool scrolled_x,
+                          bool scrolled_y);
+  bool SnapForDirection(const ScrollOffset& delta);
+  bool SnapForEndAndDirection(const ScrollOffset& delta);
+
+  base::Optional<FloatPoint> GetSnapPosition(
+      const cc::SnapSelectionStrategy& strategy) const;
 
   void FinishCurrentScrollAnimations() const;
 
@@ -498,6 +515,9 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
   virtual int PageStep(ScrollbarOrientation) const;
   virtual int DocumentStep(ScrollbarOrientation) const;
   virtual float PixelStep(ScrollbarOrientation) const;
+
+  // Returns true if a snap point was found.
+  bool PerformSnapping(const cc::SnapSelectionStrategy& strategy);
 
   mutable Member<ScrollAnimatorBase> scroll_animator_;
   mutable Member<ProgrammaticScrollAnimator> programmatic_scroll_animator_;

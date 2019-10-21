@@ -28,7 +28,6 @@
 #include "third_party/blink/renderer/core/page/scrolling/root_scroller_controller.h"
 #include "third_party/blink/renderer/core/page/scrolling/scroll_state.h"
 #include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator.h"
-#include "third_party/blink/renderer/core/page/scrolling/snap_coordinator.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/scroll/scroll_animator_base.h"
@@ -301,8 +300,11 @@ bool ScrollManager::LogicalScroll(ScrollDirection direction,
 
     DCHECK(scrollable_area);
 
-    SnapCoordinator& snap_coordinator =
-        frame_->GetDocument()->GetSnapCoordinator();
+    // TODO(crbug.com/1015451): Remove ScrollableAreaForSnapping and use the
+    // RootFrameViewport if the scroller is a global root scroller.
+    ScrollableArea* scrollable_area_for_snapping =
+        ScrollableAreaForSnapping(box);
+
     ScrollOffset delta = ToScrollDelta(physical_direction, 1);
     delta.Scale(scrollable_area->ScrollStep(granularity, kHorizontalScrollbar),
                 scrollable_area->ScrollStep(granularity, kVerticalScrollbar));
@@ -312,12 +314,12 @@ bool ScrollManager::LogicalScroll(ScrollDirection direction,
     // scroll with intended end position only.
     switch (granularity) {
       case ScrollGranularity::kScrollByLine: {
-        if (snap_coordinator.SnapForDirection(*box, delta))
+        if (scrollable_area_for_snapping->SnapForDirection(delta))
           return true;
         break;
       }
       case ScrollGranularity::kScrollByPage: {
-        if (snap_coordinator.SnapForEndAndDirection(*box, delta))
+        if (scrollable_area_for_snapping->SnapForEndAndDirection(delta))
           return true;
         break;
       }
@@ -327,8 +329,8 @@ bool ScrollManager::LogicalScroll(ScrollDirection direction,
                           physical_direction == kScrollRight;
         bool scrolled_y = physical_direction == kScrollUp ||
                           physical_direction == kScrollDown;
-        if (snap_coordinator.SnapForEndPosition(*box, end_position, scrolled_x,
-                                                scrolled_y))
+        if (scrollable_area_for_snapping->SnapForEndPosition(
+                end_position, scrolled_x, scrolled_y))
           return true;
         break;
       }
@@ -759,10 +761,9 @@ bool ScrollManager::SnapAtGestureScrollEnd(const WebGestureEvent& end_event) {
   if (!previous_gesture_scrolled_node_ ||
       (!did_scroll_x_for_scroll_gesture_ && !did_scroll_y_for_scroll_gesture_))
     return false;
-  SnapCoordinator& snap_coordinator =
-      frame_->GetDocument()->GetSnapCoordinator();
   LayoutBox* layout_box = LayoutBoxForSnapping();
-  if (!layout_box)
+  ScrollableArea* scrollable_area = ScrollableAreaForSnapping(layout_box);
+  if (!layout_box || !scrollable_area)
     return false;
 
   bool is_mouse_wheel =
@@ -786,20 +787,17 @@ bool ScrollManager::SnapAtGestureScrollEnd(const WebGestureEvent& end_event) {
     // limit the miscalculation to 1px.
     ScrollOffset scroll_direction =
         GetScrollDirection(last_scroll_delta_for_scroll_gesture_);
-    return snap_coordinator.SnapForDirection(*layout_box, scroll_direction);
+    return scrollable_area->SnapForDirection(scroll_direction);
   }
 
-  return snap_coordinator.SnapAtCurrentPosition(
-      *layout_box, did_scroll_x_for_scroll_gesture_,
-      did_scroll_y_for_scroll_gesture_);
+  return scrollable_area->SnapAtCurrentPosition(
+      did_scroll_x_for_scroll_gesture_, did_scroll_y_for_scroll_gesture_);
 }
 
 bool ScrollManager::GetSnapFlingInfo(
     const gfx::Vector2dF& natural_displacement,
     gfx::Vector2dF* out_initial_position,
     gfx::Vector2dF* out_target_position) const {
-  SnapCoordinator& snap_coordinator =
-      frame_->GetDocument()->GetSnapCoordinator();
   LayoutBox* layout_box = LayoutBoxForSnapping();
   ScrollableArea* scrollable_area = ScrollableAreaForSnapping(layout_box);
   if (!layout_box || !scrollable_area)
@@ -812,7 +810,7 @@ bool ScrollManager::GetSnapFlingInfo(
           gfx::ScrollOffset(*out_initial_position),
           gfx::ScrollOffset(natural_displacement));
   base::Optional<FloatPoint> snap_end =
-      snap_coordinator.GetSnapPosition(*layout_box, *strategy);
+      scrollable_area->GetSnapPosition(*strategy);
   if (!snap_end.has_value())
     return false;
   *out_target_position = gfx::Vector2dF(snap_end.value());
