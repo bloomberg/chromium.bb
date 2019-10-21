@@ -7,6 +7,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
@@ -53,6 +54,8 @@ AppUninstallDialogView::AppUninstallDialogView(
       app_name_(app_name) {
   InitializeView(profile, app_id);
   constrained_window::CreateBrowserModalDialogViews(this, nullptr)->Show();
+
+  chrome::RecordDialogCreation(chrome::DialogIdentifier::APP_UNINSTALL);
 }
 
 bool AppUninstallDialogView::Cancel() {

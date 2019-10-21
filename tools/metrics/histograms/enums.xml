@@ -13974,6 +13974,7 @@ Called by update_net_error_codes.py.-->
   <int value="98" label="Phone Chooser"/>
   <int value="99" label="QR Code Generator"/>
   <int value="100" label="Crostini Force Close"/>
+  <int value="101" label="App Uninstall"/>
 </enum>
 
 <enum name="DialogOriginRelationship">
