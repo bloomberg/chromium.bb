@@ -249,8 +249,15 @@ void LatencyTracker::ComputeEndToEndLatencyHistograms(
             "Event.Latency.EventToRender.TouchpadPinch", original_timestamp,
             timestamp);
       }
-      UMA_HISTOGRAM_INPUT_LATENCY_CUSTOM_MICROSECONDS(
-          "Event.Latency.EndToEnd.TouchpadPinch", original_timestamp,
+      {
+        // TODO(nburris): Deprecate Event.Latency.EndToEnd.TouchpadPinch in
+        // favor of TouchpadPinch2 once we have stable data for that one.
+        UMA_HISTOGRAM_INPUT_LATENCY_CUSTOM_MICROSECONDS(
+            "Event.Latency.EndToEnd.TouchpadPinch", original_timestamp,
+            gpu_swap_begin_timestamp);
+      }
+      UMA_HISTOGRAM_INPUT_LATENCY_CUSTOM_1_SECOND_MAX_MICROSECONDS(
+          "Event.Latency.EndToEnd.TouchpadPinch2", original_timestamp,
           gpu_swap_begin_timestamp);
     }
     return;
