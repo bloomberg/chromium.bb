@@ -47,7 +47,9 @@ Slower Initial Runs:
  * The first time you run an incremental .apk, the `DexOpt` needs to run on all
    .dex files. This step is normally done during `adb install`, but is done on
    start-up for incremental apks.
-   * DexOpt results are cached, so subsequent runs are much faster
+   * DexOpt results are cached, so subsequent runs are faster.
+   * The slowdown varies significantly based on the Android version. Android O+
+     has almost no visible slow-down.
 
 Caveats:
  * Isolated processes (on L+) are incompatible with incremental install. As a
