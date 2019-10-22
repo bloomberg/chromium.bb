@@ -5695,7 +5695,6 @@ test("net_unittests") {
     "url_request/url_fetcher_response_writer_unittest.cc",
     "url_request/url_request_context_builder_unittest.cc",
     "url_request/url_request_context_unittest.cc",
-    "url_request/url_request_data_job_unittest.cc",
     "url_request/url_request_filter_unittest.cc",
     "url_request/url_request_ftp_job_unittest.cc",
     "url_request/url_request_http_job_unittest.cc",
@@ -6253,9 +6252,9 @@ fuzzer_test("disk_cache_lpm_fuzzer") {
   ]
 }
 
-fuzzer_test("net_data_job_fuzzer") {
+fuzzer_test("net_data_url_fuzzer") {
   sources = [
-    "url_request/url_request_data_job_fuzzer.cc",
+    "base/data_url_fuzzer.cc",
   ]
   deps = [
     ":net_fuzzer_test_support",
@@ -6263,6 +6262,7 @@ fuzzer_test("net_data_job_fuzzer") {
     "//base",
     "//net",
   ]
+  dict = "data/fuzzer_dictionaries/net_data_url_fuzzer.dict"
 }
 
 fuzzer_test("net_mime_sniffer_fuzzer") {
@@ -6324,18 +6324,6 @@ fuzzer_test("net_parse_proxy_rules_fuzzer") {
     "//net",
   ]
   dict = "data/fuzzer_dictionaries/net_parse_proxy_bypass_rules_fuzzer.dict"
-}
-
-fuzzer_test("net_parse_data_url_fuzzer") {
-  sources = [
-    "base/parse_data_url_fuzzer.cc",
-  ]
-  deps = [
-    ":net_fuzzer_test_support",
-    "//base",
-    "//net",
-  ]
-  dict = "data/fuzzer_dictionaries/net_parse_data_url_fuzzer.dict"
 }
 
 fuzzer_test("net_parse_ip_pattern_fuzzer") {
