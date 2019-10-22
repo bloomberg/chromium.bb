@@ -466,8 +466,7 @@ INSTANTIATE_TEST_SUITE_P(, HotseatAppListControllerImplTest, testing::Bool());
 
 // Tests for HomeScreenDelegate::GetInitialAppListItemScreenBoundsForWindow
 // implemtenation.
-// Disabled due to crbug.com/1016843
-TEST_F(AppListControllerImplTest, DISABLED_GetItemBoundsForWindow) {
+TEST_P(HotseatAppListControllerImplTest, GetItemBoundsForWindow) {
   // Populate app list model with 25 items, of which items at indices in
   // |folders| are folders containing a single item.
   const std::set<int> folders = {5, 23};
@@ -514,14 +513,18 @@ TEST_F(AppListControllerImplTest, DISABLED_GetItemBoundsForWindow) {
                     {"", base::nullopt},
                     {"fake_id_22", base::nullopt}};
 
+  // Tests the case app ID property is not set on the window.
+  std::unique_ptr<aura::Window> window_without_app_id(CreateTestWindow());
+
   HomeScreenDelegate* const home_screen_delegate =
       Shell::Get()->home_screen_controller()->delegate();
+  // NOTE: Calculate the apps grid bounds after test window is shown, as showing
+  // the window can change the app list layout (due to the change in the shelf
+  // height).
   const gfx::Rect apps_grid_bounds = apps_grid_view->GetBoundsInScreen();
   const gfx::Rect apps_grid_center =
       gfx::Rect(apps_grid_bounds.CenterPoint(), gfx::Size(1, 1));
 
-  // Tests the case app ID property is not set on the window.
-  std::unique_ptr<aura::Window> window_without_app_id(CreateTestWindow());
   EXPECT_EQ(apps_grid_center,
             home_screen_delegate->GetInitialAppListItemScreenBoundsForWindow(
                 window_without_app_id.get()));
