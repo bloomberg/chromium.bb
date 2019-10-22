@@ -78,7 +78,8 @@ class EphemeralTabLayer : public OverlayPanelLayer,
                      float progress_bar_height,
                      float progress_bar_opacity,
                      int progress_bar_completion,
-                     int separator_line_color);
+                     int separator_line_color,
+                     bool is_new_layout);
   void SetupTextLayer(float bar_top,
                       float bar_height,
                       float text_layer_min_height,

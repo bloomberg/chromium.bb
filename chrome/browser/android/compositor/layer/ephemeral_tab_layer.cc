@@ -86,7 +86,8 @@ void EphemeralTabLayer::SetProperties(
     float progress_bar_height,
     float progress_bar_opacity,
     int progress_bar_completion,
-    int separator_line_color) {
+    int separator_line_color,
+    bool is_new_layout) {
   if (web_contents_ != web_contents) {
     web_contents_ = web_contents;
     if (web_contents_) {
@@ -112,12 +113,18 @@ void EphemeralTabLayer::SetProperties(
       bar_shadow_visible, icon_color, drag_handlebar_color,
       1.0f /* icon opacity */, separator_line_color);
 
-  SetupTextLayer(bar_top, bar_height, text_layer_min_height,
+  // Content setup, to center in space below drag handle (when present).
+  int content_top = bar_top;
+  int content_height = bar_height;
+  if (is_new_layout) {
+    content_top += bar_margin_top;
+    content_height -= bar_margin_top;
+  }
+  SetupTextLayer(content_top, content_height, text_layer_min_height,
                  caption_view_resource_id, caption_icon_resource_id,
-                 caption_icon_opacity,
-
-                 caption_animation_percentage, caption_visible,
-                 title_view_resource_id, title_caption_spacing);
+                 caption_icon_opacity, caption_animation_percentage,
+                 caption_visible, title_view_resource_id,
+                 title_caption_spacing);
 
   OverlayPanelLayer::SetProgressBar(
       progress_bar_background_resource_id, progress_bar_resource_id,
@@ -133,8 +140,8 @@ void EphemeralTabLayer::SetProperties(
   panel_icon_->SetOpacity(1 - favicon_opacity);
 }
 
-void EphemeralTabLayer::SetupTextLayer(float bar_top,
-                                       float bar_height,
+void EphemeralTabLayer::SetupTextLayer(float content_top,
+                                       float content_height,
                                        float text_layer_min_height,
                                        int caption_view_resource_id,
                                        int caption_icon_resource_id,
@@ -196,7 +203,7 @@ void EphemeralTabLayer::SetupTextLayer(float bar_top,
   float layer_width =
       std::max(title_->bounds().width(), caption_->bounds().width());
 
-  float layer_top = bar_top + (bar_height - layer_height) / 2;
+  float layer_top = content_top + (content_height - layer_height) / 2;
   text_layer_->SetBounds(gfx::Size(layer_width, layer_height));
   text_layer_->SetPosition(gfx::PointF(0.f, layer_top));
   text_layer_->SetMasksToBounds(true);
