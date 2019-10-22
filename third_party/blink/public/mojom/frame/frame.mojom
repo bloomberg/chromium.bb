@@ -52,6 +52,11 @@ interface LocalFrameHost {
   // Indication that the associated frame contains a form that submits to an
   // insecure target url.
   DidContainInsecureFormAction();
+
+  // Indicates that a child frame requires its parent frame to send it information
+  // about whether it is occluded or has visual effects applied, in order to
+  // service IntersectionObserver's that track visibility.
+  SetNeedsOcclusionTracking(bool needs_tracking);
 };
 
 // Implemented in Blink, this interface defines frame-specific methods that will

@@ -1238,12 +1238,6 @@ IPC_MESSAGE_ROUTED3(FrameHostMsg_UpdateViewportIntersection,
                     gfx::Rect /* compositor_visible_rect */,
                     blink::FrameOcclusionState /* occlusion_state */)
 
-// Indicates that a child frame requires its parent frame to send it information
-// about whether it is occluded or has visual effects applied, in order to
-// service IntersectionObserver's that track visibility.
-IPC_MESSAGE_ROUTED1(FrameHostMsg_SetNeedsOcclusionTracking,
-                    bool /* needs_tracking */)
-
 // Informs the child that the frame has changed visibility.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_VisibilityChanged,
                     blink::mojom::FrameVisibility /* visibility */)

@@ -4648,10 +4648,6 @@ void RenderFrameImpl::SetMouseCapture(bool capture) {
   GetLocalRootRenderWidget()->SetMouseCapture(capture);
 }
 
-void RenderFrameImpl::SetNeedsOcclusionTracking(bool needs_tracking) {
-  Send(new FrameHostMsg_SetNeedsOcclusionTracking(routing_id_, needs_tracking));
-}
-
 void RenderFrameImpl::LifecycleStateChanged(
     blink::mojom::FrameLifecycleState state) {
   GetFrameHost()->LifecycleStateChanged(state);

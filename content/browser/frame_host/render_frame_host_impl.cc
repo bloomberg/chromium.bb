@@ -1678,8 +1678,6 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnUpdateUserActivationState)
     IPC_MESSAGE_HANDLER(FrameHostMsg_SetHasReceivedUserGestureBeforeNavigation,
                         OnSetHasReceivedUserGestureBeforeNavigation)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_SetNeedsOcclusionTracking,
-                        OnSetNeedsOcclusionTracking);
     IPC_MESSAGE_HANDLER(FrameHostMsg_ScrollRectToVisibleInParentFrame,
                         OnScrollRectToVisibleInParentFrame)
     IPC_MESSAGE_HANDLER(FrameHostMsg_BubbleLogicalScrollInParentFrame,
@@ -3519,6 +3517,24 @@ void RenderFrameHostImpl::DidContainInsecureFormAction() {
   delegate_->DidContainInsecureFormAction();
 }
 
+void RenderFrameHostImpl::SetNeedsOcclusionTracking(bool needs_tracking) {
+  // Don't process the IPC if this RFH is pending deletion.  See also
+  // https://crbug.com/972566.
+  if (!is_active())
+    return;
+
+  RenderFrameProxyHost* proxy =
+      frame_tree_node()->render_manager()->GetProxyToParent();
+  if (!proxy) {
+    bad_message::ReceivedBadMessage(GetProcess(),
+                                    bad_message::RFH_NO_PROXY_TO_PARENT);
+    return;
+  }
+
+  proxy->Send(new FrameMsg_SetNeedsOcclusionTracking(proxy->GetRoutingID(),
+                                                     needs_tracking));
+}
+
 void RenderFrameHostImpl::LifecycleStateChanged(
     blink::mojom::FrameLifecycleState state) {
   frame_lifecycle_state_ = state;
@@ -4049,24 +4065,6 @@ void RenderFrameHostImpl::OnUpdateUserActivationState(
 void RenderFrameHostImpl::OnSetHasReceivedUserGestureBeforeNavigation(
     bool value) {
   frame_tree_node_->OnSetHasReceivedUserGestureBeforeNavigation(value);
-}
-
-void RenderFrameHostImpl::OnSetNeedsOcclusionTracking(bool needs_tracking) {
-  // Don't process the IPC if this RFH is pending deletion.  See also
-  // https://crbug.com/972566.
-  if (!is_active())
-    return;
-
-  RenderFrameProxyHost* proxy =
-      frame_tree_node()->render_manager()->GetProxyToParent();
-  if (!proxy) {
-    bad_message::ReceivedBadMessage(GetProcess(),
-                                    bad_message::RFH_NO_PROXY_TO_PARENT);
-    return;
-  }
-
-  proxy->Send(new FrameMsg_SetNeedsOcclusionTracking(proxy->GetRoutingID(),
-                                                     needs_tracking));
 }
 
 void RenderFrameHostImpl::OnScrollRectToVisibleInParentFrame(

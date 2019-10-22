@@ -1216,6 +1216,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
                                  bool user_gesture) override;
   void DidDisplayInsecureContent() override;
   void DidContainInsecureFormAction() override;
+  void SetNeedsOcclusionTracking(bool needs_tracking) override;
 
  protected:
   friend class RenderFrameHostFactory;
