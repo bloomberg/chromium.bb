@@ -4056,6 +4056,25 @@
             ]
         }
     ],
+    "OmniboxOnDeviceHeadSuggest": [
+        {
+            "platforms": [
+                "android",
+                "windows",
+                "mac",
+                "chromeos",
+                "linux"
+            ],
+            "experiments": [
+                {
+                    "name": "Beta_OnDeviceHeadSuggest_Enabled",
+                    "enable_features": [
+                        "OmniboxOnDeviceHeadProvider"
+                    ]
+                }
+            ]
+        }
+    ],
     "OmniboxSteadyStateElisions": [
         {
             "platforms": [
