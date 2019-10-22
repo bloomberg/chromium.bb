@@ -37,6 +37,7 @@ class MODULES_EXPORT NDEFRecord final : public ScriptWrappable {
 
   const String& recordType() const;
   const String& mediaType() const;
+  const String& id() const;
   String text() const;
   DOMArrayBuffer* arrayBuffer() const;
   ScriptValue json(ScriptState*, ExceptionState&) const;
@@ -48,6 +49,7 @@ class MODULES_EXPORT NDEFRecord final : public ScriptWrappable {
  private:
   String record_type_;
   String media_type_;
+  String id_;
   // Holds the NDEFRecord.[[PayloadData]] bytes defined at
   // https://w3c.github.io/web-nfc/#the-ndefrecord-interface.
   WTF::Vector<uint8_t> data_;

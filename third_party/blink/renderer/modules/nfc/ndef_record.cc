@@ -273,6 +273,7 @@ NDEFRecord::NDEFRecord(DOMArrayBuffer* array_buffer)
 NDEFRecord::NDEFRecord(const device::mojom::blink::NDEFRecord& record)
     : record_type_(record.record_type),
       media_type_(record.media_type),
+      id_(record.id),
       data_(record.data) {}
 
 const String& NDEFRecord::recordType() const {
@@ -281,6 +282,10 @@ const String& NDEFRecord::recordType() const {
 
 const String& NDEFRecord::mediaType() const {
   return media_type_;
+}
+
+const String& NDEFRecord::id() const {
+  return id_;
 }
 
 String NDEFRecord::text() const {
