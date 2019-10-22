@@ -392,6 +392,9 @@ extern const char kEnableDataReductionProxyNetworkServiceDescription[];
 extern const char kEnableDataReductionProxyServerExperimentName[];
 extern const char kEnableDataReductionProxyServerExperimentDescription[];
 
+extern const char kDesktopMinimalUIName[];
+extern const char kDesktopMinimalUIDescription[];
+
 extern const char kEnableDesktopPWAsName[];
 extern const char kEnableDesktopPWAsDescription[];
 

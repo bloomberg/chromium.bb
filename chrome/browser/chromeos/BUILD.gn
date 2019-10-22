@@ -64,6 +64,7 @@ source_set("chromeos") {
     "//build:branding_buildflags",
     "//chrome/app:command_ids",
     "//chrome/app/vector_icons",
+    "//chrome/browser:theme_properties",
     "//chrome/browser/apps/platform_apps",
     "//chrome/browser/apps/platform_apps/api",
     "//chrome/browser/chromeos/power/ml/smart_dim",

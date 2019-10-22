@@ -640,6 +640,11 @@ const char kEnableDataReductionProxyServerExperimentDescription[] =
     "Enable a different approach to saving data by configuring the back end "
     "server";
 
+const char kDesktopMinimalUIName[] = "Desktop PWAs support minimal-ui";
+const char kDesktopMinimalUIDescription[] =
+    "PWAs with display mode minimal-ui open in a window with Back and Refresh "
+    "buttons.";
+
 const char kEnableDesktopPWAsName[] = "Desktop PWAs";
 const char kEnableDesktopPWAsDescription[] =
     "Experimental windowing and install banner treatment for Progressive Web "

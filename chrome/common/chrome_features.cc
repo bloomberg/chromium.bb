@@ -238,6 +238,10 @@ const base::Feature kTerminalSystemApp{"TerminalSystemApp",
 const base::Feature kDesktopCaptureTabSharingInfobar{
     "DesktopCaptureTabSharingInfobar", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables or disables new Desktop PWA support for minimal-ui display mode.
+const base::Feature kDesktopMinimalUI{"DesktopMinimalUI",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables or disables new Desktop PWAs implementation that does not use
 // extensions.
 const base::Feature kDesktopPWAsWithoutExtensions{
