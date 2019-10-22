@@ -246,6 +246,14 @@ void V8Initializer::Initialize(IsolateHolder::ScriptMode mode) {
                                sizeof(gc_experiment_less_compaction) - 1);
   }
 
+  if (base::FeatureList::IsEnabled(features::kV8GCAlwaysPromoteYoungMC)) {
+    static const char gc_experiment_always_promote_young_mc[] =
+        "--always_promote_young_mc";
+    v8::V8::SetFlagsFromString(
+        gc_experiment_always_promote_young_mc,
+        sizeof(gc_experiment_always_promote_young_mc) - 1);
+  }
+
   if (IsolateHolder::kStrictMode == mode) {
     static const char use_strict[] = "--use_strict";
     v8::V8::SetFlagsFromString(use_strict, sizeof(use_strict) - 1);
