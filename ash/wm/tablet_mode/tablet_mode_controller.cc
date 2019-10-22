@@ -184,25 +184,14 @@ constexpr TabletModeController::TabletModeBehavior kOnBySensor{
     /*force_physical_tablet_state=*/false,
 };
 
-// Defines the behavior that sticks to tablet mode. Used to implement the
-// --force-tablet-mode=touch_view flag.
-constexpr TabletModeController::TabletModeBehavior kLockInTabletMode{
+// Defines the behavior that sticks to the current mode. Used to
+// implement --force-tablet-mode flag.
+constexpr TabletModeController::TabletModeBehavior kLockInCurrentMode{
     /*use_sensor=*/false,
     /*observe_display_events=*/false,
     /*observe_external_pointer_device_events=*/false,
     /*block_internal_input_device=*/false,
     /*always_show_overview_button=*/true,
-    /*force_physical_tablet_state=*/false,
-};
-
-// Defines the behavior that sticks to tablet mode. Used to implement the
-// --force-tablet-mode=clamshell flag.
-constexpr TabletModeController::TabletModeBehavior kLockInClamshellMode{
-    /*use_sensor=*/false,
-    /*observe_display_events=*/false,
-    /*observe_external_pointer_device_events=*/false,
-    /*block_internal_input_device=*/false,
-    /*always_show_overview_button=*/false,
     /*force_physical_tablet_state=*/false,
 };
 
@@ -445,12 +434,8 @@ void TabletModeController::OnShellInitialized() {
   forced_ui_mode_ = GetUiMode();
   switch (forced_ui_mode_) {
     case UiMode::kTabletMode:
-      tablet_mode_behavior_ = kLockInTabletMode;
-      UpdateUiTabletState();
-      break;
-
     case UiMode::kClamshell:
-      tablet_mode_behavior_ = kLockInClamshellMode;
+      tablet_mode_behavior_ = kLockInCurrentMode;
       UpdateUiTabletState();
       break;
 
@@ -921,17 +906,8 @@ void TabletModeController::UpdateInternalInputDevicesEventBlocker() {
       tablet_mode_behavior_.block_internal_input_device &&
       (InTabletMode() || is_in_tablet_physical_state_);
 
-  if (should_block_internal_events == AreInternalInputDeviceEventsBlocked()) {
-    if (tablet_mode_behavior_.always_show_overview_button) {
-      // The overview button visibility gets updated based on the
-      // OnTabletModeEventsBlockingChanged() notification. Broadcast this event
-      // if we need to force it visible.
-      for (auto& observer : tablet_mode_observers_)
-        observer.OnTabletModeEventsBlockingChanged();
-    }
-
+  if (should_block_internal_events == AreInternalInputDeviceEventsBlocked())
     return;
-  }
 
   event_blocker_->UpdateInternalInputDevices(should_block_internal_events);
   for (auto& observer : tablet_mode_observers_)
