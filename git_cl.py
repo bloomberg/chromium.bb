@@ -15,7 +15,6 @@ import base64
 import collections
 import datetime
 import glob
-import httplib
 import httplib2
 import itertools
 import json
@@ -30,9 +29,6 @@ import sys
 import tempfile
 import textwrap
 import time
-import urllib
-import urllib2
-import urlparse
 import uuid
 import webbrowser
 import zlib
@@ -57,6 +53,17 @@ import split_cl
 import subcommand
 import subprocess2
 import watchlists
+
+if sys.version_info.major == 2:
+  import httplib
+  import urllib2 as urllib_request
+  import urllib2 as urllib_error
+  import urlparse
+else:
+  import http.client as httplib
+  import urllib.request as urllib_request
+  import urllib.error as urllib_error
+  import urllib.parse as urlparse
 
 __version__ = '2.0'
 
@@ -3182,7 +3189,7 @@ def urlretrieve(source, destination):
   This is necessary because urllib is broken for SSL connections via a proxy.
   """
   with open(destination, 'w') as f:
-    f.write(urllib2.urlopen(source).read())
+    f.write(urllib_request.urlopen(source).read())
 
 
 def hasSheBang(fname):
@@ -4655,7 +4662,7 @@ def GetTreeStatus(url=None):
   'unknown' or 'unset'."""
   url = url or settings.GetTreeStatusUrl(error_ok=True)
   if url:
-    status = urllib2.urlopen(url).read().lower()
+    status = urllib_request.urlopen(url).read().lower()
     if status.find('closed') != -1 or status == '0':
       return 'closed'
     elif status.find('open') != -1 or status == '1':
@@ -4669,7 +4676,7 @@ def GetTreeStatusReason():
   with the reason for the tree to be opened or closed."""
   url = settings.GetTreeStatusUrl()
   json_url = urlparse.urljoin(url, '/current?format=json')
-  connection = urllib2.urlopen(json_url)
+  connection = urllib_request.urlopen(json_url)
   status = json.loads(connection.read())
   connection.close()
   return status['message']
@@ -5459,7 +5466,7 @@ def main(argv):
     return dispatcher.execute(OptionParser(), argv)
   except auth.LoginRequiredError as e:
     DieWithError(str(e))
-  except urllib2.HTTPError as e:
+  except urllib_error.HTTPError as e:
     if e.code != 500:
       raise
     DieWithError(

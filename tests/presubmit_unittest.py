@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env vpython3
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -7,7 +7,8 @@
 
 # pylint: disable=no-member,E1103
 
-import StringIO
+from __future__ import unicode_literals
+
 import functools
 import itertools
 import logging
@@ -19,7 +20,6 @@ import sys
 import tempfile
 import time
 import unittest
-import urllib2
 
 _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, _ROOT)
@@ -37,6 +37,15 @@ import owners_finder
 import presubmit_support as presubmit
 import scm
 import subprocess2 as subprocess
+
+if sys.version_info.major == 2:
+  from cStringIO import StringIO
+  import urllib2 as urllib_request
+  BUILTIN_OPEN = '__builtin__.open'
+else:
+  from io import StringIO
+  import urllib.request as urllib_request
+  BUILTIN_OPEN = 'builtins.open'
 
 # Shortcut.
 presubmit_canned_checks = presubmit.presubmit_canned_checks
@@ -163,11 +172,14 @@ index fe3de7b..54ae6e1 100755
     mock.patch('scm.determine_scm').start()
     mock.patch('scm.GIT.GenerateDiff').start()
     mock.patch('subprocess2.Popen').start()
-    mock.patch('sys.stderr', StringIO.StringIO()).start()
-    mock.patch('sys.stdout', StringIO.StringIO()).start()
+    mock.patch('sys.stderr', StringIO()).start()
+    mock.patch('sys.stdout', StringIO()).start()
     mock.patch('tempfile.NamedTemporaryFile').start()
     mock.patch('multiprocessing.cpu_count', lambda: 2)
-    mock.patch('urllib2.urlopen').start()
+    if sys.version_info.major == 2:
+      mock.patch('urllib2.urlopen').start()
+    else:
+      mock.patch('urllib.request.urlopen').start()
     self.addCleanup(mock.patch.stopall)
 
   def checkstdout(self, value):
@@ -631,7 +643,7 @@ def CheckChangeOnCommit(input_api, output_api):
         ]
     }
 
-    fake_result_json = json.dumps(fake_result)
+    fake_result_json = json.dumps(fake_result, sort_keys=True)
 
     output = presubmit.DoPresubmitChecks(
         change=change, committing=False, verbose=True,
@@ -657,7 +669,7 @@ def CheckChangeOnCommit(input_api, output_api):
     # Make a change with a single warning.
     change = self.ExampleChange(extra_lines=['PROMPT_WARNING=yes'])
 
-    input_buf = StringIO.StringIO('n\n')  # say no to the warning
+    input_buf = StringIO('n\n')  # say no to the warning
     output = presubmit.DoPresubmitChecks(
         change=change, committing=False, verbose=True,
         output_stream=None, input_stream=input_buf,
@@ -666,7 +678,7 @@ def CheckChangeOnCommit(input_api, output_api):
     self.assertFalse(output.should_continue())
     self.assertEqual(output.getvalue().count('??'), 2)
 
-    input_buf = StringIO.StringIO('y\n')  # say yes to the warning
+    input_buf = StringIO('y\n')  # say yes to the warning
     output = presubmit.DoPresubmitChecks(
         change=change, committing=False, verbose=True,
         output_stream=None, input_stream=input_buf,
@@ -740,7 +752,7 @@ def CheckChangeOnCommit(input_api, output_api):
         lambda d: [] if d == self.fake_root_dir else ['PRESUBMIT.py'])
     random.randint.return_value = 0
 
-    input_buf = StringIO.StringIO('y\n')
+    input_buf = StringIO('y\n')
 
     change = self.ExampleChange(extra_lines=['STORY=http://tracker/123'])
     output = presubmit.DoPresubmitChecks(
@@ -820,7 +832,7 @@ def CheckChangeOnCommit(input_api, output_api):
       'try2.cr': {'linux2': set(['defaulttests'])},
     }
     for permutation in itertools.permutations(parts):
-      self.assertEqual(expected, reduce(merge, permutation, {}))
+      self.assertEqual(expected, functools.reduce(merge, permutation, {}))
 
   def testDoGetTryMasters(self):
     root_text = (self.presubmit_trymaster
@@ -844,12 +856,12 @@ def CheckChangeOnCommit(input_api, output_api):
     change = presubmit.Change(
         'mychange', '', self.fake_root_dir, [], 0, 0, None)
 
-    output = StringIO.StringIO()
+    output = StringIO()
     self.assertEqual({'t1.cr': {'win': ['defaulttests']}},
                      presubmit.DoGetTryMasters(change, [filename],
                                                self.fake_root_dir,
                                                None, None, False, output))
-    output = StringIO.StringIO()
+    output = StringIO()
     expected = {
       't1.cr': {'win': ['defaulttests'], 'linux1': ['t1']},
       't2.cr': {'linux2': ['defaulttests']},
@@ -1084,7 +1096,7 @@ class InputApiUnittest(PresubmitTestsBase):
     self.assertEqual(len(input_api.DEFAULT_WHITE_LIST), 24)
     self.assertEqual(len(input_api.DEFAULT_BLACK_LIST), 12)
     for item in files:
-      results = filter(input_api.FilterSourceFile, item[0])
+      results = list(filter(input_api.FilterSourceFile, item[0]))
       for i in range(len(results)):
         self.assertEqual(results[i].LocalPath(),
                           presubmit.normpath(item[1][i]))
@@ -1289,33 +1301,33 @@ class OutputApiUnittest(PresubmitTestsBase):
     self.assertIsNotNone(output.should_continue())
     self.assertIsNotNone(output.getvalue().count('?see?'))
 
-    output = presubmit.PresubmitOutput(input_stream=StringIO.StringIO('y'))
+    output = presubmit.PresubmitOutput(input_stream=StringIO('y'))
     presubmit.OutputApi.PresubmitPromptWarning('???').handle(output)
     output.prompt_yes_no('prompt: ')
     self.assertIsNotNone(output.should_continue())
     self.assertIsNotNone(output.getvalue().count('???'))
 
-    output = presubmit.PresubmitOutput(input_stream=StringIO.StringIO('\n'))
+    output = presubmit.PresubmitOutput(input_stream=StringIO('\n'))
     presubmit.OutputApi.PresubmitPromptWarning('???').handle(output)
     output.prompt_yes_no('prompt: ')
     self.assertFalse(output.should_continue())
     self.assertIsNotNone(output.getvalue().count('???'))
 
     output_api = presubmit.OutputApi(True)
-    output = presubmit.PresubmitOutput(input_stream=StringIO.StringIO('y'))
+    output = presubmit.PresubmitOutput(input_stream=StringIO('y'))
     output_api.PresubmitPromptOrNotify('???').handle(output)
     output.prompt_yes_no('prompt: ')
     self.assertIsNotNone(output.should_continue())
     self.assertIsNotNone(output.getvalue().count('???'))
 
     output_api = presubmit.OutputApi(False)
-    output = presubmit.PresubmitOutput(input_stream=StringIO.StringIO('y'))
+    output = presubmit.PresubmitOutput(input_stream=StringIO('y'))
     output_api.PresubmitPromptOrNotify('???').handle(output)
     self.assertIsNotNone(output.should_continue())
     self.assertIsNotNone(output.getvalue().count('???'))
 
     output_api = presubmit.OutputApi(True)
-    output = presubmit.PresubmitOutput(input_stream=StringIO.StringIO('\n'))
+    output = presubmit.PresubmitOutput(input_stream=StringIO('\n'))
     output_api.PresubmitPromptOrNotify('???').handle(output)
     output.prompt_yes_no('prompt: ')
     self.assertFalse(output.should_continue())
@@ -1351,7 +1363,7 @@ class AffectedFileUnittest(PresubmitTestsBase):
     f_blob = os.path.join(self.fake_root_dir, blob)
     os.path.isfile.side_effect = lambda f: f in [f_blat, f_blob]
 
-    output = filter(lambda x: x.IsTestableFile(), files)
+    output = list(filter(lambda x: x.IsTestableFile(), files))
     self.assertEqual(2, len(output))
     self.assertEqual(files[:2], output[:2])
 
@@ -1432,11 +1444,13 @@ class CannedChecksUnittest(PresubmitTestsBase):
     input_api.os_path = os.path
     input_api.re = presubmit.re
     input_api.gerrit = mock.MagicMock(presubmit.GerritAccessor)
-    input_api.urllib2 = mock.MagicMock(presubmit.urllib2)
+    if sys.version_info.major == 2:
+      input_api.urllib2 = mock.MagicMock(presubmit.urllib2)
     input_api.urllib_request = mock.MagicMock(presubmit.urllib_request)
     input_api.urllib_error = mock.MagicMock(presubmit.urllib_error)
     input_api.unittest = unittest
     input_api.subprocess = subprocess
+    input_api.sys = sys
     class fake_CalledProcessError(Exception):
       def __str__(self):
         return 'foo'
@@ -1660,7 +1674,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
       'config_sets': [{'config_set': 'deadbeef',
                        'location': '%s/+/%s' % (host, branch)}]
     }
-    urllib2.urlopen.return_value = http_resp
+    urllib_request.urlopen.return_value = http_resp
     json.load.return_value = http_resp
 
     mockChangelist().GetRemoteBranch.return_value = ('remote', branch)
@@ -1968,14 +1982,14 @@ the current line as well!
 
   def testCannedCheckTreeIsOpenOpen(self):
     input_api = self.MockInputApi(None, True)
-    input_api.urllib2.urlopen().read.return_value = 'The tree is open'
+    input_api.urllib_request.urlopen().read.return_value = 'The tree is open'
     results = presubmit_canned_checks.CheckTreeIsOpen(
         input_api, presubmit.OutputApi, url='url_to_open', closed='.*closed.*')
     self.assertEqual(results, [])
 
   def testCannedCheckTreeIsOpenClosed(self):
     input_api = self.MockInputApi(None, True)
-    input_api.urllib2.urlopen().read.return_value = (
+    input_api.urllib_request.urlopen().read.return_value = (
         'Tree is closed for maintenance')
     results = presubmit_canned_checks.CheckTreeIsOpen(
         input_api, presubmit.OutputApi,
@@ -1991,7 +2005,7 @@ the current line as well!
         'general_state': 'open',
         'message': 'The tree is open'
     }
-    input_api.urllib2.urlopen().read.return_value = json.dumps(status)
+    input_api.urllib_request.urlopen().read.return_value = json.dumps(status)
     results = presubmit_canned_checks.CheckTreeIsOpen(
         input_api, presubmit.OutputApi, json_url='url_to_open')
     self.assertEqual(results, [])
@@ -2003,7 +2017,7 @@ the current line as well!
         'general_state': 'closed',
         'message': 'The tree is close',
     }
-    input_api.urllib2.urlopen().read.return_value = json.dumps(status)
+    input_api.urllib_request.urlopen().read.return_value = json.dumps(status)
     results = presubmit_canned_checks.CheckTreeIsOpen(
         input_api, presubmit.OutputApi, json_url='url_to_closed')
     self.assertEqual(len(results), 1)
@@ -2119,7 +2133,7 @@ the current line as well!
 
   def testCheckBuildbotPendingBuildsBad(self):
     input_api = self.MockInputApi(None, True)
-    input_api.urllib2.urlopen().read.return_value = 'foo'
+    input_api.urllib_request.urlopen().read.return_value = 'foo'
 
     results = presubmit_canned_checks.CheckBuildbotPendingBuilds(
         input_api, presubmit.OutputApi, 'uurl', 2, ('foo'))
@@ -2129,7 +2143,7 @@ the current line as well!
 
   def testCheckBuildbotPendingBuildsGood(self):
     input_api = self.MockInputApi(None, True)
-    input_api.urllib2.urlopen().read.return_value = """
+    input_api.urllib_request.urlopen().read.return_value = """
     {
       'b1': { 'pending_builds': [0, 1, 2, 3, 4, 5, 6, 7] },
       'foo': { 'pending_builds': [0, 1, 2, 3, 4, 5, 6, 7] },
@@ -2155,7 +2169,7 @@ the current line as well!
 
     os.path.exists = lambda _: True
 
-    owners_file = StringIO.StringIO(owners_content)
+    owners_file = StringIO(owners_content)
     fopen = lambda *args: owners_file
 
     input_api.owners_db = owners.Database('', fopen, os.path)
@@ -2265,7 +2279,7 @@ the current line as well!
         presubmit.OutputApi)
     for result in results:
       result.handle(output)
-    if isinstance(expected_output, re._pattern_type):
+    if expected_output:
       self.assertRegexpMatches(output.getvalue(), expected_output)
     else:
       self.assertEqual(output.getvalue(), expected_output)
@@ -2544,7 +2558,7 @@ the current line as well!
                            is_committing=False,
                            uncovered_files=set())
 
-  @mock.patch('__builtin__.open', mock.mock_open(read_data=''))
+  @mock.patch(BUILTIN_OPEN, mock.mock_open(read_data=''))
   def testCannedRunUnitTests(self):
     change = presubmit.Change(
         'foo1', 'description1', self.fake_root_dir, None, 0, 0, None)
@@ -2587,7 +2601,7 @@ the current line as well!
 
     self.checkstdout('')
 
-  @mock.patch('__builtin__.open', mock.mock_open())
+  @mock.patch(BUILTIN_OPEN, mock.mock_open())
   def testCannedRunUnitTestsPython3(self):
     open().readline.return_value = '#!/usr/bin/env python3'
     change = presubmit.Change(
@@ -2643,7 +2657,7 @@ the current line as well!
 
     self.checkstdout('')
 
-  @mock.patch('__builtin__.open', mock.mock_open())
+  @mock.patch(BUILTIN_OPEN, mock.mock_open())
   def testCannedRunUnitTestsDontRunOnPython2(self):
     open().readline.return_value = '#!/usr/bin/env python3'
     change = presubmit.Change(
@@ -2687,7 +2701,7 @@ the current line as well!
 
     self.checkstdout('')
 
-  @mock.patch('__builtin__.open', mock.mock_open())
+  @mock.patch(BUILTIN_OPEN, mock.mock_open())
   def testCannedRunUnitTestsDontRunOnPython3(self):
     open().readline.return_value = '#!/usr/bin/env python3'
     change = presubmit.Change(

@@ -5,6 +5,7 @@
 """Generic presubmit checks that can be reused by other presubmit checks."""
 
 from __future__ import print_function
+from __future__ import unicode_literals
 
 import os as _os
 _HERE = _os.path.dirname(_os.path.abspath(__file__))
@@ -245,7 +246,7 @@ def CheckGenderNeutral(input_api, output_api, source_file_filter=None):
   submitted.
   """
   gendered_re = input_api.re.compile(
-      '(^|\s|\(|\[)([Hh]e|[Hh]is|[Hh]ers?|[Hh]im|[Ss]he|[Gg]uys?)\\b')
+      r'(^|\s|\(|\[)([Hh]e|[Hh]is|[Hh]ers?|[Hh]im|[Ss]he|[Gg]uys?)\\b')
 
   errors = []
   for f in input_api.AffectedFiles(include_deletes=False,
@@ -570,7 +571,7 @@ def CheckTreeIsOpen(input_api, output_api,
     return []
   try:
     if json_url:
-      connection = input_api.urllib2.urlopen(json_url)
+      connection = input_api.urllib_request.urlopen(json_url)
       status = input_api.json.loads(connection.read())
       connection.close()
       if not status['can_commit_freely']:
@@ -579,7 +580,7 @@ def CheckTreeIsOpen(input_api, output_api,
         return [output_api.PresubmitError(short_text, long_text=long_text)]
     else:
       # TODO(bradnelson): drop this once all users are gone.
-      connection = input_api.urllib2.urlopen(url)
+      connection = input_api.urllib_request.urlopen(url)
       status = connection.read()
       connection.close()
       if input_api.re.match(closed, status):
@@ -821,7 +822,7 @@ def GetPylint(input_api, output_api, white_list=None, black_list=None,
 
   The default white_list enforces looking only at *.py files.
   """
-  white_list = tuple(white_list or ('.*\.py$',))
+  white_list = tuple(white_list or (r'.*\.py$',))
   black_list = tuple(black_list or input_api.DEFAULT_BLACK_LIST)
   extra_paths_list = extra_paths_list or []
 
@@ -867,8 +868,7 @@ def GetPylint(input_api, output_api, white_list=None, black_list=None,
   input_api.logging.info('Running pylint on %d files', len(files))
   input_api.logging.debug('Running pylint on: %s', files)
   env = input_api.environ.copy()
-  env['PYTHONPATH'] = input_api.os_path.pathsep.join(
-    extra_paths_list).encode('utf8')
+  env['PYTHONPATH'] = input_api.os_path.pathsep.join(extra_paths_list)
   env.pop('VPYTHON_CLEAR_PYTHONPATH', None)
   input_api.logging.debug('  with extra PYTHONPATH: %r', extra_paths_list)
 
@@ -936,7 +936,7 @@ def RunPylint(input_api, *args, **kwargs):
 def CheckBuildbotPendingBuilds(input_api, output_api, url, max_pendings,
     ignored):
   try:
-    connection = input_api.urllib2.urlopen(url)
+    connection = input_api.urllib_request.urlopen(url)
     raw_data = connection.read()
     connection.close()
   except IOError:
@@ -1001,7 +1001,7 @@ def CheckOwners(input_api, output_api, source_file_filter=None):
       input_api.change.RepositoryRoot(),
       owner_email,
       reviewers,
-      fopen=file,
+      fopen=open,
       os_path=input_api.os_path,
       email_postfix='',
       disable_color=True,
@@ -1126,7 +1126,7 @@ def PanProjectChecks(input_api, output_api,
   # 2006-20xx string used on the oldest files. 2006-20xx is deprecated, but
   # tolerated on old files.
   current_year = int(input_api.time.strftime('%Y'))
-  allowed_years = (str(s) for s in reversed(xrange(2006, current_year + 1)))
+  allowed_years = (str(s) for s in reversed(range(2006, current_year + 1)))
   years_re = '(' + '|'.join(allowed_years) + '|2006-2008|2006-2009|2006-2010)'
 
   # The (c) is deprecated, but tolerate it until it's removed from all files.
@@ -1155,7 +1155,10 @@ def PanProjectChecks(input_api, output_api,
   snapshot_memory = []
   def snapshot(msg):
     """Measures & prints performance warning if a rule is running slow."""
-    dt2 = input_api.time.clock()
+    if input_api.sys.version_info.major == 2:
+      dt2 = input_api.time.clock()
+    else:
+      dt2 = input_api.time.process_time()
     if snapshot_memory:
       delta_ms = int(1000*(dt2 - snapshot_memory[0]))
       if delta_ms > 500:
@@ -1388,7 +1391,6 @@ def CheckChangedLUCIConfigs(input_api, output_api):
   import base64
   import json
   import logging
-  import urllib2
 
   import auth
   import git_cl
@@ -1425,16 +1427,16 @@ def CheckChangedLUCIConfigs(input_api, output_api):
   def request(endpoint, body=None):
     api_url = ('https://%s/_ah/api/config/v1/%s'
                % (LUCI_CONFIG_HOST_NAME, endpoint))
-    req = urllib2.Request(api_url)
+    req = input_api.urllib_request.Request(api_url)
     req.add_header('Authorization', 'Bearer %s' % acc_tkn.token)
     if body is not None:
       req.add_header('Content-Type', 'application/json')
       req.add_data(json.dumps(body))
-    return json.load(urllib2.urlopen(req))
+    return json.load(input_api.urllib_request.urlopen(req))
 
   try:
     config_sets = request('config-sets').get('config_sets')
-  except urllib2.HTTPError as e:
+  except input_api.urllib_error.HTTPError as e:
     return [output_api.PresubmitError(
         'Config set request to luci-config failed', long_text=str(e))]
   if not config_sets:
@@ -1472,7 +1474,7 @@ def CheckChangedLUCIConfigs(input_api, output_api):
         cs_to_files[cs].append({
           'path': file_path[len(dr):] if dr != '/' else file_path,
           'content': base64.b64encode(
-              '\n'.join(f.NewContents()).encode('utf-8'))
+              '\n'.join(f.NewContents()).encode('utf-8')).decode('utf-8')
         })
   outputs = []
   for cs, f in cs_to_files.items():
@@ -1480,7 +1482,7 @@ def CheckChangedLUCIConfigs(input_api, output_api):
       # TODO(myjang): parallelize
       res = request(
           'validate-config', body={'config_set': cs, 'files': f})
-    except urllib2.HTTPError as e:
+    except input_api.urllib_error.HTTPError as e:
       return [output_api.PresubmitError(
           'Validation request to luci-config failed', long_text=str(e))]
     for msg in res.get('messages', []):
