@@ -140,6 +140,27 @@ enum class ArcContainerStopReason {
   UPGRADE_FAILURE = 5,
 };
 
+// The reason for stopping the session.
+enum class SessionStopReason {
+  // Force restart to restore active sessions.
+  RESTORE_ACTIVE_SESSIONS = 0,
+
+  // Stoped by user requesting sign out.
+  REQUEST_FROM_SESSION_MANAGER = 1,
+
+  // No owner found.
+  OWNER_REQUIRED = 2,
+
+  // Terms of service declined.
+  TERMS_DECLINED = 3,
+
+  // Failed to lock screen.
+  FAILED_TO_LOCK = 4,
+
+  // Suspend after Chrome restart.
+  SUSPEND_AFTER_RESTART = 5,
+};
+
 }  // namespace login_manager
 
 #endif  // SYSTEM_API_DBUS_LOGIN_MANAGER_DBUS_CONSTANTS_H_
