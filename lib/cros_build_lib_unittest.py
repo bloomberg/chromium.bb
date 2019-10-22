@@ -198,9 +198,10 @@ class TestRunCommandNoMock(cros_test_lib.TestCase):
     result = cros_build_lib.run(['cat'], input=open('/dev/null'))
     self.assertEqual(result.output, b'')
 
-    result = cros_build_lib.run(['cat'], input=open(__file__))
-    self.assertEqual(result.stdout,
-                     osutils.ReadFile(__file__, mode='rb'))
+    with open(__file__) as f:
+      result = cros_build_lib.run(['cat'], input=f)
+      self.assertEqual(result.stdout,
+                       osutils.ReadFile(__file__, mode='rb'))
 
   def testInputFileDescriptor(self):
     """Verify input argument when it is a file descriptor."""

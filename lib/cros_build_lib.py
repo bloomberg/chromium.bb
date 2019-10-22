@@ -758,6 +758,8 @@ def run(cmd, print_cmd=True, redirect_stdout=False,
         popen_stdout.seek(0)
         cmd_result.stdout = popen_stdout.read()
         popen_stdout.close()
+      elif log_stdout_to_file:
+        popen_stdout.close()
 
       if popen_stderr and popen_stderr != subprocess.STDOUT:
         popen_stderr.seek(0)
