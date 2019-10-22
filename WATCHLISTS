@@ -1535,7 +1535,7 @@
     'safety_tips': {
       'filepath': 'chrome/browser/component_updater/safety_tips_.*'\
                   '|chrome/browser/lookalikes/'\
-                  '|chrome/browser/resources/safety_tips'\
+                  '|chrome/browser/reputation/'\
                   '|chrome/browser/ui/views/page_info/safety_tip_page_info_bubble_view.*',
     },
     'sampling_profiler': {
