@@ -20,6 +20,10 @@ const base::Feature kInstantTetheringBackgroundAdvertisementSupport{
 const base::Feature kAmbientModeFeature{"ChromeOSAmbientMode",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls whether to enable ARC ADB sideloading support.
+const base::Feature kArcAdbSideloadingFeature{
+    "ArcAdbSideloading", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables or disables auto screen-brightness adjustment when ambient light
 // changes.
 const base::Feature kAutoScreenBrightness{"AutoScreenBrightness",
