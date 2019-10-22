@@ -107,7 +107,8 @@ public class WebLayerShellActivityTestRule extends ActivityTestRule<WebLayerShel
     }
 
     /**
-     * Starts the WebLayer activity and loads the given URL.
+     * Starts the WebLayer activity and completely loads the given URL (this calls
+     * navigateAndWait()).
      */
     public WebLayerShellActivity launchShellWithUrl(String url) {
         Intent intent = new Intent(Intent.ACTION_MAIN);

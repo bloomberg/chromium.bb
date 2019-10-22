@@ -62,6 +62,7 @@ public final class BrowserController {
                 mImpl.setFullscreenDelegateClient(mFullscreenDelegateClient);
             } else {
                 mImpl.setFullscreenDelegateClient(null);
+                mFullscreenDelegateClient = null;
             }
         } catch (RemoteException e) {
             throw new APICallException(e);

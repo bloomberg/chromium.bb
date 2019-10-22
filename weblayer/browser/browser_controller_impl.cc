@@ -259,7 +259,7 @@ void BrowserControllerImpl::OnExitFullscreen() {
   // If |processing_enter_fullscreen_| is true, it means the callback is being
   // called while processing EnterFullscreenModeForTab(). WebContents doesn't
   // deal well with this. FATAL as Android generally doesn't run with DCHECKs.
-  LOG_IF(FATAL, !processing_enter_fullscreen_)
+  LOG_IF(FATAL, processing_enter_fullscreen_)
       << "exiting fullscreen while entering fullscreen is not supported";
   web_contents_->ExitFullscreen(/* will_cause_resize */ false);
 }
