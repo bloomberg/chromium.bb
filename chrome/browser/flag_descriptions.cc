@@ -3260,6 +3260,13 @@ const char kAshSwapSideVolumeButtonsForOrientationDescription[] =
     "increase the volume and the button that's closer to the bottom/left "
     "always decrease the volume.";
 
+const char kAshSwipingFromLeftEdgeToGoBackName[] =
+    "Swping from the left edge of the display to go back to the previous page.";
+const char kAshSwipingFromLeftEdgeToGoBackDescription[] =
+    "Swiping from the restricted left area of the display with enough drag "
+    "distance or fling velocity could go back to the previous page while in "
+    "tablet mode.";
+
 const char kBluetoothAggressiveAppearanceFilterName[] =
     "Aggressive Bluetooth device filtering";
 const char kBluetoothAggressiveAppearanceFilterDescription[] =

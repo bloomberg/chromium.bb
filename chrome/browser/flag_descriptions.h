@@ -1929,6 +1929,9 @@ extern const char kAshNotificationStackingBarRedesignDescription[];
 extern const char kAshSwapSideVolumeButtonsForOrientationName[];
 extern const char kAshSwapSideVolumeButtonsForOrientationDescription[];
 
+extern const char kAshSwipingFromLeftEdgeToGoBackName[];
+extern const char kAshSwipingFromLeftEdgeToGoBackDescription[];
+
 extern const char kBluetoothAggressiveAppearanceFilterName[];
 extern const char kBluetoothAggressiveAppearanceFilterDescription[];
 
