@@ -122,7 +122,7 @@ bool ObuParser::ParseColorConfig(ObuSequenceHeader* sequence_header) {
   const auto color_description_present_flag = static_cast<bool>(scratch);
   if (color_description_present_flag) {
     OBU_READ_LITERAL_OR_FAIL(8);
-    color_config->color_primaries = static_cast<ColorPrimaries>(scratch);
+    color_config->color_primary = static_cast<ColorPrimary>(scratch);
     OBU_READ_LITERAL_OR_FAIL(8);
     color_config->transfer_characteristics =
         static_cast<TransferCharacteristics>(scratch);
@@ -130,13 +130,14 @@ bool ObuParser::ParseColorConfig(ObuSequenceHeader* sequence_header) {
     color_config->matrix_coefficients =
         static_cast<MatrixCoefficients>(scratch);
   } else {
-    color_config->color_primaries = kColorPrimaryUnspecified;
-    color_config->transfer_characteristics = kTransferCharacteristicUnspecified;
-    color_config->matrix_coefficients = kMatrixCoefficientUnspecified;
+    color_config->color_primary = kColorPrimaryUnspecified;
+    color_config->transfer_characteristics =
+        kTransferCharacteristicsUnspecified;
+    color_config->matrix_coefficients = kMatrixCoefficientsUnspecified;
   }
   if (color_config->is_monochrome) {
     OBU_READ_BIT_OR_FAIL;
-    color_config->color_range = scratch;
+    color_config->color_range = static_cast<ColorRange>(scratch);
     // Set subsampling_x and subsampling_y to 1 for monochrome. This makes it
     // easy to allow monochrome to be supported in profile 0. Profile 0
     // requires subsampling_x and subsampling_y to be 1.
@@ -144,15 +145,16 @@ bool ObuParser::ParseColorConfig(ObuSequenceHeader* sequence_header) {
     color_config->subsampling_y = 1;
     color_config->chroma_sample_position = kChromaSamplePositionUnknown;
   } else {
-    if (color_config->color_primaries == kColorPrimaryBt709 &&
-        color_config->transfer_characteristics == kTransferCharacteristicSrgb &&
-        color_config->matrix_coefficients == kMatrixCoefficientIdentity) {
-      color_config->color_range = 1;
+    if (color_config->color_primary == kColorPrimaryBt709 &&
+        color_config->transfer_characteristics ==
+            kTransferCharacteristicsSrgb &&
+        color_config->matrix_coefficients == kMatrixCoefficientsIdentity) {
+      color_config->color_range = kColorRangeFull;
       color_config->subsampling_x = 0;
       color_config->subsampling_y = 0;
     } else {
       OBU_READ_BIT_OR_FAIL;
-      color_config->color_range = scratch;
+      color_config->color_range = static_cast<ColorRange>(scratch);
       if (sequence_header->profile == kProfile0) {
         color_config->subsampling_x = 1;
         color_config->subsampling_y = 1;
@@ -184,7 +186,7 @@ bool ObuParser::ParseColorConfig(ObuSequenceHeader* sequence_header) {
     OBU_READ_BIT_OR_FAIL;
     color_config->separate_uv_delta_q = static_cast<bool>(scratch);
   }
-  if (color_config->matrix_coefficients == kMatrixCoefficientIdentity &&
+  if (color_config->matrix_coefficients == kMatrixCoefficientsIdentity &&
       (color_config->subsampling_x != 0 || color_config->subsampling_y != 0)) {
     LIBGAV1_DLOG(ERROR,
                  "matrix_coefficients is MC_IDENTITY, but subsampling_x (%d) "

@@ -259,7 +259,7 @@ StatusCode DecoderImpl::DequeueFrame(const DecoderBuffer** out_ptr) {
                 displayable_frame->film_grain_params(),
                 displayable_frame->buffer()->is_monochrome(),
                 obu->sequence_header().color_config.matrix_coefficients ==
-                    kMatrixCoefficientIdentity,
+                    kMatrixCoefficientsIdentity,
                 displayable_frame->upscaled_width(),
                 displayable_frame->frame_height(),
                 displayable_frame->buffer()->subsampling_x(),
@@ -326,6 +326,12 @@ StatusCode DecoderImpl::CopyFrameToOutputBuffer(
       return kLibgav1StatusInvalidArgument;
     }
   }
+  buffer_.color_range = state_.sequence_header.color_config.color_range;
+  buffer_.color_primary = state_.sequence_header.color_config.color_primary;
+  buffer_.transfer_characteristics =
+      state_.sequence_header.color_config.transfer_characteristics;
+  buffer_.matrix_coefficients =
+      state_.sequence_header.color_config.matrix_coefficients;
 
   buffer_.bitdepth = yuv_buffer->bitdepth();
   const int num_planes =

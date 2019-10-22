@@ -88,81 +88,17 @@ struct BitStreamLevel {
   uint8_t minor;  // Range: 0-3.
 };
 
-enum ColorPrimaries : uint8_t {
-  // 0 is reserved.
-  kColorPrimaryBt709 = 1,
-  kColorPrimaryUnspecified,
-  // 3 is reserved.
-  kColorPrimaryBt470M = 4,
-  kColorPrimaryBt470Bg,
-  kColorPrimaryBt601,
-  kColorPrimarySmpte240,
-  kColorPrimaryGenericFilm,
-  kColorPrimaryBt2020,
-  kColorPrimaryXyz,
-  kColorPrimarySmpte431,
-  kColorPrimarySmpte432,
-  // 13-21 are reserved.
-  kColorPrimaryEbu3213 = 22,
-  // 23-254 are reserved.
-  kMaxColorPrimaries = 255
-};
-
-enum TransferCharacteristics : uint8_t {
-  // 0 is reserved.
-  kTransferCharacteristicBt709 = 1,
-  kTransferCharacteristicUnspecified,
-  // 3 is reserved.
-  kTransferCharacteristicBt470M = 4,
-  kTransferCharacteristicBt470Bg,
-  kTransferCharacteristicBt601,
-  kTransferCharacteristicSmpte240,
-  kTransferCharacteristicLinear,
-  kTransferCharacteristicLog100,
-  kTransferCharacteristicLog100Sqrt10,
-  kTransferCharacteristicIec61966,
-  kTransferCharacteristicBt1361,
-  kTransferCharacteristicSrgb,
-  kTransferCharacteristicBt2020TenBit,
-  kTransferCharacteristicBt2020TwelveBit,
-  kTransferCharacteristicSmpte2084,
-  kTransferCharacteristicSmpte428,
-  kTransferCharacteristicHlg,
-  // 19-254 are reserved.
-  kMaxTransferCharacteristics = 255
-};
-
-enum MatrixCoefficients : uint8_t {
-  kMatrixCoefficientIdentity,
-  kMatrixCoefficientBt709,
-  kMatrixCoefficientUnspecified,
-  // 3 is reserved.
-  kMatrixCoefficientFcc = 4,
-  kMatrixCoefficientBt470BG,
-  kMatrixCoefficientBt601,
-  kMatrixCoefficientSmpte240,
-  kMatrixCoefficientSmpteYcgco,
-  kMatrixCoefficientBt2020Ncl,
-  kMatrixCoefficientBt2020Cl,
-  kMatrixCoefficientSmpte2085,
-  kMatrixCoefficientChromatNcl,
-  kMatrixCoefficientChromatCl,
-  kMatrixCoefficientIctcp,
-  // 15-254 are reserved.
-  kMaxMatrixCoefficients = 255
-};
-
 struct ColorConfig {
   int8_t bitdepth;
   bool is_monochrome;
-  ColorPrimaries color_primaries;
+  ColorPrimary color_primary;
   TransferCharacteristics transfer_characteristics;
   MatrixCoefficients matrix_coefficients;
   // A binary value (0 or 1) that is associated with the VideoFullRangeFlag
   // variable specified in ISO/IEC 23091-4/ITUT H.273.
   // * 0: the studio swing representation.
   // * 1: the full swing representation.
-  int8_t color_range;
+  ColorRange color_range;
   int8_t subsampling_x;
   int8_t subsampling_y;
   ChromaSamplePosition chroma_sample_position;
