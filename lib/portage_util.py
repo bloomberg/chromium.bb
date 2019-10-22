@@ -371,6 +371,7 @@ class EBuild(object):
   @classmethod
   def _RunCommand(cls, command, **kwargs):
     kwargs.setdefault('capture_output', True)
+    kwargs.setdefault('encoding', 'utf-8')
     return cros_build_lib.run(command, print_cmd=cls.VERBOSE, **kwargs).output
 
   @classmethod
@@ -930,8 +931,9 @@ class EBuild(object):
 
     # The chromeos-version script will output a usable raw version number,
     # or nothing in case of error or no available version
-    result = cros_build_lib.run(['bash', '-x', vers_script] + srcdirs,
-                                capture_output=True, error_code_ok=True)
+    result = cros_build_lib.run(
+        ['bash', '-x', vers_script] + srcdirs,
+        capture_output=True, check=False, encoding='utf-8')
 
     output = result.output.strip()
     if result.returncode or not output:
@@ -1544,7 +1546,8 @@ def ParseBashArray(value):
   # Because %s may contain bash comments (#), put a clever newline in the way.
   cmd = 'ARR=%s\nIFS=%s; echo -n "${ARR[*]}"' % (value, sep)
   return cros_build_lib.run(
-      cmd, print_cmd=False, shell=True, capture_output=True).output.split(sep)
+      cmd, print_cmd=False, shell=True, capture_output=True,
+      encoding='utf-8').stdout.split(sep)
 
 
 def WorkonEBuildGeneratorForDirectory(base_dir, subdir_support=False):
@@ -1803,7 +1806,7 @@ def FindPackageNameMatches(pkg_str, board=None,
   cmd += ['list', pkg_str]
   result = cros_build_lib.run(
       cmd, cwd=buildroot, enter_chroot=True, capture_output=True,
-      error_code_ok=True)
+      check=False, encoding='utf-8')
 
   matches = []
   if result.returncode == 0:
@@ -1819,7 +1822,7 @@ def FindEbuildForBoardPackage(pkg_str, board,
   cmd = [equery, 'which', pkg_str]
   return cros_build_lib.run(
       cmd, cwd=buildroot, enter_chroot=True,
-      capture_output=True).output.strip()
+      capture_output=True, encoding='utf-8').stdout.strip()
 
 
 def FindEbuildsForPackages(packages_list, sysroot, include_masked=False,
@@ -1847,8 +1850,9 @@ def FindEbuildsForPackages(packages_list, sysroot, include_masked=False,
     cmd += ['--include-masked']
   cmd += packages_list
 
-  result = cros_build_lib.run(cmd, extra_env=extra_env, print_cmd=False,
-                              capture_output=True, error_code_ok=error_code_ok)
+  result = cros_build_lib.run(
+      cmd, extra_env=extra_env, print_cmd=False, capture_output=True,
+      check=not error_code_ok, encoding='utf-8')
 
   if result.returncode:
     return {}
@@ -1915,7 +1919,7 @@ def GetInstalledPackageUseFlags(pkg_str, board=None,
   cmd += ['-CqU', pkg_str]
   result = cros_build_lib.run(
       cmd, enter_chroot=True, capture_output=True, error_code_ok=True,
-      cwd=buildroot)
+      encoding='utf-8', cwd=buildroot)
 
   use_flags = {}
   if result.returncode == 0:
@@ -1966,7 +1970,7 @@ def GetPackageDependencies(board, package,
          package]
   emerge_output = cros_build_lib.run(
       cmd, cwd=buildroot, enter_chroot=True,
-      capture_output=True).output.splitlines()
+      capture_output=True, encoding='utf-8').stdout.splitlines()
   packages = []
   for line in emerge_output:
     columns = line.split()
@@ -2031,7 +2035,7 @@ def GetRepositoryForEbuild(ebuild_path, sysroot):
   cmd = (cros_build_lib.GetSysrootToolPath(sysroot, 'ebuild'),
          ebuild_path, 'info')
   result = cros_build_lib.run(
-      cmd, capture_output=True, print_cmd=False, error_code_ok=True)
+      cmd, capture_output=True, print_cmd=False, check=False, encoding='utf-8')
   return GetRepositoryFromEbuildInfo(result.output)
 
 
@@ -2139,6 +2143,7 @@ def _Portageq(command, board=None, **kwargs):
   kwargs.setdefault('capture_output', True)
   kwargs.setdefault('cwd', constants.SOURCE_ROOT)
   kwargs.setdefault('debug_level', logging.DEBUG)
+  kwargs.setdefault('encoding', 'utf-8')
   kwargs.setdefault('enter_chroot', True)
 
   portageq = 'portageq-%s' % board if board else 'portageq'

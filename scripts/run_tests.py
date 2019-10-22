@@ -256,6 +256,7 @@ PYTHON3_TESTS = {
     'lib/paygen/paygen_stateful_payload_lib_unittest',
     'lib/paygen/urilib_unittest',
     'lib/paygen/utils_unittest',
+    'lib/portage_util_unittest',
     'lib/process_util_unittest',
     'lib/prpc_unittest',
     'lib/qemu_unittest',
