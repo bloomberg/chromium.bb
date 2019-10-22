@@ -16,6 +16,7 @@ import shutil
 import stat
 import time
 
+from chromite.lib import cros_logging as logging
 from chromite.lib import locking
 from chromite.lib import osutils
 from chromite.lib.paygen import urilib
@@ -220,9 +221,8 @@ class DownloadCache(object):
             total_size -= size
             os.unlink(f)
 
-        # Just remove all lock files. They will be recreated as needed.
-        shutil.rmtree(self._lock_dir)
-        os.makedirs(self._lock_dir)
+        # Leave any lock files in place.  They can be used as is.
+        # See crbug.com/1016555.
 
     except locking.LockNotAcquiredError:
       # If we can't get an exclusive lock on the file, it's in use, leave it.
@@ -260,6 +260,7 @@ class DownloadCache(object):
         except:
           # If there was any error with the download, make sure no partial
           # file was left behind.
+          logging.info('Failed to fetch %s to %s', uri, cache_file)
           if os.path.exists(cache_file):
             os.unlink(cache_file)
           raise

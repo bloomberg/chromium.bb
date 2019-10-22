@@ -436,7 +436,9 @@ class PaygenPayload(object):
       # Rename it into the desired image name.
       shutil.move(os.path.join(self.work_dir, extract_file), image_file)
 
-      # It's safe to delete the archive at this point.
+      # It should be safe to delete the archive at this point.
+      # TODO(crbug/1016555): consider removing the logging once resolved.
+      logging.info('Removing %s', download_file)
       os.remove(download_file)
 
   def _GeneratePostinstConfig(self, run_postinst):
