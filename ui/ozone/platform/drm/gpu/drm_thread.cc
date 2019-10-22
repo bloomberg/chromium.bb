@@ -307,8 +307,8 @@ void DrmThread::CheckOverlayCapabilities(
 }
 
 void DrmThread::GetDeviceCursor(
-    ozone::mojom::DeviceCursorAssociatedRequest request) {
-  cursor_bindings_.AddBinding(this, std::move(request));
+    mojo::PendingAssociatedReceiver<ozone::mojom::DeviceCursor> receiver) {
+  cursor_receivers_.Add(this, std::move(receiver));
 }
 
 void DrmThread::RefreshNativeDisplays(
