@@ -1149,6 +1149,7 @@ if (enable_java_templates) {
 
   # Variables
   #   apply_mapping: The path to the ProGuard mapping file to apply.
+  #   disable_incremental: Disable incremental dexing.
   template("dex") {
     assert(defined(invoker.output))
 
@@ -1376,7 +1377,9 @@ if (enable_java_templates) {
 
         if (_proguard_enabled) {
           deps += [ ":${_proguard_target_name}" ]
-        } else if (enable_incremental_d8) {
+        } else if (enable_incremental_d8 &&
+                   !(defined(invoker.disable_incremental) &&
+                     invoker.disable_incremental)) {
           # Don't use incremental dexing for ProGuarded inputs as a precaution.
           args += [
             "--incremental-dir",
@@ -3500,6 +3503,10 @@ if (enable_java_templates) {
         if (defined(_dex_path)) {
           dex("${target_name}__dex") {
             input_class_jars = [ _final_jar_path ]
+
+            # There's no value in per-class dexing prebuilts since they never
+            # change just one class at a time.
+            disable_incremental = _is_prebuilt
             output = _dex_path
             deps = [
               ":$_process_prebuilt_target_name",
