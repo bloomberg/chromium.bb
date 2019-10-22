@@ -5,14 +5,10 @@
 import("//build/config/android/rules.gni")
 
 android_library("java") {
-  java_files = [
-    "java/src/org/chromium/chrome/browser/download/DirectoryOption.java",
-    "java/src/org/chromium/chrome/browser/download/DownloadFilter.java",
-    "java/src/org/chromium/chrome/browser/download/DownloadDirectoryProvider.java",
-  ]
+  java_files =
+      [ "java/src/org/chromium/chrome/browser/download/DownloadFilter.java" ]
 
   deps = [
     "//base:base_java",
-    "//content/public/android:content_java",
   ]
 }
