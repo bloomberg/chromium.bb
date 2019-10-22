@@ -396,7 +396,7 @@ class MockWebUIDataSource : public content::URLDataSource {
   std::string GetSource() override { return "dummyurl"; }
 
   void StartDataRequest(
-      const std::string& path,
+      const GURL& url,
       const content::WebContents::Getter& wc_getter,
       const content::URLDataSource::GotDataCallback& callback) override {
     std::string dummy_html = "<html><body>Dummy</body></html>";

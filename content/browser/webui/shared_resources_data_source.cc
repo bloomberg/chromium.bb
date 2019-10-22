@@ -294,9 +294,10 @@ std::string SharedResourcesDataSource::GetSource() {
 }
 
 void SharedResourcesDataSource::StartDataRequest(
-    const std::string& path,
+    const GURL& url,
     const WebContents::Getter& wc_getter,
     const URLDataSource::GotDataCallback& callback) {
+  const std::string path = URLDataSource::URLToRequestPath(url);
   std::string updated_path = path;
 #if defined(OS_CHROMEOS)
   // If this is a Polymer request and multiple Polymer versions are enabled,
