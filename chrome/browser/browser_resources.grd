@@ -219,13 +219,13 @@
 
       <if expr="not is_android">
         <!-- History. -->
-        <include name="IDR_HISTORY_CONSTANTS_HTML" file="resources\history\constants.html" type="BINDATA" />
-        <include name="IDR_HISTORY_CONSTANTS_JS" file="resources\history\constants.js" type="BINDATA" />
+        <include name="IDR_HISTORY_CONSTANTS_HTML" file="resources\history\constants.html" compress="gzip" type="BINDATA" />
+        <include name="IDR_HISTORY_CONSTANTS_JS" file="resources\history\constants.js" compress="gzip" type="BINDATA" />
         <include name="IDR_HISTORY_HISTORY_HTML" file="resources\history\history.html" preprocess="true" type="BINDATA" compress="gzip" />
-        <include name="IDR_HISTORY_HISTORY_JS" file="resources\history\history.js" type="BINDATA" />
-        <include name="IDR_HISTORY_IMAGES_SIGN_IN_PROMO_DARK_SVG" file="resources\history\images\sign_in_promo_dark.svg" type="BINDATA" />
-        <include name="IDR_HISTORY_IMAGES_SIGN_IN_PROMO_SVG" file="resources\history\images\sign_in_promo.svg" type="BINDATA" />
-        <include name="IDR_HISTORY_STRINGS_HTML" file="resources\history\strings.html" type="BINDATA" />
+        <include name="IDR_HISTORY_HISTORY_JS" file="resources\history\history.js" compress="gzip" type="BINDATA" />
+        <include name="IDR_HISTORY_IMAGES_SIGN_IN_PROMO_DARK_SVG" file="resources\history\images\sign_in_promo_dark.svg" compress="gzip" type="BINDATA" />
+        <include name="IDR_HISTORY_IMAGES_SIGN_IN_PROMO_SVG" file="resources\history\images\sign_in_promo.svg" compress="gzip" type="BINDATA" />
+        <include name="IDR_HISTORY_STRINGS_HTML" file="resources\history\strings.html" compress="gzip" type="BINDATA" />
         <if expr="optimize_webui">
           <then>
             <include name="IDR_HISTORY_APP_VULCANIZED_HTML" file="${root_gen_dir}\chrome\browser\resources\history\app.vulcanized.html" preprocess="true" type="BINDATA" compress="gzip" use_base_dir="false" />
