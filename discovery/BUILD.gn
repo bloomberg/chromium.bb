@@ -9,6 +9,7 @@ source_set("dnssd") {
 
   sources = [
     "dnssd/dns_sd_temp.cc",
+    "dnssd/impl/constants.h",
     "dnssd/public/instance_record.h",
     "dnssd/public/publisher.h",
     "dnssd/public/querier.h",
@@ -27,7 +28,9 @@ source_set("dnssd") {
 source_set("unittests") {
   testonly = true
 
-  sources = []
+  sources = [
+    "dnssd/impl/constants_unittest.cc",
+  ]
 
   deps = [
     ":dnssd",
