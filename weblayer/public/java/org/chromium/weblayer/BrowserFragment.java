@@ -16,6 +16,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.NonNull;
+
 import org.chromium.weblayer_private.aidl.APICallException;
 import org.chromium.weblayer_private.aidl.IBrowserFragment;
 import org.chromium.weblayer_private.aidl.IObjectWrapper;
@@ -149,6 +151,7 @@ public final class BrowserFragment extends Fragment {
      * Returns the {@link BrowserFragmentController} associated with this fragment.
      * The controller is available only between BrowserFragment's onCreate() and onDestroy().
      */
+    @NonNull
     public BrowserFragmentController getController() {
         if (mBrowserFragmentController == null) {
             throw new RuntimeException("BrowserFragmentController is available only between "
