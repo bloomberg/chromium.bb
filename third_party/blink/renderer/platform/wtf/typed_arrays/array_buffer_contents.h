@@ -114,6 +114,10 @@ class WTF_EXPORT ArrayBufferContents {
                       unsigned element_byte_size,
                       SharingType is_shared,
                       InitializationPolicy);
+  ArrayBufferContents(void* data,
+                      size_t length,
+                      DataDeleter deleter,
+                      SharingType is_shared);
   ArrayBufferContents(DataHandle,
                       SharingType is_shared);
   ArrayBufferContents(ArrayBufferContents&&) = default;

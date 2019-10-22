@@ -66,6 +66,14 @@ ArrayBufferContents::ArrayBufferContents(DataHandle data,
   }
 }
 
+ArrayBufferContents::ArrayBufferContents(void* data,
+                                         size_t length,
+                                         DataDeleter deleter,
+                                         SharingType is_shared)
+    : holder_(base::AdoptRef(new DataHolder())) {
+  holder_->Adopt(DataHandle(data, length, deleter, nullptr), is_shared);
+}
+
 ArrayBufferContents::~ArrayBufferContents() = default;
 
 void ArrayBufferContents::Detach() {
