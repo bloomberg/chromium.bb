@@ -272,6 +272,9 @@ static void cyclic_refresh_update_map(AV1_COMP *const cpi) {
     int sb_col_index = i - sb_row_index * sb_cols;
     int mi_row = sb_row_index * cm->seq_params.mib_size;
     int mi_col = sb_col_index * cm->seq_params.mib_size;
+    // TODO(any): Ensure the population of
+    // cpi->common.allow_screen_content_tools and use the same instead of
+    // cpi->oxcf.content == AOM_CONTENT_SCREEN
     int qindex_thresh =
         cpi->oxcf.content == AOM_CONTENT_SCREEN
             ? av1_get_qindex(&cm->seg, CR_SEGMENT_ID_BOOST2, cm->base_qindex)
