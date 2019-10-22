@@ -238,6 +238,7 @@ PYTHON3_TESTS = {
     'lib/iter_utils_unittest',
     'lib/json_lib_unittest',
     'lib/launch_control/processed_builds_unittest',
+    'lib/loas_unittest',
     'lib/logdog_unittest',
     'lib/luci/net_unittest',
     'lib/luci/utils_unittest',

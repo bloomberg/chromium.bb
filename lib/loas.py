@@ -70,7 +70,8 @@ class Loas(object):
     result = cros_build_lib.sudo_run(cmd,
                                      user=self.user,
                                      error_code_ok=True,
-                                     redirect_stdout=True)
+                                     redirect_stdout=True,
+                                     encoding='utf-8')
 
     # Figure out how many days are left.  The command should display:
     # SSL-ENROLLED CERT cert expires in about 22 days
