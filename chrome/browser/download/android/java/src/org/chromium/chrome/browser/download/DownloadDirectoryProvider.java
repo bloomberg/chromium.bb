@@ -131,8 +131,9 @@ public class DownloadDirectoryProvider {
                 hasAddtionalDirectory = true;
             }
 
-            if (hasAddtionalDirectory)
+            if (hasAddtionalDirectory) {
                 recordDirectoryType(DirectoryOption.DownloadLocationDirectoryType.ADDITIONAL);
+            }
 
             return dirs;
         }
@@ -203,7 +204,7 @@ public class DownloadDirectoryProvider {
     private AllDirectoriesTask mAllDirectoriesTask;
     private ArrayList<DirectoryOption> mDirectoryOptions;
     private String mExternalStorageDirectory;
-    private ArrayList < Callback < ArrayList<DirectoryOption>>> mCallbacks = new ArrayList<>();
+    private ArrayList<Callback<ArrayList<DirectoryOption>>> mCallbacks = new ArrayList<>();
 
     protected DownloadDirectoryProvider() {
         registerSDCardReceiver();
