@@ -364,7 +364,7 @@ Args that affect build speed:
 
 #### Incremental Install
 [Incremental Install](/build/android/incremental_install/README.md) uses
-reflection and side-loading to speed up the edit & deploy cycle (normally < 10
+reflection and sideloading to speed up the edit & deploy cycle (normally < 10
 seconds). The initial launch of the apk will be a lot slower on older Android
 versions (pre-N) where the OS needs to pre-optimize the side-loaded files, but
 then be only marginally slower after the first launch.
@@ -373,20 +373,11 @@ To enable Incremental Install, add the gn args:
 
 ```gn
 incremental_install = true
-disable_incremental_isolated_processes = true
 ```
 
 Some APKs (e.g. WebView) do not work with incremental install, and are
-blacklisted from being built as such via `never_incremental = true`.
-
-**Bug:** Sometimes Android does not notice changes to dex files, and tries to
-use prior versions. If you see impossible sounding dex exceptions, try
-uninstalling then re-installing:
-
-```shell
-out/Default/bin/chrome_public_apk uninstall
-out/Default/bin/chrome_public_apk run
-```
+blacklisted from being built as such (via `never_incremental = true`), so are
+build as normal APKs even when `incremental_install = true`.
 
 ## Installing and Running Chromium on an Emulator
 
