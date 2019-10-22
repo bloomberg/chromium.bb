@@ -120,7 +120,7 @@ public class WebLayerShellActivityTestRule extends ActivityTestRule<WebLayerShel
                         WebLayerShellActivity.class));
         WebLayerShellActivity activity = launchActivity(intent);
         Assert.assertNotNull(activity);
-        navigateAndWait(url);
+        if (url != null) navigateAndWait(url);
         return activity;
     }
 
