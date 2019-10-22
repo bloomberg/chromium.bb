@@ -1839,6 +1839,24 @@
             ]
         }
     ],
+    "CrOSSystemAECDeactivatedGroups": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "AecGroupIdsWithBrowserFallbackFromCrAS",
+                    "params": {
+                        "3": "true"
+                    },
+                    "enable_features": [
+                        "CrOSSystemAECDeactivatedGroups"
+                    ]
+                }
+            ]
+        }
+    ],
     "D3D11VideoDecoder": [
         {
             "platforms": [
