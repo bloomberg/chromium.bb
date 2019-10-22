@@ -1889,6 +1889,7 @@ jumbo_static_library("browser") {
     "//components/sync_device_info",
     "//content/public/browser",
     "//ipc",
+    "//services/image_annotation/public/mojom",
     "//sql",
   ]
   deps = [
@@ -2136,7 +2137,6 @@ jumbo_static_library("browser") {
     "//services/identity:lib",
     "//services/identity/public/cpp:cpp_types",
     "//services/image_annotation:service",
-    "//services/image_annotation/public/mojom",
     "//services/metrics/public/cpp:ukm_builders",
     "//services/network:network_service",
     "//services/network/public/cpp",
