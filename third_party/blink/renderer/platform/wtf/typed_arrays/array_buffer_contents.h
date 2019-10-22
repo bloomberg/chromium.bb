@@ -144,23 +144,6 @@ class WTF_EXPORT ArrayBufferContents {
   static void* AllocateMemoryOrNull(size_t, InitializationPolicy);
   static void FreeMemory(void*);
   static DataHandle CreateDataHandle(size_t, InitializationPolicy);
-  static void Initialize(
-      AdjustAmountOfExternalAllocatedMemoryFunction function) {
-    DCHECK(IsMainThread());
-    DCHECK_EQ(adjust_amount_of_external_allocated_memory_function_,
-              DefaultAdjustAmountOfExternalAllocatedMemoryFunction);
-    adjust_amount_of_external_allocated_memory_function_ = function;
-  }
-
-  void RegisterExternalAllocationWithCurrentContext() {
-    if (holder_)
-      holder_->RegisterExternalAllocationWithCurrentContext();
-  }
-
-  void UnregisterExternalAllocationWithCurrentContext() {
-    if (holder_)
-      holder_->UnregisterExternalAllocationWithCurrentContext();
-  }
 
  private:
   static void* AllocateMemoryWithFlags(size_t, InitializationPolicy, int);
@@ -186,49 +169,13 @@ class WTF_EXPORT ArrayBufferContents {
     size_t DataLength() const { return data_.DataLength(); }
     bool IsShared() const { return is_shared_ == kShared; }
 
-    void RegisterExternalAllocationWithCurrentContext();
-    void UnregisterExternalAllocationWithCurrentContext();
-
    private:
-    void AdjustAmountOfExternalAllocatedMemory(int64_t diff) {
-      has_registered_external_allocation_ =
-          !has_registered_external_allocation_;
-      DCHECK(!diff || (has_registered_external_allocation_ == (diff > 0)));
-      CheckIfAdjustAmountOfExternalAllocatedMemoryIsConsistent();
-      adjust_amount_of_external_allocated_memory_function_(diff);
-    }
-
-    void AdjustAmountOfExternalAllocatedMemory(size_t diff) {
-      AdjustAmountOfExternalAllocatedMemory(static_cast<int64_t>(diff));
-    }
-
-    void CheckIfAdjustAmountOfExternalAllocatedMemoryIsConsistent() {
-      DCHECK(adjust_amount_of_external_allocated_memory_function_);
-
-#if DCHECK_IS_ON()
-      // Make sure that the function actually used is always the same.
-      // Shouldn't be updated during its use.
-      if (!last_used_adjust_amount_of_external_allocated_memory_function_) {
-        last_used_adjust_amount_of_external_allocated_memory_function_ =
-            adjust_amount_of_external_allocated_memory_function_;
-      }
-      DCHECK_EQ(adjust_amount_of_external_allocated_memory_function_,
-                last_used_adjust_amount_of_external_allocated_memory_function_);
-#endif
-    }
-
     DataHandle data_;
     SharingType is_shared_;
     bool has_registered_external_allocation_;
   };
 
   scoped_refptr<DataHolder> holder_;
-  static AdjustAmountOfExternalAllocatedMemoryFunction
-      adjust_amount_of_external_allocated_memory_function_;
-#if DCHECK_IS_ON()
-  static AdjustAmountOfExternalAllocatedMemoryFunction
-      last_used_adjust_amount_of_external_allocated_memory_function_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(ArrayBufferContents);
 };
