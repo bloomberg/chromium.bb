@@ -5772,3 +5772,6 @@ crbug.com/1015975 virtual/audio-service/media/video-currentTime.html [ Pass Fail
 # Sheriff 2019-10-21
 crbug.com/1016364 [ Linux Mac Debug ] http/tests/devtools/console/console-search.js [ Pass Timeout ]
 crbug.com/1016457 [ Linux Mac Debug ] external/wpt/dom/ranges/Range-mutations-dataChange.html [ Pass Timeout ]
+
+# ecosystem-infra sheriff 2019-10-22
+crbug.com/1016762 external/wpt/html/cross-origin-opener-policy/popup-redirect-cache.https.html [ Pass Failure ]
