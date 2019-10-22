@@ -1131,7 +1131,12 @@
   {
     "name": "enable-cros-ime-input-logic-fst",
     "owners": [ "essential-inputs-team@google.com" ],
-    "expiry_milestone": 77
+    "expiry_milestone": 80
+  },
+  {
+    "name": "enable-cros-ime-native-decoder",
+    "owners": [ "essential-inputs-team@google.com" ],
+    "expiry_milestone": 85
   },
   {
     "name": "enable-cssom-view-scroll-coordinates",
