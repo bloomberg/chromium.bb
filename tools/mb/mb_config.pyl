@@ -2293,7 +2293,7 @@
     },
 
     'incremental': {
-      'gn_args': 'disable_incremental_isolated_processes=true incremental_apk_by_default=true',
+      'gn_args': 'incremental_install=true',
     },
 
     'internal_gles_conform_tests': {

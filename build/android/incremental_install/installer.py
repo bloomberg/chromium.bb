@@ -21,7 +21,6 @@ sys.path.append(
 import devil_chromium
 from devil.android import apk_helper
 from devil.android import device_utils
-from devil.android.sdk import version_codes
 from devil.utils import reraiser_thread
 from devil.utils import run_tests_helper
 from pylib import constants
@@ -174,17 +173,7 @@ def Install(device, install_json, apk=None, enable_device_cache=False,
                                 delete_device_stale=True)
     push_dex_timer.Stop(log=False)
 
-  def check_selinux():
-    # Marshmallow has no filesystem access whatsoever. It might be possible to
-    # get things working on Lollipop, but attempts so far have failed.
-    # http://crbug.com/558818
-    has_selinux = device.build_version_sdk >= version_codes.LOLLIPOP
-    if has_selinux and apk.HasIsolatedProcesses():
-      raise Exception('Cannot use incremental installs on Android L+ without '
-                      'first disabling isolated processes.\n'
-                      'To do so, use GN arg:\n'
-                      '    disable_incremental_isolated_processes=true')
-
+  def check_device_configured():
     target_sdk_version = int(apk.GetTargetSdkVersion())
     # Beta Q builds apply whitelist to targetSdk=28 as well.
     if target_sdk_version >= 28 and device.build_version_sdk >= 29:
@@ -243,8 +232,8 @@ To restore back to default:
   # Concurrency here speeds things up quite a bit, but DeviceUtils hasn't
   # been designed for multi-threading. Enabling only because this is a
   # developer-only tool.
-  setup_timer = _Execute(
-      use_concurrency, create_lock_files, restore_cache, check_selinux)
+  setup_timer = _Execute(use_concurrency, create_lock_files, restore_cache,
+                         check_device_configured)
 
   _Execute(use_concurrency, do_install, do_push_files)
 

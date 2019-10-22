@@ -164,9 +164,8 @@ final class ClassLoaderPatcher {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 // TODO: Work around this issue by using APK splits to install each dex / lib.
                 throw new RuntimeException("Incremental install does not work on Android M+ "
-                        + "with isolated processes. Use the gn arg:\n"
-                        + "    disable_incremental_isolated_processes=true\n"
-                        + "and try again.");
+                        + "with isolated processes. Build system should have removed this. "
+                        + "Please file a bug.");
             }
             // Other processes: Waits for primary process to finish copying.
             LockFile.waitForRuntimeLock(lockFile, 10 * 1000);
