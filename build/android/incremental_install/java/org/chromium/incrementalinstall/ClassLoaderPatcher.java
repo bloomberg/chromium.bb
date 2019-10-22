@@ -18,6 +18,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Provides the ability to add native libraries and .dex files to an existing class loader.
@@ -202,18 +203,28 @@ final class ClassLoaderPatcher {
     }
 
     private static void copyChangedFiles(File srcDir, File dstDir) throws IOException {
-        // No need to delete stale libs since libraries are loaded explicitly.
-        int numNotChanged = 0;
-        for (File f : srcDir.listFiles()) {
+        int numUpdated = 0;
+        File[] srcFiles = srcDir.listFiles();
+        for (File f : srcFiles) {
             // Note: Tried using hardlinks, but resulted in EACCES exceptions.
             File dest = new File(dstDir, f.getName());
-            if (!copyIfModified(f, dest)) {
-                numNotChanged++;
+            if (copyIfModified(f, dest)) {
+                numUpdated++;
             }
         }
-        if (numNotChanged > 0) {
-            Log.i(TAG, numNotChanged + " libs already up to date.");
+        // Delete stale files.
+        int numDeleted = 0;
+        for (File f : dstDir.listFiles()) {
+            File src = new File(srcDir, f.getName());
+            if (!src.exists()) {
+                numDeleted++;
+                f.delete();
+            }
         }
+        String msg = String.format(Locale.US,
+                "copyChangedFiles: %d of %d updated. %d stale files removed.", numUpdated,
+                srcFiles.length, numDeleted);
+        Log.i(TAG, msg);
     }
 
     @SuppressLint("SetWorldReadable")
