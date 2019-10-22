@@ -4,6 +4,7 @@
 
 #include "chrome/browser/media/router/providers/openscreen/platform/chrome_platform_client.h"
 
+#include "base/threading/thread_checker.h"
 #include <utility>
 
 namespace media_router {
@@ -25,7 +26,11 @@ ChromePlatformClient* ChromePlatformClient::GetInstance() {
 
 // static
 void ChromePlatformClient::ShutDown() {
-  PlatformClient::ShutDown();
+  ChromePlatformClient* client = ChromePlatformClient::GetInstance();
+  if (client != nullptr) {
+    DCHECK_CALLED_ON_VALID_THREAD(client->thread_checker_);
+    PlatformClient::ShutDown();
+  }
 }
 
 openscreen::platform::TaskRunner* ChromePlatformClient::GetTaskRunner() {
