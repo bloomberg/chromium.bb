@@ -161,6 +161,16 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
   // immediately.
   bool AuthenticationRequiresUnmaskDetails();
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+  // After card verification starts, shows the verify pending dialog if WebAuthn
+  // is enabled, indicating some verification steps are in progress.
+  void ShowVerifyPendingDialog();
+
+  // The callback function invoked when the cancel button in the verify pending
+  // dialog is clicked. Will cancel the attempt to fetch unmask details.
+  void OnDidCancelCardVerification();
+#endif
+
   // Is set to true only when waiting for the callback to
   // OnCVCAuthenticationComplete() to be executed.
   bool is_authentication_in_progress_ = false;

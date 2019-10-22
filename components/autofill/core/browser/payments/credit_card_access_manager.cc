@@ -307,6 +307,11 @@ void CreditCardAccessManager::FetchCreditCard(
   }
 #endif
   if (AuthenticationRequiresUnmaskDetails() && !get_unmask_details_returned) {
+    // On desktop, shows the verify pending dialog.
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+    ShowVerifyPendingDialog();
+#endif
+
     // Wait for |ready_to_start_authentication_| to be signaled by
     // OnDidGetUnmaskDetails() or until timeout before calling Authenticate().
     base::PostTaskAndReplyWithResult(
@@ -388,6 +393,11 @@ void CreditCardAccessManager::Authenticate(bool get_unmask_details_returned) {
         std::move(unmask_details_.fido_request_options));
 #endif
   } else {
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+    // Close the verify pending dialog if it enters CVC authentication flow
+    // since the card unmask prompt will pop up.
+    client_->CloseVerifyPendingDialog();
+#endif
     GetOrCreateCVCAuthenticator()->Authenticate(
         card_, weak_ptr_factory_.GetWeakPtr(), personal_data_manager_,
         form_parsed_timestamp_);
@@ -467,6 +477,13 @@ void CreditCardAccessManager::OnCVCAuthenticationComplete(
 void CreditCardAccessManager::OnFIDOAuthenticationComplete(
     bool did_succeed,
     const CreditCard* card) {
+#if !defined(OS_ANDROID)
+  // Close the verify pending dialog. If FIDO authentication succeeded, card is
+  // filled to the form, otherwise fall back to CVC authentication which does
+  // not need the verify pending dialog either.
+  client_->CloseVerifyPendingDialog();
+#endif
+
   if (did_succeed) {
     is_authentication_in_progress_ = false;
     accessor_->OnCreditCardFetched(did_succeed, card);
@@ -481,6 +498,10 @@ void CreditCardAccessManager::OnFIDOAuthenticationComplete(
 }
 #endif
 
+bool CreditCardAccessManager::IsLocalCard(const CreditCard* card) {
+  return card && card->record_type() == CreditCard::LOCAL_CARD;
+}
+
 bool CreditCardAccessManager::AuthenticationRequiresUnmaskDetails() {
 #if defined(OS_IOS)
   return false;
@@ -490,8 +511,18 @@ bool CreditCardAccessManager::AuthenticationRequiresUnmaskDetails() {
 #endif
 }
 
-bool CreditCardAccessManager::IsLocalCard(const CreditCard* card) {
-  return card && card->record_type() == CreditCard::LOCAL_CARD;
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+void CreditCardAccessManager::ShowVerifyPendingDialog() {
+  client_->ShowVerifyPendingDialog(
+      base::BindOnce(&CreditCardAccessManager::OnDidCancelCardVerification,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
+
+void CreditCardAccessManager::OnDidCancelCardVerification() {
+  payments_client_->CancelRequest();
+  unmask_details_request_in_progress_ = false;
+  is_authentication_in_progress_ = false;
+}
+#endif
 
 }  // namespace autofill
