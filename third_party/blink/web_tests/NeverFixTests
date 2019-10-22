@@ -2073,7 +2073,7 @@ external/wpt/pointerevents/pointerevent_touch-action-inherit_child-none_touch-ma
 external/wpt/pointerevents/pointerevent_touch-action-inherit_parent-none_touch-manual.html [ WontFix ]
 external/wpt/pointerevents/pointerevent_touch-action-inherit_child-auto-child-none_touch-manual.html [ WontFix ]
 external/wpt/web-share/share-files-manual.tentative.https.html [ WontFix ]
-external/wpt/web-share/share-image-manual.https.html [ WontFix ]
+external/wpt/web-share/share-image-manual.tentative.https.html [ WontFix ]
 external/wpt/uievents/order-of-events/mouse-events/wheel-basic-manual.html [ WontFix ]
 external/wpt/uievents/order-of-events/mouse-events/wheel-scrolling-manual.html [ WontFix ]
 external/wpt/html/webappapis/user-prompts/print-manual.html [ WontFix ]
