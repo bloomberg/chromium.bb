@@ -142,12 +142,25 @@ def Create(arguments):
   cros_build_lib.run(cmd)
 
   version = GetChrootVersion(arguments.chroot_path)
-  if not version and not arguments.replace:
-    # Force replace when we can't get a version for a chroot that exists,
-    # since something must have gone wrong.
-    logging.info('Replacing broken chroot.')
-    arguments.replace = True
-    return Create(arguments)
+  if not arguments.replace:
+    # Force replace scenarios. Only needed when we're not already replacing it.
+    if not version:
+      # Force replace when we can't get a version for a chroot that exists,
+      # since something must have gone wrong.
+      logging.notice('Replacing broken chroot.')
+      arguments.replace = True
+      return Create(arguments)
+    elif not cros_sdk_lib.IsChrootVersionValid(arguments.chroot_path):
+      # Force replace when the version is not valid, i.e. ahead of the chroot
+      # version hooks.
+      logging.notice('Replacing chroot ahead of current checkout.')
+      arguments.replace = True
+      return Create(arguments)
+    elif not cros_sdk_lib.IsChrootDirValid(arguments.chroot_path):
+      # Force replace when the permissions or owner are not correct.
+      logging.notice('Replacing chroot with invalid permissions.')
+      arguments.replace = True
+      return Create(arguments)
 
   return GetChrootVersion(arguments.chroot_path)
 

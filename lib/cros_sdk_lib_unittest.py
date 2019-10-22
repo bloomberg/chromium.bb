@@ -16,6 +16,36 @@ from chromite.lib import osutils
 from chromite.lib import partial_mock
 
 
+class VersionHookTestCase(cros_test_lib.TempDirTestCase):
+  """Class to set up tests that use the version hooks."""
+
+  def setUp(self):
+    # Build set of expected scripts.
+    D = cros_test_lib.Directory
+    filesystem = (
+        D('hooks', (
+            '8_invalid_gap',
+            '10_run_success',
+            '11_run_success',
+            '12_run_success',
+        )),
+        'version_file',
+    )
+    cros_test_lib.CreateOnDiskHierarchy(self.tempdir, filesystem)
+
+    self.chroot_path = os.path.join(self.tempdir, 'chroot')
+    self.version_file = os.path.join(
+        self.chroot_path, cros_sdk_lib.CHROOT_VERSION_FILE.lstrip(os.sep))
+    osutils.WriteFile(self.version_file, '0', makedirs=True)
+    self.hooks_dir = os.path.join(self.tempdir, 'hooks')
+
+    self.earliest_version = 8
+    self.latest_version = 12
+    self.deprecated_versions = (6, 7, 8)
+    self.invalid_versions = (13,)
+    self.success_versions = (9, 10, 11, 12)
+
+
 class TestGetChrootVersion(cros_test_lib.MockTestCase):
   """Tests GetChrootVersion functionality."""
 
@@ -24,6 +54,46 @@ class TestGetChrootVersion(cros_test_lib.MockTestCase):
     self.PatchObject(cros_sdk_lib.ChrootUpdater, 'GetVersion',
                      side_effect=IOError())
     self.assertIsNone(cros_sdk_lib.GetChrootVersion('/.$om3/place/nowhere'))
+
+
+class TestChrootVersionValid(VersionHookTestCase):
+  """Test valid chroot version method."""
+
+  def testLowerVersionValid(self):
+    """Lower versions are considered valid."""
+    osutils.WriteFile(self.version_file, str(self.latest_version - 1))
+    self.assertTrue(
+        cros_sdk_lib.IsChrootVersionValid(self.chroot_path, self.hooks_dir))
+
+  def testLatestVersionValid(self):
+    """Test latest version."""
+    osutils.WriteFile(self.version_file, str(self.latest_version))
+    self.assertTrue(
+        cros_sdk_lib.IsChrootVersionValid(self.chroot_path, self.hooks_dir))
+
+  def testInvalidVersion(self):
+    """Test version higher than latest."""
+    osutils.WriteFile(self.version_file, str(self.latest_version + 1))
+    self.assertFalse(
+        cros_sdk_lib.IsChrootVersionValid(self.chroot_path, self.hooks_dir))
+
+
+class TestLatestChrootVersion(VersionHookTestCase):
+  """LatestChrootVersion tests."""
+
+  def testLatest(self):
+    """Test latest version."""
+    self.assertEqual(self.latest_version,
+                     cros_sdk_lib.LatestChrootVersion(self.hooks_dir))
+
+
+class TestEarliestChrootVersion(VersionHookTestCase):
+  """EarliestChrootVersion tests."""
+
+  def testEarliest(self):
+    """Test earliest version."""
+    self.assertEqual(self.earliest_version,
+                     cros_sdk_lib.EarliestChrootVersion(self.hooks_dir))
 
 
 class TestFindVolumeGroupForDevice(cros_test_lib.MockTempDirTestCase):
@@ -553,31 +623,14 @@ class TestCleanupChrootMount(cros_test_lib.MockTempDirTestCase):
     m4.assert_called_with(self.chroot_path, ignore_missing=True, sudo=True)
 
 
-class ChrootUpdaterTest(cros_test_lib.MockTempDirTestCase):
+class ChrootUpdaterTest(cros_test_lib.MockTestCase, VersionHookTestCase):
   """ChrootUpdater tests."""
 
   def setUp(self):
-    # Build expected success scripts.
-    D = cros_test_lib.Directory
-    filesystem = (
-        D('hooks', (
-            '8_invalid_gap',
-            '10_run_success',
-            '11_run_success',
-            '12_run_success',
-        )),
-        'version_file',
-    )
-    cros_test_lib.CreateOnDiskHierarchy(self.tempdir, filesystem)
+    # Avoid sudo password prompt for config writing.
+    self.PatchObject(os, 'getuid', return_value=0)
+    self.PatchObject(os, 'geteuid', return_value=0)
 
-    self.version_file = os.path.join(self.tempdir, 'version_file')
-    osutils.WriteFile(self.version_file, '0')
-    self.hooks_dir = os.path.join(self.tempdir, 'hooks')
-
-    self.latest_version = 12
-    self.deprecated_versions = (6, 7, 8)
-    self.invalid_versions = (13,)
-    self.success_versions = (9, 10, 11, 12)
     self.chroot = cros_sdk_lib.ChrootUpdater(version_file=self.version_file,
                                              hooks_dir=self.hooks_dir)
 
