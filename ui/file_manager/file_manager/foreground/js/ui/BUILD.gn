@@ -380,6 +380,15 @@ js_library("files_menu") {
 js_library("install_linux_package_dialog") {
   deps = [
     ":file_manager_dialog_base",
+    "//ui/file_manager/file_manager/common/js:util",
+  ]
+}
+
+js_unittest("install_linux_package_dialog_unittest") {
+  deps = [
+    ":install_linux_package_dialog",
+    "//ui/file_manager/base/js:test_error_reporting",
+    "//ui/webui/resources/js:webui_resource_test",
   ]
 }
 
@@ -504,6 +513,7 @@ js_test_gen_html("js_test_gen_html") {
     ":file_table_list_unittest",
     ":file_table_unittest",
     ":file_tap_handler_unittest",
+    ":install_linux_package_dialog_unittest",
     ":multi_menu_unittest",
   ]
 }
