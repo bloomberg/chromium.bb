@@ -2251,19 +2251,6 @@ const char kWebrtcHwEncodingName[] = "WebRTC hardware video encoding";
 const char kWebrtcHwEncodingDescription[] =
     "Support in WebRTC for encoding video streams using platform hardware.";
 
-const char kWebrtcHwH264EncodingName[] = "WebRTC hardware h264 video encoding";
-const char kWebrtcHwH264EncodingDescription[] =
-    "Support in WebRTC for encoding h264 video streams using platform "
-    "hardware.";
-
-const char kWebrtcHwVP8EncodingName[] = "WebRTC hardware vp8 video encoding";
-const char kWebrtcHwVP8EncodingDescription[] =
-    "Support in WebRTC for encoding vp8 video streams using platform hardware.";
-
-const char kWebrtcHwVP9EncodingName[] = "WebRTC hardware vp9 video encoding";
-const char kWebrtcHwVP9EncodingDescription[] =
-    "Support in WebRTC for encoding vp9 video streams using platform hardware.";
-
 const char kWebrtcNewEncodeCpuLoadEstimatorName[] =
     "WebRTC new encode cpu load estimator";
 const char kWebrtcNewEncodeCpuLoadEstimatorDescription[] =

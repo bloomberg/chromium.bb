@@ -1318,15 +1318,6 @@ extern const char kWebrtcHwDecodingDescription[];
 extern const char kWebrtcHwEncodingName[];
 extern const char kWebrtcHwEncodingDescription[];
 
-extern const char kWebrtcHwH264EncodingName[];
-extern const char kWebrtcHwH264EncodingDescription[];
-
-extern const char kWebrtcHwVP8EncodingName[];
-extern const char kWebrtcHwVP8EncodingDescription[];
-
-extern const char kWebrtcHwVP9EncodingName[];
-extern const char kWebrtcHwVP9EncodingDescription[];
-
 extern const char kWebrtcNewEncodeCpuLoadEstimatorName[];
 extern const char kWebrtcNewEncodeCpuLoadEstimatorDescription[];
 

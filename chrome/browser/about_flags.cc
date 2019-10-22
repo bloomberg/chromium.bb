@@ -1429,14 +1429,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableReaderModeDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(dom_distiller::kReaderMode)},
 #endif  // !defined(OS_ANDROID)
-    {"enable-webrtc-hw-h264-encoding",
-     flag_descriptions::kWebrtcHwH264EncodingName,
-     flag_descriptions::kWebrtcHwH264EncodingDescription, kOsAndroid | kOsCrOS,
-     FEATURE_VALUE_TYPE(blink::features::kWebRtcHWH264Encoding)},
-    {"enable-webrtc-hw-vp8-encoding",
-     flag_descriptions::kWebrtcHwVP8EncodingName,
-     flag_descriptions::kWebrtcHwVP8EncodingDescription, kOsAndroid | kOsCrOS,
-     FEATURE_VALUE_TYPE(blink::features::kWebRtcHWVP8Encoding)},
 #if defined(WEBRTC_USE_PIPEWIRE)
     {"enable-webrtc-pipewire-capturer",
      flag_descriptions::kWebrtcPipeWireCapturerName,
@@ -3969,11 +3961,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsWin | kOsMac | kOsCrOS,
      FEATURE_VALUE_TYPE(features::kWebContentsOcclusion)},
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
-
-    {"enable-webrtc-hw-vp9-encoding",
-     flag_descriptions::kWebrtcHwVP9EncodingName,
-     flag_descriptions::kWebrtcHwVP9EncodingDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(blink::features::kWebRtcHWVP9Encoding)},
 
 #if defined(OS_ANDROID)
     {"manual-password-generation-android",
