@@ -1246,10 +1246,6 @@ linux_builder(
 )
 
 linux_builder(
-    name = 'linux-jumbo-rel',
-)
-
-linux_builder(
     name = 'linux-libfuzzer-asan-rel',
     executable = luci.recipe(name = 'chromium_libfuzzer_trybot'),
     tryjob = tryjob(),
@@ -1461,11 +1457,6 @@ def mac_builder(*, name, cores=None, os=os.MAC_ANY, **kwargs):
   )
 
 mac_builder(
-    name = 'mac-jumbo-rel',
-    cores = 4,
-)
-
-mac_builder(
     name = 'mac-osxbeta-rel',
     builderless = True,
     os = os.MAC_DEFAULT,
@@ -1669,10 +1660,6 @@ win_builder(
         'pool_size': 20,
         'tests': '*',
     },
-)
-
-win_builder(
-    name = 'win-jumbo-rel',
 )
 
 win_builder(

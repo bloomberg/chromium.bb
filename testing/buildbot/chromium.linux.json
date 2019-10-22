@@ -5762,11 +5762,6 @@
       "empty_main"
     ]
   },
-  "linux-jumbo-rel": {
-    "additional_compile_targets": [
-      "all"
-    ]
-  },
   "linux-ozone-rel": {
     "additional_compile_targets": [
       "chrome"

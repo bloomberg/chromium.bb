@@ -68,7 +68,6 @@
       'android-cronet-x86-dbg': 'android_cronet_debug_static_bot_x86',
       'android-cronet-x86-rel': 'android_cronet_release_bot_minimal_symbols_x86',
       'android-incremental-dbg': 'android_incremental_debug_bot',
-      'android-jumbo-rel': 'android_jumbo_release_bot_minimal_symbols',
       'android-kitkat-arm-rel': 'android_release_bot_minimal_symbols',
 
       # This bot must use the gpu_tests mixin to match 'Android FYI Release (Nexus 5X)'
@@ -288,9 +287,6 @@
 
       'ios-simulator-code-coverage': 'clang_code_coverage_ios',
       'ios-simulator': 'ios_error',
-      'Jumbo Linux x64': 'jumbo_large_chunks_release_bot_compile_only',
-      'Jumbo Mac': 'jumbo_release_bot_compile_only',
-      'Jumbo Win x64': 'jumbo_release_bot_compile_only',
       'Libfuzzer Upload Chrome OS ASan': 'libfuzzer_chromeos_asan_release_bot',
       'Libfuzzer Upload Linux ASan': 'libfuzzer_asan_release_bot',
       'Libfuzzer Upload Linux ASan Debug': 'libfuzzer_asan_debug_bot',
@@ -449,9 +445,6 @@
       'fuchsia-x64-cast': 'release_bot_fuchsia_cast',
       'fuchsia-x64-dbg': 'debug_bot_fuchsia_compile_only',
       'linux-gcc-rel': 'release_bot_x86_minimal_symbols_no_clang_cxx11',
-      # linux-jumbo-rel is identical to linux-rel for perf comparisons, except
-      # for the jumbo part.
-      'linux-jumbo-rel': 'gpu_tests_release_bot_jumbo_no_symbols_use_dummy_lastchange',
       'linux-ozone-rel': 'ozone_linux_release_bot',
       'linux-trusty-rel': 'gpu_tests_release_bot',
     },
@@ -479,7 +472,6 @@
     'chromium.mac': {
       'Mac Builder': 'gpu_tests_release_bot_minimal_symbols',
       'Mac Builder (dbg)': 'gpu_tests_debug_bot',
-      'mac-jumbo-rel': 'jumbo_large_chunks_release_bot_compile_only',
       'ios-device': 'ios_error',
       'ios-device-xcode-clang': 'ios_error',
       'ios-simulator': 'ios_error',
@@ -613,7 +605,6 @@
       # Windows bots take too long to link w/ full symbols and time out.
       'Win Builder': 'gpu_tests_release_bot_x86_minimal_symbols',
       'Win Builder (dbg)': 'gpu_tests_debug_bot_x86',
-      'win-jumbo-rel': 'jumbo_large_chunks_release_bot_compile_only',
       'Win x64 Builder': 'gpu_tests_release_bot_minimal_symbols',
       'Win x64 Builder (dbg)': 'gpu_tests_debug_bot',
       'Windows deterministic': 'release_bot_x86_minimal_symbols',
@@ -800,7 +791,6 @@
       'linux-clang-tidy-rel': 'release_trybot',
       'linux-dcheck-off-rel': 'release_trybot_dcheck_off',
       'linux-gcc-rel': 'release_bot_x86_minimal_symbols_no_clang_cxx11',
-      'linux-jumbo-rel': 'jumbo_large_chunks_release_bot_compile_only',
       'linux-libfuzzer-asan-rel': 'libfuzzer_asan_release_trybot',
       'linux-ozone-rel': 'ozone_linux_release_trybot',
       'linux-rel': 'gpu_tests_release_trybot_no_symbols_use_dummy_lastchange_code_coverage',
@@ -863,7 +853,6 @@
       'ios-simulator-full-configs': 'ios_error',
       'ios-simulator-cronet': 'ios_error',
       'ios-simulator-xcode-clang': 'ios_error',
-      'mac-jumbo-rel': 'jumbo_large_chunks_release_bot_compile_only',
       'mac-osxbeta-rel': 'gpu_tests_release_trybot_deterministic_mac',
       'mac_chromium_10.10': 'gpu_tests_release_trybot_deterministic_mac',
       'mac_chromium_10.12_rel_ng': 'gpu_tests_release_trybot_deterministic_mac',
@@ -910,7 +899,6 @@
       'win-annotator-rel': 'release_trybot',
       'win-asan': 'asan_clang_fuzzer_static_v8_heap_minimal_symbols_release',
       'win-celab-try-rel': 'celab_release_bot',
-      'win-jumbo-rel': 'jumbo_large_chunks_release_bot_compile_only',
       'win-libfuzzer-asan-rel': 'libfuzzer_windows_asan_release_trybot',
       'win7-rel': 'gpu_tests_release_trybot_x86_resource_whitelisting',
       'win_x64_archive': 'release_trybot',
@@ -1106,10 +1094,6 @@
 
     'android_incremental_debug_bot': [
       'android', 'incremental', 'debug_bot',
-    ],
-
-    'android_jumbo_release_bot_minimal_symbols': [
-      'android', 'jumbo', 'release_bot', 'minimal_symbols',
     ],
 
     'android_release_bot_minimal_symbols': [
@@ -1686,11 +1670,6 @@
       'use_clang_coverage', 'partial_code_coverage_instrumentation',
     ],
 
-    'gpu_tests_release_bot_jumbo_no_symbols_use_dummy_lastchange': [
-      'gpu_tests', 'release_bot', 'jumbo_non_goma_chunks', 'no_symbols',
-      'use_dummy_lastchange',
-    ],
-
     'gpu_tests_release_trybot': [
       'gpu_tests', 'release_trybot',
     ],
@@ -1717,14 +1696,6 @@
     # It is an error to actually use one of these configs to generate the
     # build files.
     'ios_error': [ 'error'],
-
-    'jumbo_release_bot_compile_only': [
-      'jumbo', 'release_bot', 'compile_only',
-    ],
-
-    'jumbo_large_chunks_release_bot_compile_only': [
-      'jumbo_non_goma_chunks', 'release_bot', 'compile_only',
-    ],
 
     'libfuzzer_asan_debug_bot': [
       'libfuzzer', 'asan', 'debug_bot', 'shared', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'disable_seed_corpus',
@@ -2306,14 +2277,6 @@
 
     'java_coverage': {
       'gn_args': 'use_jacoco_coverage=true',
-    },
-
-    'jumbo': {
-      'gn_args': 'use_jumbo_build=true',
-    },
-
-    'jumbo_non_goma_chunks': {
-      'gn_args': 'use_jumbo_build=true jumbo_file_merge_limit=50',
     },
 
     'libcxx': {

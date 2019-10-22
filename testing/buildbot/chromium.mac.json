@@ -7834,10 +7834,5 @@
         }
       }
     ]
-  },
-  "mac-jumbo-rel": {
-    "additional_compile_targets": [
-      "all"
-    ]
   }
 }

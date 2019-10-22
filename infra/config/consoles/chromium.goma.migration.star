@@ -315,11 +315,6 @@ luci.console_view(
             short_name = 'dbg',
         ),
         luci.console_view_entry(
-            builder = 'ci/Jumbo Linux x64',
-            category = 'week2d|linux',
-            short_name = 'jumbo',
-        ),
-        luci.console_view_entry(
             builder = 'ci/Dawn Mac x64 Builder',
             category = 'week2d|mac|dawn',
         ),
@@ -360,11 +355,6 @@ luci.console_view(
             builder = 'ci/Mac deterministic (dbg)',
             category = 'week2d|mac|det',
             short_name = 'dbg',
-        ),
-        luci.console_view_entry(
-            builder = 'ci/Jumbo Mac',
-            category = 'week2d|mac',
-            short_name = 'jumbo',
         ),
         luci.console_view_entry(
             builder = 'ci/Linux Builder',
@@ -496,11 +486,6 @@ luci.console_view(
             builder = 'ci/mac-hermetic-upgrade-rel',
             category = 'week3c|mac',
             short_name = 'herm',
-        ),
-        luci.console_view_entry(
-            builder = 'ci/mac-jumbo-rel',
-            category = 'week3c|mac',
-            short_name = 'jumbo',
         ),
         luci.console_view_entry(
             builder = 'ci/mac-mojo-rel',
