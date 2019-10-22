@@ -165,6 +165,11 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
   // OnCVCAuthenticationComplete() to be executed.
   bool is_authentication_in_progress_ = false;
 
+  // Set to true if the card selected needs to be authenticated through CVC
+  // first, and then FIDO. This happens when a user is opted-in but has not
+  // previously authenticated this card with CVC on this device.
+  bool should_follow_up_cvc_with_fido_auth_ = false;
+
   // The associated autofill driver. Weak reference.
   AutofillDriver* const driver_;
 

@@ -25,6 +25,7 @@
 #include "components/autofill/core/browser/metrics/credit_card_form_event_logger.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_tick_clock.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -353,14 +354,24 @@ void CreditCardAccessManager::Authenticate(bool get_unmask_details_returned) {
       get_unmask_details_returned && unmask_details_.unmask_auth_method ==
                                          AutofillClient::UnmaskAuthMethod::FIDO;
 
-  // Do not use FIDO if card is not listed in unmask details, as each Card must
-  // be CVC authed at least once per device. Logging decision.
-  bool card_is_eligible_for_fido =
+  bool card_is_authorized_for_fido =
       fido_auth_suggested &&
       unmask_details_.fido_eligible_card_ids.find(card_->server_id()) !=
           unmask_details_.fido_eligible_card_ids.end();
 
-  if (fido_auth_suggested) {
+  // If FIDO authentication was suggested, but card is not in authorized list,
+  // must authenticate with CVC followed by FIDO in order to authorize this card
+  // for future FIDO use.
+  should_follow_up_cvc_with_fido_auth_ =
+      fido_auth_suggested && !card_is_authorized_for_fido;
+
+  // Only use FIDO if card is authorized and not expired.
+  bool card_is_eligible_for_fido =
+      card_is_authorized_for_fido && !card_->IsExpired(AutofillClock::Now());
+
+  // If FIDO auth was suggested, logging which authentication method was
+  // actually used.
+  if (fido_auth_suggested && !card_->IsExpired(AutofillClock::Now())) {
     AutofillMetrics::LogCardUnmaskTypeDecision(
         card_is_eligible_for_fido
             ? AutofillMetrics::CardUnmaskTypeDecisionMetric::kFidoOnly
@@ -443,7 +454,8 @@ void CreditCardAccessManager::OnCVCAuthenticationComplete(
   } else if (should_offer_fido_auth) {
     GetOrCreateFIDOAuthenticator()->ShowWebauthnOfferDialog(
         response.card_authorization_token);
-  } else if (unmask_details_.fido_request_options.is_dict()) {
+  } else if (should_follow_up_cvc_with_fido_auth_) {
+    DCHECK(unmask_details_.fido_request_options.is_dict());
     GetOrCreateFIDOAuthenticator()->Authorize(
         response.card_authorization_token,
         std::move(unmask_details_.fido_request_options));
