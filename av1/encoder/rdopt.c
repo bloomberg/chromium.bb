@@ -2269,6 +2269,8 @@ static AOM_INLINE void inverse_transform_block_facade(MACROBLOCKD *xd,
                                                       int blk_row, int blk_col,
                                                       int eob,
                                                       int reduced_tx_set) {
+  if (!eob) return;
+
   struct macroblockd_plane *const pd = &xd->plane[plane];
   tran_low_t *dqcoeff = pd->dqcoeff + BLOCK_OFFSET(block);
   const PLANE_TYPE plane_type = get_plane_type(plane);

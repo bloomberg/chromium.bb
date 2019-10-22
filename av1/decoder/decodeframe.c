@@ -226,12 +226,11 @@ static AOM_INLINE void predict_and_reconstruct_intra_block(
 
   if (!mbmi->skip) {
     struct macroblockd_plane *const pd = &xd->plane[plane];
-
-    // tx_type will be read out in av1_read_coeffs_txb_facade
-    const TX_TYPE tx_type = av1_get_tx_type(xd, plane_type, row, col, tx_size,
-                                            cm->reduced_tx_set_used);
     eob_info *eob_data = pd->eob_data + xd->txb_offset[plane];
     if (eob_data->eob) {
+      // tx_type was read out in av1_read_coeffs_txb.
+      const TX_TYPE tx_type = av1_get_tx_type(xd, plane_type, row, col, tx_size,
+                                              cm->reduced_tx_set_used);
       uint8_t *dst =
           &pd->dst.buf[(row * pd->dst.stride + col) << tx_size_wide_log2[0]];
       inverse_transform_block(xd, plane, tx_type, tx_size, dst, pd->dst.stride,
@@ -251,7 +250,7 @@ static AOM_INLINE void inverse_transform_inter_block(
   PLANE_TYPE plane_type = get_plane_type(plane);
   const struct macroblockd_plane *const pd = &xd->plane[plane];
 
-  // tx_type will be read out in av1_read_coeffs_txb_facade
+  // tx_type was read out in av1_read_coeffs_txb.
   const TX_TYPE tx_type = av1_get_tx_type(xd, plane_type, blk_row, blk_col,
                                           tx_size, cm->reduced_tx_set_used);
 
