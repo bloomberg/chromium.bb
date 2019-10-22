@@ -2481,6 +2481,10 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'wizpig',
   ])
 
+  _paladin_no_unittest_phase = frozenset([
+      'grunt-kernelnext',
+  ])
+
   _paladin_separate_unittest_phase = frozenset([
       'grunt',
   ])
@@ -2600,7 +2604,8 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
           site_config.templates.cq_luci_slave,
       )
 
-    if board in _paladin_separate_unittest_phase:
+    if (board in _paladin_no_unittest_phase
+        or board in _paladin_separate_unittest_phase):
       customizations.update(unittests=False)
 
     if board in chromeos_boards.lakitu_boards:
