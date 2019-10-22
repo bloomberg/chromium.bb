@@ -545,6 +545,32 @@ public class NFCTest {
     }
 
     /**
+     * Test that Nfc.watch() notifies client when tag is not formatted.
+     */
+    @Test
+    @Feature({"NFCTest"})
+    public void testWatchNotFormattedTag() throws IOException, FormatException {
+        TestNfcImpl nfc = new TestNfcImpl(mContext, mDelegate);
+        mDelegate.invokeCallback();
+        nfc.setClient(mNfcClient);
+        int watchId = mNextWatchId++;
+        WatchResponse mockWatchCallback = mock(WatchResponse.class);
+        nfc.watch(createNdefScanOptions(), watchId, mockWatchCallback);
+        verify(mockWatchCallback).call(mErrorCaptor.capture());
+        assertNull(mErrorCaptor.getValue());
+
+        // Returning null means tag is not formatted.
+        doReturn(null).when(mNfcTagHandler).read();
+        nfc.processPendingOperationsForTesting(mNfcTagHandler);
+
+        // Check that client was notified and correct watch id was provided.
+        verify(mNfcClient, times(1))
+                .onWatch(mOnWatchCallbackCaptor.capture(), nullable(String.class),
+                        any(NdefMessage.class));
+        assertEquals(watchId, mOnWatchCallbackCaptor.getValue()[0]);
+    }
+
+    /**
      * Test that Nfc.watch() matching function works correctly.
      */
     @Test
