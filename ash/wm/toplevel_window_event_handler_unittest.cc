@@ -1368,10 +1368,10 @@ TEST_F(ToplevelWindowEventHandlerDragTest,
        TapWindowInOverviewGridDuringWindowDrag) {
   TabletModeControllerTestApi().EnterTabletMode();
 
-  SendGestureEvent(gfx::Point(0, 0), 0, 5, ui::ET_GESTURE_SCROLL_BEGIN);
+  SendGestureEvent(gfx::Point(100, 0), 0, 5, ui::ET_GESTURE_SCROLL_BEGIN);
   // Drag the window to the right corner to avoid overlap with
   // |non_dragged_window_| in overview grid.
-  SendGestureEvent(gfx::Point(700, 500), 700, 500,
+  SendGestureEvent(gfx::Point(600, 500), 600, 500,
                    ui::ET_GESTURE_SCROLL_UPDATE);
   EXPECT_TRUE(WindowState::Get(dragged_window_.get())->is_dragged());
 
@@ -1403,8 +1403,8 @@ TEST_F(ToplevelWindowEventHandlerDragTest,
   dragged_window_->SetProperty(aura::client::kResizeBehaviorKey,
                                aura::client::kResizeBehaviorNone);
 
-  SendGestureEvent(gfx::Point(0, 0), 0, 5, ui::ET_GESTURE_SCROLL_BEGIN);
-  SendGestureEvent(gfx::Point(700, 500), 700, 500,
+  SendGestureEvent(gfx::Point(100, 0), 0, 5, ui::ET_GESTURE_SCROLL_BEGIN);
+  SendGestureEvent(gfx::Point(600, 500), 600, 500,
                    ui::ET_GESTURE_SCROLL_UPDATE);
   EXPECT_TRUE(WindowState::Get(dragged_window_.get())->is_dragged());
 
@@ -1450,10 +1450,10 @@ TEST_F(ToplevelWindowEventHandlerDragTest, DisplayConfigurationChangeTest) {
 
   ASSERT_TRUE(TabletModeControllerTestApi().IsTabletModeStarted());
 
-  SendGestureEvent(gfx::Point(0, 0), 0, 5, ui::ET_GESTURE_SCROLL_BEGIN);
+  SendGestureEvent(gfx::Point(100, 0), 0, 5, ui::ET_GESTURE_SCROLL_BEGIN);
   // Drag the window to the right corner to avoid overlap with
   // |non_dragged_window_| in overview grid.
-  SendGestureEvent(gfx::Point(700, 500), 700, 500,
+  SendGestureEvent(gfx::Point(600, 500), 600, 500,
                    ui::ET_GESTURE_SCROLL_UPDATE);
   EXPECT_TRUE(WindowState::Get(dragged_window_.get())->is_dragged());
 
