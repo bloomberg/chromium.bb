@@ -2573,6 +2573,11 @@ crbug.com/953847 [ Mac ] virtual/compositor_threaded_scrollbar_scrolling/fast/sc
 crbug.com/1009892 [ Win ] virtual/compositor_threaded_scrollbar_scrolling_hidpi_nozoomfordsf/fast/scrolling/scrollbars/mouse-scrolling-on-div-scrollbar.html [ Failure ]
 crbug.com/1009892 [ Win ] virtual/compositor_threaded_scrollbar_scrolling_hidpi_nozoomfordsf/fast/scrolling/scrollbars/scrollbar-thumb-snapping.html [ Failure ]
 
+# TODO(arakeri): Mac is the only platform that runs with use_zoom_for_dsf=false. Get rid of this suite when crbug.com/716231 is fixed.
+# When DSF = 2 and use_zoom_for_dsf=false, the scroll offsets are different when compared to DSF = 2 and use_zoom_for_dsf=true.
+crbug.com/1016186 [ Win ] virtual/compositor_threaded_scrollbar_scrolling_hidpi_nozoomfordsf/fast/scrolling/scrollbars/dsf-ready/mouse-interactions-dsf-2.html [ Failure Timeout ]
+crbug.com/1016186 [ Linux ] virtual/compositor_threaded_scrollbar_scrolling_hidpi_nozoomfordsf/fast/scrolling/scrollbars/dsf-ready/mouse-interactions-dsf-2.html [ Failure Timeout ]
+
 # Some control characters still not visible
 crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-001.html [ Failure ]
 crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-002.html [ Failure ]
