@@ -177,7 +177,10 @@ class GmailServer(MailServer):
     service = apiclient_build('gmail', 'v1', http=http)
     try:
       # 'me' represents the default authorized user.
-      payload = {'raw': base64.urlsafe_b64encode(message.as_string())}
+      payload = {
+          'raw': base64.urlsafe_b64encode(
+              message.as_string().encode('utf-8')).decode('utf-8'),
+      }
       service.users().messages().send(userId='me', body=payload).execute()
       return True
     except (apiclient_errors.HttpError, httplib.HTTPException,

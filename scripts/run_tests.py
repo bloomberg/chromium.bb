@@ -190,6 +190,7 @@ PYTHON3_TESTS = {
     'contrib/uprev_frequency_unittest',
     'cros_bisect/manual_evaluator_unittest',
     'lib/accounts_lib_unittest',
+    'lib/alerts_unittest',
     'lib/androidbuild_unittest',
     'lib/auth_unittest',
     'lib/auto_update_util_unittest',
