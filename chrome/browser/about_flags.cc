@@ -104,7 +104,7 @@
 #include "components/security_state/core/security_state.h"
 #include "components/send_tab_to_self/features.h"
 #include "components/services/heap_profiling/public/cpp/switches.h"
-#include "components/signin/core/browser/account_reconcilor.h"
+#include "components/signin/core/browser/dice_account_reconcilor_delegate.h"
 #include "components/signin/public/base/signin_buildflags.h"
 #include "components/signin/public/base/signin_switches.h"
 #include "components/spellcheck/common/spellcheck_features.h"
@@ -3652,9 +3652,11 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          blink::features::kServiceWorkerImportedScriptUpdateCheck)},
 
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
     {"use-multilogin-endpoint", flag_descriptions::kUseMultiloginEndpointName,
-     flag_descriptions::kUseMultiloginEndpointDescription, kOsAll,
-     FEATURE_VALUE_TYPE(kUseMultiloginEndpoint)},
+     flag_descriptions::kUseMultiloginEndpointDescription,
+     kOsMac | kOsWin | kOsLinux, FEATURE_VALUE_TYPE(kUseMultiloginEndpoint)},
+#endif
 
 #if defined(OS_CHROMEOS)
     {"enable-usbguard", flag_descriptions::kUsbguardName,
