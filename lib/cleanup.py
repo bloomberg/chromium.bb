@@ -112,7 +112,7 @@ class EnforcedCleanupSection(cros_build_lib.MasterPidContextManager):
   def _KillWatchdog(self):
     """Kill the child watchdog cleanly."""
     if self._watchdog_alive:
-      self._write_pipe.send_bytes('\n')
+      self._write_pipe.send_bytes(b'\n')
       self._lock.unlock()
       self._lock.close()
 
