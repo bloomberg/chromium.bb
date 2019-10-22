@@ -12000,7 +12000,7 @@ static AOM_INLINE void search_palette_mode(
     search_state->best_mode_skippable = skippable;
     memcpy(ctx->blk_skip, x->blk_skip,
            sizeof(x->blk_skip[0]) * ctx->num_4x4_blk);
-    av1_copy_array(ctx->tx_type_map, best_tx_type_map, ctx->num_4x4_blk);
+    av1_copy_array(ctx->tx_type_map, xd->tx_type_map, ctx->num_4x4_blk);
   }
 }
 
