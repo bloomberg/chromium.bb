@@ -1869,7 +1869,6 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
       'kevin',
   ])
   _pi_vmtest_boards = frozenset([
-      'betty-arcnext',
       'betty-pi-arc',
   ])
   _pi_vmtest_experimental_boards = frozenset([
@@ -2252,7 +2251,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'beaglebone_servo',
       'betty',
       'betty-arc64',
-      'betty-arcnext',
       'betty-pi-arc',
       'bob',
       'buddy',
@@ -2410,21 +2408,18 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
 
   _paladin_simple_vmtest_boards = frozenset([
       'betty',
-      'betty-arcnext',
       'betty-kernelnext',
       'betty-pi-arc',
   ])
 
   _paladin_devmode_vmtest_boards = frozenset([
       'betty',
-      'betty-arcnext',
       'betty-kernelnext',
       'betty-pi-arc',
   ])
 
   _paladin_cros_vmtest_boards = frozenset([
       'betty',
-      'betty-arcnext',
       'betty-kernelnext',
       'betty-pi-arc',
   ])
@@ -2432,14 +2427,12 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   _paladin_smoke_vmtest_boards = frozenset([
       'betty',
       'betty-arc64',
-      'betty-arcnext',
       'betty-kernelnext',
       'betty-pi-arc',
   ])
 
   _paladin_default_vmtest_boards = frozenset([
       'betty',
-      'betty-arcnext',
       'betty-kernelnext',
       'betty-pi-arc',
   ])
@@ -3176,7 +3169,6 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       'amd64-generic',
       'arm-generic',
       'betty',
-      'betty-arcnext',
       'betty-pi-arc',
   ])
 
@@ -3274,7 +3266,6 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
   _chrome_pfq_important_boards = frozenset([
       'atlas',
       'betty',
-      'betty-arcnext',
       'betty-pi-arc',
       'bob',
       'caroline',
@@ -3927,12 +3918,6 @@ def ApplyCustomOverrides(site_config):
           'hw_tests': [],
           'hw_tests_override': []
       },
-
-      'betty-arcnext-release': {
-          'hw_tests': [],
-          'hw_tests_override': []
-      },
-
       'betty-arcmaster-release': {
           'hw_tests': [],
           'hw_tests_override': []

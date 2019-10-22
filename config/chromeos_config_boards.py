@@ -85,7 +85,6 @@ x86_internal_release_boards = frozenset([
     'banon',
     'betty',
     'betty-arc64',
-    'betty-arcnext',
     'betty-pi-arc',
     'betty-qt-arc',
     'buddy',

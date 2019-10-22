@@ -13,7 +13,6 @@
     arm-generic-chromium-pfq
     arm64-generic-chromium-pfq
     atlas-chrome-pfq
-    betty-arcnext-chrome-pfq
     betty-chrome-pfq
     betty-pi-arc-chrome-pfq
     bob-chrome-pfq
@@ -50,7 +49,6 @@
     beaglebone-paladin
     beaglebone_servo-paladin
     betty-arc64-paladin
-    betty-arcnext-paladin
     betty-kernelnext-paladin
     betty-paladin
     betty-pi-arc-paladin
@@ -398,7 +396,6 @@
 
 == pi_android_pfq ==
   master-pi-android-pfq
-    betty-arcnext-pi-android-pfq
     betty-pi-arc-pi-android-pfq
     caroline-pi-android-pfq
     coral-pi-android-pfq
@@ -877,7 +874,6 @@
   betty-arcmaster-release-tryjob
   betty-arcmaster-tot-chromium-pfq-informational-tryjob
   betty-arcmaster-unittest-stress
-  betty-arcnext-chrome-pfq-tryjob
   betty-arcnext-chromium-pfq-tryjob
   betty-arcnext-compile-only-pre-cq
   betty-arcnext-full-tryjob
@@ -885,15 +881,8 @@
   betty-arcnext-llvm-toolchain-tryjob
   betty-arcnext-no-vmtest-pre-cq
   betty-arcnext-paladin-tryjob
-  betty-arcnext-payloads-tryjob
-  betty-arcnext-pi-android-pfq-tryjob
   betty-arcnext-pre-cq
-  betty-arcnext-release-afdo-generate-tryjob
-  betty-arcnext-release-afdo-tryjob
-  betty-arcnext-release-afdo-use-tryjob
   betty-arcnext-release-tryjob
-  betty-arcnext-telemetry-tryjob
-  betty-arcnext-tot-chrome-pfq-informational-tryjob
   betty-arcnext-tot-chromium-pfq-informational-tryjob
   betty-arcnext-unittest-stress
   betty-asan-paladin-tryjob
@@ -2434,7 +2423,6 @@
     arm-generic-chromium-pfq-tryjob
     arm64-generic-chromium-pfq-tryjob
     atlas-chrome-pfq-tryjob
-    betty-arcnext-chrome-pfq-tryjob
     betty-chrome-pfq-tryjob
     betty-pi-arc-chrome-pfq-tryjob
     bob-chrome-pfq-tryjob
@@ -2493,7 +2481,6 @@
     beaglebone-paladin-tryjob
     beaglebone_servo-paladin-tryjob
     betty-arc64-paladin-tryjob
-    betty-arcnext-paladin-tryjob
     betty-kernelnext-paladin-tryjob
     betty-paladin-tryjob
     betty-pi-arc-paladin-tryjob
@@ -2616,7 +2603,6 @@
     wooten-paladin-tryjob
     zork-paladin-tryjob
   master-pi-android-pfq-tryjob
-    betty-arcnext-pi-android-pfq-tryjob
     betty-pi-arc-pi-android-pfq-tryjob
     caroline-pi-android-pfq-tryjob
     coral-pi-android-pfq-tryjob
