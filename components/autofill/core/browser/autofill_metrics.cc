@@ -774,6 +774,14 @@ void AutofillMetrics::LogSaveCardPromptMetricBySecurityLevel(
 }
 
 // static
+void AutofillMetrics::LogCreditCardUploadFeedbackMetric(
+    CreditCardUploadFeedbackMetric metric) {
+  DCHECK_LT(metric, NUM_CREDIT_CARD_UPLOAD_FEEDBACK_METRICS);
+  UMA_HISTOGRAM_ENUMERATION("Autofill.CreditCardUploadFeedback", metric,
+                            NUM_CREDIT_CARD_UPLOAD_FEEDBACK_METRICS);
+}
+
+// static
 void AutofillMetrics::LogManageCardsPromptMetric(ManageCardsPromptMetric metric,
                                                  bool is_upload_save) {
   DCHECK_LT(metric, NUM_MANAGE_CARDS_PROMPT_METRICS);

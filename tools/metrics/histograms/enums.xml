@@ -3794,6 +3794,12 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="CVC followed by WebAuthn"/>
 </enum>
 
+<enum name="AutofillCreditCardUploadFeedback">
+  <int value="0" label="Loading indicator shown"/>
+  <int value="1" label="Failure icon shown"/>
+  <int value="2" label="Failure bubble shown"/>
+</enum>
+
 <enum name="AutofillCreditCardWebauthnResultMetric">
   <int value="0" label="Success"/>
   <int value="1" label="Other error"/>

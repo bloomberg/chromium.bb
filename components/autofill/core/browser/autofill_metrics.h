@@ -302,6 +302,17 @@ class AutofillMetrics {
     NUM_SAVE_CARD_PROMPT_METRICS,
   };
 
+  enum CreditCardUploadFeedbackMetric {
+    // The loading indicator animation which indicates uploading is in progress
+    // is successfully shown.
+    CREDIT_CARD_UPLOAD_FEEDBACK_LOADING_ANIMATION_SHOWN,
+    // The credit card icon with the saving failure badge is shown.
+    CREDIT_CARD_UPLOAD_FEEDBACK_FAILURE_ICON_SHOWN,
+    // The failure icon is clicked and the save card failure bubble is shown.
+    CREDIT_CARD_UPLOAD_FEEDBACK_FAILURE_BUBBLE_SHOWN,
+    NUM_CREDIT_CARD_UPLOAD_FEEDBACK_METRICS,
+  };
+
   // Metrics to measure user interaction with the Manage Cards view
   // shown when user clicks on the save card icon after accepting
   // to save a card.
@@ -1009,6 +1020,8 @@ class AutofillMetrics {
       SaveCardPromptMetric metric,
       bool is_uploading,
       security_state::SecurityLevel security_level);
+  static void LogCreditCardUploadFeedbackMetric(
+      CreditCardUploadFeedbackMetric metric);
   static void LogManageCardsPromptMetric(ManageCardsPromptMetric metric,
                                          bool is_uploading);
   static void LogScanCreditCardPromptMetric(ScanCreditCardPromptMetric metric);
