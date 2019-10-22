@@ -1850,7 +1850,7 @@ void RenderFrameHostImpl::RenderProcessExited(
 
   // Ensure that the AssociatedRemote<blink::mojom::LocalFrame> works after a
   // crash.
-  local_frame_remote_.reset();
+  local_frame_.reset();
 
   // Any termination disablers in content loaded by the new process will
   // be sent again.
@@ -3194,13 +3194,13 @@ void RenderFrameHostImpl::RequestTextSurroundingSelection(
     blink::mojom::LocalFrame::GetTextSurroundingSelectionCallback callback,
     int max_length) {
   DCHECK(!callback.is_null());
-  GetAssociatedLocalFrameRemote()->GetTextSurroundingSelection(
-      max_length, std::move(callback));
+  GetAssociatedLocalFrame()->GetTextSurroundingSelection(max_length,
+                                                         std::move(callback));
 }
 
 void RenderFrameHostImpl::SendInterventionReport(const std::string& id,
                                                  const std::string& message) {
-  GetAssociatedLocalFrameRemote()->SendInterventionReport(id, message);
+  GetAssociatedLocalFrame()->SendInterventionReport(id, message);
 }
 
 void RenderFrameHostImpl::AllowBindings(int bindings_flags) {
@@ -3929,8 +3929,7 @@ void RenderFrameHostImpl::EnterFullscreen(
 
     RenderFrameProxyHost* child_proxy =
         node->render_manager()->GetRenderFrameProxyHost(parent_site_instance);
-    child_proxy->Send(
-        new FrameMsg_WillEnterFullscreen(child_proxy->GetRoutingID()));
+    child_proxy->GetAssociatedRemoteFrame()->WillEnterFullscreen();
     notified_instances.insert(parent_site_instance);
   }
 
@@ -5979,10 +5978,10 @@ RenderFrameHostImpl::GetFindInPage() {
 }
 
 const mojo::AssociatedRemote<blink::mojom::LocalFrame>&
-RenderFrameHostImpl::GetAssociatedLocalFrameRemote() {
-  if (!local_frame_remote_)
-    GetRemoteAssociatedInterfaces()->GetInterface(&local_frame_remote_);
-  return local_frame_remote_;
+RenderFrameHostImpl::GetAssociatedLocalFrame() {
+  if (!local_frame_)
+    GetRemoteAssociatedInterfaces()->GetInterface(&local_frame_);
+  return local_frame_;
 }
 
 void RenderFrameHostImpl::ResetLoadingState() {

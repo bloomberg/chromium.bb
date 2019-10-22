@@ -813,12 +813,6 @@ IPC_MESSAGE_ROUTED1(FrameMsg_ViewChanged,
 // support cross-process focused frame changes.
 IPC_MESSAGE_ROUTED0(FrameMsg_SetFocusedFrame)
 
-// Sent to a frame proxy when its real frame is preparing to enter fullscreen
-// in another process.  Actually entering fullscreen will be done separately as
-// part of ViewMsg_Resize, once the browser process has resized the tab for
-// fullscreen.
-IPC_MESSAGE_ROUTED0(FrameMsg_WillEnterFullscreen)
-
 // Send to the RenderFrame to set text tracks state and style settings.
 // Sent for top-level frames.
 IPC_MESSAGE_ROUTED1(FrameMsg_SetTextTrackSettings,
