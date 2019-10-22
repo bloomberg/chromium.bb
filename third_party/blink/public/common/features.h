@@ -128,6 +128,7 @@ BLINK_COMMON_EXPORT extern const base::Feature
 BLINK_COMMON_EXPORT extern const base::Feature kARIAAnnotationRoles;
 
 BLINK_COMMON_EXPORT extern const base::Feature kDisableDirectlyCompositedImages;
+BLINK_COMMON_EXPORT extern const base::Feature kCompositeCrossOriginIframes;
 
 BLINK_COMMON_EXPORT extern const base::Feature kSubresourceRedirect;
 

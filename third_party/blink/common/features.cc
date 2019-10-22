@@ -401,5 +401,8 @@ const base::Feature kDisableDirectlyCompositedImages{
 const base::Feature kSubresourceRedirect{"SubresourceRedirect",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
+// When 'enabled', all cross-origin iframes will get a compositing layer.
+const base::Feature kCompositeCrossOriginIframes{
+    "CompositeCrossOriginIframes", base::FEATURE_DISABLED_BY_DEFAULT};
 }  // namespace features
 }  // namespace blink
