@@ -14348,7 +14348,7 @@
       'owners': ['file://components/policy/resources/OWNERS'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:65-'],
+      'supported_on': ['chrome.*:65-79'],
       'device_only': False,
       'features': {
         'dynamic_refresh': False,
@@ -14358,7 +14358,11 @@
       'id': 414,
       'caption': '''Allow WebDriver to Override Incompatible Policies''',
       'tags': ['system-security'],
-      'desc': '''This policy allows users of the WebDriver feature to override
+      'desc': '''
+      This policy was removed in M80, because it is not necessary anymore as
+      WebDriver is now compatible with all existing policies.
+
+      This policy allows users of the WebDriver feature to override
       policies which can interfere with its operation.
 
       Currently this policy disables SitePerProcess and IsolateOrigins policies.
