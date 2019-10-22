@@ -35,9 +35,13 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
+#include "chromeos/constants/chromeos_features.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/message_center/message_center.h"
@@ -434,6 +438,31 @@ TEST_F(AppListControllerImplTest,
   ASSERT_EQ(ash::AppListViewState::kFullscreenAllApps,
             GetAppListView()->app_list_state());
 }
+
+class HotseatAppListControllerImplTest
+    : public AppListControllerImplTest,
+      public testing::WithParamInterface<bool> {
+ public:
+  HotseatAppListControllerImplTest() = default;
+  ~HotseatAppListControllerImplTest() override = default;
+
+  // AshTestBase:
+  void SetUp() override {
+    if (GetParam()) {
+      feature_list_.InitAndEnableFeature(chromeos::features::kShelfHotseat);
+    } else {
+      feature_list_.InitAndDisableFeature(chromeos::features::kShelfHotseat);
+    }
+    AppListControllerImplTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+  DISALLOW_COPY_AND_ASSIGN(HotseatAppListControllerImplTest);
+};
+
+// Tests with both hotseat disabled and enabled.
+INSTANTIATE_TEST_SUITE_P(, HotseatAppListControllerImplTest, testing::Bool());
 
 // Tests for HomeScreenDelegate::GetInitialAppListItemScreenBoundsForWindow
 // implemtenation.
