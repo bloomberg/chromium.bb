@@ -437,7 +437,8 @@ TEST_F(AppListControllerImplTest,
 
 // Tests for HomeScreenDelegate::GetInitialAppListItemScreenBoundsForWindow
 // implemtenation.
-TEST_F(AppListControllerImplTest, GetItemBoundsForWindow) {
+// Disabled due to crbug.com/1016843
+TEST_F(AppListControllerImplTest, DISABLED_GetItemBoundsForWindow) {
   // Populate app list model with 25 items, of which items at indices in
   // |folders| are folders containing a single item.
   const std::set<int> folders = {5, 23};
