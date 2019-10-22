@@ -4,16 +4,9 @@
 
 #include <pthread.h>
 
-#include "base/profiler/thread_delegate_android.h"
+#include "base/profiler/thread_delegate_posix.h"
 
 #include "build/build_config.h"
-
-// IMPORTANT NOTE: Some functions within this implementation are invoked while
-// the target thread is suspended so it must not do any allocation from the
-// heap, including indirectly via use of DCHECK/CHECK or other logging
-// statements. Otherwise this code can deadlock on heap locks acquired by the
-// target thread before it was suspended. These functions are commented with "NO
-// HEAP ALLOCATIONS".
 
 namespace base {
 
@@ -30,14 +23,14 @@ uintptr_t GetThreadStackBaseAddress(PlatformThreadId thread_id) {
 
 }  // namespace
 
-ThreadDelegateAndroid::ThreadDelegateAndroid(PlatformThreadId thread_id)
+ThreadDelegatePosix::ThreadDelegatePosix(PlatformThreadId thread_id)
     : thread_stack_base_address_(GetThreadStackBaseAddress(thread_id)) {}
 
-uintptr_t ThreadDelegateAndroid::GetStackBaseAddress() const {
+uintptr_t ThreadDelegatePosix::GetStackBaseAddress() const {
   return thread_stack_base_address_;
 }
 
-std::vector<uintptr_t*> ThreadDelegateAndroid::GetRegistersToRewrite(
+std::vector<uintptr_t*> ThreadDelegatePosix::GetRegistersToRewrite(
     RegisterContext* thread_context) {
 #if defined(ARCH_CPU_ARM_FAMILY) && defined(ARCH_CPU_32_BITS)
   return {
@@ -59,6 +52,7 @@ std::vector<uintptr_t*> ThreadDelegateAndroid::GetRegistersToRewrite(
       // addresses of executable code, not addresses in the stack.
   };
 #else  // #if defined(ARCH_CPU_ARM_FAMILY) && defined(ARCH_CPU_32_BITS)
+  // Unimplemented for other architectures.
   return {};
 #endif
 }

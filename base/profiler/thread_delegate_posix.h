@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_PROFILER_THREAD_DELEGATE_ANDROID_H_
-#define BASE_PROFILER_THREAD_DELEGATE_ANDROID_H_
+#ifndef BASE_PROFILER_THREAD_DELEGATE_POSIX_H_
+#define BASE_PROFILER_THREAD_DELEGATE_POSIX_H_
 
 #include "base/base_export.h"
 #include "base/profiler/thread_delegate.h"
@@ -12,15 +12,13 @@
 namespace base {
 
 // Platform- and thread-specific implementation in support of stack sampling on
-// Android.
-//
-// TODO(https://crbug.com/988579): Implement this class.
-class BASE_EXPORT ThreadDelegateAndroid : public ThreadDelegate {
+// POSIX.
+class BASE_EXPORT ThreadDelegatePosix : public ThreadDelegate {
  public:
-  ThreadDelegateAndroid(PlatformThreadId thread_id);
+  ThreadDelegatePosix(PlatformThreadId thread_id);
 
-  ThreadDelegateAndroid(const ThreadDelegateAndroid&) = delete;
-  ThreadDelegateAndroid& operator=(const ThreadDelegateAndroid&) = delete;
+  ThreadDelegatePosix(const ThreadDelegatePosix&) = delete;
+  ThreadDelegatePosix& operator=(const ThreadDelegatePosix&) = delete;
 
   // ThreadDelegate
   uintptr_t GetStackBaseAddress() const override;
@@ -33,4 +31,4 @@ class BASE_EXPORT ThreadDelegateAndroid : public ThreadDelegate {
 
 }  // namespace base
 
-#endif  // BASE_PROFILER_THREAD_DELEGATE_ANDROID_H_
+#endif  // BASE_PROFILER_THREAD_DELEGATE_POSIX_H_
