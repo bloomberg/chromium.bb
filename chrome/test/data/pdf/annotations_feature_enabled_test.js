@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {$} from 'chrome://resources/js/util.m.js';
+
 window.onerror = e => chrome.test.fail(e.stack);
 window.onunhandledrejection = e => chrome.test.fail(e.reason);
 

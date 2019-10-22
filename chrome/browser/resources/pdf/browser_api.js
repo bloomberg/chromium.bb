@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
+import {assert} from 'chrome://resources/js/assert.m.js';
 
 /**
  * @param {!Object} streamInfo The stream object pointing to the data contained
@@ -49,7 +49,7 @@ function lookupInitialZoom(streamInfo) {
 /**
  * A class providing an interface to the browser.
  */
-class BrowserApi {
+export class BrowserApi {
   /**
    * @param {!Object} streamInfo The stream object which points to the data
    *     contained in the PDF.
@@ -230,7 +230,7 @@ function createBrowserApiForPrintPreview() {
  * @return {!Promise<!BrowserApi>} A promise to a BrowserApi instance for the
  *     current environment.
  */
-function createBrowserApi() {
+export function createBrowserApi() {
   if (location.origin === 'chrome://print') {
     return createBrowserApiForPrintPreview();
   }

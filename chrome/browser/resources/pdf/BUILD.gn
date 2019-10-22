@@ -19,7 +19,7 @@ js_library("annotation_tool") {
 
 js_library("browser_api") {
   deps = [
-    "//ui/webui/resources/js:assert",
+    "//ui/webui/resources/js:assert.m",
   ]
   externs_list = [
     "$externs_path/chrome_extensions.js",
@@ -40,9 +40,6 @@ js_library("open_pdf_params_parser") {
 }
 
 js_library("pdf_scripting_api") {
-  deps = [
-    "//ui/webui/resources/js:assert",
-  ]
 }
 
 js_library("viewport_scroller") {
@@ -53,8 +50,9 @@ js_library("viewport") {
     ":gesture_detector",
     ":pdf_fitting_type",
     ":zoom_manager",
-    "//ui/webui/resources/js:event_tracker",
-    "//ui/webui/resources/js:util",
+    "//ui/webui/resources/js:assert.m",
+    "//ui/webui/resources/js:event_tracker.m",
+    "//ui/webui/resources/js:util.m",
   ]
   externs_list = [ "$externs_path/pending.js" ]
 }
@@ -62,7 +60,7 @@ js_library("viewport") {
 js_library("zoom_manager") {
   deps = [
     ":browser_api",
-    "//ui/webui/resources/js/cr:event_target",
+    "//ui/webui/resources/js/cr:event_target.m",
   ]
 }
 
@@ -84,7 +82,7 @@ js_library("toolbar_manager") {
   deps = [
     "elements:viewer-pdf-toolbar",
     "elements:viewer-zoom-toolbar",
-    "//ui/webui/resources/js:util",
+    "//ui/webui/resources/js:util.m",
   ]
 }
 
@@ -93,8 +91,11 @@ js_library("controller") {
     ":annotation_tool",
     ":viewport",
     "elements:viewer-pdf-toolbar",
-    "//ui/webui/resources/js:load_time_data",
-    "//ui/webui/resources/js/cr:event_target",
+    "//ui/webui/resources/js:assert.m",
+    "//ui/webui/resources/js:load_time_data.m",
+    "//ui/webui/resources/js:promise_resolver.m",
+    "//ui/webui/resources/js:util.m",
+    "//ui/webui/resources/js/cr:event_target.m",
   ]
 }
 
@@ -113,8 +114,11 @@ js_library("pdf_viewer") {
     "elements:viewer-password-screen",
     "elements:viewer-pdf-toolbar",
     "elements:viewer-zoom-toolbar",
-    "//ui/webui/resources/js:event_tracker",
-    "//ui/webui/resources/js:load_time_data",
+    "//ui/webui/resources/js:assert.m",
+    "//ui/webui/resources/js:event_tracker.m",
+    "//ui/webui/resources/js:load_time_data.m",
+    "//ui/webui/resources/js:promise_resolver.m",
+    "//ui/webui/resources/js:util.m",
   ]
   externs_list = [ "$externs_path/resources_private.js" ]
 }

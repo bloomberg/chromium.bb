@@ -12,6 +12,8 @@ import './elements/shared-vars.js';
 import './elements/viewer-ink-host.js';
 import './elements/viewer-form-warning.js';
 // </if>
+
+import {BrowserApi, createBrowserApi} from './browser_api.js';
 import {PDFViewer} from './pdf_viewer.js';
 
 /**
