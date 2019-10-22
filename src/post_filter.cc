@@ -163,13 +163,15 @@ void PostFilter::ExtendFrameBoundary(uint8_t* const frame_start,
                                      const ptrdiff_t stride, const int left,
                                      const int right, const int top,
                                      const int bottom) {
-  if (bitdepth_ == 8) {
-    ExtendFrame<uint8_t>(frame_start, width, height, stride, left, right, top,
-                         bottom);
-  } else {
+#if LIBGAV1_MAX_BITDEPTH >= 10
+  if (bitdepth_ >= 10) {
     ExtendFrame<uint16_t>(frame_start, width, height, stride, left, right, top,
                           bottom);
+    return;
   }
+#endif
+  ExtendFrame<uint8_t>(frame_start, width, height, stride, left, right, top,
+                       bottom);
 }
 
 void PostFilter::DeblockFilterWorker(const DeblockFilterJob* jobs, int num_jobs,
@@ -666,21 +668,28 @@ void PostFilter::FrameSuperRes(YuvBuffer* const input_buffer) {
         MultiplyBy4(frame_header_.columns4x4) >> subsampling_x;
     const int plane_height =
         MultiplyBy4(frame_header_.rows4x4) >> subsampling_y;
-    if (bitdepth_ == 8) {
-      CopyPlane<uint8_t>(input_buffer->data(plane), input_buffer->stride(plane),
-                         plane_width, plane_height,
-                         super_res_buffer_.data(plane),
-                         super_res_buffer_.stride(plane));
-    } else {
+#if LIBGAV1_MAX_BITDEPTH >= 10
+    if (bitdepth_ >= 10) {
       CopyPlane<uint16_t>(input_buffer->data(plane),
                           input_buffer->stride(plane), plane_width,
                           plane_height, super_res_buffer_.data(plane),
                           super_res_buffer_.stride(plane));
+      ExtendFrame<uint16_t>(super_res_buffer_.data(plane), plane_width,
+                            plane_height, super_res_buffer_.stride(plane),
+                            border_width, border_width, border_height,
+                            border_height);
+    } else
+#endif  // LIBGAV1_MAX_BITDEPTH >= 10
+    {
+      CopyPlane<uint8_t>(input_buffer->data(plane), input_buffer->stride(plane),
+                         plane_width, plane_height,
+                         super_res_buffer_.data(plane),
+                         super_res_buffer_.stride(plane));
+      ExtendFrame<uint8_t>(super_res_buffer_.data(plane), plane_width,
+                           plane_height, super_res_buffer_.stride(plane),
+                           border_width, border_width, border_height,
+                           border_height);
     }
-    ExtendFrameBoundary(super_res_buffer_.data(plane), plane_width,
-                        plane_height, super_res_buffer_.stride(plane),
-                        border_width, border_width, border_height,
-                        border_height);
   }
 
   // Upscale filter and write to frame.
@@ -1045,21 +1054,21 @@ bool PostFilter::ApplyLoopRestoration() {
   for (int plane = kPlaneY; plane < planes_; ++plane) {
     if (loop_restoration_.type[plane] == kLoopRestorationTypeNone) {
       if (!DoCdef()) continue;
-      if (cdef_buffer_->bitdepth() == 8) {
-        CopyPlane<uint8_t>(
-            cdef_buffer_->data(plane), cdef_buffer_->stride(plane),
-            cdef_buffer_->displayed_width(plane),
-            cdef_buffer_->displayed_height(plane), source_buffer_->data(plane),
-            source_buffer_->stride(plane));
 #if LIBGAV1_MAX_BITDEPTH >= 10
-      } else {
+      if (cdef_buffer_->bitdepth() >= 10) {
         CopyPlane<uint16_t>(
             cdef_buffer_->data(plane), cdef_buffer_->stride(plane),
             cdef_buffer_->displayed_width(plane),
             cdef_buffer_->displayed_height(plane), source_buffer_->data(plane),
             source_buffer_->stride(plane));
-#endif
+        continue;
       }
+#endif
+      CopyPlane<uint8_t>(cdef_buffer_->data(plane), cdef_buffer_->stride(plane),
+                         cdef_buffer_->displayed_width(plane),
+                         cdef_buffer_->displayed_height(plane),
+                         source_buffer_->data(plane),
+                         source_buffer_->stride(plane));
       continue;
     }
     const int8_t subsampling_x = (plane == kPlaneY) ? 0 : subsampling_x_;
@@ -1191,15 +1200,18 @@ bool PostFilter::ApplyLoopRestoration() {
             const bool frame_bottom_border =
                 (unit_row == num_vertical_units - 1) &&
                 (row + current_process_unit_height >= current_unit_height);
-            if (bitdepth_ == 8) {
-              PrepareLoopRestorationBlock<uint8_t>(
+#if LIBGAV1_MAX_BITDEPTH >= 10
+            if (bitdepth_ >= 10) {
+              PrepareLoopRestorationBlock<uint16_t>(
                   cdef_process_unit_buffer, cdef_buffer_stride,
                   deblock_process_unit_buffer, deblock_buffer_stride,
                   block_buffer_, block_buffer_stride, processing_unit_width,
                   processing_unit_height, frame_top_border,
                   frame_bottom_border);
-            } else {
-              PrepareLoopRestorationBlock<uint16_t>(
+            } else
+#endif
+            {
+              PrepareLoopRestorationBlock<uint8_t>(
                   cdef_process_unit_buffer, cdef_buffer_stride,
                   deblock_process_unit_buffer, deblock_buffer_stride,
                   block_buffer_, block_buffer_stride, processing_unit_width,
