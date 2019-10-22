@@ -3221,6 +3221,8 @@ test("unit_tests") {
     "../browser/sessions/restore_on_startup_policy_handler_unittest.cc",
     "../browser/sessions/session_common_utils_unittest.cc",
     "../browser/sharing/ack_message_handler_unittest.cc",
+    "../browser/sharing/mock_sharing_service.cc",
+    "../browser/sharing/mock_sharing_service.h",
     "../browser/sharing/sharing_device_registration_unittest.cc",
     "../browser/sharing/sharing_fcm_handler_unittest.cc",
     "../browser/sharing/sharing_fcm_sender_unittest.cc",
