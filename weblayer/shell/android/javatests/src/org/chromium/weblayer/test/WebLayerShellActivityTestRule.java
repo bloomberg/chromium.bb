@@ -14,6 +14,7 @@ import android.net.Uri;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.rule.ActivityTestRule;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Assert;
 
@@ -181,5 +182,29 @@ public class WebLayerShellActivityTestRule extends ActivityTestRule<WebLayerShel
             throw new RuntimeException(e);
         }
         return callbackHelper.getResult();
+    }
+
+    public int executeScriptAndExtractInt(String script) {
+        try {
+            return executeScriptSync(script).getInt(BrowserController.SCRIPT_RESULT_KEY);
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public String executeScriptAndExtractString(String script) {
+        try {
+            return executeScriptSync(script).getString(BrowserController.SCRIPT_RESULT_KEY);
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public boolean executeScriptAndExtractBoolean(String script) {
+        try {
+            return executeScriptSync(script).getBoolean(BrowserController.SCRIPT_RESULT_KEY);
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

@@ -6,10 +6,12 @@
 
 #include "base/auto_reset.h"
 #include "base/logging.h"
+#include "content/public/browser/file_select_listener.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/browser_controls_state.h"
+#include "weblayer/browser/file_select_helper.h"
 #include "weblayer/browser/navigation_controller_impl.h"
 #include "weblayer/browser/profile_impl.h"
 #include "weblayer/public/browser_observer.h"
@@ -190,6 +192,14 @@ void BrowserControllerImpl::DidNavigateMainFramePostCommit(
     content::WebContents* web_contents) {
   for (auto& observer : observers_)
     observer.DisplayedUrlChanged(web_contents->GetVisibleURL());
+}
+
+void BrowserControllerImpl::RunFileChooser(
+    content::RenderFrameHost* render_frame_host,
+    std::unique_ptr<content::FileSelectListener> listener,
+    const blink::mojom::FileChooserParams& params) {
+  FileSelectHelper::RunFileChooser(render_frame_host, std::move(listener),
+                                   params);
 }
 
 int BrowserControllerImpl::GetTopControlsHeight() {

@@ -4,7 +4,11 @@
 
 package org.chromium.weblayer;
 
+import android.content.ActivityNotFoundException;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentSender;
+import android.content.IntentSender.SendIntentException;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.support.v4.app.Fragment;
@@ -96,6 +100,34 @@ public final class BrowserFragment extends Fragment {
         public IObjectWrapper getActivity() {
             return ObjectWrapper.wrap(BrowserFragment.this.getActivity());
         }
+
+        @Override
+        public boolean startActivityForResult(
+                IObjectWrapper intent, int requestCode, IObjectWrapper options) {
+            try {
+                BrowserFragment.this.startActivityForResult(
+                        ObjectWrapper.unwrap(intent, Intent.class), requestCode,
+                        ObjectWrapper.unwrap(options, Bundle.class));
+            } catch (ActivityNotFoundException e) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public boolean startIntentSenderForResult(IObjectWrapper intent, int requestCode,
+                IObjectWrapper fillInIntent, int flagsMask, int flagsValues, int extraFlags,
+                IObjectWrapper options) {
+            try {
+                BrowserFragment.this.startIntentSenderForResult(
+                        ObjectWrapper.unwrap(intent, IntentSender.class), requestCode,
+                        ObjectWrapper.unwrap(fillInIntent, Intent.class), flagsMask, flagsValues,
+                        extraFlags, ObjectWrapper.unwrap(options, Bundle.class));
+            } catch (SendIntentException e) {
+                return false;
+            }
+            return true;
+        }
     };
 
     // Nonnull after first onAttach().
@@ -123,6 +155,16 @@ public final class BrowserFragment extends Fragment {
                     + "BrowserFragment's onCreate() and onDestroy().");
         }
         return mBrowserFragmentController;
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        try {
+            mImpl.asRemoteFragment().handleOnActivityResult(
+                    requestCode, resultCode, ObjectWrapper.wrap(data));
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
     }
 
     @SuppressWarnings("MissingSuperCall")
