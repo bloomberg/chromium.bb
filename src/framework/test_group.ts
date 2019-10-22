@@ -121,14 +121,23 @@ class RunCaseSpecific<F extends Fixture> implements RunCase {
   async run(debug: boolean): Promise<LiveTestCaseResult> {
     const [rec, res] = this.recorder.record(this.id.test, this.id.params);
     rec.start(debug);
+
     try {
       const inst = new this.fixture(rec, this.id.params || {});
       await inst.init();
-      await this.fn(inst);
+      try {
+        await this.fn(inst);
+      } catch (ex) {
+        // There was an exception from the test itself.
+        rec.threw(ex);
+      }
+      // Runs as long as constructor and init succeeded, even if the test rejected.
       await inst.finalize();
-    } catch (e) {
-      rec.threw(e);
+    } catch (ex) {
+      // There was an exception from constructor, init, or finalize.
+      rec.threw(ex);
     }
+
     rec.finish();
     return res;
   }

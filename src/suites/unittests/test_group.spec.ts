@@ -121,6 +121,17 @@ g.test('invalid test name', t => {
   });
 }).params(poptions('char', badChars));
 
+g.test('throws', async t0 => {
+  const g = new TestGroup(UnitTest);
+
+  g.test('a', t => {
+    throw new Error();
+  });
+
+  const result = await t0.run(g);
+  t0.expect(result.cases[0].status === 'fail');
+});
+
 g.test('shouldThrow', async t0 => {
   t0.shouldThrow('TypeError', () => {
     throw new TypeError();
@@ -139,7 +150,7 @@ g.test('shouldThrow', async t0 => {
 });
 
 g.test('shouldReject', async t0 => {
-  t0.shouldReject(
+  await t0.shouldReject(
     'TypeError',
     (async () => {
       throw new TypeError();
@@ -148,8 +159,8 @@ g.test('shouldReject', async t0 => {
 
   const g = new TestGroup(UnitTest);
 
-  g.test('a', t => {
-    t.shouldReject(
+  g.test('a', async t => {
+    await t.shouldReject(
       'Error',
       (async () => {
         throw new TypeError();
@@ -158,5 +169,23 @@ g.test('shouldReject', async t0 => {
   });
 
   const result = await t0.run(g);
+  t0.expect(result.cases[0].status === 'fail');
+});
+
+g.test('shouldReject/unawaited', async t0 => {
+  const g = new TestGroup(UnitTest);
+
+  g.test('a', async t => {
+    // This test passes...
+    t.shouldReject(
+      'Error',
+      (async () => {
+        throw new Error();
+      })()
+    );
+  });
+
+  const result = await t0.run(g);
+  // ... but the test fails, because there were outstanding expectations at the end of the test.
   t0.expect(result.cases[0].status === 'fail');
 });
