@@ -25148,6 +25148,8 @@ Called by update_net_error_codes.py.-->
   <int value="3059" label="NonOriginCleanImageBitmapTransfer"/>
   <int value="3060" label="CompressionStreamConstructor"/>
   <int value="3061" label="DecompressionStreamConstructor"/>
+  <int value="3062" label="V8RTCRtpReceiver_PlayoutDelayHint_AttributeGetter"/>
+  <int value="3063" label="V8RTCRtpReceiver_PlayoutDelayHint_AttributeSetter"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
