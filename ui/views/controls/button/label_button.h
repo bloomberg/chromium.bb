@@ -142,10 +142,6 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
   // set with SetBorder.
   void UpdateThemedBorder();
 
-  // Returns the available area for the label and image. Subclasses can change
-  // these bounds if they need room to do manual painting.
-  gfx::Rect GetChildAreaBounds();
-
   // Fills |params| with information about the button.
   virtual void GetExtraParams(ui::NativeTheme::ExtraParams* params) const;
 
