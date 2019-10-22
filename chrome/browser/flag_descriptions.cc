@@ -2187,14 +2187,6 @@ const char kUnsafeWebGPUDescription[] =
 const char kUiPartialSwapName[] = "Partial swap";
 const char kUiPartialSwapDescription[] = "Sets partial swap behavior.";
 
-const char kUsePdfCompositorServiceName[] =
-    "Use PDF compositor service for printing";
-const char kUsePdfCompositorServiceDescription[] =
-    "When enabled, use PDF compositor service to composite and generate PDF "
-    "files for printing. When site isolation is enabled, disabling this will "
-    "not stop using PDF compositor service since the service is required for "
-    "printing out-of-process iframes correctly.";
-
 const char kUserActivationV2Name[] = "User Activation v2";
 const char kUserActivationV2Description[] =
     "Enable simple user activation for APIs that are otherwise controlled by "

@@ -1282,9 +1282,6 @@ extern const char kUnsafeWebGPUDescription[];
 extern const char kUiPartialSwapName[];
 extern const char kUiPartialSwapDescription[];
 
-extern const char kUsePdfCompositorServiceName[];
-extern const char kUsePdfCompositorServiceDescription[];
-
 extern const char kUserActivationV2Name[];
 extern const char kUserActivationV2Description[];
 
