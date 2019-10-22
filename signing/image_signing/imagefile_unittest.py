@@ -114,17 +114,19 @@ class TestGetKernelConfig(cros_test_lib.RunCommandTestCase):
     ret = imagefile.GetKernelConfig('/dev/loop9999p4')
     expected_rc = [
         mock.call(['sudo', '--', 'dump_kernel_config', '/dev/loop9999p4'],
-                  capture_output=True, print_cmd=False, error_code_ok=False)]
+                  capture_output=True, print_cmd=False, check=True,
+                  encoding='utf-8')]
     self.assertEqual(expected_rc, self.rc.call_args_list)
     self.assertTrue(isinstance(ret, six.string_types))
     self.assertEqual(SAMPLE_KERNEL_CONFIG.strip(), ret)
 
   def testCallsPassesErrorCodeOk(self):
     """Verify that it passes error_code_ok."""
-    ret = imagefile.GetKernelConfig('/dev/loop9999p4', error_code_ok=555)
+    ret = imagefile.GetKernelConfig('/dev/loop9999p4', check=555)
     expected_rc = [
         mock.call(['sudo', '--', 'dump_kernel_config', '/dev/loop9999p4'],
-                  capture_output=True, print_cmd=False, error_code_ok=555)]
+                  capture_output=True, print_cmd=False, check=555,
+                  encoding='utf-8')]
     self.assertEqual(expected_rc, self.rc.call_args_list)
     self.assertTrue(isinstance(ret, six.string_types))
     self.assertEqual(SAMPLE_KERNEL_CONFIG.strip(), ret)
@@ -133,7 +135,7 @@ class TestGetKernelConfig(cros_test_lib.RunCommandTestCase):
     """Verify that it handles errors."""
     with self.assertRaises(cros_build_lib.RunCommandError):
       imagefile.GetKernelConfig('/dev/loop9999p3')
-    ret = imagefile.GetKernelConfig('/dev/loop9999p3', error_code_ok=True)
+    ret = imagefile.GetKernelConfig('/dev/loop9999p3', check=False)
     self.assertEqual(None, ret)
 
 
@@ -145,7 +147,7 @@ class TestGetKernelCmdLine(cros_test_lib.MockTestCase):
     gkc = self.PatchObject(imagefile, 'GetKernelConfig',
                            return_value=SAMPLE_KERNEL_CONFIG.strip())
     ret = imagefile._GetKernelCmdLine('/dev/loop9999p4')
-    gkc.assert_called_once_with('/dev/loop9999p4', False)
+    gkc.assert_called_once_with('/dev/loop9999p4', True)
     self.assertTrue(isinstance(ret, kernel_cmdline.CommandLine))
     self.assertEqual(SAMPLE_KERNEL_CONFIG.strip(), ret.Format())
 
@@ -153,7 +155,7 @@ class TestGetKernelCmdLine(cros_test_lib.MockTestCase):
     """Verify that it passes error_code_ok."""
     gkc = self.PatchObject(imagefile, 'GetKernelConfig',
                            return_value=SAMPLE_KERNEL_CONFIG.strip())
-    ret = imagefile._GetKernelCmdLine('/dev/loop9999p4', error_code_ok=555)
+    ret = imagefile._GetKernelCmdLine('/dev/loop9999p4', check=555)
     gkc.assert_called_once_with('/dev/loop9999p4', 555)
     self.assertTrue(isinstance(ret, kernel_cmdline.CommandLine))
     self.assertEqual(SAMPLE_KERNEL_CONFIG.strip(), ret.Format())
@@ -161,7 +163,7 @@ class TestGetKernelCmdLine(cros_test_lib.MockTestCase):
   def testCallsHandlesNone(self):
     """Verify that it handles errors."""
     self.PatchObject(imagefile, 'GetKernelConfig', return_value=None)
-    ret = imagefile._GetKernelCmdLine('/dev/loop9999p3', error_code_ok=True)
+    ret = imagefile._GetKernelCmdLine('/dev/loop9999p3', check=False)
     self.assertEqual(None, ret)
 
 
@@ -192,7 +194,8 @@ class TestSignImage(cros_test_lib.RunCommandTempDirTestCase):
     expected_rc = [
         mock.call(['cp', '--sparse=always', 'infile', 'outfile'],),
         mock.call(['sudo', '--', 'dump_kernel_config', '/dev/loop9999p2'],
-                  capture_output=True, print_cmd=False, error_code_ok=False),
+                  capture_output=True, print_cmd=False, check=True,
+                  encoding='utf-8'),
         mock.call(['strip_boot_from_image.sh', '--image', '/dev/loop9999p3'],
                   extra_env={'PATH': 'path'}),
     ]
@@ -367,7 +370,8 @@ class TestCalculateRootfsHash(cros_test_lib.RunCommandTempDirTestCase):
                    'payload=/dev/loop9999p3', 'payload_blocks=486400',
                    'hashtree=%s' % rootfs_hash.hashtree_filename,
                    'salt=bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
-                   'bbbbbbbbbbbbbbb'], capture_output=True, print_cmd=False)]
+                   'bbbbbbbbbbbbbbb'], capture_output=True, print_cmd=False,
+                  encoding='utf-8')]
     self.assertEqual(expected_rc, self.rc.call_args_list)
     self.assertEqual(kernel_cmdline.DmConfig(
         '1 vroot none ro 1,0 3891200 verity '
@@ -413,7 +417,7 @@ class TestCalculateRootfsHash(cros_test_lib.RunCommandTempDirTestCase):
         mock.call(['sudo', '--', 'verity', 'mode=create', 'alg=sha1',
                    'payload=/dev/loop9999p3', 'payload_blocks=486400',
                    'hashtree=%s' % rootfs_hash.hashtree_filename],
-                  capture_output=True, print_cmd=False)]
+                  capture_output=True, print_cmd=False, encoding='utf-8')]
     self.assertEqual(expected_rc, self.rc.call_args_list)
     self.assertEqual(
         '1 vroot none ro 1,0 3891200 verity '
@@ -570,7 +574,7 @@ class TestUpdateStatefulVblock(cros_test_lib.RunCommandTempDirTestCase):
     imagefile.UpdateStatefulPartitionVblock(self.image, self.keyset)
     self.rc.assertCommandCalled(
         ['sudo', '--', 'dump_kernel_config', '/dev/loop9999p4'],
-        print_cmd=False, capture_output=True, error_code_ok=True)
+        print_cmd=False, capture_output=True, check=False, encoding='utf-8')
     self.rc.assertCommandCalled([
         'sudo', '--', 'vbutil_kernel', '--repack', mock.ANY,
         '--keyblock', kernel_key.keyblock,
@@ -590,7 +594,7 @@ class TestUpdateStatefulVblock(cros_test_lib.RunCommandTempDirTestCase):
     imagefile.UpdateStatefulPartitionVblock(self.image, self.keyset)
     self.rc.assertCommandCalled(
         ['sudo', '--', 'dump_kernel_config', '/dev/loop9999p4'],
-        print_cmd=False, capture_output=True, error_code_ok=True)
+        print_cmd=False, capture_output=True, check=False, encoding='utf-8')
     self.rc.assertCommandCalled([
         'sudo', '--', 'vbutil_kernel', '--repack', mock.ANY,
         '--keyblock', kernel_key.keyblock,
@@ -626,7 +630,7 @@ class TestUpdateRecoveryKernelHash(cros_test_lib.RunCommandTempDirTestCase):
     imagefile.UpdateRecoveryKernelHash(self.image, self.keyset)
     self.rc.assertCommandCalled(
         ['sudo', '--', 'dump_kernel_config', '/dev/loop9999p2'],
-        capture_output=True, print_cmd=False, error_code_ok=False)
+        capture_output=True, print_cmd=False, check=True, encoding='utf-8')
     new_cmdline = (
         SAMPLE_KERNEL_CONFIG +
         'kern_b_hash=5555555555555555555555555555555555555555')
@@ -645,7 +649,7 @@ class TestUpdateRecoveryKernelHash(cros_test_lib.RunCommandTempDirTestCase):
     imagefile.UpdateRecoveryKernelHash(self.image, self.keyset)
     self.rc.assertCommandCalled(
         ['sudo', '--', 'dump_kernel_config', '/dev/loop9999p2'],
-        capture_output=True, print_cmd=False, error_code_ok=False)
+        capture_output=True, print_cmd=False, check=True, encoding='utf-8')
     new_cmdline = SAMPLE_KERNEL_CONFIG.strip()
     self.loginfo.assert_called_once_with(
         'New cmdline for kernel A is %s', new_cmdline)
@@ -692,7 +696,7 @@ class TestUpdateLegacyBootloader(cros_test_lib.RunCommandTempDirTestCase):
     self.assertEqual(2, self.rc.call_count)
     self.rc.assertCommandCalled(
         ['sudo', '--', 'dump_kernel_config', '/dev/loop9999p2'],
-        capture_output=True, print_cmd=False, error_code_ok=False)
+        capture_output=True, print_cmd=False, check=True, encoding='utf-8')
     sed_command = self.rc.call_args_list[1]
     sed_args = (sed_command[0][0][:5] + sorted(sed_command[0][0][5:]),)
     sed_args += sed_command[0][1:]
@@ -709,7 +713,7 @@ class TestUpdateLegacyBootloader(cros_test_lib.RunCommandTempDirTestCase):
     self.assertEqual(2, self.rc.call_count)
     self.rc.assertCommandCalled(
         ['sudo', '--', 'dump_kernel_config', '/dev/loop9999p2'],
-        capture_output=True, print_cmd=False, error_code_ok=False)
+        capture_output=True, print_cmd=False, check=True, encoding='utf-8')
     sed_command = self.rc.call_args_list[1]
     sed_args = (sed_command[0][0][:5] + sorted(sed_command[0][0][5:]),)
     sed_args += sed_command[0][1:]
@@ -726,7 +730,7 @@ class TestUpdateLegacyBootloader(cros_test_lib.RunCommandTempDirTestCase):
     self.assertEqual(2, self.rc.call_count)
     self.rc.assertCommandCalled(
         ['sudo', '--', 'dump_kernel_config', '/dev/loop9999p2'],
-        capture_output=True, print_cmd=False, error_code_ok=False)
+        capture_output=True, print_cmd=False, check=True, encoding='utf-8')
     sed_command = self.rc.call_args_list[1]
     sed_args = (sed_command[0][0][:5] + sorted(sed_command[0][0][5:]),)
     sed_args += sed_command[0][1:]
@@ -745,7 +749,7 @@ class TestUpdateLegacyBootloader(cros_test_lib.RunCommandTempDirTestCase):
     self.assertEqual(2, self.rc.call_count)
     self.rc.assertCommandCalled(
         ['sudo', '--', 'dump_kernel_config', '/dev/loop9999p2'],
-        capture_output=True, print_cmd=False, error_code_ok=False)
+        capture_output=True, print_cmd=False, check=True, encoding='utf-8')
     sed_command = self.rc.call_args_list[1]
     sed_args = (sed_command[0][0][:5] + sorted(sed_command[0][0][5:]),)
     sed_args += sed_command[0][1:]
@@ -764,7 +768,7 @@ class TestUpdateLegacyBootloader(cros_test_lib.RunCommandTempDirTestCase):
     self.assertEqual(2, self.rc.call_count)
     self.rc.assertCommandCalled(
         ['sudo', '--', 'dump_kernel_config', '/dev/loop9999p2'],
-        capture_output=True, print_cmd=False, error_code_ok=False)
+        capture_output=True, print_cmd=False, check=True, encoding='utf-8')
     sed_command = self.rc.call_args_list[1]
     sed_args = (sed_command[0][0][:5] + sorted(sed_command[0][0][5:]),)
     sed_args += sed_command[0][1:]
@@ -779,10 +783,10 @@ class TestUpdateLegacyBootloader(cros_test_lib.RunCommandTempDirTestCase):
     with self.assertRaises(imagefile.SignImageError) as e:
       imagefile.UpdateLegacyBootloader(self.image, '/dev/loop9999p4')
     # Empty kernel cmdline raises this error.
-    self.assertEqual('Could not find root digest', e.exception.message)
+    self.assertEqual('Could not find root digest', str(e.exception))
     self.rc.assertCommandCalled(
         ['sudo', '--', 'dump_kernel_config', '/dev/loop9999p4'],
-        capture_output=True, print_cmd=False, error_code_ok=False)
+        capture_output=True, print_cmd=False, check=True, encoding='utf-8')
 
 
 class TestDumpConfig(cros_test_lib.MockTestCase):
@@ -795,7 +799,7 @@ class TestDumpConfig(cros_test_lib.MockTestCase):
     gkc = self.PatchObject(imagefile, 'GetKernelConfig', return_value='Config')
     imagefile.DumpConfig('image.bin')
     expected = [
-        mock.call('/dev/loop9999p2', error_code_ok=True),
-        mock.call('/dev/loop9999p4', error_code_ok=True),
+        mock.call('/dev/loop9999p2', check=False),
+        mock.call('/dev/loop9999p4', check=False),
     ]
     self.assertEqual(expected, gkc.call_args_list)

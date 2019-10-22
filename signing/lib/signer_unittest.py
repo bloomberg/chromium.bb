@@ -9,6 +9,7 @@ from __future__ import print_function
 
 import io
 import os
+import sys
 
 from six.moves import configparser
 
@@ -59,12 +60,18 @@ class TestSignerConfig(cros_test_lib.TestCase):
       cp.add_section(section)
       for option, value in options.items():
         cp.set(section, option, value=value)
-    ini_in_file = io.BytesIO()
+    # Python 2 is picky with unicode-vs-str in the CSV module.
+    # TODO(vapier): Drop this once we're Python 3-only.
+    if sys.version_info.major < 3:
+      ini_in_file = io.BytesIO()
+    else:
+      ini_in_file = io.StringIO()
     cp.write(ini_in_file)
 
     # Read INI to new SignerConfig
     read_sc = signer.SignerInstructionConfig()
-    read_sc.ReadIniFile(io.BytesIO(ini_in_file.getvalue()))
+    ini_in_file.seek(0)
+    read_sc.ReadIniFile(ini_in_file)
 
     self.assertEqual(initial_sc, read_sc)
 

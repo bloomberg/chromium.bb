@@ -11,6 +11,7 @@ import csv
 import io
 import os
 import shutil
+import sys
 import textwrap
 
 from chromite.lib import cros_test_lib
@@ -461,14 +462,19 @@ class SignerConfigsFromCSVTest(cros_test_lib.TestCase):
     board_dicts = (board_dict or
                    SignerConfigsFromCSVTest.CreateBoardDicts(fields=fields,
                                                              boards=boards))
-
-    csv_file = io.BytesIO()
+    # Python 2 is picky with unicode-vs-str in the CSV module.
+    # TODO(vapier): Drop this once we're Python 3-only.
+    if sys.version_info.major < 3:
+      csv_file = io.BytesIO()
+    else:
+      csv_file = io.StringIO()
     csv_writer = csv.DictWriter(csv_file, fields)
 
     csv_writer.writeheader()
     csv_writer.writerows(board_dicts)
 
-    return io.BytesIO(csv_file.getvalue())
+    csv_file.seek(0)
+    return csv_file
 
   def testMissingRow(self):
     fields = SignerConfigsFromCSVTest.BOARDS[:-1]
@@ -501,13 +507,12 @@ class TestWriteSignerNotes(cros_test_lib.RunCommandTempDirTestCase):
     keyset.AddKey(recovery_key)
     keyset.AddKey(root_key)
 
-
     sha1sum = keys_unittest.MOCK_SHA1SUM
     expected_output = ['Signed with keyset in ' + self.tempdir,
                        'recovery: ' + sha1sum,
                        'root: ' + sha1sum]
 
-    version_signer = io.BytesIO()
+    version_signer = io.StringIO()
     firmware.WriteSignerNotes(keyset, version_signer)
     self.assertListEqual(expected_output,
                          version_signer.getvalue().splitlines())
@@ -537,7 +542,7 @@ class TestWriteSignerNotes(cros_test_lib.RunCommandTempDirTestCase):
                       'loem2: ' + sha1sum,
                       'loem3: ' + sha1sum]
 
-    version_signer = io.BytesIO()
+    version_signer = io.StringIO()
     firmware.WriteSignerNotes(keyset, version_signer)
 
     output = version_signer.getvalue().splitlines()

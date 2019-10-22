@@ -151,10 +151,6 @@ PYTHON2_ONLY_TESTS = {
     'cli/cros/cros_chrome_sdk_unittest',
     'cli/deploy_unittest',
     'scripts/deploy_chrome_unittest',
-    'signing/image_signing/imagefile_unittest',
-    'signing/lib/firmware_unittest',
-    'signing/lib/keys_unittest',
-    'signing/lib/signer_unittest',
 }
 
 

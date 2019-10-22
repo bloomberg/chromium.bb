@@ -49,12 +49,12 @@ def _PathForVbootSigningScripts(path=None):
   return {'PATH': ':'.join(current_path)}
 
 
-def GetKernelConfig(loop_kern, error_code_ok=False):
+def GetKernelConfig(loop_kern, check=True):
   """Get the kernel config for |loop_kern|.
 
   Args:
     loop_kern: Device file for the partition to inspect.
-    error_code_ok: Failure to read the command line is acceptable.
+    check: Whether failure to read the command line is acceptable.
 
   Returns:
     String containing the kernel arguments, or None.
@@ -62,23 +62,23 @@ def GetKernelConfig(loop_kern, error_code_ok=False):
   ret = cros_build_lib.sudo_run(
       ['dump_kernel_config', loop_kern],
       print_cmd=False, capture_output=True,
-      error_code_ok=error_code_ok)
+      check=check, encoding='utf-8')
   if ret.returncode:
     return None
   return ret.output.strip()
 
 
-def _GetKernelCmdLine(loop_kern, error_code_ok=False):
+def _GetKernelCmdLine(loop_kern, check=True):
   """Get the kernel commandline for |loop_kern|.
 
   Args:
     loop_kern: Device file for the partition to inspect.
-    error_code_ok: Failure to read the command line is acceptable.
+    check: Whether failure to read the command line is acceptable.
 
   Returns:
     CommandLine() containing the kernel config.
   """
-  config = GetKernelConfig(loop_kern, error_code_ok)
+  config = GetKernelConfig(loop_kern, check)
   if config is None:
     return None
   else:
@@ -269,7 +269,7 @@ class CalculateRootfsHash(object):
     if salt:
       cmd.append('salt=%s' % salt.value)
     verity = cros_build_lib.sudo_run(
-        cmd, print_cmd=False, capture_output=True).output
+        cmd, print_cmd=False, capture_output=True, encoding='utf-8').stdout
     # verity is a templated DmLine string.
     slave = kernel_cmdline.DmLine(
         verity.replace('ROOT_DEV', root_dev).replace('HASH_DEV', hash_dev))
@@ -313,7 +313,7 @@ def UpdateRootfsHash(image, loop_kern, keyset, keyA_prefix):
   logging.info(
       '%s (in %s) keyset=%s keyA_prefix=%s',
       loop_kern, image.path, keyset.key_dir, keyA_prefix)
-  cmd_line = _GetKernelCmdLine(loop_kern, error_code_ok=True)
+  cmd_line = _GetKernelCmdLine(loop_kern, check=False)
   if cmd_line:
     dm_config = cmd_line.GetDmConfig()
   if not cmd_line or not dm_config:
@@ -326,7 +326,7 @@ def UpdateRootfsHash(image, loop_kern, keyset, keyA_prefix):
   rootfs_hash = CalculateRootfsHash(image, cmd_line)
   fsinfo = cros_build_lib.sudo_run(
       ['tune2fs', '-l', image.GetPartitionDevName('ROOT-A')],
-      capture_output=True).output
+      capture_output=True, encoding='utf-8').stdout
   rootfs_blocks = int(re.search(
       r'^Block count: *([0-9]+)$', fsinfo, flags=re.MULTILINE).group(1))
   rootfs_sectors = 8 * rootfs_blocks
@@ -340,7 +340,7 @@ def UpdateRootfsHash(image, loop_kern, keyset, keyA_prefix):
   # Update kernel command lines.
   for kern in ('KERN-A', 'KERN-B'):
     loop_kern = image.GetPartitionDevName(kern)
-    new_cmd_line = _GetKernelCmdLine(loop_kern, error_code_ok=True)
+    new_cmd_line = _GetKernelCmdLine(loop_kern, check=False)
     if not new_cmd_line and kern == 'KERN-B':
       logging.info('Skipping empty KERN-B partition (legacy images).')
       continue
@@ -362,7 +362,7 @@ def _UpdateKernelConfig(loop_kern, cmdline, key):
     key: Key to use.
   """
   with tempfile.NamedTemporaryFile() as temp:
-    temp.file.write(cmdline.Format())
+    temp.file.write(cmdline.Format().encode('utf-8'))
     temp.file.flush()
 
     cros_build_lib.sudo_run(
@@ -387,7 +387,7 @@ def UpdateStatefulPartitionVblock(image, keyset):
   """
   with tempfile.NamedTemporaryFile(dir=image.destination) as tmpfile:
     loop_kern = image.GetPartitionDevName('KERN-B')
-    ret = _GetKernelCmdLine(loop_kern, error_code_ok=True)
+    ret = _GetKernelCmdLine(loop_kern, check=False)
     if not ret:
       logging.info(
           'Building vmlinuz_hd.vblock from legacy image partition 2.')
@@ -415,8 +415,9 @@ def UpdateRecoveryKernelHash(image, keyset):
 
   if old_kernB_hash:
     cmd = 'sha256sum' if len(old_kernB_hash.value) >= 64 else 'sha1sum'
-    new_kernB_hash = cros_build_lib.sudo_run([
-        cmd, loop_kernB], redirect_stdout=True).output.split()[0]
+    new_kernB_hash = cros_build_lib.sudo_run(
+        [cmd, loop_kernB], redirect_stdout=True,
+        encoding='utf-8').stdout.split()[0]
     kernA_cmd.SetKernelParameter('kern_b_hash', new_kernB_hash)
   logging.info('New cmdline for kernel A is %s', str(kernA_cmd))
   recovery_key = keyset.keys['recovery']
@@ -478,7 +479,7 @@ def DumpConfig(image_file):
   with image_lib.LoopbackPartitions(image_file) as image:
     for kernel_part in ('KERN-A', 'KERN-B'):
       loop_kern = image.GetPartitionDevName(kernel_part)
-      config = GetKernelConfig(loop_kern, error_code_ok=True)
+      config = GetKernelConfig(loop_kern, check=False)
       if config:
         logging.info('Partition %s', kernel_part)
         logging.info(config)

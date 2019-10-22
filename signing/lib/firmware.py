@@ -87,7 +87,7 @@ class ECSigner(signer.BaseSigner):
     fmap = cros_build_lib.run(['futility', 'dump_fmap', '-p', ec_image],
                               capture_output=True)
 
-    return re.search('KEY_RO', fmap.output) is not None
+    return b'KEY_RO' in fmap.stdout
 
   def Sign(self, keyset, input_name, output_name):
     """Sign EC image
@@ -438,13 +438,13 @@ def WriteSignerNotes(keyset, outfile):
     outfile: file object that signer notes are written to.
   """
   recovery_key = keyset.keys['recovery_key']
-  outfile.write('Signed with keyset in %s\n' % recovery_key.keydir)
-  outfile.write('recovery: %s\n' % recovery_key.GetSHA1sum())
+  outfile.write(u'Signed with keyset in %s\n' % recovery_key.keydir)
+  outfile.write(u'recovery: %s\n' % recovery_key.GetSHA1sum())
 
   root_keys = keyset.GetRootOfTrustKeys('root_key')
   if 'root_key' in root_keys and len(root_keys) == 1:
-    outfile.write('root: %s\n' % (root_keys['root_key'].GetSHA1sum()))
+    outfile.write(u'root: %s\n' % (root_keys['root_key'].GetSHA1sum()))
   else:
-    outfile.write("List sha1sum of all loem/model's signatures:\n")
+    outfile.write(u"List sha1sum of all loem/model's signatures:\n")
     for key_id, key in root_keys.items():
-      outfile.write('%s: %s\n' % (key_id, key.GetSHA1sum()))
+      outfile.write(u'%s: %s\n' % (key_id, key.GetSHA1sum()))
