@@ -6,9 +6,9 @@ protocols (both control and streaming).
 Information about the protocol and its specification can be found [on
 GitHub](https://github.com/webscreens/openscreenprotocol).
 
-## Getting the code
+# Getting the code
 
-### Installing depot_tools
+## Installing depot_tools
 
 openscreen library dependencies are managed using `gclient`, from the
 [depot_tools](https://www.chromium.org/developers/how-tos/depottools) repo.
@@ -24,7 +24,7 @@ Note that openscreen does not use other features of `depot_tools` like `repo` or
 `drover`.  However, some `git-cl` functions *do* work, like `git cl try`, `git cl
 lint` and `git cl upload.`
 
-### Checking out code
+## Checking out code
 
 From the parent directory of where you want the openscreen checkout, configure
 `gclient` and check out openscreen with the following commands:
@@ -37,7 +37,7 @@ From the parent directory of where you want the openscreen checkout, configure
 Now, you should have `openscreen/` repository checked out, with all dependencies
 checked out to their appropriate revisions.
 
-### Syncing your local checkout
+## Syncing your local checkout
 
 To update your local checkout from the openscreen master repository, just run
 
@@ -49,9 +49,9 @@ To update your local checkout from the openscreen master repository, just run
 This will rebase any local commits on the remote top-of-tree, and update any
 dependencies that have changed.
 
-## Building
+# Build setup
 
-### Installing build dependencies
+## Installing build dependencies
 
 The following tools are required for building:
 
@@ -65,12 +65,12 @@ running `./tools/install-build-tools.sh`.
 `clang-format` is only used for presubmit checks and optionally used on
 generated code from the CDDL tool.
 
-`gn` will be installed in `buildtools/<platform>/` automatically by DEPS.
+`gn` will be installed in `buildtools/<platform>/` automatically by `gclient sync`.
 
-You also need to ensure that you have the compiler toolchain dependencies.
+You also need to ensure that you have the compiler and its toolchain dependencies.
 Currently, both Linux and Mac OS X build configurations use clang by default.
 
-### Linux
+## Linux clang
 
 On Linux, the build will automatically download the Clang compiler from the
 Google storage cache, the same way that Chromium does it.
@@ -82,22 +82,29 @@ instance of it. On Debian flavors, you can run:
    sudo apt-get install libstdc++-8-dev
 ```
 
-### Mac
-
-On Mac OS X, the build will use the clang provided by
-[XCode](https://apps.apple.com/us/app/xcode/id497799835?mt=12), which must be
-installed.
-
-### gcc support
+## Linux gcc
 
 Setting the `gn` argument "is_gcc=true" on Linux enables building using gcc
-instead.  Note that g++ must be installed.
+instead.
 
 ```bash
   gn gen out/Default --args="is_gcc=true"
 ```
 
-### Debug build
+Note that g++ version 7 or newer must be installed.  On Debian flavors you can
+run:
+
+```bash
+  sudo apt-get install gcc-7
+```
+
+## Mac clang
+
+On Mac OS X, the build will use the clang provided by
+[XCode](https://apps.apple.com/us/app/xcode/id497799835?mt=12), which must be
+installed.
+
+## Debug build
 
 Setting the `gn` argument "is_debug=true" enables debug build.
 
@@ -111,7 +118,7 @@ To install debug information for libstdc++ 8 on Debian flavors, you can run:
    sudo apt-get install libstdc++6-8-dbg
 ```
 
-### gn configuration
+## gn configuration
 
 Running `gn args` opens an editor that allows to create a list of arguments
 passed to every invocation of `gn gen`.
@@ -120,7 +127,9 @@ passed to every invocation of `gn gen`.
   gn args out/Default
 ```
 
-### Building the sample executable
+# Building targets
+
+## Building the OSP demo
 
 The following commands will build a sample executable and run it.
 
@@ -146,7 +155,7 @@ edited a `BUILD.gn` file, `ninja` will re-run `gn` for you.
 
 For details on running `demo`, see its [README.md](demo/README.md).
 
-### Building other targets
+## Building other targets
 
 Running `ninja -C out/Default gn_all` will build all non-test targets in the
 repository.
@@ -158,32 +167,34 @@ If you want to customize the build further, you can run `gn args out/Default` to
 pull up an editor for build flags. `gn args --list out/Default` prints all of
 the build flags available.
 
-## Running unit tests
+## Building and running unit tests
 
 ```bash
   ninja -C out/Default unittests
   ./out/Default/unittests
 ```
 
-## Continuous build and try jobs
+# Continuous build and try jobs
 
 openscreen uses [LUCI builders](https://ci.chromium.org/p/openscreen/builders)
 to monitor the build and test health of the library.  Current builders include:
 
 | Name                   | Arch   | OS                 | Toolchain | Build   | Notes        |
 |------------------------|--------|--------------------|-----------|---------|--------------|
-| linux64_debug          | x86-64 | Linux Ubuntu 16.04 | clang     | debug   | ASAN enabled |
-| linux64_tsan           | x86-64 | Linux Ubuntu 16.04 | clang     | release | TSAN enabled |
+| linux64_debug          | x86-64 | Ubuntu Linux 16.04 | clang     | debug   | ASAN enabled |
+| linux64_gcc_debug      | x86-64 | Ubuntu Linux 18.04 | gcc-7     | debug   | |
+| linux64_tsan           | x86-64 | Ubuntu Linux 16.04 | clang     | release | TSAN enabled |
 | mac_debug              | x86-64 | Mac OS X/Xcode     | clang     | debug   | |
-| chromium_linux64_debug | x86-64 | Linux Ubuntu 16.04 | clang     | debug   | built within chromium |
+| chromium_linux64_debug | x86-64 | Ubuntu Linux 16.04 | clang     | debug   | built within chromium |
 | chromium_mac_debug     | x86-64 | Mac OS X/Xcode     | clang     | debug   | built within chromium |
 
 You can run a patch through the try job queue (which tests it on all
 non-chromium builders) using `git cl try`, or through Gerrit (details below).
-The chromium builders only run as continuous-integration FYI bots, testing HEAD
-vs. HEAD.
 
-## Submitting changes
+The chromium builders compile openscreen HEAD vs. chromium HEAD.  They run as
+experimental trybots and continuous-integration FYI bots.
+
+# Submitting changes
 
 openscreen library code should follow the [Open Screen Library Style
 Guide](docs/style_guide.md).
@@ -195,7 +206,7 @@ The following sections contain some tips about dealing with Gerrit for code
 reviews, specifically when pushing patches for review, getting patches reviewed,
 and committing patches.
 
-### Uploading a patch for review
+## Uploading a patch for review
 
 The `git cl` tool handles details of interacting with Gerrit (the Chromium code
 review tool) and is recommended for pushing patches for review.  Once you have
@@ -216,14 +227,14 @@ It's simplest to create a local git branch for each patch you want reviewed
 separately.  `git cl` keeps track of review status separately for each local
 branch.
 
-### Addressing merge conflicts
+## Addressing merge conflicts
 
 If conflicting commits have been landed in the repository for a patch in review,
 Gerrit will flag the patch as having a merge conflict.  In that case, use the
 instructions above to rebase your commits on top-of-tree and upload a new
 patchset with the merge conflicts resolved.
 
-### Tryjobs
+## Tryjobs
 
 Clicking the `CQ DRY RUN` button (also, confusingly, labeled `COMMIT QUEUE +1`)
 will run the current patchset through all LUCI builders and report the results.
@@ -232,29 +243,16 @@ review to avoid extra back-and-forth.
 
 You can also run `git cl try` from the commandline to submit a tryjob.
 
-### Code reviews
+## Code reviews
 
 Send your patch to one or more committers in the
 [COMMITTERS](https://chromium.googlesource.com/openscreen/+/refs/heads/master/COMMITTERS)
 file for code review.  All patches must receive at least one LGTM by a committer
 before it can be submitted.
 
-### Submission
+## Submission
 
 After your patch has received one or more LGTM commit it by clicking the
 `SUBMIT` button (or, confusingly, `COMMIT QUEUE +2`) in Gerrit.  This will run
 your patch through the builders again before committing to the main openscreen
 repository.
-
-## Chromium Build Differences
-
-Currently, openscreen is also built in Chromium, with some build differences.
-The files that are built are determined by the following build variables:
- - `build_with_chromium`: `true` when building as part of a Chromium checkout,
- `false` otherwise.  Set by `//build_overrides/build.gni`.
- - `use_mdns_responder`: `true` by default, `false` when `build_with_chromium`
- is `true`.  Controls whether the default mDNSResponder mDNS implementation is
- used.  Set by `//build/config/services.gni`.
- - `use_chromium_quic`: `true` by default, `false` when `build_with_chromium`
- is `true`.  Controls whether the Chromium QUIC implementation clone is used.
- Set by `//build/config/services.gni`.
