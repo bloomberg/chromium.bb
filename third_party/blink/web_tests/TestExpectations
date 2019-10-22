@@ -5775,3 +5775,6 @@ crbug.com/1016457 [ Linux Mac Debug ] external/wpt/dom/ranges/Range-mutations-da
 
 # ecosystem-infra sheriff 2019-10-22
 crbug.com/1016762 external/wpt/html/cross-origin-opener-policy/popup-redirect-cache.https.html [ Pass Failure ]
+
+# cci-trooper 2019-10-22
+crbug.com/1016804 external/wpt/css/css-grid/layout-algorithm/grid-flex-track-intrinsic-sizes-002.html [ Pass Failure ]
