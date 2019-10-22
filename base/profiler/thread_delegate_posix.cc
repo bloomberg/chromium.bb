@@ -24,7 +24,12 @@ uintptr_t GetThreadStackBaseAddress(PlatformThreadId thread_id) {
 }  // namespace
 
 ThreadDelegatePosix::ThreadDelegatePosix(PlatformThreadId thread_id)
-    : thread_stack_base_address_(GetThreadStackBaseAddress(thread_id)) {}
+    : thread_id_(thread_id),
+      thread_stack_base_address_(GetThreadStackBaseAddress(thread_id)) {}
+
+PlatformThreadId ThreadDelegatePosix::GetThreadId() const {
+  return thread_id_;
+}
 
 uintptr_t ThreadDelegatePosix::GetStackBaseAddress() const {
   return thread_stack_base_address_;

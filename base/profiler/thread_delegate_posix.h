@@ -21,11 +21,13 @@ class BASE_EXPORT ThreadDelegatePosix : public ThreadDelegate {
   ThreadDelegatePosix& operator=(const ThreadDelegatePosix&) = delete;
 
   // ThreadDelegate
+  PlatformThreadId GetThreadId() const override;
   uintptr_t GetStackBaseAddress() const override;
   std::vector<uintptr_t*> GetRegistersToRewrite(
       RegisterContext* thread_context) override;
 
  private:
+  const PlatformThreadId thread_id_;
   const uintptr_t thread_stack_base_address_;
 };
 
