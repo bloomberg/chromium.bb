@@ -21,6 +21,7 @@ message InputEvent {
     LID_CLOSED = 3;
     TABLET_MODE_ON = 4;
     TABLET_MODE_OFF = 5;
+    DOUBLE_TAP = 6;
   }
   optional Type type = 1;
 
