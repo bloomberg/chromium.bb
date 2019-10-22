@@ -2043,6 +2043,9 @@ const std::vector<AccountReconcilorTestTableParam> kActiveDirectoryParams = {
 // clang-format on
 
 TEST_P(AccountReconcilorTestActiveDirectory, TableRowTestMergeSession) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(kUseMultiloginEndpoint);
+
   // Setup tokens.
   std::vector<Token> tokens = ParseTokenString(GetParam().tokens);
   SetupTokens(GetParam().tokens);
