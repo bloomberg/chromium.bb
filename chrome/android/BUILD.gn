@@ -2383,7 +2383,8 @@ if (public_android_sdk) {
     # Having //clank present causes different flags because of how play services
     # is wired up.
     # The channel is required because manifest entries vary based on channel.
-    if (!enable_chrome_android_internal && android_channel == "stable") {
+    if (check_android_configuration && !enable_chrome_android_internal &&
+        android_channel == "stable") {
       verify_android_configuration = true
     }
   }
