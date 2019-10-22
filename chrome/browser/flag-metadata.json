@@ -1453,6 +1453,11 @@
     "expiry_milestone": 78
   },
   {
+    "name": "enable-media-internals-devtools",
+    "owners": ["tmathmeyer"],
+    "expiry_milestone": 82
+  },
+  {
     "name": "enable-media-session-notifications",
     "owners": [ "beccahughes", "media-dev" ],
     "expiry_milestone": 82

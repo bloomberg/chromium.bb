@@ -4674,6 +4674,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-desktop-minimal-ui", flag_descriptions::kDesktopMinimalUIName,
      flag_descriptions::kDesktopMinimalUIDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kDesktopMinimalUI)},
+    {"enable-media-internals-devtools",
+     flag_descriptions::kMediaInspectorLoggingName,
+     flag_descriptions::kMediaInspectorLoggingDescription, kOsAll,
+     FEATURE_VALUE_TYPE(media::kMediaInspectorLogging)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

@@ -1268,6 +1268,13 @@ const char kLookalikeUrlNavigationSuggestionsDescription[] =
 const char kMarkHttpAsName[] = "Mark non-secure origins as non-secure";
 const char kMarkHttpAsDescription[] = "Change the UI treatment for HTTP pages";
 
+extern const char kMediaInspectorLoggingName[] =
+    "Enable media log in developer tools";
+extern const char kMediaInspectorLoggingDescription[] =
+    "Move media logging from chrome://media-internals into the developer tools "
+    "project; #enable-devtools-experiments must also be enabled as well on "
+    "desktop platforms";
+
 const char kMediaRouterCastAllowAllIPsName[] =
     "Connect to Cast devices on all IP addresses";
 const char kMediaRouterCastAllowAllIPsDescription[] =
