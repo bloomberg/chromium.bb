@@ -1,1 +1,9 @@
-{"sysroot": {"path": "/build/eve"}, "output_dir": "/tmp"}
+{
+  "output_dir": "/tmp",
+  "sysroot": {
+    "path": "/build/betty",
+    "build_target": {
+      "name": "betty"
+    }
+  }
+}

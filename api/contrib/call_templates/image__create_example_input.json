@@ -1,1 +1,10 @@
-{"build_target": {"name": "betty"}, "image_types": [1, 3, 5]}
+{
+  "build_target": {
+    "name": "betty"
+  },
+  "image_types": [
+    1,
+    3,
+    5
+  ]
+}

@@ -5,5 +5,9 @@
     },
     "path": "/build/betty"
   },
-  "use_flags": [{"flag": "chrome_internal"}]
+  "use_flags": [
+    {
+      "flag": "chrome_internal"
+    }
+  ]
 }

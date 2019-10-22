@@ -1,1 +1,10 @@
-{"toolchain_targets": [{"name": "betty"}, {"name": "reef"}]}
+{
+  "toolchain_targets": [
+    {
+      "name": "betty"
+    },
+    {
+      "name": "reef"
+    }
+  ]
+}

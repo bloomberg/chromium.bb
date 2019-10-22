@@ -1,1 +1,8 @@
-{"sysroot": {"path": "/build/gale"}, "chroot": {"path": "/usr/local/google/home/saklein/chromiumos/chroot"}}
+{
+  "sysroot": {
+    "path": "/build/betty"
+  },
+  "chroot": {
+    "path": "/usr/local/google/home/saklein/chromiumos/chroot"
+  }
+}

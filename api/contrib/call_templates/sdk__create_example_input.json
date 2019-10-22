@@ -1,1 +1,5 @@
-{"flags": {"no_replace":  true}}
+{
+  "flags": {
+    "no_replace": true
+  }
+}

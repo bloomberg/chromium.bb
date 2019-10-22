@@ -1,10 +1,10 @@
 {
   "build_target": {
-    "name": "reef"
+    "name": "betty"
   },
-  "uri": "gs://chromeos-prebuilt/board/reef/postsubmit-R77-12271.0.0-7775-8910709858450730096/packages/",
+  "uri": "gs://chromeos-prebuilt/board/betty/postsubmit-R77-12271.0.0-7775-8910709858450730096/packages/",
   "sysroot": {
-    "path": "/build/reef"
+    "path": "/build/betty"
   },
   "package_index_files": []
 }

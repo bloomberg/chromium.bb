@@ -2,5 +2,7 @@
   "build_target": {
     "name": "betty"
   },
-  "use_flags": ["chrome_internal"]
+  "use_flags": [
+    "chrome_internal"
+  ]
 }
