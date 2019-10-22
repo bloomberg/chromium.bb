@@ -161,8 +161,8 @@ BrowserApi.ZoomBehavior = {
 /**
  * Creates a BrowserApi for an extension running as a mime handler.
  *
- * @return {Promise<BrowserApi>} A promise to a BrowserApi instance constructed
- *     using the mimeHandlerPrivate API.
+ * @return {!Promise<!BrowserApi>} A promise to a BrowserApi instance
+ *     constructed using the mimeHandlerPrivate API.
  */
 function createBrowserApiForMimeHandlerView() {
   return new Promise(function(resolve, reject) {
@@ -198,8 +198,8 @@ function createBrowserApiForMimeHandlerView() {
 /**
  * Creates a BrowserApi instance for an extension not running as a mime handler.
  *
- * @return {Promise<BrowserApi>} A promise to a BrowserApi instance constructed
- *     from the URL.
+ * @return {!Promise<!BrowserApi>} A promise to a BrowserApi instance
+ *     constructed from the URL.
  */
 function createBrowserApiForPrintPreview() {
   const url = window.location.search.substring(1);
@@ -227,7 +227,7 @@ function createBrowserApiForPrintPreview() {
 }
 
 /**
- * @return {Promise<BrowserApi>} A promise to a BrowserApi instance for the
+ * @return {!Promise<!BrowserApi>} A promise to a BrowserApi instance for the
  *     current environment.
  */
 function createBrowserApi() {

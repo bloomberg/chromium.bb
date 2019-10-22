@@ -67,6 +67,9 @@ js_library("zoom_manager") {
 }
 
 js_library("metrics") {
+  deps = [
+    ":pdf_fitting_type",
+  ]
   externs_list = [ "$externs_path/metrics_private.js" ]
 }
 
@@ -81,6 +84,7 @@ js_library("toolbar_manager") {
   deps = [
     "elements:viewer-pdf-toolbar",
     "elements:viewer-zoom-toolbar",
+    "//ui/webui/resources/js:util",
   ]
 }
 
@@ -97,9 +101,12 @@ js_library("controller") {
 js_library("pdf_viewer") {
   deps = [
     ":controller",
+    ":metrics",
     ":navigator",
+    ":pdf_scripting_api",
     ":toolbar_manager",
     ":viewport",
+    ":viewport_scroller",
     "elements:viewer-bookmark",
     "elements:viewer-error-screen",
     "elements:viewer-page-indicator",
@@ -112,12 +119,21 @@ js_library("pdf_viewer") {
   externs_list = [ "$externs_path/resources_private.js" ]
 }
 
+js_library("main") {
+  deps = [
+    ":browser_api",
+    ":pdf_viewer",
+  ]
+}
+
 js_type_check("pdf_resources") {
   is_polymer3 = true
   deps = [
+    ":annotation_tool",
     ":browser_api",
     ":controller",
     ":gesture_detector",
+    ":main",
     ":metrics",
     ":navigator",
     ":open_pdf_params_parser",

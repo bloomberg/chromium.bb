@@ -42,30 +42,29 @@ function handleScriptingMessage(message) {
 /**
  * Initialize the global PDFViewer and pass any outstanding messages to it.
  *
- * @param {Promise<BrowserApi>} browserApi A promise resolving to an API
- *     to the browser.
+ * @param {!BrowserApi} browserApi
  */
 function initViewer(browserApi) {
   // PDFViewer will handle any messages after it is created.
   window.removeEventListener('message', handleScriptingMessage, false);
-  viewer = new PDFViewer(browserApi);
+  window.viewer = new PDFViewer(browserApi);
   while (pendingMessages.length > 0) {
-    viewer.handleScriptingMessage(pendingMessages.shift());
+    window.viewer.handleScriptingMessage(pendingMessages.shift());
   }
 }
 
 /**
  * Determine if the content settings allow PDFs to execute javascript.
  *
- * @param {Promise<BrowserApi>} browserApi A promise resolving to an API
- *     to the browser.
+ * @param {!BrowserApi} browserApi
+ * @return {!Promise<!BrowserApi>}
  */
 function configureJavaScriptContentSetting(browserApi) {
   return new Promise((resolve, reject) => {
     chrome.contentSettings.javascript.get(
         {
           'primaryUrl': browserApi.getStreamInfo().originalUrl,
-          'secondaryUrl': window.origin
+          'secondaryUrl': window.location.origin
         },
         (result) => {
           browserApi.getStreamInfo().javascript = result.setting;
@@ -89,7 +88,7 @@ function main() {
     chain = chain.then(configureJavaScriptContentSetting);
   }
 
-  chain = chain.then(initViewer);
+  chain.then(initViewer);
 }
 
 main();
