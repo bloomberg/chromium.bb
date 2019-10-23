@@ -1932,6 +1932,13 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_FALSE(speculative_rfh);
 }
 
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#define MAYBE_DeleteSpeculativeRFHPendingCommitOfPendingEntryOnInterrupted2 \
+  DISABLED_DeleteSpeculativeRFHPendingCommitOfPendingEntryOnInterrupted2
+#else
+#define MAYBE_DeleteSpeculativeRFHPendingCommitOfPendingEntryOnInterrupted2 \
+  DeleteSpeculativeRFHPendingCommitOfPendingEntryOnInterrupted2
+#endif
 // Ensures that deleting a speculative RenderFrameHost trying to commit a
 // navigation to the pending NavigationEntry will not crash if it happens
 // because a new navigation to the same pending NavigationEntry started.  This
@@ -1940,7 +1947,7 @@ IN_PROC_BROWSER_TEST_F(
 // regression test for crbug.com/796135.
 IN_PROC_BROWSER_TEST_F(
     RenderFrameHostManagerTest,
-    DeleteSpeculativeRFHPendingCommitOfPendingEntryOnInterrupted2) {
+    MAYBE_DeleteSpeculativeRFHPendingCommitOfPendingEntryOnInterrupted2) {
   const std::string kOriginalPath = "/original.html";
   const std::string kRedirectPath = "/redirect.html";
   net::test_server::ControllableHttpResponse original_response1(
