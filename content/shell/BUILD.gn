@@ -478,6 +478,10 @@ jumbo_static_library("content_shell_lib") {
       "browser/shell_plugin_service_filter.h",
     ]
   }
+
+  if (enable_cast_renderer) {
+    deps += [ "//media/mojo/mojom:constants" ]
+  }
 }
 
 grit("content_shell_resources_grit") {
