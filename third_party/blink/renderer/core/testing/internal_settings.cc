@@ -122,10 +122,7 @@ InternalSettings::~InternalSettings() = default;
 InternalSettings::InternalSettings(Page& page)
     : InternalSettingsGenerated(&page),
       Supplement<Page>(page),
-      backup_(&page.GetSettings()) {
-  Page::SetInternalSettingsPrepareForLeakDetectionCallback(
-      &PrepareForLeakDetection);
-}
+      backup_(&page.GetSettings()) {}
 
 void InternalSettings::ResetToConsistentState() {
   backup_.RestoreTo(GetSettings());
@@ -560,10 +557,8 @@ void InternalSettings::setUniversalAccessFromFileURLs(
 }
 
 void InternalSettings::PrepareForLeakDetection() {
-  // Internal settings are ScriptWrappable and thus may retain documents
-  // depending on whether the garbage collector(s) are able to find the settings
-  // object through the Page supplement. Prepares for leak detection by
-  // removing all InternalSetting objects from Pages.
+  // Prepares for leak detection by removing all InternalSetting objects from
+  // Pages.
   for (Page* page : Page::OrdinaryPages()) {
     page->RemoveSupplement<InternalSettings>();
   }

@@ -341,12 +341,6 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
     return history_navigation_virtual_time_pauser_;
   }
 
-  // See InternalSettings::PrepareForLeakDetection(). The callback is to avoid
-  // dependency from production code to test-only code.
-  static void SetInternalSettingsPrepareForLeakDetectionCallback(
-      void (*callback)());
-  static void PrepareForLeakDetection();
-
  private:
   friend class ScopedPagePauser;
 

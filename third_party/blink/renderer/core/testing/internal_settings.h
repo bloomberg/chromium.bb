@@ -51,6 +51,8 @@ class InternalSettings final : public InternalSettingsGenerated,
  public:
   static const char kSupplementName[];
 
+  static void PrepareForLeakDetection();
+
   class Backup {
     DISALLOW_NEW();
 
@@ -145,7 +147,6 @@ class InternalSettings final : public InternalSettingsGenerated,
   void SetPreloadLogging(bool, ExceptionState&);
 
  private:
-  static void PrepareForLeakDetection();
   Settings* GetSettings() const;
   Page* GetPage() const { return GetSupplementable(); }
 

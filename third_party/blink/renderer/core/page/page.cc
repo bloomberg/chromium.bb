@@ -1019,21 +1019,6 @@ void Page::ClearMediaFeatureOverrides() {
   SettingsChanged(SettingsDelegate::kColorSchemeChange);
 }
 
-static void (*g_internal_settings_prepare_for_leak_detection_callback)() =
-    nullptr;
-
-// static
-void Page::SetInternalSettingsPrepareForLeakDetectionCallback(
-    void (*callback)()) {
-  g_internal_settings_prepare_for_leak_detection_callback = callback;
-}
-
-// static
-void Page::PrepareForLeakDetection() {
-  if (!g_internal_settings_prepare_for_leak_detection_callback)
-    g_internal_settings_prepare_for_leak_detection_callback();
-}
-
 Page::PageClients::PageClients() : chrome_client(nullptr) {}
 
 Page::PageClients::~PageClients() = default;
