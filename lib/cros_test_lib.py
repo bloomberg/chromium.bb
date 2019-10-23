@@ -33,6 +33,7 @@ from chromite.lib import remote_access
 from chromite.lib import retry_util
 from chromite.lib import terminal
 from chromite.lib import timeout_util
+from chromite.utils import outcap
 
 
 Directory = collections.namedtuple('Directory', ['name', 'contents'])
@@ -752,7 +753,7 @@ class OutputTestCase(TestCase):
 
   def OutputCapturer(self, *args, **kwargs):
     """Create and return OutputCapturer object."""
-    self._output_capturer = cros_build_lib.OutputCapturer(*args, **kwargs)
+    self._output_capturer = outcap.OutputCapturer(*args, **kwargs)
     return self._output_capturer
 
   def _GetOutputCapt(self):

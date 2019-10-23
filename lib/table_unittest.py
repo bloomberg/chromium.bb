@@ -9,9 +9,9 @@ from __future__ import print_function
 
 import tempfile
 
-from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import table
+from chromite.utils import outcap
 
 
 # pylint: disable=protected-access
@@ -168,7 +168,7 @@ class TableTest(cros_test_lib.TempDirTestCase):
   def testMergeRows(self):
     # This merge should fail without a merge rule.  Capture stderr to avoid
     # scary error message in test output.
-    with cros_build_lib.OutputCapturer():
+    with outcap.OutputCapturer():
       self.assertRaises(ValueError, self._table._MergeRow, self.ROW0a,
                         self.COL0)
 

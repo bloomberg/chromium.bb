@@ -17,6 +17,7 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import remote_access
 from chromite.lib import vm
+from chromite.utils import outcap
 
 
 class Error(Exception):
@@ -205,7 +206,7 @@ class CommandVMTest(object):
                                                          '--root=/usr/local'])
 
     logging.info('Test to uninstall packages on the VM device.')
-    with cros_build_lib.OutputCapturer() as output:
+    with outcap.OutputCapturer() as output:
       result = cros_build_lib.run(cmd + ['--unmerge'], error_code_ok=True)
 
     if result.returncode:
@@ -221,7 +222,7 @@ class CommandVMTest(object):
         raise CommandError()
 
     logging.info('Test to install packages on the VM device.')
-    with cros_build_lib.OutputCapturer() as output:
+    with outcap.OutputCapturer() as output:
       result = cros_build_lib.run(cmd, error_code_ok=True)
 
     if result.returncode:

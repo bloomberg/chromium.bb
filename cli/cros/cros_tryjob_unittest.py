@@ -14,6 +14,7 @@ from chromite.lib import config_lib
 from chromite.lib import cros_build_lib
 from chromite.cli.cros import cros_tryjob
 from chromite.lib import cros_test_lib
+from chromite.utils import outcap
 
 
 class MockTryjobCommand(command_unittest.MockCommand):
@@ -90,7 +91,7 @@ class TryjobTestPrintKnownConfigs(TryjobTest):
 
   def testListTryjobs(self):
     """Test we can generate results for --list."""
-    with cros_build_lib.OutputCapturer() as output:
+    with outcap.OutputCapturer() as output:
       cros_tryjob.PrintKnownConfigs(
           self.site_config, production=False, build_config_fragments=[])
 
@@ -100,7 +101,7 @@ class TryjobTestPrintKnownConfigs(TryjobTest):
 
   def testListProduction(self):
     """Test we can generate results for --production --list."""
-    with cros_build_lib.OutputCapturer() as output:
+    with outcap.OutputCapturer() as output:
       cros_tryjob.PrintKnownConfigs(
           self.site_config, production=True, build_config_fragments=[])
 
@@ -110,7 +111,7 @@ class TryjobTestPrintKnownConfigs(TryjobTest):
 
   def testListTryjobsEmpty(self):
     """Test we can generate ~empty results for failed --list search."""
-    with cros_build_lib.OutputCapturer() as output:
+    with outcap.OutputCapturer() as output:
       cros_tryjob.PrintKnownConfigs(
           self.site_config, production=False,
           build_config_fragments=['this-is-not-a-builder-name'])
@@ -447,7 +448,7 @@ class TryjobTestVerifyOptions(TryjobTest):
     ])
 
     with self.assertRaises(cros_build_lib.DieSystemExit) as cm:
-      with cros_build_lib.OutputCapturer(quiet_fail=True):  # Hide list output.
+      with outcap.OutputCapturer(quiet_fail=True):  # Hide list output.
         cros_tryjob.VerifyOptions(self.cmd_mock.inst.options, self.site_config)
     self.assertEqual(cm.exception.code, 0)
 
@@ -458,7 +459,7 @@ class TryjobTestVerifyOptions(TryjobTest):
     ])
 
     with self.assertRaises(cros_build_lib.DieSystemExit) as cm:
-      with cros_build_lib.OutputCapturer(quiet_fail=True):  # Hide list output.
+      with outcap.OutputCapturer(quiet_fail=True):  # Hide list output.
         cros_tryjob.VerifyOptions(self.cmd_mock.inst.options, self.site_config)
     self.assertEqual(cm.exception.code, 0)
 

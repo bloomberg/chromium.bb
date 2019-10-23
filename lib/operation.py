@@ -25,11 +25,12 @@ import termios
 
 from six.moves import queue as Queue
 
-from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib.terminal import Color
+from chromite.utils import outcap
+
 
 # Define filenames for captured stdout and stderr.
 STDOUT_FILE = 'stdout'
@@ -166,7 +167,7 @@ class ProgressBarOperation(object):
     restore_log_level = logging.getLogger().getEffectiveLevel()
     logging.getLogger().setLevel(log_level)
     try:
-      with cros_build_lib.OutputCapturer(
+      with outcap.OutputCapturer(
           stdout_path=self._stdout_path, stderr_path=self._stderr_path,
           quiet_fail=False):
         func(*args, **kwargs)

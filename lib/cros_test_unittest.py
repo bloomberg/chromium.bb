@@ -17,6 +17,7 @@ from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import partial_mock
 from chromite.lib import cros_test
+from chromite.utils import outcap
 
 
 # pylint: disable=protected-access
@@ -271,7 +272,7 @@ class CrOSTesterAutotest(CrOSTesterBase):
     self._tester.autotest = ['accessibility_Sanity']
     # Capture the run command. This is necessary beacuse the mock doesn't
     # capture the cros_sdk wrapper.
-    with cros_build_lib.OutputCapturer() as output:
+    with outcap.OutputCapturer() as output:
       self._tester._RunAutotest()
     # Check that we enter the chroot before running test_that.
     self.assertIn(
@@ -476,10 +477,10 @@ class CrOSTesterParser(CrOSTesterBase):
     # Recreate args as a list if it is given as a string.
     if isinstance(args, str):
       args = [args]
-    # Putting cros_build_lib.OutputCapturer() before assertRaises(SystemExit)
+    # Putting outcap.OutputCapturer() before assertRaises(SystemExit)
     # swallows SystemExit exception check.
     with self.assertRaises(SystemExit):
-      with cros_build_lib.OutputCapturer() as output:
+      with outcap.OutputCapturer() as output:
         cros_test.ParseCommandLine(args)
     self.assertIn(error_msg, output.GetStderr())
 
