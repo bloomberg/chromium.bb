@@ -127,14 +127,6 @@ uint32_t FindFormsDifferences(const FormData& lhs, const FormData& rhs) {
   return differences_bitmask;
 }
 
-// Since empty or unspecified form's action is automatically set to the page
-// origin, this function checks if a form's action is empty by comparing it to
-// its origin.
-bool HasNonEmptyAction(const FormData& form) {
-  // TODO(crbug.com/1008798): The logic isn't accurate and should be fixed.
-  return form.action != form.url;
-}
-
 bool FormContainsFieldWithName(const FormData& form,
                                const base::string16& element) {
   if (element.empty())
@@ -240,8 +232,8 @@ bool PasswordFormManager::IsEqualToSubmittedForm(
   if (IsHttpAuth())
     return false;
 
-  if (form.action.is_valid() && HasNonEmptyAction(form) &&
-      HasNonEmptyAction(submitted_form_) &&
+  if (form.action.is_valid() && !form.is_action_empty &&
+      !submitted_form_.is_action_empty &&
       submitted_form_.action == form.action) {
     return true;
   }
