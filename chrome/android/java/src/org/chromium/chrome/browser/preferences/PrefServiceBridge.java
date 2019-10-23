@@ -139,6 +139,14 @@ public class PrefServiceBridge {
     }
 
     /**
+     * @param preference The name of the preference.
+     * @return Whether the specified preference is managed.
+     */
+    public boolean isManagedPreference(@Pref int preference) {
+        return PrefServiceBridgeJni.get().isManagedPreference(PrefServiceBridge.this, preference);
+    }
+
+    /**
      * Migrates (synchronously) the preferences to the most recent version.
      */
     public void migratePreferences() {
@@ -399,27 +407,6 @@ public class PrefServiceBridge {
      */
     public String getSyncLastAccountName() {
         return PrefServiceBridgeJni.get().getSyncLastAccountName(PrefServiceBridge.this);
-    }
-
-    /**
-     * @return Whether Search Suggest is enabled.
-     */
-    public boolean isSearchSuggestEnabled() {
-        return PrefServiceBridgeJni.get().getSearchSuggestEnabled(PrefServiceBridge.this);
-    }
-
-    /**
-     * Sets whether search suggest should be enabled.
-     */
-    public void setSearchSuggestEnabled(boolean enabled) {
-        PrefServiceBridgeJni.get().setSearchSuggestEnabled(PrefServiceBridge.this, enabled);
-    }
-
-    /**
-     * @return Whether Search Suggest is configured by policy.
-     */
-    public boolean isSearchSuggestManaged() {
-        return PrefServiceBridgeJni.get().getSearchSuggestManaged(PrefServiceBridge.this);
     }
 
     /**
@@ -1143,6 +1130,7 @@ public class PrefServiceBridge {
         boolean getBoolean(PrefServiceBridge caller, int preference);
         void setBoolean(PrefServiceBridge caller, int preference, boolean value);
         void setInteger(PrefServiceBridge caller, int preference, int value);
+        boolean isManagedPreference(PrefServiceBridge caller, int preference);
         boolean getAcceptCookiesEnabled(PrefServiceBridge caller);
         boolean getAcceptCookiesUserModifiable(PrefServiceBridge caller);
         boolean getAcceptCookiesManagedByCustodian(PrefServiceBridge caller);
@@ -1217,9 +1205,6 @@ public class PrefServiceBridge {
         void setContextualSearchPreference(PrefServiceBridge caller, String preference);
         String getContextualSearchPreference(PrefServiceBridge caller);
         boolean getContextualSearchPreferenceIsManaged(PrefServiceBridge caller);
-        boolean getSearchSuggestEnabled(PrefServiceBridge caller);
-        void setSearchSuggestEnabled(PrefServiceBridge caller, boolean enabled);
-        boolean getSearchSuggestManaged(PrefServiceBridge caller);
         boolean getSafeBrowsingExtendedReportingEnabled(PrefServiceBridge caller);
         void setSafeBrowsingExtendedReportingEnabled(PrefServiceBridge caller, boolean enabled);
         boolean getSafeBrowsingExtendedReportingManaged(PrefServiceBridge caller);

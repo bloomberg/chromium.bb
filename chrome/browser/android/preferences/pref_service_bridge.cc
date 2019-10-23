@@ -158,6 +158,14 @@ static void JNI_PrefServiceBridge_SetInteger(JNIEnv* env,
       PrefServiceBridge::GetPrefNameExposedToJava(j_pref_index), j_value);
 }
 
+static jboolean JNI_PrefServiceBridge_IsManagedPreference(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const jint j_pref_index) {
+  return GetPrefService()->IsManagedPreference(
+      PrefServiceBridge::GetPrefNameExposedToJava(j_pref_index));
+}
+
 static jboolean JNI_PrefServiceBridge_IsContentSettingManaged(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
@@ -418,18 +426,6 @@ static jboolean JNI_PrefServiceBridge_GetTranslateManaged(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
   return GetPrefService()->IsManagedPreference(prefs::kOfferTranslateEnabled);
-}
-
-static jboolean JNI_PrefServiceBridge_GetSearchSuggestEnabled(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  return GetPrefService()->GetBoolean(prefs::kSearchSuggestEnabled);
-}
-
-static jboolean JNI_PrefServiceBridge_GetSearchSuggestManaged(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  return GetPrefService()->IsManagedPreference(prefs::kSearchSuggestEnabled);
 }
 
 static jboolean JNI_PrefServiceBridge_GetSafeBrowsingExtendedReportingEnabled(
@@ -967,13 +963,6 @@ static jboolean JNI_PrefServiceBridge_GetMicManagedByCustodian(
     const JavaParamRef<jobject>& obj) {
   return IsContentSettingManagedByCustodian(
              CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC);
-}
-
-static void JNI_PrefServiceBridge_SetSearchSuggestEnabled(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    jboolean enabled) {
-  GetPrefService()->SetBoolean(prefs::kSearchSuggestEnabled, enabled);
 }
 
 static ScopedJavaLocalRef<jstring>
