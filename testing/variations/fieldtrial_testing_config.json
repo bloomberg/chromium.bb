@@ -1560,6 +1560,21 @@
             ]
         }
     ],
+    "ChromeOSParentalControlsSettings": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ChromeOSParentalControlsSettings"
+                    ]
+                }
+            ]
+        }
+    ],
     "ChromeSmartSelection": [
         {
             "platforms": [
