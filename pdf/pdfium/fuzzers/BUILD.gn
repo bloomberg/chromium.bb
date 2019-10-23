@@ -66,6 +66,9 @@ group("pdf_fuzzers") {
       }
     }
   }
+  if (is_clang) {
+    deps += [ ":pdf_nametree_fuzzer" ]
+  }
 }
 
 fuzzer_test("pdfium_fuzzer") {
@@ -355,6 +358,15 @@ if (pdf_enable_v8) {
         "//testing/gtest",
       ]
     }
+  }
+}
+
+if (is_clang) {
+  fuzzer_test("pdf_nametree_fuzzer") {
+    sources = []
+    deps = [
+      "//third_party/pdfium/testing/fuzzers:pdf_nametree_fuzzer_src",
+    ]
   }
 }
 
