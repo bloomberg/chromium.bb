@@ -1198,7 +1198,7 @@ static void build_intra_predictors_high(
 
   // NEED_LEFT
   if (need_left) {
-    int need_bottom = !!(extend_modes[mode] & NEED_BOTTOMLEFT);
+    int need_bottom = extend_modes[mode] & NEED_BOTTOMLEFT;
     if (use_filter_intra) need_bottom = 0;
     if (is_dr_mode) need_bottom = p_angle > 180;
     const int num_left_pixels_needed = txhpx + (need_bottom ? txwpx : 0);
@@ -1223,7 +1223,7 @@ static void build_intra_predictors_high(
 
   // NEED_ABOVE
   if (need_above) {
-    int need_right = !!(extend_modes[mode] & NEED_ABOVERIGHT);
+    int need_right = extend_modes[mode] & NEED_ABOVERIGHT;
     if (use_filter_intra) need_right = 0;
     if (is_dr_mode) need_right = p_angle < 90;
     const int num_top_pixels_needed = txwpx + (need_right ? txhpx : 0);
@@ -1384,7 +1384,7 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
 
   // NEED_LEFT
   if (need_left) {
-    int need_bottom = !!(extend_modes[mode] & NEED_BOTTOMLEFT);
+    int need_bottom = extend_modes[mode] & NEED_BOTTOMLEFT;
     if (use_filter_intra) need_bottom = 0;
     if (is_dr_mode) need_bottom = p_angle > 180;
     // the avx2 dr_prediction_z2 may read at most 3 extra bytes,
@@ -1412,7 +1412,7 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
 
   // NEED_ABOVE
   if (need_above) {
-    int need_right = !!(extend_modes[mode] & NEED_ABOVERIGHT);
+    int need_right = extend_modes[mode] & NEED_ABOVERIGHT;
     if (use_filter_intra) need_right = 0;
     if (is_dr_mode) need_right = p_angle < 90;
     const int num_top_pixels_needed = txwpx + (need_right ? txhpx : 0);
