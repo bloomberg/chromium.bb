@@ -30789,8 +30789,23 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-2004287464" label="AUDCLNT_E_BUFFER_ERROR"/>
   <int value="-2004287463" label="AUDCLNT_E_BUFFER_SIZE_NOT_ALIGNED"/>
   <int value="-2004287456" label="AUDCLNT_E_INVALID_DEVICE_PERIOD"/>
+  <int value="-2003283968" label="DWRITE_E_FILEFORMAT"/>
+  <int value="-2003283967" label="DWRITE_E_UNEXPECTED"/>
+  <int value="-2003283966" label="DWRITE_E_NOFONT"/>
+  <int value="-2003283965" label="DWRITE_E_FILENOTFOUND"/>
+  <int value="-2003283964" label="DWRITE_E_FILEACCESS"/>
+  <int value="-2003283963" label="DWRITE_E_FONTCOLLECTIONOBSOLETE"/>
+  <int value="-2003283962" label="DWRITE_E_ALREADYREGISTERED"/>
+  <int value="-2003283961" label="DWRITE_E_CACHEFORMAT"/>
+  <int value="-2003283960" label="DWRITE_E_CACHEVERSION"/>
+  <int value="-2003283959" label="DWRITE_E_UNSUPPORTEDOPERATION"/>
+  <int value="-2003283958" label="DWRITE_E_TEXTRENDERERINCOMPATIBLE"/>
+  <int value="-2003283957" label="DWRITE_E_FLOWDIRECTIONCONFLICTS"/>
+  <int value="-2003283956" label="DWRITE_E_NOCOLOR"/>
   <int value="-1606219753" label="GOOPDATE_E_NON_BLOCKING_CALL_PENDING"/>
   <int value="-1606219747" label="GOOPDATE_E_APP_USING_EXTERNAL_UPDATER"/>
+  <int value="-805306212" label="STATUS_DEVICE_DATA_ERROR"/>
+  <int value="-805305979" label="STATUS_IO_DEVICE_ERROR"/>
   <int value="143196161" label="AUDCLNT_S_BUFFER_EMPTY"/>
   <int value="143196162" label="AUDCLNT_S_THREAD_ALREADY_REGISTERED"/>
   <int value="143196163" label="AUDCLNT_S_POSITION_STALLED"/>
