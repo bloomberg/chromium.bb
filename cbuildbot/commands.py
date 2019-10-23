@@ -502,6 +502,7 @@ def VerifyBinpkg(buildroot, board, pkg, packages, extra_env=None):
       buildroot,
       cmd,
       capture_output=True,
+      encoding='utf-8',
       enter_chroot=True,
       extra_env=extra_env)
   pattern = r'^\[(ebuild|binary).*%s' % re.escape(pkg)
@@ -660,7 +661,7 @@ def GetFirmwareVersionCmdResult(buildroot, board):
 
   return cros_build_lib.run([updater, '-V'], enter_chroot=True,
                             capture_output=True, log_output=True,
-                            cwd=buildroot).output
+                            encoding='utf-8', cwd=buildroot).stdout
 
 
 def FindFirmwareVersions(cmd_output):
@@ -778,6 +779,7 @@ def RunCrosConfigHost(buildroot, board, args, log_output=True):
       [tool, '-c', config_fname] + args,
       enter_chroot=True,
       capture_output=True,
+      encoding='utf-8',
       log_output=log_output,
       cwd=buildroot,
       error_code_ok=True)
@@ -1716,6 +1718,7 @@ def _HWTestCreate(cmd, debug=False, **kwargs):
         error_check=swarming_lib.SwarmingRetriableErrorCheck,
         cmd=start_cmd,
         capture_output=True,
+        encoding='utf-8',
         combine_stdout_stderr=True,
         **kwargs)
     # If the command succeeds, result.task_summary_json
@@ -1754,6 +1757,7 @@ def _HWTestWait(cmd, job_id, **kwargs):
         error_check=swarming_lib.SwarmingRetriableErrorCheck,
         cmd=wait_cmd,
         capture_output=True,
+        encoding='utf-8',
         combine_stdout_stderr=True,
         **kwargs)
     pass_hwtest = True
@@ -1810,6 +1814,7 @@ def _HWTestDumpJson(cmd, job_id, **kwargs):
       error_check=swarming_lib.SwarmingRetriableErrorCheck,
       cmd=dump_json_cmd,
       capture_output=True,
+      encoding='utf-8',
       combine_stdout_stderr=True,
       **kwargs)
   for output in result.GetValue('outputs', ''):
@@ -1958,6 +1963,7 @@ def GenerateStackTraces(buildroot, board, test_results_dir, archive_dir,
             enter_chroot=True,
             debug_level=logging.DEBUG,
             capture_output=True,
+            encoding='utf-8',
             extra_env={'LLVM_SYMBOLIZER_PATH': '/usr/bin/llvm-symbolizer'})
         cros_build_lib.run(['c++filt'],
                            input=raw.output,
@@ -2264,6 +2270,7 @@ def ExtractDependencies(buildroot,
         enter_chroot=True,
         chromite_cmd=True,
         capture_output=True,
+        encoding='utf-8',
         extra_env=env)
 
   # The stdout of cros_extract_deps may contain undesirable
@@ -3894,7 +3901,7 @@ def GetTargetChromiteApiVersion(buildroot, validate_version=True):
   try:
     api = cros_build_lib.run(
         [constants.PATH_TO_CBUILDBOT, '--reexec-api-version'],
-        cwd=buildroot, error_code_ok=True, capture_output=True)
+        cwd=buildroot, check=False, encoding='utf-8', capture_output=True)
   except cros_build_lib.RunCommandError:
     # Although error_code_ok=True was used, this exception will still be raised
     # if the executible did not exist.
