@@ -33,7 +33,7 @@ BRANDINGS = [
 ]
 
 ARCH_MAP = {
-    'android': ['ia32', 'x64', 'mipsel', 'mips64el', 'arm-neon', 'arm64'],
+    'android': ['ia32', 'x64', 'arm-neon', 'arm64'],
     'linux': [
         'ia32', 'x64', 'mipsel', 'mips64el', 'noasm-x64', 'arm', 'arm-neon',
         'arm64'
@@ -154,9 +154,9 @@ def RewriteFile(path, search_replace):
     f.write(contents)
 
 
-# Extracts the Android toolchain version and api level from the Android
-# config.gni.  Returns (api level, api 64 level, toolchain version).
-def GetAndroidApiLevelAndToolchainVersion():
+# Extracts the Android api level from the Android config.gni.
+# Returns (api level, api 64 level).
+def GetAndroidApiLevel():
   android_config_gni = os.path.join(CHROMIUM_ROOT_DIR, 'build', 'config',
                                     'android', 'config.gni')
   with open(android_config_gni, 'r') as f:
@@ -164,20 +164,17 @@ def GetAndroidApiLevelAndToolchainVersion():
     api64_match = re.search('android64_ndk_api_level\s*=\s*(\d{2})',
                             gni_contents)
     api_match = re.search('android32_ndk_api_level\s*=\s*(\d{2})', gni_contents)
-    toolchain_match = re.search('_android_toolchain_version\s*=\s*"([.\d]+)"',
-                                gni_contents)
-    if not api_match or not toolchain_match or not api64_match:
+    if not api_match or not api64_match:
       raise Exception('Failed to find the android api level or toolchain '
                       'version in ' + android_config_gni)
 
-    return (api_match.group(1), api64_match.group(1), toolchain_match.group(1))
+    return (api_match.group(1), api64_match.group(1))
 
 
 # Sets up cross-compilation (regardless of host arch) for compiling Android.
 # Returns the necessary configure flags as a list.
 def SetupAndroidToolchain(target_arch):
-  api_level, api64_level, toolchain_version = (
-      GetAndroidApiLevelAndToolchainVersion())
+  api_level, api64_level = GetAndroidApiLevel()
 
   # Toolchain prefix misery, for when just one pattern is not enough :/
   toolchain_level = api_level
@@ -208,9 +205,25 @@ def SetupAndroidToolchain(target_arch):
   sysroot = (
       NDK_ROOT_DIR + '/platforms/android-' + toolchain_level + '/arch-' +
       sysroot_arch)
-  gcc_toolchain = (
-      NDK_ROOT_DIR + '/toolchains/' + toolchain_dir_prefix + '-' +
-      toolchain_version + '/prebuilt/linux-x86_64/')
+  gcc_toolchain = NDK_ROOT_DIR + '/toolchains/llvm/prebuilt/linux-x86_64/'
+
+  # Big old nasty hack here, beware! The new android ndk has some foolery with
+  # libgcc.a -- clang still uses gcc for its linker when cross compiling.
+  # It can't just be that simple though - the |libgcc.a| file is actually a
+  # super secret linkerscript which links libgcc_real.a, because apparently
+  # someone decided that more flags are needed, including -lunwind; thats where
+  # our story begins. ffmpeg doesn't use linunwind, and we dont really have a
+  # good way to get a cross-compiled version anyway, but this silly linker
+  # script insists that we must link with it, or face all sorts of horrible
+  # consequences -- namely configure failures. Anyway, there is a way around it:
+  # the "big old nasty hack" mentioned what feels like forever ago now. It's
+  # simple, we uhh, kill tha batman. Actually we just make a fake libunwind.a
+  # linker script and drop it someplace nobody will ever find, like I dunno, say
+  # /tmp/fakelinkerscripts or something. Then we add that path to the ldflags
+  # flags and everything works again.
+  fakedir = '/tmp/fakelinkerscripts'
+  os.system('mkdir -p {fakedir} && touch {fakedir}/libunwind.a'.format(
+    fakedir=fakedir))
 
   return [
       '--enable-cross-compile',
@@ -218,11 +231,13 @@ def SetupAndroidToolchain(target_arch):
 
       # Android sysroot includes are now split out; try to cobble together the
       # correct tree.
-      '--extra-cflags=-I' + NDK_ROOT_DIR + '/sysroot/usr/include',
-      '--extra-cflags=-I' + NDK_ROOT_DIR + '/sysroot/usr/include/' +
+      '--extra-cflags=-I' + gcc_toolchain + 'sysroot/usr/include',
+      '--extra-cflags=-I' + gcc_toolchain + 'sysroot/usr/include/' +
       toolchain_bin_prefix,
       '--extra-cflags=--target=' + toolchain_bin_prefix,
       '--extra-ldflags=--target=' + toolchain_bin_prefix,
+      '--extra-ldflags=-L{}'.format(fakedir),
+      '--extra-ldflags=-L' + gcc_toolchain + toolchain_bin_prefix + '/',
       '--extra-ldflags=--gcc-toolchain=' + gcc_toolchain,
       '--target-os=android',
   ]
@@ -798,8 +813,8 @@ def ConfigureAndBuild(target_arch, target_os, host_os, host_arch, parallel_jobs,
     # Clang Linux will use the first 'ld' it finds on the path, which will
     # typically be the system one, so explicitly configure use of Clang's
     # ld.lld, to ensure that things like cross-compilation and LTO work.
-    # This does not work for arm64, ia32 and is always used on mac.
-    if target_arch not in ['arm64', 'ia32', 'mipsel'] and target_os != 'mac':
+    # This does not work for ia32 and is always used on mac.
+    if target_arch != 'ia32' and target_os != 'mac':
       configure_flags['Common'].append('--extra-ldflags=-fuse-ld=lld')
 
   # Should be run on Mac, unless we're cross-compiling on Linux.
