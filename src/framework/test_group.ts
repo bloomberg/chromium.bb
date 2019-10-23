@@ -98,22 +98,29 @@ class Test<F extends Fixture> {
   }
 
   *iterate(rec: TestSpecRecorder): IterableIterator<RunCase> {
-    for (const p of this.cases || [null]) {
-      const params = p ? extractPublicParams(p) : null;
-      yield new RunCaseSpecific(rec, { test: this.name, params }, this.fixture, this.fn);
+    for (const params of this.cases || [null]) {
+      yield new RunCaseSpecific(rec, this.name, params, this.fixture, this.fn);
     }
   }
 }
 
 class RunCaseSpecific<F extends Fixture> implements RunCase {
   readonly id: TestCaseID;
+  private readonly params: ParamSpec | null;
   private readonly recorder: TestSpecRecorder;
   private readonly fixture: FixtureClass<F>;
   private readonly fn: TestFn<F>;
 
-  constructor(recorder: TestSpecRecorder, id: TestCaseID, fixture: FixtureClass<F>, fn: TestFn<F>) {
+  constructor(
+    recorder: TestSpecRecorder,
+    test: string,
+    params: ParamSpec | null,
+    fixture: FixtureClass<F>,
+    fn: TestFn<F>
+  ) {
+    this.id = { test, params: params ? extractPublicParams(params) : null };
+    this.params = params;
     this.recorder = recorder;
-    this.id = id;
     this.fixture = fixture;
     this.fn = fn;
   }
@@ -123,7 +130,7 @@ class RunCaseSpecific<F extends Fixture> implements RunCase {
     rec.start(debug);
 
     try {
-      const inst = new this.fixture(rec, this.id.params || {});
+      const inst = new this.fixture(rec, this.params || {});
       await inst.init();
       try {
         await this.fn(inst);

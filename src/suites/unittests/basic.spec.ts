@@ -19,3 +19,11 @@ g.test('testp/sync', t => {
 g.test('testp/async', async t => {
   t.log(JSON.stringify(t.params));
 }).params([{}]);
+
+g.test('testp/private', t => {
+  const { a, b, _result } = t.params;
+  t.expect(a + b === _result);
+}).params([
+  { a: 1, b: 2, _result: 3 }, //
+  { a: 4, b: -3, _result: 1 },
+]);
