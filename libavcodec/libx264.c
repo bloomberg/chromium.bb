@@ -99,6 +99,12 @@ typedef struct X264Context {
 
     int nb_reordered_opaque, next_reordered_opaque;
     int64_t *reordered_opaque;
+
+    /**
+     * If the encoder does not support ROI then warn the first time we
+     * encounter a frame with ROI side data.
+     */
+    int roi_warned;
 } X264Context;
 
 static void X264_log(void *p, int level, const char *fmt, va_list args)
@@ -356,7 +362,10 @@ static int X264_frame(AVCodecContext *ctx, AVPacket *pkt, const AVFrame *frame,
         sd = av_frame_get_side_data(frame, AV_FRAME_DATA_REGIONS_OF_INTEREST);
         if (sd) {
             if (x4->params.rc.i_aq_mode == X264_AQ_NONE) {
-                av_log(ctx, AV_LOG_WARNING, "Adaptive quantization must be enabled to use ROI encoding, skipping ROI.\n");
+                if (!x4->roi_warned) {
+                    x4->roi_warned = 1;
+                    av_log(ctx, AV_LOG_WARNING, "Adaptive quantization must be enabled to use ROI encoding, skipping ROI.\n");
+                }
             } else {
                 if (frame->interlaced_frame == 0) {
                     int mbx = (frame->width + MB_SIZE - 1) / MB_SIZE;
@@ -410,7 +419,10 @@ static int X264_frame(AVCodecContext *ctx, AVPacket *pkt, const AVFrame *frame,
                     x4->pic.prop.quant_offsets = qoffsets;
                     x4->pic.prop.quant_offsets_free = av_free;
                 } else {
-                    av_log(ctx, AV_LOG_WARNING, "interlaced_frame not supported for ROI encoding yet, skipping ROI.\n");
+                    if (!x4->roi_warned) {
+                        x4->roi_warned = 1;
+                        av_log(ctx, AV_LOG_WARNING, "interlaced_frame not supported for ROI encoding yet, skipping ROI.\n");
+                    }
                 }
             }
         }
@@ -594,6 +606,10 @@ static av_cold int X264_init(AVCodecContext *avctx)
     PARSE_X264_OPT("weightp", wpredp);
 
     if (avctx->bit_rate) {
+        if (avctx->bit_rate / 1000 > INT_MAX || avctx->rc_max_rate / 1000 > INT_MAX) {
+            av_log(avctx, AV_LOG_ERROR, "bit_rate and rc_max_rate > %d000 not supported by libx264\n", INT_MAX);
+            return AVERROR(EINVAL);
+        }
         x4->params.rc.i_bitrate   = avctx->bit_rate / 1000;
         x4->params.rc.i_rc_method = X264_RC_ABR;
     }
@@ -898,7 +914,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
     if (avctx->max_b_frames < 0)
         avctx->max_b_frames = 0;
 
-    avctx->bit_rate = x4->params.rc.i_bitrate*1000;
+    avctx->bit_rate = x4->params.rc.i_bitrate*1000LL;
 
     x4->enc = x264_encoder_open(&x4->params);
     if (!x4->enc)
@@ -935,8 +951,8 @@ FF_ENABLE_DEPRECATION_WARNINGS
     if (!cpb_props)
         return AVERROR(ENOMEM);
     cpb_props->buffer_size = x4->params.rc.i_vbv_buffer_size * 1000;
-    cpb_props->max_bitrate = x4->params.rc.i_vbv_max_bitrate * 1000;
-    cpb_props->avg_bitrate = x4->params.rc.i_bitrate         * 1000;
+    cpb_props->max_bitrate = x4->params.rc.i_vbv_max_bitrate * 1000LL;
+    cpb_props->avg_bitrate = x4->params.rc.i_bitrate         * 1000LL;
 
     // Overestimate the reordered opaque buffer size, in case a runtime
     // reconfigure would increase the delay (which it shouldn't).
@@ -1164,7 +1180,11 @@ AVCodec ff_libx264_encoder = {
     .priv_class       = &x264_class,
     .defaults         = x264_defaults,
     .init_static_data = X264_init_static,
+#if X264_BUILD >= 158
+    .caps_internal    = FF_CODEC_CAP_INIT_CLEANUP | FF_CODEC_CAP_INIT_THREADSAFE,
+#else
     .caps_internal    = FF_CODEC_CAP_INIT_CLEANUP,
+#endif
     .wrapper_name     = "libx264",
 };
 #endif
@@ -1191,6 +1211,11 @@ AVCodec ff_libx264rgb_encoder = {
     .priv_class     = &rgbclass,
     .defaults       = x264_defaults,
     .pix_fmts       = pix_fmts_8bit_rgb,
+#if X264_BUILD >= 158
+    .caps_internal  = FF_CODEC_CAP_INIT_CLEANUP | FF_CODEC_CAP_INIT_THREADSAFE,
+#else
+    .caps_internal  = FF_CODEC_CAP_INIT_CLEANUP,
+#endif
     .wrapper_name   = "libx264",
 };
 #endif

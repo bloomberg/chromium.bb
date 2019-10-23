@@ -36,7 +36,7 @@ typedef struct AIFFOutputContext {
     int64_t frames;
     int64_t ssnd;
     int audio_stream_idx;
-    AVPacketList *pict_list;
+    AVPacketList *pict_list, *pict_list_end;
     int write_id3v2;
     int id3v2_version;
 } AIFFOutputContext;
@@ -48,9 +48,6 @@ static int put_id3v2_tags(AVFormatContext *s, AIFFOutputContext *aiff)
     ID3v2EncContext id3v2 = { 0 };
     AVIOContext *pb = s->pb;
     AVPacketList *pict_list = aiff->pict_list;
-
-    if (!pb->seekable & AVIO_SEEKABLE_NORMAL)
-        return 0;
 
     if (!s->metadata && !aiff->pict_list)
         return 0;
@@ -215,9 +212,6 @@ static int aiff_write_packet(AVFormatContext *s, AVPacket *pkt)
     if (pkt->stream_index == aiff->audio_stream_idx)
         avio_write(pb, pkt->data, pkt->size);
     else {
-        int ret;
-        AVPacketList *pict_list, *last;
-
         if (s->streams[pkt->stream_index]->codecpar->codec_type != AVMEDIA_TYPE_VIDEO)
             return 0;
 
@@ -229,24 +223,8 @@ static int aiff_write_packet(AVFormatContext *s, AVPacket *pkt)
         if (s->streams[pkt->stream_index]->nb_frames >= 1)
             return 0;
 
-        pict_list = av_mallocz(sizeof(AVPacketList));
-        if (!pict_list)
-            return AVERROR(ENOMEM);
-
-        ret = av_packet_ref(&pict_list->pkt, pkt);
-        if (ret < 0) {
-            av_freep(&pict_list);
-            return ret;
-        }
-
-        if (!aiff->pict_list)
-            aiff->pict_list = pict_list;
-        else {
-            last = aiff->pict_list;
-            while (last->next)
-                last = last->next;
-            last->next = pict_list;
-        }
+        return ff_packet_list_put(&aiff->pict_list, &aiff->pict_list_end,
+                                  pkt, FF_PACKETLIST_FLAG_REF_PACKET);
     }
 
     return 0;
@@ -254,10 +232,9 @@ static int aiff_write_packet(AVFormatContext *s, AVPacket *pkt)
 
 static int aiff_write_trailer(AVFormatContext *s)
 {
-    int ret;
+    int ret = 0;
     AVIOContext *pb = s->pb;
     AIFFOutputContext *aiff = s->priv_data;
-    AVPacketList *pict_list = aiff->pict_list;
     AVCodecParameters *par = s->streams[aiff->audio_stream_idx]->codecpar;
 
     /* Chunks sizes must be even */
@@ -283,7 +260,7 @@ static int aiff_write_trailer(AVFormatContext *s)
         /* Write ID3 tags */
         if (aiff->write_id3v2)
             if ((ret = put_id3v2_tags(s, aiff)) < 0)
-                return ret;
+                goto free;
 
         /* File length */
         file_size = avio_tell(pb);
@@ -293,14 +270,10 @@ static int aiff_write_trailer(AVFormatContext *s)
         avio_flush(pb);
     }
 
-    while (pict_list) {
-        AVPacketList *next = pict_list->next;
-        av_packet_unref(&pict_list->pkt);
-        av_freep(&pict_list);
-        pict_list = next;
-    }
+free:
+    ff_packet_list_free(&aiff->pict_list, &aiff->pict_list_end);
 
-    return 0;
+    return ret;
 }
 
 #define OFFSET(x) offsetof(AIFFOutputContext, x)
