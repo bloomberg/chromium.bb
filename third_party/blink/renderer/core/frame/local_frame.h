@@ -206,11 +206,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
       UserGestureToken::Status = UserGestureToken::kPossiblyExistingGesture,
       bool need_browser_verification = false);
 
-  // Similar to above, but used only in old UAv1-specific code.
-  static std::unique_ptr<UserGestureIndicator> NotifyUserActivation(
-      LocalFrame*,
-      UserGestureToken*);
-
   // Returns the transient user activation state of the |LocalFrame|, provided
   // it is non-null.  Otherwise returns |false|.
   //
