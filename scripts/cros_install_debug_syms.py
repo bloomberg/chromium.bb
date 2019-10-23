@@ -20,7 +20,6 @@ import functools
 import multiprocessing
 import os
 import pickle
-import sys
 import tempfile
 
 from six.moves import urllib
@@ -34,6 +33,7 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 from chromite.lib import path_util
 from chromite.lib import gs
+from chromite.utils import outcap
 
 if cros_build_lib.IsInsideChroot():
   # pylint: disable=import-error
@@ -47,31 +47,24 @@ CACHE_VERSION = '1'
 
 
 class DebugSymbolsInstaller(object):
-  """Container for enviromnent objects, needed to make multiprocessing work.
-
-  This also redirects stdout to null when stdout_to_null=True to avoid
-  polluting the output with portage QA warnings.
-  """
-  _old_stdout = None
-  _null = None
+  """Container for enviromnent objects, needed to make multiprocessing work."""
 
   def __init__(self, vartree, gs_context, sysroot, stdout_to_null):
     self._vartree = vartree
     self._gs_context = gs_context
     self._sysroot = sysroot
     self._stdout_to_null = stdout_to_null
+    self._capturer = outcap.OutputCapturer()
 
   def __enter__(self):
     if self._stdout_to_null:
-      self._old_stdout = sys.stdout
-      self._null = open(os.devnull, 'w')
-      sys.stdout = self._null
+      self._capturer.StartCapturing()
+
     return self
 
   def __exit__(self, _exc_type, _exc_val, _exc_tb):
     if self._stdout_to_null:
-      sys.stdout = self._old_stdout
-      self._null.close()
+      self._capturer.StopCapturing()
 
   def Install(self, cpv, url):
     """Install the debug symbols for |cpv|.
