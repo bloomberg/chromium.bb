@@ -767,15 +767,6 @@ void SplitViewController::RemoveObserver(SplitViewObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void SplitViewController::OnWindowDestroyed(aura::Window* window) {
-  DCHECK(InSplitViewMode());
-  DCHECK(IsWindowInSplitView(window));
-  auto iter = snapping_window_transformed_bounds_map_.find(window);
-  if (iter != snapping_window_transformed_bounds_map_.end())
-    snapping_window_transformed_bounds_map_.erase(iter);
-  OnSnappedWindowDetached(window, /*window_drag=*/false);
-}
-
 void SplitViewController::OnWindowPropertyChanged(aura::Window* window,
                                                   const void* key,
                                                   intptr_t old) {
@@ -825,6 +816,15 @@ void SplitViewController::OnWindowBoundsChanged(
                             : work_area.height() - new_bounds.height();
   }
   NotifyDividerPositionChanged();
+}
+
+void SplitViewController::OnWindowDestroyed(aura::Window* window) {
+  DCHECK(InSplitViewMode());
+  DCHECK(IsWindowInSplitView(window));
+  auto iter = snapping_window_transformed_bounds_map_.find(window);
+  if (iter != snapping_window_transformed_bounds_map_.end())
+    snapping_window_transformed_bounds_map_.erase(iter);
+  OnSnappedWindowDetached(window, /*window_drag=*/false);
 }
 
 void SplitViewController::OnResizeLoopStarted(aura::Window* window) {
