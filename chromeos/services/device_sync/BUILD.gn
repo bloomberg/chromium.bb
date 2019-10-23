@@ -194,6 +194,8 @@ static_library("test_support") {
     "fake_cryptauth_metadata_syncer.h",
     "fake_cryptauth_scheduler.cc",
     "fake_cryptauth_scheduler.h",
+    "fake_cryptauth_v2_device_manager.cc",
+    "fake_cryptauth_v2_device_manager.h",
     "fake_cryptauth_v2_enroller.cc",
     "fake_cryptauth_v2_enroller.h",
     "fake_device_sync.cc",
