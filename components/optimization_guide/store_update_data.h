@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_OPTIMIZATION_GUIDE_HINT_UPDATE_DATA_H_
-#define COMPONENTS_OPTIMIZATION_GUIDE_HINT_UPDATE_DATA_H_
+#ifndef COMPONENTS_OPTIMIZATION_GUIDE_STORE_UPDATE_DATA_H_
+#define COMPONENTS_OPTIMIZATION_GUIDE_STORE_UPDATE_DATA_H_
 
 #include <string>
 
@@ -24,16 +24,16 @@ using EntryVector =
     leveldb_proto::ProtoDatabase<proto::StoreEntry>::KeyEntryVector;
 
 // Holds hint data for updating the HintCacheStore.
-class HintUpdateData {
+class StoreUpdateData {
  public:
-  ~HintUpdateData();
+  ~StoreUpdateData();
 
   // Creates an update data object for a component hint update.
-  static std::unique_ptr<HintUpdateData> CreateComponentHintUpdateData(
+  static std::unique_ptr<StoreUpdateData> CreateComponentStoreUpdateData(
       const base::Version& component_version);
 
   // Creates an update data object for a fetched hint update.
-  static std::unique_ptr<HintUpdateData> CreateFetchedHintUpdateData(
+  static std::unique_ptr<StoreUpdateData> CreateFetchedStoreUpdateData(
       base::Time fetch_update_time,
       base::Time expiry_time);
 
@@ -58,9 +58,9 @@ class HintUpdateData {
   std::unique_ptr<EntryVector> TakeUpdateEntries();
 
  private:
-  HintUpdateData(base::Optional<base::Version> component_version,
-                 base::Optional<base::Time> fetch_update_time,
-                 base::Optional<base::Time> expiry_time);
+  StoreUpdateData(base::Optional<base::Version> component_version,
+                  base::Optional<base::Time> fetch_update_time,
+                  base::Optional<base::Time> expiry_time);
 
   // The component version of the update data for a component update.
   base::Optional<base::Version> component_version_;
@@ -80,9 +80,9 @@ class HintUpdateData {
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  DISALLOW_COPY_AND_ASSIGN(HintUpdateData);
+  DISALLOW_COPY_AND_ASSIGN(StoreUpdateData);
 };
 
 }  // namespace optimization_guide
 
-#endif  // COMPONENTS_OPTIMIZATION_GUIDE_HINT_UPDATE_DATA_H_
+#endif  // COMPONENTS_OPTIMIZATION_GUIDE_STORE_UPDATE_DATA_H_

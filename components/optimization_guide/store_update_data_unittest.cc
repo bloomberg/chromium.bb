@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/optimization_guide/hint_update_data.h"
+#include "components/optimization_guide/store_update_data.h"
 
 #include <string>
 #include <vector>
@@ -19,7 +19,7 @@ namespace optimization_guide {
 
 namespace {
 
-TEST(HintUpdateDataTest, BuildComponentHintUpdateData) {
+TEST(StoreUpdateDataTest, BuildComponentStoreUpdateData) {
   // Verify creating a Component Hint update package.
   base::Version v1("1.2.3.4");
   proto::Hint hint1;
@@ -33,8 +33,8 @@ TEST(HintUpdateDataTest, BuildComponentHintUpdateData) {
   proto::PageHint* page_hint2 = hint2.add_page_hints();
   page_hint2->set_page_pattern("slowpagealso");
 
-  std::unique_ptr<HintUpdateData> component_update =
-      HintUpdateData::CreateComponentHintUpdateData(v1);
+  std::unique_ptr<StoreUpdateData> component_update =
+      StoreUpdateData::CreateComponentStoreUpdateData(v1);
   component_update->MoveHintIntoUpdateData(std::move(hint1));
   component_update->MoveHintIntoUpdateData(std::move(hint2));
   EXPECT_TRUE(component_update->component_version().has_value());
@@ -45,7 +45,7 @@ TEST(HintUpdateDataTest, BuildComponentHintUpdateData) {
   EXPECT_EQ(3ul, component_update->TakeUpdateEntries()->size());
 }
 
-TEST(HintUpdateDataTest, BuildFetchUpdateData) {
+TEST(StoreUpdateDataTest, BuildFetchUpdateData) {
   // Verify creating a Fetched Hint update package.
   base::Time update_time = base::Time::Now();
   proto::Hint hint1;
@@ -54,8 +54,8 @@ TEST(HintUpdateDataTest, BuildFetchUpdateData) {
   proto::PageHint* page_hint1 = hint1.add_page_hints();
   page_hint1->set_page_pattern("slowpage");
 
-  std::unique_ptr<HintUpdateData> fetch_update =
-      HintUpdateData::CreateFetchedHintUpdateData(
+  std::unique_ptr<StoreUpdateData> fetch_update =
+      StoreUpdateData::CreateFetchedStoreUpdateData(
           update_time, update_time + optimization_guide::features::
                                          StoredFetchedHintsFreshnessDuration());
   fetch_update->MoveHintIntoUpdateData(std::move(hint1));

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/optimization_guide/hint_update_data.h"
+#include "components/optimization_guide/store_update_data.h"
 
 #include "components/optimization_guide/hint_cache_store.h"
 #include "components/optimization_guide/proto/hint_cache.pb.h"
@@ -11,28 +11,30 @@
 namespace optimization_guide {
 
 // static
-std::unique_ptr<HintUpdateData> HintUpdateData::CreateComponentHintUpdateData(
+std::unique_ptr<StoreUpdateData>
+StoreUpdateData::CreateComponentStoreUpdateData(
     const base::Version& component_version) {
-  std::unique_ptr<HintUpdateData> update_data(new HintUpdateData(
+  std::unique_ptr<StoreUpdateData> update_data(new StoreUpdateData(
       base::Optional<base::Version>(component_version),
       base::Optional<base::Time>(), base::Optional<base::Time>()));
   return update_data;
 }
 
 // static
-std::unique_ptr<HintUpdateData> HintUpdateData::CreateFetchedHintUpdateData(
+std::unique_ptr<StoreUpdateData> StoreUpdateData::CreateFetchedStoreUpdateData(
     base::Time fetch_update_time,
     base::Time expiry_time) {
-  std::unique_ptr<HintUpdateData> update_data(
-      new HintUpdateData(base::Optional<base::Version>(),
-                         base::Optional<base::Time>(fetch_update_time),
-                         base::Optional<base::Time>(expiry_time)));
+  std::unique_ptr<StoreUpdateData> update_data(
+      new StoreUpdateData(base::Optional<base::Version>(),
+                          base::Optional<base::Time>(fetch_update_time),
+                          base::Optional<base::Time>(expiry_time)));
   return update_data;
 }
 
-HintUpdateData::HintUpdateData(base::Optional<base::Version> component_version,
-                               base::Optional<base::Time> fetch_update_time,
-                               base::Optional<base::Time> expiry_time)
+StoreUpdateData::StoreUpdateData(
+    base::Optional<base::Version> component_version,
+    base::Optional<base::Time> fetch_update_time,
+    base::Optional<base::Time> expiry_time)
     : component_version_(component_version),
       fetch_update_time_(fetch_update_time),
       expiry_time_(expiry_time),
@@ -72,9 +74,9 @@ HintUpdateData::HintUpdateData(base::Optional<base::Version> component_version,
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
-HintUpdateData::~HintUpdateData() {}
+StoreUpdateData::~StoreUpdateData() {}
 
-void HintUpdateData::MoveHintIntoUpdateData(proto::Hint&& hint) {
+void StoreUpdateData::MoveHintIntoUpdateData(proto::Hint&& hint) {
   // All future modifications must be made by the same thread. Note, |this| may
   // have been constructed on another thread.
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -98,7 +100,7 @@ void HintUpdateData::MoveHintIntoUpdateData(proto::Hint&& hint) {
                                  std::move(entry_proto));
 }
 
-std::unique_ptr<EntryVector> HintUpdateData::TakeUpdateEntries() {
+std::unique_ptr<EntryVector> StoreUpdateData::TakeUpdateEntries() {
   // TakeUpdateEntries is not be sequence checked as it only gives up ownership
   // of the entries_to_save_ and does not modify any state.
   DCHECK(entries_to_save_);
