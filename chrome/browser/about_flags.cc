@@ -3941,6 +3941,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kUseFakeDeviceForMediaStreamName,
      flag_descriptions::kUseFakeDeviceForMediaStreamDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(media::kUseFakeDeviceForMediaStream)},
+
+    {"ash-drag-window-from-shelf",
+     flag_descriptions::kAshDragWindowFromShelfName,
+     flag_descriptions::kAshDragWindowFromShelfDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kDragFromShelfToHomeOrOverview)},
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_WIN)
