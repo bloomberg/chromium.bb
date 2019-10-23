@@ -27,6 +27,7 @@
   * [fetch_end_to_end_test](#recipes-fetch_end_to_end_test)
   * [gclient:examples/full](#recipes-gclient_examples_full)
   * [gclient:tests/patch_project](#recipes-gclient_tests_patch_project)
+  * [gclient:tests/sync_failure](#recipes-gclient_tests_sync_failure)
   * [gerrit:examples/full](#recipes-gerrit_examples_full)
   * [git:examples/full](#recipes-git_examples_full)
   * [git_cl:examples/full](#recipes-git_cl_examples_full)
@@ -264,12 +265,12 @@ Returns (Path): The "depot_tools" root directory.
 
 Wrapper for easy calling of gclient steps.
 
-&mdash; **def [break\_locks](/recipes/recipe_modules/gclient/api.py#270)(self):**
+&mdash; **def [break\_locks](/recipes/recipe_modules/gclient/api.py#271)(self):**
 
 Remove all index.lock files. If a previous run of git crashed, bot was
 reset, etc... we might end up with leftover index.lock files.
 
-&mdash; **def [checkout](/recipes/recipe_modules/gclient/api.py#230)(self, gclient_config=None, revert=RevertOnTryserver, inject_parent_got_revision=True, extra_sync_flags=None, \*\*kwargs):**
+&mdash; **def [checkout](/recipes/recipe_modules/gclient/api.py#231)(self, gclient_config=None, revert=RevertOnTryserver, inject_parent_got_revision=True, extra_sync_flags=None, \*\*kwargs):**
 
 Return a step generator function for gclient checkouts.
 
@@ -277,7 +278,7 @@ Return a step generator function for gclient checkouts.
 
 &mdash; **def [get\_config\_defaults](/recipes/recipe_modules/gclient/api.py#114)(self):**
 
-&mdash; **def [get\_gerrit\_patch\_root](/recipes/recipe_modules/gclient/api.py#292)(self, gclient_config=None):**
+&mdash; **def [get\_gerrit\_patch\_root](/recipes/recipe_modules/gclient/api.py#293)(self, gclient_config=None):**
 
 Returns local path to the repo where gerrit patch will be applied.
 
@@ -290,7 +291,7 @@ Instead, properly map a repository to a local path using repo_path_map.
 TODO(nodir): remove this. Update all recipe tests to specify a git_repo
 matching the recipe.
 
-&mdash; **def [get\_repo\_path](/recipes/recipe_modules/gclient/api.py#319)(self, repo_url, gclient_config=None):**
+&mdash; **def [get\_repo\_path](/recipes/recipe_modules/gclient/api.py#320)(self, repo_url, gclient_config=None):**
 
 Returns local path to the repo checkout given its url.
 
@@ -306,7 +307,7 @@ Returns (dict): A mapping from property name -> project name. It merges the
     values of the deprecated got_revision_mapping and the new
     got_revision_reverse_mapping.
 
-&mdash; **def [inject\_parent\_got\_revision](/recipes/recipe_modules/gclient/api.py#205)(self, gclient_config=None, override=False):**
+&mdash; **def [inject\_parent\_got\_revision](/recipes/recipe_modules/gclient/api.py#206)(self, gclient_config=None, override=False):**
 
 Match gclient config to build revisions obtained from build_properties.
 
@@ -318,9 +319,9 @@ Args:
 
 &mdash; **def [resolve\_revision](/recipes/recipe_modules/gclient/api.py#142)(self, revision):**
 
-&mdash; **def [runhooks](/recipes/recipe_modules/gclient/api.py#264)(self, args=None, name='runhooks', \*\*kwargs):**
+&mdash; **def [runhooks](/recipes/recipe_modules/gclient/api.py#265)(self, args=None, name='runhooks', \*\*kwargs):**
 
-&mdash; **def [set\_patch\_repo\_revision](/recipes/recipe_modules/gclient/api.py#349)(self, gclient_config=None):**
+&mdash; **def [set\_patch\_repo\_revision](/recipes/recipe_modules/gclient/api.py#350)(self, gclient_config=None):**
 
 Updates config revision corresponding to patched project.
 
@@ -987,6 +988,11 @@ Raises:
 [DEPS](/recipes/recipe_modules/gclient/tests/patch_project.py#9): [gclient](#recipe_modules-gclient), [recipe\_engine/buildbucket][recipe_engine/recipe_modules/buildbucket], [recipe\_engine/properties][recipe_engine/recipe_modules/properties]
 
 &mdash; **def [RunSteps](/recipes/recipe_modules/gclient/tests/patch_project.py#16)(api):**
+### *recipes* / [gclient:tests/sync\_failure](/recipes/recipe_modules/gclient/tests/sync_failure.py)
+
+[DEPS](/recipes/recipe_modules/gclient/tests/sync_failure.py#7): [gclient](#recipe_modules-gclient)
+
+&mdash; **def [RunSteps](/recipes/recipe_modules/gclient/tests/sync_failure.py#9)(api):**
 ### *recipes* / [gerrit:examples/full](/recipes/recipe_modules/gerrit/examples/full.py)
 
 [DEPS](/recipes/recipe_modules/gerrit/examples/full.py#5): [gerrit](#recipe_modules-gerrit), [recipe\_engine/step][recipe_engine/recipe_modules/step]

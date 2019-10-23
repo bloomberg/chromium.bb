@@ -192,13 +192,14 @@ class GclientApi(recipe_api.RecipeApi):
                  **kwargs)
     finally:
       result = self.m.step.active_result
-      solutions = result.json.output['solutions']
-      for propname, path in sorted(
-          self.got_revision_reverse_mapping(cfg).items()):
-        # gclient json paths always end with a slash
-        info = solutions.get(path + '/') or solutions.get(path)
-        if info:
-          result.presentation.properties[propname] = info['revision']
+      if result.json.output is not None:
+        solutions = result.json.output['solutions']
+        for propname, path in sorted(
+            self.got_revision_reverse_mapping(cfg).items()):
+          # gclient json paths always end with a slash
+          info = solutions.get(path + '/') or solutions.get(path)
+          if info:
+            result.presentation.properties[propname] = info['revision']
 
     return result
 
