@@ -1180,7 +1180,7 @@ class TestAutotestPayloadsPayloads(BasePaygenBuildLibTestWithBuilds):
       full_fp.close()
 
     # We only checking the beginning to avoid the very long doc string.
-    self.assertTrue(delta_contents.startswith("""name = 'paygen_au_foo'
+    self.assertTrue(delta_contents.startswith(b"""name = 'paygen_au_foo'
 update_type = 'delta'
 source_release = '1.0.0'
 target_release = '1.2.3'
@@ -1223,7 +1223,7 @@ REQUIRE_SSP = False
 DOC ="""))
 
     # We only checking the beginning to avoid the very long doc string.
-    self.assertTrue(full_contents.startswith("""name = 'paygen_au_foo'
+    self.assertTrue(full_contents.startswith(b"""name = 'paygen_au_foo'
 update_type = 'full'
 source_release = '1.2.3'
 target_release = '1.2.3'
