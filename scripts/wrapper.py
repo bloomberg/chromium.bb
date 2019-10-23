@@ -13,7 +13,6 @@ lots of places.
 
 from __future__ import print_function
 
-import imp
 import os
 import sys
 
@@ -165,7 +164,16 @@ def FindTarget(target):
       raise
   else:
     try:
-      module = imp.load_source('main', full_path)
+      # Python 3 way.
+      from importlib.machinery import SourceFileLoader
+      _loader = lambda *args: SourceFileLoader(*args).load_module()
+    except ImportError:
+      # Python 2 way.
+      import imp
+      _loader = imp.load_source
+
+    try:
+      module = _loader('main', full_path)
     except IOError as e:
       print(
           '%s: could not import external module: %s: %s' % (sys.argv[0],
