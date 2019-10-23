@@ -1519,25 +1519,32 @@ int OverviewGrid::CalculateWidthAndMaybeSetUnclippedBounds(OverviewItem* item,
     return width;
   }
 
-  const bool is_landscape = IsCurrentScreenOrientationLandscape();
+  // Perform horizontal clipping if the window's aspect ratio is wider than the
+  // split view bounds aspect ratio, and vertical clipping otherwise.
+  const float aspect_ratio =
+      target_bounds.width() /
+      (target_bounds.height() -
+       item->GetWindow()->GetProperty(aura::client::kTopViewInset));
+  const float target_aspect_ratio =
+      split_view_bounds->width() / split_view_bounds->height();
+  const bool clip_horizontally = aspect_ratio > target_aspect_ratio;
+  const int window_height = height - 2 * kWindowMargin - kHeaderHeightDp;
   gfx::Size unclipped_size;
-  if (is_landscape) {
+  if (clip_horizontally) {
     unclipped_size.set_width(width - 2 * kWindowMargin);
     unclipped_size.set_height(height - 2 * kWindowMargin);
-    // For landscape mode, shrink |width| so that the aspect ratio matches
+    // For horizontal clipping, shrink |width| so that the aspect ratio matches
     // that of |split_view_bounds|.
-    width = std::max(1, gfx::ToFlooredInt(split_view_bounds->width() * scale) +
+    width = std::max(1, gfx::ToFlooredInt(target_aspect_ratio * window_height) +
                             2 * kWindowMargin);
   } else {
-    // For portrait mode, we want |height| to stay the same, so calculate
+    // For vertical clipping, we want |height| to stay the same, so calculate
     // what the unclipped height would be based on |split_view_bounds|.
 
     // Find the width so that it matches height and matches the aspect ratio of
-    // |split_view_bounds|. |height| includes the margins and overview header,
-    // so exclude those from the calculation.
-    width = (split_view_bounds->width() *
-             (height - 2 * kWindowMargin - kHeaderHeightDp) /
-             split_view_bounds->height());
+    // |split_view_bounds|.
+    width = split_view_bounds->width() * window_height /
+            split_view_bounds->height();
     // The unclipped height is the height which matches |width| but keeps the
     // aspect ratio of |target_bounds|. Clipping takes the overview header into
     // account, so add that back in.
