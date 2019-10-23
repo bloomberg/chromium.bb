@@ -15,6 +15,7 @@
 #include "chrome/browser/sync/test/integration/encryption_helper.h"
 #include "chrome/browser/sync/test/integration/passwords_helper.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
+#include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/status_change_checker.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/ui/browser.h"
@@ -162,6 +163,25 @@ class PageTitleChecker : public StatusChangeChecker,
   const base::string16 expected_title_;
 
   DISALLOW_COPY_AND_ASSIGN(PageTitleChecker);
+};
+
+class PasswordsDataTypeActiveChecker : public SingleClientStatusChangeChecker {
+ public:
+  explicit PasswordsDataTypeActiveChecker(syncer::ProfileSyncService* service)
+      : SingleClientStatusChangeChecker(service) {}
+  ~PasswordsDataTypeActiveChecker() override {}
+
+  // StatusChangeChecker implementation.
+  bool IsExitConditionSatisfied() override {
+    return service()->GetActiveDataTypes().Has(syncer::PASSWORDS);
+  }
+
+  std::string GetDebugMessage() const override {
+    return "Waiting for PASSWORDS to become active";
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PasswordsDataTypeActiveChecker);
 };
 
 class SingleClientNigoriSyncTestWithUssTests
@@ -379,6 +399,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientNigoriWithWebApiTest,
   ASSERT_TRUE(TrustedVaultKeyRequiredStateChecker(GetSyncService(0),
                                                   /*desired_state=*/true)
                   .Wait());
+  ASSERT_FALSE(GetSyncService(0)->GetActiveDataTypes().Has(syncer::PASSWORDS));
 
   // Mimic opening a web page where the user can interact with the retrieval
   // flow.
@@ -393,9 +414,10 @@ IN_PROC_BROWSER_TEST_F(SingleClientNigoriWithWebApiTest,
       GetBrowser(0)->tab_strip_model()->GetActiveWebContents());
   EXPECT_TRUE(title_checker.Wait());
 
-  ASSERT_TRUE(TrustedVaultKeyRequiredStateChecker(GetSyncService(0),
+  EXPECT_TRUE(TrustedVaultKeyRequiredStateChecker(GetSyncService(0),
                                                   /*desired_state=*/false)
                   .Wait());
+  EXPECT_TRUE(PasswordsDataTypeActiveChecker(GetSyncService(0)).Wait());
 }
 
 IN_PROC_BROWSER_TEST_F(SingleClientNigoriWithWebApiTest,
@@ -436,6 +458,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientNigoriWithWebApiTest,
   EXPECT_FALSE(GetSyncService(0)
                    ->GetUserSettings()
                    ->IsTrustedVaultKeyRequiredForPreferredDataTypes());
+  EXPECT_TRUE(GetSyncService(0)->GetActiveDataTypes().Has(syncer::PASSWORDS));
 }
 
 // Same as SingleClientNigoriWithWebApiTest but does NOT override
