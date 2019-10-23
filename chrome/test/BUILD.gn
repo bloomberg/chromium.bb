@@ -1454,7 +1454,10 @@ if (!is_android) {
         "//chrome/test/data/webui:browser_tests_js_webui",
       ]
       if (is_chromeos) {
-        deps += [ "//chromeos/components/media_app_ui:browser_tests_js" ]
+        deps += [
+          "//chromeos/components/help_app_ui:browser_tests_js",
+          "//chromeos/components/media_app_ui:browser_tests_js",
+        ]
       }
     }
 
