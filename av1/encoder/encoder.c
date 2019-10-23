@@ -5183,6 +5183,11 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
 #endif
   } while (loop);
 
+  // Update some stats from cyclic refresh.
+  if (cpi->oxcf.aq_mode == CYCLIC_REFRESH_AQ && cm->seg.enabled &&
+      !frame_is_intra_only(cm))
+    av1_cyclic_refresh_postencode(cpi);
+
   return AOM_CODEC_OK;
 }
 

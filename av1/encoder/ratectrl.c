@@ -1476,10 +1476,6 @@ void av1_rc_postencode_update(AV1_COMP *cpi, uint64_t bytes_used) {
 
   const int qindex = cm->base_qindex;
 
-  if (cpi->oxcf.aq_mode == CYCLIC_REFRESH_AQ && cm->seg.enabled) {
-    av1_cyclic_refresh_postencode(cpi);
-  }
-
   // Update rate control heuristics
   rc->projected_frame_size = (int)(bytes_used << 3);
 
