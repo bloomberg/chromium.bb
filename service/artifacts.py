@@ -610,7 +610,7 @@ def GenerateCpeReport(chroot, sysroot, output_dir):
   warnings_path = os.path.join(output_dir,
                                CPE_WARNINGS_FILE_TEMPLATE % build_target)
 
-  osutils.WriteFile(report_path, result.output)
-  osutils.WriteFile(warnings_path, result.error)
+  osutils.WriteFile(report_path, result.stdout, mode='wb')
+  osutils.WriteFile(warnings_path, result.stderr, mode='wb')
 
   return CpeResult(report=report_path, warnings=warnings_path)

@@ -321,6 +321,7 @@ PYTHON3_TESTS = {
     'scripts/test_image_unittest',
     'scripts/trigger_cr50_signing_unittest',
     'scripts/virtualenv_wrapper_unittest',
+    'service/artifacts_unittest',
     'service/binhost_unittest',
     'service/dependency_unittest',
     'service/image_unittest',
