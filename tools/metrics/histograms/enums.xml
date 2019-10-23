@@ -21044,6 +21044,7 @@ Called by update_net_error_codes.py.-->
   <int value="1395" label="AUTOTESTPRIVATE_SETAPPWINDOWSTATE"/>
   <int value="1396" label="AUTOTESTPRIVATE_CLOSEAPPWINDOW"/>
   <int value="1397" label="AUTOTESTPRIVATE_REFRESHENTERPRISEPOLICIES"/>
+  <int value="1398" label="AUTOTESTPRIVATE_INSTALLPWAFORCURRENTURL"/>
 </enum>
 
 <enum name="ExtensionIconState">
