@@ -1,4 +1,4 @@
-#!/usr/bin/env vpython
+#!/usr/bin/env vpython3
 # Copyright 2016 The LUCI Authors. All rights reserved.
 # Use of this source code is governed under the Apache License, Version 2.0
 # that can be found in the LICENSE file.
@@ -17,7 +17,7 @@ class LargeTest(unittest.TestCase):
     array = range(1000000)
     data = large.pack(array)
     self.assertGreater(1000, len(data))
-    self.assertEqual(array, large.unpack(data))
+    self.assertEqual(list(array), large.unpack(data))
 
   def test_1m_1000(self):
     array = [i * 1000 for i in range(1000000)]
@@ -34,8 +34,8 @@ class LargeTest(unittest.TestCase):
     self.assertEqual(array, large.unpack(data))
 
   def test_empty(self):
-    self.assertEqual('', large.pack([]))
-    self.assertEqual([], large.unpack(''))
+    self.assertEqual(b'', large.pack([]))
+    self.assertEqual([], large.unpack(b''))
 
 
 if __name__ == '__main__':
