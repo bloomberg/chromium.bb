@@ -4195,9 +4195,10 @@
             ],
             "experiments": [
                 {
-                    "name": "PartitionConnectionsAndSSLSessions",
+                    "name": "PartitionConnectionsAndSSLSessionsAndQuic",
                     "enable_features": [
                         "PartitionConnectionsByNetworkIsolationKey",
+                        "PartitionHttpServerPropertiesByNetworkIsolationKey",
                         "PartitionSSLSessionsByNetworkIsolationKey"
                     ]
                 }
