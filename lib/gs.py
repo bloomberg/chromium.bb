@@ -330,43 +330,43 @@ class GSContext(object):
                 'chromeos-mirror/gentoo/distfiles/%s' % GSUTIL_TAR)
   GSUTIL_API_SELECTOR = 'JSON'
 
-  RESUMABLE_UPLOAD_ERROR = ('Too many resumable upload attempts failed without '
-                            'progress')
-  RESUMABLE_DOWNLOAD_ERROR = ('Too many resumable download attempts failed '
-                              'without progress')
+  RESUMABLE_UPLOAD_ERROR = (b'Too many resumable upload attempts failed '
+                            b'without progress')
+  RESUMABLE_DOWNLOAD_ERROR = (b'Too many resumable download attempts failed '
+                              b'without progress')
 
   # TODO: Below is a list of known flaky errors that we should
   # retry. The list needs to be extended.
   RESUMABLE_ERROR_MESSAGE = (
       RESUMABLE_DOWNLOAD_ERROR,
       RESUMABLE_UPLOAD_ERROR,
-      'ResumableUploadException',
-      'ResumableUploadAbortException',
-      'ResumableDownloadException',
-      'ssl.SSLError: The read operation timed out',
+      b'ResumableUploadException',
+      b'ResumableUploadAbortException',
+      b'ResumableDownloadException',
+      b'ssl.SSLError: The read operation timed out',
       # TODO: Error messages may change in different library versions,
       # use regexes to match resumable error messages.
-      "ssl.SSLError: ('The read operation timed out',)",
-      'ssl.SSLError: _ssl.c:495: The handshake operation timed out',
-      'Unable to find the server',
-      "doesn't match cloud-supplied digest",
-      'ssl.SSLError: [Errno 8]',
-      'EOF occurred in violation of protocol',
+      b"ssl.SSLError: ('The read operation timed out',)",
+      b'ssl.SSLError: _ssl.c:495: The handshake operation timed out',
+      b'Unable to find the server',
+      b"doesn't match cloud-supplied digest",
+      b'ssl.SSLError: [Errno 8]',
+      b'EOF occurred in violation of protocol',
       # TODO(nxia): crbug.com/775330 narrow down the criteria for retrying
-      'AccessDeniedException',
+      b'AccessDeniedException',
   )
 
   # We have seen flaky errors with 5xx return codes
   # See b/17376491 for the "JSON decoding" error.
   # We have seen transient Oauth 2.0 credential errors (crbug.com/414345).
   TRANSIENT_ERROR_MESSAGE = (
-      'ServiceException: 5',
-      'Failure: No JSON object could be decoded',
-      'Oauth 2.0 User Account',
-      'InvalidAccessKeyId',
-      'socket.error: [Errno 104] Connection reset by peer',
-      'Received bad request from server',
-      "can't start new thread",
+      b'ServiceException: 5',
+      b'Failure: No JSON object could be decoded',
+      b'Oauth 2.0 User Account',
+      b'InvalidAccessKeyId',
+      b'socket.error: [Errno 104] Connection reset by peer',
+      b'Received bad request from server',
+      b"can't start new thread",
   )
 
   @classmethod
@@ -755,10 +755,16 @@ class GSContext(object):
 
     error = e.result.error
     if error:
+      # Since the captured error will use the encoding the user requested,
+      # normalize to bytes for testing below.
+      if isinstance(error, six.text_type):
+        error = error.encode('utf-8')
+
       # gsutil usually prints PreconditionException when a precondition fails.
       # It may also print "ResumableUploadAbortException: 412 Precondition
       # Failed", so the logic needs to be a little more general.
-      if 'PreconditionException' in error or '412 Precondition Failed' in error:
+      if (b'PreconditionException' in error or
+          b'412 Precondition Failed' in error):
         return ErrorDetails(type='precondition_exception', retriable=False,
                             exception=GSContextPreconditionFailed(e))
 
@@ -766,9 +772,9 @@ class GSContext(object):
       # "stat" command leaves off the "CommandException: " prefix, but it also
       # outputs to stdout instead of stderr and so will not be caught here
       # regardless.
-      if ('CommandException: No URLs matched' in error or
-          'NotFoundException:' in error or
-          'One or more URLs matched no objects' in error):
+      if (b'CommandException: No URLs matched' in error or
+          b'NotFoundException:' in error or
+          b'One or more URLs matched no objects' in error):
         return ErrorDetails(type='no_such_key', retriable=False,
                             exception=GSNoSuchKey(e))
 
@@ -796,12 +802,14 @@ class GSContext(object):
               logging.info('The content of the tracker file: %s',
                            osutils.ReadFile(tracker_file_path))
               osutils.SafeUnlink(tracker_file_path)
-        return ErrorDetails(type='resumable', message_pattern=resumable_error,
+        return ErrorDetails(type='resumable',
+                            message_pattern=resumable_error.decode('utf-8'),
                             retriable=True)
 
       transient_error = _FirstSubstring(error, self.TRANSIENT_ERROR_MESSAGE)
       if transient_error:
-        return ErrorDetails(type='transient', message_pattern=transient_error,
+        return ErrorDetails(type='transient',
+                            message_pattern=transient_error.decode('utf-8'),
                             retriable=True)
 
     return ErrorDetails(type='unknown', retriable=False)

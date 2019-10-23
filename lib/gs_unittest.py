@@ -1307,7 +1307,7 @@ class StatTest(AbstractGSContextTest):
   """Tests Stat functionality."""
 
   # Convenient constant for mocking Stat results.
-  STAT_OUTPUT = """gs://abc/1:
+  STAT_OUTPUT = b"""gs://abc/1:
         Creation time:    Sat, 23 Aug 2014 06:53:20 GMT
         Content-Language: en
         Content-Length:   74
@@ -1320,7 +1320,7 @@ class StatTest(AbstractGSContextTest):
       """
 
   # Stat output can vary based on how/when the file was created.
-  STAT_OUTPUT_OLDER = """gs://abc/1:
+  STAT_OUTPUT_OLDER = b"""gs://abc/1:
         Creation time:    Sat, 23 Aug 2014 06:53:20 GMT
         Content-Length:   74
         Content-Type:   application/octet-stream
@@ -1333,7 +1333,7 @@ class StatTest(AbstractGSContextTest):
 
   # Stat output with no MD5 (this is not guaranteed by GS, and
   # can be omitted if files are uploaded as composite objects).
-  STAT_OUTPUT_NO_MD5 = """gs://abc/1:
+  STAT_OUTPUT_NO_MD5 = b"""gs://abc/1:
         Creation time:    Sat, 23 Aug 2014 06:53:20 GMT
         Content-Language: en
         Content-Length:   74
@@ -1345,7 +1345,7 @@ class StatTest(AbstractGSContextTest):
       """
 
   # When stat throws an error.  It's a special snow flake.
-  STAT_ERROR_OUTPUT = 'No URLs matched gs://abc/1'
+  STAT_ERROR_OUTPUT = b'No URLs matched gs://abc/1'
 
   def testStat(self):
     """Test ability to get the generation of a file."""
