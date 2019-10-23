@@ -52,7 +52,7 @@ import java.util.concurrent.TimeoutException;
  * A utility class that contains methods generic to all Tabs tests.
  */
 public class ChromeTabUtils {
-    private static final String TAG = "cr_ChromeTabUtils";
+    private static final String TAG = "ChromeTabUtils";
     public static final int TITLE_UPDATE_TIMEOUT_MS = 3000;
 
     /**
