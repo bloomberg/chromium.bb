@@ -48,6 +48,46 @@ unsigned int aom_avg_8x8_c(const uint8_t *s, int p) {
   return (sum + 32) >> 6;
 }
 
+#if CONFIG_AV1_HIGHBITDEPTH
+unsigned int aom_highbd_avg_8x8_c(const uint8_t *s8, int p) {
+  int i, j;
+  int sum = 0;
+  const uint16_t *s = CONVERT_TO_SHORTPTR(s8);
+  for (i = 0; i < 8; ++i, s += p)
+    for (j = 0; j < 8; sum += s[j], ++j) {
+    }
+
+  return (sum + 32) >> 6;
+}
+
+unsigned int aom_highbd_avg_4x4_c(const uint8_t *s8, int p) {
+  int i, j;
+  int sum = 0;
+  const uint16_t *s = CONVERT_TO_SHORTPTR(s8);
+  for (i = 0; i < 4; ++i, s += p)
+    for (j = 0; j < 4; sum += s[j], ++j) {
+    }
+
+  return (sum + 8) >> 4;
+}
+
+void aom_highbd_minmax_8x8_c(const uint8_t *s8, int p, const uint8_t *d8,
+                             int dp, int *min, int *max) {
+  int i, j;
+  const uint16_t *s = CONVERT_TO_SHORTPTR(s8);
+  const uint16_t *d = CONVERT_TO_SHORTPTR(d8);
+  *min = 255;
+  *max = 0;
+  for (i = 0; i < 8; ++i, s += p, d += dp) {
+    for (j = 0; j < 8; ++j) {
+      int diff = abs(s[j] - d[j]);
+      *min = diff < *min ? diff : *min;
+      *max = diff > *max ? diff : *max;
+    }
+  }
+}
+#endif  // CONFIG_VP9_HIGHBITDEPTH
+
 // src_diff: first pass, 9 bit, dynamic range [-255, 255]
 //           second pass, 12 bit, dynamic range [-2040, 2040]
 static void hadamard_col8(const int16_t *src_diff, ptrdiff_t src_stride,

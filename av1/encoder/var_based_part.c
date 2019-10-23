@@ -262,8 +262,12 @@ static int set_vt_partitioning(AV1_COMP *cpi, MACROBLOCK *const x,
 static AOM_INLINE void fill_variance_8x8avg(const uint8_t *s, int sp,
                                             const uint8_t *d, int dp,
                                             int x16_idx, int y16_idx,
-                                            v16x16 *vst, int pixels_wide,
-                                            int pixels_high, int is_key_frame) {
+                                            v16x16 *vst,
+#if CONFIG_AV1_HIGHBITDEPTH
+                                            int highbd_flag,
+#endif
+                                            int pixels_wide, int pixels_high,
+                                            int is_key_frame) {
   int k;
   for (k = 0; k < 4; k++) {
     int x8_idx = x16_idx + ((k & 1) << 3);
@@ -273,9 +277,19 @@ static AOM_INLINE void fill_variance_8x8avg(const uint8_t *s, int sp,
     if (x8_idx < pixels_wide && y8_idx < pixels_high) {
       int s_avg;
       int d_avg = 128;
+#if CONFIG_AV1_HIGHBITDEPTH
+      if (highbd_flag & YV12_FLAG_HIGHBITDEPTH) {
+        s_avg = aom_highbd_avg_8x8(s + y8_idx * sp + x8_idx, sp);
+        if (!is_key_frame)
+          d_avg = aom_highbd_avg_8x8(d + y8_idx * dp + x8_idx, dp);
+      } else {
+        s_avg = aom_avg_8x8(s + y8_idx * sp + x8_idx, sp);
+        if (!is_key_frame) d_avg = aom_avg_8x8(d + y8_idx * dp + x8_idx, dp);
+      }
+#else
       s_avg = aom_avg_8x8(s + y8_idx * sp + x8_idx, sp);
       if (!is_key_frame) d_avg = aom_avg_8x8(d + y8_idx * dp + x8_idx, dp);
-
+#endif
       sum = s_avg - d_avg;
       sse = sum * sum;
     }
@@ -284,8 +298,11 @@ static AOM_INLINE void fill_variance_8x8avg(const uint8_t *s, int sp,
 }
 
 static int compute_minmax_8x8(const uint8_t *s, int sp, const uint8_t *d,
-                              int dp, int x16_idx, int y16_idx, int pixels_wide,
-                              int pixels_high) {
+                              int dp, int x16_idx, int y16_idx,
+#if CONFIG_AV1_HIGHBITDEPTH
+                              int highbd_flag,
+#endif
+                              int pixels_wide, int pixels_high) {
   int k;
   int minmax_max = 0;
   int minmax_min = 255;
@@ -296,8 +313,18 @@ static int compute_minmax_8x8(const uint8_t *s, int sp, const uint8_t *d,
     int min = 0;
     int max = 0;
     if (x8_idx < pixels_wide && y8_idx < pixels_high) {
+#if CONFIG_AV1_HIGHBITDEPTH
+      if (highbd_flag & YV12_FLAG_HIGHBITDEPTH) {
+        aom_highbd_minmax_8x8(s + y8_idx * sp + x8_idx, sp,
+                              d + y8_idx * dp + x8_idx, dp, &min, &max);
+      } else {
+        aom_minmax_8x8(s + y8_idx * sp + x8_idx, sp, d + y8_idx * dp + x8_idx,
+                       dp, &min, &max);
+      }
+#else
       aom_minmax_8x8(s + y8_idx * sp + x8_idx, sp, d + y8_idx * dp + x8_idx, dp,
                      &min, &max);
+#endif
       if ((max - min) > minmax_max) minmax_max = (max - min);
       if ((max - min) < minmax_min) minmax_min = (max - min);
     }
@@ -308,6 +335,9 @@ static int compute_minmax_8x8(const uint8_t *s, int sp, const uint8_t *d,
 static AOM_INLINE void fill_variance_4x4avg(const uint8_t *s, int sp,
                                             const uint8_t *d, int dp,
                                             int x8_idx, int y8_idx, v8x8 *vst,
+#if CONFIG_AV1_HIGHBITDEPTH
+                                            int highbd_flag,
+#endif
                                             int pixels_wide, int pixels_high,
                                             int is_key_frame) {
   int k;
@@ -319,8 +349,20 @@ static AOM_INLINE void fill_variance_4x4avg(const uint8_t *s, int sp,
     if (x4_idx < pixels_wide && y4_idx < pixels_high) {
       int s_avg;
       int d_avg = 128;
+#if CONFIG_AV1_HIGHBITDEPTH
+      if (highbd_flag & YV12_FLAG_HIGHBITDEPTH) {
+        s_avg = aom_highbd_avg_4x4(s + y4_idx * sp + x4_idx, sp);
+        if (!is_key_frame)
+          d_avg = aom_highbd_avg_4x4(d + y4_idx * dp + x4_idx, dp);
+      } else {
+        s_avg = aom_avg_4x4(s + y4_idx * sp + x4_idx, sp);
+        if (!is_key_frame) d_avg = aom_avg_4x4(d + y4_idx * dp + x4_idx, dp);
+      }
+#else
       s_avg = aom_avg_4x4(s + y4_idx * sp + x4_idx, sp);
       if (!is_key_frame) d_avg = aom_avg_4x4(d + y4_idx * dp + x4_idx, dp);
+#endif
+
       sum = s_avg - d_avg;
       sse = sum * sum;
     }
@@ -708,8 +750,11 @@ int av1_choose_var_based_partitioning(AV1_COMP *cpi, const TileInfo *const tile,
         force_split[split_index] = 0;
         variance4x4downsample[i2 + j] = 0;
         if (!is_key_frame) {
-          fill_variance_8x8avg(s, sp, d, dp, x16_idx, y16_idx, vst, pixels_wide,
-                               pixels_high, is_key_frame);
+          fill_variance_8x8avg(s, sp, d, dp, x16_idx, y16_idx, vst,
+#if CONFIG_AV1_HIGHBITDEPTH
+                               xd->cur_buf->flags,
+#endif
+                               pixels_wide, pixels_high, is_key_frame);
           fill_variance_tree(&vt->split[m].split[i].split[j], BLOCK_16X16);
           get_variance(&vt->split[m].split[i].split[j].part_variances.none);
           avg_16x16[m][i] +=
@@ -741,6 +786,9 @@ int av1_choose_var_based_partitioning(AV1_COMP *cpi, const TileInfo *const tile,
             // compute the minmax over the 8x8 sub-blocks, and if above
             // threshold, force split to 8x8 block for this 16x16 block.
             int minmax = compute_minmax_8x8(s, sp, d, dp, x16_idx, y16_idx,
+#if CONFIG_AV1_HIGHBITDEPTH
+                                            xd->cur_buf->flags,
+#endif
                                             pixels_wide, pixels_high);
             int thresh_minmax = (int)cpi->vbp_threshold_minmax;
             if (minmax > thresh_minmax) {
@@ -760,6 +808,9 @@ int av1_choose_var_based_partitioning(AV1_COMP *cpi, const TileInfo *const tile,
             int y8_idx = y16_idx + ((k >> 1) << 3);
             v8x8 *vst2 = is_key_frame ? &vst->split[k] : &vt2[i2 + j].split[k];
             fill_variance_4x4avg(s, sp, d, dp, x8_idx, y8_idx, vst2,
+#if CONFIG_AV1_HIGHBITDEPTH
+                                 xd->cur_buf->flags,
+#endif
                                  pixels_wide, pixels_high, is_key_frame);
           }
         }
