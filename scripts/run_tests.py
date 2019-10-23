@@ -176,7 +176,6 @@ PYTHON2_ONLY_TESTS = {
     'cros_bisect/git_bisector_unittest',
     'cros_bisect/simple_chrome_builder_unittest',
     'lib/auto_updater_unittest',
-    'lib/binpkg_unittest',
     'lib/buildbucket_v2_unittest',
     'lib/builder_status_lib_unittest',
     'lib/cidb_unittest',
