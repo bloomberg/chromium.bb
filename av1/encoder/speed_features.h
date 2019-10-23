@@ -795,6 +795,9 @@ typedef struct SPEED_FEATURES {
 
   // If set forces interpolation filter to EIGHTTAP_REGULAR
   int skip_interp_filter_search;
+
+  // For nonrd: use block_yrd for rd cost in interpolation filter search.
+  int nonrd_use_blockyrd_interp_filter;
 } SPEED_FEATURES;
 
 struct AV1_COMP;

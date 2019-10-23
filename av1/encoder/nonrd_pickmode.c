@@ -1181,25 +1181,27 @@ static void search_filter_ref(AV1_COMP *cpi, MACROBLOCK *x, RD_STATS *this_rdc,
                               BLOCK_SIZE bsize, int reuse_inter_pred,
                               PRED_BUFFER **this_mode_pred, unsigned int *var_y,
                               unsigned int *sse_y, int *this_early_term,
-                              int use_model_yrd_large) {
+                              int use_model_yrd_large, int64_t *sse_block_yrd,
+                              int *block_yrd_computed) {
   AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *const xd = &x->e_mbd;
   struct macroblockd_plane *const pd = &xd->plane[0];
   MB_MODE_INFO *const mi = xd->mi[0];
   const int bw = block_size_wide[bsize];
-
+  RD_STATS this_rdc_fil;
+  int is_skippable;
   int pf_rate[FILTER_SEARCH_SIZE] = { 0 };
   int64_t pf_dist[FILTER_SEARCH_SIZE] = { 0 };
   int curr_rate[FILTER_SEARCH_SIZE] = { 0 };
   unsigned int pf_var[FILTER_SEARCH_SIZE] = { 0 };
   unsigned int pf_sse[FILTER_SEARCH_SIZE] = { 0 };
+  int64_t pf_sse_block_yrd[FILTER_SEARCH_SIZE] = { 0 };
   TX_SIZE pf_tx_size[FILTER_SEARCH_SIZE] = { 0 };
   PRED_BUFFER *current_pred = *this_mode_pred;
   int skip_txfm[FILTER_SEARCH_SIZE] = { 0 };
   int best_skip = 0;
   int best_early_term = 0;
   int64_t best_cost = INT64_MAX;
-
   int best_filter_index = -1;
   InterpFilter filters[FILTER_SEARCH_SIZE] = { EIGHTTAP_REGULAR,
                                                EIGHTTAP_SMOOTH };
@@ -1212,10 +1214,22 @@ static void search_filter_ref(AV1_COMP *cpi, MACROBLOCK *x, RD_STATS *this_rdc,
                                   AOM_PLANE_Y, AOM_PLANE_Y);
     if (use_model_yrd_large)
       model_skip_for_sb_y_large(cpi, bsize, x, xd, &pf_rate[i], &pf_dist[i],
-                                &pf_var[i], &pf_sse[i], this_early_term, 1);
+                                &pf_var[i], &pf_sse[i], this_early_term,
+                                !cpi->sf.nonrd_use_blockyrd_interp_filter);
     else
       model_rd_for_sb_y(cpi, bsize, x, xd, &pf_rate[i], &pf_dist[i],
-                        &skip_txfm[i], NULL, &pf_var[i], &pf_sse[i], 1);
+                        &skip_txfm[i], NULL, &pf_var[i], &pf_sse[i],
+                        !cpi->sf.nonrd_use_blockyrd_interp_filter);
+    if (cpi->sf.nonrd_use_blockyrd_interp_filter) {
+      int64_t this_sse = (int64_t)pf_sse[i];
+      block_yrd(cpi, x, mi_row, mi_col, &this_rdc_fil, &is_skippable, &this_sse,
+                bsize, mi->tx_size);
+      pf_rate[i] = this_rdc_fil.rate;
+      pf_dist[i] = this_rdc_fil.dist;
+      pf_sse_block_yrd[i] = this_sse;
+      skip_txfm[i] = this_rdc_fil.skip;
+      *block_yrd_computed = 1;
+    }
     curr_rate[i] = pf_rate[i];
     pf_rate[i] += av1_get_switchable_rate(cm, x, xd);
     cost = RDCOST(x->rdmult, pf_rate[i], pf_dist[i]);
@@ -1246,6 +1260,7 @@ static void search_filter_ref(AV1_COMP *cpi, MACROBLOCK *x, RD_STATS *this_rdc,
   this_rdc->dist = pf_dist[best_filter_index];
   *var_y = pf_var[best_filter_index];
   *sse_y = pf_sse[best_filter_index];
+  *sse_block_yrd = pf_sse_block_yrd[best_filter_index];
   this_rdc->skip = (best_skip || best_early_term);
   *this_early_term = best_early_term;
   if (reuse_inter_pred) {
@@ -1494,6 +1509,7 @@ void av1_fast_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     int skip_this_mv = 0;
     int comp_pred = 0;
     int force_mv_inter_layer = 0;
+    int block_yrd_computed = 0;
     PREDICTION_MODE this_mode;
     MB_MODE_INFO_EXT *const mbmi_ext = x->mbmi_ext;
     second_ref_frame = NONE_FRAME;
@@ -1677,7 +1693,8 @@ void av1_fast_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
         ref_frame == LAST_FRAME) {
       search_filter_ref(cpi, x, &this_rdc, mi_row, mi_col, tmp, bsize,
                         reuse_inter_pred, &this_mode_pred, &var_y, &sse_y,
-                        &this_early_term, use_model_yrd_large);
+                        &this_early_term, use_model_yrd_large, &this_sse,
+                        &block_yrd_computed);
     } else {
       mi->interp_filters = (filter_ref == SWITCHABLE)
                                ? av1_broadcast_interp_filter(EIGHTTAP_REGULAR)
@@ -1716,9 +1733,11 @@ void av1_fast_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
           this_rdc.rate += no_skip_cost;
         }
       } else {
-        this_sse = (int64_t)sse_y;
-        block_yrd(cpi, x, mi_row, mi_col, &this_rdc, &is_skippable, &this_sse,
-                  bsize, mi->tx_size);
+        if (!block_yrd_computed) {
+          this_sse = (int64_t)sse_y;
+          block_yrd(cpi, x, mi_row, mi_col, &this_rdc, &is_skippable, &this_sse,
+                    bsize, mi->tx_size);
+        }
         if (this_rdc.skip) {
           this_rdc.rate = skip_cost;
         } else {
