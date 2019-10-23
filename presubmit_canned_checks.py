@@ -744,10 +744,13 @@ def GetPythonUnitTests(input_api, output_api, unit_tests):
       backpath = [
           '.', input_api.os_path.pathsep.join(['..'] * (cwd.count('/') + 1))
         ]
-      if env.get('PYTHONPATH'):
-        backpath.append(env.get('PYTHONPATH'))
-      env['PYTHONPATH'] = input_api.os_path.pathsep.join((backpath))
-      env.pop('VPYTHON_CLEAR_PYTHONPATH', None)
+      # We convert to str, since on Windows on Python 2 only strings are allowed
+      # as environment variables, but literals are unicode since we're importing
+      # unicode_literals from __future__.
+      if env.get(str('PYTHONPATH')):
+        backpath.append(env.get(str('PYTHONPATH')))
+      env[str('PYTHONPATH')] = input_api.os_path.pathsep.join((backpath))
+      env.pop(str('VPYTHON_CLEAR_PYTHONPATH'), None)
     cmd = [input_api.python_executable, '-m', '%s' % unit_test]
     results.append(input_api.Command(
         name=unit_test_name,
@@ -868,8 +871,11 @@ def GetPylint(input_api, output_api, white_list=None, black_list=None,
   input_api.logging.info('Running pylint on %d files', len(files))
   input_api.logging.debug('Running pylint on: %s', files)
   env = input_api.environ.copy()
-  env['PYTHONPATH'] = input_api.os_path.pathsep.join(extra_paths_list)
-  env.pop('VPYTHON_CLEAR_PYTHONPATH', None)
+  # We convert to str, since on Windows on Python 2 only strings are allowed
+  # as environment variables, but literals are unicode since we're importing
+  # unicode_literals from __future__.
+  env[str('PYTHONPATH')] = input_api.os_path.pathsep.join(extra_paths_list)
+  env.pop(str('VPYTHON_CLEAR_PYTHONPATH'), None)
   input_api.logging.debug('  with extra PYTHONPATH: %r', extra_paths_list)
 
   def GetPylintCmd(flist, extra, parallel):
