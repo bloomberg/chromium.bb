@@ -361,7 +361,8 @@ void PasswordFormManager::Update(const PasswordForm& credentials_to_update) {
   client_->UpdateFormManagers();
 }
 
-void PasswordFormManager::UpdateUsername(const base::string16& new_username) {
+void PasswordFormManager::OnUpdateUsernameFromPrompt(
+    const base::string16& new_username) {
   DCHECK(parsed_submitted_form_);
   parsed_submitted_form_->username_value = new_username;
   parsed_submitted_form_->username_element.clear();
@@ -389,7 +390,7 @@ void PasswordFormManager::UpdateUsername(const base::string16& new_username) {
   CreatePendingCredentials();
 }
 
-void PasswordFormManager::UpdatePasswordValue(
+void PasswordFormManager::OnUpdatePasswordFromPrompt(
     const base::string16& new_password) {
   DCHECK(parsed_submitted_form_);
   parsed_submitted_form_->password_value = new_password;
