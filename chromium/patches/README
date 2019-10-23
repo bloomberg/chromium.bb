@@ -671,27 +671,6 @@ Affects:
     configure
 
 ------------------------------------------------------------------
-commit a5ef4a7a43af84dda13a34db34d709bad59f004c
-Author: liberato@chromium.org <liberato@chromium.org>
-Date:   Wed May 9 10:50:32 2018 -0700
-
-    Explicitly turn off v4l2 in configure.
-
-    configure seems to enable v4l2-m2m even if we explicitly turn it
-    off with arguments.
-
-    This CL makes configure check the command-line arguments, and skip
-    v4l2 (and v4l2-m2m) if they're turned off.
-
-    Bug: 841360
-    Change-Id: I3c597c12e91631ecd9b526cdea056e064901e008
-    Reviewed-on: https://chromium-review.googlesource.com/1052372
-    Reviewed-by: Matthew Wolenetz <wolenetz@chromium.org>
-
-Affects:
-    configure
-
-------------------------------------------------------------------
 commit f3680cd7365f99a0c3f77b06d664adc69a0624c4
 Author: liberato@chromium.org <liberato@chromium.org>
 Date:   Thu May 24 13:43:24 2018 -0700
@@ -818,10 +797,17 @@ Affects:
     libavcodec/libopusdec.c
 
 ------------------------------------------------------------------
-commit f1852b173307290afdd17851c2d76ab261b02d68
+commit d7ba23c23434eb938c6fcae4fe77ca1e2a2fbeff
 Author: liberato@chromium.org <liberato@chromium.org>
-Date:   Thu Aug 22 10:49:16 2019 -0700
+Date:   Thu Aug 22 10:52:09 2019 -0700
 
     Fail matroska parsing with an error rather than assert.
 
     Bug: 995706
+    Change-Id: I6f9865e0fdf44def6cc40e369954e66a7e0ad1d1
+    Reviewed-on: https://chromium-review.googlesource.com/c/chromium/third_party/ffmpeg/+/1765951
+    Reviewed-by: Matthew Wolenetz <wolenetz@chromium.org>
+
+Affects:
+    libavformat/matroskadec.c
+
