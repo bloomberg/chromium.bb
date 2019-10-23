@@ -595,6 +595,7 @@ TEST_F(ReceiverTest, RequestsKeyFrameToRectifyPictureLoss) {
     testing::Mock::VerifyAndClearExpectations(sender());
     testing::Mock::VerifyAndClearExpectations(consumer());
   }
+  ConsumeAndVerifyFrames(0, 2, start_time);
 
   // Simulate the Consumer requesting a key frame after picture loss (e.g., a
   // decoder failure). Ensure the Sender is immediately notified.
@@ -624,14 +625,31 @@ TEST_F(ReceiverTest, RequestsKeyFrameToRectifyPictureLoss) {
               OnReceiverCheckpoint(FrameId::first() + 4, kTargetPlayoutDelay))
       .Times(1);
   EXPECT_CALL(*sender(), OnReceiverIndicatesPictureLoss()).Times(0);
-  SimulatedFrame frame(start_time, 4);
-  frame.dependency = EncodedFrame::KEY_FRAME;
-  frame.referenced_frame_id = frame.frame_id;
-  sender()->SetFrameBeingSent(frame);
+  SimulatedFrame key_frame(start_time, 4);
+  key_frame.dependency = EncodedFrame::KEY_FRAME;
+  key_frame.referenced_frame_id = key_frame.frame_id;
+  sender()->SetFrameBeingSent(key_frame);
   sender()->SendRtpPackets(sender()->GetAllPacketIds(0));
   RunTasksUntilIdle();
   testing::Mock::VerifyAndClearExpectations(sender());
   testing::Mock::VerifyAndClearExpectations(consumer());
+
+  // The client has not yet consumed the key frame, so any calls to
+  // RequestKeyFrame() should not set the PLI condition again.
+  EXPECT_CALL(*sender(), OnReceiverIndicatesPictureLoss()).Times(0);
+  receiver()->RequestKeyFrame();
+  RunTasksUntilIdle();
+  testing::Mock::VerifyAndClearExpectations(sender());
+
+  // After consuming the next two frames, the latter of which is the
+  // previously-requested key frame, the client should be able to set the PLI
+  // condition again with a RequestKeyFrame() call.
+  ConsumeAndVerifyFrames(3, 3, start_time);
+  ConsumeAndVerifyFrame(key_frame);
+  EXPECT_CALL(*sender(), OnReceiverIndicatesPictureLoss()).Times(1);
+  receiver()->RequestKeyFrame();
+  RunTasksUntilIdle();
+  testing::Mock::VerifyAndClearExpectations(sender());
 }
 
 // Tests that the Receiver will start dropping packets once its frame queue is

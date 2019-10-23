@@ -138,6 +138,7 @@ class Receiver {
   ~Receiver();
 
   Ssrc ssrc() const { return rtcp_session_.receiver_ssrc(); }
+  int rtp_timebase() const { return rtp_timebase_; }
 
   // Set the Consumer receiving notifications when new frames are ready for
   // consumption. Frames received before this method is called will remain in
@@ -299,6 +300,11 @@ class Receiver {
   // equal to |checkpoint_frame()|, since it's impossible to consume incomplete
   // frames!
   FrameId last_frame_consumed_ = FrameId::first() - 1;
+
+  // The ID of the latest key frame known to be in-flight. This is used by
+  // RequestKeyFrame() to ensure the PLI condition doesn't get set again until
+  // after the consumer has seen a key frame that would clear the condition.
+  FrameId last_key_frame_received_;
 
   // The frame queue (circular), which tracks which frames are in-flight, stores
   // data for partially-received frames, and holds onto completed frames until
