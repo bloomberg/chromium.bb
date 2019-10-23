@@ -224,6 +224,24 @@ gfx::Size LabelButton::CalculatePreferredSize() const {
   return cached_preferred_size_.value();
 }
 
+gfx::Size LabelButton::GetMinimumSize() const {
+  if (label_->GetElideBehavior() == gfx::ElideBehavior::NO_ELIDE)
+    return GetPreferredSize();
+
+  gfx::Size size = image_->GetPreferredSize();
+  const gfx::Insets insets(GetInsets());
+  size.Enlarge(insets.width(), insets.height());
+
+  size.SetToMax(GetMinSize());
+  const gfx::Size max_size = GetMaxSize();
+  if (max_size.width() > 0)
+    size.set_width(std::min(max_size.width(), size.width()));
+  if (max_size.height() > 0)
+    size.set_height(std::min(max_size.height(), size.height()));
+
+  return size;
+}
+
 int LabelButton::GetHeightForWidth(int width) const {
   const gfx::Size size_without_label = GetUnclampedSizeWithoutLabel();
   // Get label height for the remaining width.
