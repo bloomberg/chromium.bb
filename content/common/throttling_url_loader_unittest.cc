@@ -293,7 +293,7 @@ class TestURLLoaderThrottle : public blink::URLLoaderThrottle {
   }
 
   void WillRedirectRequest(net::RedirectInfo* redirect_info,
-                           const network::ResourceResponseHead& response_head,
+                           const network::mojom::URLResponseHead& response_head,
                            bool* defer,
                            std::vector<std::string>* removed_headers,
                            net::HttpRequestHeaders* modified_headers) override {
@@ -305,7 +305,7 @@ class TestURLLoaderThrottle : public blink::URLLoaderThrottle {
   }
 
   void WillProcessResponse(const GURL& response_url,
-                           network::ResourceResponseHead* response_head,
+                           network::mojom::URLResponseHead* response_head,
                            bool* defer) override {
     will_process_response_called_++;
     if (will_process_response_callback_)
@@ -315,7 +315,7 @@ class TestURLLoaderThrottle : public blink::URLLoaderThrottle {
 
   void BeforeWillProcessResponse(
       const GURL& response_url,
-      const network::ResourceResponseHead& response_head,
+      const network::mojom::URLResponseHead& response_head,
       bool* defer) override {
     before_will_process_response_called_++;
     if (before_will_process_response_callback_)
