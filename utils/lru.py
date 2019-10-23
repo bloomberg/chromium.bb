@@ -62,7 +62,8 @@ class LRUDict(object):
     Raises ValueError if state file is corrupted.
     """
     try:
-      state = json.load(open(state_file, 'r'))
+      with open(state_file, 'r') as f:
+        state = json.load(f)
     except (IOError, ValueError) as e:
       raise ValueError('Broken state file %s: %s' % (state_file, e))
     if not isinstance(state, dict):
@@ -108,12 +109,12 @@ class LRUDict(object):
     if not self._dirty:
       return False
 
-    with open(state_file, 'wb') as f:
+    with open(state_file, 'w') as f:
       contents = {
-        'version': 2,
-        'items': self._items.items(),
+          'version': 2,
+          'items': list(self._items.items()),
       }
-      json.dump(contents, f, separators=(',',':'))
+      json.dump(contents, f, separators=(',', ':'))
 
     self._dirty = False
     return True
