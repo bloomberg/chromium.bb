@@ -438,6 +438,22 @@ class ArcVmClientAdapter : public ArcClientAdapter,
     std::move(callback).Run(true);
   }
 
+  void OnArcVmServerProxyJobStarted(UpgradeParams params,
+                                    chromeos::VoidDBusMethodCallback callback,
+                                    bool result) {
+    if (!result) {
+      LOG(ERROR) << "Failed to start arcvm-server-proxy job";
+      std::move(callback).Run(false);
+      return;
+    }
+
+    VLOG(1) << "Starting Concierge service";
+    chromeos::DBusThreadManager::Get()->GetDebugDaemonClient()->StartConcierge(
+        base::BindOnce(&ArcVmClientAdapter::OnConciergeStarted,
+                       weak_factory_.GetWeakPtr(), std::move(params),
+                       std::move(callback)));
+  }
+
   void OnConciergeStarted(UpgradeParams params,
                           chromeos::VoidDBusMethodCallback callback,
                           bool success) {
@@ -579,7 +595,7 @@ class ArcVmClientAdapter : public ArcClientAdapter,
   void OnStopVmReply(
       base::Optional<vm_tools::concierge::StopVmResponse> reply) {
     // If the reply indicates the D-Bus call is successfully done, do nothing.
-    // Concierge call OnVmStopped() eventually.
+    // Concierge will call OnVmStopped() eventually.
     if (reply.has_value() && reply.value().success())
       return;
 
@@ -587,22 +603,6 @@ class ArcVmClientAdapter : public ArcClientAdapter,
     // observers.
     // TODO(yusukes): Remove the fallback once we implement mini VM.
     OnArcInstanceStopped();
-  }
-
-  void OnArcVmServerProxyJobStarted(UpgradeParams params,
-                                    chromeos::VoidDBusMethodCallback callback,
-                                    bool result) {
-    if (!result) {
-      LOG(ERROR) << "Failed to start arcvm-server-proxy job";
-      std::move(callback).Run(false);
-      return;
-    }
-
-    VLOG(1) << "Starting Concierge service";
-    chromeos::DBusThreadManager::Get()->GetDebugDaemonClient()->StartConcierge(
-        base::BindOnce(&ArcVmClientAdapter::OnConciergeStarted,
-                       weak_factory_.GetWeakPtr(), std::move(params),
-                       std::move(callback)));
   }
 
   const version_info::Channel channel_;
