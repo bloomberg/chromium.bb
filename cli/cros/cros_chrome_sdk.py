@@ -204,12 +204,14 @@ class SDKFetcher(object):
       else:
         try:
           raw_json = self.gs_ctx.Cat(metadata_path,
-                                     debug_level=logging.DEBUG)
+                                     debug_level=logging.DEBUG,
+                                     encoding='utf-8')
         except gs.GSNoSuchKey:
           logging.info('Could not read %s, falling back to %s',
                        metadata_path, partial_metadata_path)
           raw_json = self.gs_ctx.Cat(partial_metadata_path,
-                                     debug_level=logging.DEBUG)
+                                     debug_level=logging.DEBUG,
+                                     encoding='utf-8')
 
         ref.AssignText(raw_json)
 
@@ -306,7 +308,7 @@ class SDKFetcher(object):
             bucket=constants.SDK_GS_BUCKET,
             suburl='cros-sdk-%s.tar.xz.Manifest' % self._GetSDKVersion(version),
             for_gsutil=True)
-        manifest = self.gs_ctx.Cat(manifest_path)
+        manifest = self.gs_ctx.Cat(manifest_path, encoding='utf-8')
         ref.AssignText(manifest)
       return json.loads(manifest)
 
@@ -399,7 +401,7 @@ class SDKFetcher(object):
     try:
        # If the version doesn't exist in google storage,
        # which isn't unlikely, don't waste time on retries.
-      full_version = self.gs_ctx.Cat(version_file, retries=0)
+      full_version = self.gs_ctx.Cat(version_file, retries=0, encoding='utf-8')
       assert full_version.startswith('R')
       return full_version
     except (gs.GSNoSuchKey, gs.GSCommandError):
@@ -879,7 +881,7 @@ class ChromeSDKCommand(command.CliCommand):
       chroot: The path to the chroot, if set.
     """
     current_ps1 = cros_build_lib.run(
-        ['bash', '-l', '-c', 'echo "$PS1"'], print_cmd=False,
+        ['bash', '-l', '-c', 'echo "$PS1"'], print_cmd=False, encoding='utf-8',
         capture_output=True).output.splitlines()
     if current_ps1:
       current_ps1 = current_ps1[-1]
@@ -1304,7 +1306,7 @@ class ChromeSDKCommand(command.CliCommand):
     """Returns current active Goma port."""
     port = cros_build_lib.run(
         self.GOMACC_PORT_CMD, cwd=goma_dir, debug_level=logging.DEBUG,
-        error_code_ok=True, capture_output=True).output.strip()
+        check=False, encoding='utf-8', capture_output=True).output.strip()
     return port
 
   def _FetchGoma(self):

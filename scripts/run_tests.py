@@ -145,9 +145,7 @@ SLOW_TESTS = {
 # These are tests that have not yet been ported to Python 3.  No new tests
 # should be added to this list as they'll need to be ported at some point.
 PYTHON2_ONLY_TESTS = {
-    'cli/cros/cros_chrome_sdk_unittest',
     'cli/deploy_unittest',
-    'scripts/deploy_chrome_unittest',
 }
 
 

@@ -120,12 +120,13 @@ class DeployChrome(object):
 
   def _GetRemoteDirSize(self, remote_dir):
     result = self.device.RunCommand('du -ks %s' % remote_dir,
-                                    capture_output=True)
+                                    capture_output=True, encoding='utf-8')
     return int(result.output.split()[0])
 
   def _GetStagingDirSize(self):
     result = cros_build_lib.dbg_run(['du', '-ks', self.staging_dir],
-                                    redirect_stdout=True, capture_output=True)
+                                    redirect_stdout=True, capture_output=True,
+                                    encoding='utf-8')
     return int(result.output.split()[0])
 
   def _ChromeFileInUse(self):
@@ -173,7 +174,8 @@ class DeployChrome(object):
     # <job_name> <status> ['process' <pid>].
     # <status> is in the format <goal>/<state>.
     try:
-      result = self.device.RunCommand('status ui', capture_output=True)
+      result = self.device.RunCommand('status ui', capture_output=True,
+                                      encoding='utf-8')
     except cros_build_lib.RunCommandError as e:
       if 'Unknown job' in e.result.error:
         return False
@@ -218,7 +220,7 @@ class DeployChrome(object):
     # TODO: Should migrate to use the remount functions in remote_access.
     result = self.device.RunCommand(MOUNT_RW_COMMAND,
                                     error_code_ok=error_code_ok,
-                                    capture_output=True)
+                                    capture_output=True, encoding='utf-8')
     if result.returncode and not self.device.IsDirWritable('/'):
       self._root_dir_is_still_readonly.set()
 
