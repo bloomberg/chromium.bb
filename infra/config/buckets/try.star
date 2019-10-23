@@ -877,6 +877,7 @@ gpu_linux_builder(
 
 gpu_linux_builder(
     name = 'gpu-try-linux-nvidia-rel',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_linux_builder(
@@ -1259,6 +1260,7 @@ linux_builder(
 
 linux_builder(
     name = 'linux-rel',
+    goma_backend = goma.backend.RBE_PROD,
     goma_jobs = goma.jobs.J150,
     tryjob = tryjob(),
     use_clang_coverage = True,
@@ -1297,6 +1299,7 @@ linux_builder(
 
 linux_builder(
     name = 'linux_chromium_asan_rel_ng',
+    goma_backend = goma.backend.RBE_PROD,
     goma_jobs = goma.jobs.J150,
     ssd = True,
     tryjob = tryjob(),
@@ -1373,6 +1376,7 @@ linux_builder(
 
 linux_builder(
     name = 'linux_chromium_tsan_rel_ng',
+    goma_backend = goma.backend.RBE_PROD,
     goma_jobs = goma.jobs.J150,
     tryjob = tryjob(),
 )

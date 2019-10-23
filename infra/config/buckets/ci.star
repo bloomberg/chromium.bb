@@ -2082,6 +2082,7 @@ memory_builder(
 
 memory_builder(
     name = 'Linux ASan LSan Builder',
+    goma_backend = goma.backend.RBE_PROD,
     ssd = True,
 )
 
@@ -2130,6 +2131,7 @@ memory_builder(
 
 memory_builder(
     name = 'Linux TSan Builder',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 memory_builder(

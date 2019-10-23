@@ -682,6 +682,16 @@ luci.console_view(
             short_name = 'n5x',
         ),
         luci.console_view_entry(
+            builder = 'ci/Linux ASan LSan Builder',
+            category = 'week14a|linux',
+            short_name = 'asanlsan',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/Linux TSan Builder',
+            category = 'week14a|linux',
+            short_name = 'tsan',
+        ),
+        luci.console_view_entry(
             builder = 'ci/Win ASan Release',
             category = 'win|week1|asan',
         ),
