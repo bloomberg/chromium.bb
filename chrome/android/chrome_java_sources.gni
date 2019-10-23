@@ -1155,7 +1155,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/omnibox/suggestions/editurl/EditUrlSuggestionProperties.java",
   "java/src/org/chromium/chrome/browser/omnibox/suggestions/editurl/EditUrlSuggestionViewBinder.java",
   "java/src/org/chromium/chrome/browser/omnibox/suggestions/entity/EntitySuggestionProcessor.java",
-  "java/src/org/chromium/chrome/browser/omnibox/suggestions/entity/EntitySuggestionView.java",
   "java/src/org/chromium/chrome/browser/omnibox/suggestions/entity/EntitySuggestionViewBinder.java",
   "java/src/org/chromium/chrome/browser/omnibox/suggestions/entity/EntitySuggestionViewProperties.java",
   "java/src/org/chromium/chrome/browser/page_info/CertificateChainHelper.java",
