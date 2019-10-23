@@ -100,7 +100,7 @@ class SendToDashboardTest(PerfUploadTestCase):
     request = self.urlopen.call_args[0][0]
     self.assertEqual(os.path.join(perf_uploader.DASHBOARD_URL, 'add_point'),
                      request.get_full_url())
-    data = request.get_data()
+    data = request.data
     data = urllib.parse.parse_qs(data)['data']
     entries = [json.loads(x) for x in data]
     entry = entries[0][0]
