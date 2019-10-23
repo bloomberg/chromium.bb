@@ -268,10 +268,12 @@
       'android-archive-dbg-goma-rbe-latest': 'android_without_codecs_debug_bot',
       'android-archive-dbg-goma-rbe-ats-latest': 'android_without_codecs_debug_bot',
       'android-archive-dbg-goma-rbe-ats-canary': 'android_without_codecs_debug_bot',
+
       'ios-device-goma-canary-clobber': 'ios_error',
       'ios-device-goma-latest-clobber': 'ios_error',
       'ios-device-goma-rbe-canary-clobber': 'ios_error',
       'ios-device-goma-rbe-latest-clobber': 'ios_error',
+      'ios-simulator-cr-recipe': 'ios_simulator_debug_static_bot',
 
       # TODO(yyanagisawa): deprecate cl.exe.
       'Win cl.exe Goma Canary LocalOutputCache': 'release_bot_x86_minimal_symbols_enable_archive_compression_no_clang',
@@ -852,6 +854,7 @@
       'ios-simulator': 'ios_error',
       'ios-simulator-full-configs': 'ios_error',
       'ios-simulator-cronet': 'ios_error',
+      'ios-simulator-cr-recipe': 'ios_simulator_debug_static_bot',
       'ios-simulator-xcode-clang': 'ios_error',
       'mac-osxbeta-rel': 'gpu_tests_release_trybot_deterministic_mac',
       'mac_chromium_10.10': 'gpu_tests_release_trybot_deterministic_mac',
@@ -1697,6 +1700,10 @@
     # build files.
     'ios_error': [ 'error'],
 
+    'ios_simulator_debug_static_bot': [
+        'ios_simulator', 'debug_static_bot',
+    ],
+
     'libfuzzer_asan_debug_bot': [
       'libfuzzer', 'asan', 'debug_bot', 'shared', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'disable_seed_corpus',
     ],
@@ -2273,6 +2280,11 @@
 
     'ios': {
       'gn_args': 'target_os="ios"',
+    },
+
+    'ios_simulator': {
+      'mixins': ['ios'],
+      'gn_args': 'target_cpu="x64"',
     },
 
     'java_coverage': {
