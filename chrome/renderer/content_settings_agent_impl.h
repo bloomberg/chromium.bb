@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_CONTENT_SETTINGS_OBSERVER_H_
-#define CHROME_RENDERER_CONTENT_SETTINGS_OBSERVER_H_
+#ifndef CHROME_RENDERER_CONTENT_SETTINGS_AGENT_IMPL_H_
+#define CHROME_RENDERER_CONTENT_SETTINGS_AGENT_IMPL_H_
 
 #include <string>
 #include <utility>
@@ -13,7 +13,8 @@
 #include "base/containers/flat_set.h"
 #include "base/gtest_prod_util.h"
 #include "base/time/time.h"
-#include "chrome/common/content_settings_renderer.mojom.h"
+#include "chrome/common/content_settings_agent.mojom.h"
+#include "chrome/common/content_settings_manager.mojom.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "content/public/renderer/render_frame_observer.h"
@@ -31,28 +32,31 @@ struct WebEnabledClientHints;
 class WebFrame;
 class WebSecurityOrigin;
 class WebURL;
-}
+}  // namespace blink
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 namespace extensions {
 class Dispatcher;
 class Extension;
-}
+}  // namespace extensions
 #endif
 
-// Handles blocking content per content settings for each RenderFrame.
-class ContentSettingsObserver
+// This class serves as an agent of the browser-side content settings machinery
+// to implement browser-specified rules directly within the renderer process.
+// In some cases it forwards requests on to the browser to determine policy.
+// An instance of this class is associated w/ each RenderFrame in the process.
+class ContentSettingsAgentImpl
     : public content::RenderFrameObserver,
-      public content::RenderFrameObserverTracker<ContentSettingsObserver>,
+      public content::RenderFrameObserverTracker<ContentSettingsAgentImpl>,
       public blink::WebContentSettingsClient,
-      public chrome::mojom::ContentSettingsRenderer {
+      public chrome::mojom::ContentSettingsAgent {
  public:
   // Set |should_whitelist| to true if |render_frame()| contains content that
   // should be whitelisted for content settings.
-  ContentSettingsObserver(content::RenderFrame* render_frame,
-                          bool should_whitelist,
-                          service_manager::BinderRegistry* registry);
-  ~ContentSettingsObserver() override;
+  ContentSettingsAgentImpl(content::RenderFrame* render_frame,
+                           bool should_whitelist,
+                           service_manager::BinderRegistry* registry);
+  ~ContentSettingsAgentImpl() override;
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // Sets the extension dispatcher. Call this right after constructing this
@@ -62,7 +66,7 @@ class ContentSettingsObserver
 
   // Sets the content setting rules which back |allowImage()|, |allowScript()|,
   // |allowScriptFromSource()| and |allowAutoplay()|. |content_setting_rules|
-  // must outlive this |ContentSettingsObserver|.
+  // must outlive this |ContentSettingsAgentImpl|.
   void SetContentSettingRules(
       const RendererContentSettingRules* content_setting_rules);
   const RendererContentSettingRules* GetContentSettingRules();
@@ -112,11 +116,14 @@ class ContentSettingsObserver
     return allow_running_insecure_content_;
   }
 
+  void SetContentSettingsManagerForTesting(
+      mojo::Remote<chrome::mojom::ContentSettingsManager> manager);
+
  private:
-  FRIEND_TEST_ALL_PREFIXES(ContentSettingsObserverTest, WhitelistedSchemes);
-  FRIEND_TEST_ALL_PREFIXES(ContentSettingsObserverBrowserTest,
+  FRIEND_TEST_ALL_PREFIXES(ContentSettingsAgentImplTest, WhitelistedSchemes);
+  FRIEND_TEST_ALL_PREFIXES(ContentSettingsAgentImplBrowserTest,
                            ContentSettingsInterstitialPages);
-  FRIEND_TEST_ALL_PREFIXES(ContentSettingsObserverBrowserTest,
+  FRIEND_TEST_ALL_PREFIXES(ContentSettingsAgentImplBrowserTest,
                            PluginsTemporarilyAllowed);
 
   // RenderFrameObserver implementation.
@@ -125,17 +132,16 @@ class ContentSettingsObserver
                                 ui::PageTransition transition) override;
   void OnDestruct() override;
 
-  // chrome::mojom::ContentSettingsRenderer:
+  // chrome::mojom::ContentSettingsAgent:
   void SetAllowRunningInsecureContent() override;
   void SetAsInterstitial() override;
 
-  void OnContentSettingsRendererRequest(
-      mojo::PendingAssociatedReceiver<chrome::mojom::ContentSettingsRenderer>
+  void OnContentSettingsAgentRequest(
+      mojo::PendingAssociatedReceiver<chrome::mojom::ContentSettingsAgent>
           receiver);
 
   // Message handlers.
   void OnLoadBlockedPlugins(const std::string& identifier);
-  void OnRequestFileSystemAccessAsyncResponse(int request_id, bool allowed);
 
   // Resets the |content_blocked_| array.
   void ClearBlockedContentSettings();
@@ -145,7 +151,7 @@ class ContentSettingsObserver
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // If |origin| corresponds to an installed extension, returns that extension.
-  // Otherwise returns NULL.
+  // Otherwise returns null.
   const extensions::Extension* GetExtension(
       const blink::WebSecurityOrigin& origin) const;
 #endif
@@ -159,6 +165,8 @@ class ContentSettingsObserver
   static bool IsWhitelistedForContentSettings(
       const blink::WebSecurityOrigin& origin,
       const blink::WebURL& document_url);
+
+  mojo::Remote<chrome::mojom::ContentSettingsManager> content_settings_manager_;
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // Owned by ChromeContentRendererClient and outlive us.
@@ -187,16 +195,12 @@ class ContentSettingsObserver
   base::flat_set<std::string> temporarily_allowed_plugins_;
   bool is_interstitial_page_ = false;
 
-  int current_request_id_ = 0;
-  base::flat_map<int, base::OnceCallback<void(bool)>> permission_requests_;
-
   // If true, IsWhitelistedForContentSettings will always return true.
   const bool should_whitelist_;
 
-  mojo::AssociatedReceiverSet<chrome::mojom::ContentSettingsRenderer>
-      receivers_;
+  mojo::AssociatedReceiverSet<chrome::mojom::ContentSettingsAgent> receivers_;
 
-  DISALLOW_COPY_AND_ASSIGN(ContentSettingsObserver);
+  DISALLOW_COPY_AND_ASSIGN(ContentSettingsAgentImpl);
 };
 
-#endif  // CHROME_RENDERER_CONTENT_SETTINGS_OBSERVER_H_
+#endif  // CHROME_RENDERER_CONTENT_SETTINGS_AGENT_IMPL_H_

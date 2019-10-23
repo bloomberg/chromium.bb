@@ -4,13 +4,12 @@
 
 module chrome.mojom;
 
-// Tells the renderer that it is displaying an interstitial page.
-interface ContentSettingsRenderer {
+// An interface to the content settings agent running in the renderer process.
+interface ContentSettingsAgent {
   // Sent to allow the running of insecure mixed-content. If received by the
   // main frame, it will also reload the frame afterwards.
   SetAllowRunningInsecureContent();
 
-  // Message sent from the browser to the render to inform the renderer
-  // that it is displaying interstitial page.
+  // Sent to inform the renderer that it is displaying interstitial page.
   SetAsInterstitial();
 };
