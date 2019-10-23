@@ -1157,6 +1157,9 @@ interface ConstantSourceNode : AudioScheduledSourceNode
     attribute @@toStringTag
     getter offset
     method constructor
+interface ContactAddress : PaymentAddress
+    attribute @@toStringTag
+    method constructor
 interface ContactsManager
     attribute @@toStringTag
     method constructor
