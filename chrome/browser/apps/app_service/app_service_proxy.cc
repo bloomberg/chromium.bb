@@ -209,11 +209,19 @@ void AppServiceProxy::SetPermission(const std::string& app_id,
   }
 }
 
-void AppServiceProxy::Uninstall(const std::string& app_id) {
+void AppServiceProxy::Uninstall(const std::string& app_id,
+                                gfx::NativeWindow parent_window) {
   if (app_service_.is_connected()) {
-    cache_.ForOneApp(app_id, [this](const apps::AppUpdate& update) {
-      app_service_->PromptUninstall(update.AppType(), update.AppId());
-    });
+    cache_.ForOneApp(
+        app_id, [this, parent_window](const apps::AppUpdate& update) {
+          apps::mojom::IconKeyPtr icon_key = update.IconKey();
+          uninstall_dialogs_.emplace(std::make_unique<UninstallDialog>(
+              profile_, update.AppType(), update.AppId(), update.Name(),
+              std::move(icon_key), this, parent_window,
+              base::BindOnce(&AppServiceProxy::OnUninstallDialogClosed,
+                             weak_ptr_factory_.GetWeakPtr(), update.AppType(),
+                             update.AppId())));
+        });
   }
 }
 

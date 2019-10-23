@@ -19,6 +19,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "ui/gfx/native_widget_types.h"
 #include "url/gurl.h"
 
 #if defined(OS_CHROMEOS)
@@ -77,7 +78,7 @@ class AppServiceProxy : public KeyedService,
                         int64_t display_id);
   void SetPermission(const std::string& app_id,
                      apps::mojom::PermissionPtr permission);
-  void Uninstall(const std::string& app_id);
+  void Uninstall(const std::string& app_id, gfx::NativeWindow parent_window);
   void OnUninstallDialogClosed(apps::mojom::AppType app_type,
                                const std::string& app_id,
                                bool uninstall,
