@@ -100,8 +100,7 @@ AndroidStreamReaderURLLoader::AndroidStreamReaderURLLoader(
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
     std::unique_ptr<ResponseDelegate> response_delegate)
     : resource_request_(resource_request),
-      resource_response_head_(
-          std::make_unique<network::ResourceResponseHead>()),
+      response_head_(network::mojom::URLResponseHead::New()),
       client_(std::move(client)),
       traffic_annotation_(traffic_annotation),
       response_delegate_(std::move(response_delegate)),
@@ -218,7 +217,7 @@ void AndroidStreamReaderURLLoader::HeadersComplete(
   // HttpResponseHeaders expects its input string to be terminated by two NULs.
   status.append("\0\0", 2);
 
-  network::ResourceResponseHead& head = *resource_response_head_;
+  network::mojom::URLResponseHead& head = *response_head_;
   head.request_start = base::TimeTicks::Now();
   head.response_start = base::TimeTicks::Now();
   head.headers = new net::HttpResponseHeaders(status);
@@ -286,7 +285,7 @@ void AndroidStreamReaderURLLoader::SendBody() {
   //    needs the ability to break the stream after getting the headers but
   //    before finishing the read.
   if (!base::FeatureList::IsEnabled(features::kWebViewSniffMimeType) ||
-      !resource_response_head_->mime_type.empty()) {
+      !response_head_->mime_type.empty()) {
     SendResponseToClient();
   }
   ReadMore();
@@ -295,8 +294,7 @@ void AndroidStreamReaderURLLoader::SendBody() {
 void AndroidStreamReaderURLLoader::SendResponseToClient() {
   DCHECK(consumer_handle_.is_valid());
   DCHECK(client_.is_bound());
-  client_->OnReceiveResponse(*resource_response_head_);
-  resource_response_head_ = nullptr;
+  client_->OnReceiveResponse(std::move(response_head_));
   client_->OnStartLoadingResponseBody(std::move(consumer_handle_));
 }
 
@@ -360,7 +358,7 @@ void AndroidStreamReaderURLLoader::DidRead(int result) {
     // We only hit this on for the first buffer read, which we expect to be
     // enough to determine the MIME type.
     DCHECK(base::FeatureList::IsEnabled(features::kWebViewSniffMimeType));
-    if (resource_response_head_->mime_type.empty()) {
+    if (response_head_->mime_type.empty()) {
       // Limit sniffing to the first net::kMaxBytesToSniff.
       size_t data_length = result;
       if (data_length > net::kMaxBytesToSniff)
@@ -373,8 +371,8 @@ void AndroidStreamReaderURLLoader::DidRead(int result) {
       // SniffMimeType() returns false if there is not enough data to
       // determine the mime type. However, even if it returns false, it
       // returns a new type that is probably better than the current one.
-      resource_response_head_->mime_type.assign(new_type);
-      resource_response_head_->did_mime_sniff = true;
+      response_head_->mime_type.assign(new_type);
+      response_head_->did_mime_sniff = true;
     }
 
     SendResponseToClient();
