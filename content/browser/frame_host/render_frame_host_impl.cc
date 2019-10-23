@@ -6557,7 +6557,8 @@ void RenderFrameHostImpl::CreateWebSocketConnector(
     mojo::PendingReceiver<blink::mojom::WebSocketConnector> receiver) {
   mojo::MakeSelfOwnedReceiver(
       std::make_unique<WebSocketConnectorImpl>(
-          GetProcess()->GetID(), routing_id_, last_committed_origin_),
+          GetProcess()->GetID(), routing_id_, last_committed_origin_,
+          network_isolation_key_),
       std::move(receiver));
 }
 
