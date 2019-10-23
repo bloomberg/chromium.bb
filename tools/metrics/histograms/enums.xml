@@ -46140,6 +46140,11 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="Model for target not available on client">
     The model for the optimization target not available on the client.
   </int>
+  <int value="4" label="In model prediction holdback">
+    The page load is part of a model prediction holdback where all decisions
+    will return false in an attempt to not taint the data in order to understand
+    the production recall of the model.
+  </int>
 </enum>
 
 <enum name="OptimizationGuideOptimizationTypeDecision">
