@@ -2689,7 +2689,6 @@ void FilterIntraPredictor_SSE4_1(void* const dest, ptrdiff_t stride,
     dst += 4;
   }
 
-  left = _mm_setzero_si128();
   // Now we handle heights that reference previous blocks rather than top_row.
   for (int y = 4; y < height; y += 4) {
     // Leftmost 4x4 block for this height.
