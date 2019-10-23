@@ -421,24 +421,6 @@ class TestGitClBasic(unittest.TestCase):
         'Cr-Commit-Position: refs/heads/branch@{#2}\n'
         'Cr-Branched-From: somehash-refs/heads/master@{#12}')
 
-  def test_gerrit_mirror_hack(self):
-    cr = 'chromium-review.googlesource.com'
-    url0 = 'https://%s/a/changes/x?a=b' % cr
-    origMirrors = git_cl.gerrit_util._GERRIT_MIRROR_PREFIXES
-    try:
-      git_cl.gerrit_util._GERRIT_MIRROR_PREFIXES = ['us1', 'us2']
-      url1 = git_cl.gerrit_util._UseGerritMirror(url0, cr)
-      url2 = git_cl.gerrit_util._UseGerritMirror(url1, cr)
-      url3 = git_cl.gerrit_util._UseGerritMirror(url2, cr)
-
-      self.assertNotEqual(url1, url2)
-      self.assertEqual(sorted((url1, url2)), [
-        'https://us1-mirror-chromium-review.googlesource.com/a/changes/x?a=b',
-        'https://us2-mirror-chromium-review.googlesource.com/a/changes/x?a=b'])
-      self.assertEqual(url1, url3)
-    finally:
-      git_cl.gerrit_util._GERRIT_MIRROR_PREFIXES = origMirrors
-
   def test_valid_accounts(self):
     mock_per_account = {
       'u1': None,  # 404, doesn't exist.
