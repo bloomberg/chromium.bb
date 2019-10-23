@@ -121,6 +121,10 @@ vars = {
   # Wildcards are supported (e.g. "qemu.*").
   'checkout_fuchsia_boot_images': "qemu.x64,qemu.arm64",
 
+  # By default, do not check out files required to run fuchsia tests in
+  # qemu on linux-arm64 machines.
+  'checkout_fuchsia_for_arm64_host': False,
+
   # By Default, do not checkout AEMU, as it is too big. This can be overridden
   # e.g. with custom_vars.
   # TODO(chonggu): Delete once AEMU package is small enough.
@@ -943,6 +947,19 @@ deps = {
       'condition': 'checkout_linux',
   },
 
+  # TODO(steveroe): Get this from GCS instead of CIPD once the arm64 sdk is
+  # released using the same version specified in build/fuchsia/linux.sdk.sha1.
+  'src/third_party/fuchsia-sdk-arm64': {
+      'packages': [
+          {
+              'package': 'fuchsia/sdk/core/linux-arm64',
+              'version': 'J4QyYSv0T-30YSgD6d34XHRpck2ckNh-4MMhsRYj4zoC'
+          },
+      ],
+      'condition': 'host_os == "linux" and checkout_fuchsia and checkout_fuchsia_for_arm64_host',
+      'dep_type': 'cipd',
+  },
+
   'src/third_party/grpc/src': {
       'url': Var('chromium_git') + '/external/github.com/grpc/grpc.git' + '@' + '74b981a6a3d9ba17f3acae1d72b9109325ef656d',
   },
@@ -1327,6 +1344,17 @@ deps = {
 
   'src/third_party/pywebsocket/src':
     Var('chromium_git') + '/external/github.com/google/pywebsocket.git' + '@' + '2d7b73c3acbd0f41dcab487ae5c97c6feae06ce2',
+
+  'src/third_party/qemu-linux-arm64': {
+      'packages': [
+          {
+              'package': 'fuchsia/qemu/linux-arm64',
+              'version': 'b1b61a39e3ab0935cd030f27e01740578b04b967'
+          },
+      ],
+      'condition': 'host_os == "linux" and checkout_fuchsia and checkout_fuchsia_for_arm64_host',
+      'dep_type': 'cipd',
+  },
 
   'src/third_party/qemu-linux-x64': {
       'packages': [
