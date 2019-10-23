@@ -70,7 +70,7 @@ class F extends ValidationTest {
     const renderPass = commandEncoder.beginRenderPass(descriptor);
     renderPass.endPass();
 
-    await this.expectValidationError(() => {
+    this.expectValidationError(() => {
       commandEncoder.finish();
     }, !success);
   }
@@ -427,7 +427,7 @@ g.test('it is invalid to use a resolve target in error state', async t => {
   const resolveTargetTexture = t.createTexture({ arrayLayerCount: ARRAY_LAYER_COUNT });
 
   const colorAttachment = t.getColorAttachment(multisampledColorTexture);
-  await t.expectValidationError(() => {
+  t.expectValidationError(() => {
     colorAttachment.resolveTarget = resolveTargetTexture.createView({
       dimension: '2d',
       format: 'rgba8unorm',

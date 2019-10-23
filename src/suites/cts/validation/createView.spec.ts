@@ -82,7 +82,7 @@ g.test('creating texture view on a 2D non array texture', async t => {
     baseMipLevel,
   });
 
-  await t.expectValidationError(() => {
+  t.expectValidationError(() => {
     texture.createView(descriptor);
   }, !_success);
 }).params([
@@ -116,7 +116,7 @@ g.test('creating texture view on a 2D array texture', async t => {
     baseArrayLayer,
   });
 
-  await t.expectValidationError(() => {
+  t.expectValidationError(() => {
     texture.createView(descriptor);
   }, !_success);
 }).params([
@@ -144,7 +144,7 @@ g.test(
 
     const descriptor = { format, dimension, arrayLayerCount, mipLevelCount };
 
-    await t.expectValidationError(() => {
+    t.expectValidationError(() => {
       texture.createView(descriptor);
     }, !_success);
   }
@@ -171,7 +171,7 @@ g.test('Using defaults validates the same as setting values for only 1 array lay
 
   const descriptor = { format, dimension, arrayLayerCount, mipLevelCount };
 
-  await t.expectValidationError(() => {
+  t.expectValidationError(() => {
     texture.createView(descriptor);
   }, !_success);
 }).params([
@@ -197,7 +197,7 @@ g.test('creating cube map texture view', async t => {
     arrayLayerCount,
   });
 
-  await t.expectValidationError(() => {
+  t.expectValidationError(() => {
     texture.createView(descriptor);
   }, !_success);
 }).params([
@@ -228,7 +228,7 @@ g.test('creating cube map texture view with a non square texture', async t => {
     arrayLayerCount,
   });
 
-  await t.expectValidationError(() => {
+  t.expectValidationError(() => {
     nonSquareTexture.createView(descriptor);
   });
 }).params([
@@ -245,7 +245,7 @@ g.test('test the format compatibility rules when creating a texture view', async
   });
 
   // it is invalid to create a view in depth-stencil format on a RGBA texture
-  await t.expectValidationError(() => {
+  t.expectValidationError(() => {
     texture.createView(descriptor);
   });
 });
@@ -266,7 +266,7 @@ g.test('it is invalid to use a texture view created from a destroyed texture', a
   });
   renderPass.endPass();
 
-  await t.expectValidationError(() => {
+  t.expectValidationError(() => {
     commandEncoder.finish();
   });
 });

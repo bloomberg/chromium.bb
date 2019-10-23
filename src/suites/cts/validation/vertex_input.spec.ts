@@ -199,7 +199,7 @@ g.test('pipeline vertex buffers are backed by attributes in vertex input', async
     `;
     const descriptor = t.getDescriptor(vertexInput, code);
 
-    await t.expectValidationError(() => {
+    t.expectValidationError(() => {
       t.device.createRenderPipeline(descriptor);
     });
   }
@@ -262,7 +262,7 @@ g.test('offset should be within vertex buffer stride if stride is not zero', asy
     badVertexInput.vertexBuffers![0].attributeSet[1].format = 'float2';
     const descriptor = t.getDescriptor(badVertexInput, VERTEX_SHADER_CODE_WITH_NO_INPUT);
 
-    await t.expectValidationError(() => {
+    t.expectValidationError(() => {
       t.device.createRenderPipeline(descriptor);
     });
   }
@@ -272,7 +272,7 @@ g.test('offset should be within vertex buffer stride if stride is not zero', asy
     badVertexInput.vertexBuffers![0].stride = Float32Array.BYTES_PER_ELEMENT;
     const descriptor = t.getDescriptor(badVertexInput, VERTEX_SHADER_CODE_WITH_NO_INPUT);
 
-    await t.expectValidationError(() => {
+    t.expectValidationError(() => {
       t.device.createRenderPipeline(descriptor);
     });
   }
@@ -315,7 +315,7 @@ g.test('check two attributes overlapping', async t => {
     badVertexInput.vertexBuffers![0].attributeSet[0].format = 'int2';
     const descriptor = t.getDescriptor(badVertexInput, VERTEX_SHADER_CODE_WITH_NO_INPUT);
 
-    await t.expectValidationError(() => {
+    t.expectValidationError(() => {
       t.device.createRenderPipeline(descriptor);
     });
   }
@@ -359,7 +359,7 @@ g.test('check out of bounds condition on total number of vertex buffers', async 
     };
     const descriptor = t.getDescriptor(vertexInput, VERTEX_SHADER_CODE_WITH_NO_INPUT);
 
-    await t.expectValidationError(() => {
+    t.expectValidationError(() => {
       t.device.createRenderPipeline(descriptor);
     });
   }
@@ -405,7 +405,7 @@ g.test('check out of bounds on number of vertex attributes on a single vertex bu
     };
     const descriptor = t.getDescriptor(vertexInput, VERTEX_SHADER_CODE_WITH_NO_INPUT);
 
-    await t.expectValidationError(() => {
+    t.expectValidationError(() => {
       t.device.createRenderPipeline(descriptor);
     });
   }
@@ -440,7 +440,7 @@ g.test('check out of bounds on number of vertex attributes across vertex buffers
     const vertexInput: GPUVertexInputDescriptor = { vertexBuffers };
     const descriptor = t.getDescriptor(vertexInput, VERTEX_SHADER_CODE_WITH_NO_INPUT);
 
-    await t.expectValidationError(() => {
+    t.expectValidationError(() => {
       t.device.createRenderPipeline(descriptor);
     });
   }
@@ -465,7 +465,7 @@ g.test('check out of bounds condition on input strides', async t => {
     vertexInput.vertexBuffers![0].stride = MAX_VERTEX_BUFFER_STRIDE + 4;
     const descriptor = t.getDescriptor(vertexInput, VERTEX_SHADER_CODE_WITH_NO_INPUT);
 
-    await t.expectValidationError(() => {
+    t.expectValidationError(() => {
       t.device.createRenderPipeline(descriptor);
     });
   }
@@ -495,7 +495,7 @@ g.test('check multiple of 4 bytes constraint on input stride', async t => {
     vertexInput.vertexBuffers![0].stride = 2;
     const descriptor = t.getDescriptor(vertexInput, VERTEX_SHADER_CODE_WITH_NO_INPUT);
 
-    await t.expectValidationError(() => {
+    t.expectValidationError(() => {
       t.device.createRenderPipeline(descriptor);
     });
   }
@@ -528,7 +528,7 @@ g.test('identical duplicate attributes are invalid', async t => {
     });
     const descriptor = t.getDescriptor(vertexInput, VERTEX_SHADER_CODE_WITH_NO_INPUT);
 
-    await t.expectValidationError(() => {
+    t.expectValidationError(() => {
       t.device.createRenderPipeline(descriptor);
     });
   }
@@ -564,7 +564,7 @@ g.test('we cannot set same shader location', async t => {
       vertexInput.vertexBuffers![0].attributeSet![1].shaderLocation = 0;
       const descriptor = t.getDescriptor(vertexInput, VERTEX_SHADER_CODE_WITH_NO_INPUT);
 
-      await t.expectValidationError(() => {
+      t.expectValidationError(() => {
         t.device.createRenderPipeline(descriptor);
       });
     }
@@ -595,7 +595,7 @@ g.test('we cannot set same shader location', async t => {
     // Test same shader location in two attributes in different buffers
     const descriptor = t.getDescriptor(vertexInput, VERTEX_SHADER_CODE_WITH_NO_INPUT);
 
-    await t.expectValidationError(() => {
+    t.expectValidationError(() => {
       t.device.createRenderPipeline(descriptor);
     });
   }
@@ -625,7 +625,7 @@ g.test('check out of bounds condition on attribute shader location', async t => 
     vertexInput.vertexBuffers![0].attributeSet![0].shaderLocation = MAX_VERTEX_ATTRIBUTES;
     const descriptor = t.getDescriptor(vertexInput, VERTEX_SHADER_CODE_WITH_NO_INPUT);
 
-    await t.expectValidationError(() => {
+    t.expectValidationError(() => {
       t.device.createRenderPipeline(descriptor);
     });
   }
@@ -662,7 +662,7 @@ g.test('check attribute offset out of bounds', async t => {
     vertexInput.vertexBuffers![0].attributeSet![0].offset = MAX_VERTEX_BUFFER_END - 4;
     const descriptor = t.getDescriptor(vertexInput, VERTEX_SHADER_CODE_WITH_NO_INPUT);
 
-    await t.expectValidationError(() => {
+    t.expectValidationError(() => {
       t.device.createRenderPipeline(descriptor);
     });
   }
@@ -693,7 +693,7 @@ g.test('check multiple of 4 bytes constraint on offset', async t => {
     vertexInput.vertexBuffers![0].attributeSet![0].offset = 2;
     vertexInput.vertexBuffers![0].attributeSet![0].format = 'uchar2';
     const descriptor = t.getDescriptor(vertexInput, VERTEX_SHADER_CODE_WITH_NO_INPUT);
-    await t.expectValidationError(() => {
+    t.expectValidationError(() => {
       t.device.createRenderPipeline(descriptor);
     });
   }
@@ -703,7 +703,7 @@ g.test('check multiple of 4 bytes constraint on offset', async t => {
     vertexInput.vertexBuffers![0].attributeSet![0].format = 'float';
     const descriptor = t.getDescriptor(vertexInput, VERTEX_SHADER_CODE_WITH_NO_INPUT);
 
-    await t.expectValidationError(() => {
+    t.expectValidationError(() => {
       t.device.createRenderPipeline(descriptor);
     });
   }
@@ -726,7 +726,7 @@ g.test('check attribute offset overflow', async t => {
   };
   const descriptor = t.getDescriptor(vertexInput, VERTEX_SHADER_CODE_WITH_NO_INPUT);
 
-  await t.expectValidationError(() => {
+  t.expectValidationError(() => {
     t.device.createRenderPipeline(descriptor);
   });
 });

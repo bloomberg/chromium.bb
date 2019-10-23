@@ -124,9 +124,9 @@ g.test('partial suite', async t => {
 });
 
 g.test('whole group', async t => {
-  await t.shouldReject('Error', t.load(['suite1::']));
-  await t.shouldReject('Error', t.load(['suite1:bar:']));
-  await t.shouldReject('Error', t.load(['suite1:bar/:']));
+  t.shouldReject('Error', t.load(['suite1::']));
+  t.shouldReject('Error', t.load(['suite1:bar:']));
+  t.shouldReject('Error', t.load(['suite1:bar/:']));
   t.expect((await t.singleGroup('suite1:bar/buzz:')).length === 1);
   t.expect((await t.singleGroup('suite1:baz:')).length === 2);
 

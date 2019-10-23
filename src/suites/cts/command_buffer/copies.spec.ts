@@ -26,7 +26,7 @@ g.test('b2b', async t => {
   encoder.copyBufferToBuffer(src, 0, dst, 0, 4);
   t.device.getQueue().submit([encoder.finish()]);
 
-  await t.expectContents(dst, data);
+  t.expectContents(dst, data);
 });
 
 g.test('b2t2b', async t => {
@@ -63,7 +63,7 @@ g.test('b2t2b', async t => {
   );
   t.device.getQueue().submit([encoder.finish()]);
 
-  await t.expectContents(dst, data);
+  t.expectContents(dst, data);
 });
 
 g.test('b2t2t2b', async t => {
@@ -107,5 +107,5 @@ g.test('b2t2t2b', async t => {
   );
   t.device.getQueue().submit([encoder.finish()]);
 
-  await t.expectContents(dst, data);
+  t.expectContents(dst, data);
 });

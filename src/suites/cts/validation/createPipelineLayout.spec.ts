@@ -61,7 +61,7 @@ g.test('number of dynamic buffers exceeds the maximum value', async t => {
     ],
   };
 
-  await t.expectValidationError(() => {
+  t.expectValidationError(() => {
     t.device.createPipelineLayout(badPipelineLayoutDescriptor);
   });
 }).params([
@@ -102,7 +102,7 @@ g.test('number of bind group layouts exceeds the maximum value', async t => {
     ],
   };
 
-  await t.expectValidationError(() => {
+  t.expectValidationError(() => {
     t.device.createPipelineLayout(badPipelineLayoutDescriptor);
   });
 }).params(poptions('type', ['storage-buffer', 'uniform-buffer']));

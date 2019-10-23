@@ -56,7 +56,7 @@ g.test('dynamic offsets passed but not expected/compute pass', async t => {
   const { type } = t.params;
   const dynamicOffsets = [0];
 
-  await t.expectValidationError(() => {
+  t.expectValidationError(() => {
     if (type === 'compute') {
       const encoder = t.device.createCommandEncoder();
       const computePass = encoder.beginComputePass();
@@ -142,7 +142,7 @@ g.test('dynamic offsets match expectations in pass encoder', async t => {
 
   const { type, dynamicOffsets, _success } = t.params;
 
-  await t.expectValidationError(() => {
+  t.expectValidationError(() => {
     if (type === 'compute') {
       t.testComputePass(bindGroup, dynamicOffsets);
     } else if (type === 'renderpass') {

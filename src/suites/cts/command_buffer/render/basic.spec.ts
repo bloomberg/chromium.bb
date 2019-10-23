@@ -38,5 +38,5 @@ g.test('clear', async t => {
   );
   t.device.getQueue().submit([encoder.finish()]);
 
-  await t.expectContents(dst, new Uint8Array([0x00, 0xff, 0x00, 0xff]));
+  t.expectContents(dst, new Uint8Array([0x00, 0xff, 0x00, 0xff]));
 });

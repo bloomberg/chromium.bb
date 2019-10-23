@@ -62,23 +62,24 @@ export class GPUTest extends Fixture {
 
   // TODO: add an expectContents for textures, which logs data: uris on failure
 
-  expectContents(src: GPUBuffer, expected: ArrayBufferView): Promise<void> {
-    return this.asyncExpectation(async () => {
-      const exp = new Uint8Array(expected.buffer, expected.byteOffset, expected.byteLength);
+  expectContents(src: GPUBuffer, expected: ArrayBufferView): void {
+    const exp = new Uint8Array(expected.buffer, expected.byteOffset, expected.byteLength);
 
-      const size = expected.buffer.byteLength;
-      const dst = this.device.createBuffer({
-        size: expected.buffer.byteLength,
-        usage: GPUBufferUsage.MAP_READ | GPUBufferUsage.COPY_DST,
-      });
+    const size = expected.buffer.byteLength;
+    const dst = this.device.createBuffer({
+      size: expected.buffer.byteLength,
+      usage: GPUBufferUsage.MAP_READ | GPUBufferUsage.COPY_DST,
+    });
 
-      const c = this.device.createCommandEncoder();
-      c.copyBufferToBuffer(src, 0, dst, 0, size);
+    const c = this.device.createCommandEncoder();
+    c.copyBufferToBuffer(src, 0, dst, 0, size);
 
-      this.queue.submit([c.finish()]);
+    this.queue.submit([c.finish()]);
 
+    this.eventualAsyncExpectation(async () => {
       const actual = new Uint8Array(await dst.mapReadAsync());
       this.expectBuffer(actual, exp);
+      dst.destroy();
     });
   }
 

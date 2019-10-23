@@ -11,18 +11,19 @@ export class ValidationTest extends GPUTest {
     return errorBuffer;
   }
 
-  async expectValidationError(fn: Function, shouldError: boolean = true): Promise<void> {
+  expectValidationError(fn: Function, shouldError: boolean = true): void {
     // If no error is expected, we let the scope surrounding the test catch it.
     if (shouldError === false) {
       fn();
       return;
     }
-    return this.asyncExpectation(async () => {
-      this.device.pushErrorScope('validation');
 
-      fn();
+    this.device.pushErrorScope('validation');
+    fn();
+    const promise = this.device.popErrorScope();
 
-      const gpuValidationError = await this.device.popErrorScope();
+    this.eventualAsyncExpectation(async () => {
+      const gpuValidationError = await promise;
       if (!gpuValidationError) {
         this.fail('Validation error was expected.');
       } else if (gpuValidationError instanceof GPUValidationError) {

@@ -1,7 +1,7 @@
 import { GPUTest } from '../gpu_test.js';
 
 export class MappingTest extends GPUTest {
-  checkMapWrite(buffer: GPUBuffer, mappedContents: ArrayBuffer, size: number): Promise<void> {
+  checkMapWrite(buffer: GPUBuffer, mappedContents: ArrayBuffer, size: number): void {
     this.checkMapWriteZeroed(mappedContents, size);
 
     const mappedView = new Uint32Array(mappedContents);
@@ -12,7 +12,7 @@ export class MappingTest extends GPUTest {
     }
     buffer.unmap();
 
-    return this.expectContents(buffer, expected);
+    this.expectContents(buffer, expected);
   }
 
   checkMapWriteZeroed(arrayBuffer: ArrayBuffer, expectedSize: number): void {

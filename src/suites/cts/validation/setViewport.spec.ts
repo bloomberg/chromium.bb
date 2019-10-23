@@ -39,7 +39,7 @@ g.test('use of setViewport', async t => {
   renderPass.setViewport(x, y, width, height, minDepth, maxDepth);
   renderPass.endPass();
 
-  await t.expectValidationError(() => {
+  t.expectValidationError(() => {
     commandEncoder.finish();
   }, !_success);
 }).params([

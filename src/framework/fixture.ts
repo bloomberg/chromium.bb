@@ -7,6 +7,7 @@ import { ParamSpec } from './params/index.js';
 export class Fixture {
   params: ParamSpec;
   protected rec: TestCaseRecorder;
+  private eventualExpectations: Array<Promise<unknown>> = [];
   private numOutstandingAsyncExpectations = 0;
 
   constructor(rec: TestCaseRecorder, params: ParamSpec) {
@@ -32,6 +33,8 @@ export class Fixture {
         'there were outstanding asynchronous expectations (e.g. shouldReject) at the end of the test'
       );
     }
+
+    await Promise.all(this.eventualExpectations);
   }
 
   warn(msg?: string): void {
@@ -47,11 +50,17 @@ export class Fixture {
     this.log('OK' + m);
   }
 
-  protected async asyncExpectation<T>(fn: () => Promise<T>): Promise<T> {
+  protected async immediateAsyncExpectation<T>(fn: () => Promise<T>): Promise<T> {
     this.numOutstandingAsyncExpectations++;
     const ret = await fn();
     this.numOutstandingAsyncExpectations--;
     return ret;
+  }
+
+  protected eventualAsyncExpectation<T>(fn: () => Promise<T>): Promise<T> {
+    const promise = fn();
+    this.eventualExpectations.push(promise);
+    return promise;
   }
 
   private expectErrorValue(expectedName: string, ex: unknown, m: string): void {
@@ -67,8 +76,8 @@ export class Fixture {
     }
   }
 
-  async shouldReject(expectedName: string, p: Promise<unknown>, msg?: string): Promise<void> {
-    this.asyncExpectation(async () => {
+  shouldReject(expectedName: string, p: Promise<unknown>, msg?: string): void {
+    this.eventualAsyncExpectation(async () => {
       const m = msg ? ': ' + msg : '';
       try {
         await p;

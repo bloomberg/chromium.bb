@@ -75,7 +75,7 @@ g.test('storeOp controls whether 1x1 drawn quad is stored', async t => {
 
   // expect the buffer to be clear
   const expectedContent = new Uint32Array([t.params.expected]);
-  await t.expectContents(dstBuffer, expectedContent);
+  t.expectContents(dstBuffer, expectedContent);
 }).params([
   { storeOp: 'store', expected: 255 }, //
   { storeOp: 'clear', expected: 0 },

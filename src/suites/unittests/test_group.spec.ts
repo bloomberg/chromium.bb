@@ -150,7 +150,7 @@ g.test('shouldThrow', async t0 => {
 });
 
 g.test('shouldReject', async t0 => {
-  await t0.shouldReject(
+  t0.shouldReject(
     'TypeError',
     (async () => {
       throw new TypeError();
@@ -160,7 +160,7 @@ g.test('shouldReject', async t0 => {
   const g = new TestGroup(UnitTest);
 
   g.test('a', async t => {
-    await t.shouldReject(
+    t.shouldReject(
       'Error',
       (async () => {
         throw new TypeError();
@@ -169,23 +169,6 @@ g.test('shouldReject', async t0 => {
   });
 
   const result = await t0.run(g);
-  t0.expect(result.cases[0].status === 'fail');
-});
-
-g.test('shouldReject/unawaited', async t0 => {
-  const g = new TestGroup(UnitTest);
-
-  g.test('a', async t => {
-    // This test passes...
-    t.shouldReject(
-      'Error',
-      (async () => {
-        throw new Error();
-      })()
-    );
-  });
-
-  const result = await t0.run(g);
-  // ... but the test fails, because there were outstanding expectations at the end of the test.
+  // Fails even though shouldReject doesn't fail until after the test function ends
   t0.expect(result.cases[0].status === 'fail');
 });

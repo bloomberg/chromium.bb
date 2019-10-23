@@ -39,7 +39,7 @@ g.test('use of setScissorRect', async t => {
   renderPass.setScissorRect(x, y, width, height);
   renderPass.endPass();
 
-  await t.expectValidationError(() => {
+  t.expectValidationError(() => {
     commandEncoder.finish();
   }, !_success);
 }).params([

@@ -32,7 +32,7 @@ g.test('submitting with a mapped buffer is disallowed', async t => {
   await buffer.mapWriteAsync();
   t.queue.submit([]);
 
-  await t.expectValidationError(() => {
+  t.expectValidationError(() => {
     t.queue.submit([getCommandBuffer()]);
   });
 

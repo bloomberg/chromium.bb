@@ -36,7 +36,7 @@ g.test('basic', t => {
 
 g.test('basic/async', async t => {
   // shouldReject must be awaited to ensure it can wait for the promise before the test ends.
-  await t.shouldReject(
+  t.shouldReject(
     // The expected '.name' of the thrown error.
     'TypeError',
     // Promise expected to reject.
@@ -46,7 +46,7 @@ g.test('basic/async', async t => {
   );
 
   // Promise can also be an IIFE.
-  await t.shouldReject(
+  t.shouldReject(
     'TypeError',
     (async () => {
       throw new TypeError();
@@ -89,5 +89,5 @@ g.test('gpu/buffers', async t => {
 
   // Use the expectContents helper to check the actual contents of a GPUBuffer.
   // Like shouldReject, it must be awaited.
-  await t.expectContents(src, data);
+  t.expectContents(src, data);
 });

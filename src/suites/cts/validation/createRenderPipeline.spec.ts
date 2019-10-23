@@ -119,7 +119,7 @@ g.test('at least one color state is required', async t => {
     colorStates: [],
   });
 
-  await t.expectValidationError(() => {
+  t.expectValidationError(() => {
     t.device.createRenderPipeline(badDescriptor);
   });
 });
@@ -135,7 +135,7 @@ g.test('color formats must be renderable', async t => {
     t.device.createRenderPipeline(descriptor);
   } else {
     // Fails because when format is non-renderable
-    await t.expectValidationError(() => {
+    t.expectValidationError(() => {
       t.device.createRenderPipeline(descriptor);
     });
   }
@@ -151,7 +151,7 @@ g.test('sample count must be valid', async t => {
     t.device.createRenderPipeline(descriptor);
   } else {
     // Fails when sample count is not 4 or 1
-    await t.expectValidationError(() => {
+    t.expectValidationError(() => {
       t.device.createRenderPipeline(descriptor);
     });
   }
@@ -223,7 +223,7 @@ g.test('sample count must be equal to the one of every attachment in the render 
     renderPass.setPipeline(pipeline);
     renderPass.endPass();
 
-    await t.expectValidationError(() => {
+    t.expectValidationError(() => {
       commandEncoder.finish();
     }, !_success);
   }

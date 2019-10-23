@@ -141,7 +141,7 @@ g.test('it is invalid to draw in a render pass with missing bind groups', async 
   }
   renderPass.draw(3, 1, 0, 0);
   renderPass.endPass();
-  await t.expectValidationError(() => {
+  t.expectValidationError(() => {
     commandEncoder.finish();
   }, !_success);
 }).params([

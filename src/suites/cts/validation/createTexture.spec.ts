@@ -45,7 +45,7 @@ g.test('validation of sampleCount', async t => {
 
   const descriptor = t.getDescriptor({ sampleCount, mipLevelCount, arrayLayerCount });
 
-  await t.expectValidationError(() => {
+  t.expectValidationError(() => {
     t.device.createTexture(descriptor);
   }, !_success);
 }).params([
@@ -65,7 +65,7 @@ g.test('validation of mipLevelCount', async t => {
 
   const descriptor = t.getDescriptor({ width, height, mipLevelCount });
 
-  await t.expectValidationError(() => {
+  t.expectValidationError(() => {
     t.device.createTexture(descriptor);
   }, !_success);
 }).params([
@@ -118,7 +118,7 @@ g.test('it is invalid to submit a destroyed texture before and after encode', as
     texture.destroy();
   }
 
-  await t.expectValidationError(() => {
+  t.expectValidationError(() => {
     t.queue.submit([commandBuffer]);
   }, !_success);
 }).params([
@@ -133,7 +133,7 @@ g.test('it is invalid to have an output attachment texture with non renderable f
 
   const descriptor = t.getDescriptor({ width: 1, height: 1, format });
 
-  await t.expectValidationError(() => {
+  t.expectValidationError(() => {
     t.device.createTexture(descriptor);
   }, !info.renderable);
 }).params(textureFormatParams);

@@ -142,6 +142,7 @@ class RunCaseSpecific<F extends Fixture> implements RunCase {
       await inst.finalize();
     } catch (ex) {
       // There was an exception from constructor, init, or finalize.
+      // (An error from finalize may have been an eventualAsyncExpectation failure.)
       rec.threw(ex);
     }
 

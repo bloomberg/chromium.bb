@@ -94,7 +94,7 @@ g.test('binding count mismatch', async t => {
     layout: bindGroupLayout,
   };
 
-  await t.expectValidationError(() => {
+  t.expectValidationError(() => {
     t.device.createBindGroup(badDescriptor);
   });
 });
@@ -138,7 +138,7 @@ g.test('binding must be present in layout', async t => {
     layout: bindGroupLayout,
   };
 
-  await t.expectValidationError(() => {
+  t.expectValidationError(() => {
     t.device.createBindGroup(badDescriptor);
   });
 });
@@ -176,7 +176,7 @@ g.test('buffer binding must contain exactly one buffer of its type', async t => 
     shouldError = false;
   }
 
-  await t.expectValidationError(() => {
+  t.expectValidationError(() => {
     t.device.createBindGroup({
       bindings: [{ binding: 0, resource }],
       layout: bindGroupLayout,
@@ -259,7 +259,7 @@ g.test('texture binding must have correct usage', async t => {
     const badDescriptor = clone(goodDescriptor);
     badDescriptor.usage = mismatchedTextureUsage;
 
-    await t.expectValidationError(() => {
+    t.expectValidationError(() => {
       t.device.createBindGroup({
         bindings: [
           {
@@ -333,7 +333,7 @@ g.test('texture must have correct component type', async t => {
     const badDescriptor = clone(goodDescriptor);
     badDescriptor.format = mismatchedTextureFormat;
 
-    await t.expectValidationError(() => {
+    t.expectValidationError(() => {
       t.device.createBindGroup({
         bindings: [
           {
@@ -382,7 +382,7 @@ g.test('texture must have correct dimension', async t => {
   const badDescriptor = clone(goodDescriptor);
   badDescriptor.arrayLayerCount = 2;
 
-  await t.expectValidationError(() => {
+  t.expectValidationError(() => {
     t.device.createBindGroup({
       bindings: [
         {
@@ -428,7 +428,7 @@ g.test('buffer offset and size for bind groups match', async t => {
     t.device.createBindGroup(descriptor);
   } else {
     // Buffer offset and/or size don't match in bind groups.
-    await t.expectValidationError(() => {
+    t.expectValidationError(() => {
       t.device.createBindGroup(descriptor);
     });
   }
