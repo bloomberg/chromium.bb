@@ -4144,6 +4144,21 @@
             ]
         }
     ],
+    "OzoneDrmMojo": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "OzoneDrmMojo",
+                    "enable_features": [
+                        "OzoneDrmMojo"
+                    ]
+                }
+            ]
+        }
+    ],
     "PDFClickToOpen": [
         {
             "platforms": [
