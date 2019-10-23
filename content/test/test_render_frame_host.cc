@@ -353,17 +353,11 @@ void TestRenderFrameHost::SendRendererInitiatedNavigationRequest(
 
   mojo::PendingAssociatedRemote<mojom::NavigationClient>
       navigation_client_remote;
-  if (IsPerNavigationMojoInterfaceEnabled()) {
-    GetRemoteAssociatedInterfaces()->GetInterface(
-        navigation_client_remote.InitWithNewEndpointAndPassReceiver());
-    BeginNavigation(std::move(common_params), std::move(begin_params),
-                    mojo::NullRemote(), std::move(navigation_client_remote),
-                    mojo::NullRemote());
-  } else {
-    BeginNavigation(std::move(common_params), std::move(begin_params),
-                    mojo::NullRemote(), mojo::NullAssociatedRemote(),
-                    mojo::NullRemote());
-  }
+  GetRemoteAssociatedInterfaces()->GetInterface(
+      navigation_client_remote.InitWithNewEndpointAndPassReceiver());
+  BeginNavigation(std::move(common_params), std::move(begin_params),
+                  mojo::NullRemote(), std::move(navigation_client_remote),
+                  mojo::NullRemote());
 }
 
 void TestRenderFrameHost::DidChangeOpener(int opener_routing_id) {

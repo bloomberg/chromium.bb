@@ -1124,24 +1124,13 @@ bool NavigationSimulatorImpl::SimulateRendererInitiatedStart() {
       InitiatorCSPInfo(should_check_main_world_csp_,
                        std::vector<ContentSecurityPolicy>(), base::nullopt);
 
-  if (IsPerNavigationMojoInterfaceEnabled()) {
-    mojo::PendingAssociatedRemote<mojom::NavigationClient>
-        navigation_client_remote;
-    navigation_client_receiver_ =
-        navigation_client_remote.InitWithNewEndpointAndPassReceiver();
-    render_frame_host_->frame_host_receiver_for_testing()
-        .impl()
-        ->BeginNavigation(std::move(common_params), std::move(begin_params),
-                          mojo::NullRemote(),
-                          std::move(navigation_client_remote),
-                          mojo::NullRemote());
-  } else {
-    render_frame_host_->frame_host_receiver_for_testing()
-        .impl()
-        ->BeginNavigation(std::move(common_params), std::move(begin_params),
-                          mojo::NullRemote(), mojo::NullAssociatedRemote(),
-                          mojo::NullRemote());
-  }
+  mojo::PendingAssociatedRemote<mojom::NavigationClient>
+      navigation_client_remote;
+  navigation_client_receiver_ =
+      navigation_client_remote.InitWithNewEndpointAndPassReceiver();
+  render_frame_host_->frame_host_receiver_for_testing().impl()->BeginNavigation(
+      std::move(common_params), std::move(begin_params), mojo::NullRemote(),
+      std::move(navigation_client_remote), mojo::NullRemote());
 
   NavigationRequest* request =
       render_frame_host_->frame_tree_node()->navigation_request();
