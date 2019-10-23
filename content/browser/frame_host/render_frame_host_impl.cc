@@ -1272,8 +1272,8 @@ void RenderFrameHostImpl::StartBackForwardCacheEvictionTimer() {
                      BackForwardCacheMetrics::NotRestoredReason::kTimeout));
 }
 
-void RenderFrameHostImpl::DisallowBackForwardCache() {
-  is_back_forward_cache_disallowed_ = true;
+void RenderFrameHostImpl::DisableBackForwardCache() {
+  is_back_forward_cache_disabled_ = true;
   if (is_in_back_forward_cache())
     EvictFromBackForwardCacheWithReason(base::nullopt);
 }
