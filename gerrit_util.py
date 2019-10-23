@@ -12,6 +12,8 @@ from __future__ import print_function
 
 import base64
 import contextlib
+import cookielib
+import httplib  # Still used for its constants.
 import httplib2
 import json
 import logging
@@ -25,6 +27,8 @@ import sys
 import tempfile
 import time
 import urllib
+import urlparse
+from cStringIO import StringIO
 from multiprocessing.pool import ThreadPool
 
 import auth
@@ -32,17 +36,6 @@ import gclient_utils
 import metrics
 import metrics_utils
 import subprocess2
-
-if sys.version_info.major == 2:
-  import cookielib
-  import httplib
-  import urlparse
-  from cStringIO import StringIO
-else:
-  import http.cookiejar as cookielib
-  import http.client as httplib
-  import urllib.parse as urlparse
-  from io import StringIO
 
 LOGGER = logging.getLogger()
 # With a starting sleep time of 1.5 seconds, 2^n exponential backoff, and seven

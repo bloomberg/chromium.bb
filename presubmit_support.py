@@ -7,7 +7,6 @@
 """
 
 from __future__ import print_function
-from __future__ import unicode_literals
 
 __version__ = '1.8.0'
 
@@ -34,6 +33,7 @@ import sys  # Parts exposed through API.
 import tempfile  # Exposed through the API.
 import threading
 import time
+import types
 import unittest  # Exposed through the API.
 from warnings import warn
 
@@ -542,12 +542,10 @@ class InputApi(object):
     self.os_walk = os.walk
     self.re = re
     self.subprocess = subprocess
-    self.sys = sys
     self.tempfile = tempfile
     self.time = time
     self.unittest = unittest
-    if sys.version_info.major == 2:
-      self.urllib2 = urllib2
+    self.urllib2 = urllib2
     self.urllib_request = urllib_request
     self.urllib_error = urllib_error
 
@@ -577,7 +575,7 @@ class InputApi(object):
     # TODO(dpranke): figure out a list of all approved owners for a repo
     # in order to be able to handle wildcard OWNERS files?
     self.owners_db = owners.Database(change.RepositoryRoot(),
-                                     fopen=open, os_path=self.os_path)
+                                     fopen=file, os_path=self.os_path)
     self.owners_finder = owners_finder.OwnersFinder
     self.verbose = verbose
     self.Command = CommandData
@@ -611,9 +609,9 @@ class InputApi(object):
     if len(dir_with_slash) == 1:
       dir_with_slash = ''
 
-    return list(filter(
+    return filter(
         lambda x: normpath(x.AbsoluteLocalPath()).startswith(dir_with_slash),
-        self.change.AffectedFiles(include_deletes, file_filter)))
+        self.change.AffectedFiles(include_deletes, file_filter))
 
   def LocalPaths(self):
     """Returns local paths of input_api.AffectedFiles()."""
@@ -635,9 +633,8 @@ class InputApi(object):
                " is deprecated and ignored" % str(include_deletes),
            category=DeprecationWarning,
            stacklevel=2)
-    return list(filter(
-        lambda x: x.IsTestableFile(),
-        self.AffectedFiles(include_deletes=False, **kwargs)))
+    return filter(lambda x: x.IsTestableFile(),
+                  self.AffectedFiles(include_deletes=False, **kwargs))
 
   def AffectedTextFiles(self, include_deletes=None):
     """An alias to AffectedTestableFiles for backwards compatibility."""
@@ -670,7 +667,7 @@ class InputApi(object):
     """
     if not source_file:
       source_file = self.FilterSourceFile
-    return list(filter(source_file, self.AffectedTestableFiles()))
+    return filter(source_file, self.AffectedTestableFiles())
 
   def RightHandSideLines(self, source_file_filter=None):
     """An iterator over all text lines in "new" version of changed files.
@@ -1097,11 +1094,11 @@ class Change(object):
     Returns:
       [AffectedFile(path, action), AffectedFile(path, action)]
     """
-    affected = list(filter(file_filter, self._affected_files))
+    affected = filter(file_filter, self._affected_files)
 
     if include_deletes:
       return affected
-    return list(filter(lambda x: x.Action() != 'D', affected))
+    return filter(lambda x: x.Action() != 'D', affected)
 
   def AffectedTestableFiles(self, include_deletes=None, **kwargs):
     """Return a list of the existing text files in a change."""
@@ -1110,9 +1107,8 @@ class Change(object):
                " is deprecated and ignored" % str(include_deletes),
            category=DeprecationWarning,
            stacklevel=2)
-    return list(filter(
-        lambda x: x.IsTestableFile(),
-        self.AffectedFiles(include_deletes=False, **kwargs)))
+    return filter(lambda x: x.IsTestableFile(),
+                  self.AffectedFiles(include_deletes=False, **kwargs))
 
   def AffectedTextFiles(self, include_deletes=None):
     """An alias to AffectedTestableFiles for backwards compatibility."""
@@ -1449,9 +1445,9 @@ class PresubmitExecuter(object):
         logging.debug('Running %s done.', function_name)
         self.more_cc.extend(output_api.more_cc)
       finally:
-        for f in input_api._named_temporary_files:
-          os.remove(f)
-      if not isinstance(result, (tuple, list)):
+        map(os.remove, input_api._named_temporary_files)
+      if not (isinstance(result, types.TupleType) or
+              isinstance(result, types.ListType)):
         raise PresubmitFailure(
           'Presubmit functions must return a tuple or list')
       for item in result:
@@ -1573,8 +1569,7 @@ def DoPresubmitChecks(change,
         ]
       }
 
-      gclient_utils.FileWrite(
-          json_output, json.dumps(presubmit_results, sort_keys=True))
+      gclient_utils.FileWrite(json_output, json.dumps(presubmit_results))
 
     output.write('\n')
     for name, items in (('Messages', notifications),
