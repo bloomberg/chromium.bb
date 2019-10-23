@@ -60,14 +60,14 @@ def ShaSums(file_path):
   """
   sha1 = hashlib.sha1()
   sha256 = hashlib.sha256()
-  with open(file_path, mode='r') as file_fobj:
+  with open(file_path, mode='rb') as file_fobj:
     for block in ReadBlock(file_fobj):
       sha1.update(block)
       sha256.update(block)
 
   # Encode in base 64 string.  Other bases could be supported here.
-  sha1_hex = base64.b64encode(sha1.digest())
-  sha256_hex = base64.b64encode(sha256.digest())
+  sha1_hex = base64.b64encode(sha1.digest()).decode('utf-8')
+  sha256_hex = base64.b64encode(sha256.digest()).decode('utf-8')
 
   return sha1_hex, sha256_hex
 

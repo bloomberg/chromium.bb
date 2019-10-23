@@ -252,6 +252,7 @@ PYTHON3_TESTS = {
     'lib/patch_unittest',
     'lib/path_util_unittest',
     'lib/paygen/download_cache_unittest',
+    'lib/paygen/filelib_unittest',
     'lib/paygen/gslock_unittest',
     'lib/paygen/gspaths_unittest',
     'lib/paygen/partition_lib_unittest',

@@ -1184,7 +1184,7 @@ fe5d699f2e9e4a7de031497953313dbd *./models/snappy/setvars.sh
 
   def _TestChromeLKGM(self, chrome_revision):
     """Helper method for testing the GetChromeLKGM method."""
-    chrome_lkgm = '3322.0.0'
+    chrome_lkgm = b'3322.0.0'
     url = '%s/+/%s/%s?format=text' % (
         constants.CHROMIUM_SRC_PROJECT,
         chrome_revision or 'refs/heads/master',
@@ -1599,8 +1599,8 @@ class UnmockedTests(cros_test_lib.TempDirTestCase):
     parsed = json.loads(osutils.ReadFile(upload_file))
 
     # Directory should be ignored.
-    test_content = {'file1.txt': text_str,
-                    'file2.json': json_str,
+    test_content = {'file1.txt': text_str.encode('utf-8'),
+                    'file2.json': json_str.encode('utf-8'),
                     'file3.bin': bin_blob}
 
     self.assertEqual(set(parsed.keys()), set(test_content.keys()))
@@ -1609,8 +1609,9 @@ class UnmockedTests(cros_test_lib.TempDirTestCase):
     for filename, content in test_content.items():
       entry = parsed[filename]
       size = len(content)
-      sha1 = base64.b64encode(hashlib.sha1(content).digest())
-      sha256 = base64.b64encode(hashlib.sha256(content).digest())
+      sha1 = base64.b64encode(hashlib.sha1(content).digest()).decode('utf-8')
+      sha256 = base64.b64encode(
+          hashlib.sha256(content).digest()).decode('utf-8')
 
       self.assertEqual(entry['size'], size)
       self.assertEqual(entry['sha1'], sha1)

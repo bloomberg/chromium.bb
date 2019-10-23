@@ -34,7 +34,7 @@ class TestFileLib(cros_test_lib.TempDirTestCase):
     """
     # The shasum utility returns hashes in base 16 encoding.  We need base 64.
     hash16 = cros_build_lib.run(
-        [util, file_path], redirect_stdout=True).output.split(' ')[0]
+        [util, file_path], redirect_stdout=True).output.split(b' ')[0]
     hashbytes = base64.b16decode(hash16, True)
     hash64 = base64.b64encode(hashbytes)
     return hash64.rstrip().decode('utf-8')
