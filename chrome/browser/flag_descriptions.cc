@@ -2250,6 +2250,12 @@ const char kWebrtcHwEncodingName[] = "WebRTC hardware video encoding";
 const char kWebrtcHwEncodingDescription[] =
     "Support in WebRTC for encoding video streams using platform hardware.";
 
+const char kWebrtcMultiChannelApmName[] =
+    "WebRTC multi-channel audio processing.";
+const char kWebrtcMultiChannelApmDescription[] =
+    "Support in WebRTC for processing playout and capture audio in multi "
+    "channel without downmixing.";
+
 const char kWebrtcNewEncodeCpuLoadEstimatorName[] =
     "WebRTC new encode cpu load estimator";
 const char kWebrtcNewEncodeCpuLoadEstimatorDescription[] =
