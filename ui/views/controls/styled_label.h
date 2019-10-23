@@ -24,6 +24,7 @@
 
 namespace views {
 
+class Label;
 class Link;
 class StyledLabelListener;
 
@@ -182,14 +183,17 @@ class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
   // |width_at_last_size_calculation_|. Returns the needed size.
   gfx::Size CalculateAndDoLayout(int width, bool dry_run);
 
+  // Creates a Label for a given |text| and |style_info|.
+  std::unique_ptr<Label> CreateLabel(const base::string16& text,
+                                     const RangeStyleInfo& style_info) const;
+
   // Adjusts the offsets of the views in a line for alignment and other line
   // parameters.
   void AdvanceOneLine(int* line_number,
                       gfx::Point* offset,
                       int* max_line_height,
                       int width,
-                      std::vector<View*>* views_in_a_line,
-                      bool new_line = true);
+                      std::vector<View*>* views_in_a_line);
 
   // The text to display.
   base::string16 text_;

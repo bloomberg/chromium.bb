@@ -29,42 +29,6 @@ namespace views {
 
 namespace {
 
-std::unique_ptr<Label> CreateLabelRange(
-    const base::string16& text,
-    int text_context,
-    int default_style,
-    const StyledLabel::RangeStyleInfo& style_info,
-    views::LinkListener* link_listener) {
-  std::unique_ptr<Label> result;
-
-  if (style_info.IsLink()) {
-    // Nothing should (and nothing does) use a custom font for links.
-    DCHECK(!style_info.custom_font);
-
-    // Note this ignores |default_style|, in favor of style::STYLE_LINK.
-    Link* link = new Link(text, text_context);
-    link->set_listener(link_listener);
-
-    // Links in a StyledLabel do not get underlines.
-    link->SetUnderline(false);
-
-    result.reset(link);
-  } else if (style_info.custom_font) {
-    result = std::make_unique<Label>(
-        text, Label::CustomFont{style_info.custom_font.value()});
-  } else {
-    result = std::make_unique<Label>(
-        text, text_context, style_info.text_style.value_or(default_style));
-  }
-  if (style_info.override_color != SK_ColorTRANSPARENT)
-    result->SetEnabledColor(style_info.override_color);
-
-  if (!style_info.tooltip.empty())
-    result->SetTooltipText(style_info.tooltip);
-
-  return result;
-}
-
 // Returns the horizontal offset to align views in a line.
 int HorizontalAdjustment(int used_width,
                          int width,
@@ -356,7 +320,7 @@ gfx::Size StyledLabel::CalculateAndDoLayout(int width, bool dry_run) {
   bool first_loop_iteration = true;
 
   // Max height of the views in a line.
-  int max_line_height = default_line_height;
+  int line_height = default_line_height;
 
   // Temporary references to the views in a line, used for alignment.
   std::vector<View*> views_in_a_line;
@@ -426,9 +390,9 @@ gfx::Size StyledLabel::CalculateAndDoLayout(int width, bool dry_run) {
         // The entire line is \n, or nothing fits on this line. Start a new
         // line. As for the first line, don't advance line number so that it
         // will be handled again at the beginning of the loop.
-        AdvanceOneLine(&line, &offset, &max_line_height, width,
-                       &views_in_a_line,
-                       offset.x() != 0 || line > 0 /* new_line */);
+        if (offset.x() != 0 || line > 0)
+          AdvanceOneLine(&line, &offset, &line_height, width, &views_in_a_line);
+        DCHECK(views_in_a_line.empty());
         continue;
       }
     }
@@ -461,8 +425,7 @@ gfx::Size StyledLabel::CalculateAndDoLayout(int width, bool dry_run) {
           position == range.start() && offset.x() != 0) {
         // If the chunk should not be wrapped, try to fit it entirely on the
         // next line.
-        AdvanceOneLine(&line, &offset, &max_line_height, width,
-                       &views_in_a_line);
+        AdvanceOneLine(&line, &offset, &line_height, width, &views_in_a_line);
         continue;
       }
 
@@ -470,10 +433,11 @@ gfx::Size StyledLabel::CalculateAndDoLayout(int width, bool dry_run) {
         chunk = chunk.substr(0, range.end() - position);
 
       if (!custom_view) {
-        label = CreateLabelRange(chunk, text_context_, default_text_style_,
-                                 style_info, this);
-        if (style_info.IsLink() && !dry_run)
+        label = CreateLabel(chunk, style_info);
+        if (style_info.IsLink() && !dry_run) {
+          static_cast<Link*>(label.get())->set_listener(this);
           link_targets_[label.get()] = range;
+        }
       }
 
       if (position + chunk.size() >= range.end())
@@ -484,14 +448,7 @@ gfx::Size StyledLabel::CalculateAndDoLayout(int width, bool dry_run) {
       // This chunk is normal text.
       if (position + chunk.size() > range.start())
         chunk = chunk.substr(0, range.start() - position);
-      label = CreateLabelRange(chunk, text_context_, default_text_style_,
-                               default_style, this);
-    }
-
-    if (label) {
-      if (displayed_on_background_color_set_)
-        label->SetBackgroundColor(displayed_on_background_color_);
-      label->SetAutoColorReadabilityEnabled(auto_color_readability_enabled_);
+      label = CreateLabel(chunk, default_style);
     }
 
     View* child_view = custom_view ? custom_view : label.get();
@@ -509,7 +466,7 @@ gfx::Size StyledLabel::CalculateAndDoLayout(int width, bool dry_run) {
                                         offset.y() + default_line_height) +
                                    insets.bottom());
     used_width = std::max(used_width, offset.x());
-    max_line_height = std::max(max_line_height, view_size.height());
+    line_height = std::max(line_height, view_size.height());
 
     if (!dry_run) {
       views_in_a_line.push_back(child_view);
@@ -519,6 +476,8 @@ gfx::Size StyledLabel::CalculateAndDoLayout(int width, bool dry_run) {
         AddChildView(child_view);
     }
 
+    remaining_string = remaining_string.substr(chunk.size());
+
     // If |gfx::ElideRectangleText| returned more than one substring, that
     // means the whole text did not fit into remaining line width, with text
     // after |susbtring[0]| spilling into next line. If whole |substring[0]|
@@ -526,13 +485,10 @@ gfx::Size StyledLabel::CalculateAndDoLayout(int width, bool dry_run) {
     // substring has different style), proceed to the next line.
     if (!custom_view && substrings.size() > 1 &&
         chunk.size() == substrings[0].size()) {
-      AdvanceOneLine(&line, &offset, &max_line_height, width, &views_in_a_line);
+      AdvanceOneLine(&line, &offset, &line_height, width, &views_in_a_line);
     }
-
-    remaining_string = remaining_string.substr(chunk.size());
   }
-  AdvanceOneLine(&line, &offset, &max_line_height, width, &views_in_a_line,
-                 false);
+  AdvanceOneLine(&line, &offset, &line_height, width, &views_in_a_line);
   DCHECK_LE(used_width, width);
   calculated_size_ = gfx::Size(used_width + GetInsets().width(), total_height);
   return calculated_size_;
@@ -540,26 +496,57 @@ gfx::Size StyledLabel::CalculateAndDoLayout(int width, bool dry_run) {
 
 void StyledLabel::AdvanceOneLine(int* line_number,
                                  gfx::Point* offset,
-                                 int* max_line_height,
+                                 int* line_height,
                                  int width,
-                                 std::vector<View*>* views_in_a_line,
-                                 bool new_line) {
+                                 std::vector<View*>* views_in_a_line) {
   const int x_delta =
       HorizontalAdjustment(offset->x(), width, horizontal_alignment_);
   for (auto* view : *views_in_a_line) {
     gfx::Rect bounds = view->bounds();
     bounds.set_x(bounds.x() + x_delta);
-    bounds.set_y(offset->y() + (*max_line_height - bounds.height()) / 2.0f);
+    bounds.set_y(offset->y() + (*line_height - bounds.height()) / 2.0f);
     view->SetBoundsRect(bounds);
   }
   views_in_a_line->clear();
 
-  if (new_line) {
-    ++(*line_number);
-    offset->set_y(offset->y() + *max_line_height);
-    *max_line_height = GetDefaultLineHeight();
+  ++(*line_number);
+  *offset = gfx::Point(0, offset->y() + *line_height);
+  *line_height = GetDefaultLineHeight();
+}
+
+std::unique_ptr<Label> StyledLabel::CreateLabel(
+    const base::string16& text,
+    const StyledLabel::RangeStyleInfo& style_info) const {
+  std::unique_ptr<Label> result;
+  if (style_info.IsLink()) {
+    // Nothing should (and nothing does) use a custom font for links.
+    DCHECK(!style_info.custom_font);
+
+    // Note this ignores |default_style|, in favor of style::STYLE_LINK.
+    auto link = std::make_unique<Link>(text, text_context_);
+
+    // Links in a StyledLabel do not get underlines.
+    link->SetUnderline(false);
+
+    result = std::move(link);
+  } else if (style_info.custom_font) {
+    result = std::make_unique<Label>(
+        text, Label::CustomFont{style_info.custom_font.value()});
+  } else {
+    result = std::make_unique<Label>(
+        text, text_context_,
+        style_info.text_style.value_or(default_text_style_));
   }
-  offset->set_x(0);
+
+  if (style_info.override_color != SK_ColorTRANSPARENT)
+    result->SetEnabledColor(style_info.override_color);
+  if (!style_info.tooltip.empty())
+    result->SetTooltipText(style_info.tooltip);
+  if (displayed_on_background_color_set_)
+    result->SetBackgroundColor(displayed_on_background_color_);
+  result->SetAutoColorReadabilityEnabled(auto_color_readability_enabled_);
+
+  return result;
 }
 
 BEGIN_METADATA(StyledLabel)
