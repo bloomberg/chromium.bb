@@ -355,21 +355,17 @@ else:
 
 
   def extend(path):
-    """Convert the path back to utf-8.
-
-    In some rare case, concatenating str and unicode may cause a
-    UnicodeEncodeError because the default encoding is 'ascii'.
-    """
+    """Path extending is not needed on POSIX."""
     assert os.path.isabs(path), path
     assert isinstance(path, six.text_type), path
-    return path.encode('utf-8')
+    return path
 
 
   def trim(path):
     """Path mangling is not needed on POSIX."""
     assert os.path.isabs(path), path
-    assert isinstance(path, str), path
-    return path.decode('utf-8')
+    assert isinstance(path, six.text_type), path
+    return path
 
 
   def islink(path):
