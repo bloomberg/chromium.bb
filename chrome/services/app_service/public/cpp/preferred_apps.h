@@ -58,6 +58,9 @@ class PreferredApps {
   // Find preferred app id for an |url|.
   base::Optional<std::string> FindPreferredAppForUrl(const GURL& url);
 
+  // Get a copy of the preferred apps.
+  base::Value GetValue();
+
  private:
   std::unique_ptr<base::Value> preferred_apps_;
 

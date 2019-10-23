@@ -52,7 +52,7 @@ class AppServiceProxy : public KeyedService,
 
   mojo::Remote<apps::mojom::AppService>& AppService();
   apps::AppRegistryCache& AppRegistryCache();
-  apps::PreferredApps& PreferredAppsCache();
+  apps::PreferredApps& PreferredApps();
 
   // apps::IconLoader overrides.
   apps::mojom::IconKeyPtr GetIconKey(const std::string& app_id) override;
@@ -175,6 +175,9 @@ class AppServiceProxy : public KeyedService,
   // apps::mojom::Subscriber overrides.
   void OnApps(std::vector<apps::mojom::AppPtr> deltas) override;
   void Clone(mojo::PendingReceiver<apps::mojom::Subscriber> receiver) override;
+  void OnPreferredAppSet(const std::string& app_id,
+                         apps::mojom::IntentFilterPtr intent_filter) override;
+  void InitializePreferredApps(base::Value preferred_apps) override;
 
   // This proxy privately owns its instance of the App Service. This should not
   // be exposed except through the Mojo interface connected to |app_service_|.
@@ -194,7 +197,7 @@ class AppServiceProxy : public KeyedService,
   IconCoalescer icon_coalescer_;
   IconCache outer_icon_loader_;
 
-  PreferredApps preferred_apps_cache_;
+  apps::PreferredApps preferred_apps_;
 
 #if defined(OS_CHROMEOS)
   std::unique_ptr<BuiltInChromeOsApps> built_in_chrome_os_apps_;

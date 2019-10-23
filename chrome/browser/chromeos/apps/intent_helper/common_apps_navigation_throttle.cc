@@ -113,8 +113,7 @@ CommonAppsNavigationThrottle::FindAllAppsForUrl(
   std::vector<std::string> app_ids = proxy->GetAppIdsForUrl(url);
   auto* menu_manager =
       extensions::MenuManager::Get(web_contents->GetBrowserContext());
-  auto preferred_app_id =
-      proxy->PreferredAppsCache().FindPreferredAppForUrl(url);
+  auto preferred_app_id = proxy->PreferredApps().FindPreferredAppForUrl(url);
 
   for (const std::string app_id : app_ids) {
     proxy->AppRegistryCache().ForOneApp(

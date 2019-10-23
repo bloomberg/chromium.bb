@@ -153,10 +153,6 @@ void AppServiceProxy::Initialize() {
                                   weak_ptr_factory_.GetWeakPtr(), profile_));
 #endif  // OS_CHROMEOS
   }
-
-  // TODO(crbug.com/853604): Initialise from App Service stored preference.
-  preferred_apps_cache_.Init(
-      std::make_unique<base::Value>(base::Value::Type::DICTIONARY));
 }
 
 mojo::Remote<apps::mojom::AppService>& AppServiceProxy::AppService() {
@@ -167,8 +163,8 @@ apps::AppRegistryCache& AppServiceProxy::AppRegistryCache() {
   return cache_;
 }
 
-apps::PreferredApps& AppServiceProxy::PreferredAppsCache() {
-  return preferred_apps_cache_;
+apps::PreferredApps& AppServiceProxy::PreferredApps() {
+  return preferred_apps_;
 }
 
 apps::mojom::IconKeyPtr AppServiceProxy::GetIconKey(const std::string& app_id) {
@@ -344,8 +340,16 @@ void AppServiceProxy::AddPreferredApp(const std::string& app_id,
 void AppServiceProxy::AddPreferredApp(const std::string& app_id,
                                       const apps::mojom::IntentPtr& intent) {
   auto intent_filter = FindBestMatchingFilter(intent);
-  if (intent_filter)
-    preferred_apps_cache_.AddPreferredApp(app_id, intent_filter);
+  if (intent_filter) {
+    preferred_apps_.AddPreferredApp(app_id, intent_filter);
+    if (app_service_.is_connected()) {
+      cache_.ForOneApp(
+          app_id, [this, &intent_filter](const apps::AppUpdate& update) {
+            app_service_->AddPreferredApp(update.AppType(), update.AppId(),
+                                          std::move(intent_filter));
+          });
+    }
+  }
 }
 
 void AppServiceProxy::AddAppIconSource(Profile* profile) {
@@ -372,6 +376,17 @@ void AppServiceProxy::OnApps(std::vector<apps::mojom::AppPtr> deltas) {
 void AppServiceProxy::Clone(
     mojo::PendingReceiver<apps::mojom::Subscriber> receiver) {
   receivers_.Add(this, std::move(receiver));
+}
+
+void AppServiceProxy::OnPreferredAppSet(
+    const std::string& app_id,
+    apps::mojom::IntentFilterPtr intent_filter) {
+  preferred_apps_.AddPreferredApp(app_id, intent_filter);
+}
+
+void AppServiceProxy::InitializePreferredApps(base::Value preferred_apps) {
+  preferred_apps_.Init(
+      std::make_unique<base::Value>(std::move(preferred_apps)));
 }
 
 }  // namespace apps

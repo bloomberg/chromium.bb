@@ -335,4 +335,8 @@ base::Optional<std::string> PreferredApps::FindPreferredAppForUrl(
   return FindPreferredAppForIntent(intent);
 }
 
+base::Value PreferredApps::GetValue() {
+  return preferred_apps_->Clone();
+}
+
 }  // namespace apps
