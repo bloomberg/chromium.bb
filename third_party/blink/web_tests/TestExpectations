@@ -1973,11 +1973,6 @@ crbug.com/467635 fast/dom/HTMLImageElement/image-sizes-meta-viewport.html [ Skip
 crbug.com/636239 [ Win7 ] media/video-zoom-controls.html [ Failure ]
 crbug.com/636239 [ Win7 ] virtual/audio-service/media/video-zoom-controls.html [ Failure ]
 
-# The spec for "Propagation to the Initial Containing Block" was changed.
-# https://drafts.csswg.org/css-writing-modes-4/#icb
-crbug.com/988585 external/wpt/css/css-writing-modes/wm-propagation-001.html [ Failure ]
-crbug.com/988585 external/wpt/css/css-writing-modes/wm-propagation-body-044.html [ Failure ]
-
 # Printing Layout broken in these tests.
 crbug.com/377696 printing/setPrinting.html [ Skip ]
 crbug.com/377696 printing/width-overflow.html [ Skip ]
