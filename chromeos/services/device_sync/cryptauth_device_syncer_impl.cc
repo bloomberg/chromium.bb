@@ -146,10 +146,6 @@ void CryptAuthDeviceSyncerImpl::OnAttemptStarted(
       CryptAuthKeyBundle::Name::kDeviceSyncBetterTogether));
   request_context_.mutable_client_metadata()->CopyFrom(client_metadata);
   request_context_.set_device_id(client_app_metadata.instance_id());
-
-  // TODO(https://crbug.com/990430): This is the IID token for the v2 Enrollment
-  // service. A different IID token for the v2 DeviceSync service will be
-  // necessary.
   request_context_.set_device_id_token(client_app_metadata.instance_id_token());
 
   const CryptAuthKey* user_key_pair =
