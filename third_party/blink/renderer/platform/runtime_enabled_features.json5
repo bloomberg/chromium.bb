@@ -1774,7 +1774,6 @@
     },
     {
       name: "WebVR",
-      status: "test",
     },
     {
       name: "WebVTTRegions",

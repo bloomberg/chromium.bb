@@ -2076,10 +2076,6 @@ crbug.com/472330 fast/writing-mode/box-shadow-vertical-rl.html [ Failure ]
 # These are the failing tests because Chrome hasn't implemented according to the spec.
 crbug.com/645988 external/wpt/uievents/order-of-events/focus-events/focus-manual.html [ Failure ]
 
-# TODO(https://crbug.com/960132): Remove these when WebVR is removed.
-crbug.com/807152 vr/VRDisplay_rAF_fires_with_window_rAF.html [ Pass Failure ]
-crbug.com/813697 vr/getFrameData_oneframeupdate.html [ Pass Failure ]
-
 crbug.com/346473  fast/events/drag-on-mouse-move-cancelled.html [ Failure ]
 crbug.com/346473  virtual/mouseevent_fractional/fast/events/drag-on-mouse-move-cancelled.html [ Failure ]
 
@@ -5552,21 +5548,6 @@ crbug.com/988248 [ Mac Linux ] virtual/audio-service/media/video-persistence.htm
 crbug.com/979298 [ Mac ] virtual/audio-service/media/video-zoom.html [ Pass Failure ]
 
 crbug.com/986019 virtual/threaded/animations/play-state.html [ Pass Failure ]
-
-crbug.com/914134 [ Mac ] vr/events_vrdisplayactivate.html [ Failure ]
-crbug.com/914134 [ Mac ] vr/events_vrdisplaypresentchange.html [ Failure ]
-crbug.com/914134 [ Mac ] vr/exitPresent_resolve.html [ Failure ]
-crbug.com/914134 [ Mac ] vr/getLayers_notpresenting.html [ Failure ]
-crbug.com/914134 [ Mac ] vr/getLayers_presenting.html [ Failure ]
-crbug.com/914134 [ Mac ] vr/getLayers_presenting_nondefaultbounds.html [ Failure ]
-crbug.com/914134 [ Mac ] vr/getLayers_update.html [ Failure ]
-crbug.com/914134 [ Mac ] vr/requestAnimationFrame_consistentTimestamps.html [ Failure ]
-crbug.com/914134 [ Mac ] vr/requestAnimationFrame_handoff.html [ Failure ]
-crbug.com/914134 [ Mac ] vr/requestAnimationFrame_submitFrame_combinations.html [ Failure ]
-crbug.com/914134 [ Mac ] vr/requestPresent_resolve.html [ Failure ]
-crbug.com/914134 [ Mac ] vr/requestPresent_resolve_repeatwithgesture.html [ Failure ]
-crbug.com/914134 [ Mac ] vr/requestPresent_resolve_repeatwithoutgesture.html [ Failure ]
-crbug.com/914134 [ Mac ] vr/requestPresent_resolve_then_reject.html [ Failure ]
 
 crbug.com/996219 [ Win ] fast/text/emoji-vertical-origin-visual.html [ Failure ]
 

@@ -2496,12 +2496,9 @@ interface Gamepad
     getter axes
     getter buttons
     getter connected
-    getter displayId
-    getter hand
     getter id
     getter index
     getter mapping
-    getter pose
     getter timestamp
     getter vibrationActuator
     method constructor
@@ -2531,17 +2528,6 @@ interface GamepadHapticActuator
     method constructor
     method playEffect
     method reset
-interface GamepadPose
-    attribute @@toStringTag
-    getter angularAcceleration
-    getter angularVelocity
-    getter hasOrientation
-    getter hasPosition
-    getter linearAcceleration
-    getter linearVelocity
-    getter orientation
-    getter position
-    method constructor
 interface Geolocation
     attribute @@toStringTag
     method clearWatch
@@ -5220,7 +5206,6 @@ interface Navigator
     method getInstalledRelatedApps
     method getUserAgent
     method getUserMedia
-    method getVRDisplays
     method javaEnabled
     method registerProtocolHandler
     method requestMIDIAccess
@@ -8306,67 +8291,6 @@ interface UserActivation
     attribute @@toStringTag
     getter hasBeenActive
     getter isActive
-    method constructor
-interface VRDisplay : EventTarget
-    attribute @@toStringTag
-    getter capabilities
-    getter depthFar
-    getter depthNear
-    getter displayId
-    getter displayName
-    getter isPresenting
-    getter stageParameters
-    method cancelAnimationFrame
-    method constructor
-    method exitPresent
-    method getEyeParameters
-    method getFrameData
-    method getLayers
-    method requestAnimationFrame
-    method requestPresent
-    method submitFrame
-    setter depthFar
-    setter depthNear
-interface VRDisplayCapabilities
-    attribute @@toStringTag
-    getter canPresent
-    getter hasExternalDisplay
-    getter hasPosition
-    getter maxLayers
-    method constructor
-interface VRDisplayEvent : Event
-    attribute @@toStringTag
-    getter display
-    getter reason
-    method constructor
-interface VREyeParameters
-    attribute @@toStringTag
-    getter offset
-    getter renderHeight
-    getter renderWidth
-    method constructor
-interface VRFrameData
-    attribute @@toStringTag
-    getter leftProjectionMatrix
-    getter leftViewMatrix
-    getter pose
-    getter rightProjectionMatrix
-    getter rightViewMatrix
-    method constructor
-interface VRPose
-    attribute @@toStringTag
-    getter angularAcceleration
-    getter angularVelocity
-    getter linearAcceleration
-    getter linearVelocity
-    getter orientation
-    getter position
-    method constructor
-interface VRStageParameters
-    attribute @@toStringTag
-    getter sittingToStandingTransform
-    getter sizeX
-    getter sizeZ
     method constructor
 interface VTTCue : TextTrackCue
     attribute @@toStringTag
