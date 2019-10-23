@@ -323,6 +323,10 @@ vars = {
   # the commit queue can handle CLs rolling libexpat
   # and whatever else without interference from each other.
   'libexpat_revision': '25d3c190c69ea7f98e2826f901fd9e28b6f7f3fd',
+  # Three lines of non-changing comments so that
+  # the commit queue can handle CLs rolling wuffs
+  # and whatever else without interference from each other.
+  'wuffs_revision': '4080840928c0b05a80cda0d14ac2e2615f679f1a',
 
   # TODO(crbug.com/941824): The values below need to be kept in sync
   # between //DEPS and //buildtools/DEPS, so if you're updating one,
@@ -1506,6 +1510,11 @@ deps = {
 
   'src/third_party/webrtc':
     Var('webrtc_git') + '/src.git' + '@' + '8e13e6ed3dfbd2009f4c2e781dc19621d9dd8ca3',
+
+  # Wuffs' canonical repository is at github.com/google/wuffs, but we use
+  # Skia's mirror of Wuffs, the same as in upstream Skia's DEPS file.
+  'src/third_party/wuffs/src':
+    Var('skia_git') + '/external/github.com/google/wuffs.git' + '@' +  Var('wuffs_revision'),
 
   'src/third_party/xdg-utils': {
       'url': Var('chromium_git') + '/chromium/deps/xdg-utils.git' + '@' + 'd80274d5869b17b8c9067a1022e4416ee7ed5e0d',

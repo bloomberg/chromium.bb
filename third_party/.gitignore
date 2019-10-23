@@ -243,6 +243,7 @@
 /win_toolchain/.timestamps
 /win_toolchain/files
 /wix
+/wuffs/src
 /xdg-utils
 /xstream/lib/
 /xulrunner-sdk
