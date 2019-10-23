@@ -216,6 +216,23 @@ class SingleClientNigoriSyncTestWithUssTests
   DISALLOW_COPY_AND_ASSIGN(SingleClientNigoriSyncTestWithUssTests);
 };
 
+class SingleClientNigoriSyncTestWithNotAwaitQuiescence
+    : public SingleClientNigoriSyncTestWithUssTests {
+ public:
+  SingleClientNigoriSyncTestWithNotAwaitQuiescence() = default;
+  ~SingleClientNigoriSyncTestWithNotAwaitQuiescence() = default;
+
+  bool TestUsesSelfNotifications() override {
+    // This test fixture is used with tests, which expect SetupSync() to be
+    // waiting for completion, but not for quiescense, because it can't be
+    // achieved and isn't needed.
+    return false;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SingleClientNigoriSyncTestWithNotAwaitQuiescence);
+};
+
 IN_PROC_BROWSER_TEST_P(SingleClientNigoriSyncTestWithUssTests,
                        ShouldCommitKeystoreNigoriWhenReceivedDefault) {
   // SetupSync() should make FakeServer send default NigoriSpecifics.
@@ -349,6 +366,31 @@ IN_PROC_BROWSER_TEST_P(SingleClientNigoriSyncTestWithUssTests,
 
 INSTANTIATE_TEST_SUITE_P(USS,
                          SingleClientNigoriSyncTestWithUssTests,
+                         ::testing::Values(false, true));
+
+// Performs initial sync for Nigori, but doesn't allow initialized Nigori to be
+// commited.
+IN_PROC_BROWSER_TEST_P(SingleClientNigoriSyncTestWithNotAwaitQuiescence,
+                       PRE_ShouldCompleteKeystoreInitializationAfterRestart) {
+  GetFakeServer()->TriggerCommitError(sync_pb::SyncEnums::THROTTLED);
+  ASSERT_TRUE(SetupSync());
+}
+
+// After browser restart the client should commit initialized Nigori.
+IN_PROC_BROWSER_TEST_P(SingleClientNigoriSyncTestWithNotAwaitQuiescence,
+                       ShouldCompleteKeystoreInitializationAfterRestart) {
+  ASSERT_TRUE(SetupClients());
+  ASSERT_TRUE(ServerNigoriChecker(GetSyncService(0), GetFakeServer(),
+                                  syncer::PassphraseType::kImplicitPassphrase)
+                  .Wait());
+  GetFakeServer()->TriggerCommitError(sync_pb::SyncEnums::SUCCESS);
+  EXPECT_TRUE(ServerNigoriChecker(GetSyncService(0), GetFakeServer(),
+                                  syncer::PassphraseType::kKeystorePassphrase)
+                  .Wait());
+}
+
+INSTANTIATE_TEST_SUITE_P(USS,
+                         SingleClientNigoriSyncTestWithNotAwaitQuiescence,
                          ::testing::Values(false, true));
 
 class SingleClientNigoriWithWebApiTest : public SyncTest {
