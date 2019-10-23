@@ -207,8 +207,8 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, LaunchAndIPC) {
   EXPECT_TRUE(ServiceProcessControl::GetInstance()->Shutdown());
 }
 
-// Flaky on macOS: https://crbug.com/978948
-#if defined(OS_MACOSX)
+// Flaky on macOS, linux and windows: https://crbug.com/978948
+#if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)
 #define MAYBE_LaunchAndReconnect DISABLED_LaunchAndReconnect
 #else
 #define MAYBE_LaunchAndReconnect LaunchAndReconnect
