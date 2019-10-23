@@ -416,20 +416,20 @@ class RunIsolatedTest(unittest.TestCase):
     _out, _err, returncode = self._run(self._cmd_args(isolated_hash))
     self.assertEqual(0, returncode)
     expected = {
-      u'.': (040707, 040707, 040777),
-      u'state.json': (0100606, 0100606, 0100666),
-      # The reason for 0100666 on Windows is that the file node had to be
-      # modified to delete the hardlinked node. The read only bit is reset on
-      # load.
-      unicode(file1_hash): (0100400, 0100400, 0100444),
-      unicode(isolated_hash): (0100400, 0100400, 0100444),
+        u'.': (0o40707, 0o40707, 0o40777),
+        u'state.json': (0o100606, 0o100606, 0o100666),
+        # The reason for 0100666 on Windows is that the file node had to be
+        # modified to delete the hardlinked node. The read only bit is reset on
+        # load.
+        unicode(file1_hash): (0o100400, 0o100400, 0o100444),
+        unicode(isolated_hash): (0o100400, 0o100400, 0o100444),
     }
     self.assertTreeModes(self._isolated_cache_dir, expected)
 
     # Modify one of the files in the cache to be invalid.
     cached_file_path = os.path.join(self._isolated_cache_dir, file1_hash)
     previous_mode = os.stat(cached_file_path).st_mode
-    os.chmod(cached_file_path, 0600)
+    os.chmod(cached_file_path, 0o600)
     write_content(cached_file_path, new_content)
     os.chmod(cached_file_path, previous_mode)
     logging.info('Modified %s', cached_file_path)
@@ -440,10 +440,10 @@ class RunIsolatedTest(unittest.TestCase):
     out, err, returncode = self._run(self._cmd_args(isolated_hash))
     self.assertEqual(0, returncode, (out, err, returncode))
     expected = {
-      u'.': (040707, 040707, 040777),
-      u'state.json': (0100606, 0100606, 0100666),
-      unicode(file1_hash): (0100400, 0100400, 0100444),
-      unicode(isolated_hash): (0100400, 0100400, 0100444),
+        u'.': (0o40707, 0o40707, 0o40777),
+        u'state.json': (0o100606, 0o100606, 0o100666),
+        unicode(file1_hash): (0o100400, 0o100400, 0o100444),
+        unicode(isolated_hash): (0o100400, 0o100400, 0o100444),
     }
     self.assertTreeModes(self._isolated_cache_dir, expected)
     return cached_file_path

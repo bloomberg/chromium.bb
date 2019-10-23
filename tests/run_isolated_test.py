@@ -937,16 +937,16 @@ class RunIsolatedTestRun(RunIsolatedTestBase):
         'open(sys.argv[1], "w").write("bar")\n')
       script_hash = isolateserver_fake.hash_content(script)
       isolated = {
-        u'algo': u'sha-1',
-        u'command': [u'cmd.py', u'${ISOLATED_OUTDIR}/foo'],
-        u'files': {
-          u'cmd.py': {
-            u'h': script_hash,
-            u'm': 0700,
-            u's': len(script),
+          u'algo': u'sha-1',
+          u'command': [u'cmd.py', u'${ISOLATED_OUTDIR}/foo'],
+          u'files': {
+              u'cmd.py': {
+                  u'h': script_hash,
+                  u'm': 0o700,
+                  u's': len(script),
+              },
           },
-        },
-        u'version': isolated_format.ISOLATED_FILE_VERSION,
+          u'version': isolated_format.ISOLATED_FILE_VERSION,
       }
       if sys.platform == 'win32':
         isolated[u'files'][u'cmd.py'].pop(u'm')
@@ -987,15 +987,15 @@ class RunIsolatedTestRun(RunIsolatedTestBase):
       output_hash = isolateserver_fake.hash_content('bar')
       hashes.add(output_hash)
       isolated = {
-        u'algo': u'sha-1',
-        u'files': {
-          u'foo': {
-            u'h': output_hash,
-            u'm': 0600,
-            u's': 3,
+          u'algo': u'sha-1',
+          u'files': {
+              u'foo': {
+                  u'h': output_hash,
+                  u'm': 0o600,
+                  u's': 3,
+              },
           },
-        },
-        u'version': isolated_format.ISOLATED_FILE_VERSION,
+          u'version': isolated_format.ISOLATED_FILE_VERSION,
       }
       if sys.platform == 'win32':
         isolated[u'files'][u'foo'].pop(u'm')
@@ -1312,9 +1312,9 @@ class RunIsolatedTestOutputFiles(RunIsolatedTestBase):
         '  open(sys.argv[2], "w").write("foo2")\n')
       script_hash = isolateserver_fake.hash_content(script)
       isolated['files']['cmd.py'] = {
-        'h': script_hash,
-        'm': 0700,
-        's': len(script),
+          'h': script_hash,
+          'm': 0o700,
+          's': len(script),
       }
       if sys.platform == 'win32':
         isolated['files']['cmd.py'].pop('m')
@@ -1364,25 +1364,25 @@ class RunIsolatedTestOutputFiles(RunIsolatedTestBase):
       hashes.add(foo2_output_hash)
       hashes.add(bar1_output_hash)
       isolated = {
-        u'algo': u'sha-1',
-        u'files': {
-          u'foo1': {
-            u'h': foo1_output_hash,
-            u'm': 0600,
-            u's': 4,
+          u'algo': u'sha-1',
+          u'files': {
+              u'foo1': {
+                  u'h': foo1_output_hash,
+                  u'm': 0o600,
+                  u's': 4,
+              },
+              os.path.join(u'foodir', 'foo2_sl'): {
+                  u'h': foo2_output_hash,
+                  u'm': 0o600,
+                  u's': 4,
+              },
+              os.path.join(u'bardir', 'bar1'): {
+                  u'h': bar1_output_hash,
+                  u'm': 0o600,
+                  u's': 4,
+              },
           },
-          os.path.join(u'foodir', 'foo2_sl'): {
-            u'h': foo2_output_hash,
-            u'm': 0600,
-            u's': 4,
-          },
-          os.path.join(u'bardir', 'bar1'): {
-            u'h': bar1_output_hash,
-            u'm': 0600,
-            u's': 4,
-          },
-        },
-        u'version': isolated_format.ISOLATED_FILE_VERSION,
+          u'version': isolated_format.ISOLATED_FILE_VERSION,
       }
       if sys.platform == 'win32':
         isolated['files']['foo1'].pop('m')
@@ -1504,15 +1504,15 @@ class RunIsolatedJsonTest(RunIsolatedTestBase):
         ],
         self.popen_calls)
     isolated_out = {
-      'algo': 'sha-1',
-      'files': {
-        'out.txt': {
-          'h': isolateserver_fake.hash_content('generated data\n'),
-          's': 15,
-          'm': 0600,
+        'algo': 'sha-1',
+        'files': {
+            'out.txt': {
+                'h': isolateserver_fake.hash_content('generated data\n'),
+                's': 15,
+                'm': 0o600,
+            },
         },
-      },
-      'version': isolated_format.ISOLATED_FILE_VERSION,
+        'version': isolated_format.ISOLATED_FILE_VERSION,
     }
     if sys.platform == 'win32':
       del isolated_out['files']['out.txt']['m']

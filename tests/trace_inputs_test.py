@@ -176,7 +176,7 @@ if sys.platform != 'win32':
       try:
         self._load_context([], None)
         self.fail()
-      except trace_inputs.TracingFailure, e:
+      except trace_inputs.TracingFailure as e:
         expected = (
           'Found internal inconsitency in process lifetime detection '
           'while finding the root process',

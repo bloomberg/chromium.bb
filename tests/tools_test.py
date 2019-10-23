@@ -79,7 +79,7 @@ class FindExecutableTest(auto_stub.TestCase):
   def _touch_exe(self, *path_toks):
     full = self._touch(*path_toks)
     if not _ACTUALLY_WINDOWS:
-      os.chmod(full, 0777)
+      os.chmod(full, 0o777)
     return full
 
   def _fe(self, cmd):

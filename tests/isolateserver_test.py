@@ -257,7 +257,7 @@ class UtilsTest(TestCase):
       # Copy as not readonly
       cp = os.path.join(tmpoutdir, u'cp')
       with fs.open(infile, 'rb') as f:
-        isolateserver.putfile(f, cp, file_mode=0755)
+        isolateserver.putfile(f, cp, file_mode=0o755)
       self.assertEqual(True, fs.exists(cp))
       self.assertEqual(False, fs.islink(cp))
       self.assertFile(cp, 'data')
@@ -386,7 +386,7 @@ class StorageTest(TestCase):
       channel = threading_utils.TaskChannel()
       storage._async_push(channel, item, self.get_push_state(storage, item))
       # Wait for push to finish.
-      pushed_item = channel.next()
+      pushed_item = next(channel)
       self.assertEqual(item, pushed_item)
       # StorageApi.push was called with correct arguments.
       self.assertEqual(
@@ -411,7 +411,7 @@ class StorageTest(TestCase):
       channel = threading_utils.TaskChannel()
       storage._async_push(channel, item, self.get_push_state(storage, item))
       with self.assertRaises(FakeException):
-        channel.next()
+        next(channel)
       # StorageApi's push should never complete when data can not be read.
       self.assertEqual(0, len(storage_api.push_calls))
 
@@ -438,7 +438,7 @@ class StorageTest(TestCase):
         channel = threading_utils.TaskChannel()
         storage._async_push(channel, item, self.get_push_state(storage, item))
         with self.assertRaises(IOError):
-          channel.next()
+          next(channel)
         # First initial attempt + all retries.
         attempts = 1 + storage.net_thread_pool.RETRIES
         # Single push attempt call arguments.
@@ -928,7 +928,7 @@ class IsolateServerStorageSmokeTest(unittest.TestCase):
         for _ in range(size / len(data)):
           f.write(data)
           h.update(data)
-      os.chmod(p, 0600)
+      os.chmod(p, 0o600)
       files[p] = h.hexdigest()
 
     server_ref = isolate_storage.ServerRef(self.server.url, 'default')
@@ -991,7 +991,7 @@ class IsolateServerDownloadTest(TestCase):
         if os.path.islink(p):
           actual[p] = (os.readlink(p), 0)
         else:
-          actual[p] = (content, os.stat(p).st_mode & 0777)
+          actual[p] = (content, os.stat(p).st_mode & 0o777)
     return actual
 
   def setUp(self):
@@ -1061,25 +1061,25 @@ class IsolateServerDownloadTest(TestCase):
       'b': 'More content',
     }
     isolated = {
-      'command': ['Absurb', 'command'],
-      'relative_cwd': 'a',
-      'files': {
-        os.path.join('a', 'foo'): {
-          'h': isolateserver_fake.hash_content('Content'),
-          's': len('Content'),
-          'm': 0700,
+        'command': ['Absurb', 'command'],
+        'relative_cwd': 'a',
+        'files': {
+            os.path.join('a', 'foo'): {
+                'h': isolateserver_fake.hash_content('Content'),
+                's': len('Content'),
+                'm': 0o700,
+            },
+            'b': {
+                'h': isolateserver_fake.hash_content('More content'),
+                's': len('More content'),
+                'm': 0o600,
+            },
+            'c': {
+                'l': 'a/foo',
+            },
         },
-        'b': {
-          'h': isolateserver_fake.hash_content('More content'),
-          's': len('More content'),
-          'm': 0600,
-        },
-        'c': {
-          'l': 'a/foo',
-        },
-      },
-      'read_only': 1,
-      'version': isolated_format.ISOLATED_FILE_VERSION,
+        'read_only': 1,
+        'version': isolated_format.ISOLATED_FILE_VERSION,
     }
     isolated_data = json.dumps(isolated, sort_keys=True, separators=(',', ':'))
     isolated_hash = isolateserver_fake.hash_content(isolated_data)
@@ -1117,9 +1117,9 @@ class IsolateServerDownloadTest(TestCase):
     self.expected_requests(requests)
     self.assertEqual(0, isolateserver.main(cmd))
     expected = {
-      os.path.join(self.tempdir, 'target', 'a', 'foo'): ('Content', 0500),
-      os.path.join(self.tempdir, 'target', 'b'): ('More content', 0400),
-      os.path.join(self.tempdir, 'target', 'c'): (u'a/foo', 0),
+        os.path.join(self.tempdir, 'target', 'a', 'foo'): ('Content', 0o500),
+        os.path.join(self.tempdir, 'target', 'b'): ('More content', 0o400),
+        os.path.join(self.tempdir, 'target', 'c'): (u'a/foo', 0),
     }
     actual = self._get_actual()
     self.assertEqual(expected, actual)
@@ -1133,9 +1133,9 @@ class IsolateServerDownloadTest(TestCase):
     server_ref = isolate_storage.ServerRef('http://example.com', 'default-gzip')
 
     files = {
-      os.path.join('a', 'foo'): ('Content', 0500),
-      'b': ('More content', 0400),
-      'c': ('Even more content!', 0500),
+        os.path.join('a', 'foo'): ('Content', 0o500),
+        'b': ('More content', 0o400),
+        'c': ('Even more content!', 0o500),
     }
 
     # Generate a tar archive
@@ -1145,14 +1145,14 @@ class IsolateServerDownloadTest(TestCase):
       f1.type = tarfile.REGTYPE
       f1.name = 'a/foo'
       f1.size = 7
-      f1.mode = 0570
+      f1.mode = 0o570
       tar.addfile(f1, io.BytesIO('Content'))
 
       f2 = tarfile.TarInfo()
       f2.type = tarfile.REGTYPE
       f2.name = 'b'
       f2.size = 12
-      f2.mode = 0666
+      f2.mode = 0o666
       tar.addfile(f2, io.BytesIO('More content'))
     archive = tf.getvalue()
 
@@ -1281,7 +1281,7 @@ class TestArchive(TestCase):
         's': len(v),
       }
       if sys.platform != 'win32':
-        isolated['files'][k]['m'] = 0600
+        isolated['files'][k]['m'] = 0o600
     isolated_data = json.dumps(isolated, sort_keys=True, separators=(',', ':'))
     isolated_hash = isolateserver_fake.hash_content(isolated_data)
     self.checkOutput(

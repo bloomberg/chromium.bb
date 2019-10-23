@@ -157,16 +157,16 @@ class UrlOpenTimeoutTest(auto_stub.TestCase):
     self.assertTrue(stream)
     gen = stream.iter_content(len(SleepingHandler.first_line))
     with self.assertRaises(net.TimeoutError):
-      gen.next()
+      next(gen)
 
   def test_urlopen_timeout_mid_stream(self):
     # Timeouts while reading from the stream.
     stream = self.call('sleep_during_response', 0.25, read_timeout=0.1)
     self.assertTrue(stream)
     gen = stream.iter_content(len(SleepingHandler.first_line))
-    gen.next()
+    next(gen)
     with self.assertRaises(net.TimeoutError):
-      gen.next()
+      next(gen)
 
 
 if __name__ == '__main__':

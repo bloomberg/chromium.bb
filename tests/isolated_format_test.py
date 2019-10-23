@@ -230,14 +230,14 @@ class TestIsolated(auto_stub.TestCase):
     calls = []
     self.mock(tools, 'write_json', lambda *x: calls.append(x))
     data = {
-      u'algo': 'sha-1',
-      u'files': {
-        u'b': {
-          u'm': 123,
-          u'h': u'0123456789abcdef0123456789abcdef01234567',
-          u's': 2181582786L,
-        }
-      },
+        u'algo': 'sha-1',
+        u'files': {
+            u'b': {
+                u'm': 123,
+                u'h': u'0123456789abcdef0123456789abcdef01234567',
+                u's': 2181582786,
+            }
+        },
     }
     isolated_format.save_isolated('foo', data)
     self.assertEqual([('foo', data, True)], calls)

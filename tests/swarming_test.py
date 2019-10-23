@@ -3,6 +3,7 @@
 # Use of this source code is governed under the Apache License, Version 2.0
 # that can be found in the LICENSE file.
 
+from __future__ import print_function
 import datetime
 import json
 import logging
@@ -292,14 +293,14 @@ class TestIsolated(auto_stub.TestCase, Common):
       main_hash = self._isolate.add_content_compressed(
           'default-gzip', 'not executed')
       isolated = {
-        'files': {
-          'main.py': {
-            'h': main_hash,
-            's': 12,
-            'm': 0700,
+          'files': {
+              'main.py': {
+                  'h': main_hash,
+                  's': 12,
+                  'm': 0o700,
+              },
           },
-        },
-        'command': ['python', 'main.py'],
+          'command': ['python', 'main.py'],
       }
       isolated_hash = self._isolate.add_content_compressed(
           'default-gzip', json.dumps(isolated))

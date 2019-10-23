@@ -651,7 +651,7 @@ class NamedCacheTest(TestCase, CacheTestMixin):
     c = local_caching.NamedCache
     with fs.open(os.path.join(self.cache_dir, c.STATE_FILE), 'w') as f:
       f.write('}}}}')
-    fs.makedirs(os.path.join(self.cache_dir, '1'), 0777)
+    fs.makedirs(os.path.join(self.cache_dir, '1'), 0o777)
 
     cache = self.get_cache(_get_policies())
     self._add_one_item(cache, 1)

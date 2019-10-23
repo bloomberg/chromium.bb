@@ -101,11 +101,11 @@ class IsolateStorageGPRCTest(auto_stub.TestCase):
 
     s = self.get_server()
     replies = s.fetch('abc123', 1, 0)
-    response = replies.next()
+    response = next(replies)
     self.assertEqual('0', response)
-    response = replies.next()
+    response = next(replies)
     self.assertEqual('1', response)
-    response = replies.next()
+    response = next(replies)
     self.assertEqual('2', response)
 
   def testFetchHappyZeroLengthBlob(self):
@@ -120,7 +120,7 @@ class IsolateStorageGPRCTest(auto_stub.TestCase):
 
     s = self.get_server()
     replies = s.fetch('abc123', 1, 0)
-    reply = replies.next()
+    reply = next(replies)
     self.assertEqual(0, len(reply))
 
   def testFetchThrowsOnFailure(self):
@@ -134,7 +134,7 @@ class IsolateStorageGPRCTest(auto_stub.TestCase):
     s = self.get_server()
     replies = s.fetch('abc123', 1, 0)
     with self.assertRaises(IOError):
-      _response = replies.next()
+      _response = next(replies)
 
   def testFetchThrowsCorrectExceptionOnGrpcFailure(self):
     """Fetch: if something goes wrong in gRPC, we throw an IOError"""
@@ -146,7 +146,7 @@ class IsolateStorageGPRCTest(auto_stub.TestCase):
     s = self.get_server()
     replies = s.fetch('abc123', 1, 0)
     with self.assertRaises(IOError):
-      _response = replies.next()
+      _response = next(replies)
 
   def testFetchThrowsCorrectExceptionOnStreamingGrpcFailure(self):
     """Fetch: if something goes wrong in gRPC, we throw an IOError"""

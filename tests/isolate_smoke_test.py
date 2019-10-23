@@ -458,10 +458,10 @@ def _wrap_in_condition(variables):
 
 def _fix_file_mode(filename, read_only):
   """4 modes are supported, 0700 (rwx), 0600 (rw), 0500 (rx), 0400 (r)."""
-  min_mode = 0400
+  min_mode = 0o400
   if not read_only:
-    min_mode |= 0200
-  return (min_mode | 0100) if filename.endswith('.py') else min_mode
+    min_mode |= 0o200
+  return (min_mode | 0o100) if filename.endswith('.py') else min_mode
 
 
 class Isolate(unittest.TestCase):
@@ -548,7 +548,7 @@ class IsolateTempdirBase(unittest.TestCase):
       item = files[empty_file]
       item['h'] = unicode(HASH_NULL)
       if sys.platform != 'win32':
-        item['m'] = 0400
+        item['m'] = 0o400
       item['s'] = 0
     return files
 
@@ -705,7 +705,7 @@ class IsolateOutdir(IsolateTempdirBase):
   def setUp(self):
     super(IsolateOutdir, self).setUp()
     # The tests assume the current directory is the file's directory.
-    os.mkdir(self.isolate_dir, 0700)
+    os.mkdir(self.isolate_dir, 0o700)
     self.old_cwd = os.getcwd()
     os.chdir(self.isolate_dir)
     self.outdir = os.path.join(self.tempdir, 'isolated')
