@@ -19,15 +19,14 @@ from __future__ import print_function
 
 import os
 import re
-import shutil
 
 from chromite.api import router as router_lib
 from chromite.lib import commandline
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 
-_SCRIPT_TEMPLATE_FILE = os.path.join(os.path.dirname(__file__),
-                                     'call_templates', 'script_template')
+_SCRIPT_TEMPLATE_FILE = os.path.join(
+    os.path.dirname(__file__), 'call_templates', 'script_template')
 SCRIPT_TEMPLATE = osutils.ReadFile(_SCRIPT_TEMPLATE_FILE)
 EXAMPLES_PATH = os.path.join(os.path.dirname(__file__), 'call_templates')
 OUTPUT_PATH = os.path.join(os.path.dirname(__file__), 'call_scripts')
@@ -66,12 +65,16 @@ def get_services():
     final_method = _camel_to_snake(method)
 
     if not final_service in services:
-      services[final_service] = {'name': final_service,
-                                 'full_name': full_service_name,
-                                 'methods': []}
+      services[final_service] = {
+          'name': final_service,
+          'full_name': full_service_name,
+          'methods': []
+      }
 
-    services[final_service]['methods'].append({'name': final_method,
-                                               'full_name': method})
+    services[final_service]['methods'].append({
+        'name': final_method,
+        'full_name': method,
+    })
 
   return list(services.values())
 
@@ -83,7 +86,7 @@ def write_script(filename, service, method):
   os.chmod(script_path, 0o755)
 
 
-def write_scripts(force=False):
+def write_scripts(build_target, force=False):
   for service_data in get_services():
     for method_data in service_data['methods']:
       filename = '__'.join([service_data['name'], method_data['name']])
@@ -98,8 +101,9 @@ def write_scripts(force=False):
       if not force and not _input_file_empty(input_file):
         logging.info('%s exists, skipping.', input_file)
       elif os.path.exists(example_input):
-        logging.info('Example %s exists, copying.', example_input)
-        shutil.copy(example_input, input_file)
+        logging.info('Example %s exists, building input.', example_input)
+        content = osutils.ReadFile(example_input)
+        osutils.WriteFile(input_file, content % {'build_target': build_target})
       elif not os.path.exists(input_file):
         logging.info('No input could be found, writing empty input.')
         osutils.WriteFile(input_file, '{}')
@@ -116,9 +120,18 @@ def GetParser():
   """Build the argument parser."""
   parser = commandline.ArgumentParser(description=__doc__)
 
-  parser.add_argument('--force', action='store_true', default=False,
-                      help='Force replace all input files, even if not empty.')
-
+  parser.add_argument(
+      '--force',
+      action='store_true',
+      default=False,
+      help='Force replace all input files, even if not empty.')
+  parser.add_argument(
+      '-b',
+      '--board',
+      '--build-target',
+      dest='build_target',
+      help='Generate the configs with the given build target. Implies --force. '
+           'Defaults to "betty".')
   return parser
 
 
@@ -127,10 +140,15 @@ def _ParseArgs(argv):
   parser = GetParser()
   opts = parser.parse_args(argv)
 
+  if opts.build_target:
+    opts.force = True
+  else:
+    opts.build_target = 'betty'
+
   opts.Freeze()
   return opts
 
 
 def main(argv):
   opts = _ParseArgs(argv)
-  write_scripts(force=opts.force)
+  write_scripts(opts.build_target, force=opts.force)

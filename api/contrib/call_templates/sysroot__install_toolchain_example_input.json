@@ -1,9 +1,9 @@
 {
   "sysroot": {
     "buildTarget": {
-      "name": "betty"
+      "name": "%(build_target)s"
     },
-    "path": "/build/betty"
+    "path": "/build/%(build_target)s"
   },
   "chroot": {
     "env": {

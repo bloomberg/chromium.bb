@@ -1,7 +1,7 @@
 {
   "build_targets": [
     {
-      "name": "betty"
+      "name": "%(build_target)s"
     }
   ],
   "overlay_type": 1

@@ -1,6 +1,6 @@
 {
   "build_target": {
-    "name": "betty"
+    "name": "%(build_target)s"
   },
   "use_flags": [
     "chrome_internal"

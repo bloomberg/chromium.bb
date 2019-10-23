@@ -1,9 +1,11 @@
 {
   "build_target": {
-    "name": "betty"
+    "name": "%(build_target)s"
   },
   "image": {
-    "path": "/mnt/host/source/src/build/images/betty/latest"
+    "path": "/mnt/host/source/src/build/images/%(build_target)s/latest"
   },
-  "result_directory": "/tmp/image_test_results"
+  "result": {
+    "directory": "/tmp"
+  }
 }
