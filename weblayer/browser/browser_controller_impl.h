@@ -74,8 +74,6 @@ class BrowserControllerImpl : public BrowserController,
 #endif
 
   // content::WebContentsDelegate:
-  void LoadingStateChanged(content::WebContents* source,
-                           bool to_different_document) override;
   void LoadProgressChanged(content::WebContents* source,
                            double progress) override;
   void DidNavigateMainFramePostCommit(

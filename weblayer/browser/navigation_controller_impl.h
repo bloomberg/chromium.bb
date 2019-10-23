@@ -67,6 +67,11 @@ class NavigationControllerImpl : public NavigationController,
       int index);
 #endif
 
+  // Called by BrowserControllerImpl when the loading progress has changed.
+  // TODO(estade): move LoadProgressChanged from WebContentsDelegate to
+  // WebContentsObserver to avoid this extra bounce.
+  void NotifyLoadProgressChanged(double progress);
+
  private:
   // NavigationController implementation:
   void AddObserver(NavigationObserver* observer) override;
@@ -91,9 +96,12 @@ class NavigationControllerImpl : public NavigationController,
       content::NavigationHandle* navigation_handle) override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
+  void DidStartLoading() override;
+  void DidStopLoading() override;
   void DidFirstVisuallyNonEmptyPaint() override;
 
-  BrowserControllerImpl* browser_controller_;
+  void NotifyLoadStateChanged();
+
   base::ObserverList<NavigationObserver>::Unchecked observers_;
   std::map<content::NavigationHandle*, std::unique_ptr<NavigationImpl>>
       navigation_map_;
