@@ -396,13 +396,6 @@ public class PrefServiceBridge {
     }
 
     /**
-     * @return the last account id associated with sync.
-     */
-    public String getSyncLastAccountId() {
-        return PrefServiceBridgeJni.get().getSyncLastAccountId(PrefServiceBridge.this);
-    }
-
-    /**
      * @return the last account username associated with sync.
      */
     public String getSyncLastAccountName() {
@@ -819,13 +812,6 @@ public class PrefServiceBridge {
     }
 
     /**
-     * Sets the preferences on whether to enable/disable microphone.
-     */
-    public void setMicEnabled(boolean enabled) {
-        PrefServiceBridgeJni.get().setMicEnabled(PrefServiceBridge.this, enabled);
-    }
-
-    /**
      * @return Whether the microphone permission is managed by the custodian of
      * the supervised account.
      */
@@ -862,13 +848,6 @@ public class PrefServiceBridge {
     }
 
     /**
-     * @return Whether printing is managed by policy.
-     */
-    public boolean isPrintingManaged() {
-        return PrefServiceBridgeJni.get().getPrintingManaged(PrefServiceBridge.this);
-    }
-
-    /**
      * Get all the version strings from native.
      * @return AboutVersionStrings about version strings.
      */
@@ -900,17 +879,8 @@ public class PrefServiceBridge {
                 PrefServiceBridge.this);
     }
 
-    public String getSupervisedUserCustodianName() {
-        return PrefServiceBridgeJni.get().getSupervisedUserCustodianName(PrefServiceBridge.this);
-    }
-
     public String getSupervisedUserCustodianEmail() {
         return PrefServiceBridgeJni.get().getSupervisedUserCustodianEmail(PrefServiceBridge.this);
-    }
-
-    public String getSupervisedUserCustodianProfileImageURL() {
-        return PrefServiceBridgeJni.get().getSupervisedUserCustodianProfileImageURL(
-                PrefServiceBridge.this);
     }
 
     public String getSupervisedUserSecondCustodianName() {
@@ -920,11 +890,6 @@ public class PrefServiceBridge {
 
     public String getSupervisedUserSecondCustodianEmail() {
         return PrefServiceBridgeJni.get().getSupervisedUserSecondCustodianEmail(
-                PrefServiceBridge.this);
-    }
-
-    public String getSupervisedUserSecondCustodianProfileImageURL() {
-        return PrefServiceBridgeJni.get().getSupervisedUserSecondCustodianProfileImageURL(
                 PrefServiceBridge.this);
     }
 
@@ -1166,7 +1131,6 @@ public class PrefServiceBridge {
         boolean getIncognitoModeEnabled(PrefServiceBridge caller);
         boolean getIncognitoModeManaged(PrefServiceBridge caller);
         boolean getPrintingEnabled(PrefServiceBridge caller);
-        boolean getPrintingManaged(PrefServiceBridge caller);
         boolean getSensorsEnabled(PrefServiceBridge caller);
         boolean getSoundEnabled(PrefServiceBridge caller);
         boolean getSupervisedUserSafeSitesEnabled(PrefServiceBridge caller);
@@ -1218,15 +1182,11 @@ public class PrefServiceBridge {
         void setResolveNavigationErrorEnabled(PrefServiceBridge caller, boolean enabled);
         void setEulaAccepted(PrefServiceBridge caller);
         void resetAcceptLanguages(PrefServiceBridge caller, String defaultLocale);
-        String getSyncLastAccountId(PrefServiceBridge caller);
         String getSyncLastAccountName(PrefServiceBridge caller);
-        String getSupervisedUserCustodianName(PrefServiceBridge caller);
         String getSupervisedUserCustodianEmail(PrefServiceBridge caller);
-        String getSupervisedUserCustodianProfileImageURL(PrefServiceBridge caller);
         int getDefaultSupervisedUserFilteringBehavior(PrefServiceBridge caller);
         String getSupervisedUserSecondCustodianName(PrefServiceBridge caller);
         String getSupervisedUserSecondCustodianEmail(PrefServiceBridge caller);
-        String getSupervisedUserSecondCustodianProfileImageURL(PrefServiceBridge caller);
         boolean isMetricsReportingEnabled(PrefServiceBridge caller);
         void setMetricsReportingEnabled(PrefServiceBridge caller, boolean enabled);
         boolean isMetricsReportingManaged(PrefServiceBridge caller);
