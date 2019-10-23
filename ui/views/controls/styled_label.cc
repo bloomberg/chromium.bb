@@ -319,176 +319,181 @@ gfx::Size StyledLabel::CalculateAndDoLayout(int width, bool dry_run) {
 
   bool first_loop_iteration = true;
 
-  // Max height of the views in a line.
-  int line_height = default_line_height;
-
-  // Temporary references to the views in a line, used for alignment.
-  std::vector<View*> views_in_a_line;
-
   // Iterate over the text, creating a bunch of labels and links and laying them
   // out in the appropriate positions.
-  while (!remaining_string.empty()) {
-    if (offset.x() == 0 && !first_loop_iteration) {
-      if (remaining_string.front() == L'\n') {
-        // Wrapped to the next line on \n, remove it. Other whitespace,
-        // eg, spaces to indent next line, are preserved.
-        remaining_string.erase(0, 1);
-      } else {
-        // Wrapped on whitespace character or characters in the middle of the
-        // line - none of them are needed at the beginning of the next line.
-        base::TrimWhitespace(remaining_string, base::TRIM_LEADING,
-                             &remaining_string);
+  {
+    // Max height of the views in a line.
+    int line_height = default_line_height;
+
+    // Temporary references to the views in a line, used for alignment.
+    std::vector<View*> views_in_a_line;
+
+    while (!remaining_string.empty()) {
+      if (offset.x() == 0 && !first_loop_iteration) {
+        if (remaining_string.front() == L'\n') {
+          // Wrapped to the next line on \n, remove it. Other whitespace,
+          // eg, spaces to indent next line, are preserved.
+          remaining_string.erase(0, 1);
+        } else {
+          // Wrapped on whitespace character or characters in the middle of the
+          // line - none of them are needed at the beginning of the next line.
+          base::TrimWhitespace(remaining_string, base::TRIM_LEADING,
+                               &remaining_string);
+        }
       }
-    }
-    first_loop_iteration = false;
+      first_loop_iteration = false;
 
-    gfx::Range range(gfx::Range::InvalidRange());
-    if (current_range != style_ranges_.end())
-      range = current_range->range;
+      gfx::Range range(gfx::Range::InvalidRange());
+      if (current_range != style_ranges_.end())
+        range = current_range->range;
 
-    const size_t position = text_.size() - remaining_string.size();
-    std::vector<base::string16> substrings;
-    // If the current range is not a custom_view, then we use ElideRectangleText
-    // to determine the line wrapping. Note: if it is a custom_view, then the
-    // |position| should equal |range.start()| because the custom_view is
-    // treated as one unit.
-    if (position != range.start() || (current_range != style_ranges_.end() &&
-                                      !current_range->style_info.custom_view)) {
-      const gfx::Rect chunk_bounds(offset.x(), 0, width - offset.x(),
-                                   default_line_height);
-      // If the start of the remaining text is inside a styled range, the font
-      // style may differ from the base font. The font specified by the range
-      // should be used when eliding text.
-      gfx::FontList text_font_list = position >= range.start()
-                                         ? GetFontListForRange(current_range)
-                                         : GetDefaultFontList();
-      int elide_result = gfx::ElideRectangleText(
-          remaining_string, text_font_list, chunk_bounds.width(),
-          chunk_bounds.height(), gfx::WRAP_LONG_WORDS, &substrings);
+      const size_t position = text_.size() - remaining_string.size();
+      std::vector<base::string16> substrings;
+      // If the current range is not a custom_view, then we use
+      // ElideRectangleText to determine the line wrapping. Note: if it is a
+      // custom_view, then the |position| should equal |range.start()| because
+      // the custom_view is treated as one unit.
+      if (position != range.start() ||
+          (current_range != style_ranges_.end() &&
+           !current_range->style_info.custom_view)) {
+        const gfx::Rect chunk_bounds(offset.x(), 0, width - offset.x(),
+                                     default_line_height);
+        // If the start of the remaining text is inside a styled range, the font
+        // style may differ from the base font. The font specified by the range
+        // should be used when eliding text.
+        gfx::FontList text_font_list = position >= range.start()
+                                           ? GetFontListForRange(current_range)
+                                           : GetDefaultFontList();
+        int elide_result = gfx::ElideRectangleText(
+            remaining_string, text_font_list, chunk_bounds.width(),
+            chunk_bounds.height(), gfx::WRAP_LONG_WORDS, &substrings);
 
-      if (substrings.empty()) {
-        // There is no room for anything; abort. Since wrapping is enabled, this
-        // should only occur if there is insufficient vertical space remaining.
-        // ElideRectangleText always adds a single character, even if there is
-        // no room horizontally.
-        DCHECK_NE(0, elide_result & gfx::INSUFFICIENT_SPACE_VERTICAL);
-        break;
-      }
+        if (substrings.empty()) {
+          // There is no room for anything; abort. Since wrapping is enabled,
+          // this should only occur if there is insufficient vertical space
+          // remaining. ElideRectangleText always adds a single character, even
+          // if there is no room horizontally.
+          DCHECK_NE(0, elide_result & gfx::INSUFFICIENT_SPACE_VERTICAL);
+          break;
+        }
 
-      // Views are aligned to integer coordinates, but typesetting is not. This
-      // means that it's possible for an ElideRectangleText on a prior iteration
-      // to fit a word on the current line, which does not fit after that word
-      // is wrapped in a View for its chunk at the end of the line. In most
-      // cases, this will just wrap more words on to the next line. However, if
-      // the remaining chunk width is insufficient for the very _first_ word,
-      // that word will be incorrectly split. In this case, start a new line
-      // instead.
-      bool truncated_chunk =
-          offset.x() != 0 &&
-          (elide_result & gfx::INSUFFICIENT_SPACE_FOR_FIRST_WORD) != 0;
-      if (substrings[0].empty() || truncated_chunk) {
-        // The entire line is \n, or nothing fits on this line. Start a new
-        // line. As for the first line, don't advance line number so that it
-        // will be handled again at the beginning of the loop.
-        if (offset.x() != 0 || line > 0)
-          AdvanceOneLine(&line, &offset, &line_height, width, &views_in_a_line);
-        DCHECK(views_in_a_line.empty());
-        continue;
-      }
-    }
-
-    base::string16 chunk;
-    View* custom_view = nullptr;
-    std::unique_ptr<Label> label;
-    if (position >= range.start()) {
-      const RangeStyleInfo& style_info = current_range->style_info;
-
-      if (style_info.custom_view) {
-        custom_view = style_info.custom_view;
-        // Ownership of the custom view must be passed to StyledLabel.
-        DCHECK(
-            std::find_if(custom_views_.cbegin(), custom_views_.cend(),
-                         [custom_view](const std::unique_ptr<View>& view_ptr) {
-                           return view_ptr.get() == custom_view;
-                         }) != custom_views_.cend());
-        // Do not allow wrap in custom view.
-        DCHECK_EQ(position, range.start());
-        chunk = remaining_string.substr(0, range.end() - position);
-      } else {
-        chunk = substrings[0];
-      }
-
-      if (((custom_view &&
-            offset.x() + custom_view->GetPreferredSize().width() > width) ||
-           (style_info.disable_line_wrapping &&
-            chunk.size() < range.length())) &&
-          position == range.start() && offset.x() != 0) {
-        // If the chunk should not be wrapped, try to fit it entirely on the
-        // next line.
-        AdvanceOneLine(&line, &offset, &line_height, width, &views_in_a_line);
-        continue;
-      }
-
-      if (chunk.size() > range.end() - position)
-        chunk = chunk.substr(0, range.end() - position);
-
-      if (!custom_view) {
-        label = CreateLabel(chunk, style_info);
-        if (style_info.IsLink() && !dry_run) {
-          static_cast<Link*>(label.get())->set_listener(this);
-          link_targets_[label.get()] = range;
+        // Views are aligned to integer coordinates, but typesetting is not.
+        // This means that it's possible for an ElideRectangleText on a prior
+        // iteration to fit a word on the current line, which does not fit after
+        // that word is wrapped in a View for its chunk at the end of the line.
+        // In most cases, this will just wrap more words on to the next line.
+        // However, if the remaining chunk width is insufficient for the very
+        // _first_ word, that word will be incorrectly split. In this case,
+        // start a new line instead.
+        bool truncated_chunk =
+            offset.x() != 0 &&
+            (elide_result & gfx::INSUFFICIENT_SPACE_FOR_FIRST_WORD) != 0;
+        if (substrings[0].empty() || truncated_chunk) {
+          // The entire line is \n, or nothing fits on this line. Start a new
+          // line. As for the first line, don't advance line number so that it
+          // will be handled again at the beginning of the loop.
+          if (offset.x() != 0 || line > 0)
+            AdvanceOneLine(&line, &offset, &line_height, width,
+                           &views_in_a_line);
+          DCHECK(views_in_a_line.empty());
+          continue;
         }
       }
 
-      if (position + chunk.size() >= range.end())
-        ++current_range;
-    } else {
-      chunk = substrings[0];
+      base::string16 chunk;
+      View* custom_view = nullptr;
+      std::unique_ptr<Label> label;
+      if (position >= range.start()) {
+        const RangeStyleInfo& style_info = current_range->style_info;
 
-      // This chunk is normal text.
-      if (position + chunk.size() > range.start())
-        chunk = chunk.substr(0, range.start() - position);
-      label = CreateLabel(chunk, default_style);
+        if (style_info.custom_view) {
+          custom_view = style_info.custom_view;
+          // Ownership of the custom view must be passed to StyledLabel.
+          DCHECK(std::find_if(
+                     custom_views_.cbegin(), custom_views_.cend(),
+                     [custom_view](const std::unique_ptr<View>& view_ptr) {
+                       return view_ptr.get() == custom_view;
+                     }) != custom_views_.cend());
+          // Do not allow wrap in custom view.
+          DCHECK_EQ(position, range.start());
+          chunk = remaining_string.substr(0, range.end() - position);
+        } else {
+          chunk = substrings[0];
+        }
+
+        if (((custom_view &&
+              offset.x() + custom_view->GetPreferredSize().width() > width) ||
+             (style_info.disable_line_wrapping &&
+              chunk.size() < range.length())) &&
+            position == range.start() && offset.x() != 0) {
+          // If the chunk should not be wrapped, try to fit it entirely on the
+          // next line.
+          AdvanceOneLine(&line, &offset, &line_height, width, &views_in_a_line);
+          continue;
+        }
+
+        if (chunk.size() > range.end() - position)
+          chunk = chunk.substr(0, range.end() - position);
+
+        if (!custom_view) {
+          label = CreateLabel(chunk, style_info);
+          if (style_info.IsLink() && !dry_run) {
+            static_cast<Link*>(label.get())->set_listener(this);
+            link_targets_[label.get()] = range;
+          }
+        }
+
+        if (position + chunk.size() >= range.end())
+          ++current_range;
+      } else {
+        chunk = substrings[0];
+
+        // This chunk is normal text.
+        if (position + chunk.size() > range.start())
+          chunk = chunk.substr(0, range.start() - position);
+        label = CreateLabel(chunk, default_style);
+      }
+
+      View* child_view = custom_view ? custom_view : label.get();
+      gfx::Size view_size = child_view->GetPreferredSize();
+      // |offset.y()| already contains |insets.top()|.
+      gfx::Point view_origin(insets.left() + offset.x(), offset.y());
+      // The custom view could be wider than the available width; clamp as
+      // needed.
+      if (custom_view)
+        view_size.set_width(std::min(view_size.width(), width - offset.x()));
+
+      child_view->SetBoundsRect(gfx::Rect(view_origin, view_size));
+      offset.set_x(offset.x() + view_size.width());
+      total_height =
+          std::max(total_height, std::max(child_view->bounds().bottom(),
+                                          offset.y() + default_line_height) +
+                                     insets.bottom());
+      used_width = std::max(used_width, offset.x());
+      line_height = std::max(line_height, view_size.height());
+
+      if (!dry_run) {
+        views_in_a_line.push_back(child_view);
+        if (label)
+          AddChildView(label.release());
+        else
+          AddChildView(child_view);
+      }
+
+      remaining_string = remaining_string.substr(chunk.size());
+
+      // If |gfx::ElideRectangleText| returned more than one substring, that
+      // means the whole text did not fit into remaining line width, with text
+      // after |susbtring[0]| spilling into next line. If whole |substring[0]|
+      // was added to the current line (this may not be the case if part of the
+      // substring has different style), proceed to the next line.
+      if (!custom_view && substrings.size() > 1 &&
+          chunk.size() == substrings[0].size()) {
+        AdvanceOneLine(&line, &offset, &line_height, width, &views_in_a_line);
+      }
     }
-
-    View* child_view = custom_view ? custom_view : label.get();
-    gfx::Size view_size = child_view->GetPreferredSize();
-    // |offset.y()| already contains |insets.top()|.
-    gfx::Point view_origin(insets.left() + offset.x(), offset.y());
-    // The custom view could be wider than the available width; clamp as needed.
-    if (custom_view)
-      view_size.set_width(std::min(view_size.width(), width - offset.x()));
-
-    child_view->SetBoundsRect(gfx::Rect(view_origin, view_size));
-    offset.set_x(offset.x() + view_size.width());
-    total_height =
-        std::max(total_height, std::max(child_view->bounds().bottom(),
-                                        offset.y() + default_line_height) +
-                                   insets.bottom());
-    used_width = std::max(used_width, offset.x());
-    line_height = std::max(line_height, view_size.height());
-
-    if (!dry_run) {
-      views_in_a_line.push_back(child_view);
-      if (label)
-        AddChildView(label.release());
-      else
-        AddChildView(child_view);
-    }
-
-    remaining_string = remaining_string.substr(chunk.size());
-
-    // If |gfx::ElideRectangleText| returned more than one substring, that
-    // means the whole text did not fit into remaining line width, with text
-    // after |susbtring[0]| spilling into next line. If whole |substring[0]|
-    // was added to the current line (this may not be the case if part of the
-    // substring has different style), proceed to the next line.
-    if (!custom_view && substrings.size() > 1 &&
-        chunk.size() == substrings[0].size()) {
-      AdvanceOneLine(&line, &offset, &line_height, width, &views_in_a_line);
-    }
+    AdvanceOneLine(&line, &offset, &line_height, width, &views_in_a_line);
   }
-  AdvanceOneLine(&line, &offset, &line_height, width, &views_in_a_line);
   DCHECK_LE(used_width, width);
   calculated_size_ = gfx::Size(used_width + GetInsets().width(), total_height);
   return calculated_size_;
