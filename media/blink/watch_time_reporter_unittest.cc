@@ -245,14 +245,12 @@ class WatchTimeReporterTest
             receiver) override {}
     void Initialize(bool is_mse, mojom::MediaURLScheme url_scheme) override {}
     void OnError(PipelineStatus status) override {}
-    void SetIsAdMedia() override {}
     void SetIsEME() override {}
     void SetTimeToMetadata(base::TimeDelta elapsed) override {}
     void SetTimeToFirstFrame(base::TimeDelta elapsed) override {}
     void SetTimeToPlayReady(base::TimeDelta elapsed) override {}
     void SetContainerName(
         container_names::MediaContainerName container_name) override {}
-    void AddBytesReceived(uint64_t bytes_received) override {}
     void SetHasPlayed() override {}
     void SetHaveEnough() override {}
     void SetHasAudio(AudioCodec audio_codec) override {}
