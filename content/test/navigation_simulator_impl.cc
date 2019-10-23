@@ -660,6 +660,23 @@ void NavigationSimulatorImpl::AbortCommit() {
   CHECK_EQ(1, num_did_finish_navigation_called_);
 }
 
+void NavigationSimulatorImpl::AbortFromRenderer() {
+  CHECK(!browser_initiated_)
+      << "NavigationSimulatorImpl::AbortFromRenderer cannot be called for "
+         "browser-initiated navigation.";
+  CHECK_LE(state_, FAILED)
+      << "NavigationSimulatorImpl::AbortFromRenderer cannot be called after "
+         "NavigationSimulatorImpl::Commit or  "
+         "NavigationSimulatorImpl::CommitErrorPage.";
+
+  was_aborted_ = true;
+  DCHECK(IsPerNavigationMojoInterfaceEnabled());
+  request_->RendererAbortedNavigationForTesting();
+  state_ = FINISHED;
+
+  CHECK_EQ(1, num_did_finish_navigation_called_);
+}
+
 void NavigationSimulatorImpl::FailWithResponseHeaders(
     int error_code,
     scoped_refptr<net::HttpResponseHeaders> response_headers) {
@@ -1019,6 +1036,8 @@ void NavigationSimulatorImpl::DidFinishNavigation(
   if (request == request_) {
     num_did_finish_navigation_called_++;
     request_ = nullptr;
+    if (was_aborted_)
+      CHECK_EQ(net::ERR_ABORTED, request->GetNetErrorCode());
   }
 }
 

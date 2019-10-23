@@ -5075,7 +5075,7 @@ Unknown properties are collapsed to zero. -->
   <int value="117" label="BDH_INVALID_REFCOUNT_OPERATION"/>
   <int value="118" label="BDH_INVALID_URL_OPERATION"/>
   <int value="119" label="OBSOLETE_IDBDH_INVALID_ORIGIN"/>
-  <int value="120" label="RFH_FAIL_PROVISIONAL_LOAD_NO_HANDLE"/>
+  <int value="120" label="OBSOLETE_RFH_FAIL_PROVISIONAL_LOAD_NO_HANDLE"/>
   <int value="121" label="OBSOLETE_RFH_FAIL_PROVISIONAL_LOAD_NO_ERROR"/>
   <int value="122" label="NI_IN_PAGE_NAVIGATION"/>
   <int value="123" label="RPH_MOJO_PROCESS_ERROR"/>

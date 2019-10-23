@@ -2573,28 +2573,6 @@ bool RenderFrameHostImpl::IsFrozen() {
   return frame_lifecycle_state_ != blink::mojom::FrameLifecycleState::kRunning;
 }
 
-void RenderFrameHostImpl::DidFailProvisionalLoadWithError(
-    const GURL& url,
-    int error_code,
-    const base::string16& error_description,
-    bool showing_repost_interstitial) {
-  TRACE_EVENT2("navigation",
-               "RenderFrameHostImpl::DidFailProvisionalLoadWithError",
-               "frame_tree_node", frame_tree_node_->frame_tree_node_id(),
-               "error", error_code);
-  // TODO(clamy): Kill the renderer with RFH_FAIL_PROVISIONAL_LOAD_NO_HANDLE and
-  // return early if navigation_handle_ is null, once we prevent that case from
-  // happening in practice. See https://crbug.com/605289.
-
-  // Update the error code in the NavigationRequest.
-  if (navigation_request()) {
-    navigation_request()->set_net_error(static_cast<net::Error>(error_code));
-  }
-
-  frame_tree_node_->navigator()->DidFailProvisionalLoadWithError(
-      this, url, error_code, error_description, showing_repost_interstitial);
-}
-
 void RenderFrameHostImpl::DidFailLoadWithError(
     const GURL& url,
     int error_code,
