@@ -1220,6 +1220,9 @@ fyi_coverage_builder(
     cores = None,
     os = os.MAC_ANY,
     use_clang_coverage = True,
+    properties = {
+        'xcode_build_version': '11m382q',
+    },
 )
 
 fyi_coverage_builder(
