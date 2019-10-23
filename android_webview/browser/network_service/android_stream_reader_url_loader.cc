@@ -4,6 +4,11 @@
 
 #include "android_webview/browser/network_service/android_stream_reader_url_loader.h"
 
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "android_webview/browser/input_stream.h"
 #include "android_webview/browser/network_service/input_stream_reader.h"
 #include "android_webview/common/aw_features.h"
