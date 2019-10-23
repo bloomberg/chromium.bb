@@ -117,6 +117,8 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kUseSearchClickForRightClick;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kVideoPlayerNativeControls;
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const base::Feature kVirtualKeyboardBorderedKey;
 
 // Keep alphabetized.
 

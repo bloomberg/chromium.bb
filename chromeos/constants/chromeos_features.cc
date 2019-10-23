@@ -256,6 +256,10 @@ const base::Feature kUseSearchClickForRightClick{
 const base::Feature kVideoPlayerNativeControls{
     "VideoPlayerNativeControls", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enable or disable bordered key for virtual keyboard on Chrome OS.
+const base::Feature kVirtualKeyboardBorderedKey{
+    "VirtualKeyboardBorderedKey", base::FEATURE_DISABLED_BY_DEFAULT};
+
 ////////////////////////////////////////////////////////////////////////////////
 
 bool IsAmbientModeEnabled() {
