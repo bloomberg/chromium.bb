@@ -155,8 +155,8 @@ void AddToWidgetInputEventObservers(
   // added, the observer is removed and added again, to ensure that it is added
   // only once.
 #if defined(OS_ANDROID)
-  widget_host->RemoveImeTextCommittedEventObserver(observer);
-  widget_host->AddImeTextCommittedEventObserver(observer);
+  widget_host->RemoveImeInputEventObserver(observer);
+  widget_host->AddImeInputEventObserver(observer);
 #endif
   widget_host->RemoveInputEventObserver(observer);
   widget_host->AddInputEventObserver(observer);
