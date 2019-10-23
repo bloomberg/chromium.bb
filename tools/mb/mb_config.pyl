@@ -22,8 +22,11 @@
       'linux-chromeos-google-rel': 'official_goma_chromeos_minimal_symbols',
       'linux-google-rel': 'official_goma',
       'mac-google-rel': 'official_goma',
-      'win-celab-rel': 'official_celab_release_bot',
       'win-google-rel': 'official_goma_x86',
+    },
+
+    'internal.chrome.fyi': {
+      'win-celab-rel': 'official_celab_release_bot',
     },
 
     'chromeos.chrome': {
