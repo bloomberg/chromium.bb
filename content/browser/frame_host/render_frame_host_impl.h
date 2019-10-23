@@ -926,9 +926,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   bool is_mhtml_document() { return is_mhtml_document_; }
 
-  // Notifies the render frame about a user activation from the browser side.
-  void NotifyUserActivation();
-
   // Notifies the render frame that |frame_tree_node_| has had the sticky
   // user activation bit set for the first time.
   void DidReceiveFirstUserActivation();

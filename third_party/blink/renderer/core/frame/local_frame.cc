@@ -1821,6 +1821,10 @@ void LocalFrame::SendInterventionReport(const String& id,
   Intervention::GenerateReport(this, id, message);
 }
 
+void LocalFrame::NotifyUserActivation() {
+  NotifyUserActivation(false);
+}
+
 void LocalFrame::BindToReceiver(
     blink::LocalFrame* frame,
     mojo::PendingAssociatedReceiver<mojom::blink::LocalFrame> receiver) {

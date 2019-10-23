@@ -4002,10 +4002,6 @@ void RenderFrameHostImpl::OnFocusedNodeChanged(
                       bounds_in_frame_widget.size()));
 }
 
-void RenderFrameHostImpl::NotifyUserActivation() {
-  Send(new FrameMsg_NotifyUserActivation(routing_id_));
-}
-
 void RenderFrameHostImpl::DidReceiveFirstUserActivation() {
   delegate_->DidReceiveFirstUserActivation(this);
 }

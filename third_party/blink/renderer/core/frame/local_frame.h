@@ -456,6 +456,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
       uint32_t max_length,
       GetTextSurroundingSelectionCallback callback) final;
   void SendInterventionReport(const String& id, const String& message) final;
+  void NotifyUserActivation() final;
 
  private:
   friend class FrameNavigationDisabler;
