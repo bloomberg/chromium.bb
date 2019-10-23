@@ -125,7 +125,7 @@ void WebContentController::ProcessRequest(
 void WebContentController::AttachTo(aura::Window* window, int window_id) {
   content::WebContents* contents = GetWebContents();
   auto* contents_window = contents->GetNativeView();
-  window->SetLayoutManager(new WebviewLayoutManager(window, contents_window));
+  window->SetLayoutManager(new WebviewLayoutManager(window));
   contents_window->set_id(window_id);
   contents_window->SetBounds(gfx::Rect(window->bounds().size()));
   // The aura window is hidden to avoid being shown via the usual layer method,
