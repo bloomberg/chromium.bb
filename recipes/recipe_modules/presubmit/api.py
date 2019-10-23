@@ -27,6 +27,7 @@ class PresubmitApi(recipe_api.RecipeApi):
   def __call__(self, *args, **kwargs):
     """Return a presubmit step."""
 
+    kwargs['venv'] = True
     name = kwargs.pop('name', 'presubmit')
     with self.m.depot_tools.on_path():
       presubmit_args = list(args) + [
@@ -106,16 +107,10 @@ class PresubmitApi(recipe_api.RecipeApi):
       '--upstream', upstream,  # '' if not in bot_update mode.
     ])
 
-    venv = True
-    # TODO(iannucci): verify that presubmit_support.py correctly finds and
-    # uses .vpython files, then remove this configuration.
-    if self._vpython_spec_path:
-      venv = abs_root.join(self._vpython_spec_path)
-
     raw_result = result_pb2.RawResult()
     step_json = self(
         *presubmit_args,
-        venv=venv, timeout=self._timeout_s,
+        timeout=self._timeout_s,
         # ok_ret='any' causes all exceptions to be ignored in this step
         ok_ret='any')
     # Set recipe result values

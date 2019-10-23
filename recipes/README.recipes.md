@@ -757,7 +757,7 @@ Raises:
 
 Return a presubmit step.
 
-&mdash; **def [execute](/recipes/recipe_modules/presubmit/api.py#74)(self, bot_update_step):**
+&mdash; **def [execute](/recipes/recipe_modules/presubmit/api.py#75)(self, bot_update_step):**
 
 Runs presubmit and sets summary markdown if applicable.
 
@@ -766,7 +766,7 @@ Args:
 Returns:
   a RawResult object, suitable for being returned from RunSteps.
 
-&mdash; **def [prepare](/recipes/recipe_modules/presubmit/api.py#39)(self):**
+&mdash; **def [prepare](/recipes/recipe_modules/presubmit/api.py#40)(self):**
 
 Set up a presubmit run.
 
