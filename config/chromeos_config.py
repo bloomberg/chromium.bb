@@ -3883,6 +3883,11 @@ def ApplyCustomOverrides(site_config):
   """
 
   overwritten_configs = {
+      'amd64-generic-cheets-release': {
+          'hw_tests': [],
+          'hw_tests_override': []
+      },
+
       'amd64-generic-chromium-pfq': {
           'useflags': [],
       },
