@@ -889,8 +889,9 @@ void ChromeClientImpl::SetBrowserControlsState(float top_height,
                                        shrinks_layout);
 }
 
-void ChromeClientImpl::SetBrowserControlsShownRatio(float ratio) {
-  web_view_->GetBrowserControls().SetShownRatio(ratio);
+void ChromeClientImpl::SetBrowserControlsShownRatio(float top_ratio,
+                                                    float bottom_ratio) {
+  web_view_->GetBrowserControls().SetShownRatio(top_ratio, bottom_ratio);
 }
 
 bool ChromeClientImpl::ShouldOpenUIElementDuringPageDismissal(
