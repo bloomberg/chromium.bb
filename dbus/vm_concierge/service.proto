@@ -246,6 +246,9 @@ message VmStoppedSignal {
 
   // The owner of the vm.
   string owner_id = 2;
+
+  // The virtual socket context id assigned to the VM that was stopped.
+  int64 cid = 3;
 }
 
 // Response to a SyncTimes RPC.
