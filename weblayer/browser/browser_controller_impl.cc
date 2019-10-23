@@ -175,11 +175,6 @@ void BrowserControllerImpl::ExecuteScript(
 
 #endif
 
-void BrowserControllerImpl::LoadProgressChanged(content::WebContents* source,
-                                                double progress) {
-  navigation_controller_->NotifyLoadProgressChanged(progress);
-}
-
 void BrowserControllerImpl::DidNavigateMainFramePostCommit(
     content::WebContents* web_contents) {
   for (auto& observer : observers_)

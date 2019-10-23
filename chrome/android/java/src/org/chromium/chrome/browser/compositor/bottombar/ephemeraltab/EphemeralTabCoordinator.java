@@ -237,7 +237,7 @@ public class EphemeralTabCoordinator implements View.OnLayoutChangeListener {
         }
 
         @Override
-        public void onProgressBarUpdated(int progress) {
+        public void onProgressBarUpdated(float progress) {
             if (mSheetContent == null) return;
             mSheetContent.setProgress(progress);
         }

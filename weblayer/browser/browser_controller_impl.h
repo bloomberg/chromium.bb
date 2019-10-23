@@ -74,8 +74,6 @@ class BrowserControllerImpl : public BrowserController,
 #endif
 
   // content::WebContentsDelegate:
-  void LoadProgressChanged(content::WebContents* source,
-                           double progress) override;
   void DidNavigateMainFramePostCommit(
       content::WebContents* web_contents) override;
   void RunFileChooser(content::RenderFrameHost* render_frame_host,
