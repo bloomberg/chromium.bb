@@ -257,7 +257,8 @@ class UsbImagerOperationTest(cros_test_lib.RunCommandTestCase):
 
     # Check that flash.UsbImagerOperation.Run() is called correctly.
     run_mock.assert_called_with(cros_build_lib.sudo_run, expected_cmd,
-                                debug_level=logging.NOTICE, update_period=0.5)
+                                debug_level=logging.NOTICE, encoding='utf-8',
+                                update_period=0.5)
 
   def testSudoRunCommandCalled(self):
     """Test that sudo_run is called when log level > NOTICE."""
@@ -340,10 +341,10 @@ class FlashUtilTest(cros_test_lib.MockTempDirTestCase):
     """Tests the GPT image probing."""
     # pylint: disable=protected-access
 
-    INVALID_PMBR = ' ' * 0x200
-    INVALID_GPT = ' ' * 0x200
-    VALID_PMBR = (' ' * 0x1fe) + '\x55\xaa'
-    VALID_GPT = 'EFI PART' + (' ' * 0x1f8)
+    INVALID_PMBR = b' ' * 0x200
+    INVALID_GPT = b' ' * 0x200
+    VALID_PMBR = (b' ' * 0x1fe) + b'\x55\xaa'
+    VALID_GPT = b'EFI PART' + (b' ' * 0x1f8)
     TESTCASES = (
         (False, False, INVALID_PMBR + INVALID_GPT),
         (False, False, VALID_PMBR + INVALID_GPT),
@@ -353,7 +354,7 @@ class FlashUtilTest(cros_test_lib.MockTempDirTestCase):
 
     img = os.path.join(self.tempdir, 'img.bin')
     for exp_pmbr_t, exp_pmbr_f, data in TESTCASES:
-      osutils.WriteFile(img, data)
+      osutils.WriteFile(img, data, mode='wb')
       self.assertEqual(
           flash._IsFilePathGPTDiskImage(img, require_pmbr=True), exp_pmbr_t)
       self.assertEqual(

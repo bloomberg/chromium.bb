@@ -46,7 +46,7 @@ class UsbImagerOperation(operation.ProgressBarOperation):
     """Get the Pid of dd."""
     try:
       pids = cros_build_lib.run(['pgrep', 'dd'], capture_output=True,
-                                print_cmd=False).output
+                                print_cmd=False, encoding='utf-8').stdout
       for pid in pids.splitlines():
         if osutils.IsChildProcess(int(pid), name='dd'):
           return int(pid)
@@ -92,11 +92,11 @@ def _IsFilePathGPTDiskImage(file_path, require_pmbr=False):
     require_pmbr: Whether to require a PMBR in LBA0.
   """
   if os.path.isfile(file_path):
-    with open(file_path) as image_file:
+    with open(file_path, 'rb') as image_file:
       if require_pmbr:
         # Seek to the end of LBA0 and look for the PMBR boot signature.
         image_file.seek(0x1fe)
-        if image_file.read(2) != '\x55\xaa':
+        if image_file.read(2) != b'\x55\xaa':
           return False
         # Current file position is start of LBA1 now.
       else:
@@ -104,7 +104,7 @@ def _IsFilePathGPTDiskImage(file_path, require_pmbr=False):
         image_file.seek(0x200)
 
       # See if there's a GPT here.
-      if image_file.read(8) == 'EFI PART':
+      if image_file.read(8) == b'EFI PART':
         return True
 
   return False
@@ -231,7 +231,7 @@ class USBImager(object):
     if logging.getLogger().getEffectiveLevel() <= logging.NOTICE:
       op = UsbImagerOperation(image)
       op.Run(cros_build_lib.sudo_run, cmd, debug_level=logging.NOTICE,
-             update_period=0.5)
+             encoding='utf-8', update_period=0.5)
     else:
       cros_build_lib.sudo_run(
           cmd, debug_level=logging.NOTICE,
