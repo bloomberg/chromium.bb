@@ -1690,6 +1690,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDisableExplicitDmaFencesName,
      flag_descriptions::kDisableExplicitDmaFencesDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(switches::kDisableExplicitDmaFences)},
+    // TODO(crbug.com/1012846): Remove this flag and provision when HDR is fully
+    //  supported on ChromeOS.
+    {"enable-use-hdr-transfer-function",
+     flag_descriptions::kEnableUseHDRTransferFunctionName,
+     flag_descriptions::kEnableUseHDRTransferFunctionDescription, kOsCrOS,
+     SINGLE_VALUE_TYPE(switches::kEnableUseHDRTransferFunction)},
 #endif  // OS_CHROMEOS
 #if defined(OS_CHROMEOS)
     {"ash-enable-unified-desktop",

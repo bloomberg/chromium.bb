@@ -1971,6 +1971,9 @@ extern const char kDisableCancelAllTouchesDescription[];
 extern const char kDisableExplicitDmaFencesName[];
 extern const char kDisableExplicitDmaFencesDescription[];
 
+extern const char kEnableUseHDRTransferFunctionName[];
+extern const char kEnableUseHDRTransferFunctionDescription[];
+
 extern const char kDisableOfficeEditingComponentAppName[];
 extern const char kDisableOfficeEditingComponentAppDescription[];
 

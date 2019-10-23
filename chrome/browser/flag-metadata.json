@@ -1889,6 +1889,11 @@
     "expiry_milestone": 80
   },
   {
+    "name": "enable-use-hdr-transfer-function",
+    "owners": [ "mcasas" ],
+    "expiry_milestone": 89
+  },
+  {
     "name": "enable-use-zoom-for-dsf",
     "owners": [ "ccameron" ],
     "expiry_milestone": 80
