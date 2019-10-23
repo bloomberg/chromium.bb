@@ -1589,7 +1589,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // should not be initialized with a NetworkIsolationKey, and will be trusted
   // so it can consume requests with a TrustedParams::network_isolation_key.
   bool CreateNetworkServiceDefaultFactoryAndObserve(
-      const base::Optional<url::Origin>& origin,
+      const url::Origin& origin,
       base::Optional<net::NetworkIsolationKey> network_isolation_key,
       mojo::PendingReceiver<network::mojom::URLLoaderFactory>
           default_factory_receiver);
@@ -1601,7 +1601,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // For |network_isolation_key|, see the comment for |network_isolation_key|
   // above CreateNetworkServiceDefaultFactoryAndObserve().
   bool CreateNetworkServiceDefaultFactoryInternal(
-      const base::Optional<url::Origin>& origin,
+      const url::Origin& origin,
       base::Optional<net::NetworkIsolationKey> network_isolation_key,
       mojo::PendingReceiver<network::mojom::URLLoaderFactory>
           default_factory_receiver);

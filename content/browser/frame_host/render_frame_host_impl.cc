@@ -447,17 +447,12 @@ void LogRendererKillCrashKeys(const GURL& site_url) {
   base::debug::SetCrashKeyString(site_url_key, site_url.spec());
 }
 
-base::Optional<url::Origin> GetOriginForURLLoaderFactoryUnchecked(
+url::Origin GetOriginForURLLoaderFactoryUnchecked(
     NavigationRequest* navigation_request) {
   // Return a safe opaque origin when there is no |navigation_request| (e.g.
   // when RFHI::CommitNavigation is called via RFHI::NavigateToInterstitialURL).
   if (!navigation_request)
     return url::Origin();
-
-  // GetOriginForURLLoaderFactory should only be called at the ready-to-commit
-  // time, when the RFHI and process to commit the navigation are already known.
-  DCHECK_LE(NavigationRequest::RESPONSE_STARTED, navigation_request->state());
-  RenderFrameHostImpl* target_frame = navigation_request->GetRenderFrameHost();
 
   // Check if this is loadDataWithBaseUrl (which needs special treatment).
   auto& common_params = navigation_request->common_params();
@@ -487,43 +482,25 @@ base::Optional<url::Origin> GetOriginForURLLoaderFactoryUnchecked(
   if (navigation_request->IsForMhtmlSubframe())
     return url::Origin();
 
-  // TODO(lukasza, nasko): https://crbug.com/888079: Use exact origin, instead
-  // of falling back to site URL for about:blank and about:srcdoc.
-  if (common_params.url.SchemeIs(url::kAboutScheme)) {
-    // |site_instance|'s site URL cannot be used as
-    // |request_initiator_site_lock| unless the site requires a dedicated
-    // process.  Otherwise b.com may share a process associated with a.com, in
-    // a SiteInstance with |site_url| set to "http://a.com" (and/or
-    // "http://nonisolated.invalid" in the future) and in that scenario
-    // |request_initiator| for requests from b.com should NOT be locked to
-    // a.com.
-    SiteInstanceImpl* site_instance = target_frame->GetSiteInstance();
-    if (!SiteInstanceImpl::ShouldLockToOrigin(
-            site_instance->GetIsolationContext(), site_instance->GetSiteURL()))
-      return base::nullopt;
-    return SiteInstanceImpl::GetRequestInitiatorSiteLock(
-        site_instance->GetSiteURL());
-  }
-
   // In cases not covered above, URLLoaderFactory should be associated with the
-  // origin of |common_params.url|.  This works fine for all URLs, including
-  // data: URLs (which should use an opaque origin for their subresource
-  // requests) and blob: URLs (which embed their origin inside the URL).
-  return url::Origin::Create(common_params.url);
+  // origin of |common_params.url| and/or |common_params.initiator_origin|.
+  return url::Origin::Resolve(
+      common_params.url,
+      common_params.initiator_origin.value_or(url::Origin()));
 }
 
-base::Optional<url::Origin> GetOriginForURLLoaderFactory(
+url::Origin GetOriginForURLLoaderFactory(
     NavigationRequest* navigation_request) {
-  base::Optional<url::Origin> result =
+  url::Origin result =
       GetOriginForURLLoaderFactoryUnchecked(navigation_request);
 
   // Any non-opaque |result| must be an origin that is allowed to be accessed
   // from the process that is the target of this navigation.
-  if (result.has_value() && !result->opaque()) {
+  if (!result.opaque()) {
     auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
     CHECK(policy->CanAccessDataForOrigin(
         navigation_request->GetRenderFrameHost()->GetProcess()->GetID(),
-        *result));
+        result));
   }
 
   return result;
@@ -5403,10 +5380,8 @@ void RenderFrameHostImpl::CommitNavigation(
       GetContentClient()->browser()->WillCreateURLLoaderFactory(
           browser_context, this, GetProcess()->GetID(),
           ContentBrowserClient::URLLoaderFactoryType::kDocumentSubResource,
-          GetOriginForURLLoaderFactory(navigation_request)
-              .value_or(url::Origin()),
-          &factory_receiver, nullptr /* header_client */,
-          nullptr /* bypass_redirect_checks */);
+          GetOriginForURLLoaderFactory(navigation_request), &factory_receiver,
+          nullptr /* header_client */, nullptr /* bypass_redirect_checks */);
       CreateWebUIURLLoaderBinding(this, scheme, std::move(factory_receiver));
       // If the renderer has webui bindings, then don't give it access to
       // network loader for security reasons.
@@ -5525,10 +5500,8 @@ void RenderFrameHostImpl::CommitNavigation(
       GetContentClient()->browser()->WillCreateURLLoaderFactory(
           browser_context, this, GetProcess()->GetID(),
           ContentBrowserClient::URLLoaderFactoryType::kDocumentSubResource,
-          GetOriginForURLLoaderFactory(navigation_request)
-              .value_or(url::Origin()),
-          &factory_receiver, nullptr /* header_client */,
-          nullptr /* bypass_redirect_checks */);
+          GetOriginForURLLoaderFactory(navigation_request), &factory_receiver,
+          nullptr /* header_client */, nullptr /* bypass_redirect_checks */);
       // Keep DevTools proxy last, i.e. closest to the network.
       devtools_instrumentation::WillCreateURLLoaderFactory(
           this, false /* is_navigation */, false /* is_download */,
@@ -6213,7 +6186,7 @@ void RenderFrameHostImpl::NavigationRequestCancelled(
 }
 
 bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryAndObserve(
-    const base::Optional<url::Origin>& origin,
+    const url::Origin& origin,
     base::Optional<net::NetworkIsolationKey> network_isolation_key,
     mojo::PendingReceiver<network::mojom::URLLoaderFactory>
         default_factory_receiver) {
@@ -6242,7 +6215,7 @@ bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryAndObserve(
 }
 
 bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryInternal(
-    const base::Optional<url::Origin>& origin,
+    const url::Origin& origin,
     base::Optional<net::NetworkIsolationKey> network_isolation_key,
     mojo::PendingReceiver<network::mojom::URLLoaderFactory>
         default_factory_receiver) {
@@ -6253,9 +6226,8 @@ bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryInternal(
       header_client;
   GetContentClient()->browser()->WillCreateURLLoaderFactory(
       context, this, GetProcess()->GetID(),
-      ContentBrowserClient::URLLoaderFactoryType::kDocumentSubResource,
-      origin.value_or(url::Origin()), &default_factory_receiver, &header_client,
-      &bypass_redirect_checks);
+      ContentBrowserClient::URLLoaderFactoryType::kDocumentSubResource, origin,
+      &default_factory_receiver, &header_client, &bypass_redirect_checks);
 
   // Keep DevTools proxy last, i.e. closest to the network.
   devtools_instrumentation::WillCreateURLLoaderFactory(
