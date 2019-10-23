@@ -15,10 +15,31 @@
 #include "chrome/browser/apps/app_service/uninstall_dialog.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/services/app_service/app_service_impl.h"
+#include "chrome/services/app_service/public/cpp/intent_filter_util.h"
 #include "chrome/services/app_service/public/cpp/intent_util.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/url_data_source.h"
+#include "url/url_constants.h"
+
+namespace {
+
+apps::mojom::IntentFilterPtr FindBestMatchingFilter(
+    const apps::mojom::IntentPtr& intent) {
+  // TODO(crbug.com/853604): Update the matching util method to return how well
+  // the match is instead of just bool. And return the best match here. At the
+  // moment just return the url filter itself.
+  apps::mojom::IntentFilterPtr intent_filter;
+  if (intent->scheme.has_value() && intent->host.has_value() &&
+      intent->path.has_value()) {
+    intent_filter = apps_util::CreateIntentFilterForUrlScope(
+        GURL(intent->scheme.value() + url::kStandardSchemeSeparator +
+             intent->host.value() + intent->path.value()));
+  }
+  return intent_filter;
+}
+
+}  // namespace
 
 namespace apps {
 
@@ -132,6 +153,10 @@ void AppServiceProxy::Initialize() {
                                   weak_ptr_factory_.GetWeakPtr(), profile_));
 #endif  // OS_CHROMEOS
   }
+
+  // TODO(crbug.com/853604): Initialise from App Service stored preference.
+  preferred_apps_cache_.Init(
+      std::make_unique<base::Value>(base::Value::Type::DICTIONARY));
 }
 
 mojo::Remote<apps::mojom::AppService>& AppServiceProxy::AppService() {
@@ -140,6 +165,10 @@ mojo::Remote<apps::mojom::AppService>& AppServiceProxy::AppService() {
 
 apps::AppRegistryCache& AppServiceProxy::AppRegistryCache() {
   return cache_;
+}
+
+apps::PreferredApps& AppServiceProxy::PreferredAppsCache() {
+  return preferred_apps_cache_;
 }
 
 apps::mojom::IconKeyPtr AppServiceProxy::GetIconKey(const std::string& app_id) {
@@ -305,6 +334,18 @@ void AppServiceProxy::SetArcIsRegistered() {
   extension_apps_->ObserveArc();
   extension_web_apps_->ObserveArc();
 #endif
+}
+
+void AppServiceProxy::AddPreferredApp(const std::string& app_id,
+                                      const GURL& url) {
+  AddPreferredApp(app_id, apps_util::CreateIntentFromUrl(url));
+}
+
+void AppServiceProxy::AddPreferredApp(const std::string& app_id,
+                                      const apps::mojom::IntentPtr& intent) {
+  auto intent_filter = FindBestMatchingFilter(intent);
+  if (intent_filter)
+    preferred_apps_cache_.AddPreferredApp(app_id, intent_filter);
 }
 
 void AppServiceProxy::AddAppIconSource(Profile* profile) {
