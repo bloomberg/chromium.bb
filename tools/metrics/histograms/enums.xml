@@ -56016,6 +56016,18 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="From TWA manage space activity"/>
 </enum>
 
+<enum name="SettingsPageInteractions">
+  <int value="0" label="PRIVACY_SYNC_AND_GOOGLE_SERVICES"/>
+  <int value="1" label="PRIVACY_CHROME_SIGN_IN"/>
+  <int value="2" label="PRIVACY_DO_NOT_TRACK"/>
+  <int value="3" label="PRIVACY_PAYMENT_METHOD"/>
+  <int value="4" label="PRIVACY_NETWORK_PREDICTION"/>
+  <int value="5" label="PRIVACY_MANAGE_CERTIFICATES"/>
+  <int value="6" label="PRIVACY_SECURITY_KEYS"/>
+  <int value="7" label="PRIVACY_SITE_SETTINGS"/>
+  <int value="8" label="PRIVACY_CLEAR_BROWSING_DATA"/>
+</enum>
+
 <enum name="SettingsResetPromptConfigError">
   <int value="1" label="Config Ok"/>
   <int value="2" label="Missing domain_hashes param"/>
