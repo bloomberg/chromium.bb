@@ -14,11 +14,12 @@
 #include "platform/impl/socket_handle_waiter_posix.h"
 #include "platform/impl/task_runner.h"
 #include "platform/impl/tls_data_router_posix.h"
-#include "platform/impl/udp_socket_reader_posix.h"
 #include "util/operation_loop.h"
 
 namespace openscreen {
 namespace platform {
+
+class UdpSocketReaderPosix;
 
 class PlatformClientPosix : public PlatformClient {
  public:

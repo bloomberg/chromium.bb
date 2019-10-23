@@ -42,8 +42,6 @@ ACTION_P2(VerifyMessageBytesWithoutId, expected_data, expected_size) {
 
 class MockUdpSocket : public UdpSocket {
  public:
-  MockUdpSocket(TaskRunner* task_runner) : UdpSocket(task_runner, nullptr) {}
-  ~MockUdpSocket() { CloseIfOpen(); }
   MOCK_METHOD(bool, IsIPv4, (), (const, override));
   MOCK_METHOD(bool, IsIPv6, (), (const, override));
   MOCK_METHOD(IPEndpoint, GetLocalEndpoint, (), (const, override));
@@ -76,7 +74,6 @@ class MdnsTrackerTest : public testing::Test {
   MdnsTrackerTest()
       : clock_(Clock::now()),
         task_runner_(&clock_),
-        socket_(&task_runner_),
         sender_(&socket_),
         a_question_(DomainName{"testing", "local"},
                     DnsType::kANY,

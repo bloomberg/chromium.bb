@@ -6,6 +6,8 @@
 
 #include <mutex>
 
+#include "platform/impl/udp_socket_reader_posix.h"
+
 namespace openscreen {
 namespace platform {
 

@@ -364,7 +364,6 @@ int main(int argc, char** argv) {
   openscreen::platform::SocketHandleWaiterThread socket_handle_waiter_thread;
   openscreen::platform::UdpSocketReaderPosix reader(
       socket_handle_waiter_thread.socket_handle_waiter());
-  openscreen::platform::UdpSocket::SetLifetimeObserver(&reader);
 
   openscreen::BrowseDemo(task_runner_thread.task_runner(), labels[0], labels[1],
                          service_instance);

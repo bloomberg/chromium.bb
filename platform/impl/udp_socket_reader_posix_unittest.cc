@@ -38,7 +38,6 @@ class MockUdpSocketPosix : public UdpSocketPosix {
   MOCK_METHOD1(SetMulticastOutboundInterface, void(NetworkInterfaceIndex));
   MOCK_METHOD2(JoinMulticastGroup,
                void(const IPAddress&, NetworkInterfaceIndex));
-  MOCK_METHOD0(ReceiveMessage, void());
   MOCK_METHOD3(SendMessage, void(const void*, size_t, const IPEndpoint&));
   MOCK_METHOD1(SetDscp, void(DscpMode));
 

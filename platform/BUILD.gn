@@ -171,7 +171,6 @@ source_set("unittests") {
     "api/internal/trace_logging_internal_unittest.cc",
     "api/time_unittest.cc",
     "api/trace_logging_unittest.cc",
-    "api/udp_socket_unittest.cc",
     "base/error_unittest.cc",
     "base/ip_address_unittest.cc",
     "base/location_unittest.cc",

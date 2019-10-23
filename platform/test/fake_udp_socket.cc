@@ -10,13 +10,11 @@ namespace platform {
 FakeUdpSocket::FakeUdpSocket(TaskRunner* task_runner,
                              Client* client,
                              Version version)
-    : UdpSocket(task_runner, client), client_(client), version_(version) {}
+    : client_(client), version_(version) {}
 
 // Ensure that the destructors for the unique_ptr objects are called in
 // the correct order to avoid OSP_CHECK failures.
 FakeUdpSocket::~FakeUdpSocket() {
-  CloseIfOpen();
-
   fake_task_runner_.reset();
   fake_clock_.reset();
   fake_client_.reset();
@@ -83,6 +81,8 @@ void FakeUdpSocket::SendMessage(const void* data,
 std::unique_ptr<FakeUdpSocket> FakeUdpSocket::CreateDefault(
     UdpSocket::Version version) {
   std::unique_ptr<FakeClock> clock = std::make_unique<FakeClock>(Clock::now());
+  // TODO: Revisit this, since a FakeTaskRunner is being created here, but no
+  // part of FakeUdpSocket makes use of a TaskRunner?
   std::unique_ptr<FakeTaskRunner> task_runner =
       std::make_unique<FakeTaskRunner>(clock.get());
   std::unique_ptr<FakeUdpSocket::MockClient> client =

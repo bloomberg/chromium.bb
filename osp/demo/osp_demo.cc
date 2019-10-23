@@ -428,7 +428,6 @@ void ListenerDemo() {
   platform::SocketHandleWaiterThread socket_handle_waiter_thread;
   platform::UdpSocketReaderPosix reader(
       socket_handle_waiter_thread.socket_handle_waiter());
-  platform::UdpSocket::SetLifetimeObserver(&reader);
 
   ListenerObserver listener_observer;
   MdnsServiceListenerConfig listener_config;
@@ -520,7 +519,6 @@ void PublisherDemo(absl::string_view friendly_name) {
   platform::SocketHandleWaiterThread socket_handle_waiter_thread;
   platform::UdpSocketReaderPosix reader(
       socket_handle_waiter_thread.socket_handle_waiter());
-  platform::UdpSocket::SetLifetimeObserver(&reader);
 
   PublisherObserver publisher_observer;
   // TODO(btolsch): aggregate initialization probably better?

@@ -31,28 +31,8 @@ using UdpSocketUniquePtr = std::unique_ptr<UdpSocket>;
 // Usage: The socket is created and opened by calling the Create() method. This
 // returns a unique pointer that auto-closes/destroys the socket when it goes
 // out-of-scope.
-//
-// Platform implementation note: There must only be one platform-specific
-// implementation of UdpSocket linked into the library/application. For that
-// reason, none of the methods here are declared virtual (i.e., the overhead is
-// pure waste). However, UdpSocket can be subclassed to include all extra
-// private state, such as OS-specific handles. See UdpSocketPosix for a
-// reference implementation.
 class UdpSocket {
  public:
-  virtual ~UdpSocket();
-
-  class LifetimeObserver {
-   public:
-    virtual ~LifetimeObserver() = default;
-
-    // Function to call upon creation of a new UdpSocket.
-    virtual void OnCreate(UdpSocket* socket) = 0;
-
-    // Function to call upon deletion of a UdpSocket.
-    virtual void OnDestroy(UdpSocket* socket) = 0;
-  };
-
   // Client for the UdpSocket class.
   class Client {
    public:
@@ -88,22 +68,19 @@ class UdpSocket {
     kLowPriority = 0x20
   };
 
-  // The LifetimeObserver set here must exist during ANY future UdpSocket
-  // creations. SetLifetimeObserver(nullptr) must be called before any future
-  // socket creations on destructions after the observer is destroyed
-  static void SetLifetimeObserver(LifetimeObserver* observer);
-
   using Version = IPAddress::Version;
 
   // Creates a new, scoped UdpSocket within the IPv4 or IPv6 family.
   // |local_endpoint| may be zero (see comments for Bind()). This method must be
-  // defined in the platform-level implementation. All client_ methods called
-  // will be queued on the provided task_runner. For this reason, the provided
-  // task_runner and client must exist for the duration of the created socket's
+  // defined in the platform-level implementation. All |client| methods called
+  // will be queued on the provided |task_runner|. For this reason, the provided
+  // TaskRunner and Client must exist for the duration of the created socket's
   // lifetime.
   static ErrorOr<UdpSocketUniquePtr> Create(TaskRunner* task_runner,
                                             Client* client,
                                             const IPEndpoint& local_endpoint);
+
+  virtual ~UdpSocket();
 
   // Returns true if |socket| belongs to the IPv4/IPv6 address family.
   virtual bool IsIPv4() const = 0;
@@ -117,7 +94,7 @@ class UdpSocket {
   // Binds to the address specified in the constructor. If the local endpoint's
   // address is zero, the operating system will bind to all interfaces. If the
   // local endpoint's port is zero, the operating system will automatically find
-  // a free local port and bind to it. Future calls to local_endpoint() will
+  // a free local port and bind to it. Future calls to GetLocalEndpoint() will
   // reflect the resolved port.
   virtual void Bind() = 0;
 
@@ -129,8 +106,8 @@ class UdpSocket {
   virtual void JoinMulticastGroup(const IPAddress& address,
                                   NetworkInterfaceIndex ifindex) = 0;
 
-  // Sends a message and returns the number of bytes sent, on success.
-  // Error::Code::kAgain might be returned to indicate the operation would
+  // Sends a message. If the message is not sent, Client::OnSendError() will be
+  // called to indicate this. Error::Code::kAgain indicates the operation would
   // block, which can be expected during normal operation.
   virtual void SendMessage(const void* data,
                            size_t length,
@@ -140,49 +117,9 @@ class UdpSocket {
   virtual void SetDscp(DscpMode state) = 0;
 
  protected:
-  // Creates a new UdpSocket. The provided client and task_runner must exist for
-  // the duration of this socket's lifetime.
-  UdpSocket(TaskRunner* task_runner, Client* client);
-
-  // Methods to take care of posting UdpSocket::Client callbacks for client_ to
-  // task_runner_.
-  // NOTE: OnError(...) will close the socket in addition to returning the
-  // error.
-  void OnError(Error error);
-  void OnSendError(Error error);
-  void OnRead(ErrorOr<UdpPacket> read_data);
-
-  // Closes an open socket when a non-recoverable error occurs.
-  void CloseIfError(const Error& error);
-
-  // Closes an open socket.
-  // NOTE: Concrete implementations of UdpSocket must call this method in their
-  // destructor.
-  void CloseIfOpen();
-
-  // Returns whether the socket is currently closed.
-  // NOTE: This must be checked before calling any operation on the socket.
-  bool is_closed() { return is_closed_.load(); }
+  UdpSocket();
 
  private:
-  static std::atomic<LifetimeObserver*> lifetime_observer_;
-
-  // Closes this socket.
-  // NOTE: This method will only be called once.
-  virtual void Close() {}
-
-  // Atomically keeps track of if the socket is closed, so that threading
-  // across different implementations isn't a problem.
-  std::atomic_bool is_closed_{false};
-
-  // Client to use for callbacks.
-  // NOTE: client_ can be nullptr if the user does not want any callbacks (for
-  // example, in the send-only case).
-  Client* const client_;
-
-  // Task runner to use for queuing client_ callbacks.
-  TaskRunner* const task_runner_;
-
   OSP_DISALLOW_COPY_AND_ASSIGN(UdpSocket);
 };
 

@@ -81,7 +81,6 @@ int main(int argc, const char* argv[]) {
   openscreen::platform::SocketHandleWaiterThread socket_handle_waiter_thread;
   openscreen::platform::UdpSocketReaderPosix udp_socket_reader(
       socket_handle_waiter_thread.socket_handle_waiter());
-  openscreen::platform::UdpSocket::SetLifetimeObserver(&udp_socket_reader);
 
   // Create the Environment that holds the required injected dependencies
   // (clock, task runner) used throughout the system, and owns the UDP socket

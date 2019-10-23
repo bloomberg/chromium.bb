@@ -76,17 +76,16 @@ class FakeUdpSocket : public UdpSocket {
   }
   size_t set_dscp_queue_size() { return set_dscp_errors_.size(); }
 
-  // Posts a task to call client_'s OnRead method
-  void MockReceivePacket(UdpPacket packet) { OnRead(std::move(packet)); }
+  void MockReceivePacket(UdpPacket packet) {
+    client_->OnRead(this, std::move(packet));
+  }
 
   FakeUdpSocket::MockClient* client_mock() { return fake_client_.get(); }
 
  private:
   void ProcessConfigurationMethod(std::queue<Error>* errors);
 
-  void Close() override {}
-
-  Client* client_;
+  Client* const client_;
   Version version_;
 
   // Queues for the response to calls above

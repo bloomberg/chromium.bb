@@ -11,20 +11,18 @@
 
 #include "platform/api/task_runner.h"
 #include "platform/api/time.h"
-#include "platform/api/udp_socket.h"
 #include "platform/impl/socket_handle.h"
 #include "platform/impl/socket_handle_waiter.h"
+#include "platform/impl/udp_socket_posix.h"
 
 namespace openscreen {
 namespace platform {
-
-struct UdpSocketPosix;
 
 // This is the class responsible for watching sockets for readable data, then
 // calling the function associated with these sockets once that data is read.
 // NOTE: This class will only function as intended while its RunUntilStopped
 // method is running.
-class UdpSocketReaderPosix : public UdpSocket::LifetimeObserver,
+class UdpSocketReaderPosix : public UdpSocketPosix::LifetimeObserver,
                              public SocketHandleWaiter::Subscriber {
  public:
   using SocketHandleRef = SocketHandleWaiter::SocketHandleRef;

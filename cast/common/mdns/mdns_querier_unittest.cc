@@ -44,9 +44,6 @@ ACTION_P(PartialCompareRecords, expected) {
 
 class MockUdpSocket : public UdpSocket {
  public:
-  explicit MockUdpSocket(TaskRunner* task_runner)
-      : UdpSocket(task_runner, nullptr) {}
-  ~MockUdpSocket() { CloseIfOpen(); }
   MOCK_METHOD(bool, IsIPv4, (), (const, override));
   MOCK_METHOD(bool, IsIPv6, (), (const, override));
   MOCK_METHOD(IPEndpoint, GetLocalEndpoint, (), (const, override));
@@ -79,7 +76,6 @@ class MdnsQuerierTest : public testing::Test {
   MdnsQuerierTest()
       : clock_(Clock::now()),
         task_runner_(&clock_),
-        socket_(&task_runner_),
         sender_(&socket_),
         receiver_(&socket_),
         record0_created_(DomainName{"testing", "local"},
