@@ -5107,6 +5107,7 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
     if (cm->seg.enabled) {
       if (!cm->seg.update_data && cm->prev_frame) {
         segfeatures_copy(&cm->seg, &cm->prev_frame->seg);
+        cm->seg.enabled = cm->prev_frame->seg.enabled;
       } else {
         av1_calculate_segdata(&cm->seg);
       }
@@ -5114,6 +5115,7 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
       memset(&cm->seg, 0, sizeof(cm->seg));
     }
     segfeatures_copy(&cm->cur_frame->seg, &cm->seg);
+    cm->cur_frame->seg.enabled = cm->seg.enabled;
 
 #if CONFIG_COLLECT_COMPONENT_TIMING
     start_timing(cpi, av1_encode_frame_time);
