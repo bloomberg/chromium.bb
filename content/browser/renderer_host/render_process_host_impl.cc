@@ -4713,7 +4713,7 @@ void RenderProcessHostImpl::CreateMediaStreamTrackMetricsHost(
 }
 
 void RenderProcessHostImpl::BindPeerConnectionTrackerHost(
-    mojo::PendingReceiver<mojom::PeerConnectionTrackerHost> receiver) {
+    mojo::PendingReceiver<blink::mojom::PeerConnectionTrackerHost> receiver) {
   GetPeerConnectionTrackerHost()->BindReceiver(std::move(receiver));
 }
 

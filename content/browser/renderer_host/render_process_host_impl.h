@@ -41,7 +41,6 @@
 #include "content/common/associated_interfaces.mojom.h"
 #include "content/common/child_process.mojom.h"
 #include "content/common/content_export.h"
-#include "content/common/media/peer_connection_tracker.mojom.h"
 #include "content/common/media/renderer_audio_output_stream_factory.mojom.h"
 #include "content/common/renderer.mojom.h"
 #include "content/common/renderer_host.mojom.h"
@@ -77,6 +76,7 @@
 #include "third_party/blink/public/mojom/filesystem/file_system.mojom.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-shared.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom.h"
+#include "third_party/blink/public/mojom/peerconnection/peer_connection_tracker.mojom.h"
 #include "third_party/blink/public/mojom/webdatabase/web_database.mojom.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
@@ -746,7 +746,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
           receiver);
 
   void BindPeerConnectionTrackerHost(
-      mojo::PendingReceiver<mojom::PeerConnectionTrackerHost> receiver);
+      mojo::PendingReceiver<blink::mojom::PeerConnectionTrackerHost> receiver);
 
 #if BUILDFLAG(ENABLE_MDNS)
   void CreateMdnsResponder(
