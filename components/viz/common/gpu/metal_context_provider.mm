@@ -9,6 +9,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/time/time.h"
+#include "components/metal_util/device.h"
 #include "components/viz/common/gpu/metal_api_proxy.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 
@@ -100,7 +101,7 @@ struct API_AVAILABLE(macos(10.11)) MetalContextProviderImpl
     [device_ setProgressReporter:progress_reporter];
   }
   GrContext* GetGrContext() override { return gr_context_.get(); }
-  MTLDevicePtr GetMTLDevice() override { return device_.get(); }
+  metal::MTLDevicePtr GetMTLDevice() override { return device_.get(); }
 
  private:
   base::scoped_nsobject<MTLDeviceProxy> device_;
@@ -116,17 +117,8 @@ struct API_AVAILABLE(macos(10.11)) MetalContextProviderImpl
 std::unique_ptr<MetalContextProvider> MetalContextProvider::Create() {
   if (@available(macOS 10.11, *)) {
     // First attempt to find a low power device to use.
-    base::scoped_nsprotocol<id<MTLDevice>> device_to_use;
-    base::scoped_nsobject<NSArray<id<MTLDevice>>> devices(MTLCopyAllDevices());
-    for (id<MTLDevice> device in devices.get()) {
-      if ([device isLowPower]) {
-        device_to_use.reset(device, base::scoped_policy::RETAIN);
-        break;
-      }
-    }
-    // Failing that, use the system default device.
-    if (!device_to_use)
-      device_to_use.reset(MTLCreateSystemDefaultDevice());
+    base::scoped_nsprotocol<id<MTLDevice>> device_to_use(
+        metal::CreateDefaultDevice());
     if (!device_to_use) {
       DLOG(ERROR) << "Failed to find MTLDevice.";
       return nullptr;
