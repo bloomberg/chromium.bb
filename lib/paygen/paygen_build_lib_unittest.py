@@ -15,6 +15,7 @@ import mock
 
 from chromite.cbuildbot import commands
 from chromite.lib import config_lib_unittest
+from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import gs
 from chromite.lib import parallel
@@ -592,7 +593,7 @@ class TestPaygenBuildLibDiscoverRequiredPayloads(MockImageDiscoveryHelper,
   def testCanaryEverything(self):
     """Handle the canary payloads and tests."""
     # Make our random strings deterministic for testing.
-    self.PatchObject(gspaths, '_RandomString', return_value='<random>')
+    self.PatchObject(cros_build_lib, 'GetRandomString', return_value='<random>')
 
     target_build = gspaths.Build(bucket='crt',
                                  channel='canary-channel',

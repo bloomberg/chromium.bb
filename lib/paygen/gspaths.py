@@ -17,11 +17,10 @@ This includes definitions for various build flags:
 
 from __future__ import print_function
 
-import hashlib
 import os
-import random
 import re
 
+from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib.paygen import utils
 
@@ -483,7 +482,7 @@ class ChromeosReleases(object):
       .bin-250bc111ea4955aebc2af08db1f1773c.signed
     """
     if random_str is None:
-      random_str = _RandomString()
+      random_str = cros_build_lib.GetRandomString()
 
     if sign is True:
       signed_ext = '.signed'
@@ -550,7 +549,7 @@ class ChromeosReleases(object):
         bin-610c97c30fae8561bde01a6116d65cb9.signed
     """
     if random_str is None:
-      random_str = _RandomString()
+      random_str = cros_build_lib.GetRandomString()
 
     if key is None:
       signed_ext = ''
@@ -831,13 +830,3 @@ def IsDLCImage(a):
     True if |a| is of DLCImage type, False otherwise
   """
   return isinstance(a, DLCImage)
-
-
-def _RandomString():
-  """Helper function for generating a random string for a payload name.
-
-  This is an external helper function so that it can be trivially mocked
-  to make test results deterministic.
-  """
-  random.seed()
-  return hashlib.md5(str(random.getrandbits(128))).hexdigest()
