@@ -1269,8 +1269,14 @@ class GitWrapper(SCMWrapper):
     # we don't accidentally go corrupting parent git checks too.  See
     # https://crbug.com/1000825 for an example.
     if set_git_dir:
-      env.setdefault('GIT_DIR', os.path.abspath(os.path.join(
-          self.checkout_path, '.git')))
+
+      git_dir = os.path.abspath(os.path.join(self.checkout_path, '.git'))
+
+      # Depending on how the .gclient file was defined, self.checkout_path
+      # might be set to a unicode string, not a regular string; on Windows
+      # Python2, we can't set env vars to be unicode strings, so we
+      # forcibly cast the value to a string before setting it.
+      env.setdefault('GIT_DIR', str(git_dir))
     ret = subprocess2.check_output(
         ['git'] + args, env=env, **kwargs).decode('utf-8')
     if strip:
