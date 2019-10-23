@@ -4187,8 +4187,8 @@ static AOM_INLINE void encode_sb_row(AV1_COMP *cpi, ThreadData *td,
         break;
       default: assert(0);
     }
-
     switch (cpi->oxcf.mv_cost_upd_freq) {
+      case COST_UPD_OFF: break;
       case COST_UPD_TILE:  // Tile level
         if (mi_row != tile_info->mi_row_start) break;
         AOM_FALLTHROUGH_INTENDED;
@@ -4204,7 +4204,6 @@ static AOM_INLINE void encode_sb_row(AV1_COMP *cpi, ThreadData *td,
         break;
       default: assert(0);
     }
-
     x->mb_rd_record.num = x->mb_rd_record.index_start = 0;
     x->color_sensitivity[0] = 0;
     x->color_sensitivity[1] = 0;

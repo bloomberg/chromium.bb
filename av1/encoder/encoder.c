@@ -5077,7 +5077,7 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
       scale_references(cpi);
     }
     av1_set_quantizer(cm, q);
-    av1_init_quantizer(cpi);
+    if (cpi->oxcf.deltaq_mode != NO_DELTA_Q) av1_init_quantizer(cpi);
 
     av1_set_variance_partition_thresholds(cpi, q, 0);
 

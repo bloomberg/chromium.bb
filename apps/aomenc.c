@@ -598,7 +598,7 @@ static const arg_def_t mode_cost_upd_freq =
 static const arg_def_t mv_cost_upd_freq =
     ARG_DEF(NULL, "mv-cost-upd-freq", 1,
             "Update freq for mv costs"
-            "0: SB, 1: SB Row per Tile, 2: Tile");
+            "0: SB, 1: SB Row per Tile, 2: Tile, 3: Off");
 #if CONFIG_DIST_8X8
 static const arg_def_t enable_dist_8x8 =
     ARG_DEF(NULL, "enable-dist-8x8", 1,
