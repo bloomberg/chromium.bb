@@ -1956,6 +1956,9 @@ extern const char kCrostiniUsbAllowUnsupportedDescription[];
 extern const char kCrostiniWebUIInstallerName[];
 extern const char kCrostiniWebUIInstallerDescription[];
 
+extern const char kCryptAuthV2DeviceActivityStatusName[];
+extern const char kCryptAuthV2DeviceActivityStatusDescription[];
+
 extern const char kCryptAuthV2DeviceSyncName[];
 extern const char kCryptAuthV2DeviceSyncDescription[];
 
