@@ -7,11 +7,14 @@ import threading
 
 # third_party/
 from depot_tools import auto_stub
+import six
+
 from utils import net
 
 
 def make_fake_response(content, url, code=200, headers=None):
   """Returns HttpResponse with predefined content, useful in tests."""
+  assert isinstance(content, six.binary_type), content
   headers = dict(headers or {})
   headers['Content-Length'] = len(content)
   class _Fake(object):
@@ -30,7 +33,7 @@ def make_fake_response(content, url, code=200, headers=None):
 def make_fake_error(code, url, content=None, headers=None):
   """Returns HttpError that represents the given response, useful in tests."""
   if content is None:
-    content = 'Fake error body for code %d' % code
+    content = b'Fake error body for code %d' % code
   if headers is None:
     headers = {'Content-Type': 'text/plain'}
   return net.HttpError(make_fake_response(content, url, code, headers))

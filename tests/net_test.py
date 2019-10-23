@@ -1,11 +1,10 @@
-#!/usr/bin/env vpython
+#!/usr/bin/env vpython3
 # Copyright 2013 The LUCI Authors. All rights reserved.
 # Use of this source code is governed under the Apache License, Version 2.0
 # that can be found in the LICENSE file.
 
-import StringIO
-import __builtin__
 import contextlib
+import io
 import math
 import os
 import unittest
@@ -78,8 +77,11 @@ class HttpErrorTest(unittest.TestCase):
     e = net_utils.make_fake_error(
         code=404,
         url='/url',
-        content='Response\nBody',
-        headers={'Header-A': 'value-a', 'X-Skipped': 'zzz'})
+        content=b'Response\nBody',
+        headers={
+            'Header-A': 'value-a',
+            'X-Skipped': 'zzz'
+        })
     self.assertEqual(e.description(False), 'Server returned HTTP code 404')
     self.assertEqual(e.description(True), '\n'.join([
         'Server returned HTTP code 404',
@@ -96,7 +98,7 @@ class HttpErrorTest(unittest.TestCase):
     e = net_utils.make_fake_error(
         code=404,
         url='/url',
-        content='{"error": "inner error message"}',
+        content=b'{"error": "inner error message"}',
         headers={'Content-Type': 'application/json'})
     self.assertEqual(
         e.description(False),
@@ -141,7 +143,7 @@ class HttpServiceTest(RetryLoopMockedTest):
   def test_request_GET_success(self):
     service_url = 'http://example.com'
     request_url = '/some_request'
-    response = 'True'
+    response = b'True'
 
     def mock_perform_request(request):
       self.assertTrue(
@@ -156,7 +158,7 @@ class HttpServiceTest(RetryLoopMockedTest):
   def test_request_POST_success(self):
     service_url = 'http://example.com'
     request_url = '/some_request'
-    response = 'True'
+    response = b'True'
 
     def mock_perform_request(request):
       self.assertTrue(
@@ -173,7 +175,7 @@ class HttpServiceTest(RetryLoopMockedTest):
     service_url = 'http://example.com'
     request_url = '/some_request'
     request_body = 'data_body'
-    response_body = 'True'
+    response_body = b'True'
     content_type = 'application/octet-stream'
 
     def mock_perform_request(request):
@@ -192,7 +194,7 @@ class HttpServiceTest(RetryLoopMockedTest):
     self.assertAttempts(1, net.URL_OPEN_TIMEOUT)
 
   def test_request_success_after_failure(self):
-    response = 'True'
+    response = b'True'
     attempts = []
 
     def mock_perform_request(request):
@@ -245,7 +247,7 @@ class HttpServiceTest(RetryLoopMockedTest):
     self.assertAttempts(1, net.URL_OPEN_TIMEOUT)
 
   def test_request_HTTP_error_retry_404_endpoints(self):
-    response = 'data'
+    response = b'data'
     attempts = []
 
     def mock_perform_request(request):
@@ -262,7 +264,7 @@ class HttpServiceTest(RetryLoopMockedTest):
     self.assertAttempts(2, net.URL_OPEN_TIMEOUT)
 
   def test_request_HTTP_error_with_retry(self):
-    response = 'response'
+    response = b'response'
     attempts = []
 
     def mock_perform_request(request):
@@ -277,7 +279,7 @@ class HttpServiceTest(RetryLoopMockedTest):
 
   def test_auth_success(self):
     calls = []
-    response = 'response'
+    response = b'response'
 
     def mock_perform_request(request):
       calls.append('request')
@@ -324,8 +326,8 @@ class HttpServiceTest(RetryLoopMockedTest):
   def test_url_read(self):
     # Successfully reads the data.
     self.mock(net, 'url_open',
-        lambda url, **_kwargs: net_utils.make_fake_response('111', url))
-    self.assertEqual(net.url_read('https://fake_url.com/test'), '111')
+              lambda url, **_kwargs: net_utils.make_fake_response(b'111', url))
+    self.assertEqual(net.url_read('https://fake_url.com/test'), b'111')
 
     # Respects url_open connection errors.
     self.mock(net, 'url_open', lambda _url, **_kwargs: None)
@@ -335,7 +337,8 @@ class HttpServiceTest(RetryLoopMockedTest):
     def timeouting_http_response(url):
       def read_mock(_size=None):
         raise net.TimeoutError()
-      response = net_utils.make_fake_response('', url)
+
+      response = net_utils.make_fake_response(b'', url)
       self.mock(response, 'read', read_mock)
       return response
 
@@ -347,11 +350,11 @@ class HttpServiceTest(RetryLoopMockedTest):
     # Successfully reads the data.
     @contextlib.contextmanager
     def fake_open(_filepath, _mode):
-      yield StringIO.StringIO()
+      yield io.BytesIO()
 
-    self.mock(__builtin__, 'open', fake_open)
+    self.mock(io, 'open', fake_open)
     self.mock(net, 'url_open',
-        lambda url, **_kwargs: net_utils.make_fake_response('111', url))
+              lambda url, **_kwargs: net_utils.make_fake_response(b'111', url))
     self.assertEqual(
         True, net.url_retrieve('filepath', 'https://localhost/test'))
 
@@ -364,7 +367,8 @@ class HttpServiceTest(RetryLoopMockedTest):
     def timeouting_http_response(url):
       def iter_content_mock(_size=None):
         raise net.TimeoutError()
-      response = net_utils.make_fake_response('', url)
+
+      response = net_utils.make_fake_response(b'', url)
       self.mock(response, 'iter_content', iter_content_mock)
       return response
 

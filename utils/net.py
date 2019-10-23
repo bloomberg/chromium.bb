@@ -4,6 +4,7 @@
 
 """Classes and functions for generic network communication over HTTP."""
 
+import io
 import itertools
 import json
 import logging
@@ -23,6 +24,7 @@ tools.force_local_third_party()
 import requests
 from requests import adapters
 from requests import structures
+import six
 from six.moves import http_cookiejar as cookielib
 from six.moves import urllib
 import urllib3
@@ -153,7 +155,7 @@ class HttpError(NetError):
         if not header.lower().startswith('x-'):
           out.append('%s: %s' % (header.capitalize(), value))
       out.append('')
-    out.append(self._body_for_desc or '<empty body>')
+    out.append(six.ensure_str(self._body_for_desc) or '<empty body>')
     out.append('----------')
     return '\n'.join(out)
 
@@ -162,7 +164,7 @@ def _fish_out_error_message(maybe_json_blob):
   try:
     as_json = json.loads(maybe_json_blob)
     err = as_json.get('error')
-    if isinstance(err, basestring):
+    if isinstance(err, six.string_types):
       return err
     if isinstance(err, dict):
       return str(err.get('message') or '<no error message>')
@@ -245,7 +247,7 @@ def url_retrieve(filepath, url, **kwargs):
   if not response:
     return False
   try:
-    with open(filepath, 'wb') as f:
+    with io.open(filepath, 'wb') as f:
       for buf in response.iter_content(65536):
         f.write(buf)
     return True
