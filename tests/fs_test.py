@@ -52,7 +52,7 @@ class FSTest(unittest.TestCase):
     dirpath = os.path.join(self.tempdir, 'dir')
     filepath = os.path.join(dirpath, 'file')
     fs.mkdir(dirpath)
-    write_content(filepath, 'hello')
+    write_content(filepath, b'hello')
 
     linkfile = os.path.join(self.tempdir, 'lf')
     linkdir = os.path.join(self.tempdir, 'ld')
@@ -66,7 +66,8 @@ class FSTest(unittest.TestCase):
     self.assertEqual('dir', fs.readlink(linkdir))
     self.assertEqual(['file'], fs.listdir(linkdir))
     # /lf resolves to /dir/file.
-    self.assertEqual('hello', fs.open(linkfile).read())
+    with fs.open(linkfile) as f:
+      self.assertEqual('hello', f.read())
 
     # Ensures that followlinks is respected in walk().
     expected = [
@@ -98,7 +99,7 @@ class FSTest(unittest.TestCase):
     dirpath = os.path.join(self.tempdir, 'dir')
     filepath = os.path.join(dirpath, 'file')
     fs.mkdir(dirpath)
-    write_content(filepath, 'hello')
+    write_content(filepath, b'hello')
 
     linkfile = os.path.join(self.tempdir, 'lf')
     linkdir = os.path.join(self.tempdir, 'ld')
@@ -112,7 +113,8 @@ class FSTest(unittest.TestCase):
     self.assertEqual(dirpath, fs.readlink(linkdir))
     self.assertEqual(['file'], fs.listdir(linkdir))
     # /lf resolves to /dir/file.
-    self.assertEqual('hello', fs.open(linkfile).read())
+    with fs.open(linkfile) as f:
+      self.assertEqual('hello', f.read())
 
     # Ensures that followlinks is respected in walk().
     expected = [
@@ -157,7 +159,7 @@ class FSTest(unittest.TestCase):
     # Creating a symlink that overrides a file fails.
     filepath = os.path.join(self.tempdir, 'file')
     linkfile = os.path.join(self.tempdir, 'lf')
-    write_content(linkfile, 'hello')
+    write_content(linkfile, b'hello')
     with self.assertRaises(OSError):
       fs.symlink(filepath, linkfile)
 
