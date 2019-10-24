@@ -13,12 +13,14 @@
 namespace openscreen {
 namespace discovery {
 
+bool IsInstanceValid(absl::string_view instance);
+bool IsServiceValid(absl::string_view service);
+bool IsDomainValid(absl::string_view domain);
+
 // Represents the data stored in DNS records of types SRV, TXT, A, and AAAA
 class DnsSdInstanceRecord {
  public:
   // These ctors expect valid input, and will cause a crash if they are not.
-  // TODO(rwkeane): Add validation methods for instance_id, service_id,
-  // domain_id.
   DnsSdInstanceRecord(std::string instance_id,
                       std::string service_id,
                       std::string domain_id,
@@ -52,6 +54,11 @@ class DnsSdInstanceRecord {
   const DnsSdTxtRecord& txt() const { return txt_; };
 
  private:
+  DnsSdInstanceRecord(std::string instance_id,
+                      std::string service_id,
+                      std::string domain_id,
+                      DnsSdTxtRecord txt);
+
   std::string instance_id_;
   std::string service_id_;
   std::string domain_id_;
