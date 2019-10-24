@@ -1044,16 +1044,24 @@ class EBuild(object):
           self.pkgname)
       test_dirs_changed = True
 
-    old_stable_commit = self._RunGit(self.overlay,
-                                     ['log', '--pretty=%H', '-n1', '--',
-                                      old_stable_ebuild_path]).rstrip()
-    output = self._RunGit(self.overlay,
-                          ['log', '%s..HEAD' % old_stable_commit, '--',
-                           self._unstable_ebuild_path,
-                           os.path.join(os.path.dirname(self.ebuild_path),
-                                        'files')])
+    def _CheckForChanges():
+      # It is possible for chromeos-version.sh to have changed leading to a
+      # non-existent old_stable_ebuild_path. If this is the case, a change
+      # happened so perform the uprev.
+      if not os.path.exists(old_stable_ebuild_path):
+        return True
 
-    unstable_ebuild_or_files_changed = bool(output)
+      old_stable_commit = self._RunGit(self.overlay,
+                                       ['log', '--pretty=%H', '-n1', '--',
+                                        old_stable_ebuild_path]).rstrip()
+      output = self._RunGit(self.overlay,
+                            ['log', '%s..HEAD' % old_stable_commit, '--',
+                             self._unstable_ebuild_path,
+                             os.path.join(os.path.dirname(self.ebuild_path),
+                                          'files')])
+      return bool(output)
+
+    unstable_ebuild_or_files_changed = _CheckForChanges()
 
     # If there has been any change in the tests list, choose to uprev.
     if (not test_dirs_changed and not unstable_ebuild_or_files_changed and
