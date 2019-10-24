@@ -3126,6 +3126,19 @@ void AXPlatformNodeAuraLinux::OnMenuPopupHide() {
   }
 }
 
+void AXPlatformNodeAuraLinux::ResendFocusSignalsForCurrentlyFocusedNode() {
+  auto* frame = AtkObjectToAXPlatformNodeAuraLinux(g_active_top_level_frame);
+  if (!frame)
+    return;
+
+  AtkObject* focused_node = frame->GetDelegate()->GetFocus();
+  if (!focused_node)
+    return;
+
+  g_signal_emit_by_name(focused_node, "focus-event", true);
+  atk_object_notify_state_change(focused_node, ATK_STATE_FOCUSED, true);
+}
+
 void AXPlatformNodeAuraLinux::OnMenuPopupEnd() {
   if (!GetActiveMenus().empty() && g_active_top_level_frame &&
       ComputeActiveTopLevelFrame() != g_active_top_level_frame) {
@@ -3134,6 +3147,7 @@ void AXPlatformNodeAuraLinux::OnMenuPopupEnd() {
                                    TRUE);
   }
 
+  ResendFocusSignalsForCurrentlyFocusedNode();
   GetActiveMenus().clear();
 }
 

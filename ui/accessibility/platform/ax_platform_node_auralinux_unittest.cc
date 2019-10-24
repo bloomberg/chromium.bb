@@ -1728,21 +1728,27 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkPopupWindowActive) {
   root.id = 1;
   root.role = ax::mojom::Role::kApplication;
   root.child_ids.push_back(2);
-  root.child_ids.push_back(3);
+  root.child_ids.push_back(4);
 
   AXNodeData window_node_data;
   window_node_data.id = 2;
   window_node_data.role = ax::mojom::Role::kWindow;
+  window_node_data.child_ids.push_back(3);
+
+  AXNodeData document_node_data;
+  document_node_data.id = 3;
+  document_node_data.role = ax::mojom::Role::kRootWebArea;
 
   AXNodeData menu_node_data;
-  menu_node_data.id = 3;
+  menu_node_data.id = 4;
   menu_node_data.role = ax::mojom::Role::kWindow;
-  menu_node_data.child_ids.push_back(4);
+  menu_node_data.child_ids.push_back(5);
 
   AXNodeData menu_item_data;
-  menu_item_data.id = 4;
+  menu_item_data.id = 5;
 
-  Init(root, window_node_data, menu_node_data, menu_item_data);
+  Init(root, window_node_data, document_node_data, menu_node_data,
+       menu_item_data);
 
   AtkObject* root_atk_object(GetRootAtkObject());
   EXPECT_TRUE(ATK_IS_OBJECT(root_atk_object));
@@ -1750,6 +1756,19 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkPopupWindowActive) {
 
   AXNode* window_node = GetRootNode()->children()[0];
   AtkObject* window_atk_node(AtkObjectFromNode(window_node));
+
+  AXNode* document_node = window_node->children()[0];
+  AtkObject* document_atk_node(AtkObjectFromNode(document_node));
+  EXPECT_EQ(ATK_ROLE_DOCUMENT_WEB, atk_object_get_role(document_atk_node));
+  int focus_events_on_original_node = 0;
+  g_signal_connect(
+      document_atk_node, "focus-event",
+      G_CALLBACK(+[](AtkObject* atkobject, gint focused, int* focus_events) {
+        if (focused)
+          *focus_events += 1;
+      }),
+      &focus_events_on_original_node);
+  atk_component_grab_focus(ATK_COMPONENT(document_atk_node));
 
   ActivationTester toplevel_tester(window_atk_node);
   GetPlatformNode(window_node)
@@ -1769,6 +1788,7 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkPopupWindowActive) {
     EXPECT_TRUE(tester.saw_activate_);
     EXPECT_FALSE(tester.saw_deactivate_);
     EXPECT_TRUE(tester.IsActivatedInStateSet());
+    EXPECT_EQ(focus_events_on_original_node, 0);
   }
 
   EXPECT_FALSE(toplevel_tester.saw_activate_);
@@ -1783,6 +1803,7 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkPopupWindowActive) {
     EXPECT_FALSE(tester.saw_activate_);
     EXPECT_TRUE(tester.saw_deactivate_);
     EXPECT_FALSE(tester.IsActivatedInStateSet());
+    EXPECT_EQ(focus_events_on_original_node, 0);
   }
 
   {
@@ -1792,6 +1813,10 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkPopupWindowActive) {
     EXPECT_FALSE(tester.saw_activate_);
     EXPECT_FALSE(tester.saw_deactivate_);
     EXPECT_FALSE(tester.IsActivatedInStateSet());
+
+    // The menu has closed so the original node should have received focus
+    // again.
+    EXPECT_EQ(focus_events_on_original_node, 1);
   }
 
   // Now that the menu is definitively closed, activation should have returned
@@ -1799,8 +1824,9 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkPopupWindowActive) {
   EXPECT_TRUE(toplevel_tester.saw_activate_);
   EXPECT_FALSE(toplevel_tester.saw_deactivate_);
 
-  // No we test opening the menu and closing it without hiding any submenus. The
-  // toplevel should lose and then regain focus.
+  // Now we test opening the menu and closing it without hiding any submenus.
+  // The toplevel should lose and then regain focus.
+  focus_events_on_original_node = 0;
   toplevel_tester.Reset();
 
   GetPlatformNode(menu_node)->NotifyAccessibilityEvent(
@@ -1809,6 +1835,9 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkPopupWindowActive) {
       ax::mojom::Event::kMenuPopupEnd);
   EXPECT_TRUE(toplevel_tester.saw_activate_);
   EXPECT_TRUE(toplevel_tester.saw_deactivate_);
+
+  // The menu has closed so the original node should have received focus again.
+  EXPECT_EQ(focus_events_on_original_node, 1);
 
   g_object_unref(root_atk_object);
 }
