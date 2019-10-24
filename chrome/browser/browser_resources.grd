@@ -406,7 +406,7 @@
         <include name="IDR_MOBILE_SETUP_PORTAL_PAGE_HTML" file="resources\chromeos\mobile_setup_portal.html" flattenhtml="true" type="BINDATA" compress="gzip" />
 
         <include name="IDR_ECHO_MANIFEST" file="resources\chromeos\echo\manifest.json" type="BINDATA" />
-        <include name="IDR_OS_CREDITS_HTML" file="resources\chromeos\about_os_credits.html" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_OS_CREDITS_HTML" file="resources\chromeos\about_os_credits.html" flattenhtml="true" type="BINDATA" compress="gzip" />
         <if expr="optimize_webui">
           <then>
             <include name="IDR_INTERNET_CONFIG_DIALOG_VULCANIZED_HTML" file="${root_gen_dir}\chrome\browser\resources\chromeos\internet_config_dialog\vulcanized.html" use_base_dir="false" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
