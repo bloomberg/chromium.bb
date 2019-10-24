@@ -2640,6 +2640,12 @@ crbug.com/618969 external/wpt/css/css-grid/subgrid/ [ Skip ]
 crbug.com/1012627 [ Win7 ] external/wpt/css/css-text/line-breaking/line-breaking-021.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux ] external/wpt/fetch/corb/script-resource-with-nonsniffable-types.tentative.sub.html [ Timeout ]
+crbug.com/626703 [ Mac ] external/wpt/fetch/corb/script-resource-with-nonsniffable-types.tentative.sub.html [ Timeout ]
+crbug.com/626703 [ Win ] external/wpt/fetch/corb/script-resource-with-nonsniffable-types.tentative.sub.html [ Timeout ]
+crbug.com/626703 [ Linux ] virtual/omt-worker-fetch/external/wpt/fetch/corb/script-resource-with-nonsniffable-types.tentative.sub.html [ Timeout ]
+crbug.com/626703 [ Mac ] virtual/omt-worker-fetch/external/wpt/fetch/corb/script-resource-with-nonsniffable-types.tentative.sub.html [ Timeout ]
+crbug.com/626703 [ Win ] virtual/omt-worker-fetch/external/wpt/fetch/corb/script-resource-with-nonsniffable-types.tentative.sub.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-values/attr-in-max.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-values/attr-in-max.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-values/attr-in-max.html [ Failure ]
