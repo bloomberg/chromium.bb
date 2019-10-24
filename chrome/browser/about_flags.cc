@@ -4725,8 +4725,13 @@ class FlagsStateSingleton {
   FlagsStateSingleton()
       : flags_state_(std::make_unique<flags_ui::FlagsState>(
             kFeatureEntries,
-            base::size(kFeatureEntries))) {}
+            base::size(kFeatureEntries),
+            base::Bind(&FlagsStateSingleton::IsFlagExpired))) {}
   ~FlagsStateSingleton() {}
+
+  static bool IsFlagExpired(const flags_ui::FeatureEntry& entry) {
+    return flags::IsFlagExpired(entry.internal_name);
+  }
 
   static FlagsStateSingleton* GetInstance() {
     return base::Singleton<FlagsStateSingleton>::get();
@@ -4737,8 +4742,9 @@ class FlagsStateSingleton {
   }
 
   void RebuildState(const std::vector<flags_ui::FeatureEntry>& entries) {
-    flags_state_ =
-        std::make_unique<flags_ui::FlagsState>(entries.data(), entries.size());
+    flags_state_ = std::make_unique<flags_ui::FlagsState>(
+        entries.data(), entries.size(),
+        base::Bind(&FlagsStateSingleton::IsFlagExpired));
   }
 
  private:
