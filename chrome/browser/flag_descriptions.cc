@@ -2172,12 +2172,6 @@ const char kUnexpireFlagsM76Description[] =
     "Temporarily unexpire flags that are expired as of M76. These flags will "
     "be removed soon.";
 
-const char kUnifiedConsentName[] = "Unified Consent";
-const char kUnifiedConsentDescription[] =
-    "Enables a unified management of user consent for privacy-related "
-    "features. This includes new confirmation screens and improved settings "
-    "pages.";
-
 const char kUnsafeWebGPUName[] = "Unsafe WebGPU";
 const char kUnsafeWebGPUDescription[] =
     "Enables access to the experimental WebGPU API. Warning: As GPU sanboxing "

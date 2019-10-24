@@ -2077,7 +2077,6 @@ jumbo_static_library("browser") {
     "//components/ui_devtools",
     "//components/ukm:observers",
     "//components/undo",
-    "//components/unified_consent",
     "//components/update_client",
     "//components/update_client:common_impl",
     "//components/upload_list",
