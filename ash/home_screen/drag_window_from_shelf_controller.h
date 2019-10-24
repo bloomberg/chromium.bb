@@ -116,7 +116,7 @@ class DragWindowFromShelfController : public aura::WindowObserver {
   gfx::Point initial_location_in_screen_;
   gfx::Point previous_location_in_screen_;
   bool drag_started_ = false;
-  BackdropWindowMode original_backdrop_mode_ = BackdropWindowMode::kAuto;
+  BackdropWindowMode original_backdrop_mode_ = BackdropWindowMode::kAutoOpaque;
 
   // Hide all eligible windows during window dragging. Depends on different
   // scenarios, we may or may not reshow there windows when drag ends.
