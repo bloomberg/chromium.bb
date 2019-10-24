@@ -21,6 +21,15 @@
 // Saves an example form in the store for the passed URL spec.
 + (void)savePasswordFormForURLSpec:(NSString*)URLSpec;
 
+// Clears the profiles (addresses) in the data manager.
++ (void)clearProfilesStore;
+
+// Saves a sample profile (address) in the data manager.
++ (void)saveExampleProfile;
+
+// Resturns the name of the sample profile.
++ (NSString*)exampleProfileName;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_APP_INTERFACE_H_

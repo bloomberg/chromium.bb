@@ -377,6 +377,9 @@ id<GREYMatcher> SettingsPasswordSearchMatcher();
 // Returns a matcher for the profiles settings collection view.
 id<GREYMatcher> SettingsProfileMatcher();
 
+// Returns a matcher for an autofill suggestion view.
+id<GREYMatcher> AutofillSuggestionViewMatcher();
+
 #pragma mark - Manual Fallback
 
 // Returns a matcher for the scroll view in keyboard accessory bar.

@@ -471,6 +471,10 @@ id<GREYMatcher> SettingsProfileMatcher() {
   return [ChromeMatchersAppInterface settingsProfileMatcher];
 }
 
+id<GREYMatcher> AutofillSuggestionViewMatcher() {
+  return [ChromeMatchersAppInterface autofillSuggestionViewMatcher];
+}
+
 #pragma mark - Manual Fallback
 
 id<GREYMatcher> ManualFallbackFormSuggestionViewMatcher() {

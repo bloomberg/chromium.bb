@@ -7,9 +7,13 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
+#include "components/autofill/core/browser/autofill_test_utils.h"
+#include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
+#include "ios/chrome/browser/application_context.h"
+#include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 
@@ -126,6 +130,20 @@ void ClearPasswordStore() {
   TestStoreConsumer consumer;
 }
 
+// Saves an example profile in the store.
+void AddAutofillProfile(autofill::PersonalDataManager* personalDataManager) {
+  autofill::AutofillProfile profile = autofill::test::GetFullProfile();
+  size_t profileCount = personalDataManager->GetProfiles().size();
+  personalDataManager->AddProfile(profile);
+
+  ConditionBlock conditionBlock = ^bool {
+    return profileCount < personalDataManager->GetProfiles().size();
+  };
+  base::test::ios::TimeUntilCondition(
+      nil, conditionBlock, false,
+      base::TimeDelta::FromSeconds(base::test::ios::kWaitForActionTimeout));
+}
+
 }  // namespace
 
 @implementation AutofillAppInterface
@@ -140,6 +158,47 @@ void ClearPasswordStore() {
 
 + (void)savePasswordFormForURLSpec:(NSString*)URLSpec {
   SaveLocalPasswordForm(GURL(base::SysNSStringToUTF8(URLSpec)));
+}
+
++ (void)clearProfilesStore {
+  ios::ChromeBrowserState* browserState =
+      chrome_test_util::GetOriginalBrowserState();
+  autofill::PersonalDataManager* personalDataManager =
+      autofill::PersonalDataManagerFactory::GetForBrowserState(browserState);
+  for (const auto* profile : personalDataManager->GetProfiles()) {
+    personalDataManager->RemoveByGUID(profile->guid());
+  }
+
+  ConditionBlock conditionBlock = ^bool {
+    return 0 == personalDataManager->GetProfiles().size();
+  };
+  base::test::ios::TimeUntilCondition(
+      nil, conditionBlock, false,
+      base::TimeDelta::FromSeconds(base::test::ios::kWaitForActionTimeout));
+}
+
++ (void)saveExampleProfile {
+  AddAutofillProfile([self personalDataManager]);
+}
+
++ (NSString*)exampleProfileName {
+  autofill::AutofillProfile profile = autofill::test::GetFullProfile();
+  base::string16 name =
+      profile.GetInfo(autofill::AutofillType(autofill::NAME_FULL),
+                      GetApplicationContext()->GetApplicationLocale());
+  return base::SysUTF16ToNSString(name);
+}
+
+#pragma mark - Private
+
+// The PersonalDataManager instance for the current browser state.
++ (autofill::PersonalDataManager*)personalDataManager {
+  ios::ChromeBrowserState* browserState =
+      chrome_test_util::GetOriginalBrowserState();
+  autofill::PersonalDataManager* personalDataManager =
+      autofill::PersonalDataManagerFactory::GetForBrowserState(browserState);
+  personalDataManager->SetSyncingForTest(true);
+  return personalDataManager;
 }
 
 @end

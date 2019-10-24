@@ -748,6 +748,10 @@ UIView* SubviewWithAccessibilityIdentifier(NSString* accessibility_id,
   return grey_accessibilityID(kAutofillProfileTableViewID);
 }
 
++ (id<GREYMatcher>)autofillSuggestionViewMatcher {
+  return grey_accessibilityID(kFormSuggestionLabelAccessibilityIdentifier);
+}
+
 #pragma mark - Manual Fallback
 
 + (id<GREYMatcher>)manualFallbackFormSuggestionViewMatcher {

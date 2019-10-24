@@ -173,8 +173,12 @@ source_set("test_support") {
   deps = [
     "//base",
     "//base/test:test_support",
+    "//components/autofill/core/browser",
+    "//components/autofill/core/browser:test_support",
     "//components/keyed_service/core",
     "//components/password_manager/core/browser",
+    "//ios/chrome/browser",
+    "//ios/chrome/browser/autofill",
     "//ios/chrome/browser/passwords",
     "//ios/chrome/test/app:test_support",
     "//ios/testing/earl_grey:earl_grey_support",
@@ -195,8 +199,12 @@ source_set("eg_app_support+eg2") {
   deps = [
     "//base",
     "//base/test:test_support",
+    "//components/autofill/core/browser",
+    "//components/autofill/core/browser:test_support",
     "//components/keyed_service/core",
     "//components/password_manager/core/browser",
+    "//ios/chrome/browser",
+    "//ios/chrome/browser/autofill",
     "//ios/chrome/browser/passwords",
     "//ios/chrome/test/app:test_support",
   ]

@@ -110,10 +110,6 @@ source_set("manual_fill_ui") {
   ]
   deps = [
     "//base",
-    "//components/autofill/core/browser",
-    "//components/autofill/core/common",
-    "//components/autofill/ios/browser",
-    "//components/password_manager/core/browser",
     "//ios/chrome/app/strings:ios_strings_grit",
     "//ios/chrome/browser",
     "//ios/chrome/browser/autofill/manual_fill:manual_fill",
@@ -240,6 +236,7 @@ source_set("eg2_tests") {
   ]
   testonly = true
   sources = [
+    "fallback_coordinator_egtest.mm",
     "password_view_controller_egtest.mm",
   ]
   deps = [

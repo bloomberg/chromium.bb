@@ -382,6 +382,9 @@
 // Returns a matcher for the profiles settings collection view.
 + (id<GREYMatcher>)settingsProfileMatcher;
 
+// Returns a matcher for an autofill suggestion view.
++ (id<GREYMatcher>)autofillSuggestionViewMatcher;
+
 #pragma mark - Manual Fallback
 
 // Returns a matcher for the scroll view in keyboard accessory bar.
