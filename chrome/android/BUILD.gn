@@ -282,6 +282,7 @@ android_library("chrome_java") {
     "//chrome/browser/android/thin_webview:java",
     "//chrome/browser/download/android:java",
     "//chrome/browser/image_fetcher:java",
+    "//chrome/browser/share/android:java_resources",
     "//chrome/browser/ui/android/styles:java",
     "//chrome/browser/ui/android/widget:java",
     "//chrome/browser/util/android:java",
