@@ -1614,6 +1614,14 @@ gpu_fyi_linux_ci_tester(
 )
 
 gpu_fyi_linux_ci_tester(
+    name = 'Win10 FYI x64 DX12 Vulkan Debug (NVIDIA)',
+)
+
+gpu_fyi_linux_ci_tester(
+    name = 'Win10 FYI x64 DX12 Vulkan Release (NVIDIA)',
+)
+
+gpu_fyi_linux_ci_tester(
     name = 'Win10 FYI x64 Exp Release (Intel HD 630)',
 )
 
@@ -1750,6 +1758,14 @@ gpu_fyi_windows_builder(
 
 gpu_fyi_windows_builder(
     name = 'GPU FYI Win x64 dEQP Builder',
+)
+
+gpu_fyi_windows_builder(
+    name = 'GPU FYI Win x64 DX12 Vulkan Builder',
+)
+
+gpu_fyi_windows_builder(
+    name = 'GPU FYI Win x64 DX12 Vulkan Builder (dbg)',
 )
 
 gpu_fyi_windows_builder(
