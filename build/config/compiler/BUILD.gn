@@ -1539,6 +1539,9 @@ config("default_warnings") {
           cflags += [
             # TODO(https://crbug.com/1016947) Clean up, enable.
             "-Wno-bitwise-conditional-parentheses",
+
+            # TODO(https://crbug.com/1016945) Clean up, enable.
+            "-Wno-builtin-assume-aligned-alignment",
           ]
         }
       }
