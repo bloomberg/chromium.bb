@@ -759,7 +759,8 @@ static INLINE void dec_build_inter_predictors(const AV1_COMMON *cm,
         av1_init_inter_params(
             &inter_pred_params, b4_w, b4_h, (mi_y >> pd->subsampling_y) + y,
             (mi_x >> pd->subsampling_x) + x, pd->subsampling_x,
-            pd->subsampling_y, xd->bd, is_cur_buf_hbd(xd), mi->use_intrabc, sf);
+            pd->subsampling_y, xd->bd, is_cur_buf_hbd(xd), mi->use_intrabc, sf,
+            this_mbmi->interp_filters);
 
         av1_make_inter_predictor(pre, src_stride, dst, dst_buf->stride,
                                  &inter_pred_params, &subpel_params,
@@ -833,7 +834,7 @@ static INLINE void dec_build_inter_predictors(const AV1_COMMON *cm,
       av1_init_inter_params(
           &inter_pred_params, bw, bh, mi_y >> pd->subsampling_y,
           mi_x >> pd->subsampling_x, pd->subsampling_x, pd->subsampling_y,
-          xd->bd, is_cur_buf_hbd(xd), mi->use_intrabc, sf);
+          xd->bd, is_cur_buf_hbd(xd), mi->use_intrabc, sf, mi->interp_filters);
 
       if (!build_for_obmc)
         av1_init_warp_params(&inter_pred_params, &pd->pre[ref], &warp_types,

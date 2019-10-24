@@ -564,7 +564,7 @@ void aom_upsampled_pred_sse2(MACROBLOCKD *xd, const struct AV1Common *const cm,
       av1_init_inter_params(
           &inter_pred_params, width, height, mi_y >> pd->subsampling_y,
           mi_x >> pd->subsampling_x, pd->subsampling_x, pd->subsampling_y,
-          xd->bd, is_cur_buf_hbd(xd), mi->use_intrabc, sf);
+          xd->bd, is_cur_buf_hbd(xd), mi->use_intrabc, sf, filters);
 
       // Get the inter predictor.
       av1_make_inter_predictor(pre, pre_buf->stride, comp_pred, width,

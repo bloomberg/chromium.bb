@@ -180,7 +180,8 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
         av1_init_inter_params(
             &inter_pred_params, b4_w, b4_h, (mi_y >> pd->subsampling_y) + y,
             (mi_x >> pd->subsampling_x) + x, pd->subsampling_x,
-            pd->subsampling_y, xd->bd, is_cur_buf_hbd(xd), mi->use_intrabc, sf);
+            pd->subsampling_y, xd->bd, is_cur_buf_hbd(xd), mi->use_intrabc, sf,
+            this_mbmi->interp_filters);
         av1_make_inter_predictor(pre, pre_buf->stride, dst, dst_buf->stride,
                                  &inter_pred_params, &subpel_params,
                                  &conv_params, this_mbmi->interp_filters);
@@ -222,7 +223,7 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
       av1_init_inter_params(
           &inter_pred_params, bw, bh, mi_y >> pd->subsampling_y,
           mi_x >> pd->subsampling_x, pd->subsampling_x, pd->subsampling_y,
-          xd->bd, is_cur_buf_hbd(xd), mi->use_intrabc, sf);
+          xd->bd, is_cur_buf_hbd(xd), mi->use_intrabc, sf, mi->interp_filters);
 
       if (!build_for_obmc)
         av1_init_warp_params(&inter_pred_params, &pd->pre[ref], &warp_types,
@@ -313,10 +314,10 @@ void av1_build_inter_predictor(const uint8_t *src, int src_stride, uint8_t *dst,
   src += (mv.row >> SCALE_SUBPEL_BITS) * src_stride +
          (mv.col >> SCALE_SUBPEL_BITS);
 
-  av1_init_inter_params(&inter_pred_params, w, h, p_col, p_row,
-                        xd->plane[plane].subsampling_x,
-                        xd->plane[plane].subsampling_y, xd->bd,
-                        is_cur_buf_hbd(xd), xd->mi[0]->use_intrabc, sf);
+  av1_init_inter_params(
+      &inter_pred_params, w, h, p_col, p_row, xd->plane[plane].subsampling_x,
+      xd->plane[plane].subsampling_y, xd->bd, is_cur_buf_hbd(xd),
+      xd->mi[0]->use_intrabc, sf, interp_filters);
 
   av1_make_inter_predictor(src, src_stride, dst, dst_stride, &inter_pred_params,
                            &subpel_params, conv_params, interp_filters);
@@ -504,7 +505,8 @@ static void build_inter_predictors_single_buf(MACROBLOCKD *xd, int plane,
 
   av1_init_inter_params(&inter_pred_params, bw, bh, pre_y, pre_x,
                         pd->subsampling_x, pd->subsampling_y, xd->bd,
-                        is_cur_buf_hbd(xd), mi->use_intrabc, sf);
+                        is_cur_buf_hbd(xd), mi->use_intrabc, sf,
+                        mi->interp_filters);
 
   av1_init_warp_params(&inter_pred_params, &pd->pre[ref], &warp_types, ref, xd,
                        mi);

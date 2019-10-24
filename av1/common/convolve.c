@@ -577,7 +577,7 @@ static void convolve_2d_for_intrabc(const uint8_t *src, int src_stride,
 
 void av1_convolve_2d_facade(const uint8_t *src, int src_stride, uint8_t *dst,
                             int dst_stride, int w, int h,
-                            int_interpfilters interp_filters,
+                            const InterpFilterParams *interp_filters[2],
                             const int subpel_x_qn, int x_step_q4,
                             const int subpel_y_qn, int y_step_q4, int scaled,
                             ConvolveParams *conv_params,
@@ -594,20 +594,12 @@ void av1_convolve_2d_facade(const uint8_t *src, int src_stride, uint8_t *dst,
     return;
   }
 
-  InterpFilter filter_x = 0;
-  InterpFilter filter_y = 0;
   const int need_filter_params_x = (subpel_x_qn != 0) | scaled;
   const int need_filter_params_y = (subpel_y_qn != 0) | scaled;
-  if (need_filter_params_x) filter_x = interp_filters.as_filters.x_filter;
-  if (need_filter_params_y) filter_y = interp_filters.as_filters.y_filter;
   const InterpFilterParams *filter_params_x =
-      need_filter_params_x
-          ? av1_get_interp_filter_params_with_block_size(filter_x, w)
-          : NULL;
+      need_filter_params_x ? interp_filters[0] : NULL;
   const InterpFilterParams *filter_params_y =
-      need_filter_params_y
-          ? av1_get_interp_filter_params_with_block_size(filter_y, h)
-          : NULL;
+      need_filter_params_y ? interp_filters[1] : NULL;
 
   if (scaled) {
     convolve_2d_scale_wrapper(src, src_stride, dst, dst_stride, w, h,
@@ -1070,7 +1062,7 @@ static void highbd_convolve_2d_for_intrabc(const uint16_t *src, int src_stride,
 
 void av1_highbd_convolve_2d_facade(const uint8_t *src8, int src_stride,
                                    uint8_t *dst8, int dst_stride, int w, int h,
-                                   int_interpfilters interp_filters,
+                                   const InterpFilterParams *interp_filters[2],
                                    const int subpel_x_qn, int x_step_q4,
                                    const int subpel_y_qn, int y_step_q4,
                                    int scaled, ConvolveParams *conv_params,
@@ -1089,20 +1081,12 @@ void av1_highbd_convolve_2d_facade(const uint8_t *src8, int src_stride,
     return;
   }
 
-  InterpFilter filter_x = 0;
-  InterpFilter filter_y = 0;
   const int need_filter_params_x = (subpel_x_qn != 0) | scaled;
   const int need_filter_params_y = (subpel_y_qn != 0) | scaled;
-  if (need_filter_params_x) filter_x = interp_filters.as_filters.x_filter;
-  if (need_filter_params_y) filter_y = interp_filters.as_filters.y_filter;
   const InterpFilterParams *filter_params_x =
-      need_filter_params_x
-          ? av1_get_interp_filter_params_with_block_size(filter_x, w)
-          : NULL;
+      need_filter_params_x ? interp_filters[0] : NULL;
   const InterpFilterParams *filter_params_y =
-      need_filter_params_y
-          ? av1_get_interp_filter_params_with_block_size(filter_y, h)
-          : NULL;
+      need_filter_params_y ? interp_filters[1] : NULL;
 
   if (scaled) {
     uint16_t *dst = CONVERT_TO_SHORTPTR(dst8);

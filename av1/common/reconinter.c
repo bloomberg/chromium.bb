@@ -60,7 +60,8 @@ void av1_init_inter_params(InterPredParams *inter_pred_params, int block_width,
                            int block_height, int pix_row, int pix_col,
                            int subsampling_x, int subsampling_y, int bit_depth,
                            int use_hbd_buf, int is_intrabc,
-                           const struct scale_factors *sf) {
+                           const struct scale_factors *sf,
+                           int_interpfilters interp_filters) {
   inter_pred_params->block_width = block_width;
   inter_pred_params->block_height = block_height;
   inter_pred_params->pix_row = pix_row;
@@ -72,6 +73,18 @@ void av1_init_inter_params(InterPredParams *inter_pred_params, int block_width,
   inter_pred_params->is_intrabc = is_intrabc;
   inter_pred_params->scale_factors = sf;
   inter_pred_params->mode = UNIFORM_PRED;
+
+  if (is_intrabc) {
+    inter_pred_params->interp_filter_params[0] = &av1_intrabc_filter_params;
+    inter_pred_params->interp_filter_params[1] = &av1_intrabc_filter_params;
+  } else {
+    inter_pred_params->interp_filter_params[0] =
+        av1_get_interp_filter_params_with_block_size(
+            interp_filters.as_filters.x_filter, block_width);
+    inter_pred_params->interp_filter_params[1] =
+        av1_get_interp_filter_params_with_block_size(
+            interp_filters.as_filters.y_filter, block_height);
+  }
 }
 
 void av1_init_warp_params(InterPredParams *inter_pred_params,
@@ -99,6 +112,8 @@ void av1_make_inter_predictor(const uint8_t *src, int src_stride, uint8_t *dst,
                               int_interpfilters interp_filters) {
   assert(IMPLIES(conv_params->is_compound, conv_params->dst != NULL));
 
+  (void)interp_filters;
+
   // TODO(jingning): av1_warp_plane() can be further cleaned up.
   if (inter_pred_params->mode == WARP_PRED) {
     av1_warp_plane(
@@ -119,21 +134,23 @@ void av1_make_inter_predictor(const uint8_t *src, int src_stride, uint8_t *dst,
       highbd_inter_predictor(
           src, src_stride, dst, dst_stride, subpel_params,
           inter_pred_params->scale_factors, inter_pred_params->block_width,
-          inter_pred_params->block_height, conv_params, interp_filters,
+          inter_pred_params->block_height, conv_params,
+          inter_pred_params->interp_filter_params,
           inter_pred_params->is_intrabc, inter_pred_params->bit_depth);
     } else {
       inter_predictor(src, src_stride, dst, dst_stride, subpel_params,
                       inter_pred_params->scale_factors,
                       inter_pred_params->block_width,
                       inter_pred_params->block_height, conv_params,
-                      interp_filters, inter_pred_params->is_intrabc);
+                      inter_pred_params->interp_filter_params,
+                      inter_pred_params->is_intrabc);
     }
 #else
-    inter_predictor(src, src_stride, dst, dst_stride, subpel_params,
-                    inter_pred_params->scale_factors,
-                    inter_pred_params->block_width,
-                    inter_pred_params->block_height, conv_params,
-                    interp_filters, inter_pred_params->is_intrabc);
+    inter_predictor(
+        src, src_stride, dst, dst_stride, subpel_params,
+        inter_pred_params->scale_factors, inter_pred_params->block_width,
+        inter_pred_params->block_height, conv_params,
+        inter_pred_params->interp_filter_params, inter_pred_params->is_intrabc);
 #endif
   }
 }

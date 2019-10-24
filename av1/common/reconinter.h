@@ -103,6 +103,7 @@ typedef struct InterPredParams {
   InterPredMode mode;
   WarpedMotionParams warp_params;
   ConvolveParams conv_params;
+  const InterpFilterParams *interp_filter_params[2];
   int block_width;
   int block_height;
   int pix_row;
@@ -120,7 +121,8 @@ void av1_init_inter_params(InterPredParams *inter_pred_params, int block_width,
                            int block_height, int pix_row, int pix_col,
                            int subsampling_x, int subsampling_y, int bit_depth,
                            int use_hbd_buf, int is_intrabc,
-                           const struct scale_factors *sf);
+                           const struct scale_factors *sf,
+                           int_interpfilters interp_filters);
 
 void av1_init_warp_params(InterPredParams *inter_pred_params,
                           struct buf_2d *ref_buf,
@@ -147,7 +149,7 @@ static INLINE void inter_predictor(const uint8_t *src, int src_stride,
                                    const SubpelParams *subpel_params,
                                    const struct scale_factors *sf, int w, int h,
                                    ConvolveParams *conv_params,
-                                   int_interpfilters interp_filters,
+                                   const InterpFilterParams *interp_filters[2],
                                    int is_intrabc) {
   assert(conv_params->do_average == 0 || conv_params->do_average == 1);
   assert(sf);
@@ -167,13 +169,11 @@ static INLINE void inter_predictor(const uint8_t *src, int src_stride,
   }
 }
 
-static INLINE void highbd_inter_predictor(const uint8_t *src, int src_stride,
-                                          uint8_t *dst, int dst_stride,
-                                          const SubpelParams *subpel_params,
-                                          const struct scale_factors *sf, int w,
-                                          int h, ConvolveParams *conv_params,
-                                          int_interpfilters interp_filters,
-                                          int is_intrabc, int bd) {
+static INLINE void highbd_inter_predictor(
+    const uint8_t *src, int src_stride, uint8_t *dst, int dst_stride,
+    const SubpelParams *subpel_params, const struct scale_factors *sf, int w,
+    int h, ConvolveParams *conv_params,
+    const InterpFilterParams *interp_filters[2], int is_intrabc, int bd) {
   assert(conv_params->do_average == 0 || conv_params->do_average == 1);
   assert(sf);
   const int is_scaled = has_scale(subpel_params->xs, subpel_params->ys);
