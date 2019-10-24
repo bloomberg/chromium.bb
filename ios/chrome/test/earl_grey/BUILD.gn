@@ -361,6 +361,7 @@ source_set("eg_app_support+eg2") {
     "//ios/chrome/browser/autofill",
     "//ios/chrome/browser/autofill/automation:eg_app_support+eg2",
     "//ios/chrome/browser/content_settings:content_settings",
+    "//ios/chrome/browser/device_sharing:eg_app_support+eg2",
     "//ios/chrome/browser/ntp:features",
     "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/authentication/cells",
