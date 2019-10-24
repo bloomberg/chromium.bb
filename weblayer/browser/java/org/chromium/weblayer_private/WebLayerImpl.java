@@ -44,12 +44,14 @@ public final class WebLayerImpl extends IWebLayer.Stub {
 
     private static class FileProviderHelper implements ContentUriUtils.FileProviderUtil {
         // Keep this variable in sync with the value defined in AndroidManifest.xml.
-        private static final String API_AUTHORITY = "org.chromium.weblayer.client.FileProvider";
+        private static final String API_AUTHORITY_SUFFIX =
+                ".org.chromium.weblayer.client.FileProvider";
 
         @Override
         public Uri getContentUriFromFile(File file) {
             Context appContext = ContextUtils.getApplicationContext();
-            return FileProvider.getUriForFile(appContext, API_AUTHORITY, file);
+            return FileProvider.getUriForFile(
+                    appContext, appContext.getPackageName() + API_AUTHORITY_SUFFIX, file);
         }
     }
 
