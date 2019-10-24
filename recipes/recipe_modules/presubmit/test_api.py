@@ -8,13 +8,12 @@ from PB.recipe_modules.depot_tools.presubmit import properties
 
 class PresubmitTestApi(recipe_test_api.RecipeTestApi):
 
-  def __call__(self, runhooks=False, timeout_s=480, vpython_spec_path=None):
+  def __call__(self, runhooks=False, timeout_s=480):
     return self.m.properties(
         **{
             '$depot_tools/presubmit': properties.InputProperties(
                 runhooks=runhooks,
                 timeout_s=timeout_s,
-                vpython_spec_path=vpython_spec_path,
             ),
         }
     )

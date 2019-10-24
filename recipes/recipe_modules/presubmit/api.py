@@ -18,7 +18,6 @@ class PresubmitApi(recipe_api.RecipeApi):
     # According to event mon data we have, it seems like anything longer than
     # this is a bug, and should just instant fail.
     self._timeout_s = properties.timeout_s
-    self._vpython_spec_path = properties.vpython_spec_path
 
   @property
   def presubmit_support_path(self):
@@ -241,4 +240,3 @@ def _createSummaryMarkdown(step_json):
       ' look at the stdout of the presubmit step.')
     )
   return '\n\n'.join(error_messages)
-

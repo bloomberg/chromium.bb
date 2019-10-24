@@ -57,15 +57,6 @@ def GenTests(api):
   )
 
   yield (
-      api.test('root_vpython') +
-      api.runtime(is_experimental=False, is_luci=True) +
-      api.buildbucket.try_build(project='infra') +
-      api.presubmit(vpython_spec_path='.vpython') +
-      api.post_process(post_process.StatusSuccess) +
-      api.post_process(post_process.DropExpectation)
-  )
-
-  yield (
       api.test('timeout') +
       api.runtime(is_experimental=False, is_luci=True) +
       api.buildbucket.try_build(project='infra') +
@@ -248,4 +239,3 @@ def GenTests(api):
       api.post_process(post_process.ResultReason, bug_msg) +
       api.post_process(post_process.DropExpectation)
   )
-
