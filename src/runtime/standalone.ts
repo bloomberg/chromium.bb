@@ -1,139 +1,153 @@
 // Implements the standalone test runner (see also: index.html).
 
-import { TestSpecID } from '../framework/id.js';
 import { RunCase } from '../framework/index.js';
 import { TestLoader } from '../framework/loader.js';
 import { Logger } from '../framework/logger.js';
-import { makeQueryString } from '../framework/url_query.js';
+import { FilterResultTreeNode, treeFromFilterResults } from '../framework/tree.js';
 
+window.onbeforeunload = () => {
+  // Prompt user before reloading if there are any results
+  return haveSomeResults ? false : undefined;
+};
+
+let haveSomeResults = false;
 const log = new Logger();
 
-type runButtonCallback = () => Promise<void>;
-const runButtonCallbacks = new Map<HTMLElement, runButtonCallback>();
+const url = new URL(window.location.toString());
+const runnow = url.searchParams.get('runnow') === '1';
+const debug = url.searchParams.get('debug') === '1';
 
-const resultsJSON = document.getElementById('resultsJSON') as HTMLElement;
-const resultsVis = document.getElementById('resultsVis') as HTMLElement;
-function makeTest(spec: TestSpecID, description: string): HTMLElement {
-  const test = $('<div>')
-    .addClass('test')
-    .appendTo(resultsVis);
+const resultsVis = document.getElementById('resultsVis')!;
+const resultsJSON = document.getElementById('resultsJSON')!;
 
-  const testrun = $('<button>')
-    .addClass('testrun')
-    .html('&#9654;')
-    .appendTo(test);
+type RunSubtree = () => Promise<void>;
 
-  $('<div>')
-    .addClass('testname')
-    .text(makeQueryString(spec))
-    .appendTo(test);
-
-  $('<div>')
-    .addClass('testdesc')
-    .text(description)
-    .appendTo(test);
-
-  const testcases = $('<div>')
-    .addClass('testcases')
-    .appendTo(test);
-
-  testrun.on('click', async () => {
-    for (const el of test.find('.caserun')) {
-      const rc = runButtonCallbacks.get(el) as runButtonCallback;
-      await rc();
-    }
-    resultsJSON.textContent = log.asJSON(2);
-  });
-
-  return testcases[0];
+function makeTreeNodeHTML(name: string, tree: FilterResultTreeNode): [HTMLElement, RunSubtree] {
+  if (tree.children) {
+    return makeSubtreeHTML(name, tree.children);
+  } else {
+    return makeCaseHTML(name, tree.runCase!);
+  }
 }
 
-function mkCase(
-  testcasesVis: HTMLElement,
-  query: string,
-  t: RunCase,
-  debug: boolean
-): () => Promise<void> {
-  const testcase = $('<div>')
-    .addClass('testcase')
-    .appendTo(testcasesVis);
-  const casehead = $('<div>')
-    .addClass('casehead')
-    .appendTo(testcase);
+function makeCaseHTML(name: string, t: RunCase): [HTMLElement, RunSubtree] {
+  const div = $('<div>').addClass('testcase');
 
-  const caserun = $('<button>')
-    .addClass('caserun')
-    .html('&#9654;')
-    .appendTo(casehead);
-  $('<div>')
-    .addClass('casename')
-    .appendTo(casehead)
-    .text(query);
-  const casetime = $('<div>')
-    .addClass('casetime')
-    .appendTo(casehead);
-
-  const caselogs = $('<div>', { class: 'caselogs' }).appendTo(testcase);
-
-  const runCase = async () => {
+  const runSubtree = async () => {
+    haveSomeResults = true;
     const res = await t.run(debug);
 
     casetime.text(res.timems.toFixed(4) + ' ms');
 
-    testcase.removeClass('pass');
-    testcase.removeClass('warn');
-    testcase.removeClass('fail');
-    testcase.addClass(res.status);
+    div
+      .removeClass('pass')
+      .removeClass('warn')
+      .removeClass('fail')
+      .addClass(res.status);
 
     if (res.logs) {
       caselogs.empty();
       for (const l of res.logs) {
-        $('<div>', { class: 'caselog' })
+        $('<div>')
+          .addClass('testcaselog')
           .appendTo(caselogs)
           .text(l);
       }
     }
   };
-  runButtonCallbacks.set(caserun[0], runCase);
-  caserun.on('click', async () => {
-    await runCase();
-    resultsJSON.textContent = log.asJSON(2);
+
+  const casehead = makeTreeNodeHeaderHTML(name, runSubtree);
+  div.append(casehead);
+  const casetime = $('<div>')
+    .addClass('testcasetime')
+    .html('ms')
+    .appendTo(casehead);
+  const caselogs = $('<div>')
+    .addClass('testcaselogs')
+    .appendTo(div);
+
+  return [div[0], runSubtree];
+}
+
+function makeSubtreeHTML(
+  name: string,
+  children: Map<string, FilterResultTreeNode>
+): [HTMLElement, RunSubtree] {
+  const div = $('<div>').addClass('subtree');
+
+  const header = makeTreeNodeHeaderHTML(name, () => {
+    return runSubtree();
   });
-  return runCase;
+  div.append(header);
+
+  const subtree = $('<div>')
+    .addClass('subtreechildren')
+    .appendTo(div);
+  const runSubtree = makeSubtreeChildrenHTML(subtree[0], children);
+
+  return [div[0], runSubtree];
+}
+
+function makeSubtreeChildrenHTML(
+  div: HTMLElement,
+  children: Map<string, FilterResultTreeNode>
+): RunSubtree {
+  const runSubtreeFns: RunSubtree[] = [];
+  for (const [n, subtree] of children) {
+    const [subtreeHTML, runSubtree] = makeTreeNodeHTML(n, subtree);
+    div.append(subtreeHTML);
+    runSubtreeFns.push(runSubtree);
+  }
+
+  return async () => {
+    for (const runSubtree of runSubtreeFns) {
+      await runSubtree();
+    }
+  };
+}
+
+function makeTreeNodeHeaderHTML(name: string, runSubtree: RunSubtree): HTMLElement {
+  const div = $('<div>').addClass('nodeheader');
+  $('<button>')
+    .addClass('noderun')
+    .attr('alt', 'run')
+    .html('&#x25b6;')
+    .on('click', async () => {
+      await runSubtree();
+      updateJSON();
+    })
+    .appendTo(div);
+  const nodetitle = $('<div>')
+    .addClass('nodetitle')
+    .appendTo(div);
+  $('<span>')
+    .addClass('nodename')
+    .text(name)
+    .appendTo(nodetitle);
+  $('<a>')
+    .addClass('nodelink')
+    .attr('href', '?q=' + name)
+    .attr('alt', 'open')
+    .html('&#x2b08;')
+    .appendTo(nodetitle);
+  return div[0];
+}
+
+function updateJSON(): void {
+  resultsJSON.textContent = log.asJSON(2);
 }
 
 (async () => {
-  const url = new URL(window.location.toString());
-  const runnow = url.searchParams.get('runnow') === '1';
-  const debug = url.searchParams.get('debug') === '1';
-
   const loader = new TestLoader();
 
   // TODO: everything after this point is very similar across the three runtimes.
   // TODO: start populating page before waiting for everything to load?
   const files = await loader.loadTestsFromQuery(window.location.search);
-  // TODO: convert listing to tree so it can be displayed as a tree?
+  const tree = treeFromFilterResults(log, files);
 
-  const runCaseList = [];
-  for (const f of files) {
-    const testcasesVis = makeTest(f.id, f.spec.description);
-
-    if (!('g' in f.spec)) {
-      continue;
-    }
-
-    const [tRec] = log.record(f.id);
-    for (const t of f.spec.g.iterate(tRec)) {
-      const query = makeQueryString(f.id, t.id);
-      const runCase = mkCase(testcasesVis, query, t, debug);
-      runCaseList.push(runCase);
-    }
-  }
+  const runSubtree = makeSubtreeChildrenHTML(resultsVis, tree.children!);
 
   if (runnow) {
-    for (const runCase of runCaseList) {
-      await runCase();
-    }
-    resultsJSON.textContent = log.asJSON(2);
+    runSubtree();
   }
 })();

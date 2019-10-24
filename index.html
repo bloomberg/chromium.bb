@@ -3,6 +3,9 @@
     <title></title>
     <script src="third_party/jquery/jquery-3.3.1.min.js"></script>
     <style>
+      * {
+        box-sizing: border-box;
+      }
       #info {
         font-family: monospace;
       }
@@ -11,50 +14,59 @@
         width: 100%;
         height: 15em;
       }
-      .test {
-        border-width: 1px 1px 0 1px;
+
+      #resultsVis {
+        border-right: 1px solid gray;
+      }
+
+      /* tree nodes */
+
+      .nodeheader {
+        display: flex;
+        width: 100%;
+        padding: 1px 2px 1px 1px;
+      }
+      .noderun {
+        font-size: 10pt;
+        padding: 0 3pt 0 3pt;
+        margin: 0 2px;
+      }
+      .nodetitle {
+        flex-grow: 1;
+      }
+      .nodename {
+        user-select: all;
+      }
+      .nodelink {
+        margin: 0 2px;
+      }
+
+      /* tree nodes which are subtrees */
+
+      .subtree {
+        margin: 0px;
+        border-width: 1px 0 0 1px;
         border-style: solid;
         border-color: gray;
       }
-      .testrun {
-        display: inline-block;
-        font-size: 10pt;
-        padding: 0 3pt 0 3pt;
-      }
-      .testname {
-        display: inline-block;
-        margin-left: 2pt;
-      }
-      .testdesc {
-        margin-left: 1.8em;
-      }
-      .testcases {
+      .subtreechildren {
         margin-left: 8pt;
       }
+
+      /* tree nodes which are test cases */
+
       .testcase {
         border-width: 1px 0 0 1px;
         border-style: solid;
         border-color: gray;
         background: white;
       }
-      .casehead {
-        overflow: auto;
+      .testcasetime {
+        text-align: right;
+        min-width: 8em;
+        max-width: 8em;
       }
-      .caserun {
-        display: inline-block;
-        font-size: 10pt;
-        padding: 0 3pt 0 3pt;
-      }
-      .casename {
-        display: inline-block;
-        margin-left: 2pt;
-        width: 65%;
-      }
-      .casetime {
-        width: 20%;
-        float: right;
-      }
-      .caselogs {
+      .testcaselogs {
         margin-left: 8pt;
         width: calc(100% - 8pt - 1px);
         border-width: 0 1px 0 1px;
@@ -62,13 +74,12 @@
         border-color: gray;
         background: white;
       }
-      .caselog {
+      .testcaselog {
         margin-left: 2pt;
         border-width: 0 0 1px 0;
         border-style: solid;
         border-color: #eee;
       }
-
       .fail {
         background: #fcc;
       }
@@ -87,6 +98,7 @@
   </head>
   <body>
     <h1>WebGPU Conformance Test Suite</h1>
+
     <div id="info"></div>
     <div id="resultsVis"></div>
     <textarea id="resultsJSON"></textarea>
