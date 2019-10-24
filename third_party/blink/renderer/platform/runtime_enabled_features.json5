@@ -1326,10 +1326,6 @@
       status: "experimental",
     },
     {
-      name: "QuicTransport",
-      status: "experimental",
-    },
-    {
       name: "ReducedReferrerGranularity",
     },
     {
