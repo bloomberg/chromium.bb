@@ -900,6 +900,8 @@ TEST_F(CrostiniPackageServiceTest, SecondUninstallStartsWhenFirstFails) {
 }
 
 TEST_F(CrostiniPackageServiceTest, DuplicateUninstallSucceeds) {
+  // Use three uninstalls as a regression test for crbug.com/1015341
+  service_->QueueUninstallApplication(kDefaultAppId);
   service_->QueueUninstallApplication(kDefaultAppId);
   service_->QueueUninstallApplication(kDefaultAppId);
 
@@ -917,6 +919,7 @@ TEST_F(CrostiniPackageServiceTest, DuplicateUninstallSucceeds) {
       Printable(notification_display_service_->GetDisplayedNotificationsForType(
           NotificationHandler::Type::TRANSIENT)),
       UnorderedElementsAre(IsUninstallSuccessNotification(DEFAULT_APP),
+                           IsUninstallSuccessNotification(DEFAULT_APP),
                            IsUninstallSuccessNotification(DEFAULT_APP)));
 }
 
