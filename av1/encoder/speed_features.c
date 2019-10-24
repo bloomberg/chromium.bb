@@ -921,7 +921,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
     sf->exhaustive_searches_thresh = (1 << 24);
   else
     sf->exhaustive_searches_thresh = (1 << 25);
-  sf->max_exaustive_pct = good_quality_max_mesh_pct[mesh_speed];
+  sf->max_exhaustive_pct = good_quality_max_mesh_pct[mesh_speed];
   if (mesh_speed > 0)
     sf->exhaustive_searches_thresh = sf->exhaustive_searches_thresh << 1;
 
@@ -933,25 +933,15 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   }
 
   // Update the mesh pattern of exhaustive motion search for intraBC
-  if (av1_allow_intrabc(cm) && cpi->oxcf.enable_intrabc) {
-    for (i = 0; i < MAX_MESH_STEP; ++i) {
-      sf->intrabc_mesh_patterns[i].range =
-          intrabc_mesh_patterns[mesh_speed][i].range;
-      sf->intrabc_mesh_patterns[i].interval =
-          intrabc_mesh_patterns[mesh_speed][i].interval;
-    }
-    sf->intrabc_max_exaustive_pct = intrabc_max_mesh_pct[mesh_speed];
-  } else {
-    /* Default initialization of intraBC exhaustive search mesh pattern and
-     * threshold */
-    for (i = 0; i < MAX_MESH_STEP; ++i) {
-      sf->intrabc_mesh_patterns[i].range =
-          good_quality_mesh_patterns[mesh_speed][i].range;
-      sf->intrabc_mesh_patterns[i].interval =
-          good_quality_mesh_patterns[mesh_speed][i].interval;
-    }
-    sf->intrabc_max_exaustive_pct = good_quality_max_mesh_pct[mesh_speed];
+  // Though intraBC mesh pattern is populated for all frame types, it is used
+  // only for intra frames of screen contents
+  for (i = 0; i < MAX_MESH_STEP; ++i) {
+    sf->intrabc_mesh_patterns[i].range =
+        intrabc_mesh_patterns[mesh_speed][i].range;
+    sf->intrabc_mesh_patterns[i].interval =
+        intrabc_mesh_patterns[mesh_speed][i].interval;
   }
+  sf->intrabc_max_exhaustive_pct = intrabc_max_mesh_pct[mesh_speed];
 
   // Slow quant, dct and trellis not worthwhile for first pass
   // so make sure they are always turned off.

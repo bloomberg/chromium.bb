@@ -2103,7 +2103,7 @@ int av1_refining_search_8p_c(MACROBLOCK *x, int error_per_bit, int search_range,
 
 #define MIN_EX_SEARCH_LIMIT 128
 static int is_exhaustive_allowed(const AV1_COMP *const cpi, MACROBLOCK *x,
-                                 int max_exaustive_pct) {
+                                 int max_exhaustive_pct) {
   const SPEED_FEATURES *const sf = &cpi->sf;
   int is_allowed = sf->allow_exhaustive_searches &&
                    (sf->exhaustive_searches_thresh < INT_MAX) &&
@@ -2111,7 +2111,7 @@ static int is_exhaustive_allowed(const AV1_COMP *const cpi, MACROBLOCK *x,
   if (x->m_search_count_ptr != NULL && x->ex_search_count_ptr != NULL) {
     const int max_ex =
         AOMMAX(MIN_EX_SEARCH_LIMIT,
-               (*x->m_search_count_ptr * max_exaustive_pct) / 100);
+               (*x->m_search_count_ptr * max_exhaustive_pct) / 100);
     is_allowed = *x->ex_search_count_ptr <= max_ex && is_allowed;
   }
   return is_allowed;
@@ -2381,11 +2381,11 @@ int av1_full_pixel_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
   // Should we allow a follow on exhaustive search?
   // Pick the threshold for decision on the evaluation of exhaustive search
   // based on the toolset (intraBC or non-intraBC)
-  const int max_exaustive_pct = use_intrabc_mesh_pattern
-                                    ? sf->intrabc_max_exaustive_pct
-                                    : sf->max_exaustive_pct;
+  const int max_exhaustive_pct = use_intrabc_mesh_pattern
+                                     ? sf->intrabc_max_exhaustive_pct
+                                     : sf->max_exhaustive_pct;
   if (!run_mesh_search && method == NSTEP &&
-      is_exhaustive_allowed(cpi, x, max_exaustive_pct)) {
+      is_exhaustive_allowed(cpi, x, max_exhaustive_pct)) {
     int exhuastive_thr = sf->exhaustive_searches_thresh;
     exhuastive_thr >>=
         10 - (mi_size_wide_log2[bsize] + mi_size_high_log2[bsize]);
