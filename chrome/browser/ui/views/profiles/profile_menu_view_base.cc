@@ -304,8 +304,13 @@ void ProfileMenuViewBase::SetIdentityInfo(const gfx::ImageSkia& image,
   gfx::ImageSkia sized_badge =
       AddCircularBackground(SizeImage(badge, kBadgeSize), kBadgeBackgroundColor,
                             kBadgeSize + 2 * kBadgePadding);
-  gfx::ImageSkia badged_image =
-      gfx::ImageSkiaOperations::CreateIconWithBadge(sized_image, sized_badge);
+  gfx::ImageSkia sized_badge_with_shadow =
+      gfx::ImageSkiaOperations::CreateImageWithDropShadow(
+          sized_badge,
+          gfx::ShadowValue::MakeMdShadowValues(/*elevation=*/1, SK_ColorBLACK));
+
+  gfx::ImageSkia badged_image = gfx::ImageSkiaOperations::CreateIconWithBadge(
+      sized_image, sized_badge_with_shadow);
   image_view->SetImage(badged_image);
   image_view->SetBorder(views::CreateEmptyBorder(0, 0, kImageBottomMargin, 0));
 
