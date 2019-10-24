@@ -109,6 +109,7 @@ public final class WebLayer {
     @NonNull
     public static ListenableFuture<WebLayer> create(Context appContext)
             throws UnsupportedVersionException {
+        ThreadCheck.ensureOnUiThread();
         if (sFuture == null) {
             // Just in case the app passed an Activity context.
             appContext = appContext.getApplicationContext();
@@ -157,7 +158,8 @@ public final class WebLayer {
         }
 
         @Override
-        public void onLoad() {
+        /* package */ void onLoad() {
+            ThreadCheck.ensureOnUiThread();
             try {
                 mIWebLayer.loadSync();
             } catch (RemoteException e) {
@@ -177,6 +179,7 @@ public final class WebLayer {
     }
 
     public void destroy() {
+        ThreadCheck.ensureOnUiThread();
         // TODO: implement me.
         mProfileManager.destroy();
     }
@@ -187,6 +190,7 @@ public final class WebLayer {
 
     @NonNull
     public static BrowserFragment createBrowserFragment(String profilePath) {
+        ThreadCheck.ensureOnUiThread();
         // TODO: use a profile id instead of the path to the actual file.
         Bundle args = new Bundle();
         args.putString(BrowserFragmentArgs.PROFILE_PATH, profilePath == null ? "" : profilePath);
