@@ -4,17 +4,18 @@
 # that can be found in the LICENSE file.
 
 import base64
-import BaseHTTPServer
 import collections
 import json
 import logging
 import os
 import re
-import SocketServer
 import sys
 import threading
 import time
 
+import six
+from six.moves import BaseHTTPServer
+from six.moves import socketserver
 
 # OAuth access token with its expiration time.
 AccessToken = collections.namedtuple('AccessToken', [
@@ -115,7 +116,7 @@ class LocalAuthServer(object):
     # This secret will be placed in a file on disk accessible only to current
     # user processes. RPC requests are expected to send this secret verbatim.
     # That way we authenticate RPCs as coming from current user's processes.
-    rpc_secret = base64.b64encode(os.urandom(48))
+    rpc_secret = base64.b64encode(os.urandom(48)).decode('ascii')
 
     with self._lock:
       assert not self._server, 'Already running'
@@ -127,10 +128,14 @@ class LocalAuthServer(object):
       self._accept_thread = threading.Thread(target=self._server.serve_forever)
       self._accept_thread.start()
       local_auth = {
-        'rpc_port': self._server.server_port,
-        'secret': self._rpc_secret,
-        'accounts': sorted(
-            {'id': acc.id, 'email': acc.email} for acc in accounts),
+          'rpc_port':
+              self._server.server_port,
+          'secret':
+              self._rpc_secret,
+          'accounts': [{
+              'id': acc.id,
+              'email': acc.email
+          } for acc in sorted(accounts)],
       }
       # TODO(vadimsh): Some clients don't understand 'null' value for
       # default_account_id, so just omit it completely for now.
@@ -202,7 +207,7 @@ class LocalAuthServer(object):
     account_id = request.get('account_id')
     if not account_id:
       raise RPCError(400, 'Field "account_id" is required.')
-    if not isinstance(account_id, basestring):
+    if not isinstance(account_id, six.string_types):
       raise RPCError(400, 'Field "account_id" must be a string')
     account_id = str(account_id)
 
@@ -211,7 +216,7 @@ class LocalAuthServer(object):
     if not scopes:
       raise RPCError(400, 'Field "scopes" is required.')
     if (not isinstance(scopes, list) or
-        not all(isinstance(s, basestring) for s in scopes)):
+        not all(isinstance(s, six.string_types) for s in scopes)):
       raise RPCError(400, 'Field "scopes" must be a list of strings.')
     scopes = tuple(sorted(set(map(str, scopes))))
 
@@ -219,7 +224,7 @@ class LocalAuthServer(object):
     secret = request.get('secret')
     if not secret:
       raise RPCError(400, 'Field "secret" is required.')
-    if not isinstance(secret, basestring):
+    if not isinstance(secret, six.string_types):
       raise RPCError(400, 'Field "secret" must be a string.')
     secret = str(secret)
 
@@ -276,8 +281,8 @@ class LocalAuthServer(object):
       }
     if isinstance(tok_or_err, TokenError):
       return {
-        'error_code': tok_or_err.code,
-        'error_message': str(tok_or_err.message or 'unknown'),
+          'error_code': tok_or_err.code,
+          'error_message': str(tok_or_err) or 'unknown',
       }
     raise AssertionError('impossible')
 
@@ -299,7 +304,7 @@ def should_refresh(tok):
   return time.time() > tok.expiry - 3*60
 
 
-class _HTTPServer(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
+class _HTTPServer(socketserver.ThreadingMixIn, BaseHTTPServer.HTTPServer):
   """Used internally by LocalAuthServer."""
 
   # How often to poll 'select' in local HTTP server.
@@ -308,7 +313,7 @@ class _HTTPServer(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
   # speed them up.
   poll_interval = 0.5
 
-  # From SocketServer.ThreadingMixIn.
+  # From socketserver.ThreadingMixIn.
   daemon_threads = True
   # From BaseHTTPServer.HTTPServer.
   request_queue_size = 50
@@ -350,7 +355,7 @@ class _RequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     self.send_header('Content-Length', str(len(message)))
     self.send_header('Content-Type', 'text/plain')
     self.end_headers()
-    self.wfile.write(message)
+    self.wfile.write(message.encode('utf-8'))
 
   def do_POST(self):
     """Implements POST handler."""
@@ -388,7 +393,7 @@ class _RequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       resp = self.server.local_auth_server.handle_rpc(method, req)
       response_body = json.dumps(resp) + '\n'
     except RPCError as exc:
-      self.send_error(exc.code, exc.message)
+      self.send_error(exc.code, str(exc))
       return
     except Exception as exc:
       self.send_error(500, 'Internal error: %s' % exc)
@@ -400,7 +405,7 @@ class _RequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     self.send_header('Content-Length', str(len(response_body)))
     self.send_header('Content-Type', 'application/json')
     self.end_headers()
-    self.wfile.write(response_body)
+    self.wfile.write(response_body.encode('utf-8'))
 
 
 def testing_main():

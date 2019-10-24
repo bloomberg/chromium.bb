@@ -47,7 +47,7 @@ def _tf(data, data_raw=False, workdir=None):
   _LOGGER.debug('Writing LUCI_CONTEXT file %r', tf.name)
   try:
     if not data_raw:
-      json.dump(data, tf)
+      json.dump(_to_encodable(data), tf)
     else:
       # for testing, allows malformed json
       tf.write(data)
@@ -68,6 +68,18 @@ def _to_utf8(obj):
     return [_to_utf8(item) for item in obj]
   if isinstance(obj, six.text_type):
     return obj.encode('utf-8')
+  return obj
+
+
+def _to_encodable(obj):
+  if isinstance(obj, dict):
+    return {
+        _to_encodable(key): _to_encodable(value) for key, value in obj.items()
+    }
+  if isinstance(obj, list):
+    return [_to_encodable(item) for item in obj]
+  if isinstance(obj, six.binary_type):
+    return obj.decode('utf-8')
   return obj
 
 
