@@ -10,8 +10,4 @@ message InputProperties {
   bool runhooks = 1;
   // Timeout for presubmit execution, in seconds.
   int32 timeout_s = 2;
-
-  // TODO(tikuta): remove this if this is not necessary.
-  reserved "vpython_spec_path";
-  reserved 3;
 }
