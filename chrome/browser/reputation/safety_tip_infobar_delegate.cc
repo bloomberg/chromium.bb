@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/lookalikes/safety_tips/safety_tip_infobar_delegate.h"
+#include "chrome/browser/reputation/safety_tip_infobar_delegate.h"
 
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/android/android_theme_resources.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/infobars/infobar_service.h"
-#include "chrome/browser/lookalikes/safety_tips/reputation_service.h"
-#include "chrome/browser/lookalikes/safety_tips/safety_tip_infobar.h"
-#include "chrome/browser/lookalikes/safety_tips/safety_tip_ui_helper.h"
+#include "chrome/browser/reputation/reputation_service.h"
+#include "chrome/browser/reputation/safety_tip_infobar.h"
+#include "chrome/browser/reputation/safety_tip_ui_helper.h"
 #include "components/infobars/core/infobar.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"

@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_LOOKALIKES_SAFETY_TIPS_REPUTATION_SERVICE_H_
-#define CHROME_BROWSER_LOOKALIKES_SAFETY_TIPS_REPUTATION_SERVICE_H_
+#ifndef CHROME_BROWSER_REPUTATION_REPUTATION_SERVICE_H_
+#define CHROME_BROWSER_REPUTATION_REPUTATION_SERVICE_H_
 
 #include <set>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/lookalikes/safety_tips/safety_tip_ui.h"
+#include "chrome/browser/reputation/safety_tip_ui.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/security_state/core/security_state.h"
 #include "url/gurl.h"
@@ -85,4 +85,4 @@ security_state::SafetyTipStatus GetUrlBlockType(const GURL& url);
 
 }  // namespace safety_tips
 
-#endif  // CHROME_BROWSER_LOOKALIKES_SAFETY_TIPS_REPUTATION_SERVICE_H_
+#endif  // CHROME_BROWSER_REPUTATION_REPUTATION_SERVICE_H_

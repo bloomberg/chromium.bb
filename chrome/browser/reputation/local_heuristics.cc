@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/lookalikes/safety_tips/local_heuristics.h"
+#include "chrome/browser/reputation/local_heuristics.h"
 
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/string_split.h"

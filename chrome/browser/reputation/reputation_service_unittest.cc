@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/lookalikes/safety_tips/reputation_service.h"
+#include "chrome/browser/reputation/reputation_service.h"
 
 #include <algorithm>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include "chrome/browser/lookalikes/safety_tips/safety_tip_test_utils.h"
+#include "chrome/browser/reputation/safety_tip_test_utils.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/security_state/core/security_state.h"
 #include "testing/gtest/include/gtest/gtest.h"

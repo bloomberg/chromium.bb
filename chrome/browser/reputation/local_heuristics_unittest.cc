@@ -4,7 +4,7 @@
 
 #include <vector>
 
-#include "chrome/browser/lookalikes/safety_tips/local_heuristics.h"
+#include "chrome/browser/reputation/local_heuristics.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"

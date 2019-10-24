@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_LOOKALIKES_SAFETY_TIPS_REPUTATION_WEB_CONTENTS_OBSERVER_H_
-#define CHROME_BROWSER_LOOKALIKES_SAFETY_TIPS_REPUTATION_WEB_CONTENTS_OBSERVER_H_
+#ifndef CHROME_BROWSER_REPUTATION_REPUTATION_WEB_CONTENTS_OBSERVER_H_
+#define CHROME_BROWSER_REPUTATION_REPUTATION_WEB_CONTENTS_OBSERVER_H_
 
 #include <set>
 
 #include "base/callback_forward.h"
-#include "chrome/browser/lookalikes/safety_tips/reputation_service.h"
-#include "chrome/browser/lookalikes/safety_tips/safety_tip_ui.h"
+#include "chrome/browser/reputation/reputation_service.h"
+#include "chrome/browser/reputation/safety_tip_ui.h"
 #include "components/security_state/core/security_state.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/visibility.h"
@@ -82,4 +82,4 @@ class ReputationWebContentsObserver
 
 }  // namespace safety_tips
 
-#endif  // CHROME_BROWSER_LOOKALIKES_SAFETY_TIPS_REPUTATION_WEB_CONTENTS_OBSERVER_H_
+#endif  // CHROME_BROWSER_REPUTATION_REPUTATION_WEB_CONTENTS_OBSERVER_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/lookalikes/safety_tips/safety_tip_infobar.h"
+#include "chrome/browser/reputation/safety_tip_infobar.h"
 
 #include <utility>
 
@@ -10,7 +10,7 @@
 #include "base/android/jni_string.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/android/chrome_jni_headers/SafetyTipInfoBar_jni.h"
-#include "chrome/browser/lookalikes/safety_tips/safety_tip_infobar_delegate.h"
+#include "chrome/browser/reputation/safety_tip_infobar_delegate.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/image/image.h"
 

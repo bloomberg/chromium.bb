@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/lookalikes/safety_tips/safety_tip_test_utils.h"
+#include "chrome/browser/reputation/safety_tip_test_utils.h"
 
 #include <algorithm>
 #include <memory>
 #include <utility>
 
-#include "chrome/browser/lookalikes/safety_tips/safety_tips_config.h"
+#include "chrome/browser/reputation/safety_tips_config.h"
 
 namespace {
 

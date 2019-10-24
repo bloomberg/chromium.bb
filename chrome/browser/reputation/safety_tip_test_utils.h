@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_LOOKALIKES_SAFETY_TIPS_SAFETY_TIP_TEST_UTILS_H_
-#define CHROME_BROWSER_LOOKALIKES_SAFETY_TIPS_SAFETY_TIP_TEST_UTILS_H_
+#ifndef CHROME_BROWSER_REPUTATION_SAFETY_TIP_TEST_UTILS_H_
+#define CHROME_BROWSER_REPUTATION_SAFETY_TIP_TEST_UTILS_H_
 
 #include <string>
 #include <vector>
 
-#include "chrome/browser/lookalikes/safety_tips/safety_tips.pb.h"
+#include "chrome/browser/reputation/safety_tips.pb.h"
 
 // Initialize component configuration. Necessary to enable Safety Tips for
 // testing, as no heuristics trigger if the allowlist is inaccessible.
@@ -26,4 +26,4 @@ void SetSafetyTipBadRepPatterns(std::vector<std::string> pattern);
 // Sets allowlist patterns in the given proto for testing.
 void SetSafetyTipAllowlistPatterns(std::vector<std::string> patterns);
 
-#endif  // CHROME_BROWSER_LOOKALIKES_SAFETY_TIPS_SAFETY_TIP_TEST_UTILS_H_
+#endif  // CHROME_BROWSER_REPUTATION_SAFETY_TIP_TEST_UTILS_H_

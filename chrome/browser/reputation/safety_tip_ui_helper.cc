@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/lookalikes/safety_tips/safety_tip_ui_helper.h"
+#include "chrome/browser/reputation/safety_tip_ui_helper.h"
 
 #include "base/metrics/histogram_functions.h"
 #include "build/build_config.h"

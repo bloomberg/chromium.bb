@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_LOOKALIKES_SAFETY_TIPS_SAFETY_TIP_INFOBAR_DELEGATE_H_
-#define CHROME_BROWSER_LOOKALIKES_SAFETY_TIPS_SAFETY_TIP_INFOBAR_DELEGATE_H_
+#ifndef CHROME_BROWSER_REPUTATION_SAFETY_TIP_INFOBAR_DELEGATE_H_
+#define CHROME_BROWSER_REPUTATION_SAFETY_TIP_INFOBAR_DELEGATE_H_
 
-#include "chrome/browser/lookalikes/safety_tips/safety_tip_ui.h"
+#include "chrome/browser/reputation/safety_tip_ui.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/security_state/core/security_state.h"
 #include "content/public/browser/web_contents.h"
@@ -56,4 +56,4 @@ class SafetyTipInfoBarDelegate : public ConfirmInfoBarDelegate {
 
 }  // namespace safety_tips
 
-#endif  // CHROME_BROWSER_LOOKALIKES_SAFETY_TIPS_SAFETY_TIP_INFOBAR_DELEGATE_H_
+#endif  // CHROME_BROWSER_REPUTATION_SAFETY_TIP_INFOBAR_DELEGATE_H_

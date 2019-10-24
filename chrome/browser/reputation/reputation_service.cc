@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/lookalikes/safety_tips/reputation_service.h"
+#include "chrome/browser/reputation/reputation_service.h"
 
 #include <string>
 #include <utility>
@@ -13,11 +13,11 @@
 #include "chrome/browser/lookalikes/lookalike_url_interstitial_page.h"
 #include "chrome/browser/lookalikes/lookalike_url_navigation_throttle.h"
 #include "chrome/browser/lookalikes/lookalike_url_service.h"
-#include "chrome/browser/lookalikes/safety_tips/local_heuristics.h"
-#include "chrome/browser/lookalikes/safety_tips/safety_tip_ui_helper.h"
-#include "chrome/browser/lookalikes/safety_tips/safety_tips_config.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/reputation/local_heuristics.h"
+#include "chrome/browser/reputation/safety_tip_ui_helper.h"
+#include "chrome/browser/reputation/safety_tips_config.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"

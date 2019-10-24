@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_LOOKALIKES_SAFETY_TIPS_SAFETY_TIPS_CONFIG_H_
-#define CHROME_BROWSER_LOOKALIKES_SAFETY_TIPS_SAFETY_TIPS_CONFIG_H_
+#ifndef CHROME_BROWSER_REPUTATION_SAFETY_TIPS_CONFIG_H_
+#define CHROME_BROWSER_REPUTATION_SAFETY_TIPS_CONFIG_H_
 
 #include <memory>
 
-#include "chrome/browser/lookalikes/safety_tips/safety_tips.pb.h"
+#include "chrome/browser/reputation/safety_tips.pb.h"
 
 namespace safety_tips {
 
@@ -24,4 +24,4 @@ const chrome_browser_safety_tips::SafetyTipsConfig* GetRemoteConfigProto();
 
 }  // namespace safety_tips
 
-#endif  // CHROME_BROWSER_LOOKALIKES_SAFETY_TIPS_SAFETY_TIPS_CONFIG_H_
+#endif  // CHROME_BROWSER_REPUTATION_SAFETY_TIPS_CONFIG_H_

@@ -12,7 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/engagement/site_engagement_details.mojom.h"
 #include "chrome/browser/lookalikes/lookalike_url_interstitial_page.h"
-#include "chrome/browser/lookalikes/safety_tips/reputation_service.h"
+#include "chrome/browser/reputation/reputation_service.h"
 #include "components/url_formatter/url_formatter.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
