@@ -324,7 +324,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const AXEventNotificationDetails& details);
 
   void EvictFromBackForwardCacheWithReason(
-      base::Optional<BackForwardCacheMetrics::NotRestoredReason> reason);
+      BackForwardCacheMetrics::NotRestoredReason reason);
 
   // IPC::Sender
   bool Send(IPC::Message* msg) override;

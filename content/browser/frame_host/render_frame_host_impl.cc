@@ -1251,8 +1251,11 @@ void RenderFrameHostImpl::StartBackForwardCacheEvictionTimer() {
 
 void RenderFrameHostImpl::DisableBackForwardCache() {
   is_back_forward_cache_disabled_ = true;
-  if (is_in_back_forward_cache())
-    EvictFromBackForwardCacheWithReason(base::nullopt);
+  if (is_in_back_forward_cache()) {
+    EvictFromBackForwardCacheWithReason(
+        BackForwardCacheMetrics::NotRestoredReason::
+            kDisableForRenderFrameHostCalled);
+  }
 }
 
 void RenderFrameHostImpl::OnGrantedMediaStreamAccess() {
@@ -3701,7 +3704,7 @@ void RenderFrameHostImpl::EvictFromBackForwardCache() {
 }
 
 void RenderFrameHostImpl::EvictFromBackForwardCacheWithReason(
-    base::Optional<BackForwardCacheMetrics::NotRestoredReason> reason) {
+    BackForwardCacheMetrics::NotRestoredReason reason) {
   DCHECK(IsBackForwardCacheEnabled());
 
   if (is_evicted_from_back_forward_cache_)
@@ -3718,8 +3721,8 @@ void RenderFrameHostImpl::EvictFromBackForwardCacheWithReason(
   // TODO(hajimehoshi): Record the 'race condition' by JavaScript execution when
   // |is_in_back_forward_cache()| is false.
   BackForwardCacheMetrics* metrics = top_document->GetBackForwardCacheMetrics();
-  if (is_in_back_forward_cache() && reason && metrics)
-    metrics->MarkNotRestoredWithReason(reason.value());
+  if (is_in_back_forward_cache() && metrics)
+    metrics->MarkNotRestoredWithReason(reason);
 
   if (!in_back_forward_cache) {
     BackForwardCacheMetrics::RecordEvictedAfterDocumentRestored(
