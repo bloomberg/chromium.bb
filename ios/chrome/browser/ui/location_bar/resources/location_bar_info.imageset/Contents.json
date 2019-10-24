@@ -3,17 +3,17 @@
         {
             "idiom": "universal",
             "scale": "1x",
-            "filename": "location_bar_dangerous.png"
+            "filename": "location_bar_info.png"
         },
         {
             "idiom": "universal",
             "scale": "2x",
-            "filename": "location_bar_dangerous@2x.png"
+            "filename": "location_bar_info@2x.png"
         },
         {
             "idiom": "universal",
             "scale": "3x",
-            "filename": "location_bar_dangerous@3x.png"
+            "filename": "location_bar_info@3x.png"
         }
     ],
     "info": {
