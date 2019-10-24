@@ -1,12 +1,12 @@
-#!/usr/bin/env vpython
+#!/usr/bin/env vpython3
 # coding=utf-8
 # Copyright 2013 The LUCI Authors. All rights reserved.
 # Use of this source code is governed under the Apache License, Version 2.0
 # that can be found in the LICENSE file.
 
 import getpass
+import io
 import os
-import StringIO
 import subprocess
 import sys
 import tempfile
@@ -53,18 +53,18 @@ class FilePathTest(auto_stub.TestCase):
 
   def test_atomic_replace_new_file(self):
     path = os.path.join(self.tempdir, 'new_file')
-    file_path.atomic_replace(path, 'blah')
+    file_path.atomic_replace(path, b'blah')
     with open(path, 'rb') as f:
-      self.assertEqual('blah', f.read())
+      self.assertEqual(b'blah', f.read())
     self.assertEqual([u'new_file'], os.listdir(self.tempdir))
 
   def test_atomic_replace_existing_file(self):
     path = os.path.join(self.tempdir, 'existing_file')
     with open(path, 'wb') as f:
-      f.write('existing body')
-    file_path.atomic_replace(path, 'new body')
+      f.write(b'existing body')
+    file_path.atomic_replace(path, b'new body')
     with open(path, 'rb') as f:
-      self.assertEqual('new body', f.read())
+      self.assertEqual(b'new body', f.read())
     self.assertEqual([u'existing_file'], os.listdir(self.tempdir))
 
   def assertFileMode(self, filepath, mode, umask=None):
@@ -104,7 +104,7 @@ class FilePathTest(auto_stub.TestCase):
     dir_foo = os.path.join(self.tempdir, 'foo')
     file_bar = os.path.join(dir_foo, 'bar')
     fs.mkdir(dir_foo, 0o777)
-    write_content(file_bar, 'bar')
+    write_content(file_bar, b'bar')
     file_path.set_read_only(dir_foo, False)
     file_path.set_read_only(file_bar, True)
     self.assertFileMode(dir_foo, 0o40777)
@@ -121,7 +121,7 @@ class FilePathTest(auto_stub.TestCase):
     dir_foo = os.path.join(self.tempdir, 'foo')
     file_bar = os.path.join(dir_foo, 'bar')
     fs.mkdir(dir_foo, 0o777)
-    write_content(file_bar, 'bar')
+    write_content(file_bar, b'bar')
     file_path.set_read_only(dir_foo, True)
     file_path.set_read_only(file_bar, False)
     self.assertMaskedFileMode(dir_foo, 0o40555)
@@ -144,7 +144,7 @@ class FilePathTest(auto_stub.TestCase):
     dir_foo = os.path.join(self.tempdir, 'foo')
     file_bar = os.path.join(dir_foo, 'bar')
     fs.mkdir(dir_foo, 0o777)
-    write_content(file_bar, 'bar')
+    write_content(file_bar, b'bar')
     file_path.set_read_only(dir_foo, True)
     file_path.set_read_only(file_bar, True)
     self.assertMaskedFileMode(dir_foo, 0o40555)
@@ -161,7 +161,7 @@ class FilePathTest(auto_stub.TestCase):
     file_bar = os.path.join(dir_foo, 'bar')
     file_link = os.path.join(dir_foo, 'link')
     fs.mkdir(dir_foo, 0o777)
-    write_content(file_bar, 'bar')
+    write_content(file_bar, b'bar')
     file_path.hardlink(file_bar, file_link)
     self.assertFileMode(file_bar, 0o100666)
     self.assertFileMode(file_link, 0o100666)
@@ -188,7 +188,7 @@ class FilePathTest(auto_stub.TestCase):
     filepath = os.path.join(
         subdir, u'\u0627\u0644\u0635\u064A\u0646\u064A\u0629')
     with fs.open(filepath, 'wb') as f:
-      f.write('hi')
+      f.write(b'hi')
     # In particular, it fails when the input argument is a str.
     file_path.rmtree(str(subdir))
 
@@ -280,7 +280,7 @@ class FilePathTest(auto_stub.TestCase):
       # Mock our sleep for faster test case execution.
       sleeps = []
       self.mock(time, 'sleep', sleeps.append)
-      self.mock(sys, 'stderr', StringIO.StringIO())
+      self.mock(sys, 'stderr', io.StringIO())
 
       # Open a child process, so the file is locked.
       subdir = os.path.join(self.tempdir, 'to_be_deleted')
