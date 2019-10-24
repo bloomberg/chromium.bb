@@ -1,1 +1,60 @@
-support/chromite_wrapper
+#!/usr/bin/env python
+# Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+"""Wrapper for chromite tools.
+
+The script is intend to be symlinked to any number of chromite tools, attempts
+to find the path for chromite, and hands off to the right tool via exec if
+possible.
+
+It is intended to used strictly outside of the chroot.
+"""
+
+import os
+import sys
+
+
+def _FindChromite(path):
+  """Find the chromite dir in a repo, gclient, or submodule checkout."""
+  path = os.path.abspath(path)
+  # Depending on the checkout type (whether repo chromeos or gclient chrome)
+  # Chromite lives in a different location.
+  roots = (
+      ('.repo', 'chromite/.git'),
+      ('.gclient', 'src/third_party/chromite/.git'),
+      ('src/.gitmodules', 'src/third_party/chromite/.git'),
+  )
+
+  while path != '/':
+    for root, chromite_git_dir in roots:
+      if all(os.path.exists(os.path.join(path, x))
+             for x in [root, chromite_git_dir]):
+        return os.path.dirname(os.path.join(path, chromite_git_dir))
+    path = os.path.dirname(path)
+  return None
+
+
+def _MissingErrorOut(target):
+  sys.stderr.write("""ERROR: Couldn't find the chromite tool %s.
+
+Please change to a directory inside your Chromium OS source tree
+and retry.  If you need to setup a Chromium OS source tree, see
+  https://chromium.googlesource.com/chromiumos/docs/+/HEAD/developer_guide.md
+""" % target)
+  return 127
+
+
+def main():
+  chromite_dir = _FindChromite(os.getcwd())
+  target = os.path.basename(sys.argv[0])
+  if chromite_dir is None:
+    return _MissingErrorOut(target)
+
+  path = os.path.join(chromite_dir, 'bin', target)
+  os.execv(path, [path] + sys.argv[1:])
+
+
+if __name__ == '__main__':
+  sys.exit(main())
