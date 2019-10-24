@@ -190,6 +190,7 @@ source_set("requesters") {
 }
 
 source_set("eg_tests") {
+  defines = [ "CHROME_EARL_GREY_1" ]
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
@@ -210,11 +211,10 @@ source_set("eg_tests") {
     "//components/autofill/core/common",
     "//components/autofill/ios/browser",
     "//components/keyed_service/core",
-    "//components/password_manager/core/browser",
     "//ios/chrome/app/strings:ios_strings_grit",
     "//ios/chrome/browser",
     "//ios/chrome/browser/autofill",
-    "//ios/chrome/browser/passwords",
+    "//ios/chrome/browser/ui/autofill:test_support",
     "//ios/chrome/browser/ui/settings",
     "//ios/chrome/browser/ui/settings/autofill",
     "//ios/chrome/browser/ui/settings/autofill:feature_flags",
@@ -230,4 +230,29 @@ source_set("eg_tests") {
     "//ios/web/public/test/http_server",
     "//third_party/ocmock",
   ]
+}
+
+source_set("eg2_tests") {
+  defines = [ "CHROME_EARL_GREY_2" ]
+  configs += [
+    "//build/config/compiler:enable_arc",
+    "//build/config/ios:xctest_config",
+  ]
+  testonly = true
+  sources = [
+    "password_view_controller_egtest.mm",
+  ]
+  deps = [
+    "//base",
+    "//base/test:test_support",
+    "//ios/chrome/app/strings:ios_strings_grit",
+    "//ios/chrome/browser/ui/autofill:eg_test_support+eg2",
+    "//ios/chrome/test/earl_grey:eg_test_support+eg2",
+    "//ios/testing/earl_grey:eg_test_support+eg2",
+    "//ios/third_party/earl_grey2:test_lib",
+    "//ios/web/public/test:element_selector",
+    "//net:test_support",
+    "//url",
+  ]
+  libs = [ "UIKit.framework" ]
 }

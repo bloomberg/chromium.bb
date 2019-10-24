@@ -9,6 +9,10 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/unified_consent/feature.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view.h"
+#import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_accessory_view_controller.h"
+#import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_password_cell.h"
+#import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_password_mediator.h"
+#import "ios/chrome/browser/ui/autofill/manual_fill/password_view_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_ui_constants.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
@@ -32,6 +36,7 @@
 #import "ios/chrome/browser/ui/settings/google_services/accounts_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/google_services/advanced_signin_settings_coordinator.h"
 #import "ios/chrome/browser/ui/settings/import_data_table_view_controller.h"
+#import "ios/chrome/browser/ui/settings/password/passwords_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/privacy_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_table_view_controller.h"
 #import "ios/chrome/browser/ui/static_content/static_html_view_controller.h"
@@ -221,6 +226,13 @@ UIView* SubviewWithAccessibilityIdentifier(NSString* accessibility_id,
 + (id<GREYMatcher>)cancelButton {
   return
       [ChromeMatchersAppInterface buttonWithAccessibilityLabelID:(IDS_CANCEL)];
+}
+
++ (id<GREYMatcher>)navigationBarCancelButton {
+  return grey_allOf(
+      grey_ancestor(grey_kindOfClass([UINavigationBar class])),
+      [self cancelButton],
+      grey_not(grey_accessibilityTrait(UIAccessibilityTraitNotEnabled)), nil);
 }
 
 + (id<GREYMatcher>)closeButton {
@@ -719,6 +731,62 @@ UIView* SubviewWithAccessibilityIdentifier(NSString* accessibility_id,
       grey_ancestor(grey_accessibilityID(IdentifierForCellAtIndex(index))),
       grey_accessibilityID(kGridCellCloseButtonIdentifier),
       grey_sufficientlyVisible(), nil);
+}
+
++ (id<GREYMatcher>)settingsPasswordMatcher {
+  return grey_accessibilityID(kPasswordsTableViewId);
+}
+
++ (id<GREYMatcher>)settingsPasswordSearchMatcher {
+  return grey_accessibilityID(kPasswordsSearchBarId);
+}
+
+#pragma mark - Manual Fallback
+
++ (id<GREYMatcher>)manualFallbackPasswordIconMatcher {
+  return grey_accessibilityID(
+      manual_fill::AccessoryPasswordAccessibilityIdentifier);
+}
+
++ (id<GREYMatcher>)manualFallbackKeyboardIconMatcher {
+  return grey_accessibilityID(
+      manual_fill::AccessoryKeyboardAccessibilityIdentifier);
+}
+
++ (id<GREYMatcher>)manualFallbackPasswordTableViewMatcher {
+  return grey_accessibilityID(
+      manual_fill::kPasswordTableViewAccessibilityIdentifier);
+}
+
++ (id<GREYMatcher>)manualFallbackPasswordSearchBarMatcher {
+  return grey_accessibilityID(
+      manual_fill::kPasswordSearchBarAccessibilityIdentifier);
+}
+
++ (id<GREYMatcher>)manualFallbackManagePasswordsMatcher {
+  return grey_accessibilityID(
+      manual_fill::ManagePasswordsAccessibilityIdentifier);
+}
+
++ (id<GREYMatcher>)manualFallbackOtherPasswordsMatcher {
+  return grey_accessibilityID(
+      manual_fill::OtherPasswordsAccessibilityIdentifier);
+}
+
++ (id<GREYMatcher>)manualFallbackOtherPasswordsDismissMatcher {
+  return grey_accessibilityID(
+      manual_fill::kPasswordDoneButtonAccessibilityIdentifier);
+}
+
++ (id<GREYMatcher>)manualFallbackPasswordButtonMatcher {
+  return grey_buttonTitle(kMaskedPasswordTitle);
+}
+
++ (id<GREYMatcher>)manualFallbackPasswordTableViewWindowMatcher {
+  id<GREYMatcher> classMatcher = grey_kindOfClass([UIWindow class]);
+  id<GREYMatcher> parentMatcher =
+      grey_descendant([self manualFallbackPasswordTableViewMatcher]);
+  return grey_allOf(classMatcher, parentMatcher, nil);
 }
 
 @end
