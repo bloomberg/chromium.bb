@@ -14,8 +14,6 @@ class WebContents;
 
 class GURL;
 
-namespace safety_tips {
-
 // Represents the different user interactions with a Safety Tip dialog.
 //
 // These values are persisted to logs. Entries should not be renumbered and
@@ -50,7 +48,5 @@ void ShowSafetyTipDialog(
     const GURL& virtual_url,
     const GURL& suggested_url,
     base::OnceCallback<void(SafetyTipInteraction)> close_callback);
-
-}  // namespace safety_tips
 
 #endif  // CHROME_BROWSER_REPUTATION_SAFETY_TIP_UI_H_

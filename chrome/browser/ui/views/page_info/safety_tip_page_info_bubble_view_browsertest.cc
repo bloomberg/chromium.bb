@@ -648,7 +648,7 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
     CloseWarningLeaveSite(browser());
     histogram_tester.ExpectUniqueSample(
         kHistogramPrefix + "SafetyTip_Lookalike",
-        safety_tips::SafetyTipInteraction::kLeaveSite, 1);
+        SafetyTipInteraction::kLeaveSite, 1);
   }
 
   {
@@ -663,10 +663,10 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
     CloseWarningIgnore(views::Widget::ClosedReason::kCloseButtonClicked);
     histogram_tester.ExpectBucketCount(
         kHistogramPrefix + "SafetyTip_BadReputation",
-        safety_tips::SafetyTipInteraction::kDismiss, 1);
+        SafetyTipInteraction::kDismiss, 1);
     histogram_tester.ExpectBucketCount(
         kHistogramPrefix + "SafetyTip_BadReputation",
-        safety_tips::SafetyTipInteraction::kDismissWithClose, 1);
+        SafetyTipInteraction::kDismissWithClose, 1);
   }
 
   // Test that the specific dismissal type is recorded correctly.
@@ -678,10 +678,10 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
     CloseWarningIgnore(views::Widget::ClosedReason::kEscKeyPressed);
     histogram_tester.ExpectBucketCount(
         kHistogramPrefix + "SafetyTip_BadReputation",
-        safety_tips::SafetyTipInteraction::kDismiss, 1);
+        SafetyTipInteraction::kDismiss, 1);
     histogram_tester.ExpectBucketCount(
         kHistogramPrefix + "SafetyTip_BadReputation",
-        safety_tips::SafetyTipInteraction::kDismissWithEsc, 1);
+        SafetyTipInteraction::kDismissWithEsc, 1);
   }
 
   {
@@ -692,10 +692,10 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
     CloseWarningIgnore(views::Widget::ClosedReason::kCancelButtonClicked);
     histogram_tester.ExpectBucketCount(
         kHistogramPrefix + "SafetyTip_BadReputation",
-        safety_tips::SafetyTipInteraction::kDismiss, 1);
+        SafetyTipInteraction::kDismiss, 1);
     histogram_tester.ExpectBucketCount(
         kHistogramPrefix + "SafetyTip_BadReputation",
-        safety_tips::SafetyTipInteraction::kDismissWithIgnore, 1);
+        SafetyTipInteraction::kDismissWithIgnore, 1);
   }
 }
 

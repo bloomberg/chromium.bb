@@ -30,17 +30,14 @@ class SafetyTipsConfigSingleton {
 
 }  // namespace
 
-namespace safety_tips {
-
 // static
-void SetRemoteConfigProto(
+void SetSafetyTipsRemoteConfigProto(
     std::unique_ptr<chrome_browser_safety_tips::SafetyTipsConfig> proto) {
   SafetyTipsConfigSingleton::GetInstance().SetProto(std::move(proto));
 }
 
 // static
-const chrome_browser_safety_tips::SafetyTipsConfig* GetRemoteConfigProto() {
+const chrome_browser_safety_tips::SafetyTipsConfig*
+GetSafetyTipsRemoteConfigProto() {
   return SafetyTipsConfigSingleton::GetInstance().GetProto();
 }
-
-}  // namespace safety_tips

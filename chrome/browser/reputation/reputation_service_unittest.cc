@@ -14,8 +14,6 @@
 #include "components/security_state/core/security_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using safety_tips::GetUrlBlockType;
-
 class ReputationServiceTest : public ChromeRenderViewHostTestHarness {
  protected:
   ReputationServiceTest() {}
@@ -94,6 +92,6 @@ TEST_F(ReputationServiceTest, BlocklistTest) {
       };
 
   for (auto test : kTests) {
-    EXPECT_EQ(GetUrlBlockType(GURL(test.first)), test.second);
+    EXPECT_EQ(GetSafetyTipUrlBlockType(GURL(test.first)), test.second);
   }
 }

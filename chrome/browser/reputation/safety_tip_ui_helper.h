@@ -14,10 +14,8 @@ namespace content {
 class WebContents;
 }
 
-namespace safety_tips {
-
 // URL that the "leave site" button aborts to by default.
-extern const char kSafeUrl[];
+extern const char kSafetyTipLeaveSiteUrl[];
 
 // Records a histogram for a user's interaction with a Safety Tip in the given
 // |web_contents|.
@@ -26,11 +24,12 @@ void RecordSafetyTipInteractionHistogram(content::WebContents* web_contents,
 
 // Invokes action when 'leave site' button is clicked, and records a histogram.
 // Navigates to a safe URL, replacing the current page in the process.
-void LeaveSite(content::WebContents* web_contents, const GURL& safe_url);
+void LeaveSiteFromSafetyTip(content::WebContents* web_contents,
+                            const GURL& safe_url);
 
 // Invoke action when 'Learn more' button is clicked, and records a histogram.
 // Navigates to the help center URL.
-void OpenHelpCenter(content::WebContents* web_contents);
+void OpenHelpCenterFromSafetyTip(content::WebContents* web_contents);
 
 // Get the titles, descriptions, and button strings or IDs needed to describe
 // the applicable warning type.  Handles both Android and desktop warnings.
@@ -43,7 +42,5 @@ base::string16 GetSafetyTipDescription(
     const GURL& url,
     const GURL& suggested_url);
 int GetSafetyTipLeaveButtonId(security_state::SafetyTipStatus warning_type);
-
-}  // namespace safety_tips
 
 #endif  // CHROME_BROWSER_REPUTATION_SAFETY_TIP_UI_HELPER_H_

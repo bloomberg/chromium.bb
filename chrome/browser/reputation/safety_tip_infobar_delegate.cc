@@ -16,11 +16,6 @@
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
-using content::WebContents;
-using safety_tips::SafetyTipInfoBarDelegate;
-
-namespace safety_tips {
-
 // From safety_tip_ui.h
 void ShowSafetyTipDialog(
     content::WebContents* web_contents,
@@ -37,13 +32,11 @@ void ShowSafetyTipDialog(
       SafetyTipInfoBar::CreateInfoBar(std::move(delegate)));
 }
 
-}  // namespace safety_tips
-
 SafetyTipInfoBarDelegate::SafetyTipInfoBarDelegate(
     security_state::SafetyTipStatus safety_tip_status,
     const GURL& url,
     const GURL& suggested_url,
-    WebContents* web_contents,
+    content::WebContents* web_contents,
     base::OnceCallback<void(SafetyTipInteraction)> close_callback)
     : safety_tip_status_(safety_tip_status),
       url_(url),
@@ -82,8 +75,8 @@ bool SafetyTipInfoBarDelegate::Accept() {
   action_taken_ = SafetyTipInteraction::kLeaveSite;
   auto url = safety_tip_status_ == security_state::SafetyTipStatus::kLookalike
                  ? suggested_url_
-                 : GURL(safety_tips::kSafeUrl);
-  LeaveSite(web_contents_, url);
+                 : GURL(kSafetyTipLeaveSiteUrl);
+  LeaveSiteFromSafetyTip(web_contents_, url);
   return true;
 }
 
@@ -95,7 +88,7 @@ bool SafetyTipInfoBarDelegate::Cancel() {
     if (action_taken_ != SafetyTipInteraction::kDismissWithClose) {
       action_taken_ = SafetyTipInteraction::kDismissWithIgnore;
     }
-    safety_tips::ReputationService::Get(tab->GetProfile())
+    ReputationService::Get(tab->GetProfile())
         ->SetUserIgnore(web_contents_, url_, action_taken_);
   }
 

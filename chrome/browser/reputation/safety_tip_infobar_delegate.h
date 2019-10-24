@@ -11,8 +11,6 @@
 #include "content/public/browser/web_contents.h"
 #include "url/gurl.h"
 
-namespace safety_tips {
-
 class SafetyTipInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   SafetyTipInfoBarDelegate(
@@ -53,7 +51,5 @@ class SafetyTipInfoBarDelegate : public ConfirmInfoBarDelegate {
   base::OnceCallback<void(SafetyTipInteraction)> close_callback_;
   content::WebContents* web_contents_;
 };
-
-}  // namespace safety_tips
 
 #endif  // CHROME_BROWSER_REPUTATION_SAFETY_TIP_INFOBAR_DELEGATE_H_

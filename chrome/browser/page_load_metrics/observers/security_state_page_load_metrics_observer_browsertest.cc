@@ -258,8 +258,8 @@ IN_PROC_BROWSER_TEST_F(SecurityStatePageLoadMetricsBrowserTest,
     content::WebContents* contents =
         browser()->tab_strip_model()->GetActiveWebContents();
 
-    safety_tips::ReputationWebContentsObserver* rep_observer =
-        safety_tips::ReputationWebContentsObserver::FromWebContents(contents);
+    ReputationWebContentsObserver* rep_observer =
+        ReputationWebContentsObserver::FromWebContents(contents);
     ASSERT_TRUE(rep_observer);
 
     // Navigate to |url| and wait for the reputation check to complete before
@@ -308,8 +308,8 @@ IN_PROC_BROWSER_TEST_F(SecurityStatePageLoadMetricsBrowserTest,
 
     content::WebContents* contents =
         browser()->tab_strip_model()->GetActiveWebContents();
-    safety_tips::ReputationWebContentsObserver* rep_observer =
-        safety_tips::ReputationWebContentsObserver::FromWebContents(contents);
+    ReputationWebContentsObserver* rep_observer =
+        ReputationWebContentsObserver::FromWebContents(contents);
     ASSERT_TRUE(rep_observer);
 
     // Navigate to |url| and wait for the reputation check to complete before
@@ -483,8 +483,8 @@ IN_PROC_BROWSER_TEST_F(SecurityStatePageLoadMetricsBrowserTest,
     }
     content::WebContents* contents =
         browser()->tab_strip_model()->GetActiveWebContents();
-    safety_tips::ReputationWebContentsObserver* rep_observer =
-        safety_tips::ReputationWebContentsObserver::FromWebContents(contents);
+    ReputationWebContentsObserver* rep_observer =
+        ReputationWebContentsObserver::FromWebContents(contents);
     ASSERT_TRUE(rep_observer);
 
     // Navigate to |url| and wait for the reputation check to complete before

@@ -20,8 +20,6 @@
 
 class Profile;
 
-namespace safety_tips {
-
 // Observes navigations and triggers a warning if a visited site is determined
 // to be low-reputation as determined by heuristics or inclusion on
 // pre-calculated lists.
@@ -79,7 +77,5 @@ class ReputationWebContentsObserver
   base::WeakPtrFactory<ReputationWebContentsObserver> weak_factory_{this};
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 };
-
-}  // namespace safety_tips
 
 #endif  // CHROME_BROWSER_REPUTATION_REPUTATION_WEB_CONTENTS_OBSERVER_H_

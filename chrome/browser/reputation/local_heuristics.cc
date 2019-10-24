@@ -25,8 +25,6 @@ const base::FeatureParam<bool> kEnableLookalikeEditDistanceSiteEngagement{
 
 }  // namespace
 
-namespace safety_tips {
-
 bool ShouldTriggerSafetyTipFromLookalike(
     const GURL& url,
     const DomainInfo& navigated_domain,
@@ -103,5 +101,3 @@ bool ShouldTriggerSafetyTipFromKeywordInURL(
 
   return false;
 }
-
-}  // namespace safety_tips

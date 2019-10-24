@@ -12,11 +12,6 @@
 #include "chrome/browser/lookalikes/lookalike_url_service.h"
 #include "url/gurl.h"
 
-// These functions exist as utility functions, and are currently used in
-// "safety_tip_heuristics". These functions SHOULD NOT be called directly. See
-// reptuation_service.h for module use.
-namespace safety_tips {
-
 // Checks to see whether a given URL qualifies as a lookalike domain, and thus
 // should trigger a safety tip. This algorithm factors in the sites that the
 // user has already engaged with. This heuristic stores a "safe url" that the
@@ -33,7 +28,5 @@ bool ShouldTriggerSafetyTipFromKeywordInURL(
     const GURL& url,
     const char* const sensitive_keywords[],
     size_t num_keywords);
-
-}  // namespace safety_tips
 
 #endif  // CHROME_BROWSER_REPUTATION_LOCAL_HEURISTICS_H_

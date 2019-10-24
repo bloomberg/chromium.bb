@@ -14,7 +14,7 @@ namespace {
 
 // Retrieve existing config proto if set, or create a new one otherwise.
 std::unique_ptr<chrome_browser_safety_tips::SafetyTipsConfig> GetConfig() {
-  auto* old = safety_tips::GetRemoteConfigProto();
+  auto* old = GetSafetyTipsRemoteConfigProto();
   if (old) {
     return std::make_unique<chrome_browser_safety_tips::SafetyTipsConfig>(*old);
   }
@@ -28,7 +28,7 @@ std::unique_ptr<chrome_browser_safety_tips::SafetyTipsConfig> GetConfig() {
 }  // namespace
 
 void InitializeSafetyTipConfig() {
-  safety_tips::SetRemoteConfigProto(GetConfig());
+  SetSafetyTipsRemoteConfigProto(GetConfig());
 }
 
 void SetSafetyTipPatternsWithFlagType(
@@ -43,7 +43,7 @@ void SetSafetyTipPatternsWithFlagType(
     page->set_type(type);
   }
 
-  safety_tips::SetRemoteConfigProto(std::move(config_proto));
+  SetSafetyTipsRemoteConfigProto(std::move(config_proto));
 }
 
 void SetSafetyTipBadRepPatterns(std::vector<std::string> patterns) {
@@ -59,5 +59,5 @@ void SetSafetyTipAllowlistPatterns(std::vector<std::string> patterns) {
         config_proto->add_allowed_pattern();
     page->set_pattern(pattern);
   }
-  safety_tips::SetRemoteConfigProto(std::move(config_proto));
+  SetSafetyTipsRemoteConfigProto(std::move(config_proto));
 }

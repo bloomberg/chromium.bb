@@ -29,7 +29,6 @@ namespace {
 using chrome_browser_safety_tips::FlaggedPage;
 using chrome_browser_safety_tips::UrlPattern;
 using safe_browsing::V4ProtocolManagerUtil;
-using safety_tips::ReputationService;
 
 // This factory helps construct and find the singleton ReputationService linked
 // to a Profile.
@@ -57,7 +56,7 @@ class ReputationServiceFactory : public BrowserContextKeyedServiceFactory {
   // BrowserContextKeyedServiceFactory:
   KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const override {
-    return new safety_tips::ReputationService(static_cast<Profile*>(profile));
+    return new ReputationService(static_cast<Profile*>(profile));
   }
 
   content::BrowserContext* GetBrowserContextToUse(
@@ -122,7 +121,7 @@ bool ShouldSuppressWarning(const GURL& url) {
   std::vector<std::string> patterns;
   UrlToPatterns(url, &patterns);
 
-  auto* proto = safety_tips::GetRemoteConfigProto();
+  auto* proto = GetSafetyTipsRemoteConfigProto();
   if (!proto) {
     // This happens when the component hasn't downloaded yet. This should only
     // happen for a short time after initial upgrade to M79.
@@ -152,8 +151,6 @@ bool ShouldSuppressWarning(const GURL& url) {
 }
 
 }  // namespace
-
-namespace safety_tips {
 
 ReputationService::ReputationService(Profile* profile) : profile_(profile) {}
 
@@ -234,7 +231,7 @@ void ReputationService::GetReputationStatusWithEngagedSites(
   }
 
   // 2. Server-side blocklist check.
-  security_state::SafetyTipStatus status = GetUrlBlockType(url);
+  security_state::SafetyTipStatus status = GetSafetyTipUrlBlockType(url);
   if (status != security_state::SafetyTipStatus::kNone) {
     std::move(callback).Run(status, IsIgnored(url), url, GURL());
     return;
@@ -271,11 +268,11 @@ void ReputationService::GetReputationStatusWithEngagedSites(
                           IsIgnored(url), url, GURL());
 }
 
-security_state::SafetyTipStatus GetUrlBlockType(const GURL& url) {
+security_state::SafetyTipStatus GetSafetyTipUrlBlockType(const GURL& url) {
   std::vector<std::string> patterns;
   UrlToPatterns(url, &patterns);
 
-  auto* proto = safety_tips::GetRemoteConfigProto();
+  auto* proto = GetSafetyTipsRemoteConfigProto();
   if (!proto) {
     return security_state::SafetyTipStatus::kNone;
   }
@@ -305,5 +302,3 @@ security_state::SafetyTipStatus GetUrlBlockType(const GURL& url) {
 
   return security_state::SafetyTipStatus::kNone;
 }
-
-}  // namespace safety_tips

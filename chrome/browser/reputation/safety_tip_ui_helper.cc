@@ -14,10 +14,7 @@
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 
-namespace safety_tips {
-
-// URL that the "leave site" button aborts to.
-const char kSafeUrl[] = "chrome://newtab";
+const char kSafetyTipLeaveSiteUrl[] = "chrome://newtab";
 
 void RecordSafetyTipInteractionHistogram(content::WebContents* web_contents,
                                          SafetyTipInteraction interaction) {
@@ -31,7 +28,8 @@ void RecordSafetyTipInteractionHistogram(content::WebContents* web_contents,
       interaction);
 }
 
-void LeaveSite(content::WebContents* web_contents, const GURL& safe_url) {
+void LeaveSiteFromSafetyTip(content::WebContents* web_contents,
+                            const GURL& safe_url) {
   RecordSafetyTipInteractionHistogram(web_contents,
                                       SafetyTipInteraction::kLeaveSite);
   content::OpenURLParams params(
@@ -41,7 +39,7 @@ void LeaveSite(content::WebContents* web_contents, const GURL& safe_url) {
   web_contents->OpenURL(params);
 }
 
-void OpenHelpCenter(content::WebContents* web_contents) {
+void OpenHelpCenterFromSafetyTip(content::WebContents* web_contents) {
   RecordSafetyTipInteractionHistogram(web_contents,
                                       SafetyTipInteraction::kLearnMore);
   web_contents->OpenURL(content::OpenURLParams(
@@ -126,5 +124,3 @@ int GetSafetyTipLeaveButtonId(security_state::SafetyTipStatus warning_type) {
   NOTREACHED();
   return 0;
 }
-
-}  // namespace safety_tips

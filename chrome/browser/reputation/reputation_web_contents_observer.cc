@@ -18,34 +18,34 @@ namespace {
 
 void OnSafetyTipClosed(security_state::SafetyTipStatus safety_tip_status,
                        base::Time start_time,
-                       safety_tips::SafetyTipInteraction action) {
+                       SafetyTipInteraction action) {
   std::string action_suffix;
   bool warning_dismissed = false;
   switch (action) {
-    case safety_tips::SafetyTipInteraction::kNoAction:
+    case SafetyTipInteraction::kNoAction:
       action_suffix = "NoAction";
       break;
-    case safety_tips::SafetyTipInteraction::kLeaveSite:
+    case SafetyTipInteraction::kLeaveSite:
       action_suffix = "LeaveSite";
       break;
-    case safety_tips::SafetyTipInteraction::kDismiss:
+    case SafetyTipInteraction::kDismiss:
       NOTREACHED();
       // Do nothing because the dismissal action passed to this method should
       // be the more specific version (esc, close, or ignore).
       break;
-    case safety_tips::SafetyTipInteraction::kDismissWithEsc:
+    case SafetyTipInteraction::kDismissWithEsc:
       action_suffix = "DismissWithEsc";
       warning_dismissed = true;
       break;
-    case safety_tips::SafetyTipInteraction::kDismissWithClose:
+    case SafetyTipInteraction::kDismissWithClose:
       action_suffix = "DismissWithClose";
       warning_dismissed = true;
       break;
-    case safety_tips::SafetyTipInteraction::kDismissWithIgnore:
+    case SafetyTipInteraction::kDismissWithIgnore:
       action_suffix = "DismissWithIgnore";
       warning_dismissed = true;
       break;
-    case safety_tips::SafetyTipInteraction::kLearnMore:
+    case SafetyTipInteraction::kLearnMore:
       action_suffix = "LearnMore";
       break;
   }
@@ -66,8 +66,6 @@ void OnSafetyTipClosed(security_state::SafetyTipStatus safety_tip_status,
 }
 
 }  // namespace
-
-namespace safety_tips {
 
 ReputationWebContentsObserver::~ReputationWebContentsObserver() {}
 
@@ -187,5 +185,3 @@ void ReputationWebContentsObserver::MaybeCallReputationCheckCallback() {
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(ReputationWebContentsObserver)
-
-}  // namespace safety_tips

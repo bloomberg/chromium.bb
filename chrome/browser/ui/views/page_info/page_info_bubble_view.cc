@@ -996,7 +996,7 @@ void PageInfoBubbleView::StyledLabelLinkClicked(views::StyledLabel* label,
   switch (label->GetID()) {
     case PageInfoBubbleView::VIEW_ID_PAGE_INFO_LABEL_SECURITY_DETAILS:
       if (GetSecurityDescriptionType() == SecurityDescriptionType::SAFETY_TIP) {
-        safety_tips::OpenHelpCenter(web_contents());
+        OpenHelpCenterFromSafetyTip(web_contents());
       } else {
         web_contents()->OpenURL(content::OpenURLParams(
             GURL(chrome::kPageInfoHelpCenterURL), content::Referrer(),

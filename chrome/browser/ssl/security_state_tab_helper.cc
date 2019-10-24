@@ -158,9 +158,8 @@ SecurityStateTabHelper::GetVisibleSecurityState() {
   // information is still being initialized, thus no need to check for that.
   state->malicious_content_status = GetMaliciousContentStatus();
 
-  safety_tips::ReputationWebContentsObserver* reputation_web_contents_observer =
-      safety_tips::ReputationWebContentsObserver::FromWebContents(
-          web_contents());
+  ReputationWebContentsObserver* reputation_web_contents_observer =
+      ReputationWebContentsObserver::FromWebContents(web_contents());
   state->safety_tip_info =
       reputation_web_contents_observer
           ? reputation_web_contents_observer

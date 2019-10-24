@@ -15,9 +15,6 @@
 #include "ui/gfx/image/image.h"
 
 using base::android::ScopedJavaLocalRef;
-using safety_tips::SafetyTipInfoBarDelegate;
-
-namespace safety_tips {
 
 // static
 std::unique_ptr<infobars::InfoBar> SafetyTipInfoBar::CreateInfoBar(
@@ -61,5 +58,3 @@ ScopedJavaLocalRef<jobject> SafetyTipInfoBar::CreateRenderInfoBar(JNIEnv* env) {
 SafetyTipInfoBarDelegate* SafetyTipInfoBar::GetDelegate() {
   return static_cast<SafetyTipInfoBarDelegate*>(delegate());
 }
-
-}  // namespace safety_tips

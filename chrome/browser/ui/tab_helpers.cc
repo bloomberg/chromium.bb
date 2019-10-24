@@ -255,8 +255,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
       web_contents);
   safe_browsing::TriggerCreator::MaybeCreateTriggersForWebContents(
       profile, web_contents);
-  safety_tips::ReputationWebContentsObserver::CreateForWebContents(
-      web_contents);
+  ReputationWebContentsObserver::CreateForWebContents(web_contents);
   SearchEngineTabHelper::CreateForWebContents(web_contents);
   SecurityStateTabHelper::CreateForWebContents(web_contents);
   if (SiteEngagementService::IsEnabled())

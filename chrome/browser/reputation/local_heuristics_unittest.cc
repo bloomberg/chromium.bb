@@ -104,7 +104,7 @@ TEST(SafetyTipHeuristicsTest, SensitiveKeywordsTest) {
 
   for (const auto& test_case : test_cases) {
     ASSERT_EQ(test_case.should_trigger,
-              safety_tips::ShouldTriggerSafetyTipFromKeywordInURL(
+              ShouldTriggerSafetyTipFromKeywordInURL(
                   test_case.url, keywords.data(), keywords.size()))
         << "Expected that \"" << test_case.url << "\" should"
         << (test_case.should_trigger ? "" : "n't") << " trigger but it did"
