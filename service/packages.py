@@ -454,13 +454,19 @@ def determine_android_package(board):
   Args:
     board: The board name this is specific to.
   """
-  packages = portage_util.GetPackageDependencies(board, 'virtual/target-os')
-  # We assume there is only one Android package in the depgraph.
-  for package in packages:
-    if package.startswith('chromeos-base/android-container-') or \
-       package.startswith('chromeos-base/android-vm-'):
-      return package
-  return None
+  try:
+    packages = portage_util.GetPackageDependencies(board, 'virtual/target-os')
+    # We assume there is only one Android package in the depgraph.
+    for package in packages:
+      if package.startswith('chromeos-base/android-container-') or \
+         package.startswith('chromeos-base/android-vm-'):
+        return package
+    return None
+  except cros_build_lib.RunCommandError as e:
+    # Return None because a command (likely portage) failed when trying to
+    # determine the package.
+    logging.warning('Caught exception in determine_android_package: %s', e)
+    return None
 
 
 def determine_android_version(boards=None):

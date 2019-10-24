@@ -11,6 +11,7 @@ import re
 
 from chromite.cbuildbot import manifest_version
 from chromite.lib import build_target_util
+from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import portage_util
@@ -162,6 +163,25 @@ class AndroidVersionsTest(cros_test_lib.MockTestCase):
                      return_value=package_result)
     target = packages.determine_android_target(self.board)
     self.assertEqual(target, None)
+
+  def test_determine_android_version_handle_exception(self):
+    """Tests handling RunCommandError inside determine_android_version."""
+    # Mock what happens when portage returns that bubbles up (via RunCommand)
+    # inside portage_util.GetPackageDependencies.
+    self.PatchObject(portage_util, 'GetPackageDependencies',
+                     side_effect=cros_build_lib.RunCommandError('error'))
+    target = packages.determine_android_version(self.board)
+    self.assertEqual(target, None)
+
+  def test_determine_android_package_handle_exception(self):
+    """Tests handling RunCommandError inside determine_android_package."""
+    # Mock what happens when portage returns that bubbles up (via RunCommand)
+    # inside portage_util.GetPackageDependencies.
+    self.PatchObject(portage_util, 'GetPackageDependencies',
+                     side_effect=cros_build_lib.RunCommandError('error'))
+    target = packages.determine_android_package(self.board)
+    self.assertEqual(target, None)
+
 
 class ChromeVersionsTest(cros_test_lib.MockTestCase):
   """Tests getting chrome version."""
