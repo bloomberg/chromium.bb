@@ -15,6 +15,8 @@
 #include "chromeos/services/cellular_setup/public/cpp/fake_carrier_portal_handler.h"
 #include "chromeos/services/cellular_setup/public/cpp/fake_cellular_setup.h"
 #include "chromeos/services/cellular_setup/public/mojom/cellular_setup.mojom.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -24,7 +26,8 @@ namespace cellular_setup {
 namespace {
 
 using CarrierPortalHandlerPair =
-    std::pair<mojom::CarrierPortalHandlerPtr, FakeCarrierPortalHandler*>;
+    std::pair<mojo::Remote<mojom::CarrierPortalHandler>,
+              FakeCarrierPortalHandler*>;
 
 const char kTestPaymentUrl[] = "testPaymentUrl";
 const char kTestPaymentPostData[] = "testPaymentPostData";
@@ -48,7 +51,7 @@ class CellularSetupServiceTest : public testing::Test {
   }
 
   // Calls StartActivation() and returns the fake CarrierPortalHandler and its
-  // associated InterfacePtr.
+  // associated mojo::Remote<>.
   CarrierPortalHandlerPair CallStartActivation(
       FakeActivationDelegate* fake_activation_delegate) {
     std::vector<std::unique_ptr<FakeCellularSetup::StartActivationInvocation>>&
@@ -73,9 +76,8 @@ class CellularSetupServiceTest : public testing::Test {
     run_loop.RunUntilIdle();
 
     EXPECT_TRUE(last_carrier_portal_observer_);
-    CarrierPortalHandlerPair observer_pair =
-        std::make_pair(std::move(*last_carrier_portal_observer_),
-                       fake_carrier_portal_observer);
+    CarrierPortalHandlerPair observer_pair = std::make_pair(
+        std::move(last_carrier_portal_observer_), fake_carrier_portal_observer);
     last_carrier_portal_observer_.reset();
 
     return observer_pair;
@@ -141,11 +143,11 @@ class CellularSetupServiceTest : public testing::Test {
   }
 
  private:
-  void OnStartActivationResult(
-      base::OnceClosure quit_closure,
-      mojom::CarrierPortalHandlerPtr carrier_portal_observer) {
+  void OnStartActivationResult(base::OnceClosure quit_closure,
+                               mojo::PendingRemote<mojom::CarrierPortalHandler>
+                                   carrier_portal_observer) {
     EXPECT_FALSE(last_carrier_portal_observer_);
-    last_carrier_portal_observer_ = std::move(carrier_portal_observer);
+    last_carrier_portal_observer_.Bind(std::move(carrier_portal_observer));
     std::move(quit_closure).Run();
   }
 
@@ -162,7 +164,7 @@ class CellularSetupServiceTest : public testing::Test {
 
   std::unique_ptr<FakeCellularSetup> service_;
 
-  base::Optional<mojom::CarrierPortalHandlerPtr> last_carrier_portal_observer_;
+  mojo::Remote<mojom::CarrierPortalHandler> last_carrier_portal_observer_;
 
   mojom::CellularSetupPtr cellular_setup_ptr_;
 

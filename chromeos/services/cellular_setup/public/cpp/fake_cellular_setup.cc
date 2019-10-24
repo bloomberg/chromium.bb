@@ -27,8 +27,7 @@ FakeCellularSetup::StartActivationInvocation::ExecuteCallback() {
   DCHECK(!fake_carrier_portal_observer_);
 
   fake_carrier_portal_observer_ = std::make_unique<FakeCarrierPortalHandler>();
-  std::move(callback_).Run(
-      fake_carrier_portal_observer_->GenerateInterfacePtr());
+  std::move(callback_).Run(fake_carrier_portal_observer_->GenerateRemote());
 
   return fake_carrier_portal_observer_.get();
 }

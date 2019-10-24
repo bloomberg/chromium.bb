@@ -36,7 +36,7 @@ void CellularSetupImpl::StartActivation(
           network_handler->network_connection_handler(),
           network_handler->network_activation_handler());
 
-  std::move(callback).Run(ota_activator->GenerateInterfacePtr());
+  std::move(callback).Run(ota_activator->GenerateRemote());
 
   // Store the OtaActivator instance in a map indexed by request ID; once the
   // attempt has finished, the map entry will be deleted in
