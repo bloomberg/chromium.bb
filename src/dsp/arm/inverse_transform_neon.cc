@@ -701,13 +701,14 @@ LIBGAV1_ALWAYS_INLINE void Dct16Stages(int16x8_t* s) {
 // Process dct16 rows or columns, depending on the transpose flag.
 template <ButterflyRotationFunc bufferfly_rotation, bool stage_is_rectangular>
 LIBGAV1_ALWAYS_INLINE void Dct16_NEON(void* dest, const void* source,
-                                      int32_t step, bool transpose) {
+                                      int32_t step, bool is_row,
+                                      int row_shift) {
   auto* const dst = static_cast<int16_t*>(dest);
   const auto* const src = static_cast<const int16_t*>(source);
   int16x8_t s[16], x[16];
 
   if (stage_is_rectangular) {
-    if (transpose) {
+    if (is_row) {
       int16x8_t input[4];
       LoadSrc<16, 4>(src, step, 0, input);
       Transpose8x4To4x8(input, x);
@@ -716,7 +717,7 @@ LIBGAV1_ALWAYS_INLINE void Dct16_NEON(void* dest, const void* source,
     } else {
       LoadSrc<8, 16>(src, step, 0, x);
     }
-  } else if (transpose) {
+  } else if (is_row) {
     for (int idx = 0; idx < 16; idx += 8) {
       int16x8_t input[8];
       LoadSrc<16, 8>(src, step, idx, input);
@@ -749,8 +750,15 @@ LIBGAV1_ALWAYS_INLINE void Dct16_NEON(void* dest, const void* source,
   Dct8Stages<bufferfly_rotation>(s);
   Dct16Stages<bufferfly_rotation>(s);
 
+  if (is_row) {
+    const int16x8_t v_row_shift = vdupq_n_s16(-row_shift);
+    for (int i = 0; i < 16; ++i) {
+      s[i] = vqrshlq_s16(s[i], v_row_shift);
+    }
+  }
+
   if (stage_is_rectangular) {
-    if (transpose) {
+    if (is_row) {
       int16x8_t output[4];
       Transpose4x8To8x4(s, output);
       StoreDst<16, 4>(dst, step, 0, output);
@@ -759,7 +767,7 @@ LIBGAV1_ALWAYS_INLINE void Dct16_NEON(void* dest, const void* source,
     } else {
       StoreDst<8, 16>(dst, step, 0, s);
     }
-  } else if (transpose) {
+  } else if (is_row) {
     for (int idx = 0; idx < 16; idx += 8) {
       int16x8_t output[8];
       Transpose8x8(&s[idx], output);
@@ -862,13 +870,13 @@ LIBGAV1_ALWAYS_INLINE void Dct32Stages(int16x8_t* s) {
 
 // Process dct32 rows or columns, depending on the transpose flag.
 LIBGAV1_ALWAYS_INLINE void Dct32_NEON(void* dest, const void* source,
-                                      const int32_t step,
-                                      const bool transpose) {
+                                      const int32_t step, const bool is_row,
+                                      int row_shift) {
   auto* const dst = static_cast<int16_t*>(dest);
   const auto* const src = static_cast<const int16_t*>(source);
   int16x8_t s[32], x[32];
 
-  if (transpose) {
+  if (is_row) {
     for (int idx = 0; idx < 32; idx += 8) {
       int16x8_t input[8];
       LoadSrc<16, 8>(src, step, idx, input);
@@ -921,10 +929,14 @@ LIBGAV1_ALWAYS_INLINE void Dct32_NEON(void* dest, const void* source,
   Dct16Stages<ButterflyRotation_8>(s);
   Dct32Stages<ButterflyRotation_8>(s);
 
-  if (transpose) {
+  if (is_row) {
+    const int16x8_t v_row_shift = vdupq_n_s16(-row_shift);
     for (int idx = 0; idx < 32; idx += 8) {
       int16x8_t output[8];
       Transpose8x8(&s[idx], output);
+      for (int i = 0; i < 8; ++i) {
+        output[i] = vqrshlq_s16(output[i], v_row_shift);
+      }
       StoreDst<16, 8>(dst, step, idx, output);
     }
   } else {
@@ -934,12 +946,13 @@ LIBGAV1_ALWAYS_INLINE void Dct32_NEON(void* dest, const void* source,
 
 // Allow the compiler to call this function instead of force inlining. Tests
 // show the performance is slightly faster.
-void Dct64_NEON(void* dest, const void* source, int32_t step, bool transpose) {
+void Dct64_NEON(void* dest, const void* source, int32_t step, bool is_row,
+                int row_shift) {
   auto* const dst = static_cast<int16_t*>(dest);
   const auto* const src = static_cast<const int16_t*>(source);
   int16x8_t s[64], x[32];
 
-  if (transpose) {
+  if (is_row) {
     // The last 32 values of every row are always zero if the |tx_width| is
     // 64.
     for (int idx = 0; idx < 32; idx += 8) {
@@ -1140,10 +1153,14 @@ void Dct64_NEON(void* dest, const void* source, int32_t step, bool transpose) {
   }
   //-- end dct 64 stages
 
-  if (transpose) {
+  if (is_row) {
+    const int16x8_t v_row_shift = vdupq_n_s16(-row_shift);
     for (int idx = 0; idx < 64; idx += 8) {
       int16x8_t output[8];
       Transpose8x8(&s[idx], output);
+      for (int i = 0; i < 8; ++i) {
+        output[i] = vqrshlq_s16(output[i], v_row_shift);
+      }
       StoreDst<16, 8>(dst, step, idx, output);
     }
   } else {
@@ -1522,13 +1539,14 @@ LIBGAV1_ALWAYS_INLINE bool Adst8DcOnlyColumn(void* dest, const void* source,
 
 template <ButterflyRotationFunc bufferfly_rotation, bool stage_is_rectangular>
 LIBGAV1_ALWAYS_INLINE void Adst16_NEON(void* dest, const void* source,
-                                       int32_t step, bool transpose) {
+                                       int32_t step, bool is_row,
+                                       int row_shift) {
   auto* const dst = static_cast<int16_t*>(dest);
   const auto* const src = static_cast<const int16_t*>(source);
   int16x8_t s[16], x[16];
 
   if (stage_is_rectangular) {
-    if (transpose) {
+    if (is_row) {
       int16x8_t input[4];
       LoadSrc<16, 4>(src, step, 0, input);
       Transpose8x4To4x8(input, x);
@@ -1538,7 +1556,7 @@ LIBGAV1_ALWAYS_INLINE void Adst16_NEON(void* dest, const void* source,
       LoadSrc<8, 16>(src, step, 0, x);
     }
   } else {
-    if (transpose) {
+    if (is_row) {
       for (int idx = 0; idx < 16; idx += 8) {
         int16x8_t input[8];
         LoadSrc<16, 8>(src, step, idx, input);
@@ -1644,20 +1662,31 @@ LIBGAV1_ALWAYS_INLINE void Adst16_NEON(void* dest, const void* source,
   x[15] = vqnegq_s16(s[1]);
 
   if (stage_is_rectangular) {
-    if (transpose) {
+    if (is_row) {
+      const int16x8_t v_row_shift = vdupq_n_s16(-row_shift);
       int16x8_t output[4];
       Transpose4x8To8x4(x, output);
+      for (int i = 0; i < 4; ++i) {
+        output[i] = vqrshlq_s16(output[i], v_row_shift);
+      }
       StoreDst<16, 4>(dst, step, 0, output);
       Transpose4x8To8x4(&x[8], output);
+      for (int i = 0; i < 4; ++i) {
+        output[i] = vqrshlq_s16(output[i], v_row_shift);
+      }
       StoreDst<16, 4>(dst, step, 8, output);
     } else {
       StoreDst<8, 16>(dst, step, 0, x);
     }
   } else {
-    if (transpose) {
+    if (is_row) {
+      const int16x8_t v_row_shift = vdupq_n_s16(-row_shift);
       for (int idx = 0; idx < 16; idx += 8) {
         int16x8_t output[8];
         Transpose8x8(&x[idx], output);
+        for (int i = 0; i < 8; ++i) {
+          output[i] = vqrshlq_s16(output[i], v_row_shift);
+        }
         StoreDst<16, 8>(dst, step, idx, output);
       }
     } else {
@@ -2617,18 +2646,16 @@ void Dct16TransformLoop_NEON(TransformType tx_type, TransformSize tx_size,
     if (num_rows <= 4) {
       // Process 4 1d dct16 rows in parallel.
       Dct16_NEON<ButterflyRotation_4, true>(&src[0], &src[0], 16,
-                                            /*transpose=*/true);
+                                            /*is_row=*/true, row_shift);
     } else {
       int i = 0;
       do {
         // Process 8 1d dct16 rows in parallel per iteration.
         Dct16_NEON<ButterflyRotation_8, false>(&src[i * 16], &src[i * 16], 16,
-                                               /*transpose=*/true);
+                                               /*is_row=*/true, row_shift);
         i += 8;
       } while (i < num_rows);
     }
-    // row_shift is always non zero here.
-    RowShift<16>(src, num_rows, row_shift);
 
     return;
   }
@@ -2642,13 +2669,14 @@ void Dct16TransformLoop_NEON(TransformType tx_type, TransformSize tx_size,
     if (tx_width == 4) {
       // Process 4 1d dct16 columns in parallel.
       Dct16_NEON<ButterflyRotation_4, true>(&src[0], &src[0], 4,
-                                            /*transpose=*/false);
+                                            /*is_row=*/false, /*row_shift=*/0);
     } else {
       int i = 0;
       do {
         // Process 8 1d dct16 columns in parallel per iteration.
         Dct16_NEON<ButterflyRotation_8, false>(&src[i], &src[i], tx_width,
-                                               /*transpose=*/false);
+                                               /*is_row=*/false,
+                                               /*row_shift=*/0);
         i += 8;
       } while (i < tx_width);
     }
@@ -2681,12 +2709,9 @@ void Dct32TransformLoop_NEON(TransformType tx_type, TransformSize tx_size,
     // Process 8 1d dct32 rows in parallel per iteration.
     int i = 0;
     do {
-      Dct32_NEON(&src[i * 32], &src[i * 32], 32, /*transpose=*/true);
+      Dct32_NEON(&src[i * 32], &src[i * 32], 32, /*is_row=*/true, row_shift);
       i += 8;
     } while (i < num_rows);
-
-    // row_shift is always non zero here.
-    RowShift<32>(src, num_rows, row_shift);
 
     return;
   }
@@ -2696,7 +2721,7 @@ void Dct32TransformLoop_NEON(TransformType tx_type, TransformSize tx_size,
     // Process 8 1d dct32 columns in parallel per iteration.
     int i = 0;
     do {
-      Dct32_NEON(&src[i], &src[i], tx_width, /*transpose=*/false);
+      Dct32_NEON(&src[i], &src[i], tx_width, /*is_row=*/false, /*row_shift=*/0);
       i += 8;
     } while (i < tx_width);
   }
@@ -2728,11 +2753,9 @@ void Dct64TransformLoop_NEON(TransformType tx_type, TransformSize tx_size,
     // Process 8 1d dct64 rows in parallel per iteration.
     int i = 0;
     do {
-      Dct64_NEON(&src[i * 64], &src[i * 64], 64, /*transpose=*/true);
+      Dct64_NEON(&src[i * 64], &src[i * 64], 64, /*is_row=*/true, row_shift);
       i += 8;
     } while (i < num_rows);
-    // row_shift is always non zero here.
-    RowShift<64>(src, num_rows, row_shift);
 
     return;
   }
@@ -2742,7 +2765,7 @@ void Dct64TransformLoop_NEON(TransformType tx_type, TransformSize tx_size,
     // Process 8 1d dct64 columns in parallel per iteration.
     int i = 0;
     do {
-      Dct64_NEON(&src[i], &src[i], tx_width, /*transpose=*/false);
+      Dct64_NEON(&src[i], &src[i], tx_width, /*is_row=*/false, /*row_shift=*/0);
       i += 8;
     } while (i < tx_width);
   }
@@ -2897,19 +2920,16 @@ void Adst16TransformLoop_NEON(TransformType tx_type, TransformSize tx_size,
     if (num_rows <= 4) {
       // Process 4 1d adst16 rows in parallel.
       Adst16_NEON<ButterflyRotation_4, true>(&src[0], &src[0], 16,
-                                             /*transpose=*/true);
+                                             /*is_row=*/true, row_shift);
     } else {
       int i = 0;
       do {
         // Process 8 1d adst16 rows in parallel per iteration.
         Adst16_NEON<ButterflyRotation_8, false>(&src[i * 16], &src[i * 16], 16,
-                                                /*transpose=*/true);
+                                                /*is_row=*/true, row_shift);
         i += 8;
       } while (i < num_rows);
     }
-    // row_shift is always non zero here.
-    RowShift<16>(src, num_rows, row_shift);
-
     return;
   }
 
@@ -2922,13 +2942,14 @@ void Adst16TransformLoop_NEON(TransformType tx_type, TransformSize tx_size,
     if (tx_width == 4) {
       // Process 4 1d adst16 columns in parallel.
       Adst16_NEON<ButterflyRotation_4, true>(&src[0], &src[0], 4,
-                                             /*transpose=*/false);
+                                             /*is_row=*/false, /*row_shift=*/0);
     } else {
       int i = 0;
       do {
         // Process 8 1d adst16 columns in parallel per iteration.
         Adst16_NEON<ButterflyRotation_8, false>(&src[i], &src[i], tx_width,
-                                                /*transpose=*/false);
+                                                /*is_row=*/false,
+                                                /*row_shift=*/0);
         i += 8;
       } while (i < tx_width);
     }
