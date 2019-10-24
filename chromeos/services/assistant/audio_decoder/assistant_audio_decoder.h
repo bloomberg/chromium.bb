@@ -10,8 +10,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/services/assistant/public/mojom/assistant_audio_decoder.mojom.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
-#include "mojo/public/cpp/bindings/remote.h"
 
 namespace media {
 class AudioFileReader;
@@ -25,8 +23,8 @@ namespace assistant {
 class AssistantAudioDecoder : public mojom::AssistantAudioDecoder {
  public:
   AssistantAudioDecoder(
-      mojo::PendingRemote<mojom::AssistantAudioDecoderClient> client,
-      mojo::PendingRemote<mojom::AssistantMediaDataSource> data_source);
+      mojom::AssistantAudioDecoderClientPtr client,
+      mojom::AssistantMediaDataSourcePtr data_source);
   ~AssistantAudioDecoder() override;
 
   // Called by |client_| on main thread.
@@ -49,7 +47,7 @@ class AssistantAudioDecoder : public mojom::AssistantAudioDecoder {
   void OnConnectionError();
   void RunCallbacksAsClosed();
 
-  mojo::Remote<mojom::AssistantAudioDecoderClient> client_;
+  mojom::AssistantAudioDecoderClientPtr client_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   OpenDecoderCallback open_callback_;

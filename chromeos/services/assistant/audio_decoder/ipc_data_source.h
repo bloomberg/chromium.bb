@@ -11,8 +11,6 @@
 #include "base/threading/thread_checker.h"
 #include "chromeos/services/assistant/public/mojom/assistant_audio_decoder.mojom.h"
 #include "media/base/data_source.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
-#include "mojo/public/cpp/bindings/remote.h"
 
 namespace chromeos {
 namespace assistant {
@@ -23,8 +21,7 @@ namespace assistant {
 class IPCDataSource : public media::DataSource {
  public:
   // May only be called on the utility thread.
-  explicit IPCDataSource(
-      mojo::PendingRemote<mojom::AssistantMediaDataSource> media_data_source);
+  explicit IPCDataSource(mojom::AssistantMediaDataSourcePtr media_data_source);
   ~IPCDataSource() override;
 
   // media::DataSource implementation. The methods may be called on any single
@@ -47,7 +44,7 @@ class IPCDataSource : public media::DataSource {
                 uint32_t requested_size,
                 const std::vector<uint8_t>& data);
 
-  mojo::Remote<mojom::AssistantMediaDataSource> media_data_source_;
+  mojom::AssistantMediaDataSourcePtr media_data_source_;
 
   scoped_refptr<base::SequencedTaskRunner> utility_task_runner_;
 
