@@ -379,7 +379,13 @@
 // Returns a matcher for the search bar in password settings.
 + (id<GREYMatcher>)settingsPasswordSearchMatcher;
 
+// Returns a matcher for the profiles settings collection view.
++ (id<GREYMatcher>)settingsProfileMatcher;
+
 #pragma mark - Manual Fallback
+
+// Returns a matcher for the scroll view in keyboard accessory bar.
++ (id<GREYMatcher>)manualFallbackFormSuggestionViewMatcher;
 
 // Returns a matcher for the keyboard icon in the keyboard accessory bar.
 + (id<GREYMatcher>)manualFallbackKeyboardIconMatcher;
@@ -408,6 +414,18 @@
 
 // Returns a matcher for the PasswordTableView window.
 + (id<GREYMatcher>)manualFallbackPasswordTableViewWindowMatcher;
+
+// Returns a matcher for the profiles icon in the keyboard accessory bar.
++ (id<GREYMatcher>)manualFallbackProfilesIconMatcher;
+
+// Returns a matcher for the profiles table view in manual fallback.
++ (id<GREYMatcher>)manualFallbackProfilesTableViewMatcher;
+// Returns a matcher for the button to open profile settings in manual
+// fallback.
++ (id<GREYMatcher>)manualFallbackManageProfilesMatcher;
+
+// Returns a matcher for the ProfileTableView window.
++ (id<GREYMatcher>)manualFallbackProfileTableViewWindowMatcher;
 
 @end
 

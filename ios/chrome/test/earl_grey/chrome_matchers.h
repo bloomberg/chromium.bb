@@ -374,7 +374,13 @@ id<GREYMatcher> SettingsPasswordMatcher();
 // Returns a matcher for the search bar in password settings.
 id<GREYMatcher> SettingsPasswordSearchMatcher();
 
+// Returns a matcher for the profiles settings collection view.
+id<GREYMatcher> SettingsProfileMatcher();
+
 #pragma mark - Manual Fallback
+
+// Returns a matcher for the scroll view in keyboard accessory bar.
+id<GREYMatcher> ManualFallbackFormSuggestionViewMatcher();
 
 // Returns a matcher for the keyboard icon in the keyboard accessory bar.
 id<GREYMatcher> ManualFallbackKeyboardIconMatcher();
@@ -403,6 +409,21 @@ id<GREYMatcher> ManualFallbackPasswordButtonMatcher();
 
 // Returns a matcher for the PasswordTableView window.
 id<GREYMatcher> ManualFallbackPasswordTableViewWindowMatcher();
+
+// Returns a matcher for the profiles icon in the keyboard accessory bar.
+id<GREYMatcher> ManualFallbackProfilesIconMatcher();
+
+// Returns a matcher for the profiles table view in manual fallback.
+id<GREYMatcher> ManualFallbackProfilesTableViewMatcher();
+// Returns a matcher for the button to open profile settings in manual
+// fallback.
+id<GREYMatcher> ManualFallbackManageProfilesMatcher();
+
+// Returns a matcher for the profiles settings collection view.
+id<GREYMatcher> SettingsProfileMatcher();
+
+// Returns a matcher for the ProfileTableView window.
+id<GREYMatcher> ManualFallbackProfileTableViewWindowMatcher();
 
 }  // namespace chrome_test_util
 

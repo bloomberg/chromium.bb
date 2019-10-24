@@ -8,7 +8,10 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/unified_consent/feature.h"
+#import "ios/chrome/browser/autofill/form_suggestion_constants.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view.h"
+#import "ios/chrome/browser/ui/autofill/manual_fill/address_mediator.h"
+#import "ios/chrome/browser/ui/autofill/manual_fill/address_view_controller.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_accessory_view_controller.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_password_cell.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_password_mediator.h"
@@ -27,6 +30,7 @@
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_constants.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_add_credit_card_view_controller.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_credit_card_table_view_controller.h"
+#import "ios/chrome/browser/ui/settings/autofill/autofill_profile_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/cells/clear_browsing_data_constants.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_cell.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
@@ -741,7 +745,15 @@ UIView* SubviewWithAccessibilityIdentifier(NSString* accessibility_id,
   return grey_accessibilityID(kPasswordsSearchBarId);
 }
 
++ (id<GREYMatcher>)settingsProfileMatcher {
+  return grey_accessibilityID(kAutofillProfileTableViewID);
+}
+
 #pragma mark - Manual Fallback
+
++ (id<GREYMatcher>)manualFallbackFormSuggestionViewMatcher {
+  return grey_accessibilityID(kFormSuggestionsViewAccessibilityIdentifier);
+}
 
 + (id<GREYMatcher>)manualFallbackPasswordIconMatcher {
   return grey_accessibilityID(
@@ -789,4 +801,25 @@ UIView* SubviewWithAccessibilityIdentifier(NSString* accessibility_id,
   return grey_allOf(classMatcher, parentMatcher, nil);
 }
 
++ (id<GREYMatcher>)manualFallbackProfilesIconMatcher {
+  return grey_accessibilityID(
+      manual_fill::AccessoryAddressAccessibilityIdentifier);
+}
+
++ (id<GREYMatcher>)manualFallbackProfilesTableViewMatcher {
+  return grey_accessibilityID(
+      manual_fill::AddressTableViewAccessibilityIdentifier);
+}
+
++ (id<GREYMatcher>)manualFallbackManageProfilesMatcher {
+  return grey_accessibilityID(
+      manual_fill::ManageAddressAccessibilityIdentifier);
+}
+
++ (id<GREYMatcher>)manualFallbackProfileTableViewWindowMatcher {
+  id<GREYMatcher> classMatcher = grey_kindOfClass([UIWindow class]);
+  id<GREYMatcher> parentMatcher =
+      grey_descendant([self manualFallbackProfilesTableViewMatcher]);
+  return grey_allOf(classMatcher, parentMatcher, nil);
+}
 @end

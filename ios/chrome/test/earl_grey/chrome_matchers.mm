@@ -467,7 +467,15 @@ id<GREYMatcher> SettingsPasswordSearchMatcher() {
   return [ChromeMatchersAppInterface settingsPasswordSearchMatcher];
 }
 
+id<GREYMatcher> SettingsProfileMatcher() {
+  return [ChromeMatchersAppInterface settingsProfileMatcher];
+}
+
 #pragma mark - Manual Fallback
+
+id<GREYMatcher> ManualFallbackFormSuggestionViewMatcher() {
+  return [ChromeMatchersAppInterface manualFallbackFormSuggestionViewMatcher];
+}
 
 id<GREYMatcher> ManualFallbackKeyboardIconMatcher() {
   return [ChromeMatchersAppInterface manualFallbackKeyboardIconMatcher];
@@ -505,6 +513,23 @@ id<GREYMatcher> ManualFallbackPasswordButtonMatcher() {
 id<GREYMatcher> ManualFallbackPasswordTableViewWindowMatcher() {
   return
       [ChromeMatchersAppInterface manualFallbackPasswordTableViewWindowMatcher];
+}
+
+id<GREYMatcher> ManualFallbackProfilesIconMatcher() {
+  return [ChromeMatchersAppInterface manualFallbackProfilesIconMatcher];
+}
+
+id<GREYMatcher> ManualFallbackProfilesTableViewMatcher() {
+  return [ChromeMatchersAppInterface manualFallbackProfilesTableViewMatcher];
+}
+
+id<GREYMatcher> ManualFallbackManageProfilesMatcher() {
+  return [ChromeMatchersAppInterface manualFallbackManageProfilesMatcher];
+}
+
+id<GREYMatcher> ManualFallbackProfileTableViewWindowMatcher() {
+  return
+      [ChromeMatchersAppInterface manualFallbackProfileTableViewWindowMatcher];
 }
 
 }  // namespace chrome_test_util
