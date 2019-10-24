@@ -67,8 +67,9 @@ static INLINE void calc_subpel_params(
     subpel_params->xs = subpel_params->ys = SCALE_SUBPEL_SHIFTS;
     subpel_params->subpel_x = (mv_q4.col & SUBPEL_MASK) << SCALE_EXTRA_BITS;
     subpel_params->subpel_y = (mv_q4.row & SUBPEL_MASK) << SCALE_EXTRA_BITS;
-    *pre = pre_buf->buf + (y + (mv_q4.row >> SUBPEL_BITS)) * pre_buf->stride +
-           (x + (mv_q4.col >> SUBPEL_BITS));
+    *pre = pre_buf->buf0 +
+           (pre_y + y + (mv_q4.row >> SUBPEL_BITS)) * pre_buf->stride +
+           (pre_x + x + (mv_q4.col >> SUBPEL_BITS));
   }
 }
 
