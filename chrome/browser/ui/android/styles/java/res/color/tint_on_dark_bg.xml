@@ -4,7 +4,10 @@
      found in the LICENSE file.
 -->
 
-<selector xmlns:android="http://schemas.android.com/apk/res/android">
+<!-- TODO(crbug.com/1017190): Remove the UnusedResources workaround. -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android"
+          xmlns:tools="http://schemas.android.com/tools"
+          tools:ignore="UnusedResources">
     <item android:state_selected="true" android:color="@color/default_icon_color_white_pressed" />
     <item android:state_focused="true" android:color="@color/default_icon_color_white_pressed" />
     <item android:state_pressed="true" android:color="@color/default_icon_color_white_pressed" />

@@ -4,16 +4,7 @@
 
 package org.chromium.chrome.browser.util;
 
-import android.content.Context;
-import android.content.res.ColorStateList;
-import android.content.res.Resources;
 import android.graphics.Color;
-import android.support.v7.content.res.AppCompatResources;
-
-import androidx.annotation.ColorRes;
-
-import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.chrome.R;
 
 /**
  * Helper functions for working with colors.
@@ -52,52 +43,6 @@ public class ColorUtils {
         bgB = (bgB < 0.03928f) ? bgB / 12.92f : (float) Math.pow((bgB + 0.055f) / 1.055f, 2.4f);
         float bgL = 0.2126f * bgR + 0.7152f * bgG + 0.0722f * bgB;
         return Math.abs((1.05f) / (bgL + 0.05f));
-    }
-
-    /**
-     * Determines the default theme color used for toolbar based on the provided parameters.
-     * @param res {@link Resources} used to retrieve colors.
-     * @param isIncognito Whether to retrieve the default theme color for incognito mode.
-     * @return The default theme color.
-     */
-    public static int getDefaultThemeColor(Resources res, boolean isIncognito) {
-        return isIncognito
-                ? ApiCompatibilityUtils.getColor(res, R.color.toolbar_background_primary_incognito)
-                : ApiCompatibilityUtils.getColor(res, R.color.toolbar_background_primary);
-    }
-
-    /**
-     * Returns the primary background color used as native page background based on the given
-     * parameters.
-     * @param res The {@link Resources} used to retrieve colors.
-     * @param isIncognito Whether or not the color is for incognito mode.
-     * @return The primary background color.
-     */
-    public static int getPrimaryBackgroundColor(Resources res, boolean isIncognito) {
-        return isIncognito
-                ? ApiCompatibilityUtils.getColor(res, R.color.incognito_modern_primary_color)
-                : ApiCompatibilityUtils.getColor(res, R.color.modern_primary_color);
-    }
-
-    /**
-     * Returns the icon tint resource to use based on the current parameters and whether the app is
-     * in night mode.
-     * @param useLight Whether or not the icon tint should be light when not in night mode.
-     * @return The {@link ColorRes} for the icon tint.
-     */
-    public static @ColorRes int getIconTintRes(boolean useLight) {
-        return useLight ? R.color.tint_on_dark_bg : R.color.standard_mode_tint;
-    }
-
-    /**
-     * Returns the icon tint to use based on the current parameters and whether the app is in night
-     * mode.
-     * @param context The {@link Context} used to retrieve colors.
-     * @param useLight Whether or not the icon tint should be light when not in night mode.
-     * @return The {@link ColorStateList} for the icon tint.
-     */
-    public static ColorStateList getIconTint(Context context, boolean useLight) {
-        return AppCompatResources.getColorStateList(context, getIconTintRes(useLight));
     }
 
     /**
