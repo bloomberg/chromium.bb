@@ -2504,6 +2504,13 @@ Unknown properties are collapsed to zero. -->
   <int value="4" label="PROMO_SEEN"/>
 </enum>
 
+<enum name="AppSeedRequestState">
+  <int value="0" label="Unknown seed state"/>
+  <int value="1" label="Current seed fresh"/>
+  <int value="2" label="New seed requested from the service"/>
+  <int value="3" label="Seed request to service throttled by client"/>
+</enum>
+
 <enum name="AppsPageDragSource">
   <int value="0" label="Same apps pane"/>
   <int value="1" label="Different apps pane"/>
