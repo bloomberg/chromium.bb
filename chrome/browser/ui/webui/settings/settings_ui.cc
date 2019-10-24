@@ -56,7 +56,6 @@
 #include "components/favicon_base/favicon_url_parser.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/pref_registry/pref_registry_syncable.h"
-#include "components/unified_consent/feature.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -263,8 +262,8 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
       "privacySettingsRedesignEnabled",
       base::FeatureList::IsEnabled(features::kPrivacySettingsRedesign));
 
-  html_source->AddBoolean("unifiedConsentEnabled",
-                          unified_consent::IsUnifiedConsentFeatureEnabled());
+  // TODO(msarda): Remove |unifiedConsentEnabled| from all settings resources.
+  html_source->AddBoolean("unifiedConsentEnabled", true);
 
   html_source->AddBoolean(
       "navigateToGooglePasswordManager",
