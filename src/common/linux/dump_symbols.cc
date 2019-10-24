@@ -38,6 +38,7 @@
 #include <elf.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <limits.h>
 #include <link.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -936,7 +937,14 @@ bool InitModuleForElfClass(const typename ElfClass::Ehdr* elf_header,
     return false;
   }
 
-  string name = google_breakpad::BaseName(obj_filename);
+  string name;
+  char name_buf[NAME_MAX];
+  memset(name_buf, 0, sizeof(name_buf));
+  name = google_breakpad::ElfFileSoNameFromMappedFile(elf_header, name_buf,
+                                                      sizeof(name_buf))
+             ? name_buf
+             : google_breakpad::BaseName(obj_filename);
+
   string os = "Linux";
   // Add an extra "0" at the end.  PDB files on Windows have an 'age'
   // number appended to the end of the file identifier; this isn't

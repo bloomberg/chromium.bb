@@ -439,49 +439,6 @@ bool LinuxDumper::GetMappingAbsolutePath(const MappingInfo& mapping,
 }
 
 namespace {
-bool ElfFileSoNameFromMappedFile(
-    const void* elf_base, char* soname, size_t soname_size) {
-  if (!IsValidElf(elf_base)) {
-    // Not ELF
-    return false;
-  }
-
-  const void* segment_start;
-  size_t segment_size;
-  if (!FindElfSection(elf_base, ".dynamic", SHT_DYNAMIC, &segment_start,
-                      &segment_size)) {
-    // No dynamic section
-    return false;
-  }
-
-  const void* dynstr_start;
-  size_t dynstr_size;
-  if (!FindElfSection(elf_base, ".dynstr", SHT_STRTAB, &dynstr_start,
-                      &dynstr_size)) {
-    // No dynstr section
-    return false;
-  }
-
-  const ElfW(Dyn)* dynamic = static_cast<const ElfW(Dyn)*>(segment_start);
-  size_t dcount = segment_size / sizeof(ElfW(Dyn));
-  for (const ElfW(Dyn)* dyn = dynamic; dyn < dynamic + dcount; ++dyn) {
-    if (dyn->d_tag == DT_SONAME) {
-      const char* dynstr = static_cast<const char*>(dynstr_start);
-      if (dyn->d_un.d_val >= dynstr_size) {
-        // Beyond the end of the dynstr section
-        return false;
-      }
-      const char* str = dynstr + dyn->d_un.d_val;
-      const size_t maxsize = dynstr_size - dyn->d_un.d_val;
-      my_strlcpy(soname, str, maxsize < soname_size ? maxsize : soname_size);
-      return true;
-    }
-  }
-
-  // Did not find SONAME
-  return false;
-}
-
 // Find the shared object name (SONAME) by examining the ELF information
 // for |mapping|. If the SONAME is found copy it into the passed buffer
 // |soname| and return true. The size of the buffer is |soname_size|.
