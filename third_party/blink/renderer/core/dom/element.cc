@@ -3010,7 +3010,10 @@ void Element::RecalcStyle(const StyleRecalcChange change) {
 
   if (child_change.TraverseChildren(*this)) {
     SelectorFilterParentScope filter_scope(*this);
-    if (ShadowRoot* root = GetShadowRoot()) {
+    if (IsActiveV0InsertionPoint(*this)) {
+      To<V0InsertionPoint>(this)->RecalcStyleForInsertionPointChildren(
+          child_change);
+    } else if (ShadowRoot* root = GetShadowRoot()) {
       if (RuntimeEnabledFeatures::FlatTreeStyleRecalcEnabled()) {
         root->RecalcDescendantStyles(child_change);
       } else {
@@ -3020,9 +3023,6 @@ void Element::RecalcStyle(const StyleRecalcChange change) {
       }
     } else if (auto* slot = ToHTMLSlotElementIfSupportsAssignmentOrNull(this)) {
       slot->RecalcStyleForSlotChildren(child_change);
-    } else if (IsActiveV0InsertionPoint(*this)) {
-      To<V0InsertionPoint>(this)->RecalcStyleForInsertionPointChildren(
-          child_change);
     } else {
       RecalcDescendantStyles(child_change);
     }
