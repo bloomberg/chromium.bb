@@ -1470,7 +1470,6 @@ RenderProcessHostImpl::RenderProcessHostImpl(
           nullptr,
           base::OnTaskRunnerDeleter(base::CreateSequencedTaskRunner(
               {ServiceWorkerContext::GetCoreThreadId()}))),
-      renderer_host_binding_(this),
       instance_weak_factory_(base::in_place, this),
       frame_sink_provider_(id_),
       shutdown_exit_code_(-1) {
@@ -2368,7 +2367,7 @@ void RenderProcessHostImpl::RegisterCoordinatorClient(
 
 void RenderProcessHostImpl::CreateRendererHost(
     mojo::PendingAssociatedReceiver<mojom::RendererHost> receiver) {
-  renderer_host_binding_.Bind(std::move(receiver));
+  renderer_host_receiver_.Bind(std::move(receiver));
 }
 
 int RenderProcessHostImpl::GetNextRoutingID() {
@@ -4307,9 +4306,7 @@ void RenderProcessHostImpl::ProcessDied(
 }
 
 void RenderProcessHostImpl::ResetIPC() {
-  if (renderer_host_binding_.is_bound())
-    renderer_host_binding_.Unbind();
-
+  renderer_host_receiver_.reset();
   io_thread_host_impl_.reset();
   route_provider_receiver_.reset();
   associated_interface_provider_receivers_.Clear();
