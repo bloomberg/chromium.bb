@@ -994,6 +994,8 @@ static FRAME_DIFF temporal_filter_iterate_c(
   const int num_planes = av1_num_planes(cm);
   const int mb_cols = get_cols(frames[alt_ref_index]->y_crop_width);
   const int mb_rows = get_rows(frames[alt_ref_index]->y_crop_height);
+  // TODO(any): the thresholds in this function need to adjusted based on bit_
+  // depth, so that they work better in HBD encoding.
   const int bd_shift = cm->seq_params.bit_depth - 8;
   int byte;
   int frame;
