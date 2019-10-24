@@ -751,10 +751,6 @@ static INLINE void dec_build_inter_predictors(const AV1_COMMON *cm,
                          subpel_y_mv, 0, is_intrabc, highbd, xd->mc_buf[ref],
                          &pre, &src_stride);
         inter_pred_params.conv_params.do_average = ref;
-        if (is_masked_compound_type(mi->interinter_comp.type)) {
-          // masked compound type has its own average mechanism
-          inter_pred_params.conv_params.do_average = 0;
-        }
 
         av1_init_inter_params(
             &inter_pred_params, b4_w, b4_h, (mi_y >> pd->subsampling_y) + y,

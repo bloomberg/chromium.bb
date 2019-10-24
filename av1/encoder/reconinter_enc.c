@@ -172,10 +172,6 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
         calc_subpel_params(xd, sf, mv, plane, pre_x, pre_y, x, y, pre_buf, &pre,
                            &subpel_params, bw, bh);
         inter_pred_params.conv_params.do_average = ref;
-        if (is_masked_compound_type(mi->interinter_comp.type)) {
-          // masked compound type has its own average mechanism
-          inter_pred_params.conv_params.do_average = 0;
-        }
 
         av1_init_inter_params(
             &inter_pred_params, b4_w, b4_h, (mi_y >> pd->subsampling_y) + y,
