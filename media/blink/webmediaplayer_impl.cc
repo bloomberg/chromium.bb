@@ -2102,7 +2102,9 @@ void WebMediaPlayerImpl::OnBufferingStateChangeInternal(
 
     // Report the amount of time it took to leave the underflow state.
     if (underflow_timer_) {
-      RecordUnderflowDuration(underflow_timer_->Elapsed());
+      auto elapsed = underflow_timer_->Elapsed();
+      RecordUnderflowDuration(elapsed);
+      watch_time_reporter_->OnUnderflowComplete(elapsed);
       underflow_timer_.reset();
     }
   } else {

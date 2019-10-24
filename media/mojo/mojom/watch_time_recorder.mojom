@@ -86,5 +86,7 @@ interface WatchTimeRecorder {
   // Indicates that an underflow event has occurred while collecting watch time.
   // Used to report mean values for rebuffering metrics. As with watch time,
   // this is an absolute count and not relative since the last call.
-  UpdateUnderflowCount(int32 count);
+  UpdateUnderflowCount(int32 total_count);
+  UpdateUnderflowDuration(int32 total_completed_count,
+                          mojo_base.mojom.TimeDelta total_duration);
 };

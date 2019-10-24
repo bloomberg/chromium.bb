@@ -38,7 +38,9 @@ class MEDIA_MOJO_EXPORT WatchTimeRecorder : public mojom::WatchTimeRecorder {
       mojom::SecondaryPlaybackPropertiesPtr secondary_properties) override;
   void SetAutoplayInitiated(bool value) override;
   void OnDurationChanged(base::TimeDelta duration) override;
-  void UpdateUnderflowCount(int32_t count) override;
+  void UpdateUnderflowCount(int32_t total_count) override;
+  void UpdateUnderflowDuration(int32_t total_completed_count,
+                               base::TimeDelta total_duration) override;
 
  private:
   // Records a UKM event based on |aggregate_watch_time_info_|; only recorded
@@ -89,8 +91,10 @@ class MEDIA_MOJO_EXPORT WatchTimeRecorder : public mojom::WatchTimeRecorder {
     // Sum of all watch time data since the last complete finalize.
     WatchTimeInfo aggregate_watch_time_info;
 
-    // Total underflow count for this segment of UKM watch time.
+    // Total underflow count and duration for this segment of UKM watch time.
     int total_underflow_count = 0;
+    int total_completed_underflow_count = 0;
+    base::TimeDelta total_underflow_duration;
   };
 
   // List of all watch time segments. A new entry is added for every secondary
@@ -98,6 +102,9 @@ class MEDIA_MOJO_EXPORT WatchTimeRecorder : public mojom::WatchTimeRecorder {
   std::vector<WatchTimeUkmRecord> ukm_records_;
 
   int underflow_count_ = 0;
+  int completed_underflow_count_ = 0;
+  base::TimeDelta underflow_duration_;
+
   PipelineStatus pipeline_status_ = PIPELINE_OK;
   base::TimeDelta duration_ = kNoTimestamp;
 

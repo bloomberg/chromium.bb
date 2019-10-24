@@ -121,6 +121,7 @@ class MEDIA_BLINK_EXPORT WatchTimeReporter : base::PowerObserver {
   // finalized the total watch time for a given category will be divided by the
   // number of rebuffering events. Reset to zero after a finalize event.
   void OnUnderflow();
+  void OnUnderflowComplete(base::TimeDelta elapsed);
 
   // These methods are used to ensure that the watch time is reported relative
   // to whether the media is using native controls.
@@ -183,6 +184,8 @@ class MEDIA_BLINK_EXPORT WatchTimeReporter : base::PowerObserver {
   void RecordWatchTime();
   void UpdateWatchTime();
 
+  void ResetUnderflowState();
+
   // Helper methods for creating the components that make up the watch time
   // report. All components except the base component require a creation method
   // and a conversion method to get the correct WatchTimeKey.
@@ -220,8 +223,15 @@ class MEDIA_BLINK_EXPORT WatchTimeReporter : base::PowerObserver {
   // transitioning above/below kMinimumVideoSize.
   gfx::Size natural_size_;
 
-  int underflow_count_ = 0;
-  std::vector<base::TimeDelta> pending_underflow_events_;
+  int total_underflow_count_ = 0;
+  int total_completed_underflow_count_ = 0;
+  base::TimeDelta total_underflow_duration_;
+  struct UnderflowEvent {
+    bool reported = false;
+    base::TimeDelta timestamp = kNoTimestamp;
+    base::TimeDelta duration = kNoTimestamp;
+  };
+  std::vector<UnderflowEvent> pending_underflow_events_;
 
   // The various components making up WatchTime. If the |base_component_| is
   // finalized, all reporting will be stopped and finalized using its ending
