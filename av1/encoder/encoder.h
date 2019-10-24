@@ -370,7 +370,6 @@ typedef struct AV1EncoderConfig {
   unsigned int full_still_picture_hdr;
   int enable_dual_filter;
   unsigned int motion_vector_unit_test;
-  const cfg_options_t *cfg;
   int enable_rect_partitions;
   int enable_ab_partitions;
   int enable_1to4_partitions;

@@ -453,19 +453,12 @@ static BLOCK_SIZE select_sb_size(const AV1_COMP *const cpi) {
 
   if (cpi->oxcf.superblock_size == AOM_SUPERBLOCK_SIZE_64X64)
     return BLOCK_64X64;
-#if CONFIG_FILEOPTIONS
-  if (cm->options && cm->options->ext_partition)
-#endif
-    if (cpi->oxcf.superblock_size == AOM_SUPERBLOCK_SIZE_128X128)
-      return BLOCK_128X128;
+  if (cpi->oxcf.superblock_size == AOM_SUPERBLOCK_SIZE_128X128)
+    return BLOCK_128X128;
 
   assert(cpi->oxcf.superblock_size == AOM_SUPERBLOCK_SIZE_DYNAMIC);
 
-// TODO(any): Possibly could improve this with a heuristic.
-#if CONFIG_FILEOPTIONS
-  if (cm->options && !cm->options->ext_partition) return BLOCK_64X64;
-#endif
-
+  // TODO(any): Possibly could improve this with a heuristic.
   // When superres / resize is on, 'cm->width / height' can change between
   // calls, so we don't apply this heuristic there.
   // Things break if superblock size changes between the first pass and second
@@ -2704,7 +2697,6 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
   update_film_grain_parameters(cpi, oxcf);
 
   cpi->oxcf = *oxcf;
-  cpi->common.options = oxcf->cfg;
   x->e_mbd.bd = (int)seq_params->bit_depth;
   x->e_mbd.global_motion = cm->global_motion;
 
