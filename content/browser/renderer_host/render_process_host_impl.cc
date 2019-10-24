@@ -2625,10 +2625,8 @@ void RenderProcessHostImpl::ShutdownForBadMessage(
 
   if (crash_report_mode == CrashReportMode::GENERATE_CRASH_DUMP) {
     // Set crash keys to understand renderer kills related to site isolation.
-    auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
-    std::string lock_url = policy->GetOriginLock(GetID()).spec();
-    base::debug::SetCrashKeyString(bad_message::GetKilledProcessOriginLockKey(),
-                                   lock_url.empty() ? "(none)" : lock_url);
+    ChildProcessSecurityPolicyImpl::GetInstance()->LogKilledProcessOriginLock(
+        GetID());
 
     std::string site_isolation_mode;
     if (SiteIsolationPolicy::UseDedicatedProcessesForAllSites())
@@ -4144,13 +4142,10 @@ RenderProcessHost* RenderProcessHostImpl::GetProcessHostForSiteInstance(
                                  render_process_host, browser_context,
                                  site_instance->GetIsolationContext(), site_url,
                                  site_instance->lock_url())) {
-    ChildProcessSecurityPolicyImpl* policy =
-        ChildProcessSecurityPolicyImpl::GetInstance();
     base::debug::SetCrashKeyString(bad_message::GetRequestedSiteURLKey(),
                                    site_url.spec());
-    base::debug::SetCrashKeyString(
-        bad_message::GetKilledProcessOriginLockKey(),
-        policy->GetOriginLock(render_process_host->GetID()).spec());
+    ChildProcessSecurityPolicyImpl::GetInstance()->LogKilledProcessOriginLock(
+        render_process_host->GetID());
     CHECK(false) << "Unsuitable process reused for site " << site_url;
   }
 
