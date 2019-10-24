@@ -5,7 +5,6 @@
 #import <EarlGrey/EarlGrey.h>
 #import <EarlGrey/GREYAppleInternals.h>
 #import <EarlGrey/GREYKeyboard.h>
-#include <atomic>
 
 #include "base/ios/ios_util.h"
 #include "base/strings/sys_string_conversions.h"
@@ -25,6 +24,7 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#import "ios/testing/earl_grey/keyboard_app_interface.h"
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
 #include "ios/web/public/test/element_selector.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -42,10 +42,6 @@ constexpr char kFormElementName[] = "name";
 constexpr char kFormElementCity[] = "city";
 
 constexpr char kFormHTMLFile[] = "/profile_form.html";
-
-// EarlGrey fails to detect undocked keyboards on screen, so this help check
-// for them.
-static std::atomic_bool gCHRIsKeyboardShown(false);
 
 // Returns a matcher for the scroll view in keyboard accessory bar.
 id<GREYMatcher> FormSuggestionViewMatcher() {
@@ -118,75 +114,6 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
   return [condition waitWithTimeout:timeout];
 }
 
-// If the keyboard is not present this will add a text field to the hierarchy,
-// make it first responder and return it. If it is already present, this does
-// nothing and returns nil.
-UITextField* ShowKeyboard() {
-  UITextField* textField = nil;
-  if (!gCHRIsKeyboardShown) {
-    CGRect rect = CGRectMake(0, 0, 300, 100);
-    textField = [[UITextField alloc] initWithFrame:rect];
-    textField.backgroundColor = [UIColor blueColor];
-    [[[UIApplication sharedApplication] keyWindow] addSubview:textField];
-    [textField becomeFirstResponder];
-  }
-  auto verify_block = ^BOOL {
-    return gCHRIsKeyboardShown;
-  };
-  NSTimeInterval timeout = base::test::ios::kWaitForUIElementTimeout;
-  NSString* condition_name =
-      [NSString stringWithFormat:@"Wait for keyboard to appear"];
-  GREYCondition* condition = [GREYCondition conditionWithName:condition_name
-                                                        block:verify_block];
-  [condition waitWithTimeout:timeout];
-  return textField;
-}
-
-// Returns the dismiss key if present in the passed keyboard layout. Returns nil
-// if not found.
-UIAccessibilityElement* KeyboardDismissKeyInLayout(UIView* layout) {
-  UIAccessibilityElement* key = nil;
-  if ([layout accessibilityElementCount] != NSNotFound) {
-    for (NSInteger i = [layout accessibilityElementCount]; i >= 0; --i) {
-      id element = [layout accessibilityElementAtIndex:i];
-      if ([[[element key] valueForKey:@"name"]
-              isEqualToString:@"Dismiss-Key"]) {
-        key = element;
-        break;
-      }
-    }
-  }
-  return key;
-}
-
-// Matcher for the Keyboard Window.
-id<GREYMatcher> KeyboardWindow(UIView* layout) {
-  id<GREYMatcher> classMatcher = grey_kindOfClass([UIWindow class]);
-  UIAccessibilityElement* key = KeyboardDismissKeyInLayout(layout);
-  id<GREYMatcher> parentMatcher =
-      grey_descendant(grey_accessibilityLabel(key.accessibilityLabel));
-  return grey_allOf(classMatcher, parentMatcher, nil);
-}
-
-// Returns YES if the keyboard is docked at the bottom. NO otherwise.
-BOOL IsKeyboardDockedForLayout(UIView* layout) {
-  CGRect windowBounds = layout.window.bounds;
-  UIView* viewToCompare = layout;
-  while (viewToCompare &&
-         viewToCompare.bounds.size.height < windowBounds.size.height) {
-    CGRect keyboardFrameInWindow =
-        [viewToCompare.window convertRect:viewToCompare.bounds
-                                 fromView:viewToCompare];
-
-    CGFloat maxY = CGRectGetMaxY(keyboardFrameInWindow);
-    if ([@(maxY) isEqualToNumber:@(windowBounds.size.height)]) {
-      return YES;
-    }
-    viewToCompare = viewToCompare.superview;
-  }
-  return NO;
-}
-
 // Undocks and split the keyboard by swiping it up. Does nothing if already
 // undocked. Some devices, like iPhone or iPad Pro, do not allow undocking or
 // splitting, this returns NO if it is the case.
@@ -194,46 +121,23 @@ BOOL UndockAndSplitKeyboard() {
   if (![ChromeEarlGrey isIPadIdiom]) {
     return NO;
   }
-
-  UITextField* textField = ShowKeyboard();
-
-  // Assert the "Dismiss-Key" is present.
-  UIView* layout = [[UIKeyboardImpl sharedInstance] _layout];
-  GREYAssert([[layout valueForKey:@"keyplaneContainsDismissKey"] boolValue],
-             @"No dismiss key is pressent");
+  UITextField* textField = [KeyboardAppInterface showKeyboard];
 
   // Return if already undocked.
-  if (!IsKeyboardDockedForLayout(layout)) {
-    // If we created a dummy textfield for this, remove it.
+  if (![KeyboardAppInterface isKeyboadDocked]) {
+    // If a dummy textfield was created for this, remove it.
     [textField removeFromSuperview];
     return YES;
   }
 
-  // Swipe it up.
-  if (!layout.accessibilityIdentifier.length) {
-    layout.accessibilityIdentifier = @"CRKBLayout";
-  }
+  [[EarlGrey
+      selectElementWithMatcher:[KeyboardAppInterface keyboardWindowMatcher]]
+      performAction:[KeyboardAppInterface keyboardUndockAction]];
 
-  UIAccessibilityElement* key = KeyboardDismissKeyInLayout(layout);
-  CGRect keyFrameInScreen = [key accessibilityFrame];
-  CGRect keyFrameInWindow = [UIScreen.mainScreen.coordinateSpace
-            convertRect:keyFrameInScreen
-      toCoordinateSpace:layout.window.coordinateSpace];
-  CGRect windowBounds = layout.window.bounds;
+  // If a dummy textfield was created for this, remove it.
+  [textField removeFromSuperview];
 
-  CGPoint startPoint = CGPointMake(
-      (keyFrameInWindow.origin.x + keyFrameInWindow.size.width / 2.0) /
-          windowBounds.size.width,
-      (keyFrameInWindow.origin.y + keyFrameInWindow.size.height / 2.0) /
-          windowBounds.size.height);
-
-  id action = grey_swipeFastInDirectionWithStartPoint(
-      kGREYDirectionUp, startPoint.x, startPoint.y);
-
-  [[EarlGrey selectElementWithMatcher:KeyboardWindow(layout)]
-      performAction:action];
-
-  return !IsKeyboardDockedForLayout(layout);
+  return ![KeyboardAppInterface isKeyboadDocked];
 }
 
 // Docks the keyboard by swiping it down. Does nothing if already docked.
@@ -242,56 +146,33 @@ void DockKeyboard() {
     return;
   }
 
-  UITextField* textField = ShowKeyboard();
-
-  // Assert the "Dismiss-Key" is present.
-  UIView* layout = [[UIKeyboardImpl sharedInstance] _layout];
-  GREYAssert([[layout valueForKey:@"keyplaneContainsDismissKey"] boolValue],
-             @"No dismiss key is pressent");
+  UITextField* textField = [KeyboardAppInterface showKeyboard];
 
   // Return if already docked.
-  if (IsKeyboardDockedForLayout(layout)) {
+  if ([KeyboardAppInterface isKeyboadDocked]) {
     // If we created a dummy textfield for this, remove it.
     [textField removeFromSuperview];
     return;
   }
 
-  // Swipe it down.
-  UIAccessibilityElement* key = KeyboardDismissKeyInLayout(layout);
-
-  CGRect keyFrameInScreen = [key accessibilityFrame];
-  CGRect keyFrameInWindow = [UIScreen.mainScreen.coordinateSpace
-            convertRect:keyFrameInScreen
-      toCoordinateSpace:layout.window.coordinateSpace];
-  CGRect windowBounds = layout.window.bounds;
-
-  GREYAssertFalse(CGRectEqualToRect(keyFrameInWindow, CGRectZero),
-                  @"The dismiss key accessibility frame musn't be zero");
-  CGPoint startPoint = CGPointMake(
-      (keyFrameInWindow.origin.x + keyFrameInWindow.size.width / 2.0) /
-          windowBounds.size.width,
-      (keyFrameInWindow.origin.y + keyFrameInWindow.size.height / 2.0) /
-          windowBounds.size.height);
-  id<GREYAction> action = grey_swipeFastInDirectionWithStartPoint(
-      kGREYDirectionDown, startPoint.x, startPoint.y);
-
-  [[EarlGrey selectElementWithMatcher:KeyboardWindow(layout)]
-      performAction:action];
+  [[EarlGrey
+      selectElementWithMatcher:[KeyboardAppInterface keyboardWindowMatcher]]
+      performAction:[KeyboardAppInterface keyboardDockAction]];
 
   // If we created a dummy textfield for this, remove it.
   [textField removeFromSuperview];
 
-  GREYCondition* waitForDockedKeyboard =
-      [GREYCondition conditionWithName:@"Wait For Docked Keyboard Animations"
-                                 block:^BOOL {
-                                   return IsKeyboardDockedForLayout(layout);
-                                 }];
+  GREYCondition* waitForDockedKeyboard = [GREYCondition
+      conditionWithName:@"Wait For Docked Keyboard Animations"
+                  block:^BOOL {
+                    BOOL isDocked = [KeyboardAppInterface isKeyboadDocked];
+                    return isDocked;
+                  }];
 
   GREYAssertTrue([waitForDockedKeyboard
                      waitWithTimeout:base::test::ios::kWaitForActionTimeout],
                  @"Keyboard animations still present.");
 }
-
 }  // namespace
 
 // Integration Tests for fallback coordinator.
@@ -303,41 +184,6 @@ void DockKeyboard() {
 @end
 
 @implementation FallbackCoordinatorTestCase
-
-+ (void)load {
-  @autoreleasepool {
-    // EarlGrey fails to detect undocked keyboards on screen, so this help check
-    // for them.
-    auto block = ^(NSNotification* note) {
-      CGRect keyboardFrame =
-          [note.userInfo[UIKeyboardFrameEndUserInfoKey] CGRectValue];
-      UIWindow* window = [UIApplication sharedApplication].keyWindow;
-      keyboardFrame = [window convertRect:keyboardFrame fromWindow:nil];
-      CGRect windowFrame = window.frame;
-      CGRect frameIntersection = CGRectIntersection(windowFrame, keyboardFrame);
-      gCHRIsKeyboardShown =
-          frameIntersection.size.width > 1 && frameIntersection.size.height > 1;
-    };
-
-    [[NSNotificationCenter defaultCenter]
-        addObserverForName:UIKeyboardDidChangeFrameNotification
-                    object:nil
-                     queue:nil
-                usingBlock:block];
-
-    [[NSNotificationCenter defaultCenter]
-        addObserverForName:UIKeyboardDidShowNotification
-                    object:nil
-                     queue:nil
-                usingBlock:block];
-
-    [[NSNotificationCenter defaultCenter]
-        addObserverForName:UIKeyboardDidHideNotification
-                    object:nil
-                     queue:nil
-                usingBlock:block];
-  }
-}
 
 + (void)setUp {
   [super setUp];
