@@ -469,8 +469,8 @@ gfx::Rect BackdropController::GetBackdropBounds() {
       (state == SplitViewController::State::kLeftSnapped)
           ? SplitViewController::LEFT
           : SplitViewController::RIGHT;
-  return split_view_controller->GetSnappedWindowBoundsInScreenUnadjusted(
-      snap_position);
+  return split_view_controller->GetSnappedWindowBoundsInScreen(
+      snap_position, /*adjust_for_minimum_size=*/false);
 }
 
 void BackdropController::Layout() {
