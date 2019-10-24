@@ -6402,6 +6402,11 @@ the Bookmarks menu.">
         </message>
       </if>
 
+      <!-- Mac First-run dialog -->
+      <message name="IDS_FR_ENABLE_LOGGING" desc="The label of the checkbox to enable/disable crash and user metrics logging">
+        Automatically send usage statistics and crash reports to Google
+      </message>
+
       <!-- Mac First-run dialog messages -->
       <if expr="is_macosx">
         <message name="IDS_FIRSTRUN_DLG_MAC_WINDOW_TITLE" desc="Window title of First Run Title on OS X - displayed in Window title bar">

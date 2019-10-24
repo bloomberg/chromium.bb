@@ -2112,7 +2112,7 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
     {"editPerson", IDS_SETTINGS_EDIT_PERSON},
     {"profileNameAndPicture", IDS_SETTINGS_PROFILE_NAME_AND_PICTURE},
     {"showShortcutLabel", IDS_SETTINGS_PROFILE_SHORTCUT_TOGGLE_LABEL},
-    {"syncWillStart", IDS_SETTINGS_SYNC_WILL_START_UNITY},
+    {"syncWillStart", IDS_SETTINGS_SYNC_WILL_START},
     {"syncSettingsSavedToast", IDS_SETTINGS_SYNC_SETTINGS_SAVED_TOAST_LABEL},
     {"cancelSync", IDS_SETTINGS_SYNC_SETTINGS_CANCEL_SYNC},
     {"syncSetupCancelDialogTitle", IDS_SETTINGS_SYNC_SETUP_CANCEL_DIALOG_TITLE},
@@ -2265,7 +2265,7 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
     LocalizedString sync_disconnect_strings[] = {
         {"syncDisconnect", IDS_SETTINGS_PEOPLE_SYNC_TURN_OFF},
         {"syncDisconnectTitle",
-         IDS_SETTINGS_TURN_OFF_SYNC_AND_SIGN_OUT_DIALOG_TITLE_UNIFIED_CONSENT},
+         IDS_SETTINGS_TURN_OFF_SYNC_AND_SIGN_OUT_DIALOG_TITLE},
         {"syncDisconnectDeleteProfile",
          IDS_SETTINGS_TURN_OFF_SYNC_DIALOG_CHECKBOX},
         {"syncDisconnectConfirm",
@@ -2276,7 +2276,7 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
 
     html_source->AddLocalizedString(
         "syncDisconnectExplanation",
-        IDS_SETTINGS_SYNC_DISCONNECT_AND_SIGN_OUT_EXPLANATION_UNIFIED_CONSENT);
+        IDS_SETTINGS_SYNC_DISCONNECT_AND_SIGN_OUT_EXPLANATION);
   }
 #endif
 
@@ -2514,19 +2514,18 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
                           base::size(kLocalizedStrings));
 
   static constexpr LocalizedString kConditionalLocalizedStrings[] = {
-      {"searchSuggestPref", IDS_SETTINGS_SUGGEST_PREF_UNIFIED_CONSENT},
-      {"searchSuggestPrefDesc", IDS_SETTINGS_SUGGEST_PREF_DESC_UNIFIED_CONSENT},
+      {"searchSuggestPref", IDS_SETTINGS_SUGGEST_PREF},
+      {"searchSuggestPrefDesc", IDS_SETTINGS_SUGGEST_PREF_DESC},
       {"networkPredictionEnabled",
-       IDS_SETTINGS_NETWORK_PREDICTION_ENABLED_LABEL_UNIFIED_CONSENT},
+       IDS_SETTINGS_NETWORK_PREDICTION_ENABLED_LABEL},
       {"networkPredictionEnabledDesc",
-       IDS_SETTINGS_NETWORK_PREDICTION_ENABLED_DESC_UNIFIED_CONSENT},
-      {"linkDoctorPref", IDS_SETTINGS_LINKDOCTOR_PREF_UNIFIED_CONSENT},
-      {"linkDoctorPrefDesc", IDS_SETTINGS_LINKDOCTOR_PREF_DESC_UNIFIED_CONSENT},
-      {"spellingPref", IDS_SETTINGS_SPELLING_PREF_UNIFIED_CONSENT},
-      {"spellingDescription",
-       IDS_SETTINGS_SPELLING_DESCRIPTION_UNIFIED_CONSENT},
-      {"enableLogging", IDS_SETTINGS_ENABLE_LOGGING_UNIFIED_CONSENT},
-      {"enableLoggingDesc", IDS_SETTINGS_ENABLE_LOGGING_DESC_UNIFIED_CONSENT},
+       IDS_SETTINGS_NETWORK_PREDICTION_ENABLED_DESC},
+      {"linkDoctorPref", IDS_SETTINGS_LINKDOCTOR_PREF},
+      {"linkDoctorPrefDesc", IDS_SETTINGS_LINKDOCTOR_PREF_DESC},
+      {"spellingPref", IDS_SETTINGS_SPELLING_PREF},
+      {"spellingDescription", IDS_SETTINGS_SPELLING_PREF_DESC},
+      {"enableLogging", IDS_SETTINGS_ENABLE_LOGGING_PREF},
+      {"enableLoggingDesc", IDS_SETTINGS_ENABLE_LOGGING_PREF_DESC},
   };
   AddLocalizedStringsBulk(html_source, kConditionalLocalizedStrings,
                           base::size(kConditionalLocalizedStrings));
