@@ -3,7 +3,7 @@ import { TestFilterResult } from './test_filter/index.js';
 import { RunCase } from './test_group.js';
 
 export interface FilterResultTreeNode {
-  //description?: string;
+  description?: string;
   runCase?: RunCase;
   children?: Map<string, FilterResultTreeNode>;
 }
@@ -17,6 +17,10 @@ function* iteratePath(path: string, terminator: string): IterableIterator<string
     for (let i = 1; i < parts.length - 1; ++i) {
       partial += parts[i] + '/';
       yield partial;
+    }
+    // Path ends in '/' (so is a README).
+    if (parts[parts.length - 1] === '') {
+      return;
     }
   }
   yield path + terminator;
@@ -39,12 +43,25 @@ export function treeFromFilterResults(
   const tree = { children: new Map() };
   for (const f of listing) {
     const files = insertOrNew(tree, f.id.suite + ':');
+    if (f.id.path === '') {
+      // This is a suite README.
+      files.description = f.spec.description;
+      continue;
+    }
+
     let tests = files;
     for (const path of iteratePath(f.id.path, ':')) {
       tests = insertOrNew(tests, f.id.suite + ':' + path);
     }
+    if (f.spec.description) {
+      // This is a directory README or spec file.
+      tests.description = f.spec.description.trim();
+    }
 
-    if (!('g' in f.spec)) continue;
+    if (!('g' in f.spec)) {
+      // This is a directory README.
+      continue;
+    }
 
     const [tRec] = log.record(f.id);
     const fId = f.id.suite + ':' + f.id.path;

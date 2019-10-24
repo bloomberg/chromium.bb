@@ -25,7 +25,7 @@ type RunSubtree = () => Promise<void>;
 
 function makeTreeNodeHTML(name: string, tree: FilterResultTreeNode): [HTMLElement, RunSubtree] {
   if (tree.children) {
-    return makeSubtreeHTML(name, tree.children);
+    return makeSubtreeHTML(name, tree);
   } else {
     return makeCaseHTML(name, tree.runCase!);
   }
@@ -57,7 +57,7 @@ function makeCaseHTML(name: string, t: RunCase): [HTMLElement, RunSubtree] {
     }
   };
 
-  const casehead = makeTreeNodeHeaderHTML(name, runSubtree);
+  const casehead = makeTreeNodeHeaderHTML(name, undefined, runSubtree);
   div.append(casehead);
   const casetime = $('<div>')
     .addClass('testcasetime')
@@ -70,21 +70,18 @@ function makeCaseHTML(name: string, t: RunCase): [HTMLElement, RunSubtree] {
   return [div[0], runSubtree];
 }
 
-function makeSubtreeHTML(
-  name: string,
-  children: Map<string, FilterResultTreeNode>
-): [HTMLElement, RunSubtree] {
+function makeSubtreeHTML(name: string, subtree: FilterResultTreeNode): [HTMLElement, RunSubtree] {
   const div = $('<div>').addClass('subtree');
 
-  const header = makeTreeNodeHeaderHTML(name, () => {
+  const header = makeTreeNodeHeaderHTML(name, subtree.description, () => {
     return runSubtree();
   });
   div.append(header);
 
-  const subtree = $('<div>')
+  const subtreeHTML = $('<div>')
     .addClass('subtreechildren')
     .appendTo(div);
-  const runSubtree = makeSubtreeChildrenHTML(subtree[0], children);
+  const runSubtree = makeSubtreeChildrenHTML(subtreeHTML[0], subtree.children!);
 
   return [div[0], runSubtree];
 }
@@ -94,8 +91,8 @@ function makeSubtreeChildrenHTML(
   children: Map<string, FilterResultTreeNode>
 ): RunSubtree {
   const runSubtreeFns: RunSubtree[] = [];
-  for (const [n, subtree] of children) {
-    const [subtreeHTML, runSubtree] = makeTreeNodeHTML(encodeSelectively(n), subtree);
+  for (const [name, subtree] of children) {
+    const [subtreeHTML, runSubtree] = makeTreeNodeHTML(name, subtree);
     div.append(subtreeHTML);
     runSubtreeFns.push(runSubtree);
   }
@@ -107,30 +104,54 @@ function makeSubtreeChildrenHTML(
   };
 }
 
-function makeTreeNodeHeaderHTML(name: string, runSubtree: RunSubtree): HTMLElement {
+function makeTreeNodeHeaderHTML(
+  name: string,
+  description: string | undefined,
+  runSubtree: RunSubtree
+): HTMLElement {
   const div = $('<div>').addClass('nodeheader');
-  $('<button>')
-    .addClass('noderun')
-    .attr('alt', 'run')
-    .html('&#x25b6;')
-    .on('click', async () => {
-      await runSubtree();
-      updateJSON();
-    })
-    .appendTo(div);
+
+  const nameEncoded = encodeSelectively(name);
+  let nameHTML;
+  {
+    const i = nameEncoded.indexOf('{');
+    const n1 = i === -1 ? nameEncoded : nameEncoded.slice(0, i + 1);
+    const n2 = i === -1 ? '' : nameEncoded.slice(i + 1);
+    nameHTML = n1.replace(/:/g, ':<wbr>') + '<wbr>' + n2.replace(/,/g, ',<wbr>');
+  }
+
+  $('<div>')
+    .addClass('noderunbox')
+    .appendTo(div)
+    .append(
+      $('<button>')
+        .addClass('noderun')
+        .attr('alt', 'run')
+        .html('&#x25b6;')
+        .on('click', async () => {
+          await runSubtree();
+          updateJSON();
+        })
+    );
   const nodetitle = $('<div>')
     .addClass('nodetitle')
     .appendTo(div);
   $('<span>')
     .addClass('nodename')
-    .text(name)
+    .html(nameHTML)
     .appendTo(nodetitle);
   $('<a>')
     .addClass('nodelink')
-    .attr('href', '?q=' + name)
+    .attr('href', '?q=' + nameEncoded)
     .attr('alt', 'open')
     .html('&#x2b08;')
     .appendTo(nodetitle);
+  if (description) {
+    $('<div>')
+      .addClass('nodedescription')
+      .html(description.replace(/\n/g, '<br>'))
+      .appendTo(nodetitle);
+  }
   return div[0];
 }
 

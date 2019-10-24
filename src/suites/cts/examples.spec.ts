@@ -1,5 +1,7 @@
 export const description = `
 Examples of writing CTS tests with various features.
+
+Start here when looking for examples of basic framework usage.
 `;
 
 import { TestGroup } from '../../framework/index.js';

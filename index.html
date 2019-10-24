@@ -3,6 +3,9 @@
     <title></title>
     <script src="third_party/jquery/jquery-3.3.1.min.js"></script>
     <style>
+      body {
+        font-family: monospace;
+      }
       * {
         box-sizing: border-box;
       }
@@ -26,6 +29,9 @@
         width: 100%;
         padding: 1px 2px 1px 1px;
       }
+      .noderunbox {
+        flex: 0 0;
+      }
       .noderun {
         font-size: 10pt;
         padding: 0 3pt 0 3pt;
@@ -39,6 +45,10 @@
       }
       .nodelink {
         margin: 0 2px;
+      }
+      .nodedescription {
+        margin: 0;
+        color: gray;
       }
 
       /* tree nodes which are subtrees */
@@ -63,8 +73,7 @@
       }
       .testcasetime {
         text-align: right;
-        min-width: 8em;
-        max-width: 8em;
+        flex: 0 0 8em;
       }
       .testcaselogs {
         margin-left: 8pt;

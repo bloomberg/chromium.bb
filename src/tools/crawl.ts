@@ -20,7 +20,7 @@ export async function crawl(suite: string): Promise<TestSuiteListingEntry[]> {
     process.exit(1);
   }
 
-  const specFiles = await fg(specDir + '/**/*' + specSuffix, { onlyFiles: true });
+  const specFiles = await fg(`${specDir}/**/{README.txt,*${specSuffix}}`, { onlyFiles: true });
   specFiles.sort();
 
   const groups: TestSuiteListingEntry[] = [];
