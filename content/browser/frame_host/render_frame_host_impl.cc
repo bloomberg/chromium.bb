@@ -1631,7 +1631,6 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnDidChangeFrameOwnerProperties)
     IPC_MESSAGE_HANDLER(FrameHostMsg_UpdateTitle, OnUpdateTitle)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidBlockNavigation, OnDidBlockNavigation)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_AbortNavigation, OnAbortNavigation)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DispatchLoad, OnDispatchLoad)
     IPC_MESSAGE_HANDLER(FrameHostMsg_ForwardResourceTimingToParent,
                         OnForwardResourceTimingToParent)
@@ -3531,14 +3530,6 @@ void RenderFrameHostImpl::OnDidBlockNavigation(
   delegate_->OnDidBlockNavigation(blocked_url, initiator_url, reason);
 }
 
-void RenderFrameHostImpl::OnAbortNavigation() {
-  TRACE_EVENT1("navigation", "RenderFrameHostImpl::OnAbortNavigation",
-               "frame_tree_node", frame_tree_node_->frame_tree_node_id());
-  if (!is_active())
-    return;
-  frame_tree_node()->navigator()->OnAbortNavigation(frame_tree_node());
-}
-
 void RenderFrameHostImpl::OnForwardResourceTimingToParent(
     const ResourceTimingInfo& resource_timing) {
   // Don't forward the resource timing if this RFH is pending deletion. This can
@@ -4872,7 +4863,7 @@ void RenderFrameHostImpl::DispatchBeforeUnload(BeforeUnloadType type,
         frame_tree_node_->navigation_request()->IsNavigationStarted()) {
       frame_tree_node_->navigation_request()->set_net_error(net::ERR_ABORTED);
     }
-    frame_tree_node_->ResetNavigationRequest(false, true);
+    frame_tree_node_->ResetNavigationRequest(false);
   }
 
   // In renderer-initiated navigations, don't check for beforeunload in the
@@ -5113,7 +5104,7 @@ void RenderFrameHostImpl::ResetNavigationsForPendingDeletion() {
   for (auto& child : children_)
     child->current_frame_host()->ResetNavigationsForPendingDeletion();
   ResetNavigationRequests();
-  frame_tree_node_->ResetNavigationRequest(false, false);
+  frame_tree_node_->ResetNavigationRequest(false);
   frame_tree_node_->render_manager()->CleanUpNavigation();
 }
 
