@@ -31,7 +31,8 @@ public class ColorUtils {
         return average / 255.0f;
     }
 
-    /** Calculates the contrast between the given color and white, using the algorithm provided by
+    /**
+     * Calculates the contrast between the given color and white, using the algorithm provided by
      * the WCAG v2 in http://www.w3.org/TR/WCAG20/#contrast-ratiodef.
      */
     private static float getContrastForColor(int color) {
@@ -52,13 +53,12 @@ public class ColorUtils {
      * @param overlayAlpha The alpha |overlayColor| should have on the base color.
      */
     public static int getColorWithOverlay(int baseColor, int overlayColor, float overlayAlpha) {
-        return Color.rgb(
-                (int) MathUtils.interpolate(Color.red(baseColor), Color.red(overlayColor),
-                        overlayAlpha),
-                (int) MathUtils.interpolate(Color.green(baseColor), Color.green(overlayColor),
-                        overlayAlpha),
-                (int) MathUtils.interpolate(Color.blue(baseColor), Color.blue(overlayColor),
-                        overlayAlpha));
+        return Color.rgb((int) MathUtils.interpolate(
+                                 Color.red(baseColor), Color.red(overlayColor), overlayAlpha),
+                (int) MathUtils.interpolate(
+                        Color.green(baseColor), Color.green(overlayColor), overlayAlpha),
+                (int) MathUtils.interpolate(
+                        Color.blue(baseColor), Color.blue(overlayColor), overlayAlpha));
     }
 
     /**
@@ -132,8 +132,8 @@ public class ColorUtils {
             return Color.WHITE;
         } else {
             // Light theme.
-            return ColorUtils.getColorWithOverlay(themeColor, Color.BLACK,
-                    THEMED_FOREGROUND_BLACK_FRACTION);
+            return ColorUtils.getColorWithOverlay(
+                    themeColor, Color.BLACK, THEMED_FOREGROUND_BLACK_FRACTION);
         }
     }
 }

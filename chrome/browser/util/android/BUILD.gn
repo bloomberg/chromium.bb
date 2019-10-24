@@ -11,6 +11,7 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/util/BitmapCache.java",
     "java/src/org/chromium/chrome/browser/util/ChromeContextUtil.java",
     "java/src/org/chromium/chrome/browser/util/ChromeFileProvider.java",
+    "java/src/org/chromium/chrome/browser/util/ColorUtils.java",
     "java/src/org/chromium/chrome/browser/util/ConversionUtils.java",
     "java/src/org/chromium/chrome/browser/util/FileSizeUtil.java",
     "java/src/org/chromium/chrome/browser/util/HashUtil.java",
