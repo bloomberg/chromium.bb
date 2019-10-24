@@ -7879,6 +7879,8 @@ void RenderFrameHostImpl::MaybeEvictFromBackForwardCache(
   if (can_store)
     return;
 
+  // TODO(hajimehoshi): The not-restored reasons at
+  // |can_store.not_stored_reasons| should also be passed.
   EvictFromBackForwardCacheWithReason(reason);
 }
 
