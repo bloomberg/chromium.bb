@@ -830,6 +830,7 @@ class Settings(object):
     self.squash_gerrit_uploads = None
     self.gerrit_skip_ensure_authenticated = None
     self.git_editor = None
+    self.format_full_by_default = None
 
   def LazyUpdateIfNeeded(self):
     """Updates the settings from a codereview.settings file, if available."""
@@ -937,6 +938,14 @@ class Settings(object):
   def GetLintIgnoreRegex(self):
     return (self._GetConfig('rietveld.cpplint-ignore-regex', error_ok=True) or
             DEFAULT_LINT_IGNORE_REGEX)
+
+  def GetFormatFullByDefault(self):
+    if self.format_full_by_default is None:
+      result = (
+          RunGit(['config', '--bool', 'rietveld.format-full-by-default'],
+                 error_ok=True).strip())
+      self.format_full_by_default = (result == 'true')
+    return self.format_full_by_default
 
   def _GetConfig(self, param, **kwargs):
     self.LazyUpdateIfNeeded()
@@ -3149,6 +3158,8 @@ def LoadCodereviewSettingsFromFile(fileobj):
   SetProperty('cpplint-ignore-regex', 'LINT_IGNORE_REGEX', unset_error_ok=True)
   SetProperty('run-post-upload-hook', 'RUN_POST_UPLOAD_HOOK',
               unset_error_ok=True)
+  SetProperty(
+      'format-full-by-default', 'FORMAT_FULL_BY_DEFAULT', unset_error_ok=True)
 
   if 'GERRIT_HOST' in keyvals:
     RunGit(['config', 'gerrit.host', keyvals['GERRIT_HOST']])
@@ -5162,7 +5173,7 @@ def CMDformat(parser, args):
     except clang_format.NotFoundError as e:
       DieWithError(e)
 
-    if opts.full:
+    if opts.full or settings.GetFormatFullByDefault():
       cmd = [clang_format_tool]
       if not opts.dry_run and not opts.diff:
         cmd.append('-i')

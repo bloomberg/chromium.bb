@@ -724,6 +724,8 @@ class TestGitCl(TestCase):
         CERR1),
       ((['git', 'config', '--unset-all', 'rietveld.run-post-upload-hook'],),
         CERR1),
+      ((['git', 'config', '--unset-all', 'rietveld.format-full-by-default'],),
+        CERR1),
       ((['git', 'config', 'gerrit.host', 'true'],), ''),
     ]
     self.assertIsNone(git_cl.LoadCodereviewSettingsFromFile(codereview_file))
