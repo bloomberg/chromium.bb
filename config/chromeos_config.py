@@ -1331,19 +1331,26 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       health_alert_recipients=['c-compiler-chrome@google.com'],
   )
 
-  site_config.Add(
-      'chrome-release-afdo-verify',
-      site_config.templates.release_afdo_verify,
-      boards=['eve'],
-      chrome_afdo_verify=True,
-      afdo_use=False,
-      useflags=config_lib.append_useflags(['afdo_verify']),
-      # Start at 7 hours after benchmark-afdo-generate, to
-      # give the builder enough time to finish.
-      schedule='0 5/12 * * *',
-      # FIXME(tcwang): Enable health alert once deployed.
-      # health_alert_recipients=['c-compiler-chrome@google.com'],
-  )
+  def ChromeAFDOPublishBuilders(name, board, schedule):
+    site_config.Add(
+        'chrome-' + name + '-release-afdo-verify',
+        site_config.templates.release_afdo_verify,
+        boards=[board],
+        chrome_afdo_verify=True,
+        afdo_use=False,
+        useflags=config_lib.append_useflags(['afdo_verify']),
+        schedule=schedule,
+        health_alert_recipients=['c-compiler-chrome@google.com'],
+    )
+
+  # Start at 7 hours after benchmark-afdo-generate, to
+  # give the builder enough time to finish.
+  # Since these builders upload different profiles, we can start
+  # them at the same time, as soon as we might get a new benchmark
+  # profile.
+  ChromeAFDOPublishBuilders('silvermont', 'samus', '0 5/12 * * *')
+  ChromeAFDOPublishBuilders('airmont', 'snappy', '0 5/12 * * *')
+  ChromeAFDOPublishBuilders('broadwell', 'eve', '0 5/12 * * *')
 
   def KernelAFDOPublishBuilders(name, board, schedule):
     site_config.Add(
@@ -1357,9 +1364,13 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
         health_threshold=1,
     )
 
-  KernelAFDOPublishBuilders('kernel-3_14', 'lulu', '0 11 * * 1')
-  KernelAFDOPublishBuilders('kernel-3_18', 'chell', '0 17 * * 1')
-  KernelAFDOPublishBuilders('kernel-4_4', 'eve', '0 23 * * 1')
+  # Start at the same time every day. The kernel profiles are
+  # rolled every Monday, but we run these builders daily (instead of
+  # weekly), in case the Monday profile drop is red, or in case
+  # the tree is red for unrelated reasons on Monday.
+  KernelAFDOPublishBuilders('kernel-3_14', 'lulu', '0 11 * * *')
+  KernelAFDOPublishBuilders('kernel-3_18', 'chell', '0 17 * * *')
+  KernelAFDOPublishBuilders('kernel-4_4', 'eve', '0 23 * * *')
 
   site_config.Add(
       'orderfile-generate-toolchain',

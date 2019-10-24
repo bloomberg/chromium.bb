@@ -576,7 +576,9 @@
   arm-pgo-generate-llvm-next-toolchain
   arm64-pgo-generate-llvm-next-toolchain
   benchmark-afdo-generate
-  chrome-release-afdo-verify
+  chrome-airmont-release-afdo-verify
+  chrome-broadwell-release-afdo-verify
+  chrome-silvermont-release-afdo-verify
   kernel-3_14-release-afdo-verify
   kernel-3_18-release-afdo-verify
   kernel-4_4-release-afdo-verify
@@ -1235,7 +1237,9 @@
   cheza64-tot-chrome-pfq-informational-tryjob
   cheza64-tot-chromium-pfq-informational-tryjob
   cheza64-unittest-stress
-  chrome-release-afdo-verify-tryjob
+  chrome-airmont-release-afdo-verify-tryjob
+  chrome-broadwell-release-afdo-verify-tryjob
+  chrome-silvermont-release-afdo-verify-tryjob
   chromeos-infra-go-pre-cq
   chromeos-infra-go-tryjob
   chromeos-infra-puppet-pre-cq

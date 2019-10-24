@@ -77,12 +77,10 @@ RELEASE_BENCHMARK_MERGE_WEIGHT = 100 - RELEASE_CWP_MERGE_WEIGHT
 #
 # This must be consistent with the definitions in autotest.
 AFDO_DATA_GENERATORS_LLVM = ('chell', 'samus')
-CHROME_AFDO_VERIFIER_BOARDS = {'eve': 'silvermont'}
+CHROME_AFDO_VERIFIER_BOARDS = {'samus': 'silvermont',
+                               'snappy': 'airmont',
+                               'eve': 'broadwell'}
 KERNEL_AFDO_VERIFIER_BOARDS = {'lulu': '3.14', 'chell': '3.18', 'eve': '4.4'}
-# FIXME(tcwang): Once all testing boards are added under
-# CHROME_AFDO_VERIFIER_BOARDS. This variable can be replaced by
-# CHROME_AFDO_VERIFIER_BOARDS.values()
-CWP_PROFILE_SUPPORTED_ARCHS = ['silvermont', 'airmont', 'broadwell']
 
 AFDO_ALERT_RECIPIENTS = [
     'chromeos-toolchain-sheriff@grotations.appspotmail.com'
@@ -314,7 +312,7 @@ def _GetArtifactVersionInChromium(arch, chrome_root):
     ValueError: when "arch" is not a supported.
     RuntimeError: when the file containing AFDO profile name can't be found.
   """
-  if arch not in CWP_PROFILE_SUPPORTED_ARCHS:
+  if arch not in CHROME_AFDO_VERIFIER_BOARDS.values():
     raise ValueError('Invalid architecture %s to use in AFDO profile' % arch)
 
   if not os.path.exists(chrome_root):

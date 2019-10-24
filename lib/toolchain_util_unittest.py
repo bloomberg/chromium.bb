@@ -687,7 +687,7 @@ class AFDOUpdateEbuildTests(cros_test_lib.RunCommandTempDirTestCase):
   # pylint: disable=protected-access
   def setUp(self):
     self.board = 'eve'
-    self.arch = 'silvermont'
+    self.arch = 'broadwell'
     self.kver = '4_4'
     self.orderfile = 'chrome.orderfile.xz'
     self.orderfile_stripped = 'chrome.orderfile'
