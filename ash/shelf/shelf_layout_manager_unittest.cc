@@ -3338,6 +3338,61 @@ TEST_F(HotseatShelfLayoutManagerTest, ShowingAndHidingAutohiddenShelf) {
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, GetPrimaryShelf()->GetAutoHideState());
 }
 
+// Tests that swiping up on several places in the in-app shelf shows the
+// hotseat (crbug.com/1016931).
+TEST_F(HotseatShelfLayoutManagerTest, SwipeUpInAppShelfShowsHotseat) {
+  TabletModeControllerTestApi().EnterTabletMode();
+  std::unique_ptr<aura::Window> window =
+      AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
+  wm::ActivateWindow(window.get());
+
+  // Swipe up from the center of the shelf.
+  SwipeUpOnShelf();
+  EXPECT_EQ(HotseatState::kExtended, GetShelfLayoutManager()->hotseat_state());
+
+  // Swipe down from the hotseat to hide it.
+  gfx::Rect hotseat_bounds =
+      GetShelfWidget()->hotseat_widget()->GetWindowBoundsInScreen();
+  gfx::Point start = hotseat_bounds.top_center();
+  gfx::Point end = start + gfx::Vector2d(0, 80);
+  const base::TimeDelta kTimeDelta = base::TimeDelta::FromMilliseconds(100);
+  const int kNumScrollSteps = 4;
+
+  GetEventGenerator()->GestureScrollSequence(start, end, kTimeDelta,
+                                             kNumScrollSteps);
+  ASSERT_EQ(HotseatState::kHidden, GetShelfLayoutManager()->hotseat_state());
+
+  // Swipe up from the right part of the shelf (the system tray).
+  start = GetShelfWidget()
+              ->status_area_widget()
+              ->GetWindowBoundsInScreen()
+              .CenterPoint();
+  end = start + gfx::Vector2d(0, -80);
+
+  GetEventGenerator()->GestureScrollSequence(start, end, kTimeDelta,
+                                             kNumScrollSteps);
+  EXPECT_EQ(HotseatState::kExtended, GetShelfLayoutManager()->hotseat_state());
+
+  // Swipe down from the hotseat to hide it.
+  start = hotseat_bounds.top_center();
+  end = start + gfx::Vector2d(0, 80);
+
+  GetEventGenerator()->GestureScrollSequence(start, end, kTimeDelta,
+                                             kNumScrollSteps);
+  ASSERT_EQ(HotseatState::kHidden, GetShelfLayoutManager()->hotseat_state());
+
+  // Swipe up from the left part of the shelf (the home/back button).
+  start = GetShelfWidget()
+              ->navigation_widget()
+              ->GetWindowBoundsInScreen()
+              .CenterPoint();
+  end = start + gfx::Vector2d(0, -80);
+
+  GetEventGenerator()->GestureScrollSequence(start, end, kTimeDelta,
+                                             kNumScrollSteps);
+  EXPECT_EQ(HotseatState::kExtended, GetShelfLayoutManager()->hotseat_state());
+}
+
 // Tests that swiping up on the shelf background shows the home launcher.
 TEST_P(HotseatShelfLayoutManagerTest,
        SwipeUpOnShelfBackgroundShowsHomeLauncher) {
