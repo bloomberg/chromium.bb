@@ -5063,10 +5063,6 @@ TEST_F(RenderTextTest, HarfBuzz_MultiRunsSupportGlyphs) {
 #if defined(OS_WIN)
 // Ensures that locale is used for fonts selection.
 TEST_F(RenderTextTest, CJKFontWithLocale) {
-  // The uniscribe fallback used by win7 is not supporting locale.
-  if (base::win::GetVersion() < base::win::Version::WIN10)
-    return;
-
   const wchar_t kCJKTest[] = L"\u8AA4\u904E\u9AA8";
   static const char* kLocaleTests[] = {"zh-CN", "ja-JP", "ko-KR"};
 
