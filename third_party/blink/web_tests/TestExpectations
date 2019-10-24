@@ -5718,6 +5718,7 @@ crbug.com/1016804 external/wpt/css/css-grid/layout-algorithm/grid-flex-track-int
 
 # Sheriff 2019-10-24
 crbug.com/1017626 [ Linux ] external/wpt/compat/idlharness.window.html [ Pass Timeout ]
+crbug.com/925325 [ Win ] storage/indexeddb/index-population.html [ Pass Timeout ]
 
 # DevTools Security Panel (disabled temporarily as part of workflow)
 crbug.com/1008218 http/tests/devtools/security/security-state-comparator.js [ Failure ]
