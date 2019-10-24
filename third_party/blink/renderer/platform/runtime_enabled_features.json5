@@ -1767,9 +1767,6 @@
       depends_on: ["WebUSB"],
     },
     {
-      name: "WebVR",
-    },
-    {
       name: "WebVTTRegions",
       status: "experimental",
     },
