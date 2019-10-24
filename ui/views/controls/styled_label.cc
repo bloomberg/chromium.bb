@@ -321,7 +321,7 @@ gfx::Size StyledLabel::CalculateAndDoLayout(int width, bool dry_run) {
 
   // Iterate over the text, creating a bunch of labels and links and laying them
   // out in the appropriate positions.
-  {
+  while (!remaining_string.empty()) {
     // Max height of the views in a line.
     int line_height = default_line_height;
 
@@ -369,11 +369,14 @@ gfx::Size StyledLabel::CalculateAndDoLayout(int width, bool dry_run) {
             chunk_bounds.height(), gfx::WRAP_LONG_WORDS, &substrings);
 
         if (substrings.empty()) {
-          // There is no room for anything; abort. Since wrapping is enabled,
-          // this should only occur if there is insufficient vertical space
-          // remaining. ElideRectangleText always adds a single character, even
-          // if there is no room horizontally.
+          // There is no room for anything. Since wrapping is enabled, this
+          // should only occur if there is insufficient vertical space
+          // remaining. ElideRectangleText() always adds a single character,
+          // even if there is no room horizontally.
           DCHECK_NE(0, elide_result & gfx::INSUFFICIENT_SPACE_VERTICAL);
+          // There's no way to continue processing; clear |remaining_string| so
+          // the outer loop will terminate after this iteration completes.
+          remaining_string.clear();
           break;
         }
 
@@ -393,8 +396,7 @@ gfx::Size StyledLabel::CalculateAndDoLayout(int width, bool dry_run) {
           // line. As for the first line, don't advance line number so that it
           // will be handled again at the beginning of the loop.
           if (offset.x() != 0 || line > 0)
-            AdvanceOneLine(&line, &offset, &line_height, width,
-                           &views_in_a_line);
+            break;
           DCHECK(views_in_a_line.empty());
           continue;
         }
@@ -428,8 +430,7 @@ gfx::Size StyledLabel::CalculateAndDoLayout(int width, bool dry_run) {
             position == range.start() && offset.x() != 0) {
           // If the chunk should not be wrapped, try to fit it entirely on the
           // next line.
-          AdvanceOneLine(&line, &offset, &line_height, width, &views_in_a_line);
-          continue;
+          break;
         }
 
         if (chunk.size() > range.end() - position)
@@ -489,34 +490,26 @@ gfx::Size StyledLabel::CalculateAndDoLayout(int width, bool dry_run) {
       // substring has different style), proceed to the next line.
       if (!custom_view && substrings.size() > 1 &&
           chunk.size() == substrings[0].size()) {
-        AdvanceOneLine(&line, &offset, &line_height, width, &views_in_a_line);
+        break;
       }
     }
-    AdvanceOneLine(&line, &offset, &line_height, width, &views_in_a_line);
+
+    // Adjust the positions of the views in the line.
+    const int x_delta =
+        HorizontalAdjustment(offset.x(), width, horizontal_alignment_);
+    for (auto* view : views_in_a_line) {
+      view->SetPosition({view->x() + x_delta,
+                         offset.y() + (line_height - view->height()) / 2.0f});
+    }
+
+    // Move to the next line.
+    ++line;
+    offset = gfx::Point(0, offset.y() + line_height);
   }
+
   DCHECK_LE(used_width, width);
   calculated_size_ = gfx::Size(used_width + GetInsets().width(), total_height);
   return calculated_size_;
-}
-
-void StyledLabel::AdvanceOneLine(int* line_number,
-                                 gfx::Point* offset,
-                                 int* line_height,
-                                 int width,
-                                 std::vector<View*>* views_in_a_line) {
-  const int x_delta =
-      HorizontalAdjustment(offset->x(), width, horizontal_alignment_);
-  for (auto* view : *views_in_a_line) {
-    gfx::Rect bounds = view->bounds();
-    bounds.set_x(bounds.x() + x_delta);
-    bounds.set_y(offset->y() + (*line_height - bounds.height()) / 2.0f);
-    view->SetBoundsRect(bounds);
-  }
-  views_in_a_line->clear();
-
-  ++(*line_number);
-  *offset = gfx::Point(0, offset->y() + *line_height);
-  *line_height = GetDefaultLineHeight();
 }
 
 std::unique_ptr<Label> StyledLabel::CreateLabel(
