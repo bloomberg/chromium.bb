@@ -1,7 +1,6 @@
 import { Logger } from './logger.js';
 import { TestFilterResult } from './test_filter/index.js';
 import { RunCase } from './test_group.js';
-import { makeQueryString } from './url_query.js';
 
 export interface FilterResultTreeNode {
   //description?: string;
@@ -48,14 +47,15 @@ export function treeFromFilterResults(
     if (!('g' in f.spec)) continue;
 
     const [tRec] = log.record(f.id);
+    const fId = f.id.suite + ':' + f.id.path;
     for (const t of f.spec.g.iterate(tRec)) {
       let cases = tests;
       for (const path of iteratePath(t.id.test, '~')) {
-        cases = insertOrNew(cases, makeQueryString(f.id) + path);
+        cases = insertOrNew(cases, fId + ':' + path);
       }
 
       const p = t.id.params ? JSON.stringify(t.id.params) : '';
-      cases.children!.set(makeQueryString(f.id) + t.id.test + '=' + p, {
+      cases.children!.set(fId + ':' + t.id.test + '=' + p, {
         runCase: t,
       });
     }

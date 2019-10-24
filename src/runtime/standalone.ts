@@ -4,6 +4,7 @@ import { RunCase } from '../framework/index.js';
 import { TestLoader } from '../framework/loader.js';
 import { Logger } from '../framework/logger.js';
 import { FilterResultTreeNode, treeFromFilterResults } from '../framework/tree.js';
+import { encodeSelectively } from '../framework/url_query.js';
 
 window.onbeforeunload = () => {
   // Prompt user before reloading if there are any results
@@ -94,7 +95,7 @@ function makeSubtreeChildrenHTML(
 ): RunSubtree {
   const runSubtreeFns: RunSubtree[] = [];
   for (const [n, subtree] of children) {
-    const [subtreeHTML, runSubtree] = makeTreeNodeHTML(n, subtree);
+    const [subtreeHTML, runSubtree] = makeTreeNodeHTML(encodeSelectively(n), subtree);
     div.append(subtreeHTML);
     runSubtreeFns.push(runSubtree);
   }
