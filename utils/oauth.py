@@ -31,6 +31,7 @@ from pyasn1.codec.der import decoder
 from pyasn1.type import univ
 import requests
 import rsa
+import six
 from six.moves import BaseHTTPServer, urllib
 
 from libs import luci_context
@@ -466,7 +467,11 @@ def _monkey_patch_oauth2client_locked_file():
   for a few ms, there's a risk of one getting the lock of another instance, and
   this raises, particularly on Windows. Workaround by enforcing retry.
   """
-  locked_file.LockedFile.open_and_lock.im_func.func_defaults = (60, 0.05)
+  if six.PY2:
+    # Python2 does not allow to replace __defaults__.
+    locked_file.LockedFile.open_and_lock.__func__.func_defaults = (60, 0.05)
+  else:
+    locked_file.LockedFile.open_and_lock.__defaults__ = (60, 0.05)
 
 
 # Service account related code.
