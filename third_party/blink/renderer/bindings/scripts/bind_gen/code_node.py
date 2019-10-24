@@ -58,8 +58,10 @@ class CodeNode(object):
 
         def __init__(self):
             # Symbols used in generated code, but not yet defined.  See also
-            # SymbolNode.
-            self.undefined_code_symbols = set()
+            # SymbolNode.  Code symbols are accumulated in order from the first
+            # appearance to the last.  This order affects the insertion order of
+            # SymbolDefinitionNodes at SymbolScopeNode.
+            self.undefined_code_symbols = []
 
     class _LooseFormatter(string.Formatter):
         def get_value(self, key, args, kwargs):
@@ -294,7 +296,8 @@ class CodeNode(object):
         """Receives a report of use of an undefined symbol node."""
         assert isinstance(symbol_node, SymbolNode)
         state = self.current_render_state
-        state.undefined_code_symbols.add(symbol_node)
+        if symbol_node not in state.undefined_code_symbols:
+            state.undefined_code_symbols.append(symbol_node)
 
     def likeliness_of_undefined_code_symbol_usage(self, symbol_node):
         """
@@ -544,11 +547,7 @@ class SymbolScopeNode(SequenceNode):
         self._registered_code_symbols = set()
 
     def _render(self, renderer, last_render_state):
-        # Sort nodes in order to render reproducible results.
-        symbol_nodes = sorted(
-            last_render_state.undefined_code_symbols,
-            key=lambda symbol_node: symbol_node.name)
-        for symbol_node in symbol_nodes:
+        for symbol_node in last_render_state.undefined_code_symbols:
             if (self.is_code_symbol_registered(symbol_node)
                     and not self.is_code_symbol_defined(symbol_node)):
                 self._insert_symbol_definition(symbol_node)
