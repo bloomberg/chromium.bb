@@ -31528,6 +31528,25 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   </int>
 </enum>
 
+<enum name="ImeHandwritingActions">
+  <int value="0" label="InsertCreatedByUnknown"/>
+  <int value="1" label="InsertCreatedAfterDelete"/>
+  <int value="2" label="InsertCreatedByTouchTap"/>
+  <int value="3" label="InsertCreatedByPenTap"/>
+  <int value="4" label="InsertCreatedByUpCaret"/>
+  <int value="5" label="InsertCreatedByDownCaret"/>
+  <int value="6" label="EmptyInsertRangeClosed"/>
+  <int value="7" label="InsertRangeWithTextClosed"/>
+  <int value="8" label="DeletedSingleWord"/>
+  <int value="9" label="UndoInsertCreatedByUnknown"/>
+  <int value="10" label="UndoInsertCreatedAfterDelete"/>
+  <int value="11" label="UndoInsertCreatedByTouchTap"/>
+  <int value="12" label="UndoInsertCreatedByPenTap"/>
+  <int value="13" label="UndoInsertCreatedByUpCaret"/>
+  <int value="14" label="UndoInsertCreatedByDownCaret"/>
+  <int value="15" label="UndoDeletedSingleWord"/>
+</enum>
+
 <enum name="ImeMenuButtonType">
   <int value="0" label="Unknown"/>
   <int value="1" label="Emoji"/>
