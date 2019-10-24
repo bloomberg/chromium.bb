@@ -437,6 +437,19 @@ void ProfileMenuViewBase::AddFeatureButton(const gfx::ImageSkia& icon,
 
 void ProfileMenuViewBase::SetProfileManagementHeading(
     const base::string16& heading) {
+  constexpr int kSeparatorMargins = 4;
+
+  // Add separator before heading.
+  profile_mgmt_separator_container_->RemoveAllChildViews(
+      /*delete_children=*/true);
+  profile_mgmt_separator_container_->SetLayoutManager(
+      std::make_unique<views::FillLayout>());
+  profile_mgmt_separator_container_->SetBorder(views::CreateEmptyBorder(
+      gfx::Insets(kSeparatorMargins, /*horizontal=*/0)));
+  profile_mgmt_separator_container_->AddChildView(
+      std::make_unique<views::Separator>());
+
+  // Initialize heading layout.
   profile_mgmt_heading_container_->RemoveAllChildViews(
       /*delete_children=*/true);
   profile_mgmt_heading_container_->SetLayoutManager(
@@ -444,6 +457,7 @@ void ProfileMenuViewBase::SetProfileManagementHeading(
   profile_mgmt_heading_container_->SetBorder(views::CreateEmptyBorder(
       gfx::Insets(kDefaultVerticalMargin, kMenuEdgeMargin)));
 
+  // Add heading.
   views::Label* label = profile_mgmt_heading_container_->AddChildView(
       std::make_unique<views::Label>(heading, views::style::CONTEXT_LABEL,
                                      STYLE_HINT));
@@ -629,20 +643,24 @@ void ProfileMenuViewBase::Reset() {
       components->AddChildView(std::make_unique<views::View>());
   features_container_ =
       components->AddChildView(std::make_unique<views::View>());
-  // Second, add the profile management header.
-  components->AddChildView(new views::Separator());
-  auto profile_header = std::make_unique<views::View>();
-  views::BoxLayout* profile_header_layout = profile_header->SetLayoutManager(
-      CreateBoxLayout(views::BoxLayout::Orientation::kHorizontal,
-                      views::BoxLayout::CrossAxisAlignment::kCenter));
+  profile_mgmt_separator_container_ =
+      components->AddChildView(std::make_unique<views::View>());
+  // Second, add the profile management header. This includes the heading and
+  // the shortcut feature(s) next to it.
+  auto profile_mgmt_header = std::make_unique<views::View>();
+  views::BoxLayout* profile_mgmt_header_layout =
+      profile_mgmt_header->SetLayoutManager(
+          CreateBoxLayout(views::BoxLayout::Orientation::kHorizontal,
+                          views::BoxLayout::CrossAxisAlignment::kCenter));
   profile_mgmt_heading_container_ =
-      profile_header->AddChildView(std::make_unique<views::View>());
-  profile_header_layout->SetFlexForView(profile_mgmt_heading_container_, 1);
+      profile_mgmt_header->AddChildView(std::make_unique<views::View>());
+  profile_mgmt_header_layout->SetFlexForView(profile_mgmt_heading_container_,
+                                             1);
   profile_mgmt_shortcut_features_container_ =
-      profile_header->AddChildView(std::make_unique<views::View>());
-  profile_header_layout->SetFlexForView(
+      profile_mgmt_header->AddChildView(std::make_unique<views::View>());
+  profile_mgmt_header_layout->SetFlexForView(
       profile_mgmt_shortcut_features_container_, 0);
-  components->AddChildView(std::move(profile_header));
+  components->AddChildView(std::move(profile_mgmt_header));
   // Third, add the profile management buttons.
   selectable_profiles_container_ =
       components->AddChildView(std::make_unique<views::View>());
