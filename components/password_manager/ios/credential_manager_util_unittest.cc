@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/passwords/credential_manager_util.h"
+#include "components/password_manager/ios/credential_manager_util.h"
 
 #include <memory>
 
@@ -13,9 +13,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
-using password_manager::CredentialInfo;
-using password_manager::CredentialMediationRequirement;
-using password_manager::CredentialType;
+namespace password_manager {
 
 namespace {
 
@@ -254,3 +252,5 @@ TEST_F(CredentialManagerUtilTest, ParseFederations) {
   json.SetString(kCredentialRequestProvidersKey, kTestWebOrigin);
   EXPECT_FALSE(ParseFederations(json, &federations));
 }
+
+}  // namespace password_manager

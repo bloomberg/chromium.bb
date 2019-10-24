@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ssl/ios_security_state_tab_helper.h"
+#include "components/security_state/ios/security_state_utils.h"
 
 #include "components/security_state/core/security_state.h"
-#import "ios/chrome/browser/ssl/insecure_input_tab_helper.h"
+#import "components/security_state/ios/insecure_input_tab_helper.h"
 #import "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 #include "ios/web/public/security/ssl_status.h"
@@ -18,7 +18,7 @@
 // This test fixture creates an IOSSecurityStateTabHelper and an
 // InsecureInputTabHelper for the WebState, then loads a non-secure
 // HTML document.
-class IOSSecurityStateTabHelperTest : public web::WebTestWithWebState {
+class SecurityStateUtilsTest : public web::WebTestWithWebState {
  protected:
   void SetUp() override {
     web::WebTestWithWebState::SetUp();
@@ -26,14 +26,12 @@ class IOSSecurityStateTabHelperTest : public web::WebTestWithWebState {
     insecure_input_ = InsecureInputTabHelper::FromWebState(web_state());
     ASSERT_TRUE(insecure_input_);
 
-    IOSSecurityStateTabHelper::CreateForWebState(web_state());
     LoadHtml(@"<html><body></body></html>", GURL("http://chromium.test"));
   }
 
   // Returns the InsecureInputEventData for current WebState().
   security_state::InsecureInputEventData GetInsecureInputEventData() const {
-    return IOSSecurityStateTabHelper::FromWebState(web_state())
-        ->GetVisibleSecurityState()
+    return security_state::GetVisibleSecurityStateForWebState(web_state())
         ->insecure_input_events;
   }
 
@@ -45,7 +43,7 @@ class IOSSecurityStateTabHelperTest : public web::WebTestWithWebState {
 
 // Ensures that |insecure_field_edited| is set only when an editing event has
 // been reported.
-TEST_F(IOSSecurityStateTabHelperTest, SecurityInfoAfterEditing) {
+TEST_F(SecurityStateUtilsTest, SecurityInfoAfterEditing) {
   // Verify |insecure_field_edited| is not set prematurely.
   security_state::InsecureInputEventData events = GetInsecureInputEventData();
   EXPECT_FALSE(events.insecure_field_edited);
@@ -59,7 +57,7 @@ TEST_F(IOSSecurityStateTabHelperTest, SecurityInfoAfterEditing) {
 
 // Ensures that re-navigating to the same page does not keep
 // |insecure_field_set| set.
-TEST_F(IOSSecurityStateTabHelperTest, InsecureInputClearedOnRenavigation) {
+TEST_F(SecurityStateUtilsTest, InsecureInputClearedOnRenavigation) {
   // Simulate an edit and verify |insecure_field_edited| is noted in the
   // insecure_input_events.
   insecure_input()->DidEditFieldInInsecureContext();

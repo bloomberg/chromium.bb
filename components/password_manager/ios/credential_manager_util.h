@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_PASSWORDS_CREDENTIAL_MANAGER_UTIL_H_
-#define IOS_CHROME_BROWSER_PASSWORDS_CREDENTIAL_MANAGER_UTIL_H_
+#ifndef COMPONENTS_PASSWORD_MANAGER_IOS_CREDENTIAL_MANAGER_UTIL_H_
+#define COMPONENTS_PASSWORD_MANAGER_IOS_CREDENTIAL_MANAGER_UTIL_H_
 
 #include "base/values.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
@@ -11,6 +11,8 @@
 namespace web {
 class WebState;
 }
+
+namespace password_manager {
 
 // Keys for obtaining common Credential's fields from DictionaryValue
 // representing the Credential. Keys below correspond to JavaScript
@@ -87,4 +89,6 @@ bool ParseCredentialDictionary(const base::DictionaryValue& json,
 // ignore API calls from insecure context.
 bool WebStateContentIsSecureHtml(const web::WebState* web_state);
 
-#endif  // IOS_CHROME_BROWSER_PASSWORDS_CREDENTIAL_MANAGER_UTIL_H_
+}  // namespace password_manager
+
+#endif  // COMPONENTS_PASSWORD_MANAGER_IOS_CREDENTIAL_MANAGER_UTIL_H_

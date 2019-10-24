@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_SSL_INSECURE_INPUT_TAB_HELPER_H_
-#define IOS_CHROME_BROWSER_SSL_INSECURE_INPUT_TAB_HELPER_H_
+#ifndef COMPONENTS_SECURITY_STATE_IOS_INSECURE_INPUT_TAB_HELPER_H_
+#define COMPONENTS_SECURITY_STATE_IOS_INSECURE_INPUT_TAB_HELPER_H_
 
 #include <string>
 
@@ -54,4 +54,4 @@ class InsecureInputTabHelper
   DISALLOW_COPY_AND_ASSIGN(InsecureInputTabHelper);
 };
 
-#endif  // IOS_CHROME_BROWSER_SSL_INSECURE_INPUT_TAB_HELPER_H_
+#endif  // COMPONENTS_SECURITY_STATE_IOS_INSECURE_INPUT_TAB_HELPER_H_

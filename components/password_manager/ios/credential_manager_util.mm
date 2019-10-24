@@ -2,37 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/passwords/credential_manager_util.h"
+#include "components/password_manager/ios/credential_manager_util.h"
 
-#include "components/security_state/core/security_state.h"
-#include "ios/chrome/browser/ssl/ios_security_state_tab_helper.h"
+#include "components/security_state/ios/security_state_utils.h"
 #import "ios/web/common/origin_util.h"
+#import "ios/web/public/web_state.h"
 #include "url/origin.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-using password_manager::CredentialManagerError;
-using password_manager::CredentialInfo;
-using password_manager::CredentialType;
-using password_manager::CredentialMediationRequirement;
-
-namespace {
-
-security_state::SecurityLevel GetSecurityLevelForWebState(
-    const web::WebState* web_state) {
-  if (!web_state) {
-    return security_state::NONE;
-  }
-  auto* client = IOSSecurityStateTabHelper::FromWebState(web_state);
-  if (!client) {
-    return security_state::NONE;
-  }
-  return client->GetSecurityLevel();
-}
-
-}  // namespace
+namespace password_manager {
 
 const char kCredentialIdKey[] = "_id";
 const char kCredentialTypeKey[] = "_type";
@@ -221,6 +202,8 @@ bool WebStateContentIsSecureHtml(const web::WebState* web_state) {
 
   // If scheme is cryptographic, valid SSL certificate is required.
   security_state::SecurityLevel security_level =
-      GetSecurityLevelForWebState(web_state);
+      security_state::GetSecurityLevelForWebState(web_state);
   return security_state::IsSslCertificateValid(security_level);
 }
+
+}  // namespace password_manager
