@@ -152,7 +152,7 @@ public final class BrowserController {
         }
     }
 
-    private final class DownloadDelegateClientImpl extends IDownloadDelegateClient.Stub {
+    private static final class DownloadDelegateClientImpl extends IDownloadDelegateClient.Stub {
         private final DownloadDelegate mDelegate;
 
         DownloadDelegateClientImpl(DownloadDelegate delegate) {
@@ -171,7 +171,7 @@ public final class BrowserController {
         }
     }
 
-    private final class FullscreenDelegateClientImpl extends IFullscreenDelegateClient.Stub {
+    private static final class FullscreenDelegateClientImpl extends IFullscreenDelegateClient.Stub {
         private FullscreenDelegate mDelegate;
 
         /* package */ FullscreenDelegateClientImpl(FullscreenDelegate delegate) {
