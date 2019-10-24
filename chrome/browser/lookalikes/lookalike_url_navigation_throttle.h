@@ -23,8 +23,6 @@ class NavigationHandle;
 
 class Profile;
 
-namespace lookalikes {
-
 struct DomainInfo;
 
 // Returns true if the domain given by |domain_info| is a top domain.
@@ -126,7 +124,5 @@ class LookalikeUrlNavigationThrottle : public content::NavigationThrottle {
   Profile* profile_;
   base::WeakPtrFactory<LookalikeUrlNavigationThrottle> weak_factory_{this};
 };
-
-}  // namespace lookalikes
 
 #endif  // CHROME_BROWSER_LOOKALIKES_LOOKALIKE_URL_NAVIGATION_THROTTLE_H_

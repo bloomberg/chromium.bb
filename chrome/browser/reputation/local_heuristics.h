@@ -23,8 +23,8 @@ namespace safety_tips {
 // navigated domain is a lookalike to, in the passed |safe_url|.
 bool ShouldTriggerSafetyTipFromLookalike(
     const GURL& url,
-    const lookalikes::DomainInfo& navigated_domain,
-    const std::vector<lookalikes::DomainInfo>& engaged_sites,
+    const DomainInfo& navigated_domain,
+    const std::vector<DomainInfo>& engaged_sites,
     GURL* safe_url);
 
 // Checks to see whether a given URL contains sensitive keywords in a way

@@ -28,8 +28,6 @@ namespace {
 
 using chrome_browser_safety_tips::FlaggedPage;
 using chrome_browser_safety_tips::UrlPattern;
-using lookalikes::DomainInfo;
-using lookalikes::LookalikeUrlService;
 using safe_browsing::V4ProtocolManagerUtil;
 using safety_tips::ReputationService;
 
@@ -208,7 +206,7 @@ void ReputationService::GetReputationStatusWithEngagedSites(
     ReputationCheckCallback callback,
     const GURL& url,
     const std::vector<DomainInfo>& engaged_sites) {
-  const DomainInfo navigated_domain = lookalikes::GetDomainInfo(url);
+  const DomainInfo navigated_domain = GetDomainInfo(url);
 
   // 0. Server-side warning suppression.
   // If the URL is on the allowlist list, do nothing else. This is only used to
@@ -245,7 +243,7 @@ void ReputationService::GetReputationStatusWithEngagedSites(
   // 3. Protect against bad false positives by allowing top domains.
   // Empty domain_and_registry happens on private domains.
   if (navigated_domain.domain_and_registry.empty() ||
-      lookalikes::IsTopDomain(navigated_domain)) {
+      IsTopDomain(navigated_domain)) {
     std::move(callback).Run(security_state::SafetyTipStatus::kNone,
                             IsIgnored(url), url, GURL());
     return;

@@ -17,10 +17,7 @@
 #include "url/origin.h"
 
 class Profile;
-
-namespace lookalikes {
 struct DomainInfo;
-}
 
 namespace safety_tips {
 
@@ -67,7 +64,7 @@ class ReputationService : public KeyedService {
   void GetReputationStatusWithEngagedSites(
       ReputationCheckCallback callback,
       const GURL& url,
-      const std::vector<lookalikes::DomainInfo>& engaged_sites);
+      const std::vector<DomainInfo>& engaged_sites);
 
   // Set of origins that we've warned about, and the user has explicitly
   // ignored.  Used to avoid re-warning the user.

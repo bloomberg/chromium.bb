@@ -29,19 +29,19 @@ namespace safety_tips {
 
 bool ShouldTriggerSafetyTipFromLookalike(
     const GURL& url,
-    const lookalikes::DomainInfo& navigated_domain,
-    const std::vector<lookalikes::DomainInfo>& engaged_sites,
+    const DomainInfo& navigated_domain,
+    const std::vector<DomainInfo>& engaged_sites,
     GURL* safe_url) {
   std::string matched_domain;
   MatchType match_type;
 
-  if (!lookalikes::LookalikeUrlNavigationThrottle::GetMatchingDomain(
+  if (!LookalikeUrlNavigationThrottle::GetMatchingDomain(
           navigated_domain, engaged_sites, &matched_domain, &match_type)) {
     return false;
   }
 
   // If we're already displaying an interstitial, don't warn again.
-  if (lookalikes::LookalikeUrlNavigationThrottle::ShouldDisplayInterstitial(
+  if (LookalikeUrlNavigationThrottle::ShouldDisplayInterstitial(
           match_type, navigated_domain)) {
     return false;
   }
@@ -74,7 +74,7 @@ bool ShouldTriggerSafetyTipFromKeywordInURL(
   // "eTLD + 1 - 1": "www.google.com" -> "google"
   std::string eTLD_plusminus;
   base::TrimString(url_formatter::top_domains::HostnameWithoutRegistry(
-                       lookalikes::GetETLDPlusOne(url.host())),
+                       GetETLDPlusOne(url.host())),
                    ".", &eTLD_plusminus);
   DCHECK(eTLD_plusminus.find('.') == std::string::npos);
 
