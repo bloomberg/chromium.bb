@@ -1243,6 +1243,8 @@ fyi_coverage_builder(
 fyi_coverage_builder(
     name = 'win10-code-coverage',
     builderless = True,
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
     os = os.WINDOWS_DEFAULT,
     ssd = True,
     use_clang_coverage = True,
