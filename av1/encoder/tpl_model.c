@@ -609,6 +609,7 @@ static AOM_INLINE void mc_flow_dispenser(AV1_COMP *cpi, int frame_idx,
   unsigned int ref_frame_display_index[7];
   MV_REFERENCE_FRAME ref[2] = { LAST_FRAME, INTRA_FRAME };
   const int max_allowed_refs = get_max_allowed_ref_frames(cpi);
+  int total_valid_refs = 0;
   const YV12_BUFFER_CONFIG *src_frame[7] = { NULL, NULL, NULL, NULL,
                                              NULL, NULL, NULL };
 
@@ -649,6 +650,10 @@ static AOM_INLINE void mc_flow_dispenser(AV1_COMP *cpi, int frame_idx,
     }
   }
 
+  for (idx = 0; idx < INTER_REFS_PER_FRAME; ++idx) {
+    if (ref_frame[idx] != NULL) total_valid_refs++;
+  }
+
   // Skip motion estimation w.r.t. reference frames which are not
   // considered in RD search, using "selective_ref_frame" speed feature
   for (idx = 0; idx < INTER_REFS_PER_FRAME; ++idx) {
@@ -660,10 +665,10 @@ static AOM_INLINE void mc_flow_dispenser(AV1_COMP *cpi, int frame_idx,
   }
 
   // Skip reference frames based on user options and speed.
-  for (idx = 0; idx < AOMMIN(4, INTER_REFS_PER_FRAME - max_allowed_refs);
-       ++idx) {
+  for (idx = 0; idx < 4 && total_valid_refs > max_allowed_refs; ++idx) {
     const MV_REFERENCE_FRAME ref_frame_to_disable = disable_order[idx];
     ref_frame[ref_frame_to_disable - 1] = NULL;
+    total_valid_refs--;
   }
 
   // Make a temporary mbmi for tpl model

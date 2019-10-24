@@ -399,14 +399,14 @@ static INLINE int prune_ref_by_selective_ref_frame(
         if (av1_encoder_get_relative_dist(
                 order_hint_info,
                 ref_display_order_hint[LAST3_FRAME - LAST_FRAME],
-                ref_display_order_hint[GOLDEN_FRAME - LAST_FRAME]) <= 0)
+                ref_display_order_hint[GOLDEN_FRAME - LAST_FRAME]) < 0)
           return 1;
       }
       if (ref_frame[0] == LAST2_FRAME || ref_frame[1] == LAST2_FRAME) {
         if (av1_encoder_get_relative_dist(
                 order_hint_info,
                 ref_display_order_hint[LAST2_FRAME - LAST_FRAME],
-                ref_display_order_hint[GOLDEN_FRAME - LAST_FRAME]) <= 0)
+                ref_display_order_hint[GOLDEN_FRAME - LAST_FRAME]) < 0)
           return 1;
       }
     }
