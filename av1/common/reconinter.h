@@ -238,17 +238,13 @@ static INLINE int get_interintra_wedge_bits(BLOCK_SIZE sb_type) {
 void av1_make_inter_predictor(const uint8_t *src, int src_stride, uint8_t *dst,
                               int dst_stride,
                               InterPredParams *inter_pred_params,
-                              const SubpelParams *subpel_params,
-                              ConvolveParams *conv_params,
-                              int_interpfilters interp_filters);
+                              const SubpelParams *subpel_params);
 
 void av1_make_masked_inter_predictor(const uint8_t *pre, int pre_stride,
                                      uint8_t *dst, int dst_stride,
                                      InterPredParams *inter_pred_params,
                                      const SubpelParams *subpel_params, int w,
-                                     int h, ConvolveParams *conv_params,
-                                     int_interpfilters interp_filters,
-                                     int plane, MACROBLOCKD *xd);
+                                     int h, int plane, MACROBLOCKD *xd);
 
 // TODO(jkoleszar): yet another mv clamping function :-(
 static INLINE MV clamp_mv_to_umv_border_sb(const MACROBLOCKD *xd,

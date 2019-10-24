@@ -706,9 +706,9 @@ static INLINE void dec_build_inter_predictors(const AV1_COMMON *cm,
         int tmp_dst_stride = 8;
         InterPredParams inter_pred_params;
         assert(bw < 8 || bh < 8);
-        ConvolveParams conv_params = get_conv_params_no_round(
+        inter_pred_params.conv_params = get_conv_params_no_round(
             0, plane, xd->tmp_conv_dst, tmp_dst_stride, is_compound, xd->bd);
-        conv_params.use_dist_wtd_comp_avg = 0;
+        inter_pred_params.conv_params.use_dist_wtd_comp_avg = 0;
         struct buf_2d *const dst_buf = &pd->dst;
         uint8_t *dst = dst_buf->buf + dst_buf->stride * y + x;
 
@@ -750,10 +750,10 @@ static INLINE void dec_build_inter_predictors(const AV1_COMMON *cm,
         extend_mc_border(sf, pre_buf, scaled_mv, block, subpel_x_mv,
                          subpel_y_mv, 0, is_intrabc, highbd, xd->mc_buf[ref],
                          &pre, &src_stride);
-        conv_params.do_average = ref;
+        inter_pred_params.conv_params.do_average = ref;
         if (is_masked_compound_type(mi->interinter_comp.type)) {
           // masked compound type has its own average mechanism
-          conv_params.do_average = 0;
+          inter_pred_params.conv_params.do_average = 0;
         }
 
         av1_init_inter_params(
@@ -763,8 +763,7 @@ static INLINE void dec_build_inter_predictors(const AV1_COMMON *cm,
             this_mbmi->interp_filters);
 
         av1_make_inter_predictor(pre, src_stride, dst, dst_buf->stride,
-                                 &inter_pred_params, &subpel_params,
-                                 &conv_params, this_mbmi->interp_filters);
+                                 &inter_pred_params, &subpel_params);
 
         ++col;
       }
@@ -813,11 +812,12 @@ static INLINE void dec_build_inter_predictors(const AV1_COMMON *cm,
                        &src_stride[ref]);
     }
 
-    ConvolveParams conv_params = get_conv_params_no_round(
+    inter_pred_params.conv_params = get_conv_params_no_round(
         0, plane, xd->tmp_conv_dst, MAX_SB_SIZE, is_compound, xd->bd);
     av1_dist_wtd_comp_weight_assign(
-        cm, mi, 0, &conv_params.fwd_offset, &conv_params.bck_offset,
-        &conv_params.use_dist_wtd_comp_avg, is_compound);
+        cm, mi, 0, &inter_pred_params.conv_params.fwd_offset,
+        &inter_pred_params.conv_params.bck_offset,
+        &inter_pred_params.conv_params.use_dist_wtd_comp_avg, is_compound);
 
     for (ref = 0; ref < 1 + is_compound; ++ref) {
       const struct scale_factors *const sf =
@@ -825,10 +825,10 @@ static INLINE void dec_build_inter_predictors(const AV1_COMMON *cm,
       WarpTypesAllowed warp_types;
       warp_types.global_warp_allowed = is_global[ref];
       warp_types.local_warp_allowed = mi->motion_mode == WARPED_CAUSAL;
-      conv_params.do_average = ref;
+      inter_pred_params.conv_params.do_average = ref;
       if (is_masked_compound_type(mi->interinter_comp.type)) {
         // masked compound type has its own average mechanism
-        conv_params.do_average = 0;
+        inter_pred_params.conv_params.do_average = 0;
       }
 
       av1_init_inter_params(
@@ -841,14 +841,13 @@ static INLINE void dec_build_inter_predictors(const AV1_COMMON *cm,
                              ref, xd, mi);
 
       if (ref && is_masked_compound_type(mi->interinter_comp.type))
-        av1_make_masked_inter_predictor(
-            pre[ref], src_stride[ref], dst, dst_buf->stride, &inter_pred_params,
-            &subpel_params[ref], bw, bh, &conv_params, mi->interp_filters,
-            plane, xd);
+        av1_make_masked_inter_predictor(pre[ref], src_stride[ref], dst,
+                                        dst_buf->stride, &inter_pred_params,
+                                        &subpel_params[ref], bw, bh, plane, xd);
       else
-        av1_make_inter_predictor(
-            pre[ref], src_stride[ref], dst, dst_buf->stride, &inter_pred_params,
-            &subpel_params[ref], &conv_params, mi->interp_filters);
+        av1_make_inter_predictor(pre[ref], src_stride[ref], dst,
+                                 dst_buf->stride, &inter_pred_params,
+                                 &subpel_params[ref]);
     }
   }
 }

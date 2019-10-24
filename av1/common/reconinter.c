@@ -107,12 +107,9 @@ void av1_init_warp_params(InterPredParams *inter_pred_params,
 void av1_make_inter_predictor(const uint8_t *src, int src_stride, uint8_t *dst,
                               int dst_stride,
                               InterPredParams *inter_pred_params,
-                              const SubpelParams *subpel_params,
-                              ConvolveParams *conv_params,
-                              int_interpfilters interp_filters) {
-  assert(IMPLIES(conv_params->is_compound, conv_params->dst != NULL));
-
-  (void)interp_filters;
+                              const SubpelParams *subpel_params) {
+  assert(IMPLIES(inter_pred_params->conv_params.is_compound,
+                 inter_pred_params->conv_params.dst != NULL));
 
   // TODO(jingning): av1_warp_plane() can be further cleaned up.
   if (inter_pred_params->mode == WARP_PRED) {
@@ -125,31 +122,31 @@ void av1_make_inter_predictor(const uint8_t *src, int src_stride, uint8_t *dst,
         inter_pred_params->pix_col, inter_pred_params->pix_row,
         inter_pred_params->block_width, inter_pred_params->block_height,
         dst_stride, inter_pred_params->subsampling_x,
-        inter_pred_params->subsampling_y, conv_params);
+        inter_pred_params->subsampling_y, &inter_pred_params->conv_params);
   } else if (inter_pred_params->mode == UNIFORM_PRED) {
     // TODO(jingning): is_intrabc related convolve function can be refactored
     // and streamlined.
 #if CONFIG_AV1_HIGHBITDEPTH
     if (inter_pred_params->use_hbd_buf) {
-      highbd_inter_predictor(src, src_stride, dst, dst_stride, subpel_params,
-                             inter_pred_params->scale_factors,
-                             inter_pred_params->block_width,
-                             inter_pred_params->block_height, conv_params,
-                             inter_pred_params->interp_filter_params,
-                             inter_pred_params->bit_depth);
+      highbd_inter_predictor(
+          src, src_stride, dst, dst_stride, subpel_params,
+          inter_pred_params->scale_factors, inter_pred_params->block_width,
+          inter_pred_params->block_height, &inter_pred_params->conv_params,
+          inter_pred_params->interp_filter_params,
+          inter_pred_params->bit_depth);
     } else {
-      inter_predictor(src, src_stride, dst, dst_stride, subpel_params,
-                      inter_pred_params->scale_factors,
-                      inter_pred_params->block_width,
-                      inter_pred_params->block_height, conv_params,
-                      inter_pred_params->interp_filter_params);
+      inter_predictor(
+          src, src_stride, dst, dst_stride, subpel_params,
+          inter_pred_params->scale_factors, inter_pred_params->block_width,
+          inter_pred_params->block_height, &inter_pred_params->conv_params,
+          inter_pred_params->interp_filter_params);
     }
 #else
-    inter_predictor(src, src_stride, dst, dst_stride, subpel_params,
-                    inter_pred_params->scale_factors,
-                    inter_pred_params->block_width,
-                    inter_pred_params->block_height, conv_params,
-                    inter_pred_params->interp_filter_params);
+    inter_predictor(
+        src, src_stride, dst, dst_stride, subpel_params,
+        inter_pred_params->scale_factors, inter_pred_params->block_width,
+        inter_pred_params->block_height, &inter_pred_params->conv_params,
+        inter_pred_params->interp_filter_params);
 #endif
   }
 }
@@ -584,9 +581,7 @@ void av1_make_masked_inter_predictor(const uint8_t *pre, int pre_stride,
                                      uint8_t *dst, int dst_stride,
                                      InterPredParams *inter_pred_params,
                                      const SubpelParams *subpel_params, int w,
-                                     int h, ConvolveParams *conv_params,
-                                     int_interpfilters interp_filters,
-                                     int plane, MACROBLOCKD *xd) {
+                                     int h, int plane, MACROBLOCKD *xd) {
   MB_MODE_INFO *mi = xd->mi[0];
   mi->interinter_comp.seg_mask = xd->seg_mask;
   const INTERINTER_COMPOUND_DATA *comp_data = &mi->interinter_comp;
@@ -598,26 +593,26 @@ void av1_make_masked_inter_predictor(const uint8_t *pre, int pre_stride,
   uint8_t *tmp_dst = get_buf_by_bd(xd, tmp_buf);
 
   const int tmp_buf_stride = MAX_SB_SIZE;
-  CONV_BUF_TYPE *org_dst = conv_params->dst;
-  int org_dst_stride = conv_params->dst_stride;
+  CONV_BUF_TYPE *org_dst = inter_pred_params->conv_params.dst;
+  int org_dst_stride = inter_pred_params->conv_params.dst_stride;
   CONV_BUF_TYPE *tmp_buf16 = (CONV_BUF_TYPE *)tmp_buf;
-  conv_params->dst = tmp_buf16;
-  conv_params->dst_stride = tmp_buf_stride;
-  assert(conv_params->do_average == 0);
+  inter_pred_params->conv_params.dst = tmp_buf16;
+  inter_pred_params->conv_params.dst_stride = tmp_buf_stride;
+  assert(inter_pred_params->conv_params.do_average == 0);
 
   // This will generate a prediction in tmp_buf for the second reference
   av1_make_inter_predictor(pre, pre_stride, tmp_dst, MAX_SB_SIZE,
-                           inter_pred_params, subpel_params, conv_params,
-                           interp_filters);
+                           inter_pred_params, subpel_params);
 
   if (!plane && comp_data->type == COMPOUND_DIFFWTD) {
     av1_build_compound_diffwtd_mask_d16(
         comp_data->seg_mask, comp_data->mask_type, org_dst, org_dst_stride,
-        tmp_buf16, tmp_buf_stride, h, w, conv_params, xd->bd);
+        tmp_buf16, tmp_buf_stride, h, w, &inter_pred_params->conv_params,
+        xd->bd);
   }
-  build_masked_compound_no_round(dst, dst_stride, org_dst, org_dst_stride,
-                                 tmp_buf16, tmp_buf_stride, comp_data,
-                                 mi->sb_type, h, w, conv_params, xd);
+  build_masked_compound_no_round(
+      dst, dst_stride, org_dst, org_dst_stride, tmp_buf16, tmp_buf_stride,
+      comp_data, mi->sb_type, h, w, &inter_pred_params->conv_params, xd);
 }
 
 void av1_dist_wtd_comp_weight_assign(const AV1_COMMON *cm,

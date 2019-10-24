@@ -671,16 +671,18 @@ void aom_highbd_upsampled_pred_sse2(MACROBLOCKD *xd,
       const uint8_t *const pre =
           pre_buf->buf0 + (pos_y >> SCALE_SUBPEL_BITS) * pre_buf->stride +
           (pos_x >> SCALE_SUBPEL_BITS);
+
+      InterPredParams inter_pred_params;
+
       const SubpelParams subpel_params = { sf->x_step_q4, sf->y_step_q4,
                                            pos_x & SCALE_SUBPEL_MASK,
                                            pos_y & SCALE_SUBPEL_MASK };
 
       // Get convolve parameters.
-      ConvolveParams conv_params = get_conv_params(0, plane, xd->bd);
+      inter_pred_params.conv_params = get_conv_params(0, plane, xd->bd);
       const int_interpfilters filters =
           av1_broadcast_interp_filter(EIGHTTAP_REGULAR);
 
-      InterPredParams inter_pred_params;
       av1_init_inter_params(
           &inter_pred_params, width, height, mi_y >> pd->subsampling_y,
           mi_x >> pd->subsampling_x, pd->subsampling_x, pd->subsampling_y,
@@ -688,8 +690,7 @@ void aom_highbd_upsampled_pred_sse2(MACROBLOCKD *xd,
 
       // Get the inter predictor.
       av1_make_inter_predictor(pre, pre_buf->stride, comp_pred8, width,
-                               &inter_pred_params, &subpel_params, &conv_params,
-                               filters);
+                               &inter_pred_params, &subpel_params);
       return;
     }
   }
