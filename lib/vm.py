@@ -9,6 +9,7 @@ from __future__ import print_function
 
 import distutils.version  # pylint: disable=import-error,no-name-in-module
 import errno
+import glob
 import multiprocessing
 import os
 import re
@@ -140,6 +141,8 @@ class VM(device.Device):
 
   SSH_PORT = 9222
   IMAGE_FORMAT = 'raw'
+  # kvm_* should match kvm_intel, kvm_amd, etc.
+  NESTED_KVM_GLOB = '/sys/module/kvm_*/parameters/nested'
 
   def __init__(self, opts):
     """Initialize VM.
@@ -388,6 +391,19 @@ class VM(device.Device):
       os.mkfifo(pipe, 0o600)
     osutils.Touch(self.pidfile)
 
+    # Append 'check' to warn if the requested CPU is not fully supported.
+    if 'check' not in self.qemu_cpu.split(','):
+      self.qemu_cpu += ',check'
+    # Append 'vmx=on' if the host supports nested virtualization. It can be
+    # enabled via 'vmx+' or 'vmx=on' (or similarly disabled) so just test for
+    # the presence of 'vmx'. For more details, see:
+    # https://www.kernel.org/doc/Documentation/virtual/kvm/nested-vmx.txt
+    if 'vmx' not in self.qemu_cpu and self.enable_kvm:
+      for f in glob.glob(self.NESTED_KVM_GLOB):
+        if cros_build_lib.BooleanShellValue(osutils.ReadFile(f).strip(), False):
+          self.qemu_cpu += ',vmx=on'
+          break
+
     qemu_args = [self.qemu_path]
     if self.qemu_bios_path:
       if not os.path.isdir(self.qemu_bios_path):
@@ -401,8 +417,7 @@ class VM(device.Device):
         '-chardev', 'pipe,id=control_pipe,path=%s' % self.kvm_monitor,
         '-serial', 'file:%s' % self.kvm_serial,
         '-mon', 'chardev=control_pipe',
-        # Append 'check' to warn if the requested CPU is not fully supported.
-        '-cpu', self.qemu_cpu + ',check',
+        '-cpu', self.qemu_cpu,
         '-device', 'virtio-net,netdev=eth0',
         '-device', 'virtio-scsi-pci,id=scsi',
         '-device', 'scsi-hd,drive=hd',

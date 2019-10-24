@@ -37,6 +37,12 @@ class VMTester(cros_test_lib.RunCommandTempDirTestCase):
     self._vm.image_path = self.TempFilePath('chromiumos_qemu_image.bin')
     osutils.Touch(self._vm.image_path)
 
+    self.nested_kvm_file = self.TempFilePath('kvm_intel_nested')
+    osutils.WriteFile(self.nested_kvm_file, 'N')
+    # Make the glob match the path we just created for nested_kvm_file.
+    self._vm.NESTED_KVM_GLOB = os.path.join(
+        os.path.dirname(self.nested_kvm_file), 'kvm_*_nested')
+
     # Satisfy QEMU version check.
     version_str = ('QEMU emulator version 2.6.0, Copyright (c) '
                    '2003-2008 Fabrice Bellard')
@@ -94,6 +100,14 @@ class VMTester(cros_test_lib.RunCommandTempDirTestCase):
         % self.TempFilePath('chromiumos_qemu_image.bin'),
     ])
     self.assertCommandContains(['-enable-kvm'])
+
+  def testStartWithVMX(self):
+    """Verify vmx is enabled if the host supports nested virtualizaton."""
+    osutils.WriteFile(self.nested_kvm_file, '1')
+    self._vm.Start()
+    self.assertCommandContains([
+        '-cpu', 'SandyBridge,-invpcid,-tsc-deadline,check,vmx=on',
+    ])
 
   def testStop(self):
     pid = '12345'
