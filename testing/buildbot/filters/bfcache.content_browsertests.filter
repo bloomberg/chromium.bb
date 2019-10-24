@@ -50,17 +50,3 @@
 # histogram is not recorded before the end of the test.
 -SignedExchangeRequestHandlerBrowserTest.Simple/3
 -SignedExchangeRequestHandlerBrowserTest.VariantMatch/3
-
-# Flaky on android only, need to be triaged, see https://crbug.com/1006267.
--IndexedDBBrowserTest*
--MHTMLGenerationTest/MHTMLGenerationTest.*
--MSE_ClearKey/EncryptedMediaTest.*
--MSE_ExternalClearKey/EncryptedMediaTest.*
--NavigationControllerBrowserTest.BackOnBrowserInitiatedErrorPageNavigation
--NavigationControllerBrowserTest.BackSameDocumentAfterBlockedSubframe
--NavigationControllerBrowserTest.BrowserInitiatedLoadPostCommitErrorPageForSubframe
--NavigationControllerBrowserTest.PageStateAfterForwardInCompetingFrames
--NavigationControllerBrowserTest.ReplacedNavigationEntryData_Back
--RenderViewHostTest.IsFocusedElementEditable
--TouchInputBrowserTest.*
--TouchpadPinchBrowserTest.*
