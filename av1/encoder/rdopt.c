@@ -4033,8 +4033,16 @@ static int predict_skip_flag(MACROBLOCK *x, BLOCK_SIZE bsize, int64_t *dist,
   // smaller than 32) into account.
   const int16_t normalized_dc_q = dc_q >> 3;
   const int64_t mse_thresh = (int64_t)normalized_dc_q * normalized_dc_q / 8;
-  // Predict not to skip when mse is larger than threshold.
-  if (mse > mse_thresh) return 0;
+  // For faster early skip decision, use dist to compare against threshold so
+  // that quality risk is less for the skip=1 decision. Otherwise, use mse
+  // since the fwd_txfm coeff checks will take care of quality
+  // TODO(any): Use dist to return 0 when predict_skip_level is 1
+  int64_t pred_err = (x->predict_skip_level >= 2) ? *dist : mse;
+  // Predict not to skip when error is larger than threshold.
+  if (pred_err > mse_thresh) return 0;
+  // Return as skip otherwise for aggressive early skip
+  else if (x->predict_skip_level >= 2)
+    return 1;
 
   const int max_tx_size = max_predict_sf_tx_size[bsize];
   const int tx_h = tx_size_high[max_tx_size];
@@ -4214,7 +4222,7 @@ static AOM_INLINE void super_block_yrd(const AV1_COMP *const cpi, MACROBLOCK *x,
   // context and terminate early.
   int64_t dist;
 
-  if (cpi->sf.tx_type_search.use_skip_flag_prediction && is_inter &&
+  if (x->predict_skip_level && is_inter &&
       (!xd->lossless[xd->mi[0]->segment_id]) &&
       predict_skip_flag(x, bs, &dist, cpi->common.reduced_tx_set_used)) {
     // Populate rdstats as per skip decision
@@ -6223,7 +6231,7 @@ static AOM_INLINE void pick_tx_size_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
   // If we predict that skip is the optimal RD decision - set the respective
   // context and terminate early.
   int64_t dist;
-  if (cpi->sf.tx_type_search.use_skip_flag_prediction &&
+  if (x->predict_skip_level &&
       predict_skip_flag(x, bsize, &dist, cm->reduced_tx_set_used)) {
     set_skip_flag(x, rd_stats, bsize, dist);
     // Save the RD search results into tx_rd_record.

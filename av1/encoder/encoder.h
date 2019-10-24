@@ -1044,6 +1044,11 @@ typedef struct AV1_COMP {
   // speed feature is ON
   unsigned int use_transform_domain_distortion[MODE_EVAL_TYPES];
 
+  // Predict transform skip levels to be used for default, mode and winner mode
+  // evaluation. Index 0: Default mode evaluation, Winner mode processing is not
+  // applicable. Index 1: Mode evaluation, Index 2: Winner mode evaluation
+  unsigned int predict_skip_level[MODE_EVAL_TYPES];
+
   AV1LfSync lf_row_sync;
   AV1LrSync lr_row_sync;
   AV1LrStruct lr_ctxt;

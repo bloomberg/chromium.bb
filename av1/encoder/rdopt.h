@@ -305,6 +305,7 @@ static INLINE void set_mode_eval_params(const struct AV1_COMP *cpi,
     case DEFAULT_EVAL:
       x->use_default_inter_tx_type = 0;
       x->use_default_intra_tx_type = 0;
+      x->predict_skip_level = cpi->predict_skip_level[DEFAULT_EVAL];
       // Set default transform domain distortion type
       set_tx_domain_dist_params(cpi, x, 0, 0);
 
@@ -320,6 +321,7 @@ static INLINE void set_mode_eval_params(const struct AV1_COMP *cpi,
            cpi->oxcf.use_intra_default_tx_only);
       x->use_default_inter_tx_type =
           cpi->sf.tx_type_search.fast_inter_tx_type_search;
+      x->predict_skip_level = cpi->predict_skip_level[MODE_EVAL];
 
       // Set transform domain distortion type for mode evaluation
       set_tx_domain_dist_params(
@@ -337,6 +339,7 @@ static INLINE void set_mode_eval_params(const struct AV1_COMP *cpi,
     case WINNER_MODE_EVAL:
       x->use_default_inter_tx_type = 0;
       x->use_default_intra_tx_type = 0;
+      x->predict_skip_level = cpi->predict_skip_level[WINNER_MODE_EVAL];
 
       // Set transform domain distortion type for winner mode evaluation
       set_tx_domain_dist_params(

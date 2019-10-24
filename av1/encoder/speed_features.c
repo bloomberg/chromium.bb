@@ -94,6 +94,17 @@ static TX_SIZE_SEARCH_METHOD tx_size_search_methods[3][MODE_EVAL_TYPES] = {
   { USE_LARGESTALL, USE_LARGESTALL, USE_FULL_RD }
 };
 
+// Predict transform skip levels to be used for default, mode and winner mode
+// evaluation. Index 0: Default mode evaluation, Winner mode processing is not
+// applicable. Index 1: Mode evaluation, Index 2: Winner mode evaluation
+// Values indicate the aggressiveness of skip flag prediction.
+// 0 : no early skip prediction
+// 1 : conservative early skip prediction using DCT_DCT
+// 2 : early skip prediction based on SSE
+static unsigned int predict_skip_levels[3][MODE_EVAL_TYPES] = { { 0, 0, 0 },
+                                                                { 1, 1, 1 },
+                                                                { 1, 2, 1 } };
+
 // scaling values to be used for gating wedge/compound segment based on best
 // approximate rd
 static int comp_type_rd_threshold_mul[3] = { 1, 11, 12 };
@@ -395,6 +406,8 @@ static void set_good_speed_features_framesize_independent(
     sf->mv.subpel_search_method = SUBPEL_TREE_PRUNED;
     sf->simple_motion_search_prune_agg = 1;
     sf->disable_sb_level_mv_cost_upd = 1;
+    sf->tx_type_search.use_skip_flag_prediction =
+        cm->allow_screen_content_tools ? 1 : 2;
   }
 
   if (speed >= 4) {
@@ -1005,6 +1018,13 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   memcpy(cpi->coeff_opt_dist_threshold,
          coeff_opt_dist_thresholds[cpi->sf.perform_coeff_opt],
          sizeof(cpi->coeff_opt_dist_threshold));
+
+  // assert ensures that predict_skip_levels is accessed correctly
+  assert(cpi->sf.tx_type_search.use_skip_flag_prediction >= 0 &&
+         cpi->sf.tx_type_search.use_skip_flag_prediction < 3);
+  memcpy(cpi->predict_skip_level,
+         predict_skip_levels[cpi->sf.tx_type_search.use_skip_flag_prediction],
+         sizeof(cpi->predict_skip_level));
 
   // Override speed feature setting for user config
   if (cpi->oxcf.tx_size_search_method != USE_FULL_RD) {
