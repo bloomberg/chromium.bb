@@ -12,9 +12,9 @@ namespace base {
 
 namespace {
 
-uintptr_t GetThreadStackBaseAddress(PlatformThreadId thread_id) {
+uintptr_t GetThreadStackBaseAddress(pthread_t pthread_id) {
   pthread_attr_t attr;
-  pthread_getattr_np(thread_id, &attr);
+  pthread_getattr_np(pthread_id, &attr);
   void* base_address;
   size_t size;
   pthread_attr_getstack(&attr, &base_address, &size);
@@ -23,9 +23,11 @@ uintptr_t GetThreadStackBaseAddress(PlatformThreadId thread_id) {
 
 }  // namespace
 
-ThreadDelegatePosix::ThreadDelegatePosix(PlatformThreadId thread_id)
-    : thread_id_(thread_id),
-      thread_stack_base_address_(GetThreadStackBaseAddress(thread_id)) {}
+ThreadDelegatePosix::ThreadDelegatePosix(
+    SamplingProfilerThreadToken thread_token)
+    : thread_id_(thread_token.id),
+      thread_stack_base_address_(
+          GetThreadStackBaseAddress(thread_token.pthread_id)) {}
 
 PlatformThreadId ThreadDelegatePosix::GetThreadId() const {
   return thread_id_;
