@@ -11,3 +11,6 @@ option optimize_for = LITE_RUNTIME;
 
 // Request message to fetch a SMS from a remote device.
 message SmsFetchRequest {}
+
+// Response message to fetch a SMS from a remote device.
+message SmsFetchResponse {}
