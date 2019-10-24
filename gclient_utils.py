@@ -218,7 +218,7 @@ def safe_rename(old, new):
 
 
 def rm_file_or_tree(path):
-  if os.path.isfile(path):
+  if os.path.isfile(path) or os.path.islink(path):
     os.remove(path)
   else:
     rmtree(path)
