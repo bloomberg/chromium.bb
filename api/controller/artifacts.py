@@ -34,15 +34,14 @@ def _GetImageDir(build_root, target):
     target (str): Name of the build target.
 
   Returns:
-    Path to the directory containing target images.
-
-  Raises:
-    DieSystemExit: If the image dir does not exist.
+    Path to the latest directory containing target images or None.
   """
   image_dir = os.path.join(build_root, 'src/build/images', target, 'latest')
   if not os.path.exists(image_dir):
-    cros_build_lib.Die('Expected to find image output for target %s at %s, '
-                       'but path does not exist' % (target, image_dir))
+    logging.warning('Expected to find image output for target %s at %s, but '
+                    'path does not exist', target, image_dir)
+    return None
+
   return image_dir
 
 
@@ -55,6 +54,8 @@ def BundleImageArchives(input_proto, output_proto, _config):
   build_target = controller_util.ParseBuildTarget(input_proto.build_target)
   output_dir = input_proto.output_dir
   image_dir = _GetImageDir(constants.SOURCE_ROOT, build_target.name)
+  if image_dir is None:
+    return
 
   archives = artifacts.ArchiveImages(image_dir, output_dir)
 
@@ -77,6 +78,8 @@ def BundleImageZip(input_proto, output_proto, _config):
   target = input_proto.build_target.name
   output_dir = input_proto.output_dir
   image_dir = _GetImageDir(constants.SOURCE_ROOT, target)
+  if image_dir is None:
+    return None
 
   archive = artifacts.BundleImageZip(output_dir, image_dir)
   output_proto.artifacts.add().path = os.path.join(output_dir, archive)
@@ -100,6 +103,9 @@ def BundleTestUpdatePayloads(input_proto, output_proto, _config):
 
   # Use the first available image to create the update payload.
   img_dir = _GetImageDir(build_root, target)
+  if img_dir is None:
+    return None
+
   img_types = [constants.IMAGE_TYPE_TEST, constants.IMAGE_TYPE_DEV,
                constants.IMAGE_TYPE_BASE]
   img_names = [constants.IMAGE_TYPE_TO_NAME[t] for t in img_types]

@@ -528,9 +528,9 @@ class BundleTestUpdatePayloadsTest(cros_test_lib.MockTempDirTestCase,
   def testBundleTestUpdatePayloadsNoImageDir(self):
     """BundleTestUpdatePayloads dies if no image dir is found."""
     # Intentionally do not write image directory.
-    with self.assertRaises(cros_build_lib.DieSystemExit):
-      artifacts.BundleTestUpdatePayloads(self.input_proto, self.output_proto,
-                                         self.api_config)
+    artifacts.BundleTestUpdatePayloads(self.input_proto, self.output_proto,
+                                       self.api_config)
+    self.assertFalse(self.output_proto.artifacts)
 
   def testBundleTestUpdatePayloadsNoImage(self):
     """BundleTestUpdatePayloads dies if no usable image is found for target."""
