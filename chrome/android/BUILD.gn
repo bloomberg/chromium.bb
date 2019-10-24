@@ -285,7 +285,7 @@ android_library("chrome_java") {
     "//chrome/browser/share/android:java_resources",
     "//chrome/browser/ui/android/styles:java",
     "//chrome/browser/ui/android/widget:java",
-    "//chrome/browser/util/android:java",
+    "//chrome/browser/util:java",
     "//chrome/lib/lifecycle/public/android:java",
     "//components/autofill/android:autofill_java",
     "//components/autofill_assistant/browser:proto_java",
@@ -535,7 +535,7 @@ group("jni_headers") {
     "//chrome/android/public/profiles:jni_headers",
     "//chrome/browser/image_fetcher:jni_headers",
     "//chrome/browser/touch_to_fill/android:jni_headers",
-    "//chrome/browser/util/android:jni_headers",
+    "//chrome/browser/util:jni_headers",
   ]
 }
 
@@ -805,7 +805,7 @@ android_library("chrome_test_java") {
     "//chrome/browser/ui/android/styles:java",
     "//chrome/browser/ui/android/widget:java",
     "//chrome/browser/ui/android/widget:test_support_java",
-    "//chrome/browser/util/android:java",
+    "//chrome/browser/util:java",
     "//chrome/test/android:chrome_java_test_support",
     "//chrome/test/android/test_trusted_web_activity:test_trusted_web_activity_java",
     "//components/autofill/android:autofill_java",
@@ -961,7 +961,7 @@ if (enable_vr || enable_arcore) {
     "//chrome/android:app_hooks_java",
     "//chrome/android:chrome_java",
     "//chrome/android/features/vr:java",
-    "//chrome/browser/util/android:java",
+    "//chrome/browser/util:java",
     "//chrome/test/android:chrome_java_test_support",
     "//components/policy/android:policy_java",
     "//content/public/android:content_java",

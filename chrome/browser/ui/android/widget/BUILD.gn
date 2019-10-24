@@ -55,7 +55,7 @@ android_library("java") {
   deps = [
     ":ui_widget_java_resources",
     "//base:base_java",
-    "//chrome/browser/util/android:java",
+    "//chrome/browser/util:java",
     "//third_party/android_deps:android_support_v4_java",
     "//third_party/android_deps:android_support_v7_appcompat_java",
     "//third_party/android_deps:com_android_support_design_java",

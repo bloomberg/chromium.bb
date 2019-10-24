@@ -162,7 +162,7 @@ android_library("java") {
     "//chrome/app:java_strings_grd",
     "//chrome/browser/ui/android/styles:java",
     "//chrome/browser/ui/android/widget:java",
-    "//chrome/browser/util/android:java",
+    "//chrome/browser/util:java",
     "//chrome/lib/lifecycle/public/android:java",
     "//components/embedder_support/android:web_contents_delegate_java",
     "//components/feature_engagement:feature_engagement_java",
