@@ -61,6 +61,9 @@ extern const base::Feature kZeroSuggestionsOnNTP;
 extern const base::Feature kZeroSuggestionsOnNTPRealbox;
 extern const base::Feature kZeroSuggestionsOnSERP;
 
+// Scoring - these affect how relevance scores are calculated for suggestions.
+extern const base::Feature kOmniboxExperimentalSuggestScoring;
+
 // Suggestions UI - these affect the UI or function of the suggestions popup.
 extern const base::Feature kConfirmOmniboxSuggestionRemovals;
 

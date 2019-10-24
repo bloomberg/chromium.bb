@@ -846,6 +846,9 @@ extern const char kOmniboxDisableInstantExtendedLimitDescription[];
 extern const char kOmniboxDisplayTitleForCurrentUrlName[];
 extern const char kOmniboxDisplayTitleForCurrentUrlDescription[];
 
+extern const char kOmniboxExperimentalSuggestScoringName[];
+extern const char kOmniboxExperimentalSuggestScoringDescription[];
+
 extern const char kOmniboxGroupSuggestionsBySearchVsUrlName[];
 extern const char kOmniboxGroupSuggestionsBySearchVsUrlDescription[];
 

@@ -1404,6 +1404,13 @@ const char kOmniboxDisableInstantExtendedLimitName[] =
 const char kOmniboxDisableInstantExtendedLimitDescription[] =
     "Effectively doubles the max number of Google-provided search suggestions "
     "on Android by disabling the 'Instant Extended' check.";
+
+const char kOmniboxExperimentalSuggestScoringName[] =
+    "Omnibox Experimental Suggest Scoring";
+const char kOmniboxExperimentalSuggestScoringDescription[] =
+    "Enables an experimental scoring mode for suggestions when Google is the "
+    "default search engine.";
+
 const char kOmniboxGroupSuggestionsBySearchVsUrlName[] =
     "Omnibox Group Suggestions By Search vs URL";
 const char kOmniboxGroupSuggestionsBySearchVsUrlDescription[] =
@@ -2959,7 +2966,7 @@ const char kOmniboxExperimentalKeywordModeName[] =
     "Omnibox Experimental Keyword Mode";
 const char kOmniboxExperimentalKeywordModeDescription[] =
     "Enables various experimental features related to keyword mode, its "
-    "suggestions and layout";
+    "suggestions and layout.";
 
 const char kOmniboxPedalSuggestionsName[] = "Omnibox Pedal suggestions";
 const char kOmniboxPedalSuggestionsDescription[] =

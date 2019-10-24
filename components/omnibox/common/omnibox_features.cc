@@ -309,6 +309,13 @@ const base::Feature kZeroSuggestionsOnNTPRealbox{
 const base::Feature kZeroSuggestionsOnSERP{"OmniboxZeroSuggestionsOnSERP",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
+// If enabled, changes the way Google-provided search suggestions are scored by
+// the backend. Note that this Feature is only used for triggering a server-
+// side experiment config that will send experiment IDs to the backend. It is
+// not referred to in any of the Chromium code.
+const base::Feature kOmniboxExperimentalSuggestScoring{
+    "OmniboxExperimentalSuggestScoring", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // If enabled, shows a confirm dialog before removing search suggestions from
 // the omnibox. See ConfirmNtpSuggestionRemovals for the NTP equivalent.
 const base::Feature kConfirmOmniboxSuggestionRemovals{
