@@ -917,7 +917,7 @@ class InputApiUnittest(PresubmitTestsBase):
     known_files = []
     for _, f, exists in files:
       full_file = os.path.join(self.fake_root_dir, f)
-      if exists and f.startswith('foo/'):
+      if exists and f.startswith('foo'):
         known_files.append(full_file)
       diffs.append(self.presubmit_diffs % {'filename': f})
 
@@ -2078,8 +2078,8 @@ the current line as well!
     input_api.environ = mock.MagicMock(os.environ)
     input_api.environ.copy.return_value = {}
     input_api.AffectedSourceFiles.return_value = True
-    input_api.PresubmitLocalPath.return_value = '/foo'
-    input_api.os_walk.return_value = [('/foo', [], ['file1.py'])]
+    input_api.PresubmitLocalPath.return_value = 'CWD'
+    input_api.os_walk.return_value = [('CWD', [], ['file1.py'])]
 
     process = mock.Mock()
     process.returncode = 0
@@ -2088,7 +2088,9 @@ the current line as well!
 
     pylint = os.path.join(_ROOT, 'pylint')
     pylintrc = os.path.join(_ROOT, 'pylintrc')
-    env = {'PYTHONPATH': ''}
+    env = {str('PYTHONPATH'): str('')}
+    if sys.platform == 'win32':
+      pylint += '.bat'
 
     results = presubmit_canned_checks.RunPylint(
         input_api, presubmit.OutputApi)
@@ -2097,11 +2099,11 @@ the current line as well!
     self.assertEqual(subprocess.Popen.mock_calls, [
         mock.call(
             [pylint, '--args-on-stdin'], env=env,
-            cwd='/foo', stderr=subprocess.STDOUT, stdout=subprocess.PIPE,
+            cwd='CWD', stderr=subprocess.STDOUT, stdout=subprocess.PIPE,
             stdin=subprocess.PIPE),
         mock.call(
             [pylint, '--args-on-stdin'], env=env,
-            cwd='/foo', stderr=subprocess.STDOUT, stdout=subprocess.PIPE,
+            cwd='CWD', stderr=subprocess.STDOUT, stdout=subprocess.PIPE,
             stdin=subprocess.PIPE),
     ])
     self.assertEqual(presubmit.sigint_handler.wait.mock_calls, [
