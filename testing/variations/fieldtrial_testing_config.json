@@ -605,7 +605,7 @@
             ],
             "experiments": [
                 {
-                    "name": "AppListZeroStateMixedTypesRanker",
+                    "name": "Enabled_20191017",
                     "enable_features": [
                         "EnableZeroStateMixedTypesRanker"
                     ]
