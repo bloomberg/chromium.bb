@@ -1,7 +1,8 @@
 // Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-package org.chromium.android_webview.ui;
+
+package org.chromium.android_webview.devui;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -18,10 +19,9 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import org.chromium.android_webview.R;
 import org.chromium.android_webview.common.crash.CrashInfo;
 import org.chromium.android_webview.common.crash.CrashInfo.UploadState;
-import org.chromium.android_webview.ui.util.WebViewCrashInfoCollector;
+import org.chromium.android_webview.devui.util.WebViewCrashInfoCollector;
 
 import java.util.Date;
 import java.util.List;

@@ -11,6 +11,9 @@
     android_webview/java/strings/android_webview_strings.grd
 
     See http://www.chromium.org/developers/design-documents/ui-localization
+
+    Dev UI strings should be inlined as they're not currently translated.
+    See crbug.com/1014805.
 -->
 
 <resources/>

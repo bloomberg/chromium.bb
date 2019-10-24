@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.android_webview.test.ui.util;
+package org.chromium.android_webview.test.devui.util;
 
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -19,9 +19,9 @@ import org.junit.runner.RunWith;
 
 import org.chromium.android_webview.common.crash.CrashInfo;
 import org.chromium.android_webview.common.crash.CrashInfo.UploadState;
+import org.chromium.android_webview.devui.util.WebViewCrashInfoCollector;
 import org.chromium.android_webview.test.AwJUnit4ClassRunner;
 import org.chromium.android_webview.test.OnlyRunIn;
-import org.chromium.android_webview.ui.util.WebViewCrashInfoCollector;
 
 import java.util.Arrays;
 import java.util.List;
