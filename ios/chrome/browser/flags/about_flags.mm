@@ -560,6 +560,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kTranslateInfobarMessagesUIName,
      flag_descriptions::kTranslateInfobarMessagesUIDescription,
      flags_ui::kOsIos, FEATURE_VALUE_TYPE(kTranslateInfobarMessagesUI)},
+    {"use-WKWebView-loading", flag_descriptions::kUseWKWebViewLoadingName,
+     flag_descriptions::kUseWKWebViewLoadingDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(web::features::kUseWKWebViewLoading)},
 };
 
 // Add all switches from experimental flags to |command_line|.
