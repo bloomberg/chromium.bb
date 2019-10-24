@@ -234,7 +234,7 @@ class PostFilter {
                                              int column4x4_start, int unit_id);
   // The lookup table for picking the deblock filter, according to:
   // kDeblockFilterBitMask (first dimension), and deblock filter type (second).
-  DeblockFilter deblock_filter_type_table_[2][2] = {
+  const DeblockFilter deblock_filter_type_table_[2][2] = {
       {&PostFilter::VerticalDeblockFilterNoMask,
        &PostFilter::HorizontalDeblockFilterNoMask},
       {&PostFilter::VerticalDeblockFilter,
@@ -280,7 +280,7 @@ class PostFilter {
                                   int subsampling_x, int subsampling_y,
                                   int window_buffer_plane_size,
                                   int vertical_shift, int horizontal_shift,
-                                  int* cdef_stride);
+                                  int* cdef_stride) const;
   template <typename Pixel>
   void ApplyCdefForOneUnit(uint16_t* cdef_block, int index, int block_width4x4,
                            int block_height4x4, int row4x4_start,
@@ -363,7 +363,7 @@ class PostFilter {
   bool GetDeblockFilterEdgeInfo(Plane plane, int row4x4, int column4x4,
                                 int8_t subsampling_x, int8_t subsampling_y,
                                 LoopFilterType type, uint8_t* level, int* step,
-                                int* filter_length);
+                                int* filter_length) const;
   static dsp::LoopFilterSize GetLoopFilterSize(Plane plane, int step) {
     if (step == 4) {
       return dsp::kLoopFilterSize4;

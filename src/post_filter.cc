@@ -327,7 +327,7 @@ uint8_t* PostFilter::GetCdefBufferAndStride(
     const int start_x, const int start_y, const int plane,
     const int subsampling_x, const int subsampling_y,
     const int window_buffer_plane_size, const int vertical_shift,
-    const int horizontal_shift, int* cdef_stride) {
+    const int horizontal_shift, int* cdef_stride) const {
   if (!DoRestoration() && thread_pool_ != nullptr) {
     // write output to threaded_window_buffer.
     *cdef_stride = window_buffer_width_ * pixel_size_;
@@ -1693,7 +1693,7 @@ void PostFilter::VerticalDeblockFilterNoMask(Plane plane, int row4x4_start,
 bool PostFilter::GetDeblockFilterEdgeInfo(
     const Plane plane, int row4x4, int column4x4, const int8_t subsampling_x,
     const int8_t subsampling_y, const LoopFilterType type, uint8_t* level,
-    int* step, int* filter_length) {
+    int* step, int* filter_length) const {
   row4x4 = GetDeblockPosition(row4x4, subsampling_y);
   column4x4 = GetDeblockPosition(column4x4, subsampling_x);
   const BlockParameters* bp = block_parameters_.Find(row4x4, column4x4);
