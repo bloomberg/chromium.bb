@@ -55,10 +55,6 @@ UnifiedMessageCenterBubble::UnifiedMessageCenterBubble(UnifiedSystemTray* tray)
   tray->bubble()->unified_view()->AddObserver(this);
 
   UpdatePosition();
-
-  if (!message_center_view_->GetVisible()) {
-    bubble_widget_->Hide();
-  }
 }
 
 UnifiedMessageCenterBubble::~UnifiedMessageCenterBubble() {
@@ -130,15 +126,6 @@ TrayBubbleView* UnifiedMessageCenterBubble::GetBubbleView() const {
 
 views::Widget* UnifiedMessageCenterBubble::GetBubbleWidget() const {
   return bubble_widget_;
-}
-
-void UnifiedMessageCenterBubble::OnViewVisibilityChanged(
-    views::View* observed_view,
-    views::View* starting_view) {
-  if (message_center_view_->GetVisible())
-    bubble_widget_->Show();
-  else
-    bubble_widget_->Hide();
 }
 
 void UnifiedMessageCenterBubble::OnViewPreferredSizeChanged(
