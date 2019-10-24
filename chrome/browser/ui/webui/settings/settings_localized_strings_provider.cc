@@ -2533,15 +2533,6 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
   html_source->AddString("syncAndGoogleServicesLearnMoreURL",
                          chrome::kSyncAndGoogleServicesLearnMoreURL);
   html_source->AddString(
-      "improveBrowsingExperience",
-      l10n_util::GetStringFUTF16(
-          IDS_SETTINGS_IMPROVE_BROWSING_EXPERIENCE,
-#if defined(OS_CHROMEOS)
-          GetHelpUrlWithBoard(chrome::kPrivacyLearnMoreURL)));
-#else
-          base::ASCIIToUTF16(chrome::kPrivacyLearnMoreURL)));
-#endif
-  html_source->AddString(
       "doNotTrackDialogMessage",
       l10n_util::GetStringFUTF16(
           IDS_SETTINGS_ENABLE_DO_NOT_TRACK_DIALOG_TEXT,

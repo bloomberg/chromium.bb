@@ -262,9 +262,6 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
       "privacySettingsRedesignEnabled",
       base::FeatureList::IsEnabled(features::kPrivacySettingsRedesign));
 
-  // TODO(msarda): Remove |unifiedConsentEnabled| from all settings resources.
-  html_source->AddBoolean("unifiedConsentEnabled", true);
-
   html_source->AddBoolean(
       "navigateToGooglePasswordManager",
       ShouldManagePasswordsinGooglePasswordManager(profile));
