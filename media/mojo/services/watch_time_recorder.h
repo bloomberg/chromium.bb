@@ -38,6 +38,8 @@ class MEDIA_MOJO_EXPORT WatchTimeRecorder : public mojom::WatchTimeRecorder {
       mojom::SecondaryPlaybackPropertiesPtr secondary_properties) override;
   void SetAutoplayInitiated(bool value) override;
   void OnDurationChanged(base::TimeDelta duration) override;
+  void UpdateVideoDecodeStats(uint32_t video_frames_decoded,
+                              uint32_t video_frames_dropped) override;
   void UpdateUnderflowCount(int32_t total_count) override;
   void UpdateUnderflowDuration(int32_t total_completed_count,
                                base::TimeDelta total_duration) override;
@@ -95,11 +97,17 @@ class MEDIA_MOJO_EXPORT WatchTimeRecorder : public mojom::WatchTimeRecorder {
     int total_underflow_count = 0;
     int total_completed_underflow_count = 0;
     base::TimeDelta total_underflow_duration;
+
+    uint32_t total_video_frames_decoded = 0;
+    uint32_t total_video_frames_dropped = 0;
   };
 
   // List of all watch time segments. A new entry is added for every secondary
   // property update.
   std::vector<WatchTimeUkmRecord> ukm_records_;
+
+  uint32_t video_frames_decoded_ = 0;
+  uint32_t video_frames_dropped_ = 0;
 
   int underflow_count_ = 0;
   int completed_underflow_count_ = 0;

@@ -13,7 +13,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "media/base/mock_media_log.h"
-#include "media/base/video_codecs.h"
+#include "media/base/pipeline_status.h"
 #include "media/base/watch_time_keys.h"
 #include "media/blink/watch_time_reporter.h"
 #include "media/mojo/mojom/media_metrics_provider.mojom.h"
@@ -223,6 +223,12 @@ class WatchTimeReporterTest
       parent_->OnDurationChanged(duration);
     }
 
+    void UpdateVideoDecodeStats(uint32_t video_frames_decoded,
+                                uint32_t video_frames_dropped) override {
+      parent_->OnUpdateVideoDecodeStats(video_frames_decoded,
+                                        video_frames_dropped);
+    }
+
    private:
     WatchTimeReporterTest* parent_;
 
@@ -299,10 +305,18 @@ class WatchTimeReporterTest
         initial_video_size,
         base::BindRepeating(&WatchTimeReporterTest::GetCurrentMediaTime,
                             base::Unretained(this)),
+        base::BindRepeating(&WatchTimeReporterTest::GetPipelineStatistics,
+                            base::Unretained(this)),
         &fake_metrics_provider_,
         blink::scheduler::GetSequencedTaskRunnerForTesting(),
         task_runner_->GetMockTickClock()));
     reporting_interval_ = wtr_->reporting_interval_;
+
+    // Most tests don't care about this.
+    EXPECT_CALL(*this, GetPipelineStatistics())
+        .WillRepeatedly(testing::Return(PipelineStatistics()));
+    EXPECT_CALL(*this, OnUpdateVideoDecodeStats(_, _))
+        .Times(testing::AnyNumber());
   }
 
   void CycleReportingTimer() {
@@ -593,6 +607,7 @@ class WatchTimeReporterTest
   }
 
   MOCK_METHOD0(GetCurrentMediaTime, base::TimeDelta());
+  MOCK_METHOD0(GetPipelineStatistics, PipelineStatistics());
 
   MOCK_METHOD0(OnWatchTimeFinalized, void(void));
   MOCK_METHOD0(OnPowerWatchTimeFinalized, void(void));
@@ -606,6 +621,7 @@ class WatchTimeReporterTest
                void(mojom::SecondaryPlaybackPropertiesPtr));
   MOCK_METHOD1(OnSetAutoplayInitiated, void(bool));
   MOCK_METHOD1(OnDurationChanged, void(base::TimeDelta));
+  MOCK_METHOD2(OnUpdateVideoDecodeStats, void(uint32_t, uint32_t));
 
   const bool has_video_;
   const bool has_audio_;
@@ -693,6 +709,75 @@ TEST_P(WatchTimeReporterTest, WatchTimeReporterBasic) {
       .WillOnce(testing::Return(kWatchTimeEarly))
       .WillRepeatedly(testing::Return(kWatchTimeLate));
   Initialize(true, true, kSizeJustRight);
+
+  PipelineStatistics stats;
+  stats.video_frames_decoded = 10;
+  stats.video_frames_dropped = 2;
+  if (has_video_) {
+    EXPECT_CALL(*this, GetPipelineStatistics())
+        .WillOnce(testing::Return(PipelineStatistics()))
+        .WillRepeatedly(testing::Return(stats));
+    EXPECT_CALL(*this, OnUpdateVideoDecodeStats(stats.video_frames_decoded,
+                                                stats.video_frames_dropped));
+  }
+
+  wtr_->OnPlaying();
+  EXPECT_TRUE(IsMonitoring());
+
+  EXPECT_WATCH_TIME(Ac, kWatchTimeEarly);
+  EXPECT_WATCH_TIME(All, kWatchTimeEarly);
+  EXPECT_WATCH_TIME(Eme, kWatchTimeEarly);
+  EXPECT_WATCH_TIME(Mse, kWatchTimeEarly);
+  EXPECT_WATCH_TIME(NativeControlsOff, kWatchTimeEarly);
+  EXPECT_WATCH_TIME_IF_VIDEO(DisplayInline, kWatchTimeEarly);
+  CycleReportingTimer();
+
+  wtr_->OnUnderflow();
+  constexpr base::TimeDelta kUnderflowDuration =
+      base::TimeDelta::FromMilliseconds(250);
+  wtr_->OnUnderflowComplete(kUnderflowDuration);
+  wtr_->OnUnderflow();
+  EXPECT_WATCH_TIME(Ac, kWatchTimeLate);
+  EXPECT_WATCH_TIME(All, kWatchTimeLate);
+  EXPECT_WATCH_TIME(Eme, kWatchTimeLate);
+  EXPECT_WATCH_TIME(Mse, kWatchTimeLate);
+  EXPECT_WATCH_TIME(NativeControlsOff, kWatchTimeLate);
+  EXPECT_WATCH_TIME_IF_VIDEO(DisplayInline, kWatchTimeLate);
+  EXPECT_CALL(*this, OnUnderflowUpdate(2));
+  EXPECT_CALL(*this, OnUnderflowDurationUpdate(1, kUnderflowDuration));
+  CycleReportingTimer();
+
+  EXPECT_WATCH_TIME_FINALIZED();
+  wtr_.reset();
+}
+
+TEST_P(WatchTimeReporterTest, WatchTimeReporterStatsOffsetCorrectly) {
+  constexpr base::TimeDelta kWatchTimeEarly = base::TimeDelta::FromSeconds(5);
+  constexpr base::TimeDelta kWatchTimeLate = base::TimeDelta::FromSeconds(10);
+  EXPECT_CALL(*this, GetCurrentMediaTime())
+      .WillOnce(testing::Return(base::TimeDelta()))
+      .WillOnce(testing::Return(kWatchTimeEarly))
+      .WillRepeatedly(testing::Return(kWatchTimeLate));
+  Initialize(true, true, kSizeJustRight);
+
+  PipelineStatistics initial_stats;
+  initial_stats.video_frames_decoded = 10;
+  initial_stats.video_frames_dropped = 2;
+
+  PipelineStatistics stats;
+  stats.video_frames_decoded = 17;
+  stats.video_frames_dropped = 7;
+  if (has_video_) {
+    EXPECT_CALL(*this, GetPipelineStatistics())
+        .WillOnce(testing::Return(initial_stats))
+        .WillRepeatedly(testing::Return(stats));
+    EXPECT_CALL(
+        *this,
+        OnUpdateVideoDecodeStats(
+            stats.video_frames_decoded - initial_stats.video_frames_decoded,
+            stats.video_frames_dropped - initial_stats.video_frames_dropped));
+  }
+
   wtr_->OnPlaying();
   EXPECT_TRUE(IsMonitoring());
 
@@ -997,9 +1082,7 @@ TEST_P(WatchTimeReporterTest, WatchTimeReporterNoUnderflowDoubleReport) {
   wtr_->OnUnderflowComplete(kUnderflowDuration);
   EXPECT_CALL(*this, OnUnderflowDurationUpdate(1, kUnderflowDuration));
 
-  // Muted watch time shouldn't finalize until destruction.
-  if (has_audio_ && has_video_)
-    EXPECT_WATCH_TIME_FINALIZED();
+  EXPECT_WATCH_TIME_FINALIZED();
   wtr_.reset();
 }
 

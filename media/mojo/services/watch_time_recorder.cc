@@ -243,8 +243,11 @@ void WatchTimeRecorder::FinalizeWatchTime(
     last_record.total_underflow_count += underflow_count_;
     last_record.total_completed_underflow_count += completed_underflow_count_;
     last_record.total_underflow_duration += underflow_duration_;
+    last_record.total_video_frames_decoded += video_frames_decoded_;
+    last_record.total_video_frames_dropped += video_frames_dropped_;
   }
 
+  video_frames_decoded_ = video_frames_dropped_ = 0;
   underflow_count_ = completed_underflow_count_ = 0;
   underflow_duration_ = base::TimeDelta();
   watch_time_info_.clear();
@@ -306,13 +309,16 @@ void WatchTimeRecorder::UpdateSecondaryProperties(
     last_record.total_underflow_count += underflow_count_;
     last_record.total_completed_underflow_count += completed_underflow_count_;
     last_record.total_underflow_duration += underflow_duration_;
+    last_record.total_video_frames_decoded += video_frames_decoded_;
+    last_record.total_video_frames_dropped += video_frames_dropped_;
 
     // If we flushed any watch time or underflow counts which hadn't been
     // finalized we'll need to ensure the eventual Finalize() correctly accounts
     // for those values at the time of the secondary property update.
     last_record_was_unfinalized =
         !watch_time_info_.empty() || underflow_count_ ||
-        completed_underflow_count_ || !underflow_duration_.is_zero();
+        completed_underflow_count_ || !underflow_duration_.is_zero() ||
+        video_frames_decoded_ || video_frames_dropped_;
   }
   ukm_records_.emplace_back(std::move(secondary_properties));
 
@@ -336,6 +342,8 @@ void WatchTimeRecorder::UpdateSecondaryProperties(
     last_record.total_underflow_count = -underflow_count_;
     last_record.total_completed_underflow_count = -completed_underflow_count_;
     last_record.total_underflow_duration = -underflow_duration_;
+    last_record.total_video_frames_decoded = -video_frames_decoded_;
+    last_record.total_video_frames_dropped = -video_frames_dropped_;
     for (auto& kv : watch_time_info_)
       last_record.aggregate_watch_time_info[kv.first] = -kv.second;
   }
@@ -348,6 +356,12 @@ void WatchTimeRecorder::SetAutoplayInitiated(bool value) {
 
 void WatchTimeRecorder::OnDurationChanged(base::TimeDelta duration) {
   duration_ = duration;
+}
+
+void WatchTimeRecorder::UpdateVideoDecodeStats(uint32_t video_frames_decoded,
+                                               uint32_t video_frames_dropped) {
+  video_frames_decoded_ = video_frames_decoded;
+  video_frames_dropped_ = video_frames_dropped;
 }
 
 void WatchTimeRecorder::UpdateUnderflowCount(int32_t total_count) {
@@ -496,6 +510,8 @@ void WatchTimeRecorder::RecordUkmPlaybackData() {
         ukm_record.total_completed_underflow_count);
     builder.SetCompletedRebuffersDuration(
         ukm_record.total_underflow_duration.InMilliseconds());
+    builder.SetVideoFramesDecoded(ukm_record.total_video_frames_decoded);
+    builder.SetVideoFramesDropped(ukm_record.total_video_frames_dropped);
     builder.SetVideoNaturalWidth(
         ukm_record.secondary_properties->natural_size.width());
     builder.SetVideoNaturalHeight(

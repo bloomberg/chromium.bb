@@ -59,6 +59,7 @@ class MEDIA_BLINK_EXPORT WatchTimeReporter : base::PowerObserver {
  public:
   using DisplayType = blink::WebMediaPlayer::DisplayType;
   using GetMediaTimeCB = base::RepeatingCallback<base::TimeDelta(void)>;
+  using GetPipelineStatsCB = base::Callback<PipelineStatistics(void)>;
 
   // Constructor for the reporter; all requested metadata should be fully known
   // before attempting construction as incorrect values will result in the wrong
@@ -82,6 +83,7 @@ class MEDIA_BLINK_EXPORT WatchTimeReporter : base::PowerObserver {
   WatchTimeReporter(mojom::PlaybackPropertiesPtr properties,
                     const gfx::Size& natural_size,
                     GetMediaTimeCB get_media_time_cb,
+                    GetPipelineStatsCB get_pipeline_stats_cb,
                     mojom::MediaMetricsProvider* provider,
                     scoped_refptr<base::SequencedTaskRunner> task_runner,
                     const base::TickClock* tick_clock = nullptr);
@@ -160,6 +162,7 @@ class MEDIA_BLINK_EXPORT WatchTimeReporter : base::PowerObserver {
                     bool is_muted,
                     const gfx::Size& natural_size,
                     GetMediaTimeCB get_media_time_cb,
+                    GetPipelineStatsCB get_pipeline_stats_cb,
                     mojom::MediaMetricsProvider* provider,
                     scoped_refptr<base::SequencedTaskRunner> task_runner,
                     const base::TickClock* tick_clock);
@@ -202,6 +205,7 @@ class MEDIA_BLINK_EXPORT WatchTimeReporter : base::PowerObserver {
   const bool is_background_;
   const bool is_muted_;
   const GetMediaTimeCB get_media_time_cb_;
+  const GetPipelineStatsCB get_pipeline_stats_cb_;
   mojom::WatchTimeRecorderPtr recorder_;
 
   // The amount of time between each UpdateWatchTime(); this is the frequency by
@@ -232,6 +236,9 @@ class MEDIA_BLINK_EXPORT WatchTimeReporter : base::PowerObserver {
     base::TimeDelta duration = kNoTimestamp;
   };
   std::vector<UnderflowEvent> pending_underflow_events_;
+
+  PipelineStatistics initial_stats_;
+  PipelineStatistics last_stats_;
 
   // The various components making up WatchTime. If the |base_component_| is
   // finalized, all reporting will be stopped and finalized using its ending

@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/time/time.h"
+#include "media/base/pipeline_status.h"
 #include "media/base/timestamp_constants.h"
 #include "media/base/watch_time_keys.h"
 
@@ -47,6 +48,7 @@ WatchTimeReporter::WatchTimeReporter(
     mojom::PlaybackPropertiesPtr properties,
     const gfx::Size& natural_size,
     GetMediaTimeCB get_media_time_cb,
+    GetPipelineStatsCB get_pipeline_stats_cb,
     mojom::MediaMetricsProvider* provider,
     scoped_refptr<base::SequencedTaskRunner> task_runner,
     const base::TickClock* tick_clock)
@@ -55,6 +57,7 @@ WatchTimeReporter::WatchTimeReporter(
                         false /* is_muted */,
                         natural_size,
                         std::move(get_media_time_cb),
+                        std::move(get_pipeline_stats_cb),
                         provider,
                         task_runner,
                         tick_clock) {}
@@ -65,6 +68,7 @@ WatchTimeReporter::WatchTimeReporter(
     bool is_muted,
     const gfx::Size& natural_size,
     GetMediaTimeCB get_media_time_cb,
+    GetPipelineStatsCB get_pipeline_stats_cb,
     mojom::MediaMetricsProvider* provider,
     scoped_refptr<base::SequencedTaskRunner> task_runner,
     const base::TickClock* tick_clock)
@@ -72,9 +76,11 @@ WatchTimeReporter::WatchTimeReporter(
       is_background_(is_background),
       is_muted_(is_muted),
       get_media_time_cb_(std::move(get_media_time_cb)),
+      get_pipeline_stats_cb_(std::move(get_pipeline_stats_cb)),
       reporting_timer_(tick_clock),
       natural_size_(natural_size) {
   DCHECK(get_media_time_cb_);
+  DCHECK(get_pipeline_stats_cb_);
   DCHECK(properties_->has_audio || properties_->has_video);
   DCHECK_EQ(is_background, properties_->is_background);
 
@@ -114,7 +120,8 @@ WatchTimeReporter::WatchTimeReporter(
   prop_copy->is_background = true;
   background_reporter_.reset(new WatchTimeReporter(
       std::move(prop_copy), true /* is_background */, false /* is_muted */,
-      natural_size_, get_media_time_cb_, provider, task_runner, tick_clock));
+      natural_size_, get_media_time_cb_, get_pipeline_stats_cb_, provider,
+      task_runner, tick_clock));
 
   // Muted watch time is only reported for audio+video playback.
   if (!properties_->has_video || !properties_->has_audio)
@@ -126,7 +133,8 @@ WatchTimeReporter::WatchTimeReporter(
   prop_copy->is_muted = true;
   muted_reporter_.reset(new WatchTimeReporter(
       std::move(prop_copy), false /* is_background */, true /* is_muted */,
-      natural_size_, get_media_time_cb_, provider, task_runner, tick_clock));
+      natural_size_, get_media_time_cb_, get_pipeline_stats_cb_, provider,
+      task_runner, tick_clock));
 }
 
 WatchTimeReporter::~WatchTimeReporter() {
@@ -404,6 +412,11 @@ void WatchTimeReporter::MaybeStartReportingTimer(
   if (!should_start)
     return;
 
+  if (properties_->has_video) {
+    initial_stats_ = get_pipeline_stats_cb_.Run();
+    last_stats_ = PipelineStatistics();
+  }
+
   ResetUnderflowState();
   base_component_->OnReportingStarted(start_timestamp);
   power_component_->OnReportingStarted(start_timestamp);
@@ -489,6 +502,24 @@ void WatchTimeReporter::RecordWatchTime() {
     if (last_completed_underflow_count != total_completed_underflow_count_) {
       recorder_->UpdateUnderflowDuration(total_completed_underflow_count_,
                                          total_underflow_duration_);
+    }
+  }
+
+  if (properties_->has_video) {
+    auto stats = get_pipeline_stats_cb_.Run();
+    DCHECK_GE(stats.video_frames_decoded, initial_stats_.video_frames_decoded);
+    DCHECK_GE(stats.video_frames_dropped, initial_stats_.video_frames_dropped);
+
+    // Offset the stats based on where they were when we started reporting.
+    stats.video_frames_decoded -= initial_stats_.video_frames_decoded;
+    stats.video_frames_dropped -= initial_stats_.video_frames_dropped;
+
+    // Only send updates.
+    if (last_stats_.video_frames_decoded != stats.video_frames_decoded ||
+        last_stats_.video_frames_dropped != stats.video_frames_dropped) {
+      recorder_->UpdateVideoDecodeStats(stats.video_frames_decoded,
+                                        stats.video_frames_dropped);
+      last_stats_ = stats;
     }
   }
 

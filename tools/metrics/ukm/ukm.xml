@@ -3817,6 +3817,17 @@ be describing additional metrics about the same event.
       if the video track is unencrypted.
     </summary>
   </metric>
+  <metric name="VideoFramesDecoded">
+    <summary>
+      Integer count of the video frames decoded in this record.
+    </summary>
+  </metric>
+  <metric name="VideoFramesDropped">
+    <summary>
+      Integer count of the video frames dropped in this record. Should not
+      exceed VideoFramesDecoded.
+    </summary>
+  </metric>
   <metric name="VideoNaturalHeight">
     <summary>
       Integer value indicating the natural height of the playback.
