@@ -21,6 +21,9 @@
 extern "C" {
 #endif
 
+// Block size used for force_integer_mv decisions
+#define FORCE_INT_MV_DECISION_BLOCK_SIZE 8
+
 // store a block's hash info.
 // x and y are the position from the top left of the picture
 // hash_value2 is used to store the second hash value

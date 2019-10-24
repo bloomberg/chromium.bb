@@ -5517,7 +5517,7 @@ static int is_integer_mv(AV1_COMP *cpi, const YV12_BUFFER_CONFIG *cur_picture,
   uint32_t hash_value_1;
   uint32_t hash_value_2;
 
-  const int block_size = 8;
+  const int block_size = FORCE_INT_MV_DECISION_BLOCK_SIZE;
   const double threshold_current = 0.8;
   const double threshold_average = 0.95;
   const int max_history_size = 32;

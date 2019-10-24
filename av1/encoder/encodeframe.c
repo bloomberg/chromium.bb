@@ -5036,7 +5036,16 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
     av1_hash_table_create(&cm->cur_frame->hash_table);
     av1_generate_block_2x2_hash_value(cpi->source, block_hash_values[0],
                                       is_block_same[0], &cpi->td.mb);
-    const int max_size = 128, min_size = 4;
+    // Hash data generated for screen contents is used for the following:
+    // 1. intraBC ME
+    // 2. Calculation of cm->cur_frame_force_integer_mv
+    // As the calculation of cm->cur_frame_force_integer_mv is limited to 8x8
+    // block size, for non-intra frames, max_size for hash calculation can be
+    // limited to 8x8
+    // TODO(any): Adjust max_size based on superblock size for intra frames
+    const int max_size =
+        frame_is_intra_only(cm) ? 128 : FORCE_INT_MV_DECISION_BLOCK_SIZE;
+    const int min_size = 4;
     const int min_alloc_size = block_size_wide[cm->mi_alloc_bsize];
     int src_idx = 0;
     for (int size = min_size; size <= max_size; size *= 2, src_idx = !src_idx) {
