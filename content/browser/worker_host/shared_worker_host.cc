@@ -362,7 +362,8 @@ void SharedWorkerHost::CreatePaymentManager(
   RenderProcessHost* worker_process_host = GetProcessHost();
   if (!worker_process_host)
     return;
-  worker_process_host->CreatePaymentManager(std::move(receiver));
+  worker_process_host->CreatePaymentManagerForOrigin(
+      url::Origin::Create(instance().url()), std::move(receiver));
 }
 
 void SharedWorkerHost::CreateIDBFactory(

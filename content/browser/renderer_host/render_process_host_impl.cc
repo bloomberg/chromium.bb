@@ -227,6 +227,7 @@
 #include "ui/display/display_switches.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/native_theme/native_theme_features.h"
+#include "url/origin.h"
 #include "url/url_constants.h"
 
 #if defined(OS_ANDROID)
@@ -1942,11 +1943,12 @@ void RenderProcessHostImpl::CreatePermissionService(
                                                       std::move(receiver));
 }
 
-void RenderProcessHostImpl::CreatePaymentManager(
+void RenderProcessHostImpl::CreatePaymentManagerForOrigin(
+    const url::Origin& origin,
     mojo::PendingReceiver<payments::mojom::PaymentManager> receiver) {
   static_cast<StoragePartitionImpl*>(GetStoragePartition())
       ->GetPaymentAppContext()
-      ->CreatePaymentManager(std::move(receiver));
+      ->CreatePaymentManagerForOrigin(origin, std::move(receiver));
 }
 
 void RenderProcessHostImpl::CancelProcessShutdownDelayForUnload() {

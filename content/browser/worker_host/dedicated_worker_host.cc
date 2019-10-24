@@ -440,7 +440,8 @@ void DedicatedWorkerHost::CreatePaymentManager(
   RenderProcessHost* worker_process_host = GetProcessHost();
   if (!worker_process_host)
     return;
-  worker_process_host->CreatePaymentManager(std::move(receiver));
+  worker_process_host->CreatePaymentManagerForOrigin(GetOrigin(),
+                                                     std::move(receiver));
 }
 
 void DedicatedWorkerHost::CreateIDBFactory(

@@ -6393,6 +6393,12 @@ void RenderFrameHostImpl::AXContentTreeDataToAXTreeData(ui::AXTreeData* dst) {
   dst->focused_tree_id = focused_frame->GetAXTreeID();
 }
 
+void RenderFrameHostImpl::CreatePaymentManager(
+    mojo::PendingReceiver<payments::mojom::PaymentManager> receiver) {
+  GetProcess()->CreatePaymentManagerForOrigin(GetLastCommittedOrigin(),
+                                              std::move(receiver));
+}
+
 void RenderFrameHostImpl::CreateWebBluetoothService(
     mojo::PendingReceiver<blink::mojom::WebBluetoothService> receiver) {
   BackForwardCache::DisableForRenderFrameHost(this, "WebBluetooth");

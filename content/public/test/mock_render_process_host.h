@@ -195,7 +195,8 @@ class MockRenderProcessHost : public RenderProcessHost {
       const url::Origin& origin,
       mojo::PendingReceiver<blink::mojom::PermissionService> receiver)
       override {}
-  void CreatePaymentManager(
+  void CreatePaymentManagerForOrigin(
+      const url::Origin& origin,
       mojo::PendingReceiver<payments::mojom::PaymentManager> receiver)
       override {}
   void CleanupCorbExceptionForPluginUponDestruction() override;
