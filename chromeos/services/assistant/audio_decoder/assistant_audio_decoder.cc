@@ -30,15 +30,15 @@ void OnError(bool* succeeded) {
 }  // namespace
 
 AssistantAudioDecoder::AssistantAudioDecoder(
-    mojom::AssistantAudioDecoderClientPtr client,
-    mojom::AssistantMediaDataSourcePtr data_source)
+    mojo::PendingRemote<mojom::AssistantAudioDecoderClient> client,
+    mojo::PendingRemote<mojom::AssistantMediaDataSource> data_source)
     : client_(std::move(client)),
       task_runner_(base::SequencedTaskRunnerHandle::Get()),
       data_source_(std::make_unique<IPCDataSource>(std::move(data_source))),
       media_thread_(std::make_unique<base::Thread>("media_thread")),
       weak_factory_(this) {
   CHECK(media_thread_->Start());
-  client_.set_connection_error_handler(base::BindOnce(
+  client_.set_disconnect_handler(base::BindOnce(
       &AssistantAudioDecoder::OnConnectionError, base::Unretained(this)));
 }
 
