@@ -32,8 +32,8 @@ _IMAGE_DIR = 'build/rootfs/dlc/'
 _BLOCK_SIZE = 4096
 
 
-class HashFileTest(cros_test_lib.TempDirTestCase):
-  """Test build_dlc.HashFile"""
+class UtilsTest(cros_test_lib.TempDirTestCase):
+  """Tests build_dlc utility functions."""
   def testHashFile(self):
     """Test the hash of a simple file."""
     file_path = os.path.join(self.tempdir, 'f.txt')
@@ -42,6 +42,19 @@ class HashFileTest(cros_test_lib.TempDirTestCase):
     self.assertEqual(hash_value,
                      '1be2e452b46d7a0d9656bbb1f768e824'
                      '8eba1b75baed65f5d99eafa948899a6a')
+
+  def testValidateDlcIdentifier(self):
+    """Tests build_dlc.ValidateDlcIdentifier."""
+    build_dlc.ValidateDlcIdentifier('hello-world')
+    build_dlc.ValidateDlcIdentifier('hello-world2')
+    build_dlc.ValidateDlcIdentifier('this-string-has-length-40-exactly-now---')
+
+    self.assertRaises(Exception, build_dlc.ValidateDlcIdentifier, '-')
+    self.assertRaises(Exception, build_dlc.ValidateDlcIdentifier, '-hi')
+    self.assertRaises(Exception, build_dlc.ValidateDlcIdentifier, 'hello%')
+    self.assertRaises(Exception, build_dlc.ValidateDlcIdentifier, 'hello_world')
+    self.assertRaises(Exception, build_dlc.ValidateDlcIdentifier,
+                      'this-string-has-length-greater-than-40-now')
 
 
 class DlcGeneratorTest(cros_test_lib.RunCommandTempDirTestCase):

@@ -12,6 +12,7 @@ import hashlib
 import json
 import math
 import os
+import re
 import shutil
 
 from chromite.lib import commandline
@@ -41,6 +42,7 @@ DLC_APPID_KEY = 'DLC_RELEASE_APPID'
 _SQUASHFS_TYPE = 'squashfs'
 _EXT4_TYPE = 'ext4'
 
+MAX_ID_NAME = 40
 
 def HashFile(file_path):
   """Calculate the sha256 hash of a file.
@@ -401,6 +403,26 @@ def GetParser():
   return parser
 
 
+def ValidateDlcIdentifier(name):
+  """Validates the DLC identifiers like ID and package names.
+
+  The name specifications are:
+    - No underscore.
+    - First character should be only alphanumeric.
+    - Other characters can be alphanumeric and '-' (dash).
+    - Maximum length of 40 characters.
+
+  For more info see:
+  https://chromium.googlesource.com/chromiumos/platform2/+/master/dlcservice/docs/developer.md#create-a-dlc-module
+
+  Args:
+    name: The string to be validated.
+  """
+  if (not name or not re.match(r'^[a-zA-Z0-9][a-zA-Z0-9-]*$', name) or
+      len(name) > MAX_ID_NAME):
+    raise Exception('Invalid DLC identifier %s' % name)
+
+
 def ValidateArguments(opts):
   """Validates the correctness of the passed arguments.
 
@@ -418,6 +440,11 @@ def ValidateArguments(opts):
 
   if opts.fs_type == _EXT4_TYPE:
     raise Exception('ext4 unsupported for DLC, see https://crbug.com/890060')
+
+  if opts.id:
+    ValidateDlcIdentifier(opts.id)
+  if opts.package:
+    ValidateDlcIdentifier(opts.package)
 
 
 def main(argv):
