@@ -21,7 +21,7 @@ CellularSetupImpl::CellularSetupImpl() = default;
 CellularSetupImpl::~CellularSetupImpl() = default;
 
 void CellularSetupImpl::StartActivation(
-    mojom::ActivationDelegatePtr delegate,
+    mojo::PendingRemote<mojom::ActivationDelegate> delegate,
     StartActivationCallback callback) {
   size_t request_id = next_request_id_;
   ++next_request_id_;

@@ -61,7 +61,7 @@ class CellularSetupOtaActivatorImplTest : public testing::Test {
   void BuildOtaActivator() {
     auto test_task_runner = base::MakeRefCounted<base::TestSimpleTaskRunner>();
     ota_activator_ = OtaActivatorImpl::Factory::Create(
-        fake_activation_delegate_->GenerateInterfacePtr(),
+        fake_activation_delegate_->GenerateRemote(),
         base::BindOnce(&CellularSetupOtaActivatorImplTest::OnFinished,
                        base::Unretained(this)),
         test_helper_.network_state_handler(),
@@ -205,7 +205,9 @@ class CellularSetupOtaActivatorImplTest : public testing::Test {
     EXPECT_TRUE(is_finished_);
   }
 
-  void DisconnectDelegate() { fake_activation_delegate_->DisconnectBindings(); }
+  void DisconnectDelegate() {
+    fake_activation_delegate_->DisconnectReceivers();
+  }
 
   bool is_finished() { return is_finished_; }
 

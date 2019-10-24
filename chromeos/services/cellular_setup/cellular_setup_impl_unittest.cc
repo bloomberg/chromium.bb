@@ -39,7 +39,7 @@ class FakeOtaActivatorFactory : public OtaActivatorImpl::Factory {
  private:
   // OtaActivatorImpl::Factory:
   std::unique_ptr<OtaActivator> BuildInstance(
-      mojom::ActivationDelegatePtr activation_delegate,
+      mojo::PendingRemote<mojom::ActivationDelegate> activation_delegate,
       base::OnceClosure on_finished_callback,
       NetworkStateHandler* network_state_handler,
       NetworkConnectionHandler* network_connection_handler,
@@ -93,7 +93,7 @@ class CellularSetupImplTest : public testing::Test {
 
     base::RunLoop run_loop;
     cellular_setup_->StartActivation(
-        fake_activation_delegate->GenerateInterfacePtr(),
+        fake_activation_delegate->GenerateRemote(),
         base::BindOnce(&CellularSetupImplTest::OnCarrierPortalHandlerReceived,
                        base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();

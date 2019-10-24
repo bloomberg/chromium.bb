@@ -62,7 +62,7 @@ class CellularSetupServiceTest : public testing::Test {
 
     // Make StartActivation() call and propagate it to the service.
     cellular_setup_ptr_->StartActivation(
-        fake_activation_delegate->GenerateInterfacePtr(),
+        fake_activation_delegate->GenerateRemote(),
         base::BindOnce(&CellularSetupServiceTest::OnStartActivationResult,
                        base::Unretained(this), run_loop.QuitClosure()));
     cellular_setup_ptr_.FlushForTesting();
@@ -153,7 +153,7 @@ class CellularSetupServiceTest : public testing::Test {
 
   FakeCellularSetup* fake_cellular_setup() { return service_.get(); }
 
-  mojom::ActivationDelegatePtr& GetLastActivationDelegate() {
+  mojo::Remote<mojom::ActivationDelegate>& GetLastActivationDelegate() {
     return fake_cellular_setup()
         ->start_activation_invocations()
         .back()
