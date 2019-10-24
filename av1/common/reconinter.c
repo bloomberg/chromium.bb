@@ -131,26 +131,25 @@ void av1_make_inter_predictor(const uint8_t *src, int src_stride, uint8_t *dst,
     // and streamlined.
 #if CONFIG_AV1_HIGHBITDEPTH
     if (inter_pred_params->use_hbd_buf) {
-      highbd_inter_predictor(
-          src, src_stride, dst, dst_stride, subpel_params,
-          inter_pred_params->scale_factors, inter_pred_params->block_width,
-          inter_pred_params->block_height, conv_params,
-          inter_pred_params->interp_filter_params,
-          inter_pred_params->is_intrabc, inter_pred_params->bit_depth);
+      highbd_inter_predictor(src, src_stride, dst, dst_stride, subpel_params,
+                             inter_pred_params->scale_factors,
+                             inter_pred_params->block_width,
+                             inter_pred_params->block_height, conv_params,
+                             inter_pred_params->interp_filter_params,
+                             inter_pred_params->bit_depth);
     } else {
       inter_predictor(src, src_stride, dst, dst_stride, subpel_params,
                       inter_pred_params->scale_factors,
                       inter_pred_params->block_width,
                       inter_pred_params->block_height, conv_params,
-                      inter_pred_params->interp_filter_params,
-                      inter_pred_params->is_intrabc);
+                      inter_pred_params->interp_filter_params);
     }
 #else
-    inter_predictor(
-        src, src_stride, dst, dst_stride, subpel_params,
-        inter_pred_params->scale_factors, inter_pred_params->block_width,
-        inter_pred_params->block_height, conv_params,
-        inter_pred_params->interp_filter_params, inter_pred_params->is_intrabc);
+    inter_predictor(src, src_stride, dst, dst_stride, subpel_params,
+                    inter_pred_params->scale_factors,
+                    inter_pred_params->block_width,
+                    inter_pred_params->block_height, conv_params,
+                    inter_pred_params->interp_filter_params);
 #endif
   }
 }

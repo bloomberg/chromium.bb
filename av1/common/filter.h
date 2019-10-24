@@ -169,7 +169,8 @@ static const InterpFilterParams
 
 // A special 2-tap bilinear filter for IntraBC chroma. IntraBC uses full pixel
 // MV for luma. If sub-sampling exists, chroma may possibly use half-pel MV.
-DECLARE_ALIGNED(256, static const int16_t, av1_intrabc_bilinear_filter[2]) = {
+DECLARE_ALIGNED(256, static const int16_t,
+                av1_intrabc_bilinear_filter[SUBPEL_SHIFTS]) = {
   64,
   64,
 };
