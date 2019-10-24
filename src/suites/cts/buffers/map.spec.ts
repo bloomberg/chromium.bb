@@ -14,7 +14,7 @@ g.test('mapWriteAsync', async t => {
   });
 
   const arrayBuffer = await buffer.mapWriteAsync();
-  await t.checkMapWrite(buffer, arrayBuffer, size);
+  t.checkMapWrite(buffer, arrayBuffer, size);
 }).params(poptions('size', [12, 512 * 1024]));
 
 g.test('mapReadAsync', async t => {
@@ -42,7 +42,7 @@ g.test('createBufferMapped', async t => {
     size,
     usage: GPUBufferUsage.COPY_SRC | (t.params.mappable ? GPUBufferUsage.MAP_WRITE : 0),
   });
-  await t.checkMapWrite(buffer, arrayBuffer, size);
+  t.checkMapWrite(buffer, arrayBuffer, size);
 }).params(
   pcombine(
     poptions('size', [12, 512 * 1024]), //
@@ -56,7 +56,7 @@ g.test('createBufferMappedAsync', async t => {
     size,
     usage: GPUBufferUsage.COPY_SRC | (t.params.mappable ? GPUBufferUsage.MAP_WRITE : 0),
   });
-  await t.checkMapWrite(buffer, arrayBuffer, size);
+  t.checkMapWrite(buffer, arrayBuffer, size);
 }).params(
   pcombine(
     poptions('size', [12, 512 * 1024]), //
