@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef STORAGE_COMMON_FILEAPI_FILE_SYSTEM_UTIL_H_
-#define STORAGE_COMMON_FILEAPI_FILE_SYSTEM_UTIL_H_
+#ifndef STORAGE_COMMON_FILE_SYSTEM_FILE_SYSTEM_UTIL_H_
+#define STORAGE_COMMON_FILE_SYSTEM_FILE_SYSTEM_UTIL_H_
 
 #include <string>
 #include <vector>
@@ -11,8 +11,8 @@
 #include "base/component_export.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
-#include "storage/common/fileapi/file_system_info.h"
-#include "storage/common/fileapi/file_system_types.h"
+#include "storage/common/file_system/file_system_info.h"
+#include "storage/common/file_system/file_system_types.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 #include "third_party/blink/public/platform/web_file_system_type.h"
 
@@ -172,4 +172,4 @@ base::File::Error NetErrorToFileError(int error);
 
 }  // namespace storage
 
-#endif  // STORAGE_COMMON_FILEAPI_FILE_SYSTEM_UTIL_H_
+#endif  // STORAGE_COMMON_FILE_SYSTEM_FILE_SYSTEM_UTIL_H_

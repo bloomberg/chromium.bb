@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef STORAGE_COMMON_FILEAPI_FILE_SYSTEM_TYPES_H_
-#define STORAGE_COMMON_FILEAPI_FILE_SYSTEM_TYPES_H_
+#ifndef STORAGE_COMMON_FILE_SYSTEM_FILE_SYSTEM_TYPES_H_
+#define STORAGE_COMMON_FILE_SYSTEM_FILE_SYSTEM_TYPES_H_
 
 #include "third_party/blink/public/platform/web_file_system_type.h"
 
@@ -136,4 +136,4 @@ enum FileSystemType {
 
 }  // namespace storage
 
-#endif  // STORAGE_COMMON_FILEAPI_FILE_SYSTEM_TYPES_H_
+#endif  // STORAGE_COMMON_FILE_SYSTEM_FILE_SYSTEM_TYPES_H_

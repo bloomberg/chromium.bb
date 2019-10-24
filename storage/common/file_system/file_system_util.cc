@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "storage/common/fileapi/file_system_util.h"
+#include "storage/common/file_system/file_system_util.h"
 
 #include <stddef.h>
 
@@ -53,7 +53,7 @@ base::FilePath VirtualPath::BaseName(const base::FilePath& virtual_path) {
 
 base::FilePath VirtualPath::DirName(const base::FilePath& virtual_path) {
   using StringType = base::FilePath::StringType;
-  StringType  path = virtual_path.value();
+  StringType path = virtual_path.value();
 
   // The logic below is taken from that of base::FilePath::DirName, except
   // that this version never cares about '//' or drive-letters even on win32.
@@ -119,15 +119,16 @@ std::vector<std::string> VirtualPath::GetComponentsUTF8Unsafe(
 base::FilePath::StringType VirtualPath::GetNormalizedFilePath(
     const base::FilePath& path) {
   base::FilePath::StringType normalized_path = path.value();
-  const size_t num_separators = base::FilePath::StringType(
-      base::FilePath::kSeparators).length();
+  const size_t num_separators =
+      base::FilePath::StringType(base::FilePath::kSeparators).length();
   for (size_t i = 0; i < num_separators; ++i) {
     std::replace(normalized_path.begin(), normalized_path.end(),
                  base::FilePath::kSeparators[i], kSeparator);
   }
 
-  return (IsAbsolute(normalized_path)) ?
-      normalized_path : base::FilePath::StringType(kRoot) + normalized_path;
+  return (IsAbsolute(normalized_path))
+             ? normalized_path
+             : base::FilePath::StringType(kRoot) + normalized_path;
 }
 
 bool VirtualPath::IsAbsolute(const base::FilePath::StringType& path) {
@@ -138,8 +139,7 @@ bool VirtualPath::IsRootPath(const base::FilePath& path) {
   std::vector<base::FilePath::StringType> components =
       VirtualPath::GetComponents(path);
   return (path.empty() || components.empty() ||
-          (components.size() == 1 &&
-           components[0] == VirtualPath::kRoot));
+          (components.size() == 1 && components[0] == VirtualPath::kRoot));
 }
 
 bool ParseFileSystemSchemeURL(const GURL& url,
@@ -156,11 +156,11 @@ bool ParseFileSystemSchemeURL(const GURL& url,
     FileSystemType type;
     const char* dir;
   } kValidTypes[] = {
-    { kFileSystemTypePersistent, kPersistentDir },
-    { kFileSystemTypeTemporary, kTemporaryDir },
-    { kFileSystemTypeIsolated, kIsolatedDir },
-    { kFileSystemTypeExternal, kExternalDir },
-    { kFileSystemTypeTest, kTestDir },
+      {kFileSystemTypePersistent, kPersistentDir},
+      {kFileSystemTypeTemporary, kTemporaryDir},
+      {kFileSystemTypeIsolated, kIsolatedDir},
+      {kFileSystemTypeExternal, kExternalDir},
+      {kFileSystemTypeTest, kTestDir},
   };
 
   // A path of the inner_url contains only mount type part (e.g. "/temporary").
@@ -193,8 +193,8 @@ bool ParseFileSystemSchemeURL(const GURL& url,
   if (type)
     *type = file_system_type;
   if (virtual_path)
-    *virtual_path = converted_path.NormalizePathSeparators().
-        StripTrailingSeparators();
+    *virtual_path =
+        converted_path.NormalizePathSeparators().StripTrailingSeparators();
 
   return true;
 }
@@ -341,9 +341,8 @@ base::FilePath StringToFilePath(const std::string& file_path_string) {
 #endif
 }
 
-bool GetFileSystemPublicType(
-    const std::string type_string,
-    blink::WebFileSystemType* type) {
+bool GetFileSystemPublicType(const std::string type_string,
+                             blink::WebFileSystemType* type) {
   DCHECK(type);
   if (type_string == "Temporary") {
     *type = blink::kWebFileSystemTypeTemporary;
@@ -380,8 +379,9 @@ bool CrackIsolatedFileSystemName(const std::string& filesystem_name,
 
   // |filesystem_name| is of the form {origin}:isolated_{filesystem_id}.
   std::string start_token(":");
-  start_token = start_token.append(
-      GetFileSystemTypeString(kFileSystemTypeIsolated)).append("_");
+  start_token =
+      start_token.append(GetFileSystemTypeString(kFileSystemTypeIsolated))
+          .append("_");
   // WebKit uses different case in its constant for isolated file system
   // names, so we do a case insensitive compare by converting both strings
   // to uppercase.
@@ -394,8 +394,8 @@ bool CrackIsolatedFileSystemName(const std::string& filesystem_name,
   if (pos == 0)
     return false;
 
-  *filesystem_id = filesystem_name.substr(pos + start_token.length(),
-                                          std::string::npos);
+  *filesystem_id =
+      filesystem_name.substr(pos + start_token.length(), std::string::npos);
   if (filesystem_id->empty())
     return false;
 
@@ -414,8 +414,8 @@ std::string GetIsolatedFileSystemRootURIString(
     const GURL& origin_url,
     const std::string& filesystem_id,
     const std::string& optional_root_name) {
-  std::string root = GetFileSystemRootURI(origin_url,
-                                          kFileSystemTypeIsolated).spec();
+  std::string root =
+      GetFileSystemRootURI(origin_url, kFileSystemTypeIsolated).spec();
   if (base::FilePath::FromUTF8Unsafe(filesystem_id).ReferencesParent())
     return std::string();
   root.append(net::EscapePath(filesystem_id));
@@ -429,11 +429,10 @@ std::string GetIsolatedFileSystemRootURIString(
   return root;
 }
 
-std::string GetExternalFileSystemRootURIString(
-    const GURL& origin_url,
-    const std::string& mount_name) {
-  std::string root = GetFileSystemRootURI(origin_url,
-                                          kFileSystemTypeExternal).spec();
+std::string GetExternalFileSystemRootURIString(const GURL& origin_url,
+                                               const std::string& mount_name) {
+  std::string root =
+      GetFileSystemRootURI(origin_url, kFileSystemTypeExternal).spec();
   if (base::FilePath::FromUTF8Unsafe(mount_name).ReferencesParent())
     return std::string();
   root.append(net::EscapePath(mount_name));

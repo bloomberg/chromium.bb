@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef STORAGE_COMMON_FILEAPI_FILE_SYSTEM_INFO_H_
-#define STORAGE_COMMON_FILEAPI_FILE_SYSTEM_INFO_H_
+#ifndef STORAGE_COMMON_FILE_SYSTEM_FILE_SYSTEM_INFO_H_
+#define STORAGE_COMMON_FILE_SYSTEM_FILE_SYSTEM_INFO_H_
 
 #include <string>
 
 #include "base/component_export.h"
-#include "storage/common/fileapi/file_system_types.h"
+#include "storage/common/file_system/file_system_types.h"
 #include "url/gurl.h"
 
 namespace storage {
@@ -30,4 +30,4 @@ struct COMPONENT_EXPORT(STORAGE_COMMON) FileSystemInfo {
 
 }  // namespace storage
 
-#endif  // STORAGE_COMMON_FILEAPI_FILE_SYSTEM_INFO_H_
+#endif  // STORAGE_COMMON_FILE_SYSTEM_FILE_SYSTEM_INFO_H_

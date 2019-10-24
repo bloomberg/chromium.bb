@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef STORAGE_COMMON_FILEAPI_FILE_SYSTEM_MOUNT_OPTION_H_
-#define STORAGE_COMMON_FILEAPI_FILE_SYSTEM_MOUNT_OPTION_H_
+#ifndef STORAGE_COMMON_FILE_SYSTEM_FILE_SYSTEM_MOUNT_OPTION_H_
+#define STORAGE_COMMON_FILE_SYSTEM_FILE_SYSTEM_MOUNT_OPTION_H_
 
 namespace storage {
 
@@ -40,4 +40,4 @@ class FileSystemMountOption {
 
 }  // namespace storage
 
-#endif  // STORAGE_COMMON_FILEAPI_FILE_SYSTEM_MOUNT_OPTION_H_
+#endif  // STORAGE_COMMON_FILE_SYSTEM_FILE_SYSTEM_MOUNT_OPTION_H_

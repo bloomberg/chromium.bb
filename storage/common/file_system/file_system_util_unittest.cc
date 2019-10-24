@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "storage/common/fileapi/file_system_util.h"
+#include "storage/common/file_system/file_system_util.h"
 
 #include <stddef.h>
 
@@ -59,20 +59,19 @@ TEST_F(FileSystemUtilTest, VirtualPathBaseName) {
     const base::FilePath::StringType path;
     const base::FilePath::StringType base_name;
   } test_cases[] = {
-    { FILE_PATH_LITERAL("foo/bar"), FILE_PATH_LITERAL("bar") },
-    { FILE_PATH_LITERAL("foo/b:bar"), FILE_PATH_LITERAL("b:bar") },
-    { FILE_PATH_LITERAL(""), FILE_PATH_LITERAL("") },
-    { FILE_PATH_LITERAL("/"), FILE_PATH_LITERAL("/") },
-    { FILE_PATH_LITERAL("foo//////bar"), FILE_PATH_LITERAL("bar") },
-    { FILE_PATH_LITERAL("foo/bar/"), FILE_PATH_LITERAL("bar") },
-    { FILE_PATH_LITERAL("foo/bar/////"), FILE_PATH_LITERAL("bar") },
-    { FILE_PATH_LITERAL("/bar/////"), FILE_PATH_LITERAL("bar") },
-    { FILE_PATH_LITERAL("bar/////"), FILE_PATH_LITERAL("bar") },
-    { FILE_PATH_LITERAL("bar/"), FILE_PATH_LITERAL("bar") },
-    { FILE_PATH_LITERAL("/bar"), FILE_PATH_LITERAL("bar") },
-    { FILE_PATH_LITERAL("////bar"), FILE_PATH_LITERAL("bar") },
-    { FILE_PATH_LITERAL("bar"), FILE_PATH_LITERAL("bar") }
-  };
+      {FILE_PATH_LITERAL("foo/bar"), FILE_PATH_LITERAL("bar")},
+      {FILE_PATH_LITERAL("foo/b:bar"), FILE_PATH_LITERAL("b:bar")},
+      {FILE_PATH_LITERAL(""), FILE_PATH_LITERAL("")},
+      {FILE_PATH_LITERAL("/"), FILE_PATH_LITERAL("/")},
+      {FILE_PATH_LITERAL("foo//////bar"), FILE_PATH_LITERAL("bar")},
+      {FILE_PATH_LITERAL("foo/bar/"), FILE_PATH_LITERAL("bar")},
+      {FILE_PATH_LITERAL("foo/bar/////"), FILE_PATH_LITERAL("bar")},
+      {FILE_PATH_LITERAL("/bar/////"), FILE_PATH_LITERAL("bar")},
+      {FILE_PATH_LITERAL("bar/////"), FILE_PATH_LITERAL("bar")},
+      {FILE_PATH_LITERAL("bar/"), FILE_PATH_LITERAL("bar")},
+      {FILE_PATH_LITERAL("/bar"), FILE_PATH_LITERAL("bar")},
+      {FILE_PATH_LITERAL("////bar"), FILE_PATH_LITERAL("bar")},
+      {FILE_PATH_LITERAL("bar"), FILE_PATH_LITERAL("bar")}};
   for (const auto& test_case : test_cases) {
     base::FilePath input = base::FilePath(test_case.path);
     base::FilePath base_name = VirtualPath::BaseName(input);
@@ -85,32 +84,32 @@ TEST_F(FileSystemUtilTest, VirtualPathDirName) {
     const base::FilePath::StringType path;
     const base::FilePath::StringType dir_name;
   } test_cases[] = {
-    { FILE_PATH_LITERAL("foo/bar"), FILE_PATH_LITERAL("foo") },
-    { FILE_PATH_LITERAL("foo/b:bar"), FILE_PATH_LITERAL("foo") },
-    { FILE_PATH_LITERAL(""), FILE_PATH_LITERAL(".") },
-    { FILE_PATH_LITERAL("/"), FILE_PATH_LITERAL("/") },
-    { FILE_PATH_LITERAL("foo//////bar"), FILE_PATH_LITERAL("foo") },
-    { FILE_PATH_LITERAL("foo/bar/"), FILE_PATH_LITERAL("foo") },
-    { FILE_PATH_LITERAL("foo/bar/////"), FILE_PATH_LITERAL("foo") },
-    { FILE_PATH_LITERAL("/bar/////"), FILE_PATH_LITERAL("/") },
-    { FILE_PATH_LITERAL("bar/////"), FILE_PATH_LITERAL(".") },
-    { FILE_PATH_LITERAL("bar/"), FILE_PATH_LITERAL(".") },
-    { FILE_PATH_LITERAL("/bar"), FILE_PATH_LITERAL("/") },
-    { FILE_PATH_LITERAL("////bar"), FILE_PATH_LITERAL("/") },
-    { FILE_PATH_LITERAL("bar"), FILE_PATH_LITERAL(".") },
-    { FILE_PATH_LITERAL("c:bar"), FILE_PATH_LITERAL(".") },
+      {FILE_PATH_LITERAL("foo/bar"), FILE_PATH_LITERAL("foo")},
+      {FILE_PATH_LITERAL("foo/b:bar"), FILE_PATH_LITERAL("foo")},
+      {FILE_PATH_LITERAL(""), FILE_PATH_LITERAL(".")},
+      {FILE_PATH_LITERAL("/"), FILE_PATH_LITERAL("/")},
+      {FILE_PATH_LITERAL("foo//////bar"), FILE_PATH_LITERAL("foo")},
+      {FILE_PATH_LITERAL("foo/bar/"), FILE_PATH_LITERAL("foo")},
+      {FILE_PATH_LITERAL("foo/bar/////"), FILE_PATH_LITERAL("foo")},
+      {FILE_PATH_LITERAL("/bar/////"), FILE_PATH_LITERAL("/")},
+      {FILE_PATH_LITERAL("bar/////"), FILE_PATH_LITERAL(".")},
+      {FILE_PATH_LITERAL("bar/"), FILE_PATH_LITERAL(".")},
+      {FILE_PATH_LITERAL("/bar"), FILE_PATH_LITERAL("/")},
+      {FILE_PATH_LITERAL("////bar"), FILE_PATH_LITERAL("/")},
+      {FILE_PATH_LITERAL("bar"), FILE_PATH_LITERAL(".")},
+      {FILE_PATH_LITERAL("c:bar"), FILE_PATH_LITERAL(".")},
 #ifdef FILE_PATH_USES_WIN_SEPARATORS
-    { FILE_PATH_LITERAL("foo\\bar"), FILE_PATH_LITERAL("foo") },
-    { FILE_PATH_LITERAL("foo\\b:bar"), FILE_PATH_LITERAL("foo") },
-    { FILE_PATH_LITERAL("\\"), FILE_PATH_LITERAL("\\") },
-    { FILE_PATH_LITERAL("foo\\\\\\\\\\\\bar"), FILE_PATH_LITERAL("foo") },
-    { FILE_PATH_LITERAL("foo\\bar\\"), FILE_PATH_LITERAL("foo") },
-    { FILE_PATH_LITERAL("foo\\bar\\\\\\\\\\"), FILE_PATH_LITERAL("foo") },
-    { FILE_PATH_LITERAL("\\bar\\\\\\\\\\"), FILE_PATH_LITERAL("\\") },
-    { FILE_PATH_LITERAL("bar\\\\\\\\\\"), FILE_PATH_LITERAL(".") },
-    { FILE_PATH_LITERAL("bar\\"), FILE_PATH_LITERAL(".") },
-    { FILE_PATH_LITERAL("\\bar"), FILE_PATH_LITERAL("\\") },
-    { FILE_PATH_LITERAL("\\\\\\\\bar"), FILE_PATH_LITERAL("\\") },
+      {FILE_PATH_LITERAL("foo\\bar"), FILE_PATH_LITERAL("foo")},
+      {FILE_PATH_LITERAL("foo\\b:bar"), FILE_PATH_LITERAL("foo")},
+      {FILE_PATH_LITERAL("\\"), FILE_PATH_LITERAL("\\")},
+      {FILE_PATH_LITERAL("foo\\\\\\\\\\\\bar"), FILE_PATH_LITERAL("foo")},
+      {FILE_PATH_LITERAL("foo\\bar\\"), FILE_PATH_LITERAL("foo")},
+      {FILE_PATH_LITERAL("foo\\bar\\\\\\\\\\"), FILE_PATH_LITERAL("foo")},
+      {FILE_PATH_LITERAL("\\bar\\\\\\\\\\"), FILE_PATH_LITERAL("\\")},
+      {FILE_PATH_LITERAL("bar\\\\\\\\\\"), FILE_PATH_LITERAL(".")},
+      {FILE_PATH_LITERAL("bar\\"), FILE_PATH_LITERAL(".")},
+      {FILE_PATH_LITERAL("\\bar"), FILE_PATH_LITERAL("\\")},
+      {FILE_PATH_LITERAL("\\\\\\\\bar"), FILE_PATH_LITERAL("\\")},
 #endif
   };
   for (const auto& test_case : test_cases) {
@@ -125,12 +124,12 @@ TEST_F(FileSystemUtilTest, GetNormalizedFilePath) {
     const base::FilePath::StringType path;
     const base::FilePath::StringType normalized_path;
   } test_cases[] = {
-    { FILE_PATH_LITERAL(""), FILE_PATH_LITERAL("/") },
-    { FILE_PATH_LITERAL("/"), FILE_PATH_LITERAL("/") },
-    { FILE_PATH_LITERAL("foo/bar"), FILE_PATH_LITERAL("/foo/bar") },
-    { FILE_PATH_LITERAL("/foo/bar"), FILE_PATH_LITERAL("/foo/bar") },
+    {FILE_PATH_LITERAL(""), FILE_PATH_LITERAL("/")},
+    {FILE_PATH_LITERAL("/"), FILE_PATH_LITERAL("/")},
+    {FILE_PATH_LITERAL("foo/bar"), FILE_PATH_LITERAL("/foo/bar")},
+    {FILE_PATH_LITERAL("/foo/bar"), FILE_PATH_LITERAL("/foo/bar")},
 #if defined(FILE_PATH_USES_WIN_SEPARATORS)
-    { FILE_PATH_LITERAL("\\foo"), FILE_PATH_LITERAL("/foo") },
+    {FILE_PATH_LITERAL("\\foo"), FILE_PATH_LITERAL("/foo")},
 #endif
   };
   for (const auto& test_case : test_cases) {
@@ -153,12 +152,12 @@ TEST_F(FileSystemUtilTest, IsRootPath) {
   EXPECT_TRUE(VirtualPath::IsRootPath(base::FilePath()));
   EXPECT_TRUE(VirtualPath::IsRootPath(base::FilePath(FILE_PATH_LITERAL("/"))));
   EXPECT_TRUE(VirtualPath::IsRootPath(base::FilePath(FILE_PATH_LITERAL("//"))));
-  EXPECT_FALSE(VirtualPath::IsRootPath(
-      base::FilePath(FILE_PATH_LITERAL("c:/"))));
+  EXPECT_FALSE(
+      VirtualPath::IsRootPath(base::FilePath(FILE_PATH_LITERAL("c:/"))));
 #if defined(FILE_PATH_USES_WIN_SEPARATORS)
   EXPECT_TRUE(VirtualPath::IsRootPath(base::FilePath(FILE_PATH_LITERAL("\\"))));
-  EXPECT_FALSE(VirtualPath::IsRootPath(
-      base::FilePath(FILE_PATH_LITERAL("c:\\"))));
+  EXPECT_FALSE(
+      VirtualPath::IsRootPath(base::FilePath(FILE_PATH_LITERAL("c:\\"))));
 #endif
 }
 
@@ -168,34 +167,34 @@ TEST_F(FileSystemUtilTest, VirtualPathGetComponents) {
     size_t count;
     const base::FilePath::StringType components[2];
   } test_cases[] = {
-    { FILE_PATH_LITERAL("foo/bar"),
-      2,
-      { FILE_PATH_LITERAL("foo"), FILE_PATH_LITERAL("bar") } },
-    { FILE_PATH_LITERAL("foo"),
-      1,
-      { FILE_PATH_LITERAL("foo"), FILE_PATH_LITERAL("") } },
-    { FILE_PATH_LITERAL("foo////bar"),
-      2,
-      { FILE_PATH_LITERAL("foo"), FILE_PATH_LITERAL("bar") } },
-    { FILE_PATH_LITERAL("foo/c:bar"),
-      2,
-      { FILE_PATH_LITERAL("foo"), FILE_PATH_LITERAL("c:bar") } },
-    { FILE_PATH_LITERAL("c:foo/bar"),
-      2,
-      { FILE_PATH_LITERAL("c:foo"), FILE_PATH_LITERAL("bar") } },
-    { FILE_PATH_LITERAL("foo/bar"),
-      2,
-      { FILE_PATH_LITERAL("foo"), FILE_PATH_LITERAL("bar") } },
-    { FILE_PATH_LITERAL("/foo/bar"),
-      2,
-      { FILE_PATH_LITERAL("foo"), FILE_PATH_LITERAL("bar") } },
-    { FILE_PATH_LITERAL("c:/bar"),
-      2,
-      { FILE_PATH_LITERAL("c:"), FILE_PATH_LITERAL("bar") } },
+      {FILE_PATH_LITERAL("foo/bar"),
+       2,
+       {FILE_PATH_LITERAL("foo"), FILE_PATH_LITERAL("bar")}},
+      {FILE_PATH_LITERAL("foo"),
+       1,
+       {FILE_PATH_LITERAL("foo"), FILE_PATH_LITERAL("")}},
+      {FILE_PATH_LITERAL("foo////bar"),
+       2,
+       {FILE_PATH_LITERAL("foo"), FILE_PATH_LITERAL("bar")}},
+      {FILE_PATH_LITERAL("foo/c:bar"),
+       2,
+       {FILE_PATH_LITERAL("foo"), FILE_PATH_LITERAL("c:bar")}},
+      {FILE_PATH_LITERAL("c:foo/bar"),
+       2,
+       {FILE_PATH_LITERAL("c:foo"), FILE_PATH_LITERAL("bar")}},
+      {FILE_PATH_LITERAL("foo/bar"),
+       2,
+       {FILE_PATH_LITERAL("foo"), FILE_PATH_LITERAL("bar")}},
+      {FILE_PATH_LITERAL("/foo/bar"),
+       2,
+       {FILE_PATH_LITERAL("foo"), FILE_PATH_LITERAL("bar")}},
+      {FILE_PATH_LITERAL("c:/bar"),
+       2,
+       {FILE_PATH_LITERAL("c:"), FILE_PATH_LITERAL("bar")}},
 #ifdef FILE_PATH_USES_WIN_SEPARATORS
-    { FILE_PATH_LITERAL("c:\\bar"),
-      2,
-      { FILE_PATH_LITERAL("c:"), FILE_PATH_LITERAL("bar") } },
+      {FILE_PATH_LITERAL("c:\\bar"),
+       2,
+       {FILE_PATH_LITERAL("c:"), FILE_PATH_LITERAL("bar")}},
 #endif
   };
   for (const auto& test_case : test_cases) {
