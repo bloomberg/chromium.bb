@@ -975,21 +975,6 @@ bool AwContentBrowserClient::WillCreateURLLoaderFactory(
   return true;
 }
 
-void AwContentBrowserClient::WillCreateURLLoaderFactoryForAppCacheSubresource(
-    int render_process_id,
-    mojo::PendingRemote<network::mojom::URLLoaderFactory>* pending_factory) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  auto pending_proxy = std::move(*pending_factory);
-  mojo::PendingReceiver<network::mojom::URLLoaderFactory> factory_receiver =
-      pending_factory->InitWithNewPipeAndPassReceiver();
-
-  base::PostTask(FROM_HERE, {content::BrowserThread::IO},
-                 base::BindOnce(&AwProxyingURLLoaderFactory::CreateProxy,
-                                render_process_id, std::move(factory_receiver),
-                                std::move(pending_proxy)));
-}
-
 uint32_t AwContentBrowserClient::GetWebSocketOptions(
     content::RenderFrameHost* frame) {
   uint32_t options = network::mojom::kWebSocketOptionNone;
