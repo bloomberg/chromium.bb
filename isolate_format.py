@@ -56,7 +56,7 @@ def determine_root_dir(relative_root, infiles):
 
 
 def replace_variable(part, variables):
-  m = re.match(r'<\((' + VALID_VARIABLE + ')\)', part)
+  m = re.match(r'<\((' + VALID_VARIABLE + r')\)', part)
   if m:
     if m.group(1) not in variables:
       raise IsolateError(
@@ -73,7 +73,7 @@ def eval_variables(item, variables):
   """
   return ''.join(
       replace_variable(p, variables)
-      for p in re.split(r'(<\(' + VALID_VARIABLE + '\))', item))
+      for p in re.split(r'(<\(' + VALID_VARIABLE + r'\))', item))
 
 
 def pretty_print(variables, stdout):
