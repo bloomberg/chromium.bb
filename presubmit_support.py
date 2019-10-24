@@ -34,6 +34,7 @@ import tempfile  # Exposed through the API.
 import threading
 import time
 import types
+import traceback
 import unittest  # Exposed through the API.
 from warnings import warn
 
@@ -174,6 +175,12 @@ class ThreadPool(object):
       duration = time.time() - start
       return test.message(
           '%s exec failure (%4.2fs)\n   %s' % (test.name, duration, e))
+    except Exception as e:
+      duration = time.time() - start
+      return test.message(
+          '%s exec failure (%4.2fs)\n%s' % (
+              test.name, duration, traceback.format_exc()))
+
     if p.returncode != 0:
       return test.message(
           '%s (%4.2fs) failed\n%s' % (test.name, duration, stdout))

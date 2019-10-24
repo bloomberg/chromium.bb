@@ -2892,6 +2892,47 @@ the current line as well!
     self.assertIsNone(commands[0].info)
 
 
+class ThreadPoolTest(unittest.TestCase):
+  def setUp(self):
+    super(ThreadPoolTest, self).setUp()
+    mock.patch('subprocess2.Popen').start()
+    mock.patch('presubmit_support.sigint_handler').start()
+    presubmit.sigint_handler.wait.return_value = ('stdout', '')
+    self.addCleanup(mock.patch.stopall)
+
+  def testSurfaceExceptions(self):
+    def FakePopen(cmd, **kwargs):
+      if cmd[0] == '3':
+        raise TypeError('TypeError')
+      if cmd[0] == '4':
+        raise OSError('OSError')
+      if cmd[0] == '5':
+        return mock.Mock(returncode=1)
+      return mock.Mock(returncode=0)
+    subprocess.Popen.side_effect = FakePopen
+
+    mock_tests = [
+        presubmit.CommandData(
+            name=str(i),
+            cmd=[str(i)],
+            kwargs={},
+            message=lambda x: x,
+        )
+        for i in range(10)
+    ]
+
+    t = presubmit.ThreadPool(1)
+    t.AddTests(mock_tests)
+    messages = sorted(t.RunAsync())
+
+    self.assertEqual(3, len(messages))
+    self.assertIn(
+      '3 exec failure (0.00s)\nTraceback (most recent call last):',
+      messages[0])
+    self.assertEqual('4 exec failure (0.00s)\n   OSError', messages[1])
+    self.assertEqual('5 (0.00s) failed\nstdout', messages[2])
+
+
 if __name__ == '__main__':
   import unittest
   unittest.main()
