@@ -25,10 +25,6 @@
       'win-google-rel': 'official_goma_x86',
     },
 
-    'internal.chrome.fyi': {
-      'win-celab-rel': 'official_celab_release_bot',
-    },
-
     'chromeos.chrome': {
       'chrome-tot-chromeos-amd64-generic': 'cros_chrome_sdk',
       'Chrome4CROS Packages': 'chromeos_with_codecs_release_bot',
@@ -614,6 +610,10 @@
       'Win x64 Builder (dbg)': 'gpu_tests_debug_bot',
       'Windows deterministic': 'release_bot_x86_minimal_symbols',
       'win-celab-builder-rel': 'celab_release_bot',
+    },
+
+    'internal.chrome.fyi': {
+      'win-celab-rel': 'official_celab_release_bot',
     },
 
     'internal.client.kitchensync': {
