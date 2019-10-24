@@ -36,6 +36,7 @@ chrome_ios_eg2_test("ios_chrome_integration_eg2tests_module") {
   deps = [
     "//ios/chrome/browser/device_sharing:eg2_tests",
     "//ios/chrome/browser/ntp_tiles:eg2_tests",
+    "//ios/chrome/browser/passwords:eg2_tests",
     "//ios/chrome/browser/prerender:eg2_tests",
   ]
 }
