@@ -263,8 +263,13 @@ static int virtio_gpu_bo_invalidate(struct bo *bo, struct mapping *mapping)
 	int ret;
 	struct drm_virtgpu_3d_transfer_from_host xfer;
 	struct virtio_gpu_priv *priv = (struct virtio_gpu_priv *)bo->drv->priv;
+	struct drm_virtgpu_3d_wait waitcmd;
 
 	if (!priv->has_3d)
+		return 0;
+
+	// Invalidate is only necessary if the host writes to the buffer.
+	if ((bo->meta.use_flags & BO_USE_RENDERING) == 0)
 		return 0;
 
 	memset(&xfer, 0, sizeof(xfer));
@@ -283,6 +288,17 @@ static int virtio_gpu_bo_invalidate(struct bo *bo, struct mapping *mapping)
 	ret = drmIoctl(bo->drv->fd, DRM_IOCTL_VIRTGPU_TRANSFER_FROM_HOST, &xfer);
 	if (ret) {
 		drv_log("DRM_IOCTL_VIRTGPU_TRANSFER_FROM_HOST failed with %s\n", strerror(errno));
+		return -errno;
+	}
+
+	// The transfer needs to complete before invalidate returns so that any host changes
+	// are visible and to ensure the host doesn't overwrite subsequent guest changes.
+	// TODO(b/136733358): Support returning fences from transfers
+	memset(&waitcmd, 0, sizeof(waitcmd));
+	waitcmd.handle = mapping->vma->handle;
+	ret = drmIoctl(bo->drv->fd, DRM_IOCTL_VIRTGPU_WAIT, &waitcmd);
+	if (ret) {
+		drv_log("DRM_IOCTL_VIRTGPU_WAIT failed with %s\n", strerror(errno));
 		return -errno;
 	}
 
