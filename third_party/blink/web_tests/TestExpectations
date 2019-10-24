@@ -5727,3 +5727,6 @@ crbug.com/1016762 external/wpt/html/cross-origin-opener-policy/popup-redirect-ca
 
 # cci-trooper 2019-10-22
 crbug.com/1016804 external/wpt/css/css-grid/layout-algorithm/grid-flex-track-intrinsic-sizes-002.html [ Pass Failure ]
+
+# Sheriff 2019-10-24
+crbug.com/1017626 [ Linux ] external/wpt/compat/idlharness.window.html [ Pass Timeout ]
