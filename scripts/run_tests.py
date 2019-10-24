@@ -639,6 +639,8 @@ def GetParser():
                       help='Only run Python 2 unittests.')
   parser.add_argument('--py3', dest='pyver', action='store_const', const='py3',
                       help='Only run Python 3 unittests.')
+  parser.add_argument('--clear-pycache', action='store_true',
+                      help='Clear .pyc files, then exit without running tests.')
   parser.add_argument('tests', nargs='*', default=None, help='Tests to run')
   return parser
 
@@ -680,6 +682,8 @@ def main(argv):
   # Clear python caches now that we're root, in the right dir, but before we
   # run any tests.
   ClearPythonCacheFiles()
+  if opts.clear_pycache:
+    return
 
   # Sanity check the environment.  https://crbug.com/1015450
   st = os.stat('/')
