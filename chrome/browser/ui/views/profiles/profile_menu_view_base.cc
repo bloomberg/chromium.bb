@@ -251,7 +251,7 @@ ProfileMenuViewBase::~ProfileMenuViewBase() {
 void ProfileMenuViewBase::SetHeading(const base::string16& heading,
                                      const base::string16& tooltip_text,
                                      base::RepeatingClosure action) {
-  constexpr int kInsidePadding = 4;
+  constexpr int kInsidePadding = 8;
   const SkColor kBackgroundColor =
       ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
           ui::NativeTheme::kColorId_HighlightedMenuItemBackgroundColor);
@@ -260,16 +260,15 @@ void ProfileMenuViewBase::SetHeading(const base::string16& heading,
   heading_container_->SetLayoutManager(std::make_unique<views::FillLayout>());
   heading_container_->SetBackground(
       views::CreateSolidBackground(kBackgroundColor));
-  heading_container_->SetBorder(
-      views::CreateEmptyBorder(gfx::Insets(kInsidePadding)));
 
-  views::Link* link =
-      heading_container_->AddChildView(std::make_unique<views::Link>(heading));
-  link->SetEnabledColor(views::style::GetColor(
+  views::LabelButton* button = heading_container_->AddChildView(
+      std::make_unique<HoverButton>(this, heading));
+  button->SetEnabledTextColors(views::style::GetColor(
       *this, views::style::CONTEXT_LABEL, views::style::STYLE_SECONDARY));
-  link->SetTooltipText(tooltip_text);
-  link->set_listener(this);
-  RegisterClickAction(link, std::move(action));
+  button->SetTooltipText(tooltip_text);
+  button->SetHorizontalAlignment(gfx::ALIGN_CENTER);
+  button->SetBorder(views::CreateEmptyBorder(gfx::Insets(kInsidePadding)));
+  RegisterClickAction(button, std::move(action));
 }
 
 void ProfileMenuViewBase::SetIdentityInfo(const gfx::ImageSkia& image,
