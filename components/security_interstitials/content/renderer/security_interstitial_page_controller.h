@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_SECURITY_INTERSTITIALS_SECURITY_INTERSTITIAL_PAGE_CONTROLLER_H_
-#define CHROME_RENDERER_SECURITY_INTERSTITIALS_SECURITY_INTERSTITIAL_PAGE_CONTROLLER_H_
+#ifndef COMPONENTS_SECURITY_INTERSTITIALS_CONTENT_RENDERER_SECURITY_INTERSTITIAL_PAGE_CONTROLLER_H_
+#define COMPONENTS_SECURITY_INTERSTITIALS_CONTENT_RENDERER_SECURITY_INTERSTITIAL_PAGE_CONTROLLER_H_
 
 #include "base/memory/weak_ptr.h"
 #include "components/security_interstitials/core/controller_client.h"
@@ -12,6 +12,8 @@
 namespace content {
 class RenderFrame;
 }
+
+namespace security_interstitials {
 
 // This class makes various helper functions available to interstitials
 // when committed interstitials are on. It is bound to the JavaScript
@@ -68,4 +70,6 @@ class SecurityInterstitialPageController
   DISALLOW_COPY_AND_ASSIGN(SecurityInterstitialPageController);
 };
 
-#endif  // CHROME_RENDERER_SECURITY_INTERSTITIALS_SECURITY_INTERSTITIAL_PAGE_CONTROLLER_H_
+}  // namespace security_interstitials
+
+#endif  // COMPONENTS_SECURITY_INTERSTITIALS_CONTENT_RENDERER_SECURITY_INTERSTITIAL_PAGE_CONTROLLER_H_

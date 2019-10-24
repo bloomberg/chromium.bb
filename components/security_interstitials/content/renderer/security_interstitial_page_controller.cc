@@ -2,14 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/security_interstitials/security_interstitial_page_controller.h"
+#include "components/security_interstitials/content/renderer/security_interstitial_page_controller.h"
 
 #include "components/security_interstitials/core/controller_client.h"
 #include "content/public/renderer/render_frame.h"
+#include "gin/converter.h"
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/public/web/web_local_frame.h"
+
+namespace security_interstitials {
 
 gin::WrapperInfo SecurityInterstitialPageController::kWrapperInfo = {
     gin::kEmbedderNativeGin};
@@ -146,3 +149,5 @@ SecurityInterstitialPageController::GetObjectTemplateBuilder(
           .SetMethod("reportPhishingError",
                      &SecurityInterstitialPageController::ReportPhishingError);
 }
+
+}  // namespace security_interstitials
