@@ -16,19 +16,6 @@
 
 using base::android::BundleUtils;
 
-#if defined(LOAD_FROM_BASE_LIBRARY)
-extern "C" {
-
-// These methods are forward-declared here for the build case where
-// partitioned libraries are disabled, and module code is pulled into the main
-// library. In that case, there is no current way of dlsym()'ing for this
-// JNI registration method, and hence it's referred to directly.
-// This list could be auto-generated in the future.
-extern bool JNI_OnLoad_test_dummy(JNIEnv* env) __attribute__((weak_import));
-
-}  // extern "C"
-#endif  // LOAD_FROM_BASE_LIBRARY
-
 namespace module_installer {
 
 // Allows memory mapping module PAK files on the main thread.
@@ -56,7 +43,6 @@ typedef bool JniRegistrationFunction(JNIEnv* env);
 void LoadLibrary(JNIEnv* env, const std::string& library_name) {
   JniRegistrationFunction* registration_function = nullptr;
 
-#if defined(LOAD_FROM_PARTITIONS) || defined(LOAD_FROM_COMPONENTS)
 #if defined(LOAD_FROM_PARTITIONS)
   // The partition library must be opened via native code (using
   // android_dlopen_ext() under the hood). There is no need to repeat the
@@ -65,10 +51,12 @@ void LoadLibrary(JNIEnv* env, const std::string& library_name) {
   // library, for lazy JNI registration).
   void* library_handle =
       BundleUtils::DlOpenModuleLibraryPartition(library_name);
-#else   // defined(LOAD_FROM_PARTITIONS)
+#elif defined(COMPONENT_BUILD)
   const std::string lib_name = "lib" + library_name + ".cr.so";
   void* library_handle = dlopen(lib_name.c_str(), RTLD_LOCAL);
-#endif  // defined(LOAD_FROM_PARTITIONS)
+#else
+#error "Unsupported configuration."
+#endif  // defined(COMPONENT_BUILD)
   CHECK(library_handle != nullptr)
       << "Could not open feature library:" << dlerror();
 
@@ -78,14 +66,6 @@ void LoadLibrary(JNIEnv* env, const std::string& library_name) {
   CHECK(symbol != nullptr) << "Could not find JNI registration method: "
                            << dlerror();
   registration_function = reinterpret_cast<JniRegistrationFunction*>(symbol);
-#else   // defined(LOAD_FROM_PARTITIONS) || defined(LOAD_FROM_COMPONENTS)
-  // TODO(https://crbug.com/1011834): Remove this code path (and anything
-  // associated with it) once there's confidence partitions will stay enabled.
-  const std::map<std::string, JniRegistrationFunction*> modules = {
-      {"test_dummy", JNI_OnLoad_test_dummy}};
-  registration_function = modules.at(library_name);
-#endif  // defined(LOAD_FROM_PARTITIONS) || defined(LOAD_FROM_COMPONENTS)
-
   CHECK(registration_function(env))
       << "JNI registration failed: " << library_name;
 }

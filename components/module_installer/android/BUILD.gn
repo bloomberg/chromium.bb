@@ -87,13 +87,9 @@ source_set("native") {
   ]
 
   # The method used to load and register JNI for native libraries depends
-  # heavily on build type.
+  # on build type.
   if (use_native_partitions) {
     defines = [ "LOAD_FROM_PARTITIONS" ]
-  } else if (is_component_build) {
-    defines = [ "LOAD_FROM_COMPONENTS" ]
-  } else {
-    defines = [ "LOAD_FROM_BASE_LIBRARY" ]
   }
 }
 
