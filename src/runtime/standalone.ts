@@ -6,6 +6,8 @@ import { Logger } from '../framework/logger.js';
 import { FilterResultTreeNode, treeFromFilterResults } from '../framework/tree.js';
 import { encodeSelectively } from '../framework/url_query.js';
 
+import { TestWorker } from './helper/test_worker.js';
+
 window.onbeforeunload = () => {
   // Prompt user before reloading if there are any results
   return haveSomeResults ? false : undefined;
@@ -18,10 +20,14 @@ const url = new URL(window.location.toString());
 const runnow = url.searchParams.get('runnow') === '1';
 const debug = url.searchParams.get('debug') === '1';
 
+const worker = url.searchParams.get('worker') === '1' ? new TestWorker() : undefined;
+
 const resultsVis = document.getElementById('resultsVis')!;
 const resultsJSON = document.getElementById('resultsJSON')!;
 
 type RunSubtree = () => Promise<void>;
+
+// DOM generation
 
 function makeTreeNodeHTML(name: string, tree: FilterResultTreeNode): [HTMLElement, RunSubtree] {
   if (tree.children) {
@@ -36,7 +42,8 @@ function makeCaseHTML(name: string, t: RunCase): [HTMLElement, RunSubtree] {
 
   const runSubtree = async () => {
     haveSomeResults = true;
-    const res = await t.run(debug);
+    const res = await (worker ? worker.run(name, debug) : t.run(debug));
+    // TODO: save result to log
 
     casetime.text(res.timems.toFixed(4) + ' ms');
 

@@ -57,7 +57,7 @@ export class TestLoader {
     return this.loadTests(filters);
   }
 
-  private async loadTests(filters: string[]): Promise<TestFilterResultIterator> {
+  async loadTests(filters: string[]): Promise<TestFilterResultIterator> {
     const loads = filters.map(f => loadFilter(this.fileLoader, f));
     return concat(await Promise.all(loads));
   }
