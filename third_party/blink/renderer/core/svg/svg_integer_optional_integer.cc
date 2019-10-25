@@ -101,15 +101,13 @@ void SVGIntegerOptionalInteger::Add(SVGPropertyBase* other, SVGElement*) {
 }
 
 void SVGIntegerOptionalInteger::CalculateAnimatedValue(
-    SVGAnimationElement* animation_element,
+    const SVGAnimationElement& animation_element,
     float percentage,
     unsigned repeat_count,
     SVGPropertyBase* from,
     SVGPropertyBase* to,
     SVGPropertyBase* to_at_end_of_duration,
     SVGElement*) {
-  DCHECK(animation_element);
-
   SVGIntegerOptionalInteger* from_integer = ToSVGIntegerOptionalInteger(from);
   SVGIntegerOptionalInteger* to_integer = ToSVGIntegerOptionalInteger(to);
   SVGIntegerOptionalInteger* to_at_end_of_duration_integer =
@@ -117,11 +115,11 @@ void SVGIntegerOptionalInteger::CalculateAnimatedValue(
 
   float x = first_integer_->Value();
   float y = second_integer_->Value();
-  animation_element->AnimateAdditiveNumber(
+  animation_element.AnimateAdditiveNumber(
       percentage, repeat_count, from_integer->FirstInteger()->Value(),
       to_integer->FirstInteger()->Value(),
       to_at_end_of_duration_integer->FirstInteger()->Value(), x);
-  animation_element->AnimateAdditiveNumber(
+  animation_element.AnimateAdditiveNumber(
       percentage, repeat_count, from_integer->SecondInteger()->Value(),
       to_integer->SecondInteger()->Value(),
       to_at_end_of_duration_integer->SecondInteger()->Value(), y);

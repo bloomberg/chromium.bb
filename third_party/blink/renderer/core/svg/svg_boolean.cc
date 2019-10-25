@@ -54,21 +54,21 @@ void SVGBoolean::Add(SVGPropertyBase*, SVGElement*) {
   NOTREACHED();
 }
 
-void SVGBoolean::CalculateAnimatedValue(SVGAnimationElement* animation_element,
-                                        float percentage,
-                                        unsigned repeat_count,
-                                        SVGPropertyBase* from,
-                                        SVGPropertyBase* to,
-                                        SVGPropertyBase*,
-                                        SVGElement*) {
-  DCHECK(animation_element);
-  bool from_boolean = animation_element->GetAnimationMode() == kToAnimation
+void SVGBoolean::CalculateAnimatedValue(
+    const SVGAnimationElement& animation_element,
+    float percentage,
+    unsigned repeat_count,
+    SVGPropertyBase* from,
+    SVGPropertyBase* to,
+    SVGPropertyBase*,
+    SVGElement*) {
+  bool from_boolean = animation_element.GetAnimationMode() == kToAnimation
                           ? value_
                           : ToSVGBoolean(from)->Value();
   bool to_boolean = ToSVGBoolean(to)->Value();
 
-  animation_element->AnimateDiscreteType<bool>(percentage, from_boolean,
-                                               to_boolean, value_);
+  animation_element.AnimateDiscreteType<bool>(percentage, from_boolean,
+                                              to_boolean, value_);
 }
 
 float SVGBoolean::CalculateDistance(SVGPropertyBase*, SVGElement*) {

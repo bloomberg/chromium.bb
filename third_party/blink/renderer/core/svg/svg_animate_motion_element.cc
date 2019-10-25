@@ -197,7 +197,7 @@ bool SVGAnimateMotionElement::CalculateFromAndByValues(
 
 void SVGAnimateMotionElement::CalculateAnimatedValue(float percentage,
                                                      unsigned repeat_count,
-                                                     SVGSMILElement*) {
+                                                     SVGSMILElement*) const {
   SVGElement* target_element = targetElement();
   DCHECK(target_element);
   AffineTransform* transform = target_element->AnimateMotionTransform();

@@ -326,9 +326,10 @@ SVGPropertyBase* SVGAnimateElement::AdjustForInheritance(
   return CreatePropertyForAnimation(value);
 }
 
-void SVGAnimateElement::CalculateAnimatedValue(float percentage,
-                                               unsigned repeat_count,
-                                               SVGSMILElement* result_element) {
+void SVGAnimateElement::CalculateAnimatedValue(
+    float percentage,
+    unsigned repeat_count,
+    SVGSMILElement* result_element) const {
   DCHECK(result_element);
   DCHECK(targetElement());
   if (!IsSVGAnimateElement(*result_element))
@@ -370,7 +371,7 @@ void SVGAnimateElement::CalculateAnimatedValue(float percentage,
   to_value = AdjustForInheritance(to_value, to_property_value_type_);
 
   animated_value->CalculateAnimatedValue(
-      this, percentage, repeat_count, from_value, to_value,
+      *this, percentage, repeat_count, from_value, to_value,
       to_at_end_of_duration_value, target_element);
 }
 

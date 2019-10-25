@@ -27,20 +27,19 @@ void SVGString::Add(SVGPropertyBase*, SVGElement*) {
   NOTREACHED();
 }
 
-void SVGString::CalculateAnimatedValue(SVGAnimationElement* animation_element,
-                                       float percentage,
-                                       unsigned repeat_count,
-                                       SVGPropertyBase* from,
-                                       SVGPropertyBase* to,
-                                       SVGPropertyBase*,
-                                       SVGElement*) {
-  DCHECK(animation_element);
-
+void SVGString::CalculateAnimatedValue(
+    const SVGAnimationElement& animation_element,
+    float percentage,
+    unsigned repeat_count,
+    SVGPropertyBase* from,
+    SVGPropertyBase* to,
+    SVGPropertyBase*,
+    SVGElement*) {
   String from_string = ToSVGString(from)->value_;
   String to_string = ToSVGString(to)->value_;
 
-  animation_element->AnimateDiscreteType<String>(percentage, from_string,
-                                                 to_string, value_);
+  animation_element.AnimateDiscreteType<String>(percentage, from_string,
+                                                to_string, value_);
 }
 
 float SVGString::CalculateDistance(SVGPropertyBase*, SVGElement*) {

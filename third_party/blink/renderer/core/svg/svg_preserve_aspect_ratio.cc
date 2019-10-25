@@ -440,17 +440,15 @@ void SVGPreserveAspectRatio::Add(SVGPropertyBase* other, SVGElement*) {
 }
 
 void SVGPreserveAspectRatio::CalculateAnimatedValue(
-    SVGAnimationElement* animation_element,
+    const SVGAnimationElement& animation_element,
     float percentage,
     unsigned repeat_count,
     SVGPropertyBase* from_value,
     SVGPropertyBase* to_value,
     SVGPropertyBase*,
     SVGElement*) {
-  DCHECK(animation_element);
-
   bool use_to_value;
-  animation_element->AnimateDiscreteType(percentage, false, true, use_to_value);
+  animation_element.AnimateDiscreteType(percentage, false, true, use_to_value);
 
   SVGPreserveAspectRatio* preserve_aspect_ratio_to_use =
       use_to_value ? ToSVGPreserveAspectRatio(to_value)
