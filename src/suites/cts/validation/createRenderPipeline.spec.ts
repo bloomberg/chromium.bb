@@ -130,8 +130,8 @@ g.test('color formats must be renderable', async t => {
 
   const descriptor = t.getDescriptor({ colorStates: [{ format }] });
 
-  if (info.renderable) {
-    // Succeeds when format is renderable
+  if (info.renderable && info.color) {
+    // Succeeds when color format is renderable
     t.device.createRenderPipeline(descriptor);
   } else {
     // Fails because when format is non-renderable
