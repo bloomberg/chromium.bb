@@ -3862,9 +3862,6 @@ crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/margin-collap
 # Other untriaged test failures, timeouts and crashes from newly-imported WPT tests.
 crbug.com/626703 external/wpt/html/browsers/history/the-location-interface/location-protocol-setter-non-broken.html [ Failure Pass ]
 
-# TODO(https://crbug.com/1010509): Re-enable this in Chrome 80.
-crbug.com/936080 external/wpt/html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name/no_window_open_when_term_nesting_level_nonzero.window.html [ Failure ]
-
 # Underline offset and thickness are not implemented yet.
 crbug.com/785230 external/wpt/css/css-text-decor/text-underline-offset-001.html [ Skip ]
 crbug.com/785230 external/wpt/css/css-text-decor/text-underline-offset-scroll-001.html [ Skip ]
