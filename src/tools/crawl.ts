@@ -4,9 +4,10 @@
 
 // tslint:disable: no-console
 
-import fg from 'fast-glob';
 import * as fs from 'fs';
 import * as path from 'path';
+
+const fg = require('fast-glob');
 
 import { TestSuiteListingEntry } from '../framework/listing.js';
 import { TestSpec } from '../framework/loader.js';

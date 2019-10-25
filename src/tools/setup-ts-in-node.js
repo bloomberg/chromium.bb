@@ -1,5 +1,10 @@
 // Automatically transpile .ts imports
-require('ts-node/register/transpile-only');
+require('ts-node').register({
+  compilerOptions: {
+    module: 'commonjs',
+  },
+  transpileOnly: true,
+})
 
 // Redirect imports of .js files to .ts files
 const Module = require('module');

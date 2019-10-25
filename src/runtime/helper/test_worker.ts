@@ -5,7 +5,10 @@ export class TestWorker {
   private resolvers = new Map<string, (result: LiveTestCaseResult) => void>();
 
   constructor() {
-    this.worker = new Worker('out/runtime/helper/test_worker.worker.js', { type: 'module' });
+    const selfPath = import.meta.url;
+    const selfPathDir = selfPath.substring(0, selfPath.lastIndexOf('/'));
+    const workerPath = selfPathDir + '/test_worker.worker.js';
+    this.worker = new Worker(workerPath, { type: 'module' });
     this.worker.onmessage = ev => {
       const { query, result } = ev.data;
       this.resolvers.get(query)!(result);

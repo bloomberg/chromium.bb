@@ -1,10 +1,11 @@
-module.exports = function(api) {
+module.exports = function (api) {
   api.cache(true);
   return {
     presets: ['@babel/preset-typescript'],
     plugins: [
       '@babel/plugin-proposal-class-properties',
       '@babel/plugin-syntax-dynamic-import',
+      '@babel/plugin-syntax-import-meta',
       'macros',
       [
         'add-header-comment',

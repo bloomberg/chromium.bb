@@ -43,5 +43,8 @@
     "tslint": "^5.15.0",
     "typescript": "~3.6.4",
     "typescript-formatter": "^7.2.2"
+  },
+  "dependencies": {
+    "@babel/plugin-syntax-import-meta": "^7.2.0"
   }
 }

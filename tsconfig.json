@@ -2,6 +2,7 @@
   "extends": "./node_modules/gts/tsconfig-google.json",
   "compilerOptions": {
     "lib": ["dom", "es2016"],
+    "module": "esnext",
 
     /* Output options */
     "noEmit": true,
@@ -19,10 +20,9 @@
 
     /* Module Options */
     "moduleResolution": "node",
-    "esModuleInterop": true,
+    "esModuleInterop": false,
   },
   "include": [
     "src/**/*.ts",
-    "tools/**/*.ts"
-  ]
+  ],
 }

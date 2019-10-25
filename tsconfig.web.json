@@ -1,8 +1,0 @@
-{
-  "extends": "./tsconfig.json",
-  "compilerOptions": {
-    "module": "es2016",
-    "noEmit": false,
-    "outDir": "out/"
-  }
-}

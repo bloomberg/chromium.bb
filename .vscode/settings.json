@@ -11,6 +11,7 @@
     "*.tmp.txt": true,
     ".babelrc": true,
     ".gitignore": true,
+    ".prettierignore": true,
     ".travis.yml": true,
     ".tscache": true,
     ".vscode": true,
