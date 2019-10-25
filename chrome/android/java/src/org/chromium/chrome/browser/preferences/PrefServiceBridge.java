@@ -16,7 +16,6 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.ContentSettingsType;
 import org.chromium.chrome.browser.browsing_data.TimePeriod;
-import org.chromium.chrome.browser.download.DownloadPromptStatus;
 import org.chromium.chrome.browser.preferences.languages.LanguageItem;
 import org.chromium.chrome.browser.preferences.website.ContentSettingException;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
@@ -128,6 +127,14 @@ public class PrefServiceBridge {
      */
     public void setBoolean(@Pref int preference, boolean value) {
         PrefServiceBridgeJni.get().setBoolean(PrefServiceBridge.this, preference, value);
+    }
+
+    /**
+     * @param preference The name of the preference.
+     * @return value The value of the specified preference.
+     */
+    public int getInteger(@Pref int preference) {
+        return PrefServiceBridgeJni.get().getInteger(PrefServiceBridge.this, preference);
     }
 
     /**
@@ -1038,21 +1045,6 @@ public class PrefServiceBridge {
     }
 
     /**
-     * @return The status of prompt for download pref, defined by {@link DownloadPromptStatus}.
-     */
-    @DownloadPromptStatus
-    public int getPromptForDownloadAndroid() {
-        return PrefServiceBridgeJni.get().getPromptForDownloadAndroid(PrefServiceBridge.this);
-    }
-
-    /**
-     * @param status New status to update the prompt for download preference.
-     */
-    public void setPromptForDownloadAndroid(@DownloadPromptStatus int status) {
-        PrefServiceBridgeJni.get().setPromptForDownloadAndroid(PrefServiceBridge.this, status);
-    }
-
-    /**
      * @return Whether the explicit language prompt was shown at least once.
      */
     public boolean getExplicitLanguageAskPromptShown() {
@@ -1094,6 +1086,7 @@ public class PrefServiceBridge {
         void setContentSetting(PrefServiceBridge caller, int contentSettingType, int setting);
         boolean getBoolean(PrefServiceBridge caller, int preference);
         void setBoolean(PrefServiceBridge caller, int preference, boolean value);
+        int getInteger(PrefServiceBridge caller, int preference);
         void setInteger(PrefServiceBridge caller, int preference, int value);
         boolean isManagedPreference(PrefServiceBridge caller, int preference);
         boolean getAcceptCookiesEnabled(PrefServiceBridge caller);
@@ -1204,8 +1197,6 @@ public class PrefServiceBridge {
         void setLanguageBlockedState(PrefServiceBridge caller, String language, boolean blocked);
         String getDownloadDefaultDirectory(PrefServiceBridge caller);
         void setDownloadAndSaveFileDefaultDirectory(PrefServiceBridge caller, String directory);
-        int getPromptForDownloadAndroid(PrefServiceBridge caller);
-        void setPromptForDownloadAndroid(PrefServiceBridge caller, int status);
         boolean getExplicitLanguageAskPromptShown(PrefServiceBridge caller);
         void setExplicitLanguageAskPromptShown(PrefServiceBridge caller, boolean shown);
         void setForceWebContentsDarkModeEnabled(PrefServiceBridge caller, boolean enabled);

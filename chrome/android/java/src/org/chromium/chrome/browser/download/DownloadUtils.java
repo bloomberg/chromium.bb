@@ -48,6 +48,8 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.offlinepages.OfflinePageOrigin;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadBridge;
+import org.chromium.chrome.browser.preferences.Pref;
+import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
@@ -1057,6 +1059,21 @@ public class DownloadUtils {
             }
         }
         return originalUri;
+    }
+
+    /**
+     * @return The status of prompt for download pref, defined by {@link DownloadPromptStatus}.
+     */
+    @DownloadPromptStatus
+    public static int getPromptForDownloadAndroid() {
+        return PrefServiceBridge.getInstance().getInteger(Pref.PROMPT_FOR_DOWNLOAD_ANDROID);
+    }
+
+    /**
+     * @param status New status to update the prompt for download preference.
+     */
+    public static void setPromptForDownloadAndroid(@DownloadPromptStatus int status) {
+        PrefServiceBridge.getInstance().setInteger(Pref.PROMPT_FOR_DOWNLOAD_ANDROID, status);
     }
 
     @NativeMethods

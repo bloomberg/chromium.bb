@@ -150,6 +150,13 @@ static void JNI_PrefServiceBridge_SetBoolean(JNIEnv* env,
       PrefServiceBridge::GetPrefNameExposedToJava(j_pref_index), j_value);
 }
 
+static jint JNI_PrefServiceBridge_GetInteger(JNIEnv* env,
+                                             const JavaParamRef<jobject>& obj,
+                                             const jint j_pref_index) {
+  return GetPrefService()->GetInteger(
+      PrefServiceBridge::GetPrefNameExposedToJava(j_pref_index));
+}
+
 static void JNI_PrefServiceBridge_SetInteger(JNIEnv* env,
                                              const JavaParamRef<jobject>& obj,
                                              const jint j_pref_index,
@@ -1316,19 +1323,6 @@ static void JNI_PrefServiceBridge_SetDownloadAndSaveFileDefaultDirectory(
   base::FilePath path(ConvertJavaStringToUTF8(env, directory));
   GetPrefService()->SetFilePath(prefs::kDownloadDefaultDirectory, path);
   GetPrefService()->SetFilePath(prefs::kSaveFileDefaultDirectory, path);
-}
-
-static jint JNI_PrefServiceBridge_GetPromptForDownloadAndroid(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  return GetPrefService()->GetInteger(prefs::kPromptForDownloadAndroid);
-}
-
-static void JNI_PrefServiceBridge_SetPromptForDownloadAndroid(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    const jint status) {
-  GetPrefService()->SetInteger(prefs::kPromptForDownloadAndroid, status);
 }
 
 static jboolean JNI_PrefServiceBridge_GetExplicitLanguageAskPromptShown(
