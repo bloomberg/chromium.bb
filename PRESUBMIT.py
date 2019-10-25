@@ -500,6 +500,16 @@ _BANNED_CPP_FUNCTIONS = (
       False,
       (),
     ),
+    (
+      r'/\busing namespace ',
+      (
+       'Using directives ("using namespace x") are banned by the Google Style',
+       'Guide ( http://google.github.io/styleguide/cppguide.html#Namespaces ).',
+       'Explicitly qualify symbols or use using declarations ("using x::foo").',
+      ),
+      True,
+      [_THIRD_PARTY_EXCEPT_BLINK],  # Don't warn in third_party folders.
+    ),
     # Make sure that gtest's FRIEND_TEST() macro is not used; the
     # FRIEND_TEST_ALL_PREFIXES() macro from base/gtest_prod_util.h should be
     # used instead since that allows for FLAKY_ and DISABLED_ prefixes.
