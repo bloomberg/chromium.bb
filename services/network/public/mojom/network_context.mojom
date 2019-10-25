@@ -1098,9 +1098,10 @@ interface NetworkContext {
                     NetworkIsolationKey network_isolation_key);
 
   // Creates a P2PSocketManager instance, used for WebRTC.
-  CreateP2PSocketManager(P2PTrustedSocketManagerClient client,
-                         P2PTrustedSocketManager& trusted_socket_manager,
-                         P2PSocketManager& socket_manager);
+  CreateP2PSocketManager(
+      pending_remote<P2PTrustedSocketManagerClient> client,
+      pending_receiver<P2PTrustedSocketManager> trusted_socket_manager,
+      pending_receiver<P2PSocketManager> socket_manager);
 
   // Creates an MdnsResponder instance.
   CreateMdnsResponder(pending_receiver<MdnsResponder> responder_receiver);
