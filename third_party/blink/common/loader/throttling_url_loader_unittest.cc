@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/throttling_url_loader.h"
+#include "third_party/blink/public/common/loader/throttling_url_loader.h"
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -21,7 +21,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 
-namespace content {
+namespace blink {
 namespace {
 
 GURL request_url = GURL("http://example.org");
@@ -2740,4 +2740,4 @@ TEST_F(ThrottlingURLLoaderTest, MultipleRestartOfMultipleTypesDeferAndSync) {
 }
 
 }  // namespace
-}  // namespace content
+}  // namespace blink
