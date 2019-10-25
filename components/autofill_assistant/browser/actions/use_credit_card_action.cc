@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -158,6 +159,14 @@ std::string UseCreditCardAction::GetFallbackValue(
 
     case UseCreditCardProto::RequiredField::CREDIT_CARD_NUMBER:
       return fallback_data.card_number;
+      break;
+
+    case UseCreditCardProto::RequiredField::CREDIT_CARD_EXP_MM_YY:
+      if (fallback_data.expiration_month > 0 &&
+          fallback_data.expiration_year > 0)
+        return base::StrCat(
+            {base::StringPrintf("%02d", fallback_data.expiration_month), "/",
+             base::StringPrintf("%02d", fallback_data.expiration_year % 100)});
       break;
 
     case UseCreditCardProto::RequiredField::UNDEFINED:
