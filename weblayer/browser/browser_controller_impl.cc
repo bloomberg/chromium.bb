@@ -58,6 +58,15 @@ void HandleJavaScriptResult(
 
 }  // namespace
 
+#if defined(OS_ANDROID)
+BrowserControllerImpl::BrowserControllerImpl(
+    ProfileImpl* profile,
+    const base::android::JavaParamRef<jobject>& java_impl)
+    : BrowserControllerImpl(profile) {
+  java_impl_ = java_impl;
+}
+#endif
+
 BrowserControllerImpl::BrowserControllerImpl(ProfileImpl* profile)
     : profile_(profile) {
 #if defined(OS_ANDROID)
@@ -142,10 +151,12 @@ void BrowserControllerImpl::AttachToView(views::WebView* web_view) {
 #endif
 
 #if defined(OS_ANDROID)
-static jlong JNI_BrowserControllerImpl_CreateBrowserController(JNIEnv* env,
-                                                               jlong profile) {
-  return reinterpret_cast<intptr_t>(
-      new BrowserControllerImpl(reinterpret_cast<ProfileImpl*>(profile)));
+static jlong JNI_BrowserControllerImpl_CreateBrowserController(
+    JNIEnv* env,
+    jlong profile,
+    const base::android::JavaParamRef<jobject>& java_impl) {
+  return reinterpret_cast<intptr_t>(new BrowserControllerImpl(
+      reinterpret_cast<ProfileImpl*>(profile), java_impl));
 }
 
 static void JNI_BrowserControllerImpl_DeleteBrowserController(
@@ -216,7 +227,12 @@ int BrowserControllerImpl::GetTopControlsHeight() {
 
 bool BrowserControllerImpl::DoBrowserControlsShrinkRendererSize(
     const content::WebContents* web_contents) {
-  return true;
+#if defined(OS_ANDROID)
+  return Java_BrowserControllerImpl_doBrowserControlsShrinkRendererSize(
+      base::android::AttachCurrentThread(), java_impl_);
+#else
+  return false;
+#endif
 }
 
 bool BrowserControllerImpl::EmbedsFullscreenWidget() {
