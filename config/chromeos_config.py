@@ -3683,6 +3683,10 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
       'terra',
   ])
 
+  _no_unittest_configs = [
+      'grunt-kernelnext-release',
+  ]
+
   def _get_skylab_settings(board_name):
     """Get skylab settings for release builder.
 
@@ -3761,19 +3765,23 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
       important = False
 
     enable_skylab_hw_tests = _get_skylab_settings(reference_board_name)
+    props = {
+        'models': models,
+        'important': important,
+        'enable_skylab_hw_tests': enable_skylab_hw_tests['default'],
+        'enable_skylab_cts_hw_tests': enable_skylab_hw_tests['cts'],
+        'hw_tests': (hw_test_list.SharedPoolCanary(pool=pool)
+                     + hw_test_list.CtsGtsQualTests())
+    }
+    if config_name in _no_unittest_configs:
+      props['unittests'] = False
     site_config.AddForBoards(
         config_lib.CONFIG_TYPE_RELEASE,
         [reference_board_name],
         board_configs,
         site_config.templates.release,
-        models=models,
-        important=important,
-        enable_skylab_hw_tests=enable_skylab_hw_tests['default'],
-        enable_skylab_cts_hw_tests=enable_skylab_hw_tests['cts'],
-        hw_tests=(hw_test_list.SharedPoolCanary(pool=pool) +
-                  hw_test_list.CtsGtsQualTests()),
+        **props
     )
-
     _AssignToMaster(site_config[config_name])
 
   def GetReleaseConfigName(board):
