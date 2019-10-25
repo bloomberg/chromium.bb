@@ -726,12 +726,12 @@ static int get_tx_type_cost(const MACROBLOCK *x, const MACROBLOCKD *xd,
 }
 
 static AOM_FORCE_INLINE int warehouse_efficients_txb(
-    const AV1_COMMON *const cm, const MACROBLOCK *x, const int plane,
-    const int block, const TX_SIZE tx_size, const TXB_CTX *const txb_ctx,
+    const MACROBLOCK *x, const int plane, const int block,
+    const TX_SIZE tx_size, const TXB_CTX *const txb_ctx,
     const struct macroblock_plane *p, const int eob,
     const PLANE_TYPE plane_type, const LV_MAP_COEFF_COST *const coeff_costs,
-    const MACROBLOCKD *const xd, const TX_TYPE tx_type,
-    const TX_CLASS tx_class) {
+    const MACROBLOCKD *const xd, const TX_TYPE tx_type, const TX_CLASS tx_class,
+    int reduced_tx_set_used) {
   const tran_low_t *const qcoeff = p->qcoeff + BLOCK_OFFSET(block);
   const int txb_skip_ctx = txb_ctx->txb_skip_ctx;
   const int bwl = get_txb_bwl(tx_size);
@@ -749,8 +749,7 @@ static AOM_FORCE_INLINE int warehouse_efficients_txb(
 
   av1_txb_init_levels(qcoeff, width, height, levels);
 
-  cost +=
-      get_tx_type_cost(x, xd, plane, tx_size, tx_type, cm->reduced_tx_set_used);
+  cost += get_tx_type_cost(x, xd, plane, tx_size, tx_type, reduced_tx_set_used);
 
   cost += get_eob_cost(eob, eob_costs, coeff_costs, tx_class);
 
@@ -789,7 +788,7 @@ static AOM_FORCE_INLINE int warehouse_efficients_txb(
     const int coeff_ctx = coeff_contexts[pos];
     const tran_low_t v = qcoeff[pos];
     const int level = abs(v);
-    const int cost0 = base_cost[coeff_ctx][AOMMIN(level, 3)];
+    cost += base_cost[coeff_ctx][AOMMIN(level, 3)];
     if (v) {
       // sign bit cost
       cost += av1_cost_literal(1);
@@ -798,9 +797,9 @@ static AOM_FORCE_INLINE int warehouse_efficients_txb(
         cost += get_br_cost(level, lps_cost[ctx]);
       }
     }
-    cost += cost0;
   }
-  if (c == 0) {
+  // c == 0 after previous loop
+  {
     const int pos = scan[c];
     const tran_low_t v = qcoeff[pos];
     const int coeff_ctx = coeff_contexts[pos];
@@ -822,9 +821,9 @@ static AOM_FORCE_INLINE int warehouse_efficients_txb(
   return cost;
 }
 
-int av1_cost_coeffs_txb(const AV1_COMMON *const cm, const MACROBLOCK *x,
-                        const int plane, const int block, const TX_SIZE tx_size,
-                        const TX_TYPE tx_type, const TXB_CTX *const txb_ctx) {
+int av1_cost_coeffs_txb(const MACROBLOCK *x, const int plane, const int block,
+                        const TX_SIZE tx_size, const TX_TYPE tx_type,
+                        const TXB_CTX *const txb_ctx, int reduced_tx_set_used) {
   const struct macroblock_plane *p = &x->plane[plane];
   const int eob = p->eobs[block];
   const TX_SIZE txs_ctx = get_txsize_entropy_ctx(tx_size);
@@ -838,9 +837,9 @@ int av1_cost_coeffs_txb(const AV1_COMMON *const cm, const MACROBLOCK *x,
   const MACROBLOCKD *const xd = &x->e_mbd;
   const TX_CLASS tx_class = tx_type_to_class[tx_type];
 
-  return warehouse_efficients_txb(cm, x, plane, block, tx_size, txb_ctx, p, eob,
+  return warehouse_efficients_txb(x, plane, block, tx_size, txb_ctx, p, eob,
                                   plane_type, coeff_costs, xd, tx_type,
-                                  tx_class);
+                                  tx_class, reduced_tx_set_used);
 }
 
 static int optimize_txb(TxbInfo *txb_info, const LV_MAP_COEFF_COST *txb_costs,
