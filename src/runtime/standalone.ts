@@ -2,7 +2,7 @@
 
 import { RunCase } from '../framework/index.js';
 import { TestLoader } from '../framework/loader.js';
-import { Logger } from '../framework/logger.js';
+import { Logger, LiveTestCaseResult } from '../framework/logger.js';
 import { FilterResultTreeNode, treeFromFilterResults } from '../framework/tree.js';
 import { encodeSelectively } from '../framework/url_query.js';
 
@@ -42,8 +42,13 @@ function makeCaseHTML(name: string, t: RunCase): [HTMLElement, RunSubtree] {
 
   const runSubtree = async () => {
     haveSomeResults = true;
-    const res = await (worker ? worker.run(name, debug) : t.run(debug));
-    // TODO: save result to log
+    let res: LiveTestCaseResult;
+    if (worker) {
+      res = await worker.run(name, debug);
+      t.injectResult(res);
+    } else {
+      res = await t.run(debug);
+    }
 
     casetime.text(res.timems.toFixed(4) + ' ms');
 

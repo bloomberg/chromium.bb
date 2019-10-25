@@ -1,5 +1,5 @@
 import { TestLoader } from '../framework/loader.js';
-import { Logger } from '../framework/logger.js';
+import { Logger, LiveTestCaseResult } from '../framework/logger.js';
 import { makeQueryString } from '../framework/url_query.js';
 import { AsyncMutex } from '../framework/util/async_mutex.js';
 import { TestWorker } from './helper/test_worker.js';
@@ -35,8 +35,14 @@ declare function async_test(f: (this: WptTestObject) => Promise<void>, name: str
       // Note: apparently, async_tests must ALL be added within the same task.
       async_test(function(this: WptTestObject): Promise<void> {
         const p = mutex.with(async () => {
-          const r = await (worker ? worker.run(name) : t.run());
-          // TODO: save result to log
+          let r: LiveTestCaseResult;
+          if (worker) {
+            r = await worker.run(name);
+            t.injectResult(r);
+          } else {
+            r = await t.run();
+          }
+
           this.step(() => {
             if (r.status === 'fail') {
               throw (r.logs || []).join('\n');

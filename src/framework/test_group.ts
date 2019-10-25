@@ -8,6 +8,7 @@ import { checkPublicParamType, extractPublicParams } from './url_query.js';
 export interface RunCase {
   readonly id: TestCaseID;
   run(debug?: boolean): Promise<LiveTestCaseResult>;
+  injectResult(result: LiveTestCaseResult): void;
 }
 
 export interface RunCaseIterable {
@@ -154,5 +155,10 @@ class RunCaseSpecific<F extends Fixture> implements RunCase {
 
     rec.finish();
     return res;
+  }
+
+  injectResult(result: LiveTestCaseResult): void {
+    const [, res] = this.recorder.record(this.id.test, this.id.params);
+    Object.assign(res, result);
   }
 }
