@@ -388,9 +388,8 @@ void RenderFrameProxyHost::OnOpenURL(
       current_rfh, validated_url, params.initiator_origin, site_instance_.get(),
       params.referrer, ui::PAGE_TRANSITION_LINK,
       params.should_replace_current_entry, download_policy,
-      params.uses_post ? "POST" : "GET", params.resource_request_body,
-      params.extra_headers, std::move(blob_url_loader_factory),
-      params.user_gesture);
+      params.post_body ? "POST" : "GET", params.post_body, params.extra_headers,
+      std::move(blob_url_loader_factory), params.user_gesture);
 }
 
 void RenderFrameProxyHost::OnCheckCompleted() {

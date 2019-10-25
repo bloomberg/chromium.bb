@@ -787,8 +787,8 @@ void RenderFrameProxy::Navigate(
   FrameHostMsg_OpenURL_Params params;
   params.url = request.Url();
   params.initiator_origin = request.RequestorOrigin();
-  params.uses_post = request.HttpMethod().Utf8() == "POST";
-  params.resource_request_body = GetRequestBodyForWebURLRequest(request);
+  params.post_body = GetRequestBodyForWebURLRequest(request);
+  DCHECK_EQ(!!params.post_body, request.HttpMethod().Utf8() == "POST");
   params.extra_headers = GetWebURLRequestHeadersAsString(request);
   // TODO(domfarolino): Retrieve the referrer in the form of a referrer member
   // instead of the header field. See https://crbug.com/850813.

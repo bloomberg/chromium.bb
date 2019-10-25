@@ -6591,9 +6591,8 @@ void RenderFrameImpl::OpenURL(std::unique_ptr<blink::WebNavigationInfo> info) {
   FrameHostMsg_OpenURL_Params params;
   params.url = info->url_request.Url();
   params.initiator_origin = info->url_request.RequestorOrigin();
-  params.uses_post = IsHttpPost(info->url_request);
-  params.resource_request_body =
-      GetRequestBodyForWebURLRequest(info->url_request);
+  params.post_body = GetRequestBodyForWebURLRequest(info->url_request);
+  DCHECK_EQ(!!params.post_body, IsHttpPost(info->url_request));
   params.extra_headers = GetWebURLRequestHeadersAsString(info->url_request);
   params.referrer =
       RenderViewImpl::GetReferrerFromRequest(frame_, info->url_request);

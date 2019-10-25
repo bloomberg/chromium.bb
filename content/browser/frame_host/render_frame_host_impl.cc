@@ -2510,10 +2510,10 @@ void RenderFrameHostImpl::OnOpenURL(const FrameHostMsg_OpenURL_Params& params) {
                validated_url.possibly_invalid_spec());
 
   frame_tree_node_->navigator()->RequestOpenURL(
-      this, validated_url, params.initiator_origin, params.uses_post,
-      params.resource_request_body, params.extra_headers, params.referrer,
-      params.disposition, params.should_replace_current_entry,
-      params.user_gesture, params.triggering_event_info, params.href_translate,
+      this, validated_url, params.initiator_origin, params.post_body,
+      params.extra_headers, params.referrer, params.disposition,
+      params.should_replace_current_entry, params.user_gesture,
+      params.triggering_event_info, params.href_translate,
       std::move(blob_url_loader_factory));
 }
 
