@@ -51,6 +51,8 @@ source_set("common") {
     "image_processor_factory.h",
     "libyuv_image_processor.cc",
     "libyuv_image_processor.h",
+    "video_decoder_pipeline.cc",
+    "video_decoder_pipeline.h",
   ]
 
   # TODO(crbug.com/1012587): Merge :fourcc to :common.
@@ -65,6 +67,7 @@ source_set("common") {
     "//media/gpu:buildflags",
     "//media/gpu:common",
     "//media/gpu:video_frame_mapper_common",
+    "//media/gpu/linux:common",
     "//third_party/libyuv",
     "//ui/gfx/geometry",
     "//ui/gl",

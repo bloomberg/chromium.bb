@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_GPU_LINUX_VIDEO_DECODER_PIPELINE_H_
-#define MEDIA_GPU_LINUX_VIDEO_DECODER_PIPELINE_H_
+#ifndef MEDIA_GPU_CHROMEOS_VIDEO_DECODER_PIPELINE_H_
+#define MEDIA_GPU_CHROMEOS_VIDEO_DECODER_PIPELINE_H_
 
 #include <memory>
 
@@ -216,4 +216,4 @@ class MEDIA_GPU_EXPORT VideoDecoderPipeline : public VideoDecoder {
 
 }  // namespace media
 
-#endif  // MEDIA_GPU_LINUX_VIDEO_DECODER_PIPELINE_H_
+#endif  // MEDIA_GPU_CHROMEOS_VIDEO_DECODER_PIPELINE_H_

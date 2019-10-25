@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/gpu/linux/video_decoder_pipeline.h"
+#include "media/gpu/chromeos/video_decoder_pipeline.h"
 #include <memory>
 
 #include "base/bind.h"
