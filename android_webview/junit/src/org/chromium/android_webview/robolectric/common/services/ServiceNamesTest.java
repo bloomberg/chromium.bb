@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.android_webview.robolectric.common;
+package org.chromium.android_webview.robolectric.common.services;
 
 import android.support.test.filters.SmallTest;
 
@@ -11,7 +11,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 
-import org.chromium.android_webview.common.ServiceNames;
+import org.chromium.android_webview.common.services.ServiceNames;
 import org.chromium.android_webview.services.CrashReceiverService;
 import org.chromium.android_webview.services.VariationsSeedServer;
 import org.chromium.testing.local.LocalRobolectricTestRunner;

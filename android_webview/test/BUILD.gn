@@ -167,8 +167,6 @@ instrumentation_test_apk("webview_instrumentation_test_apk") {
   min_sdk_version = 21
   deps = [
     "//android_webview:android_webview_java",
-    "//android_webview:services_java",
-    "//android_webview:services_variations_seed_server_aidl",
     "//android_webview/test/embedded_test_server:aw_net_java_test_support",
     "//base:base_java",
     "//base:base_java_test_support",
@@ -438,11 +436,12 @@ junit_binary("android_webview_junit_tests") {
     "../junit/src/org/chromium/android_webview/robolectric/AwLayoutSizerTest.java",
     "../junit/src/org/chromium/android_webview/robolectric/FindAddressTest.java",
     "../junit/src/org/chromium/android_webview/robolectric/AwScrollOffsetManagerTest.java",
-    "../junit/src/org/chromium/android_webview/robolectric/common/ServiceNamesTest.java",
+    "../junit/src/org/chromium/android_webview/robolectric/common/services/ServiceNamesTest.java",
   ]
 
   deps = [
     "//android_webview:android_webview_java",
+    "//android_webview/apk:services_java",
     "//base:base_java_test_support",
     "//content/public/test/android:content_java_test_support",
     "//third_party/android_support_test_runner:runner_java",

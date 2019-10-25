@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.android_webview.common;
+package org.chromium.android_webview.common.services;
 
 /**
  * Defines constants containing the fully-qualified names of WebView services.

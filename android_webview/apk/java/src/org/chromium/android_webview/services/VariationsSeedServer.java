@@ -9,6 +9,8 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.os.ParcelFileDescriptor;
 
+import org.chromium.android_webview.common.services.IVariationsSeedServer;
+
 /**
  * VariationsSeedServer is a bound service that shares the Variations seed with all the WebViews
  * on the system. A WebView will bind and call getSeed, passing a file descriptor to which the

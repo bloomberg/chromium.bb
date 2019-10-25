@@ -14,6 +14,7 @@ import android.os.ParcelFileDescriptor;
 
 import org.chromium.android_webview.common.crash.CrashInfo;
 import org.chromium.android_webview.common.crash.SystemWideCrashDirectories;
+import org.chromium.android_webview.common.services.ICrashReceiverService;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.components.background_task_scheduler.TaskIds;
