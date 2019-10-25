@@ -6,8 +6,13 @@
 
 #include "tools/binary_size/libsupersize/caspian/file_format.h"
 
-caspian::Symbol::Symbol() = default;
-caspian::Symbol::Symbol(const Symbol& other) = default;
+using namespace caspian;
 
-caspian::SizeInfo::SizeInfo() = default;
-caspian::SizeInfo::~SizeInfo() = default;
+Symbol::Symbol() = default;
+Symbol::Symbol(const Symbol& other) = default;
+
+TreeNode::TreeNode() = default;
+TreeNode::~TreeNode() = default;
+
+SizeInfo::SizeInfo() = default;
+SizeInfo::~SizeInfo() = default;

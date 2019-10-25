@@ -32,6 +32,28 @@ struct Symbol {
   std::vector<Symbol*>* aliases = nullptr;
 };
 
+struct TreeNode {
+  TreeNode();
+  ~TreeNode();
+
+  std::string_view id_path;
+  const char* src_path = nullptr;
+  const char* component = nullptr;
+  int32_t size = 0;
+  int32_t flags = 0;
+  int32_t short_name_index = 0;
+
+  /*
+    type,
+    numAliases,
+    childStats,
+  */
+
+  std::deque<TreeNode*> children;
+  TreeNode* parent = nullptr;
+  Symbol* symbol = nullptr;
+};
+
 struct SizeInfo {
   SizeInfo();
   ~SizeInfo();
