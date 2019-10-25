@@ -8,13 +8,13 @@
 
 #include "base/callback.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/sharing/click_to_call/click_to_call_utils.h"
 #include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_dialog.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/grit/theme_resources.h"
 #include "components/sync_device_info/device_info.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/web_contents.h"
@@ -173,8 +173,8 @@ SharingDialogData ClickToCallUiController::CreateDialogData(
 
   // Do not add the header image for error dialogs.
   if (dialog_type != SharingDialogType::kErrorDialog) {
-    data.header_image_light = IDR_CLICK_TO_CALL_ILLUSTRATION_LIGHT;
-    data.header_image_dark = IDR_CLICK_TO_CALL_ILLUSTRATION_DARK;
+    data.header_image_light = &kClickToCallIllustrationIcon;
+    data.header_image_dark = &kClickToCallIllustrationDarkIcon;
   }
 
   data.help_text_id =
