@@ -1175,6 +1175,12 @@ interface NetworkContext {
   // See net::TransportSecurityState::DeleteDynamicDataForHost for more detail.
   DeleteDynamicDataForHost(string host) => (bool result);
 
+  // Sets whether the HTTP auth cache will be split the NetworkIsolationKey.
+  // Only affects server (not proxy) credentials. Whenever the effective value
+  // is changed, all cached server auth credentials will be cleared.
+  SetSplitAuthCacheByNetworkIsolationKey(
+      bool split_auth_cache_by_network_isolation_key);
+
   // Copies the proxy entries of this NetworkContext's auth cache and
   // returns a key that can be used by LoadHttpAuthCache to load them into
   // another NetworkContext's auth cache. The data referenced by the

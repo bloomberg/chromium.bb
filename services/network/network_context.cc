@@ -1460,6 +1460,15 @@ void NetworkContext::ForceDomainReliabilityUploadsForTesting(
   std::move(callback).Run();
 }
 
+void NetworkContext::SetSplitAuthCacheByNetworkIsolationKey(
+    bool split_auth_cache_by_network_isolation_key) {
+  url_request_context_->http_transaction_factory()
+      ->GetSession()
+      ->http_auth_cache()
+      ->SetKeyServerEntriesByNetworkIsolationKey(
+          split_auth_cache_by_network_isolation_key);
+}
+
 void NetworkContext::SaveHttpAuthCacheProxyEntries(
     SaveHttpAuthCacheProxyEntriesCallback callback) {
   net::HttpAuthCache* http_auth_cache =
@@ -1826,6 +1835,10 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
     session_params.key_auth_cache_server_entries_by_network_isolation_key =
         network_service_->split_auth_cache_by_network_isolation_key();
   }
+
+  session_params.key_auth_cache_server_entries_by_network_isolation_key =
+      base::FeatureList::IsEnabled(
+          features::kSplitAuthCacheByNetworkIsolationKey);
 
   builder.set_http_network_session_params(session_params);
 
