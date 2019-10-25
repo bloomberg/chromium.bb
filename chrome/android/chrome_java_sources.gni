@@ -495,7 +495,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/download/DownloadForegroundService.java",
   "java/src/org/chromium/chrome/browser/download/DownloadForegroundServiceManager.java",
   "java/src/org/chromium/chrome/browser/download/DownloadForegroundServiceObservers.java",
-  "java/src/org/chromium/chrome/browser/download/DownloadInfo.java",
   "java/src/org/chromium/chrome/browser/download/DownloadInfoBarController.java",
   "java/src/org/chromium/chrome/browser/download/DownloadItem.java",
   "java/src/org/chromium/chrome/browser/download/DownloadLocationCustomView.java",

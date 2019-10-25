@@ -281,7 +281,7 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
     public void onDownloadItemUpdated(DownloadItem downloadItem) {
         if (mUseNewDownloadPath) return;
 
-        OfflineItem offlineItem = DownloadInfo.createOfflineItem(downloadItem.getDownloadInfo());
+        OfflineItem offlineItem = DownloadItem.createOfflineItem(downloadItem);
         if (!isVisibleToUser(offlineItem)) return;
 
         if (downloadItem.getDownloadInfo().state() == DownloadState.COMPLETE) {
@@ -320,8 +320,7 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
                     if (result) {
                         onItemRemoved(downloadItem.getContentId());
                     } else {
-                        computeNextStepForUpdate(
-                                DownloadInfo.createOfflineItem(downloadItem.getDownloadInfo()));
+                        computeNextStepForUpdate(DownloadItem.createOfflineItem(downloadItem));
                     }
                 });
     }

@@ -362,7 +362,7 @@ public class DownloadManagerService implements DownloadController.DownloadNotifi
         if (downloadInfo.getBytesReceived() == 0) {
             status = DownloadStatus.FAILED;
         } else {
-            mimeType = DownloadUtils.remapGenericMimeType(
+            mimeType = MimeUtils.remapGenericMimeType(
                     mimeType, downloadInfo.getOriginalUrl(), downloadInfo.getFileName());
         }
         DownloadInfo newInfo =
@@ -605,8 +605,7 @@ public class DownloadManagerService implements DownloadController.DownloadNotifi
                     if (success) item.setSystemDownloadId(systemDownloadId);
                 }
                 boolean canResolve = success
-                        && (DownloadUtils.isOMADownloadDescription(
-                                    item.getDownloadInfo().getMimeType())
+                        && (MimeUtils.isOMADownloadDescription(item.getDownloadInfo().getMimeType())
                                 || canResolveDownloadItem(item, isSupportedMimeType));
                 return Pair.create(success, canResolve);
             }
@@ -653,7 +652,7 @@ public class DownloadManagerService implements DownloadController.DownloadNotifi
      * @param download A download item.
      */
     private void handleAutoOpenAfterDownload(DownloadItem download) {
-        if (DownloadUtils.isOMADownloadDescription(download.getDownloadInfo().getMimeType())) {
+        if (MimeUtils.isOMADownloadDescription(download.getDownloadInfo().getMimeType())) {
             mOMADownloadHandler.handleOMADownload(
                     download.getDownloadInfo(), download.getSystemDownloadId());
             return;
@@ -937,7 +936,7 @@ public class DownloadManagerService implements DownloadController.DownloadNotifi
     public static boolean canResolveDownload(
             String filePath, String mimeType, long systemDownloadId) {
         assert !ThreadUtils.runningOnUiThread();
-        if (DownloadUtils.isOMADownloadDescription(mimeType)) return true;
+        if (MimeUtils.isOMADownloadDescription(mimeType)) return true;
 
         Intent intent = getLaunchIntentForDownload(filePath, systemDownloadId,
                 DownloadManagerService.isSupportedMimeType(mimeType), null, null, mimeType);
@@ -1396,9 +1395,7 @@ public class DownloadManagerService implements DownloadController.DownloadNotifi
                                 handleAutoOpenAfterDownload(item);
                             } else {
                                 getInfoBarController(item.getDownloadInfo().isOffTheRecord())
-                                        .onItemUpdated(DownloadInfo.createOfflineItem(
-                                                               item.getDownloadInfo()),
-                                                null);
+                                        .onItemUpdated(DownloadItem.createOfflineItem(item), null);
                             }
                         }
                     }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
@@ -1822,7 +1819,7 @@ public class DownloadManagerService implements DownloadController.DownloadNotifi
             public Boolean doInBackground() {
                 DownloadInfo info = downloadItem.getDownloadInfo();
                 boolean isSupportedMimeType = isSupportedMimeType(info.getMimeType());
-                boolean canResolve = DownloadUtils.isOMADownloadDescription(info.getMimeType())
+                boolean canResolve = MimeUtils.isOMADownloadDescription(info.getMimeType())
                         || canResolveDownloadItem(downloadItem, isSupportedMimeType);
                 return canResolve
                         && DownloadUtils.shouldAutoOpenDownload(

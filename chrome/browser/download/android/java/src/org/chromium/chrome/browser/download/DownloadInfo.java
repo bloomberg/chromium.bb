@@ -8,13 +8,11 @@ import android.graphics.Bitmap;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.components.download.DownloadState;
-import org.chromium.components.download.ResumeMode;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.FailState;
 import org.chromium.components.offline_items_collection.LegacyHelpers;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItem.Progress;
-import org.chromium.components.offline_items_collection.OfflineItemFilter;
 import org.chromium.components.offline_items_collection.OfflineItemProgressUnit;
 import org.chromium.components.offline_items_collection.OfflineItemState;
 import org.chromium.components.offline_items_collection.OfflineItemVisuals;
@@ -302,99 +300,6 @@ public final class DownloadInfo {
     }
 
     /**
-     * Helper method to build an {@link OfflineItem} from a {@link DownloadInfo}.
-     * @param item The {@link DownloadInfo} to mimic.
-     * @return     A {@link OfflineItem} containing the relevant fields from {@code item}.
-     */
-    public static OfflineItem createOfflineItem(DownloadInfo downloadInfo) {
-        OfflineItem offlineItem = new OfflineItem();
-        offlineItem.id = downloadInfo.getContentId();
-        offlineItem.filePath = downloadInfo.getFilePath();
-        offlineItem.title = downloadInfo.getFileName();
-        offlineItem.description = downloadInfo.getDescription();
-        offlineItem.isTransient = downloadInfo.getIsTransient();
-        offlineItem.isAccelerated = downloadInfo.getIsParallelDownload();
-        offlineItem.isSuggested = false;
-        offlineItem.totalSizeBytes = downloadInfo.getBytesTotalSize();
-        offlineItem.receivedBytes = downloadInfo.getBytesReceived();
-        offlineItem.isResumable = downloadInfo.isResumable();
-        offlineItem.pageUrl = downloadInfo.getUrl();
-        offlineItem.originalUrl = downloadInfo.getOriginalUrl();
-        offlineItem.isOffTheRecord = downloadInfo.isOffTheRecord();
-        offlineItem.mimeType = downloadInfo.getMimeType();
-        offlineItem.progress = downloadInfo.getProgress();
-        offlineItem.timeRemainingMs = downloadInfo.getTimeRemainingInMillis();
-        offlineItem.isDangerous = downloadInfo.getIsDangerous();
-        offlineItem.pendingState = downloadInfo.getPendingState();
-        offlineItem.failState = downloadInfo.getFailState();
-        offlineItem.promoteOrigin = downloadInfo.getShouldPromoteOrigin();
-        offlineItem.lastAccessedTimeMs = downloadInfo.getLastAccessTime();
-
-        switch (downloadInfo.state()) {
-            case DownloadState.IN_PROGRESS:
-                offlineItem.state = downloadInfo.isPaused() ? OfflineItemState.PAUSED
-                                                            : OfflineItemState.IN_PROGRESS;
-                break;
-            case DownloadState.COMPLETE:
-                offlineItem.state = downloadInfo.getBytesReceived() == 0
-                        ? OfflineItemState.FAILED
-                        : OfflineItemState.COMPLETE;
-                break;
-            case DownloadState.CANCELLED:
-                offlineItem.state = OfflineItemState.CANCELLED;
-                break;
-            case DownloadState.INTERRUPTED:
-                DownloadItem downloadItem = new DownloadItem(false, downloadInfo);
-                @ResumeMode
-                int resumeMode = DownloadUtils.getResumeMode(
-                        downloadInfo.getUrl(), downloadInfo.getFailState());
-                if (resumeMode == ResumeMode.INVALID || resumeMode == ResumeMode.USER_RESTART) {
-                    // Fail but can restart from the beginning. The UI should let the user to retry.
-                    offlineItem.state = OfflineItemState.INTERRUPTED;
-                }
-                // TODO(xingliu): isDownloadPaused and isDownloadPending rely on isAutoResumable
-                // is set correctly in {@link DownloadSharedPreferenceEntry}. The states of
-                // notification UI and download home currently may not match. Also pending is
-                // related to Java side auto resumption on good network condition.
-                else if (downloadInfo.isPaused()) {
-                    offlineItem.state = OfflineItemState.PAUSED;
-                } else if (DownloadUtils.isDownloadPending(downloadItem)) {
-                    offlineItem.state = OfflineItemState.PENDING;
-                } else {
-                    // Unknown failure state.
-                    offlineItem.state = OfflineItemState.FAILED;
-                }
-                break;
-            default:
-                assert false;
-        }
-
-        switch (DownloadFilter.fromMimeType(downloadInfo.getMimeType())) {
-            case DownloadFilter.Type.PAGE:
-                offlineItem.filter = OfflineItemFilter.PAGE;
-                break;
-            case DownloadFilter.Type.VIDEO:
-                offlineItem.filter = OfflineItemFilter.VIDEO;
-                break;
-            case DownloadFilter.Type.AUDIO:
-                offlineItem.filter = OfflineItemFilter.AUDIO;
-                break;
-            case DownloadFilter.Type.IMAGE:
-                offlineItem.filter = OfflineItemFilter.IMAGE;
-                break;
-            case DownloadFilter.Type.DOCUMENT:
-                offlineItem.filter = OfflineItemFilter.DOCUMENT;
-                break;
-            case DownloadFilter.Type.OTHER:
-            default:
-                offlineItem.filter = OfflineItemFilter.OTHER;
-                break;
-        }
-
-        return offlineItem;
-    }
-
-    /**
      * Helper class for building the DownloadInfo object.
      */
     public static class Builder {
@@ -645,8 +550,7 @@ public final class DownloadInfo {
             boolean hasUserGesture, boolean isResumable, boolean isParallelDownload,
             String originalUrl, String referrerUrl, long timeRemainingInMs, long lastAccessTime,
             boolean isDangerous, @FailState int failState) {
-        String remappedMimeType = ChromeDownloadDelegate.remapGenericMimeType(
-                mimeType, url, fileName);
+        String remappedMimeType = MimeUtils.remapGenericMimeType(mimeType, url, fileName);
 
         Progress progress = new Progress(bytesReceived,
                 percentCompleted == -1 ? null : bytesTotalSize, OfflineItemProgressUnit.BYTES);
