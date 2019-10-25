@@ -151,6 +151,10 @@ const base::Feature kParentalControlsSettings{
 const base::Feature kReleaseNotes{"ReleaseNotes",
                                   base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables or disables Release Notes notifications on Chrome OS.
+const base::Feature kReleaseNotesNotification{
+    "ReleaseNotesNotification", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables or disables showing the battery level in the System Tray and Settings
 // UI for supported Bluetooth Devices.
 const base::Feature kShowBluetoothDeviceBattery{

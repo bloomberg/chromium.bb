@@ -2896,6 +2896,11 @@
     "expiry_milestone": 79
   },
   {
+    "name": "release-notes-notification",
+    "owners": [ "yulunwu" ],
+    "expiry_milestone": 79
+  },
+  {
     "name": "request-unbuffered-dispatch",
     "owners": [ "bokan" ],
     "expiry_milestone": 80

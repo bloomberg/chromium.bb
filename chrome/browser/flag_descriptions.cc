@@ -3508,8 +3508,13 @@ const char kPrinterProviderSearchAppDescription[] =
 
 const char kReleaseNotesName[] = "CrOS Release Notes.";
 const char kReleaseNotesDescription[] =
-    "Instructs OS to show notification about CrOS ReleaseNotes on login after "
-    "update, show webview describing new OS features.";
+    "Creates release notes app in settings menu that shows a webview "
+    "describing new OS features.";
+
+const char kReleaseNotesNotificationName[] = "CrOS Release Notes Notification.";
+const char kReleaseNotesNotificationDescription[] =
+    "Instructs OS to show notificationlogin after update that release notes "
+    "are now available.";
 
 const char kSchedulerConfigurationName[] = "Scheduler Configuration";
 const char kSchedulerConfigurationDescription[] =
