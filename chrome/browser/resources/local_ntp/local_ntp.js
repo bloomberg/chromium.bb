@@ -1174,7 +1174,7 @@ function onQueryAutocompleteDone(result) {
     return;
   }
 
-  $(IDS.REALBOX_MATCHES).firstElementChild.classList.add(CLASSES.SELECTED);
+  selectMatchEl(assert($(IDS.REALBOX_MATCHES).firstElementChild));
 
   // If the user is deleting content, don't quickly re-suggest the same
   // output.
@@ -1476,13 +1476,19 @@ function populateAutocompleteMatches(matches) {
         renderMatchClassifications(match.contents, match.contentsClass);
     const descriptionEls = [];
     const separatorEls = [];
+    let separatorText = '';
 
     if (match.description) {
       descriptionEls.push(...renderMatchClassifications(
           match.description, match.descriptionClass));
-      separatorEls.push(document.createTextNode(
-          configData.translatedStrings.realboxSeparator));
+      separatorText = configData.translatedStrings.realboxSeparator;
+      separatorEls.push(document.createTextNode(separatorText));
     }
+
+    const ariaLabel = match.swapContentsAndDescription ?
+        match.description + separatorText + match.contents :
+        match.contents + separatorText + match.description;
+    matchEl.setAttribute('aria-label', ariaLabel);
 
     const layout = match.swapContentsAndDescription ?
         [descriptionEls, separatorEls, contentsEls] :
@@ -1512,9 +1518,6 @@ function populateAutocompleteMatches(matches) {
       matchEl.appendChild(remove);
       realboxMatchesEl.classList.add(CLASSES.REMOVABLE);
     }
-
-    // TODO(crbug.com/1002689): set a more useful aria-label on |matchEl|, as
-    // "Remove suggestion" is now uttered when navigating through matches.
 
     realboxMatchesEl.append(matchEl);
   }
@@ -1748,6 +1751,7 @@ function selectMatchEl(elToSelect) {
   Array.from($(IDS.REALBOX_MATCHES).children).forEach((matchEl, i) => {
     const found = matchEl === elToSelect;
     matchEl.classList.toggle(CLASSES.SELECTED, found);
+    matchEl.setAttribute('aria-selected', found);
     if (found) {
       selectedIndex = i;
     }
