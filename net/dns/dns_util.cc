@@ -174,6 +174,12 @@ const std::vector<DohUpgradeEntry>& GetDohUpgradeList() {
                "1dot1dot1dot1.cloudflare-dns.com"} /* DoT hostname */,
               {"https://chrome.cloudflare-dns.com/dns-query",
                true /* use-post */}),
+          DohUpgradeEntry("Comcast",
+                          {"75.75.75.75", "75.75.76.76", "2001:558:feed::1",
+                           "2001:558:feed::2"},
+                          {""} /* DoT hostname */,
+                          {"https://doh.xfinity.com/dns-query{?dns}",
+                           false /* use_post */}),
           DohUpgradeEntry(
               "Dnssb",
               {"185.222.222.222", "185.184.222.222", "2a09::", "2a09::1"},
