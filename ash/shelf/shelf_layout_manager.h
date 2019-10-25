@@ -237,6 +237,10 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
   ShelfAutoHideState auto_hide_state() const { return state_.auto_hide_state; }
   HotseatState hotseat_state() const { return state_.hotseat_state; }
 
+  DragWindowFromShelfController* window_drag_controller_for_testing() {
+    return window_drag_controller_.get();
+  }
+
   // TODO(harrym|oshima): These templates will be moved to a new Shelf class.
   // A helper function for choosing values specific to a shelf alignment.
   template <typename T>

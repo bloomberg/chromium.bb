@@ -1734,6 +1734,7 @@ test("ash_unittests") {
     "frame/non_client_frame_view_ash_unittest.cc",
     "highlighter/highlighter_controller_unittest.cc",
     "highlighter/highlighter_gesture_util_unittest.cc",
+    "home_screen/drag_window_from_shelf_controller_unittest.cc",
     "home_screen/home_launcher_gesture_handler_unittest.cc",
     "home_screen/home_screen_controller_unittest.cc",
     "ime/ime_controller_unittest.cc",

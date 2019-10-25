@@ -128,9 +128,6 @@ GetHomeLauncherGestureHandlerModeForDrag() {
     return HomeLauncherGestureHandler::Mode::kSwipeHomeToOverview;
   }
 
-  if (features::IsDragFromShelfToHomeOrOverviewEnabled())
-    return HomeLauncherGestureHandler::Mode::kDragWindowToHomeOrOverview;
-
   return HomeLauncherGestureHandler::Mode::kSlideUpToShow;
 }
 

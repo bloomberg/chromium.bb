@@ -14,6 +14,7 @@
 #include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/focus_cycler.h"
+#include "ash/home_screen/drag_window_from_shelf_controller.h"
 #include "ash/home_screen/home_launcher_gesture_handler.h"
 #include "ash/home_screen/home_screen_controller.h"
 #include "ash/keyboard/ui/keyboard_ui.h"
@@ -3736,6 +3737,121 @@ TEST_F(HotseatShelfLayoutManagerTest, HotseatHidesWhenSwipedToBezel) {
                                              kNumScrollSteps);
 
   EXPECT_EQ(HotseatState::kHidden, GetShelfLayoutManager()->hotseat_state());
+}
+
+class ShelfLayoutManagerWindowDraggingTest : public ShelfLayoutManagerTestBase {
+ public:
+  ShelfLayoutManagerWindowDraggingTest() = default;
+  ~ShelfLayoutManagerWindowDraggingTest() override = default;
+
+  // AshTestBase:
+  void SetUp() override {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        chromeos::switches::kShelfHotseat);
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kDragFromShelfToHomeOrOverview);
+    AshTestBase::SetUp();
+
+    TabletModeControllerTestApi().EnterTabletMode();
+    base::RunLoop().RunUntilIdle();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+  DISALLOW_COPY_AND_ASSIGN(ShelfLayoutManagerWindowDraggingTest);
+};
+
+// Test that when swiping up on the shelf, we may or may not drag up the MRU
+// window.
+TEST_F(ShelfLayoutManagerWindowDraggingTest, DraggedMRUWindow) {
+  const gfx::Rect shelf_widget_bounds =
+      GetShelfWidget()->GetWindowBoundsInScreen();
+  const int hotseat_size = ShelfConfig::Get()->hotseat_size();
+
+  // Starts the drag from the center of the shelf's bottom.
+  gfx::Point start = shelf_widget_bounds.bottom_center();
+  StartScroll(start);
+  // We need at least one window to work with.
+  EXPECT_FALSE(GetShelfLayoutManager()->window_drag_controller_for_testing());
+  UpdateScroll(-shelf_widget_bounds.height() - hotseat_size);
+  EndScroll(/*is_fling=*/false, 0.f);
+
+  std::unique_ptr<aura::Window> window =
+      AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
+  wm::ActivateWindow(window.get());
+
+  StartScroll(start);
+  DragWindowFromShelfController* window_drag_controller =
+      GetShelfLayoutManager()->window_drag_controller_for_testing();
+  EXPECT_TRUE(window_drag_controller);
+  EXPECT_EQ(window_drag_controller->dragged_window(), window.get());
+  UpdateScroll(-shelf_widget_bounds.height() - hotseat_size);
+  EndScroll(/*is_fling=*/false, 0.f);
+  EXPECT_FALSE(GetShelfLayoutManager()->window_drag_controller_for_testing());
+
+  // The window needs to be visible to drag up.
+  window->Hide();
+  StartScroll(start);
+  EXPECT_FALSE(GetShelfLayoutManager()->window_drag_controller_for_testing());
+  UpdateScroll(-shelf_widget_bounds.height() - hotseat_size);
+  EndScroll(/*is_fling=*/false, 0.f);
+
+  // In splitview, depends on the drag position, the active dragged window might
+  // be different.
+  window->Show();
+  auto window2 = AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
+  SplitViewController* split_view_controller =
+      SplitViewController::Get(Shell::GetPrimaryRootWindow());
+  split_view_controller->SnapWindow(window.get(), SplitViewController::LEFT);
+  split_view_controller->SnapWindow(window2.get(), SplitViewController::RIGHT);
+  StartScroll(shelf_widget_bounds.bottom_left());
+  window_drag_controller =
+      GetShelfLayoutManager()->window_drag_controller_for_testing();
+  EXPECT_TRUE(window_drag_controller);
+  EXPECT_EQ(window_drag_controller->dragged_window(), window.get());
+  EndScroll(/*is_fling=*/false, 0.f);
+  EXPECT_FALSE(GetShelfLayoutManager()->window_drag_controller_for_testing());
+
+  StartScroll(shelf_widget_bounds.bottom_right());
+  window_drag_controller =
+      GetShelfLayoutManager()->window_drag_controller_for_testing();
+  EXPECT_TRUE(window_drag_controller);
+  EXPECT_EQ(window_drag_controller->dragged_window(), window2.get());
+  EndScroll(/*is_fling=*/false, 0.f);
+  split_view_controller->EndSplitView();
+  EXPECT_FALSE(GetShelfLayoutManager()->window_drag_controller_for_testing());
+}
+
+// Test that drag from shelf when overview is active is a no-op.
+TEST_F(ShelfLayoutManagerWindowDraggingTest, NoOpInOverview) {
+  const gfx::Rect shelf_widget_bounds =
+      GetShelfWidget()->GetWindowBoundsInScreen();
+  std::unique_ptr<aura::Window> window1 =
+      AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
+  std::unique_ptr<aura::Window> window2 =
+      AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
+  wm::ActivateWindow(window1.get());
+
+  // Starts the drag from the center of the shelf's bottom.
+  OverviewController* overview_controller = Shell::Get()->overview_controller();
+  overview_controller->StartOverview();
+  gfx::Point start = shelf_widget_bounds.bottom_center();
+  StartScroll(start);
+  EXPECT_FALSE(GetShelfLayoutManager()->window_drag_controller_for_testing());
+  EndScroll(/*is_fling=*/false, 0.f);
+
+  // In splitview + overview case, drag from shelf in the overview side of the
+  // screen also does nothing.
+  SplitViewController* split_view_controller =
+      SplitViewController::Get(Shell::GetPrimaryRootWindow());
+  split_view_controller->SnapWindow(window1.get(), SplitViewController::LEFT);
+  split_view_controller->SnapWindow(window2.get(), SplitViewController::RIGHT);
+  overview_controller->StartOverview();
+  EXPECT_TRUE(split_view_controller->InSplitViewMode());
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+  StartScroll(shelf_widget_bounds.bottom_right());
+  EXPECT_FALSE(GetShelfLayoutManager()->window_drag_controller_for_testing());
+  EndScroll(/*is_fling=*/false, 0.f);
 }
 
 class ShelfLayoutManagerKeyboardTest : public AshTestBase {
