@@ -4789,10 +4789,22 @@ Unknown properties are collapsed to zero. -->
 </enum>
 
 <enum name="BackForwardCacheDisabledForRenderFrameHostReason">
+  <int value="-1859200986" label="WebUSB"/>
+  <int value="-1521338555" label="OfflinePage"/>
   <int value="-1449100855" label="safe_browsing::ThreatDetails"/>
+  <int value="-1442160010" label="Serial"/>
   <int value="-1314032804" label="MediaSessionImpl::OnServiceCreated"/>
+  <int value="-1303768664" label="PopupBlockerTabHelper"/>
   <int value="-866479064" label="content::protocol::SecurityHandler"/>
+  <int value="-684843031" label="SafeBrowsingTriggeredPopupBlocker"/>
+  <int value="-438850149" label="PermissionRequestManager"/>
+  <int value="72716222" label="WebBluetooth"/>
   <int value="671363579" label="banners::AppBannerManager"/>
+  <int value="990438262" label="MediaWebContentsObserver::OnMediaPlaying"/>
+  <int value="1683256665" label="NativeFileSystem"/>
+  <int value="2013040510" label="RenderFrameDevToolsAgentHost"/>
+  <int value="2024383223"
+      label="ChromePasswordManagerClient::BindCredentialManager"/>
 </enum>
 
 <enum name="BackForwardCacheEvictedAfterDocumentRestoredReason">
