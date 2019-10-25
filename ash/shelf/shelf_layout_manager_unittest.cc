@@ -3854,6 +3854,49 @@ TEST_F(ShelfLayoutManagerWindowDraggingTest, NoOpInOverview) {
   EndScroll(/*is_fling=*/false, 0.f);
 }
 
+// Test that if shelf if hidden or auto-hide hidden, drag window from shelf is a
+// no-op.
+TEST_F(ShelfLayoutManagerWindowDraggingTest, NoOpForHiddenShelf) {
+  std::unique_ptr<aura::Window> window =
+      AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
+  wm::ActivateWindow(window.get());
+  Shelf* shelf = GetPrimaryShelf();
+  // The window can be dragged on a visible shelf.
+  const gfx::Rect shelf_widget_bounds =
+      GetShelfWidget()->GetWindowBoundsInScreen();
+  EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
+  StartScroll(shelf_widget_bounds.bottom_center());
+  EXPECT_TRUE(GetShelfLayoutManager()->window_drag_controller_for_testing());
+  EndScroll(/*is_fling=*/false, 0.f);
+
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  ShelfLayoutManager* layout_manager = GetShelfLayoutManager();
+  layout_manager->LayoutShelf();
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
+
+  // The window can't be dragged on an auto-hidden hidden shelf.
+  gfx::Rect display_bounds =
+      display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
+  StartScroll(display_bounds.bottom_center());
+  EXPECT_FALSE(GetShelfLayoutManager()->window_drag_controller_for_testing());
+  EndScroll(/*is_fling=*/false, 0.f);
+
+  // The window can be dragged on an auto-hidden shown shelf.
+  SwipeUpOnShelf();
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
+  StartScroll(display_bounds.bottom_center());
+  EXPECT_TRUE(GetShelfLayoutManager()->window_drag_controller_for_testing());
+  EndScroll(/*is_fling=*/false, 0.f);
+
+  // The window can't be dragged on a hidden shelf.
+  SetState(GetShelfLayoutManager(), SHELF_HIDDEN);
+  EXPECT_EQ(SHELF_HIDDEN, shelf->GetVisibilityState());
+  StartScroll(display_bounds.bottom_center());
+  EXPECT_FALSE(GetShelfLayoutManager()->window_drag_controller_for_testing());
+  EndScroll(/*is_fling=*/false, 0.f);
+}
+
 class ShelfLayoutManagerKeyboardTest : public AshTestBase {
  public:
   ShelfLayoutManagerKeyboardTest() = default;

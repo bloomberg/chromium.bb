@@ -2389,6 +2389,13 @@ void ShelfLayoutManager::MaybeStartDragWindowFromShelf(
   if (drag_status_ != kDragInProgress)
     return;
 
+  // Do not drag on a auto-hide hidden shelf or a hidden shelf.
+  if ((visibility_state() == SHELF_AUTO_HIDE &&
+       auto_hide_state() == SHELF_AUTO_HIDE_HIDDEN) ||
+      visibility_state() == SHELF_HIDDEN) {
+    return;
+  }
+
   aura::Window* window =
       GetWindowForDragToHomeOrOverview(event_in_screen.location());
   if (!window)
