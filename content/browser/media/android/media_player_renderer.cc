@@ -140,9 +140,9 @@ void MediaPlayerRenderer::SetCdm(media::CdmContext* cdm_context,
   NOTREACHED();
 }
 
-void MediaPlayerRenderer::Flush(const base::Closure& flush_cb) {
+void MediaPlayerRenderer::Flush(base::OnceClosure flush_cb) {
   DVLOG(3) << __func__;
-  flush_cb.Run();
+  std::move(flush_cb).Run();
 }
 
 void MediaPlayerRenderer::StartPlayingFrom(base::TimeDelta time) {

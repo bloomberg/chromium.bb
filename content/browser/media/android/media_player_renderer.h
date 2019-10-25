@@ -59,7 +59,7 @@ class CONTENT_EXPORT MediaPlayerRenderer
                   const media::PipelineStatusCB& init_cb) override;
   void SetCdm(media::CdmContext* cdm_context,
               const media::CdmAttachedCB& cdm_attached_cb) override;
-  void Flush(const base::Closure& flush_cb) override;
+  void Flush(base::OnceClosure flush_cb) override;
   void StartPlayingFrom(base::TimeDelta time) override;
 
   // N.B: MediaPlayerBridge doesn't support variable playback rates (but it

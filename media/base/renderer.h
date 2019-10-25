@@ -44,7 +44,7 @@ class MEDIA_EXPORT Renderer {
   // The following functions must be called after Initialize().
 
   // Discards any buffered data, executing |flush_cb| when completed.
-  virtual void Flush(const base::Closure& flush_cb) = 0;
+  virtual void Flush(base::OnceClosure flush_cb) = 0;
 
   // Starts rendering from |time|.
   virtual void StartPlayingFrom(base::TimeDelta time) = 0;

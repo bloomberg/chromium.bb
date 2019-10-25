@@ -33,7 +33,7 @@
 #include "ui/gfx/geometry/size.h"
 
 using ::base::test::RunCallback;
-using ::base::test::RunClosure;
+using ::base::test::RunOnceClosure;
 using ::testing::_;
 using ::testing::AnyNumber;
 using ::testing::CreateFunctor;
@@ -243,7 +243,7 @@ class PipelineImplTest : public ::testing::Test {
     EXPECT_CALL(*demuxer_, Seek(seek_time, _))
         .WillOnce(RunCallback<1>(PIPELINE_OK));
 
-    EXPECT_CALL(*renderer_, Flush(_)).WillOnce(RunClosure<0>());
+    EXPECT_CALL(*renderer_, OnFlush(_)).WillOnce(RunOnceClosure<0>());
     EXPECT_CALL(*renderer_, SetPlaybackRate(_));
     EXPECT_CALL(*renderer_, SetVolume(_));
     EXPECT_CALL(*renderer_, StartPlayingFrom(seek_time))
@@ -701,7 +701,7 @@ TEST_F(PipelineImplTest, ErrorDuringSeek) {
 
   base::TimeDelta seek_time = base::TimeDelta::FromSeconds(5);
 
-  EXPECT_CALL(*renderer_, Flush(_)).WillOnce(RunClosure<0>());
+  EXPECT_CALL(*renderer_, OnFlush(_)).WillOnce(RunOnceClosure<0>());
 
   EXPECT_CALL(*demuxer_, AbortPendingReads());
   EXPECT_CALL(*demuxer_, Seek(seek_time, _))
@@ -752,7 +752,7 @@ TEST_F(PipelineImplTest, NoMessageDuringTearDownFromError) {
   base::TimeDelta seek_time = base::TimeDelta::FromSeconds(5);
 
   // Seek() isn't called as the demuxer errors out first.
-  EXPECT_CALL(*renderer_, Flush(_)).WillOnce(RunClosure<0>());
+  EXPECT_CALL(*renderer_, OnFlush(_)).WillOnce(RunOnceClosure<0>());
 
   EXPECT_CALL(*demuxer_, AbortPendingReads());
   EXPECT_CALL(*demuxer_, Seek(seek_time, _))
@@ -1049,23 +1049,21 @@ class PipelineTeardownTest : public PipelineImplTest {
     if (state == kFlushing) {
       EXPECT_CALL(*demuxer_, Seek(_, _));
       if (stop_or_error == kStop) {
-        EXPECT_CALL(*renderer_, Flush(_))
-            .WillOnce(DoAll(
-                Stop(pipeline_.get()), RunClosure<0>()));
+        EXPECT_CALL(*renderer_, OnFlush(_))
+            .WillOnce(DoAll(Stop(pipeline_.get()), RunOnceClosure<0>()));
         // Note: OnSeek callbacks are not called
         // after pipeline is stopped.
       } else {
-        EXPECT_CALL(*renderer_, Flush(_))
-            .WillOnce(DoAll(
-                SetError(&renderer_client_, PIPELINE_ERROR_READ),
-                RunClosure<0>()));
+        EXPECT_CALL(*renderer_, OnFlush(_))
+            .WillOnce(DoAll(SetError(&renderer_client_, PIPELINE_ERROR_READ),
+                            RunOnceClosure<0>()));
         EXPECT_CALL(callbacks_, OnSeek(PIPELINE_ERROR_READ))
             .WillOnce(Stop(pipeline_.get()));
       }
       return;
     }
 
-    EXPECT_CALL(*renderer_, Flush(_)).WillOnce(RunClosure<0>());
+    EXPECT_CALL(*renderer_, OnFlush(_)).WillOnce(RunOnceClosure<0>());
 
     if (state == kSeeking) {
       if (stop_or_error == kStop) {

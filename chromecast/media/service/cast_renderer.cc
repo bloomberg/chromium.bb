@@ -305,9 +305,9 @@ void CastRenderer::SetCdm(::media::CdmContext* cdm_context,
   cdm_attached_cb.Run(true);
 }
 
-void CastRenderer::Flush(const base::Closure& flush_cb) {
+void CastRenderer::Flush(base::OnceClosure flush_cb) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  pipeline_->Flush(flush_cb);
+  pipeline_->Flush(std::move(flush_cb));
 }
 
 void CastRenderer::StartPlayingFrom(base::TimeDelta time) {

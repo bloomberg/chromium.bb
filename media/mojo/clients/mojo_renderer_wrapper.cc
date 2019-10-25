@@ -20,8 +20,8 @@ void MojoRendererWrapper::Initialize(media::MediaResource* media_resource,
   mojo_renderer_->Initialize(media_resource, client, init_cb);
 }
 
-void MojoRendererWrapper::Flush(const base::Closure& flush_cb) {
-  mojo_renderer_->Flush(flush_cb);
+void MojoRendererWrapper::Flush(base::OnceClosure flush_cb) {
+  mojo_renderer_->Flush(std::move(flush_cb));
 }
 
 void MojoRendererWrapper::StartPlayingFrom(base::TimeDelta time) {

@@ -441,8 +441,8 @@ TEST_F(CourierRendererTest, InitializeFailed) {
 
   ResetReceivedRpcMessage();
   EXPECT_CALL(*render_client_, OnFlushCallback()).Times(1);
-  renderer_->Flush(base::Bind(&RendererClientImpl::OnFlushCallback,
-                              base::Unretained(render_client_.get())));
+  renderer_->Flush(base::BindOnce(&RendererClientImpl::OnFlushCallback,
+                                  base::Unretained(render_client_.get())));
   RunPendingTasks();
   ASSERT_EQ(0, ReceivedRpcMessageCount());
 
@@ -473,8 +473,8 @@ TEST_F(CourierRendererTest, Flush) {
       &CourierRendererTest::RpcMessageResponseBot, base::Unretained(this)));
   RunPendingTasks();
   EXPECT_CALL(*render_client_, OnFlushCallback()).Times(1);
-  renderer_->Flush(base::Bind(&RendererClientImpl::OnFlushCallback,
-                              base::Unretained(render_client_.get())));
+  renderer_->Flush(base::BindOnce(&RendererClientImpl::OnFlushCallback,
+                                  base::Unretained(render_client_.get())));
   RunPendingTasks();
 }
 

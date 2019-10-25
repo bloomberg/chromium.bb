@@ -157,7 +157,7 @@ void CourierRenderer::SetCdm(CdmContext* cdm_context,
   NOTIMPLEMENTED();
 }
 
-void CourierRenderer::Flush(const base::Closure& flush_cb) {
+void CourierRenderer::Flush(base::OnceClosure flush_cb) {
   VLOG(2) << __func__;
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   DCHECK(!flush_cb_);
@@ -167,7 +167,7 @@ void CourierRenderer::Flush(const base::Closure& flush_cb) {
     // In the error state, this renderer will be shut down shortly. To prevent
     // breaking the pipeline impl, just run the done callback (interface
     // requirement).
-    media_task_runner_->PostTask(FROM_HERE, flush_cb);
+    media_task_runner_->PostTask(FROM_HERE, std::move(flush_cb));
     return;
   }
 
@@ -188,7 +188,7 @@ void CourierRenderer::Flush(const base::Closure& flush_cb) {
     return;
   }
 
-  flush_cb_ = flush_cb;
+  flush_cb_ = std::move(flush_cb);
 
   // Issues RPC_R_FLUSHUNTIL RPC message.
   std::unique_ptr<pb::RpcMessage> rpc(new pb::RpcMessage());

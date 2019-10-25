@@ -79,15 +79,14 @@ class SerialRunnerTest : public ::testing::Test {
     status_cb.Run(status);
   }
 
-  void RunBoundClosure(size_t index,
-                       const base::Closure& done_cb) {
+  void RunBoundClosure(size_t index, base::OnceClosure done_cb) {
     EXPECT_EQ(index == 0u, inside_start_)
         << "First bound function should run on same stack as "
         << "SerialRunner::Run() while all others should not\n"
         << base::debug::StackTrace().ToString();
 
     called_[index] = true;
-    done_cb.Run();
+    std::move(done_cb).Run();
   }
 
   void RunClosure(size_t index) {

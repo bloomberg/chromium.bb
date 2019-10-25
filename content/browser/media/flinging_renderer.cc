@@ -78,10 +78,10 @@ void FlingingRenderer::SetCdm(media::CdmContext* cdm_context,
   NOTREACHED();
 }
 
-void FlingingRenderer::Flush(const base::Closure& flush_cb) {
+void FlingingRenderer::Flush(base::OnceClosure flush_cb) {
   DVLOG(2) << __func__;
   // There is nothing to reset, we can no-op the call.
-  flush_cb.Run();
+  std::move(flush_cb).Run();
 }
 
 void FlingingRenderer::StartPlayingFrom(base::TimeDelta time) {

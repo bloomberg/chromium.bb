@@ -58,7 +58,7 @@ class MEDIA_EXPORT RendererImpl : public Renderer {
                   const PipelineStatusCB& init_cb) final;
   void SetCdm(CdmContext* cdm_context,
               const CdmAttachedCB& cdm_attached_cb) final;
-  void Flush(const base::Closure& flush_cb) final;
+  void Flush(base::OnceClosure flush_cb) final;
   void StartPlayingFrom(base::TimeDelta time) final;
   void SetPlaybackRate(double playback_rate) final;
   void SetVolume(float volume) final;
@@ -209,7 +209,7 @@ class MEDIA_EXPORT RendererImpl : public Renderer {
 
   // Temporary callback used for Initialize() and Flush().
   PipelineStatusCB init_cb_;
-  base::Closure flush_cb_;
+  base::OnceClosure flush_cb_;
 
   std::unique_ptr<RendererClientInternal> audio_renderer_client_;
   std::unique_ptr<RendererClientInternal> video_renderer_client_;

@@ -189,7 +189,7 @@ void RendererImpl::SetCdm(CdmContext* cdm_context,
   InitializeAudioRenderer();
 }
 
-void RendererImpl::Flush(const base::Closure& flush_cb) {
+void RendererImpl::Flush(base::OnceClosure flush_cb) {
   DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!flush_cb_);
@@ -197,7 +197,7 @@ void RendererImpl::Flush(const base::Closure& flush_cb) {
   TRACE_EVENT_ASYNC_BEGIN0("media", "RendererImpl::Flush", this);
 
   if (state_ == STATE_FLUSHED) {
-    flush_cb_ = BindToCurrentLoop(flush_cb);
+    flush_cb_ = BindToCurrentLoop(std::move(flush_cb));
     FinishFlush();
     return;
   }
@@ -207,7 +207,7 @@ void RendererImpl::Flush(const base::Closure& flush_cb) {
     return;
   }
 
-  flush_cb_ = flush_cb;
+  flush_cb_ = std::move(flush_cb);
   state_ = STATE_FLUSHING;
 
   // If a stream restart is pending, this Flush() will complete it. Upon flush

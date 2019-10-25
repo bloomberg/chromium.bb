@@ -272,8 +272,8 @@ class RendererImplTest : public ::testing::Test {
     SetFlushExpectationsForAVRenderers();
     EXPECT_CALL(callbacks_, OnFlushed());
 
-    renderer_impl_->Flush(base::BindRepeating(&CallbackHelper::OnFlushed,
-                                              base::Unretained(&callbacks_)));
+    renderer_impl_->Flush(base::BindOnce(&CallbackHelper::OnFlushed,
+                                         base::Unretained(&callbacks_)));
     base::RunLoop().RunUntilIdle();
   }
 
@@ -557,8 +557,8 @@ TEST_F(RendererImplTest, StartPlayingFromWithPlaybackRate) {
 TEST_F(RendererImplTest, FlushAfterInitialization) {
   InitializeWithAudioAndVideo();
   EXPECT_CALL(callbacks_, OnFlushed());
-  renderer_impl_->Flush(base::BindRepeating(&CallbackHelper::OnFlushed,
-                                            base::Unretained(&callbacks_)));
+  renderer_impl_->Flush(base::BindOnce(&CallbackHelper::OnFlushed,
+                                       base::Unretained(&callbacks_)));
   base::RunLoop().RunUntilIdle();
 }
 
@@ -662,8 +662,8 @@ TEST_F(RendererImplTest, ErrorDuringFlush) {
                       RunClosure<0>()));
   EXPECT_CALL(callbacks_, OnError(PIPELINE_ERROR_DECODE));
   EXPECT_CALL(callbacks_, OnFlushed());
-  renderer_impl_->Flush(base::BindRepeating(&CallbackHelper::OnFlushed,
-                                            base::Unretained(&callbacks_)));
+  renderer_impl_->Flush(base::BindOnce(&CallbackHelper::OnFlushed,
+                                       base::Unretained(&callbacks_)));
   base::RunLoop().RunUntilIdle();
 }
 
@@ -829,8 +829,8 @@ TEST_F(RendererImplTest, VideoUnderflowWithAudioFlush) {
   EXPECT_CALL(*audio_renderer_, Flush(_)).WillOnce(RunClosure<0>());
   EXPECT_CALL(*video_renderer_, Flush(_)).WillOnce(RunClosure<0>());
   EXPECT_CALL(callbacks_, OnFlushed());
-  renderer_impl_->Flush(base::BindRepeating(&CallbackHelper::OnFlushed,
-                                            base::Unretained(&callbacks_)));
+  renderer_impl_->Flush(base::BindOnce(&CallbackHelper::OnFlushed,
+                                       base::Unretained(&callbacks_)));
   base::RunLoop().RunUntilIdle();
 
   // Start playback after the flush, but never return BUFFERING_HAVE_ENOUGH from

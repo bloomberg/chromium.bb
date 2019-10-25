@@ -162,7 +162,7 @@ void Receiver::FlushUntil(std::unique_ptr<pb::RpcMessage> message) {
   }
   time_update_timer_.Stop();
   renderer_->Flush(
-      base::Bind(&Receiver::OnFlushDone, weak_factory_.GetWeakPtr()));
+      base::BindOnce(&Receiver::OnFlushDone, weak_factory_.GetWeakPtr()));
 }
 
 void Receiver::OnFlushDone() {
