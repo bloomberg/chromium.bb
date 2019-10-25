@@ -2,9 +2,6 @@
   "toolchain_targets": [
     {
       "name": "%(build_target)s"
-    },
-    {
-      "name": "reef"
     }
   ]
 }
