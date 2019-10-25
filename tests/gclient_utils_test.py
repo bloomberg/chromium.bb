@@ -10,6 +10,7 @@ from __future__ import unicode_literals
 import io
 import os
 import sys
+import tempfile
 import time
 import unittest
 
@@ -333,6 +334,26 @@ class GClientUtilsTest(trial_dir.TestCase):
     for content, expected in values:
       self.assertEqual(
           expected, gclient_utils.ParseCodereviewSettingsContent(content))
+
+  def testFileRead_Bytes(self):
+    with tempfile.NamedTemporaryFile(delete=False) as tmp:
+      tmp.write(b'foo \xe2\x9c bar')
+      # NamedTemporaryFiles must be closed on Windows before being opened again.
+      tmp.close()
+      try:
+        self.assertEqual('foo \ufffd bar', gclient_utils.FileRead(tmp.name))
+      finally:
+        os.remove(tmp.name)
+
+  def testFileRead_Unicode(self):
+    with tempfile.NamedTemporaryFile(delete=False) as tmp:
+      tmp.write(b'foo \xe2\x9c\x94 bar')
+      # NamedTemporaryFiles must be closed on Windows before being opened again.
+      tmp.close()
+      try:
+        self.assertEqual('foo ✔ bar', gclient_utils.FileRead(tmp.name))
+      finally:
+        os.remove(tmp.name)
 
 
 if __name__ == '__main__':

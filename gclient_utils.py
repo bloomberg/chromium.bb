@@ -164,19 +164,16 @@ class PrintableObject(object):
     return output
 
 
-def FileRead(filename, mode='rU'):
+def FileRead(filename, mode='rbU'):
+  # Always decodes output to a Unicode string.
   # On Python 3 newlines are converted to '\n' by default and 'U' is deprecated.
-  if mode == 'rU' and sys.version_info.major == 3:
-    mode = 'r'
+  if mode == 'rbU' and sys.version_info.major == 3:
+    mode = 'rb'
   with open(filename, mode=mode) as f:
-    # codecs.open() has different behavior than open() on python 2.6 so use
-    # open() and decode manually.
     s = f.read()
-    try:
-      return s.decode('utf-8')
-    # AttributeError is for Py3 compatibility
-    except (UnicodeDecodeError, AttributeError):
-      return s
+    if isinstance(s, bytes):
+      return s.decode('utf-8', 'replace')
+    return s
 
 
 def FileWrite(filename, content, mode='w'):
