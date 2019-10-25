@@ -16,8 +16,9 @@ async function receiveAddressSpaceMessageFromIFrame(frame) {
     });
 }
 
-async function addressSpaceServiceWorkerTest(t, origin, expected) {
-    const url = origin + "/security/cors-rfc1918/resources/post-addressspace-from-serviceworker.html";
+async function addressSpaceServiceWorkerTest(t, origin, expected, workerType) {
+    const path = "/security/cors-rfc1918/resources/post-addressspace-from-serviceworker.html";
+    const url = origin + path + "?workerType=" + workerType;
 
     const frame = await with_iframe(url);
     t.add_cleanup(_ => frame.remove());
@@ -30,14 +31,30 @@ async function addressSpaceServiceWorkerTest(t, origin, expected) {
 promise_test(async t => {
     const origin = "https://localhost:8443";
     const expected = "local";
-    await addressSpaceServiceWorkerTest(t, origin, expected);
-}, "addressspace: service worker localhost");
+    const workerType = "classic";
+    await addressSpaceServiceWorkerTest(t, origin, expected, workerType);
+}, "addressspace: service worker classic script localhost");
 
 promise_test(async t => {
     const origin = "https://127.0.0.1:8443";
     const expected = "local";
-    await addressSpaceServiceWorkerTest(t, origin, expected);
+    const workerType = "classic";
+    await addressSpaceServiceWorkerTest(t, origin, expected, workerType);
 }, "addressspace: service worker 127.0.0.1");
+
+promise_test(async t => {
+    const origin = "https://localhost:8443";
+    const expected = "local";
+    const workerType = "module";
+    await addressSpaceServiceWorkerTest(t, origin, expected, workerType);
+}, "addressspace: service worker module script localhost");
+
+promise_test(async t => {
+    const origin = "https://127.0.0.1:8443";
+    const expected = "local";
+    const workerType = "module";
+    await addressSpaceServiceWorkerTest(t, origin, expected, workerType);
+}, "addressspace: service worker module script 127.0.0.1");
 
 </script>
 </body>
