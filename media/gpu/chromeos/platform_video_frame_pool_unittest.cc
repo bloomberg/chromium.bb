@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "media/gpu/chromeos/platform_video_frame_pool.h"
+
 #include <stddef.h>
 #include <stdint.h>
 #include <memory>
@@ -13,7 +15,6 @@
 #include "base/files/scoped_file.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "media/gpu/linux/platform_video_frame_pool.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {

@@ -46,6 +46,8 @@ source_set("chromeos") {
 source_set("common") {
   defines = [ "MEDIA_GPU_IMPLEMENTATION" ]
   sources = [
+    "dmabuf_video_frame_pool.cc",
+    "dmabuf_video_frame_pool.h",
     "image_processor.cc",
     "image_processor.h",
     "image_processor_factory.h",
@@ -53,6 +55,8 @@ source_set("common") {
     "libyuv_image_processor.h",
     "mailbox_video_frame_converter.cc",
     "mailbox_video_frame_converter.h",
+    "platform_video_frame_pool.cc",
+    "platform_video_frame_pool.h",
     "video_decoder_pipeline.cc",
     "video_decoder_pipeline.h",
     "video_frame_converter.cc",
@@ -110,6 +114,7 @@ source_set("unit_tests") {
   sources = [
     "fourcc_unittests.cc",
     "mailbox_video_frame_converter_unittest.cc",
+    "platform_video_frame_pool_unittest.cc",
   ]
 }
 

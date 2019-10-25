@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_GPU_LINUX_DMABUF_VIDEO_FRAME_POOL_H_
-#define MEDIA_GPU_LINUX_DMABUF_VIDEO_FRAME_POOL_H_
+#ifndef MEDIA_GPU_CHROMEOS_DMABUF_VIDEO_FRAME_POOL_H_
+#define MEDIA_GPU_CHROMEOS_DMABUF_VIDEO_FRAME_POOL_H_
 
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
@@ -72,4 +72,4 @@ class MEDIA_GPU_EXPORT DmabufVideoFramePool {
 
 }  // namespace media
 
-#endif  // MEDIA_GPU_LINUX_DMABUF_VIDEO_FRAME_POOL_H_
+#endif  // MEDIA_GPU_CHROMEOS_DMABUF_VIDEO_FRAME_POOL_H_

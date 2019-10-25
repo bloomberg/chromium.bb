@@ -9,8 +9,8 @@
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
-#include "media/gpu/linux/dmabuf_video_frame_pool.h"
-#include "media/gpu/linux/platform_video_frame_pool.h"
+#include "media/gpu/chromeos/dmabuf_video_frame_pool.h"
+#include "media/gpu/chromeos/platform_video_frame_pool.h"
 #include "media/gpu/macros.h"
 
 namespace media {

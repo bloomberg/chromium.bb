@@ -10,10 +10,6 @@ assert(use_v4l2_codec || use_vaapi)
 source_set("common") {
   defines = [ "MEDIA_GPU_IMPLEMENTATION" ]
   sources = [
-    "dmabuf_video_frame_pool.cc",
-    "dmabuf_video_frame_pool.h",
-    "platform_video_frame_pool.cc",
-    "platform_video_frame_pool.h",
     "platform_video_frame_utils.cc",
     "platform_video_frame_utils.h",
   ]
@@ -55,7 +51,6 @@ source_set("video_frame_mapper") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "platform_video_frame_pool_unittest.cc",
     "platform_video_frame_utils_unittest.cc",
   ]
   deps = [
