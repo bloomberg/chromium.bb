@@ -37,6 +37,9 @@ void ClickToCallUiController::ShowDialog(
     const base::Optional<url::Origin>& initiating_origin,
     const GURL& url,
     bool hide_default_handler) {
+  LogClickToCallPhoneNumberSize(GetUnescapedURLContent(url),
+                                SharingClickToCallEntryPoint::kLeftClickLink,
+                                /*send_to_device=*/false);
   auto* controller = GetOrCreateFromWebContents(web_contents);
   controller->phone_url_ = url;
   controller->hide_default_handler_ = hide_default_handler;
@@ -58,7 +61,7 @@ void ClickToCallUiController::OnDeviceSelected(
                     /*has_devices=*/true, /*has_apps=*/false,
                     SharingClickToCallSelection::kDevice);
 
-  SendNumberToDevice(device, phone_number);
+  SendNumberToDevice(device, phone_number, entry_point);
 }
 
 void ClickToCallUiController::OnDialogClosed(SharingDialog* dialog) {
@@ -113,12 +116,17 @@ void ClickToCallUiController::OnDeviceChosen(const syncer::DeviceInfo& device) {
   if (ukm_recorder_)
     std::move(ukm_recorder_).Run(SharingClickToCallSelection::kDevice);
 
-  SendNumberToDevice(device, GetUnescapedURLContent(phone_url_));
+  SendNumberToDevice(device, GetUnescapedURLContent(phone_url_),
+                     SharingClickToCallEntryPoint::kLeftClickLink);
 }
 
 void ClickToCallUiController::SendNumberToDevice(
     const syncer::DeviceInfo& device,
-    const std::string& phone_number) {
+    const std::string& phone_number,
+    SharingClickToCallEntryPoint entry_point) {
+  LogClickToCallPhoneNumberSize(phone_number, entry_point,
+                                /*send_to_device=*/true);
+
   SharingMessage sharing_message;
   sharing_message.mutable_click_to_call_message()->set_phone_number(
       phone_number);
