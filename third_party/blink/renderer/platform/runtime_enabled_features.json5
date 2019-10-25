@@ -1090,6 +1090,9 @@
       name: "NewRemotePlaybackPipeline",
     },
     {
+      name: "NewSystemColors",
+    },
+    {
       name: "NoIdleEncodingForWebTests",
       status: "test",
     },
