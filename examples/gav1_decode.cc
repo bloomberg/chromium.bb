@@ -255,8 +255,8 @@ int main(int argc, char* argv[]) {
             static_cast<int>(absl::ToInt64Microseconds(timing.input)));
     const int decode_time_us =
         static_cast<int>(absl::ToInt64Microseconds(timing.dequeue));
-    const float decode_fps =
-        (decoded_frames == 0) ? 0.f : 1.e6f * decoded_frames / decode_time_us;
+    const double decode_fps =
+        (decoded_frames == 0) ? 0.0 : 1.0e6 * decoded_frames / decode_time_us;
     fprintf(stderr, "time to decode input: %d us (%d frames, %.2f fps)\n",
             decode_time_us, decoded_frames, decode_fps);
   }
