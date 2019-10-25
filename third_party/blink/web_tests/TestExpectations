@@ -5566,6 +5566,10 @@ crbug.com/1015130 virtual/scalefactor200/external/wpt/largest-contentful-paint/f
 crbug.com/1015130 virtual/scalefactor200withoutzoom/external/wpt/largest-contentful-paint/first-paint-equals-lcp-text.html [ Failure Pass ]
 
 # These tests are missing test automation
+crbug.com/998917 external/wpt/native-file-system/native_FileSystemBaseHandle-postMessage-BroadcastChannel.tentative.https.manual.window.html [ Skip ]
+crbug.com/998917 external/wpt/native-file-system/native_FileSystemBaseHandle-postMessage-Error.tentative.https.manual.window.html [ Skip ]
+crbug.com/998917 external/wpt/native-file-system/native_FileSystemBaseHandle-postMessage-MessagePort.tentative.https.manual.window.html [ Skip ]
+crbug.com/998917 external/wpt/native-file-system/native_FileSystemBaseHandle-postMessage.tentative.https.manual.window.html [ Skip ]
 crbug.com/998917 external/wpt/native-file-system/native_FileSystemDirectoryHandle-getDirectory.tentative.https.manual.window.html [ Skip ]
 crbug.com/998917 external/wpt/native-file-system/native_FileSystemDirectoryHandle-getEntries.tentative.https.manual.window.html [ Skip ]
 crbug.com/998917 external/wpt/native-file-system/native_FileSystemDirectoryHandle-getFile.tentative.https.manual.window.html [ Skip ]
