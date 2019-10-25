@@ -672,6 +672,14 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
       chroot_args = chroot_args or []
       chroot_args += ['--cache-dir', self._run.options.cache_dir]
 
+    # Disable revdep logic on full and release builders. These builders never
+    # reuse sysroots, so the revdep logic only causes unnecessary
+    # rebuilds in the SDK. The SDK rebuilds sometimes hit build critical
+    # packages causing races & build failures.
+    clean_build = (
+        self._run.config.build_type == constants.CANARY_TYPE or
+        self._run.config.build_type == constants.FULL_TYPE)
+
     # Set property to specify bisection builder job to run for Findit.
     logging.PrintKitchenSetBuildProperty(
         'BISECT_BUILDER', self._current_board + '-postsubmit-tryjob')
@@ -689,7 +697,9 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
           extra_env=self._portage_extra_env,
           event_file=event_file_in_chroot,
           run_goma=run_goma,
-          build_all_with_goma=self._run.config.build_all_with_goma)
+          build_all_with_goma=self._run.config.build_all_with_goma,
+          disable_revdep_logic=clean_build,
+      )
     except failures_lib.PackageBuildFailure as ex:
       failure_json = ex.BuildCompileFailureOutputJson()
       failures_filename = os.path.join(self.archive_path,

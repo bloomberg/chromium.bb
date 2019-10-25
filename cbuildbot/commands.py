@@ -606,7 +606,8 @@ def Build(buildroot,
           chroot_args=None,
           event_file=None,
           run_goma=False,
-          build_all_with_goma=False):
+          build_all_with_goma=False,
+          disable_revdep_logic=False):
   """Wrapper around build_packages.
 
   Args:
@@ -626,6 +627,8 @@ def Build(buildroot,
     build_all_with_goma: Use goma to build all board packages.
     run_goma: Set ./build_package --run_goma option, which starts and stops
       goma server in chroot while building packages.
+    disable_revdep_logic: Pass --nowithrevdeps to build_packages, disabling the
+      reverse dependency calculation step.
   """
   cmd = [
       './build_packages',
@@ -643,6 +646,9 @@ def Build(buildroot,
 
   if noretry:
     cmd.append('--nobuildretry')
+
+  if disable_revdep_logic:
+    cmd.append('--nowithrevdeps')
 
   if run_goma:
     cmd.append('--run_goma')
