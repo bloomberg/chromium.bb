@@ -84,12 +84,6 @@ bool IsInTabletMode() {
   return true;
 }
 
-// Returns the padding between the app icon and the end of the ScrollableShelf.
-int GetAppIconEndPadding() {
-  return (chromeos::switches::ShouldShowShelfHotseat() && IsInTabletMode()) ? 4
-                                                                            : 0;
-}
-
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -445,6 +439,12 @@ views::View* ScrollableShelfView::GetShelfContainerViewForTest() {
   return shelf_container_view_;
 }
 
+// static
+int ScrollableShelfView::GetAppIconEndPadding() {
+  return (chromeos::switches::ShouldShowShelfHotseat() && IsInTabletMode()) ? 4
+                                                                            : 0;
+}
+
 bool ScrollableShelfView::ShouldAdjustForTest() const {
   return CalculateAdjustedOffset();
 }
@@ -639,8 +639,7 @@ void ScrollableShelfView::Layout() {
 
   // Paddings are within the shelf view. It makes sure that |shelf_view_|'s
   // bounds are never changed.
-  shelf_view_->set_app_icons_layout_offset(before_padding +
-                                           GetAppIconEndPadding());
+  shelf_view_->SetAppIconsLayoutOffset(before_padding + GetAppIconEndPadding());
 
   // Adjust the bounds when not showing in the horizontal
   // alignment.tShelf()->IsHorizontalAlignment()) {

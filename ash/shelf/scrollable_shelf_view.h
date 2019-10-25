@@ -102,8 +102,8 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
 
   const gfx::Rect& visible_space() const { return visible_space_; }
 
-  // Size of the arrow button.
-  static int GetArrowButtonSize();
+  // Returns the padding between the app icon and the end of the ScrollableShelf
+  static int GetAppIconEndPadding();
 
   // Padding at the two ends of the shelf.
   static constexpr int kEndPadding = 4;
