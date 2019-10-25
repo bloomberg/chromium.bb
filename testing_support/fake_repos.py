@@ -14,6 +14,7 @@ import errno
 import logging
 import os
 import pprint
+import random
 import re
 import socket
 import sys
@@ -26,6 +27,13 @@ from testing_support import trial_dir
 import gclient_utils
 import scm
 import subprocess2
+
+
+# Attempt |MAX_TRY| times to find a free port. Each time select one port at
+# random from the range [|PORT_START|, |PORT_END|].
+MAX_TRY = 10
+PORT_START = 20000
+PORT_END = 65535
 
 
 def write(path, content):
@@ -74,20 +82,20 @@ def commit_git(repo):
   return rev
 
 
-def test_port(host, port):
+def port_is_free(host, port):
   s = socket.socket()
   try:
-    return s.connect_ex((host, port)) == 0
+    return s.connect_ex((host, port)) != 0
   finally:
     s.close()
 
 
-def find_free_port(host, base_port):
+def find_free_port(host):
   """Finds a listening port free to listen to."""
-  while base_port < (2<<16):
-    if not test_port(host, base_port):
+  for _ in range(MAX_TRY):
+    base_port = random.randint(PORT_START, PORT_END)
+    if port_is_free(host, base_port):
       return base_port
-    base_port += 1
   assert False, 'Having issues finding an available port'
 
 
@@ -239,7 +247,7 @@ class FakeReposBase(object):
     self.set_up()
     if self.gitdaemon:
       return True
-    assert self.git_pid_file_name == None
+    assert self.git_pid_file_name == None, self.git_pid_file_name
     try:
       subprocess2.check_output(['git', '--version'])
     except (OSError, subprocess2.CalledProcessError):
@@ -247,12 +255,11 @@ class FakeReposBase(object):
     for repo in ['repo_%d' % r for r in range(1, self.NB_GIT_REPOS + 1)]:
       subprocess2.check_call(['git', 'init', '-q', join(self.git_root, repo)])
       self.git_hashes[repo] = [(None, None)]
-    self.git_port = find_free_port(self.host, 20000)
-    self.git_base = 'git://%s:%d/git/' % (self.host, self.git_port)
-    # Start the daemon.
     git_pid_file = tempfile.NamedTemporaryFile(delete=False)
     self.git_pid_file_name = git_pid_file.name
     git_pid_file.close()
+    self.git_port = find_free_port(self.host)
+    self.git_base = 'git://%s:%d/git/' % (self.host, self.git_port)
     cmd = ['git', 'daemon',
         '--export-all',
         '--reuseaddr',
@@ -261,7 +268,10 @@ class FakeReposBase(object):
         '--port=%d' % self.git_port]
     if self.host == '127.0.0.1':
       cmd.append('--listen=' + self.host)
-    self.check_port_is_free(self.git_port)
+    # Verify that the port is free.
+    if not port_is_free(self.host, self.git_port):
+      return False
+    # Start the daemon.
     self.gitdaemon = subprocess2.Popen(
         cmd,
         cwd=self.root_dir,
@@ -303,17 +313,6 @@ class FakeReposBase(object):
     logging.debug('%s: fast-import %s', repo, data)
     subprocess2.check_call(
         ['git', 'fast-import', '--quiet'], cwd=repo_root, stdin=data.encode())
-
-  def check_port_is_free(self, port):
-    sock = socket.socket()
-    try:
-      sock.connect((self.host, port))
-      # It worked, throw.
-      assert False, '%d shouldn\'t be bound' % port
-    except (socket.error, EnvironmentError):
-      pass
-    finally:
-      sock.close()
 
   def populateGit(self):
     raise NotImplementedError()
