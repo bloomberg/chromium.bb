@@ -12,6 +12,8 @@ import re
 import stat
 import sys
 
+import six
+
 from utils import file_path
 from utils import fs
 from utils import tools
@@ -406,7 +408,7 @@ def load_isolated(content, algo):
 
   # Check 'version' first, since it could modify the parsing after.
   value = data.get('version', '1.0')
-  if not isinstance(value, basestring):
+  if not isinstance(value, six.string_types):
     raise IsolatedError('Expected string, got %r' % value)
   try:
     version = tuple(map(int, value.split('.')))
@@ -424,7 +426,7 @@ def load_isolated(content, algo):
 
   for key, value in data.items():
     if key == 'algo':
-      if not isinstance(value, basestring):
+      if not isinstance(value, six.string_types):
         raise IsolatedError('Expected string, got %r' % value)
       if value not in SUPPORTED_ALGOS:
         raise IsolatedError(
@@ -440,14 +442,14 @@ def load_isolated(content, algo):
       if not value:
         raise IsolatedError('Expected non-empty command')
       for subvalue in value:
-        if not isinstance(subvalue, basestring):
+        if not isinstance(subvalue, six.string_types):
           raise IsolatedError('Expected string, got %r' % subvalue)
 
     elif key == 'files':
       if not isinstance(value, dict):
         raise IsolatedError('Expected dict, got %r' % value)
       for subkey, subvalue in value.items():
-        if not isinstance(subkey, basestring):
+        if not isinstance(subkey, six.string_types):
           raise IsolatedError('Expected string, got %r' % subkey)
         if os.path.isabs(subkey) or subkey.startswith('\\\\'):
           # Disallow '\\\\', it could UNC on Windows but disallow this
@@ -462,7 +464,7 @@ def load_isolated(content, algo):
           raise IsolatedError('Expected dict, got %r' % subvalue)
         for subsubkey, subsubvalue in subvalue.items():
           if subsubkey == 'l':
-            if not isinstance(subsubvalue, basestring):
+            if not isinstance(subsubvalue, six.string_types):
               raise IsolatedError('Expected string, got %r' % subsubvalue)
           elif subsubkey == 'm':
             if not isinstance(subsubvalue, int):
@@ -472,7 +474,7 @@ def load_isolated(content, algo):
               raise IsolatedError('Expected %s, got %r' %
                                   (algo_name, subsubvalue))
           elif subsubkey == 's':
-            if not isinstance(subsubvalue, (int, long)):
+            if not isinstance(subsubvalue, six.integer_types):
               raise IsolatedError('Expected int or long, got %r' % subsubvalue)
           elif subsubkey == 't':
             if subsubvalue not in SUPPORTED_FILE_TYPES:
@@ -515,7 +517,7 @@ def load_isolated(content, algo):
         raise IsolatedError('Expected 0, 1 or 2, got %r' % value)
 
     elif key == 'relative_cwd':
-      if not isinstance(value, basestring):
+      if not isinstance(value, six.string_types):
         raise IsolatedError('Expected string, got %r' % value)
 
     elif key == 'version':
