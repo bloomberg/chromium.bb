@@ -90,6 +90,10 @@ class CORE_EXPORT NGInlineCursor {
   // True if the current position is an ellipsis. It is error to call at end.
   bool IsEllipsis() const;
 
+  // True if the current position is an empty line box. It is error to call
+  // other then line box.
+  bool IsEmptyLineBox() const;
+
   // True if the current position is a generatd text. It is error to call at
   // end.
   bool IsGeneratedText() const;
@@ -98,11 +102,17 @@ class CORE_EXPORT NGInlineCursor {
   // end.
   bool IsHiddenForPaint() const;
 
+  // True if the current position is text or atomic inline box.
+  bool IsInlineLeaf() const;
+
   // True if the current position is a line box. It is error to call at end.
   bool IsLineBox() const;
 
   // True if the current position is a line break. It is error to call at end.
   bool IsLineBreak() const;
+
+  // True if the current position is a list marker.
+  bool IsListMarker() const;
 
   // True if the current position is a text. It is error to call at end.
   bool IsText() const;
@@ -173,6 +183,10 @@ class CORE_EXPORT NGInlineCursor {
 
   // Move the current position to next fragment on same layout object.
   void MoveToNextForSameLayoutObject();
+
+  // Move the current position to next line. It is error to call other than line
+  // box.
+  void MoveToNextLine();
 
   // Move the current position to next sibling fragment.
   void MoveToNextSibling();

@@ -162,6 +162,10 @@ bool NGInlineCursor::IsHiddenForPaint() const {
   return false;
 }
 
+bool NGInlineCursor::IsInlineLeaf() const {
+  return IsText() || IsAtomicInline();
+}
+
 bool NGInlineCursor::IsInclusiveDescendantOf(
     const LayoutObject& layout_object) const {
   return CurrentLayoutObject() &&
@@ -192,6 +196,15 @@ bool NGInlineCursor::IsLineBreak() const {
   }
   if (current_item_)
     return current_item_->IsLineBreak();
+  NOTREACHED();
+  return false;
+}
+
+bool NGInlineCursor::IsListMarker() const {
+  if (current_paint_fragment_)
+    return current_paint_fragment_->PhysicalFragment().IsListMarker();
+  if (current_item_)
+    return current_item_->IsListMarker();
   NOTREACHED();
   return false;
 }
@@ -242,6 +255,19 @@ bool NGInlineCursor::CanHaveChildren() const {
            (current_item_->Type() == NGFragmentItem::kBox &&
             !current_item_->IsAtomicInline());
   }
+  NOTREACHED();
+  return false;
+}
+
+bool NGInlineCursor::IsEmptyLineBox() const {
+  DCHECK(IsLineBox());
+  if (current_paint_fragment_) {
+    return To<NGPhysicalLineBoxFragment>(
+               current_paint_fragment_->PhysicalFragment())
+        .IsEmptyLineBox();
+  }
+  if (current_item_)
+    return current_item_->IsEmptyLineBox();
   NOTREACHED();
   return false;
 }
@@ -527,6 +553,22 @@ void NGInlineCursor::MoveToNextForSameLayoutObject() {
     } while (current_item_ && CurrentLayoutObject() != layout_object);
     return;
   }
+}
+
+void NGInlineCursor::MoveToNextLine() {
+  DCHECK(IsLineBox());
+  if (current_paint_fragment_) {
+    if (auto* paint_fragment = current_paint_fragment_->NextSibling())
+      return MoveTo(*paint_fragment);
+    return MakeNull();
+  }
+  if (current_item_) {
+    do {
+      MoveToNextItem();
+    } while (IsNotNull() && !IsLineBox());
+    return;
+  }
+  NOTREACHED();
 }
 
 void NGInlineCursor::MoveToNextSibling() {
