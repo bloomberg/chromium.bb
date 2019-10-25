@@ -144,7 +144,7 @@ const std::vector<DohUpgradeEntry>& GetDohUpgradeList() {
   // DohProviderId histogram suffix list in
   // tools/metrics/histograms/histograms.xml.
   static const base::NoDestructor<std::vector<DohUpgradeEntry>>
-      upgradable_servers({
+      upgradable_servers{{
           DohUpgradeEntry(
               "CleanBrowsingAdult",
               {"185.228.168.10", "185.228.169.11", "2a0d:2a00:1::1",
@@ -215,7 +215,7 @@ const std::vector<DohUpgradeEntry>& GetDohUpgradeList() {
               {"9.9.9.9", "149.112.112.112", "2620:fe::fe", "2620:fe::9"},
               {"dns.quad9.net", "dns9.quad9.net"} /* DoT hostname */,
               {"https://dns.quad9.net/dns-query", true /* use_post */}),
-      });
+      }};
   return *upgradable_servers;
 }
 
