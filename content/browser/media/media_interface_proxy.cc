@@ -259,16 +259,16 @@ void MediaInterfaceProxy::CreateCdmProxy(
   NOTREACHED() << "The CdmProxy should only be created by a CDM.";
 }
 
-service_manager::mojom::InterfaceProviderPtr
+mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
 MediaInterfaceProxy::GetFrameServices(const base::Token& cdm_guid,
                                       const std::string& cdm_file_system_id) {
   // Register frame services.
-  service_manager::mojom::InterfaceProviderPtr interfaces;
+  mojo::PendingRemote<service_manager::mojom::InterfaceProvider> interfaces;
 
   // TODO(xhwang): Replace this InterfaceProvider with a dedicated media host
   // interface. See http://crbug.com/660573
   auto provider = std::make_unique<media::MediaInterfaceProvider>(
-      mojo::MakeRequest(&interfaces));
+      interfaces.InitWithNewPipeAndPassReceiver());
 
 #if BUILDFLAG(ENABLE_MOJO_CDM)
   // TODO(slan): Wrap these into a RenderFrame specific ProvisionFetcher impl.

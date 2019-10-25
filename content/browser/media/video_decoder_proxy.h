@@ -16,6 +16,8 @@
 #include "media/mojo/mojom/interface_factory.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace content {
 
@@ -67,7 +69,7 @@ class CONTENT_EXPORT VideoDecoderProxy : public media::mojom::InterfaceFactory {
   void OnMediaServiceConnectionError();
 
   // Connection to the remote media InterfaceFactory.
-  media::mojom::InterfaceFactoryPtr interface_factory_ptr_;
+  mojo::Remote<media::mojom::InterfaceFactory> interface_factory_remote_;
 
   // Connections to the renderer.
   mojo::BindingSet<media::mojom::InterfaceFactory> bindings_;

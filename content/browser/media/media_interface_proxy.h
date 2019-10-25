@@ -21,6 +21,7 @@
 #include "media/mojo/mojom/interface_factory.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 
 namespace media {
@@ -83,9 +84,9 @@ class MediaInterfaceProxy : public media::mojom::InterfaceFactory {
   // Gets services provided by the browser (at RenderFrameHost level) to the
   // mojo media (or CDM) service running remotely. |cdm_file_system_id| is
   // used to register the appropriate CdmStorage interface needed by the CDM.
-  service_manager::mojom::InterfaceProviderPtr GetFrameServices(
-      const base::Token& cdm_guid,
-      const std::string& cdm_file_system_id);
+  mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
+  GetFrameServices(const base::Token& cdm_guid,
+                   const std::string& cdm_file_system_id);
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
   // Gets a CdmFactory pointer for |key_system|. Returns null if unexpected
