@@ -88,6 +88,9 @@ class FindBarView::MatchCountLabel : public views::Label {
   }
 
   void SetResult(const FindNotificationDetails& result) {
+    if (last_result_ && result == *last_result_)
+      return;
+
     last_result_ = result;
     SetText(l10n_util::GetStringFUTF16(
         IDS_FIND_IN_PAGE_COUNT,
