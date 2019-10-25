@@ -159,7 +159,7 @@ jinja_template("weblayer_support_manifest") {
 
 android_apk("weblayer_support_apk") {
   testonly = true
-  
+
   # Test runner does not support having "additional apks" that are incremental.
   never_incremental = true
 
@@ -218,6 +218,7 @@ instrumentation_test_apk("weblayer_instrumentation_test_apk") {
     "javatests/src/org/chromium/weblayer/test/EventUtils.java",
     "javatests/src/org/chromium/weblayer/test/ExecuteScriptTest.java",
     "javatests/src/org/chromium/weblayer/test/RenderingTest.java",
+    "javatests/src/org/chromium/weblayer/test/TopControlsTest.java",
     "javatests/src/org/chromium/weblayer/test/WebLayerShellActivityTestRule.java",
     "javatests/src/org/chromium/weblayer/test/FragmentRestoreTest.java",
     "javatests/src/org/chromium/weblayer/test/InputTypesTest.java",
