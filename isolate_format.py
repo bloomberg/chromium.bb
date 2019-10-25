@@ -136,8 +136,8 @@ def pretty_print(variables, stdout):
         loop_list(indent + b'  ', item)
         stdout.write(indent + b'],\n')
       elif isinstance(item, six.string_types):
-        stdout.write(
-            '\'%s\',\n' % item.replace('\\', '\\\\').replace('\'', '\\\''))
+        stdout.write(('\'%s\',\n' % item.replace('\\', '\\\\').replace(
+            '\'', '\\\'')).encode('utf-8'))
       elif isinstance(item, (int, bool)) or item is None:
         stdout.write(('%s,\n' % item).encode('utf-8'))
       else:

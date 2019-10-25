@@ -411,6 +411,9 @@ class IsolateFormatTest(auto_stub.TestCase):
   def test_pretty_print_empty(self):
     self._test_pretty_print_impl({}, b'{\n}\n')
 
+  def test_pretty_print_simple(self):
+    self._test_pretty_print_impl({'a': 'b'}, b'{\n  \'a\': \'b\',\n}')
+
   def test_pretty_print_mid_size(self):
     value = {
         'variables': {
