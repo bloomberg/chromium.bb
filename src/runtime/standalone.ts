@@ -2,10 +2,11 @@
 
 import { RunCase } from '../framework/index.js';
 import { TestLoader } from '../framework/loader.js';
-import { Logger, LiveTestCaseResult } from '../framework/logger.js';
+import { LiveTestCaseResult, Logger } from '../framework/logger.js';
 import { FilterResultTreeNode, treeFromFilterResults } from '../framework/tree.js';
 import { encodeSelectively } from '../framework/url_query.js';
 
+import { optionEnabled } from './helper/options.js';
 import { TestWorker } from './helper/test_worker.js';
 
 window.onbeforeunload = () => {
@@ -16,11 +17,10 @@ window.onbeforeunload = () => {
 let haveSomeResults = false;
 const log = new Logger();
 
-const url = new URL(window.location.toString());
-const runnow = url.searchParams.get('runnow') === '1';
-const debug = url.searchParams.get('debug') === '1';
+const runnow = optionEnabled('runnow');
+const debug = optionEnabled('debug');
 
-const worker = url.searchParams.get('worker') === '1' ? new TestWorker() : undefined;
+const worker = optionEnabled('worker') ? new TestWorker() : undefined;
 
 const resultsVis = document.getElementById('resultsVis')!;
 const resultsJSON = document.getElementById('resultsJSON')!;
@@ -154,7 +154,7 @@ function makeTreeNodeHeaderHTML(
     .appendTo(nodetitle);
   $('<a>')
     .addClass('nodelink')
-    .attr('href', '?q=' + nameEncoded)
+    .attr('href', `?${worker ? 'worker&' : ''}${debug ? 'debug&' : ''}q=${nameEncoded}`)
     .attr('alt', 'open')
     .html('&#x2b08;')
     .appendTo(nodetitle);

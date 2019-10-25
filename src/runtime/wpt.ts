@@ -1,7 +1,9 @@
 import { TestLoader } from '../framework/loader.js';
-import { Logger, LiveTestCaseResult } from '../framework/logger.js';
+import { LiveTestCaseResult, Logger } from '../framework/logger.js';
 import { makeQueryString } from '../framework/url_query.js';
 import { AsyncMutex } from '../framework/util/async_mutex.js';
+
+import { optionEnabled } from './helper/options.js';
 import { TestWorker } from './helper/test_worker.js';
 
 declare interface WptTestObject {
@@ -16,8 +18,7 @@ declare function async_test(f: (this: WptTestObject) => Promise<void>, name: str
   const loader = new TestLoader();
   const files = await loader.loadTestsFromQuery(window.location.search);
 
-  const url = new URL(window.location.toString());
-  const worker = url.searchParams.get('worker') === '1' ? new TestWorker() : undefined;
+  const worker = optionEnabled('worker') ? new TestWorker() : undefined;
 
   const log = new Logger();
   const mutex = new AsyncMutex();
