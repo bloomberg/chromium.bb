@@ -2307,6 +2307,22 @@
       "models": [
         {
           "board_name": "hatch",
+          "name": "dragonair",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 372,
+          "is_active": true
+        },
+        {
+          "board_name": "hatch",
+          "name": "dratini",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 372,
+          "is_active": true
+        },
+        {
+          "board_name": "hatch",
           "name": "hatch",
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt",
