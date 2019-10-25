@@ -21,6 +21,9 @@ import org.chromium.components.signin.AccountIdProvider;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.signin.OAuth2TokenService;
+import org.chromium.components.signin.identitymanager.CoreAccountId;
+import org.chromium.components.signin.identitymanager.CoreAccountInfo;
+import org.chromium.components.signin.identitymanager.IdentityMutator;
 import org.chromium.components.signin.test.util.AccountHolder;
 import org.chromium.components.signin.test.util.AccountManagerTestRule;
 import org.chromium.content_public.browser.test.NativeLibraryTestRule;
@@ -30,12 +33,12 @@ import java.util.Arrays;
 import java.util.HashSet;
 
 /**
- * Integration test for the OAuth2TokenService.
+ * Integration test for the IdentityManager.
  *
  * These tests initialize the native part of the service.
  */
 @RunWith(BaseJUnit4ClassRunner.class)
-public class OAuth2TokenServiceIntegrationTest {
+public class IdentityManagerIntegrationTest {
     @Rule
     public NativeLibraryTestRule mActivityTestRule = new NativeLibraryTestRule();
 
@@ -51,12 +54,17 @@ public class OAuth2TokenServiceIntegrationTest {
     private static final AccountHolder TEST_ACCOUNT_HOLDER_2 =
             AccountHolder.builder(TEST_ACCOUNT2).alwaysAccept(true).build();
 
-    private OAuth2TokenService mOAuth2TokenService;
+    private CoreAccountInfo mTestAccount1;
+    private CoreAccountInfo mTestAccount2;
+
+    private IdentityMutator mIdentityMutator;
     private ChromeSigninController mChromeSigninController;
 
     @Before
     public void setUp() {
-        mapAccountNamesToIds();
+        setAccountIdProviderForTest();
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> { initializeTestAccounts(); });
 
         mActivityTestRule.loadNativeLibraryAndInitBrowserProcess();
 
@@ -69,26 +77,24 @@ public class OAuth2TokenServiceIntegrationTest {
             seedAccountTrackerService();
 
             // Get a reference to the service.
-            mOAuth2TokenService = IdentityServicesProvider.getOAuth2TokenService();
+            mIdentityMutator = IdentityServicesProvider.getSigninManager().getIdentityMutator();
         });
     }
 
     @After
     public void tearDown() {
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            mChromeSigninController.setSignedInAccountName(null);
-            mOAuth2TokenService.updateAccountList();
-        });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { mIdentityMutator.reloadAllAccountsFromSystemWithPrimaryAccount(null); });
         SigninHelper.resetSharedPrefs();
         SigninTestUtil.resetSigninState();
     }
 
-    private void mapAccountNamesToIds() {
+    private void setAccountIdProviderForTest() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             AccountIdProvider.setInstanceForTest(new AccountIdProvider() {
                 @Override
                 public String getAccountId(String accountName) {
-                    return "gaia-id-" + accountName;
+                    return "gaia-id-" + accountName.replace("@", "_at_");
                 }
 
                 @Override
@@ -99,11 +105,21 @@ public class OAuth2TokenServiceIntegrationTest {
         });
     }
 
+    private void initializeTestAccounts() {
+        AccountIdProvider provider = AccountIdProvider.getInstance();
+
+        String account1Id = provider.getAccountId(TEST_ACCOUNT1.name);
+        mTestAccount1 =
+                new CoreAccountInfo(new CoreAccountId(account1Id), TEST_ACCOUNT1, account1Id);
+        String account2Id = provider.getAccountId(TEST_ACCOUNT2.name);
+        mTestAccount2 =
+                new CoreAccountInfo(new CoreAccountId(account2Id), TEST_ACCOUNT2, account2Id);
+    }
+
     private void seedAccountTrackerService() {
         AccountIdProvider provider = AccountIdProvider.getInstance();
-        String[] accountNames = {TEST_ACCOUNT1.name, TEST_ACCOUNT2.name};
-        String[] accountIds = {
-                provider.getAccountId(accountNames[0]), provider.getAccountId(accountNames[1])};
+        String[] accountNames = {mTestAccount1.getName(), mTestAccount2.getName()};
+        String[] accountIds = {mTestAccount1.getGaiaId(), mTestAccount2.getGaiaId()};
         IdentityServicesProvider.getAccountTrackerService().syncForceRefreshForTest(
                 accountIds, accountNames);
     }
@@ -126,7 +142,7 @@ public class OAuth2TokenServiceIntegrationTest {
                     OAuth2TokenService.getAccounts());
 
             // Run test.
-            mOAuth2TokenService.updateAccountList();
+            mIdentityMutator.reloadAllAccountsFromSystemWithPrimaryAccount(null);
 
             Assert.assertArrayEquals("No account: getAccounts must be empty", new String[] {},
                     OAuth2TokenService.getAccounts());
@@ -140,7 +156,7 @@ public class OAuth2TokenServiceIntegrationTest {
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             // Run test.
-            mOAuth2TokenService.updateAccountList();
+            mIdentityMutator.reloadAllAccountsFromSystemWithPrimaryAccount(null);
 
             Assert.assertArrayEquals("No signed in account: getAccounts must be empty",
                     new String[] {}, OAuth2TokenService.getAccounts());
@@ -153,16 +169,11 @@ public class OAuth2TokenServiceIntegrationTest {
         addAccount(TEST_ACCOUNT_HOLDER_1);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            // Mark user as signed in.
-            mChromeSigninController.setSignedInAccountName(TEST_ACCOUNT1.name);
-
             // Run test.
-            mOAuth2TokenService.updateAccountList();
+            mIdentityMutator.reloadAllAccountsFromSystemWithPrimaryAccount(mTestAccount1.getId());
 
             Assert.assertArrayEquals("Signed in: one account should be available",
-                    new String[] {AccountIdProvider.getInstance().getAccountId(TEST_ACCOUNT1.name)},
-                    OAuth2TokenService.getAccounts());
-
+                    new String[] {mTestAccount1.getId().getId()}, OAuth2TokenService.getAccounts());
         });
     }
 
@@ -172,11 +183,8 @@ public class OAuth2TokenServiceIntegrationTest {
         addAccount(TEST_ACCOUNT_HOLDER_1);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            // Mark user as signed in.
-            mChromeSigninController.setSignedInAccountName(TEST_ACCOUNT2.name);
-
             // Run test.
-            mOAuth2TokenService.updateAccountList();
+            mIdentityMutator.reloadAllAccountsFromSystemWithPrimaryAccount(mTestAccount2.getId());
 
             Assert.assertArrayEquals(
                     "Signed in but different account, getAccounts must remain empty",
@@ -190,15 +198,11 @@ public class OAuth2TokenServiceIntegrationTest {
         addAccount(TEST_ACCOUNT_HOLDER_1);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            // Mark user as signed in.
-            mChromeSigninController.setSignedInAccountName(TEST_ACCOUNT1.name);
-
             // Run one validation.
-            mOAuth2TokenService.updateAccountList();
+            mIdentityMutator.reloadAllAccountsFromSystemWithPrimaryAccount(mTestAccount1.getId());
 
             Assert.assertArrayEquals("Signed in and one account available",
-                    new String[] {AccountIdProvider.getInstance().getAccountId(TEST_ACCOUNT1.name)},
-                    OAuth2TokenService.getAccounts());
+                    new String[] {mTestAccount1.getId().getId()}, OAuth2TokenService.getAccounts());
         });
 
         // Add another account.
@@ -206,12 +210,11 @@ public class OAuth2TokenServiceIntegrationTest {
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             // Re-run validation.
-            mOAuth2TokenService.updateAccountList();
+            mIdentityMutator.reloadAllAccountsFromSystemWithPrimaryAccount(mTestAccount1.getId());
 
             Assert.assertEquals("Signed in and two accounts available",
                     new HashSet<String>(Arrays.asList(
-                            AccountIdProvider.getInstance().getAccountId(TEST_ACCOUNT1.name),
-                            AccountIdProvider.getInstance().getAccountId(TEST_ACCOUNT2.name))),
+                            mTestAccount1.getId().getId(), mTestAccount2.getId().getId())),
                     new HashSet<String>(Arrays.asList(OAuth2TokenService.getAccounts())));
         });
     }
@@ -224,28 +227,23 @@ public class OAuth2TokenServiceIntegrationTest {
         addAccount(TEST_ACCOUNT_HOLDER_2);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            // Mark user as signed in.
-            mChromeSigninController.setSignedInAccountName(TEST_ACCOUNT1.name);
-
             // Run one validation.
-            mOAuth2TokenService.updateAccountList();
+            mIdentityMutator.reloadAllAccountsFromSystemWithPrimaryAccount(mTestAccount1.getId());
 
             Assert.assertEquals("Signed in and two accounts available",
                     new HashSet<String>(Arrays.asList(
-                            AccountIdProvider.getInstance().getAccountId(TEST_ACCOUNT1.name),
-                            AccountIdProvider.getInstance().getAccountId(TEST_ACCOUNT2.name))),
+                            mTestAccount1.getId().getId(), mTestAccount2.getId().getId())),
                     new HashSet<String>(Arrays.asList(OAuth2TokenService.getAccounts())));
         });
 
         removeAccount(TEST_ACCOUNT_HOLDER_2);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            mOAuth2TokenService.updateAccountList();
+            mIdentityMutator.reloadAllAccountsFromSystemWithPrimaryAccount(mTestAccount1.getId());
 
             Assert.assertArrayEquals(
                     "Only one account available, account2 should not be returned anymore",
-                    new String[] {AccountIdProvider.getInstance().getAccountId(TEST_ACCOUNT1.name)},
-                    OAuth2TokenService.getAccounts());
+                    new String[] {mTestAccount1.getId().getId()}, OAuth2TokenService.getAccounts());
         });
     }
 
@@ -257,15 +255,11 @@ public class OAuth2TokenServiceIntegrationTest {
         addAccount(TEST_ACCOUNT_HOLDER_2);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            // Mark user as signed in.
-            mChromeSigninController.setSignedInAccountName(TEST_ACCOUNT1.name);
-
-            mOAuth2TokenService.updateAccountList();
+            mIdentityMutator.reloadAllAccountsFromSystemWithPrimaryAccount(mTestAccount1.getId());
 
             Assert.assertEquals("Signed in and two accounts available",
                     new HashSet<String>(Arrays.asList(
-                            AccountIdProvider.getInstance().getAccountId(TEST_ACCOUNT1.name),
-                            AccountIdProvider.getInstance().getAccountId(TEST_ACCOUNT2.name))),
+                            mTestAccount1.getId().getId(), mTestAccount2.getId().getId())),
                     new HashSet<String>(Arrays.asList(OAuth2TokenService.getAccounts())));
         });
 
@@ -275,7 +269,7 @@ public class OAuth2TokenServiceIntegrationTest {
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             // Re-validate and run checks.
-            mOAuth2TokenService.updateAccountList();
+            mIdentityMutator.reloadAllAccountsFromSystemWithPrimaryAccount(mTestAccount1.getId());
 
             Assert.assertArrayEquals(
                     "No account available", new String[] {}, OAuth2TokenService.getAccounts());
@@ -291,19 +285,12 @@ public class OAuth2TokenServiceIntegrationTest {
         addAccount(TEST_ACCOUNT_HOLDER_2);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            // Mark user as signed in.
-            mChromeSigninController.setSignedInAccountName(TEST_ACCOUNT1.name);
-
-            mOAuth2TokenService.updateAccountList();
+            mIdentityMutator.reloadAllAccountsFromSystemWithPrimaryAccount(mTestAccount1.getId());
 
             Assert.assertEquals("Signed in and two accounts available",
                     new HashSet<String>(Arrays.asList(
-                            AccountIdProvider.getInstance().getAccountId(TEST_ACCOUNT1.name),
-                            AccountIdProvider.getInstance().getAccountId(TEST_ACCOUNT2.name))),
+                            mTestAccount1.getId().getId(), mTestAccount2.getId().getId())),
                     new HashSet<String>(Arrays.asList(OAuth2TokenService.getAccounts())));
-
-            // Remove all.
-            mChromeSigninController.setSignedInAccountName(null);
         });
 
         removeAccount(TEST_ACCOUNT_HOLDER_1);
@@ -311,7 +298,7 @@ public class OAuth2TokenServiceIntegrationTest {
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             // Re-validate and run checks.
-            mOAuth2TokenService.updateAccountList();
+            mIdentityMutator.reloadAllAccountsFromSystemWithPrimaryAccount(null);
 
             Assert.assertEquals("Not signed in and no accounts available", new String[] {},
                     OAuth2TokenService.getAccounts());
@@ -326,16 +313,12 @@ public class OAuth2TokenServiceIntegrationTest {
         addAccount(TEST_ACCOUNT_HOLDER_2);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            // Mark user as signed in.
-            mChromeSigninController.setSignedInAccountName(TEST_ACCOUNT1.name);
-
             // Run test.
-            mOAuth2TokenService.updateAccountList();
+            mIdentityMutator.reloadAllAccountsFromSystemWithPrimaryAccount(mTestAccount1.getId());
 
             Assert.assertEquals("Signed in and two accounts available",
                     new HashSet<String>(Arrays.asList(
-                            AccountIdProvider.getInstance().getAccountId(TEST_ACCOUNT1.name),
-                            AccountIdProvider.getInstance().getAccountId(TEST_ACCOUNT2.name))),
+                            mTestAccount1.getId().getId(), mTestAccount2.getId().getId())),
                     new HashSet<String>(Arrays.asList(OAuth2TokenService.getAccounts())));
         });
     }
@@ -344,11 +327,8 @@ public class OAuth2TokenServiceIntegrationTest {
     @MediumTest
     public void testUpdateAccountListNoAccountsRegisteredButSignedIn() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            // Mark user as signed in without setting up the account.
-            mChromeSigninController.setSignedInAccountName(TEST_ACCOUNT1.name);
-
             // Run test.
-            mOAuth2TokenService.updateAccountList();
+            mIdentityMutator.reloadAllAccountsFromSystemWithPrimaryAccount(mTestAccount1.getId());
 
             Assert.assertEquals(
                     "No accounts available", new String[] {}, OAuth2TokenService.getAccounts());
