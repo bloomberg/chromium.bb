@@ -54,6 +54,8 @@ AssistantOptInFlowScreenHandler::AssistantOptInFlowScreenHandler(
 }
 
 AssistantOptInFlowScreenHandler::~AssistantOptInFlowScreenHandler() {
+  if (client_binding_)
+    StopSpeakerIdEnrollment();
   if (arc::VoiceInteractionControllerClient::Get()) {
     arc::VoiceInteractionControllerClient::Get()->RemoveObserver(this);
   }
