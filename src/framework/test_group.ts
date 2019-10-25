@@ -52,6 +52,12 @@ export class TestGroup<F extends Fixture> implements RunCaseIterable {
 
   // TODO: This could take a fixture, too, to override the one for the group.
   test(name: string, fn: TestFn<F>): Test<F> {
+    // Replace spaces with underscores for readability.
+    if (name.indexOf('_') !== -1) {
+      throw new Error('Invalid test name ${name}: contains underscore (use space)');
+    }
+    name = name.replace(/ /g, '_');
+
     this.checkName(name);
 
     const test = new Test<F>(name, this.fixture, fn);

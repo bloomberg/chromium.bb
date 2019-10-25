@@ -54,9 +54,7 @@ export class TestLoader {
   // TODO: Test
   // TODO: Probably should actually not exist at all, just use queries on cmd line too.
   async loadTestsFromCmdLine(filters: string[]): Promise<TestFilterResultIterator> {
-    // In actual URL queries (?q=...), + represents a space. But decodeURIComponent doesn't do this,
-    // so do it manually. (+ is used over %20 for readability.) (See also encodeSelectively.)
-    return this.loadTests(filters.map(f => decodeURIComponent(f.replace(/\+/g, '%20'))));
+    return this.loadTests(filters);
   }
 
   private async loadTests(filters: string[]): Promise<TestFilterResultIterator> {

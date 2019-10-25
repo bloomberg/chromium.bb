@@ -20,6 +20,9 @@ import { GPUTest } from './gpu_test.js';
 
 export const g = new TestGroup(GPUTest);
 
+// Note: spaces in test names are replaced with underscores: cts:examples:test_name=
+g.test('test name', t => {});
+
 g.test('basic', t => {
   t.expect(true);
   t.expect(true, 'true should be true');
