@@ -104,4 +104,9 @@ interface RemoteFrame {
   // SecurityContext. Used to reset CSP from the previous document on
   // a cross-document navigation.
   ResetReplicatedContentSecurityPolicy();
+
+  // Update replicated set for enforcement of insecure navigations. |set|
+  // is a hashed set of host/port pairs. See
+  // SecurityContext::SetInsecureNavigationsSet.
+  EnforceInsecureNavigationsSet(array<uint32> set);
 };

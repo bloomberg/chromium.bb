@@ -414,8 +414,6 @@ bool RenderFrameProxy::OnMessageReceived(const IPC::Message& msg) {
                         OnAddContentSecurityPolicies)
     IPC_MESSAGE_HANDLER(FrameMsg_EnforceInsecureRequestPolicy,
                         OnEnforceInsecureRequestPolicy)
-    IPC_MESSAGE_HANDLER(FrameMsg_EnforceInsecureNavigationsSet,
-                        OnEnforceInsecureNavigationsSet)
     IPC_MESSAGE_HANDLER(FrameMsg_SetFrameOwnerProperties,
                         OnSetFrameOwnerProperties)
     IPC_MESSAGE_HANDLER(FrameMsg_DidUpdateOrigin, OnDidUpdateOrigin)
@@ -533,11 +531,6 @@ void RenderFrameProxy::OnAddContentSecurityPolicies(
 void RenderFrameProxy::OnEnforceInsecureRequestPolicy(
     blink::WebInsecureRequestPolicy policy) {
   web_frame_->SetReplicatedInsecureRequestPolicy(policy);
-}
-
-void RenderFrameProxy::OnEnforceInsecureNavigationsSet(
-    const std::vector<uint32_t>& set) {
-  web_frame_->SetReplicatedInsecureNavigationsSet(set);
 }
 
 void RenderFrameProxy::OnSetFrameOwnerProperties(

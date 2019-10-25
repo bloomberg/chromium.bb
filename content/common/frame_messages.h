@@ -784,11 +784,6 @@ IPC_MESSAGE_ROUTED1(FrameMsg_AddContentSecurityPolicies,
 IPC_MESSAGE_ROUTED1(FrameMsg_EnforceInsecureRequestPolicy,
                     blink::WebInsecureRequestPolicy)
 
-// Update a proxy's replicated set for enforcement of insecure navigations.
-// Used when the frame's set is changed in another process.
-IPC_MESSAGE_ROUTED1(FrameMsg_EnforceInsecureNavigationsSet,
-                    std::vector<uint32_t> /* set */)
-
 // Update a proxy's replicated origin.  Used when the frame is navigated to a
 // new origin.
 IPC_MESSAGE_ROUTED2(FrameMsg_DidUpdateOrigin,
