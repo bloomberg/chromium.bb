@@ -41,7 +41,7 @@ import androidx.annotation.Nullable;
  * TODO(peconn): Make this class work with both Origins and Scopes (for WebAPK unificiation).
  */
 @ActivityScope
-public class TrustedWebActivityVerifier implements NativeInitObserver {
+public class Verifier implements NativeInitObserver {
     private final CustomTabActivityTabProvider mTabProvider;
     private final TabObserverRegistrar mTabObserverRegistrar;
     private final BrowserServicesIntentDataProvider mIntentDataProvider;
@@ -101,7 +101,7 @@ public class TrustedWebActivityVerifier implements NativeInitObserver {
             };
 
     @Inject
-    public TrustedWebActivityVerifier(
+    public Verifier(
             ActivityLifecycleDispatcher lifecycleDispatcher,
             TabObserverRegistrar tabObserverRegistrar,
             CustomTabActivityTabProvider tabProvider,

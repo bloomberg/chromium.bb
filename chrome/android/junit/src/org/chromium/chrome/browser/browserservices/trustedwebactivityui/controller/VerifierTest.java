@@ -24,7 +24,7 @@ import org.robolectric.annotation.Config;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.browserservices.Origin;
-import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityVerifier.VerificationStatus;
+import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.Verifier.VerificationStatus;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
@@ -45,7 +45,7 @@ import java.util.Collections;
 @Config(manifest = Config.NONE)
 @EnableFeatures(ChromeFeatureList.TRUSTED_WEB_ACTIVITY)
 @DisableFeatures(ChromeFeatureList.TRUSTED_WEB_ACTIVITY_POST_MESSAGE)
-public class TrustedWebActivityVerifierTest {
+public class VerifierTest {
 
     private static final Origin TRUSTED_ORIGIN = new Origin("https://www.origin1.com/");
     private static final Origin OTHER_TRUSTED_ORIGIN = new Origin("https://www.origin2.com/");
@@ -70,7 +70,7 @@ public class TrustedWebActivityVerifierTest {
 
     TestVerifierDelegate mVerifierDelegate = new TestVerifierDelegate(PACKAGE_NAME);
 
-    private TrustedWebActivityVerifier mVerifier;
+    private Verifier mVerifier;
 
     @Before
     public void setUp() {
@@ -79,7 +79,7 @@ public class TrustedWebActivityVerifierTest {
         doNothing().when(mTabObserverRegistrar).registerTabObserver(mTabObserverCaptor.capture());
         when(mIntentDataProvider.getTrustedWebActivityAdditionalOrigins())
                 .thenReturn(Collections.singletonList("https://www.origin2.com/"));
-        mVerifier = new TrustedWebActivityVerifier(mLifecycleDispatcher, mTabObserverRegistrar,
+        mVerifier = new Verifier(mLifecycleDispatcher, mTabObserverRegistrar,
                 mTabProvider, mIntentDataProvider, mVerifierDelegate, mTwaRegistrar);
         // TODO(peconn): Add check on permission updated being updated.
     }
@@ -190,7 +190,7 @@ public class TrustedWebActivityVerifierTest {
         assertStatus(VerificationStatus.SUCCESS);
     }
 
-    private void assertStatus(@TrustedWebActivityVerifier.VerificationStatus int status) {
+    private void assertStatus(@Verifier.VerificationStatus int status) {
         assertEquals(status, mVerifier.getState().status);
     }
 
