@@ -60,7 +60,7 @@ class Template(collections.namedtuple('Template', (
     Returns (bool): True if |dst_path| was updated, False otherwise.
     """
     template_path = os.path.join(THIS_DIR, name)
-    with open(template_path, 'r') as fd:
+    with open(template_path, 'r', encoding='utf8') as fd:
       t = string.Template(fd.read())
     return maybe_update(t.safe_substitute(self._asdict()), dst_path)
 
@@ -82,12 +82,12 @@ def maybe_update(content, dst_path):
   # If the path already exists and matches the new content, refrain from writing
   # a new one.
   if os.path.exists(dst_path):
-    with open(dst_path, 'r') as fd:
+    with open(dst_path, 'r', encoding='utf-8') as fd:
       if fd.read() == content:
         return False
 
   logging.debug('Updating %r', dst_path)
-  with open(dst_path, 'w') as fd:
+  with open(dst_path, 'w', encoding='utf-8') as fd:
     fd.write(content)
   os.chmod(dst_path, 0o755)
   return True
@@ -104,7 +104,7 @@ def maybe_copy(src_path, dst_path):
 
   Returns (bool): True if |dst_path| was updated, False otherwise.
   """
-  with open(src_path, 'r') as fd:
+  with open(src_path, 'r', encoding='utf-8') as fd:
     content = fd.read()
   return maybe_update(content, dst_path)
 
@@ -130,14 +130,14 @@ def call_if_outdated(stamp_path, stamp_version, fn):
 
   stamp_version = stamp_version.strip()
   if os.path.isfile(stamp_path):
-    with open(stamp_path, 'r') as fd:
+    with open(stamp_path, 'r', encoding='utf-8') as fd:
       current_version = fd.read().strip()
     if current_version == stamp_version:
       return False
 
   fn()
 
-  with open(stamp_path, 'w') as fd:
+  with open(stamp_path, 'w', encoding='utf-8') as fd:
     fd.write(stamp_version)
   return True
 
