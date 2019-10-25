@@ -1189,13 +1189,7 @@ public class PaymentRequestImpl
         mPaymentHandlerUi = new PaymentHandlerCoordinator();
         ChromeActivity chromeActivity = ChromeActivity.fromWebContents(mWebContents);
         if (chromeActivity == null) return false;
-        return mPaymentHandlerUi.show(
-                chromeActivity, this::onPaymentHandlerUiDismissed, url, mIsIncognito);
-    }
-
-    private void onPaymentHandlerUiDismissed() {
-        ensureHideAndResetPaymentHandlerUi();
-        ServiceWorkerPaymentAppBridge.onClosingPaymentAppWindow(mWebContents);
+        return mPaymentHandlerUi.show(chromeActivity, url, mIsIncognito);
     }
 
     @Override
