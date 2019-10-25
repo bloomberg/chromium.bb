@@ -464,7 +464,6 @@ void OverviewController::ToggleOverview(
   } else {
     DCHECK(CanEnterOverview());
     TRACE_EVENT_ASYNC_BEGIN0("ui", "OverviewController::EnterOverview", this);
-    LOG(ERROR) << "Will start, overview session " << overview_session();
     for (auto& observer : observers_)
       observer.OnOverviewModeWillStart();
 
