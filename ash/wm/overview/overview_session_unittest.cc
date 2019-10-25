@@ -318,6 +318,15 @@ class OverviewSessionTest : public MultiDisplayOverviewAndSplitViewTest {
     }
   }
 
+  // Creates a window which cannot be snapped by splitview.
+  std::unique_ptr<aura::Window> CreateUnsnappableWindow(
+      const gfx::Rect& bounds = gfx::Rect()) {
+    std::unique_ptr<aura::Window> window = CreateTestWindow(bounds);
+    window->SetProperty(aura::client::kResizeBehaviorKey,
+                        aura::client::kResizeBehaviorNone);
+    return window;
+  }
+
   static void StubForTest(ExitWarningHandler* ewh) {
     ewh->stub_timer_for_test_ = true;
   }
@@ -3062,30 +3071,45 @@ TEST_P(OverviewSessionNewLayoutTest, CheckOverviewItemScrollingBounds) {
 // while the new overivew layout is enabled.
 TEST_P(OverviewSessionNewLayoutTest, StackingOrderSplitviewWindow) {
   std::unique_ptr<aura::Window> window1 = CreateTestWindow();
-  std::unique_ptr<aura::Window> window2 = CreateTestWindow();
+  std::unique_ptr<aura::Window> window2 = CreateUnsnappableWindow();
+  std::unique_ptr<aura::Window> window3 = CreateTestWindow();
 
   ToggleOverview();
   ASSERT_TRUE(InOverviewSession());
 
-  // Snap |window1| to the left and exit overview. |window2| should have higher
+  // Snap |window1| to the left and exit overview. |window3| should have higher
   // z-order now, since it is the MRU window.
   split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
   ToggleOverview();
   ASSERT_EQ(SplitViewController::State::kBothSnapped,
             split_view_controller()->state());
-  ASSERT_GT(IndexOf(window2.get(), window2->parent()),
+  ASSERT_GT(IndexOf(window3.get(), window3->parent()),
             IndexOf(window1.get(), window1->parent()));
 
-  // Test that on entering overview, |window2| is of a lower z-order, so that
+  // Test that on entering overview, |window3| is of a lower z-order, so that
   // when we scroll the grid, it will be seen under |window1|.
   ToggleOverview();
-  EXPECT_LT(IndexOf(window2.get(), window2->parent()),
+  EXPECT_LT(IndexOf(window3.get(), window3->parent()),
             IndexOf(window1.get(), window1->parent()));
 
-  // Test that on exiting overview, |window2| becomes activated, so it returns
+  // Test that |window2| has a cannot snap widget indicating that it cannot be
+  // snapped, and that both |window2| and the widget are lower z-order than
+  // |window1|.
+  views::Widget* cannot_snap_widget =
+      static_cast<views::Widget*>(GetOverviewItemForWindow(window2.get())
+                                      ->cannot_snap_widget_for_testing());
+  ASSERT_TRUE(cannot_snap_widget);
+  aura::Window* cannot_snap_window = cannot_snap_widget->GetNativeWindow();
+  ASSERT_EQ(window1->parent(), cannot_snap_window->parent());
+  EXPECT_LT(IndexOf(window2.get(), window2->parent()),
+            IndexOf(window1.get(), window1->parent()));
+  EXPECT_LT(IndexOf(cannot_snap_window, cannot_snap_window->parent()),
+            IndexOf(window1.get(), window1->parent()));
+
+  // Test that on exiting overview, |window3| becomes activated, so it returns
   // to being higher on the z-order than |window1|.
   ToggleOverview();
-  EXPECT_GT(IndexOf(window2.get(), window2->parent()),
+  EXPECT_GT(IndexOf(window3.get(), window3->parent()),
             IndexOf(window1.get(), window1->parent()));
 }
 
@@ -3452,15 +3476,6 @@ class SplitViewOverviewSessionTest : public OverviewSessionTest {
   // Drags a overview item |item| from its center point to |end_location|.
   void DragWindowTo(OverviewItem* item, const gfx::PointF& end_location) {
     DragWindowTo(item, end_location, SelectorItemLocation::CENTER, true);
-  }
-
-  // Creates a window which cannot be snapped by splitview.
-  std::unique_ptr<aura::Window> CreateUnsnappableWindow(
-      const gfx::Rect& bounds = gfx::Rect()) {
-    std::unique_ptr<aura::Window> window = CreateTestWindow(bounds);
-    window->SetProperty(aura::client::kResizeBehaviorKey,
-                        aura::client::kResizeBehaviorNone);
-    return window;
   }
 
  private:

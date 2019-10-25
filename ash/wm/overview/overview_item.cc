@@ -564,11 +564,12 @@ void OverviewItem::UpdateCannotSnapWarningVisibility() {
     params.rounding_dp = kSplitviewLabelRoundRectRadiusDp;
     params.preferred_height = kSplitviewLabelPreferredHeightDp;
     params.message_id = IDS_ASH_SPLIT_VIEW_CANNOT_SNAP;
-    params.parent =
-        root_window()->GetChildById(kShellWindowId_AlwaysOnTopContainer);
+    params.parent = GetWindow()->parent();
     params.hide_in_mini_view = true;
     cannot_snap_widget_ = std::make_unique<RoundedLabelWidget>();
     cannot_snap_widget_->Init(std::move(params));
+    GetWindow()->parent()->StackChildAbove(
+        cannot_snap_widget_->GetNativeWindow(), GetWindow());
   }
 
   DoSplitviewOpacityAnimation(cannot_snap_widget_->GetNativeWindow()->layer(),
@@ -703,6 +704,12 @@ void OverviewItem::OnDragAnimationCompleted() {
       parent_window->StackChildBelow(dragged_widget_window, dragged_window);
       break;
     }
+  }
+
+  if (cannot_snap_widget_) {
+    DCHECK_EQ(parent_window, cannot_snap_widget_->GetNativeWindow()->parent());
+    parent_window->StackChildAbove(cannot_snap_widget_->GetNativeWindow(),
+                                   dragged_window);
   }
 }
 
