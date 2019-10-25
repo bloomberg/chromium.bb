@@ -269,13 +269,6 @@ let isDarkModeEnabled = false;
 let isDeletingInput = false;
 
 /**
- * The rendered autocomplete match currently being deleted, or null if there
- * isn't one.
- * @type {?Element}
- */
-let matchElBeingDeleted = null;
-
-/**
  * The last blacklisted tile rid if any, which by definition should not be
  * filler.
  * @type {?number}
@@ -761,9 +754,8 @@ function init() {
       realboxEl.addEventListener('cut', onRealboxCutCopy);
       realboxEl.addEventListener('input', onRealboxInput);
 
-      const realboxWrapper = $(IDS.REALBOX_INPUT_WRAPPER);
-      realboxWrapper.addEventListener('focusin', onRealboxWrapperFocusIn);
-      realboxWrapper.addEventListener('focusout', onRealboxWrapperFocusOut);
+      setRealboxWrapperListenForFocusIn(true);
+      setRealboxWrapperListenForFocusOut(true);
 
       searchboxApiHandle.onqueryautocompletedone = onQueryAutocompleteDone;
       searchboxApiHandle.ondeleteautocompletematch = onDeleteAutocompleteMatch;
@@ -1076,10 +1068,7 @@ function onAddCustomLinkDone(success) {
 
 /** @param {!DeleteAutocompleteMatchResult} result */
 function onDeleteAutocompleteMatch(result) {
-  assert(matchElBeingDeleted);
-
   if (!result.success) {
-    matchElBeingDeleted = null;
     return;
   }
 
@@ -1091,7 +1080,6 @@ function onDeleteAutocompleteMatch(result) {
   const wasFocused = matchEls[selected].contains(document.activeElement);
 
   populateAutocompleteMatches(result.matches);
-  matchElBeingDeleted = null;
 
   if (result.matches.length === 0) {
     if (wasFocused) {
@@ -1248,18 +1236,14 @@ function onRealboxWrapperFocusIn(e) {
 
 /** @param {Event} e */
 function onRealboxWrapperFocusOut(e) {
-  const target = /** @type {Element} */ (e.target);
-  if (matchElBeingDeleted && matchElBeingDeleted.contains(target)) {
-    // When a match is being deleted, the focus gets dropped temporariliy as the
-    // element is deleted from the DOM. Don't stop autocomplete in those cases.
-    return;
-  }
-
+  // Hide the matches and stop autocomplete only when the focus goes outside of
+  // the realbox wrapper.
   const relatedTarget = /** @type {Element} */ (e.relatedTarget);
   const realboxWrapper = $(IDS.REALBOX_INPUT_WRAPPER);
   if (!realboxWrapper.contains(relatedTarget)) {
     setRealboxMatchesVisible(false);
-    // Note: intentionally leaving keydown listening and match data intact.
+    // Note: intentionally leaving keydown listening (see
+    // onRealboxWrapperKeydown) and match data intact.
     window.chrome.embeddedSearch.searchBox.stopAutocomplete(
         /*clearResult=*/ true);
   }
@@ -1307,7 +1291,6 @@ function onRealboxWrapperKeydown(e) {
   if (key === 'Delete') {
     if (e.shiftKey && !e.altKey && !e.ctrlKey && !e.metaKey &&
         autocompleteMatches[selected].supportsDeletion) {
-      matchElBeingDeleted = matchEls[selected];
       window.chrome.embeddedSearch.searchBox.deleteAutocompleteMatch(selected);
       e.preventDefault();
     }
@@ -1506,7 +1489,6 @@ function populateAutocompleteMatches(matches) {
         e.preventDefault();  // Stops default browser action (focus)
       };
       icon.onclick = e => {
-        matchElBeingDeleted = matchEl;
         window.chrome.embeddedSearch.searchBox.deleteAutocompleteMatch(i);
         e.preventDefault();  // Stops default browser action (navigation)
       };
@@ -1522,10 +1504,18 @@ function populateAutocompleteMatches(matches) {
     realboxMatchesEl.append(matchEl);
   }
 
+  // When the matches are replaced, the focus gets dropped temporariliy as the
+  // focused element is being deleted from the DOM. Stop listening to 'focusout'
+  // event and retore it immediately after since we don't want to stop
+  // autocomplete in those cases.
+  setRealboxWrapperListenForFocusOut(false);
+
   $(IDS.REALBOX_MATCHES).remove();
   realboxMatchesEl.id = IDS.REALBOX_MATCHES;
 
   $(IDS.REALBOX_INPUT_WRAPPER).appendChild(realboxMatchesEl);
+
+  setRealboxWrapperListenForFocusOut(true);
 
   const hasMatches = matches.length > 0;
   setRealboxMatchesVisible(hasMatches);
@@ -1842,6 +1832,26 @@ function setFakeboxVisibility(show) {
 /** @param {boolean} visible */
 function setRealboxMatchesVisible(visible) {
   $(IDS.REALBOX_INPUT_WRAPPER).classList.toggle(CLASSES.SHOW_MATCHES, visible);
+}
+
+/** @param {boolean} listen */
+function setRealboxWrapperListenForFocusIn(listen) {
+  const realboxWrapper = $(IDS.REALBOX_INPUT_WRAPPER);
+  if (listen) {
+    realboxWrapper.addEventListener('focusin', onRealboxWrapperFocusIn);
+  } else {
+    realboxWrapper.removeEventListener('focusin', onRealboxWrapperFocusIn);
+  }
+}
+
+/** @param {boolean} listen */
+function setRealboxWrapperListenForFocusOut(listen) {
+  const realboxWrapper = $(IDS.REALBOX_INPUT_WRAPPER);
+  if (listen) {
+    realboxWrapper.addEventListener('focusout', onRealboxWrapperFocusOut);
+  } else {
+    realboxWrapper.removeEventListener('focusout', onRealboxWrapperFocusOut);
+  }
 }
 
 /** @param {boolean} listen */
