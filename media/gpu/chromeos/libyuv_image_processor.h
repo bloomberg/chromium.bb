@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_GPU_LIBYUV_IMAGE_PROCESSOR_H_
-#define MEDIA_GPU_LIBYUV_IMAGE_PROCESSOR_H_
+#ifndef MEDIA_GPU_CHROMEOS_LIBYUV_IMAGE_PROCESSOR_H_
+#define MEDIA_GPU_CHROMEOS_LIBYUV_IMAGE_PROCESSOR_H_
 
 #include <atomic>
 #include <memory>
@@ -19,7 +19,7 @@
 #include "media/base/video_frame.h"
 #include "media/base/video_frame_layout.h"
 #include "media/base/video_types.h"
-#include "media/gpu/image_processor.h"
+#include "media/gpu/chromeos/image_processor.h"
 #include "media/gpu/media_gpu_export.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -98,4 +98,4 @@ class MEDIA_GPU_EXPORT LibYUVImageProcessor : public ImageProcessor {
 
 }  // namespace media
 
-#endif  // MEDIA_GPU_LIBYUV_IMAGE_PROCESSOR_H_
+#endif  // MEDIA_GPU_CHROMEOS_LIBYUV_IMAGE_PROCESSOR_H_

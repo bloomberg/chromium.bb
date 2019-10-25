@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/gpu/image_processor_factory.h"
+#include "media/gpu/chromeos/image_processor_factory.h"
 
 #include <stddef.h>
 
 #include "base/callback.h"
 #include "media/gpu/buildflags.h"
-#include "media/gpu/libyuv_image_processor.h"
+#include "media/gpu/chromeos/libyuv_image_processor.h"
 
 #if BUILDFLAG(USE_VAAPI)
 #include "media/gpu/vaapi/vaapi_image_processor.h"

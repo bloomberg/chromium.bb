@@ -16,7 +16,7 @@
 #include "media/base/video_frame_layout.h"
 #include "media/base/video_types.h"
 #include "media/gpu/chromeos/fourcc.h"
-#include "media/gpu/image_processor.h"
+#include "media/gpu/chromeos/image_processor.h"
 #include "media/gpu/test/image.h"
 #include "media/gpu/test/image_processor/image_processor_client.h"
 #include "media/gpu/test/video_frame_file_writer.h"

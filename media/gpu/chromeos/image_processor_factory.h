@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_GPU_IMAGE_PROCESSOR_FACTORY_H_
-#define MEDIA_GPU_IMAGE_PROCESSOR_FACTORY_H_
+#ifndef MEDIA_GPU_CHROMEOS_IMAGE_PROCESSOR_FACTORY_H_
+#define MEDIA_GPU_CHROMEOS_IMAGE_PROCESSOR_FACTORY_H_
 
 #include <memory>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "media/gpu/image_processor.h"
+#include "media/gpu/chromeos/image_processor.h"
 #include "media/gpu/media_gpu_export.h"
 
 namespace media {
@@ -53,4 +53,4 @@ class MEDIA_GPU_EXPORT ImageProcessorFactory {
 
 }  // namespace media
 
-#endif  // MEDIA_GPU_IMAGE_PROCESSOR_FACTORY_H_
+#endif  // MEDIA_GPU_CHROMEOS_IMAGE_PROCESSOR_FACTORY_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_GPU_IMAGE_PROCESSOR_H_
-#define MEDIA_GPU_IMAGE_PROCESSOR_H_
+#ifndef MEDIA_GPU_CHROMEOS_IMAGE_PROCESSOR_H_
+#define MEDIA_GPU_CHROMEOS_IMAGE_PROCESSOR_H_
 
 #include <stdint.h>
 
@@ -44,10 +44,7 @@ class MEDIA_GPU_EXPORT ImageProcessor {
   // ImageProcessor's clients all use IMPORT output mode.
   // TODO(crbug.com/907767): Remove this once ImageProcessor always works as
   // IMPORT mode for output.
-  enum class OutputMode {
-    ALLOCATE,
-    IMPORT
-  };
+  enum class OutputMode { ALLOCATE, IMPORT };
 
   // Encapsulates ImageProcessor input / output configurations.
   struct MEDIA_GPU_EXPORT PortConfig {
@@ -134,8 +131,7 @@ class MEDIA_GPU_EXPORT ImageProcessor {
   // current users as they are all under the same build config.
   // TODO(crbug.com/907767): Remove this once ImageProcessor always works as
   // IMPORT mode for output.
-  bool Process(scoped_refptr<VideoFrame> frame,
-               LegacyFrameReadyCB cb);
+  bool Process(scoped_refptr<VideoFrame> frame, LegacyFrameReadyCB cb);
 #endif
 
   // Called by client to process |input_frame| and store in |output_frame|. This
@@ -183,4 +179,4 @@ class MEDIA_GPU_EXPORT ImageProcessor {
 
 }  // namespace media
 
-#endif  // MEDIA_GPU_IMAGE_PROCESSOR_H_
+#endif  // MEDIA_GPU_CHROMEOS_IMAGE_PROCESSOR_H_
