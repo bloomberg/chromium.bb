@@ -462,7 +462,8 @@ void WebSettingsImpl::SetEditingBehavior(EditingBehavior behavior) {
 }
 
 void WebSettingsImpl::SetMockScrollbarsEnabled(bool enabled) {
-  settings_->SetMockScrollbarsEnabled(enabled);
+  // TODO(wangxianzhu): Remove this function in crrev.com/c/1879706.
+  // settings_->SetMockScrollbarsEnabled(enabled);
 }
 
 void WebSettingsImpl::SetHideScrollbars(bool enabled) {

@@ -1174,7 +1174,6 @@
     },
     {
       name: "OverlayScrollbars",
-      settable_from_internals: true,
     },
     {
       name: "OverscrollCustomization",
