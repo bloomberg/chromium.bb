@@ -216,9 +216,6 @@ if (is_android || is_chromeos) {
     trichrome_shared_assets = android_sdk_release == "q"
   }
 
-  # TODO(agrieve): Remove once unused downstream.
-  incremental_apk_by_default = incremental_install
-
   if (notouch_build && defined(extra_keymappings)) {
     keycode_conversion_data_android_path = extra_keymappings
   }
