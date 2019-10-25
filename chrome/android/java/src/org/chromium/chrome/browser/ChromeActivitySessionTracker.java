@@ -28,6 +28,7 @@ import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.metrics.VariationsSession;
 import org.chromium.chrome.browser.notifications.NotificationPlatformBridge;
+import org.chromium.chrome.browser.notifications.chime.ChimeSession;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.privacy.BrowsingDataBridge;
@@ -138,6 +139,7 @@ public class ChromeActivitySessionTracker {
         updateAcceptLanguages();
         mVariationsSession.start();
         mPowerBroadcastReceiver.onForegroundSessionStart();
+        ChimeSession.start();
 
         // Track the ratio of Chrome startups that are caused by notification clicks.
         // TODO(johnme): Add other reasons (and switch to recordEnumeratedHistogram).
