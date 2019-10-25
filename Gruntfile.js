@@ -69,6 +69,7 @@ module.exports = function (grunt) {
           { expand: true, cwd: 'out', src: 'framework/**/*.js', dest: 'out-wpt/' },
           { expand: true, cwd: 'out', src: 'suites/cts/**/*.js', dest: 'out-wpt/' },
           { expand: true, cwd: 'out', src: 'runtime/wpt.js', dest: 'out-wpt/' },
+          { expand: true, cwd: 'out', src: 'runtime/helper/**/*.js', dest: 'out-wpt/' },
         ],
       },
     },
