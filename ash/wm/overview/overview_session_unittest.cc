@@ -2861,6 +2861,63 @@ TEST_P(OverviewSessionTest, ShelfAlignmentChangeWhileInOverview) {
   EXPECT_FALSE(InOverviewSession());
 }
 
+// Tests overview behavior with kHomerviewGesture flag enabled.
+class OverviewSessionWithHomerviewGestureTest : public OverviewSessionTest {
+ public:
+  OverviewSessionWithHomerviewGestureTest() = default;
+  ~OverviewSessionWithHomerviewGestureTest() override = default;
+
+  void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(features::kHomerviewGesture);
+    OverviewSessionTest::SetUp();
+    EnterTabletMode();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(OverviewSessionWithHomerviewGestureTest);
+};
+
+// Tests starting the overview session using kFadeInEnter type.
+TEST_P(OverviewSessionWithHomerviewGestureTest, FadeIn) {
+  // Create a minimized window.
+  std::unique_ptr<aura::Window> window = CreateTestWindow();
+  WindowState::Get(window.get())->Minimize();
+
+  ui::ScopedAnimationDurationScaleMode test_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  ToggleOverview(OverviewSession::EnterExitOverviewType::kFadeInEnter);
+  ASSERT_TRUE(InOverviewSession());
+
+  OverviewItem* item = GetOverviewItemForWindow(window.get());
+
+  // Verify that the item widget's transform is not animated as part of the
+  // animation.
+  views::Widget* widget = item_widget(item);
+  EXPECT_FALSE(widget->GetLayer()->GetAnimator()->IsAnimatingProperty(
+      ui::LayerAnimationElement::TRANSFORM));
+
+  // Opacity should be animated to full opacity.
+  EXPECT_EQ(1.0f, widget->GetLayer()->GetTargetOpacity());
+  EXPECT_TRUE(widget->GetLayer()->GetAnimator()->IsAnimatingProperty(
+      ui::LayerAnimationElement::OPACITY));
+
+  // Validate item bounds are within the grid.
+  const gfx::Rect bounds = gfx::ToEnclosedRect(item->target_bounds());
+  EXPECT_TRUE(GetGridBounds().Contains(bounds));
+
+  // Caption container view is expected to be shown immediately.
+  EXPECT_EQ(1.0f, item->caption_container_view()
+                      ->header_view()
+                      ->layer()
+                      ->GetTargetOpacity());
+
+  EXPECT_EQ(OverviewSession::EnterExitOverviewType::kFadeInEnter,
+            overview_session()->enter_exit_overview_type());
+}
+
 // The class to test overview behavior with kDragFromShelfToHomeOrOverview flag
 // enabled.
 class OverviewSessionWithDragFromShelfFeatureTest : public OverviewSessionTest {

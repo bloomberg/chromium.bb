@@ -161,7 +161,8 @@ void SetWidgetBoundsAndMaybeAnimateTransform(
   window->SetBoundsInScreen(
       new_bounds_in_screen,
       display::Screen::GetScreen()->GetDisplayNearestWindow(window));
-  if (animation_type == OVERVIEW_ANIMATION_NONE) {
+  if (animation_type == OVERVIEW_ANIMATION_NONE ||
+      animation_type == OVERVIEW_ANIMATION_ENTER_FROM_HOME_LAUNCHER) {
     // Make sure that |observer|, which could be a self-deleting object, will
     // not be leaked.
     DCHECK(!observer);
@@ -445,8 +446,20 @@ void OverviewItem::SetBounds(const gfx::RectF& target_bounds,
         } else {
           FadeInWidgetAndMaybeSlideOnEnter(
               item_widget_.get(),
-              OVERVIEW_ANIMATION_ENTER_OVERVIEW_MODE_FADE_IN,
-              /*slide=*/false, /*observe=*/true);
+              (new_animation_type ==
+               OVERVIEW_ANIMATION_ENTER_FROM_HOME_LAUNCHER)
+                  ? new_animation_type
+                  : OVERVIEW_ANIMATION_ENTER_OVERVIEW_MODE_FADE_IN,
+              /*slide=*/false,
+              /*observe=*/true);
+
+          // Update the item header visibility immediately if entering from home
+          // launcher.
+          if (new_animation_type ==
+              OVERVIEW_ANIMATION_ENTER_FROM_HOME_LAUNCHER) {
+            caption_container_view_->SetHeaderVisibility(
+                CaptionContainerView::HeaderVisibility::kVisible);
+          }
         }
       }
     }
@@ -1271,7 +1284,8 @@ void OverviewItem::UpdateHeaderLayout(OverviewAnimationType animation_type) {
                                                      widget_window);
   // Create a start animation observer if this is an enter overview layout
   // animation.
-  if (animation_type == OVERVIEW_ANIMATION_LAYOUT_OVERVIEW_ITEMS_ON_ENTER) {
+  if (animation_type == OVERVIEW_ANIMATION_LAYOUT_OVERVIEW_ITEMS_ON_ENTER ||
+      animation_type == OVERVIEW_ANIMATION_ENTER_FROM_HOME_LAUNCHER) {
     auto enter_observer = std::make_unique<EnterAnimationObserver>();
     animation_settings.AddObserver(enter_observer.get());
     Shell::Get()->overview_controller()->AddEnterAnimationObserver(
