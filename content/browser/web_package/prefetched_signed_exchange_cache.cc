@@ -690,14 +690,7 @@ PrefetchedSignedExchangeCache::GetExchanges() {
 }
 
 void PrefetchedSignedExchangeCache::RecordHistograms() {
-  BrowserThread::ID thread_id = BrowserThread::UI;
-  if (!BrowserThread::CurrentlyOn(thread_id)) {
-    base::PostTask(
-        FROM_HERE, {thread_id},
-        base::BindOnce(&PrefetchedSignedExchangeCache::RecordHistograms, this));
-    return;
-  }
-  DCHECK_CURRENTLY_ON(thread_id);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (exchanges_.empty())
     return;
   UMA_HISTOGRAM_COUNTS_100("PrefetchedSignedExchangeCache.Count",
