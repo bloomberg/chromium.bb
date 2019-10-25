@@ -5722,3 +5722,9 @@ crbug.com/925325 [ Win ] storage/indexeddb/index-population.html [ Pass Timeout 
 
 # DevTools Security Panel (disabled temporarily as part of workflow)
 crbug.com/1008218 http/tests/devtools/security/security-state-comparator.js [ Failure ]
+
+# Sheriff 2019-10-25
+crbug.com/1018027 [ Mac ] virtual/threaded-no-composited-antialiasing/animations/custom-properties/registered-var-to-unregistered.html [ Pass Crash ]
+crbug.com/1018027 [ Mac ] virtual/threaded-no-composited-antialiasing/animations/custom-properties/registered-var-fallback.html [ Pass Crash ]
+crbug.com/1018027 [ Mac ] virtual/threaded-no-composited-antialiasing/animations/custom-properties/registered-var-to-registered-animating.html [ Pass Crash ]
+crbug.com/1018027 [ Mac ] virtual/threaded-no-composited-antialiasing/animations/custom-properties/registered-var-to-unregistered-animating.html [ Pass Crash ]
