@@ -1,9 +1,9 @@
-#!/usr/bin/env vpython
+#!/usr/bin/env vpython3
 # Copyright 2014 The LUCI Authors. All rights reserved.
 # Use of this source code is governed under the Apache License, Version 2.0
 # that can be found in the LICENSE file.
 
-import cStringIO
+import io
 import os
 import sys
 import tempfile
@@ -404,12 +404,12 @@ class IsolateFormatTest(auto_stub.TestCase):
     self.assertEqual('', isolate_format.extract_comment('{}'))
 
   def _test_pretty_print_impl(self, value, expected):
-    actual = cStringIO.StringIO()
+    actual = io.BytesIO()
     isolate_format.pretty_print(value, actual)
     self.assertEqual(expected.splitlines(), actual.getvalue().splitlines())
 
   def test_pretty_print_empty(self):
-    self._test_pretty_print_impl({}, '{\n}\n')
+    self._test_pretty_print_impl({}, b'{\n}\n')
 
   def test_pretty_print_mid_size(self):
     value = {
@@ -442,36 +442,36 @@ class IsolateFormatTest(auto_stub.TestCase):
     }
     isolate_format.verify_root(value, {})
     # This is an .isolate format.
-    expected = ("{\n"
-                "  'variables': {\n"
-                "    'files': [\n"
-                "      'file1',\n"
-                "      'file2',\n"
-                "    ],\n"
-                "  },\n"
-                "  'conditions': [\n"
-                "    ['OS==\"foo\"', {\n"
-                "      'variables': {\n"
-                "        'command': [\n"
-                "          'python',\n"
-                "          '-c',\n"
-                "          'print(\"H\\i\'\")',\n"
-                "        ],\n"
-                "        'files': [\n"
-                "          'dir1/',\n"
-                "          'dir2/',\n"
-                "          'file3',\n"
-                "          'file4',\n"
-                "        ],\n"
-                "        'read_only': 2,\n"
-                "      },\n"
-                "    }],\n"
-                "    ['OS==\"bar\"', {\n"
-                "      'variables': {\n"
-                "      },\n"
-                "    }],\n"
-                "  ],\n"
-                "}\n")
+    expected = (b"{\n"
+                b"  'variables': {\n"
+                b"    'files': [\n"
+                b"      'file1',\n"
+                b"      'file2',\n"
+                b"    ],\n"
+                b"  },\n"
+                b"  'conditions': [\n"
+                b"    ['OS==\"foo\"', {\n"
+                b"      'variables': {\n"
+                b"        'command': [\n"
+                b"          'python',\n"
+                b"          '-c',\n"
+                b"          'print(\"H\\i\'\")',\n"
+                b"        ],\n"
+                b"        'files': [\n"
+                b"          'dir1/',\n"
+                b"          'dir2/',\n"
+                b"          'file3',\n"
+                b"          'file4',\n"
+                b"        ],\n"
+                b"        'read_only': 2,\n"
+                b"      },\n"
+                b"    }],\n"
+                b"    ['OS==\"bar\"', {\n"
+                b"      'variables': {\n"
+                b"      },\n"
+                b"    }],\n"
+                b"  ],\n"
+                b"}\n")
     self._test_pretty_print_impl(value, expected)
 
   def test_convert_old_to_new_else(self):
@@ -491,39 +491,39 @@ class IsolateFormatTest(auto_stub.TestCase):
   def test_match_configs(self):
     expectations = [
         (
-          ('OS=="win"', ('OS',), [('win',), ('mac',), ('linux',)]),
-          [('win',)],
+            ('OS=="win"', ('OS',), [('win',), ('mac',), ('linux',)]),
+            [('win',)],
         ),
         (
-          (
-            '(foo==1 or foo==2) and bar=="b"',
-            ['foo', 'bar'],
-            [(1, 'a'), (1, 'b'), (2, 'a'), (2, 'b')],
-          ),
-          [(1, 'b'), (2, 'b')],
+            (
+                '(foo==1 or foo==2) and bar=="b"',
+                ['foo', 'bar'],
+                [(1, 'a'), (1, 'b'), (2, 'a'), (2, 'b')],
+            ),
+            [(1, 'b'), (2, 'b')],
         ),
         (
-          (
-            'bar=="b"',
-            ['foo', 'bar'],
-            [(1, 'a'), (1, 'b'), (2, 'a'), (2, 'b')],
-          ),
-          # TODO(maruel): When a free variable match is found, it should not
-          # list all the bounded values in addition. The problem is when an
-          # intersection of two different bound variables that are tested singly
-          # in two different conditions.
-          [(1, 'b'), (2, 'b'), (None, 'b')],
+            (
+                'bar=="b"',
+                ['foo', 'bar'],
+                [(1, 'a'), (1, 'b'), (2, 'a'), (2, 'b')],
+            ),
+            # TODO(maruel): When a free variable match is found, it should not
+            # list all the bounded values in addition. The problem is when an
+            # intersection of two different bound variables that are tested
+            # singly in two different conditions.
+            [(1, 'b'), (2, 'b'), (None, 'b')],
         ),
         (
-          (
-            'foo==1 or bar=="b"',
-            ['foo', 'bar'],
-            [(1, 'a'), (1, 'b'), (2, 'a'), (2, 'b')],
-          ),
-          # TODO(maruel): (None, 'b') would match.
-          # It is hard in this case to realize that each of the variables 'foo'
-          # and 'bar' can be unbounded in a specific case.
-          [(1, 'a'), (1, 'b'), (2, 'b'), (1, None)],
+            (
+                'foo==1 or bar=="b"',
+                ['foo', 'bar'],
+                [(1, 'a'), (1, 'b'), (2, 'a'), (2, 'b')],
+            ),
+            # TODO(maruel): (None, 'b') would match.
+            # It is hard in this case to realize that each of the variables
+            # 'foo' and 'bar' can be unbounded in a specific case.
+            [(1, 'a'), (1, 'b'), (1, None), (2, 'b')],
         ),
     ]
     for data, expected in expectations:
