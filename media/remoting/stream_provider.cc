@@ -34,7 +34,7 @@ class MediaStream final : public DemuxerStream {
   ~MediaStream() override;
 
   // DemuxerStream implementation.
-  void Read(const ReadCB& read_cb) override;
+  void Read(ReadCB read_cb) override;
   bool IsReadPending() const override;
   AudioDecoderConfig audio_decoder_config() override;
   VideoDecoderConfig video_decoder_config() override;
@@ -297,10 +297,10 @@ void MediaStream::FlushUntil(int count) {
   read_until_sent_ = false;
 }
 
-void MediaStream::Read(const ReadCB& read_cb) {
+void MediaStream::Read(ReadCB read_cb) {
   DCHECK(read_complete_callback_.is_null());
   DCHECK(read_cb);
-  read_complete_callback_ = read_cb;
+  read_complete_callback_ = std::move(read_cb);
   if (buffers_.empty() && config_changed_) {
     CompleteRead(DemuxerStream::kConfigChanged);
     return;

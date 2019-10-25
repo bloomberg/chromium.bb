@@ -721,10 +721,10 @@ DemuxerStream::Liveness FFmpegDemuxerStream::liveness() const {
   return liveness_;
 }
 
-void FFmpegDemuxerStream::Read(const ReadCB& read_cb) {
+void FFmpegDemuxerStream::Read(ReadCB read_cb) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   CHECK(!read_cb_) << "Overlapping reads are not supported";
-  read_cb_ = BindToCurrentLoop(read_cb);
+  read_cb_ = BindToCurrentLoop(std::move(read_cb));
 
   // Don't accept any additional reads if we've been told to stop.
   // The |demuxer_| may have been destroyed in the pipeline thread.

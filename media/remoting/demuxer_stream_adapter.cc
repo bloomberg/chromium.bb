@@ -242,8 +242,9 @@ void DemuxerStreamAdapter::RequestBuffer() {
     DEMUXER_VLOG(2) << "Skip actions since it's not in the reading state";
     return;
   }
-  demuxer_stream_->Read(base::Bind(&DemuxerStreamAdapter::OnNewBuffer,
-                                   request_buffer_weak_factory_.GetWeakPtr()));
+  demuxer_stream_->Read(
+      base::BindOnce(&DemuxerStreamAdapter::OnNewBuffer,
+                     request_buffer_weak_factory_.GetWeakPtr()));
 }
 
 void DemuxerStreamAdapter::OnNewBuffer(DemuxerStream::Status status,

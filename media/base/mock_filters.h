@@ -183,7 +183,8 @@ class MockDemuxerStream : public DemuxerStream {
   // DemuxerStream implementation.
   Type type() const override;
   Liveness liveness() const override;
-  MOCK_METHOD1(Read, void(const ReadCB& read_cb));
+  void Read(ReadCB read_cb) { OnRead(read_cb); }
+  MOCK_METHOD1(OnRead, void(ReadCB& read_cb));
   MOCK_CONST_METHOD0(IsReadPending, bool());
   AudioDecoderConfig audio_decoder_config() override;
   VideoDecoderConfig video_decoder_config() override;
