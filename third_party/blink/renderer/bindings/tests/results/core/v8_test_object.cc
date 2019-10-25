@@ -4125,15 +4125,13 @@ static void SaveSameObjectAttributeAttributeGetter(const v8::FunctionCallbackInf
   v8::Local<v8::Object> holder = info.Holder();
 
   // [SaveSameObject]
-  // If you see a compile error that
-  //   V8PrivateProperty::GetSameObjectTestObjectSaveSameObjectAttribute
-  // is not defined, then you need to register your attribute at
-  // V8_PRIVATE_PROPERTY_FOR_EACH defined in V8PrivateProperty.h as
-  //   X(SameObject, TestObjectSaveSameObjectAttribute)
-  auto privateSameObject = V8PrivateProperty::GetSameObjectTestObjectSaveSameObjectAttribute(info.GetIsolate());
+  static const V8PrivateProperty::SymbolKey
+      save_same_object_key("TestObject#SaveSameObjectAttribute");
+  auto private_same_object =
+      V8PrivateProperty::GetSymbol(info.GetIsolate(), save_same_object_key);
   {
     v8::Local<v8::Value> v8_value;
-    if (privateSameObject.GetOrUndefined(holder).ToLocal(&v8_value) && !v8_value->IsUndefined()) {
+    if (private_same_object.GetOrUndefined(holder).ToLocal(&v8_value) && !v8_value->IsUndefined()) {
       V8SetReturnValue(info, v8_value);
       return;
     }
@@ -4156,22 +4154,20 @@ static void SaveSameObjectAttributeAttributeGetter(const v8::FunctionCallbackInf
   V8SetReturnValue(info, v8_value);
 
   // [SaveSameObject]
-  privateSameObject.Set(holder, info.GetReturnValue().Get());
+  private_same_object.Set(holder, info.GetReturnValue().Get());
 }
 
 static void StaticSaveSameObjectAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
 
   // [SaveSameObject]
-  // If you see a compile error that
-  //   V8PrivateProperty::GetSameObjectTestObjectStaticSaveSameObjectAttribute
-  // is not defined, then you need to register your attribute at
-  // V8_PRIVATE_PROPERTY_FOR_EACH defined in V8PrivateProperty.h as
-  //   X(SameObject, TestObjectStaticSaveSameObjectAttribute)
-  auto privateSameObject = V8PrivateProperty::GetSameObjectTestObjectStaticSaveSameObjectAttribute(info.GetIsolate());
+  static const V8PrivateProperty::SymbolKey
+      save_same_object_key("TestObject#StaticSaveSameObjectAttribute");
+  auto private_same_object =
+      V8PrivateProperty::GetSymbol(info.GetIsolate(), save_same_object_key);
   {
     v8::Local<v8::Value> v8_value;
-    if (privateSameObject.GetOrUndefined(holder).ToLocal(&v8_value) && !v8_value->IsUndefined()) {
+    if (private_same_object.GetOrUndefined(holder).ToLocal(&v8_value) && !v8_value->IsUndefined()) {
       V8SetReturnValue(info, v8_value);
       return;
     }
@@ -4180,7 +4176,7 @@ static void StaticSaveSameObjectAttributeAttributeGetter(const v8::FunctionCallb
   V8SetReturnValue(info, WTF::GetPtr(TestObject::staticSaveSameObjectAttribute()), info.GetIsolate()->GetCurrentContext()->Global());
 
   // [SaveSameObject]
-  privateSameObject.Set(holder, info.GetReturnValue().Get());
+  private_same_object.Set(holder, info.GetReturnValue().Get());
 }
 
 static void UnscopableLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
