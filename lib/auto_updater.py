@@ -166,7 +166,7 @@ class ChromiumOSUpdater(BaseUpdater):
                do_rootfs_update=True, do_stateful_update=True,
                reboot=True, disable_verification=False,
                send_payload_in_parallel=False, payload_filename=None,
-               experimental_au=False, transfer_obj=None):
+               experimental_au=False, transfer_obj=None, staging_server=None):
     """Initialize a ChromiumOSUpdater for auto-update a chromium OS device.
 
     Args:
@@ -207,8 +207,13 @@ class ChromiumOSUpdater(BaseUpdater):
           should be deprecated once crbug.com/872441 is fixed.
       transfer_obj: An instance of the subclass of
           auto_updater_transfer.Transfer. If transfer_obj is None, then an
-          instance of auto_updater_transfer.LocalTransfer will be used by
-          default.
+          instance of auto_updater_transfer.LocalTransfer or
+          auto_updater_transfer.LabTransfer (see documentation for
+          staging_server below) will be created.
+      staging_server: URL (str) of the server that's staging the payload files.
+          Assuming transfer_obj is None, if value for staging_server is None or
+          empty, an auto_updater_transfer.LocalTransfer instance is created. If
+          not, then an auto_updater_transfer.LabTransfer instance is created.
     """
     super(ChromiumOSUpdater, self).__init__(device, payload_dir)
 
@@ -252,20 +257,24 @@ class ChromiumOSUpdater(BaseUpdater):
       }
       self._cmd_kwargs.update(log_kwargs)
       self._cmd_kwargs_omit_error.update(log_kwargs)
+    self._staging_server = staging_server
+    arguments = {'device': self.device, 'payload_dir': self.payload_dir,
+                 'payload_name': self._GetRootFsPayloadFileName(),
+                 'cmd_kwargs': self._cmd_kwargs,
+                 'transfer_rootfs_update': self._do_rootfs_update,
+                 'transfer_stateful_update': self._do_rootfs_update,
+                 'dev_dir': self.dev_dir,
+                 'original_payload_dir': self.original_payload_dir,
+                 'device_restore_dir': self.device_restore_dir,
+                 'device_payload_dir': self.device_payload_dir}
     if transfer_obj:
       self._transfer_obj = transfer_obj
+    elif staging_server:
+      self._transfer_obj = auto_updater_transfer.LabTransfer(
+          staging_server=self._staging_server, **arguments)
     else:
       self._transfer_obj = auto_updater_transfer.LocalTransfer(
-          device=self.device, payload_dir=self.payload_dir,
-          tempdir=self.tempdir, device_restore_dir=self.device_restore_dir,
-          payload_name=self._GetRootFsPayloadFileName(),
-          cmd_kwargs=self._cmd_kwargs,
-          device_payload_dir=self.device_payload_dir,
-          dev_dir=self.dev_dir,
-          payload_mode=self.payload_mode,
-          original_payload_dir=self.original_payload_dir,
-          transfer_rootfs_update=self._do_rootfs_update,
-          transfer_stateful_update=self._do_rootfs_update)
+          tempdir=self.tempdir, payload_mode=self.payload_mode, **arguments)
 
   @property
   def is_au_endtoendtest(self):
@@ -713,6 +722,11 @@ class ChromiumOSUpdater(BaseUpdater):
     will fail. We empty the payload's AppID so nebraska can do partial APP ID
     matching.
     """
+    # TODO (sanikak): This function will need to be updated as this assumes the
+    # payload properties file to be local. In the autotest provision_AutoUpdater
+    # case, this properties file will have to be downloaded onto to the drone
+    # first before the rest of the function is allowed to be continued.
+
     if not self.device.app_id:
       logging.warn('Device does not a propper APP ID!')
       return

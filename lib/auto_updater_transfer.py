@@ -26,6 +26,7 @@ import os
 import shutil
 
 import six
+from six.moves import urllib
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
@@ -313,3 +314,148 @@ class LocalTransfer(Transfer):
     payload = os.path.join(self._payload_dir, STATEFUL_FILENAME)
     self._device.CopyToWorkDir(payload, mode=self._payload_mode,
                                log_output=True, **self._cmd_kwargs)
+
+
+class LabTransfer(Transfer):
+  """Abstracts logic that transfers files from staging server to the DUT."""
+
+  def __init__(self, device, payload_dir, device_restore_dir,
+               payload_name, cmd_kwargs, device_payload_dir, staging_server,
+               dev_dir='', original_payload_dir=None,
+               transfer_stateful_update=True, transfer_rootfs_update=True):
+    """Initialize LabTransfer to transfer files from staging server to DUT.
+
+    Args:
+      device: See Base class.
+      payload_dir: See Base class.
+      device_restore_dir: See Base class.
+      payload_name: See Base class.
+      cmd_kwargs: See Base class.
+      device_payload_dir: See Base class.
+      staging_server: URL of the server that's staging the payload files.
+      dev_dir: See Base class.
+      original_payload_dir: See Base class.
+      transfer_stateful_update: See Base class.
+      transfer_rootfs_update: See Base class.
+    """
+    super(LabTransfer, self).__init__(
+        device=device, payload_dir=payload_dir,
+        device_restore_dir=device_restore_dir, payload_name=payload_name,
+        cmd_kwargs=cmd_kwargs, device_payload_dir=device_payload_dir,
+        dev_dir=dev_dir, original_payload_dir=original_payload_dir,
+        transfer_stateful_update=transfer_stateful_update,
+        transfer_rootfs_update=transfer_rootfs_update)
+    self._staging_server = staging_server
+
+  def CheckPayloads(self):
+    """Verify that all required payloads are in |self.payload_dir|."""
+    logging.debug('Checking if payloads have been stored in directory %s...',
+                  self._payload_dir)
+    # TODO (sanikak): This function needs to be written taking into
+    # consideration where the payloads reside and how they will be accessed.
+
+  def _GetCurlCmdForPayloadDownload(self, payload_dir, payload_filename,
+                                    image_name=''):
+    """Returns a valid curl command to download payloads into device tmp dir.
+
+    Args:
+      payload_dir: Path to the payload directory on the device.
+      payload_filename: Name of the file by which the downloaded payload should
+        be saved. This is assumed to be the same as the name of the payload.
+      image_name: This is the path at which the needed payload can be found. It
+        is usually of the format <board_name>-release/R79-12345.6.0. By default,
+        the path is set to be an empty string.
+
+    Returns:
+      A fully formed curl command in the format:
+        curl -o <path where payload should be saved> <payload download URL>
+    """
+    download_dir = os.path.join(payload_dir, payload_filename)
+
+    # Formulate the download URL out of components.
+    url = urllib.parse.urljoin(self._staging_server, 'static/')
+    if image_name:
+      # Add slash at the end of image_name if necessary.
+      if not image_name.endswith('/'):
+        image_name = image_name + '/'
+      url = urllib.parse.urljoin(url, image_name)
+    url = urllib.parse.urljoin(url, payload_filename)
+
+    return ['curl', '-o', download_dir, url]
+
+  def _TransferUpdateUtilsPackage(self):
+    """Transfer update-utils package to work directory of the remote device.
+
+    The update-utils package will be transferred to the device from the
+    staging server via curl.
+    """
+    files_to_copy = (os.path.basename(nebraska_wrapper.NEBRASKA_SOURCE_FILE),)
+    logging.info('Copying these files to device: %s', files_to_copy)
+
+    source_dir = os.path.join(self._device.work_dir, 'src')
+    self._EnsureDeviceDirectory(source_dir)
+
+    for f in files_to_copy:
+      self._device.RunCommand(self._GetCurlCmdForPayloadDownload(
+          payload_dir=source_dir, payload_filename=f))
+
+    # Make sure the device.work_dir exists after any installation and reboot.
+    self._EnsureDeviceDirectory(self._device.work_dir)
+
+  def _TransferStatefulUpdate(self):
+    """Transfer files for stateful update.
+
+    The stateful update bin and the corresponding payloads are copied to the
+    target remote device for stateful update from the staging server via curl.
+    """
+    self._EnsureDeviceDirectory(self._device_payload_dir)
+
+    logging.info('Copying stateful_update binary to device...')
+
+    # TODO(crbug.com/1024639): Another way to make the payloads available is
+    # to make update_engine download it directly from the staging_server. This
+    # will avoid a disk copy but has the potential to be harder to debug if
+    # update engine does not report the error clearly.
+
+    self._device.RunCommand(self._GetCurlCmdForPayloadDownload(
+        payload_dir=self._device_payload_dir,
+        payload_filename=_STATEFUL_UPDATE_FILENAME))
+    self._stateful_update_bin = os.path.join(
+        self._device_payload_dir, _STATEFUL_UPDATE_FILENAME)
+
+    if self._original_payload_dir:
+      logging.info('Copying original stateful payload to device...')
+      self._EnsureDeviceDirectory(self._device_restore_dir)
+      self._device.RunCommand(self._GetCurlCmdForPayloadDownload(
+          payload_dir=self._device_restore_dir,
+          image_name=self._original_payload_dir,
+          payload_filename=STATEFUL_FILENAME))
+
+    logging.info('Copying target stateful payload to device...')
+    self._device.RunCommand(self._GetCurlCmdForPayloadDownload(
+        payload_dir=self._device.work_dir, image_name=self._payload_dir,
+        payload_filename=STATEFUL_FILENAME))
+
+  def _TransferRootfsUpdate(self):
+    """Transfer files for rootfs update.
+
+    Copy the update payload to the remote device for rootfs update from the
+    staging server via curl.
+    """
+    self._EnsureDeviceDirectory(self._device_payload_dir)
+
+    logging.info('Copying rootfs payload to device...')
+
+    # TODO(crbug.com/1024639): Another way to make the payloads available is
+    # to make update_engine download it directly from the staging_server. This
+    # will avoid a disk copy but has the potential to be harder to debug if
+    # update engine does not report the error clearly.
+
+    self._device.RunCommand(self._GetCurlCmdForPayloadDownload(
+        payload_dir=self._device_payload_dir, image_name=self._payload_dir,
+        payload_filename=self._payload_name))
+
+    payload_props_filename = GetPayloadPropertiesFileName(self._payload_name)
+    self._device.RunCommand(self._GetCurlCmdForPayloadDownload(
+        payload_dir=self._device_payload_dir, image_name=self._payload_dir,
+        payload_filename=payload_props_filename))
