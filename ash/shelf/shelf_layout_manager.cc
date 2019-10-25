@@ -1601,7 +1601,8 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
 
     int hotseat_y = 0;
     if (!Shell::Get()->overview_controller() ||
-        !Shell::Get()->overview_controller()->InOverviewSession()) {
+        !Shell::Get()->overview_controller()->InOverviewSession() ||
+        window_drag_controller_) {
       const int hotseat_extended_y =
           Shell::Get()->shelf_config()->hotseat_size() +
           Shell::Get()->shelf_config()->hotseat_bottom_padding();
