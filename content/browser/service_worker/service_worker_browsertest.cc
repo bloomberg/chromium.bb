@@ -96,6 +96,7 @@
 #include "storage/browser/blob/blob_handle.h"
 #include "storage/browser/blob/blob_reader.h"
 #include "storage/browser/blob/blob_storage_context.h"
+#include "storage/browser/test/blob_test_utils.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/common/service_worker/service_worker_type_converters.h"
@@ -115,38 +116,6 @@ namespace {
 // timestamp).
 const int kV8CacheTimeStampDataSize =
     sizeof(uint32_t) + sizeof(uint32_t) + sizeof(double);
-
-// TODO(falken): This is identical to the code in
-// cache_storage_cache_unittest.cc and
-// background_fetch_data_manager_unittest.cc for copying
-// a blob to a string. Factor it out somewhere.
-class DataPipeDrainerClient : public mojo::DataPipeDrainer::Client {
- public:
-  DataPipeDrainerClient(std::string* output) : output_(output) {}
-  void Run() { run_loop_.Run(); }
-
-  void OnDataAvailable(const void* data, size_t num_bytes) override {
-    output_->append(reinterpret_cast<const char*>(data), num_bytes);
-  }
-  void OnDataComplete() override { run_loop_.Quit(); }
-
- private:
-  base::RunLoop run_loop_;
-  std::string* output_;
-};
-
-std::string BlobToString(blink::mojom::Blob* actual_blob) {
-  std::string output;
-  mojo::ScopedDataPipeProducerHandle producer;
-  mojo::ScopedDataPipeConsumerHandle consumer;
-  CHECK_EQ(MOJO_RESULT_OK,
-           mojo::CreateDataPipe(/*options=*/nullptr, &producer, &consumer));
-  actual_blob->ReadAll(std::move(producer), mojo::NullRemote());
-  DataPipeDrainerClient client(&output);
-  mojo::DataPipeDrainer drainer(&client, std::move(consumer));
-  client.Run();
-  return output;
-}
 
 size_t BlobSideDataLength(blink::mojom::Blob* actual_blob) {
   size_t result = 0;
@@ -1497,7 +1466,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, FetchEvent_Response) {
 
   mojo::Remote<blink::mojom::Blob> blob(std::move(response->blob->blob));
   EXPECT_EQ("This resource is gone. Gone, gone, gone.",
-            BlobToString(blob.get()));
+            storage::BlobToString(blob.get()));
 }
 
 // Tests for response type when a service worker does respondWith(fetch()).
@@ -3951,7 +3920,7 @@ class CacheStorageEagerReadingTestBase
     mojo::Remote<blink::mojom::Blob> blob(std::move(response->blob->blob));
 
     // The blob should contain the expected body content.
-    EXPECT_EQ(BlobToString(blob.get()).length(), 1075u);
+    EXPECT_EQ(storage::BlobToString(blob.get()).length(), 1075u);
 
     // Since this js response was stored in the install event it should have
     // code cache stored in the blob side data.
