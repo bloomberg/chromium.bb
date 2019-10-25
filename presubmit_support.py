@@ -558,11 +558,10 @@ class InputApi(object):
 
     self.is_windows = sys.platform == 'win32'
 
-    # Set python_executable to 'python'. This is interpreted in CallCommand to
-    # convert to vpython in order to allow scripts in other repos (e.g. src.git)
-    # to automatically pick up that repo's .vpython file, instead of inheriting
-    # the one in depot_tools.
-    self.python_executable = 'python'
+    # Set python_executable to 'vpython' in order to allow scripts in other
+    # repos (e.g. src.git) to automatically pick up that repo's .vpython file,
+    # instead of inheriting the one in depot_tools.
+    self.python_executable = 'vpython'
     self.environ = os.environ
 
     # InputApi.platform is the platform you're currently running on.
