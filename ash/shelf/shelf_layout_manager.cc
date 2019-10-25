@@ -2352,6 +2352,12 @@ void ShelfLayoutManager::MaybeStartDragWindowFromShelf(
     return;
   }
 
+  // If the start location is above the shelf (e.g., on the extended hotseat),
+  // do not allow the drag.
+  const gfx::Rect shelf_bounds = GetVisibleShelfBounds();
+  if (event_in_screen.location().y() < shelf_bounds.y())
+    return;
+
   aura::Window* window =
       GetWindowForDragToHomeOrOverview(event_in_screen.location());
   if (!window)

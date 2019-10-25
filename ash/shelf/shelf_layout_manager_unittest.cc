@@ -3905,6 +3905,24 @@ TEST_F(ShelfLayoutManagerWindowDraggingTest, NoOpForHiddenShelf) {
   EndScroll(/*is_fling=*/false, 0.f);
 }
 
+TEST_F(ShelfLayoutManagerWindowDraggingTest, NoOpIfDragStartsAboveShelf) {
+  std::unique_ptr<aura::Window> window =
+      AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
+  wm::ActivateWindow(window.get());
+
+  Shelf* shelf = GetPrimaryShelf();
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  SwipeUpOnShelf();
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
+  EXPECT_EQ(HotseatState::kExtended, GetShelfLayoutManager()->hotseat_state());
+
+  gfx::Rect hotseat_bounds =
+      GetShelfWidget()->hotseat_widget()->GetWindowBoundsInScreen();
+  StartScroll(hotseat_bounds.CenterPoint());
+  EXPECT_FALSE(GetShelfLayoutManager()->window_drag_controller_for_testing());
+  EndScroll(/*is_fling=*/false, 0.f);
+}
+
 class ShelfLayoutManagerKeyboardTest : public AshTestBase {
  public:
   ShelfLayoutManagerKeyboardTest() = default;
