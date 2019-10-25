@@ -30,8 +30,6 @@
 
 #include "third_party/blink/renderer/core/svg/svg_boolean.h"
 
-#include "third_party/blink/renderer/core/svg/svg_animation_element.h"
-
 namespace blink {
 
 String SVGBoolean::ValueAsString() const {
@@ -62,13 +60,7 @@ void SVGBoolean::CalculateAnimatedValue(
     SVGPropertyBase* to,
     SVGPropertyBase*,
     SVGElement*) {
-  bool from_boolean = animation_element.GetAnimationMode() == kToAnimation
-                          ? value_
-                          : ToSVGBoolean(from)->Value();
-  bool to_boolean = ToSVGBoolean(to)->Value();
-
-  animation_element.AnimateDiscreteType<bool>(percentage, from_boolean,
-                                              to_boolean, value_);
+  NOTREACHED();
 }
 
 float SVGBoolean::CalculateDistance(SVGPropertyBase*, SVGElement*) {

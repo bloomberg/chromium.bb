@@ -326,6 +326,17 @@ SVGPropertyBase* SVGAnimateElement::AdjustForInheritance(
   return CreatePropertyForAnimation(value);
 }
 
+static SVGPropertyBase* DiscreteSelectValue(AnimationMode animation_mode,
+                                            float percentage,
+                                            SVGPropertyBase* from,
+                                            SVGPropertyBase* to) {
+  if ((animation_mode == kFromToAnimation && percentage > 0.5) ||
+      animation_mode == kToAnimation || percentage == 1) {
+    return to;
+  }
+  return from;
+}
+
 void SVGAnimateElement::CalculateAnimatedValue(
     float percentage,
     unsigned repeat_count,
@@ -369,6 +380,14 @@ void SVGAnimateElement::CalculateAnimatedValue(
   // Apply CSS inheritance rules.
   from_value = AdjustForInheritance(from_value, from_property_value_type_);
   to_value = AdjustForInheritance(to_value, to_property_value_type_);
+
+  // If the animated type can only be animated discretely, then do that here,
+  // replacing |result_element|s animated value.
+  if (!AnimatedPropertyTypeSupportsAddition()) {
+    result_animation_element->animated_value_ = DiscreteSelectValue(
+        GetAnimationMode(), percentage, from_value, to_value);
+    return;
+  }
 
   animated_value->CalculateAnimatedValue(
       *this, percentage, repeat_count, from_value, to_value,

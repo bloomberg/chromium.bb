@@ -76,19 +76,6 @@ class CORE_EXPORT SVGAnimationElement : public SVGSMILElement {
 
   bool OverwritesUnderlyingAnimationValue() const override;
 
-  template <typename AnimatedType>
-  void AnimateDiscreteType(float percentage,
-                           const AnimatedType& from_type,
-                           const AnimatedType& to_type,
-                           AnimatedType& animated_type) const {
-    if ((GetAnimationMode() == kFromToAnimation && percentage > 0.5) ||
-        GetAnimationMode() == kToAnimation || percentage == 1) {
-      animated_type = AnimatedType(to_type);
-      return;
-    }
-    animated_type = AnimatedType(from_type);
-  }
-
   void AnimateAdditiveNumber(float percentage,
                              unsigned repeat_count,
                              float from_number,
