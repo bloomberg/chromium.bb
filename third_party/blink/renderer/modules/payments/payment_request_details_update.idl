@@ -2,12 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://w3c.github.io/payment-handler/#dom-paymentmethodchangeresponse
-// Todo(sahel): Change the link to the updated spec. crbug.com/984694
-// Todo(sahel): Rename PaymentMethodChangeResponse to
-// PaymentRequestDetailsUpdate which is a more generic name. crbug.com/984694
+// https://w3c.github.io/payment-handler/#the-paymentrequestdetailsupdate
 
-dictionary PaymentMethodChangeResponse {
+dictionary PaymentRequestDetailsUpdate {
   DOMString error;
   PaymentCurrencyAmount total;
   FrozenArray<PaymentDetailsModifier> modifiers;

@@ -1241,7 +1241,7 @@ public class PaymentRequestImpl
             // Todo(sahel): handlesShipping must be true when the payment handler is responsible for
             // handling shipping. crbug.com/984694
             mInvokedPaymentInstrument.updateWith(
-                    PaymentDetailsConverter.convertToPaymentMethodChangeResponse(
+                    PaymentDetailsConverter.convertToPaymentRequestDetailsUpdate(
                             details, false /* handlesShipping */, this /* methodChecker */));
             return;
         }
