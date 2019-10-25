@@ -209,6 +209,9 @@ jinja_template("weblayer_support_manifest") {
 
 android_apk("weblayer_support_apk") {
   testonly = true
+  
+  # Test runner does not support having "additional apks" that are incremental.
+  never_incremental = true
 
   deps = [
     ":weblayer_support_manifest",
