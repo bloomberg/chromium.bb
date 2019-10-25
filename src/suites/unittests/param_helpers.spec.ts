@@ -67,3 +67,12 @@ g.test('exclude', t => {
     [{ a: true, x: 1 }]
   );
 });
+
+g.test('undefined', t => {
+  t.expectSpecEqual([{ a: undefined }], [{}]);
+  t.expectSpecEqual([{}], [{ a: undefined }]);
+});
+
+g.test('arrays', t => {
+  t.expectSpecEqual([{ a: [1, 2] }], [{ a: [1, 2] }]);
+});

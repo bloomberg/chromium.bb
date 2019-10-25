@@ -20,16 +20,16 @@ export function paramsEquals(x: ParamSpec | null, y: ParamSpec | null): boolean 
   }
 
   for (const xk of Object.keys(x)) {
-    if (!y.hasOwnProperty(xk)) {
+    if (x[xk] !== undefined && !y.hasOwnProperty(xk)) {
       return false;
     }
-    if (x[xk] !== y[xk]) {
+    if (!objectEquals(x[xk], y[xk])) {
       return false;
     }
   }
 
   for (const yk of Object.keys(y)) {
-    if (!x.hasOwnProperty(yk)) {
+    if (y[yk] !== undefined && !x.hasOwnProperty(yk)) {
       return false;
     }
   }
