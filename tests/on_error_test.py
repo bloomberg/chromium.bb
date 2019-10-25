@@ -3,7 +3,6 @@
 # Use of this source code is governed under the Apache License, Version 2.0
 # that can be found in the LICENSE file.
 
-import BaseHTTPServer
 import atexit
 import cgi
 import getpass
@@ -17,6 +16,8 @@ import ssl
 import subprocess
 import sys
 import threading
+
+from six.moves import BaseHTTPServer
 
 # Mutates sys.path.
 import test_env

@@ -3,11 +3,12 @@
 # Use of this source code is governed under the Apache License, Version 2.0
 # that can be found in the LICENSE file.
 
-import BaseHTTPServer
 import re
-import SocketServer
 import threading
 import time
+
+from six.moves import BaseHTTPServer
+from six.moves import socketserver
 
 # Mutates sys.path.
 import test_env
@@ -19,7 +20,7 @@ from utils import authenticators
 from utils import net
 
 
-class SleepingServer(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
+class SleepingServer(socketserver.ThreadingMixIn, BaseHTTPServer.HTTPServer):
   """Multithreaded server that serves requests that block at various stages."""
 
   # Lingering keep-alive HTTP connections keep (not very smart) HTTPServer
