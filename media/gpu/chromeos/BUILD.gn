@@ -51,8 +51,12 @@ source_set("common") {
     "image_processor_factory.h",
     "libyuv_image_processor.cc",
     "libyuv_image_processor.h",
+    "mailbox_video_frame_converter.cc",
+    "mailbox_video_frame_converter.h",
     "video_decoder_pipeline.cc",
     "video_decoder_pipeline.h",
+    "video_frame_converter.cc",
+    "video_frame_converter.h",
   ]
 
   # TODO(crbug.com/1012587): Merge :fourcc to :common.
@@ -65,6 +69,7 @@ source_set("common") {
     "//base",
     "//media",
     "//media/gpu:buildflags",
+    "//media/gpu:command_buffer_helper",
     "//media/gpu:common",
     "//media/gpu:video_frame_mapper_common",
     "//media/gpu/linux:common",
@@ -94,13 +99,17 @@ source_set("fourcc") {
 source_set("unit_tests") {
   testonly = true
   deps = [
-    ":fourcc",
+    ":common",
     "//base",
+    "//base/test:test_support",
     "//media/gpu:buildflags",
+    "//skia",
+    "//testing/gmock",
     "//testing/gtest",
   ]
   sources = [
     "fourcc_unittests.cc",
+    "mailbox_video_frame_converter_unittest.cc",
   ]
 }
 

@@ -25,7 +25,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "media/gpu/chromeos/chromeos_video_decoder_factory.h"
-#include "media/gpu/video_frame_converter.h"
+#include "media/gpu/chromeos/video_frame_converter.h"
 #endif  // defined(OS_CHROMEOS)
 
 namespace media {

@@ -12,8 +12,6 @@ source_set("common") {
   sources = [
     "dmabuf_video_frame_pool.cc",
     "dmabuf_video_frame_pool.h",
-    "mailbox_video_frame_converter.cc",
-    "mailbox_video_frame_converter.h",
     "platform_video_frame_pool.cc",
     "platform_video_frame_pool.h",
     "platform_video_frame_utils.cc",
@@ -57,7 +55,6 @@ source_set("video_frame_mapper") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "mailbox_video_frame_converter_unittest.cc",
     "platform_video_frame_pool_unittest.cc",
     "platform_video_frame_utils_unittest.cc",
   ]
@@ -67,7 +64,6 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//media",
     "//media/gpu:common",
-    "//skia",
     "//testing/gmock",
     "//testing/gtest",
     "//ui/gfx:memory_buffer",

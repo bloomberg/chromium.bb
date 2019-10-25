@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_GPU_LINUX_MAILBOX_VIDEO_FRAME_CONVERTER_H_
-#define MEDIA_GPU_LINUX_MAILBOX_VIDEO_FRAME_CONVERTER_H_
+#ifndef MEDIA_GPU_CHROMEOS_MAILBOX_VIDEO_FRAME_CONVERTER_H_
+#define MEDIA_GPU_CHROMEOS_MAILBOX_VIDEO_FRAME_CONVERTER_H_
 
 #include "base/callback_forward.h"
 #include "base/containers/queue.h"
@@ -11,8 +11,8 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "gpu/command_buffer/common/mailbox.h"
+#include "media/gpu/chromeos/video_frame_converter.h"
 #include "media/gpu/media_gpu_export.h"
-#include "media/gpu/video_frame_converter.h"
 
 namespace base {
 class Location;
@@ -164,4 +164,4 @@ class MEDIA_GPU_EXPORT MailboxVideoFrameConverter : public VideoFrameConverter {
 };
 
 }  // namespace media
-#endif  // MEDIA_GPU_LINUX_MAILBOX_VIDEO_FRAME_CONVERTER_H_
+#endif  // MEDIA_GPU_CHROMEOS_MAILBOX_VIDEO_FRAME_CONVERTER_H_

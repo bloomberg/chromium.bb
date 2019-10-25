@@ -256,8 +256,6 @@ source_set("common") {
     "h264_dpb.cc",
     "h264_dpb.h",
     "macros.h",
-    "video_frame_converter.cc",
-    "video_frame_converter.h",
     "vp9_decoder.cc",
     "vp9_decoder.h",
     "vp9_picture.cc",

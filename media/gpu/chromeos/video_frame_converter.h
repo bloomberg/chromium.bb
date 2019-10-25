@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_GPU_VIDEO_FRAME_CONVERTER_H_
-#define MEDIA_GPU_VIDEO_FRAME_CONVERTER_H_
+#ifndef MEDIA_GPU_CHROMEOS_VIDEO_FRAME_CONVERTER_H_
+#define MEDIA_GPU_CHROMEOS_VIDEO_FRAME_CONVERTER_H_
 
 #include <memory>
 
@@ -76,4 +76,4 @@ struct MEDIA_GPU_EXPORT default_delete<media::VideoFrameConverter> {
 
 }  // namespace std
 
-#endif  // MEDIA_GPU_VIDEO_FRAME_CONVERTER_H_
+#endif  // MEDIA_GPU_CHROMEOS_VIDEO_FRAME_CONVERTER_H_

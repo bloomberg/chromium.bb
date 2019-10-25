@@ -13,8 +13,8 @@
 #include "base/sequence_checker.h"
 #include "media/base/video_decoder.h"
 #include "media/base/video_decoder_config.h"
+#include "media/gpu/chromeos/video_frame_converter.h"
 #include "media/gpu/media_gpu_export.h"
-#include "media/gpu/video_frame_converter.h"
 
 namespace base {
 class SequencedTaskRunner;
