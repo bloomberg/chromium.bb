@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# TODO: Support cleaning /tmp and /build/*/tmp.
+# TODO: Support cleaning /build/*/tmp.
 # TODO: Support running `eclean -q packages` on / and the sysroots.
 # TODO: Support cleaning sysroots as a destructive option.
 
@@ -89,6 +89,11 @@ class CleanCommand(command.CliCommand):
         default=False,
         action='store_true',
         help='Clean up build various package build directories.')
+    group.add_argument(
+        '--chroot-tmp',
+        default=False,
+        action='store_true',
+        help="Empty the chroot's /tmp directory.")
 
     group = parser.add_argument_group(
         'Unrecoverable Options (Dangerous)',
@@ -121,8 +126,8 @@ class CleanCommand(command.CliCommand):
     # If no option is set, default to "--safe"
     if not (self.options.safe or self.options.clobber or self.options.board or
             self.options.chroot or self.options.cache or self.options.deploy or
-            self.options.flash or self.options.images or
-            self.options.autotest or self.options.incrementals):
+            self.options.flash or self.options.images or self.options.autotest
+            or self.options.incrementals or self.options.chroot_tmp):
       self.options.safe = True
 
     if self.options.clobber:
@@ -133,6 +138,7 @@ class CleanCommand(command.CliCommand):
     if self.options.safe:
       self.options.cache = True
       self.options.chromite = True
+      self.options.chroot_tmp = True
       self.options.deploy = True
       self.options.flash = True
       self.options.images = True
@@ -154,6 +160,13 @@ class CleanCommand(command.CliCommand):
       else:
         osutils.RmDir(path, ignore_missing=True, sudo=True)
 
+    def Empty(path):
+      """Helper wrapper for the dry-run checks"""
+      if self.options.dry_run:
+        logging.notice('would have emptied: %s', path)
+      else:
+        osutils.EmptyDir(path, ignore_missing=True, sudo=True)
+
     def CleanNoBindMount(path):
       # This test is a convenience for developers that bind mount these dirs.
       if not os.path.ismount(path):
@@ -174,8 +187,12 @@ class CleanCommand(command.CliCommand):
         logging.debug('Clean up the %s build root.', b)
         Clean(os.path.join(chroot_dir, 'build', b))
 
+    if self.options.chroot_tmp:
+      logging.debug('Empty chroot tmp directory.')
+      Empty(os.path.join(chroot_dir, 'tmp'))
+
     if self.options.cache:
-      logging.debug('Clean the common cache')
+      logging.debug('Clean the common cache.')
       CleanNoBindMount(self.options.cache_dir)
 
       # Recreate dirs that cros_sdk does when entering.
@@ -189,7 +206,7 @@ class CleanCommand(command.CliCommand):
             os.path.join(self.options.cache_dir, 'distfiles', 'ccache'), 0o2775)
 
     if self.options.chromite:
-      logging.debug('Clean chromite workdirs')
+      logging.debug('Clean chromite workdirs.')
       Clean(os.path.join(constants.CHROMITE_DIR, 'venv', 'venv'))
       Clean(os.path.join(constants.CHROMITE_DIR, 'venv', '.venv_lock'))
 
@@ -209,21 +226,21 @@ class CleanCommand(command.CliCommand):
       CleanNoBindMount(cache_dir)
 
     if self.options.incrementals:
-      logging.debug('Clean package incremental objects')
+      logging.debug('Clean package incremental objects.')
       Clean(os.path.join(chroot_dir, 'var', 'cache', 'portage'))
       for d in glob.glob(
           os.path.join(chroot_dir, 'build', '*', 'var', 'cache', 'portage')):
         Clean(d)
 
     if self.options.logs:
-      logging.debug('Clean log files')
+      logging.debug('Clean log files.')
       Clean(os.path.join(chroot_dir, 'var', 'log'))
       for d in glob.glob(
           os.path.join(chroot_dir, 'build', '*', 'tmp', 'portage', 'logs')):
         Clean(d)
 
     if self.options.workdirs:
-      logging.debug('Clean package workdirs')
+      logging.debug('Clean package workdirs.')
       Clean(os.path.join(chroot_dir, 'var', 'tmp', 'portage'))
       Clean(os.path.join(constants.CHROMITE_DIR, 'venv', 'venv'))
       for d in glob.glob(
@@ -231,7 +248,7 @@ class CleanCommand(command.CliCommand):
         Clean(d)
 
     if self.options.autotest:
-      logging.debug('Clean build_externals')
+      logging.debug('Clean build_externals.')
       packages_dir = os.path.join(constants.SOURCE_ROOT, 'src', 'third_party',
                                   'autotest', 'files', 'site-packages')
       Clean(packages_dir)
