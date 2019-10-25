@@ -1257,7 +1257,7 @@ AccessibilityExpanded AXNodeObject::IsExpanded() const {
     if (GetNode()->parentNode() &&
         IsA<HTMLDetailsElement>(GetNode()->parentNode()))
       return To<Element>(GetNode()->parentNode())
-                     ->hasAttribute(html_names::kOpenAttr)
+                     ->FastHasAttribute(html_names::kOpenAttr)
                  ? kExpandedExpanded
                  : kExpandedCollapsed;
   }
@@ -2936,8 +2936,8 @@ String AXNodeObject::NativeTextAlternative(
            ++label_index) {
         Element* label = labels->item(label_index);
         if (name_sources) {
-          if (!label->getAttribute(html_names::kForAttr).IsEmpty() &&
-              label->getAttribute(html_names::kForAttr) ==
+          if (!label->FastGetAttribute(html_names::kForAttr).IsEmpty() &&
+              label->FastGetAttribute(html_names::kForAttr) ==
                   html_element->GetIdAttribute()) {
             name_sources->back().native_source = kAXTextFromNativeHTMLLabelFor;
           } else {
