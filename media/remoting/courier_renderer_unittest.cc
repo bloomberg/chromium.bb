@@ -255,9 +255,10 @@ class CourierRendererTest : public testing::Test {
     controller_->GetRpcBroker()->SetMessageCallbackForTesting(base::Bind(
         &CourierRendererTest::RpcMessageResponseBot, base::Unretained(this)));
     RunPendingTasks();
-    renderer_->Initialize(media_resource_.get(), render_client_.get(),
-                          base::Bind(&RendererClientImpl::OnPipelineStatus,
-                                     base::Unretained(render_client_.get())));
+    renderer_->Initialize(
+        media_resource_.get(), render_client_.get(),
+        base::BindOnce(&RendererClientImpl::OnPipelineStatus,
+                       base::Unretained(render_client_.get())));
     RunPendingTasks();
     // Redirect RPC message back to save for later check.
     controller_->GetRpcBroker()->SetMessageCallbackForTesting(base::Bind(

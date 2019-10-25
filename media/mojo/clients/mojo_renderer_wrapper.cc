@@ -16,8 +16,8 @@ MojoRendererWrapper::~MojoRendererWrapper() = default;
 
 void MojoRendererWrapper::Initialize(media::MediaResource* media_resource,
                                      media::RendererClient* client,
-                                     const media::PipelineStatusCB& init_cb) {
-  mojo_renderer_->Initialize(media_resource, client, init_cb);
+                                     media::PipelineStatusCallback init_cb) {
+  mojo_renderer_->Initialize(media_resource, client, std::move(init_cb));
 }
 
 void MojoRendererWrapper::Flush(base::OnceClosure flush_cb) {

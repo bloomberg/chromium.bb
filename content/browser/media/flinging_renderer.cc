@@ -66,10 +66,10 @@ std::unique_ptr<FlingingRenderer> FlingingRenderer::Create(
 // media::Renderer implementation
 void FlingingRenderer::Initialize(media::MediaResource* media_resource,
                                   media::RendererClient* client,
-                                  const media::PipelineStatusCB& init_cb) {
+                                  media::PipelineStatusCallback init_cb) {
   DVLOG(2) << __func__;
   client_ = client;
-  init_cb.Run(media::PIPELINE_OK);
+  std::move(init_cb).Run(media::PIPELINE_OK);
 }
 
 void FlingingRenderer::SetCdm(media::CdmContext* cdm_context,

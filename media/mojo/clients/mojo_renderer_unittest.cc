@@ -33,6 +33,7 @@
 #include "url/origin.h"
 
 using ::base::test::RunCallback;
+using ::base::test::RunOnceCallback;
 using ::base::test::RunOnceClosure;
 using ::testing::_;
 using ::testing::DoAll;
@@ -126,17 +127,17 @@ class MojoRendererTest : public ::testing::Test {
   void InitializeAndExpect(PipelineStatus status) {
     DVLOG(1) << __func__ << ": " << status;
     EXPECT_CALL(*this, OnInitialized(status));
-    mojo_renderer_->Initialize(
-        &demuxer_, &renderer_client_,
-        base::Bind(&MojoRendererTest::OnInitialized, base::Unretained(this)));
+    mojo_renderer_->Initialize(&demuxer_, &renderer_client_,
+                               base::BindOnce(&MojoRendererTest::OnInitialized,
+                                              base::Unretained(this)));
     base::RunLoop().RunUntilIdle();
   }
 
   void Initialize() {
     CreateAudioStream();
-    EXPECT_CALL(*mock_renderer_, Initialize(_, _, _))
+    EXPECT_CALL(*mock_renderer_, OnInitialize(_, _, _))
         .WillOnce(DoAll(SaveArg<1>(&remote_renderer_client_),
-                        RunCallback<2>(PIPELINE_OK)));
+                        RunOnceCallback<2>(PIPELINE_OK)));
     InitializeAndExpect(PIPELINE_OK);
   }
 
@@ -238,14 +239,14 @@ TEST_F(MojoRendererTest, Initialize_Failure) {
   CreateAudioStream();
   // Mojo Renderer only expects a boolean result, which will be translated
   // to PIPELINE_OK or PIPELINE_ERROR_INITIALIZATION_FAILED.
-  EXPECT_CALL(*mock_renderer_, Initialize(_, _, _))
-      .WillOnce(RunCallback<2>(PIPELINE_ERROR_ABORT));
+  EXPECT_CALL(*mock_renderer_, OnInitialize(_, _, _))
+      .WillOnce(RunOnceCallback<2>(PIPELINE_ERROR_ABORT));
   InitializeAndExpect(PIPELINE_ERROR_INITIALIZATION_FAILED);
 }
 
 TEST_F(MojoRendererTest, Initialize_BeforeConnectionError) {
   CreateAudioStream();
-  EXPECT_CALL(*mock_renderer_, Initialize(_, _, _))
+  EXPECT_CALL(*mock_renderer_, OnInitialize(_, _, _))
       .WillOnce(InvokeWithoutArgs(this, &MojoRendererTest::ConnectionError));
   InitializeAndExpect(PIPELINE_ERROR_INITIALIZATION_FAILED);
 }
@@ -439,12 +440,12 @@ TEST_F(MojoRendererTest, OnEnded) {
 
 TEST_F(MojoRendererTest, Destroy_PendingInitialize) {
   CreateAudioStream();
-  EXPECT_CALL(*mock_renderer_, Initialize(_, _, _))
-      .WillRepeatedly(RunCallback<2>(PIPELINE_ERROR_ABORT));
+  EXPECT_CALL(*mock_renderer_, OnInitialize(_, _, _))
+      .WillRepeatedly(RunOnceCallback<2>(PIPELINE_ERROR_ABORT));
   EXPECT_CALL(*this, OnInitialized(PIPELINE_ERROR_INITIALIZATION_FAILED));
   mojo_renderer_->Initialize(
       &demuxer_, &renderer_client_,
-      base::Bind(&MojoRendererTest::OnInitialized, base::Unretained(this)));
+      base::BindOnce(&MojoRendererTest::OnInitialized, base::Unretained(this)));
   Destroy();
 }
 

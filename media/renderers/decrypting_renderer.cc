@@ -42,7 +42,7 @@ DecryptingRenderer::~DecryptingRenderer() {}
 // Encrypted  Other         InitializeRenderer()
 void DecryptingRenderer::Initialize(MediaResource* media_resource,
                                     RendererClient* client,
-                                    const PipelineStatusCB& init_cb) {
+                                    PipelineStatusCallback init_cb) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   DCHECK(media_resource);
   DCHECK(client);

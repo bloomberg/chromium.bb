@@ -43,7 +43,7 @@ class MEDIA_EXPORT DecryptingRenderer : public Renderer {
   // Renderer implementation:
   void Initialize(MediaResource* media_resource,
                   RendererClient* client,
-                  const PipelineStatusCB& init_cb) override;
+                  PipelineStatusCallback init_cb) override;
   void SetCdm(CdmContext* cdm_context,
               const CdmAttachedCB& cdm_attached_cb) override;
 
@@ -81,7 +81,7 @@ class MEDIA_EXPORT DecryptingRenderer : public Renderer {
   CdmContext* cdm_context_ = nullptr;
   RendererClient* client_;
   MediaResource* media_resource_;
-  PipelineStatusCB init_cb_;
+  PipelineStatusCallback init_cb_;
 
   std::unique_ptr<DecryptingMediaResource> decrypting_media_resource_;
 

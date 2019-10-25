@@ -951,11 +951,11 @@ std::string FFmpegDemuxer::GetDisplayName() const {
 }
 
 void FFmpegDemuxer::Initialize(DemuxerHost* host,
-                               const PipelineStatusCB& init_cb) {
+                               PipelineStatusCallback init_cb) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   host_ = host;
   weak_this_ = cancel_pending_seek_factory_.GetWeakPtr();
-  init_cb_ = init_cb;
+  init_cb_ = std::move(init_cb);
 
   // Give a WeakPtr to BlockingUrlProtocol since we'll need to release it on the
   // blocking thread pool.
@@ -1061,11 +1061,11 @@ void FFmpegDemuxer::CancelPendingSeek(base::TimeDelta seek_time) {
   }
 }
 
-void FFmpegDemuxer::Seek(base::TimeDelta time, const PipelineStatusCB& cb) {
+void FFmpegDemuxer::Seek(base::TimeDelta time, PipelineStatusCallback cb) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!pending_seek_cb_);
   TRACE_EVENT_ASYNC_BEGIN0("media", "FFmpegDemuxer::Seek", this);
-  pending_seek_cb_ = cb;
+  pending_seek_cb_ = std::move(cb);
   SeekInternal(time, base::BindOnce(&FFmpegDemuxer::OnSeekFrameSuccess,
                                     weak_factory_.GetWeakPtr()));
 }

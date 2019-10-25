@@ -43,20 +43,20 @@ MojoRenderer::~MojoRenderer() {
 
 void MojoRenderer::Initialize(MediaResource* media_resource,
                               media::RendererClient* client,
-                              const PipelineStatusCB& init_cb) {
+                              PipelineStatusCallback init_cb) {
   DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(media_resource);
 
   if (encountered_error_) {
     task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(init_cb, PIPELINE_ERROR_INITIALIZATION_FAILED));
+        FROM_HERE, base::BindOnce(std::move(init_cb),
+                                  PIPELINE_ERROR_INITIALIZATION_FAILED));
     return;
   }
 
   media_resource_ = media_resource;
-  init_cb_ = init_cb;
+  init_cb_ = std::move(init_cb);
 
   switch (media_resource_->GetType()) {
     case MediaResource::Type::STREAM:

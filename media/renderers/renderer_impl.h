@@ -55,7 +55,7 @@ class MEDIA_EXPORT RendererImpl : public Renderer {
   // Renderer implementation.
   void Initialize(MediaResource* media_resource,
                   RendererClient* client,
-                  const PipelineStatusCB& init_cb) final;
+                  PipelineStatusCallback init_cb) final;
   void SetCdm(CdmContext* cdm_context,
               const CdmAttachedCB& cdm_attached_cb) final;
   void Flush(base::OnceClosure flush_cb) final;
@@ -208,7 +208,7 @@ class MEDIA_EXPORT RendererImpl : public Renderer {
   RendererClient* client_;
 
   // Temporary callback used for Initialize() and Flush().
-  PipelineStatusCB init_cb_;
+  PipelineStatusCallback init_cb_;
   base::OnceClosure flush_cb_;
 
   std::unique_ptr<RendererClientInternal> audio_renderer_client_;

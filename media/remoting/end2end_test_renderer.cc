@@ -168,8 +168,8 @@ End2EndTestRenderer::~End2EndTestRenderer() = default;
 
 void End2EndTestRenderer::Initialize(MediaResource* media_resource,
                                      RendererClient* client,
-                                     const PipelineStatusCB& init_cb) {
-  courier_renderer_->Initialize(media_resource, client, init_cb);
+                                     PipelineStatusCallback init_cb) {
+  courier_renderer_->Initialize(media_resource, client, std::move(init_cb));
 }
 
 void End2EndTestRenderer::SetCdm(CdmContext* cdm_context,

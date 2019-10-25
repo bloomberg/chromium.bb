@@ -34,7 +34,7 @@ class MEDIA_EXPORT Renderer {
   // be run only prior to returning.
   virtual void Initialize(MediaResource* media_resource,
                           RendererClient* client,
-                          const PipelineStatusCB& init_cb) = 0;
+                          PipelineStatusCallback init_cb) = 0;
 
   // Associates the |cdm_context| with this Renderer for decryption (and
   // decoding) of media data, then fires |cdm_attached_cb| with the result.

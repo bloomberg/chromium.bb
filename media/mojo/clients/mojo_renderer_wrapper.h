@@ -25,7 +25,7 @@ class MojoRendererWrapper : public Renderer {
   // Renderer implementation.
   void Initialize(MediaResource* media_resource,
                   media::RendererClient* client,
-                  const PipelineStatusCB& init_cb) override;
+                  PipelineStatusCallback init_cb) override;
   void SetCdm(CdmContext* cdm_context,
               const CdmAttachedCB& cdm_attached_cb) override;
   void Flush(base::OnceClosure flush_cb) override;

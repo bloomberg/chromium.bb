@@ -110,9 +110,9 @@ void Receiver::Initialize(std::unique_ptr<pb::RpcMessage> message) {
 
 void Receiver::OnStreamInitialized() {
   DCHECK(stream_provider_);
-  renderer_->Initialize(
-      stream_provider_.get(), this,
-      base::Bind(&Receiver::OnRendererInitialized, weak_factory_.GetWeakPtr()));
+  renderer_->Initialize(stream_provider_.get(), this,
+                        base::BindOnce(&Receiver::OnRendererInitialized,
+                                       weak_factory_.GetWeakPtr()));
 }
 
 void Receiver::OnRendererInitialized(PipelineStatus status) {

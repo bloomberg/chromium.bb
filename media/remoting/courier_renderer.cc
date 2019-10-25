@@ -101,7 +101,7 @@ CourierRenderer::~CourierRenderer() {
 
 void CourierRenderer::Initialize(MediaResource* media_resource,
                                  RendererClient* client,
-                                 const PipelineStatusCB& init_cb) {
+                                 PipelineStatusCallback init_cb) {
   VLOG(2) << __func__;
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   DCHECK(media_resource);
@@ -109,13 +109,14 @@ void CourierRenderer::Initialize(MediaResource* media_resource,
 
   if (state_ != STATE_UNINITIALIZED) {
     media_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(init_cb, PIPELINE_ERROR_INVALID_STATE));
+        FROM_HERE,
+        base::BindOnce(std::move(init_cb), PIPELINE_ERROR_INVALID_STATE));
     return;
   }
 
   media_resource_ = media_resource;
   client_ = client;
-  init_workflow_done_callback_ = init_cb;
+  init_workflow_done_callback_ = std::move(init_cb);
 
   state_ = STATE_CREATE_PIPE;
 

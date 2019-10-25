@@ -69,14 +69,14 @@ class SerialRunnerTest : public ::testing::Test {
  private:
   void RunBoundFunction(PipelineStatus status,
                         size_t index,
-                        const PipelineStatusCB& status_cb) {
+                        PipelineStatusCallback status_cb) {
     EXPECT_EQ(index == 0u, inside_start_)
         << "First bound function should run on same stack as "
         << "SerialRunner::Run() while all others should not\n"
         << base::debug::StackTrace().ToString();
 
     called_[index] = true;
-    status_cb.Run(status);
+    std::move(status_cb).Run(status);
   }
 
   void RunBoundClosure(size_t index, base::OnceClosure done_cb) {
@@ -116,12 +116,12 @@ class SerialRunnerTest : public ::testing::Test {
     done_status_ = status;
   }
 
-  void CancelSerialRunner(const PipelineStatusCB& status_cb) {
+  void CancelSerialRunner(PipelineStatusCallback status_cb) {
     // Tasks run by |runner_| shouldn't reset it, hence we post a task to do so.
     task_environment_.GetMainThreadTaskRunner()->PostTask(
         FROM_HERE, base::BindOnce(&SerialRunnerTest::ResetSerialRunner,
                                   base::Unretained(this)));
-    status_cb.Run(PIPELINE_OK);
+    std::move(status_cb).Run(PIPELINE_OK);
   }
 
   void ResetSerialRunner() {

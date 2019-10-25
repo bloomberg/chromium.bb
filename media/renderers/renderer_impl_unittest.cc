@@ -136,10 +136,9 @@ class RendererImplTest : public ::testing::Test {
       renderer_impl_->set_time_source_for_testing(&time_source_);
     }
 
-    renderer_impl_->Initialize(
-        demuxer_.get(), &callbacks_,
-        base::BindRepeating(&CallbackHelper::OnInitialize,
-                            base::Unretained(&callbacks_)));
+    renderer_impl_->Initialize(demuxer_.get(), &callbacks_,
+                               base::BindOnce(&CallbackHelper::OnInitialize,
+                                              base::Unretained(&callbacks_)));
     base::RunLoop().RunUntilIdle();
 
     if (start_status == PIPELINE_OK && audio_stream_) {
