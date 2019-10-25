@@ -7928,6 +7928,15 @@ interface TextEvent : UIEvent
     getter data
     method constructor
     method initTextEvent
+interface TextFormatUpdateEvent : Event
+    attribute @@toStringTag
+    getter backgroundColor
+    getter formatRangeEnd
+    getter formatRangeStart
+    getter textDecorationColor
+    getter textUnderlineStyle
+    getter underlineColor
+    method constructor
 interface TextMetrics
     attribute @@toStringTag
     getter actualBoundingBoxAscent
@@ -7991,6 +8000,14 @@ interface TextTrackList : EventTarget
     setter onaddtrack
     setter onchange
     setter onremovetrack
+interface TextUpdateEvent : Event
+    attribute @@toStringTag
+    getter newSelectionEnd
+    getter newSelectionStart
+    getter updateRangeEnd
+    getter updateRangeStart
+    getter updateText
+    method constructor
 interface TimeRanges
     attribute @@toStringTag
     getter length
