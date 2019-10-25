@@ -98,6 +98,11 @@ class CORE_EXPORT NGInlineCursor {
   // end.
   bool IsGeneratedText() const;
 
+  // True if fragment is |NGFragmentItem::kGeneratedText| or
+  // |NGPhysicalTextFragment::kGeneratedText|.
+  // TODO(yosin): We should rename |IsGeneratedTextType()| to another name.
+  bool IsGeneratedTextType() const;
+
   // True if the current position is hidden for paint. It is error to call at
   // end.
   bool IsHiddenForPaint() const;
@@ -143,6 +148,12 @@ class CORE_EXPORT NGInlineCursor {
   // It is error when this cursor doesn't point to text fragment.
   unsigned CurrentTextStartOffset() const;
   unsigned CurrentTextEndOffset() const;
+
+  // The layout box of text in (start, end) range in local coordinate.
+  // Start and end offsets must be between |CurrentTextStartOffset()| and
+  // |CurrentTextEndOffset()|. It is error to call other than text.
+  PhysicalRect CurrentLocalRect(unsigned start_offset,
+                                unsigned end_offset) const;
 
   //
   // Functions to move the current position.

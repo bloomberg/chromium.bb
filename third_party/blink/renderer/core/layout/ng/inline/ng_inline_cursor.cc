@@ -153,6 +153,21 @@ bool NGInlineCursor::IsGeneratedText() const {
   return false;
 }
 
+bool NGInlineCursor::IsGeneratedTextType() const {
+  if (current_paint_fragment_) {
+    if (auto* text_fragment = DynamicTo<NGPhysicalTextFragment>(
+            current_paint_fragment_->PhysicalFragment())) {
+      return text_fragment->TextType() ==
+             NGPhysicalTextFragment::kGeneratedText;
+    }
+    return false;
+  }
+  if (current_item_)
+    return current_item_->Type() == NGFragmentItem::kGeneratedText;
+  NOTREACHED();
+  return false;
+}
+
 bool NGInlineCursor::IsHiddenForPaint() const {
   if (current_paint_fragment_)
     return current_paint_fragment_->PhysicalFragment().IsHiddenForPaint();
@@ -391,6 +406,22 @@ unsigned NGInlineCursor::CurrentTextEndOffset() const {
     return current_item_->EndOffset();
   NOTREACHED();
   return 0u;
+}
+
+PhysicalRect NGInlineCursor::CurrentLocalRect(unsigned start_offset,
+                                              unsigned end_offset) const {
+  DCHECK(IsText());
+  if (current_paint_fragment_) {
+    return To<NGPhysicalTextFragment>(
+               current_paint_fragment_->PhysicalFragment())
+        .LocalRect(start_offset, end_offset);
+  }
+  if (current_item_) {
+    return current_item_->LocalRect(current_item_->Text(*fragment_items_),
+                                    start_offset, end_offset);
+  }
+  NOTREACHED();
+  return PhysicalRect();
 }
 
 void NGInlineCursor::MakeNull() {
