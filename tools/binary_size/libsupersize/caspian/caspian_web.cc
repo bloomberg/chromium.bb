@@ -18,41 +18,24 @@
 #include "tools/binary_size/libsupersize/caspian/file_format.h"
 #include "tools/binary_size/libsupersize/caspian/model.h"
 
+namespace caspian {
 namespace {
-caspian::SizeInfo info;
+SizeInfo info;
 
-caspian::TreeNode root;
+TreeNode root;
 // TODO: A full hash table might be overkill here - could walk tree to find
 // node.
-std::unordered_map<std::string_view, caspian::TreeNode*> parents;
+std::unordered_map<std::string_view, TreeNode*> parents;
 
 std::unique_ptr<Json::StreamWriter> writer;
 
 /** Name used by a directory created to hold symbols with no name. */
-const char* _NO_NAME = "(No path)";
+const char* NO_NAME = "(No path)";
 
-std::string ToJson(const Json::Value& value) {
+std::string JsonSerialize(const Json::Value& value) {
   std::stringstream s;
   writer->write(value, &s);
   return s.str();
-}
-
-void OpenIntoJson(const caspian::TreeNode* node, Json::Value* out, int depth) {
-  (*out)["idPath"] = std::string(node->id_path);
-  (*out)["shortNameIndex"] = node->short_name_index;
-  // TODO: Put correct information.
-  (*out)["type"] = "D";
-  (*out)["size"] = node->size;
-  (*out)["flags"] = node->flags;
-  (*out)["childStats"] = Json::Value(Json::objectValue);
-  if (depth < 0) {
-    (*out)["children"] = Json::Value();  // null
-  } else {
-    (*out)["children"] = Json::Value(Json::arrayValue);
-    for (unsigned int i = 0; i < node->children.size(); i++) {
-      OpenIntoJson(node->children[i], &(*out)["children"][i], depth - 1);
-    }
-  }
 }
 
 std::string_view DirName(std::string_view path, char sep) {
@@ -65,7 +48,7 @@ std::string_view DirName(std::string_view path, char sep) {
   return "";
 }
 
-void AttachToParent(caspian::TreeNode* child, caspian::TreeNode* parent) {
+void AttachToParent(TreeNode* child, TreeNode* parent) {
   if (child->parent != nullptr) {
     std::cerr << "Child " << child->id_path << " already attached to parent "
               << child->parent->id_path << std::endl;
@@ -77,28 +60,29 @@ void AttachToParent(caspian::TreeNode* child, caspian::TreeNode* parent) {
   child->parent = parent;
 
   // Update size information along tree.
-  caspian::TreeNode* node = child;
+  TreeNode* node = child;
   while (node->parent) {
     node->parent->size += child->size;
+    node->parent->node_stats += child->node_stats;
     node = node->parent;
   }
 }
 
-caspian::TreeNode* GetOrMakeParentNode(caspian::TreeNode* child_node) {
+TreeNode* GetOrMakeParentNode(TreeNode* child_node) {
   std::string_view parent_path;
   if (child_node->id_path.empty()) {
-    parent_path = _NO_NAME;
+    parent_path = NO_NAME;
   } else {
     parent_path = DirName(child_node->id_path, '/');
   }
 
-  caspian::TreeNode*& parent = parents[parent_path];
+  TreeNode*& parent = parents[parent_path];
   if (parent == nullptr) {
-    parent = new caspian::TreeNode();
+    parent = new TreeNode();
     parent->id_path = parent_path;
     parent->short_name_index = parent_path.find_last_of('/') + 1;
-    // TODO: Set parent type to directory or component.
-    parents[parent_path] = parent;
+    // TODO: Container type might be a component instead of a directory.
+    parent->containerType = ContainerType::kDirectory;
   }
   if (child_node->parent != parent) {
     AttachToParent(child_node, parent);
@@ -107,36 +91,40 @@ caspian::TreeNode* GetOrMakeParentNode(caspian::TreeNode* child_node) {
 }
 
 void AddFileEntry(const std::string_view source_path,
-                  const std::vector<const caspian::Symbol*>& symbols) {
+                  const std::vector<const Symbol*>& symbols) {
   // Creates a single file node with a child for each symbol in that file.
-  caspian::TreeNode* file_node = new caspian::TreeNode();
+  TreeNode* file_node = new TreeNode();
+  file_node->containerType = ContainerType::kFile;
   if (source_path.empty()) {
-    file_node->id_path = _NO_NAME;
+    file_node->id_path = NO_NAME;
   } else {
     file_node->id_path = source_path;
   }
   file_node->short_name_index = source_path.find_last_of('/') + 1;
+  parents[file_node->id_path] = file_node;
   // TODO: Initialize file type, source path, component
 
   // Create symbol nodes.
   for (const auto sym : symbols) {
-    caspian::TreeNode* symbol_node = new caspian::TreeNode();
+    TreeNode* symbol_node = new TreeNode();
+    symbol_node->containerType = ContainerType::kSymbol;
     symbol_node->id_path = sym->full_name;
     symbol_node->size = sym->size;
+    symbol_node->node_stats =
+        NodeStats(info.ShortSectionName(sym->section_name), 1, 0, sym->size);
     AttachToParent(symbol_node, file_node);
   }
 
   // TODO: Only add if there are unfiltered symbols in this file.
-  caspian::TreeNode* orphan_node = file_node;
+  TreeNode* orphan_node = file_node;
   while (orphan_node != &root) {
     orphan_node = GetOrMakeParentNode(orphan_node);
   }
 }
 
-void AddSymbolsAndFileNodes(caspian::SizeInfo* size_info) {
+void AddSymbolsAndFileNodes(SizeInfo* size_info) {
   // Group symbols by source path.
-  std::unordered_map<std::string_view, std::vector<const caspian::Symbol*>>
-      symbols;
+  std::unordered_map<std::string_view, std::vector<const Symbol*>> symbols;
   for (auto& sym : size_info->raw_symbols) {
     std::string_view key = sym.source_path;
     if (key == nullptr) {
@@ -153,8 +141,9 @@ void AddSymbolsAndFileNodes(caspian::SizeInfo* size_info) {
 extern "C" {
 bool LoadSizeFile(const char* compressed, size_t size) {
   writer.reset(Json::StreamWriterBuilder().newStreamWriter());
-  caspian::ParseSizeInfo(compressed, size, &info);
+  ParseSizeInfo(compressed, size, &info);
   // Build tree
+  root.containerType = ContainerType::kDirectory;
   root.id_path = "/";
   parents[""] = &root;
   AddSymbolsAndFileNodes(&info);
@@ -168,8 +157,8 @@ const char* Open(const char* path) {
 
   if (node != parents.end()) {
     Json::Value v;
-    OpenIntoJson(node->second, &v, 1);
-    result = ToJson(v);
+    node->second->WriteIntoJson(&v, 1);
+    result = JsonSerialize(v);
     return result.c_str();
   } else {
     std::cerr << "Tried to open nonexistent node with path: " << path
@@ -178,3 +167,4 @@ const char* Open(const char* path) {
   }
 }
 }  // extern "C"
+}  // namespace caspian
