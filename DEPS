@@ -254,7 +254,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'feed_revision': '78a886b204af52d24e298852587fc99f68cee626',
+  'feed_revision': '5bb82fc8595da9dfebd9b60bee75c8fb0bc5a1c6',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling android_sdk_build-tools_version
   # and whatever else without interference from each other.
