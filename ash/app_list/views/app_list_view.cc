@@ -2117,9 +2117,14 @@ bool AppListView::CloseKeyboardIfVisible() {
 }
 
 void AppListView::OnParentWindowBoundsChanged() {
+  const gfx::Rect new_target_bounds =
+      GetPreferredWidgetBoundsForState(app_list_state_);
+  aura::Window* window = GetWidget()->GetNativeView();
+  if (new_target_bounds == window->GetTargetBounds())
+    return;
+
   // Set the widget size to fit the new display metrics.
-  GetWidget()->GetNativeView()->SetBounds(
-      GetPreferredWidgetBoundsForState(app_list_state_));
+  GetWidget()->GetNativeView()->SetBounds(new_target_bounds);
 
   // Update the widget bounds to accomodate the new work
   // area.
