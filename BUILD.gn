@@ -23,9 +23,7 @@ group("gn_all") {
     "third_party/abseil",
     "third_party/boringssl",
     "third_party/jsoncpp",
-    "third_party/protobuf:protoc",
     "third_party/tinycbor",
-    "third_party/zlib",
     "tools/cddl",
     "util",
   ]
@@ -45,17 +43,22 @@ group("gn_all") {
   if (use_chromium_quic && use_mdns_responder) {
     deps += [ "osp:osp_demo" ]
   }
+
+  if (!build_with_chromium) {
+    deps += [
+      "third_party/protobuf:protoc",
+      "third_party/zlib",
+    ]
+  }
 }
 
-executable("openscreen_unittests") {
+source_set("openscreen_unittests_all") {
   testonly = true
-  deps = [
+  public_deps = [
     "cast/common:unittests",
     "cast/sender:unittests",
     "discovery:unittests",
     "osp:unittests",
-    "osp/impl/discovery/mdns:unittests",
-    "osp/impl/testing:unittests",
     "osp/msgs:unittests",
     "platform:unittests",
     "streaming/cast:unittests",
@@ -63,4 +66,22 @@ executable("openscreen_unittests") {
     "third_party/googletest:gtest_main",
     "util:unittests",
   ]
+
+  if (use_mdns_responder) {
+    public_deps += [
+      "osp/impl/discovery/mdns:unittests",
+
+      # Currently this target only includes mDNS tests.
+      "osp/impl/testing:unittests",
+    ]
+  }
+}
+
+if (!build_with_chromium) {
+  executable("openscreen_unittests") {
+    testonly = true
+    deps = [
+      ":openscreen_unittests_all",
+    ]
+  }
 }

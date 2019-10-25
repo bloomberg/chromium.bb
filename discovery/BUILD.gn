@@ -28,12 +28,13 @@ source_set("mdns") {
   ]
 
   deps = [
-    "../platform",
-    "../third_party/abseil",
     "../util",
   ]
 
-  configs += [ "../../build:allow_build_from_embedder" ]
+  public_deps = [
+    "../platform",
+    "../third_party/abseil",
+  ]
 }
 
 source_set("dnssd") {
@@ -58,11 +59,7 @@ source_set("dnssd") {
 
   deps = [
     ":mdns",
-    "../platform",
-    "../third_party/abseil",
   ]
-
-  configs += [ "../build:allow_build_from_embedder" ]
 }
 
 source_set("unittests") {
@@ -87,12 +84,8 @@ source_set("unittests") {
   deps = [
     ":dnssd",
     ":mdns",
-    "../platform",
-    "../third_party/abseil",
     "../third_party/googletest:gmock",
     "../third_party/googletest:gtest",
     "../util",
   ]
-
-  configs += [ "../../build:allow_build_from_embedder" ]
 }

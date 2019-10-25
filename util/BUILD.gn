@@ -38,7 +38,7 @@ source_set("util") {
     "../third_party/jsoncpp",
   ]
 
-  configs += [ "../build:allow_build_from_embedder" ]
+  public_configs = [ "../build:openscreen_include_dirs" ]
 }
 
 source_set("unittests") {
@@ -66,6 +66,4 @@ source_set("unittests") {
     "../third_party/googletest:gtest",
     "../third_party/jsoncpp",
   ]
-
-  configs += [ "../build:allow_build_from_embedder" ]
 }

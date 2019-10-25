@@ -65,7 +65,6 @@ executable("quic_demo_client") {
   deps = [
     ":chromium_quic",
   ]
-  configs -= [ "//build:default_include_dirs" ]
   configs += [ ":chromium_quic_config" ]
 }
 
@@ -78,7 +77,6 @@ executable("quic_demo_server") {
   deps = [
     ":chromium_quic",
   ]
-  configs -= [ "//build:default_include_dirs" ]
   configs += [ ":chromium_quic_config" ]
 }
 
@@ -212,7 +210,6 @@ source_set("core") {
   #   "src/net/third_party/quic/core/quic_packet_reader.cc",
   #   "src/net/third_party/quic/core/quic_packet_reader.h",
   # ]
-  configs -= [ "//build:default_include_dirs" ]
   configs += [
     ":chromium_quic_config",
     "//third_party/protobuf:using_proto",
@@ -257,7 +254,6 @@ source_set("congestion_control") {
     "src/net/third_party/quic/core/congestion_control/windowed_filter.h",
   ]
 
-  configs -= [ "//build:default_include_dirs" ]
   configs += [ ":chromium_quic_config" ]
 }
 
@@ -348,7 +344,6 @@ source_set("crypto") {
     ":proto",
   ]
 
-  configs -= [ "//build:default_include_dirs" ]
   configs += [ ":chromium_quic_config" ]
 }
 
@@ -394,7 +389,6 @@ source_set("frames") {
     "src/net/third_party/quic/core/frames/quic_window_update_frame.h",
   ]
 
-  configs -= [ "//build:default_include_dirs" ]
   configs += [ ":chromium_quic_config" ]
 }
 
@@ -404,7 +398,6 @@ proto_library("proto") {
     "src/net/third_party/quic/core/proto/source_address_token.proto",
   ]
 
-  removed_configs = [ "//build:default_include_dirs" ]
   extra_configs = [ ":chromium_quic_config" ]
 }
 
@@ -424,7 +417,6 @@ source_set("quartc") {
     ":core",
   ]
 
-  configs -= [ "//build:default_include_dirs" ]
   configs += [ ":chromium_quic_config" ]
 }
 
@@ -532,7 +524,6 @@ source_set("platform") {
     "src/net/third_party/quic/platform/impl/quic_url_utils_impl.h",
   ]
 
-  configs -= [ "//build:default_include_dirs" ]
   configs += [ ":chromium_quic_config" ]
 }
 

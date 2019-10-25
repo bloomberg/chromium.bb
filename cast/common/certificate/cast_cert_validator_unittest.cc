@@ -156,7 +156,7 @@ DateTime MarchFirst2037() {
   return CreateDate(2037, 3, 1);
 }
 
-#define TEST_DATA_PREFIX "test/data/cast/common/certificate/"
+#define TEST_DATA_PREFIX OPENSCREEN_TEST_DATA_DIR "/cast/common/certificate/"
 
 // Tests verifying a valid certificate chain of length 2:
 //

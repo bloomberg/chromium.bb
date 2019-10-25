@@ -7,6 +7,7 @@ import("//build_overrides/build.gni")
 if (build_with_chromium) {
   source_set("abseil") {
     public_deps = [
+      "//third_party/abseil-cpp/absl/hash",
       "//third_party/abseil-cpp/absl/strings",
       "//third_party/abseil-cpp/absl/types:optional",
       "//third_party/abseil-cpp/absl/types:variant",
@@ -88,7 +89,6 @@ if (build_with_chromium) {
 
     configs -= [ "//build/config:symbol_visibility_hidden" ]
     configs += [ "//build/config:symbol_visibility_default" ]
-    configs -= [ "//build:default_include_dirs" ]
 
     configs += [ ":private_abseil_config" ]
     public_configs = [ ":abseil_config" ]

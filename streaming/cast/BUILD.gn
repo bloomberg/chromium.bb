@@ -46,6 +46,8 @@ source_set("common") {
     "ssrc.h",
   ]
 
+  public_configs = [ "../../build:openscreen_include_dirs" ]
+
   public_deps = [
     "../../third_party/abseil",
     "../../third_party/boringssl",

@@ -46,8 +46,6 @@ source_set("public") {
     "../../platform",
     "../../util",
   ]
-
-  configs += [ "../../build:allow_build_from_embedder" ]
 }
 
 source_set("test_support") {

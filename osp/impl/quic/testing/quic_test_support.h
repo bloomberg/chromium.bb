@@ -18,8 +18,8 @@
 #include "platform/api/time.h"
 #include "platform/api/udp_socket.h"
 #include "platform/base/ip_address.h"
-#include "platform/impl/task_runner.h"
 #include "platform/test/fake_clock.h"
+#include "platform/test/fake_task_runner.h"
 #include "platform/test/fake_udp_socket.h"
 
 namespace openscreen {

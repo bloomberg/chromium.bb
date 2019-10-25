@@ -33,10 +33,10 @@ class DnsDataTesting : public DnsData {
     SetVariable(new_aaaa, aaaa(), DnsType::kAAAA);
   }
 
-  const absl::optional<SrvRecordRdata>& srv() { return srv_; };
-  const absl::optional<TxtRecordRdata>& txt() { return txt_; };
-  const absl::optional<ARecordRdata>& a() { return a_; };
-  const absl::optional<AAAARecordRdata>& aaaa() { return aaaa_; };
+  const absl::optional<SrvRecordRdata>& srv() { return srv_; }
+  const absl::optional<TxtRecordRdata>& txt() { return txt_; }
+  const absl::optional<ARecordRdata>& a() { return a_; }
+  const absl::optional<AAAARecordRdata>& aaaa() { return aaaa_; }
 
  private:
   template <typename T>

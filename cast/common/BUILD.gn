@@ -57,6 +57,7 @@ source_set("channel") {
 
 proto_library("channel_proto") {
   sources = [
+    "channel/proto/authority_keys.proto",
     "channel/proto/cast_channel.proto",
   ]
 }

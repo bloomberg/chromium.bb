@@ -147,7 +147,7 @@ bool MdnsRecordTracker::IsStarted() {
   OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
 
   return record_.has_value();
-};
+}
 
 void MdnsRecordTracker::SendQuery() {
   const MdnsRecord& record = record_.value();
@@ -221,7 +221,7 @@ bool MdnsQuestionTracker::IsStarted() {
   OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
 
   return question_.has_value();
-};
+}
 
 void MdnsQuestionTracker::AddCallback(MdnsRecordChangedCallback* callback) {
   OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());

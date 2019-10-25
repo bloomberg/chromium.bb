@@ -51,7 +51,7 @@ class DnsSdInstanceRecord {
   const absl::optional<IPEndpoint>& address_v6() const { return address_v6_; }
 
   // Returns the TXT record associated with this DNS-SD record
-  const DnsSdTxtRecord& txt() const { return txt_; };
+  const DnsSdTxtRecord& txt() const { return txt_; }
 
  private:
   DnsSdInstanceRecord(std::string instance_id,

@@ -94,7 +94,5 @@ if (build_with_chromium) {
 
     public_configs = [ ":external_config" ]
     configs += [ ":internal_config" ]
-
-    configs -= [ "//build:default_include_dirs" ]
   }
 }

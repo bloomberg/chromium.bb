@@ -99,7 +99,7 @@ bool ConvertTimeSeconds(const certificate::DateTime& time, uint64_t* seconds) {
   return true;
 }
 
-#define TEST_DATA_PREFIX "test/data/cast/common/certificate/"
+#define TEST_DATA_PREFIX OPENSCREEN_TEST_DATA_DIR "cast/common/certificate/"
 
 class CastAuthUtilTest : public testing::Test {
  public:

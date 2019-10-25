@@ -134,7 +134,6 @@ _shared_binary_target_configs = [
   "//build/config:default_sanitizers",
   "//build/config:compiler_defaults",
   "//build/config:default_optimization",
-  "//build:default_include_dirs",
 ]
 
 # Apply that default list to the binary target types.

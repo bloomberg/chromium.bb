@@ -715,7 +715,6 @@ source_set("base") {
     "../../src/third_party",
   ]
 
-  configs -= [ "//build:default_include_dirs" ]
   configs += [ ":base_config" ]
 }
 
@@ -765,7 +764,6 @@ source_set("libevent") {
     ]
   }
 
-  configs -= [ "//build:default_include_dirs" ]
   configs += [ ":base_config" ]
   include_dirs = [ "third_party/libevent" ]
 }
