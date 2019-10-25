@@ -35,53 +35,80 @@ class CleanCommand(command.CliCommand):
     super(CleanCommand, cls).AddParser(parser)
 
     parser.add_argument(
-        '--safe', default=False, action='store_true',
+        '--safe',
+        default=False,
+        action='store_true',
         help='Clean up files that are automatically created.')
     parser.add_argument(
-        '-n', '--dry-run', default=False, action='store_true',
+        '-n',
+        '--dry-run',
+        default=False,
+        action='store_true',
         help='Show which paths would be cleaned up.')
 
     group = parser.add_argument_group(
         'Cache Selection (Advanced)',
         description='Clean out specific caches (--safe does all of these).')
     group.add_argument(
-        '--cache', default=False, action='store_true',
+        '--cache',
+        default=False,
+        action='store_true',
         help='Clean up our shared cache dir.')
     group.add_argument(
-        '--chromite', default=False, action='store_true',
+        '--chromite',
+        default=False,
+        action='store_true',
         help='Clean up chromite working directories.')
     group.add_argument(
-        '--deploy', default=False, action='store_true',
+        '--deploy',
+        default=False,
+        action='store_true',
         help='Clean files cached by cros deploy.')
     group.add_argument(
-        '--flash', default=False, action='store_true',
+        '--flash',
+        default=False,
+        action='store_true',
         help='Clean files cached by cros flash.')
     group.add_argument(
-        '--images', default=False, action='store_true',
+        '--images',
+        default=False,
+        action='store_true',
         help='Clean up locally generated images.')
     group.add_argument(
-        '--incrementals', default=False, action='store_true',
+        '--incrementals',
+        default=False,
+        action='store_true',
         help='Clean up incremental package objects.')
     group.add_argument(
-        '--logs', default=False, action='store_true',
+        '--logs',
+        default=False,
+        action='store_true',
         help='Clean up various build log files.')
     group.add_argument(
-        '--workdirs', default=False, action='store_true',
+        '--workdirs',
+        default=False,
+        action='store_true',
         help='Clean up build various package build directories.')
 
     group = parser.add_argument_group(
         'Unrecoverable Options (Dangerous)',
         description='Clean out objects that cannot be recovered easily.')
     group.add_argument(
-        '--clobber', default=False, action='store_true',
+        '--clobber',
+        default=False,
+        action='store_true',
         help='Delete all non-source objects.')
     group.add_argument(
-        '--chroot', default=False, action='store_true',
+        '--chroot',
+        default=False,
+        action='store_true',
         help='Delete build chroot (affects all boards).')
     group.add_argument(
         '--board', action='append', help='Delete board(s) build root(s).')
     group.add_argument(
-        '--autotest', default=False, action='store_true',
+        '--autotest',
+        default=False,
+        action='store_true',
         help='Delete build_externals packages.')
 
   def __init__(self, options):
@@ -92,16 +119,10 @@ class CleanCommand(command.CliCommand):
     """Perfrom the cros clean command."""
 
     # If no option is set, default to "--safe"
-    if not (self.options.safe or
-            self.options.clobber or
-            self.options.board or
-            self.options.chroot or
-            self.options.cache or
-            self.options.deploy or
-            self.options.flash or
-            self.options.images or
-            self.options.autotest or
-            self.options.incrementals):
+    if not (self.options.safe or self.options.clobber or self.options.board or
+            self.options.chroot or self.options.cache or self.options.deploy or
+            self.options.flash or self.options.images or
+            self.options.autotest or self.options.incrementals):
       self.options.safe = True
 
     if self.options.clobber:
@@ -164,8 +185,8 @@ class CleanCommand(command.CliCommand):
         for subdir in ('ccache', 'host', 'target'):
           osutils.SafeMakedirs(
               os.path.join(self.options.cache_dir, 'distfiles', subdir))
-        os.chmod(os.path.join(self.options.cache_dir, 'distfiles', 'ccache'),
-                 0o2775)
+        os.chmod(
+            os.path.join(self.options.cache_dir, 'distfiles', 'ccache'), 0o2775)
 
     if self.options.chromite:
       logging.debug('Clean chromite workdirs')
@@ -190,28 +211,27 @@ class CleanCommand(command.CliCommand):
     if self.options.incrementals:
       logging.debug('Clean package incremental objects')
       Clean(os.path.join(chroot_dir, 'var', 'cache', 'portage'))
-      for d in glob.glob(os.path.join(chroot_dir, 'build', '*', 'var', 'cache',
-                                      'portage')):
+      for d in glob.glob(
+          os.path.join(chroot_dir, 'build', '*', 'var', 'cache', 'portage')):
         Clean(d)
 
     if self.options.logs:
       logging.debug('Clean log files')
       Clean(os.path.join(chroot_dir, 'var', 'log'))
-      for d in glob.glob(os.path.join(chroot_dir, 'build', '*', 'tmp',
-                                      'portage', 'logs')):
+      for d in glob.glob(
+          os.path.join(chroot_dir, 'build', '*', 'tmp', 'portage', 'logs')):
         Clean(d)
 
     if self.options.workdirs:
       logging.debug('Clean package workdirs')
       Clean(os.path.join(chroot_dir, 'var', 'tmp', 'portage'))
       Clean(os.path.join(constants.CHROMITE_DIR, 'venv', 'venv'))
-      for d in glob.glob(os.path.join(chroot_dir, 'build', '*', 'tmp',
-                                      'portage')):
+      for d in glob.glob(
+          os.path.join(chroot_dir, 'build', '*', 'tmp', 'portage')):
         Clean(d)
 
     if self.options.autotest:
       logging.debug('Clean build_externals')
-      packages_dir = os.path.join(
-          constants.SOURCE_ROOT, 'src', 'third_party', 'autotest', 'files',
-          'site-packages')
+      packages_dir = os.path.join(constants.SOURCE_ROOT, 'src', 'third_party',
+                                  'autotest', 'files', 'site-packages')
       Clean(packages_dir)
