@@ -283,12 +283,15 @@ void ShelfWidget::DelegateView::UpdateDragHandle() {
     return;
   }
   drag_handle_->SetVisible(true);
-  drag_handle_->SetX((shelf_widget_->GetClientAreaBoundsInScreen().width() -
-                      kDragHandleSize.width()) /
-                     2);
-  drag_handle_->SetY((shelf_widget_->GetClientAreaBoundsInScreen().height() -
-                      kDragHandleSize.height()) /
-                     2);
+
+  const int x = (shelf_widget_->GetClientAreaBoundsInScreen().width() -
+                 kDragHandleSize.width()) /
+                2;
+  const int y = (shelf_widget_->GetClientAreaBoundsInScreen().height() -
+                 kDragHandleSize.height()) /
+                2;
+  drag_handle_->SetBounds(x, y, kDragHandleSize.width(),
+                          kDragHandleSize.height());
 }
 
 void ShelfWidget::DelegateView::OnBoundsChanged(const gfx::Rect& old_bounds) {
@@ -581,6 +584,12 @@ void ShelfWidget::OnSessionStateChanged(session_manager::SessionState state) {
     login_shelf_view()->SetVisible(!show_hotseat);
     delegate_view_->SetLayoutManager(
         show_hotseat ? nullptr : std::make_unique<views::FillLayout>());
+
+    // When FillLayout is no longer the layout manager, ensure the correct size
+    // for the drag handle is set.
+    if (show_hotseat)
+      delegate_view_->UpdateDragHandle();
+
     ShowIfHidden();
   }
   login_shelf_view_->UpdateAfterSessionChange();
