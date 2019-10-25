@@ -436,6 +436,10 @@
       status: "test",
     },
     {
+      name: "CSSMarkerPseudoElement",
+      status: "experimental",
+    },
+    {
       name: "CSSMaskSourceType",
       status: "experimental",
     },
