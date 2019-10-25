@@ -45,11 +45,6 @@ export class Fixture {
     this.rec.fail(msg);
   }
 
-  ok(msg?: string): void {
-    const m = msg ? ': ' + msg : '';
-    this.log('OK' + m);
-  }
-
   protected async immediateAsyncExpectation<T>(fn: () => Promise<T>): Promise<T> {
     this.numOutstandingAsyncExpectations++;
     const ret = await fn();
@@ -72,7 +67,7 @@ export class Fixture {
     if (actualName !== expectedName) {
       this.fail(`THREW ${actualName} INSTEAD OF ${expectedName}${m}`);
     } else {
-      this.ok(`threw ${actualName}${m}`);
+      this.debug(`OK: threw ${actualName}${m}`);
     }
   }
 
@@ -100,7 +95,8 @@ export class Fixture {
 
   expect(cond: boolean, msg?: string): boolean {
     if (cond) {
-      this.ok(msg);
+      const m = msg ? ': ' + msg : '';
+      this.debug('expect OK' + m);
     } else {
       this.rec.fail(msg);
     }

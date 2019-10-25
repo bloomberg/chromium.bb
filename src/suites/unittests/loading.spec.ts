@@ -60,11 +60,11 @@ const specsData: { [k: string]: TestSpecOrReadme } = {
     g: (() => {
       const g = new TestGroup(UnitTest);
       g.test('blah', t => {
-        t.ok();
+        t.log('OK');
       });
       g.test('bleh', t => {
-        t.ok();
-        t.ok();
+        t.log('OK');
+        t.log('OK');
       }).params([{}]);
       return g;
     })(),
