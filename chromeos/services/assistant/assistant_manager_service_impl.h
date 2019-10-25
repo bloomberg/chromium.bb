@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "ash/public/mojom/assistant_controller.mojom.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "chromeos/assistant/internal/action/cros_action_module.h"
@@ -248,31 +249,10 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
 
   void HandleLaunchMediaIntentResponse(bool app_opened);
 
-  void OnConversationTurnStartedOnMainThread(
-      const assistant_client::ConversationTurnMetadata& metadata);
-  void OnConversationTurnFinishedOnMainThread(
-      assistant_client::ConversationStateListener::Resolution resolution);
-  void OnShowHtmlOnMainThread(const std::string& html,
-                              const std::string& fallback);
-  void OnShowSuggestionsOnMainThread(
-      const std::vector<mojom::AssistantSuggestionPtr>& suggestions);
-  void OnShowTextOnMainThread(const std::string& text);
-  void OnOpenUrlOnMainThread(const std::string& url, bool in_background);
-  void OnShowNotificationOnMainThread(
-      const mojom::AssistantNotificationPtr& notification);
-  void OnNotificationRemovedOnMainThread(const std::string& grouping_id);
-  void OnCommunicationErrorOnMainThread(int error_code);
-  void OnRecognitionStateChangedOnMainThread(
-      assistant_client::ConversationStateListener::RecognitionState state,
-      const assistant_client::ConversationStateListener::RecognitionResult&
-          recognition_result);
-  void OnRespondingStartedOnMainThread(bool is_error_response);
-  void OnSpeechLevelUpdatedOnMainThread(const float speech_level);
-  void OnAlarmTimerStateChangedOnMainThread();
+  void OnAlarmTimerStateChanged();
   void OnModifySettingsAction(const std::string& modify_setting_args_proto);
-  void OnOpenMediaAndroidIntentOnMainThread(
-      const std::string play_media_args_proto,
-      action::AndroidAppInfo* android_app_info);
+  void OnOpenMediaAndroidIntent(const std::string play_media_args_proto,
+                                action::AndroidAppInfo* android_app_info);
   void OnPlayMedia(const std::string play_media_args_proto);
   void OnMediaControlAction(const std::string& action_name,
                             const std::string& media_action_args_proto);
