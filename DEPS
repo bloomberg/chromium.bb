@@ -464,7 +464,7 @@ deps = {
     'packages': [
       {
         'package': 'chromium/chrome/test/data/password/captured_sites',
-        'version': 'q_mI3rtAXvNUW_X3zxca3VcUVdHkgwRqhfTLHt9H7rIC',
+        'version': 'MuT6UWjyB52nWFDuu4RCv4o_vMPIZdI4P2m2YsC66fAC',
       }
     ],
     'condition': 'checkout_chromium_password_manager_test_dependencies',
