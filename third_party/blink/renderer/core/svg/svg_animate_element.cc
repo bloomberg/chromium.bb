@@ -424,7 +424,6 @@ void SVGAnimateElement::ResetAnimatedType() {
     // SVG DOM animVal animation code-path.
     animated_value_ = target_property_->CreateAnimatedValue();
     DCHECK_EQ(animated_value_->GetType(), type_);
-    target_element->SetAnimatedAttribute(AttributeName(), animated_value_);
     return;
   }
   DCHECK(IsAnimatingCSSProperty());
@@ -448,8 +447,8 @@ void SVGAnimateElement::ClearAnimatedType() {
   }
 
   bool should_apply = ShouldApplyAnimation(*target_element);
+  // CSS properties animation code-path.
   if (IsAnimatingCSSProperty()) {
-    // CSS properties animation code-path.
     if (should_apply) {
       MutableCSSPropertyValueSet* property_set =
           target_element->EnsureAnimatedSMILStyleProperties();
@@ -460,12 +459,9 @@ void SVGAnimateElement::ClearAnimatedType() {
       }
     }
   }
-  if (IsAnimatingSVGDom()) {
-    // SVG DOM animVal animation code-path.
+  // SVG DOM animVal animation code-path.
+  if (IsAnimatingSVGDom())
     target_element->ClearAnimatedAttribute(AttributeName());
-    if (should_apply)
-      target_element->InvalidateAnimatedAttribute(AttributeName());
-  }
 
   animated_value_.Clear();
 }
@@ -484,8 +480,9 @@ void SVGAnimateElement::ApplyResultsToTarget() {
 
   // We do update the style and the animation property independent of each
   // other.
+
+  // CSS properties animation code-path.
   if (IsAnimatingCSSProperty()) {
-    // CSS properties animation code-path.
     // Convert the result of the animation to a String and apply it as CSS
     // property on the target_element.
     MutableCSSPropertyValueSet* properties =
@@ -502,12 +499,9 @@ void SVGAnimateElement::ApplyResultsToTarget() {
           StyleChangeReasonForTracing::Create(style_change_reason::kAnimation));
     }
   }
-  if (IsAnimatingSVGDom()) {
-    // SVG DOM animVal animation code-path.
-    // At this point the SVG DOM values are already changed, unlike for CSS.
-    // We only have to trigger update notifications here.
-    targetElement()->InvalidateAnimatedAttribute(AttributeName());
-  }
+  // SVG DOM animVal animation code-path.
+  if (IsAnimatingSVGDom())
+    target_element->SetAnimatedAttribute(AttributeName(), animated_value_);
 }
 
 bool SVGAnimateElement::AnimatedPropertyTypeSupportsAddition() const {
