@@ -2160,6 +2160,9 @@ extern const char kReduceDisplayNotificationsDescription[];
 extern const char kReleaseNotesName[];
 extern const char kReleaseNotesDescription[];
 
+extern const char kReleaseNotesNotificationName[];
+extern const char kReleaseNotesNotificationDescription[];
+
 extern const char kSchedulerConfigurationName[];
 extern const char kSchedulerConfigurationDescription[];
 extern const char kSchedulerConfigurationConservative[];
