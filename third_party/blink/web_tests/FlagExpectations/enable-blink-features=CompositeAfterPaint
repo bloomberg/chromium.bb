@@ -177,6 +177,7 @@ Bug(none) paint/invalidation/compositing/should-not-repaint-composited-filter.ht
 Bug(none) paint/invalidation/compositing/should-not-repaint-composited-opacity.html [ Failure ]
 Bug(none) paint/invalidation/compositing/should-not-repaint-move-backface-hidden.html [ Failure ]
 Bug(none) paint/invalidation/scroll/iframe-scroll-repaint.html [ Failure ]
+Bug(none) paint/invalidation/scroll/repaint-composited-child-in-scrolled-container.html [ Failure ]
 Bug(none) paint/invalidation/position/layout-state-only-positioned.html [ Failure ]
 Bug(none) paint/invalidation/position/relative-positioned-movement-repaint.html [ Failure ]
 
