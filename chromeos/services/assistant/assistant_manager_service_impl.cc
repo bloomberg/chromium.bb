@@ -31,6 +31,7 @@
 #include "chromeos/services/assistant/media_session/assistant_media_session.h"
 #include "chromeos/services/assistant/platform_api_impl.h"
 #include "chromeos/services/assistant/public/features.h"
+#include "chromeos/services/assistant/public/mojom/assistant.mojom-shared.h"
 #include "chromeos/services/assistant/service_context.h"
 #include "chromeos/services/assistant/utils.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
@@ -409,6 +410,12 @@ void AssistantManagerServiceImpl::StartWarmerWelcomeInteraction(
       allow_tts ? assistant_client::VoicelessOptions::Modality::VOICE_MODALITY
                 : assistant_client::VoicelessOptions::Modality::TYPING_MODALITY;
 
+  auto interaction_type = allow_tts ? mojom::AssistantInteractionType::kVoice
+                                    : mojom::AssistantInteractionType::kText;
+  options.conversation_turn_id = NewPendingInteraction(
+      interaction_type, mojom::AssistantQuerySource::kWarmerWelcome,
+      /*query=*/std::string());
+
   assistant_manager_internal_->SendVoicelessInteraction(
       interaction, /*description=*/"warmer_welcome_trigger", options,
       [](auto) {});
@@ -466,10 +473,8 @@ void AssistantManagerServiceImpl::StartTextInteraction(
 
   // Cache metadata about this interaction that can be resolved when the
   // associated conversation turn starts in LibAssistant.
-  options.conversation_turn_id = base::NumberToString(next_interaction_id_++);
-  pending_interactions_[options.conversation_turn_id] =
-      mojom::AssistantInteractionMetadata::New(
-          mojom::AssistantInteractionType::kText, source, query);
+  options.conversation_turn_id = NewPendingInteraction(
+      mojom::AssistantInteractionType::kText, source, query);
 
   if (base::FeatureList::IsEnabled(
           assistant::features::kEnableTextQueriesWithClientDiscourseContext) &&
@@ -1630,6 +1635,16 @@ void AssistantManagerServiceImpl::UpdateMediaState() {
   auto* media_manager = assistant_manager_->GetMediaManager();
   if (media_manager)
     media_manager->SetExternalPlaybackState(media_status);
+}
+
+std::string AssistantManagerServiceImpl::NewPendingInteraction(
+    mojom::AssistantInteractionType interaction_type,
+    mojom::AssistantQuerySource source,
+    const std::string& query) {
+  auto id = base::NumberToString(next_interaction_id_++);
+  pending_interactions_[id] =
+      mojom::AssistantInteractionMetadata::New(interaction_type, source, query);
+  return id;
 }
 
 ash::mojom::AssistantAlarmTimerController*
