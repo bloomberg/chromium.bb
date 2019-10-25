@@ -12,7 +12,7 @@
 };
 
 namespace TestNamespace {
-  readonly attribute Promise<boolean> attr1;
+  readonly attribute boolean attr1;
   readonly attribute DOMString attr2;
   void op1();
 };
