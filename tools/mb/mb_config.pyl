@@ -1594,7 +1594,7 @@
     ],
 
     'gpu_fyi_tests_dx12vk_release_trybot': [
-      'gpu_fyi_tests', 'dx12vk',
+      'gpu_fyi_tests', 'dx12vk', 'release_trybot',
     ],
 
     'gpu_tests_android_release_bot_minimal_symbols_arm64': [
