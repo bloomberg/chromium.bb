@@ -731,12 +731,6 @@ IPC_MESSAGE_ROUTED0(FrameMsg_DidStartLoading)
 // RenderFrame has completed loading.
 IPC_MESSAGE_ROUTED0(FrameMsg_DidStopLoading)
 
-// Add message to the frame console.
-IPC_MESSAGE_ROUTED3(FrameMsg_AddMessageToConsole,
-                    blink::mojom::ConsoleMessageLevel /* level */,
-                    std::string /* message */,
-                    bool /* discard_duplicates */)
-
 // TODO(https://crbug.com/995428): Deprecated.
 // Tells the renderer to reload the frame.
 IPC_MESSAGE_ROUTED0(FrameMsg_Reload)

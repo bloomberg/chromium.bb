@@ -2262,7 +2262,6 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
 #endif
     IPC_MESSAGE_HANDLER(FrameMsg_CopyImageAt, OnCopyImageAt)
     IPC_MESSAGE_HANDLER(FrameMsg_SaveImageAt, OnSaveImageAt)
-    IPC_MESSAGE_HANDLER(FrameMsg_AddMessageToConsole, OnAddMessageToConsole)
     IPC_MESSAGE_HANDLER(FrameMsg_VisualStateRequest,
                         OnVisualStateRequest)
     IPC_MESSAGE_HANDLER(FrameMsg_Reload, OnReload)
@@ -2585,13 +2584,6 @@ void RenderFrameImpl::OnSaveImageAt(int x, int y) {
   blink::WebFloatRect viewport_position(x, y, 0, 0);
   GetLocalRootRenderWidget()->ConvertWindowToViewport(&viewport_position);
   frame_->SaveImageAt(WebPoint(viewport_position.x, viewport_position.y));
-}
-
-void RenderFrameImpl::OnAddMessageToConsole(
-    blink::mojom::ConsoleMessageLevel level,
-    const std::string& message,
-    bool discard_duplicates) {
-  AddMessageToConsoleImpl(level, message, discard_duplicates);
 }
 
 void RenderFrameImpl::JavaScriptExecuteRequest(

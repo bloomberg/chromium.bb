@@ -7676,8 +7676,8 @@ void RenderFrameHostImpl::AddMessageToConsoleImpl(
     blink::mojom::ConsoleMessageLevel level,
     const std::string& message,
     bool discard_duplicates) {
-  Send(new FrameMsg_AddMessageToConsole(routing_id_, level, message,
-                                        discard_duplicates));
+  GetAssociatedLocalFrame()->AddMessageToConsole(level, message,
+                                                 discard_duplicates);
 }
 
 void RenderFrameHostImpl::AddSameSiteCookieDeprecationMessage(
