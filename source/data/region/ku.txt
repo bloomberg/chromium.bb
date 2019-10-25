@@ -261,8 +261,7 @@ ku{
         CD{"Kongo (KDK)"}
         CG{"Kongo (Komar)"}
         CZ{"Komara Çekî"}
-        MK{"MK"}
         TL{"Tîmora Rojhilat"}
     }
-    Version{"2.1.47.83"}
+    Version{"36"}
 }

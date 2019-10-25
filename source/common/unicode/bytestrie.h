@@ -23,6 +23,9 @@
  */
 
 #include "unicode/utypes.h"
+
+#if U_SHOW_CPLUSPLUS_API
+
 #include "unicode/stringpiece.h"
 #include "unicode/uobject.h"
 #include "unicode/ustringtrie.h"
@@ -94,6 +97,7 @@ public:
         return *this;
     }
 
+#ifndef U_HIDE_DRAFT_API
     /**
      * Returns the state of this trie as a 64-bit integer.
      * The state value is never 0.
@@ -126,6 +130,7 @@ public:
         pos_ = bytes_ + (state & kState64PosMask);
         return *this;
     }
+#endif  /* U_HIDE_DRAFT_API */
 
     /**
      * BytesTrie state object, for saving a trie's current state
@@ -556,5 +561,7 @@ private:
 };
 
 U_NAMESPACE_END
+
+#endif /* U_SHOW_CPLUSPLUS_API */
 
 #endif  // __BYTESTRIE_H__

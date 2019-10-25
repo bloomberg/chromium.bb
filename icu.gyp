@@ -630,6 +630,7 @@
               'unicode/icuplug.h',
               'unicode/idna.h',
               'unicode/localebuilder.h',
+              'unicode/localematcher.h',
               'unicode/localpointer.h',
               'unicode/locdspnm.h',
               'unicode/locid.h',

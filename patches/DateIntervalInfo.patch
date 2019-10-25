@@ -1,8 +1,8 @@
 diff --git a/source/i18n/dtitvinf.cpp b/source/i18n/dtitvinf.cpp
-index c0a6980e..2dd210ac 100644
+index 35ee8c16..7474bebf 100644
 --- a/source/i18n/dtitvinf.cpp
 +++ b/source/i18n/dtitvinf.cpp
-@@ -48,6 +48,7 @@ U_NAMESPACE_BEGIN
+@@ -50,6 +50,7 @@ U_NAMESPACE_BEGIN
  UOBJECT_DEFINE_RTTI_IMPLEMENTATION(DateIntervalInfo)
  
  static const char gCalendarTag[]="calendar";
@@ -10,7 +10,7 @@ index c0a6980e..2dd210ac 100644
  static const char gGregorianTag[]="gregorian";
  static const char gIntervalDateTimePatternTag[]="intervalFormats";
  static const char gFallbackPatternTag[]="fallback";
-@@ -424,9 +425,32 @@ DateIntervalInfo::initializeData(const Locale& locale, UErrorCode& status)
+@@ -426,9 +427,32 @@ DateIntervalInfo::initializeData(const Locale& locale, UErrorCode& status)
          calTypeBundle = ures_getByKeyWithFallback(calBundle, calendarTypeToUse, NULL, &status);
          itvDtPtnResource = ures_getByKeyWithFallback(calTypeBundle,
                                                       gIntervalDateTimePatternTag, NULL, &status);

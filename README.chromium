@@ -1,15 +1,15 @@
 Name: icu
 URL: https://github.com/unicode-org/icu
-Version: 64.2
+Version: 65.1
 License: MIT
 Security Critical: yes
 
 Description:
-This directory contains the source code of ICU 64.2 for C/C++.
+This directory contains the source code of ICU 65.1 for C/C++.
 
 A. How to update ICU
 
-1. Run "scripts/update.sh <version>" (e.g. 64-2).
+1. Run "scripts/update.sh <version>" (e.g. 65-1).
    This will download ICU from the upstream git repository.
    It does preserve Chrome-specific build files and
    converter files. (see section C)
@@ -136,16 +136,7 @@ them when updating ICU.
     from U+1E3F to \xA8\xBC (windows-936/GBK).
        See https://www.w3.org/Bugs/Public/show_bug.cgi?id=28740#c3
 
-2. source/data/*/*local.mk
-  - List locales of interest to Chromium
-   a. Chrome's UI languages
-   b. Variants of UI languages
-   c. Other locales in Accept-Language list : will only have bare minimum
-   locale data
-
-  - brklocal.mk drops some line*brk files to save space for now.
-
-3. source/data/brkitr
+2. source/data/brkitr
   - dictionaries/khmerdict.txt: Abridged Khmer dictionary. See
     https://unicode-org.atlassian.net/browse/ICU-9451
   - rules/word_ja.txt (used only on Android)
@@ -157,10 +148,7 @@ them when updating ICU.
        http://unicode.org/cldr/trac/ticket/6557
        http://unicode.org/cldr/trac/ticket/4200 (http://crbug.com/39779)
 
-4. source/data/trnslit/root_subset.txt
-   Subset of transliteration data to keep for:
-
-5. Add {an,ku,tg,wa}.txt to source/data/{locale,lang}
+3. Add {an,ku,tg,wa}.txt to source/data/{locale,lang}
    with the minimal locale data necessary for spellchecker and
    and language menus.
 
@@ -218,122 +206,21 @@ D. Local Modifications
     upstream bugs : https://unicode-org.atlassian.net/browse/ICU-8043
                     https://unicode-org.atlassian.net/browse/ICU-5701
 
-  - patches/data_symb.patch :
-      Put ICU_DATA_ENTRY_POINT(icudtXX_dat) in common when we use
-      the icu data file or icudt.dll
+  - patches/extra-semi.patch
+    - upstream bugs: https://unicode-org.atlassian.net/browse/ICU-20872
+    - upstream PR: https://github.com/unicode-org/icu/pull/888
 
-  - patches/staticmutex.patch :
-      Change the static UMutex code to avoid static_initializers error.
-      upstream bug: https://unicode-org.atlassian.net/browse/ICU-20520
-
-  - patches/buildtool.patch :
-      Fix the build tool which ommited res_index.res */res_index.res files
-      upstream bug: https://unicode-org.atlassian.net/browse/ICU-20529
-      upstream PR: https://github.com/unicode-org/icu/pull/571/
-
-6. Double conversion library build failure
-
-  - patches/double_conversion.patch
-  - upstream bugs:
-    https://unicode-org.atlassian.net/browse/ICU-13750
-    https://github.com/google/double-conversion/issues/66
-
-7. ISO-2022-JP encoding (fromUnicode) change per WHATWG encoding spec.
-
+5. ISO-2022-JP encoding (fromUnicode) change per WHATWG encoding spec.
   - patches/iso2022jp.patch
   - upstream bug:
     https://unicode-org.atlassian.net/browse/ICU-20251
 
-8. Regexp fuzzer breakage patch
-
-  - patches/regexp.patch
-  - upstream bug:
-    https://unicode-org.atlassian.net/browse/ICU-20544
-  - upstream PR:
-    https://github.com/unicode-org/icu/pull/611
-    https://github.com/unicode-org/icu/pull/623
-
-  - patches/regexp2.patch
-  - upstream bug:
-    https://unicode-org.atlassian.net/browse/ICU-20391
-  - upstream PR:
-    https://github.com/unicode-org/icu/pull/628
-
-9. Timezone breakage patch
-  - patches/timezone.patch
-  - upstream bug:
-    https://unicode-org.atlassian.net/browse/ICU-20595
-  - upstream PR:
-    https://github.com/unicode-org/icu/pull/649
-
-10. Bidi UBSan breakage patch
-  - patches/bidiunshift.patch
-  - upstream bug:
-    https://unicode-org.atlassian.net/browse/ICU-20641
-  - upstream PR:
-    https://github.com/unicode-org/icu/pull/663
-
-11. Fix RelativeTimeFormat for "this hour" and "this minute"
-  - patches/this_hour_minute.patch
-  - upstream bug:
-    https://unicode-org.atlassian.net/browse/ICU-20654
-  - upstream PR:
-    https://github.com/unicode-org/icu/pull/674
-
-12. Add usePoolBundle option to filters.json
-  - patches/usePool.patch
-  - upstream bug:
-    https://unicode-org.atlassian.net/browse/ICU-20660
-  - upstream PR:
-    https://github.com/unicode-org/icu/pull/682
-
-13. Allow ICUPKG to generating dat with missing dependencies.
+6. Allow ICUPKG to generating dat with missing dependencies.
   - patches/icupkg.patch
   - upstream bug:
     https://unicode-org.atlassian.net/browse/ICU-20774
 
-14. Add LocaleMatcher
-  - patches/trie.patch
-  - upstream PR:
-    https://github.com/unicode-org/icu/pull/747
-
-  - patches/tracing.patch
-  - upstream PR:
-    https://github.com/unicode-org/icu/pull/617
-
-  - patches/localematcher.patch
-  - upstream PR:
-    https://github.com/unicode-org/icu/pull/714
-
-15. Prevent leak from adoptCalendar
- - patches/calendarToAdopt.patch
- - upstream bug:
-   https://unicode-org.atlassian.net/browse/ICU-20799
- - upstream PR:
-   https://github.com/unicode-org/icu/pull/790
-
-16. Fix minimumGroupingDigits in Hungarian locale (hu) from 4 to 1.
- - patches/hu_minimumGroupingDigits.patch
- - upstream bug:
-   https://unicode-org.atlassian.net/browse/CLDR-13256
- - upstream PR:
-   https://github.com/unicode-org/cldr/pull/142
-
-17. Remove obsolete U_HAVE_STD_ATOMICS and similar @internal macros.
-  - patches/remove_atomic_macros.patch
-  - upstream bug:
-    https://unicode-org.atlassian.net/browse/ICU-20729
-  - upstream PR:
-    https://github.com/unicode-org/icu/pull/712
-
-18. Do not override clang compiler internal builtins
-  - patches/clang_builtins.patch
-  - upstream bug:
-    https://unicode-org.atlassian.net/browse/ICU-20784
-  - upstream PR:
-    https://github.com/unicode-org/icu/pull/770
-
-19. Fix DateInterval::createInstance
+7. Fix DateInterval::createInstance
   - patches/DateIntervalInfo.patch
   - upstream bug:
     https://unicode-org.atlassian.net/browse/ICU-20706

@@ -308,7 +308,7 @@ az{
         CI{"Fil Dişi Sahili"}
         CZ{"Çex Respublikası"}
         SZ{"Svazilend"}
-        TL{"Doğu Timor"}
+        TL{"Şərqi Timor"}
     }
-    Version{"2.1.49.82"}
+    Version{"36"}
 }

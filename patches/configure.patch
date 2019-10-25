@@ -1,13 +1,14 @@
 diff --git a/source/configure b/source/configure
-index dbdedb6a..a36771d3 100755
+index 67d7f13e..c49c7efa 100755
 --- a/source/configure
 +++ b/source/configure
-@@ -9137,15 +9137,6 @@ else
+@@ -9243,16 +9243,6 @@ else
        echo "Not rebuilding data/rules.mk, assuming prebuilt data in data/in"
        touch data/rules.mk
      fi
 -    echo "Spawning Python to generate test/testdata/rules.mk..."
--    PYTHONPATH="$srcdir/test/testdata:$srcdir/data" $PYTHON -m buildtool \
+-    PYTHONPATH="$srcdir/python" \
+-        $PYTHON -m icutools.databuilder \
 -        --mode gnumake \
 -        --seqmode parallel \
 -        --src_dir "$srcdir/test/testdata" \

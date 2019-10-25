@@ -181,7 +181,6 @@ ksh{
         MF{"de Zint-Määtes-Ensel"}
         MG{"Maddajaska"}
         MH{"de Machschall-Enselle"}
-        MK{"Mazedoonije"}
         ML{"Maali"}
         MM{"Birma"}
         MN{"Mongjolei"}
@@ -300,7 +299,6 @@ ksh{
         CD{"de Demmokraatesche Republik Konggo"}
         CG{"de Republik Konggo"}
         CI{"de Älfebeijnköß"}
-        MK{"de vörmaals ens jugoßlaawesch jewääse Republik Mazedoonije"}
     }
-    Version{"2.1.47.82"}
+    Version{"36"}
 }

@@ -178,7 +178,6 @@ fur{
         MF{"Sant Martin"}
         MG{"Madagascar"}
         MH{"Isulis Marshall"}
-        MK{"Macedonie"}
         ML{"Mali"}
         MM{"Birmanie"}
         MN{"Mongolie"}
@@ -289,7 +288,6 @@ fur{
     Countries%variant{
         CD{"Congo (RDC)"}
         CG{"Congo (Republiche)"}
-        MK{"Macedonie (FYROM)"}
     }
-    Version{"2.1.47.82"}
+    Version{"36"}
 }

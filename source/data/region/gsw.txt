@@ -174,7 +174,6 @@ gsw{
         MF{"St. Martin"}
         MG{"Madagaschkar"}
         MH{"Marshallinsle"}
-        MK{"Mazedoonie"}
         ML{"Maali"}
         MM{"Myanmar (Burma)"}
         MN{"Mongolei"}
@@ -281,8 +280,5 @@ gsw{
         ZW{"Simbabwe"}
         ZZ{"Unbekannti oder ungültigi Regioon"}
     }
-    Countries%variant{
-        MK{"Mazedoonie (EJRM)"}
-    }
-    Version{"2.1.47.82"}
+    Version{"36"}
 }

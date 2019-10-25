@@ -253,7 +253,7 @@ lv{
         SV{"Salvadora"}
         SX{"Sintmārtena"}
         SY{"Sīrija"}
-        SZ{"Svazilenda"}
+        SZ{"Svatini"}
         TA{"Tristana da Kuņas salas"}
         TC{"Tērksas un Kaikosas salas"}
         TD{"Čada"}
@@ -288,7 +288,7 @@ lv{
         WF{"Volisa un Futunas salas"}
         WS{"Samoa"}
         XA{"pseidoakcenti"}
-        XB{"pseido-Bidi"}
+        XB{"pseidodivvirzienu"}
         XK{"Kosova"}
         YE{"Jemena"}
         YT{"Majota"}
@@ -307,6 +307,8 @@ lv{
         CG{"Kongo (Republika)"}
         CI{"Ziloņkaula krasts"}
         CZ{"Čehijas Republika"}
+        SZ{"Svazilenda"}
+        TL{"Austrumtimora"}
     }
-    Version{"2.1.48.43"}
+    Version{"36"}
 }
