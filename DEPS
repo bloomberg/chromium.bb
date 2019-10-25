@@ -957,7 +957,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/sdk/core/linux-arm64',
-              'version': 'J4QyYSv0T-30YSgD6d34XHRpck2ckNh-4MMhsRYj4zoC'
+              'version': 'xbqDSJKkLORclZW8h9et17dVsOjaxurf7RElMu0fGvUC',
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia and checkout_fuchsia_for_arm64_host',
