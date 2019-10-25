@@ -165,6 +165,25 @@ static void JNI_PrefServiceBridge_SetInteger(JNIEnv* env,
       PrefServiceBridge::GetPrefNameExposedToJava(j_pref_index), j_value);
 }
 
+static ScopedJavaLocalRef<jstring> JNI_PrefServiceBridge_GetString(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const jint j_pref_index) {
+  return ConvertUTF8ToJavaString(
+      env, GetPrefService()->GetString(
+               PrefServiceBridge::GetPrefNameExposedToJava(j_pref_index)));
+}
+
+static void JNI_PrefServiceBridge_SetString(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const jint j_pref_index,
+    const JavaParamRef<jstring>& j_value) {
+  GetPrefService()->SetString(
+      PrefServiceBridge::GetPrefNameExposedToJava(j_pref_index),
+      ConvertJavaStringToUTF8(env, j_value));
+}
+
 static jboolean JNI_PrefServiceBridge_IsManagedPreference(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
@@ -957,28 +976,6 @@ static jboolean JNI_PrefServiceBridge_GetMicManagedByCustodian(
     const JavaParamRef<jobject>& obj) {
   return IsContentSettingManagedByCustodian(
              CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC);
-}
-
-static ScopedJavaLocalRef<jstring>
-JNI_PrefServiceBridge_GetContextualSearchPreference(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  return ConvertUTF8ToJavaString(
-      env, GetPrefService()->GetString(prefs::kContextualSearchEnabled));
-}
-
-static jboolean JNI_PrefServiceBridge_GetContextualSearchPreferenceIsManaged(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  return GetPrefService()->IsManagedPreference(prefs::kContextualSearchEnabled);
-}
-
-static void JNI_PrefServiceBridge_SetContextualSearchPreference(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jstring>& pref) {
-  GetPrefService()->SetString(prefs::kContextualSearchEnabled,
-      ConvertJavaStringToUTF8(env, pref));
 }
 
 static void JNI_PrefServiceBridge_SetNetworkPredictionEnabled(
