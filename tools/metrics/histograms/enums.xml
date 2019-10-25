@@ -25188,6 +25188,11 @@ Called by update_net_error_codes.py.-->
   <int value="3064" label="V8RegExpExecCalledOnSlowRegExp"/>
   <int value="3065" label="V8RegExpReplaceCalledOnSlowRegExp"/>
   <int value="3066" label="HasMarkerPseudoElement"/>
+  <int value="3067" label="WindowMove"/>
+  <int value="3068" label="WindowResize"/>
+  <int value="3069" label="MovedOrResizedPopup"/>
+  <int value="3070" label="MovedOrResizedPopup2sAfterCreation"/>
+  <int value="3071" label="DOMWindowOpenPositioningFeatures"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
