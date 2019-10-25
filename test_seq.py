@@ -8,9 +8,9 @@ import sys
 
 import six
 
-from test_support import sequential_test_runner
-
-ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+THIS_DIR = os.path.dirname(os.path.abspath(__file__))
+LUCI_DIR = os.path.dirname(THIS_DIR)
+COMPONENTS_DIR = os.path.join(LUCI_DIR, 'appengine', 'components')
 
 
 def main():
@@ -23,7 +23,10 @@ def main():
       'tests/isolateserver_test.py',
       'tests/logging_utils_test.py',
   ]
-  abs_test_files = [os.path.join(ROOT_DIR, t) for t in test_files]
+  abs_test_files = [os.path.join(THIS_DIR, t) for t in test_files]
+
+  sys.path.insert(0, COMPONENTS_DIR)
+  from test_support import sequential_test_runner
 
   # execute test runner
   return sequential_test_runner.run_tests(abs_test_files, python3=six.PY3)
