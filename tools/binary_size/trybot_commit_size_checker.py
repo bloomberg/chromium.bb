@@ -158,6 +158,14 @@ def _CreateUncompressedPakSizeDeltas(symbols):
   ]
 
 
+def _CreateTestingSymbolssDeltas(symbols):
+  testing_symbols = symbols.WhereNameMatches('ForTest').WhereDiffStatusIs(
+      models.DIFF_STATUS_ADDED)
+  lines = list(describe.GenerateLines(testing_symbols, summarize=False))
+  return lines, _SizeDelta('Added symbols named "ForTest"', 'symbols', 0,
+                           len(testing_symbols), None)
+
+
 def _FormatSign(number):
   if number > 0:
     return '+{}'.format(number)
@@ -213,6 +221,12 @@ def main():
   mutable_constants_lines, mutable_constants_delta = (
       _CreateMutableConstantsDelta(changed_symbols))
   size_deltas.add(mutable_constants_delta)
+
+  # Look for symbols with 'ForTesting' in their name.
+  logging.info('Checking for symbols named "ForTest"')
+  testing_symbols_lines, test_symbols_delta = (
+      _CreateTestingSymbolssDeltas(changed_symbols))
+  size_deltas.add(test_symbols_delta)
 
   # Check for uncompressed .pak file entries being added to avoid unnecessary
   # bloat.
@@ -271,6 +285,10 @@ PASSING:
       {
           'name': '>>> Mutable Constants Diff <<<',
           'lines': mutable_constants_lines,
+      },
+      {
+          'name': '>>> "ForTest" Symbols Diff <<<',
+          'lines': testing_symbols_lines,
       },
       {
           'name': '>>> Dex Method Diff <<<',

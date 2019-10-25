@@ -68,7 +68,9 @@ _TEST_ONLY_WARNING = (
     'You might be calling functions intended only for testing from\n'
     'production code.  It is OK to ignore this warning if you know what\n'
     'you are doing, as the heuristics used to detect the situation are\n'
-    'not perfect.  The commit queue will not block on this warning.')
+    'not perfect.  The commit queue will not block on this warning,\n'
+    'however the android-binary-size trybot will block if the method\n'
+    'exists in the release apk.')
 
 
 _INCLUDE_ORDER_WARNING = (
