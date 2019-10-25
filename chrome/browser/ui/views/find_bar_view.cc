@@ -422,7 +422,7 @@ void FindBarView::Find(const base::string16& search_text) {
   } else {
     find_tab_helper->StopFinding(FindOnPageSelectionAction::kClear);
     UpdateForResult(find_tab_helper->find_result(), base::string16());
-    find_bar_host_->MoveWindowIfNecessary(gfx::Rect());
+    find_bar_host_->MoveWindowIfNecessary();
 
     // Clearing the text box should clear the prepopulate state so that when
     // we close and reopen the Find box it doesn't show the search we just
