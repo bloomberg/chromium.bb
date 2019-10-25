@@ -139,7 +139,11 @@
       status: "experimental",
     },
     {
-      name: "AOMPhase1",
+      name: "AOMAriaProperties",
+      status: "experimental",
+    },
+    {
+      name: "AOMAriaRelationshipProperties",
       status: "experimental",
     },
     {

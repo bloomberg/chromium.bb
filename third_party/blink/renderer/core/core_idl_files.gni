@@ -529,6 +529,7 @@ core_dependency_idl_files =
                     "css/cssom/element_computed_style_map.idl",
                     "dom/accessibility_role.idl",
                     "dom/aria_attributes.idl",
+                    "dom/aria_relationship_attributes.idl",
                     "dom/child_node.idl",
                     "dom/document_and_element_event_handlers.idl",
                     "dom/document_or_shadow_root.idl",
