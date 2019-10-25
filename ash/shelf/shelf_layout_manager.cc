@@ -766,6 +766,7 @@ void ShelfLayoutManager::OnShelfItemSelected(ShelfAction action) {
     case SHELF_ACTION_NONE:
     case SHELF_ACTION_APP_LIST_SHOWN:
     case SHELF_ACTION_APP_LIST_DISMISSED:
+    case SHELF_ACTION_APP_LIST_BACK:
     case SHELF_ACTION_WINDOW_MINIMIZED:
       break;
     case SHELF_ACTION_NEW_WINDOW_CREATED:
