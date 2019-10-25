@@ -149,7 +149,13 @@ void HotseatWidget::DelegateView::SetParentLayer(ui::Layer* layer) {
 }
 
 HotseatWidget::HotseatWidget()
-    : delegate_view_(new DelegateView(Shell::Get()->wallpaper_controller())) {}
+    : delegate_view_(new DelegateView(Shell::Get()->wallpaper_controller())) {
+  ShelfConfig::Get()->AddObserver(this);
+}
+
+HotseatWidget::~HotseatWidget() {
+  ShelfConfig::Get()->RemoveObserver(this);
+}
 
 void HotseatWidget::Initialize(aura::Window* container, Shelf* shelf) {
   DCHECK(container);
@@ -206,6 +212,10 @@ bool HotseatWidget::OnNativeWidgetActivationChanged(bool active) {
   return true;
 }
 
+void HotseatWidget::OnShelfConfigUpdated() {
+  set_manually_extended(false);
+}
+
 ShelfView* HotseatWidget::GetShelfView() {
   if (IsScrollableShelfEnabled()) {
     DCHECK(scrollable_shelf_view_);
@@ -225,7 +235,7 @@ bool HotseatWidget::IsShowingOverflowBubble() const {
   return GetShelfView()->IsShowingOverflowBubble();
 }
 
-bool HotseatWidget::IsDraggedToExtended() const {
+bool HotseatWidget::IsExtended() const {
   DCHECK(GetShelfView()->shelf()->IsHorizontalAlignment());
   const int extended_y =
       display::Screen::GetScreen()

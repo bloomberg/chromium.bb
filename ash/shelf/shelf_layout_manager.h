@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/home_screen/home_launcher_gesture_handler_observer.h"
 #include "ash/public/cpp/app_list/app_list_controller_observer.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/wallpaper_controller.h"
@@ -62,7 +61,6 @@ class ShelfWidget;
 // closely with ShelfLayoutManager.
 // On mus, widget bounds management is handled by the window manager.
 class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
-                                      public HomeLauncherGestureHandlerObserver,
                                       public ShellObserver,
                                       public SplitViewObserver,
                                       public OverviewObserver,
@@ -184,15 +182,11 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
   void OnOverviewModeStartingAnimationComplete(bool canceled) override;
   void OnOverviewModeEnding(OverviewSession* overview_session) override;
   void OnOverviewModeEndingAnimationComplete(bool canceled) override;
+  void OnOverviewModeEnded() override;
 
   // AppListControllerObserver:
   void OnAppListVisibilityWillChange(bool shown, int64_t display_id) override;
   void OnAppListVisibilityChanged(bool shown, int64_t display_id) override;
-
-  // HomeLauncherGestureHandlerObserver:
-  void OnHomeLauncherTargetPositionChanged(bool showing,
-                                           int64_t display_id) override;
-  void OnHomeLauncherAnimationComplete(bool shown, int64_t display_id) override;
 
   // wm::ActivationChangeObserver:
   void OnWindowActivated(ActivationReason reason,
@@ -520,16 +514,6 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
 
   ShelfWidget* shelf_widget_;
   Shelf* shelf_;
-
-  enum HomeLauncherAnimationState {
-    kFinished,
-    kShowing,
-    kHiding,
-  };
-
-  // Whether the home launcher is showing, hiding, or not animating. Maintained
-  // by the AppList and HomeLauncher visibility observers.
-  HomeLauncherAnimationState home_launcher_animation_state_ = kFinished;
 
   // Count of pending visibility update suspensions. Skip updating shelf
   // visibility state if it is greater than 0.
