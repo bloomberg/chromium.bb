@@ -10,7 +10,6 @@
 #include "ash/shelf/shelf_view_test_api.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/test/scoped_feature_list.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "ui/display/manager/display_manager.h"
@@ -67,9 +66,8 @@ class ScrollableShelfViewTest : public AshTestBase {
   ~ScrollableShelfViewTest() override = default;
 
   void SetUp() override {
-    scoped_feature_list_.InitWithFeatures({chromeos::features::kShelfScrollable,
-                                           chromeos::features::kShelfHotseat},
-                                          {});
+    scoped_feature_list_.InitWithFeatures(
+        {chromeos::features::kShelfScrollable}, {});
 
     AshTestBase::SetUp();
     scrollable_shelf_view_ = GetPrimaryShelf()
@@ -229,36 +227,6 @@ TEST_F(ScrollableShelfViewTest, CorrectUIAfterDisplayRotationLongToShort) {
 
   // Verifies that the scrollable shelf does not need further adjustment.
   EXPECT_FALSE(scrollable_shelf_view_->ShouldAdjustForTest());
-}
-
-// Verifies that there is padding between the edging app icon and the end
-// of hotseat background in tablet mode (https://crbug.com/1017979).
-TEST_F(ScrollableShelfViewTest, CorrectEdgePaddingInTabletMode) {
-  for (int i = 0; i < 3; i++)
-    AddAppShortcut();
-  ASSERT_EQ(ScrollableShelfView::kNotShowArrowButtons,
-            scrollable_shelf_view_->layout_strategy_for_test());
-
-  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
-  ASSERT_TRUE(Shell::Get()->tablet_mode_controller()->InTabletMode());
-
-  gfx::Rect hotseat_background_in_screen =
-      scrollable_shelf_view_->GetHotseatBackgroundBounds();
-  views::View::ConvertRectToScreen(scrollable_shelf_view_,
-                                   &hotseat_background_in_screen);
-
-  const int end_padding = ScrollableShelfView::GetAppIconEndPadding();
-  ASSERT_GT(end_padding, 0);
-
-  views::ViewModel* view_model = shelf_view_->view_model();
-  views::View* first_icon =
-      view_model->view_at(scrollable_shelf_view_->first_tappable_app_index());
-  EXPECT_EQ(first_icon->GetBoundsInScreen().x(),
-            hotseat_background_in_screen.x() + end_padding);
-  views::View* last_icon =
-      view_model->view_at(scrollable_shelf_view_->last_tappable_app_index());
-  EXPECT_EQ(last_icon->GetBoundsInScreen().right(),
-            hotseat_background_in_screen.right() - end_padding);
 }
 
 // When hovering mouse on a shelf icon, the tooltip only shows for the visible

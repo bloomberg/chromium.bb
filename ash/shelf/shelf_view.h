@@ -297,8 +297,6 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   // Returns the ShelfAppButton associated with |id|.
   ShelfAppButton* GetShelfAppButton(const ShelfID& id);
 
-  void SetAppIconsLayoutOffset(int app_icons_layout_offset);
-
   // Return the view model for test purposes.
   const views::ViewModel* view_model_for_test() const {
     return view_model_.get();
@@ -325,6 +323,10 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
 
   void set_default_last_focusable_child(bool default_last_focusable_child) {
     default_last_focusable_child_ = default_last_focusable_child;
+  }
+
+  void set_app_icons_layout_offset(int app_icons_layout_offset) {
+    app_icons_layout_offset_ = app_icons_layout_offset;
   }
 
   const ShelfAppButton* drag_view() const { return drag_view_; }
