@@ -1781,9 +1781,7 @@ void RenderProcessHostImpl::InitializeChannelProxy() {
           base::ThreadTaskRunnerHandle::Get());
 
   child_process_.reset();
-  content::BindInterface(
-      this,
-      mojom::ChildProcessRequest(child_process_.BindNewPipeAndPassReceiver()));
+  content::BindInterface(this, child_process_.BindNewPipeAndPassReceiver());
 
   ResetChannelProxy();
 
