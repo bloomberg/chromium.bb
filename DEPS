@@ -240,10 +240,6 @@ vars = {
   # and whatever else without interference from each other.
   'libfuzzer_revision': 'b9f51dc8c98065df0c8da13c051046f5bab833db',
   # Three lines of non-changing comments so that
-  # the commit queue can handle CLs rolling devtools-node-modules
-  # and whatever else without interference from each other.
-  'devtools_node_modules_revision': '207c67362bdb7e135dc5735fb46b9c508d4e4c5e',
-  # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
   'devtools_frontend_revision': 'c20eb36aa74460b2cd476e2ec4af675e66e62f00',
@@ -900,9 +896,6 @@ deps = {
 
   'src/third_party/depot_tools':
     Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'ebba8d75bf65250198a1f5c84295e119129915bd',
-
-  'src/third_party/devtools-node-modules':
-    Var('chromium_git') + '/external/github.com/ChromeDevTools/devtools-node-modules' + '@' + Var('devtools_node_modules_revision'),
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
