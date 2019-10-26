@@ -32,6 +32,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "ipc/ipc_message.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 
 namespace content {
@@ -67,8 +68,7 @@ RenderFrameProxyHost::RenderFrameProxyHost(
       process_(site_instance->GetProcess()),
       frame_tree_node_(frame_tree_node),
       render_frame_proxy_created_(false),
-      render_view_host_(std::move(render_view_host)),
-      frame_proxy_host_associated_binding_(this) {
+      render_view_host_(std::move(render_view_host)) {
   GetProcess()->AddRoute(routing_id_, this);
   CHECK(
       g_routing_id_frame_proxy_map.Get()
@@ -248,8 +248,9 @@ bool RenderFrameProxyHost::InitRenderFrameProxy() {
 void RenderFrameProxyHost::OnAssociatedInterfaceRequest(
     const std::string& interface_name,
     mojo::ScopedInterfaceEndpointHandle handle) {
-  frame_proxy_host_associated_binding_.Bind(
-      mojom::RenderFrameProxyHostAssociatedRequest(std::move(handle)));
+  frame_proxy_host_associated_receiver_.Bind(
+      mojo::PendingAssociatedReceiver<mojom::RenderFrameProxyHost>(
+          std::move(handle)));
 }
 
 blink::AssociatedInterfaceProvider*
@@ -280,7 +281,7 @@ void RenderFrameProxyHost::SetRenderFrameProxyCreated(bool created) {
   if (!created) {
     // If the renderer process has gone away, created can be false. In that
     // case, invalidate the mojo connection.
-    frame_proxy_host_associated_binding_.Close();
+    frame_proxy_host_associated_receiver_.reset();
   }
   render_frame_proxy_created_ = created;
 }
