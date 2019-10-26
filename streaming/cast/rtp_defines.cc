@@ -16,6 +16,9 @@ bool IsRtpPayloadType(uint8_t raw_byte) {
     case RtpPayloadType::kVideoVp8:
     case RtpPayloadType::kVideoH264:
     case RtpPayloadType::kVideoVarious:
+    case RtpPayloadType::kAudioHackForAndroidTV:
+      // Note: RtpPayloadType::kVideoHackForAndroidTV has the same value as
+      // kAudioOpus.
       return true;
 
     case RtpPayloadType::kNull:

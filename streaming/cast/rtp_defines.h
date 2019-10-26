@@ -85,13 +85,18 @@ enum class RtpPayloadType : uint8_t {
   kAudioAac = 97,
   kAudioPcm16 = 98,
   kAudioVarious = 99,  // Codec being used is not fixed.
-  kAudioLast = kAudioVarious,
 
   kVideoFirst = 100,
   kVideoVp8 = 100,
   kVideoH264 = 101,
   kVideoVarious = 102,  // Codec being used is not fixed.
-  kVideoLast = 102,
+
+  // Some AndroidTV receivers require the payload type for audio to be 127, and
+  // video to be 96; regardless of the codecs actually being used. This is
+  // definitely out-of-spec, and inconsistent with the audio versus video range
+  // of values, but must be taken into account for backwards-compatibility.
+  kAudioHackForAndroidTV = 127,
+  kVideoHackForAndroidTV = 96,
 };
 
 // Returns true if the |raw_byte| can be type-casted to a RtpPayloadType, and is

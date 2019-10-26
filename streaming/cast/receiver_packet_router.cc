@@ -5,6 +5,7 @@
 #include "streaming/cast/receiver_packet_router.h"
 
 #include <algorithm>
+#include <iomanip>
 
 #include "platform/api/logging.h"
 #include "streaming/cast/packet_util.h"
@@ -75,6 +76,16 @@ void ReceiverPacketRouter::OnReceivedPacket(
   const std::pair<ApparentPacketType, Ssrc> seems_like =
       InspectPacketForRouting(packet);
   if (seems_like.first == ApparentPacketType::UNKNOWN) {
+    // If the packet type is unknown, log a warning containing a hex dump.
+    constexpr int kMaxDumpSize = 96;
+    std::ostringstream hex_dump;
+    hex_dump << std::setfill('0') << std::hex;
+    for (int i = 0, len = std::min<int>(packet.size(), kMaxDumpSize); i < len;
+         ++i) {
+      hex_dump << std::setw(2) << static_cast<int>(packet[i]);
+    }
+    OSP_LOG_WARN << "UNKNOWN packet of " << packet.size()
+                 << " bytes. Partial hex dump: " << hex_dump.str();
     return;
   }
   const auto it = FindEntry(seems_like.second);
