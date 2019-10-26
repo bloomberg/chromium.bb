@@ -668,13 +668,39 @@ void SurfaceAggregator::EmitSurfaceContent(
         gfx::ScaleToEnclosingRect(source_visible_rect, layer_to_content_scale_x,
                                   layer_to_content_scale_y));
 
-    auto* quad = dest_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
-    RenderPassId remapped_pass_id = RemapPassId(last_pass.id, surface_id);
-    quad->SetNew(shared_quad_state, scaled_rect, scaled_visible_rect,
-                 remapped_pass_id, 0, gfx::RectF(), gfx::Size(),
-                 gfx::Vector2dF(), gfx::PointF(), gfx::RectF(scaled_rect),
-                 /*force_anti_aliasing_off=*/false,
-                 /* backdrop_filter_quality*/ 1.0f);
+    // TODO(ericrk): Apply this path everywhere (not just de-jelly).
+    // crbug.com/1016677
+    if (de_jelly_enabled_) {
+      // Due to viewport clipping, |last_pass|'s |output_rect| may be smaller
+      // than |source_rect|'s projection into content space. We always use
+      // |output_rect| to avoid sampling outside of RenderPass output.
+      gfx::Rect quad_rect = last_pass.output_rect;
+
+      // We can't produce content outside of |output_rect|, so clip the visible
+      // rect if necessary.
+      scaled_visible_rect.Intersect(quad_rect);
+
+      // |tex_coord_rect| indicates the area of the source texture to sample
+      // from. This is always the size of |quad_rect| which represents the full
+      // render pass |output_rect|.
+      gfx::RectF tex_coord_rect = gfx::RectF(gfx::SizeF(quad_rect.size()));
+
+      auto* quad = dest_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
+      RenderPassId remapped_pass_id = RemapPassId(last_pass.id, surface_id);
+      quad->SetNew(shared_quad_state, quad_rect, scaled_visible_rect,
+                   remapped_pass_id, 0, gfx::RectF(), gfx::Size(),
+                   gfx::Vector2dF(), gfx::PointF(), tex_coord_rect,
+                   /*force_anti_aliasing_off=*/false,
+                   /* backdrop_filter_quality*/ 1.0f);
+    } else {
+      auto* quad = dest_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
+      RenderPassId remapped_pass_id = RemapPassId(last_pass.id, surface_id);
+      quad->SetNew(shared_quad_state, scaled_rect, scaled_visible_rect,
+                   remapped_pass_id, 0, gfx::RectF(), gfx::Size(),
+                   gfx::Vector2dF(), gfx::PointF(), gfx::RectF(scaled_rect),
+                   /*force_anti_aliasing_off=*/false,
+                   /* backdrop_filter_quality*/ 1.0f);
+    }
   }
 
   referenced_surfaces_.erase(surface_id);
