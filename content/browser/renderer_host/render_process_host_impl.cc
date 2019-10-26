@@ -113,6 +113,7 @@
 #include "content/browser/permissions/permission_service_context.h"
 #include "content/browser/permissions/permission_service_impl.h"
 #include "content/browser/push_messaging/push_messaging_manager.h"
+#include "content/browser/renderer_host/agent_metrics_collector.h"
 #include "content/browser/renderer_host/clipboard_host_impl.h"
 #include "content/browser/renderer_host/code_cache_host_impl.h"
 #include "content/browser/renderer_host/embedded_frame_sink_provider_impl.h"
@@ -2171,6 +2172,12 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   registry->AddInterface(base::BindRepeating(
       &RenderProcessHostImpl::CreateMediaStreamTrackMetricsHost,
       base::Unretained(this)));
+
+  AddUIThreadInterface(
+      registry.get(),
+      base::BindRepeating(
+          &RenderProcessHostImpl::CreateAgentMetricsCollectorHost,
+          base::Unretained(this)));
 
   registry->AddInterface(
       base::BindRepeating(&metrics::CreateSingleSampleMetricsProvider));
@@ -4742,6 +4749,16 @@ void RenderProcessHostImpl::CreateMediaStreamTrackMetricsHost(
   if (!media_stream_track_metrics_host_)
     media_stream_track_metrics_host_.reset(new MediaStreamTrackMetricsHost());
   media_stream_track_metrics_host_->BindReceiver(std::move(receiver));
+}
+
+void RenderProcessHostImpl::CreateAgentMetricsCollectorHost(
+    mojo::PendingReceiver<blink::mojom::AgentMetricsCollectorHost> receiver) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!agent_metrics_collector_host_) {
+    agent_metrics_collector_host_.reset(
+        new AgentMetricsCollectorHost(this->GetID(), std::move(receiver)));
+    AddObserver(agent_metrics_collector_host_.get());
+  }
 }
 
 void RenderProcessHostImpl::BindPeerConnectionTrackerHost(
