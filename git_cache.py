@@ -555,8 +555,10 @@ class Mirror(object):
         env = os.environ.copy()
         env.update({
             'GIT_TRACE_PACKET': '1',
-            'GIT_TRACE_PERFORMANCE': '1',
-            'GIT_TRACE_SETUP': '1'
+            'GIT_TR2_EVENT': '1',
+            'GIT_TRACE2_EVENT': '1',
+            'GIT_TRACE_CURL': '1',
+            'GIT_TRACE_CURL_NO_DATA': '1'
         })
         # Only print first 30000 packets. We can use nonlocal keyword once we
         # switch to python 3.
