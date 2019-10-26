@@ -88,7 +88,7 @@ class MEDIA_MOJO_EXPORT CdmService : public service_manager::Service,
   void LoadCdm(const base::FilePath& cdm_path) final;
 #endif  // defined(OS_MACOSX)
   void CreateCdmFactory(
-      mojom::CdmFactoryRequest request,
+      mojo::PendingReceiver<mojom::CdmFactory> receiver,
       mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
           host_interfaces) final;
 

@@ -363,15 +363,15 @@ media::mojom::CdmFactory* MediaInterfaceProxy::ConnectToCdmService(
   cdm_service->LoadCdm(cdm_path);
 #endif  // defined(OS_MACOSX)
 
-  media::mojom::CdmFactoryPtr cdm_factory_ptr;
-  cdm_service->CreateCdmFactory(MakeRequest(&cdm_factory_ptr),
+  mojo::Remote<media::mojom::CdmFactory> cdm_factory_remote;
+  cdm_service->CreateCdmFactory(cdm_factory_remote.BindNewPipeAndPassReceiver(),
                                 GetFrameServices(cdm_guid, cdm_file_system_id));
-  cdm_factory_ptr.set_connection_error_handler(
+  cdm_factory_remote.set_disconnect_handler(
       base::BindOnce(&MediaInterfaceProxy::OnCdmServiceConnectionError,
                      base::Unretained(this), cdm_guid));
 
-  auto* cdm_factory = cdm_factory_ptr.get();
-  cdm_factory_map_.emplace(cdm_guid, std::move(cdm_factory_ptr));
+  auto* cdm_factory = cdm_factory_remote.get();
+  cdm_factory_map_.emplace(cdm_guid, std::move(cdm_factory_remote));
   return cdm_factory;
 }
 

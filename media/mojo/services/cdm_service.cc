@@ -228,17 +228,17 @@ void CdmService::LoadCdm(const base::FilePath& cdm_path) {
 }
 
 void CdmService::CreateCdmFactory(
-    mojom::CdmFactoryRequest request,
+    mojo::PendingReceiver<mojom::CdmFactory> receiver,
     mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
         host_interfaces) {
-  // Ignore request if service has already stopped.
+  // Ignore receiver if service has already stopped.
   if (!client_)
     return;
 
   cdm_factory_bindings_.AddBinding(
       std::make_unique<CdmFactoryImpl>(
           client_.get(), std::move(host_interfaces), keepalive_->CreateRef()),
-      std::move(request));
+      std::move(receiver));
 }
 
 }  // namespace media

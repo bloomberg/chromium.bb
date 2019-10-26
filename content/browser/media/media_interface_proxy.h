@@ -22,6 +22,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 
 namespace media {
@@ -141,9 +142,10 @@ class MediaInterfaceProxy : public media::mojom::InterfaceFactory {
 #endif  // BUILDFLAG(ENABLE_CAST_RENDERER)
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-  // CDM GUID to CDM InterfaceFactoryPtr mapping, where the InterfaceFactory
+  // CDM GUID to CDM InterfaceFactoryRemote mapping, where the InterfaceFactory
   // instances live in the standalone kCdmServiceName service instances.
-  std::map<base::Token, media::mojom::CdmFactoryPtr> cdm_factory_map_;
+  std::map<base::Token, mojo::Remote<media::mojom::CdmFactory>>
+      cdm_factory_map_;
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
   base::ThreadChecker thread_checker_;
