@@ -334,7 +334,8 @@ void CourierRenderer::OnDataPipeCreated(
         main_task_runner_, media_task_runner_, "audio", audio_demuxer_stream,
         rpc_broker_, audio_rpc_handle, std::move(audio),
         std::move(audio_handle),
-        base::Bind(&CourierRenderer::OnFatalError, base::Unretained(this))));
+        base::BindOnce(&CourierRenderer::OnFatalError,
+                       base::Unretained(this))));
   }
 
   // Create video demuxer stream adapter if video is available.
@@ -345,7 +346,8 @@ void CourierRenderer::OnDataPipeCreated(
         main_task_runner_, media_task_runner_, "video", video_demuxer_stream,
         rpc_broker_, video_rpc_handle, std::move(video),
         std::move(video_handle),
-        base::Bind(&CourierRenderer::OnFatalError, base::Unretained(this))));
+        base::BindOnce(&CourierRenderer::OnFatalError,
+                       base::Unretained(this))));
   }
 
   // Checks if data pipe is created successfully.
