@@ -174,6 +174,8 @@
 #include "media/mojo/services/video_decode_perf_history.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/message.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
@@ -388,11 +390,11 @@ class RemoterFactoryImpl final : public media::mojom::RemoterFactory {
   }
 
  private:
-  void Create(media::mojom::RemotingSourcePtr source,
-              media::mojom::RemoterRequest request) final {
+  void Create(mojo::PendingRemote<media::mojom::RemotingSource> source,
+              mojo::PendingReceiver<media::mojom::Remoter> receiver) final {
     if (auto* host = RenderFrameHostImpl::FromID(process_id_, routing_id_)) {
       GetContentClient()->browser()->CreateMediaRemoter(host, std::move(source),
-                                                        std::move(request));
+                                                        std::move(receiver));
     }
   }
 
