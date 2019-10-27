@@ -24,6 +24,7 @@
 #include "src/dsp/common.h"
 #include "src/dsp/dsp.h"
 #include "src/utils/common.h"
+#include "src/utils/compiler_attributes.h"
 #include "src/utils/logging.h"
 
 namespace libgav1 {
@@ -326,27 +327,46 @@ FilmGrain<bitdepth>::FilmGrain(const FilmGrainParams& params,
 template <int bitdepth>
 bool FilmGrain<bitdepth>::Init() {
   // Section 7.18.3.3. Generate grain process.
-  GenerateLumaGrain(params_, luma_grain_);
-  // If params_.auto_regression_coeff_lag is 0, the filter is the identity
-  // filter and therefore can be skipped. If params_.num_y_points is 0,
-  // luma_grain_ is all zeros (see GenerateLumaGrain), so we can also skip the
-  // filter. (In fact, the Note at the end of Section 7.18.3.3 says luma_grain_
-  // will never be read in this case.)
-  if (params_.auto_regression_coeff_lag > 0 && params_.num_y_points > 0) {
-    ApplyAutoRegressiveFilterToLumaGrain(params_, kGrainMin, kGrainMax,
-                                         luma_grain_);
+
+  // If params_.num_y_points is 0, luma_grain_ will never be read, so we don't
+  // need to generate it.
+  if (params_.num_y_points > 0) {
+    GenerateLumaGrain(params_, luma_grain_);
+    // If params_.auto_regression_coeff_lag is 0, the filter is the identity
+    // filter and therefore can be skipped.
+    if (params_.auto_regression_coeff_lag > 0) {
+      ApplyAutoRegressiveFilterToLumaGrain(params_, kGrainMin, kGrainMax,
+                                           luma_grain_);
+    }
+  } else {
+    ASAN_POISON_MEMORY_REGION(luma_grain_, sizeof(luma_grain_));
   }
   if (!is_monochrome_) {
     GenerateChromaGrains(params_, chroma_width_, chroma_height_, u_grain_,
                          v_grain_);
-    ApplyAutoRegressiveFilterToChromaGrains(
-        params_, kGrainMin, kGrainMax, luma_grain_, subsampling_x_,
-        subsampling_y_, chroma_width_, chroma_height_, u_grain_, v_grain_);
+    if (params_.auto_regression_coeff_lag > 0 || params_.num_y_points > 0) {
+      ApplyAutoRegressiveFilterToChromaGrains(
+          params_, kGrainMin, kGrainMax, luma_grain_, subsampling_x_,
+          subsampling_y_, chroma_width_, chroma_height_, u_grain_, v_grain_);
+    }
   }
 
   // Section 7.18.3.4. Scaling lookup initialization process.
-  InitializeScalingLookupTable(params_.num_y_points, params_.point_y_value,
-                               params_.point_y_scaling, scaling_lut_y_);
+
+  // Initialize scaling_lut_y_. If params_.num_y_points > 0, scaling_lut_y_
+  // is used for the Y plane. If params_.chroma_scaling_from_luma is true,
+  // scaling_lut_u_ and scaling_lut_v_ are the same as scaling_lut_y_ and are
+  // set up as aliases. So we need to initialize scaling_lut_y_ under these
+  // two conditions.
+  //
+  // Note: Although it does not seem to make sense, there are test vectors
+  // with chroma_scaling_from_luma=true and params_.num_y_points=0.
+  if (params_.num_y_points > 0 || params_.chroma_scaling_from_luma) {
+    InitializeScalingLookupTable(params_.num_y_points, params_.point_y_value,
+                                 params_.point_y_scaling, scaling_lut_y_);
+  } else {
+    ASAN_POISON_MEMORY_REGION(scaling_lut_y_, sizeof(scaling_lut_y_));
+  }
   if (!is_monochrome_) {
     if (params_.chroma_scaling_from_luma) {
       scaling_lut_u_ = scaling_lut_y_;
@@ -610,7 +630,10 @@ bool FilmGrain<bitdepth>::AllocateNoiseStripes() {
     return false;
   }
   constexpr int kNoiseStripeHeight = 34;
-  size_t noise_buffer_size = max_luma_num * kNoiseStripeHeight * width_;
+  size_t noise_buffer_size = 0;
+  if (params_.num_y_points > 0) {
+    noise_buffer_size += max_luma_num * kNoiseStripeHeight * width_;
+  }
   if (!is_monochrome_) {
     noise_buffer_size += max_luma_num * 2 *
                          (kNoiseStripeHeight >> subsampling_y_) *
@@ -623,8 +646,12 @@ bool FilmGrain<bitdepth>::AllocateNoiseStripes() {
   assert(half_height > 0);
   int y = 0;
   do {
-    noise_stripes_[luma_num][kPlaneY] = noise_stripe;
-    noise_stripe += kNoiseStripeHeight * width_;
+    if (params_.num_y_points > 0) {
+      noise_stripes_[luma_num][kPlaneY] = noise_stripe;
+      noise_stripe += kNoiseStripeHeight * width_;
+    } else {
+      noise_stripes_[luma_num][kPlaneY] = nullptr;
+    }
     if (!is_monochrome_) {
       noise_stripes_[luma_num][kPlaneU] = noise_stripe;
       noise_stripe += (kNoiseStripeHeight >> subsampling_y_) *
@@ -660,6 +687,7 @@ void FilmGrain<bitdepth>::ConstructNoiseStripes() {
       const int offset_x = rand >> 4;
       const int offset_y = rand & 15;
       for (int plane = kPlaneY; plane < num_planes; ++plane) {
+        if (plane == kPlaneY && params_.num_y_points == 0) continue;
         const int plane_sub_x = (plane > kPlaneY) ? subsampling_x_ : 0;
         const int plane_sub_y = (plane > kPlaneY) ? subsampling_y_ : 0;
         const int plane_offset_x =
@@ -730,7 +758,8 @@ void FilmGrain<bitdepth>::ConstructNoiseStripes() {
 
 template <int bitdepth>
 bool FilmGrain<bitdepth>::AllocateNoiseImage() {
-  if (!noise_image_[kPlaneY].Reset(height_, width_,
+  if (params_.num_y_points > 0 &&
+      !noise_image_[kPlaneY].Reset(height_, width_,
                                    /*zero_initialize=*/false)) {
     return false;
   }
@@ -755,6 +784,7 @@ template <int bitdepth>
 void FilmGrain<bitdepth>::ConstructNoiseImage() {
   const int num_planes = is_monochrome_ ? kMaxPlanesMonochrome : kMaxPlanes;
   for (int plane = kPlaneY; plane < num_planes; ++plane) {
+    if (plane == kPlaneY && params_.num_y_points == 0) continue;
     const int plane_sub_x = (plane > kPlaneY) ? subsampling_x_ : 0;
     const int plane_sub_y = (plane > kPlaneY) ? subsampling_y_ : 0;
     const int plane_width = (width_ + plane_sub_x) >> plane_sub_x;
