@@ -29,3 +29,8 @@ file://third_party/blink/API_OWNERS
 
 # Extension API related files.
 file://extensions/common/api/API_OWNERS
+
+# This restriction is in place to avoid accidential addition to our top level
+# layout files, such as add duplicated assets, or introducing new colors when
+# we don't want them.
+file://ui/android/java/res/LAYOUT_OWNERS
