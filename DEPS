@@ -1112,7 +1112,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/jdk',
-              'version': 'rfJtuH296mzs7BYOgmQkpz-7ydXtpLKeO15qDDMaa5cC',
+              'version': 'PfRSnxe8Od6WU4zBXomq-zsgcJgWmm3z4gMQNB-r2QcC',
           },
       ],
       'condition': 'host_os == "linux" and checkout_android',
