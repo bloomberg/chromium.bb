@@ -14,6 +14,7 @@ If unsure, just use the --safe flag to clean out various objects.
 
 from __future__ import print_function
 
+import errno
 import glob
 import os
 
@@ -109,25 +110,43 @@ class CleanCommand(command.CliCommand):
         action='store_true',
         help='Delete build chroot (affects all boards).')
     group.add_argument(
-        '--board', action='append', help='Delete board(s) build root(s).')
+        '--board', action='append', help='Delete board(s) sysroot(s).')
+    group.add_argument(
+        '--sysroots',
+        default=False,
+        action='store_true',
+        help='Delete ALL of the sysroots. This is the same as calling with '
+             '--board with every board that has been built.')
     group.add_argument(
         '--autotest',
         default=False,
         action='store_true',
         help='Delete build_externals packages.')
 
+    group = parser.add_argument_group(
+        'Advanced Customization',
+        description='Advanced options that are rarely be needed.')
+    group.add_argument(
+        '--sdk-path',
+        type='path',
+        default=os.path.join(constants.SOURCE_ROOT,
+                             constants.DEFAULT_CHROOT_DIR),
+        help='The sdk (chroot) path. This only needs to be provided if your '
+             'chroot is not in the default location.')
+
   def __init__(self, options):
     """Initializes cros clean."""
     command.CliCommand.__init__(self, options)
 
   def Run(self):
-    """Perfrom the cros clean command."""
+    """Perform the cros clean command."""
 
     # If no option is set, default to "--safe"
     if not (self.options.safe or self.options.clobber or self.options.board or
             self.options.chroot or self.options.cache or self.options.deploy or
-            self.options.flash or self.options.images or self.options.autotest
-            or self.options.incrementals or self.options.chroot_tmp):
+            self.options.flash or self.options.images or
+            self.options.autotest or self.options.incrementals or
+            self.options.chroot_tmp or self.options.sysroots):
       self.options.safe = True
 
     if self.options.clobber:
@@ -148,8 +167,7 @@ class CleanCommand(command.CliCommand):
 
     self.options.Freeze()
 
-    chroot_dir = os.path.join(constants.SOURCE_ROOT,
-                              constants.DEFAULT_CHROOT_DIR)
+    chroot_dir = self.options.sdk_path
 
     cros_build_lib.AssertOutsideChroot()
 
@@ -182,10 +200,16 @@ class CleanCommand(command.CliCommand):
       else:
         cros_build_lib.run(['cros_sdk', '--delete'])
 
-    if self.options.board:
-      for b in self.options.board:
-        logging.debug('Clean up the %s build root.', b)
-        Clean(os.path.join(chroot_dir, 'build', b))
+    boards = self.options.board or []
+    if self.options.sysroots:
+      try:
+        boards = os.listdir(os.path.join(chroot_dir, 'build'))
+      except OSError as e:
+        if e.errno != errno.ENOENT:
+          raise
+    for b in boards:
+      logging.debug('Clean up the %s sysroot.', b)
+      Clean(os.path.join(chroot_dir, 'build', b))
 
     if self.options.chroot_tmp:
       logging.debug('Empty chroot tmp directory.')
