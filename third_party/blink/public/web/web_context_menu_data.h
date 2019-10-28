@@ -133,19 +133,6 @@ struct WebContextMenuData {
   int writing_direction_left_to_right;
   int writing_direction_right_to_left;
 
-  enum EditFlags {
-    kCanDoNone = 0x0,
-    kCanUndo = 0x1,
-    kCanRedo = 0x2,
-    kCanCut = 0x4,
-    kCanCopy = 0x8,
-    kCanPaste = 0x10,
-    kCanDelete = 0x20,
-    kCanSelectAll = 0x40,
-    kCanTranslate = 0x80,
-    kCanEditRichly = 0x100,
-  };
-
   // Which edit operations are available in the context.
   int edit_flags;
 
