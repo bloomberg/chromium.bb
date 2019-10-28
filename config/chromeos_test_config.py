@@ -450,7 +450,7 @@ def EnsureVmTestsOnVmTestBoards(site_config, boards_dict, _gs_build_config):
           cc.apply(site_config.templates.no_vmtest_builder)
 
 
-def ApplyCustomOverrides(site_config, ge_build_config):
+def ApplyCustomOverrides(site_config):
   """Method with to override specific flags for specific builders.
 
   Generally try really hard to avoid putting anything here that isn't
@@ -460,9 +460,7 @@ def ApplyCustomOverrides(site_config, ge_build_config):
   Args:
     site_config: config_lib.SiteConfig containing builds to have their
                  waterfall values updated.
-    ge_build_config: Dictionary containing the decoded GE configuration file.
   """
-  hw_test_list = HWTestList(ge_build_config)
 
   overwritten_configs = {
       'lakitu-pre-cq':
@@ -524,18 +522,6 @@ def ApplyCustomOverrides(site_config, ge_build_config):
           'vm_tests':[],
       },
 
-      'cyan-chrome-pfq': {
-          'hw_tests': hw_test_list.SharedPoolPFQ(),
-      },
-
-      'grunt-chrome-pfq': {
-          'hw_tests': hw_test_list.SharedPoolPFQ(),
-      },
-
-      'kevin-arcnext-chrome-pfq': {
-          'hw_tests': hw_test_list.SharedPoolPFQ(),
-      },
-
       'moblab-generic-vm-paladin': config_lib.BuildConfig().apply(
           site_config.templates.moblab_vm_tests,
           site_config.templates.tast_vm_paladin_tests,
@@ -546,27 +532,14 @@ def ApplyCustomOverrides(site_config, ge_build_config):
       #    site_config.templates.tast_vm_paladin_tests,
       # ),
 
-      'reef-chrome-pfq': {
-          'hw_tests': hw_test_list.SharedPoolPFQ(),
-      },
-
-      'veyron_minnie-chrome-pfq': {
-          'hw_tests': hw_test_list.SharedPoolPFQ(),
-      },
-
       'amd64-generic-paladin': site_config.templates.tast_vm_paladin_tests,
       'betty-arc64-paladin': site_config.templates.tast_vm_paladin_tests,
       'betty-paladin': site_config.templates.tast_vm_paladin_tests,
       'betty-pi-arc-paladin': site_config.templates.tast_vm_paladin_tests,
       'betty-pre-cq': site_config.templates.tast_vm_paladin_tests,
 
-      'amd64-generic-chromium-pfq':
-          site_config.templates.tast_vm_chrome_pfq_tests,
       'amd64-generic-tot-chromium-pfq-informational':
           site_config.templates.tast_vm_chrome_pfq_tests,
-      'betty-pi-arc-chrome-pfq':
-          site_config.templates.tast_vm_chrome_pfq_tests,
-      'betty-chrome-pfq': site_config.templates.tast_vm_chrome_pfq_tests,
 
       'betty-arc64-nyc-android-pfq':
           site_config.templates.tast_vm_android_pfq_tests,
@@ -962,4 +935,4 @@ def ApplyConfig(site_config, boards_dict, ge_build_config):
 
   EnsureVmTestsOnVmTestBoards(site_config, boards_dict, ge_build_config)
 
-  ApplyCustomOverrides(site_config, ge_build_config)
+  ApplyCustomOverrides(site_config)

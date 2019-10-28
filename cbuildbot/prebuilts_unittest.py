@@ -208,13 +208,3 @@ class BinhostConfWriterTest(
     # We expect --set-version so long as build config has manifest_version=True.
     self.assertCommandContains([self.cmd, '--set-version', self.VERSION],
                                expected=self._run.config.manifest_version)
-
-  def testMasterChromiumPFQUpload(self):
-    self._Run('master-chromium-pfq')
-
-    # Provide a sample of private/public slave boards that are expected.
-    public_slave_boards = ('amd64-generic', 'scarlet')
-    private_slave_boards = ('cyan', 'nocturne', 'reef')
-
-    self._VerifyResults(public_slave_boards=public_slave_boards,
-                        private_slave_boards=private_slave_boards)
