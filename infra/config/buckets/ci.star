@@ -1224,9 +1224,8 @@ def fyi_coverage_builder(
 
 fyi_coverage_builder(
     name = 'android-code-coverage',
-    ssd = True,
-    use_clang_coverage = True,
     use_java_coverage = True,
+    ssd = True,
 )
 
 fyi_coverage_builder(
