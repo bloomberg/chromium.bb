@@ -11,9 +11,9 @@
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "media/base/media_util.h"
+#include "media/media_buildflags.h"
 #include "media/mojo/buildflags.h"
 #include "media/mojo/mojom/audio_decoder.mojom.h"
-#include "media/mojo/mojom/cdm_proxy.mojom.h"
 #include "media/mojo/mojom/content_decryption_module.mojom.h"
 #include "media/mojo/mojom/decryptor.mojom.h"
 #include "media/mojo/mojom/interface_factory.mojom.h"
@@ -27,6 +27,10 @@
 #include "mojo/public/cpp/bindings/unique_receiver_set.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service_keepalive.h"
+
+#if BUILDFLAG(ENABLE_CDM_PROXY)
+#include "media/mojo/mojom/cdm_proxy.mojom.h"
+#endif  // BUILDFLAG(ENABLE_CDM_PROXY)
 
 namespace media {
 
@@ -71,8 +75,10 @@ class InterfaceFactoryImpl : public DeferredDestroy<mojom::InterfaceFactory> {
                  mojom::ContentDecryptionModuleRequest request) final;
   void CreateDecryptor(int cdm_id,
                        mojo::PendingReceiver<mojom::Decryptor> receiver) final;
+#if BUILDFLAG(ENABLE_CDM_PROXY)
   void CreateCdmProxy(const base::Token& cdm_guid,
                       mojo::PendingReceiver<mojom::CdmProxy> receiver) final;
+#endif  // BUILDFLAG(ENABLE_CDM_PROXY)
 
   // DeferredDestroy<mojom::InterfaceFactory> implemenation.
   void OnDestroyPending(base::OnceClosure destroy_cb) final;
@@ -113,9 +119,9 @@ class InterfaceFactoryImpl : public DeferredDestroy<mojom::InterfaceFactory> {
   mojo::StrongBindingSet<mojom::ContentDecryptionModule> cdm_bindings_;
 #endif  // BUILDFLAG(ENABLE_MOJO_CDM)
 
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+#if BUILDFLAG(ENABLE_CDM_PROXY)
   mojo::UniqueReceiverSet<mojom::CdmProxy> cdm_proxy_receivers_;
-#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
+#endif  // BUILDFLAG(ENABLE_CDM_PROXY)
 
   mojo::Remote<service_manager::mojom::InterfaceProvider> host_interfaces_;
 

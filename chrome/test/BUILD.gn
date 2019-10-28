@@ -5160,7 +5160,7 @@ test("unit_tests") {
     ]
   }
 
-  if (enable_widevine && is_win) {
+  if (enable_cdm_proxy && enable_widevine && is_win) {
     sources += [ "../gpu/widevine_cdm_proxy_factory_unittest.cc" ]
   }
 
