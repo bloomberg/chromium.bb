@@ -1310,8 +1310,7 @@ bool Browser::ShouldAllowRunningInsecureContent(
     TabSpecificContentSettings* tab_settings =
         TabSpecificContentSettings::FromWebContents(web_contents);
     DCHECK(tab_settings);
-    tab_settings->OnContentBlockedWithDetail(CONTENT_SETTINGS_TYPE_MIXEDSCRIPT,
-                                             base::UTF8ToUTF16(origin.host()));
+    tab_settings->OnContentBlocked(CONTENT_SETTINGS_TYPE_MIXEDSCRIPT);
   }
   return allowed;
 }
