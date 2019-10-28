@@ -578,6 +578,10 @@ const base::Feature kMediaLearningExperiment{"MediaLearningExperiment",
 const base::Feature kMediaLearningFramework{"MediaLearningFramework",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable aggregate power measurement for media playback.
+const base::Feature kMediaPowerExperiment{"MediaPowerExperiment",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables flash to be ducked by audio focus. This is enabled on Chrome OS which
 // has audio focus enabled.
 const base::Feature kAudioFocusDuckFlash {
