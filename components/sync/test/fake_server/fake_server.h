@@ -208,16 +208,17 @@ class FakeServer : public syncer::LoopbackServer::ObserverForTests {
       syncer::LoopbackServer::ResponseTypeProvider response_type_override);
 
  private:
+  // Analogous to HandleCommand() but deals with parsed protos.
+  net::HttpStatusCode HandleParsedCommand(
+      const sync_pb::ClientToServerMessage& message,
+      sync_pb::ClientToServerResponse* response);
+
   // Returns whether a triggered error should be sent for the request.
   bool ShouldSendTriggeredError() const;
   bool HasTriggeredError() const;
-  net::HttpStatusCode SendToLoopbackServer(const std::string& request,
-                                           std::string* response);
-  void InjectClientCommand(std::string* response);
-  void HandleWalletRequest(
-      const sync_pb::ClientToServerMessage& request,
-      const sync_pb::DataTypeProgressMarker& old_wallet_marker,
-      std::string* response_string);
+  net::HttpStatusCode SendToLoopbackServer(
+      const sync_pb::ClientToServerMessage& message,
+      sync_pb::ClientToServerResponse* response);
 
   // Logs a string that is meant to be shown in case the running test fails.
   void LogForTestFailure(const base::Location& location,
