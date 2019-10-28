@@ -973,7 +973,7 @@ void CastContentBrowserClient::RegisterNonNetworkSubresourceURLLoaderFactories(
     int render_frame_id,
     NonNetworkURLLoaderFactoryMap* factories) {
   if (render_frame_id == MSG_ROUTING_NONE) {
-    NOTREACHED() << "Service worker not supported.";
+    LOG(ERROR) << "Service worker not supported.";
     return;
   }
   content::RenderFrameHost* frame_host =
