@@ -171,6 +171,15 @@ def Delete(chroot_path=None):
   Args:
     chroot_path: The chroot directory, or None to use the default.
   """
+  # Get an order of magnitude on the size of the chroot we're trying to delete
+  # to see if the size and disk performance are a major factor of the
+  # SDK Delete timeout issue, or if it's another underlying problem.
+  # TODO(crbug.com/1018217) Remove or make a proper metric.
+  logging.info('Checking chroot size.')
+  path = chroot_path or constants.DEFAULT_CHROOT_PATH
+  cmd = ['du', '-h', '-d0', path]
+  cros_build_lib.sudo_run(cmd)
+
   cmd = [os.path.join(constants.CHROMITE_BIN_DIR, 'cros_sdk'), '--delete']
   if chroot_path:
     cmd.extend(['--chroot', chroot_path])
