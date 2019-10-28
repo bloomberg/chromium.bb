@@ -9,7 +9,9 @@ file://third_party/OWNERS
 
 # Security reviews
 file://chromeos/SECURITY_OWNERS
+file://content/browser/SITE_ISOLATION_OWNERS
 file://ipc/SECURITY_OWNERS
+file://net/base/SECURITY_OWNERS
 file://sandbox/linux/OWNERS
 file://sandbox/mac/OWNERS
 file://sandbox/OWNERS
@@ -17,6 +19,7 @@ file://sandbox/win/OWNERS
 file://third_party/blink/SECURITY_OWNERS
 
 # Privacy reviews
+file://tools/traffic_annotation/summary/TRAFFIC_ANNOTATION_OWNERS
 file://tools/metrics/ukm/PRIVACY_OWNERS
 file://base/metrics/OWNERS
 
