@@ -652,8 +652,8 @@ TEST(IntrusiveHeapTest, MoveOnlyNoDefaultConstructorTest) {
 TEST(IntrusiveHeapTest, CopyOnlyNoDefaultConstructorTest) {
   using ValueType = Value_dmC;
   ValidateValueType<ValueType, false, false, true>();
-  // Value_dmC is not Cpp17MoveInsertable, which is required for
-  // std::vector::push_back.
+  CopyStressTest<ValueType>();
+  GeneralStressTest<ValueType>();
 }
 
 TEST(IntrusiveHeapTest, CopyAndMoveNoDefaultConstructorTest) {
@@ -674,8 +674,8 @@ TEST(IntrusiveHeapTest, MoveOnlyWithDefaultConstructorTest) {
 TEST(IntrusiveHeapTest, CopyOnlyWithDefaultConstructorTest) {
   using ValueType = Value_DmC;
   ValidateValueType<ValueType, true, false, true>();
-  // Value_DmC is not Cpp17MoveInsertable, which is required for
-  // std::vector::push_back.
+  CopyStressTest<ValueType>();
+  GeneralStressTest<ValueType>();
 }
 
 TEST(IntrusiveHeapTest, CopyAndMoveWithDefaultConstructorTest) {
