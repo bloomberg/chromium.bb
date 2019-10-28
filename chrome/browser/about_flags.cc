@@ -4730,6 +4730,16 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(games::features::kGamesHub)},
 #endif  // defined(OS_ANDROID)
 
+    {"enable-heavy-ad-intervention",
+     flag_descriptions::kHeavyAdInterventionName,
+     flag_descriptions::kHeavyAdInterventionDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kHeavyAdIntervention)},
+
+    {"heavy-ad-privacy-mitigations-opt-out",
+     flag_descriptions::kHeavyAdPrivacyMitigationsOptOutName,
+     flag_descriptions::kHeavyAdPrivacyMitigationsOptOutDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kHeavyAdPrivacyMitigations)},
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

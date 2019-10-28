@@ -703,6 +703,12 @@ extern const char kHarfBuzzPDFSubsetterDescription[];
 extern const char kHarfbuzzRendertextName[];
 extern const char kHarfbuzzRendertextDescription[];
 
+extern const char kHeavyAdPrivacyMitigationsOptOutName[];
+extern const char kHeavyAdPrivacyMitigationsOptOutDescription[];
+
+extern const char kHeavyAdInterventionName[];
+extern const char kHeavyAdInterventionDescription[];
+
 extern const char kHorizontalTabSwitcherAndroidName[];
 extern const char kHorizontalTabSwitcherAndroidDescription[];
 

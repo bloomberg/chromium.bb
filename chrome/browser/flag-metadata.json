@@ -1361,6 +1361,11 @@
     "expiry_milestone": -1
   },
   {
+    "name": "enable-heavy-ad-intervention",
+    "owners": [ "johnidel", "jkarlin" ],
+    "expiry_milestone": 82
+  },
+  {
     "name": "enable-heuristic-stylus-palm-rejection",
     "owners": ["robsc", "napper"],
     // We add a heuristic that changes the way fingers are handled. We should
@@ -2313,6 +2318,11 @@
     "name": "harfbuzz-pdf-subsetter",
     "owners": ["dhoss", "thestig"],
     "expiry_milestone": 80
+  },
+  {
+    "name": "heavy-ad-privacy-mitigations-opt-out",
+    "owners": [ "johnidel", "jkarlin" ],
+    "expiry_milestone": 82
   },
   {
     "name": "http-auth-committed-interstitials",
