@@ -948,7 +948,5 @@ class PublishUprevChangesStage(generic_stages.BuilderStage):
         overlay_type=self._run.config.push_overlays,
         dryrun=self._run.options.debug,
         staging_branch=staging_branch)
-    if config_lib.IsMasterChromePFQ(self._run.config) and self.success:
-      self._run.attrs.metadata.UpdateWithDict({'UprevvedChrome': True})
     if config_lib.IsMasterAndroidPFQ(self._run.config) and self.success:
       self._run.attrs.metadata.UpdateWithDict({'UprevvedAndroid': True})

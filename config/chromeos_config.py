@@ -3184,171 +3184,6 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
   )
 
 
-def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
-  """Create all Chrome PFQ build configs.
-
-  Args:
-    site_config: config_lib.SiteConfig to be modified by adding templates
-                 and configs.
-    boards_dict: A dict mapping board types to board name collections.
-    ge_build_config: Dictionary containing the decoded GE configuration file.
-  """
-  external_board_configs = CreateBoardConfigs(
-      site_config, boards_dict, ge_build_config)
-  internal_board_configs = CreateInternalBoardConfigs(
-      site_config, boards_dict, ge_build_config)
-
-  _chrome_boards = frozenset(
-      board for board, config in internal_board_configs.items()
-      if config.get('sync_chrome', True))
-
-  _chromium_pfq_important_boards = frozenset([
-      'amd64-generic',
-      'arm-generic',
-      'arm64-generic',
-      'scarlet',
-      'veyron_jerry',
-  ])
-
-  _chromium_pfq_experimental_boards = frozenset([
-  ])
-
-  master_config = site_config.Add(
-      'master-chromium-pfq',
-      site_config.templates.chromium_pfq,
-      boards=[],
-      master=True,
-      slave_configs=[],
-      binhost_test=True,
-      push_overlays=constants.BOTH_OVERLAYS,
-      # Moving AFDO updates to PUpr, https://crbug.com/1012311.
-      afdo_update_ebuild=False,
-      chrome_sdk=False,
-      health_alert_recipients=['chromeos-infra-eng@grotations.appspotmail.com',
-                               'chrome'],
-      schedule='triggered',
-      triggered_gitiles=[[
-          'https://chromium.googlesource.com/chromium/src',
-          ['regexp:refs/tags/[^/]+']
-      ]],
-  )
-
-  # Create important configs, then non-important configs.
-  master_config.AddSlaves(
-      site_config.AddForBoards(
-          'chromium-pfq',
-          _chromium_pfq_important_boards,
-          external_board_configs,
-          site_config.templates.chromium_pfq,
-          site_config.templates.build_external_chrome,
-      )
-  )
-  # non-important configs.
-  master_config.AddSlaves(
-      site_config.AddForBoards(
-          'chromium-pfq',
-          _chromium_pfq_experimental_boards,
-          external_board_configs,
-          site_config.templates.chromium_pfq,
-          site_config.templates.build_external_chrome,
-          important=False,
-      )
-  )
-  site_config.AddForBoards(
-      'chromium-pfq',
-      ((boards_dict['all_full_boards'] & _chrome_boards) -
-       (_chromium_pfq_important_boards | _chromium_pfq_experimental_boards)),
-      external_board_configs,
-      site_config.templates.chromium_pfq,
-      site_config.templates.build_external_chrome,
-  )
-
-  _chrome_pfq_important_boards = frozenset([
-      'atlas',
-      'betty',
-      'betty-pi-arc',
-      'bob',
-      'caroline',
-      'chell',
-      'coral',
-      'cyan',
-      'eve',
-      'eve-arcnext',
-      'grunt',
-      'hana',
-      'kevin64',
-      'nocturne',
-      'nyan_kitty',
-      'reef',
-      'terra',
-      'veyron_minnie',
-      'veyron_rialto',
-  ])
-
-  _chrome_pfq_experimental_boards = frozenset([
-  ])
-
-  _chrome_pfq_skylab_boards = frozenset([
-      'caroline',
-      'kevin-arcnext',
-      'kevin64',
-      'grunt',
-      'reef',
-      'veyron_minnie',
-  ])
-
-  _chrome_pfq_tryjob_boards = (
-      (boards_dict['all_release_boards'] & _chrome_boards) -
-      (_chrome_pfq_important_boards | _chrome_pfq_experimental_boards)
-  )
-
-  master_config.AddSlaves(
-      site_config.AddForBoards(
-          'chrome-pfq',
-          _chrome_pfq_important_boards - _chrome_pfq_skylab_boards,
-          internal_board_configs,
-          site_config.templates.chrome_pfq,
-      )
-  )
-  master_config.AddSlaves(
-      site_config.AddForBoards(
-          'chrome-pfq',
-          _chrome_pfq_experimental_boards - _chrome_pfq_skylab_boards,
-          internal_board_configs,
-          site_config.templates.chrome_pfq,
-          important=False,
-      )
-  )
-  master_config.AddSlaves(
-      site_config.AddForBoards(
-          'chrome-pfq',
-          _chrome_pfq_skylab_boards & _chrome_pfq_important_boards,
-          internal_board_configs,
-          site_config.templates.chrome_pfq,
-          enable_skylab_hw_tests=True,
-      )
-  )
-
-  master_config.AddSlaves(
-      site_config.AddForBoards(
-          'chrome-pfq',
-          _chrome_pfq_skylab_boards & _chrome_pfq_experimental_boards,
-          internal_board_configs,
-          site_config.templates.chrome_pfq,
-          enable_skylab_hw_tests=True,
-          important=False,
-      )
-  )
-
-  # Define the result of the build configs for tryjob purposes.
-  site_config.AddForBoards(
-      'chrome-pfq',
-      _chrome_pfq_tryjob_boards,
-      internal_board_configs,
-      site_config.templates.chrome_pfq,
-  )
-
-
 def FirmwareBuilders(site_config, _boards_dict, _ge_build_config):
   """Create all firmware build configs.
 
@@ -3898,10 +3733,6 @@ def ApplyCustomOverrides(site_config):
           'hw_tests_override': []
       },
 
-      'amd64-generic-chromium-pfq': {
-          'useflags': [],
-      },
-
       # The board does not exist in the lab. See crbug.com/1003981
       'beaglebone_servo-release': {
           'hw_tests': [],
@@ -4038,14 +3869,8 @@ def ApplyCustomOverrides(site_config):
       },
 
       # Run TestSimpleChromeWorkflow only on kevin64-release instead of
-      # arm64-generic/kevin64-chrome-pfq/kevin64-full.
-      'arm64-generic-chromium-pfq': {
-          'chrome_sdk_build_chrome': False,
-      },
+      # arm64-generic/kevin64-full.
       'arm64-generic-full': {
-          'chrome_sdk_build_chrome': False,
-      },
-      'kevin64-chrome-pfq': {
           'chrome_sdk_build_chrome': False,
       },
       'kevin64-full': {
@@ -4647,8 +4472,6 @@ def GetConfig():
   chromeos_test.AndroidTemplates(site_config)
 
   AndroidPfqBuilders(site_config, boards_dict, ge_build_config)
-
-  ChromePfqBuilders(site_config, boards_dict, ge_build_config)
 
   FullBuilders(site_config, boards_dict, ge_build_config)
 
