@@ -1404,7 +1404,7 @@ void UserSessionManager::InitProfilePreferences(
             AccountManager::AccountKey{
                 gaia_id, account_manager::AccountType::ACCOUNT_TYPE_GAIA},
             user->GetDisplayEmail() /* raw_email */,
-            user_context.GetRefreshToken(), false /* revoke_old_token */);
+            user_context.GetRefreshToken());
       }
       // else: If |user_context| does not contain a refresh token, then we are
       // restoring an existing Profile, in which case the account will be
