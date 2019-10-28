@@ -1393,10 +1393,9 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
   WelcomeToChromeViewController* welcomeToChrome =
       [[WelcomeToChromeViewController alloc]
-          initWithBrowserState:self.mainBrowserState
-                      tabModel:self.mainTabModel
-                     presenter:self.mainBVC
-                    dispatcher:self.mainBVC.dispatcher];
+          initWithBrowser:self.interfaceProvider.mainInterface.browser
+                presenter:self.mainBVC
+               dispatcher:self.mainBVC.dispatcher];
   UINavigationController* navController =
       [[OrientationLimitingNavigationController alloc]
           initWithRootViewController:welcomeToChrome];
