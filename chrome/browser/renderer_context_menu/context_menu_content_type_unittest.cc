@@ -27,7 +27,7 @@ class ContextMenuContentTypeTest : public ChromeRenderViewHostTestHarness {
 content::ContextMenuParams CreateParams(int contexts) {
   content::ContextMenuParams rv;
   rv.is_editable = false;
-  rv.media_type = blink::WebContextMenuData::MediaType::kNone;
+  rv.media_type = blink::ContextMenuDataMediaType::kNone;
   rv.page_url = GURL("http://test.page/");
 
   static const base::string16 selected_text = base::ASCIIToUTF16("sel");
@@ -44,17 +44,17 @@ content::ContextMenuParams CreateParams(int contexts) {
 
   if (contexts & MenuItem::IMAGE) {
     rv.src_url = GURL("http://test.image/");
-    rv.media_type = blink::WebContextMenuData::MediaType::kImage;
+    rv.media_type = blink::ContextMenuDataMediaType::kImage;
   }
 
   if (contexts & MenuItem::VIDEO) {
     rv.src_url = GURL("http://test.video/");
-    rv.media_type = blink::WebContextMenuData::MediaType::kVideo;
+    rv.media_type = blink::ContextMenuDataMediaType::kVideo;
   }
 
   if (contexts & MenuItem::AUDIO) {
     rv.src_url = GURL("http://test.audio/");
-    rv.media_type = blink::WebContextMenuData::MediaType::kAudio;
+    rv.media_type = blink::ContextMenuDataMediaType::kAudio;
   }
 
   if (contexts & MenuItem::FRAME)

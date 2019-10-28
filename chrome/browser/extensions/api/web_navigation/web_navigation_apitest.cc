@@ -368,7 +368,7 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, MAYBE_UserAction) {
   // This corresponds to "Open link in new tab".
   content::ContextMenuParams params;
   params.is_editable = false;
-  params.media_type = blink::WebContextMenuData::MediaType::kNone;
+  params.media_type = blink::ContextMenuDataMediaType::kNone;
   params.page_url = url;
   params.link_url = extension->GetResourceURL("b.html");
 

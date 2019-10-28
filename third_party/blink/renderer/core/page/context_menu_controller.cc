@@ -209,8 +209,8 @@ bool ContextMenuController::ShouldShowContextMenuFromTouch(
     const WebContextMenuData& data) {
   return page_->GetSettings().GetAlwaysShowContextMenuOnTouch() ||
          !data.link_url.IsEmpty() ||
-         data.media_type == WebContextMenuData::MediaType::kImage ||
-         data.media_type == WebContextMenuData::MediaType::kVideo ||
+         data.media_type == ContextMenuDataMediaType::kImage ||
+         data.media_type == ContextMenuDataMediaType::kVideo ||
          data.is_editable || !data.selected_text.IsEmpty();
 }
 
@@ -260,11 +260,11 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
   }
 
   if (IsA<HTMLCanvasElement>(result.InnerNode())) {
-    data.media_type = WebContextMenuData::MediaType::kCanvas;
+    data.media_type = ContextMenuDataMediaType::kCanvas;
     data.has_image_contents = true;
   } else if (!result.AbsoluteImageURL().IsEmpty()) {
     data.src_url = result.AbsoluteImageURL();
-    data.media_type = WebContextMenuData::MediaType::kImage;
+    data.media_type = ContextMenuDataMediaType::kImage;
     data.media_flags |= WebContextMenuData::kMediaCanPrint;
 
     // An image can be null for many reasons, like being blocked, no image
@@ -282,9 +282,9 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
       // A video element should be presented as an audio element when it has an
       // audio track but no video track.
       if (media_element->HasAudio() && !media_element->HasVideo())
-        data.media_type = WebContextMenuData::MediaType::kAudio;
+        data.media_type = ContextMenuDataMediaType::kAudio;
       else
-        data.media_type = WebContextMenuData::MediaType::kVideo;
+        data.media_type = ContextMenuDataMediaType::kVideo;
       if (media_element->SupportsPictureInPicture()) {
         data.media_flags |= WebContextMenuData::kMediaCanPictureInPicture;
         if (PictureInPictureController::IsElementInPictureInPicture(
@@ -292,7 +292,7 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
           data.media_flags |= WebContextMenuData::kMediaPictureInPicture;
       }
     } else if (IsA<HTMLAudioElement>(*media_element)) {
-      data.media_type = WebContextMenuData::MediaType::kAudio;
+      data.media_type = ContextMenuDataMediaType::kAudio;
     }
 
     data.suggested_filename = media_element->title();
@@ -326,7 +326,7 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
       WebPluginContainerImpl* plugin_view =
           ToLayoutEmbeddedContent(object)->Plugin();
       if (plugin_view) {
-        data.media_type = WebContextMenuData::MediaType::kPlugin;
+        data.media_type = ContextMenuDataMediaType::kPlugin;
 
         WebPlugin* plugin = plugin_view->Plugin();
         data.link_url = plugin->LinkAtPosition(data.mouse_position);

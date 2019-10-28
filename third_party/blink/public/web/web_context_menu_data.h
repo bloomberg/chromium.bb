@@ -46,8 +46,8 @@ namespace blink {
 // This struct is passed to WebViewClient::ShowContextMenu.
 struct WebContextMenuData {
   // The type of media the context menu is being invoked on.
-  using MediaType = ContextMenuDataMediaType;
-  MediaType media_type;
+  // using MediaType = ContextMenuDataMediaType;
+  ContextMenuDataMediaType media_type;
 
   // The x and y position of the mouse pointer (relative to the webview).
   WebPoint mouse_position;
@@ -184,7 +184,7 @@ struct WebContextMenuData {
   WebMenuSourceType source_type;
 
   WebContextMenuData()
-      : media_type(MediaType::kNone),
+      : media_type(ContextMenuDataMediaType::kNone),
         has_image_contents(false),
         media_flags(kMediaNone),
         is_spell_checking_enabled(false),
