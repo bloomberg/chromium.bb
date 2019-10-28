@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/fileapi/browser_file_system_helper.h"
+#include "content/browser/file_system/browser_file_system_helper.h"
 
 #include <stddef.h>
 #include <memory>
@@ -123,9 +123,7 @@ scoped_refptr<storage::FileSystemContext> CreateFileSystemContext(
   // Setting up additional filesystem backends.
   std::vector<std::unique_ptr<storage::FileSystemBackend>> additional_backends;
   GetContentClient()->browser()->GetAdditionalFileSystemBackends(
-      browser_context,
-      profile_path,
-      &additional_backends);
+      browser_context, profile_path, &additional_backends);
 
   // Set up the auto mount handlers for url requests.
   std::vector<storage::URLRequestAutoMountHandler>
@@ -164,8 +162,7 @@ void SyncGetPlatformPath(storage::FileSystemContext* context,
                          int process_id,
                          const GURL& path,
                          SyncGetPlatformPathCB callback) {
-  DCHECK(context->default_file_task_runner()->
-         RunsTasksInCurrentSequence());
+  DCHECK(context->default_file_task_runner()->RunsTasksInCurrentSequence());
   storage::FileSystemURL url(context->CrackURL(path));
   if (!FileSystemURLIsValid(context, url)) {
     // Note: Posting a task here so this function always returns

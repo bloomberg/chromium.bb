@@ -34,9 +34,7 @@ namespace content {
 class FileSystemBrowserTest : public ContentBrowserTest,
                               public testing::WithParamInterface<bool> {
  public:
-  FileSystemBrowserTest() {
-    is_incognito_ = GetParam();
-  }
+  FileSystemBrowserTest() { is_incognito_ = GetParam(); }
 
   void SimpleTest(const GURL& test_url) {
     // The test page will perform tests on FileAPI, then navigate to either

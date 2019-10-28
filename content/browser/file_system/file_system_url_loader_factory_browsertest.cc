@@ -17,7 +17,7 @@
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "build/build_config.h"
-#include "content/browser/fileapi/file_system_url_loader_factory.h"
+#include "content/browser/file_system/file_system_url_loader_factory.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/test/browser_test_utils.h"

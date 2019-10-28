@@ -36,7 +36,7 @@ namespace content {
 namespace {
 
 void GetStatus(bool* done,
-               base::File::Error *status_out,
+               base::File::Error* status_out,
                base::File::Error status) {
   ASSERT_FALSE(*done);
   *done = true;
@@ -45,7 +45,7 @@ void GetStatus(bool* done,
 
 void GetCancelStatus(bool* operation_done,
                      bool* cancel_done,
-                     base::File::Error *status_out,
+                     base::File::Error* status_out,
                      base::File::Error status) {
   // Cancel callback must be always called after the operation's callback.
   ASSERT_TRUE(*operation_done);
@@ -76,8 +76,7 @@ class FileSystemOperationRunnerTest : public testing::Test {
 
   FileSystemURL URL(const std::string& path) {
     return file_system_context_->CreateCrackedFileSystemURL(
-        GURL("http://example.com"),
-        storage::kFileSystemTypeTemporary,
+        GURL("http://example.com"), storage::kFileSystemTypeTemporary,
         base::FilePath::FromUTF8Unsafe(path));
   }
 
@@ -210,8 +209,7 @@ class MultiThreadFileSystemOperationRunnerTest : public testing::Test {
 
   FileSystemURL URL(const std::string& path) {
     return file_system_context_->CreateCrackedFileSystemURL(
-        GURL("http://example.com"),
-        storage::kFileSystemTypeTemporary,
+        GURL("http://example.com"), storage::kFileSystemTypeTemporary,
         base::FilePath::FromUTF8Unsafe(path));
   }
 

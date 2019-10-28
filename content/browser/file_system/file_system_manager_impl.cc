@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/fileapi/file_system_manager_impl.h"
+#include "content/browser/file_system/file_system_manager_impl.h"
 
 #include <utility>
 
@@ -21,7 +21,7 @@
 #include "content/browser/bad_message.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/child_process_security_policy_impl.h"
-#include "content/browser/fileapi/browser_file_system_helper.h"
+#include "content/browser/file_system/browser_file_system_helper.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "ipc/ipc_platform_file.h"
@@ -39,12 +39,12 @@
 #include "third_party/blink/public/common/features.h"
 #include "url/gurl.h"
 
-using storage::FileSystemFileUtil;
-using storage::FileSystemBackend;
-using storage::FileSystemOperation;
-using storage::FileSystemURL;
 using storage::BlobDataBuilder;
 using storage::BlobStorageContext;
+using storage::FileSystemBackend;
+using storage::FileSystemFileUtil;
+using storage::FileSystemOperation;
+using storage::FileSystemURL;
 
 namespace content {
 
