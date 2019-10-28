@@ -178,7 +178,11 @@ bool NGInlineCursor::IsHiddenForPaint() const {
 }
 
 bool NGInlineCursor::IsInlineLeaf() const {
-  return IsText() || IsAtomicInline();
+  if (IsText())
+    return true;
+  if (!IsAtomicInline())
+    return false;
+  return !IsListMarker();
 }
 
 bool NGInlineCursor::IsInclusiveDescendantOf(
