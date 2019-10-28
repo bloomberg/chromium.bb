@@ -1,6 +1,5 @@
 /*
  * Copyright (C) 2009 Apple Inc. All rights reserved.
- * Copyright (C) 2009 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -24,62 +23,58 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TYPED_ARRAYS_UINT8_ARRAY_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TYPED_ARRAYS_UINT8_ARRAY_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TYPED_ARRAYS_ARRAY_BUFFER_INT16_ARRAY_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_TYPED_ARRAYS_ARRAY_BUFFER_INT16_ARRAY_H_
 
-#include "third_party/blink/renderer/platform/wtf/typed_arrays/integral_typed_array_base.h"
+#include "third_party/blink/renderer/core/typed_arrays/array_buffer/integral_typed_array_base.h"
 
-namespace WTF {
+namespace blink {
 
 class ArrayBuffer;
 
-class Uint8Array : public IntegralTypedArrayBase<unsigned char> {
+class Int16Array final : public IntegralTypedArrayBase<int16_t> {
  public:
-  static inline scoped_refptr<Uint8Array> Create(unsigned length);
-  static inline scoped_refptr<Uint8Array> Create(const unsigned char* array,
+  static inline scoped_refptr<Int16Array> Create(unsigned length);
+  static inline scoped_refptr<Int16Array> Create(const int16_t* array,
                                                  unsigned length);
-  static inline scoped_refptr<Uint8Array> Create(scoped_refptr<ArrayBuffer>,
+  static inline scoped_refptr<Int16Array> Create(scoped_refptr<ArrayBuffer>,
                                                  unsigned byte_offset,
                                                  unsigned length);
 
-  using TypedArrayBase<unsigned char>::Set;
-  using IntegralTypedArrayBase<unsigned char>::Set;
+  using TypedArrayBase<int16_t>::Set;
+  using IntegralTypedArrayBase<int16_t>::Set;
 
-  ViewType GetType() const override { return kTypeUint8; }
+  ViewType GetType() const override { return kTypeInt16; }
 
- protected:
-  inline Uint8Array(scoped_refptr<ArrayBuffer>,
+ private:
+  inline Int16Array(scoped_refptr<ArrayBuffer>,
                     unsigned byte_offset,
                     unsigned length);
   // Make constructor visible to superclass.
-  friend class TypedArrayBase<unsigned char>;
+  friend class TypedArrayBase<int16_t>;
 };
 
-scoped_refptr<Uint8Array> Uint8Array::Create(unsigned length) {
-  return TypedArrayBase<unsigned char>::Create<Uint8Array>(length);
+scoped_refptr<Int16Array> Int16Array::Create(unsigned length) {
+  return TypedArrayBase<int16_t>::Create<Int16Array>(length);
 }
 
-scoped_refptr<Uint8Array> Uint8Array::Create(const unsigned char* array,
+scoped_refptr<Int16Array> Int16Array::Create(const int16_t* array,
                                              unsigned length) {
-  return TypedArrayBase<unsigned char>::Create<Uint8Array>(array, length);
+  return TypedArrayBase<int16_t>::Create<Int16Array>(array, length);
 }
 
-scoped_refptr<Uint8Array> Uint8Array::Create(scoped_refptr<ArrayBuffer> buffer,
+scoped_refptr<Int16Array> Int16Array::Create(scoped_refptr<ArrayBuffer> buffer,
                                              unsigned byte_offset,
                                              unsigned length) {
-  return TypedArrayBase<unsigned char>::Create<Uint8Array>(std::move(buffer),
-                                                           byte_offset, length);
+  return TypedArrayBase<int16_t>::Create<Int16Array>(std::move(buffer),
+                                                     byte_offset, length);
 }
 
-Uint8Array::Uint8Array(scoped_refptr<ArrayBuffer> buffer,
+Int16Array::Int16Array(scoped_refptr<ArrayBuffer> buffer,
                        unsigned byte_offset,
                        unsigned length)
-    : IntegralTypedArrayBase<unsigned char>(std::move(buffer),
-                                            byte_offset,
-                                            length) {}
+    : IntegralTypedArrayBase<int16_t>(std::move(buffer), byte_offset, length) {}
 
-}  // namespace WTF
+}  // namespace blink
 
-using WTF::Uint8Array;
-
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TYPED_ARRAYS_UINT8_ARRAY_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_TYPED_ARRAYS_ARRAY_BUFFER_INT16_ARRAY_H_

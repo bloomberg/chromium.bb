@@ -24,13 +24,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TYPED_ARRAYS_TYPED_ARRAY_BASE_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TYPED_ARRAYS_TYPED_ARRAY_BASE_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TYPED_ARRAYS_ARRAY_BUFFER_TYPED_ARRAY_BASE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_TYPED_ARRAYS_ARRAY_BUFFER_TYPED_ARRAY_BASE_H_
 
-#include "third_party/blink/renderer/platform/wtf/typed_arrays/array_buffer.h"
-#include "third_party/blink/renderer/platform/wtf/typed_arrays/array_buffer_view.h"
+#include "third_party/blink/renderer/core/typed_arrays/array_buffer/array_buffer.h"
+#include "third_party/blink/renderer/core/typed_arrays/array_buffer/array_buffer_view.h"
 
-namespace WTF {
+namespace blink {
 
 template <typename T>
 class TypedArrayBase : public ArrayBufferView {
@@ -119,8 +119,6 @@ class TypedArrayBase : public ArrayBufferView {
   unsigned length_;
 };
 
-}  // namespace WTF
+}  // namespace blink
 
-using WTF::TypedArrayBase;
-
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TYPED_ARRAYS_TYPED_ARRAY_BASE_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_TYPED_ARRAYS_ARRAY_BUFFER_TYPED_ARRAY_BASE_H_

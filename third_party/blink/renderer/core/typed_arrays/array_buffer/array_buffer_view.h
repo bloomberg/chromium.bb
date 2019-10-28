@@ -23,19 +23,19 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TYPED_ARRAYS_ARRAY_BUFFER_VIEW_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TYPED_ARRAYS_ARRAY_BUFFER_VIEW_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TYPED_ARRAYS_ARRAY_BUFFER_ARRAY_BUFFER_VIEW_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_TYPED_ARRAYS_ARRAY_BUFFER_ARRAY_BUFFER_VIEW_H_
 
 #include <limits.h>
 #include "base/memory/scoped_refptr.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/typed_arrays/array_buffer/array_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
-#include "third_party/blink/renderer/platform/wtf/typed_arrays/array_buffer.h"
-#include "third_party/blink/renderer/platform/wtf/wtf_export.h"
 
-namespace WTF {
+namespace blink {
 
-class WTF_EXPORT ArrayBufferView : public RefCounted<ArrayBufferView> {
+class CORE_EXPORT ArrayBufferView : public RefCounted<ArrayBufferView> {
   USING_FAST_MALLOC(ArrayBuffer);
 
  public:
@@ -127,8 +127,6 @@ bool ArrayBufferView::SetImpl(ArrayBufferView* array, unsigned byte_offset) {
   return true;
 }
 
-}  // namespace WTF
+}  // namespace blink
 
-using WTF::ArrayBufferView;
-
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TYPED_ARRAYS_ARRAY_BUFFER_VIEW_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_TYPED_ARRAYS_ARRAY_BUFFER_ARRAY_BUFFER_VIEW_H_

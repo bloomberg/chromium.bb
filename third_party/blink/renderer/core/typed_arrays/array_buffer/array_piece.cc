@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/platform/wtf/typed_arrays/array_piece.h"
+#include "third_party/blink/renderer/core/typed_arrays/array_buffer/array_piece.h"
 
+#include "third_party/blink/renderer/core/typed_arrays/array_buffer/array_buffer.h"
+#include "third_party/blink/renderer/core/typed_arrays/array_buffer/array_buffer_view.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
-#include "third_party/blink/renderer/platform/wtf/typed_arrays/array_buffer.h"
-#include "third_party/blink/renderer/platform/wtf/typed_arrays/array_buffer_view.h"
 
-namespace WTF {
+namespace blink {
 
 ArrayPiece::ArrayPiece() {
   InitNull();
@@ -77,4 +77,4 @@ void ArrayPiece::InitNull() {
   is_detached_ = false;
 }
 
-}  // namespace WTF
+}  // namespace blink

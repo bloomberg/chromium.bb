@@ -24,12 +24,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TYPED_ARRAYS_INT8_ARRAY_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TYPED_ARRAYS_INT8_ARRAY_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TYPED_ARRAYS_ARRAY_BUFFER_INT8_ARRAY_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_TYPED_ARRAYS_ARRAY_BUFFER_INT8_ARRAY_H_
 
-#include "third_party/blink/renderer/platform/wtf/typed_arrays/integral_typed_array_base.h"
+#include "third_party/blink/renderer/core/typed_arrays/array_buffer/integral_typed_array_base.h"
 
-namespace WTF {
+namespace blink {
 
 class ArrayBuffer;
 
@@ -78,8 +78,6 @@ Int8Array::Int8Array(scoped_refptr<ArrayBuffer> buffer,
                                           byte_offset,
                                           length) {}
 
-}  // namespace WTF
+}  // namespace blink
 
-using WTF::Int8Array;
-
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TYPED_ARRAYS_INT8_ARRAY_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_TYPED_ARRAYS_ARRAY_BUFFER_INT8_ARRAY_H_

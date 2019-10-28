@@ -24,14 +24,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TYPED_ARRAYS_INTEGRAL_TYPED_ARRAY_BASE_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TYPED_ARRAYS_INTEGRAL_TYPED_ARRAY_BASE_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TYPED_ARRAYS_ARRAY_BUFFER_INTEGRAL_TYPED_ARRAY_BASE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_TYPED_ARRAYS_ARRAY_BUFFER_INTEGRAL_TYPED_ARRAY_BASE_H_
 
 #include <limits>
+#include "third_party/blink/renderer/core/typed_arrays/array_buffer/typed_array_base.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
-#include "third_party/blink/renderer/platform/wtf/typed_arrays/typed_array_base.h"
 
-namespace WTF {
+namespace blink {
 
 // Base class for all WebGL<T>Array types holding integral
 // (non-floating-point) values.
@@ -56,8 +56,6 @@ class IntegralTypedArrayBase : public TypedArrayBase<T> {
       : TypedArrayBase<T>(std::move(buffer), byte_offset, length) {}
 };
 
-}  // namespace WTF
+}  // namespace blink
 
-using WTF::IntegralTypedArrayBase;
-
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TYPED_ARRAYS_INTEGRAL_TYPED_ARRAY_BASE_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_TYPED_ARRAYS_ARRAY_BUFFER_INTEGRAL_TYPED_ARRAY_BASE_H_

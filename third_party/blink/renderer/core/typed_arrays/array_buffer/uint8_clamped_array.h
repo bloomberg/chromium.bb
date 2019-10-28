@@ -25,13 +25,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TYPED_ARRAYS_UINT8_CLAMPED_ARRAY_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TYPED_ARRAYS_UINT8_CLAMPED_ARRAY_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TYPED_ARRAYS_ARRAY_BUFFER_UINT8_CLAMPED_ARRAY_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_TYPED_ARRAYS_ARRAY_BUFFER_UINT8_CLAMPED_ARRAY_H_
 
+#include "third_party/blink/renderer/core/typed_arrays/array_buffer/uint8_array.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
-#include "third_party/blink/renderer/platform/wtf/typed_arrays/uint8_array.h"
 
-namespace WTF {
+namespace blink {
 
 class Uint8ClampedArray final : public Uint8Array {
  public:
@@ -89,8 +89,6 @@ Uint8ClampedArray::Uint8ClampedArray(scoped_refptr<ArrayBuffer> buffer,
                                      unsigned length)
     : Uint8Array(std::move(buffer), byte_offset, length) {}
 
-}  // namespace WTF
+}  // namespace blink
 
-using WTF::Uint8ClampedArray;
-
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TYPED_ARRAYS_UINT8_CLAMPED_ARRAY_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_TYPED_ARRAYS_ARRAY_BUFFER_UINT8_CLAMPED_ARRAY_H_

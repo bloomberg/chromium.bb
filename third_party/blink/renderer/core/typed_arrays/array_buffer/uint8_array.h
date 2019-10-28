@@ -24,58 +24,60 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TYPED_ARRAYS_INT32_ARRAY_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TYPED_ARRAYS_INT32_ARRAY_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TYPED_ARRAYS_ARRAY_BUFFER_UINT8_ARRAY_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_TYPED_ARRAYS_ARRAY_BUFFER_UINT8_ARRAY_H_
 
-#include "third_party/blink/renderer/platform/wtf/typed_arrays/integral_typed_array_base.h"
+#include "third_party/blink/renderer/core/typed_arrays/array_buffer/integral_typed_array_base.h"
 
-namespace WTF {
+namespace blink {
 
-class Int32Array final : public IntegralTypedArrayBase<int> {
+class ArrayBuffer;
+
+class Uint8Array : public IntegralTypedArrayBase<unsigned char> {
  public:
-  static inline scoped_refptr<Int32Array> Create(unsigned length);
-  static inline scoped_refptr<Int32Array> Create(const int* array,
+  static inline scoped_refptr<Uint8Array> Create(unsigned length);
+  static inline scoped_refptr<Uint8Array> Create(const unsigned char* array,
                                                  unsigned length);
-  static inline scoped_refptr<Int32Array> Create(scoped_refptr<ArrayBuffer>,
+  static inline scoped_refptr<Uint8Array> Create(scoped_refptr<ArrayBuffer>,
                                                  unsigned byte_offset,
                                                  unsigned length);
 
-  using TypedArrayBase<int>::Set;
-  using IntegralTypedArrayBase<int>::Set;
+  using TypedArrayBase<unsigned char>::Set;
+  using IntegralTypedArrayBase<unsigned char>::Set;
 
-  ViewType GetType() const override { return kTypeInt32; }
+  ViewType GetType() const override { return kTypeUint8; }
 
- private:
-  inline Int32Array(scoped_refptr<ArrayBuffer>,
+ protected:
+  inline Uint8Array(scoped_refptr<ArrayBuffer>,
                     unsigned byte_offset,
                     unsigned length);
   // Make constructor visible to superclass.
-  friend class TypedArrayBase<int>;
+  friend class TypedArrayBase<unsigned char>;
 };
 
-scoped_refptr<Int32Array> Int32Array::Create(unsigned length) {
-  return TypedArrayBase<int>::Create<Int32Array>(length);
+scoped_refptr<Uint8Array> Uint8Array::Create(unsigned length) {
+  return TypedArrayBase<unsigned char>::Create<Uint8Array>(length);
 }
 
-scoped_refptr<Int32Array> Int32Array::Create(const int* array,
+scoped_refptr<Uint8Array> Uint8Array::Create(const unsigned char* array,
                                              unsigned length) {
-  return TypedArrayBase<int>::Create<Int32Array>(array, length);
+  return TypedArrayBase<unsigned char>::Create<Uint8Array>(array, length);
 }
 
-scoped_refptr<Int32Array> Int32Array::Create(scoped_refptr<ArrayBuffer> buffer,
+scoped_refptr<Uint8Array> Uint8Array::Create(scoped_refptr<ArrayBuffer> buffer,
                                              unsigned byte_offset,
                                              unsigned length) {
-  return TypedArrayBase<int>::Create<Int32Array>(std::move(buffer), byte_offset,
-                                                 length);
+  return TypedArrayBase<unsigned char>::Create<Uint8Array>(std::move(buffer),
+                                                           byte_offset, length);
 }
 
-Int32Array::Int32Array(scoped_refptr<ArrayBuffer> buffer,
+Uint8Array::Uint8Array(scoped_refptr<ArrayBuffer> buffer,
                        unsigned byte_offset,
                        unsigned length)
-    : IntegralTypedArrayBase<int>(std::move(buffer), byte_offset, length) {}
+    : IntegralTypedArrayBase<unsigned char>(std::move(buffer),
+                                            byte_offset,
+                                            length) {}
 
-}  // namespace WTF
+}  // namespace blink
 
-using WTF::Int32Array;
-
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TYPED_ARRAYS_INT32_ARRAY_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_TYPED_ARRAYS_ARRAY_BUFFER_UINT8_ARRAY_H_

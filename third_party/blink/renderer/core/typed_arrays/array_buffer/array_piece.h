@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TYPED_ARRAYS_ARRAY_PIECE_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TYPED_ARRAYS_ARRAY_PIECE_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TYPED_ARRAYS_ARRAY_BUFFER_ARRAY_PIECE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_TYPED_ARRAYS_ARRAY_BUFFER_ARRAY_PIECE_H_
 
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/forward.h"
-#include "third_party/blink/renderer/platform/wtf/wtf_export.h"
 
-namespace WTF {
+namespace blink {
+
+class ArrayBuffer;
+class ArrayBufferView;
 
 // This class is for passing around un-owned bytes as a pointer + length.
 // It supports implicit conversion from several other data types.
@@ -20,7 +22,7 @@ namespace WTF {
 //
 // IMPORTANT: The data contained by ArrayPiece is NOT OWNED, so caution must be
 //            taken to ensure it is kept alive.
-class WTF_EXPORT ArrayPiece {
+class CORE_EXPORT ArrayPiece {
   DISALLOW_NEW();
 
  public:
@@ -52,8 +54,6 @@ class WTF_EXPORT ArrayPiece {
   bool is_detached_;
 };
 
-}  // namespace WTF
+}  // namespace blink
 
-using WTF::ArrayPiece;
-
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TYPED_ARRAYS_ARRAY_PIECE_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_TYPED_ARRAYS_ARRAY_BUFFER_ARRAY_PIECE_H_

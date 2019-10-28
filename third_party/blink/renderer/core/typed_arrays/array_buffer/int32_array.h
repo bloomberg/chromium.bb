@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2009 Apple Inc. All rights reserved.
+ * Copyright (C) 2009 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -23,60 +24,56 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TYPED_ARRAYS_INT16_ARRAY_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TYPED_ARRAYS_INT16_ARRAY_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TYPED_ARRAYS_ARRAY_BUFFER_INT32_ARRAY_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_TYPED_ARRAYS_ARRAY_BUFFER_INT32_ARRAY_H_
 
-#include "third_party/blink/renderer/platform/wtf/typed_arrays/integral_typed_array_base.h"
+#include "third_party/blink/renderer/core/typed_arrays/array_buffer/integral_typed_array_base.h"
 
-namespace WTF {
+namespace blink {
 
-class ArrayBuffer;
-
-class Int16Array final : public IntegralTypedArrayBase<int16_t> {
+class Int32Array final : public IntegralTypedArrayBase<int> {
  public:
-  static inline scoped_refptr<Int16Array> Create(unsigned length);
-  static inline scoped_refptr<Int16Array> Create(const int16_t* array,
+  static inline scoped_refptr<Int32Array> Create(unsigned length);
+  static inline scoped_refptr<Int32Array> Create(const int* array,
                                                  unsigned length);
-  static inline scoped_refptr<Int16Array> Create(scoped_refptr<ArrayBuffer>,
+  static inline scoped_refptr<Int32Array> Create(scoped_refptr<ArrayBuffer>,
                                                  unsigned byte_offset,
                                                  unsigned length);
 
-  using TypedArrayBase<int16_t>::Set;
-  using IntegralTypedArrayBase<int16_t>::Set;
+  using TypedArrayBase<int>::Set;
+  using IntegralTypedArrayBase<int>::Set;
 
-  ViewType GetType() const override { return kTypeInt16; }
+  ViewType GetType() const override { return kTypeInt32; }
 
  private:
-  inline Int16Array(scoped_refptr<ArrayBuffer>,
+  inline Int32Array(scoped_refptr<ArrayBuffer>,
                     unsigned byte_offset,
                     unsigned length);
   // Make constructor visible to superclass.
-  friend class TypedArrayBase<int16_t>;
+  friend class TypedArrayBase<int>;
 };
 
-scoped_refptr<Int16Array> Int16Array::Create(unsigned length) {
-  return TypedArrayBase<int16_t>::Create<Int16Array>(length);
+scoped_refptr<Int32Array> Int32Array::Create(unsigned length) {
+  return TypedArrayBase<int>::Create<Int32Array>(length);
 }
 
-scoped_refptr<Int16Array> Int16Array::Create(const int16_t* array,
+scoped_refptr<Int32Array> Int32Array::Create(const int* array,
                                              unsigned length) {
-  return TypedArrayBase<int16_t>::Create<Int16Array>(array, length);
+  return TypedArrayBase<int>::Create<Int32Array>(array, length);
 }
 
-scoped_refptr<Int16Array> Int16Array::Create(scoped_refptr<ArrayBuffer> buffer,
+scoped_refptr<Int32Array> Int32Array::Create(scoped_refptr<ArrayBuffer> buffer,
                                              unsigned byte_offset,
                                              unsigned length) {
-  return TypedArrayBase<int16_t>::Create<Int16Array>(std::move(buffer),
-                                                     byte_offset, length);
+  return TypedArrayBase<int>::Create<Int32Array>(std::move(buffer), byte_offset,
+                                                 length);
 }
 
-Int16Array::Int16Array(scoped_refptr<ArrayBuffer> buffer,
+Int32Array::Int32Array(scoped_refptr<ArrayBuffer> buffer,
                        unsigned byte_offset,
                        unsigned length)
-    : IntegralTypedArrayBase<int16_t>(std::move(buffer), byte_offset, length) {}
+    : IntegralTypedArrayBase<int>(std::move(buffer), byte_offset, length) {}
 
-}  // namespace WTF
+}  // namespace blink
 
-using WTF::Int16Array;
-
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TYPED_ARRAYS_INT16_ARRAY_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_TYPED_ARRAYS_ARRAY_BUFFER_INT32_ARRAY_H_

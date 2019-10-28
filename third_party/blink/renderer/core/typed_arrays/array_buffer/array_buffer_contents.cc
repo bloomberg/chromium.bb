@@ -24,15 +24,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "third_party/blink/renderer/core/typed_arrays/array_buffer/array_buffer_contents.h"
 #include "build/build_config.h"
-#include "third_party/blink/renderer/platform/wtf/typed_arrays/array_buffer_contents.h"
 
 #include <string.h>
 #include "base/allocator/partition_allocator/partition_alloc.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
-namespace WTF {
+namespace blink {
 
 ArrayBufferContents::ArrayBufferContents()
     : holder_(base::AdoptRef(new DataHolder())) {}
@@ -54,8 +54,7 @@ ArrayBufferContents::ArrayBufferContents(
   holder_->AllocateNew(total_size, is_shared, policy);
 }
 
-ArrayBufferContents::ArrayBufferContents(DataHandle data,
-                                         SharingType is_shared)
+ArrayBufferContents::ArrayBufferContents(DataHandle data, SharingType is_shared)
     : holder_(base::AdoptRef(new DataHolder())) {
   if (data) {
     holder_->Adopt(std::move(data), is_shared);
@@ -117,7 +116,7 @@ void* ArrayBufferContents::AllocateMemoryWithFlags(size_t size,
     flags |= base::PartitionAllocZeroFill;
   }
   void* data = PartitionAllocGenericFlags(
-      Partitions::ArrayBufferPartition(), flags, size,
+      WTF::Partitions::ArrayBufferPartition(), flags, size,
       WTF_HEAP_PROFILER_TYPE_NAME(ArrayBufferContents));
   return data;
 }
@@ -128,7 +127,7 @@ void* ArrayBufferContents::AllocateMemoryOrNull(size_t size,
 }
 
 void ArrayBufferContents::FreeMemory(void* data) {
-  Partitions::ArrayBufferPartition()->Free(data);
+  WTF::Partitions::ArrayBufferPartition()->Free(data);
 }
 
 ArrayBufferContents::DataHandle ArrayBufferContents::CreateDataHandle(
@@ -140,7 +139,11 @@ ArrayBufferContents::DataHandle ArrayBufferContents::CreateDataHandle(
 }
 
 ArrayBufferContents::DataHolder::DataHolder()
-    : data_(nullptr, 0, [](void*, size_t, void*) {}, nullptr),
+    : data_(
+          nullptr,
+          0,
+          [](void*, size_t, void*) {},
+          nullptr),
       is_shared_(kNotShared),
       has_registered_external_allocation_(false) {}
 
@@ -181,4 +184,4 @@ void ArrayBufferContents::DataHolder::CopyMemoryFrom(const DataHolder& source) {
   memcpy(data_.Data(), source.Data(), source.DataLength());
 }
 
-}  // namespace WTF
+}  // namespace blink

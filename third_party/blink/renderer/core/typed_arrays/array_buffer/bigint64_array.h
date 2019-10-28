@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TYPED_ARRAYS_BIGINT64_ARRAY_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TYPED_ARRAYS_BIGINT64_ARRAY_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TYPED_ARRAYS_ARRAY_BUFFER_BIGINT64_ARRAY_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_TYPED_ARRAYS_ARRAY_BUFFER_BIGINT64_ARRAY_H_
 
+#include "third_party/blink/renderer/core/typed_arrays/array_buffer/typed_array_base.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
-#include "third_party/blink/renderer/platform/wtf/typed_arrays/typed_array_base.h"
 
-namespace WTF {
+namespace blink {
 
 class BigInt64Array final : public TypedArrayBase<int64_t> {
  public:
@@ -64,8 +64,6 @@ BigInt64Array::BigInt64Array(scoped_refptr<ArrayBuffer> buffer,
                              unsigned length)
     : TypedArrayBase<int64_t>(std::move(buffer), byte_offset, length) {}
 
-}  // namespace WTF
+}  // namespace blink
 
-using WTF::BigInt64Array;
-
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TYPED_ARRAYS_BIGINT64_ARRAY_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_TYPED_ARRAYS_ARRAY_BUFFER_BIGINT64_ARRAY_H_

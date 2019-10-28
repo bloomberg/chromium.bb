@@ -23,12 +23,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "third_party/blink/renderer/platform/wtf/typed_arrays/array_buffer.h"
+#include "third_party/blink/renderer/core/typed_arrays/array_buffer/array_buffer.h"
 
 #include "base/memory/scoped_refptr.h"
-#include "third_party/blink/renderer/platform/wtf/typed_arrays/array_buffer_view.h"
+#include "third_party/blink/renderer/core/typed_arrays/array_buffer/array_buffer_view.h"
 
-namespace WTF {
+namespace blink {
 
 bool ArrayBuffer::Transfer(ArrayBufferContents& result) {
   DCHECK(!IsShared());
@@ -115,4 +115,4 @@ void ArrayBuffer::RemoveView(ArrayBufferView* view) {
   view->prev_view_ = view->next_view_ = nullptr;
 }
 
-}  // namespace WTF
+}  // namespace blink

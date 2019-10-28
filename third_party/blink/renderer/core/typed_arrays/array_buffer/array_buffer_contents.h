@@ -24,22 +24,22 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TYPED_ARRAYS_ARRAY_BUFFER_CONTENTS_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TYPED_ARRAYS_ARRAY_BUFFER_CONTENTS_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TYPED_ARRAYS_ARRAY_BUFFER_ARRAY_BUFFER_CONTENTS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_TYPED_ARRAYS_ARRAY_BUFFER_ARRAY_BUFFER_CONTENTS_H_
 
 #include "base/allocator/partition_allocator/page_allocator.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_copier.h"
 #include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/wtf.h"
-#include "third_party/blink/renderer/platform/wtf/wtf_export.h"
 
-namespace WTF {
+namespace blink {
 
-class WTF_EXPORT ArrayBufferContents {
+class CORE_EXPORT ArrayBufferContents {
   DISALLOW_NEW();
 
  public:
@@ -118,8 +118,7 @@ class WTF_EXPORT ArrayBufferContents {
                       size_t length,
                       DataDeleter deleter,
                       SharingType is_shared);
-  ArrayBufferContents(DataHandle,
-                      SharingType is_shared);
+  ArrayBufferContents(DataHandle, SharingType is_shared);
   ArrayBufferContents(ArrayBufferContents&&) = default;
 
   ~ArrayBufferContents();
@@ -159,7 +158,7 @@ class WTF_EXPORT ArrayBufferContents {
   static void DefaultAdjustAmountOfExternalAllocatedMemoryFunction(
       int64_t diff);
 
-  class WTF_EXPORT DataHolder : public ThreadSafeRefCounted<DataHolder> {
+  class CORE_EXPORT DataHolder : public ThreadSafeRefCounted<DataHolder> {
     DISALLOW_COPY_AND_ASSIGN(DataHolder);
 
    public:
@@ -188,10 +187,14 @@ class WTF_EXPORT ArrayBufferContents {
   DISALLOW_COPY_AND_ASSIGN(ArrayBufferContents);
 };
 
+}  // namespace blink
+
+namespace WTF {
+
 template <>
-struct CrossThreadCopier<ArrayBufferContents> {
+struct CrossThreadCopier<blink::ArrayBufferContents> {
   STATIC_ONLY(CrossThreadCopier);
-  using Type = ArrayBufferContents;
+  using Type = blink::ArrayBufferContents;
   static Type Copy(Type handle) {
     return handle;  // This is in fact a move.
   }
@@ -199,4 +202,4 @@ struct CrossThreadCopier<ArrayBufferContents> {
 
 }  // namespace WTF
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TYPED_ARRAYS_ARRAY_BUFFER_CONTENTS_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_TYPED_ARRAYS_ARRAY_BUFFER_ARRAY_BUFFER_CONTENTS_H_

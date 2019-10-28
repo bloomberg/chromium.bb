@@ -23,11 +23,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "third_party/blink/renderer/platform/wtf/typed_arrays/array_buffer_view.h"
+#include "third_party/blink/renderer/core/typed_arrays/array_buffer/array_buffer_view.h"
 
-#include "third_party/blink/renderer/platform/wtf/typed_arrays/array_buffer.h"
+#include "third_party/blink/renderer/core/typed_arrays/array_buffer/array_buffer.h"
 
-namespace WTF {
+namespace blink {
 
 ArrayBufferView::ArrayBufferView(scoped_refptr<ArrayBuffer> buffer,
                                  unsigned byte_offset)
@@ -97,4 +97,4 @@ const char* ArrayBufferView::TypeName() {
   return "Unknown";
 }
 
-}  // namespace WTF
+}  // namespace blink
