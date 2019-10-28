@@ -18509,6 +18509,7 @@ Called by update_net_error_codes.py.-->
   <int value="636" label="DeviceWebBasedAttestationAllowedUrls"/>
   <int value="637" label="BlockExternalExtensions"/>
   <int value="638" label="DeviceShowNumericKeyboardForPassword"/>
+  <int value="639" label="CrostiniAnsiblePlaybook"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
