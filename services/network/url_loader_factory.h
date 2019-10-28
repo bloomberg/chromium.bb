@@ -63,6 +63,7 @@ class URLLoaderFactory : public mojom::URLLoaderFactory {
 
   static constexpr int kMaxKeepaliveConnections = 2048;
   static constexpr int kMaxKeepaliveConnectionsPerProcess = 256;
+  static constexpr int kMaxTotalKeepaliveRequestSize = 256 * 1024;
 
  private:
   // The NetworkContext that indirectly owns |this|.
