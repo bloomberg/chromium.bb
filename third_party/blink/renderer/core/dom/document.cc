@@ -7870,8 +7870,7 @@ void Document::FlushAutofocusCandidates() {
     if (element.IsFocusable() ||
         // TODO(tkent): Standardize delegatesFocus handling.
         // https://github.com/whatwg/html/issues/5027
-        (element.AuthorShadowRoot() &&
-         element.AuthorShadowRoot()->delegatesFocus())) {
+        element.DelegatesFocus()) {
       // 9.1. Empty candidates.
       autofocus_candidates_.clear();
       // 9.2. Set topDocument's autofocus processed flag to true.
