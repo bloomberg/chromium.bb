@@ -207,7 +207,7 @@ android_builder(
     ssd = True,
     use_java_coverage = True,
     tryjob = tryjob(
-        experiment_percentage = 20,
+        experiment_percentage = 10,
     ),
 )
 
