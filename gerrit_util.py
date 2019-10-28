@@ -9,11 +9,10 @@ https://gerrit-review.googlesource.com/Documentation/rest-api.html
 """
 
 from __future__ import print_function
+from __future__ import unicode_literals
 
 import base64
 import contextlib
-import cookielib
-import httplib  # Still used for its constants.
 import httplib2
 import json
 import logging
@@ -26,9 +25,6 @@ import stat
 import sys
 import tempfile
 import time
-import urllib
-import urlparse
-from cStringIO import StringIO
 from multiprocessing.pool import ThreadPool
 
 import auth
@@ -36,6 +32,16 @@ import gclient_utils
 import metrics
 import metrics_utils
 import subprocess2
+
+from third_party import six
+from six.moves import urllib
+
+if sys.version_info.major == 2:
+  import cookielib
+  from StringIO import StringIO
+else:
+  import http.cookiejar as cookielib
+  from io import StringIO
 
 LOGGER = logging.getLogger()
 # With a starting sleep time of 1.5 seconds, 2^n exponential backoff, and seven
@@ -48,16 +54,18 @@ TRY_LIMIT = 3
 GERRIT_PROTOCOL = 'https'
 
 
+def time_sleep(seconds):
+  # Use this so that it can be mocked in tests without interfering with python
+  # system machinery.
+  return time.sleep(seconds)
+
+
 class GerritError(Exception):
   """Exception class for errors commuicating with the gerrit-on-borg service."""
-  def __init__(self, http_status, *args, **kwargs):
+  def __init__(self, http_status, message, *args, **kwargs):
     super(GerritError, self).__init__(*args, **kwargs)
     self.http_status = http_status
-    self.message = '(%d) %s' % (self.http_status, self.message)
-
-
-class GerritAuthenticationError(GerritError):
-  """Exception class for authentication errors during Gerrit communication."""
+    self.message = '(%d) %s' % (self.http_status, message)
 
 
 def _QueryString(params, first_param=None):
@@ -65,19 +73,9 @@ def _QueryString(params, first_param=None):
 
   https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#list-changes
   """
-  q = [urllib.quote(first_param)] if first_param else []
+  q = [urllib.parse.quote(first_param)] if first_param else []
   q.extend(['%s:%s' % (key, val) for key, val in params])
   return '+'.join(q)
-
-
-def GetConnectionObject(protocol=None):
-  if protocol is None:
-    protocol = GERRIT_PROTOCOL
-  if protocol in ('http', 'https'):
-    return httplib2.Http()
-  else:
-    raise RuntimeError(
-        "Don't know how to work with protocol '%s'" % protocol)
 
 
 class Authenticator(object):
@@ -300,11 +298,13 @@ class GceAuthenticator(Authenticator):
   def _get(url, **kwargs):
     next_delay_sec = 1
     for i in xrange(TRY_LIMIT):
-      p = urlparse.urlparse(url)
-      c = GetConnectionObject(protocol=p.scheme)
-      resp, contents = c.request(url, 'GET', **kwargs)
+      p = urllib.parse.urlparse(url)
+      if p.scheme not in ('http', 'https'):
+        raise RuntimeError(
+            "Don't know how to work with protocol '%s'" % protocol)
+      resp, contents = httplib2.Http().request(url, 'GET', **kwargs)
       LOGGER.debug('GET [%s] #%d/%d (%d)', url, i+1, TRY_LIMIT, resp.status)
-      if resp.status < httplib.INTERNAL_SERVER_ERROR:
+      if resp.status < 500:
         return (resp, contents)
 
       # Retry server error status codes.
@@ -312,7 +312,7 @@ class GceAuthenticator(Authenticator):
       if TRY_LIMIT - i > 1:
         LOGGER.info('Will retry in %d seconds (%d more times)...',
                     next_delay_sec, TRY_LIMIT - i - 1)
-        time.sleep(next_delay_sec)
+        time_sleep(next_delay_sec)
         next_delay_sec *= 2
 
   @classmethod
@@ -323,7 +323,7 @@ class GceAuthenticator(Authenticator):
         return cls._token_cache
 
     resp, contents = cls._get(cls._ACQUIRE_URL, headers=cls._ACQUIRE_HEADERS)
-    if resp.status != httplib.OK:
+    if resp.status != 200:
       return None
     cls._token_cache = json.loads(contents)
     cls._token_expiration = cls._token_cache['expires_in'] + time.time()
@@ -370,7 +370,7 @@ def CreateHttpConn(host, path, reqtype='GET', headers=None, body=None):
     url = '/a%s' % url
 
   if body:
-    body = json.JSONEncoder().encode(body)
+    body = json.dumps(body, sort_keys=True)
     headers.setdefault('Content-Type', 'application/json')
   if LOGGER.isEnabledFor(logging.DEBUG):
     LOGGER.debug('%s %s://%s%s' % (reqtype, GERRIT_PROTOCOL, host, url))
@@ -380,12 +380,12 @@ def CreateHttpConn(host, path, reqtype='GET', headers=None, body=None):
       LOGGER.debug('%s: %s' % (key, val))
     if body:
       LOGGER.debug(body)
-  conn = GetConnectionObject()
-  # HACK: httplib.Http has no such attribute; we store req_host here for later
+  conn = httplib2.Http()
+  # HACK: httplib2.Http has no such attribute; we store req_host here for later
   # use in ReadHttpResponse.
   conn.req_host = host
   conn.req_params = {
-      'uri': urlparse.urljoin('%s://%s' % (GERRIT_PROTOCOL, host), url),
+      'uri': urllib.parse.urljoin('%s://%s' % (GERRIT_PROTOCOL, host), url),
       'method': reqtype,
       'headers': headers,
       'body': body,
@@ -406,6 +406,7 @@ def ReadHttpResponse(conn, accept_statuses=frozenset([200])):
   for idx in range(TRY_LIMIT):
     before_response = time.time()
     response, contents = conn.request(**conn.req_params)
+    contents = contents.decode('utf-8', 'replace')
 
     response_time = time.time() - before_response
     metrics.collector.add_repeated(
@@ -414,21 +415,12 @@ def ReadHttpResponse(conn, accept_statuses=frozenset([200])):
             conn.req_params['uri'], conn.req_params['method'], response.status,
             response_time))
 
-    # Check if this is an authentication issue.
-    www_authenticate = response.get('www-authenticate')
-    if (response.status in (httplib.UNAUTHORIZED, httplib.FOUND) and
-        www_authenticate):
-      auth_match = re.search('realm="([^"]+)"', www_authenticate, re.I)
-      host = auth_match.group(1) if auth_match else conn.req_host
-      reason = ('Authentication failed. Please make sure your .gitcookies file '
-                'has credentials for %s' % host)
-      raise GerritAuthenticationError(response.status, reason)
-
-    # If response.status < 500 then the result is final; break retry loop.
-    # If the response is 404/409, it might be because of replication lag, so
-    # keep trying anyway.
-    if ((response.status < 500 and response.status not in [404, 409])
-        or response.status in accept_statuses):
+    # If response.status is an accepted status,
+    # or response.status < 500 then the result is final; break retry loop.
+    # If the response is 404/409 it might be because of replication lag,
+    # so keep trying anyway.
+    if (response.status in accept_statuses
+        or response.status < 500 and response.status not in [404, 409]):
       LOGGER.debug('got response %d for %s %s', response.status,
                    conn.req_params['method'], conn.req_params['uri'])
       # If 404 was in accept_statuses, then it's expected that the file might
@@ -437,6 +429,7 @@ def ReadHttpResponse(conn, accept_statuses=frozenset([200])):
       if response.status == 404:
         contents = ''
       break
+
     # A status >=500 is assumed to be a possible transient error; retry.
     http_version = 'HTTP/%s' % ('1.1' if response.version == 11 else '1.0')
     LOGGER.warn('A transient error occurred while querying %s:\n'
@@ -446,19 +439,29 @@ def ReadHttpResponse(conn, accept_statuses=frozenset([200])):
                 conn.req_params['uri'],
                 http_version, http_version, response.status, response.reason)
 
-    if TRY_LIMIT - idx > 1:
+    if idx < TRY_LIMIT - 1:
       LOGGER.info('Will retry in %d seconds (%d more times)...',
                   sleep_time, TRY_LIMIT - idx - 1)
-      time.sleep(sleep_time)
+      time_sleep(sleep_time)
       sleep_time = sleep_time * 2
   # end of retries loop
-  if response.status not in accept_statuses:
-    if response.status in (401, 403):
-      print('Your Gerrit credentials might be misconfigured. Try: \n'
-            '  git cl creds-check')
-    reason = '%s: %s' % (response.reason, contents)
-    raise GerritError(response.status, reason)
-  return StringIO(contents)
+
+  if response.status in accept_statuses:
+    return StringIO(contents)
+
+  if response.status in (302, 401, 403):
+    www_authenticate = response.get('www-authenticate')
+    if not www_authenticate:
+      print('Your Gerrit credentials might be misconfigured.')
+    else:
+      auth_match = re.search('realm="([^"]+)"', www_authenticate, re.I)
+      host = auth_match.group(1) if auth_match else conn.req_host
+      print('Authentication failed. Please make sure your .gitcookies '
+            'file has credentials for %s.' % host)
+    print('Try:\n  git cl creds-check')
+
+  reason = '%s: %s' % (response.reason, contents)
+  raise GerritError(response.status, reason)
 
 
 def ReadHttpJsonResponse(conn, accept_statuses=frozenset([200])):
@@ -575,7 +578,7 @@ def MultiQueryChanges(host, params, change_list, limit=None, o_params=None,
   if not change_list:
     raise RuntimeError(
         "MultiQueryChanges requires a list of change numbers/id's")
-  q = ['q=%s' % '+OR+'.join([urllib.quote(str(x)) for x in change_list])]
+  q = ['q=%s' % '+OR+'.join([urllib.parse.quote(str(x)) for x in change_list])]
   if params:
     q.append(_QueryString(params))
   if limit:
@@ -601,7 +604,8 @@ def GetGerritFetchUrl(host):
 def GetCodeReviewTbrScore(host, project):
   """Given a Gerrit host name and project, return the Code-Review score for TBR.
   """
-  conn = CreateHttpConn(host, '/projects/%s' % urllib.quote(project, safe=''))
+  conn = CreateHttpConn(
+      host, '/projects/%s' % urllib.parse.quote(project, ''))
   project = ReadHttpJsonResponse(conn)
   if ('labels' not in project
       or 'Code-Review' not in project['labels']
@@ -988,4 +992,4 @@ def ChangeIdentifier(project, change_number):
   comparing to specifying just change_number.
   """
   assert int(change_number)
-  return '%s~%s' % (urllib.quote(project, safe=''), change_number)
+  return '%s~%s' % (urllib.parse.quote(project, ''), change_number)
