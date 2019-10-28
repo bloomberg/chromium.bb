@@ -75,6 +75,10 @@ class CodeNodeTest(unittest.TestCase):
         root.insert(100, LiteralNode("5"))
         root.append(LiteralNode("6"))
         self.assertRenderResult(root, "1,2,3,4,5,6")
+        root.remove(root[0])
+        root.remove(root[2])
+        root.remove(root[-1])
+        self.assertRenderResult(root, "2,3,5")
 
     def test_nested_sequence(self):
         """Tests nested SequenceNodes."""

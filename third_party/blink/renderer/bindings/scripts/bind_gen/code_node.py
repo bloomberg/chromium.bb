@@ -196,6 +196,10 @@ class CodeNode(object):
         assert self._outer is None
         self._outer = outer
 
+    def reset_outer(self, outer):
+        assert isinstance(outer, CodeNode) or outer is None
+        self._outer = outer
+
     @property
     def prev(self):
         """Returns the previous CodeNode if this is a Sequence or None."""
@@ -207,7 +211,7 @@ class CodeNode(object):
         self._prev = prev
 
     def reset_prev(self, prev):
-        assert isinstance(prev, CodeNode)
+        assert isinstance(prev, CodeNode) or prev is None
         self._prev = prev
 
     @property
@@ -432,6 +436,18 @@ ${node | trim}\\
         node.set_outer(self)
         self._element_nodes.insert(index, node)
 
+    def remove(self, node):
+        assert node in self
+
+        index = self._element_nodes.index(node)
+        if index + 1 < len(self._element_nodes):
+            next_node = self._element_nodes[index + 1]
+            prev_node = self._element_nodes[index - 1] if index != 0 else None
+            next_node.reset_prev(prev_node)
+        del self._element_nodes[index]
+        node.reset_outer(None)
+        node.reset_prev(None)
+
 
 class SymbolNode(CodeNode):
     """
@@ -515,8 +531,7 @@ class SymbolDefinitionNode(CodeNode):
         self._symbol_node = symbol_node
 
     def _render(self, renderer, last_render_state):
-        if (self.upstream
-                and self.upstream.is_code_symbol_defined(self._symbol_node)):
+        if self.is_duplicated():
             return ""
 
         return super(SymbolDefinitionNode, self)._render(
@@ -527,6 +542,10 @@ class SymbolDefinitionNode(CodeNode):
             return True
         return super(SymbolDefinitionNode,
                      self).is_code_symbol_defined(symbol_node)
+
+    def is_duplicated(self):
+        return (self.upstream is not None
+                and self.upstream.is_code_symbol_defined(self._symbol_node))
 
 
 class SymbolScopeNode(SequenceNode):
@@ -548,6 +567,14 @@ class SymbolScopeNode(SequenceNode):
         self._registered_code_symbols = set()
 
     def _render(self, renderer, last_render_state):
+        duplicates = []
+        for element_node in self:
+            if (isinstance(element_node, SymbolDefinitionNode)
+                    and element_node.is_duplicated()):
+                duplicates.append(element_node)
+        for element_node in duplicates:
+            self.remove(element_node)
+
         for symbol_node in last_render_state.undefined_code_symbols:
             if (self.is_code_symbol_registered(symbol_node)
                     and not self.is_code_symbol_defined(symbol_node)):
