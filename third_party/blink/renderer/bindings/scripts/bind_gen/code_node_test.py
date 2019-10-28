@@ -103,7 +103,7 @@ class CodeNodeTest(unittest.TestCase):
         appropriately.
         """
         renderer = MakoRenderer()
-        root = SymbolScopeNode(renderer=renderer)
+        root = SymbolScopeNode(separator_last="\n", renderer=renderer)
 
         root.register_code_symbols([
             SymbolNode("var1", "int ${var1} = ${var2} + ${var3};"),
@@ -127,7 +127,7 @@ int var1 = var2 + var3;
 
     def test_symbol_definition_with_exit_branches(self):
         renderer = MakoRenderer()
-        root = SymbolScopeNode(renderer=renderer)
+        root = SymbolScopeNode(separator_last="\n", renderer=renderer)
 
         root.register_code_symbols([
             SymbolNode("var1", "int ${var1} = 1;"),
@@ -175,7 +175,7 @@ var3;
 
     def test_symbol_definition_with_nested_exit_branches(self):
         renderer = MakoRenderer()
-        root = SymbolScopeNode(renderer=renderer)
+        root = SymbolScopeNode(separator_last="\n", renderer=renderer)
 
         root.register_code_symbols([
             SymbolNode("var1", "int ${var1} = 1;"),
@@ -229,11 +229,12 @@ if (true) {
 
     def test_function_definition_minimum(self):
         renderer = MakoRenderer()
-        root = FunctionDefinitionNode(
-            name=LiteralNode("blink::bindings::func"),
-            arg_decls=[],
-            return_type=LiteralNode("void"),
-            renderer=renderer)
+        root = SymbolScopeNode(separator_last="\n", renderer=renderer)
+        root.append(
+            FunctionDefinitionNode(
+                name=LiteralNode("blink::bindings::func"),
+                arg_decls=[],
+                return_type=LiteralNode("void")))
 
         self.assertRenderResult(root, """\
 
@@ -244,6 +245,7 @@ void blink::bindings::func() {
 
     def test_function_definition_full(self):
         renderer = MakoRenderer()
+        root = SymbolScopeNode(separator_last="\n", renderer=renderer)
 
         local_vars = [
             SymbolNode("var1", "int ${var1} = 1;"),
@@ -257,18 +259,15 @@ void blink::bindings::func() {
             TextNode("return ${var2};"),
         ])
 
-        root = FunctionDefinitionNode(
-            name=LiteralNode("blink::bindings::func"),
-            arg_decls=[LiteralNode("int arg1"),
-                       LiteralNode("int arg2")],
-            return_type=LiteralNode("void"),
-            local_vars=local_vars,
-            body=func_body,
-            comment=LiteralNode("""\
-// comment1
-// comment2
-"""),
-            renderer=renderer)
+        root.append(
+            FunctionDefinitionNode(
+                name=LiteralNode("blink::bindings::func"),
+                arg_decls=[LiteralNode("int arg1"),
+                           LiteralNode("int arg2")],
+                return_type=LiteralNode("void"),
+                local_vars=local_vars,
+                body=func_body,
+                comment=LiteralNode("// comment1\n// comment2")))
 
         self.assertRenderResult(
             root, """\
@@ -286,8 +285,8 @@ void blink::bindings::func(int arg1, int arg2) {
 
     def test_template_error_handling(self):
         renderer = MakoRenderer()
-
         root = SymbolScopeNode(renderer=renderer)
+
         root.append(
             SymbolScopeNode([
                 # Have Mako raise a NameError.

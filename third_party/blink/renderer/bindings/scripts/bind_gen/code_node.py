@@ -264,7 +264,11 @@ class CodeNode(object):
 
     @property
     def renderer(self):
-        return self._renderer or self.outer.renderer
+        # Always use the renderer of the root node in order not to mix renderers
+        # during rendering of a single code node tree.
+        if self.outer is not None:
+            return self.outer.renderer
+        return self._renderer
 
     @property
     def current_render_state(self):
@@ -366,7 +370,7 @@ class SequenceNode(CodeNode):
         template_text = CodeNode.format_template(
             """\
 % for node in {element_nodes}:
-${node | trim}\\
+${node}\\
 % if not loop.last:
 {separator}\\
 % endif
@@ -454,12 +458,16 @@ class SymbolScopeNode(SequenceNode):
     insert corresponding SymbolDefinitionNodes appropriately.
     """
 
-    def __init__(self, code_nodes=None, renderer=None):
+    def __init__(self,
+                 code_nodes=None,
+                 separator="\n",
+                 separator_last="",
+                 renderer=None):
         SequenceNode.__init__(
             self,
             code_nodes=code_nodes,
-            separator="\n",
-            separator_last="\n",
+            separator=separator,
+            separator_last=separator_last,
             renderer=renderer)
 
         self._registered_code_symbols = set()
@@ -703,8 +711,8 @@ class ConditionalExitNode(ConditionalNode):
         template_text = CodeNode.format_template(
             """\
 if (${{{conditional}}}) {{
-  ${{{body} | trim}}
-}}
+  ${{{body}}}
+}}\\
 """, **gensyms)
         template_vars = {
             gensyms["conditional"]: cond,
@@ -803,10 +811,10 @@ class FunctionDefinitionNode(CodeNode):
 
         template_text = CodeNode.format_template(
             """\
-${{{comment} | trim}}
+${{{comment}}}
 ${{{return_type}}} ${{{name}}}(${{{arg_decls}}}) {{
-  ${{{body} | trim}}
-}}
+  ${{{body}}}
+}}\\
 """, **gensyms)
         template_vars = {
             gensyms["name"]: name,
