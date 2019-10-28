@@ -619,9 +619,11 @@ void AppListControllerImpl::OnOverviewModeEnding(OverviewSession* session) {
   if (!IsTabletMode())
     return;
   const int64_t display_id = last_visible_display_id_;
-  const bool app_list_visible = IsVisible();
-  OnHomeLauncherTargetPositionChanged(app_list_visible, display_id);
-  OnVisibilityWillChange(app_list_visible, display_id);
+  bool target_visibility = GetTargetVisibility();
+  if (home_launcher_animation_state_ == HomeLauncherAnimationState::kFinished)
+    target_visibility &= !HasVisibleWindows();
+  OnHomeLauncherTargetPositionChanged(target_visibility, display_id);
+  OnVisibilityWillChange(target_visibility, display_id);
 }
 
 void AppListControllerImpl::OnOverviewModeEnded() {
@@ -1295,13 +1297,11 @@ void AppListControllerImpl::RemoveObserver(
 
 void AppListControllerImpl::OnVisibilityChanged(bool visible,
                                                 int64_t display_id) {
-  const bool is_home_launcher = IsTabletMode();
-
   bool real_visibility = visible;
   // HomeLauncher is only visible when no other app windows are visible,
   // unless we are in the process of animating to (or dragging) the home
   // launcher.
-  if (is_home_launcher &&
+  if (IsTabletMode() &&
       home_launcher_animation_state_ == HomeLauncherAnimationState::kFinished) {
     real_visibility &= !HasVisibleWindows();
   }
@@ -1338,13 +1338,11 @@ void AppListControllerImpl::OnVisibilityChanged(bool visible,
 
 void AppListControllerImpl::OnVisibilityWillChange(bool visible,
                                                    int64_t display_id) {
-  const bool is_home_launcher = IsTabletMode();
-
   bool real_target_visibility = visible;
   // HomeLauncher is only visible when no other app windows are visible,
   // unless we are in the process of animating to (or dragging) the home
   // launcher.
-  if (is_home_launcher &&
+  if (IsTabletMode() &&
       home_launcher_animation_state_ == HomeLauncherAnimationState::kFinished) {
     real_target_visibility &= !HasVisibleWindows();
   }
