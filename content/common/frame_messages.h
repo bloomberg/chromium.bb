@@ -118,7 +118,7 @@ IPC_ENUM_TRAITS_MIN_MAX_VALUE(content::JavaScriptDialogType,
                               content::JAVASCRIPT_DIALOG_TYPE_ALERT,
                               content::JAVASCRIPT_DIALOG_TYPE_PROMPT)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebContextMenuData::MediaType,
-                          blink::WebContextMenuData::kMediaTypeLast)
+                          blink::WebContextMenuData::MediaType::kLast)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebContextMenuData::InputFieldType,
                           blink::WebContextMenuData::kInputFieldTypeLast)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebFocusType, blink::kWebFocusTypeLast)

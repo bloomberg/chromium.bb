@@ -78,7 +78,7 @@ bool ContextMenuContentType::SupportsGroupInternal(int group) {
 
     case ITEM_GROUP_PAGE: {
       bool is_candidate =
-          params_.media_type == WebContextMenuData::kMediaTypeNone &&
+          params_.media_type == WebContextMenuData::MediaType::kNone &&
           !has_link && !params_.is_editable && !has_selection;
 
       if (!is_candidate && params_.page_url.is_empty())
@@ -99,26 +99,26 @@ bool ContextMenuContentType::SupportsGroupInternal(int group) {
       return has_selection && !has_link;
 
     case ITEM_GROUP_MEDIA_IMAGE:
-      return params_.media_type == WebContextMenuData::kMediaTypeImage;
+      return params_.media_type == WebContextMenuData::MediaType::kImage;
 
     case ITEM_GROUP_SEARCHWEBFORIMAGE:
       // Image menu items imply search web for image item.
       return SupportsGroupInternal(ITEM_GROUP_MEDIA_IMAGE);
 
     case ITEM_GROUP_MEDIA_VIDEO:
-      return params_.media_type == WebContextMenuData::kMediaTypeVideo;
+      return params_.media_type == WebContextMenuData::MediaType::kVideo;
 
     case ITEM_GROUP_MEDIA_AUDIO:
-      return params_.media_type == WebContextMenuData::kMediaTypeAudio;
+      return params_.media_type == WebContextMenuData::MediaType::kAudio;
 
     case ITEM_GROUP_MEDIA_CANVAS:
-      return params_.media_type == WebContextMenuData::kMediaTypeCanvas;
+      return params_.media_type == WebContextMenuData::MediaType::kCanvas;
 
     case ITEM_GROUP_MEDIA_PLUGIN:
-      return params_.media_type == WebContextMenuData::kMediaTypePlugin;
+      return params_.media_type == WebContextMenuData::MediaType::kPlugin;
 
     case ITEM_GROUP_MEDIA_FILE:
-      return params_.media_type == WebContextMenuData::kMediaTypeFile;
+      return params_.media_type == WebContextMenuData::MediaType::kFile;
 
     case ITEM_GROUP_EDITABLE:
       return params_.is_editable;
