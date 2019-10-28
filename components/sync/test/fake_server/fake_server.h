@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/files/scoped_temp_dir.h"
+#include "base/location.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
 #include "base/threading/thread_checker.h"
@@ -27,6 +28,7 @@
 #include "components/sync/protocol/client_commands.pb.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "net/http/http_status_code.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 namespace fake_server {
 
@@ -216,6 +218,14 @@ class FakeServer : public syncer::LoopbackServer::ObserverForTests {
       const sync_pb::ClientToServerMessage& request,
       const sync_pb::DataTypeProgressMarker& old_wallet_marker,
       std::string* response_string);
+
+  // Logs a string that is meant to be shown in case the running test fails.
+  void LogForTestFailure(const base::Location& location,
+                         const std::string& title,
+                         const std::string& body);
+
+  // List used to implement LogForTestFailure().
+  std::vector<std::unique_ptr<testing::ScopedTrace>> gtest_scoped_traces_;
 
   // If set, the server will return HTTP errors.
   base::Optional<net::HttpStatusCode> http_error_status_code_;

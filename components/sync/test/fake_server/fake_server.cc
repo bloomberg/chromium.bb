@@ -11,6 +11,7 @@
 
 #include "base/guid.h"
 #include "base/hash/hash.h"
+#include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -20,7 +21,9 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
+#include "base/values.h"
 #include "components/sync/engine_impl/net/server_connection_manager.h"
+#include "components/sync/protocol/proto_value_conversions.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
 
@@ -161,6 +164,13 @@ void PopulateWalletResults(
   }
 }
 
+std::string PrettyPrintValue(std::unique_ptr<base::DictionaryValue> value) {
+  std::string message;
+  base::JSONWriter::WriteWithOptions(
+      *value, base::JSONWriter::OPTIONS_PRETTY_PRINT, &message);
+  return message;
+}
+
 }  // namespace
 
 bool AreWalletDataProgressMarkersEquivalent(
@@ -184,6 +194,10 @@ net::HttpStatusCode FakeServer::HandleCommand(const std::string& request,
   sync_pb::ClientToServerMessage message;
   bool parsed = message.ParseFromString(request);
   DCHECK(parsed) << "Unable to parse the ClientToServerMessage.";
+
+  LogForTestFailure(FROM_HERE, "REQUEST",
+                    PrettyPrintValue(syncer::ClientToServerMessageToValue(
+                        message, /*include_specifics=*/true)));
 
   sync_pb::ClientToServerResponse response_proto;
   if (message.message_contents() == sync_pb::ClientToServerMessage::COMMIT &&
@@ -229,8 +243,20 @@ net::HttpStatusCode FakeServer::HandleCommand(const std::string& request,
     if (http_status_code == net::HTTP_OK) {
       InjectClientCommand(response);
     }
+
+    // Parse the proto for logging purposes.
+    response_proto.ParseFromString(*response);
+    LogForTestFailure(FROM_HERE, "RESPONSE",
+                      PrettyPrintValue(syncer::ClientToServerResponseToValue(
+                          response_proto, /*include_specifics=*/true)));
+
     return http_status_code;
   }
+
+  LogForTestFailure(FROM_HERE, "RESPONSE",
+                    PrettyPrintValue(syncer::ClientToServerResponseToValue(
+                        response_proto,
+                        /*include_specifics=*/true)));
 
   response_proto.set_store_birthday(loopback_server_->GetStoreBirthday());
   *response = response_proto.SerializeAsString();
@@ -486,6 +512,15 @@ const std::set<std::string>& FakeServer::GetCommittedHistoryURLs() const {
 base::WeakPtr<FakeServer> FakeServer::AsWeakPtr() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return weak_ptr_factory_.GetWeakPtr();
+}
+
+void FakeServer::LogForTestFailure(const base::Location& location,
+                                   const std::string& title,
+                                   const std::string& body) {
+  gtest_scoped_traces_.push_back(std::make_unique<testing::ScopedTrace>(
+      location.file_name(), location.line_number(),
+      base::StringPrintf("--- %s %d (reverse chronological order) ---\n%s",
+                         title.c_str(), request_counter_, body.c_str())));
 }
 
 }  // namespace fake_server
