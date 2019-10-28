@@ -307,17 +307,17 @@ void AccessibilityNodeInfoDataWrapper::Serialize(
     // For a textField, the editable text is contained in the text property, and
     // this should be set as the value.
     // This ensures that the edited text will be read out appropriately.
-    if (out_data->role == ax::mojom::Role::kTextField) {
-      out_data->SetValue(text);
-    } else {
-      names.push_back(text);
+    if (!text.empty()) {
+      if (out_data->role == ax::mojom::Role::kTextField) {
+        out_data->SetValue(text);
+      } else {
+        names.push_back(text);
+      }
     }
     // TODO (sarakato): Exposing all possible labels for a node, may result in
     // too much being spoken. For ARC ++, this may result in divergent behaviour
     // from Talkback.
-    if (names.size() == 1)
-      out_data->SetName(names[0]);
-    else if (names.size() > 1)
+    if (!names.empty())
       out_data->SetName(base::JoinString(names, " "));
   } else if (is_clickable_leaf_) {
     // Compute the name by joining all nodes with names.
