@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/password_manager/core/browser/password_generation_state.h"
+#include "components/password_manager/core/browser/password_generation_manager.h"
 
 #include <map>
 #include <utility>
@@ -182,22 +182,23 @@ const PasswordForm* FindUsernameConflict(
 }
 }  // namespace
 
-PasswordGenerationState::PasswordGenerationState(FormSaver* form_saver,
-                                                 PasswordManagerClient* client)
+PasswordGenerationManager::PasswordGenerationManager(
+    FormSaver* form_saver,
+    PasswordManagerClient* client)
     : form_saver_(form_saver),
       client_(client),
       clock_(new base::DefaultClock) {}
 
-PasswordGenerationState::~PasswordGenerationState() = default;
+PasswordGenerationManager::~PasswordGenerationManager() = default;
 
-std::unique_ptr<PasswordGenerationState> PasswordGenerationState::Clone(
+std::unique_ptr<PasswordGenerationManager> PasswordGenerationManager::Clone(
     FormSaver* form_saver) const {
-  auto clone = std::make_unique<PasswordGenerationState>(form_saver, client_);
+  auto clone = std::make_unique<PasswordGenerationManager>(form_saver, client_);
   clone->presaved_ = presaved_;
   return clone;
 }
 
-void PasswordGenerationState::GeneratedPasswordAccepted(
+void PasswordGenerationManager::GeneratedPasswordAccepted(
     PasswordForm generated,
     const FormFetcher& fetcher,
     base::WeakPtr<PasswordManagerDriver> driver) {
@@ -217,7 +218,7 @@ void PasswordGenerationState::GeneratedPasswordAccepted(
           GenerationPresaveConflict::kConflictWithEmptyUsername);
       auto bubble_launcher = std::make_unique<PasswordDataForUI>(
           std::move(generated), matches, fetcher.GetFederatedMatches(),
-          base::BindRepeating(&PasswordGenerationState::OnPresaveBubbleResult,
+          base::BindRepeating(&PasswordGenerationManager::OnPresaveBubbleResult,
                               weak_factory_.GetWeakPtr(), std::move(driver)));
       client_->PromptUserToSaveOrUpdatePassword(std::move(bubble_launcher),
                                                 true);
@@ -233,7 +234,7 @@ void PasswordGenerationState::GeneratedPasswordAccepted(
   driver->GeneratedPasswordAccepted(generated.password_value);
 }
 
-void PasswordGenerationState::PresaveGeneratedPassword(
+void PasswordGenerationManager::PresaveGeneratedPassword(
     PasswordForm generated,
     const std::vector<const PasswordForm*>& matches) {
   DCHECK(!generated.password_value.empty());
@@ -253,13 +254,13 @@ void PasswordGenerationState::PresaveGeneratedPassword(
   presaved_ = std::move(generated);
 }
 
-void PasswordGenerationState::PasswordNoLongerGenerated() {
+void PasswordGenerationManager::PasswordNoLongerGenerated() {
   DCHECK(presaved_);
   form_saver_->Remove(*presaved_);
   presaved_.reset();
 }
 
-void PasswordGenerationState::CommitGeneratedPassword(
+void PasswordGenerationManager::CommitGeneratedPassword(
     PasswordForm generated,
     const std::vector<const PasswordForm*>& matches,
     const base::string16& old_password) {
@@ -271,7 +272,7 @@ void PasswordGenerationState::CommitGeneratedPassword(
                              presaved_.value() /* old_primary_key */);
 }
 
-void PasswordGenerationState::OnPresaveBubbleResult(
+void PasswordGenerationManager::OnPresaveBubbleResult(
     const base::WeakPtr<PasswordManagerDriver>& driver,
     bool accepted,
     const PasswordForm& pending) {

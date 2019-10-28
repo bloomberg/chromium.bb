@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_GENERATION_STATE_H_
-#define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_GENERATION_STATE_H_
+#ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_GENERATION_MANAGER_H_
+#define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_GENERATION_MANAGER_H_
 
 #include <map>
 #include <memory>
@@ -20,14 +20,16 @@ class FormSaver;
 class PasswordManagerClient;
 class PasswordManagerDriver;
 
-class PasswordGenerationState {
+class PasswordGenerationManager {
  public:
-  PasswordGenerationState(FormSaver* form_saver, PasswordManagerClient* client);
-  ~PasswordGenerationState();
-  PasswordGenerationState(const PasswordGenerationState& rhs) = delete;
-  PasswordGenerationState& operator=(const PasswordGenerationState&) = delete;
+  PasswordGenerationManager(FormSaver* form_saver,
+                            PasswordManagerClient* client);
+  ~PasswordGenerationManager();
+  PasswordGenerationManager(const PasswordGenerationManager& rhs) = delete;
+  PasswordGenerationManager& operator=(const PasswordGenerationManager&) =
+      delete;
 
-  std::unique_ptr<PasswordGenerationState> Clone(FormSaver* form_saver) const;
+  std::unique_ptr<PasswordGenerationManager> Clone(FormSaver* form_saver) const;
 
   // Returns true iff the generated password was presaved.
   bool HasGeneratedPassword() const { return presaved_.has_value(); }
@@ -85,9 +87,9 @@ class PasswordGenerationState {
   // Interface to get current time.
   std::unique_ptr<base::Clock> clock_;
   // Used to produce callbacks.
-  base::WeakPtrFactory<PasswordGenerationState> weak_factory_{this};
+  base::WeakPtrFactory<PasswordGenerationManager> weak_factory_{this};
 };
 
 }  // namespace password_manager
 
-#endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_GENERATION_STATE_H_
+#endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_GENERATION_MANAGER_H_
