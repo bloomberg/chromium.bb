@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_UPDATER_EXTENSION_CACHE_FAKE_H_
-#define CHROME_BROWSER_EXTENSIONS_UPDATER_EXTENSION_CACHE_FAKE_H_
+#ifndef EXTENSIONS_BROWSER_UPDATER_EXTENSION_CACHE_FAKE_H_
+#define EXTENSIONS_BROWSER_UPDATER_EXTENSION_CACHE_FAKE_H_
 
 #include <map>
 #include <set>
@@ -35,7 +35,7 @@ class ExtensionCacheFake : public ExtensionCache {
                     const PutExtensionCallback& callback) override;
 
  private:
-  typedef std::map<std::string, std::pair<std::string, base::FilePath> > Map;
+  typedef std::map<std::string, std::pair<std::string, base::FilePath>> Map;
   // Set of extensions that can be cached.
   std::set<std::string> allowed_extensions_;
 
@@ -47,4 +47,4 @@ class ExtensionCacheFake : public ExtensionCache {
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_UPDATER_EXTENSION_CACHE_FAKE_H_
+#endif  // EXTENSIONS_BROWSER_UPDATER_EXTENSION_CACHE_FAKE_H_

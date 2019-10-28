@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/updater/extension_cache_fake.h"
+#include "extensions/browser/updater/extension_cache_fake.h"
 
 #include "base/bind.h"
 #include "base/stl_util.h"
@@ -12,11 +12,9 @@
 
 namespace extensions {
 
-ExtensionCacheFake::ExtensionCacheFake() {
-}
+ExtensionCacheFake::ExtensionCacheFake() = default;
 
-ExtensionCacheFake::~ExtensionCacheFake() {
-}
+ExtensionCacheFake::~ExtensionCacheFake() = default;
 
 void ExtensionCacheFake::Start(const base::Closure& callback) {
   base::PostTask(FROM_HERE, {content::BrowserThread::UI}, callback);
