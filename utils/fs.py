@@ -358,12 +358,19 @@ else:
     """Path extending is not needed on POSIX."""
     assert os.path.isabs(path), path
     assert isinstance(path, six.text_type), path
+    if six.PY2:
+      # In python2, default filesystem encoding may be 'ascii'.
+      # So does encode here to avoid UnicodeEncodeError.
+      return path.encode('utf-8')
     return path
 
 
   def trim(path):
     """Path mangling is not needed on POSIX."""
     assert os.path.isabs(path), path
+    if six.PY2:
+      assert isinstance(path, str), path
+      return path.decode('utf-8')
     assert isinstance(path, six.text_type), path
     return path
 
@@ -377,6 +384,8 @@ else:
 
 
   def readlink(path):
+    if six.PY2:
+      return os.readlink(extend(path)).decode('utf-8')
     return os.readlink(extend(path))
 
 
