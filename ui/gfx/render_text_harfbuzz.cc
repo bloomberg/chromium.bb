@@ -94,13 +94,11 @@ bool IsUnusualBlockCode(UBlockCode block_code) {
          block_code == UBLOCK_MISCELLANEOUS_SYMBOLS;
 }
 
-// Returns true if |character| is a bracket. This is used to avoid "matching"
+// Returns true if |codepoint| is a bracket. This is used to avoid "matching"
 // brackets picking different font fallbacks, thereby appearing mismatched.
-bool IsBracket(UChar32 character) {
-  // 0x300c and 0x300d are「foo」 style brackets.
-  constexpr UChar32 kBrackets[] = {'(', ')', '{',       '}',
-                                   '<', '>', L'\u300c', L'\u300d'};
-  return base::Contains(kBrackets, character);
+bool IsBracket(UChar32 codepoint) {
+  return u_getIntPropertyValue(codepoint, UCHAR_BIDI_PAIRED_BRACKET_TYPE) !=
+         U_BPT_NONE;
 }
 
 // If the given scripts match, returns the one that isn't USCRIPT_INHERITED,
