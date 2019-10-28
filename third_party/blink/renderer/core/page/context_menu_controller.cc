@@ -161,20 +161,20 @@ static int ComputeEditFlags(Document& selected_document, Editor& editor) {
   return edit_flags;
 }
 
-static WebContextMenuData::InputFieldType ComputeInputFieldType(
+static ContextMenuDataInputFieldType ComputeInputFieldType(
     HitTestResult& result) {
   if (auto* input = ToHTMLInputElementOrNull(result.InnerNode())) {
     if (input->type() == input_type_names::kPassword)
-      return WebContextMenuData::kInputFieldTypePassword;
+      return ContextMenuDataInputFieldType::kPassword;
     if (input->type() == input_type_names::kNumber)
-      return WebContextMenuData::kInputFieldTypeNumber;
+      return ContextMenuDataInputFieldType::kNumber;
     if (input->type() == input_type_names::kTel)
-      return WebContextMenuData::kInputFieldTypeTelephone;
+      return ContextMenuDataInputFieldType::kTelephone;
     if (input->IsTextField())
-      return WebContextMenuData::kInputFieldTypePlainText;
-    return WebContextMenuData::kInputFieldTypeOther;
+      return ContextMenuDataInputFieldType::kPlainText;
+    return ContextMenuDataInputFieldType::kOther;
   }
-  return WebContextMenuData::kInputFieldTypeNone;
+  return ContextMenuDataInputFieldType::kNone;
 }
 
 static WebRect ComputeSelectionRect(LocalFrame* selected_frame) {

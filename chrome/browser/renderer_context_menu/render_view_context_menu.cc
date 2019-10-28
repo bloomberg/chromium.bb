@@ -145,6 +145,7 @@
 #include "printing/buildflags/buildflags.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/public/common/context_menu_data/input_field_type.h"
 #include "third_party/blink/public/common/context_menu_data/media_type.h"
 #include "third_party/blink/public/common/plugin/plugin_action.h"
 #include "third_party/blink/public/public_buildflags.h"
@@ -564,12 +565,12 @@ void OnProfileCreated(const GURL& link_url,
 }
 
 bool DoesInputFieldTypeSupportEmoji(
-    blink::WebContextMenuData::InputFieldType text_input_type) {
+    blink::ContextMenuDataInputFieldType text_input_type) {
   // Disable emoji for input types that definitely do not support emoji.
   switch (text_input_type) {
-    case blink::WebContextMenuData::kInputFieldTypeNumber:
-    case blink::WebContextMenuData::kInputFieldTypeTelephone:
-    case blink::WebContextMenuData::kInputFieldTypeOther:
+    case blink::ContextMenuDataInputFieldType::kNumber:
+    case blink::ContextMenuDataInputFieldType::kTelephone:
+    case blink::ContextMenuDataInputFieldType::kOther:
       return false;
     default:
       return true;

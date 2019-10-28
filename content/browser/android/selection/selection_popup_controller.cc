@@ -182,8 +182,8 @@ bool SelectionPopupController::ShowSelectionMenu(
       !!(params.edit_flags & WebContextMenuData::kCanSelectAll);
   const bool can_edit_richly =
       !!(params.edit_flags & WebContextMenuData::kCanEditRichly);
-  const bool is_password_type =
-      params.input_field_type == WebContextMenuData::kInputFieldTypePassword;
+  const bool is_password_type = params.input_field_type ==
+                                blink::ContextMenuDataInputFieldType::kPassword;
   const ScopedJavaLocalRef<jstring> jselected_text =
       ConvertUTF16ToJavaString(env, params.selection_text);
   const bool should_suggest = params.source_type == ui::MENU_SOURCE_TOUCH ||

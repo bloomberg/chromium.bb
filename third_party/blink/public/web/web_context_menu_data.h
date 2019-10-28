@@ -32,6 +32,7 @@
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_CONTEXT_MENU_DATA_H_
 
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
+#include "third_party/blink/public/common/context_menu_data/input_field_type.h"
 #include "third_party/blink/public/common/context_menu_data/media_type.h"
 #include "third_party/blink/public/platform/web_menu_source_type.h"
 #include "third_party/blink/public/platform/web_point.h"
@@ -117,24 +118,8 @@ struct WebContextMenuData {
   // Whether context is editable.
   bool is_editable;
 
-  enum InputFieldType {
-    // Not an input field.
-    kInputFieldTypeNone,
-    // type = text, search, email, url
-    kInputFieldTypePlainText,
-    // type = password
-    kInputFieldTypePassword,
-    // type = number
-    kInputFieldTypeNumber,
-    // type = tel
-    kInputFieldTypeTelephone,
-    // type = <etc.>
-    kInputFieldTypeOther,
-    kInputFieldTypeLast = kInputFieldTypeOther
-  };
-
   // If this node is an input field, the type of that field.
-  InputFieldType input_field_type;
+  ContextMenuDataInputFieldType input_field_type;
 
   enum CheckableMenuItemFlags {
     kCheckableMenuItemDisabled = 0x0,
