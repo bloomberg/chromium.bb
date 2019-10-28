@@ -12,6 +12,7 @@ import os
 from chromite.api import controller
 from chromite.api import faux
 from chromite.api import validate
+from chromite.api.controller import controller_util
 from chromite.lib import cros_build_lib
 from chromite.service import sdk
 
@@ -88,4 +89,5 @@ def Update(input_proto, output_proto, _config):
 @validate.validation_complete
 def Delete(input_proto, _output_proto, _config):
   """Delete a chroot."""
-  sdk.Delete(chroot_path=input_proto.chroot.path)
+  chroot = controller_util.ParseChroot(input_proto.chroot)
+  sdk.Delete(chroot)

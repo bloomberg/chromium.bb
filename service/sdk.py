@@ -124,6 +124,35 @@ class UpdateArguments(object):
 
     return args
 
+
+def Clean(chroot, images=False, sysroots=False, tmp=False):
+  """Clean the chroot.
+
+  See:
+    cros clean -h
+
+  Args:
+    chroot: The chroot to clean.
+    images (bool): Remove all built images.
+    sysroots (bool): Remove all of the sysroots.
+    tmp (bool): Clean the tmp/ directory.
+  """
+  if not images and not sysroots and not tmp:
+    return
+
+  cmd = ['cros', 'clean']
+  if chroot:
+    cmd.extend(['--sdk-path', chroot.path])
+  if images:
+    cmd.append('--images')
+  if sysroots:
+    cmd.append('--sysroots')
+  if tmp:
+    cmd.append('--chroot-tmp')
+
+  cros_build_lib.run(cmd)
+
+
 def Create(arguments):
   """Create or replace the chroot.
 
@@ -165,26 +194,28 @@ def Create(arguments):
   return GetChrootVersion(arguments.chroot_path)
 
 
-def Delete(chroot_path=None):
+def Delete(chroot=None):
   """Delete the chroot.
 
   Args:
-    chroot_path: The chroot directory, or None to use the default.
+    chroot (chroot_lib.Chroot): The chroot being deleted, or None for the
+      default chroot.
   """
-  # Get an order of magnitude on the size of the chroot we're trying to delete
-  # to see if the size and disk performance are a major factor of the
-  # SDK Delete timeout issue, or if it's another underlying problem.
-  # TODO(crbug.com/1018217) Remove or make a proper metric.
-  logging.info('Checking chroot size.')
-  path = chroot_path or constants.DEFAULT_CHROOT_PATH
-  cmd = ['du', '-h', '-d0', path]
-  cros_build_lib.sudo_run(cmd)
+  # Manually remove the sysroots to reduce the time taken to delete the chroot.
+  logging.info('Removing sysroots.')
+  Clean(chroot, sysroots=True)
 
+  # Delete the chroot itself.
+  logging.info('Removing the SDK.')
   cmd = [os.path.join(constants.CHROMITE_BIN_DIR, 'cros_sdk'), '--delete']
-  if chroot_path:
-    cmd.extend(['--chroot', chroot_path])
+  if chroot:
+    cmd.extend(['--chroot', chroot.path])
 
   cros_build_lib.run(cmd)
+
+  # Remove any images that were built.
+  logging.info('Removing images.')
+  Clean(chroot, images=True)
 
 
 def GetChrootVersion(chroot_path=None):

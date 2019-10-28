@@ -9,6 +9,7 @@ from __future__ import print_function
 
 import os
 
+from chromite.lib import chroot_lib
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.service import sdk
@@ -129,13 +130,18 @@ class DeleteTest(cros_test_lib.RunCommandTestCase):
   def testDeleteNoChroot(self):
     """Test no chroot provided."""
     sdk.Delete()
-    self.assertCommandContains(['--chroot'], expected=False)
+    # cros clean sysroots command.
+    self.assertCommandContains(['clean', '--sysroots'])
+    # cros_sdk --delete.
     self.assertCommandContains(['--delete'])
+    # Double whammy: no chroot specified for cros_sdk --delete, and no
+    # cros clean --chroot.
+    self.assertCommandContains(['--chroot'], expected=False)
 
   def testDeleteWithChroot(self):
     """Test with chroot provided."""
     path = '/some/path'
-    sdk.Delete(chroot_path=path)
+    sdk.Delete(chroot=chroot_lib.Chroot(path))
     self.assertCommandContains(['--delete', '--chroot', path])
 
 
