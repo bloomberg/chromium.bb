@@ -473,10 +473,10 @@ class GenerateChromeOrderfileTest(cros_test_lib.MockTempDirTestCase):
     output_files = os.listdir(self.out_dir)
     self.assertIn(
         self.orderfile_name + '.nm' +
-        toolchain_util.ORDERFILE_COMPRESSION_SUFFIX, output_files)
+        toolchain_util.XZ_COMPRESSION_SUFFIX, output_files)
     self.assertIn(
         self.orderfile_name + '.orderfile' +
-        toolchain_util.ORDERFILE_COMPRESSION_SUFFIX, output_files)
+        toolchain_util.XZ_COMPRESSION_SUFFIX, output_files)
     self.assertEqual(mock_upload.call_count, 2)
 
 
@@ -632,7 +632,8 @@ class CheckAFDOArtifactExistsTest(cros_test_lib.RunCommandTempDirTestCase):
         'orderfile_generate',
         os.path.join(
             toolchain_util.ORDERFILE_GS_URL_UNVETTED,
-            self.orderfile_name + toolchain_util.ORDERFILE_COMPRESSION_SUFFIX))
+            self.orderfile_name + '.orderfile' +
+            toolchain_util.XZ_COMPRESSION_SUFFIX))
 
   def testOrderfileVerifyAsTarget(self):
     """Test check orderfile for verification work properly."""
@@ -652,7 +653,7 @@ class CheckAFDOArtifactExistsTest(cros_test_lib.RunCommandTempDirTestCase):
     self._CheckExistCall(
         'benchmark_afdo',
         os.path.join(toolchain_util.BENCHMARK_AFDO_GS_URL,
-                     self.afdo_name + toolchain_util.AFDO_COMPRESSION_SUFFIX))
+                     self.afdo_name + toolchain_util.BZ2_COMPRESSION_SUFFIX))
 
   def testKernelAFDOAsTarget(self):
     """Test check kernel AFDO verification work properly."""
@@ -864,7 +865,7 @@ class GenerateBenchmarkAFDOProfile(cros_test_lib.MockTempDirTestCase):
     """Test _CheckAFDOPerfDataStatus method."""
     afdo_name = 'chromeos.afdo'
     url = os.path.join(toolchain_util.BENCHMARK_AFDO_GS_URL,
-                       afdo_name + toolchain_util.AFDO_COMPRESSION_SUFFIX)
+                       afdo_name + toolchain_util.BZ2_COMPRESSION_SUFFIX)
     for exist in [True, False]:
       mock_exist = self.PatchObject(gs.GSContext, 'Exists', return_value=exist)
       self.PatchObject(
@@ -954,18 +955,18 @@ class GenerateBenchmarkAFDOProfile(cros_test_lib.MockTempDirTestCase):
         'version': self.version
     }
     upload_name = chrome_version + '.debug' + \
-        toolchain_util.AFDO_COMPRESSION_SUFFIX
+        toolchain_util.BZ2_COMPRESSION_SUFFIX
     calls = [
         mock.call(
             toolchain_util.BENCHMARK_AFDO_GS_URL,
             os.path.join(
                 self.output_dir,
-                chrome_binary + toolchain_util.AFDO_COMPRESSION_SUFFIX),
+                chrome_binary + toolchain_util.BZ2_COMPRESSION_SUFFIX),
             rename=upload_name),
         mock.call(
             toolchain_util.BENCHMARK_AFDO_GS_URL,
             os.path.join(self.output_dir,
-                         afdo_name + toolchain_util.AFDO_COMPRESSION_SUFFIX))
+                         afdo_name + toolchain_util.BZ2_COMPRESSION_SUFFIX))
     ]
     mock_upload.assert_has_calls(calls)
 
@@ -988,12 +989,12 @@ class GenerateBenchmarkAFDOProfile(cros_test_lib.MockTempDirTestCase):
             targets=[chrome_binary],
             input_dir=None,
             output_dir=self.output_dir,
-            suffix=toolchain_util.AFDO_COMPRESSION_SUFFIX),
+            suffix=toolchain_util.BZ2_COMPRESSION_SUFFIX),
         mock.call(
             targets=[afdo_name],
             input_dir=self.working_dir,
             output_dir=self.output_dir,
-            suffix=toolchain_util.AFDO_COMPRESSION_SUFFIX)
+            suffix=toolchain_util.BZ2_COMPRESSION_SUFFIX)
     ]
     mock_compress.assert_has_calls(calls)
     mock_upload.assert_called_once_with(chrome_binary, afdo_name)
@@ -1033,7 +1034,7 @@ class UploadVettedAFDOArtifactTest(cros_test_lib.MockTempDirTestCase):
 
   def testUploadVettedOrderfile(self):
     """Test _UploadVettedAFDOArtifacts() works with orderfile."""
-    full_name = self.artifact + toolchain_util.ORDERFILE_COMPRESSION_SUFFIX
+    full_name = self.artifact + toolchain_util.XZ_COMPRESSION_SUFFIX
     source_url = os.path.join(toolchain_util.ORDERFILE_GS_URL_UNVETTED,
                               full_name)
     dest_url = os.path.join(toolchain_util.ORDERFILE_GS_URL_VETTED, full_name)
@@ -1164,11 +1165,11 @@ class UploadReleaseChromeAFDOTest(cros_test_lib.MockTempDirTestCase):
   # pylint: disable=protected-access
   def setUp(self):
     self.cwp_name = 'R77-3809.38-1562580965.afdo'
-    self.cwp_full = self.cwp_name + toolchain_util.ORDERFILE_COMPRESSION_SUFFIX
+    self.cwp_full = self.cwp_name + toolchain_util.XZ_COMPRESSION_SUFFIX
     self.arch = 'silvermont'
     self.benchmark_name = 'chromeos-chrome-amd64-77.0.3849.0_rc-r1.afdo'
     self.benchmark_full = \
-        self.benchmark_name + toolchain_util.AFDO_COMPRESSION_SUFFIX
+        self.benchmark_name + toolchain_util.BZ2_COMPRESSION_SUFFIX
     cwp_string = '%s-77-3809.38-1562580965' % self.arch
     benchmark_string = 'benchmark-77.0.3849.0-r1'
     self.merged_name = 'chromeos-chrome-amd64-%s-%s' % (cwp_string,
@@ -1176,7 +1177,7 @@ class UploadReleaseChromeAFDOTest(cros_test_lib.MockTempDirTestCase):
     self.redacted_name = self.merged_name + '-redacted.afdo'
     self.output = os.path.join(
         self.tempdir,
-        self.redacted_name + toolchain_util.ORDERFILE_COMPRESSION_SUFFIX)
+        self.redacted_name + toolchain_util.XZ_COMPRESSION_SUFFIX)
     self.decompress = self.PatchObject(cros_build_lib, 'UncompressFile')
     self.compress = self.PatchObject(
         toolchain_util, '_CompressAFDOFiles', return_value=[self.output])
@@ -1294,12 +1295,12 @@ class UploadReleaseChromeAFDOTest(cros_test_lib.MockTempDirTestCase):
     # Check compress and upload.
     self.compress.assert_called_once_with(
         [os.path.join(verified_afdo)], None, self.tempdir,
-        toolchain_util.ORDERFILE_COMPRESSION_SUFFIX)
+        toolchain_util.XZ_COMPRESSION_SUFFIX)
     self.upload.assert_called_once_with(
         toolchain_util.RELEASE_AFDO_GS_URL_VETTED,
         os.path.join(
             self.tempdir,
-            self.redacted_name + toolchain_util.ORDERFILE_COMPRESSION_SUFFIX))
+            self.redacted_name + toolchain_util.XZ_COMPRESSION_SUFFIX))
 
 
 class UploadAndPublishVettedAFDOArtifactsTest(

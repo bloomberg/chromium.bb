@@ -54,8 +54,8 @@ RELEASE_AFDO_GS_URL_VETTED = \
 
 # Constants
 AFDO_SUFFIX = '.afdo'
-AFDO_COMPRESSION_SUFFIX = '.bz2'
-ORDERFILE_COMPRESSION_SUFFIX = '.xz'
+BZ2_COMPRESSION_SUFFIX = '.bz2'
+XZ_COMPRESSION_SUFFIX = '.xz'
 KERNEL_AFDO_COMPRESSION_SUFFIX = '.gcov.xz'
 TOOLCHAIN_UTILS_PATH = '/mnt/host/source/src/third_party/toolchain-utils/'
 TOOLCHAIN_UTILS_REPO = \
@@ -312,7 +312,7 @@ def _GetArtifactVersionInChromium(arch, chrome_root):
     ValueError: when "arch" is not a supported.
     RuntimeError: when the file containing AFDO profile name can't be found.
   """
-  if arch not in CHROME_AFDO_VERIFIER_BOARDS.values():
+  if arch not in list(CHROME_AFDO_VERIFIER_BOARDS.values()):
     raise ValueError('Invalid architecture %s to use in AFDO profile' % arch)
 
   if not os.path.exists(chrome_root):
@@ -678,7 +678,7 @@ class GenerateChromeOrderfile(object):
     chrome_nm = self._GenerateChromeNM()
     orderfile = self._PostProcessOrderfile(chrome_nm)
     tarballs = _CompressAFDOFiles([chrome_nm, orderfile], self.working_dir,
-                                  self.output_dir, ORDERFILE_COMPRESSION_SUFFIX)
+                                  self.output_dir, XZ_COMPRESSION_SUFFIX)
     for t in tarballs:
       _UploadAFDOArtifactToGSBucket(ORDERFILE_GS_URL_UNVETTED, t)
 
@@ -1122,7 +1122,7 @@ class GenerateBenchmarkAFDOProfile(object):
     """
     gs_context = gs.GSContext()
     url = os.path.join(BENCHMARK_AFDO_GS_URL,
-                       self._GetPerfAFDOName() + AFDO_COMPRESSION_SUFFIX)
+                       self._GetPerfAFDOName() + BZ2_COMPRESSION_SUFFIX)
     if not gs_context.Exists(url):
       logging.info('Could not find AFDO perf data at %s', url)
       return False
@@ -1148,7 +1148,7 @@ class GenerateBenchmarkAFDOProfile(object):
 
     gs_context = gs.GSContext()
     url = os.path.join(BENCHMARK_AFDO_GS_URL,
-                       self._GetPerfAFDOName() + AFDO_COMPRESSION_SUFFIX)
+                       self._GetPerfAFDOName() + BZ2_COMPRESSION_SUFFIX)
     dest_path = os.path.join(self.working_dir, url.rsplit('/', 1)[1])
     gs_context.Copy(url, dest_path)
 
@@ -1212,10 +1212,10 @@ class GenerateBenchmarkAFDOProfile(object):
     }
     debug_bin_full_path = os.path.join(
         self.output_dir,
-        os.path.basename(debug_bin) + AFDO_COMPRESSION_SUFFIX)
+        os.path.basename(debug_bin) + BZ2_COMPRESSION_SUFFIX)
     chrome_version = CHROME_ARCH_VERSION % afdo_spec
     debug_bin_name_with_version = \
-        chrome_version + '.debug' + AFDO_COMPRESSION_SUFFIX
+        chrome_version + '.debug' + BZ2_COMPRESSION_SUFFIX
 
     # Upload Chrome debug binary and rename it
     _UploadAFDOArtifactToGSBucket(
@@ -1226,7 +1226,7 @@ class GenerateBenchmarkAFDOProfile(object):
     # Upload Benchmark AFDO profile as is
     _UploadAFDOArtifactToGSBucket(
         BENCHMARK_AFDO_GS_URL,
-        os.path.join(self.output_dir, afdo_name + AFDO_COMPRESSION_SUFFIX))
+        os.path.join(self.output_dir, afdo_name + BZ2_COMPRESSION_SUFFIX))
 
   def _GenerateAFDOData(self):
     """Generate AFDO profile data from 'perf' data.
@@ -1249,13 +1249,13 @@ class GenerateBenchmarkAFDOProfile(object):
         targets=[debug_bin],
         input_dir=None,
         output_dir=self.output_dir,
-        suffix=AFDO_COMPRESSION_SUFFIX)
+        suffix=BZ2_COMPRESSION_SUFFIX)
 
     _CompressAFDOFiles(
         targets=[afdo_name],
         input_dir=self.working_dir,
         output_dir=self.output_dir,
-        suffix=AFDO_COMPRESSION_SUFFIX)
+        suffix=BZ2_COMPRESSION_SUFFIX)
 
     self._UploadArtifacts(debug_bin, afdo_name)
     return afdo_name
@@ -1324,9 +1324,11 @@ def CheckAFDOArtifactExists(buildroot, chrome_root, board, target):
   if target == 'orderfile_generate':
     # For orderfile_generate builder, get the orderfile name from chrome ebuild
     orderfile_name = _GetOrderfileName(chrome_root)
+    # Need to append the suffix
+    orderfile_name += '.orderfile'
     return gs_context.Exists(
         os.path.join(ORDERFILE_GS_URL_UNVETTED,
-                     orderfile_name + ORDERFILE_COMPRESSION_SUFFIX))
+                     orderfile_name + XZ_COMPRESSION_SUFFIX))
 
   if target == 'orderfile_verify':
     # Check if the latest unvetted orderfile is already verified
@@ -1340,7 +1342,7 @@ def CheckAFDOArtifactExists(buildroot, chrome_root, board, target):
     afdo_name = _GetBenchmarkAFDOName(buildroot, board)
     return gs_context.Exists(
         os.path.join(BENCHMARK_AFDO_GS_URL,
-                     afdo_name + AFDO_COMPRESSION_SUFFIX))
+                     afdo_name + BZ2_COMPRESSION_SUFFIX))
 
   if target == 'kernel_afdo':
     # Check the latest unvetted kernel AFDO is already verified
@@ -1362,8 +1364,11 @@ def CheckAFDOArtifactExists(buildroot, chrome_root, board, target):
         _ParseCWPProfileName(os.path.splitext(cwp_afdo)[0]),
         arch,
         _ParseBenchmarkProfileName(os.path.splitext(benchmark_afdo)[0]))
+    # The profile name also contained 'redacted' info
+    merged_name += '-redacted.afdo'
     return gs_context.Exists(
-        os.path.join(RELEASE_AFDO_GS_URL_VETTED, merged_name))
+        os.path.join(RELEASE_AFDO_GS_URL_VETTED,
+                     merged_name + XZ_COMPRESSION_SUFFIX))
 
   raise ValueError('Unsupported target %s to check' % target)
 
@@ -1394,7 +1399,7 @@ def _UploadVettedAFDOArtifacts(artifact_type, subcategory=None):
   if artifact_type == 'orderfile':
     artifact = _GetArtifactVersionInEbuild('chromeos-chrome',
                                            'UNVETTED_ORDERFILE')
-    full_name = artifact + ORDERFILE_COMPRESSION_SUFFIX
+    full_name = artifact + XZ_COMPRESSION_SUFFIX
     source_url = os.path.join(ORDERFILE_GS_URL_UNVETTED, full_name)
     dest_url = os.path.join(ORDERFILE_GS_URL_VETTED, full_name)
   elif artifact_type == 'kernel_afdo':
@@ -1529,8 +1534,8 @@ def _CreateReleaseChromeAFDO(cwp_afdo, arch, benchmark_afdo, output_dir):
   """
   gs_context = gs.GSContext()
   # Download profiles from gsutil.
-  cwp_full_name = cwp_afdo + ORDERFILE_COMPRESSION_SUFFIX
-  benchmark_full_name = benchmark_afdo + AFDO_COMPRESSION_SUFFIX
+  cwp_full_name = cwp_afdo + XZ_COMPRESSION_SUFFIX
+  benchmark_full_name = benchmark_afdo + BZ2_COMPRESSION_SUFFIX
 
   cwp_afdo_url = os.path.join(CWP_AFDO_GS_URL, arch, cwp_full_name)
   cwp_afdo_local = os.path.join(output_dir, cwp_full_name)
@@ -1577,7 +1582,7 @@ def _UploadReleaseChromeAFDO():
                                                'UNVETTED_AFDO_FILE')
     # Compress the final AFDO profile.
     ret = _CompressAFDOFiles([profile_path], None, tempdir,
-                             ORDERFILE_COMPRESSION_SUFFIX)
+                             XZ_COMPRESSION_SUFFIX)
     # Upload to GS bucket
     _UploadAFDOArtifactToGSBucket(RELEASE_AFDO_GS_URL_VETTED, ret[0])
 
