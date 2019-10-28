@@ -255,13 +255,11 @@ void MediaInterfaceProxy::CreateDecryptor(
     factory->CreateDecryptor(cdm_id, std::move(receiver));
 }
 
-#if BUILDFLAG(ENABLE_CDM_PROXY)
 void MediaInterfaceProxy::CreateCdmProxy(
     const base::Token& cdm_guid,
     mojo::PendingReceiver<media::mojom::CdmProxy> receiver) {
   NOTREACHED() << "The CdmProxy should only be created by a CDM.";
 }
-#endif  // BUILDFLAG(ENABLE_CDM_PROXY)
 
 mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
 MediaInterfaceProxy::GetFrameServices(const base::Token& cdm_guid,
@@ -291,11 +289,9 @@ MediaInterfaceProxy::GetFrameServices(const base::Token& cdm_guid,
         &CdmStorageImpl::Create, render_frame_host_, cdm_file_system_id));
   }
 
-#if BUILDFLAG(ENABLE_CDM_PROXY)
   provider->registry()->AddInterface(
       base::BindRepeating(&MediaInterfaceProxy::CreateCdmProxyInternal,
                           base::Unretained(this), cdm_guid));
-#endif  // BUILDFLAG(ENABLE_CDM_PROXY)
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 #endif  // BUILDFLAG(ENABLE_MOJO_CDM)
 
@@ -390,7 +386,6 @@ void MediaInterfaceProxy::OnCdmServiceConnectionError(
   cdm_factory_map_.erase(cdm_guid);
 }
 
-#if BUILDFLAG(ENABLE_CDM_PROXY)
 void MediaInterfaceProxy::CreateCdmProxyInternal(
     const base::Token& cdm_guid,
     mojo::PendingReceiver<media::mojom::CdmProxy> receiver) {
@@ -401,8 +396,5 @@ void MediaInterfaceProxy::CreateCdmProxyInternal(
   if (factory)
     factory->CreateCdmProxy(cdm_guid, std::move(receiver));
 }
-#endif  // BUILDFLAG(ENABLE_CDM_PROXY)
-
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
-
 }  // namespace content

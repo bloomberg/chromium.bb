@@ -36,9 +36,9 @@
 #include "media/mojo/services/mojo_cdm_service.h"
 #endif  // BUILDFLAG(ENABLE_MOJO_CDM)
 
-#if BUILDFLAG(ENABLE_CDM_PROXY)
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 #include "media/mojo/services/mojo_cdm_proxy_service.h"
-#endif  // BUILDFLAG(ENABLE_CDM_PROXY)
+#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
 namespace media {
 
@@ -203,11 +203,12 @@ void InterfaceFactoryImpl::CreateDecryptor(
   decryptor_receivers_.Add(std::move(mojo_decryptor_service),
                            std::move(receiver));
 }
-#if BUILDFLAG(ENABLE_CDM_PROXY)
+
 void InterfaceFactoryImpl::CreateCdmProxy(
     const base::Token& cdm_guid,
     mojo::PendingReceiver<mojom::CdmProxy> receiver) {
   DVLOG(2) << __func__;
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
   auto cdm_proxy = mojo_media_client_->CreateCdmProxy(cdm_guid);
   if (!cdm_proxy) {
     DLOG(ERROR) << "CdmProxy creation failed.";
@@ -217,8 +218,8 @@ void InterfaceFactoryImpl::CreateCdmProxy(
   cdm_proxy_receivers_.Add(std::make_unique<MojoCdmProxyService>(
                                std::move(cdm_proxy), &cdm_service_context_),
                            std::move(receiver));
+#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 }
-#endif  // BUILDFLAG(ENABLE_CDM_PROXY)
 
 void InterfaceFactoryImpl::OnDestroyPending(base::OnceClosure destroy_cb) {
   DVLOG(1) << __func__;
@@ -249,10 +250,10 @@ bool InterfaceFactoryImpl::IsEmpty() {
     return false;
 #endif  // BUILDFLAG(ENABLE_MOJO_CDM)
 
-#if BUILDFLAG(ENABLE_CDM_PROXY)
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
   if (!cdm_proxy_receivers_.empty())
     return false;
-#endif  // BUILDFLAG(ENABLE_CDM_PROXY)
+#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
   if (!decryptor_receivers_.empty())
     return false;
@@ -283,9 +284,9 @@ void InterfaceFactoryImpl::SetBindingConnectionErrorHandler() {
   cdm_bindings_.set_connection_error_handler(connection_error_cb);
 #endif  // BUILDFLAG(ENABLE_MOJO_CDM)
 
-#if BUILDFLAG(ENABLE_CDM_PROXY)
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
   cdm_proxy_receivers_.set_disconnect_handler(connection_error_cb);
-#endif  // BUILDFLAG(ENABLE_CDM_PROXY)
+#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
   decryptor_receivers_.set_disconnect_handler(connection_error_cb);
 }

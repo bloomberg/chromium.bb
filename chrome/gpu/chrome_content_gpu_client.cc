@@ -15,10 +15,9 @@
 #include "content/public/child/child_thread.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_names.mojom.h"
-#include "media/media_buildflags.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
-#if BUILDFLAG(ENABLE_CDM_PROXY)
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 #include "media/cdm/cdm_paths.h"
 #include "media/cdm/library_cdm/clear_key_cdm/clear_key_cdm_proxy.h"
 #include "third_party/widevine/cdm/buildflags.h"
@@ -26,7 +25,7 @@
 #include "chrome/gpu/widevine_cdm_proxy_factory.h"
 #include "third_party/widevine/cdm/widevine_cdm_common.h"
 #endif  // BUILDFLAG(ENABLE_WIDEVINE) && defined(OS_WIN)
-#endif  // BUILDFLAG(ENABLE_CDM_PROXY)
+#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
 #if defined(OS_CHROMEOS)
 #include "components/arc/video_accelerator/gpu_arc_video_decode_accelerator.h"
@@ -115,7 +114,7 @@ void ChromeContentGpuClient::PostCompositorThreadCreated(
                      metrics::CallStackProfileParams::COMPOSITOR_THREAD));
 }
 
-#if BUILDFLAG(ENABLE_CDM_PROXY)
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 std::unique_ptr<media::CdmProxy> ChromeContentGpuClient::CreateCdmProxy(
     const base::Token& cdm_guid) {
   if (cdm_guid == media::kClearKeyCdmGuid)
@@ -128,7 +127,7 @@ std::unique_ptr<media::CdmProxy> ChromeContentGpuClient::CreateCdmProxy(
 
   return nullptr;
 }
-#endif  // BUILDFLAG(ENABLE_CDM_PROXY)
+#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
 #if defined(OS_CHROMEOS)
 void ChromeContentGpuClient::CreateArcVideoDecodeAccelerator(

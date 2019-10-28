@@ -17,11 +17,11 @@
 #include "media/base/cdm_config.h"
 #include "media/base/mock_filters.h"
 #include "media/base/test_helpers.h"
-#include "media/media_buildflags.h"
 #include "media/mojo/buildflags.h"
 #include "media/mojo/clients/mojo_decryptor.h"
 #include "media/mojo/clients/mojo_demuxer_stream_impl.h"
 #include "media/mojo/common/media_type_converters.h"
+#include "media/mojo/mojom/cdm_proxy.mojom.h"
 #include "media/mojo/mojom/constants.mojom.h"
 #include "media/mojo/mojom/content_decryption_module.mojom.h"
 #include "media/mojo/mojom/decryptor.mojom.h"
@@ -42,7 +42,7 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
-#if BUILDFLAG(ENABLE_CDM_PROXY)
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 #include "media/cdm/cdm_paths.h"  // nogncheck
 #include "media/mojo/mojom/cdm_proxy.mojom.h"
 #endif
@@ -79,7 +79,6 @@ scoped_refptr<DecoderBuffer> CreateEncryptedBuffer() {
   return encrypted_buffer;
 }
 
-#if BUILDFLAG(ENABLE_CDM_PROXY)
 class MockCdmProxyClient : public mojom::CdmProxyClient {
  public:
   MockCdmProxyClient() = default;
@@ -91,7 +90,6 @@ class MockCdmProxyClient : public mojom::CdmProxyClient {
  private:
   DISALLOW_COPY_AND_ASSIGN(MockCdmProxyClient);
 };
-#endif  // BUILDFLAG(ENABLE_CDM_PROXY)
 
 class MockRendererClient : public mojom::RendererClient {
  public:
@@ -151,12 +149,9 @@ class MediaServiceTest : public testing::Test {
                  .Build()}),
         test_service_(
             test_service_manager_.RegisterTestInstance(kTestServiceName)),
-#if BUILDFLAG(ENABLE_CDM_PROXY)
         cdm_proxy_client_binding_(&cdm_proxy_client_),
-#endif
         renderer_client_binding_(&renderer_client_),
-        video_stream_(DemuxerStream::VIDEO) {
-  }
+        video_stream_(DemuxerStream::VIDEO) {}
   ~MediaServiceTest() override = default;
 
   service_manager::Connector* connector() { return test_service_.connector(); }
@@ -204,7 +199,6 @@ class MediaServiceTest : public testing::Test {
     return cdm_id;
   }
 
-#if BUILDFLAG(ENABLE_CDM_PROXY)
   MOCK_METHOD4(OnCdmProxyInitialized,
                void(CdmProxy::Status status,
                     CdmProxy::Protocol protocol,
@@ -230,7 +224,6 @@ class MediaServiceTest : public testing::Test {
     run_loop.Run();
     return cdm_id;
   }
-#endif  // BUILDFLAG(ENABLE_CDM_PROXY)
 
   MOCK_METHOD2(OnDecrypted,
                void(Decryptor::Status, scoped_refptr<DecoderBuffer>));
@@ -294,13 +287,11 @@ class MediaServiceTest : public testing::Test {
   mojom::MediaServicePtr media_service_;
   mojo::Remote<mojom::InterfaceFactory> interface_factory_;
   mojom::ContentDecryptionModulePtr cdm_;
+  mojo::Remote<mojom::CdmProxy> cdm_proxy_;
   mojom::RendererPtr renderer_;
 
-#if BUILDFLAG(ENABLE_CDM_PROXY)
-  mojo::Remote<mojom::CdmProxy> cdm_proxy_;
   NiceMock<MockCdmProxyClient> cdm_proxy_client_;
   mojo::AssociatedBinding<mojom::CdmProxyClient> cdm_proxy_client_binding_;
-#endif  // BUILDFLAG(ENABLE_CDM_PROXY)
 
   NiceMock<MockRendererClient> renderer_client_;
   mojo::AssociatedBinding<mojom::RendererClient> renderer_client_binding_;
@@ -344,7 +335,7 @@ TEST_F(MediaServiceTest, InitializeRenderer) {
 }
 #endif  // BUILDFLAG(ENABLE_MOJO_RENDERER)
 
-#if BUILDFLAG(ENABLE_CDM_PROXY)
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 TEST_F(MediaServiceTest, CdmProxy) {
   InitializeCdmProxy(kClearKeyCdmGuid);
 }
@@ -374,7 +365,7 @@ TEST_F(MediaServiceTest, DeferredDestruction_CdmProxy) {
   cdm_proxy_.reset();
   run_loop.Run();
 }
-#endif  // BUILDFLAG(ENABLE_CDM_PROXY)
+#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
 TEST_F(MediaServiceTest, Decryptor_WithoutCdmOrCdmProxy) {
   // Creating decryptor without creating CDM or CdmProxy.

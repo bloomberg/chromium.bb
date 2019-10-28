@@ -11,9 +11,9 @@
 #include "media/base/renderer.h"
 #include "media/base/video_decoder.h"
 
-#if BUILDFLAG(ENABLE_CDM_PROXY)
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 #include "media/cdm/cdm_proxy.h"
-#endif  // BUILDFLAG(ENABLE_CDM_PROXY)
+#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
 namespace media {
 
@@ -66,11 +66,11 @@ std::unique_ptr<CdmFactory> MojoMediaClient::CreateCdmFactory(
   return nullptr;
 }
 
-#if BUILDFLAG(ENABLE_CDM_PROXY)
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 std::unique_ptr<CdmProxy> MojoMediaClient::CreateCdmProxy(
     const base::Token& cdm_guid) {
   return nullptr;
 }
-#endif  // BUILDFLAG(ENABLE_CDM_PROXY)
+#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
 }  // namespace media

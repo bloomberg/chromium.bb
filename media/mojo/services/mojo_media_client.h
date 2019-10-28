@@ -102,11 +102,11 @@ class MEDIA_MOJO_EXPORT MojoMediaClient {
   virtual std::unique_ptr<CdmFactory> CreateCdmFactory(
       service_manager::mojom::InterfaceProvider* host_interfaces);
 
-#if BUILDFLAG(ENABLE_CDM_PROXY)
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
   // Creates a CdmProxy that proxies part of CDM functionalities to a different
   // entity, e.g. hardware CDM modules.
   virtual std::unique_ptr<CdmProxy> CreateCdmProxy(const base::Token& cdm_guid);
-#endif  // BUILDFLAG(ENABLE_CDM_PROXY)
+#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
  protected:
   MojoMediaClient();

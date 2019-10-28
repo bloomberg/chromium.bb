@@ -12,7 +12,6 @@
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
-#include "media/media_buildflags.h"
 #include "media/mojo/buildflags.h"
 #include "media/mojo/mojom/interface_factory.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -63,11 +62,9 @@ class CONTENT_EXPORT VideoDecoderProxy : public media::mojom::InterfaceFactory {
   void CreateDecryptor(
       int cdm_id,
       mojo::PendingReceiver<media::mojom::Decryptor> receiver) final;
-#if BUILDFLAG(ENABLE_CDM_PROXY)
   void CreateCdmProxy(
       const base::Token& cdm_guid,
       mojo::PendingReceiver<media::mojom::CdmProxy> receiver) final;
-#endif  // BUILDFLAG(ENABLE_CDM_PROXY)
 
  private:
   media::mojom::InterfaceFactory* GetMediaInterfaceFactory();

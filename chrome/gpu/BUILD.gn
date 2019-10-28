@@ -18,7 +18,7 @@ static_library("gpu") {
     "chrome_content_gpu_client.h",
   ]
 
-  if (enable_cdm_proxy) {
+  if (enable_library_cdms) {
     deps += [
       "//media/cdm:cdm_paths",
       "//media/cdm/library_cdm/clear_key_cdm:clear_key_cdm_proxy",

@@ -61,9 +61,9 @@ class GpuMojoMediaClient : public MojoMediaClient {
       const gfx::ColorSpace& target_color_space) final;
   std::unique_ptr<CdmFactory> CreateCdmFactory(
       service_manager::mojom::InterfaceProvider* interface_provider) final;
-#if BUILDFLAG(ENABLE_CDM_PROXY)
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
   std::unique_ptr<CdmProxy> CreateCdmProxy(const base::Token& cdm_guid) final;
-#endif  // BUILDFLAG(ENABLE_CDM_PROXY)
+#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
  private:
   gpu::GpuPreferences gpu_preferences_;
