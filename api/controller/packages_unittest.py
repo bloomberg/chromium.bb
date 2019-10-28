@@ -230,6 +230,51 @@ class GetBestVisibleTest(cros_test_lib.MockTestCase, ApiConfigMixin):
     self.assertEqual(package_info.version, cpv.version)
 
 
+class GetChromeVersion(cros_test_lib.MockTestCase, ApiConfigMixin):
+  """GetChromeVersion tests."""
+
+  def setUp(self):
+    self.response = packages_pb2.GetChromeVersionResponse()
+
+  def _GetRequest(self, board=None):
+    """Helper to build out a request."""
+    request = packages_pb2.GetChromeVersionRequest()
+
+    if board:
+      request.build_target.name = board
+
+    return request
+
+  def testValidateOnly(self):
+    """Sanity check that a validate only call does not execute any logic."""
+    chrome_version = self.PatchObject(packages_service,
+                                      'determine_chrome_version')
+    request = self._GetRequest(board='betty')
+    packages_controller.GetChromeVersion(request, self.response,
+                                         self.validate_only_config)
+    chrome_version.assert_not_called()
+
+  def testMockCall(self):
+    """Test that a mock call does not execute logic, returns mocked value."""
+    chrome_version = self.PatchObject(packages_service,
+                                      'determine_chrome_version')
+    request = self._GetRequest(board='betty')
+    packages_controller.GetChromeVersion(request, self.response,
+                                         self.mock_call_config)
+    chrome_version.assert_not_called()
+    self.assertTrue(self.response.version)
+
+  def testGetChromeVersion(self):
+    """Verify basic return values."""
+    chrome_version = '76.0.1.2'
+    self.PatchObject(packages_service, 'determine_chrome_version',
+                     return_value=chrome_version)
+    request = self._GetRequest(board='betty')
+    packages_controller.GetChromeVersion(request, self.response,
+                                         self.api_config)
+    self.assertEqual(self.response.version, chrome_version)
+
+
 class GetTargetVersionsTest(cros_test_lib.MockTestCase, ApiConfigMixin):
   """GetTargetVersions tests."""
 

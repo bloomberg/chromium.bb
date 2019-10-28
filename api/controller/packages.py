@@ -83,7 +83,6 @@ def UprevVersionedPackage(input_proto, output_proto, _config):
       uprev_response.modified_ebuilds.add().path = path
 
 
-
 @faux.all_empty
 @validate.require('atom')
 @validate.validation_complete
@@ -99,18 +98,19 @@ def GetBestVisible(input_proto, output_proto, _config):
   output_proto.package_info.CopyFrom(package_info)
 
 
-@faux.all_empty
+def _ChromeVersionResponse(_input_proto, output_proto, _config):
+  """Add a fake chrome version to a successful response."""
+  output_proto.version = '78.0.3900.0'
+
+
+@faux.success(_ChromeVersionResponse)
+@faux.empty_error
 @validate.require('build_target.name')
 @validate.validation_complete
 def GetChromeVersion(input_proto, output_proto, _config):
   """Returns the chrome version."""
   build_target = controller_util.ParseBuildTarget(input_proto.build_target)
   output_proto.version = packages.determine_chrome_version(build_target)
-
-
-def _HasChromePrebuiltSuccess(_input_proto, output_proto, _config):
-  """The mock success case for HasChromePrebuilt."""
-  output_proto.has_prebuilt = True
 
 
 @faux.all_empty
@@ -135,6 +135,11 @@ def GetTargetVersions(input_proto, output_proto, _config):
   output_proto.platform_version = packages.determine_platform_version()
   output_proto.milestone_version = packages.determine_milestone_version()
   output_proto.full_version = packages.determine_full_version()
+
+
+def _HasChromePrebuiltSuccess(_input_proto, output_proto, _config):
+  """The mock success case for HasChromePrebuilt."""
+  output_proto.has_prebuilt = True
 
 
 @faux.success(_HasChromePrebuiltSuccess)
