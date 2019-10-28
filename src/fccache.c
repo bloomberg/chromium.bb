@@ -338,7 +338,7 @@ FcDirCacheOpenFile (const FcChar8 *cache_file, struct stat *file_stat)
 static FcBool
 FcDirCacheProcess (FcConfig *config, const FcChar8 *dir,
 		   FcBool (*callback) (FcConfig *config, int fd, struct stat *fd_stat,
-				       struct stat *dir_stat, void *closure),
+				       struct stat *dir_stat, struct timeval *cache_mtime, void *closure),
 		   void *closure, FcChar8 **cache_file_ret)
 {
     int		fd = -1;
@@ -348,6 +348,7 @@ FcDirCacheProcess (FcConfig *config, const FcChar8 *dir,
     struct stat file_stat, dir_stat;
     FcBool	ret = FcFalse;
     const FcChar8 *sysroot = FcConfigGetSysRoot (config);
+    struct timeval latest_mtime = (struct timeval){ 0 };
 
     if (sysroot)
 	d = FcStrBuildFilename (sysroot, dir, NULL);
@@ -383,15 +384,18 @@ FcDirCacheProcess (FcConfig *config, const FcChar8 *dir,
 #endif
         fd = FcDirCacheOpenFile (cache_hashed, &file_stat);
         if (fd >= 0) {
-	    ret = (*callback) (config, fd, &file_stat, &dir_stat, closure);
+	    ret = (*callback) (config, fd, &file_stat, &dir_stat, &latest_mtime, closure);
 	    close (fd);
 	    if (ret)
 	    {
 		if (cache_file_ret)
+		{
+		    if (*cache_file_ret)
+			FcStrFree (*cache_file_ret);
 		    *cache_file_ret = cache_hashed;
+		}
 		else
 		    FcStrFree (cache_hashed);
-		break;
 	    }
 	}
 #ifndef _WIN32
@@ -414,7 +418,8 @@ FcDirCacheProcess (FcConfig *config, const FcChar8 *dir,
 	    }
 	}
 #endif
-    	FcStrFree (cache_hashed);
+	else
+	    FcStrFree (cache_hashed);
     }
     FcStrListDone (list);
 
@@ -998,12 +1003,31 @@ FcDirCacheUnload (FcCache *cache)
 }
 
 static FcBool
-FcDirCacheMapHelper (FcConfig *config, int fd, struct stat *fd_stat, struct stat *dir_stat, void *closure)
+FcDirCacheMapHelper (FcConfig *config, int fd, struct stat *fd_stat, struct stat *dir_stat, struct timeval *latest_cache_mtime, void *closure)
 {
     FcCache *cache = FcDirCacheMapFd (config, fd, fd_stat, dir_stat);
+    struct timeval cache_mtime;
 
     if (!cache)
 	return FcFalse;
+    cache_mtime.tv_sec = fd_stat->st_mtime;
+#ifdef HAVE_STRUCT_STAT_ST_MTIM
+    cache_mtime.tv_usec = fd_stat->st_mtim.tv_nsec / 1000;
+#else
+    cache_mtime.tv_usec = 0;
+#endif
+    if (timercmp (latest_cache_mtime, &cache_mtime, <))
+    {
+	if (*((FcCache **) closure))
+	    FcDirCacheUnload (*((FcCache **) closure));
+    }
+    else
+    {
+	FcDirCacheUnload (cache);
+	return FcFalse;
+    }
+    latest_cache_mtime->tv_sec = cache_mtime.tv_sec;
+    latest_cache_mtime->tv_usec = cache_mtime.tv_usec;
     *((FcCache **) closure) = cache;
     return FcTrue;
 }
@@ -1093,7 +1117,7 @@ FcDirChecksumNano (struct stat *statb)
  * the magic number and the size field
  */
 static FcBool
-FcDirCacheValidateHelper (FcConfig *config, int fd, struct stat *fd_stat, struct stat *dir_stat, void *closure FC_UNUSED)
+FcDirCacheValidateHelper (FcConfig *config, int fd, struct stat *fd_stat, struct stat *dir_stat, struct timeval *latest_cache_mtime, void *closure FC_UNUSED)
 {
     FcBool  ret = FcTrue;
     FcCache	c;

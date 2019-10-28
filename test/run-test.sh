@@ -340,6 +340,72 @@ fi
 
 rm -rf $MyPWD/sysroot
 
+dotest "read newer caches when multiple places are allowed to store"
+prep
+cp $FONT1 $FONT2 $FONTDIR
+if [ -n ${SOURCE_DATE_EPOCH:-} ] && [ ${#SOURCE_DATE_EPOCH} -gt 0 ]; then
+    touch -m -t "`date -d \"@${SOURCE_DATE_EPOCH}\" +%y%m%d%H%M.%S`" $FONTDIR
+fi
+MYCACHEBASEDIR=`mktemp -d /tmp/fontconfig.XXXXXXXX`
+MYCACHEDIR=$MYCACHEBASEDIR/cache.dir
+MYOWNCACHEDIR=$MYCACHEBASEDIR/owncache.dir
+MYCONFIG=`mktemp /tmp/fontconfig.XXXXXXXX`
+
+mkdir -p $MYCACHEDIR
+mkdir -p $MYOWNCACHEDIR
+
+sed "s!@FONTDIR@!$FONTDIR!
+s!@REMAPDIR@!!
+s!@CACHEDIR@!$MYCACHEDIR!" < $TESTDIR/fonts.conf.in > my-fonts.conf
+
+FONTCONFIG_FILE=$MyPWD/my-fonts.conf $FCCACHE $FONTDIR
+
+sleep 1
+cat<<EOF>$MYCONFIG
+<fontconfig>
+  <match target="scan">
+    <test name="file"><string>$FONTDIR/4x6.pcf</string></test>
+    <edit name="pixelsize"><int>8</int></edit>
+  </match>
+</fontconfig>
+EOF
+sed "s!@FONTDIR@!$FONTDIR!
+s!@REMAPDIR@!<include ignore_missing=\"yes\">$MYCONFIG</include>!
+s!@CACHEDIR@!$MYOWNCACHEDIR!" < $TESTDIR/fonts.conf.in > my-fonts.conf
+
+if [ -n ${SOURCE_DATE_EPOCH:-} ]; then
+  old_epoch=${SOURCE_DATE_EPOCH}
+  SOURCE_DATE_EPOCH=`expr $SOURCE_DATE_EPOCH + 1`
+fi
+FONTCONFIG_FILE=$MyPWD/my-fonts.conf $FCCACHE -f $FONTDIR
+if [ -n ${SOURCE_DATE_EPOCH:-} ]; then
+  SOURCE_DATE_EPOCH=${old_epoch}
+fi
+
+sed "s!@FONTDIR@!$FONTDIR!
+s!@REMAPDIR@!<include ignore_missing=\"yes\">$MYCONFIG</include>!
+s!@CACHEDIR@!$MYCACHEDIR</cachedir><cachedir>$MYOWNCACHEDIR!" < $TESTDIR/fonts.conf.in > my-fonts.conf
+
+FONTCONFIG_FILE=$MyPWD/my-fonts.conf $FCLIST - family pixelsize | sort > my-out
+echo "=" >> my-out
+FONTCONFIG_FILE=$MyPWD/my-fonts.conf $FCLIST - family pixelsize | sort >> my-out
+echo "=" >> my-out
+FONTCONFIG_FILE=$MyPWD/my-fonts.conf $FCLIST - family pixelsize | sort >> my-out
+tr -d '\015' <my-out >my-out.tmp; mv my-out.tmp my-out
+sed -e 's/pixelsize=6/pixelsize=8/g' $BUILDTESTDIR/$EXPECTED > my-out.expected
+
+if cmp my-out my-out.expected > /dev/null ; then : ; else
+    echo "*** Test failed: $TEST"
+    echo "*** output is in 'my-out', expected output in 'my-out.expected'"
+    echo "Actual Result"
+    cat my-out
+    echo "Expected Result"
+    cat my-out.expected
+    exit 1
+fi
+
+rm -rf $MYCACHEBASEDIR $MYCONFIG my-fonts.conf my-out my-out.expected
+
 fi # if [ "x$EXEEXT" = "x" ]
 
 rm -rf $FONTDIR $CACHEFILE $CACHEDIR $BASEDIR $FONTCONFIG_FILE out
