@@ -478,12 +478,16 @@ class BackgroundFetchDataManagerTest
             origin(), CacheStorageOwner::kBackgroundFetch);
     auto match_options = blink::mojom::CacheQueryOptions::New();
     match_options->ignore_search = true;
+    // Note: QuitWhenIdleClosure is used rather than QuitClosure to allow
+    // destruction of the fetch response given to DidMatchCache to post a
+    // series of tasks that ultimately tear down the connection and allow
+    // resources to be freed (including an open file in the cache).
     cache_storage.value()->MatchCache(
         kExampleUniqueId, BackgroundFetchSettledFetch::CloneRequest(request),
         std::move(match_options),
         /* trace_id= */ 0,
         base::BindOnce(&BackgroundFetchDataManagerTest::DidMatchCache,
-                       base::Unretained(this), run_loop.QuitClosure(),
+                       base::Unretained(this), run_loop.QuitWhenIdleClosure(),
                        &result));
     run_loop.Run();
 
