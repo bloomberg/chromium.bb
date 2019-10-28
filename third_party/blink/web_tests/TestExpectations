@@ -1397,7 +1397,6 @@ crbug.com/591099 external/wpt/css/css-flexbox/flexbox_align-items-stretch-3.html
 
 ### virtual/layout_ng_flex_box/css3/flexbox/
 crbug.com/591099 virtual/layout_ng_flex_box/css3/flexbox/auto-height-column-with-border-and-padding.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_flex_box/css3/flexbox/box-sizing-min-max-sizes.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_flex_box/css3/flexbox/flex-align-end.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_flex_box/css3/flexbox/flex-align-vertical-writing-mode.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_flex_box/css3/flexbox/flex-align.html [ Failure ]
@@ -1418,7 +1417,6 @@ crbug.com/591099 virtual/layout_ng_flex_box/css3/flexbox/inline-flexbox-wrap-ver
 crbug.com/591099 virtual/layout_ng_flex_box/css3/flexbox/minimum-size-image.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_flex_box/css3/flexbox/multiline-align-self.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_flex_box/css3/flexbox/multiline-justify-content.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_flex_box/css3/flexbox/multiline-min-max.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_flex_box/css3/flexbox/multiline-reverse-wrap-baseline.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_flex_box/css3/flexbox/multiline.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_flex_box/css3/flexbox/negative-overflow.html [ Failure ]
