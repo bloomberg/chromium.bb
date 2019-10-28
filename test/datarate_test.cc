@@ -148,7 +148,7 @@ class DatarateTestLarge
             << " > first dropped frame for drop_thresh "
             << i - kDropFrameThreshTestStep;
       }
-      ASSERT_GE(num_drops_, last_num_drops * 0.85)
+      ASSERT_GE(num_drops_, last_num_drops * 0.7)
           << " The number of dropped frames for drop_thresh " << i
           << " < number of dropped frames for drop_thresh "
           << i - kDropFrameThreshTestStep;
