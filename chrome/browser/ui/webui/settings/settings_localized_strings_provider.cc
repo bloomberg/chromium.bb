@@ -166,6 +166,7 @@ void AddCommonStrings(content::WebUIDataSource* html_source, Profile* profile) {
     {"edit", IDS_SETTINGS_EDIT},
     {"extensionsLinkTooltip", IDS_SETTINGS_MENU_EXTENSIONS_LINK_TOOLTIP},
     {"learnMore", IDS_LEARN_MORE},
+    {"menu", IDS_MENU},
     {"menuButtonLabel", IDS_SETTINGS_MENU_BUTTON_LABEL},
     {"moreActions", IDS_SETTINGS_MORE_ACTIONS},
     {"ok", IDS_OK},
