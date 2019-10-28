@@ -1435,9 +1435,10 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   // Show the sign-in promo if needed
   if ([SigninPromoViewController
           shouldBePresentedForBrowserState:self.mainBrowserState]) {
+    Browser* browser = self.interfaceProvider.mainInterface.browser;
     UIViewController* promoController = [[SigninPromoViewController alloc]
-        initWithBrowserState:self.mainBrowserState
-                  dispatcher:self.mainBVC.dispatcher];
+        initWithBrowser:browser
+             dispatcher:self.mainBVC.dispatcher];
 
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW,
                                  (int64_t)(kDisplayPromoDelay * NSEC_PER_SEC)),
