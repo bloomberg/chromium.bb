@@ -1694,10 +1694,15 @@ void RenderFrameHostImpl::OnAssociatedInterfaceRequest(
 
 void RenderFrameHostImpl::AccessibilityPerformAction(
     const ui::AXActionData& action_data) {
+  if (!is_active())
+    return;
   Send(new AccessibilityMsg_PerformAction(routing_id_, action_data));
 }
 
 bool RenderFrameHostImpl::AccessibilityViewHasFocus() const {
+  if (!is_active())
+    return false;
+
   RenderWidgetHostView* view = render_view_host_->GetWidget()->GetView();
   if (view)
     return view->HasFocus();
@@ -1705,12 +1710,18 @@ bool RenderFrameHostImpl::AccessibilityViewHasFocus() const {
 }
 
 void RenderFrameHostImpl::AccessibilityViewSetFocus() {
+  if (!is_active())
+    return;
+
   RenderWidgetHostView* view = render_view_host_->GetWidget()->GetView();
   if (view)
     view->Focus();
 }
 
 gfx::Rect RenderFrameHostImpl::AccessibilityGetViewBounds() const {
+  if (!is_active())
+    return gfx::Rect();
+
   RenderWidgetHostView* view = render_view_host_->GetWidget()->GetView();
   if (view)
     return view->GetViewBounds();
@@ -1718,6 +1729,9 @@ gfx::Rect RenderFrameHostImpl::AccessibilityGetViewBounds() const {
 }
 
 float RenderFrameHostImpl::AccessibilityGetDeviceScaleFactor() const {
+  if (!is_active())
+    return 1.0f;
+
   RenderWidgetHostView* view = render_view_host_->GetWidget()->GetView();
   if (view)
     return GetScaleFactorForView(view);
@@ -1748,7 +1762,7 @@ RenderFrameHostImpl::AccessibilityGetAcceleratedWidget() {
   // Only the main frame's current frame host is connected to the native
   // widget tree for accessibility, so return null if this is queried on
   // any other frame.
-  if (frame_tree_node()->parent() || !IsCurrent())
+  if (!is_active() || frame_tree_node()->parent() || !IsCurrent())
     return gfx::kNullAcceleratedWidget;
 
   RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
@@ -1760,6 +1774,9 @@ RenderFrameHostImpl::AccessibilityGetAcceleratedWidget() {
 
 gfx::NativeViewAccessible
 RenderFrameHostImpl::AccessibilityGetNativeViewAccessible() {
+  if (!is_active())
+    return nullptr;
+
   RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
       render_view_host_->GetWidget()->GetView());
   if (view)
@@ -1769,6 +1786,9 @@ RenderFrameHostImpl::AccessibilityGetNativeViewAccessible() {
 
 gfx::NativeViewAccessible
 RenderFrameHostImpl::AccessibilityGetNativeViewAccessibleForWindow() {
+  if (!is_active())
+    return nullptr;
+
   RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
       render_view_host_->GetWidget()->GetView());
   if (view)
@@ -1777,10 +1797,14 @@ RenderFrameHostImpl::AccessibilityGetNativeViewAccessibleForWindow() {
 }
 
 WebContents* RenderFrameHostImpl::AccessibilityWebContents() {
+  if (!is_active())
+    return nullptr;
   return delegate()->GetAsWebContents();
 }
 
 bool RenderFrameHostImpl::AccessibilityIsMainFrame() const {
+  if (!is_active())
+    return false;
   return frame_tree_node()->IsMainFrame();
 }
 
@@ -3763,12 +3787,12 @@ void RenderFrameHostImpl::EvictFromBackForwardCacheWithReason(
 
 void RenderFrameHostImpl::OnAccessibilityLocationChanges(
     const std::vector<AccessibilityHostMsg_LocationChangeParams>& params) {
-  if (accessibility_reset_token_)
+  if (accessibility_reset_token_ || !is_active())
     return;
 
   RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
       render_view_host_->GetWidget()->GetView());
-  if (view && is_active()) {
+  if (view) {
     ui::AXMode accessibility_mode = delegate_->GetAccessibilityMode();
     if (accessibility_mode.has_mode(ui::AXMode::kNativeAPIs)) {
       BrowserAccessibilityManager* manager =
@@ -3795,7 +3819,7 @@ void RenderFrameHostImpl::OnAccessibilityLocationChanges(
 void RenderFrameHostImpl::OnAccessibilityFindInPageResult(
     const AccessibilityHostMsg_FindInPageResultParams& params) {
   ui::AXMode accessibility_mode = delegate_->GetAccessibilityMode();
-  if (accessibility_mode.has_mode(ui::AXMode::kNativeAPIs)) {
+  if (accessibility_mode.has_mode(ui::AXMode::kNativeAPIs) && is_active()) {
     BrowserAccessibilityManager* manager =
         GetOrCreateBrowserAccessibilityManager();
     if (manager) {
@@ -3808,7 +3832,7 @@ void RenderFrameHostImpl::OnAccessibilityFindInPageResult(
 
 void RenderFrameHostImpl::OnAccessibilityFindInPageTermination() {
   ui::AXMode accessibility_mode = delegate_->GetAccessibilityMode();
-  if (accessibility_mode.has_mode(ui::AXMode::kNativeAPIs)) {
+  if (accessibility_mode.has_mode(ui::AXMode::kNativeAPIs) && is_active()) {
     BrowserAccessibilityManager* manager =
         GetOrCreateBrowserAccessibilityManager();
     if (manager)
@@ -3837,7 +3861,7 @@ void RenderFrameHostImpl::OnAccessibilityChildFrameHitTestResult(
     NOTREACHED();
   }
 
-  if (!child_frame)
+  if (!child_frame || !child_frame->is_active())
     return;
 
   ui::AXActionData action_data;
