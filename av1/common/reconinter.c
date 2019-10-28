@@ -124,8 +124,6 @@ void av1_make_inter_predictor(const uint8_t *src, int src_stride, uint8_t *dst,
         dst_stride, inter_pred_params->subsampling_x,
         inter_pred_params->subsampling_y, &inter_pred_params->conv_params);
   } else if (inter_pred_params->mode == UNIFORM_PRED) {
-    // TODO(jingning): is_intrabc related convolve function can be refactored
-    // and streamlined.
 #if CONFIG_AV1_HIGHBITDEPTH
     if (inter_pred_params->use_hbd_buf) {
       highbd_inter_predictor(
