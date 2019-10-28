@@ -377,7 +377,7 @@ else:
 
 
   def readlink(path):
-    return os.readlink(path)
+    return os.readlink(extend(path))
 
 
   def walk(top, *args, **kwargs):
