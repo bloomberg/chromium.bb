@@ -648,6 +648,11 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->max_intra_bsize = BLOCK_16X16;
     sf->use_inter_txb_hash = 0;
     sf->skip_interp_filter_search = 1;
+#if 0
+    // Turning this off until we agree that tradeoff qualuty vs speed is good.
+    sf->force_tx_search_off = 1;
+    sf->num_inter_modes_for_tx_search = 2;
+#endif
   }
   if (speed >= 7) {
     sf->lpf_pick = LPF_PICK_FROM_Q;
@@ -825,6 +830,8 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   // TODO(yunqing): turn it on for speed 0 if there is gain.
   sf->adaptive_overlay_encoding = 0;
   sf->skip_interp_filter_search = 0;
+  sf->force_tx_search_off = 0;
+  sf->num_inter_modes_for_tx_search = INT_MAX;
 
   for (i = 0; i < TX_SIZES; i++) {
     sf->intra_y_mode_mask[i] = INTRA_ALL;

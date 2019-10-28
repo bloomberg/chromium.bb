@@ -798,6 +798,12 @@ typedef struct SPEED_FEATURES {
 
   // For nonrd: use block_yrd for rd cost in interpolation filter search.
   int nonrd_use_blockyrd_interp_filter;
+
+  // Forces TX search off for RDCost calulation.
+  int force_tx_search_off;
+
+  // Number of best inter modes to search transform. INT_MAX - search all.
+  int num_inter_modes_for_tx_search;
 } SPEED_FEATURES;
 
 struct AV1_COMP;

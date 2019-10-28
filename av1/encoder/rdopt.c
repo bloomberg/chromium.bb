@@ -11882,27 +11882,30 @@ static AOM_INLINE void set_params_rd_pick_inter_mode(
           AOMMIN(x->best_pred_mv_sad, x->pred_mv_sad[ref_frame]);
   }
   // ref_frame = ALTREF_FRAME
-  for (; ref_frame < MODE_CTX_REF_FRAMES; ++ref_frame) {
-    x->mbmi_ext->mode_context[ref_frame] = 0;
-    mbmi_ext->ref_mv_count[ref_frame] = UINT8_MAX;
-    const MV_REFERENCE_FRAME *rf = ref_frame_map[ref_frame - REF_FRAMES];
-    if (!((cpi->ref_frame_flags & av1_ref_frame_flag_list[rf[0]]) &&
-          (cpi->ref_frame_flags & av1_ref_frame_flag_list[rf[1]]))) {
-      continue;
-    }
-
-    if (mbmi->partition != PARTITION_NONE &&
-        mbmi->partition != PARTITION_SPLIT) {
-      if (skip_ref_frame_mask & (1 << ref_frame)) {
+  if (!cpi->sf.use_real_time_ref_set) {  // No second reference on RT ref set,
+                                         // so no need to initialize
+    for (; ref_frame < MODE_CTX_REF_FRAMES; ++ref_frame) {
+      x->mbmi_ext->mode_context[ref_frame] = 0;
+      mbmi_ext->ref_mv_count[ref_frame] = UINT8_MAX;
+      const MV_REFERENCE_FRAME *rf = ref_frame_map[ref_frame - REF_FRAMES];
+      if (!((cpi->ref_frame_flags & av1_ref_frame_flag_list[rf[0]]) &&
+            (cpi->ref_frame_flags & av1_ref_frame_flag_list[rf[1]]))) {
         continue;
       }
+
+      if (mbmi->partition != PARTITION_NONE &&
+          mbmi->partition != PARTITION_SPLIT) {
+        if (skip_ref_frame_mask & (1 << ref_frame)) {
+          continue;
+        }
+      }
+      av1_find_mv_refs(cm, xd, mbmi, ref_frame, mbmi_ext->ref_mv_count,
+                       xd->ref_mv_stack, xd->weight, NULL, mbmi_ext->global_mvs,
+                       mi_row, mi_col, mbmi_ext->mode_context);
+      // TODO(Ravi): Populate mbmi_ext->ref_mv_stack[ref_frame][4] and
+      // mbmi_ext->weight[ref_frame][4] inside av1_find_mv_refs.
+      av1_copy_usable_ref_mv_stack_and_weight(xd, mbmi_ext, ref_frame);
     }
-    av1_find_mv_refs(cm, xd, mbmi, ref_frame, mbmi_ext->ref_mv_count,
-                     xd->ref_mv_stack, xd->weight, NULL, mbmi_ext->global_mvs,
-                     mi_row, mi_col, mbmi_ext->mode_context);
-    // TODO(Ravi): Populate mbmi_ext->ref_mv_stack[ref_frame][4] and
-    // mbmi_ext->weight[ref_frame][4] inside av1_find_mv_refs.
-    av1_copy_usable_ref_mv_stack_and_weight(xd, mbmi_ext, ref_frame);
   }
 
   av1_count_overlappable_neighbors(cm, xd, mi_row, mi_col);
@@ -12966,7 +12969,8 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   const int do_tx_search =
       !((cpi->sf.inter_mode_rd_model_estimation == 1 && md->ready) ||
         (cpi->sf.inter_mode_rd_model_estimation == 2 &&
-         num_pels_log2_lookup[bsize] > 8));
+         num_pels_log2_lookup[bsize] > 8) ||
+        cpi->sf.force_tx_search_off);
   InterModesInfo *inter_modes_info = x->inter_modes_info;
   inter_modes_info->num = 0;
 
@@ -13211,7 +13215,10 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     inter_modes_info_sort(inter_modes_info, inter_modes_info->rd_idx_pair_arr);
     search_state.best_rd = best_rd_so_far;
     search_state.best_mode_index = THR_INVALID;
-
+    inter_modes_info->num =
+        inter_modes_info->num < cpi->sf.num_inter_modes_for_tx_search
+            ? inter_modes_info->num
+            : cpi->sf.num_inter_modes_for_tx_search;
     const int64_t top_est_rd =
         inter_modes_info->num > 0
             ? inter_modes_info
