@@ -26,7 +26,6 @@ namespace network {
 
 constexpr int URLLoaderFactory::kMaxKeepaliveConnections;
 constexpr int URLLoaderFactory::kMaxKeepaliveConnectionsPerProcess;
-constexpr int URLLoaderFactory::kMaxKeepaliveConnectionsPerProcessForFetchAPI;
 
 URLLoaderFactory::URLLoaderFactory(
     NetworkContext* context,
@@ -102,24 +101,11 @@ void URLLoaderFactory::CreateLoaderAndStart(
 
   bool exhausted = false;
   if (url_request.keepalive && keepalive_statistics_recorder) {
-    // This logic comes from
-    // content::ResourceDispatcherHostImpl::BeginRequestInternal.
-    // This is needed because we want to know whether the request is initiated
-    // by fetch() or not. We hope that we can unify these restrictions and
-    // remove the reference to fetch_request_context_type in the future.
-    constexpr uint32_t kInitiatedByFetchAPI = 8;
-    const bool is_initiated_by_fetch_api =
-        url_request.fetch_request_context_type == kInitiatedByFetchAPI;
     const auto& recorder = *keepalive_statistics_recorder;
     if (recorder.num_inflight_requests() >= kMaxKeepaliveConnections)
       exhausted = true;
     if (recorder.NumInflightRequestsPerProcess(params_->process_id) >=
         kMaxKeepaliveConnectionsPerProcess) {
-      exhausted = true;
-    }
-    if (is_initiated_by_fetch_api &&
-        recorder.NumInflightRequestsPerProcess(params_->process_id) >=
-            kMaxKeepaliveConnectionsPerProcessForFetchAPI) {
       exhausted = true;
     }
   }
