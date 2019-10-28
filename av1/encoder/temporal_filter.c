@@ -54,9 +54,8 @@ static int64_t highbd_index_mult[14] = { 0U,          0U,          0U,
 static void temporal_filter_predictors_mb_c(
     MACROBLOCKD *xd, uint8_t *y_mb_ptr, uint8_t *u_mb_ptr, uint8_t *v_mb_ptr,
     int stride, int uv_block_width, int uv_block_height, int mv_row, int mv_col,
-    uint8_t *pred, struct scale_factors *scale, int x, int y,
-    int can_use_previous, int num_planes, MV *blk_mvs, int use_32x32) {
-  mv_precision mv_precision_uv;
+    uint8_t *pred, struct scale_factors *scale, int x, int y, int num_planes,
+    MV *blk_mvs, int use_32x32) {
   int uv_stride;
   const int_interpfilters interp_filters =
       av1_broadcast_interp_filter(MULTITAP_SHARP);
@@ -66,34 +65,36 @@ static void temporal_filter_predictors_mb_c(
   const int ssx = (uv_block_width == (BW >> 1)) ? 1 : 0;
   if (ssx) {
     uv_stride = (stride + 1) >> 1;
-    mv_precision_uv = MV_PRECISION_Q4;
   } else {
     uv_stride = stride;
-    mv_precision_uv = MV_PRECISION_Q3;
   }
 
-  ConvolveParams conv_params = get_conv_params(0, 0, xd->bd);
+  InterPredParams inter_pred_params;
+
+  av1_init_inter_params(&inter_pred_params, BW, BH, x, y, 0, 0, xd->bd,
+                        is_cur_buf_hbd(xd), 0, scale, interp_filters);
+  inter_pred_params.conv_params = get_conv_params(0, 0, xd->bd);
+
   if (use_32x32) {
     assert(mv_row >= INT16_MIN && mv_row <= INT16_MAX && mv_col >= INT16_MIN &&
            mv_col <= INT16_MAX);
     const MV mv = { (int16_t)mv_row, (int16_t)mv_col };
 
-    av1_build_inter_predictor(y_mb_ptr, stride, &pred[0], BW, &mv, scale, BW,
-                              BH, &conv_params, interp_filters, &warp_types, x,
-                              y, 0, 0, MV_PRECISION_Q3, x, y, xd,
-                              can_use_previous);
-    if (num_planes > 1) {
-      conv_params = get_conv_params(0, 1, xd->bd);
-      av1_build_inter_predictor(
-          u_mb_ptr, uv_stride, &pred[BLK_PELS], uv_block_width, &mv, scale,
-          uv_block_width, uv_block_height, &conv_params, interp_filters,
-          &warp_types, x, y, 1, 0, mv_precision_uv, x, y, xd, can_use_previous);
+    av1_build_inter_predictor(y_mb_ptr, stride, &pred[0], BW, &mv, x, y,
+                              &inter_pred_params);
 
-      conv_params = get_conv_params(0, 2, xd->bd);
-      av1_build_inter_predictor(
-          v_mb_ptr, uv_stride, &pred[(BLK_PELS << 1)], uv_block_width, &mv,
-          scale, uv_block_width, uv_block_height, &conv_params, interp_filters,
-          &warp_types, x, y, 2, 0, mv_precision_uv, x, y, xd, can_use_previous);
+    if (num_planes > 1) {
+      av1_init_inter_params(&inter_pred_params, uv_block_width, uv_block_height,
+                            x, y, xd->plane[1].subsampling_x,
+                            xd->plane[1].subsampling_y, xd->bd,
+                            is_cur_buf_hbd(xd), 0, scale, interp_filters);
+      inter_pred_params.conv_params = get_conv_params(0, 1, xd->bd);
+      av1_build_inter_predictor(u_mb_ptr, uv_stride, &pred[BLK_PELS],
+                                uv_block_width, &mv, x, y, &inter_pred_params);
+
+      inter_pred_params.conv_params = get_conv_params(0, 2, xd->bd);
+      av1_build_inter_predictor(v_mb_ptr, uv_stride, &pred[(BLK_PELS << 1)],
+                                uv_block_width, &mv, x, y, &inter_pred_params);
     }
 
     return;
@@ -103,7 +104,9 @@ static void temporal_filter_predictors_mb_c(
   // predictors.
   int i, j, k = 0, ys = (BH >> 1), xs = (BW >> 1);
   // Y predictor
-  conv_params = get_conv_params(0, 0, xd->bd);
+  av1_init_inter_params(&inter_pred_params, xs, ys, x, y, 0, 0, xd->bd,
+                        is_cur_buf_hbd(xd), 0, scale, interp_filters);
+  inter_pred_params.conv_params = get_conv_params(0, 0, xd->bd);
   for (i = 0; i < BH; i += ys) {
     for (j = 0; j < BW; j += xs) {
       const MV mv = blk_mvs[k];
@@ -111,9 +114,7 @@ static void temporal_filter_predictors_mb_c(
       const int p_offset = i * BW + j;
 
       av1_build_inter_predictor(y_mb_ptr + y_offset, stride, &pred[p_offset],
-                                BW, &mv, scale, xs, ys, &conv_params,
-                                interp_filters, &warp_types, x, y, 0, 0,
-                                MV_PRECISION_Q3, x, y, xd, can_use_previous);
+                                BW, &mv, x, y, &inter_pred_params);
       k++;
     }
   }
@@ -130,19 +131,20 @@ static void temporal_filter_predictors_mb_c(
         const int uv_offset = i * uv_stride + j;
         const int p_offset = i * uv_block_width + j;
 
-        conv_params = get_conv_params(0, 1, xd->bd);
+        av1_init_inter_params(&inter_pred_params, xs, ys, x, y,
+                              xd->plane[1].subsampling_x,
+                              xd->plane[1].subsampling_y, xd->bd,
+                              is_cur_buf_hbd(xd), 0, scale, interp_filters);
+        inter_pred_params.conv_params = get_conv_params(0, 1, xd->bd);
+
         av1_build_inter_predictor(u_mb_ptr + uv_offset, uv_stride,
                                   &pred[BLK_PELS + p_offset], uv_block_width,
-                                  &mv, scale, xs, ys, &conv_params,
-                                  interp_filters, &warp_types, x, y, 1, 0,
-                                  mv_precision_uv, x, y, xd, can_use_previous);
+                                  &mv, x, y, &inter_pred_params);
 
-        conv_params = get_conv_params(0, 2, xd->bd);
+        inter_pred_params.conv_params = get_conv_params(0, 1, xd->bd);
         av1_build_inter_predictor(
             v_mb_ptr + uv_offset, uv_stride, &pred[(BLK_PELS << 1) + p_offset],
-            uv_block_width, &mv, scale, xs, ys, &conv_params, interp_filters,
-            &warp_types, x, y, 2, 0, mv_precision_uv, x, y, xd,
-            can_use_previous);
+            uv_block_width, &mv, x, y, &inter_pred_params);
         k++;
       }
     }
@@ -1162,7 +1164,7 @@ static FRAME_DIFF temporal_filter_iterate_c(
               frames[frame]->y_stride, mb_uv_width, mb_uv_height,
               mbd->mi[0]->mv[0].as_mv.row, mbd->mi[0]->mv[0].as_mv.col,
               predictor, ref_scale_factors, mb_col * BW, mb_row * BH,
-              cm->allow_warped_motion, num_planes, blk_mvs, use_32x32);
+              num_planes, blk_mvs, use_32x32);
 
           // Apply the filter (YUV)
           if (frame == alt_ref_index) {

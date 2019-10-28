@@ -192,8 +192,11 @@ typedef struct RD_STATS {
   int zero_rate;
 #if CONFIG_RD_DEBUG
   int txb_coeff_cost[MAX_MB_PLANE];
-  int txb_coeff_cost_map[MAX_MB_PLANE][TXB_COEFF_COST_MAP_SIZE]
-                        [TXB_COEFF_COST_MAP_SIZE];
+  // TODO(jingning): Temporary solution to silence stack over-size warning
+  // in handle_inter_mode. This should be fixed after rate-distortion
+  // optimization refactoring.
+  int16_t txb_coeff_cost_map[MAX_MB_PLANE][TXB_COEFF_COST_MAP_SIZE]
+                            [TXB_COEFF_COST_MAP_SIZE];
 #endif  // CONFIG_RD_DEBUG
 } RD_STATS;
 

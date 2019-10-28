@@ -277,47 +277,27 @@ void av1_enc_build_inter_predictor(const AV1_COMMON *cm, MACROBLOCKD *xd,
   }
 }
 
-// TODO(sarahparker):
-// av1_build_inter_predictor should be combined with
-// av1_make_inter_predictor
 void av1_build_inter_predictor(const uint8_t *src, int src_stride, uint8_t *dst,
-                               int dst_stride, const MV *src_mv,
-                               const struct scale_factors *sf, int w, int h,
-                               ConvolveParams *conv_params,
-                               int_interpfilters interp_filters,
-                               const WarpTypesAllowed *warp_types, int p_col,
-                               int p_row, int plane, int ref,
-                               mv_precision precision, int x, int y,
-                               const MACROBLOCKD *xd, int can_use_previous) {
-  const struct macroblockd_plane *pd = &xd->plane[conv_params->plane];
-  const MV mv_q4 = { pd->subsampling_y ? src_mv->row : src_mv->row * 2,
-                     pd->subsampling_x ? src_mv->col : src_mv->col * 2 };
+                               int dst_stride, const MV *src_mv, int x, int y,
+                               InterPredParams *inter_pred_params) {
+  const MV mv_q4 = {
+    inter_pred_params->subsampling_y ? src_mv->row : src_mv->row * 2,
+    inter_pred_params->subsampling_x ? src_mv->col : src_mv->col * 2
+  };
 
-  (void)plane;
-  (void)precision;
-  (void)warp_types;
-  (void)ref;
-  (void)can_use_previous;
-
-  MV32 mv = av1_scale_mv(&mv_q4, x, y, sf);
+  MV32 mv = av1_scale_mv(&mv_q4, x, y, inter_pred_params->scale_factors);
   mv.col += SCALE_EXTRA_OFF;
   mv.row += SCALE_EXTRA_OFF;
 
-  InterPredParams inter_pred_params;
-  const SubpelParams subpel_params = { sf->x_step_q4, sf->y_step_q4,
-                                       mv.col & SCALE_SUBPEL_MASK,
-                                       mv.row & SCALE_SUBPEL_MASK };
+  const SubpelParams subpel_params = {
+    inter_pred_params->scale_factors->x_step_q4,
+    inter_pred_params->scale_factors->y_step_q4, mv.col & SCALE_SUBPEL_MASK,
+    mv.row & SCALE_SUBPEL_MASK
+  };
   src += (mv.row >> SCALE_SUBPEL_BITS) * src_stride +
          (mv.col >> SCALE_SUBPEL_BITS);
 
-  inter_pred_params.conv_params = *conv_params;
-
-  av1_init_inter_params(&inter_pred_params, w, h, p_col, p_row,
-                        pd->subsampling_x, pd->subsampling_y, xd->bd,
-                        is_cur_buf_hbd(xd), xd->mi[0]->use_intrabc, sf,
-                        interp_filters);
-
-  av1_make_inter_predictor(src, src_stride, dst, dst_stride, &inter_pred_params,
+  av1_make_inter_predictor(src, src_stride, dst, dst_stride, inter_pred_params,
                            &subpel_params);
 }
 

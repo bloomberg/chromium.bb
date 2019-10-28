@@ -122,7 +122,7 @@ static INLINE void av1_invalid_rd_stats(RD_STATS *rd_stats) {
       int r, c;
       for (r = 0; r < TXB_COEFF_COST_MAP_SIZE; ++r)
         for (c = 0; c < TXB_COEFF_COST_MAP_SIZE; ++c)
-          rd_stats->txb_coeff_cost_map[plane][r][c] = INT_MAX;
+          rd_stats->txb_coeff_cost_map[plane][r][c] = INT16_MAX;
     }
   }
 #endif

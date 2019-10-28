@@ -6918,12 +6918,7 @@ static AOM_INLINE void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
   const int refs[2] = { mbmi->ref_frame[0], mbmi->ref_frame[1] };
   int_mv ref_mv[2];
   int ite, ref;
-  struct macroblockd_plane *const pd = &xd->plane[0];
-  const int p_col = ((mi_col * MI_SIZE) >> pd->subsampling_x);
-  const int p_row = ((mi_row * MI_SIZE) >> pd->subsampling_y);
 
-  ConvolveParams conv_params = get_conv_params(0, plane, xd->bd);
-  conv_params.use_dist_wtd_comp_avg = 0;
   WarpTypesAllowed warp_types[2];
   for (ref = 0; ref < 2; ++ref) {
     const WarpedMotionParams *const wm =
@@ -6932,6 +6927,19 @@ static AOM_INLINE void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
     warp_types[ref].global_warp_allowed = is_global;
     warp_types[ref].local_warp_allowed = mbmi->motion_mode == WARPED_CAUSAL;
   }
+
+  // Get the prediction block from the 'other' reference frame.
+  const int_interpfilters interp_filters =
+      av1_broadcast_interp_filter(EIGHTTAP_REGULAR);
+
+  (void)warp_types;
+
+  InterPredParams inter_pred_params;
+
+  av1_init_inter_params(&inter_pred_params, pw, ph, mi_col * MI_SIZE,
+                        mi_row * MI_SIZE, 0, 0, xd->bd, is_cur_buf_hbd(xd), 0,
+                        &cm->sf_identity, interp_filters);
+  inter_pred_params.conv_params = get_conv_params(0, 0, xd->bd);
 
   // Do joint motion search in compound mode to get more accurate mv.
   struct buf_2d backup_yv12[2][MAX_MB_PLANE];
@@ -6996,18 +7004,12 @@ static AOM_INLINE void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
     ref_yv12[0] = xd->plane[plane].pre[0];
     ref_yv12[1] = xd->plane[plane].pre[1];
 
-    // Get the prediction block from the 'other' reference frame.
-    const int_interpfilters interp_filters =
-        av1_broadcast_interp_filter(EIGHTTAP_REGULAR);
-
     // Since we have scaled the reference frames to match the size of the
     // current frame we must use a unit scaling factor during mode selection.
     av1_build_inter_predictor(ref_yv12[!id].buf, ref_yv12[!id].stride,
                               second_pred, pw, &cur_mv[!id].as_mv,
-                              &cm->sf_identity, pw, ph, &conv_params,
-                              interp_filters, &warp_types[!id], p_col, p_row,
-                              plane, !id, MV_PRECISION_Q3, mi_col * MI_SIZE,
-                              mi_row * MI_SIZE, xd, cm->allow_warped_motion);
+                              mi_col * MI_SIZE, mi_row * MI_SIZE,
+                              &inter_pred_params);
 
     const int order_idx = id != 0;
     av1_dist_wtd_comp_weight_assign(
@@ -7550,17 +7552,23 @@ static AOM_INLINE void build_second_inter_pred(const AV1_COMP *cpi,
   av1_setup_scale_factors_for_frame(&sf, ref_yv12.width, ref_yv12.height,
                                     cm->width, cm->height);
 
-  ConvolveParams conv_params = get_conv_params(0, plane, xd->bd);
   WarpTypesAllowed warp_types;
   warp_types.global_warp_allowed = is_global;
   warp_types.local_warp_allowed = mbmi->motion_mode == WARPED_CAUSAL;
 
+  (void)warp_types;
+
+  InterPredParams inter_pred_params;
+
+  av1_init_inter_params(&inter_pred_params, pw, ph, p_col, p_row,
+                        pd->subsampling_x, pd->subsampling_y, xd->bd,
+                        is_cur_buf_hbd(xd), 0, &sf, mbmi->interp_filters);
+  inter_pred_params.conv_params = get_conv_params(0, 0, xd->bd);
+
   // Get the prediction block from the 'other' reference frame.
   av1_build_inter_predictor(ref_yv12.buf, ref_yv12.stride, second_pred, pw,
-                            other_mv, &sf, pw, ph, &conv_params,
-                            mbmi->interp_filters, &warp_types, p_col, p_row,
-                            plane, !ref_idx, MV_PRECISION_Q3, mi_col * MI_SIZE,
-                            mi_row * MI_SIZE, xd, cm->allow_warped_motion);
+                            other_mv, mi_col * MI_SIZE, mi_row * MI_SIZE,
+                            &inter_pred_params);
 
   av1_dist_wtd_comp_weight_assign(cm, mbmi, 0, &xd->jcp_param.fwd_offset,
                                   &xd->jcp_param.bck_offset,
@@ -10754,7 +10762,6 @@ static int64_t handle_inter_mode(
                   (mbmi->ref_frame[1] < 0 ? 0 : mbmi->ref_frame[1]) };
   int rate_mv = 0;
   int64_t rd = INT64_MAX;
-
   // do first prediction into the destination buffer. Do the next
   // prediction into a temporary buffer. Then keep track of which one
   // of these currently holds the best predictor, and use the other
