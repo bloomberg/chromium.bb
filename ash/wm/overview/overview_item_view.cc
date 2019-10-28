@@ -1,10 +1,8 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/overview/caption_container_view.h"
-
-#include <memory>
+#include "ash/wm/overview/overview_item_view.h"
 
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/wm/overview/overview_constants.h"
@@ -12,38 +10,17 @@
 #include "ash/wm/window_preview_view.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
-#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
-#include "ui/gfx/image/image_skia_operations.h"
-#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/image_button.h"
-#include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
+
 namespace {
-
-// Foreground label color.
-constexpr SkColor kLabelColor = SK_ColorWHITE;
-
-// Horizontal padding for the label, on both sides.
-constexpr int kHorizontalLabelPaddingDp = 12;
-
-// The size in dp of the window icon shown on the overview window next to the
-// title.
-constexpr gfx::Size kIconSize{24, 24};
-
-// The font delta of the window title.
-constexpr int kLabelFontDelta = 2;
-
-// Values of the backdrop.
-constexpr int kBackdropRoundingDp = 4;
-constexpr SkColor kBackdropColor = SkColorSetA(SK_ColorWHITE, 0x24);
 
 // Duration of the show/hide animation of the header.
 constexpr base::TimeDelta kHeaderFadeDuration =
@@ -92,81 +69,50 @@ void AnimateLayerOpacity(ui::Layer* layer, bool visible) {
 
 }  // namespace
 
-CaptionContainerView::CaptionContainerView(EventDelegate* event_delegate,
-                                           aura::Window* window,
-                                           bool show_preview,
-                                           views::ImageButton* close_button)
-    : views::Button(nullptr),
+OverviewItemView::OverviewItemView(EventDelegate* event_delegate,
+                                   aura::Window* window,
+                                   bool show_preview,
+                                   views::ImageButton* close_button)
+    : WindowMiniView(window),
       event_delegate_(event_delegate),
-      window_(window),
       close_button_(close_button) {
   // This should not be focusable. It's also to avoid accessibility error when
   // |window->GetTitle()| is empty.
   SetFocusBehavior(FocusBehavior::NEVER);
-  SetAccessibleName(window->GetTitle());
-
-  header_view_ = new views::View();
-  views::BoxLayout* layout =
-      header_view_->SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
-          kHorizontalLabelPaddingDp));
-  AddChildWithLayer(this, header_view_);
-
-  // Prefer kAppIconKey over kWindowIconKey as the app icon is typically larger.
-  gfx::ImageSkia* icon = window->GetProperty(aura::client::kAppIconKey);
-  if (!icon || icon->size().IsEmpty())
-    icon = window->GetProperty(aura::client::kWindowIconKey);
-  if (icon && !icon->size().IsEmpty()) {
-    image_view_ = new views::ImageView();
-    image_view_->SetImage(gfx::ImageSkiaOperations::CreateResizedImage(
-        *icon, skia::ImageOperations::RESIZE_BEST, kIconSize));
-    image_view_->SetSize(kIconSize);
-    header_view_->AddChildView(image_view_);
-  }
-
-  title_label_ = new views::Label(window->GetTitle());
-  title_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  title_label_->SetAutoColorReadabilityEnabled(false);
-  title_label_->SetEnabledColor(kLabelColor);
-  title_label_->SetSubpixelRenderingEnabled(false);
-  title_label_->SetFontList(gfx::FontList().Derive(
-      kLabelFontDelta, gfx::Font::NORMAL, gfx::Font::Weight::MEDIUM));
-  header_view_->AddChildView(title_label_);
-  layout->SetFlexForView(title_label_, 1);
 
   if (close_button)
-    AddChildWithLayer(header_view_, close_button);
+    AddChildWithLayer(header_view(), close_button);
 
   // Call this last as it calls |Layout()| which relies on the some of the other
   // elements existing.
   SetShowPreview(show_preview);
   if (show_preview) {
-    header_view_->layer()->SetOpacity(0.f);
+    header_view()->layer()->SetOpacity(0.f);
     current_header_visibility_ = HeaderVisibility::kInvisible;
   }
 }
 
-CaptionContainerView::~CaptionContainerView() = default;
+OverviewItemView::~OverviewItemView() = default;
 
-void CaptionContainerView::SetHeaderVisibility(HeaderVisibility visibility) {
-  DCHECK(header_view_->layer());
+void OverviewItemView::SetHeaderVisibility(HeaderVisibility visibility) {
+  DCHECK(header_view()->layer());
   if (visibility == current_header_visibility_)
     return;
   const HeaderVisibility previous_visibility = current_header_visibility_;
   current_header_visibility_ = visibility;
 
   const bool all_invisible = visibility == HeaderVisibility::kInvisible;
-  AnimateLayerOpacity(header_view_->layer(), !all_invisible);
+  AnimateLayerOpacity(header_view()->layer(), !all_invisible);
 
-  // If |header_view_| is fading out, we are done. Depending on if the close
-  // button was visible, it will fade out with |header_view_| or stay hidden.
+  // If |header_view()| is fading out, we are done. Depending on if the close
+  // button was visible, it will fade out with |header_view()| or stay hidden.
   if (all_invisible || !close_button_)
     return;
 
   const bool close_button_visible = visibility == HeaderVisibility::kVisible;
-  // If |header_view_| was hidden and is fading in, set the opacity of
+  // If |header_view()| was hidden and is fading in, set the opacity of
   // |close_button_| depending on whether the close button should fade in with
-  // |header_view_| or stay hidden.
+  // |header_view()| or stay hidden.
   if (previous_visibility == HeaderVisibility::kInvisible) {
     close_button_->layer()->SetOpacity(close_button_visible ? 1.f : 0.f);
     return;
@@ -175,7 +121,7 @@ void CaptionContainerView::SetHeaderVisibility(HeaderVisibility visibility) {
   AnimateLayerOpacity(close_button_->layer(), close_button_visible);
 }
 
-void CaptionContainerView::HideCloseInstantlyAndThenShowItSlowly() {
+void OverviewItemView::HideCloseInstantlyAndThenShowItSlowly() {
   DCHECK(close_button_);
   DCHECK_NE(HeaderVisibility::kInvisible, current_header_visibility_);
   ui::Layer* layer = close_button_->layer();
@@ -191,67 +137,23 @@ void CaptionContainerView::HideCloseInstantlyAndThenShowItSlowly() {
   layer->SetOpacity(1.f);
 }
 
-void CaptionContainerView::SetBackdropVisibility(bool visible) {
-  if (!backdrop_view_ && !visible)
-    return;
-
-  if (!backdrop_view_) {
-    backdrop_view_ = new RoundedRectView(kBackdropRoundingDp, kBackdropColor);
-    backdrop_view_->set_can_process_events_within_subtree(false);
-    AddChildWithLayer(this, backdrop_view_);
-    Layout();
-  }
-  backdrop_view_->SetVisible(visible);
-}
-
-void CaptionContainerView::ResetEventDelegate() {
+void OverviewItemView::ResetEventDelegate() {
   event_delegate_ = nullptr;
 }
 
-void CaptionContainerView::SetTitle(const base::string16& title) {
-  title_label_->SetText(title);
-  SetAccessibleName(title);
-}
-
-void CaptionContainerView::SetShowPreview(bool show) {
-  if (show == !!preview_view_)
+void OverviewItemView::RefreshPreviewView() {
+  if (!preview_view())
     return;
 
-  if (!show) {
-    RemoveChildView(preview_view_);
-    preview_view_ = nullptr;
-    return;
-  }
-
-  preview_view_ = new WindowPreviewView(window_, false);
-  AddChildWithLayer(this, preview_view_);
+  preview_view()->RecreatePreviews();
   Layout();
 }
 
-void CaptionContainerView::UpdatePreviewRoundedCorners(bool show,
-                                                       float rounding) {
-  if (!preview_view_)
-    return;
-
-  const float scale = preview_view_->layer()->transform().Scale2d().x();
-  const gfx::RoundedCornersF radii(show ? rounding / scale : 0.0f);
-  preview_view_->layer()->SetRoundedCornerRadius(radii);
-  preview_view_->layer()->SetIsFastRoundedCorner(true);
-}
-
-void CaptionContainerView::UpdatePreviewView() {
-  if (!preview_view_)
-    return;
-
-  preview_view_->RecreatePreviews();
-  Layout();
-}
-
-views::View* CaptionContainerView::GetView() {
+views::View* OverviewItemView::GetView() {
   return this;
 }
 
-gfx::Rect CaptionContainerView::GetHighlightBoundsInScreen() {
+gfx::Rect OverviewItemView::GetHighlightBoundsInScreen() {
   // Use the target bounds instead of |GetBoundsInScreen()| because |this| may
   // be animating. However, the origin will be incorrect because the windows are
   // always positioned above and left of the parents origin, then translated. To
@@ -264,68 +166,43 @@ gfx::Rect CaptionContainerView::GetHighlightBoundsInScreen() {
   return target_bounds;
 }
 
-void CaptionContainerView::MaybeActivateHighlightedView() {
+void OverviewItemView::MaybeActivateHighlightedView() {
   if (event_delegate_)
     event_delegate_->OnHighlightedViewActivated();
 }
 
-void CaptionContainerView::MaybeCloseHighlightedView() {
+void OverviewItemView::MaybeCloseHighlightedView() {
   if (event_delegate_)
     event_delegate_->OnHighlightedViewClosed();
 }
 
-gfx::Point CaptionContainerView::GetMagnifierFocusPointInScreen() {
+gfx::Point OverviewItemView::GetMagnifierFocusPointInScreen() {
   // When this item is tabbed into, put the magnifier focus on the front of the
   // title, so that users can read the title first thing.
-  const gfx::Rect title_bounds = title_label_->GetBoundsInScreen();
+  const gfx::Rect title_bounds = title_label()->GetBoundsInScreen();
   return gfx::Point(GetMirroredXInView(title_bounds.x()),
                     title_bounds.CenterPoint().y());
 }
 
-void CaptionContainerView::Layout() {
-  gfx::Rect bounds(GetLocalBounds());
-  bounds.Inset(kOverviewMargin, kOverviewMargin);
-
-  if (backdrop_view_) {
-    gfx::Rect backdrop_bounds = bounds;
-    backdrop_bounds.Inset(0, kHeaderHeightDp, 0, 0);
-    backdrop_view_->SetBoundsRect(backdrop_bounds);
-  }
-
-  if (preview_view_) {
-    gfx::Rect preview_bounds = bounds;
-    preview_bounds.Inset(0, kHeaderHeightDp, 0, 0);
-    preview_bounds.ClampToCenteredSize(preview_view_->CalculatePreferredSize());
-    preview_view_->SetBoundsRect(preview_bounds);
-  }
-
-  // Position the header at the top. The close button should be right aligned so
-  // that the edge of its icon, not the button itself lines up with the margins.
-  const gfx::Rect header_bounds(kOverviewMargin, kOverviewMargin,
-                                GetLocalBounds().width() - kWindowMargin,
-                                kHeaderHeightDp);
-  header_view_->SetBoundsRect(header_bounds);
+const char* OverviewItemView::GetClassName() const {
+  return "OverviewItemView";
 }
 
-const char* CaptionContainerView::GetClassName() const {
-  return "CaptionContainerView";
-}
-
-bool CaptionContainerView::OnMousePressed(const ui::MouseEvent& event) {
+bool OverviewItemView::OnMousePressed(const ui::MouseEvent& event) {
   if (!event_delegate_)
     return Button::OnMousePressed(event);
   event_delegate_->HandleMouseEvent(event);
   return true;
 }
 
-bool CaptionContainerView::OnMouseDragged(const ui::MouseEvent& event) {
+bool OverviewItemView::OnMouseDragged(const ui::MouseEvent& event) {
   if (!event_delegate_)
     return Button::OnMouseDragged(event);
   event_delegate_->HandleMouseEvent(event);
   return true;
 }
 
-void CaptionContainerView::OnMouseReleased(const ui::MouseEvent& event) {
+void OverviewItemView::OnMouseReleased(const ui::MouseEvent& event) {
   if (!event_delegate_) {
     Button::OnMouseReleased(event);
     return;
@@ -333,7 +210,7 @@ void CaptionContainerView::OnMouseReleased(const ui::MouseEvent& event) {
   event_delegate_->HandleMouseEvent(event);
 }
 
-void CaptionContainerView::OnGestureEvent(ui::GestureEvent* event) {
+void OverviewItemView::OnGestureEvent(ui::GestureEvent* event) {
   if (!event_delegate_)
     return;
 
@@ -346,7 +223,7 @@ void CaptionContainerView::OnGestureEvent(ui::GestureEvent* event) {
   event->SetHandled();
 }
 
-bool CaptionContainerView::CanAcceptEvent(const ui::Event& event) {
+bool OverviewItemView::CanAcceptEvent(const ui::Event& event) {
   bool accept_events = true;
   // Do not process or accept press down events that are on the border.
   static ui::EventType press_types[] = {ui::ET_GESTURE_TAP_DOWN,
@@ -361,7 +238,7 @@ bool CaptionContainerView::CanAcceptEvent(const ui::Event& event) {
   return accept_events && Button::CanAcceptEvent(event);
 }
 
-void CaptionContainerView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+void OverviewItemView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   views::Button::GetAccessibleNodeData(node_data);
   node_data->AddStringAttribute(
       ax::mojom::StringAttribute::kDescription,
