@@ -40,6 +40,7 @@
 #include "ui/gfx/font_render_params.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/harfbuzz_font_skia.h"
+#include "ui/gfx/platform_font.h"
 #include "ui/gfx/range/range_f.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/switches.h"
@@ -53,10 +54,6 @@
 #if defined(OS_ANDROID)
 #include "base/android/locale_utils.h"
 #endif  // defined(OS_ANDROID)
-
-#if defined(OS_WIN)
-#include "ui/gfx/platform_font.h"
-#endif
 
 #include <hb.h>
 
@@ -828,15 +825,9 @@ bool TextRunHarfBuzz::FontParams::SetRenderParamsRematchFont(
 bool TextRunHarfBuzz::FontParams::SetRenderParamsOverrideSkiaFaceFromFont(
     const Font& fallback_font,
     const FontRenderParams& new_render_params) {
-  sk_sp<SkTypeface> new_skia_face;
-#if defined(OS_WIN)
-  // TODO(https://crbug.com/1008407): Extend this to additional platforms that
-  // use PlatformFontSkia.
   PlatformFont* platform_font = fallback_font.platform_font();
-  if (platform_font) {
-    new_skia_face = platform_font->GetNativeSkTypefaceIfAvailable();
-  }
-#endif
+  sk_sp<SkTypeface> new_skia_face =
+      platform_font->GetNativeSkTypefaceIfAvailable();
 
   // If pass-through of the Skia native handle fails for PlatformFonts other
   // than PlatformFontSkia, perform rematching.
