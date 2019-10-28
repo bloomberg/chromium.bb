@@ -406,7 +406,7 @@ class ConfigSettings(object):
       out['files'] = self.files
     if self.read_only is not None:
       out['read_only'] = self.read_only
-      # TODO(maruel): Probably better to not output it if command is None?
+    # TODO(maruel): Probably better to not output it if command is None?
     if self.isolate_dir is not None:
       out['isolate_dir'] = self.isolate_dir
     return out
