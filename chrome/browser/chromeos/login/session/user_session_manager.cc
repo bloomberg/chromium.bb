@@ -1492,6 +1492,9 @@ void UserSessionManager::UserProfileInitialized(Profile* profile,
         content::NotificationService::AllSources(),
         content::Details<Profile>(profile));
 
+    session_manager::SessionManager::Get()->NotifyUserProfileLoaded(
+        ProfileHelper::Get()->GetUserByProfile(profile)->GetAccountId());
+
     if (delegate_)
       delegate_->OnProfilePrepared(profile, false);
 

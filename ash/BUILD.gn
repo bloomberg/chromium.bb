@@ -2207,9 +2207,12 @@ static_library("test_support") {
   public = [
     "public/cpp/shelf_test_api.h",
     "public/cpp/system_tray_test_api.h",
+    "public/cpp/test/accessibility_controller_test_api.h",
     "public/cpp/test/assistant_test_api.h",
   ]
   sources = [
+    "accessibility/accessibility_controller_test_api_impl.cc",
+    "accessibility/accessibility_controller_test_api_impl.h",
     "accessibility/test_accessibility_controller_client.cc",
     "accessibility/test_accessibility_controller_client.h",
     "app_list/test/app_list_test_helper.cc",
