@@ -798,10 +798,6 @@ IPC_MESSAGE_ROUTED0(FrameMsg_SetFocusedFrame)
 IPC_MESSAGE_ROUTED1(FrameMsg_SetTextTrackSettings,
                     FrameMsg_TextTrackSettings_Params /* params */)
 
-// Sent to a frame when one of its remote children finishes loading, so that the
-// frame can update its loading state.
-IPC_MESSAGE_ROUTED0(FrameMsg_CheckCompleted)
-
 // Tells the RenderFrame to clear the focused element (if any).
 IPC_MESSAGE_ROUTED0(FrameMsg_ClearFocusedElement)
 
