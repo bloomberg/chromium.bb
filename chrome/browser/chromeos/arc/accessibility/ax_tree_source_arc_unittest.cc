@@ -235,6 +235,7 @@ TEST_F(AXTreeSourceArcTest, ReorderChildrenByLayout) {
   event->node_data.push_back(AXNodeInfoData::New());
   AXNodeInfoData* root = event->node_data.back().get();
   root->id = 10;
+  SetProperty(root, AXBooleanProperty::IMPORTANCE, true);
   SetProperty(root, AXIntListProperty::CHILD_NODE_IDS,
               std::vector<int>({1, 2}));
 
@@ -856,6 +857,7 @@ TEST_F(AXTreeSourceArcTest, SerializeAndUnserialize) {
   AXNodeInfoData* root = event->node_data.back().get();
   root->id = 10;
   SetProperty(root, AXIntListProperty::CHILD_NODE_IDS, std::vector<int>({1}));
+  SetProperty(root, AXBooleanProperty::IMPORTANCE, true);
 
   event->node_data.emplace_back(AXNodeInfoData::New());
   AXNodeInfoData* node1 = event->node_data.back().get();
@@ -876,9 +878,10 @@ TEST_F(AXTreeSourceArcTest, SerializeAndUnserialize) {
       "id=100 window (0, 0)-(0, 0) child_ids=10\n"
       "  id=10 genericContainer INVISIBLE (0, 0)-(0, 0) restriction=disabled "
       "modal=true child_ids=1\n"
-      "    id=1 ignored INVISIBLE (0, 0)-(0, 0) restriction=disabled "
-      "child_ids=2\n"
-      "      id=2 ignored INVISIBLE (0, 0)-(0, 0) restriction=disabled\n");
+      "    id=1 genericContainer IGNORED INVISIBLE (0, 0)-(0, 0) "
+      "restriction=disabled child_ids=2\n"
+      "      id=2 genericContainer IGNORED INVISIBLE (0, 0)-(0, 0) "
+      "restriction=disabled\n");
 
   EXPECT_EQ(0U, tree()->GetFromId(10)->GetUnignoredChildCount());
 
@@ -887,6 +890,7 @@ TEST_F(AXTreeSourceArcTest, SerializeAndUnserialize) {
   AXNodeInfoData* node3 = event->node_data.back().get();
   node3->id = 3;
   SetProperty(node3, AXStringProperty::CONTENT_DESCRIPTION, "some text");
+  SetProperty(node3, AXBooleanProperty::IMPORTANCE, true);
   SetProperty(node2, AXIntListProperty::CHILD_NODE_IDS, std::vector<int>({3}));
 
   // |node3| is unignored since it has some text.
@@ -896,10 +900,10 @@ TEST_F(AXTreeSourceArcTest, SerializeAndUnserialize) {
       "id=100 window (0, 0)-(0, 0) child_ids=10\n"
       "  id=10 genericContainer INVISIBLE (0, 0)-(0, 0) restriction=disabled "
       "modal=true child_ids=1\n"
-      "    id=1 ignored INVISIBLE (0, 0)-(0, 0) restriction=disabled "
-      "child_ids=2\n"
-      "      id=2 ignored INVISIBLE (0, 0)-(0, 0) restriction=disabled "
-      "child_ids=3\n"
+      "    id=1 genericContainer IGNORED INVISIBLE (0, 0)-(0, 0) "
+      "restriction=disabled child_ids=2\n"
+      "      id=2 genericContainer IGNORED INVISIBLE (0, 0)-(0, 0) "
+      "restriction=disabled child_ids=3\n"
       "        id=3 genericContainer INVISIBLE (0, 0)-(0, 0) "
       "restriction=disabled name=some text \n");
   EXPECT_EQ(1U, tree()->GetFromId(10)->GetUnignoredChildCount());

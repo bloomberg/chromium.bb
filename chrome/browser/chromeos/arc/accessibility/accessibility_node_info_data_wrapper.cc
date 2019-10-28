@@ -88,14 +88,6 @@ void AccessibilityNodeInfoDataWrapper::PopulateAXRole(
                                  class_name);
   }
 
-  if (!GetProperty(AXBooleanProperty::IMPORTANCE) &&
-      !HasProperty(AXStringProperty::TEXT) &&
-      !HasProperty(AXStringProperty::CONTENT_DESCRIPTION) &&
-      !tree_source_->IsRootOfNodeTree(GetId())) {
-    out_data->role = ax::mojom::Role::kIgnored;
-    return;
-  }
-
   if (GetProperty(AXBooleanProperty::EDITABLE)) {
     out_data->role = ax::mojom::Role::kTextField;
     return;
@@ -263,13 +255,14 @@ void AccessibilityNodeInfoDataWrapper::PopulateAXState(
                                          : ax::mojom::CheckedState::kFalse);
   }
 
-  if (!GetProperty(AXBooleanProperty::ENABLED)) {
+  if (!GetProperty(AXBooleanProperty::ENABLED))
     out_data->SetRestriction(ax::mojom::Restriction::kDisabled);
-  }
 
-  if (!GetProperty(AXBooleanProperty::VISIBLE_TO_USER)) {
+  if (!GetProperty(AXBooleanProperty::VISIBLE_TO_USER))
     out_data->AddState(ax::mojom::State::kInvisible);
-  }
+
+  if (!GetProperty(AXBooleanProperty::IMPORTANCE))
+    out_data->AddState(ax::mojom::State::kIgnored);
 }
 
 void AccessibilityNodeInfoDataWrapper::Serialize(
