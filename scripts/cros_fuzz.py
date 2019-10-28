@@ -289,7 +289,7 @@ def CopyCorpusToSysroot(src_corpus_path):
     return SysrootPath(src_corpus_path)
 
   dest_corpus_path = GetPathForCopy(CORPUS_DIRECTORY_NAME, src_corpus_path)
-  osutils.RmDir(dest_corpus_path.chroot)
+  osutils.RmDir(dest_corpus_path.chroot, ignore_missing=True)
   shutil.copytree(src_corpus_path, dest_corpus_path.chroot)
   return dest_corpus_path
 
