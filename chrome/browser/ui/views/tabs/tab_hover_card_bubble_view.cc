@@ -72,7 +72,7 @@ bool AreHoverCardImagesEnabled() {
 base::TimeDelta GetMinimumTriggerDelay() {
   int delay_group = base::GetFieldTrialParamByFeatureAsInt(
       features::kTabHoverCards, features::kTabHoverCardsFeatureParameterName,
-      0);
+      2);
   switch (delay_group) {
     case 2:
       return base::TimeDelta::FromMilliseconds(150);
@@ -87,7 +87,7 @@ base::TimeDelta GetMinimumTriggerDelay() {
 base::TimeDelta GetMaximumTriggerDelay() {
   int delay_group = base::GetFieldTrialParamByFeatureAsInt(
       features::kTabHoverCards, features::kTabHoverCardsFeatureParameterName,
-      0);
+      2);
   switch (delay_group) {
     case 2:
       return base::TimeDelta::FromMilliseconds(500);
