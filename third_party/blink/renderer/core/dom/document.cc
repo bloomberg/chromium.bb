@@ -6573,15 +6573,16 @@ void SetOriginTrialFreezePolicy(
     DocumentResourceCoordinator* document_resource_coordinator,
     ExecutionContext* context) {
   // An explicit opt-out overrides an explicit opt-in if both are present.
+  InterventionPolicy policy = InterventionPolicy::kDefault;
   if (RuntimeEnabledFeatures::PageFreezeOptOutEnabled(context)) {
-    document_resource_coordinator->SetOriginTrialFreezePolicy(
-        InterventionPolicy::kOptOut);
+    policy = InterventionPolicy::kOptOut;
     UseCounter::Count(context, WebFeature::kPageFreezeOptOut);
   } else if (RuntimeEnabledFeatures::PageFreezeOptInEnabled(context)) {
-    document_resource_coordinator->SetOriginTrialFreezePolicy(
-        InterventionPolicy::kOptIn);
+    policy = InterventionPolicy::kOptIn;
     UseCounter::Count(context, WebFeature::kPageFreezeOptIn);
   }
+
+  document_resource_coordinator->SetOriginTrialFreezePolicy(policy);
 }
 
 }  // namespace
