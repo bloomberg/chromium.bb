@@ -478,7 +478,7 @@ luci.console_view(
             short_name = 'pie',
         ),
         luci.console_view_entry(
-            builder = 'ci/mac-code-coverage-generation',
+            builder = 'ci/mac-code-coverage',
             category = 'week3c|mac',
             short_name = 'code',
         ),

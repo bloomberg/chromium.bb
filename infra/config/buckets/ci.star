@@ -1259,10 +1259,12 @@ fyi_coverage_builder(
 )
 
 fyi_coverage_builder(
-    name = 'mac-code-coverage-generation',
+    name = 'mac-code-coverage',
+    builderless = True,
     cores = 24,
     goma_backend = goma.backend.RBE_PROD,
-    os = None,
+    os = os.MAC_ANY,
+    ssd = True,
     use_clang_coverage = True,
 )
 
