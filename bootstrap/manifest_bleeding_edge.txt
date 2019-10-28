@@ -24,4 +24,4 @@ infra/python/cpython/${platform} version:2.7.15.chromium14
 infra/python/cpython3/${os}-${arch=amd64} version:3.8.0b1.chromium.1
 
 @Subdir git
-infra/git/${os}-${arch} version:2.21.0.chromium16
+infra/git/${os}-${arch} version:2.23.0.chromium16
