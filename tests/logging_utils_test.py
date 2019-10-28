@@ -1,4 +1,4 @@
-#!/usr/bin/env vpython
+#!/usr/bin/env vpython3
 # Copyright 2015 The LUCI Authors. All rights reserved.
 # Use of this source code is governed under the Apache License, Version 2.0
 # that can be found in the LICENSE file.
@@ -46,7 +46,8 @@ class Test(unittest.TestCase):
     expected = _LOG_HEADER + ': DEBUG foo\n$'
     if sys.platform == 'win32':
       expected = expected.replace('\n', '\r\n')
-    self.assertTrue(re.match(expected, result), (expected, result))
+    self.assertTrue(
+        re.match(expected.encode('utf-8'), result), (expected, result))
 
   def test_prepare_logging(self):
     root = logging.RootLogger(logging.DEBUG)
@@ -58,7 +59,8 @@ class Test(unittest.TestCase):
     # It'd be nice to figure out a way to ensure it's properly in UTC but it's
     # tricky to do reliably.
     expected = _LOG_HEADER + ' D: foo\n$'
-    self.assertTrue(re.match(expected, result), (expected, result))
+    self.assertTrue(
+        re.match(expected.encode('utf-8'), result), (expected, result))
 
   def test_rotating(self):
     # Create a rotating log. Create a subprocess then delete the file. Make sure
@@ -80,7 +82,7 @@ class Test(unittest.TestCase):
     ]
     for e, l in zip(expected, lines):
       ex = _LOG_HEADER_PID + e + '$'
-      self.assertTrue(re.match(ex, l), (ex, l))
+      self.assertTrue(re.match(ex.encode('utf-8'), l), (ex, l))
     self.assertEqual(len(expected), len(lines))
 
 
