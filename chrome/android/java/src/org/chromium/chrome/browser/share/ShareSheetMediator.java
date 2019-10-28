@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.feature_engagement.ScreenshotTabObserver;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.printing.PrintShareActivity;
@@ -30,34 +31,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Handles the action of selecting the share item in the menu.
+ * Handles displaying the share sheet. The version used depends on several
+ * conditions.
+ * Android K and below: custom share dialog
+ * Android L+: system share sheet
+ * #chrome-sharing-hub enabled: custom share sheet
  */
-public class ShareMenuActionHandler {
-    private static boolean sScreenshotCaptureSkippedForTesting;
-    private static ShareMenuActionHandler sInstance;
-
-    private final ShareMenuActionDelegate mDelegate;
-
+class ShareSheetMediator {
     static final String CANONICAL_URL_RESULT_HISTOGRAM = "Mobile.CanonicalURLResult";
-
-    /**
-     * @return The singleton share menu handler.
-     */
-    public static ShareMenuActionHandler getInstance() {
-        if (sInstance == null) {
-            sInstance = new ShareMenuActionHandler(new ShareMenuActionDelegate());
-        }
-        return sInstance;
-    }
+    private static boolean sScreenshotCaptureSkippedForTesting;
+    private final ShareSheetDelegate mDelegate;
 
     @VisibleForTesting
-    ShareMenuActionHandler(ShareMenuActionDelegate delegate) {
+    ShareSheetMediator(ShareSheetDelegate delegate) {
         mDelegate = delegate;
-    }
-
-    @VisibleForTesting
-    public static void setScreenshotCaptureSkippedForTesting(boolean value) {
-        sScreenshotCaptureSkippedForTesting = value;
     }
 
     /**
@@ -67,7 +54,7 @@ public class ShareMenuActionHandler {
      *                      recently used to share.
      * @param isIncognito Whether currentTab is incognito.
      */
-    public void onShareMenuItemSelected(
+    public void onShareSelected(
             Activity activity, Tab currentTab, boolean shareDirectly, boolean isIncognito) {
         if (currentTab == null) return;
 
@@ -78,7 +65,7 @@ public class ShareMenuActionHandler {
         }
 
         if (SendTabToSelfShareActivity.featureIsAvailable(currentTab)) {
-           classesToEnable.add(SendTabToSelfShareActivity.class);
+            classesToEnable.add(SendTabToSelfShareActivity.class);
         }
 
         if (QrCodeShareActivity.featureIsAvailable()) {
@@ -94,67 +81,22 @@ public class ShareMenuActionHandler {
         triggerShare(currentTab, shareDirectly, isIncognito);
     }
 
-    @VisibleForTesting
-    static boolean shouldFetchCanonicalUrl(final Tab currentTab) {
-        WebContents webContents = currentTab.getWebContents();
-        if (webContents == null) return false;
-        if (webContents.getMainFrame() == null) return false;
-        String url = currentTab.getUrl();
-        if (TextUtils.isEmpty(url)) return false;
-        if (currentTab.isShowingErrorPage() || currentTab.isShowingInterstitialPage()
-                || SadTab.isShowing(currentTab)) {
-            return false;
-        }
-        return true;
+    /**
+     * Creates and shows a share intent picker dialog or starts a share intent directly with the
+     * activity that was most recently used to share based on shareDirectly value.
+     *
+     * This function will save |screenshot| under {app's root}/files/images/screenshot (or
+     * /sdcard/DCIM/browser-images/screenshot if ADK is lower than JB MR2).
+     * Cleaning up doesn't happen automatically, and so an app should call clearSharedScreenshots()
+     * explicitly when needed.
+     *
+     * @param params The container holding the share parameters.
+     */
+    public void share(ShareParams params) {
+        mDelegate.share(params);
     }
 
-    @VisibleForTesting
-    static String getUrlToShare(String visibleUrl, String canonicalUrl) {
-        if (TextUtils.isEmpty(canonicalUrl)) return visibleUrl;
-        // TODO(tedchoc): Can we replace GURLUtils.getScheme with Uri.parse(...).getScheme()
-        //                https://crbug.com/783819
-        if (!UrlConstants.HTTPS_SCHEME.equals(GURLUtils.getScheme(visibleUrl))) {
-            return visibleUrl;
-        }
-        String canonicalScheme = GURLUtils.getScheme(canonicalUrl);
-        if (!UrlConstants.HTTP_SCHEME.equals(canonicalScheme)
-                && !UrlConstants.HTTPS_SCHEME.equals(canonicalScheme)) {
-            return visibleUrl;
-        }
-        return canonicalUrl;
-    }
-
-    private void logCanonicalUrlResult(String visibleUrl, String canonicalUrl) {
-        @CanonicalURLResult
-        int result = getCanonicalUrlResult(visibleUrl, canonicalUrl);
-        RecordHistogram.recordEnumeratedHistogram(CANONICAL_URL_RESULT_HISTOGRAM, result,
-                CanonicalURLResult.CANONICAL_URL_RESULT_COUNT);
-    }
-
-    @CanonicalURLResult
-    private int getCanonicalUrlResult(String visibleUrl, String canonicalUrl) {
-        if (!UrlConstants.HTTPS_SCHEME.equals(GURLUtils.getScheme(visibleUrl))) {
-            return CanonicalURLResult.FAILED_VISIBLE_URL_NOT_HTTPS;
-        }
-        if (TextUtils.isEmpty(canonicalUrl)) {
-            return CanonicalURLResult.FAILED_NO_CANONICAL_URL_DEFINED;
-        }
-        String canonicalScheme = GURLUtils.getScheme(canonicalUrl);
-        if (!UrlConstants.HTTPS_SCHEME.equals(canonicalScheme)) {
-            if (!UrlConstants.HTTP_SCHEME.equals(canonicalScheme)) {
-                return CanonicalURLResult.FAILED_CANONICAL_URL_INVALID;
-            } else {
-                return CanonicalURLResult.SUCCESS_CANONICAL_URL_NOT_HTTPS;
-            }
-        }
-        if (TextUtils.equals(visibleUrl, canonicalUrl)) {
-            return CanonicalURLResult.SUCCESS_CANONICAL_URL_SAME_AS_VISIBLE;
-        } else {
-            return CanonicalURLResult.SUCCESS_CANONICAL_URL_DIFFERENT_FROM_VISIBLE;
-        }
-    }
-
-    private void triggerShare(
+    protected void triggerShare(
             final Tab currentTab, final boolean shareDirectly, boolean isIncognito) {
         ScreenshotTabObserver tabObserver = ScreenshotTabObserver.from(currentTab);
         if (tabObserver != null) {
@@ -164,7 +106,7 @@ public class ShareMenuActionHandler {
 
         OfflinePageUtils.maybeShareOfflinePage(currentTab, (ShareParams p) -> {
             if (p != null) {
-                mDelegate.share(p);
+                share(p);
             } else {
                 WindowAndroid window = currentTab.getWindowAndroid();
                 // Could not share as an offline page.
@@ -203,7 +145,7 @@ public class ShareMenuActionHandler {
                         .setShareDirectly(shareDirectly)
                         .setSaveLastUsed(!shareDirectly)
                         .setScreenshotUri(blockingUri);
-        mDelegate.share(builder.build());
+        share(builder.build());
         if (shareDirectly) {
             RecordUserAction.record("MobileMenuDirectShare");
         } else {
@@ -224,15 +166,90 @@ public class ShareMenuActionHandler {
         }
     }
 
+    @VisibleForTesting
+    static boolean shouldFetchCanonicalUrl(final Tab currentTab) {
+        WebContents webContents = currentTab.getWebContents();
+        if (webContents == null) return false;
+        if (webContents.getMainFrame() == null) return false;
+        String url = currentTab.getUrl();
+        if (TextUtils.isEmpty(url)) return false;
+        if (currentTab.isShowingErrorPage() || currentTab.isShowingInterstitialPage()
+                || SadTab.isShowing(currentTab)) {
+            return false;
+        }
+        return true;
+    }
+
+    private static void logCanonicalUrlResult(String visibleUrl, String canonicalUrl) {
+        @CanonicalURLResult
+        int result = getCanonicalUrlResult(visibleUrl, canonicalUrl);
+        RecordHistogram.recordEnumeratedHistogram(CANONICAL_URL_RESULT_HISTOGRAM, result,
+                CanonicalURLResult.CANONICAL_URL_RESULT_COUNT);
+    }
+
+    @VisibleForTesting
+    public static void setScreenshotCaptureSkippedForTesting(boolean value) {
+        sScreenshotCaptureSkippedForTesting = value;
+    }
+
+    @VisibleForTesting
+    static String getUrlToShare(String visibleUrl, String canonicalUrl) {
+        if (TextUtils.isEmpty(canonicalUrl)) return visibleUrl;
+        // TODO(tedchoc): Can we replace GURLUtils.getScheme with Uri.parse(...).getScheme()
+        //                https://crbug.com/783819
+        if (!UrlConstants.HTTPS_SCHEME.equals(GURLUtils.getScheme(visibleUrl))) {
+            return visibleUrl;
+        }
+        String canonicalScheme = GURLUtils.getScheme(canonicalUrl);
+        if (!UrlConstants.HTTP_SCHEME.equals(canonicalScheme)
+                && !UrlConstants.HTTPS_SCHEME.equals(canonicalScheme)) {
+            return visibleUrl;
+        }
+        return canonicalUrl;
+    }
+
+    @CanonicalURLResult
+    private static int getCanonicalUrlResult(String visibleUrl, String canonicalUrl) {
+        if (!UrlConstants.HTTPS_SCHEME.equals(GURLUtils.getScheme(visibleUrl))) {
+            return CanonicalURLResult.FAILED_VISIBLE_URL_NOT_HTTPS;
+        }
+        if (TextUtils.isEmpty(canonicalUrl)) {
+            return CanonicalURLResult.FAILED_NO_CANONICAL_URL_DEFINED;
+        }
+        String canonicalScheme = GURLUtils.getScheme(canonicalUrl);
+        if (!UrlConstants.HTTPS_SCHEME.equals(canonicalScheme)) {
+            if (!UrlConstants.HTTP_SCHEME.equals(canonicalScheme)) {
+                return CanonicalURLResult.FAILED_CANONICAL_URL_INVALID;
+            } else {
+                return CanonicalURLResult.SUCCESS_CANONICAL_URL_NOT_HTTPS;
+            }
+        }
+        if (TextUtils.equals(visibleUrl, canonicalUrl)) {
+            return CanonicalURLResult.SUCCESS_CANONICAL_URL_SAME_AS_VISIBLE;
+        } else {
+            return CanonicalURLResult.SUCCESS_CANONICAL_URL_DIFFERENT_FROM_VISIBLE;
+        }
+    }
+
     /**
      * Delegate for share handling.
      */
-    static class ShareMenuActionDelegate {
+    static class ShareSheetDelegate {
         /**
          * Trigger the share action for the specified params.
          */
         void share(ShareParams params) {
-            ShareHelper.share(params);
+            if (params.shareDirectly()) {
+                ShareHelper.shareDirectly(params);
+            } else if (ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_SHARING_HUB)) {
+                // TODO(crbug/1009124): open custom share sheet.
+            } else if (ShareHelper.TargetChosenReceiver.isSupported()) {
+                // On L+ open system share sheet.
+                ShareHelper.makeIntentAndShare(params, null);
+            } else {
+                // On K and below open custom share dialog.
+                ShareHelper.showShareDialog(params);
+            }
         }
     }
 }

@@ -18,7 +18,7 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.MetricsUtils.HistogramDelta;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.share.ShareMenuActionHandler.ShareMenuActionDelegate;
+import org.chromium.chrome.browser.share.ShareSheetMediator.ShareSheetDelegate;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.ui_metrics.CanonicalURLResult;
@@ -34,7 +34,7 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-public class ShareMenuActionHandlerIntegrationTest {
+public class ShareSheetMediatorIntegrationTest {
     private static final String PAGE_WITH_HTTPS_CANONICAL_URL =
             "/chrome/test/data/android/share/link_share_https_canonical.html";
     private static final String PAGE_WITH_HTTP_CANONICAL_URL =
@@ -99,7 +99,7 @@ public class ShareMenuActionHandlerIntegrationTest {
             throws IllegalArgumentException, TimeoutException {
         mActivityTestRule.loadUrl(pageUrl);
         HistogramDelta urlResultDelta = new HistogramDelta(
-                ShareMenuActionHandler.CANONICAL_URL_RESULT_HISTOGRAM, expectedUrlResult);
+                ShareSheetMediator.CANONICAL_URL_RESULT_HISTOGRAM, expectedUrlResult);
         ShareParams params = triggerShare();
         Assert.assertEquals(expectedShareUrl, params.getUrl());
         Assert.assertEquals(1, urlResultDelta.getDelta());
@@ -109,7 +109,7 @@ public class ShareMenuActionHandlerIntegrationTest {
         final CallbackHelper helper = new CallbackHelper();
         final AtomicReference<ShareParams> paramsRef = new AtomicReference<>();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            ShareMenuActionDelegate delegate = new ShareMenuActionDelegate() {
+            ShareSheetDelegate delegate = new ShareSheetDelegate() {
                 @Override
                 void share(ShareParams params) {
                     paramsRef.set(params);
@@ -117,8 +117,7 @@ public class ShareMenuActionHandlerIntegrationTest {
                 }
             };
 
-            new ShareMenuActionHandler(delegate).onShareMenuItemSelected(
-                    mActivityTestRule.getActivity(),
+            new ShareSheetMediator(delegate).onShareSelected(mActivityTestRule.getActivity(),
                     mActivityTestRule.getActivity().getActivityTab(), false, false);
         });
         helper.waitForCallback(0);
