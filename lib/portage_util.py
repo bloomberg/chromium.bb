@@ -2308,7 +2308,9 @@ def GeneratePackageSizes(db, root, installed_packages):
   """
   visited_cpvs = set()
   for installed_package in installed_packages:
-    package_cpv = '%s/%s' % (installed_package.category, installed_package.pf)
+    package_cpv = '%s/%s/%s' % (installed_package.category,
+                                installed_package.package,
+                                installed_package.version)
 
     assert package_cpv not in visited_cpvs
     visited_cpvs.add(package_cpv)
