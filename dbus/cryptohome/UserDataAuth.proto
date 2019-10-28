@@ -424,6 +424,12 @@ message GetAccountDiskUsageReply {
   int64 size = 2;
 }
 
+// The data that comes with LowDiskSpace signal.
+message LowDiskSpace {
+  // The amount of remaining free disk space.
+  uint64 disk_free_bytes = 1;
+}
+
 // ------------------------- ArcQuota Interface -------------------------
 
 // Input parameters to GetArcDiskFeatures().
