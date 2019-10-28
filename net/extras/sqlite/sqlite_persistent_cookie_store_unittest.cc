@@ -805,8 +805,6 @@ TEST_F(SQLitePersistentCookieStoreTest, SameSiteIsPersistent) {
 
   ASSERT_EQ(1u, cookie_map.count(kStrictName));
   EXPECT_EQ(CookieSameSite::STRICT_MODE, cookie_map[kStrictName]->SameSite());
-
-  cookies.clear();
 }
 
 TEST_F(SQLitePersistentCookieStoreTest, UpdateToEncryption) {
