@@ -203,6 +203,25 @@ message StartVmResponse {
   // Status of the VM. If VM_STATUS_RUNNING, it is not necessary to wait for a
   // TremplinStartedSignal before starting a container in the VM.
   VmStatus status = 4;
+
+  enum MountResult {
+    // The mountability of the disk is unknown, typically because the
+    // call failed before trying to mount the disk.
+    UNKNOWN = 0;
+
+    // The disk mount succeeded completely.
+    SUCCESS = 1;
+
+    // The disk mount succeeded, but some data loss is
+    // likely. Currently this occurrs when the initial mount fails,
+    // but succeeds on a retry with -o usebackuproots.
+    PARTIAL_DATA_LOSS = 2;
+
+    // The disk is unmountable.
+    FAILURE = 3;
+  }
+
+  MountResult mount_result = 5;
 }
 
 // Message used in the signal for when a VM has started.
