@@ -1572,16 +1572,6 @@ void View::ScrollViewToVisible() {
   ScrollRectToVisible(GetLocalBounds());
 }
 
-int View::GetPageScrollIncrement(ScrollView* scroll_view,
-                                 bool is_horizontal, bool is_positive) {
-  return 0;
-}
-
-int View::GetLineScrollIncrement(ScrollView* scroll_view,
-                                 bool is_horizontal, bool is_positive) {
-  return 0;
-}
-
 void View::AddObserver(ViewObserver* observer) {
   CHECK(observer);
   observers_.AddObserver(observer);
