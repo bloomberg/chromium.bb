@@ -14,10 +14,8 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * A handler that provides Autofill Assistant actions for a specific activity.
@@ -39,19 +37,19 @@ class AutofillAssistantActionHandlerImpl implements AutofillAssistantActionHandl
     }
 
     @Override
-    public void listActions(String userName, String experimentIds, Bundle arguments,
-            Callback<Set<String>> callback) {
+    public void fetchWebsiteActions(
+            String userName, String experimentIds, Bundle arguments, Callback<Boolean> callback) {
         if (!AutofillAssistantPreferencesUtil.isAutofillOnboardingAccepted()) {
-            callback.onResult(Collections.emptySet());
+            callback.onResult(false);
             return;
         }
         AutofillAssistantClient client = getOrCreateClient();
         if (client == null) {
-            callback.onResult(Collections.emptySet());
+            callback.onResult(false);
             return;
         }
 
-        client.listDirectActions(userName, experimentIds, toArgumentMap(arguments), callback);
+        client.fetchWebsiteActions(userName, experimentIds, toArgumentMap(arguments), callback);
     }
 
     @Override

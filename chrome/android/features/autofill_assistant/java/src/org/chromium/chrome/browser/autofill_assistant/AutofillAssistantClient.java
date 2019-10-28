@@ -21,11 +21,8 @@ import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.OAuth2TokenService;
 import org.chromium.content_public.browser.WebContents;
 
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * An Autofill Assistant client, associated with a specific WebContents.
@@ -141,11 +138,11 @@ class AutofillAssistantClient {
                 mNativeClientAndroid, AutofillAssistantClient.this, otherWebContents);
     }
 
-    /** Lists available direct actions. */
-    public void listDirectActions(String userName, String experimentIds,
-            Map<String, String> arguments, Callback<Set<String>> callback) {
+    /** Starts the controller and fetching scripts for websites. */
+    public void fetchWebsiteActions(String userName, String experimentIds,
+            Map<String, String> arguments, Callback<Boolean> callback) {
         if (mNativeClientAndroid == 0) {
-            callback.onResult(Collections.emptySet());
+            callback.onResult(false);
             return;
         }
 
@@ -153,7 +150,7 @@ class AutofillAssistantClient {
 
         // The native side calls sendDirectActionList() on the callback once the controller has
         // results.
-        AutofillAssistantClientJni.get().listDirectActions(mNativeClientAndroid,
+        AutofillAssistantClientJni.get().fetchWebsiteActions(mNativeClientAndroid,
                 AutofillAssistantClient.this, experimentIds,
                 arguments.keySet().toArray(new String[arguments.size()]),
                 arguments.values().toArray(new String[arguments.size()]), callback);
@@ -184,7 +181,7 @@ class AutofillAssistantClient {
             @Nullable AssistantOnboardingCoordinator onboardingCoordinator) {
         if (mNativeClientAndroid == 0) return false;
 
-        // Note that only listDirectActions can start AA, so only it needs
+        // Note that only fetchWebsiteActions can start AA, so only it needs
         // chooseAccountAsyncIfNecessary.
         return AutofillAssistantClientJni.get().performDirectAction(mNativeClientAndroid,
                 AutofillAssistantClient.this, actionId, experimentIds,
@@ -337,12 +334,8 @@ class AutofillAssistantClient {
 
     /** Adds a dynamic action to the given reporter. */
     @CalledByNative
-    private void sendDirectActionList(Callback<Set<String>> callback, String[] names) {
-        Set<String> set = new HashSet<>();
-        for (String name : names) {
-            set.add(name);
-        }
-        callback.onResult(set);
+    private void onFetchWebsiteActions(Callback<Boolean> callback, boolean success) {
+        callback.onResult(success);
     }
 
     @CalledByNative
@@ -363,7 +356,7 @@ class AutofillAssistantClient {
         void destroyUI(long nativeClientAndroid, AutofillAssistantClient caller);
         void transferUITo(
                 long nativeClientAndroid, AutofillAssistantClient caller, Object otherWebContents);
-        void listDirectActions(long nativeClientAndroid, AutofillAssistantClient caller,
+        void fetchWebsiteActions(long nativeClientAndroid, AutofillAssistantClient caller,
                 String experimentIds, String[] argumentNames, String[] argumentValues,
                 Object callback);
         String[] getDirectActions(long nativeClientAndroid, AutofillAssistantClient caller);
