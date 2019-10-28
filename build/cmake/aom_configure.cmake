@@ -275,6 +275,7 @@ else()
   add_compiler_flag_if_supported("-Wimplicit-function-declaration")
   add_compiler_flag_if_supported("-Wlogical-op")
   add_compiler_flag_if_supported("-Wpointer-arith")
+  add_compiler_flag_if_supported("-Wshorten-64-to-32")
   add_compiler_flag_if_supported("-Wsign-compare")
   add_compiler_flag_if_supported("-Wstring-conversion")
   add_compiler_flag_if_supported("-Wtype-limits")
@@ -296,10 +297,6 @@ else()
     add_c_flag_if_supported("-Wstack-usage=100000")
     add_cxx_flag_if_supported("-Wstack-usage=240000")
   endif()
-
-  # TODO(jzern): this could be added as a cxx flags for test/*.cc only, avoiding
-  # third_party.
-  add_c_flag_if_supported("-Wshorten-64-to-32")
 
   # Add -Wshadow only for C files to avoid massive gtest warning spam.
   add_c_flag_if_supported("-Wshadow")

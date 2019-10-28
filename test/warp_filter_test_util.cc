@@ -55,8 +55,9 @@ void generate_warped_model(libaom_test::ACMRandom *rnd, int32_t *mat,
       if (is_beta_zero == 1) mat[3] = 0;
       if (is_gamma_zero == 1) mat[4] = 0;
       if (is_delta_zero == 1)
-        mat[5] = (((int64_t)mat[3] * mat[4] + (mat[2] / 2)) / mat[2]) +
-                 (1 << WARPEDMODEL_PREC_BITS);
+        mat[5] = static_cast<int32_t>(
+            ((static_cast<int64_t>(mat[3]) * mat[4] + (mat[2] / 2)) / mat[2]) +
+            (1 << WARPEDMODEL_PREC_BITS));
     }
 
     // Calculate the derived parameters and check that they are suitable
@@ -65,12 +66,14 @@ void generate_warped_model(libaom_test::ACMRandom *rnd, int32_t *mat,
 
     *alpha = clamp(mat[2] - (1 << WARPEDMODEL_PREC_BITS), INT16_MIN, INT16_MAX);
     *beta = clamp(mat[3], INT16_MIN, INT16_MAX);
-    *gamma = clamp(((int64_t)mat[4] * (1 << WARPEDMODEL_PREC_BITS)) / mat[2],
-                   INT16_MIN, INT16_MAX);
-    *delta =
-        clamp(mat[5] - (((int64_t)mat[3] * mat[4] + (mat[2] / 2)) / mat[2]) -
-                  (1 << WARPEDMODEL_PREC_BITS),
-              INT16_MIN, INT16_MAX);
+    *gamma = static_cast<int16_t>(clamp64(
+        (static_cast<int64_t>(mat[4]) * (1 << WARPEDMODEL_PREC_BITS)) / mat[2],
+        INT16_MIN, INT16_MAX));
+    *delta = static_cast<int16_t>(clamp64(
+        mat[5] -
+            ((static_cast<int64_t>(mat[3]) * mat[4] + (mat[2] / 2)) / mat[2]) -
+            (1 << WARPEDMODEL_PREC_BITS),
+        INT16_MIN, INT16_MAX));
 
     if ((4 * abs(*alpha) + 7 * abs(*beta) >= (1 << WARPEDMODEL_PREC_BITS)) ||
         (4 * abs(*gamma) + 4 * abs(*delta) >= (1 << WARPEDMODEL_PREC_BITS)))
