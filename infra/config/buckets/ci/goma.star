@@ -1,39 +1,7 @@
-load('//lib/builders.star', 'builder', 'cpu', 'defaults', 'goma', 'os')
+load('//lib/builders.star', 'builder', 'goma', 'os')
 
-luci.bucket(
-    name = 'goma',
-    acls = [
-        acl.entry(
-            roles = acl.BUILDBUCKET_READER,
-            groups = 'all',
-        ),
-        acl.entry(
-            roles = acl.BUILDBUCKET_TRIGGERER,
-            groups = 'project-chromium-ci-schedulers',
-        ),
-        acl.entry(
-            roles = acl.BUILDBUCKET_OWNER,
-            groups = 'google/luci-task-force@google.com',
-        ),
-    ],
-)
 
-luci.recipe.defaults.cipd_package.set(
-    'infra/recipe_bundles/chromium.googlesource.com/chromium/tools/build')
-
-defaults.bucket.set('goma')
-defaults.build_numbers.set(True)
-defaults.configure_kitchen.set(True)
-defaults.cores.set(8)
-defaults.cpu.set(cpu.X86_64)
-defaults.executable.set(luci.recipe(name = 'chromium'))
-defaults.execution_timeout.set(3 * time.hour)
-defaults.os.set(os.LINUX_DEFAULT)
-defaults.pool.set('luci.chromium.ci')
-defaults.service_account.set(
-    'chromium-ci-builder@chops-service-accounts.iam.gserviceaccount.com')
-defaults.swarming_tags.set(['vpython:native-python-wrapper'])
-
+# module-level defaults are set in ci.star
 
 # Builders appear after the function used to define them, with all builders
 # defined using the same function ordered lexicographically by name
@@ -115,19 +83,6 @@ fyi_goma_canary_builder(
 
 fyi_goma_canary_builder(
     name = 'chromeos-amd64-generic-rel-goma-canary',
-)
-
-fyi_goma_canary_builder(
-    name = 'ios-device-goma-canary-clobber',
-    caches = [
-        swarming.cache(
-            name = 'xcode_ios_11a420a',
-            path = 'xcode_ios_11a420a.app',
-        ),
-    ],
-    cores = None,
-    executable = luci.recipe(name = 'ios/unified_builder_tester'),
-    os = os.MAC_ANY,
 )
 
 fyi_goma_canary_builder(
