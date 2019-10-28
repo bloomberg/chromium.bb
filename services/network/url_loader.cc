@@ -191,7 +191,6 @@ class RawFileElementReader : public net::UploadFileElementReader {
   DISALLOW_COPY_AND_ASSIGN(RawFileElementReader);
 };
 
-// TODO: copied from content/browser/loader/upload_data_stream_builder.cc.
 std::unique_ptr<net::UploadDataStream> CreateUploadDataStream(
     ResourceRequestBody* body,
     std::vector<base::File>& opened_files,
