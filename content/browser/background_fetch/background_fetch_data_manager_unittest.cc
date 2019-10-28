@@ -17,6 +17,7 @@
 #include "base/guid.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "content/browser/background_fetch/background_fetch.pb.h"
 #include "content/browser/background_fetch/background_fetch_data_manager_observer.h"
@@ -196,6 +197,14 @@ class BackgroundFetchDataManagerTest
 
   ~BackgroundFetchDataManagerTest() override {
     background_fetch_data_manager_->RemoveObserver(this);
+  }
+
+  void TearDown() override {
+    // Allow remaining tasks on the cache thread and main thread to run to clean
+    // up all dangling file handles.
+    base::ThreadPoolInstance::Get()->FlushForTesting();
+    base::RunLoop().RunUntilIdle();
+    BackgroundFetchTestBase::TearDown();
   }
 
   // Re-creates the data manager. Useful for testing that data was persisted.
@@ -478,16 +487,12 @@ class BackgroundFetchDataManagerTest
             origin(), CacheStorageOwner::kBackgroundFetch);
     auto match_options = blink::mojom::CacheQueryOptions::New();
     match_options->ignore_search = true;
-    // Note: QuitWhenIdleClosure is used rather than QuitClosure to allow
-    // destruction of the fetch response given to DidMatchCache to post a
-    // series of tasks that ultimately tear down the connection and allow
-    // resources to be freed (including an open file in the cache).
     cache_storage.value()->MatchCache(
         kExampleUniqueId, BackgroundFetchSettledFetch::CloneRequest(request),
         std::move(match_options),
         /* trace_id= */ 0,
         base::BindOnce(&BackgroundFetchDataManagerTest::DidMatchCache,
-                       base::Unretained(this), run_loop.QuitWhenIdleClosure(),
+                       base::Unretained(this), run_loop.QuitClosure(),
                        &result));
     run_loop.Run();
 
