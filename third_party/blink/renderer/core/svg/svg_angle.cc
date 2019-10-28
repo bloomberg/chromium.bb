@@ -391,9 +391,7 @@ void SVGAngle::CalculateAnimatedValue(
     SVGPropertyBase* to,
     SVGPropertyBase* to_at_end_of_duration,
     SVGElement*) {
-  bool is_to_animation = animation_element.GetAnimationMode() == kToAnimation;
-
-  SVGAngle* from_angle = is_to_animation ? this : ToSVGAngle(from);
+  SVGAngle* from_angle = ToSVGAngle(from);
   SVGAngle* to_angle = ToSVGAngle(to);
   SVGMarkerOrientType from_orient_type = from_angle->OrientType()->EnumValue();
   SVGMarkerOrientType to_orient_type = to_angle->OrientType()->EnumValue();
