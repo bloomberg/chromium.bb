@@ -1558,7 +1558,9 @@ void av1_fast_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
 
     if (const_motion[ref_frame] && this_mode == NEARMV) continue;
 
-    if (ref_frame != LAST_FRAME && bsize > BLOCK_16X16) continue;
+    if (ref_frame != LAST_FRAME &&
+        (bsize > BLOCK_64X64 || (bsize > BLOCK_16X16 && this_mode == NEWMV)))
+      continue;
 
     if (ref_frame != LAST_FRAME && this_mode == NEARMV) continue;
 
