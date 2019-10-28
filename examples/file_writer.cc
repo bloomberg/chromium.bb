@@ -25,8 +25,8 @@
 #include <io.h>
 #endif
 
-#include "third_party/abseil-cpp/absl/memory/memory.h"
-#include "third_party/abseil-cpp/absl/strings/str_format.h"
+#include "absl/memory/memory.h"
+#include "absl/strings/str_format.h"
 
 namespace libgav1 {
 namespace {

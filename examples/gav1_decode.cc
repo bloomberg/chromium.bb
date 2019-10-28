@@ -19,13 +19,13 @@
 #include <memory>
 #include <vector>
 
+#include "absl/strings/numbers.h"
+#include "absl/time/clock.h"
+#include "absl/time/time.h"
 #include "examples/file_reader_factory.h"
 #include "examples/file_reader_interface.h"
 #include "examples/file_writer.h"
 #include "gav1/decoder.h"
-#include "third_party/abseil-cpp/absl/strings/numbers.h"
-#include "third_party/abseil-cpp/absl/time/clock.h"
-#include "third_party/abseil-cpp/absl/time/time.h"
 
 namespace {
 

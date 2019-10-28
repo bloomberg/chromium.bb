@@ -21,7 +21,7 @@
 #include <cstdint>
 #include <vector>
 
-#include "third_party/abseil-cpp/absl/base/attributes.h"
+#include "absl/base/attributes.h"
 
 namespace libgav1 {
 

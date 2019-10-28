@@ -26,11 +26,11 @@
 #include <io.h>
 #endif
 
+#include "absl/memory/memory.h"
 #include "examples/file_reader_constants.h"
 #include "examples/file_reader_factory.h"
 #include "examples/file_reader_interface.h"
 #include "examples/ivf_parser.h"
-#include "third_party/abseil-cpp/absl/memory/memory.h"
 
 namespace libgav1 {
 namespace {

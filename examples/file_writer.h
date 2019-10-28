@@ -22,9 +22,9 @@
 #include <cstdio>
 #include <memory>
 
+#include "absl/base/attributes.h"
+#include "absl/strings/string_view.h"
 #include "src/gav1/decoder_buffer.h"
-#include "third_party/abseil-cpp/absl/base/attributes.h"
-#include "third_party/abseil-cpp/absl/strings/string_view.h"
 
 namespace libgav1 {
 

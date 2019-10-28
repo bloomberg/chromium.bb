@@ -23,9 +23,9 @@
 #include <memory>
 #include <vector>
 
+#include "absl/base/attributes.h"
+#include "absl/strings/string_view.h"
 #include "examples/file_reader_interface.h"
-#include "third_party/abseil-cpp/absl/base/attributes.h"
-#include "third_party/abseil-cpp/absl/strings/string_view.h"
 
 namespace libgav1 {
 
