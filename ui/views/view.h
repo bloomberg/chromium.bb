@@ -734,11 +734,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Attributes ----------------------------------------------------------------
 
-  // Returns the first ancestor, starting at this, whose class name is |name|.
-  // Returns null if no ancestor has the class name |name|.
-  const View* GetAncestorWithClassName(const std::string& name) const;
-  View* GetAncestorWithClassName(const std::string& name);
-
   // Recursively descends the view tree starting at this view, and returns
   // the first child that it encounters that has the given ID.
   // Returns NULL if no matching child view is found.
