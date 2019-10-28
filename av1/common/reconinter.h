@@ -125,7 +125,7 @@ void av1_init_inter_params(InterPredParams *inter_pred_params, int block_width,
                            int_interpfilters interp_filters);
 
 void av1_init_warp_params(InterPredParams *inter_pred_params,
-                          struct buf_2d *ref_buf,
+                          const struct buf_2d *ref_buf,
                           const WarpTypesAllowed *warp_types, int ref,
                           const MACROBLOCKD *xd, const MB_MODE_INFO *mi);
 
