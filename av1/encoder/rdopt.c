@@ -7524,23 +7524,16 @@ static INLINE void restore_dst_buf(MACROBLOCKD *xd, const BUFFER_SET dst,
 static AOM_INLINE void build_second_inter_pred(const AV1_COMP *cpi,
                                                MACROBLOCK *x, BLOCK_SIZE bsize,
                                                const MV *other_mv, int mi_row,
-                                               int mi_col, const int block,
-                                               int ref_idx,
+                                               int mi_col, int ref_idx,
                                                uint8_t *second_pred) {
   const AV1_COMMON *const cm = &cpi->common;
   const int pw = block_size_wide[bsize];
   const int ph = block_size_high[bsize];
   MACROBLOCKD *xd = &x->e_mbd;
   MB_MODE_INFO *mbmi = xd->mi[0];
-  const int other_ref = mbmi->ref_frame[!ref_idx];
   struct macroblockd_plane *const pd = &xd->plane[0];
-  // ic and ir are the 4x4 coordinates of the sub8x8 at index "block"
-  const int ic = block & 1;
-  const int ir = (block - ic) >> 1;
-  const int p_col = ((mi_col * MI_SIZE) >> pd->subsampling_x) + 4 * ic;
-  const int p_row = ((mi_row * MI_SIZE) >> pd->subsampling_y) + 4 * ir;
-  const WarpedMotionParams *const wm = &xd->global_motion[other_ref];
-  int is_global = is_global_mv_block(xd->mi[0], wm->wmtype);
+  const int p_col = ((mi_col * MI_SIZE) >> pd->subsampling_x);
+  const int p_row = ((mi_row * MI_SIZE) >> pd->subsampling_y);
 
   // This function should only ever be called for compound modes
   assert(has_second_ref(mbmi));
@@ -7551,12 +7544,6 @@ static AOM_INLINE void build_second_inter_pred(const AV1_COMP *cpi,
   struct scale_factors sf;
   av1_setup_scale_factors_for_frame(&sf, ref_yv12.width, ref_yv12.height,
                                     cm->width, cm->height);
-
-  WarpTypesAllowed warp_types;
-  warp_types.global_warp_allowed = is_global;
-  warp_types.local_warp_allowed = mbmi->motion_mode == WARPED_CAUSAL;
-
-  (void)warp_types;
 
   InterPredParams inter_pred_params;
 
@@ -7688,7 +7675,7 @@ static AOM_INLINE void compound_single_motion_search(
 static AOM_INLINE void compound_single_motion_search_interinter(
     const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize, int_mv *cur_mv,
     int mi_row, int mi_col, const uint8_t *mask, int mask_stride, int *rate_mv,
-    const int block, int ref_idx) {
+    int ref_idx) {
   MACROBLOCKD *xd = &x->e_mbd;
   // This function should only ever be called for compound modes
   assert(has_second_ref(xd->mi[0]));
@@ -7704,8 +7691,8 @@ static AOM_INLINE void compound_single_motion_search_interinter(
   MV *this_mv = &cur_mv[ref_idx].as_mv;
   const MV *other_mv = &cur_mv[!ref_idx].as_mv;
 
-  build_second_inter_pred(cpi, x, bsize, other_mv, mi_row, mi_col, block,
-                          ref_idx, second_pred);
+  build_second_inter_pred(cpi, x, bsize, other_mv, mi_row, mi_col, ref_idx,
+                          second_pred);
 
   compound_single_motion_search(cpi, x, bsize, this_mv, mi_row, mi_col,
                                 second_pred, mask, mask_stride, rate_mv,
@@ -7730,7 +7717,7 @@ static AOM_INLINE void do_masked_motion_search_indexed(
   if (which == 0 || which == 1) {
     compound_single_motion_search_interinter(cpi, x, bsize, tmp_mv, mi_row,
                                              mi_col, mask, mask_stride, rate_mv,
-                                             0, which);
+                                             which);
   } else if (which == 2) {
     joint_motion_search(cpi, x, bsize, tmp_mv, mi_row, mi_col, mask,
                         mask_stride, rate_mv);
@@ -8441,8 +8428,8 @@ static int64_t handle_newmv(const AV1_COMP *const cpi, MACROBLOCK *const x,
 
       // aomenc2
       if (cpi->sf.comp_inter_joint_search_thresh <= bsize || !valid_mv1) {
-        compound_single_motion_search_interinter(
-            cpi, x, bsize, cur_mv, mi_row, mi_col, NULL, 0, rate_mv, 0, 1);
+        compound_single_motion_search_interinter(cpi, x, bsize, cur_mv, mi_row,
+                                                 mi_col, NULL, 0, rate_mv, 1);
       } else {
         const int_mv ref_mv = av1_get_ref_mv(x, 1);
         *rate_mv =
@@ -8458,8 +8445,8 @@ static int64_t handle_newmv(const AV1_COMP *const cpi, MACROBLOCK *const x,
 
       // aomenc3
       if (cpi->sf.comp_inter_joint_search_thresh <= bsize || !valid_mv0) {
-        compound_single_motion_search_interinter(
-            cpi, x, bsize, cur_mv, mi_row, mi_col, NULL, 0, rate_mv, 0, 0);
+        compound_single_motion_search_interinter(cpi, x, bsize, cur_mv, mi_row,
+                                                 mi_col, NULL, 0, rate_mv, 0);
       } else {
         const int_mv ref_mv = av1_get_ref_mv(x, 0);
         *rate_mv =
