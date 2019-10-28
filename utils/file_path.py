@@ -182,13 +182,13 @@ if sys.platform == 'win32':
             letter = u'%s:' % letter
             mapped = QueryDosDevice(letter)
             if mapped in self._MAPPING:
-              logging.warn(
+              logging.warning(
                   ('Two drives: \'%s\' and \'%s\', are mapped to the same disk'
                    '. Drive letters are a user-mode concept and the kernel '
                    'traces only have NT path, so all accesses will be '
                    'associated with the first drive letter, independent of the '
-                   'actual letter used by the code') % (
-                     self._MAPPING[mapped], letter))
+                   'actual letter used by the code') % (self._MAPPING[mapped],
+                                                        letter))
             else:
               self._MAPPING[mapped] = letter
           except WindowsError:  # pylint: disable=undefined-variable

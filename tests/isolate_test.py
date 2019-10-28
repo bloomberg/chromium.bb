@@ -1264,7 +1264,7 @@ class IsolateLoad(IsolateBase):
         base = os.path.dirname(f)
         if not os.path.isdir(base):
           os.makedirs(base)
-        logging.warn(f)
+        logging.warning(f)
         open(f, 'wb').close()
 
       c = isolate.CompleteState(

@@ -965,7 +965,7 @@ class IsolateServerStorageSmokeTest(unittest.TestCase):
 class IsolateServerDownloadTest(TestCase):
   def _url_read_json(self, url, **kwargs):
     """Current _url_read_json mock doesn't respect identical URLs."""
-    logging.warn('url_read_json(%s, %s)', url[:500], str(kwargs)[:500])
+    logging.warning('url_read_json(%s, %s)', url[:500], str(kwargs)[:500])
     with self._lock:
       if not self._requests:
         return None

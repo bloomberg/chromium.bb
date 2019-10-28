@@ -116,7 +116,7 @@ def recreate_tree(outdir, indir, infiles, action, as_hash):
         if metadata['s'] == fs.stat(outfile).st_size:
           continue
         else:
-          logging.warn('Overwriting %s' % metadata['h'])
+          logging.warning('Overwriting %s' % metadata['h'])
           fs.remove(outfile)
     else:
       outfile = os.path.join(outdir, relfile)
@@ -257,7 +257,7 @@ class Flattenable(object):
     except (IOError, ValueError) as e:
       # On failure, loads the default instance.
       out = cls(*args, **kwargs)
-      logging.warn('Failed to load %s: %s', filename, e)
+      logging.warning('Failed to load %s: %s', filename, e)
     return out
 
 
