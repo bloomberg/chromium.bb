@@ -58,8 +58,6 @@ static void temporal_filter_predictors_mb_c(
     int can_use_previous, int num_planes, MV *blk_mvs, int use_32x32) {
   mv_precision mv_precision_uv;
   int uv_stride;
-  // TODO(angiebird): change plane setting accordingly
-  ConvolveParams conv_params = get_conv_params(0, 0, xd->bd);
   const int_interpfilters interp_filters =
       av1_broadcast_interp_filter(MULTITAP_SHARP);
   WarpTypesAllowed warp_types;
@@ -74,6 +72,7 @@ static void temporal_filter_predictors_mb_c(
     mv_precision_uv = MV_PRECISION_Q3;
   }
 
+  ConvolveParams conv_params = get_conv_params(0, 0, xd->bd);
   if (use_32x32) {
     assert(mv_row >= INT16_MIN && mv_row <= INT16_MAX && mv_col >= INT16_MIN &&
            mv_col <= INT16_MAX);
@@ -84,10 +83,13 @@ static void temporal_filter_predictors_mb_c(
                               y, 0, 0, MV_PRECISION_Q3, x, y, xd,
                               can_use_previous);
     if (num_planes > 1) {
+      conv_params = get_conv_params(0, 1, xd->bd);
       av1_build_inter_predictor(
           u_mb_ptr, uv_stride, &pred[BLK_PELS], uv_block_width, &mv, scale,
           uv_block_width, uv_block_height, &conv_params, interp_filters,
           &warp_types, x, y, 1, 0, mv_precision_uv, x, y, xd, can_use_previous);
+
+      conv_params = get_conv_params(0, 2, xd->bd);
       av1_build_inter_predictor(
           v_mb_ptr, uv_stride, &pred[(BLK_PELS << 1)], uv_block_width, &mv,
           scale, uv_block_width, uv_block_height, &conv_params, interp_filters,
@@ -101,6 +103,7 @@ static void temporal_filter_predictors_mb_c(
   // predictors.
   int i, j, k = 0, ys = (BH >> 1), xs = (BW >> 1);
   // Y predictor
+  conv_params = get_conv_params(0, 0, xd->bd);
   for (i = 0; i < BH; i += ys) {
     for (j = 0; j < BW; j += xs) {
       const MV mv = blk_mvs[k];
@@ -127,11 +130,14 @@ static void temporal_filter_predictors_mb_c(
         const int uv_offset = i * uv_stride + j;
         const int p_offset = i * uv_block_width + j;
 
+        conv_params = get_conv_params(0, 1, xd->bd);
         av1_build_inter_predictor(u_mb_ptr + uv_offset, uv_stride,
                                   &pred[BLK_PELS + p_offset], uv_block_width,
                                   &mv, scale, xs, ys, &conv_params,
                                   interp_filters, &warp_types, x, y, 1, 0,
                                   mv_precision_uv, x, y, xd, can_use_previous);
+
+        conv_params = get_conv_params(0, 2, xd->bd);
         av1_build_inter_predictor(
             v_mb_ptr + uv_offset, uv_stride, &pred[(BLK_PELS << 1) + p_offset],
             uv_block_width, &mv, scale, xs, ys, &conv_params, interp_filters,
