@@ -13,6 +13,7 @@ import androidx.annotation.Nullable;
 
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
@@ -154,6 +155,17 @@ class AutofillAssistantClient {
                 AutofillAssistantClient.this, experimentIds,
                 arguments.keySet().toArray(new String[arguments.size()]),
                 arguments.values().toArray(new String[arguments.size()]), callback);
+    }
+
+    /** Return true if the controller exists and is in tracking mode. */
+    public boolean hasRunFirstCheck() {
+        if (mNativeClientAndroid == 0) {
+            return false;
+        }
+
+        ThreadUtils.assertOnUiThread();
+        return AutofillAssistantClientJni.get().hasRunFirstCheck(
+                mNativeClientAndroid, AutofillAssistantClient.this);
     }
 
     /** Lists available direct actions. */
@@ -359,6 +371,8 @@ class AutofillAssistantClient {
         void fetchWebsiteActions(long nativeClientAndroid, AutofillAssistantClient caller,
                 String experimentIds, String[] argumentNames, String[] argumentValues,
                 Object callback);
+        boolean hasRunFirstCheck(long nativeClientAndroid, AutofillAssistantClient caller);
+
         String[] getDirectActions(long nativeClientAndroid, AutofillAssistantClient caller);
 
         boolean performDirectAction(long nativeClientAndroid, AutofillAssistantClient caller,

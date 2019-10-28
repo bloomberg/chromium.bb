@@ -85,7 +85,7 @@ public class AutofillAssistantDirectActionHandlerTest {
         mModuleEntryProvider.setInstalled();
 
         FakeDirectActionReporter reporter = new FakeDirectActionReporter();
-        mHandler.reportAvailableDirectActions(reporter);
+        reportAvailableDirectActions(mHandler, reporter);
 
         assertEquals(1, reporter.mActions.size());
 
@@ -110,7 +110,7 @@ public class AutofillAssistantDirectActionHandlerTest {
         // Start the autofill assistant stack.
 
         FakeDirectActionReporter reporter = new FakeDirectActionReporter();
-        mHandler.reportAvailableDirectActions(reporter);
+        reportAvailableDirectActions(mHandler, reporter);
 
         assertEquals(2, reporter.mActions.size());
 
@@ -142,16 +142,15 @@ public class AutofillAssistantDirectActionHandlerTest {
         fetchWebsiteActions();
         // Reset the reported actions.
         reporter = new FakeDirectActionReporter();
-        mHandler.reportAvailableDirectActions(reporter);
+        reportAvailableDirectActions(mHandler, reporter);
 
-        assertEquals(4, reporter.mActions.size());
+        // Now that the AA stack is up, the fetdch_website_actions should no longer show up.
+        assertEquals(3, reporter.mActions.size());
 
-        // The previous two actions are still reported for now.
         assertEquals("perform_assistant_action", reporter.mActions.get(0).mId);
-        assertEquals("fetch_website_actions", reporter.mActions.get(1).mId);
 
         // Now we expect 2 dyamic actions "search" and "action2".
-        FakeDirectActionDefinition search = reporter.mActions.get(2);
+        FakeDirectActionDefinition search = reporter.mActions.get(1);
         assertEquals("search", search.mId);
         assertEquals(1, search.mParameters.size());
         assertEquals("experiment_ids", search.mParameters.get(0).mName);
@@ -160,7 +159,7 @@ public class AutofillAssistantDirectActionHandlerTest {
         assertEquals("success", search.mResults.get(0).mName);
         assertEquals(Type.BOOLEAN, search.mResults.get(0).mType);
 
-        FakeDirectActionDefinition action2 = reporter.mActions.get(3);
+        FakeDirectActionDefinition action2 = reporter.mActions.get(2);
         assertEquals("action2", action2.mId);
         assertEquals(1, action2.mParameters.size());
         assertEquals("experiment_ids", action2.mParameters.get(0).mName);
@@ -177,7 +176,7 @@ public class AutofillAssistantDirectActionHandlerTest {
         AutofillAssistantPreferencesUtil.setInitialPreferences(true);
 
         FakeDirectActionReporter reporter = new FakeDirectActionReporter();
-        mHandler.reportAvailableDirectActions(reporter);
+        reportAvailableDirectActions(mHandler, reporter);
 
         assertEquals(2, reporter.mActions.size());
 
@@ -258,9 +257,9 @@ public class AutofillAssistantDirectActionHandlerTest {
         assertEquals(Boolean.TRUE, onboardingCallback.waitForResult("accept onboarding"));
     }
 
-    private boolean isOnboardingReported() {
+    private boolean isOnboardingReported() throws Exception {
         FakeDirectActionReporter reporter = new FakeDirectActionReporter();
-        mHandler.reportAvailableDirectActions(reporter);
+        reportAvailableDirectActions(mHandler, reporter);
 
         for (FakeDirectActionDefinition definition : reporter.mActions) {
             if (definition.mId.equals("onboarding")) {
@@ -281,6 +280,18 @@ public class AutofillAssistantDirectActionHandlerTest {
                         -> mHandler.performDirectAction(
                                 "fetch_website_actions", Bundle.EMPTY, callback)));
         return callback.waitForResult("fetch_website_actions").getBoolean("success", false);
+    }
+
+    /**
+     * When reporting direct actions involves web_contents in the controller, it needs to run on the
+     * UI thread.
+     */
+    private void reportAvailableDirectActions(
+            DirectActionHandler handler, DirectActionReporter reporter) throws Exception {
+        assertTrue(TestThreadUtils.runOnUiThreadBlocking(() -> {
+            handler.reportAvailableDirectActions(reporter);
+            return true;
+        }));
     }
 
     /** Calls perform_assistant_action and returns the result. */

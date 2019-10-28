@@ -72,6 +72,10 @@ class ClientAndroid : public Client,
       const base::android::JavaParamRef<jobjectArray>& jargument_values,
       const base::android::JavaParamRef<jobject>& jcallback);
 
+  bool HasRunFirstCheck(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jcaller) const;
+
   base::android::ScopedJavaLocalRef<jobjectArray> GetDirectActions(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& jcaller);

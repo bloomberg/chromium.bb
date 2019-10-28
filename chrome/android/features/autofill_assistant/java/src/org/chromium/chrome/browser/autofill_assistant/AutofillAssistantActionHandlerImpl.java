@@ -10,6 +10,7 @@ import android.os.Bundle;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.Callback;
+import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
@@ -50,6 +51,14 @@ class AutofillAssistantActionHandlerImpl implements AutofillAssistantActionHandl
         }
 
         client.fetchWebsiteActions(userName, experimentIds, toArgumentMap(arguments), callback);
+    }
+
+    @Override
+    public boolean hasRunFirstCheck() {
+        if (!AutofillAssistantPreferencesUtil.isAutofillOnboardingAccepted()) return false;
+        AutofillAssistantClient client = getOrCreateClient();
+        if (client == null) return false;
+        return client.hasRunFirstCheck();
     }
 
     @Override
@@ -108,6 +117,7 @@ class AutofillAssistantActionHandlerImpl implements AutofillAssistantActionHandl
      */
     @Nullable
     private AutofillAssistantClient getOrCreateClient() {
+        ThreadUtils.assertOnUiThread();
         Tab tab = mGetCurrentTab.get();
 
         if (tab == null || tab.getWebContents() == null) return null;

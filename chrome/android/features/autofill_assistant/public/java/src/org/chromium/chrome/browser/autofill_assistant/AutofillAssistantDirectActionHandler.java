@@ -10,6 +10,7 @@ import android.os.Bundle;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.Callback;
+import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.directactions.DirectActionHandler;
 import org.chromium.chrome.browser.directactions.DirectActionReporter;
 import org.chromium.chrome.browser.directactions.DirectActionReporter.Type;
@@ -72,12 +73,13 @@ public class AutofillAssistantDirectActionHandler implements DirectActionHandler
                 .withParameter(EXPERIMENT_IDS, Type.STRING, /* required= */ false)
                 .withResult(AA_ACTION_RESULT, Type.BOOLEAN);
 
-        // TODO(b/138833619): Only report this action when the controller has not been started
-        // yet or if we navigated to another domain in the mean time.
-        reporter.addDirectAction(FETCH_WEBSITE_ACTIONS)
-                .withParameter(USER_NAME, Type.STRING, /* required= */ false)
-                .withParameter(EXPERIMENT_IDS, Type.STRING, /* required= */ false)
-                .withResult(FETCH_WEBSITE_ACTIONS_RESULT, Type.BOOLEAN);
+        ThreadUtils.assertOnUiThread();
+        if (mDelegate == null || (mDelegate != null && !mDelegate.hasRunFirstCheck())) {
+            reporter.addDirectAction(FETCH_WEBSITE_ACTIONS)
+                    .withParameter(USER_NAME, Type.STRING, /* required= */ false)
+                    .withParameter(EXPERIMENT_IDS, Type.STRING, /* required= */ false)
+                    .withResult(FETCH_WEBSITE_ACTIONS_RESULT, Type.BOOLEAN);
+        }
 
         // Additionally report if there are dynamic actions.
         if (mDelegate != null) {

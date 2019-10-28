@@ -229,6 +229,12 @@ void ClientAndroid::FetchWebsiteActions(
                      weak_ptr_factory_.GetWeakPtr(), scoped_jcallback));
 }
 
+bool ClientAndroid::HasRunFirstCheck(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jcaller) const {
+  return controller_ != nullptr && controller_->HasRunFirstCheck();
+}
+
 base::android::ScopedJavaLocalRef<jobjectArray>
 ClientAndroid::GetDirectActionsAsJavaArrayOfStrings(JNIEnv* env) const {
   // Using a set here helps remove duplicates.
