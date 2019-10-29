@@ -495,6 +495,9 @@ extern const char kProfileLastUsed[];
 extern const char kProfilesLastActive[];
 extern const char kProfilesNumCreated[];
 extern const char kProfileInfoCache[];
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+extern const char kLegacyProfileNamesMigrated[];
+#endif  // !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 extern const char kProfileCreatedByVersion[];
 extern const char kProfilesDeleted[];
 
