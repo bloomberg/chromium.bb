@@ -479,6 +479,7 @@ CreditCardFIDOAuthenticator::ParseCreationOptions(
       "timeout_millis", base::Value::Type::INTEGER);
   options->adjusted_timeout = base::TimeDelta::FromMilliseconds(
       timeout ? timeout->GetInt() : kWebAuthnTimeoutMs);
+  options->attestation = AttestationConveyancePreference::kDirect;
 
   // Only allow user-verifying platform authenticators.
   options->authenticator_selection = AuthenticatorSelectionCriteria(
