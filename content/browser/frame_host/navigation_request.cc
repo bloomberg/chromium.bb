@@ -1304,6 +1304,7 @@ void NavigationRequest::ResetForCrossDocumentRestart() {
   StopCommitTimeout();
   state_ = NOT_STARTED;
   handle_state_ = NOT_CREATED;
+  processing_navigation_throttle_ = false;
 
 #if defined(OS_ANDROID)
   if (navigation_handle_proxy_)
@@ -1870,6 +1871,7 @@ void NavigationRequest::OnRequestFailedInternal(
   TRACE_EVENT_ASYNC_STEP_INTO1("navigation", "NavigationRequest", this,
                                "OnRequestFailed", "error", status.error_code);
   state_ = FAILED;
+  processing_navigation_throttle_ = false;
 
   // Ensure the pending entry also gets discarded if it has no other active
   // requests.
@@ -2899,11 +2901,11 @@ void NavigationRequest::OnNavigationEventProcessed(
 
 void NavigationRequest::OnWillStartRequestProcessed(
     NavigationThrottle::ThrottleCheckResult result) {
-  DCHECK_EQ(PROCESSING_WILL_START_REQUEST, handle_state_);
+  DCHECK_EQ(WILL_START_REQUEST, handle_state_);
   DCHECK_NE(NavigationThrottle::BLOCK_RESPONSE, result.action());
-  if (result.action() == NavigationThrottle::PROCEED)
-    handle_state_ = WILL_START_REQUEST;
-  else
+  DCHECK(processing_navigation_throttle_);
+  processing_navigation_throttle_ = false;
+  if (result.action() != NavigationThrottle::PROCEED)
     handle_state_ = CANCELING;
 
   // TODO(zetamoo): Remove CompleteCallback, and call NavigationRequest methods
@@ -2913,26 +2915,27 @@ void NavigationRequest::OnWillStartRequestProcessed(
 
 void NavigationRequest::OnWillRedirectRequestProcessed(
     NavigationThrottle::ThrottleCheckResult result) {
-  DCHECK_EQ(PROCESSING_WILL_REDIRECT_REQUEST, handle_state_);
+  DCHECK_EQ(WILL_REDIRECT_REQUEST, handle_state_);
   DCHECK_NE(NavigationThrottle::BLOCK_RESPONSE, result.action());
+  DCHECK(processing_navigation_throttle_);
+  processing_navigation_throttle_ = false;
   if (result.action() == NavigationThrottle::PROCEED) {
-    handle_state_ = WILL_REDIRECT_REQUEST;
-
     // Notify the delegate that a redirect was encountered and will be followed.
     if (GetDelegate())
       GetDelegate()->DidRedirectNavigation(this);
   } else {
-    handle_state_ = NavigationRequest::CANCELING;
+    handle_state_ = CANCELING;
   }
   RunCompleteCallback(result);
 }
 
 void NavigationRequest::OnWillFailRequestProcessed(
     NavigationThrottle::ThrottleCheckResult result) {
-  DCHECK_EQ(NavigationRequest::PROCESSING_WILL_FAIL_REQUEST, handle_state_);
+  DCHECK_EQ(WILL_FAIL_REQUEST, handle_state_);
   DCHECK_NE(NavigationThrottle::BLOCK_RESPONSE, result.action());
+  DCHECK(processing_navigation_throttle_);
+  processing_navigation_throttle_ = false;
   if (result.action() == NavigationThrottle::PROCEED) {
-    handle_state_ = WILL_FAIL_REQUEST;
     result = NavigationThrottle::ThrottleCheckResult(
         NavigationThrottle::PROCEED, net_error_);
   } else {
@@ -2943,18 +2946,19 @@ void NavigationRequest::OnWillFailRequestProcessed(
 
 void NavigationRequest::OnWillProcessResponseProcessed(
     NavigationThrottle::ThrottleCheckResult result) {
-  DCHECK_EQ(NavigationRequest::PROCESSING_WILL_PROCESS_RESPONSE, handle_state_);
+  DCHECK_EQ(WILL_PROCESS_RESPONSE, handle_state_);
   DCHECK_NE(NavigationThrottle::BLOCK_REQUEST, result.action());
   DCHECK_NE(NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE, result.action());
+  DCHECK(processing_navigation_throttle_);
+  processing_navigation_throttle_ = false;
   if (result.action() == NavigationThrottle::PROCEED) {
-    handle_state_ = WILL_PROCESS_RESPONSE;
     // If the navigation is done processing the response, then it's ready to
     // commit. Inform observers that the navigation is now ready to commit,
     // unless it is not set to commit (204/205s/downloads).
     if (render_frame_host_)
       ReadyToCommitNavigation(false);
   } else {
-    handle_state_ = NavigationRequest::CANCELING;
+    handle_state_ = CANCELING;
   }
   RunCompleteCallback(result);
 }
@@ -3005,20 +3009,17 @@ bool NavigationRequest::IsForMhtmlSubframe() const {
 
 void NavigationRequest::CancelDeferredNavigationInternal(
     NavigationThrottle::ThrottleCheckResult result) {
-  DCHECK(handle_state_ == PROCESSING_WILL_START_REQUEST ||
-         handle_state_ == PROCESSING_WILL_REDIRECT_REQUEST ||
-         handle_state_ == PROCESSING_WILL_FAIL_REQUEST ||
-         handle_state_ == PROCESSING_WILL_PROCESS_RESPONSE);
+  DCHECK(processing_navigation_throttle_);
   DCHECK(result.action() == NavigationThrottle::CANCEL_AND_IGNORE ||
          result.action() == NavigationThrottle::CANCEL ||
          result.action() == NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE);
   DCHECK(result.action() != NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE ||
-         handle_state_ == PROCESSING_WILL_START_REQUEST ||
-         handle_state_ == PROCESSING_WILL_REDIRECT_REQUEST);
+         handle_state_ == WILL_START_REQUEST ||
+         handle_state_ == WILL_REDIRECT_REQUEST);
 
   TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationRequest", this,
                                "CancelDeferredNavigation");
-  handle_state_ = NavigationRequest::CANCELING;
+  handle_state_ = CANCELING;
   RunCompleteCallback(result);
 }
 
@@ -3033,7 +3034,7 @@ void NavigationRequest::WillStartRequest(
     return;
   }
 
-  handle_state_ = PROCESSING_WILL_START_REQUEST;
+  handle_state_ = WILL_START_REQUEST;
   complete_callback_ = std::move(callback);
 
   if (IsSelfReferentialURL()) {
@@ -3049,6 +3050,8 @@ void NavigationRequest::WillStartRequest(
   if (!navigation_ui_data_) {
     navigation_ui_data_ = GetDelegate()->GetNavigationUIData(this);
   }
+
+  processing_navigation_throttle_ = true;
 
   // Notify each throttle of the request.
   throttle_runner_->ProcessNavigationEvent(
@@ -3086,7 +3089,8 @@ void NavigationRequest::WillFailRequest(
                                "WillFailRequest");
 
   complete_callback_ = std::move(callback);
-  handle_state_ = PROCESSING_WILL_FAIL_REQUEST;
+  handle_state_ = WILL_FAIL_REQUEST;
+  processing_navigation_throttle_ = true;
 
   // Notify each throttle of the request.
   throttle_runner_->ProcessNavigationEvent(
@@ -3100,8 +3104,9 @@ void NavigationRequest::WillProcessResponse(
   TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationRequest", this,
                                "WillProcessResponse");
 
-  handle_state_ = PROCESSING_WILL_PROCESS_RESPONSE;
   complete_callback_ = std::move(callback);
+  handle_state_ = WILL_PROCESS_RESPONSE;
+  processing_navigation_throttle_ = true;
 
   // Notify each throttle of the response.
   throttle_runner_->ProcessNavigationEvent(
@@ -3228,7 +3233,8 @@ void NavigationRequest::UpdateStateFollowingRedirect(
   was_redirected_ = true;
   redirect_chain_.push_back(common_params_->url);
 
-  handle_state_ = PROCESSING_WILL_REDIRECT_REQUEST;
+  handle_state_ = WILL_REDIRECT_REQUEST;
+  processing_navigation_throttle_ = true;
 
 #if defined(OS_ANDROID)
   navigation_handle_proxy_->DidRedirect();
@@ -3443,16 +3449,13 @@ void NavigationRequest::SetCommitTimeoutForTesting(
 }
 
 void NavigationRequest::RemoveRequestHeader(const std::string& header_name) {
-  DCHECK(handle_state_ == PROCESSING_WILL_REDIRECT_REQUEST ||
-         handle_state_ == WILL_REDIRECT_REQUEST);
+  DCHECK(handle_state_ == WILL_REDIRECT_REQUEST);
   removed_request_headers_.push_back(header_name);
 }
 
 void NavigationRequest::SetRequestHeader(const std::string& header_name,
                                          const std::string& header_value) {
   DCHECK(handle_state_ == INITIAL ||
-         handle_state_ == PROCESSING_WILL_START_REQUEST ||
-         handle_state_ == PROCESSING_WILL_REDIRECT_REQUEST ||
          handle_state_ == WILL_START_REQUEST ||
          handle_state_ == WILL_REDIRECT_REQUEST);
   modified_request_headers_.SetHeader(header_name, header_value);
@@ -3653,7 +3656,7 @@ RenderFrameHostImpl* NavigationRequest::GetRenderFrameHost() {
   // Only allow the RenderFrameHost to be retrieved once it has been set for
   // this navigation. This will happens either at WillProcessResponse time for
   // regular navigations or at WillFailRequest time for error pages.
-  CHECK_GE(handle_state_, PROCESSING_WILL_FAIL_REQUEST)
+  CHECK_GE(handle_state_, WILL_FAIL_REQUEST)
       << "This accessor should only be called after a RenderFrameHost has "
          "been picked for this navigation.";
   static_assert(WILL_FAIL_REQUEST < WILL_PROCESS_RESPONSE,
@@ -3738,7 +3741,7 @@ const GURL& NavigationRequest::GetBaseURLForDataURL() {
 }
 
 const GlobalRequestID& NavigationRequest::GetGlobalRequestID() {
-  DCHECK_GE(handle_state_, PROCESSING_WILL_PROCESS_RESPONSE);
+  DCHECK_GE(handle_state_, WILL_PROCESS_RESPONSE);
   return request_id_;
 }
 
