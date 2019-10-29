@@ -12,10 +12,10 @@ package web_app;
 
 // Local data: Information about web app icon.
 message WebAppIconInfoProto {
-  // The URL of the app icon.
-  required string url = 1;
   // The size of the square app icon, in raw pixels.
-  required int32 size_in_px = 2;
+  required int32 size_in_px = 1;
+  // The URL of the app icon. Generated icons have empty urls.
+  optional string url = 2;
 }
 
 // A set to track simultaneous installs and uninstalls from multiple install

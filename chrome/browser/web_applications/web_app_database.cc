@@ -124,8 +124,9 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
 
   for (const WebApp::IconInfo& icon : web_app.icons()) {
     WebAppIconInfoProto* icon_proto = local_data->add_icons();
-    icon_proto->set_url(icon.url.spec());
     icon_proto->set_size_in_px(icon.size_in_px);
+    if (!icon.url.is_empty())
+      icon_proto->set_url(icon.url.spec());
   }
 
   return local_data;
@@ -222,14 +223,19 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
   for (int i = 0; i < local_data.icons_size(); ++i) {
     const WebAppIconInfoProto& icon_proto = local_data.icons(i);
 
-    GURL icon_url(icon_proto.url());
-    if (icon_url.is_empty() || !icon_url.is_valid()) {
-      DLOG(ERROR) << "WebApp IconInfo proto url parse error: "
-                  << icon_url.possibly_invalid_spec();
-      return nullptr;
+    WebApp::IconInfo icon_info;
+    icon_info.size_in_px = icon_proto.size_in_px();
+    if (icon_proto.has_url()) {
+      GURL icon_url(icon_proto.url());
+      if (icon_url.is_empty() || !icon_url.is_valid()) {
+        DLOG(ERROR) << "WebApp IconInfo proto url parse error: "
+                    << icon_url.possibly_invalid_spec();
+        return nullptr;
+      }
+      icon_info.url = icon_url;
     }
 
-    icons.push_back({icon_url, icon_proto.size_in_px()});
+    icons.push_back(std::move(icon_info));
   }
   web_app->SetIcons(std::move(icons));
 
