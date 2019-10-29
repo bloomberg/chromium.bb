@@ -41,7 +41,6 @@ class TestDataRetriever : public WebAppDataRetriever {
   // Set info to respond on |GetWebApplicationInfo|.
   void SetRendererWebApplicationInfo(
       std::unique_ptr<WebApplicationInfo> web_app_info);
-  void SetEmptyRendererWebApplicationInfo();
   // Set arguments to respond on |CheckInstallabilityAndRetrieveManifest|.
   void SetManifest(std::unique_ptr<blink::Manifest> manifest,
                    bool is_installable);

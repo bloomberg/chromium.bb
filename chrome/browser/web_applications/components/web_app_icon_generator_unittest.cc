@@ -8,12 +8,7 @@
 
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
-#include "base/test/task_environment.h"
-#include "chrome/browser/web_applications/test/web_app_icon_test_utils.h"
-#include "chrome/common/web_application_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/skia/include/core/SkColor.h"
-#include "ui/gfx/color_utils.h"
 
 namespace web_app {
 
@@ -177,19 +172,7 @@ void TestIconGeneration(int icon_size,
 
 }  // namespace
 
-class WebAppIconGeneratorTest : public testing::Test {
- public:
-  WebAppIconGeneratorTest() = default;
-
- private:
-  // Needed to bypass DCHECK in GetFallbackFont.
-  base::test::TaskEnvironment task_environment_{
-      base::test::TaskEnvironment::MainThreadType::UI};
-
-  DISALLOW_COPY_AND_ASSIGN(WebAppIconGeneratorTest);
-};
-
-TEST_F(WebAppIconGeneratorTest, ConstrainBitmapsToSizes) {
+TEST(WebAppIconGeneratorTest, ConstrainBitmapsToSizes) {
   std::set<int> desired_sizes;
   desired_sizes.insert(16);
   desired_sizes.insert(32);
@@ -235,7 +218,7 @@ TEST_F(WebAppIconGeneratorTest, ConstrainBitmapsToSizes) {
   }
 }
 
-TEST_F(WebAppIconGeneratorTest, LinkedAppIconsAreNotChanged) {
+TEST(WebAppIconGeneratorTest, LinkedAppIconsAreNotChanged) {
   std::vector<BitmapAndSource> icons;
 
   const GURL url = kAppIconURL3;
@@ -261,7 +244,7 @@ TEST_F(WebAppIconGeneratorTest, LinkedAppIconsAreNotChanged) {
   ValidateAllIconsWithURLsArePresent(icons, size_map);
 }
 
-TEST_F(WebAppIconGeneratorTest, IconsResizedFromOddSizes) {
+TEST(WebAppIconGeneratorTest, IconsResizedFromOddSizes) {
   std::vector<BitmapAndSource> downloaded;
 
   const SkColor color = SK_ColorRED;
@@ -283,7 +266,7 @@ TEST_F(WebAppIconGeneratorTest, IconsResizedFromOddSizes) {
                                             TestSizesToGenerate(), 0, 2);
 }
 
-TEST_F(WebAppIconGeneratorTest, IconsResizedFromLarger) {
+TEST(WebAppIconGeneratorTest, IconsResizedFromLarger) {
   std::vector<BitmapAndSource> downloaded;
 
   // Add three icons with a URL and bitmap. 'Download' two of them and pretend
@@ -304,7 +287,7 @@ TEST_F(WebAppIconGeneratorTest, IconsResizedFromLarger) {
                                             TestSizesToGenerate(), 0, 2);
 }
 
-TEST_F(WebAppIconGeneratorTest, AllIconsGeneratedWhenNotDownloaded) {
+TEST(WebAppIconGeneratorTest, AllIconsGeneratedWhenNotDownloaded) {
   // Add three icons with a URL and bitmap. 'Download' none of them.
   std::vector<BitmapAndSource> downloaded;
 
@@ -318,7 +301,7 @@ TEST_F(WebAppIconGeneratorTest, AllIconsGeneratedWhenNotDownloaded) {
                                             TestSizesToGenerate(), 3, 0);
 }
 
-TEST_F(WebAppIconGeneratorTest, IconResizedFromLargerAndSmaller) {
+TEST(WebAppIconGeneratorTest, IconResizedFromLargerAndSmaller) {
   std::vector<BitmapAndSource> downloaded;
 
   // Pretend the huge icon wasn't downloaded but two smaller ones were.
@@ -343,19 +326,19 @@ TEST_F(WebAppIconGeneratorTest, IconResizedFromLargerAndSmaller) {
   EXPECT_EQ(kAppIconURL2, it->second.source_url);
 }
 
-TEST_F(WebAppIconGeneratorTest, IconsResizedWhenOnlyATinyOneIsProvided) {
+TEST(WebAppIconGeneratorTest, IconsResizedWhenOnlyATinyOneIsProvided) {
   // When only a tiny icon is downloaded (smaller than the three desired
   // sizes), 3 icons should be resized.
   TestIconGeneration(icon_size::k16, 0, 3);
 }
 
-TEST_F(WebAppIconGeneratorTest, IconsResizedWhenOnlyAGigantorOneIsProvided) {
+TEST(WebAppIconGeneratorTest, IconsResizedWhenOnlyAGigantorOneIsProvided) {
   // When an enormous icon is provided, each desired icon size should be resized
   // from it, and no icons should be generated.
   TestIconGeneration(icon_size::k512, 0, 3);
 }
 
-TEST_F(WebAppIconGeneratorTest, GenerateIconLetterFromUrl) {
+TEST(WebAppIconGeneratorTest, GenerateIconLetterFromUrl) {
   // ASCII:
   EXPECT_EQ('E', GenerateIconLetterFromUrl(GURL("http://example.com")));
   // Cyrillic capital letter ZHE for something like https://zhuk.rf:
@@ -364,44 +347,6 @@ TEST_F(WebAppIconGeneratorTest, GenerateIconLetterFromUrl) {
   // Arabic:
   EXPECT_EQ(0x0645,
             GenerateIconLetterFromUrl(GURL("http://xn--mgbh0fb.example/")));
-}
-
-TEST_F(WebAppIconGeneratorTest, GenerateIcons) {
-  std::set<int> sizes = SizesToGenerate();
-  const SkColor bg_color = SK_ColorCYAN;
-  const SkColor letter_color = color_utils::GetColorWithMaxContrast(bg_color);
-
-  // This is Unicode "Black Large Circle" U+2B24 character encoded as UTF8.
-  // Guarantees that there is some letter_color area at the center of the
-  // generated icon.
-  const char black_circle[] = "\u2B24";
-
-  const std::vector<WebApplicationIconInfo> icon_infos =
-      GenerateIcons(black_circle, bg_color);
-  EXPECT_EQ(sizes.size(), icon_infos.size());
-
-  for (const auto& icon_info : icon_infos) {
-    EXPECT_EQ(icon_info.width, icon_info.height);
-    EXPECT_EQ(icon_info.width, icon_info.data.width());
-    EXPECT_EQ(icon_info.height, icon_info.data.height());
-
-    EXPECT_TRUE(icon_info.url.is_empty());
-
-    const int border_radius = icon_info.height / 16;
-    const int centerX = icon_info.width / 2;
-    const int centerY = icon_info.height / 2;
-
-    // We don't check corner colors here: the icon is rounded by border_radius.
-    EXPECT_EQ(bg_color, icon_info.data.getColor(border_radius * 2, centerY));
-    EXPECT_EQ(bg_color, icon_info.data.getColor(centerX, border_radius * 2));
-
-    // Peek a pixel at the center of icon:
-    EXPECT_EQ(letter_color, icon_info.data.getColor(centerX, centerY));
-
-    sizes.erase(icon_info.width);
-  }
-
-  EXPECT_TRUE(sizes.empty());
 }
 
 }  // namespace web_app

@@ -7,15 +7,12 @@
 
 #include <map>
 #include <set>
-#include <string>
 #include <vector>
 
 #include "base/strings/string16.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "url/gurl.h"
-
-struct WebApplicationIconInfo;
 
 namespace web_app {
 
@@ -37,9 +34,6 @@ enum {
 };
 
 }  // namespace icon_size
-
-// Returns icon sizes to be generated from downloaded icons.
-std::set<int> SizesToGenerate();
 
 struct BitmapAndSource {
   BitmapAndSource();
@@ -74,12 +68,6 @@ std::map<int, BitmapAndSource> ResizeIconsAndGenerateMissing(
     const std::set<int>& sizes_to_generate,
     const GURL& app_url,
     SkColor* generated_icon_color);
-
-// Generate icons for default sizes, using the first letter of the application
-// name and some background color. |app_name| is encoded as UTF8.
-std::vector<WebApplicationIconInfo> GenerateIcons(
-    const std::string& app_name,
-    SkColor background_icon_color);
 
 }  // namespace web_app
 
