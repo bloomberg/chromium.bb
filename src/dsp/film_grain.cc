@@ -321,8 +321,7 @@ FilmGrain<bitdepth>::FilmGrain(const FilmGrainParams& params,
       height_(height),
       chroma_width_((subsampling_x != 0) ? kMinChromaWidth : kMaxChromaWidth),
       chroma_height_((subsampling_y != 0) ? kMinChromaHeight
-                                          : kMaxChromaHeight) {
-}
+                                          : kMaxChromaHeight) {}
 
 template <int bitdepth>
 bool FilmGrain<bitdepth>::Init() {

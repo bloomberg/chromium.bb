@@ -83,8 +83,8 @@ struct FilmGrainParams {
   uint8_t point_v_value[10];
   uint8_t point_v_scaling[10];
 
-  uint8_t chroma_scaling;             // [8, 11].
-  uint8_t auto_regression_coeff_lag;  // [0, 3].
+  uint8_t chroma_scaling;              // [8, 11].
+  uint8_t auto_regression_coeff_lag;   // [0, 3].
   int8_t auto_regression_coeff_y[24];  // [-128, 127]
   int8_t auto_regression_coeff_u[25];  // [-128, 127]
   int8_t auto_regression_coeff_v[25];  // [-128, 127]
