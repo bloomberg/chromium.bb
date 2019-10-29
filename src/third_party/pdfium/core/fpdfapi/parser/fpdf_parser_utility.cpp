@@ -9,6 +9,7 @@
 #include "core/fpdfapi/parser/cpdf_array.h"
 #include "core/fpdfapi/parser/cpdf_boolean.h"
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
+#include "core/fpdfapi/parser/cpdf_name.h"
 #include "core/fpdfapi/parser/cpdf_number.h"
 #include "core/fpdfapi/parser/cpdf_reference.h"
 #include "core/fpdfapi/parser/cpdf_stream.h"
@@ -150,6 +151,31 @@ ByteString PDF_NameEncode(const ByteString& orig) {
   }
   res.ReleaseBuffer(dest_len);
   return res;
+}
+
+bool ValidateDictType(const CPDF_Dictionary* dict, const ByteString& type) {
+  ASSERT(dict);
+  ASSERT(!type.IsEmpty());
+  const CPDF_Name* name_obj = ToName(dict->GetObjectFor("Type"));
+  return name_obj && name_obj->GetString() == type;
+}
+
+bool ValidateDictAllResourcesOfType(const CPDF_Dictionary* dict,
+                                    const ByteString& type) {
+  if (!dict)
+    return false;
+
+  CPDF_DictionaryLocker locker(dict);
+  for (const auto& it : locker) {
+    const CPDF_Dictionary* entry = ToDictionary(it.second.Get()->GetDirect());
+    if (!entry || !ValidateDictType(entry, type))
+      return false;
+  }
+  return true;
+}
+
+bool ValidateFontResourceDict(const CPDF_Dictionary* dict) {
+  return ValidateDictAllResourcesOfType(dict, "Font");
 }
 
 std::ostream& operator<<(std::ostream& buf, const CPDF_Object* pObj) {
