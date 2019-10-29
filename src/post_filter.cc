@@ -37,6 +37,35 @@ constexpr uint8_t kCdefUvDirection[2][2][8] = {
     {{0, 1, 2, 3, 4, 5, 6, 7}, {1, 2, 2, 2, 3, 4, 6, 0}},
     {{7, 0, 2, 4, 5, 6, 6, 6}, {0, 1, 2, 3, 4, 5, 6, 7}}};
 
+// The following example illustrates how ExtendFrame() extends a frame.
+// Suppose the frame width is 8 and height is 4, and left, right, top, and
+// bottom are all equal to 3.
+//
+// Before:
+//
+//       ABCDEFGH
+//       IJKLMNOP
+//       QRSTUVWX
+//       YZabcdef
+//
+// After:
+//
+//   AAA|ABCDEFGH|HHH  [3]
+//   AAA|ABCDEFGH|HHH
+//   AAA|ABCDEFGH|HHH
+//   ---+--------+---
+//   AAA|ABCDEFGH|HHH  [1]
+//   III|IJKLMNOP|PPP
+//   QQQ|QRSTUVWX|XXX
+//   YYY|YZabcdef|fff
+//   ---+--------+---
+//   YYY|YZabcdef|fff  [2]
+//   YYY|YZabcdef|fff
+//   YYY|YZabcdef|fff
+//
+// ExtendFrame() first extends the rows to the left and to the right[1]. Then
+// it copies the extended last row to the bottom borders[2]. Finally it copies
+// the extended first row to the top borders[3].
 template <typename Pixel>
 void ExtendFrame(uint8_t* const frame_start, const int width, const int height,
                  ptrdiff_t stride, const int left, const int right,
@@ -52,17 +81,17 @@ void ExtendFrame(uint8_t* const frame_start, const int width, const int height,
     src += stride;
     dst += stride;
   }
+  // Copy to bottom borders.
+  assert(dst == start - left + height * stride);
+  src = dst - stride;
+  for (int y = 0; y < bottom; ++y) {
+    memcpy(dst, src, sizeof(Pixel) * stride);
+    dst += stride;
+  }
   // Copy to top borders.
   src = start - left;
   dst = start - left - top * stride;
   for (int y = 0; y < top; ++y) {
-    memcpy(dst, src, sizeof(Pixel) * stride);
-    dst += stride;
-  }
-  // Copy to bottom borders.
-  dst = start - left + height * stride;
-  src = dst - stride;
-  for (int y = 0; y < bottom; ++y) {
     memcpy(dst, src, sizeof(Pixel) * stride);
     dst += stride;
   }
