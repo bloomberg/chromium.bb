@@ -2324,8 +2324,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'soraka',
       'sumo',
       'swanky',
-      'tael',
-      'tatl',
       'terra',
       'tidus',
       'ultima',
@@ -2393,10 +2391,12 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'mistral', # b/140536001, crbug.com/981002
       'moblab-generic-vm', # crbug.com/960998, crbug.com/976297
       'samus-kernelnext', # https://crbug.com/1004618
+      'tael', # https://crbug.com/1018589
+      'tatl', # https://crbug.com/1018589
       'veyron_mighty', # https://crbug.com/1001290
       'veyron_rialto',  # https://crbug.com/1007997
       'viking', # crbug.com/1017958
-      'whirlwind', # https://crbug.com/981002
+      'whirlwind', # https://crbug.com/1001714
       'wizpig', # crbug.com/996944
   ])
 
