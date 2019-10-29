@@ -5751,9 +5751,6 @@ crbug.com/1016804 external/wpt/css/css-grid/layout-algorithm/grid-flex-track-int
 crbug.com/1017626 [ Linux ] external/wpt/compat/idlharness.window.html [ Pass Timeout ]
 crbug.com/925325 [ Win ] storage/indexeddb/index-population.html [ Pass Timeout ]
 
-# DevTools Security Panel (disabled temporarily as part of workflow)
-crbug.com/1008218 http/tests/devtools/security/security-state-comparator.js [ Failure ]
-
 # Sheriff 2019-10-25
 crbug.com/1018027 virtual/threaded-no-composited-antialiasing/animations/custom-properties/registered-var-to-unregistered.html [ Pass Crash ]
 crbug.com/1018027 virtual/threaded-no-composited-antialiasing/animations/custom-properties/registered-var-fallback.html [ Pass Crash ]
