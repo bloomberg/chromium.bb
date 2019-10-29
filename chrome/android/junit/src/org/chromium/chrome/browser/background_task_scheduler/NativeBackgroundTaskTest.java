@@ -261,8 +261,7 @@ public class NativeBackgroundTaskTest {
                         .handlePostNativeStartup(eq(true), mBrowserParts.capture());
                 break;
             case EXCEPTION:
-                doThrow(new ProcessInitException(
-                                LoaderErrors.LOADER_ERROR_NATIVE_LIBRARY_LOAD_FAILED))
+                doThrow(new ProcessInitException(LoaderErrors.NATIVE_LIBRARY_LOAD_FAILED))
                         .when(mChromeBrowserInitializer)
                         .handlePostNativeStartup(eq(true), any(BrowserParts.class));
                 break;
