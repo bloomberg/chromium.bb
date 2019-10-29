@@ -937,7 +937,10 @@ group("gn_visibility") {
 
 if (!is_ios) {
   # This group includes all of the targets needed to build and test Blink,
-  # including running the layout tests (see below).
+  # including running web tests (see below). This target is defined here because
+  # previously //third_party/WebKit, now //third_party/blink, couldn't depend on
+  # //content/shell. This might not longer be true, see
+  # https://crbug.com/1018659.
   group("blink_tests") {
     testonly = true
 
