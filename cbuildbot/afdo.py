@@ -663,44 +663,25 @@ def CreateAndUploadMergedAFDOProfile(gs_context,
 
   unmerged_version = _ParseBenchmarkProfileName(unmerged_name)
 
-  def is_merge_candidate(x):
-    version = _ParseBenchmarkProfileName(os.path.basename(x.url))
+  def get_ordered_mergeable_profiles(benchmark_listing):
+    """Returns a list of mergeable profiles ordered by increasing version."""
+    profile_versions = [(_ParseBenchmarkProfileName(os.path.basename(x.url)), x)
+                        for x in benchmark_listing]
     # Exclude merged profiles, because merging merged profiles into merged
     # profiles is likely bad.
-    return unmerged_version >= version and not version.is_merged
+    candidates = [(version, x)
+                  for version, x in profile_versions
+                  if unmerged_version >= version and not version.is_merged]
+    candidates.sort()
+    return [x for _, x in candidates]
 
-  benchmark_profiles = [p for p in benchmark_listing if is_merge_candidate(p)]
-
+  benchmark_profiles = get_ordered_mergeable_profiles(benchmark_listing)
   if not benchmark_profiles:
     logging.warning('Skipping merged profile creation: no merge candidates '
                     'found')
     return None, False
 
-  latest_profile = benchmark_profiles[-1]
-  latest_profile_version = _ParseBenchmarkProfileName(
-      os.path.basename(benchmark_profiles[-1].url))
-
-  # crbug.com/954978: branch profiles don't play nicely with non-branch
-  # profiles. Hence, we want to avoid merging branch profiles into ToT
-  # profiles. Merging ToT profiles -> branch is fine, since that's all we
-  # realistically have in our past, but ToT should always prefer profiles
-  # collected from ToT only.
-  def is_differing_branch_profile(x):
-    parsed = _ParseBenchmarkProfileName(os.path.basename(x.url))
-    # Branches bump patch levels.
-    if parsed.patch == 0:
-      return False
-    return parsed.major != latest_profile_version.major
-
-  benchmark_profiles = [
-      p for p in benchmark_profiles if not is_differing_branch_profile(p)
-  ]
-  # We'll always have |latest_profile| in |benchmark_profiles|. If not,
-  # |is_differing_branch_profile| is broken, since it should only filter out
-  # branch profiles with a major version != |latest_profile|'s.
-  assert benchmark_profiles
-
-  base_time = latest_profile.creation_time
+  base_time = benchmark_profiles[-1].creation_time
   time_cutoff = base_time - datetime.timedelta(days=max_age_days)
   merge_candidates = [
       p for p in benchmark_profiles if p.creation_time >= time_cutoff
