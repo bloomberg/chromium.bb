@@ -51,6 +51,15 @@ class UprevTest(cros_test_lib.MockTestCase, ApiConfigMixin):
     packages_controller.Uprev(request, self.response, self.validate_only_config)
     patch.assert_not_called()
 
+  def testMockCall(self):
+    """Test that a mock call does not execute logic, returns mocked value."""
+    patch = self.PatchObject(packages_service, 'uprev_build_targets')
+    targets = ['foo', 'bar']
+    request = self._GetRequest(targets=targets, overlay_type=self._BOTH)
+    packages_controller.Uprev(request, self.response, self.mock_call_config)
+    patch.assert_not_called()
+    self.assertTrue(self.response.modified_ebuilds)
+
   def testNoOverlayTypeFails(self):
     """No overlay type provided should fail."""
     request = self._GetRequest(targets=['foo'])
@@ -117,6 +126,16 @@ class UprevVersionedPackageTest(cros_test_lib.MockTestCase, ApiConfigMixin):
                                               self.validate_only_config)
 
     service.assert_not_called()
+
+  def testMockCall(self):
+    """Test that a mock call does not execute logic, returns mocked value."""
+    patch = self.PatchObject(packages_service, 'uprev_versioned_package')
+    request = packages_pb2.UprevVersionedPackageRequest()
+    packages_controller.UprevVersionedPackage(request, self.response,
+                                              self.mock_call_config)
+    patch.assert_not_called()
+    self.assertTrue(self.response.responses)
+    self.assertTrue(self.response.responses[0].modified_ebuilds)
 
   def testNoVersions(self):
     """Test no versions provided."""
@@ -207,6 +226,18 @@ class GetBestVisibleTest(cros_test_lib.MockTestCase, ApiConfigMixin):
     packages_controller.GetBestVisible(request, self.response,
                                        self.validate_only_config)
     patch.assert_not_called()
+
+  def testMockCall(self):
+    """Test that a mock call does not execute logic, returns mocked value."""
+    patch = self.PatchObject(packages_service, 'get_best_visible')
+    request = self._GetRequest(atom='chromeos-chrome')
+    packages_controller.GetBestVisible(request, self.response,
+                                       self.mock_call_config)
+    patch.assert_not_called()
+    self.assertTrue(self.response.package_info)
+    self.assertTrue(self.response.package_info.category)
+    self.assertTrue(self.response.package_info.package_name)
+    self.assertTrue(self.response.package_info.version)
 
   def testNoAtomFails(self):
     """No atom provided should fail."""
@@ -320,6 +351,46 @@ class GetTargetVersionsTest(cros_test_lib.MockTestCase, ApiConfigMixin):
     platform_version.assert_not_called()
     milestone_version.assert_not_called()
     full_version.assert_not_called()
+
+  def testMockCall(self):
+    """Test that a mock call does not execute logic, returns mocked value."""
+    builds_chrome = self.PatchObject(
+        packages_service, 'builds', return_value=True)
+    patch_version = self.PatchObject(packages_service,
+                                     'determine_android_version')
+    patch_branch_version = self.PatchObject(packages_service,
+                                            'determine_android_branch')
+    patch_target_version = self.PatchObject(packages_service,
+                                            'determine_android_target')
+    chrome_version = self.PatchObject(packages_service,
+                                      'determine_chrome_version')
+    platform_version = self.PatchObject(packages_service,
+                                        'determine_platform_version')
+    milestone_version = self.PatchObject(packages_service,
+                                         'determine_milestone_version')
+    full_version = self.PatchObject(packages_service,
+                                    'determine_full_version')
+
+    request = self._GetRequest(board='betty')
+    packages_controller.GetTargetVersions(request, self.response,
+                                          self.mock_call_config)
+
+    patch_version.assert_not_called()
+    patch_branch_version.assert_not_called()
+    patch_target_version.assert_not_called()
+    builds_chrome.assert_not_called()
+    chrome_version.assert_not_called()
+    platform_version.assert_not_called()
+    milestone_version.assert_not_called()
+    full_version.assert_not_called()
+
+    self.assertTrue(self.response.android_version)
+    self.assertTrue(self.response.android_branch_version)
+    self.assertTrue(self.response.android_target_version)
+    self.assertTrue(self.response.chrome_version)
+    self.assertTrue(self.response.platform_version)
+    self.assertTrue(self.response.milestone_version)
+    self.assertTrue(self.response.full_version)
 
   def testNoBuildTargetFails(self):
     """No build target argument should fail."""
