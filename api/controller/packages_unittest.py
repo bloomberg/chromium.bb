@@ -305,6 +305,15 @@ class GetChromeVersion(cros_test_lib.MockTestCase, ApiConfigMixin):
                                          self.api_config)
     self.assertEqual(self.response.version, chrome_version)
 
+  def testGetChromeVersionHandleNone(self):
+    """Verify basic return values."""
+    self.PatchObject(packages_service, 'determine_chrome_version',
+                     return_value=None)
+    request = self._GetRequest(board='betty')
+    packages_controller.GetChromeVersion(request, self.response,
+                                         self.api_config)
+    self.assertFalse(self.response.version)
+
 
 class GetTargetVersionsTest(cros_test_lib.MockTestCase, ApiConfigMixin):
   """GetTargetVersions tests."""

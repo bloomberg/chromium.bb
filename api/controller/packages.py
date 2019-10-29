@@ -133,7 +133,9 @@ def _ChromeVersionResponse(_input_proto, output_proto, _config):
 def GetChromeVersion(input_proto, output_proto, _config):
   """Returns the chrome version."""
   build_target = controller_util.ParseBuildTarget(input_proto.build_target)
-  output_proto.version = packages.determine_chrome_version(build_target)
+  chrome_version = packages.determine_chrome_version(build_target)
+  if chrome_version:
+    output_proto.version = chrome_version
 
 
 def _GetTargetVersionsResponse(_input_proto, output_proto, _config):
@@ -163,10 +165,13 @@ def GetTargetVersions(input_proto, output_proto, _config):
   android_target_version = packages.determine_android_target(build_target)
   if android_target_version:
     output_proto.android_target_version = android_target_version
+  # TODO(crbug/1019770): Investigate cases where builds_chrome is true but
+  # chrome_version is None.
   builds_chrome = packages.builds(constants.CHROME_CP, build_target)
   if builds_chrome:
-    output_proto.chrome_version = packages.determine_chrome_version(
-        build_target)
+    chrome_version = packages.determine_chrome_version(build_target)
+    if chrome_version:
+      output_proto.chrome_version = chrome_version
   output_proto.platform_version = packages.determine_platform_version()
   output_proto.milestone_version = packages.determine_milestone_version()
   output_proto.full_version = packages.determine_full_version()

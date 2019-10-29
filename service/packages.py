@@ -400,8 +400,18 @@ def determine_chrome_version(build_target):
   Args:
     build_target (build_target_util.BuildTarget): The board build target.
   """
-  cpv = portage_util.PortageqBestVisible(constants.CHROME_CP, build_target.name,
-                                         cwd=constants.SOURCE_ROOT)
+  # TODO(crbug/1019770): Long term we should not need the try/catch here once
+  # the builds function above only returns True for chrome when
+  # determine_chrome_version will succeed.
+  try:
+    cpv = portage_util.PortageqBestVisible(constants.CHROME_CP,
+                                           build_target.name,
+                                           cwd=constants.SOURCE_ROOT)
+  except cros_build_lib.RunCommandError as e:
+    # Return None because portage failed when trying to determine the chrome
+    # version.
+    logging.warning('Caught exception in determine_chrome_package: %s', e)
+    return None
   # Something like 78.0.3877.4_rc -> 78.0.3877.4
   return cpv.version_no_rev.partition('_')[0]
 

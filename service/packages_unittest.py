@@ -182,6 +182,22 @@ class AndroidVersionsTest(cros_test_lib.MockTestCase):
     target = packages.determine_android_package(self.board)
     self.assertEqual(target, None)
 
+  def test_determine_android_package_callers_handle_exception(self):
+    """Tests handling RunCommandError by determine_android_package callers."""
+    # Mock what happens when portage returns that bubbles up (via RunCommand)
+    # inside portage_util.GetPackageDependencies.
+    self.PatchObject(portage_util, 'GetPackageDependencies',
+                     side_effect=cros_build_lib.RunCommandError('error'))
+    # Verify that target is None, as expected.
+    target = packages.determine_android_package(self.board)
+    self.assertEqual(target, None)
+    # determine_android_branch calls determine_android_package
+    branch = packages.determine_android_branch(self.board)
+    self.assertEqual(branch, None)
+    # determine_android_target calls determine_android_package
+    target = packages.determine_android_target(self.board)
+    self.assertEqual(target, None)
+
 
 class ChromeVersionsTest(cros_test_lib.MockTestCase):
   """Tests getting chrome version."""
@@ -201,6 +217,14 @@ class ChromeVersionsTest(cros_test_lib.MockTestCase):
     version_numbers = chrome_version.split('.')
     self.assertEqual(len(version_numbers), 4)
     self.assertEqual(int(version_numbers[0]), 78)
+
+  def test_determine_chrome_version_handle_exception(self):
+    # Mock what happens when portage throws an exception that bubbles up (via
+    # RunCommand)inside portage_util.PortageqBestVisible.
+    self.PatchObject(portage_util, 'PortageqBestVisible',
+                     side_effect=cros_build_lib.RunCommandError('error'))
+    target = packages.determine_chrome_version(self.build_target)
+    self.assertEqual(target, None)
 
 
 class PlatformVersionsTest(cros_test_lib.MockTestCase):
