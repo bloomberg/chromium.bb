@@ -5753,3 +5753,7 @@ crbug.com/1009396 http/tests/devtools/coverage/coverage-view.js [ Pass Failure ]
 crbug.com/1009396 http/tests/devtools/coverage/decorations-after-script-formatter.js [ Pass Timeout Failure ]
 crbug.com/1009396 http/tests/devtools/coverage/gutter-js.js [ Pass Failure ]
 crbug.com/1009396 http/tests/devtools/coverage/multiple-instances-merge.js [ Pass Timeout Failure ]
+
+# Temporarily disable to land source map changes that log error on failure
+crbug.com/1016772 http/tests/devtools/compiler-script-mapping.js [ Pass Failure ]
+crbug.com/1016772 http/tests/devtools/sources/debugger-ui/source-url-comment.js [ Pass Failure ]
