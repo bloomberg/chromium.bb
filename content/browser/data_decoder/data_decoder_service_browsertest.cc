@@ -13,9 +13,9 @@
 
 namespace content {
 
-using DataDecoderServiceBrowserTest = ContentBrowserTest;
+using DataDecoderBrowserTest = ContentBrowserTest;
 
-IN_PROC_BROWSER_TEST_F(DataDecoderServiceBrowserTest, Launch) {
+IN_PROC_BROWSER_TEST_F(DataDecoderBrowserTest, Launch) {
   // Simple smoke test to verify that we can launch an instance of the Data
   // Decoder service and communicate end-to-end.
 

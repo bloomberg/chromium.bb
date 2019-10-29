@@ -100,11 +100,7 @@ void ServiceBinding::Bind(mojo::PendingReceiver<mojom::Service> receiver) {
 }
 
 void ServiceBinding::RequestClose() {
-  // We allow for innoccuous RequestClose() calls on unbound ServiceBindings.
-  // This may occur e.g. when running a service in-process.
-  if (!is_bound())
-    return;
-
+  DCHECK(is_bound());
   if (service_control_.is_bound()) {
     service_control_->RequestQuit();
   } else {
