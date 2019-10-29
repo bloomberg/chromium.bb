@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromecast/media/audio/mixer_service/receiver/receiver_creation.h"
+#include "chromecast/media/audio/mixer_service/constants.h"
+
+#include "chromecast/media/audio/mixer_service/buildflags.h"
 
 namespace chromecast {
 namespace media {
 namespace mixer_service {
 
-std::unique_ptr<ReceiverInstance> CreateCmaReceiverIfNeeded(
-    MediaPipelineBackendManager* backend_manager) {
-  return nullptr;
+bool HaveFullMixer() {
+  return BUILDFLAG(HAVE_FULL_MIXER);
 }
 
 }  // namespace mixer_service
