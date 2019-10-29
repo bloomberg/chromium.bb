@@ -54131,6 +54131,15 @@ Called by update_net_trust_anchors.py.-->
   <int value="5" label="NAVIGATION_EVENT_NOT_FOUND"/>
 </enum>
 
+<enum name="SafeBrowsingBinaryUploadResult">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Success"/>
+  <int value="2" label="Upload failure"/>
+  <int value="3" label="Timeout"/>
+  <int value="4" label="File too large"/>
+  <int value="5" label="Failed to get token"/>
+</enum>
+
 <enum name="SafeBrowsingParseV4HashResult">
   <int value="0" label="PARSE_FROM_STRING_ERROR"/>
   <int value="1" label="UNEXPECTED_THREAT_ENTRY_TYPE_ERROR"/>
