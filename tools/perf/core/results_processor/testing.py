@@ -25,7 +25,8 @@ def TestResult(test_path, status='PASS', is_expected=None,
     start_time: An optional UTC timestamp recording when the test run started.
     run_duration: An optional duration string recording the amount of time
       that the test run lasted.
-    artifcats: An optional dict mapping artifact names to Artifact dicts.
+    output_artifacts: An optional mapping of artifact names to Artifact dicts,
+      may be given as a dict or a sequence of pairs.
     tags: An optional sequence of tags associated with this test run; each
       tag is given as a '{key}:{value}' string. Keys are not unique, the same
       key may appear multiple times.
@@ -43,7 +44,7 @@ def TestResult(test_path, status='PASS', is_expected=None,
       'runDuration': run_duration
   }
   if output_artifacts is not None:
-    test_result['outputArtifacts'] = output_artifacts
+    test_result['outputArtifacts'] = dict(output_artifacts)
   if tags is not None:
     test_result['tags'] = [_SplitTag(tag) for tag in tags]
 
