@@ -9,11 +9,6 @@
 
 #include <vector>
 
-// Accessibility identifier to open the advanced sign-in settings view.
-extern NSString* const kAdvancedSigninSettingsLinkIdentifier;
-// Accessibility identifier for |-UnifiedConsentViewController.view|.
-extern NSString* const kUnifiedConsentScrollViewIdentifier;
-
 @protocol UnifiedConsentViewControllerDelegate;
 
 // UnifiedConsentViewController is a sub view controller to ask for the user
