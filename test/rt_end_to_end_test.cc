@@ -31,8 +31,8 @@ const int kBitrate = 500;
 std::unordered_map<std::string,
                    std::unordered_map<int, std::unordered_map<int, double>>>
     kPsnrThreshold = { { "park_joy_90p_8_420.y4m",
-                         { { 6, { { 0, 35.5 }, { 3, 36.5 } } },
-                           { 7, { { 0, 34.9 }, { 3, 36.0 } } },
+                         { { 6, { { 0, 35.5 }, { 3, 36.3 } } },
+                           { 7, { { 0, 34.9 }, { 3, 35.8 } } },
                            { 8, { { 0, 35.0 }, { 3, 36.0 } } } } },
                        { "paris_352_288_30.y4m",
                          { { 6, { { 0, 36.4 }, { 3, 36.7 } } },
