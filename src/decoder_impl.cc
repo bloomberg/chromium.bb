@@ -73,9 +73,8 @@ StatusCode DecoderImpl::Create(const DecoderSettings* settings,
   }
   if (settings->frame_parallel) {
     LIBGAV1_DLOG(ERROR,
-                 "Frame parallel decoding is not implemented. Don't set "
-                 "frame_parallel to true in DecoderSettings.");
-    return kLibgav1StatusUnimplemented;
+                 "Frame parallel decoding is not implemented, ignoring"
+                 " setting.");
   }
   std::unique_ptr<DecoderImpl> impl(new (std::nothrow) DecoderImpl(settings));
   if (impl == nullptr) {
