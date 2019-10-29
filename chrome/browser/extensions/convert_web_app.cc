@@ -209,6 +209,8 @@ scoped_refptr<Extension> ConvertWebAppToExtension(
                                                 web_app.scope, web_app.title));
   }
 
+  // TODO(crbug.com/1014346): Record display_mode.
+
   if (web_app.file_handler) {
     root->SetDictionary(keys::kFileHandlers, CreateFileHandlersForBookmarkApp(
                                                  web_app.file_handler.value()));
