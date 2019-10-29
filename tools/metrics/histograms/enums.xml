@@ -42212,6 +42212,22 @@ Called by update_use_counter_css.py.-->
              foreground until the previous preconnect expired."/>
 </enum>
 
+<enum name="NavigationPredictorLinkClickedPrerenderResult">
+  <int value="0"
+      label="The prerender finished entirely before the link was clicked"/>
+  <int value="1" label="The prerender was started but not finished"/>
+  <int value="2" label="The link was waiting to be prerendered"/>
+  <int value="3" label="The prerender was attempted, but blocked by policy"/>
+  <int value="4" label="The link scored poorly"/>
+  <int value="5" label="The link was not seen at the load event"/>
+  <int value="6"
+      label="The link was cross origin and scored above the threshold"/>
+  <int value="7"
+      label="The link was cross origin and scored below the threshold"/>
+  <int value="8"
+      label="The link was cross origin and not seen at the load event"/>
+</enum>
+
 <enum name="NavigationRequiresDedicatedProcess">
   <int value="0" label="Does not require dedicated process"/>
   <int value="1" label="Requires dedicated process"/>
