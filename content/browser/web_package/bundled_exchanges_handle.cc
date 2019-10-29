@@ -19,6 +19,7 @@
 #include "content/browser/web_package/bundled_exchanges_utils.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/data_decoder_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -194,7 +195,8 @@ class InterceptorForFile final : public NavigationLoaderInterceptor {
         BundledExchangesSource::MaybeCreateFromFileUrl(request.url);
     if (!source)
       return false;
-    reader_ = base::MakeRefCounted<BundledExchangesReader>(std::move(source));
+    reader_ = base::MakeRefCounted<BundledExchangesReader>(std::move(source),
+                                                           LaunchDataDecoder());
     reader_->ReadMetadata(base::BindOnce(&InterceptorForFile::OnMetadataReady,
                                          weak_factory_.GetWeakPtr(), request));
     *client_request = forwarding_client_.BindNewPipeAndPassReceiver();
@@ -277,7 +279,9 @@ class InterceptorForTrustableFile final : public NavigationLoaderInterceptor {
                               DoneCallback done_callback,
                               int frame_tree_node_id)
       : source_(std::move(source)),
-        reader_(base::MakeRefCounted<BundledExchangesReader>(source_->Clone())),
+        reader_(
+            base::MakeRefCounted<BundledExchangesReader>(source_->Clone(),
+                                                         LaunchDataDecoder())),
         done_callback_(std::move(done_callback)),
         frame_tree_node_id_(frame_tree_node_id) {
     reader_->ReadMetadata(
@@ -549,7 +553,8 @@ class InterceptorForNavigationInfo final : public NavigationLoaderInterceptor {
       DoneCallback done_callback,
       int frame_tree_node_id)
       : reader_(base::MakeRefCounted<BundledExchangesReader>(
-            navigation_info->source().Clone())),
+            navigation_info->source().Clone(),
+            LaunchDataDecoder())),
         target_inner_url_(navigation_info->target_inner_url()),
         done_callback_(std::move(done_callback)),
         frame_tree_node_id_(frame_tree_node_id) {
