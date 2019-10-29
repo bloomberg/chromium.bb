@@ -7165,6 +7165,13 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
 
   accessibility_reset_count_ = 0;
   appcache_handle_ = navigation_request->TakeAppCacheHandle();
+
+  if (navigation_request->IsInMainFrame() &&
+      !navigation_request->IsSameDocument() &&
+      !navigation_request->IsServedFromBackForwardCache()) {
+    render_view_host_->ResetPerPageState();
+  }
+
   frame_tree_node()->navigator()->DidNavigate(this, *validated_params,
                                               std::move(navigation_request),
                                               is_same_document_navigation);

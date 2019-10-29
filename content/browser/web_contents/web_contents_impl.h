@@ -1633,9 +1633,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // The last published theme color.
   base::Optional<SkColor> last_sent_theme_color_;
 
-  // Whether the first visually non-empty paint has occurred.
-  bool did_first_visually_non_empty_paint_;
-
   // SourceId for current page.
   ukm::SourceId last_committed_source_id_ = ukm::kInvalidSourceId;
 

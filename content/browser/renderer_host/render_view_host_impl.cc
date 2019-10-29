@@ -799,6 +799,7 @@ void RenderViewHostImpl::SetInitialFocus(bool reverse) {
 }
 
 void RenderViewHostImpl::RenderWidgetDidFirstVisuallyNonEmptyPaint() {
+  did_first_visually_non_empty_paint_ = true;
   delegate_->DidFirstVisuallyNonEmptyPaint(this);
 }
 
@@ -1077,6 +1078,10 @@ std::vector<viz::SurfaceId> RenderViewHostImpl::CollectSurfaceIdsForEviction() {
     view->set_is_evicted();
   }
   return ids;
+}
+
+void RenderViewHostImpl::ResetPerPageState() {
+  did_first_visually_non_empty_paint_ = false;
 }
 
 bool RenderViewHostImpl::IsTestRenderViewHost() const {

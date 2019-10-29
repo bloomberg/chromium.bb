@@ -570,7 +570,6 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
       is_resume_pending_(false),
       interstitial_page_(nullptr),
       has_accessed_initial_document_(false),
-      did_first_visually_non_empty_paint_(false),
       capturer_count_(0),
       is_being_destroyed_(false),
       is_notifying_observers_(false),
@@ -4556,8 +4555,6 @@ void WebContentsImpl::DidNavigateMainFramePostCommit(
     if (rwhvb)
       rwhvb->OnDidNavigateMainFrameToNewPage();
 
-    did_first_visually_non_empty_paint_ = false;
-
     // Reset theme color on navigation to new page.
     theme_color_.reset();
   }
@@ -4568,6 +4565,13 @@ void WebContentsImpl::DidNavigateMainFramePostCommit(
 
   if (!details.is_same_document && GetInnerWebContents().empty())
     had_inner_webcontents_ = false;
+
+  if (details.is_navigation_to_different_page() &&
+      GetRenderViewHost()->did_first_visually_non_empty_paint()) {
+    // This event will not fire again if the page is restored from the
+    // BackForwardCache. So fire it ourselves if needed.
+    DidFirstVisuallyNonEmptyPaint(GetRenderViewHost());
+  }
 }
 
 void WebContentsImpl::DidNavigateAnyFramePostCommit(
@@ -4616,7 +4620,7 @@ void WebContentsImpl::OnThemeColorChanged(
   // first visually non-empty paint.
   theme_color_ = theme_color;
 
-  if (did_first_visually_non_empty_paint_ &&
+  if (GetRenderViewHost()->did_first_visually_non_empty_paint() &&
       last_sent_theme_color_ != theme_color_) {
     for (auto& observer : observers_)
       observer.DidChangeThemeColor(theme_color_);
@@ -5124,10 +5128,6 @@ void WebContentsImpl::SetIsOverlayContent(bool is_overlay_content) {
 
 void WebContentsImpl::DidFirstVisuallyNonEmptyPaint(
     RenderViewHostImpl* source) {
-  // Set |did_first_visually_non_empty_paint_| before notifying observers so
-  // they can see that CompletedFirstVisuallyNonEmptyPaint() is true.
-  did_first_visually_non_empty_paint_ = true;
-
   // TODO(nick): When this is ported to FrameHostMsg_, we should only listen if
   // |source| is the main frame.
   for (auto& observer : observers_)
@@ -6688,7 +6688,7 @@ service_manager::InterfaceProvider* WebContentsImpl::GetJavaInterfaces() {
 #endif
 
 bool WebContentsImpl::CompletedFirstVisuallyNonEmptyPaint() {
-  return did_first_visually_non_empty_paint_;
+  return GetRenderViewHost()->did_first_visually_non_empty_paint();
 }
 
 void WebContentsImpl::OnDidDownloadImage(
