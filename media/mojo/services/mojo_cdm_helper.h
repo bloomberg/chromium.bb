@@ -72,7 +72,7 @@ class MEDIA_MOJO_EXPORT MojoCdmHelper final : public CdmAuxiliaryHelper,
   // connection error occurs, we will not be able to reconnect to the
   // service as the document has been destroyed (see FrameServiceBase) or
   // the browser crashed, so there's no point in trying to reconnect.
-  mojom::CdmStoragePtr cdm_storage_ptr_;
+  mojo::Remote<mojom::CdmStorage> cdm_storage_remote_;
   std::unique_ptr<CdmAllocator> allocator_;
   mojo::Remote<mojom::OutputProtection> output_protection_;
   mojo::Remote<mojom::PlatformVerification> platform_verification_;
