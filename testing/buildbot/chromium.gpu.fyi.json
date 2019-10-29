@@ -20296,29 +20296,6 @@
           "expiration": 21600
         },
         "test": "swiftshader_unittests"
-      },
-      {
-        "args": [
-          "--ignore-runtime-requirements=*"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "xr_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "1002:699f",
-              "os": "Windows-10",
-              "pool": "Chrome-GPU"
-            }
-          ],
-          "expiration": 21600
-        },
-        "test": "xr_browser_tests"
       }
     ],
     "isolated_scripts": [
