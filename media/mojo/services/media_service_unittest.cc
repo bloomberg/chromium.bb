@@ -30,7 +30,8 @@
 #include "media/mojo/mojom/renderer.mojom.h"
 #include "media/mojo/services/media_interface_provider.h"
 #include "media/mojo/services/media_manifest.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
@@ -148,8 +149,8 @@ class MediaServiceTest : public testing::Test {
                  .Build()}),
         test_service_(
             test_service_manager_.RegisterTestInstance(kTestServiceName)),
-        cdm_proxy_client_binding_(&cdm_proxy_client_),
-        renderer_client_binding_(&renderer_client_),
+        cdm_proxy_client_receiver_(&cdm_proxy_client_),
+        renderer_client_receiver_(&renderer_client_),
         video_stream_(DemuxerStream::VIDEO) {}
   ~MediaServiceTest() override = default;
 
@@ -212,14 +213,15 @@ class MediaServiceTest : public testing::Test {
     interface_factory_->CreateCdmProxy(cdm_guid,
                                        cdm_proxy_.BindNewPipeAndPassReceiver());
 
-    mojom::CdmProxyClientAssociatedPtrInfo client_ptr_info;
-    cdm_proxy_client_binding_.Bind(mojo::MakeRequest(&client_ptr_info));
+    mojo::PendingAssociatedRemote<mojom::CdmProxyClient> client_remote;
+    cdm_proxy_client_receiver_.Bind(
+        client_remote.InitWithNewEndpointAndPassReceiver());
     int cdm_id = CdmContext::kInvalidCdmId;
 
     EXPECT_CALL(*this, OnCdmProxyInitialized(CdmProxy::Status::kOk, _, _, _))
         .WillOnce(DoAll(SaveArg<3>(&cdm_id), QuitLoop(&run_loop)));
     cdm_proxy_->Initialize(
-        std::move(client_ptr_info),
+        std::move(client_remote),
         base::BindOnce(&MediaServiceTest::OnCdmProxyInitialized,
                        base::Unretained(this)));
     run_loop.Run();
@@ -263,8 +265,9 @@ class MediaServiceTest : public testing::Test {
     mojo_video_stream_.reset(new MojoDemuxerStreamImpl(
         &video_stream_, MakeRequest(&video_stream_proxy_info)));
 
-    mojom::RendererClientAssociatedPtrInfo client_ptr_info;
-    renderer_client_binding_.Bind(mojo::MakeRequest(&client_ptr_info));
+    mojo::PendingAssociatedRemote<mojom::RendererClient> client_remote;
+    renderer_client_receiver_.Bind(
+        client_remote.InitWithNewEndpointAndPassReceiver());
 
     std::vector<mojom::DemuxerStreamPtrInfo> streams;
     streams.push_back(std::move(video_stream_proxy_info));
@@ -272,7 +275,7 @@ class MediaServiceTest : public testing::Test {
     EXPECT_CALL(*this, OnRendererInitialized(expected_result))
         .WillOnce(QuitLoop(&run_loop));
     renderer_->Initialize(
-        std::move(client_ptr_info), std::move(streams), nullptr,
+        std::move(client_remote), std::move(streams), nullptr,
         base::BindOnce(&MediaServiceTest::OnRendererInitialized,
                        base::Unretained(this)));
     run_loop.Run();
@@ -292,10 +295,10 @@ class MediaServiceTest : public testing::Test {
   mojo::Remote<mojom::Renderer> renderer_;
 
   NiceMock<MockCdmProxyClient> cdm_proxy_client_;
-  mojo::AssociatedBinding<mojom::CdmProxyClient> cdm_proxy_client_binding_;
+  mojo::AssociatedReceiver<mojom::CdmProxyClient> cdm_proxy_client_receiver_;
 
   NiceMock<MockRendererClient> renderer_client_;
-  mojo::AssociatedBinding<mojom::RendererClient> renderer_client_binding_;
+  mojo::AssociatedReceiver<mojom::RendererClient> renderer_client_receiver_;
 
   StrictMock<MockDemuxerStream> video_stream_;
   std::unique_ptr<MojoDemuxerStreamImpl> mojo_video_stream_;
