@@ -1164,6 +1164,8 @@ source_set("chromeos") {
     "input_method/input_method_persistence.h",
     "input_method/input_method_syncer.cc",
     "input_method/input_method_syncer.h",
+    "input_method/native_input_method_engine.cc",
+    "input_method/native_input_method_engine.h",
     "kerberos/kerberos_credentials_manager.cc",
     "kerberos/kerberos_credentials_manager.h",
     "kerberos/kerberos_ticket_expiry_notification.cc",
