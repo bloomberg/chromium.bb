@@ -112,8 +112,9 @@ extern NSString* const kSettingsDoneButtonId;
                   feedbackDataSource:(id<UserFeedbackDataSource>)dataSource
                           dispatcher:(id<ApplicationCommands>)dispatcher;
 
-// Creates and displays a new ImportDataTableViewController. |browser|
+// Creates and displays a new ImportDataTableViewController. |browserState|
 // should not be nil.
+// TODO(crbug.com/1018746) pass Browser instead of BrowserState
 + (instancetype)
     importDataControllerForBrowserState:(ios::ChromeBrowserState*)browserState
                                delegate:
@@ -144,12 +145,11 @@ extern NSString* const kSettingsDoneButtonId;
                                           delegate;
 
 // Initializes the UINavigationController with |rootViewController|.
-- (instancetype)
-    initWithRootViewController:(UIViewController*)rootViewController
-                  browserState:(ios::ChromeBrowserState*)browserState
-                      delegate:
-                          (id<SettingsNavigationControllerDelegate>)delegate
-    NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithRootViewController:(UIViewController*)rootViewController
+                                   browser:(Browser*)browser
+                                  delegate:
+                                      (id<SettingsNavigationControllerDelegate>)
+                                          delegate NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithRootViewController:(UIViewController*)rootViewController
     NS_UNAVAILABLE;

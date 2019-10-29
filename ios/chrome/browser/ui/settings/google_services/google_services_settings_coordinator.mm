@@ -62,11 +62,9 @@
 @implementation GoogleServicesSettingsCoordinator
 
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
-                              browserState:
-                                  (ios::ChromeBrowserState*)browserState
+                                   browser:(Browser*)browser
                                       mode:(GoogleServicesSettingsMode)mode {
-  if ([super initWithBaseViewController:viewController
-                           browserState:browserState]) {
+  if ([super initWithBaseViewController:viewController browser:browser]) {
     _mode = mode;
   }
   return self;
@@ -212,9 +210,9 @@
       signin_metrics::AccessPoint::ACCESS_POINT_GOOGLE_SERVICES_SETTINGS,
       signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO);
   DCHECK(!self.signinInteractionCoordinator);
-  self.signinInteractionCoordinator = [[SigninInteractionCoordinator alloc]
-      initWithBrowserState:self.browserState
-                dispatcher:self.dispatcher];
+  self.signinInteractionCoordinator =
+      [[SigninInteractionCoordinator alloc] initWithBrowser:self.browser
+                                                 dispatcher:self.dispatcher];
   __weak __typeof(self) weakSelf = self;
   [self.signinInteractionCoordinator
             signInWithIdentity:nil
@@ -229,9 +227,9 @@
 }
 
 - (void)openAccountSettings {
-  AccountsTableViewController* controller = [[AccountsTableViewController alloc]
-           initWithBrowserState:self.browserState
-      closeSettingsOnAddAccount:NO];
+  AccountsTableViewController* controller =
+      [[AccountsTableViewController alloc] initWithBrowser:self.browser
+                                 closeSettingsOnAddAccount:NO];
   [self.navigationController pushViewController:controller animated:YES];
 }
 
