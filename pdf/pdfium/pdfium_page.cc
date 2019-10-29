@@ -184,6 +184,13 @@ bool DoubleEquals(double d1, double d2) {
              std::fmax(std::fmax(std::fabs(d1), std::fabs(d2)), epsilon_scale);
 }
 
+uint32_t MakeARGB(unsigned int a,
+                  unsigned int r,
+                  unsigned int g,
+                  unsigned int b) {
+  return (a << 24) | (r << 16) | (g << 8) | b;
+}
+
 }  // namespace
 
 PDFiumPage::LinkTarget::LinkTarget() : page(-1) {}
@@ -268,8 +275,59 @@ void PDFiumPage::CalculatePageObjectTextRunBreaks() {
   }
 }
 
-base::Optional<PP_PrivateAccessibilityTextRunInfo> PDFiumPage::GetTextRunInfo(
-    int start_char_index) {
+void PDFiumPage::CalculateTextRunStyleInfo(
+    int char_index,
+    pp::PDF::PrivateAccessibilityTextStyleInfo* style_info) {
+  FPDF_TEXTPAGE text_page = GetTextPage();
+  style_info->font_size = FPDFText_GetFontSize(text_page, char_index);
+
+  int flags = 0;
+  size_t buffer_size =
+      FPDFText_GetFontInfo(text_page, char_index, nullptr, 0, &flags);
+  if (buffer_size > 0) {
+    PDFiumAPIStringBufferAdapter<std::string> api_string_adapter(
+        &style_info->font_name, buffer_size, true);
+    void* data = api_string_adapter.GetData();
+    size_t bytes_written =
+        FPDFText_GetFontInfo(text_page, char_index, data, buffer_size, nullptr);
+    // Trim the null character.
+    api_string_adapter.Close(bytes_written);
+  }
+
+  style_info->font_weight = FPDFText_GetFontWeight(text_page, char_index);
+  // As defined in PDF 1.7 table 5.20.
+  constexpr int kFlagItalic = (1 << 6);
+  // Bold text is considered bold when greater than or equal to 700.
+  constexpr int kStandardBoldValue = 700;
+  style_info->is_italic = (flags & kFlagItalic);
+  style_info->is_bold = style_info->font_weight >= kStandardBoldValue;
+  unsigned int fill_r;
+  unsigned int fill_g;
+  unsigned int fill_b;
+  unsigned int fill_a;
+  if (FPDFText_GetFillColor(text_page, char_index, &fill_r, &fill_g, &fill_b,
+                            &fill_a)) {
+    style_info->fill_color = MakeARGB(fill_a, fill_r, fill_g, fill_b);
+  } else {
+    style_info->fill_color = MakeARGB(0xff, 0, 0, 0);
+  }
+
+  unsigned int stroke_r;
+  unsigned int stroke_g;
+  unsigned int stroke_b;
+  unsigned int stroke_a;
+  if (FPDFText_GetStrokeColor(text_page, char_index, &stroke_r, &stroke_g,
+                              &stroke_b, &stroke_a)) {
+    style_info->stroke_color = MakeARGB(stroke_a, stroke_r, stroke_g, stroke_b);
+  } else {
+    style_info->stroke_color = MakeARGB(0xff, 0, 0, 0);
+  }
+
+  style_info->render_mode = FPDFText_GetTextRenderMode(text_page, char_index);
+}
+
+base::Optional<pp::PDF::PrivateAccessibilityTextRunInfo>
+PDFiumPage::GetTextRunInfo(int start_char_index) {
   FPDF_PAGE page = GetPage();
   FPDF_TEXTPAGE text_page = GetTextPage();
   int chars_count = FPDFText_CountChars(text_page);
@@ -282,21 +340,24 @@ base::Optional<PP_PrivateAccessibilityTextRunInfo> PDFiumPage::GetTextRunInfo(
   // Check to see if GetFirstNonUnicodeWhiteSpaceCharIndex() iterated through
   // all the characters.
   if (actual_start_char_index >= chars_count) {
-    // If so, |text_run_info->len| needs to take the number of characters
+    // If so, |info.len| needs to take the number of characters
     // iterated into account.
     DCHECK_GT(actual_start_char_index, start_char_index);
-    PP_PrivateAccessibilityTextRunInfo info;
+    pp::PDF::PrivateAccessibilityTextRunInfo info;
     info.len = chars_count - start_char_index;
-    info.font_size = 0;
     info.bounds = pp::FloatRect();
     info.direction = PP_PRIVATEDIRECTION_NONE;
     return info;
   }
   int char_index = actual_start_char_index;
 
+  // Set text run's style info from the first character of the text run.
+  pp::PDF::PrivateAccessibilityTextRunInfo info;
+  CalculateTextRunStyleInfo(char_index, &info.style);
+
   pp::FloatRect start_char_rect =
       GetFloatCharRectInPixels(page, text_page, char_index);
-  double text_run_font_size = FPDFText_GetFontSize(text_page, char_index);
+  double text_run_font_size = info.style.font_size;
 
   // Heuristic: Initialize the average character size to one-third of the font
   // size to avoid having the first few characters misrepresent the average.
@@ -345,6 +406,8 @@ base::Optional<PP_PrivateAccessibilityTextRunInfo> PDFiumPage::GetTextRunInfo(
         GetFloatCharRectInPixels(page, text_page, char_index);
 
     if (!base::IsUnicodeWhitespace(character)) {
+      // TODO (bebeaudr): add text run break heuristic to break on style.
+
       // Heuristic: End the text run if different font size is encountered.
       double font_size = FPDFText_GetFontSize(text_page, char_index);
       if (!DoubleEquals(font_size, text_run_font_size))
@@ -407,9 +470,8 @@ base::Optional<PP_PrivateAccessibilityTextRunInfo> PDFiumPage::GetTextRunInfo(
     text_run_font_size = estimated_font_size;
   }
 
-  PP_PrivateAccessibilityTextRunInfo info;
   info.len = char_index - start_char_index;
-  info.font_size = text_run_font_size;
+  info.style.font_size = text_run_font_size;
   info.bounds = text_run_bounds;
   // Infer text direction from first and last character of the text run. We
   // can't base our decision on the character direction, since a character of a
