@@ -233,10 +233,10 @@ class MediaServiceTest : public testing::Test {
 
   void CreateDecryptor(int cdm_id, bool expected_result) {
     base::RunLoop run_loop;
-    mojom::DecryptorPtr decryptor_ptr;
-    interface_factory_->CreateDecryptor(cdm_id,
-                                        mojo::MakeRequest(&decryptor_ptr));
-    MojoDecryptor mojo_decryptor(std::move(decryptor_ptr));
+    mojo::PendingRemote<mojom::Decryptor> decryptor_remote;
+    interface_factory_->CreateDecryptor(
+        cdm_id, decryptor_remote.InitWithNewPipeAndPassReceiver());
+    MojoDecryptor mojo_decryptor(std::move(decryptor_remote));
 
     // In the success case, there's no decryption key to decrypt the buffer so
     // we would expect no-key.
