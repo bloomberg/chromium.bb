@@ -7,6 +7,7 @@
 #import <EarlGrey/EarlGrey.h>
 
 #include "base/mac/foundation_util.h"
+#import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_constants.h"
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/identity_chooser/identity_chooser_cell.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/identity_picker_view.h"
