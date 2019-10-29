@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/metrics/ukm_url_recorder.h"
+#include "components/ukm/ios/ukm_url_recorder.h"
 
 #include "base/bind.h"
 #include "base/optional.h"
 #import "base/test/ios/wait_util.h"
 #include "components/ukm/test_ukm_recorder.h"
-#import "ios/chrome/browser/web/chrome_web_test.h"
 #import "ios/web/public/navigation/navigation_manager.h"
+#import "ios/web/public/test/web_test_with_web_state.h"
 #import "ios/web/public/web_state.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -55,14 +55,14 @@ std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
 
 }  // namespace
 
-class UkmUrlRecorderTest : public ChromeWebTest {
+class UkmUrlRecorderTest : public web::WebTestWithWebState {
  protected:
   UkmUrlRecorderTest() {
     server_.RegisterDefaultHandler(base::BindRepeating(&HandleRequest));
   }
 
   void SetUp() override {
-    ChromeWebTest::SetUp();
+    web::WebTestWithWebState::SetUp();
     ASSERT_TRUE(server_.Start());
     ukm::InitializeSourceUrlRecorderForWebState(web_state());
   }

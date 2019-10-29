@@ -209,6 +209,7 @@ test("components_unittests") {
       "//components/security_state/ios:unit_tests",
       "//components/signin/ios/browser:unit_tests",
       "//components/translate/ios/browser:unit_tests",
+      "//components/ukm/ios:unit_tests",
     ]
   } else {  # !iOS
     deps += [

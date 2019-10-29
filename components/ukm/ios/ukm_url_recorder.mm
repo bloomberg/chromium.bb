@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/metrics/ukm_url_recorder.h"
+#include "components/ukm/ios/ukm_url_recorder.h"
 
 #include <utility>
 
