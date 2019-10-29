@@ -746,4 +746,22 @@ TEST_F(StyledLabelTest, ViewsCenteredWithLinkAndCustomView) {
   EXPECT_TRUE(is_centered(2));
 }
 
+TEST_F(StyledLabelTest, CacheSizeWithAlignment) {
+  const std::string text("text");
+  InitStyledLabel(text);
+  styled()->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
+  styled()->SetBounds(0, 0, 1000, 1000);
+  styled()->Layout();
+  ASSERT_EQ(1u, styled()->children().size());
+  const View* child = styled()->children().front();
+  EXPECT_EQ(1000, child->bounds().right());
+
+  styled()->SetSize({800, 1000});
+  styled()->Layout();
+  ASSERT_EQ(1u, styled()->children().size());
+  const View* new_child = styled()->children().front();
+  EXPECT_EQ(child, new_child);
+  EXPECT_EQ(800, new_child->bounds().right());
+}
+
 }  // namespace views
