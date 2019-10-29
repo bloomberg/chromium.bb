@@ -564,3 +564,53 @@ TEST(Construct, FunctionsAndThumbExternsWithSameAddress) {
                "PUBLIC cc00 0 arm_func\n",
                contents.c_str());
 }
+
+TEST(Write, OutOfRangeAddresses) {
+  stringstream s;
+  Module m(MODULE_NAME, MODULE_OS, MODULE_ARCH, MODULE_ID);
+
+  // Specify an allowed address range, representing a PT_LOAD segment in a
+  // module.
+  vector<Module::Range> address_ranges = {
+    Module::Range(0x2000ULL, 0x1000ULL),
+  };
+  m.SetAddressRanges(address_ranges);
+
+  // Add three stack frames (one lower, one in, and one higher than the allowed
+  // address range).  Only the middle frame should be captured.
+  Module::StackFrameEntry* entry1 = new Module::StackFrameEntry();
+  entry1->address = 0x1000ULL;
+  entry1->size = 0x100ULL;
+  m.AddStackFrameEntry(entry1);
+  Module::StackFrameEntry* entry2 = new Module::StackFrameEntry();
+  entry2->address = 0x2000ULL;
+  entry2->size = 0x100ULL;
+  m.AddStackFrameEntry(entry2);
+  Module::StackFrameEntry* entry3 = new Module::StackFrameEntry();
+  entry3->address = 0x3000ULL;
+  entry3->size = 0x100ULL;
+  m.AddStackFrameEntry(entry3);
+
+  // Add a function outside the allowed range.
+  Module::File* file = m.FindFile("file_name.cc");
+  Module::Function* function = new Module::Function(
+      "function_name", 0x4000ULL);
+  Module::Range range(0x4000ULL, 0x1000ULL);
+  function->ranges.push_back(range);
+  function->parameter_size = 0x100ULL;
+  Module::Line line = { 0x4000ULL, 0x100ULL, file, 67519080 };
+  function->lines.push_back(line);
+  m.AddFunction(function);
+
+  // Add an extern outside the allowed range.
+  Module::Extern* extern1 = new Module::Extern(0x5000ULL);
+  extern1->name = "_xyz";
+  m.AddExtern(extern1);
+
+  m.Write(s, ALL_SYMBOL_DATA);
+
+  EXPECT_STREQ("MODULE os-name architecture id-string name with spaces\n"
+               "STACK CFI INIT 2000 100 \n",
+               s.str().c_str());
+
+}

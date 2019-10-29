@@ -182,6 +182,23 @@ typename ElfClass::Addr GetLoadingAddress(
   return 0;
 }
 
+// Find the set of address ranges for all PT_LOAD segments.
+template <typename ElfClass>
+vector<Module::Range> GetPtLoadSegmentRanges(
+    const typename ElfClass::Phdr* program_headers,
+    int nheader) {
+  typedef typename ElfClass::Phdr Phdr;
+  vector<Module::Range> ranges;
+
+  for (int i = 0; i < nheader; ++i) {
+    const Phdr& header = program_headers[i];
+    if (header.p_type == PT_LOAD) {
+      ranges.push_back(Module::Range(header.p_vaddr, header.p_memsz));
+    }
+  }
+  return ranges;
+}
+
 #ifndef NO_STABS_SUPPORT
 template<typename ElfClass>
 bool LoadStabs(const typename ElfClass::Ehdr* elf_header,
@@ -648,6 +665,14 @@ bool LoadSymbols(const string& obj_file,
       elf_header->e_phnum);
   module->SetLoadAddress(loading_addr);
   info->set_loading_addr(loading_addr, obj_file);
+
+  // Allow filtering of extraneous debug information in partitioned libraries.
+  // Such libraries contain debug information for all libraries extracted from
+  // the same combined library, implying extensive duplication.
+  vector<Module::Range> address_ranges = GetPtLoadSegmentRanges<ElfClass>(
+      GetOffset<ElfClass, Phdr>(elf_header, elf_header->e_phoff),
+      elf_header->e_phnum);
+  module->SetAddressRanges(address_ranges);
 
   const Shdr* sections =
       GetOffset<ElfClass, Shdr>(elf_header, elf_header->e_shoff);
