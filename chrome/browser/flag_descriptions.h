@@ -657,9 +657,6 @@ extern const char kFileHandlingAPIDescription[];
 extern const char kFillOnAccountSelectName[];
 extern const char kFillOnAccountSelectDescription[];
 
-extern const char kFillOnAccountSelectHttpName[];
-extern const char kFillOnAccountSelectHttpDescription[];
-
 extern const char kFocusMode[];
 extern const char kFocusModeDescription[];
 

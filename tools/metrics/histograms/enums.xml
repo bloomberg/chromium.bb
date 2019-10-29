@@ -47861,9 +47861,8 @@ Called by update_net_trust_anchors.py.-->
     Form is suspected to be a password change form. (Only recorded for old form
     parser)
   </int>
-  <int value="4" label="FOAS on HTTP">
-    User is on an HTTP site where passwords are filled on account selection
-    (FOAS).
+  <int value="4" label="Insecure Origin">
+    User is on a site with an insecure main frame origin.
   </int>
   <int value="5" label="Touch To Fill">
     User is browsing with the Touch To Fill feature enabled.

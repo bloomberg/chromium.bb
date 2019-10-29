@@ -2180,11 +2180,6 @@
     "expiry_milestone": 80
   },
   {
-    "name": "fill-on-account-select-http",
-    "owners": [ "jdoerrie" ],
-    "expiry_milestone": 80
-  },
-  {
     "name": "focus-mode",
     "owners": [ "dfried", "pbos", "yiningwang@google.com" ],
     "expiry_milestone": 82
