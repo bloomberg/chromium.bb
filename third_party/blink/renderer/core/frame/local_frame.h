@@ -203,7 +203,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // that contains a |UserGestureToken| with the given status.
   static std::unique_ptr<UserGestureIndicator> NotifyUserActivation(
       LocalFrame*,
-      UserGestureToken::Status = UserGestureToken::kPossiblyExistingGesture,
       bool need_browser_verification = false);
 
   // Returns the transient user activation state of the |LocalFrame|, provided

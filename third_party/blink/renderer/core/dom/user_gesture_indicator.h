@@ -27,8 +27,6 @@ class CORE_EXPORT UserGestureToken : public RefCounted<UserGestureToken> {
   friend class UserGestureIndicator;
 
  public:
-  enum Status { kNewGesture, kPossiblyExistingGesture };
-
   ~UserGestureToken() = default;
 
   void SetClockForTesting(const base::Clock* clock) { clock_ = clock; }
@@ -36,7 +34,7 @@ class CORE_EXPORT UserGestureToken : public RefCounted<UserGestureToken> {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(UserGestureIndicatorTest, Timeouts);
-  UserGestureToken(Status);
+  UserGestureToken();
 
   void TransferGestureTo(UserGestureToken*);
   bool ConsumeGesture();
@@ -77,8 +75,7 @@ class CORE_EXPORT UserGestureIndicator final {
 
   // Constructs a UserGestureIndicator with a new UserGestureToken of the given
   // status.
-  explicit UserGestureIndicator(
-      UserGestureToken::Status = UserGestureToken::kPossiblyExistingGesture);
+  explicit UserGestureIndicator();
   ~UserGestureIndicator();
 
  private:

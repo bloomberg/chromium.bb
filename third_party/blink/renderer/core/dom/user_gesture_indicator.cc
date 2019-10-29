@@ -16,12 +16,11 @@ namespace blink {
 // User gestures timeout in 1 second.
 const double kUserGestureTimeout = 1.0;
 
-UserGestureToken::UserGestureToken(Status status)
+UserGestureToken::UserGestureToken()
     : consumable_gestures_(0),
       clock_(base::DefaultClock::GetInstance()),
       timestamp_(clock_->Now().ToDoubleT()) {
-  if (status == kNewGesture || !UserGestureIndicator::CurrentTokenThreadSafe())
-    consumable_gestures_++;
+  consumable_gestures_++;
 }
 
 bool UserGestureToken::HasGestures() const {
@@ -68,10 +67,10 @@ UserGestureIndicator::UserGestureIndicator(
   UpdateRootToken();
 }
 
-UserGestureIndicator::UserGestureIndicator(UserGestureToken::Status status) {
+UserGestureIndicator::UserGestureIndicator() {
   if (!IsMainThread())
     return;
-  token_ = base::AdoptRef(new UserGestureToken(status));
+  token_ = base::AdoptRef(new UserGestureToken());
   UpdateRootToken();
 }
 

@@ -95,7 +95,7 @@ GamepadList* NavigatorGamepad::Gamepads() {
   if (RuntimeEnabledFeatures::UserActivationV2Enabled() && GetFrame() &&
       GetPage() && GetPage()->IsPageVisible() &&
       GamepadComparisons::HasUserActivation(gamepads_)) {
-    LocalFrame::NotifyUserActivation(GetFrame(), UserGestureToken::kNewGesture);
+    LocalFrame::NotifyUserActivation(GetFrame());
   }
   is_gamepads_exposed_ = true;
 

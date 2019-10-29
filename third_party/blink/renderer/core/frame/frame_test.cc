@@ -75,8 +75,7 @@ TEST_F(FrameTest, PossiblyExisting) {
 TEST_F(FrameTest, NewGesture) {
   // UserGestureToken::Status doesn't impact Document gesture state.
   std::unique_ptr<UserGestureIndicator> holder =
-      LocalFrame::NotifyUserActivation(GetDocument().GetFrame(),
-                                       UserGestureToken::kNewGesture);
+      LocalFrame::NotifyUserActivation(GetDocument().GetFrame());
   EXPECT_TRUE(GetDocument().GetFrame()->HasBeenActivated());
 }
 
