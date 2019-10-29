@@ -179,7 +179,7 @@ class DownloadCache(object):
                             blocking=blocking)
     return lock.lock(shared)
 
-  def Purge(self, max_age=None, cache_size=None):
+  def Purge(self, max_age=None, cache_size=None, protect=None):
     """Attempts to clean up the cache contents.
 
     Is a no-op if cache lock is not acquirable.
@@ -189,9 +189,12 @@ class DownloadCache(object):
                        purge. Mostly intended for unittests.
       cache_size: Overrides the __init__ cache_size for this one
                        purge. Mostly intended for unittests.
+      protect: List of files to definitely not purge.
     """
     max_age = self._max_age if max_age is None else max_age
     cache_size = self._cache_size if cache_size is None else cache_size
+    # TODO(crbug/1016555): remove or reduce logging once fixed.
+    logging.info('Purge(max_age=%s, cache_size=%s)', max_age, cache_size)
 
     try:
       # Prevent other changes while we purge the cache.
@@ -202,6 +205,9 @@ class DownloadCache(object):
           now = time.time()
           for f in utils.ListdirFullpath(self._file_dir):
             if (now - os.path.getmtime(f)) > max_age:
+              # TODO(crbug/1016555): remove or reduce logging once fixed.
+              logging.info(
+                  'Purge removing %s. age=%d', f, now - os.path.getmtime(f))
               os.unlink(f)
 
         # Purge files based on size, if specified.
@@ -218,6 +224,11 @@ class DownloadCache(object):
           for f, size in zip(cache_files, sizes):
             if total_size < cache_size:
               break
+            if f in protect:
+              logging.info('Purge not removing protected %s', f)
+              continue
+            # TODO(crbug/1016555): remove or reduce logging once fixed.
+            logging.info('Purge removing %s. total_size=%d', f, total_size)
             total_size -= size
             os.unlink(f)
 
@@ -271,7 +282,7 @@ class DownloadCache(object):
       return False
 
     # Try to cleanup the cache after we just grew it.
-    self.Purge()
+    self.Purge(protect=[cache_file])
     return True
 
   # TODO: Instead of hooking in fetch functions in the cache here, we could
