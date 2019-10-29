@@ -516,6 +516,7 @@ class ManifestCheckoutTest(cros_test_lib.TempDirTestCase):
     git.Commit(remote_manifests, 'dummy commit', allow_empty=True)
     git.CreateBranch(remote_manifests, 'default')
     git.CreateBranch(remote_manifests, 'release-R23-2913.B')
+    git.CreateBranch(remote_manifests, 'release-R23-2913.B-suffix')
     git.CreateBranch(remote_manifests, 'firmware-link-')
 
     # Create a copy of our existing manifests.git, but rewrite it so it
@@ -632,4 +633,17 @@ class ManifestCheckoutTest(cros_test_lib.TempDirTestCase):
     self.assertTrue('firmware-link-' in branches[0])
 
     branches = git.MatchBranchName(git_repo, 'r23')
+    self.assertEqual(branches,
+                     ['refs/remotes/origin/release-R23-2913.B',
+                      'refs/remotes/origin/release-R23-2913.B-suffix'])
+
+    branches = git.MatchBranchName(git_repo, 'release-R23-2913.B')
     self.assertEqual(branches, ['refs/remotes/origin/release-R23-2913.B'])
+
+    branches = git.MatchBranchName(git_repo, 'release-R23-2913.B',
+                                   namespace='refs/remotes/origin/')
+    self.assertEqual(branches, ['release-R23-2913.B'])
+
+    branches = git.MatchBranchName(git_repo, 'release-R23-2913.B',
+                                   namespace='refs/remotes/')
+    self.assertEqual(branches, ['origin/release-R23-2913.B'])
