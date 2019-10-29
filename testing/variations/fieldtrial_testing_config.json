@@ -4398,24 +4398,6 @@
             ]
         }
     ],
-    "PasswordSmartBubble": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "3-Times",
-                    "params": {
-                        "dismissal_count": "3"
-                    }
-                }
-            ]
-        }
-    ],
     "PauseBrowserInitiatedHeavyTrafficForP2P": [
         {
             "platforms": [
