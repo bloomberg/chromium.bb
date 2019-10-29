@@ -16,6 +16,8 @@ import tempfile
 import unittest
 import zlib
 
+import six
+
 # Mutates sys.path.
 import test_env
 
@@ -531,7 +533,7 @@ class StorageTest(TestCase):
   def test_archive_files_to_storage_tar(self):
     # Create 5 files, which is the minimum to create a tarball.
     for i in range(5):
-      with open(os.path.join(self.tempdir, unicode(i)), 'wb') as f:
+      with open(os.path.join(self.tempdir, six.text_type(i)), 'wb') as f:
         f.write('fooo%d' % i)
     server_ref = isolate_storage.ServerRef('http://localhost:1', 'default')
     storage_api = MockedStorageApi(server_ref, {})

@@ -14,6 +14,8 @@ import os
 import sys
 import tempfile
 
+import six
+
 # Mutates sys.path.
 import test_env
 
@@ -122,7 +124,7 @@ class RunIsolatedTestBase(auto_stub.TestCase):
   def setUp(self):
     super(RunIsolatedTestBase, self).setUp()
     os.environ.pop('LUCI_CONTEXT', None)
-    self._previous_dir = unicode(os.getcwd())
+    self._previous_dir = six.text_type(os.getcwd())
     self.tempdir = tempfile.mkdtemp(prefix=u'run_isolated_test')
     logging.debug('Temp dir: %s', self.tempdir)
     cwd = os.path.join(self.tempdir, 'cwd')
@@ -689,14 +691,16 @@ class RunIsolatedTest(RunIsolatedTestBase):
 
     # Test cipd client cache. `git:wowza` was a tag and so is cacheable.
     self.assertEqual(len(fs.listdir(os.path.join(cipd_cache, 'versions'))), 2)
-    version_file = unicode(os.path.join(
-        cipd_cache, 'versions', '765a0de4c618f91faf923cb68a47bb564aed412d'))
+    version_file = six.text_type(
+        os.path.join(cipd_cache, 'versions',
+                     '765a0de4c618f91faf923cb68a47bb564aed412d'))
     self.assertTrue(fs.isfile(version_file))
     with open(version_file) as f:
       self.assertEqual(f.read(), 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
 
-    client_binary_file = unicode(os.path.join(
-        cipd_cache, 'clients', 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'))
+    client_binary_file = six.text_type(
+        os.path.join(cipd_cache, 'clients',
+                     'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'))
     self.assertTrue(fs.isfile(client_binary_file))
 
     # Test echo call.
@@ -729,11 +733,12 @@ class RunIsolatedTest(RunIsolatedTestBase):
     self.assertEqual(0, ret)
 
     # The CIPD client was bootstrapped and hardlinked (or copied on Win).
-    client_binary_file = unicode(os.path.join(
-        cipd_cache, 'clients', 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'))
+    client_binary_file = six.text_type(
+        os.path.join(cipd_cache, 'clients',
+                     'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'))
     self.assertTrue(fs.isfile(client_binary_file))
-    client_binary_link = unicode(os.path.join(
-        cipd_cache, 'bin', 'cipd' + cipd.EXECUTABLE_SUFFIX))
+    client_binary_link = six.text_type(
+        os.path.join(cipd_cache, 'bin', 'cipd' + cipd.EXECUTABLE_SUFFIX))
     self.assertTrue(fs.isfile(client_binary_link))
 
     # 'cipd ensure' was NOT called (only 'echo hello world' was).
@@ -1519,29 +1524,29 @@ class RunIsolatedJsonTest(RunIsolatedTestBase):
     isolated_out_json = json_dumps(isolated_out)
     isolated_out_hash = isolateserver_fake.hash_content(isolated_out_json)
     expected = {
-      u'exit_code': 0,
-      u'had_hard_timeout': False,
-      u'internal_failure': None,
-      u'outputs_ref': {
-        u'isolated': unicode(isolated_out_hash),
-        u'isolatedserver': u'http://localhost:1',
-        u'namespace': u'default-gzip',
-      },
-      u'stats': {
-        u'isolated': {
-          u'download': {
-            u'initial_number_items': 0,
-            u'initial_size': 0,
-            u'items_cold': [len(isolated_in_json)],
-            u'items_hot': [],
-          },
-          u'upload': {
-            u'items_cold': [len(isolated_out_json)],
-            u'items_hot': [15],
-          },
+        u'exit_code': 0,
+        u'had_hard_timeout': False,
+        u'internal_failure': None,
+        u'outputs_ref': {
+            u'isolated': six.text_type(isolated_out_hash),
+            u'isolatedserver': u'http://localhost:1',
+            u'namespace': u'default-gzip',
         },
-      },
-      u'version': 5,
+        u'stats': {
+            u'isolated': {
+                u'download': {
+                    u'initial_number_items': 0,
+                    u'initial_size': 0,
+                    u'items_cold': [len(isolated_in_json)],
+                    u'items_hot': [],
+                },
+                u'upload': {
+                    u'items_cold': [len(isolated_out_json)],
+                    u'items_hot': [15],
+                },
+            },
+        },
+        u'version': 5,
     }
     actual = tools.read_json(out)
     # duration can be exactly 0 due to low timer resolution, especially but not

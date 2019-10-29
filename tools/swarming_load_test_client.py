@@ -28,6 +28,7 @@ tools.force_local_third_party()
 
 # third_party/
 import colorama
+import six
 
 # pylint: disable=ungrouped-imports
 import swarming
@@ -109,14 +110,12 @@ def trigger_task(
     test_keys.append(key.pop('test_key'))
     assert re.match('[0-9a-f]+', test_keys[-1]), test_keys
   expected = {
-    u'priority': 100,
-    u'test_case_name': unicode(name),
-    u'test_keys': [
-      {
-        u'num_instances': 1,
-        u'instance_index': 0,
-      }
-    ],
+      u'priority': 100,
+      u'test_case_name': six.text_type(name),
+      u'test_keys': [{
+          u'num_instances': 1,
+          u'instance_index': 0,
+      }],
   }
   assert result == expected, '\n%s\n%s' % (result, expected)
 

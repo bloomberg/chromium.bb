@@ -14,6 +14,8 @@ import subprocess
 import sys
 import tempfile
 
+import six
+
 # Mutates sys.path.
 import test_env
 
@@ -119,7 +121,7 @@ class IsolateBase(auto_stub.TestCase):
     self.mock(auth, 'ensure_logged_in', lambda _: None)
     self.old_cwd = os.getcwd()
     self.cwd = file_path.get_native_path_case(
-        unicode(tempfile.mkdtemp(prefix=u'isolate_')))
+        six.text_type(tempfile.mkdtemp(prefix=u'isolate_')))
     # Everything should work even from another directory.
     os.chdir(self.cwd)
     self.mock(
@@ -273,8 +275,8 @@ class IsolateTest(IsolateBase):
     complete_state = isolate.CompleteState(
         None, isolate.SavedState('sha-1', self.cwd))
     complete_state.load_isolate(
-        unicode(self.cwd), unicode(isolate_file), {}, {}, {}, None, False,
-        False)
+        six.text_type(self.cwd), six.text_type(isolate_file), {}, {}, {}, None,
+        False, False)
     self.assertEqual(expected, complete_state.saved_state.to_isolated())
 
   if sys.platform == 'darwin':
@@ -834,21 +836,25 @@ class IsolateLoad(IsolateBase):
         u'command': [u'python', u'split.py'],
         u'files': {
             u'split.py': {
-                u'm': 0o700,
-                u'h': unicode(self.hash_file('tests', 'isolate', 'split.py')),
-                u's': self.size('tests', 'isolate', 'split.py'),
+                u'm':
+                    0o700,
+                u'h':
+                    six.text_type(
+                        self.hash_file('tests', 'isolate', 'split.py')),
+                u's':
+                    self.size('tests', 'isolate', 'split.py'),
             },
         },
         u'includes': [
-            unicode(self.hash_file(self.isolated_dir, 'foo.0.isolated')),
-            unicode(self.hash_file(self.isolated_dir, 'foo.1.isolated')),
+            six.text_type(self.hash_file(self.isolated_dir, 'foo.0.isolated')),
+            six.text_type(self.hash_file(self.isolated_dir, 'foo.1.isolated')),
         ],
         u'read_only':
             1,
         u'relative_cwd':
             u'.',
         u'version':
-            unicode(isolated_format.ISOLATED_FILE_VERSION),
+            six.text_type(isolated_format.ISOLATED_FILE_VERSION),
     }
     self._cleanup_isolated(expected_isolated_master)
     self.assertEqual(expected_isolated_master, actual_isolated_master)
@@ -862,14 +868,14 @@ class IsolateLoad(IsolateBase):
                 u'm':
                     0o600,
                 u'h':
-                    unicode(
+                    six.text_type(
                         self.hash_file('tests', 'isolate', 'test', 'data',
                                        'foo.txt')),
                 u's':
                     self.size('tests', 'isolate', 'test', 'data', 'foo.txt'),
             },
         },
-        u'version': unicode(isolated_format.ISOLATED_FILE_VERSION),
+        u'version': six.text_type(isolated_format.ISOLATED_FILE_VERSION),
     }
     self._cleanup_isolated(expected_isolated_0)
     self.assertEqual(expected_isolated_0, actual_isolated_0)
@@ -883,26 +889,26 @@ class IsolateLoad(IsolateBase):
                 u'm':
                     0o600,
                 u'h':
-                    unicode(
+                    six.text_type(
                         self.hash_file('tests', 'isolate', 'files1', 'subdir',
                                        '42.txt')),
                 u's':
                     self.size('tests', 'isolate', 'files1', 'subdir', '42.txt'),
             },
         },
-        u'version': unicode(isolated_format.ISOLATED_FILE_VERSION),
+        u'version': six.text_type(isolated_format.ISOLATED_FILE_VERSION),
     }
     self._cleanup_isolated(expected_isolated_1)
     self.assertEqual(expected_isolated_1, actual_isolated_1)
 
     actual_saved_state = tools.read_json(
         isolate.isolatedfile_to_state(options.isolated))
-    isolated_base = unicode(os.path.basename(options.isolated))
+    isolated_base = six.text_type(os.path.basename(options.isolated))
     isolate_file = os.path.join(
         self.isolate_dir, 'tests', 'isolate', 'split.isolate')
     expected_saved_state = {
         u'OS':
-            unicode(sys.platform),
+            six.text_type(sys.platform),
         u'algo':
             u'sha-1',
         u'child_isolated_files': [
@@ -921,22 +927,26 @@ class IsolateLoad(IsolateBase):
                 u'm':
                     0o600,
                 u'h':
-                    unicode(
+                    six.text_type(
                         self.hash_file('tests', 'isolate', 'files1', 'subdir',
                                        '42.txt')),
                 u's':
                     self.size('tests', 'isolate', 'files1', 'subdir', '42.txt'),
             },
             u'split.py': {
-                u'm': 0o700,
-                u'h': unicode(self.hash_file('tests', 'isolate', 'split.py')),
-                u's': self.size('tests', 'isolate', 'split.py'),
+                u'm':
+                    0o700,
+                u'h':
+                    six.text_type(
+                        self.hash_file('tests', 'isolate', 'split.py')),
+                u's':
+                    self.size('tests', 'isolate', 'split.py'),
             },
             os.path.join(u'test', 'data', 'foo.txt'): {
                 u'm':
                     0o600,
                 u'h':
-                    unicode(
+                    six.text_type(
                         self.hash_file('tests', 'isolate', 'test', 'data',
                                        'foo.txt')),
                 u's':
@@ -946,7 +956,7 @@ class IsolateLoad(IsolateBase):
         u'isolate_file':
             file_path.safe_relpath(
                 file_path.get_native_path_case(isolate_file),
-                unicode(os.path.dirname(options.isolated))),
+                six.text_type(os.path.dirname(options.isolated))),
         u'path_variables': {
             u'DEPTH': u'.',
             u'PRODUCT_DIR': u'files1',
@@ -956,7 +966,7 @@ class IsolateLoad(IsolateBase):
         u'root_dir':
             file_path.get_native_path_case(os.path.dirname(isolate_file)),
         u'version':
-            unicode(isolate.SavedState.EXPECTED_VERSION),
+            six.text_type(isolate.SavedState.EXPECTED_VERSION),
     }
     self._cleanup_isolated(expected_saved_state)
     self.assertEqual(expected_saved_state, actual_saved_state)
@@ -1083,17 +1093,19 @@ class IsolateLoad(IsolateBase):
         'OS': config_os,
       }
       c.load_isolate(
-          unicode(self.cwd), root_isolate, {}, config, {}, None, False, False)
+          six.text_type(self.cwd), root_isolate, {}, config, {}, None, False,
+          False)
       # Note that load_isolate() doesn't retrieve the meta data about each file.
       expected = {
-        'algo': 'sha-1',
-        'command': command,
-        'files': {
-          unicode(f.replace('/', os.path.sep)):{} for f in expected_files
-        },
-        'read_only': 1,
-        'relative_cwd': relative_cwd.replace('/', os.path.sep),
-        'version': isolated_format.ISOLATED_FILE_VERSION,
+          'algo': 'sha-1',
+          'command': command,
+          'files': {
+              six.text_type(f.replace('/', os.path.sep)): {}
+              for f in expected_files
+          },
+          'read_only': 1,
+          'relative_cwd': relative_cwd.replace('/', os.path.sep),
+          'version': isolated_format.ISOLATED_FILE_VERSION,
       }
       self.assertEqual(expected, c.saved_state.to_isolated())
 
@@ -1279,18 +1291,19 @@ class IsolateLoad(IsolateBase):
         'EXTRA': 'indeed',
       }
       c.load_isolate(
-          unicode(cwd), root_isolate, paths, config, extra, None, False, False)
+          six.text_type(cwd), root_isolate, paths, config, extra, None, False,
+          False)
       # Note that load_isolate() doesn't retrieve the meta data about each file.
       expected = {
-        'algo': 'sha-1',
-        'command': command,
-        'files': {
-          unicode(os.path.join(cwd_name, config_os, 'path', f)): {}
-          for f in expected_files
-        },
-        'read_only': 1,
-        'relative_cwd': relative_cwd,
-        'version': isolated_format.ISOLATED_FILE_VERSION,
+          'algo': 'sha-1',
+          'command': command,
+          'files': {
+              six.text_type(os.path.join(cwd_name, config_os, 'path', f)): {}
+              for f in expected_files
+          },
+          'read_only': 1,
+          'relative_cwd': relative_cwd,
+          'version': isolated_format.ISOLATED_FILE_VERSION,
       }
       if not command:
         expected.pop('command')

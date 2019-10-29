@@ -17,6 +17,8 @@ import tempfile
 import unicodedata
 import unittest
 
+import six
+
 # Mutates sys.path.
 import test_env
 
@@ -95,13 +97,13 @@ class TraceInputsBase(unittest.TestCase):
         self.executable += suffix
 
     self.real_executable = file_path.get_native_path_case(
-        unicode(self.executable))
+        six.text_type(self.executable))
     self.tempdir = file_path.get_native_path_case(
-        unicode(tempfile.mkdtemp(prefix=u'trace_smoke_test')))
+        six.text_type(tempfile.mkdtemp(prefix=u'trace_smoke_test')))
     self.log = os.path.join(self.tempdir, 'log')
 
     # self.naked_executable will only be naked on Windows.
-    self.naked_executable = unicode(sys.executable)
+    self.naked_executable = six.text_type(sys.executable)
     if sys.platform == 'win32':
       self.naked_executable = os.path.basename(sys.executable)
 
@@ -196,64 +198,71 @@ class TraceInputs(TraceInputsBase):
   @check_can_trace
   def test_trace_json(self):
     expected = {
-      u'root': {
-        u'children': [
-          {
-            u'children': [],
-            u'command': [u'python', u'child2.py'],
-            u'executable': self.naked_executable,
-            u'files': [
-              {
-                'mode': MODE_R,
-                u'path': os.path.join(REL_DATA, 'child2.py'),
-                u'size': self._size(REL_DATA, 'child2.py'),
-              },
-              {
-                'mode': MODE_R,
-                u'path': os.path.join(REL_DATA, 'files1', 'bar'),
-                u'size': self._size(REL_DATA, 'files1', 'bar'),
-              },
-              {
-                'mode': MODE_R,
-                u'path': os.path.join(REL_DATA, 'files1', 'foo'),
-                u'size': self._size(REL_DATA, 'files1', 'foo'),
-              },
-              {
-                'mode': MODE_R,
-                u'path': os.path.join(REL_DATA, 'test_file.txt'),
-                u'size': self._size(REL_DATA, 'test_file.txt'),
-              },
+        u'root': {
+            u'children': [
+                {
+                    u'children': [],
+                    u'command': [u'python', u'child2.py'],
+                    u'executable':
+                        self.naked_executable,
+                    u'files': [
+                        {
+                            'mode': MODE_R,
+                            u'path': os.path.join(REL_DATA, 'child2.py'),
+                            u'size': self._size(REL_DATA, 'child2.py'),
+                        },
+                        {
+                            'mode': MODE_R,
+                            u'path': os.path.join(REL_DATA, 'files1', 'bar'),
+                            u'size': self._size(REL_DATA, 'files1', 'bar'),
+                        },
+                        {
+                            'mode': MODE_R,
+                            u'path': os.path.join(REL_DATA, 'files1', 'foo'),
+                            u'size': self._size(REL_DATA, 'files1', 'foo'),
+                        },
+                        {
+                            'mode': MODE_R,
+                            u'path': os.path.join(REL_DATA, 'test_file.txt'),
+                            u'size': self._size(REL_DATA, 'test_file.txt'),
+                        },
+                    ],
+                    u'initial_cwd':
+                        self.initial_cwd,
+                    #u'pid': 123,
+                },
             ],
-            u'initial_cwd': self.initial_cwd,
+            u'command': [
+                six.text_type(self.executable),
+                os.path.join(u'trace_inputs', 'child1.py'),
+                u'--child-gyp',
+            ],
+            u'executable':
+                self.real_executable,
+            u'files': [
+                {
+                    u'mode': MODE_R,
+                    u'path': os.path.join(REL_DATA, 'child1.py'),
+                    u'size': self._size(REL_DATA, 'child1.py'),
+                },
+                {
+                    u'mode':
+                        MODE_R,
+                    u'path':
+                        os.path.join(u'tests', u'trace_inputs_smoke_test.py'),
+                    u'size':
+                        self._size('tests', 'trace_inputs_smoke_test.py'),
+                },
+                {
+                    u'mode': MODE_R,
+                    u'path': u'trace_inputs.py',
+                    u'size': self._size('trace_inputs.py'),
+                },
+            ],
+            u'initial_cwd':
+                self.initial_cwd,
             #u'pid': 123,
-          },
-        ],
-        u'command': [
-          unicode(self.executable),
-          os.path.join(u'trace_inputs', 'child1.py'),
-          u'--child-gyp',
-        ],
-        u'executable': self.real_executable,
-        u'files': [
-          {
-            u'mode': MODE_R,
-            u'path': os.path.join(REL_DATA, 'child1.py'),
-            u'size': self._size(REL_DATA, 'child1.py'),
-          },
-          {
-            u'mode': MODE_R,
-            u'path': os.path.join(u'tests', u'trace_inputs_smoke_test.py'),
-            u'size': self._size('tests', 'trace_inputs_smoke_test.py'),
-          },
-          {
-            u'mode': MODE_R,
-            u'path': u'trace_inputs.py',
-            u'size': self._size('trace_inputs.py'),
-          },
-        ],
-        u'initial_cwd': self.initial_cwd,
-        #u'pid': 123,
-      },
+        },
     }
     trace_expected = '\n'.join(
       ('child_gyp from %s' % test_env.TESTS_DIR, 'child2')) + '\n'

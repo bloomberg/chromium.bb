@@ -13,6 +13,8 @@ import sys
 import tempfile
 import time
 
+import six
+
 # Mutates sys.path.
 import test_env
 
@@ -99,7 +101,7 @@ class TestCase(auto_stub.TestCase):
       # In this case, map a named cache, add a file, unmap it.
       dest_dir = os.path.join(self.tempdir, 'dest')
       self.assertFalse(fs.exists(dest_dir))
-      name = unicode(size)
+      name = six.text_type(size)
       cache.install(dest_dir, name)
       # Put a file in there named 'hello', otherwise it'll stay empty.
       with fs.open(os.path.join(dest_dir, 'hello'), 'wb') as f:
@@ -389,7 +391,8 @@ class DiskContentAddressedCacheTest(TestCase, ContentAddressedCacheTestMixin):
     # At this point, after the implicit trim in __exit__(), h_a and h_large were
     # evicted.
     self.assertEqual(
-        sorted([unicode(h_b), unicode(h_c), cache.STATE_FILE]),
+        sorted([unicode(h_b),
+                six.text_type(h_c), cache.STATE_FILE]),
         sorted(fs.listdir(cache.cache_dir)))
 
     # Allow 3 items and 101 bytes so h_large is kept.
@@ -803,7 +806,8 @@ class FnTest(TestCase):
   def _verify_isolated_cache(self, cache, items):
     # Isolated cache verification.
     expected = {
-      unicode(self._algo(_gen_data(n)).hexdigest()): _gen_data(n) for n in items
+        six.text_type(self._algo(_gen_data(n)).hexdigest()): _gen_data(n)
+        for n in items
     }
     expected[cache.STATE_FILE] = _gen_state(
         [
@@ -817,9 +821,10 @@ class FnTest(TestCase):
     # Figure out the short names via the symlinks.
     items = range(1, 11)
     short_names = {
-      n: os.path.basename(fs.readlink(
-          os.path.join(cache.cache_dir, cache.NAMED_DIR, unicode(n))))
-      for n in items
+        n: os.path.basename(
+            fs.readlink(
+                os.path.join(cache.cache_dir, cache.NAMED_DIR,
+                             six.text_type(n)))) for n in items
     }
     self._verify_named_cache(cache, short_names, items)
     return short_names

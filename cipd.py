@@ -15,6 +15,7 @@ import sys
 import tempfile
 import time
 
+import six
 from six.moves import urllib
 
 from utils import file_path
@@ -383,14 +384,14 @@ def get_client(service_url, package_template, version, cache_dir, timeout=None):
     # version_cache is {hash(package_name, tag) -> instance id} mapping.
     # It does not take a lot of disk space.
     version_cache = local_caching.DiskContentAddressedCache(
-        unicode(os.path.join(cache_dir, 'versions')),
+        six.text_type(os.path.join(cache_dir, 'versions')),
         local_caching.CachePolicies(
             # 1GiB.
-            max_cache_size=1024*1024*1024,
+            max_cache_size=1024 * 1024 * 1024,
             min_free_space=0,
             max_items=300,
             # 3 weeks.
-            max_age_secs=21*24*60*60),
+            max_age_secs=21 * 24 * 60 * 60),
         trim=True)
     # Convert (package_name, version) to a string that may be used as a
     # filename in disk cache by hashing it.
@@ -411,14 +412,14 @@ def get_client(service_url, package_template, version, cache_dir, timeout=None):
   # instance_cache is {instance_id -> client binary} mapping.
   # It is bounded by 5 client versions.
   instance_cache = local_caching.DiskContentAddressedCache(
-      unicode(os.path.join(cache_dir, 'clients')),
-        local_caching.CachePolicies(
-            # 1GiB.
-            max_cache_size=1024*1024*1024,
-            min_free_space=0,
-            max_items=10,
-            # 3 weeks.
-            max_age_secs=21*24*60*60),
+      six.text_type(os.path.join(cache_dir, 'clients')),
+      local_caching.CachePolicies(
+          # 1GiB.
+          max_cache_size=1024 * 1024 * 1024,
+          min_free_space=0,
+          max_items=10,
+          # 3 weeks.
+          max_age_secs=21 * 24 * 60 * 60),
       trim=True)
   if instance_id not in instance_cache:
     logging.info('Fetching CIPD client %s:%s', package_name, instance_id)
@@ -428,7 +429,7 @@ def get_client(service_url, package_template, version, cache_dir, timeout=None):
 
   # A single host can run multiple swarming bots, but they cannot share same
   # root bot directory. Thus, it is safe to use the same name for the binary.
-  cipd_bin_dir = unicode(os.path.join(cache_dir, 'bin'))
+  cipd_bin_dir = six.text_type(os.path.join(cache_dir, 'bin'))
   binary_path = os.path.join(cipd_bin_dir, 'cipd' + EXECUTABLE_SUFFIX)
   if fs.isfile(binary_path):
     # TODO(maruel): Do not unconditionally remove the binary.

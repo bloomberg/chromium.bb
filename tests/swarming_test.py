@@ -15,6 +15,8 @@ import threading
 import time
 import traceback
 
+import six
+
 # Mutates sys.path.
 import test_env
 
@@ -2042,7 +2044,8 @@ class TestCommandBot(NetTestCase):
   def setUp(self):
     super(TestCommandBot, self).setUp()
     # Sample data retrieved from actual server.
-    self.now = unicode(datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'))
+    self.now = six.text_type(
+        datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'))
     self.bot_1 = {
       u'bot_id': u'swarm1',
       u'created_ts': self.now,
@@ -2132,11 +2135,11 @@ class TestCommandBot(NetTestCase):
     """Returns fake /_ah/api/swarming/v1/bots/list data."""
     # Sample data retrieved from actual server.
     return {
-      u'items': bots,
-      u'cursor': cursor,
-      u'death_timeout': 1800.0,
-      u'limit': 4,
-      u'now': unicode(self.now),
+        u'items': bots,
+        u'cursor': cursor,
+        u'death_timeout': 1800.0,
+        u'limit': 4,
+        u'now': six.text_type(self.now),
     }
 
   def test_bots(self):

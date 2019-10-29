@@ -43,6 +43,7 @@ tools.force_local_third_party()
 import colorama
 from depot_tools import fix_encoding
 from depot_tools import subcommand
+import six
 
 # pylint: disable=ungrouped-imports
 from utils import file_path
@@ -3090,7 +3091,7 @@ class LogmanTrace(ApiBase):
       # memory for large trace. use a csv file as a workaround since the json
       # parser requires a complete in-memory file.
       path = os.path.join(
-          unicode(os.getcwd()), u'%s.preprocessed' % self._logname)
+          six.text_type(os.getcwd()), u'%s.preprocessed' % self._logname)
       with fs.open(path, 'wb') as f:
         # $ and * can't be used in file name on windows, reducing the likelihood
         # of having to escape a string.
@@ -3374,7 +3375,7 @@ def CMDread(parser, args):
 
   if options.root_dir:
     options.root_dir = file_path.get_native_path_case(
-        unicode(os.path.abspath(options.root_dir)))
+        six.text_type(os.path.abspath(options.root_dir)))
 
   variables = dict(options.variables)
   api = get_api()
@@ -3448,7 +3449,7 @@ class OptionParserTraceInputs(logging_utils.OptionParserWithLogging):
         self, *args, **kwargs)
     if not options.log:
       self.error('Must supply a log file with -l')
-    options.log = unicode(os.path.abspath(options.log))
+    options.log = six.text_type(os.path.abspath(options.log))
     return options, args
 
 

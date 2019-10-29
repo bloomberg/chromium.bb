@@ -29,6 +29,7 @@ tools.force_local_third_party()
 import colorama
 from depot_tools import fix_encoding
 from depot_tools import subcommand
+import six
 from six.moves import queue as Queue
 
 # pylint: disable=ungrouped-imports
@@ -1309,7 +1310,7 @@ def fetch_isolated(isolated_hash, storage, cache, outdir, use_symlinks,
       logging.debug('%s is not a valid hash, assuming a file '
                     '(algo was %s, hash size was %d)',
                     isolated_hash, algo(), algo().digest_size)
-      path = unicode(os.path.abspath(isolated_hash))
+      path = six.text_type(os.path.abspath(isolated_hash))
       try:
         isolated_hash = fetch_queue.inject_local_file(path, algo)
       except IOError as e:
@@ -1623,7 +1624,7 @@ def CMDdownload(parser, args):
 
   cache = process_cache_options(options, trim=True)
   cache.cleanup()
-  options.target = unicode(os.path.abspath(options.target))
+  options.target = six.text_type(os.path.abspath(options.target))
   if options.isolated:
     if (fs.isfile(options.target) or
         (fs.isdir(options.target) and fs.listdir(options.target))):
@@ -1638,7 +1639,7 @@ def CMDdownload(parser, args):
       channel = threading_utils.TaskChannel()
       pending = {}
       for digest, dest in options.file:
-        dest = unicode(dest)
+        dest = six.text_type(dest)
         pending[digest] = dest
         storage.async_fetch(
             channel,
@@ -1761,7 +1762,7 @@ def process_cache_options(options, trim, **kwargs):
     # |options.cache| path may not exist until DiskContentAddressedCache()
     # instance is created.
     return local_caching.DiskContentAddressedCache(
-        unicode(os.path.abspath(options.cache)), policies, trim, **kwargs)
+        six.text_type(os.path.abspath(options.cache)), policies, trim, **kwargs)
   return local_caching.MemoryContentAddressedCache()
 
 

@@ -40,6 +40,7 @@ tools.force_local_third_party()
 import colorama
 from depot_tools import fix_encoding
 from depot_tools import subcommand
+import six
 
 # pylint: disable=ungrouped-imports
 from utils import logging_utils
@@ -715,7 +716,7 @@ def load_complete_state(options, cwd, subdir, skip_update):
 
   # Regenerate complete_state.saved_state.files.
   if subdir:
-    subdir = unicode(subdir)
+    subdir = six.text_type(subdir)
     # This is tricky here. If it is a path, take it from the root_dir. If
     # it is a variable, it must be keyed from the directory containing the
     # .isolate file. So translate all variables first.
@@ -953,7 +954,8 @@ def CMDarchive(parser, args):
   isolateserver.process_isolate_server_options(parser, options, True, True)
   server_ref = isolate_storage.ServerRef(
       options.isolate_server, options.namespace)
-  result = isolate_and_archive([(options, unicode(os.getcwd()))], server_ref)
+  result = isolate_and_archive([(options, six.text_type(os.getcwd()))],
+                               server_ref)
   if result is None:
     return EXIT_CODE_UPLOAD_ERROR
   assert len(result) == 1, result
@@ -1255,7 +1257,7 @@ def process_outdir_options(parser, options, cwd):
     parser.error('--outdir is required.')
   if file_path.is_url(options.outdir):
     parser.error('Can\'t use an URL for --outdir.')
-  options.outdir = unicode(options.outdir).replace('/', os.path.sep)
+  options.outdir = six.text_type(options.outdir).replace('/', os.path.sep)
   # outdir doesn't need native path case since tracing is never done from there.
   options.outdir = os.path.abspath(
       os.path.normpath(os.path.join(cwd, options.outdir)))
@@ -1274,7 +1276,8 @@ def process_isolate_options(parser, options, cwd=None, require_isolated=True):
   # Parse --isolated option.
   if options.isolated:
     options.isolated = os.path.abspath(
-        os.path.join(cwd, unicode(options.isolated).replace('/', os.path.sep)))
+        os.path.join(cwd,
+                     six.text_type(options.isolated).replace('/', os.path.sep)))
   if require_isolated and not options.isolated:
     parser.error('--isolated is required.')
   if options.isolated and not options.isolated.endswith('.isolated'):
@@ -1300,7 +1303,7 @@ def process_isolate_options(parser, options, cwd=None, require_isolated=True):
   if options.isolate:
     # TODO(maruel): Work with non-ASCII.
     # The path must be in native path case for tracing purposes.
-    options.isolate = unicode(options.isolate).replace('/', os.path.sep)
+    options.isolate = six.text_type(options.isolate).replace('/', os.path.sep)
     options.isolate = os.path.abspath(os.path.join(cwd, options.isolate))
     options.isolate = file_path.get_native_path_case(options.isolate)
 

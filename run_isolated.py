@@ -62,6 +62,7 @@ tools.force_local_third_party()
 
 # third_party/
 from depot_tools import fix_encoding
+import six
 
 # pylint: disable=ungrouped-imports
 import auth
@@ -231,7 +232,7 @@ def _to_unicode(s):
 
 def make_temp_dir(prefix, root_dir):
   """Returns a new unique temporary directory."""
-  return unicode(tempfile.mkdtemp(prefix=prefix, dir=root_dir))
+  return six.text_type(tempfile.mkdtemp(prefix=prefix, dir=root_dir))
 
 
 def change_tree_read_only(rootdir, read_only):
@@ -1194,7 +1195,7 @@ def process_named_cache_options(parser, options, time_fn=None):
         min_free_space=options.min_free_space,
         max_items=50,
         max_age_secs=MAX_AGE_SECS)
-    root_dir = unicode(os.path.abspath(options.named_cache_root))
+    root_dir = six.text_type(os.path.abspath(options.named_cache_root))
     return local_caching.NamedCache(root_dir, policies, time_fn=time_fn)
   return None
 
@@ -1264,7 +1265,7 @@ def main(args):
     caches.append(isolate_cache)
   if named_cache:
     caches.append(named_cache)
-  root = caches[0].cache_dir if caches else unicode(os.getcwd())
+  root = caches[0].cache_dir if caches else six.text_type(os.getcwd())
   if options.clean:
     if options.isolated:
       parser.error('Can\'t use --isolated with --clean.')
@@ -1313,9 +1314,9 @@ def main(args):
         '%s in args requires --isolate-server' % ISOLATED_OUTDIR_PARAMETER)
 
   if options.root_dir:
-    options.root_dir = unicode(os.path.abspath(options.root_dir))
+    options.root_dir = six.text_type(os.path.abspath(options.root_dir))
   if options.json:
-    options.json = unicode(os.path.abspath(options.json))
+    options.json = six.text_type(os.path.abspath(options.json))
 
   if any('=' not in i for i in options.env):
     parser.error(
@@ -1354,12 +1355,10 @@ def main(args):
   def install_named_caches(run_dir):
     # WARNING: this function depends on "options" variable defined in the outer
     # function.
-    assert unicode(run_dir), repr(run_dir)
+    assert six.text_type(run_dir), repr(run_dir)
     assert os.path.isabs(run_dir), run_dir
-    named_caches = [
-      (os.path.join(run_dir, unicode(relpath)), name)
-      for name, relpath, _ in options.named_caches
-    ]
+    named_caches = [(os.path.join(run_dir, six.text_type(relpath)), name)
+                    for name, relpath, _ in options.named_caches]
     for path, name in named_caches:
       named_cache.install(path, name)
     try:

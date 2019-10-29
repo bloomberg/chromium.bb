@@ -15,6 +15,8 @@ import sys
 import tempfile
 import unittest
 
+import six
+
 # Mutates sys.path.
 import test_env
 
@@ -498,7 +500,7 @@ class IsolateTempdirBase(unittest.TestCase):
   def setUp(self):
     super(IsolateTempdirBase, self).setUp()
     self.tempdir = file_path.get_native_path_case(
-        unicode(tempfile.mkdtemp(prefix=u'isolate_smoke_')))
+        six.text_type(tempfile.mkdtemp(prefix=u'isolate_smoke_')))
     self.isolated = os.path.join(self.tempdir, 'isolate_smoke_test.isolated')
     self.isolate_dir = os.path.join(self.tempdir, 'isolate')
 
@@ -542,11 +544,11 @@ class IsolateTempdirBase(unittest.TestCase):
         # Upgrade the value to unicode so diffing the structure in case of
         # test failure is easier, since the basestring type must match,
         # str!=unicode.
-        v[u'h'] = unicode(isolated_format.hash_file(filepath, ALGO))
+        v[u'h'] = six.text_type(isolated_format.hash_file(filepath, ALGO))
 
     if empty_file:
       item = files[empty_file]
-      item['h'] = unicode(HASH_NULL)
+      item['h'] = six.text_type(HASH_NULL)
       if sys.platform != 'win32':
         item['m'] = 0o400
       item['s'] = 0
@@ -555,41 +557,48 @@ class IsolateTempdirBase(unittest.TestCase):
   def _expected_isolated(self, args, read_only, empty_file):
     """Verifies self.isolated contains the expected data."""
     expected = {
-      u'algo': u'sha-1',
-      u'files': self._gen_files(read_only, empty_file),
-      u'read_only': 1,
-      u'version': unicode(isolated_format.ISOLATED_FILE_VERSION),
+        u'algo': u'sha-1',
+        u'files': self._gen_files(read_only, empty_file),
+        u'read_only': 1,
+        u'version': six.text_type(isolated_format.ISOLATED_FILE_VERSION),
     }
     if read_only is not None:
       expected[u'read_only'] = read_only
     if args:
       expected[u'command'] = [u'python'] + [unicode(x) for x in args]
-      expected[u'relative_cwd'] = unicode(RELATIVE_CWD[self.case()])
+      expected[u'relative_cwd'] = six.text_type(RELATIVE_CWD[self.case()])
     with open(self.isolated, 'r') as f:
       self.assertEqual(expected, json.load(f))
 
   def _expected_saved_state(
       self, args, read_only, empty_file, extra_vars, root_dir):
     expected = {
-      u'OS': unicode(sys.platform),
-      u'algo': u'sha-1',
-      u'child_isolated_files': [],
-      u'command': [],
-      u'config_variables': {
-        u'OS': u'mac',
-        u'chromeos': 0,
-      },
-      u'extra_variables': {
-        u'EXECUTABLE_SUFFIX': u'.exe' if sys.platform == 'win32' else u'',
-      },
-      u'files': self._gen_files(read_only, empty_file),
-      u'isolate_file': file_path.safe_relpath(
-          file_path.get_native_path_case(unicode(self.filename())),
-          unicode(os.path.dirname(self.isolated))),
-      u'path_variables': {},
-      u'relative_cwd': unicode(RELATIVE_CWD[self.case()]),
-      u'root_dir': unicode(root_dir or os.path.dirname(self.filename())),
-      u'version': unicode(isolate.SavedState.EXPECTED_VERSION),
+        u'OS':
+            six.text_type(sys.platform),
+        u'algo':
+            u'sha-1',
+        u'child_isolated_files': [],
+        u'command': [],
+        u'config_variables': {
+            u'OS': u'mac',
+            u'chromeos': 0,
+        },
+        u'extra_variables': {
+            u'EXECUTABLE_SUFFIX': u'.exe' if sys.platform == 'win32' else u'',
+        },
+        u'files':
+            self._gen_files(read_only, empty_file),
+        u'isolate_file':
+            file_path.safe_relpath(
+                file_path.get_native_path_case(unicode(self.filename())),
+                six.text_type(os.path.dirname(self.isolated))),
+        u'path_variables': {},
+        u'relative_cwd':
+            six.text_type(RELATIVE_CWD[self.case()]),
+        u'root_dir':
+            six.text_type(root_dir or os.path.dirname(self.filename())),
+        u'version':
+            six.text_type(isolate.SavedState.EXPECTED_VERSION),
     }
     if args:
       expected[u'command'] = [u'python'] + [unicode(x) for x in args]

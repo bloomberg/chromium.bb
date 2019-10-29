@@ -13,6 +13,8 @@ import textwrap
 import time
 import unittest
 
+import six
+
 # Mutates sys.path.
 import test_env
 
@@ -421,8 +423,8 @@ class RunIsolatedTest(unittest.TestCase):
         # The reason for 0100666 on Windows is that the file node had to be
         # modified to delete the hardlinked node. The read only bit is reset on
         # load.
-        unicode(file1_hash): (0o100400, 0o100400, 0o100444),
-        unicode(isolated_hash): (0o100400, 0o100400, 0o100444),
+        six.text_type(file1_hash): (0o100400, 0o100400, 0o100444),
+        six.text_type(isolated_hash): (0o100400, 0o100400, 0o100444),
     }
     self.assertTreeModes(self._isolated_cache_dir, expected)
 
@@ -442,8 +444,8 @@ class RunIsolatedTest(unittest.TestCase):
     expected = {
         u'.': (0o40707, 0o40707, 0o40777),
         u'state.json': (0o100606, 0o100606, 0o100666),
-        unicode(file1_hash): (0o100400, 0o100400, 0o100444),
-        unicode(isolated_hash): (0o100400, 0o100400, 0o100444),
+        six.text_type(file1_hash): (0o100400, 0o100400, 0o100444),
+        six.text_type(isolated_hash): (0o100400, 0o100400, 0o100444),
     }
     self.assertTreeModes(self._isolated_cache_dir, expected)
     return cached_file_path

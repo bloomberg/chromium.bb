@@ -29,6 +29,7 @@ import colorama
 from chromium import natsort
 from depot_tools import fix_encoding
 from depot_tools import subcommand
+import six
 from six.moves import urllib
 
 # pylint: disable=ungrouped-imports
@@ -384,7 +385,7 @@ class TaskOutputCollector(object):
       shard_count: expected number of task shards.
     """
     self.task_output_dir = (
-        unicode(os.path.abspath(task_output_dir))
+        six.text_type(os.path.abspath(task_output_dir))
         if task_output_dir else task_output_dir)
     self.task_output_stdout = task_output_stdout
     self.shard_count = shard_count
@@ -1137,10 +1138,10 @@ def process_trigger_options(parser, options, args):
       secret_bytes = f.read().encode('base64')
 
   # Named caches
-  caches = [
-    {u'name': unicode(i[0]), u'path': unicode(i[1])}
-    for i in options.named_cache
-  ]
+  caches = [{
+      u'name': six.text_type(i[0]),
+      u'path': six.text_type(i[1])
+  } for i in options.named_cache]
 
   env_prefixes = {}
   for k, v in options.env_prefix:
@@ -1457,7 +1458,7 @@ def CMDcollect(parser, args):
     parser.error('Only use one of task id or --json.')
 
   if options.json:
-    options.json = unicode(os.path.abspath(options.json))
+    options.json = six.text_type(os.path.abspath(options.json))
     try:
       with fs.open(options.json, 'rb') as f:
         data = json.load(f)
@@ -1577,7 +1578,7 @@ def CMDquery(parser, args):
     sys.stderr.write('\n')
     sys.stderr.flush()
   if options.json:
-    options.json = unicode(os.path.abspath(options.json))
+    options.json = six.text_type(os.path.abspath(options.json))
     tools.write_json(options.json, data, True)
   else:
     try:
@@ -1603,7 +1604,7 @@ def CMDquery_list(parser, args):
   except APIError as e:
     parser.error(str(e))
   if options.json:
-    options.json = unicode(os.path.abspath(options.json))
+    options.json = six.text_type(os.path.abspath(options.json))
     with fs.open(options.json, 'wb') as f:
       json.dump(apis, f)
   else:
@@ -1743,11 +1744,11 @@ def CMDreproduce(parser, args):
     print('Failed to retrieve request data for the task', file=sys.stderr)
     return 1
 
-  workdir = unicode(os.path.abspath(options.work))
+  workdir = six.text_type(os.path.abspath(options.work))
   if fs.isdir(workdir):
     parser.error('Please delete the directory %r first' % options.work)
   fs.mkdir(workdir)
-  cachedir = unicode(os.path.abspath('cipd_cache'))
+  cachedir = six.text_type(os.path.abspath('cipd_cache'))
   if not fs.exists(cachedir):
     fs.mkdir(cachedir)
 
@@ -1787,7 +1788,7 @@ def CMDreproduce(parser, args):
       # leak.
       policies = local_caching.CachePolicies(0, 0, 0, 0)
       cache = local_caching.DiskContentAddressedCache(
-          unicode(os.path.abspath(options.cache)), policies, False)
+          six.text_type(os.path.abspath(options.cache)), policies, False)
       bundle = isolateserver.fetch_isolated(
           properties['inputs_ref']['isolated'], storage, cache, workdir, False)
       command = bundle.command
