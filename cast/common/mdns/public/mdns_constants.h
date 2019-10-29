@@ -10,8 +10,8 @@
 // message size (synced with sender SDK) and usage of site-local MDNS group
 // in addition to the default link-local MDNS multicast group.
 
-#ifndef CAST_COMMON_MDNS_MDNS_CONSTANTS_H_
-#define CAST_COMMON_MDNS_MDNS_CONSTANTS_H_
+#ifndef CAST_COMMON_MDNS_PUBLIC_MDNS_CONSTANTS_H_
+#define CAST_COMMON_MDNS_PUBLIC_MDNS_CONSTANTS_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -369,4 +369,4 @@ constexpr uint8_t kTXTEmptyRdata = 0;
 }  // namespace mdns
 }  // namespace cast
 
-#endif  // CAST_COMMON_MDNS_MDNS_CONSTANTS_H_
+#endif  // CAST_COMMON_MDNS_PUBLIC_MDNS_CONSTANTS_H_

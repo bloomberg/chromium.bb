@@ -6,7 +6,6 @@ import("//build_overrides/build.gni")
 
 source_set("mdns") {
   sources = [
-    "mdns/mdns_constants.h",
     "mdns/mdns_querier.cc",
     "mdns/mdns_querier.h",
     "mdns/mdns_reader.cc",
@@ -18,10 +17,14 @@ source_set("mdns") {
     "mdns/mdns_records.h",
     "mdns/mdns_sender.cc",
     "mdns/mdns_sender.h",
+    "mdns/mdns_service_impl.cc",
+    "mdns/mdns_service_impl.h",
     "mdns/mdns_trackers.cc",
     "mdns/mdns_trackers.h",
     "mdns/mdns_writer.cc",
     "mdns/mdns_writer.h",
+    "mdns/public/mdns_constants.h",
+    "mdns/public/mdns_service.h",
   ]
 
   deps = [

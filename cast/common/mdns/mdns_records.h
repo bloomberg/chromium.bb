@@ -12,7 +12,7 @@
 
 #include "absl/strings/string_view.h"
 #include "absl/types/variant.h"
-#include "cast/common/mdns/mdns_constants.h"
+#include "cast/common/mdns/public/mdns_constants.h"
 #include "platform/api/logging.h"
 #include "platform/base/ip_address.h"
 
