@@ -31,7 +31,6 @@
 #include "media/mojo/services/media_interface_provider.h"
 #include "media/mojo/services/media_manifest.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
@@ -162,8 +161,9 @@ class MediaServiceTest : public testing::Test {
     auto provider = std::make_unique<MediaInterfaceProvider>(
         host_interfaces.InitWithNewPipeAndPassReceiver());
 
-    connector()->BindInterface(mojom::kMediaServiceName, &media_service_);
-    media_service_.set_connection_error_handler(
+    connector()->Connect(mojom::kMediaServiceName,
+                         media_service_.BindNewPipeAndPassReceiver());
+    media_service_.set_disconnect_handler(
         base::BindRepeating(&MediaServiceTest::MediaServiceConnectionClosed,
                             base::Unretained(this)));
     media_service_->CreateInterfaceFactory(
@@ -180,8 +180,9 @@ class MediaServiceTest : public testing::Test {
   // Returns the CDM ID associated with the CDM.
   int InitializeCdm(const std::string& key_system, bool expected_result) {
     base::RunLoop run_loop;
-    interface_factory_->CreateCdm(key_system, mojo::MakeRequest(&cdm_));
-    cdm_.set_connection_error_handler(base::BindRepeating(
+    interface_factory_->CreateCdm(key_system,
+                                  cdm_.BindNewPipeAndPassReceiver());
+    cdm_.set_disconnect_handler(base::BindRepeating(
         &MediaServiceTest::OnCdmConnectionError, base::Unretained(this)));
 
     int cdm_id = CdmContext::kInvalidCdmId;
@@ -253,8 +254,8 @@ class MediaServiceTest : public testing::Test {
   void InitializeRenderer(const VideoDecoderConfig& video_config,
                           bool expected_result) {
     base::RunLoop run_loop;
-    interface_factory_->CreateDefaultRenderer(std::string(),
-                                              mojo::MakeRequest(&renderer_));
+    interface_factory_->CreateDefaultRenderer(
+        std::string(), renderer_.BindNewPipeAndPassReceiver());
 
     video_stream_.set_video_decoder_config(video_config);
 
@@ -284,11 +285,11 @@ class MediaServiceTest : public testing::Test {
   service_manager::TestServiceManager test_service_manager_;
   service_manager::TestService test_service_;
 
-  mojom::MediaServicePtr media_service_;
+  mojo::Remote<mojom::MediaService> media_service_;
   mojo::Remote<mojom::InterfaceFactory> interface_factory_;
-  mojom::ContentDecryptionModulePtr cdm_;
+  mojo::Remote<mojom::ContentDecryptionModule> cdm_;
   mojo::Remote<mojom::CdmProxy> cdm_proxy_;
-  mojom::RendererPtr renderer_;
+  mojo::Remote<mojom::Renderer> renderer_;
 
   NiceMock<MockCdmProxyClient> cdm_proxy_client_;
   mojo::AssociatedBinding<mojom::CdmProxyClient> cdm_proxy_client_binding_;
