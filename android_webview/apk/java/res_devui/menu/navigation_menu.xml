@@ -7,11 +7,16 @@
 
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
-    <group android:id="@+id/crashes_menu">
+    <group android:id="@+id/nav_menu_group">
         <!--suppress HardcodedText -->
         <item
-            android:id="@+id/options_menu_refresh"
-            android:title="Refresh"
-            android:showAsAction="ifRoom" />
+             android:id="@+id/nav_menu_crash_ui"
+             android:title="WebView Crashes"
+             android:showAsAction="never"/>
+        <!--suppress HardcodedText -->
+        <item
+             android:id="@+id/nav_menu_main_ui"
+             android:title="Home"
+             android:showAsAction="never"/>
     </group>
 </menu>
