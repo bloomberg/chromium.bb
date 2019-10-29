@@ -50,6 +50,7 @@ _DELAY_SEC_FOR_RETRY = 5
 # Update file names for rootfs+kernel and stateful partitions.
 ROOTFS_FILENAME = 'update.gz'
 STATEFUL_FILENAME = 'stateful.tgz'
+_STATEFUL_UPDATE_FILENAME = 'stateful_update'
 
 
 class ChromiumOSTransferError(Exception):
@@ -63,6 +64,28 @@ def GetPayloadPropertiesFileName(payload):
 
 class Transfer(six.with_metaclass(abc.ABCMeta, object)):
   """Abstract Base Class that handles payload precheck and transfer."""
+
+  PAYLOAD_DIR_NAME = 'payloads'
+
+  def __init__(self, device, cmd_kwargs, dev_dir='',
+               transfer_stateful_update=True, transfer_rootfs_update=True):
+    """Initialize Base Class for transferring payloads functionality.
+
+    Args:
+      device: The ChromiumOSDevice to be updated.
+      dev_dir: The directory of the nebraska that runs the CrOS auto-update.
+      cmd_kwargs: Keyword arguments that are sent along with the commands that
+          are run on the device.
+      transfer_stateful_update: Whether to transfer payloads necessary for
+          stateful update. The default is True.
+      transfer_rootfs_update: Whether to transfer payloads necessary for
+          rootfs update. The default is True.
+    """
+    self._device = device
+    self._cmd_kwargs = cmd_kwargs
+    self._dev_dir = dev_dir
+    self._transfer_stateful_update = transfer_stateful_update
+    self._transfer_rootfs_update = transfer_rootfs_update
 
   @abc.abstractmethod
   def CheckPayloads(self):
@@ -88,16 +111,22 @@ class Transfer(six.with_metaclass(abc.ABCMeta, object)):
     target remote device for stateful update.
     """
 
+  def _EnsureDeviceDirectory(self, directory):
+    """Mkdir the directory no matther whether this directory exists on host.
+
+    Args:
+      directory: The directory to be made on the device.
+    """
+    self._device.RunCommand(['mkdir', '-p', directory], **self._cmd_kwargs)
+
 
 class LocalTransfer(Transfer):
   """Abstracts logic that handles transferring local files to the DUT."""
 
   # Stateful update files.
-  LOCAL_STATEFUL_UPDATE_FILENAME = 'stateful_update'
+  LOCAL_STATEFUL_UPDATE_FILENAME = _STATEFUL_UPDATE_FILENAME
   LOCAL_CHROOT_STATEFUL_UPDATE_PATH = '/usr/bin/stateful_update'
   REMOTE_STATEFUL_UPDATE_PATH = '/usr/local/bin/stateful_update'
-
-  PAYLOAD_DIR_NAME = 'payloads'
 
   def __init__(self, device, payload_dir, tempdir, device_restore_dir,
                payload_name, cmd_kwargs, device_payload_dir, dev_dir='',
@@ -126,23 +155,22 @@ class LocalTransfer(Transfer):
       device_restore_dir: Path to the old payload directory in the device's work
           directory.
       payload_name: Filename of exact payload file to use for update.
-      transfer_stateful_update: whether to do stateful partition update.
-          The default is True.
-      transfer_rootfs_update: whether to do rootfs partition update. The default
-          is True.
+      transfer_stateful_update: Whether to transfer payloads necessary for
+          stateful update. The default is True.
+      transfer_rootfs_update: Whether to transfer payloads necessary for
+          rootfs update. The default is True.
     """
-    self._device = device
+    super(LocalTransfer, self).__init__(
+        device=device, cmd_kwargs=cmd_kwargs, dev_dir=dev_dir,
+        transfer_stateful_update=transfer_stateful_update,
+        transfer_rootfs_update=transfer_rootfs_update)
     self._device_payload_dir = device_payload_dir
     self._tempdir = tempdir
-    self._dev_dir = dev_dir
     self._payload_dir = payload_dir
     self._payload_mode = payload_mode
-    self._cmd_kwargs = cmd_kwargs
     self._original_payload_dir = original_payload_dir
     self._device_restore_dir = device_restore_dir
     self._payload_name = payload_name
-    self._transfer_stateful_update = transfer_stateful_update
-    self._transfer_rootfs_update = transfer_rootfs_update
     self._stateful_update_bin = None
 
   def CheckPayloads(self):
@@ -162,14 +190,6 @@ class LocalTransfer(Transfer):
       payload = os.path.join(self._payload_dir, fname)
       if not os.path.exists(payload):
         raise ChromiumOSTransferError('Payload %s does not exist!' % payload)
-
-  def _EnsureDeviceDirectory(self, directory):
-    """Mkdir the directory no matther whether this directory exists on host.
-
-    Args:
-      directory: the directory to be made on the device.
-    """
-    self._device.RunCommand(['mkdir', '-p', directory], **self._cmd_kwargs)
 
   def _TransferUpdateUtilsPackage(self):
     """Transfer update-utils package to work directory of the remote device."""
