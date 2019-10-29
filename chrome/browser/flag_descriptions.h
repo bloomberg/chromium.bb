@@ -77,6 +77,9 @@ extern const char kAllowSyncXHRInPageDismissalDescription[];
 extern const char kEnableClipboardProviderTextSuggestionsName[];
 extern const char kEnableClipboardProviderTextSuggestionsDescription[];
 
+extern const char kEnableFtpName[];
+extern const char kEnableFtpDescription[];
+
 extern const char kEnableSignedExchangeSubresourcePrefetchName[];
 extern const char kEnableSignedExchangeSubresourcePrefetchDescription[];
 

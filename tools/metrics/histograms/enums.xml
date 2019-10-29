@@ -35331,6 +35331,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-2098243118" label="OmniboxTailSuggestions:disabled"/>
   <int value="-2097895488" label="NotificationScrollBar:enabled"/>
   <int value="-2097515669" label="disable-cast"/>
+  <int value="-2095519429" label="FtpProtocol:enabled"/>
   <int value="-2092067251" label="NativeFilesystemAPI:disabled"/>
   <int value="-2091404586" label="TabStripKeyboardFocus:enabled"/>
   <int value="-2090484194" label="ContextualSearchUrlActions:disabled"/>
@@ -36696,6 +36697,7 @@ from previous Chrome versions.
   <int value="-400572959" label="UseDownloadOfflineContentProvider:enabled"/>
   <int value="-400098787" label="QuietNotificationPrompts:enabled"/>
   <int value="-398623652" label="CCTTargetTranslateLanguage:enabled"/>
+  <int value="-397392156" label="FtpProtocol:disabled"/>
   <int value="-396994784" label="enable-vr-shell"/>
   <int value="-396496344" label="ViewsTaskManager:enabled"/>
   <int value="-395606844" label="enable-site-settings"/>

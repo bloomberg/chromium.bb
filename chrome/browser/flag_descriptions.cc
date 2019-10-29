@@ -69,6 +69,13 @@ const char kEnableClipboardProviderTextSuggestionsName[] =
 const char kEnableClipboardProviderTextSuggestionsDescription[] =
     "Enables search suggestions in omnibox";
 
+const char kEnableFtpName[] = "Enable support for FTP URLs";
+const char kEnableFtpDescription[] =
+    "When enabled, the browser will handle navigations to ftp:// URLs by "
+    "either showing a directory listing or downloading the resource over FTP. "
+    "When disabled, the browser has no special handling for ftp:// URLs and "
+    "by default defer handling of the URL to the underlying platform.";
+
 const char kEnableSignedExchangeSubresourcePrefetchName[] =
     "Enable Signed Exchange subresource prefetching";
 const char kEnableSignedExchangeSubresourcePrefetchDescription[] =
