@@ -312,6 +312,11 @@ const base::Feature kFallbackAfterDecodeError{"FallbackAfterDecodeError",
 const base::Feature kGlobalMediaControls{"GlobalMediaControls",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Show Cast sessions in Global Media Controls. It is no-op if
+// kGlobalMediaControls is not enabled.
+const base::Feature kGlobalMediaControlsForCast{
+    "GlobalMediaControlsForCast", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable new cpu load estimator. Intended for evaluation in local
 // testing and origin-trial.
 // TODO(nisse): Delete once we have switched over to always using the
