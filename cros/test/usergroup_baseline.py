@@ -202,6 +202,11 @@ GROUP_BASELINE_JETSTREAM = dict((e.group, e) for e in (
     GroupEntry(group='hostapd', gid=1106,
                users={'hostapd', 'ap-wireless-optimizer', 'ap-monitor',
                       'ap-wifi-manager', 'ap-wifi-diagnostics', 'ap-hal'}),
+    # Add users to gdisp group in order to allow those processes to access
+    # the unix domain socket file to communicate with gdisp-broker daemon
+    GroupEntry(group='gdisp', gid=2700,
+               users={'gdisp', 'ap-csi-collector', 'ap-csi-preproc',
+                      'ap-csi-inference'}),
 ))
 
 # rialtod:!:400:rialto
