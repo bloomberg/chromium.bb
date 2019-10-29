@@ -75,7 +75,7 @@ class MEDIA_MOJO_EXPORT MojoCdmHelper final : public CdmAuxiliaryHelper,
   mojom::CdmStoragePtr cdm_storage_ptr_;
   std::unique_ptr<CdmAllocator> allocator_;
   mojo::Remote<mojom::OutputProtection> output_protection_;
-  mojom::PlatformVerificationPtr platform_verification_ptr_;
+  mojo::Remote<mojom::PlatformVerification> platform_verification_;
 
   FileReadCB file_read_cb_;
 
