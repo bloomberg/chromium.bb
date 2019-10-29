@@ -77,7 +77,7 @@ def ProcessResults(options):
           result, upload_bucket, results_label, run_identifier,
           test_suite_start, should_compute_metrics, max_num_values),
       test_results,
-      on_failure=lambda result: result.update(status='FAIL'),
+      on_failure=util.SetUnexpectedFailure,
   )
 
   if should_compute_metrics:
@@ -110,7 +110,7 @@ def ProcessTestResult(test_result, upload_bucket, results_label,
     if max_num_values is not None and num_values > max_num_values:
       logging.error('%s produced %d values, but only %d are allowed.',
                     test_result['testPath'], num_values, max_num_values)
-      test_result['status'] = 'FAIL'
+      util.SetUnexpectedFailure(test_result)
       del test_result['_histograms']
     else:
       AddDiagnosticsToHistograms(test_result, test_suite_start, results_label)

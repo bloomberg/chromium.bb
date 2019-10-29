@@ -162,6 +162,7 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
 
     self.assertEqual(results['tests']['benchmark']['story1']['actual'], 'PASS')
     self.assertEqual(results['tests']['benchmark']['story2']['actual'], 'FAIL')
+    self.assertTrue(results['tests']['benchmark']['story2']['is_unexpected'])
 
   def testHistogramsOutput(self):
     self.SerializeIntermediateResults(
