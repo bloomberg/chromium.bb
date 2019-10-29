@@ -10689,7 +10689,9 @@
 
           If you set this policy, users can temporarily override it by enabling or disabling the screen magnifier. However, the user's choice is not persistent and the default is restored whenever the login screen is shown anew or the user remains idle on the login screen for a minute.
 
-          If this policy is left unset, the screen magnifier is disabled when the login screen is first shown. Users can enable or disable the screen magnifier anytime and its status on the login screen is persisted between users.''',
+          If this policy is left unset, the screen magnifier is disabled when the login screen is first shown. Users can enable or disable the screen magnifier anytime and its status on the login screen is persisted between users.
+
+          Note: <ph name="DEVICE_LOGIN_SCREEN_SCREEN_MAGNIFIER_TYPE_POLICY_NAME">DeviceLoginScreenScreenMagnifierType</ph> overrides this policy if the former is specified.''',
     },
     {
       'name': 'DeviceLoginScreenScreenMagnifierType',
