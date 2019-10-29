@@ -2,30 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_CANONICAL_COOKIE_H_
-#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_CANONICAL_COOKIE_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_COOKIE_CANONICAL_COOKIE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_COOKIE_CANONICAL_COOKIE_H_
 
 #include "base/optional.h"
 #include "base/time/time.h"
-#include "services/network/public/mojom/restricted_cookie_manager.mojom-shared.h"
+#include "services/network/public/mojom/cookie_manager.mojom-shared.h"
+#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_string.h"
-#include "third_party/blink/public/platform/web_url.h"
-#include "third_party/blink/renderer/platform/platform_export.h"  // nogncheck
 
 namespace blink {
 
+class WebURL;
+
 // This class is a blink analogue for net::CanonicalCookie.
-// TODO(jsbell): Once all prospective clients are migrated to blink, move this
-// to renderer/platform as blink::CanonicalCookie.
-class BLINK_PLATFORM_EXPORT WebCanonicalCookie {
+class BLINK_PLATFORM_EXPORT CanonicalCookie {
  public:
   // Default/copy constructor needed for use with Vector.
-  WebCanonicalCookie();
-  WebCanonicalCookie(const WebCanonicalCookie& other);
+  CanonicalCookie();
+  CanonicalCookie(const CanonicalCookie& other);
 
-  ~WebCanonicalCookie();
+  ~CanonicalCookie();
 
-  WebCanonicalCookie& operator=(const WebCanonicalCookie& other);
+  CanonicalCookie& operator=(const CanonicalCookie& other);
 
   const WebString& Name() const { return name_; }
   const WebString& Value() const { return value_; }
@@ -40,7 +39,7 @@ class BLINK_PLATFORM_EXPORT WebCanonicalCookie {
   network::mojom::CookiePriority Priority() const { return priority_; }
 
   // If the result is not canonical, nullopt will be returned.
-  static base::Optional<WebCanonicalCookie> Create(
+  static base::Optional<CanonicalCookie> Create(
       WebString name,
       WebString value,
       WebString domain,
@@ -55,9 +54,9 @@ class BLINK_PLATFORM_EXPORT WebCanonicalCookie {
 
   // Parsing, for the document.cookie API.
   // If the result is not canonical, nullopt will be returned.
-  static base::Optional<WebCanonicalCookie> Create(const WebURL& url,
-                                                   const WebString& cookie_line,
-                                                   base::Time creation_time);
+  static base::Optional<CanonicalCookie> Create(const WebURL& url,
+                                                const WebString& cookie_line,
+                                                base::Time creation_time);
 
   static constexpr const network::mojom::CookiePriority kDefaultPriority =
       network::mojom::CookiePriority::MEDIUM;
@@ -65,17 +64,17 @@ class BLINK_PLATFORM_EXPORT WebCanonicalCookie {
  private:
   // Prefer static Create methods, which ensure that the returned cookie is
   // canonical.
-  WebCanonicalCookie(WebString name,
-                     WebString value,
-                     WebString domain,
-                     WebString path,
-                     base::Time creation,
-                     base::Time expiration,
-                     base::Time last_access,
-                     bool is_secure,
-                     bool is_http_only,
-                     network::mojom::CookieSameSite same_site,
-                     network::mojom::CookiePriority priority);
+  CanonicalCookie(WebString name,
+                  WebString value,
+                  WebString domain,
+                  WebString path,
+                  base::Time creation,
+                  base::Time expiration,
+                  base::Time last_access,
+                  bool is_secure,
+                  bool is_http_only,
+                  network::mojom::CookieSameSite same_site,
+                  network::mojom::CookiePriority priority);
 
   WebString name_;
   WebString value_;
@@ -93,4 +92,4 @@ class BLINK_PLATFORM_EXPORT WebCanonicalCookie {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_CANONICAL_COOKIE_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_COOKIE_CANONICAL_COOKIE_H_

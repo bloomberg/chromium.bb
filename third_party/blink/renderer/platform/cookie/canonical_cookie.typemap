@@ -4,11 +4,9 @@
 
 mojom = "//services/network/public/mojom/cookie_manager.mojom"
 public_headers =
-    [ "//third_party/blink/public/platform/web_canonical_cookie.h" ]
-traits_headers = [
-  "//third_party/blink/renderer/platform/mojo/canonical_cookie_mojom_traits.h",
-]
+    [ "//third_party/blink/renderer/platform/cookie/canonical_cookie.h" ]
+traits_headers = [ "//third_party/blink/renderer/platform/cookie/canonical_cookie_mojom_traits.h" ]
 deps = [
   "//mojo/public/cpp/bindings",
 ]
-type_mappings = [ "network.mojom.CanonicalCookie=::blink::WebCanonicalCookie" ]
+type_mappings = [ "network.mojom.CanonicalCookie=::blink::CanonicalCookie" ]

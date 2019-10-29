@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/public/platform/web_canonical_cookie.h"
+#include "third_party/blink/renderer/platform/cookie/canonical_cookie.h"
 
 #include <initializer_list>
 
@@ -15,8 +15,8 @@
 
 namespace blink {
 
-TEST(WebCanonicalCookieTest, Defaults) {
-  WebCanonicalCookie cookie;
+TEST(CanonicalCookieTest, Defaults) {
+  CanonicalCookie cookie;
   EXPECT_EQ(WebString(), cookie.Name());
   EXPECT_EQ(WebString(), cookie.Value());
   EXPECT_EQ(WebString(), cookie.Domain());
@@ -27,26 +27,26 @@ TEST(WebCanonicalCookieTest, Defaults) {
   EXPECT_FALSE(cookie.IsSecure());
   EXPECT_FALSE(cookie.IsHttpOnly());
   EXPECT_EQ(network::mojom::CookieSameSite::NO_RESTRICTION, cookie.SameSite());
-  EXPECT_EQ(WebCanonicalCookie::kDefaultPriority, cookie.Priority());
+  EXPECT_EQ(CanonicalCookie::kDefaultPriority, cookie.Priority());
 }
 
-TEST(WebCanonicalCookieTest, CreationFailure) {
+TEST(CanonicalCookieTest, CreationFailure) {
   const WebURL url(KURL("http://example.com"));
 
   // Invalid cookie lines cause nullopt to be returned.
   EXPECT_FALSE(
-      WebCanonicalCookie::Create(url, "\x01", base::Time::Now()).has_value());
+      CanonicalCookie::Create(url, "\x01", base::Time::Now()).has_value());
 
   // Invalid names cause nullopt to be returned.
-  EXPECT_FALSE(WebCanonicalCookie::Create(
+  EXPECT_FALSE(CanonicalCookie::Create(
                    "\x01", "value", "domain", "/path", base::Time::Now(),
                    base::Time::Now(), base::Time::Now(), false, false,
                    network::mojom::CookieSameSite::NO_RESTRICTION,
-                   WebCanonicalCookie::kDefaultPriority)
+                   CanonicalCookie::kDefaultPriority)
                    .has_value());
 }
 
-TEST(WebCanonicalCookieTest, Properties) {
+TEST(CanonicalCookieTest, Properties) {
   const base::Time t1 = base::Time::FromDoubleT(1);
   const base::Time t2 = base::Time::FromDoubleT(2);
   const base::Time t3 = base::Time::FromDoubleT(3);
@@ -54,12 +54,12 @@ TEST(WebCanonicalCookieTest, Properties) {
   ASSERT_NE(t1, t3);
   ASSERT_NE(t2, t3);
 
-  base::Optional<WebCanonicalCookie> cookie_opt = WebCanonicalCookie::Create(
+  base::Optional<CanonicalCookie> cookie_opt = CanonicalCookie::Create(
       "name", "value", "domain", "/path", t1, t2, t3, true, true,
       network::mojom::CookieSameSite::STRICT_MODE,
       network::mojom::CookiePriority::HIGH);
   ASSERT_TRUE(cookie_opt);
-  WebCanonicalCookie& cookie = cookie_opt.value();
+  CanonicalCookie& cookie = cookie_opt.value();
 
   EXPECT_EQ("name", cookie.Name());
   EXPECT_EQ("value", cookie.Value());
@@ -78,9 +78,9 @@ TEST(WebCanonicalCookieTest, Properties) {
                          network::mojom::CookieSameSite::LAX_MODE,
                          network::mojom::CookieSameSite::STRICT_MODE}) {
     EXPECT_EQ(same_site,
-              WebCanonicalCookie::Create("name", "value", "domain", "/path", t1,
-                                         t2, t3, false, false, same_site,
-                                         WebCanonicalCookie::kDefaultPriority)
+              CanonicalCookie::Create("name", "value", "domain", "/path", t1,
+                                      t2, t3, false, false, same_site,
+                                      CanonicalCookie::kDefaultPriority)
                   ->SameSite());
   }
 
@@ -88,9 +88,9 @@ TEST(WebCanonicalCookieTest, Properties) {
   for (auto priority : {network::mojom::CookiePriority::LOW,
                         network::mojom::CookiePriority::MEDIUM,
                         network::mojom::CookiePriority::HIGH,
-                        WebCanonicalCookie::kDefaultPriority}) {
+                        CanonicalCookie::kDefaultPriority}) {
     EXPECT_EQ(priority,
-              WebCanonicalCookie::Create(
+              CanonicalCookie::Create(
                   "name", "value", "domain", "/path", t1, t2, t3, false, false,
                   network::mojom::CookieSameSite::NO_RESTRICTION, priority)
                   ->Priority());

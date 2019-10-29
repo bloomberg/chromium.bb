@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/public/platform/web_canonical_cookie.h"
+#include "third_party/blink/renderer/platform/cookie/canonical_cookie.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/optional.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_constants.h"
+#include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "url/gurl.h"
@@ -32,13 +34,13 @@ STATIC_ASSERT_ENUM(net::CookiePriority::COOKIE_PRIORITY_MEDIUM,
 STATIC_ASSERT_ENUM(net::CookiePriority::COOKIE_PRIORITY_HIGH,
                    network::mojom::CookiePriority::HIGH);
 STATIC_ASSERT_ENUM(net::CookiePriority::COOKIE_PRIORITY_DEFAULT,
-                   blink::WebCanonicalCookie::kDefaultPriority);
+                   blink::CanonicalCookie::kDefaultPriority);
 
 namespace blink {
 
 namespace {
 
-net::CanonicalCookie ToNetCanonicalCookie(const WebCanonicalCookie& cookie) {
+net::CanonicalCookie ToNetCanonicalCookie(const CanonicalCookie& cookie) {
   net::CanonicalCookie net_cookie(
       cookie.Name().Utf8(), cookie.Value().Utf8(), cookie.Domain().Utf8(),
       cookie.Path().Utf8(), cookie.CreationDate(), cookie.ExpiryDate(),
@@ -51,19 +53,19 @@ net::CanonicalCookie ToNetCanonicalCookie(const WebCanonicalCookie& cookie) {
 
 }  // namespace
 
-WebCanonicalCookie::WebCanonicalCookie() = default;
+CanonicalCookie::CanonicalCookie() = default;
 
-WebCanonicalCookie::WebCanonicalCookie(WebString name,
-                                       WebString value,
-                                       WebString domain,
-                                       WebString path,
-                                       base::Time creation,
-                                       base::Time expiration,
-                                       base::Time last_access,
-                                       bool is_secure,
-                                       bool is_http_only,
-                                       network::mojom::CookieSameSite same_site,
-                                       network::mojom::CookiePriority priority)
+CanonicalCookie::CanonicalCookie(WebString name,
+                                 WebString value,
+                                 WebString domain,
+                                 WebString path,
+                                 base::Time creation,
+                                 base::Time expiration,
+                                 base::Time last_access,
+                                 bool is_secure,
+                                 bool is_http_only,
+                                 network::mojom::CookieSameSite same_site,
+                                 network::mojom::CookiePriority priority)
     : name_(std::move(name)),
       value_(std::move(value)),
       domain_(std::move(domain)),
@@ -78,13 +80,12 @@ WebCanonicalCookie::WebCanonicalCookie(WebString name,
   DCHECK(ToNetCanonicalCookie(*this).IsCanonical());
 }
 
-WebCanonicalCookie::WebCanonicalCookie(const WebCanonicalCookie& other) =
+CanonicalCookie::CanonicalCookie(const CanonicalCookie& other) = default;
+
+CanonicalCookie& CanonicalCookie::operator=(const CanonicalCookie& other) =
     default;
 
-WebCanonicalCookie& WebCanonicalCookie::operator=(
-    const WebCanonicalCookie& other) = default;
-
-WebCanonicalCookie::~WebCanonicalCookie() = default;
+CanonicalCookie::~CanonicalCookie() = default;
 
 namespace {
 
@@ -99,7 +100,7 @@ GURL ToGURL(const WebURL& url) {
 }  // namespace
 
 // static
-base::Optional<WebCanonicalCookie> WebCanonicalCookie::Create(
+base::Optional<CanonicalCookie> CanonicalCookie::Create(
     const WebURL& url,
     const WebString& cookie_line,
     base::Time creation_time) {
@@ -108,7 +109,7 @@ base::Optional<WebCanonicalCookie> WebCanonicalCookie::Create(
       base::nullopt /* server_time */);
   if (!cookie)
     return base::nullopt;
-  return WebCanonicalCookie(
+  return CanonicalCookie(
       WebString::FromUTF8(cookie->Name()), WebString::FromUTF8(cookie->Value()),
       WebString::FromUTF8(cookie->Domain()),
       WebString::FromUTF8(cookie->Path()), cookie->CreationDate(),
@@ -119,7 +120,7 @@ base::Optional<WebCanonicalCookie> WebCanonicalCookie::Create(
 }
 
 // static
-base::Optional<WebCanonicalCookie> WebCanonicalCookie::Create(
+base::Optional<CanonicalCookie> CanonicalCookie::Create(
     WebString name,
     WebString value,
     WebString domain,
@@ -139,13 +140,12 @@ base::Optional<WebCanonicalCookie> WebCanonicalCookie::Create(
   if (!net_cookie.IsCanonical())
     return base::nullopt;
 
-  return WebCanonicalCookie(std::move(name), std::move(value),
-                            std::move(domain), std::move(path), creation,
-                            expiration, last_access, is_secure, is_http_only,
-                            same_site, priority);
+  return CanonicalCookie(std::move(name), std::move(value), std::move(domain),
+                         std::move(path), creation, expiration, last_access,
+                         is_secure, is_http_only, same_site, priority);
 }
 
 constexpr const network::mojom::CookiePriority
-    WebCanonicalCookie::kDefaultPriority;
+    CanonicalCookie::kDefaultPriority;
 
 }  // namespace blink
