@@ -529,7 +529,7 @@ void GetRestrictedCookieManager(
 }
 
 // Helper method to download a URL on UI thread.
-void DownloadUrlOnUIThread(
+void StartDownload(
     std::unique_ptr<download::DownloadUrlParameters> parameters,
     mojo::PendingRemote<blink::mojom::BlobURLToken> blob_url_token) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -555,37 +555,16 @@ void DownloadUrlOnUIThread(
                                 std::move(blob_url_loader_factory));
 }
 
-// Called on the IO thread when the data URL in the BlobDataHandle
+// Called on the UI thread when the data URL in the BlobDataHandle
 // is read.
 void OnDataURLRetrieved(
     std::unique_ptr<download::DownloadUrlParameters> parameters,
     GURL data_url) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!data_url.is_valid())
+    return;
   parameters->set_url(std::move(data_url));
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&DownloadUrlOnUIThread, std::move(parameters),
-                                mojo::NullRemote()));
-}
-// Called on the IO thread when the BlobDataHandle for the data URL
-// is retrieved.
-void OnDataURLBlobRetrieved(
-    std::unique_ptr<download::DownloadUrlParameters> parameters,
-    std::unique_ptr<storage::BlobDataHandle> blob_data_handle) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DataURLBlobReader::ReadDataURLFromBlob(
-      std::move(blob_data_handle),
-      base::BindOnce(&OnDataURLRetrieved, std::move(parameters)));
-}
-
-// Called to retrieve the data URL on the IO thread.
-void RetrieveDataURLOnIOThread(
-    std::unique_ptr<download::DownloadUrlParameters> parameters,
-    mojo::PendingRemote<blink::mojom::Blob> data_url_blob,
-    scoped_refptr<ChromeBlobStorageContext> blob_context) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  blob_context->context()->GetBlobDataFromBlobRemote(
-      std::move(data_url_blob),
-      base::BindOnce(&OnDataURLBlobRetrieved, std::move(parameters)));
+  StartDownload(std::move(parameters), mojo::NullRemote());
 }
 
 // TODO(crbug.com/977040): Remove when no longer needed.
@@ -4163,18 +4142,14 @@ void RenderFrameHostImpl::DownloadUrl(
   parameters->set_initiator(initiator);
   parameters->set_download_source(download::DownloadSource::FROM_RENDERER);
 
-  BrowserContext* browser_context = GetSiteInstance()->GetBrowserContext();
   if (data_url_blob) {
-    scoped_refptr<ChromeBlobStorageContext> blob_context =
-        ChromeBlobStorageContext::GetFor(browser_context);
-    base::PostTask(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&RetrieveDataURLOnIOThread, std::move(parameters),
-                       std::move(data_url_blob), blob_context));
+    DataURLBlobReader::ReadDataURLFromBlob(
+        std::move(data_url_blob),
+        base::BindOnce(&OnDataURLRetrieved, std::move(parameters)));
     return;
   }
 
-  DownloadUrlOnUIThread(std::move(parameters), std::move(blob_url_token));
+  StartDownload(std::move(parameters), std::move(blob_url_token));
 }
 
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
