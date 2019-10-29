@@ -152,6 +152,10 @@ class TestProcMetrics(cros_test_lib.TestCase):
                        ('/usr/local/autotest/server/autoserv'
                         ' -s -P 196499100-chromeos-test/group0 ...')]
           ),
+          _mock_process(
+              name='getty',
+              cmdline=['/sbin/getty', '-8', '38400', 'console',]
+          ),
       ]
       proc_metrics.collect_proc_info()
 
@@ -159,6 +163,7 @@ class TestProcMetrics(cros_test_lib.TestCase):
     calls = []
     calls.extend(_expected_calls_for('apache'))
     calls.extend(_expected_calls_for('autoserv'))
+    calls.extend(_expected_calls_for('getty'))
     calls.extend(_expected_calls_for('gs_offloader'))
     calls.extend(_expected_calls_for('job_aborter'))
     calls.extend(_expected_calls_for('job_reporter'))

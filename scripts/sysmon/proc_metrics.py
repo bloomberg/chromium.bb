@@ -39,6 +39,8 @@ class _ProcessMetricsCollector(object):
                        test_func=partial(_is_process_name, 'apache2')),
         _ProcessMetric('autoserv',
                        test_func=_is_parent_autoserv),
+        _ProcessMetric('getty',
+                       test_func=partial(_is_process_name, 'getty')),
         _ProcessMetric('gs_offloader',
                        test_func=_is_gs_offloader),
         _ProcessMetric('job_aborter',
