@@ -13,7 +13,7 @@ cr.define('settings_sync_account_control', function() {
   }
 
   suite('SyncAccountControl', function() {
-    let peoplePage = null;
+    const peoplePage = null;
     let browserProxy = null;
     let testElement = null;
 
