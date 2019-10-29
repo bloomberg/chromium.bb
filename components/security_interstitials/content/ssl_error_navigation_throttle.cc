@@ -2,32 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ssl/ssl_error_navigation_throttle.h"
+#include "components/security_interstitials/content/ssl_error_navigation_throttle.h"
 
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chrome/common/chrome_features.h"
+#include "build/buildflag.h"
 #include "components/security_interstitials/content/security_interstitial_page.h"
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 #include "content/public/browser/navigation_handle.h"
 #include "net/cert/cert_status_flags.h"
 
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_commands.h"
-#include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/web_applications/app_browser_controller.h"
-#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
-
 SSLErrorNavigationThrottle::SSLErrorNavigationThrottle(
     content::NavigationHandle* navigation_handle,
     std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
     SSLErrorNavigationThrottle::HandleSSLErrorCallback
-        handle_ssl_error_callback)
+        handle_ssl_error_callback,
+    IsInHostedAppCallback is_in_hosted_app_callback)
     : content::NavigationThrottle(navigation_handle),
       ssl_cert_reporter_(std::move(ssl_cert_reporter)),
-      handle_ssl_error_callback_(std::move(handle_ssl_error_callback)) {}
+      handle_ssl_error_callback_(std::move(handle_ssl_error_callback)),
+      is_in_hosted_app_callback_(std::move(is_in_hosted_app_callback)) {}
 
 SSLErrorNavigationThrottle::~SSLErrorNavigationThrottle() {}
 
@@ -76,15 +71,12 @@ SSLErrorNavigationThrottle::WillProcessResponse() {
     return content::NavigationThrottle::PROCEED;
   }
 
-#if BUILDFLAG(ENABLE_EXTENSIONS)
   // Hosted Apps should not be allowed to run if there is a problem with their
   // certificate. So, when a user tries to open such an app, we show an
   // interstitial, even if the user has previously clicked through one. Clicking
   // through the interstitial will continue the navigation in a regular browser
   // window.
-  Browser* browser =
-      chrome::FindBrowserWithWebContents(handle->GetWebContents());
-  if (browser && web_app::AppBrowserController::IsForWebAppBrowser(browser)) {
+  if (std::move(is_in_hosted_app_callback_).Run(handle->GetWebContents())) {
     QueueShowInterstitial(
         std::move(handle_ssl_error_callback_), handle->GetWebContents(),
         // The navigation handle's net error code will be
@@ -96,7 +88,6 @@ SSLErrorNavigationThrottle::WillProcessResponse() {
     return content::NavigationThrottle::ThrottleCheckResult(
         content::NavigationThrottle::DEFER);
   }
-#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
   return content::NavigationThrottle::PROCEED;
 }

@@ -2,19 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SSL_SSL_ERROR_NAVIGATION_THROTTLE_H_
-#define CHROME_BROWSER_SSL_SSL_ERROR_NAVIGATION_THROTTLE_H_
+#ifndef COMPONENTS_SECURITY_INTERSTITIALS_CONTENT_SSL_ERROR_NAVIGATION_THROTTLE_H_
+#define COMPONENTS_SECURITY_INTERSTITIALS_CONTENT_SSL_ERROR_NAVIGATION_THROTTLE_H_
 
 #include <memory>
 
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/ssl/ssl_error_handler.h"
+#include "components/security_interstitials/content/ssl_cert_reporter.h"
+#include "content/public/browser/certificate_request_result_type.h"
 #include "content/public/browser/navigation_throttle.h"
+#include "net/ssl/ssl_info.h"
 
 class SSLCertReporter;
 
 namespace content {
 class NavigationHandle;
+class WebContents;
 }  // namespace content
 
 namespace security_interstitials {
@@ -42,10 +45,20 @@ class SSLErrorNavigationThrottle : public content::NavigationThrottle {
           blocking_page_ready_callback)>
       HandleSSLErrorCallback;
 
+  // Returns whether |web_contents| is in the context of a hosted app, as the
+  // logic of when to display interstitials for SSL errors is specialized for
+  // hosted apps. This is exposed as a callback because although the WebContents
+  // is known at the time of creating SSLErrorNavigationThrottle, it may not
+  // have been inserted into a browser by the time the navigation begins. See
+  // browser_navigator.cc.
+  typedef base::OnceCallback<bool(content::WebContents* web_contents)>
+      IsInHostedAppCallback;
+
   explicit SSLErrorNavigationThrottle(
       content::NavigationHandle* handle,
       std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
-      HandleSSLErrorCallback handle_ssl_error_callback);
+      HandleSSLErrorCallback handle_ssl_error_callback,
+      IsInHostedAppCallback is_in_hosted_app_callback);
   ~SSLErrorNavigationThrottle() override;
 
   // content::NavigationThrottle:
@@ -69,7 +82,8 @@ class SSLErrorNavigationThrottle : public content::NavigationThrottle {
 
   std::unique_ptr<SSLCertReporter> ssl_cert_reporter_;
   HandleSSLErrorCallback handle_ssl_error_callback_;
+  IsInHostedAppCallback is_in_hosted_app_callback_;
   base::WeakPtrFactory<SSLErrorNavigationThrottle> weak_ptr_factory_{this};
 };
 
-#endif  // CHROME_BROWSER_SSL_SSL_ERROR_NAVIGATION_THROTTLE_H_
+#endif  // COMPONENTS_SECURITY_INTERSTITIALS_CONTENT_SSL_ERROR_NAVIGATION_THROTTLE_H_
