@@ -33,7 +33,7 @@ void SetChannel(const std::string& channel) {
 
 std::string GetChannelName() {
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  switch (g_chromeos_channel) {
+  switch (GetChannel()) {
     case version_info::Channel::STABLE:
       return std::string();
     case version_info::Channel::BETA:
