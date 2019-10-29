@@ -1993,8 +1993,7 @@ static void ActivityLoggingSetterForAllWorldsLongAttributeAttributeSetter(
 }
 
 // Define a private property key shared between getter and setter.
-static const V8PrivateProperty::SymbolKey
-    cached_attribute_any_attribute_key("TestObject#CachedAttributeAnyAttribute");
+static const V8PrivateProperty::SymbolKey cached_attribute_any_attribute_key;
 
 static void CachedAttributeAnyAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
@@ -2046,8 +2045,7 @@ static void CachedAttributeAnyAttributeAttributeSetter(
 }
 
 // Define a private property key shared between getter and setter.
-static const V8PrivateProperty::SymbolKey
-    cached_array_attribute_key("TestObject#CachedArrayAttribute");
+static const V8PrivateProperty::SymbolKey cached_array_attribute_key;
 
 static void CachedArrayAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
@@ -2108,8 +2106,7 @@ static void ReadonlyCachedAttributeAttributeGetter(const v8::FunctionCallbackInf
   TestObject* impl = V8TestObject::ToImpl(holder);
 
   // [CachedAttribute]
-  static const V8PrivateProperty::SymbolKey
-      readonly_cached_attribute_key("TestObject#ReadonlyCachedAttribute");
+  static const V8PrivateProperty::SymbolKey readonly_cached_attribute_key;
 
   V8PrivateProperty::Symbol property_symbol =
       V8PrivateProperty::GetSymbol(info.GetIsolate(),
@@ -2132,8 +2129,7 @@ static void ReadonlyCachedAttributeAttributeGetter(const v8::FunctionCallbackInf
 }
 
 // Define a private property key shared between getter and setter.
-static const V8PrivateProperty::SymbolKey
-    cached_string_or_none_attribute_key("TestObject#CachedStringOrNoneAttribute");
+static const V8PrivateProperty::SymbolKey cached_string_or_none_attribute_key;
 
 static void CachedStringOrNoneAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
@@ -3145,8 +3141,7 @@ static void RaisesExceptionTestInterfaceEmptyAttributeAttributeSetter(
 }
 
 // Define a private property key shared between getter and setter.
-static const V8PrivateProperty::SymbolKey
-    cached_attribute_raises_exception_getter_any_attribute_key("TestObject#CachedAttributeRaisesExceptionGetterAnyAttribute");
+static const V8PrivateProperty::SymbolKey cached_attribute_raises_exception_getter_any_attribute_key;
 
 static void CachedAttributeRaisesExceptionGetterAnyAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
@@ -4125,8 +4120,7 @@ static void SaveSameObjectAttributeAttributeGetter(const v8::FunctionCallbackInf
   v8::Local<v8::Object> holder = info.Holder();
 
   // [SaveSameObject]
-  static const V8PrivateProperty::SymbolKey
-      save_same_object_key("TestObject#SaveSameObjectAttribute");
+  static const V8PrivateProperty::SymbolKey save_same_object_key;
   auto private_same_object =
       V8PrivateProperty::GetSymbol(info.GetIsolate(), save_same_object_key);
   {
@@ -4161,8 +4155,7 @@ static void StaticSaveSameObjectAttributeAttributeGetter(const v8::FunctionCallb
   v8::Local<v8::Object> holder = info.Holder();
 
   // [SaveSameObject]
-  static const V8PrivateProperty::SymbolKey
-      save_same_object_key("TestObject#StaticSaveSameObjectAttribute");
+  static const V8PrivateProperty::SymbolKey save_same_object_key;
   auto private_same_object =
       V8PrivateProperty::GetSymbol(info.GetIsolate(), save_same_object_key);
   {
