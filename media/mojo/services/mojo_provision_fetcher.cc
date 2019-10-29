@@ -9,8 +9,8 @@
 namespace media {
 
 MojoProvisionFetcher::MojoProvisionFetcher(
-    mojo::PendingRemote<mojom::ProvisionFetcher> provision_fetcher_remote)
-    : provision_fetcher_remote_(std::move(provision_fetcher_remote)) {
+    mojo::PendingRemote<mojom::ProvisionFetcher> provision_fetcher)
+    : provision_fetcher_(std::move(provision_fetcher)) {
   DVLOG(1) << __func__;
 }
 
@@ -21,7 +21,7 @@ void MojoProvisionFetcher::Retrieve(const std::string& default_url,
                                     const std::string& request_data,
                                     const ResponseCB& response_cb) {
   DVLOG(1) << __func__;
-  provision_fetcher_remote_->Retrieve(
+  provision_fetcher_->Retrieve(
       default_url, request_data,
       base::Bind(&MojoProvisionFetcher::OnResponse, weak_factory_.GetWeakPtr(),
                  response_cb));

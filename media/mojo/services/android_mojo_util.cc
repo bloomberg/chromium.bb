@@ -14,12 +14,11 @@ namespace android_mojo_util {
 std::unique_ptr<ProvisionFetcher> CreateProvisionFetcher(
     service_manager::mojom::InterfaceProvider* host_interfaces) {
   DCHECK(host_interfaces);
-  mojo::PendingRemote<mojom::ProvisionFetcher> provision_fetcher_remote;
-  service_manager::GetInterface(
-      host_interfaces,
-      provision_fetcher_remote.InitWithNewPipeAndPassReceiver());
-  return std::make_unique<MojoProvisionFetcher>(
-      std::move(provision_fetcher_remote));
+  mojo::PendingRemote<mojom::ProvisionFetcher> provision_fetcher;
+  host_interfaces->GetInterface(
+      mojom::ProvisionFetcher::Name_,
+      provision_fetcher.InitWithNewPipeAndPassReceiver().PassPipe());
+  return std::make_unique<MojoProvisionFetcher>(std::move(provision_fetcher));
 }
 
 std::unique_ptr<MediaDrmStorage> CreateMediaDrmStorage(

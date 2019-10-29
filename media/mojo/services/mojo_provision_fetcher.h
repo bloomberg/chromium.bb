@@ -16,12 +16,11 @@
 
 namespace media {
 
-// A ProvisionFetcher that proxies to a
-// mojo::PendingRemote<mojom::ProvisionFetcher>.
+// A ProvisionFetcher that proxies to a Remote<mojom::ProvisionFetcher>.
 class MEDIA_MOJO_EXPORT MojoProvisionFetcher : public ProvisionFetcher {
  public:
   explicit MojoProvisionFetcher(
-      mojo::PendingRemote<mojom::ProvisionFetcher> provision_fetcher_remote);
+      mojo::PendingRemote<mojom::ProvisionFetcher> provision_fetcher);
   ~MojoProvisionFetcher() final;
 
   // ProvisionFetcher implementation:
@@ -30,12 +29,12 @@ class MEDIA_MOJO_EXPORT MojoProvisionFetcher : public ProvisionFetcher {
                 const ResponseCB& response_cb) final;
 
  private:
-  // Callback for mojom::ProvisionFetcherPtr::Retrieve().
+  // Callback for mojo::Remote<mojom::ProvisionFetcher>::Retrieve().
   void OnResponse(const ResponseCB& response_cb,
                   bool success,
                   const std::string& response);
 
-  mojo::Remote<mojom::ProvisionFetcher> provision_fetcher_remote_;
+  mojo::Remote<mojom::ProvisionFetcher> provision_fetcher_;
 
   base::WeakPtrFactory<MojoProvisionFetcher> weak_factory_{this};
 
