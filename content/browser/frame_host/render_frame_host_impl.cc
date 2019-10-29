@@ -4512,7 +4512,7 @@ void RenderFrameHostImpl::BeginNavigation(
                "frame_tree_node", frame_tree_node_->frame_tree_node_id(), "url",
                common_params->url.possibly_invalid_spec());
 
-  DCHECK(IsPerNavigationMojoInterfaceEnabled() == navigation_client.is_valid());
+  DCHECK(navigation_client.is_valid());
 
   mojom::CommonNavigationParamsPtr validated_params = common_params.Clone();
   if (!VerifyBeginNavigationCommonParams(GetSiteInstance(), &*validated_params))
