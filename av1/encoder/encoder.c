@@ -5049,7 +5049,10 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
   if (cpi->sf.prune_obmc_using_stats &&
       cm->current_frame.frame_type == KEY_FRAME) {
     av1_copy(cpi->obmc_probs, default_obmc_probs);
-    cpi->obmc_probs_thresh = 16;
+    if (cpi->sf.prune_obmc_using_stats == 1)
+      cpi->obmc_probs_thresh = 8;
+    else
+      cpi->obmc_probs_thresh = 16;
   }
 
   // Loop variables

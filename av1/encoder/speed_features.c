@@ -186,6 +186,11 @@ static void set_good_speed_feature_framesize_dependent(
     }
 
     if (is_480p_or_larger) sf->tx_type_search.prune_tx_type_using_stats = 1;
+
+    if (is_720p_or_larger)
+      sf->prune_obmc_using_stats = 2;
+    else
+      sf->prune_obmc_using_stats = 1;
   }
 
   if (speed >= 3) {
@@ -208,6 +213,8 @@ static void set_good_speed_feature_framesize_dependent(
     }
 
     if (is_480p_or_larger) sf->tx_type_search.prune_tx_type_using_stats = 2;
+
+    sf->prune_obmc_using_stats = 2;
   }
 }
 
@@ -443,7 +450,6 @@ static void set_good_speed_features_framesize_independent(
     // sf->tx_domain_dist_level = 2;
     sf->tx_domain_dist_thres_level = 2;
     sf->simple_motion_search_prune_agg = 2;
-    sf->prune_obmc_using_stats = 1;
   }
 }
 
