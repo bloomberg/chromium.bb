@@ -13,6 +13,7 @@
 #include "components/page_load_metrics/renderer/page_timing_metrics_sender.h"
 #include "components/page_load_metrics/renderer/page_timing_sender.h"
 #include "content/public/renderer/render_frame.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_document_loader.h"
@@ -118,7 +119,7 @@ void MetricsRenderFrameObserver::DidObserveLazyLoadBehavior(
 void MetricsRenderFrameObserver::DidStartResponse(
     const GURL& response_url,
     int request_id,
-    const network::ResourceResponseHead& response_head,
+    const network::mojom::URLResponseHead& response_head,
     content::ResourceType resource_type,
     content::PreviewsState previews_state) {
   if (provisional_frame_resource_data_use_ &&
