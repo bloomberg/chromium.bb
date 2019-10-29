@@ -166,9 +166,8 @@ static void ReadonlyTestInterfaceEmptyAttributeAttributeGetter(const v8::Functio
   if (cpp_value && DOMDataStore::SetReturnValue(info.GetReturnValue(), cpp_value))
     return;
   v8::Local<v8::Value> v8_value(ToV8(cpp_value, holder, info.GetIsolate()));
-  static int private_property_key;
-  V8PrivateProperty::GetSymbol(
-      info.GetIsolate(), &private_property_key, "KeepAlive#TestObject#readonlyTestInterfaceEmptyAttribute")
+  static const V8PrivateProperty::SymbolKey keep_alive_key;
+  V8PrivateProperty::GetSymbol(info.GetIsolate(), keep_alive_key)
       .Set(holder, v8_value);
 
   V8SetReturnValue(info, v8_value);
@@ -2523,9 +2522,8 @@ static void PerWorldBindingsReadonlyTestInterfaceEmptyAttributeAttributeGetter(c
   if (cpp_value && DOMDataStore::SetReturnValue(info.GetReturnValue(), cpp_value))
     return;
   v8::Local<v8::Value> v8_value(ToV8(cpp_value, holder, info.GetIsolate()));
-  static int private_property_key;
-  V8PrivateProperty::GetSymbol(
-      info.GetIsolate(), &private_property_key, "KeepAlive#TestObject#perWorldBindingsReadonlyTestInterfaceEmptyAttribute")
+  static const V8PrivateProperty::SymbolKey keep_alive_key;
+  V8PrivateProperty::GetSymbol(info.GetIsolate(), keep_alive_key)
       .Set(holder, v8_value);
 
   V8SetReturnValue(info, v8_value);
@@ -2543,9 +2541,8 @@ static void PerWorldBindingsReadonlyTestInterfaceEmptyAttributeAttributeGetterFo
   if (cpp_value && DOMDataStore::SetReturnValueForMainWorld(info.GetReturnValue(), cpp_value))
     return;
   v8::Local<v8::Value> v8_value(ToV8(cpp_value, holder, info.GetIsolate()));
-  static int private_property_key;
-  V8PrivateProperty::GetSymbol(
-      info.GetIsolate(), &private_property_key, "KeepAlive#TestObject#perWorldBindingsReadonlyTestInterfaceEmptyAttribute")
+  static const V8PrivateProperty::SymbolKey keep_alive_key;
+  V8PrivateProperty::GetSymbol(info.GetIsolate(), keep_alive_key)
       .Set(holder, v8_value);
 
   V8SetReturnValue(info, v8_value);
@@ -4108,9 +4105,8 @@ static void SameObjectAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8
   if (cpp_value && DOMDataStore::SetReturnValue(info.GetReturnValue(), cpp_value))
     return;
   v8::Local<v8::Value> v8_value(ToV8(cpp_value, holder, info.GetIsolate()));
-  static int private_property_key;
-  V8PrivateProperty::GetSymbol(
-      info.GetIsolate(), &private_property_key, "KeepAlive#TestObject#sameObjectAttribute")
+  static const V8PrivateProperty::SymbolKey keep_alive_key;
+  V8PrivateProperty::GetSymbol(info.GetIsolate(), keep_alive_key)
       .Set(holder, v8_value);
 
   V8SetReturnValue(info, v8_value);
@@ -4140,9 +4136,8 @@ static void SaveSameObjectAttributeAttributeGetter(const v8::FunctionCallbackInf
   if (cpp_value && DOMDataStore::SetReturnValue(info.GetReturnValue(), cpp_value))
     return;
   v8::Local<v8::Value> v8_value(ToV8(cpp_value, holder, info.GetIsolate()));
-  static int private_property_key;
-  V8PrivateProperty::GetSymbol(
-      info.GetIsolate(), &private_property_key, "KeepAlive#TestObject#saveSameObjectAttribute")
+  static const V8PrivateProperty::SymbolKey keep_alive_key;
+  V8PrivateProperty::GetSymbol(info.GetIsolate(), keep_alive_key)
       .Set(holder, v8_value);
 
   V8SetReturnValue(info, v8_value);
