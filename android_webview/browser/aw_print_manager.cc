@@ -57,14 +57,14 @@ AwPrintManager::AwPrintManager(
       fd_(file_descriptor) {
   DCHECK(settings_);
   pdf_writing_done_callback_ = std::move(callback);
+  DCHECK(pdf_writing_done_callback_);
   cookie_ = 1;  // Set a valid dummy cookie value.
 }
 
 AwPrintManager::~AwPrintManager() = default;
 
 void AwPrintManager::PdfWritingDone(int page_count) {
-  if (pdf_writing_done_callback_)
-    pdf_writing_done_callback_.Run(page_count);
+  pdf_writing_done_callback_.Run(page_count);
   // Invalidate the file descriptor so it doesn't get reused.
   fd_ = -1;
 }
