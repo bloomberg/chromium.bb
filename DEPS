@@ -35,6 +35,7 @@ gclient_gn_args = [
   'checkout_nacl',
   'checkout_oculus_sdk',
   'checkout_openxr',
+  'checkout_aemu'
 ]
 
 
