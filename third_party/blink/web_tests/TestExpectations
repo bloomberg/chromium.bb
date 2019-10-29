@@ -5725,7 +5725,6 @@ crbug.com/990900 virtual/omt-worker-fetch/external/wpt/fetch/api/idlharness.any.
 crbug.com/1014327 [ Mac ] external/wpt/preload/onerror-event.html [ Pass Timeout ]
 
 # Sheriff 2019-10-16
-crbug.com/1014810 virtual/threaded/external/wpt/animation-worklet/stateful-animator.https.html [ Pass Timeout ]
 crbug.com/1014812 external/wpt/animation-worklet/playback-rate.https.html [ Pass Timeout Failure ]
 crbug.com/1014812 virtual/threaded/external/wpt/animation-worklet/playback-rate.https.html [ Pass Timeout Failure ]
 crbug.com/1014950 [ Mac ] http/tests/devtools/tracing/timeline-js/timeline-js-line-level-profile-no-url-end-to-end.js [ Pass Timeout ]
