@@ -452,6 +452,7 @@ class CONTENT_EXPORT RenderFrameImpl
   int ShowContextMenu(ContextMenuClient* client,
                       const ContextMenuParams& params) override;
   void CancelContextMenu(int request_id) override;
+  void ShowVirtualKeyboard() override;
   blink::WebPlugin* CreatePlugin(
       const WebPluginInfo& info,
       const blink::WebPluginParams& params,

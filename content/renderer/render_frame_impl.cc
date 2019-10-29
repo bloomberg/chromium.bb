@@ -3029,6 +3029,10 @@ void RenderFrameImpl::CancelContextMenu(int request_id) {
   pending_context_menus_.Remove(request_id);
 }
 
+void RenderFrameImpl::ShowVirtualKeyboard() {
+  GetLocalRootRenderWidget()->ShowVirtualKeyboard();
+}
+
 blink::WebPlugin* RenderFrameImpl::CreatePlugin(
     const WebPluginInfo& info,
     const blink::WebPluginParams& params,
