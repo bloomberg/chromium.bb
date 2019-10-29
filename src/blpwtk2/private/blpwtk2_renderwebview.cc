@@ -1126,6 +1126,17 @@ void RenderWebView::setLogicalFocus(bool focused)
         content::RenderViewImpl *rv =
             content::RenderViewImpl::FromRoutingID(d_renderViewRoutingId);
         DCHECK(rv);
+
+        blink::WebFrame *webFrame = rv->GetWebView()->MainFrame();
+
+        v8::Isolate* isolate = webFrame->ScriptIsolate();
+        v8::Isolate::Scope isolateScope(isolate);
+
+        v8::HandleScope handleScope(isolate);
+
+        v8::Context::Scope contextScope(
+            webFrame->ToWebLocalFrame()->MainWorldScriptContext());
+
         rv->SetFocus(focused);
     }
 }
