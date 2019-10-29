@@ -13,6 +13,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.directactions.DirectActionHandler;
 import org.chromium.chrome.browser.directactions.DirectActionReporter;
+import org.chromium.chrome.browser.directactions.DirectActionReporter.Definition;
 import org.chromium.chrome.browser.directactions.DirectActionReporter.Type;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.widget.ScrimView;
@@ -84,9 +85,16 @@ public class AutofillAssistantDirectActionHandler implements DirectActionHandler
         // Additionally report if there are dynamic actions.
         if (mDelegate != null) {
             for (String action : mDelegate.getActions()) {
-                reporter.addDirectAction(action)
-                        .withParameter(EXPERIMENT_IDS, Type.STRING, /* required= */ false)
-                        .withResult(AA_ACTION_RESULT, Type.BOOLEAN);
+                Definition definition =
+                        reporter.addDirectAction(action)
+                                .withParameter(EXPERIMENT_IDS, Type.STRING, /* required= */ false)
+                                .withResult(AA_ACTION_RESULT, Type.BOOLEAN);
+
+                // TODO(b/138833619): For testing purposes only. Remove this when script
+                // parameters are properly supported.
+                if (action.equals("search")) {
+                    definition.withParameter("SEARCH_QUERY", Type.STRING, /* required= */ true);
+                }
             }
         }
     }

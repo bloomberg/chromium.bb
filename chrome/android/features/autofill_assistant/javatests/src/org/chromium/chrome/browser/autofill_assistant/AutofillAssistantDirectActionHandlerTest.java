@@ -152,9 +152,11 @@ public class AutofillAssistantDirectActionHandlerTest {
         // Now we expect 2 dyamic actions "search" and "action2".
         FakeDirectActionDefinition search = reporter.mActions.get(1);
         assertEquals("search", search.mId);
-        assertEquals(1, search.mParameters.size());
+        assertEquals(2, search.mParameters.size());
         assertEquals("experiment_ids", search.mParameters.get(0).mName);
         assertEquals(Type.STRING, search.mParameters.get(0).mType);
+        assertEquals("SEARCH_QUERY", search.mParameters.get(1).mName);
+        assertEquals(Type.STRING, search.mParameters.get(1).mType);
         assertEquals(1, search.mResults.size());
         assertEquals("success", search.mResults.get(0).mName);
         assertEquals(Type.BOOLEAN, search.mResults.get(0).mType);
