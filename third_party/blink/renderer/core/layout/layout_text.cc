@@ -1278,7 +1278,8 @@ void LayoutText::ComputePreferredLogicalWidths(
     }
 
     bool is_breakable_location =
-        is_newline || (is_space && style_to_use.AutoWrap());
+        is_newline || (is_space && style_to_use.AutoWrap()) ||
+        break_all_or_break_word == EWordBreak::kBreakWord;
     if (!i)
       has_breakable_start_ = is_breakable_location;
     if (i == len - 1) {
@@ -1389,6 +1390,7 @@ void LayoutText::ComputePreferredLogicalWidths(
       }
 
       if (break_all_or_break_word != EWordBreak::kNormal) {
+        has_breakable_char_ = true;
         // Because sum of character widths may not be equal to the word width,
         // we need to measure twice; once with normal break for max width,
         // another with break-all for min width.
