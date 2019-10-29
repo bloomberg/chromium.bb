@@ -3,6 +3,7 @@
 
 import sys
 _b=sys.version_info[0]<3 and (lambda x:x) or (lambda x:x.encode('latin1'))
+from google.protobuf.internal import enum_type_wrapper
 from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
 from google.protobuf import reflection as _reflection
@@ -20,10 +21,75 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='config',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x1f\x63onfig/replication_config.proto\x12\x06\x63onfig\x1a google/protobuf/field_mask.proto\"|\n\x13\x46ileReplicationRule\x12\x13\n\x0bsource_path\x18\x01 \x01(\t\x12\x18\n\x10\x64\x65stination_path\x18\x02 \x01(\t\x12\x36\n\x12\x64\x65stination_fields\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.FieldMask\"P\n\x11ReplicationConfig\x12;\n\x16\x66ile_replication_rules\x18\x01 \x03(\x0b\x32\x1b.config.FileReplicationRuleb\x06proto3')
+  serialized_pb=_b('\n\x1f\x63onfig/replication_config.proto\x12\x06\x63onfig\x1a google/protobuf/field_mask.proto\"\xd4\x01\n\x13\x46ileReplicationRule\x12\x13\n\x0bsource_path\x18\x01 \x01(\t\x12\x18\n\x10\x64\x65stination_path\x18\x02 \x01(\t\x12#\n\tfile_type\x18\x03 \x01(\x0e\x32\x10.config.FileType\x12\x31\n\x10replication_type\x18\x04 \x01(\x0e\x32\x17.config.ReplicationType\x12\x36\n\x12\x64\x65stination_fields\x18\x05 \x01(\x0b\x32\x1a.google.protobuf.FieldMask\"P\n\x11ReplicationConfig\x12;\n\x16\x66ile_replication_rules\x18\x01 \x03(\x0b\x32\x1b.config.FileReplicationRule*d\n\x08\x46ileType\x12\x19\n\x15\x46ILE_TYPE_UNSPECIFIED\x10\x00\x12\x12\n\x0e\x46ILE_TYPE_JSON\x10\x01\x12\x14\n\x10\x46ILE_TYPE_JSONPB\x10\x02\x12\x13\n\x0f\x46ILE_TYPE_OTHER\x10\x03*k\n\x0fReplicationType\x12 \n\x1cREPLICATION_TYPE_UNSPECIFIED\x10\x00\x12\x19\n\x15REPLICATION_TYPE_COPY\x10\x01\x12\x1b\n\x17REPLICATION_TYPE_FILTER\x10\x02\x62\x06proto3')
   ,
   dependencies=[google_dot_protobuf_dot_field__mask__pb2.DESCRIPTOR,])
 
+_FILETYPE = _descriptor.EnumDescriptor(
+  name='FileType',
+  full_name='config.FileType',
+  filename=None,
+  file=DESCRIPTOR,
+  values=[
+    _descriptor.EnumValueDescriptor(
+      name='FILE_TYPE_UNSPECIFIED', index=0, number=0,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='FILE_TYPE_JSON', index=1, number=1,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='FILE_TYPE_JSONPB', index=2, number=2,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='FILE_TYPE_OTHER', index=3, number=3,
+      serialized_options=None,
+      type=None),
+  ],
+  containing_type=None,
+  serialized_options=None,
+  serialized_start=374,
+  serialized_end=474,
+)
+_sym_db.RegisterEnumDescriptor(_FILETYPE)
+
+FileType = enum_type_wrapper.EnumTypeWrapper(_FILETYPE)
+_REPLICATIONTYPE = _descriptor.EnumDescriptor(
+  name='ReplicationType',
+  full_name='config.ReplicationType',
+  filename=None,
+  file=DESCRIPTOR,
+  values=[
+    _descriptor.EnumValueDescriptor(
+      name='REPLICATION_TYPE_UNSPECIFIED', index=0, number=0,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='REPLICATION_TYPE_COPY', index=1, number=1,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='REPLICATION_TYPE_FILTER', index=2, number=2,
+      serialized_options=None,
+      type=None),
+  ],
+  containing_type=None,
+  serialized_options=None,
+  serialized_start=476,
+  serialized_end=583,
+)
+_sym_db.RegisterEnumDescriptor(_REPLICATIONTYPE)
+
+ReplicationType = enum_type_wrapper.EnumTypeWrapper(_REPLICATIONTYPE)
+FILE_TYPE_UNSPECIFIED = 0
+FILE_TYPE_JSON = 1
+FILE_TYPE_JSONPB = 2
+FILE_TYPE_OTHER = 3
+REPLICATION_TYPE_UNSPECIFIED = 0
+REPLICATION_TYPE_COPY = 1
+REPLICATION_TYPE_FILTER = 2
 
 
 
@@ -49,8 +115,22 @@ _FILEREPLICATIONRULE = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='destination_fields', full_name='config.FileReplicationRule.destination_fields', index=2,
-      number=3, type=11, cpp_type=10, label=1,
+      name='file_type', full_name='config.FileReplicationRule.file_type', index=2,
+      number=3, type=14, cpp_type=8, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='replication_type', full_name='config.FileReplicationRule.replication_type', index=3,
+      number=4, type=14, cpp_type=8, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='destination_fields', full_name='config.FileReplicationRule.destination_fields', index=4,
+      number=5, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -67,8 +147,8 @@ _FILEREPLICATIONRULE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=77,
-  serialized_end=201,
+  serialized_start=78,
+  serialized_end=290,
 )
 
 
@@ -98,14 +178,18 @@ _REPLICATIONCONFIG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=203,
-  serialized_end=283,
+  serialized_start=292,
+  serialized_end=372,
 )
 
+_FILEREPLICATIONRULE.fields_by_name['file_type'].enum_type = _FILETYPE
+_FILEREPLICATIONRULE.fields_by_name['replication_type'].enum_type = _REPLICATIONTYPE
 _FILEREPLICATIONRULE.fields_by_name['destination_fields'].message_type = google_dot_protobuf_dot_field__mask__pb2._FIELDMASK
 _REPLICATIONCONFIG.fields_by_name['file_replication_rules'].message_type = _FILEREPLICATIONRULE
 DESCRIPTOR.message_types_by_name['FileReplicationRule'] = _FILEREPLICATIONRULE
 DESCRIPTOR.message_types_by_name['ReplicationConfig'] = _REPLICATIONCONFIG
+DESCRIPTOR.enum_types_by_name['FileType'] = _FILETYPE
+DESCRIPTOR.enum_types_by_name['ReplicationType'] = _REPLICATIONTYPE
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 FileReplicationRule = _reflection.GeneratedProtocolMessageType('FileReplicationRule', (_message.Message,), dict(
