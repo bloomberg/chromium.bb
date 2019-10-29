@@ -261,16 +261,16 @@ class MediaServiceTest : public testing::Test {
 
     video_stream_.set_video_decoder_config(video_config);
 
-    mojom::DemuxerStreamPtrInfo video_stream_proxy_info;
+    mojo::PendingRemote<mojom::DemuxerStream> video_stream_proxy;
     mojo_video_stream_.reset(new MojoDemuxerStreamImpl(
-        &video_stream_, MakeRequest(&video_stream_proxy_info)));
+        &video_stream_, video_stream_proxy.InitWithNewPipeAndPassReceiver()));
 
     mojo::PendingAssociatedRemote<mojom::RendererClient> client_remote;
     renderer_client_receiver_.Bind(
         client_remote.InitWithNewEndpointAndPassReceiver());
 
-    std::vector<mojom::DemuxerStreamPtrInfo> streams;
-    streams.push_back(std::move(video_stream_proxy_info));
+    std::vector<mojo::PendingRemote<mojom::DemuxerStream>> streams;
+    streams.push_back(std::move(video_stream_proxy));
 
     EXPECT_CALL(*this, OnRendererInitialized(expected_result))
         .WillOnce(QuitLoop(&run_loop));
