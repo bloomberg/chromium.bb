@@ -635,8 +635,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                                    int context_id) override;
   RenderFrameHostImpl* GetMainFrameForInnerDelegate(
       FrameTreeNode* frame_tree_node) override;
-  void OnThemeColorChanged(RenderFrameHostImpl* source,
-                           const base::Optional<SkColor>& theme_color) override;
   bool IsFrameLowPriority(const RenderFrameHost* render_frame_host) override;
   void RegisterProtocolHandler(RenderFrameHostImpl* source,
                                const std::string& protocol,
@@ -712,6 +710,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   RenderFrameHostImpl* GetPendingMainFrame() override;
   void DidFirstVisuallyNonEmptyPaint(RenderViewHostImpl* source) override;
   bool IsPortal() const override;
+  void OnThemeColorChanged(RenderViewHostImpl* source) override;
 
   // NavigatorDelegate ---------------------------------------------------------
 
@@ -1625,10 +1624,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // unsafe to show the pending URL. Usually false unless another window tries
   // to modify the blank page.  Always false after the first commit.
   bool has_accessed_initial_document_;
-
-  // The theme color for the underlying document as specified
-  // by theme-color meta tag.
-  base::Optional<SkColor> theme_color_;
 
   // The last published theme color.
   base::Optional<SkColor> last_sent_theme_color_;

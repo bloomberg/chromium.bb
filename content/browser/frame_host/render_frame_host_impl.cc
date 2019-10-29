@@ -3518,7 +3518,7 @@ void RenderFrameHostImpl::VisibilityChanged(
 
 void RenderFrameHostImpl::DidChangeThemeColor(
     const base::Optional<SkColor>& theme_color) {
-  delegate_->OnThemeColorChanged(this, theme_color);
+  render_view_host_->OnThemeColorChanged(this, theme_color);
 }
 
 void RenderFrameHostImpl::SetCommitCallbackInterceptorForTesting(

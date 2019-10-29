@@ -24,6 +24,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/no_destructor.h"
+#include "base/optional.h"
 #include "base/process/process.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -1085,7 +1086,7 @@ void WebContentsImpl::OnScreenOrientationChange() {
 }
 
 base::Optional<SkColor> WebContentsImpl::GetThemeColor() {
-  return theme_color_;
+  return GetRenderViewHost()->theme_color();
 }
 
 void WebContentsImpl::SetAccessibilityMode(ui::AXMode mode) {
@@ -4554,9 +4555,6 @@ void WebContentsImpl::DidNavigateMainFramePostCommit(
         static_cast<RenderWidgetHostViewBase*>(GetRenderWidgetHostView());
     if (rwhvb)
       rwhvb->OnDidNavigateMainFrameToNewPage();
-
-    // Reset theme color on navigation to new page.
-    theme_color_.reset();
   }
 
   if (delegate_)
@@ -4571,6 +4569,12 @@ void WebContentsImpl::DidNavigateMainFramePostCommit(
     // This event will not fire again if the page is restored from the
     // BackForwardCache. So fire it ourselves if needed.
     DidFirstVisuallyNonEmptyPaint(GetRenderViewHost());
+  }
+
+  if (GetRenderViewHost()->theme_color() != last_sent_theme_color_) {
+    // This event will not fire again if the page is restored from the
+    // BackForwardCache. So fire it ourselves if needed.
+    OnThemeColorChanged(GetRenderViewHost());
   }
 }
 
@@ -4608,23 +4612,12 @@ bool WebContentsImpl::CanOverscrollContent() const {
   return false;
 }
 
-void WebContentsImpl::OnThemeColorChanged(
-    RenderFrameHostImpl* source,
-    const base::Optional<SkColor>& theme_color) {
-  if (source != GetMainFrame()) {
-    // Only the main frame may control the theme.
-    return;
-  }
-
-  // Update the theme color. This is to be published to observers after the
-  // first visually non-empty paint.
-  theme_color_ = theme_color;
-
-  if (GetRenderViewHost()->did_first_visually_non_empty_paint() &&
-      last_sent_theme_color_ != theme_color_) {
+void WebContentsImpl::OnThemeColorChanged(RenderViewHostImpl* source) {
+  if (source->did_first_visually_non_empty_paint() &&
+      last_sent_theme_color_ != source->theme_color()) {
     for (auto& observer : observers_)
-      observer.DidChangeThemeColor(theme_color_);
-    last_sent_theme_color_ = theme_color_;
+      observer.DidChangeThemeColor(source->theme_color());
+    last_sent_theme_color_ = source->theme_color();
   }
 }
 
@@ -5133,11 +5126,11 @@ void WebContentsImpl::DidFirstVisuallyNonEmptyPaint(
   for (auto& observer : observers_)
     observer.DidFirstVisuallyNonEmptyPaint();
 
-  if (theme_color_ != last_sent_theme_color_) {
+  if (source->theme_color() != last_sent_theme_color_) {
     // Theme color should have updated by now if there was one.
     for (auto& observer : observers_)
-      observer.DidChangeThemeColor(theme_color_);
-    last_sent_theme_color_ = theme_color_;
+      observer.DidChangeThemeColor(source->theme_color());
+    last_sent_theme_color_ = source->theme_color();
   }
 }
 

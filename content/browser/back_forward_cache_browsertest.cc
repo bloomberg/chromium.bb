@@ -256,6 +256,24 @@ void WaitForFirstVisuallyNonEmptyPaint(WebContents* contents) {
   observer.Wait();
 }
 
+class ThemeColorObserver : public WebContentsObserver {
+ public:
+  explicit ThemeColorObserver(WebContents* contents)
+      : WebContentsObserver(contents) {}
+  void DidChangeThemeColor(base::Optional<SkColor> color) override {
+    observed_ = true;
+    color_ = color;
+  }
+
+  const base::Optional<SkColor>& color() const { return color_; }
+
+  bool did_fire() const { return observed_; }
+
+ private:
+  bool observed_ = false;
+  base::Optional<SkColor> color_;
+};
+
 }  // namespace
 
 // Navigate from A to B and go back.
@@ -3501,6 +3519,31 @@ IN_PROC_BROWSER_TEST_F(
   // navigation.
   EXPECT_TRUE(web_contents()->CompletedFirstVisuallyNonEmptyPaint());
   EXPECT_TRUE(observer.did_fire());
+}
+
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
+                       SetsThemeColorWhenRestoredFromCache) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  const GURL url_a(
+      embedded_test_server()->GetURL("a.com", "/theme_color.html"));
+  const GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  WaitForFirstVisuallyNonEmptyPaint(web_contents());
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+  EXPECT_EQ(web_contents()->GetThemeColor(), 0xFFFF0000u);
+
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+  WaitForFirstVisuallyNonEmptyPaint(web_contents());
+  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
+  EXPECT_EQ(web_contents()->GetThemeColor(), base::nullopt);
+
+  ThemeColorObserver observer(web_contents());
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_TRUE(observer.did_fire());
+  EXPECT_EQ(observer.color(), 0xFFFF0000u);
+  EXPECT_EQ(web_contents()->GetThemeColor(), 0xFFFF0000u);
 }
 
 }  // namespace content
