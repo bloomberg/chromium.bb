@@ -164,8 +164,6 @@ TEST_F(FrameTest, NavigateSameDomainNoGesture) {
 }
 
 TEST_F(FrameTest, UserActivationInterfaceTest) {
-  ScopedUserActivationV2ForTest scoped_feature(true);
-
   // Initially both sticky and transient bits are false.
   EXPECT_FALSE(GetDocument().GetFrame()->HasBeenActivated());
   EXPECT_FALSE(

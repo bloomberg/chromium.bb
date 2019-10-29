@@ -80,32 +80,6 @@ UserGestureIndicator::~UserGestureIndicator() {
 }
 
 // static
-bool UserGestureIndicator::ProcessingUserGesture() {
-  if (auto* token = CurrentToken())
-    return token->HasGestures();
-  return false;
-}
-
-// static
-bool UserGestureIndicator::ProcessingUserGestureThreadSafe() {
-  return IsMainThread() && ProcessingUserGesture();
-}
-
-// static
-bool UserGestureIndicator::ConsumeUserGesture() {
-  if (auto* token = CurrentToken()) {
-    if (token->ConsumeGesture())
-      return true;
-  }
-  return false;
-}
-
-// static
-bool UserGestureIndicator::ConsumeUserGestureThreadSafe() {
-  return IsMainThread() && ConsumeUserGesture();
-}
-
-// static
 UserGestureToken* UserGestureIndicator::CurrentToken() {
   DCHECK(IsMainThread());
   return root_token_;

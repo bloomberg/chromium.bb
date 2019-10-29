@@ -943,8 +943,7 @@ bool LocalFrame::CanNavigate(const Frame& target_frame,
 
   // Navigating window.opener cross origin, without user activation. See
   // https://crbug.com/813643.
-  if (Client()->Opener() == target_frame &&
-      !HasTransientUserActivation(this, false /* check_if_main_thread */) &&
+  if (Client()->Opener() == target_frame && !HasTransientUserActivation(this) &&
       !target_frame.GetSecurityContext()->GetSecurityOrigin()->CanAccess(
           SecurityOrigin::Create(destination_url).get())) {
     UseCounter::Count(GetDocument(),
@@ -1491,27 +1490,15 @@ std::unique_ptr<UserGestureIndicator> LocalFrame::NotifyUserActivation(
 }
 
 // static
-bool LocalFrame::HasTransientUserActivation(LocalFrame* frame,
-                                            bool check_if_main_thread) {
-  if (RuntimeEnabledFeatures::UserActivationV2Enabled())
-    return frame ? frame->HasTransientUserActivation() : false;
-
-  return check_if_main_thread
-             ? UserGestureIndicator::ProcessingUserGestureThreadSafe()
-             : UserGestureIndicator::ProcessingUserGesture();
+bool LocalFrame::HasTransientUserActivation(LocalFrame* frame) {
+  return frame ? frame->HasTransientUserActivation() : false;
 }
 
 // static
 bool LocalFrame::ConsumeTransientUserActivation(
     LocalFrame* frame,
-    bool check_if_main_thread,
     UserActivationUpdateSource update_source) {
-  if (RuntimeEnabledFeatures::UserActivationV2Enabled())
-    return frame ? frame->ConsumeTransientUserActivation(update_source) : false;
-
-  return check_if_main_thread
-             ? UserGestureIndicator::ConsumeUserGestureThreadSafe()
-             : UserGestureIndicator::ConsumeUserGesture();
+  return frame ? frame->ConsumeTransientUserActivation(update_source) : false;
 }
 
 void LocalFrame::NotifyUserActivation(bool need_browser_verification) {

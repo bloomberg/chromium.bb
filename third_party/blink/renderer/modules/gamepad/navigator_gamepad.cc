@@ -92,8 +92,7 @@ GamepadList* NavigatorGamepad::Gamepads() {
 
   // Allow gamepad button presses to qualify as user activations if the page is
   // visible.
-  if (RuntimeEnabledFeatures::UserActivationV2Enabled() && GetFrame() &&
-      GetPage() && GetPage()->IsPageVisible() &&
+  if (GetFrame() && GetPage() && GetPage()->IsPageVisible() &&
       GamepadComparisons::HasUserActivation(gamepads_)) {
     LocalFrame::NotifyUserActivation(GetFrame());
   }
