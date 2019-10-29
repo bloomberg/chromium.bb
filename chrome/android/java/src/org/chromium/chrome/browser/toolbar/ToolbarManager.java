@@ -90,7 +90,6 @@ import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
-import org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil;
 import org.chromium.chrome.browser.toolbar.bottom.BottomControlsCoordinator;
 import org.chromium.chrome.browser.toolbar.top.ActionModeController;
 import org.chromium.chrome.browser.toolbar.top.ActionModeController.ActionBarDelegate;
@@ -955,8 +954,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
 
         mLocationBarModel.initializeWithNative();
         mLocationBarModel.setShouldShowOmniboxInOverviewMode(
-                ReturnToChromeExperimentsUtil.shouldShowOmniboxOnTabSwitcher());
-
+                FeatureUtilities.isStartSurfaceEnabled());
 
         assert controlsVisibilityDelegate != null;
         mControlsVisibilityDelegate = controlsVisibilityDelegate;
