@@ -80,7 +80,7 @@ bool SignedExchangeRequestHandler::MaybeCreateLoaderForResponse(
     const network::ResourceResponseHead& response_head,
     mojo::ScopedDataPipeConsumerHandle* response_body,
     network::mojom::URLLoaderPtr* loader,
-    network::mojom::URLLoaderClientRequest* client_request,
+    mojo::PendingReceiver<network::mojom::URLLoaderClient>* client_receiver,
     blink::ThrottlingURLLoader* url_loader,
     bool* skip_other_interceptors,
     bool* will_return_unsafe_redirect) {
@@ -91,7 +91,7 @@ bool SignedExchangeRequestHandler::MaybeCreateLoaderForResponse(
   }
 
   network::mojom::URLLoaderClientPtr client;
-  *client_request = mojo::MakeRequest(&client);
+  *client_receiver = mojo::MakeRequest(&client);
 
   // This lets the SignedExchangeLoader directly returns an artificial redirect
   // to the downstream client without going through blink::ThrottlingURLLoader,

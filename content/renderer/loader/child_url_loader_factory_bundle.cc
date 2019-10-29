@@ -22,11 +22,12 @@ namespace {
 class URLLoaderRelay : public network::mojom::URLLoaderClient,
                        public network::mojom::URLLoader {
  public:
-  URLLoaderRelay(network::mojom::URLLoaderPtr loader_sink,
-                 network::mojom::URLLoaderClientRequest client_source,
-                 network::mojom::URLLoaderClientPtr client_sink)
+  URLLoaderRelay(
+      network::mojom::URLLoaderPtr loader_sink,
+      mojo::PendingReceiver<network::mojom::URLLoaderClient> client_source,
+      network::mojom::URLLoaderClientPtr client_sink)
       : loader_sink_(std::move(loader_sink)),
-        client_source_binding_(this, std::move(client_source)),
+        client_source_receiver_(this, std::move(client_source)),
         client_sink_(std::move(client_sink)) {}
 
   // network::mojom::URLLoader implementation:
@@ -93,7 +94,7 @@ class URLLoaderRelay : public network::mojom::URLLoaderClient,
 
  private:
   network::mojom::URLLoaderPtr loader_sink_;
-  mojo::Binding<network::mojom::URLLoaderClient> client_source_binding_;
+  mojo::Receiver<network::mojom::URLLoaderClient> client_source_receiver_;
   network::mojom::URLLoaderClientPtr client_sink_;
 };
 

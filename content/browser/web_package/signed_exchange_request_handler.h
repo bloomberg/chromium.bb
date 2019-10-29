@@ -57,7 +57,7 @@ class SignedExchangeRequestHandler final : public NavigationLoaderInterceptor {
       const network::ResourceResponseHead& response_head,
       mojo::ScopedDataPipeConsumerHandle* response_body,
       network::mojom::URLLoaderPtr* loader,
-      network::mojom::URLLoaderClientRequest* client_request,
+      mojo::PendingReceiver<network::mojom::URLLoaderClient>* client_receiver,
       blink::ThrottlingURLLoader* url_loader,
       bool* skip_other_interceptors,
       bool* will_return_unsafe_redirect) override;

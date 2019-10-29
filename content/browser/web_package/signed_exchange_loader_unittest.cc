@@ -18,9 +18,6 @@
 #include "content/browser/web_package/signed_exchange_prefetch_metric_recorder.h"
 #include "content/browser/web_package/signed_exchange_reporter.h"
 #include "content/public/common/content_features.h"
-#include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/system/data_pipe_producer.h"
 #include "mojo/public/cpp/system/string_data_source.h"
 #include "net/http/http_status_code.h"
@@ -55,8 +52,9 @@ class SignedExchangeLoaderTest : public testing::TestWithParam<bool> {
  protected:
   class MockURLLoaderClient final : public network::mojom::URLLoaderClient {
    public:
-    explicit MockURLLoaderClient(network::mojom::URLLoaderClientRequest request)
-        : loader_client_binding_(this, std::move(request)) {}
+    explicit MockURLLoaderClient(
+        mojo::PendingReceiver<network::mojom::URLLoaderClient> receiver)
+        : loader_client_receiver_(this, std::move(receiver)) {}
     ~MockURLLoaderClient() override {}
 
     // network::mojom::URLLoaderClient overrides:
@@ -74,7 +72,7 @@ class SignedExchangeLoaderTest : public testing::TestWithParam<bool> {
     MOCK_METHOD1(OnComplete, void(const network::URLLoaderCompletionStatus&));
 
    private:
-    mojo::Binding<network::mojom::URLLoaderClient> loader_client_binding_;
+    mojo::Receiver<network::mojom::URLLoaderClient> loader_client_receiver_;
     DISALLOW_COPY_AND_ASSIGN(MockURLLoaderClient);
   };
 

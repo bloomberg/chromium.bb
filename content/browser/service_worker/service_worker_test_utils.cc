@@ -654,11 +654,12 @@ ServiceWorkerUpdateCheckTestUtils::CreateUpdateCheckerPausedState(
     ServiceWorkerUpdatedScriptLoader::WriterState body_writer_state,
     mojo::ScopedDataPipeConsumerHandle network_consumer) {
   network::mojom::URLLoaderClientPtr network_loader_client;
-  network::mojom::URLLoaderClientRequest network_loader_client_request =
-      mojo::MakeRequest(&network_loader_client);
+  mojo::PendingReceiver<network::mojom::URLLoaderClient>
+      network_loader_client_receiver =
+          mojo::MakeRequest(&network_loader_client);
   return std::make_unique<ServiceWorkerSingleScriptUpdateChecker::PausedState>(
       std::move(cache_writer), /*network_loader=*/nullptr,
-      std::move(network_loader_client_request), std::move(network_consumer),
+      std::move(network_loader_client_receiver), std::move(network_consumer),
       network_loader_state, body_writer_state);
 }
 

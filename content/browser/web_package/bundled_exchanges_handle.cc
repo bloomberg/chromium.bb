@@ -22,10 +22,8 @@
 #include "content/public/browser/data_decoder_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/http/http_util.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -180,7 +178,7 @@ class InterceptorForFile final : public NavigationLoaderInterceptor {
       const network::ResourceResponseHead& response_head,
       mojo::ScopedDataPipeConsumerHandle* response_body,
       network::mojom::URLLoaderPtr* loader,
-      network::mojom::URLLoaderClientRequest* client_request,
+      mojo::PendingReceiver<network::mojom::URLLoaderClient>* client_receiver,
       blink::ThrottlingURLLoader* url_loader,
       bool* skip_other_interceptors,
       bool* will_return_unsafe_redirect) override {
@@ -199,7 +197,7 @@ class InterceptorForFile final : public NavigationLoaderInterceptor {
                                                            LaunchDataDecoder());
     reader_->ReadMetadata(base::BindOnce(&InterceptorForFile::OnMetadataReady,
                                          weak_factory_.GetWeakPtr(), request));
-    *client_request = forwarding_client_.BindNewPipeAndPassReceiver();
+    *client_receiver = forwarding_client_.BindNewPipeAndPassReceiver();
     *will_return_unsafe_redirect = true;
     return true;
   }

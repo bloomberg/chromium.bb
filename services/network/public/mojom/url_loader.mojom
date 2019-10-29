@@ -517,5 +517,5 @@ interface URLLoaderClient {
 // implementations of URLLoaderClient use to communicate with their URLLoader.
 struct URLLoaderClientEndpoints {
   pending_remote<URLLoader> url_loader;
-  URLLoaderClient& url_loader_client;
+  pending_receiver<URLLoaderClient> url_loader_client;
 };
