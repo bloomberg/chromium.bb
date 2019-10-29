@@ -1,14 +1,14 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/components/drivefs/pending_connection_manager.h"
+#include "chromeos/components/mojo_bootstrap/pending_connection_manager.h"
 
 #include <utility>
 
 #include "base/logging.h"
 
-namespace drivefs {
+namespace mojo_bootstrap {
 
 // static
 PendingConnectionManager& PendingConnectionManager::Get() {
@@ -16,15 +16,15 @@ PendingConnectionManager& PendingConnectionManager::Get() {
   return *connection_manager;
 }
 
-bool PendingConnectionManager::OpenIpcChannel(const std::string& identity,
-                                              base::ScopedFD ipc_channel) {
-  auto it = open_ipc_channel_callbacks_.find(identity);
+bool PendingConnectionManager::OpenIpcChannel(const std::string& token,
+                                              base::ScopedFD fd) {
+  auto it = open_ipc_channel_callbacks_.find(token);
   if (it == open_ipc_channel_callbacks_.end()) {
     return false;
   }
   OpenIpcChannelCallback callback = std::move(it->second);
   open_ipc_channel_callbacks_.erase(it);
-  std::move(callback).Run(std::move(ipc_channel));
+  std::move(callback).Run(std::move(fd));
   return true;
 }
 
@@ -44,4 +44,4 @@ void PendingConnectionManager::CancelExpectedOpenIpcChannel(
 PendingConnectionManager::PendingConnectionManager() = default;
 PendingConnectionManager::~PendingConnectionManager() = default;
 
-}  // namespace drivefs
+}  // namespace mojo_bootstrap

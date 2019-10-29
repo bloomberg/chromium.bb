@@ -90,6 +90,7 @@ source_set("chromeos") {
     "//chromeos/components/account_manager",
     "//chromeos/components/drivefs",
     "//chromeos/components/drivefs/mojom",
+    "//chromeos/components/mojo_bootstrap",
     "//chromeos/components/multidevice",
     "//chromeos/components/multidevice/logging",
     "//chromeos/components/power",
