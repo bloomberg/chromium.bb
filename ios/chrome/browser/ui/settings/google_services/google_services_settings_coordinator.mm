@@ -167,12 +167,12 @@
           ->GetAuthenticatedIdentity();
   [self.googleServicesSettingsViewController preventUserInteraction];
   DCHECK(!self.authenticationFlow);
-  self.authenticationFlow = [[AuthenticationFlow alloc]
-          initWithBrowserState:self.browserState
-                      identity:authenticatedIdentity
-               shouldClearData:SHOULD_CLEAR_DATA_USER_CHOICE
-              postSignInAction:POST_SIGNIN_ACTION_START_SYNC
-      presentingViewController:self.viewController];
+  self.authenticationFlow =
+      [[AuthenticationFlow alloc] initWithBrowser:self.browser
+                                         identity:authenticatedIdentity
+                                  shouldClearData:SHOULD_CLEAR_DATA_USER_CHOICE
+                                 postSignInAction:POST_SIGNIN_ACTION_START_SYNC
+                         presentingViewController:self.viewController];
   self.authenticationFlow.dispatcher = self.dispatcher;
   __weak GoogleServicesSettingsCoordinator* weakSelf = self;
   [self.authenticationFlow startSignInWithCompletion:^(BOOL success) {

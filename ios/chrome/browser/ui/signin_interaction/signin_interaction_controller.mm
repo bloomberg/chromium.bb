@@ -233,12 +233,12 @@
 
 - (void)showSigninViewControllerWithIdentity:(ChromeIdentity*)signInIdentity
                                identityAdded:(BOOL)identityAdded {
-  signinViewController_ = [[ChromeSigninViewController alloc]
-      initWithBrowserState:browser_->GetBrowserState()
-               accessPoint:accessPoint_
-               promoAction:promoAction_
-            signInIdentity:signInIdentity
-                dispatcher:self.dispatcher];
+  signinViewController_ =
+      [[ChromeSigninViewController alloc] initWithBrowser:browser_
+                                              accessPoint:accessPoint_
+                                              promoAction:promoAction_
+                                           signInIdentity:signInIdentity
+                                               dispatcher:self.dispatcher];
   signinViewController_.delegate = self;
   signInIdentity_ = signInIdentity;
   identityAdded_ = identityAdded;

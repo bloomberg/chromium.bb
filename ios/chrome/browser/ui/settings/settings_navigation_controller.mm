@@ -60,17 +60,8 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
 @property(nonatomic, weak) id<SettingsNavigationControllerDelegate>
     settingsNavigationDelegate;
 
+// The Browser instance this controller is configured with.
 @property(nonatomic, assign) Browser* browser;
-
-// Temporary private init while Browser plumbing refactor is in progress.
-// This creates an instance with a null browser, which could potentially DCHECK
-// in some circumstances.
-// TODO(crbug.com/1018746) remove this init.
-- (instancetype)
-    initWithRootViewController:(UIViewController*)rootViewController
-                  browserState:(ios::ChromeBrowserState*)browserState
-                      delegate:
-                          (id<SettingsNavigationControllerDelegate>)delegate;
 
 @end
 
@@ -198,15 +189,14 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
 }
 
 + (instancetype)
-    importDataControllerForBrowserState:(ios::ChromeBrowserState*)browserState
-                               delegate:
-                                   (id<SettingsNavigationControllerDelegate>)
-                                       delegate
-                     importDataDelegate:
-                         (id<ImportDataControllerDelegate>)importDataDelegate
-                              fromEmail:(NSString*)fromEmail
-                                toEmail:(NSString*)toEmail
-                             isSignedIn:(BOOL)isSignedIn {
+    importDataControllerForBrowser:(Browser*)browser
+                          delegate:
+                              (id<SettingsNavigationControllerDelegate>)delegate
+                importDataDelegate:
+                    (id<ImportDataControllerDelegate>)importDataDelegate
+                         fromEmail:(NSString*)fromEmail
+                           toEmail:(NSString*)toEmail
+                        isSignedIn:(BOOL)isSignedIn {
   UIViewController* controller =
       [[ImportDataTableViewController alloc] initWithDelegate:importDataDelegate
                                                     fromEmail:fromEmail
@@ -215,7 +205,7 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
 
   SettingsNavigationController* nc = [[SettingsNavigationController alloc]
       initWithRootViewController:controller
-                    browserState:browserState
+                         browser:browser
                         delegate:delegate];
 
   // Make sure the cancel button is always present, as the Save Passwords screen
@@ -275,11 +265,11 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
                                   delegate:
                                       (id<SettingsNavigationControllerDelegate>)
                                           delegate {
+  DCHECK(browser);
+  DCHECK(!browser->GetBrowserState()->IsOffTheRecord());
   self = [super initWithRootViewController:rootViewController];
   if (self) {
     _browser = browser;
-    if (_browser)
-      _mainBrowserState = browser->GetBrowserState();
     _settingsNavigationDelegate = delegate;
     self.modalPresentationStyle = UIModalPresentationFormSheet;
     // Set the presentationController delegate. This is used for swipe down to
@@ -287,22 +277,6 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
     if (@available(iOS 13, *)) {
       self.presentationController.delegate = self;
     }
-  }
-  return self;
-}
-
-// Backwards compatibility init while Browser refactor is in progress.
-// TODO(crbug.com/1018746) remove this init.
-- (instancetype)
-    initWithRootViewController:(UIViewController*)rootViewController
-                  browserState:(ios::ChromeBrowserState*)browserState
-                      delegate:
-                          (id<SettingsNavigationControllerDelegate>)delegate {
-  self = [self initWithRootViewController:rootViewController
-                                  browser:nullptr
-                                 delegate:delegate];
-  if (self) {
-    _mainBrowserState = browserState;
   }
   return self;
 }
@@ -537,7 +511,7 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
     (UIViewController*)baseViewController {
   SyncEncryptionPassphraseTableViewController* controller =
       [[SyncEncryptionPassphraseTableViewController alloc]
-          initWithBrowserState:self.mainBrowserState];
+          initWithBrowserState:self.browser->GetBrowserState()];
   controller.dispatcher =
       [self.settingsNavigationDelegate dispatcherForSettings];
   [self pushViewController:controller animated:YES];
@@ -548,7 +522,7 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
     (UIViewController*)baseViewController {
   PasswordsTableViewController* controller =
       [[PasswordsTableViewController alloc]
-          initWithBrowserState:self.mainBrowserState];
+          initWithBrowserState:self.browser->GetBrowserState()];
   controller.dispatcher =
       [self.settingsNavigationDelegate dispatcherForSettings];
   [self pushViewController:controller animated:YES];
@@ -559,7 +533,7 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
     (UIViewController*)baseViewController {
   AutofillProfileTableViewController* controller =
       [[AutofillProfileTableViewController alloc]
-          initWithBrowserState:self.mainBrowserState];
+          initWithBrowserState:self.browser->GetBrowserState()];
   controller.dispatcher =
       [self.settingsNavigationDelegate dispatcherForSettings];
   [self pushViewController:controller animated:YES];
@@ -570,7 +544,7 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
     (UIViewController*)baseViewController {
   AutofillCreditCardTableViewController* controller =
       [[AutofillCreditCardTableViewController alloc]
-          initWithBrowserState:self.mainBrowserState];
+          initWithBrowserState:self.browser->GetBrowserState()];
   controller.dispatcher =
       [self.settingsNavigationDelegate dispatcherForSettings];
   [self pushViewController:controller animated:YES];
