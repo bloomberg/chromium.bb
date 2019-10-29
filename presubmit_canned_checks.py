@@ -140,8 +140,14 @@ def CheckDoNotSubmitInFiles(input_api, output_api):
   # We want to check every text file, not just source files.
   file_filter = lambda x : x
   keyword = 'DO NOT ''SUBMIT'
-  errors = _FindNewViolationsOfRule(lambda _, line : keyword not in line,
-                                    input_api, file_filter)
+  def DoNotSubmitRule(extension, line):
+    try:
+      return keyword not in line
+    # Fallback to True for non-text content
+    except UnicodeDecodeError:
+      return True
+
+  errors = _FindNewViolationsOfRule(DoNotSubmitRule, input_api, file_filter)
   text = '\n'.join('Found %s in %s' % (keyword, loc) for loc in errors)
   if text:
     return [output_api.PresubmitError(text)]
