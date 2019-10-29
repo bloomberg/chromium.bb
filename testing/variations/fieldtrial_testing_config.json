@@ -4022,6 +4022,21 @@
             ]
         }
     ],
+    "OmniboxOnDeviceHeadSuggestIOS": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Beta_OnDeviceHeadSuggest_Enabled",
+                    "enable_features": [
+                        "OmniboxOnDeviceHeadProvider"
+                    ]
+                }
+            ]
+        }
+    ],
     "OmniboxSteadyStateElisions": [
         {
             "platforms": [
