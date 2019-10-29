@@ -18,6 +18,7 @@ import static org.mockito.Mockito.verify;
 import android.content.Context;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -33,8 +34,11 @@ import org.chromium.base.library_loader.LoaderErrors;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.init.BrowserParts;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
+import org.chromium.chrome.browser.metrics.BackgroundTaskMemoryMetricsEmitter;
+import org.chromium.chrome.browser.metrics.BackgroundTaskMemoryMetricsEmitterJni;
 import org.chromium.components.background_task_scheduler.BackgroundTask;
 import org.chromium.components.background_task_scheduler.TaskIds;
 import org.chromium.components.background_task_scheduler.TaskParameters;
@@ -43,7 +47,7 @@ import org.chromium.content_public.browser.BrowserStartupController;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-/** Unit tests for {@link BackgroundTaskScheduler}. */
+/** Unit tests for {@link NativeBackgroundTask}. */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class NativeBackgroundTaskTest {
@@ -112,8 +116,12 @@ public class NativeBackgroundTaskTest {
     private TaskFinishedCallback mCallback;
     private TestNativeBackgroundTask mTask;
 
+    @Rule
+    public final JniMocker mocker = new JniMocker();
     @Mock
     private ChromeBrowserInitializer mChromeBrowserInitializer;
+    @Mock
+    BackgroundTaskMemoryMetricsEmitter.Natives mEmitterNativeMock;
     @Captor
     ArgumentCaptor<BrowserParts> mBrowserParts;
 
@@ -228,6 +236,7 @@ public class NativeBackgroundTaskTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        mocker.mock(BackgroundTaskMemoryMetricsEmitterJni.TEST_HOOKS, mEmitterNativeMock);
         mBrowserStartupController = new TestBrowserStartupController();
         mCallback = new TaskFinishedCallback();
         mTask = new TestNativeBackgroundTask(mBrowserStartupController);
