@@ -36825,6 +36825,7 @@ from previous Chrome versions.
   <int value="-231426350" label="AutofillEnableToolbarStatusChip:enabled"/>
   <int value="-230824955" label="NTPMostLikelyFaviconsFromServer:enabled"/>
   <int value="-225505731" label="CCTModule:enabled"/>
+  <int value="-222296540" label="VirtualKeyboardBorderedKey:disabled"/>
   <int value="-220599034" label="UsePdfCompositorServiceForPrint:enabled"/>
   <int value="-216219963" label="ash-shelf-color-scheme"/>
   <int value="-215534141" label="NativeWindowNavButtons:enabled"/>
@@ -38166,6 +38167,7 @@ from previous Chrome versions.
   <int value="1548942246" label="PassiveDocumentEventListeners:disabled"/>
   <int value="1559034872" label="AutofillPrefilledFields:enabled"/>
   <int value="1560188739" label="reader-mode-heuristics"/>
+  <int value="1561781431" label="VirtualKeyboardBorderedKey:enabled"/>
   <int value="1563255033" label="memlog-stack-mode"/>
   <int value="1567839560"
       label="ChromeHomePersonalizedOmniboxSuggestions:disabled"/>
