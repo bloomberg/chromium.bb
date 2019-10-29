@@ -3,15 +3,13 @@
 # Use of this source code is governed under the Apache License, Version 2.0
 # that can be found in the LICENSE file.
 
-import io
+import cStringIO as StringIO
 import os
 import subprocess
 import sys
 import tempfile
 import unittest
 import zipfile
-
-import six
 
 # Mutates sys.path.
 import test_env
@@ -21,8 +19,7 @@ from utils import zip_package
 
 
 def check_output(*args, **kwargs):
-  return subprocess.check_output(
-      *args, stderr=subprocess.STDOUT, **kwargs).decode('utf-8')
+  return  subprocess.check_output(*args, stderr=subprocess.STDOUT, **kwargs)
 
 
 class ZipPackageTest(unittest.TestCase):
@@ -39,7 +36,7 @@ class ZipPackageTest(unittest.TestCase):
   def stage_files(self, files):
     """Populates temp directory with given files specified as a list or dict."""
     if not isinstance(files, dict):
-      files = dict((p, b'') for p in files)
+      files = dict((p, '') for p in files)
     for path, content in files.items():
       abs_path = os.path.join(self.temp_dir, path.replace('/', os.sep))
       dir_path = os.path.dirname(abs_path)
@@ -185,21 +182,21 @@ class ZipPackageTest(unittest.TestCase):
 
   def test_add_buffer(self):
     pkg = zip_package.ZipPackage(self.temp_dir)
-    pkg.add_buffer('buf1', b'')
-    self.assertEqual(list(pkg.files), ['buf1'])
-    # No text types.
+    pkg.add_buffer('buf1', '')
+    self.assertEqual(pkg.files, ['buf1'])
+    # No unicode.
     with self.assertRaises(AssertionError):
       pkg.add_buffer('buf2', u'unicode')
 
   def test_zipping(self):
-    data = {'a': b'123', 'b/c': b'456'}
+    data = {'a': '123', 'b/c': '456'}
     self.stage_files(data)
     pkg = zip_package.ZipPackage(self.temp_dir)
     pkg.add_directory(self.temp_dir)
     # Test zip_into_buffer produces readable zip with same content.
     for compress in (True, False):
       buf = pkg.zip_into_buffer(compress=compress)
-      self.assertEqual(data, self.read_zip(io.BytesIO(buf)))
+      self.assertEqual(data, self.read_zip(StringIO.StringIO(buf)))
     # Test zip_into_file produces readable zip with same content.
     for compress in (True, False):
       path = os.path.join(self.temp_dir, 'pkg.zip')
@@ -212,7 +209,7 @@ class ZipPackageTest(unittest.TestCase):
     for _ in range(2):
       # Build temp dir content from scratch.
       assert not os.listdir(self.temp_dir)
-      self.stage_files({'a': b'123', 'b': b'456', 'c': b'789'})
+      self.stage_files({'a': '123', 'b': '456', 'c': '789'})
       # Zip it.
       pkg = zip_package.ZipPackage(self.temp_dir)
       pkg.add_directory(self.temp_dir)
@@ -234,14 +231,14 @@ class ZipPackageTest(unittest.TestCase):
     pkg = zip_package.ZipPackage(self.temp_dir)
     pkg.add_directory(os.path.join(test_env.CLIENT_DIR, 'utils'), 'utils')
     pkg.add_buffer(
-        '__main__.py', b'\n'.join([
-            b'import sys',
-            b'',
-            b'from utils import zip_package',
-            b'',
-            b'print(zip_package.is_zipped_module(sys.modules[__name__]))',
-            b'print(zip_package.get_module_zip_archive(sys.modules[__name__]))',
-            b'print(zip_package.get_main_script_path())',
+        '__main__.py', '\n'.join([
+            'import sys',
+            '',
+            'from utils import zip_package',
+            '',
+            'print(zip_package.is_zipped_module(sys.modules[__name__]))',
+            'print(zip_package.get_module_zip_archive(sys.modules[__name__]))',
+            'print(zip_package.get_main_script_path())',
         ]))
     zip_file = os.path.join(self.temp_dir, 'out.zip')
     pkg.zip_into_file(zip_file)
@@ -253,13 +250,13 @@ class ZipPackageTest(unittest.TestCase):
   def test_extract_resource(self):
     pkg = zip_package.ZipPackage(self.temp_dir)
     pkg.add_directory(os.path.join(test_env.CLIENT_DIR, 'utils'), 'utils')
-    pkg.add_buffer('cert.pem', b'Certificate\n')
+    pkg.add_buffer('cert.pem', 'Certificate\n')
     pkg.add_buffer(
-        '__main__.py', b'\n'.join([
-            b'import sys',
-            b'from utils import zip_package',
-            b'print(zip_package.extract_resource(',
-            b'    sys.modules[__name__], \'cert.pem\'))',
+        '__main__.py', '\n'.join([
+            'import sys',
+            'from utils import zip_package',
+            'print(zip_package.extract_resource(',
+            '    sys.modules[__name__], \'cert.pem\'))',
         ]))
     zip_file = os.path.join(self.temp_dir, 'out.zip')
     pkg.zip_into_file(zip_file)
@@ -272,13 +269,13 @@ class ZipPackageTest(unittest.TestCase):
   def test_extract_resource_temp_dir(self):
     pkg = zip_package.ZipPackage(self.temp_dir)
     pkg.add_directory(os.path.join(test_env.CLIENT_DIR, 'utils'), 'utils')
-    pkg.add_buffer('cert.pem', b'Certificate\n')
+    pkg.add_buffer('cert.pem', 'Certificate\n')
     pkg.add_buffer(
-        '__main__.py', b'\n'.join([
-            b'import sys',
-            b'from utils import zip_package',
-            b'print(zip_package.extract_resource(',
-            b'  sys.modules[__name__], \'cert.pem\', %r))' % self.temp_dir,
+        '__main__.py', '\n'.join([
+            'import sys',
+            'from utils import zip_package',
+            'print(zip_package.extract_resource(',
+            '  sys.modules[__name__], \'cert.pem\', %r))' % self.temp_dir,
         ]))
     zip_file = os.path.join(self.temp_dir, 'out.zip')
     pkg.zip_into_file(zip_file)
