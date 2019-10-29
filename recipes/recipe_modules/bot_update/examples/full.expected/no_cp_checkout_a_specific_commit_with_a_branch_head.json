@@ -17,9 +17,9 @@
       "--revision",
       "got_revision@src",
       "--revision",
-      "src@HEAD",
+      "src@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
       "--refs",
-      "refs/heads/master",
+      "refs/branch-heads/x",
       "--disable-syntax-validation"
     ],
     "env_suffixes": {
@@ -49,7 +49,7 @@
     "cmd": [],
     "name": "set_output_gitiles_commit",
     "~followup_annotations": [
-      "@@@SET_BUILD_PROPERTY@$recipe_engine/buildbucket/output_gitiles_commit@{\"host\": \"chromium.googlesource.com\", \"id\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\", \"project\": \"chromium/src\", \"ref\": \"refs/heads/master\"}@@@"
+      "@@@SET_BUILD_PROPERTY@$recipe_engine/buildbucket/output_gitiles_commit@{\"host\": \"chromium.googlesource.com\", \"id\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\", \"project\": \"chromium/src\", \"ref\": \"refs/branch-heads/x\"}@@@"
     ]
   },
   {
