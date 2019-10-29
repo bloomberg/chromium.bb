@@ -18510,6 +18510,7 @@ Called by update_net_error_codes.py.-->
   <int value="637" label="BlockExternalExtensions"/>
   <int value="638" label="DeviceShowNumericKeyboardForPassword"/>
   <int value="639" label="CrostiniAnsiblePlaybook"/>
+  <int value="640" label="WebRtcLocalIpsAllowedUrls"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
