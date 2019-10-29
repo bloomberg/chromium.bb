@@ -254,20 +254,6 @@ class CONTENT_EXPORT RenderFrameHostManager
   //      only happens for child frames.
   void OnBeforeUnloadACK(bool proceed, const base::TimeTicks& proceed_time);
 
-  // Determines whether a navigation to |dest_url| may be completed using an
-  // existing RenderFrameHost, or whether transferring to a new RenderFrameHost
-  // backed by a different render process is required. This is a security policy
-  // check determined by the current site isolation mode, and must be done
-  // before the resource at |dest_url| is delivered to |existing_rfh|.
-  //
-  // |existing_rfh| must belong to this RFHM, but it can be a pending or current
-  // host.
-  //
-  // When this function returns true for a subframe, an out-of-process iframe
-  // must be created.
-  bool IsRendererTransferNeededForNavigation(RenderFrameHostImpl* existing_rfh,
-                                             const GURL& dest_url);
-
   // Called when a renderer's frame navigates.
   void DidNavigateFrame(RenderFrameHostImpl* render_frame_host,
                         bool was_caused_by_user_gesture,
@@ -755,11 +741,6 @@ class CONTENT_EXPORT RenderFrameHostManager
   // RenderFrameHost and updates counts.
   std::unique_ptr<RenderFrameHostImpl> SetRenderFrameHost(
       std::unique_ptr<RenderFrameHostImpl> render_frame_host);
-
-  // Returns true if a subframe can navigate cross-process.
-  bool CanSubframeSwapProcess(const GURL& dest_url,
-                              SiteInstance* source_instance,
-                              SiteInstance* dest_instance);
 
   // After a renderer process crash we'd have marked the host as invisible, so
   // we need to set the visibility of the new View to the correct value here

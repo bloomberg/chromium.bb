@@ -1578,8 +1578,10 @@ RenderFrameHostManager::DetermineSiteInstanceForURL(
   // reached via a server redirect.  Normally, redirects to data: or about:
   // URLs are disallowed as net::ERR_UNSAFE_REDIRECT, but extensions can still
   // redirect arbitary requests to those URLs using webRequest or
-  // declarativeWebRequest API.  For these cases, the content isn't controlled
-  // by the source SiteInstance, so it need not use it.
+  // declarativeWebRequest API (for an example, see
+  // ExtensionWebRequestApiTest.WebRequestDeclarative1).  For these cases, the
+  // content isn't controlled by the source SiteInstance, so we don't use the
+  // |source_instance| if there was a server redirect.
   if (source_instance && IsDataOrAbout(dest_url) && !was_server_redirect)
     return SiteInstanceDescriptor(source_instance);
 
@@ -1694,86 +1696,6 @@ bool RenderFrameHostManager::IsBrowsingInstanceSwapAllowedForPageTransition(
     default:
       return false;
   }
-}
-
-bool RenderFrameHostManager::IsRendererTransferNeededForNavigation(
-    RenderFrameHostImpl* rfh,
-    const GURL& dest_url) {
-  // Always attempt a process transfer if the SiteInstance has a process that's
-  // unsuitable for |dest_url|.  For example, this might happen when reloading
-  // a URL for which a hosted app was just installed or uninstalled.
-  //
-  // This might also happen for a siteless SiteInstance which may have a
-  // process that's unsuitable for |dest_url|.  For example, another navigation
-  // could share that process when over process limit and lock it to a
-  // different site before this SiteInstance sets its site.  See
-  // https://crbug.com/773809.
-  if (!rfh->GetSiteInstance()->IsSuitableForURL(dest_url))
-    return true;
-
-  // A transfer is not needed if the current SiteInstance doesn't yet have a
-  // site.  For example, this happens when tests use NavigateToURL or when
-  // navigating a blank window in some cases.
-  if (!rfh->GetSiteInstance()->HasSite())
-    return false;
-
-  // We do not currently swap processes for navigations in webview tag guests.
-  if (rfh->GetSiteInstance()->GetSiteURL().SchemeIs(kGuestScheme))
-    return false;
-
-  // Attempt a transfer if |dest_url|'s origin was dynamically isolated, and
-  // this navigation is eligible to perform a BrowsingInstance swap to ensure
-  // that |dest_url| is placed into a dedicated process. This is important to
-  // check before IsCurrentlySameSite() below, since in this case we might swap
-  // BrowsingInstances even for same-site navigations.
-  if (ShouldSwapBrowsingInstancesForDynamicIsolation(rfh, dest_url))
-    return true;
-
-  // Experimental mode to swap BrowsingInstances on most cross-site navigations
-  // when there are no other windows in the BrowsingInstance.
-  if (ShouldProactivelySwapBrowsingInstance(rfh, dest_url))
-    return true;
-
-  // TODO(nasko, nick): These following --site-per-process checks are
-  // overly simplistic. Update them to match all the cases
-  // considered by DetermineSiteInstanceForURL.
-  if (IsCurrentlySameSite(rfh, dest_url)) {
-    // The same site, no transition needed for security purposes, and we must
-    // keep the same SiteInstance for correctness of synchronous scripting.
-    return false;
-  }
-
-  // Attempting a transfer with kProcessSharingWithStrictSiteInstances allows
-  // us to "swap" from the renderer's perspective and create the full OOPIF
-  // plumbing, even if this subframe is eventually assigned to the same process
-  // as its cross-site parent.
-  if (base::FeatureList::IsEnabled(
-          features::kProcessSharingWithStrictSiteInstances))
-    return true;
-
-  // The sites differ. If either one requires a dedicated process,
-  // then a transfer is needed.
-  if (rfh->GetSiteInstance()->RequiresDedicatedProcess() ||
-      SiteInstanceImpl::DoesSiteRequireDedicatedProcess(
-          rfh->GetSiteInstance()->GetIsolationContext(), dest_url)) {
-    return true;
-  }
-
-  // If the destination URL is not same-site with current RenderFrameHost and
-  // doesn't require a dedicated process (see above), but it is same-site with
-  // the opener RenderFrameHost, attempt a transfer so that the destination URL
-  // can go back to the opener SiteInstance.  This avoids breaking scripting in
-  // some cases when only a subset of sites is isolated
-  // (https://crbug.com/807184).
-  //
-  // TODO(alexmos): This is a temporary workaround and should be removed after
-  // fixing https://crbug.com/787576.
-  FrameTreeNode* opener = frame_tree_node_->opener();
-  if (opener && IsCurrentlySameSite(opener->current_frame_host(), dest_url) &&
-      opener->current_frame_host()->GetSiteInstance() != rfh->GetSiteInstance())
-    return true;
-
-  return false;
 }
 
 scoped_refptr<SiteInstance> RenderFrameHostManager::ConvertToSiteInstance(
@@ -2222,48 +2144,9 @@ RenderFrameHostManager::GetSiteInstanceForNavigationRequest(
   if (parent && request->common_params().url.IsAboutSrcdoc())
     return base::WrapRefCounted(parent->GetSiteInstance());
 
-  // First, check if the navigation can switch SiteInstances. If not, the
-  // navigation should use the current SiteInstance.
-  bool no_renderer_swap_allowed = false;
-  bool should_swap_for_error_isolation = false;
-  bool was_server_redirect = request->WasServerRedirect();
-
-  // When error page isolation is enabled, each navigation that crosses
-  // from a success to failure and vice versa needs to do a process swap.
-  if (SiteIsolationPolicy::IsErrorPageIsolationEnabled(
-          frame_tree_node_->IsMainFrame())) {
-    should_swap_for_error_isolation =
-        (request->state() == NavigationRequest::FAILED) !=
-        (current_site_instance->GetSiteURL() == GURL(kUnreachableWebDataURL));
-  }
-
-  if (frame_tree_node_->IsMainFrame()) {
-    // Renderer-initiated main frame navigations that may require a
-    // SiteInstance swap are sent to the browser via the OpenURL IPC and are
-    // afterwards treated as browser-initiated navigations. NavigationRequests
-    // marked as renderer-initiated are created by receiving a BeginNavigation
-    // IPC, and will then proceed in the same renderer. In site-per-process
-    // mode, it is possible for renderer-intiated navigations to be allowed to
-    // go cross-process. Check it first.
-    bool can_renderer_initiate_transfer =
-        IsURLHandledByNetworkStack(request->common_params().url) &&
-        IsRendererTransferNeededForNavigation(render_frame_host_.get(),
-                                              request->common_params().url);
-    no_renderer_swap_allowed |=
-        request->from_begin_navigation() && !can_renderer_initiate_transfer;
-  } else {
-    // Subframe navigations will use the current renderer, unless specifically
-    // allowed to swap processes.
-    no_renderer_swap_allowed |= !CanSubframeSwapProcess(
-        request->common_params().url, request->GetSourceSiteInstance(),
-        request->dest_site_instance());
-  }
-
-  if (no_renderer_swap_allowed && !should_swap_for_error_isolation)
-    return scoped_refptr<SiteInstance>(current_site_instance);
-
-  // If the navigation can swap SiteInstances, compute the SiteInstance it
-  // should use.
+  // Compute the SiteInstance that the navigation should use, which will be
+  // either the current SiteInstance or a new one.
+  //
   // TODO(clamy): We should also consider as a candidate SiteInstance the
   // speculative SiteInstance that was computed on redirects.
   SiteInstanceImpl* candidate_site_instance =
@@ -2277,7 +2160,7 @@ RenderFrameHostManager::GetSiteInstanceForNavigationRequest(
       request->common_params().transition,
       request->state() == NavigationRequest::FAILED,
       request->GetRestoreType() != RestoreType::NONE, request->is_view_source(),
-      was_server_redirect);
+      request->WasServerRedirect());
 
   return dest_site_instance;
 }
@@ -2843,73 +2726,6 @@ void RenderFrameHostManager::SendPageMessage(IPC::Message* msg,
   } else {
     delete msg;
   }
-}
-
-bool RenderFrameHostManager::CanSubframeSwapProcess(
-    const GURL& dest_url,
-    SiteInstance* source_instance,
-    SiteInstance* dest_instance) {
-  // On renderer-initiated navigations, when the frame initiating the navigation
-  // and the frame being navigated differ, |source_instance| is set to the
-  // SiteInstance of the initiating frame. |dest_instance| is present on session
-  // history navigations. The two cannot be set simultaneously.
-  DCHECK(!source_instance || !dest_instance);
-
-  // This case is handled outside of this function.
-  DCHECK(!dest_url.IsAboutSrcdoc());
-
-  // If dest_url is a unique origin like about:blank, then the need for a swap
-  // is determined by the source_instance or dest_instance.
-  GURL resolved_url = dest_url;
-  if (url::Origin::Create(resolved_url).opaque()) {
-    if (source_instance) {
-      resolved_url = source_instance->GetSiteURL();
-    } else if (dest_instance) {
-      resolved_url = dest_instance->GetSiteURL();
-    } else {
-      // If there is no SiteInstance this unique origin can be associated with,
-      // then check whether it is safe to stay in the current process or not.
-      //
-      // * about:blank: Safe to stay in the current process, because it doesn't
-      //                contain content from untrustworthy sources.
-      //
-      // * data: URL: Not safe to stay in the current process, because it may
-      //             contain data from untrustworthy sources, such as a restored
-      //             frame from a different site or a redirect [1]. It is not
-      //             safe loading arbitrary data: URL in arbitrary processes.
-      //
-      // * about:srcdoc: Handled outside of this function. Always sharing the
-      //                 SiteInstance of its parent, because it is where the
-      //                 data comes from.
-      //
-      // * MHTML document: Handled outside of this function. Always sharing the
-      //                   SiteInstance of the main frame's document, because it
-      //                   is where the data comes from.
-      //
-      // * Other URLs: A priori not safe. It contains chrome-URL, ...
-      //
-      // [1] Server redirects to data: URL are disallowed and a
-      // net::ERR_UNSAFE_REDIRECT error page is displayed instead. However this
-      // is not sufficient, because extensions can still redirect arbitrary
-      // requests to those URLs using chrome.webRequest or
-      // chrome.declarativeWebRequest API, which will end up here (for an
-      // example, see ExtensionWebRequestApiTest.WebRequestDeclarative1).
-      if (resolved_url.IsAboutBlank())
-        return false;
-    }
-  }
-
-  // If we are in an OOPIF mode that only applies to some sites, only swap if
-  // the policy determines that a transfer would have been needed.  We can get
-  // here for session restore.
-  if (!IsRendererTransferNeededForNavigation(render_frame_host_.get(),
-                                             resolved_url)) {
-    DCHECK(!dest_instance ||
-           dest_instance == render_frame_host_->GetSiteInstance());
-    return false;
-  }
-
-  return true;
 }
 
 void RenderFrameHostManager::EnsureRenderFrameHostVisibilityConsistent() {

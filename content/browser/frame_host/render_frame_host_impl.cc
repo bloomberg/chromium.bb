@@ -7729,13 +7729,6 @@ void RenderFrameHostImpl::LogCannotCommitUrlCrashKeys(
       GetSiteInstance()->original_url().GetOrigin().spec());
 
   base::debug::SetCrashKeyString(
-      base::debug::AllocateCrashKeyString("is_transfer_needed",
-                                          base::debug::CrashKeySize::Size32),
-      bool_to_crash_key(
-          frame_tree_node_->render_manager()
-              ->IsRendererTransferNeededForNavigation(this, url)));
-
-  base::debug::SetCrashKeyString(
       base::debug::AllocateCrashKeyString("is_mhtml_document",
                                           base::debug::CrashKeySize::Size32),
       bool_to_crash_key(is_mhtml_document()));
