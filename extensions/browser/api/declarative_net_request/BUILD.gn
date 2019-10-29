@@ -67,5 +67,6 @@ source_set("test_support") {
     ":declarative_net_request",
     "//base",
     "//extensions/common",
+    "//testing/gtest",
   ]
 }
