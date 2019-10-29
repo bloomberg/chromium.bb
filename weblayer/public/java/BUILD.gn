@@ -71,6 +71,13 @@ dist_aar("client_aar") {
   ]
   resource_included_patterns = [ "*/weblayer/public/java/*" ]
 
+  # R files are excluded because they are not used in the client lib and depend
+  # on other generated chromium R classes.
+  jar_excluded_patterns = [
+    "org/chromium/weblayer/client/R\$*.class",
+    "org/chromium/weblayer/client/R.class",
+  ]
+
   # dist_aar does not take the manifest from libraries in deps, so we have to
   # specify again here.
   android_manifest = weblayer_client_manifest
