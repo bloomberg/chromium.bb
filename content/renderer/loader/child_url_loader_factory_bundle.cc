@@ -11,7 +11,7 @@
 
 #include "base/logging.h"
 #include "content/public/common/resource_type.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
 
@@ -197,7 +197,7 @@ network::mojom::URLLoaderFactory* ChildURLLoaderFactoryBundle::GetFactory(
 }
 
 void ChildURLLoaderFactoryBundle::CreateLoaderAndStart(
-    network::mojom::URLLoaderRequest loader,
+    mojo::PendingReceiver<network::mojom::URLLoader> loader,
     int32_t routing_id,
     int32_t request_id,
     uint32_t options,
@@ -211,7 +211,7 @@ void ChildURLLoaderFactoryBundle::CreateLoaderAndStart(
     subresource_overrides_.erase(override_iter);
 
     client->OnReceiveResponse(std::move(transferrable_loader->head));
-    mojo::MakeStrongBinding(
+    mojo::MakeSelfOwnedReceiver(
         std::make_unique<URLLoaderRelay>(
             network::mojom::URLLoaderPtr(
                 std::move(transferrable_loader->url_loader)),

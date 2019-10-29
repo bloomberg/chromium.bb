@@ -11,7 +11,7 @@
 #include "content/browser/web_package/signed_exchange_prefetch_metric_recorder.h"
 #include "content/browser/web_package/signed_exchange_reporter.h"
 #include "content/public/common/content_features.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -65,13 +65,13 @@ SignedExchangePrefetchHandler::~SignedExchangePrefetchHandler() = default;
 
 network::mojom::URLLoaderClientRequest
 SignedExchangePrefetchHandler::FollowRedirect(
-    network::mojom::URLLoaderRequest loader_request) {
+    mojo::PendingReceiver<network::mojom::URLLoader> loader_receiver) {
   DCHECK(signed_exchange_loader_);
   network::mojom::URLLoaderClientPtr client;
   auto pending_request = mojo::MakeRequest(&client);
   signed_exchange_loader_->ConnectToClient(std::move(client));
-  mojo::MakeStrongBinding(std::move(signed_exchange_loader_),
-                          std::move(loader_request));
+  mojo::MakeSelfOwnedReceiver(std::move(signed_exchange_loader_),
+                              std::move(loader_receiver));
   return pending_request;
 }
 

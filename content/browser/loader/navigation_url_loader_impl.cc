@@ -287,7 +287,7 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
 void UnknownSchemeCallback(
     bool handled_externally,
     const network::ResourceRequest& /* resource_request */,
-    network::mojom::URLLoaderRequest request,
+    mojo::PendingReceiver<network::mojom::URLLoader> receiver,
     network::mojom::URLLoaderClientPtr client) {
   client->OnComplete(network::URLLoaderCompletionStatus(
       handled_externally ? net::ERR_ABORTED : net::ERR_UNKNOWN_URL_SCHEME));

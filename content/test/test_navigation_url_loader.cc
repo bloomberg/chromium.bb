@@ -76,12 +76,11 @@ void TestNavigationURLLoader::CallOnResponseStarted(
   network::mojom::URLLoaderClientPtr url_loader_client_ptr;
   network::mojom::URLLoaderClientRequest url_loader_client_request =
       mojo::MakeRequest(&url_loader_client_ptr);
-  network::mojom::URLLoaderPtr url_loader_ptr;
-  network::mojom::URLLoaderRequest url_loader_request =
-      mojo::MakeRequest(&url_loader_ptr);
+  mojo::PendingRemote<network::mojom::URLLoader> url_loader_remote;
+  ignore_result(url_loader_remote.InitWithNewPipeAndPassReceiver());
   auto url_loader_client_endpoints =
       network::mojom::URLLoaderClientEndpoints::New(
-          url_loader_ptr.PassInterface(), std::move(url_loader_client_request));
+          std::move(url_loader_remote), std::move(url_loader_client_request));
 
   delegate_->OnResponseStarted(
       std::move(url_loader_client_endpoints), response_head,

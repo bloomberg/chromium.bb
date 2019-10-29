@@ -12,6 +12,7 @@
 #include "base/unguessable_token.h"
 #include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/public/common/resource_type.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "url/origin.h"
 
 namespace network {
@@ -63,7 +64,7 @@ class SignedExchangeRequestHandler final : public NavigationLoaderInterceptor {
 
  private:
   void StartResponse(const network::ResourceRequest& resource_request,
-                     network::mojom::URLLoaderRequest request,
+                     mojo::PendingReceiver<network::mojom::URLLoader> receiver,
                      network::mojom::URLLoaderClientPtr client);
 
   // Valid after MaybeCreateLoaderForResponse intercepts the request and until

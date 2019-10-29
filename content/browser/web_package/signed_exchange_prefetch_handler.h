@@ -13,6 +13,7 @@
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 
@@ -59,13 +60,13 @@ class SignedExchangePrefetchHandler final
 
   ~SignedExchangePrefetchHandler() override;
 
-  // This connects |loader_request| to the SignedExchangeLoader, and returns the
-  // pending client request to the loader.
-  // The returned client request can be bound to the downstream client so that
-  // they can start directly receiving upcalls from the SignedExchangeLoader.
-  // After this point |this| can be destructed.
+  // This connects |loader_receiver| to the SignedExchangeLoader, and returns
+  // the pending client request to the loader. The returned client request can
+  // be bound to the downstream client so that they can start directly receiving
+  // upcalls from the SignedExchangeLoader. After this point |this| can be
+  // destructed.
   network::mojom::URLLoaderClientRequest FollowRedirect(
-      network::mojom::URLLoaderRequest loader_request);
+      mojo::PendingReceiver<network::mojom::URLLoader> loader_receiver);
 
   // Returns the header integrity value of the loaded signed exchange if
   // available. This is available after OnReceiveRedirect() of

@@ -15,7 +15,7 @@
 #include "content/browser/web_package/signed_exchange_reporter.h"
 #include "content/browser/web_package/signed_exchange_utils.h"
 #include "content/public/common/content_features.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/http/http_response_headers.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -116,11 +116,11 @@ bool SignedExchangeRequestHandler::MaybeCreateLoaderForResponse(
 
 void SignedExchangeRequestHandler::StartResponse(
     const network::ResourceRequest& resource_request,
-    network::mojom::URLLoaderRequest request,
+    mojo::PendingReceiver<network::mojom::URLLoader> receiver,
     network::mojom::URLLoaderClientPtr client) {
   signed_exchange_loader_->ConnectToClient(std::move(client));
-  mojo::MakeStrongBinding(std::move(signed_exchange_loader_),
-                          std::move(request));
+  mojo::MakeSelfOwnedReceiver(std::move(signed_exchange_loader_),
+                              std::move(receiver));
 }
 
 }  // namespace content
