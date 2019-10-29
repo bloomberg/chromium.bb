@@ -1719,7 +1719,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/usage_stats/UsageStatsMetricsReporter.java",
   "java/src/org/chromium/chrome/browser/usage_stats/UsageStatsService.java",
   "java/src/org/chromium/chrome/browser/usage_stats/WebsiteEvent.java",
-  "java/src/org/chromium/chrome/browser/util/FeatureUtilities.java",
   "java/src/org/chromium/chrome/browser/ui/ImmersiveModeManager.java",
   "java/src/org/chromium/chrome/browser/ui/RootUiCoordinator.java",
   "java/src/org/chromium/chrome/browser/ui/system/StatusBarColorController.java",
