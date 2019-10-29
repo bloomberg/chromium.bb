@@ -609,6 +609,7 @@ typedef struct RD_COUNTS {
   int compound_ref_used_flag;
   int skip_mode_used_flag;
   int tx_type_used[FRAME_UPDATE_TYPES][TX_SIZES_ALL][TX_TYPES];
+  int obmc_used[BLOCK_SIZES_ALL][2];
 } RD_COUNTS;
 
 typedef struct ThreadData {
@@ -984,6 +985,8 @@ typedef struct AV1_COMP {
   int64_t vbp_threshold_copy;
   BLOCK_SIZE vbp_bsize_min;
 
+  int obmc_probs[FRAME_UPDATE_TYPES][BLOCK_SIZES_ALL];
+  int obmc_probs_thresh;
   int tx_type_probs[FRAME_UPDATE_TYPES][TX_SIZES_ALL][TX_TYPES];
   int tx_type_probs_thresh[FRAME_UPDATE_TYPES];
 

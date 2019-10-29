@@ -1643,6 +1643,24 @@ static AOM_INLINE void encode_b(const AV1_COMP *const cpi,
     if (tile_data->allow_update_cdf) {
       update_stats(&cpi->common, td, mi_row, mi_col);
     }
+
+    // Gather obmc count to update the probability.
+    if (cpi->sf.prune_obmc_using_stats) {
+      const int inter_block = is_inter_block(mbmi);
+      const int seg_ref_active =
+          segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_REF_FRAME);
+      if (!seg_ref_active && inter_block) {
+        const MOTION_MODE motion_allowed =
+            cm->switchable_motion_mode
+                ? motion_mode_allowed(xd->global_motion, xd, mbmi,
+                                      cm->allow_warped_motion)
+                : SIMPLE_TRANSLATION;
+        if (mbmi->ref_frame[1] != INTRA_FRAME &&
+            motion_allowed == OBMC_CAUSAL) {
+          td->rd_counts.obmc_used[bsize][mbmi->motion_mode == OBMC_CAUSAL]++;
+        }
+      }
+    }
   }
   // TODO(Ravi/Remya): Move this copy function to a better logical place
   copy_winner_ref_mode_from_mbmi_ext(x);
@@ -4999,6 +5017,7 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
   av1_zero(*td->counts);
   av1_zero(rdc->comp_pred_diff);
   av1_zero(rdc->tx_type_used);
+  av1_zero(rdc->obmc_used);
 
   // Reset the flag.
   cpi->intrabc_used = 0;
@@ -5295,6 +5314,19 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
         if (j == 0) prob += left;
         cpi->tx_type_probs[update_type][i][j] = prob;
       }
+    }
+  }
+
+  if (cpi->sf.prune_obmc_using_stats) {
+    const FRAME_UPDATE_TYPE update_type = get_frame_update_type(&cpi->gf_group);
+
+    for (i = 0; i < BLOCK_SIZES_ALL; i++) {
+      int sum = 0;
+      for (int j = 0; j < 2; j++) sum += cpi->td.rd_counts.obmc_used[i][j];
+
+      int new_prob = sum ? 128 * cpi->td.rd_counts.obmc_used[i][1] / sum : 0;
+      cpi->obmc_probs[update_type][i] =
+          (cpi->obmc_probs[update_type][i] + new_prob) >> 1;
     }
   }
 }

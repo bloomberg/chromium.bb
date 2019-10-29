@@ -232,6 +232,20 @@ const int default_tx_type_probs[FRAME_UPDATE_TYPES][TX_SIZES_ALL][TX_TYPES] = {
     { 1024, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } }
 };
 
+const int default_obmc_probs[FRAME_UPDATE_TYPES][BLOCK_SIZES_ALL] = {
+  { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+  { 0,  0,  0,  106, 90, 90, 97, 67, 59, 70, 28,
+    30, 38, 16, 16,  16, 0,  0,  44, 50, 26, 25 },
+  { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+  { 0,  0,  0,  98, 93, 97, 68, 82, 85, 33, 30,
+    33, 16, 16, 16, 16, 0,  0,  43, 37, 26, 16 },
+  { 0,  0,  0,  91, 80, 76, 78, 55, 49, 24, 16,
+    16, 16, 16, 16, 16, 0,  0,  29, 45, 16, 38 },
+  { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+  { 0,  0,  0,  103, 89, 89, 89, 62, 63, 76, 34,
+    35, 32, 19, 16,  16, 0,  0,  49, 55, 29, 19 }
+};
+
 static INLINE void Scale2Ratio(AOM_SCALING mode, int *hr, int *hs) {
   switch (mode) {
     case NORMAL:
@@ -5030,6 +5044,12 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
           thr[cpi->sf.tx_type_search.prune_tx_type_using_stats - 1]
              [kf_arf_update];
     }
+  }
+
+  if (cpi->sf.prune_obmc_using_stats &&
+      cm->current_frame.frame_type == KEY_FRAME) {
+    av1_copy(cpi->obmc_probs, default_obmc_probs);
+    cpi->obmc_probs_thresh = 16;
   }
 
   // Loop variables
