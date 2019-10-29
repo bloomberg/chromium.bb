@@ -88,10 +88,14 @@ TabletModeAnimationTransition CalculateAnimationTransitionForMetrics(
       return launcher_should_show
                  ? TabletModeAnimationTransition::kDragReleaseShow
                  : TabletModeAnimationTransition::kDragReleaseHide;
-    case HomeScreenDelegate::AnimationTrigger::kOverviewMode:
+    case HomeScreenDelegate::AnimationTrigger::kOverviewModeSlide:
       return launcher_should_show
                  ? TabletModeAnimationTransition::kExitOverviewMode
                  : TabletModeAnimationTransition::kEnterOverviewMode;
+    case HomeScreenDelegate::AnimationTrigger::kOverviewModeFade:
+      return launcher_should_show
+                 ? TabletModeAnimationTransition::kFadeOutOverview
+                 : TabletModeAnimationTransition::kFadeInOverview;
   }
 }
 
@@ -814,6 +818,14 @@ void AppListControllerImpl::UpdateYPositionAndOpacityForHomeLauncher(
     UpdateAnimationSettingsCallback callback) {
   presenter_.UpdateYPositionAndOpacityForHomeLauncher(
       y_position_in_screen, opacity, std::move(callback));
+}
+
+void AppListControllerImpl::UpdateScaleAndOpacityForHomeLauncher(
+    float scale,
+    float opacity,
+    UpdateAnimationSettingsCallback callback) {
+  presenter_.UpdateScaleAndOpacityForHomeLauncher(scale, opacity,
+                                                  std::move(callback));
 }
 
 void AppListControllerImpl::UpdateAfterHomeLauncherShown() {
