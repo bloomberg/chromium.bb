@@ -1115,6 +1115,10 @@ deps = {
               'package': 'chromium/third_party/jdk',
               'version': 'PfRSnxe8Od6WU4zBXomq-zsgcJgWmm3z4gMQNB-r2QcC',
           },
+          {
+              'package': 'chromium/third_party/jdk/extras',
+              'version': 'fkhuOQ3r-zKtWEdKplpo6k0vKkjl-LY_rJTmtzFCQN4C',
+          },
       ],
       'condition': 'host_os == "linux" and checkout_android',
       'dep_type': 'cipd',
