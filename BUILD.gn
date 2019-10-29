@@ -6,6 +6,7 @@ import("//common-mk/proto_library.gni")
 
 group("all") {
   deps = [
+    ":system_api-anomaly_detector-protos",
     ":system_api-attestation-goprotos",
     ":system_api-attestation-protos",
     ":system_api-authpolicy-protos",
@@ -411,4 +412,13 @@ proto_library("system_api-patchpanel-protos") {
   ]
   standalone = true
   use_pic = true
+}
+
+proto_library("system_api-anomaly_detector-protos") {
+  proto_in_dir = "dbus/anomaly_detector"
+  proto_out_dir = "include/anomaly_detector/proto_bindings"
+  sources = [
+    "${proto_in_dir}/service.proto",
+  ]
+  standalone = true
 }

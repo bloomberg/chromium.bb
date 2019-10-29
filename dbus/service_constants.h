@@ -9,6 +9,7 @@
 
 // We use relative includes here to make this compatible with both the
 // Chromium OS and Chromium environment.
+#include "anomaly_detector/dbus-constants.h"
 #include "authpolicy/dbus-constants.h"
 #include "biod/dbus-constants.h"
 #include "bluetooth/dbus-constants.h"
@@ -506,14 +507,6 @@ constexpr char kOpenFileMethod[] = "OpenFile";
 }  // namespace appfuse
 
 }  // namespace arc
-
-namespace anomaly_detector {
-const char kAnomalyEventServiceName[] = "org.chromium.AnomalyEventService";
-const char kAnomalyEventServicePath[] = "/org/chromium/AnomalyEventService";
-const char kAnomalyEventServiceInterface[] =
-    "org.chromium.AnomalyEventServiceInterface";
-const char kAnomalyEventSignalName[] = "AnomalyEvent";
-}  // namespace anomaly_detector
 
 namespace libvda {
 const char kLibvdaServiceInterface[] = "org.chromium.LibvdaService";
