@@ -319,7 +319,10 @@ CanvasResourceDispatcher* OffscreenCanvas::GetOrCreateResourceDispatcher() {
 
 void OffscreenCanvas::DiscardResourceProvider() {
   CanvasResourceHost::DiscardResourceProvider();
-  needs_matrix_clip_restore_ = true;
+  // If deferral is enabled the recorder will play back the transform, so
+  // we should not do it here or else it will be applied twice
+  if (!context_->IsDeferralEnabled())
+    needs_matrix_clip_restore_ = true;
 }
 
 CanvasResourceProvider* OffscreenCanvas::GetOrCreateResourceProvider() {
