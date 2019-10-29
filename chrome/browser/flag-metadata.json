@@ -1027,11 +1027,6 @@
     "expiry_milestone": 82
   },
   {
-    "name": "enable-autofill-save-credit-card-uses-improved-messaging",
-    "owners": [ "siyua@chromium.org", "payments-autofill-team@google.com" ],
-    "expiry_milestone": 80
-  },
-  {
     "name": "enable-autofill-updated-card-unmask-prompt-ui",
     "owners": ["siyua", "payments-autofill-team@google.com"],
     "expiry_milestone": 87

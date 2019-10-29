@@ -575,12 +575,6 @@ const char kEnableAutofillSaveCardShowNoThanksName[] =
 const char kEnableAutofillSaveCardShowNoThanksDescription[] =
     "If enabled, adds a [No thanks] button to credit card save prompts.";
 
-const char kEnableAutofillSaveCreditCardUsesImprovedMessagingName[] =
-    "Enable new title and button label for credit card upload bubble";
-const char kEnableAutofillSaveCreditCardUsesImprovedMessagingDescription[] =
-    "If enabled, four variations of new messaging will be used in credit card "
-    "upload bubble.";
-
 const char kEnableAutofillUpdatedCardUnmaskPromptUiName[] =
     "Enable new card unmask prompt UI";
 const char kEnableAutofillUpdatedCardUnmaskPromptUiDescription[] =

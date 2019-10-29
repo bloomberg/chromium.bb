@@ -346,10 +346,6 @@ extern const char
 extern const char kEnableAutofillSaveCardShowNoThanksName[];
 extern const char kEnableAutofillSaveCardShowNoThanksDescription[];
 
-extern const char kEnableAutofillSaveCreditCardUsesImprovedMessagingName[];
-extern const char
-    kEnableAutofillSaveCreditCardUsesImprovedMessagingDescription[];
-
 extern const char kEnableAutofillToolkitViewsCreditCardDialogsMac[];
 extern const char kEnableAutofillToolkitViewsCreditCardDialogsMacDescription[];
 
