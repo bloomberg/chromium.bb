@@ -1,7 +1,13 @@
 <!DOCTYPE HTML>
-<script src="../resources/testharness.js"></script>
-<script src="../resources/testharnessreport.js"></script>
-
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Element Reflection for aria-activedescendant and aria-errormessage</title>
+    <link rel=help href="https://wicg.github.io/aom/spec/aria-reflection.html">
+    <link rel="author" title="Meredith Lane" href="meredithl@chromium.org">
+    <script src="/resources/testharness.js"></script>
+    <script src="/resources/testharnessreport.js"></script>
+  </head>
 <div id="role" role="button"></div>
 
 <script>
@@ -408,3 +414,4 @@ test(function(t) {
     assert_equals(element.getAttribute("aria-valuetext"), "51%");
 }, "aria-valuetext attribute reflects.");
 </script>
+</html>
