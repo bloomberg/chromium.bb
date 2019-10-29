@@ -655,7 +655,7 @@ class TraceInputsImport(TraceInputsBase):
         'initial_cwd': self.initial_cwd,
       },
     }
-    if sys.platform != 'linux2':
+    if not sys.platform.startswith('linux'):
       # TODO(maruel): Remove once properly implemented.
       expected['root']['files'].pop(0)
 

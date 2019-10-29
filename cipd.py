@@ -239,9 +239,10 @@ def get_platform():
   """
   # linux, mac or windows.
   os_name = {
-    'darwin': 'mac',
-    'linux2': 'linux',
-    'win32': 'windows',
+      'darwin': 'mac',
+      'linux2': 'linux',
+      'linux': 'linux',
+      'win32': 'windows',
   }.get(sys.platform)
   if not os_name:
     raise Error('Unknown OS: %s' % sys.platform)
