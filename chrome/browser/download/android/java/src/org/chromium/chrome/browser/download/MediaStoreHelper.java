@@ -13,7 +13,6 @@ import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.task.AsyncTask;
-import org.chromium.chrome.browser.ChromeFeatureList;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -37,8 +36,7 @@ public class MediaStoreHelper {
      */
     public static void addImageToGalleryOnSDCard(String filePath, String mimeType) {
         // TODO(xingliu): Support Android Q when we have available device with SD card slot.
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOAD_LOCATION_SHOW_IMAGE_IN_GALLERY)
-                || TextUtils.isEmpty(filePath) || mimeType == null || !mimeType.startsWith("image/")
+        if (TextUtils.isEmpty(filePath) || mimeType == null || !mimeType.startsWith("image/")
                 || BuildInfo.isAtLeastQ()) {
             return;
         }
