@@ -1096,7 +1096,7 @@ def update_labs_docs_md(filepath):
       f.write('## %s\n\n' % platform.title())
       testers.sort()
       for tester in testers:
-        f.write(' * [{0.name}]({0.buildbot_url}): {0.description}.\n'.format(
+        f.write(' * [{0.name}]({0.builder_url}): {0.description}.\n'.format(
             tester))
       f.write('\n')
 
