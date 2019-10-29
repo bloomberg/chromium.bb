@@ -425,7 +425,8 @@ void GetProjSubspaceTest::RunGetProjSubspaceTest(int32_t run_times) {
   const int iters = run_times == 1 ? kIterations : 4;
   for (int iter = 0; iter < iters && !HasFatalFailure(); ++iter) {
     int64_t C_ref[2] = { 0 }, C_test[2] = { 0 };
-    int64_t H_ref[2][2] = { 0 }, H_test[2][2] = { 0 };
+    int64_t H_ref[2][2] = { { 0, 0 }, { 0, 0 } };
+    int64_t H_test[2][2] = { { 0, 0 }, { 0, 0 } };
     for (int i = 0; i < MAX_DATA_BLOCK * MAX_DATA_BLOCK; ++i) {
       dgd_[i] = rng_.Rand8();
       src_[i] = rng_.Rand8();
@@ -483,7 +484,8 @@ void GetProjSubspaceTest::RunGetProjSubspaceTest_ExtremeValues() {
   const int iters = kIterations;
   for (int iter = 0; iter < iters && !HasFatalFailure(); ++iter) {
     int64_t C_ref[2] = { 0 }, C_test[2] = { 0 };
-    int64_t H_ref[2][2] = { 0 }, H_test[2][2] = { 0 };
+    int64_t H_ref[2][2] = { { 0, 0 }, { 0, 0 } };
+    int64_t H_test[2][2] = { { 0, 0 }, { 0, 0 } };
     for (int i = 0; i < MAX_DATA_BLOCK * MAX_DATA_BLOCK; ++i) {
       dgd_[i] = 0;
       src_[i] = 255;
