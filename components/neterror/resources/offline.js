@@ -67,6 +67,11 @@ function Runner(outerContainerId, opt_config) {
   this.images = {};
   this.imagesLoaded = 0;
 
+  // Gamepad state.
+  this.pollingGamepads = false;
+  this.gamepadIndex = undefined;
+  this.previousGamepad = null;
+
   if (this.isDisabled()) {
     this.setupDisabledRunner();
   } else {
@@ -237,7 +242,8 @@ Runner.events = {
   VISIBILITY: 'visibilitychange',
   BLUR: 'blur',
   FOCUS: 'focus',
-  LOAD: 'load'
+  LOAD: 'load',
+  GAMEPADCONNECTED: 'gamepadconnected',
 };
 
 Runner.prototype = {
@@ -643,6 +649,9 @@ Runner.prototype = {
         case events.POINTERUP:
           this.onKeyUp(e);
           break;
+        case events.GAMEPADCONNECTED:
+          this.onGamepadConnected(e);
+          break;
       }
     }.bind(this))(e.type, Runner.events);
   },
@@ -659,6 +668,11 @@ Runner.prototype = {
     this.containerEl.addEventListener(Runner.events.TOUCHSTART, this);
     document.addEventListener(Runner.events.POINTERDOWN, this);
     document.addEventListener(Runner.events.POINTERUP, this);
+
+    if (this.isArcadeMode()) {
+      // Gamepad
+      window.addEventListener(Runner.events.GAMEPADCONNECTED, this);
+    }
   },
 
   /**
@@ -676,6 +690,10 @@ Runner.prototype = {
     this.containerEl.removeEventListener(Runner.events.TOUCHSTART, this);
     document.removeEventListener(Runner.events.POINTERDOWN, this);
     document.removeEventListener(Runner.events.POINTERUP, this);
+
+    if (this.isArcadeMode()) {
+      window.removeEventListener(Runner.events.GAMEPADCONNECTED, this);
+    }
   },
 
   /**
@@ -758,6 +776,95 @@ Runner.prototype = {
       // Reset the jump state
       this.tRex.reset();
       this.play();
+    }
+  },
+
+  /**
+   * Process gamepad connected event.
+   * @param {Event} e
+   */
+  onGamepadConnected: function(e) {
+    if (!this.pollingGamepads) {
+      this.pollGamepadState();
+    }
+  },
+
+  /**
+   * rAF loop for gamepad polling.
+   */
+  pollGamepadState: function() {
+    var gamepads = navigator.getGamepads();
+    this.pollActiveGamepad(gamepads);
+
+    this.pollingGamepads = true;
+    requestAnimationFrame(this.pollGamepadState.bind(this));
+  },
+
+  /**
+   * Polls for a gamepad with the jump button pressed. If one is found this
+   * becomes the "active" gamepad and all others are ignored.
+   * @param {!Array<Gamepad>} gamepads
+   */
+  pollForActiveGamepad: function(gamepads) {
+    for (var i = 0; i < gamepads.length; ++i) {
+      if (gamepads[i] && gamepads[i].buttons.length > 0 &&
+          gamepads[i].buttons[0].pressed) {
+        this.gamepadIndex = i;
+        this.pollActiveGamepad(gamepads);
+        return;
+      }
+    }
+  },
+
+  /**
+   * Polls the chosen gamepad for button presses and generates KeyboardEvents
+   * to integrate with the rest of the game logic.
+   * @param {!Array<Gamepad>} gamepads
+   */
+  pollActiveGamepad: function(gamepads) {
+    if (this.gamepadIndex === undefined) {
+      this.pollForActiveGamepad(gamepads);
+      return;
+    }
+
+    var gamepad = gamepads[this.gamepadIndex];
+    if (!gamepad) {
+      this.gamepadIndex = undefined;
+      this.pollForActiveGamepad(gamepads);
+      return;
+    }
+
+    // The gamepad specification defines the typical mapping of physical buttons
+    // to button indicies: https://w3c.github.io/gamepad/#remapping
+    this.pollGamepadButton(gamepad, 0, 38);  // Jump
+    if (gamepad.buttons.length >= 2) {
+      this.pollGamepadButton(gamepad, 1, 40);  // Duck
+    }
+    if (gamepad.buttons.length >= 10) {
+      this.pollGamepadButton(gamepad, 9, 13);  // Restart
+    }
+
+    this.previousGamepad = gamepad;
+  },
+
+  /**
+   * Generates a key event based on a gamepad button.
+   * @param {!Gamepad} gamepad
+   * @param {number} buttonIndex
+   * @param {number} keyCode
+   */
+  pollGamepadButton: function(gamepad, buttonIndex, keyCode) {
+    var state = gamepad.buttons[buttonIndex].pressed;
+    var previousState = false;
+    if (this.previousGamepad) {
+      previousState = this.previousGamepad.buttons[buttonIndex].pressed;
+    }
+    // Generate key events on the rising and falling edge of a button press.
+    if (state != previousState) {
+      var e = new KeyboardEvent(state ? Runner.events.KEYDOWN
+                                      : Runner.events.KEYUP,
+                                { keyCode: keyCode });
+      document.dispatchEvent(e);
     }
   },
 
