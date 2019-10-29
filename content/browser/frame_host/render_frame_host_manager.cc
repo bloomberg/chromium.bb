@@ -199,12 +199,6 @@ RenderViewHostImpl* RenderFrameHostManager::current_host() const {
   return render_frame_host_->render_view_host();
 }
 
-WebUIImpl* RenderFrameHostManager::GetNavigatingWebUI() const {
-  if (speculative_render_frame_host_)
-    return speculative_render_frame_host_->web_ui();
-  return render_frame_host_->pending_web_ui();
-}
-
 RenderWidgetHostView* RenderFrameHostManager::GetRenderWidgetHostView() const {
   if (delegate_->GetInterstitialForRenderManager())
     return delegate_->GetInterstitialForRenderManager()->GetView();
@@ -349,10 +343,6 @@ void RenderFrameHostManager::CommitPendingIfNecessary(
 
   // A same-process navigation committed. A cross-process navigation may also
   // be ongoing.
-
-  // If the current RenderFrameHost has a pending WebUI it must be committed.
-  if (render_frame_host_->pending_web_ui())
-    CommitPendingWebUI();
 
   // A navigation in the original process has taken place, while a
   // cross-process navigation is ongoing.  This should cancel the ongoing
@@ -664,9 +654,9 @@ void RenderFrameHostManager::ClearRFHsPendingShutdown() {
 }
 
 void RenderFrameHostManager::ClearWebUIInstances() {
-  current_frame_host()->ClearAllWebUI();
+  current_frame_host()->ClearWebUI();
   if (speculative_render_frame_host_)
-    speculative_render_frame_host_->ClearAllWebUI();
+    speculative_render_frame_host_->ClearWebUI();
 }
 
 void RenderFrameHostManager::DidCreateNavigationRequest(
@@ -710,6 +700,7 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
 
   // First compute the SiteInstance to use for the navigation.
   SiteInstance* current_site_instance = render_frame_host_->GetSiteInstance();
+  BrowserContext* browser_context = current_site_instance->GetBrowserContext();
   scoped_refptr<SiteInstance> dest_site_instance =
       GetSiteInstanceForNavigationRequest(request);
 
@@ -727,13 +718,45 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
     if (speculative_render_frame_host_)
       DiscardUnusedFrame(UnsetSpeculativeRenderFrameHost());
 
-    // Short-term solution: avoid creating a WebUI for subframes because
-    // non-PlzNavigate code path doesn't do it and some WebUI pages don't
-    // support it.
-    // TODO(crbug.com/713313): Make WebUI objects always be per-frame instead.
-    if (frame_tree_node_->IsMainFrame()) {
-      UpdatePendingWebUIOnCurrentFrameHost(request->common_params().url,
-                                           request->bindings());
+    // If the navigation is to a WebUI and the current RenderFrameHost is going
+    // to be used, there are only two possible ways to get here:
+    // * The navigation is between two different documents belonging to the same
+    //   WebUI or reloading the same document.
+    // * Newly created window with a RenderFrameHost which hasn't committed a
+    //   navigation yet.
+    if (WebUIControllerFactoryRegistry::GetInstance()->UseWebUIForURL(
+            browser_context, request->common_params().url) &&
+        request->state() != NavigationRequest::FAILED) {
+      if (render_frame_host_->has_committed_any_navigation()) {
+        // If |render_frame_host_| has committed at least one navigation and it
+        // is in a WebUI SiteInstance, then it must have the exact same WebUI
+        // type if it will be reused.
+        CHECK_EQ(render_frame_host_->web_ui_type(),
+                 WebUIControllerFactoryRegistry::GetInstance()->GetWebUIType(
+                     browser_context, request->common_params().url));
+        render_frame_host_->web_ui()->RenderFrameReused(
+            render_frame_host_.get());
+      } else if (!render_frame_host_->web_ui()) {
+        // It is possible to reuse a RenderFrameHost when going to a WebUI URL
+        // and not have created a WebUI instance. An example is a WebUI main
+        // frame that includes an iframe to URL that doesn't require WebUI but
+        // stays in the parent frame SiteInstance (e.g. about:blank).  If that
+        // frame is subsequently navigated to a URL in the same WebUI as the
+        // parent frame, the RenderFrameHost will be reused and WebUI instance
+        // for the child frame needs to be created.
+        // During navigation, this method is called twice - at the beginning
+        // and at ReadyToCommit time. The first call would have created the
+        // WebUI instance and since the initial about:blank has not committed
+        // a navigation, the else branch would be taken. Explicit check for
+        // web_ui_ is required, otherwise we will allocate a new instance
+        // unnecessarily here.
+        render_frame_host_->CreateWebUI(request->common_params().url,
+                                        request->bindings());
+        if (render_frame_host_->IsRenderFrameLive()) {
+          render_frame_host_->web_ui()->RenderFrameCreated(
+              render_frame_host_.get());
+        }
+      }
     }
 
     navigation_rfh = render_frame_host_.get();
@@ -760,18 +783,17 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
     }
     DCHECK(speculative_render_frame_host_);
 
-    // Short-term solution: avoid creating a WebUI for subframes because
-    // non-PlzNavigate code path doesn't do it and some WebUI pages don't
-    // support it.
-    // TODO(crbug.com/713313): Make WebUI objects always be per-frame instead.
-    if (frame_tree_node_->IsMainFrame()) {
-      bool changed_web_ui = speculative_render_frame_host_->UpdatePendingWebUI(
+    // If the navigation is to a WebUI URL, the WebUI needs to be created to
+    // allow the navigation to be served correctly.
+    if (WebUIControllerFactoryRegistry::GetInstance()->UseWebUIForURL(
+            browser_context, request->common_params().url) &&
+        request->state() != NavigationRequest::FAILED) {
+      bool created_web_ui = speculative_render_frame_host_->CreateWebUI(
           request->common_params().url, request->bindings());
-      speculative_render_frame_host_->CommitPendingWebUI();
-      DCHECK_EQ(GetNavigatingWebUI(), speculative_render_frame_host_->web_ui());
       notify_webui_of_rf_creation =
-          changed_web_ui && speculative_render_frame_host_->web_ui();
+          created_web_ui && speculative_render_frame_host_->web_ui();
     }
+
     navigation_rfh = speculative_render_frame_host_.get();
 
     // Check if our current RFH is live.
@@ -794,15 +816,6 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
             new FrameMsg_SwapIn(navigation_rfh->GetRoutingID()));
       }
       CommitPending(std::move(speculative_render_frame_host_), nullptr);
-
-      // Notify the WebUI about the new RenderFrame if needed (the newly
-      // created WebUI has just been committed by CommitPending, so
-      // GetNavigatingWebUI() below will return false).
-      if (notify_webui_of_rf_creation && render_frame_host_->web_ui()) {
-        render_frame_host_->web_ui()->RenderFrameCreated(
-            render_frame_host_.get());
-        notify_webui_of_rf_creation = false;
-      }
     }
   }
   DCHECK(navigation_rfh &&
@@ -834,15 +847,9 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
 
   // If a WebUI was created in a speculative RenderFrameHost or a new
   // RenderFrame was created then the WebUI never interacted with the
-  // RenderFrame or its RenderView. Notify using RenderFrameCreated.
-  //
-  // Short-term solution: avoid creating a WebUI for subframes because
-  // non-PlzNavigate code path doesn't do it and some WebUI pages don't
-  // support it.
-  // TODO(crbug.com/713313): Make WebUI objects always be per-frame instead.
-  if (notify_webui_of_rf_creation && GetNavigatingWebUI() &&
-      frame_tree_node_->IsMainFrame()) {
-    GetNavigatingWebUI()->RenderFrameCreated(navigation_rfh);
+  // RenderFrame. Notify using RenderFrameCreated.
+  if (notify_webui_of_rf_creation && navigation_rfh->web_ui()) {
+    navigation_rfh->web_ui()->RenderFrameCreated(navigation_rfh);
   }
 
   // If this function picked an incompatible process for the URL, capture a
@@ -2393,23 +2400,6 @@ int RenderFrameHostManager::GetRoutingIdForSiteInstance(
   return MSG_ROUTING_NONE;
 }
 
-void RenderFrameHostManager::CommitPendingWebUI() {
-  TRACE_EVENT1("navigation", "RenderFrameHostManager::CommitPendingWebUI",
-               "FrameTreeNode id", frame_tree_node_->frame_tree_node_id());
-  DCHECK(render_frame_host_->pending_web_ui());
-
-  // First check whether we're going to want to focus the location bar after
-  // this commit.  We do this now because the navigation hasn't formally
-  // committed yet, so if we've already cleared the pending WebUI the call chain
-  // this triggers won't be able to figure out what's going on.
-  bool will_focus_location_bar = delegate_->FocusLocationBarByDefault();
-
-  render_frame_host_->CommitPendingWebUI();
-
-  if (will_focus_location_bar)
-    delegate_->SetFocusToLocationBar();
-}
-
 void RenderFrameHostManager::CommitPending(
     std::unique_ptr<RenderFrameHostImpl> pending_rfh,
     std::unique_ptr<BackForwardCacheImpl::Entry> pending_bfcache_entry) {
@@ -2644,35 +2634,6 @@ void RenderFrameHostManager::CommitPending(
   // After all is done, there must never be a proxy in the list which has the
   // same SiteInstance as the current RenderFrameHost.
   CHECK(!GetRenderFrameProxyHost(render_frame_host_->GetSiteInstance()));
-}
-
-void RenderFrameHostManager::UpdatePendingWebUIOnCurrentFrameHost(
-    const GURL& dest_url,
-    int entry_bindings) {
-  bool pending_webui_changed =
-      render_frame_host_->UpdatePendingWebUI(dest_url, entry_bindings);
-  DCHECK_EQ(GetNavigatingWebUI(), render_frame_host_->pending_web_ui());
-
-  if (render_frame_host_->pending_web_ui() && pending_webui_changed &&
-      render_frame_host_->IsRenderFrameLive()) {
-    // If a pending WebUI exists in the current RenderFrameHost and it has been
-    // updated and the associated RenderFrame is alive, notify the WebUI about
-    // the RenderFrame.
-    // Note: If the RenderFrame is not alive at this point the notification
-    // will happen later, when the RenderFrame is created.
-    if (render_frame_host_->pending_web_ui() == render_frame_host_->web_ui()) {
-      // If the active WebUI is being reused it has already interacting with
-      // this RenderFrame and its RenderView in the past, so call
-      // RenderFrameReused.
-      render_frame_host_->pending_web_ui()->RenderFrameReused(
-          render_frame_host_.get());
-    } else {
-      // If this is a new WebUI it has never interacted with the existing
-      // RenderFrame so call RenderFrameCreated.
-      render_frame_host_->pending_web_ui()->RenderFrameCreated(
-          render_frame_host_.get());
-    }
-  }
 }
 
 std::unique_ptr<RenderFrameHostImpl> RenderFrameHostManager::SetRenderFrameHost(

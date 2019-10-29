@@ -40,7 +40,6 @@ class RenderViewHost;
 class RenderViewHostImpl;
 class RenderWidgetHostView;
 class TestWebContents;
-class WebUIImpl;
 struct ContentSecurityPolicyHeader;
 struct FrameOwnerProperties;
 struct FrameReplicationState;
@@ -234,11 +233,6 @@ class CONTENT_EXPORT RenderFrameHostManager
   RenderFrameHostImpl* speculative_frame_host() const {
     return speculative_render_frame_host_.get();
   }
-
-  // Returns the WebUI associated with the ongoing navigation, it being either
-  // the active or the pending one from the navigating RenderFrameHost. Returns
-  // null if there's no ongoing navigation or if no WebUI applies.
-  WebUIImpl* GetNavigatingWebUI() const;
 
   // Instructs the various live views to stop. Called when the user directed the
   // page to stop loading.
@@ -726,10 +720,6 @@ class CONTENT_EXPORT RenderFrameHostManager
   // needs to be reused for a new navigation, but it is not live.
   bool ReinitializeRenderFrame(RenderFrameHostImpl* render_frame_host);
 
-  // Makes the pending WebUI on the current RenderFrameHost active. Call this
-  // when the current RenderFrameHost commits and it has a pending WebUI.
-  void CommitPendingWebUI();
-
   // Sets the |pending_rfh| to be the active one. Called when the pending
   // RenderFrameHost commits.
   //
@@ -765,11 +755,6 @@ class CONTENT_EXPORT RenderFrameHostManager
   // RenderFrameHost and updates counts.
   std::unique_ptr<RenderFrameHostImpl> SetRenderFrameHost(
       std::unique_ptr<RenderFrameHostImpl> render_frame_host);
-
-  // Updates the pending WebUI of the current RenderFrameHost for a same-site
-  // navigation.
-  void UpdatePendingWebUIOnCurrentFrameHost(const GURL& dest_url,
-                                            int entry_bindings);
 
   // Returns true if a subframe can navigate cross-process.
   bool CanSubframeSwapProcess(const GURL& dest_url,
