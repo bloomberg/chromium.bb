@@ -255,16 +255,16 @@ void MediaMetricsProvider::SetContainerName(
 
 void MediaMetricsProvider::AcquireWatchTimeRecorder(
     mojom::PlaybackPropertiesPtr properties,
-    mojom::WatchTimeRecorderRequest request) {
+    mojo::PendingReceiver<mojom::WatchTimeRecorder> receiver) {
   if (!initialized_) {
     mojo::ReportBadMessage(kInvalidInitialize);
     return;
   }
 
-  mojo::MakeStrongBinding(
+  mojo::MakeSelfOwnedReceiver(
       std::make_unique<WatchTimeRecorder>(std::move(properties), source_id_,
                                           is_top_frame_, player_id_),
-      std::move(request));
+      std::move(receiver));
 }
 
 void MediaMetricsProvider::AcquireVideoDecodeStatsRecorder(
