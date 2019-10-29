@@ -7,7 +7,7 @@
 import json
 
 
-def TestResult(test_path, status='PASS', is_expected=None,
+def TestResult(test_path, status='PASS', expected=None,
                start_time='2015-10-21T07:28:00.000Z', run_duration='1.00s',
                output_artifacts=None, tags=None):
   """Build a TestResult dict.
@@ -20,7 +20,7 @@ def TestResult(test_path, status='PASS', is_expected=None,
       the form '{benchmark_name}/{story_name}'.
     status: An optional string indicating the status of the test run. Usually
       one of 'PASS', 'SKIP', 'FAIL'. Defaults to 'PASS'.
-    is_expected: An optional bool indicating whether the status result is
+    expected: An optional bool indicating whether the status result is
       expected. Defaults to True for 'PASS', 'SKIP'; and False otherwise.
     start_time: An optional UTC timestamp recording when the test run started.
     run_duration: An optional duration string recording the amount of time
@@ -34,12 +34,12 @@ def TestResult(test_path, status='PASS', is_expected=None,
   Returns:
     A TestResult dict.
   """
-  if is_expected is None:
-    is_expected = status in ('PASS', 'SKIP')
+  if expected is None:
+    expected = status in ('PASS', 'SKIP')
   test_result = {
       'testPath': test_path,
       'status': status,
-      'isExpected': is_expected,
+      'expected': expected,
       'startTime': start_time,
       'runDuration': run_duration
   }

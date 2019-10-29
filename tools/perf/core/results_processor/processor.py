@@ -159,6 +159,11 @@ def _LoadTestResults(intermediate_dir):
       if 'benchmarkRun' in record:
         benchmark_run.update(record['benchmarkRun'])
       if 'testResult' in record:
+        # TODO(crbug.com/1018248): Remove this after the field is renamed
+        # in Telemetry.
+        if 'isExpected' in record['testResult']:
+          record['testResult']['expected'] = record['testResult']['isExpected']
+          del record['testResult']['isExpected']
         test_results.append(record['testResult'])
   for test_result in test_results:
     test_result['_benchmarkRun'] = benchmark_run
