@@ -666,6 +666,11 @@ def _git_checkout(sln, sln_dir, revisions, refs, git_cache_dir, cleanup_dir):
     env = {
         'GIT_TRACE': 'true',
         'GIT_TRACE_PERFORMANCE': 'true',
+        'GIT_TRACE_PACKET': '1',
+        'GIT_TRACE2_EVENT': '1',
+        'GIT_TRACE_CURL': '1',
+        'GIT_TRACE_CURL_NO_DATA': '1',
+        'INFRA_GIT_WRAPPER_TRACE': '1',
     }
 
   # Step 1: populate/refresh cache, if necessary.
@@ -723,11 +728,11 @@ def _git_checkout(sln, sln_dir, revisions, refs, git_cache_dir, cleanup_dir):
       else:
         _git_disable_gc(sln_dir)
         git('remote', 'set-url', 'origin', mirror_dir, cwd=sln_dir)
-        git('fetch', 'origin', cwd=sln_dir)
+        git('fetch', 'origin', cwd=sln_dir, env=env)
       git('remote', 'set-url', '--push', 'origin', url, cwd=sln_dir)
       for ref in refs:
         refspec = '%s:%s' % (ref, ref.lstrip('+'))
-        git('fetch', 'origin', refspec, cwd=sln_dir)
+        git('fetch', 'origin', refspec, cwd=sln_dir, env=env)
 
       # Windows sometimes has trouble deleting files.
       # This can make git commands that rely on locks fail.
