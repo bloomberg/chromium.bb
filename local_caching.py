@@ -203,7 +203,7 @@ class CacheMiss(Exception):
 class Cache(object):
   def __init__(self, cache_dir):
     if cache_dir is not None:
-      assert isinstance(cache_dir, unicode), cache_dir
+      assert isinstance(cache_dir, six.text_type), cache_dir
       assert file_path.isabs(cache_dir), cache_dir
     self.cache_dir = cache_dir
     self._lock = threading_utils.LockWithAssert()

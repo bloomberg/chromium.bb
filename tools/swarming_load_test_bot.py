@@ -31,6 +31,7 @@ tools.force_local_third_party()
 
 # third_party/
 import colorama
+import six
 
 # pylint: disable=ungrouped-imports
 import swarming
@@ -174,7 +175,7 @@ class FakeSwarmBot(object):
           break
 
         store_cmd = manifest['commands'][0]
-        if not isinstance(store_cmd['args'], unicode):
+        if not isinstance(store_cmd['args'], six.text_type):
           self._progress.update_item('Unexpected RPC manifest\n%s' % manifest)
           self._events.put('unknown_args')
           break

@@ -132,7 +132,7 @@ def fileobj_path(fileobj):
   # name will end up being a str (such as a function outside our control, like
   # the standard library). We want all our paths to be unicode objects, so we
   # decode it.
-  if not isinstance(name, unicode):
+  if not isinstance(name, six.text_type):
     # We incorrectly assume that UTF-8 is used everywhere.
     name = name.decode('utf-8')
 
@@ -1510,7 +1510,7 @@ def archive_files_to_storage(storage, files, blacklist):
   items_found = []
   try:
     for f in files:
-      assert isinstance(f, unicode), repr(f)
+      assert isinstance(f, six.text_type), repr(f)
       if f in results:
         # Duplicate
         continue

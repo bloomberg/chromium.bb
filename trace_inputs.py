@@ -102,7 +102,7 @@ if sys.platform == 'win32':
     """Splits a commandline into argv using CommandLineToArgvW()."""
     # http://msdn.microsoft.com/library/windows/desktop/bb776391.aspx
     size = c_int()
-    assert isinstance(command_line, unicode)
+    assert isinstance(command_line, six.text_type)
     ptr = windll.shell32.CommandLineToArgvW(command_line, byref(size))
     try:
       return [arg for arg in (c_wchar_p * size.value).from_address(ptr)]
@@ -287,15 +287,13 @@ def strace_process_quoted_arguments(text):
 
 def assert_is_renderable(pseudo_string):
   """Asserts the input is a valid object to be processed by render()."""
-  assert (
-      pseudo_string is None or
-      isinstance(pseudo_string, unicode) or
-      hasattr(pseudo_string, 'render')), repr(pseudo_string)
+  assert (pseudo_string is None or isinstance(pseudo_string, six.text_type) or
+          hasattr(pseudo_string, 'render')), repr(pseudo_string)
 
 
 def render(pseudo_string):
   """Converts the pseudo-string to an unicode string."""
-  if pseudo_string is None or isinstance(pseudo_string, unicode):
+  if pseudo_string is None or isinstance(pseudo_string, six.text_type):
     return pseudo_string
   return pseudo_string.render()
 
@@ -898,9 +896,8 @@ class Strace(ApiBase):
         def __init__(self, parent, value):
           assert_is_renderable(parent)
           self.parent = parent
-          assert (
-              value is None or
-              (isinstance(value, unicode) and not os.path.isabs(value)))
+          assert (value is None or (isinstance(value, six.text_type) and
+                                    not os.path.isabs(value)))
           self.value = value
           if self.value:
             # TODO(maruel): On POSIX, '\\' is a valid character so remove this
@@ -936,7 +933,7 @@ class Strace(ApiBase):
         self._pending_calls = {}
         self._line_number = 0
         # Current directory when the process started.
-        if isinstance(self._root(), unicode):
+        if isinstance(self._root(), six.text_type):
           self.initial_cwd = self._root()
         else:
           self.initial_cwd = self.RelativePath(self._root(), None)
@@ -1133,7 +1130,7 @@ class Strace(ApiBase):
           filepath = args[0][1:-1]
           if os.path.isabs(filepath):
             logging.debug('handle_chdir(%d, %s)' % (self.pid, self.cwd))
-            if not isinstance(self.cwd, unicode):
+            if not isinstance(self.cwd, six.text_type):
               # Take the occasion to reset the path.
               self.cwd = self._mangle(filepath)
             else:
@@ -1304,7 +1301,7 @@ class Strace(ApiBase):
         if os.path.isabs(filepath):
           return filepath
         else:
-          if isinstance(self.get_cwd(), unicode):
+          if isinstance(self.get_cwd(), six.text_type):
             return os.path.normpath(os.path.join(self.get_cwd(), filepath))
           return self.RelativePath(self.get_cwd(), filepath)
 
@@ -1623,14 +1620,14 @@ class Dtrace(ApiBase):
       logging.info(
           '%s(%d, %s)' % (self.__class__.__name__, thunk_pid, initial_cwd))
       super(Dtrace.Context, self).__init__(blacklist)
-      assert isinstance(initial_cwd, unicode), initial_cwd
+      assert isinstance(initial_cwd, six.text_type), initial_cwd
       # Process ID of the temporary script created by create_subprocess_thunk().
       self._thunk_pid = thunk_pid
       self._initial_cwd = initial_cwd
       self._line_number = 0
 
     def on_line(self, line):
-      assert isinstance(line, unicode), line
+      assert isinstance(line, six.text_type), line
       self._line_number += 1
       match = self.RE_HEADER.match(line)
       if not match:

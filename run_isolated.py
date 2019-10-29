@@ -225,7 +225,7 @@ def _to_str(s):
 
 def _to_unicode(s):
   """Upgrades a str instance to unicode. Pass unicode through as-is."""
-  if isinstance(s, unicode) or s is None:
+  if isinstance(s, six.text_type) or s is None:
     return s
   return s.decode('utf-8')
 

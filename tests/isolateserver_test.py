@@ -183,13 +183,13 @@ class UtilsTest(TestCase):
     thisfile = os.path.join(test_env.TESTS_DIR, 'isolateserver_test.py')
     f = fs.open(thisfile)
     result = isolateserver.fileobj_path(f)
-    self.assertIsInstance(result, unicode)
+    self.assertIsInstance(result, six.text_type)
     self.assertSequenceEqual(result, thisfile)
 
     # Path on temporary files
     tf = tempfile.NamedTemporaryFile()
     result = isolateserver.fileobj_path(tf)
-    self.assertIsInstance(result, unicode)
+    self.assertIsInstance(result, six.text_type)
     self.assertSequenceEqual(result, tf.name)
 
     # No path on files which are no longer on the file system

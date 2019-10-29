@@ -161,8 +161,8 @@ def normalize_path_variables(cwd, path_variables, relative_base_dir):
   logging.info(
       'normalize_path_variables(%s, %s, %s)', cwd, path_variables,
       relative_base_dir)
-  assert isinstance(cwd, unicode), cwd
-  assert isinstance(relative_base_dir, unicode), relative_base_dir
+  assert isinstance(cwd, six.text_type), cwd
+  assert isinstance(relative_base_dir, six.text_type), relative_base_dir
   relative_base_dir = file_path.get_native_path_case(relative_base_dir)
   return dict(
       (k, _normalize_path_variable(cwd, relative_base_dir, k, v))
@@ -1004,11 +1004,11 @@ def CMDbatcharchive(parser, args):
     if data.get('version') != ISOLATED_GEN_JSON_VERSION:
       parser.error('Invalid version in %s' % gen_json_path)
     cwd = data.get('dir')
-    if not isinstance(cwd, unicode) or not fs.isdir(cwd):
+    if not isinstance(cwd, six.text_type) or not fs.isdir(cwd):
       parser.error('Invalid dir in %s' % gen_json_path)
     args = data.get('args')
     if (not isinstance(args, list) or
-        not all(isinstance(x, unicode) for x in args)):
+        not all(isinstance(x, six.text_type) for x in args)):
       parser.error('Invalid args in %s' % gen_json_path)
     # Convert command line (embedded in JSON) to Options object.
     work_units.append((parse_archive_command_line(args, cwd), cwd))
