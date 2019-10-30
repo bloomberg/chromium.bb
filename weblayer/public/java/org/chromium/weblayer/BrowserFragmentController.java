@@ -5,6 +5,7 @@
 package org.chromium.weblayer;
 
 import android.os.RemoteException;
+import android.support.v4.app.Fragment;
 import android.view.View;
 import android.webkit.ValueCallback;
 
@@ -23,10 +24,21 @@ public final class BrowserFragmentController {
     private final ProfileManager mProfileManager;
     private BrowserController mController;
 
-
     BrowserFragmentController(IBrowserFragmentController impl, ProfileManager profileManager) {
         mImpl = impl;
         mProfileManager = profileManager;
+    }
+
+    /**
+     * Returns the BrowserFragmentController for the supplied Fragment; null if
+     * {@link fragment} was not created by WebLayer.
+     *
+     * @return the BrowserFragmentController
+     */
+    @Nullable
+    public static BrowserFragmentController fromFragment(@Nullable Fragment fragment) {
+        return fragment instanceof BrowserFragment ? ((BrowserFragment) fragment).getController()
+                                                   : null;
     }
 
     /**

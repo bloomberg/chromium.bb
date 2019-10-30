@@ -22,7 +22,6 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
 import org.chromium.weblayer.BrowserController;
-import org.chromium.weblayer.BrowserFragment;
 import org.chromium.weblayer.BrowserFragmentController;
 import org.chromium.weblayer.BrowserObserver;
 import org.chromium.weblayer.Profile;
@@ -47,7 +46,6 @@ public class InstrumentationActivity extends FragmentActivity {
     private View mMainView;
     private int mMainViewId;
     private ViewGroup mTopContentsContainer;
-    private BrowserFragment mFragment;
     private IntentInterceptor mIntentInterceptor;
 
     public BrowserController getBrowserController() {
@@ -120,8 +118,8 @@ public class InstrumentationActivity extends FragmentActivity {
     private void onWebLayerReady(Bundle savedInstanceState) {
         if (isFinishing() || isDestroyed()) return;
 
-        mFragment = getOrCreateBrowserFragment(savedInstanceState);
-        mBrowserFragmentController = mFragment.getController();
+        Fragment fragment = getOrCreateBrowserFragment(savedInstanceState);
+        mBrowserFragmentController = BrowserFragmentController.fromFragment(fragment);
         mProfile = mBrowserFragmentController.getProfile();
 
         mBrowserFragmentController.setTopView(mTopContentsContainer);
@@ -135,7 +133,7 @@ public class InstrumentationActivity extends FragmentActivity {
         });
     }
 
-    private BrowserFragment getOrCreateBrowserFragment(Bundle savedInstanceState) {
+    private Fragment getOrCreateBrowserFragment(Bundle savedInstanceState) {
         FragmentManager fragmentManager = getSupportFragmentManager();
         if (savedInstanceState != null) {
             // FragmentManager could have re-created the fragment.
@@ -144,7 +142,7 @@ public class InstrumentationActivity extends FragmentActivity {
                 throw new IllegalStateException("More than one fragment added, shouldn't happen");
             }
             if (fragments.size() == 1) {
-                return (BrowserFragment) fragments.get(0);
+                return fragments.get(0);
             }
         }
 
@@ -156,7 +154,7 @@ public class InstrumentationActivity extends FragmentActivity {
             profilePath = new File(getFilesDir(), profileName).getPath();
         } // else create an in-memory Profile.
 
-        BrowserFragment fragment = WebLayer.createBrowserFragment(profilePath);
+        Fragment fragment = WebLayer.createBrowserFragment(profilePath);
         FragmentTransaction transaction = fragmentManager.beginTransaction();
         transaction.add(mMainViewId, fragment);
 
