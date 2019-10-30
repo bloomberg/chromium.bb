@@ -397,18 +397,24 @@ class NET_EXPORT CookieMonster : public CookieStore {
                                 CookieStatusList* included_cookies,
                                 CookieStatusList* excluded_cookies);
 
-  // Delete any cookies that are equivalent to |ecc| (same path, domain, etc).
-  // |source_secure| indicates if the source may override existing secure
-  // cookies.
+  // Possibly delete an existing cookie equivalent to |cookie_being_set| (same
+  // path, domain, and name).
   //
-  // If |skip_httponly| is true, httponly cookies will not be deleted.  The
-  // return value will be true if |skip_httponly| skipped an httponly cookie or
-  // the cookie to delete was Secure and the scheme of |ecc| is insecure.  |key|
-  // is the key to find the cookie in cookies_; see the comment before the
+  // |source_secure| indicates if the source may override existing secure
+  // cookies. If the source is not secure, and there is an existing "equivalent"
+  // cookie that is Secure, that cookie will be preserved, under "Leave Secure
+  // Cookies Alone" (see
+  // https://tools.ietf.org/html/draft-ietf-httpbis-cookie-alone-01).
+  // ("equivalent" here is in quotes because the equivalency check for the
+  // purposes of preserving existing Secure cookies is slightly more inclusive.)
+  //
+  // If |skip_httponly| is true, httponly cookies will not be deleted even if
+  // they are equivalent.
+  // |key| is the key to find the cookie in cookies_; see the comment before the
   // CookieMap typedef for details.
   //
-  // If a cookie is deleted, and its value matches |ecc|'s value, then
-  // |creation_date_to_inherit| will be set to that cookie's creation date.
+  // If a cookie is deleted, and its value matches |cookie_being_set|'s value,
+  // then |creation_date_to_inherit| will be set to that cookie's creation date.
   //
   // The cookie will not be deleted if |*status| is not "include" when calling
   // the function. The function will update |*status| with exclusion reasons if
@@ -417,7 +423,7 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // NOTE: There should never be more than a single matching equivalent cookie.
   void MaybeDeleteEquivalentCookieAndUpdateStatus(
       const std::string& key,
-      const CanonicalCookie& ecc,
+      const CanonicalCookie& cookie_being_set,
       bool source_secure,
       bool skip_httponly,
       bool already_expired,
