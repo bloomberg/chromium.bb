@@ -123,6 +123,16 @@ class WebViewClientDelegate
         // This method is called when the setParent call is done   
         // If successful, status 0 will be returned, otherwise error code from GetLassError()
         // will be returned as status 
+
+    virtual void devToolsAgentHostAttached() = 0;
+        // This method is called when the client receives a notification from
+        // the host that a DevTools frontend successfully connected to the
+        // DevTools agent associated with this webview.
+
+    virtual void devToolsAgentHostDetached() = 0;
+        // This method is called when the client receives a notification from
+        // the host that a DevTools frontend is disconnected from the
+        // DevTools agent associated with this webview.
 };
 
 }  // close namespace blpwtk2
