@@ -473,19 +473,26 @@ void LinuxDumper::GetMappingEffectiveNameAndPath(const MappingInfo& mapping,
                                                  size_t file_name_size) {
   my_strlcpy(file_path, mapping.name, file_path_size);
 
-  // If an executable is mapped from a non-zero offset, this is likely because
-  // the executable was loaded directly from inside an archive file (e.g., an
-  // apk on Android). We try to find the name of the shared object (SONAME) by
-  // looking in the file for ELF sections.
-  bool mapped_from_archive = false;
-  if (mapping.exec && mapping.offset != 0) {
-    mapped_from_archive =
-        ElfFileSoName(*this, mapping, file_name, file_name_size);
+  // Tools such as minidump_stackwalk use the name of the module to look up
+  // symbols produced by dump_syms. dump_syms will prefer to use a module's
+  // DT_SONAME as the module name, if one exists, and will fall back to the
+  // filesystem name of the module.
+
+  // Just use the filesystem name if no SONAME is present.
+  if (!ElfFileSoName(*this, mapping, file_name, file_name_size)) {
+    //   file_path := /path/to/libname.so
+    //   file_name := libname.so
+    const char* basename = my_strrchr(file_path, '/');
+    basename = basename == NULL ? file_path : (basename + 1);
+    my_strlcpy(file_name, basename, file_name_size);
+    return;
   }
 
-  if (mapped_from_archive) {
-    // Some tools (e.g., stackwalk) extract the basename from the pathname. In
-    // this case, we append the file_name to the mapped archive path as follows:
+  if (mapping.exec && mapping.offset != 0) {
+    // If an executable is mapped from a non-zero offset, this is likely because
+    // the executable was loaded directly from inside an archive file (e.g., an
+    // apk on Android).
+    // In this case, we append the file_name to the mapped archive path:
     //   file_name := libname.so
     //   file_path := /path/to/ARCHIVE.APK/libname.so
     if (my_strlen(file_path) + 1 + my_strlen(file_name) < file_path_size) {
@@ -493,12 +500,15 @@ void LinuxDumper::GetMappingEffectiveNameAndPath(const MappingInfo& mapping,
       my_strlcat(file_path, file_name, file_path_size);
     }
   } else {
-    // Common case:
-    //   file_path := /path/to/libname.so
-    //   file_name := libname.so
-    const char* basename = my_strrchr(file_path, '/');
-    basename = basename == NULL ? file_path : (basename + 1);
-    my_strlcpy(file_name, basename, file_name_size);
+    // Otherwise, replace the basename with the SONAME.
+    char* basename = const_cast<char*>(my_strrchr(file_path, '/'));
+    if (basename) {
+      my_strlcpy(basename + 1, file_name,
+                 file_path_size - my_strlen(file_path) +
+                     my_strlen(basename + 1));
+    } else {
+      my_strlcpy(file_path, file_name, file_path_size);
+    }
   }
 }
 
