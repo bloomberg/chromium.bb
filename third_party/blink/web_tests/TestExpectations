@@ -5760,3 +5760,6 @@ crbug.com/1016772 http/tests/devtools/sources/debugger-ui/source-url-comment.js 
 
 # Temporarily disabled for landing initiator chain changes in DevTools
 crbug.com/842488 http/tests/devtools/network/network-initiator-chain.js [ Pass Failure ]
+
+# Temporarily disabled to a breakpoint non-determinism issue.
+crbug.com/1019613 http/tests/devtools/sources/debugger/debug-inlined-scripts.js [ Pass Failure ]
