@@ -80,7 +80,7 @@ class WebRtcVideoCaptureSharedDeviceBrowserTest
     switch (GetParam().api_to_use) {
       case ServiceApi::kSingleClient:
         GetVideoCaptureService().ConnectToDeviceFactory(
-            mojo::MakeRequest(&device_factory_));
+            device_factory_.BindNewPipeAndPassReceiver());
         device_factory_->GetDeviceInfos(base::BindOnce(
             &WebRtcVideoCaptureSharedDeviceBrowserTest::OnDeviceInfosReceived,
             weak_factory_.GetWeakPtr(), GetParam().buffer_type_to_request));
@@ -194,7 +194,7 @@ class WebRtcVideoCaptureSharedDeviceBrowserTest
   base::test::ScopedFeatureList scoped_feature_list_;
 
   // For single-client API case only
-  video_capture::mojom::DeviceFactoryPtr device_factory_;
+  mojo::Remote<video_capture::mojom::DeviceFactory> device_factory_;
   mojo::Remote<video_capture::mojom::Device> device_;
 
   // For multi-client API case only

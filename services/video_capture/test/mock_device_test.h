@@ -10,6 +10,7 @@
 #include "media/capture/video/mock_device_factory.h"
 #include "media/capture/video/video_capture_device.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/video_capture/device_factory_media_to_mojo_adapter.h"
 #include "services/video_capture/public/cpp/mock_receiver.h"
@@ -37,8 +38,8 @@ class MockDeviceTest : public ::testing::Test {
   media::MockDeviceFactory* mock_device_factory_;
   std::unique_ptr<DeviceFactoryMediaToMojoAdapter> mock_device_factory_adapter_;
 
-  mojom::DeviceFactoryPtr factory_;
-  std::unique_ptr<mojo::Binding<mojom::DeviceFactory>> mock_factory_binding_;
+  mojo::Remote<mojom::DeviceFactory> factory_;
+  std::unique_ptr<mojo::Receiver<mojom::DeviceFactory>> mock_factory_receiver_;
   base::MockCallback<mojom::DeviceFactory::GetDeviceInfosCallback>
       device_infos_receiver_;
 

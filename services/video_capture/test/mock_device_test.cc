@@ -40,8 +40,10 @@ void MockDeviceTest::SetUp() {
           std::move(video_capture_system));
 #endif  // defined(OS_CHROMEOS)
 
-  mock_factory_binding_ = std::make_unique<mojo::Binding<mojom::DeviceFactory>>(
-      mock_device_factory_adapter_.get(), mojo::MakeRequest(&factory_));
+  mock_factory_receiver_ =
+      std::make_unique<mojo::Receiver<mojom::DeviceFactory>>(
+          mock_device_factory_adapter_.get(),
+          factory_.BindNewPipeAndPassReceiver());
 
   media::VideoCaptureDeviceDescriptor mock_descriptor;
   mock_descriptor.device_id = "MockDeviceId";
