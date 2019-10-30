@@ -1134,6 +1134,8 @@
       'KitKat Tablet Tester',
       'Lollipop Tablet Tester',
       'Marshmallow Tablet Tester',
+      # chromium.fyi
+      'android-code-coverage-native', # https://crbug.com/1018780
     ],
   },
   'network_service_out_of_process_components_browsertests': {
@@ -1206,6 +1208,8 @@
       # chromium.clang
       'ToTAndroid',
       'ToTAndroidCFI',
+      # chromium.fyi
+      'android-code-coverage-native', # https://crbug.com/1018431
     ],
   },
   'non_viz_browser_tests': {
