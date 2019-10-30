@@ -764,4 +764,16 @@ TEST_F(StyledLabelTest, CacheSizeWithAlignment) {
   EXPECT_EQ(800, new_child->bounds().right());
 }
 
+// Verifies that calling SizeToFit() on a label which requires less width still
+// causes it to take the whole requested width.
+TEST_F(StyledLabelTest, SizeToFit) {
+  const std::string text("text");
+  InitStyledLabel(text);
+  styled()->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
+  styled()->SizeToFit(1000);
+  styled()->Layout();
+  ASSERT_EQ(1u, styled()->children().size());
+  EXPECT_EQ(1000, styled()->children().front()->bounds().right());
+}
+
 }  // namespace views

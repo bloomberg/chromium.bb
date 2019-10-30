@@ -160,13 +160,14 @@ class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
   // provided by GetHeightForWidth().
   const LayoutSizeInfo& GetLayoutSizeInfoForWidth(int w) const;
 
-  // Resizes the label so its width is set to the width of the longest line and
-  // its height deduced accordingly.
+  // Resizes the label so its width is set to the fixed width and its height
+  // deduced accordingly. Even if all widths of the lines are shorter than
+  // |fixed_width|, the given value is applied to the element's width.
   // This is only intended for multi-line labels and is useful when the label's
   // text contains several lines separated with \n.
-  // |max_width| is the maximum width that will be used (longer lines will be
-  // wrapped). If 0, no maximum width is enforced.
-  void SizeToFit(int max_width);
+  // |fixed_width| is the fixed width that will be used (longer lines will be
+  // wrapped).  If 0, no fixed width is enforced.
+  void SizeToFit(int fixed_width);
 
   // View:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
