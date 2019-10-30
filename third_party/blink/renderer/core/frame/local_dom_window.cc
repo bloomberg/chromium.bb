@@ -1046,7 +1046,8 @@ void LocalDOMWindow::scrollBy(const ScrollToOptions* scroll_to_options) const {
       cc::SnapSelectionStrategy::CreateForEndAndDirection(
           gfx::ScrollOffset(current_position), gfx::ScrollOffset(scaled_delta));
   new_scaled_position =
-      viewport->GetSnapPosition(*strategy).value_or(new_scaled_position);
+      viewport->GetSnapPositionAndSetTarget(*strategy).value_or(
+          new_scaled_position);
 
   ScrollBehavior scroll_behavior = kScrollBehaviorAuto;
   ScrollableArea::ScrollBehaviorFromString(scroll_to_options->behavior(),
@@ -1110,7 +1111,8 @@ void LocalDOMWindow::scrollTo(const ScrollToOptions* scroll_to_options) const {
           gfx::ScrollOffset(new_scaled_position), scroll_to_options->hasLeft(),
           scroll_to_options->hasTop());
   new_scaled_position =
-      viewport->GetSnapPosition(*strategy).value_or(new_scaled_position);
+      viewport->GetSnapPositionAndSetTarget(*strategy).value_or(
+          new_scaled_position);
   ScrollBehavior scroll_behavior = kScrollBehaviorAuto;
   ScrollableArea::ScrollBehaviorFromString(scroll_to_options->behavior(),
                                            scroll_behavior);

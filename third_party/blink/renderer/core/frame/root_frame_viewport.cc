@@ -307,7 +307,7 @@ PhysicalRect RootFrameViewport::ScrollIntoView(
       cc::SnapSelectionStrategy::CreateForEndPosition(
           gfx::ScrollOffset(end_point), true, true);
   if (GetLayoutBox()) {
-    end_point = GetSnapPosition(*strategy).value_or(end_point);
+    end_point = GetSnapPositionAndSetTarget(*strategy).value_or(end_point);
     new_scroll_offset = ScrollPositionToOffset(end_point);
   }
 
@@ -612,6 +612,11 @@ const cc::SnapContainerData* RootFrameViewport::GetSnapContainerData() const {
 void RootFrameViewport::SetSnapContainerData(
     base::Optional<cc::SnapContainerData> data) {
   LayoutViewport().SetSnapContainerData(data);
+}
+
+base::Optional<FloatPoint> RootFrameViewport::GetSnapPositionAndSetTarget(
+    const cc::SnapSelectionStrategy& strategy) {
+  return LayoutViewport().GetSnapPositionAndSetTarget(strategy);
 }
 
 void RootFrameViewport::Trace(blink::Visitor* visitor) {

@@ -302,6 +302,7 @@ _CONFIG = [
             'cc::SnapFlingController',
             'cc::SnapSelectionStrategy',
             'cc::SnapStrictness',
+            'cc::TargetSnapAreaElementIds',
             'gfx::RectToSkRect',
             'gfx::ScrollOffset',
             'ui::input_types::ScrollGranularity',

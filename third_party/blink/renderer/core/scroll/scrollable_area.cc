@@ -815,25 +815,6 @@ void ScrollableArea::OnScrollFinished() {
   }
 }
 
-base::Optional<FloatPoint> ScrollableArea::GetSnapPosition(
-    const cc::SnapSelectionStrategy& strategy) const {
-  const auto* optional_data = GetSnapContainerData();
-  if (!optional_data)
-    return base::nullopt;
-
-  const cc::SnapContainerData& data = *optional_data;
-  if (!data.size())
-    return base::nullopt;
-
-  gfx::ScrollOffset snap_position;
-  if (data.FindSnapPosition(strategy, &snap_position)) {
-    FloatPoint snap_point(snap_position.x(), snap_position.y());
-    return snap_point;
-  }
-
-  return base::nullopt;
-}
-
 void ScrollableArea::SnapAfterScrollbarScrolling(
     ScrollbarOrientation orientation) {
   SnapAtCurrentPosition(orientation == kHorizontalScrollbar,
@@ -884,7 +865,7 @@ bool ScrollableArea::SnapForEndAndDirection(const ScrollOffset& delta) {
 
 bool ScrollableArea::PerformSnapping(const cc::SnapSelectionStrategy& strategy,
                                      base::ScopedClosureRunner on_finish) {
-  base::Optional<FloatPoint> snap_point = GetSnapPosition(strategy);
+  base::Optional<FloatPoint> snap_point = GetSnapPositionAndSetTarget(strategy);
   if (!snap_point)
     return false;
   CancelScrollAnimation();

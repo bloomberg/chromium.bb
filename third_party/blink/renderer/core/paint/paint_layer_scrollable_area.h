@@ -560,6 +560,9 @@ class CORE_EXPORT PaintLayerScrollableArea final
   const cc::SnapContainerData* GetSnapContainerData() const override;
   void SetSnapContainerData(base::Optional<cc::SnapContainerData>) override;
 
+  base::Optional<FloatPoint> GetSnapPositionAndSetTarget(
+      const cc::SnapSelectionStrategy& strategy) override;
+
   void DisposeImpl() override;
 
  private:

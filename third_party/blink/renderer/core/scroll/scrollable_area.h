@@ -168,8 +168,16 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
       base::ScopedClosureRunner on_finish = base::ScopedClosureRunner());
   bool SnapForEndAndDirection(const ScrollOffset& delta);
 
-  base::Optional<FloatPoint> GetSnapPosition(
-      const cc::SnapSelectionStrategy& strategy) const;
+  // Tries to find a target snap position. If found, returns the target position
+  // and updates the last target snap area element id for the snap container's
+  // data. If not found, then clears the last target snap area element id.
+  //
+  // NOTE: If a target position is found, then it is expected that this position
+  // will be scrolled to.
+  virtual base::Optional<FloatPoint> GetSnapPositionAndSetTarget(
+      const cc::SnapSelectionStrategy& strategy) {
+    return base::nullopt;
+  }
 
   void FinishCurrentScrollAnimations() const;
 

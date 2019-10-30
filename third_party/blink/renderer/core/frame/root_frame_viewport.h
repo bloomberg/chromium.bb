@@ -124,6 +124,8 @@ class CORE_EXPORT RootFrameViewport final
   ScrollbarTheme& GetPageScrollbarTheme() const override;
   const cc::SnapContainerData* GetSnapContainerData() const override;
   void SetSnapContainerData(base::Optional<cc::SnapContainerData>) override;
+  base::Optional<FloatPoint> GetSnapPositionAndSetTarget(
+      const cc::SnapSelectionStrategy& strategy) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(RootFrameViewportTest, DistributeScrollOrder);
