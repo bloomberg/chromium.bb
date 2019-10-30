@@ -53,9 +53,6 @@ class INVALIDATION_EXPORT InvalidatorRegistrarWithMemory
   bool UpdateRegisteredTopics(InvalidationHandler* handler,
                               const Topics& topics) override WARN_UNUSED_RESULT;
 
-  // void UnregisterHandler(InvalidationHandler* handler) override;
-  // void RegisterHandler(InvalidationHandler* handler) override;
-
   // Returns the set of all IDs that are registered to some handler (even
   // handlers that have been unregistered).
   Topics GetAllRegisteredIds() const override;
@@ -65,14 +62,10 @@ class INVALIDATION_EXPORT InvalidatorRegistrarWithMemory
       const;
 
  private:
-  using HandlerNameTopicsMap = std::map<std::string, Topics>;
-
   // Generate a Dictionary with all the debugging information.
   base::DictionaryValue CollectDebugData() const;
 
-  std::unordered_map<std::string, InvalidationHandler*>
-      handler_name_to_handler_;
-  HandlerNameTopicsMap handler_name_to_topics_map_;
+  std::map<std::string, Topics> handler_name_to_topics_map_;
   PrefService* local_state_;
   const std::string sender_id_;
 
