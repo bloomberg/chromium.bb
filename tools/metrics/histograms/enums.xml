@@ -60404,24 +60404,24 @@ would be helpful to identify which type is being sent.
   <int value="12" label="Apps"/>
   <int value="13" label="App Settings"/>
   <int value="14" label="Extension Settings"/>
-  <int value="15" label="App Notifications"/>
+  <int value="15" label="App Notifications (deprecated)"/>
   <int value="16" label="History Delete Directives"/>
   <int value="17" label="Nigori"/>
   <int value="18" label="Device Information"/>
   <int value="19" label="Experiments"/>
-  <int value="20" label="Synced Notifications"/>
+  <int value="20" label="Synced Notifications (deprecated)"/>
   <int value="21" label="Priority Preferences"/>
   <int value="22" label="Dictionary"/>
   <int value="23" label="Favicon Images"/>
   <int value="24" label="Favicon Tracking"/>
   <int value="25" label="Proxy Tabs"/>
   <int value="26" label="Managed User Settings"/>
-  <int value="27" label="Managed Users"/>
-  <int value="28" label="Articles"/>
+  <int value="27" label="Managed Users (deprecated)"/>
+  <int value="28" label="Articles (deprecated)"/>
   <int value="29" label="App List"/>
-  <int value="30" label="Managed User Shared Settings"/>
-  <int value="31" label="Synced Notification App Info"/>
-  <int value="32" label="Wifi Credentials"/>
+  <int value="30" label="Managed User Shared Settings (deprecated)"/>
+  <int value="31" label="Synced Notification App Info (deprecated)"/>
+  <int value="32" label="Wifi Credentials (deprecated)"/>
   <int value="33" label="Managed User Whitelists"/>
   <int value="34" label="Autofill Wallet"/>
   <int value="35" label="Autofill Wallet Metadata"/>
