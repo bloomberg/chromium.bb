@@ -631,6 +631,8 @@ void MixerInputConnection::CheckAndStartPlaybackIfNecessary(
     remaining_silence_frames_ = ::media::AudioTimestampHelper::TimeToFrames(
         base::TimeDelta::FromMicroseconds(silence_duration),
         input_samples_per_second_);
+    // Round to nearest multiple of 4 to preserve buffer alignment.
+    remaining_silence_frames_ = ((remaining_silence_frames_ + 2) / 4) * 4;
     started_ = true;
     LOG(INFO) << this << " Should start playback of PTS " << actual_pts_now
               << " at " << (playback_absolute_timestamp + silence_duration);

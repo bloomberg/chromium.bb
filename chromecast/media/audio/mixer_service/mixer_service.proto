@@ -118,8 +118,8 @@ message LoopbackDataRequest {}
 message RedirectionRequest {
   optional int32 order = 1;
   optional int32 num_channels = 2;
-  optional bool apply_volume = 4;
-  optional int64 extra_delay_microseconds = 5;
+  optional bool apply_volume = 3;
+  optional int64 extra_delay_microseconds = 4;
 }
 
 // Sets the patterns to determine which audio output streams should be
