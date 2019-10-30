@@ -279,6 +279,8 @@ api::autotest_private::AppType GetAppType(apps::mojom::AppType type) {
       return api::autotest_private::AppType::APP_TYPE_WEB;
     case apps::mojom::AppType::kUnknown:
       return api::autotest_private::AppType::APP_TYPE_NONE;
+    case apps::mojom::AppType::kMacNative:
+      return api::autotest_private::AppType::APP_TYPE_MACNATIVE;
   }
   NOTREACHED();
   return api::autotest_private::AppType::APP_TYPE_NONE;

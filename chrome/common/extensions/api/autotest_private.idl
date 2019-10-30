@@ -34,7 +34,8 @@ namespace autotestPrivate {
     BuiltIn,
     Crostini,
     Extension,
-    Web
+    Web,
+    MacNative
   };
 
   // A mapping of apps::mojom::Readiness
