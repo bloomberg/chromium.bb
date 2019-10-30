@@ -704,14 +704,6 @@ IPC_MESSAGE_ROUTED1(FrameMsg_VisualStateRequest, uint64_t /* id */)
 // Expects the result to be returned via FrameHostMsg_BeforeUnload_ACK.
 IPC_MESSAGE_ROUTED1(FrameMsg_BeforeUnload, bool /* is_reload */)
 
-// Instructs the frame to swap out for a cross-site transition, including
-// running the unload event handler and creating a RenderFrameProxy with the
-// given |proxy_routing_id|. Expects a SwapOut_ACK message when finished.
-IPC_MESSAGE_ROUTED3(FrameMsg_SwapOut,
-                    int /* proxy_routing_id */,
-                    bool /* is_loading */,
-                    content::FrameReplicationState /* replication_state */)
-
 // Requests that a provisional RenderFrame swap itself into the frame tree,
 // replacing the RenderFrameProxy that it is associated with.  This is used
 // with remote-to-local frame navigations when the RenderFrameProxy corresponds
