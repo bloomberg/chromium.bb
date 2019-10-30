@@ -5757,3 +5757,6 @@ crbug.com/1009396 http/tests/devtools/coverage/multiple-instances-merge.js [ Pas
 # Temporarily disable to land source map changes that log error on failure
 crbug.com/1016772 http/tests/devtools/compiler-script-mapping.js [ Pass Failure ]
 crbug.com/1016772 http/tests/devtools/sources/debugger-ui/source-url-comment.js [ Pass Failure ]
+
+# Temporarily disabled for landing initiator chain changes in DevTools
+crbug.com/842488 http/tests/devtools/network/network-initiator-chain.js [ Pass Failure ]
