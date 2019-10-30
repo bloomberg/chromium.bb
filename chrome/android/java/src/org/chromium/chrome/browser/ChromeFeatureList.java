@@ -367,6 +367,8 @@ public abstract class ChromeFeatureList {
     public static final String WEB_PAYMENTS_SINGLE_APP_UI_SKIP = "WebPaymentsSingleAppUiSkip";
     public static final String SERVICE_MANAGER_FOR_BACKGROUND_PREFETCH =
             "ServiceManagerForBackgroundPrefetch";
+    public static final String SPLIT_CACHE_BY_NETWORK_ISOLATION_KEY =
+            "SplitCacheByNetworkIsolationKey";
 
     @NativeMethods
     interface Natives {

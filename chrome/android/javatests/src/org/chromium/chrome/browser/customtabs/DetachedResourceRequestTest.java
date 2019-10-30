@@ -39,6 +39,7 @@ import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.safe_browsing.SafeBrowsingApiBridge;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
@@ -313,8 +314,20 @@ public class DetachedResourceRequestTest {
      */
     @Test
     @SmallTest
+    @DisableFeatures(ChromeFeatureList.SPLIT_CACHE_BY_NETWORK_ISOLATION_KEY)
     public void testSafeBrowsingMainResource() throws Exception {
-        testSafeBrowsingMainResource(true);
+        testSafeBrowsingMainResource(true /* afterNative */, false /* splitCacheEnabled */);
+    }
+
+    /**
+     * Tests that non-cached detached resource requests that are forbidden by SafeBrowsing don't end
+     * up in the content area, for a main resource.
+     */
+    @Test
+    @SmallTest
+    @EnableFeatures(ChromeFeatureList.SPLIT_CACHE_BY_NETWORK_ISOLATION_KEY)
+    public void testSafeBrowsingMainResourceWithSplitCache() throws Exception {
+        testSafeBrowsingMainResource(true /* afterNative */, true /* splitCacheEnabled */);
     }
 
     /**
@@ -333,8 +346,9 @@ public class DetachedResourceRequestTest {
      */
     @Test
     @SmallTest
+    @DisableFeatures(ChromeFeatureList.SPLIT_CACHE_BY_NETWORK_ISOLATION_KEY)
     public void testSafeBrowsingMainResourceBeforeNative() throws Exception {
-        testSafeBrowsingMainResource(false);
+        testSafeBrowsingMainResource(false /* afterNative */, false /* splitCacheEnabled */);
     }
 
     /**
@@ -531,7 +545,8 @@ public class DetachedResourceRequestTest {
         Assert.assertEquals("\"acookie\"", content);
     }
 
-    private void testSafeBrowsingMainResource(boolean afterNative) throws Exception {
+    private void testSafeBrowsingMainResource(boolean afterNative, boolean splitCacheEnabled)
+            throws Exception {
         SafeBrowsingApiBridge.setSafeBrowsingHandlerType(
                 new MockSafeBrowsingApiHandler().getClass());
         CustomTabsSessionToken session = prepareSession();
@@ -558,9 +573,18 @@ public class DetachedResourceRequestTest {
             CriteriaHelper.pollUiThread(
                     () -> tab.getWebContents().getTitle().equals("Security error"));
 
-            // 1 read from the detached request, and 0 from the page load, as
-            // the response comes from the cache, and SafeBrowsing blocks it.
-            Assert.assertEquals(1, readFromSocketCallback.getCallCount());
+            if (splitCacheEnabled) {
+                // Note that since the SplitCacheByNetworkIsolationKey feature is
+                // enabled, the detached request and the original request both
+                // would be read from the socket as they both would have different
+                // top frame origins in the cache partitioning key: |ORIGIN| and
+                // mServer's base url, respectively.
+                Assert.assertEquals(2, readFromSocketCallback.getCallCount());
+            } else {
+                // 1 read from the detached request, and 0 from the page load, as
+                // the response comes from the cache, and SafeBrowsing blocks it.
+                Assert.assertEquals(1, readFromSocketCallback.getCallCount());
+            }
         } finally {
             MockSafeBrowsingApiHandler.clearMockResponses();
         }
