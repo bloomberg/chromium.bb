@@ -3689,6 +3689,7 @@ test("unit_tests") {
       "../browser/diagnostics/diagnostics_model_unittest.cc",
       "../browser/download/download_commands_unittest.cc",
       "../browser/download/download_shelf_unittest.cc",
+      "../browser/enterprise_reporting/browser_report_generator_unittest.cc",
       "../browser/enterprise_reporting/extension_info_unittest.cc",
       "../browser/enterprise_reporting/policy_info_unittest.cc",
       "../browser/enterprise_reporting/profile_report_generator_unittest.cc",

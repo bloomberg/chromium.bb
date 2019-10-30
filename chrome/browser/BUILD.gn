@@ -3030,6 +3030,8 @@ jumbo_static_library("browser") {
       "download/download_shelf_context_menu.h",
       "download/download_shelf_controller.cc",
       "download/download_shelf_controller.h",
+      "enterprise_reporting/browser_report_generator.cc",
+      "enterprise_reporting/browser_report_generator.h",
       "enterprise_reporting/extension_info.cc",
       "enterprise_reporting/extension_info.h",
       "enterprise_reporting/policy_info.cc",
