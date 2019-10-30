@@ -450,6 +450,11 @@ void WebViewHostImpl::enableNCHitTest(bool enabled)
     d_impl->enableNCHitTest(enabled);
 }
 
+void WebViewHostImpl::enableAltDragRubberbanding(bool enabled)
+{
+    d_impl->enableAltDragRubberbanding(enabled);
+}
+
 void WebViewHostImpl::find(int                reqId,
                            const std::string& text,
                            bool               matchCase,
