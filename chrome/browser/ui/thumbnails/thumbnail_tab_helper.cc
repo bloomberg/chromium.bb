@@ -37,15 +37,17 @@ ThumbnailTabHelper::~ThumbnailTabHelper() {
 
 void ThumbnailTabHelper::ThumbnailImageBeingObservedChanged(
     bool is_being_observed) {
-  if (is_being_observed) {
-    if (!captured_loaded_thumbnail_since_tab_hidden_)
+  if (is_being_observed_ != is_being_observed) {
+    is_being_observed_ = is_being_observed;
+    if (is_being_observed && !captured_loaded_thumbnail_since_tab_hidden_)
       StartVideoCapture();
-  } else {
-    StopVideoCapture();
   }
 }
 
 bool ThumbnailTabHelper::ShouldKeepUpdatingThumbnail() const {
+  if (!is_being_observed_)
+    return false;
+
   auto* tab_load_tracker = resource_coordinator::TabLoadTracker::Get();
   if (tab_load_tracker &&
       tab_load_tracker->GetLoadingState(web_contents()) !=
@@ -99,29 +101,19 @@ void ThumbnailTabHelper::StoreThumbnail(const SkBitmap& bitmap) {
 }
 
 void ThumbnailTabHelper::StartVideoCapture() {
-  bool was_capturing = false;
-  if (video_capturer_) {
-    // Already capturing: We're already forcing rendering. Clear the capturer.
-    was_capturing = true;
-    video_capturer_->Stop();
-    video_capturer_.reset();
-  }
+  if (video_capturer_)
+    return;
 
   // Get the WebContents' main view.
   content::RenderWidgetHostView* const source_view = GetView();
-  if (!source_view) {
-    if (was_capturing)
-      web_contents()->DecrementCapturerCount();
+  if (!source_view)
     return;
-  }
 
   // Get the source size and scale.
   const float scale_factor = source_view->GetDeviceScaleFactor();
   const gfx::Size source_size = source_view->GetViewBounds().size();
-  if (source_size.IsEmpty()) {
-    web_contents()->DecrementCapturerCount();
+  if (source_size.IsEmpty())
     return;
-  }
 
   // Figure out how large we want the capture target to be.
   last_frame_capture_info_ =
@@ -129,9 +121,7 @@ void ThumbnailTabHelper::StartVideoCapture() {
                             /* include_scrollbars_in_capture */ true);
 
   const gfx::Size& target_size = last_frame_capture_info_.target_size;
-  if (!was_capturing)
-    web_contents()->IncrementCapturerCount(target_size);
-
+  web_contents()->IncrementCapturerCount(target_size);
   constexpr int kMaxFrameRate = 5;
   video_capturer_ = source_view->CreateVideoCapturer();
   video_capturer_->SetResolutionConstraints(target_size, target_size, false);

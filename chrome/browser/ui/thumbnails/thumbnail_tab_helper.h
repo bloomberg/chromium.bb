@@ -108,6 +108,9 @@ class ThumbnailTabHelper
   // The last known visibility WebContents visibility.
   content::Visibility last_visibility_;
 
+  // Is the thumbnail being observed?
+  bool is_being_observed_ = false;
+
   // Whether a thumbnail was captured while the tab was loaded, since the tab
   // was last hidden.
   bool captured_loaded_thumbnail_since_tab_hidden_ = false;
