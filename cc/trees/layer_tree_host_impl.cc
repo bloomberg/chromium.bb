@@ -2974,6 +2974,10 @@ void LayerTreeHostImpl::ActivateSyncTree() {
 
     active_tree_->lifecycle().AdvanceTo(LayerTreeLifecycle::kNotSyncing);
 
+    // The previous scrolling node no longer exists in the new tree.
+    if (!active_tree_->CurrentlyScrollingNode())
+      ClearCurrentlyScrollingNode();
+
     // Now that we've synced everything from the pending tree to the active
     // tree, rename the pending tree the recycle tree so we can reuse it on the
     // next sync.
