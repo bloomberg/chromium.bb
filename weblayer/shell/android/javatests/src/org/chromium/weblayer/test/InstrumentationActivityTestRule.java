@@ -131,7 +131,11 @@ public class InstrumentationActivityTestRule extends ActivityTestRule<Instrument
      * Loads the given URL in the shell.
      */
     public void navigateAndWait(String url) {
-        NavigationWaiter waiter = new NavigationWaiter(url, getActivity().getBrowserController());
+        navigateAndWait(getActivity().getBrowserController(), url);
+    }
+
+    public void navigateAndWait(BrowserController controller, String url) {
+        NavigationWaiter waiter = new NavigationWaiter(url, controller);
         waiter.navigateAndWait();
     }
 
