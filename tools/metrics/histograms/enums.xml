@@ -18601,6 +18601,7 @@ Called by update_net_error_codes.py.-->
   <int value="640" label="WebRtcLocalIpsAllowedUrls"/>
   <int value="641" label="PerAppTimeLimits"/>
   <int value="642" label="DnsOverHttpsTemplates"/>
+  <int value="643" label="GloballyScopeHTTPAuthCacheEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

@@ -1838,6 +1838,11 @@ const char kAuthAndroidNegotiateAccountType[] =
 // domain sub-content requests.
 const char kAllowCrossOriginAuthPrompt[] = "auth.allow_cross_origin_prompt";
 
+// Boolean that specifies whether cached (server) auth credentials are separated
+// by NetworkIsolationKey.
+const char kGloballyScopeHTTPAuthCacheEnabled[] =
+    "auth.globally_scoped_http_auth_cache_enabled";
+
 #if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
 // Boolean that specifies whether OK-AS-DELEGATE flag from KDC is respected
 // along with kAuthNegotiateDelegateWhitelist.
