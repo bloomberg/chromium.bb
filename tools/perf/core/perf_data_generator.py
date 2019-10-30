@@ -768,9 +768,10 @@ BUILDERS = {
     ],
     'platform': 'linux',
     'dimension': {
-      'gpu': '10de:1cb3',
-      'os': 'Ubuntu',
+      'gpu': '10de:1cb3-384.90',
+      'os': 'Ubuntu-14.04',
       'pool': 'chrome.tests.perf',
+      'synthetic_product_name': 'PowerEdge R230 (Dell Inc.)'
     },
   },
   'mac-10_13_laptop_high_end-perf': {
