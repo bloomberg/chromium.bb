@@ -20,8 +20,10 @@ import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
+import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omaha.UpdateStatusProvider.UpdateInteractionSource;
 import org.chromium.chrome.browser.omaha.UpdateStatusProvider.UpdateState;
@@ -41,12 +43,14 @@ import org.chromium.content_public.browser.UiThreadTaskTraits;
  * For manually testing this functionality, see {@link UpdateConfigs}.
  */
 public class UpdateMenuItemHelper {
+    static final String ACTION_TAKEN_ON_MENU_OPEN_HISTOGRAM =
+            "GoogleUpdate.MenuItem.ActionTakenOnMenuOpen";
     private static final String TAG = "UpdateMenuItemHelper";
 
     // UMA constants for logging whether the menu item was clicked.
-    private static final int ITEM_NOT_CLICKED = 0;
-    private static final int ITEM_CLICKED_INTENT_LAUNCHED = 1;
-    private static final int ITEM_CLICKED_INTENT_FAILED = 2;
+    static final int ITEM_NOT_CLICKED = 0;
+    static final int ITEM_CLICKED_INTENT_LAUNCHED = 1;
+    static final int ITEM_CLICKED_INTENT_FAILED = 2;
     private static final int ITEM_CLICKED_BOUNDARY = 3;
 
     // UMA constants for logging whether Chrome was updated after the menu item was clicked.
@@ -141,6 +145,12 @@ public class UpdateMenuItemHelper {
     // Whether the menu item was clicked. This is used to log the click-through rate.
     private boolean mMenuItemClicked;
 
+    /**
+     * Whether the runnable posted when the app menu is dismissed has been executed. Tracked for
+     * testing.
+     */
+    private boolean mMenuDismissedRunnableExecuted;
+
     /** @return The {@link UpdateMenuItemHelper} instance. */
     public static UpdateMenuItemHelper getInstance() {
         synchronized (UpdateMenuItemHelper.sGetInstanceLock) {
@@ -191,6 +201,7 @@ public class UpdateMenuItemHelper {
      * @param activity The current {@code Activity}.
      */
     public void onMenuItemClicked(Activity activity) {
+        mMenuItemClicked = true;
         if (mStatus == null) return;
 
         switch (mStatus.updateState) {
@@ -237,18 +248,18 @@ public class UpdateMenuItemHelper {
         handleStateChanged();
     }
 
-    /** Should be called before the AppMenu is dismissed if the update menu item was clicked. */
-    public void setMenuItemClicked() {
-        mMenuItemClicked = true;
-    }
-
     /**
-     * Called when the {@link AppMenu} is dimissed. Logs a histogram immediately if the update menu
-     * item was not clicked. If it was clicked, logging is delayed until #onMenuItemClicked().
+     * Called when the menu containing the update menu item is dismissed.
      */
     public void onMenuDismissed() {
-        if (!mMenuItemClicked) recordItemClickedHistogram(ITEM_NOT_CLICKED);
-        mMenuItemClicked = false;
+        mMenuDismissedRunnableExecuted = false;
+        // Post a task to record the item clicked histogram. Post task is used so that the runnable
+        // executes after #onMenuItemClicked is called (if it's going to be called).
+        PostTask.postTask(TaskTraits.CHOREOGRAPHER_FRAME, () -> {
+            if (!mMenuItemClicked) recordItemClickedHistogram(ITEM_NOT_CLICKED);
+            mMenuItemClicked = false;
+            mMenuDismissedRunnableExecuted = true;
+        });
     }
 
     /**
@@ -386,8 +397,8 @@ public class UpdateMenuItemHelper {
     }
 
     private void recordItemClickedHistogram(int action) {
-        RecordHistogram.recordEnumeratedHistogram("GoogleUpdate.MenuItem.ActionTakenOnMenuOpen",
-                action, ITEM_CLICKED_BOUNDARY);
+        RecordHistogram.recordEnumeratedHistogram(
+                ACTION_TAKEN_ON_MENU_OPEN_HISTOGRAM, action, ITEM_CLICKED_BOUNDARY);
     }
 
     private void recordUpdateHistogram() {
@@ -402,5 +413,8 @@ public class UpdateMenuItemHelper {
         }
     }
 
-
+    @VisibleForTesting
+    boolean getMenuDismissedRunnableExecutedForTests() {
+        return mMenuDismissedRunnableExecuted;
+    }
 }
