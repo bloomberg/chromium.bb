@@ -1637,8 +1637,7 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewAdvancedTabUi(
                   0);
     cs->AddPaddingColumn(views::GridLayout::kFixedSize,
                          provider->GetDistanceMetric(
-                             views::DISTANCE_RELATED_CONTROL_HORIZONTAL) *
-                             2);
+                             views::DISTANCE_RELATED_CONTROL_HORIZONTAL));
   }
   cs->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
                 views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0,
@@ -1656,11 +1655,7 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewAdvancedTabUi(
 
   if (!UseGoogleTranslateBranding()) {
     cs->AddPaddingColumn(views::GridLayout::kFixedSize,
-                         provider->GetDistanceMetric(
-                             views::DISTANCE_RELATED_CONTROL_HORIZONTAL));
-    cs->AddPaddingColumn(views::GridLayout::kFixedSize,
-                         provider->GetDistanceMetric(
-                             views::DISTANCE_RELATED_CONTROL_HORIZONTAL));
+                         language_icon->CalculatePreferredSize().width());
     cs->AddPaddingColumn(views::GridLayout::kFixedSize,
                          provider->GetDistanceMetric(
                              views::DISTANCE_RELATED_CONTROL_HORIZONTAL));
