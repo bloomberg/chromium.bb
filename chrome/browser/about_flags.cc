@@ -4332,12 +4332,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kTurnOffStreamingMediaCachingDescription, kOsAll,
      FEATURE_VALUE_TYPE(net::features::kTurnOffStreamingMediaCaching)},
 
-    {"enable-autofill-save-card-show-no-thanks",
-     flag_descriptions::kEnableAutofillSaveCardShowNoThanksName,
-     flag_descriptions::kEnableAutofillSaveCardShowNoThanksDescription,
-     kOsCrOS | kOsAndroid,
-     FEATURE_VALUE_TYPE(autofill::features::kAutofillSaveCardShowNoThanks)},
-
 #if defined(OS_ANDROID)
     {"password-manager-onboarding-android",
      flag_descriptions::kPasswordManagerOnboardingAndroidName,

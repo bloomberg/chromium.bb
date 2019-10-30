@@ -1000,24 +1000,6 @@
             ]
         }
     ],
-    "AutofillSaveCardShowNoThanks": [
-        {
-            "platforms": [
-                "android",
-                "android_webview",
-                "chromeos",
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_20190726",
-                    "enable_features": [
-                        "AutofillSaveCardShowNoThanks"
-                    ]
-                }
-            ]
-        }
-    ],
     "AutofillSmallFormSupport": [
         {
             "platforms": [
