@@ -428,6 +428,9 @@ typedef struct AV1EncoderConfig {
   unsigned int tier_mask;
   // min_cr / 100 is the target minimum compression ratio for each frame.
   unsigned int min_cr;
+#if CONFIG_OPTIONS_FILE
+  const cfg_options_t *encoder_cfg;
+#endif
 } AV1EncoderConfig;
 
 static INLINE int is_lossless_requested(const AV1EncoderConfig *cfg) {
