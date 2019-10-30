@@ -2997,6 +2997,29 @@
             ]
         }
     ],
+    "IncognitoDynamicQuota": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "WideRange",
+                    "params": {
+                        "RatioLowerBound": "0.1",
+                        "RatioUpperBound": "0.2"
+                    },
+                    "enable_features": [
+                        "IncognitoDynamicQuota"
+                    ]
+                }
+            ]
+        }
+    ],
     "IncognitoWindowInProductHelp": [
         {
             "platforms": [
