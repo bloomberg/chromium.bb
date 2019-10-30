@@ -414,6 +414,7 @@
     "col-resize",
     "row-resize",
     "text",
+    "text-with-tab",
     "wait",
     "help",
     "all-scroll",

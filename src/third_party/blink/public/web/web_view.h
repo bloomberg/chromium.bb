@@ -158,6 +158,63 @@ class WebView {
   // for whether window.close() may be called.
   virtual void SetOpenedByDOM() = 0;
 
+
+
+  // Rubberbanding -------------------------------------------------------
+  // Controls whether rubberbanding is enabled via Alt+Mousedrag.  Note that
+  // this just determines whether the WebView's mouse handler will perform
+  // rubberbanding when the user does Alt+Mousedrag.  This is the simplest
+  // way to support rubberbanding in the WebView.  However, if the client
+  // wants to use its own gesture for rubberbanding, then the client can
+  // instead use the lower-level rubberband primitives described below.
+  virtual bool IsAltDragRubberbandingEnabled() const = 0;
+  virtual void EnableAltDragRubberbanding(bool) = 0;
+  // Returns true if a rubberband is in progress.
+  virtual bool IsRubberbanding() const = 0;
+  // Performs some checks to see if rubberbanding can be performed, and
+  // returns true if successful.  Part of this process is dispatching a
+  // "rubberbandstarting" event from the main document.  If the JavaScript
+  // handler calls 'preventDefault' on this event, then this method will
+  // return false.  The behavior is undefined if 'IsRubberbanding()' returns
+  // true.
+  virtual bool PreStartRubberbanding() = 0;
+  // Start rubberbanding.  This method initializes internal data structures
+  // with details about the layout of text that is currently in view.  The
+  // behavior is undefined if 'IsRubberbanding()' returns true or if
+  // 'PreStartRubberbanding()' returns false.  Note that after this method
+  // returns, 'IsRubberbanding()' will return true.
+  virtual void StartRubberbanding() = 0;
+  // Expand the specified rectangle (in WebView client coordinates) to snap
+  // at lines and characters, using the information that was gathered by
+  // 'StartRubberbanding()'.  The behavior is undefined if
+  // 'IsRubberbanding()' returns false.
+  virtual WebRect ExpandRubberbandRect(const WebRect&) = 0;
+  // Finish rubberbanding and return the text contained in the specified
+  // rectangle (in WebView client coordinates).  Also, dispatch a
+  // "rubberbandfinished" event from the main document.  The behavior is
+  // undefined if 'IsRubberbanding()' returns false.  Note that after this
+  // method returns, 'IsRubberbanding()' will return false.
+  virtual WebString FinishRubberbanding(const WebRect&) = 0;
+  // Abort rubberbanding.  Also, dispatch a "rubberbandaborted" event from
+  // the main document.  The behavior is undefined if 'IsRubberbanding()'
+  // returns false.  Note that after this method returns, 'IsRubberbanding()'
+  // will return false.
+  virtual void AbortRubberbanding() = 0;
+  // Get the text in the specified rectangle (in WebView client coordinates),
+  // without actually starting and finishing a rubberband.  The behavior is
+  // undefined if 'IsRubberbanding()' returns true.  Note that after this
+  // method returns, 'IsRubberbanding()' will remain false.  Also note that
+  // the rubberband events will not be dispatched.
+  virtual WebString GetTextInRubberband(const WebRect&) = 0;
+  // Begin rubberbanding, regardless of the state of the mouse/alt key. This
+  // method will internally invoke 'preStartRubberbanding' and, on success,
+  // 'startRubberBanding'. Rubberbanding will begin at the specified 'x' and
+  // 'y' in WebView client coordinates. Returns 'true' if rubberbanding began
+  // or was already in progress, and 'false' otherwise. The behavior is
+  // undefined if the mouse is not currently down when this function is
+  // called.
+  virtual bool ForceStartRubberbanding(int x, int y) = 0;
+
   // Frames --------------------------------------------------------------
 
   virtual WebFrame* MainFrame() = 0;
