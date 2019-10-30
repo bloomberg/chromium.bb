@@ -2098,13 +2098,11 @@ int AXPlatformNodeAuraLinux::GetGTypeInterfaceMask() {
   // for each object.
   interface_mask |= 1 << ATK_ACTION_INTERFACE;
 
-  // TODO(accessibility): We should only expose this for some elements, but
-  // it might be better to do this after exposing the hypertext interface
-  // as well.
-  interface_mask |= 1 << ATK_TEXT_INTERFACE;
-
-  if (!IsPlainTextField())
-    interface_mask |= 1 << ATK_HYPERTEXT_INTERFACE;
+  if (!ui::IsImage(GetData().role)) {
+    interface_mask |= 1 << ATK_TEXT_INTERFACE;
+    if (!IsPlainTextField())
+      interface_mask |= 1 << ATK_HYPERTEXT_INTERFACE;
+  }
 
   // Value Interface
   AtkRole role = GetAtkRole();
@@ -3644,7 +3642,6 @@ void AXPlatformNodeAuraLinux::UpdateHypertext() {
   offset_to_text_attributes_.clear();
 
   AtkObject* atk_object = GetOrCreateAtkObject();
-  DCHECK(ATK_IS_TEXT(atk_object));
 
   if (!EmitsAtkTextEvents())
     return;
