@@ -6,23 +6,19 @@ package org.chromium.weblayer.test;
 
 import android.support.test.filters.SmallTest;
 import android.view.View;
-import android.widget.FrameLayout;
 
+import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
-import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.weblayer.BrowserController;
-import org.chromium.weblayer.BrowserFragment;
-import org.chromium.weblayer.BrowserFragmentController;
-import org.chromium.weblayer.WebLayer;
 import org.chromium.weblayer.shell.InstrumentationActivity;
 
 /**
@@ -36,43 +32,18 @@ public class TopControlsTest {
 
     private int mTopControlsHeight;
     private int mInitialVisiblePageHeight;
-    private BrowserController mBrowserController;
-    private BrowserFragmentController mBrowserFragmentController;
 
     /**
      * Returns the visible height of the page as determined by JS. The returned value is in CSS
      * pixels (which are most likely not the same as device pixels).
      */
     private int getVisiblePageHeight() {
-        return mActivityTestRule.executeScriptAndExtractInt("window.innerHeight");
-    }
-
-    @Test
-    @SmallTest
-    public void testZeroHeight() throws Exception {
-        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(null);
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            BrowserFragment fragment = WebLayer.createBrowserFragment(null);
-            activity.getSupportFragmentManager()
-                    .beginTransaction()
-                    .add(android.R.id.content, fragment)
-                    .commitNow();
-            fragment.getController().setTopView(new FrameLayout(activity));
-            mBrowserFragmentController = fragment.getController();
-            mBrowserController = mBrowserFragmentController.getBrowserController();
-        });
-
-        mActivityTestRule.navigateAndWait(
-                mBrowserController, UrlUtils.encodeHtmlDataUri("<html></html>"));
-
-        // Calling setSupportsEmbedding() makes sure onTopControlsChanged() will get called, which
-        // should not crash.
-        CallbackHelper helper = new CallbackHelper();
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            mBrowserFragmentController.setSupportsEmbedding(true).addCallback(
-                    (Boolean result) -> { helper.notifyCalled(); });
-        });
-        helper.waitForCallback(0);
+        try {
+            JSONObject result = mActivityTestRule.executeScriptSync("window.innerHeight");
+            return result.getInt(BrowserController.SCRIPT_RESULT_KEY);
+        } catch (Exception e) {
+            return -1;
+        }
     }
 
     @Test
