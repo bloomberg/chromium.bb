@@ -4562,10 +4562,6 @@ crbug.com/793771 [ Mac Win ] virtual/audio-service/media/controls/scrubbing.html
 # Different paths may have different anti-aliasing pixels 2018-02-21
 skbug.com/7641 external/wpt/css/css-paint-api/paint2d-paths.https.html [ Failure Pass ]
 
-# Sheriff failures 2018-01-02
-crbug.com/798592 [ Win7 ] http/tests/devtools/tracing/timeline-style/timeline-recalculate-styles.js [ Pass Failure ]
-crbug.com/798592 [ Win7 ] virtual/threaded/http/tests/devtools/tracing/timeline-style/timeline-recalculate-styles.js [ Pass Failure ]
-
 # Sheriff failures 2018-01-25
 # Flaking on Linux Tests, WebKit Linux Trusty (also ASAN, Leak)
 crbug.com/805794 [ Linux ] virtual/android/rootscroller/nested-rootscroller-browser-controls-bounds-shown.html [ Pass Failure ]
@@ -5078,7 +5074,9 @@ crbug.com/922951 virtual/threaded/http/tests/devtools/tracing/timeline-layout/ti
 crbug.com/922951 virtual/threaded/http/tests/devtools/tracing/timeline-misc/timeline-record-reload.js [ Skip ]
 crbug.com/922951 virtual/threaded/http/tests/devtools/tracing/timeline-paint/timeline-paint-image.js [ Skip ]
 
-
+# Flaky devtools test for recalculating styles.
+crbug.com/1018177 http/tests/devtools/tracing/timeline-style/timeline-recalculate-styles.js [ Failure Pass ]
+crbug.com/1018177 virtual/threaded/http/tests/devtools/tracing/timeline-style/timeline-recalculate-styles.js [ Pass Failure ]
 
 # These were marked as skipped in 922951. Flakiness no longer produces localy.
 # Marking them as Failure/Pass to collect data on bots. Once confirmed they are
@@ -5624,7 +5622,6 @@ crbug.com/1001936 external/wpt/css/css-masking/clip-path/clip-path-inline-001.ht
 
 # Sheriff 2019-09-10
 crbug.com/1002527 [ Debug ] fast/text/large-text-composed-char.html [ Pass Crash ]
-crbug.com/1002686 [ Mac10.13 ] virtual/threaded/http/tests/devtools/tracing/timeline-style/timeline-recalculate-styles.js [ Failure ]
 
 # Tests fail because of scrollbar-width property
 crbug.com/1003055 external/wpt/css/css-scroll-snap/scroll-target-align-001.html [ Failure ]
