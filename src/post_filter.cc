@@ -81,14 +81,37 @@ void ExtendFrame(uint8_t* const frame_start, const int width, const int height,
     src += stride;
     dst += stride;
   }
-  // Copy to bottom borders.
-  assert(dst == start - left + height * stride);
+  // Copy to bottom borders. For performance we copy |stride| pixels
+  // (including some padding pixels potentially) in each row, ending at the
+  // bottom right border pixel. In the diagram the asterisks indicate padding
+  // pixels.
+  //
+  // |<--- stride --->|
+  // **YYY|YZabcdef|fff <-- Copy from the extended last row.
+  // -----+--------+---
+  // **YYY|YZabcdef|fff
+  // **YYY|YZabcdef|fff
+  // **YYY|YZabcdef|fff <-- bottom right border pixel
+  assert(src == start + height * stride);
+  dst = const_cast<Pixel*>(src) + width + right - stride;
   src = dst - stride;
   for (int y = 0; y < bottom; ++y) {
     memcpy(dst, src, sizeof(Pixel) * stride);
     dst += stride;
   }
-  // Copy to top borders.
+  // Copy to top borders. For performance we copy |stride| pixels (including
+  // some padding pixels potentially) in each row, starting from the top left
+  // border pixel. In the diagram the asterisks indicate padding pixels.
+  //
+  // +-- top left border pixel
+  // |
+  // v
+  // AAA|ABCDEFGH|HHH**
+  // AAA|ABCDEFGH|HHH**
+  // AAA|ABCDEFGH|HHH**
+  // ---+--------+-----
+  // AAA|ABCDEFGH|HHH** <-- Copy from the extended first row.
+  // |<--- stride --->|
   src = start - left;
   dst = start - left - top * stride;
   for (int y = 0; y < top; ++y) {
