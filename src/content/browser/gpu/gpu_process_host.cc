@@ -1201,6 +1201,7 @@ bool GpuProcessHost::LaunchGpuProcess() {
     delegate->DisableAppContainer();
 #endif  // defined(OS_WIN)
 
+  LOG(INFO) << "Launch GPU process with commandline = " << cmd_line->GetCommandLineString();
   // Do not call process_->Launch() here.
   // AppendExtraCommandLineSwitches will be called again in process_->Launch(),
   // Call LaunchWithoutExtraCommandLineSwitches() so the command line switches
