@@ -207,6 +207,10 @@ class WebView
     virtual void clearTooltip() = 0;
         // TODO(imran)
 
+    virtual void rootWindowCompositionChanged() = 0;
+        // Notify the webview that desktop composition has been enabled or
+        // disabled.
+
     virtual v8::MaybeLocal<v8::Value> callFunction(v8::Local<v8::Function> func,
                                                    v8::Local<v8::Value> recv,
                                                    int argc,
