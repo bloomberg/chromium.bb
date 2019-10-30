@@ -814,10 +814,12 @@ const FeatureEntry::FeatureVariation kOmniboxDocumentProviderVariations[] = {
 
 #ifdef OS_ANDROID
 const FeatureEntry::FeatureParam kOmniboxNTPZPSLocal[] = {
+    {"ZeroSuggestVariant:1:*", "Local"},
     {"ZeroSuggestVariant:7:*", "Local"},
     {"ZeroSuggestVariant:8:*", "Local"}};
 
 const FeatureEntry::FeatureParam kOmniboxNTPZPSRemote[] = {
+    {"ZeroSuggestVariant:1:*", "RemoteNoUrl"},
     {"ZeroSuggestVariant:7:*", "RemoteNoUrl"},
     {"ZeroSuggestVariant:8:*", "RemoteNoUrl"}};
 
