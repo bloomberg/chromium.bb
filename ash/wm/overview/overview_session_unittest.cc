@@ -5331,68 +5331,26 @@ TEST_P(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
   UpdateDisplay("800x600,800x600");
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   ASSERT_EQ(2u, root_windows.size());
-  // This unit test assumes a shelf height of 56, as currently hard coded in
-  // |AppListTestViewDelegate::GetShelfHeight|. There is a TODO to change that
-  // value to 48, and the code below will just have to be updated then. The
-  // |EXPECT_EQ| calls produce better failure output if they compare string
-  // representations of bounds rects rather than individual components of
-  // origins and sizes. Those string representations of bounds rects are most
-  // readable when hard-coded.
-  if (chromeos::switches::ShouldShowShelfHotseat()) {
-    ASSERT_EQ(
-        "0,0 800x552",
-        screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
-            root_windows[0])
-            .ToString());
-    ASSERT_EQ(
-        "800,0 800x552",
-        screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
-            root_windows[1])
-            .ToString());
-
-    EXPECT_EQ("0,0 400x552",
-              SplitViewController::Get(root_windows[0])
-                  ->GetSnappedWindowBoundsInScreen(SplitViewController::LEFT)
-                  .ToString());
-    EXPECT_EQ("400,0 400x552",
-              SplitViewController::Get(root_windows[0])
-                  ->GetSnappedWindowBoundsInScreen(SplitViewController::RIGHT)
-                  .ToString());
-    EXPECT_EQ("800,0 400x552",
-              SplitViewController::Get(root_windows[1])
-                  ->GetSnappedWindowBoundsInScreen(SplitViewController::LEFT)
-                  .ToString());
-    EXPECT_EQ("1200,0 400x552",
-              SplitViewController::Get(root_windows[1])
-                  ->GetSnappedWindowBoundsInScreen(SplitViewController::RIGHT)
-                  .ToString());
-    return;
-  }
-  ASSERT_EQ("0,0 800x544",
+  const int height = 600 - ShelfConfig::Get()->shelf_size();
+  ASSERT_EQ(gfx::Rect(0, 0, 800, height),
             screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
-                root_windows[0])
-                .ToString());
-  ASSERT_EQ("800,0 800x544",
+                root_windows[0]));
+  ASSERT_EQ(gfx::Rect(800, 0, 800, height),
             screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
-                root_windows[1])
-                .ToString());
+                root_windows[1]));
 
-  EXPECT_EQ("0,0 400x544",
+  EXPECT_EQ(gfx::Rect(0, 0, 400, height),
             SplitViewController::Get(root_windows[0])
-                ->GetSnappedWindowBoundsInScreen(SplitViewController::LEFT)
-                .ToString());
-  EXPECT_EQ("400,0 400x544",
+                ->GetSnappedWindowBoundsInScreen(SplitViewController::LEFT));
+  EXPECT_EQ(gfx::Rect(400, 0, 400, height),
             SplitViewController::Get(root_windows[0])
-                ->GetSnappedWindowBoundsInScreen(SplitViewController::RIGHT)
-                .ToString());
-  EXPECT_EQ("800,0 400x544",
+                ->GetSnappedWindowBoundsInScreen(SplitViewController::RIGHT));
+  EXPECT_EQ(gfx::Rect(800, 0, 400, height),
             SplitViewController::Get(root_windows[1])
-                ->GetSnappedWindowBoundsInScreen(SplitViewController::LEFT)
-                .ToString());
-  EXPECT_EQ("1200,0 400x544",
+                ->GetSnappedWindowBoundsInScreen(SplitViewController::LEFT));
+  EXPECT_EQ(gfx::Rect(1200, 0, 400, height),
             SplitViewController::Get(root_windows[1])
-                ->GetSnappedWindowBoundsInScreen(SplitViewController::RIGHT)
-                .ToString());
+                ->GetSnappedWindowBoundsInScreen(SplitViewController::RIGHT));
 }
 
 // Test that if clamshell split view is started by snapping a window that is the
