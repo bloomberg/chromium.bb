@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/network_hints/browser/network_hints_message_filter.h"
+#include "components/network_hints/browser/simple_network_hints_handler_impl.h"
 
 #include <memory>
 #include <string>
@@ -10,13 +10,12 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "components/network_hints/common/network_hints_common.h"
-#include "components/network_hints/common/network_hints_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "ipc/ipc_message_macros.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/base/address_list.h"
 #include "net/base/net_errors.h"
 #include "net/log/net_log_with_source.h"
@@ -26,7 +25,6 @@
 #include "url/gurl.h"
 
 namespace network_hints {
-
 namespace {
 
 const int kDefaultPort = 80;
@@ -44,8 +42,6 @@ class DnsLookupRequest : public network::ResolveHostClientBase {
   // net:ERR_IO_PENDING ==> Network will callback later with result.
   // anything else ==> Host was not found synchronously.
   void Start(std::unique_ptr<DnsLookupRequest> request) {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
     request_ = std::move(request);
 
     content::RenderProcessHost* render_process_host =
@@ -92,39 +88,35 @@ class DnsLookupRequest : public network::ResolveHostClientBase {
 
 }  // namespace
 
-NetworkHintsMessageFilter::NetworkHintsMessageFilter(int render_process_id)
-    : content::BrowserMessageFilter(NetworkHintsMsgStart),
-      render_process_id_(render_process_id) {}
+SimpleNetworkHintsHandlerImpl::SimpleNetworkHintsHandlerImpl(
+    int render_process_id)
+    : render_process_id_(render_process_id) {}
 
-NetworkHintsMessageFilter::~NetworkHintsMessageFilter() {
+SimpleNetworkHintsHandlerImpl::~SimpleNetworkHintsHandlerImpl() = default;
+
+// static
+void SimpleNetworkHintsHandlerImpl::Create(
+    int render_process_id,
+    mojo::PendingReceiver<mojom::NetworkHintsHandler> receiver) {
+  mojo::MakeSelfOwnedReceiver(
+      base::WrapUnique(new SimpleNetworkHintsHandlerImpl(render_process_id)),
+      std::move(receiver));
 }
 
-bool NetworkHintsMessageFilter::OnMessageReceived(const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(NetworkHintsMessageFilter, message)
-    IPC_MESSAGE_HANDLER(NetworkHintsMsg_DNSPrefetch, OnDnsPrefetch)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
-}
-
-void NetworkHintsMessageFilter::OverrideThreadForMessage(
-    const IPC::Message& message,
-    content::BrowserThread::ID* thread) {
-  if (message.type() == NetworkHintsMsg_DNSPrefetch::ID)
-    *thread = content::BrowserThread::UI;
-}
-
-void NetworkHintsMessageFilter::OnDnsPrefetch(
-    const LookupRequest& lookup_request) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  for (const std::string& hostname : lookup_request.hostname_list) {
+void SimpleNetworkHintsHandlerImpl::PrefetchDNS(
+    const std::vector<std::string>& names) {
+  for (const std::string& hostname : names) {
     std::unique_ptr<DnsLookupRequest> request =
         std::make_unique<DnsLookupRequest>(render_process_id_, hostname);
     DnsLookupRequest* request_ptr = request.get();
     request_ptr->Start(std::move(request));
   }
+}
+
+void SimpleNetworkHintsHandlerImpl::Preconnect(int render_frame_id,
+                                               const GURL& url,
+                                               bool allow_credentials) {
+  // Not implemented.
 }
 
 }  // namespace network_hints
