@@ -1280,9 +1280,6 @@ extern const char kUnsafeWebGPUDescription[];
 extern const char kUiPartialSwapName[];
 extern const char kUiPartialSwapDescription[];
 
-extern const char kUserActivationV2Name[];
-extern const char kUserActivationV2Description[];
-
 extern const char kUseSearchClickForRightClickName[];
 extern const char kUseSearchClickForRightClickDescription[];
 

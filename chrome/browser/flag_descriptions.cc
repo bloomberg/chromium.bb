@@ -2186,11 +2186,6 @@ const char kUnsafeWebGPUDescription[] =
 const char kUiPartialSwapName[] = "Partial swap";
 const char kUiPartialSwapDescription[] = "Sets partial swap behavior.";
 
-const char kUserActivationV2Name[] = "User Activation v2";
-const char kUserActivationV2Description[] =
-    "Enable simple user activation for APIs that are otherwise controlled by "
-    "user gesture tokens.";
-
 const char kUsernameFirstFlowName[] = "Username first flow";
 const char kUsernameFirstFlowDescription[] =
     "Support of username saving and filling on username first flow i.e. login "

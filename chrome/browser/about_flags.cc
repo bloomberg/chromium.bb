@@ -2397,11 +2397,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(ntp_snippets::kArticleSuggestionsFeature,
                                     kRemoteSuggestionsFeatureVariations,
                                     "NTPArticleSuggestions")},
-#endif  // OS_ANDROID
-    {"user-activation-v2", flag_descriptions::kUserActivationV2Name,
-     flag_descriptions::kUserActivationV2Description, kOsAll,
-     FEATURE_VALUE_TYPE(features::kUserActivationV2)},
-#if defined(OS_ANDROID)
     {"offlining-recent-pages", flag_descriptions::kOffliningRecentPagesName,
      flag_descriptions::kOffliningRecentPagesDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(offline_pages::kOffliningRecentPagesFeature)},
