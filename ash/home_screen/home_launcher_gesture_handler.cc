@@ -9,7 +9,6 @@
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/home_screen/drag_window_from_shelf_controller.h"
-#include "ash/home_screen/home_launcher_gesture_handler_observer.h"
 #include "ash/home_screen/home_screen_controller.h"
 #include "ash/home_screen/swipe_home_to_overview_controller.h"
 #include "ash/root_window_controller.h"
@@ -398,28 +397,17 @@ bool HomeLauncherGestureHandler::IsDragInProgress() const {
   return mode_ != Mode::kNone;
 }
 
-void HomeLauncherGestureHandler::AddObserver(
-    HomeLauncherGestureHandlerObserver* observer) {
-  observers_.AddObserver(observer);
-}
-
-void HomeLauncherGestureHandler::RemoveObserver(
-    HomeLauncherGestureHandlerObserver* observer) {
-  observers_.RemoveObserver(observer);
-}
-
 void HomeLauncherGestureHandler::NotifyHomeLauncherTargetPositionChanged(
     bool showing,
     int64_t display_id) {
-  for (auto& observer : observers_)
-    observer.OnHomeLauncherTargetPositionChanged(showing, display_id);
+  GetHomeScreenDelegate()->OnHomeLauncherTargetPositionChanged(showing,
+                                                               display_id);
 }
 
 void HomeLauncherGestureHandler::NotifyHomeLauncherAnimationComplete(
     bool shown,
     int64_t display_id) {
-  for (auto& observer : observers_)
-    observer.OnHomeLauncherAnimationComplete(shown, display_id);
+  GetHomeScreenDelegate()->OnHomeLauncherAnimationComplete(shown, display_id);
 }
 
 void HomeLauncherGestureHandler::OnWindowDestroying(aura::Window* window) {
