@@ -121,7 +121,7 @@ class GIT(object):
   def CaptureStatus(files, cwd, upstream_branch):
     """Returns git status.
 
-    @files can be a string (one file) or a list of files.
+    @files is a list of files.
 
     Returns an array of (status, file) tuples."""
     if upstream_branch is None:
@@ -130,11 +130,7 @@ class GIT(object):
         raise gclient_utils.Error('Cannot determine upstream branch')
     command = ['-c', 'core.quotePath=false', 'diff',
                '--name-status', '--no-renames', '-r', '%s...' % upstream_branch]
-    if not files:
-      pass
-    elif isinstance(files, basestring):
-      command.append(files)
-    else:
+    if files:
       command.extend(files)
     status = GIT.Capture(command, cwd)
     results = []
