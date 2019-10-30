@@ -47,6 +47,7 @@ WNDPROC g_defaultEditWndProc = 0;
 blpwtk2::Toolkit* g_toolkit = 0;
 blpwtk2::Profile* g_profile = 0;
 std::set<std::string> g_languages;
+std::vector<std::string> g_sideLoadedFonts;
 std::string g_url;
 std::string g_dictDir;
 bool g_in_process_renderer = true;
@@ -661,6 +662,11 @@ HANDLE spawnProcess()
         cmdline.append(" --custom-tooltip");
     }
 
+    for (size_t i = 0; i < g_sideLoadedFonts.size(); ++i) {
+        cmdline.append(" --sideload-font=");
+        cmdline.append(g_sideLoadedFonts[i]);
+    }
+
     // It seems like CreateProcess wants a char* instead of
     // a const char*.  So we need to make a copy to a modifiable
     // buffer.
@@ -794,6 +800,11 @@ int main(int, const char**)
                 sprintf_s(buf, sizeof(buf), "%S", argv[i]+15);
                 fileMapping = buf;
             }
+            else if (0 == wcsncmp(L"--sideload-font=", argv[i], 16)) {
+                char buf[1024];
+                sprintf_s(buf, sizeof(buf), "%S", argv[i] + 16);
+                g_sideLoadedFonts.push_back(buf);
+            }
             else if (0 == wcsncmp(L"--dict-dir=", argv[i], 11)) {
                 char buf[1024];
                 sprintf_s(buf, sizeof(buf), "%S", argv[i] + 11);
@@ -875,6 +886,10 @@ int main(int, const char**)
     else {
         toolkitParams.setThreadMode(blpwtk2::ThreadMode::ORIGINAL);
         toolkitParams.disableInProcessRenderer();
+    }
+
+    for (size_t i = 0; i < g_sideLoadedFonts.size(); ++i) {
+        toolkitParams.appendSideLoadedFontInProcess(g_sideLoadedFonts[i]);
     }
 
     toolkitParams.setHeaderFooterHTML(getHeaderFooterHTMLContent());
