@@ -4,9 +4,9 @@
 
 syntax = "proto3";
 
-import "click_to_call_message.proto";
-import "shared_clipboard_message.proto";
-import "sms_fetch_message.proto";
+import "sharing_click_to_call_message.proto";
+import "sharing_shared_clipboard_message.proto";
+import "sharing_sms_fetch_message.proto";
 
 package chrome_browser_sharing;
 
