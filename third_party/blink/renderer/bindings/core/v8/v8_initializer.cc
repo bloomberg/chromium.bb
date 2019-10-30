@@ -384,59 +384,6 @@ static bool ContentSecurityPolicyCodeGenerationCheck(
   return false;
 }
 
-static v8::MaybeLocal<v8::String> TrustedTypesCodeGenerationCheck(
-    v8::Local<v8::Context> context,
-    v8::Local<v8::Value> source) {
-  ExceptionState exception_state(context->GetIsolate(),
-                                 ExceptionState::kExecutionContext, "eval", "");
-  StringOrTrustedScript string_or_trusted_script;
-  V8StringOrTrustedScript::ToImpl(
-      context->GetIsolate(), source, string_or_trusted_script,
-      UnionTypeConversionMode::kNotNullable, exception_state);
-
-  String modified_source = GetStringFromTrustedScript(
-      string_or_trusted_script, ToExecutionContext(context), exception_state);
-  if (exception_state.HadException()) {
-    exception_state.ClearException();
-    return v8::MaybeLocal<v8::String>();
-  }
-
-  return V8String(context->GetIsolate(), modified_source);
-}
-
-static v8::MaybeLocal<v8::String> CodeGenerationCheckCallbackInMainThread(
-    v8::Local<v8::Context> context,
-    v8::Local<v8::Value> source) {
-  // Without trusted types, we decide based on CSP.
-  if (!RequireTrustedTypesCheck(ToExecutionContext(context))) {
-    bool allowed_by_csp =
-        source->IsString() && ContentSecurityPolicyCodeGenerationCheck(
-                                  context, source.As<v8::String>());
-    return allowed_by_csp ? source.As<v8::String>()
-                          : v8::MaybeLocal<v8::String>();
-  }
-
-  // With Trusted Types, we pass when both CSP and TT allow the value.
-  // We will always run the TT check because of reporting, and because a
-  // default policy might want to modify the string.
-  v8::Local<v8::String> trusted_types_string;
-  if (TrustedTypesCodeGenerationCheck(context, source)
-          .ToLocal(&trusted_types_string) &&
-      ContentSecurityPolicyCodeGenerationCheck(context, trusted_types_string)) {
-    return trusted_types_string;
-  }
-
-  // TODO(ssanfilippo) returning an empty local covers two different messages:
-  //
-  //  * The source was not a string or TrustedScript.
-  //  * TT or CSP has rejected this source.
-  //
-  // We need to patch the V8 callback to differentiate these two. For now,
-  // rejected TSs are passed through. CSP reports are still sent as side-effect.
-  // See crbug.com/992424.
-  return v8::MaybeLocal<v8::String>();
-}
-
 static bool WasmCodeGenerationCheckCallbackInMainThread(
     v8::Local<v8::Context> context,
     v8::Local<v8::String> source) {
@@ -694,8 +641,8 @@ void V8Initializer::InitializeMainThread(const intptr_t* reference_table) {
           v8::Isolate::kMessageLog);
   isolate->SetFailedAccessCheckCallbackFunction(
       FailedAccessCheckCallbackInMainThread);
-  isolate->SetModifyCodeGenerationFromStringsCallback(
-      CodeGenerationCheckCallbackInMainThread);
+  isolate->SetAllowCodeGenerationFromStringsCallback(
+      ContentSecurityPolicyCodeGenerationCheck);
   isolate->SetAllowWasmCodeGenerationCallback(
       WasmCodeGenerationCheckCallbackInMainThread);
   if (RuntimeEnabledFeatures::V8IdleTasksEnabled()) {
