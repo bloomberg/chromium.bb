@@ -562,9 +562,7 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
                update_metadata=False,
                record_packages_under_test=True,
                **kwargs):
-    if afdo_use:
-      suffix = self.UpdateSuffix(constants.USE_AFDO_USE, suffix)
-    else:
+    if not afdo_use:
       suffix = self.UpdateSuffix('-' + constants.USE_AFDO_USE, suffix)
     super(BuildPackagesStage, self).__init__(
         builder_run, buildstore, board, suffix=suffix, **kwargs)
@@ -574,9 +572,7 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
     assert not afdo_generate_min or not afdo_use
 
     useflags = self._portage_extra_env.get('USE', '').split()
-    if afdo_use:
-      useflags.append(constants.USE_AFDO_USE)
-    else:
+    if not afdo_use:
       useflags.append('-' + constants.USE_AFDO_USE)
 
     if useflags:
