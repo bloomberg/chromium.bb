@@ -792,24 +792,6 @@ def AddReviewers(host, change, reviewers=None, ccs=None, notify=True,
                  ccs=(ccs-errored), notify=notify, accept_statuses=[200])
 
 
-def RemoveReviewers(host, change, remove=None):
-  """Removes reviewers from a change."""
-  if not remove:
-    return
-  if isinstance(remove, basestring):
-    remove = (remove,)
-  for r in remove:
-    path = 'changes/%s/reviewers/%s' % (change, r)
-    conn = CreateHttpConn(host, path, reqtype='DELETE')
-    try:
-      ReadHttpResponse(conn, accept_statuses=[204])
-    except GerritError as e:
-      raise GerritError(
-          e.http_status,
-          'Received unexpected http status while deleting reviewer "%s" '
-          'from change %s' % (r, change))
-
-
 def SetReview(host, change, msg=None, labels=None, notify=None, ready=None):
   """Sets labels and/or adds a message to a code review."""
   if not msg and not labels:
