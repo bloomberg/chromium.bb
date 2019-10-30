@@ -160,6 +160,17 @@
     ]
   },
 
+  "DnsOverHttpsTemplates": {
+    "os": [ "win", "linux", "mac", "chromeos", "android" ],
+    "test_policy": { "DnsOverHttpsMode":  "automatic", "DnsOverHttpsTemplates": "https://cloudflare-dns.com/dns-query https://dns.quad9.net/dns-query{?dns}" },
+    "pref_mappings": [
+      {
+        "pref": "dns_over_https.templates",
+        "local_state": true
+      }
+    ]
+  },
+
   "NetworkPredictionOptions": {
     "os": ["win", "linux", "mac", "chromeos"],
     "can_be_recommended": true,

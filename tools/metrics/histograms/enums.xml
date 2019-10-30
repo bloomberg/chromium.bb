@@ -18544,8 +18544,8 @@ Called by update_net_error_codes.py.-->
   <int value="587" label="DelayDeliveryUntilVerdict"/>
   <int value="588" label="AllowPasswordProtectedFiles"/>
   <int value="589" label="CheckContentCompliance"/>
-  <int value="590" label="DomainsToCheckComplianceOfDownloadedContent"/>
-  <int value="591" label="DomainsToNotCheckComplianceOfUploadedContent"/>
+  <int value="590" label="URLsToCheckComplianceOfDownloadedContent"/>
+  <int value="591" label="URLsToNotCheckComplianceOfUploadedContent"/>
   <int value="592" label="DictationEnabled"/>
   <int value="593" label="KeyboardFocusHighlightEnabled"/>
   <int value="594" label="CursorHighlightEnabled"/>
@@ -18554,7 +18554,7 @@ Called by update_net_error_codes.py.-->
   <int value="597" label="AutoclickEnabled"/>
   <int value="598" label="RendererCodeIntegrityEnabled"/>
   <int value="599" label="DeviceLoginScreenLargeCursorEnabled"/>
-  <int value="600" label="DomainsToCheckForMalwareOfUploadedContent"/>
+  <int value="600" label="URLsToCheckForMalwareOfUploadedContent"/>
   <int value="601" label="HSTSPolicyBypassList"/>
   <int value="602" label="ReportDeviceOsUpdateStatus"/>
   <int value="603" label="DeviceLoginScreenWebUsbAllowDevicesForUrls"/>
@@ -18596,6 +18596,7 @@ Called by update_net_error_codes.py.-->
   <int value="639" label="CrostiniAnsiblePlaybook"/>
   <int value="640" label="WebRtcLocalIpsAllowedUrls"/>
   <int value="641" label="PerAppTimeLimits"/>
+  <int value="642" label="DnsOverHttpsTemplates"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

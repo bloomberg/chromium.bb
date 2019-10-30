@@ -8875,7 +8875,7 @@
     },
     {
       'name': 'DnsOverHttpsMode',
-      'owners': ['doh-core@google.com'],
+      'owners': ['dalyk@chromium.org', 'ericorth@chromium.org', 'bingler@chromium.org'],
       'type': 'string-enum',
       'schema': {
         'type': 'string',
@@ -8911,7 +8911,7 @@
       'example_value': 'off',
       'id': 582,
       'default_for_enterprise_users': 'off',
-      'caption': '''Controls the mode of DNS-over-HTTPS.''',
+      'caption': '''Controls the mode of DNS-over-HTTPS''',
       'tags': [],
       'desc': '''Controls the mode of the DNS-over-HTTPS resolver. Please note that this policy will only set the default mode for each query. The mode may be overridden for special types of queries such as requests to resolve a DNS-over-HTTPS server hostname.
 
@@ -8924,6 +8924,31 @@
       On <ph name="ANDROID_VERSION">Android Pie</ph> and above, if DNS-over-TLS is active, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will not send insecure DNS requests.
 
       If this policy is unset the browser may send DNS-over-HTTPS requests to a resolver associated with the user's configured system resolver.''',
+    },
+    {
+      'name': 'DnsOverHttpsTemplates',
+      'owners': ['dalyk@chromium.org', 'ericorth@chromium.org', 'bingler@chromium.org'],
+      'type': 'string',
+      'schema': { 'type': 'string' },
+      'supported_on': ['chrome_os:80-', 'chrome.*:80-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'future': True,
+      'example_value': 'https://dns.example.net/dns-query{?dns}',
+      'id': 642,
+      'caption': '''Specify URI template of desired DNS-over-HTTPS resolver''',
+      'tags': [],
+      'desc': '''The URI template of the desired DNS-over-HTTPS resolver. To specify multiple DNS-over-HTTPS resolvers, separate the corresponding URI templates with spaces.
+
+      If the DnsOverHttpsMode is set to <ph name="SECURE_DNS_MODE_SECURE">"secure"</ph> then this policy must be set and not empty.
+
+      If the DnsOverHttpsMode is set to <ph name="SECURE_DNS_MODE_AUTOMATIC">"automatic"</ph> and this policy is set then the URI templates specified will be used; if this policy is unset then hardcoded mappings will be used to attempt to upgrade the user's current DNS resolver to a DoH resolver operated by the same provider.
+
+      If the URI template contains a <ph name="HTTP_VARIABLE_DNS">dns</ph> variable, requests to the resolver will use <ph name="HTTP_METHOD_GET">GET</ph>; otherwise requests will use <ph name="HTTP_METHOD_POST">POST</ph>.
+
+      Incorrectly formatted templates will be ignored.''',
     },
     {
       'name': 'ShelfAutoHideBehavior',
@@ -19738,6 +19763,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562, 569],
-  'highest_id_currently_used': 641,
+  'highest_id_currently_used': 642,
   'highest_atomic_group_id_currently_used': 38
 }
