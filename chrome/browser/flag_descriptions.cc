@@ -563,14 +563,6 @@ const char kEnableAutofillDoNotMigrateUnsupportedLocalCardsDescription[] =
     "If enabled, local cards from unsupported networks will not be offered "
     "local card migration.";
 
-const char kEnableAutofillLocalCardMigrationUsesStrikeSystemV2Name[] =
-    "Enable limit on offering to migrate local cards repeatedly using the "
-    "updated strike system implementation";
-const char kEnableAutofillLocalCardMigrationUsesStrikeSystemV2Description[] =
-    "If enabled, uses the updated strike system implementation to prevent "
-    "offering prompts for local card migration if it has repeatedly been "
-    "ignored, declined, or failed.";
-
 const char kEnableAutofillNativeDropdownViewsName[] =
     "Display Autofill Dropdown Using Views";
 const char kEnableAutofillNativeDropdownViewsDescription[] =

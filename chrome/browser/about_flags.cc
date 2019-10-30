@@ -2650,13 +2650,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAll,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillUpstreamEditableExpirationDate)},
-    {"enable-autofill-local-card-migration-uses-strike-system-v2",
-     flag_descriptions::kEnableAutofillLocalCardMigrationUsesStrikeSystemV2Name,
-     flag_descriptions::
-         kEnableAutofillLocalCardMigrationUsesStrikeSystemV2Description,
-     kOsAll,
-     FEATURE_VALUE_TYPE(
-         autofill::features::kAutofillLocalCardMigrationUsesStrikeSystemV2)},
 
 #if defined(OS_ANDROID)
     {"enable-autofill-manual-fallback",
