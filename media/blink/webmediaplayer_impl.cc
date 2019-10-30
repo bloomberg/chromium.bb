@@ -1749,7 +1749,8 @@ void WebMediaPlayerImpl::OnError(PipelineStatus status) {
         "Media.WebMediaPlayerImpl.HLS.IsMixedContent",
         frame_url_is_cryptographic && !manifest_url_is_cryptographic);
 
-    renderer_factory_selector_->SetUseMediaPlayer(true);
+    renderer_factory_selector_->SetBaseFactoryType(
+        RendererFactorySelector::FactoryType::MEDIA_PLAYER);
 
     loaded_url_ = mb_data_source_->GetUrlAfterRedirects();
     DCHECK(data_source_);
