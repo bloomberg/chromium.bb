@@ -457,3 +457,6 @@ Bug(none) virtual/controls-refresh/fast/forms/controls-new-ui/color-scheme-valid
 Bug(none) virtual/controls-refresh/fast/forms/controls-new-ui/color-scheme-validation/color/color-suggestion-picker-appearance-with-scrollbar.html [ Failure ]
 Bug(none) virtual/controls-refresh/fast/forms/controls-new-ui/color-scheme-validation/select/select-multiple-appearance-basic.html [ Failure ]
 Bug(none) virtual/controls-refresh/fast/forms/controls-new-ui/color-scheme-validation/time-picker/time-picker-appearance.html [ Failure ]
+
+# We need the inner viewport scroll layer.
+crbug.com/1015625 inspector-protocol/emulation/device-emulation-restore.js [ Crash ]
