@@ -19,7 +19,7 @@ import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.weblayer.BrowserController;
-import org.chromium.weblayer.shell.WebLayerShellActivity;
+import org.chromium.weblayer.shell.InstrumentationActivity;
 
 /**
  * Test for top-controls.
@@ -27,7 +27,8 @@ import org.chromium.weblayer.shell.WebLayerShellActivity;
 @RunWith(BaseJUnit4ClassRunner.class)
 public class TopControlsTest {
     @Rule
-    public WebLayerShellActivityTestRule mActivityTestRule = new WebLayerShellActivityTestRule();
+    public InstrumentationActivityTestRule mActivityTestRule =
+            new InstrumentationActivityTestRule();
 
     private int mTopControlsHeight;
     private int mInitialVisiblePageHeight;
@@ -49,7 +50,7 @@ public class TopControlsTest {
     @SmallTest
     public void testBasic() throws Exception {
         final String url = UrlUtils.encodeHtmlDataUri("<body><p style='height:5000px'>");
-        WebLayerShellActivity activity = mActivityTestRule.launchShellWithUrl(url);
+        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(url);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mTopControlsHeight = activity.getTopContentsContainer().getHeight();

@@ -20,7 +20,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.weblayer.Profile;
-import org.chromium.weblayer.shell.WebLayerShellActivity;
+import org.chromium.weblayer.shell.InstrumentationActivity;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -31,7 +31,8 @@ import java.util.concurrent.TimeUnit;
 @RunWith(BaseJUnit4ClassRunner.class)
 public class DataClearingTest {
     @Rule
-    public WebLayerShellActivityTestRule mActivityTestRule = new WebLayerShellActivityTestRule();
+    public InstrumentationActivityTestRule mActivityTestRule =
+            new InstrumentationActivityTestRule();
 
     @Test
     @SmallTest
@@ -68,7 +69,7 @@ public class DataClearingTest {
     @Test
     @SmallTest
     public void twoSuccesiveRequestsTriggerCallbacks() throws InterruptedException {
-        WebLayerShellActivity activity = launchWithProfile("profile");
+        InstrumentationActivity activity = launchWithProfile("profile");
 
         CountDownLatch latch = new CountDownLatch(2);
         runOnUiThreadBlocking(() -> {
@@ -84,7 +85,7 @@ public class DataClearingTest {
     @Test
     @SmallTest
     public void clearingAgainAfterClearFinished_TriggersCallback() throws InterruptedException {
-        WebLayerShellActivity activity = launchWithProfile("profile");
+        InstrumentationActivity activity = launchWithProfile("profile");
 
         CountDownLatch latch = new CountDownLatch(1);
         runOnUiThreadBlocking(() -> {
@@ -100,7 +101,7 @@ public class DataClearingTest {
     @Test
     @SmallTest
     public void destroyingProfileDuringDataClear_DoesntCrash() throws InterruptedException {
-        WebLayerShellActivity activity = launchWithProfile("profile");
+        InstrumentationActivity activity = launchWithProfile("profile");
 
         CountDownLatch latch = new CountDownLatch(1);
         runOnUiThreadBlocking(() -> {
@@ -119,19 +120,18 @@ public class DataClearingTest {
 
     private void checkTriggersCallbackOnClearData(int[] dataTypes, String profileName)
             throws InterruptedException {
-        WebLayerShellActivity activity = launchWithProfile(profileName);
+        InstrumentationActivity activity = launchWithProfile(profileName);
         CountDownLatch latch = new CountDownLatch(1);
         runOnUiThreadBlocking(() -> activity.getBrowserFragmentController().getProfile()
                 .clearBrowsingData(dataTypes).addCallback((ignored) -> latch.countDown()));
         assertTrue(latch.await(3, TimeUnit.SECONDS));
     }
 
-    private WebLayerShellActivity launchWithProfile(String profileName) {
+    private InstrumentationActivity launchWithProfile(String profileName) {
         Bundle extras = new Bundle();
-        extras.putString(WebLayerShellActivity.EXTRA_PROFILE_NAME, profileName);
+        extras.putString(InstrumentationActivity.EXTRA_PROFILE_NAME, profileName);
         String url = "data:text,foo";
-        WebLayerShellActivity activity = mActivityTestRule.launchShellWithUrl(url, extras);
+        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(url, extras);
         return activity;
     }
-
 }

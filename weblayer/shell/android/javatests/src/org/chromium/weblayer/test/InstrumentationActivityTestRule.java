@@ -23,17 +23,17 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.weblayer.BrowserController;
 import org.chromium.weblayer.Navigation;
 import org.chromium.weblayer.NavigationObserver;
-import org.chromium.weblayer.shell.WebLayerShellActivity;
+import org.chromium.weblayer.shell.InstrumentationActivity;
 
 import java.lang.reflect.Field;
 import java.util.concurrent.TimeoutException;
 
 /**
- * ActivityTestRule for WebLayerShellActivity.
+ * ActivityTestRule for InstrumentationActivity.
  *
- * Test can use this ActivityTestRule to launch or get WebLayerShellActivity.
+ * Test can use this ActivityTestRule to launch or get InstrumentationActivity.
  */
-public class WebLayerShellActivityTestRule extends ActivityTestRule<WebLayerShellActivity> {
+public class InstrumentationActivityTestRule extends ActivityTestRule<InstrumentationActivity> {
     private static final class NavigationWaiter {
         private String mUrl;
         private BrowserController mController;
@@ -97,25 +97,23 @@ public class WebLayerShellActivityTestRule extends ActivityTestRule<WebLayerShel
         }
     }
 
-    public WebLayerShellActivityTestRule() {
-        super(WebLayerShellActivity.class, false, false);
+    public InstrumentationActivityTestRule() {
+        super(InstrumentationActivity.class, false, false);
     }
 
     /**
      * Starts the WebLayer activity with the given extras Bundle and completely loads the given URL
      * (this calls navigateAndWait()).
      */
-    public WebLayerShellActivity launchShellWithUrl(String url, Bundle extras) {
+    public InstrumentationActivity launchShellWithUrl(String url, Bundle extras) {
         Intent intent = new Intent(Intent.ACTION_MAIN);
         intent.putExtras(extras);
         intent.addCategory(Intent.CATEGORY_LAUNCHER);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        // Prevent URL from being loaded on start.
-        intent.putExtra(WebLayerShellActivity.EXTRA_NO_LOAD, true);
         intent.setComponent(
                 new ComponentName(InstrumentationRegistry.getInstrumentation().getTargetContext(),
-                        WebLayerShellActivity.class));
-        WebLayerShellActivity activity = launchActivity(intent);
+                        InstrumentationActivity.class));
+        InstrumentationActivity activity = launchActivity(intent);
         Assert.assertNotNull(activity);
         if (url != null) navigateAndWait(url);
         return activity;
@@ -125,7 +123,7 @@ public class WebLayerShellActivityTestRule extends ActivityTestRule<WebLayerShel
      * Starts the WebLayer activity and completely loads the given URL (this calls
      * navigateAndWait()).
      */
-    public WebLayerShellActivity launchShellWithUrl(String url) {
+    public InstrumentationActivity launchShellWithUrl(String url) {
         return launchShellWithUrl(url, new Bundle());
     }
 
@@ -144,15 +142,14 @@ public class WebLayerShellActivityTestRule extends ActivityTestRule<WebLayerShel
     public void recreateActivity() {
         Activity activity = getActivity();
 
-        ActivityMonitor monitor = new ActivityMonitor(WebLayerShellActivity.class.getName(),
-                null, false);
+        ActivityMonitor monitor =
+                new ActivityMonitor(InstrumentationActivity.class.getName(), null, false);
         InstrumentationRegistry.getInstrumentation().addMonitor(monitor);
 
         TestThreadUtils.runOnUiThreadBlocking(activity::recreate);
 
-        CriteriaHelper.pollUiThread(() ->
-            monitor.getLastActivity() != null && monitor.getLastActivity() != activity
-        );
+        CriteriaHelper.pollUiThread(
+                () -> monitor.getLastActivity() != null && monitor.getLastActivity() != activity);
         InstrumentationRegistry.getInstrumentation().removeMonitor(monitor);
 
         // There is no way to rotate the activity using ActivityTestRule or even notify it.

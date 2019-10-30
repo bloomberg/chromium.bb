@@ -25,7 +25,7 @@ import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.weblayer.Navigation;
 import org.chromium.weblayer.NavigationController;
 import org.chromium.weblayer.NavigationObserver;
-import org.chromium.weblayer.shell.WebLayerShellActivity;
+import org.chromium.weblayer.shell.InstrumentationActivity;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -38,7 +38,8 @@ import java.util.concurrent.TimeoutException;
 @RunWith(BaseJUnit4ClassRunner.class)
 public class NavigationTest {
     @Rule
-    public WebLayerShellActivityTestRule mActivityTestRule = new WebLayerShellActivityTestRule();
+    public InstrumentationActivityTestRule mActivityTestRule =
+            new InstrumentationActivityTestRule();
 
     // URLs used for base tests.
     private static final String URL1 = "data:text,foo";
@@ -146,7 +147,7 @@ public class NavigationTest {
     @Test
     @SmallTest
     public void testNavigationEvents() throws Exception {
-        WebLayerShellActivity activity = mActivityTestRule.launchShellWithUrl(URL1);
+        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(URL1);
 
         setNavigationObserver(activity);
         int curStartedCount = mObserver.onStartedCallback.getCallCount();
@@ -166,7 +167,7 @@ public class NavigationTest {
     @Test
     @SmallTest
     public void testLoadStateUpdates() throws Exception {
-        WebLayerShellActivity activity = mActivityTestRule.launchShellWithUrl(null);
+        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(null);
         setNavigationObserver(activity);
         mActivityTestRule.navigateAndWait(URL1);
 
@@ -199,7 +200,7 @@ public class NavigationTest {
     @Test
     @SmallTest
     public void testGoBackAndForward() throws Exception {
-        WebLayerShellActivity activity = mActivityTestRule.launchShellWithUrl(URL1);
+        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(URL1);
         setNavigationObserver(activity);
 
         mActivityTestRule.navigateAndWait(URL2);
@@ -237,7 +238,7 @@ public class NavigationTest {
     @Test
     @SmallTest
     public void testSameDocument() throws Exception {
-        WebLayerShellActivity activity = mActivityTestRule.launchShellWithUrl(URL1);
+        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(URL1);
         setNavigationObserver(activity);
 
         int curCompletedCount = mObserver.onCompletedCallback.getCallCount();
@@ -248,7 +249,7 @@ public class NavigationTest {
                 curCompletedCount, "data:text,foo#bar", true);
     }
 
-    private void setNavigationObserver(WebLayerShellActivity activity) {
+    private void setNavigationObserver(InstrumentationActivity activity) {
         runOnUiThreadBlocking(() ->
             activity.getBrowserController().getNavigationController().addObserver(mObserver)
         );
