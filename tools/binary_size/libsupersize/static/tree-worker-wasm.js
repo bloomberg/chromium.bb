@@ -144,8 +144,8 @@ const fetcher = new DataFetcher('data.size');
 let sizeFileLoaded = false;
 
 async function buildTree(
-    groupBy, filterTest, highlightTest, methodCountMode, onProgress) {
-
+    groupBy, includeRegex, excludeRegex, highlightTest, methodCountMode,
+    onProgress) {
   if (!sizeFileLoaded) {
     let sizeBuffer = await fetcher.loadSizeBuffer();
     let heapBuffer = mallocBuffer(sizeBuffer);
@@ -188,10 +188,11 @@ async function buildTree(
     return message;
   }
 
-  let BuildTree = Module.cwrap('BuildTree', 'void', ['bool']);
+  let BuildTree =
+      Module.cwrap('BuildTree', 'void', ['bool', 'string', 'string']);
   let start_time = Date.now();
   const groupByComponent = groupBy === "component";
-  BuildTree(groupByComponent);
+  BuildTree(groupByComponent, includeRegex, excludeRegex);
   console.log('Constructed tree in ' +
     (Date.now() - start_time)/1000.0 + ' seconds');
 
@@ -216,20 +217,33 @@ function parseOptions(options) {
   const filterGeneratedFiles = params.has('generated_filter');
   const flagToHighlight = _NAMES_TO_FLAGS[params.get('highlight')];
 
-  function filterTest(symbolNode) {
-    return true;
-  }
+  const includeRegex = params.get('include');
+  const excludeRegex = params.get('exclude');
+
   function highlightTest(symbolNode) {
     return false;
   }
-  return {groupBy, filterTest, highlightTest, url, methodCountMode};
+  return {
+    groupBy,
+    includeRegex,
+    excludeRegex,
+    highlightTest,
+    url,
+    methodCountMode
+  };
 }
 
 const actions = {
   /** @param {{input:string|null,options:string}} param0 */
   load({input, options}) {
-    const {groupBy, filterTest, highlightTest, url, methodCountMode} =
-        parseOptions(options);
+    const {
+      groupBy,
+      includeRegex,
+      excludeRegex,
+      highlightTest,
+      url,
+      methodCountMode
+    } = parseOptions(options);
     if (input === 'from-url://' && url) {
       // Display the data from the `load_url` query parameter
       console.info('Displaying data from', url);
@@ -240,7 +254,8 @@ const actions = {
     }
 
     return buildTree(
-        groupBy, filterTest, highlightTest, methodCountMode, progress => {
+        groupBy, includeRegex, excludeRegex, highlightTest, methodCountMode,
+        progress => {
           // @ts-ignore
           self.postMessage(progress);
         });

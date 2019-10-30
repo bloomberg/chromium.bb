@@ -40,10 +40,14 @@ std::string_view DirName(std::string_view path, char sep, char othersep) {
 }
 }  // namespace
 
-TreeBuilder::TreeBuilder(SizeInfo* size_info, bool group_by_component)
+TreeBuilder::TreeBuilder(
+    SizeInfo* size_info,
+    bool group_by_component,
+    std::vector<std::function<bool(const Symbol&)>> filters)
     : size_info_(size_info),
       group_by_component_(group_by_component),
-      sep_(group_by_component ? kComponentSep : kPathSep) {}
+      sep_(group_by_component ? kComponentSep : kPathSep),
+      filters_(filters) {}
 
 TreeBuilder::~TreeBuilder() = default;
 
@@ -57,11 +61,13 @@ void TreeBuilder::Build() {
   // Group symbols by source path.
   std::unordered_map<std::string_view, std::vector<const Symbol*>> symbols;
   for (auto& sym : size_info_->raw_symbols) {
-    std::string_view key = sym.source_path;
-    if (key == nullptr) {
-      key = sym.object_path;
+    if (ShouldIncludeSymbol(sym)) {
+      std::string_view key = sym.source_path;
+      if (key == nullptr) {
+        key = sym.object_path;
+      }
+      symbols[key].push_back(&sym);
     }
-    symbols[key].push_back(&sym);
   }
   for (const auto& pair : symbols) {
     AddFileEntry(pair.first, pair.second);
@@ -186,6 +192,15 @@ ContainerType TreeBuilder::ContainerTypeFromChild(
   } else {
     return ContainerType::kComponent;
   }
+}
+
+bool TreeBuilder::ShouldIncludeSymbol(const Symbol& symbol) const {
+  for (const auto& filter : filters_) {
+    if (!filter(symbol)) {
+      return false;
+    }
+  }
+  return true;
 }
 
 void TreeBuilder::JoinDexMethodClasses(TreeNode* node) {
