@@ -1553,6 +1553,8 @@ jumbo_static_library("browser") {
     "sharing/features.h",
     "sharing/ping_message_handler.cc",
     "sharing/ping_message_handler.h",
+    "sharing/response_callback_helper.cc",
+    "sharing/response_callback_helper.h",
     "sharing/shared_clipboard/feature_flags.cc",
     "sharing/shared_clipboard/feature_flags.h",
     "sharing/shared_clipboard/shared_clipboard_message_handler.cc",
