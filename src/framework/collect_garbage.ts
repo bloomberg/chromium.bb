@@ -3,7 +3,7 @@ declare const Components: any;
 
 export function attemptGarbageCollection(): void {
   // tslint:disable-next-line: no-any
-  const w: any = window;
+  const w: any = self;
   if (w.GCController) {
     w.GCController.collect();
     return;

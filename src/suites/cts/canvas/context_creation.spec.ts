@@ -7,6 +7,12 @@ import { GPUTest } from '../gpu_test.js';
 export const g = new TestGroup(GPUTest);
 
 g.test('getContext returns GPUCanvasContext', async t => {
+  if (typeof document === 'undefined') {
+    // Skip if there is no document (Workers, Node)
+    // TODO: Use t.skip()
+    return;
+  }
+
   const canvas = document.createElement('canvas');
   canvas.width = 10;
   canvas.height = 10;
