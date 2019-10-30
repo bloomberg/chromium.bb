@@ -59,7 +59,8 @@ interface MediaMetricsProvider {
                            pending_receiver<WatchTimeRecorder> recorder);
 
   // Creates a VideoDecodeStatsRecorder instance.
-  AcquireVideoDecodeStatsRecorder(VideoDecodeStatsRecorder& recorder);
+  AcquireVideoDecodeStatsRecorder(
+      pending_receiver<VideoDecodeStatsRecorder> recorder);
 
   // Returns a LearningTaskController for the given |taskName|.
   AcquireLearningTaskController(

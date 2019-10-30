@@ -249,7 +249,8 @@ class WatchTimeReporterTest
           std::make_unique<WatchTimeInterceptor>(parent_), std::move(receiver));
     }
     void AcquireVideoDecodeStatsRecorder(
-        mojom::VideoDecodeStatsRecorderRequest request) override {
+        mojo::PendingReceiver<mojom::VideoDecodeStatsRecorder> receiver)
+        override {
       FAIL();
     }
     void AcquireLearningTaskController(

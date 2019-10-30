@@ -15,7 +15,6 @@
 #include "media/mojo/services/video_decode_stats_recorder.h"
 #include "media/mojo/services/watch_time_recorder.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 
@@ -268,7 +267,7 @@ void MediaMetricsProvider::AcquireWatchTimeRecorder(
 }
 
 void MediaMetricsProvider::AcquireVideoDecodeStatsRecorder(
-    mojom::VideoDecodeStatsRecorderRequest request) {
+    mojo::PendingReceiver<mojom::VideoDecodeStatsRecorder> receiver) {
   if (!initialized_) {
     mojo::ReportBadMessage(kInvalidInitialize);
     return;
@@ -279,10 +278,10 @@ void MediaMetricsProvider::AcquireVideoDecodeStatsRecorder(
     return;
   }
 
-  mojo::MakeStrongBinding(
+  mojo::MakeSelfOwnedReceiver(
       std::make_unique<VideoDecodeStatsRecorder>(save_cb_, source_id_, origin_,
                                                  is_top_frame_, player_id_),
-      std::move(request));
+      std::move(receiver));
 }
 
 void MediaMetricsProvider::AcquireLearningTaskController(

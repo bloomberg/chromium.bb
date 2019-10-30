@@ -105,7 +105,7 @@ class MEDIA_MOJO_EXPORT MediaMetricsProvider
       mojom::PlaybackPropertiesPtr properties,
       mojo::PendingReceiver<mojom::WatchTimeRecorder> receiver) override;
   void AcquireVideoDecodeStatsRecorder(
-      mojom::VideoDecodeStatsRecorderRequest request) override;
+      mojo::PendingReceiver<mojom::VideoDecodeStatsRecorder> receiver) override;
   void AcquireLearningTaskController(
       const std::string& taskName,
       mojo::PendingReceiver<media::learning::mojom::LearningTaskController>
