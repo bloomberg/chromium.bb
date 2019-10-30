@@ -525,6 +525,10 @@ void Widget::SetBounds(const gfx::Rect& bounds) {
   native_widget_->SetBounds(bounds);
 }
 
+void Widget::SetBoundsNoDPIAdjustment(const gfx::Rect& bounds) {
+  native_widget_->SetBoundsNoDPIAdjustment(bounds);
+}
+
 void Widget::SetSize(const gfx::Size& size) {
   native_widget_->SetSize(size);
 }
