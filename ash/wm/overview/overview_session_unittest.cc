@@ -5445,8 +5445,10 @@ TEST_P(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly, Dragging) {
   std::unique_ptr<aura::Window> window1 = CreateTestWindow(bounds_within_root2);
   std::unique_ptr<aura::Window> window2 = CreateTestWindow(bounds_within_root2);
   ToggleOverview();
-  OverviewItem* item1 = GetOverviewItemForWindow(window1.get());
-  OverviewItem* item2 = GetOverviewItemForWindow(window2.get());
+  OverviewGrid* grid_on_root2 =
+      overview_session()->GetGridWithRootWindow(root_windows[1]);
+  OverviewItem* item1 = grid_on_root2->GetOverviewItemContaining(window1.get());
+  OverviewItem* item2 = grid_on_root2->GetOverviewItemContaining(window2.get());
   SplitViewController* split_view_controller =
       SplitViewController::Get(root_windows[1]);
   SplitViewDragIndicators* indicators =
@@ -5460,6 +5462,9 @@ TEST_P(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly, Dragging) {
   overview_session()->Drag(item1, right_snap_point);
   EXPECT_EQ(IndicatorState::kPreviewAreaRight,
             indicators->current_indicator_state());
+  EXPECT_EQ(SplitViewController::Get(root_windows[1])
+                ->GetSnappedWindowBoundsInScreen(SplitViewController::LEFT),
+            grid_on_root2->bounds());
   overview_session()->CompleteDrag(item1, right_snap_point);
   EXPECT_EQ(SplitViewController::State::kRightSnapped,
             split_view_controller->state());
