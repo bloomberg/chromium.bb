@@ -166,7 +166,7 @@ void FilmGrain<bitdepth>::ApplyAutoRegressiveFilterToLumaGrain_NEON(
 
 #define ACCUMULATE_WEIGHTED_GRAIN(offset)                           \
   sum = AccumulateWeightedGrain<offset>(src_grain_lo, src_grain_hi, \
-                                        auto_regression_coeff_y[pos++], sum);
+                                        auto_regression_coeff_y[pos++], sum)
 
         // A pictorial representation of the auto-regressive filter for
         // various values of params.auto_regression_coeff_lag. The letter 'O'
@@ -219,7 +219,7 @@ void FilmGrain<bitdepth>::ApplyAutoRegressiveFilterToLumaGrain_NEON(
 #define WRITE_AUTO_REGRESSION_RESULT(lane)                             \
   WriteFinalAutoRegression<bitdepth, auto_regression_coeff_lag, lane>( \
       luma_grain + x, sum, auto_regression_coeff_y, pos,               \
-      auto_regression_shift);
+      auto_regression_shift)
 
       WRITE_AUTO_REGRESSION_RESULT(0);
       WRITE_AUTO_REGRESSION_RESULT(1);
