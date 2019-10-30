@@ -776,4 +776,34 @@ TEST_F(StyledLabelTest, SizeToFit) {
   EXPECT_EQ(1000, styled()->children().front()->bounds().right());
 }
 
+// Verifies that a non-empty label has a preferred size by default.
+TEST_F(StyledLabelTest, PreferredSizeNonEmpty) {
+  const std::string text("text");
+  InitStyledLabel(text);
+  EXPECT_FALSE(styled()->GetPreferredSize().IsEmpty());
+}
+
+// Verifies that GetPreferredSize() respects the existing wrapping.
+TEST_F(StyledLabelTest, PreferredSizeRespectsWrapping) {
+  const std::string text("Long text that can be split across lines");
+  InitStyledLabel(text);
+  gfx::Size size = styled()->GetPreferredSize();
+  size.set_width(size.width() / 2);
+  size.set_height(styled()->GetHeightForWidth(size.width()));
+  styled()->SetSize(size);
+  styled()->Layout();
+  const gfx::Size new_size = styled()->GetPreferredSize();
+  EXPECT_LE(new_size.width(), size.width());
+  EXPECT_EQ(new_size.height(), size.height());
+}
+
+// Verifies that calling a const method does not change the preferred size.
+TEST_F(StyledLabelTest, PreferredSizeAcrossConstCall) {
+  const std::string text("Long text that can be split across lines");
+  InitStyledLabel(text);
+  const gfx::Size size = styled()->GetPreferredSize();
+  styled()->GetHeightForWidth(size.width() / 2);
+  EXPECT_EQ(size, styled()->GetPreferredSize());
+}
+
 }  // namespace views

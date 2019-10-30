@@ -213,8 +213,8 @@ void StyledLabel::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 }
 
 gfx::Size StyledLabel::CalculatePreferredSize() const {
-  // TODO(pkasting): This seems suspicious; shouldn't there be a call to
-  // CalculateLayout(std::numeric_limits<int>::max()) here?
+  // Respect any existing size.  If there is none, default to a single line.
+  CalculateLayout((width() == 0) ? std::numeric_limits<int>::max() : width());
   return layout_size_info_.total_size;
 }
 
