@@ -48,15 +48,29 @@ public class NavigationTest {
     private static class Observer extends NavigationObserver {
         public static class NavigationCallbackHelper extends CallbackHelper {
             private Uri mUri;
+            private boolean mIsSameDocument;
 
             public void notifyCalled(Uri uri) {
                 mUri = uri;
                 notifyCalled();
             }
 
+            public void notifyCalled(Uri uri, boolean isSameDocument) {
+                mUri = uri;
+                mIsSameDocument = isSameDocument;
+                notifyCalled();
+            }
+
             public void assertCalledWith(int currentCallCount, String uri) throws TimeoutException {
                 waitForCallback(currentCallCount);
                 assertEquals(mUri.toString(), uri);
+            }
+
+            public void assertCalledWith(int currentCallCount, String uri, boolean isSameDocument)
+                    throws TimeoutException {
+                waitForCallback(currentCallCount);
+                assertEquals(mUri.toString(), uri);
+                assertEquals(mIsSameDocument, isSameDocument);
             }
         }
 
@@ -106,7 +120,7 @@ public class NavigationTest {
 
         @Override
         public void navigationCompleted(Navigation navigation) {
-            onCompletedCallback.notifyCalled(navigation.getUri());
+            onCompletedCallback.notifyCalled(navigation.getUri(), navigation.isSameDocument());
         }
 
         @Override
@@ -218,6 +232,20 @@ public class NavigationTest {
         runOnUiThreadBlocking(() -> {
             assertFalse(navigationController.canGoForward());
         });
+    }
+
+    @Test
+    @SmallTest
+    public void testSameDocument() throws Exception {
+        WebLayerShellActivity activity = mActivityTestRule.launchShellWithUrl(URL1);
+        setNavigationObserver(activity);
+
+        int curCompletedCount = mObserver.onCompletedCallback.getCallCount();
+
+        mActivityTestRule.executeScriptSync("history.pushState(null, '', '#bar');");
+
+        mObserver.onCompletedCallback.assertCalledWith(
+                curCompletedCount, "data:text,foo#bar", true);
     }
 
     private void setNavigationObserver(WebLayerShellActivity activity) {
