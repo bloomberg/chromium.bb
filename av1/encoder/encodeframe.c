@@ -4814,39 +4814,6 @@ static AOM_INLINE void set_rel_frame_dist(AV1_COMP *cpi) {
   }
 }
 
-// Enforce the number of references for each arbitrary frame based on user
-// options and speed.
-static AOM_INLINE void enforce_max_ref_frames(AV1_COMP *cpi) {
-  MV_REFERENCE_FRAME ref_frame;
-  int total_valid_refs = 0;
-  for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
-    if (cpi->ref_frame_flags & av1_ref_frame_flag_list[ref_frame]) {
-      total_valid_refs++;
-    }
-  }
-
-  const int max_allowed_refs = get_max_allowed_ref_frames(cpi);
-
-  for (int i = 0; i < 4 && total_valid_refs > max_allowed_refs; ++i) {
-    const MV_REFERENCE_FRAME ref_frame_to_disable = disable_order[i];
-
-    if (!(cpi->ref_frame_flags &
-          av1_ref_frame_flag_list[ref_frame_to_disable])) {
-      continue;
-    }
-
-    switch (ref_frame_to_disable) {
-      case LAST3_FRAME: cpi->ref_frame_flags &= ~AOM_LAST3_FLAG; break;
-      case LAST2_FRAME: cpi->ref_frame_flags &= ~AOM_LAST2_FLAG; break;
-      case ALTREF2_FRAME: cpi->ref_frame_flags &= ~AOM_ALT2_FLAG; break;
-      case GOLDEN_FRAME: cpi->ref_frame_flags &= ~AOM_GOLD_FLAG; break;
-      default: assert(0);
-    }
-    --total_valid_refs;
-  }
-  assert(total_valid_refs <= max_allowed_refs);
-}
-
 static INLINE int av1_refs_are_one_sided(const AV1_COMMON *cm) {
   assert(!frame_is_intra_only(cm));
 
@@ -5581,7 +5548,7 @@ void av1_encode_frame(AV1_COMP *cpi) {
   }
 
   av1_setup_frame_buf_refs(cm);
-  enforce_max_ref_frames(cpi);
+  enforce_max_ref_frames(cpi, &cpi->ref_frame_flags);
   set_rel_frame_dist(cpi);
   av1_setup_frame_sign_bias(cm);
 

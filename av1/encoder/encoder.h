@@ -1516,6 +1516,73 @@ static INLINE int get_max_allowed_ref_frames(const AV1_COMP *cpi) {
                 cpi->oxcf.max_reference_frames);
 }
 
+static const MV_REFERENCE_FRAME
+    ref_frame_priority_order[INTER_REFS_PER_FRAME] = {
+      LAST_FRAME,    ALTREF_FRAME, BWDREF_FRAME, GOLDEN_FRAME,
+      ALTREF2_FRAME, LAST2_FRAME,  LAST3_FRAME,
+    };
+
+static INLINE int get_ref_frame_flags(const AV1_COMP *const cpi,
+                                      const YV12_BUFFER_CONFIG **ref_frames) {
+  // cpi->ext_ref_frame_flags allows certain reference types to be disabled
+  // by the external interface.  These are set by av1_apply_encoding_flags().
+  // Start with what the external interface allows, then suppress any reference
+  // types which we have found to be duplicates.
+  int flags = cpi->ext_ref_frame_flags;
+
+  for (int i = 1; i < INTER_REFS_PER_FRAME; ++i) {
+    const YV12_BUFFER_CONFIG *const this_ref = ref_frames[i];
+    // If this_ref has appeared before, mark the corresponding ref frame as
+    // invalid. For nonrd mode, only disable GOLDEN_FRAME if it's the same
+    // as LAST_FRAME or ALTREF_FRAME (if ALTREF is being used in nonrd).
+    int index = (cpi->sf.rt_sf.use_nonrd_pick_mode &&
+                 ref_frame_priority_order[i] == GOLDEN_FRAME)
+                    ? (1 + cpi->sf.rt_sf.use_nonrd_altref_frame)
+                    : i;
+    for (int j = 0; j < index; ++j) {
+      if (this_ref == ref_frames[j]) {
+        flags &= ~(1 << (ref_frame_priority_order[i] - 1));
+        break;
+      }
+    }
+  }
+  return flags;
+}
+
+// Enforce the number of references for each arbitrary frame based on user
+// options and speed.
+static AOM_INLINE void enforce_max_ref_frames(AV1_COMP *cpi,
+                                              int *ref_frame_flags) {
+  MV_REFERENCE_FRAME ref_frame;
+  int total_valid_refs = 0;
+
+  for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
+    if (*ref_frame_flags & av1_ref_frame_flag_list[ref_frame]) {
+      total_valid_refs++;
+    }
+  }
+
+  const int max_allowed_refs = get_max_allowed_ref_frames(cpi);
+
+  for (int i = 0; i < 4 && total_valid_refs > max_allowed_refs; ++i) {
+    const MV_REFERENCE_FRAME ref_frame_to_disable = disable_order[i];
+
+    if (!(*ref_frame_flags & av1_ref_frame_flag_list[ref_frame_to_disable])) {
+      continue;
+    }
+
+    switch (ref_frame_to_disable) {
+      case LAST3_FRAME: *ref_frame_flags &= ~AOM_LAST3_FLAG; break;
+      case LAST2_FRAME: *ref_frame_flags &= ~AOM_LAST2_FLAG; break;
+      case ALTREF2_FRAME: *ref_frame_flags &= ~AOM_ALT2_FLAG; break;
+      case GOLDEN_FRAME: *ref_frame_flags &= ~AOM_GOLD_FLAG; break;
+      default: assert(0);
+    }
+    --total_valid_refs;
+  }
+  assert(total_valid_refs <= max_allowed_refs);
+}
+
 // Returns a Sequence Header OBU stored in an aom_fixed_buf_t, or NULL upon
 // failure. When a non-NULL aom_fixed_buf_t pointer is returned by this
 // function, the memory must be freed by the caller. Both the buf member of the

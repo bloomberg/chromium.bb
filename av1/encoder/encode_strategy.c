@@ -210,43 +210,6 @@ static void set_ext_overrides(AV1_COMP *const cpi,
   frame_params->error_resilient_mode |= frame_params->frame_type == S_FRAME;
 }
 
-static int get_ref_frame_flags(const AV1_COMP *const cpi) {
-  static const MV_REFERENCE_FRAME
-      ref_frame_priority_order[INTER_REFS_PER_FRAME] = {
-        LAST_FRAME,    ALTREF_FRAME, BWDREF_FRAME, GOLDEN_FRAME,
-        ALTREF2_FRAME, LAST2_FRAME,  LAST3_FRAME,
-      };
-  const AV1_COMMON *const cm = &cpi->common;
-  const RefCntBuffer *ref_frames[INTER_REFS_PER_FRAME];
-  for (int i = 0; i < INTER_REFS_PER_FRAME; ++i) {
-    ref_frames[i] = get_ref_frame_buf(cm, ref_frame_priority_order[i]);
-  }
-
-  // cpi->ext_ref_frame_flags allows certain reference types to be disabled
-  // by the external interface.  These are set by av1_apply_encoding_flags().
-  // Start with what the external interface allows, then suppress any reference
-  // types which we have found to be duplicates.
-  int flags = cpi->ext_ref_frame_flags;
-
-  for (int i = 1; i < INTER_REFS_PER_FRAME; ++i) {
-    const RefCntBuffer *const this_ref = ref_frames[i];
-    // If this_ref has appeared before, mark the corresponding ref frame as
-    // invalid. For nonrd mode, only disable GOLDEN_FRAME if it's the same
-    // as LAST_FRAME or ALTREF_FRAME (if ALTREF is being used in nonrd).
-    int index = (cpi->sf.rt_sf.use_nonrd_pick_mode &&
-                 ref_frame_priority_order[i] == GOLDEN_FRAME)
-                    ? (1 + cpi->sf.rt_sf.use_nonrd_altref_frame)
-                    : i;
-    for (int j = 0; j < index; ++j) {
-      if (this_ref == ref_frames[j]) {
-        flags &= ~(1 << (ref_frame_priority_order[i] - 1));
-        break;
-      }
-    }
-  }
-  return flags;
-}
-
 static int get_current_frame_ref_type(
     const AV1_COMP *const cpi, const EncodeFrameParams *const frame_params) {
   // We choose the reference "type" of this frame from the flags which indicate
@@ -1275,6 +1238,9 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
                                force_refresh_all);
 
   if (!is_stat_generation_stage(cpi)) {
+    const RefCntBuffer *ref_frames[INTER_REFS_PER_FRAME];
+    const YV12_BUFFER_CONFIG *ref_frame_buf[INTER_REFS_PER_FRAME];
+
     if (!cpi->ext_refresh_frame_flags_pending) {
       av1_get_ref_frames(cpi, &cpi->ref_buffer_stack);
     } else if (cpi->svc.external_ref_frame_config) {
@@ -1282,8 +1248,13 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
         cm->remapped_ref_idx[i] = cpi->svc.ref_idx[i];
     }
 
+    // Get the reference frames
+    for (int i = 0; i < INTER_REFS_PER_FRAME; ++i) {
+      ref_frames[i] = get_ref_frame_buf(cm, ref_frame_priority_order[i]);
+      ref_frame_buf[i] = ref_frames[i] != NULL ? &ref_frames[i]->buf : NULL;
+    }
     // Work out which reference frame slots may be used.
-    frame_params.ref_frame_flags = get_ref_frame_flags(cpi);
+    frame_params.ref_frame_flags = get_ref_frame_flags(cpi, ref_frame_buf);
 
     frame_params.primary_ref_frame =
         choose_primary_ref_frame(cpi, &frame_params);

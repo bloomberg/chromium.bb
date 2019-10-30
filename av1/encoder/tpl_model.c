@@ -671,10 +671,10 @@ static AOM_INLINE void mc_flow_dispenser(AV1_COMP *cpi, int frame_idx,
   const YV12_BUFFER_CONFIG *this_frame = tpl_frame->gf_picture;
   const YV12_BUFFER_CONFIG *ref_frame[7] = { NULL, NULL, NULL, NULL,
                                              NULL, NULL, NULL };
+  const YV12_BUFFER_CONFIG *ref_frames_ordered[INTER_REFS_PER_FRAME];
   unsigned int ref_frame_display_index[7];
   MV_REFERENCE_FRAME ref[2] = { LAST_FRAME, INTRA_FRAME };
-  const int max_allowed_refs = get_max_allowed_ref_frames(cpi);
-  int total_valid_refs = 0;
+  int ref_frame_flags;
   const YV12_BUFFER_CONFIG *src_frame[7] = { NULL, NULL, NULL, NULL,
                                              NULL, NULL, NULL };
 
@@ -706,17 +706,21 @@ static AOM_INLINE void mc_flow_dispenser(AV1_COMP *cpi, int frame_idx,
     src_frame[idx] = cpi->tpl_frame[tpl_frame->ref_map_index[idx]].gf_picture;
   }
 
-  // Remove duplicate frames
-  for (int idx1 = 0; idx1 < INTER_REFS_PER_FRAME; ++idx1) {
-    for (int idx2 = idx1 + 1; idx2 < INTER_REFS_PER_FRAME; ++idx2) {
-      if (ref_frame[idx1] == ref_frame[idx2]) {
-        ref_frame[idx2] = NULL;
-      }
-    }
+  // Store the reference frames based on priority order
+  for (int i = 0; i < INTER_REFS_PER_FRAME; ++i) {
+    ref_frames_ordered[i] = ref_frame[ref_frame_priority_order[i] - 1];
   }
 
+  // Work out which reference frame slots may be used.
+  ref_frame_flags = get_ref_frame_flags(cpi, ref_frames_ordered);
+
+  enforce_max_ref_frames(cpi, &ref_frame_flags);
+
+  // Prune reference frames
   for (idx = 0; idx < INTER_REFS_PER_FRAME; ++idx) {
-    if (ref_frame[idx] != NULL) total_valid_refs++;
+    if ((ref_frame_flags & (1 << idx)) == 0) {
+      ref_frame[idx] = NULL;
+    }
   }
 
   // Skip motion estimation w.r.t. reference frames which are not
@@ -727,13 +731,6 @@ static AOM_INLINE void mc_flow_dispenser(AV1_COMP *cpi, int frame_idx,
                                          tpl_frame->frame_display_index)) {
       ref_frame[idx] = NULL;
     }
-  }
-
-  // Skip reference frames based on user options and speed.
-  for (idx = 0; idx < 4 && total_valid_refs > max_allowed_refs; ++idx) {
-    const MV_REFERENCE_FRAME ref_frame_to_disable = disable_order[idx];
-    ref_frame[ref_frame_to_disable - 1] = NULL;
-    total_valid_refs--;
   }
 
   // Make a temporary mbmi for tpl model
