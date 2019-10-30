@@ -65,7 +65,9 @@ bool InitializeStaticEGLInternal(GLImplementation implementation) {
   base::FilePath gles_path;
   if (implementation == kGLImplementationSwiftShaderGL) {
 #if BUILDFLAG(ENABLE_SWIFTSHADER)
+#if !defined(IS_BLPWTK2)
     gles_path = module_path.Append(L"swiftshader/");
+#endif
     // Preload library
     LoadLibrary(L"ddraw.dll");
 #else
@@ -91,6 +93,7 @@ bool InitializeStaticEGLInternal(GLImplementation implementation) {
 #else
     DVLOG(1) << BLPCR_GLESV2_DLL_NAME << " not found";
 #endif
+    LOG(ERROR) << "gles dll not found in the path: " << gles_path;
     return false;
   }
 
