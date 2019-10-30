@@ -29,6 +29,8 @@
 #include "net/base/filename_util.h"
 #include "net/base/mime_sniffer.h"
 #include "net/base/parse_number.h"
+#include "net/http/http_byte_range.h"
+#include "net/http/http_util.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 
@@ -109,6 +111,38 @@ scoped_refptr<net::HttpResponseHeaders> CreateHeaders(
   }
 
   return headers;
+}
+
+// Determines which range of bytes should be sent in the response.
+// If a range is specified in |headers|, then |start| and |length| are set to
+// the range's boundaries and the function returns true.
+// If no range is specified in |headers|, then the entire range [0,
+// |max_length|) is set and the function returns true.
+// If the requested range is invalid, then the function returns false.
+bool GetRangeForRequest(const net::HttpRequestHeaders& headers,
+                        size_t max_length,
+                        size_t* start,
+                        size_t* length) {
+  std::string range_header;
+  net::HttpByteRange byte_range;
+  if (headers.GetHeader(net::HttpRequestHeaders::kRange, &range_header)) {
+    std::vector<net::HttpByteRange> ranges;
+    if (net::HttpUtil::ParseRangeHeader(range_header, &ranges) &&
+        ranges.size() == 1) {
+      byte_range = ranges[0];
+    } else {
+      // Only one range is allowed.
+      return false;
+    }
+  }
+  if (!byte_range.ComputeBounds(max_length)) {
+    return false;
+  }
+
+  *start = byte_range.first_byte_position();
+  *length =
+      byte_range.last_byte_position() - byte_range.first_byte_position() + 1;
+  return true;
 }
 
 // Copies data from a fuchsia.io.Node file into a URL response stream.
@@ -208,9 +242,19 @@ class ContentDirectoryURLLoader : public network::mojom::URLLoader {
           reinterpret_cast<char*>(mmap_.data()), mmap_.length(), request.url,
           "", net::ForceSniffFileUrlsForHtml::kDisabled, &*mime_type);
     }
+
+    size_t start_offset;
+    size_t content_length;
+    if (!GetRangeForRequest(request.headers, mmap_.length(), &start_offset,
+                            &content_length)) {
+      client_->OnComplete(network::URLLoaderCompletionStatus(
+          net::ERR_REQUEST_RANGE_NOT_SATISFIABLE));
+      return;
+    }
+
     response->mime_type = *mime_type;
     response->headers = CreateHeaders(*mime_type, charset);
-    response->content_length = mmap_.length();
+    response->content_length = content_length;
     client_->OnReceiveResponse(std::move(response));
 
     // Set up the Mojo DataPipe used for streaming the response payload to the
@@ -231,8 +275,9 @@ class ContentDirectoryURLLoader : public network::mojom::URLLoader {
         std::make_unique<mojo::DataPipeProducer>(std::move(producer_handle));
     body_writer_->Write(
         std::make_unique<mojo::StringDataSource>(
-            base::StringPiece(reinterpret_cast<char*>(mmap_.data()),
-                              mmap_.length()),
+            base::StringPiece(
+                reinterpret_cast<char*>(mmap_.data() + start_offset),
+                content_length),
             mojo::StringDataSource::AsyncWritingMode::
                 STRING_STAYS_VALID_UNTIL_COMPLETION),
         base::BindOnce(&ContentDirectoryURLLoader::OnWriteComplete,
