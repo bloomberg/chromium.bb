@@ -12,6 +12,8 @@
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/app_list/app_list_presenter_impl.h"
 #include "ash/app_list/views/app_list_view.h"
+#include "ash/home_screen/home_launcher_gesture_handler.h"
+#include "ash/home_screen/home_launcher_gesture_handler_observer.h"
 #include "ash/home_screen/home_screen_controller.h"
 #include "ash/keyboard/keyboard_controller_impl.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
@@ -72,26 +74,26 @@ class PointerMoveLoopWaiter : public ui::CompositorObserver {
   DISALLOW_COPY_AND_ASSIGN(PointerMoveLoopWaiter);
 };
 
-class HomeLauncherStateWaiter {
+class HomeLauncherStateWaiter : public HomeLauncherGestureHandlerObserver {
  public:
   HomeLauncherStateWaiter(bool target_shown, base::OnceClosure closure)
       : target_shown_(target_shown), closure_(std::move(closure)) {
     Shell::Get()
-        ->app_list_controller()
-        ->SetHomeLauncherAnimationCallbackForTesting(base::BindRepeating(
-            &HomeLauncherStateWaiter::OnHomeLauncherAnimationCompleted,
-            base::Unretained(this)));
+        ->home_screen_controller()
+        ->home_launcher_gesture_handler()
+        ->AddObserver(this);
   }
-  ~HomeLauncherStateWaiter() {
+  ~HomeLauncherStateWaiter() override {
     Shell::Get()
-        ->app_list_controller()
-        ->SetHomeLauncherAnimationCallbackForTesting(base::NullCallback());
+        ->home_screen_controller()
+        ->home_launcher_gesture_handler()
+        ->RemoveObserver(this);
   }
 
  private:
-  // Passed to AppListControllerImpl as a callback to run when home launcher
-  // transition animation is complete.
-  void OnHomeLauncherAnimationCompleted(bool shown) {
+  // HomeLauncherGestureHandlerObserver:
+  void OnHomeLauncherAnimationComplete(bool shown,
+                                       int64_t display_id) override {
     if (shown == target_shown_) {
       std::move(closure_).Run();
       delete this;
@@ -110,15 +112,13 @@ class LauncherStateWaiter {
  public:
   LauncherStateWaiter(ash::AppListViewState state, base::OnceClosure closure)
       : target_state_(state), closure_(std::move(closure)) {
-    Shell::Get()
-        ->app_list_controller()
-        ->SetStateTransitionAnimationCallbackForTesting(base::BindRepeating(
-            &LauncherStateWaiter::OnStateChanged, base::Unretained(this)));
+    Shell::Get()->app_list_controller()->SetStateTransitionAnimationCallback(
+        base::BindRepeating(&LauncherStateWaiter::OnStateChanged,
+                            base::Unretained(this)));
   }
   ~LauncherStateWaiter() {
-    Shell::Get()
-        ->app_list_controller()
-        ->SetStateTransitionAnimationCallbackForTesting(base::NullCallback());
+    Shell::Get()->app_list_controller()->SetStateTransitionAnimationCallback(
+        base::NullCallback());
   }
 
   void OnStateChanged(ash::AppListViewState state) {

@@ -24,6 +24,7 @@
 
 namespace ash {
 
+class HomeLauncherGestureHandlerObserver;
 class SwipeHomeToOverviewController;
 
 // HomeLauncherGestureHandler makes modifications to a window's transform and
@@ -78,6 +79,9 @@ class ASH_EXPORT HomeLauncherGestureHandler
   aura::Window* GetSecondaryWindow();
 
   bool IsDragInProgress() const;
+
+  void AddObserver(HomeLauncherGestureHandlerObserver* observer);
+  void RemoveObserver(HomeLauncherGestureHandlerObserver* obsever);
 
   void NotifyHomeLauncherTargetPositionChanged(bool showing,
                                                int64_t display_id);
@@ -208,6 +212,8 @@ class ASH_EXPORT HomeLauncherGestureHandler
   // detects a swipe from the shelf area.
   std::unique_ptr<SwipeHomeToOverviewController>
       swipe_home_to_overview_controller_;
+
+  base::ObserverList<HomeLauncherGestureHandlerObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(HomeLauncherGestureHandler);
 };

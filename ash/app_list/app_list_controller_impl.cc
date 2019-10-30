@@ -167,6 +167,8 @@ AppListControllerImpl::AppListControllerImpl()
     shell->assistant_controller()->AddObserver(this);
     shell->assistant_controller()->ui_controller()->AddModelObserver(this);
   }
+  shell->home_screen_controller()->home_launcher_gesture_handler()->AddObserver(
+      this);
 }
 
 AppListControllerImpl::~AppListControllerImpl() {
@@ -792,9 +794,6 @@ void AppListControllerImpl::OnHomeLauncherAnimationComplete(
   // visibility is correct first.
   OnVisibilityWillChange(shown, display_id);
   OnVisibilityChanged(shown, display_id);
-
-  if (!home_launcher_animation_callback_.is_null())
-    home_launcher_animation_callback_.Run(shown);
 }
 
 void AppListControllerImpl::OnHomeLauncherTargetPositionChanged(
@@ -933,14 +932,9 @@ void AppListControllerImpl::SetAppListModelForTest(
   model_->AddObserver(this);
 }
 
-void AppListControllerImpl::SetStateTransitionAnimationCallbackForTesting(
+void AppListControllerImpl::SetStateTransitionAnimationCallback(
     StateTransitionAnimationCallback callback) {
   state_transition_animation_callback_ = std::move(callback);
-}
-
-void AppListControllerImpl::SetHomeLauncherAnimationCallbackForTesting(
-    HomeLauncherAnimationCallback callback) {
-  home_launcher_animation_callback_ = std::move(callback);
 }
 
 void AppListControllerImpl::RecordShelfAppLaunched(
@@ -1560,6 +1554,9 @@ void AppListControllerImpl::Shutdown() {
   is_shutdown_ = true;
 
   Shell* shell = Shell::Get();
+  shell->home_screen_controller()
+      ->home_launcher_gesture_handler()
+      ->RemoveObserver(this);
   if (app_list_features::IsEmbeddedAssistantUIEnabled()) {
     shell->assistant_controller()->RemoveObserver(this);
     shell->assistant_controller()->ui_controller()->RemoveModelObserver(this);
