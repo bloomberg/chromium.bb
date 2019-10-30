@@ -10810,6 +10810,10 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="CookieDeleteEquivalent">
+  <obsolete>
+    Deprecated 2019-10-23 as part of cookie histogram cleanup
+    (https://crbug.com/993120).
+  </obsolete>
   <int value="0"
       label="Attempt to delete an equivalent cookie during a set cookie
              operation"/>
