@@ -209,6 +209,8 @@ std::string MigrationCauseToString(MigrationCause cause) {
       return "OnPathDegrading";
     case CHANGE_PORT_ON_PATH_DEGRADING:
       return "ChangePortOnPathDegrading";
+    case NEW_NETWORK_CONNECTED_POST_PATH_DEGRADING:
+      return "NewNetworkConnectedPostPathDegrading";
     default:
       QUIC_NOTREACHED();
       break;
@@ -2083,7 +2085,7 @@ void QuicChromiumClientSession::OnNetworkConnected(
     return;
 
   if (connection()->IsPathDegrading()) {
-    current_migration_cause_ = CHANGE_NETWORK_ON_PATH_DEGRADING;
+    current_migration_cause_ = NEW_NETWORK_CONNECTED_POST_PATH_DEGRADING;
   }
 
   if (wait_for_new_network_) {
