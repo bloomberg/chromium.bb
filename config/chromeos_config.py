@@ -542,7 +542,6 @@ def GeneralTemplates(site_config):
       site_config.templates.release,
       description='Moblab release builders',
       images=['base', 'recovery', 'test'],
-      afdo_use=False,
       signer_tests=False,
   )
 
@@ -556,7 +555,6 @@ def GeneralTemplates(site_config):
       'factory',
       site_config.templates.factory_firmware,
       display_label=config_lib.DISPLAY_LABEL_FACTORY,
-      afdo_use=False,
       chrome_sdk=False,
       chrome_sdk_build_chrome=False,
       description='Factory Builds',
@@ -600,7 +598,6 @@ def GeneralTemplates(site_config):
       paygen=False,
       image_test=False,
       manifest=constants.DEFAULT_MANIFEST,
-      afdo_use=False,
       sign_types=['firmware', 'accessory_rwsig'],
       build_type=constants.GENERIC_TYPE,
       uprev=True,

@@ -214,7 +214,6 @@
         },
         "factorybranch": {
             "_template": "factorybranch",
-            "afdo_use": false,
             "archive_build_debug": true,
             "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
             "binhost_bucket": "gs://chromeos-dev-installer",
@@ -258,7 +257,6 @@
         },
         "firmwarebranch": {
             "_template": "firmwarebranch",
-            "afdo_use": false,
             "archive_build_debug": true,
             "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
             "binhost_bucket": "gs://chromeos-dev-installer",
@@ -14032,7 +14030,6 @@
     },
     "fizz-moblab-release": {
         "_template": "release",
-        "afdo_use": false,
         "boards": [
             "fizz-moblab"
         ],
@@ -14058,7 +14055,6 @@
     },
     "fizz-moblab-release-tryjob": {
         "_template": "release",
-        "afdo_use": false,
         "boards": [
             "fizz-moblab"
         ],
