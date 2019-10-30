@@ -257,8 +257,8 @@ static scoped_refptr<cc::ScrollbarLayerBase> CreateScrollbarLayer(
     Scrollbar& scrollbar,
     float device_scale_factor) {
   ScrollbarTheme& theme = scrollbar.GetTheme();
-  auto scrollbar_delegate =
-      std::make_unique<ScrollbarLayerDelegate>(scrollbar, device_scale_factor);
+  auto scrollbar_delegate = base::MakeRefCounted<ScrollbarLayerDelegate>(
+      scrollbar, device_scale_factor);
   scoped_refptr<cc::ScrollbarLayerBase> scrollbar_layer;
   if (theme.UsesOverlayScrollbars() && theme.UsesNinePatchThumbResource()) {
     scrollbar_layer =
