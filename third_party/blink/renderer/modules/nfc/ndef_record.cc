@@ -275,6 +275,8 @@ NDEFRecord::NDEFRecord(const device::mojom::blink::NDEFRecord& record)
     : record_type_(record.record_type),
       media_type_(record.media_type),
       id_(record.id),
+      encoding_(record.encoding),
+      lang_(record.lang),
       payload_data_(record.data) {}
 
 const String& NDEFRecord::recordType() const {
@@ -287,6 +289,14 @@ const String& NDEFRecord::mediaType() const {
 
 const String& NDEFRecord::id() const {
   return id_;
+}
+
+const String& NDEFRecord::encoding() const {
+  return encoding_;
+}
+
+const String& NDEFRecord::lang() const {
+  return lang_;
 }
 
 DOMDataView* NDEFRecord::data() const {

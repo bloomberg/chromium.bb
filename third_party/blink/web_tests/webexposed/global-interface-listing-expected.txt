@@ -5093,7 +5093,9 @@ interface NDEFReadingEvent : Event
 interface NDEFRecord
     attribute @@toStringTag
     getter data
+    getter encoding
     getter id
+    getter lang
     getter mediaType
     getter recordType
     method arrayBuffer

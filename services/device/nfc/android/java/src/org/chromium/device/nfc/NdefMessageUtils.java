@@ -27,6 +27,8 @@ public final class NdefMessageUtils {
     private static final String TEXT_MIME = "text/plain";
     private static final String JSON_MIME = "application/json";
     private static final String OCTET_STREAM_MIME = "application/octet-stream";
+    private static final String ENCODING_UTF8 = "utf-8";
+    private static final String ENCODING_UTF16 = "utf-16";
 
     public static final String RECORD_TYPE_EMPTY = "empty";
     public static final String RECORD_TYPE_TEXT = "text";
@@ -215,7 +217,7 @@ public final class NdefMessageUtils {
     /**
      * Constructs TEXT NdefRecord
      */
-    private static NdefRecord createTextRecord(byte[] text) {
+    private static NdefRecord createTextRecord(byte[] text) throws UnsupportedEncodingException {
         // Check that text byte array is not empty.
         if (text.length == 0) {
             return null;
@@ -228,8 +230,10 @@ public final class NdefMessageUtils {
         // First byte of the payload is status byte, defined in Table 3: Status Byte Encodings.
         // 0-5: lang code length
         // 6  : must be zero
-        // 8  : 0 - text is in UTF-8 encoding, 1 - text is in UTF-16 encoding.
+        // 7  : 0 - text is in UTF-8 encoding, 1 - text is in UTF-16 encoding.
+        nfcRecord.encoding = (text[0] & (1 << 7)) == 0 ? ENCODING_UTF8 : ENCODING_UTF16;
         int langCodeLength = (text[0] & (byte) 0x3F);
+        nfcRecord.lang = new String(text, 1, langCodeLength, "US-ASCII");
         int textBodyStartPos = langCodeLength + 1;
         if (textBodyStartPos > text.length) {
             return null;
@@ -241,7 +245,8 @@ public final class NdefMessageUtils {
     /**
      * Constructs well known type (TEXT or URI) NdefRecord
      */
-    private static NdefRecord createWellKnownRecord(android.nfc.NdefRecord record) {
+    private static NdefRecord createWellKnownRecord(android.nfc.NdefRecord record)
+            throws UnsupportedEncodingException {
         if (Arrays.equals(record.getType(), android.nfc.NdefRecord.RTD_URI)) {
             return createURLRecord(record.toUri());
         }

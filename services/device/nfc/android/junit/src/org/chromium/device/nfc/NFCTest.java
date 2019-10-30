@@ -98,8 +98,7 @@ public class NFCTest {
     private static final String TEXT_MIME = "text/plain";
     private static final String JSON_MIME = "application/json";
     private static final String OCTET_STREAM_MIME = "application/octet-stream";
-    private static final String CHARSET_UTF8 = ";charset=UTF-8";
-    private static final String CHARSET_UTF16 = ";charset=UTF-16";
+    private static final String ENCODING_UTF8 = "utf-8";
     private static final String LANG_EN_US = "en-US";
 
     /**
@@ -223,6 +222,8 @@ public class NFCTest {
         assertEquals(NdefMessageUtils.RECORD_TYPE_EMPTY, emptyMojoNdefMessage.data[0].recordType);
         assertEquals(true, emptyMojoNdefMessage.data[0].mediaType.isEmpty());
         assertEquals(true, emptyMojoNdefMessage.data[0].id.isEmpty());
+        assertNull(emptyMojoNdefMessage.data[0].encoding);
+        assertNull(emptyMojoNdefMessage.data[0].lang);
         assertEquals(0, emptyMojoNdefMessage.data[0].data.length);
 
         // Test URL record conversion.
@@ -234,6 +235,8 @@ public class NFCTest {
         assertEquals(NdefMessageUtils.RECORD_TYPE_URL, urlMojoNdefMessage.data[0].recordType);
         assertEquals(TEXT_MIME, urlMojoNdefMessage.data[0].mediaType);
         assertEquals(true, urlMojoNdefMessage.data[0].id.isEmpty());
+        assertNull(urlMojoNdefMessage.data[0].encoding);
+        assertNull(urlMojoNdefMessage.data[0].lang);
         assertEquals(TEST_URL, new String(urlMojoNdefMessage.data[0].data));
 
         // Test TEXT record conversion.
@@ -245,6 +248,9 @@ public class NFCTest {
         assertEquals(NdefMessageUtils.RECORD_TYPE_TEXT, textMojoNdefMessage.data[0].recordType);
         assertEquals(TEXT_MIME, textMojoNdefMessage.data[0].mediaType);
         assertEquals(true, textMojoNdefMessage.data[0].id.isEmpty());
+        // TODO(beaufort.francois): Find a way to test UTF-16 encoding record conversion.
+        assertEquals(ENCODING_UTF8, textMojoNdefMessage.data[0].encoding);
+        assertEquals(LANG_EN_US, textMojoNdefMessage.data[0].lang);
         assertEquals(TEST_TEXT, new String(textMojoNdefMessage.data[0].data));
 
         // Test MIME record conversion.
@@ -257,6 +263,8 @@ public class NFCTest {
         assertEquals(NdefMessageUtils.RECORD_TYPE_OPAQUE, mimeMojoNdefMessage.data[0].recordType);
         assertEquals(TEXT_MIME, mimeMojoNdefMessage.data[0].mediaType);
         assertEquals(true, mimeMojoNdefMessage.data[0].id.isEmpty());
+        assertNull(mimeMojoNdefMessage.data[0].encoding);
+        assertNull(mimeMojoNdefMessage.data[0].lang);
         assertEquals(TEST_TEXT, new String(textMojoNdefMessage.data[0].data));
 
         // Test JSON record conversion.
@@ -269,6 +277,8 @@ public class NFCTest {
         assertEquals(NdefMessageUtils.RECORD_TYPE_JSON, jsonMojoNdefMessage.data[0].recordType);
         assertEquals(JSON_MIME, jsonMojoNdefMessage.data[0].mediaType);
         assertEquals(true, jsonMojoNdefMessage.data[0].id.isEmpty());
+        assertNull(jsonMojoNdefMessage.data[0].encoding);
+        assertNull(jsonMojoNdefMessage.data[0].lang);
         assertEquals(TEST_JSON, new String(jsonMojoNdefMessage.data[0].data));
 
         // Test Unknown record conversion.
@@ -283,6 +293,8 @@ public class NFCTest {
                 NdefMessageUtils.RECORD_TYPE_OPAQUE, unknownMojoNdefMessage.data[0].recordType);
         assertEquals(OCTET_STREAM_MIME, unknownMojoNdefMessage.data[0].mediaType);
         assertEquals(DUMMY_RECORD_ID, unknownMojoNdefMessage.data[0].id);
+        assertNull(unknownMojoNdefMessage.data[0].encoding);
+        assertNull(unknownMojoNdefMessage.data[0].lang);
         assertEquals(TEST_TEXT, new String(unknownMojoNdefMessage.data[0].data));
 
         // Test external record conversion.
@@ -296,6 +308,8 @@ public class NFCTest {
                 extMojoNdefMessage.data[0].recordType);
         assertEquals(OCTET_STREAM_MIME, extMojoNdefMessage.data[0].mediaType);
         assertEquals(true, extMojoNdefMessage.data[0].id.isEmpty());
+        assertNull(extMojoNdefMessage.data[0].encoding);
+        assertNull(extMojoNdefMessage.data[0].lang);
         assertEquals(TEST_TEXT, new String(extMojoNdefMessage.data[0].data));
 
         // Test NdefMessage with an additional WebNFC author record.
@@ -311,6 +325,8 @@ public class NFCTest {
         assertEquals(1, webMojoNdefMessage.data.length);
         assertEquals(NdefMessageUtils.RECORD_TYPE_JSON, webMojoNdefMessage.data[0].recordType);
         assertEquals(JSON_MIME, webMojoNdefMessage.data[0].mediaType);
+        assertNull(webMojoNdefMessage.data[0].encoding);
+        assertNull(webMojoNdefMessage.data[0].lang);
         assertEquals(TEST_JSON, new String(webMojoNdefMessage.data[0].data));
     }
 
