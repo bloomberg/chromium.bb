@@ -3150,6 +3150,7 @@ jumbo_static_library("ui") {
       "views/tabs/tab_hover_card_bubble_view.h",
       "views/tabs/tab_icon.cc",
       "views/tabs/tab_icon.h",
+      "views/tabs/tab_slot_view.cc",
       "views/tabs/tab_slot_view.h",
       "views/tabs/tab_strip.cc",
       "views/tabs/tab_strip.h",
