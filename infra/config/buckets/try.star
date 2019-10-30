@@ -237,12 +237,10 @@ android_builder(
 
 android_builder(
     name = 'android-oreo-arm64-dbg',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
     name = 'android-pie-arm64-dbg',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
@@ -282,7 +280,6 @@ android_builder(
 
 android_builder(
     name = 'android_arm64_dbg_recipe',
-    goma_backend = goma.backend.RBE_PROD,
     goma_jobs = goma.jobs.J300,
     tryjob = tryjob(),
 )
@@ -299,14 +296,12 @@ android_builder(
 
 android_builder(
     name = 'android_clang_dbg_recipe',
-    goma_backend = goma.backend.RBE_PROD,
     goma_jobs = goma.jobs.J300,
     tryjob = tryjob(),
 )
 
 android_builder(
     name = 'android_compile_dbg',
-    goma_backend = goma.backend.RBE_PROD,
     goma_jobs = goma.jobs.J150,
     tryjob = tryjob(),
 )
@@ -367,7 +362,6 @@ android_builder(
 
 android_builder(
     name = 'android_n5x_swarming_dbg',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
