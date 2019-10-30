@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.util;
 
+import android.annotation.SuppressLint;
 import android.support.test.filters.SmallTest;
 
 import org.junit.Assert;
@@ -16,6 +17,7 @@ import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.NativeLibraryTestRule;
 
 /** Tests for functions in {@link UrlUtilities} that use native code. */
+@SuppressLint("Authleak")
 @RunWith(BaseJUnit4ClassRunner.class)
 public class UrlUtilitiesTest {
     @Rule
