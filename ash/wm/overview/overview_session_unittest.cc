@@ -2938,8 +2938,7 @@ class OverviewSessionWithDragFromShelfFeatureTest : public OverviewSessionTest {
   DISALLOW_COPY_AND_ASSIGN(OverviewSessionWithDragFromShelfFeatureTest);
 };
 
-// Tests that in tablet mode, tapping on the background will always go to home
-// screen.
+// Tests that in tablet mode, tapping on the background will go to home screen.
 TEST_P(OverviewSessionWithDragFromShelfFeatureTest, TapOnBackgroundGoToHome) {
   UpdateDisplay("800x600");
   std::unique_ptr<aura::Window> window(CreateTestWindow());
@@ -2960,6 +2959,31 @@ TEST_P(OverviewSessionWithDragFromShelfFeatureTest, TapOnBackgroundGoToHome) {
   EXPECT_FALSE(InOverviewSession());
   EXPECT_TRUE(window_state->IsMinimized());
   EXPECT_TRUE(Shell::Get()->home_screen_controller()->IsHomeScreenVisible());
+}
+
+// Tests that in tablet mode, tapping on the background in split view mode will
+// be no-op.
+TEST_P(OverviewSessionWithDragFromShelfFeatureTest,
+       TapOnBackgroundInSplitView) {
+  UpdateDisplay("800x600");
+  std::unique_ptr<aura::Window> window1(CreateTestWindow());
+
+  std::unique_ptr<aura::Window> window2(CreateTestWindow());
+
+  EXPECT_FALSE(Shell::Get()->home_screen_controller()->IsHomeScreenVisible());
+  ToggleOverview();
+  EXPECT_TRUE(InOverviewSession());
+
+  split_view_controller()->SnapWindow(window2.get(),
+                                      SplitViewController::RIGHT);
+  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
+
+  // Tap on the background.
+  GetEventGenerator()->GestureTapAt(gfx::Point(10, 10));
+
+  EXPECT_TRUE(InOverviewSession());
+  EXPECT_FALSE(Shell::Get()->home_screen_controller()->IsHomeScreenVisible());
+  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
 }
 
 // TODO(sammiequon): Merge this into SplitViewOverviewSessionTest and rename
