@@ -430,7 +430,7 @@ TEST_F(SharingServiceTest, SendMessageToDeviceSuccess) {
   ASSERT_TRUE(
       sharing_message.ParseFromString(fake_gcm_driver_.message().payload));
   EXPECT_EQ("id", sharing_message.sender_guid());
-  EXPECT_EQ("manufacturer Computer model",
+  EXPECT_EQ("Manufacturer Computer model",
             sharing_message.sender_device_name());
 
   // Simulate ack message received by AckMessageHandler.
