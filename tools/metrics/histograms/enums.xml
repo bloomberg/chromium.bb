@@ -33738,6 +33738,23 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
       label="Del Fail -MaxPathCheck Fail - MoveFileEx Fail - CopyDelDir Fail"/>
 </enum>
 
+<enum name="KeepaliveRequestBlockStatus">
+  <int value="0" label="Not Blocked"/>
+  <int value="1" label="Blocked due to NetworkContext::CanCreateLoader"/>
+  <int value="2" label="Blocked due to the number of requests per process"/>
+  <int value="3"
+      label="Blocked due to the number of requests per top-level frame"/>
+  <int value="4" label="Blocked due to the number of requests globally"/>
+  <int value="5"
+      label="Blocked due to the total size of URL and request headers"/>
+  <int value="6"
+      label="Not blocked but the total size of URL and request headers
+             exceeds 384kb"/>
+  <int value="7"
+      label="Not blocked but the total size of URL and request headers
+             exceeds 256kb"/>
+</enum>
+
 <enum name="KerberosConfigErrorCode">
   <int value="0" label="Valid"/>
   <int value="1" label="Section nested in group"/>
