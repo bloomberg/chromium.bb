@@ -39,8 +39,8 @@ void LoadSizeFile(const char* compressed, size_t size) {
   ParseSizeInfo(compressed, size, &info);
 }
 
-void BuildTree() {
-  builder.reset(new TreeBuilder(&info));
+void BuildTree(bool group_by_component) {
+  builder.reset(new TreeBuilder(&info, group_by_component));
   builder->Build();
 }
 

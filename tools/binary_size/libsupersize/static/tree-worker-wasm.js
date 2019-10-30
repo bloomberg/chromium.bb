@@ -141,19 +141,25 @@ function Open(name) {
 
 // Placeholder input name until supplied via setInput()
 const fetcher = new DataFetcher('data.size');
+let sizeFileLoaded = false;
 
 async function buildTree(
     groupBy, filterTest, highlightTest, methodCountMode, onProgress) {
 
-  let sizeBuffer = await fetcher.loadSizeBuffer();
-  let heapBuffer = mallocBuffer(sizeBuffer);
-  console.log('Passing ' + sizeBuffer.byteLength + ' bytes to WebAssembly');
-  let LoadSizeFile = Module.cwrap('LoadSizeFile', 'bool', ['number', 'number']);
-  let start_time = Date.now();
-  LoadSizeFile(heapBuffer.byteOffset, sizeBuffer.byteLength);
-  console.log('Loaded size file in ' +
-    (Date.now() - start_time)/1000.0 + ' seconds');
-  Module._free(heapBuffer.byteOffset);
+  if (!sizeFileLoaded) {
+    let sizeBuffer = await fetcher.loadSizeBuffer();
+    let heapBuffer = mallocBuffer(sizeBuffer);
+    console.log('Passing ' + sizeBuffer.byteLength + ' bytes to WebAssembly');
+    let LoadSizeFile = Module.cwrap(
+      'LoadSizeFile', 'bool', ['number', 'number']);
+    let start_time = Date.now();
+    LoadSizeFile(heapBuffer.byteOffset, sizeBuffer.byteLength);
+    console.log('Loaded size file in ' +
+      (Date.now() - start_time)/1000.0 + ' seconds');
+    Module._free(heapBuffer.byteOffset);
+
+    sizeFileLoaded = true;
+  }
 
   /**
    * Creates data to post to the UI thread. Defaults will be used for the root
@@ -182,9 +188,10 @@ async function buildTree(
     return message;
   }
 
-  let BuildTree = Module.cwrap('BuildTree', 'void', []);
-  start_time = Date.now();
-  BuildTree();
+  let BuildTree = Module.cwrap('BuildTree', 'void', ['bool']);
+  let start_time = Date.now();
+  const groupByComponent = groupBy === "component";
+  BuildTree(groupByComponent);
   console.log('Constructed tree in ' +
     (Date.now() - start_time)/1000.0 + ' seconds');
 
