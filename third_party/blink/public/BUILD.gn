@@ -450,7 +450,6 @@ source_set("blink_headers") {
     "web/web_manifest_manager.h",
     "web/web_meaningful_layout.h",
     "web/web_media_inspector.h",
-    "web/web_media_player_action.h",
     "web/web_memory_statistics.h",
     "web/web_menu_item_info.h",
     "web/web_message_port_converter.h",

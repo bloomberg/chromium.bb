@@ -6476,7 +6476,7 @@ void RenderFrameImpl::RequestOverlayRoutingToken(
 
 void RenderFrameImpl::OnMediaPlayerActionAt(
     const gfx::PointF& location,
-    const blink::WebMediaPlayerAction& action) {
+    const blink::MediaPlayerAction& action) {
   blink::WebFloatRect viewport_position(location.x(), location.y(), 0, 0);
   GetLocalRootRenderWidget()->ConvertWindowToViewport(&viewport_position);
   frame_->PerformMediaPlayerAction(

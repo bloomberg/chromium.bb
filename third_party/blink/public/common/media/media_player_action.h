@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_MEDIA_PLAYER_ACTION_H_
-#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_MEDIA_PLAYER_ACTION_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_COMMON_MEDIA_MEDIA_PLAYER_ACTION_H_
+#define THIRD_PARTY_BLINK_PUBLIC_COMMON_MEDIA_MEDIA_PLAYER_ACTION_H_
 
 namespace blink {
 
-struct WebMediaPlayerAction {
+struct MediaPlayerAction {
   enum class Type {
     kPlay,
     kMute,
@@ -48,8 +48,8 @@ struct WebMediaPlayerAction {
 
   // The default constructor is needed for IPC. If this is moved to mojo, we may
   // be able to delete it and enforce that parameters are used.
-  WebMediaPlayerAction() = default;
-  WebMediaPlayerAction(Type type, bool enable) : type(type), enable(enable) {}
+  MediaPlayerAction() = default;
+  MediaPlayerAction(Type type, bool enable) : type(type), enable(enable) {}
 };
 
 }  // namespace blink
