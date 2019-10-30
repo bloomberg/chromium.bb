@@ -5238,12 +5238,12 @@ bool LayerTreeHostImpl::AnimatePageScale(base::TimeTicks monotonic_time) {
 }
 
 bool LayerTreeHostImpl::AnimateBrowserControls(base::TimeTicks time) {
-  if (!browser_controls_offset_manager_->has_animation())
+  if (!browser_controls_offset_manager_->HasAnimation())
     return false;
 
   gfx::Vector2dF scroll_delta = browser_controls_offset_manager_->Animate(time);
 
-  if (browser_controls_offset_manager_->has_animation())
+  if (browser_controls_offset_manager_->HasAnimation())
     SetNeedsOneBeginImplFrame();
 
   if (active_tree_->TotalScrollOffset().y() == 0.f)

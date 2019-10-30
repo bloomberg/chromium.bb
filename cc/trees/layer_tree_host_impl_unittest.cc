@@ -9976,7 +9976,7 @@ TEST_F(LayerTreeHostImplWithBrowserControlsTest,
 
   // End the scroll while the controls are still offset from their limit.
   host_impl_->ScrollEnd(EndState().get());
-  ASSERT_TRUE(host_impl_->browser_controls_manager()->has_animation());
+  ASSERT_TRUE(host_impl_->browser_controls_manager()->HasAnimation());
   EXPECT_TRUE(did_request_next_frame_);
   EXPECT_TRUE(did_request_redraw_);
   EXPECT_TRUE(did_request_commit_);
@@ -10011,12 +10011,12 @@ TEST_F(LayerTreeHostImplWithBrowserControlsTest,
       EXPECT_TRUE(did_request_redraw_);
 
     if (new_offset != 0) {
-      EXPECT_TRUE(host_impl_->browser_controls_manager()->has_animation());
+      EXPECT_TRUE(host_impl_->browser_controls_manager()->HasAnimation());
       EXPECT_TRUE(did_request_next_frame_);
     }
     host_impl_->DidFinishImplFrame();
   }
-  EXPECT_FALSE(host_impl_->browser_controls_manager()->has_animation());
+  EXPECT_FALSE(host_impl_->browser_controls_manager()->HasAnimation());
 }
 
 TEST_F(LayerTreeHostImplWithBrowserControlsTest,
@@ -10062,7 +10062,7 @@ TEST_F(LayerTreeHostImplWithBrowserControlsTest,
 
   // End the scroll while the controls are still offset from the limit.
   host_impl_->ScrollEnd(EndState().get());
-  ASSERT_TRUE(host_impl_->browser_controls_manager()->has_animation());
+  ASSERT_TRUE(host_impl_->browser_controls_manager()->HasAnimation());
   EXPECT_TRUE(did_request_next_frame_);
   EXPECT_TRUE(did_request_redraw_);
   EXPECT_TRUE(did_request_commit_);
@@ -10092,7 +10092,7 @@ TEST_F(LayerTreeHostImplWithBrowserControlsTest,
     }
     host_impl_->DidFinishImplFrame();
   }
-  EXPECT_FALSE(host_impl_->browser_controls_manager()->has_animation());
+  EXPECT_FALSE(host_impl_->browser_controls_manager()->HasAnimation());
   EXPECT_EQ(-top_controls_height_,
             host_impl_->browser_controls_manager()->ControlsTopOffset());
 }
