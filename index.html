@@ -1,10 +1,16 @@
 <html>
   <head>
     <title></title>
+    <meta name="viewport" content="width=device-width" />
+    <link rel="stylesheet" href="third_party/normalize.min.css" />
     <script src="third_party/jquery/jquery-3.3.1.min.js"></script>
     <style>
+      html {
+        overflow-x: hidden;
+      }
       body {
         font-family: monospace;
+        min-width: 400px;
       }
       * {
         box-sizing: border-box;
@@ -29,22 +35,57 @@
         width: 100%;
         padding: 1px 2px 1px 1px;
       }
-      .noderunbox {
-        flex: 0 0;
+      .nodebuttons {
+        flex-grow: 0;
+        flex-shrink: 0;
+      }
+      .noderun,
+      .nodelink {
+        display: inline-block;
+        vertical-align: top;
+        background-color: #eee;
+        background-repeat: no-repeat;
+        background-position: center;
+        border: 1px solid #888;
+      }
+      @media (pointer: fine) {
+        .nodebuttons {
+          flex-basis: 52px;
+        }
+        .noderun,
+        .nodelink {
+          border-radius: 4px;
+          width: 24px;
+          height: 24px;
+        }
+      }
+      @media (pointer: coarse) {
+        .nodebuttons {
+          flex-basis: 76px;
+        }
+        .noderun,
+        .nodelink {
+          border-radius: 6px;
+          width: 36px;
+          height: 36px;
+        }
       }
       .noderun {
-        font-size: 10pt;
-        padding: 0 3pt 0 3pt;
-        margin: 0 2px;
+        background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAJCAYAAADgkQYQAAAANklEQVQoU2NkYGD4zwABjFAagwJJwBTBJDEUY1OEoRifIrhiYhSBHYvuJnSHM5LtJry+wxlOAGPTCQmAB/WwAAAAAElFTkSuQmCC);
+      }
+      .nodelink {
+        background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMAQMAAABsu86kAAAABlBMVEUAAAAAAAClZ7nPAAAAAXRSTlMAQObYZgAAACRJREFUCNdjYGBg+P+BoUGAYesFhj4BhvsFDPYNDHwMCMTAAACqJwbp3VgbrAAAAABJRU5ErkJggg==);
       }
       .nodetitle {
-        flex-grow: 1;
+        flex: 10 0 4em;
       }
       .nodename {
         user-select: all;
+        word-break: break-word;
       }
-      .nodelink {
-        margin: 0 2px;
+      @media only screen and (max-width: 600px) {
+        /* TODO: make the uninteresting part of the name be really small or something, such that it gets
+         * auto selected but doesn't take space. */
       }
       .nodedescription {
         margin: 0;
@@ -60,7 +101,7 @@
         border-color: gray;
       }
       .subtreechildren {
-        margin-left: 8pt;
+        margin-left: 6px;
       }
 
       /* tree nodes which are test cases */
@@ -71,32 +112,46 @@
         border-color: gray;
         background: white;
       }
+      .testcase[data-status='fail'] {
+        background: #fcc;
+      }
+      .testcase[data-status='warn'] {
+        background: #ffb;
+      }
+      .testcase[data-status='pass'] {
+        background: #cfc;
+      }
+      .testcase[data-status='skip'] {
+        background: #ccc;
+      }
       .testcasetime {
+        white-space: nowrap;
         text-align: right;
-        flex: 0 0 8em;
+        flex: 1 0 5.5em;
       }
       .testcaselogs {
-        margin-left: 8pt;
-        width: calc(100% - 8pt);
+        margin-left: 6px;
+        width: calc(100% - 6px);
         border-width: 0 0px 0 1px;
         border-style: solid;
         border-color: gray;
         background: white;
       }
       .testcaselog {
-        margin-left: 2pt;
+        margin-left: 2px;
         border-width: 0 0 1px 0;
         border-style: solid;
         border-color: #eee;
       }
-      .fail {
-        background: #fcc;
-      }
-      .warn {
-        background: #ffb;
-      }
-      .pass {
-        background: #cfc;
+
+      @media only screen and (max-width: 600px) {
+        .subtreechildren {
+          margin-left: 2px;
+        }
+        .testcaselogs {
+          margin-left: 2px;
+          width: calc(100% - 2px);
+        }
       }
     </style>
     <script>

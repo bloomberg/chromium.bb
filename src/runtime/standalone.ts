@@ -52,11 +52,7 @@ function makeCaseHTML(name: string, t: RunCase): [HTMLElement, RunSubtree] {
 
     casetime.text(res.timems.toFixed(4) + ' ms');
 
-    div
-      .removeClass('pass')
-      .removeClass('warn')
-      .removeClass('fail')
-      .addClass(res.status);
+    div.attr('data-status', res.status);
 
     if (res.logs) {
       caselogs.empty();
@@ -132,18 +128,26 @@ function makeTreeNodeHeaderHTML(
     nameHTML = n1.replace(/:/g, ':<wbr>') + '<wbr>' + n2.replace(/,/g, ',<wbr>');
   }
 
+  const href = `?${worker ? 'worker&' : ''}${debug ? 'debug&' : ''}q=${nameEncoded}`;
   $('<div>')
-    .addClass('noderunbox')
+    .addClass('nodebuttons')
     .appendTo(div)
     .append(
       $('<button>')
         .addClass('noderun')
-        .attr('alt', 'run')
-        .html('&#x25b6;')
+        .attr('alt', 'Run subtree')
+        .attr('title', 'Run subtree')
         .on('click', async () => {
           await runSubtree();
           updateJSON();
         })
+    )
+    .append(
+      $('<a>')
+        .addClass('nodelink')
+        .attr('href', href)
+        .attr('alt', 'Open')
+        .attr('title', 'Open')
     );
   const nodetitle = $('<div>')
     .addClass('nodetitle')
@@ -151,12 +155,6 @@ function makeTreeNodeHeaderHTML(
   $('<span>')
     .addClass('nodename')
     .html(nameHTML)
-    .appendTo(nodetitle);
-  $('<a>')
-    .addClass('nodelink')
-    .attr('href', `?${worker ? 'worker&' : ''}${debug ? 'debug&' : ''}q=${nameEncoded}`)
-    .attr('alt', 'open')
-    .html('&#x2b08;')
     .appendTo(nodetitle);
   if (description) {
     $('<div>')
