@@ -65,6 +65,57 @@ void MarkingVisitorCommon::RegisterBackingStoreCallback(
   }
 }
 
+void MarkingVisitorCommon::VisitWeak(void* object,
+                                     void* object_weak_ref,
+                                     TraceDescriptor desc,
+                                     WeakCallback callback) {
+  // Filter out already marked values. The write barrier for WeakMember
+  // ensures that any newly set value after this point is kept alive and does
+  // not require the callback.
+  if (desc.base_object_payload != BlinkGC::kNotFullyConstructedObject &&
+      HeapObjectHeader::FromPayload(desc.base_object_payload)
+          ->IsMarked<HeapObjectHeader::AccessMode::kAtomic>())
+    return;
+  RegisterWeakCallback(object_weak_ref, callback);
+}
+
+void MarkingVisitorCommon::VisitBackingStoreStrongly(void* object,
+                                                     void** object_slot,
+                                                     TraceDescriptor desc) {
+  RegisterBackingStoreReference(object_slot);
+  if (!object)
+    return;
+  Visit(object, desc);
+}
+
+// All work is registered through RegisterWeakCallback.
+void MarkingVisitorCommon::VisitBackingStoreWeakly(void* object,
+                                                   void** object_slot,
+                                                   TraceDescriptor strong_desc,
+                                                   TraceDescriptor weak_desc,
+                                                   WeakCallback callback,
+                                                   void* parameter) {
+  RegisterBackingStoreReference(object_slot);
+  if (!object)
+    return;
+  RegisterWeakCallback(parameter, callback);
+
+  if (weak_desc.callback) {
+    weak_table_worklist_.Push(
+        {weak_desc.base_object_payload, weak_desc.callback});
+  }
+}
+
+void MarkingVisitorCommon::VisitBackingStoreOnly(void* object,
+                                                 void** object_slot) {
+  RegisterBackingStoreReference(object_slot);
+  if (!object)
+    return;
+  HeapObjectHeader* header = HeapObjectHeader::FromPayload(object);
+  MarkHeaderNoTracing(header);
+  AccountMarkedBytes(header);
+}
+
 // static
 bool MarkingVisitor::WriteBarrierSlow(void* value) {
   if (!value || IsHashTableDeleteValue(value))
