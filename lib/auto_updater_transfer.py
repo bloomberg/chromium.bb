@@ -53,7 +53,11 @@ STATEFUL_FILENAME = 'stateful.tgz'
 _STATEFUL_UPDATE_FILENAME = 'stateful_update'
 
 
-class ChromiumOSTransferError(Exception):
+class Error(Exception):
+  """A generic auto updater transfer error."""
+
+
+class ChromiumOSTransferError(Error):
   """Thrown when there is a general transfer specific error."""
 
 
@@ -132,18 +136,18 @@ class LocalTransfer(Transfer):
                payload_name, cmd_kwargs, device_payload_dir, dev_dir='',
                payload_mode='scp', original_payload_dir=None,
                transfer_stateful_update=True, transfer_rootfs_update=True):
-    """Initialize a LocalTransfer to handle tranferring files from local to DUT.
+    """Initialize LocalTransfer to handle transferring files from local to DUT.
 
     Args:
-      device: the ChromiumOSDevice to be updated.
+      device: The ChromiumOSDevice to be updated.
       device_payload_dir: Path to the payload directory in the device's work
           directory.
-      tempdir: the temp directory in caller, not in the device. For example,
+      tempdir: The temp directory in caller, not in the device. For example,
           the tempdir for cros flash is /tmp/cros-flash****/, used to
           temporarily keep files when transferring update-utils package, and
           reserve nebraska and update engine logs.
-      dev_dir: the directory of the nebraska that runs the CrOS auto-update.
-      payload_dir: the directory of payload(s).
+      dev_dir: The directory of the nebraska that runs the CrOS auto-update.
+      payload_dir: The directory of payload(s).
       payload_mode: The payload mode - it can be 'parallel' or 'scp'.
       cmd_kwargs: keyword arguments that are sent along with the commands that
           are run on the device.
@@ -246,7 +250,7 @@ class LocalTransfer(Transfer):
     """Returns the path to the stateful_update_bin on the target.
 
     Returns:
-      <need_transfer, path>:
+      (need_transfer, path):
       need_transfer is True if stateful_update_bin is found in local path,
       False if we directly use stateful_update_bin on the host.
       path: If need_transfer is True, it represents the local path of
