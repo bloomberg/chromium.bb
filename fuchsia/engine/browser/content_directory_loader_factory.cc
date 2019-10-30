@@ -39,6 +39,12 @@ namespace {
 using ContentDirectoriesMap =
     std::map<std::string, fidl::InterfaceHandle<fuchsia::io::Directory>>;
 
+// Maximum number of bytes to read when "sniffing" its MIME type.
+constexpr size_t kMaxBytesToSniff = 1024 * 10;  // Read up to 10KB.
+
+// The MIME type to use if "sniffing" fails to compute a result.
+constexpr char kFallbackMimeType[] = "application/octet-stream";
+
 ContentDirectoriesMap ParseContentDirectoriesFromCommandLine() {
   ContentDirectoriesMap directories;
 
@@ -237,10 +243,17 @@ class ContentDirectoryURLLoader : public network::mojom::URLLoader {
     // If a MIME type wasn't specified, then fall back on inferring the type
     // from the file's contents.
     if (!mime_type) {
-      mime_type.emplace();
-      net::SniffMimeType(
-          reinterpret_cast<char*>(mmap_.data()), mmap_.length(), request.url,
-          "", net::ForceSniffFileUrlsForHtml::kDisabled, &*mime_type);
+      if (!net::SniffMimeType(reinterpret_cast<char*>(mmap_.data()),
+                              std::min(mmap_.length(), kMaxBytesToSniff),
+                              request.url, {} /* type_hint */,
+                              net::ForceSniffFileUrlsForHtml::kDisabled,
+                              &mime_type.emplace())) {
+        if (!mime_type) {
+          // Only set the fallback type if SniffMimeType completely gave up on
+          // generating a suggestion.
+          *mime_type = kFallbackMimeType;
+        }
+      }
     }
 
     size_t start_offset;
