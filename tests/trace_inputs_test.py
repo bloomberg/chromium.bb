@@ -4,7 +4,7 @@
 # Use of this source code is governed under the Apache License, Version 2.0
 # that can be found in the LICENSE file.
 
-import StringIO
+import io
 import os
 import sys
 import unittest
@@ -101,7 +101,7 @@ class TraceInputs(unittest.TestCase):
         [u'cmd.exe', u'"C:\\\\Winz\\\\cmd.exe" /k "C:\\\\MSVS\\\\vc.bat" x86'],
     }
     for data, expected in test_cases.items():
-      csv = trace_inputs.LogmanTrace.Tracer.CsvReader(StringIO.StringIO(data))
+      csv = trace_inputs.LogmanTrace.Tracer.CsvReader(io.StringIO(data))
       actual = [i for i in csv]
       self.assertEqual(1, len(actual))
       self.assertEqual(expected, actual[0])

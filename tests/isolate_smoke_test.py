@@ -3,8 +3,8 @@
 # Use of this source code is governed under the Apache License, Version 2.0
 # that can be found in the LICENSE file.
 
-import cStringIO
 import hashlib
+import io
 import json
 import logging
 import os
@@ -438,7 +438,7 @@ def list_files_tree(directory):
 
 
 def _isolate_dict_to_string(values):
-  buf = cStringIO.StringIO()
+  buf = io.StringIO()
   isolate.isolate_format.pretty_print(values, buf)
   return buf.getvalue()
 

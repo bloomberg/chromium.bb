@@ -10,13 +10,13 @@ retries.
 """
 
 import hashlib
+import io
 import json
 import logging
 import optparse
 import os
 import Queue
 import socket
-import StringIO
 import sys
 import threading
 import time
@@ -88,7 +88,7 @@ def generate_version(source):
 def calculate_version(url):
   """Retrieves the swarm_bot code and returns the SHA-1 for it."""
   # Cannot use url_open() since zipfile requires .seek().
-  return generate_version(StringIO.StringIO(net.url_read(url)))
+  return generate_version(io.StringIO(net.url_read(url)))
 
 
 def get_hostname():
