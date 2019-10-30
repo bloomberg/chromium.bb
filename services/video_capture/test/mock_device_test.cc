@@ -56,7 +56,8 @@ void MockDeviceTest::SetUp() {
   // CreateDevice.
   wait_loop.Run();
   factory_->CreateDevice(mock_descriptor.device_id,
-                         mojo::MakeRequest(&device_proxy_), base::DoNothing());
+                         device_remote_.BindNewPipeAndPassReceiver(),
+                         base::DoNothing());
 
   requested_settings_.requested_format.frame_size = gfx::Size(800, 600);
   requested_settings_.requested_format.frame_rate = 15;

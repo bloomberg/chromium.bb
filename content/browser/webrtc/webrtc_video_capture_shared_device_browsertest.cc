@@ -14,6 +14,7 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "media/base/media_switches.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/video_capture/public/cpp/mock_receiver.h"
 #include "services/video_capture/public/mojom/device.mojom.h"
 #include "services/video_capture/public/mojom/device_factory.mojom.h"
@@ -137,7 +138,7 @@ class WebRtcVideoCaptureSharedDeviceBrowserTest
       const std::vector<media::VideoCaptureDeviceInfo>& infos) {
     ASSERT_FALSE(infos.empty());
     device_factory_->CreateDevice(
-        infos[0].descriptor.device_id, mojo::MakeRequest(&device_),
+        infos[0].descriptor.device_id, device_.BindNewPipeAndPassReceiver(),
         base::BindOnce(
             &WebRtcVideoCaptureSharedDeviceBrowserTest::OnCreateDeviceCallback,
             weak_factory_.GetWeakPtr(), infos, buffer_type_to_request));
@@ -194,7 +195,7 @@ class WebRtcVideoCaptureSharedDeviceBrowserTest
 
   // For single-client API case only
   video_capture::mojom::DeviceFactoryPtr device_factory_;
-  video_capture::mojom::DevicePtr device_;
+  mojo::Remote<video_capture::mojom::Device> device_;
 
   // For multi-client API case only
   video_capture::mojom::VideoSourceProviderPtr video_source_provider_;

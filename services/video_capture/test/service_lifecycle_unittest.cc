@@ -163,10 +163,10 @@ TEST_F(VideoCaptureServiceLifecycleTest,
     factory->GetDeviceInfos(device_info_receiver_.Get());
     wait_loop.Run();
   }
-  mojom::DevicePtr fake_device;
+  mojo::Remote<mojom::Device> fake_device;
   factory->CreateDevice(
       std::move(fake_device_info.descriptor.device_id),
-      mojo::MakeRequest(&fake_device),
+      fake_device.BindNewPipeAndPassReceiver(),
       base::BindOnce([](mojom::DeviceAccessResultCode result_code) {
         ASSERT_EQ(mojom::DeviceAccessResultCode::SUCCESS, result_code);
       }));
