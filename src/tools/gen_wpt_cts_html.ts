@@ -14,6 +14,10 @@ import { listing } from '../suites/cts/index.js';
 
   const ls = (await listing) as TestSuiteListingEntry[];
   for (const l of ls) {
+    if (l.path.length === 0 || l.path.endsWith('/')) {
+      // This is a readme.
+      continue;
+    }
     result += `<meta name=variant content='?q=cts:${l.path}:'>\n`;
   }
 
