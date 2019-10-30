@@ -4,6 +4,7 @@
 # the BackForwardCache.
 -FrameServiceBaseTest.DidFinishNavigation
 
+# https://crbug.com/1019077
 # Expects the process used by the previous document to exit.
 -RenderFrameHostManagerTest.DeleteFrameAfterSwapOutACK
 
