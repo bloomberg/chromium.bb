@@ -871,7 +871,7 @@ public class Tab {
             boolean creatingWebContents = webContents == null;
             if (creatingWebContents) {
                 webContents = WarmupManager.getInstance().takeSpareWebContents(
-                        isIncognito(), initiallyHidden, isCurrentlyACustomTab());
+                        isIncognito(), initiallyHidden, isCustomTab());
                 if (webContents == null) {
                     webContents =
                             WebContentsFactory.createWebContents(isIncognito(), initiallyHidden);
@@ -1278,7 +1278,7 @@ public class Tab {
         if (mPendingLoadParams != null) {
             assert isFrozen();
             WebContents webContents = WarmupManager.getInstance().takeSpareWebContents(
-                    isIncognito(), isHidden(), isCurrentlyACustomTab());
+                    isIncognito(), isHidden(), isCustomTab());
             if (webContents == null) {
                 webContents = WebContentsFactory.createWebContents(isIncognito(), isHidden());
             }
@@ -1502,13 +1502,9 @@ public class Tab {
         return mWebContentsDelegate;
     }
 
-    /**
-     * Checks if this tab is currently presented in the context of custom tabs. Tabs can be moved
-     * between different activities so the returned value might change over the lifetime of the tab.
-     * @return true if this is currently a custom tab.
-     */
-    @CalledByNative
-    public boolean isCurrentlyACustomTab() {
+    // TODO(jinsukkim): Delete this once the WarmupManager does not need this any more
+    //         for its metric after 2020-03-28.
+    private boolean isCustomTab() {
         ChromeActivity activity = getActivity();
         return activity != null && activity.isCustomTab();
     }

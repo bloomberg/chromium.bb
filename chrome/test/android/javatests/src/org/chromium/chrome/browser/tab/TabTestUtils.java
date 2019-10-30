@@ -15,7 +15,6 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
  * Exposes helper functions to be used in tests to instrument tab interaction.
  */
 public class TabTestUtils {
-
     /**
      * @return The observers registered for the given tab.
      */
@@ -118,5 +117,13 @@ public class TabTestUtils {
      */
     public static TabDelegateFactory getDelegateFactory(Tab tab) {
         return tab.getDelegateFactory();
+    }
+
+    /**
+     * @param tab {@link Tab} object.
+     * @return {@code true} if the current tab is a custom tab.
+     */
+    public static boolean isCustomTab(Tab tab) {
+        return tab.getTabWebContentsDelegateAndroid().isCustomTab();
     }
 }
