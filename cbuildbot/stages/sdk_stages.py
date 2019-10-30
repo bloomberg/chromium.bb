@@ -352,7 +352,8 @@ class SDKTestStage(generic_stages.BuilderStage):
           build_autotest=True,
           usepkg=False,
           extra_env=self._portage_extra_env,
-          chroot_args=new_chroot_args)
+          chroot_args=new_chroot_args,
+          disable_revdep_logic=True)
 
 
 class SDKUprevStage(generic_stages.BuilderStage):
