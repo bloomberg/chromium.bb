@@ -1787,7 +1787,6 @@ void WebMediaPlayerImpl::OnError(PipelineStatus status) {
 #endif
 
   MaybeSetContainerName();
-  ReportPipelineError(load_type_, status, media_log_.get());
   simple_watch_timer_.Stop();
   media_log_->AddEvent(media_log_->CreatePipelineErrorEvent(status));
   media_metrics_provider_->OnError(status);
