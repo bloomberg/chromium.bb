@@ -65121,6 +65121,42 @@ Full version information for the fingerprint enum values:
   <int value="3" label="H264"/>
 </enum>
 
+<enum name="WebSchedulerTrackedFeature">
+  <int value="0" label="WebSocket"/>
+  <int value="1" label="WebRTC"/>
+  <int value="2" label="MainResourceHasCacheControlNoCache"/>
+  <int value="3" label="MainResourceHasCacheControlNoStore"/>
+  <int value="4" label="SubresourceHasCacheControlNoCache"/>
+  <int value="5" label="SubresourceHasCacheControlNoStore"/>
+  <int value="6" label="PageShowEventListener"/>
+  <int value="7" label="PageHideEventListener"/>
+  <int value="8" label="BeforeUnloadEventListener"/>
+  <int value="9" label="UnloadEventListener"/>
+  <int value="10" label="FreezeEventListener"/>
+  <int value="11" label="ResumeEventListener"/>
+  <int value="12" label="ContainsPlugins"/>
+  <int value="13" label="DocumentLoaded"/>
+  <int value="14" label="DedicatedWorkerOrWorklet"/>
+  <int value="15" label="OutstandingNetworkRequest"/>
+  <int value="16" label="ServiceWorkerControlledPage"/>
+  <int value="17" label="OutstandingIndexedDBTransaction"/>
+  <int value="18" label="HasScriptableFramesInMultipleTabs"/>
+  <int value="19" label="RequestedGeolocationPermission"/>
+  <int value="20" label="RequestedNotificationsPermission"/>
+  <int value="21" label="RequestedMIDIPermission"/>
+  <int value="22" label="RequestedAudioCapturePermission"/>
+  <int value="23" label="RequestedVideoCapturePermission"/>
+  <int value="24" label="RequestedSensorsPermission"/>
+  <int value="25" label="RequestedBackgroundWorkPermission"/>
+  <int value="26" label="BroadcastChannel"/>
+  <int value="27" label="IndexedDBConnection"/>
+  <int value="28" label="WebGL"/>
+  <int value="29" label="WebVR"/>
+  <int value="30" label="WebXR"/>
+  <int value="31" label="SharedWorker"/>
+  <int value="32" label="WebLocks"/>
+</enum>
+
 <enum name="WebShareMethod">
   <int value="0" label="Share"/>
 </enum>

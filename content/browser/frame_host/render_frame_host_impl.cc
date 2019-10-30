@@ -3718,8 +3718,11 @@ void RenderFrameHostImpl::EvictFromBackForwardCacheWithReason(
   // TODO(hajimehoshi): Record the 'race condition' by JavaScript execution when
   // |is_in_back_forward_cache()| is false.
   BackForwardCacheMetrics* metrics = top_document->GetBackForwardCacheMetrics();
-  if (is_in_back_forward_cache() && metrics)
-    metrics->MarkNotRestoredWithReason(reason);
+  if (is_in_back_forward_cache() && metrics) {
+    BackForwardCacheMetrics::NotRestoredReasons reasons;
+    reasons.set(static_cast<size_t>(reason));
+    metrics->MarkNotRestoredWithReasons(reasons);
+  }
 
   if (!in_back_forward_cache) {
     BackForwardCacheMetrics::RecordEvictedAfterDocumentRestored(
