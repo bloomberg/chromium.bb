@@ -155,6 +155,12 @@ const char kSupervisedUserCustodianProfileImageURL[] =
 const char kSupervisedUserCustodianProfileURL[] =
     "profile.managed.custodian_profile_url";
 
+// Whether the supervised user may approve extension permission requests. If
+// false, extensions should not be able to request new permissions, and new
+// extensions should not be installable.
+const char kSupervisedUserExtensionsMayRequestPermissions[] =
+    "profile.managed.extensions_may_request_permissions";
+
 // Maps host names to whether the host is manually allowed or blocked.
 const char kSupervisedUserManualHosts[] = "profile.managed.manual_hosts";
 
