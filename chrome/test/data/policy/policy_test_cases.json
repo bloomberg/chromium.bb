@@ -32,7 +32,7 @@
   },
 
   "TabFreezingEnabled": {
-    "os": ["win"],
+    "os": ["win", "linux", "mac", "chromeos"],
     "official_only": true,
     "test_policy": { "TabFreezingEnabled": false },
     "pref_mappings": [
