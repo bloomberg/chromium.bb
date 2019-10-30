@@ -3523,9 +3523,11 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_TRUE(NavigateToURL(shell(), url_a));
   WaitForFirstVisuallyNonEmptyPaint(shell()->web_contents());
   RenderFrameHostImpl* rfh_a = current_frame_host();
+  RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
 
   // 2) Navigate to B.
   EXPECT_TRUE(NavigateToURL(shell(), url_b));
+  ASSERT_FALSE(delete_observer_rfh_a.deleted());
   EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
   WaitForFirstVisuallyNonEmptyPaint(shell()->web_contents());
 
@@ -3549,10 +3551,12 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), url_a));
   WaitForFirstVisuallyNonEmptyPaint(web_contents());
   RenderFrameHostImpl* rfh_a = current_frame_host();
+  RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
   EXPECT_EQ(web_contents()->GetThemeColor(), 0xFFFF0000u);
 
   EXPECT_TRUE(NavigateToURL(shell(), url_b));
   WaitForFirstVisuallyNonEmptyPaint(web_contents());
+  ASSERT_FALSE(delete_observer_rfh_a.deleted());
   EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
   EXPECT_EQ(web_contents()->GetThemeColor(), base::nullopt);
 
