@@ -879,38 +879,6 @@ public class PrefServiceBridge {
     }
 
     /**
-     * @param clicked Whether the update menu item was clicked. The preference is stored to
-     *                facilitate logging whether Chrome was updated after a click on the menu item.
-     */
-    public void setClickedUpdateMenuItem(boolean clicked) {
-        PrefServiceBridgeJni.get().setClickedUpdateMenuItem(PrefServiceBridge.this, clicked);
-    }
-
-    /**
-     * @return Whether the update menu item was clicked.
-     */
-    public boolean getClickedUpdateMenuItem() {
-        return PrefServiceBridgeJni.get().getClickedUpdateMenuItem(PrefServiceBridge.this);
-    }
-
-    /**
-     * @param version The latest version of Chrome available when the update menu item
-     *                was clicked.
-     */
-    public void setLatestVersionWhenClickedUpdateMenuItem(String version) {
-        PrefServiceBridgeJni.get().setLatestVersionWhenClickedUpdateMenuItem(
-                PrefServiceBridge.this, version);
-    }
-
-    /**
-     * @return The latest version of Chrome available when the update menu item was clicked.
-     */
-    public String getLatestVersionWhenClickedUpdateMenuItem() {
-        return PrefServiceBridgeJni.get().getLatestVersionWhenClickedUpdateMenuItem(
-                PrefServiceBridge.this);
-    }
-
-    /**
      * @return The stored download default directory.
      */
     public String getDownloadDefaultDirectory() {
@@ -1049,10 +1017,6 @@ public class PrefServiceBridge {
         boolean isMetricsReportingEnabled(PrefServiceBridge caller);
         void setMetricsReportingEnabled(PrefServiceBridge caller, boolean enabled);
         boolean isMetricsReportingManaged(PrefServiceBridge caller);
-        void setClickedUpdateMenuItem(PrefServiceBridge caller, boolean clicked);
-        boolean getClickedUpdateMenuItem(PrefServiceBridge caller);
-        void setLatestVersionWhenClickedUpdateMenuItem(PrefServiceBridge caller, String version);
-        String getLatestVersionWhenClickedUpdateMenuItem(PrefServiceBridge caller);
         void getChromeAcceptLanguages(PrefServiceBridge caller, List<LanguageItem> list);
         void getUserAcceptLanguages(PrefServiceBridge caller, List<String> list);
         void updateUserAcceptLanguages(PrefServiceBridge caller, String language, boolean add);

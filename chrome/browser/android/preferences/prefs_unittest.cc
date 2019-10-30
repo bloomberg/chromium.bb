@@ -84,6 +84,10 @@ TEST_F(PrefsTest, TestIndex) {
             GetPrefName(SUPERVISED_USER_SECOND_CUSTODIAN_NAME));
   EXPECT_EQ(prefs::kSupervisedUserSecondCustodianEmail,
             GetPrefName(SUPERVISED_USER_SECOND_CUSTODIAN_EMAIL));
+  EXPECT_EQ(prefs::kClickedUpdateMenuItem,
+            GetPrefName(CLICKED_UPDATE_MENU_ITEM));
+  EXPECT_EQ(prefs::kLatestVersionWhenClickedUpdateMenuItem,
+            GetPrefName(LATEST_VERSION_WHEN_CLICKED_UPDATE_MENU_ITEM));
 
   // If this check fails, a pref is missing a test case above.
   EXPECT_EQ(Pref::PREF_NUM_PREFS, pref_count_);

@@ -50,6 +50,8 @@ enum Pref {
   SUPERVISED_USER_CUSTODIAN_EMAIL,
   SUPERVISED_USER_SECOND_CUSTODIAN_NAME,
   SUPERVISED_USER_SECOND_CUSTODIAN_EMAIL,
+  CLICKED_UPDATE_MENU_ITEM,
+  LATEST_VERSION_WHEN_CLICKED_UPDATE_MENU_ITEM,
   // PREF_NUM_PREFS must be the last entry.
   PREF_NUM_PREFS
 };
@@ -89,6 +91,8 @@ const char* const kPrefsExposedToJava[] = {
     prefs::kSupervisedUserCustodianEmail,
     prefs::kSupervisedUserSecondCustodianName,
     prefs::kSupervisedUserSecondCustodianEmail,
+    prefs::kClickedUpdateMenuItem,
+    prefs::kLatestVersionWhenClickedUpdateMenuItem,
 };
 
 #endif  // CHROME_BROWSER_ANDROID_PREFERENCES_PREFS_H_

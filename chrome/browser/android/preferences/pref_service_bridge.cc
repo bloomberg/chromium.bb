@@ -545,37 +545,6 @@ static jboolean JNI_PrefServiceBridge_IsMetricsReportingManaged(
       metrics::prefs::kMetricsReportingEnabled);
 }
 
-static void JNI_PrefServiceBridge_SetClickedUpdateMenuItem(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    jboolean clicked) {
-  GetPrefService()->SetBoolean(prefs::kClickedUpdateMenuItem, clicked);
-}
-
-static jboolean JNI_PrefServiceBridge_GetClickedUpdateMenuItem(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  return GetPrefService()->GetBoolean(prefs::kClickedUpdateMenuItem);
-}
-
-static void JNI_PrefServiceBridge_SetLatestVersionWhenClickedUpdateMenuItem(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jstring>& version) {
-  GetPrefService()->SetString(
-      prefs::kLatestVersionWhenClickedUpdateMenuItem,
-      ConvertJavaStringToUTF8(env, version));
-}
-
-static ScopedJavaLocalRef<jstring>
-JNI_PrefServiceBridge_GetLatestVersionWhenClickedUpdateMenuItem(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  return ConvertUTF8ToJavaString(
-      env, GetPrefService()->GetString(
-          prefs::kLatestVersionWhenClickedUpdateMenuItem));
-}
-
 static jboolean JNI_PrefServiceBridge_GetBrowsingDataDeletionPreference(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
