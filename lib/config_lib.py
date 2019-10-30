@@ -27,7 +27,6 @@ CONFIG_TYPE_RELEASE = 'release'
 CONFIG_TYPE_FULL = 'full'
 CONFIG_TYPE_FIRMWARE = 'firmware'
 CONFIG_TYPE_FACTORY = 'factory'
-CONFIG_TYPE_RELEASE_AFDO = 'release-afdo'
 CONFIG_TYPE_TOOLCHAIN = 'toolchain'
 
 # DISPLAY labels are used to group related builds together in the GE UI.

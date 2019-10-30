@@ -541,30 +541,6 @@ def GeneralTemplates(site_config):
       luci_builder=config_lib.LUCI_BUILDER_FACTORY,
   )
 
-  ### Release AFDO configs.
-  site_config.AddTemplate(
-      'release_afdo',
-      site_config.templates.release,
-      suite_scheduling=False,
-      push_image=False,
-      paygen=False,
-      dev_installer_prebuilts=False,
-  )
-
-  site_config.AddTemplate(
-      'release_afdo_generate',
-      site_config.templates.release_afdo,
-      afdo_generate_min=True,
-      afdo_use=False,
-      afdo_update_ebuild=True,
-  )
-
-  site_config.AddTemplate(
-      'release_afdo_use',
-      site_config.templates.release_afdo,
-      afdo_use=True,
-  )
-
   site_config.AddTemplate(
       'moblab_release',
       site_config.templates.release,
@@ -1885,56 +1861,6 @@ def IncrementalBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.lakitu_notification_emails,
       board_configs['lakitu_next'],
   )
-
-
-def ReleaseAfdoBuilders(site_config, boards_dict, ge_build_config):
-  """Create AFDO Performance tryjobs.
-
-  Args:
-    site_config: config_lib.SiteConfig to be modified by adding templates
-                 and configs.
-    boards_dict: A dict mapping board types to board name collections.
-    ge_build_config: Dictionary containing the decoded GE configuration file.
-  """
-  board_configs = CreateInternalBoardConfigs(
-      site_config, boards_dict, ge_build_config)
-
-  # Now generate generic release-afdo configs if we haven't created anything
-  # more specific above already. release-afdo configs are builders that do AFDO
-  # profile collection and optimization in the same builder. Used by developers
-  # that want to measure performance changes caused by their changes.
-  for board in boards_dict['all_release_boards']:
-    base = board_configs[board]
-
-    config_name = '%s-%s' % (board, config_lib.CONFIG_TYPE_RELEASE_AFDO)
-    if config_name in site_config:
-      continue
-
-    generate_config_name = (
-        '%s-%s-%s' % (board,
-                      config_lib.CONFIG_TYPE_RELEASE_AFDO,
-                      'generate'))
-    use_config_name = '%s-%s-%s' % (board,
-                                    config_lib.CONFIG_TYPE_RELEASE_AFDO,
-                                    'use')
-
-    # We can't use AFDO data if afdo_use is disabled for this board.
-    if not base.get('afdo_use', True):
-      continue
-
-    site_config.AddGroup(
-        config_name,
-        site_config.Add(
-            generate_config_name,
-            site_config.templates.release_afdo_generate,
-            base
-        ),
-        site_config.Add(
-            use_config_name,
-            site_config.templates.release_afdo_use,
-            base
-        ),
-    )
 
 
 def InformationalBuilders(site_config, boards_dict, ge_build_config):
@@ -3355,8 +3281,6 @@ def GetConfig():
   SpecialtyBuilders(site_config, boards_dict, ge_build_config)
 
   IncrementalBuilders(site_config, boards_dict, ge_build_config)
-
-  ReleaseAfdoBuilders(site_config, boards_dict, ge_build_config)
 
   InformationalBuilders(site_config, boards_dict, ge_build_config)
 

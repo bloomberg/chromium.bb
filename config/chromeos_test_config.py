@@ -656,32 +656,6 @@ def GeneralTemplates(site_config, ge_build_config):
                                   warn_only=True)],
   )
 
-  release_afdo_hw_tests = (
-      hw_test_list.DefaultList(pool=constants.HWTEST_SUITES_POOL) +
-      hw_test_list.AFDOList()
-  )
-
-  site_config.templates.release_afdo.apply(
-      site_config.templates.default_hw_tests_override,
-      hw_tests=release_afdo_hw_tests,
-  )
-
-  site_config.templates.release_afdo_generate.apply(
-      site_config.templates.default_hw_tests_override,
-      hw_tests=[hw_test_list.AFDORecordTest(warn_only=True)],
-      hw_tests_override=[hw_test_list.AFDORecordTest(
-          pool=constants.HWTEST_TRYBOT_POOL,
-          file_bugs=False,
-          warn_only=True,
-          priority=constants.HWTEST_DEFAULT_PRIORITY,
-      )],
-  )
-
-  site_config.templates.release_afdo_use.apply(
-      site_config.templates.default_hw_tests_override,
-      hw_tests=release_afdo_hw_tests,
-  )
-
   site_config.templates.payloads.apply(
       site_config.templates.no_vmtest_builder,
       site_config.templates.no_hwtest_builder,
