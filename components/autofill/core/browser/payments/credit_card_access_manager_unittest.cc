@@ -1007,14 +1007,17 @@ TEST_F(CreditCardAccessManagerTest, FIDOEnrollmentServerFailure) {
 // |creation_options|.
 TEST_F(CreditCardAccessManagerTest,
        FIDOEnrollmentSuccess_CreationOptions_Desktop) {
-  ClearStrikes();
-
   base::HistogramTester histogram_tester;
   std::string webauthn_result_histogram_name =
       "Autofill.BetterAuth.WebauthnResult.CheckoutOptIn";
   std::string opt_in_histogram_name =
       "Autofill.BetterAuth.OptInCalled.FromCheckoutFlow";
+  std::string promo_shown_histogram_name =
+      "Autofill.BetterAuth.OptInPromoShown.FromCheckoutFlow";
+  std::string promo_user_decision_histogram_name =
+      "Autofill.BetterAuth.OptInPromoUserDecision.FromCheckoutFlow";
 
+  ClearStrikes();
   CreateServerCard(kTestGUID, kTestNumber);
   CreditCard* card = credit_card_access_manager_->GetCreditCard(kTestGUID);
   GetFIDOAuthenticator()->SetUserVerifiable(true);
@@ -1055,11 +1058,21 @@ TEST_F(CreditCardAccessManagerTest,
   histogram_tester.ExpectBucketCount(
       opt_in_histogram_name,
       AutofillMetrics::WebauthnOptInParameters::kWithCreationChallenge, 1);
+  histogram_tester.ExpectTotalCount(promo_shown_histogram_name, 1);
+  histogram_tester.ExpectUniqueSample(
+      promo_user_decision_histogram_name,
+      AutofillMetrics::WebauthnOptInPromoUserDecisionMetric::kAccepted, 1);
 }
 
 // Ensures that the correct number of strikes are added when the user declines
 // the WebAuthn offer.
 TEST_F(CreditCardAccessManagerTest, FIDOEnrollment_OfferDeclined_Desktop) {
+  base::HistogramTester histogram_tester;
+  std::string promo_shown_histogram_name =
+      "Autofill.BetterAuth.OptInPromoShown.FromCheckoutFlow";
+  std::string promo_user_decision_histogram_name =
+      "Autofill.BetterAuth.OptInPromoUserDecision.FromCheckoutFlow";
+
   ClearStrikes();
   CreateServerCard(kTestGUID, kTestNumber);
   CreditCard* card = credit_card_access_manager_->GetCreditCard(kTestGUID);
@@ -1067,29 +1080,73 @@ TEST_F(CreditCardAccessManagerTest, FIDOEnrollment_OfferDeclined_Desktop) {
   SetUserOptedIn(false);
   payments_client_->AllowFidoRegistration(true);
 
+  credit_card_access_manager_->PrepareToFetchCreditCard();
   credit_card_access_manager_->FetchCreditCard(card, accessor_->GetWeakPtr());
-  InvokeUnmaskDetailsTimeout();
   WaitForCallbacks();
 
-  // Mock user response.
+  // Mock user and payments response.
+  EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::SUCCESS, kTestNumber,
+                                   /*fido_opt_in=*/false));
   AcceptWebauthnOfferDialog(/*did_accept=*/false);
   EXPECT_EQ(
       FidoAuthenticationStrikeDatabase::kStrikesToAddWhenOptInOfferDeclined,
       GetStrikes());
+  histogram_tester.ExpectTotalCount(promo_shown_histogram_name, 1);
+  histogram_tester.ExpectUniqueSample(
+      promo_user_decision_histogram_name,
+      AutofillMetrics::WebauthnOptInPromoUserDecisionMetric::
+          kDeclinedImmediately,
+      1);
+}
+
+// Ensures that the correct number of strikes are added when the user declines
+// the WebAuthn offer.
+TEST_F(CreditCardAccessManagerTest,
+       FIDOEnrollment_OfferDeclinedAfterAccepting_Desktop) {
+  base::HistogramTester histogram_tester;
+  std::string promo_shown_histogram_name =
+      "Autofill.BetterAuth.OptInPromoShown.FromCheckoutFlow";
+  std::string promo_user_decision_histogram_name =
+      "Autofill.BetterAuth.OptInPromoUserDecision.FromCheckoutFlow";
+
+  ClearStrikes();
+  CreateServerCard(kTestGUID, kTestNumber);
+  CreditCard* card = credit_card_access_manager_->GetCreditCard(kTestGUID);
+  GetFIDOAuthenticator()->SetUserVerifiable(true);
+  SetUserOptedIn(false);
+  payments_client_->AllowFidoRegistration(true);
+
+  credit_card_access_manager_->PrepareToFetchCreditCard();
+  credit_card_access_manager_->FetchCreditCard(card, accessor_->GetWeakPtr());
+  WaitForCallbacks();
+
+  // Mock user and payments response.
+  EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::SUCCESS, kTestNumber,
+                                   /*fido_opt_in=*/false));
+  AcceptWebauthnOfferDialog(/*did_accept=*/true);
+  AcceptWebauthnOfferDialog(/*did_accept=*/false);
+  EXPECT_EQ(
+      FidoAuthenticationStrikeDatabase::kStrikesToAddWhenOptInOfferDeclined,
+      GetStrikes());
+  histogram_tester.ExpectTotalCount(promo_shown_histogram_name, 1);
+  histogram_tester.ExpectUniqueSample(
+      promo_user_decision_histogram_name,
+      AutofillMetrics::WebauthnOptInPromoUserDecisionMetric::
+          kDeclinedAfterAccepting,
+      1);
 }
 
 // Ensures that the correct number of strikes are added when the user fails to
 // complete user-verification for an opt-in attempt.
 TEST_F(CreditCardAccessManagerTest,
        FIDOEnrollment_UserVerificationFailed_Desktop) {
-  ClearStrikes();
-
   base::HistogramTester histogram_tester;
   std::string webauthn_result_histogram_name =
       "Autofill.BetterAuth.WebauthnResult.CheckoutOptIn";
   std::string opt_in_histogram_name =
       "Autofill.BetterAuth.OptInCalled.FromCheckoutFlow";
 
+  ClearStrikes();
   CreateServerCard(kTestGUID, kTestNumber);
   CreditCard* card = credit_card_access_manager_->GetCreditCard(kTestGUID);
   GetFIDOAuthenticator()->SetUserVerifiable(true);
@@ -1186,6 +1243,11 @@ TEST_F(CreditCardAccessManagerTest, SettingsPage_FIDOEnrollment) {
       "Autofill.BetterAuth.WebauthnResult.SettingsPageOptIn";
   std::string opt_in_histogram_name =
       "Autofill.BetterAuth.OptInCalled.FromSettingsPage";
+  std::string promo_shown_histogram_name =
+      "Autofill.BetterAuth.OptInPromoShown.FromSettingsPage";
+  std::string promo_user_decision_histogram_name =
+      "Autofill.BetterAuth.OptInPromoUserDecision.FromSettingsPage";
+
   GetFIDOAuthenticator()->SetUserVerifiable(true);
 
   for (bool did_succeed : {false, true}) {
@@ -1215,6 +1277,10 @@ TEST_F(CreditCardAccessManagerTest, SettingsPage_FIDOEnrollment) {
   histogram_tester.ExpectBucketCount(
       opt_in_histogram_name,
       AutofillMetrics::WebauthnOptInParameters::kWithCreationChallenge, 1);
+  histogram_tester.ExpectTotalCount(promo_shown_histogram_name, 2);
+  histogram_tester.ExpectUniqueSample(
+      promo_user_decision_histogram_name,
+      AutofillMetrics::WebauthnOptInPromoUserDecisionMetric::kAccepted, 2);
 }
 
 // Ensure proper metrics are logged when user opts-out from settings page.

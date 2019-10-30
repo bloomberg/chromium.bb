@@ -4681,6 +4681,12 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="Added as a new local profile"/>
 </enum>
 
+<enum name="AutofillWebauthnOptInPromoUserDecision">
+  <int value="0" label="Accepted"/>
+  <int value="1" label="Declined immediately"/>
+  <int value="2" label="Declined after accepting"/>
+</enum>
+
 <enum name="AutoLaunchState">
   <int value="0" label="AUTO_LAUNCH_NONE"/>
   <int value="1" label="AUTO_LAUNCH_BACKGROUND"/>

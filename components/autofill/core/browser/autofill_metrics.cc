@@ -985,6 +985,24 @@ void AutofillMetrics::LogWebauthnOptChangeCalled(
 }
 
 // static
+void AutofillMetrics::LogWebauthnOptInPromoShown(bool is_checkout_flow) {
+  std::string suffix =
+      is_checkout_flow ? "FromCheckoutFlow" : "FromSettingsPage";
+  base::UmaHistogramBoolean("Autofill.BetterAuth.OptInPromoShown." + suffix,
+                            true);
+}
+
+// static
+void AutofillMetrics::LogWebauthnOptInPromoUserDecision(
+    bool is_checkout_flow,
+    WebauthnOptInPromoUserDecisionMetric metric) {
+  std::string suffix =
+      (is_checkout_flow ? "FromCheckoutFlow" : "FromSettingsPage");
+  base::UmaHistogramEnumeration(
+      "Autofill.BetterAuth.OptInPromoUserDecision." + suffix, metric);
+}
+
+// static
 void AutofillMetrics::LogCardUnmaskTypeDecision(
     CardUnmaskTypeDecisionMetric metric) {
   base::UmaHistogramEnumeration("Autofill.BetterAuth.CardUnmaskTypeDecision",

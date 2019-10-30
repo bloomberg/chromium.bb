@@ -745,6 +745,19 @@ class AutofillMetrics {
     kMaxValue = kNotAllowedError,
   };
 
+  // The user decision for the WebAuthn opt-in promo.
+  enum class WebauthnOptInPromoUserDecisionMetric {
+    // User accepted promo.
+    kAccepted = 0,
+    // User immediately declined promo.
+    kDeclinedImmediately = 1,
+    // Once user accepts the dialog, a round-trip call to Payments is sent,
+    // which is required for user authentication. The user has the option to
+    // cancel the dialog before the round-trip call is returned.
+    kDeclinedAfterAccepting = 2,
+    kMaxValue = kDeclinedAfterAccepting,
+  };
+
   // The parameters with which opt change was called.
   enum class WebauthnOptInParameters {
     // Call made to fetch a challenge.
@@ -1124,6 +1137,16 @@ class AutofillMetrics {
   static void LogWebauthnOptChangeCalled(bool request_to_opt_in,
                                          bool is_checkout_flow,
                                          WebauthnOptInParameters metric);
+
+  // Logs the number of times the opt-in promo for enabling FIDO authentication
+  // for card unmasking has been shown.
+  static void LogWebauthnOptInPromoShown(bool is_checkout_flow);
+
+  // Logs the user response to the opt-in promo for enabling FIDO authentication
+  // for card unmasking.
+  static void LogWebauthnOptInPromoUserDecision(
+      bool is_checkout_flow,
+      WebauthnOptInPromoUserDecisionMetric metric);
 
   // Logs which unmask type was used for a user with FIDO authentication
   // enabled.

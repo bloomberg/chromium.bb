@@ -67,6 +67,8 @@ void CreditCardFIDOAuthenticator::ShowWebauthnOfferDialog(
   autofill_client_->ShowWebauthnOfferDialog(base::BindRepeating(
       &CreditCardFIDOAuthenticator::OnWebauthnOfferDialogUserResponse,
       weak_ptr_factory_.GetWeakPtr()));
+  AutofillMetrics::LogWebauthnOptInPromoShown(
+      /*is_checkout_flow=*/!card_authorization_token_.empty());
 }
 
 void CreditCardFIDOAuthenticator::Authenticate(
@@ -186,10 +188,17 @@ void CreditCardFIDOAuthenticator::GetAssertion(
   // ready to show the OS level authentication dialog. If dialog is already
   // closed, then the offer was declined during the fetching challenge process,
   // and thus returned early.
-  if (current_flow_ == OPT_IN_WITH_CHALLENGE_FLOW &&
-      !autofill_client_->CloseWebauthnOfferDialog()) {
-    current_flow_ = NONE_FLOW;
-    return;
+  if (current_flow_ == OPT_IN_WITH_CHALLENGE_FLOW) {
+    if (autofill_client_->CloseWebauthnOfferDialog()) {
+      // Now that the dialog has closed and will proceed to a WebAuthn prompt,
+      // the user must have accepted the dialog without cancelling.
+      AutofillMetrics::LogWebauthnOptInPromoUserDecision(
+          /*is_checkout_flow=*/!card_authorization_token_.empty(),
+          AutofillMetrics::WebauthnOptInPromoUserDecisionMetric::kAccepted);
+    } else {
+      current_flow_ = NONE_FLOW;
+      return;
+    }
   }
 #endif
   authenticator_->GetAssertion(
@@ -209,7 +218,13 @@ void CreditCardFIDOAuthenticator::MakeCredential(
   // level authentication dialog. If dialog is already closed, then the offer
   // was declined during the fetching challenge process, and thus returned
   // early.
-  if (!autofill_client_->CloseWebauthnOfferDialog()) {
+  if (autofill_client_->CloseWebauthnOfferDialog()) {
+    // Now that the dialog has closed and will proceed to a WebAuthn prompt,
+    // the user must have accepted the dialog without cancelling.
+    AutofillMetrics::LogWebauthnOptInPromoUserDecision(
+        /*is_checkout_flow=*/!card_authorization_token_.empty(),
+        AutofillMetrics::WebauthnOptInPromoUserDecisionMetric::kAccepted);
+  } else {
     current_flow_ = NONE_FLOW;
     return;
   }
@@ -388,8 +403,20 @@ void CreditCardFIDOAuthenticator::OnDidGetOptChangeResult(
 void CreditCardFIDOAuthenticator::OnWebauthnOfferDialogUserResponse(
     bool did_accept) {
   if (did_accept) {
+    // Wait until GetAssertion()/MakeCredential() to log user acceptance, since
+    // user still has the option to cancel the dialog while the challenge is
+    // being fetched.
     Register(card_authorization_token_);
   } else {
+    // If user declined, log user decision. User may have initially accepted the
+    // dialog, but then chose to cancel while the challenge was being fetched.
+    AutofillMetrics::LogWebauthnOptInPromoUserDecision(
+        /*is_checkout_flow=*/!card_authorization_token_.empty(),
+        current_flow_ == OPT_IN_FETCH_CHALLENGE_FLOW
+            ? AutofillMetrics::WebauthnOptInPromoUserDecisionMetric::
+                  kDeclinedAfterAccepting
+            : AutofillMetrics::WebauthnOptInPromoUserDecisionMetric::
+                  kDeclinedImmediately);
     payments_client_->CancelRequest();
     card_authorization_token_ = std::string();
     current_flow_ = NONE_FLOW;
