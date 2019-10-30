@@ -114,9 +114,18 @@ SpellcheckService::SpellcheckService(content::BrowserContext* context)
       base::BindRepeating(&SpellcheckService::InitForAllRenderers,
                           base::Unretained(this)));
 
+  // SHEZ: Remove dependency on Chrome's custom dictionary
+#if 0
   custom_dictionary_.reset(new SpellcheckCustomDictionary(context_->GetPath()));
   custom_dictionary_->AddObserver(this);
   custom_dictionary_->Load();
+#endif
+
+  content::SpellcheckData* spellcheckData =
+      content::SpellcheckData::FromContext(context);
+  if (spellcheckData) {
+    spellcheckData->AddObserver(this);
+  }
 
   registrar_.Add(this,
                  content::NOTIFICATION_RENDERER_PROCESS_CREATED,
@@ -207,8 +216,23 @@ void SpellcheckService::InitForRenderer(
 
   std::vector<std::string> custom_words;
   if (enable) {
+    // blpwtk2: Remove dependency on Chrome's custom dictionary
+#if 0
     custom_words.assign(custom_dictionary_->GetWords().begin(),
                         custom_dictionary_->GetWords().end());
+#endif
+
+    // blpwtk2: Send the list of custom words to the renderer
+    content::SpellcheckData* spellcheckData =
+      content::SpellcheckData::FromContext(context);
+
+    if (spellcheckData) {
+      // blpwtk2: Convert the std::set to std::vector.  We could've changed
+      // SpellcheckData to use std::vector but this will allow duplicate
+      // words, which we cannot allow.
+	  const auto& src = spellcheckData->custom_words();
+      std::copy(src.begin(), src.end(), std::back_inserter(custom_words));
+    }
   }
 
   spellcheck::mojom::SpellCheckerPtr spellchecker;
@@ -224,9 +248,12 @@ SpellCheckHostMetrics* SpellcheckService::GetMetrics() const {
   return metrics_.get();
 }
 
+// SHEZ: Remove dependency on Chrome's custom dictionary
+#if 0
 SpellcheckCustomDictionary* SpellcheckService::GetCustomDictionary() {
   return custom_dictionary_.get();
 }
+#endif
 
 void SpellcheckService::LoadHunspellDictionaries() {
   hunspell_dictionaries_.clear();
@@ -293,6 +320,49 @@ void SpellcheckService::Observe(int type,
                       ->GetChildIdentity());
 }
 
+// content::SpellcheckData::Observer implementation.
+void SpellcheckService::OnCustomWordsChanged(
+    const std::vector<base::StringPiece>& words_added,
+    const std::vector<base::StringPiece>& words_removed) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  std::set<std::string> words_added_copy;
+  std::set<std::string> words_removed_copy;
+  for (size_t i = 0; i < words_added.size(); ++i) {
+    std::string word;
+    words_added[i].CopyToString(&word);
+    words_added_copy.insert(word);
+  }
+  for (size_t i = 0; i < words_removed.size(); ++i) {
+    std::string word;
+    words_removed[i].CopyToString(&word);
+    words_removed_copy.insert(word);
+  }
+
+  auto process_hosts(content::RenderProcessHost::AllHostsIterator());
+  std::vector<std::string> additions(words_added_copy.begin(), words_added_copy.end());
+  std::vector<std::string> deletions(words_removed_copy.begin(), words_removed_copy.end());
+
+  while (!process_hosts.IsAtEnd()) {
+    content::RenderProcessHost* process = process_hosts.GetCurrentValue();
+    if (!process->IsInitializedAndNotDead())
+      continue;
+
+    service_manager::Identity renderer_identity = process->GetChildIdentity();
+    spellcheck::mojom::SpellCheckerPtr spellchecker;
+    ChromeService::GetInstance()->connector()->BindInterface(
+        service_manager::ServiceFilter::ByNameWithIdInGroup(
+            chrome::mojom::kRendererServiceName,
+            renderer_identity.instance_id(),
+            renderer_identity.instance_group()),
+        &spellchecker);
+    spellchecker->CustomDictionaryChanged(additions, deletions);
+    process_hosts.Advance();
+  }
+}
+
+// SHEZ: Remove dependency on Chrome's custom dictionary
+#if 0
 void SpellcheckService::OnCustomDictionaryLoaded() {
   InitForAllRenderers();
 }
@@ -323,6 +393,7 @@ void SpellcheckService::OnCustomDictionaryChanged(
     spellchecker->CustomDictionaryChanged(additions, deletions);
   }
 }
+#endif
 
 void SpellcheckService::OnHunspellDictionaryInitialized(
     const std::string& language) {
