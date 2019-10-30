@@ -106,12 +106,12 @@ index %s..%s 100644
 
     # Run 2, local and GS.
     urilib.Copy(local_path, gs_path)
-    gs_mock.assert_called_once_with(local_path, gs_path)
+    gs_mock.assert_called_once_with(local_path, gs_path, log_output=True)
     gs_mock.reset_mock()
 
     # Run 4, GS and GS
     urilib.Copy(gs_path, gs_path + '.1')
-    gs_mock.assert_called_once_with(gs_path, gs_path + '.1')
+    gs_mock.assert_called_once_with(gs_path, gs_path + '.1', log_output=True)
     gs_mock.reset_mock()
 
     # Run 7, HTTP and local

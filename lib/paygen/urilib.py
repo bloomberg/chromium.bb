@@ -170,7 +170,7 @@ def Copy(src_uri, dest_uri):
     # GS only supported between other GS files or local files.
     if len(uri_types) == 1 or TYPE_LOCAL in uri_types:
       ctx = gs.GSContext()
-      return ctx.Copy(src_uri, dest_uri)
+      return ctx.Copy(src_uri, dest_uri, log_output=True)
 
   if TYPE_LOCAL in uri_types and len(uri_types) == 1:
     return filelib.Copy(src_uri, dest_uri)
