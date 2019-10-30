@@ -41597,6 +41597,12 @@ Called by update_use_counter_css.py.-->
   <int value="4" label="ReturnedToOrigin"/>
 </enum>
 
+<enum name="MobileMessagesConfirmInfobarEvents">
+  <int value="0" label="Presented"/>
+  <int value="1" label="Accepted"/>
+  <int value="2" label="Dismissed"/>
+</enum>
+
 <enum name="MobileMessagesModalEvent">
   <int value="0" label="Accepted"/>
   <int value="1" label="Canceled"/>
