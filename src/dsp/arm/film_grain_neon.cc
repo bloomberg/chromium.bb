@@ -29,6 +29,7 @@
 #include "src/dsp/arm/film_grain_neon.h"
 #include "src/dsp/common.h"
 #include "src/dsp/dsp.h"
+#include "src/dsp/film_grain_impl.h"
 #include "src/utils/common.h"
 #include "src/utils/logging.h"
 
@@ -99,7 +100,7 @@ inline void WriteFinalAutoRegression(int8_t* luma_grain_cursor, int32x4x2_t sum,
   }
   luma_grain_cursor[lane] =
       Clip3(luma_grain_cursor[lane] + RightShiftWithRounding(result, shift),
-            FilmGrain<bitdepth>::kGrainMin, FilmGrain<bitdepth>::kGrainMax);
+            GetGrainMin<bitdepth>(), GetGrainMax<bitdepth>());
 }
 
 #if LIBGAV1_MAX_BITDEPTH >= 10
@@ -115,7 +116,7 @@ inline void WriteFinalAutoRegression(int16_t* luma_grain_cursor,
   }
   luma_grain_cursor[lane] =
       Clip3(luma_grain_cursor[lane] + RightShiftWithRounding(result, shift),
-            FilmGrain<bitdepth>::kGrainMin, FilmGrain<bitdepth>::kGrainMax);
+            GetGrainMin<bitdepth>(), GetGrainMax<bitdepth>());
 }
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
 
@@ -124,7 +125,6 @@ inline void SetZero(int32x4x2_t* v) {
   v->val[1] = vdupq_n_s32(0);
 }
 
-constexpr int kAutoRegressionBorder = 3;
 }  // namespace
 
 void FilmGrainInit_NEON() {
@@ -144,13 +144,13 @@ void FilmGrain<bitdepth>::ApplyAutoRegressiveFilterToLumaGrain_NEON(
   const int8_t* const auto_regression_coeff_y = params.auto_regression_coeff_y;
   const uint8_t auto_regression_shift = params.auto_regression_shift;
 
-  int y = 3;
+  int y = kAutoRegressionBorder;
   luma_grain += kLumaWidth * y;
   do {
     // Each row is computed 8 values at a time in the following loop. At the
     // end of the loop, 4 values remain to write. They are given a special
     // reduced iteration at the end.
-    int x = 3;
+    int x = kAutoRegressionBorder;
     do {
       int pos = 0;
       int32x4x2_t sum;
@@ -285,14 +285,15 @@ bool FilmGrain<bitdepth>::Init_NEON() {
       FilmGrain<bitdepth>::ApplyAutoRegressiveFilterToLumaGrain_NEON<3>};
   if (params_.auto_regression_coeff_lag > 0 && params_.num_y_points > 0) {
     kAutoRegressionFnTableLuma[params_.auto_regression_coeff_lag - 1](
-        params_, kGrainMin, kGrainMax, luma_grain_);
+        params_, GetGrainMin<bitdepth>(), GetGrainMax<bitdepth>(), luma_grain_);
   }
   if (!is_monochrome_) {
     GenerateChromaGrains(params_, chroma_width_, chroma_height_, u_grain_,
                          v_grain_);
     ApplyAutoRegressiveFilterToChromaGrains(
-        params_, kGrainMin, kGrainMax, luma_grain_, subsampling_x_,
-        subsampling_y_, chroma_width_, chroma_height_, u_grain_, v_grain_);
+        params_, GetGrainMin<bitdepth>(), GetGrainMax<bitdepth>(), luma_grain_,
+        subsampling_x_, subsampling_y_, chroma_width_, chroma_height_, u_grain_,
+        v_grain_);
   }
 
   // Section 7.18.3.4. Scaling lookup initialization process.

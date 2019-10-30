@@ -23,12 +23,14 @@
 
 #include "src/dsp/common.h"
 #include "src/dsp/dsp.h"
+#include "src/dsp/film_grain_impl.h"
 #include "src/utils/common.h"
 #include "src/utils/compiler_attributes.h"
 #include "src/utils/logging.h"
 
 namespace libgav1 {
 namespace dsp {
+
 namespace {
 
 // The kGaussianSequence array contains random samples from a Gaussian
@@ -289,24 +291,6 @@ void FilmGrainInit_C() {
 #endif
 }
 
-// Static data member definitions.
-template <int bitdepth>
-constexpr int FilmGrain<bitdepth>::kGrainMin;
-template <int bitdepth>
-constexpr int FilmGrain<bitdepth>::kGrainMax;
-template <int bitdepth>
-constexpr int FilmGrain<bitdepth>::kLumaWidth;
-template <int bitdepth>
-constexpr int FilmGrain<bitdepth>::kLumaHeight;
-template <int bitdepth>
-constexpr int FilmGrain<bitdepth>::kMinChromaWidth;
-template <int bitdepth>
-constexpr int FilmGrain<bitdepth>::kMaxChromaWidth;
-template <int bitdepth>
-constexpr int FilmGrain<bitdepth>::kMinChromaHeight;
-template <int bitdepth>
-constexpr int FilmGrain<bitdepth>::kMaxChromaHeight;
-
 template <int bitdepth>
 FilmGrain<bitdepth>::FilmGrain(const FilmGrainParams& params,
                                bool is_monochrome,
@@ -334,7 +318,8 @@ bool FilmGrain<bitdepth>::Init() {
     // If params_.auto_regression_coeff_lag is 0, the filter is the identity
     // filter and therefore can be skipped.
     if (params_.auto_regression_coeff_lag > 0) {
-      ApplyAutoRegressiveFilterToLumaGrain(params_, kGrainMin, kGrainMax,
+      ApplyAutoRegressiveFilterToLumaGrain(params_, GetGrainMin<bitdepth>(),
+                                           GetGrainMax<bitdepth>(),
                                            luma_grain_);
     }
   } else {
@@ -345,8 +330,9 @@ bool FilmGrain<bitdepth>::Init() {
                          v_grain_);
     if (params_.auto_regression_coeff_lag > 0 || params_.num_y_points > 0) {
       ApplyAutoRegressiveFilterToChromaGrains(
-          params_, kGrainMin, kGrainMax, luma_grain_, subsampling_x_,
-          subsampling_y_, chroma_width_, chroma_height_, u_grain_, v_grain_);
+          params_, GetGrainMin<bitdepth>(), GetGrainMax<bitdepth>(),
+          luma_grain_, subsampling_x_, subsampling_y_, chroma_width_,
+          chroma_height_, u_grain_, v_grain_);
     }
   }
 
@@ -446,8 +432,9 @@ void FilmGrain<bitdepth>::ApplyAutoRegressiveFilterToLumaGrain(
   // it is not called in that case.
   assert(params.auto_regression_coeff_lag > 0);
   const int shift = params.auto_regression_shift;
-  for (int y = 3; y < kLumaHeight; ++y) {
-    for (int x = 3; x < kLumaWidth - 3; ++x) {
+  for (int y = kAutoRegressionBorder; y < kLumaHeight; ++y) {
+    for (int x = kAutoRegressionBorder; x < kLumaWidth - kAutoRegressionBorder;
+         ++x) {
       int sum = 0;
       int pos = 0;
       int delta_row = -params.auto_regression_coeff_lag;
@@ -529,8 +516,9 @@ void FilmGrain<bitdepth>::ApplyAutoRegressiveFilterToChromaGrains(
     GrainType* v_grain) {
   assert(params.auto_regression_coeff_lag <= 3);
   const int shift = params.auto_regression_shift;
-  for (int y = 3; y < chroma_height; ++y) {
-    for (int x = 3; x < chroma_width - 3; ++x) {
+  for (int y = kAutoRegressionBorder; y < chroma_height; ++y) {
+    for (int x = kAutoRegressionBorder;
+         x < chroma_width - kAutoRegressionBorder; ++x) {
       int sum_u = 0;
       int sum_v = 0;
       int pos = 0;
@@ -543,8 +531,12 @@ void FilmGrain<bitdepth>::ApplyAutoRegressiveFilterToChromaGrains(
           if (delta_row == 0 && delta_column == 0) {
             if (params.num_y_points > 0) {
               int luma = 0;
-              const int luma_x = ((x - 3) << subsampling_x) + 3;
-              const int luma_y = ((y - 3) << subsampling_y) + 3;
+              const int luma_x =
+                  ((x - kAutoRegressionBorder) << subsampling_x) +
+                  kAutoRegressionBorder;
+              const int luma_y =
+                  ((y - kAutoRegressionBorder) << subsampling_y) +
+                  kAutoRegressionBorder;
               int i = 0;
               do {
                 int j = 0;
@@ -730,8 +722,8 @@ void FilmGrain<bitdepth>::ConstructNoiseStripes() {
                 } else {
                   grain = old * 17 + grain * 27;
                 }
-                grain = Clip3(RightShiftWithRounding(grain, 5), kGrainMin,
-                              kGrainMax);
+                grain = Clip3(RightShiftWithRounding(grain, 5),
+                              GetGrainMin<bitdepth>(), GetGrainMax<bitdepth>());
               }
               noise_stripe[i * plane_width + (x * 2 + j)] = grain;
             } else {
@@ -739,8 +731,8 @@ void FilmGrain<bitdepth>::ConstructNoiseStripes() {
               if (j == 0 && params_.overlap_flag && x > 0) {
                 const int old = noise_stripe[i * plane_width + (x + j)];
                 grain = old * 23 + grain * 22;
-                grain = Clip3(RightShiftWithRounding(grain, 5), kGrainMin,
-                              kGrainMax);
+                grain = Clip3(RightShiftWithRounding(grain, 5),
+                              GetGrainMin<bitdepth>(), GetGrainMax<bitdepth>());
               }
               noise_stripe[i * plane_width + (x + j)] = grain;
             }
@@ -803,16 +795,16 @@ void FilmGrain<bitdepth>::ConstructNoiseImage() {
             } else {
               grain = old * 17 + grain * 27;
             }
-            grain =
-                Clip3(RightShiftWithRounding(grain, 5), kGrainMin, kGrainMax);
+            grain = Clip3(RightShiftWithRounding(grain, 5),
+                          GetGrainMin<bitdepth>(), GetGrainMax<bitdepth>());
           }
         } else {
           if (i < 1 && luma_num > 0 && params_.overlap_flag) {
             const int old =
                 noise_stripes_[luma_num - 1][plane][(i + 16) * plane_width + x];
             grain = old * 23 + grain * 22;
-            grain =
-                Clip3(RightShiftWithRounding(grain, 5), kGrainMin, kGrainMax);
+            grain = Clip3(RightShiftWithRounding(grain, 5),
+                          GetGrainMin<bitdepth>(), GetGrainMax<bitdepth>());
           }
         }
         noise_image_[plane][y][x] = grain;

@@ -21,6 +21,7 @@ list(APPEND libgav1_dsp_sources
             "${libgav1_source}/dsp/dsp.h"
             "${libgav1_source}/dsp/film_grain.cc"
             "${libgav1_source}/dsp/film_grain.h"
+            "${libgav1_source}/dsp/film_grain_impl.h"
             "${libgav1_source}/dsp/intra_edge.cc"
             "${libgav1_source}/dsp/intra_edge.h"
             "${libgav1_source}/dsp/intrapred.cc"
