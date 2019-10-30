@@ -7918,6 +7918,8 @@ histogram as enum -->
   <int value="2" label="Initiated by WebStore Installer"/>
   <int value="3" label="Initiated by ImageBurner"/>
   <int value="4" label="Initiated by Plugin Installer"/>
+  <int value="5" label="Initiated by PDF plugin"/>
+  <int value="6" label="Initiated by Extension"/>
 </enum>
 
 <enum name="ChromeHomeOpenReason">
