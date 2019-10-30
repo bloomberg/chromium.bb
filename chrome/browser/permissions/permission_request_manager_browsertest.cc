@@ -723,9 +723,10 @@ class PermissionRequestManagerBrowserTest_AnimatedIcon
   }
 };
 
+// Re-enable when 1016233 is fixed.
 // Quiet permission requests are cancelled when a new request is made.
 IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest_StaticIcon,
-                       QuietPendingRequestsKilledOnNewRequest) {
+                       DISABLED_QuietPendingRequestsKilledOnNewRequest) {
   // First add a quiet permission request. Ensure that this request is decided
   // by the end of this test.
   MockPermissionRequest request_quiet(
@@ -752,9 +753,10 @@ IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest_StaticIcon,
   EXPECT_EQ(0u, GetPermissionRequestManager()->Requests().size());
 }
 
+// Re-enable when 1016233 is fixed.
 // Quiet permission requests are cancelled when a new request is made.
 IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest_AnimatedIcon,
-                       QuietPendingRequestsKilledOnNewRequest) {
+                       DISABLED_QuietPendingRequestsKilledOnNewRequest) {
   // First add a quiet permission request. Ensure that this request is decided
   // by the end of this test.
   MockPermissionRequest request_quiet(
