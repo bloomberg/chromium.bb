@@ -3530,12 +3530,12 @@ class SplitViewOverviewSessionTest : public OverviewSessionTest {
 
   gfx::Rect GetSplitViewLeftWindowBounds() {
     return split_view_controller()->GetSnappedWindowBoundsInScreen(
-        SplitViewController::LEFT);
+        SplitViewController::LEFT, split_view_controller()->left_window());
   }
 
   gfx::Rect GetSplitViewRightWindowBounds() {
     return split_view_controller()->GetSnappedWindowBoundsInScreen(
-        SplitViewController::RIGHT);
+        SplitViewController::RIGHT, split_view_controller()->right_window());
   }
 
   gfx::Rect GetSplitViewDividerBounds(bool is_dragging) {
@@ -4047,7 +4047,8 @@ TEST_P(SplitViewOverviewSessionTest, Clipping) {
             window1.get());
     const gfx::Rect split_view_bounds_right =
         split_view_controller()->GetSnappedWindowBoundsInScreen(
-            SplitViewController::SnapPosition::RIGHT);
+            SplitViewController::SnapPosition::RIGHT,
+            /*window_for_minimum_size=*/nullptr);
 
     ToggleOverview();
     // Tests that in regular overview, the clipping is unchanged.
@@ -4715,6 +4716,80 @@ TEST_P(SplitViewOverviewSessionTest, SnappedWindowBoundsTest) {
   EXPECT_EQ(window2->bounds().width(), screen_width);
 }
 
+// Test snapped window bounds with adjustment for the minimum size of a window.
+TEST_P(SplitViewOverviewSessionTest, SnappedWindowBoundsWithMinimumSizeTest) {
+  const gfx::Rect bounds(400, 400);
+  std::unique_ptr<aura::Window> window1(CreateTestWindow(bounds));
+  const int work_area_length =
+      screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
+          Shell::GetPrimaryRootWindow())
+          .width();
+  std::unique_ptr<aura::Window> window2(CreateWindowWithMinimumSize(
+      bounds, gfx::Size(work_area_length / 3 + 20, 0)));
+
+  split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
+  split_view_controller()->StartResize(
+      GetSplitViewDividerBounds(/*is_dragging=*/false).CenterPoint());
+  split_view_controller()->EndResize(gfx::Point(work_area_length / 3, 10));
+  SkipDividerSnapAnimation();
+  // Use |EXPECT_NEAR| for reasons related to rounding and divider thickness.
+  EXPECT_NEAR(
+      work_area_length / 3,
+      split_view_controller()
+          ->GetSnappedWindowBoundsInScreen(SplitViewController::LEFT,
+                                           /*window_for_minimum_size=*/nullptr)
+          .width(),
+      8);
+  EXPECT_NEAR(work_area_length / 2,
+              split_view_controller()
+                  ->GetSnappedWindowBoundsInScreen(SplitViewController::LEFT,
+                                                   window2.get())
+                  .width(),
+              8);
+  EXPECT_NEAR(
+      work_area_length * 2 / 3,
+      split_view_controller()
+          ->GetSnappedWindowBoundsInScreen(SplitViewController::RIGHT,
+                                           /*window_for_minimum_size=*/nullptr)
+          .width(),
+      8);
+  EXPECT_NEAR(work_area_length * 2 / 3,
+              split_view_controller()
+                  ->GetSnappedWindowBoundsInScreen(SplitViewController::RIGHT,
+                                                   window2.get())
+                  .width(),
+              8);
+  split_view_controller()->StartResize(
+      GetSplitViewDividerBounds(/*is_dragging=*/false).CenterPoint());
+  split_view_controller()->EndResize(gfx::Point(work_area_length * 2 / 3, 10));
+  EXPECT_NEAR(
+      work_area_length * 2 / 3,
+      split_view_controller()
+          ->GetSnappedWindowBoundsInScreen(SplitViewController::LEFT,
+                                           /*window_for_minimum_size=*/nullptr)
+          .width(),
+      8);
+  EXPECT_NEAR(work_area_length * 2 / 3,
+              split_view_controller()
+                  ->GetSnappedWindowBoundsInScreen(SplitViewController::LEFT,
+                                                   window2.get())
+                  .width(),
+              8);
+  EXPECT_NEAR(
+      work_area_length / 3,
+      split_view_controller()
+          ->GetSnappedWindowBoundsInScreen(SplitViewController::RIGHT,
+                                           /*window_for_minimum_size=*/nullptr)
+          .width(),
+      8);
+  EXPECT_NEAR(work_area_length / 2,
+              split_view_controller()
+                  ->GetSnappedWindowBoundsInScreen(SplitViewController::RIGHT,
+                                                   window2.get())
+                  .width(),
+              8);
+}
+
 // Verify that if the split view divider is dragged all the way to the edge, the
 // window being dragged gets returned to the overview list, if overview mode is
 // still active.
@@ -4968,18 +5043,20 @@ TEST_P(SplitViewOverviewSessionTest, SwapWindowAndOverviewGrid) {
   EXPECT_EQ(split_view_controller()->default_snap_position(),
             SplitViewController::LEFT);
   EXPECT_TRUE(overview_controller()->InOverviewSession());
-  EXPECT_EQ(GetGridBounds(),
-            split_view_controller()->GetSnappedWindowBoundsInScreen(
-                SplitViewController::RIGHT));
+  EXPECT_EQ(
+      GetGridBounds(),
+      split_view_controller()->GetSnappedWindowBoundsInScreen(
+          SplitViewController::RIGHT, /*window_for_minimum_size=*/nullptr));
 
   split_view_controller()->SwapWindows();
   EXPECT_EQ(split_view_controller()->state(),
             SplitViewController::State::kRightSnapped);
   EXPECT_EQ(split_view_controller()->default_snap_position(),
             SplitViewController::RIGHT);
-  EXPECT_EQ(GetGridBounds(),
-            split_view_controller()->GetSnappedWindowBoundsInScreen(
-                SplitViewController::LEFT));
+  EXPECT_EQ(
+      GetGridBounds(),
+      split_view_controller()->GetSnappedWindowBoundsInScreen(
+          SplitViewController::LEFT, /*window_for_minimum_size=*/nullptr));
 }
 
 // Verify the behavior when trying to exit overview with one snapped window
@@ -5367,6 +5444,73 @@ TEST_P(SplitViewOverviewSessionInClamshellTest, MinimizedWindowTest) {
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
 }
 
+// Test snapped window bounds with adjustment for the minimum size of a window.
+TEST_P(SplitViewOverviewSessionInClamshellTest,
+       SnappedWindowBoundsWithMinimumSizeTest) {
+  const gfx::Rect bounds(400, 400);
+  std::unique_ptr<aura::Window> window1(
+      CreateWindowWithHitTestComponent(HTRIGHT, bounds));
+  const int window2_minimum_size = 350;
+  std::unique_ptr<aura::Window> window2(
+      CreateWindowWithMinimumSize(bounds, gfx::Size(window2_minimum_size, 0)));
+
+  ToggleOverview();
+  split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                     window1.get());
+  int divider_position = split_view_controller()->divider_position();
+  generator.MoveMouseTo(divider_position, 10);
+  divider_position = 300;
+  generator.DragMouseTo(divider_position, 10);
+  EXPECT_EQ(divider_position, split_view_controller()
+                                  ->GetSnappedWindowBoundsInScreen(
+                                      SplitViewController::LEFT,
+                                      /*window_for_minimum_size=*/nullptr)
+                                  .width());
+  EXPECT_EQ(window2_minimum_size,
+            split_view_controller()
+                ->GetSnappedWindowBoundsInScreen(SplitViewController::LEFT,
+                                                 window2.get())
+                .width());
+  const int work_area_length =
+      screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
+          window1.get())
+          .width();
+  EXPECT_EQ(
+      work_area_length - divider_position,
+      split_view_controller()
+          ->GetSnappedWindowBoundsInScreen(SplitViewController::RIGHT,
+                                           /*window_for_minimum_size=*/nullptr)
+          .width());
+  EXPECT_EQ(work_area_length - divider_position,
+            split_view_controller()
+                ->GetSnappedWindowBoundsInScreen(SplitViewController::RIGHT,
+                                                 window2.get())
+                .width());
+  divider_position = 500;
+  generator.DragMouseTo(divider_position, 10);
+  EXPECT_EQ(divider_position, split_view_controller()
+                                  ->GetSnappedWindowBoundsInScreen(
+                                      SplitViewController::LEFT,
+                                      /*window_for_minimum_size=*/nullptr)
+                                  .width());
+  EXPECT_EQ(divider_position, split_view_controller()
+                                  ->GetSnappedWindowBoundsInScreen(
+                                      SplitViewController::LEFT, window2.get())
+                                  .width());
+  EXPECT_EQ(
+      work_area_length - divider_position,
+      split_view_controller()
+          ->GetSnappedWindowBoundsInScreen(SplitViewController::RIGHT,
+                                           /*window_for_minimum_size=*/nullptr)
+          .width());
+  EXPECT_EQ(window2_minimum_size,
+            split_view_controller()
+                ->GetSnappedWindowBoundsInScreen(SplitViewController::RIGHT,
+                                                 window2.get())
+                .width());
+}
+
 using SplitViewOverviewSessionInClamshellTestMultiDisplayOnly =
     SplitViewOverviewSessionInClamshellTest;
 
@@ -5400,18 +5544,26 @@ TEST_P(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
             screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
                 root_windows[1]));
 
-  EXPECT_EQ(gfx::Rect(0, 0, 400, height),
-            SplitViewController::Get(root_windows[0])
-                ->GetSnappedWindowBoundsInScreen(SplitViewController::LEFT));
-  EXPECT_EQ(gfx::Rect(400, 0, 400, height),
-            SplitViewController::Get(root_windows[0])
-                ->GetSnappedWindowBoundsInScreen(SplitViewController::RIGHT));
-  EXPECT_EQ(gfx::Rect(800, 0, 400, height),
-            SplitViewController::Get(root_windows[1])
-                ->GetSnappedWindowBoundsInScreen(SplitViewController::LEFT));
-  EXPECT_EQ(gfx::Rect(1200, 0, 400, height),
-            SplitViewController::Get(root_windows[1])
-                ->GetSnappedWindowBoundsInScreen(SplitViewController::RIGHT));
+  EXPECT_EQ(
+      gfx::Rect(0, 0, 400, height),
+      SplitViewController::Get(root_windows[0])
+          ->GetSnappedWindowBoundsInScreen(
+              SplitViewController::LEFT, /*window_for_minimum_size=*/nullptr));
+  EXPECT_EQ(
+      gfx::Rect(400, 0, 400, height),
+      SplitViewController::Get(root_windows[0])
+          ->GetSnappedWindowBoundsInScreen(
+              SplitViewController::RIGHT, /*window_for_minimum_size=*/nullptr));
+  EXPECT_EQ(
+      gfx::Rect(800, 0, 400, height),
+      SplitViewController::Get(root_windows[1])
+          ->GetSnappedWindowBoundsInScreen(
+              SplitViewController::LEFT, /*window_for_minimum_size=*/nullptr));
+  EXPECT_EQ(
+      gfx::Rect(1200, 0, 400, height),
+      SplitViewController::Get(root_windows[1])
+          ->GetSnappedWindowBoundsInScreen(
+              SplitViewController::RIGHT, /*window_for_minimum_size=*/nullptr));
 }
 
 // Test that if clamshell split view is started by snapping a window that is the
@@ -5481,9 +5633,11 @@ TEST_P(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly, Dragging) {
   overview_session()->Drag(item1, right_snap_point);
   EXPECT_EQ(IndicatorState::kPreviewAreaRight,
             indicators->current_indicator_state());
-  EXPECT_EQ(SplitViewController::Get(root_windows[1])
-                ->GetSnappedWindowBoundsInScreen(SplitViewController::LEFT),
-            grid_on_root2->bounds());
+  EXPECT_EQ(
+      SplitViewController::Get(root_windows[1])
+          ->GetSnappedWindowBoundsInScreen(SplitViewController::LEFT,
+                                           /*window_for_minimum_size=*/nullptr),
+      grid_on_root2->bounds());
   overview_session()->CompleteDrag(item1, right_snap_point);
   EXPECT_EQ(SplitViewController::State::kRightSnapped,
             split_view_controller->state());

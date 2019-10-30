@@ -144,8 +144,10 @@ void DragWindowFromShelfController::Drag(const gfx::Point& location_in_screen,
       !overview_controller->InOverviewSession()) {
     overview_controller->StartOverview(
         OverviewSession::EnterExitOverviewType::kImmediateEnter);
-    overview_controller->overview_session()->OnWindowDragStarted(
-        window_, /*animate=*/false);
+    OverviewSession* overview_session = overview_controller->overview_session();
+    overview_session->OnWindowDragStarted(window_, /*animate=*/false);
+    if (ShouldAllowSplitView())
+      overview_session->SetSplitViewDragIndicatorsDraggedWindow(window_);
   }
 
   // If overview is active, update its splitview indicator during dragging if
@@ -285,8 +287,10 @@ void DragWindowFromShelfController::OnDragStarted(
   // Note SplitViewController::OnWindowDragStarted() may open overview.
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   if (overview_controller->InOverviewSession()) {
-    overview_controller->overview_session()->OnWindowDragStarted(
-        window_, /*animate=*/false);
+    OverviewSession* overview_session = overview_controller->overview_session();
+    overview_session->OnWindowDragStarted(window_, /*animate=*/false);
+    if (ShouldAllowSplitView())
+      overview_session->SetSplitViewDragIndicatorsDraggedWindow(window_);
   }
 }
 
