@@ -35,7 +35,7 @@ class INVALIDATION_EXPORT InvalidatorRegistrarWithMemory
                                  bool migrate_old_prefs);
 
   // It is an error to have registered handlers on destruction.
-  ~InvalidatorRegistrarWithMemory();
+  ~InvalidatorRegistrarWithMemory() override;
 
   // RegisterProfilePrefs and RegisterPrefs register the same prefs, because on
   // device level (sign in screen, device local account) we spin up separate

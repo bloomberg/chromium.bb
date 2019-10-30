@@ -27,7 +27,7 @@ class INVALIDATION_EXPORT InvalidatorRegistrar {
   InvalidatorRegistrar();
 
   // It is an error to have registered handlers on destruction.
-  ~InvalidatorRegistrar();
+  virtual ~InvalidatorRegistrar();
 
   // Starts sending notifications to |handler|.  |handler| must not be NULL,
   // and it must not already be registered.
