@@ -1151,8 +1151,6 @@ jumbo_static_library("ui") {
       "thumbnails/thumbnail_page_observer.h",
       "thumbnails/thumbnail_tab_helper.cc",
       "thumbnails/thumbnail_tab_helper.h",
-      "thumbnails/thumbnail_utils.cc",
-      "thumbnails/thumbnail_utils.h",
       "toolbar/app_menu_icon_controller.cc",
       "toolbar/app_menu_icon_controller.h",
       "toolbar/app_menu_model.cc",
