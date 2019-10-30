@@ -5,7 +5,7 @@
         "afdo_generate_async": false,
         "afdo_generate_min": false,
         "afdo_update_ebuild": false,
-        "afdo_use": false,
+        "afdo_use": true,
         "android_gts_build_branch": null,
         "android_import_branch": null,
         "android_package": null,
@@ -167,6 +167,7 @@
         "benchmark_afdo_generate": {
             "_template": "benchmark_afdo_generate",
             "afdo_generate_async": true,
+            "afdo_use": false,
             "archive_build_debug": true,
             "build_timeout": 21600,
             "build_type": "full",
@@ -213,6 +214,7 @@
         },
         "factorybranch": {
             "_template": "factorybranch",
+            "afdo_use": false,
             "archive_build_debug": true,
             "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
             "binhost_bucket": "gs://chromeos-dev-installer",
@@ -256,6 +258,7 @@
         },
         "firmwarebranch": {
             "_template": "firmwarebranch",
+            "afdo_use": false,
             "archive_build_debug": true,
             "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
             "binhost_bucket": "gs://chromeos-dev-installer",
@@ -378,7 +381,6 @@
         },
         "llvm_next_toolchain": {
             "_template": "llvm_next_toolchain",
-            "afdo_use": true,
             "archive_build_debug": true,
             "build_timeout": 57000,
             "build_type": "toolchain",
@@ -432,7 +434,6 @@
         },
         "llvm_toolchain": {
             "_template": "llvm_toolchain",
-            "afdo_use": true,
             "archive_build_debug": true,
             "build_timeout": 57000,
             "build_type": "toolchain",
@@ -485,7 +486,6 @@
         },
         "llvm_tot_toolchain": {
             "_template": "llvm_tot_toolchain",
-            "afdo_use": true,
             "archive_build_debug": true,
             "build_timeout": 57000,
             "build_type": "toolchain",
@@ -590,7 +590,6 @@
         },
         "orderfile_generate_toolchain": {
             "_template": "orderfile_generate_toolchain",
-            "afdo_use": true,
             "archive_build_debug": true,
             "build_timeout": 21600,
             "build_type": "full",
@@ -617,7 +616,6 @@
         },
         "orderfile_verify_toolchain": {
             "_template": "orderfile_verify_toolchain",
-            "afdo_use": true,
             "archive_build_debug": true,
             "build_timeout": 21600,
             "build_type": "full",
@@ -733,7 +731,6 @@
         },
         "release": {
             "_template": "release",
-            "afdo_use": true,
             "archive_build_debug": true,
             "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
             "binhost_bucket": "gs://chromeos-dev-installer",
@@ -811,7 +808,6 @@
         },
         "release_afdo_verify": {
             "_template": "release_afdo_verify",
-            "afdo_use": true,
             "archive_build_debug": true,
             "build_timeout": 21600,
             "build_type": "full",
@@ -858,7 +854,6 @@
         },
         "toolchain": {
             "_template": "toolchain",
-            "afdo_use": true,
             "archive_build_debug": true,
             "build_timeout": 57000,
             "build_type": "toolchain",
@@ -1473,6 +1468,7 @@
     },
     "arkham-full": {
         "_template": "full",
+        "afdo_use": false,
         "boards": [
             "arkham"
         ],
@@ -1486,6 +1482,7 @@
     },
     "arkham-full-tryjob": {
         "_template": "full",
+        "afdo_use": false,
         "boards": [
             "arkham"
         ],
@@ -1607,6 +1604,7 @@
     },
     "arkham-unittest-stress": {
         "_template": "unittest_stress",
+        "afdo_use": false,
         "boards": [
             "arkham"
         ],
@@ -3166,6 +3164,7 @@
     },
     "beaglebone-full": {
         "_template": "full",
+        "afdo_use": false,
         "boards": [
             "beaglebone"
         ],
@@ -3184,6 +3183,7 @@
     },
     "beaglebone-full-tryjob": {
         "_template": "full",
+        "afdo_use": false,
         "boards": [
             "beaglebone"
         ],
@@ -3215,6 +3215,7 @@
     },
     "beaglebone-incremental": {
         "_template": "incremental",
+        "afdo_use": false,
         "boards": [
             "beaglebone"
         ],
@@ -3226,6 +3227,7 @@
     },
     "beaglebone-incremental-tryjob": {
         "_template": "incremental",
+        "afdo_use": false,
         "boards": [
             "beaglebone"
         ],
@@ -3365,6 +3367,7 @@
     },
     "beaglebone-unittest-stress": {
         "_template": "unittest_stress",
+        "afdo_use": false,
         "boards": [
             "beaglebone"
         ],
@@ -3383,6 +3386,7 @@
     },
     "beaglebone_servo-full": {
         "_template": "full",
+        "afdo_use": false,
         "boards": [
             "beaglebone_servo"
         ],
@@ -3401,6 +3405,7 @@
     },
     "beaglebone_servo-full-tryjob": {
         "_template": "full",
+        "afdo_use": false,
         "boards": [
             "beaglebone_servo"
         ],
@@ -3545,6 +3550,7 @@
     },
     "beaglebone_servo-unittest-stress": {
         "_template": "unittest_stress",
+        "afdo_use": false,
         "boards": [
             "beaglebone_servo"
         ],
@@ -5745,6 +5751,7 @@
     },
     "capri-full": {
         "_template": "full",
+        "afdo_use": false,
         "boards": [
             "capri"
         ],
@@ -5765,6 +5772,7 @@
     },
     "capri-full-tryjob": {
         "_template": "full",
+        "afdo_use": false,
         "boards": [
             "capri"
         ],
@@ -5914,6 +5922,7 @@
     },
     "capri-unittest-stress": {
         "_template": "unittest_stress",
+        "afdo_use": false,
         "boards": [
             "capri"
         ],
@@ -5931,6 +5940,7 @@
     },
     "capri-zfpga-full": {
         "_template": "full",
+        "afdo_use": false,
         "boards": [
             "capri-zfpga"
         ],
@@ -5951,6 +5961,7 @@
     },
     "capri-zfpga-full-tryjob": {
         "_template": "full",
+        "afdo_use": false,
         "boards": [
             "capri-zfpga"
         ],
@@ -6099,6 +6110,7 @@
     },
     "capri-zfpga-unittest-stress": {
         "_template": "unittest_stress",
+        "afdo_use": false,
         "boards": [
             "capri-zfpga"
         ],
@@ -7105,6 +7117,7 @@
         "_template": "pre_flight_branch",
         "afdo_generate": true,
         "afdo_update_ebuild": true,
+        "afdo_use": false,
         "archive_build_debug": true,
         "boards": [
             "chell"
@@ -7128,6 +7141,7 @@
         "_template": "pre_flight_branch",
         "afdo_generate": true,
         "afdo_update_ebuild": true,
+        "afdo_use": false,
         "archive_build_debug": true,
         "boards": [
             "chell"
@@ -7913,6 +7927,7 @@
     },
     "cobblepot-full": {
         "_template": "full",
+        "afdo_use": false,
         "boards": [
             "cobblepot"
         ],
@@ -7933,6 +7948,7 @@
     },
     "cobblepot-full-tryjob": {
         "_template": "full",
+        "afdo_use": false,
         "boards": [
             "cobblepot"
         ],
@@ -8082,6 +8098,7 @@
     },
     "cobblepot-unittest-stress": {
         "_template": "unittest_stress",
+        "afdo_use": false,
         "boards": [
             "cobblepot"
         ],
@@ -14261,6 +14278,7 @@
     },
     "gale-full": {
         "_template": "full",
+        "afdo_use": false,
         "boards": [
             "gale"
         ],
@@ -14274,6 +14292,7 @@
     },
     "gale-full-tryjob": {
         "_template": "full",
+        "afdo_use": false,
         "boards": [
             "gale"
         ],
@@ -14434,6 +14453,7 @@
     },
     "gale-unittest-stress": {
         "_template": "unittest_stress",
+        "afdo_use": false,
         "boards": [
             "gale"
         ],
@@ -15072,6 +15092,7 @@
     },
     "gonzo-full": {
         "_template": "full",
+        "afdo_use": false,
         "boards": [
             "gonzo"
         ],
@@ -15092,6 +15113,7 @@
     },
     "gonzo-full-tryjob": {
         "_template": "full",
+        "afdo_use": false,
         "boards": [
             "gonzo"
         ],
@@ -15241,6 +15263,7 @@
     },
     "gonzo-unittest-stress": {
         "_template": "unittest_stress",
+        "afdo_use": false,
         "boards": [
             "gonzo"
         ],
@@ -19221,6 +19244,7 @@
     },
     "kumo-full": {
         "_template": "full",
+        "afdo_use": false,
         "boards": [
             "kumo"
         ],
@@ -19246,6 +19270,7 @@
     },
     "kumo-full-tryjob": {
         "_template": "full",
+        "afdo_use": false,
         "boards": [
             "kumo"
         ],
@@ -19274,6 +19299,7 @@
     },
     "kumo-incremental": {
         "_template": "incremental",
+        "afdo_use": false,
         "boards": [
             "kumo"
         ],
@@ -19303,6 +19329,7 @@
     },
     "kumo-incremental-tryjob": {
         "_template": "incremental",
+        "afdo_use": false,
         "boards": [
             "kumo"
         ],
@@ -19510,6 +19537,7 @@
     },
     "kumo-unittest-stress": {
         "_template": "unittest_stress",
+        "afdo_use": false,
         "boards": [
             "kumo"
         ],
@@ -19532,6 +19560,7 @@
     },
     "lakitu-full": {
         "_template": "full",
+        "afdo_use": false,
         "boards": [
             "lakitu"
         ],
@@ -19563,6 +19592,7 @@
     },
     "lakitu-full-tryjob": {
         "_template": "full",
+        "afdo_use": false,
         "boards": [
             "lakitu"
         ],
@@ -19596,6 +19626,7 @@
     },
     "lakitu-gpu-full": {
         "_template": "full",
+        "afdo_use": false,
         "boards": [
             "lakitu-gpu"
         ],
@@ -19620,6 +19651,7 @@
     },
     "lakitu-gpu-full-tryjob": {
         "_template": "full",
+        "afdo_use": false,
         "boards": [
             "lakitu-gpu"
         ],
@@ -19647,6 +19679,7 @@
     },
     "lakitu-gpu-incremental": {
         "_template": "incremental",
+        "afdo_use": false,
         "boards": [
             "lakitu-gpu"
         ],
@@ -19679,6 +19712,7 @@
     },
     "lakitu-gpu-incremental-tryjob": {
         "_template": "incremental",
+        "afdo_use": false,
         "boards": [
             "lakitu-gpu"
         ],
@@ -19890,6 +19924,7 @@
     },
     "lakitu-gpu-unittest-stress": {
         "_template": "unittest_stress",
+        "afdo_use": false,
         "boards": [
             "lakitu-gpu"
         ],
@@ -19911,6 +19946,7 @@
     },
     "lakitu-incremental": {
         "_template": "incremental",
+        "afdo_use": false,
         "boards": [
             "lakitu"
         ],
@@ -19945,6 +19981,7 @@
     },
     "lakitu-incremental-tryjob": {
         "_template": "incremental",
+        "afdo_use": false,
         "boards": [
             "lakitu"
         ],
@@ -20085,6 +20122,7 @@
     },
     "lakitu-nc-full": {
         "_template": "full",
+        "afdo_use": false,
         "boards": [
             "lakitu-nc"
         ],
@@ -20109,6 +20147,7 @@
     },
     "lakitu-nc-full-tryjob": {
         "_template": "full",
+        "afdo_use": false,
         "boards": [
             "lakitu-nc"
         ],
@@ -20301,6 +20340,7 @@
     },
     "lakitu-nc-unittest-stress": {
         "_template": "unittest_stress",
+        "afdo_use": false,
         "boards": [
             "lakitu-nc"
         ],
@@ -20421,6 +20461,7 @@
     },
     "lakitu-st-full": {
         "_template": "full",
+        "afdo_use": false,
         "boards": [
             "lakitu-st"
         ],
@@ -20445,6 +20486,7 @@
     },
     "lakitu-st-full-tryjob": {
         "_template": "full",
+        "afdo_use": false,
         "boards": [
             "lakitu-st"
         ],
@@ -20472,6 +20514,7 @@
     },
     "lakitu-st-incremental": {
         "_template": "incremental",
+        "afdo_use": false,
         "boards": [
             "lakitu-st"
         ],
@@ -20504,6 +20547,7 @@
     },
     "lakitu-st-incremental-tryjob": {
         "_template": "incremental",
+        "afdo_use": false,
         "boards": [
             "lakitu-st"
         ],
@@ -20715,6 +20759,7 @@
     },
     "lakitu-st-unittest-stress": {
         "_template": "unittest_stress",
+        "afdo_use": false,
         "boards": [
             "lakitu-st"
         ],
@@ -20736,6 +20781,7 @@
     },
     "lakitu-unittest-stress": {
         "_template": "unittest_stress",
+        "afdo_use": false,
         "boards": [
             "lakitu"
         ],
@@ -20757,6 +20803,7 @@
     },
     "lakitu_next-full": {
         "_template": "full",
+        "afdo_use": false,
         "boards": [
             "lakitu_next"
         ],
@@ -20781,6 +20828,7 @@
     },
     "lakitu_next-full-tryjob": {
         "_template": "full",
+        "afdo_use": false,
         "boards": [
             "lakitu_next"
         ],
@@ -20808,6 +20856,7 @@
     },
     "lakitu_next-incremental": {
         "_template": "incremental",
+        "afdo_use": false,
         "boards": [
             "lakitu_next"
         ],
@@ -20840,6 +20889,7 @@
     },
     "lakitu_next-incremental-tryjob": {
         "_template": "incremental",
+        "afdo_use": false,
         "boards": [
             "lakitu_next"
         ],
@@ -21047,6 +21097,7 @@
     },
     "lakitu_next-unittest-stress": {
         "_template": "unittest_stress",
+        "afdo_use": false,
         "boards": [
             "lakitu_next"
         ],
@@ -21237,6 +21288,7 @@
     },
     "lasilla-ground-full": {
         "_template": "full",
+        "afdo_use": false,
         "boards": [
             "lasilla-ground"
         ],
@@ -21257,6 +21309,7 @@
     },
     "lasilla-ground-full-tryjob": {
         "_template": "full",
+        "afdo_use": false,
         "boards": [
             "lasilla-ground"
         ],
@@ -21406,6 +21459,7 @@
     },
     "lasilla-ground-unittest-stress": {
         "_template": "unittest_stress",
+        "afdo_use": false,
         "boards": [
             "lasilla-ground"
         ],
@@ -21423,6 +21477,7 @@
     },
     "littlejoe-full": {
         "_template": "full",
+        "afdo_use": false,
         "boards": [
             "littlejoe"
         ],
@@ -21443,6 +21498,7 @@
     },
     "littlejoe-full-tryjob": {
         "_template": "full",
+        "afdo_use": false,
         "boards": [
             "littlejoe"
         ],
@@ -21592,6 +21648,7 @@
     },
     "littlejoe-unittest-stress": {
         "_template": "unittest_stress",
+        "afdo_use": false,
         "boards": [
             "littlejoe"
         ],
@@ -22772,6 +22829,7 @@
     },
     "mistral-full": {
         "_template": "full",
+        "afdo_use": false,
         "boards": [
             "mistral"
         ],
@@ -22785,6 +22843,7 @@
     },
     "mistral-full-tryjob": {
         "_template": "full",
+        "afdo_use": false,
         "boards": [
             "mistral"
         ],
@@ -22941,6 +23000,7 @@
     },
     "mistral-unittest-stress": {
         "_template": "unittest_stress",
+        "afdo_use": false,
         "boards": [
             "mistral"
         ],
@@ -24859,6 +24919,7 @@
     },
     "octavius-full": {
         "_template": "full",
+        "afdo_use": false,
         "boards": [
             "octavius"
         ],
@@ -24879,6 +24940,7 @@
     },
     "octavius-full-tryjob": {
         "_template": "full",
+        "afdo_use": false,
         "boards": [
             "octavius"
         ],
@@ -25028,6 +25090,7 @@
     },
     "octavius-unittest-stress": {
         "_template": "unittest_stress",
+        "afdo_use": false,
         "boards": [
             "octavius"
         ],
@@ -26980,6 +27043,7 @@
     },
     "romer-full": {
         "_template": "full",
+        "afdo_use": false,
         "boards": [
             "romer"
         ],
@@ -27000,6 +27064,7 @@
     },
     "romer-full-tryjob": {
         "_template": "full",
+        "afdo_use": false,
         "boards": [
             "romer"
         ],
@@ -27149,6 +27214,7 @@
     },
     "romer-unittest-stress": {
         "_template": "unittest_stress",
+        "afdo_use": false,
         "boards": [
             "romer"
         ],
@@ -27168,6 +27234,7 @@
         "_template": "pre_flight_branch",
         "afdo_generate": true,
         "afdo_update_ebuild": true,
+        "afdo_use": false,
         "archive_build_debug": true,
         "boards": [
             "samus"
@@ -27191,6 +27258,7 @@
         "_template": "pre_flight_branch",
         "afdo_generate": true,
         "afdo_update_ebuild": true,
+        "afdo_use": false,
         "archive_build_debug": true,
         "boards": [
             "samus"
@@ -28598,6 +28666,7 @@
     },
     "sludge-full": {
         "_template": "full",
+        "afdo_use": false,
         "boards": [
             "sludge"
         ],
@@ -28630,6 +28699,7 @@
     },
     "sludge-full-tryjob": {
         "_template": "full",
+        "afdo_use": false,
         "boards": [
             "sludge"
         ],
@@ -28864,6 +28934,7 @@
     },
     "sludge-unittest-stress": {
         "_template": "unittest_stress",
+        "afdo_use": false,
         "boards": [
             "sludge"
         ],
@@ -29583,6 +29654,7 @@
     },
     "tael-full": {
         "_template": "full",
+        "afdo_use": false,
         "boards": [
             "tael"
         ],
@@ -29616,6 +29688,7 @@
     },
     "tael-full-tryjob": {
         "_template": "full",
+        "afdo_use": false,
         "boards": [
             "tael"
         ],
@@ -29774,6 +29847,7 @@
     },
     "tael-unittest-stress": {
         "_template": "unittest_stress",
+        "afdo_use": false,
         "boards": [
             "tael"
         ],
@@ -29800,6 +29874,7 @@
     },
     "tatl-full": {
         "_template": "full",
+        "afdo_use": false,
         "boards": [
             "tatl"
         ],
@@ -29833,6 +29908,7 @@
     },
     "tatl-full-tryjob": {
         "_template": "full",
+        "afdo_use": false,
         "boards": [
             "tatl"
         ],
@@ -29991,6 +30067,7 @@
     },
     "tatl-unittest-stress": {
         "_template": "unittest_stress",
+        "afdo_use": false,
         "boards": [
             "tatl"
         ],
@@ -32603,6 +32680,7 @@
     },
     "viking-full": {
         "_template": "full",
+        "afdo_use": false,
         "boards": [
             "viking"
         ],
@@ -32623,6 +32701,7 @@
     },
     "viking-full-tryjob": {
         "_template": "full",
+        "afdo_use": false,
         "boards": [
             "viking"
         ],
@@ -32720,6 +32799,7 @@
     },
     "viking-poc2-full": {
         "_template": "full",
+        "afdo_use": false,
         "boards": [
             "viking-poc2"
         ],
@@ -32740,6 +32820,7 @@
     },
     "viking-poc2-full-tryjob": {
         "_template": "full",
+        "afdo_use": false,
         "boards": [
             "viking-poc2"
         ],
@@ -32888,6 +32969,7 @@
     },
     "viking-poc2-unittest-stress": {
         "_template": "unittest_stress",
+        "afdo_use": false,
         "boards": [
             "viking-poc2"
         ],
@@ -32957,6 +33039,7 @@
     },
     "viking-unittest-stress": {
         "_template": "unittest_stress",
+        "afdo_use": false,
         "boards": [
             "viking"
         ],
@@ -33209,6 +33292,7 @@
     },
     "whirlwind-full": {
         "_template": "full",
+        "afdo_use": false,
         "boards": [
             "whirlwind"
         ],
@@ -33222,6 +33306,7 @@
     },
     "whirlwind-full-tryjob": {
         "_template": "full",
+        "afdo_use": false,
         "boards": [
             "whirlwind"
         ],
@@ -33382,6 +33467,7 @@
     },
     "whirlwind-unittest-stress": {
         "_template": "unittest_stress",
+        "afdo_use": false,
         "boards": [
             "whirlwind"
         ],
@@ -33740,6 +33826,7 @@
     },
     "wooten-full": {
         "_template": "full",
+        "afdo_use": false,
         "boards": [
             "wooten"
         ],
@@ -33760,6 +33847,7 @@
     },
     "wooten-full-tryjob": {
         "_template": "full",
+        "afdo_use": false,
         "boards": [
             "wooten"
         ],
@@ -33909,6 +33997,7 @@
     },
     "wooten-unittest-stress": {
         "_template": "unittest_stress",
+        "afdo_use": false,
         "boards": [
             "wooten"
         ],
@@ -33926,6 +34015,7 @@
     },
     "wristpin-full": {
         "_template": "full",
+        "afdo_use": false,
         "boards": [
             "wristpin"
         ],
@@ -33946,6 +34036,7 @@
     },
     "wristpin-full-tryjob": {
         "_template": "full",
+        "afdo_use": false,
         "boards": [
             "wristpin"
         ],
@@ -34094,6 +34185,7 @@
     },
     "wristpin-unittest-stress": {
         "_template": "unittest_stress",
+        "afdo_use": false,
         "boards": [
             "wristpin"
         ],

@@ -877,7 +877,7 @@ def DefaultSettings():
 
       # Uses AFDO data. The Chrome build will be optimized using the AFDO
       # profile information found in the chrome ebuild file.
-      afdo_use=False,
+      afdo_use=True,
 
       # A list of VMTestConfig objects to run by default.
       vm_tests=[
