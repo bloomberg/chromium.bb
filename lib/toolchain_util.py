@@ -61,6 +61,7 @@ TOOLCHAIN_UTILS_PATH = '/mnt/host/source/src/third_party/toolchain-utils/'
 TOOLCHAIN_UTILS_REPO = \
     'https://chromium.googlesource.com/chromiumos/third_party/toolchain-utils'
 AFDO_PROFILE_PATH_IN_CHROMIUM = 'src/chromeos/profiles/%s.afdo.newest.txt'
+MERGED_AFDO_NAME = 'chromeos-chrome-amd64-%s'
 
 # How old can the Kernel AFDO data be? (in days).
 KERNEL_ALLOWED_STALE_DAYS = 42
@@ -1360,10 +1361,10 @@ def CheckAFDOArtifactExists(buildroot, chrome_root, board, target):
     arch = CHROME_AFDO_VERIFIER_BOARDS[board]
     source_url = os.path.join(CWP_AFDO_GS_URL, arch)
     cwp_afdo = _FindLatestAFDOArtifact(source_url, _RankValidCWPProfiles)
-    merged_name = _GetCombinedAFDOName(
+    merged_name = MERGED_AFDO_NAME % (_GetCombinedAFDOName(
         _ParseCWPProfileName(os.path.splitext(cwp_afdo)[0]),
         arch,
-        _ParseBenchmarkProfileName(os.path.splitext(benchmark_afdo)[0]))
+        _ParseBenchmarkProfileName(os.path.splitext(benchmark_afdo)[0])))
     # The profile name also contained 'redacted' info
     merged_name += '-redacted.afdo'
     return gs_context.Exists(
@@ -1556,7 +1557,7 @@ def _CreateReleaseChromeAFDO(cwp_afdo, arch, benchmark_afdo, output_dir):
   merge_weights = [(cwp_local_uncompressed, RELEASE_CWP_MERGE_WEIGHT),
                    (benchmark_local_uncompressed,
                     RELEASE_BENCHMARK_MERGE_WEIGHT)]
-  merged_profile_name = 'chromeos-chrome-amd64-%s' % (
+  merged_profile_name = MERGED_AFDO_NAME % (
       _GetCombinedAFDOName(_ParseCWPProfileName(cwp_afdo), arch,
                            _ParseBenchmarkProfileName(benchmark_afdo)))
   merged_profile = os.path.join(output_dir, merged_profile_name)
