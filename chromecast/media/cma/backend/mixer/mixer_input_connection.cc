@@ -149,6 +149,7 @@ MixerInputConnection::MixerInputConnection(
     const mixer_service::OutputStreamParams& params)
     : mixer_(mixer),
       socket_(std::move(socket)),
+      ignore_for_stream_count_(params.ignore_for_stream_count()),
       fill_size_(GetFillSize(params)),
       num_channels_(params.num_channels()),
       input_samples_per_second_(params.sample_rate()),
@@ -466,7 +467,7 @@ int MixerInputConnection::playout_channel() {
 
 bool MixerInputConnection::active() {
   base::AutoLock lock(lock_);
-  return !paused_;
+  return !ignore_for_stream_count_ && !paused_;
 }
 
 void MixerInputConnection::WritePcm(scoped_refptr<net::IOBuffer> data) {
