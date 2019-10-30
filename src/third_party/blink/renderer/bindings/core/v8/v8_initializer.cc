@@ -548,8 +548,11 @@ static void HostGetImportMetaProperties(v8::Local<v8::Context> context,
 static void InitializeV8Common(v8::Isolate* isolate) {
   isolate->AddGCPrologueCallback(V8GCController::GcPrologue);
   isolate->AddGCEpilogueCallback(V8GCController::GcEpilogue);
-  isolate->SetEmbedderHeapTracer(static_cast<v8::EmbedderHeapTracer*>(
-      V8PerIsolateData::From(isolate)->GetUnifiedHeapController()));
+
+  // Instead of installing blink's v8 heap tracer as the sole embedder heap
+  // tracer, we will register it to the multi heap tracer.  This registration
+  // takes place in blink::V8PerIsolateData::V8PerIsolateData()
+
   isolate->SetMicrotasksPolicy(v8::MicrotasksPolicy::kScoped);
   isolate->SetUseCounterCallback(&UseCounterCallback);
   isolate->SetWasmModuleCallback(WasmModuleOverride);
