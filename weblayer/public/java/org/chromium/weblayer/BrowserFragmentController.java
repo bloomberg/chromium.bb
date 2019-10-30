@@ -29,7 +29,11 @@ public final class BrowserFragmentController {
         mProfileManager = profileManager;
     }
 
-    // TODO(pshmakov): rename this to BrowserTabController.
+    /**
+     * Returns the BrowserController associated with this BrowserFragmentController.
+     *
+     * @return The BrowserController.
+     */
     @NonNull
     public BrowserController getBrowserController() {
         ThreadCheck.ensureOnUiThread();
@@ -43,6 +47,12 @@ public final class BrowserFragmentController {
         return mController;
     }
 
+    /**
+     * Sets the View shown at the top of the browser. A value of null removes the view. The
+     * top-view is typically used to show the uri. The top-view scrolls with the page.
+     *
+     * @param view The new top-view.
+     */
     public void setTopView(@Nullable View view) {
         ThreadCheck.ensureOnUiThread();
         try {
