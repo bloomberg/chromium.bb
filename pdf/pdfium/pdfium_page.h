@@ -201,6 +201,11 @@ class PDFiumPage {
   void CalculateTextRunStyleInfo(
       int char_index,
       pp::PDF::PrivateAccessibilityTextStyleInfo* style_info);
+  // Returns a boolean indicating if the character at index |char_index| has the
+  // same text style as the text run.
+  bool AreTextStyleEqual(
+      int char_index,
+      const pp::PDF::PrivateAccessibilityTextStyleInfo& style);
 
   // Key    :  Marked content id for the image element as specified in the
   //           struct tree.

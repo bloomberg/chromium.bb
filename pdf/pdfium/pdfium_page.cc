@@ -326,6 +326,21 @@ void PDFiumPage::CalculateTextRunStyleInfo(
   style_info->render_mode = FPDFText_GetTextRenderMode(text_page, char_index);
 }
 
+bool PDFiumPage::AreTextStyleEqual(
+    int char_index,
+    const pp::PDF::PrivateAccessibilityTextStyleInfo& style) {
+  pp::PDF::PrivateAccessibilityTextStyleInfo char_style;
+  CalculateTextRunStyleInfo(char_index, &char_style);
+  return char_style.font_name == style.font_name &&
+         char_style.font_weight == style.font_weight &&
+         char_style.render_mode == style.render_mode &&
+         DoubleEquals(char_style.font_size, style.font_size) &&
+         char_style.fill_color == style.fill_color &&
+         char_style.stroke_color == style.stroke_color &&
+         char_style.is_italic == style.is_italic &&
+         char_style.is_bold == style.is_bold;
+}
+
 base::Optional<pp::PDF::PrivateAccessibilityTextRunInfo>
 PDFiumPage::GetTextRunInfo(int start_char_index) {
   FPDF_PAGE page = GetPage();
@@ -406,11 +421,9 @@ PDFiumPage::GetTextRunInfo(int start_char_index) {
         GetFloatCharRectInPixels(page, text_page, char_index);
 
     if (!base::IsUnicodeWhitespace(character)) {
-      // TODO (bebeaudr): add text run break heuristic to break on style.
-
-      // Heuristic: End the text run if different font size is encountered.
-      double font_size = FPDFText_GetFontSize(text_page, char_index);
-      if (!DoubleEquals(font_size, text_run_font_size))
+      // Heuristic: End the text run if the text style of the current character
+      // is different from the text run's style.
+      if (!AreTextStyleEqual(char_index, info.style))
         break;
 
       // Heuristic: End text run if character isn't going in the same direction.

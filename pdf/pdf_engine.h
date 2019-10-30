@@ -376,9 +376,9 @@ class PDFEngine {
   // Get a given unicode character on a given page.
   virtual uint32_t GetCharUnicode(int page_index, int char_index) = 0;
   // Given a start char index, find the longest continuous run of text that's
-  // in a single direction and with the same style and font size. Return a
-  // filled out pp::PDF::PrivateAccessibilityTextRunInfo on success or
-  // base::nullopt on failure. e.g. When |start_char_index| is out of bounds.
+  // in a single direction and with the same text style. Return a filled out
+  // pp::PDF::PrivateAccessibilityTextRunInfo on success or base::nullopt on
+  // failure. e.g. When |start_char_index| is out of bounds.
   virtual base::Optional<pp::PDF::PrivateAccessibilityTextRunInfo>
   GetTextRunInfo(int page_index, int start_char_index) = 0;
   // Gets the number of links on a given page.
