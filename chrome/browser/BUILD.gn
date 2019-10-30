@@ -1580,6 +1580,8 @@ jumbo_static_library("browser") {
     "sharing/sharing_service_proxy_android.h",
     "sharing/sharing_sync_preference.cc",
     "sharing/sharing_sync_preference.h",
+    "sharing/sharing_utils.cc",
+    "sharing/sharing_utils.h",
     "sharing/vapid_key_manager.cc",
     "sharing/vapid_key_manager.h",
     "shell_integration.cc",
