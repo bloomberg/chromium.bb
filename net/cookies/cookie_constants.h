@@ -36,7 +36,7 @@ enum class CookieSameSite {
   NO_RESTRICTION = 0,
   LAX_MODE = 1,
   STRICT_MODE = 2,
-  EXTENDED_MODE = 3,  // TODO(chlily): Remove or gate behind flag.
+  // Reserved 3 (was EXTENDED_MODE), next number is 4.
 };
 
 // These are the enforcement modes that may be applied to a cookie when deciding

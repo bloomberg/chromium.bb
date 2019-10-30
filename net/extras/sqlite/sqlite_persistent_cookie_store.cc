@@ -491,8 +491,6 @@ DBCookieSameSite CookieSameSiteToDBCookieSameSite(CookieSameSite value) {
       return kCookieSameSiteLax;
     case CookieSameSite::STRICT_MODE:
       return kCookieSameSiteStrict;
-    case CookieSameSite::EXTENDED_MODE:
-      return kCookieSameSiteExtended;
     case CookieSameSite::UNSPECIFIED:
       return kCookieSameSiteUnspecified;
   }
