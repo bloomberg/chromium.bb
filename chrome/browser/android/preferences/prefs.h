@@ -44,6 +44,12 @@ enum Pref {
   REMEMBER_PASSWORDS_ENABLED,
   PASSWORD_MANAGER_AUTO_SIGNIN_ENABLED,
   PASSWORD_MANAGER_LEAK_DETECTION_ENABLED,
+  SUPERVISED_USER_SAFE_SITES,
+  DEFAULT_SUPERVISED_USER_FILTERING_BEHAVIOR,
+  SUPERVISED_USER_ID,
+  SUPERVISED_USER_CUSTODIAN_EMAIL,
+  SUPERVISED_USER_SECOND_CUSTODIAN_NAME,
+  SUPERVISED_USER_SECOND_CUSTODIAN_EMAIL,
   // PREF_NUM_PREFS must be the last entry.
   PREF_NUM_PREFS
 };
@@ -77,6 +83,12 @@ const char* const kPrefsExposedToJava[] = {
     password_manager::prefs::kCredentialsEnableService,
     password_manager::prefs::kCredentialsEnableAutosignin,
     password_manager::prefs::kPasswordLeakDetectionEnabled,
+    prefs::kSupervisedUserSafeSites,
+    prefs::kDefaultSupervisedUserFilteringBehavior,
+    prefs::kSupervisedUserId,
+    prefs::kSupervisedUserCustodianEmail,
+    prefs::kSupervisedUserSecondCustodianName,
+    prefs::kSupervisedUserSecondCustodianEmail,
 };
 
 #endif  // CHROME_BROWSER_ANDROID_PREFERENCES_PREFS_H_

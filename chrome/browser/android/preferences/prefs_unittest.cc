@@ -73,6 +73,17 @@ TEST_F(PrefsTest, TestIndex) {
             GetPrefName(PASSWORD_MANAGER_AUTO_SIGNIN_ENABLED));
   EXPECT_EQ(password_manager::prefs::kPasswordLeakDetectionEnabled,
             GetPrefName(PASSWORD_MANAGER_LEAK_DETECTION_ENABLED));
+  EXPECT_EQ(prefs::kSupervisedUserSafeSites,
+            GetPrefName(SUPERVISED_USER_SAFE_SITES));
+  EXPECT_EQ(prefs::kDefaultSupervisedUserFilteringBehavior,
+            GetPrefName(DEFAULT_SUPERVISED_USER_FILTERING_BEHAVIOR));
+  EXPECT_EQ(prefs::kSupervisedUserId, GetPrefName(SUPERVISED_USER_ID));
+  EXPECT_EQ(prefs::kSupervisedUserCustodianEmail,
+            GetPrefName(SUPERVISED_USER_CUSTODIAN_EMAIL));
+  EXPECT_EQ(prefs::kSupervisedUserSecondCustodianName,
+            GetPrefName(SUPERVISED_USER_SECOND_CUSTODIAN_NAME));
+  EXPECT_EQ(prefs::kSupervisedUserSecondCustodianEmail,
+            GetPrefName(SUPERVISED_USER_SECOND_CUSTODIAN_EMAIL));
 
   // If this check fails, a pref is missing a test case above.
   EXPECT_EQ(Pref::PREF_NUM_PREFS, pref_count_);

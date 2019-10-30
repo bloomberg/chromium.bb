@@ -504,20 +504,6 @@ static jboolean JNI_PrefServiceBridge_GetResolveNavigationErrorManaged(
   return GetPrefService()->IsManagedPreference(
       prefs::kAlternateErrorPagesEnabled);
 }
-
-static jboolean JNI_PrefServiceBridge_GetSupervisedUserSafeSitesEnabled(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  return GetPrefService()->GetBoolean(prefs::kSupervisedUserSafeSites);
-}
-
-static jint JNI_PrefServiceBridge_GetDefaultSupervisedUserFilteringBehavior(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  return GetPrefService()->GetInteger(
-      prefs::kDefaultSupervisedUserFilteringBehavior);
-}
-
 static jboolean JNI_PrefServiceBridge_GetIncognitoModeEnabled(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
@@ -983,32 +969,6 @@ static ScopedJavaLocalRef<jobject> JNI_PrefServiceBridge_GetAboutVersionStrings(
       ConvertUTF8ToJavaString(env, os_version));
 }
 
-static ScopedJavaLocalRef<jstring>
-JNI_PrefServiceBridge_GetSupervisedUserCustodianEmail(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  return ConvertUTF8ToJavaString(
-      env, GetPrefService()->GetString(prefs::kSupervisedUserCustodianEmail));
-}
-
-static ScopedJavaLocalRef<jstring>
-JNI_PrefServiceBridge_GetSupervisedUserSecondCustodianName(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  return ConvertUTF8ToJavaString(
-      env,
-      GetPrefService()->GetString(prefs::kSupervisedUserSecondCustodianName));
-}
-
-static ScopedJavaLocalRef<jstring>
-JNI_PrefServiceBridge_GetSupervisedUserSecondCustodianEmail(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  return ConvertUTF8ToJavaString(
-      env,
-      GetPrefService()->GetString(prefs::kSupervisedUserSecondCustodianEmail));
-}
-
 // static
 // This logic should be kept in sync with prependToAcceptLanguagesIfNecessary in
 // chrome/android/java/src/org/chromium/chrome/browser/
@@ -1097,14 +1057,6 @@ void PrefServiceBridge::GetAndroidPermissionsForContentSetting(
       Java_PrefServiceBridge_getAndroidPermissionsForContentSetting(
           env, static_cast<int>(content_settings_type)),
       out);
-}
-
-static void JNI_PrefServiceBridge_SetSupervisedUserId(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jstring>& pref) {
-  GetPrefService()->SetString(prefs::kSupervisedUserId,
-                              ConvertJavaStringToUTF8(env, pref));
 }
 
 static void JNI_PrefServiceBridge_GetChromeAcceptLanguages(
