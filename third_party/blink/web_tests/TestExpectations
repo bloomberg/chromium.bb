@@ -5762,9 +5762,6 @@ crbug.com/1009396 http/tests/devtools/coverage/multiple-instances-merge.js [ Pas
 crbug.com/1016772 http/tests/devtools/compiler-script-mapping.js [ Pass Failure ]
 crbug.com/1016772 http/tests/devtools/sources/debugger-ui/source-url-comment.js [ Pass Failure ]
 
-# Temporarily disabled for landing initiator chain changes in DevTools
-crbug.com/842488 http/tests/devtools/network/network-initiator-chain.js [ Pass Failure ]
-
 # Temporarily disabled to a breakpoint non-determinism issue.
 crbug.com/1019613 http/tests/devtools/sources/debugger/debug-inlined-scripts.js [ Pass Failure ]
 
