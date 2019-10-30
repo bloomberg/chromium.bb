@@ -63,7 +63,6 @@
 #include "third_party/blink/renderer/core/script/modulator.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_types_util.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
-#include "third_party/blink/renderer/core/workers/worklet_global_scope.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_context_data.h"
 #include "third_party/blink/renderer/platform/bindings/v8_private_property.h"
@@ -335,9 +334,7 @@ static void PromiseRejectHandlerInWorker(v8::PromiseRejectMessage data) {
     return;
 
   auto* script_controller =
-      execution_context->IsWorkerGlobalScope()
-          ? To<WorkerGlobalScope>(execution_context)->ScriptController()
-          : To<WorkletGlobalScope>(execution_context)->ScriptController();
+      To<WorkerGlobalScope>(execution_context)->ScriptController();
   DCHECK(script_controller);
 
   PromiseRejectHandler(data, *script_controller->GetRejectedPromises(),
