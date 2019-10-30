@@ -55,36 +55,44 @@ FloatRect DeNormalizeRect(const WebFloatRect& normalized, const IntRect& base) {
 }
 }  // namespace
 
-WebRemoteFrame* WebRemoteFrame::Create(WebTreeScopeType scope,
-                                       WebRemoteFrameClient* client,
-                                       InterfaceRegistry* interface_registry) {
-  return WebRemoteFrameImpl::Create(scope, client, interface_registry);
+WebRemoteFrame* WebRemoteFrame::Create(
+    WebTreeScopeType scope,
+    WebRemoteFrameClient* client,
+    InterfaceRegistry* interface_registry,
+    AssociatedInterfaceProvider* associated_interface_provider) {
+  return WebRemoteFrameImpl::Create(scope, client, interface_registry,
+                                    associated_interface_provider);
 }
 
 WebRemoteFrame* WebRemoteFrame::CreateMainFrame(
     WebView* web_view,
     WebRemoteFrameClient* client,
     InterfaceRegistry* interface_registry,
+    AssociatedInterfaceProvider* associated_interface_provider,
     WebFrame* opener) {
-  return WebRemoteFrameImpl::CreateMainFrame(web_view, client,
-                                             interface_registry, opener);
+  return WebRemoteFrameImpl::CreateMainFrame(
+      web_view, client, interface_registry, associated_interface_provider,
+      opener);
 }
 
 WebRemoteFrame* WebRemoteFrame::CreateForPortal(
     WebTreeScopeType scope,
     WebRemoteFrameClient* client,
     InterfaceRegistry* interface_registry,
+    AssociatedInterfaceProvider* associated_interface_provider,
     const WebElement& portal_element) {
   return WebRemoteFrameImpl::CreateForPortal(scope, client, interface_registry,
+                                             associated_interface_provider,
                                              portal_element);
 }
 
 WebRemoteFrameImpl* WebRemoteFrameImpl::Create(
     WebTreeScopeType scope,
     WebRemoteFrameClient* client,
-    InterfaceRegistry* interface_registry) {
+    InterfaceRegistry* interface_registry,
+    AssociatedInterfaceProvider* associated_interface_provider) {
   WebRemoteFrameImpl* frame = MakeGarbageCollected<WebRemoteFrameImpl>(
-      scope, client, interface_registry);
+      scope, client, interface_registry, associated_interface_provider);
   return frame;
 }
 
@@ -92,9 +100,11 @@ WebRemoteFrameImpl* WebRemoteFrameImpl::CreateMainFrame(
     WebView* web_view,
     WebRemoteFrameClient* client,
     InterfaceRegistry* interface_registry,
+    AssociatedInterfaceProvider* associated_interface_provider,
     WebFrame* opener) {
   WebRemoteFrameImpl* frame = MakeGarbageCollected<WebRemoteFrameImpl>(
-      WebTreeScopeType::kDocument, client, interface_registry);
+      WebTreeScopeType::kDocument, client, interface_registry,
+      associated_interface_provider);
   frame->SetOpener(opener);
   Page& page = *static_cast<WebViewImpl*>(web_view)->GetPage();
   // It would be nice to DCHECK that the main frame is not set yet here.
@@ -115,9 +125,10 @@ WebRemoteFrameImpl* WebRemoteFrameImpl::CreateForPortal(
     WebTreeScopeType scope,
     WebRemoteFrameClient* client,
     InterfaceRegistry* interface_registry,
+    AssociatedInterfaceProvider* associated_interface_provider,
     const WebElement& portal_element) {
   WebRemoteFrameImpl* frame = MakeGarbageCollected<WebRemoteFrameImpl>(
-      scope, client, interface_registry);
+      scope, client, interface_registry, associated_interface_provider);
 
   Element* element = portal_element;
   DCHECK(element->HasTagName(html_names::kPortalTag));
@@ -205,9 +216,9 @@ void WebRemoteFrameImpl::InitializeCoreFrame(
     FrameOwner* owner,
     const AtomicString& name,
     WindowAgentFactory* window_agent_factory) {
-  SetCoreFrame(MakeGarbageCollected<RemoteFrame>(frame_client_.Get(), page,
-                                                 owner, window_agent_factory,
-                                                 interface_registry_));
+  SetCoreFrame(MakeGarbageCollected<RemoteFrame>(
+      frame_client_.Get(), page, owner, window_agent_factory,
+      interface_registry_, associated_interface_provider_));
   GetFrame()->CreateView();
   frame_->Tree().SetName(name);
 }
@@ -219,9 +230,10 @@ WebRemoteFrame* WebRemoteFrameImpl::CreateRemoteChild(
     FrameOwnerElementType frame_owner_element_type,
     WebRemoteFrameClient* client,
     blink::InterfaceRegistry* interface_registry,
+    AssociatedInterfaceProvider* associated_interface_provider,
     WebFrame* opener) {
-  WebRemoteFrameImpl* child =
-      WebRemoteFrameImpl::Create(scope, client, interface_registry);
+  WebRemoteFrameImpl* child = WebRemoteFrameImpl::Create(
+      scope, client, interface_registry, associated_interface_provider);
   child->SetOpener(opener);
   AppendChild(child);
   auto* owner = MakeGarbageCollected<RemoteFrameOwner>(
@@ -467,13 +479,16 @@ void WebRemoteFrameImpl::RenderFallbackContent() const {
   owner->RenderFallbackContent(frame_);
 }
 
-WebRemoteFrameImpl::WebRemoteFrameImpl(WebTreeScopeType scope,
-                                       WebRemoteFrameClient* client,
-                                       InterfaceRegistry* interface_registry)
+WebRemoteFrameImpl::WebRemoteFrameImpl(
+    WebTreeScopeType scope,
+    WebRemoteFrameClient* client,
+    InterfaceRegistry* interface_registry,
+    AssociatedInterfaceProvider* associated_interface_provider)
     : WebRemoteFrame(scope),
       client_(client),
       frame_client_(MakeGarbageCollected<RemoteFrameClientImpl>(this)),
       interface_registry_(interface_registry),
+      associated_interface_provider_(associated_interface_provider),
       self_keep_alive_(PERSISTENT_FROM_HERE, this) {
   DCHECK(client);
 }

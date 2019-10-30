@@ -1207,10 +1207,6 @@ IPC_MESSAGE_ROUTED1(FrameHostMsg_VisibilityChanged,
 // https://html.spec.whatwg.org/multipage/interaction.html#inert
 IPC_MESSAGE_ROUTED1(FrameHostMsg_SetIsInert, bool /* inert */)
 
-// Sets the inherited effective touch action on a remote frame.
-IPC_MESSAGE_ROUTED1(FrameHostMsg_SetInheritedEffectiveTouchAction,
-                    cc::TouchAction)
-
 // Toggles render throttling on a remote frame. |is_throttled| indicates
 // whether the current frame should be throttled based on its viewport
 // visibility, and |subtree_throttled| indicates that an ancestor frame has

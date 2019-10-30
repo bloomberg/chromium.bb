@@ -195,7 +195,6 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
       blink::FrameOcclusionState occlusion_state) override;
   void VisibilityChanged(blink::mojom::FrameVisibility visibility) override;
   void SetIsInert(bool) override;
-  void SetInheritedEffectiveTouchAction(cc::TouchAction) override;
   void UpdateRenderThrottlingStatus(bool is_throttled,
                                     bool subtree_throttled) override;
   void DidChangeOpener(blink::WebFrame* opener) override;

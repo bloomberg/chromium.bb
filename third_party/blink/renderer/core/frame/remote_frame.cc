@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/frame/remote_frame.h"
 
 #include "cc/layers/surface_layer.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/platform/interface_registry.h"
 #include "third_party/blink/renderer/bindings/core/v8/window_proxy.h"
 #include "third_party/blink/renderer/bindings/core/v8/window_proxy_manager.h"
@@ -36,11 +37,13 @@
 
 namespace blink {
 
-RemoteFrame::RemoteFrame(RemoteFrameClient* client,
-                         Page& page,
-                         FrameOwner* owner,
-                         WindowAgentFactory* inheriting_agent_factory,
-                         InterfaceRegistry* interface_registry)
+RemoteFrame::RemoteFrame(
+    RemoteFrameClient* client,
+    Page& page,
+    FrameOwner* owner,
+    WindowAgentFactory* inheriting_agent_factory,
+    InterfaceRegistry* interface_registry,
+    AssociatedInterfaceProvider* associated_interface_provider)
     : Frame(client,
             page,
             owner,
@@ -52,10 +55,12 @@ RemoteFrame::RemoteFrame(RemoteFrameClient* client,
   interface_registry->AddAssociatedInterface(WTF::BindRepeating(
       &RemoteFrame::BindToReceiver, WrapWeakPersistent(this)));
 
+  associated_interface_provider->GetInterface(
+      remote_frame_host_remote_.BindNewEndpointAndPassReceiver());
+
   UpdateInertIfPossible();
   UpdateInheritedEffectiveTouchActionIfPossible();
   UpdateVisibleToHitTesting();
-
   Initialize();
 }
 
@@ -185,7 +190,7 @@ void RemoteFrame::SetIsInert(bool inert) {
 
 void RemoteFrame::SetInheritedEffectiveTouchAction(TouchAction touch_action) {
   if (inherited_effective_touch_action_ != touch_action)
-    Client()->SetInheritedEffectiveTouchAction(touch_action);
+    GetRemoteFrameHostRemote().SetInheritedEffectiveTouchAction(touch_action);
   inherited_effective_touch_action_ = touch_action;
 }
 
@@ -217,6 +222,10 @@ void RemoteFrame::CreateView() {
 
   if (OwnerLayoutObject())
     DeprecatedLocalOwner()->SetEmbeddedContentView(view_);
+}
+
+mojom::blink::RemoteFrameHost& RemoteFrame::GetRemoteFrameHostRemote() {
+  return *remote_frame_host_remote_.get();
 }
 
 RemoteFrameClient* RemoteFrame::Client() const {
