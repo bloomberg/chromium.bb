@@ -232,7 +232,6 @@ def GeneralTemplates(site_config):
       'brillo',
       sync_chrome=False,
       chrome_sdk=False,
-      afdo_use=False,
       dev_installer_prebuilts=False,
   )
 
@@ -240,7 +239,6 @@ def GeneralTemplates(site_config):
       'lakitu',
       sync_chrome=False,
       chrome_sdk=False,
-      afdo_use=False,
       dev_installer_prebuilts=False,
       paygen_skip_testing=True,
   )
@@ -270,7 +268,6 @@ def GeneralTemplates(site_config):
       'termina',
       sync_chrome=False,
       chrome_sdk=False,
-      afdo_use=False,
       dev_installer_prebuilts=False,
       signer_tests=False,
       sign_types=None,
@@ -288,7 +285,6 @@ def GeneralTemplates(site_config):
       'loonix',
       sync_chrome=False,
       chrome_sdk=False,
-      afdo_use=False,
       dev_installer_prebuilts=False,
       # TODO(harshmodi): Re-enable this when we start using vboot
       signer_tests=False,

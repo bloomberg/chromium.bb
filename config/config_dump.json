@@ -1467,7 +1467,6 @@
     },
     "arkham-full": {
         "_template": "full",
-        "afdo_use": false,
         "boards": [
             "arkham"
         ],
@@ -1481,7 +1480,6 @@
     },
     "arkham-full-tryjob": {
         "_template": "full",
-        "afdo_use": false,
         "boards": [
             "arkham"
         ],
@@ -1508,7 +1506,6 @@
     },
     "arkham-llvm-next-toolchain": {
         "_template": "llvm_next_toolchain",
-        "afdo_use": false,
         "boards": [
             "arkham"
         ],
@@ -1517,7 +1514,6 @@
     },
     "arkham-llvm-next-toolchain-tryjob": {
         "_template": "llvm_next_toolchain",
-        "afdo_use": false,
         "boards": [
             "arkham"
         ],
@@ -1530,7 +1526,6 @@
     },
     "arkham-llvm-toolchain": {
         "_template": "llvm_toolchain",
-        "afdo_use": false,
         "boards": [
             "arkham"
         ],
@@ -1539,7 +1534,6 @@
     },
     "arkham-llvm-toolchain-tryjob": {
         "_template": "llvm_toolchain",
-        "afdo_use": false,
         "boards": [
             "arkham"
         ],
@@ -1567,7 +1561,6 @@
     },
     "arkham-release": {
         "_template": "release",
-        "afdo_use": false,
         "boards": [
             "arkham"
         ],
@@ -1582,7 +1575,6 @@
     },
     "arkham-release-tryjob": {
         "_template": "release",
-        "afdo_use": false,
         "boards": [
             "arkham"
         ],
@@ -1603,7 +1595,6 @@
     },
     "arkham-unittest-stress": {
         "_template": "unittest_stress",
-        "afdo_use": false,
         "boards": [
             "arkham"
         ],
@@ -3163,7 +3154,6 @@
     },
     "beaglebone-full": {
         "_template": "full",
-        "afdo_use": false,
         "boards": [
             "beaglebone"
         ],
@@ -3182,7 +3172,6 @@
     },
     "beaglebone-full-tryjob": {
         "_template": "full",
-        "afdo_use": false,
         "boards": [
             "beaglebone"
         ],
@@ -3214,7 +3203,6 @@
     },
     "beaglebone-incremental": {
         "_template": "incremental",
-        "afdo_use": false,
         "boards": [
             "beaglebone"
         ],
@@ -3226,7 +3214,6 @@
     },
     "beaglebone-incremental-tryjob": {
         "_template": "incremental",
-        "afdo_use": false,
         "boards": [
             "beaglebone"
         ],
@@ -3253,7 +3240,6 @@
     },
     "beaglebone-llvm-next-toolchain": {
         "_template": "llvm_next_toolchain",
-        "afdo_use": false,
         "boards": [
             "beaglebone"
         ],
@@ -3267,7 +3253,6 @@
     },
     "beaglebone-llvm-next-toolchain-tryjob": {
         "_template": "llvm_next_toolchain",
-        "afdo_use": false,
         "boards": [
             "beaglebone"
         ],
@@ -3285,7 +3270,6 @@
     },
     "beaglebone-llvm-toolchain": {
         "_template": "llvm_toolchain",
-        "afdo_use": false,
         "boards": [
             "beaglebone"
         ],
@@ -3299,7 +3283,6 @@
     },
     "beaglebone-llvm-toolchain-tryjob": {
         "_template": "llvm_toolchain",
-        "afdo_use": false,
         "boards": [
             "beaglebone"
         ],
@@ -3317,7 +3300,6 @@
     },
     "beaglebone-release": {
         "_template": "release",
-        "afdo_use": false,
         "boards": [
             "beaglebone"
         ],
@@ -3339,7 +3321,6 @@
     },
     "beaglebone-release-tryjob": {
         "_template": "release",
-        "afdo_use": false,
         "boards": [
             "beaglebone"
         ],
@@ -3366,7 +3347,6 @@
     },
     "beaglebone-unittest-stress": {
         "_template": "unittest_stress",
-        "afdo_use": false,
         "boards": [
             "beaglebone"
         ],
@@ -3385,7 +3365,6 @@
     },
     "beaglebone_servo-full": {
         "_template": "full",
-        "afdo_use": false,
         "boards": [
             "beaglebone_servo"
         ],
@@ -3404,7 +3383,6 @@
     },
     "beaglebone_servo-full-tryjob": {
         "_template": "full",
-        "afdo_use": false,
         "boards": [
             "beaglebone_servo"
         ],
@@ -3436,7 +3414,6 @@
     },
     "beaglebone_servo-llvm-next-toolchain": {
         "_template": "llvm_next_toolchain",
-        "afdo_use": false,
         "boards": [
             "beaglebone_servo"
         ],
@@ -3450,7 +3427,6 @@
     },
     "beaglebone_servo-llvm-next-toolchain-tryjob": {
         "_template": "llvm_next_toolchain",
-        "afdo_use": false,
         "boards": [
             "beaglebone_servo"
         ],
@@ -3468,7 +3444,6 @@
     },
     "beaglebone_servo-llvm-toolchain": {
         "_template": "llvm_toolchain",
-        "afdo_use": false,
         "boards": [
             "beaglebone_servo"
         ],
@@ -3482,7 +3457,6 @@
     },
     "beaglebone_servo-llvm-toolchain-tryjob": {
         "_template": "llvm_toolchain",
-        "afdo_use": false,
         "boards": [
             "beaglebone_servo"
         ],
@@ -3500,7 +3474,6 @@
     },
     "beaglebone_servo-release": {
         "_template": "release",
-        "afdo_use": false,
         "boards": [
             "beaglebone_servo"
         ],
@@ -3522,7 +3495,6 @@
     },
     "beaglebone_servo-release-tryjob": {
         "_template": "release",
-        "afdo_use": false,
         "boards": [
             "beaglebone_servo"
         ],
@@ -3549,7 +3521,6 @@
     },
     "beaglebone_servo-unittest-stress": {
         "_template": "unittest_stress",
-        "afdo_use": false,
         "boards": [
             "beaglebone_servo"
         ],
@@ -5774,7 +5745,6 @@
     },
     "capri-full": {
         "_template": "full",
-        "afdo_use": false,
         "boards": [
             "capri"
         ],
@@ -5795,7 +5765,6 @@
     },
     "capri-full-tryjob": {
         "_template": "full",
-        "afdo_use": false,
         "boards": [
             "capri"
         ],
@@ -5819,7 +5788,6 @@
     },
     "capri-llvm-next-toolchain": {
         "_template": "llvm_next_toolchain",
-        "afdo_use": false,
         "boards": [
             "capri"
         ],
@@ -5836,7 +5804,6 @@
     },
     "capri-llvm-next-toolchain-tryjob": {
         "_template": "llvm_next_toolchain",
-        "afdo_use": false,
         "boards": [
             "capri"
         ],
@@ -5856,7 +5823,6 @@
     },
     "capri-llvm-toolchain": {
         "_template": "llvm_toolchain",
-        "afdo_use": false,
         "boards": [
             "capri"
         ],
@@ -5873,7 +5839,6 @@
     },
     "capri-llvm-toolchain-tryjob": {
         "_template": "llvm_toolchain",
-        "afdo_use": false,
         "boards": [
             "capri"
         ],
@@ -5893,7 +5858,6 @@
     },
     "capri-release": {
         "_template": "release",
-        "afdo_use": false,
         "boards": [
             "capri"
         ],
@@ -5917,7 +5881,6 @@
     },
     "capri-release-tryjob": {
         "_template": "release",
-        "afdo_use": false,
         "boards": [
             "capri"
         ],
@@ -5945,7 +5908,6 @@
     },
     "capri-unittest-stress": {
         "_template": "unittest_stress",
-        "afdo_use": false,
         "boards": [
             "capri"
         ],
@@ -5963,7 +5925,6 @@
     },
     "capri-zfpga-full": {
         "_template": "full",
-        "afdo_use": false,
         "boards": [
             "capri-zfpga"
         ],
@@ -5984,7 +5945,6 @@
     },
     "capri-zfpga-full-tryjob": {
         "_template": "full",
-        "afdo_use": false,
         "boards": [
             "capri-zfpga"
         ],
@@ -6008,7 +5968,6 @@
     },
     "capri-zfpga-llvm-next-toolchain": {
         "_template": "llvm_next_toolchain",
-        "afdo_use": false,
         "boards": [
             "capri-zfpga"
         ],
@@ -6025,7 +5984,6 @@
     },
     "capri-zfpga-llvm-next-toolchain-tryjob": {
         "_template": "llvm_next_toolchain",
-        "afdo_use": false,
         "boards": [
             "capri-zfpga"
         ],
@@ -6045,7 +6003,6 @@
     },
     "capri-zfpga-llvm-toolchain": {
         "_template": "llvm_toolchain",
-        "afdo_use": false,
         "boards": [
             "capri-zfpga"
         ],
@@ -6062,7 +6019,6 @@
     },
     "capri-zfpga-llvm-toolchain-tryjob": {
         "_template": "llvm_toolchain",
-        "afdo_use": false,
         "boards": [
             "capri-zfpga"
         ],
@@ -6082,7 +6038,6 @@
     },
     "capri-zfpga-release": {
         "_template": "release",
-        "afdo_use": false,
         "boards": [
             "capri-zfpga"
         ],
@@ -6105,7 +6060,6 @@
     },
     "capri-zfpga-release-tryjob": {
         "_template": "release",
-        "afdo_use": false,
         "boards": [
             "capri-zfpga"
         ],
@@ -6133,7 +6087,6 @@
     },
     "capri-zfpga-unittest-stress": {
         "_template": "unittest_stress",
-        "afdo_use": false,
         "boards": [
             "capri-zfpga"
         ],
@@ -7974,7 +7927,6 @@
     },
     "cobblepot-full": {
         "_template": "full",
-        "afdo_use": false,
         "boards": [
             "cobblepot"
         ],
@@ -7995,7 +7947,6 @@
     },
     "cobblepot-full-tryjob": {
         "_template": "full",
-        "afdo_use": false,
         "boards": [
             "cobblepot"
         ],
@@ -8019,7 +7970,6 @@
     },
     "cobblepot-llvm-next-toolchain": {
         "_template": "llvm_next_toolchain",
-        "afdo_use": false,
         "boards": [
             "cobblepot"
         ],
@@ -8036,7 +7986,6 @@
     },
     "cobblepot-llvm-next-toolchain-tryjob": {
         "_template": "llvm_next_toolchain",
-        "afdo_use": false,
         "boards": [
             "cobblepot"
         ],
@@ -8056,7 +8005,6 @@
     },
     "cobblepot-llvm-toolchain": {
         "_template": "llvm_toolchain",
-        "afdo_use": false,
         "boards": [
             "cobblepot"
         ],
@@ -8073,7 +8021,6 @@
     },
     "cobblepot-llvm-toolchain-tryjob": {
         "_template": "llvm_toolchain",
-        "afdo_use": false,
         "boards": [
             "cobblepot"
         ],
@@ -8093,7 +8040,6 @@
     },
     "cobblepot-release": {
         "_template": "release",
-        "afdo_use": false,
         "boards": [
             "cobblepot"
         ],
@@ -8117,7 +8063,6 @@
     },
     "cobblepot-release-tryjob": {
         "_template": "release",
-        "afdo_use": false,
         "boards": [
             "cobblepot"
         ],
@@ -8145,7 +8090,6 @@
     },
     "cobblepot-unittest-stress": {
         "_template": "unittest_stress",
-        "afdo_use": false,
         "boards": [
             "cobblepot"
         ],
@@ -14430,7 +14374,6 @@
     },
     "gale-full": {
         "_template": "full",
-        "afdo_use": false,
         "boards": [
             "gale"
         ],
@@ -14444,7 +14387,6 @@
     },
     "gale-full-tryjob": {
         "_template": "full",
-        "afdo_use": false,
         "boards": [
             "gale"
         ],
@@ -14471,7 +14413,6 @@
     },
     "gale-llvm-next-toolchain": {
         "_template": "llvm_next_toolchain",
-        "afdo_use": false,
         "boards": [
             "gale"
         ],
@@ -14486,7 +14427,6 @@
     },
     "gale-llvm-next-toolchain-tryjob": {
         "_template": "llvm_next_toolchain",
-        "afdo_use": false,
         "boards": [
             "gale"
         ],
@@ -14502,7 +14442,6 @@
     },
     "gale-llvm-toolchain": {
         "_template": "llvm_toolchain",
-        "afdo_use": false,
         "boards": [
             "gale"
         ],
@@ -14517,7 +14456,6 @@
     },
     "gale-llvm-toolchain-tryjob": {
         "_template": "llvm_toolchain",
-        "afdo_use": false,
         "boards": [
             "gale"
         ],
@@ -14548,7 +14486,6 @@
     },
     "gale-release": {
         "_template": "release",
-        "afdo_use": false,
         "boards": [
             "gale"
         ],
@@ -14561,7 +14498,6 @@
     },
     "gale-release-tryjob": {
         "_template": "release",
-        "afdo_use": false,
         "boards": [
             "gale"
         ],
@@ -14605,7 +14541,6 @@
     },
     "gale-unittest-stress": {
         "_template": "unittest_stress",
-        "afdo_use": false,
         "boards": [
             "gale"
         ],
@@ -15244,7 +15179,6 @@
     },
     "gonzo-full": {
         "_template": "full",
-        "afdo_use": false,
         "boards": [
             "gonzo"
         ],
@@ -15265,7 +15199,6 @@
     },
     "gonzo-full-tryjob": {
         "_template": "full",
-        "afdo_use": false,
         "boards": [
             "gonzo"
         ],
@@ -15289,7 +15222,6 @@
     },
     "gonzo-llvm-next-toolchain": {
         "_template": "llvm_next_toolchain",
-        "afdo_use": false,
         "boards": [
             "gonzo"
         ],
@@ -15306,7 +15238,6 @@
     },
     "gonzo-llvm-next-toolchain-tryjob": {
         "_template": "llvm_next_toolchain",
-        "afdo_use": false,
         "boards": [
             "gonzo"
         ],
@@ -15326,7 +15257,6 @@
     },
     "gonzo-llvm-toolchain": {
         "_template": "llvm_toolchain",
-        "afdo_use": false,
         "boards": [
             "gonzo"
         ],
@@ -15343,7 +15273,6 @@
     },
     "gonzo-llvm-toolchain-tryjob": {
         "_template": "llvm_toolchain",
-        "afdo_use": false,
         "boards": [
             "gonzo"
         ],
@@ -15363,7 +15292,6 @@
     },
     "gonzo-release": {
         "_template": "release",
-        "afdo_use": false,
         "boards": [
             "gonzo"
         ],
@@ -15387,7 +15315,6 @@
     },
     "gonzo-release-tryjob": {
         "_template": "release",
-        "afdo_use": false,
         "boards": [
             "gonzo"
         ],
@@ -15415,7 +15342,6 @@
     },
     "gonzo-unittest-stress": {
         "_template": "unittest_stress",
-        "afdo_use": false,
         "boards": [
             "gonzo"
         ],
@@ -19427,7 +19353,6 @@
     },
     "kumo-full": {
         "_template": "full",
-        "afdo_use": false,
         "boards": [
             "kumo"
         ],
@@ -19453,7 +19378,6 @@
     },
     "kumo-full-tryjob": {
         "_template": "full",
-        "afdo_use": false,
         "boards": [
             "kumo"
         ],
@@ -19482,7 +19406,6 @@
     },
     "kumo-incremental": {
         "_template": "incremental",
-        "afdo_use": false,
         "boards": [
             "kumo"
         ],
@@ -19512,7 +19435,6 @@
     },
     "kumo-incremental-tryjob": {
         "_template": "incremental",
-        "afdo_use": false,
         "boards": [
             "kumo"
         ],
@@ -19547,7 +19469,6 @@
     },
     "kumo-llvm-next-toolchain": {
         "_template": "llvm_next_toolchain",
-        "afdo_use": false,
         "boards": [
             "kumo"
         ],
@@ -19565,7 +19486,6 @@
     },
     "kumo-llvm-next-toolchain-tryjob": {
         "_template": "llvm_next_toolchain",
-        "afdo_use": false,
         "boards": [
             "kumo"
         ],
@@ -19586,7 +19506,6 @@
     },
     "kumo-llvm-toolchain": {
         "_template": "llvm_toolchain",
-        "afdo_use": false,
         "boards": [
             "kumo"
         ],
@@ -19604,7 +19523,6 @@
     },
     "kumo-llvm-toolchain-tryjob": {
         "_template": "llvm_toolchain",
-        "afdo_use": false,
         "boards": [
             "kumo"
         ],
@@ -19640,7 +19558,6 @@
     },
     "kumo-release": {
         "_template": "release",
-        "afdo_use": false,
         "boards": [
             "kumo"
         ],
@@ -19678,7 +19595,6 @@
     },
     "kumo-release-tryjob": {
         "_template": "release",
-        "afdo_use": false,
         "boards": [
             "kumo"
         ],
@@ -19720,7 +19636,6 @@
     },
     "kumo-unittest-stress": {
         "_template": "unittest_stress",
-        "afdo_use": false,
         "boards": [
             "kumo"
         ],
@@ -19743,7 +19658,6 @@
     },
     "lakitu-full": {
         "_template": "full",
-        "afdo_use": false,
         "boards": [
             "lakitu"
         ],
@@ -19775,7 +19689,6 @@
     },
     "lakitu-full-tryjob": {
         "_template": "full",
-        "afdo_use": false,
         "boards": [
             "lakitu"
         ],
@@ -19809,7 +19722,6 @@
     },
     "lakitu-gpu-full": {
         "_template": "full",
-        "afdo_use": false,
         "boards": [
             "lakitu-gpu"
         ],
@@ -19834,7 +19746,6 @@
     },
     "lakitu-gpu-full-tryjob": {
         "_template": "full",
-        "afdo_use": false,
         "boards": [
             "lakitu-gpu"
         ],
@@ -19862,7 +19773,6 @@
     },
     "lakitu-gpu-incremental": {
         "_template": "incremental",
-        "afdo_use": false,
         "boards": [
             "lakitu-gpu"
         ],
@@ -19895,7 +19805,6 @@
     },
     "lakitu-gpu-incremental-tryjob": {
         "_template": "incremental",
-        "afdo_use": false,
         "boards": [
             "lakitu-gpu"
         ],
@@ -19933,7 +19842,6 @@
     },
     "lakitu-gpu-llvm-next-toolchain": {
         "_template": "llvm_next_toolchain",
-        "afdo_use": false,
         "boards": [
             "lakitu-gpu"
         ],
@@ -19950,7 +19858,6 @@
     },
     "lakitu-gpu-llvm-next-toolchain-tryjob": {
         "_template": "llvm_next_toolchain",
-        "afdo_use": false,
         "boards": [
             "lakitu-gpu"
         ],
@@ -19970,7 +19877,6 @@
     },
     "lakitu-gpu-llvm-toolchain": {
         "_template": "llvm_toolchain",
-        "afdo_use": false,
         "boards": [
             "lakitu-gpu"
         ],
@@ -19987,7 +19893,6 @@
     },
     "lakitu-gpu-llvm-toolchain-tryjob": {
         "_template": "llvm_toolchain",
-        "afdo_use": false,
         "boards": [
             "lakitu-gpu"
         ],
@@ -20022,7 +19927,6 @@
     },
     "lakitu-gpu-release": {
         "_template": "release",
-        "afdo_use": false,
         "boards": [
             "lakitu-gpu"
         ],
@@ -20062,7 +19966,6 @@
     },
     "lakitu-gpu-release-tryjob": {
         "_template": "release",
-        "afdo_use": false,
         "boards": [
             "lakitu-gpu"
         ],
@@ -20107,7 +20010,6 @@
     },
     "lakitu-gpu-unittest-stress": {
         "_template": "unittest_stress",
-        "afdo_use": false,
         "boards": [
             "lakitu-gpu"
         ],
@@ -20129,7 +20031,6 @@
     },
     "lakitu-incremental": {
         "_template": "incremental",
-        "afdo_use": false,
         "boards": [
             "lakitu"
         ],
@@ -20164,7 +20065,6 @@
     },
     "lakitu-incremental-tryjob": {
         "_template": "incremental",
-        "afdo_use": false,
         "boards": [
             "lakitu"
         ],
@@ -20203,7 +20103,6 @@
     },
     "lakitu-llvm-next-toolchain": {
         "_template": "llvm_next_toolchain",
-        "afdo_use": false,
         "boards": [
             "lakitu"
         ],
@@ -20227,7 +20126,6 @@
     },
     "lakitu-llvm-next-toolchain-tryjob": {
         "_template": "llvm_next_toolchain",
-        "afdo_use": false,
         "boards": [
             "lakitu"
         ],
@@ -20254,7 +20152,6 @@
     },
     "lakitu-llvm-toolchain": {
         "_template": "llvm_toolchain",
-        "afdo_use": false,
         "boards": [
             "lakitu"
         ],
@@ -20278,7 +20175,6 @@
     },
     "lakitu-llvm-toolchain-tryjob": {
         "_template": "llvm_toolchain",
-        "afdo_use": false,
         "boards": [
             "lakitu"
         ],
@@ -20305,7 +20201,6 @@
     },
     "lakitu-nc-full": {
         "_template": "full",
-        "afdo_use": false,
         "boards": [
             "lakitu-nc"
         ],
@@ -20330,7 +20225,6 @@
     },
     "lakitu-nc-full-tryjob": {
         "_template": "full",
-        "afdo_use": false,
         "boards": [
             "lakitu-nc"
         ],
@@ -20358,7 +20252,6 @@
     },
     "lakitu-nc-llvm-next-toolchain": {
         "_template": "llvm_next_toolchain",
-        "afdo_use": false,
         "boards": [
             "lakitu-nc"
         ],
@@ -20375,7 +20268,6 @@
     },
     "lakitu-nc-llvm-next-toolchain-tryjob": {
         "_template": "llvm_next_toolchain",
-        "afdo_use": false,
         "boards": [
             "lakitu-nc"
         ],
@@ -20395,7 +20287,6 @@
     },
     "lakitu-nc-llvm-toolchain": {
         "_template": "llvm_toolchain",
-        "afdo_use": false,
         "boards": [
             "lakitu-nc"
         ],
@@ -20412,7 +20303,6 @@
     },
     "lakitu-nc-llvm-toolchain-tryjob": {
         "_template": "llvm_toolchain",
-        "afdo_use": false,
         "boards": [
             "lakitu-nc"
         ],
@@ -20447,7 +20337,6 @@
     },
     "lakitu-nc-release": {
         "_template": "release",
-        "afdo_use": false,
         "boards": [
             "lakitu-nc"
         ],
@@ -20483,7 +20372,6 @@
     },
     "lakitu-nc-release-tryjob": {
         "_template": "release",
-        "afdo_use": false,
         "boards": [
             "lakitu-nc"
         ],
@@ -20523,7 +20411,6 @@
     },
     "lakitu-nc-unittest-stress": {
         "_template": "unittest_stress",
-        "afdo_use": false,
         "boards": [
             "lakitu-nc"
         ],
@@ -20560,7 +20447,6 @@
     },
     "lakitu-release": {
         "_template": "release",
-        "afdo_use": false,
         "boards": [
             "lakitu"
         ],
@@ -20599,7 +20485,6 @@
     },
     "lakitu-release-tryjob": {
         "_template": "release",
-        "afdo_use": false,
         "boards": [
             "lakitu"
         ],
@@ -20644,7 +20529,6 @@
     },
     "lakitu-st-full": {
         "_template": "full",
-        "afdo_use": false,
         "boards": [
             "lakitu-st"
         ],
@@ -20669,7 +20553,6 @@
     },
     "lakitu-st-full-tryjob": {
         "_template": "full",
-        "afdo_use": false,
         "boards": [
             "lakitu-st"
         ],
@@ -20697,7 +20580,6 @@
     },
     "lakitu-st-incremental": {
         "_template": "incremental",
-        "afdo_use": false,
         "boards": [
             "lakitu-st"
         ],
@@ -20730,7 +20612,6 @@
     },
     "lakitu-st-incremental-tryjob": {
         "_template": "incremental",
-        "afdo_use": false,
         "boards": [
             "lakitu-st"
         ],
@@ -20768,7 +20649,6 @@
     },
     "lakitu-st-llvm-next-toolchain": {
         "_template": "llvm_next_toolchain",
-        "afdo_use": false,
         "boards": [
             "lakitu-st"
         ],
@@ -20785,7 +20665,6 @@
     },
     "lakitu-st-llvm-next-toolchain-tryjob": {
         "_template": "llvm_next_toolchain",
-        "afdo_use": false,
         "boards": [
             "lakitu-st"
         ],
@@ -20805,7 +20684,6 @@
     },
     "lakitu-st-llvm-toolchain": {
         "_template": "llvm_toolchain",
-        "afdo_use": false,
         "boards": [
             "lakitu-st"
         ],
@@ -20822,7 +20700,6 @@
     },
     "lakitu-st-llvm-toolchain-tryjob": {
         "_template": "llvm_toolchain",
-        "afdo_use": false,
         "boards": [
             "lakitu-st"
         ],
@@ -20857,7 +20734,6 @@
     },
     "lakitu-st-release": {
         "_template": "release",
-        "afdo_use": false,
         "boards": [
             "lakitu-st"
         ],
@@ -20897,7 +20773,6 @@
     },
     "lakitu-st-release-tryjob": {
         "_template": "release",
-        "afdo_use": false,
         "boards": [
             "lakitu-st"
         ],
@@ -20942,7 +20817,6 @@
     },
     "lakitu-st-unittest-stress": {
         "_template": "unittest_stress",
-        "afdo_use": false,
         "boards": [
             "lakitu-st"
         ],
@@ -20964,7 +20838,6 @@
     },
     "lakitu-unittest-stress": {
         "_template": "unittest_stress",
-        "afdo_use": false,
         "boards": [
             "lakitu"
         ],
@@ -20986,7 +20859,6 @@
     },
     "lakitu_next-full": {
         "_template": "full",
-        "afdo_use": false,
         "boards": [
             "lakitu_next"
         ],
@@ -21011,7 +20883,6 @@
     },
     "lakitu_next-full-tryjob": {
         "_template": "full",
-        "afdo_use": false,
         "boards": [
             "lakitu_next"
         ],
@@ -21039,7 +20910,6 @@
     },
     "lakitu_next-incremental": {
         "_template": "incremental",
-        "afdo_use": false,
         "boards": [
             "lakitu_next"
         ],
@@ -21072,7 +20942,6 @@
     },
     "lakitu_next-incremental-tryjob": {
         "_template": "incremental",
-        "afdo_use": false,
         "boards": [
             "lakitu_next"
         ],
@@ -21110,7 +20979,6 @@
     },
     "lakitu_next-llvm-next-toolchain": {
         "_template": "llvm_next_toolchain",
-        "afdo_use": false,
         "boards": [
             "lakitu_next"
         ],
@@ -21127,7 +20995,6 @@
     },
     "lakitu_next-llvm-next-toolchain-tryjob": {
         "_template": "llvm_next_toolchain",
-        "afdo_use": false,
         "boards": [
             "lakitu_next"
         ],
@@ -21147,7 +21014,6 @@
     },
     "lakitu_next-llvm-toolchain": {
         "_template": "llvm_toolchain",
-        "afdo_use": false,
         "boards": [
             "lakitu_next"
         ],
@@ -21164,7 +21030,6 @@
     },
     "lakitu_next-llvm-toolchain-tryjob": {
         "_template": "llvm_toolchain",
-        "afdo_use": false,
         "boards": [
             "lakitu_next"
         ],
@@ -21199,7 +21064,6 @@
     },
     "lakitu_next-release": {
         "_template": "release",
-        "afdo_use": false,
         "boards": [
             "lakitu_next"
         ],
@@ -21237,7 +21101,6 @@
     },
     "lakitu_next-release-tryjob": {
         "_template": "release",
-        "afdo_use": false,
         "boards": [
             "lakitu_next"
         ],
@@ -21280,7 +21143,6 @@
     },
     "lakitu_next-unittest-stress": {
         "_template": "unittest_stress",
-        "afdo_use": false,
         "boards": [
             "lakitu_next"
         ],
@@ -21471,7 +21333,6 @@
     },
     "lasilla-ground-full": {
         "_template": "full",
-        "afdo_use": false,
         "boards": [
             "lasilla-ground"
         ],
@@ -21492,7 +21353,6 @@
     },
     "lasilla-ground-full-tryjob": {
         "_template": "full",
-        "afdo_use": false,
         "boards": [
             "lasilla-ground"
         ],
@@ -21516,7 +21376,6 @@
     },
     "lasilla-ground-llvm-next-toolchain": {
         "_template": "llvm_next_toolchain",
-        "afdo_use": false,
         "boards": [
             "lasilla-ground"
         ],
@@ -21533,7 +21392,6 @@
     },
     "lasilla-ground-llvm-next-toolchain-tryjob": {
         "_template": "llvm_next_toolchain",
-        "afdo_use": false,
         "boards": [
             "lasilla-ground"
         ],
@@ -21553,7 +21411,6 @@
     },
     "lasilla-ground-llvm-toolchain": {
         "_template": "llvm_toolchain",
-        "afdo_use": false,
         "boards": [
             "lasilla-ground"
         ],
@@ -21570,7 +21427,6 @@
     },
     "lasilla-ground-llvm-toolchain-tryjob": {
         "_template": "llvm_toolchain",
-        "afdo_use": false,
         "boards": [
             "lasilla-ground"
         ],
@@ -21590,7 +21446,6 @@
     },
     "lasilla-ground-release": {
         "_template": "release",
-        "afdo_use": false,
         "boards": [
             "lasilla-ground"
         ],
@@ -21614,7 +21469,6 @@
     },
     "lasilla-ground-release-tryjob": {
         "_template": "release",
-        "afdo_use": false,
         "boards": [
             "lasilla-ground"
         ],
@@ -21642,7 +21496,6 @@
     },
     "lasilla-ground-unittest-stress": {
         "_template": "unittest_stress",
-        "afdo_use": false,
         "boards": [
             "lasilla-ground"
         ],
@@ -21660,7 +21513,6 @@
     },
     "littlejoe-full": {
         "_template": "full",
-        "afdo_use": false,
         "boards": [
             "littlejoe"
         ],
@@ -21681,7 +21533,6 @@
     },
     "littlejoe-full-tryjob": {
         "_template": "full",
-        "afdo_use": false,
         "boards": [
             "littlejoe"
         ],
@@ -21705,7 +21556,6 @@
     },
     "littlejoe-llvm-next-toolchain": {
         "_template": "llvm_next_toolchain",
-        "afdo_use": false,
         "boards": [
             "littlejoe"
         ],
@@ -21722,7 +21572,6 @@
     },
     "littlejoe-llvm-next-toolchain-tryjob": {
         "_template": "llvm_next_toolchain",
-        "afdo_use": false,
         "boards": [
             "littlejoe"
         ],
@@ -21742,7 +21591,6 @@
     },
     "littlejoe-llvm-toolchain": {
         "_template": "llvm_toolchain",
-        "afdo_use": false,
         "boards": [
             "littlejoe"
         ],
@@ -21759,7 +21607,6 @@
     },
     "littlejoe-llvm-toolchain-tryjob": {
         "_template": "llvm_toolchain",
-        "afdo_use": false,
         "boards": [
             "littlejoe"
         ],
@@ -21779,7 +21626,6 @@
     },
     "littlejoe-release": {
         "_template": "release",
-        "afdo_use": false,
         "boards": [
             "littlejoe"
         ],
@@ -21803,7 +21649,6 @@
     },
     "littlejoe-release-tryjob": {
         "_template": "release",
-        "afdo_use": false,
         "boards": [
             "littlejoe"
         ],
@@ -21831,7 +21676,6 @@
     },
     "littlejoe-unittest-stress": {
         "_template": "unittest_stress",
-        "afdo_use": false,
         "boards": [
             "littlejoe"
         ],
@@ -23018,7 +22862,6 @@
     },
     "mistral-full": {
         "_template": "full",
-        "afdo_use": false,
         "boards": [
             "mistral"
         ],
@@ -23032,7 +22875,6 @@
     },
     "mistral-full-tryjob": {
         "_template": "full",
-        "afdo_use": false,
         "boards": [
             "mistral"
         ],
@@ -23059,7 +22901,6 @@
     },
     "mistral-llvm-next-toolchain": {
         "_template": "llvm_next_toolchain",
-        "afdo_use": false,
         "boards": [
             "mistral"
         ],
@@ -23074,7 +22915,6 @@
     },
     "mistral-llvm-next-toolchain-tryjob": {
         "_template": "llvm_next_toolchain",
-        "afdo_use": false,
         "boards": [
             "mistral"
         ],
@@ -23090,7 +22930,6 @@
     },
     "mistral-llvm-toolchain": {
         "_template": "llvm_toolchain",
-        "afdo_use": false,
         "boards": [
             "mistral"
         ],
@@ -23105,7 +22944,6 @@
     },
     "mistral-llvm-toolchain-tryjob": {
         "_template": "llvm_toolchain",
-        "afdo_use": false,
         "boards": [
             "mistral"
         ],
@@ -23156,7 +22994,6 @@
     },
     "mistral-release": {
         "_template": "release",
-        "afdo_use": false,
         "boards": [
             "mistral"
         ],
@@ -23170,7 +23007,6 @@
     },
     "mistral-release-tryjob": {
         "_template": "release",
-        "afdo_use": false,
         "boards": [
             "mistral"
         ],
@@ -23189,7 +23025,6 @@
     },
     "mistral-unittest-stress": {
         "_template": "unittest_stress",
-        "afdo_use": false,
         "boards": [
             "mistral"
         ],
@@ -25235,7 +25070,6 @@
     },
     "octavius-full": {
         "_template": "full",
-        "afdo_use": false,
         "boards": [
             "octavius"
         ],
@@ -25256,7 +25090,6 @@
     },
     "octavius-full-tryjob": {
         "_template": "full",
-        "afdo_use": false,
         "boards": [
             "octavius"
         ],
@@ -25280,7 +25113,6 @@
     },
     "octavius-llvm-next-toolchain": {
         "_template": "llvm_next_toolchain",
-        "afdo_use": false,
         "boards": [
             "octavius"
         ],
@@ -25297,7 +25129,6 @@
     },
     "octavius-llvm-next-toolchain-tryjob": {
         "_template": "llvm_next_toolchain",
-        "afdo_use": false,
         "boards": [
             "octavius"
         ],
@@ -25317,7 +25148,6 @@
     },
     "octavius-llvm-toolchain": {
         "_template": "llvm_toolchain",
-        "afdo_use": false,
         "boards": [
             "octavius"
         ],
@@ -25334,7 +25164,6 @@
     },
     "octavius-llvm-toolchain-tryjob": {
         "_template": "llvm_toolchain",
-        "afdo_use": false,
         "boards": [
             "octavius"
         ],
@@ -25354,7 +25183,6 @@
     },
     "octavius-release": {
         "_template": "release",
-        "afdo_use": false,
         "boards": [
             "octavius"
         ],
@@ -25378,7 +25206,6 @@
     },
     "octavius-release-tryjob": {
         "_template": "release",
-        "afdo_use": false,
         "boards": [
             "octavius"
         ],
@@ -25406,7 +25233,6 @@
     },
     "octavius-unittest-stress": {
         "_template": "unittest_stress",
-        "afdo_use": false,
         "boards": [
             "octavius"
         ],
@@ -27368,7 +27194,6 @@
     },
     "romer-full": {
         "_template": "full",
-        "afdo_use": false,
         "boards": [
             "romer"
         ],
@@ -27389,7 +27214,6 @@
     },
     "romer-full-tryjob": {
         "_template": "full",
-        "afdo_use": false,
         "boards": [
             "romer"
         ],
@@ -27413,7 +27237,6 @@
     },
     "romer-llvm-next-toolchain": {
         "_template": "llvm_next_toolchain",
-        "afdo_use": false,
         "boards": [
             "romer"
         ],
@@ -27430,7 +27253,6 @@
     },
     "romer-llvm-next-toolchain-tryjob": {
         "_template": "llvm_next_toolchain",
-        "afdo_use": false,
         "boards": [
             "romer"
         ],
@@ -27450,7 +27272,6 @@
     },
     "romer-llvm-toolchain": {
         "_template": "llvm_toolchain",
-        "afdo_use": false,
         "boards": [
             "romer"
         ],
@@ -27467,7 +27288,6 @@
     },
     "romer-llvm-toolchain-tryjob": {
         "_template": "llvm_toolchain",
-        "afdo_use": false,
         "boards": [
             "romer"
         ],
@@ -27487,7 +27307,6 @@
     },
     "romer-release": {
         "_template": "release",
-        "afdo_use": false,
         "boards": [
             "romer"
         ],
@@ -27511,7 +27330,6 @@
     },
     "romer-release-tryjob": {
         "_template": "release",
-        "afdo_use": false,
         "boards": [
             "romer"
         ],
@@ -27539,7 +27357,6 @@
     },
     "romer-unittest-stress": {
         "_template": "unittest_stress",
-        "afdo_use": false,
         "boards": [
             "romer"
         ],
@@ -28938,7 +28755,6 @@
     },
     "sludge-full": {
         "_template": "full",
-        "afdo_use": false,
         "boards": [
             "sludge"
         ],
@@ -28971,7 +28787,6 @@
     },
     "sludge-full-tryjob": {
         "_template": "full",
-        "afdo_use": false,
         "boards": [
             "sludge"
         ],
@@ -29007,7 +28822,6 @@
     },
     "sludge-llvm-next-toolchain": {
         "_template": "llvm_next_toolchain",
-        "afdo_use": false,
         "boards": [
             "sludge"
         ],
@@ -29036,7 +28850,6 @@
     },
     "sludge-llvm-next-toolchain-tryjob": {
         "_template": "llvm_next_toolchain",
-        "afdo_use": false,
         "boards": [
             "sludge"
         ],
@@ -29068,7 +28881,6 @@
     },
     "sludge-llvm-toolchain": {
         "_template": "llvm_toolchain",
-        "afdo_use": false,
         "boards": [
             "sludge"
         ],
@@ -29097,7 +28909,6 @@
     },
     "sludge-llvm-toolchain-tryjob": {
         "_template": "llvm_toolchain",
-        "afdo_use": false,
         "boards": [
             "sludge"
         ],
@@ -29129,7 +28940,6 @@
     },
     "sludge-release": {
         "_template": "release",
-        "afdo_use": false,
         "boards": [
             "sludge"
         ],
@@ -29165,7 +28975,6 @@
     },
     "sludge-release-tryjob": {
         "_template": "release",
-        "afdo_use": false,
         "boards": [
             "sludge"
         ],
@@ -29206,7 +29015,6 @@
     },
     "sludge-unittest-stress": {
         "_template": "unittest_stress",
-        "afdo_use": false,
         "boards": [
             "sludge"
         ],
@@ -29925,7 +29733,6 @@
     },
     "tael-full": {
         "_template": "full",
-        "afdo_use": false,
         "boards": [
             "tael"
         ],
@@ -29959,7 +29766,6 @@
     },
     "tael-full-tryjob": {
         "_template": "full",
-        "afdo_use": false,
         "boards": [
             "tael"
         ],
@@ -29996,7 +29802,6 @@
     },
     "tael-llvm-next-toolchain": {
         "_template": "llvm_next_toolchain",
-        "afdo_use": false,
         "boards": [
             "tael"
         ],
@@ -30025,7 +29830,6 @@
     },
     "tael-llvm-next-toolchain-tryjob": {
         "_template": "llvm_next_toolchain",
-        "afdo_use": false,
         "boards": [
             "tael"
         ],
@@ -30057,7 +29861,6 @@
     },
     "tael-llvm-toolchain": {
         "_template": "llvm_toolchain",
-        "afdo_use": false,
         "boards": [
             "tael"
         ],
@@ -30086,7 +29889,6 @@
     },
     "tael-llvm-toolchain-tryjob": {
         "_template": "llvm_toolchain",
-        "afdo_use": false,
         "boards": [
             "tael"
         ],
@@ -30118,7 +29920,6 @@
     },
     "tael-unittest-stress": {
         "_template": "unittest_stress",
-        "afdo_use": false,
         "boards": [
             "tael"
         ],
@@ -30145,7 +29946,6 @@
     },
     "tatl-full": {
         "_template": "full",
-        "afdo_use": false,
         "boards": [
             "tatl"
         ],
@@ -30179,7 +29979,6 @@
     },
     "tatl-full-tryjob": {
         "_template": "full",
-        "afdo_use": false,
         "boards": [
             "tatl"
         ],
@@ -30216,7 +30015,6 @@
     },
     "tatl-llvm-next-toolchain": {
         "_template": "llvm_next_toolchain",
-        "afdo_use": false,
         "boards": [
             "tatl"
         ],
@@ -30245,7 +30043,6 @@
     },
     "tatl-llvm-next-toolchain-tryjob": {
         "_template": "llvm_next_toolchain",
-        "afdo_use": false,
         "boards": [
             "tatl"
         ],
@@ -30277,7 +30074,6 @@
     },
     "tatl-llvm-toolchain": {
         "_template": "llvm_toolchain",
-        "afdo_use": false,
         "boards": [
             "tatl"
         ],
@@ -30306,7 +30102,6 @@
     },
     "tatl-llvm-toolchain-tryjob": {
         "_template": "llvm_toolchain",
-        "afdo_use": false,
         "boards": [
             "tatl"
         ],
@@ -30338,7 +30133,6 @@
     },
     "tatl-unittest-stress": {
         "_template": "unittest_stress",
-        "afdo_use": false,
         "boards": [
             "tatl"
         ],
@@ -32902,7 +32696,6 @@
     },
     "viking-full": {
         "_template": "full",
-        "afdo_use": false,
         "boards": [
             "viking"
         ],
@@ -32923,7 +32716,6 @@
     },
     "viking-full-tryjob": {
         "_template": "full",
-        "afdo_use": false,
         "boards": [
             "viking"
         ],
@@ -32947,7 +32739,6 @@
     },
     "viking-llvm-next-toolchain": {
         "_template": "llvm_next_toolchain",
-        "afdo_use": false,
         "boards": [
             "viking"
         ],
@@ -32964,7 +32755,6 @@
     },
     "viking-llvm-next-toolchain-tryjob": {
         "_template": "llvm_next_toolchain",
-        "afdo_use": false,
         "boards": [
             "viking"
         ],
@@ -32984,7 +32774,6 @@
     },
     "viking-llvm-toolchain": {
         "_template": "llvm_toolchain",
-        "afdo_use": false,
         "boards": [
             "viking"
         ],
@@ -33001,7 +32790,6 @@
     },
     "viking-llvm-toolchain-tryjob": {
         "_template": "llvm_toolchain",
-        "afdo_use": false,
         "boards": [
             "viking"
         ],
@@ -33021,7 +32809,6 @@
     },
     "viking-poc2-full": {
         "_template": "full",
-        "afdo_use": false,
         "boards": [
             "viking-poc2"
         ],
@@ -33042,7 +32829,6 @@
     },
     "viking-poc2-full-tryjob": {
         "_template": "full",
-        "afdo_use": false,
         "boards": [
             "viking-poc2"
         ],
@@ -33066,7 +32852,6 @@
     },
     "viking-poc2-llvm-next-toolchain": {
         "_template": "llvm_next_toolchain",
-        "afdo_use": false,
         "boards": [
             "viking-poc2"
         ],
@@ -33083,7 +32868,6 @@
     },
     "viking-poc2-llvm-next-toolchain-tryjob": {
         "_template": "llvm_next_toolchain",
-        "afdo_use": false,
         "boards": [
             "viking-poc2"
         ],
@@ -33103,7 +32887,6 @@
     },
     "viking-poc2-llvm-toolchain": {
         "_template": "llvm_toolchain",
-        "afdo_use": false,
         "boards": [
             "viking-poc2"
         ],
@@ -33120,7 +32903,6 @@
     },
     "viking-poc2-llvm-toolchain-tryjob": {
         "_template": "llvm_toolchain",
-        "afdo_use": false,
         "boards": [
             "viking-poc2"
         ],
@@ -33140,7 +32922,6 @@
     },
     "viking-poc2-release": {
         "_template": "release",
-        "afdo_use": false,
         "boards": [
             "viking-poc2"
         ],
@@ -33163,7 +32944,6 @@
     },
     "viking-poc2-release-tryjob": {
         "_template": "release",
-        "afdo_use": false,
         "boards": [
             "viking-poc2"
         ],
@@ -33191,7 +32971,6 @@
     },
     "viking-poc2-unittest-stress": {
         "_template": "unittest_stress",
-        "afdo_use": false,
         "boards": [
             "viking-poc2"
         ],
@@ -33209,7 +32988,6 @@
     },
     "viking-release": {
         "_template": "release",
-        "afdo_use": false,
         "boards": [
             "viking"
         ],
@@ -33233,7 +33011,6 @@
     },
     "viking-release-tryjob": {
         "_template": "release",
-        "afdo_use": false,
         "boards": [
             "viking"
         ],
@@ -33261,7 +33038,6 @@
     },
     "viking-unittest-stress": {
         "_template": "unittest_stress",
-        "afdo_use": false,
         "boards": [
             "viking"
         ],
@@ -33513,7 +33289,6 @@
     },
     "whirlwind-full": {
         "_template": "full",
-        "afdo_use": false,
         "boards": [
             "whirlwind"
         ],
@@ -33527,7 +33302,6 @@
     },
     "whirlwind-full-tryjob": {
         "_template": "full",
-        "afdo_use": false,
         "boards": [
             "whirlwind"
         ],
@@ -33554,7 +33328,6 @@
     },
     "whirlwind-llvm-next-toolchain": {
         "_template": "llvm_next_toolchain",
-        "afdo_use": false,
         "boards": [
             "whirlwind"
         ],
@@ -33569,7 +33342,6 @@
     },
     "whirlwind-llvm-next-toolchain-tryjob": {
         "_template": "llvm_next_toolchain",
-        "afdo_use": false,
         "boards": [
             "whirlwind"
         ],
@@ -33585,7 +33357,6 @@
     },
     "whirlwind-llvm-toolchain": {
         "_template": "llvm_toolchain",
-        "afdo_use": false,
         "boards": [
             "whirlwind"
         ],
@@ -33600,7 +33371,6 @@
     },
     "whirlwind-llvm-toolchain-tryjob": {
         "_template": "llvm_toolchain",
-        "afdo_use": false,
         "boards": [
             "whirlwind"
         ],
@@ -33631,7 +33401,6 @@
     },
     "whirlwind-release": {
         "_template": "release",
-        "afdo_use": false,
         "boards": [
             "whirlwind"
         ],
@@ -33644,7 +33413,6 @@
     },
     "whirlwind-release-tryjob": {
         "_template": "release",
-        "afdo_use": false,
         "boards": [
             "whirlwind"
         ],
@@ -33688,7 +33456,6 @@
     },
     "whirlwind-unittest-stress": {
         "_template": "unittest_stress",
-        "afdo_use": false,
         "boards": [
             "whirlwind"
         ],
@@ -34047,7 +33814,6 @@
     },
     "wooten-full": {
         "_template": "full",
-        "afdo_use": false,
         "boards": [
             "wooten"
         ],
@@ -34068,7 +33834,6 @@
     },
     "wooten-full-tryjob": {
         "_template": "full",
-        "afdo_use": false,
         "boards": [
             "wooten"
         ],
@@ -34092,7 +33857,6 @@
     },
     "wooten-llvm-next-toolchain": {
         "_template": "llvm_next_toolchain",
-        "afdo_use": false,
         "boards": [
             "wooten"
         ],
@@ -34109,7 +33873,6 @@
     },
     "wooten-llvm-next-toolchain-tryjob": {
         "_template": "llvm_next_toolchain",
-        "afdo_use": false,
         "boards": [
             "wooten"
         ],
@@ -34129,7 +33892,6 @@
     },
     "wooten-llvm-toolchain": {
         "_template": "llvm_toolchain",
-        "afdo_use": false,
         "boards": [
             "wooten"
         ],
@@ -34146,7 +33908,6 @@
     },
     "wooten-llvm-toolchain-tryjob": {
         "_template": "llvm_toolchain",
-        "afdo_use": false,
         "boards": [
             "wooten"
         ],
@@ -34166,7 +33927,6 @@
     },
     "wooten-release": {
         "_template": "release",
-        "afdo_use": false,
         "boards": [
             "wooten"
         ],
@@ -34190,7 +33950,6 @@
     },
     "wooten-release-tryjob": {
         "_template": "release",
-        "afdo_use": false,
         "boards": [
             "wooten"
         ],
@@ -34218,7 +33977,6 @@
     },
     "wooten-unittest-stress": {
         "_template": "unittest_stress",
-        "afdo_use": false,
         "boards": [
             "wooten"
         ],
@@ -34236,7 +33994,6 @@
     },
     "wristpin-full": {
         "_template": "full",
-        "afdo_use": false,
         "boards": [
             "wristpin"
         ],
@@ -34257,7 +34014,6 @@
     },
     "wristpin-full-tryjob": {
         "_template": "full",
-        "afdo_use": false,
         "boards": [
             "wristpin"
         ],
@@ -34281,7 +34037,6 @@
     },
     "wristpin-llvm-next-toolchain": {
         "_template": "llvm_next_toolchain",
-        "afdo_use": false,
         "boards": [
             "wristpin"
         ],
@@ -34298,7 +34053,6 @@
     },
     "wristpin-llvm-next-toolchain-tryjob": {
         "_template": "llvm_next_toolchain",
-        "afdo_use": false,
         "boards": [
             "wristpin"
         ],
@@ -34318,7 +34072,6 @@
     },
     "wristpin-llvm-toolchain": {
         "_template": "llvm_toolchain",
-        "afdo_use": false,
         "boards": [
             "wristpin"
         ],
@@ -34335,7 +34088,6 @@
     },
     "wristpin-llvm-toolchain-tryjob": {
         "_template": "llvm_toolchain",
-        "afdo_use": false,
         "boards": [
             "wristpin"
         ],
@@ -34355,7 +34107,6 @@
     },
     "wristpin-release": {
         "_template": "release",
-        "afdo_use": false,
         "boards": [
             "wristpin"
         ],
@@ -34378,7 +34129,6 @@
     },
     "wristpin-release-tryjob": {
         "_template": "release",
-        "afdo_use": false,
         "boards": [
             "wristpin"
         ],
@@ -34406,7 +34156,6 @@
     },
     "wristpin-unittest-stress": {
         "_template": "unittest_stress",
-        "afdo_use": false,
         "boards": [
             "wristpin"
         ],
