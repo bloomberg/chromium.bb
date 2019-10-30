@@ -33,7 +33,6 @@ import sys  # Parts exposed through API.
 import tempfile  # Exposed through the API.
 import threading
 import time
-import types
 import traceback
 import unittest  # Exposed through the API.
 from warnings import warn
@@ -549,10 +548,12 @@ class InputApi(object):
     self.os_walk = os.walk
     self.re = re
     self.subprocess = subprocess
+    self.sys = sys
     self.tempfile = tempfile
     self.time = time
     self.unittest = unittest
-    self.urllib2 = urllib2
+    if sys.version_info.major == 2:
+      self.urllib2 = urllib2
     self.urllib_request = urllib_request
     self.urllib_error = urllib_error
 
@@ -581,7 +582,7 @@ class InputApi(object):
     # TODO(dpranke): figure out a list of all approved owners for a repo
     # in order to be able to handle wildcard OWNERS files?
     self.owners_db = owners.Database(change.RepositoryRoot(),
-                                     fopen=file, os_path=self.os_path)
+                                     fopen=open, os_path=self.os_path)
     self.owners_finder = owners_finder.OwnersFinder
     self.verbose = verbose
     self.Command = CommandData
@@ -615,9 +616,9 @@ class InputApi(object):
     if len(dir_with_slash) == 1:
       dir_with_slash = ''
 
-    return filter(
+    return list(filter(
         lambda x: normpath(x.AbsoluteLocalPath()).startswith(dir_with_slash),
-        self.change.AffectedFiles(include_deletes, file_filter))
+        self.change.AffectedFiles(include_deletes, file_filter)))
 
   def LocalPaths(self):
     """Returns local paths of input_api.AffectedFiles()."""
@@ -639,8 +640,9 @@ class InputApi(object):
                " is deprecated and ignored" % str(include_deletes),
            category=DeprecationWarning,
            stacklevel=2)
-    return filter(lambda x: x.IsTestableFile(),
-                  self.AffectedFiles(include_deletes=False, **kwargs))
+    return list(filter(
+        lambda x: x.IsTestableFile(),
+        self.AffectedFiles(include_deletes=False, **kwargs)))
 
   def AffectedTextFiles(self, include_deletes=None):
     """An alias to AffectedTestableFiles for backwards compatibility."""
@@ -673,7 +675,7 @@ class InputApi(object):
     """
     if not source_file:
       source_file = self.FilterSourceFile
-    return filter(source_file, self.AffectedTestableFiles())
+    return list(filter(source_file, self.AffectedTestableFiles()))
 
   def RightHandSideLines(self, source_file_filter=None):
     """An iterator over all text lines in "new" version of changed files.
@@ -1100,11 +1102,11 @@ class Change(object):
     Returns:
       [AffectedFile(path, action), AffectedFile(path, action)]
     """
-    affected = filter(file_filter, self._affected_files)
+    affected = list(filter(file_filter, self._affected_files))
 
     if include_deletes:
       return affected
-    return filter(lambda x: x.Action() != 'D', affected)
+    return list(filter(lambda x: x.Action() != 'D', affected))
 
   def AffectedTestableFiles(self, include_deletes=None, **kwargs):
     """Return a list of the existing text files in a change."""
@@ -1113,8 +1115,9 @@ class Change(object):
                " is deprecated and ignored" % str(include_deletes),
            category=DeprecationWarning,
            stacklevel=2)
-    return filter(lambda x: x.IsTestableFile(),
-                  self.AffectedFiles(include_deletes=False, **kwargs))
+    return list(filter(
+        lambda x: x.IsTestableFile(),
+        self.AffectedFiles(include_deletes=False, **kwargs)))
 
   def AffectedTextFiles(self, include_deletes=None):
     """An alias to AffectedTestableFiles for backwards compatibility."""
@@ -1451,9 +1454,9 @@ class PresubmitExecuter(object):
         logging.debug('Running %s done.', function_name)
         self.more_cc.extend(output_api.more_cc)
       finally:
-        map(os.remove, input_api._named_temporary_files)
-      if not (isinstance(result, types.TupleType) or
-              isinstance(result, types.ListType)):
+        for f in input_api._named_temporary_files:
+          os.remove(f)
+      if not isinstance(result, (tuple, list)):
         raise PresubmitFailure(
           'Presubmit functions must return a tuple or list')
       for item in result:
@@ -1513,11 +1516,8 @@ def DoPresubmitChecks(change,
   old_environ = os.environ
   try:
     # Make sure python subprocesses won't generate .pyc files.
-    # We convert to str, since on Windows on Python 2 only strings are allowed
-    # as environment variables, but literals are unicode since we're importing
-    # unicode_literals from __future__.
     os.environ = os.environ.copy()
-    os.environ[str('PYTHONDONTWRITEBYTECODE')] = str('1')
+    os.environ['PYTHONDONTWRITEBYTECODE'] = '1'
 
     output = PresubmitOutput(input_stream, output_stream)
 
@@ -1575,7 +1575,8 @@ def DoPresubmitChecks(change,
         ]
       }
 
-      gclient_utils.FileWrite(json_output, json.dumps(presubmit_results))
+      gclient_utils.FileWrite(
+          json_output, json.dumps(presubmit_results, sort_keys=True))
 
     output.write('\n')
     for name, items in (('Messages', notifications),
