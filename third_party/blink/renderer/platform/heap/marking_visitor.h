@@ -31,7 +31,14 @@ class PLATFORM_EXPORT MarkingVisitorCommon : public Visitor {
                                TraceDescriptor,
                                TraceDescriptor,
                                WeakCallback,
-                               void*) final;
+                               void*,
+                               bool) final;
+  bool VisitEphemeronKeyValuePair(
+      void* key,
+      void* value,
+      bool strong_handling,
+      EphemeronTracingCallback key_trace_callback,
+      EphemeronTracingCallback value_trace_callback) final;
 
   // Used to only mark the backing store when it has been registered for weak
   // processing. In this case, the contents are processed separately using

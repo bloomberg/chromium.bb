@@ -94,7 +94,8 @@ void MarkingVisitorCommon::VisitBackingStoreWeakly(void* object,
                                                    TraceDescriptor strong_desc,
                                                    TraceDescriptor weak_desc,
                                                    WeakCallback callback,
-                                                   void* parameter) {
+                                                   void* parameter,
+                                                   bool is_ephemeron) {
   RegisterBackingStoreReference(object_slot);
   if (!object)
     return;
@@ -104,6 +105,18 @@ void MarkingVisitorCommon::VisitBackingStoreWeakly(void* object,
     weak_table_worklist_.Push(
         {weak_desc.base_object_payload, weak_desc.callback});
   }
+}
+
+bool MarkingVisitorCommon::VisitEphemeronKeyValuePair(
+    void* key,
+    void* value,
+    bool strong_handling,
+    EphemeronTracingCallback key_trace_callback,
+    EphemeronTracingCallback value_trace_callback) {
+  const bool key_is_dead = key_trace_callback(this, key);
+  if (key_is_dead && !strong_handling)
+    return true;
+  return value_trace_callback(this, value);
 }
 
 void MarkingVisitorCommon::VisitBackingStoreOnly(void* object,
