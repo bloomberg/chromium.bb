@@ -488,7 +488,6 @@ def GeneralTemplates(site_config):
       # longer timeout.  See crbug.com/938958.
       build_timeout=12 * 60 * 60,
       useflags=config_lib.append_useflags(['-cros-debug']),
-      afdo_use=True,
       manifest=constants.OFFICIAL_MANIFEST,
       manifest_version=True,
       images=['base', 'recovery', 'test', 'factory_install'],
@@ -1006,7 +1005,6 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       sync_chrome=True,
       health_alert_recipients=['c-compiler-chrome@google.com'],
       health_threshold=1,
-      afdo_use=False,
       slave_configs=[],
       # 3 PM UTC is 7 AM PST (no daylight savings)
       schedule='0 15 * * *',
@@ -2264,7 +2262,6 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
         slave_configs=[],
         sync_chrome=True,
         chrome_sdk=False,
-        afdo_use=False,
         # Because PST is 8 hours from UTC, these times are the same in both. But
         # daylight savings time is NOT adjusted for
         schedule='  0 2,10,18 * * *',

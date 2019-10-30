@@ -22199,7 +22199,6 @@
     },
     "master-lakitu-release": {
         "_template": "release",
-        "afdo_use": false,
         "boards": [],
         "chrome_sdk": false,
         "master": true,
@@ -22209,7 +22208,6 @@
     },
     "master-lakitu-release-tryjob": {
         "_template": "release",
-        "afdo_use": false,
         "boards": [],
         "chrome_sdk": false,
         "debug": true,
@@ -22386,7 +22384,6 @@
     },
     "master-release": {
         "_template": "release",
-        "afdo_use": false,
         "boards": [],
         "chrome_sdk": false,
         "master": true,
@@ -22554,7 +22551,6 @@
     },
     "master-release-tryjob": {
         "_template": "release",
-        "afdo_use": false,
         "boards": [],
         "chrome_sdk": false,
         "debug": true,
@@ -22739,7 +22735,6 @@
     },
     "master-toolchain": {
         "_template": "toolchain",
-        "afdo_use": false,
         "boards": [],
         "description": "Toolchain master (all others are slaves).",
         "health_alert_recipients": [
@@ -22757,7 +22752,6 @@
     },
     "master-toolchain-tryjob": {
         "_template": "toolchain",
-        "afdo_use": false,
         "boards": [],
         "debug": true,
         "debug_cidb": true,
