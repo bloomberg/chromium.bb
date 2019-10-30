@@ -253,18 +253,35 @@ void CreditCardFIDOAuthenticator::OptChange(
   // If |authenticator_response| is not set, that means the user was fetching a
   // challenge, in which case |card_authorization_token_| will be required for
   // the subsequent OptChange call.
+  AutofillMetrics::WebauthnOptInParameters opt_change_metric;
+  bool is_checkout_flow = !card_authorization_token_.empty();
   if (authenticator_response.is_dict()) {
     request_details.fido_authenticator_response =
         std::move(authenticator_response);
+    opt_change_metric =
+        request_details.fido_authenticator_response.FindKey(
+            "fido_assertion_info")
+            ? AutofillMetrics::WebauthnOptInParameters::kWithRequestChallenge
+            : AutofillMetrics::WebauthnOptInParameters::kWithCreationChallenge;
     if (!card_authorization_token_.empty()) {
       request_details.card_authorization_token = card_authorization_token_;
       card_authorization_token_ = std::string();
     }
+  } else {
+    opt_change_metric =
+        AutofillMetrics::WebauthnOptInParameters::kFetchingChallenge;
   }
   payments_client_->OptChange(
       request_details,
       base::BindOnce(&CreditCardFIDOAuthenticator::OnDidGetOptChangeResult,
                      weak_ptr_factory_.GetWeakPtr()));
+
+  // Logging call if user was attempting to change their opt-in state.
+  if (current_flow_ != FOLLOWUP_AFTER_CVC_AUTH_FLOW) {
+    bool request_to_opt_in = (current_flow_ != OPT_OUT_FLOW);
+    AutofillMetrics::LogWebauthnOptChangeCalled(
+        request_to_opt_in, is_checkout_flow, opt_change_metric);
+  }
 }
 
 void CreditCardFIDOAuthenticator::OnDidGetAssertion(

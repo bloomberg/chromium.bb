@@ -3820,6 +3820,12 @@ Unknown properties are collapsed to zero. -->
   <int value="2" label="Failure bubble shown"/>
 </enum>
 
+<enum name="AutofillCreditCardWebauthnOptInParameters">
+  <int value="0" label="Fetching challenge"/>
+  <int value="1" label="Creating new credential"/>
+  <int value="2" label="Using existing credential"/>
+</enum>
+
 <enum name="AutofillCreditCardWebauthnResultMetric">
   <int value="0" label="Success"/>
   <int value="1" label="Other error"/>

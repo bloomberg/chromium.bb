@@ -745,6 +745,17 @@ class AutofillMetrics {
     kMaxValue = kNotAllowedError,
   };
 
+  // The parameters with which opt change was called.
+  enum class WebauthnOptInParameters {
+    // Call made to fetch a challenge.
+    kFetchingChallenge = 0,
+    // Call made with signature of creation challenge.
+    kWithCreationChallenge = 1,
+    // Call made with signature of request challenge.
+    kWithRequestChallenge = 2,
+    kMaxValue = kWithRequestChallenge,
+  };
+
   // Possible results of Payments RPCs.
   enum PaymentsRpcResult {
     // Request succeeded.
@@ -1107,6 +1118,12 @@ class AutofillMetrics {
   // Logs the duration of the PaymentsClient::GetUnmaskDetails() call (aka
   // GetDetailsForGetRealPan).
   static void LogCardUnmaskPreflightDuration(const base::TimeDelta& duration);
+
+  // Logs the count of calls to PaymentsClient::OptChange() (aka
+  // UpdateAutofillUserPreference).
+  static void LogWebauthnOptChangeCalled(bool request_to_opt_in,
+                                         bool is_checkout_flow,
+                                         WebauthnOptInParameters metric);
 
   // Logs which unmask type was used for a user with FIDO authentication
   // enabled.
