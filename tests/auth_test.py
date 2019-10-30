@@ -19,6 +19,11 @@ from third_party import mock
 import auth
 import subprocess2
 
+if sys.version_info.major == 2:
+  BUILTIN_OPEN = '__builtin__.open'
+else:
+  BUILTIN_OPEN = 'builtins.open'
+
 
 NOW = datetime.datetime(2019, 10, 17, 12, 30, 59, 0)
 VALID_EXPIRY = NOW + datetime.timedelta(seconds=31)
@@ -111,6 +116,72 @@ class AccessTokenTest(unittest.TestCase):
 
   def testNeedsRefresh_Valid(self):
     self.assertFalse(auth.AccessToken('token', VALID_EXPIRY).needs_refresh())
+
+
+class HasLuciContextLocalAuthTest(unittest.TestCase):
+  def setUp(self):
+    mock.patch('os.environ').start()
+    mock.patch(BUILTIN_OPEN, mock.mock_open()).start()
+    self.addCleanup(mock.patch.stopall)
+
+  def testNoLuciContextEnvVar(self):
+    os.environ = {}
+    self.assertFalse(auth.has_luci_context_local_auth())
+
+  def testUnexistentPath(self):
+    os.environ = {'LUCI_CONTEXT': 'path'}
+    open.side_effect = OSError
+    self.assertFalse(auth.has_luci_context_local_auth())
+    open.assert_called_with('path')
+
+  def testInvalidJsonFile(self):
+    os.environ = {'LUCI_CONTEXT': 'path'}
+    open().read.return_value = 'not-a-json-file'
+    self.assertFalse(auth.has_luci_context_local_auth())
+    open.assert_called_with('path')
+
+  def testNoLocalAuth(self):
+    os.environ = {'LUCI_CONTEXT': 'path'}
+    open().read.return_value = '{}'
+    self.assertFalse(auth.has_luci_context_local_auth())
+    open.assert_called_with('path')
+
+  def testNoDefaultAccountId(self):
+    os.environ = {'LUCI_CONTEXT': 'path'}
+    open().read.return_value = json.dumps({
+        'local_auth': {
+            'secret': 'secret',
+            'accounts': [{
+                'email': 'bots@account.iam.gserviceaccount.com',
+                'id': 'system',
+            }],
+            'rpc_port': 1234,
+        }
+    })
+    self.assertFalse(auth.has_luci_context_local_auth())
+    open.assert_called_with('path')
+
+  def testHasLocalAuth(self):
+    os.environ = {'LUCI_CONTEXT': 'path'}
+    open().read.return_value = json.dumps({
+        'local_auth': {
+            'secret': 'secret',
+            'accounts': [
+                {
+                    'email': 'bots@account.iam.gserviceaccount.com',
+                    'id': 'system',
+                },
+                {
+                    'email': 'builder@account.iam.gserviceaccount.com',
+                    'id': 'task',
+                },
+            ],
+            'rpc_port': 1234,
+            'default_account_id': 'task',
+        },
+    })
+    self.assertTrue(auth.has_luci_context_local_auth())
+    open.assert_called_with('path')
 
 
 if __name__ == '__main__':

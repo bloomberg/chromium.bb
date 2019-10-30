@@ -57,7 +57,15 @@ class LoginRequiredError(Exception):
 
 def has_luci_context_local_auth():
   """Returns whether LUCI_CONTEXT should be used for ambient authentication."""
-  return bool(os.environ.get('LUCI_CONTEXT'))
+  ctx_path = os.environ.get('LUCI_CONTEXT')
+  if not ctx_path:
+    return False
+  try:
+    with open(ctx_path) as f:
+      loaded = json.load(f)
+  except (OSError, IOError, ValueError):
+    return False
+  return loaded.get('local_auth', {}).get('default_account_id') is not None
 
 
 class Authenticator(object):
