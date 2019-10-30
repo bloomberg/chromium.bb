@@ -412,6 +412,19 @@ unsigned NGInlineCursor::CurrentTextEndOffset() const {
   return 0u;
 }
 
+const ShapeResultView* NGInlineCursor::CurrentTextShapeResult() const {
+  DCHECK(IsText());
+  if (current_paint_fragment_) {
+    return To<NGPhysicalTextFragment>(
+               current_paint_fragment_->PhysicalFragment())
+        .TextShapeResult();
+  }
+  if (current_item_)
+    return current_item_->TextShapeResult();
+  NOTREACHED();
+  return nullptr;
+}
+
 PhysicalRect NGInlineCursor::CurrentLocalRect(unsigned start_offset,
                                               unsigned end_offset) const {
   DCHECK(IsText());

@@ -26,6 +26,7 @@ class Node;
 struct PhysicalOffset;
 struct PhysicalRect;
 struct PhysicalSize;
+class ShapeResultView;
 
 // This class traverses fragments in an inline formatting context.
 //
@@ -149,6 +150,10 @@ class CORE_EXPORT NGInlineCursor {
   // It is error when this cursor doesn't point to text fragment.
   unsigned CurrentTextStartOffset() const;
   unsigned CurrentTextEndOffset() const;
+
+  // Returns |ShapeResultView| of the current position. It is error to call
+  // other than text.
+  const ShapeResultView* CurrentTextShapeResult() const;
 
   // The layout box of text in (start, end) range in local coordinate.
   // Start and end offsets must be between |CurrentTextStartOffset()| and
