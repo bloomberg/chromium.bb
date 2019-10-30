@@ -312,25 +312,6 @@ def GenTests(api):
   )
 
   yield (
-      api.test('no_cp_checkout_a_specific_commit_with_a_branch_head') +
-      ci_build(revision='a' * 40, git_ref='refs/branch-heads/x') +
-      api.properties(
-          revisions={'got_revision': 'src'},
-          bot_update_output={
-            'properties': {
-              'got_revision': 'a' * 40,
-            },
-            'manifest': {
-              'src': {
-                'revision': 'a' * 40,
-                'repository': 'https://chromium.googlesource.com/chromium/src',
-              }
-            }
-          }
-      )
-  )
-
-  yield (
       api.test('no_cp_checkout_HEAD') +
       ci_build(revision='HEAD') +
       api.properties(
