@@ -5,13 +5,14 @@
 package org.chromium.device.nfc;
 
 import android.net.Uri;
-import android.os.Build;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.device.mojom.NdefMessage;
 import org.chromium.device.mojom.NdefRecord;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -102,8 +103,8 @@ public final class NdefMessageUtils {
 
     /**
      * Converts mojo NdefRecord to android.nfc.NdefRecord
-     * |record.data| should always be treated as "UTF-8" encoding bytes, this is guaranteed by the
-     * sender (Blink).
+     * |record.data| can safely be treated as "UTF-8" encoding bytes for non text records, this is
+     * guaranteed by the sender (Blink).
      */
     private static android.nfc.NdefRecord toNdefRecord(NdefRecord record)
             throws InvalidNdefMessageException, IllegalArgumentException,
@@ -112,12 +113,9 @@ public final class NdefMessageUtils {
             case RECORD_TYPE_URL:
                 return android.nfc.NdefRecord.createUri(new String(record.data, "UTF-8"));
             case RECORD_TYPE_TEXT:
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    return android.nfc.NdefRecord.createTextRecord(
-                            "en-US", new String(record.data, "UTF-8"));
-                } else {
-                    return android.nfc.NdefRecord.createMime(TEXT_MIME, record.data);
-                }
+                byte[] payload = createPayloadForTextRecord(record);
+                return new android.nfc.NdefRecord(android.nfc.NdefRecord.TNF_WELL_KNOWN,
+                        android.nfc.NdefRecord.RTD_TEXT, null, payload);
             case RECORD_TYPE_JSON:
             case RECORD_TYPE_OPAQUE:
                 return android.nfc.NdefRecord.createMime(record.mediaType, record.data);
@@ -305,5 +303,20 @@ public final class NdefMessageUtils {
         if (!type.matches("[a-zA-Z0-9()+,\\-:=@;$_!*'.]+")) return null;
 
         return new PairOfDomainAndType(domain, type);
+    }
+
+    private static byte[] createPayloadForTextRecord(NdefRecord record)
+            throws UnsupportedEncodingException {
+        byte[] languageCodeBytes = record.lang.getBytes(StandardCharsets.US_ASCII);
+        ByteBuffer buffer = ByteBuffer.allocate(1 + languageCodeBytes.length + record.data.length);
+        // Lang length is always less than 64 as it is guaranteed by Blink.
+        byte status = (byte) languageCodeBytes.length;
+        if (!record.encoding.equals(ENCODING_UTF8)) {
+            status |= (byte) (1 << 7);
+        }
+        buffer.put(status);
+        buffer.put(languageCodeBytes);
+        buffer.put(record.data);
+        return buffer.array();
     }
 }
