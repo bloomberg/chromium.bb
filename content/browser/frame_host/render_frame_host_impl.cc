@@ -7730,10 +7730,12 @@ void RenderFrameHostImpl::LogCannotCommitUrlCrashKeys(
                                           base::debug::CrashKeySize::Size256),
       GetSiteInstance()->lock_url().spec());
 
-  base::debug::SetCrashKeyString(
-      base::debug::AllocateCrashKeyString("original_url_origin",
-                                          base::debug::CrashKeySize::Size256),
-      GetSiteInstance()->original_url().GetOrigin().spec());
+  if (!GetSiteInstance()->IsDefaultSiteInstance()) {
+    base::debug::SetCrashKeyString(
+        base::debug::AllocateCrashKeyString("original_url_origin",
+                                            base::debug::CrashKeySize::Size256),
+        GetSiteInstance()->original_url().GetOrigin().spec());
+  }
 
   base::debug::SetCrashKeyString(
       base::debug::AllocateCrashKeyString("is_mhtml_document",

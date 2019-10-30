@@ -915,10 +915,27 @@ NavigationRequest::NavigationRequest(
     if (frame_navigation_entry) {
       source_site_instance_ = frame_navigation_entry->source_site_instance();
       dest_site_instance_ = frame_navigation_entry->site_instance();
+
+      // Handle history subframe navigations that require a source_site_instance
+      // but do not have one set yet. This can happen when navigation entries
+      // are restored from PageState objects. The serialized state does not
+      // contain a SiteInstance so we need to use the initiator_origin to
+      // get an appropriate source SiteInstance.
+      if (common_params_->is_history_navigation_in_new_child_frame)
+        SetSourceSiteInstanceToInitiatorIfNeeded();
     }
     network_isolation_key_ = entry->network_isolation_key();
     is_view_source_ = entry->IsViewSourceMode();
     bindings_ = entry->bindings();
+
+    // Ensure that we always have a |source_site_instance_| for navigations
+    // that require it at this point. This is needed to ensure that data: URLs
+    // commit in the SiteInstance that initiated them.
+    //
+    // TODO(acolwell): Move this below so it can be enforced on all paths.
+    // This requires auditing same-document and other navigations that don't
+    // have |from_begin_navigation_| or |entry| set.
+    DCHECK(!RequiresSourceSiteInstance() || source_site_instance_);
   }
 
   // Store the old RenderFrameHost id at request creation to be used later.
@@ -3798,4 +3815,28 @@ bool NavigationRequest::IsNavigationStarted() const {
   return handle_state_ >= INITIAL;
 }
 
+bool NavigationRequest::RequiresSourceSiteInstance() const {
+  // TODO(acolwell): Include about:blank as part of this check. This will
+  // require fixing |source_site_instance_| setting logic and code that
+  // constructs NavigationRequests.
+  return (common_params_->url.SchemeIs(url::kDataScheme)) &&
+         !dest_site_instance_ && common_params_->initiator_origin &&
+         !common_params_->initiator_origin->GetTupleOrPrecursorTupleIfOpaque()
+              .IsInvalid();
+}
+
+void NavigationRequest::SetSourceSiteInstanceToInitiatorIfNeeded() {
+  if (source_site_instance_ || !RequiresSourceSiteInstance() ||
+      !common_params_->initiator_origin.has_value()) {
+    return;
+  }
+
+  const auto tuple =
+      common_params_->initiator_origin->GetTupleOrPrecursorTupleIfOpaque();
+  source_site_instance_ = static_cast<SiteInstanceImpl*>(
+      frame_tree_node_->current_frame_host()
+          ->GetSiteInstance()
+          ->GetRelatedSiteInstance(tuple.GetURL())
+          .get());
+}
 }  // namespace content
