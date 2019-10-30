@@ -1643,7 +1643,7 @@ static AOM_INLINE void encode_b(const AV1_COMP *const cpi,
     }
 
     // Gather obmc count to update the probability.
-    if (cpi->sf.prune_obmc_using_stats) {
+    if (cpi->sf.prune_obmc_prob_thresh > 0) {
       const int inter_block = is_inter_block(mbmi);
       const int seg_ref_active =
           segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_REF_FRAME);
@@ -5327,7 +5327,7 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
     }
   }
 
-  if (cpi->sf.prune_obmc_using_stats) {
+  if (cpi->sf.prune_obmc_prob_thresh > 0) {
     const FRAME_UPDATE_TYPE update_type = get_frame_update_type(&cpi->gf_group);
 
     for (i = 0; i < BLOCK_SIZES_ALL; i++) {

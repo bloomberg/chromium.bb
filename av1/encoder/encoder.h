@@ -986,7 +986,6 @@ typedef struct AV1_COMP {
   BLOCK_SIZE vbp_bsize_min;
 
   int obmc_probs[FRAME_UPDATE_TYPES][BLOCK_SIZES_ALL];
-  int obmc_probs_thresh;
   int tx_type_probs[FRAME_UPDATE_TYPES][TX_SIZES_ALL][TX_TYPES];
   int tx_type_probs_thresh[FRAME_UPDATE_TYPES];
 

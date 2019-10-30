@@ -9749,8 +9749,7 @@ static int64_t motion_mode_rd(
 
     const FRAME_UPDATE_TYPE update_type = get_frame_update_type(&cpi->gf_group);
     const int prune_obmc =
-        cpi->sf.prune_obmc_using_stats &&
-        (cpi->obmc_probs[update_type][bsize] < cpi->obmc_probs_thresh);
+        cpi->obmc_probs[update_type][bsize] < cpi->sf.prune_obmc_prob_thresh;
     if ((cpi->oxcf.enable_obmc == 0 || cpi->sf.use_fast_nonrd_pick_mode ||
          prune_obmc) &&
         mbmi->motion_mode == OBMC_CAUSAL)
@@ -11910,8 +11909,7 @@ static AOM_INLINE void set_params_rd_pick_inter_mode(
   av1_count_overlappable_neighbors(cm, xd, mi_row, mi_col);
   const FRAME_UPDATE_TYPE update_type = get_frame_update_type(&cpi->gf_group);
   const int prune_obmc =
-      cpi->sf.prune_obmc_using_stats &&
-      (cpi->obmc_probs[update_type][bsize] < cpi->obmc_probs_thresh);
+      cpi->obmc_probs[update_type][bsize] < cpi->sf.prune_obmc_prob_thresh;
   if (cpi->oxcf.enable_obmc && !prune_obmc) {
     if (check_num_overlappable_neighbors(mbmi) &&
         is_motion_variation_allowed_bsize(bsize)) {

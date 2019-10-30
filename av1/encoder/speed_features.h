@@ -791,7 +791,7 @@ typedef struct SPEED_FEATURES {
   int adaptive_overlay_encoding;
 
   // Prune obmc search using previous frame stats.
-  int prune_obmc_using_stats;
+  int prune_obmc_prob_thresh;
 
   // Use ALTREF frame in non-RD mode decision.
   int use_nonrd_altref_frame;
