@@ -552,6 +552,14 @@ class Mirror(object):
       spec = spec.decode()
       try:
         self.print('Fetching %s' % spec)
+        env = os.environ.copy()
+        env.update({
+            'GIT_TRACE_PACKET': '1',
+            'GIT_TR2_EVENT': '1',
+            'GIT_TRACE2_EVENT': '1',
+            'GIT_TRACE_CURL': '1',
+            'GIT_TRACE_CURL_NO_DATA': '1'
+        })
         # Only print first 30000 packets. We can use nonlocal keyword once we
         # switch to python 3.
         packet_count = [0]
@@ -570,6 +578,7 @@ class Mirror(object):
               fetch_cmd + [spec],
               cwd=rundir,
               retry=True,
+              env=env,
               filter_fn=FilterPacket)
       except subprocess.CalledProcessError:
         if spec == '+refs/heads/*:refs/heads/*':
