@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.compositor.bottombar;
 
 import android.content.Context;
-import android.view.View;
 import android.view.ViewGroup;
 
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
@@ -15,18 +14,13 @@ import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
  * This implementation simply does a binary transition when the panel is 50% of the way
  * between peek and expanded states.
  */
-public abstract class OverlayPanelRepaddingTextView extends OverlayPanelInflater {
-    private static final float REPADDING_THRESHOLD = 0.5f;
+public abstract class OverlayPanelAdjustingTextView extends OverlayPanelInflater {
+    private static final float ADJUSTING_THRESHOLD = 0.5f;
 
     private final float mPeekedEndButtonsWidth;
     private final float mExpandedEndButtonsWidth;
 
-    private int mPaddingStart;
-    private int mPaddingTop;
-    private int mPaddingBottom;
-
-    private boolean mIsPanelExpandedBeyondHalf;
-    private boolean mWasPanelExpandedBeyondHalf;
+    private int mBoundsAdjust;
 
     /**
      * @param panel             The panel.
@@ -38,7 +32,7 @@ public abstract class OverlayPanelRepaddingTextView extends OverlayPanelInflater
      * @param peekedDimension   The dimension resource for the padding when the Overlay is Peeked.
      * @param expandedDimension The dimension resource for the padding when the Overlay is Expanded.
      */
-    public OverlayPanelRepaddingTextView(OverlayPanel panel, int layoutResource, int layoutId,
+    public OverlayPanelAdjustingTextView(OverlayPanel panel, int layoutResource, int layoutId,
             Context context, ViewGroup container, DynamicResourceLoader resourceLoader,
             int peekedDimension, int expandedDimension) {
         super(panel, layoutResource, layoutId, context, container, resourceLoader);
@@ -46,6 +40,7 @@ public abstract class OverlayPanelRepaddingTextView extends OverlayPanelInflater
                 peekedDimension == 0 ? 0 : context.getResources().getDimension(peekedDimension);
         mExpandedEndButtonsWidth =
                 expandedDimension == 0 ? 0 : context.getResources().getDimension(expandedDimension);
+        mBoundsAdjust = 0;
     }
 
     /**
@@ -54,41 +49,13 @@ public abstract class OverlayPanelRepaddingTextView extends OverlayPanelInflater
      *        been expanded.
      */
     public void onUpdateFromPeekToExpand(float percentage) {
-        mIsPanelExpandedBeyondHalf = percentage > REPADDING_THRESHOLD;
-        invalidateIfNeeded(false);
+        int barPaddingWidth = (int) (percentage > ADJUSTING_THRESHOLD ? mExpandedEndButtonsWidth
+                                                                      : mPeekedEndButtonsWidth);
+        mBoundsAdjust = -barPaddingWidth;
     }
 
-    @Override
-    public void invalidate() {
-        invalidateIfNeeded(true);
-    }
-
-    /**
-     * Invalidates the view, if needed.  Checks the {@code mIsPanelExpandedBeyondHalf} private
-     * member to see if the panel is beyond a threshold that's part way between peek and expanded
-     * states.
-     * @param alwaysInvalidate When {@code true}, makes sure that {@link #invalidate} is called.
-     */
-    protected void invalidateIfNeeded(boolean alwaysInvalidate) {
-        View view = getView();
-        if (view == null
-                || !alwaysInvalidate && mIsPanelExpandedBeyondHalf == mWasPanelExpandedBeyondHalf) {
-            return;
-        }
-
-        mWasPanelExpandedBeyondHalf = mIsPanelExpandedBeyondHalf;
-        int barPaddingWidth = (int) (mIsPanelExpandedBeyondHalf ? mExpandedEndButtonsWidth
-                                                                : mPeekedEndButtonsWidth);
-        view.setPaddingRelative(mPaddingStart, mPaddingTop, barPaddingWidth, mPaddingBottom);
-        super.invalidate();
-    }
-
-    @Override
-    protected void onFinishInflate() {
-        super.onFinishInflate();
-        View view = getView();
-        mPaddingStart = view.getPaddingStart();
-        mPaddingTop = view.getPaddingTop();
-        mPaddingBottom = view.getPaddingBottom();
+    /** @return The signed value of how much to adjust the horizontal bounds for this view. */
+    public int getBoundsAdjust() {
+        return mBoundsAdjust;
     }
 }
