@@ -123,7 +123,6 @@
 #include "content/renderer/media/audio/audio_output_ipc_factory.h"
 #include "content/renderer/media/audio/audio_renderer_sink_cache.h"
 #include "content/renderer/media/media_permission_dispatcher.h"
-#include "content/renderer/media/webrtc/rtc_peer_connection_handler.h"
 #include "content/renderer/mhtml_handle_writer.h"
 #include "content/renderer/mojo/blink_interface_registry_impl.h"
 #include "content/renderer/navigation_client.h"
@@ -5386,11 +5385,6 @@ void RenderFrameImpl::DidChangeScrollOffset() {
 
   for (auto& observer : observers_)
     observer.DidChangeScrollOffset();
-}
-
-void RenderFrameImpl::WillStartUsingPeerConnectionHandler(
-    blink::WebRTCPeerConnectionHandler* handler) {
-  static_cast<RTCPeerConnectionHandler*>(handler)->associateWithFrame(frame_);
 }
 
 blink::WebMediaStreamDeviceObserver*

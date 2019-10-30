@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/webrtc/webrtc_set_description_observer.h"
+#include "third_party/blink/renderer/modules/peerconnection/webrtc_set_description_observer.h"
 
 #include <memory>
 #include <utility>
@@ -12,9 +12,6 @@
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "base/test/task_environment.h"
-#include "base/threading/thread_task_runner_handle.h"
-#include "content/child/child_process.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/public/platform/modules/peerconnection/webrtc_util.h"
@@ -29,7 +26,7 @@
 
 using ::testing::Return;
 
-namespace content {
+namespace blink {
 
 class WebRtcSetDescriptionObserverForTest
     : public WebRtcSetDescriptionObserver {
@@ -228,7 +225,7 @@ class WebRtcSetDescriptionObserverHandlerTest
     main_thread_ = blink::scheduler::GetSingleThreadTaskRunnerForTesting();
     track_adapter_map_ = new blink::WebRtcMediaStreamTrackAdapterMap(
         dependency_factory_.get(), main_thread_);
-    observer_ = new WebRtcSetDescriptionObserverForTest();
+    observer_ = base::MakeRefCounted<WebRtcSetDescriptionObserverForTest>();
     observer_handler_ = std::make_unique<ObserverHandlerWrapper>(
         handler_type_, main_thread_,
         dependency_factory_->GetWebRtcSignalingTaskRunner(), pc_,
@@ -363,11 +360,6 @@ class WebRtcSetDescriptionObserverHandlerTest
   }
 
  protected:
-  // The TaskEnvironment prevents the ChildProcess from leaking a
-  // ThreadPool.
-  base::test::TaskEnvironment task_environment_;
-  ChildProcess child_process_;
-
   scoped_refptr<webrtc::MockPeerConnectionInterface> pc_;
   std::unique_ptr<blink::MockPeerConnectionDependencyFactory>
       dependency_factory_;
@@ -500,4 +492,4 @@ INSTANTIATE_TEST_SUITE_P(
                                       StateSurfacerType::kReceiversOnly)),
     PrintToStringTestVariety());
 
-}  // namespace content
+}  // namespace blink

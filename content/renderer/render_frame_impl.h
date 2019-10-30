@@ -796,8 +796,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void WillReleaseScriptContext(v8::Local<v8::Context> context,
                                 int world_id) override;
   void DidChangeScrollOffset() override;
-  void WillStartUsingPeerConnectionHandler(
-      blink::WebRTCPeerConnectionHandler* handler) override;
   blink::WebMediaStreamDeviceObserver* MediaStreamDeviceObserver() override;
   blink::WebEncryptedMediaClient* EncryptedMediaClient() override;
   blink::WebString UserAgentOverride() override;

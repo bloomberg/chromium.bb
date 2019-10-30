@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/webrtc/media_stream_track_metrics.h"
+#include "third_party/blink/renderer/modules/peerconnection/media_stream_track_metrics.h"
 
 #include <inttypes.h>
 #include <string>
 
-#include "base/hash/md5.h"
+//#include "base/hash/md5.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_checker.h"
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/platform.h"
 
-namespace content {
+namespace blink {
 
 class MediaStreamTrackMetricsObserver {
  public:
@@ -256,7 +256,7 @@ uint64_t MediaStreamTrackMetrics::MakeUniqueId(const std::string& track_id,
       direction);
 }
 
-mojo::Remote<blink::mojom::MediaStreamTrackMetricsHost>&
+mojo::Remote<blink::mojom::blink::MediaStreamTrackMetricsHost>&
 MediaStreamTrackMetrics::GetMediaStreamTrackMetricsHost() {
   if (!track_metrics_host_) {
     blink::Platform::Current()->GetBrowserInterfaceBrokerProxy()->GetInterface(
@@ -265,4 +265,4 @@ MediaStreamTrackMetrics::GetMediaStreamTrackMetricsHost() {
   return track_metrics_host_;
 }
 
-}  // namespace content
+}  // namespace blink

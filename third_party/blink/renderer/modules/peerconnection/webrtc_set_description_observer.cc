@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/webrtc/webrtc_set_description_observer.h"
+#include "third_party/blink/renderer/modules/peerconnection/webrtc_set_description_observer.h"
 
 #include "base/bind.h"
 #include "base/logging.h"
 
-namespace content {
+namespace blink {
 
 WebRtcSetDescriptionObserver::States::States()
     : signaling_state(
@@ -119,13 +119,14 @@ WebRtcSetLocalDescriptionObserverHandler::
             track_adapter_map,
         scoped_refptr<WebRtcSetDescriptionObserver> observer,
         bool surface_receivers_only)
-    : handler_impl_(new WebRtcSetDescriptionObserverHandlerImpl(
-          std::move(main_task_runner),
-          std::move(signaling_task_runner),
-          std::move(pc),
-          std::move(track_adapter_map),
-          std::move(observer),
-          surface_receivers_only)) {}
+    : handler_impl_(
+          base::MakeRefCounted<WebRtcSetDescriptionObserverHandlerImpl>(
+              std::move(main_task_runner),
+              std::move(signaling_task_runner),
+              std::move(pc),
+              std::move(track_adapter_map),
+              std::move(observer),
+              surface_receivers_only)) {}
 
 WebRtcSetLocalDescriptionObserverHandler::
     ~WebRtcSetLocalDescriptionObserverHandler() = default;
@@ -162,13 +163,14 @@ WebRtcSetRemoteDescriptionObserverHandler::
             track_adapter_map,
         scoped_refptr<WebRtcSetDescriptionObserver> observer,
         bool surface_receivers_only)
-    : handler_impl_(new WebRtcSetDescriptionObserverHandlerImpl(
-          std::move(main_task_runner),
-          std::move(signaling_task_runner),
-          std::move(pc),
-          std::move(track_adapter_map),
-          std::move(observer),
-          surface_receivers_only)) {}
+    : handler_impl_(
+          base::MakeRefCounted<WebRtcSetDescriptionObserverHandlerImpl>(
+              std::move(main_task_runner),
+              std::move(signaling_task_runner),
+              std::move(pc),
+              std::move(track_adapter_map),
+              std::move(observer),
+              surface_receivers_only)) {}
 
 WebRtcSetRemoteDescriptionObserverHandler::
     ~WebRtcSetRemoteDescriptionObserverHandler() = default;
@@ -178,4 +180,4 @@ void WebRtcSetRemoteDescriptionObserverHandler::OnSetRemoteDescriptionComplete(
   handler_impl_->OnSetDescriptionComplete(std::move(error));
 }
 
-}  // namespace content
+}  // namespace blink

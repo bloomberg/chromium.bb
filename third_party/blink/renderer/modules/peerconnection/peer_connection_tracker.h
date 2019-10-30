@@ -2,45 +2,42 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_WEBRTC_PEER_CONNECTION_TRACKER_H_
-#define CONTENT_RENDERER_MEDIA_WEBRTC_PEER_CONNECTION_TRACKER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_PEER_CONNECTION_TRACKER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_PEER_CONNECTION_TRACKER_H_
 
 #include <map>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "third_party/blink/public/mojom/peerconnection/peer_connection_tracker.mojom.h"
+#include "third_party/blink/public/mojom/peerconnection/peer_connection_tracker.mojom-blink.h"
 #include "third_party/blink/public/platform/web_rtc_peer_connection_handler_client.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_transceiver.h"
 #include "third_party/blink/public/platform/web_rtc_session_description.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
-
-namespace blink {
-class WebLocalFrame;
-class WebMediaConstraints;
-class WebRTCAnswerOptions;
-class WebRTCICECandidate;
-class WebRTCOfferOptions;
-class WebRTCSessionDescription;
-class WebUserMediaRequest;
-}  // namespace blink
 
 namespace webrtc {
 class DataChannelInterface;
 }  // namespace webrtc
 
-namespace content {
+namespace blink {
 class RTCPeerConnectionHandler;
+class WebLocalFrame;
+class WebMediaConstraints;
+class WebRTCAnswerOptions;
+class WebRTCICECandidate;
+class WebRTCOfferOptions;
+class WebUserMediaRequest;
 
 // This class collects data about each peer connection,
 // sends it to the browser process, and handles messages
 // from the browser process.
-class CONTENT_EXPORT PeerConnectionTracker
-    : public blink::mojom::PeerConnectionManager,
+class MODULES_EXPORT PeerConnectionTracker
+    : public blink::mojom::blink::PeerConnectionManager,
       public base::SupportsWeakPtr<PeerConnectionTracker> {
  public:
   static PeerConnectionTracker* GetInstance();
@@ -50,14 +47,11 @@ class CONTENT_EXPORT PeerConnectionTracker
   explicit PeerConnectionTracker(
       scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner);
   PeerConnectionTracker(
-      mojo::Remote<blink::mojom::PeerConnectionTrackerHost> host,
+      mojo::Remote<blink::mojom::blink::PeerConnectionTrackerHost> host,
       scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner);
   ~PeerConnectionTracker() override;
 
-  enum Source {
-    SOURCE_LOCAL,
-    SOURCE_REMOTE
-  };
+  enum Source { SOURCE_LOCAL, SOURCE_REMOTE };
 
   enum Action {
     ACTION_SET_LOCAL_DESCRIPTION,
@@ -76,8 +70,8 @@ class CONTENT_EXPORT PeerConnectionTracker
     kSetRemoteDescription,
   };
 
-  void Bind(
-      mojo::PendingReceiver<blink::mojom::PeerConnectionManager> receiver);
+  void Bind(mojo::PendingReceiver<blink::mojom::blink::PeerConnectionManager>
+                receiver);
 
   // The following methods send an update to the browser process when a
   // PeerConnection update happens. The caller should call the Track* methods
@@ -114,9 +108,10 @@ class CONTENT_EXPORT PeerConnectionTracker
                                  const blink::WebMediaConstraints& constraints);
 
   // Sends an update when setLocalDescription or setRemoteDescription is called.
-  virtual void TrackSetSessionDescription(
-      RTCPeerConnectionHandler* pc_handler,
-      const std::string& sdp, const std::string& type, Source source);
+  virtual void TrackSetSessionDescription(RTCPeerConnectionHandler* pc_handler,
+                                          const std::string& sdp,
+                                          const std::string& type,
+                                          Source source);
 
   // Sends an update when setConfiguration is called.
   virtual void TrackSetConfiguration(
@@ -159,7 +154,8 @@ class CONTENT_EXPORT PeerConnectionTracker
   // Sends an update when a DataChannel is created.
   virtual void TrackCreateDataChannel(
       RTCPeerConnectionHandler* pc_handler,
-      const webrtc::DataChannelInterface* data_channel, Source source);
+      const webrtc::DataChannelInterface* data_channel,
+      Source source);
 
   // Sends an update when a PeerConnection has been stopped.
   virtual void TrackStop(RTCPeerConnectionHandler* pc_handler);
@@ -202,8 +198,10 @@ class CONTENT_EXPORT PeerConnectionTracker
   // Sends an update when the SetSessionDescription or CreateOffer or
   // CreateAnswer callbacks are called.
   virtual void TrackSessionDescriptionCallback(
-      RTCPeerConnectionHandler* pc_handler, Action action,
-      const std::string& type, const std::string& value);
+      RTCPeerConnectionHandler* pc_handler,
+      Action action,
+      const std::string& type,
+      const std::string& value);
 
   // Sends an update when the session description's ID is set.
   virtual void TrackSessionId(RTCPeerConnectionHandler* pc_handler,
@@ -258,8 +256,8 @@ class CONTENT_EXPORT PeerConnectionTracker
   // |value| - A json serialized string containing all the information for the
   //           update event.
   void SendPeerConnectionUpdate(int local_id,
-                                const std::string& callback_type,
-                                const std::string& value);
+                                const String& callback_type,
+                                const String& value);
 
   void AddStandardStats(int lid, base::Value value);
   void AddLegacyStats(int lid, base::Value value);
@@ -271,15 +269,15 @@ class CONTENT_EXPORT PeerConnectionTracker
   // This keeps track of the next available local ID.
   int next_local_id_;
   THREAD_CHECKER(main_thread_);
-  mojo::Remote<blink::mojom::PeerConnectionTrackerHost>
+  mojo::Remote<blink::mojom::blink::PeerConnectionTrackerHost>
       peer_connection_tracker_host_;
-  mojo::Receiver<blink::mojom::PeerConnectionManager> receiver_{this};
+  mojo::Receiver<blink::mojom::blink::PeerConnectionManager> receiver_{this};
 
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(PeerConnectionTracker);
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_MEDIA_WEBRTC_PEER_CONNECTION_TRACKER_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_PEER_CONNECTION_TRACKER_H_

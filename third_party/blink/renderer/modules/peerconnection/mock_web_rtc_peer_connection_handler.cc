@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/platform/testing/testing_platform_support_with_web_rtc.h"
+#include "third_party/blink/renderer/modules/peerconnection/mock_web_rtc_peer_connection_handler.h"
 
 #include <utility>
 
@@ -401,12 +401,5 @@ void MockWebRTCPeerConnectionHandler::
 void MockWebRTCPeerConnectionHandler::TrackIceConnectionStateChange(
     WebRTCPeerConnectionHandler::IceConnectionStateVersion version,
     webrtc::PeerConnectionInterface::IceConnectionState state) {}
-
-std::unique_ptr<WebRTCPeerConnectionHandler>
-TestingPlatformSupportWithWebRTC::CreateRTCPeerConnectionHandler(
-    WebRTCPeerConnectionHandlerClient*,
-    scoped_refptr<base::SingleThreadTaskRunner>) {
-  return std::make_unique<MockWebRTCPeerConnectionHandler>();
-}
 
 }  // namespace blink

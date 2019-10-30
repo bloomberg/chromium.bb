@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/webrtc/peer_connection_tracker.h"
+#include "third_party/blink/renderer/modules/peerconnection/peer_connection_tracker.h"
 
-#include "base/test/task_environment.h"
-#include "content/renderer/media/webrtc/rtc_peer_connection_handler.h"
+#include "base/run_loop.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/mojom/peerconnection/peer_connection_tracker.mojom.h"
+#include "third_party/blink/public/mojom/peerconnection/peer_connection_tracker.mojom-blink.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/platform/web_rtc_offer_options.h"
@@ -18,10 +17,11 @@
 #include "third_party/blink/public/web/modules/peerconnection/fake_rtc_rtp_transceiver_impl.h"
 #include "third_party/blink/public/web/modules/peerconnection/mock_peer_connection_dependency_factory.h"
 #include "third_party/blink/public/web/modules/peerconnection/mock_web_rtc_peer_connection_handler_client.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_peer_connection_handler.h"
 
 using ::testing::_;
 
-namespace content {
+namespace blink {
 
 const char* kDefaultTransceiverString =
     "getTransceivers()[0]:{\n"
@@ -52,33 +52,30 @@ const char* kDefaultReceiverString =
     "}";
 
 class MockPeerConnectionTrackerHost
-    : public blink::mojom::PeerConnectionTrackerHost {
+    : public blink::mojom::blink::PeerConnectionTrackerHost {
  public:
   MockPeerConnectionTrackerHost() {}
-  MOCK_METHOD3(UpdatePeerConnection,
-               void(int, const std::string&, const std::string&));
-  MOCK_METHOD1(AddPeerConnection, void(blink::mojom::PeerConnectionInfoPtr));
+  MOCK_METHOD3(UpdatePeerConnection, void(int, const String&, const String&));
+  MOCK_METHOD1(AddPeerConnection,
+               void(blink::mojom::blink::PeerConnectionInfoPtr));
   MOCK_METHOD1(RemovePeerConnection, void(int));
-  MOCK_METHOD2(OnPeerConnectionSessionIdSet, void(int, const std::string&));
+  MOCK_METHOD2(OnPeerConnectionSessionIdSet, void(int, const String&));
   MOCK_METHOD5(GetUserMedia,
-               void(const std::string&,
-                    bool,
-                    bool,
-                    const std::string&,
-                    const std::string&));
-  MOCK_METHOD2(WebRtcEventLogWrite, void(int, const std::string&));
+               void(const String&, bool, bool, const String&, const String&));
+  MOCK_METHOD2(WebRtcEventLogWrite, void(int, const String&));
   MOCK_METHOD2(AddStandardStats, void(int, base::Value));
   MOCK_METHOD2(AddLegacyStats, void(int, base::Value));
 
-  mojo::Remote<blink::mojom::PeerConnectionTrackerHost>
+  mojo::Remote<blink::mojom::blink::PeerConnectionTrackerHost>
   CreatePendingRemoteAndBind() {
     receiver_.reset();
-    return mojo::Remote<blink::mojom::PeerConnectionTrackerHost>(
+    return mojo::Remote<blink::mojom::blink::PeerConnectionTrackerHost>(
         receiver_.BindNewPipeAndPassRemote(
             blink::scheduler::GetSingleThreadTaskRunnerForTesting()));
   }
 
-  mojo::Receiver<blink::mojom::PeerConnectionTrackerHost> receiver_{this};
+  mojo::Receiver<blink::mojom::blink::PeerConnectionTrackerHost> receiver_{
+      this};
 };
 
 // Creates a transceiver that is expected to be logged as
@@ -151,11 +148,10 @@ class PeerConnectionTrackerTest : public ::testing::Test {
         mock_handler_.get(),
         webrtc::PeerConnectionInterface::RTCConfiguration(),
         blink::WebMediaConstraints(), nullptr);
-    task_environment_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
  protected:
-  base::test::SingleThreadTaskEnvironment task_environment_;
   std::unique_ptr<MockPeerConnectionTrackerHost> mock_host_;
   std::unique_ptr<PeerConnectionTracker> tracker_;
   std::unique_ptr<MockPeerConnectionHandler> mock_handler_;
@@ -174,11 +170,12 @@ TEST_F(PeerConnectionTrackerTest, TrackCreateOffer) {
   // Note: blink::WebRTCOfferOptions is not mockable. So we can't write tests
   // for anything but a null options parameter.
   blink::WebRTCOfferOptions options(0, 0, false, false);
-  EXPECT_CALL(*mock_host_,
-              UpdatePeerConnection(
-                  _, "createOffer",
-                  "options: {offerToReceiveVideo: 0, offerToReceiveAudio: 0, "
-                  "voiceActivityDetection: false, iceRestart: false}"));
+  EXPECT_CALL(
+      *mock_host_,
+      UpdatePeerConnection(
+          _, String("createOffer"),
+          String("options: {offerToReceiveVideo: 0, offerToReceiveAudio: 0, "
+                 "voiceActivityDetection: false, iceRestart: false}")));
   tracker_->TrackCreateOffer(mock_handler_.get(), options);
   base::RunLoop().RunUntilIdle();
 }
@@ -204,15 +201,16 @@ TEST_F(PeerConnectionTrackerTest, AddTransceiverWithOptionalValuesPresent) {
       true /* stopped */,
       webrtc::RtpTransceiverDirection::kSendRecv /* direction */,
       webrtc::RtpTransceiverDirection::kInactive /* current_direction */);
-  std::string update_value;
-  EXPECT_CALL(*mock_host_, UpdatePeerConnection(_, "transceiverAdded", _))
+  String update_value;
+  EXPECT_CALL(*mock_host_,
+              UpdatePeerConnection(_, String("transceiverAdded"), _))
       .WillOnce(testing::SaveArg<2>(&update_value));
   tracker_->TrackAddTransceiver(
       mock_handler_.get(),
       PeerConnectionTracker::TransceiverUpdatedReason::kAddTrack, transceiver,
       0u);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(
+  String expected_value(
       "Caused by: addTrack\n"
       "\n"
       "getTransceivers()[0]:{\n"
@@ -228,8 +226,8 @@ TEST_F(PeerConnectionTrackerTest, AddTransceiverWithOptionalValuesPresent) {
       "  stopped:true,\n"
       "  direction:'sendrecv',\n"
       "  currentDirection:'inactive',\n"
-      "}",
-      update_value);
+      "}");
+  EXPECT_EQ(expected_value, update_value);
 }
 
 TEST_F(PeerConnectionTrackerTest, AddTransceiverWithOptionalValuesNull) {
@@ -246,15 +244,16 @@ TEST_F(PeerConnectionTrackerTest, AddTransceiverWithOptionalValuesNull) {
       false /* stopped */,
       webrtc::RtpTransceiverDirection::kInactive /* direction */,
       base::nullopt /* current_direction */);
-  std::string update_value;
-  EXPECT_CALL(*mock_host_, UpdatePeerConnection(_, "transceiverAdded", _))
+  String update_value;
+  EXPECT_CALL(*mock_host_,
+              UpdatePeerConnection(_, String("transceiverAdded"), _))
       .WillOnce(testing::SaveArg<2>(&update_value));
   tracker_->TrackAddTransceiver(
       mock_handler_.get(),
       PeerConnectionTracker::TransceiverUpdatedReason::kAddTransceiver,
       transceiver, 1u);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(
+  String expected_value(
       "Caused by: addTransceiver\n"
       "\n"
       "getTransceivers()[1]:{\n"
@@ -270,8 +269,8 @@ TEST_F(PeerConnectionTrackerTest, AddTransceiverWithOptionalValuesNull) {
       "  stopped:false,\n"
       "  direction:'inactive',\n"
       "  currentDirection:null,\n"
-      "}",
-      update_value);
+      "}");
+  EXPECT_EQ(expected_value, update_value);
 }
 
 TEST_F(PeerConnectionTrackerTest, ModifyTransceiver) {
@@ -279,19 +278,18 @@ TEST_F(PeerConnectionTrackerTest, ModifyTransceiver) {
   CreateAndRegisterPeerConnectionHandler();
   auto transceiver = CreateDefaultTransceiver(
       blink::WebRTCRtpTransceiverImplementationType::kFullTransceiver);
-  std::string update_value;
-  EXPECT_CALL(*mock_host_, UpdatePeerConnection(_, "transceiverModified", _))
+  String update_value;
+  EXPECT_CALL(*mock_host_,
+              UpdatePeerConnection(_, String("transceiverModified"), _))
       .WillOnce(testing::SaveArg<2>(&update_value));
   tracker_->TrackModifyTransceiver(
       mock_handler_.get(),
       PeerConnectionTracker::TransceiverUpdatedReason::kSetLocalDescription,
       *transceiver, 0u);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(
-      "Caused by: setLocalDescription\n"
-      "\n" +
-          std::string(kDefaultTransceiverString),
-      update_value);
+  String expected_value("Caused by: setLocalDescription\n\n" +
+                        String(kDefaultTransceiverString));
+  EXPECT_EQ(expected_value, update_value);
 }
 
 TEST_F(PeerConnectionTrackerTest, RemoveTransceiver) {
@@ -299,19 +297,20 @@ TEST_F(PeerConnectionTrackerTest, RemoveTransceiver) {
   CreateAndRegisterPeerConnectionHandler();
   auto transceiver = CreateDefaultTransceiver(
       blink::WebRTCRtpTransceiverImplementationType::kFullTransceiver);
-  std::string update_value;
-  EXPECT_CALL(*mock_host_, UpdatePeerConnection(_, "transceiverRemoved", _))
+  String update_value;
+  EXPECT_CALL(*mock_host_,
+              UpdatePeerConnection(_, String("transceiverRemoved"), _))
       .WillOnce(testing::SaveArg<2>(&update_value));
   tracker_->TrackRemoveTransceiver(
       mock_handler_.get(),
       PeerConnectionTracker::TransceiverUpdatedReason::kRemoveTrack,
       *transceiver, 0u);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(
+  String expected_value(
       "Caused by: removeTrack\n"
       "\n" +
-          std::string(kDefaultTransceiverString),
-      update_value);
+      String(kDefaultTransceiverString));
+  EXPECT_EQ(expected_value, update_value);
 }
 
 TEST_F(PeerConnectionTrackerTest, AddSender) {
@@ -319,19 +318,19 @@ TEST_F(PeerConnectionTrackerTest, AddSender) {
   CreateAndRegisterPeerConnectionHandler();
   auto sender_only = CreateDefaultTransceiver(
       blink::WebRTCRtpTransceiverImplementationType::kPlanBSenderOnly);
-  std::string update_value;
-  EXPECT_CALL(*mock_host_, UpdatePeerConnection(_, "senderAdded", _))
+  String update_value;
+  EXPECT_CALL(*mock_host_, UpdatePeerConnection(_, String("senderAdded"), _))
       .WillOnce(testing::SaveArg<2>(&update_value));
   tracker_->TrackAddTransceiver(
       mock_handler_.get(),
       PeerConnectionTracker::TransceiverUpdatedReason::kSetLocalDescription,
       *sender_only, 0u);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(
+  String expected_value(
       "Caused by: setLocalDescription\n"
       "\n" +
-          std::string(kDefaultSenderString),
-      update_value);
+      String(kDefaultSenderString));
+  EXPECT_EQ(expected_value, update_value);
 }
 
 TEST_F(PeerConnectionTrackerTest, ModifySender) {
@@ -339,19 +338,19 @@ TEST_F(PeerConnectionTrackerTest, ModifySender) {
   CreateAndRegisterPeerConnectionHandler();
   auto sender_only = CreateDefaultTransceiver(
       blink::WebRTCRtpTransceiverImplementationType::kPlanBSenderOnly);
-  std::string update_value;
-  EXPECT_CALL(*mock_host_, UpdatePeerConnection(_, "senderModified", _))
+  String update_value;
+  EXPECT_CALL(*mock_host_, UpdatePeerConnection(_, String("senderModified"), _))
       .WillOnce(testing::SaveArg<2>(&update_value));
   tracker_->TrackModifyTransceiver(
       mock_handler_.get(),
       PeerConnectionTracker::TransceiverUpdatedReason::kSetRemoteDescription,
       *sender_only, 0u);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(
+  String expected_value(
       "Caused by: setRemoteDescription\n"
       "\n" +
-          std::string(kDefaultSenderString),
-      update_value);
+      String(kDefaultSenderString));
+  EXPECT_EQ(expected_value, update_value);
 }
 
 TEST_F(PeerConnectionTrackerTest, RemoveSender) {
@@ -359,19 +358,19 @@ TEST_F(PeerConnectionTrackerTest, RemoveSender) {
   CreateAndRegisterPeerConnectionHandler();
   auto sender_only = CreateDefaultTransceiver(
       blink::WebRTCRtpTransceiverImplementationType::kPlanBSenderOnly);
-  std::string update_value;
-  EXPECT_CALL(*mock_host_, UpdatePeerConnection(_, "senderRemoved", _))
+  String update_value;
+  EXPECT_CALL(*mock_host_, UpdatePeerConnection(_, String("senderRemoved"), _))
       .WillOnce(testing::SaveArg<2>(&update_value));
   tracker_->TrackRemoveTransceiver(
       mock_handler_.get(),
       PeerConnectionTracker::TransceiverUpdatedReason::kSetRemoteDescription,
       *sender_only, 0u);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(
+  String expected_value(
       "Caused by: setRemoteDescription\n"
       "\n" +
-          std::string(kDefaultSenderString),
-      update_value);
+      String(kDefaultSenderString));
+  EXPECT_EQ(expected_value, update_value);
 }
 
 TEST_F(PeerConnectionTrackerTest, AddReceiver) {
@@ -379,19 +378,19 @@ TEST_F(PeerConnectionTrackerTest, AddReceiver) {
   CreateAndRegisterPeerConnectionHandler();
   auto receiver_only = CreateDefaultTransceiver(
       blink::WebRTCRtpTransceiverImplementationType::kPlanBReceiverOnly);
-  std::string update_value;
-  EXPECT_CALL(*mock_host_, UpdatePeerConnection(_, "receiverAdded", _))
+  String update_value;
+  EXPECT_CALL(*mock_host_, UpdatePeerConnection(_, String("receiverAdded"), _))
       .WillOnce(testing::SaveArg<2>(&update_value));
   tracker_->TrackAddTransceiver(
       mock_handler_.get(),
       PeerConnectionTracker::TransceiverUpdatedReason::kSetRemoteDescription,
       *receiver_only, 0u);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(
+  String expected_value(
       "Caused by: setRemoteDescription\n"
       "\n" +
-          std::string(kDefaultReceiverString),
-      update_value);
+      String(kDefaultReceiverString));
+  EXPECT_EQ(expected_value, update_value);
 }
 
 TEST_F(PeerConnectionTrackerTest, ModifyReceiver) {
@@ -399,19 +398,20 @@ TEST_F(PeerConnectionTrackerTest, ModifyReceiver) {
   CreateAndRegisterPeerConnectionHandler();
   auto receiver_only = CreateDefaultTransceiver(
       blink::WebRTCRtpTransceiverImplementationType::kPlanBReceiverOnly);
-  std::string update_value;
-  EXPECT_CALL(*mock_host_, UpdatePeerConnection(_, "receiverModified", _))
+  String update_value;
+  EXPECT_CALL(*mock_host_,
+              UpdatePeerConnection(_, String("receiverModified"), _))
       .WillOnce(testing::SaveArg<2>(&update_value));
   tracker_->TrackModifyTransceiver(
       mock_handler_.get(),
       PeerConnectionTracker::TransceiverUpdatedReason::kSetRemoteDescription,
       *receiver_only, 0u);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(
+  String expected_value(
       "Caused by: setRemoteDescription\n"
       "\n" +
-          std::string(kDefaultReceiverString),
-      update_value);
+      String(kDefaultReceiverString));
+  EXPECT_EQ(expected_value, update_value);
 }
 
 TEST_F(PeerConnectionTrackerTest, RemoveReceiver) {
@@ -419,21 +419,22 @@ TEST_F(PeerConnectionTrackerTest, RemoveReceiver) {
   CreateAndRegisterPeerConnectionHandler();
   auto receiver_only = CreateDefaultTransceiver(
       blink::WebRTCRtpTransceiverImplementationType::kPlanBReceiverOnly);
-  std::string update_value;
-  EXPECT_CALL(*mock_host_, UpdatePeerConnection(_, "receiverRemoved", _))
+  String update_value;
+  EXPECT_CALL(*mock_host_,
+              UpdatePeerConnection(_, String("receiverRemoved"), _))
       .WillOnce(testing::SaveArg<2>(&update_value));
   tracker_->TrackRemoveTransceiver(
       mock_handler_.get(),
       PeerConnectionTracker::TransceiverUpdatedReason::kSetRemoteDescription,
       *receiver_only, 0u);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(
+  String expected_value(
       "Caused by: setRemoteDescription\n"
       "\n" +
-          std::string(kDefaultReceiverString),
-      update_value);
+      String(kDefaultReceiverString));
+  EXPECT_EQ(expected_value, update_value);
 }
 
 // TODO(hta): Write tests for the other tracking functions.
 
-}  // namespace
+}  // namespace blink

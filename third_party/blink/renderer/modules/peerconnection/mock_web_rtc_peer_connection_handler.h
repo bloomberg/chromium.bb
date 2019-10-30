@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_TESTING_PLATFORM_SUPPORT_WITH_WEB_RTC_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_TESTING_PLATFORM_SUPPORT_WITH_WEB_RTC_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_MOCK_WEB_RTC_PEER_CONNECTION_HANDLER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_MOCK_WEB_RTC_PEER_CONNECTION_HANDLER_H_
 
 #include <memory>
 #include <string>
@@ -11,6 +11,7 @@
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/public/platform/web_rtc_peer_connection_handler.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
 #include "third_party/webrtc/api/stats/rtc_stats.h"
 
@@ -87,13 +88,6 @@ class MockWebRTCPeerConnectionHandler : public WebRTCPeerConnectionHandler {
   Vector<std::unique_ptr<DummyWebRTCRtpTransceiver>> transceivers_;
 };
 
-class TestingPlatformSupportWithWebRTC : public TestingPlatformSupport {
- public:
-  std::unique_ptr<WebRTCPeerConnectionHandler> CreateRTCPeerConnectionHandler(
-      WebRTCPeerConnectionHandlerClient*,
-      scoped_refptr<base::SingleThreadTaskRunner>) override;
-};
-
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_TESTING_PLATFORM_SUPPORT_WITH_WEB_RTC_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_MOCK_WEB_RTC_PEER_CONNECTION_HANDLER_H_

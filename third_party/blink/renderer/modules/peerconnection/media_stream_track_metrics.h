@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_WEBRTC_MEDIA_STREAM_TRACK_METRICS_H_
-#define CONTENT_RENDERER_MEDIA_WEBRTC_MEDIA_STREAM_TRACK_METRICS_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_MEDIA_STREAM_TRACK_METRICS_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_MEDIA_STREAM_TRACK_METRICS_H_
 
 #include <stdint.h>
 
@@ -11,12 +11,12 @@
 #include <vector>
 
 #include "base/sequence_checker.h"
-#include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "third_party/blink/public/mojom/mediastream/media_stream.mojom.h"
+#include "third_party/blink/public/mojom/mediastream/media_stream.mojom-blink.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
 
-namespace content {
+namespace blink {
 
 class MediaStreamTrackMetricsObserver;
 class RTCPeerConnectionHandler;
@@ -28,7 +28,7 @@ class RTCPeerConnectionHandler;
 // There should be exactly one of these objects owned by each
 // RTCPeerConnectionHandler, and its lifetime should match the
 // lifetime of its owner.
-class CONTENT_EXPORT MediaStreamTrackMetrics {
+class MODULES_EXPORT MediaStreamTrackMetrics {
  public:
   explicit MediaStreamTrackMetrics();
   ~MediaStreamTrackMetrics();
@@ -87,10 +87,11 @@ class CONTENT_EXPORT MediaStreamTrackMetrics {
   // track object and the PeerConnection it is attached to both exist.
   uint64_t MakeUniqueId(const std::string& track_id, Direction direction);
 
-  mojo::Remote<blink::mojom::MediaStreamTrackMetricsHost>&
+  mojo::Remote<blink::mojom::blink::MediaStreamTrackMetricsHost>&
   GetMediaStreamTrackMetricsHost();
 
-  mojo::Remote<blink::mojom::MediaStreamTrackMetricsHost> track_metrics_host_;
+  mojo::Remote<blink::mojom::blink::MediaStreamTrackMetricsHost>
+      track_metrics_host_;
 
   typedef std::vector<std::unique_ptr<MediaStreamTrackMetricsObserver>>
       ObserverVector;
@@ -103,6 +104,6 @@ class CONTENT_EXPORT MediaStreamTrackMetrics {
   DISALLOW_COPY_AND_ASSIGN(MediaStreamTrackMetrics);
 };
 
-}  // namespace
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_MEDIA_WEBRTC_MEDIA_STREAM_TRACK_METRICS_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_MEDIA_STREAM_TRACK_METRICS_H_

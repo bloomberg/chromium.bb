@@ -2,23 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_WEBRTC_WEBRTC_SET_DESCRIPTION_OBSERVER_H_
-#define CONTENT_RENDERER_MEDIA_WEBRTC_WEBRTC_SET_DESCRIPTION_OBSERVER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_WEBRTC_SET_DESCRIPTION_OBSERVER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_WEBRTC_SET_DESCRIPTION_OBSERVER_H_
 
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
-#include "content/common/content_export.h"
-#include "content/renderer/media/webrtc/rtc_peer_connection_handler.h"
 #include "third_party/blink/public/web/modules/peerconnection/rtc_rtp_receiver_impl.h"
 #include "third_party/blink/public/web/modules/peerconnection/rtc_rtp_sender_impl.h"
 #include "third_party/blink/public/web/modules/peerconnection/rtc_rtp_transceiver_impl.h"
 #include "third_party/blink/public/web/modules/peerconnection/transceiver_state_surfacer.h"
 #include "third_party/blink/public/web/modules/peerconnection/webrtc_media_stream_track_adapter_map.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_peer_connection_handler.h"
+#include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 #include "third_party/webrtc/api/jsep.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
 #include "third_party/webrtc/api/rtc_error.h"
@@ -28,20 +27,20 @@
 #include "third_party/webrtc/rtc_base/ref_count.h"
 #include "third_party/webrtc/rtc_base/ref_counted_object.h"
 
-namespace content {
+namespace blink {
 
-// The content layer correspondent of the setLocalDescription() observer
+// The blink layer correspondent of the setLocalDescription() observer
 // (webrtc::SetSessionDescriptionObserver) and setRemoteDescription() observer
 // (webrtc::SetRemoteDescriptionObserverInterface). The implementation should
 // process the state changes of the Set[Local/Remote]Description() by inspecting
 // the updated States.
-class CONTENT_EXPORT WebRtcSetDescriptionObserver
-    : public base::RefCountedThreadSafe<WebRtcSetDescriptionObserver> {
+class MODULES_EXPORT WebRtcSetDescriptionObserver
+    : public WTF::ThreadSafeRefCounted<WebRtcSetDescriptionObserver> {
  public:
   // The states as they were when the operation finished on the webrtc signaling
   // thread. Note that other operations may have occurred while jumping back to
   // the main thread, but these must be handled separately.
-  struct CONTENT_EXPORT States {
+  struct MODULES_EXPORT States {
     States();
     States(States&& other);
     ~States();
@@ -64,7 +63,7 @@ class CONTENT_EXPORT WebRtcSetDescriptionObserver
                                         States states) = 0;
 
  protected:
-  friend class base::RefCountedThreadSafe<WebRtcSetDescriptionObserver>;
+  friend class WTF::ThreadSafeRefCounted<WebRtcSetDescriptionObserver>;
   virtual ~WebRtcSetDescriptionObserver();
 
   DISALLOW_COPY_AND_ASSIGN(WebRtcSetDescriptionObserver);
@@ -80,8 +79,8 @@ class CONTENT_EXPORT WebRtcSetDescriptionObserver
 // WebRtcSetRemoteDescriptionObserverHandler, but these are put in different
 // classes because local and remote description observers have different
 // interfaces in webrtc.
-class CONTENT_EXPORT WebRtcSetDescriptionObserverHandlerImpl
-    : public base::RefCountedThreadSafe<
+class MODULES_EXPORT WebRtcSetDescriptionObserverHandlerImpl
+    : public WTF::ThreadSafeRefCounted<
           WebRtcSetDescriptionObserverHandlerImpl> {
  public:
   WebRtcSetDescriptionObserverHandlerImpl(
@@ -97,7 +96,7 @@ class CONTENT_EXPORT WebRtcSetDescriptionObserverHandlerImpl
   void OnSetDescriptionComplete(webrtc::RTCError error);
 
  private:
-  friend class base::RefCountedThreadSafe<
+  friend class WTF::ThreadSafeRefCounted<
       WebRtcSetDescriptionObserverHandlerImpl>;
   virtual ~WebRtcSetDescriptionObserverHandlerImpl();
 
@@ -118,7 +117,7 @@ class CONTENT_EXPORT WebRtcSetDescriptionObserverHandlerImpl
 
 // An implementation of webrtc::SetSessionDescriptionObserver for performing the
 // operations of WebRtcSetDescriptionObserverHandlerImpl.
-class CONTENT_EXPORT WebRtcSetLocalDescriptionObserverHandler
+class MODULES_EXPORT WebRtcSetLocalDescriptionObserverHandler
     : public webrtc::SetSessionDescriptionObserver {
  public:
   static scoped_refptr<WebRtcSetLocalDescriptionObserverHandler> Create(
@@ -151,7 +150,7 @@ class CONTENT_EXPORT WebRtcSetLocalDescriptionObserverHandler
 
 // An implementation of webrtc::SetRemoteDescriptionObserverInterface for
 // performing the operations of WebRtcSetDescriptionObserverHandlerImpl.
-class CONTENT_EXPORT WebRtcSetRemoteDescriptionObserverHandler
+class MODULES_EXPORT WebRtcSetRemoteDescriptionObserverHandler
     : public webrtc::SetRemoteDescriptionObserverInterface {
  public:
   static scoped_refptr<WebRtcSetRemoteDescriptionObserverHandler> Create(
@@ -182,6 +181,6 @@ class CONTENT_EXPORT WebRtcSetRemoteDescriptionObserverHandler
   DISALLOW_COPY_AND_ASSIGN(WebRtcSetRemoteDescriptionObserverHandler);
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_MEDIA_WEBRTC_WEBRTC_SET_DESCRIPTION_OBSERVER_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_WEBRTC_SET_DESCRIPTION_OBSERVER_H_

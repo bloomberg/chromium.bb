@@ -6,12 +6,11 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
-#include "base/test/task_environment.h"
 #include "base/threading/thread.h"
-#include "content/renderer/media/webrtc/media_stream_track_metrics.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/web/modules/peerconnection/mock_peer_connection_dependency_factory.h"
+#include "third_party/blink/renderer/modules/peerconnection/media_stream_track_metrics.h"
 #include "third_party/webrtc/api/media_stream_interface.h"
 
 using webrtc::AudioSourceInterface;
@@ -20,10 +19,10 @@ using webrtc::AudioTrackSinkInterface;
 using webrtc::MediaStreamInterface;
 using webrtc::ObserverInterface;
 using webrtc::PeerConnectionInterface;
-using webrtc::VideoTrackSourceInterface;
 using webrtc::VideoTrackInterface;
+using webrtc::VideoTrackSourceInterface;
 
-namespace content {
+namespace blink {
 
 // A very simple mock that implements only the id() method.
 class MockAudioTrackInterface : public AudioTrackInterface {
@@ -84,10 +83,7 @@ class MockMediaStreamTrackMetrics : public MediaStreamTrackMetrics {
 
 class MediaStreamTrackMetricsTest : public testing::Test {
  public:
-  MediaStreamTrackMetricsTest()
-      : task_environment_(
-            base::test::SingleThreadTaskEnvironment::MainThreadType::UI),
-        signaling_thread_("signaling_thread") {}
+  MediaStreamTrackMetricsTest() : signaling_thread_("signaling_thread") {}
 
   void SetUp() override {
     metrics_.reset(new MockMediaStreamTrackMetrics());
@@ -151,7 +147,6 @@ class MediaStreamTrackMetricsTest : public testing::Test {
   std::unique_ptr<MockMediaStreamTrackMetrics> metrics_;
   scoped_refptr<MediaStreamInterface> stream_;
 
-  base::test::SingleThreadTaskEnvironment task_environment_;
   base::Thread signaling_thread_;
 };
 
@@ -250,7 +245,7 @@ TEST_F(MediaStreamTrackMetricsTest, BasicLocalStreams) {
 
 TEST_F(MediaStreamTrackMetricsTest, LocalStreamAddedAferIceConnect) {
   metrics_->IceConnectionChange(
-        PeerConnectionInterface::kIceConnectionConnected);
+      PeerConnectionInterface::kIceConnectionConnected);
 
   EXPECT_CALL(*metrics_, SendLifetimeMessage(
                              "audio", MediaStreamTrackMetrics::Kind::kAudio,
@@ -269,7 +264,7 @@ TEST_F(MediaStreamTrackMetricsTest, LocalStreamAddedAferIceConnect) {
 
 TEST_F(MediaStreamTrackMetricsTest, RemoteStreamAddedAferIceConnect) {
   metrics_->IceConnectionChange(
-        PeerConnectionInterface::kIceConnectionConnected);
+      PeerConnectionInterface::kIceConnectionConnected);
 
   EXPECT_CALL(*metrics_, SendLifetimeMessage(
                              "audio", MediaStreamTrackMetrics::Kind::kAudio,
@@ -474,4 +469,4 @@ TEST_F(MediaStreamTrackMetricsTest, LocalStreamLargerTest) {
                         MediaStreamTrackMetrics::Kind::kVideo, "video");
 }
 
-}  // namespace content
+}  // namespace blink

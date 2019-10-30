@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_WEBRTC_RTC_PEER_CONNECTION_HANDLER_H_
-#define CONTENT_RENDERER_MEDIA_WEBRTC_RTC_PEER_CONNECTION_HANDLER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_RTC_PEER_CONNECTION_HANDLER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_RTC_PEER_CONNECTION_HANDLER_H_
 
 #include <stddef.h>
 
@@ -12,14 +12,10 @@
 #include <string>
 #include <vector>
 
-#include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
-#include "base/threading/thread.h"
-#include "content/common/content_export.h"
-#include "content/renderer/media/webrtc/media_stream_track_metrics.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_rtc_peer_connection_handler.h"
 #include "third_party/blink/public/platform/web_rtc_peer_connection_handler_client.h"
@@ -30,25 +26,23 @@
 #include "third_party/blink/public/web/modules/peerconnection/rtc_rtp_sender_impl.h"
 #include "third_party/blink/public/web/modules/peerconnection/transceiver_state_surfacer.h"
 #include "third_party/blink/public/web/modules/peerconnection/webrtc_media_stream_track_adapter_map.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/modules/peerconnection/media_stream_track_metrics.h"
 #include "third_party/webrtc/api/stats/rtc_stats.h"
 #include "third_party/webrtc/api/stats/rtc_stats_collector_callback.h"
 
 namespace blink {
 class PeerConnectionDependencyFactory;
+class PeerConnectionTracker;
+class SetLocalDescriptionRequest;
 class WebLocalFrame;
 class WebRTCAnswerOptions;
 class WebRTCLegacyStats;
 class WebRTCOfferOptions;
 class WebRTCPeerConnectionHandlerClient;
-}  // namespace blink
-
-namespace content {
-
-class PeerConnectionTracker;
-class SetLocalDescriptionRequest;
 
 // Mockable wrapper for blink::WebRTCStatsResponse
-class CONTENT_EXPORT LocalRTCStatsResponse : public rtc::RefCountInterface {
+class MODULES_EXPORT LocalRTCStatsResponse : public rtc::RefCountInterface {
  public:
   explicit LocalRTCStatsResponse(const blink::WebRTCStatsResponse& impl)
       : impl_(impl) {}
@@ -66,7 +60,7 @@ class CONTENT_EXPORT LocalRTCStatsResponse : public rtc::RefCountInterface {
 };
 
 // Mockable wrapper for blink::WebRTCStatsRequest
-class CONTENT_EXPORT LocalRTCStatsRequest : public rtc::RefCountInterface {
+class MODULES_EXPORT LocalRTCStatsRequest : public rtc::RefCountInterface {
  public:
   explicit LocalRTCStatsRequest(blink::WebRTCStatsRequest impl);
   // Constructor for testing.
@@ -90,7 +84,7 @@ class CONTENT_EXPORT LocalRTCStatsRequest : public rtc::RefCountInterface {
 // WebKit calls all of these methods on the main render thread.
 // Callbacks to the webrtc::PeerConnectionObserver implementation also occur on
 // the main render thread.
-class CONTENT_EXPORT RTCPeerConnectionHandler
+class MODULES_EXPORT RTCPeerConnectionHandler
     : public blink::WebRTCPeerConnectionHandler {
  public:
   RTCPeerConnectionHandler(
@@ -99,7 +93,7 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~RTCPeerConnectionHandler() override;
 
-  void associateWithFrame(blink::WebLocalFrame* frame);
+  void AssociateWithFrame(blink::WebLocalFrame* frame) override;
 
   // Initialize method only used for unit test.
   bool InitializeForTest(
@@ -370,11 +364,11 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   // another. In Unified Plan, senders and receivers are created in pairs as
   // transceivers. Transceivers may become inactive, but are never removed.
   // TODO(hbos): Implement transceiver behaviors. https://crbug.com/777617
-  // Content layer correspondents of |webrtc::RtpSenderInterface|.
+  // Blink layer correspondents of |webrtc::RtpSenderInterface|.
   std::vector<std::unique_ptr<blink::RTCRtpSenderImpl>> rtp_senders_;
-  // Content layer correspondents of |webrtc::RtpReceiverInterface|.
+  // Blink layer correspondents of |webrtc::RtpReceiverInterface|.
   std::vector<std::unique_ptr<blink::RTCRtpReceiverImpl>> rtp_receivers_;
-  // Content layer correspondents of |webrtc::RtpTransceiverInterface|.
+  // Blink layer correspondents of |webrtc::RtpTransceiverInterface|.
   std::vector<std::unique_ptr<blink::RTCRtpTransceiverImpl>> rtp_transceivers_;
 
   base::WeakPtr<PeerConnectionTracker> peer_connection_tracker_;
@@ -419,6 +413,6 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   DISALLOW_COPY_AND_ASSIGN(RTCPeerConnectionHandler);
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_MEDIA_WEBRTC_RTC_PEER_CONNECTION_HANDLER_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_RTC_PEER_CONNECTION_HANDLER_H_
