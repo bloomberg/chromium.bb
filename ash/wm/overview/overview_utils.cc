@@ -89,8 +89,7 @@ void FadeInWidgetAndMaybeSlideOnEnter(views::Widget* widget,
 }
 
 void FadeOutWidgetAndMaybeSlideOnExit(std::unique_ptr<views::Widget> widget,
-                                      OverviewAnimationType animation_type,
-                                      bool slide) {
+                                      OverviewAnimationType animation_type) {
   // The overview controller may be nullptr on shutdown.
   OverviewController* controller = Shell::Get()->overview_controller();
   if (!controller) {
@@ -113,7 +112,8 @@ void FadeOutWidgetAndMaybeSlideOnExit(std::unique_ptr<views::Widget> widget,
   controller->AddExitAnimationObserver(std::move(observer));
   widget_ptr->SetOpacity(0.f);
 
-  if (slide) {
+  // Slide |widget| towards to top of screen if exit overview to home launcher.
+  if (animation_type == OVERVIEW_ANIMATION_EXIT_TO_HOME_LAUNCHER) {
     gfx::Transform new_transform = widget_ptr->GetNativeWindow()->transform();
     new_transform.ConcatTransform(GetShiftTransform());
     widget_ptr->GetNativeWindow()->SetTransform(new_transform);

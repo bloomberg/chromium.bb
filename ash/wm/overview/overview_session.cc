@@ -269,8 +269,7 @@ void OverviewSession::Shutdown() {
     // Fade out the no windows widget. This animation continues past the
     // lifetime of |this|.
     FadeOutWidgetAndMaybeSlideOnExit(std::move(no_windows_widget_),
-                                     OVERVIEW_ANIMATION_RESTORE_WINDOW,
-                                     /*slide=*/false);
+                                     OVERVIEW_ANIMATION_RESTORE_WINDOW);
   }
 }
 
