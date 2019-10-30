@@ -13,9 +13,9 @@
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/tablet_mode.h"
-#include "ash/public/cpp/test/shelf_widget_test_api.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
+#include "ash/shelf/home_button.h"
 #include "ash/shelf/overflow_button.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_app_button.h"
@@ -40,8 +40,6 @@
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
-#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
-#include "chrome/browser/chromeos/accessibility/speech_monitor.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
@@ -2210,56 +2208,6 @@ IN_PROC_BROWSER_TEST_F(HotseatShelfAppBrowserTest,
   ExtendHotseat(browser());
   event_generator.GestureTapAt(button_1->GetBoundsInScreen().CenterPoint());
   EXPECT_EQ(ash::HotseatState::kHidden,
-            controller->shelf()->shelf_layout_manager()->hotseat_state());
-}
-
-// Verify that the in-app shelf should be shown when the app icon receives
-// the accessibility focus.
-IN_PROC_BROWSER_TEST_F(HotseatShelfAppBrowserTest, EnableChromeVox) {
-  ash::Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
-  chromeos::SpeechMonitor speech_monitor;
-
-  // Enable ChromeVox.
-  {
-    ASSERT_FALSE(
-        chromeos::AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
-    chromeos::AccessibilityManager::Get()->EnableSpokenFeedback(true);
-    EXPECT_TRUE(speech_monitor.SkipChromeVoxEnabledMessage());
-
-    // Disable earcons (https://crbug.com/396507).
-    const std::string script(
-        "cvox.ChromeVox.earcons.playEarcon = function() {};");
-    extensions::ExtensionHost* host =
-        extensions::ProcessManager::Get(browser()->profile())
-            ->GetBackgroundHostForExtension(
-                extension_misc::kChromeVoxExtensionId);
-    CHECK(content::ExecuteScript(host->host_contents(), script));
-  }
-
-  ash::RootWindowController* controller =
-      ash::Shell::GetRootWindowControllerWithDisplayId(
-          display::Screen::GetScreen()->GetPrimaryDisplay().id());
-
-  // Gesture tap at the home button.
-  views::View* home_button = ash::ShelfWidgetTestApi().GetHomeButton();
-  ui::test::EventGenerator event_generator(controller->GetRootWindow());
-  event_generator.GestureTapAt(home_button->GetBoundsInScreen().CenterPoint());
-
-  ASSERT_EQ("Launcher", speech_monitor.GetNextUtterance());
-  ASSERT_EQ("Button", speech_monitor.GetNextUtterance());
-  ASSERT_EQ("Shelf", speech_monitor.GetNextUtterance());
-  ASSERT_EQ("Tool bar", speech_monitor.GetNextUtterance());
-  ASSERT_EQ(", window", speech_monitor.GetNextUtterance());
-
-  // Verifies that before moving the focus to the app icon, hotseat is hidden.
-  ASSERT_EQ(ash::HotseatState::kHidden,
-            controller->shelf()->shelf_layout_manager()->hotseat_state());
-
-  // Press the search + right. Expects that the chromium icon receives the
-  // accessibility focus and the hotseat is shown.
-  event_generator.PressKey(ui::VKEY_RIGHT, ui::EF_COMMAND_DOWN);
-  EXPECT_EQ("Chromium", speech_monitor.GetNextUtterance());
-  EXPECT_EQ(ash::HotseatState::kShown,
             controller->shelf()->shelf_layout_manager()->hotseat_state());
 }
 
