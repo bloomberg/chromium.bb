@@ -42,7 +42,7 @@ class PermissionPromptAndroidTest : public ChromeRenderViewHostTestHarness {
 
 TEST_F(PermissionPromptAndroidTest, TabCloseMiniInfoBarClosesCleanly) {
   // Create a notification request. This causes an infobar to appear.
-  MockPermissionRequest request("test", CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+  MockPermissionRequest request("test", ContentSettingsType::NOTIFICATIONS);
   permission_request_manager()->AddRequest(&request);
 
   permission_request_manager()->DocumentOnLoadCompletedInMainFrame();

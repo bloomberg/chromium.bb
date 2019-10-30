@@ -88,8 +88,7 @@ void PermissionRequestManager::AddRequest(PermissionRequest* request) {
   }
 
   if (is_notification_prompt_cooldown_active_ &&
-      request->GetContentSettingsType() ==
-          CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
+      request->GetContentSettingsType() == ContentSettingsType::NOTIFICATIONS) {
     // Short-circuit by canceling rather than denying to avoid creating a large
     // number of content setting exceptions on Desktop / disabled notification
     // channels on Android.
@@ -325,7 +324,7 @@ void PermissionRequestManager::Deny() {
           features::kBlockRepeatedNotificationPermissionPrompts) &&
       std::any_of(requests_.begin(), requests_.end(), [](const auto* request) {
         return request->GetContentSettingsType() ==
-               CONTENT_SETTINGS_TYPE_NOTIFICATIONS;
+               ContentSettingsType::NOTIFICATIONS;
       })) {
     is_notification_prompt_cooldown_active_ = true;
   }
@@ -446,7 +445,7 @@ void PermissionRequestManager::FinalizeBubble(
     // TODO(timloh): We only support dismiss and ignore embargo for permissions
     // which use PermissionRequestImpl as the other subclasses don't support
     // GetContentSettingsType.
-    if (request->GetContentSettingsType() == CONTENT_SETTINGS_TYPE_DEFAULT)
+    if (request->GetContentSettingsType() == ContentSettingsType::DEFAULT)
       continue;
 
     PermissionEmbargoStatus embargo_status =

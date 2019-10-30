@@ -20,7 +20,7 @@ MockPermissionRequest::MockPermissionRequest()
                             GURL("http://www.google.com"),
                             PermissionRequestType::PERMISSION_NOTIFICATIONS,
                             PermissionRequestGestureType::UNKNOWN,
-                            CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {}
+                            ContentSettingsType::NOTIFICATIONS) {}
 
 MockPermissionRequest::MockPermissionRequest(const std::string& text)
     : MockPermissionRequest(text,
@@ -29,7 +29,7 @@ MockPermissionRequest::MockPermissionRequest(const std::string& text)
                             GURL("http://www.google.com"),
                             PermissionRequestType::PERMISSION_NOTIFICATIONS,
                             PermissionRequestGestureType::UNKNOWN,
-                            CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {}
+                            ContentSettingsType::NOTIFICATIONS) {}
 
 MockPermissionRequest::MockPermissionRequest(
     const std::string& text,
@@ -41,7 +41,7 @@ MockPermissionRequest::MockPermissionRequest(
                             GURL("http://www.google.com"),
                             request_type,
                             gesture_type,
-                            CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {}
+                            ContentSettingsType::NOTIFICATIONS) {}
 
 MockPermissionRequest::MockPermissionRequest(const std::string& text,
                                              PermissionRequestType request_type,
@@ -52,7 +52,7 @@ MockPermissionRequest::MockPermissionRequest(const std::string& text,
                             url,
                             request_type,
                             PermissionRequestGestureType::UNKNOWN,
-                            CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {}
+                            ContentSettingsType::NOTIFICATIONS) {}
 
 MockPermissionRequest::MockPermissionRequest(const std::string& text,
                                              const std::string& accept_label,
@@ -63,7 +63,7 @@ MockPermissionRequest::MockPermissionRequest(const std::string& text,
                             GURL("http://www.google.com"),
                             PermissionRequestType::PERMISSION_NOTIFICATIONS,
                             PermissionRequestGestureType::UNKNOWN,
-                            CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {}
+                            ContentSettingsType::NOTIFICATIONS) {}
 MockPermissionRequest::MockPermissionRequest(
     const std::string& text,
     ContentSettingsType content_settings_type_)

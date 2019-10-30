@@ -786,8 +786,8 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
 
     const ContentSettingsType content_type =
         ShouldUseJavaScriptSettingForPlugin(info)
-            ? CONTENT_SETTINGS_TYPE_JAVASCRIPT
-            : CONTENT_SETTINGS_TYPE_PLUGINS;
+            ? ContentSettingsType::JAVASCRIPT
+            : ContentSettingsType::PLUGINS;
 
     if ((status == chrome::mojom::PluginStatus::kUnauthorized ||
          status == chrome::mojom::PluginStatus::kBlocked) &&
