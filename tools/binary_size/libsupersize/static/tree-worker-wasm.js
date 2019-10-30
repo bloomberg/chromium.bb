@@ -144,18 +144,19 @@ const fetcher = new DataFetcher('data.size');
 let sizeFileLoaded = false;
 
 async function buildTree(
-    groupBy, includeRegex, excludeRegex, highlightTest, methodCountMode,
-    onProgress) {
+    groupBy, includeRegex, excludeRegex, minSymbolSize, highlightTest,
+    methodCountMode, onProgress) {
   if (!sizeFileLoaded) {
     let sizeBuffer = await fetcher.loadSizeBuffer();
     let heapBuffer = mallocBuffer(sizeBuffer);
     console.log('Passing ' + sizeBuffer.byteLength + ' bytes to WebAssembly');
-    let LoadSizeFile = Module.cwrap(
-      'LoadSizeFile', 'bool', ['number', 'number']);
+    let LoadSizeFile =
+        Module.cwrap('LoadSizeFile', 'bool', ['number', 'number']);
     let start_time = Date.now();
     LoadSizeFile(heapBuffer.byteOffset, sizeBuffer.byteLength);
-    console.log('Loaded size file in ' +
-      (Date.now() - start_time)/1000.0 + ' seconds');
+    console.log(
+        'Loaded size file in ' + (Date.now() - start_time) / 1000.0 +
+        ' seconds');
     Module._free(heapBuffer.byteOffset);
 
     sizeFileLoaded = true;
@@ -189,10 +190,10 @@ async function buildTree(
   }
 
   let BuildTree =
-      Module.cwrap('BuildTree', 'void', ['bool', 'string', 'string']);
+      Module.cwrap('BuildTree', 'void', ['bool', 'string', 'string', 'number']);
   let start_time = Date.now();
-  const groupByComponent = groupBy === "component";
-  BuildTree(groupByComponent, includeRegex, excludeRegex);
+  const groupByComponent = groupBy === 'component';
+  BuildTree(groupByComponent, includeRegex, excludeRegex, minSymbolSize);
   console.log('Constructed tree in ' +
     (Date.now() - start_time)/1000.0 + ' seconds');
 
@@ -217,6 +218,11 @@ function parseOptions(options) {
   const filterGeneratedFiles = params.has('generated_filter');
   const flagToHighlight = _NAMES_TO_FLAGS[params.get('highlight')];
 
+  let minSymbolSize = Number(params.get('min_size'));
+  if (Number.isNaN(minSymbolSize)) {
+    minSymbolSize = 0;
+  }
+
   const includeRegex = params.get('include');
   const excludeRegex = params.get('exclude');
 
@@ -227,6 +233,7 @@ function parseOptions(options) {
     groupBy,
     includeRegex,
     excludeRegex,
+    minSymbolSize,
     highlightTest,
     url,
     methodCountMode
@@ -240,6 +247,7 @@ const actions = {
       groupBy,
       includeRegex,
       excludeRegex,
+      minSymbolSize,
       highlightTest,
       url,
       methodCountMode
@@ -254,8 +262,8 @@ const actions = {
     }
 
     return buildTree(
-        groupBy, includeRegex, excludeRegex, highlightTest, methodCountMode,
-        progress => {
+        groupBy, includeRegex, excludeRegex, minSymbolSize, highlightTest,
+        methodCountMode, progress => {
           // @ts-ignore
           self.postMessage(progress);
         });

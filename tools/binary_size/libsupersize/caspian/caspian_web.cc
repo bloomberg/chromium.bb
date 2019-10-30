@@ -42,8 +42,15 @@ void LoadSizeFile(const char* compressed, size_t size) {
 
 void BuildTree(bool group_by_component,
                const char* include_regex_str,
-               const char* exclude_regex_str) {
+               const char* exclude_regex_str,
+               int minimum_size_bytes) {
   std::vector<std::function<bool(const Symbol&)>> filters;
+
+  if (minimum_size_bytes > 0) {
+    filters.push_back([minimum_size_bytes](const Symbol& sym) -> bool {
+      return sym.size >= minimum_size_bytes;
+    });
+  }
 
   std::unique_ptr<RE2> include_regex;
   if (include_regex_str && *include_regex_str) {
