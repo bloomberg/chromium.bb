@@ -1077,28 +1077,6 @@ bool BrowserAccessibility::HasAction(ax::mojom::Action action_enum) const {
   return GetData().HasAction(action_enum);
 }
 
-bool BrowserAccessibility::HasVisibleCaretOrSelection() const {
-  ui::AXTree::Selection unignored_selection =
-      manager()->ax_tree()->GetUnignoredSelection();
-  int32_t focus_id = unignored_selection.focus_object_id;
-  BrowserAccessibility* focus_object = manager()->GetFromID(focus_id);
-  if (!focus_object)
-    return false;
-
-  // Selection or caret will be visible in a focused editable area.
-  if (HasState(ax::mojom::State::kEditable)) {
-    return IsPlainTextField() ? focus_object == this
-                              : focus_object->IsDescendantOf(this);
-  }
-
-  // The selection will be visible in non-editable content only if it is not
-  // collapsed into a caret.
-  return (focus_id != unignored_selection.anchor_object_id ||
-          unignored_selection.focus_offset !=
-              unignored_selection.anchor_offset) &&
-         focus_object->IsDescendantOf(this);
-}
-
 bool BrowserAccessibility::IsWebAreaForPresentationalIframe() const {
   if (GetRole() != ax::mojom::Role::kWebArea &&
       GetRole() != ax::mojom::Role::kRootWebArea) {
@@ -1294,6 +1272,28 @@ bool BrowserAccessibility::IsMinimized() const {
 
 bool BrowserAccessibility::IsWebContent() const {
   return true;
+}
+
+bool BrowserAccessibility::HasVisibleCaretOrSelection() const {
+  ui::AXTree::Selection unignored_selection =
+      manager()->ax_tree()->GetUnignoredSelection();
+  int32_t focus_id = unignored_selection.focus_object_id;
+  BrowserAccessibility* focus_object = manager()->GetFromID(focus_id);
+  if (!focus_object)
+    return false;
+
+  // Selection or caret will be visible in a focused editable area.
+  if (HasState(ax::mojom::State::kEditable)) {
+    return IsPlainTextField() ? focus_object == this
+                              : focus_object->IsDescendantOf(this);
+  }
+
+  // The selection will be visible in non-editable content only if it is not
+  // collapsed into a caret.
+  return (focus_id != unignored_selection.anchor_object_id ||
+          unignored_selection.focus_offset !=
+              unignored_selection.anchor_offset) &&
+         focus_object->IsDescendantOf(this);
 }
 
 std::set<ui::AXPlatformNode*> BrowserAccessibility::GetNodesForNodeIdSet(
