@@ -16,7 +16,6 @@ from chromite.cbuildbot import repository
 from chromite.cbuildbot.stages import config_stages
 from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.cbuildbot.stages import test_stages
-from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import git
 from chromite.lib import gs
@@ -107,12 +106,8 @@ class UpdateConfigStageTest(generic_stages_unittest.AbstractStageTestCase):
     self.PatchObject(cros_build_lib, 'run')
 
     self.project = 'chromite'
-    self.chromite_dir = config_stages.GetProjectRepoDir('chromite',
-                                                        constants.CHROMITE_URL)
+    self.chromite_dir = os.path.join(self.tempdir, self.project)
     self.buildstore = FakeBuildStore()
-
-  def tearDown(self):
-    osutils.RmDir(self.chromite_dir, ignore_missing=True)
 
   # pylint: disable=arguments-differ
   def ConstructStage(self, template, new_config=True):
