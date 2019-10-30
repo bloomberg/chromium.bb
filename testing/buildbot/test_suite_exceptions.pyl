@@ -94,6 +94,17 @@
           'shards': 21,
         },
       },
+      'mac-code-coverage': {
+        # A subset of tests seem to cause WindowServer deaths on VMs.
+        # crbug.com/828031 et al.
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/mac_window_server_killers.browser_tests.filter',
+          '--gtest_shuffle',
+        ],
+        'swarming': {
+          'shards': 15,
+        },
+      },
       'linux-chromeos-google-rel': {
         # TODO(https://crbug.com/932269): Promote out of experiment when the
         # tests are green.

@@ -25398,6 +25398,10 @@
         "test": "boringssl_ssl_tests"
       },
       {
+        "args": [
+          "--test-launcher-filter-file=../../testing/buildbot/filters/mac_window_server_killers.browser_tests.filter",
+          "--gtest_shuffle"
+        ],
         "isolate_coverage_data": true,
         "merge": {
           "args": [],
@@ -25411,7 +25415,7 @@
               "os": "Mac-10.13.6"
             }
           ],
-          "shards": 10
+          "shards": 15
         },
         "test": "browser_tests"
       },
