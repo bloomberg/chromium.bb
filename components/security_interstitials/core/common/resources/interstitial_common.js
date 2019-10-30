@@ -119,7 +119,8 @@ function preventDefaultOnPoundLinkClicks() {
       return el.tagName == 'A';
     });
     // Use getAttribute() to prevent URL normalization.
-    if (anchor && anchor.getAttribute('href') == '#')
+    if (anchor && anchor.getAttribute('href') == '#') {
       e.preventDefault();
+    }
   });
 }
