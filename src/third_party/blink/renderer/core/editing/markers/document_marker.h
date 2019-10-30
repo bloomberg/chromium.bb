@@ -46,6 +46,7 @@ class CORE_EXPORT DocumentMarker
     kCompositionMarkerIndex,
     kActiveSuggestionMarkerIndex,
     kSuggestionMarkerIndex,
+    kHighlightMarkerIndex,
     kMarkerTypeIndexesCount
   };
 
@@ -56,6 +57,7 @@ class CORE_EXPORT DocumentMarker
     kComposition = 1 << kCompositionMarkerIndex,
     kActiveSuggestion = 1 << kActiveSuggestionMarkerIndex,
     kSuggestion = 1 << kSuggestionMarkerIndex,
+    kHighlight = 1 << kHighlightMarkerIndex
   };
 
   class MarkerTypesIterator
