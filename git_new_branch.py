@@ -61,8 +61,8 @@ def main(args):
         run('checkout', '--track', opts.upstream, '-b', opts.branch_name)
     get_or_create_merge_base(opts.branch_name)
   except subprocess2.CalledProcessError as cpe:
-    sys.stdout.write(cpe.stdout)
-    sys.stderr.write(cpe.stderr)
+    sys.stdout.write(cpe.stdout.decode('utf-8', 'replace'))
+    sys.stderr.write(cpe.stderr.decode('utf-8', 'replace'))
     return 1
   sys.stderr.write('Switched to branch %s.\n' % opts.branch_name)
   return 0

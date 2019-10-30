@@ -42,7 +42,7 @@ def main(args):
         if branch_config(branch, 'remote') == '.':
           set_branch_config(branch, 'merge', 'refs/heads/' + opts.new_name)
   except subprocess2.CalledProcessError as cpe:
-    sys.stderr.write(cpe.stderr)
+    sys.stderr.write(cpe.stderr.decode('utf-8', 'replace'))
     return 1
   return 0
 
