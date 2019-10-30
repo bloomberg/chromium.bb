@@ -291,38 +291,6 @@ public class PrefServiceBridge {
         return PrefServiceBridgeJni.get().getBlockThirdPartyCookiesManaged(PrefServiceBridge.this);
     }
 
-    public boolean isRememberPasswordsEnabled() {
-        return PrefServiceBridgeJni.get().getRememberPasswordsEnabled(PrefServiceBridge.this);
-    }
-
-    public boolean isPasswordManagerAutoSigninEnabled() {
-        return PrefServiceBridgeJni.get().getPasswordManagerAutoSigninEnabled(
-                PrefServiceBridge.this);
-    }
-
-    public boolean isPasswordLeakDetectionEnabled() {
-        return PrefServiceBridgeJni.get().getPasswordLeakDetectionEnabled(PrefServiceBridge.this);
-    }
-
-    /**
-     * @return Whether password storage is configured by policy
-     */
-    public boolean isRememberPasswordsManaged() {
-        return PrefServiceBridgeJni.get().getRememberPasswordsManaged(PrefServiceBridge.this);
-    }
-
-    public boolean isPasswordManagerAutoSigninManaged() {
-        return PrefServiceBridgeJni.get().getPasswordManagerAutoSigninManaged(
-                PrefServiceBridge.this);
-    }
-
-    /**
-     * @return Whether leak detection is enabled/disabled by policy
-     */
-    public boolean isPasswordLeakDetectionManaged() {
-        return PrefServiceBridgeJni.get().getPasswordLeakDetectionManaged(PrefServiceBridge.this);
-    }
-
     /**
      * @return Whether vibration is enabled for notifications.
      */
@@ -613,19 +581,6 @@ public class PrefServiceBridge {
 
     public void setDoNotTrackEnabled(boolean enabled) {
         PrefServiceBridgeJni.get().setDoNotTrackEnabled(PrefServiceBridge.this, enabled);
-    }
-
-    public void setRememberPasswordsEnabled(boolean allow) {
-        PrefServiceBridgeJni.get().setRememberPasswordsEnabled(PrefServiceBridge.this, allow);
-    }
-
-    public void setPasswordManagerAutoSigninEnabled(boolean enabled) {
-        PrefServiceBridgeJni.get().setPasswordManagerAutoSigninEnabled(
-                PrefServiceBridge.this, enabled);
-    }
-
-    public void setPasswordLeakDetectionEnabled(boolean enabled) {
-        PrefServiceBridgeJni.get().setPasswordLeakDetectionEnabled(PrefServiceBridge.this, enabled);
     }
 
     public void setNotificationsVibrateEnabled(boolean enabled) {
@@ -1063,12 +1018,6 @@ public class PrefServiceBridge {
         boolean getBackgroundSyncEnabled(PrefServiceBridge caller);
         boolean getBlockThirdPartyCookiesEnabled(PrefServiceBridge caller);
         boolean getBlockThirdPartyCookiesManaged(PrefServiceBridge caller);
-        boolean getRememberPasswordsEnabled(PrefServiceBridge caller);
-        boolean getPasswordManagerAutoSigninEnabled(PrefServiceBridge caller);
-        boolean getPasswordLeakDetectionEnabled(PrefServiceBridge caller);
-        boolean getRememberPasswordsManaged(PrefServiceBridge caller);
-        boolean getPasswordManagerAutoSigninManaged(PrefServiceBridge caller);
-        boolean getPasswordLeakDetectionManaged(PrefServiceBridge caller);
         boolean getAllowLocationUserModifiable(PrefServiceBridge caller);
         boolean getLocationAllowedByPolicy(PrefServiceBridge caller);
         boolean getAllowLocationManagedByCustodian(PrefServiceBridge caller);
@@ -1111,9 +1060,6 @@ public class PrefServiceBridge {
         void setBlockThirdPartyCookiesEnabled(PrefServiceBridge caller, boolean enabled);
         void setClipboardEnabled(PrefServiceBridge caller, boolean enabled);
         void setDoNotTrackEnabled(PrefServiceBridge caller, boolean enabled);
-        void setRememberPasswordsEnabled(PrefServiceBridge caller, boolean allow);
-        void setPasswordManagerAutoSigninEnabled(PrefServiceBridge caller, boolean enabled);
-        void setPasswordLeakDetectionEnabled(PrefServiceBridge caller, boolean enabled);
         boolean getAllowLocationEnabled(PrefServiceBridge caller);
         boolean getNotificationsEnabled(PrefServiceBridge caller);
         boolean getNotificationsVibrateEnabled(PrefServiceBridge caller);

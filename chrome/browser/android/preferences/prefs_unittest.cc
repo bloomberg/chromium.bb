@@ -67,6 +67,12 @@ TEST_F(PrefsTest, TestIndex) {
   EXPECT_EQ(password_manager::prefs::kPasswordManagerOnboardingState,
             GetPrefName(PASSWORD_MANAGER_ONBOARDING_STATE));
   EXPECT_EQ(prefs::kSearchSuggestEnabled, GetPrefName(SEARCH_SUGGEST_ENABLED));
+  EXPECT_EQ(password_manager::prefs::kCredentialsEnableService,
+            GetPrefName(REMEMBER_PASSWORDS_ENABLED));
+  EXPECT_EQ(password_manager::prefs::kCredentialsEnableAutosignin,
+            GetPrefName(PASSWORD_MANAGER_AUTO_SIGNIN_ENABLED));
+  EXPECT_EQ(password_manager::prefs::kPasswordLeakDetectionEnabled,
+            GetPrefName(PASSWORD_MANAGER_LEAK_DETECTION_ENABLED));
 
   // If this check fails, a pref is missing a test case above.
   EXPECT_EQ(Pref::PREF_NUM_PREFS, pref_count_);

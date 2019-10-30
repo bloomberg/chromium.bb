@@ -364,48 +364,6 @@ static jboolean JNI_PrefServiceBridge_GetBlockThirdPartyCookiesManaged(
   return GetPrefService()->IsManagedPreference(prefs::kBlockThirdPartyCookies);
 }
 
-static jboolean JNI_PrefServiceBridge_GetRememberPasswordsEnabled(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  return GetPrefService()->GetBoolean(
-      password_manager::prefs::kCredentialsEnableService);
-}
-
-static jboolean JNI_PrefServiceBridge_GetPasswordManagerAutoSigninEnabled(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  return GetPrefService()->GetBoolean(
-      password_manager::prefs::kCredentialsEnableAutosignin);
-}
-
-static jboolean JNI_PrefServiceBridge_GetPasswordLeakDetectionEnabled(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  return GetPrefService()->GetBoolean(
-      password_manager::prefs::kPasswordLeakDetectionEnabled);
-}
-
-static jboolean JNI_PrefServiceBridge_GetRememberPasswordsManaged(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  return GetPrefService()->IsManagedPreference(
-      password_manager::prefs::kCredentialsEnableService);
-}
-
-static jboolean JNI_PrefServiceBridge_GetPasswordManagerAutoSigninManaged(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  return GetPrefService()->IsManagedPreference(
-      password_manager::prefs::kCredentialsEnableAutosignin);
-}
-
-static jboolean JNI_PrefServiceBridge_GetPasswordLeakDetectionManaged(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  return GetPrefService()->IsManagedPreference(
-      password_manager::prefs::kPasswordLeakDetectionEnabled);
-}
-
 static jboolean JNI_PrefServiceBridge_GetDoNotTrackEnabled(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
@@ -809,30 +767,6 @@ static void JNI_PrefServiceBridge_SetBlockThirdPartyCookiesEnabled(
     const JavaParamRef<jobject>& obj,
     jboolean enabled) {
   GetPrefService()->SetBoolean(prefs::kBlockThirdPartyCookies, enabled);
-}
-
-static void JNI_PrefServiceBridge_SetRememberPasswordsEnabled(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    jboolean allow) {
-  GetPrefService()->SetBoolean(
-      password_manager::prefs::kCredentialsEnableService, allow);
-}
-
-static void JNI_PrefServiceBridge_SetPasswordManagerAutoSigninEnabled(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    jboolean enabled) {
-  GetPrefService()->SetBoolean(
-      password_manager::prefs::kCredentialsEnableAutosignin, enabled);
-}
-
-static void JNI_PrefServiceBridge_SetPasswordLeakDetectionEnabled(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    jboolean enabled) {
-  GetPrefService()->SetBoolean(
-      password_manager::prefs::kPasswordLeakDetectionEnabled, enabled);
 }
 
 static void JNI_PrefServiceBridge_SetAllowLocationEnabled(
