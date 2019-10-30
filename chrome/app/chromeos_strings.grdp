@@ -3134,6 +3134,9 @@
   <message name="IDS_ASSISTANT_LOGO" desc="Logo label for voice interaction.">
     Google assistant logo
   </message>
+  <message name="IDS_ASSISTANT_OOBE_USER_IMAGE" desc="Image label for the user image.">
+    User image
+  </message>
   <message name="IDS_ASSISTANT_SCREEN_CONTEXT_TITLE" desc="Title for assistant screen context optin. This is also used as the title for a toggle that lets the assistant use whats on the screen in Assistant settings page.">
     Related info
   </message>
