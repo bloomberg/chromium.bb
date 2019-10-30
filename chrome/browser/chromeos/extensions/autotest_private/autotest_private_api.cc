@@ -119,6 +119,7 @@
 #include "extensions/common/permissions/permissions_data.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/filename_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
@@ -1929,7 +1930,8 @@ class AssistantInteractionHelper
 
   void Init(OnInteractionFinishedCallback on_interaction_finished_callback) {
     // Bind to Assistant service interface.
-    AssistantClient::Get()->BindAssistant(mojo::MakeRequest(&assistant_));
+    AssistantClient::Get()->BindAssistant(
+        assistant_.BindNewPipeAndPassReceiver());
 
     // Subscribe to Assistant interaction events.
     assistant_->AddAssistantInteractionSubscriber(
@@ -2018,7 +2020,7 @@ class AssistantInteractionHelper
   void OnTtsStarted(bool due_to_error) override {}
   void OnWaitStarted() override {}
 
-  chromeos::assistant::mojom::AssistantPtr assistant_;
+  mojo::Remote<chromeos::assistant::mojom::Assistant> assistant_;
   mojo::Receiver<chromeos::assistant::mojom::AssistantInteractionSubscriber>
       assistant_interaction_subscriber_receiver_{this};
   std::unique_ptr<base::DictionaryValue> query_status_;
