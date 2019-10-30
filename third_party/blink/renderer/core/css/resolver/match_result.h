@@ -46,7 +46,7 @@ struct CORE_EXPORT MatchedProperties {
 
   Member<CSSPropertyValueSet> properties;
 
-  struct Data {
+  struct {
     unsigned link_match_type : 2;
     unsigned valid_property_filter : 2;
     // This is approximately equivalent to the 'shadow-including tree order'.
@@ -61,8 +61,7 @@ struct CORE_EXPORT MatchedProperties {
     //
     // https://drafts.csswg.org/css-scoping/#shadow-cascading
     uint16_t tree_order;
-  };
-  Data types_;
+  } types_;
 };
 
 }  // namespace blink
