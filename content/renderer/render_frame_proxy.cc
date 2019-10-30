@@ -416,7 +416,6 @@ bool RenderFrameProxy::OnMessageReceived(const IPC::Message& msg) {
                         OnEnforceInsecureRequestPolicy)
     IPC_MESSAGE_HANDLER(FrameMsg_SetFrameOwnerProperties,
                         OnSetFrameOwnerProperties)
-    IPC_MESSAGE_HANDLER(FrameMsg_DidUpdateOrigin, OnDidUpdateOrigin)
     IPC_MESSAGE_HANDLER(InputMsg_SetFocus, OnSetPageFocus)
     IPC_MESSAGE_HANDLER(FrameMsg_DidUpdateVisualProperties,
                         OnDidUpdateVisualProperties)
@@ -537,13 +536,6 @@ void RenderFrameProxy::OnSetFrameOwnerProperties(
     const FrameOwnerProperties& properties) {
   web_frame_->SetFrameOwnerProperties(
       ConvertFrameOwnerPropertiesToWebFrameOwnerProperties(properties));
-}
-
-void RenderFrameProxy::OnDidUpdateOrigin(
-    const url::Origin& origin,
-    bool is_potentially_trustworthy_unique_origin) {
-  web_frame_->SetReplicatedOrigin(origin,
-                                  is_potentially_trustworthy_unique_origin);
 }
 
 void RenderFrameProxy::OnSetPageFocus(bool is_focused) {

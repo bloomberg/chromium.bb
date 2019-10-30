@@ -250,8 +250,6 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
       const std::vector<ContentSecurityPolicyHeader>& header);
   void OnEnforceInsecureRequestPolicy(blink::WebInsecureRequestPolicy policy);
   void OnSetFrameOwnerProperties(const FrameOwnerProperties& properties);
-  void OnDidUpdateOrigin(const url::Origin& origin,
-                         bool is_potentially_trustworthy_unique_origin);
   void OnSetPageFocus(bool is_focused);
   void OnSetFocusedFrame();
   void OnWillEnterFullscreen();

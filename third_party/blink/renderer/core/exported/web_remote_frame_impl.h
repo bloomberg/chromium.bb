@@ -123,7 +123,6 @@ class CORE_EXPORT WebRemoteFrameImpl final
   friend class RemoteFrameClientImpl;
 
   void SetCoreFrame(RemoteFrame*);
-  void ApplyReplicatedFeaturePolicyHeader();
 
   // Inherited from WebFrame, but intentionally hidden: it never makes sense
   // to call these on a WebRemoteFrameImpl.
@@ -136,8 +135,6 @@ class CORE_EXPORT WebRemoteFrameImpl final
   // TODO(dcheng): Inline this field directly rather than going through Member.
   Member<RemoteFrameClientImpl> frame_client_;
   Member<RemoteFrame> frame_;
-
-  ParsedFeaturePolicy feature_policy_header_;
 
   InterfaceRegistry* const interface_registry_;
 

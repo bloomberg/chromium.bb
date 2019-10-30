@@ -118,4 +118,9 @@ interface RemoteFrame {
   // is a hashed set of host/port pairs. See
   // SecurityContext::SetInsecureNavigationsSet.
   EnforceInsecureNavigationsSet(array<uint32> set);
+
+  // Update the replicated origin. Used when the frame is navigated to a
+  // new origin.
+  SetReplicatedOrigin(url.mojom.Origin origin,
+    bool is_potentially_trustworthy_unique_origin);
 };

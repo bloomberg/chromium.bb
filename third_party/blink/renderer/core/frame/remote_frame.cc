@@ -231,6 +231,19 @@ void RemoteFrame::DidChangeVisibleToHitTesting() {
       IsIgnoredForHitTest());
 }
 
+void RemoteFrame::SetReplicatedFeaturePolicyHeaderAndOpenerPolicies(
+    const ParsedFeaturePolicy& parsed_header,
+    const FeaturePolicy::FeatureState& opener_feature_state) {
+  feature_policy_header_ = parsed_header;
+  if (RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled()) {
+    DCHECK(opener_feature_state.empty() || IsMainFrame());
+    if (OpenerFeatureState().empty()) {
+      SetOpenerFeatureState(opener_feature_state);
+    }
+  }
+  ApplyReplicatedFeaturePolicyHeader();
+}
+
 void RemoteFrame::WillEnterFullscreen() {
   // This should only ever be called when the FrameOwner is local.
   HTMLFrameOwnerElement* owner_element = To<HTMLFrameOwnerElement>(Owner());
@@ -259,6 +272,30 @@ void RemoteFrame::ResetReplicatedContentSecurityPolicy() {
 void RemoteFrame::EnforceInsecureNavigationsSet(
     const WTF::Vector<uint32_t>& set) {
   GetSecurityContext()->SetInsecureNavigationsSet(set);
+}
+
+void RemoteFrame::SetReplicatedOrigin(
+    const scoped_refptr<const SecurityOrigin>& origin,
+    bool is_potentially_trustworthy_unique_origin) {
+  scoped_refptr<SecurityOrigin> security_origin = origin->IsolatedCopy();
+  security_origin->SetOpaqueOriginIsPotentiallyTrustworthy(
+      is_potentially_trustworthy_unique_origin);
+  GetSecurityContext()->SetReplicatedOrigin(security_origin);
+  ApplyReplicatedFeaturePolicyHeader();
+
+  // If the origin of a remote frame changed, the accessibility object for the
+  // owner element now points to a different child.
+  //
+  // TODO(dmazzoni, dcheng): there's probably a better way to solve this.
+  // Run SitePerProcessAccessibilityBrowserTest.TwoCrossSiteNavigations to
+  // ensure an alternate fix works.  http://crbug.com/566222
+  FrameOwner* owner = Owner();
+  HTMLElement* owner_element = DynamicTo<HTMLFrameOwnerElement>(owner);
+  if (owner_element) {
+    AXObjectCache* cache = owner_element->GetDocument().ExistingAXObjectCache();
+    if (cache)
+      cache->ChildrenChanged(owner_element);
+  }
 }
 
 bool RemoteFrame::IsIgnoredForHitTest() const {
@@ -304,6 +341,22 @@ void RemoteFrame::DetachChildren() {
     children_to_detach.push_back(child);
   for (const auto& child : children_to_detach)
     child->Detach(FrameDetachType::kRemove);
+}
+
+void RemoteFrame::ApplyReplicatedFeaturePolicyHeader() {
+  const FeaturePolicy* parent_feature_policy = nullptr;
+  if (Frame* parent_frame = Client()->Parent()) {
+    parent_feature_policy =
+        parent_frame->GetSecurityContext()->GetFeaturePolicy();
+  }
+  ParsedFeaturePolicy container_policy;
+  if (Owner())
+    container_policy = Owner()->GetFramePolicy().container_policy;
+  const FeaturePolicy::FeatureState& opener_feature_state =
+      OpenerFeatureState();
+  GetSecurityContext()->InitializeFeaturePolicy(
+      feature_policy_header_, container_policy, parent_feature_policy,
+      opener_feature_state.empty() ? nullptr : &opener_feature_state);
 }
 
 void RemoteFrame::BindToReceiver(

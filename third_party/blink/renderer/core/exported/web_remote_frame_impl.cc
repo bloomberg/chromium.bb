@@ -256,25 +256,8 @@ void WebRemoteFrameImpl::SetReplicatedOrigin(
     const WebSecurityOrigin& origin,
     bool is_potentially_trustworthy_opaque_origin) {
   DCHECK(GetFrame());
-  scoped_refptr<SecurityOrigin> security_origin = origin.Get()->IsolatedCopy();
-  security_origin->SetOpaqueOriginIsPotentiallyTrustworthy(
-      is_potentially_trustworthy_opaque_origin);
-  GetFrame()->GetSecurityContext()->SetReplicatedOrigin(security_origin);
-  ApplyReplicatedFeaturePolicyHeader();
-
-  // If the origin of a remote frame changed, the accessibility object for the
-  // owner element now points to a different child.
-  //
-  // TODO(dmazzoni, dcheng): there's probably a better way to solve this.
-  // Run SitePerProcessAccessibilityBrowserTest.TwoCrossSiteNavigations to
-  // ensure an alternate fix works.  http://crbug.com/566222
-  FrameOwner* owner = GetFrame()->Owner();
-  HTMLElement* owner_element = DynamicTo<HTMLFrameOwnerElement>(owner);
-  if (owner_element) {
-    AXObjectCache* cache = owner_element->GetDocument().ExistingAXObjectCache();
-    if (cache)
-      cache->ChildrenChanged(owner_element);
-  }
+  GetFrame()->SetReplicatedOrigin(origin,
+                                  is_potentially_trustworthy_opaque_origin);
 }
 
 void WebRemoteFrameImpl::SetReplicatedSandboxFlags(WebSandboxFlags flags) {
@@ -291,31 +274,9 @@ void WebRemoteFrameImpl::SetReplicatedName(const WebString& name) {
 void WebRemoteFrameImpl::SetReplicatedFeaturePolicyHeaderAndOpenerPolicies(
     const ParsedFeaturePolicy& parsed_header,
     const FeaturePolicy::FeatureState& opener_feature_state) {
-  feature_policy_header_ = parsed_header;
-  if (RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled()) {
-    DCHECK(opener_feature_state.empty() || frame_->IsMainFrame());
-    if (frame_->OpenerFeatureState().empty()) {
-      frame_->SetOpenerFeatureState(opener_feature_state);
-    }
-  }
-  ApplyReplicatedFeaturePolicyHeader();
-}
-
-void WebRemoteFrameImpl::ApplyReplicatedFeaturePolicyHeader() {
-  const FeaturePolicy* parent_feature_policy = nullptr;
-  if (Parent()) {
-    Frame* parent_frame = GetFrame()->Client()->Parent();
-    parent_feature_policy =
-        parent_frame->GetSecurityContext()->GetFeaturePolicy();
-  }
-  ParsedFeaturePolicy container_policy;
-  if (GetFrame()->Owner())
-    container_policy = GetFrame()->Owner()->GetFramePolicy().container_policy;
-  const FeaturePolicy::FeatureState& opener_feature_state =
-      frame_->OpenerFeatureState();
-  GetFrame()->GetSecurityContext()->InitializeFeaturePolicy(
-      feature_policy_header_, container_policy, parent_feature_policy,
-      opener_feature_state.empty() ? nullptr : &opener_feature_state);
+  DCHECK(GetFrame());
+  GetFrame()->SetReplicatedFeaturePolicyHeaderAndOpenerPolicies(
+      parsed_header, opener_feature_state);
 }
 
 void WebRemoteFrameImpl::AddReplicatedContentSecurityPolicyHeader(
