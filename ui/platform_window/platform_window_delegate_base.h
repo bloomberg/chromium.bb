@@ -5,7 +5,6 @@
 #ifndef UI_PLATFORM_WINDOW_PLATFORM_WINDOW_DELEGATE_BASE_H_
 #define UI_PLATFORM_WINDOW_PLATFORM_WINDOW_DELEGATE_BASE_H_
 
-#include "base/component_export.h"
 #include "base/optional.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -29,7 +28,7 @@ enum class PlatformWindowState {
 // This is the bare minimum for PlatformWindowDeelegate, but some platforms may
 // require more, and should do so in a subclass. Please refer to
 // PlatformWindowDelegateLinux for an example.
-class COMPONENT_EXPORT(PLATFORM_WINDOW) PlatformWindowDelegateBase {
+class PlatformWindowDelegateBase {
  public:
   PlatformWindowDelegateBase();
   virtual ~PlatformWindowDelegateBase();

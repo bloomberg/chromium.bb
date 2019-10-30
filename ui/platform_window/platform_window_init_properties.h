@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/component_export.h"
 #include "base/optional.h"
 #include "build/build_config.h"
 #include "ui/gfx/geometry/rect.h"
@@ -41,7 +40,7 @@ enum class PlatformWindowOpacity {
 
 // Initial properties which are passed to PlatformWindow to be initialized
 // with a desired set of properties.
-struct COMPONENT_EXPORT(PLATFORM_WINDOW) PlatformWindowInitProperties {
+struct PlatformWindowInitProperties {
   PlatformWindowInitProperties();
 
   // Initializes properties with the specified |bounds|.

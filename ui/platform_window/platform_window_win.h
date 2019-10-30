@@ -5,14 +5,12 @@
 #ifndef UI_PLATFORM_WINDOW_PLATFORM_WINDOW_WIN_H_
 #define UI_PLATFORM_WINDOW_PLATFORM_WINDOW_WIN_H_
 
-#include "base/component_export.h"
 #include "ui/platform_window/platform_window_base.h"
 
 namespace ui {
 
 // Windows extensions to the PlatformWindowBase.
-class COMPONENT_EXPORT(PLATFORM_WINDOW) PlatformWindowWin
-    : public PlatformWindowBase {
+class PlatformWindowWin : public PlatformWindowBase {
  public:
   PlatformWindowWin() = default;
   ~PlatformWindowWin() override = default;
