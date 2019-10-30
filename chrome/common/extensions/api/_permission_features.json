@@ -617,6 +617,11 @@
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app"]
   },
+  "printing": {
+    "channel": "dev",
+    "platforms": ["chromeos"],
+    "extension_types": ["extension"]
+  },
   "printingMetrics": {
     "channel": "stable",
     "platforms": ["chromeos"],

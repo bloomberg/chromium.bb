@@ -19691,6 +19691,7 @@ Called by update_net_error_codes.py.-->
   <int value="442" label="PRINTING_METRICS_ON_PRINT_JOB_FINISHED"/>
   <int value="443" label="AUTOTESTPRIVATE_ON_CLIPBOARD_DATA_CHANGED"/>
   <int value="444" label="AUTOFILL_PRIVATE_ON_PERSONAL_DATA_CHANGED"/>
+  <int value="445" label="PRINTING_ON_JOB_STATUS_CHANGED"/>
 </enum>
 
 <enum name="ExtensionFileWriteResult">
@@ -21700,6 +21701,7 @@ Called by update_net_error_codes.py.-->
   <int value="221" label="kLoginScreenStorage"/>
   <int value="222" label="kLoginState"/>
   <int value="223" label="kPrintingMetrics"/>
+  <int value="224" label="kPrinting"/>
 </enum>
 
 <enum name="ExtensionServiceVerifyAllSuccess">
