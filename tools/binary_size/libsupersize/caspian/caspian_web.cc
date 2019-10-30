@@ -48,7 +48,7 @@ void BuildTree(bool group_by_component,
 
   if (minimum_size_bytes > 0) {
     filters.push_back([minimum_size_bytes](const Symbol& sym) -> bool {
-      return sym.size >= minimum_size_bytes;
+      return sym.pss() >= minimum_size_bytes;
     });
   }
 
