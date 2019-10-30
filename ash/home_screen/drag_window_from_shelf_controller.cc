@@ -29,6 +29,7 @@
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/screen.h"
+#include "ui/gfx/transform_util.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
 namespace ash {
@@ -451,6 +452,22 @@ void DragWindowFromShelfController::UpdateDraggedWindow(
       (location_in_screen.y() - bounds.y()) -
           (initial_location_in_screen_.y() - bounds.y()) * scale);
   transform.Scale(scale, scale);
+
+  // The dragged window cannot exceed the top of the display. So calculate the
+  // expected transformed bounds and then adjust the transform if needed.
+  gfx::RectF transformed_bounds(window_->bounds());
+  gfx::Transform new_tranform = TransformAboutPivot(
+      gfx::ToRoundedPoint(transformed_bounds.origin()), transform);
+  new_tranform.TransformRect(&transformed_bounds);
+  ::wm::TranslateRectToScreen(window_->parent(), &transformed_bounds);
+  const gfx::Rect display_bounds =
+      display::Screen::GetScreen()
+          ->GetDisplayNearestPoint(location_in_screen)
+          .bounds();
+  if (transformed_bounds.y() < display_bounds.y()) {
+    transform.Translate(0,
+                        (display_bounds.y() - transformed_bounds.y()) / scale);
+  }
 
   SetTransform(window_, transform);
 }
