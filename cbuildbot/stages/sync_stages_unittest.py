@@ -1600,14 +1600,14 @@ pre-cq-configs: grunt-pre-cq
 class MasterSlaveLKGMSyncTest(generic_stages_unittest.StageTestCase):
   """Unit tests for MasterSlaveLKGMSyncStage"""
 
-  BOT_ID = constants.MST_ANDROID_PFQ_MASTER
+  BOT_ID = constants.PFQ_MASTER
 
   def setUp(self):
     """Setup"""
     self.source_repo = 'ssh://source/repo'
     self.manifest_version_url = 'fake manifest url'
     self.branch = 'master'
-    self.build_name = 'master-mst-android-pfq'
+    self.build_name = 'master-chromium-pfq'
     self.incr_type = 'branch'
     self.next_version = 'next_version'
     self.sync_stage = None
@@ -1624,7 +1624,7 @@ class MasterSlaveLKGMSyncTest(generic_stages_unittest.StageTestCase):
         source_repo=self.repo,
         manifest_repo=self.manifest_version_url,
         build_names=[self.build_name],
-        build_type=constants.ANDROID_PFQ_TYPE,
+        build_type=constants.CHROME_PFQ_TYPE,
         incr_type=self.incr_type,
         force=False,
         branch=self.branch,
@@ -1655,12 +1655,12 @@ class MasterSlaveLKGMSyncTest(generic_stages_unittest.StageTestCase):
     id1 = self.buildstore.InsertBuild(
         builder_name='test_builder',
         build_number=666,
-        build_config='master-mst-android-pfq',
+        build_config='master-chromium-pfq',
         bot_hostname='test_hostname')
     id2 = self.buildstore.InsertBuild(
         builder_name='test_builder',
         build_number=667,
-        build_config='master-mst-android-pfq',
+        build_config='master-chromium-pfq',
         bot_hostname='test_hostname')
     metadata_1 = metadata_lib.CBuildbotMetadata()
     metadata_1.UpdateWithDict({'version': {'full': 'R42-7140.0.0-rc1'}})

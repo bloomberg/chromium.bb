@@ -825,7 +825,7 @@ class MasterCommitQueueCompletionStageTest(BaseCommitQueueCompletionStageTest):
 class PublishUprevChangesStageTest(
     generic_stages_unittest.AbstractStageTestCase):
   """Tests for the PublishUprevChanges stage."""
-  BOT_ID = 'master-mst-android-pfq'
+  BOT_ID = 'master-chromium-pfq'
 
   def setUp(self):
     self.PatchObject(completion_stages.PublishUprevChangesStage,
@@ -853,6 +853,19 @@ class PublishUprevChangesStageTest(
     sync_stage.pool = mock.MagicMock()
     return completion_stages.PublishUprevChangesStage(
         self._run, self.buildstore, sync_stage, success=True)
+
+  def testPush(self):
+    """Test values for PublishUprevChanges."""
+    self._Prepare(extra_config={'push_overlays': constants.PUBLIC_OVERLAYS},
+                  extra_cmd_args=['--chrome_rev', constants.CHROME_REV_TOT])
+    self._run.options.prebuilts = True
+    self.RunStage()
+    self.push_mock.assert_called_once_with(
+        self.build_root, overlay_type='public', dryrun=False,
+        staging_branch=None)
+    self.assertTrue(self._run.attrs.metadata.GetValue('UprevvedChrome'))
+    metadata_dict = self._run.attrs.metadata.GetDict()
+    self.assertFalse(metadata_dict.has_key('UprevvedAndroid'))
 
   def testCheckSlaveUploadPrebuiltsTest(self):
     """Tests for CheckSlaveUploadPrebuiltsTest."""

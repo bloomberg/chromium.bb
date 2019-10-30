@@ -784,7 +784,8 @@ class CBuildBotTest(ChromeosConfigTestBase):
     for slave_config in self._getSlaveConfigsForMaster('master-paladin'):
       paladin_boards.update(slave_config.boards)
 
-    for pfq_master in (constants.NYC_ANDROID_PFQ_MASTER,):
+    for pfq_master in (constants.PFQ_MASTER,
+                       constants.NYC_ANDROID_PFQ_MASTER):
       pfq_configs = self._getSlaveConfigsForMaster(pfq_master)
 
       failures = set()
