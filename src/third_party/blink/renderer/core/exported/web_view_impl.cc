@@ -294,6 +294,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client,
       minimum_zoom_level_(ZoomFactorToZoomLevel(kMinTextSizeMultiplier)),
       maximum_zoom_level_(ZoomFactorToZoomLevel(kMaxTextSizeMultiplier)),
       does_composite_(does_composite),
+      hwnd_(0),
       fullscreen_controller_(std::make_unique<FullscreenController>(this)) {
   if (!AsView().client) {
     DCHECK(!does_composite_);
@@ -3510,6 +3511,14 @@ void WebViewImpl::ClearAutoplayFlags() {
 
 int32_t WebViewImpl::AutoplayFlagsForTest() {
   return AsView().page->AutoplayFlags();
+}
+
+HWND WebViewImpl::GetHwnd() {
+  return hwnd_;
+}
+
+void WebViewImpl::SetHwnd(HWND hwnd) {
+  hwnd_ = hwnd;
 }
 
 void WebViewImpl::DeferMainFrameUpdateForTesting() {
