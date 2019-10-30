@@ -843,7 +843,6 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
           '-tests_cheets_SELinuxTest',
           'thinlto',
           'strict_toolchain_checks']),
-      afdo_use=True,
       latest_toolchain=True,
       enable_skylab_hw_tests=True,
   )
@@ -916,7 +915,6 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       chrome_sdk=False,
       paygen=False,
       signer_tests=False,
-      afdo_use=True,
       useflags=config_lib.append_useflags(['-cros-debug']),
       display_label=config_lib.DISPLAY_LABEL_TOOLCHAIN,
   )
