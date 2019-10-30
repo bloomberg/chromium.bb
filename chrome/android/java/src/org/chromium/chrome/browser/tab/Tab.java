@@ -677,27 +677,6 @@ public class Tab {
     }
 
     /**
-     * Called on the foreground tab when the Activity showing the Tab gets started. This is called
-     * on both cold and warm starts.
-     */
-    public void onActivityShown() {
-        if (isHidden()) {
-            show(TabSelectionType.FROM_USER);
-        } else {
-            // The visible Tab's renderer process may have died after the activity was paused.
-            // Ensure that it's restored appropriately.
-            loadIfNeeded();
-        }
-    }
-
-    /**
-     * Called on the foreground tab when the Activity showing the Tab gets stopped.
-     */
-    public void onActivityHidden() {
-        hide(TabHidingType.ACTIVITY_HIDDEN);
-    }
-
-    /**
      * Prepares the tab to be shown. This method is supposed to be called before the tab is
      * displayed. It restores the ContentView if it is not available after the cold start and
      * reloads the tab if its renderer has crashed.
