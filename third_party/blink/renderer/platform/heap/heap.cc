@@ -250,7 +250,8 @@ void ThreadHeap::InvokeEphemeronCallbacks(MarkingVisitor* visitor) {
   // Then we iterate over the new callbacks found by the marking visitor.
   // Callbacks found by the concurrent marking will be flushed eventually
   // and then invoked by the mutator thread (in the atomic pause at latest).
-  while (!weak_table_worklist_->IsGlobalEmpty()) {
+  while (
+      !weak_table_worklist_->IsLocalViewEmpty(WorklistTaskId::MutatorThread)) {
     // Read ephemeron callbacks from worklist to ephemeron_callbacks_ hashmap.
     WeakTableWorklist::View ephemerons_worklist(weak_table_worklist_.get(),
                                                 WorklistTaskId::MutatorThread);
@@ -347,7 +348,7 @@ bool ThreadHeap::AdvanceMarking(MarkingVisitor* visitor,
     InvokeEphemeronCallbacks(visitor);
 
     // Rerun loop if ephemeron processing queued more objects for tracing.
-  } while (!marking_worklist_->IsGlobalEmpty());
+  } while (!marking_worklist_->IsLocalViewEmpty(WorklistTaskId::MutatorThread));
 
   FlushV8References();
 

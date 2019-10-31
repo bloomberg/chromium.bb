@@ -730,6 +730,13 @@ void ThreadState::AtomicPauseMarkPrologue(BlinkGC::StackState stack_state,
       marker_scheduler_->CancelAndWait();
       active_markers_ = 0;
     }
+#if DCHECK_IS_ON()
+    MarkingWorklist* worklist = Heap().GetMarkingWorklist();
+    for (int concurrent_task = WorklistTaskId::ConcurrentThreadBase;
+         concurrent_task < worklist->num_tasks(); ++concurrent_task) {
+      DCHECK(worklist->IsLocalEmpty(concurrent_task));
+    }
+#endif  // DCHECK_IS_ON()
     DisableIncrementalMarkingBarrier();
     current_gc_data_.reason = reason;
     current_gc_data_.stack_state = stack_state;
