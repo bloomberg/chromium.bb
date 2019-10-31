@@ -509,12 +509,12 @@
   },
   {
     "prefix": "controls-refresh",
-    "bases": ["fast/forms/controls-new-ui"],
+    "bases": [],
     "args": ["--enable-features=FormControlsRefresh"]
   },
   {
-    "prefix": "controls-refresh-high-contrast",
-    "bases": ["fast/forms/controls-new-ui/color-scheme-validation"],
+    "prefix": "controls-refresh-hc",
+    "bases": ["virtual/controls-refresh/color-scheme"],
     "args": ["--enable-features=FormControlsRefresh",
              "--force-high-contrast",
              "--enable-blink-features=ForcedColors"]
