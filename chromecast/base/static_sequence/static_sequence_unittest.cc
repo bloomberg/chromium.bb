@@ -26,14 +26,16 @@ void DoSomething(bool* activated) {
   *activated = true;
 }
 
-void DoSomethingWithRequiredSequence(bool* activated, TestSequence::Key&) {
+void DoSomethingWithRequiredSequence(bool* activated,
+                                     const TestSequence::Key&) {
   *activated = true;
 }
 
 class TestObject {
  public:
   void DoSomething(bool* activated) { *activated = true; }
-  void DoSomethingWithRequiredSequence(bool* activated, TestSequence::Key&) {
+  void DoSomethingWithRequiredSequence(bool* activated,
+                                       const TestSequence::Key&) {
     *activated = true;
   }
 };
@@ -43,7 +45,7 @@ class ParameterizedObject {
   explicit ParameterizedObject(int increment_by)
       : increment_by_(increment_by) {}
 
-  void Increment(int* out, TestSequence::Key&) { *out += increment_by_; }
+  void Increment(int* out, const TestSequence::Key&) { *out += increment_by_; }
 
  private:
   int increment_by_;

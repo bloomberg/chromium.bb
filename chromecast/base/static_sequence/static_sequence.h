@@ -27,7 +27,7 @@
 // To require that a function run on that sequence, add a Key parameter from the
 // sequence:
 //
-//   void MyFunction(int x, int y, MySequence::Key&);
+//   void MyFunction(int x, int y, const MySequence::Key&);
 //
 // Such a function must be called through the MySequence's PostTask() method:
 //
@@ -41,7 +41,7 @@
 //
 //   struct MyStruct {
 //     // The Key needs to be the last parameter!
-//     void MyMethod(int x, int y, MySequence::Key&);
+//     void MyMethod(int x, int y, const MySequence::Key&);
 //   };
 //
 //   void CallMyMethodFromOriginThreadSafe(MyStruct* m) {
@@ -109,7 +109,7 @@ class StaticTaskRunnerHolder
 //         : util::StaticSequence<BackgroundSequence,
 //                                BackgroundTaskTraitsProvider> {};
 //     void DoBackgroundWork(const std::string& request,
-//                           BackgroundSequence::Key&);
+//                           const BackgroundSequence::Key&);
 //   };
 struct DefaultStaticSequenceTraitsProvider {
   static constexpr base::TaskTraits GetTraits() { return {base::ThreadPool()}; }
@@ -162,7 +162,7 @@ class StaticSequence {
   // PostedTo, the StaticSequence whose PostTask method was called; and
   // Expected, the StaticSequence whose Key was requested by the task.
   template <typename U>
-  using IncompatibleCallback = base::OnceCallback<void(U&)>;
+  using IncompatibleCallback = base::OnceCallback<void(const U&)>;
   template <typename U, typename Expected = typename U::Sequence>
   static void PostTask(
       IncompatibleCallback<U> cb,
@@ -173,10 +173,21 @@ class StaticSequence {
                   "static sequence!");
   }
 
+  template <typename U>
+  using IncompatibleNonConstCallback = base::OnceCallback<void(U&)>;
+  template <typename U, typename Expected = typename U::Sequence>
+  static void PostTask(
+      IncompatibleNonConstCallback<U> cb,
+      const base::Location& from_here = base::Location::Current()) {
+    static_assert(invalid<IncompatibleNonConstCallback<U>>,
+                  "Did you forget to add `const` to the Key parameter of the "
+                  "bound functor?");
+  }
+
   // Takes a callback that specifically requires that it be invoked from this
   // sequence. Such callbacks can only be invoked through this method because
   // the Key is only constructible here.
-  using CompatibleCallback = base::OnceCallback<void(Key&)>;
+  using CompatibleCallback = base::OnceCallback<void(const Key&)>;
   static void PostTask(
       CompatibleCallback cb,
       const base::Location& from_here = base::Location::Current()) {
@@ -193,14 +204,22 @@ class StaticSequence {
 
   // The Run() overload set can only be invoked on the sequence, and accepts
   // callbacks that may or may not require a Key to the sequence.
-  static void Run(CompatibleCallback cb, Key& key) { std::move(cb).Run(key); }
-  static void Run(base::OnceClosure cb, Key&) { std::move(cb).Run(); }
+  static void Run(CompatibleCallback cb, const Key& key) {
+    std::move(cb).Run(key);
+  }
+  static void Run(base::OnceClosure cb, const Key&) { std::move(cb).Run(); }
   template <typename U, typename Expected = typename U::Sequence>
-  static void Run(IncompatibleCallback<U> cb, Key&) {
+  static void Run(IncompatibleCallback<U> cb, const Key&) {
     using PostedTo = T;
     static_assert(invalid<PostedTo, Expected>,
                   "Attempting to post a statically-sequenced task to the wrong "
                   "static sequence!");
+  }
+  template <typename U>
+  static void Run(IncompatibleNonConstCallback<U> cb, const Key&) {
+    static_assert(invalid<IncompatibleNonConstCallback<U>>,
+                  "Did you forget to add `const` to the Key parameter of the "
+                  "bound functor?");
   }
 
   // Forwards a functor and arguments before posting as a task, to avoid
@@ -229,7 +248,7 @@ class StaticSequence {
       : LastArgumentIsKey<Pack<Rest...>> {};
 
   template <>
-  struct LastArgumentIsKey<Pack<Key&>> : std::true_type {};
+  struct LastArgumentIsKey<Pack<const Key&>> : std::true_type {};
 
   template <>
   struct LastArgumentIsKey<Pack<>> : std::false_type {};
@@ -268,11 +287,11 @@ class StaticSequence {
     }
   };
 
-  static Key key_;
+  static const Key key_;
 };
 
 template <typename T, typename TraitsProvider>
-typename StaticSequence<T, TraitsProvider>::Key
+const typename StaticSequence<T, TraitsProvider>::Key
     StaticSequence<T, TraitsProvider>::key_ = {};
 
 // Behaves like the SequenceBound class wrapper for static sequences, wrapping
@@ -300,7 +319,7 @@ class Sequenced {
  private:
   using UniquePtr = std::unique_ptr<T, base::OnTaskRunnerDeleter>;
   template <typename... Args>
-  void Construct(Args&&... args, typename Sequence::Key& key) {
+  void Construct(Args&&... args, const typename Sequence::Key& key) {
     obj_ = MakeUnique<Args...>(std::forward<Args>(args)..., key);
   }
 
@@ -310,13 +329,13 @@ class Sequenced {
   }
 
   template <typename... Args>
-  UniquePtr MakeUnique(Args&&... args, typename Sequence::Key&) {
+  UniquePtr MakeUnique(Args&&... args, const typename Sequence::Key&) {
     return UniquePtr(new T(std::forward<Args>(args)...),
                      base::OnTaskRunnerDeleter(Sequence::TaskRunner()));
   }
 
   template <typename Method, typename... Bound>
-  void Call(Method method, Bound&&... args, typename Sequence::Key& key) {
+  void Call(Method method, Bound&&... args, const typename Sequence::Key& key) {
     Sequence::Run(base::BindOnce(method, base::Unretained(obj_.get()),
                                  std::forward<Bound>(args)...),
                   key);
