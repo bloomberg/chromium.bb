@@ -144,7 +144,7 @@ const fetcher = new DataFetcher('data.size');
 let sizeFileLoaded = false;
 
 async function buildTree(
-    groupBy, includeRegex, excludeRegex, minSymbolSize, highlightTest,
+    groupBy, includeRegex, excludeRegex, minSymbolSize, flagToFilter,
     methodCountMode, onProgress) {
   if (!sizeFileLoaded) {
     let sizeBuffer = await fetcher.loadSizeBuffer();
@@ -189,11 +189,13 @@ async function buildTree(
     return message;
   }
 
-  let BuildTree =
-      Module.cwrap('BuildTree', 'void', ['bool', 'string', 'string', 'number']);
+  let BuildTree = Module.cwrap(
+      'BuildTree', 'void', ['bool', 'string', 'string', 'number', 'number']);
   let start_time = Date.now();
   const groupByComponent = groupBy === 'component';
-  BuildTree(groupByComponent, includeRegex, excludeRegex, minSymbolSize);
+  BuildTree(
+      groupByComponent, includeRegex, excludeRegex, minSymbolSize,
+      flagToFilter);
   console.log('Constructed tree in ' +
     (Date.now() - start_time)/1000.0 + ' seconds');
 
@@ -215,8 +217,7 @@ function parseOptions(options) {
   const url = params.get('load_url');
   const groupBy = params.get('group_by') || 'source_path';
   const methodCountMode = params.has('method_count');
-  const filterGeneratedFiles = params.has('generated_filter');
-  const flagToHighlight = _NAMES_TO_FLAGS[params.get('highlight')];
+  const flagToFilter = _NAMES_TO_FLAGS[params.get('flag_filter')] || 0;
 
   let minSymbolSize = Number(params.get('min_size'));
   if (Number.isNaN(minSymbolSize)) {
@@ -226,15 +227,12 @@ function parseOptions(options) {
   const includeRegex = params.get('include');
   const excludeRegex = params.get('exclude');
 
-  function highlightTest(symbolNode) {
-    return false;
-  }
   return {
     groupBy,
     includeRegex,
     excludeRegex,
     minSymbolSize,
-    highlightTest,
+    flagToFilter,
     url,
     methodCountMode
   };
@@ -248,7 +246,7 @@ const actions = {
       includeRegex,
       excludeRegex,
       minSymbolSize,
-      highlightTest,
+      flagToFilter,
       url,
       methodCountMode
     } = parseOptions(options);
@@ -262,7 +260,7 @@ const actions = {
     }
 
     return buildTree(
-        groupBy, includeRegex, excludeRegex, minSymbolSize, highlightTest,
+        groupBy, includeRegex, excludeRegex, minSymbolSize, flagToFilter,
         methodCountMode, progress => {
           // @ts-ignore
           self.postMessage(progress);

@@ -43,13 +43,22 @@ void LoadSizeFile(const char* compressed, size_t size) {
 void BuildTree(bool group_by_component,
                const char* include_regex_str,
                const char* exclude_regex_str,
-               int minimum_size_bytes) {
+               int minimum_size_bytes,
+               int match_flag) {
   std::vector<std::function<bool(const Symbol&)>> filters;
 
   if (minimum_size_bytes > 0) {
     filters.push_back([minimum_size_bytes](const Symbol& sym) -> bool {
       return sym.pss() >= minimum_size_bytes;
     });
+  }
+
+  // It's currently not useful to filter on more than one flag, so |match_flag|
+  // can be assumed to be a power of two.
+  if (match_flag) {
+    std::cout << "Filtering on flag matching " << match_flag << std::endl;
+    filters.push_back(
+        [match_flag](const Symbol& sym) { return match_flag & sym.flags; });
   }
 
   std::unique_ptr<RE2> include_regex;
