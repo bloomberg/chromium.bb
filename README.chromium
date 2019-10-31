@@ -227,3 +227,10 @@ D. Local Modifications
   - upstream PR:
     https://github.com/unicode-org/icu/pull/876
 
+8. Fix uninitialized array.
+  - patches/uninitialized_uloc.patch
+  - upstream bug:
+    https://unicode-org.atlassian.net/browse/ICU-20884
+  - upstream PR:
+    https://github.com/unicode-org/icu/pull/902
+
