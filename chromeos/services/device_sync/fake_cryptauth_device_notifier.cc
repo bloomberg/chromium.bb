@@ -44,6 +44,9 @@ void FakeCryptAuthDeviceNotifier::NotifyDevices(
   requests_.emplace_back(device_ids, target_service, feature_type,
                          std::move(success_callback),
                          std::move(error_callback));
+
+  if (delegate_)
+    delegate_->OnNotifyDevicesCalled();
 }
 
 FakeCryptAuthDeviceNotifierFactory::FakeCryptAuthDeviceNotifierFactory() =

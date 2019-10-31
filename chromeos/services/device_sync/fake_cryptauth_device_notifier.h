@@ -28,6 +28,12 @@ class CryptAuthGCMManager;
 
 class FakeCryptAuthDeviceNotifier : public CryptAuthDeviceNotifier {
  public:
+  class Delegate {
+   public:
+    virtual ~Delegate() = default;
+    virtual void OnNotifyDevicesCalled() {}
+  };
+
   struct Request {
     Request(const base::flat_set<std::string>& device_ids,
             cryptauthv2::TargetService target_service,
@@ -49,6 +55,8 @@ class FakeCryptAuthDeviceNotifier : public CryptAuthDeviceNotifier {
   FakeCryptAuthDeviceNotifier();
   ~FakeCryptAuthDeviceNotifier() override;
 
+  void set_delegate(Delegate* delegate) { delegate_ = delegate; }
+
   std::vector<Request>& requests() { return requests_; }
 
  private:
@@ -60,6 +68,7 @@ class FakeCryptAuthDeviceNotifier : public CryptAuthDeviceNotifier {
       base::OnceClosure success_callback,
       base::OnceCallback<void(NetworkRequestError)> error_callback) override;
 
+  Delegate* delegate_ = nullptr;
   std::vector<Request> requests_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeCryptAuthDeviceNotifier);

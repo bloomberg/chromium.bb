@@ -27,6 +27,12 @@ class CryptAuthGCMManager;
 
 class FakeCryptAuthFeatureStatusSetter : public CryptAuthFeatureStatusSetter {
  public:
+  class Delegate {
+   public:
+    virtual ~Delegate() = default;
+    virtual void OnSetFeatureStatusCalled() {}
+  };
+
   struct Request {
     Request(const std::string& device_id,
             multidevice::SoftwareFeature feature,
@@ -48,6 +54,8 @@ class FakeCryptAuthFeatureStatusSetter : public CryptAuthFeatureStatusSetter {
   FakeCryptAuthFeatureStatusSetter();
   ~FakeCryptAuthFeatureStatusSetter() override;
 
+  void set_delegate(Delegate* delegate) { delegate_ = delegate; }
+
   std::vector<Request>& requests() { return requests_; }
 
  private:
@@ -59,6 +67,7 @@ class FakeCryptAuthFeatureStatusSetter : public CryptAuthFeatureStatusSetter {
       base::OnceClosure success_callback,
       base::OnceCallback<void(NetworkRequestError)> error_callback) override;
 
+  Delegate* delegate_ = nullptr;
   std::vector<Request> requests_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeCryptAuthFeatureStatusSetter);

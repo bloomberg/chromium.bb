@@ -42,6 +42,9 @@ void FakeCryptAuthFeatureStatusSetter::SetFeatureStatus(
   requests_.emplace_back(device_id, feature, status_change,
                          std::move(success_callback),
                          std::move(error_callback));
+
+  if (delegate_)
+    delegate_->OnSetFeatureStatusCalled();
 }
 
 FakeCryptAuthFeatureStatusSetterFactory::
