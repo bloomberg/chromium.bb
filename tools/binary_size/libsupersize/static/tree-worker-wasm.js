@@ -144,8 +144,8 @@ const fetcher = new DataFetcher('data.size');
 let sizeFileLoaded = false;
 
 async function buildTree(
-    groupBy, includeRegex, excludeRegex, minSymbolSize, flagToFilter,
-    methodCountMode, onProgress) {
+    groupBy, includeRegex, excludeRegex, includeSections, minSymbolSize,
+    flagToFilter, methodCountMode, onProgress) {
   if (!sizeFileLoaded) {
     let sizeBuffer = await fetcher.loadSizeBuffer();
     let heapBuffer = mallocBuffer(sizeBuffer);
@@ -190,12 +190,13 @@ async function buildTree(
   }
 
   let BuildTree = Module.cwrap(
-      'BuildTree', 'void', ['bool', 'string', 'string', 'number', 'number']);
+      'BuildTree', 'void',
+      ['bool', 'string', 'string', 'string', 'number', 'number']);
   let start_time = Date.now();
   const groupByComponent = groupBy === 'component';
   BuildTree(
-      groupByComponent, includeRegex, excludeRegex, minSymbolSize,
-      flagToFilter);
+      groupByComponent, includeRegex, excludeRegex, includeSections,
+      minSymbolSize, flagToFilter);
   console.log('Constructed tree in ' +
     (Date.now() - start_time)/1000.0 + ' seconds');
 
@@ -227,10 +228,19 @@ function parseOptions(options) {
   const includeRegex = params.get('include');
   const excludeRegex = params.get('exclude');
 
+  let includeSections = params.get('type');
+  if (includeSections === null) {
+    // Exclude native symbols by default.
+    let includeSectionsSet = new Set(_SYMBOL_TYPE_SET);
+    includeSectionsSet.delete('b');
+    includeSections = Array.from(includeSectionsSet.values()).join('');
+  }
+
   return {
     groupBy,
     includeRegex,
     excludeRegex,
+    includeSections,
     minSymbolSize,
     flagToFilter,
     url,
@@ -245,6 +255,7 @@ const actions = {
       groupBy,
       includeRegex,
       excludeRegex,
+      includeSections,
       minSymbolSize,
       flagToFilter,
       url,
@@ -260,8 +271,8 @@ const actions = {
     }
 
     return buildTree(
-        groupBy, includeRegex, excludeRegex, minSymbolSize, flagToFilter,
-        methodCountMode, progress => {
+        groupBy, includeRegex, excludeRegex, includeSections, minSymbolSize,
+        flagToFilter, methodCountMode, progress => {
           // @ts-ignore
           self.postMessage(progress);
         });
