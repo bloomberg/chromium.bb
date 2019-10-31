@@ -31,8 +31,6 @@ class ScriptWrappable;
   X(DOMException, Error)                                \
   X(Global, Event)                                      \
   X(IDBCursor, Request)                                 \
-  X(MessageChannel, Port1)                              \
-  X(MessageChannel, Port2)                              \
   X(MessageEvent, CachedData)                           \
   X(NamedConstructor, Initialized)                      \
   X(PopStateEvent, State)                               \
