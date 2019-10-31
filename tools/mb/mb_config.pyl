@@ -14,7 +14,6 @@
   # below). MB uses this dict to look up which config to use for a given bot.
   'masters': {
     'chrome': {
-      'chromeos-amd64-generic-google-rel': 'official_cros_chrome_sdk',
       'chromeos-betty-google-rel': 'official_cros_chrome_sdk_headless_ozone',
       'chromeos-betty-pi-arc-google-rel': 'official_cros_chrome_sdk_headless_ozone',
       'chromeos-eve-google-rel': 'official_cros_chrome_sdk_headless_ozone',

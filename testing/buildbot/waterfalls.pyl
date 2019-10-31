@@ -12,11 +12,6 @@
   {
     'name': 'chrome',
     'machines': {
-      'chromeos-amd64-generic-google-rel': {
-        'additional_compile_targets': [
-          'chrome',
-        ],
-      },
       'chromeos-betty-google-rel': {
         'additional_compile_targets': [
           'chromiumos_preflight',
