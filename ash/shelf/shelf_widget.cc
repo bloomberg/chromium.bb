@@ -145,6 +145,7 @@ ShelfWidget::DelegateView::DelegateView(ShelfWidget* shelf_widget)
   DCHECK(shelf_widget_);
   set_owned_by_client();  // Deleted by DeleteDelegate().
 
+  SetLayoutManager(std::make_unique<views::FillLayout>());
   set_allow_deactivate_on_esc(true);
 
   std::unique_ptr<views::View> drag_handle_ptr =
