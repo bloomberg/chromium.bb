@@ -1127,6 +1127,21 @@ TEST_F(ToplevelWindowEventHandlerBackGestureTest, FlingFromLeftEdgeToGoBack) {
   EXPECT_EQ(1, target_back_release.accelerator_count());
 }
 
+TEST_F(ToplevelWindowEventHandlerBackGestureTest, GoBackInOverviewMode) {
+  ui::TestAcceleratorTarget target_back_press, target_back_release;
+  RegisterBackPressAndRelease(&target_back_press, &target_back_release);
+
+  auto* shell = Shell::Get();
+  shell->overview_controller()->StartOverview();
+  ASSERT_TRUE(shell->overview_controller()->InOverviewSession());
+  GetEventGenerator()->GestureScrollSequence(
+      gfx::Point(0, 100),
+      gfx::Point(ToplevelWindowEventHandler::kSwipingDistanceForGoingBack + 10,
+                 100),
+      base::TimeDelta::FromMilliseconds(100), 3);
+  EXPECT_EQ(1, target_back_release.accelerator_count());
+}
+
 TEST_F(ToplevelWindowEventHandlerBackGestureTest, DonotStartGoingBack) {
   ui::TestAcceleratorTarget target_back_press, target_back_release;
   RegisterBackPressAndRelease(&target_back_press, &target_back_release);
@@ -1148,27 +1163,10 @@ TEST_F(ToplevelWindowEventHandlerBackGestureTest, DonotStartGoingBack) {
   EXPECT_EQ(0, target_back_press.accelerator_count());
   EXPECT_EQ(0, target_back_release.accelerator_count());
 
-  // Should not go back while in overview mode but splitview is not active.
-  ASSERT_FALSE(SplitViewController::Get(Shell::GetPrimaryRootWindow())
-                   ->InSplitViewMode());
-  GetSessionControllerClient()->SetSessionState(
-      session_manager::SessionState::ACTIVE);
-  ASSERT_EQ(session_manager::SessionState::ACTIVE,
-            shell->session_controller()->GetSessionState());
-  shell->overview_controller()->StartOverview();
-  ASSERT_TRUE(shell->overview_controller()->InOverviewSession());
-  generator->GestureScrollSequence(
-      start,
-      gfx::Point(ToplevelWindowEventHandler::kSwipingDistanceForGoingBack + 10,
-                 100),
-      base::TimeDelta::FromMilliseconds(100), 3);
-  EXPECT_EQ(0, target_back_press.accelerator_count());
-  EXPECT_EQ(0, target_back_release.accelerator_count());
-
   // Should not go back if home screen is visible and in |kFullscreenAllApps|
   // state.
-  shell->overview_controller()->EndOverview();
-  ASSERT_FALSE(shell->overview_controller()->InOverviewSession());
+  GetSessionControllerClient()->SetSessionState(
+      session_manager::SessionState::ACTIVE);
   shell->home_screen_controller()->GoHome(GetPrimaryDisplay().id());
   ASSERT_TRUE(shell->home_screen_controller()->IsHomeScreenVisible());
   GetAppListTestHelper()->CheckState(AppListViewState::kFullscreenAllApps);

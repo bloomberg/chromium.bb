@@ -51,6 +51,10 @@ class ASH_EXPORT ToplevelWindowEventHandler
   // previous page.
   static constexpr int kFlingVelocityForGoingBack = 1000;
 
+  // How many dips are reserved for gesture events to start swiping to previous
+  // page from the left edge of the screen in tablet mode.
+  static constexpr int kStartGoingBackLeftEdgeInset = 16;
+
   // Describes what triggered ending the drag.
   enum class DragResult {
     // The drag successfully completed.

@@ -3132,9 +3132,15 @@ TEST_P(OverviewSessionNewLayoutTest, CheckOverviewItemScrollingBounds) {
   // see if the item moved at all.
   OverviewItem* leftmost_window = GetOverviewItemForWindow(windows[0].get());
 
-  GenerateScrollSequence(gfx::Point(0, 50), gfx::Point(5000, 50));
+  GenerateScrollSequence(
+      gfx::Point(ToplevelWindowEventHandler::kStartGoingBackLeftEdgeInset + 5,
+                 50),
+      gfx::Point(5000, 50));
   const gfx::RectF left_bounds = leftmost_window->target_bounds();
-  GenerateScrollSequence(gfx::Point(0, 50), gfx::Point(5000, 50));
+  GenerateScrollSequence(
+      gfx::Point(ToplevelWindowEventHandler::kStartGoingBackLeftEdgeInset + 5,
+                 50),
+      gfx::Point(5000, 50));
   EXPECT_EQ(left_bounds, leftmost_window->target_bounds());
 
   // Scroll an extreme amount to see if windows on the far right are still in
