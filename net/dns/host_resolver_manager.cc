@@ -1060,7 +1060,7 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
     HostCache::Entry results(ERR_FAILED, HostCache::Entry::SOURCE_UNKNOWN);
     switch (dns_query_type) {
       case DnsQueryType::UNSPECIFIED:
-        // Should create two separate transactions with specified type.
+        // Should create multiple transactions with specified types.
         NOTREACHED();
         break;
       case DnsQueryType::A:
@@ -1117,11 +1117,24 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
       return;
     }
 
-    // If there are multiple addresses, and at least one is IPv6, need to sort
-    // them.  Note that IPv6 addresses are always put before IPv4 ones, so it's
-    // sufficient to just check the family of the first address.
-    if (results.addresses() && results.addresses().value().size() > 1 &&
-        results.addresses().value()[0].GetFamily() == ADDRESS_FAMILY_IPV6) {
+    // If there are multiple addresses, and at least one is IPv6, need to
+    // sort them.
+    // When there are no ESNI keys in the record, IPv6 addresses are always
+    // put before IPv4 ones, so it's sufficient to just check the family of
+    // the first address.
+    // When there are ESNI keys, there could be ESNI-equipped
+    // IPv4 addresses preceding the first IPv6 address, so it's necessary to
+    // scan the list.
+    bool at_least_one_ipv6_address =
+        results.addresses() && !results.addresses().value().empty() &&
+        (results.addresses().value()[0].GetFamily() == ADDRESS_FAMILY_IPV6 ||
+         (results.esni_data() &&
+          std::any_of(results.addresses().value().begin(),
+                      results.addresses().value().end(), [](auto& e) {
+                        return e.GetFamily() == ADDRESS_FAMILY_IPV6;
+                      })));
+
+    if (at_least_one_ipv6_address) {
       // Sort addresses if needed.  Sort could complete synchronously.
       AddressList addresses = results.addresses().value();
       client_->GetAddressSorter()->Sort(
@@ -1147,6 +1160,7 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
       *out_results = HostCache::Entry(ERR_NAME_NOT_RESOLVED, AddressList(),
                                       HostCache::Entry::SOURCE_DNS, ttl);
     } else {
+      addresses.Deduplicate();
       *out_results = HostCache::Entry(OK, std::move(addresses),
                                       HostCache::Entry::SOURCE_DNS, ttl);
     }

@@ -6148,6 +6148,59 @@ TEST_F(HostResolverManagerDnsTest, CanonicalNameForcesProc) {
             "canonical");
 }
 
+TEST_F(HostResolverManagerDnsTest, SortsAndDeduplicatesAddresses) {
+  MockDnsClientRuleList rules;
+
+  {
+    std::vector<DnsResourceRecord> answers(
+        3, BuildTestAddressRecord("duplicate", IPAddress::IPv4Localhost()));
+    std::string dns_name;
+    CHECK(DNSDomainFromDot("duplicate", &dns_name));
+    base::Optional<DnsQuery> query(base::in_place, 0, dns_name,
+                                   dns_protocol::kTypeA);
+
+    rules.emplace_back(
+        "duplicate", dns_protocol::kTypeA, false /* secure */,
+        MockDnsClientRule::Result(std::make_unique<DnsResponse>(
+            0, false, std::move(answers),
+            std::vector<DnsResourceRecord>() /* authority_records */,
+            std::vector<DnsResourceRecord>() /* additional_records */, query)),
+        false /* delay */);
+  }
+
+  {
+    std::vector<DnsResourceRecord> answers(
+        3, BuildTestAddressRecord("duplicate", IPAddress::IPv6Localhost()));
+    std::string dns_name;
+    CHECK(DNSDomainFromDot("duplicate", &dns_name));
+    base::Optional<DnsQuery> query(base::in_place, 0, dns_name,
+                                   dns_protocol::kTypeAAAA);
+
+    rules.emplace_back(
+        "duplicate", dns_protocol::kTypeAAAA, false /* secure */,
+        MockDnsClientRule::Result(std::make_unique<DnsResponse>(
+            0, false, std::move(answers),
+            std::vector<DnsResourceRecord>() /* authority_records */,
+            std::vector<DnsResourceRecord>() /* additional_records */, query)),
+        false /* delay */);
+  }
+
+  CreateResolver();
+  UseMockDnsClient(CreateValidDnsConfig(), std::move(rules));
+
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("duplicate", 80), NetLogWithSource(), base::nullopt,
+      request_context_.get(), host_cache_.get()));
+  ASSERT_THAT(response.result_error(), IsOk());
+
+  EXPECT_THAT(
+      response.request()->GetAddressResults(),
+      testing::Optional(testing::Property(
+          &AddressList::endpoints,
+          testing::ElementsAre(IPEndPoint(IPAddress::IPv6Localhost(), 80),
+                               IPEndPoint(IPAddress::IPv4Localhost(), 80)))));
+}
+
 TEST_F(HostResolverManagerTest, ResolveLocalHostname) {
   AddressList addresses;
 
