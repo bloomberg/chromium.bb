@@ -150,6 +150,9 @@ class CORE_EXPORT NGInlineCursor {
   TextDirection CurrentResolvedDirection() const;
   const ComputedStyle& CurrentStyle() const;
 
+  // InkOverflow of itself, including contents if they contribute to the ink
+  // overflow of this object (e.g. when not clipped,) in the local coordinate.
+  const PhysicalRect CurrentInkOverflow() const;
   // The offset relative to the root of the inline formatting context.
   const PhysicalOffset CurrentOffset() const;
   const PhysicalRect CurrentRect() const;

@@ -380,6 +380,15 @@ Node* NGInlineCursor::CurrentNode() const {
   return nullptr;
 }
 
+const PhysicalRect NGInlineCursor::CurrentInkOverflow() const {
+  if (current_paint_fragment_)
+    return current_paint_fragment_->InkOverflow();
+  if (current_item_)
+    return current_item_->InkOverflow();
+  NOTREACHED();
+  return PhysicalRect();
+}
+
 const PhysicalOffset NGInlineCursor::CurrentOffset() const {
   if (current_paint_fragment_)
     return current_paint_fragment_->InlineOffsetToContainerBox();
