@@ -7,9 +7,9 @@ package org.chromium.weblayer_private.aidl;
 import org.chromium.weblayer_private.aidl.IObjectWrapper;
 
 /**
- * Used to forward FullscreenDelegate calls to the client.
+ * Used to forward FullscreenCallback calls to the client.
  */
-interface IFullscreenDelegateClient {
+interface IFullscreenCallbackClient {
   // exitFullscreenWrapper is a ValueCallback<Void> that when run exits
   // fullscreen.
   void enterFullscreen(in IObjectWrapper exitFullscreenWrapper) = 0;

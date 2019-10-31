@@ -21,25 +21,25 @@ import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.util.TestWebServer;
-import org.chromium.weblayer.DownloadDelegate;
+import org.chromium.weblayer.DownloadCallback;
 import org.chromium.weblayer.shell.InstrumentationActivity;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Tests that the DownloadDelegate method is invoked for downloads.
+ * Tests that the DownloadCallback method is invoked for downloads.
  */
 @RunWith(BaseJUnit4ClassRunner.class)
-public class DownloadDelegateTest {
+public class DownloadCallbackTest {
     @Rule
     public InstrumentationActivityTestRule mActivityTestRule =
             new InstrumentationActivityTestRule();
 
     private InstrumentationActivity mActivity;
-    private Delegate mDelegate;
+    private Callback mCallback;
 
-    private static class Delegate extends DownloadDelegate {
+    private static class Callback extends DownloadCallback {
         public String mUrl;
         public String mUserAgent;
         public String mContentDisposition;
@@ -71,13 +71,13 @@ public class DownloadDelegateTest {
         mActivity = mActivityTestRule.launchShellWithUrl(null);
         Assert.assertNotNull(mActivity);
 
-        mDelegate = new Delegate();
+        mCallback = new Callback();
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> { mActivity.getBrowserController().setDownloadDelegate(mDelegate); });
+                () -> { mActivity.getBrowserController().setDownloadCallback(mCallback); });
     }
 
     /**
-     * Verifies the DownloadDelegate is informed of downloads resulting from navigations to pages
+     * Verifies the DownloadCallback is informed of downloads resulting from navigations to pages
      * with Content-Disposition attachment.
      */
     @Test
@@ -99,12 +99,12 @@ public class DownloadDelegateTest {
                 mActivity.getBrowserController().getNavigationController().navigate(
                         Uri.parse(pageUrl));
             });
-            mDelegate.waitForDownload();
+            mCallback.waitForDownload();
 
-            Assert.assertEquals(pageUrl, mDelegate.mUrl);
-            Assert.assertEquals(contentDisposition, mDelegate.mContentDisposition);
-            Assert.assertEquals(mimetype, mDelegate.mMimetype);
-            Assert.assertEquals(data.length(), mDelegate.mContentLength);
+            Assert.assertEquals(pageUrl, mCallback.mUrl);
+            Assert.assertEquals(contentDisposition, mCallback.mContentDisposition);
+            Assert.assertEquals(mimetype, mCallback.mMimetype);
+            Assert.assertEquals(data.length(), mCallback.mContentLength);
             // TODO(estade): verify mUserAgent.
         } finally {
             webServer.shutdown();
@@ -112,7 +112,7 @@ public class DownloadDelegateTest {
     }
 
     /**
-     * Verifies the DownloadDelegate is informed of downloads resulting from the user clicking on a
+     * Verifies the DownloadCallback is informed of downloads resulting from the user clicking on a
      * download link.
      */
     @Test
@@ -129,8 +129,8 @@ public class DownloadDelegateTest {
         mActivityTestRule.navigateAndWait(pageUrl);
 
         EventUtils.simulateTouchCenterOfView(mActivity.getWindow().getDecorView());
-        mDelegate.waitForDownload();
-        Assert.assertEquals(testServer.getURL("/lorem_ipsum.txt"), mDelegate.mUrl);
+        mCallback.waitForDownload();
+        Assert.assertEquals(testServer.getURL("/lorem_ipsum.txt"), mCallback.mUrl);
 
         testServer.stopAndDestroyServer();
     }

@@ -10,36 +10,36 @@ import android.webkit.ValueCallback;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.weblayer_private.aidl.IFullscreenDelegateClient;
+import org.chromium.weblayer_private.aidl.IFullscreenCallbackClient;
 import org.chromium.weblayer_private.aidl.ObjectWrapper;
 
 /**
- * Owns the c++ FullscreenDelegateProxy class, which is responsible for forwarding all
+ * Owns the c++ FullscreenCallbackProxy class, which is responsible for forwarding all
  * FullscreenDelegate delegate calls to this class, which in turn forwards to the
- * FullscreenDelegateClient.
+ * FullscreenCallbackClient.
  */
 @JNINamespace("weblayer")
-public final class FullscreenDelegateProxy {
-    private long mNativeFullscreenDelegateProxy;
-    private IFullscreenDelegateClient mClient;
+public final class FullscreenCallbackProxy {
+    private long mNativeFullscreenCallbackProxy;
+    private IFullscreenCallbackClient mClient;
 
-    FullscreenDelegateProxy(long browserController, IFullscreenDelegateClient client) {
+    FullscreenCallbackProxy(long browserController, IFullscreenCallbackClient client) {
         assert client != null;
         mClient = client;
-        mNativeFullscreenDelegateProxy =
-                FullscreenDelegateProxyJni.get().createFullscreenDelegateProxy(
+        mNativeFullscreenCallbackProxy =
+                FullscreenCallbackProxyJni.get().createFullscreenCallbackProxy(
                         this, browserController);
     }
 
-    public void setClient(IFullscreenDelegateClient client) {
+    public void setClient(IFullscreenCallbackClient client) {
         assert client != null;
         mClient = client;
     }
 
     public void destroy() {
-        FullscreenDelegateProxyJni.get().deleteFullscreenDelegateProxy(
-                mNativeFullscreenDelegateProxy);
-        mNativeFullscreenDelegateProxy = 0;
+        FullscreenCallbackProxyJni.get().deleteFullscreenCallbackProxy(
+                mNativeFullscreenCallbackProxy);
+        mNativeFullscreenCallbackProxy = 0;
     }
 
     @CalledByNative
@@ -47,11 +47,11 @@ public final class FullscreenDelegateProxy {
         ValueCallback<Void> exitFullscreenCallback = new ValueCallback<Void>() {
             @Override
             public void onReceiveValue(Void result) {
-                if (mNativeFullscreenDelegateProxy == 0) {
+                if (mNativeFullscreenCallbackProxy == 0) {
                     throw new IllegalStateException("Called after destroy()");
                 }
-                FullscreenDelegateProxyJni.get().doExitFullscreen(
-                        mNativeFullscreenDelegateProxy, FullscreenDelegateProxy.this);
+                FullscreenCallbackProxyJni.get().doExitFullscreen(
+                        mNativeFullscreenCallbackProxy, FullscreenCallbackProxy.this);
             }
         };
         mClient.enterFullscreen(ObjectWrapper.wrap(exitFullscreenCallback));
@@ -64,8 +64,8 @@ public final class FullscreenDelegateProxy {
 
     @NativeMethods
     interface Natives {
-        long createFullscreenDelegateProxy(FullscreenDelegateProxy proxy, long browserController);
-        void deleteFullscreenDelegateProxy(long proxy);
-        void doExitFullscreen(long nativeFullscreenDelegateProxy, FullscreenDelegateProxy proxy);
+        long createFullscreenCallbackProxy(FullscreenCallbackProxy proxy, long browserController);
+        void deleteFullscreenCallbackProxy(long proxy);
+        void doExitFullscreen(long nativeFullscreenCallbackProxy, FullscreenCallbackProxy proxy);
     }
 }

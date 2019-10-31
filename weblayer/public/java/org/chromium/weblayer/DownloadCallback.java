@@ -9,7 +9,7 @@ import androidx.annotation.NonNull;
 /**
  * An interface that allows clients to handle download requests originating in the browser.
  */
-public abstract class DownloadDelegate {
+public abstract class DownloadCallback {
     /**
      * A download of has been requested with the specified details.
      *

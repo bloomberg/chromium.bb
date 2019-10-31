@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBLAYER_BROWSER_DOWNLOAD_DELEGATE_PROXY_H_
-#define WEBLAYER_BROWSER_DOWNLOAD_DELEGATE_PROXY_H_
+#ifndef WEBLAYER_BROWSER_DOWNLOAD_CALLBACK_PROXY_H_
+#define WEBLAYER_BROWSER_DOWNLOAD_CALLBACK_PROXY_H_
 
 #include <jni.h>
 
@@ -16,13 +16,13 @@ namespace weblayer {
 
 class BrowserController;
 
-// Forwards DownloadDelegate calls to the java-side DownloadDelegateProxy.
-class DownloadDelegateProxy : public DownloadDelegate {
+// Forwards DownloadDelegate calls to the java-side DownloadCallbackProxy.
+class DownloadCallbackProxy : public DownloadDelegate {
  public:
-  DownloadDelegateProxy(JNIEnv* env,
+  DownloadCallbackProxy(JNIEnv* env,
                         jobject obj,
                         BrowserController* browser_controller);
-  ~DownloadDelegateProxy() override;
+  ~DownloadCallbackProxy() override;
 
   // DownloadDelegate:
   void DownloadRequested(const GURL& url,
@@ -35,9 +35,9 @@ class DownloadDelegateProxy : public DownloadDelegate {
   BrowserController* browser_controller_;
   base::android::ScopedJavaGlobalRef<jobject> java_delegate_;
 
-  DISALLOW_COPY_AND_ASSIGN(DownloadDelegateProxy);
+  DISALLOW_COPY_AND_ASSIGN(DownloadCallbackProxy);
 };
 
 }  // namespace weblayer
 
-#endif  // WEBLAYER_BROWSER_DOWNLOAD_DELEGATE_PROXY_H_
+#endif  // WEBLAYER_BROWSER_DOWNLOAD_CALLBACK_PROXY_H_

@@ -8,9 +8,9 @@ import androidx.annotation.NonNull;
 
 /**
  * Used to configure fullscreen related state. HTML fullscreen support is only enabled if a
- * FullscreenDelegate is set.
+ * FullscreenCallback is set.
  */
-public abstract class FullscreenDelegate {
+public abstract class FullscreenCallback {
     /**
      * Called when the page has requested to go fullscreen. The delegate is responsible for
      *  putting the system into fullscreen mode. The delegate can exit out of fullscreen by

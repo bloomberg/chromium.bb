@@ -19,14 +19,14 @@ import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
-import org.chromium.weblayer.FullscreenDelegate;
+import org.chromium.weblayer.FullscreenCallback;
 import org.chromium.weblayer.shell.InstrumentationActivity;
 
 /**
- * Tests that FullscreenDelegate methods are invoked as expected.
+ * Tests that FullscreenCallback methods are invoked as expected.
  */
 @RunWith(BaseJUnit4ClassRunner.class)
-public class FullscreenDelegateTest {
+public class FullscreenCallbackTest {
     @Rule
     public InstrumentationActivityTestRule mActivityTestRule =
             new InstrumentationActivityTestRule();
@@ -35,7 +35,7 @@ public class FullscreenDelegateTest {
     private InstrumentationActivity mActivity;
     private Delegate mDelegate;
 
-    private static class Delegate extends FullscreenDelegate {
+    private static class Delegate extends FullscreenCallback {
         public int mEnterFullscreenCount;
         public int mExitFullscreenCount;
         public Runnable mExitFullscreenRunnable;
@@ -83,7 +83,7 @@ public class FullscreenDelegateTest {
         Assert.assertNotNull(mActivity);
         mDelegate = new Delegate();
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> { mActivity.getBrowserController().setFullscreenDelegate(mDelegate); });
+                () -> { mActivity.getBrowserController().setFullscreenCallback(mDelegate); });
 
         // First touch enters fullscreen.
         EventUtils.simulateTouchCenterOfView(mActivity.getWindow().getDecorView());
@@ -108,9 +108,9 @@ public class FullscreenDelegateTest {
     @Test
     @SmallTest
     public void testExitFullscreenWhenDelegateCleared() {
-        // Clearing the FullscreenDelegate should exit fullscreen.
+        // Clearing the FullscreenCallback should exit fullscreen.
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> { mActivity.getBrowserController().setFullscreenDelegate(null); });
+                () -> { mActivity.getBrowserController().setFullscreenCallback(null); });
         mDelegate.waitForExitFullscreen();
         Assert.assertEquals(1, mDelegate.mExitFullscreenCount);
     }

@@ -9,33 +9,33 @@ import android.os.RemoteException;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.weblayer_private.aidl.IDownloadDelegateClient;
+import org.chromium.weblayer_private.aidl.IDownloadCallbackClient;
 
 /**
- * Owns the c++ DownloadDelegateProxy class, which is responsible for forwarding all
+ * Owns the c++ DownloadCallbackProxy class, which is responsible for forwarding all
  * DownloadDelegate delegate calls to this class, which in turn forwards to the
- * DownloadDelegateClient.
+ * DownloadCallbackClient.
  */
 @JNINamespace("weblayer")
-public final class DownloadDelegateProxy {
-    private long mNativeDownloadDelegateProxy;
-    private IDownloadDelegateClient mClient;
+public final class DownloadCallbackProxy {
+    private long mNativeDownloadCallbackProxy;
+    private IDownloadCallbackClient mClient;
 
-    DownloadDelegateProxy(long browserController, IDownloadDelegateClient client) {
+    DownloadCallbackProxy(long browserController, IDownloadCallbackClient client) {
         assert client != null;
         mClient = client;
-        mNativeDownloadDelegateProxy =
-                DownloadDelegateProxyJni.get().createDownloadDelegateProxy(this, browserController);
+        mNativeDownloadCallbackProxy =
+                DownloadCallbackProxyJni.get().createDownloadCallbackProxy(this, browserController);
     }
 
-    public void setClient(IDownloadDelegateClient client) {
+    public void setClient(IDownloadCallbackClient client) {
         assert client != null;
         mClient = client;
     }
 
     public void destroy() {
-        DownloadDelegateProxyJni.get().deleteDownloadDelegateProxy(mNativeDownloadDelegateProxy);
-        mNativeDownloadDelegateProxy = 0;
+        DownloadCallbackProxyJni.get().deleteDownloadCallbackProxy(mNativeDownloadCallbackProxy);
+        mNativeDownloadCallbackProxy = 0;
     }
 
     @CalledByNative
@@ -46,7 +46,7 @@ public final class DownloadDelegateProxy {
 
     @NativeMethods
     interface Natives {
-        long createDownloadDelegateProxy(DownloadDelegateProxy proxy, long browserController);
-        void deleteDownloadDelegateProxy(long proxy);
+        long createDownloadCallbackProxy(DownloadCallbackProxy proxy, long browserController);
+        void deleteDownloadCallbackProxy(long proxy);
     }
 }

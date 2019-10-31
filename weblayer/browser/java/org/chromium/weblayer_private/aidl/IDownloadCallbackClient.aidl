@@ -7,6 +7,6 @@ package org.chromium.weblayer_private.aidl;
 /**
  * Used to forward download requests to the client.
  */
-interface IDownloadDelegateClient {
+interface IDownloadCallbackClient {
   void downloadRequested(in String url, in String userAgent, in String contentDisposition, in String mimetype, long contentLength) = 0;
 }

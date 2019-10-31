@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBLAYER_BROWSER_FULLSCREEN_DELEGATE_PROXY_H_
-#define WEBLAYER_BROWSER_FULLSCREEN_DELEGATE_PROXY_H_
+#ifndef WEBLAYER_BROWSER_FULLSCREEN_CALLBACK_PROXY_H_
+#define WEBLAYER_BROWSER_FULLSCREEN_CALLBACK_PROXY_H_
 
 #include <jni.h>
 
@@ -16,15 +16,15 @@ namespace weblayer {
 
 class BrowserController;
 
-// FullscreenDelegateProxy forwards all FullscreenDelegate functions to the
-// Java side. There is at most one FullscreenDelegateProxy per
+// FullscreenCallbackProxy forwards all FullscreenDelegate functions to the
+// Java side. There is at most one FullscreenCallbackProxy per
 // BrowserController.
-class FullscreenDelegateProxy : public FullscreenDelegate {
+class FullscreenCallbackProxy : public FullscreenDelegate {
  public:
-  FullscreenDelegateProxy(JNIEnv* env,
+  FullscreenCallbackProxy(JNIEnv* env,
                           jobject obj,
                           BrowserController* browser_controller);
-  ~FullscreenDelegateProxy() override;
+  ~FullscreenCallbackProxy() override;
 
   // FullscreenDelegate:
   void EnterFullscreen(base::OnceClosure exit_closure) override;
@@ -39,9 +39,9 @@ class FullscreenDelegateProxy : public FullscreenDelegate {
   base::android::ScopedJavaGlobalRef<jobject> java_delegate_;
   base::OnceClosure exit_fullscreen_closure_;
 
-  DISALLOW_COPY_AND_ASSIGN(FullscreenDelegateProxy);
+  DISALLOW_COPY_AND_ASSIGN(FullscreenCallbackProxy);
 };
 
 }  // namespace weblayer
 
-#endif  // WEBLAYER_BROWSER_FULLSCREEN_DELEGATE_PROXY_H_
+#endif  // WEBLAYER_BROWSER_FULLSCREEN_CALLBACK_PROXY_H_
