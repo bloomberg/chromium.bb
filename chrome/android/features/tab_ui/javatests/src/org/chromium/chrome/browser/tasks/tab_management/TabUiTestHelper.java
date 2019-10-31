@@ -59,7 +59,10 @@ public class TabUiTestHelper {
     static void enterTabSwitcher(ChromeTabbedActivity cta) {
         OverviewModeBehaviorWatcher showWatcher = createOverviewShowWatcher(cta);
         assertFalse(cta.getLayoutManager().overviewVisible());
-        onView(withId(R.id.tab_switcher_button)).perform(click());
+        // TODO(crbug.com/1019727) Figure out a better way to wait until isCompletelyDisplayed() is
+        // true in espresso.
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { cta.findViewById(R.id.tab_switcher_button).performClick(); });
         showWatcher.waitForBehavior();
     }
 
