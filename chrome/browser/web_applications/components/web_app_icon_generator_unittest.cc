@@ -9,7 +9,6 @@
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/test/task_environment.h"
-#include "build/build_config.h"
 #include "chrome/browser/web_applications/test/web_app_icon_test_utils.h"
 #include "chrome/common/web_application_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -394,21 +393,7 @@ TEST_F(WebAppIconGeneratorTest, GenerateIcons) {
     // We don't check corner colors here: the icon is rounded by border_radius.
     EXPECT_EQ(bg_color, icon_info.data.getColor(border_radius * 2, center_y));
     EXPECT_EQ(bg_color, icon_info.data.getColor(center_x, border_radius * 2));
-
-    // Only for large icons with a sharp letter: Peek a pixel at the center of
-    // icon.
-    //
-    // TODO(crbug.com/1019102): Investigate if Win7 x64 doesn't generate
-    // unicode characters in our GeneratedIconImageSource implementation.
-#if !defined(OS_WIN)
-    const SkColor letter_color = color_utils::GetColorWithMaxContrast(bg_color);
-    if (icon_info.width >= icon_size::k256) {
-      SkColor center_color = icon_info.data.getColor(center_x, center_y);
-      SCOPED_TRACE(letter_color);
-      SCOPED_TRACE(center_color);
-      EXPECT_TRUE(AreColorsEqual(letter_color, center_color, /*threshold=*/50));
-    }
-#endif  // !defined(OS_WIN)
+    // TODO(loyso): Peek a pixel at the center of icon and check the color.
 
     sizes.erase(icon_info.width);
   }
