@@ -4530,6 +4530,16 @@ TEST_F(RenderTextTest, ControlCharacterReplacement) {
   EXPECT_EQ(WideToUTF16(L"␈␍␇␉\n␋␌"), render_text->GetDisplayText());
 }
 
+TEST_F(RenderTextTest, PrivateUseCharacterReplacement) {
+  RenderText* render_text = GetRenderText();
+  render_text->SetText(UTF8ToUTF16("xx\ue78d\ue78fa\U00100042z"));
+
+  // The private use characters should have been replaced. If the code point is
+  // a surrogate pair, it needs to be replaced by two characters.
+  EXPECT_EQ(WideToUTF16(L"xx\ufffd\ufffda\ufffd\ufffdz"),
+            render_text->GetDisplayText());
+}
+
 // Make sure the horizontal positions of runs in a line (left-to-right for
 // LTR languages and right-to-left for RTL languages).
 TEST_F(RenderTextTest, HarfBuzz_HorizontalPositions) {
