@@ -1048,6 +1048,9 @@ HotseatState ShelfLayoutManager::CalculateHotseatState(
   if (!IsHotseatEnabled() || !shelf_->IsHorizontalAlignment())
     return HotseatState::kShown;
 
+  if (shelf_widget_->is_hotseat_forced_to_show())
+    return HotseatState::kExtended;
+
   auto* app_list_controller = Shell::Get()->app_list_controller();
   const auto* overview_controller = Shell::Get()->overview_controller();
   const bool in_overview =
