@@ -10,7 +10,7 @@
 namespace base {
 
 TEST(SampleMetadataTest, ScopedSampleMetadata) {
-  base::ProfileBuilder::MetadataItemArray items;
+  ProfileBuilder::MetadataItemArray items;
   ASSERT_EQ(0u, GetSampleMetadataRecorder()->CreateMetadataProvider()->GetItems(
                     &items));
 
@@ -20,7 +20,7 @@ TEST(SampleMetadataTest, ScopedSampleMetadata) {
     ASSERT_EQ(1u,
               GetSampleMetadataRecorder()->CreateMetadataProvider()->GetItems(
                   &items));
-    EXPECT_EQ(base::HashMetricName("myname"), items[0].name_hash);
+    EXPECT_EQ(HashMetricName("myname"), items[0].name_hash);
     EXPECT_FALSE(items[0].key.has_value());
     EXPECT_EQ(100, items[0].value);
   }
@@ -30,7 +30,7 @@ TEST(SampleMetadataTest, ScopedSampleMetadata) {
 }
 
 TEST(SampleMetadataTest, ScopedSampleMetadataWithKey) {
-  base::ProfileBuilder::MetadataItemArray items;
+  ProfileBuilder::MetadataItemArray items;
   ASSERT_EQ(0u, GetSampleMetadataRecorder()->CreateMetadataProvider()->GetItems(
                     &items));
 
@@ -40,7 +40,7 @@ TEST(SampleMetadataTest, ScopedSampleMetadataWithKey) {
     ASSERT_EQ(1u,
               GetSampleMetadataRecorder()->CreateMetadataProvider()->GetItems(
                   &items));
-    EXPECT_EQ(base::HashMetricName("myname"), items[0].name_hash);
+    EXPECT_EQ(HashMetricName("myname"), items[0].name_hash);
     ASSERT_TRUE(items[0].key.has_value());
     EXPECT_EQ(10, *items[0].key);
     EXPECT_EQ(100, items[0].value);
@@ -51,14 +51,14 @@ TEST(SampleMetadataTest, ScopedSampleMetadataWithKey) {
 }
 
 TEST(SampleMetadataTest, SampleMetadata) {
-  base::ProfileBuilder::MetadataItemArray items;
+  ProfileBuilder::MetadataItemArray items;
   ASSERT_EQ(0u, GetSampleMetadataRecorder()->CreateMetadataProvider()->GetItems(
                     &items));
 
   SetSampleMetadata("myname", 100);
   ASSERT_EQ(1u, GetSampleMetadataRecorder()->CreateMetadataProvider()->GetItems(
                     &items));
-  EXPECT_EQ(base::HashMetricName("myname"), items[0].name_hash);
+  EXPECT_EQ(HashMetricName("myname"), items[0].name_hash);
   EXPECT_FALSE(items[0].key.has_value());
   EXPECT_EQ(100, items[0].value);
 
@@ -68,14 +68,14 @@ TEST(SampleMetadataTest, SampleMetadata) {
 }
 
 TEST(SampleMetadataTest, SampleMetadataWithKey) {
-  base::ProfileBuilder::MetadataItemArray items;
+  ProfileBuilder::MetadataItemArray items;
   ASSERT_EQ(0u, GetSampleMetadataRecorder()->CreateMetadataProvider()->GetItems(
                     &items));
 
   SetSampleMetadata("myname", 10, 100);
   ASSERT_EQ(1u, GetSampleMetadataRecorder()->CreateMetadataProvider()->GetItems(
                     &items));
-  EXPECT_EQ(base::HashMetricName("myname"), items[0].name_hash);
+  EXPECT_EQ(HashMetricName("myname"), items[0].name_hash);
   ASSERT_TRUE(items[0].key.has_value());
   EXPECT_EQ(10, *items[0].key);
   EXPECT_EQ(100, items[0].value);

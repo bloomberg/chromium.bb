@@ -54,7 +54,7 @@ namespace base {
 class BASE_EXPORT ScopedSampleMetadata {
  public:
   // Set the metadata value associated with |name|.
-  ScopedSampleMetadata(base::StringPiece name, int64_t value);
+  ScopedSampleMetadata(StringPiece name, int64_t value);
 
   // Set the metadata value associated with the pair (|name|, |key|). This
   // constructor allows the metadata to be associated with an additional
@@ -63,7 +63,7 @@ class BASE_EXPORT ScopedSampleMetadata {
   // frames. Prefer the previous constructor if no user-defined metadata is
   // required. Note: values specified for a name and key are stored separately
   // from values specified with only a name.
-  ScopedSampleMetadata(base::StringPiece name, int64_t key, int64_t value);
+  ScopedSampleMetadata(StringPiece name, int64_t key, int64_t value);
 
   ScopedSampleMetadata(const ScopedSampleMetadata&) = delete;
   ~ScopedSampleMetadata();
@@ -78,7 +78,7 @@ class BASE_EXPORT ScopedSampleMetadata {
 // Set the metadata value associated with |name| in the process-global stack
 // sampling profiler metadata, overwriting any previous value set for that
 // |name|.
-BASE_EXPORT void SetSampleMetadata(base::StringPiece name, int64_t value);
+BASE_EXPORT void SetSampleMetadata(StringPiece name, int64_t value);
 
 // Set the metadata value associated with the pair (|name|, |key|) in the
 // process-global stack sampling profiler metadata, overwriting any previous
@@ -88,7 +88,7 @@ BASE_EXPORT void SetSampleMetadata(base::StringPiece name, int64_t value);
 // scrolling between different frames. Prefer the previous function if no
 // user-defined metadata is required. Note: values specified for a name and key
 // are stored separately from values specified with only a name.
-BASE_EXPORT void SetSampleMetadata(base::StringPiece name,
+BASE_EXPORT void SetSampleMetadata(StringPiece name,
                                    int64_t key,
                                    int64_t value);
 
@@ -96,20 +96,20 @@ BASE_EXPORT void SetSampleMetadata(base::StringPiece name,
 // stack sampling profiler metadata.
 //
 // If such an item doesn't exist, this has no effect.
-BASE_EXPORT void RemoveSampleMetadata(base::StringPiece name);
+BASE_EXPORT void RemoveSampleMetadata(StringPiece name);
 
 // Removes the metadata item with the specified (|name|, |key|) pair from the
 // process-global stack sampling profiler metadata. This function does not alter
 // values set with the name |name| but no key.
 //
 // If such an item doesn't exist, this has no effect.
-BASE_EXPORT void RemoveSampleMetadata(base::StringPiece name, int64_t key);
+BASE_EXPORT void RemoveSampleMetadata(StringPiece name, int64_t key);
 
 // Returns the process-global metadata recorder instance used for tracking
 // sampling profiler metadata.
 //
 // This function should not be called by non-profiler related code.
-BASE_EXPORT base::MetadataRecorder* GetSampleMetadataRecorder();
+BASE_EXPORT MetadataRecorder* GetSampleMetadataRecorder();
 
 }  // namespace base
 

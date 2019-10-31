@@ -9,13 +9,12 @@
 
 namespace base {
 
-ScopedSampleMetadata::ScopedSampleMetadata(base::StringPiece name,
-                                           int64_t value)
+ScopedSampleMetadata::ScopedSampleMetadata(StringPiece name, int64_t value)
     : name_hash_(HashMetricName(name)) {
   GetSampleMetadataRecorder()->Set(name_hash_, nullopt, value);
 }
 
-ScopedSampleMetadata::ScopedSampleMetadata(base::StringPiece name,
+ScopedSampleMetadata::ScopedSampleMetadata(StringPiece name,
                                            int64_t key,
                                            int64_t value)
     : name_hash_(HashMetricName(name)), key_(key) {
@@ -26,24 +25,24 @@ ScopedSampleMetadata::~ScopedSampleMetadata() {
   GetSampleMetadataRecorder()->Remove(name_hash_, key_);
 }
 
-void SetSampleMetadata(base::StringPiece name, int64_t value) {
-  GetSampleMetadataRecorder()->Set(base::HashMetricName(name), nullopt, value);
+void SetSampleMetadata(StringPiece name, int64_t value) {
+  GetSampleMetadataRecorder()->Set(HashMetricName(name), nullopt, value);
 }
 
-void SetSampleMetadata(base::StringPiece name, int64_t key, int64_t value) {
-  GetSampleMetadataRecorder()->Set(base::HashMetricName(name), key, value);
+void SetSampleMetadata(StringPiece name, int64_t key, int64_t value) {
+  GetSampleMetadataRecorder()->Set(HashMetricName(name), key, value);
 }
 
-void RemoveSampleMetadata(base::StringPiece name) {
-  GetSampleMetadataRecorder()->Remove(base::HashMetricName(name), nullopt);
+void RemoveSampleMetadata(StringPiece name) {
+  GetSampleMetadataRecorder()->Remove(HashMetricName(name), nullopt);
 }
 
-void RemoveSampleMetadata(base::StringPiece name, int64_t key) {
-  GetSampleMetadataRecorder()->Remove(base::HashMetricName(name), key);
+void RemoveSampleMetadata(StringPiece name, int64_t key) {
+  GetSampleMetadataRecorder()->Remove(HashMetricName(name), key);
 }
 
-base::MetadataRecorder* GetSampleMetadataRecorder() {
-  static base::NoDestructor<base::MetadataRecorder> instance;
+MetadataRecorder* GetSampleMetadataRecorder() {
+  static NoDestructor<MetadataRecorder> instance;
   return instance.get();
 }
 

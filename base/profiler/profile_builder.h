@@ -34,7 +34,7 @@ class BASE_EXPORT ProfileBuilder {
     MetadataItem(const MetadataItem& other);
     MetadataItem& operator=(const MetadataItem& other);
 
-    // The hash of the metadata name, as produced by base::HashMetricName().
+    // The hash of the metadata name, as produced by HashMetricName().
     uint64_t name_hash;
     // The key if specified when setting the item.
     Optional<int64_t> key;

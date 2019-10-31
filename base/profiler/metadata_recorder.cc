@@ -23,7 +23,7 @@ MetadataRecorder::~MetadataRecorder() = default;
 void MetadataRecorder::Set(uint64_t name_hash,
                            Optional<int64_t> key,
                            int64_t value) {
-  base::AutoLock lock(write_lock_);
+  AutoLock lock(write_lock_);
 
   // Acquiring the |write_lock_| ensures that:
   //
@@ -73,7 +73,7 @@ void MetadataRecorder::Set(uint64_t name_hash,
 }
 
 void MetadataRecorder::Remove(uint64_t name_hash, Optional<int64_t> key) {
-  base::AutoLock lock(write_lock_);
+  AutoLock lock(write_lock_);
 
   size_t item_slots_used = item_slots_used_.load(std::memory_order_relaxed);
   for (size_t i = 0; i < item_slots_used; ++i) {
