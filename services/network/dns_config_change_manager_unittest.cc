@@ -24,7 +24,7 @@ class TestDnsConfigChangeManagerClient
     manager_remote->RequestNotifications(receiver_.BindNewPipeAndPassRemote());
   }
 
-  void OnSystemDnsConfigChanged() override {
+  void OnDnsConfigChanged() override {
     num_notifications_++;
     if (num_notifications_ >= num_notifications_expected_)
       run_loop_.Quit();

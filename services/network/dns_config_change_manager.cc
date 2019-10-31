@@ -28,7 +28,7 @@ void DnsConfigChangeManager::RequestNotifications(
 
 void DnsConfigChangeManager::OnDNSChanged() {
   for (const auto& client : clients_)
-    client->OnSystemDnsConfigChanged();
+    client->OnDnsConfigChanged();
 }
 
 }  // namespace network
