@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_PEERCONNECTION_WEBRTC_MEDIA_STREAM_TRACK_ADAPTER_H_
-#define THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_PEERCONNECTION_WEBRTC_MEDIA_STREAM_TRACK_ADAPTER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_WEBRTC_MEDIA_STREAM_TRACK_ADAPTER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_WEBRTC_MEDIA_STREAM_TRACK_ADAPTER_H_
 
 #include <memory>
 
-#include "base/memory/ref_counted.h"
 #include "base/synchronization/waitable_event.h"
 #include "third_party/blink/public/platform/modules/peerconnection/webrtc_audio_sink.h"
-#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/web/modules/mediastream/remote_media_stream_track_adapter.h"
-#include "third_party/blink/public/web/modules/peerconnection/media_stream_video_webrtc_sink.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/modules/peerconnection/media_stream_video_webrtc_sink.h"
+#include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 #include "third_party/webrtc/api/media_stream_interface.h"
 
 namespace blink {
@@ -28,12 +28,9 @@ struct WebRtcMediaStreamTrackAdapterTraits;
 // There are different sinks/adapters used whether the track is local or remote
 // and whether it is an audio or video track; this adapter hides that fact and
 // lets you use a single class for any type of track.
-//
-// TODO(crbug.com/787254): Move the classes below out of the Blink exposed
-// API when all users of it have been Onion souped.
-class BLINK_MODULES_EXPORT WebRtcMediaStreamTrackAdapter
-    : public base::RefCountedThreadSafe<WebRtcMediaStreamTrackAdapter,
-                                        WebRtcMediaStreamTrackAdapterTraits> {
+class MODULES_EXPORT WebRtcMediaStreamTrackAdapter
+    : public WTF::ThreadSafeRefCounted<WebRtcMediaStreamTrackAdapter,
+                                       WebRtcMediaStreamTrackAdapterTraits> {
  public:
   // Invoke on the main thread. The returned adapter is fully initialized, see
   // |is_initialized|. The adapter will keep a reference to the |main_thread|.
@@ -80,8 +77,8 @@ class BLINK_MODULES_EXPORT WebRtcMediaStreamTrackAdapter
   }
 
  protected:
-  friend class base::RefCountedThreadSafe<WebRtcMediaStreamTrackAdapter,
-                                          WebRtcMediaStreamTrackAdapterTraits>;
+  friend class WTF::ThreadSafeRefCounted<WebRtcMediaStreamTrackAdapter,
+                                         WebRtcMediaStreamTrackAdapterTraits>;
   friend struct WebRtcMediaStreamTrackAdapterTraits;
 
   WebRtcMediaStreamTrackAdapter(
@@ -138,11 +135,7 @@ class BLINK_MODULES_EXPORT WebRtcMediaStreamTrackAdapter
   DISALLOW_COPY_AND_ASSIGN(WebRtcMediaStreamTrackAdapter);
 };
 
-struct BLINK_MODULES_EXPORT WebRtcMediaStreamTrackAdapterTraits {
- private:
-  friend class base::RefCountedThreadSafe<WebRtcMediaStreamTrackAdapter,
-                                          WebRtcMediaStreamTrackAdapterTraits>;
-
+struct MODULES_EXPORT WebRtcMediaStreamTrackAdapterTraits {
   // Ensure destruction occurs on main thread so that "Web" and other resources
   // are destroyed on the correct thread.
   static void Destruct(const WebRtcMediaStreamTrackAdapter* adapter);
@@ -150,4 +143,4 @@ struct BLINK_MODULES_EXPORT WebRtcMediaStreamTrackAdapterTraits {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_PEERCONNECTION_WEBRTC_MEDIA_STREAM_TRACK_ADAPTER_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_WEBRTC_MEDIA_STREAM_TRACK_ADAPTER_H_

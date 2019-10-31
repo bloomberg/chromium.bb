@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_PEERCONNECTION_RTC_RTP_SENDER_IMPL_H_
-#define THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_PEERCONNECTION_RTC_RTP_SENDER_IMPL_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_RTC_RTP_SENDER_IMPL_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_RTC_RTP_SENDER_IMPL_H_
 
 #include <memory>
 #include <string>
@@ -11,12 +11,12 @@
 
 #include "base/callback.h"
 #include "base/single_thread_task_runner.h"
-#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_sender.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_transceiver.h"
 #include "third_party/blink/public/platform/web_rtc_stats.h"
-#include "third_party/blink/public/web/modules/peerconnection/webrtc_media_stream_track_adapter_map.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/modules/peerconnection/webrtc_media_stream_track_adapter_map.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
 #include "third_party/webrtc/api/rtp_sender_interface.h"
 #include "third_party/webrtc/api/scoped_refptr.h"
@@ -54,12 +54,10 @@ namespace blink {
 // Except for initialization logic and operator=(), the RtpSenderState is
 // immutable and only accessible on the main thread.
 //
-// TODO(crbug.com/787254): Move the classes below out of the Blink exposed API.
-// Also, consider merging RTCRtpSenderImpl and RTCRtpReceiver, and removing
-// WebRTCRtpSender when all its clients are Onion soup'ed.
-//
-// Last, move away from using std::vector.
-class BLINK_MODULES_EXPORT RtpSenderState {
+// TODO(crbug.com/787254): Consider merging RTCRtpSenderImpl and RTCRtpReceiver,
+// and removing WebRTCRtpSender when all its clients are Onion soup'ed.
+// Also, move away from using std::vector.
+class MODULES_EXPORT RtpSenderState {
  public:
   RtpSenderState(
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
@@ -115,7 +113,7 @@ class BLINK_MODULES_EXPORT RtpSenderState {
 // all the blink object will need is the RtpSenderState. Requires coordination
 // with transceivers and receivers since these are tightly coupled.
 // https://crbug.com/787254
-class BLINK_MODULES_EXPORT RTCRtpSenderImpl : public blink::WebRTCRtpSender {
+class MODULES_EXPORT RTCRtpSenderImpl : public blink::WebRTCRtpSender {
  public:
   static uintptr_t getId(const webrtc::RtpSenderInterface* webrtc_sender);
 
@@ -165,7 +163,7 @@ class BLINK_MODULES_EXPORT RTCRtpSenderImpl : public blink::WebRTCRtpSender {
   scoped_refptr<RTCRtpSenderInternal> internal_;
 };
 
-class BLINK_MODULES_EXPORT RTCRtpSenderOnlyTransceiver
+class MODULES_EXPORT RTCRtpSenderOnlyTransceiver
     : public blink::WebRTCRtpTransceiver {
  public:
   explicit RTCRtpSenderOnlyTransceiver(
@@ -194,4 +192,4 @@ class BLINK_MODULES_EXPORT RTCRtpSenderOnlyTransceiver
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_PEERCONNECTION_RTC_RTP_SENDER_IMPL_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_RTC_RTP_SENDER_IMPL_H_

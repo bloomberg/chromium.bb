@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_PEERCONNECTION_WEBRTC_MEDIA_STREAM_TRACK_ADAPTER_MAP_H_
-#define THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_PEERCONNECTION_WEBRTC_MEDIA_STREAM_TRACK_ADAPTER_MAP_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_WEBRTC_MEDIA_STREAM_TRACK_ADAPTER_MAP_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_WEBRTC_MEDIA_STREAM_TRACK_ADAPTER_MAP_H_
 
-#include "base/memory/ref_counted.h"
 #include "third_party/blink/public/platform/modules/peerconnection/two_keys_adapter_map.h"
-#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
-#include "third_party/blink/public/web/modules/peerconnection/webrtc_media_stream_track_adapter.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/modules/peerconnection/webrtc_media_stream_track_adapter.h"
+#include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 #include "third_party/webrtc/api/media_stream_interface.h"
 
 namespace base {
@@ -23,16 +23,13 @@ class PeerConnectionDependencyFactory;
 // creating, initializing and disposing track adapters independently of media
 // streams. Adapters are accessed via |AdapterRef|s, when all references to an
 // adapter are destroyed it is disposed and removed from the map.
-//
-// TODO(crbug.com/787254): Move the class below out of the Blink exposed
-// API when all users of it have been Onion souped.
-class BLINK_MODULES_EXPORT WebRtcMediaStreamTrackAdapterMap
-    : public base::RefCountedThreadSafe<WebRtcMediaStreamTrackAdapterMap> {
+class MODULES_EXPORT WebRtcMediaStreamTrackAdapterMap
+    : public WTF::ThreadSafeRefCounted<WebRtcMediaStreamTrackAdapterMap> {
  public:
   // Acts as an accessor to adapter members without leaking a reference to the
   // adapter. When the last |AdapterRef| is destroyed, the corresponding adapter
   // is |Dispose|d and removed from the map.
-  class BLINK_MODULES_EXPORT AdapterRef {
+  class MODULES_EXPORT AdapterRef {
    public:
     // Must be invoked on the main thread. If this was the last reference to the
     // adapter it will be disposed and removed from the map.
@@ -119,7 +116,7 @@ class BLINK_MODULES_EXPORT WebRtcMediaStreamTrackAdapterMap
   size_t GetRemoteTrackCount() const;
 
  private:
-  friend class base::RefCountedThreadSafe<WebRtcMediaStreamTrackAdapterMap>;
+  friend class WTF::ThreadSafeRefCounted<WebRtcMediaStreamTrackAdapterMap>;
 
   // "(blink::WebMediaStreamTrack, webrtc::MediaStreamTrackInterface) ->
   // WebRtcMediaStreamTrackAdapter" maps. The primary key is based on the object
@@ -152,4 +149,4 @@ class BLINK_MODULES_EXPORT WebRtcMediaStreamTrackAdapterMap
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_PEERCONNECTION_WEBRTC_MEDIA_STREAM_TRACK_ADAPTER_MAP_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_WEBRTC_MEDIA_STREAM_TRACK_ADAPTER_MAP_H_

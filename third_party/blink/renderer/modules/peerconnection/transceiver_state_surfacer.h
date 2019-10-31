@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_PEERCONNECTION_TRANSCEIVER_STATE_SURFACER_H_
-#define THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_PEERCONNECTION_TRANSCEIVER_STATE_SURFACER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_TRANSCEIVER_STATE_SURFACER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_TRANSCEIVER_STATE_SURFACER_H_
 
-#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_rtc_peer_connection_handler_client.h"
-#include "third_party/blink/public/web/modules/peerconnection/rtc_rtp_transceiver_impl.h"
-#include "third_party/blink/public/web/modules/peerconnection/webrtc_media_stream_track_adapter_map.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_transceiver_impl.h"
+#include "third_party/blink/renderer/modules/peerconnection/webrtc_media_stream_track_adapter_map.h"
 #include "third_party/webrtc/api/rtp_transceiver_interface.h"
 #include "third_party/webrtc/api/sctp_transport_interface.h"
 #include "third_party/webrtc/rtc_base/ref_count.h"
@@ -23,10 +23,7 @@ namespace blink {
 // The surfacer is initialized on the signaling thread and states are obtained
 // on the main thread. It is designed to be initialized and handed off; it is
 // not thread safe for concurrent thread usage.
-//
-// TODO(crbug.com/787254): Move this class out of the Blink API when all its
-// client get moved to Blink. Also move it away from using std::vector.
-class BLINK_MODULES_EXPORT TransceiverStateSurfacer {
+class MODULES_EXPORT TransceiverStateSurfacer {
  public:
   TransceiverStateSurfacer(
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
@@ -66,7 +63,7 @@ class BLINK_MODULES_EXPORT TransceiverStateSurfacer {
 // A dummy implementation of a transceiver used to surface sender state
 // information only. It is not thread safe, only designed to be passed on to
 // TransceiverStateSurfacer::Initialize().
-class BLINK_MODULES_EXPORT SurfaceSenderStateOnly
+class MODULES_EXPORT SurfaceSenderStateOnly
     : public rtc::RefCountedObject<webrtc::RtpTransceiverInterface> {
  public:
   SurfaceSenderStateOnly(rtc::scoped_refptr<webrtc::RtpSenderInterface> sender);
@@ -90,7 +87,7 @@ class BLINK_MODULES_EXPORT SurfaceSenderStateOnly
 // A dummy implementation of a transceiver used to surface receiver state
 // information only. It is not thread safe, only designed to be passed on to
 // TransceiverStateSurfacer::Initialize().
-class BLINK_MODULES_EXPORT SurfaceReceiverStateOnly
+class MODULES_EXPORT SurfaceReceiverStateOnly
     : public rtc::RefCountedObject<webrtc::RtpTransceiverInterface> {
  public:
   SurfaceReceiverStateOnly(
@@ -114,4 +111,4 @@ class BLINK_MODULES_EXPORT SurfaceReceiverStateOnly
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_PEERCONNECTION_TRANSCEIVER_STATE_SURFACER_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_TRANSCEIVER_STATE_SURFACER_H_

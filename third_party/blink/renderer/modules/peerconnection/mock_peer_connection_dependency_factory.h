@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_PEERCONNECTION_MOCK_PEER_CONNECTION_DEPENDENCY_FACTORY_H_
-#define THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_PEERCONNECTION_MOCK_PEER_CONNECTION_DEPENDENCY_FACTORY_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_MOCK_PEER_CONNECTION_DEPENDENCY_FACTORY_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_MOCK_PEER_CONNECTION_DEPENDENCY_FACTORY_H_
 
 #include <set>
 #include <string>
@@ -166,6 +166,7 @@ class MockPeerConnectionDependencyFactory
   void SetFailToCreateSessionDescription(bool fail);
 
  private:
+  // TODO(crbug.com/787254): Replace with the appropriate Blink class.
   base::Thread signaling_thread_;
   bool fail_to_create_session_description_ = false;
 
@@ -174,4 +175,4 @@ class MockPeerConnectionDependencyFactory
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_PEERCONNECTION_MOCK_PEER_CONNECTION_DEPENDENCY_FACTORY_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_MOCK_PEER_CONNECTION_DEPENDENCY_FACTORY_H_
