@@ -5391,6 +5391,57 @@
             ]
         }
     ],
+    "SameSiteByDefaultCookies_AndroidAw": [
+        {
+            "platforms": [
+                "android",
+                "android_webview"
+            ],
+            "experiments": [
+                {
+                    "name": "LaxByDefaultAndNoneRequiresSecure",
+                    "enable_features": [
+                        "CookiesWithoutSameSiteMustBeSecure",
+                        "SameSiteByDefaultCookies"
+                    ]
+                }
+            ]
+        }
+    ],
+    "SameSiteByDefaultCookies_Linux": [
+        {
+            "platforms": [
+                "linux"
+            ],
+            "experiments": [
+                {
+                    "name": "LaxByDefaultAndNoneRequiresSecure",
+                    "enable_features": [
+                        "CookiesWithoutSameSiteMustBeSecure",
+                        "SameSiteByDefaultCookies"
+                    ]
+                }
+            ]
+        }
+    ],
+    "SameSiteByDefaultCookies_WinMacCros": [
+        {
+            "platforms": [
+                "chromeos",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "LaxByDefaultAndNoneRequiresSecure",
+                    "enable_features": [
+                        "CookiesWithoutSameSiteMustBeSecure",
+                        "SameSiteByDefaultCookies"
+                    ]
+                }
+            ]
+        }
+    ],
     "SameSiteCookieMessages": [
         {
             "platforms": [
