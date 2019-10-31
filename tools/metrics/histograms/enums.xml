@@ -9698,6 +9698,11 @@ Called by update_net_error_codes.py.-->
   <int value="1" label="Decompressed in a background or a foreground tab"/>
 </enum>
 
+<enum name="CompressionStreamsFormat">
+  <int value="0" label="gzip"/>
+  <int value="1" label="deflate"/>
+</enum>
+
 <enum name="ComputeCurrentSigninStatus">
   <obsolete>
     Deprecated as of Jun 2016. The enum was added for debugging purpose and is
