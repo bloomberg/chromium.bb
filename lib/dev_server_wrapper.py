@@ -12,11 +12,12 @@ import multiprocessing
 import os
 import re
 import socket
-import sys
 import tempfile
 
 from six.moves import http_client as httplib
 from six.moves import urllib
+
+import cherrypy  # pylint: disable=import-error
 
 from chromite.lib import constants
 from chromite.cli import command
@@ -27,11 +28,12 @@ from chromite.lib import osutils
 from chromite.lib import path_util
 from chromite.lib import remote_access
 from chromite.lib import timeout_util
+from chromite.lib.xbuddy import build_artifact
+from chromite.lib.xbuddy import xbuddy
 
 
 DEFAULT_PORT = 8080
 
-DEVSERVER_PKG_DIR = os.path.join(constants.SOURCE_ROOT, 'src/platform/dev')
 DEFAULT_STATIC_DIR = path_util.FromChrootPath(
     os.path.join(constants.SOURCE_ROOT, 'src', 'platform', 'dev', 'static'))
 
@@ -127,16 +129,6 @@ def GetImagePathWithXbuddy(path, board, version=None,
   upath = os.environ['PATH'].split(os.pathsep)
   upath.insert(0, os.path.dirname(gs.GSContext.GetDefaultGSUtilBin()))
   os.environ['PATH'] = os.pathsep.join(upath)
-
-  # Import xbuddy for translating, downloading and staging the image.
-  if not os.path.exists(DEVSERVER_PKG_DIR):
-    raise Exception('Cannot find xbuddy module. Devserver package directory '
-                    'does not exist: %s' % DEVSERVER_PKG_DIR)
-  sys.path.append(DEVSERVER_PKG_DIR)
-  # pylint: disable=import-error
-  import build_artifact
-  import xbuddy
-  import cherrypy
 
   # If we are using the progress bar, quiet the logging output of cherrypy.
   if command.UseProgressBar():
