@@ -21,12 +21,10 @@ import org.chromium.weblayer_private.aidl.ObjectWrapper;
  */
 public final class BrowserFragmentController {
     private final IBrowserFragmentController mImpl;
-    private final ProfileManager mProfileManager;
     private BrowserController mController;
 
-    BrowserFragmentController(IBrowserFragmentController impl, ProfileManager profileManager) {
+    BrowserFragmentController(IBrowserFragmentController impl) {
         mImpl = impl;
-        mProfileManager = profileManager;
     }
 
     /**
@@ -109,7 +107,7 @@ public final class BrowserFragmentController {
     public Profile getProfile() {
         ThreadCheck.ensureOnUiThread();
         try {
-            return mProfileManager.getProfileFor(mImpl.getProfile());
+            return Profile.of(mImpl.getProfile());
         } catch (RemoteException e) {
             throw new APICallException(e);
         }

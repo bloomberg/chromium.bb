@@ -117,11 +117,6 @@ public final class BrowserController {
         return mFullscreenDelegateClient != null ? mFullscreenDelegateClient.getDelegate() : null;
     }
 
-    @Override
-    protected void finalize() {
-        // TODO(sky): figure out right assertion here if mProfile is non-null.
-    }
-
     @NonNull
     public NavigationController getNavigationController() {
         ThreadCheck.ensureOnUiThread();

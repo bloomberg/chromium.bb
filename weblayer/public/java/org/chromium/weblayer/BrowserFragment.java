@@ -218,8 +218,7 @@ public final class BrowserFragment extends Fragment {
         ThreadCheck.ensureOnUiThread();
         try {
             mImpl.asRemoteFragment().handleOnCreate(ObjectWrapper.wrap(savedInstanceState));
-            mBrowserFragmentController = new BrowserFragmentController(mImpl.getController(),
-                    mWebLayer.getProfileManager());
+            mBrowserFragmentController = new BrowserFragmentController(mImpl.getController());
         } catch (RemoteException e) {
             throw new APICallException(e);
         }

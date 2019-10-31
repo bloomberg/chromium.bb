@@ -19,10 +19,12 @@ import java.util.List;
 
 @JNINamespace("weblayer")
 public final class ProfileImpl extends IProfile.Stub {
+    private final String mPath;
     private long mNativeProfile;
     private Runnable mOnDestroyCallback;
 
     ProfileImpl(String path, Runnable onDestroyCallback) {
+        mPath = path;
         mNativeProfile = ProfileImplJni.get().createProfile(path);
         mOnDestroyCallback = onDestroyCallback;
     }
@@ -33,6 +35,11 @@ public final class ProfileImpl extends IProfile.Stub {
         mNativeProfile = 0;
         mOnDestroyCallback.run();
         mOnDestroyCallback = null;
+    }
+
+    @Override
+    public String getPath() {
+        return mPath;
     }
 
     @Override

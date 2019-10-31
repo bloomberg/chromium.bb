@@ -37,7 +37,6 @@ android_library("java") {
     "org/chromium/weblayer/Navigation.java",
     "org/chromium/weblayer/ObserverList.java",
     "org/chromium/weblayer/Profile.java",
-    "org/chromium/weblayer/ProfileManager.java",
     "org/chromium/weblayer/ThreadCheck.java",
     "org/chromium/weblayer/UnsupportedVersionException.java",
     "org/chromium/weblayer/WebLayer.java",
