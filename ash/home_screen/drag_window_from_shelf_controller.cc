@@ -427,7 +427,7 @@ IndicatorState DragWindowFromShelfController::GetIndicatorState(
       ::ash::GetIndicatorState(GetSnapPosition(location_in_screen));
   // Do not show drag-to-snap or cannot-snap drag indicator so that the drag is
   // is less distracting.
-  if (indicator_state == IndicatorState::kDragArea)
+  if (indicator_state == IndicatorState::kDragAreaBoth)
     indicator_state = IndicatorState::kNone;
 
   return indicator_state;

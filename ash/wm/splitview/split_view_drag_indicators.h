@@ -27,7 +27,7 @@ namespace ash {
 enum class IndicatorState {
   kNone,
   // Showing both left/top and right/bottom drag guidances.
-  kDragArea,
+  kDragAreaBoth,
 
   // Showing only left/top drag guidance.
   kDragAreaLeft,

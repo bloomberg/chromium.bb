@@ -5653,7 +5653,8 @@ TEST_P(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly, Dragging) {
                                    /*is_touch_dragging=*/false);
   const gfx::PointF left_of_middle(1150.f, 300.f);
   overview_session()->Drag(item2, left_of_middle);
-  EXPECT_EQ(IndicatorState::kDragArea, indicators->current_indicator_state());
+  EXPECT_EQ(IndicatorState::kDragAreaBoth,
+            indicators->current_indicator_state());
   overview_session()->CompleteDrag(item2, left_of_middle);
   EXPECT_EQ(SplitViewController::State::kRightSnapped,
             split_view_controller->state());

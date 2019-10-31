@@ -296,7 +296,7 @@ TEST_F(SplitViewDragIndicatorsTest, SplitViewDragIndicatorsState) {
                                   /*is_touch_dragging=*/false);
   EXPECT_EQ(IndicatorState::kNone, indicator_state());
   overview_session_->StartNormalDragMode(start_location);
-  EXPECT_EQ(IndicatorState::kDragArea, indicator_state());
+  EXPECT_EQ(IndicatorState::kDragAreaBoth, indicator_state());
 
   // Reset the gesture so we stay in overview mode.
   overview_session_->ResetDraggedWindowGesture();
@@ -309,7 +309,7 @@ TEST_F(SplitViewDragIndicatorsTest, SplitViewDragIndicatorsState) {
                                   /*is_touch_dragging=*/false);
   EXPECT_EQ(IndicatorState::kNone, indicator_state());
   overview_session_->Drag(item, gfx::PointF(edge_inset + 1, y_position));
-  EXPECT_EQ(IndicatorState::kDragArea, indicator_state());
+  EXPECT_EQ(IndicatorState::kDragAreaBoth, indicator_state());
   overview_session_->Drag(item, gfx::PointF(edge_inset, y_position));
   EXPECT_EQ(IndicatorState::kPreviewAreaLeft, indicator_state());
 
@@ -343,10 +343,10 @@ TEST_F(SplitViewDragIndicatorsTest,
   overview_session_->InitiateDrag(item, start_location,
                                   /*is_touch_dragging=*/false);
   overview_session_->StartNormalDragMode(start_location);
-  EXPECT_EQ(IndicatorState::kDragArea, indicator_state());
+  EXPECT_EQ(IndicatorState::kDragAreaBoth, indicator_state());
   const gfx::PointF end_location1(0.f, 0.f);
   overview_session_->Drag(item, end_location1);
-  EXPECT_EQ(IndicatorState::kDragArea, indicator_state());
+  EXPECT_EQ(IndicatorState::kDragAreaBoth, indicator_state());
   overview_session_->CompleteDrag(item, end_location1);
   EXPECT_EQ(IndicatorState::kNone, indicator_state());
 }
@@ -384,8 +384,8 @@ TEST_F(SplitViewDragIndicatorsTest, SplitViewDragIndicatorsVisibility) {
                   to_int(IndicatorType::kLeftText) |
                   to_int(IndicatorType::kRightHighlight) |
                   to_int(IndicatorType::kRightText);
-  // Verify that everything is visible in state |IndicatorState::kDragArea|.
-  indicator->SetIndicatorState(IndicatorState::kDragArea, gfx::Point());
+  // Verify that everything is visible in state |IndicatorState::kDragAreaBoth|.
+  indicator->SetIndicatorState(IndicatorState::kDragAreaBoth, gfx::Point());
   check_helper(indicator.get(), all);
 
   // Verify that only one highlight shows up for the preview area states.
@@ -444,7 +444,7 @@ TEST_F(SplitViewDragIndicatorsTest, SplitViewDragIndicatorsWidgetReparenting) {
   overview_session_->InitiateDrag(item, start_location,
                                   /*is_touch_dragging=*/true);
   overview_session_->Drag(item, gfx::PointF(100.f, start_location.y()));
-  EXPECT_EQ(IndicatorState::kDragArea, indicator_state());
+  EXPECT_EQ(IndicatorState::kDragAreaBoth, indicator_state());
   EXPECT_EQ(root_windows[0], overview_session_->split_view_drag_indicators()
                                  ->widget_->GetNativeView()
                                  ->GetRootWindow());
@@ -464,7 +464,7 @@ TEST_F(SplitViewDragIndicatorsTest, SplitViewDragIndicatorsWidgetReparenting) {
   overview_session_->InitiateDrag(item, start_location,
                                   /*is_touch_dragging=*/true);
   overview_session_->Drag(item, gfx::PointF(800.f, start_location.y()));
-  EXPECT_EQ(IndicatorState::kDragArea, indicator_state());
+  EXPECT_EQ(IndicatorState::kDragAreaBoth, indicator_state());
   EXPECT_EQ(root_windows[1], overview_session_->split_view_drag_indicators()
                                  ->widget_->GetNativeView()
                                  ->GetRootWindow());

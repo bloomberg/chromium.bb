@@ -408,7 +408,7 @@ IndicatorState GetIndicatorState(
 
   switch (snap_position) {
     case SplitViewController::NONE:
-      return IndicatorState::kDragArea;
+      return IndicatorState::kDragAreaBoth;
     case SplitViewController::LEFT:
       return IndicatorState::kPreviewAreaLeft;
     case SplitViewController::RIGHT:

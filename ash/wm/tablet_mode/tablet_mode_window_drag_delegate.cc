@@ -328,7 +328,7 @@ IndicatorState TabletModeWindowDragDelegate::GetIndicatorState(
   // In portrait screen orientation no top drag indicator since we're dragging
   // from top.
   return !IsCurrentScreenOrientationLandscape() &&
-                 indicator_state == IndicatorState::kDragArea
+                 indicator_state == IndicatorState::kDragAreaBoth
              ? IndicatorState::kDragAreaRight
              : indicator_state;
 }

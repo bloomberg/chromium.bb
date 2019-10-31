@@ -238,7 +238,7 @@ void OverviewWindowDragController::StartNormalDragMode(
     overview_session_->SetSplitViewDragIndicatorsDraggedWindow(
         item_->GetWindow());
     overview_session_->SetSplitViewDragIndicatorsIndicatorState(
-        IndicatorState::kDragArea, gfx::ToRoundedPoint(location_in_screen));
+        IndicatorState::kDragAreaBoth, gfx::ToRoundedPoint(location_in_screen));
     item_->HideCannotSnapWarning();
 
     // Update the split view divider bar status if necessary. If splitview is
