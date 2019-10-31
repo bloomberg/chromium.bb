@@ -2259,7 +2259,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'capri-zfpga',
       'caroline',
       'celes',
-      'chell',
       'cheza',
       'cobblepot',
       'coral',
@@ -2276,7 +2275,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'flapjack',
       'gale',
       'gandof',
-      'glados',
       'gnawty',
       'gonzo',
       'grunt',
@@ -2386,8 +2384,10 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'auron_paine', # crbug.com/1008410
       'auron_yuna',  # temporary hack for crbug.com/1008674
       'cave',  # temporary hack for crbug.com/1008674
+      'chell', # https://crbug.com/1020191
       'elm',  # temporary hack for crbug.com/1008674
       'fizz-moblab', # crbug.com/995170
+      'glados', # https://crbug.com/1020191
       'lakitu',  # crbug.com/1015040  review on 2019-10-17
       'lakitu-gpu',  # crbug.com/1015040  review on 2019-10-17
       'lakitu-st',  # crbug.com/1015040  review on 2019-10-17
