@@ -349,7 +349,7 @@ TEST_F(NavigationRequestTest, MAYBE_CancelDeferredWillRedirect) {
   // Simulate WillRedirectRequest. The request should be deferred. The callback
   // should not have been called.
   SimulateWillRedirectRequest();
-  EXPECT_EQ(NavigationRequest::WILL_REDIRECT_REQUEST, state());
+  EXPECT_EQ(NavigationRequest::WILL_REDIRECT_REQUEST, request_state());
   EXPECT_FALSE(was_callback_called());
   EXPECT_TRUE(call_counts_match(test_throttle, 0, 1, 0, 0));
 
