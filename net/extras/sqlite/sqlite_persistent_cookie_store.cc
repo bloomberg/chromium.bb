@@ -480,6 +480,7 @@ enum DBCookieSameSite {
   kCookieSameSiteNoRestriction = 0,
   kCookieSameSiteLax = 1,
   kCookieSameSiteStrict = 2,
+  // Deprecated, mapped to kCookieSameSiteUnspecified.
   kCookieSameSiteExtended = 3
 };
 

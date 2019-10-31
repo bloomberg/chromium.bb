@@ -64,7 +64,7 @@ enum class CookieSameSiteString {
   kLax = 3,
   kStrict = 4,
   kNone = 5,
-  kExtended = 6,
+  kExtended = 6,  // Deprecated, kept for metrics only.
 
   // Keep last, update if adding new value.
   kMaxValue = kExtended
