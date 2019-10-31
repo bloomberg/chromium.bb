@@ -14,10 +14,6 @@
 
 class Profile;
 
-namespace storage {
-class FileSystemURL;
-}
-
 namespace drive {
 
 class DriveIntegrationService;
@@ -28,14 +24,6 @@ namespace util {
 // Otherwise, nullptr.
 DriveIntegrationService* GetIntegrationServiceByProfile(Profile*);
 
-// Returns the Drive mount point path, which looks like "/special/drive-<hash>".
-base::FilePath GetDriveMountPointPath(Profile* profile);
-
-// Returns the Drive mount point path, which looks like
-// "/special/drive-<username_hash>", when provided with the |user_id_hash|.
-base::FilePath GetDriveMountPointPathForUserIdHash(
-    const std::string& user_id_hash);
-
 // Returns true if the given path is under the Drive mount point.
 bool IsUnderDriveMountPoint(const base::FilePath& path);
 
@@ -43,16 +31,6 @@ bool IsUnderDriveMountPoint(const base::FilePath& path);
 // point. Returns an empty path if |path| is not under the Drive mount point.
 // Examples: ExtractDrivePath("/special/drive-xxx/foo.txt") => "drive/foo.txt"
 base::FilePath ExtractDrivePath(const base::FilePath& path);
-
-// Extracts |profile| from the given paths located under
-// GetDriveMountPointPath(profile). Returns NULL if it does not correspond to
-// a valid mount point path. Must be called from UI thread.
-Profile* ExtractProfileFromPath(const base::FilePath& path);
-
-// Extracts the Drive path (e.g., "drive/foo.txt") from the filesystem URL.
-// Returns an empty path if |url| does not point under Drive mount point.
-base::FilePath ExtractDrivePathFromFileSystemUrl(
-    const storage::FileSystemURL& url);
 
 // Gets the cache root path (i.e. <user_profile_dir>/GCache/v1) from the
 // profile.
