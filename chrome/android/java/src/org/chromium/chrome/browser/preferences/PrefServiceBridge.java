@@ -746,13 +746,6 @@ public class PrefServiceBridge {
     }
 
     /**
-     * @return Whether printing is enabled.
-     */
-    public boolean isPrintingEnabled() {
-        return PrefServiceBridgeJni.get().getPrintingEnabled(PrefServiceBridge.this);
-    }
-
-    /**
      * Get all the version strings from native.
      * @return AboutVersionStrings about version strings.
      */
@@ -948,7 +941,6 @@ public class PrefServiceBridge {
         boolean getResolveNavigationErrorManaged(PrefServiceBridge caller);
         boolean getIncognitoModeEnabled(PrefServiceBridge caller);
         boolean getIncognitoModeManaged(PrefServiceBridge caller);
-        boolean getPrintingEnabled(PrefServiceBridge caller);
         boolean getSensorsEnabled(PrefServiceBridge caller);
         boolean getSoundEnabled(PrefServiceBridge caller);
         void setTranslateEnabled(PrefServiceBridge caller, boolean enabled);

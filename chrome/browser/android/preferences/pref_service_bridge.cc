@@ -371,12 +371,6 @@ static jboolean JNI_PrefServiceBridge_GetPasswordEchoEnabled(
   return GetPrefService()->GetBoolean(prefs::kWebKitPasswordEchoEnabled);
 }
 
-static jboolean JNI_PrefServiceBridge_GetPrintingEnabled(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  return GetPrefService()->GetBoolean(prefs::kPrintingEnabled);
-}
-
 static jboolean JNI_PrefServiceBridge_GetTranslateEnabled(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
