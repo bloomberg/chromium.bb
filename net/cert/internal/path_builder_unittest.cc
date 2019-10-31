@@ -856,6 +856,104 @@ TEST_F(PathBuilderKeyRolloverTest, TestRolloverLongChain) {
   EXPECT_EQ(oldroot_, path2.certs[3]);
 }
 
+// Tests that when SetExploreAllPaths is combined with SetIterationLimit the
+// path builder will return all the paths that were able to be built before the
+// iteration limit was reached.
+TEST_F(PathBuilderKeyRolloverTest, ExploreAllPathsWithIterationLimit) {
+  struct Expectation {
+    int iteration_limit;
+    size_t expected_num_paths;
+  } kExpectations[] = {
+      // No iteration limit. All possible paths should be built.
+      {0, 4},
+      // Limit 1 is only enough to reach the intermediate, no paths should be
+      // built.
+      {1, 0},
+      // Limit 2 allows reaching the root on the first path.
+      {2, 1},
+      // Next iteration uses oldroot instead of newroot.
+      {3, 2},
+      // Backtracking to the target cert.
+      {4, 2},
+      // Adding oldintermediate.
+      {5, 2},
+      // Trying newroot.
+      {6, 3},
+      // Trying oldroot.
+      {7, 4},
+  };
+
+  // Trust both old and new roots.
+  TrustStoreInMemory trust_store;
+  trust_store.AddTrustAnchor(oldroot_);
+  trust_store.AddTrustAnchor(newroot_);
+
+  // Intermediates and root rollover are all provided synchronously.
+  CertIssuerSourceStatic sync_certs;
+  sync_certs.AddCert(oldintermediate_);
+  sync_certs.AddCert(newintermediate_);
+
+  for (const auto& expectation : kExpectations) {
+    CertPathBuilder path_builder(
+        target_, &trust_store, &delegate_, time_, KeyPurpose::ANY_EKU,
+        initial_explicit_policy_, user_initial_policy_set_,
+        initial_policy_mapping_inhibit_, initial_any_policy_inhibit_);
+    path_builder.AddCertIssuerSource(&sync_certs);
+
+    // Explore all paths, rather than stopping at the first valid path.
+    path_builder.SetExploreAllPaths(true);
+
+    // Limit the number of iterations.
+    path_builder.SetIterationLimit(expectation.iteration_limit);
+
+    auto result = path_builder.Run();
+
+    EXPECT_EQ(expectation.expected_num_paths > 0, result.HasValidPath());
+    ASSERT_EQ(expectation.expected_num_paths, result.paths.size());
+
+    if (expectation.expected_num_paths > 0) {
+      // Path builder will first build path: target <- newintermediate <-
+      // newroot
+      const auto& path0 = *result.paths[0];
+      EXPECT_TRUE(path0.IsValid());
+      ASSERT_EQ(3U, path0.certs.size());
+      EXPECT_EQ(target_, path0.certs[0]);
+      EXPECT_EQ(newintermediate_, path0.certs[1]);
+      EXPECT_EQ(newroot_, path0.certs[2]);
+    }
+
+    if (expectation.expected_num_paths > 1) {
+      // Next path:  target <- newintermediate <- oldroot
+      const auto& path1 = *result.paths[1];
+      EXPECT_FALSE(path1.IsValid());
+      ASSERT_EQ(3U, path1.certs.size());
+      EXPECT_EQ(target_, path1.certs[0]);
+      EXPECT_EQ(newintermediate_, path1.certs[1]);
+      EXPECT_EQ(oldroot_, path1.certs[2]);
+    }
+
+    if (expectation.expected_num_paths > 2) {
+      // Next path:  target <- oldintermediate <- newroot
+      const auto& path2 = *result.paths[2];
+      EXPECT_FALSE(path2.IsValid());
+      ASSERT_EQ(3U, path2.certs.size());
+      EXPECT_EQ(target_, path2.certs[0]);
+      EXPECT_EQ(oldintermediate_, path2.certs[1]);
+      EXPECT_EQ(newroot_, path2.certs[2]);
+    }
+
+    if (expectation.expected_num_paths > 3) {
+      // Final path:  target <- oldintermediate <- oldroot
+      const auto& path3 = *result.paths[3];
+      EXPECT_TRUE(path3.IsValid());
+      ASSERT_EQ(3U, path3.certs.size());
+      EXPECT_EQ(target_, path3.certs[0]);
+      EXPECT_EQ(oldintermediate_, path3.certs[1]);
+      EXPECT_EQ(oldroot_, path3.certs[2]);
+    }
+  }
+}
+
 // If the target cert is a trust anchor, however is not itself *signed* by a
 // trust anchor, then it is not considered valid (the SPKI and name of the
 // trust anchor matches the SPKI and subject of the targe certificate, but the

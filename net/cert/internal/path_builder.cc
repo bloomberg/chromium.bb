@@ -596,6 +596,10 @@ void CertPathBuilder::SetDeadline(base::TimeTicks deadline) {
   deadline_ = deadline;
 }
 
+void CertPathBuilder::SetExploreAllPaths(bool explore_all_paths) {
+  explore_all_paths_ = explore_all_paths;
+}
+
 CertPathBuilder::Result CertPathBuilder::Run() {
   uint32_t iteration_count = 0;
 
@@ -634,10 +638,9 @@ CertPathBuilder::Result CertPathBuilder::Run() {
 
     AddResultPath(std::move(result_path));
 
-    if (path_is_good) {
+    if (path_is_good && !explore_all_paths_) {
       RecordIterationCountHistogram(iteration_count);
       // Found a valid path, return immediately.
-      // TODO(mattm): add debug/test mode that tries all possible paths.
       return std::move(out_result_);
     }
     // Path did not verify. Try more paths.
@@ -646,10 +649,12 @@ CertPathBuilder::Result CertPathBuilder::Run() {
 
 void CertPathBuilder::AddResultPath(
     std::unique_ptr<CertPathBuilderResultPath> result_path) {
-  // TODO(mattm): set best_result_index based on number or severity of errors.
-  if (result_path->IsValid())
+  // TODO(mattm): If there are no valid paths, set best_result_index based on
+  // number or severity of errors. If there are multiple valid paths, could set
+  // best_result_index based on prioritization (since due to AIA and such, the
+  // actual order results were discovered may not match the ideal).
+  if (result_path->IsValid() && !out_result_.HasValidPath())
     out_result_.best_result_index = out_result_.paths.size();
-  // TODO(mattm): add flag to only return a single path or all attempted paths?
   out_result_.paths.push_back(std::move(result_path));
 }
 
