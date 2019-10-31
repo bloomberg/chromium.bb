@@ -174,6 +174,7 @@ PaintPropertyChangeType VisualViewport::UpdatePaintPropertyNodesIfNeeded(
     TransformPaintPropertyNode::State state{
         TransformationMatrix().Scale(Scale())};
     state.flags.in_subtree_of_page_scale = false;
+    state.direct_compositing_reasons = CompositingReason::kWillChangeTransform;
     state.compositor_element_id = GetCompositorElementId();
 
     if (!page_scale_node_) {
@@ -258,6 +259,7 @@ PaintPropertyChangeType VisualViewport::UpdatePaintPropertyNodesIfNeeded(
     TransformPaintPropertyNode::State state{
         FloatSize(-scroll_position.Width(), -scroll_position.Height())};
     state.scroll = scroll_node_;
+    state.direct_compositing_reasons = CompositingReason::kWillChangeTransform;
     if (!scroll_translation_node_) {
       scroll_translation_node_ = TransformPaintPropertyNode::Create(
           *page_scale_node_, std::move(state));

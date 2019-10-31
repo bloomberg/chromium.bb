@@ -144,6 +144,9 @@ crbug.com/959941 virtual/threaded-prefer-compositing/fast/scrolling/mouse-scroll
 
 crbug.com/907601 virtual/threaded-prefer-compositing/fast/scrolling/events/scrollend-event-fired-after-snap.html [ Skip ]
 
+# Need to create layers for fully invisible content for hit testing.
+crbug.com/937573 virtual/threaded-no-composited-antialiasing/animations/invisible-composited-animations-prevent-scroll.html [ Failure ]
+
 # Scrolling with the mouse wheel does not work.
 crbug.com/979352 virtual/threaded-prefer-compositing/fast/scrolling/non-composited-scroller-in-scrolled-absolute-scroller.html [ Failure ]
 crbug.com/979352 virtual/threaded-prefer-compositing/fast/scrolling/non-composited-scroller-in-scrolled-position-fixed-scroller.html [ Failure ]
