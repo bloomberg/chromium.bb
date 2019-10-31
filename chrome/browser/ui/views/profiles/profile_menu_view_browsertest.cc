@@ -575,18 +575,9 @@ class ProfileMenuViewExtensionsTestWithScopedAccountConsistency
 
 // Open the profile chooser to increment the Dice sign-in promo show counter
 // below the threshold.
-// TODO(https://crbug.com/862573): Re-enable when no longer failing when
-// is_chrome_branded is true.
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-#define MAYBE_IncrementDiceSigninPromoShowCounter \
-  DISABLED_IncrementDiceSigninPromoShowCounter
-#else
-#define MAYBE_IncrementDiceSigninPromoShowCounter \
-  IncrementDiceSigninPromoShowCounter
-#endif
 IN_PROC_BROWSER_TEST_F(
     ProfileMenuViewExtensionsTestWithScopedAccountConsistency,
-    MAYBE_IncrementDiceSigninPromoShowCounter) {
+    IncrementDiceSigninPromoShowCounter) {
   browser()->profile()->GetPrefs()->SetInteger(
       prefs::kDiceSigninUserMenuPromoCount, 7);
   ASSERT_NO_FATAL_FAILURE(OpenProfileMenuView(browser()));
@@ -595,18 +586,9 @@ IN_PROC_BROWSER_TEST_F(
 
 // The DICE sync illustration is shown only the first 10 times. This test
 // ensures that the profile chooser is shown correctly above this threshold.
-// TODO(https://crbug.com/862573): Re-enable when no longer failing when
-// is_chrome_branded is true.
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-#define MAYBE_DiceSigninPromoWithoutIllustration \
-  DISABLED_DiceSigninPromoWithoutIllustration
-#else
-#define MAYBE_DiceSigninPromoWithoutIllustration \
-  DiceSigninPromoWithoutIllustration
-#endif
 IN_PROC_BROWSER_TEST_F(
     ProfileMenuViewExtensionsTestWithScopedAccountConsistency,
-    MAYBE_DiceSigninPromoWithoutIllustration) {
+    DiceSigninPromoWithoutIllustration) {
   browser()->profile()->GetPrefs()->SetInteger(
       prefs::kDiceSigninUserMenuPromoCount, 10);
   ASSERT_NO_FATAL_FAILURE(OpenProfileMenuView(browser()));
