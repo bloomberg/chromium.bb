@@ -1636,12 +1636,15 @@ const ComputedStyle* Node::VirtualEnsureComputedStyle(
 
 void Node::SetForceReattachLayoutTree() {
   DCHECK(!GetDocument().GetStyleEngine().InRebuildLayoutTree());
+  DCHECK(IsElementNode() || IsTextNode());
   if (GetForceReattachLayoutTree())
     return;
   if (!InActiveDocument())
     return;
-  if (!IsContainerNode() && !IsTextNode())
+  if (IsElementNode() && !GetComputedStyle()) {
+    DCHECK(!GetLayoutObject());
     return;
+  }
   SetFlag(kForceReattachLayoutTree);
   if (!NeedsStyleRecalc()) {
     // Make sure we traverse down to this node during style recalc.
