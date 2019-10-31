@@ -625,7 +625,7 @@ void AudioRendererImpl::OnAudioDecoderStreamInitialized(bool success) {
       (media_client ? media_client->GetAudioRendererAlgorithmParameters(
                           audio_parameters_)
                     : base::nullopt);
-  if (params) {
+  if (params && !client_->IsVideoStreamAvailable()) {
     algorithm_ = std::make_unique<AudioRendererAlgorithm>(params.value());
   } else {
     algorithm_ = std::make_unique<AudioRendererAlgorithm>();
