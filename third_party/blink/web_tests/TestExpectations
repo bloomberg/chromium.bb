@@ -5773,3 +5773,4 @@ crbug.com/940927 external/wpt/trusted-types/eval-with-permissive-csp.tentative.h
 
 # Sheriff 2019-10-31
 crbug.com/1020034 [ Mac10.10 ] fast/forms/month/month-appearance-l10n.html [ Failure ]
+crbug.com/1020036 [ Debug ] external/wpt/lifecycle/freeze.html [ Failure Pass ]
