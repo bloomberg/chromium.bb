@@ -184,6 +184,7 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate,
   void DidSwapBuffersComplete(gpu::SwapBuffersCompleteParams params) override;
   void BufferPresented(const gfx::PresentationFeedback& feedback) override;
   GpuVSyncCallback GetGpuVSyncCallback() override;
+  base::TimeDelta GetGpuBlockedTimeSinceLastSwap() override;
 
   void SendOverlayPromotionNotification(
       base::flat_set<gpu::Mailbox> promotion_denied,

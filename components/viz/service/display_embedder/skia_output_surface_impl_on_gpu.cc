@@ -1446,6 +1446,10 @@ GpuVSyncCallback SkiaOutputSurfaceImplOnGpu::GetGpuVSyncCallback() {
   return gpu_vsync_callback_;
 }
 
+base::TimeDelta SkiaOutputSurfaceImplOnGpu::GetGpuBlockedTimeSinceLastSwap() {
+  return dependency_->GetGpuBlockedTimeSinceLastSwap();
+}
+
 void SkiaOutputSurfaceImplOnGpu::DidSwapBuffersComplete(
     gpu::SwapBuffersCompleteParams params) {
   NOTIMPLEMENTED_LOG_ONCE();
