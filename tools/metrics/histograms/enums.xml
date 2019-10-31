@@ -13855,6 +13855,7 @@ Called by update_net_error_codes.py.-->
   <int value="32" label="Audits' view trace clicked"/>
   <int value="33" label="Network panel film strip started recording"/>
   <int value="34" label="Coverage report was filtered"/>
+  <int value="35" label="Coverage started (per block)"/>
 </enum>
 
 <enum name="DevToolsBackgroundService">
