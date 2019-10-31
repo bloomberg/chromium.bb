@@ -1825,18 +1825,22 @@ bool WebContentsImpl::NeedToFireBeforeUnload() {
   if (GetRenderViewHost()->SuddenTerminationAllowed())
     return false;
 
-  // Check whether the main frame needs to run beforeunload or unload handlers.
-  if (GetMainFrame()->GetSuddenTerminationDisablerState(
-          blink::kBeforeUnloadHandler | blink::kUnloadHandler)) {
-    return true;
+  // Check whether any frame in the frame tree needs to run beforeunload or
+  // unload handlers.
+  for (FrameTreeNode* node : frame_tree_.Nodes()) {
+    RenderFrameHostImpl* rfh = node->current_frame_host();
+
+    // No need to run beforeunload/unload if the RenderFrame isn't live.
+    if (!rfh->IsRenderFrameLive())
+      continue;
+
+    if (rfh->GetSuddenTerminationDisablerState(blink::kBeforeUnloadHandler |
+                                               blink::kUnloadHandler)) {
+      return true;
+    }
   }
 
-  // Check whether any subframes need to run beforeunload handlers.
-  //
-  // TODO(alexmos): Also check whether subframes need to run unload handlers in
-  // addition to beforeunload.
-  return GetMainFrame()->ShouldDispatchBeforeUnload(
-      true /* check_subframes_only */);
+  return false;
 }
 
 void WebContentsImpl::DispatchBeforeUnload(bool auto_cancel) {
