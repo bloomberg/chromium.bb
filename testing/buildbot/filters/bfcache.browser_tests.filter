@@ -21,6 +21,3 @@
 
 # https://crbug.com/1017594
 -IsolatedAppTest.CrossProcessClientRedirect
-
-# https://crbug.com/1017597
--ViewSourceWithSplitCacheEnabledTest.NetworkIsolationKeyReusedForBackNavigation/0
