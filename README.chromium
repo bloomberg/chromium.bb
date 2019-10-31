@@ -234,3 +234,9 @@ D. Local Modifications
   - upstream PR:
     https://github.com/unicode-org/icu/pull/902
 
+9. Fix the variant in locale is not sorted
+  - patches/sort_variant.patch
+  - upstream bug:
+    https://unicode-org.atlassian.net/browse/ICU-20478
+  - upstream PR:
+    https://github.com/unicode-org/icu/pull/836
