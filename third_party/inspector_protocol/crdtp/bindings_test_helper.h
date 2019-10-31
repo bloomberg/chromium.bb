@@ -7,10 +7,10 @@
 // bases (e.g. v8), a custom file with these two functions and with appropriate
 // includes may need to be provided, so it isn't necessarily part of a roll.
 
-#ifndef INSPECTOR_PROTOCOL_BINDINGS_BINDINGS_TEST_HELPER_H_
-#define INSPECTOR_PROTOCOL_BINDINGS_BINDINGS_TEST_HELPER_H_
+#ifndef CRDTP_BINDINGS_TEST_HELPER_H_
+#define CRDTP_BINDINGS_TEST_HELPER_H_
 
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#endif  // INSPECTOR_PROTOCOL_BINDINGS_BINDINGS_TEST_HELPER_H_
+#endif  // CRDTP_BINDINGS_TEST_HELPER_H_

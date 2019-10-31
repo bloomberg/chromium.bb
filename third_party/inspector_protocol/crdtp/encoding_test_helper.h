@@ -7,8 +7,8 @@
 // bases (e.g. v8), a custom file with these two functions and with appropriate
 // includes may need to be provided, so it isn't necessarily part of a roll.
 
-#ifndef INSPECTOR_PROTOCOL_ENCODING_ENCODING_TEST_HELPER_H_
-#define INSPECTOR_PROTOCOL_ENCODING_ENCODING_TEST_HELPER_H_
+#ifndef CRDTP_ENCODING_TEST_HELPER_H_
+#define CRDTP_ENCODING_TEST_HELPER_H_
 
 #include <cstdint>
 #include <string>
@@ -19,7 +19,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace inspector_protocol_encoding {
+namespace crdtp {
 std::string UTF16ToUTF8(span<uint16_t> in) {
   std::string out;
   bool success = base::UTF16ToUTF8(
@@ -35,6 +35,6 @@ std::vector<uint16_t> UTF8ToUTF16(span<uint8_t> in) {
   CHECK(success);
   return std::vector<uint16_t>(tmp.begin(), tmp.end());
 }
-}  // namespace inspector_protocol_encoding
+}  // namespace crdtp
 
-#endif  // INSPECTOR_PROTOCOL_ENCODING_ENCODING_TEST_HELPER_H_
+#endif  // CRDTP_ENCODING_TEST_HELPER_H_

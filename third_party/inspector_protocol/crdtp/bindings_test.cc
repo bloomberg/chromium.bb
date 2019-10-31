@@ -9,7 +9,7 @@
 
 #include "bindings_test_helper.h"
 
-namespace inspector_protocol_bindings {
+namespace crdtp {
 namespace glue {
 // =============================================================================
 // glue::detail::PtrMaybe, glue::detail::ValueMaybe, templates for optional
@@ -41,4 +41,4 @@ TEST(PtrValueTest, SmokeTest) {
   EXPECT_EQ(out, 42);
 }
 }  // namespace glue
-}  // namespace inspector_protocol_bindings
+}  // namespace crdtp

@@ -9,7 +9,7 @@
 
 #include "encoding.h"
 
-namespace inspector_protocol_encoding {
+namespace crdtp {
 class SingleThreadedPlatform : public json::Platform {
   bool StrToD(const char* str, double* result) const override {
     const char* saved_locale = std::setlocale(LC_NUMERIC, nullptr);
@@ -73,11 +73,11 @@ int Transcode(const std::string& cmd,
   output_file.write(out.data(), out.size());
   return 0;
 }
-}  // namespace inspector_protocol_encoding
+}  // namespace crdtp
 
 int main(int argc, char** argv) {
   if (argc == 4)
-    return ::inspector_protocol_encoding::Transcode(argv[1], argv[2], argv[3]);
+    return ::crdtp::Transcode(argv[1], argv[2], argv[3]);
   std::cerr << "usage: " << argv[0]
             << " --json-to-cbor <input-file> <output-file>\n"
             << "  or   " << argv[0]

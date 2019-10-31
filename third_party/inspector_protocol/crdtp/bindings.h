@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef INSPECTOR_PROTOCOL_BINDINGS_BINDINGS_H_
-#define INSPECTOR_PROTOCOL_BINDINGS_BINDINGS_H_
+#ifndef CRDTP_BINDINGS_H_
+#define CRDTP_BINDINGS_H_
 
 #include <cassert>
 #include <memory>
 
-namespace inspector_protocol_bindings {
+namespace crdtp {
 namespace glue {
 // =============================================================================
 // glue::detail::PtrMaybe, glue::detail::ValueMaybe, templates for optional
@@ -70,11 +70,11 @@ class ValueMaybe {
 };
 }  // namespace detail
 }  // namespace glue
-}  // namespace inspector_protocol_bindings
+}  // namespace crdtp
 
 #define PROTOCOL_DISALLOW_COPY(ClassName) \
-    private: \
-        ClassName(const ClassName&) = delete; \
-        ClassName& operator=(const ClassName&) = delete
+ private:                                 \
+  ClassName(const ClassName&) = delete;   \
+  ClassName& operator=(const ClassName&) = delete
 
-#endif  // INSPECTOR_PROTOCOL_BINDINGS_BINDINGS_H_
+#endif  // CRDTP_BINDINGS_H_

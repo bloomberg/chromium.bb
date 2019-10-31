@@ -11,7 +11,7 @@
 #include <limits>
 #include <stack>
 
-namespace inspector_protocol_encoding {
+namespace crdtp {
 // =============================================================================
 // Status and Error codes
 // =============================================================================
@@ -855,7 +855,7 @@ void CBORTokenizer::ReadNextToken(bool enter_envelope) {
       switch (token_start_type_) {
         case MajorType::UNSIGNED:  // INT32.
           // INT32 is a signed int32 (int32 makes sense for the
-          // inspector_protocol, it's not a CBOR limitation), so we check
+          // crdtp, it's not a CBOR limitation), so we check
           // against the signed max, so that the allowable values are
           // 0, 1, 2, ... 2^31 - 1.
           if (!bytes_read || std::numeric_limits<int32_t>::max() <
@@ -867,7 +867,7 @@ void CBORTokenizer::ReadNextToken(bool enter_envelope) {
           return;
         case MajorType::NEGATIVE: {  // INT32.
           // INT32 is a signed int32 (int32 makes sense for the
-          // inspector_protocol, it's not a CBOR limitation); in CBOR, the
+          // crdtp, it's not a CBOR limitation); in CBOR, the
           // negative values for INT32 are represented as NEGATIVE, that is, -1
           // INT32 is represented as 1 << 5 | 0 (major type 1, additional info
           // value 0).
@@ -2254,4 +2254,4 @@ Status ConvertJSONToCBOR(const Platform& platform,
   return ConvertJSONToCBORTmpl(platform, json, cbor);
 }
 }  // namespace json
-}  // namespace inspector_protocol_encoding
+}  // namespace crdtp

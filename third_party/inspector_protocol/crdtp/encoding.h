@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef INSPECTOR_PROTOCOL_ENCODING_ENCODING_H_
-#define INSPECTOR_PROTOCOL_ENCODING_ENCODING_H_
+#ifndef CRDTP_ENCODING_H_
+#define CRDTP_ENCODING_H_
 
 #include <algorithm>
 #include <cstddef>
@@ -14,7 +14,9 @@
 #include <string>
 #include <vector>
 
-namespace inspector_protocol_encoding {
+#include "export.h"
+
+namespace crdtp {
 // This library is designed to be portable. The only allowed dependency
 // are the C/C++ standard libraries, up to C++11. We support both 32 bit
 // and 64 architectures.
@@ -155,7 +157,7 @@ enum class Error {
 
 // A status value with position that can be copied. The default status
 // is OK. Usually, error status values should come with a valid position.
-struct Status {
+struct CRDTP_EXPORT Status {
   static constexpr size_t npos() { return std::numeric_limits<size_t>::max(); }
 
   bool ok() const { return error == Error::OK; }
@@ -229,60 +231,62 @@ namespace cbor {
 // and arrays; and the byte that indicates a byte string with 32 bit length.
 // These two bytes start an envelope, and thereby also any CBOR message
 // produced or consumed by this protocol. See also |EnvelopeEncoder| below.
-uint8_t InitialByteForEnvelope();
-uint8_t InitialByteFor32BitLengthByteString();
+CRDTP_EXPORT uint8_t InitialByteForEnvelope();
+CRDTP_EXPORT uint8_t InitialByteFor32BitLengthByteString();
 
 // Checks whether |msg| is a cbor message.
-bool IsCBORMessage(span<uint8_t> msg);
+CRDTP_EXPORT bool IsCBORMessage(span<uint8_t> msg);
 
 // =============================================================================
 // Encoding individual CBOR items
 // =============================================================================
 
 // Some constants for CBOR tokens that only take a single byte on the wire.
-uint8_t EncodeTrue();
-uint8_t EncodeFalse();
-uint8_t EncodeNull();
-uint8_t EncodeIndefiniteLengthArrayStart();
-uint8_t EncodeIndefiniteLengthMapStart();
-uint8_t EncodeStop();
+CRDTP_EXPORT uint8_t EncodeTrue();
+CRDTP_EXPORT uint8_t EncodeFalse();
+CRDTP_EXPORT uint8_t EncodeNull();
+CRDTP_EXPORT uint8_t EncodeIndefiniteLengthArrayStart();
+CRDTP_EXPORT uint8_t EncodeIndefiniteLengthMapStart();
+CRDTP_EXPORT uint8_t EncodeStop();
 
 // Encodes |value| as |UNSIGNED| (major type 0) iff >= 0, or |NEGATIVE|
 // (major type 1) iff < 0.
-void EncodeInt32(int32_t value, std::vector<uint8_t>* out);
-void EncodeInt32(int32_t value, std::string* out);
+CRDTP_EXPORT void EncodeInt32(int32_t value, std::vector<uint8_t>* out);
+CRDTP_EXPORT void EncodeInt32(int32_t value, std::string* out);
 
 // Encodes a UTF16 string as a BYTE_STRING (major type 2). Each utf16
 // character in |in| is emitted with most significant byte first,
 // appending to |out|.
-void EncodeString16(span<uint16_t> in, std::vector<uint8_t>* out);
-void EncodeString16(span<uint16_t> in, std::string* out);
+CRDTP_EXPORT void EncodeString16(span<uint16_t> in, std::vector<uint8_t>* out);
+CRDTP_EXPORT void EncodeString16(span<uint16_t> in, std::string* out);
 
 // Encodes a UTF8 string |in| as STRING (major type 3).
-void EncodeString8(span<uint8_t> in, std::vector<uint8_t>* out);
-void EncodeString8(span<uint8_t> in, std::string* out);
+CRDTP_EXPORT void EncodeString8(span<uint8_t> in, std::vector<uint8_t>* out);
+CRDTP_EXPORT void EncodeString8(span<uint8_t> in, std::string* out);
 
 // Encodes the given |latin1| string as STRING8.
 // If any non-ASCII character is present, it will be represented
 // as a 2 byte UTF8 sequence.
-void EncodeFromLatin1(span<uint8_t> latin1, std::vector<uint8_t>* out);
-void EncodeFromLatin1(span<uint8_t> latin1, std::string* out);
+CRDTP_EXPORT void EncodeFromLatin1(span<uint8_t> latin1,
+                                   std::vector<uint8_t>* out);
+CRDTP_EXPORT void EncodeFromLatin1(span<uint8_t> latin1, std::string* out);
 
 // Encodes the given |utf16| string as STRING8 if it's entirely US-ASCII.
 // Otherwise, encodes as STRING16.
-void EncodeFromUTF16(span<uint16_t> utf16, std::vector<uint8_t>* out);
-void EncodeFromUTF16(span<uint16_t> utf16, std::string* out);
+CRDTP_EXPORT void EncodeFromUTF16(span<uint16_t> utf16,
+                                  std::vector<uint8_t>* out);
+CRDTP_EXPORT void EncodeFromUTF16(span<uint16_t> utf16, std::string* out);
 
 // Encodes arbitrary binary data in |in| as a BYTE_STRING (major type 2) with
 // definitive length, prefixed with tag 22 indicating expected conversion to
 // base64 (see RFC 7049, Table 3 and Section 2.4.4.2).
-void EncodeBinary(span<uint8_t> in, std::vector<uint8_t>* out);
-void EncodeBinary(span<uint8_t> in, std::string* out);
+CRDTP_EXPORT void EncodeBinary(span<uint8_t> in, std::vector<uint8_t>* out);
+CRDTP_EXPORT void EncodeBinary(span<uint8_t> in, std::string* out);
 
 // Encodes / decodes a double as Major type 7 (SIMPLE_VALUE),
 // with additional info = 27, followed by 8 bytes in big endian.
-void EncodeDouble(double value, std::vector<uint8_t>* out);
-void EncodeDouble(double value, std::string* out);
+CRDTP_EXPORT void EncodeDouble(double value, std::vector<uint8_t>* out);
+CRDTP_EXPORT void EncodeDouble(double value, std::string* out);
 
 // =============================================================================
 // cbor::EnvelopeEncoder - for wrapping submessages
@@ -295,7 +299,7 @@ void EncodeDouble(double value, std::string* out);
 // info = 24, followed by a byte string with a 32 bit length value;
 // so the maximal structure that we can wrap is 2^32 bits long.
 // See also: https://tools.ietf.org/html/rfc7049#section-2.4.4.1
-class EnvelopeEncoder {
+class CRDTP_EXPORT EnvelopeEncoder {
  public:
   // Emits the envelope start bytes and records the position for the
   // byte size in |byte_size_pos_|. Also emits empty bytes for the
@@ -319,11 +323,12 @@ class EnvelopeEncoder {
 // that drives it. The handler will encode into |out|, and iff an error occurs
 // it will set |status| to an error and clear |out|. Otherwise, |status.ok()|
 // will be |true|.
-std::unique_ptr<StreamingParserHandler> NewCBOREncoder(
+CRDTP_EXPORT std::unique_ptr<StreamingParserHandler> NewCBOREncoder(
     std::vector<uint8_t>* out,
     Status* status);
-std::unique_ptr<StreamingParserHandler> NewCBOREncoder(std::string* out,
-                                                       Status* status);
+CRDTP_EXPORT std::unique_ptr<StreamingParserHandler> NewCBOREncoder(
+    std::string* out,
+    Status* status);
 
 // =============================================================================
 // cbor::CBORTokenizer - for parsing individual CBOR items
@@ -385,7 +390,7 @@ enum class MajorType {
 // numbers, strings, etc. This is not a complete CBOR parser, but makes it much
 // easier to implement one (e.g. ParseCBOR, above). It can also be used to parse
 // messages partially.
-class CBORTokenizer {
+class CRDTP_EXPORT CBORTokenizer {
  public:
   explicit CBORTokenizer(span<uint8_t> bytes);
   ~CBORTokenizer();
@@ -462,7 +467,7 @@ class CBORTokenizer {
 // |out|. If an error occurs, sends |out->HandleError|, and parsing stops.
 // The client is responsible for discarding the already received information in
 // that case.
-void ParseCBOR(span<uint8_t> bytes, StreamingParserHandler* out);
+CRDTP_EXPORT void ParseCBOR(span<uint8_t> bytes, StreamingParserHandler* out);
 
 // =============================================================================
 // cbor::AppendString8EntryToMap - for limited in-place editing of messages
@@ -471,31 +476,31 @@ void ParseCBOR(span<uint8_t> bytes, StreamingParserHandler* out);
 // Modifies the |cbor| message by appending a new key/value entry at the end
 // of the map. Patches up the envelope size; Status.ok() iff successful.
 // If not successful, |cbor| may be corrupted after this call.
-Status AppendString8EntryToCBORMap(span<uint8_t> string8_key,
-                                   span<uint8_t> string8_value,
-                                   std::vector<uint8_t>* cbor);
-Status AppendString8EntryToCBORMap(span<uint8_t> string8_key,
-                                   span<uint8_t> string8_value,
-                                   std::string* cbor);
+CRDTP_EXPORT Status AppendString8EntryToCBORMap(span<uint8_t> string8_key,
+                                                span<uint8_t> string8_value,
+                                                std::vector<uint8_t>* cbor);
+CRDTP_EXPORT Status AppendString8EntryToCBORMap(span<uint8_t> string8_key,
+                                                span<uint8_t> string8_value,
+                                                std::string* cbor);
 
 namespace internals {  // Exposed only for writing tests.
-size_t ReadTokenStart(span<uint8_t> bytes,
-                      cbor::MajorType* type,
-                      uint64_t* value);
+CRDTP_EXPORT size_t ReadTokenStart(span<uint8_t> bytes,
+                                   cbor::MajorType* type,
+                                   uint64_t* value);
 
-void WriteTokenStart(cbor::MajorType type,
-                     uint64_t value,
-                     std::vector<uint8_t>* encoded);
-void WriteTokenStart(cbor::MajorType type,
-                     uint64_t value,
-                     std::string* encoded);
+CRDTP_EXPORT void WriteTokenStart(cbor::MajorType type,
+                                  uint64_t value,
+                                  std::vector<uint8_t>* encoded);
+CRDTP_EXPORT void WriteTokenStart(cbor::MajorType type,
+                                  uint64_t value,
+                                  std::string* encoded);
 }  // namespace internals
 }  // namespace cbor
 
 namespace json {
 // Client code must provide an instance. Implementation should delegate
 // to whatever is appropriate.
-class Platform {
+class CRDTP_EXPORT Platform {
  public:
   virtual ~Platform() = default;
   // Parses |str| into |result|. Returns false iff there are
@@ -516,47 +521,46 @@ class Platform {
 // Except for calling the HandleError routine at any time, the client
 // code must call the Handle* methods in an order in which they'd occur
 // in valid JSON; otherwise we may crash (the code uses assert).
-std::unique_ptr<StreamingParserHandler> NewJSONEncoder(
+CRDTP_EXPORT std::unique_ptr<StreamingParserHandler> NewJSONEncoder(
     const Platform* platform,
     std::vector<uint8_t>* out,
     Status* status);
-std::unique_ptr<StreamingParserHandler> NewJSONEncoder(const Platform* platform,
-                                                       std::string* out,
-                                                       Status* status);
+CRDTP_EXPORT std::unique_ptr<StreamingParserHandler>
+NewJSONEncoder(const Platform* platform, std::string* out, Status* status);
 
 // =============================================================================
 // json::ParseJSON - for receiving streaming parser events for JSON
 // =============================================================================
 
-void ParseJSON(const Platform& platform,
-               span<uint8_t> chars,
-               StreamingParserHandler* handler);
-void ParseJSON(const Platform& platform,
-               span<uint16_t> chars,
-               StreamingParserHandler* handler);
+CRDTP_EXPORT void ParseJSON(const Platform& platform,
+                            span<uint8_t> chars,
+                            StreamingParserHandler* handler);
+CRDTP_EXPORT void ParseJSON(const Platform& platform,
+                            span<uint16_t> chars,
+                            StreamingParserHandler* handler);
 
 // =============================================================================
 // json::ConvertCBORToJSON, json::ConvertJSONToCBOR - for transcoding
 // =============================================================================
-Status ConvertCBORToJSON(const Platform& platform,
-                         span<uint8_t> cbor,
-                         std::string* json);
-Status ConvertCBORToJSON(const Platform& platform,
-                         span<uint8_t> cbor,
-                         std::vector<uint8_t>* json);
-Status ConvertJSONToCBOR(const Platform& platform,
-                         span<uint8_t> json,
-                         std::vector<uint8_t>* cbor);
-Status ConvertJSONToCBOR(const Platform& platform,
-                         span<uint16_t> json,
-                         std::vector<uint8_t>* cbor);
-Status ConvertJSONToCBOR(const Platform& platform,
-                         span<uint8_t> json,
-                         std::string* cbor);
-Status ConvertJSONToCBOR(const Platform& platform,
-                         span<uint16_t> json,
-                         std::string* cbor);
+CRDTP_EXPORT Status ConvertCBORToJSON(const Platform& platform,
+                                      span<uint8_t> cbor,
+                                      std::string* json);
+CRDTP_EXPORT Status ConvertCBORToJSON(const Platform& platform,
+                                      span<uint8_t> cbor,
+                                      std::vector<uint8_t>* json);
+CRDTP_EXPORT Status ConvertJSONToCBOR(const Platform& platform,
+                                      span<uint8_t> json,
+                                      std::vector<uint8_t>* cbor);
+CRDTP_EXPORT Status ConvertJSONToCBOR(const Platform& platform,
+                                      span<uint16_t> json,
+                                      std::vector<uint8_t>* cbor);
+CRDTP_EXPORT Status ConvertJSONToCBOR(const Platform& platform,
+                                      span<uint8_t> json,
+                                      std::string* cbor);
+CRDTP_EXPORT Status ConvertJSONToCBOR(const Platform& platform,
+                                      span<uint16_t> json,
+                                      std::string* cbor);
 }  // namespace json
-}  // namespace inspector_protocol_encoding
+}  // namespace crdtp
 
-#endif  // INSPECTOR_PROTOCOL_ENCODING_ENCODING_H_
+#endif  // CRDTP_ENCODING_H_

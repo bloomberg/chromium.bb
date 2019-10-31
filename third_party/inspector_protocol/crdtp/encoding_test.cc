@@ -18,7 +18,7 @@
 
 using testing::ElementsAreArray;
 
-namespace inspector_protocol_encoding {
+namespace crdtp {
 
 class TestPlatform : public json::Platform {
   bool StrToD(const char* str, double* result) const override {
@@ -923,8 +923,8 @@ TEST(ParseCBORTest, ParseEmptyCBORMessage) {
 TEST(ParseCBORTest, ParseCBORHelloWorld) {
   const uint8_t kPayloadLen = 27;
   std::vector<uint8_t> bytes = {0xd8, 0x5a, 0, 0, 0, kPayloadLen};
-  bytes.push_back(0xbf);                            // start indef length map.
-  EncodeString8(SpanFrom("msg"), &bytes);           // key: msg
+  bytes.push_back(0xbf);                   // start indef length map.
+  EncodeString8(SpanFrom("msg"), &bytes);  // key: msg
   // Now write the value, the familiar "Hello, 🌎." where the globe is expressed
   // as two utf16 chars.
   bytes.push_back(/*major type=*/2 << 5 | /*additional info=*/20);
@@ -2109,4 +2109,4 @@ TYPED_TEST(ConvertJSONToCBORTest, RoundTripValidJson16) {
   EXPECT_EQ(expected_json, roundtrip_json);
 }
 }  // namespace json
-}  // namespace inspector_protocol_encoding
+}  // namespace crdtp
