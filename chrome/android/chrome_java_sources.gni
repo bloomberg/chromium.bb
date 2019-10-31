@@ -1797,6 +1797,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/webapps/WebappRegistry.java",
   "java/src/org/chromium/chrome/browser/webapps/WebappScopePolicy.java",
   "java/src/org/chromium/chrome/browser/webapps/WebappTabDelegate.java",
+  "java/src/org/chromium/chrome/browser/webapps/addtohomescreen/AddToHomescreenInstaller.java",
   "java/src/org/chromium/chrome/browser/webapps/addtohomescreen/AddToHomescreenManager.java",
   "java/src/org/chromium/chrome/browser/webapps/addtohomescreen/AddToHomescreenProperties.java",
   "java/src/org/chromium/chrome/browser/webapps/addtohomescreen/AddToHomescreenDialogView.java",
