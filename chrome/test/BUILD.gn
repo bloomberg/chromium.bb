@@ -1283,6 +1283,7 @@ if (!is_android) {
       "../browser/ui/views/hats/hats_browsertest.cc",
       "../browser/ui/views/intent_picker_bubble_view_browsertest.cc",
       "../browser/ui/views/try_chrome_dialog_win/try_chrome_dialog_browsertest.cc",
+      "../browser/ui/views/web_apps/web_app_minimal_ui_test.cc",
       "../browser/ui/views/webauthn/authenticator_dialog_view_browsertest.cc",
       "../browser/ui/views/webauthn/authenticator_qr_code_test.cc",
       "../browser/ui/views/webview_accessibility_browsertest.cc",
