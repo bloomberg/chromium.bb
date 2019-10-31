@@ -5770,3 +5770,6 @@ crbug.com/940927 external/wpt/trusted-types/trusted-types-eval-reporting-report-
 crbug.com/940927 external/wpt/trusted-types/trusted-types-eval-reporting.tentative.https.html [ Failure ]
 crbug.com/940927 external/wpt/trusted-types/trusted-types-eval-reporting-no-unsafe-eval.tentative.https.html [ Timeout ]
 crbug.com/940927 external/wpt/trusted-types/eval-with-permissive-csp.tentative.html [ Failure ]
+
+# Sheriff 2019-10-31
+crbug.com/1020034 [ Mac10.10 ] fast/forms/month/month-appearance-l10n.html [ Failure ]
