@@ -41,13 +41,15 @@ class EngineCommandsImpl : public mojom::EngineCommands {
       const std::vector<UwS::TraceLocation>& enabled_trace_locations,
       bool include_details,
       mojo::PendingAssociatedRemote<mojom::EngineFileRequests> file_requests,
-      mojom::EngineRequestsAssociatedPtrInfo sandboxed_engine_requests,
+      mojo::PendingAssociatedRemote<mojom::EngineRequests>
+          sandboxed_engine_requests,
       mojo::PendingAssociatedRemote<mojom::EngineScanResults> scan_results,
       StartScanCallback callback) override;
   void StartCleanup(
       const std::vector<UwSId>& enabled_uws,
       mojo::PendingAssociatedRemote<mojom::EngineFileRequests> file_requests,
-      mojom::EngineRequestsAssociatedPtrInfo sandboxed_engine_requests,
+      mojo::PendingAssociatedRemote<mojom::EngineRequests>
+          sandboxed_engine_requests,
       mojom::CleanerEngineRequestsAssociatedPtrInfo
           sandboxed_cleaner_engine_requests,
       mojo::PendingAssociatedRemote<mojom::EngineCleanupResults>

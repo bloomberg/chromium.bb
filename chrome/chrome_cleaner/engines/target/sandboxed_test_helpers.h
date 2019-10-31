@@ -89,11 +89,11 @@ class MaybeSandboxedParentProcess : public BaseClass {
     file_requests_impl_->Bind(&file_requests);
 
     // Bind to empty callbacks as we don't care about the result.
-    mojom::EngineRequestsAssociatedPtrInfo scanner_info;
+    mojo::PendingAssociatedRemote<mojom::EngineRequests> scanner;
     mojo::PendingAssociatedRemote<mojom::EngineScanResults> scanner_results;
     if (requests_to_setup_ == CallbacksToSetup::kScanAndCleanupRequests ||
         requests_to_setup_ == CallbacksToSetup::kCleanupRequests) {
-      scanner_impl_->Bind(&scanner_info);
+      scanner_impl_->Bind(&scanner);
       scan_results_impl_->BindToCallbacks(
           &scanner_results,
           base::BindRepeating(
@@ -122,13 +122,13 @@ class MaybeSandboxedParentProcess : public BaseClass {
           ->StartScan(/*enabled_uws=*/std::vector<UwSId>{},
                       /*enabled_locations=*/std::vector<UwS::TraceLocation>{},
                       /*include_details=*/false, std::move(file_requests),
-                      std::move(scanner_info), std::move(scanner_results),
+                      std::move(scanner), std::move(scanner_results),
                       std::move(operation_started));
 
     } else if (requests_to_setup_ == CallbacksToSetup::kCleanupRequests) {
       (*engine_commands_)
           ->StartCleanup(/*enabled_uws=*/std::vector<UwSId>(),
-                         std::move(file_requests), std::move(scanner_info),
+                         std::move(file_requests), std::move(scanner),
                          std::move(cleaner_info), std::move(cleanup_results),
                          std::move(operation_started));
     }

@@ -20,8 +20,6 @@ namespace chrome_cleaner {
 
 using mojom::CleanerEngineRequestsAssociatedPtr;
 using mojom::CleanerEngineRequestsAssociatedPtrInfo;
-using mojom::EngineRequestsAssociatedPtr;
-using mojom::EngineRequestsAssociatedPtrInfo;
 
 namespace {
 
@@ -86,7 +84,8 @@ void EngineCommandsImpl::StartScan(
     const std::vector<UwS::TraceLocation>& enabled_trace_locations,
     bool include_details,
     mojo::PendingAssociatedRemote<mojom::EngineFileRequests> file_requests,
-    mojom::EngineRequestsAssociatedPtrInfo sandboxed_engine_requests,
+    mojo::PendingAssociatedRemote<mojom::EngineRequests>
+        sandboxed_engine_requests,
     mojo::PendingAssociatedRemote<mojom::EngineScanResults> scan_results,
     StartScanCallback callback) {
   ScopedCrashStageRecorder crash_stage(__func__);
@@ -96,11 +95,9 @@ void EngineCommandsImpl::StartScan(
       base::MakeRefCounted<EngineFileRequestsProxy>(std::move(file_requests),
                                                     task_runner_);
 
-  EngineRequestsAssociatedPtr engine_requests_ptr;
-  engine_requests_ptr.Bind(std::move(sandboxed_engine_requests));
   scoped_refptr<EngineRequestsProxy> engine_requests_proxy =
-      base::MakeRefCounted<EngineRequestsProxy>(std::move(engine_requests_ptr),
-                                                task_runner_);
+      base::MakeRefCounted<EngineRequestsProxy>(
+          std::move(sandboxed_engine_requests), task_runner_);
 
   // Create an EngineScanResults proxy to send results back over the
   // Mojo connection.
@@ -117,7 +114,8 @@ void EngineCommandsImpl::StartScan(
 void EngineCommandsImpl::StartCleanup(
     const std::vector<UwSId>& enabled_uws,
     mojo::PendingAssociatedRemote<mojom::EngineFileRequests> file_requests,
-    mojom::EngineRequestsAssociatedPtrInfo sandboxed_engine_requests,
+    mojo::PendingAssociatedRemote<mojom::EngineRequests>
+        sandboxed_engine_requests,
     mojom::CleanerEngineRequestsAssociatedPtrInfo
         sandboxed_cleaner_engine_requests,
     mojo::PendingAssociatedRemote<mojom::EngineCleanupResults> cleanup_results,
@@ -129,11 +127,9 @@ void EngineCommandsImpl::StartCleanup(
       base::MakeRefCounted<EngineFileRequestsProxy>(std::move(file_requests),
                                                     task_runner_);
 
-  EngineRequestsAssociatedPtr engine_requests_ptr;
-  engine_requests_ptr.Bind(std::move(sandboxed_engine_requests));
   scoped_refptr<EngineRequestsProxy> engine_requests_proxy =
-      base::MakeRefCounted<EngineRequestsProxy>(std::move(engine_requests_ptr),
-                                                task_runner_);
+      base::MakeRefCounted<EngineRequestsProxy>(
+          std::move(sandboxed_engine_requests), task_runner_);
 
   CleanerEngineRequestsAssociatedPtr cleaner_engine_requests_ptr;
   cleaner_engine_requests_ptr.Bind(
