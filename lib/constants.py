@@ -268,7 +268,6 @@ MON_BB_CANCEL_PRE_CQ_BUILD_COUNT = ('chromeos/cbuildbot/buildbucket/'
                                     'cancel_pre_cq_build_count')
 MON_EXPORT_TO_GCLOUD = 'chromeos/cbuildbot/export_to_gcloud'
 MON_CL_REJECT_COUNT = 'chromeos/cbuildbot/change/rejected_count'
-MON_GS_ERROR = 'chromeos/gs/error_count'
 
 # Stage Categorization for failed stages metric.
 UNCATEGORIZED_STAGE = 'Uncategorized'

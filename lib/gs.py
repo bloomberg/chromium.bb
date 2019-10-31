@@ -27,7 +27,6 @@ from chromite.lib import constants
 from chromite.lib import cache
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
-from chromite.lib import metrics
 from chromite.lib import osutils
 from chromite.lib import path_util
 from chromite.lib import retry_stats
@@ -35,11 +34,6 @@ from chromite.lib import retry_util
 from chromite.lib import signals
 from chromite.lib import timeout_util
 
-# TODO(crbug.com/765864): Remove this import guard when we have a wrapper
-try:
-  from infra_libs import ts_mon
-except (ImportError, RuntimeError):
-  ts_mon = metrics.MockMetric()
 
 # This bucket has the allAuthenticatedUsers:READER ACL.
 AUTHENTICATION_BUCKET = 'gs://chromeos-authentication-bucket/'
@@ -572,14 +566,6 @@ class GSContext(object):
     self.retries = self.DEFAULT_RETRIES if retries is None else int(retries)
     self._sleep_time = self.DEFAULT_SLEEP_TIME if sleep is None else int(sleep)
 
-    # TODO(phobbs) make a class level constant after crbug.com/755415 is fixed.
-    self._error_metric = metrics.Counter(
-        constants.MON_GS_ERROR,
-        description='Errors encountered with Google Storage',
-        field_spec=[ts_mon.StringField('type'),
-                    ts_mon.StringField('message_pattern'),
-                    ts_mon.BooleanField('retriable')])
-
     if init_boto and not dry_run:
       # We can't really expect gsutil to even be present in dry_run mode.
       self._InitBoto()
@@ -774,11 +760,6 @@ class GSContext(object):
          exception type based on the contents of |e|.
     """
     error_details = self._MatchKnownError(e)
-    self._error_metric.increment(fields={
-        'type': error_details.type,
-        'message_pattern': error_details.message_pattern,
-        'retriable': error_details.retriable,
-    })
     if error_details.exception:
       raise error_details.exception
     return error_details.retriable
