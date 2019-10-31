@@ -256,11 +256,12 @@ void ThreadHeap::InvokeEphemeronCallbacks(MarkingVisitor* visitor) {
                                                 WorklistTaskId::MutatorThread);
     WeakTableItem item;
     while (ephemerons_worklist.Pop(&item)) {
-      auto result = ephemeron_callbacks_.insert(item.object, item.callback);
+      auto result =
+          ephemeron_callbacks_.insert(item.base_object_payload, item.callback);
       DCHECK(result.is_new_entry ||
              result.stored_value->value == item.callback);
       if (result.is_new_entry) {
-        item.callback(visitor, item.object);
+        item.callback(visitor, item.base_object_payload);
       }
     }
   }
@@ -308,9 +309,9 @@ bool ThreadHeap::AdvanceMarking(MarkingVisitor* visitor,
           deadline, marking_worklist_.get(),
           [visitor](const MarkingItem& item) {
             HeapObjectHeader* header =
-                HeapObjectHeader::FromPayload(item.object);
-            DCHECK(!header->IsInConstruction());
-            item.callback(visitor, item.object);
+                HeapObjectHeader::FromPayload(item.base_object_payload);
+            DCHECK(!MarkingVisitor::IsInConstruction(header));
+            item.callback(visitor, item.base_object_payload);
             visitor->AccountMarkedBytes(header);
           },
           WorklistTaskId::MutatorThread);
@@ -320,7 +321,7 @@ bool ThreadHeap::AdvanceMarking(MarkingVisitor* visitor,
       finished = DrainWorklistWithDeadline(
           deadline, write_barrier_worklist_.get(),
           [visitor](HeapObjectHeader* header) {
-            DCHECK(!header->IsInConstruction());
+            DCHECK(!MarkingVisitor::IsInConstruction(header));
             GCInfoTable::Get()
                 .GCInfoFromIndex(header->GcInfoIndex())
                 ->trace(visitor, header->Payload());
@@ -361,9 +362,10 @@ bool ThreadHeap::AdvanceConcurrentMarking(ConcurrentMarkingVisitor* visitor,
   finished = DrainWorklistWithDeadline(
       deadline, marking_worklist_.get(),
       [visitor](const MarkingItem& item) {
-        HeapObjectHeader* header = HeapObjectHeader::FromPayload(item.object);
-        DCHECK(!header->IsInConstruction());
-        item.callback(visitor, item.object);
+        HeapObjectHeader* header =
+            HeapObjectHeader::FromPayload(item.base_object_payload);
+        DCHECK(!ConcurrentMarkingVisitor::IsInConstruction(header));
+        item.callback(visitor, item.base_object_payload);
         visitor->AccountMarkedBytes(header);
       },
       visitor->task_id());
@@ -373,7 +375,7 @@ bool ThreadHeap::AdvanceConcurrentMarking(ConcurrentMarkingVisitor* visitor,
   finished = DrainWorklistWithDeadline(
       deadline, write_barrier_worklist_.get(),
       [visitor](HeapObjectHeader* header) {
-        DCHECK(!header->IsInConstruction());
+        DCHECK(!ConcurrentMarkingVisitor::IsInConstruction(header));
         GCInfoTable::Get()
             .GCInfoFromIndex(header->GcInfoIndex())
             ->trace(visitor, header->Payload());
@@ -396,7 +398,7 @@ void ThreadHeap::WeakProcessing(MarkingVisitor* visitor) {
   // Call weak callbacks on objects that may now be pointing to dead objects.
   CustomCallbackItem item;
   while (weak_callback_worklist_->Pop(WorklistTaskId::MutatorThread, &item)) {
-    item.callback(visitor, item.object);
+    item.callback(visitor, item.base_object_payload);
   }
   // Weak callbacks should not add any new objects for marking.
   DCHECK(marking_worklist_->IsGlobalEmpty());

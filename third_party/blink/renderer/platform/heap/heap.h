@@ -63,11 +63,7 @@ class PagePool;
 class ProcessHeapReporter;
 class RegionTree;
 
-struct MarkingItem {
-  void* object;
-  TraceCallback callback;
-};
-
+using MarkingItem = TraceDescriptor;
 using CustomCallbackItem = MarkingItem;
 using NotFullyConstructedItem = void*;
 using WeakTableItem = MarkingItem;
