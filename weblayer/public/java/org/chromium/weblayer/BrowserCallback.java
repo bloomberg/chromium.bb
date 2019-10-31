@@ -11,7 +11,7 @@ import androidx.annotation.NonNull;
 /**
  * Informed of interesting events that happen during the lifetime of a BrowserController.
  */
-public abstract class BrowserObserver {
+public abstract class BrowserCallback {
     /**
      * The Uri that should be displayed in the url-bar has updated.
      *

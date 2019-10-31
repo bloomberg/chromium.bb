@@ -15,7 +15,7 @@ import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
-import org.chromium.weblayer.BrowserObserver;
+import org.chromium.weblayer.BrowserCallback;
 import org.chromium.weblayer.shell.InstrumentationActivity;
 
 import java.util.ArrayList;
@@ -23,16 +23,16 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Tests that BrowserObserver methods are invoked as expected.
+ * Tests that BrowserCallback methods are invoked as expected.
  */
 @RunWith(BaseJUnit4ClassRunner.class)
-public class BrowserObserverTest {
+public class BrowserCallbackTest {
     @Rule
     public InstrumentationActivityTestRule mActivityTestRule =
             new InstrumentationActivityTestRule();
 
-    private static class Observer extends BrowserObserver {
-        public static class BrowserObserverValueRecorder {
+    private static class Callback extends BrowserCallback {
+        public static class BrowserCallbackValueRecorder {
             private List<String> mObservedValues =
                     Collections.synchronizedList(new ArrayList<String>());
 
@@ -57,8 +57,8 @@ public class BrowserObserverTest {
             }
         }
 
-        public BrowserObserverValueRecorder visibleUrlChangedCallback =
-                new BrowserObserverValueRecorder();
+        public BrowserCallbackValueRecorder visibleUrlChangedCallback =
+                new BrowserCallbackValueRecorder();
 
         @Override
         public void visibleUrlChanged(Uri url) {
@@ -72,14 +72,14 @@ public class BrowserObserverTest {
         String startupUrl = "about:blank";
         InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(startupUrl);
 
-        Observer observer = new Observer();
+        Callback calllback = new Callback();
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> { activity.getBrowserController().addObserver(observer); });
+                () -> { activity.getBrowserController().registerBrowserCallback(calllback); });
 
         String url = "data:text,foo";
         mActivityTestRule.navigateAndWait(url);
 
         /* Verify that the visible URL changes to the target. */
-        observer.visibleUrlChangedCallback.waitUntilValueObserved(url);
+        calllback.visibleUrlChangedCallback.waitUntilValueObserved(url);
     }
 }

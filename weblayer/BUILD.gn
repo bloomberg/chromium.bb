@@ -174,8 +174,8 @@ jumbo_static_library("weblayer_lib") {
     sources += [
       "app/jni_onload.cc",
       "app/jni_onload.h",
-      "browser/browser_observer_proxy.cc",
-      "browser/browser_observer_proxy.h",
+      "browser/browser_callback_proxy.cc",
+      "browser/browser_callback_proxy.h",
       "browser/content_view_render_view.cc",
       "browser/content_view_render_view.h",
       "browser/download_delegate_proxy.cc",

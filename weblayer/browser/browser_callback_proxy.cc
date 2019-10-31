@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "weblayer/browser/browser_observer_proxy.h"
+#include "weblayer/browser/browser_callback_proxy.h"
 
 #include "base/android/jni_string.h"
 #include "url/gurl.h"
 #include "weblayer/browser/browser_controller_impl.h"
-#include "weblayer/browser/java/jni/BrowserObserverProxy_jni.h"
+#include "weblayer/browser/java/jni/BrowserCallbackProxy_jni.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertUTF8ToJavaString;
@@ -15,7 +15,7 @@ using base::android::ScopedJavaLocalRef;
 
 namespace weblayer {
 
-BrowserObserverProxy::BrowserObserverProxy(
+BrowserCallbackProxy::BrowserCallbackProxy(
     JNIEnv* env,
     jobject obj,
     BrowserController* browser_controller)
@@ -23,29 +23,29 @@ BrowserObserverProxy::BrowserObserverProxy(
   browser_controller_->AddObserver(this);
 }
 
-BrowserObserverProxy::~BrowserObserverProxy() {
+BrowserCallbackProxy::~BrowserCallbackProxy() {
   browser_controller_->RemoveObserver(this);
 }
 
-void BrowserObserverProxy::DisplayedUrlChanged(const GURL& url) {
+void BrowserCallbackProxy::DisplayedUrlChanged(const GURL& url) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jstring> jstring_url(
       ConvertUTF8ToJavaString(env, url.spec()));
-  Java_BrowserObserverProxy_visibleUrlChanged(env, java_observer_, jstring_url);
+  Java_BrowserCallbackProxy_visibleUrlChanged(env, java_observer_, jstring_url);
 }
 
-static jlong JNI_BrowserObserverProxy_CreateBrowserObserverProxy(
+static jlong JNI_BrowserCallbackProxy_CreateBrowserCallbackProxy(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& proxy,
     jlong browser_controller) {
-  return reinterpret_cast<jlong>(new BrowserObserverProxy(
+  return reinterpret_cast<jlong>(new BrowserCallbackProxy(
       env, proxy,
       reinterpret_cast<BrowserControllerImpl*>(browser_controller)));
 }
 
-static void JNI_BrowserObserverProxy_DeleteBrowserObserverProxy(JNIEnv* env,
+static void JNI_BrowserCallbackProxy_DeleteBrowserCallbackProxy(JNIEnv* env,
                                                                 jlong proxy) {
-  delete reinterpret_cast<BrowserObserverProxy*>(proxy);
+  delete reinterpret_cast<BrowserCallbackProxy*>(proxy);
 }
 
 }  // namespace weblayer

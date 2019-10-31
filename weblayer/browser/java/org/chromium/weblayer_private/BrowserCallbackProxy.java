@@ -12,24 +12,24 @@ import org.chromium.base.annotations.NativeMethods;
 import org.chromium.weblayer_private.aidl.IBrowserControllerClient;
 
 /**
- * Owns the c++ BrowserObserverProxy class, which is responsible for forwarding all
+ * Owns the C++ BrowserCallbackProxy class, which is responsible for forwarding all
  * BrowserObserver calls to this class, which in turn forwards to the BrowserControllerClient.
- * To avoid unnecessary IPC only one BrowserObserverProxy is created per BrowserController.
+ * To avoid unnecessary IPC only one BrowserCallbackProxy is created per BrowserController.
  */
 @JNINamespace("weblayer")
-public final class BrowserObserverProxy {
-    private long mNativeBrowserObserverProxy;
+public final class BrowserCallbackProxy {
+    private long mNativeBrowserCallbackProxy;
     private IBrowserControllerClient mClient;
 
-    BrowserObserverProxy(long browserController, IBrowserControllerClient client) {
+    BrowserCallbackProxy(long browserController, IBrowserControllerClient client) {
         mClient = client;
-        mNativeBrowserObserverProxy =
-                BrowserObserverProxyJni.get().createBrowserObserverProxy(this, browserController);
+        mNativeBrowserCallbackProxy =
+                BrowserCallbackProxyJni.get().createBrowserCallbackProxy(this, browserController);
     }
 
     public void destroy() {
-        BrowserObserverProxyJni.get().deleteBrowserObserverProxy(mNativeBrowserObserverProxy);
-        mNativeBrowserObserverProxy = 0;
+        BrowserCallbackProxyJni.get().deleteBrowserCallbackProxy(mNativeBrowserCallbackProxy);
+        mNativeBrowserCallbackProxy = 0;
     }
 
     @CalledByNative
@@ -39,7 +39,7 @@ public final class BrowserObserverProxy {
 
     @NativeMethods
     interface Natives {
-        long createBrowserObserverProxy(BrowserObserverProxy proxy, long browserController);
-        void deleteBrowserObserverProxy(long proxy);
+        long createBrowserCallbackProxy(BrowserCallbackProxy proxy, long browserController);
+        void deleteBrowserCallbackProxy(long proxy);
     }
 }

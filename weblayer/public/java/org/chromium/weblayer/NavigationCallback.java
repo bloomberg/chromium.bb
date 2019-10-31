@@ -17,7 +17,7 @@ import androidx.annotation.NonNull;
  * 4) navigationCompleted() or navigationFailed()
  * 5) onFirstContentfulPaint
  */
-public abstract class NavigationObserver {
+public abstract class NavigationCallback {
     /**
      * Called when a navigation started in the BrowserController. |navigation| is unique to a
      * specific navigation. The same |navigation| will be  provided on subsequent calls to

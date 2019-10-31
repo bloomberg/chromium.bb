@@ -26,7 +26,7 @@ android_library("java") {
     "org/chromium/weblayer_private/BrowserControllerImpl.java",
     "org/chromium/weblayer_private/BrowserFragmentControllerImpl.java",
     "org/chromium/weblayer_private/BrowserFragmentImpl.java",
-    "org/chromium/weblayer_private/BrowserObserverProxy.java",
+    "org/chromium/weblayer_private/BrowserCallbackProxy.java",
     "org/chromium/weblayer_private/ChildProcessServiceImpl.java",
     "org/chromium/weblayer_private/ContentView.java",
     "org/chromium/weblayer_private/ContentViewRenderView.java",
@@ -69,8 +69,8 @@ android_library("java") {
 
 generate_jni("jni") {
   sources = [
+    "org/chromium/weblayer_private/BrowserCallbackProxy.java",
     "org/chromium/weblayer_private/BrowserControllerImpl.java",
-    "org/chromium/weblayer_private/BrowserObserverProxy.java",
     "org/chromium/weblayer_private/ContentViewRenderView.java",
     "org/chromium/weblayer_private/DownloadDelegateProxy.java",
     "org/chromium/weblayer_private/FullscreenDelegateProxy.java",
