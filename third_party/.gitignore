@@ -140,6 +140,7 @@
 /libsrtp
 /libsync/src
 /libupnp
+/libunwindstack
 /libvpx/source/libvpx
 /libwebm/source
 /libyuv

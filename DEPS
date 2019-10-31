@@ -1194,6 +1194,11 @@ deps = {
       'condition': 'checkout_linux',
   },
 
+  'src/third_party/libunwindstack': {
+      'url': Var('chromium_git') + '/chromium/src/third_party/libunwindstack.git' + '@' + '42c8c62f292a4f43f2dfa17626cc857a1eea29ef',
+      'condition': 'checkout_android',
+  },
+
   'src/third_party/libvpx/source/libvpx':
     Var('chromium_git') + '/webm/libvpx.git' + '@' +  '9b73e21c0df8e13259bc9af461a65229d57aeb49',
 
