@@ -309,8 +309,19 @@ void DumpAccessibilityTestBase::RunTestForPlatform(
     AccessibilityNotificationWaiter waiter(shell()->web_contents(),
                                            ui::kAXModeComplete,
                                            ax::mojom::Event::kClicked);
+    BrowserAccessibility* action_element;
 
-    BrowserAccessibility* action_element = FindNode(str);
+    size_t skip_count_delimiter_index = str.find(",");
+    if (skip_count_delimiter_index != std::string::npos) {
+      auto node_name = str.substr(0, skip_count_delimiter_index);
+      auto skip_count_string = str.substr(skip_count_delimiter_index + 1);
+      size_t skip_count = 0;
+      DCHECK(base::StringToSizeT(skip_count_string, &skip_count))
+          << "Incorrectly formatted skip count string: " << skip_count_string;
+      action_element = FindNode(node_name, skip_count);
+    } else {
+      action_element = FindNode(str);
+    }
 
     ui::AXActionData action_data;
     action_data.action = ax::mojom::Action::kDoDefault;
@@ -430,10 +441,15 @@ void DumpAccessibilityTestBase::RunTestForPlatform(
 }
 
 BrowserAccessibility* DumpAccessibilityTestBase::FindNode(
-    const std::string& name) {
+    const std::string& name,
+    const size_t skip_count) {
   BrowserAccessibility* root = GetManager()->GetRoot();
   CHECK(root);
-  return FindNodeInSubtree(*root, name);
+  size_t nodes_skipped = 0;
+  BrowserAccessibility* node =
+      FindNodeInSubtree(*root, name, skip_count, nodes_skipped);
+  DCHECK(nodes_skipped == skip_count) << "There are not enough matches to skip";
+  return node;
 }
 
 BrowserAccessibilityManager* DumpAccessibilityTestBase::GetManager() {
@@ -444,14 +460,19 @@ BrowserAccessibilityManager* DumpAccessibilityTestBase::GetManager() {
 
 BrowserAccessibility* DumpAccessibilityTestBase::FindNodeInSubtree(
     BrowserAccessibility& node,
-    const std::string& name) {
+    const std::string& name,
+    const size_t target_skip_count,
+    size_t& current_skip_count) {
   if (node.GetStringAttribute(ax::mojom::StringAttribute::kName) == name) {
-    return &node;
+    if (current_skip_count == target_skip_count) {
+      return &node;
+    }
+    ++current_skip_count;
   }
 
   for (unsigned int i = 0; i < node.PlatformChildCount(); ++i) {
-    BrowserAccessibility* result =
-        FindNodeInSubtree(*node.PlatformGetChild(i), name);
+    BrowserAccessibility* result = FindNodeInSubtree(
+        *node.PlatformGetChild(i), name, target_skip_count, current_skip_count);
     if (result)
       return result;
   }

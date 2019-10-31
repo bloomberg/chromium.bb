@@ -97,8 +97,10 @@ class DumpAccessibilityTestBase : public ContentBrowserTest,
   void RunTestForPlatform(const base::FilePath file_path, const char* file_dir);
 
   // Retrieve the accessibility node, starting from the root node, that matches
-  // the accessibility name.
-  BrowserAccessibility* FindNode(const std::string& name);
+  // the accessibility name, skipping the number of matches provided by
+  // the "skip_count" parameter.
+  BrowserAccessibility* FindNode(const std::string& name,
+                                 const size_t skip_count = 0);
 
   // Retrieve the browser accessibility manager object for the current web
   // contents.
@@ -126,7 +128,9 @@ class DumpAccessibilityTestBase : public ContentBrowserTest,
 
  private:
   BrowserAccessibility* FindNodeInSubtree(BrowserAccessibility& node,
-                                          const std::string& name);
+                                          const std::string& name,
+                                          const size_t target_skip_count,
+                                          size_t& current_skip_count);
 };
 
 }  // namespace content
