@@ -226,7 +226,8 @@ void ReplaceControlCharactersWithSymbols(bool multiline, base::string16* text) {
       // Private use codepoints are working with a pair of font and codepoint,
       // but they are not used in Chrome.
       const int8_t codepoint_category = u_charType(codepoint);
-      if (codepoint_category == U_PRIVATE_USE_CHAR) {
+      if (codepoint_category == U_PRIVATE_USE_CHAR ||
+          codepoint_category == U_CONTROL_CHAR) {
         (*text)[offset] = kReplacementCodepoint;
         // We may need to replace the surrogate pair.
         if (next_offset != offset + 1)
