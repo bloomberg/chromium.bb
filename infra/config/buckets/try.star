@@ -264,7 +264,7 @@ android_builder(
 android_builder(
     name = 'android-pie-arm64-rel',
     tryjob = tryjob(
-        experiment_percentage = 50,
+        experiment_percentage = 100,
     ),
 )
 
