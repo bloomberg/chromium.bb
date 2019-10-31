@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 
 namespace content {
 
@@ -129,10 +128,7 @@ void MediaPlayerRendererClient::OnFrameAvailable() {
   // we need to add a wrapping frame with a new unique_id().
   auto frame = stream_texture_wrapper_->GetCurrentFrame();
   auto unique_frame = media::VideoFrame::WrapVideoFrame(
-      *frame, frame->format(), frame->visible_rect(), frame->natural_size());
-  unique_frame->AddDestructionObserver(
-      base::BindOnce(base::DoNothing::Once<scoped_refptr<media::VideoFrame>>(),
-                     std::move(frame)));
+      frame, frame->format(), frame->visible_rect(), frame->natural_size());
   sink_->PaintSingleFrame(std::move(unique_frame));
 }
 
