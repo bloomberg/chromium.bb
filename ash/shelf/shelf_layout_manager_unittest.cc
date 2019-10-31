@@ -3958,6 +3958,32 @@ TEST_F(HotseatShelfLayoutManagerTest,
               GetShelfLayoutManager()->hotseat_state());
   }
 }
+// Tests that popups don't activate the hotseat. (crbug.com/1018266)
+TEST_F(HotseatShelfLayoutManagerTest, HotseatRemainsHiddenIfPopupLaunched) {
+  // Go to in-app shelf and extend the hotseat.
+  TabletModeControllerTestApi().EnterTabletMode();
+  std::unique_ptr<aura::Window> window =
+      AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
+  wm::ActivateWindow(window.get());
+  SwipeUpOnShelf();
+  EXPECT_EQ(HotseatState::kExtended, GetShelfLayoutManager()->hotseat_state());
+
+  // Hide hotseat by clicking outside its bounds.
+  gfx::Rect hotseat_bounds =
+      GetShelfWidget()->hotseat_widget()->GetWindowBoundsInScreen();
+  gfx::Point start = hotseat_bounds.top_center();
+  GetEventGenerator()->GestureTapAt(gfx::Point(start.x() + 1, start.y() - 1));
+  EXPECT_EQ(HotseatState::kHidden, GetShelfLayoutManager()->hotseat_state());
+
+  // Create a popup window and wait until all actions finish. The hotseat should
+  // remain hidden.
+  aura::Window* window_2 = CreateTestWindowInParent(window.get());
+  window_2->SetBounds(gfx::Rect(201, 0, 100, 100));
+  window_2->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
+  window_2->Show();
+  GetAppListTestHelper()->WaitUntilIdle();
+  EXPECT_EQ(HotseatState::kHidden, GetShelfLayoutManager()->hotseat_state());
+}
 
 class ShelfLayoutManagerWindowDraggingTest : public ShelfLayoutManagerTestBase {
  public:

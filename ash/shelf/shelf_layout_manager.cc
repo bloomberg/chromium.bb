@@ -1092,6 +1092,11 @@ HotseatState ShelfLayoutManager::CalculateHotseatState(
               !should_hide_hotseat_) {
             return HotseatState::kExtended;
           }
+          // If none of the conditions above were met means that the state
+          // changed because of an action other than a user intervention.
+          // We should hide the hotseat and reset the |is_manually extended|
+          // flag to false.
+          shelf_widget_->hotseat_widget()->set_manually_extended(false);
           return HotseatState::kHidden;
       }
     }
