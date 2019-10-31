@@ -12,19 +12,34 @@ namespace base {
 ScopedSampleMetadata::ScopedSampleMetadata(base::StringPiece name,
                                            int64_t value)
     : name_hash_(HashMetricName(name)) {
-  GetSampleMetadataRecorder()->Set(name_hash_, value);
+  GetSampleMetadataRecorder()->Set(name_hash_, nullopt, value);
+}
+
+ScopedSampleMetadata::ScopedSampleMetadata(base::StringPiece name,
+                                           int64_t key,
+                                           int64_t value)
+    : name_hash_(HashMetricName(name)), key_(key) {
+  GetSampleMetadataRecorder()->Set(name_hash_, key, value);
 }
 
 ScopedSampleMetadata::~ScopedSampleMetadata() {
-  GetSampleMetadataRecorder()->Remove(name_hash_);
+  GetSampleMetadataRecorder()->Remove(name_hash_, key_);
 }
 
 void SetSampleMetadata(base::StringPiece name, int64_t value) {
-  GetSampleMetadataRecorder()->Set(base::HashMetricName(name), value);
+  GetSampleMetadataRecorder()->Set(base::HashMetricName(name), nullopt, value);
+}
+
+void SetSampleMetadata(base::StringPiece name, int64_t key, int64_t value) {
+  GetSampleMetadataRecorder()->Set(base::HashMetricName(name), key, value);
 }
 
 void RemoveSampleMetadata(base::StringPiece name) {
-  GetSampleMetadataRecorder()->Remove(base::HashMetricName(name));
+  GetSampleMetadataRecorder()->Remove(base::HashMetricName(name), nullopt);
+}
+
+void RemoveSampleMetadata(base::StringPiece name, int64_t key) {
+  GetSampleMetadataRecorder()->Remove(base::HashMetricName(name), key);
 }
 
 base::MetadataRecorder* GetSampleMetadataRecorder() {
