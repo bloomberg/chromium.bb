@@ -4088,6 +4088,7 @@ test("unit_tests") {
     sources += [
       "../browser/component_updater/cros_component_installer_chromeos_unittest.cc",
       "../browser/component_updater/metadata_table_chromeos_unittest.cc",
+      "../browser/extensions/api/terminal/crostini_startup_status_unittest.cc",
       "../browser/google/google_brand_code_map_chromeos_unittest.cc",
       "../browser/media/webrtc/desktop_media_list_ash_unittest.cc",
       "../browser/metrics/perf/heap_collector_unittest.cc",
