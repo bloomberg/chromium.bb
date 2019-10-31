@@ -32,6 +32,8 @@ _TEST_VM_ID = common_pb2.TEST_VM
 _RECOVERY_ID = common_pb2.RECOVERY
 _FACTORY_ID = common_pb2.FACTORY
 _FIRMWARE_ID = common_pb2.FIRMWARE
+_BASE_GUEST_VM_ID = common_pb2.BASE_GUEST_VM
+_TEST_GUEST_VM_ID = common_pb2.TEST_GUEST_VM
 
 # Dict to allow easily translating names to enum ids and vice versa.
 _IMAGE_MAPPING = {
@@ -52,6 +54,8 @@ _IMAGE_MAPPING = {
 _VM_IMAGE_MAPPING = {
     _BASE_VM_ID: _IMAGE_MAPPING[_BASE_ID],
     _TEST_VM_ID: _IMAGE_MAPPING[_TEST_ID],
+    _BASE_GUEST_VM_ID: _IMAGE_MAPPING[_BASE_ID],
+    _TEST_GUEST_VM_ID: _IMAGE_MAPPING[_TEST_ID],
 }
 
 
@@ -92,20 +96,20 @@ def Create(input_proto, output_proto, _config):
     _PopulateBuiltImages(board, image_types, output_proto)
 
     if vm_types:
-      # There are VMs to build.
-      assert len(vm_types) == 1
+      for vm_type in vm_types:
+        is_test = vm_type in [_TEST_VM_ID, _TEST_GUEST_VM_ID]
+        try:
+          if vm_type in [_BASE_GUEST_VM_ID, _TEST_GUEST_VM_ID]:
+            vm_path = image.CreateGuestVm(board, is_test=is_test)
+          else:
+            vm_path = image.CreateVm(board, is_test=is_test)
+        except image.ImageToVmError as e:
+          cros_build_lib.Die(e)
 
-      vm_type = vm_types.pop()
-      is_test = vm_type == _TEST_VM_ID
-      try:
-        vm_path = image.CreateVm(board, is_test=is_test)
-      except image.ImageToVmError as e:
-        cros_build_lib.Die(e)
-
-      new_image = output_proto.images.add()
-      new_image.path = vm_path
-      new_image.type = vm_type
-      new_image.build_target.name = board
+        new_image = output_proto.images.add()
+        new_image.path = vm_path
+        new_image.type = vm_type
+        new_image.build_target.name = board
 
     # Read metric events log and pipe them into output_proto.events.
     deserialize_metrics_log(output_proto.events, prefix=board)
@@ -152,7 +156,9 @@ def _ParseImagesToCreate(to_build):
           "The service's known image types do not match those in image.proto. "
           'Unknown Enum ID: %s' % current)
 
-  if len(vm_types) > 1:
+  # We can only build one type of these images at a time since image_to_vm.sh
+  # uses the default path if a name is not provided.
+  if vm_types.issuperset({_BASE_VM_ID, _TEST_VM_ID}):
     cros_build_lib.Die('Cannot create more than one VM.')
 
   return image_types, vm_types

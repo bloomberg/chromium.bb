@@ -411,7 +411,7 @@ def BundleVmFiles(input_proto, output_proto, _config):
   """Tar VM disk and memory files.
 
   Args:
-    input_proto (SysrootBundleRequest): The input proto.
+    input_proto (BundleVmFilesRequest): The input proto.
     output_proto (BundleResponse): The output proto.
     _config (api_config.ApiConfig): The API call config.
   """

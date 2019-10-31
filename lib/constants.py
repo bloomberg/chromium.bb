@@ -37,6 +37,8 @@ CHROMITE_BIN_DIR = os.path.join(CHROMITE_DIR, 'bin')
 PATH_TO_CBUILDBOT = os.path.join(CHROMITE_BIN_SUBDIR, 'cbuildbot')
 DEFAULT_CHROOT_DIR = 'chroot'
 DEFAULT_CHROOT_PATH = os.path.join(SOURCE_ROOT, DEFAULT_CHROOT_DIR)
+TERMINA_TOOLS_DIR = os.path.join(
+    SOURCE_ROOT, 'src/platform/container-guest-tools/termina')
 
 # These constants are defined and used in the die_hook that logs failed
 # packages: 'cros_log_failed_packages' in profiles/base/profile.bashrc in
@@ -1142,6 +1144,10 @@ VM_DISK_PREFIX = 'chromiumos_qemu_disk.bin'
 VM_MEM_PREFIX = 'chromiumos_qemu_mem.bin'
 VM_NUM_RETRIES = 0
 TAST_VM_TEST_RESULTS = 'tast_vm_test_results_%(attempt)s'
+BASE_GUEST_VM_DIR = 'guest-vm-base'
+TEST_GUEST_VM_DIR = 'guest-vm-test'
+BASE_GUEST_VM_TAR = '%s.tar.xz' % BASE_GUEST_VM_DIR
+TEST_GUEST_VM_TAR = '%s.tar.xz' % TEST_GUEST_VM_DIR
 
 TEST_IMAGE_NAME = 'chromiumos_test_image'
 TEST_IMAGE_TAR = '%s.tar.xz' % TEST_IMAGE_NAME

@@ -181,6 +181,47 @@ def CreateVm(board, is_test=False, chroot=None):
   return os.path.realpath(vm_path)
 
 
+def CreateGuestVm(board, is_test=False, chroot=None):
+  """Convert an existing image into a guest VM image.
+
+  Args:
+    board (str): The name of the board to convert.
+    is_test (bool): Flag to create a test guest VM image.
+    chroot (chroot_lib.Chroot): The chroot where the cros image lives.
+
+  Returns:
+    str: Path to the created guest VM folder.
+  """
+  assert board
+  cmd = [os.path.join(constants.TERMINA_TOOLS_DIR, 'termina_build_image.py')]
+
+  image_file = constants.TEST_IMAGE_BIN if is_test else constants.BASE_IMAGE_BIN
+  image_path = os.path.join(image_lib.GetLatestImageLink(board), image_file)
+
+  output_dir = (constants.TEST_GUEST_VM_DIR if is_test
+                else constants.BASE_GUEST_VM_DIR)
+  output_path = os.path.join(image_lib.GetLatestImageLink(board), output_dir)
+
+  cmd.append(image_path)
+  cmd.append(output_path)
+
+  chroot_args = None
+  if chroot and cros_build_lib.IsOutsideChroot():
+    chroot_args = chroot.get_enter_args()
+
+  result = cros_build_lib.sudo_run(cmd, error_code_ok=True, enter_chroot=True,
+                                   chroot_args=chroot_args)
+
+  if result.returncode:
+    # Error running the command. Unfortunately we can't be much more helpful
+    # than this right now.
+    raise ImageToVmError('Unable to convert the image to a Guest VM using'
+                         'termina_build_image.py.'
+                         'Consult the logs to determine the problem.')
+
+  return os.path.realpath(output_path)
+
+
 def Test(board, result_directory, image_dir=None):
   """Run tests on an already built image.
 

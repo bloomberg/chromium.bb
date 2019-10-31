@@ -40,6 +40,8 @@ CPE_RESULT_FILE_TEMPLATE = 'cpe-chromeos-%s.txt'
 # The individual image archives for ArchiveImages.
 IMAGE_TARS = {
     constants.TEST_IMAGE_BIN: constants.TEST_IMAGE_TAR,
+    constants.TEST_GUEST_VM_DIR: constants.TEST_GUEST_VM_TAR,
+    constants.BASE_GUEST_VM_DIR: constants.BASE_GUEST_VM_TAR
 }
 
 TAST_BUNDLE_NAME = 'tast_bundles.tar.bz2'
