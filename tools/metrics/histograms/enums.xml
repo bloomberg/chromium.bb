@@ -25314,6 +25314,7 @@ Called by update_net_error_codes.py.-->
   <int value="3073" label="MouseEventScreenY"/>
   <int value="3074"
       label="CredentialManagerIsUserVerifyingPlatformAuthenticatorAvailable"/>
+  <int value="3075" label="ObsoleteWebrtcTlsVersion"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
