@@ -97,9 +97,7 @@ ThreadHeap::ThreadHeap(ThreadState* thread_state)
       region_tree_(std::make_unique<RegionTree>()),
       address_cache_(std::make_unique<AddressCache>()),
       free_page_pool_(std::make_unique<PagePool>()),
-      process_heap_reporter_(std::make_unique<ProcessHeapReporter>()),
-      vector_backing_arena_index_(BlinkGC::kVector1ArenaIndex),
-      current_arena_ages_(0) {
+      process_heap_reporter_(std::make_unique<ProcessHeapReporter>()) {
   if (ThreadState::Current()->IsMainThread())
     main_thread_heap_ = this;
 
@@ -108,10 +106,6 @@ ThreadHeap::ThreadHeap(ThreadState* thread_state)
     arenas_[arena_index] = new NormalPageArena(thread_state_, arena_index);
   arenas_[BlinkGC::kLargeObjectArenaIndex] =
       new LargeObjectArena(thread_state_, BlinkGC::kLargeObjectArenaIndex);
-
-  likely_to_be_promptly_freed_ =
-      std::make_unique<int[]>(kLikelyToBePromptlyFreedArraySize);
-  ClearArenaAges();
 
   stats_collector()->RegisterObserver(process_heap_reporter_.get());
 }
@@ -469,7 +463,7 @@ void ThreadHeap::Compact() {
 
   // Compact the hash table backing store arena first, it usually has
   // higher fragmentation and is larger.
-  for (int i = BlinkGC::kHashTableArenaIndex; i >= BlinkGC::kVector1ArenaIndex;
+  for (int i = BlinkGC::kHashTableArenaIndex; i >= BlinkGC::kVectorArenaIndex;
        --i)
     static_cast<NormalPageArena*>(arenas_[i])->SweepAndCompact();
   Compaction()->Finish();
@@ -497,54 +491,6 @@ void ThreadHeap::InvokeFinalizersOnSweptPages() {
   for (size_t i = BlinkGC::kNormalPage1ArenaIndex;
        i < BlinkGC::kNumberOfArenas; i++)
     arenas_[i]->InvokeFinalizersOnSweptPages();
-}
-
-void ThreadHeap::ClearArenaAges() {
-  memset(arena_ages_, 0, sizeof(size_t) * BlinkGC::kNumberOfArenas);
-  memset(likely_to_be_promptly_freed_.get(), 0,
-         sizeof(int) * kLikelyToBePromptlyFreedArraySize);
-  current_arena_ages_ = 0;
-}
-
-int ThreadHeap::ArenaIndexOfVectorArenaLeastRecentlyExpanded(
-    int begin_arena_index,
-    int end_arena_index) {
-  size_t min_arena_age = arena_ages_[begin_arena_index];
-  int arena_index_with_min_arena_age = begin_arena_index;
-  for (int arena_index = begin_arena_index + 1; arena_index <= end_arena_index;
-       arena_index++) {
-    if (arena_ages_[arena_index] < min_arena_age) {
-      min_arena_age = arena_ages_[arena_index];
-      arena_index_with_min_arena_age = arena_index;
-    }
-  }
-  DCHECK(IsVectorArenaIndex(arena_index_with_min_arena_age));
-  return arena_index_with_min_arena_age;
-}
-
-BaseArena* ThreadHeap::ExpandedVectorBackingArena(uint32_t gc_info_index) {
-  uint32_t entry_index = gc_info_index & kLikelyToBePromptlyFreedArrayMask;
-  --likely_to_be_promptly_freed_[entry_index];
-  int arena_index = vector_backing_arena_index_;
-  arena_ages_[arena_index] = ++current_arena_ages_;
-  vector_backing_arena_index_ = ArenaIndexOfVectorArenaLeastRecentlyExpanded(
-      BlinkGC::kVector1ArenaIndex, BlinkGC::kVector4ArenaIndex);
-  return arenas_[arena_index];
-}
-
-void ThreadHeap::AllocationPointAdjusted(int arena_index) {
-  arena_ages_[arena_index] = ++current_arena_ages_;
-  if (vector_backing_arena_index_ == arena_index) {
-    vector_backing_arena_index_ = ArenaIndexOfVectorArenaLeastRecentlyExpanded(
-        BlinkGC::kVector1ArenaIndex, BlinkGC::kVector4ArenaIndex);
-  }
-}
-
-void ThreadHeap::PromptlyFreed(uint32_t gc_info_index) {
-  DCHECK(thread_state_->CheckThread());
-  uint32_t entry_index = gc_info_index & kLikelyToBePromptlyFreedArrayMask;
-  // See the comment in vectorBackingArena() for why this is +3.
-  likely_to_be_promptly_freed_[entry_index] += 3;
 }
 
 #if defined(ADDRESS_SANITIZER)

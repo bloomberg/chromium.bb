@@ -744,8 +744,6 @@ void ThreadState::AtomicPauseMarkPrologue(BlinkGC::StackState stack_state,
 
   DCHECK(InAtomicMarkingPause());
   Heap().MakeConsistentForGC();
-  Heap().ClearArenaAges();
-
   // AtomicPauseMarkPrologue is the common entry point for marking. The
   // requirement is to lock from roots marking to weakness processing which is
   // why the lock is taken at the end of the prologue.
