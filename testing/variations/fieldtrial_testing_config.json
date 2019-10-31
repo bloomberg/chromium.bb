@@ -1687,21 +1687,6 @@
             ]
         }
     ],
-    "ContextualSearchSimplifiedServer": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "ContextualSearchSimplifiedServer",
-                    "enable_features": [
-                        "ContextualSearchSimplifiedServer"
-                    ]
-                }
-            ]
-        }
-    ],
     "ContextualSearchTranslation": [
         {
             "platforms": [
