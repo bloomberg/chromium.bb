@@ -206,10 +206,14 @@
                 icon-aria-label="$i18n{displayOrientation}">
             </cr-policy-pref-indicator>
           </template>
-          <select class="md-select" value="[[selectedDisplay.rotation]]"
-              disabled="[[selectedDisplay.isTabletMode]]"
+          <select class="md-select"
+              value="[[selectedDisplay.rotation]]"
               aria-labelledby="displayOrientation"
               on-change="onOrientationChange_">
+            <option value="-1"
+                hidden$="[[!showAutoRotateOption_(selectedDisplay)]]">
+              $i18n{displayOrientationAutoRotate}
+            </option>
             <option value="0">$i18n{displayOrientationStandard}</option>
             <option value="90">90&deg;</option>
             <option value="180">180&deg;</option>

@@ -854,13 +854,28 @@ Polymer({
   },
 
   /**
+   * Returns whether the option "Auto-rotate" is one of the shown options in the
+   * rotation drop-down menu.
+   * @param {!chrome.system.display.DisplayUnitInfo} selectedDisplay
+   * @return {boolean|undefined}
+   * @private
+   */
+  showAutoRotateOption_: function(selectedDisplay) {
+    return selectedDisplay.isInTabletPhysicalState;
+  },
+
+  /**
    * @param {!Event} event
    * @private
    */
   onOrientationChange_: function(event) {
     const target = /** @type {!HTMLSelectElement} */ (event.target);
+    const value = /** @type {number} */ (parseInt(target.value, 10));
+
+    assert(value != -1 || this.selectedDisplay.isInTabletPhysicalState);
+
     /** @type {!chrome.system.display.DisplayProperties} */ const properties = {
-      rotation: parseInt(target.value, 10)
+      rotation: value
     };
     settings.display.systemDisplayApi.setDisplayProperties(
         this.selectedDisplay.id, properties,

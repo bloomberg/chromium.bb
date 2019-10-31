@@ -33,6 +33,7 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_observer.h"
+#include "ui/events/devices/device_data_manager_test_api.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
 
 namespace ash {
@@ -191,6 +192,13 @@ bool ShellTestApi::IsSystemModalWindowOpen() {
 
 void ShellTestApi::SetTabletModeEnabledForTest(bool enable,
                                                bool wait_for_completion) {
+  // Detach mouse devices, so we can enter tablet mode.
+  // Calling RunUntilIdle() here is necessary before setting the mouse devices
+  // to prevent the callback from evdev thread from overwriting whatever we set
+  // here below. See `InputDeviceFactoryEvdevProxy::OnStartupScanComplete()`.
+  base::RunLoop().RunUntilIdle();
+  ui::DeviceDataManagerTestApi().SetMouseDevices({});
+
   TabletMode::Waiter waiter(enable);
   shell_->tablet_mode_controller()->SetEnabledForTest(enable);
   waiter.Wait();
