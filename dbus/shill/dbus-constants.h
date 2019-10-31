@@ -612,6 +612,10 @@ const char kDiagnosticsMisconnectsProperty[] = "Diagnostics.Misconnects";
 const char kEapRemoteCertificationProperty[] = "EAP.RemoteCertification";
 const char kEapCaCertPemProperty[] = "EAP.CACertPEM";
 const char kEapSubjectMatchProperty[] = "EAP.SubjectMatch";
+const char kEapSubjectAlternativeNameMatchProperty[] =
+    "EAP.SubjectAlternativeNameMatch";
+const char kEapSubjectAlternativeNameMatchTypeProperty[] = "Type";
+const char kEapSubjectAlternativeNameMatchValueProperty[] = "Value";
 const char kErrorDetailsProperty[] = "ErrorDetails";
 const char kKeyManagementIEEE8021X[] = "IEEE8021X";
 const char kIPConfigProperty[] = "IPConfig";
@@ -648,6 +652,12 @@ const char kWifiFrequencyListProperty[] = "WiFi.FrequencyList";
 const char kWifiVendorInformationProperty[] = "WiFi.VendorInformation";
 const char kWifiProtectedManagementFrameRequiredProperty[] =
     "WiFi.ProtectedManagementFrameRequired";
+
+// Subject alternative name match type property values as expected by
+// wpa_supplicant.
+const char kEapSubjectAlternativeNameMatchTypeEmail[] = "EMAIL";
+const char kEapSubjectAlternativeNameMatchTypeDNS[] = "DNS";
+const char kEapSubjectAlternativeNameMatchTypeURI[] = "URI";
 
 // Profile property names.
 const char kUserHashProperty[] = "UserHash";
