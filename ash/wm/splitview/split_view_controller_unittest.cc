@@ -2963,7 +2963,7 @@ TEST_P(SplitViewTabDraggingTest, DragMaximizedWindow) {
   EXPECT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
   DragWindowTo(resizer.get(),
                gfx::Point(0, GetIndicatorsThreshold(window1.get()) + 10));
-  EXPECT_EQ(GetIndicatorState(resizer.get()), IndicatorState::kCannotSnap);
+  EXPECT_EQ(GetIndicatorState(resizer.get()), IndicatorState::kDragArea);
   // The souce window should has been scaled but not put to the right snapped
   // window's position.
   EXPECT_NE(window2->GetBoundsInScreen(), work_area_bounds);

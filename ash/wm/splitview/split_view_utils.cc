@@ -402,23 +402,18 @@ SplitViewController::SnapPosition GetSnapPosition(
 }
 
 IndicatorState GetIndicatorState(
-    aura::Window* window,
     SplitViewController::SnapPosition snap_position) {
   if (!ShouldAllowSplitView())
     return IndicatorState::kNone;
 
   switch (snap_position) {
+    case SplitViewController::NONE:
+      return IndicatorState::kDragArea;
     case SplitViewController::LEFT:
       return IndicatorState::kPreviewAreaLeft;
     case SplitViewController::RIGHT:
       return IndicatorState::kPreviewAreaRight;
-    case SplitViewController::NONE:
-      return CanSnapInSplitview(window) ? IndicatorState::kDragArea
-                                        : IndicatorState::kCannotSnap;
   }
-
-  NOTREACHED();
-  return IndicatorState::kNone;
 }
 
 }  // namespace ash
