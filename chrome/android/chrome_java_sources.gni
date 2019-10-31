@@ -1824,6 +1824,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/widget/ThumbnailProviderImpl.java",
   "java/src/org/chromium/chrome/browser/widget/ThumbnailStorageDelegate.java",
   "java/src/org/chromium/chrome/browser/widget/bottomsheet/BottomSheet.java",
+  "java/src/org/chromium/chrome/browser/widget/bottomsheet/BottomSheetContent.java",
   "java/src/org/chromium/chrome/browser/widget/bottomsheet/BottomSheetController.java",
   "java/src/org/chromium/chrome/browser/widget/bottomsheet/BottomSheetObserver.java",
   "java/src/org/chromium/chrome/browser/widget/bottomsheet/BottomSheetSwipeDetector.java",
