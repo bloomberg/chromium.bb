@@ -43,7 +43,7 @@ const base::FilePath::CharType kAccelerometerDevicePath[] =
 const base::FilePath::CharType kAccelerometerIioBasePath[] =
     FILE_PATH_LITERAL("/sys/bus/iio/devices/");
 
-// Paths of ChromeOS EC lid angle driver.
+// Paths to ChromeOS EC lid angle driver.
 const base::FilePath::CharType kEcLidAngleDriverPath[] =
     FILE_PATH_LITERAL("/sys/bus/platform/drivers/cros-ec-lid-angle/");
 
@@ -106,7 +106,7 @@ constexpr base::TimeDelta kDelayBetweenReads =
 // sensor hub might not be online when the Initialize function is called.
 constexpr base::TimeDelta kInitializeTimeout = base::TimeDelta::FromSeconds(5);
 
-// The time between initialization checks
+// The time between initialization checks.
 constexpr base::TimeDelta kDelayBetweenInitChecks =
     base::TimeDelta::FromMilliseconds(500);
 
@@ -150,7 +150,7 @@ enum State { INITIALIZING, SUCCESS, FAILED };
 }  // namespace
 
 // Work that runs on a base::TaskRunner. It determines the accelerometer
-// configuartion, and reads the data. Upon a successful read it will notify
+// configuration, and reads the data. Upon a successful read it will notify
 // all observers.
 class AccelerometerFileReader
     : public ash::TabletModeObserver,
@@ -163,7 +163,7 @@ class AccelerometerFileReader
   void PrepareAndInitialize(
       scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner);
 
-  // Attempts to read the accelerometer data. Upon a success, converts the raw
+  // Attempts to read the accelerometer data. Upon success, converts the raw
   // reading to an AccelerometerUpdate and notifies observers. Triggers another
   // read at the current sampling rate.
   void Read();
@@ -188,7 +188,7 @@ class AccelerometerFileReader
   void StopListenToTabletModeController();
 
   // TabletModeObserver:
-  // OnTabletModeStarted() triggers accelerometer read, while
+  // OnTabletModeStarted() triggers accelerometer read.
   // OnTabletModeEnding() disables accelerometer read.
   void OnTabletModeStarted() override;
   void OnTabletModeEnding() override;
@@ -226,19 +226,19 @@ class AccelerometerFileReader
     int index[ACCELEROMETER_SOURCE_COUNT][3];
 
     // The information for each accelerometer device to be read. In kernel 3.18
-    // there is one per ACCELEROMETER_SOURCE_COUNT, on 3.14 there is only one.
+    // there is one per ACCELEROMETER_SOURCE_COUNT. On 3.14 there is only one.
     std::vector<ReadingData> reading_data;
   };
 
   ~AccelerometerFileReader() override;
 
-  // Detects the accelerometer configuration, if an accelerometer is available
-  // triggers reads. This function MAY be called more than once.
-  //
-  // This function contains the actual initialization code to be run for the
+  // Detects the accelerometer configuration.
+  // If an accelerometer is available, it triggers reads.
+  // This function MAY be called more than once.
+  // This function contains the actual initialization code to be run by the
   // Initialize function. It is needed because on some devices the sensor hub
   // isn't available at the time the call to Initialize is made. If the sensor
-  // is found to be missing we'll make a call to TryScheduleInitializaeInternal.
+  // is found to be missing we'll make a call to TryScheduleInitializeInternal.
   void InitializeInternal();
 
   // Attempt to reschedule a run of InitializeInternal(). The function will be
@@ -312,7 +312,7 @@ void AccelerometerFileReader::PrepareAndInitialize(
 }
 
 void AccelerometerFileReader::TryScheduleInitializeInternal() {
-  // If we haven't yet passed the timeout cutoff try this again. This will
+  // If we haven't yet passed the timeout cutoff, try this again. This will
   // be scheduled at the same rate as reading.
   if (base::TimeTicks::Now() < initialization_timeout_) {
     DCHECK_EQ(INITIALIZING, initialization_state_);
@@ -666,7 +666,7 @@ bool AccelerometerFileReader::InitializeLegacyAccelerometers(
 void AccelerometerFileReader::ReadFileAndNotify() {
   DCHECK_EQ(SUCCESS, initialization_state_);
 
-  // Initiate the trigger to read accelerometers simultaneously
+  // Initiate the trigger to read accelerometers simultaneously.
   int bytes_written = base::WriteFile(configuration_.trigger_now, "1\n", 2);
   if (bytes_written < 2) {
     PLOG(ERROR) << "Accelerometer trigger failure: " << bytes_written;
