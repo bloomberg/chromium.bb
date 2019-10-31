@@ -3118,6 +3118,8 @@ test("base_unittests") {
       "//third_party/fuchsia-sdk/sdk:sys",
       "//third_party/fuchsia-sdk/sdk:sys_cpp",
     ]
+
+    manifest = "//build/config/fuchsia/tests.cmx"
   }
 
   if (!is_fuchsia && !is_ios) {
