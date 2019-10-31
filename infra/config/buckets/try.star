@@ -237,13 +237,6 @@ android_builder(
 
 android_builder(
     name = 'android-oreo-arm64-dbg',
-    tryjob = tryjob(
-        location_regexp = [
-            '.+/[+]/chrome/android/java/src/org/chromium/chrome/browser/vr/.+',
-            '.+/[+]/chrome/browser/vr/.+',
-            '.+/[+]/third_party/gvr-android-sdk/.+',
-        ],
-    ),
 )
 
 android_builder(
@@ -395,13 +388,6 @@ android_builder(
 
 android_builder(
     name = 'try-nougat-phone-tester',
-    tryjob = tryjob(
-        location_regexp = [
-            '.+/[+]/chrome/android/java/src/org/chromium/chrome/browser/vr/.+',
-            '.+/[+]/chrome/browser/vr/.+',
-            '.+/[+]/third_party/gvr-android-sdk/.+',
-        ],
-    ),
 )
 
 

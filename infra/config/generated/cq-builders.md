@@ -87,13 +87,6 @@ builder.
   Path exclude regular expressions:
   * [`//components/cronet/ios/.+`](https://cs.chromium.org/chromium/src/components/cronet/ios/)
 
-* [android-oreo-arm64-dbg](https://ci.chromium.org/p/chromium/builders/try/android-oreo-arm64-dbg) ([definition](https://cs.chromium.org/search?q=package:%5Echromium$+file:/cq.star$+-file:/beta/+-file:/stable/+android-oreo-arm64-dbg)) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+android-oreo-arm64-dbg))
-
-  Path regular expressions:
-  * [`//chrome/android/java/src/org/chromium/chrome/browser/vr/.+`](https://cs.chromium.org/chromium/src/chrome/android/java/src/org/chromium/chrome/browser/vr/)
-  * [`//chrome/browser/vr/.+`](https://cs.chromium.org/chromium/src/chrome/browser/vr/)
-  * [`//third_party/gvr-android-sdk/.+`](https://cs.chromium.org/chromium/src/third_party/gvr-android-sdk/)
-
 * [android-pie-arm64-dbg](https://ci.chromium.org/p/chromium/builders/try/android-pie-arm64-dbg) ([definition](https://cs.chromium.org/search?q=package:%5Echromium$+file:/cq.star$+-file:/beta/+-file:/stable/+android-pie-arm64-dbg)) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+android-pie-arm64-dbg))
 
   Path regular expressions:
@@ -310,13 +303,6 @@ builder.
   * [`//third_party/blink/renderer/modules/webgl/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/modules/webgl/)
   * [`//third_party/blink/renderer/platform/graphics/gpu/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/graphics/gpu/)
   * [`//ui/gl/.+`](https://cs.chromium.org/chromium/src/ui/gl/)
-
-* [try-nougat-phone-tester](https://ci.chromium.org/p/chromium/builders/try/try-nougat-phone-tester) ([definition](https://cs.chromium.org/search?q=package:%5Echromium$+file:/cq.star$+-file:/beta/+-file:/stable/+try-nougat-phone-tester)) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+try-nougat-phone-tester))
-
-  Path regular expressions:
-  * [`//chrome/android/java/src/org/chromium/chrome/browser/vr/.+`](https://cs.chromium.org/chromium/src/chrome/android/java/src/org/chromium/chrome/browser/vr/)
-  * [`//chrome/browser/vr/.+`](https://cs.chromium.org/chromium/src/chrome/browser/vr/)
-  * [`//third_party/gvr-android-sdk/.+`](https://cs.chromium.org/chromium/src/third_party/gvr-android-sdk/)
 
 * [win_optional_gpu_tests_rel](https://ci.chromium.org/p/chromium/builders/try/win_optional_gpu_tests_rel) ([definition](https://cs.chromium.org/search?q=package:%5Echromium$+file:/cq.star$+-file:/beta/+-file:/stable/+win_optional_gpu_tests_rel)) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+win_optional_gpu_tests_rel))
 
