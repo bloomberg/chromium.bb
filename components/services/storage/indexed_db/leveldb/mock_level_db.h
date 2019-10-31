@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_INDEXED_DB_LEVELDB_MOCK_LEVEL_DB_H_
-#define CONTENT_BROWSER_INDEXED_DB_LEVELDB_MOCK_LEVEL_DB_H_
+#ifndef COMPONENTS_SERVICES_STORAGE_INDEXED_DB_LEVELDB_MOCK_LEVEL_DB_H_
+#define COMPONENTS_SERVICES_STORAGE_INDEXED_DB_LEVELDB_MOCK_LEVEL_DB_H_
 
+#include "base/component_export.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 
@@ -64,4 +65,4 @@ class MockLevelDB : public DB {
 
 }  // namespace leveldb
 
-#endif  // CONTENT_BROWSER_INDEXED_DB_LEVELDB_MOCK_LEVEL_DB_H_
+#endif  // COMPONENTS_SERVICES_STORAGE_INDEXED_DB_LEVELDB_MOCK_LEVEL_DB_H_

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/indexed_db/scopes/leveldb_state.h"
+#include "components/services/storage/indexed_db/leveldb/leveldb_state.h"
 
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
-#include "content/browser/indexed_db/leveldb/leveldb_env.h"
+#include "third_party/leveldatabase/src/include/leveldb/env.h"
 
 namespace content {
 

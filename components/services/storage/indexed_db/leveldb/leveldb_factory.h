@@ -2,26 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_INDEXED_DB_LEVELDB_LEVELDB_FACTORY_H_
-#define CONTENT_BROWSER_INDEXED_DB_LEVELDB_LEVELDB_FACTORY_H_
+#ifndef COMPONENTS_SERVICES_STORAGE_INDEXED_DB_LEVELDB_LEVELDB_FACTORY_H_
+#define COMPONENTS_SERVICES_STORAGE_INDEXED_DB_LEVELDB_LEVELDB_FACTORY_H_
 
+#include <string>
 #include <tuple>
 
+#include "base/component_export.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "content/browser/indexed_db/scopes/leveldb_state.h"
-#include "content/common/content_export.h"
 #include "third_party/leveldatabase/env_chromium.h"
-#include "third_party/leveldatabase/src/include/leveldb/comparator.h"
 #include "third_party/leveldatabase/src/include/leveldb/status.h"
 
+namespace leveldb {
+class DB;
+}
+
 namespace content {
+class LevelDBState;
 
 // Factory class used to open leveldb databases, and stores all necessary
 // objects in a LevelDBState. This interface exists so that it can be mocked out
 // for tests.
-class CONTENT_EXPORT LevelDBFactory {
+class LevelDBFactory {
  public:
   virtual ~LevelDBFactory() = default;
 
@@ -51,7 +55,7 @@ class CONTENT_EXPORT LevelDBFactory {
   virtual leveldb::Status DestroyLevelDB(const base::FilePath& path) = 0;
 };
 
-class CONTENT_EXPORT DefaultLevelDBFactory : public LevelDBFactory {
+class DefaultLevelDBFactory : public LevelDBFactory {
  public:
   // The |database_options| are used to open any database. The
   // |create_if_missing| is supplied by Open*() calls, and |write_buffer_size|
@@ -87,4 +91,4 @@ class CONTENT_EXPORT DefaultLevelDBFactory : public LevelDBFactory {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_INDEXED_DB_LEVELDB_LEVELDB_FACTORY_H_
+#endif  // COMPONENTS_SERVICES_STORAGE_INDEXED_DB_LEVELDB_LEVELDB_FACTORY_H_

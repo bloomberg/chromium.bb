@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/indexed_db/leveldb/fake_leveldb_factory.h"
+#include "components/services/storage/indexed_db/leveldb/fake_leveldb_factory.h"
 
 #include <mutex>
 #include <string>
@@ -14,7 +14,7 @@
 #include "base/optional.h"
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"
-#include "content/browser/indexed_db/indexed_db_leveldb_operations.h"
+#include "components/services/storage/indexed_db/leveldb/leveldb_state.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "third_party/leveldatabase/src/include/leveldb/slice.h"
 #include "third_party/leveldatabase/src/include/leveldb/status.h"

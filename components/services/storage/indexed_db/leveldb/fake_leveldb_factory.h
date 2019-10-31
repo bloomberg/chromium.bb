@@ -2,17 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_INDEXED_DB_LEVELDB_FAKE_LEVELDB_FACTORY_H_
-#define CONTENT_BROWSER_INDEXED_DB_LEVELDB_FAKE_LEVELDB_FACTORY_H_
+#ifndef COMPONENTS_SERVICES_STORAGE_INDEXED_DB_LEVELDB_FAKE_LEVELDB_FACTORY_H_
+#define COMPONENTS_SERVICES_STORAGE_INDEXED_DB_LEVELDB_FAKE_LEVELDB_FACTORY_H_
 
 #include <memory>
 #include <queue>
 #include <utility>
 
+#include "base/component_export.h"
+#include "base/files/file_path.h"
+#include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/sequence_checker.h"
-#include "content/browser/indexed_db/leveldb/leveldb_factory.h"
+#include "components/services/storage/indexed_db/leveldb/leveldb_factory.h"
+#include "third_party/leveldatabase/env_chromium.h"
+#include "third_party/leveldatabase/src/include/leveldb/comparator.h"
+#include "third_party/leveldatabase/src/include/leveldb/db.h"
+#include "third_party/leveldatabase/src/include/leveldb/status.h"
 
 namespace content {
+class LevelDBState;
 
 // Used for unittests, this factory will only create in-memory leveldb
 // databases, and will optionally allow the user to override the next
@@ -75,4 +84,4 @@ class FakeLevelDBFactory : public DefaultLevelDBFactory {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_INDEXED_DB_LEVELDB_FAKE_LEVELDB_FACTORY_H_
+#endif  // COMPONENTS_SERVICES_STORAGE_INDEXED_DB_LEVELDB_FAKE_LEVELDB_FACTORY_H_

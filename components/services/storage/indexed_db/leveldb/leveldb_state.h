@@ -2,32 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_INDEXED_DB_SCOPES_LEVELDB_STATE_H_
-#define CONTENT_BROWSER_INDEXED_DB_SCOPES_LEVELDB_STATE_H_
+#ifndef COMPONENTS_SERVICES_STORAGE_INDEXED_DB_LEVELDB_LEVELDB_STATE_H_
+#define COMPONENTS_SERVICES_STORAGE_INDEXED_DB_LEVELDB_LEVELDB_STATE_H_
 
 #include <atomic>
 #include <memory>
 #include <utility>
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/sequenced_task_runner.h"
-#include "content/common/content_export.h"
 #include "third_party/leveldatabase/src/include/leveldb/comparator.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "third_party/leveldatabase/src/include/leveldb/filter_policy.h"
 
 namespace content {
-namespace indexed_db {
-class FakeLevelDBFactory;
-}
 
 // Encapsulates a leveldb database and comparator, allowing them to be used
 // safely across thread boundaries.
-class CONTENT_EXPORT LevelDBState
-    : public base::RefCountedThreadSafe<LevelDBState> {
+class LevelDBState : public base::RefCountedThreadSafe<LevelDBState> {
  public:
   static scoped_refptr<LevelDBState> CreateForDiskDB(
       const leveldb::Comparator* comparator,
@@ -61,7 +57,6 @@ class CONTENT_EXPORT LevelDBState
   const base::FilePath& database_path() const { return database_path_; }
 
  private:
-  friend class indexed_db::FakeLevelDBFactory;
   friend class base::RefCountedThreadSafe<LevelDBState>;
 
   LevelDBState(std::unique_ptr<leveldb::Env> optional_in_memory_env,
@@ -89,4 +84,4 @@ class CONTENT_EXPORT LevelDBState
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_INDEXED_DB_SCOPES_LEVELDB_STATE_H_
+#endif  // COMPONENTS_SERVICES_STORAGE_INDEXED_DB_LEVELDB_LEVELDB_STATE_H_

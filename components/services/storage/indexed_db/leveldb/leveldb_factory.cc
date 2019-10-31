@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/indexed_db/leveldb/leveldb_factory.h"
+#include "components/services/storage/indexed_db/leveldb/leveldb_factory.h"
 
 #include "base/system/sys_info.h"
+#include "components/services/storage/indexed_db/leveldb/leveldb_state.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
+#include "third_party/leveldatabase/src/include/leveldb/db.h"
 
 namespace content {
 
