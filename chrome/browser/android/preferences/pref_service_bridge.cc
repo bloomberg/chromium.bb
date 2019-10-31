@@ -351,12 +351,6 @@ static jboolean JNI_PrefServiceBridge_GetAutomaticDownloadsEnabled(
   return GetBooleanForContentSetting(ContentSettingsType::AUTOMATIC_DOWNLOADS);
 }
 
-static jboolean JNI_PrefServiceBridge_GetDoNotTrackEnabled(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  return GetPrefService()->GetBoolean(prefs::kEnableDoNotTrack);
-}
-
 static jboolean JNI_PrefServiceBridge_GetNetworkPredictionEnabled(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
@@ -760,13 +754,6 @@ static jboolean JNI_PrefServiceBridge_CanPrefetchAndPrerender(
     const JavaParamRef<jobject>& obj) {
   return chrome_browser_net::CanPrefetchAndPrerenderUI(GetPrefService()) ==
       chrome_browser_net::NetworkPredictionStatus::ENABLED;
-}
-
-static void JNI_PrefServiceBridge_SetDoNotTrackEnabled(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    jboolean allow) {
-  GetPrefService()->SetBoolean(prefs::kEnableDoNotTrack, allow);
 }
 
 static ScopedJavaLocalRef<jstring> JNI_PrefServiceBridge_GetSyncLastAccountName(

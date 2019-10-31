@@ -318,13 +318,6 @@ public class PrefServiceBridge {
                 PrefServiceBridge.this);
     }
 
-    /**
-     * @return Whether Do Not Track is enabled
-     */
-    public boolean isDoNotTrackEnabled() {
-        return PrefServiceBridgeJni.get().getDoNotTrackEnabled(PrefServiceBridge.this);
-    }
-
     public boolean getPasswordEchoEnabled() {
         return PrefServiceBridgeJni.get().getPasswordEchoEnabled(PrefServiceBridge.this);
     }
@@ -567,10 +560,6 @@ public class PrefServiceBridge {
     // TODO(crbug.com/1016957): Inline downstream.
     public void setBlockThirdPartyCookiesEnabled(boolean enabled) {
         setBoolean(Pref.BLOCK_THIRD_PARTY_COOKIES, enabled);
-    }
-
-    public void setDoNotTrackEnabled(boolean enabled) {
-        PrefServiceBridgeJni.get().setDoNotTrackEnabled(PrefServiceBridge.this, enabled);
     }
 
     public void setNotificationsVibrateEnabled(boolean enabled) {
@@ -943,7 +932,6 @@ public class PrefServiceBridge {
         boolean getAllowLocationUserModifiable(PrefServiceBridge caller);
         boolean getLocationAllowedByPolicy(PrefServiceBridge caller);
         boolean getAllowLocationManagedByCustodian(PrefServiceBridge caller);
-        boolean getDoNotTrackEnabled(PrefServiceBridge caller);
         boolean getPasswordEchoEnabled(PrefServiceBridge caller);
         boolean getFirstRunEulaAccepted(PrefServiceBridge caller);
         boolean getCameraEnabled(PrefServiceBridge caller);
@@ -979,7 +967,6 @@ public class PrefServiceBridge {
         void setAllowCookiesEnabled(PrefServiceBridge caller, boolean enabled);
         void setBackgroundSyncEnabled(PrefServiceBridge caller, boolean enabled);
         void setClipboardEnabled(PrefServiceBridge caller, boolean enabled);
-        void setDoNotTrackEnabled(PrefServiceBridge caller, boolean enabled);
         boolean getAllowLocationEnabled(PrefServiceBridge caller);
         boolean getNotificationsEnabled(PrefServiceBridge caller);
         boolean getNotificationsVibrateEnabled(PrefServiceBridge caller);

@@ -54,6 +54,7 @@ enum Pref {
   CLICKED_UPDATE_MENU_ITEM,
   LATEST_VERSION_WHEN_CLICKED_UPDATE_MENU_ITEM,
   BLOCK_THIRD_PARTY_COOKIES,
+  ENABLE_DO_NOT_TRACK,
   // PREF_NUM_PREFS must be the last entry.
   PREF_NUM_PREFS
 };
@@ -96,6 +97,8 @@ const char* const kPrefsExposedToJava[] = {
     prefs::kClickedUpdateMenuItem,
     prefs::kLatestVersionWhenClickedUpdateMenuItem,
     prefs::kBlockThirdPartyCookies,
+    prefs::kEnableDoNotTrack,
+
 };
 
 #endif  // CHROME_BROWSER_ANDROID_PREFERENCES_PREFS_H_
