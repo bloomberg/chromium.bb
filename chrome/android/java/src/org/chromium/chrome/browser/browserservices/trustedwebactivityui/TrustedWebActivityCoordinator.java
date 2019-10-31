@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.browserservices.trustedwebactivityui;
 
 import org.chromium.chrome.browser.browserservices.TrustedWebActivityUmaRecorder;
+import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.ClientPackageNameProvider;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityBrowserControlsVisibilityManager;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityDisclosureController;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityOpenTimeRecorder;
@@ -37,6 +38,7 @@ public class TrustedWebActivityCoordinator implements InflationObserver {
     private final CustomTabStatusBarColorProvider mStatusBarColorProvider;
     private final Lazy<ImmersiveModeController> mImmersiveModeController;
     private final TwaRegistrar mTwaRegistrar;
+    private final ClientPackageNameProvider mClientPackageNameProvider;
 
     private boolean mInTwaMode = true;
 
@@ -54,7 +56,8 @@ public class TrustedWebActivityCoordinator implements InflationObserver {
             ActivityLifecycleDispatcher lifecycleDispatcher,
             TrustedWebActivityBrowserControlsVisibilityManager browserControlsVisibilityManager,
             Lazy<ImmersiveModeController> immersiveModeController,
-            TwaRegistrar twaRegistrar) {
+            TwaRegistrar twaRegistrar,
+            ClientPackageNameProvider clientPackageNameProvider) {
         // We don't need to do anything with most of the classes above, we just need to resolve them
         // so they start working.
         mVerifier = verifier;
@@ -62,6 +65,7 @@ public class TrustedWebActivityCoordinator implements InflationObserver {
         mStatusBarColorProvider = statusBarColorProvider;
         mImmersiveModeController = immersiveModeController;
         mTwaRegistrar = twaRegistrar;
+        mClientPackageNameProvider = clientPackageNameProvider;
 
         navigationController.setLandingPageOnCloseCriterion(verifier::isPageOnVerifiedOrigin);
         initSplashScreen(splashController, intentDataProvider, umaRecorder);
@@ -106,7 +110,7 @@ public class TrustedWebActivityCoordinator implements InflationObserver {
         // want to register the clients once the state reaches SUCCESS, however we are happy to
         // show the TWA UI while the state is null or pending.
         if (state != null && state.status == VerificationStatus.SUCCESS) {
-            mTwaRegistrar.registerClient(mVerifier.getClientPackageName(), state.origin);
+            mTwaRegistrar.registerClient(mClientPackageNameProvider.get(), state.origin);
         }
 
         boolean inTwaMode = state == null || state.status != VerificationStatus.FAILURE;

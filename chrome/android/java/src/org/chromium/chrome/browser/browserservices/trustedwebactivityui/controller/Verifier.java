@@ -113,14 +113,6 @@ public class Verifier implements NativeInitObserver {
     }
 
     /**
-     * @return package name of the client app hosting this Trusted Web Activity.
-     */
-    public String getClientPackageName() {
-        // TODO(peconn): Remove this method.
-        return mDelegate.getClientPackageName();
-    }
-
-    /**
      * @return the {@link VerificationState} of the origin we are currently in.
      * Since resolving the origin requires native, returns null before native is loaded.
      * TODO(peconn): Is there any reason to distinguish between null and PENDING?
