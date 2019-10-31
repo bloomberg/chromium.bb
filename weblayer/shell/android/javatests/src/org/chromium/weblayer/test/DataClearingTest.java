@@ -48,8 +48,14 @@ public class DataClearingTest {
 
     @Test
     @SmallTest
-    public void clearCache_TriggersCallback() throws InterruptedException {
+    public void clearCacheWithPersistedProfile_TriggersCallback() throws InterruptedException {
         checkTriggersCallbackOnClearData(new int[] {CACHE}, "Profile");
+    }
+
+    @Test
+    @SmallTest
+    public void clearCacheWithInMemoryProfile_TriggersCallback() throws InterruptedException {
+        checkTriggersCallbackOnClearData(new int[] {CACHE}, "");
     }
 
     @Test
