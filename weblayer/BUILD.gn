@@ -53,10 +53,6 @@ jumbo_static_library("weblayer_lib") {
     "browser/navigation_impl.h",
     "browser/profile_impl.cc",
     "browser/profile_impl.h",
-    "browser/safe_browsing/safe_browsing_ui_manager.cc",
-    "browser/safe_browsing/safe_browsing_ui_manager.h",
-    "browser/safe_browsing/url_checker_delegate_impl.cc",
-    "browser/safe_browsing/url_checker_delegate_impl.h",
     "browser/weblayer_content_browser_overlay_manifest.cc",
     "browser/weblayer_content_browser_overlay_manifest.h",
     "browser/webui/web_ui_controller_factory.cc",
@@ -82,6 +78,18 @@ jumbo_static_library("weblayer_lib") {
     "utility/content_utility_client_impl.h",
   ]
 
+  if (is_android) {
+    # TODO(timvolodine): move this to safe_browsing/
+    sources += [
+      "browser/safe_browsing/safe_browsing_service.cc",
+      "browser/safe_browsing/safe_browsing_service.h",
+      "browser/safe_browsing/safe_browsing_ui_manager.cc",
+      "browser/safe_browsing/safe_browsing_ui_manager.h",
+      "browser/safe_browsing/url_checker_delegate_impl.cc",
+      "browser/safe_browsing/url_checker_delegate_impl.h",
+    ]
+  }
+
   configs += [
     "//build/config:precompiled_headers",
 
@@ -99,9 +107,6 @@ jumbo_static_library("weblayer_lib") {
     "//cc",
     "//components/crash/content/app",
     "//components/crash/content/browser",
-    "//components/safe_browsing",
-    "//components/safe_browsing/browser",
-    "//components/safe_browsing/db:database_manager",
     "//content:resources",
     "//content/app/resources",
     "//content/public/app:both",
@@ -145,7 +150,11 @@ jumbo_static_library("weblayer_lib") {
     ]
     deps += [
       "//components/crash/android:crashpad_main",
+      "//components/safe_browsing",
       "//components/safe_browsing/android:remote_database_manager",
+      "//components/safe_browsing/browser",
+      "//components/safe_browsing/browser:network_context",
+      "//components/safe_browsing/db:database_manager",
       "//components/version_info/android:channel_getter",
     ]
   }

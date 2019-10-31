@@ -15,12 +15,9 @@
 #include "content/public/browser/content_browser_client.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 
-namespace safe_browsing {
-class UrlCheckerDelegate;
-}
-
 namespace weblayer {
 
+class SafeBrowsingService;
 struct MainParams;
 
 class ContentBrowserClientImpl : public content::ContentBrowserClient {
@@ -63,13 +60,11 @@ class ContentBrowserClientImpl : public content::ContentBrowserClient {
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
 
  private:
-  scoped_refptr<safe_browsing::UrlCheckerDelegate>
-  GetSafeBrowsingUrlCheckerDelegate();
-
   MainParams* params_;
 
-  scoped_refptr<safe_browsing::UrlCheckerDelegate>
-      safe_browsing_url_checker_delegate_;
+#if defined(OS_ANDROID)
+  std::unique_ptr<SafeBrowsingService> safe_browsing_service_;
+#endif
 };
 
 }  // namespace weblayer

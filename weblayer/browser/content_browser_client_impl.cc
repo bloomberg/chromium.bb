@@ -12,8 +12,6 @@
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
-#include "components/safe_browsing/android/remote_database_manager.h"
-#include "components/safe_browsing/browser/browser_url_loader_throttle.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/devtools_manager_delegate.h"
 #include "content/public/browser/network_service_instance.h"
@@ -23,13 +21,12 @@
 #include "services/network/network_service.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
+#include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 #include "weblayer/browser/browser_controller_impl.h"
 #include "weblayer/browser/browser_main_parts_impl.h"
-#include "weblayer/browser/safe_browsing/safe_browsing_ui_manager.h"
-#include "weblayer/browser/safe_browsing/url_checker_delegate_impl.h"
 #include "weblayer/browser/weblayer_content_browser_overlay_manifest.h"
 #include "weblayer/common/features.h"
 #include "weblayer/public/fullscreen_delegate.h"
@@ -40,6 +37,7 @@
 #include "components/crash/content/browser/crash_handler_host_linux.h"
 #include "ui/base/resource/resource_bundle_android.h"
 #include "weblayer/browser/android_descriptors.h"
+#include "weblayer/browser/safe_browsing/safe_browsing_service.h"
 #endif
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
@@ -173,33 +171,22 @@ ContentBrowserClientImpl::CreateURLLoaderThrottles(
 
   if (base::FeatureList::IsEnabled(features::kWebLayerSafeBrowsing) &&
       IsSafebrowsingSupported()) {
-    result.push_back(safe_browsing::BrowserURLLoaderThrottle::Create(
-        base::BindOnce(
-            [](ContentBrowserClientImpl* client, content::ResourceContext*) {
-              return client->GetSafeBrowsingUrlCheckerDelegate();
-            },
-            base::Unretained(this)),
-        wc_getter, frame_tree_node_id, browser_context->GetResourceContext()));
+#if defined(OS_ANDROID)
+    if (!safe_browsing_service_) {
+      // TODO(timvolodine): consider creating SafeBrowsingService elsewhere
+      // (especially in multiplatform support).
+      // Note: Initialize() needs to happen on UI thread.
+      safe_browsing_service_ =
+          std::make_unique<SafeBrowsingService>(GetUserAgent());
+      safe_browsing_service_->Initialize();
+    }
+
+    result.push_back(safe_browsing_service_->CreateURLLoaderThrottle(
+        browser_context->GetResourceContext(), wc_getter, frame_tree_node_id));
+#endif
   }
 
   return result;
-}
-
-scoped_refptr<safe_browsing::UrlCheckerDelegate>
-ContentBrowserClientImpl::GetSafeBrowsingUrlCheckerDelegate() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-
-#if defined(OS_ANDROID)
-  if (!safe_browsing_url_checker_delegate_) {
-    // TODO(timvolodine): consider a better place for the database manager and
-    // the ui manager (also w.r.t. future safebrowsing init sequence).
-    safe_browsing_url_checker_delegate_ = new UrlCheckerDelegateImpl(
-        new safe_browsing::RemoteSafeBrowsingDatabaseManager(),
-        new SafeBrowsingUIManager());
-  }
-#endif
-
-  return safe_browsing_url_checker_delegate_;
 }
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
