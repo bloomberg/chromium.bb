@@ -1489,24 +1489,26 @@ TEST_P(SplitViewControllerTest, ExitTabletModeEndSplitView) {
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
 }
 
-// Tests that if a window's minimum size is larger than half of the display work
-// area's size, it can't be snapped.
+// Test that |CanSnapInSplitview| checks that the minimum size of the window
+// fits into the left or top, with the default divider position. (If the work
+// area length is odd, then the right or bottom will be one pixel larger.)
 TEST_P(SplitViewControllerTest, SnapWindowWithMinimumSizeTest) {
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
   EXPECT_TRUE(CanSnapInSplitview(window1.get()));
 
-  const gfx::Rect display_bounds =
-      screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
-          window1.get());
+  UpdateDisplay("800x600");
   aura::test::TestWindowDelegate* delegate =
       static_cast<aura::test::TestWindowDelegate*>(window1->delegate());
-  delegate->set_minimum_size(
-      gfx::Size(display_bounds.width() * 0.5f, display_bounds.height()));
+  delegate->set_minimum_size(gfx::Size(396, 0));
   EXPECT_TRUE(CanSnapInSplitview(window1.get()));
+  delegate->set_minimum_size(gfx::Size(397, 0));
+  EXPECT_FALSE(CanSnapInSplitview(window1.get()));
 
-  delegate->set_minimum_size(
-      gfx::Size(display_bounds.width() * 0.67f, display_bounds.height()));
+  UpdateDisplay("799x600");
+  delegate->set_minimum_size(gfx::Size(395, 0));
+  EXPECT_TRUE(CanSnapInSplitview(window1.get()));
+  delegate->set_minimum_size(gfx::Size(396, 0));
   EXPECT_FALSE(CanSnapInSplitview(window1.get()));
 }
 
