@@ -464,6 +464,10 @@ class FrameSchedulerDelegateWithUkmSourceId : public FrameScheduler::Delegate {
 
   void UpdateActiveSchedulerTrackedFeatures(uint64_t features_mask) override {}
 
+  const base::UnguessableToken& GetAgentClusterId() const override {
+    return base::UnguessableToken::Null();
+  }
+
  private:
   ukm::SourceId source_id_;
 };

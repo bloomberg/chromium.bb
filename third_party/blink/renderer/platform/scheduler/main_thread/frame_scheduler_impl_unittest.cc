@@ -17,6 +17,7 @@
 #include "base/task/sequence_manager/test/sequence_manager_for_test.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
+#include "base/unguessable_token.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
@@ -52,6 +53,10 @@ class FrameSchedulerDelegateForTesting : public FrameScheduler::Delegate {
 
   void UpdateTaskTime(base::TimeDelta task_time) override {
     update_task_time_calls_++;
+  }
+
+  const base::UnguessableToken& GetAgentClusterId() const override {
+    return base::UnguessableToken::Null();
   }
 
   MOCK_METHOD1(UpdateActiveSchedulerTrackedFeatures, void(uint64_t));

@@ -1146,6 +1146,10 @@ FrameSchedulerImpl::CreateWebSchedulingTaskQueue(
                                                       task_queue.get());
 }
 
+const base::UnguessableToken& FrameSchedulerImpl::GetAgentClusterId() const {
+  return delegate_->GetAgentClusterId();
+}
+
 // static
 MainThreadTaskQueue::QueueTraits
 FrameSchedulerImpl::ThrottleableTaskQueueTraits() {
