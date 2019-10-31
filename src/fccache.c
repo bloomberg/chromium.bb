@@ -397,6 +397,8 @@ FcDirCacheProcess (FcConfig *config, const FcChar8 *dir,
 		else
 		    FcStrFree (cache_hashed);
 	    }
+	    else
+		FcStrFree (cache_hashed);
 	}
 #ifndef _WIN32
 	else if (!retried)
@@ -416,6 +418,8 @@ FcDirCacheProcess (FcConfig *config, const FcChar8 *dir,
 		    break;
 		goto retry;
 	    }
+	    else
+		FcStrFree (cache_hashed);
 	}
 #endif
 	else
