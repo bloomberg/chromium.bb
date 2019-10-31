@@ -15,6 +15,7 @@
 #if BUILDFLAG(ENABLE_FEED_IN_CHROME)
 #include "components/feed/core/pref_names.h"
 #endif  // BUILDFLAG(ENABLE_FEED_IN_CHROME)
+#include "components/content_settings/core/common/pref_names.h"
 #include "components/ntp_snippets/pref_names.h"
 #include "components/offline_pages/core/prefetch/prefetch_prefs.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
@@ -52,6 +53,7 @@ enum Pref {
   SUPERVISED_USER_SECOND_CUSTODIAN_EMAIL,
   CLICKED_UPDATE_MENU_ITEM,
   LATEST_VERSION_WHEN_CLICKED_UPDATE_MENU_ITEM,
+  BLOCK_THIRD_PARTY_COOKIES,
   // PREF_NUM_PREFS must be the last entry.
   PREF_NUM_PREFS
 };
@@ -93,6 +95,7 @@ const char* const kPrefsExposedToJava[] = {
     prefs::kSupervisedUserSecondCustodianEmail,
     prefs::kClickedUpdateMenuItem,
     prefs::kLatestVersionWhenClickedUpdateMenuItem,
+    prefs::kBlockThirdPartyCookies,
 };
 
 #endif  // CHROME_BROWSER_ANDROID_PREFERENCES_PREFS_H_

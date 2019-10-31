@@ -41,7 +41,6 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
-#include "components/content_settings/core/common/pref_names.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/language/core/common/language_util.h"
 #include "components/metrics/metrics_pref_names.h"
@@ -350,18 +349,6 @@ static jboolean JNI_PrefServiceBridge_GetAutomaticDownloadsEnabled(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
   return GetBooleanForContentSetting(ContentSettingsType::AUTOMATIC_DOWNLOADS);
-}
-
-static jboolean JNI_PrefServiceBridge_GetBlockThirdPartyCookiesEnabled(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  return GetPrefService()->GetBoolean(prefs::kBlockThirdPartyCookies);
-}
-
-static jboolean JNI_PrefServiceBridge_GetBlockThirdPartyCookiesManaged(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  return GetPrefService()->IsManagedPreference(prefs::kBlockThirdPartyCookies);
 }
 
 static jboolean JNI_PrefServiceBridge_GetDoNotTrackEnabled(
@@ -715,13 +702,6 @@ static void JNI_PrefServiceBridge_SetAutomaticDownloadsEnabled(
   host_content_settings_map->SetDefaultContentSetting(
       ContentSettingsType::AUTOMATIC_DOWNLOADS,
       allow ? CONTENT_SETTING_ASK : CONTENT_SETTING_BLOCK);
-}
-
-static void JNI_PrefServiceBridge_SetBlockThirdPartyCookiesEnabled(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    jboolean enabled) {
-  GetPrefService()->SetBoolean(prefs::kBlockThirdPartyCookies, enabled);
 }
 
 static void JNI_PrefServiceBridge_SetAllowLocationEnabled(

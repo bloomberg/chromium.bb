@@ -276,15 +276,9 @@ public class PrefServiceBridge {
                 PrefServiceBridge.this);
     }
 
+    // TODO(crbug.com/1016957): Inline downstream.
     public boolean isBlockThirdPartyCookiesEnabled() {
-        return PrefServiceBridgeJni.get().getBlockThirdPartyCookiesEnabled(PrefServiceBridge.this);
-    }
-
-    /**
-     * @return Whether third-party cookie blocking is configured by policy
-     */
-    public boolean isBlockThirdPartyCookiesManaged() {
-        return PrefServiceBridgeJni.get().getBlockThirdPartyCookiesManaged(PrefServiceBridge.this);
+        return getBoolean(Pref.BLOCK_THIRD_PARTY_COOKIES);
     }
 
     /**
@@ -570,9 +564,9 @@ public class PrefServiceBridge {
         PrefServiceBridgeJni.get().setLastClearBrowsingDataTab(PrefServiceBridge.this, tabIndex);
     }
 
+    // TODO(crbug.com/1016957): Inline downstream.
     public void setBlockThirdPartyCookiesEnabled(boolean enabled) {
-        PrefServiceBridgeJni.get().setBlockThirdPartyCookiesEnabled(
-                PrefServiceBridge.this, enabled);
+        setBoolean(Pref.BLOCK_THIRD_PARTY_COOKIES, enabled);
     }
 
     public void setDoNotTrackEnabled(boolean enabled) {
@@ -946,8 +940,6 @@ public class PrefServiceBridge {
         boolean getAutomaticDownloadsEnabled(PrefServiceBridge caller);
         boolean getAutoplayEnabled(PrefServiceBridge caller);
         boolean getBackgroundSyncEnabled(PrefServiceBridge caller);
-        boolean getBlockThirdPartyCookiesEnabled(PrefServiceBridge caller);
-        boolean getBlockThirdPartyCookiesManaged(PrefServiceBridge caller);
         boolean getAllowLocationUserModifiable(PrefServiceBridge caller);
         boolean getLocationAllowedByPolicy(PrefServiceBridge caller);
         boolean getAllowLocationManagedByCustodian(PrefServiceBridge caller);
@@ -986,7 +978,6 @@ public class PrefServiceBridge {
         void setAutoplayEnabled(PrefServiceBridge caller, boolean enabled);
         void setAllowCookiesEnabled(PrefServiceBridge caller, boolean enabled);
         void setBackgroundSyncEnabled(PrefServiceBridge caller, boolean enabled);
-        void setBlockThirdPartyCookiesEnabled(PrefServiceBridge caller, boolean enabled);
         void setClipboardEnabled(PrefServiceBridge caller, boolean enabled);
         void setDoNotTrackEnabled(PrefServiceBridge caller, boolean enabled);
         boolean getAllowLocationEnabled(PrefServiceBridge caller);
