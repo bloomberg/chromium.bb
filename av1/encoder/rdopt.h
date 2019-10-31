@@ -244,6 +244,19 @@ static INLINE void set_tx_size_search_method(
   x->tx_mode = select_tx_mode(cpi, x->tx_size_search_method);
 }
 
+static INLINE void set_tx_type_prune(const SPEED_FEATURES *sf, MACROBLOCK *x,
+                                     int enable_winner_mode_tx_type_pruning,
+                                     int is_winner_mode) {
+  // Populate prune transform mode appropriately
+  x->prune_mode = sf->tx_type_search.prune_mode;
+  if (enable_winner_mode_tx_type_pruning) {
+    if (is_winner_mode)
+      x->prune_mode = NO_PRUNE;
+    else
+      x->prune_mode = PRUNE_2D_AGGRESSIVE;
+  }
+}
+
 static INLINE void set_tx_domain_dist_params(
     const struct AV1_COMP *cpi, MACROBLOCK *x,
     int enable_winner_mode_for_tx_domain_dist, int is_winner_mode) {
@@ -313,6 +326,8 @@ static INLINE void set_mode_eval_params(const struct AV1_COMP *cpi,
           get_rd_opt_coeff_thresh(cpi->coeff_opt_dist_threshold, 0, 0);
       // Set default transform size search method
       set_tx_size_search_method(cpi, x, 0, 0);
+      // Set default transform type prune
+      set_tx_type_prune(sf, x, 0, 0);
       break;
     case MODE_EVAL:
       x->use_default_intra_tx_type =
@@ -334,6 +349,9 @@ static INLINE void set_mode_eval_params(const struct AV1_COMP *cpi,
       // Set the transform size search method for mode evaluation
       set_tx_size_search_method(cpi, x, sf->enable_winner_mode_for_tx_size_srch,
                                 0);
+      // Set transform type prune for mode evaluation
+      set_tx_type_prune(
+          sf, x, sf->tx_type_search.enable_winner_mode_tx_type_pruning, 0);
       break;
     case WINNER_MODE_EVAL:
       x->use_default_inter_tx_type = 0;
@@ -352,6 +370,9 @@ static INLINE void set_mode_eval_params(const struct AV1_COMP *cpi,
       // Set the transform size search method for winner mode evaluation
       set_tx_size_search_method(cpi, x, sf->enable_winner_mode_for_tx_size_srch,
                                 1);
+      // Set default transform type prune mode for winner mode evaluation
+      set_tx_type_prune(
+          sf, x, sf->tx_type_search.enable_winner_mode_tx_type_pruning, 1);
       break;
     default: assert(0);
   }

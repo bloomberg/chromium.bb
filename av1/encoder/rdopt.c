@@ -1878,10 +1878,10 @@ static INLINE void sort_probability(float prob[], int txk[], int len) {
   }
 }
 
-static uint16_t prune_tx_2D(MACROBLOCK *x, BLOCK_SIZE bsize, TX_SIZE tx_size,
-                            int blk_row, int blk_col, TxSetType tx_set_type,
-                            TX_TYPE_PRUNE_MODE prune_mode, int *txk_map,
-                            uint16_t allowed_tx_mask) {
+static void prune_tx_2D(MACROBLOCK *x, BLOCK_SIZE bsize, TX_SIZE tx_size,
+                        int blk_row, int blk_col, TxSetType tx_set_type,
+                        TX_TYPE_PRUNE_MODE prune_mode, int *txk_map,
+                        uint16_t *allowed_tx_mask) {
   int tx_type_table_2D[16] = {
     DCT_DCT,      DCT_ADST,      DCT_FLIPADST,      V_DCT,
     ADST_DCT,     ADST_ADST,     ADST_FLIPADST,     V_ADST,
@@ -1890,7 +1890,7 @@ static uint16_t prune_tx_2D(MACROBLOCK *x, BLOCK_SIZE bsize, TX_SIZE tx_size,
   };
   if (tx_set_type != EXT_TX_SET_ALL16 &&
       tx_set_type != EXT_TX_SET_DTT9_IDTX_1DDCT)
-    return 0;
+    return;
 #if CONFIG_NN_V2
   NN_CONFIG_V2 *nn_config_hor = av1_tx_type_nnconfig_map_hor[tx_size];
   NN_CONFIG_V2 *nn_config_ver = av1_tx_type_nnconfig_map_ver[tx_size];
@@ -1898,7 +1898,7 @@ static uint16_t prune_tx_2D(MACROBLOCK *x, BLOCK_SIZE bsize, TX_SIZE tx_size,
   const NN_CONFIG *nn_config_hor = av1_tx_type_nnconfig_map_hor[tx_size];
   const NN_CONFIG *nn_config_ver = av1_tx_type_nnconfig_map_ver[tx_size];
 #endif
-  if (!nn_config_hor || !nn_config_ver) return 0;  // Model not established yet.
+  if (!nn_config_hor || !nn_config_ver) return;  // Model not established yet.
 
   aom_clear_system_state();
   float hfeatures[16], vfeatures[16];
@@ -1940,7 +1940,7 @@ static uint16_t prune_tx_2D(MACROBLOCK *x, BLOCK_SIZE bsize, TX_SIZE tx_size,
 
   av1_nn_softmax(scores_2D_raw, scores_2D, 16);
 
-  const int prune_aggr_table[3][2] = { { 4, 1 }, { 6, 3 }, { 9, 6 } };
+  const int prune_aggr_table[4][2] = { { 4, 1 }, { 6, 3 }, { 9, 6 }, { 9, 6 } };
   int pruning_aggressiveness = 0;
   if (tx_set_type == EXT_TX_SET_ALL16) {
     pruning_aggressiveness =
@@ -1956,7 +1956,7 @@ static uint16_t prune_tx_2D(MACROBLOCK *x, BLOCK_SIZE bsize, TX_SIZE tx_size,
   float max_score = 0.0f;
   for (int i = 0; i < 16; i++) {
     if (scores_2D[i] > max_score &&
-        (allowed_tx_mask & (1 << tx_type_table_2D[i]))) {
+        (*allowed_tx_mask & (1 << tx_type_table_2D[i]))) {
       max_score = scores_2D[i];
       max_score_i = i;
     }
@@ -1965,16 +1965,53 @@ static uint16_t prune_tx_2D(MACROBLOCK *x, BLOCK_SIZE bsize, TX_SIZE tx_size,
   const float score_thresh =
       prune_2D_adaptive_thresholds[tx_size][pruning_aggressiveness];
 
-  uint16_t prune_bitmask = 0;
-  for (int i = 0; i < 16; i++) {
-    if (scores_2D[i] < score_thresh && i != max_score_i)
-      prune_bitmask |= (1 << tx_type_table_2D[i]);
+  uint16_t allow_bitmask = 0;
+  float sum_score = 0.0;
+  // Calculate sum of allowed tx type score and Populate allow bit mask based
+  // on score_thresh and allowed_tx_mask
+  for (int tx_idx = 0; tx_idx < TX_TYPES; tx_idx++) {
+    int allow_tx_type = *allowed_tx_mask & (1 << tx_type_table_2D[tx_idx]);
+    if ((scores_2D[tx_idx] >= score_thresh && allow_tx_type) ||
+        tx_idx == max_score_i) {
+      // Set allow mask based on score_thresh and tx type with max score
+      allow_bitmask |= (1 << tx_type_table_2D[tx_idx]);
+
+      // Accumulate score of allowed tx type
+      sum_score += scores_2D[tx_idx];
+    }
   }
-
+  // Sort tx type probability of all types
   sort_probability(scores_2D, tx_type_table_2D, TX_TYPES);
-  memcpy(txk_map, tx_type_table_2D, sizeof(tx_type_table_2D));
 
-  return prune_bitmask;
+  // Enable more pruning based on tx type probability and number of allowed tx
+  // types
+  if (prune_mode == PRUNE_2D_AGGRESSIVE) {
+    float temp_score = 0.0;
+    float score_ratio = 0.0;
+    int tx_idx, tx_count = 0;
+    const float inv_sum_score = 100 / sum_score;
+    // Get allowed tx types based on sorted probability score and tx count
+    for (tx_idx = 0; tx_idx < TX_TYPES; tx_idx++) {
+      // Skip the tx type which has more than 30% of cumulative
+      // probability and allowed tx type count is more than 2
+      if (score_ratio > 30.0 && tx_count >= 2) break;
+
+      // Calculate cumulative probability of allowed tx types
+      if (allow_bitmask & (1 << tx_type_table_2D[tx_idx])) {
+        // Calculate cumulative probability
+        temp_score += scores_2D[tx_idx];
+
+        // Calculate percentage of cumulative probability of allowed tx type
+        score_ratio = temp_score * inv_sum_score;
+        tx_count++;
+      }
+    }
+    // Set remaining tx types as pruned
+    for (; tx_idx < TX_TYPES; tx_idx++)
+      allow_bitmask &= ~(1 << tx_type_table_2D[tx_idx]);
+  }
+  memcpy(txk_map, tx_type_table_2D, sizeof(tx_type_table_2D));
+  *allowed_tx_mask = allow_bitmask;
 }
 
 static AOM_INLINE void model_rd_from_sse(const AV1_COMP *const cpi,
@@ -3363,14 +3400,12 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
     }
     assert(num_allowed > 0);
 
-    // Go through ML model only if num_allowed > 5.
+    int allowed_tx_count = (x->prune_mode == PRUNE_2D_AGGRESSIVE) ? 1 : 5;
     // !fast_tx_search && txk_end != txk_start && plane == 0
-    if (cpi->sf.tx_type_search.prune_mode >= PRUNE_2D_ACCURATE && is_inter &&
-        num_allowed > 5) {
-      const uint16_t prune = prune_tx_2D(
-          x, plane_bsize, tx_size, blk_row, blk_col, tx_set_type,
-          cpi->sf.tx_type_search.prune_mode, txk_map, allowed_tx_mask);
-      allowed_tx_mask &= (~prune);
+    if (x->prune_mode >= PRUNE_2D_ACCURATE && is_inter &&
+        num_allowed > allowed_tx_count) {
+      prune_tx_2D(x, plane_bsize, tx_size, blk_row, blk_col, tx_set_type,
+                  x->prune_mode, txk_map, &allowed_tx_mask);
     }
   }
 

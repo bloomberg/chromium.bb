@@ -413,6 +413,7 @@ struct macroblock {
   int must_find_valid_partition;
   int recalc_luma_mc_data;  // Flag to indicate recalculation of MC data during
                             // interpolation filter search
+  int prune_mode;
   uint32_t tx_domain_dist_threshold;
   int use_transform_domain_distortion;
   // The likelihood of an edge existing in the block (using partial Canny edge

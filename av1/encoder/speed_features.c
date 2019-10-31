@@ -429,6 +429,7 @@ static void set_good_speed_features_framesize_independent(
     // TODO(any): Extend multi-winner mode processing support for inter frames
     sf->enable_multiwinner_mode_process =
         frame_is_intra_only(&cpi->common) ? 1 : 0;
+    sf->tx_type_search.enable_winner_mode_tx_type_pruning = 1;
     // TODO(any): Experiment with this speed feature set to 2 for higher quality
     // presets as well
     sf->skip_intra_in_interframe = 2;
@@ -812,6 +813,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   sf->tx_type_search.fast_inter_tx_type_search = 0;
   sf->tx_type_search.skip_tx_search = 0;
   sf->tx_type_search.prune_tx_type_using_stats = 0;
+  sf->tx_type_search.enable_winner_mode_tx_type_pruning = 0;
   sf->selective_ref_frame = 0;
   sf->less_rectangular_check_level = 0;
   sf->use_square_partition_only_threshold = BLOCK_128X128;

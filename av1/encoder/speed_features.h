@@ -163,6 +163,8 @@ enum {
   // similar, but applies much more aggressive pruning to get better speed-up
   PRUNE_2D_FAST = 2,
   PRUNE_2D_MORE = 3,
+  // More aggressive pruning based on tx type score and allowed tx count
+  PRUNE_2D_AGGRESSIVE = 4,
 } UENUM1BYTE(TX_TYPE_PRUNE_MODE);
 
 typedef struct {
@@ -186,6 +188,12 @@ typedef struct {
 
   // Prune tx type search using previous frame stats.
   int prune_tx_type_using_stats;
+
+  // Flag used to control the winner mode processing for tx type pruning for
+  // inter blocks. It enables further tx type mode pruning based on ML model for
+  // mode evaluation and disables tx type mode pruning for winner mode
+  // processing.
+  int enable_winner_mode_tx_type_pruning;
 } TX_TYPE_SEARCH;
 
 enum {
