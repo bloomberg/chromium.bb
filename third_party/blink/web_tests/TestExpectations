@@ -5752,6 +5752,6 @@ crbug.com/963183 http/tests/devtools/components/viewport-datagrid.js [ Pass Fail
 
 # Temporarily disabled for landing datagrid Changes in devtools
 crbug.com/963183 http/tests/devtools/network/network-close-request-view.js [ Pass Failure ]
-crbug.com/963183 http/tests/devtools/network/network-cookies-pane.js [ Pass Failure ]
+crbug.com/963183 http/tests/devtools/network/network-cookies-pane.js [ Pass Timeout Failure ]
 crbug.com/963183 http/tests/devtools/network/preview-searchable.js [ Pass Failure ]
 crbug.com/963183 http/tests/devtools/network/waterfall-header-height-updates.js [ Pass Failure ]
