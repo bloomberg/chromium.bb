@@ -218,6 +218,7 @@ android_library("ui_utils_java") {
   ]
   deps = [
     "//base:base_java",
+    "//components/payments/mojom:mojom_java",
     "//third_party/android_deps:android_support_v7_appcompat_java",
   ]
 }
