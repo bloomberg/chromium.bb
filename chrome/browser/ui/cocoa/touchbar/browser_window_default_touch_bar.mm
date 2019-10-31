@@ -491,6 +491,8 @@ class API_AVAILABLE(macos(10.12.2)) TouchBarNotificationBridge
     title = isGoogle ? l10n_util::GetStringUTF16(IDS_TOUCH_BAR_GOOGLE_SEARCH)
                      : l10n_util::GetStringFUTF16(
                            IDS_TOUCH_BAR_SEARCH, defaultProvider->short_name());
+  } else {
+    title = l10n_util::GetStringUTF16(IDS_TOUCH_BAR_NO_DEFAULT_SEARCH);
   }
 
   NSImage* image = nil;
