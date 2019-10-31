@@ -2047,13 +2047,61 @@ TEST_F(AutocompleteResultTest, SortAndCullWithDemotedSubmatches) {
   // the demoted history-url match, and the history-title results and
   // its submatch should be omitted.
   ASSERT_EQ(4u, result.size());
-  EXPECT_EQ("http://search-what-you-typed/",
-            result.match_at(0)->destination_url.spec());
-  EXPECT_EQ("http://search-history/",
-            result.match_at(1)->destination_url.spec());
-  EXPECT_EQ("http://history-url/", result.match_at(2)->destination_url.spec());
-  EXPECT_EQ("http://search-history-submatch1/",
-            result.match_at(3)->destination_url.spec());
+  EXPECT_EQ(result.match_at(0)->destination_url.spec(),
+            "http://search-what-you-typed/");
+  EXPECT_EQ(result.match_at(1)->destination_url.spec(),
+            "http://search-history/");
+  EXPECT_EQ(result.match_at(2)->destination_url.spec(), "http://history-url/");
+  EXPECT_EQ(result.match_at(3)->destination_url.spec(),
+            "http://search-history-submatch1/");
   EXPECT_TRUE(AutocompleteMatch::IsSameFamily(
       result.match_at(2)->subrelevance, result.match_at(3)->subrelevance));
+}
+
+TEST_F(AutocompleteResultTest, CalculateNumMatchesTest) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeaturesAndParameters(
+      {
+          {omnibox::kUIExperimentMaxAutocompleteMatches,
+           {{OmniboxFieldTrial::kUIMaxAutocompleteMatchesParam, "6"}}},
+          {omnibox::kOmniboxLooseMaxLimitOnDedicatedRows, {/* no params */}},
+      },
+      {/* nothing disabled */});
+
+  struct {
+    std::vector<bool> is_submatch;
+    size_t num_matches;
+  } test_data[] = {
+      // Test |matches| size.
+      {{false, false, true, true}, 4},
+      // Easy case.
+      {{false, false, false, false, false, false, false}, 6},
+      // Early match has a submatch.
+      {{false, true, false, false, false, false, false, false}, 7},
+      // Last match is submatch.
+      {{false, false, false, false, false, true, false, false}, 7},
+      // Late match has a submatch.
+      {{false, false, false, false, false, false, true, false}, 7},
+      // Late match has 2 submatches.
+      {{false, false, false, false, false, false, true, true, false}, 8},
+      // Mix.
+      {{false, true, false, false, false, false, true, true, false, false}, 9},
+  };
+  CompareWithDemoteByType<AutocompleteMatch> comparison_object(
+      metrics::OmniboxEventProto::OTHER);
+  for (const auto& test : test_data) {
+    ACMatches matches;
+    {
+      const size_t num_matches = test.is_submatch.size();
+      matches.resize(num_matches);
+      for (size_t match = 0; match < num_matches; ++match) {
+        matches[match].relevance = 100;
+        if (test.is_submatch[match])
+          matches[match].subrelevance = 1;
+      }
+    }
+    const size_t num_matches = AutocompleteResult::CalculateNumMatches(
+        false, matches, comparison_object);
+    EXPECT_EQ(num_matches, test.num_matches);
+  }
 }

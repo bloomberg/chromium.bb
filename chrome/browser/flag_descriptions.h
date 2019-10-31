@@ -1734,6 +1734,9 @@ extern const char kOmniboxDriveSuggestionsDescriptions[];
 extern const char kOmniboxExperimentalKeywordModeName[];
 extern const char kOmniboxExperimentalKeywordModeDescription[];
 
+extern const char kOmniboxLooseMaxLimitOnDedicatedRowsName[];
+extern const char kOmniboxLooseMaxLimitOnDedicatedRowsDescription[];
+
 extern const char kOmniboxPedalSuggestionsName[];
 extern const char kOmniboxPedalSuggestionsDescription[];
 

@@ -315,4 +315,9 @@ const base::Feature kOmniboxExperimentalSuggestScoring{
 const base::Feature kConfirmOmniboxSuggestionRemovals{
     "ConfirmOmniboxSuggestionRemovals", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Feature that enables not counting submatches towards the maximum
+// suggestion limit.
+const base::Feature kOmniboxLooseMaxLimitOnDedicatedRows{
+    "OmniboxLooseMaxLimitOnDedicatedRows", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace omnibox
