@@ -449,8 +449,16 @@ class CORE_EXPORT PaintLayerScrollableArea final
   // Rectangle encompassing the scroll corner and resizer rect.
   IntRect ScrollCornerAndResizerRect() const;
 
-  void UpdateNeedsCompositedScrolling(bool layer_has_been_composited = false);
-  bool NeedsCompositedScrolling() const { return needs_composited_scrolling_; }
+  bool ComputeNeedsCompositedScrolling(
+      bool force_prefer_compositing_to_lcd_text);
+
+  // These two functions are used by pre-CompositeAfterPaint only.
+  void UpdateNeedsCompositedScrolling(
+      bool force_prefer_compositing_to_lcd_text);
+  bool NeedsCompositedScrolling() const {
+    DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
+    return needs_composited_scrolling_;
+  }
 
   IntRect ResizerCornerRect(const IntRect&, ResizerHitTestType) const;
 
@@ -621,8 +629,6 @@ class CORE_EXPORT PaintLayerScrollableArea final
       rare_data_ = std::make_unique<PaintLayerScrollableAreaRareData>();
     return *rare_data_.get();
   }
-
-  bool ComputeNeedsCompositedScrolling(const bool, const PaintLayer*);
 
   IntRect CornerRect(const IntRect& bounds) const;
 

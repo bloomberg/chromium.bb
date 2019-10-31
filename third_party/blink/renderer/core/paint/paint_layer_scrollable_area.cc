@@ -2326,21 +2326,25 @@ static bool LayerNodeMayNeedCompositedScrolling(const PaintLayer* layer) {
 }
 
 bool PaintLayerScrollableArea::ComputeNeedsCompositedScrolling(
-    const bool layer_has_been_composited,
-    const PaintLayer* layer) {
+    bool force_prefer_compositing_to_lcd_text) {
+  DCHECK_EQ(RuntimeEnabledFeatures::CompositeAfterPaintEnabled()
+                ? DocumentLifecycle::kInPrePaint
+                : DocumentLifecycle::kInCompositingUpdate,
+            GetDocument()->Lifecycle().GetState());
+
   non_composited_main_thread_scrolling_reasons_ = 0;
 
-  if (CompositingReasonFinder::RequiresCompositingForRootScroller(*layer))
+  if (CompositingReasonFinder::RequiresCompositingForRootScroller(*layer_))
     return true;
 
-  if (!layer->ScrollsOverflow())
+  if (!layer_->ScrollsOverflow())
     return false;
 
-  if (layer->Size().IsEmpty())
+  if (layer_->Size().IsEmpty())
     return false;
 
-  if (!layer_has_been_composited &&
-      !LayerNodeMayNeedCompositedScrolling(layer)) {
+  if (!force_prefer_compositing_to_lcd_text &&
+      !LayerNodeMayNeedCompositedScrolling(layer_)) {
     return false;
   }
 
@@ -2348,34 +2352,33 @@ bool PaintLayerScrollableArea::ComputeNeedsCompositedScrolling(
 
   // TODO(flackr): Allow integer transforms as long as all of the ancestor
   // transforms are also integer.
+  const LayoutBox* box = GetLayoutBox();
   bool background_supports_lcd_text =
-      GetLayoutBox()->StyleRef().IsStackingContext() &&
-      GetLayoutBox()->GetBackgroundPaintLocation(
-          &non_composited_main_thread_scrolling_reasons_) &
-          kBackgroundPaintInScrollingContents &&
-      layer->BackgroundIsKnownToBeOpaqueInRect(
-          ToLayoutBox(layer->GetLayoutObject()).PhysicalPaddingBoxRect(),
-          true) &&
-      !layer->CompositesWithTransform() && !layer->CompositesWithOpacity();
+      box->StyleRef().IsStackingContext() &&
+      (box->GetBackgroundPaintLocation(
+           &non_composited_main_thread_scrolling_reasons_) &
+       kBackgroundPaintInScrollingContents) &&
+      layer_->BackgroundIsKnownToBeOpaqueInRect(box->PhysicalPaddingBoxRect(),
+                                                true) &&
+      !layer_->CompositesWithTransform() && !layer_->CompositesWithOpacity();
 
-  if (!layer_has_been_composited &&
-      !layer->Compositor()->PreferCompositingToLCDTextEnabled() &&
+  if (!force_prefer_compositing_to_lcd_text &&
+      !layer_->Compositor()->PreferCompositingToLCDTextEnabled() &&
       !background_supports_lcd_text) {
-    if (layer->CompositesWithOpacity()) {
+    if (layer_->CompositesWithOpacity()) {
       non_composited_main_thread_scrolling_reasons_ |=
           cc::MainThreadScrollingReason::kHasOpacityAndLCDText;
     }
-    if (layer->CompositesWithTransform()) {
+    if (layer_->CompositesWithTransform()) {
       non_composited_main_thread_scrolling_reasons_ |=
           cc::MainThreadScrollingReason::kHasTransformAndLCDText;
     }
-    if (!layer->BackgroundIsKnownToBeOpaqueInRect(
-            ToLayoutBox(layer->GetLayoutObject()).PhysicalPaddingBoxRect(),
-            true)) {
+    if (!layer_->BackgroundIsKnownToBeOpaqueInRect(
+            box->PhysicalPaddingBoxRect(), true)) {
       non_composited_main_thread_scrolling_reasons_ |=
           cc::MainThreadScrollingReason::kBackgroundNotOpaqueInRectAndLCDText;
     }
-    if (!layer->GetLayoutObject().StyleRef().IsStackingContext()) {
+    if (!box->StyleRef().IsStackingContext()) {
       non_composited_main_thread_scrolling_reasons_ |=
           cc::MainThreadScrollingReason::kIsNotStackingContextAndLCDText;
     }
@@ -2383,8 +2386,8 @@ bool PaintLayerScrollableArea::ComputeNeedsCompositedScrolling(
     needs_composited_scrolling = false;
   }
 
-  if (layer->GetLayoutObject().HasClip() ||
-      layer->HasDescendantWithClipPath() || !!layer->ClipPathAncestor()) {
+  if (box->HasClip() || layer_->HasDescendantWithClipPath() ||
+      !!layer_->ClipPathAncestor()) {
     non_composited_main_thread_scrolling_reasons_ |=
         cc::MainThreadScrollingReason::kHasClipRelatedProperty;
     needs_composited_scrolling = false;
@@ -2396,14 +2399,11 @@ bool PaintLayerScrollableArea::ComputeNeedsCompositedScrolling(
 }
 
 void PaintLayerScrollableArea::UpdateNeedsCompositedScrolling(
-    bool layer_has_been_composited) {
-  const bool needs_composited_scrolling =
-      ComputeNeedsCompositedScrolling(layer_has_been_composited, Layer());
+    bool force_prefer_compositing_to_lcd_text) {
+  DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
 
-  if (static_cast<bool>(needs_composited_scrolling_) !=
-      needs_composited_scrolling) {
-    needs_composited_scrolling_ = needs_composited_scrolling;
-  }
+  needs_composited_scrolling_ =
+      ComputeNeedsCompositedScrolling(force_prefer_compositing_to_lcd_text);
 }
 
 bool PaintLayerScrollableArea::VisualViewportSuppliesScrollbars() const {
