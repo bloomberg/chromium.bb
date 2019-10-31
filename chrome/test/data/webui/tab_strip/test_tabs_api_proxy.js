@@ -11,7 +11,7 @@ export class TestTabsApiProxy extends TestBrowserProxy {
       'closeTab',
       'getTabs',
       'moveTab',
-      'setThumbnailTracked',
+      'trackThumbnailForTab',
     ]);
 
     this.tabs_;
@@ -41,7 +41,7 @@ export class TestTabsApiProxy extends TestBrowserProxy {
     this.tabs_ = tabs;
   }
 
-  setThumbnailTracked(tabId, thumbnailTracked) {
-    this.methodCalled('setThumbnailTracked', [tabId, thumbnailTracked]);
+  trackThumbnailForTab(tabId) {
+    this.methodCalled('trackThumbnailForTab', tabId);
   }
 }

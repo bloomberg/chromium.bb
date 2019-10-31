@@ -252,7 +252,11 @@ suite('Tab', function() {
     assertEquals(window.getComputedStyle(thumbnailImage).display, 'none');
   });
 
-  test('updates the thumbnail source', async () => {
+  test('tracks and updates the thumbnail source', async () => {
+    const requestedTabId =
+        await testTabsApiProxy.whenCalled('trackThumbnailForTab');
+    assertEquals(requestedTabId, tab.id);
+
     const thumbnailSource = 'data:mock-thumbnail-source';
     tabElement.updateThumbnail(thumbnailSource);
     assertEquals(
