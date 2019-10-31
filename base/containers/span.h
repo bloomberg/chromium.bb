@@ -498,7 +498,7 @@ template <size_t N,
               decltype(base::data(std::declval<Container&>()))>,
           typename = internal::EnableIfSpanCompatibleContainer<Container&, T>>
 constexpr span<T, N> make_span(Container& container) noexcept {
-  return span<T, N>(data(container), size(container));
+  return span<T, N>(base::data(container), base::size(container));
 }
 
 template <
