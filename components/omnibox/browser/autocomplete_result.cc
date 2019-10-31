@@ -78,9 +78,11 @@ size_t AutocompleteResult::GetMaxMatches(bool is_zero_suggest) {
   constexpr size_t kDefaultMaxAutocompleteMatches = 5;
   if (is_zero_suggest)
     return kDefaultMaxAutocompleteMatches;
-#else
+#elif defined(OS_IOS)  // !defined(OS_ANDROID)
   constexpr size_t kDefaultMaxAutocompleteMatches = 6;
-#endif  // defined(OS_ANDROID)
+#else                  // !defined(OS_ANDROID) && !defined(OS_IOS)
+  constexpr size_t kDefaultMaxAutocompleteMatches = 8;
+#endif
   static_assert(kMaxAutocompletePositionValue > kDefaultMaxAutocompleteMatches,
                 "kMaxAutocompletePositionValue must be larger than the largest "
                 "possible autocomplete result size.");

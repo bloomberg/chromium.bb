@@ -624,10 +624,10 @@ OmniboxFieldTrial::GetEmphasizeTitlesConditionForInput(
 }
 
 size_t OmniboxFieldTrial::GetMaxURLMatches() {
+  constexpr size_t kDefaultMaxURLMatches = 7;
   return base::GetFieldTrialParamByFeatureAsInt(
       omnibox::kOmniboxMaxURLMatches,
-      OmniboxFieldTrial::kOmniboxMaxURLMatchesParam,
-      0);  // default
+      OmniboxFieldTrial::kOmniboxMaxURLMatchesParam, kDefaultMaxURLMatches);
 }
 
 bool OmniboxFieldTrial::IsPreserveDefaultMatchScoreEnabled() {

@@ -1458,6 +1458,14 @@ TEST_F(AutocompleteResultTest, SortAndCullPromoteDuplicateSearchURLs) {
 }
 
 TEST_F(AutocompleteResultTest, SortAndCullGroupSuggestionsByType) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeaturesAndParameters(
+      {
+          {omnibox::kUIExperimentMaxAutocompleteMatches,
+           {{OmniboxFieldTrial::kUIMaxAutocompleteMatchesParam, "6"}}},
+          {omnibox::kOmniboxGroupSuggestionsBySearchVsUrl, {/* no params */}},
+      },
+      {/* nothing disabled */});
   TestData data[] = {
     { 0, 1,  500, false },
     { 1, 2,  600, false },
@@ -1480,10 +1488,6 @@ TEST_F(AutocompleteResultTest, SortAndCullGroupSuggestionsByType) {
   for (size_t i = 0; i < base::size(data); ++i)
     matches[i].type = match_types[i];
 
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      omnibox::kOmniboxGroupSuggestionsBySearchVsUrl);
-
   AutocompleteInput input(base::ASCIIToUTF16("a"),
                           metrics::OmniboxEventProto::OTHER,
                           TestSchemeClassifier());
@@ -1505,7 +1509,9 @@ TEST_F(AutocompleteResultTest, SortAndCullGroupSuggestionsByType) {
 TEST_F(AutocompleteResultTest, SortAndCullMaxURLMatches) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeaturesAndParameters(
-      {{omnibox::kOmniboxMaxURLMatches,
+      {{omnibox::kUIExperimentMaxAutocompleteMatches,
+        {{OmniboxFieldTrial::kUIMaxAutocompleteMatchesParam, "6"}}},
+       {omnibox::kOmniboxMaxURLMatches,
         {{OmniboxFieldTrial::kOmniboxMaxURLMatchesParam, "3"}}}},
       {omnibox::kOmniboxGroupSuggestionsBySearchVsUrl,
        omnibox::kOmniboxPreserveDefaultMatchScore});
@@ -1591,7 +1597,9 @@ TEST_F(
     MOBILE_DISABLED(SortAndCullMaxURLMatchesWithPreserveAndGroupingFeatures)) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeaturesAndParameters(
-      {{omnibox::kOmniboxMaxURLMatches,
+      {{omnibox::kUIExperimentMaxAutocompleteMatches,
+        {{OmniboxFieldTrial::kUIMaxAutocompleteMatchesParam, "6"}}},
+       {omnibox::kOmniboxMaxURLMatches,
         {{OmniboxFieldTrial::kOmniboxMaxURLMatchesParam, "3"}}},
        {omnibox::kOmniboxGroupSuggestionsBySearchVsUrl, {}},
        {omnibox::kOmniboxPreserveDefaultMatchScore, {}}},
