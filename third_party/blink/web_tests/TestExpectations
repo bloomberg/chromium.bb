@@ -5241,6 +5241,7 @@ crbug.com/946699 [ Release ] http/tests/devtools/network/network-filter-service-
 crbug.com/946711 [ Release ] http/tests/devtools/editor/text-editor-search-switch-editor.js [ Crash Pass Timeout ]
 crbug.com/946712 [ Release ] http/tests/devtools/elements/styles-2/paste-property.js [ Crash Pass Timeout ]
 crbug.com/946713 [ Release ] http/tests/devtools/extensions/extensions-resources.js [ Crash Pass Timeout ]
+crbug.com/848799 [ Win7 ] http/tests/devtools/coverage/multiple-instances-merge.js [ Pass Timeout ]
 crbug.com/947383 inspector-protocol/css/reattach-after-editing-styles.js [ Pass Timeout ]
 
 ### external/wpt/fetch/sec-metadata/
@@ -5397,6 +5398,7 @@ crbug.com/974710 [ Win7 ] virtual/isolated_world_csp/http/tests/security/isolate
 # Sheriff 2019-06-24
 crbug.com/978000 inspector-protocol/page/setWebLifecycleState.js [ Pass Timeout ]
 
+crbug.com/946700 [ Win ] http/tests/devtools/coverage/decorations-after-script-formatter.js [ Pass Timeout ]
 crbug.com/978254 [ Win ] http/tests/devtools/elements/edit/edit-dom-actions-4.js [ Pass Timeout ]
 crbug.com/977015 [ Win ] http/tests/devtools/elements/shadow/shadow-distribution.js [ Pass Timeout ]
 
@@ -5747,16 +5749,6 @@ crbug.com/1018027 virtual/threaded-no-composited-antialiasing/animations/custom-
 crbug.com/1014810 [ Mac ] virtual/threaded/external/wpt/animation-worklet/stateful-animator.https.html [ Pass Timeout ]
 crbug.com/1019662 external/wpt/html/dom/idlharness.worker.html [ Pass Timeout ]
 crbug.com/1019663 external/wpt/web-nfc/NDEFReader_options.https.html [ Failure Pass ]
-
-# Temporarily disabled for landing coverage changes in DevTools
-crbug.com/1009396 http/tests/devtools/coverage/coverage-export.js [ Pass Failure ]
-crbug.com/1009396 http/tests/devtools/coverage/coverage-repeated.js [ Pass Failure ]
-crbug.com/1009396 http/tests/devtools/coverage/coverage-suspended.js [ Pass Failure ]
-crbug.com/1009396 http/tests/devtools/coverage/coverage-view-filter.js [ Pass Failure ]
-crbug.com/1009396 http/tests/devtools/coverage/coverage-view.js [ Pass Failure ]
-crbug.com/1009396 http/tests/devtools/coverage/decorations-after-script-formatter.js [ Pass Timeout Failure ]
-crbug.com/1009396 http/tests/devtools/coverage/gutter-js.js [ Pass Failure ]
-crbug.com/1009396 http/tests/devtools/coverage/multiple-instances-merge.js [ Pass Timeout Failure ]
 
 # Temporarily disable to land source map changes that log error on failure
 crbug.com/1016772 http/tests/devtools/compiler-script-mapping.js [ Pass Failure ]

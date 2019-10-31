@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,7 @@
   TestRunner.addResult(`Tests the filter is properly applied to coverage list view.\n`);
   await TestRunner.loadModule('coverage_test_runner');
 
-  await CoverageTestRunner.startCoverage(true);
+  await CoverageTestRunner.startCoverage(false);
   await TestRunner.navigatePromise(TestRunner.url('resources/basic-coverage.html'));
   await TestRunner.evaluateInPagePromise('performActions()');
   await CoverageTestRunner.stopCoverage();
