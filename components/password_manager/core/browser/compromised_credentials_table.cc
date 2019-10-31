@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/password_manager/core/browser/leaked_credentials_table.h"
+#include "components/password_manager/core/browser/compromised_credentials_table.h"
 
 #include "components/password_manager/core/browser/sql_table_builder.h"
 #include "sql/database.h"
