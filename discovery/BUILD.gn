@@ -10,6 +10,8 @@ source_set("dnssd") {
   sources = [
     "dnssd/dns_sd_temp.cc",
     "dnssd/impl/constants.h",
+    "dnssd/impl/querier_impl.cc",
+    "dnssd/impl/querier_impl.h",
     "dnssd/public/instance_record.cc",
     "dnssd/public/instance_record.h",
     "dnssd/public/publisher.h",
