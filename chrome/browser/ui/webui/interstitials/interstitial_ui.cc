@@ -524,7 +524,7 @@ void InterstitialHTMLSource::StartDataRequest(
   } else if (interstitial_delegate.get()) {
     html = interstitial_delegate.get()->GetHTMLContents();
   } else {
-    html = ui::ResourceBundle::GetSharedInstance().DecompressDataResource(
+    html = ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
         IDR_SECURITY_INTERSTITIAL_UI_HTML);
   }
   scoped_refptr<base::RefCountedString> html_bytes = new base::RefCountedString;
