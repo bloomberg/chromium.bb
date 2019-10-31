@@ -7,9 +7,9 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
-#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "chromeos/components/multidevice/software_feature.h"
@@ -48,7 +48,7 @@ class FakeCryptAuthFeatureStatusSetter : public CryptAuthFeatureStatusSetter {
   FakeCryptAuthFeatureStatusSetter();
   ~FakeCryptAuthFeatureStatusSetter() override;
 
-  base::queue<Request>& requests() { return requests_; }
+  std::vector<Request>& requests() { return requests_; }
 
  private:
   // CryptAuthFeatureStatusSetter:
@@ -59,7 +59,7 @@ class FakeCryptAuthFeatureStatusSetter : public CryptAuthFeatureStatusSetter {
       base::OnceClosure success_callback,
       base::OnceCallback<void(NetworkRequestError)> error_callback) override;
 
-  base::queue<Request> requests_;
+  std::vector<Request> requests_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeCryptAuthFeatureStatusSetter);
 };
