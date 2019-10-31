@@ -16,7 +16,6 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.ContentSettingsType;
-import org.chromium.chrome.browser.browsing_data.TimePeriod;
 import org.chromium.chrome.browser.preferences.languages.LanguageItem;
 import org.chromium.chrome.browser.preferences.website.ContentSettingException;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
@@ -491,72 +490,6 @@ public class PrefServiceBridge {
                 PrefServiceBridge.this, enabled);
     }
 
-    /**
-     * Checks the state of deletion preference for a certain browsing data type.
-     * @param dataType The requested browsing data type (from the shared enum
-     *      {@link org.chromium.chrome.browser.browsing_data.BrowsingDataType}).
-     * @param clearBrowsingDataTab Indicates if this is a checkbox on the default, basic or advanced
-     *      tab to apply the right preference.
-     * @return The state of the corresponding deletion preference.
-     */
-    public boolean getBrowsingDataDeletionPreference(int dataType, int clearBrowsingDataTab) {
-        return PrefServiceBridgeJni.get().getBrowsingDataDeletionPreference(
-                PrefServiceBridge.this, dataType, clearBrowsingDataTab);
-    }
-
-    /**
-     * Sets the state of deletion preference for a certain browsing data type.
-     * @param dataType The requested browsing data type (from the shared enum
-     *      {@link org.chromium.chrome.browser.browsing_data.BrowsingDataType}).
-     * @param clearBrowsingDataTab Indicates if this is a checkbox on the default, basic or advanced
-     *      tab to apply the right preference.
-     * @param value The state to be set.
-     */
-    public void setBrowsingDataDeletionPreference(
-            int dataType, int clearBrowsingDataTab, boolean value) {
-        PrefServiceBridgeJni.get().setBrowsingDataDeletionPreference(
-                PrefServiceBridge.this, dataType, clearBrowsingDataTab, value);
-    }
-
-    /**
-     * Gets the time period for which browsing data will be deleted.
-     * @param clearBrowsingDataTab Indicates if this is a timeperiod on the default, basic or
-     *      advanced tab to apply the right preference.
-     * @return The currently selected browsing data deletion time period.
-     */
-    public @TimePeriod int getBrowsingDataDeletionTimePeriod(int clearBrowsingDataTab) {
-        return PrefServiceBridgeJni.get().getBrowsingDataDeletionTimePeriod(
-                PrefServiceBridge.this, clearBrowsingDataTab);
-    }
-
-    /**
-     * Sets the time period for which browsing data will be deleted.
-     * @param clearBrowsingDataTab Indicates if this is a timeperiod on the default, basic or
-     *      advanced tab to apply the right preference.
-     * @param timePeriod The selected browsing data deletion time period.
-     */
-    public void setBrowsingDataDeletionTimePeriod(
-            int clearBrowsingDataTab, @TimePeriod int timePeriod) {
-        PrefServiceBridgeJni.get().setBrowsingDataDeletionTimePeriod(
-                PrefServiceBridge.this, clearBrowsingDataTab, timePeriod);
-    }
-
-    /**
-     * @return The index of the tab last visited by the user in the CBD dialog.
-     *         Index 0 is for the basic tab, 1 is the advanced tab.
-     */
-    public int getLastSelectedClearBrowsingDataTab() {
-        return PrefServiceBridgeJni.get().getLastClearBrowsingDataTab(PrefServiceBridge.this);
-    }
-
-    /**
-     * Set the index of the tab last visited by the user.
-     * @param tabIndex The last visited tab index, 0 for basic, 1 for advanced.
-     */
-    public void setLastSelectedClearBrowsingDataTab(int tabIndex) {
-        PrefServiceBridgeJni.get().setLastClearBrowsingDataTab(PrefServiceBridge.this, tabIndex);
-    }
-
     // TODO(crbug.com/1016957): Inline downstream.
     public void setBlockThirdPartyCookiesEnabled(boolean enabled) {
         setBoolean(Pref.BLOCK_THIRD_PARTY_COOKIES, enabled);
@@ -945,15 +878,6 @@ public class PrefServiceBridge {
         boolean getSoundEnabled(PrefServiceBridge caller);
         void setTranslateEnabled(PrefServiceBridge caller, boolean enabled);
         void migrateJavascriptPreference(PrefServiceBridge caller);
-        boolean getBrowsingDataDeletionPreference(
-                PrefServiceBridge caller, int dataType, int clearBrowsingDataTab);
-        void setBrowsingDataDeletionPreference(
-                PrefServiceBridge caller, int dataType, int clearBrowsingDataTab, boolean value);
-        int getBrowsingDataDeletionTimePeriod(PrefServiceBridge caller, int clearBrowsingDataTab);
-        void setBrowsingDataDeletionTimePeriod(
-                PrefServiceBridge caller, int clearBrowsingDataTab, int timePeriod);
-        int getLastClearBrowsingDataTab(PrefServiceBridge caller);
-        void setLastClearBrowsingDataTab(PrefServiceBridge caller, int lastTab);
         void setAutomaticDownloadsEnabled(PrefServiceBridge caller, boolean enabled);
         void setAutoplayEnabled(PrefServiceBridge caller, boolean enabled);
         void setAllowCookiesEnabled(PrefServiceBridge caller, boolean enabled);
