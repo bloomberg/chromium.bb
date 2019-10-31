@@ -24,10 +24,6 @@ class ScriptWrappable;
 // e.g. IDBCursor.Request.
 // Apply |X| for each pair of (InterfaceName, PrivateKeyName).
 #define V8_PRIVATE_PROPERTY_FOR_EACH(X)                 \
-  X(CustomElementLifecycle, AttachedCallback)           \
-  X(CustomElementLifecycle, AttributeChangedCallback)   \
-  X(CustomElementLifecycle, CreatedCallback)            \
-  X(CustomElementLifecycle, DetachedCallback)           \
   X(DOMException, Error)                                \
   X(Global, Event)                                      \
   X(IDBCursor, Request)                                 \
