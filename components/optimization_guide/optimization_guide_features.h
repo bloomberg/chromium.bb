@@ -57,8 +57,12 @@ base::TimeDelta DurationApplyLowEngagementScoreThreshold();
 // The API key for the One Platform Optimization Guide Service.
 std::string GetOptimizationGuideServiceAPIKey();
 
-// The host for the One Platform Optimization Guide Service.
-GURL GetOptimizationGuideServiceURL();
+// The host for the One Platform Optimization Guide Service for hints.
+GURL GetOptimizationGuideServiceGetHintsURL();
+
+// The host for the One Platform Optimization Guide Service for Models and Host
+// Model Features.
+GURL GetOptimizationGuideServiceGetModelsURL();
 
 // Whether server optimization hints are enabled.
 bool IsOptimizationHintsEnabled();
