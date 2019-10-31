@@ -509,7 +509,7 @@ template <
         decltype(base::data(std::declval<const Container&>()))>,
     typename = internal::EnableIfSpanCompatibleContainer<const Container&, T>>
 constexpr span<T, N> make_span(const Container& container) noexcept {
-  return span<T, N>(data(container), size(container));
+  return span<T, N>(base::data(container), base::size(container));
 }
 
 template <int&... ExplicitArgumentBarrier, typename T, size_t X>
