@@ -5625,31 +5625,15 @@ crbug.com/1001936 external/wpt/css/css-masking/clip-path/clip-path-inline-001.ht
 # Sheriff 2019-09-10
 crbug.com/1002527 [ Debug ] virtual/text-antialias/large-text-composed-char.html [ Pass Crash ]
 
-# Tests fail because of scrollbar-width property
+# Tests fail because of missing scroll snap for #target and bugs in scrollIntoView
 crbug.com/1003055 external/wpt/css/css-scroll-snap/scroll-target-align-001.html [ Failure ]
 crbug.com/1003055 external/wpt/css/css-scroll-snap/scroll-target-align-002.html [ Failure ]
-crbug.com/1003055 external/wpt/css/css-scroll-snap/scroll-target-align-003.html [ Failure ]
-crbug.com/1003055 external/wpt/css/css-scroll-snap/scroll-target-margin-001.html [ Failure ]
-crbug.com/1003055 external/wpt/css/css-scroll-snap/scroll-target-margin-002.html [ Failure ]
-crbug.com/1003055 external/wpt/css/css-scroll-snap/scroll-target-margin-003.html [ Failure ]
-crbug.com/1003055 external/wpt/css/css-scroll-snap/scroll-target-padding-001.html [ Failure ]
-crbug.com/1003055 external/wpt/css/css-scroll-snap/scroll-target-padding-002.html [ Failure ]
-crbug.com/1003055 external/wpt/css/css-scroll-snap/scroll-target-padding-003.html [ Failure ]
 crbug.com/1003055 external/wpt/css/css-scroll-snap/scroll-target-snap-001.html [ Failure ]
 crbug.com/1003055 external/wpt/css/css-scroll-snap/scroll-target-snap-002.html [ Failure ]
-crbug.com/1003055 external/wpt/css/css-scroll-snap/scroll-target-snap-003.html [ Failure ]
 crbug.com/1003055 virtual/threaded/external/wpt/css/css-scroll-snap/scroll-target-align-001.html [ Failure ]
 crbug.com/1003055 virtual/threaded/external/wpt/css/css-scroll-snap/scroll-target-align-002.html [ Failure ]
-crbug.com/1003055 virtual/threaded/external/wpt/css/css-scroll-snap/scroll-target-align-003.html [ Failure ]
-crbug.com/1003055 virtual/threaded/external/wpt/css/css-scroll-snap/scroll-target-margin-001.html [ Failure ]
-crbug.com/1003055 virtual/threaded/external/wpt/css/css-scroll-snap/scroll-target-margin-002.html [ Failure ]
-crbug.com/1003055 virtual/threaded/external/wpt/css/css-scroll-snap/scroll-target-margin-003.html [ Failure ]
-crbug.com/1003055 virtual/threaded/external/wpt/css/css-scroll-snap/scroll-target-padding-001.html [ Failure ]
-crbug.com/1003055 virtual/threaded/external/wpt/css/css-scroll-snap/scroll-target-padding-002.html [ Failure ]
-crbug.com/1003055 virtual/threaded/external/wpt/css/css-scroll-snap/scroll-target-padding-003.html [ Failure ]
 crbug.com/1003055 virtual/threaded/external/wpt/css/css-scroll-snap/scroll-target-snap-001.html [ Failure ]
 crbug.com/1003055 virtual/threaded/external/wpt/css/css-scroll-snap/scroll-target-snap-002.html [ Failure ]
-crbug.com/1003055 virtual/threaded/external/wpt/css/css-scroll-snap/scroll-target-snap-003.html [ Failure ]
 
 # Sheriff 2019-09-12
 crbug.com/1011515 [ Win7 ] fast/harness/internals-observe-gc.html [ Failure ]
