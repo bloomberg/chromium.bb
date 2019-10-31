@@ -2171,6 +2171,10 @@ const char kUnexpireFlagsM76Name[] = "Temporarily unexpire M76 flags.";
 const char kUnexpireFlagsM76Description[] =
     "Temporarily unexpire flags that are expired as of M76. These flags will "
     "be removed soon.";
+const char kUnexpireFlagsM78Name[] = "Temporarily unexpire M78 flags.";
+const char kUnexpireFlagsM78Description[] =
+    "Temporarily unexpire flags that are expired as of M78. These flags will "
+    "be removed soon.";
 
 const char kUnsafeWebGPUName[] = "Unsafe WebGPU";
 const char kUnsafeWebGPUDescription[] =

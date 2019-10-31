@@ -4415,6 +4415,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"temporary-unexpire-flags-m76", flag_descriptions::kUnexpireFlagsM76Name,
      flag_descriptions::kUnexpireFlagsM76Description, kOsAll,
      FEATURE_VALUE_TYPE(flags::kUnexpireFlagsM76)},
+    {"temporary-unexpire-flags-m78", flag_descriptions::kUnexpireFlagsM78Name,
+     flag_descriptions::kUnexpireFlagsM78Description, kOsAll,
+     FEATURE_VALUE_TYPE(flags::kUnexpireFlagsM78)},
 
 #if defined(OS_CHROMEOS)
     {"lock-screen-media-controls",
