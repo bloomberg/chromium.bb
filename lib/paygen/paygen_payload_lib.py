@@ -38,10 +38,12 @@ DESCRIPTION_FILE_VERSION = 2
 # See class docs for functionality information. Configured to reserve 6GB and
 # consider each individual task as consuming 6GB. Therefore we won't start a
 # new task unless available memory is about 12GB (including base utilization).
+# We set a total max concurrency as a precaution. TODO(crbug.com/1016555)
 _mem_semaphore = utils.MemoryConsumptionSemaphore(
     system_available_buffer_bytes=2**31 + 2**32,  # 6 GB
     single_proc_max_bytes=2**31 + 2**32,  # 6 GB
     quiescence_time_seconds=60.0,
+    total_max=10,
     unchecked_acquires=4)
 
 

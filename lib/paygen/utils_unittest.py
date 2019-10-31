@@ -94,6 +94,22 @@ class TestUtils(cros_test_lib.TempDirTestCase):
     self.assertEqual(_semaphore.acquire(ACQUIRE_TIMEOUT).result, True)
     _semaphore.release()
 
+  def testTotalMaxMemoryConsumptionSemaphore(self):
+    """Tests that the total_max is respected."""
+    _semaphore = utils.MemoryConsumptionSemaphore(
+        system_available_buffer_bytes=0,
+        single_proc_max_bytes=1,
+        quiescence_time_seconds=0.0,
+        total_max=3)
+    # Look at all this memory.
+    _semaphore._get_system_available = self.mock_get_system_available(2**64)
+    # Sure you can have three.
+    self.assertEqual(_semaphore.acquire(ACQUIRE_TIMEOUT).result, True)
+    self.assertEqual(_semaphore.acquire(ACQUIRE_TIMEOUT).result, True)
+    self.assertEqual(_semaphore.acquire(ACQUIRE_TIMEOUT).result, True)
+    # Nope, you're now over max.
+    self.assertEqual(_semaphore.acquire(1).result, False)
+
   def testQuiesceMemoryConsumptionSemaphore(self):
     """Tests that you wait for memory utilization to settle (quiesce)."""
     # All you want is two bytes.

@@ -142,6 +142,7 @@ class MemoryConsumptionSemaphore(object):
                single_proc_max_bytes=None,
                quiescence_time_seconds=None,
                unchecked_acquires=0,
+               total_max=10,
                clock=time.time):
     """Create a new MemoryConsumptionSemaphore.
 
@@ -157,6 +158,7 @@ class MemoryConsumptionSemaphore(object):
         available memory. This is to allow users to supply a mandatory minimum
         even if the semaphore would otherwise not allow it (because of the
         current available memory being to low).
+      total_max (int): The upper bound of maximum concurrent runs (default 10).
       clock (fn): Function that gets float time.
 
     Returns:
@@ -165,6 +167,7 @@ class MemoryConsumptionSemaphore(object):
     self.quiescence_time_seconds = quiescence_time_seconds
     self.unchecked_acquires = unchecked_acquires
     self._lock = multiprocessing.RLock()  # single proc may acquire lock twice.
+    self._total_max = multiprocessing.RawValue('I', total_max)
     self._n_within = multiprocessing.RawValue('I', 0)
     self._timer_future = multiprocessing.RawValue('d', 0)
     self._clock = clock  # injected, primarily useful for testing.
@@ -249,14 +252,17 @@ class MemoryConsumptionSemaphore(object):
       with self._lock:
         if not self._timer_blocked():
           # Extrapolate system state and perhaps allow.
-          if self._allow_consumption():
+          if (self._allow_consumption() and
+              self._n_within.value < self._total_max.value):
             self._set_timer()
             self._inc_within()
             return AcquireResult(True, 'Allowed due to available memory')
       time.sleep(MemoryConsumptionSemaphore.SYSTEM_POLLING_INTERVAL_SECONDS)
 
     # There was no moment before timeout where we could have ran the task.
-    return AcquireResult(False, 'Timed out due to quiescence or avail memory')
+    return AcquireResult(False,
+                         'Timed out (due to quiescence, '
+                         'total max, or avail memory)')
 
   def release(self):
     """Releases a single acquire."""
