@@ -4,7 +4,7 @@ Unit tests for namespaced logging system.
 Also serves as a larger test of async test functions, and of the logging system.
 `;
 
-import { TestGroup, paramsEquals } from '../../framework/index.js';
+import { SkipTestCase, TestGroup, paramsEquals } from '../../framework/index.js';
 import { Logger } from '../../framework/logger.js';
 
 import { UnitTest } from './unit_test.js';
@@ -67,15 +67,38 @@ g.test('pass', t => {
   t.expect(res.timems >= 0);
 });
 
+g.test('skip', t => {
+  const mylog = new Logger();
+  const [testrec] = mylog.record({ suite: '', path: '' });
+  const [rec, res] = testrec.record('baz', null);
+
+  rec.start();
+  t.expect(res.status === 'running');
+
+  rec.skipped(new SkipTestCase());
+  rec.log('hello');
+
+  t.expect(res.status === 'running');
+  rec.finish();
+
+  t.expect(res.status === 'skip');
+  t.expect(res.timems >= 0);
+});
+
 g.test('warn', t => {
   const mylog = new Logger();
   const [testrec] = mylog.record({ suite: '', path: '' });
   const [rec, res] = testrec.record('baz', null);
 
   rec.start();
+  t.expect(res.status === 'running');
+
   rec.warn();
+  rec.skipped(new SkipTestCase());
+
   t.expect(res.status === 'running');
   rec.finish();
+
   t.expect(res.status === 'warn');
   t.expect(res.timems >= 0);
 });
@@ -86,15 +109,21 @@ g.test('fail', t => {
   const [rec, res] = testrec.record('baz', null);
 
   rec.start();
+  t.expect(res.status === 'running');
+
   rec.fail('bye');
+  rec.warn();
+  rec.skipped(new SkipTestCase());
+
   t.expect(res.status === 'running');
   rec.finish();
+
   t.expect(res.status === 'fail');
   t.expect(res.timems >= 0);
 });
 
 g.test('debug', t => {
-  const { debug, logsCount } = t.params;
+  const { debug, _logsCount } = t.params;
 
   const mylog = new Logger();
   const [testrec] = mylog.record({ suite: '', path: '' });
@@ -105,8 +134,8 @@ g.test('debug', t => {
   rec.finish();
   t.expect(res.status === 'pass');
   t.expect(res.timems >= 0);
-  t.expect(res.logs!.length === logsCount);
+  t.expect(res.logs!.length === _logsCount);
 }).params([
-  { debug: true, logsCount: 1 }, // ()
-  { debug: false, logsCount: 0 },
+  { debug: true, _logsCount: 1 }, //
+  { debug: false, _logsCount: 0 },
 ]);

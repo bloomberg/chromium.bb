@@ -1,6 +1,8 @@
 import { TestCaseRecorder } from './logger.js';
 import { ParamSpec } from './params/index.js';
 
+export class SkipTestCase extends Error {}
+
 // A Fixture is a class used to instantiate each test case at run time.
 // A new instance of the Fixture is created for every single test case
 // (i.e. every time the test function is run).
@@ -25,6 +27,10 @@ export class Fixture {
 
   log(msg: string): void {
     this.rec.log(msg);
+  }
+
+  skip(msg: string): never {
+    throw new SkipTestCase(msg);
   }
 
   async finalize(): Promise<void> {

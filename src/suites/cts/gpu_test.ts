@@ -11,6 +11,7 @@ let glslangInstance: Glslang | undefined;
 export class GPUTest extends Fixture {
   device: GPUDevice = undefined!;
   queue: GPUQueue = undefined!;
+  initialized = false;
 
   async init(): Promise<void> {
     super.init();
@@ -19,30 +20,44 @@ export class GPUTest extends Fixture {
     this.device = await adapter.requestDevice();
     this.queue = this.device.getQueue();
 
+    try {
+      await this.device.popErrorScope();
+      throw new Error('There was an error scope on the stack at the beginning of the test');
+    } catch (ex) {}
+
     this.device.pushErrorScope('out-of-memory');
     this.device.pushErrorScope('validation');
+
+    this.initialized = true;
   }
 
   async finalize(): Promise<void> {
     super.finalize();
 
-    const gpuValidationError = await this.device.popErrorScope();
-    if (gpuValidationError !== null) {
-      if (!(gpuValidationError instanceof GPUValidationError)) throw new Error();
-      this.fail(`Unexpected validation error occurred: ${gpuValidationError.message}`);
-    }
+    if (this.initialized) {
+      const gpuValidationError = await this.device.popErrorScope();
+      if (gpuValidationError !== null) {
+        if (!(gpuValidationError instanceof GPUValidationError)) throw new Error();
+        this.fail(`Unexpected validation error occurred: ${gpuValidationError.message}`);
+      }
 
-    const gpuOutOfMemoryError = await this.device.popErrorScope();
-    if (gpuOutOfMemoryError !== null) {
-      if (!(gpuOutOfMemoryError instanceof GPUOutOfMemoryError)) throw new Error();
-      this.fail('Unexpected out-of-memory error occurred');
+      const gpuOutOfMemoryError = await this.device.popErrorScope();
+      if (gpuOutOfMemoryError !== null) {
+        if (!(gpuOutOfMemoryError instanceof GPUOutOfMemoryError)) throw new Error();
+        this.fail('Unexpected out-of-memory error occurred');
+      }
     }
   }
 
   async initGLSL(): Promise<void> {
     if (!glslangInstance) {
       const glslangPath = '../../glslang.js';
-      const glslangModule = ((await import(glslangPath)) as glslang).default;
+      let glslangModule: () => Promise<Glslang>;
+      try {
+        glslangModule = ((await import(glslangPath)) as glslang).default;
+      } catch (ex) {
+        this.skip('glslang is not available');
+      }
       await new Promise(resolve => {
         glslangModule().then((glslang: Glslang) => {
           glslangInstance = glslang;

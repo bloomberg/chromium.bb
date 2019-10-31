@@ -138,18 +138,18 @@ class RunCaseSpecific<F extends Fixture> implements RunCase {
 
     try {
       const inst = new this.fixture(rec, this.params || {});
-      await inst.init();
+
       try {
+        await inst.init();
         await this.fn(inst);
-      } catch (ex) {
-        // There was an exception from the test itself.
-        rec.threw(ex);
+      } finally {
+        // Runs as long as constructor succeeded, even if initialization or the test failed.
+        await inst.finalize();
       }
-      // Runs as long as constructor and init succeeded, even if the test rejected.
-      await inst.finalize();
     } catch (ex) {
-      // There was an exception from constructor, init, or finalize.
-      // (An error from finalize may have been an eventualAsyncExpectation failure.)
+      // There was an exception from constructor, init, test, or finalize.
+      // An error from init or test may have been a SkipTestCase.
+      // An error from finalize may have been an eventualAsyncExpectation failure.
       rec.threw(ex);
     }
 
