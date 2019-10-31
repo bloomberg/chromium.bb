@@ -12,8 +12,11 @@
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
+#include "components/security_interstitials/content/ssl_cert_reporter.h"
+#include "components/security_interstitials/content/ssl_error_navigation_throttle.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/devtools_manager_delegate.h"
+#include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/user_agent.h"
@@ -27,6 +30,7 @@
 #include "url/origin.h"
 #include "weblayer/browser/browser_controller_impl.h"
 #include "weblayer/browser/browser_main_parts_impl.h"
+#include "weblayer/browser/ssl_error_handler.h"
 #include "weblayer/browser/weblayer_content_browser_overlay_manifest.h"
 #include "weblayer/common/features.h"
 #include "weblayer/public/fullscreen_delegate.h"
@@ -59,6 +63,16 @@ bool IsSafebrowsingSupported() {
 #endif
   return false;
 }
+
+bool IsInHostedApp(content::WebContents* web_contents) {
+  return false;
+}
+
+class SSLCertReporterImpl : public SSLCertReporter {
+ public:
+  void ReportInvalidCertificateChain(
+      const std::string& serialized_report) override {}
+};
 
 }  // namespace
 
@@ -187,6 +201,16 @@ ContentBrowserClientImpl::CreateURLLoaderThrottles(
   }
 
   return result;
+}
+
+std::vector<std::unique_ptr<content::NavigationThrottle>>
+ContentBrowserClientImpl::CreateThrottlesForNavigation(
+    content::NavigationHandle* handle) {
+  std::vector<std::unique_ptr<content::NavigationThrottle>> throttles;
+  throttles.push_back(std::make_unique<SSLErrorNavigationThrottle>(
+      handle, std::make_unique<SSLCertReporterImpl>(),
+      base::Bind(&HandleSSLError), base::Bind(&IsInHostedApp)));
+  return throttles;
 }
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)

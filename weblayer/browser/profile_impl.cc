@@ -4,14 +4,15 @@
 
 #include "weblayer/browser/profile_impl.h"
 
-#include "base/callback.h"
 #include "base/bind.h"
+#include "base/callback.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/download_manager_delegate.h"
 #include "content/public/browser/resource_context.h"
 #include "weblayer/browser/browser_controller_impl.h"
+#include "weblayer/browser/ssl_host_state_delegate_impl.h"
 #include "weblayer/public/download_delegate.h"
 
 #if defined(OS_ANDROID)
@@ -120,7 +121,7 @@ class ProfileImpl::BrowserContextImpl : public content::BrowserContext {
   }
 
   content::SSLHostStateDelegate* GetSSLHostStateDelegate() override {
-    return nullptr;
+    return &ssl_host_state_delegate_;
   }
 
   content::PermissionControllerDelegate* GetPermissionControllerDelegate()
@@ -154,6 +155,7 @@ class ProfileImpl::BrowserContextImpl : public content::BrowserContext {
   base::FilePath path_;
   std::unique_ptr<ResourceContextImpl> resource_context_;
   DownloadManagerDelegateImpl download_delegate_;
+  SSLHostStateDelegateImpl ssl_host_state_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserContextImpl);
 };
