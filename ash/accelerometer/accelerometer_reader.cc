@@ -168,8 +168,9 @@ class AccelerometerFileReader
   // read at the current sampling rate.
   void Read();
 
-  // Controls accelerometer reading via read_switch flag.
-  void EnableAccelerometerReading(bool read_switch);
+  // Controls accelerometer reading.
+  void EnableAccelerometerReading();
+  void DisableAccelerometerReading();
 
   // Tracks if accelerometer initialization is completed.
   void CheckInitStatus();
@@ -446,7 +447,7 @@ void AccelerometerFileReader::InitializeInternal() {
   // If ChromeOS lid angle driver is not present, start accelerometer read and
   // read is always on.
   if (ec_lid_angle_driver_state_ == ABSENT)
-    EnableAccelerometerReading(/*read_switch=*/true);
+    EnableAccelerometerReading();
 }
 
 void AccelerometerFileReader::Read() {
@@ -460,21 +461,28 @@ void AccelerometerFileReader::Read() {
       kDelayBetweenReads);
 }
 
-void AccelerometerFileReader::EnableAccelerometerReading(bool read_switch) {
+void AccelerometerFileReader::EnableAccelerometerReading() {
   DCHECK(base::SequencedTaskRunnerHandle::IsSet());
-  if (accelerometer_read_on_ == read_switch)
+  if (accelerometer_read_on_)
     return;
 
-  accelerometer_read_on_ = read_switch;
-  if (accelerometer_read_on_)
-    Read();
+  accelerometer_read_on_ = true;
+  Read();
+}
+
+void AccelerometerFileReader::DisableAccelerometerReading() {
+  DCHECK(base::SequencedTaskRunnerHandle::IsSet());
+  if (!accelerometer_read_on_)
+    return;
+
+  accelerometer_read_on_ = false;
 }
 
 void AccelerometerFileReader::CheckInitStatus() {
   DCHECK(base::SequencedTaskRunnerHandle::IsSet());
   switch (initialization_state_) {
     case SUCCESS:
-      EnableAccelerometerReading(/*read_switch=*/true);
+      EnableAccelerometerReading();
       break;
     case FAILED:
       LOG(ERROR) << "Failed to initialize for accelerometer read.\n";
@@ -493,7 +501,7 @@ void AccelerometerFileReader::TriggerRead() {
   switch (initialization_state_) {
     case SUCCESS:
       if (ec_lid_angle_driver_state_ == EXISTED)
-        EnableAccelerometerReading(/*read_switch=*/true);
+        EnableAccelerometerReading();
       break;
     case FAILED:
       LOG(ERROR) << "Failed to initialize for accelerometer read.\n";
@@ -510,7 +518,7 @@ void AccelerometerFileReader::CancelRead() {
   DCHECK(base::SequencedTaskRunnerHandle::IsSet());
   if (initialization_state_ == SUCCESS &&
       ec_lid_angle_driver_state_ == EXISTED) {
-    EnableAccelerometerReading(/*read_switch=*/false);
+    DisableAccelerometerReading();
   }
 }
 
