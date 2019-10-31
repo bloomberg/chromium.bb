@@ -332,7 +332,7 @@ as required builders.
   * Experiment percentage: 10
 
 * [android-pie-arm64-rel](https://ci.chromium.org/p/chromium/builders/try/android-pie-arm64-rel) ([definition](https://cs.chromium.org/search?q=package:%5Echromium$+file:/cq.star$+-file:/beta/+-file:/stable/+android-pie-arm64-rel)) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+android-pie-arm64-rel))
-  * Experiment percentage: 100
+  * Experiment percentage: 50
 
 * [chromeos-kevin-experimental-rel](https://ci.chromium.org/p/chromium/builders/try/chromeos-kevin-experimental-rel) ([definition](https://cs.chromium.org/search?q=package:%5Echromium$+file:/cq.star$+-file:/beta/+-file:/stable/+chromeos-kevin-experimental-rel)) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+chromeos-kevin-experimental-rel))
   * Experiment percentage: 5
