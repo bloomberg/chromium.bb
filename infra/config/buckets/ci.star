@@ -670,10 +670,10 @@ def clang_mac_builder(*, name, cores=24, **kwargs):
   return clang_builder(
       name = name,
       cores = cores,
-      os = os.MAC_ANY,
+      os = os.MAC_10_14,
       ssd = True,
       properties = {
-          'xcode_build_version': '10b61',
+          'xcode_build_version': '11a1027',
       },
       **kwargs
   )
