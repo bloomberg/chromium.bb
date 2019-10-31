@@ -411,10 +411,6 @@ bool CheckClientDownloadRequest::ShouldUploadForMalwareScan(
       reason != DownloadCheckResultReason::REASON_VERDICT_UNKNOWN)
     return false;
 
-  // This feature can be used to force uploads.
-  if (base::FeatureList::IsEnabled(kUploadForMalwareCheck))
-    return true;
-
   content::BrowserContext* browser_context =
       content::DownloadItemUtils::GetBrowserContext(item_);
   if (!browser_context)
