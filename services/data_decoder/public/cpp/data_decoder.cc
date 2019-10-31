@@ -16,6 +16,11 @@
 #include "services/data_decoder/public/cpp/json_sanitizer.h"
 #endif
 
+#if defined(OS_IOS)
+#include "base/task/post_task.h"
+#include "services/data_decoder/data_decoder_service.h"  // nogncheck
+#endif
+
 namespace data_decoder {
 
 namespace {
@@ -80,6 +85,23 @@ class ValueParseRequest : public base::RefCounted<ValueParseRequest<T>> {
   DISALLOW_COPY_AND_ASSIGN(ValueParseRequest);
 };
 
+#if defined(OS_IOS)
+void BindInProcessService(
+    mojo::PendingReceiver<mojom::DataDecoderService> receiver) {
+  static base::NoDestructor<scoped_refptr<base::SequencedTaskRunner>>
+      task_runner{base::CreateSequencedTaskRunner({base::ThreadPool()})};
+  if (!(*task_runner)->RunsTasksInCurrentSequence()) {
+    (*task_runner)
+        ->PostTask(FROM_HERE,
+                   base::BindOnce(&BindInProcessService, std::move(receiver)));
+    return;
+  }
+
+  static base::NoDestructor<DataDecoderService> service;
+  service->BindReceiver(std::move(receiver));
+}
+#endif
+
 }  // namespace
 
 DataDecoder::ValueOrError::ValueOrError() = default;
@@ -110,13 +132,18 @@ mojom::DataDecoderService* DataDecoder::GetService() {
   // Lazily start an instance of the service if possible and necessary.
   if (!service_) {
     auto* provider = ServiceProvider::Get();
-    if (!provider) {
+    if (provider) {
+      provider->BindDataDecoderService(service_.BindNewPipeAndPassReceiver());
+    } else {
+#if defined(OS_IOS)
+      BindInProcessService(service_.BindNewPipeAndPassReceiver());
+#else
       LOG(FATAL) << "data_decoder::ServiceProvider::Set() must be called "
                  << "before any instances of DataDecoder can be used.";
       return nullptr;
+#endif
     }
 
-    provider->BindDataDecoderService(service_.BindNewPipeAndPassReceiver());
     service_.reset_on_disconnect();
     service_.reset_on_idle_timeout(kServiceProcessIdleTimeout);
   }
