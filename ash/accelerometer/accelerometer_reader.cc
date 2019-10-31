@@ -44,7 +44,7 @@ const base::FilePath::CharType kAccelerometerIioBasePath[] =
     FILE_PATH_LITERAL("/sys/bus/iio/devices/");
 
 // Paths to ChromeOS EC lid angle driver.
-const base::FilePath::CharType kEcLidAngleDriverPath[] =
+const base::FilePath::CharType kECLidAngleDriverPath[] =
     FILE_PATH_LITERAL("/sys/bus/platform/drivers/cros-ec-lid-angle/");
 
 // Trigger created by accelerometer-init.sh to query the sensors.
@@ -143,7 +143,7 @@ bool ReadFileToDouble(const base::FilePath& path, double* value) {
   return true;
 }
 
-enum DriverState { WAITING, EXISTED, ABSENT };
+enum ECLidAngleDriver { UNKNOWN, SUPPORTED, NOT_SUPPORTED };
 
 enum State { INITIALIZING, SUCCESS, FAILED };
 
@@ -264,9 +264,9 @@ class AccelerometerFileReader
   // reading to an AccelerometerUpdate and notifies observers.
   void ReadFileAndNotify();
 
-  // State of ChromeOS EC lid angle driver, if EXISTED, it means EC can handle
+  // State of ChromeOS EC lid angle driver, if SUPPORTED, it means EC can handle
   // lid angle calculation.
-  DriverState ec_lid_angle_driver_state_ = WAITING;
+  ECLidAngleDriver ec_lid_angle_driver_ = UNKNOWN;
 
   // The current initialization state of reader.
   State initialization_state_ = INITIALIZING;
@@ -345,10 +345,10 @@ void AccelerometerFileReader::InitializeInternal() {
   }
 
   if (base::SysInfo::IsRunningOnChromeOS() &&
-      !base::IsDirectoryEmpty(base::FilePath(kEcLidAngleDriverPath))) {
-    ec_lid_angle_driver_state_ = EXISTED;
+      !base::IsDirectoryEmpty(base::FilePath(kECLidAngleDriverPath))) {
+    ec_lid_angle_driver_ = SUPPORTED;
   } else {
-    ec_lid_angle_driver_state_ = ABSENT;
+    ec_lid_angle_driver_ = NOT_SUPPORTED;
   }
 
   // Find trigger to use:
@@ -446,7 +446,7 @@ void AccelerometerFileReader::InitializeInternal() {
 
   // If ChromeOS lid angle driver is not present, start accelerometer read and
   // read is always on.
-  if (ec_lid_angle_driver_state_ == ABSENT)
+  if (ec_lid_angle_driver_ == NOT_SUPPORTED)
     EnableAccelerometerReading();
 }
 
@@ -500,7 +500,7 @@ void AccelerometerFileReader::TriggerRead() {
   DCHECK(base::SequencedTaskRunnerHandle::IsSet());
   switch (initialization_state_) {
     case SUCCESS:
-      if (ec_lid_angle_driver_state_ == EXISTED)
+      if (ec_lid_angle_driver_ == SUPPORTED)
         EnableAccelerometerReading();
       break;
     case FAILED:
@@ -516,8 +516,7 @@ void AccelerometerFileReader::TriggerRead() {
 
 void AccelerometerFileReader::CancelRead() {
   DCHECK(base::SequencedTaskRunnerHandle::IsSet());
-  if (initialization_state_ == SUCCESS &&
-      ec_lid_angle_driver_state_ == EXISTED) {
+  if (initialization_state_ == SUCCESS && ec_lid_angle_driver_ == SUPPORTED) {
     DisableAccelerometerReading();
   }
 }
@@ -549,7 +548,7 @@ void AccelerometerFileReader::OnTabletModeStarted() {
   // When CrOS EC lid angle driver is not present, accelerometer read is always
   // ON and can't be tuned. Thus AccelerometerFileReader no longer listens to
   // tablet mode event.
-  if (ec_lid_angle_driver_state_ == ABSENT) {
+  if (ec_lid_angle_driver_ == NOT_SUPPORTED) {
     Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
     return;
   }
@@ -559,7 +558,7 @@ void AccelerometerFileReader::OnTabletModeStarted() {
 }
 
 void AccelerometerFileReader::OnTabletModeEnding() {
-  if (ec_lid_angle_driver_state_ == ABSENT) {
+  if (ec_lid_angle_driver_ == NOT_SUPPORTED) {
     Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
     return;
   }
@@ -698,7 +697,7 @@ void AccelerometerFileReader::ReadFileAndNotify() {
       DCHECK(configuration_.has[source]);
       int16_t* values = reinterpret_cast<int16_t*>(reading);
       bool is_driver_existed =
-          (ec_lid_angle_driver_state_ == EXISTED) ? true : false;
+          (ec_lid_angle_driver_ == SUPPORTED) ? true : false;
       update_->Set(source, is_driver_existed,
                    values[configuration_.index[source][0]] *
                        configuration_.scale[source][0],
