@@ -112,33 +112,6 @@ base::FilePath ExtractDrivePath(const base::FilePath& path) {
   return drive_path;
 }
 
-FileSystemInterface* GetFileSystemByProfile(Profile* profile) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  DriveIntegrationService* integration_service =
-      GetIntegrationServiceByProfile(profile);
-  return integration_service ? integration_service->file_system() : nullptr;
-}
-
-FileSystemInterface* GetFileSystemByProfileId(void* profile_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  // |profile_id| needs to be checked with ProfileManager::IsValidProfile
-  // before using it.
-  if (!g_browser_process->profile_manager()->IsValidProfile(profile_id))
-    return nullptr;
-  Profile* profile = reinterpret_cast<Profile*>(profile_id);
-  return GetFileSystemByProfile(profile);
-}
-
-DriveServiceInterface* GetDriveServiceByProfile(Profile* profile) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  DriveIntegrationService* integration_service =
-      GetIntegrationServiceByProfile(profile);
-  return integration_service ? integration_service->drive_service() : nullptr;
-}
-
 Profile* ExtractProfileFromPath(const base::FilePath& path) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -174,44 +147,6 @@ base::FilePath GetCacheRootPath(Profile* profile) {
   return cache_root_path.Append(kFileCacheVersionDir);
 }
 
-void PrepareWritableFileAndRun(Profile* profile,
-                               const base::FilePath& path,
-                               const PrepareWritableFileCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(callback);
-
-  FileSystemInterface* file_system = GetFileSystemByProfile(profile);
-  if (!file_system || !IsUnderDriveMountPoint(path)) {
-    base::PostTask(
-        FROM_HERE,
-        {base::ThreadPool(), base::MayBlock(),
-         base::TaskPriority::USER_BLOCKING},
-        base::BindOnce(callback, FILE_ERROR_FAILED, base::FilePath()));
-    return;
-  }
-
-  WriteOnCacheFile(file_system, ExtractDrivePath(path),
-                   std::string(),  // mime_type
-                   callback);
-}
-
-void EnsureDirectoryExists(Profile* profile,
-                           const base::FilePath& directory,
-                           const FileOperationCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(callback);
-  if (IsUnderDriveMountPoint(directory)) {
-    FileSystemInterface* file_system = GetFileSystemByProfile(profile);
-    DCHECK(file_system);
-    file_system->CreateDirectory(ExtractDrivePath(directory),
-                                 true /* is_exclusive */,
-                                 true /* is_recursive */, callback);
-  } else {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(callback, FILE_ERROR_OK));
-  }
-}
-
 bool IsDriveEnabledForProfile(Profile* profile) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -238,9 +173,6 @@ ConnectionStatusType GetDriveConnectionStatus(Profile* profile) {
   auto* network_connection_tracker = content::GetNetworkConnectionTracker();
   if (network_connection_tracker->IsOffline())
     return DRIVE_DISCONNECTED_NONETWORK;
-  auto* drive_service = drive_integration_service->drive_service();
-  if (drive_service && !drive_service->CanSendRequest())
-    return DRIVE_DISCONNECTED_NOTREADY;
 
   auto connection_type = network::mojom::ConnectionType::CONNECTION_UNKNOWN;
   network_connection_tracker->GetConnectionType(&connection_type,
