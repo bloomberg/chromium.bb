@@ -680,8 +680,15 @@ class ExtensionWebRequestApiPolicyTest
   std::string test_name_ = "test_cors.html";
 };
 
+// Flaky on Win10: http://crbug.com/1020185
+#if defined(OS_WIN)
+#define MAYBE_WebRequestCORSWithExtraHeaders \
+  DISABLED_WebRequestCORSWithExtraHeaders
+#else
+#define MAYBE_WebRequestCORSWithExtraHeaders WebRequestCORSWithExtraHeaders
+#endif
 IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiPolicyTest,
-                       WebRequestCORSWithExtraHeaders) {
+                       MAYBE_WebRequestCORSWithExtraHeaders) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionSubtest("webrequest", test_name())) << message_;
 }
