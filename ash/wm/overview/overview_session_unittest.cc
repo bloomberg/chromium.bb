@@ -2918,6 +2918,43 @@ TEST_P(OverviewSessionWithHomerviewGestureTest, FadeIn) {
             overview_session()->enter_exit_overview_type());
 }
 
+// Tests exiting the overview session using kFadeOutExit type.
+TEST_P(OverviewSessionWithHomerviewGestureTest, FadeOutExit) {
+  // Create a test window.
+  std::unique_ptr<views::Widget> test_widget(CreateTestWidget());
+  ToggleOverview();
+  ASSERT_TRUE(InOverviewSession());
+  EXPECT_FALSE(test_widget->IsMinimized());
+
+  ui::ScopedAnimationDurationScaleMode test_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  // Grab the item widget before the session starts shutting down. The widget
+  // should outlive the session, at least until the animations are done - give
+  // tha NON_ZERO_DURATION animation duration scale, it should be safe to
+  // dereference the widget poiner immediately (synchronously) after the session
+  // ends.
+  OverviewItem* item = GetOverviewItemForWindow(test_widget->GetNativeWindow());
+  views::Widget* grid_item_widget = item_widget(item);
+
+  ToggleOverview(OverviewSession::EnterExitOverviewType::kFadeOutExit);
+  ASSERT_FALSE(InOverviewSession());
+
+  // The test window should be minimized as overview fade out exit starts.
+  EXPECT_TRUE(test_widget->IsMinimized());
+
+  // Verify that the item widget's transform is not animated as part of the
+  // animation, and that no transform is applied after minimizing the window.
+  EXPECT_FALSE(grid_item_widget->GetLayer()->GetAnimator()->IsAnimatingProperty(
+      ui::LayerAnimationElement::TRANSFORM));
+  EXPECT_EQ(gfx::Transform(), grid_item_widget->GetLayer()->transform());
+
+  // Opacity should be animated to zero opacity.
+  EXPECT_EQ(0.0f, grid_item_widget->GetLayer()->GetTargetOpacity());
+  EXPECT_TRUE(grid_item_widget->GetLayer()->GetAnimator()->IsAnimatingProperty(
+      ui::LayerAnimationElement::OPACITY));
+}
+
 // The class to test overview behavior with kDragFromShelfToHomeOrOverview flag
 // enabled.
 class OverviewSessionWithDragFromShelfFeatureTest : public OverviewSessionTest {
@@ -5744,6 +5781,9 @@ INSTANTIATE_TEST_SUITE_P(
     testing::Values(true));
 INSTANTIATE_TEST_SUITE_P(,
                          OverviewSessionWithDragFromShelfFeatureTest,
+                         testing::Bool());
+INSTANTIATE_TEST_SUITE_P(,
+                         OverviewSessionWithHomerviewGestureTest,
                          testing::Bool());
 
 }  // namespace ash
