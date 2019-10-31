@@ -921,8 +921,7 @@ bool ToplevelWindowEventHandler::HandleGoingBackFromLeftEdge(
       if (!going_back_started_)
         break;
       DCHECK(back_gesture_affordance_);
-      if ((event->type() == ui::ET_GESTURE_SCROLL_END &&
-           x_drag_amount_ >= kSwipingDistanceForGoingBack) ||
+      if (back_gesture_affordance_->IsActivated() ||
           (event->type() == ui::ET_SCROLL_FLING_START &&
            event->details().velocity_x() >= kFlingVelocityForGoingBack)) {
         aura::Window* root_window =
