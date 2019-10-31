@@ -2490,6 +2490,84 @@ LIBGAV1_ALWAYS_INLINE void StoreToFrameWithRound(
   }
 }
 
+template <int tx_width>
+LIBGAV1_ALWAYS_INLINE int GetNumRows(TransformType tx_type, int tx_height,
+                                     int non_zero_coeff_count) {
+  const TransformClass tx_class = GetTransformClass(tx_type);
+  // The transform loops process either 4 or a multiple of 8 rows.  Use tx_class
+  // to determine the scan order.  Then return the number of rows based on the
+  // non_zero_coeff_count.
+  if (tx_height > 4) {
+    if (tx_class == kTransformClass2D) {
+      if (tx_width == 4) {
+        if (non_zero_coeff_count <= 10) return 4;
+        if (non_zero_coeff_count <= 36) return 8;
+        return tx_height;
+      }
+      if (tx_width == 8) {
+        if (non_zero_coeff_count <= 10) return 4;
+        if (non_zero_coeff_count <= 36) return 8;
+        if ((non_zero_coeff_count <= 100) & (tx_height > 16)) return 16;
+        if ((non_zero_coeff_count <= 164) & (tx_height > 16)) return 24;
+        return tx_height;
+      }
+      if (tx_width == 16) {
+        if (non_zero_coeff_count <= 10) return 4;
+        if (non_zero_coeff_count <= 36) return 8;
+        if ((non_zero_coeff_count <= 136) & (tx_height > 16)) return 16;
+        if ((non_zero_coeff_count <= 264) & (tx_height > 16)) return 24;
+        return tx_height;
+      }
+      if (tx_width == 32) {
+        if (non_zero_coeff_count <= 10) return 4;
+        if (non_zero_coeff_count <= 36) return 8;
+        if ((non_zero_coeff_count <= 136) & (tx_height > 16)) return 16;
+        if ((non_zero_coeff_count <= 300) & (tx_height > 16)) return 24;
+        return tx_height;
+      }
+    }
+
+    if (tx_class == kTransformClassHorizontal) {
+      if (non_zero_coeff_count <= 4) return 4;
+      if (non_zero_coeff_count <= 8) return 8;
+      if ((non_zero_coeff_count <= 16) & (tx_height > 16)) return 16;
+      if ((non_zero_coeff_count <= 24) & (tx_height > 16)) return 24;
+      return tx_height;
+    }
+
+    if (tx_class == kTransformClassVertical) {
+      if (tx_width == 4) {
+        if (non_zero_coeff_count <= 16) return 4;
+        if (non_zero_coeff_count <= 29) return 8;
+        return tx_height;
+      }
+      if (tx_width == 8) {
+        if (non_zero_coeff_count <= 32) return 4;
+        if (non_zero_coeff_count <= 64) return 8;
+        if ((non_zero_coeff_count <= 128) & (tx_height > 16)) return 16;
+        if ((non_zero_coeff_count <= 192) & (tx_height > 16)) return 24;
+        return tx_height;
+      }
+
+      if (tx_width == 16) {
+        if (non_zero_coeff_count <= 64) return 4;
+        if (non_zero_coeff_count <= 128) return 8;
+        if ((non_zero_coeff_count <= 256) & (tx_height > 16)) return 16;
+        if ((non_zero_coeff_count <= 384) & (tx_height > 16)) return 24;
+        return tx_height;
+      }
+      if (tx_width == 32) {
+        if (non_zero_coeff_count <= 128) return 4;
+        if (non_zero_coeff_count <= 256) return 8;
+        if ((non_zero_coeff_count <= 512) & (tx_height > 16)) return 16;
+        if ((non_zero_coeff_count <= 768) & (tx_height > 16)) return 24;
+        return tx_height;
+      }
+    }
+  }
+  return tx_height;
+}
+
 void Dct4TransformLoop_NEON(TransformType tx_type, TransformSize tx_size,
                             void* src_buffer, int start_x, int start_y,
                             void* dst_frame, bool is_row,
@@ -2508,7 +2586,8 @@ void Dct4TransformLoop_NEON(TransformType tx_type, TransformSize tx_size,
       return;
     }
 
-    const int num_rows = tx_height;
+    const int num_rows =
+        GetNumRows<4>(tx_type, tx_height, non_zero_coeff_count);
     if (should_round) {
       ApplyRounding<4>(src, num_rows);
     }
@@ -2573,7 +2652,8 @@ void Dct8TransformLoop_NEON(TransformType tx_type, TransformSize tx_size,
       return;
     }
 
-    const int num_rows = tx_height;
+    const int num_rows =
+        GetNumRows<8>(tx_type, tx_height, non_zero_coeff_count);
     if (should_round) {
       ApplyRounding<8>(src, num_rows);
     }
@@ -2638,7 +2718,8 @@ void Dct16TransformLoop_NEON(TransformType tx_type, TransformSize tx_size,
       return;
     }
 
-    const int num_rows = std::min(tx_height, 32);
+    const int num_rows =
+        GetNumRows<16>(tx_type, std::min(tx_height, 32), non_zero_coeff_count);
     if (should_round) {
       ApplyRounding<16>(src, num_rows);
     }
@@ -2702,7 +2783,8 @@ void Dct32TransformLoop_NEON(TransformType tx_type, TransformSize tx_size,
       return;
     }
 
-    const int num_rows = std::min(tx_height, 32);
+    const int num_rows =
+        GetNumRows<32>(tx_type, std::min(tx_height, 32), non_zero_coeff_count);
     if (should_round) {
       ApplyRounding<32>(src, num_rows);
     }
@@ -2746,7 +2828,8 @@ void Dct64TransformLoop_NEON(TransformType tx_type, TransformSize tx_size,
       return;
     }
 
-    const int num_rows = std::min(tx_height, 32);
+    const int num_rows =
+        GetNumRows<32>(tx_type, std::min(tx_height, 32), non_zero_coeff_count);
     if (should_round) {
       ApplyRounding<64>(src, num_rows);
     }
@@ -2790,7 +2873,8 @@ void Adst4TransformLoop_NEON(TransformType tx_type, TransformSize tx_size,
       return;
     }
 
-    const int num_rows = tx_height;
+    const int num_rows =
+        GetNumRows<4>(tx_type, tx_height, non_zero_coeff_count);
     if (should_round) {
       ApplyRounding<4>(src, num_rows);
     }
@@ -2845,7 +2929,8 @@ void Adst8TransformLoop_NEON(TransformType tx_type, TransformSize tx_size,
       return;
     }
 
-    const int num_rows = tx_height;
+    const int num_rows =
+        GetNumRows<8>(tx_type, tx_height, non_zero_coeff_count);
     if (should_round) {
       ApplyRounding<8>(src, num_rows);
     }
@@ -2912,7 +2997,8 @@ void Adst16TransformLoop_NEON(TransformType tx_type, TransformSize tx_size,
       return;
     }
 
-    const int num_rows = std::min(tx_height, 32);
+    const int num_rows =
+        GetNumRows<16>(tx_type, std::min(tx_height, 32), non_zero_coeff_count);
     if (should_round) {
       ApplyRounding<16>(src, num_rows);
     }
@@ -2982,7 +3068,8 @@ void Identity4TransformLoop_NEON(TransformType tx_type, TransformSize tx_size,
       return;
     }
 
-    const int num_rows = tx_height;
+    const int num_rows =
+        GetNumRows<4>(tx_type, tx_height, non_zero_coeff_count);
     if (should_round) {
       ApplyRounding<4>(src, num_rows);
     }
@@ -3042,7 +3129,8 @@ void Identity8TransformLoop_NEON(TransformType tx_type, TransformSize tx_size,
       return;
     }
 
-    const int num_rows = tx_height;
+    const int num_rows =
+        GetNumRows<8>(tx_type, tx_height, non_zero_coeff_count);
     if (should_round) {
       ApplyRounding<8>(src, num_rows);
     }
@@ -3095,7 +3183,8 @@ void Identity16TransformLoop_NEON(TransformType tx_type, TransformSize tx_size,
       return;
     }
 
-    const int num_rows = std::min(tx_height, 32);
+    const int num_rows =
+        GetNumRows<16>(tx_type, std::min(tx_height, 32), non_zero_coeff_count);
     if (should_round) {
       ApplyRounding<16>(src, num_rows);
     }
@@ -3115,10 +3204,10 @@ void Identity16TransformLoop_NEON(TransformType tx_type, TransformSize tx_size,
                                     src);
 }
 
-void Identity32TransformLoop_NEON(TransformType /*tx_type*/,
-                                  TransformSize tx_size, void* src_buffer,
-                                  int start_x, int start_y, void* dst_frame,
-                                  bool is_row, int non_zero_coeff_count) {
+void Identity32TransformLoop_NEON(TransformType tx_type, TransformSize tx_size,
+                                  void* src_buffer, int start_x, int start_y,
+                                  void* dst_frame, bool is_row,
+                                  int non_zero_coeff_count) {
   auto& frame = *reinterpret_cast<Array2DView<uint8_t>*>(dst_frame);
   auto* src = static_cast<int16_t*>(src_buffer);
   const int tx_width = kTransformWidth[tx_size];
@@ -3139,7 +3228,9 @@ void Identity32TransformLoop_NEON(TransformType /*tx_type*/,
       return;
     }
 
-    const int num_rows = tx_height;
+    const int num_rows =
+        GetNumRows<32>(tx_type, tx_height, non_zero_coeff_count);
+
     assert(tx_size == kTransformSize32x16);
     ApplyRounding<32>(src, num_rows);
     for (int i = 0; i < num_rows; i += 4) {
