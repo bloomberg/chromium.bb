@@ -8,18 +8,15 @@
 #include <string>
 #include <utility>
 
-#include "absl/types/optional.h"
-#include "cast/common/mdns/mdns_records.h"
-
 namespace openscreen {
 namespace discovery {
 
 // This class is intended to be used as the key of a std::unordered_map when
 // referencing data related to an SRV record.
 struct InstanceKey {
+  std::string instance_id;
   std::string service_id;
   std::string domain_id;
-  std::string instance_id;
 };
 
 // This class is intended to be used as the key of a std::unordered_map when
@@ -27,14 +24,6 @@ struct InstanceKey {
 struct ServiceKey {
   std::string service_id;
   std::string domain_id;
-};
-
-// This is the set of DNS data that can be associated with a single PTR record.
-struct DnsData {
-  absl::optional<cast::mdns::SrvRecordRdata> srv;
-  absl::optional<cast::mdns::TxtRecordRdata> txt;
-  absl::optional<cast::mdns::ARecordRdata> a;
-  absl::optional<cast::mdns::AAAARecordRdata> aaaa;
 };
 
 // Hashing functions to allow for using with absl::Hash<...>.

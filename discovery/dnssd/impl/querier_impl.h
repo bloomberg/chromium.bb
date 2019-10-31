@@ -13,6 +13,7 @@
 #include "cast/common/mdns/mdns_records.h"
 #include "cast/common/mdns/public/mdns_service.h"
 #include "discovery/dnssd/impl/constants.h"
+#include "discovery/dnssd/impl/dns_data.h"
 #include "discovery/dnssd/public/instance_record.h"
 #include "discovery/dnssd/public/querier.h"
 

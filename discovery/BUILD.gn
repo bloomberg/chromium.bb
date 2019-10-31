@@ -10,6 +10,10 @@ source_set("dnssd") {
   sources = [
     "dnssd/dns_sd_temp.cc",
     "dnssd/impl/constants.h",
+    "dnssd/impl/conversion_layer.cc",
+    "dnssd/impl/conversion_layer.h",
+    "dnssd/impl/dns_data.cc",
+    "dnssd/impl/dns_data.h",
     "dnssd/impl/querier_impl.cc",
     "dnssd/impl/querier_impl.h",
     "dnssd/public/instance_record.cc",
@@ -34,6 +38,8 @@ source_set("unittests") {
 
   sources = [
     "dnssd/impl/constants_unittest.cc",
+    "dnssd/impl/conversion_layer_unittest.cc",
+    "dnssd/impl/dns_data_unittest.cc",
     "dnssd/public/instance_record_unittest.cc",
     "dnssd/public/txt_record_unittest.cc",
   ]
