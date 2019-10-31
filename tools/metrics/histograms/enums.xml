@@ -30890,10 +30890,14 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-2147024890" label="E_HANDLE"/>
   <int value="-2147024882" label="E_OUTOFMEMORY"/>
   <int value="-2147024809" label="E_INVALIDARG"/>
+  <int value="-2147024726" label="ERROR_BUSY"/>
+  <int value="-2147024713" label="ERROR_ALREADY_EXISTS"/>
   <int value="-2147024703" label="ERROR_BAD_EXE_FORMAT"/>
   <int value="-2147024110" label="ERROR_ACCESS_DISABLED_NO_SAFER_UI_BY_POLICY"/>
   <int value="-2147023838" label="ERROR_SERVICE_DISABLED"/>
+  <int value="-2147023728" label="ERROR_NOT_FOUND"/>
   <int value="-2147023673" label="ERROR_CANCELLED"/>
+  <int value="-2147023605" label="ERROR_DRIVER_PROCESS_TERMINATED"/>
   <int value="-2147023504" label="ERROR_FILE_CORRUPT"/>
   <int value="-2147023436" label="ERROR_TIMEOUT"/>
   <int value="-2147023179" label="RPC_S_UNKNOWN_IF"/>
@@ -30969,6 +30973,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1606219747" label="GOOPDATE_E_APP_USING_EXTERNAL_UPDATER"/>
   <int value="-805306212" label="STATUS_DEVICE_DATA_ERROR"/>
   <int value="-805305979" label="STATUS_IO_DEVICE_ERROR"/>
+  <int value="0" label="S_OK"/>
   <int value="143196161" label="AUDCLNT_S_BUFFER_EMPTY"/>
   <int value="143196162" label="AUDCLNT_S_THREAD_ALREADY_REGISTERED"/>
   <int value="143196163" label="AUDCLNT_S_POSITION_STALLED"/>
