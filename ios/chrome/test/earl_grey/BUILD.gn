@@ -231,6 +231,7 @@ source_set("test_support") {
     "//components/translate/core/browser",
     "//components/ukm/ios:features",
     "//components/unified_consent",
+    "//ios/chrome/app:app_internal",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/autofill",
     "//ios/chrome/browser/content_settings:content_settings",
@@ -357,6 +358,7 @@ source_set("eg_app_support+eg2") {
     "//components/translate/core/browser",
     "//components/ukm/ios:features",
     "//components/unified_consent",
+    "//ios/chrome/app:app_internal",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/autofill",
     "//ios/chrome/browser/autofill/automation:eg_app_support+eg2",
@@ -479,8 +481,11 @@ source_set("eg_test_support+eg2") {
     "//ios/third_party/gtx:gtx+link",
     "//ios/web/public/test:element_selector",
     "//ios/web/public/test/http_server",
-    "//net:test_support",
     "//ui/base",
     "//url",
+  ]
+
+  public_deps = [
+    "//net:test_support",
   ]
 }
