@@ -115,7 +115,7 @@
       # chromium.chromiumos
       'linux-chromeos-dbg': {
         'swarming': {
-          'shards': 21,
+          'shards': 30,
         },
       },
       # chromium.clang
@@ -1230,7 +1230,7 @@
       # chromium.chromiumos
       'linux-chromeos-dbg': {
         'swarming': {
-          'shards': 20,
+          'shards': 30,
         },
       },
       # chromium.memory
@@ -1710,6 +1710,11 @@
       'Android N5X Swarm': {
         'swarming': {
           'shards': 8,
+        },
+      },
+      'linux-chromeos-dbg': {
+        'swarming': {
+          'shards': 2,
         },
       },
       'linux-chromeos-google-rel': {
