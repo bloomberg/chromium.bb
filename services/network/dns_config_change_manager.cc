@@ -31,9 +31,4 @@ void DnsConfigChangeManager::OnDNSChanged() {
     client->OnSystemDnsConfigChanged();
 }
 
-void DnsConfigChangeManager::OnInitialDNSConfigRead() {
-  // Service API makes no distinction between initial read and change.
-  OnDNSChanged();
-}
-
 }  // namespace network

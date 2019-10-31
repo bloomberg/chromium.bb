@@ -75,17 +75,6 @@ TEST_F(DnsConfigChangeManagerTest, Notification) {
   EXPECT_EQ(1, client()->num_notifications());
 }
 
-TEST_F(DnsConfigChangeManagerTest, Notification_InitialRead) {
-  EXPECT_EQ(0, client()->num_notifications());
-
-  net::NetworkChangeNotifier::NotifyObserversOfInitialDNSConfigReadForTests();
-  client()->WaitForNotification(1);
-  EXPECT_EQ(1, client()->num_notifications());
-
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1, client()->num_notifications());
-}
-
 TEST_F(DnsConfigChangeManagerTest, MultipleNotification) {
   EXPECT_EQ(0, client()->num_notifications());
 
