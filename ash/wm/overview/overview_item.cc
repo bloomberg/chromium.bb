@@ -444,14 +444,18 @@ void OverviewItem::SetBounds(const gfx::RectF& target_bounds,
           PerformItemSpawnedAnimation(item_widget_->GetNativeWindow(),
                                       gfx::Transform{});
         } else {
-          FadeInWidgetAndMaybeSlideOnEnter(
-              item_widget_.get(),
-              (new_animation_type ==
-               OVERVIEW_ANIMATION_ENTER_FROM_HOME_LAUNCHER)
-                  ? new_animation_type
-                  : OVERVIEW_ANIMATION_ENTER_OVERVIEW_MODE_FADE_IN,
-              /*slide=*/false,
-              /*observe=*/true);
+          // Items that are slide in already have their slide in animations
+          // handled in |SlideWindowIn|.
+          const bool slide_in =
+              overview_session_->enter_exit_overview_type() ==
+              OverviewSession::EnterExitOverviewType::kSlideInEnter;
+          if (!slide_in) {
+            FadeInWidgetAndMaybeSlideOnEnter(
+                item_widget_.get(),
+                OVERVIEW_ANIMATION_ENTER_OVERVIEW_MODE_FADE_IN,
+                /*slide=*/false,
+                /*observe=*/true);
+          }
 
           // Update the item header visibility immediately if entering from home
           // launcher.
