@@ -10,6 +10,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "components/viz/common/resources/resource_id.h"
 #include "components/viz/common/resources/returned_resource.h"
 #include "media/base/video_frame.h"
@@ -406,8 +407,15 @@ bool VideoFrameSubmitter::SubmitFrame(
   // not building up unused remote side resources. See https://crbug.com/830828.
   //
   // Similarly we don't submit the same frame multiple times.
+#if defined(OS_ANDROID)
+  // Android MediaPlayer sometimes sends the same frame ID multiple times. So
+  // don't elide these frames on M78 where this isn't fixed.
+  if (waiting_for_compositor_ack_)
+    return false;
+#else
   if (waiting_for_compositor_ack_ || last_frame_id_ == video_frame->unique_id())
     return false;
+#endif
 
   last_frame_id_ = video_frame->unique_id();
 
