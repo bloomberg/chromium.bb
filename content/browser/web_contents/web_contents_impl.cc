@@ -7192,6 +7192,12 @@ void WebContentsImpl::AudioContextPlaybackStopped(RenderFrameHost* host,
     observer.AudioContextPlaybackStopped(audio_context_id);
 }
 
+void WebContentsImpl::MediaWatchTimeChanged(
+    const content::MediaPlayerWatchTime& watch_time) {
+  for (auto& observer : observers_)
+    observer.MediaWatchTimeChanged(watch_time);
+}
+
 RenderFrameHostImpl* WebContentsImpl::GetMainFrameForInnerDelegate(
     FrameTreeNode* frame_tree_node) {
   if (auto* web_contents = node_.GetInnerWebContentsInFrame(frame_tree_node))
