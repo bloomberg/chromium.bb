@@ -61,10 +61,16 @@ class MissingLKGMFile(Exception):
 class MissingSDK(Exception):
   """Error thrown when we cannot find an SDK."""
 
-  def __init__(self, board, version=None):
-    msg = 'Cannot find SDK for %r' % (board,)
+  def _ConstructLegolandURL(self, config):
+    """Returns a link to the given board's release builder."""
+    return ('http://cros-goldeneye/chromeos/legoland/builderHistory?'
+            'buildConfig=%s' % config)
+
+  def __init__(self, config, version=None):
+    msg = 'Cannot find SDK for %s' % config
     if version is not None:
-      msg += ' with version %s' % (version,)
+      msg += ' with version %s' % version
+    msg += ' from its builder: %s' % self._ConstructLegolandURL(config)
     Exception.__init__(self, msg)
 
 
@@ -521,7 +527,7 @@ class SDKFetcher(object):
         full_version = self._GetFullVersionFromLatest(version)
 
         if full_version is None:
-          raise MissingSDK(self.board, version)
+          raise MissingSDK(self.config.name, version)
 
         ref.AssignText(full_version)
         return full_version
