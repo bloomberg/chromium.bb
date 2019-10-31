@@ -954,7 +954,7 @@ deps = {
               'version': 'xbqDSJKkLORclZW8h9et17dVsOjaxurf7RElMu0fGvUC',
           },
       ],
-      'condition': 'host_os == "linux" and checkout_fuchsia and checkout_fuchsia_for_arm64_host',
+      'condition': 'host_os == "linux" and (checkout_fuchsia and checkout_fuchsia_for_arm64_host)',
       'dep_type': 'cipd',
   },
 
@@ -1359,7 +1359,7 @@ deps = {
               'version': 'b1b61a39e3ab0935cd030f27e01740578b04b967'
           },
       ],
-      'condition': 'host_os == "linux" and checkout_fuchsia and checkout_fuchsia_for_arm64_host',
+      'condition': 'host_os == "linux" and (checkout_fuchsia and checkout_fuchsia_for_arm64_host)',
       'dep_type': 'cipd',
   },
 
