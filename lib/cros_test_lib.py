@@ -567,6 +567,9 @@ class TestCase(unittest.TestCase):
     self.__saved_umask__ = os.umask(0o22)
     for x in self.ENVIRON_VARIABLE_SUPPRESSIONS:
       os.environ.pop(x, None)
+    # Force all log lines in tests to include ANSI color prefixes, since it can
+    # be configured per-user.
+    os.environ['NOCOLOR'] = 'no'
 
   def tearDown(self):
     self._CheckTestEnv('%s.tearDown' % (self.id(),))

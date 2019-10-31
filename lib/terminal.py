@@ -11,6 +11,7 @@ This module handles terminal interaction including ANSI color codes.
 from __future__ import print_function
 
 import os
+import sys
 
 from chromite.lib import cros_build_lib
 
@@ -30,7 +31,11 @@ class Color(object):
       enabled: True if color output should be enabled. If False then this
         class will not add color codes at all.
     """
-    self._enabled = self.UserEnabled() if enabled is None else enabled
+    self._enabled = enabled
+    if self._enabled is None:
+      self._enabled = self.UserEnabled()
+      if self._enabled is None:
+        self._enabled = sys.stdout.isatty()
 
   def Start(self, color):
     """Returns a start color code.
@@ -79,6 +84,7 @@ class Color(object):
   @staticmethod
   def UserEnabled():
     """See if the global colorization preference is enabled ($NOCOLOR env)"""
-    return not cros_build_lib.BooleanShellValue(
+    is_disabled = cros_build_lib.BooleanShellValue(
         os.environ.get('NOCOLOR'), msg='$NOCOLOR env var is invalid',
-        default=False)
+        default=None)
+    return not is_disabled if is_disabled is not None else None
