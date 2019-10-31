@@ -109,6 +109,10 @@ if (is_linux) {
   net_configs += [ "//build/config/linux:libresolv" ]
 }
 
+# Reset sources_assignment_filter for the BUILD.gn file to prevent
+# regression during the migration of Chromium away from the feature.
+# See build/no_sources_assignment_filter.md for more information.
+# TODO(crbug.com/1018739): Remove this when migration is done.
 set_sources_assignment_filter([])
 
 source_set("constants") {
@@ -411,6 +415,10 @@ component("net") {
     "//net/http:transport_security_state_generated_files",
   ]
 
+  if (is_nacl) {
+    sources += [ "base/network_interfaces_nacl.cc" ]
+  }
+
   if (!is_nacl) {
     sources += [
       "base/backoff_entry.cc",
@@ -462,7 +470,6 @@ component("net") {
       "base/network_delegate.h",
       "base/network_delegate_impl.cc",
       "base/network_delegate_impl.h",
-      "base/network_interfaces_nacl.cc",
       "base/network_isolation_key.cc",
       "base/network_isolation_key.h",
       "base/platform_mime_util.h",
@@ -692,7 +699,6 @@ component("net") {
       "http/http_auth_handler_negotiate.h",
       "http/http_auth_handler_ntlm.cc",
       "http/http_auth_handler_ntlm.h",
-      "http/http_auth_handler_ntlm_portable.cc",
       "http/http_auth_multi_round_parse.cc",
       "http/http_auth_multi_round_parse.h",
       "http/http_auth_preferences.cc",
@@ -821,16 +827,6 @@ component("net") {
       "nqe/throughput_analyzer.cc",
       "nqe/throughput_analyzer.h",
       "nqe/weighted_observation.h",
-      "ntlm/ntlm.cc",
-      "ntlm/ntlm.h",
-      "ntlm/ntlm_buffer_reader.cc",
-      "ntlm/ntlm_buffer_reader.h",
-      "ntlm/ntlm_buffer_writer.cc",
-      "ntlm/ntlm_buffer_writer.h",
-      "ntlm/ntlm_client.cc",
-      "ntlm/ntlm_client.h",
-      "ntlm/ntlm_constants.cc",
-      "ntlm/ntlm_constants.h",
       "proxy_resolution/dhcp_pac_file_fetcher.cc",
       "proxy_resolution/dhcp_pac_file_fetcher.h",
       "proxy_resolution/multi_threaded_proxy_resolver.cc",
@@ -1810,7 +1806,7 @@ component("net") {
       ]
     }
 
-    if (is_chromeos) {
+    if (is_chromeos && use_nss_certs) {
       sources += [
         "cert/nss_cert_database_chromeos.cc",
         "cert/nss_cert_database_chromeos.h",
@@ -1969,8 +1965,8 @@ component("net") {
       ]
     }
 
-    if (is_win) {
-      sources -= [
+    if (!is_win) {
+      sources += [
         "ntlm/ntlm.cc",
         "ntlm/ntlm.h",
         "ntlm/ntlm_buffer_reader.cc",
@@ -1979,6 +1975,7 @@ component("net") {
         "ntlm/ntlm_buffer_writer.h",
         "ntlm/ntlm_client.cc",
         "ntlm/ntlm_client.h",
+        "ntlm/ntlm_constants.cc",
         "ntlm/ntlm_constants.h",
       ]
     }
@@ -1988,10 +1985,6 @@ component("net") {
         "http/http_auth_gssapi_posix.cc",
         "http/http_auth_gssapi_posix.h",
       ]
-    }
-
-    if (!is_nacl) {
-      sources -= [ "base/network_interfaces_nacl.cc" ]
     }
 
     # Use getifaddrs() on POSIX platforms, except Linux and Android.
@@ -2018,15 +2011,6 @@ component("net") {
         "third_party/mozilla_security_manager/nsPKCS12Blob.cpp",
         "third_party/mozilla_security_manager/nsPKCS12Blob.h",
       ]
-      if (is_chromeos) {
-        # These were already removed on non-ChromeOS.
-        sources -= [
-          "cert/nss_cert_database_chromeos.cc",
-          "cert/nss_cert_database_chromeos.h",
-          "cert/nss_profile_filter_chromeos.cc",
-          "cert/nss_profile_filter_chromeos.h",
-        ]
-      }
       sources -= [ "ssl/ssl_platform_key_nss.cc" ]
     } else {
       sources += [
@@ -2056,8 +2040,8 @@ component("net") {
       ]
     }
 
-    if (is_win) {
-      sources -= [ "http/http_auth_handler_ntlm_portable.cc" ]
+    if (!is_win) {
+      sources += [ "http/http_auth_handler_ntlm_portable.cc" ]
     }
 
     if (is_ios) {
@@ -2811,7 +2795,6 @@ static_library("test_support") {
     "test/cert_builder.h",
     "test/cert_test_util.cc",
     "test/cert_test_util.h",
-    "test/cert_test_util_nss.cc",
     "test/ct_test_util.cc",
     "test/ct_test_util.h",
     "test/embedded_test_server/controllable_http_response.cc",
@@ -2953,8 +2936,8 @@ static_library("test_support") {
     public_deps += [ ":net_with_v8" ]
   }
 
-  if (!use_nss_certs) {
-    sources -= [ "test/cert_test_util_nss.cc" ]
+  if (use_nss_certs) {
+    sources += [ "test/cert_test_util_nss.cc" ]
   }
 
   if (!disable_file_support) {
@@ -5186,7 +5169,6 @@ test("net_unittests") {
     "cert/x509_util_nss_unittest.cc",
     "cert/x509_util_unittest.cc",
     "cert_net/cert_net_fetcher_impl_unittest.cc",
-    "cert_net/nss_ocsp_unittest.cc",
     "cookies/canonical_cookie_unittest.cc",
     "cookies/cookie_constants_unittest.cc",
     "cookies/cookie_deletion_info_unittest.cc",
@@ -5215,18 +5197,8 @@ test("net_unittests") {
     "disk_cache/simple/simple_util_unittest.cc",
     "disk_cache/simple/simple_version_upgrade_unittest.cc",
     "extras/sqlite/sqlite_persistent_cookie_store_unittest.cc",
-    "filter/brotli_source_stream_unittest.cc",
     "filter/filter_source_stream_unittest.cc",
     "filter/gzip_source_stream_unittest.cc",
-    "ftp/ftp_auth_cache_unittest.cc",
-    "ftp/ftp_ctrl_response_buffer_unittest.cc",
-    "ftp/ftp_directory_listing_parser_ls_unittest.cc",
-    "ftp/ftp_directory_listing_parser_unittest.cc",
-    "ftp/ftp_directory_listing_parser_unittest.h",
-    "ftp/ftp_directory_listing_parser_vms_unittest.cc",
-    "ftp/ftp_directory_listing_parser_windows_unittest.cc",
-    "ftp/ftp_network_transaction_unittest.cc",
-    "ftp/ftp_util_unittest.cc",
     "http/alternative_service_unittest.cc",
     "http/bidirectional_stream_unittest.cc",
     "http/broken_alternative_services_unittest.cc",
@@ -5239,8 +5211,6 @@ test("net_unittests") {
     "http/http_auth_handler_factory_unittest.cc",
     "http/http_auth_handler_mock.cc",
     "http/http_auth_handler_mock.h",
-    "http/http_auth_handler_negotiate_unittest.cc",
-    "http/http_auth_handler_ntlm_portable_unittest.cc",
     "http/http_auth_handler_unittest.cc",
     "http/http_auth_multi_round_parse_unittest.cc",
     "http/http_auth_preferences_unittest.cc",
@@ -5297,11 +5267,6 @@ test("net_unittests") {
     "nqe/observation_buffer_unittest.cc",
     "nqe/socket_watcher_unittest.cc",
     "nqe/throughput_analyzer_unittest.cc",
-    "ntlm/ntlm_buffer_reader_unittest.cc",
-    "ntlm/ntlm_buffer_writer_unittest.cc",
-    "ntlm/ntlm_client_unittest.cc",
-    "ntlm/ntlm_test_data.h",
-    "ntlm/ntlm_unittest.cc",
     "proxy_resolution/multi_threaded_proxy_resolver_unittest.cc",
     "proxy_resolution/network_delegate_error_observer_unittest.cc",
     "proxy_resolution/pac_file_decider_unittest.cc",
@@ -5312,8 +5277,6 @@ test("net_unittests") {
     "proxy_resolution/proxy_info_unittest.cc",
     "proxy_resolution/proxy_list_unittest.cc",
     "proxy_resolution/proxy_resolution_service_unittest.cc",
-    "proxy_resolution/proxy_resolver_v8_tracing_unittest.cc",
-    "proxy_resolution/proxy_resolver_v8_unittest.cc",
     "proxy_resolution/proxy_server_unittest.cc",
     "quic/bidirectional_stream_quic_impl_unittest.cc",
     "quic/crypto/proof_test_chromium.cc",
@@ -5691,7 +5654,6 @@ test("net_unittests") {
     "url_request/url_request_context_builder_unittest.cc",
     "url_request/url_request_context_unittest.cc",
     "url_request/url_request_filter_unittest.cc",
-    "url_request/url_request_ftp_job_unittest.cc",
     "url_request/url_request_http_job_unittest.cc",
     "url_request/url_request_job_factory_impl_unittest.cc",
     "url_request/url_request_job_unittest.cc",
@@ -5719,7 +5681,7 @@ test("net_unittests") {
     ]
   }
 
-  if (is_chromeos) {
+  if (is_chromeos && use_nss_certs) {
     sources += [
       "cert/nss_cert_database_chromeos_unittest.cc",
       "cert/nss_profile_filter_chromeos_unittest.cc",
@@ -5952,8 +5914,8 @@ test("net_unittests") {
     deps += [ "//gin" ]
   }
 
-  if (is_win) {
-    sources -= [
+  if (!is_win) {
+    sources += [
       "http/http_auth_handler_ntlm_portable_unittest.cc",
       "ntlm/ntlm_buffer_reader_unittest.cc",
       "ntlm/ntlm_buffer_writer_unittest.cc",
@@ -5985,12 +5947,6 @@ test("net_unittests") {
       "ssl/client_cert_store_nss_unittest.cc",
       "ssl/ssl_platform_key_nss_unittest.cc",
     ]
-    if (is_chromeos) {  # Already removed for all non-ChromeOS builds.
-      sources -= [
-        "cert/nss_cert_database_chromeos_unittest.cc",
-        "cert/nss_profile_filter_chromeos_unittest.cc",
-      ]
-    }
   }
 
   if (use_external_gssapi) {
@@ -6005,13 +5961,12 @@ test("net_unittests") {
     ]
   }
 
-  if (!use_kerberos) {
-    sources -= [ "http/http_auth_handler_negotiate_unittest.cc" ]
+  if (use_kerberos) {
+    sources += [ "http/http_auth_handler_negotiate_unittest.cc" ]
   }
 
-  if (!use_nss_certs) {
-    # Only include this test when using NSS for cert verification.
-    sources -= [ "cert_net/nss_ocsp_unittest.cc" ]
+  if (use_nss_certs) {
+    sources += [ "cert_net/nss_ocsp_unittest.cc" ]
   }
 
   if (enable_websockets) {
@@ -6050,8 +6005,8 @@ test("net_unittests") {
     ]
   }
 
-  if (disable_ftp_support) {
-    sources -= [
+  if (!disable_ftp_support) {
+    sources += [
       "ftp/ftp_auth_cache_unittest.cc",
       "ftp/ftp_ctrl_response_buffer_unittest.cc",
       "ftp/ftp_directory_listing_parser_ls_unittest.cc",
@@ -6071,8 +6026,7 @@ test("net_unittests") {
 
   if (use_v8_in_net) {
     deps += [ ":net_with_v8" ]
-  } else {
-    sources -= [
+    sources += [
       "proxy_resolution/proxy_resolver_v8_tracing_unittest.cc",
       "proxy_resolution/proxy_resolver_v8_unittest.cc",
     ]
@@ -6144,9 +6098,8 @@ test("net_unittests") {
     ]
   }
 
-  # Exclude brotli test if the support for brotli is disabled.
-  if (disable_brotli_filter) {
-    sources -= [ "filter/brotli_source_stream_unittest.cc" ]
+  if (!disable_brotli_filter) {
+    sources += [ "filter/brotli_source_stream_unittest.cc" ]
   }
 
   if (is_android) {
