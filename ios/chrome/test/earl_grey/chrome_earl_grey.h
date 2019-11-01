@@ -286,6 +286,10 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // Returns a unique identifier for the next Tab.
 - (NSString*)nextTabID;
 
+// Shows the tab switcher by tapping the switcher button.  Works on both phone
+// and tablet.
+- (void)showTabSwitcher;
+
 #pragma mark - SignIn Utilities (EG2)
 
 // Signs the user out, clears the known accounts entirely and checks whether the

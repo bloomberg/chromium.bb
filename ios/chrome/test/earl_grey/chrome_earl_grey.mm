@@ -335,6 +335,24 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
   return [ChromeEarlGreyAppInterface nextTabID];
 }
 
+- (void)showTabSwitcher {
+  id<GREYMatcher> matcher = chrome_test_util::TabGridOpenButton();
+  // Perform a tap with a timeout. Occasionally EG doesn't sync up properly to
+  // the animations of tab switcher, so it is necessary to poll here.
+  GREYCondition* tapTabSwitcher =
+      [GREYCondition conditionWithName:@"Tap tab switcher button"
+                                 block:^BOOL {
+                                   NSError* error;
+                                   [[EarlGrey selectElementWithMatcher:matcher]
+                                       performAction:grey_tap()
+                                               error:&error];
+                                   return error == nil;
+                                 }];
+  // Wait until 2 seconds for the tap.
+  BOOL hasClicked = [tapTabSwitcher waitWithTimeout:2];
+  EG_TEST_HELPER_ASSERT_TRUE(hasClicked, @"Tab switcher could not be clicked.");
+}
+
 #pragma mark - Cookie Utilities (EG2)
 
 - (NSDictionary*)cookies {
@@ -493,8 +511,7 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
 }
 
 - (void)triggerRestoreViaTabGridRemoveAllUndo {
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::ShowTabsButton()]
-      performAction:grey_tap()];
+  [ChromeEarlGrey showTabSwitcher];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::TabGridCloseAllButton()]
       performAction:grey_tap()];
   [[EarlGrey
