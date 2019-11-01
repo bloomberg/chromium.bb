@@ -16,6 +16,7 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/video_capture/public/cpp/mock_push_subscription.h"
 #include "services/video_capture/public/cpp/mock_video_source.h"
@@ -52,7 +53,7 @@ class ServiceVideoCaptureDeviceLauncherTest : public testing::Test {
   ServiceVideoCaptureDeviceLauncherTest() {}
   ~ServiceVideoCaptureDeviceLauncherTest() override {}
 
-  void CloseSourceBinding() { source_binding_.reset(); }
+  void CloseSourceReceiver() { source_receiver_.reset(); }
 
   void CloseSubscriptionReceivers() { subscription_receivers_.Clear(); }
 
@@ -86,10 +87,11 @@ class ServiceVideoCaptureDeviceLauncherTest : public testing::Test {
     ON_CALL(mock_source_provider_, DoGetVideoSource(kStubDeviceId, _))
         .WillByDefault(Invoke(
             [this](const std::string& device_id,
-                   video_capture::mojom::VideoSourceRequest* source_request) {
-              source_binding_ = std::make_unique<
-                  mojo::Binding<video_capture::mojom::VideoSource>>(
-                  &mock_source_, std::move(*source_request));
+                   mojo::PendingReceiver<video_capture::mojom::VideoSource>*
+                       source_receiver) {
+              source_receiver_ = std::make_unique<
+                  mojo::Receiver<video_capture::mojom::VideoSource>>(
+                  &mock_source_, std::move(*source_receiver));
             }));
 
     ON_CALL(mock_source_, DoCreatePushSubscription(_, _, _, _, _))
@@ -127,8 +129,8 @@ class ServiceVideoCaptureDeviceLauncherTest : public testing::Test {
   std::unique_ptr<mojo::Binding<video_capture::mojom::VideoSourceProvider>>
       source_provider_binding_;
   video_capture::MockVideoSource mock_source_;
-  std::unique_ptr<mojo::Binding<video_capture::mojom::VideoSource>>
-      source_binding_;
+  std::unique_ptr<mojo::Receiver<video_capture::mojom::VideoSource>>
+      source_receiver_;
   video_capture::MockPushSubcription mock_subscription_;
   mojo::ReceiverSet<video_capture::mojom::PushVideoStreamSubscription>
       subscription_receivers_;
@@ -376,7 +378,7 @@ TEST_F(ServiceVideoCaptureDeviceLauncherTest,
   // Cleanup
   // Cut the connection to the source, so that the outstanding
   // |create_subscription_cb| will be dropped when we invoke it below.
-  source_binding_.reset();
+  source_receiver_.reset();
   // We have to invoke the callback, because not doing so triggers a DCHECK.
   const video_capture::mojom::CreatePushSubscriptionResultCode
       arbitrary_result_code = video_capture::mojom::
@@ -387,9 +389,9 @@ TEST_F(ServiceVideoCaptureDeviceLauncherTest,
 
 TEST_F(ServiceVideoCaptureDeviceLauncherTest,
        ConnectionToSubscriptionLostAfterSuccessfulLaunch) {
-  RunConnectionLostAfterSuccessfulStartTest(
-      base::BindOnce(&ServiceVideoCaptureDeviceLauncherTest::CloseSourceBinding,
-                     base::Unretained(this)));
+  RunConnectionLostAfterSuccessfulStartTest(base::BindOnce(
+      &ServiceVideoCaptureDeviceLauncherTest::CloseSourceReceiver,
+      base::Unretained(this)));
 }
 
 TEST_F(ServiceVideoCaptureDeviceLauncherTest,

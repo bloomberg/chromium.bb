@@ -98,10 +98,11 @@ class ServiceVideoCaptureProviderTest : public testing::Test {
         }));
 
     ON_CALL(mock_source_provider_, DoGetVideoSource(_, _))
-        .WillByDefault(
-            Invoke([this](const std::string& device_id,
-                          video_capture::mojom::VideoSourceRequest* request) {
-              source_bindings_.AddBinding(&mock_source_, std::move(*request));
+        .WillByDefault(Invoke(
+            [this](const std::string& device_id,
+                   mojo::PendingReceiver<video_capture::mojom::VideoSource>*
+                       receiver) {
+              source_receivers_.Add(&mock_source_, std::move(*receiver));
             }));
 
     ON_CALL(mock_source_, DoCreatePushSubscription(_, _, _, _, _))
@@ -132,7 +133,7 @@ class ServiceVideoCaptureProviderTest : public testing::Test {
   mojo::Binding<video_capture::mojom::VideoSourceProvider>
       source_provider_binding_;
   video_capture::MockVideoSource mock_source_;
-  mojo::BindingSet<video_capture::mojom::VideoSource> source_bindings_;
+  mojo::ReceiverSet<video_capture::mojom::VideoSource> source_receivers_;
   video_capture::MockPushSubcription mock_subscription_;
   mojo::ReceiverSet<video_capture::mojom::PushVideoStreamSubscription>
       subscription_receivers_;

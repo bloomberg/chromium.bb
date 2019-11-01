@@ -28,8 +28,9 @@ class VideoSourceProviderImpl : public mojom::VideoSourceProvider {
 
   // mojom::VideoSourceProvider implementation.
   void GetSourceInfos(GetSourceInfosCallback callback) override;
-  void GetVideoSource(const std::string& device_id,
-                      mojom::VideoSourceRequest source_request) override;
+  void GetVideoSource(
+      const std::string& device_id,
+      mojo::PendingReceiver<mojom::VideoSource> source_receiver) override;
   void AddSharedMemoryVirtualDevice(
       const media::VideoCaptureDeviceInfo& device_info,
       mojo::PendingRemote<mojom::Producer> producer,
