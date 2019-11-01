@@ -1,7 +1,8 @@
 // Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-package org.chromium.chrome.browser.omaha;
+
+package org.chromium.chrome.browser.omaha.notification;
 
 import static org.chromium.chrome.browser.omaha.UpdateConfigs.getUpdateNotificationInterval;
 import static org.chromium.chrome.browser.omaha.UpdateConfigs.getUpdateNotificationTextBody;
@@ -41,6 +42,8 @@ import org.chromium.chrome.browser.notifications.NotificationMetadata;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.notifications.PendingIntentProvider;
 import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
+import org.chromium.chrome.browser.omaha.OmahaBase;
+import org.chromium.chrome.browser.omaha.UpdateStatusProvider;
 import org.chromium.chrome.browser.omaha.UpdateStatusProvider.UpdateInteractionSource;
 import org.chromium.chrome.browser.omaha.UpdateStatusProvider.UpdateState;
 import org.chromium.chrome.browser.omaha.UpdateStatusProvider.UpdateStatus;
@@ -52,8 +55,8 @@ import java.lang.annotation.RetentionPolicy;
  * Class supports to build and to send update notification every three weeks if new Chrome version
  * is available. It listens to {@link UpdateStatusProvider}, and handle the intent to start update
  * flow.
- * */
-public class UpdateNotificationController implements Destroyable {
+ */
+public class UpdateNotificationControllerImpl implements UpdateNotificationController, Destroyable {
     private static final String TAG = "UpdateNotif";
     private static final String INLINE_UPDATE_NOTIFICATION_RECEIVED_EXTRA =
             "org.chromium.chrome.browser.omaha.inline_update_notification_received_extra";
@@ -75,18 +78,17 @@ public class UpdateNotificationController implements Destroyable {
     /**
      * @param activity A {@link ChromeActivity} instance the notification will be shown in.
      */
-    public UpdateNotificationController(ChromeActivity activity) {
+    public UpdateNotificationControllerImpl(ChromeActivity activity) {
         mActivity = activity;
         UpdateStatusProvider.getInstance().addObserver(mObserver);
         mActivity.getLifecycleDispatcher().register(this);
     }
 
-    /**Controller received intent, extract info from intent and handle the status change.
-     * @param intent A {@link Intent} contains extra to update the controller.
-     */
+    // UpdateNotificationController implementation.
+    @Override
     public void onNewIntent(Intent intent) {
-        mShouldStartInlineUpdate = intent.getBooleanExtra(
-                UpdateNotificationController.INLINE_UPDATE_NOTIFICATION_RECEIVED_EXTRA, false);
+        mShouldStartInlineUpdate =
+                intent.getBooleanExtra(INLINE_UPDATE_NOTIFICATION_RECEIVED_EXTRA, false);
         processUpdateStatus();
     }
 
