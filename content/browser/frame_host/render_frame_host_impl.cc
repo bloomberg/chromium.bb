@@ -1243,10 +1243,26 @@ void RenderFrameHostImpl::OnPortalActivated(
     mojo::PendingAssociatedRemote<blink::mojom::Portal> portal,
     mojo::PendingAssociatedReceiver<blink::mojom::PortalClient> portal_client,
     blink::TransferableMessage data,
-    base::OnceCallback<void(bool)> callback) {
+    base::OnceCallback<void(blink::mojom::PortalActivateResult)> callback) {
   GetNavigationControl()->OnPortalActivated(
       portal_token, std::move(portal), std::move(portal_client),
-      std::move(data), std::move(callback));
+      std::move(data),
+      base::BindOnce(
+          [](base::OnceCallback<void(blink::mojom::PortalActivateResult)>
+                 callback,
+             blink::mojom::PortalActivateResult result) {
+            switch (result) {
+              case blink::mojom::PortalActivateResult::kPredecessorWillUnload:
+              case blink::mojom::PortalActivateResult::kPredecessorWasAdopted:
+                // These values are acceptable from the renderer.
+                break;
+                // TODO(jbroman): Some future values may represent browser-side
+                // values which the renderer should not be able to forge. We
+                // should call mojo::ReportBadMessage here if so.
+            }
+            std::move(callback).Run(result);
+          },
+          std::move(callback)));
 }
 
 void RenderFrameHostImpl::ForwardMessageFromHost(
