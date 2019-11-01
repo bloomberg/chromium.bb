@@ -323,6 +323,7 @@ bool FilmGrain<bitdepth>::Init() {
                                            luma_grain_);
     }
   } else {
+    // Have AddressSanitizer warn if luma_grain_ is used.
     ASAN_POISON_MEMORY_REGION(luma_grain_, sizeof(luma_grain_));
   }
   if (!is_monochrome_) {
@@ -384,19 +385,20 @@ int FilmGrain<bitdepth>::GetRandomNumber(int bits, uint16_t* seed) {
 template <int bitdepth>
 void FilmGrain<bitdepth>::GenerateLumaGrain(const FilmGrainParams& params,
                                             GrainType* luma_grain) {
+  // If params.num_y_points is equal to 0, Section 7.18.3.3 specifies we set
+  // the luma_grain array to all zeros. But the Note at the end of Section
+  // 7.18.3.3 says luma_grain "will never be read in this case". So we don't
+  // call GenerateLumaGrai if params.num_y_points is equal to 0.
+  assert(params.num_y_points > 0);
   const int shift = 12 - bitdepth + params.grain_scale_shift;
-  if (params.num_y_points == 0) {
-    memset(luma_grain, 0, kLumaHeight * kLumaWidth * sizeof(*luma_grain));
-  } else {
-    uint16_t seed = params.grain_seed;
-    GrainType* luma_grain_row = luma_grain;
-    for (int y = 0; y < kLumaHeight; ++y) {
-      for (int x = 0; x < kLumaWidth; ++x) {
-        luma_grain_row[x] = RightShiftWithRounding(
-            kGaussianSequence[GetRandomNumber(11, &seed)], shift);
-      }
-      luma_grain_row += kLumaWidth;
+  uint16_t seed = params.grain_seed;
+  GrainType* luma_grain_row = luma_grain;
+  for (int y = 0; y < kLumaHeight; ++y) {
+    for (int x = 0; x < kLumaWidth; ++x) {
+      luma_grain_row[x] = RightShiftWithRounding(
+          kGaussianSequence[GetRandomNumber(11, &seed)], shift);
     }
+    luma_grain_row += kLumaWidth;
   }
 }
 
@@ -676,8 +678,8 @@ void FilmGrain<bitdepth>::ConstructNoiseStripes() {
       const int rand = GetRandomNumber(8, &seed);
       const int offset_x = rand >> 4;
       const int offset_y = rand & 15;
-      for (int plane = kPlaneY; plane < num_planes; ++plane) {
-        if (plane == kPlaneY && params_.num_y_points == 0) continue;
+      for (int plane = (params_.num_y_points > 0) ? kPlaneY : kPlaneU;
+           plane < num_planes; ++plane) {
         const int plane_sub_x = (plane > kPlaneY) ? subsampling_x_ : 0;
         const int plane_sub_y = (plane > kPlaneY) ? subsampling_y_ : 0;
         const int plane_offset_x =
@@ -773,8 +775,8 @@ bool FilmGrain<bitdepth>::AllocateNoiseImage() {
 template <int bitdepth>
 void FilmGrain<bitdepth>::ConstructNoiseImage() {
   const int num_planes = is_monochrome_ ? kMaxPlanesMonochrome : kMaxPlanes;
-  for (int plane = kPlaneY; plane < num_planes; ++plane) {
-    if (plane == kPlaneY && params_.num_y_points == 0) continue;
+  for (int plane = (params_.num_y_points > 0) ? kPlaneY : kPlaneU;
+       plane < num_planes; ++plane) {
     const int plane_sub_x = (plane > kPlaneY) ? subsampling_x_ : 0;
     const int plane_sub_y = (plane > kPlaneY) ? subsampling_y_ : 0;
     const int plane_width = (width_ + plane_sub_x) >> plane_sub_x;
