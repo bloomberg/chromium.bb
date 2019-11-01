@@ -3292,6 +3292,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kTabGroupsAndroidDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kTabGroupsAndroid)},
 
+    {"enable-tab-groups-continuation",
+     flag_descriptions::kTabGroupsContinuationAndroidName,
+     flag_descriptions::kTabGroupsContinuationAndroidDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kTabGroupsContinuationAndroid)},
+
     {"enable-tab-groups-ui-improvements",
      flag_descriptions::kTabGroupsUiImprovementsAndroidName,
      flag_descriptions::kTabGroupsUiImprovementsAndroidDescription, kOsAndroid,

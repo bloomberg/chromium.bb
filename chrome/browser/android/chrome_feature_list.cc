@@ -177,6 +177,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kSwapPixelFormatToFixConvertFromTranslucent,
     &kTabEngagementReportingAndroid,
     &kTabGroupsAndroid,
+    &kTabGroupsContinuationAndroid,
     &kTabGroupsUiImprovementsAndroid,
     &kTabGridLayoutAndroid,
     &kTabReparenting,
@@ -538,6 +539,9 @@ const base::Feature kTabEngagementReportingAndroid{
 
 const base::Feature kTabGroupsAndroid{"TabGroupsAndroid",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kTabGroupsContinuationAndroid{
+    "TabGroupsContinuationAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kTabGroupsUiImprovementsAndroid{
     "TabGroupsUiImprovementsAndroid", base::FEATURE_ENABLED_BY_DEFAULT};

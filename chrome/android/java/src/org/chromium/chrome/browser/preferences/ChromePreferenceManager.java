@@ -267,13 +267,6 @@ public class ChromePreferenceManager {
     public static final String WEBAPK_UNINSTALLED_PACKAGES = "webapk_uninstalled_packages";
 
     /**
-     * Whether or not the tab group UI improvement is enabled.
-     * Default value is false.
-     */
-    public static final String TAB_GROUPS_UI_IMPROVEMENTS_ANDROID_ENABLED_KEY =
-            "tab_group_ui_improvements_android_enabled";
-
-    /**
      * Key for whether it allows to start in service manager only mode.
      * Default value is false.
      */

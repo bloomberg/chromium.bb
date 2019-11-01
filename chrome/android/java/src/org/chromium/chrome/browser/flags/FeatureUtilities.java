@@ -589,6 +589,14 @@ public class FeatureUtilities {
     }
 
     /**
+     * @return Whether the tab group continuation feature is enabled and available for use.
+     */
+    public static boolean isTabGroupsAndroidContinuationEnabled() {
+        return isTabGroupsAndroidEnabled()
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID);
+    }
+
+    /**
      * @return Whether this device is running Android Go. This is assumed when we're running Android
      * O or later and we're on a low-end device.
      */
