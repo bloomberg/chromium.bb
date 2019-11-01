@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_INDEXED_DB_SCOPES_SCOPES_LOCK_MANAGER_H_
-#define CONTENT_BROWSER_INDEXED_DB_SCOPES_SCOPES_LOCK_MANAGER_H_
+#ifndef COMPONENTS_SERVICES_STORAGE_INDEXED_DB_SCOPES_SCOPES_LOCK_MANAGER_H_
+#define COMPONENTS_SERVICES_STORAGE_INDEXED_DB_SCOPES_SCOPES_LOCK_MANAGER_H_
 
 #include <iosfwd>
 #include <string>
@@ -13,9 +13,8 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "content/browser/indexed_db/scopes/scope_lock.h"
-#include "content/browser/indexed_db/scopes/scope_lock_range.h"
-#include "content/common/content_export.h"
+#include "components/services/storage/indexed_db/scopes/scope_lock.h"
+#include "components/services/storage/indexed_db/scopes/scope_lock_range.h"
 
 namespace content {
 
@@ -25,7 +24,7 @@ namespace content {
 // where they could be owned by the task scheduler).
 // This class must be used and destructed on the same sequence as the
 // ScopesLockManager.
-struct CONTENT_EXPORT ScopesLocksHolder {
+struct ScopesLocksHolder {
  public:
   ScopesLocksHolder();
   ~ScopesLocksHolder();
@@ -45,7 +44,7 @@ struct CONTENT_EXPORT ScopesLocksHolder {
 
 // Generic two-level lock management system based on ranges. Granted locks are
 // represented by the |ScopeLock| class.
-class CONTENT_EXPORT ScopesLockManager {
+class ScopesLockManager {
  public:
   using LocksAquiredCallback = base::OnceClosure;
 
@@ -63,7 +62,7 @@ class CONTENT_EXPORT ScopesLockManager {
   // completely independent domains. The lock levels start at zero.
   // Returns false if any of the lock ranges were invalid or an invariant was
   // broken.
-  struct CONTENT_EXPORT ScopeLockRequest {
+  struct ScopeLockRequest {
     ScopeLockRequest(int level, ScopeLockRange range, LockType type);
     int level;
     ScopeLockRange range;
@@ -79,13 +78,13 @@ class CONTENT_EXPORT ScopesLockManager {
   base::WeakPtrFactory<ScopesLockManager> weak_factory_{this};
 };
 
-CONTENT_EXPORT bool operator<(const ScopesLockManager::ScopeLockRequest& x,
-                              const ScopesLockManager::ScopeLockRequest& y);
-CONTENT_EXPORT bool operator==(const ScopesLockManager::ScopeLockRequest& x,
-                               const ScopesLockManager::ScopeLockRequest& y);
-CONTENT_EXPORT bool operator!=(const ScopesLockManager::ScopeLockRequest& x,
-                               const ScopesLockManager::ScopeLockRequest& y);
+bool operator<(const ScopesLockManager::ScopeLockRequest& x,
+               const ScopesLockManager::ScopeLockRequest& y);
+bool operator==(const ScopesLockManager::ScopeLockRequest& x,
+                const ScopesLockManager::ScopeLockRequest& y);
+bool operator!=(const ScopesLockManager::ScopeLockRequest& x,
+                const ScopesLockManager::ScopeLockRequest& y);
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_INDEXED_DB_SCOPES_SCOPES_LOCK_MANAGER_H_
+#endif  // COMPONENTS_SERVICES_STORAGE_INDEXED_DB_SCOPES_SCOPES_LOCK_MANAGER_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_INDEXED_DB_SCOPES_LEVELDB_SCOPES_FACTORY_H_
-#define CONTENT_BROWSER_INDEXED_DB_SCOPES_LEVELDB_SCOPES_FACTORY_H_
+#ifndef COMPONENTS_SERVICES_STORAGE_INDEXED_DB_SCOPES_LEVELDB_SCOPES_FACTORY_H_
+#define COMPONENTS_SERVICES_STORAGE_INDEXED_DB_SCOPES_LEVELDB_SCOPES_FACTORY_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -56,4 +56,4 @@ class DefaultLevelDBScopesFactory : public LevelDBScopesFactory {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_INDEXED_DB_SCOPES_LEVELDB_SCOPES_FACTORY_H_
+#endif  // COMPONENTS_SERVICES_STORAGE_INDEXED_DB_SCOPES_LEVELDB_SCOPES_FACTORY_H_

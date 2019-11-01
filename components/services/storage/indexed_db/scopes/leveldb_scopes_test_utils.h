@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_INDEXED_DB_SCOPES_LEVELDB_SCOPES_TEST_UTILS_H_
-#define CONTENT_BROWSER_INDEXED_DB_SCOPES_LEVELDB_SCOPES_TEST_UTILS_H_
+#ifndef COMPONENTS_SERVICES_STORAGE_INDEXED_DB_SCOPES_LEVELDB_SCOPES_TEST_UTILS_H_
+#define COMPONENTS_SERVICES_STORAGE_INDEXED_DB_SCOPES_LEVELDB_SCOPES_TEST_UTILS_H_
 
 #include "base/callback.h"
 #include "base/files/scoped_temp_dir.h"
@@ -11,9 +11,9 @@
 #include "base/threading/thread_restrictions.h"
 #include "components/services/storage/indexed_db/leveldb/fake_leveldb_factory.h"
 #include "components/services/storage/indexed_db/leveldb/leveldb_state.h"
-#include "content/browser/indexed_db/scopes/leveldb_scopes_coding.h"
-#include "content/browser/indexed_db/scopes/scopes_lock_manager.h"
-#include "content/browser/indexed_db/scopes/scopes_metadata.pb.h"
+#include "components/services/storage/indexed_db/scopes/leveldb_scopes_coding.h"
+#include "components/services/storage/indexed_db/scopes/scopes_lock_manager.h"
+#include "components/services/storage/indexed_db/scopes/scopes_metadata.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/src/include/leveldb/slice.h"
 #include "third_party/leveldatabase/src/include/leveldb/status.h"
@@ -120,4 +120,4 @@ class LevelDBScopesTestBase : public testing::Test {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_INDEXED_DB_SCOPES_LEVELDB_SCOPES_TEST_UTILS_H_
+#endif  // COMPONENTS_SERVICES_STORAGE_INDEXED_DB_SCOPES_LEVELDB_SCOPES_TEST_UTILS_H_

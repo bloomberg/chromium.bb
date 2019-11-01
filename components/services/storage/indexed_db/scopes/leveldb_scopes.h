@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_INDEXED_DB_SCOPES_LEVELDB_SCOPES_H_
-#define CONTENT_BROWSER_INDEXED_DB_SCOPES_LEVELDB_SCOPES_H_
+#ifndef COMPONENTS_SERVICES_STORAGE_INDEXED_DB_SCOPES_LEVELDB_SCOPES_H_
+#define COMPONENTS_SERVICES_STORAGE_INDEXED_DB_SCOPES_LEVELDB_SCOPES_H_
 
 #include <stdint.h>
 #include <limits>
@@ -21,10 +21,9 @@
 #include "base/numerics/checked_math.h"
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
-#include "content/browser/indexed_db/scopes/leveldb_scopes_coding.h"
-#include "content/browser/indexed_db/scopes/scope_lock.h"
-#include "content/browser/indexed_db/scopes/scope_lock_range.h"
-#include "content/common/content_export.h"
+#include "components/services/storage/indexed_db/scopes/leveldb_scopes_coding.h"
+#include "components/services/storage/indexed_db/scopes/scope_lock.h"
+#include "components/services/storage/indexed_db/scopes/scope_lock_range.h"
 #include "third_party/leveldatabase/src/include/leveldb/options.h"
 #include "third_party/leveldatabase/src/include/leveldb/status.h"
 
@@ -33,7 +32,7 @@ class LevelDBScope;
 class LevelDBState;
 class ScopesLockManager;
 
-class CONTENT_EXPORT LevelDBScopes {
+class LevelDBScopes {
  public:
   using TearDownCallback = base::RepeatingCallback<void(leveldb::Status)>;
   using EmptyRange = std::pair<std::string, std::string>;
@@ -154,4 +153,4 @@ class CONTENT_EXPORT LevelDBScopes {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_INDEXED_DB_SCOPES_LEVELDB_SCOPES_H_
+#endif  // COMPONENTS_SERVICES_STORAGE_INDEXED_DB_SCOPES_LEVELDB_SCOPES_H_

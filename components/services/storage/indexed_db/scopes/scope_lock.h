@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_INDEXED_DB_SCOPES_SCOPE_LOCK_H_
-#define CONTENT_BROWSER_INDEXED_DB_SCOPES_SCOPE_LOCK_H_
+#ifndef COMPONENTS_SERVICES_STORAGE_INDEXED_DB_SCOPES_SCOPE_LOCK_H_
+#define COMPONENTS_SERVICES_STORAGE_INDEXED_DB_SCOPES_SCOPE_LOCK_H_
 
 #include <iosfwd>
 #include <string>
@@ -12,8 +12,7 @@
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "content/browser/indexed_db/scopes/scope_lock_range.h"
-#include "content/common/content_export.h"
+#include "components/services/storage/indexed_db/scopes/scope_lock_range.h"
 #include "third_party/leveldatabase/src/include/leveldb/comparator.h"
 #include "third_party/leveldatabase/src/include/leveldb/slice.h"
 
@@ -24,7 +23,7 @@ namespace content {
 // |is_locked()| can be used to inquire locked status. Also, |Release()| can
 // be called to manually release the lock, which appropriately updates the
 // |is_locked()| result.
-class CONTENT_EXPORT ScopeLock {
+class ScopeLock {
  public:
   using LockReleasedCallback =
       base::OnceCallback<void(int level, ScopeLockRange range)>;
@@ -74,10 +73,10 @@ std::ostream& operator<<(std::ostream& out, const ScopeLock& range);
 // Equality doesn't take into account whether the lock 'is_locked()' or not,
 // only the level and the range.
 bool operator==(const ScopeLock& x, const ScopeLock& y);
-CONTENT_EXPORT bool operator!=(const ScopeLock& x, const ScopeLock& y);
+bool operator!=(const ScopeLock& x, const ScopeLock& y);
 // Comparison operator to allow sorting for locking / unlocking order.
 bool operator<(const ScopeLock& x, const ScopeLock& y);
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_INDEXED_DB_SCOPES_SCOPE_LOCK_H_
+#endif  // COMPONENTS_SERVICES_STORAGE_INDEXED_DB_SCOPES_SCOPE_LOCK_H_

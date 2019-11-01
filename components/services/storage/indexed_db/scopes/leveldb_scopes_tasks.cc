@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/indexed_db/scopes/leveldb_scopes_tasks.h"
+#include "components/services/storage/indexed_db/scopes/leveldb_scopes_tasks.h"
 
 #include <cinttypes>
 #include <memory>
@@ -13,8 +13,8 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
-#include "content/browser/indexed_db/scopes/leveldb_scopes_coding.h"
-#include "content/browser/indexed_db/scopes/scopes_metadata.pb.h"
+#include "components/services/storage/indexed_db/scopes/leveldb_scopes_coding.h"
+#include "components/services/storage/indexed_db/scopes/scopes_metadata.pb.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "third_party/leveldatabase/src/include/leveldb/iterator.h"
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_INDEXED_DB_SCOPES_LEVELDB_SCOPE_H_
-#define CONTENT_BROWSER_INDEXED_DB_SCOPES_LEVELDB_SCOPE_H_
+#ifndef COMPONENTS_SERVICES_STORAGE_INDEXED_DB_SCOPES_LEVELDB_SCOPE_H_
+#define COMPONENTS_SERVICES_STORAGE_INDEXED_DB_SCOPES_LEVELDB_SCOPE_H_
 
 #include <stdint.h>
 #include <limits>
@@ -20,11 +20,10 @@
 #include "base/numerics/checked_math.h"
 #include "base/sequence_checker.h"
 #include "components/services/storage/indexed_db/leveldb/leveldb_state.h"
-#include "content/browser/indexed_db/scopes/leveldb_scope_deletion_mode.h"
-#include "content/browser/indexed_db/scopes/leveldb_scopes_coding.h"
-#include "content/browser/indexed_db/scopes/scope_lock.h"
-#include "content/browser/indexed_db/scopes/scopes_metadata.pb.h"
-#include "content/common/content_export.h"
+#include "components/services/storage/indexed_db/scopes/leveldb_scope_deletion_mode.h"
+#include "components/services/storage/indexed_db/scopes/leveldb_scopes_coding.h"
+#include "components/services/storage/indexed_db/scopes/scope_lock.h"
+#include "components/services/storage/indexed_db/scopes/scopes_metadata.pb.h"
 #include "third_party/leveldatabase/src/include/leveldb/slice.h"
 #include "third_party/leveldatabase/src/include/leveldb/status.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
@@ -64,7 +63,7 @@ namespace content {
 //
 // This class is not thread safe, and should be used on the same sequence as
 // |LevelDBScopes::CreateScope|.
-class CONTENT_EXPORT LevelDBScope {
+class LevelDBScope {
  public:
   using RollbackCallback =
       base::OnceCallback<leveldb::Status(int64_t scope_id,
@@ -221,4 +220,4 @@ class CONTENT_EXPORT LevelDBScope {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_INDEXED_DB_SCOPES_LEVELDB_SCOPE_H_
+#endif  // COMPONENTS_SERVICES_STORAGE_INDEXED_DB_SCOPES_LEVELDB_SCOPE_H_

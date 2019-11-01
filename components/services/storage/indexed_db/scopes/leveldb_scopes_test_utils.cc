@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/indexed_db/scopes/leveldb_scopes_test_utils.h"
+#include "components/services/storage/indexed_db/scopes/leveldb_scopes_test_utils.h"
 
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"

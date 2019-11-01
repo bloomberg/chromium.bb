@@ -18,7 +18,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
-#include "content/browser/indexed_db/scopes/scope_lock_range.h"
+#include "components/services/storage/indexed_db/scopes/scope_lock_range.h"
 #include "content/common/content_export.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_key.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_key_path.h"

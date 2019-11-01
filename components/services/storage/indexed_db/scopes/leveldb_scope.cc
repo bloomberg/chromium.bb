@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/indexed_db/scopes/leveldb_scope.h"
+#include "components/services/storage/indexed_db/scopes/leveldb_scope.h"
 
 #include <memory>
 #include <sstream>
@@ -11,7 +11,7 @@
 #include "base/debug/stack_trace.h"
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
-#include "content/browser/indexed_db/scopes/leveldb_scopes_coding.h"
+#include "components/services/storage/indexed_db/scopes/leveldb_scopes_coding.h"
 #include "third_party/leveldatabase/src/include/leveldb/comparator.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 

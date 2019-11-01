@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_INDEXED_DB_SCOPES_LEVELDB_SCOPES_TASKS_H_
-#define CONTENT_BROWSER_INDEXED_DB_SCOPES_LEVELDB_SCOPES_TASKS_H_
+#ifndef COMPONENTS_SERVICES_STORAGE_INDEXED_DB_SCOPES_LEVELDB_SCOPES_TASKS_H_
+#define COMPONENTS_SERVICES_STORAGE_INDEXED_DB_SCOPES_LEVELDB_SCOPES_TASKS_H_
 
 #include <stdint.h>
 #include <vector>
@@ -14,7 +14,6 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/sequence_checker.h"
 #include "components/services/storage/indexed_db/leveldb/leveldb_state.h"
-#include "content/common/content_export.h"
 #include "third_party/leveldatabase/src/include/leveldb/status.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
 
@@ -64,7 +63,7 @@ class LevelDBScopesTask {
 //
 // Note: Tasks are constructed on one thread and then Run() and destroyed on a
 // separate thread.
-class CONTENT_EXPORT CleanupScopeTask : private LevelDBScopesTask {
+class CleanupScopeTask : private LevelDBScopesTask {
  public:
   enum class CleanupMode {
     // Used after a scope is committed.
@@ -102,7 +101,7 @@ class CONTENT_EXPORT CleanupScopeTask : private LevelDBScopesTask {
 //
 // Note: Tasks are constructed on one thread and then |Run| and destroyed on a
 // separate thread.
-class CONTENT_EXPORT RevertScopeTask : private LevelDBScopesTask {
+class RevertScopeTask : private LevelDBScopesTask {
  public:
   RevertScopeTask(scoped_refptr<LevelDBState> level_db,
                   std::vector<uint8_t> metadata_prefix,
@@ -119,4 +118,4 @@ class CONTENT_EXPORT RevertScopeTask : private LevelDBScopesTask {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_INDEXED_DB_SCOPES_LEVELDB_SCOPES_TASKS_H_
+#endif  // COMPONENTS_SERVICES_STORAGE_INDEXED_DB_SCOPES_LEVELDB_SCOPES_TASKS_H_

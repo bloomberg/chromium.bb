@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/indexed_db/scopes/leveldb_scopes_factory.h"
+#include "components/services/storage/indexed_db/scopes/leveldb_scopes_factory.h"
 
 #include <utility>
 
 #include "components/services/storage/indexed_db/leveldb/leveldb_state.h"
-#include "content/browser/indexed_db/scopes/leveldb_scopes.h"
+#include "components/services/storage/indexed_db/scopes/leveldb_scopes.h"
 
 namespace content {
 

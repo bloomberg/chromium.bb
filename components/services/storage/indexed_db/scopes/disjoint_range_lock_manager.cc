@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/indexed_db/scopes/disjoint_range_lock_manager.h"
+#include "components/services/storage/indexed_db/scopes/disjoint_range_lock_manager.h"
 
 #include "base/barrier_closure.h"
 #include "base/bind.h"

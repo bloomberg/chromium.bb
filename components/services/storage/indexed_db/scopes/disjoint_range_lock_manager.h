@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_INDEXED_DB_SCOPES_DISJOINT_RANGE_LOCK_MANAGER_H_
-#define CONTENT_BROWSER_INDEXED_DB_SCOPES_DISJOINT_RANGE_LOCK_MANAGER_H_
+#ifndef COMPONENTS_SERVICES_STORAGE_INDEXED_DB_SCOPES_DISJOINT_RANGE_LOCK_MANAGER_H_
+#define COMPONENTS_SERVICES_STORAGE_INDEXED_DB_SCOPES_DISJOINT_RANGE_LOCK_MANAGER_H_
 
 #include <list>
 #include <vector>
@@ -15,8 +15,7 @@
 #include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
-#include "content/browser/indexed_db/scopes/scopes_lock_manager.h"
-#include "content/common/content_export.h"
+#include "components/services/storage/indexed_db/scopes/scopes_lock_manager.h"
 #include "third_party/leveldatabase/src/include/leveldb/comparator.h"
 #include "third_party/leveldatabase/src/include/leveldb/slice.h"
 
@@ -36,7 +35,7 @@ namespace content {
 //   needed (where old locks will continue to be held), then all locks must be
 //   released first, and then all necessary locks acquired in one acquisition
 //   call.
-class CONTENT_EXPORT DisjointRangeLockManager : public ScopesLockManager {
+class DisjointRangeLockManager : public ScopesLockManager {
  public:
   // Creates a lock manager with the given number of levels, the comparator for
   // leveldb keys, and the current task runner that we are running on. The task
@@ -121,4 +120,4 @@ class CONTENT_EXPORT DisjointRangeLockManager : public ScopesLockManager {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_INDEXED_DB_SCOPES_DISJOINT_RANGE_LOCK_MANAGER_H_
+#endif  // COMPONENTS_SERVICES_STORAGE_INDEXED_DB_SCOPES_DISJOINT_RANGE_LOCK_MANAGER_H_

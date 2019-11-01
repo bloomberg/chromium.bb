@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/indexed_db/scopes/leveldb_scopes_tasks.h"
+#include "components/services/storage/indexed_db/scopes/leveldb_scopes_tasks.h"
 
 #include <limits>
 
 #include "base/bind_helpers.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "content/browser/indexed_db/scopes/leveldb_scopes_coding.h"
-#include "content/browser/indexed_db/scopes/leveldb_scopes_test_utils.h"
-#include "content/browser/indexed_db/scopes/scopes_metadata.pb.h"
+#include "components/services/storage/indexed_db/scopes/leveldb_scopes_coding.h"
+#include "components/services/storage/indexed_db/scopes/leveldb_scopes_test_utils.h"
+#include "components/services/storage/indexed_db/scopes/scopes_metadata.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {

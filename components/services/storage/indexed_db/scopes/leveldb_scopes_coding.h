@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_INDEXED_DB_SCOPES_LEVELDB_SCOPES_CODING_H_
-#define CONTENT_BROWSER_INDEXED_DB_SCOPES_LEVELDB_SCOPES_CODING_H_
+#ifndef COMPONENTS_SERVICES_STORAGE_INDEXED_DB_SCOPES_LEVELDB_SCOPES_CODING_H_
+#define COMPONENTS_SERVICES_STORAGE_INDEXED_DB_SCOPES_LEVELDB_SCOPES_CODING_H_
 
 #include <stdint.h>
 #include <limits>
@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "base/containers/span.h"
-#include "content/common/content_export.h"
 #include "third_party/leveldatabase/src/include/leveldb/slice.h"
 
 namespace content {
@@ -37,9 +36,9 @@ static constexpr int64_t kFirstScopeNumber = 0;
 static constexpr int64_t kFirstSequenceNumberToWrite =
     std::numeric_limits<int64_t>::max();
 
-CONTENT_EXPORT std::tuple<bool /*success*/, int64_t /*scope_id*/>
-ParseScopeMetadataId(leveldb::Slice key,
-                     base::span<const uint8_t> scopes_prefix);
+std::tuple<bool /*success*/, int64_t /*scope_id*/> ParseScopeMetadataId(
+    leveldb::Slice key,
+    base::span<const uint8_t> scopes_prefix);
 
 }  // namespace leveldb_scopes
 
@@ -47,7 +46,7 @@ ParseScopeMetadataId(leveldb::Slice key,
 // the internal std::string buffer and return a slice to it.
 // Important: Every call to this class will invalidate any 'old' slices that
 // were returned by previous calls.
-class CONTENT_EXPORT ScopesEncoder {
+class ScopesEncoder {
  public:
   ScopesEncoder() = default;
   ~ScopesEncoder() = default;
@@ -109,4 +108,4 @@ class CONTENT_EXPORT ScopesEncoder {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_INDEXED_DB_SCOPES_LEVELDB_SCOPES_CODING_H_
+#endif  // COMPONENTS_SERVICES_STORAGE_INDEXED_DB_SCOPES_LEVELDB_SCOPES_CODING_H_

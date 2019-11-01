@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/indexed_db/scopes/disjoint_range_lock_manager.h"
+#include "components/services/storage/indexed_db/scopes/disjoint_range_lock_manager.h"
 
 #include "base/barrier_closure.h"
 #include "base/bind.h"
@@ -12,13 +12,40 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "content/browser/indexed_db/scopes/scope_lock.h"
-#include "content/browser/indexed_db/scopes/scope_lock_range.h"
-#include "content/test/barrier_builder.h"
+#include "components/services/storage/indexed_db/scopes/scope_lock.h"
+#include "components/services/storage/indexed_db/scopes/scope_lock_range.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
 namespace {
+
+class BarrierBuilder {
+ public:
+  class ContinuationRef : public base::RefCountedThreadSafe<ContinuationRef> {
+   public:
+    explicit ContinuationRef(base::OnceClosure continuation)
+        : continuation_(std::move(continuation)) {}
+
+   private:
+    friend class base::RefCountedThreadSafe<ContinuationRef>;
+    ~ContinuationRef() = default;
+
+    base::ScopedClosureRunner continuation_;
+  };
+
+  explicit BarrierBuilder(base::OnceClosure continuation)
+      : continuation_(
+            base::MakeRefCounted<ContinuationRef>(std::move(continuation))) {}
+
+  base::OnceClosure AddClosure() {
+    return base::BindOnce([](scoped_refptr<ContinuationRef>) {}, continuation_);
+  }
+
+ private:
+  const scoped_refptr<ContinuationRef> continuation_;
+
+  DISALLOW_COPY_AND_ASSIGN(BarrierBuilder);
+};
 
 template <typename T>
 void SetValue(T* out, T value) {
