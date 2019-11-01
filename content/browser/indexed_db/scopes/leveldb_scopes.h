@@ -15,28 +15,22 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/containers/flat_map.h"
-#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/numerics/checked_math.h"
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
-#include "components/services/storage/indexed_db/leveldb/leveldb_state.h"
 #include "content/browser/indexed_db/scopes/leveldb_scopes_coding.h"
 #include "content/browser/indexed_db/scopes/scope_lock.h"
 #include "content/browser/indexed_db/scopes/scope_lock_range.h"
 #include "content/common/content_export.h"
-#include "third_party/leveldatabase/src/include/leveldb/comparator.h"
-#include "third_party/leveldatabase/src/include/leveldb/db.h"
-#include "third_party/leveldatabase/src/include/leveldb/iterator.h"
-#include "third_party/leveldatabase/src/include/leveldb/slice.h"
+#include "third_party/leveldatabase/src/include/leveldb/options.h"
 #include "third_party/leveldatabase/src/include/leveldb/status.h"
-#include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
 
 namespace content {
 class LevelDBScope;
+class LevelDBState;
 class ScopesLockManager;
 
 class CONTENT_EXPORT LevelDBScopes {

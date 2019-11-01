@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "components/services/storage/indexed_db/leveldb/leveldb_state.h"
 #include "content/browser/indexed_db/scopes/leveldb_scopes.h"
 
 namespace content {

@@ -12,6 +12,8 @@ source_set("storage") {
     "indexed_db/leveldb/leveldb_factory.h",
     "indexed_db/leveldb/leveldb_state.cc",
     "indexed_db/leveldb/leveldb_state.h",
+    "indexed_db/scopes/varint_coding.cc",
+    "indexed_db/scopes/varint_coding.h",
     "origin_context_impl.cc",
     "origin_context_impl.h",
     "partition_impl.cc",
@@ -34,6 +36,7 @@ source_set("tests") {
 
   sources = [
     "dom_storage/dom_storage_database_unittest.cc",
+    "indexed_db/scopes/varint_coding_unittest.cc",
     "partition_impl_unittest.cc",
     "storage_service_impl_unittest.cc",
   ]
