@@ -308,6 +308,11 @@ void RemoteFrame::SetReplicatedOrigin(
   }
 }
 
+void RemoteFrame::DispatchLoadEventForFrameOwner() {
+  DCHECK(Owner()->IsLocal());
+  Owner()->DispatchLoad();
+}
+
 bool RemoteFrame::IsIgnoredForHitTest() const {
   HTMLFrameOwnerElement* owner = DeprecatedLocalOwner();
   if (!owner || !owner->GetLayoutObject())

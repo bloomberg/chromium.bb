@@ -3599,7 +3599,7 @@ void RenderFrameHostImpl::OnDispatchLoad() {
     return;
   }
 
-  proxy->Send(new FrameMsg_DispatchLoad(proxy->GetRoutingID()));
+  proxy->GetAssociatedRemoteFrame()->DispatchLoadEventForFrameOwner();
 }
 
 RenderWidgetHostViewBase* RenderFrameHostImpl::GetViewForAccessibility() {
