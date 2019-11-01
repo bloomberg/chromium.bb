@@ -1063,14 +1063,19 @@ HotseatState ShelfLayoutManager::CalculateHotseatState(
   if (!IsHotseatEnabled() || !shelf_->IsHorizontalAlignment())
     return HotseatState::kShown;
 
-  if (shelf_widget_->is_hotseat_forced_to_show())
-    return HotseatState::kExtended;
-
   auto* app_list_controller = Shell::Get()->app_list_controller();
   const auto* overview_controller = Shell::Get()->overview_controller();
   const bool in_overview =
       overview_controller && overview_controller->InOverviewSession() &&
       !overview_controller->IsCompletingShutdownAnimations();
+  const bool app_list_visible =
+      app_list_controller->IsVisible() ||
+      app_list_controller->GetTargetVisibility() ||
+      (!in_overview && app_list_controller->ShouldHomeLauncherBeVisible());
+
+  if (shelf_widget_->is_hotseat_forced_to_show())
+    return app_list_visible ? HotseatState::kShown : HotseatState::kExtended;
+
   bool in_split_view = false;
   if (in_overview) {
     auto* split_view_controller =
@@ -1089,11 +1094,6 @@ HotseatState ShelfLayoutManager::CalculateHotseatState(
         case AppListControllerImpl::HomeLauncherAnimationState::kFinished:
           // Consider the AppList visible if it is beginning to show. Also
           // detect the case where the last window is being minimized.
-          const bool app_list_visible =
-              app_list_controller->IsVisible() ||
-              app_list_controller->GetTargetVisibility() ||
-              (!in_overview &&
-               app_list_controller->ShouldHomeLauncherBeVisible());
           if (app_list_visible)
             return HotseatState::kShown;
           if (in_split_view)
