@@ -2,10 +2,10 @@
   <head>
     <title>reply</title>
     <script>
-      _myObject.onmessage = function (event) {
+      myObject.onmessage = function (event) {
         document.title = event.data;
       };
-      _myObject.postMessage("Hello");
+      myObject.postMessage("Hello");
     </script>
   </head>
   <body>

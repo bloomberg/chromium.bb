@@ -48,8 +48,8 @@ public class JsJavaInteractionTest {
 
     private static final String HELLO = "Hello";
     private static final String NEW_TITLE = "new_title";
-    private static final String JS_OBJECT_NAME = "_myObject";
-    private static final String JS_OBJECT_NAME_2 = "$myObject2";
+    private static final String JS_OBJECT_NAME = "myObject";
+    private static final String JS_OBJECT_NAME_2 = "myObject2";
     private static final String DATA_HTML = "<html><body>data</body></html>";
     private static final int MESSAGE_COUNT = 10000;
 
@@ -521,22 +521,6 @@ public class JsJavaInteractionTest {
             }
             Assert.assertTrue(ex instanceof IllegalArgumentException);
         }
-    }
-
-    @Test
-    @SmallTest
-    @Feature({"AndroidWebView", "JsJavaInterfaction"})
-    public void testValidateJsObjectName() {
-        Assert.assertFalse(AwContents.validateJsObjectName("myObject"));
-        Assert.assertFalse(AwContents.validateJsObjectName("."));
-        Assert.assertFalse(AwContents.validateJsObjectName("1"));
-        Assert.assertFalse(AwContents.validateJsObjectName("$_ಠ_ಠ"));
-        Assert.assertFalse(AwContents.validateJsObjectName("$你好"));
-
-        Assert.assertTrue(AwContents.validateJsObjectName("_myObject123_"));
-        Assert.assertTrue(AwContents.validateJsObjectName("$myObject"));
-        Assert.assertTrue(AwContents.validateJsObjectName("_"));
-        Assert.assertTrue(AwContents.validateJsObjectName("$"));
     }
 
     @Test
