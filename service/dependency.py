@@ -136,31 +136,35 @@ def GenerateSourcePathMapping(packages, board):
   if board:
     overlay_directories = portage_util.FindOverlays(
         overlay_type='both', board=board)
+  else:
+    # If a board is not specified we assume the package is intended for the SDK
+    # and so we use the overlays for the SDK builder.
+    overlay_directories = portage_util.FindOverlays(
+        overlay_type='both', board=constants.CHROOT_BUILDER_BOARD)
+  # The only parts of the overlay that affect every package are the current
+  # profile (which lives somewhere in the profiles/ subdir) and a top-level
+  # make.conf (if it exists).
+  profile_directories = [
+      os.path.join(x, 'profiles') for x in overlay_directories
+  ]
+  make_conf_paths = [
+      os.path.join(x, 'make.conf') for x in overlay_directories
+  ]
 
-    # The only parts of the overlay that affect every package are the current
-    # profile (which lives somewhere in the profiles/ subdir) and a top-level
-    # make.conf (if it exists).
-    profile_directories = [
-        os.path.join(x, 'profiles') for x in overlay_directories
-    ]
-    make_conf_paths = [
-        os.path.join(x, 'make.conf') for x in overlay_directories
-    ]
+  # These directories *might* affect a build, so we include them for now to
+  # be safe.
+  metadata_directories = [
+      os.path.join(x, 'metadata') for x in overlay_directories
+  ]
+  scripts_directories = [
+      os.path.join(x, 'scripts') for x in overlay_directories
+  ]
 
-    # These directories *might* affect a build, so we include them for now to
-    # be safe.
-    metadata_directories = [
-        os.path.join(x, 'metadata') for x in overlay_directories
-    ]
-    scripts_directories = [
-        os.path.join(x, 'scripts') for x in overlay_directories
-    ]
-
-    for package in results:
-      results[package].extend(profile_directories)
-      results[package].extend(make_conf_paths)
-      results[package].extend(metadata_directories)
-      results[package].extend(scripts_directories)
+  for package in results:
+    results[package].extend(profile_directories)
+    results[package].extend(make_conf_paths)
+    results[package].extend(metadata_directories)
+    results[package].extend(scripts_directories)
 
   # chromiumos-overlay specifies default settings for every target in
   # chromeos/config  and so can potentially affect every board.
