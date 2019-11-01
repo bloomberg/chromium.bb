@@ -111,6 +111,15 @@ class FilmGrain {
       int chroma_width, int chroma_height, GrainType* u_grain,
       GrainType* v_grain);
 
+#if LIBGAV1_ENABLE_NEON
+  template <int auto_regression_coeff_lag>
+  static void ApplyAutoRegressiveFilterToChromaGrains_NEON(
+      const FilmGrainParams& params, int grain_min, int grain_max,
+      const GrainType* luma_grain, int subsampling_x, int subsampling_y,
+      int chroma_width, int chroma_height, GrainType* u_grain,
+      GrainType* v_grain);
+#endif
+
   static void InitializeScalingLookupTable(int num_points,
                                            const uint8_t point_value[],
                                            const uint8_t point_scaling[],
