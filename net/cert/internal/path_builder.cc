@@ -66,24 +66,95 @@ void RecordIterationCountHistogram(uint32_t iteration_count) {
 struct IssuerEntry {
   scoped_refptr<ParsedCertificate> cert;
   CertificateTrust trust;
+  int trust_and_key_id_match_ordering;
 };
 
-// Returns an integer that represents the relative ordering of |trust| for
-// prioritizing certificates in path building. Lower return values indicate
-// higer priority.
-int CertificateTrustToOrder(const CertificateTrust& trust) {
-  switch (trust.type) {
-    case CertificateTrustType::TRUSTED_ANCHOR:
-    case CertificateTrustType::TRUSTED_ANCHOR_WITH_CONSTRAINTS:
-      return 1;
-    case CertificateTrustType::UNSPECIFIED:
-      return 2;
-    case CertificateTrustType::DISTRUSTED:
-      return 4;
+enum KeyIdentifierMatch {
+  // |target| has a keyIdentifier and it matches |issuer|'s
+  // subjectKeyIdentifier.
+  kMatch = 0,
+  // |target| does not have authorityKeyIdentifier or |issuer| does not have
+  // subjectKeyIdentifier.
+  kNoData = 1,
+  // |target|'s authorityKeyIdentifier does not match |issuer|.
+  kMismatch = 2,
+};
+
+// Returns an integer that represents the relative ordering of |issuer| for
+// prioritizing certificates in path building based on |issuer|'s
+// subjectKeyIdentifier and |target|'s authorityKeyIdentifier. Lower return
+// values indicate higer priority.
+KeyIdentifierMatch CalculateKeyIdentifierMatch(
+    const ParsedCertificate* target,
+    const ParsedCertificate* issuer) {
+  if (!target->authority_key_identifier())
+    return kNoData;
+
+  // TODO(crbug.com/635205): If issuer does not have a subjectKeyIdentifier,
+  // could try synthesizing one using the standard SHA-1 method. Ideally in a
+  // way where any issuers that do have a matching subjectKeyIdentifier could
+  // be tried first before doing the extra work.
+  if (target->authority_key_identifier()->key_identifier &&
+      issuer->subject_key_identifier()) {
+    if (target->authority_key_identifier()->key_identifier !=
+        issuer->subject_key_identifier().value()) {
+      return kMismatch;
+    }
+    return kMatch;
   }
 
-  NOTREACHED();
-  return 5;
+  return kNoData;
+}
+
+// Returns an integer that represents the relative ordering of |issuer| based
+// on |issuer_trust| and authorityKeyIdentifier matching for prioritizing
+// certificates in path building. Lower return values indicate higer priority.
+int TrustAndKeyIdentifierMatchToOrder(const ParsedCertificate* target,
+                                      const ParsedCertificate* issuer,
+                                      const CertificateTrust& issuer_trust) {
+  enum {
+    kTrustedAndKeyIdMatch = 0,
+    kTrustedAndKeyIdNoData = 1,
+    kKeyIdMatch = 2,
+    kKeyIdNoData = 3,
+    kTrustedAndKeyIdMismatch = 4,
+    kKeyIdMismatch = 5,
+    kDistrustedAndKeyIdMatch = 6,
+    kDistrustedAndKeyIdNoData = 7,
+    kDistrustedAndKeyIdMismatch = 8,
+  };
+
+  KeyIdentifierMatch key_id_match = CalculateKeyIdentifierMatch(target, issuer);
+  switch (issuer_trust.type) {
+    case CertificateTrustType::TRUSTED_ANCHOR:
+    case CertificateTrustType::TRUSTED_ANCHOR_WITH_CONSTRAINTS:
+      switch (key_id_match) {
+        case kMatch:
+          return kTrustedAndKeyIdMatch;
+        case kNoData:
+          return kTrustedAndKeyIdNoData;
+        case kMismatch:
+          return kTrustedAndKeyIdMismatch;
+      }
+    case CertificateTrustType::UNSPECIFIED:
+      switch (key_id_match) {
+        case kMatch:
+          return kKeyIdMatch;
+        case kNoData:
+          return kKeyIdNoData;
+        case kMismatch:
+          return kKeyIdMismatch;
+      }
+    case CertificateTrustType::DISTRUSTED:
+      switch (key_id_match) {
+        case kMatch:
+          return kDistrustedAndKeyIdMatch;
+        case kNoData:
+          return kDistrustedAndKeyIdNoData;
+        case kMismatch:
+          return kDistrustedAndKeyIdMismatch;
+      }
+  }
 }
 
 // CertIssuersIter iterates through the intermediates from |cert_issuer_sources|
@@ -228,6 +299,8 @@ void CertIssuersIter::AddIssuers(ParsedCertificateList new_issuers) {
     IssuerEntry entry;
     entry.cert = std::move(issuer);
     trust_store_->GetTrust(entry.cert, &entry.trust, debug_data_);
+    entry.trust_and_key_id_match_ordering = TrustAndKeyIdentifierMatchToOrder(
+        cert(), entry.cert.get(), entry.trust);
 
     issuers_.push_back(std::move(entry));
     issuers_needs_sort_ = true;
@@ -257,15 +330,15 @@ void CertIssuersIter::SortRemainingIssuers() {
       [](const IssuerEntry& issuer1, const IssuerEntry& issuer2) {
         // TODO(crbug.com/635205): Add other prioritization hints. (See big list
         // of possible sorting hints in RFC 4158.)
-        return std::make_tuple(CertificateTrustToOrder(issuer1.trust),
-                               // Newer(larger) notBefore & notAfter dates are
-                               // preferred, hence |issuer2| is on the LHS of
-                               // the comparison and |issuer1| on the RHS.
-                               issuer2.cert->tbs().validity_not_before,
-                               issuer2.cert->tbs().validity_not_after) <
-               std::make_tuple(CertificateTrustToOrder(issuer2.trust),
-                               issuer1.cert->tbs().validity_not_before,
-                               issuer1.cert->tbs().validity_not_after);
+        return std::tie(issuer1.trust_and_key_id_match_ordering,
+                        // Newer(larger) notBefore & notAfter dates are
+                        // preferred, hence |issuer2| is on the LHS of
+                        // the comparison and |issuer1| on the RHS.
+                        issuer2.cert->tbs().validity_not_before,
+                        issuer2.cert->tbs().validity_not_after) <
+               std::tie(issuer2.trust_and_key_id_match_ordering,
+                        issuer1.cert->tbs().validity_not_before,
+                        issuer1.cert->tbs().validity_not_after);
       });
 
   issuers_needs_sort_ = false;

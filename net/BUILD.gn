@@ -3944,6 +3944,20 @@ bundle_data("net_unittests_bundle_data") {
     "data/ov_name_constraints/nc-int-permit-o1.pem",
     "data/ov_name_constraints/nc-int-permit-o2-o1-o3.pem",
     "data/ov_name_constraints/root.pem",
+    "data/parse_certificate_unittest/authority_key_identifier/empty_sequence.pem",
+    "data/parse_certificate_unittest/authority_key_identifier/extra_contents_after_extension_sequence.pem",
+    "data/parse_certificate_unittest/authority_key_identifier/extra_contents_after_issuer_and_serial.pem",
+    "data/parse_certificate_unittest/authority_key_identifier/invalid_contents.pem",
+    "data/parse_certificate_unittest/authority_key_identifier/invalid_issuer.pem",
+    "data/parse_certificate_unittest/authority_key_identifier/invalid_key_identifier.pem",
+    "data/parse_certificate_unittest/authority_key_identifier/invalid_serial.pem",
+    "data/parse_certificate_unittest/authority_key_identifier/issuer_and_serial.pem",
+    "data/parse_certificate_unittest/authority_key_identifier/issuer_only.pem",
+    "data/parse_certificate_unittest/authority_key_identifier/key_identifier.pem",
+    "data/parse_certificate_unittest/authority_key_identifier/key_identifier_and_issuer_and_serial.pem",
+    "data/parse_certificate_unittest/authority_key_identifier/serial_only.pem",
+    "data/parse_certificate_unittest/authority_key_identifier/url_issuer_and_serial.pem",
+    "data/parse_certificate_unittest/authority_key_identifier_not_sequence.pem",
     "data/parse_certificate_unittest/bad_key_usage.pem",
     "data/parse_certificate_unittest/bad_policy_qualifiers.pem",
     "data/parse_certificate_unittest/bad_signature_algorithm_oid.pem",
@@ -4001,6 +4015,7 @@ bundle_data("net_unittests_bundle_data") {
     "data/parse_certificate_unittest/signature_algorithm_null.pem",
     "data/parse_certificate_unittest/subject_alt_name.pem",
     "data/parse_certificate_unittest/subject_blank_subjectaltname_not_critical.pem",
+    "data/parse_certificate_unittest/subject_key_identifier_not_octet_string.pem",
     "data/parse_certificate_unittest/subject_not_ascii.pem",
     "data/parse_certificate_unittest/subject_not_printable_string.pem",
     "data/parse_certificate_unittest/subject_printable_string_containing_utf8_client_cert.pem",
@@ -4033,6 +4048,23 @@ bundle_data("net_unittests_bundle_data") {
     "data/parse_certificate_unittest/tbs_validity_utc_time_and_generalized_time.pem",
     "data/parse_certificate_unittest/v1_explicit_version.pem",
     "data/parse_certificate_unittest/v3_certificate_template.pk8",
+    "data/path_builder_unittest/key_id_name_and_serial_prioritization/int_match_name_only.pem",
+    "data/path_builder_unittest/key_id_name_and_serial_prioritization/int_matching.pem",
+    "data/path_builder_unittest/key_id_name_and_serial_prioritization/int_mismatch.pem",
+    "data/path_builder_unittest/key_id_name_and_serial_prioritization/root.pem",
+    "data/path_builder_unittest/key_id_name_and_serial_prioritization/root2.pem",
+    "data/path_builder_unittest/key_id_name_and_serial_prioritization/target.pem",
+    "data/path_builder_unittest/key_id_prioritization/int_different_ski_a.pem",
+    "data/path_builder_unittest/key_id_prioritization/int_different_ski_b.pem",
+    "data/path_builder_unittest/key_id_prioritization/int_different_ski_c.pem",
+    "data/path_builder_unittest/key_id_prioritization/int_matching_ski_a.pem",
+    "data/path_builder_unittest/key_id_prioritization/int_matching_ski_b.pem",
+    "data/path_builder_unittest/key_id_prioritization/int_matching_ski_c.pem",
+    "data/path_builder_unittest/key_id_prioritization/int_no_ski_a.pem",
+    "data/path_builder_unittest/key_id_prioritization/int_no_ski_b.pem",
+    "data/path_builder_unittest/key_id_prioritization/int_no_ski_c.pem",
+    "data/path_builder_unittest/key_id_prioritization/root.pem",
+    "data/path_builder_unittest/key_id_prioritization/target.pem",
     "data/path_builder_unittest/validity_date_prioritization/int_ac.pem",
     "data/path_builder_unittest/validity_date_prioritization/int_ad.pem",
     "data/path_builder_unittest/validity_date_prioritization/int_bc.pem",
@@ -6430,6 +6462,17 @@ fuzzer_test("net_cert_ocsp_parse_ocsp_response_fuzzer") {
     "cert/internal/ocsp_parse_ocsp_response_fuzzer.cc",
   ]
   seed_corpus = "data/fuzzer_data/parse_ocsp_response_fuzzer"
+  deps = [
+    "//base",
+    "//net",
+  ]
+}
+
+fuzzer_test("net_cert_parse_authority_key_identifier_fuzzer") {
+  sources = [
+    "cert/internal/parse_authority_key_identifier_fuzzer.cc",
+  ]
+  seed_corpus = "data/fuzzer_data/parse_authority_key_identifier_fuzzer"
   deps = [
     "//base",
     "//net",
