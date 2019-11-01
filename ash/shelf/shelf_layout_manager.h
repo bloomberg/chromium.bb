@@ -397,17 +397,21 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
   void StopAnimating();
 
   // Calculates shelf target bounds assuming visibility of
-  // |state.visibilty_state|.
+  // |state.visibilty_state| and |hotseat_target_state|.
   void CalculateTargetBounds(const State& state,
-                             TargetBounds* target_bounds) const;
+                             TargetBounds* target_bounds,
+                             HotseatState hotseat_target_state) const;
 
-  // Calculate the target bounds using |state_|, and updates the
-  // |user_work_area_bounds_|.
-  void CalculateTargetBoundsAndUpdateWorkArea(TargetBounds* target_bounds);
+  // Calculates the target bounds using |state_|, |hotseat_target_state|, and
+  // updates the |user_work_area_bounds_|.
+  void CalculateTargetBoundsAndUpdateWorkArea(
+      TargetBounds* target_bounds,
+      HotseatState hotseat_target_state);
 
   // Updates the target bounds if a gesture-drag is in progress. This is only
   // used by |CalculateTargetBounds()|.
-  void UpdateTargetBoundsForGesture(TargetBounds* target_bounds) const;
+  void UpdateTargetBoundsForGesture(TargetBounds* target_bounds,
+                                    HotseatState target_hotseat_state) const;
 
   // Updates the auto hide state immediately.
   void UpdateAutoHideStateNow();

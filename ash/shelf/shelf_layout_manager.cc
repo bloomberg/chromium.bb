@@ -774,7 +774,7 @@ void ShelfLayoutManager::ResumeVisiblityUpdate() {
   UpdateVisibilityState();
 
   TargetBounds target_bounds;
-  CalculateTargetBoundsAndUpdateWorkArea(&target_bounds);
+  CalculateTargetBoundsAndUpdateWorkArea(&target_bounds, hotseat_state());
   UpdateBoundsAndOpacity(target_bounds, /*animate=*/true, nullptr);
 
   MaybeUpdateShelfBackground(AnimationChangeType::ANIMATE);
@@ -924,7 +924,7 @@ void ShelfLayoutManager::OnSessionStateChanged(
     UpdateShelfVisibilityAfterLoginUIChange();
 
   TargetBounds target_bounds;
-  CalculateTargetBoundsAndUpdateWorkArea(&target_bounds);
+  CalculateTargetBoundsAndUpdateWorkArea(&target_bounds, hotseat_state());
   UpdateBoundsAndOpacity(target_bounds, true /* animate */, nullptr);
   UpdateVisibilityState();
 }
@@ -946,7 +946,7 @@ void ShelfLayoutManager::OnDisplayMetricsChanged(
     uint32_t changed_metrics) {
   // Update |user_work_area_bounds_| for the new display arrangement.
   TargetBounds target_bounds;
-  CalculateTargetBoundsAndUpdateWorkArea(&target_bounds);
+  CalculateTargetBoundsAndUpdateWorkArea(&target_bounds, hotseat_state());
 }
 
 void ShelfLayoutManager::OnLocaleChanged() {
@@ -1000,8 +1000,6 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
   for (auto& observer : observers_)
     observer.WillChangeVisibilityState(visibility_state);
 
-  shelf_widget_->hotseat_widget()->SetState(hotseat_new_state);
-
   StopAutoHideTimer();
 
   State old_state = state_;
@@ -1041,7 +1039,7 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
   }
 
   TargetBounds target_bounds;
-  CalculateTargetBoundsAndUpdateWorkArea(&target_bounds);
+  CalculateTargetBoundsAndUpdateWorkArea(&target_bounds, hotseat_new_state);
   UpdateBoundsAndOpacity(
       target_bounds, true /* animate */,
       delay_background_change ? update_shelf_observer_ : nullptr);
@@ -1055,6 +1053,7 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
     for (auto& observer : observers_)
       observer.OnAutoHideStateChanged(state_.auto_hide_state);
   }
+  shelf_widget_->hotseat_widget()->SetState(hotseat_new_state);
 }
 
 HotseatState ShelfLayoutManager::CalculateHotseatState(
@@ -1204,7 +1203,7 @@ ShelfVisibilityState ShelfLayoutManager::CalculateShelfVisibility() {
 
 void ShelfLayoutManager::LayoutShelfAndUpdateBounds() {
   TargetBounds target_bounds;
-  CalculateTargetBoundsAndUpdateWorkArea(&target_bounds);
+  CalculateTargetBoundsAndUpdateWorkArea(&target_bounds, hotseat_state());
   UpdateBoundsAndOpacity(target_bounds, false, nullptr);
 
   // Update insets in ShelfWindowTargeter when shelf bounds change.
@@ -1407,7 +1406,8 @@ void ShelfLayoutManager::StopAnimating() {
 
 void ShelfLayoutManager::CalculateTargetBounds(
     const State& state,
-    TargetBounds* target_bounds) const {
+    TargetBounds* target_bounds,
+    HotseatState hotseat_target_state) const {
   const int shelf_size = ShelfConfig::Get()->shelf_size();
   const int home_button_edge_spacing =
       ShelfConfig::Get()->home_button_edge_spacing();
@@ -1475,7 +1475,7 @@ void ShelfLayoutManager::CalculateTargetBounds(
   if (shelf_->IsHorizontalAlignment()) {
     int hotseat_distance_from_bottom_of_display;
     const int hotseat_size = ShelfConfig::Get()->hotseat_size();
-    switch (hotseat_state()) {
+    switch (hotseat_target_state) {
       case HotseatState::kShown: {
         // When the hotseat state is HotseatState::kShown in tablet mode, the
         // home launcher is showing. Elevate the hotseat a few px to match the
@@ -1506,7 +1506,7 @@ void ShelfLayoutManager::CalculateTargetBounds(
                               home_button_edge_spacing - hotseat_width
                         : target_bounds->nav_bounds_in_shelf.right() +
                               home_button_edge_spacing;
-    if (hotseat_state() != HotseatState::kShown) {
+    if (hotseat_target_state != HotseatState::kShown) {
       // Give the hotseat more space if it is shown outside of the shelf.
       hotseat_width = available_bounds.width();
       hotseat_x = 0;
@@ -1530,7 +1530,7 @@ void ShelfLayoutManager::CalculateTargetBounds(
   target_bounds->opacity = ComputeTargetOpacity(state);
 
   if (drag_status_ == kDragInProgress)
-    UpdateTargetBoundsForGesture(target_bounds);
+    UpdateTargetBoundsForGesture(target_bounds, hotseat_target_state);
 
   target_bounds->shelf_insets = SelectValueForShelfAlignment(
       gfx::Insets(0, 0, GetShelfInset(state.visibility_state, shelf_height), 0),
@@ -1569,8 +1569,9 @@ void ShelfLayoutManager::CalculateTargetBounds(
 }
 
 void ShelfLayoutManager::CalculateTargetBoundsAndUpdateWorkArea(
-    TargetBounds* target_bounds) {
-  CalculateTargetBounds(state_, target_bounds);
+    TargetBounds* target_bounds,
+    HotseatState hotseat_target_state) {
+  CalculateTargetBounds(state_, target_bounds, hotseat_target_state);
   WorkAreaInsets::ForWindow(shelf_widget_->GetNativeWindow())
       ->SetShelfBoundsAndInsets(target_bounds->shelf_bounds,
                                 target_bounds->shelf_insets);
@@ -1579,7 +1580,8 @@ void ShelfLayoutManager::CalculateTargetBoundsAndUpdateWorkArea(
 }
 
 void ShelfLayoutManager::UpdateTargetBoundsForGesture(
-    TargetBounds* target_bounds) const {
+    TargetBounds* target_bounds,
+    HotseatState hotseat_target_state) const {
   // TODO(https://crbug.com/1002132): Add tests for the hotseat bounds logic.
   CHECK_EQ(kDragInProgress, drag_status_);
   const bool horizontal = shelf_->IsHorizontalAlignment();
@@ -1651,13 +1653,14 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
     const int hotseat_extended_y =
         Shell::Get()->shelf_config()->hotseat_size() +
         Shell::Get()->shelf_config()->hotseat_bottom_padding();
-    const int hotseat_baseline = (hotseat_state() == HotseatState::kExtended)
-                                     ? -hotseat_extended_y
-                                     : shelf_size;
-    bool use_hotseat_baseline = (hotseat_state() == HotseatState::kExtended &&
-                                 visibility_state() == SHELF_AUTO_HIDE) ||
-                                (hotseat_state() == HotseatState::kHidden &&
-                                 visibility_state() != SHELF_AUTO_HIDE);
+    const int hotseat_baseline =
+        (hotseat_target_state == HotseatState::kExtended) ? -hotseat_extended_y
+                                                          : shelf_size;
+    bool use_hotseat_baseline =
+        (hotseat_target_state == HotseatState::kExtended &&
+         visibility_state() == SHELF_AUTO_HIDE) ||
+        (hotseat_target_state == HotseatState::kHidden &&
+         visibility_state() != SHELF_AUTO_HIDE);
     hotseat_y = std::max(
         -hotseat_extended_y,
         static_cast<int>((use_hotseat_baseline ? hotseat_baseline : 0) +
