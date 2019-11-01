@@ -33,6 +33,49 @@
 #endif
 
 static FcConfig    *_fcConfig; /* MT-safe */
+static FcMutex	   *_lock;
+
+static void
+lock_config (void)
+{
+    FcMutex *lock;
+retry:
+    lock = fc_atomic_ptr_get (&_lock);
+    if (!lock)
+    {
+	lock = (FcMutex *) malloc (sizeof (FcMutex));
+	FcMutexInit (lock);
+	if (!fc_atomic_ptr_cmpexch (&_lock, NULL, lock))
+	{
+	    FcMutexFinish (lock);
+	    goto retry;
+	}
+	FcMutexLock (lock);
+	/* Initialize random state */
+	FcRandom ();
+	return;
+    }
+    FcMutexLock (lock);
+}
+
+static void
+unlock_config (void)
+{
+    FcMutexUnlock (_lock);
+}
+
+static void
+free_lock (void)
+{
+    FcMutex *lock;
+
+    lock = fc_atomic_ptr_get (&_lock);
+    if (lock && fc_atomic_ptr_cmpexch (&_lock, lock, NULL))
+    {
+	FcMutexFinish (lock);
+	free (lock);
+    }
+}
 
 static FcConfig *
 FcConfigEnsure (void)
@@ -44,8 +87,9 @@ retry:
     {
 	config = FcInitLoadConfigAndFonts ();
 
-	if (!fc_atomic_ptr_cmpexch (&_fcConfig, NULL, config)) {
-	    FcConfigDestroy (config);
+	if (!config || !fc_atomic_ptr_cmpexch (&_fcConfig, NULL, config)) {
+	    if (config)
+		FcConfigDestroy (config);
 	    goto retry;
 	}
     }
@@ -76,6 +120,7 @@ FcConfigFini (void)
     FcConfig *cfg = fc_atomic_ptr_get (&_fcConfig);
     if (cfg && fc_atomic_ptr_cmpexch (&_fcConfig, cfg, NULL))
 	FcConfigDestroy (cfg);
+    free_lock ();
 }
 
 static FcChar8 *
@@ -297,27 +342,31 @@ FcConfigReference (FcConfig *config)
 {
     if (!config)
     {
-	/* Do not use FcConfigGetCurrent () for the purpose of obtaining current FcConfig here.
-	 * because the reference counter must be increased before setting it to _fcConfig.
+	/* lock during obtaining the value from _fcConfig and count up refcount there,
+	 * there are the race between them.
 	 */
+	lock_config ();
     retry:
 	config = fc_atomic_ptr_get (&_fcConfig);
 	if (!config)
 	{
-	    config = FcConfigCreate ();
-	    FcRefInc (&config->ref);
+	    unlock_config ();
 
-	    config = FcInitLoadOwnConfigAndFonts (config);
+	    config = FcInitLoadConfigAndFonts ();
+	    if (!config)
+		goto retry;
+	    lock_config ();
 	    if (!fc_atomic_ptr_cmpexch (&_fcConfig, NULL, config))
 	    {
-		FcConfigDestroy (config); /* To decrease the refcount for the above one. */
-		FcConfigDestroy (config); /* To destroy it actualy */
+		FcConfigDestroy (config);
 		goto retry;
 	    }
-	    return config;
 	}
+	FcRefInc (&config->ref);
+	unlock_config ();
     }
-    FcRefInc (&config->ref);
+    else
+	FcRefInc (&config->ref);
 
     return config;
 }
@@ -529,20 +578,29 @@ FcConfigSetCurrent (FcConfig *config)
 {
     FcConfig *cfg;
 
+    if (config)
+    {
+	if (!config->fonts[FcSetSystem])
+	    if (!FcConfigBuildFonts (config))
+		return FcFalse;
+	FcRefInc (&config->ref);
+    }
+
+    lock_config ();
 retry:
     cfg = fc_atomic_ptr_get (&_fcConfig);
 
     if (config == cfg)
+    {
+	unlock_config ();
+	if (config)
+	    FcConfigDestroy (config);
 	return FcTrue;
-
-    if (config && !config->fonts[FcSetSystem])
-	if (!FcConfigBuildFonts (config))
-	    return FcFalse;
+    }
 
     if (!fc_atomic_ptr_cmpexch (&_fcConfig, cfg, config))
 	goto retry;
-
-    FcConfigReference (config);
+    unlock_config ();
     if (cfg)
 	FcConfigDestroy (cfg);
 
@@ -2649,7 +2707,9 @@ FcConfigSetSysRoot (FcConfig      *config,
 {
     FcChar8 *s = NULL;
     FcBool init = FcFalse;
+    int nretry = 3;
 
+retry:
     if (!config)
     {
 	/* We can't use FcConfigGetCurrent() here to ensure
@@ -2681,6 +2741,17 @@ FcConfigSetSysRoot (FcConfig      *config,
     if (init)
     {
 	config = FcInitLoadOwnConfigAndFonts (config);
+	if (!config)
+	{
+	    /* Something failed. this is usually unlikely. so retrying */
+	    init = FcFalse;
+	    if (--nretry == 0)
+	    {
+		fprintf (stderr, "Fontconfig warning: Unable to initialize config and retry limit exceeded. sysroot functionality may not work as expected.\n");
+		return;
+	    }
+	    goto retry;
+	}
 	FcConfigSetCurrent (config);
 	/* FcConfigSetCurrent() increases the refcount.
 	 * decrease it here to avoid the memory leak.

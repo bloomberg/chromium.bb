@@ -1085,6 +1085,8 @@ FcDirCacheLoadFile (const FcChar8 *cache_file, struct stat *file_stat)
     if (fd < 0)
 	return NULL;
     config = FcConfigReference (NULL);
+    if (!config)
+	return NULL;
     cache = FcDirCacheMapFd (config, fd, file_stat, NULL);
     FcConfigDestroy (config);
     close (fd);
