@@ -563,31 +563,6 @@ public class ChromePreferenceManager {
     }
 
     /**
-     * Writes the given long to the named shared preference.
-     *
-     * @param key The name of the preference to modify.
-     * @param value The new value for the preference.
-     * @deprecated Use {@link SharedPreferencesManager} instead.
-     */
-    @Deprecated
-    public void writeLong(String key, long value) {
-        mManager.writeLong(key, value);
-    }
-
-    /**
-     * Reads the given long value from the named shared preference.
-     *
-     * @param key The name of the preference to return.
-     * @param defaultValue The default value to return if there's no value stored.
-     * @return The value of the preference if stored; defaultValue otherwise.
-     * @deprecated Use {@link SharedPreferencesManager} instead.
-     */
-    @Deprecated
-    public long readLong(String key, long defaultValue) {
-        return mManager.readLong(key, defaultValue);
-    }
-
-    /**
      * Writes the given boolean to the named shared preference.
      *
      * @param key The name of the preference to modify.
