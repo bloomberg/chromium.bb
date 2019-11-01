@@ -927,6 +927,7 @@ apps::mojom::AppPtr ExtensionApps::Convert(
                              : apps::mojom::OptionalBool::kFalse;
   app->recommendable = apps::mojom::OptionalBool::kTrue;
   app->searchable = apps::mojom::OptionalBool::kTrue;
+  app->paused = apps::mojom::OptionalBool::kFalse;
   SetShowInFields(app, extension, profile_);
 
   // Get the intent filters for PWAs.

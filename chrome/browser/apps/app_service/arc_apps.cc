@@ -623,6 +623,8 @@ apps::mojom::AppPtr ArcApps::Convert(ArcAppListPrefs* prefs,
   app->show_in_search = show;
   app->show_in_management = show;
 
+  app->paused = apps::mojom::OptionalBool::kFalse;
+
   std::unique_ptr<ArcAppListPrefs::PackageInfo> package =
       prefs->GetPackage(app_info.package_name);
   if (package) {

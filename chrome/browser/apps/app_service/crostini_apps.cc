@@ -293,6 +293,8 @@ apps::mojom::AppPtr CrostiniApps::Convert(
   // Management.
   app->show_in_management = apps::mojom::OptionalBool::kFalse;
 
+  app->paused = apps::mojom::OptionalBool::kFalse;
+
   return app;
 }
 
