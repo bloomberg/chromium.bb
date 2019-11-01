@@ -31,6 +31,7 @@
 #include "src/dsp/dsp.h"
 #include "src/dsp/film_grain_impl.h"
 #include "src/utils/common.h"
+#include "src/utils/compiler_attributes.h"
 #include "src/utils/logging.h"
 
 namespace libgav1 {
@@ -612,7 +613,7 @@ void FilmGrain<bitdepth>::ApplyAutoRegressiveFilterToChromaGrains_NEON(
 template <int bitdepth>
 bool FilmGrain<bitdepth>::Init_NEON() {
   // Section 7.18.3.3. Generate grain process.
-  GenerateLumaGrain(params_, luma_grain_);
+
   using LumaAutoRegressionFunc =
       void (*)(const FilmGrainParams& params, int grain_min, int grain_max,
                GrainType* luma_grain);
@@ -620,9 +621,19 @@ bool FilmGrain<bitdepth>::Init_NEON() {
       FilmGrain<bitdepth>::ApplyAutoRegressiveFilterToLumaGrain_NEON<1>,
       FilmGrain<bitdepth>::ApplyAutoRegressiveFilterToLumaGrain_NEON<2>,
       FilmGrain<bitdepth>::ApplyAutoRegressiveFilterToLumaGrain_NEON<3>};
-  if (params_.auto_regression_coeff_lag > 0 && params_.num_y_points > 0) {
-    kAutoRegressionFuncTableLuma[params_.auto_regression_coeff_lag - 1](
-        params_, GetGrainMin<bitdepth>(), GetGrainMax<bitdepth>(), luma_grain_);
+  // If params_.num_y_points is 0, luma_grain_ will never be read, so we don't
+  // need to generate it.
+  if (params_.num_y_points > 0) {
+    GenerateLumaGrain(params_, luma_grain_);
+    // If params_.auto_regression_coeff_lag is 0, the filter is the identity
+    // filter and therefore can be skipped.
+    if (params_.auto_regression_coeff_lag > 0) {
+      kAutoRegressionFuncTableLuma[params_.auto_regression_coeff_lag - 1](
+          params_, GetGrainMin<bitdepth>(), GetGrainMax<bitdepth>(),
+          luma_grain_);
+    }
+  } else {
+    ASAN_POISON_MEMORY_REGION(luma_grain_, sizeof(luma_grain_));
   }
   using ChromaAutoRegressionFunc =
       void (*)(const FilmGrainParams& params, int grain_min, int grain_max,
@@ -637,15 +648,30 @@ bool FilmGrain<bitdepth>::Init_NEON() {
   if (!is_monochrome_) {
     GenerateChromaGrains(params_, chroma_width_, chroma_height_, u_grain_,
                          v_grain_);
-    kAutoRegressionFuncTableChroma[params_.auto_regression_coeff_lag](
-        params_, GetGrainMin<bitdepth>(), GetGrainMax<bitdepth>(), luma_grain_,
-        subsampling_x_, subsampling_y_, chroma_width_, chroma_height_, u_grain_,
-        v_grain_);
+    if (params_.auto_regression_coeff_lag > 0 || params_.num_y_points > 0) {
+      kAutoRegressionFuncTableChroma[params_.auto_regression_coeff_lag](
+          params_, GetGrainMin<bitdepth>(), GetGrainMax<bitdepth>(),
+          luma_grain_, subsampling_x_, subsampling_y_, chroma_width_,
+          chroma_height_, u_grain_, v_grain_);
+    }
   }
 
   // Section 7.18.3.4. Scaling lookup initialization process.
-  InitializeScalingLookupTable(params_.num_y_points, params_.point_y_value,
-                               params_.point_y_scaling, scaling_lut_y_);
+
+  // Initialize scaling_lut_y_. If params_.num_y_points > 0, scaling_lut_y_
+  // is used for the Y plane. If params_.chroma_scaling_from_luma is true,
+  // scaling_lut_u_ and scaling_lut_v_ are the same as scaling_lut_y_ and are
+  // set up as aliases. So we need to initialize scaling_lut_y_ under these
+  // two conditions.
+  //
+  // Note: Although it does not seem to make sense, there are test vectors
+  // with chroma_scaling_from_luma=true and params_.num_y_points=0.
+  if (params_.num_y_points > 0 || params_.chroma_scaling_from_luma) {
+    InitializeScalingLookupTable(params_.num_y_points, params_.point_y_value,
+                                 params_.point_y_scaling, scaling_lut_y_);
+  } else {
+    ASAN_POISON_MEMORY_REGION(scaling_lut_y_, sizeof(scaling_lut_y_));
+  }
   if (!is_monochrome_) {
     if (params_.chroma_scaling_from_luma) {
       scaling_lut_u_ = scaling_lut_y_;
