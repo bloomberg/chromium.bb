@@ -158,12 +158,14 @@ void KeyboardShortcutItemView::GetAccessibleNodeData(
 }
 
 int KeyboardShortcutItemView::GetHeightForWidth(int w) const {
-  MaybeCalculateAndDoLayout(w);
+  CalculateLayout(w);
   return calculated_size_.height();
 }
 
 void KeyboardShortcutItemView::Layout() {
-  MaybeCalculateAndDoLayout(width());
+  CalculateLayout(width());
+  description_label_view_->SetBoundsRect(description_bounds_);
+  shortcut_label_view_->SetBoundsRect(shortcut_bounds_);
 }
 
 // static
@@ -179,16 +181,14 @@ KeyboardShortcutItemView::GetKeycodeToString16Cache() {
   return key_code_to_string16_cache.get();
 }
 
-void KeyboardShortcutItemView::MaybeCalculateAndDoLayout(int width) const {
+void KeyboardShortcutItemView::CalculateLayout(int width) const {
   if (width == calculated_size_.width())
     return;
 
-  TRACE_EVENT0("shortcut_viewer", "MaybeCalculateAndDoLayout");
+  TRACE_EVENT0("shortcut_viewer", "CalculateLayout");
 
   const gfx::Insets insets = GetInsets();
-  const int content_width = width - insets.width();
-  if (content_width <= 0)
-    return;
+  const int content_width = std::max(width - insets.width(), 0);
 
   // The max width of |shortcut_label_view_| as a ratio of its parent view's
   // width. This value is chosen to put all the bubble views in one line.
@@ -239,13 +239,12 @@ void KeyboardShortcutItemView::MaybeCalculateAndDoLayout(int width) const {
       shortcut_top_line_center_y - description_top_line_center_y;
 
   // Left align the |description_label_view_|.
-  description_label_view_->SetBounds(insets.left(),
-                                     insets.top() + description_delta_y,
-                                     description_width, description_height);
+  description_bounds_ =
+      gfx::Rect(insets.left(), insets.top() + description_delta_y,
+                description_width, description_height);
   // Right align the |shortcut_label_view_|.
-  shortcut_label_view_->SetBounds(
-      insets.left() + content_width - shortcut_width, insets.top(),
-      shortcut_width, shortcut_height);
+  shortcut_bounds_ = gfx::Rect(insets.left() + content_width - shortcut_width,
+                               insets.top(), shortcut_width, shortcut_height);
   // Add 2 * |description_delta_y| to balance the top and bottom paddings.
   const int content_height =
       std::max(shortcut_height, description_height + 2 * description_delta_y);
