@@ -120,7 +120,7 @@ export class TestCaseRecorder {
     if (msg) {
       m += ': ' + msg;
     }
-    m += ' ' + getStackTrace(new Error());
+    m += '\n' + getStackTrace(new Error());
     this.log(m);
   }
 
@@ -136,7 +136,7 @@ export class TestCaseRecorder {
       return;
     }
     this.setState(PassState.fail);
-    this.log('EXCEPTION: ' + ex.name + ': ' + ex.message + '\n' + getStackTrace(ex));
+    this.log('EXCEPTION: ' + ex.name + ':\n' + ex.message + '\n' + getStackTrace(ex));
   }
 
   private setState(state: PassState): void {

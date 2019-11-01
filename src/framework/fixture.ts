@@ -66,12 +66,12 @@ export class Fixture {
 
   private expectErrorValue(expectedName: string, ex: unknown, m: string): void {
     if (!(ex instanceof Error)) {
-      this.fail('THREW NON-ERROR');
+      this.fail('THREW non-error value, of type ' + typeof ex);
       return;
     }
     const actualName = ex.name;
     if (actualName !== expectedName) {
-      this.fail(`THREW ${actualName} INSTEAD OF ${expectedName}${m}`);
+      this.fail(`THREW ${actualName}, instead of ${expectedName}${m}`);
     } else {
       this.debug(`OK: threw ${actualName}${m}`);
     }

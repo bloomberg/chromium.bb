@@ -1,6 +1,12 @@
 <html>
   <head>
     <title></title>
+    <link
+      id="favicon"
+      rel="shortcut icon"
+      type="image/png"
+      href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAgMAAABinRfyAAAACVBMVEUAAAAAAAD///+D3c/SAAAAAXRSTlMAQObYZgAAAEpJREFUCB0FwbERgDAMA0BdSkbJQBSuaPABE0WuaKILmpJ/rNVejPKBUXGhqAC5J0gn9ESg2wvdNua8hUoKJQo8b6HyE6a2QHdbP0CPITh2pewWAAAAAElFTkSuQmCC"
+    />
     <meta name="viewport" content="width=device-width" />
     <link rel="stylesheet" href="third_party/normalize.min.css" />
     <script src="third_party/jquery/jquery-3.3.1.min.js"></script>
@@ -138,10 +144,18 @@
         background: white;
       }
       .testcaselog {
-        margin-left: 2px;
-        border-width: 0 0 1px 0;
-        border-style: solid;
-        border-color: #eee;
+        font-size: 10pt;
+        margin: 0 2px;
+        color: #666;
+      }
+      .testcaselog:nth-child(odd) {
+        background: #fff;
+      }
+      .testcaselog:nth-child(even) {
+        background: #f8f8f8;
+      }
+      .testcaselog::first-line {
+        color: #000;
       }
 
       @media only screen and (max-width: 600px) {

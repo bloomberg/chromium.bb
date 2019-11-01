@@ -57,7 +57,7 @@ function makeCaseHTML(name: string, t: RunCase): [HTMLElement, RunSubtree] {
     if (res.logs) {
       caselogs.empty();
       for (const l of res.logs) {
-        $('<div>')
+        $('<pre>')
           .addClass('testcaselog')
           .appendTo(caselogs)
           .text(l);
