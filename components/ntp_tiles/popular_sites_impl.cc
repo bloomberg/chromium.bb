@@ -196,14 +196,14 @@ std::map<SectionType, PopularSites::SitesVector> ParseSites(
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING) && \
     (defined(OS_ANDROID) || defined(OS_IOS))
-void SetDefaultResourceForSite(int index,
+void SetDefaultResourceForSite(size_t index,
                                int resource_id,
-                               base::ListValue* sites) {
-  base::DictionaryValue* site;
-  if (!sites->GetDictionary(index, &site))
+                               base::Value* sites) {
+  base::Value::ListStorage& list = sites->GetList();
+  if (index >= list.size() || !list[index].is_dict())
     return;
 
-  site->SetInteger("default_icon_resource", resource_id);
+  list[index].SetIntKey("default_icon_resource", resource_id);
 }
 #endif
 
@@ -215,26 +215,23 @@ base::Value DefaultPopularSites() {
   if (!base::FeatureList::IsEnabled(kPopularSitesBakedInContentFeature))
     return base::Value(base::Value::Type::LIST);
 
-  std::unique_ptr<base::ListValue> sites =
-      base::ListValue::From(base::JSONReader::ReadDeprecated(
-          ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
-              IDR_DEFAULT_POPULAR_SITES_JSON)));
-  DCHECK(sites);
-  for (base::Value& site : *sites) {
-    base::DictionaryValue& dict = static_cast<base::DictionaryValue&>(site);
-    dict.SetBoolean("baked_in", true);
-  }
+  base::Optional<base::Value> sites = base::JSONReader::Read(
+      ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
+          IDR_DEFAULT_POPULAR_SITES_JSON));
+  for (base::Value& site : sites.value().GetList())
+    site.SetBoolKey("baked_in", true);
+
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  int index = 0;
+  size_t index = 0;
   for (int icon_resource :
        {IDR_DEFAULT_POPULAR_SITES_ICON0, IDR_DEFAULT_POPULAR_SITES_ICON1,
         IDR_DEFAULT_POPULAR_SITES_ICON2, IDR_DEFAULT_POPULAR_SITES_ICON3,
         IDR_DEFAULT_POPULAR_SITES_ICON4, IDR_DEFAULT_POPULAR_SITES_ICON5,
         IDR_DEFAULT_POPULAR_SITES_ICON6, IDR_DEFAULT_POPULAR_SITES_ICON7}) {
-    SetDefaultResourceForSite(index++, icon_resource, sites.get());
+    SetDefaultResourceForSite(index++, icon_resource, &sites.value());
   }
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  return base::Value::FromUniquePtrValue(std::move(sites));
+  return std::move(sites.value());
 #endif  // OS_ANDROID || OS_IOS
 }
 
