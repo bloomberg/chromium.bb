@@ -15,7 +15,7 @@ g.test('storeOp controls whether 1x1 drawn quad is stored', async t => {
   });
 
   // create render pipeline
-  const vertexModule = t.device.createShaderModule({
+  const vertexModule = t.createShaderModule({
     code: GLSL(
       'vertex',
       `#version 450
@@ -30,7 +30,7 @@ g.test('storeOp controls whether 1x1 drawn quad is stored', async t => {
       }`
     ),
   });
-  const fragmentModule = t.device.createShaderModule({
+  const fragmentModule = t.createShaderModule({
     code: GLSL(
       'fragment',
       `#version 450

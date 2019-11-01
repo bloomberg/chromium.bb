@@ -7,11 +7,11 @@ type ShaderStage = import('@webgpu/glslang/dist/web-devel/glslang').ShaderStage;
 
 let glslangInstance: Glslang | undefined;
 
-// TODO: Should this gain some functionality currently only in UnitTest?
 export class GPUTest extends Fixture {
   device: GPUDevice = undefined!;
   queue: GPUQueue = undefined!;
   initialized = false;
+  private supportsSPIRV = true;
 
   async init(): Promise<void> {
     super.init();
@@ -19,6 +19,11 @@ export class GPUTest extends Fixture {
     const adapter = await gpu.requestAdapter();
     this.device = await adapter.requestDevice();
     this.queue = this.device.getQueue();
+
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+    if (isSafari) {
+      this.supportsSPIRV = false;
+    }
 
     try {
       await this.device.popErrorScope();
@@ -67,11 +72,18 @@ export class GPUTest extends Fixture {
     }
   }
 
-  makeShaderModule(stage: ShaderStage, source: string): GPUShaderModule {
-    if (!glslangInstance) {
-      throw new Error('GLSL is not instantiated. Run `await t.initGLSL()` first');
+  createShaderModule(desc: GPUShaderModuleDescriptor): GPUShaderModule {
+    if (!this.supportsSPIRV) {
+      this.skip('SPIR-V not available');
     }
-    const code = glslangInstance.compileGLSL(source, stage, false);
+    return this.device.createShaderModule(desc);
+  }
+
+  makeShaderModuleFromGLSL(stage: ShaderStage, glsl: string): GPUShaderModule {
+    if (!glslangInstance) {
+      throw new Error('GLSL compiler is not instantiated. Run `await t.initGLSL()` first');
+    }
+    const code = glslangInstance.compileGLSL(glsl, stage, false);
     return this.device.createShaderModule({ code });
   }
 

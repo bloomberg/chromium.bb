@@ -34,7 +34,7 @@ g.test('memcpy', async t => {
     layout: bgl,
   });
 
-  const module = t.device.createShaderModule({
+  const module = t.createShaderModule({
     code: GLSL(
       'compute',
       `#version 310 es

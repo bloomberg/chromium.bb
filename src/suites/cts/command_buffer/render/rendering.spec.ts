@@ -19,7 +19,7 @@ g.test('fullscreen quad', async t => {
   });
   const colorAttachmentView = colorAttachment.createView();
 
-  const vertexModule = t.device.createShaderModule({
+  const vertexModule = t.createShaderModule({
     code: GLSL(
       'vertex',
       `#version 310 es
@@ -31,7 +31,7 @@ g.test('fullscreen quad', async t => {
       `
     ),
   });
-  const fragmentModule = t.device.createShaderModule({
+  const fragmentModule = t.createShaderModule({
     code: GLSL(
       'fragment',
       `#version 310 es

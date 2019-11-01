@@ -44,7 +44,7 @@ class F extends ValidationTest {
 
   getVertexStage(code: string): GPUProgrammableStageDescriptor {
     return {
-      module: this.makeShaderModule('vertex', code),
+      module: this.makeShaderModuleFromGLSL('vertex', code),
       entryPoint: 'main',
     };
   }
@@ -58,7 +58,7 @@ class F extends ValidationTest {
       }
     `;
     return {
-      module: this.makeShaderModule('fragment', code),
+      module: this.makeShaderModuleFromGLSL('fragment', code),
       entryPoint: 'main',
     };
   }

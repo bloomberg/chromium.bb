@@ -16,7 +16,7 @@ class F extends ValidationTest {
   }
 
   createRenderPipeline(pipelineLayout: GPUPipelineLayout): GPURenderPipeline {
-    const vertexModule = this.device.createShaderModule({
+    const vertexModule = this.createShaderModule({
       code: GLSL(
         'vertex',
         `#version 450
@@ -31,7 +31,7 @@ class F extends ValidationTest {
       ),
     });
 
-    const fragmentModule = this.device.createShaderModule({
+    const fragmentModule = this.createShaderModule({
       code: GLSL(
         'fragment',
         `#version 450
