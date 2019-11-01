@@ -20,6 +20,8 @@
 # DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
 # TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 # PERFORMANCE OF THIS SOFTWARE.
+set -e
+
 case "$OSTYPE" in
     msys ) MyPWD=`pwd -W` ;;  # On Msys/MinGW, returns a MS Windows style path.
     *    ) MyPWD=`pwd`    ;;  # On any other platforms, returns a Unix style path.
@@ -407,5 +409,18 @@ fi
 rm -rf $MYCACHEBASEDIR $MYCONFIG my-fonts.conf my-out my-out.expected
 
 fi # if [ "x$EXEEXT" = "x" ]
+
+if [ -x $BUILDTESTDIR/test-crbug1004254 ]; then
+    dotest "MT-safe global config"
+    prep
+    curl -s -o $FONTDIR/noto.zip https://noto-website-2.storage.googleapis.com/pkgs/NotoSans-hinted.zip
+    (cd $FONTDIR; unzip noto.zip)
+    if [ -n ${SOURCE_DATE_EPOCH:-} ] && [ ${#SOURCE_DATE_EPOCH} -gt 0 ]; then
+	touch -m -t "`date -d \"@${SOURCE_DATE_EPOCH}\" +%y%m%d%H%M.%S`" $FONTDIR
+    fi
+    $BUILDTESTDIR/test-crbug1004254
+else
+    echo "No test-crbug1004254: skipped"
+fi
 
 rm -rf $FONTDIR $CACHEFILE $CACHEDIR $BASEDIR $FONTCONFIG_FILE out

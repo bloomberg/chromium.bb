@@ -58,11 +58,15 @@ FcDirCacheDeleteUUID (const FcChar8  *dir,
 {
     FcBool ret = FcTrue;
 #ifndef _WIN32
-    const FcChar8 *sysroot = FcConfigGetSysRoot (config);
+    const FcChar8 *sysroot;
     FcChar8 *target, *d;
     struct stat statb;
     struct timeval times[2];
 
+    config = FcConfigReference (config);
+    if (!config)
+	return FcFalse;
+    sysroot = FcConfigGetSysRoot (config);
     if (sysroot)
 	d = FcStrBuildFilename (sysroot, dir, NULL);
     else
@@ -94,6 +98,7 @@ FcDirCacheDeleteUUID (const FcChar8  *dir,
 bail:
     FcStrFree (d);
 #endif
+    FcConfigDestroy (config);
 
     return ret;
 }
@@ -265,7 +270,13 @@ FcDirCacheUnlink (const FcChar8 *dir, FcConfig *config)
 #endif
     FcStrList	*list;
     FcChar8	*cache_dir;
-    const FcChar8 *sysroot = FcConfigGetSysRoot (config);
+    const FcChar8 *sysroot;
+    FcBool	ret = FcTrue;
+
+    config = FcConfigReference (config);
+    if (!config)
+	return FcFalse;
+    sysroot = FcConfigGetSysRoot (config);
 
     FcDirCacheBasenameMD5 (config, dir, cache_base);
 #ifndef _WIN32
@@ -274,7 +285,10 @@ FcDirCacheUnlink (const FcChar8 *dir, FcConfig *config)
 
     list = FcStrListCreate (config->cacheDirs);
     if (!list)
-        return FcFalse;
+    {
+	ret = FcFalse;
+	goto bail;
+    }
 	
     while ((cache_dir = FcStrListNext (list)))
     {
@@ -304,8 +318,11 @@ FcDirCacheUnlink (const FcChar8 *dir, FcConfig *config)
     FcDirCacheDeleteUUID (dir, config);
     /* return FcFalse if something went wrong */
     if (cache_dir)
-	return FcFalse;
-    return FcTrue;
+	ret = FcFalse;
+bail:
+    FcConfigDestroy (config);
+
+    return ret;
 }
 
 static int
@@ -1041,10 +1058,15 @@ FcDirCacheLoad (const FcChar8 *dir, FcConfig *config, FcChar8 **cache_file)
 {
     FcCache *cache = NULL;
 
+    config = FcConfigReference (config);
+    if (!config)
+	return NULL;
     if (!FcDirCacheProcess (config, dir,
 			    FcDirCacheMapHelper,
 			    &cache, cache_file))
-	return NULL;
+	cache = NULL;
+
+    FcConfigDestroy (config);
 
     return cache;
 }
@@ -1055,13 +1077,16 @@ FcDirCacheLoadFile (const FcChar8 *cache_file, struct stat *file_stat)
     int	fd;
     FcCache *cache;
     struct stat	my_file_stat;
+    FcConfig *config;
 
     if (!file_stat)
 	file_stat = &my_file_stat;
     fd = FcDirCacheOpenFile (cache_file, file_stat);
     if (fd < 0)
 	return NULL;
-    cache = FcDirCacheMapFd (FcConfigGetCurrent (), fd, file_stat, NULL);
+    config = FcConfigReference (NULL);
+    cache = FcDirCacheMapFd (config, fd, file_stat, NULL);
+    FcConfigDestroy (config);
     close (fd);
     return cache;
 }
@@ -1155,12 +1180,16 @@ FcBool
 FcDirCacheValid (const FcChar8 *dir)
 {
     FcConfig	*config;
+    FcBool	ret;
 
-    config = FcConfigGetCurrent ();
+    config = FcConfigReference (NULL);
     if (!config)
         return FcFalse;
 
-    return FcDirCacheValidConfig (dir, config);
+    ret = FcDirCacheValidConfig (dir, config);
+    FcConfigDestroy (config);
+
+    return ret;
 }
 
 /*
@@ -1438,9 +1467,13 @@ FcDirCacheClean (const FcChar8 *cache_dir, FcBool verbose)
     FcCache	*cache;
     struct stat	target_stat;
     const FcChar8 *sysroot;
+    FcConfig	*config;
 
+    config = FcConfigReference (NULL);
+    if (!config)
+	return FcFalse;
     /* FIXME: this API needs to support non-current FcConfig */
-    sysroot = FcConfigGetSysRoot (NULL);
+    sysroot = FcConfigGetSysRoot (config);
     if (sysroot)
 	dir = FcStrBuildFilename (sysroot, cache_dir, NULL);
     else
@@ -1448,7 +1481,8 @@ FcDirCacheClean (const FcChar8 *cache_dir, FcBool verbose)
     if (!dir)
     {
 	fprintf (stderr, "Fontconfig error: %s: out of memory\n", cache_dir);
-	return FcFalse;
+	ret = FcFalse;
+	goto bail;
     }
     if (access ((char *) dir, W_OK) != 0)
     {
@@ -1525,8 +1559,10 @@ FcDirCacheClean (const FcChar8 *cache_dir, FcBool verbose)
     }
 
     closedir (d);
-  bail0:
+bail0:
     FcStrFree (dir);
+bail:
+    FcConfigDestroy (config);
 
     return ret;
 }
@@ -1968,15 +2004,20 @@ FcDirCacheCreateTagFile (const FcChar8 *cache_dir)
 }
 
 void
-FcCacheCreateTagFile (const FcConfig *config)
+FcCacheCreateTagFile (FcConfig *config)
 {
     FcChar8   *cache_dir = NULL, *d = NULL;
     FcStrList *list;
-    const FcChar8 *sysroot = FcConfigGetSysRoot (config);
+    const FcChar8 *sysroot;
+
+    config = FcConfigReference (config);
+    if (!config)
+	return;
+    sysroot = FcConfigGetSysRoot (config);
 
     list = FcConfigGetCacheDirs (config);
     if (!list)
-	return;
+	goto bail;
 
     while ((cache_dir = FcStrListNext (list)))
     {
@@ -1992,6 +2033,8 @@ FcCacheCreateTagFile (const FcConfig *config)
     if (d)
 	FcStrFree (d);
     FcStrListDone (list);
+bail:
+    FcConfigDestroy (config);
 }
 
 #define __fccache__

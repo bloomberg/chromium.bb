@@ -174,6 +174,10 @@ Returns one of the two sets of fonts from the configuration as specified
 by <parameter>set</parameter>. This font set is owned by the library and must
 not be modified or freed.
 If <parameter>config</parameter> is NULL, the current configuration is used.
+    </para><para>
+This function isn't MT-safe. <function>FcConfigReference</function> must be called
+before using this and then <function>FcConfigDestroy</function> when
+the return value is no longer referenced.
 @@
 
 @RET@           FcBlanks *
@@ -407,6 +411,10 @@ parse error, semantic error or allocation failure. Otherwise returns FcTrue.
 Obtains the system root directory in 'config' if available. All files
 (including file properties in patterns) obtained from this 'config' are
 relative to this system root directory.
+    </para><para>
+This function isn't MT-safe. <function>FcConfigReference</function> must be called
+before using this and then <function>FcConfigDestroy</function> when
+the return value is no longer referenced.
 @SINCE@		2.10.92
 @@
 
@@ -433,6 +441,10 @@ When setting this on the current config this causes changing current config
 @PURPOSE@	Initialize the iterator
 @DESC@
 Initialize 'iter' with the first iterator in the config file information list.
+    </para><para>
+This function isn't MT-safe. <function>FcConfigReference</function> must be called
+before using this and then <function>FcConfigDestroy</function> when the relevant
+values are no longer referenced.
 @SINCE@		2.12.91
 @@
 
@@ -444,6 +456,10 @@ Initialize 'iter' with the first iterator in the config file information list.
 @DESC@
 Set 'iter' to point to the next node in the config file information list.
 If there is no next node, FcFalse is returned.
+    </para><para>
+This function isn't MT-safe. <function>FcConfigReference</function> must be called
+before using <function>FcConfigFileInfoIterInit</function> and then
+<function>FcConfigDestroy</function> when the relevant values are no longer referenced.
 @SINCE@		2.12.91
 @@
 
@@ -459,5 +475,9 @@ If there is no next node, FcFalse is returned.
 Obtain the filename, the description and the flag whether it is enabled or not
 for 'iter' where points to current configuration file information.
 If the iterator is invalid, FcFalse is returned.
+    </para><para>
+This function isn't MT-safe. <function>FcConfigReference</function> must be called
+before using <function>FcConfigFileInfoIterInit</function> and then
+<function>FcConfigDestroy</function> when the relevant values are no longer referenced.
 @SINCE@		2.12.91
 @@

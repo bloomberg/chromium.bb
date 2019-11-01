@@ -42,6 +42,11 @@ test_pthread_LDADD = $(top_builddir)/src/libfontconfig.la
 # We don't enable this test by default because it will require config and fonts
 # to meaningfully test anything, and we are not installed yet.
 #TESTS += test-pthread
+
+check_PROGRAMS += test-crbug1004254
+test_crbug1004254_LDADD = $(top_builddir)/src/libfontconfig.la
+# Disabling this for the same reason as above but trying to run in run-test.sh.
+#TESTS += test-crbug1004254
 endif
 check_PROGRAMS += test-bz89617
 test_bz89617_CFLAGS = \
