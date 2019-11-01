@@ -388,7 +388,7 @@ void FilmGrain<bitdepth>::GenerateLumaGrain(const FilmGrainParams& params,
   // If params.num_y_points is equal to 0, Section 7.18.3.3 specifies we set
   // the luma_grain array to all zeros. But the Note at the end of Section
   // 7.18.3.3 says luma_grain "will never be read in this case". So we don't
-  // call GenerateLumaGrai if params.num_y_points is equal to 0.
+  // call GenerateLumaGrain if params.num_y_points is equal to 0.
   assert(params.num_y_points > 0);
   const int shift = 12 - bitdepth + params.grain_scale_shift;
   uint16_t seed = params.grain_seed;
