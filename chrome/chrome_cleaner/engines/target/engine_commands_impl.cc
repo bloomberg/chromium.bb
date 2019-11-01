@@ -18,9 +18,6 @@
 
 namespace chrome_cleaner {
 
-using mojom::CleanerEngineRequestsAssociatedPtr;
-using mojom::CleanerEngineRequestsAssociatedPtrInfo;
-
 namespace {
 
 constexpr char kStageCrashKey[] = "stage";
@@ -116,7 +113,7 @@ void EngineCommandsImpl::StartCleanup(
     mojo::PendingAssociatedRemote<mojom::EngineFileRequests> file_requests,
     mojo::PendingAssociatedRemote<mojom::EngineRequests>
         sandboxed_engine_requests,
-    mojom::CleanerEngineRequestsAssociatedPtrInfo
+    mojo::PendingAssociatedRemote<mojom::CleanerEngineRequests>
         sandboxed_cleaner_engine_requests,
     mojo::PendingAssociatedRemote<mojom::EngineCleanupResults> cleanup_results,
     StartCleanupCallback callback) {
@@ -131,12 +128,9 @@ void EngineCommandsImpl::StartCleanup(
       base::MakeRefCounted<EngineRequestsProxy>(
           std::move(sandboxed_engine_requests), task_runner_);
 
-  CleanerEngineRequestsAssociatedPtr cleaner_engine_requests_ptr;
-  cleaner_engine_requests_ptr.Bind(
-      std::move(sandboxed_cleaner_engine_requests));
   scoped_refptr<CleanerEngineRequestsProxy> cleaner_engine_requests_proxy =
       base::MakeRefCounted<CleanerEngineRequestsProxy>(
-          std::move(cleaner_engine_requests_ptr), task_runner_);
+          std::move(sandboxed_cleaner_engine_requests), task_runner_);
 
   // Create an EngineCleanupResults proxy to send results back over the
   // Mojo connection.

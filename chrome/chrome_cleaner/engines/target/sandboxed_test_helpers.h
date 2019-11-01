@@ -101,10 +101,10 @@ class MaybeSandboxedParentProcess : public BaseClass {
           base::BindOnce(base::DoNothing::Once<uint32_t>()));
     }
 
-    mojom::CleanerEngineRequestsAssociatedPtrInfo cleaner_info;
+    mojo::PendingAssociatedRemote<mojom::CleanerEngineRequests> cleaner;
     mojo::PendingAssociatedRemote<mojom::EngineCleanupResults> cleanup_results;
     if (requests_to_setup_ == CallbacksToSetup::kCleanupRequests) {
-      cleaner_impl_->Bind(&cleaner_info);
+      cleaner_impl_->Bind(&cleaner);
       cleanup_results_impl_->BindToCallbacks(
           &cleanup_results, base::BindOnce(base::DoNothing::Once<uint32_t>()));
     }
@@ -129,7 +129,7 @@ class MaybeSandboxedParentProcess : public BaseClass {
       (*engine_commands_)
           ->StartCleanup(/*enabled_uws=*/std::vector<UwSId>(),
                          std::move(file_requests), std::move(scanner),
-                         std::move(cleaner_info), std::move(cleanup_results),
+                         std::move(cleaner), std::move(cleanup_results),
                          std::move(operation_started));
     }
   }
@@ -172,7 +172,7 @@ class SandboxChildProcess : public ChildProcess {
   scoped_refptr<EngineRequestsProxy> GetEngineRequestsProxy();
   scoped_refptr<CleanerEngineRequestsProxy> GetCleanerEngineRequestsProxy();
 
-  void UnbindRequestsPtrs();
+  void UnbindRequestsRemotes();
 
   // Exit code value to be used by the child process on connection errors.
   static const int kConnectionErrorExitCode;

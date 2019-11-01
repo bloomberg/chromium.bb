@@ -414,8 +414,9 @@ void EngineClient::StartCleanupAsync(const std::vector<UwSId>& enabled_uws,
   mojo::PendingAssociatedRemote<mojom::EngineRequests> engine_requests;
   sandbox_requests_->Bind(&engine_requests);
 
-  mojom::CleanerEngineRequestsAssociatedPtrInfo cleaner_engine_requests_info;
-  sandbox_cleaner_requests_->Bind(&cleaner_engine_requests_info);
+  mojo::PendingAssociatedRemote<mojom::CleanerEngineRequests>
+      cleaner_engine_requests;
+  sandbox_cleaner_requests_->Bind(&cleaner_engine_requests);
 
   // Create a receiver to the EngineCleanupResults interface that will receive
   // results and pass them on to |done_callback|.
@@ -429,7 +430,7 @@ void EngineClient::StartCleanupAsync(const std::vector<UwSId>& enabled_uws,
   (*engine_commands_)
       ->StartCleanup(
           enabled_uws, std::move(file_requests), std::move(engine_requests),
-          std::move(cleaner_engine_requests_info), std::move(cleanup_results),
+          std::move(cleaner_engine_requests), std::move(cleanup_results),
           CallbackWithErrorHandling(std::move(result_callback)));
 }
 

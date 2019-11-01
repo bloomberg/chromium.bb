@@ -50,7 +50,7 @@ class EngineCommandsImpl : public mojom::EngineCommands {
       mojo::PendingAssociatedRemote<mojom::EngineFileRequests> file_requests,
       mojo::PendingAssociatedRemote<mojom::EngineRequests>
           sandboxed_engine_requests,
-      mojom::CleanerEngineRequestsAssociatedPtrInfo
+      mojo::PendingAssociatedRemote<mojom::CleanerEngineRequests>
           sandboxed_cleaner_engine_requests,
       mojo::PendingAssociatedRemote<mojom::EngineCleanupResults>
           cleanup_results,

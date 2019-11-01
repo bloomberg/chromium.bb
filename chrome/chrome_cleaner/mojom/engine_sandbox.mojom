@@ -72,7 +72,8 @@ interface EngineCommands {
     array<uint32> enabled_uws,
     pending_associated_remote<EngineFileRequests> file_requests,
     pending_associated_remote<EngineRequests> sandboxed_engine_requests,
-    associated CleanerEngineRequests sandboxed_cleaner_engine_requests,
+    pending_associated_remote<CleanerEngineRequests>
+      sandboxed_cleaner_engine_requests,
     pending_associated_remote<EngineCleanupResults> results) =>
       (uint32 result_code);
 
