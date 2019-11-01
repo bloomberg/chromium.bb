@@ -2382,7 +2382,7 @@
       'webkit_unit_tests': {
         'test': 'blink_unittests',
         'android_swarming': {
-          'shards': 2,
+          'shards': 4,
         },
       },
       'wtf_unittests': {},
