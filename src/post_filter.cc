@@ -184,10 +184,17 @@ bool PostFilter::ApplyFiltering() {
       const int plane_height = RightShiftWithRounding(height_, subsampling_y);
       assert(source_buffer_->left_border(plane) >= kMinLeftBorderPixels &&
              source_buffer_->right_border(plane) >= kMinRightBorderPixels);
+      // plane subsampling_x_ left_border
+      //   Y        N/A         64, 48
+      //  U,V        0          64, 48
+      //  U,V        1          32, 16
+      assert(source_buffer_->left_border(plane) >= 16);
+      // The |left| argument to ExtendFrameBoundary() must be at least
+      // kMinLeftBorderPixels (13). Use 16 to help Memset performance.
+      static_assert(16 >= kMinLeftBorderPixels, "");
       ExtendFrameBoundary(source_buffer_->data(plane), plane_width,
                           plane_height, source_buffer_->stride(plane),
-                          source_buffer_->left_border(plane),
-                          source_buffer_->right_border(plane),
+                          /*left=*/16, source_buffer_->right_border(plane),
                           source_buffer_->top_border(plane),
                           source_buffer_->bottom_border(plane));
     }
