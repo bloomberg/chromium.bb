@@ -163,8 +163,8 @@ void ExtendHotseat(Browser* browser) {
   const gfx::Point start_point = gfx::Point(
       display_bounds.width() / 4,
       display_bounds.bottom() - ash::ShelfConfig::Get()->shelf_size() / 2);
-  gfx::Point end_point(start_point);
-  end_point.set_y(10);
+  // Swipe up for a small distance to bring up the hotseat.
+  gfx::Point end_point(start_point.x(), start_point.y() - 80);
 
   ui::test::EventGenerator event_generator(controller->GetRootWindow());
   event_generator.GestureScrollSequence(
