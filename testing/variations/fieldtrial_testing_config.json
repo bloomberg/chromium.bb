@@ -5291,6 +5291,21 @@
             ]
         }
     ],
+    "SafeBrowsingPasswordProtectionOnFocusPingAndroid": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SafeBrowsingSendOnFocusPing"
+                    ]
+                }
+            ]
+        }
+    ],
     "SafeBrowsingRealTimeUrlLookupFetchAllowlist": [
         {
             "platforms": [
