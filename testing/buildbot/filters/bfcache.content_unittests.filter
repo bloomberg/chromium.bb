@@ -13,7 +13,3 @@
 # https://crbug.com/1019077
 # navigation_simulator_impl.cc(581)] Check failed: state_ <= READY_TO_COMMIT
 -RenderFrameHostManagerTest.NavigateAfterMissingSwapOutACK
-
-# https://crrev.com/c/1892476
-# NavigationSimulator.CommitErrorPage() is not supported.
--RenderProcessHostUnitTest.DoNotReuseError
