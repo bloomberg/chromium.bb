@@ -28,7 +28,6 @@ class ScriptWrappable;
   X(Global, Event)                                      \
   X(MessageEvent, CachedData)                           \
   X(NamedConstructor, Initialized)                      \
-  X(PopStateEvent, State)                               \
   SCRIPT_PROMISE_PROPERTIES(X, Promise)                 \
   SCRIPT_PROMISE_PROPERTIES(X, Resolver)
 
