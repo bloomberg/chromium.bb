@@ -26,7 +26,6 @@ class ScriptWrappable;
 #define V8_PRIVATE_PROPERTY_FOR_EACH(X)                 \
   X(DOMException, Error)                                \
   X(MessageEvent, CachedData)                           \
-  X(NamedConstructor, Initialized)                      \
 
 // The getter's name for a private property.
 #define V8_PRIVATE_PROPERTY_GETTER_NAME(InterfaceName, PrivateKeyName) \
