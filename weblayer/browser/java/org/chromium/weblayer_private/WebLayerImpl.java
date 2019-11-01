@@ -132,11 +132,11 @@ public final class WebLayerImpl extends IWebLayer.Stub {
     }
 
     @Override
-    public IBrowserFragment createBrowserFragmentImpl(IRemoteFragmentClient fragmentClient,
-            IObjectWrapper fragmentArgs) {
+    public IBrowserFragment createBrowserFragmentImpl(
+            IRemoteFragmentClient fragmentClient, IObjectWrapper fragmentArgs) {
         Bundle unwrappedArgs = ObjectWrapper.unwrap(fragmentArgs, Bundle.class);
-        BrowserFragmentImpl fragment = new BrowserFragmentImpl(mProfileManager, fragmentClient,
-                unwrappedArgs);
+        BrowserFragmentImpl fragment =
+                new BrowserFragmentImpl(mProfileManager, fragmentClient, unwrappedArgs);
         return fragment.asIBrowserFragment();
     }
 

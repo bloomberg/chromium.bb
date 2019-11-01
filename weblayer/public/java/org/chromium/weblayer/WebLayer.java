@@ -214,8 +214,8 @@ public final class WebLayer {
     /* package */ IBrowserFragment connectFragment(
             IRemoteFragmentClient remoteFragmentClient, Bundle fragmentArgs) {
         try {
-            return mImpl.createBrowserFragmentImpl(remoteFragmentClient,
-                    ObjectWrapper.wrap(fragmentArgs));
+            return mImpl.createBrowserFragmentImpl(
+                    remoteFragmentClient, ObjectWrapper.wrap(fragmentArgs));
         } catch (RemoteException e) {
             throw new APICallException(e);
         }

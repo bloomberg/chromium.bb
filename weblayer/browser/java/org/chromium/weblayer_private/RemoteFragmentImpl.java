@@ -181,37 +181,37 @@ public abstract class RemoteFragmentImpl extends IRemoteFragment.Stub {
     }
 
     @Override
-    public final void handleOnResume()  {
+    public final void handleOnResume() {
         onResume();
     }
 
     @Override
-    public final void handleOnPause()  {
+    public final void handleOnPause() {
         onPause();
     }
 
     @Override
-    public final void handleOnStop()  {
+    public final void handleOnStop() {
         onStop();
     }
 
     @Override
-    public final void handleOnDestroyView()  {
+    public final void handleOnDestroyView() {
         onDestroyView();
     }
 
     @Override
-    public final void handleOnDetach()  {
+    public final void handleOnDetach() {
         onDetach();
     }
 
     @Override
-    public final void handleOnDestroy()  {
+    public final void handleOnDestroy() {
         onDestroy();
     }
 
     @Override
-    public final void handleOnSaveInstanceState(IObjectWrapper outState)  {
+    public final void handleOnSaveInstanceState(IObjectWrapper outState) {
         onSaveInstaceState(ObjectWrapper.unwrap(outState, Bundle.class));
     }
 

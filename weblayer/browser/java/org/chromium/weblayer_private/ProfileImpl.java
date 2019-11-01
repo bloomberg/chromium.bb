@@ -46,11 +46,11 @@ public final class ProfileImpl extends IProfile.Stub {
     public void clearBrowsingData(@NonNull @BrowsingDataType int[] dataTypes,
             @NonNull IObjectWrapper completionCallback) {
         Runnable callback = ObjectWrapper.unwrap(completionCallback, Runnable.class);
-        ProfileImplJni.get().clearBrowsingData(mNativeProfile, mapBrowsingDataTypes(dataTypes),
-                callback);
+        ProfileImplJni.get().clearBrowsingData(
+                mNativeProfile, mapBrowsingDataTypes(dataTypes), callback);
     }
 
-    private static  @ImplBrowsingDataType int[] mapBrowsingDataTypes(
+    private static @ImplBrowsingDataType int[] mapBrowsingDataTypes(
             @NonNull @BrowsingDataType int[] dataTypes) {
         // Convert data types coming from aidl to the ones accepted by C++ (ImplBrowsingDataType is
         // generated from a C++ enum).
@@ -64,7 +64,7 @@ public final class ProfileImpl extends IProfile.Stub {
                     convertedTypes.add(ImplBrowsingDataType.CACHE);
                     break;
                 default:
-                    break;  // Skip unrecognized values for forward compatibility.
+                    break; // Skip unrecognized values for forward compatibility.
             }
         }
         return CollectionUtil.integerListToIntArray(convertedTypes);
@@ -78,7 +78,7 @@ public final class ProfileImpl extends IProfile.Stub {
     interface Natives {
         long createProfile(String path);
         void deleteProfile(long profile);
-        void clearBrowsingData(long nativeProfileImpl, @ImplBrowsingDataType int[] dataTypes,
-                Runnable callback);
+        void clearBrowsingData(
+                long nativeProfileImpl, @ImplBrowsingDataType int[] dataTypes, Runnable callback);
     }
 }

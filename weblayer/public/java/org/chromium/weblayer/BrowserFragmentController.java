@@ -86,13 +86,12 @@ public final class BrowserFragmentController {
         ThreadCheck.ensureOnUiThread();
         try {
             final ListenableResult<Boolean> listenableResult = new ListenableResult<Boolean>();
-            mImpl.setSupportsEmbedding(
-                    enable, ObjectWrapper.wrap(new ValueCallback<Boolean>() {
-                        @Override
-                        public void onReceiveValue(Boolean result) {
-                            listenableResult.supplyResult(result);
-                        }
-                    }));
+            mImpl.setSupportsEmbedding(enable, ObjectWrapper.wrap(new ValueCallback<Boolean>() {
+                @Override
+                public void onReceiveValue(Boolean result) {
+                    listenableResult.supplyResult(result);
+                }
+            }));
             return listenableResult;
         } catch (RemoteException e) {
             throw new APICallException(e);

@@ -74,8 +74,8 @@ public final class Profile {
         ThreadCheck.ensureOnUiThread();
         try {
             ListenableResult<Void> result = new ListenableResult<>();
-            mImpl.clearBrowsingData(dataTypes,
-                    ObjectWrapper.wrap((Runnable) () -> result.supplyResult(null)));
+            mImpl.clearBrowsingData(
+                    dataTypes, ObjectWrapper.wrap((Runnable) () -> result.supplyResult(null)));
             return result;
         } catch (RemoteException e) {
             throw new APICallException(e);

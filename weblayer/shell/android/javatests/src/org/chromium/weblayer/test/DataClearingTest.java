@@ -79,10 +79,10 @@ public class DataClearingTest {
         CountDownLatch latch = new CountDownLatch(2);
         runOnUiThreadBlocking(() -> {
             Profile profile = activity.getBrowserFragmentController().getProfile();
-            profile.clearBrowsingData(new int[] {COOKIES_AND_SITE_DATA}).addCallback(
-                    (ignored) -> latch.countDown());
-            profile.clearBrowsingData(new int[] {CACHE}).addCallback(
-                    (ignored) -> latch.countDown());
+            profile.clearBrowsingData(new int[] {COOKIES_AND_SITE_DATA})
+                    .addCallback((ignored) -> latch.countDown());
+            profile.clearBrowsingData(new int[] {CACHE})
+                    .addCallback((ignored) -> latch.countDown());
         });
         assertTrue(latch.await(3, TimeUnit.SECONDS));
     }
@@ -96,8 +96,7 @@ public class DataClearingTest {
         runOnUiThreadBlocking(() -> {
             Profile profile = activity.getBrowserFragmentController().getProfile();
             profile.clearBrowsingData(new int[] {COOKIES_AND_SITE_DATA}).addCallback((v1) -> {
-                profile.clearBrowsingData(new int[] {CACHE}).addCallback(
-                        (v2) -> latch.countDown());
+                profile.clearBrowsingData(new int[] {CACHE}).addCallback((v2) -> latch.countDown());
             });
         });
         assertTrue(latch.await(3, TimeUnit.SECONDS));
@@ -127,8 +126,12 @@ public class DataClearingTest {
             throws InterruptedException {
         InstrumentationActivity activity = mActivityTestRule.launchWithProfile(profileName);
         CountDownLatch latch = new CountDownLatch(1);
-        runOnUiThreadBlocking(() -> activity.getBrowserFragmentController().getProfile()
-                .clearBrowsingData(dataTypes).addCallback((ignored) -> latch.countDown()));
+        runOnUiThreadBlocking(() -> {
+            activity.getBrowserFragmentController()
+                    .getProfile()
+                    .clearBrowsingData(dataTypes)
+                    .addCallback((ignored) -> latch.countDown());
+        });
         assertTrue(latch.await(3, TimeUnit.SECONDS));
     }
 }

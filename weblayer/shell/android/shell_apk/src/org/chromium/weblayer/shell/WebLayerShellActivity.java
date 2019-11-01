@@ -113,8 +113,8 @@ public class WebLayerShellActivity extends FragmentActivity {
             // If activity is re-created during process restart, FragmentManager attaches
             // BrowserFragment immediately, resulting in synchronous init. By the time this line
             // executes, the synchronous init has already happened.
-            WebLayer.create(getApplication()).addCallback(webLayer -> onWebLayerReady(
-                    savedInstanceState));
+            WebLayer.create(getApplication())
+                    .addCallback(webLayer -> onWebLayerReady(savedInstanceState));
         } catch (UnsupportedVersionException e) {
             throw new RuntimeException("Failed to initialize WebLayer", e);
         }
@@ -264,8 +264,8 @@ public class WebLayerShellActivity extends FragmentActivity {
     @Override
     public void onBackPressed() {
         if (mBrowserFragmentController != null) {
-            NavigationController controller = mBrowserFragmentController.getBrowserController()
-                    .getNavigationController();
+            NavigationController controller =
+                    mBrowserFragmentController.getBrowserController().getNavigationController();
             if (controller.canGoBack()) {
                 controller.goBack();
                 return;
