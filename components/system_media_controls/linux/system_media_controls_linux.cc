@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/mpris/mpris_service_impl.h"
+#include "components/system_media_controls/linux/system_media_controls_linux.h"
 
 #include <memory>
 #include <utility>
@@ -18,14 +18,24 @@
 #include "components/dbus/properties/dbus_properties.h"
 #include "components/dbus/properties/success_barrier_callback.h"
 #include "components/dbus/thread_linux/dbus_thread_linux.h"
+#include "components/system_media_controls/system_media_controls_observer.h"
 #include "dbus/bus.h"
 #include "dbus/exported_object.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
 #include "dbus/property.h"
-#include "ui/base/mpris/mpris_service_observer.h"
 
-namespace mpris {
+namespace system_media_controls {
+
+// static
+SystemMediaControls* SystemMediaControls::GetInstance() {
+  internal::SystemMediaControlsLinux* service =
+      internal::SystemMediaControlsLinux::GetInstance();
+  service->StartService();
+  return service;
+}
+
+namespace internal {
 
 namespace {
 
@@ -33,27 +43,42 @@ constexpr int kNumMethodsToExport = 11;
 
 }  // namespace
 
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+const char kMprisAPIServiceNamePrefix[] =
+    "org.mpris.MediaPlayer2.chrome.instance";
+#else
+const char kMprisAPIServiceNamePrefix[] =
+    "org.mpris.MediaPlayer2.chromium.instance";
+#endif
+const char kMprisAPIObjectPath[] = "/org/mpris/MediaPlayer2";
+const char kMprisAPIInterfaceName[] = "org.mpris.MediaPlayer2";
+const char kMprisAPIPlayerInterfaceName[] = "org.mpris.MediaPlayer2.Player";
+
 // static
-MprisServiceImpl* MprisServiceImpl::GetInstance() {
-  return base::Singleton<MprisServiceImpl>::get();
+SystemMediaControlsLinux* SystemMediaControlsLinux::GetInstance() {
+  return base::Singleton<SystemMediaControlsLinux>::get();
 }
 
-MprisServiceImpl::MprisServiceImpl()
+SystemMediaControlsLinux::SystemMediaControlsLinux()
     : service_name_(std::string(kMprisAPIServiceNamePrefix) +
                     base::NumberToString(base::Process::Current().Pid())) {}
 
-MprisServiceImpl::~MprisServiceImpl() {
+SystemMediaControlsLinux::~SystemMediaControlsLinux() {
   if (bus_) {
     dbus_thread_linux::GetTaskRunner()->PostTask(
         FROM_HERE, base::BindOnce(&dbus::Bus::ShutdownAndBlock, bus_));
   }
 }
 
-void MprisServiceImpl::StartService() {
+void SystemMediaControlsLinux::StartService() {
+  if (started_)
+    return;
+  started_ = true;
   InitializeDbusInterface();
 }
 
-void MprisServiceImpl::AddObserver(MprisServiceObserver* observer) {
+void SystemMediaControlsLinux::AddObserver(
+    SystemMediaControlsObserver* observer) {
   observers_.AddObserver(observer);
 
   // If the service is already ready, inform the observer.
@@ -61,31 +86,32 @@ void MprisServiceImpl::AddObserver(MprisServiceObserver* observer) {
     observer->OnServiceReady();
 }
 
-void MprisServiceImpl::RemoveObserver(MprisServiceObserver* observer) {
+void SystemMediaControlsLinux::RemoveObserver(
+    SystemMediaControlsObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void MprisServiceImpl::SetCanGoNext(bool value) {
+void SystemMediaControlsLinux::SetIsNextEnabled(bool value) {
   properties_->SetProperty(kMprisAPIPlayerInterfaceName, "CanGoNext",
                            DbusBoolean(value));
 }
 
-void MprisServiceImpl::SetCanGoPrevious(bool value) {
+void SystemMediaControlsLinux::SetIsPreviousEnabled(bool value) {
   properties_->SetProperty(kMprisAPIPlayerInterfaceName, "CanGoPrevious",
                            DbusBoolean(value));
 }
 
-void MprisServiceImpl::SetCanPlay(bool value) {
+void SystemMediaControlsLinux::SetIsPlayEnabled(bool value) {
   properties_->SetProperty(kMprisAPIPlayerInterfaceName, "CanPlay",
                            DbusBoolean(value));
 }
 
-void MprisServiceImpl::SetCanPause(bool value) {
+void SystemMediaControlsLinux::SetIsPauseEnabled(bool value) {
   properties_->SetProperty(kMprisAPIPlayerInterfaceName, "CanPause",
                            DbusBoolean(value));
 }
 
-void MprisServiceImpl::SetPlaybackStatus(PlaybackStatus value) {
+void SystemMediaControlsLinux::SetPlaybackStatus(PlaybackStatus value) {
   auto status = [&]() {
     switch (value) {
       case PlaybackStatus::kPlaying:
@@ -100,27 +126,33 @@ void MprisServiceImpl::SetPlaybackStatus(PlaybackStatus value) {
                            status());
 }
 
-void MprisServiceImpl::SetTitle(const base::string16& value) {
+void SystemMediaControlsLinux::SetTitle(const base::string16& value) {
   SetMetadataPropertyInternal(
       "xesam:title", MakeDbusVariant(DbusString(base::UTF16ToUTF8(value))));
 }
 
-void MprisServiceImpl::SetArtist(const base::string16& value) {
+void SystemMediaControlsLinux::SetArtist(const base::string16& value) {
   SetMetadataPropertyInternal(
       "xesam:artist",
       MakeDbusVariant(MakeDbusArray(DbusString(base::UTF16ToUTF8(value)))));
 }
 
-void MprisServiceImpl::SetAlbum(const base::string16& value) {
+void SystemMediaControlsLinux::SetAlbum(const base::string16& value) {
   SetMetadataPropertyInternal(
       "xesam:album", MakeDbusVariant(DbusString(base::UTF16ToUTF8(value))));
 }
 
-std::string MprisServiceImpl::GetServiceName() const {
+void SystemMediaControlsLinux::ClearMetadata() {
+  SetTitle(base::string16());
+  SetArtist(base::string16());
+  SetAlbum(base::string16());
+}
+
+std::string SystemMediaControlsLinux::GetServiceName() const {
   return service_name_;
 }
 
-void MprisServiceImpl::InitializeProperties() {
+void SystemMediaControlsLinux::InitializeProperties() {
   // org.mpris.MediaPlayer2 interface properties.
   auto set_property = [&](const std::string& property_name, auto&& value) {
     properties_->SetProperty(kMprisAPIInterfaceName, property_name,
@@ -159,7 +191,7 @@ void MprisServiceImpl::InitializeProperties() {
   set_player_property("CanControl", DbusBoolean(false));
 }
 
-void MprisServiceImpl::InitializeDbusInterface() {
+void SystemMediaControlsLinux::InitializeDbusInterface() {
   // Bus may be set for testing.
   if (!bus_) {
     dbus::Bus::Options bus_options;
@@ -177,7 +209,8 @@ void MprisServiceImpl::InitializeDbusInterface() {
   // initialization.
   barrier_ = SuccessBarrierCallback(
       kNumMethodsToExport + 1,
-      base::BindOnce(&MprisServiceImpl::OnInitialized, base::Unretained(this)));
+      base::BindOnce(&SystemMediaControlsLinux::OnInitialized,
+                     base::Unretained(this)));
 
   properties_ = std::make_unique<DbusProperties>(exported_object_, barrier_);
   properties_->RegisterInterface(kMprisAPIInterfaceName);
@@ -191,14 +224,14 @@ void MprisServiceImpl::InitializeDbusInterface() {
           dbus::ExportedObject::MethodCallCallback method_call_callback) {
         exported_object_->ExportMethod(
             interface_name, method_name, method_call_callback,
-            base::BindRepeating(&MprisServiceImpl::OnExported,
+            base::BindRepeating(&SystemMediaControlsLinux::OnExported,
                                 base::Unretained(this)));
         num_methods_attempted_to_export++;
       };
   auto export_unhandled_method = [&](const std::string& interface_name,
                                      const std::string& method_name) {
     export_method(interface_name, method_name,
-                  base::BindRepeating(&MprisServiceImpl::DoNothing,
+                  base::BindRepeating(&SystemMediaControlsLinux::DoNothing,
                                       base::Unretained(this)));
   };
 
@@ -209,24 +242,24 @@ void MprisServiceImpl::InitializeDbusInterface() {
 
   // Set up org.mpris.MediaPlayer2.Player interface.
   // https://specifications.freedesktop.org/mpris-spec/2.2/Player_Interface.html
-  export_method(
-      kMprisAPIPlayerInterfaceName, "Next",
-      base::BindRepeating(&MprisServiceImpl::Next, base::Unretained(this)));
-  export_method(
-      kMprisAPIPlayerInterfaceName, "Previous",
-      base::BindRepeating(&MprisServiceImpl::Previous, base::Unretained(this)));
-  export_method(
-      kMprisAPIPlayerInterfaceName, "Pause",
-      base::BindRepeating(&MprisServiceImpl::Pause, base::Unretained(this)));
-  export_method(kMprisAPIPlayerInterfaceName, "PlayPause",
-                base::BindRepeating(&MprisServiceImpl::PlayPause,
+  export_method(kMprisAPIPlayerInterfaceName, "Next",
+                base::BindRepeating(&SystemMediaControlsLinux::Next,
                                     base::Unretained(this)));
-  export_method(
-      kMprisAPIPlayerInterfaceName, "Stop",
-      base::BindRepeating(&MprisServiceImpl::Stop, base::Unretained(this)));
-  export_method(
-      kMprisAPIPlayerInterfaceName, "Play",
-      base::BindRepeating(&MprisServiceImpl::Play, base::Unretained(this)));
+  export_method(kMprisAPIPlayerInterfaceName, "Previous",
+                base::BindRepeating(&SystemMediaControlsLinux::Previous,
+                                    base::Unretained(this)));
+  export_method(kMprisAPIPlayerInterfaceName, "Pause",
+                base::BindRepeating(&SystemMediaControlsLinux::Pause,
+                                    base::Unretained(this)));
+  export_method(kMprisAPIPlayerInterfaceName, "PlayPause",
+                base::BindRepeating(&SystemMediaControlsLinux::PlayPause,
+                                    base::Unretained(this)));
+  export_method(kMprisAPIPlayerInterfaceName, "Stop",
+                base::BindRepeating(&SystemMediaControlsLinux::Stop,
+                                    base::Unretained(this)));
+  export_method(kMprisAPIPlayerInterfaceName, "Play",
+                base::BindRepeating(&SystemMediaControlsLinux::Play,
+                                    base::Unretained(this)));
   export_unhandled_method(kMprisAPIPlayerInterfaceName, "Seek");
   export_unhandled_method(kMprisAPIPlayerInterfaceName, "SetPosition");
   export_unhandled_method(kMprisAPIPlayerInterfaceName, "OpenUri");
@@ -234,87 +267,87 @@ void MprisServiceImpl::InitializeDbusInterface() {
   DCHECK_EQ(kNumMethodsToExport, num_methods_attempted_to_export);
 }
 
-void MprisServiceImpl::OnExported(const std::string& interface_name,
-                                  const std::string& method_name,
-                                  bool success) {
+void SystemMediaControlsLinux::OnExported(const std::string& interface_name,
+                                          const std::string& method_name,
+                                          bool success) {
   barrier_.Run(success);
 }
 
-void MprisServiceImpl::OnInitialized(bool success) {
+void SystemMediaControlsLinux::OnInitialized(bool success) {
   if (success) {
-    bus_->RequestOwnership(service_name_,
-                           dbus::Bus::ServiceOwnershipOptions::REQUIRE_PRIMARY,
-                           base::BindRepeating(&MprisServiceImpl::OnOwnership,
-                                               base::Unretained(this)));
+    bus_->RequestOwnership(
+        service_name_, dbus::Bus::ServiceOwnershipOptions::REQUIRE_PRIMARY,
+        base::BindRepeating(&SystemMediaControlsLinux::OnOwnership,
+                            base::Unretained(this)));
   }
 }
 
-void MprisServiceImpl::OnOwnership(const std::string& service_name,
-                                   bool success) {
+void SystemMediaControlsLinux::OnOwnership(const std::string& service_name,
+                                           bool success) {
   if (!success)
     return;
 
   service_ready_ = true;
 
-  for (MprisServiceObserver& obs : observers_)
+  for (SystemMediaControlsObserver& obs : observers_)
     obs.OnServiceReady();
 }
 
-void MprisServiceImpl::Next(
+void SystemMediaControlsLinux::Next(
     dbus::MethodCall* method_call,
     dbus::ExportedObject::ResponseSender response_sender) {
-  for (MprisServiceObserver& obs : observers_)
+  for (SystemMediaControlsObserver& obs : observers_)
     obs.OnNext();
   response_sender.Run(dbus::Response::FromMethodCall(method_call));
 }
 
-void MprisServiceImpl::Previous(
+void SystemMediaControlsLinux::Previous(
     dbus::MethodCall* method_call,
     dbus::ExportedObject::ResponseSender response_sender) {
-  for (MprisServiceObserver& obs : observers_)
+  for (SystemMediaControlsObserver& obs : observers_)
     obs.OnPrevious();
   response_sender.Run(dbus::Response::FromMethodCall(method_call));
 }
 
-void MprisServiceImpl::Pause(
+void SystemMediaControlsLinux::Pause(
     dbus::MethodCall* method_call,
     dbus::ExportedObject::ResponseSender response_sender) {
-  for (MprisServiceObserver& obs : observers_)
+  for (SystemMediaControlsObserver& obs : observers_)
     obs.OnPause();
   response_sender.Run(dbus::Response::FromMethodCall(method_call));
 }
 
-void MprisServiceImpl::PlayPause(
+void SystemMediaControlsLinux::PlayPause(
     dbus::MethodCall* method_call,
     dbus::ExportedObject::ResponseSender response_sender) {
-  for (MprisServiceObserver& obs : observers_)
+  for (SystemMediaControlsObserver& obs : observers_)
     obs.OnPlayPause();
   response_sender.Run(dbus::Response::FromMethodCall(method_call));
 }
 
-void MprisServiceImpl::Stop(
+void SystemMediaControlsLinux::Stop(
     dbus::MethodCall* method_call,
     dbus::ExportedObject::ResponseSender response_sender) {
-  for (MprisServiceObserver& obs : observers_)
+  for (SystemMediaControlsObserver& obs : observers_)
     obs.OnStop();
   response_sender.Run(dbus::Response::FromMethodCall(method_call));
 }
 
-void MprisServiceImpl::Play(
+void SystemMediaControlsLinux::Play(
     dbus::MethodCall* method_call,
     dbus::ExportedObject::ResponseSender response_sender) {
-  for (MprisServiceObserver& obs : observers_)
+  for (SystemMediaControlsObserver& obs : observers_)
     obs.OnPlay();
   response_sender.Run(dbus::Response::FromMethodCall(method_call));
 }
 
-void MprisServiceImpl::DoNothing(
+void SystemMediaControlsLinux::DoNothing(
     dbus::MethodCall* method_call,
     dbus::ExportedObject::ResponseSender response_sender) {
   response_sender.Run(dbus::Response::FromMethodCall(method_call));
 }
 
-void MprisServiceImpl::SetMetadataPropertyInternal(
+void SystemMediaControlsLinux::SetMetadataPropertyInternal(
     const std::string& property_name,
     DbusVariant&& new_value) {
   DbusVariant* dictionary_variant =
@@ -326,4 +359,6 @@ void MprisServiceImpl::SetMetadataPropertyInternal(
     properties_->PropertyUpdated(kMprisAPIPlayerInterfaceName, "Metadata");
 }
 
-}  // namespace mpris
+}  // namespace internal
+
+}  // namespace system_media_controls

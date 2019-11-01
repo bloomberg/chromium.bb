@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_MPRIS_MPRIS_SERVICE_IMPL_H_
-#define UI_BASE_MPRIS_MPRIS_SERVICE_IMPL_H_
+#ifndef COMPONENTS_SYSTEM_MEDIA_CONTROLS_LINUX_SYSTEM_MEDIA_CONTROLS_LINUX_H_
+#define COMPONENTS_SYSTEM_MEDIA_CONTROLS_LINUX_SYSTEM_MEDIA_CONTROLS_LINUX_H_
 
 #include <string>
 
@@ -14,9 +14,9 @@
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
 #include "components/dbus/properties/types.h"
+#include "components/system_media_controls/system_media_controls.h"
 #include "dbus/bus.h"
 #include "dbus/exported_object.h"
-#include "ui/base/mpris/mpris_service.h"
 
 class DbusProperties;
 
@@ -24,32 +24,53 @@ namespace dbus {
 class MethodCall;
 }  // namespace dbus
 
-namespace mpris {
+namespace system_media_controls {
 
-class MprisServiceObserver;
+class SystemMediaControlsObserver;
+
+namespace internal {
+
+COMPONENT_EXPORT(SYSTEM_MEDIA_CONTROLS)
+extern const char kMprisAPIServiceNamePrefix[];
+COMPONENT_EXPORT(SYSTEM_MEDIA_CONTROLS) extern const char kMprisAPIObjectPath[];
+COMPONENT_EXPORT(SYSTEM_MEDIA_CONTROLS)
+extern const char kMprisAPIInterfaceName[];
+COMPONENT_EXPORT(SYSTEM_MEDIA_CONTROLS)
+extern const char kMprisAPIPlayerInterfaceName[];
 
 // A D-Bus service conforming to the MPRIS spec:
 // https://specifications.freedesktop.org/mpris-spec/latest/
-class COMPONENT_EXPORT(MPRIS) MprisServiceImpl : public MprisService {
+class COMPONENT_EXPORT(SYSTEM_MEDIA_CONTROLS) SystemMediaControlsLinux
+    : public SystemMediaControls {
  public:
-  MprisServiceImpl();
-  ~MprisServiceImpl() override;
+  SystemMediaControlsLinux();
+  ~SystemMediaControlsLinux() override;
 
-  static MprisServiceImpl* GetInstance();
+  static SystemMediaControlsLinux* GetInstance();
 
-  // MprisService implementation.
-  void StartService() override;
-  void AddObserver(MprisServiceObserver* observer) override;
-  void RemoveObserver(MprisServiceObserver* observer) override;
-  void SetCanGoNext(bool value) override;
-  void SetCanGoPrevious(bool value) override;
-  void SetCanPlay(bool value) override;
-  void SetCanPause(bool value) override;
+  // Starts the DBus service.
+  void StartService();
+
+  // SystemMediaControls implementation.
+  void AddObserver(SystemMediaControlsObserver* observer) override;
+  void RemoveObserver(SystemMediaControlsObserver* observer) override;
+  void SetEnabled(bool enabled) override {}
+  void SetIsNextEnabled(bool value) override;
+  void SetIsPreviousEnabled(bool value) override;
+  void SetIsPlayEnabled(bool value) override;
+  void SetIsPauseEnabled(bool value) override;
+  void SetIsStopEnabled(bool value) override {}
   void SetPlaybackStatus(PlaybackStatus value) override;
   void SetTitle(const base::string16& value) override;
   void SetArtist(const base::string16& value) override;
   void SetAlbum(const base::string16& value) override;
-  std::string GetServiceName() const override;
+  void SetThumbnail(const SkBitmap& bitmap) override {}
+  void ClearThumbnail() override {}
+  void ClearMetadata() override;
+  void UpdateDisplay() override {}
+
+  // Returns the generated service name.
+  std::string GetServiceName() const;
 
   // Used for testing with a mock DBus Bus.
   void SetBusForTesting(scoped_refptr<dbus::Bus> bus) { bus_ = bus; }
@@ -96,14 +117,19 @@ class COMPONENT_EXPORT(MPRIS) MprisServiceImpl : public MprisService {
 
   base::RepeatingCallback<void(bool)> barrier_;
 
+  // True if we have started creating the DBus service.
+  bool started_ = false;
+
   // True if we have finished creating the DBus service and received ownership.
   bool service_ready_ = false;
 
-  base::ObserverList<MprisServiceObserver> observers_;
+  base::ObserverList<SystemMediaControlsObserver> observers_;
 
-  DISALLOW_COPY_AND_ASSIGN(MprisServiceImpl);
+  DISALLOW_COPY_AND_ASSIGN(SystemMediaControlsLinux);
 };
 
-}  // namespace mpris
+}  // namespace internal
 
-#endif  // UI_BASE_MPRIS_MPRIS_SERVICE_IMPL_H_
+}  // namespace system_media_controls
+
+#endif  // COMPONENTS_SYSTEM_MEDIA_CONTROLS_LINUX_SYSTEM_MEDIA_CONTROLS_LINUX_H_

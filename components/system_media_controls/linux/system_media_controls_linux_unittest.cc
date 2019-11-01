@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/mpris/mpris_service_impl.h"
+#include "components/system_media_controls/linux/system_media_controls_linux.h"
 
 #include <memory>
 
@@ -12,12 +12,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/task_environment.h"
 #include "components/dbus/thread_linux/dbus_thread_linux.h"
+#include "components/system_media_controls/system_media_controls_observer.h"
 #include "dbus/message.h"
 #include "dbus/mock_bus.h"
 #include "dbus/mock_exported_object.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/mpris/mpris_service_observer.h"
 
 using ::testing::_;
 using ::testing::Invoke;
@@ -25,7 +25,9 @@ using ::testing::Return;
 using ::testing::Unused;
 using ::testing::WithArg;
 
-namespace mpris {
+namespace system_media_controls {
+
+namespace internal {
 
 namespace {
 
@@ -33,12 +35,12 @@ constexpr uint32_t kFakeSerial = 123;
 
 }  // anonymous namespace
 
-class MockMprisServiceObserver : public MprisServiceObserver {
+class MockSystemMediaControlsObserver : public SystemMediaControlsObserver {
  public:
-  MockMprisServiceObserver() = default;
-  ~MockMprisServiceObserver() override = default;
+  MockSystemMediaControlsObserver() = default;
+  ~MockSystemMediaControlsObserver() override = default;
 
-  // MprisServiceObserver implementation.
+  // SystemMediaControlsObserver implementation.
   MOCK_METHOD0(OnServiceReady, void());
   MOCK_METHOD0(OnNext, void());
   MOCK_METHOD0(OnPrevious, void());
@@ -48,15 +50,16 @@ class MockMprisServiceObserver : public MprisServiceObserver {
   MOCK_METHOD0(OnPlay, void());
 };
 
-class MprisServiceImplTest : public testing::Test, public MprisServiceObserver {
+class SystemMediaControlsLinuxTest : public testing::Test,
+                                     public SystemMediaControlsObserver {
  public:
-  MprisServiceImplTest()
+  SystemMediaControlsLinuxTest()
       : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {}
-  ~MprisServiceImplTest() override = default;
+  ~SystemMediaControlsLinuxTest() override = default;
 
   void SetUp() override { StartMprisServiceAndWaitForReady(); }
 
-  void AddObserver(MockMprisServiceObserver* observer) {
+  void AddObserver(MockSystemMediaControlsObserver* observer) {
     service_->AddObserver(observer);
   }
 
@@ -71,12 +74,13 @@ class MprisServiceImplTest : public testing::Test, public MprisServiceObserver {
 
     // Call the method and await a response.
     player_interface_exported_methods_[method_name].Run(
-        &method_call, base::BindRepeating(&MprisServiceImplTest::OnResponse,
-                                          base::Unretained(this)));
+        &method_call,
+        base::BindRepeating(&SystemMediaControlsLinuxTest::OnResponse,
+                            base::Unretained(this)));
     response_wait_loop_->Run();
   }
 
-  MprisService* GetService() { return service_.get(); }
+  SystemMediaControlsLinux* GetService() { return service_.get(); }
 
   dbus::MockExportedObject* GetExportedObject() {
     return mock_exported_object_.get();
@@ -85,7 +89,7 @@ class MprisServiceImplTest : public testing::Test, public MprisServiceObserver {
  private:
   void StartMprisServiceAndWaitForReady() {
     service_wait_loop_ = std::make_unique<base::RunLoop>();
-    service_ = std::make_unique<mpris::MprisServiceImpl>();
+    service_ = std::make_unique<SystemMediaControlsLinux>();
 
     SetUpMocks();
 
@@ -111,14 +115,15 @@ class MprisServiceImplTest : public testing::Test, public MprisServiceObserver {
                 GetExportedObject(dbus::ObjectPath(kMprisAPIObjectPath)))
         .WillOnce(Return(mock_exported_object_.get()));
     EXPECT_CALL(*mock_bus_, RequestOwnership(service_->GetServiceName(), _, _))
-        .WillOnce(Invoke(this, &MprisServiceImplTest::OnOwnership));
+        .WillOnce(Invoke(this, &SystemMediaControlsLinuxTest::OnOwnership));
 
     // The service must call ShutdownAndBlock in order to properly clean up the
     // DBus service.
     EXPECT_CALL(*mock_bus_, ShutdownAndBlock());
 
     EXPECT_CALL(*mock_exported_object_, ExportMethod(_, _, _, _))
-        .WillRepeatedly(Invoke(this, &MprisServiceImplTest::OnExported));
+        .WillRepeatedly(
+            Invoke(this, &SystemMediaControlsLinuxTest::OnExported));
   }
 
   // Tell the service that ownership was successful.
@@ -146,74 +151,80 @@ class MprisServiceImplTest : public testing::Test, public MprisServiceObserver {
       response_wait_loop_->Quit();
   }
 
-  // mpris::MprisServiceObserver implementation.
+  // SystemMediaControlsObserver implementation.
   void OnServiceReady() override {
     if (service_wait_loop_)
       service_wait_loop_->Quit();
   }
+  void OnNext() override {}
+  void OnPrevious() override {}
+  void OnPlay() override {}
+  void OnPause() override {}
+  void OnPlayPause() override {}
+  void OnStop() override {}
 
   base::test::TaskEnvironment task_environment_;
   std::unique_ptr<base::RunLoop> service_wait_loop_;
   std::unique_ptr<base::RunLoop> response_wait_loop_;
-  std::unique_ptr<MprisServiceImpl> service_;
+  std::unique_ptr<SystemMediaControlsLinux> service_;
   scoped_refptr<dbus::MockBus> mock_bus_;
   scoped_refptr<dbus::MockExportedObject> mock_exported_object_;
 
   base::flat_map<std::string, dbus::ExportedObject::MethodCallCallback>
       player_interface_exported_methods_;
 
-  DISALLOW_COPY_AND_ASSIGN(MprisServiceImplTest);
+  DISALLOW_COPY_AND_ASSIGN(SystemMediaControlsLinuxTest);
 };
 
-TEST_F(MprisServiceImplTest, ObserverNotifiedOfServiceReadyWhenAdded) {
-  MockMprisServiceObserver observer;
+TEST_F(SystemMediaControlsLinuxTest, ObserverNotifiedOfServiceReadyWhenAdded) {
+  MockSystemMediaControlsObserver observer;
   EXPECT_CALL(observer, OnServiceReady());
   AddObserver(&observer);
 }
 
-TEST_F(MprisServiceImplTest, ObserverNotifiedOfNextCalls) {
-  MockMprisServiceObserver observer;
+TEST_F(SystemMediaControlsLinuxTest, ObserverNotifiedOfNextCalls) {
+  MockSystemMediaControlsObserver observer;
   EXPECT_CALL(observer, OnNext());
   AddObserver(&observer);
   CallMediaPlayer2PlayerMethodAndBlock("Next");
 }
 
-TEST_F(MprisServiceImplTest, ObserverNotifiedOfPreviousCalls) {
-  MockMprisServiceObserver observer;
+TEST_F(SystemMediaControlsLinuxTest, ObserverNotifiedOfPreviousCalls) {
+  MockSystemMediaControlsObserver observer;
   EXPECT_CALL(observer, OnPrevious());
   AddObserver(&observer);
   CallMediaPlayer2PlayerMethodAndBlock("Previous");
 }
 
-TEST_F(MprisServiceImplTest, ObserverNotifiedOfPauseCalls) {
-  MockMprisServiceObserver observer;
+TEST_F(SystemMediaControlsLinuxTest, ObserverNotifiedOfPauseCalls) {
+  MockSystemMediaControlsObserver observer;
   EXPECT_CALL(observer, OnPause());
   AddObserver(&observer);
   CallMediaPlayer2PlayerMethodAndBlock("Pause");
 }
 
-TEST_F(MprisServiceImplTest, ObserverNotifiedOfPlayPauseCalls) {
-  MockMprisServiceObserver observer;
+TEST_F(SystemMediaControlsLinuxTest, ObserverNotifiedOfPlayPauseCalls) {
+  MockSystemMediaControlsObserver observer;
   EXPECT_CALL(observer, OnPlayPause());
   AddObserver(&observer);
   CallMediaPlayer2PlayerMethodAndBlock("PlayPause");
 }
 
-TEST_F(MprisServiceImplTest, ObserverNotifiedOfStopCalls) {
-  MockMprisServiceObserver observer;
+TEST_F(SystemMediaControlsLinuxTest, ObserverNotifiedOfStopCalls) {
+  MockSystemMediaControlsObserver observer;
   EXPECT_CALL(observer, OnStop());
   AddObserver(&observer);
   CallMediaPlayer2PlayerMethodAndBlock("Stop");
 }
 
-TEST_F(MprisServiceImplTest, ObserverNotifiedOfPlayCalls) {
-  MockMprisServiceObserver observer;
+TEST_F(SystemMediaControlsLinuxTest, ObserverNotifiedOfPlayCalls) {
+  MockSystemMediaControlsObserver observer;
   EXPECT_CALL(observer, OnPlay());
   AddObserver(&observer);
   CallMediaPlayer2PlayerMethodAndBlock("Play");
 }
 
-TEST_F(MprisServiceImplTest, ChangingPropertyEmitsSignal) {
+TEST_F(SystemMediaControlsLinuxTest, ChangingPropertyEmitsSignal) {
   base::RunLoop wait_for_signal;
 
   // The returned signal should give the changed property.
@@ -250,14 +261,14 @@ TEST_F(MprisServiceImplTest, ChangingPropertyEmitsSignal) {
 
   // CanPlay is initialized as false, so setting it to true should emit an
   // org.freedesktop.DBus.Properties.PropertiesChanged signal.
-  GetService()->SetCanPlay(true);
+  GetService()->SetIsPlayEnabled(true);
   wait_for_signal.Run();
 
   // Setting it to true again should not re-signal.
-  GetService()->SetCanPlay(true);
+  GetService()->SetIsPlayEnabled(true);
 }
 
-TEST_F(MprisServiceImplTest, ChangingMetadataEmitsSignal) {
+TEST_F(SystemMediaControlsLinuxTest, ChangingMetadataEmitsSignal) {
   base::RunLoop wait_for_signal;
 
   // The returned signal should give the changed property.
@@ -313,4 +324,6 @@ TEST_F(MprisServiceImplTest, ChangingMetadataEmitsSignal) {
   GetService()->SetTitle(base::ASCIIToUTF16("Foo"));
 }
 
-}  // namespace mpris
+}  // namespace internal
+
+}  // namespace system_media_controls

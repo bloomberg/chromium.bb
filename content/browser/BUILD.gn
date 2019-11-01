@@ -17,7 +17,6 @@ import("//ppapi/buildflags/buildflags.gni")
 import("//printing/buildflags/buildflags.gni")
 import("//third_party/blink/public/public_features.gni")
 import("//tools/ipc_fuzzer/ipc_fuzzer.gni")
-import("//ui/base/mpris/buildflags/buildflags.gni")
 
 jumbo_source_set("browser") {
   # Only the public target should depend on this. All other targets (even
@@ -219,7 +218,6 @@ jumbo_source_set("browser") {
     "//ui/base/clipboard",
     "//ui/base/idle",
     "//ui/base/ime/init",
-    "//ui/base/mpris/buildflags",
     "//ui/display",
     "//ui/display/types",
     "//ui/events",
@@ -2665,14 +2663,6 @@ jumbo_source_set("browser") {
       "gpu/viz_devtools_connector.cc",
       "gpu/viz_devtools_connector.h",
     ]
-  }
-
-  if (use_mpris) {
-    sources += [
-      "media/mpris_notifier.cc",
-      "media/mpris_notifier.h",
-    ]
-    deps += [ "//ui/base/mpris" ]
   }
 }
 
