@@ -503,8 +503,6 @@ component("net") {
       "cert/cert_verify_proc.h",
       "cert/cert_verify_proc_builtin.cc",
       "cert/cert_verify_proc_builtin.h",
-      "cert/cert_verify_proc_nss.cc",
-      "cert/cert_verify_proc_nss.h",
       "cert/coalescing_cert_verifier.cc",
       "cert/coalescing_cert_verifier.h",
       "cert/ct_log_response_parser.cc",
@@ -525,15 +523,10 @@ component("net") {
       "cert/ev_root_ca_metadata.h",
       "cert/internal/system_trust_store.cc",
       "cert/internal/system_trust_store.h",
-      "cert/internal/system_trust_store_nss.h",
-      "cert/internal/trust_store_nss.cc",
-      "cert/internal/trust_store_nss.h",
       "cert/jwk_serializer.cc",
       "cert/jwk_serializer.h",
       "cert/known_roots.cc",
       "cert/known_roots.h",
-      "cert/known_roots_nss.cc",
-      "cert/known_roots_nss.h",
       "cert/merkle_audit_proof.cc",
       "cert/merkle_audit_proof.h",
       "cert/merkle_consistency_proof.cc",
@@ -544,18 +537,11 @@ component("net") {
       "cert/multi_log_ct_verifier.h",
       "cert/multi_threaded_cert_verifier.cc",
       "cert/multi_threaded_cert_verifier.h",
-      "cert/nss_cert_database.cc",
-      "cert/nss_cert_database.h",
       "cert/root_cert_list_generated.h",
       "cert/test_root_certs.cc",
       "cert/test_root_certs.h",
-      "cert/test_root_certs_nss.cc",
-      "cert/x509_util_nss.cc",
-      "cert/x509_util_nss.h",
       "cert_net/cert_net_fetcher_impl.cc",
       "cert_net/cert_net_fetcher_impl.h",
-      "cert_net/nss_ocsp.cc",
-      "cert_net/nss_ocsp.h",
       "cookies/canonical_cookie.cc",
       "cookies/canonical_cookie.h",
       "cookies/cookie_access_delegate.cc",
@@ -695,8 +681,6 @@ component("net") {
       "http/http_auth_handler_digest.h",
       "http/http_auth_handler_factory.cc",
       "http/http_auth_handler_factory.h",
-      "http/http_auth_handler_negotiate.cc",
-      "http/http_auth_handler_negotiate.h",
       "http/http_auth_handler_ntlm.cc",
       "http/http_auth_handler_ntlm.h",
       "http/http_auth_multi_round_parse.cc",
@@ -1084,22 +1068,14 @@ component("net") {
       "spdy/spdy_write_queue.cc",
       "spdy/spdy_write_queue.h",
       "ssl/client_cert_store.h",
-      "ssl/client_cert_store_nss.cc",
-      "ssl/client_cert_store_nss.h",
       "ssl/ssl_config_service_defaults.cc",
       "ssl/ssl_config_service_defaults.h",
       "ssl/ssl_key_logger_impl.cc",
       "ssl/ssl_key_logger_impl.h",
-      "ssl/ssl_platform_key_nss.cc",
-      "ssl/ssl_platform_key_nss.h",
       "ssl/ssl_platform_key_util.cc",
       "ssl/ssl_platform_key_util.h",
       "ssl/threaded_ssl_private_key.cc",
       "ssl/threaded_ssl_private_key.h",
-      "third_party/mozilla_security_manager/nsNSSCertificateDB.cpp",
-      "third_party/mozilla_security_manager/nsNSSCertificateDB.h",
-      "third_party/mozilla_security_manager/nsPKCS12Blob.cpp",
-      "third_party/mozilla_security_manager/nsPKCS12Blob.h",
       "third_party/quiche/src/common/platform/api/quiche_logging.h",
       "third_party/quiche/src/common/platform/api/quiche_ptr_util.h",
       "third_party/quiche/src/common/platform/api/quiche_unordered_containers.h",
@@ -1927,8 +1903,8 @@ component("net") {
       ]
     }
 
-    if (!use_kerberos) {
-      sources -= [
+    if (use_kerberos) {
+      sources += [
         "http/http_auth_handler_negotiate.cc",
         "http/http_auth_handler_negotiate.h",
       ]
@@ -1995,8 +1971,8 @@ component("net") {
       ]
     }
 
-    if (!use_nss_certs) {
-      sources -= [
+    if (use_nss_certs) {
+      sources += [
         "cert/internal/system_trust_store_nss.h",
         "cert/internal/trust_store_nss.cc",
         "cert/internal/trust_store_nss.h",
@@ -2004,39 +1980,34 @@ component("net") {
         "cert/known_roots_nss.h",
         "cert/nss_cert_database.cc",
         "cert/nss_cert_database.h",
-        "ssl/client_cert_store_nss.cc",
-        "ssl/client_cert_store_nss.h",
         "third_party/mozilla_security_manager/nsNSSCertificateDB.cpp",
         "third_party/mozilla_security_manager/nsNSSCertificateDB.h",
         "third_party/mozilla_security_manager/nsPKCS12Blob.cpp",
         "third_party/mozilla_security_manager/nsPKCS12Blob.h",
-      ]
-      sources -= [ "ssl/ssl_platform_key_nss.cc" ]
-    } else {
-      sources += [
         "third_party/nss/ssl/cmpcert.cc",
         "third_party/nss/ssl/cmpcert.h",
       ]
+      if (!is_chromecast) {
+        sources += [
+          "ssl/client_cert_store_nss.cc",
+          "ssl/client_cert_store_nss.h",
+          "ssl/ssl_platform_key_nss.cc",
+          "ssl/ssl_platform_key_nss.h",
+        ]
+      }
     }
 
-    if (!use_nss_certs) {
+    if (use_nss_certs) {
       # These files are part of the partial implementation of NSS for
       # cert verification, so keep them in that case.
-      sources -= [
+      sources += [
         "cert/cert_verify_proc_nss.cc",
         "cert/cert_verify_proc_nss.h",
         "cert/test_root_certs_nss.cc",
         "cert/x509_util_nss.cc",
+        "cert/x509_util_nss.h",
         "cert_net/nss_ocsp.cc",
         "cert_net/nss_ocsp.h",
-      ]
-    }
-
-    if (is_chromecast && use_nss_certs) {
-      sources -= [
-        "ssl/client_cert_store_nss.cc",
-        "ssl/client_cert_store_nss.h",
-        "ssl/ssl_platform_key_nss.cc",
       ]
     }
 
@@ -5143,11 +5114,9 @@ test("net_unittests") {
     "cert/internal/revocation_util_unittest.cc",
     "cert/internal/signature_algorithm_unittest.cc",
     "cert/internal/simple_path_builder_delegate_unittest.cc",
-    "cert/internal/system_trust_store_nss_unittest.cc",
     "cert/internal/test_helpers.cc",
     "cert/internal/test_helpers.h",
     "cert/internal/trust_store_collection_unittest.cc",
-    "cert/internal/trust_store_nss_unittest.cc",
     "cert/internal/verify_certificate_chain_pkits_unittest.cc",
     "cert/internal/verify_certificate_chain_typed_unittest.h",
     "cert/internal/verify_certificate_chain_unittest.cc",
@@ -5159,14 +5128,12 @@ test("net_unittests") {
     "cert/merkle_tree_leaf_unittest.cc",
     "cert/multi_log_ct_verifier_unittest.cc",
     "cert/multi_threaded_cert_verifier_unittest.cc",
-    "cert/nss_cert_database_unittest.cc",
     "cert/pem_tokenizer_unittest.cc",
     "cert/signed_certificate_timestamp_unittest.cc",
     "cert/symantec_certs_unittest.cc",
     "cert/test_root_certs_unittest.cc",
     "cert/x509_cert_types_unittest.cc",
     "cert/x509_certificate_unittest.cc",
-    "cert/x509_util_nss_unittest.cc",
     "cert/x509_util_unittest.cc",
     "cert_net/cert_net_fetcher_impl_unittest.cc",
     "cookies/canonical_cookie_unittest.cc",
@@ -5360,7 +5327,6 @@ test("net_unittests") {
     "spdy/spdy_stream_unittest.cc",
     "spdy/spdy_write_queue_unittest.cc",
     "ssl/client_cert_identity_unittest.cc",
-    "ssl/client_cert_store_nss_unittest.cc",
     "ssl/client_cert_store_unittest-inl.h",
     "ssl/ssl_cipher_suite_names_unittest.cc",
     "ssl/ssl_client_auth_cache_unittest.cc",
@@ -5368,7 +5334,6 @@ test("net_unittests") {
     "ssl/ssl_config_service_unittest.cc",
     "ssl/ssl_config_unittest.cc",
     "ssl/ssl_connection_status_flags_unittest.cc",
-    "ssl/ssl_platform_key_nss_unittest.cc",
     "ssl/ssl_platform_key_util_unittest.cc",
     "test/embedded_test_server/embedded_test_server_unittest.cc",
     "test/embedded_test_server/http_request_unittest.cc",
@@ -5696,8 +5661,10 @@ test("net_unittests") {
     sources += [
       "base/address_tracker_linux_unittest.cc",
       "base/network_interfaces_linux_unittest.cc",
-      "proxy_resolution/proxy_config_service_linux_unittest.cc",
     ]
+    if (!is_chromeos) {
+      sources += [ "proxy_resolution/proxy_config_service_linux_unittest.cc" ]
+    }
   }
 
   if (is_mac) {
@@ -5906,10 +5873,6 @@ test("net_unittests") {
     libs = [ "Security.framework" ]
   }
 
-  if (is_chromeos) {
-    sources -= [ "proxy_resolution/proxy_config_service_linux_unittest.cc" ]
-  }
-
   if (v8_use_external_startup_data) {
     deps += [ "//gin" ]
   }
@@ -5938,15 +5901,19 @@ test("net_unittests") {
     sources += [ "base/network_change_notifier_fuchsia_unittest.cc" ]
   }
 
-  if (!use_nss_certs) {
-    sources -= [
+  if (use_nss_certs) {
+    sources += [
       "cert/internal/system_trust_store_nss_unittest.cc",
       "cert/internal/trust_store_nss_unittest.cc",
       "cert/nss_cert_database_unittest.cc",
       "cert/x509_util_nss_unittest.cc",
-      "ssl/client_cert_store_nss_unittest.cc",
-      "ssl/ssl_platform_key_nss_unittest.cc",
     ]
+    if (!is_chromecast) {
+      sources += [
+        "ssl/client_cert_store_nss_unittest.cc",
+        "ssl/ssl_platform_key_nss_unittest.cc",
+      ]
+    }
   }
 
   if (use_external_gssapi) {
@@ -6130,13 +6097,6 @@ test("net_unittests") {
     libs = [
       "iphlpapi.lib",
       "ncrypt.lib",
-    ]
-  }
-
-  if (is_chromecast && use_nss_certs) {
-    sources -= [
-      "ssl/client_cert_store_nss_unittest.cc",
-      "ssl/ssl_platform_key_nss_unittest.cc",
     ]
   }
 
