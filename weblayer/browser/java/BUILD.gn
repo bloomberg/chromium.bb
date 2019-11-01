@@ -35,6 +35,7 @@ android_library("java") {
     "org/chromium/weblayer_private/NavigationControllerImpl.java",
     "org/chromium/weblayer_private/NavigationImpl.java",
     "org/chromium/weblayer_private/ProfileImpl.java",
+    "org/chromium/weblayer_private/FragmentAndroidPermissionDelegate.java",
     "org/chromium/weblayer_private/FragmentWindowAndroid.java",
     "org/chromium/weblayer_private/ProfileManager.java",
     "org/chromium/weblayer_private/RemoteFragmentImpl.java",

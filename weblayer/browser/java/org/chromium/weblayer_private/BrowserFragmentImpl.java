@@ -58,6 +58,12 @@ public class BrowserFragmentImpl extends RemoteFragmentImpl {
     }
 
     @Override
+    public void onRequestPermissionsResult(
+            int requestCode, String[] permissions, int[] grantResults) {
+        mController.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
+
+    @Override
     public void onDestroy() {
         super.onDestroy();
         mController.destroy();

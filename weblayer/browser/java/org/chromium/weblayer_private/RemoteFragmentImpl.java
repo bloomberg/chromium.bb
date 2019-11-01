@@ -69,6 +69,9 @@ public abstract class RemoteFragmentImpl extends IRemoteFragment.Stub {
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {}
 
+    public void onRequestPermissionsResult(
+            int requestCode, String[] permissions, int[] grantResults) {}
+
     public void onStart() {
         try {
             mClient.superOnStart();
@@ -153,6 +156,22 @@ public abstract class RemoteFragmentImpl extends IRemoteFragment.Stub {
         }
     }
 
+    public boolean shouldShowRequestPermissionRationale(String permission) {
+        try {
+            return mClient.shouldShowRequestPermissionRationale(permission);
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+    }
+
+    public void requestPermissions(String[] permissions, int requestCode) {
+        try {
+            mClient.requestPermissions(permissions, requestCode);
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+    }
+
     // IRemoteFragment implementation below.
 
     @Override
@@ -218,5 +237,11 @@ public abstract class RemoteFragmentImpl extends IRemoteFragment.Stub {
     @Override
     public final void handleOnActivityResult(int requestCode, int resultCode, IObjectWrapper data) {
         onActivityResult(requestCode, resultCode, ObjectWrapper.unwrap(data, Intent.class));
+    }
+
+    @Override
+    public final void handleOnRequestPermissionsResult(
+            int requestCode, String[] permissions, int[] grantResults) {
+        onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 }
