@@ -2,7 +2,7 @@
   <head>
     <script>
       let channel = new MessageChannel();
-      myObject.postMessage("Hello", [channel.port1]);
+      _myObject.postMessage("Hello", [channel.port1]);
 
       channel.port2.onmessage = function(e) {
         document.title = e.data;

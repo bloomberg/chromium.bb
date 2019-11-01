@@ -170,6 +170,9 @@ public class AwContents implements SmartClipProvider {
     private static final Pattern sDataURLWithSelectorPattern =
             Pattern.compile("^[^#]*(#[A-Za-z][A-Za-z0-9\\-_:.]*)$");
 
+    // Subset of valid JavaScript variable names.
+    private static final Pattern sJsObjectNamePattern = Pattern.compile("^[\\$_][\\$A-Za-z0-9_]*$");
+
     private static class ForceAuxiliaryBitmapRendering {
         private static final boolean sResult = lazyCheck();
         private static boolean lazyCheck() {
@@ -2490,6 +2493,11 @@ public class AwContents implements SmartClipProvider {
             throw new IllegalArgumentException("jsObjectName shouldn't be null or empty string");
         }
 
+        if (!validateJsObjectName(jsObjectName)) {
+            throw new IllegalArgumentException("Invalid jsObjectName: " + jsObjectName
+                    + ", see our doc of addWebMessageListener for the format of the parameter.");
+        }
+
         for (int i = 0; i < allowedOriginRules.length; ++i) {
             if (TextUtils.isEmpty(allowedOriginRules[i])) {
                 throw new IllegalArgumentException(
@@ -2517,6 +2525,14 @@ public class AwContents implements SmartClipProvider {
     public void removeWebMessageListener(@NonNull String jsObjectName) {
         AwContentsJni.get().removeWebMessageListener(
                 mNativeAwContents, AwContents.this, jsObjectName);
+    }
+
+    // To validate the full set of JavaScript variable names requires a lot of maintenance effort,
+    // so we only allow a subset of it. The variable name starts with '$' or '_' with unlimited
+    // number of '$' or word characters follow.
+    @VisibleForTesting
+    public static boolean validateJsObjectName(String jsObjectName) {
+        return sJsObjectNamePattern.matcher(jsObjectName).matches();
     }
 
     /**
