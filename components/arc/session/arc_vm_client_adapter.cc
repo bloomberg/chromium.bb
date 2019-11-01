@@ -95,9 +95,8 @@ class FileSystemStatus {
   //     "ANDROID_DEBUGGABLE": false
   //   }
   static bool IsAndroidDebuggable(const base::FilePath& json_path) {
-    // TODO(yusukes): Remove this fallback after adding the json file.
     if (!base::PathExists(json_path))
-      return true;
+      return false;
 
     std::string content;
     if (!base::ReadFileToString(json_path, &content))

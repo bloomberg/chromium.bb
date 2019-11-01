@@ -525,8 +525,7 @@ TEST_F(ArcVmClientAdapterTest, IsAndroidDebuggable) {
   EXPECT_FALSE(test(GetTempDir(), kNonBooleanValue));
   EXPECT_FALSE(test(GetTempDir(), kBadKeyType));
 
-  // TODO(yusukes): Change this to _FALSE later.
-  EXPECT_TRUE(
+  EXPECT_FALSE(
       IsAndroidDebuggableForTesting(base::FilePath("/nonexistent-path")));
 }
 
