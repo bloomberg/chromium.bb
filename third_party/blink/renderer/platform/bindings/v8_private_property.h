@@ -33,10 +33,6 @@ class ScriptWrappable;
 #define V8_PRIVATE_PROPERTY_GETTER_NAME(InterfaceName, PrivateKeyName) \
   Get##InterfaceName##PrivateKeyName
 
-// The string used to create a private symbol.  Must be unique per V8 instance.
-#define V8_PRIVATE_PROPERTY_SYMBOL_STRING(InterfaceName, PrivateKeyName) \
-  #InterfaceName "#" #PrivateKeyName  // NOLINT(whitespace/indent)
-
 // Provides access to V8's private properties.
 //
 // Usage 1) Path to use a pre-registered symbol.
@@ -141,20 +137,7 @@ class PLATFORM_EXPORT V8PrivateProperty {
 
   // TODO(peria): Do not use this specialized hack. See a TODO comment
   // on m_symbolWindowDocumentCachedAccessor.
-  static Symbol GetWindowDocumentCachedAccessor(v8::Isolate* isolate) {
-    V8PrivateProperty* private_prop =
-        V8PerIsolateData::From(isolate)->PrivateProperty();
-    if (UNLIKELY(
-            private_prop->symbol_window_document_cached_accessor_.IsEmpty())) {
-      private_prop->symbol_window_document_cached_accessor_.Set(
-          isolate, CreateCachedV8Private(
-                       isolate, V8_PRIVATE_PROPERTY_SYMBOL_STRING(
-                                    "Window", "DocumentCachedAccessor")));
-    }
-    return Symbol(
-        isolate, private_prop->symbol_window_document_cached_accessor_.NewLocal(
-                     isolate));
-  }
+  static Symbol GetWindowDocumentCachedAccessor(v8::Isolate* isolate);
 
   static Symbol GetCachedAccessor(v8::Isolate* isolate,
                                   CachedAccessorSymbol symbol_id) {
@@ -188,9 +171,6 @@ class PLATFORM_EXPORT V8PrivateProperty {
  private:
   static v8::Local<v8::Private> CreateV8Private(v8::Isolate*,
                                                 const char* symbol);
-  // TODO(peria): Remove this method. We should not use v8::Private::ForApi().
-  static v8::Local<v8::Private> CreateCachedV8Private(v8::Isolate*,
-                                                      const char* symbol);
 
   // TODO(peria): Do not use this specialized hack for
   // Window#DocumentCachedAccessor. This is required to put v8::Private key in
