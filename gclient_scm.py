@@ -417,8 +417,6 @@ class GitWrapper(SCMWrapper):
 
     self.Print('===Applying patch===')
     self.Print('Revision to patch is %r @ %r.' % (patch_repo, patch_rev))
-    self.Print('Will cherrypick %r .. %r on top of %r.' % (
-        target_rev, patch_rev, base_rev))
     self.Print('Current dir is %r' % self.checkout_path)
     self._Capture(['reset', '--hard'])
     self._Capture(['fetch', patch_repo, patch_rev])
@@ -426,7 +424,15 @@ class GitWrapper(SCMWrapper):
 
     if not options.rebase_patch_ref:
       self._Capture(['checkout', patch_rev])
+      # Adjust base_rev to be the first parent of our checked out patch ref;
+      # This will allow us to correctly extend `file_list`, and will show the
+      # correct file-list to programs which do `git diff --cached` expecting to
+      # see the patch diff.
+      base_rev = self._Capture(['rev-parse', patch_rev+'~'])
+
     else:
+      self.Print('Will cherrypick %r .. %r on top of %r.' % (
+          target_rev, patch_rev, base_rev))
       try:
         if scm.GIT.IsAncestor(self.checkout_path, patch_rev, target_rev):
           # If |patch_rev| is an ancestor of |target_rev|, check it out.

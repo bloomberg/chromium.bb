@@ -1217,7 +1217,7 @@ class GerritChangesTest(fake_repos.FakeReposTestBase):
         file_list)
 
     self.assertCommits([1, 2, 3, 5, 6])
-    self.assertEqual(self.githash('repo_1', 4), self.gitrevparse(self.root_dir))
+    self.assertEqual(self.githash('repo_1', 5), self.gitrevparse(self.root_dir))
 
   def testDoesntRebasePatchOldCheckout(self):
     """Tests that we can apply a patch without rebasing it on an old checkout.
@@ -1237,7 +1237,7 @@ class GerritChangesTest(fake_repos.FakeReposTestBase):
         file_list)
 
     self.assertCommits([1, 2, 3, 5, 6])
-    self.assertEqual(self.githash('repo_1', 1), self.gitrevparse(self.root_dir))
+    self.assertEqual(self.githash('repo_1', 5), self.gitrevparse(self.root_dir))
 
   def testDoesntSoftResetIfNotAskedTo(self):
     """Test that we can apply a patch without doing a soft reset."""
