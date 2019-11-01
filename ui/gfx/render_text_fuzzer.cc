@@ -16,7 +16,7 @@ namespace {
 
 #if defined(OS_WIN)
 const char* kFontDescription = "Segoe UI, 13px";
-#elif (OS_ANDROID)
+#elif defined(OS_ANDROID)
 const char* kFontDescription = "serif, 13px";
 #else
 const char* kFontDescription = "sans, 13px";

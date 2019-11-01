@@ -903,3 +903,17 @@ fuzzer_test("render_text_fuzzer") {
 
   dict = "test/data/render_text/unicode_text_fuzzer.dict"
 }
+
+fuzzer_test("render_text_api_fuzzer") {
+  sources = [
+    "render_text_api_fuzzer.cc",
+  ]
+
+  deps = [
+    ":gfx",
+    "//base",
+    "//base/test:test_support",
+  ]
+
+  dict = "test/data/render_text/unicode_text_fuzzer.dict"
+}
