@@ -226,8 +226,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                         uint64_t upload_position,
                         uint64_t upload_size);
 
-  // Set the visibility to |visibility| and notifies observers.
-  void SetVisibility(Visibility visibility);
+  // Updates the visibility and notifies observers. Note that this is
+  // distinct from UpdateWebContentsVisibility which may also update the
+  // visibility of renderer-side objects.
+  void SetVisibilityAndNotifyObservers(Visibility visibility);
 
   // Notify observers that the web contents has been focused.
   void NotifyWebContentsFocused(RenderWidgetHost* render_widget_host);
@@ -1517,6 +1519,12 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // Called each time |fullscreen_frames_| is updated. Find the new
   // |current_fullscreen_frame_| and notify observers whenever it changes.
   void FullscreenFrameSetUpdated();
+
+  // Sets the visibility to |new_visibility| and propagates this to the
+  // renderer side, taking into account the current capture state. This
+  // can be called with the current visibility to effect capturing
+  // changes.
+  void UpdateVisibilityAndNotifyPageAndView(Visibility new_visibility);
 
   // Data for core operation ---------------------------------------------------
 
