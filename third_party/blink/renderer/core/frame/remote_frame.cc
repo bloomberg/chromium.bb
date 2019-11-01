@@ -160,6 +160,7 @@ void RemoteFrame::DetachImpl(FrameDetachType type) {
   To<RemoteDOMWindow>(dom_window_.Get())->FrameDetached();
   if (cc_layer_)
     SetCcLayer(nullptr, false, false);
+  receiver_.reset();
 }
 
 bool RemoteFrame::DetachDocument() {
