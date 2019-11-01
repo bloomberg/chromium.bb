@@ -3668,7 +3668,6 @@ test("unit_tests") {
       # that DevUI page tests would work.
       deps += [
         "//chrome/android/features/dev_ui:java",
-        "//chrome/android/features/dev_ui:pak_assets",
         "//chrome/android/modules/dev_ui/provider:java",
       ]
     }
