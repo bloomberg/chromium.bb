@@ -1399,8 +1399,8 @@ class IndexedDBBackingStore::Transaction::ChainedBlobWriterImpl
     DCHECK(!succeeded || bytes_written >= 0);
     waiting_for_callback_ = false;
     if (delegate_.get())  // Only present for Blob, not File.
-      content::BrowserThread::DeleteSoon(content::BrowserThread::IO, FROM_HERE,
-                                         delegate_.release());
+      base::DeleteSoon(FROM_HERE, {content::BrowserThread::IO},
+                       delegate_.release());
     if (aborted_) {
       self_ref_ = nullptr;
       return;
