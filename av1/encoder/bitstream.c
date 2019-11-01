@@ -1939,12 +1939,41 @@ static AOM_INLINE void loop_restoration_write_sb_coeffs(
   }
 }
 
+// Only write out the ref delta section if any of the elements
+// will signal a delta.
+static bool is_mode_ref_delta_meaningful(AV1_COMMON *cm) {
+  struct loopfilter *lf = &cm->lf;
+  if (!lf->mode_ref_delta_update) {
+    return 0;
+  }
+  const RefCntBuffer *buf = get_primary_ref_frame_buf(cm);
+  int8_t last_ref_deltas[REF_FRAMES];
+  int8_t last_mode_deltas[MAX_MODE_LF_DELTAS];
+  if (buf == NULL) {
+    av1_set_default_ref_deltas(last_ref_deltas);
+    av1_set_default_mode_deltas(last_mode_deltas);
+  } else {
+    memcpy(last_ref_deltas, buf->ref_deltas, REF_FRAMES);
+    memcpy(last_mode_deltas, buf->mode_deltas, MAX_MODE_LF_DELTAS);
+  }
+  for (int i = 0; i < REF_FRAMES; i++) {
+    if (lf->ref_deltas[i] != last_ref_deltas[i]) {
+      return true;
+    }
+  }
+  for (int i = 0; i < MAX_MODE_LF_DELTAS; i++) {
+    if (lf->mode_deltas[i] != last_mode_deltas[i]) {
+      return true;
+    }
+  }
+  return false;
+}
+
 static AOM_INLINE void encode_loopfilter(AV1_COMMON *cm,
                                          struct aom_write_bit_buffer *wb) {
   assert(!cm->coded_lossless);
   if (cm->allow_intrabc) return;
   const int num_planes = av1_num_planes(cm);
-  int i;
   struct loopfilter *lf = &cm->lf;
 
   // Encode the loop filter level and type
@@ -1958,41 +1987,37 @@ static AOM_INLINE void encode_loopfilter(AV1_COMMON *cm,
   }
   aom_wb_write_literal(wb, lf->sharpness_level, 3);
 
-  // Write out loop filter deltas applied at the MB level based on mode or
-  // ref frame (if they are enabled).
   aom_wb_write_bit(wb, lf->mode_ref_delta_enabled);
 
-  if (lf->mode_ref_delta_enabled) {
-    aom_wb_write_bit(wb, lf->mode_ref_delta_update);
+  // Write out loop filter deltas applied at the MB level based on mode or
+  // ref frame (if they are enabled), only if there is information to write.
+  int meaningful = is_mode_ref_delta_meaningful(cm);
+  aom_wb_write_bit(wb, meaningful);
+  if (!meaningful) {
+    return;
+  }
 
-    if (lf->mode_ref_delta_update) {
-      const RefCntBuffer *buf = get_primary_ref_frame_buf(cm);
-      int8_t last_ref_deltas[REF_FRAMES];
-      if (buf == NULL) {
-        av1_set_default_ref_deltas(last_ref_deltas);
-      } else {
-        memcpy(last_ref_deltas, buf->ref_deltas, REF_FRAMES);
-      }
-      for (i = 0; i < REF_FRAMES; i++) {
-        const int delta = lf->ref_deltas[i];
-        const int changed = delta != last_ref_deltas[i];
-        aom_wb_write_bit(wb, changed);
-        if (changed) aom_wb_write_inv_signed_literal(wb, delta, 6);
-      }
-
-      int8_t last_mode_deltas[MAX_MODE_LF_DELTAS];
-      if (buf == NULL) {
-        av1_set_default_mode_deltas(last_mode_deltas);
-      } else {
-        memcpy(last_mode_deltas, buf->mode_deltas, MAX_MODE_LF_DELTAS);
-      }
-      for (i = 0; i < MAX_MODE_LF_DELTAS; i++) {
-        const int delta = lf->mode_deltas[i];
-        const int changed = delta != last_mode_deltas[i];
-        aom_wb_write_bit(wb, changed);
-        if (changed) aom_wb_write_inv_signed_literal(wb, delta, 6);
-      }
-    }
+  const RefCntBuffer *buf = get_primary_ref_frame_buf(cm);
+  int8_t last_ref_deltas[REF_FRAMES];
+  int8_t last_mode_deltas[MAX_MODE_LF_DELTAS];
+  if (buf == NULL) {
+    av1_set_default_ref_deltas(last_ref_deltas);
+    av1_set_default_mode_deltas(last_mode_deltas);
+  } else {
+    memcpy(last_ref_deltas, buf->ref_deltas, REF_FRAMES);
+    memcpy(last_mode_deltas, buf->mode_deltas, MAX_MODE_LF_DELTAS);
+  }
+  for (int i = 0; i < REF_FRAMES; i++) {
+    const int delta = lf->ref_deltas[i];
+    const int changed = delta != last_ref_deltas[i];
+    aom_wb_write_bit(wb, changed);
+    if (changed) aom_wb_write_inv_signed_literal(wb, delta, 6);
+  }
+  for (int i = 0; i < MAX_MODE_LF_DELTAS; i++) {
+    const int delta = lf->mode_deltas[i];
+    const int changed = delta != last_mode_deltas[i];
+    aom_wb_write_bit(wb, changed);
+    if (changed) aom_wb_write_inv_signed_literal(wb, delta, 6);
   }
 }
 
