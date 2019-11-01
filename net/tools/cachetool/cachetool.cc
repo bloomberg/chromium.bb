@@ -262,9 +262,9 @@ class StreamCommandMarshal final : public CommandMarshal {
       return "";
     }
     std::vector<char> tmp_buffer(string_size + 1);
-    std::cin.read(&tmp_buffer[0], string_size);
+    std::cin.read(tmp_buffer.data(), string_size);
     tmp_buffer[string_size] = 0;
-    return std::string(&tmp_buffer[0], string_size);
+    return std::string(tmp_buffer.data(), string_size);
   }
 
   // Implements CommandMarshal.
