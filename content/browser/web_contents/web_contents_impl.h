@@ -26,6 +26,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/download/public/common/download_url_parameters.h"
+#include "content/browser/accessibility/accessibility_event_recorder.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/interstitial_page_impl.h"
@@ -134,6 +135,9 @@ class WebContentsAndroid;
 #if BUILDFLAG(ENABLE_PLUGINS)
 class PepperPlaybackObserver;
 #endif
+
+using AccessibilityEventCallback =
+    base::RepeatingCallback<void(const std::string&)>;
 
 // Factory function for the implementations that content knows about. Takes
 // ownership of |delegate|.
@@ -564,6 +568,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       bool internal,
       std::vector<content::AccessibilityTreeFormatter::PropertyFilter>
           property_filters) override;
+  void RecordAccessibilityEvents(AccessibilityEventCallback callback,
+                                 bool start) override;
   RenderFrameHost* GetGuestByInstanceID(
       RenderFrameHost* render_frame_host,
       int browser_plugin_instance_id) override;
@@ -1791,6 +1797,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // The accessibility mode for all frames. This is queried when each frame
   // is created, and broadcast to all frames when it changes.
   ui::AXMode accessibility_mode_;
+
+  std::unique_ptr<content::AccessibilityEventRecorder> event_recorder_;
 
   // Monitors power levels for audio streams associated with this WebContents.
   AudioStreamMonitor audio_stream_monitor_;

@@ -41,6 +41,7 @@
 #include "components/download/public/common/download_stats.h"
 #include "components/rappor/public/rappor_utils.h"
 #include "components/url_formatter/url_formatter.h"
+#include "content/browser/accessibility/accessibility_event_recorder.h"
 #include "content/browser/accessibility/accessibility_tree_formatter_blink.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/browser_main_loop.h"
@@ -186,6 +187,10 @@
 #endif
 
 namespace content {
+
+using AccessibilityEventCallback =
+    base::RepeatingCallback<void(const std::string&)>;
+
 namespace {
 
 const int kMinimumDelayBetweenLoadingUpdatesMS = 100;
@@ -3252,6 +3257,24 @@ base::string16 WebContentsImpl::DumpAccessibilityTree(
   DCHECK(ax_mgr);
   return AccessibilityTreeFormatter::DumpAccessibilityTreeFromManager(
       ax_mgr, internal, property_filters);
+}
+
+void WebContentsImpl::RecordAccessibilityEvents(
+    AccessibilityEventCallback callback,
+    bool start) {
+  if (start) {
+    SetAccessibilityMode(ui::AXMode::kWebContents);
+    auto* ax_mgr = GetOrCreateRootBrowserAccessibilityManager();
+    DCHECK(ax_mgr);
+    base::ProcessId pid = base::Process::Current().Pid();
+    event_recorder_ = content::AccessibilityEventRecorder::Create(
+        ax_mgr, pid, base::StringPiece{});
+    event_recorder_->ListenToEvents(callback);
+  } else {
+    DCHECK(event_recorder_);
+    event_recorder_->FlushAsyncEvents();
+    event_recorder_ = nullptr;
+  }
 }
 
 RenderFrameHost* WebContentsImpl::GetGuestByInstanceID(
