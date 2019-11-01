@@ -2506,16 +2506,16 @@ LIBGAV1_ALWAYS_INLINE int GetNumRows(TransformType tx_type, int tx_height,
       }
       if (tx_width == 8) {
         if (non_zero_coeff_count <= 10) return 4;
-        if (non_zero_coeff_count <= 36) return 8;
-        if ((non_zero_coeff_count <= 100) & (tx_height > 16)) return 16;
-        if ((non_zero_coeff_count <= 164) & (tx_height > 16)) return 24;
+        if (non_zero_coeff_count <= 43) return 8;
+        if ((non_zero_coeff_count <= 107) & (tx_height > 16)) return 16;
+        if ((non_zero_coeff_count <= 171) & (tx_height > 16)) return 24;
         return tx_height;
       }
       if (tx_width == 16) {
         if (non_zero_coeff_count <= 10) return 4;
         if (non_zero_coeff_count <= 36) return 8;
-        if ((non_zero_coeff_count <= 136) & (tx_height > 16)) return 16;
-        if ((non_zero_coeff_count <= 264) & (tx_height > 16)) return 24;
+        if ((non_zero_coeff_count <= 151) & (tx_height > 16)) return 16;
+        if ((non_zero_coeff_count <= 279) & (tx_height > 16)) return 24;
         return tx_height;
       }
       if (tx_width == 32) {
@@ -2538,7 +2538,7 @@ LIBGAV1_ALWAYS_INLINE int GetNumRows(TransformType tx_type, int tx_height,
     if (tx_class == kTransformClassVertical) {
       if (tx_width == 4) {
         if (non_zero_coeff_count <= 16) return 4;
-        if (non_zero_coeff_count <= 29) return 8;
+        if (non_zero_coeff_count <= 32) return 8;
         return tx_height;
       }
       if (tx_width == 8) {
