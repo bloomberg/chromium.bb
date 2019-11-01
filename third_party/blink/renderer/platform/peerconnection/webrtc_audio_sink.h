@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_PEERCONNECTION_WEBRTC_AUDIO_SINK_H_
-#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_PEERCONNECTION_WEBRTC_AUDIO_SINK_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_WEBRTC_AUDIO_SINK_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_WEBRTC_AUDIO_SINK_H_
 
 #include <stdint.h>
 
@@ -21,7 +21,7 @@
 #include "media/base/audio_push_fifo.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_level_calculator.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_audio_sink.h"
-#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/webrtc/api/media_stream_interface.h"
 #include "third_party/webrtc/pc/media_stream_track.h"
 
@@ -37,10 +37,9 @@ namespace blink {
 // webrtc::AudioTrackSinkInterface) which are added/removed on the WebRTC
 // signaling thread.
 //
-// TODO(crbug.com/787254): Move this class out of the Blink exposed API when its
-// clients get Onion soup'ed. Also, switch away from using std::string and
-// std::vector.
-class BLINK_PLATFORM_EXPORT WebRtcAudioSink : public WebMediaStreamAudioSink {
+// TODO(crbug.com/787254): Switch this class away from using std::string and
+// std::vector. Also merge it with WebMediaStreamAudioSink.
+class PLATFORM_EXPORT WebRtcAudioSink : public WebMediaStreamAudioSink {
  public:
   WebRtcAudioSink(
       const std::string& label,
@@ -185,4 +184,4 @@ class BLINK_PLATFORM_EXPORT WebRtcAudioSink : public WebMediaStreamAudioSink {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_PEERCONNECTION_WEBRTC_AUDIO_SINK_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_WEBRTC_AUDIO_SINK_H_
