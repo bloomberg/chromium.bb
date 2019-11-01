@@ -548,6 +548,13 @@ void ExtensionApps::OpenNativeSettings(const std::string& app_id) {
   }
 }
 
+void ExtensionApps::OnPreferredAppSet(
+    const std::string& app_id,
+    apps::mojom::IntentFilterPtr intent_filter,
+    apps::mojom::IntentPtr intent) {
+  NOTIMPLEMENTED();
+}
+
 void ExtensionApps::OnContentSettingChanged(
     const ContentSettingsPattern& primary_pattern,
     const ContentSettingsPattern& secondary_pattern,

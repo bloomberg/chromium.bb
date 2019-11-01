@@ -168,6 +168,12 @@ void CrostiniApps::OpenNativeSettings(const std::string& app_id) {
   NOTIMPLEMENTED();
 }
 
+void CrostiniApps::OnPreferredAppSet(const std::string& app_id,
+                                     apps::mojom::IntentFilterPtr intent_filter,
+                                     apps::mojom::IntentPtr intent) {
+  NOTIMPLEMENTED();
+}
+
 void CrostiniApps::OnRegistryUpdated(
     crostini::CrostiniRegistryService* registry_service,
     const std::vector<std::string>& updated_apps,

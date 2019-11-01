@@ -182,4 +182,11 @@ void BuiltInChromeOsApps::OpenNativeSettings(const std::string& app_id) {
   NOTIMPLEMENTED();
 }
 
+void BuiltInChromeOsApps::OnPreferredAppSet(
+    const std::string& app_id,
+    apps::mojom::IntentFilterPtr intent_filter,
+    apps::mojom::IntentPtr intent) {
+  NOTIMPLEMENTED();
+}
+
 }  // namespace apps
