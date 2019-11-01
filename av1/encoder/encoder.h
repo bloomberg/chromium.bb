@@ -608,7 +608,7 @@ typedef struct RD_COUNTS {
   int global_motion_used[REF_FRAMES];
   int compound_ref_used_flag;
   int skip_mode_used_flag;
-  int tx_type_used[FRAME_UPDATE_TYPES][TX_SIZES_ALL][TX_TYPES];
+  int tx_type_used[TX_SIZES_ALL][TX_TYPES];
   int obmc_used[BLOCK_SIZES_ALL][2];
 } RD_COUNTS;
 

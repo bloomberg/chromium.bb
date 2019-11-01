@@ -2064,8 +2064,7 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
   const int16_t *const scan = scan_order->scan;
 
   // record tx type usage
-  td->rd_counts
-      .tx_type_used[get_frame_update_type(&cpi->gf_group)][tx_size][tx_type]++;
+  td->rd_counts.tx_type_used[tx_size][tx_type]++;
 
 #if CONFIG_ENTROPY_STATS
   av1_update_eob_context(cdf_idx, eob, tx_size, tx_class, plane_type, ec_ctx,

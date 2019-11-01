@@ -5313,11 +5313,11 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
       int left = 1024;
 
       for (j = 0; j < TX_TYPES; j++)
-        sum += cpi->td.rd_counts.tx_type_used[update_type][i][j];
+        sum += cpi->td.rd_counts.tx_type_used[i][j];
 
       for (j = TX_TYPES - 1; j >= 0; j--) {
-        int new_prob =
-            sum ? 1024 * cpi->td.rd_counts.tx_type_used[update_type][i][j] / sum
+        const int new_prob =
+            sum ? 1024 * cpi->td.rd_counts.tx_type_used[i][j] / sum
                 : (j ? 0 : 1024);
         int prob = (cpi->tx_type_probs[update_type][i][j] + new_prob) >> 1;
         left -= prob;
@@ -5334,7 +5334,8 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
       int sum = 0;
       for (int j = 0; j < 2; j++) sum += cpi->td.rd_counts.obmc_used[i][j];
 
-      int new_prob = sum ? 128 * cpi->td.rd_counts.obmc_used[i][1] / sum : 0;
+      const int new_prob =
+          sum ? 128 * cpi->td.rd_counts.obmc_used[i][1] / sum : 0;
       cpi->obmc_probs[update_type][i] =
           (cpi->obmc_probs[update_type][i] + new_prob) >> 1;
     }
