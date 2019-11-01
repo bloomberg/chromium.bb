@@ -5793,7 +5793,11 @@ Unknown properties are collapsed to zero. -->
 
 <enum name="BookmarkLaunchLocation">
   <int value="0" label="Attached bookmark bar"/>
-  <int value="1" label="Detached (floating) bookmark bar"/>
+  <int value="1" label="Detached (floating) bookmark bar">
+    <obsolete>
+      Deprecated: The detached bookmark bar state no longer exists.
+    </obsolete>
+  </int>
   <int value="2" label="Bookmark bar subfolder"/>
   <int value="3" label="Context menu"/>
   <int value="4" label="Wrench menu"/>
