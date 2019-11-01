@@ -1554,18 +1554,19 @@ void HostProcess::StartHost() {
 #endif  // !defined(REMOTING_MULTI_PROCESS)
 
 #if defined(OS_MACOSX)
-  // Ensure we are not running as root (i.e. at the login screen).
-  DCHECK_NE(getuid(), 0U);
+  // Don't run the permission-checks as root (i.e. at the login screen), as they
+  // are not actionable there.
+  if (getuid() != 0U) {
+    // Capture a single screen image to trigger OS permission checks which will
+    // add our binary to the list of apps that can be granted permission. This
+    // is only needed for OS X 10.15 and later.
+    if (base::mac::IsAtLeastOS10_15()) {
+      capture_checker_.reset(new DesktopCapturerChecker());
+      capture_checker_->TriggerSingleCapture();
+    }
 
-  // Capture a single screen image to trigger OS permission checks which will
-  // add our binary to the list of apps that can be granted permission. This
-  // is only needed for OS X 10.15 and later.
-  if (base::mac::IsAtLeastOS10_15()) {
-    capture_checker_.reset(new DesktopCapturerChecker());
-    capture_checker_->TriggerSingleCapture();
+    mac::PromptUserToChangeTrustStateIfNeeded(context_->ui_task_runner());
   }
-
-  mac::PromptUserToChangeTrustStateIfNeeded(context_->ui_task_runner());
 #endif  // defined(OS_MACOSX)
 
   host_->Start(host_owner_);
