@@ -2501,7 +2501,7 @@ LIBGAV1_ALWAYS_INLINE int GetNumRows(TransformType tx_type, int tx_height,
     if (tx_class == kTransformClass2D) {
       if (tx_width == 4) {
         if (non_zero_coeff_count <= 10) return 4;
-        if (non_zero_coeff_count <= 36) return 8;
+        if (non_zero_coeff_count <= 29) return 8;
         return tx_height;
       }
       if (tx_width == 8) {
