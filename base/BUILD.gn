@@ -2019,6 +2019,12 @@ jumbo_component("base") {
       "time/time_conversion_posix.cc",
       "time/time_mac.cc",
     ]
+
+    if (current_cpu == "x64" || current_cpu == "arm64") {
+      sources += [ "time/time_exploded_posix.cc" ]
+    } else {
+      sources += [ "time/time_exploded_ios.cc" ]
+    }
   }
 
   if (dep_libevent) {
