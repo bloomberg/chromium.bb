@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/win/system_media_controls/system_media_controls_service_observer.h"
+#include "components/system_media_controls/system_media_controls.h"
 
 namespace system_media_controls {
 
-SystemMediaControlsServiceObserver::~SystemMediaControlsServiceObserver() =
-    default;
+// static
+SystemMediaControls* SystemMediaControls::GetInstance() {
+  return nullptr;
+}
 
 }  // namespace system_media_controls

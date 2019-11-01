@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/win/system_media_controls/mock_system_media_controls_service.h"
+#include "components/system_media_controls/mock_system_media_controls.h"
 
 namespace system_media_controls {
 
 namespace testing {
 
-MockSystemMediaControlsService::MockSystemMediaControlsService() = default;
+MockSystemMediaControls::MockSystemMediaControls() = default;
 
-MockSystemMediaControlsService::~MockSystemMediaControlsService() = default;
+MockSystemMediaControls::~MockSystemMediaControls() = default;
 
 }  // namespace testing
 

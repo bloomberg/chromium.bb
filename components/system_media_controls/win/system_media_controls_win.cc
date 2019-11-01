@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/win/system_media_controls/system_media_controls_service_impl.h"
+#include "components/system_media_controls/win/system_media_controls_win.h"
 
 #include <systemmediatransportcontrolsinterop.h>
 #include <windows.media.control.h>
@@ -12,11 +12,20 @@
 #include "base/strings/string_piece.h"
 #include "base/win/core_winrt_util.h"
 #include "base/win/scoped_hstring.h"
-#include "ui/base/win/system_media_controls/system_media_controls_service_observer.h"
+#include "components/system_media_controls/system_media_controls_observer.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/win/singleton_hwnd.h"
 
 namespace system_media_controls {
+
+// static
+SystemMediaControls* SystemMediaControls::GetInstance() {
+  internal::SystemMediaControlsWin* service =
+      internal::SystemMediaControlsWin::GetInstance();
+  if (service->Initialize())
+    return service;
+  return nullptr;
+}
 
 namespace internal {
 
@@ -33,15 +42,15 @@ using ABI::Windows::Storage::Streams::IRandomAccessStreamReference;
 using ABI::Windows::Storage::Streams::IRandomAccessStreamReferenceStatics;
 
 // static
-SystemMediaControlsServiceImpl* SystemMediaControlsServiceImpl::GetInstance() {
+SystemMediaControlsWin* SystemMediaControlsWin::GetInstance() {
   // We use a base::Singleton here instead of a base::NoDestruct so that we can
   // clean up external listeners against the Windows platform at exit.
-  return base::Singleton<SystemMediaControlsServiceImpl>::get();
+  return base::Singleton<SystemMediaControlsWin>::get();
 }
 
-SystemMediaControlsServiceImpl::SystemMediaControlsServiceImpl() = default;
+SystemMediaControlsWin::SystemMediaControlsWin() = default;
 
-SystemMediaControlsServiceImpl::~SystemMediaControlsServiceImpl() {
+SystemMediaControlsWin::~SystemMediaControlsWin() {
   if (has_valid_registration_token_) {
     DCHECK(system_media_controls_);
     system_media_controls_->remove_ButtonPressed(registration_token_);
@@ -49,7 +58,7 @@ SystemMediaControlsServiceImpl::~SystemMediaControlsServiceImpl() {
   }
 }
 
-bool SystemMediaControlsServiceImpl::Initialize() {
+bool SystemMediaControlsWin::Initialize() {
   if (attempted_to_initialize_)
     return initialized_;
 
@@ -76,7 +85,7 @@ bool SystemMediaControlsServiceImpl::Initialize() {
       Microsoft::WRL::Callback<ABI::Windows::Foundation::ITypedEventHandler<
           SystemMediaTransportControls*,
           SystemMediaTransportControlsButtonPressedEventArgs*>>(
-          &SystemMediaControlsServiceImpl::ButtonPressed);
+          &SystemMediaControlsWin::ButtonPressed);
   hr = system_media_controls_->add_ButtonPressed(handler.Get(),
                                                  &registration_token_);
   if (FAILED(hr))
@@ -108,60 +117,60 @@ bool SystemMediaControlsServiceImpl::Initialize() {
   return true;
 }
 
-void SystemMediaControlsServiceImpl::AddObserver(
-    SystemMediaControlsServiceObserver* observer) {
+void SystemMediaControlsWin::AddObserver(
+    SystemMediaControlsObserver* observer) {
   observers_.AddObserver(observer);
 }
 
-void SystemMediaControlsServiceImpl::RemoveObserver(
-    SystemMediaControlsServiceObserver* observer) {
+void SystemMediaControlsWin::RemoveObserver(
+    SystemMediaControlsObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void SystemMediaControlsServiceImpl::SetEnabled(bool enabled) {
+void SystemMediaControlsWin::SetEnabled(bool enabled) {
   DCHECK(initialized_);
   HRESULT hr = system_media_controls_->put_IsEnabled(enabled);
   DCHECK(SUCCEEDED(hr));
 }
 
-void SystemMediaControlsServiceImpl::SetIsNextEnabled(bool value) {
+void SystemMediaControlsWin::SetIsNextEnabled(bool value) {
   DCHECK(initialized_);
   HRESULT hr = system_media_controls_->put_IsNextEnabled(value);
   DCHECK(SUCCEEDED(hr));
 }
 
-void SystemMediaControlsServiceImpl::SetIsPreviousEnabled(bool value) {
+void SystemMediaControlsWin::SetIsPreviousEnabled(bool value) {
   DCHECK(initialized_);
   HRESULT hr = system_media_controls_->put_IsPreviousEnabled(value);
   DCHECK(SUCCEEDED(hr));
 }
 
-void SystemMediaControlsServiceImpl::SetIsPlayEnabled(bool value) {
+void SystemMediaControlsWin::SetIsPlayEnabled(bool value) {
   DCHECK(initialized_);
   HRESULT hr = system_media_controls_->put_IsPlayEnabled(value);
   DCHECK(SUCCEEDED(hr));
 }
 
-void SystemMediaControlsServiceImpl::SetIsPauseEnabled(bool value) {
+void SystemMediaControlsWin::SetIsPauseEnabled(bool value) {
   DCHECK(initialized_);
   HRESULT hr = system_media_controls_->put_IsPauseEnabled(value);
   DCHECK(SUCCEEDED(hr));
 }
 
-void SystemMediaControlsServiceImpl::SetIsStopEnabled(bool value) {
+void SystemMediaControlsWin::SetIsStopEnabled(bool value) {
   DCHECK(initialized_);
   HRESULT hr = system_media_controls_->put_IsStopEnabled(value);
   DCHECK(SUCCEEDED(hr));
 }
 
-void SystemMediaControlsServiceImpl::SetPlaybackStatus(
-    ABI::Windows::Media::MediaPlaybackStatus status) {
+void SystemMediaControlsWin::SetPlaybackStatus(PlaybackStatus status) {
   DCHECK(initialized_);
-  HRESULT hr = system_media_controls_->put_PlaybackStatus(status);
+  HRESULT hr =
+      system_media_controls_->put_PlaybackStatus(GetSmtcPlaybackStatus(status));
   DCHECK(SUCCEEDED(hr));
 }
 
-void SystemMediaControlsServiceImpl::SetTitle(const base::string16& title) {
+void SystemMediaControlsWin::SetTitle(const base::string16& title) {
   DCHECK(initialized_);
   DCHECK(display_properties_);
   base::win::ScopedHString h_title = base::win::ScopedHString::Create(title);
@@ -169,7 +178,7 @@ void SystemMediaControlsServiceImpl::SetTitle(const base::string16& title) {
   DCHECK(SUCCEEDED(hr));
 }
 
-void SystemMediaControlsServiceImpl::SetArtist(const base::string16& artist) {
+void SystemMediaControlsWin::SetArtist(const base::string16& artist) {
   DCHECK(initialized_);
   DCHECK(display_properties_);
   base::win::ScopedHString h_artist = base::win::ScopedHString::Create(artist);
@@ -177,7 +186,7 @@ void SystemMediaControlsServiceImpl::SetArtist(const base::string16& artist) {
   DCHECK(SUCCEEDED(hr));
 }
 
-void SystemMediaControlsServiceImpl::SetThumbnail(const SkBitmap& bitmap) {
+void SystemMediaControlsWin::SetThumbnail(const SkBitmap& bitmap) {
   DCHECK(initialized_);
   DCHECK(display_updater_);
   // Use |icon_data_writer_| to write the bitmap data into |icon_stream_| so we
@@ -254,7 +263,7 @@ void SystemMediaControlsServiceImpl::SetThumbnail(const SkBitmap& bitmap) {
   DCHECK(SUCCEEDED(hr));
 }
 
-void SystemMediaControlsServiceImpl::ClearThumbnail() {
+void SystemMediaControlsWin::ClearThumbnail() {
   DCHECK(initialized_);
   DCHECK(display_updater_);
   HRESULT hr = display_updater_->put_Thumbnail(nullptr);
@@ -264,7 +273,7 @@ void SystemMediaControlsServiceImpl::ClearThumbnail() {
   DCHECK(SUCCEEDED(hr));
 }
 
-void SystemMediaControlsServiceImpl::ClearMetadata() {
+void SystemMediaControlsWin::ClearMetadata() {
   DCHECK(initialized_);
   DCHECK(display_updater_);
   HRESULT hr = display_updater_->ClearAll();
@@ -276,7 +285,7 @@ void SystemMediaControlsServiceImpl::ClearMetadata() {
   DCHECK(SUCCEEDED(hr));
 }
 
-void SystemMediaControlsServiceImpl::UpdateDisplay() {
+void SystemMediaControlsWin::UpdateDisplay() {
   DCHECK(initialized_);
   DCHECK(system_media_controls_);
   DCHECK(display_updater_);
@@ -293,33 +302,50 @@ void SystemMediaControlsServiceImpl::UpdateDisplay() {
   DCHECK(SUCCEEDED(hr));
 }
 
-void SystemMediaControlsServiceImpl::OnPlay() {
-  for (SystemMediaControlsServiceObserver& obs : observers_)
+void SystemMediaControlsWin::OnPlay() {
+  for (SystemMediaControlsObserver& obs : observers_)
     obs.OnPlay();
 }
 
-void SystemMediaControlsServiceImpl::OnPause() {
-  for (SystemMediaControlsServiceObserver& obs : observers_)
+void SystemMediaControlsWin::OnPause() {
+  for (SystemMediaControlsObserver& obs : observers_)
     obs.OnPause();
 }
 
-void SystemMediaControlsServiceImpl::OnNext() {
-  for (SystemMediaControlsServiceObserver& obs : observers_)
+void SystemMediaControlsWin::OnNext() {
+  for (SystemMediaControlsObserver& obs : observers_)
     obs.OnNext();
 }
 
-void SystemMediaControlsServiceImpl::OnPrevious() {
-  for (SystemMediaControlsServiceObserver& obs : observers_)
+void SystemMediaControlsWin::OnPrevious() {
+  for (SystemMediaControlsObserver& obs : observers_)
     obs.OnPrevious();
 }
 
-void SystemMediaControlsServiceImpl::OnStop() {
-  for (SystemMediaControlsServiceObserver& obs : observers_)
+void SystemMediaControlsWin::OnStop() {
+  for (SystemMediaControlsObserver& obs : observers_)
     obs.OnStop();
 }
 
+ABI::Windows::Media::MediaPlaybackStatus
+SystemMediaControlsWin::GetSmtcPlaybackStatus(PlaybackStatus status) {
+  switch (status) {
+    case PlaybackStatus::kPlaying:
+      return ABI::Windows::Media::MediaPlaybackStatus::
+          MediaPlaybackStatus_Playing;
+    case PlaybackStatus::kPaused:
+      return ABI::Windows::Media::MediaPlaybackStatus::
+          MediaPlaybackStatus_Paused;
+    case PlaybackStatus::kStopped:
+      return ABI::Windows::Media::MediaPlaybackStatus::
+          MediaPlaybackStatus_Stopped;
+  }
+  NOTREACHED();
+  return ABI::Windows::Media::MediaPlaybackStatus::MediaPlaybackStatus_Stopped;
+}
+
 // static
-HRESULT SystemMediaControlsServiceImpl::ButtonPressed(
+HRESULT SystemMediaControlsWin::ButtonPressed(
     ISystemMediaTransportControls* sender,
     ISystemMediaTransportControlsButtonPressedEventArgs* args) {
   SystemMediaTransportControlsButton button;
@@ -327,7 +353,7 @@ HRESULT SystemMediaControlsServiceImpl::ButtonPressed(
   if (FAILED(hr))
     return hr;
 
-  SystemMediaControlsServiceImpl* impl = GetInstance();
+  SystemMediaControlsWin* impl = GetInstance();
 
   switch (button) {
     case SystemMediaTransportControlsButton::

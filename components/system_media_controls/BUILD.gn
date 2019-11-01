@@ -3,13 +3,9 @@
 # found in the LICENSE file.
 
 component("system_media_controls") {
-  sources = [
-    "system_media_controls_service.cc",
-    "system_media_controls_service.h",
-    "system_media_controls_service_impl.cc",
-    "system_media_controls_service_impl.h",
-    "system_media_controls_service_observer.cc",
-    "system_media_controls_service_observer.h",
+  public = [
+    "system_media_controls.h",
+    "system_media_controls_observer.h",
   ]
 
   defines = [ "IS_SYSTEM_MEDIA_CONTROLS_IMPL" ]
@@ -22,14 +18,26 @@ component("system_media_controls") {
   public_deps = [
     "//skia",
   ]
+
+  # TODO(https://crbug.com/949596): Move MPRIS and Now Playing here.
+  if (is_win) {
+    sources = [
+      "win/system_media_controls_win.cc",
+      "win/system_media_controls_win.h",
+    ]
+  } else {
+    sources = [
+      "system_media_controls_stub.cc",
+    ]
+  }
 }
 
 static_library("test_support") {
   testonly = true
 
   sources = [
-    "mock_system_media_controls_service.cc",
-    "mock_system_media_controls_service.h",
+    "mock_system_media_controls.cc",
+    "mock_system_media_controls.h",
   ]
 
   deps = [
