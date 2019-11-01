@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.preferences;
 
-import androidx.annotation.Nullable;
-
 import org.chromium.chrome.browser.crash.MinidumpUploadService.ProcessType;
 
 import java.util.HashSet;
@@ -585,31 +583,6 @@ public class ChromePreferenceManager {
     @Deprecated
     public boolean readBoolean(String key, boolean defaultValue) {
         return mManager.readBoolean(key, defaultValue);
-    }
-
-    /**
-     * Writes the given string to the named shared preference.
-     *
-     * @param key The name of the preference to modify.
-     * @param value The new value for the preference.
-     * @deprecated Use {@link SharedPreferencesManager} instead.
-     */
-    @Deprecated
-    public void writeString(String key, String value) {
-        mManager.writeString(key, value);
-    }
-
-    /**
-     * Reads the given String value from the named shared preference.
-     *
-     * @param key The name of the preference to return.
-     * @param defaultValue The default value to return if there's no value stored.
-     * @return The value of the preference if stored; defaultValue otherwise.
-     * @deprecated Use {@link SharedPreferencesManager} instead.
-     */
-    @Deprecated
-    public String readString(String key, @Nullable String defaultValue) {
-        return mManager.readString(key, defaultValue);
     }
 
     /**
