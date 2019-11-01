@@ -326,7 +326,7 @@ bool HomeLauncherGestureHandler::OnScrollEvent(const gfx::Point& location,
 bool HomeLauncherGestureHandler::OnReleaseEvent(
     const gfx::Point& location,
     base::Optional<float> velocity_y) {
-  if (IsAnimating())
+  if (mode_ != Mode::kSwipeHomeToOverview && IsAnimating())
     return false;
 
   return OnDragEnded(location, velocity_y);
@@ -916,7 +916,7 @@ bool HomeLauncherGestureHandler::SetUpWindows(
 void HomeLauncherGestureHandler::OnDragStarted(const gfx::Point& location) {
   if (mode_ == Mode::kSwipeHomeToOverview) {
     swipe_home_to_overview_controller_ =
-        std::make_unique<SwipeHomeToOverviewController>();
+        std::make_unique<SwipeHomeToOverviewController>(display_.id());
   } else {
     NotifyHomeLauncherTargetPositionChanged(
         mode_ == Mode::kSlideUpToShow /*showing*/, display_.id());
