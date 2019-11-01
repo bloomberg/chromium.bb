@@ -1245,13 +1245,13 @@ linux_builder(
 
 linux_builder(
     name = 'linux-clang-tidy-dbg',
-    executable = luci.recipe(name = 'tricium_analyze'),
+    executable = luci.recipe(name = 'tricium_clang_tidy_wrapper'),
     goma_jobs = goma.jobs.J150,
 )
 
 linux_builder(
     name = 'linux-clang-tidy-rel',
-    executable = luci.recipe(name = 'tricium_analyze'),
+    executable = luci.recipe(name = 'tricium_clang_tidy_wrapper'),
     goma_jobs = goma.jobs.J150,
 )
 
