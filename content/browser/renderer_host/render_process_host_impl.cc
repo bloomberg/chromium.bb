@@ -464,9 +464,8 @@ class SessionStorageHolder : public base::SupportsUserData::Data {
   ~SessionStorageHolder() override {
     // Its important to delete the map on the IO thread to avoid deleting
     // the underlying namespaces prior to processing ipcs referring to them.
-    BrowserThread::DeleteSoon(
-        BrowserThread::IO, FROM_HERE,
-        session_storage_namespaces_awaiting_close_.release());
+    base::DeleteSoon(FROM_HERE, {BrowserThread::IO},
+                     session_storage_namespaces_awaiting_close_.release());
   }
 
   void Hold(const SessionStorageNamespaceMap& sessions, int widget_route_id) {
