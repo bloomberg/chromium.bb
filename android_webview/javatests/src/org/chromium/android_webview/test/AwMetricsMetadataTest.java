@@ -148,4 +148,64 @@ public class AwMetricsMetadataTest {
         Assert.assertTrue("Should have some os.build_fingerprint",
                 systemProfile.getOs().hasBuildFingerprint());
     }
+
+    @Test
+    @MediumTest
+    @Feature({"AndroidWebView"})
+    public void testMetadata_hardwareMiscellaneous() throws Throwable {
+        ChromeUserMetricsExtension log = mPlatformServiceBridge.waitForNextMetricsLog();
+        SystemProfileProto systemProfile = log.getSystemProfile();
+        Assert.assertTrue("Should have some hardware.system_ram_mb",
+                systemProfile.getHardware().hasSystemRamMb());
+        Assert.assertTrue("Should have some hardware.hardware_class",
+                systemProfile.getHardware().hasHardwareClass());
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"AndroidWebView"})
+    public void testMetadata_hardwareScreen() throws Throwable {
+        ChromeUserMetricsExtension log = mPlatformServiceBridge.waitForNextMetricsLog();
+        SystemProfileProto systemProfile = log.getSystemProfile();
+        Assert.assertTrue("Should have some hardware.screen_count",
+                systemProfile.getHardware().hasScreenCount());
+        Assert.assertTrue("Should have some hardware.primary_screen_width",
+                systemProfile.getHardware().hasPrimaryScreenWidth());
+        Assert.assertTrue("Should have some hardware.primary_screen_height",
+                systemProfile.getHardware().hasPrimaryScreenHeight());
+        Assert.assertTrue("Should have some hardware.primary_screen_scale_factor",
+                systemProfile.getHardware().hasPrimaryScreenScaleFactor());
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"AndroidWebView"})
+    public void testMetadata_hardwareCpu() throws Throwable {
+        ChromeUserMetricsExtension log = mPlatformServiceBridge.waitForNextMetricsLog();
+        SystemProfileProto systemProfile = log.getSystemProfile();
+        Assert.assertTrue("Should have some hardware.cpu_architecture",
+                systemProfile.getHardware().hasCpuArchitecture());
+        Assert.assertTrue("Should have some hardware.cpu.vendor_name",
+                systemProfile.getHardware().getCpu().hasVendorName());
+        Assert.assertTrue("Should have some hardware.cpu.signature",
+                systemProfile.getHardware().getCpu().hasSignature());
+        Assert.assertTrue("Should have some hardware.cpu.num_cores",
+                systemProfile.getHardware().getCpu().hasNumCores());
+        Assert.assertTrue("Should have some hardware.cpu.is_hypervisor",
+                systemProfile.getHardware().getCpu().hasIsHypervisor());
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"AndroidWebView"})
+    public void testMetadata_hardwareGpu() throws Throwable {
+        ChromeUserMetricsExtension log = mPlatformServiceBridge.waitForNextMetricsLog();
+        SystemProfileProto systemProfile = log.getSystemProfile();
+        Assert.assertTrue("Should have some hardware.gpu.driver_version",
+                systemProfile.getHardware().getGpu().hasDriverVersion());
+        Assert.assertTrue("Should have some hardware.gpu.gl_vendor",
+                systemProfile.getHardware().getGpu().hasGlVendor());
+        Assert.assertTrue("Should have some hardware.gpu.gl_renderer",
+                systemProfile.getHardware().getGpu().hasGlRenderer());
+    }
 }
