@@ -49,12 +49,17 @@ void Warp_NEON(const void* const source, const ptrdiff_t source_stride,
                const int16_t delta, uint16_t* dest,
                const ptrdiff_t dest_stride) {
   constexpr int bitdepth = 8;
-  // Intermediate_result is the output of the horizontal filtering and rounding.
-  // The range is within 13 (= bitdepth + kFilterBits + 1 -
-  // kInterRoundBitsHorizontal) bits (unsigned). We use the signed int16_t type
-  // so that we can multiply it by kWarpedFilters (which has signed values)
-  // using vmlal_s16().
-  int16_t intermediate_result[15][8];  // 15 rows, 8 columns.
+  union {
+    // Intermediate_result is the output of the horizontal filtering and
+    // rounding. The range is within 13 (= bitdepth + kFilterBits + 1 -
+    // kInterRoundBitsHorizontal) bits (unsigned). We use the signed int16_t
+    // type so that we can multiply it by kWarpedFilters (which has signed
+    // values) using vmlal_s16().
+    int16_t intermediate_result[15][8];  // 15 rows, 8 columns.
+    // In the simple special cases where the samples in each row are all the
+    // same, store one sample per row in a column vector.
+    int16_t intermediate_result_column[15];
+  };
   const int horizontal_offset = 1 << (bitdepth + kFilterBits - 1);
   const int vertical_offset =
       1 << (bitdepth + 2 * kFilterBits - kInterRoundBitsHorizontal);
@@ -79,6 +84,99 @@ void Warp_NEON(const void* const source, const ptrdiff_t source_stride,
       const int ix4 = x4 >> kWarpedModelPrecisionBits;
       const int iy4 = y4 >> kWarpedModelPrecisionBits;
 
+      // Check for two simple special cases, where the horizontal filter can
+      // be significantly simplified.
+      //
+      // In general, for each row, the horizontal filter is calculated as
+      // follows:
+      //   for (int x = -4; x < 4; ++x) {
+      //     const int offset = ...;
+      //     int sum = horizontal_offset;
+      //     for (int k = 0; k < 8; ++k) {
+      //       const int column = Clip3(ix4 + x + k - 3, 0, source_width - 1);
+      //       sum += kWarpedFilters[offset][k] * src_row[column];
+      //     }
+      //     ...
+      //   }
+      // The column index before clipping, ix4 + x + k - 3, varies in the range
+      // ix4 - 7 <= ix4 + x + k - 3 <= ix4 + 7. If ix4 - 7 >= source_width - 1
+      // or ix4 + 7 <= 0, then all the column indexes are clipped to the same
+      // border index (source_width - 1 or 0, respectively). Then for each x,
+      // the inner for loop of the horizontal filter is reduced to multiplying
+      // the border pixel by the sum of the filter coefficients.
+      if (ix4 - 7 >= source_width - 1 || ix4 + 7 <= 0) {
+        // Points to the left or right border of the first row of |src|.
+        const uint8_t* first_row_border =
+            (ix4 + 7 <= 0) ? src : src + source_width - 1;
+        // Horizontal filter.
+        for (int y = -7; y < 8; ++y) {
+          const int row = Clip3(iy4 + y, 0, source_height - 1);
+          const uint8_t row_border_pixel =
+              first_row_border[row * source_stride];
+          // Every sample is equal to |row_border_pixel|. Since the sum of the
+          // warped filter coefficients is 128 (= 2^7), the filtering is
+          // equivalent to multiplying |row_border_pixel| by 128.
+          intermediate_result_column[y + 7] =
+              (horizontal_offset >> kInterRoundBitsHorizontal) +
+              (row_border_pixel << (7 - kInterRoundBitsHorizontal));
+        }
+        // Vertical filter.
+        uint16_t* dst_row = dest + start_x - block_start_x;
+        int sy4 =
+            (y4 & ((1 << kWarpedModelPrecisionBits) - 1)) - MultiplyBy4(delta);
+        for (int y = 0; y < 8; ++y) {
+          int sy = sy4 - MultiplyBy4(gamma);
+          int16x8_t filter[8];
+          for (int x = 0; x < 8; ++x) {
+            const int offset =
+                RightShiftWithRounding(sy, kWarpedDiffPrecisionBits) +
+                kWarpedPixelPrecisionShifts;
+            filter[x] = vld1q_s16(kWarpedFilters[offset]);
+            sy += gamma;
+          }
+          Transpose8x8(&filter[0], &filter[1], &filter[2], &filter[3],
+                       &filter[4], &filter[5], &filter[6], &filter[7]);
+          int32x4_t sum_low = vdupq_n_s32(vertical_offset);
+          int32x4_t sum_high = sum_low;
+          for (int k = 0; k < 8; ++k) {
+            const int16_t intermediate = intermediate_result_column[y + k];
+            sum_low =
+                vmlal_n_s16(sum_low, vget_low_s16(filter[k]), intermediate);
+            sum_high =
+                vmlal_n_s16(sum_high, vget_high_s16(filter[k]), intermediate);
+          }
+          assert(inter_round_bits_vertical == 7 ||
+                 inter_round_bits_vertical == 11);
+#if defined(__aarch64__)
+          const int32x4_t shift = vdupq_n_s32(-inter_round_bits_vertical);
+          const uint32x4_t sum_low_shifted =
+              vrshlq_u32(vreinterpretq_u32_s32(sum_low), shift);
+          const uint32x4_t sum_high_shifted =
+              vrshlq_u32(vreinterpretq_u32_s32(sum_high), shift);
+          const uint16x4_t sum_low_16 = vmovn_u32(sum_low_shifted);
+          const uint16x4_t sum_high_16 = vmovn_u32(sum_high_shifted);
+#else   // !defined(__aarch64__)
+          uint16x4_t sum_low_16;
+          uint16x4_t sum_high_16;
+          if (inter_round_bits_vertical == 7) {
+            sum_low_16 = vrshrn_n_u32(vreinterpretq_u32_s32(sum_low), 7);
+            sum_high_16 = vrshrn_n_u32(vreinterpretq_u32_s32(sum_high), 7);
+          } else {
+            sum_low_16 = vrshrn_n_u32(vreinterpretq_u32_s32(sum_low), 11);
+            sum_high_16 = vrshrn_n_u32(vreinterpretq_u32_s32(sum_high), 11);
+          }
+#endif  // defined(__aarch64__)
+          vst1_u16(dst_row, sum_low_16);
+          vst1_u16(dst_row + 4, sum_high_16);
+          dst_row += dest_stride;
+          sy4 += delta;
+        }
+        start_x += 8;
+        continue;
+      }
+
+      // At this point, we know ix4 - 7 < source_width - 1 and ix4 + 7 > 0.
+
       // Horizontal filter.
       int sx4 = (x4 & ((1 << kWarpedModelPrecisionBits) - 1)) - beta * 7;
       for (int y = -7; y < 8; ++y) {
@@ -90,30 +188,6 @@ void Warp_NEON(const void* const source, const ptrdiff_t source_stride,
         // filtering.
         const int row = Clip3(iy4 + y, 0, source_height - 1);
         const uint8_t* const src_row = src + row * source_stride;
-        // Check for two simple special cases.
-        if (ix4 - 7 >= source_width - 1) {
-          // Every sample is equal to src_row[source_width - 1]. Since the sum
-          // of the warped filter coefficients is 128 (= 2^7), the filtering is
-          // equivalent to multiplying src_row[source_width - 1] by 128.
-          const int16_t s =
-              (horizontal_offset >> kInterRoundBitsHorizontal) +
-              (src_row[source_width - 1] << (7 - kInterRoundBitsHorizontal));
-          const int16x8_t sum = vdupq_n_s16(s);
-          vst1q_s16(intermediate_result[y + 7], sum);
-          sx4 += beta;
-          continue;
-        }
-        if (ix4 + 7 <= 0) {
-          // Every sample is equal to src_row[0]. Since the sum of the warped
-          // filter coefficients is 128 (= 2^7), the filtering is equivalent to
-          // multiplying src_row[0] by 128.
-          const int16_t s = (horizontal_offset >> kInterRoundBitsHorizontal) +
-                            (src_row[0] << (7 - kInterRoundBitsHorizontal));
-          const int16x8_t sum = vdupq_n_s16(s);
-          vst1q_s16(intermediate_result[y + 7], sum);
-          sx4 += beta;
-          continue;
-        }
         // Read 15 samples from &src_row[ix4 - 7]. The 16th sample is also
         // read but is ignored.
         //
@@ -201,7 +275,7 @@ void Warp_NEON(const void* const source, const ptrdiff_t source_stride,
       uint16_t* dst_row = dest + start_x - block_start_x;
       int sy4 =
           (y4 & ((1 << kWarpedModelPrecisionBits) - 1)) - MultiplyBy4(delta);
-      for (int y = -4; y < 4; ++y) {
+      for (int y = 0; y < 8; ++y) {
         int sy = sy4 - MultiplyBy4(gamma);
         int16x8_t filter[8];
         for (int x = 0; x < 8; ++x) {
@@ -232,8 +306,7 @@ void Warp_NEON(const void* const source, const ptrdiff_t source_stride,
         int32x4_t sum_low = vdupq_n_s32(vertical_offset);
         int32x4_t sum_high = sum_low;
         for (int k = 0; k < 8; ++k) {
-          const int16x8_t intermediate =
-              vld1q_s16(intermediate_result[y + 4 + k]);
+          const int16x8_t intermediate = vld1q_s16(intermediate_result[y + k]);
           sum_low = vmlal_s16(sum_low, vget_low_s16(filter[k]),
                               vget_low_s16(intermediate));
           sum_high = vmlal_s16(sum_high, vget_high_s16(filter[k]),
