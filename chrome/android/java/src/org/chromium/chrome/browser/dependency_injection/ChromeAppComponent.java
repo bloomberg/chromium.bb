@@ -17,6 +17,7 @@ import org.chromium.chrome.browser.customtabs.dependency_injection.CustomTabActi
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.webapps.dependency_injection.WebappActivityComponent;
+import org.chromium.chrome.browser.webapps.dependency_injection.WebappActivityModule;
 
 import javax.inject.Singleton;
 
@@ -32,7 +33,8 @@ public interface ChromeAppComponent {
 
     CustomTabActivityComponent createCustomTabActivityComponent(ChromeActivityCommonsModule module,
             CustomTabActivityModule customTabActivityModule);
-    WebappActivityComponent createWebappActivityComponent(ChromeActivityCommonsModule module);
+    WebappActivityComponent createWebappActivityComponent(
+            ChromeActivityCommonsModule module, WebappActivityModule webappActivityModule);
 
     CustomTabsConnection resolveCustomTabsConnection();
     ChromePreferenceManager resolvePreferenceManager();
