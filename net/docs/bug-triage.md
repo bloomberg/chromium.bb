@@ -42,7 +42,7 @@ uniform, predictable two day commitment for all triagers.
     for suspected network bugs, a network component assigned and a
     chrome://net-export/ log requested.  Suggested text: "Please collect and
     attach a chrome://net-export log. Instructions can be found here:
-    https://sites.google.com/a/chromium.org/dev/for-testers/providing-network-details".
+    https://chromium.org/for-testers/providing-network-details".
     A link to the instructions appears on net-export, for easy reference.
     When asking for a log or more details, attach the Needs-Feedback label.
 
