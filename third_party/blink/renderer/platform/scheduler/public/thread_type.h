@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_THREAD_TYPE_H_
-#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_THREAD_TYPE_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_PUBLIC_THREAD_TYPE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_PUBLIC_THREAD_TYPE_H_
 
 #include "third_party/blink/public/platform/web_common.h"
 
 namespace blink {
 
-enum class WebThreadType {
+enum class ThreadType {
   kMainThread = 0,
   kUnspecifiedWorkerThread = 1,
   kCompositorThread = 2,
@@ -32,8 +32,8 @@ enum class WebThreadType {
   kCount = 18
 };
 
-BLINK_PLATFORM_EXPORT const char* GetNameForThreadType(WebThreadType);
+BLINK_PLATFORM_EXPORT const char* GetNameForThreadType(ThreadType);
 
 }  // namespace blink
 
-#endif  // ThreadType_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_PUBLIC_THREAD_TYPE_H_

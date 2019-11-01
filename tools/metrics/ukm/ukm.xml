@@ -7082,7 +7082,7 @@ be describing additional metrics about the same event.
   </metric>
   <metric name="ThreadType">
     <summary>
-      blink::WebThreadType for the thread the current task was executed on.
+      blink::ThreadType for the thread the current task was executed on.
     </summary>
   </metric>
   <metric name="UseCase">
