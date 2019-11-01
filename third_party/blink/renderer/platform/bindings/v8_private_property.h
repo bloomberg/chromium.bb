@@ -25,7 +25,6 @@ class ScriptWrappable;
 // Apply |X| for each pair of (InterfaceName, PrivateKeyName).
 #define V8_PRIVATE_PROPERTY_FOR_EACH(X)                 \
   X(DOMException, Error)                                \
-  X(Global, Event)                                      \
   X(MessageEvent, CachedData)                           \
   X(NamedConstructor, Initialized)                      \
 
