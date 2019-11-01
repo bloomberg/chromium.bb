@@ -4590,61 +4590,61 @@ static int rd_pick_palette_intra_sby(
     int *rate, int *rate_tokenonly, int64_t *distortion, int *skippable,
     int *beat_best_rd, PICK_MODE_CONTEXT *ctx, uint8_t *best_blk_skip,
     uint8_t *tx_type_map) {
-  int rate_overhead = 0;
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = xd->mi[0];
   assert(!is_inter_block(mbmi));
   assert(av1_allow_palette(cpi->common.allow_screen_content_tools, bsize));
-  const SequenceHeader *const seq_params = &cpi->common.seq_params;
-  int colors, n;
+
   const int src_stride = x->plane[0].src.stride;
   const uint8_t *const src = x->plane[0].src.buf;
-  uint8_t *const color_map = xd->plane[0].color_index_map;
   int block_width, block_height, rows, cols;
   av1_get_block_dimensions(bsize, 0, xd, &block_width, &block_height, &rows,
                            &cols);
-
+  const SequenceHeader *const seq_params = &cpi->common.seq_params;
+  const int is_hbd = seq_params->use_highbitdepth;
+  const int bit_depth = seq_params->bit_depth;
   int count_buf[1 << 12];  // Maximum (1 << 12) color levels.
-  if (seq_params->use_highbitdepth)
-    colors = av1_count_colors_highbd(src, src_stride, rows, cols,
-                                     seq_params->bit_depth, count_buf);
-  else
+  int colors;
+  if (is_hbd) {
+    colors = av1_count_colors_highbd(src, src_stride, rows, cols, bit_depth,
+                                     count_buf);
+  } else {
     colors = av1_count_colors(src, src_stride, rows, cols, count_buf);
-  mbmi->filter_intra_mode_info.use_filter_intra = 0;
+  }
 
+  int rate_overhead = 0;
+  uint8_t *const color_map = xd->plane[0].color_index_map;
   if (colors > 1 && colors <= 64) {
-    int r, c, i;
-    const int max_itr = 50;
     int *const data = x->palette_buffer->kmeans_data_buf;
     int centroids[PALETTE_MAX_SIZE];
-    int lb, ub, val;
-    uint16_t *src16 = CONVERT_TO_SHORTPTR(src);
-    if (seq_params->use_highbitdepth)
-      lb = ub = src16[0];
-    else
-      lb = ub = src[0];
-
-    if (seq_params->use_highbitdepth) {
-      for (r = 0; r < rows; ++r) {
-        for (c = 0; c < cols; ++c) {
-          val = src16[r * src_stride + c];
-          data[r * cols + c] = val;
-          if (val < lb)
-            lb = val;
-          else if (val > ub)
-            ub = val;
+    int lb, ub;
+    if (is_hbd) {
+      int *data_pt = data;
+      const uint16_t *src_pt = CONVERT_TO_SHORTPTR(src);
+      lb = ub = src_pt[0];
+      for (int r = 0; r < rows; ++r) {
+        for (int c = 0; c < cols; ++c) {
+          const int val = src_pt[c];
+          data_pt[c] = val;
+          lb = AOMMIN(lb, val);
+          ub = AOMMAX(ub, val);
         }
+        src_pt += src_stride;
+        data_pt += cols;
       }
     } else {
-      for (r = 0; r < rows; ++r) {
-        for (c = 0; c < cols; ++c) {
-          val = src[r * src_stride + c];
-          data[r * cols + c] = val;
-          if (val < lb)
-            lb = val;
-          else if (val > ub)
-            ub = val;
+      int *data_pt = data;
+      const uint8_t *src_pt = src;
+      lb = ub = src[0];
+      for (int r = 0; r < rows; ++r) {
+        for (int c = 0; c < cols; ++c) {
+          const int val = src_pt[c];
+          data_pt[c] = val;
+          lb = AOMMIN(lb, val);
+          ub = AOMMAX(ub, val);
         }
+        src_pt += src_stride;
+        data_pt += cols;
       }
     }
 
@@ -4656,9 +4656,9 @@ static int rd_pick_palette_intra_sby(
 
     // Find the dominant colors, stored in top_colors[].
     int top_colors[PALETTE_MAX_SIZE] = { 0 };
-    for (i = 0; i < AOMMIN(colors, PALETTE_MAX_SIZE); ++i) {
+    for (int i = 0; i < AOMMIN(colors, PALETTE_MAX_SIZE); ++i) {
       int max_count = 0;
-      for (int j = 0; j < (1 << seq_params->bit_depth); ++j) {
+      for (int j = 0; j < (1 << bit_depth); ++j) {
         if (count_buf[j] > max_count) {
           max_count = count_buf[j];
           top_colors[i] = j;
@@ -4668,11 +4668,13 @@ static int rd_pick_palette_intra_sby(
       count_buf[top_colors[i]] = 0;
     }
 
+    int n;
+
     // Try the dominant colors directly.
     // TODO(huisu@google.com): Try to avoid duplicate computation in cases
     // where the dominant colors and the k-means results are similar.
     for (n = AOMMIN(colors, PALETTE_MAX_SIZE); n >= 2; --n) {
-      for (i = 0; i < n; ++i) centroids[i] = top_colors[i];
+      for (int i = 0; i < n; ++i) centroids[i] = top_colors[i];
       palette_rd_y(cpi, x, mbmi, bsize, mi_row, mi_col, dc_mode_cost, data,
                    centroids, n, color_cache, n_cache, best_mbmi,
                    best_palette_color_map, best_rd, best_model_rd, rate,
@@ -4681,6 +4683,7 @@ static int rd_pick_palette_intra_sby(
     }
 
     // K-means clustering.
+    const int max_itr = 50;
     for (n = AOMMIN(colors, PALETTE_MAX_SIZE); n >= 2; --n) {
       if (colors == PALETTE_MIN_SIZE) {
         // Special case: These colors automatically become the centroids.
@@ -4689,7 +4692,7 @@ static int rd_pick_palette_intra_sby(
         centroids[0] = lb;
         centroids[1] = ub;
       } else {
-        for (i = 0; i < n; ++i) {
+        for (int i = 0; i < n; ++i) {
           centroids[i] = lb + (2 * i + 1) * (ub - lb) / n / 2;
         }
         av1_k_means(data, centroids, color_map, rows * cols, n, 1, max_itr);
