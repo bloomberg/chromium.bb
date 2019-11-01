@@ -569,12 +569,6 @@ class HostResolverManager::RequestImpl
     return results_ ? results_.value().hostnames() : *nullopt_result;
   }
 
-  const base::Optional<EsniContent>& GetEsniResults() const override {
-    DCHECK(complete_);
-    static const base::NoDestructor<base::Optional<EsniContent>> nullopt_result;
-    return results_ ? results_.value().esni_data() : *nullopt_result;
-  }
-
   const base::Optional<HostCache::EntryStaleness>& GetStaleInfo()
       const override {
     DCHECK(complete_);
@@ -1099,9 +1093,6 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
       case DnsQueryType::SRV:
         parse_result = ParseServiceDnsResponse(response, &results);
         break;
-      case DnsQueryType::ESNI:
-        parse_result = ParseEsniDnsResponse(response, &results);
-        break;
     }
     DCHECK_LT(parse_result, DnsResponse::DNS_PARSE_RESULT_MAX);
 
@@ -1117,21 +1108,14 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
 
       switch (dns_query_type) {
         case DnsQueryType::A:
-          // Canonical names from A results have lower priority than those
-          // from AAAA results, so merge to the back.
+          // A results in |results| go after other results in |saved_results_|,
+          // so merge |saved_results_| to the front.
           results = HostCache::Entry::MergeEntries(
               std::move(saved_results_).value(), std::move(results));
           break;
         case DnsQueryType::AAAA:
-          // Canonical names from AAAA results take priority over those
-          // from A results, so merge to the front.
-          results = HostCache::Entry::MergeEntries(
-              std::move(results), std::move(saved_results_).value());
-          break;
-        case DnsQueryType::ESNI:
-          // It doesn't matter whether the ESNI record is the "front"
-          // or the "back" argument to the merge, since the logic for
-          // merging addresses from ESNI records is the same in each case.
+          // AAAA results in |results| go before other results in
+          // |saved_results_|, so merge |saved_results_| to the back.
           results = HostCache::Entry::MergeEntries(
               std::move(results), std::move(saved_results_).value());
           break;
@@ -1282,58 +1266,6 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
         std::move(ordered_service_targets), HostCache::Entry::SOURCE_DNS,
         response_ttl);
     return DnsResponse::DNS_PARSE_OK;
-  }
-
-  DnsResponse::Result ParseEsniDnsResponse(const DnsResponse* response,
-                                           HostCache::Entry* out_results) {
-    std::vector<std::unique_ptr<const RecordParsed>> records;
-    base::Optional<base::TimeDelta> response_ttl;
-    DnsResponse::Result parse_result = ParseAndFilterResponseRecords(
-        response, dns_protocol::kExperimentalTypeEsniDraft4, &records,
-        &response_ttl);
-
-    if (parse_result != DnsResponse::DNS_PARSE_OK) {
-      *out_results = GetMalformedResponseResult();
-      return parse_result;
-    }
-
-    // Glom the ESNI response records into a single EsniContent;
-    // this also dedups keys and (key, address) associations.
-    EsniContent content;
-    for (const auto& record : records) {
-      const EsniRecordRdata& rdata = *record->rdata<EsniRecordRdata>();
-
-      for (const IPAddress& address : rdata.addresses())
-        content.AddKeyForAddress(address, rdata.esni_keys());
-    }
-
-    // As a first pass, deliberately ignore ESNI records with no addresses
-    // included. Later, the implementation can be extended to handle "at-large"
-    // ESNI keys not specifically associated with collections of addresses.
-    // (We're declining the "...clients MAY initiate..." choice in ESNI draft 4,
-    // Section 4.2.2 Step 2.)
-    if (content.keys_for_addresses().empty()) {
-      *out_results =
-          HostCache::Entry(ERR_NAME_NOT_RESOLVED, EsniContent(),
-                           HostCache::Entry::SOURCE_DNS, response_ttl);
-    } else {
-      AddressList addresses, ipv4_addresses_temporary;
-      addresses.set_canonical_name(hostname_);
-      for (const auto& kv : content.keys_for_addresses())
-        (kv.first.IsIPv6() ? addresses : ipv4_addresses_temporary)
-            .push_back(IPEndPoint(kv.first, 0));
-      addresses.insert(addresses.end(), ipv4_addresses_temporary.begin(),
-                       ipv4_addresses_temporary.end());
-
-      // Store the addresses separately from the ESNI key-address
-      // associations, so that the addresses can be merged later with
-      // addresses from A and AAAA records.
-      *out_results = HostCache::Entry(
-          OK, std::move(content), HostCache::Entry::SOURCE_DNS, response_ttl);
-      out_results->set_addresses(std::move(addresses));
-    }
-
-    return parse_result;
   }
 
   // Sort service targets per RFC2782.  In summary, sort first by |priority|,

@@ -100,13 +100,6 @@ class NET_EXPORT HostResolver {
     virtual const base::Optional<std::vector<HostPortPair>>&
     GetHostnameResults() const = 0;
 
-    // TLS 1.3 Encrypted Server Name Indication, draft 4 (ESNI,
-    // https://tools.ietf.org/html/draft-ietf-tls-esni-04)
-    // results of the request. Should only be called after
-    // Start() signals completion, either by invoking the callback or by
-    // returning a result other than |ERR_IO_PENDING|.
-    virtual const base::Optional<EsniContent>& GetEsniResults() const = 0;
-
     // Information about the result's staleness in the host cache. Only
     // available if results were received from the host cache.
     //
