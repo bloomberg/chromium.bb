@@ -424,7 +424,7 @@ public class ChromePreferenceManager {
      *        to record that the counter has been disabled.
      */
     public void setContextualSearchTapTriggeredPromoCount(int count) {
-        writeInt(CONTEXTUAL_SEARCH_TAP_TRIGGERED_PROMO_COUNT, count);
+        mManager.writeInt(CONTEXTUAL_SEARCH_TAP_TRIGGERED_PROMO_COUNT, count);
     }
 
     /**
@@ -439,7 +439,7 @@ public class ChromePreferenceManager {
      * @param weekNumber The week number to store.
      */
     public void setContextualSearchCurrentWeekNumber(int weekNumber) {
-        writeInt(CONTEXTUAL_SEARCH_CURRENT_WEEK_NUMBER, weekNumber);
+        mManager.writeInt(CONTEXTUAL_SEARCH_CURRENT_WEEK_NUMBER, weekNumber);
     }
 
     /**
@@ -448,7 +448,7 @@ public class ChromePreferenceManager {
      * @return the epoch time in milliseconds (see {@link System#currentTimeMillis()}).
      */
     public long getNewTabPageSigninPromoSuppressionPeriodStart() {
-        return readLong(NTP_SIGNIN_PROMO_SUPPRESSION_PERIOD_START, 0);
+        return mManager.readLong(NTP_SIGNIN_PROMO_SUPPRESSION_PERIOD_START);
     }
 
     /**
@@ -457,7 +457,7 @@ public class ChromePreferenceManager {
      * @param timeMillis the epoch time in milliseconds (see {@link System#currentTimeMillis()}).
      */
     public void setNewTabPageSigninPromoSuppressionPeriodStart(long timeMillis) {
-        writeLong(NTP_SIGNIN_PROMO_SUPPRESSION_PERIOD_START, timeMillis);
+        mManager.writeLong(NTP_SIGNIN_PROMO_SUPPRESSION_PERIOD_START, timeMillis);
     }
 
     /**
@@ -465,7 +465,7 @@ public class ChromePreferenceManager {
      * Tab Page are no longer suppressed.
      */
     public void clearNewTabPageSigninPromoSuppressionPeriodStart() {
-        removeKey(NTP_SIGNIN_PROMO_SUPPRESSION_PERIOD_START);
+        mManager.removeKey(NTP_SIGNIN_PROMO_SUPPRESSION_PERIOD_START);
     }
 
     /**
