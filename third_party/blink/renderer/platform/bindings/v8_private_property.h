@@ -24,7 +24,6 @@ class ScriptWrappable;
 // e.g. IDBCursor.Request.
 // Apply |X| for each pair of (InterfaceName, PrivateKeyName).
 #define V8_PRIVATE_PROPERTY_FOR_EACH(X)                 \
-  X(DOMException, Error)                                \
   X(MessageEvent, CachedData)                           \
 
 // The getter's name for a private property.
