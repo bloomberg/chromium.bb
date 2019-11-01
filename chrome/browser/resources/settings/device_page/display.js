@@ -194,7 +194,8 @@ Polymer({
     'updateNightLightScheduleSettings_(prefs.ash.night_light.schedule_type.*,' +
         ' prefs.ash.night_light.enabled.*)',
     'onSelectedModeChange_(selectedModePref_.value)',
-    'onSelectedZoomChange_(selectedZoomPref_.value)'
+    'onSelectedZoomChange_(selectedZoomPref_.value)',
+    'onDisplaysChanged_(displays.*)',
   ],
 
   /** @private {number} Selected mode index received from chrome. */
@@ -513,12 +514,11 @@ Polymer({
   },
 
   /**
-   * @param {!Array<!chrome.system.display.DisplayUnitInfo>} displays
    * @return {boolean}
    * @private
    */
-  hasMultipleDisplays_: function(displays) {
-    return displays.length > 1;
+  hasMultipleDisplays_: function() {
+    return this.displays.length > 1;
   },
 
   /**
@@ -952,9 +952,6 @@ Polymer({
     this.setSelectedDisplay_(selectedDisplay);
 
     this.unifiedDesktopMode_ = !!primaryDisplay && primaryDisplay.isUnified;
-
-    this.$.displayLayout.updateDisplays(
-        this.displays, this.layouts, this.mirroringDestinationIds);
   },
 
   /** @private */
@@ -983,6 +980,24 @@ Polymer({
           this.i18n('displayNightLightOnAtSunset');
     } else {
       this.nightLightScheduleSubLabel_ = '';
+    }
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  shouldShowArrangementSection_: function() {
+    return this.hasMultipleDisplays_() || this.isMirrored_(this.displays);
+  },
+
+  /** @private */
+  onDisplaysChanged_: function() {
+    Polymer.dom.flush();
+    const displayLayout = this.$$('#displayLayout');
+    if (displayLayout) {
+      displayLayout.updateDisplays(
+          this.displays, this.layouts, this.mirroringDestinationIds);
     }
   },
 });
