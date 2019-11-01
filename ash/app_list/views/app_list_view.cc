@@ -863,7 +863,7 @@ void AppListView::HandleClickOrTap(ui::LocatedEvent* event) {
   }
 
   // Close embedded Assistant UI if it is shown.
-  if (app_list_main_view()->contents_view()->IsShowingEmbeddedAssistantUI()) {
+  if (IsShowingEmbeddedAssistantUI()) {
     Back();
     search_box_view_->ClearSearchAndDeactivateSearchBox();
     return;
@@ -1532,7 +1532,7 @@ void AppListView::SetState(ash::AppListViewState new_state) {
   if (is_in_drag_ && app_list_state_ != ash::AppListViewState::kClosed)
     app_list_main_view_->contents_view()->UpdateYPositionAndOpacity();
 
-  if (GetWidget()->IsActive()) {
+  if (GetWidget()->IsActive() && !IsShowingEmbeddedAssistantUI()) {
     // Reset the focus to initially focused view. This should be
     // done before updating visibility of views, because setting
     // focused view invisible automatically moves focus to next
@@ -2037,7 +2037,7 @@ void AppListView::RedirectKeyEventToSearchBox(ui::KeyEvent* event) {
     return;
 
   // Allow text input inside the Assistant page.
-  if (app_list_main_view()->contents_view()->IsShowingEmbeddedAssistantUI())
+  if (IsShowingEmbeddedAssistantUI())
     return;
 
   views::Textfield* search_box = search_box_view_->search_box();
@@ -2207,6 +2207,10 @@ bool AppListView::ShouldIgnoreScrollEvents() {
   // changes or transtions.
   return GetWidget()->GetLayer()->GetAnimator()->is_animating() ||
          GetRootAppsGridView()->pagination_model()->has_transition();
+}
+
+bool AppListView::IsShowingEmbeddedAssistantUI() const {
+  return app_list_main_view()->contents_view()->IsShowingEmbeddedAssistantUI();
 }
 
 int AppListView::GetPreferredWidgetYForState(
