@@ -9093,9 +9093,8 @@ static int64_t interpolation_filter_search(
   const int num_planes = av1_num_planes(cm);
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = xd->mi[0];
-  const int need_search = av1_is_interp_needed(xd) &&
-                          av1_is_interp_search_needed(xd) &&
-                          !cpi->sf.skip_interp_filter_search;
+  const int need_search =
+      av1_is_interp_needed(xd) && !cpi->sf.skip_interp_filter_search;
   const int ref_frame = xd->mi[0]->ref_frame[0];
   RD_STATS rd_stats_luma, rd_stats;
 
@@ -10928,8 +10927,7 @@ static int64_t handle_inter_mode(
     int skip_build_pred = 0;
     if (is_comp_pred) {
       // Find matching interp filter or set to default interp filter
-      const int need_search =
-          av1_is_interp_needed(xd) && av1_is_interp_search_needed(xd);
+      const int need_search = av1_is_interp_needed(xd);
       const InterpFilter assign_filter = cm->interp_filter;
       int is_luma_interp_done = 0;
       find_interp_filter_match(x, cpi, assign_filter, need_search);
@@ -14097,7 +14095,7 @@ void av1_rd_pick_inter_mode_sb_seg_skip(const AV1_COMP *cpi,
     best_filter = cm->interp_filter;
   } else {
     best_filter = EIGHTTAP_REGULAR;
-    if (av1_is_interp_needed(xd) && av1_is_interp_search_needed(xd) &&
+    if (av1_is_interp_needed(xd) &&
         x->source_variance >= cpi->sf.disable_filter_search_var_thresh) {
       int rs;
       int best_rs = INT_MAX;
