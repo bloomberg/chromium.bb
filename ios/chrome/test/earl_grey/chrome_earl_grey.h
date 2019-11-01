@@ -70,9 +70,14 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 - (BOOL)isRegularXRegularSizeClass;
 
 #pragma mark - History Utilities (EG2)
+
 // Clears browsing history. Raises an EarlGrey exception if history is not
 // cleared within a timeout.
 - (void)clearBrowsingHistory;
+
+// Clears browsing cache. Raises an EarlGrey exception if history is not
+// cleared within a timeout.
+- (void)removeBrowsingCache;
 
 #pragma mark - Navigation Utilities (EG2)
 
@@ -251,6 +256,9 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // Simulates a backgrounding and raises an EarlGrey exception if simulation not
 // succeeded.
 - (void)simulateTabsBackgrounding;
+
+// Persists the current list of tabs to disk immediately.
+- (void)saveSessionImmediately;
 
 // Returns the number of main (non-incognito) tabs currently evicted.
 - (NSUInteger)evictedMainTabCount WARN_UNUSED_RESULT;

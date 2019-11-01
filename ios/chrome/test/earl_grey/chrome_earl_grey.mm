@@ -154,6 +154,11 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 }
 
+- (void)removeBrowsingCache {
+  EG_TEST_HELPER_ASSERT_NO_ERROR(
+      [ChromeEarlGreyAppInterface removeBrowsingCache]);
+}
+
 #pragma mark - Navigation Utilities (EG2)
 
 - (void)goBack {
@@ -205,6 +210,14 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
 - (void)simulateTabsBackgrounding {
   EG_TEST_HELPER_ASSERT_NO_ERROR(
       [ChromeEarlGreyAppInterface simulateTabsBackgrounding]);
+}
+
+- (void)saveSessionImmediately {
+  [ChromeEarlGreyAppInterface saveSessionImmediately];
+
+  // Saving is always performed on a separate thread, so spin the run loop a
+  // bit to ensure save.
+  base::test::ios::SpinRunLoopWithMaxDelay(base::TimeDelta::FromSeconds(1));
 }
 
 - (void)setCurrentTabsToBeColdStartTabs {
