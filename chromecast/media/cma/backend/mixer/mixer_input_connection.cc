@@ -333,6 +333,10 @@ bool MixerInputConnection::HandleAudioBuffer(
 
 void MixerInputConnection::OnConnectionError() {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
+  if (connection_error_) {
+    return;
+  }
+  connection_error_ = true;
   socket_.reset();
   weak_factory_.InvalidateWeakPtrs();
 
