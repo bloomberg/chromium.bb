@@ -547,6 +547,23 @@ void HomeLauncherGestureHandler::OnImplicitAnimationsCompleted() {
   RemoveObserversAndStopTracking();
 }
 
+bool HomeLauncherGestureHandler::IsAnimating() {
+  if (active_window_ && active_window_->IsAnimating())
+    return true;
+
+  if (secondary_window_ && secondary_window_->IsAnimating())
+    return true;
+
+  if (overview_active_on_gesture_start_ &&
+      Shell::Get()->overview_controller()->InOverviewSession() &&
+      (Shell::Get()->overview_controller()->IsInStartAnimation() ||
+       animating_to_close_overview_)) {
+    return true;
+  }
+
+  return false;
+}
+
 void HomeLauncherGestureHandler::AnimateToFinalState(AnimationTrigger trigger) {
   const bool is_final_state_show = IsFinalStateShow();
   GetHomeScreenDelegate()->NotifyHomeLauncherAnimationTransition(
@@ -716,23 +733,6 @@ void HomeLauncherGestureHandler::RemoveObserversAndStopTracking() {
 
 bool HomeLauncherGestureHandler::IsIdle() {
   return !IsDragInProgress() && !IsAnimating();
-}
-
-bool HomeLauncherGestureHandler::IsAnimating() {
-  if (active_window_ && active_window_->IsAnimating())
-    return true;
-
-  if (secondary_window_ && secondary_window_->IsAnimating())
-    return true;
-
-  if (overview_active_on_gesture_start_ &&
-      Shell::Get()->overview_controller()->InOverviewSession() &&
-      (Shell::Get()->overview_controller()->IsInStartAnimation() ||
-       animating_to_close_overview_)) {
-    return true;
-  }
-
-  return false;
 }
 
 bool HomeLauncherGestureHandler::IsFinalStateShow() {
