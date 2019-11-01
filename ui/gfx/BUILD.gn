@@ -136,6 +136,8 @@ jumbo_component("gfx") {
     "ios/uikit_util.mm",
     "linux/fontconfig_util.cc",
     "linux/fontconfig_util.h",
+    "mac/cocoa_scrollbar_painter.cc",
+    "mac/cocoa_scrollbar_painter.h",
     "mac/coordinate_conversion.h",
     "mac/coordinate_conversion.mm",
     "mac/nswindow_frame_controls.h",
