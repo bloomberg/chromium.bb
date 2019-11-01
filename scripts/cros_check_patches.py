@@ -227,7 +227,7 @@ def main(argv):
 
   deps = depgraph.DepGraphGenerator()
   deps.Initialize(depgraph_argv)
-  deps_tree, deps_info = deps.GenDependencyTree()
+  deps_tree, deps_info, _ = deps.GenDependencyTree()
   deps_map = deps.GenDependencyGraph(deps_tree, deps_info)
 
   reporter = PatchReporter(config, overlay_dir, ebuild_cmd, equery_cmd,

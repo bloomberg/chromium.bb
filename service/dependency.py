@@ -212,21 +212,26 @@ def GetBuildDependency(board, packages=None):
       'virtual/target-sdk-post-cross'
   ]
 
-  board_specific_deps = cros_extract_deps.ExtractDeps(
+  board_specific_deps, board_bdeps = cros_extract_deps.ExtractDeps(
       sysroot=cros_build_lib.GetSysroot(board),
-      package_list=board_specific_packages)
+      package_list=board_specific_packages,
+      include_bdepend=False)
 
-  non_board_specific_deps = cros_extract_deps.ExtractDeps(
+  non_board_specific_deps, _ = cros_extract_deps.ExtractDeps(
       sysroot=cros_build_lib.GetSysroot(None),
       package_list=non_board_specific_packages)
 
   results['package_deps'].update(board_specific_deps)
+  results['package_deps'].update(board_bdeps)
   results['package_deps'].update(non_board_specific_deps)
 
   results['source_path_mapping'].update(
-      GenerateSourcePathMapping(list(board_specific_deps), board))
+      GenerateSourcePathMapping(list(non_board_specific_deps), None))
 
   results['source_path_mapping'].update(
-      GenerateSourcePathMapping(list(non_board_specific_deps), None))
+      GenerateSourcePathMapping(list(board_bdeps), None))
+
+  results['source_path_mapping'].update(
+      GenerateSourcePathMapping(list(board_specific_deps), board))
 
   return results

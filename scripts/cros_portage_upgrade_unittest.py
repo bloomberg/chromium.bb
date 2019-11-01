@@ -3060,7 +3060,7 @@ class GetPreOrderDepGraphTest(CpuTestBase):
     pm_argv.append('--root-deps')
     deps = depgraph.DepGraphGenerator()
     deps.Initialize(pm_argv)
-    deps_tree, deps_info = deps.GenDependencyTree()
+    deps_tree, deps_info, _ = deps.GenDependencyTree()
     deps_graph = deps.GenDependencyGraph(deps_tree, deps_info)
 
     deps_list = cpu.Upgrader._GetPreOrderDepGraph(deps_graph)

@@ -22,6 +22,7 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 from chromite.lib import portage_util
 
+
 def FlattenDepTree(deptree, pkgtable=None, parentcpv=None, get_cpe=False):
   """Simplify dependency json.
 
@@ -262,7 +263,10 @@ def FilterObsoleteDeps(package_deps):
     del package_deps[p]
 
 
-def ExtractDeps(sysroot, package_list, formatting='deps'):
+def ExtractDeps(sysroot,
+                package_list,
+                formatting='deps',
+                include_bdepend=True):
   """Returns the set of dependencies for the packages in package_list.
 
   For calculating dependencies graph, this should only consider packages
@@ -279,36 +283,46 @@ def ExtractDeps(sysroot, package_list, formatting='deps'):
     formatting: can either be 'deps' or 'cpe'. For 'deps', see the return
       format in docstring of FlattenDepTree, for 'cpe', see the return format in
       docstring of GenerateCPEList.
+    include_bdepend: Controls whether BDEPEND packages that would be installed
+      to BROOT (usually "/" instead of ROOT) are included in the output.
 
   Returns:
     A JSON-izable object that either follows 'deps' or 'cpe' format.
   """
-  lib_argv = ['--quiet', '--pretend', '--emptytree', '--include-bdepend']
+  lib_argv = ['--quiet', '--pretend', '--emptytree']
+  if include_bdepend:
+    lib_argv += ['--include-bdepend']
   lib_argv += ['--sysroot=%s' % sysroot]
   lib_argv.extend(package_list)
 
   deps = DepGraphGenerator()
   deps.Initialize(lib_argv)
-  deps_tree, _deps_info = deps.GenDependencyTree()
-  flattened_deps = FlattenDepTree(deps_tree, get_cpe=(formatting == 'cpe'))
+
+  deps_tree, _deps_info, bdeps_tree = deps.GenDependencyTree()
+  trees = (deps_tree, bdeps_tree)
+
+  flattened_trees = tuple(
+      FlattenDepTree(tree, get_cpe=(formatting == 'cpe')) for tree in trees)
 
   # Workaround: since emerge doesn't honor the --emptytree flag, for now we need
   # to manually filter out packages that are obsolete (meant to be
   # uninstalled by emerge)
   # TODO(crbug.com/938605): remove this work around once
   # https://bugs.gentoo.org/681308 is addressed.
-  FilterObsoleteDeps(flattened_deps)
+  for tree in flattened_trees:
+    FilterObsoleteDeps(tree)
 
   if formatting == 'cpe':
-    flattened_deps = GenerateCPEList(flattened_deps, sysroot)
-  return flattened_deps
+    flattened_trees = tuple(
+        GenerateCPEList(tree, sysroot) for tree in flattened_trees)
+  return flattened_trees
 
 
 def main(argv):
   opts = ParseArgs(argv)
 
   sysroot = opts.sysroot or cros_build_lib.GetSysroot(opts.board)
-  deps_list = ExtractDeps(sysroot, opts.pkgs, opts.format)
+  deps_list, = ExtractDeps(sysroot, opts.pkgs, opts.format)
 
   deps_output = json.dumps(deps_list, sort_keys=True, indent=2)
   if opts.output_path:

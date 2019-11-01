@@ -1342,7 +1342,7 @@ class Upgrader(object):
     deps.Initialize(argv)
 
     try:
-      deps_tree, deps_info = deps.GenDependencyTree()
+      deps_tree, deps_info, _ = deps.GenDependencyTree()
     except SystemExit:
       oper.Error('Run of parallel_emerge exited with error while assembling'
                  ' package dependencies (error message should be above).\n'

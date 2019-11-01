@@ -35,7 +35,7 @@ class DepGraphGenerator(object):
   Typical usage:
     deps = DepGraphGenerator()
     deps.Initialize(sys.argv[1:])
-    deps_tree, deps_info = deps.GenDependencyTree()
+    deps_tree, deps_info, bdeps_tree = deps.GenDependencyTree()
     deps_graph = deps.GenDependencyGraph(deps_tree, deps_info)
     deps.PrintTree(deps_tree)
     PrintDepsMap(deps_graph)
@@ -43,7 +43,7 @@ class DepGraphGenerator(object):
 
   __slots__ = [
       'board', 'emerge', 'package_db', 'show_output', 'sysroot', 'unpack_only',
-      'max_retries', 'include_bdepend'
+      'max_retries', 'include_bdepend',
   ]
 
   def __init__(self):
@@ -54,6 +54,10 @@ class DepGraphGenerator(object):
     self.sysroot = None
     self.unpack_only = False
     self.max_retries = int(os.environ.get('PARALLEL_EMERGE_MAX_RETRIES', 1))
+    # include_bdepend controls whether or not BDEPEND packages are returned as
+    # part of the dependency graph for the build target. This option only
+    # changes behavior when ROOT is not equal to "/", i.e. when the build
+    # target is a board and not the SDK itself.
     self.include_bdepend = False
 
   def ParseParallelEmergeArgs(self, argv):
@@ -272,7 +276,12 @@ class DepGraphGenerator(object):
     """Get dependency tree info from emerge.
 
     Returns:
-      Dependency tree
+      A 3-tuple of the dependency tree, the dependency tree info, and the
+      BDEPEND dependency tree.
+      The BDEPEND dependency tree, or "bdeps_tree", consists of the packages
+      that would be installed to the SDK BROOT (at "/") rather than the board
+      root at "/build/$BOARD". If the ROOT is already equal to "/" the contents
+      of deps_tree and bdeps_tree will be identical.
     """
     start = time.time()
 
@@ -299,6 +308,7 @@ class DepGraphGenerator(object):
 
     # Build our own tree from the emerge digraph.
     deps_tree = {}
+    bdeps_tree = {}
     # pylint: disable=protected-access
     digraph = depgraph._dynamic_config.digraph
     root = emerge.settings['ROOT']
@@ -320,10 +330,18 @@ class DepGraphGenerator(object):
       #   V -- Version:   0.0.1-r1
       #
       # We just refer to CPVs as packages here because it's easier.
+
+      # Clear the entry for 'child' that persisted from the previous loop
+      # iteration. In Python 2 loop variables continue to hold their value
+      # in the enclosing function scope (outside the loop body), so if
+      # node_deps[0] is empty then 'child' would have whatever value was
+      # left in it from the previous loop.
+      child = None
+
       deps = {}
       for child, priorities in node_deps[0].items():
-        if isinstance(child, Package) and (self.include_bdepend or
-                                           child.root == root):
+        if (isinstance(node, Package) and isinstance(child, Package) and
+            (self.include_bdepend or child.root == node.root)):
           cpv = str(child.cpv)
           action = str(child.operation)
 
@@ -341,9 +359,31 @@ class DepGraphGenerator(object):
               action=action, deptypes=[str(x) for x in priorities], deps={})
 
       # We've built our list of deps, so we can add our package to the tree.
-      if isinstance(node, Package) and (self.include_bdepend or
-                                        child.root == root):
-        deps_tree[str(node.cpv)] = dict(action=str(node.operation), deps=deps)
+
+      # Some objects in digraph.nodes can be sets instead of packages, but we
+      # only want to return packages in our dependency graph.
+      if isinstance(node, Package) and isinstance(child, Package):
+
+        # If a package is destined for ROOT, then it is in DEPEND OR RDEPEND
+        # and we want to include it in the deps tree. If the package is not
+        # destined for ROOT, then (in the Chrome OS build) we must be building
+        # for a board and the package is a BDEPEND. We only want to add that
+        # package to the deps_tree if include_bdepend is set.
+        if (node.root == root or self.include_bdepend):
+          deps_tree[str(node.cpv)] = dict(action=str(node.operation), deps=deps)
+
+        # The only packages that will have a distinct root (in the Chrome OS
+        # build) are BDEPEND packages for a board target. If we are building
+        # for the host (the SDK) then BDEPEND packages 1. Will have the same
+        # root as every other package and 2. Are functionally the same as
+        # DEPEND packages and belong in the deps_tree.
+        #
+        # If include_bdepend is passed and we are building for a board target,
+        # BDEPEND packages will intentionally show up in both deps_tree and
+        # bdeps_tree.
+        if node.root != root:
+          bdeps_tree[str(node.cpv)] = dict(
+              action=str(node.operation), deps=deps)
 
     # Ask portage for its install plan, so that we can only throw out
     # dependencies that portage throws out.
@@ -357,7 +397,7 @@ class DepGraphGenerator(object):
     if '--quiet' not in emerge.opts:
       print('Deps calculated in %dm%.1fs' % (seconds // 60, seconds % 60))
 
-    return deps_tree, deps_info
+    return deps_tree, deps_info, bdeps_tree
 
   def PrintTree(self, deps, depth=''):
     """Print the deps we have seen in the emerge output.
