@@ -79,9 +79,9 @@ class CdmServiceTest : public testing::Test {
     service_->set_termination_closure(base::BindOnce(
         &CdmServiceTest::DestroyService, base::Unretained(this)));
 
-    connector()->BindInterface(media::mojom::kCdmServiceName,
-                               &cdm_service_ptr_);
-    cdm_service_ptr_.set_connection_error_handler(base::BindOnce(
+    connector()->Connect(media::mojom::kCdmServiceName,
+                         cdm_service_remote_.BindNewPipeAndPassReceiver());
+    cdm_service_remote_.set_disconnect_handler(base::BindOnce(
         &CdmServiceTest::CdmServiceConnectionClosed, base::Unretained(this)));
 
     mojo::PendingRemote<service_manager::mojom::InterfaceProvider> interfaces;
@@ -89,10 +89,10 @@ class CdmServiceTest : public testing::Test {
         interfaces.InitWithNewPipeAndPassReceiver());
 
     ASSERT_FALSE(cdm_factory_remote_);
-    cdm_service_ptr_->CreateCdmFactory(
+    cdm_service_remote_->CreateCdmFactory(
         cdm_factory_remote_.BindNewPipeAndPassReceiver(),
         std::move(interfaces));
-    cdm_service_ptr_.FlushForTesting();
+    cdm_service_remote_.FlushForTesting();
     ASSERT_TRUE(cdm_factory_remote_);
     cdm_factory_remote_.set_disconnect_handler(base::BindOnce(
         &CdmServiceTest::CdmFactoryConnectionClosed, base::Unretained(this)));
@@ -132,7 +132,7 @@ class CdmServiceTest : public testing::Test {
   CdmService* cdm_service() { return service_.get(); }
 
   base::test::TaskEnvironment task_environment_;
-  mojom::CdmServicePtr cdm_service_ptr_;
+  mojo::Remote<mojom::CdmService> cdm_service_remote_;
   mojo::Remote<mojom::CdmFactory> cdm_factory_remote_;
   mojo::Remote<mojom::ContentDecryptionModule> cdm_remote_;
 
@@ -163,12 +163,12 @@ TEST_F(CdmServiceTest, LoadCdm) {
   base::FilePath cdm_path(FILE_PATH_LITERAL("dummy path"));
 #if defined(OS_MACOSX)
   // Token provider will not be used since the path is a dummy path.
-  cdm_service_ptr_->LoadCdm(cdm_path, nullptr);
+  cdm_service_remote_->LoadCdm(cdm_path, nullptr);
 #else
-  cdm_service_ptr_->LoadCdm(cdm_path);
+  cdm_service_remote_->LoadCdm(cdm_path);
 #endif
 
-  cdm_service_ptr_.FlushForTesting();
+  cdm_service_remote_.FlushForTesting();
 }
 
 TEST_F(CdmServiceTest, InitializeCdm_Success) {
