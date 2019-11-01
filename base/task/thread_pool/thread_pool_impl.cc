@@ -163,6 +163,9 @@ void ThreadPoolImpl::Start(const ThreadPoolInstance::InitParams& init_params,
   task_tracker_->set_io_thread_task_runner(service_thread_->task_runner());
 #endif  // defined(OS_POSIX) && !defined(OS_NACL_SFI)
 
+  // Update the CanRunPolicy based on |has_disable_best_effort_switch_|.
+  UpdateCanRunPolicy();
+
   // Needs to happen after starting the service thread to get its task_runner().
   scoped_refptr<TaskRunner> service_thread_task_runner =
       service_thread_->task_runner();

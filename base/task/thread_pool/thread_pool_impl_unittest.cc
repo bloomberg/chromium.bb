@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
@@ -540,6 +541,54 @@ TEST_P(ThreadPoolImplTestAllTraitsExecutionModes, FlushAsyncForTestingSimple) {
   unblock_task.Signal();
 
   flush_event.Wait();
+}
+
+// Verifies that BEST_EFFORT tasks don't run when the
+// --disable-best-effort-tasks command-line switch is specified.
+//
+// Not using the same fixture as other tests because we want to append a command
+// line switch before creating the pool.
+TEST(ThreadPoolImplTest_Switch, DisableBestEffortTasksSwitch) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kDisableBestEffortTasks);
+
+  ThreadPoolImpl thread_pool("Test");
+  ThreadPoolInstance::InitParams init_params(kMaxNumForegroundThreads);
+  thread_pool.Start(init_params, nullptr);
+
+  AtomicFlag best_effort_can_run;
+  WaitableEvent best_effort_did_run;
+  thread_pool.PostDelayedTask(FROM_HERE,
+                              {ThreadPool(), TaskPriority::BEST_EFFORT,
+                               TaskShutdownBehavior::BLOCK_SHUTDOWN},
+                              BindLambdaForTesting([&]() {
+                                EXPECT_TRUE(best_effort_can_run.IsSet());
+                                best_effort_did_run.Signal();
+                              }),
+                              TimeDelta());
+
+  WaitableEvent user_blocking_did_run;
+  thread_pool.PostDelayedTask(
+      FROM_HERE, {ThreadPool(), TaskPriority::USER_BLOCKING},
+      BindLambdaForTesting([&]() { user_blocking_did_run.Signal(); }),
+      TimeDelta());
+
+  // The USER_BLOCKING task should run.
+  user_blocking_did_run.Wait();
+
+  PlatformThread::Sleep(TestTimeouts::tiny_timeout());
+
+  // The BEST_EFFORT task should not run when a BEST_EFFORT fence is deleted.
+  thread_pool.SetHasBestEffortFence(true);
+  thread_pool.SetHasBestEffortFence(false);
+
+  PlatformThread::Sleep(TestTimeouts::tiny_timeout());
+
+  // The BEST_EFFORT task should only run during shutdown.
+  best_effort_can_run.Set();
+  thread_pool.Shutdown();
+  EXPECT_TRUE(best_effort_did_run.IsSignaled());
+  thread_pool.JoinForTesting();
 }
 
 // Verifies that tasks only run when allowed by SetHasFence().
