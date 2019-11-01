@@ -12,8 +12,6 @@
 #include "content/browser/renderer_host/media/ref_counted_video_source_provider.h"
 #include "content/browser/renderer_host/media/service_launched_video_capture_device.h"
 #include "content/public/test/browser_task_environment.h"
-#include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -59,9 +57,9 @@ class ServiceVideoCaptureDeviceLauncherTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    source_provider_binding_ = std::make_unique<
-        mojo::Binding<video_capture::mojom::VideoSourceProvider>>(
-        &mock_source_provider_, mojo::MakeRequest(&source_provider_));
+    source_provider_receiver_ = std::make_unique<
+        mojo::Receiver<video_capture::mojom::VideoSourceProvider>>(
+        &mock_source_provider_, source_provider_.BindNewPipeAndPassReceiver());
     service_connection_ = base::MakeRefCounted<RefCountedVideoSourceProvider>(
         std::move(source_provider_),
         release_connection_cb_.Get());
@@ -124,10 +122,10 @@ class ServiceVideoCaptureDeviceLauncherTest : public testing::Test {
 
   BrowserTaskEnvironment task_environment_;
   MockVideoCaptureDeviceLauncherCallbacks mock_callbacks_;
-  video_capture::mojom::VideoSourceProviderPtr source_provider_;
+  mojo::Remote<video_capture::mojom::VideoSourceProvider> source_provider_;
   video_capture::MockVideoSourceProvider mock_source_provider_;
-  std::unique_ptr<mojo::Binding<video_capture::mojom::VideoSourceProvider>>
-      source_provider_binding_;
+  std::unique_ptr<mojo::Receiver<video_capture::mojom::VideoSourceProvider>>
+      source_provider_receiver_;
   video_capture::MockVideoSource mock_source_;
   std::unique_ptr<mojo::Receiver<video_capture::mojom::VideoSource>>
       source_receiver_;

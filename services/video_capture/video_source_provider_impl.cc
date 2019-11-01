@@ -17,16 +17,16 @@ VideoSourceProviderImpl::VideoSourceProviderImpl(
     : device_factory_(device_factory),
       on_last_client_disconnected_cb_(
           std::move(on_last_client_disconnected_cb)) {
-  // Unretained |this| is safe because |bindings_| is owned by |this|.
-  bindings_.set_connection_error_handler(base::BindRepeating(
+  // Unretained |this| is safe because |receivers_| is owned by |this|.
+  receivers_.set_disconnect_handler(base::BindRepeating(
       &VideoSourceProviderImpl::OnClientDisconnected, base::Unretained(this)));
 }
 
 VideoSourceProviderImpl::~VideoSourceProviderImpl() = default;
 
 void VideoSourceProviderImpl::AddClient(
-    mojom::VideoSourceProviderRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+    mojo::PendingReceiver<mojom::VideoSourceProvider> receiver) {
+  receivers_.Add(this, std::move(receiver));
   client_count_++;
 }
 

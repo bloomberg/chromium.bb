@@ -15,10 +15,9 @@
 #include "content/public/browser/video_capture_device_launcher.h"
 #include "content/public/browser/video_capture_service.h"
 #include "content/public/test/browser_task_environment.h"
-#include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/video_capture/public/cpp/mock_push_subscription.h"
 #include "services/video_capture/public/cpp/mock_video_capture_service.h"
@@ -58,7 +57,7 @@ class MockVideoCaptureDeviceLauncherCallbacks
 class ServiceVideoCaptureProviderTest : public testing::Test {
  public:
   ServiceVideoCaptureProviderTest()
-      : source_provider_binding_(&mock_source_provider_) {
+      : source_provider_receiver_(&mock_source_provider_) {
     OverrideVideoCaptureServiceForTesting(&mock_video_capture_service_);
   }
 
@@ -84,9 +83,9 @@ class ServiceVideoCaptureProviderTest : public testing::Test {
             [this](
                 mojo::PendingReceiver<video_capture::mojom::VideoSourceProvider>
                     receiver) {
-              if (source_provider_binding_.is_bound())
-                source_provider_binding_.Close();
-              source_provider_binding_.Bind(std::move(receiver));
+              if (source_provider_receiver_.is_bound())
+                source_provider_receiver_.reset();
+              source_provider_receiver_.Bind(std::move(receiver));
               wait_for_connection_to_service_.Quit();
             }));
 
@@ -130,8 +129,8 @@ class ServiceVideoCaptureProviderTest : public testing::Test {
   content::BrowserTaskEnvironment task_environment_;
   video_capture::MockVideoCaptureService mock_video_capture_service_;
   video_capture::MockVideoSourceProvider mock_source_provider_;
-  mojo::Binding<video_capture::mojom::VideoSourceProvider>
-      source_provider_binding_;
+  mojo::Receiver<video_capture::mojom::VideoSourceProvider>
+      source_provider_receiver_;
   video_capture::MockVideoSource mock_source_;
   mojo::ReceiverSet<video_capture::mojom::VideoSource> source_receivers_;
   video_capture::MockPushSubcription mock_subscription_;
@@ -182,7 +181,7 @@ TEST_F(ServiceVideoCaptureProviderTest,
   wait_for_call_to_arrive_at_service.Run();
 
   // Simulate that the service goes down by cutting the connections.
-  source_provider_binding_.Close();
+  source_provider_receiver_.reset();
   wait_for_callback_from_service.Run();
 }
 
@@ -212,7 +211,7 @@ TEST_F(ServiceVideoCaptureProviderTest,
   // Setup part 2: Now that the connection to the service is established, we can
   // listen for disconnects.
   base::RunLoop wait_for_connection_to_source_provider_to_close;
-  source_provider_binding_.set_connection_error_handler(
+  source_provider_receiver_.set_disconnect_handler(
       base::BindOnce([](base::RunLoop* run_loop) { run_loop->Quit(); },
                      &wait_for_connection_to_source_provider_to_close));
 
@@ -244,7 +243,7 @@ TEST_F(ServiceVideoCaptureProviderTest,
 
   // Monitor if connection gets closed
   bool connection_has_been_closed = false;
-  source_provider_binding_.set_connection_error_handler(base::BindOnce(
+  source_provider_receiver_.set_disconnect_handler(base::BindOnce(
       [](bool* connection_has_been_closed) {
         *connection_has_been_closed = true;
       },
@@ -335,7 +334,7 @@ TEST_F(ServiceVideoCaptureProviderTest,
 
   // Monitor if connection gets closed
   bool connection_has_been_closed = false;
-  source_provider_binding_.set_connection_error_handler(base::BindOnce(
+  source_provider_receiver_.set_disconnect_handler(base::BindOnce(
       [](bool* connection_has_been_closed) {
         *connection_has_been_closed = true;
       },
