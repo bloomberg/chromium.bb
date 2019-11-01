@@ -1271,6 +1271,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
             if (mAppMenuButtonHelper != null) {
                 mAppMenuButtonHelper.setMenuShowsFromBottom(mIsBottomToolbarVisible);
             }
+            mIdentityDiscController.updateButtonState();
         }
     }
 
