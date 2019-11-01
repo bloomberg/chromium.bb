@@ -65,7 +65,18 @@ class ValueParseRequest : public base::RefCounted<ValueParseRequest<T>> {
       result.value = std::move(value);
     else
       result.error = error.value_or("unknown error");
-    std::move(callback()).Run(std::move(result));
+
+    // Copy the callback onto the stack before resetting the Remote, as that may
+    // delete |this|.
+    auto local_callback = std::move(callback());
+
+    // Reset the |remote_| since we aren't using it again and we don't want it
+    // to trip the disconnect handler. May delete |this|.
+    remote_.reset();
+
+    // We run the callback after reset just in case it does anything funky like
+    // spin a nested RunLoop.
+    std::move(local_callback).Run(std::move(result));
   }
 
  private:
