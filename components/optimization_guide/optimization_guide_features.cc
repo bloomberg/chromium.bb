@@ -186,6 +186,12 @@ base::TimeDelta GetHintsFetchRefreshDuration() {
   return base::TimeDelta::FromHours(72);
 }
 
+base::TimeDelta StoredHostModelFeaturesFreshnessDuration() {
+  return base::TimeDelta::FromDays(GetFieldTrialParamByFeatureAsInt(
+      kOptimizationTargetPrediction,
+      "max_store_duration_for_host_model_features_in_days", 7));
+}
+
 bool IsOptimizationTargetPredictionEnabled() {
   return base::FeatureList::IsEnabled(kOptimizationTargetPrediction);
 }

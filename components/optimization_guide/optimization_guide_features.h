@@ -95,6 +95,10 @@ base::TimeDelta GetHintsFetchRefreshDuration();
 // Returns true if optimization target prediction is enabled.
 bool IsOptimizationTargetPredictionEnabled();
 
+// The amount of time host model features will be considered fresh enough
+// to be used and remain in the HintCacheStore.
+base::TimeDelta StoredHostModelFeaturesFreshnessDuration();
+
 // Returns true if the optimization target decision for |optimization_target|
 // should not be propagated to the caller in an effort to fully understand the
 // statistics for the served model and not taint the resulting data.
