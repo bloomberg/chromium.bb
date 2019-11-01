@@ -517,6 +517,8 @@ void FilmGrain<bitdepth>::ApplyAutoRegressiveFilterToChromaGrains(
   assert(params.auto_regression_coeff_lag <= 3);
   const int shift = params.auto_regression_shift;
   for (int y = kAutoRegressionBorder; y < chroma_height; ++y) {
+    const int luma_y =
+        ((y - kAutoRegressionBorder) << subsampling_y) + kAutoRegressionBorder;
     for (int x = kAutoRegressionBorder;
          x < chroma_width - kAutoRegressionBorder; ++x) {
       int sum_u = 0;
@@ -526,31 +528,11 @@ void FilmGrain<bitdepth>::ApplyAutoRegressiveFilterToChromaGrains(
       do {
         int delta_column = -params.auto_regression_coeff_lag;
         do {
-          const int coeff_u = params.auto_regression_coeff_u[pos];
-          const int coeff_v = params.auto_regression_coeff_v[pos];
           if (delta_row == 0 && delta_column == 0) {
-            if (params.num_y_points > 0) {
-              int luma = 0;
-              const int luma_x =
-                  ((x - kAutoRegressionBorder) << subsampling_x) +
-                  kAutoRegressionBorder;
-              const int luma_y =
-                  ((y - kAutoRegressionBorder) << subsampling_y) +
-                  kAutoRegressionBorder;
-              int i = 0;
-              do {
-                int j = 0;
-                do {
-                  luma += luma_grain[(luma_y + i) * kLumaWidth + (luma_x + j)];
-                } while (++j <= subsampling_x);
-              } while (++i <= subsampling_y);
-              luma =
-                  RightShiftWithRounding(luma, subsampling_x + subsampling_y);
-              sum_u += luma * coeff_u;
-              sum_v += luma * coeff_v;
-            }
             break;
           }
+          const int coeff_u = params.auto_regression_coeff_u[pos];
+          const int coeff_v = params.auto_regression_coeff_v[pos];
           sum_u +=
               u_grain[(y + delta_row) * chroma_width + (x + delta_column)] *
               coeff_u;
@@ -560,6 +542,23 @@ void FilmGrain<bitdepth>::ApplyAutoRegressiveFilterToChromaGrains(
           ++pos;
         } while (++delta_column <= params.auto_regression_coeff_lag);
       } while (++delta_row <= 0);
+      if (params.num_y_points > 0) {
+        int luma = 0;
+        const int luma_x = ((x - kAutoRegressionBorder) << subsampling_x) +
+                           kAutoRegressionBorder;
+        int i = 0;
+        do {
+          int j = 0;
+          do {
+            luma += luma_grain[(luma_y + i) * kLumaWidth + (luma_x + j)];
+          } while (++j <= subsampling_x);
+        } while (++i <= subsampling_y);
+        luma = RightShiftWithRounding(luma, subsampling_x + subsampling_y);
+        const int coeff_u = params.auto_regression_coeff_u[pos];
+        const int coeff_v = params.auto_regression_coeff_v[pos];
+        sum_u += luma * coeff_u;
+        sum_v += luma * coeff_v;
+      }
       u_grain[y * chroma_width + x] = Clip3(
           u_grain[y * chroma_width + x] + RightShiftWithRounding(sum_u, shift),
           grain_min, grain_max);
