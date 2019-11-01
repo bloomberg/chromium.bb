@@ -391,7 +391,7 @@ public class ChromePreferenceManager {
      * Stores a set of account names on the device when signin promo is shown.
      */
     public void setSigninPromoLastAccountNames(Set<String> accountNames) {
-        writeStringSet(SIGNIN_PROMO_LAST_SHOWN_ACCOUNT_NAMES, accountNames);
+        mManager.writeStringSet(SIGNIN_PROMO_LAST_SHOWN_ACCOUNT_NAMES, accountNames);
     }
 
     /**
@@ -475,7 +475,7 @@ public class ChromePreferenceManager {
     public Set<String> getVerifiedDigitalAssetLinks() {
         // From the official docs, modifying the result of a SharedPreferences.getStringSet can
         // cause bad things to happen including exceptions or ruining the data.
-        return new HashSet<>(readStringSet(VERIFIED_DIGITAL_ASSET_LINKS));
+        return new HashSet<>(mManager.readStringSet(VERIFIED_DIGITAL_ASSET_LINKS));
     }
 
     /**
@@ -483,12 +483,12 @@ public class ChromePreferenceManager {
      * Can be retrieved by {@link #getVerifiedDigitalAssetLinks()}.
      */
     public void setVerifiedDigitalAssetLinks(Set<String> links) {
-        writeStringSet(VERIFIED_DIGITAL_ASSET_LINKS, links);
+        mManager.writeStringSet(VERIFIED_DIGITAL_ASSET_LINKS, links);
     }
 
     /** Do not modify the set returned by this method. */
     private Set<String> getTrustedWebActivityDisclosureAcceptedPackages() {
-        return readStringSet(TRUSTED_WEB_ACTIVITY_DISCLOSURE_ACCEPTED_PACKAGES);
+        return mManager.readStringSet(TRUSTED_WEB_ACTIVITY_DISCLOSURE_ACCEPTED_PACKAGES);
     }
 
     /**
@@ -496,7 +496,7 @@ public class ChromePreferenceManager {
      * TWAs launched by the given package.
      */
     public void setUserAcceptedTwaDisclosureForPackage(String packageName) {
-        addToStringSet(TRUSTED_WEB_ACTIVITY_DISCLOSURE_ACCEPTED_PACKAGES, packageName);
+        mManager.addToStringSet(TRUSTED_WEB_ACTIVITY_DISCLOSURE_ACCEPTED_PACKAGES, packageName);
     }
 
     /**
@@ -504,7 +504,8 @@ public class ChromePreferenceManager {
      * TWAs launched by the given package.
      */
     public void removeTwaDisclosureAcceptanceForPackage(String packageName) {
-        removeFromStringSet(TRUSTED_WEB_ACTIVITY_DISCLOSURE_ACCEPTED_PACKAGES, packageName);
+        mManager.removeFromStringSet(
+                TRUSTED_WEB_ACTIVITY_DISCLOSURE_ACCEPTED_PACKAGES, packageName);
     }
 
     /**
@@ -513,44 +514,6 @@ public class ChromePreferenceManager {
      */
     public boolean hasUserAcceptedTwaDisclosureForPackage(String packageName) {
         return getTrustedWebActivityDisclosureAcceptedPackages().contains(packageName);
-    }
-
-    /**
-     * Reads set of String values from preferences.
-     *
-     * Note that you must not modify the set instance returned by this call.
-     * @deprecated Use {@link SharedPreferencesManager} instead.
-     */
-    @Deprecated
-    public Set<String> readStringSet(String key) {
-        return mManager.readStringSet(key);
-    }
-
-    /**
-     * Adds a value to string set in shared preferences.
-     * @deprecated Use {@link SharedPreferencesManager} instead.
-     */
-    @Deprecated
-    public void addToStringSet(String key, String value) {
-        mManager.addToStringSet(key, value);
-    }
-
-    /**
-     * Removes value from string set in shared preferences.
-     * @deprecated Use {@link SharedPreferencesManager} instead.
-     */
-    @Deprecated
-    public void removeFromStringSet(String key, String value) {
-        mManager.removeFromStringSet(key, value);
-    }
-
-    /**
-     * Writes string set to shared preferences.
-     * @deprecated Use {@link SharedPreferencesManager} instead.
-     */
-    @Deprecated
-    public void writeStringSet(String key, Set<String> values) {
-        mManager.writeStringSet(key, values);
     }
 
     /**
