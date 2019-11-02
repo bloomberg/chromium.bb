@@ -189,6 +189,18 @@ const char kWindowIdSwitchName[] = "window-id";
 // Command line switch used to send a custom offline reason and exit.
 const char kReportOfflineReasonSwitchName[] = "report-offline-reason";
 
+#if defined(OS_MACOSX)
+
+// Command line switch to check for Accessibility permission.
+const char kCheckAccessibilityPermissionsSwitchName[] =
+    "check-accessibility-permission";
+
+// Command line switch to check for Screen Recording permission.
+const char kCheckScreenRecordingPermissionsSwitchName[] =
+    "check-screen-recording-permission";
+
+#endif  // defined(OS_MACOSX)
+
 // Maximum time to wait for clean shutdown to occur, before forcing termination
 // of the process.
 const int kShutdownTimeoutSeconds = 15;
@@ -455,7 +467,15 @@ class HostProcess : public ConfigWatcher::Delegate,
   ShutdownWatchdog* shutdown_watchdog_;
 
 #if defined(OS_MACOSX)
+  // A basic decktop capturer that captures a single screen in order to trigger
+  // the native OS permission check.
   std::unique_ptr<DesktopCapturerChecker> capture_checker_;
+
+  // When using the command line option to check the Accessibility or Screen
+  // Recording permission, these track the permission state and indicate that
+  // the host should exit immediately with the result.
+  bool checking_permission_state_ = false;
+  bool permission_granted_ = false;
 #endif  // defined(OS_MACOSX)
 
   DISALLOW_COPY_AND_ASSIGN(HostProcess);
@@ -474,8 +494,13 @@ HostProcess::HostProcess(std::unique_ptr<ChromotingHostContext> context,
   //     ->set_use_update_notifications(true);
   // And remove the same line from me2me_desktop_environment.cc.
 
-
   StartOnUiThread();
+
+#if defined(OS_MACOSX)
+  if (checking_permission_state_) {
+    *exit_code_out = (permission_granted_ ? EXIT_SUCCESS : EXIT_FAILURE);
+  }
+#endif
 }
 
 HostProcess::~HostProcess() {
@@ -494,6 +519,22 @@ HostProcess::~HostProcess() {
 }
 
 bool HostProcess::InitWithCommandLine(const base::CommandLine* cmd_line) {
+#if defined(OS_MACOSX)
+  // Ensure we are not running as root (i.e. at the login screen).
+  DCHECK_NE(getuid(), 0U);
+
+  if (cmd_line->HasSwitch(kCheckAccessibilityPermissionsSwitchName)) {
+    checking_permission_state_ = true;
+    permission_granted_ = mac::CanInjectInput();
+    return false;
+  }
+  if (cmd_line->HasSwitch(kCheckScreenRecordingPermissionsSwitchName)) {
+    checking_permission_state_ = true;
+    permission_granted_ = mac::CanRecordScreen();
+    return false;
+  }
+#endif  // defined(OS_MACOSX)
+
 #if defined(REMOTING_MULTI_PROCESS)
   // Mojo keeps the task runner passed to it alive forever, so an
   // AutoThreadTaskRunner should not be passed to it. Otherwise, the process may
