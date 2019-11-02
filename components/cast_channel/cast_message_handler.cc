@@ -13,7 +13,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/time/default_tick_clock.h"
 #include "components/cast_channel/cast_socket_service.h"
-#include "services/data_decoder/public/cpp/safe_json_parser.h"
 
 namespace cast_channel {
 
