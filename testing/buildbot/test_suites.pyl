@@ -94,6 +94,7 @@
         },
       },
       'mojo_test_apk': {},
+      'weblayer_instrumentation_test_apk': {},
       'webview_instrumentation_test_apk': {
         'swarming': {
           'shards': 7,
