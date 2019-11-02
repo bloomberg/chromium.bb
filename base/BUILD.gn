@@ -1795,9 +1795,13 @@ jumbo_component("base") {
       if (is_win) {
         sources +=
             [ "allocator/partition_allocator/page_allocator_internals_win.h" ]
-      } else if (is_posix || is_fuchsia) {
+      } else if (is_posix) {
         sources +=
             [ "allocator/partition_allocator/page_allocator_internals_posix.h" ]
+      } else if (is_fuchsia) {
+        sources += [
+          "allocator/partition_allocator/page_allocator_internals_fuchsia.h",
+        ]
       }
     }
   }
