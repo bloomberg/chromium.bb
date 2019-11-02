@@ -8810,7 +8810,7 @@ static INLINE void find_best_non_dual_interp_filter(
       assert(filter_sets[filter_idx].as_filters.x_filter ==
              filter_sets[filter_idx].as_filters.y_filter);
       if (cpi->sf.adaptive_interp_filter_search &&
-          !(get_interp_filter_allowed_mask(cpi->sf.interp_filter_search_mask,
+          !(get_interp_filter_allowed_mask(cpi->interp_filter_search_mask,
                                            filter_idx))) {
         return;
       }
@@ -8845,7 +8845,7 @@ static INLINE void find_best_non_dual_interp_filter(
     set_interp_filter_allowed_mask(&allowed_interp_mask, SHARP_SHARP);
     set_interp_filter_allowed_mask(&allowed_interp_mask, SMOOTH_SMOOTH);
     if (cpi->sf.adaptive_interp_filter_search)
-      allowed_interp_mask &= cpi->sf.interp_filter_search_mask;
+      allowed_interp_mask &= cpi->interp_filter_search_mask;
 
     find_best_interp_rd_facade(x, cpi, tile_data, bsize, mi_row, mi_col,
                                orig_dst, rd, rd_stats_y, rd_stats,
@@ -8859,7 +8859,7 @@ static INLINE void find_best_non_dual_interp_filter(
       assert(filter_sets[i].as_filters.x_filter ==
              filter_sets[i].as_filters.y_filter);
       if (cpi->sf.adaptive_interp_filter_search &&
-          !(get_interp_filter_allowed_mask(cpi->sf.interp_filter_search_mask,
+          !(get_interp_filter_allowed_mask(cpi->interp_filter_search_mask,
                                            i))) {
         continue;
       }

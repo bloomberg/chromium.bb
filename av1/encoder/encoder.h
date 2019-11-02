@@ -1054,6 +1054,9 @@ typedef struct AV1_COMP {
   // Stores the default value of skip flag depending on chroma format
   // Set as 1 for monochrome and 3 for other color formats
   int default_interp_skip_flags;
+  // Filter mask to allow certain interp_filter type.
+  uint16_t interp_filter_search_mask;
+
   int preserve_arf_as_gld;
   MultiThreadHandle multi_thread_ctxt;
   void (*row_mt_sync_read_ptr)(AV1RowMTSync *const, int, int);
