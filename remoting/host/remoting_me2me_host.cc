@@ -192,11 +192,11 @@ const char kReportOfflineReasonSwitchName[] = "report-offline-reason";
 #if defined(OS_MACOSX)
 
 // Command line switch to check for Accessibility permission.
-const char kCheckAccessibilityPermissionsSwitchName[] =
+const char kCheckAccessibilityPermissionSwitchName[] =
     "check-accessibility-permission";
 
 // Command line switch to check for Screen Recording permission.
-const char kCheckScreenRecordingPermissionsSwitchName[] =
+const char kCheckScreenRecordingPermissionSwitchName[] =
     "check-screen-recording-permission";
 
 #endif  // defined(OS_MACOSX)
@@ -523,12 +523,12 @@ bool HostProcess::InitWithCommandLine(const base::CommandLine* cmd_line) {
   // Ensure we are not running as root (i.e. at the login screen).
   DCHECK_NE(getuid(), 0U);
 
-  if (cmd_line->HasSwitch(kCheckAccessibilityPermissionsSwitchName)) {
+  if (cmd_line->HasSwitch(kCheckAccessibilityPermissionSwitchName)) {
     checking_permission_state_ = true;
     permission_granted_ = mac::CanInjectInput();
     return false;
   }
-  if (cmd_line->HasSwitch(kCheckScreenRecordingPermissionsSwitchName)) {
+  if (cmd_line->HasSwitch(kCheckScreenRecordingPermissionSwitchName)) {
     checking_permission_state_ = true;
     permission_granted_ = mac::CanRecordScreen();
     return false;
