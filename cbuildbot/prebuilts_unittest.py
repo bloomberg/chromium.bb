@@ -110,7 +110,7 @@ class PrebuiltTest(cros_test_lib.RunCommandTempDirTestCase):
                            return_value=packages):
       prebuilts.UploadDevInstallerPrebuilts(*args, buildroot=self._buildroot,
                                             board=self._board)
-    self.assertCommandContains([constants.CANARY_TYPE] + args[2:] + args[0:2])
+    self.assertCommandContains(args[2:] + args[0:2])
 
   def testAddPackagesForPrebuilt(self):
     """Test AddPackagesForPrebuilt."""
