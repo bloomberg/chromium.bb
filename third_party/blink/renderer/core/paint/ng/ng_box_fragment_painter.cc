@@ -641,6 +641,10 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackground(
   } else {
     paint_rect.offset = paint_offset;
     paint_rect.size = box_fragment_.Size();
+    if (layout_object.IsTableCell()) {
+      paint_rect.size =
+          PhysicalSize(To<LayoutTableCell>(layout_object).PixelSnappedSize());
+    }
     background_client = &GetDisplayItemClient();
   }
 
@@ -849,15 +853,14 @@ void NGBoxFragmentPainter::PaintBackground(
     const PhysicalRect& paint_rect,
     const Color& background_color,
     BackgroundBleedAvoidance bleed_avoidance) {
-  const LayoutObject& layout_object = *box_fragment_.GetLayoutObject();
-  const LayoutBox& layout_box = ToLayoutBox(layout_object);
+  const LayoutBox& layout_box = ToLayoutBox(*box_fragment_.GetLayoutObject());
   if (layout_box.BackgroundTransfersToView())
     return;
   if (layout_box.BackgroundIsKnownToBeObscured())
     return;
+
   // TODO(eae): Switch to LayoutNG version of BackgroundImageGeometry.
-  BackgroundImageGeometry geometry(*static_cast<const LayoutBoxModelObject*>(
-      box_fragment_.GetLayoutObject()));
+  BackgroundImageGeometry geometry(layout_box);
   PaintFillLayers(paint_info, background_color,
                   box_fragment_.Style().BackgroundLayers(), paint_rect,
                   geometry, bleed_avoidance);
