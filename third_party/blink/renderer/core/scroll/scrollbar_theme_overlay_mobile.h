@@ -19,6 +19,7 @@ class CORE_EXPORT ScrollbarThemeOverlayMobile : public ScrollbarThemeOverlay {
   ScrollbarPart HitTest(const Scrollbar&, const IntPoint&) override {
     return kNoPart;
   }
+  bool IsSolidColor() const override { return true; }
   bool UsesNinePatchThumbResource() const override { return false; }
 
  protected:

@@ -72,6 +72,7 @@ class CORE_EXPORT ScrollbarTheme {
     return kWebScrollbarButtonsPlacementSingle;
   }
 
+  virtual bool IsSolidColor() const { return false; }
   virtual bool UsesOverlayScrollbars() const { return false; }
   virtual void UpdateScrollbarOverlayColorTheme(const Scrollbar&) {}
 
