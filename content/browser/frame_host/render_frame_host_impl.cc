@@ -6479,10 +6479,10 @@ void RenderFrameHostImpl::CreateAudioOutputStreamFactory(
 }
 
 void RenderFrameHostImpl::BindMediaInterfaceFactoryRequest(
-    media::mojom::InterfaceFactoryRequest request) {
+    mojo::PendingReceiver<media::mojom::InterfaceFactory> receiver) {
   DCHECK(!media_interface_proxy_);
   media_interface_proxy_.reset(new MediaInterfaceProxy(
-      this, std::move(request),
+      this, std::move(receiver),
       base::BindOnce(
           &RenderFrameHostImpl::OnMediaInterfaceFactoryConnectionError,
           base::Unretained(this))));

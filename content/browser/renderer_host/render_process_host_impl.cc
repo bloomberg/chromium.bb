@@ -2366,10 +2366,10 @@ void RenderProcessHostImpl::CreateCodeCacheHost(
 }
 
 void RenderProcessHostImpl::BindVideoDecoderService(
-    media::mojom::InterfaceFactoryRequest request) {
+    mojo::PendingReceiver<media::mojom::InterfaceFactory> receiver) {
   if (!video_decoder_proxy_)
     video_decoder_proxy_.reset(new VideoDecoderProxy());
-  video_decoder_proxy_->Add(std::move(request));
+  video_decoder_proxy_->Add(std::move(receiver));
 }
 
 void RenderProcessHostImpl::BindWebDatabaseHostImpl(
