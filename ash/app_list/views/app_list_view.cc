@@ -790,7 +790,13 @@ void AppListView::Layout() {
   // Exclude the shelf height from the contents bounds to avoid apps grid from
   // overlapping with shelf.
   gfx::Rect main_bounds = contents_bounds;
-  main_bounds.Inset(0, 0, 0, delegate_->GetShelfHeight());
+  if (is_side_shelf()) {
+    // Set both horizontal insets so the app list remains centered on the
+    // screen.
+    main_bounds.Inset(delegate_->GetShelfHeight(), 0);
+  } else {
+    main_bounds.Inset(0, 0, 0, delegate_->GetShelfHeight());
+  }
 
   app_list_main_view_->SetBoundsRect(main_bounds);
 
@@ -819,6 +825,10 @@ SkColor AppListView::GetAppListBackgroundShieldColorForTest() {
 }
 
 void AppListView::UpdateAppListConfig(aura::Window* parent_window) {
+  // For side shelf, extra horizontal margin is needed to ensure the apps grid
+  // does not overlap with shelf.
+  const int margin_for_side_shelf =
+      is_side_shelf() ? delegate_->GetShelfHeight() : 0;
   // Create the app list configuration override if it's needed for the current
   // display bounds and the available apps grid size.
   std::unique_ptr<AppListConfig> new_config =
@@ -827,7 +837,8 @@ void AppListView::UpdateAppListConfig(aura::Window* parent_window) {
               ->GetDisplayNearestView(parent_window)
               .work_area()
               .size(),
-          AppsContainerView::GetMinimumGridHorizontalMargin(),
+          AppsContainerView::GetMinimumGridHorizontalMargin() +
+              margin_for_side_shelf,
           delegate_->GetShelfHeight(), app_list_config_.get());
 
   if (!new_config)
