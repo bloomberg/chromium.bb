@@ -5359,6 +5359,24 @@
             ]
         }
     ],
+    "SafeBrowsingSendSampledPingsForAllowlistDomain": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SafeBrowsingSendSampledPingsForAllowlistDomain"
+                    ]
+                }
+            ]
+        }
+    ],
     "SafeBrowsingSuspiciousSiteTrigger": [
         {
             "platforms": [
