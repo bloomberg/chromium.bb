@@ -261,8 +261,9 @@ GpuVideoAcceleratorFactoriesImpl::CreateVideoEncodeAccelerator() {
   if (CheckContextLost())
     return nullptr;
 
-  media::mojom::VideoEncodeAcceleratorPtr vea;
-  vea_provider_->CreateVideoEncodeAccelerator(mojo::MakeRequest(&vea));
+  mojo::PendingRemote<media::mojom::VideoEncodeAccelerator> vea;
+  vea_provider_->CreateVideoEncodeAccelerator(
+      vea.InitWithNewPipeAndPassReceiver());
 
   if (!vea)
     return nullptr;
