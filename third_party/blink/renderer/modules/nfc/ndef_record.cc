@@ -350,11 +350,10 @@ NDEFRecord::NDEFRecord(const ExecutionContext* execution_context,
       lang_(getDocumentLanguage(execution_context)),
       payload_data_(GetUTF8DataFromString(text)) {}
 
-NDEFRecord::NDEFRecord(DOMArrayBuffer* array_buffer)
-    : record_type_("opaque"), media_type_("application/octet-stream") {
-  payload_data_.Append(static_cast<uint8_t*>(array_buffer->Data()),
-                       array_buffer->ByteLength());
-}
+NDEFRecord::NDEFRecord(WTF::Vector<uint8_t> payload_data)
+    : record_type_("opaque"),
+      media_type_("application/octet-stream"),
+      payload_data_(std::move(payload_data)) {}
 
 NDEFRecord::NDEFRecord(const device::mojom::blink::NDEFRecord& record)
     : record_type_(record.record_type),
