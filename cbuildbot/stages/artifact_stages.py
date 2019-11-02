@@ -614,7 +614,7 @@ class UploadPrebuiltsStage(generic_stages.BoardSpecificBuilderStage):
     super(UploadPrebuiltsStage, self).__init__(builder_run, buildstore, board,
                                                **kwargs)
 
-  def GenerateCommonArgs(self):
+  def GenerateCommonArgs(self, inc_chrome_ver=True):
     """Generate common prebuilt arguments."""
     generated_args = []
     if self._run.options.debug:
@@ -626,7 +626,7 @@ class UploadPrebuiltsStage(generic_stages.BoardSpecificBuilderStage):
 
     # Generate the version if we are a manifest_version build.
     if self._run.config.manifest_version:
-      version = self._run.GetVersion()
+      version = self._run.GetVersion(include_chrome=inc_chrome_ver)
     else:
       version = self.prebuilts_version
     if version is not None:
@@ -741,7 +741,7 @@ class DevInstallerPrebuiltsStage(UploadPrebuiltsStage):
 
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
-    generated_args = generated_args = self.GenerateCommonArgs()
+    generated_args = self.GenerateCommonArgs()
     prebuilts.UploadDevInstallerPrebuilts(
         binhost_bucket=self._run.config.binhost_bucket,
         binhost_key=self._run.config.binhost_key,
