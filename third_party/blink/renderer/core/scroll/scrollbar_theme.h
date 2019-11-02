@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/scroll/scrollbar.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item.h"
+#include "third_party/blink/renderer/platform/graphics/scrollbar_theme_settings.h"
 
 namespace blink {
 
@@ -190,14 +191,6 @@ class CORE_EXPORT ScrollbarTheme {
 
   virtual bool AllowsHitTest() const { return true; }
 
-  // Warning: Please call Page::GetScrollbarTheme instead of call this method
-  // directly since we support different native scrollbar theme base on page
-  // settings. See crrev.com/c/646727, this function will eventually be removed.
-  static ScrollbarTheme& DeprecatedStaticGetTheme();
-
-  static void SetMockScrollbarsEnabled(bool flag);
-  static bool MockScrollbarsEnabled();
-
  protected:
   virtual int TickmarkBorderWidth() { return 0; }
   virtual void PaintScrollbarBackground(GraphicsContext&, const Scrollbar&) {}
@@ -228,10 +221,28 @@ class CORE_EXPORT ScrollbarTheme {
     PaintThumb(context, scrollbar, rect);
   }
 
+ protected:
+  // For GetTheme().
+  friend class MockScrollableArea;
+  friend class MockScrollableAreaForAnimatorTest;
+  friend class Page;
+
+  // Get the theme based on global scrollbar settings. We should always use
+  // Page::GetScrollbarTheme() to get scrollbar theme because we support
+  // different native scrollbar theme base on page settings.
+  // See http://crrev.com/c/646727.
+  static ScrollbarTheme& GetTheme();
+
+  static bool OverlayScrollbarsEnabled() {
+    return ScrollbarThemeSettings::OverlayScrollbarsEnabled();
+  }
+  static bool MockScrollbarsEnabled() {
+    return ScrollbarThemeSettings::MockScrollbarsEnabled();
+  }
+
  private:
   // Must be implemented to return the correct theme subclass.
   static ScrollbarTheme& NativeTheme();
-  static bool g_mock_scrollbars_enabled_;
 };
 
 }  // namespace blink

@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/geometry/float_size.h"
@@ -291,8 +292,8 @@ void DevToolsEmulator::EnableMobileEmulation() {
     return;
   emulate_mobile_enabled_ = true;
   is_overlay_scrollbars_enabled_ =
-      RuntimeEnabledFeatures::OverlayScrollbarsEnabled();
-  RuntimeEnabledFeatures::SetOverlayScrollbarsEnabled(true);
+      ScrollbarThemeSettings::OverlayScrollbarsEnabled();
+  ScrollbarThemeSettings::SetOverlayScrollbarsEnabled(true);
   is_orientation_event_enabled_ =
       RuntimeEnabledFeatures::OrientationEventEnabled();
   RuntimeEnabledFeatures::SetOrientationEventEnabled(true);
@@ -333,7 +334,7 @@ void DevToolsEmulator::EnableMobileEmulation() {
 void DevToolsEmulator::DisableMobileEmulation() {
   if (!emulate_mobile_enabled_)
     return;
-  RuntimeEnabledFeatures::SetOverlayScrollbarsEnabled(
+  ScrollbarThemeSettings::SetOverlayScrollbarsEnabled(
       is_overlay_scrollbars_enabled_);
   RuntimeEnabledFeatures::SetOrientationEventEnabled(
       is_orientation_event_enabled_);

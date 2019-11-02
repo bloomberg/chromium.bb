@@ -362,7 +362,7 @@ void ScrollingCoordinator::ScrollableAreaScrollbarLayerDidChange(
 
       scoped_refptr<cc::ScrollbarLayerBase> new_scrollbar_layer;
       if (settings->GetUseSolidColorScrollbars()) {
-        DCHECK(RuntimeEnabledFeatures::OverlayScrollbarsEnabled());
+        DCHECK(scrollbar.IsOverlayScrollbar());
         new_scrollbar_layer = CreateSolidColorScrollbarLayer(
             orientation, scrollbar.GetTheme().ThumbThickness(scrollbar),
             scrollbar.GetTheme().TrackPosition(scrollbar),
