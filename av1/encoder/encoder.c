@@ -10,6 +10,7 @@
  */
 
 #include <limits.h>
+#include <float.h>
 #include <math.h>
 #include <stdio.h>
 
@@ -4341,6 +4342,10 @@ static uint8_t get_superres_denom_for_qindex(const AV1_COMP *cpi, int qindex,
   return denom;
 }
 
+// If true, SUPERRES_AUTO mode will exhaustively search over all superres
+// denominators for all frames (except overlay and internal overlay frames).
+#define SUPERRES_RECODE_ALL_RATIOS 0
+
 static uint8_t calculate_next_superres_scale(AV1_COMP *cpi) {
   // Choose an arbitrary random number
   static unsigned int seed = 34567;
@@ -4402,7 +4407,14 @@ static uint8_t calculate_next_superres_scale(AV1_COMP *cpi) {
       if (q <= qthresh) {
         new_denom = SCALE_NUMERATOR;
       } else {
+#if SUPERRES_RECODE_ALL_RATIOS
+        if (cpi->common.current_frame.frame_type == KEY_FRAME)
+          new_denom = oxcf->superres_kf_scale_denominator;
+        else
+          new_denom = oxcf->superres_scale_denominator;
+#else
         new_denom = get_superres_denom_for_qindex(cpi, q, 1, 1);
+#endif  // SUPERRES_RECODE_ALL_RATIOS
       }
       break;
     }
@@ -5386,15 +5398,47 @@ static int encode_with_and_without_superres(AV1_COMP *cpi, size_t *size,
   save_all_coding_context(cpi);
 
   // Encode with superres.
+#if SUPERRES_RECODE_ALL_RATIOS
+  int64_t superres_sses[SCALE_NUMERATOR];
+  int64_t superres_rates[SCALE_NUMERATOR];
+  int superres_largest_tile_ids[SCALE_NUMERATOR];
+  // Use superres for Key-frames and Alt-ref frames only.
+  const GF_GROUP *const gf_group = &cpi->gf_group;
+  if (gf_group->update_type[gf_group->index] != OVERLAY_UPDATE &&
+      gf_group->update_type[gf_group->index] != INTNL_OVERLAY_UPDATE) {
+    for (int denom = SCALE_NUMERATOR + 1; denom <= 2 * SCALE_NUMERATOR;
+         ++denom) {
+      oxcf->superres_scale_denominator = denom;
+      oxcf->superres_kf_scale_denominator = denom;
+      const int this_index = denom - (SCALE_NUMERATOR + 1);
+      err = encode_with_recode_loop_and_filter(
+          cpi, size, dest, &superres_sses[this_index],
+          &superres_rates[this_index], &superres_largest_tile_ids[this_index]);
+      if (err != AOM_CODEC_OK) return err;
+      restore_all_coding_context(cpi);
+    }
+    // Reset.
+    oxcf->superres_scale_denominator = SCALE_NUMERATOR;
+    oxcf->superres_kf_scale_denominator = SCALE_NUMERATOR;
+  } else {
+    for (int denom = SCALE_NUMERATOR + 1; denom <= 2 * SCALE_NUMERATOR;
+         ++denom) {
+      const int this_index = denom - (SCALE_NUMERATOR + 1);
+      superres_sses[this_index] = INT64_MAX;
+      superres_rates[this_index] = INT64_MAX;
+    }
+  }
+#else
   int64_t sse1 = INT64_MAX;
   int64_t rate1 = INT64_MAX;
   int largest_tile_id1;
   err = encode_with_recode_loop_and_filter(cpi, size, dest, &sse1, &rate1,
                                            &largest_tile_id1);
   if (err != AOM_CODEC_OK) return err;
+  restore_all_coding_context(cpi);
+#endif  // SUPERRES_RECODE_ALL_RATIOS
 
   // Encode without superres.
-  restore_all_coding_context(cpi);
   int64_t sse2 = INT64_MAX;
   int64_t rate2 = INT64_MAX;
   int largest_tile_id2;
@@ -5407,7 +5451,34 @@ static int encode_with_and_without_superres(AV1_COMP *cpi, size_t *size,
   // Note: Both use common rdmult based on base qindex of fullres.
   const int64_t rdmult =
       av1_compute_rd_mult_based_on_qindex(cpi, cm->base_qindex);
+
+#if SUPERRES_RECODE_ALL_RATIOS
+  // Find the best rdcost among all superres denoms.
+  double proj_rdcost1 = DBL_MAX;
+  int64_t sse1 = INT64_MAX;
+  int64_t rate1 = INT64_MAX;
+  int largest_tile_id1 = 0;
+  (void)sse1;
+  (void)rate1;
+  (void)largest_tile_id1;
+  int best_denom = -1;
+  for (int denom = SCALE_NUMERATOR + 1; denom <= 2 * SCALE_NUMERATOR; ++denom) {
+    const int this_index = denom - (SCALE_NUMERATOR + 1);
+    const int64_t this_sse = superres_sses[this_index];
+    const int64_t this_rate = superres_rates[this_index];
+    const int this_largest_tile_id = superres_largest_tile_ids[this_index];
+    const double this_rdcost = RDCOST_DBL(rdmult, this_rate, this_sse);
+    if (this_rdcost < proj_rdcost1) {
+      sse1 = this_sse;
+      rate1 = this_rate;
+      largest_tile_id1 = this_largest_tile_id;
+      proj_rdcost1 = this_rdcost;
+      best_denom = denom;
+    }
+  }
+#else
   const double proj_rdcost1 = RDCOST_DBL(rdmult, rate1, sse1);
+#endif  // SUPERRES_RECODE_ALL_RATIOS
   const double proj_rdcost2 = RDCOST_DBL(rdmult, rate2, sse2);
 
   // Re-encode with superres if it's better.
@@ -5416,6 +5487,11 @@ static int encode_with_and_without_superres(AV1_COMP *cpi, size_t *size,
     // TODO(urvang): We should avoid rerunning the recode loop by saving
     // previous output+state, or running encode only for the selected 'q' in
     // previous step.
+#if SUPERRES_RECODE_ALL_RATIOS
+    // Again, temporarily force the best denom.
+    oxcf->superres_scale_denominator = best_denom;
+    oxcf->superres_kf_scale_denominator = best_denom;
+#endif  // SUPERRES_RECODE_ALL_RATIOS
     int64_t sse3 = INT64_MAX;
     int64_t rate3 = INT64_MAX;
     err = encode_with_recode_loop_and_filter(cpi, size, dest, &sse3, &rate3,
@@ -5423,6 +5499,11 @@ static int encode_with_and_without_superres(AV1_COMP *cpi, size_t *size,
     assert(sse1 == sse3);
     assert(rate1 == rate3);
     assert(largest_tile_id1 == *largest_tile_id);
+#if SUPERRES_RECODE_ALL_RATIOS
+    // Reset.
+    oxcf->superres_scale_denominator = SCALE_NUMERATOR;
+    oxcf->superres_kf_scale_denominator = SCALE_NUMERATOR;
+#endif  // SUPERRES_RECODE_ALL_RATIOS
   } else {
     *largest_tile_id = largest_tile_id2;
   }
