@@ -1178,12 +1178,10 @@ void NGBoxFragmentPainter::PaintTextItem(const NGInlineCursor& cursor,
       paint_info.phase != PaintPhase::kMask)
     return;
 
-  // Need to check |IsHiddenForPaint()| for each item, but checking the style is
-  // not needed if we reach here, because text items should have the same style
-  // as their parents.
-  if (UNLIKELY(item.IsHiddenForPaint()))
+  // Need to check the style of each text items because they can have different
+  // styles than its siblings if inline boxes are culled.
+  if (UNLIKELY(IsVisibleToPaint(item, item.Style())))
     return;
-  DCHECK(IsVisibleToPaint(item, item.Style()));
 
   NGTextFragmentPainter<NGInlineCursor> text_painter(cursor);
   text_painter.Paint(paint_info, paint_offset);
