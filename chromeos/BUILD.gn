@@ -46,6 +46,8 @@ component("chromeos") {
     "hugepage_text/hugepage_text.h",
     "memory/kstaled.cc",
     "memory/kstaled.h",
+    "memory/memory.cc",
+    "memory/memory.h",
     "memory/swap_configuration.cc",
     "memory/swap_configuration.h",
     "policy/weekly_time/time_utils.cc",
