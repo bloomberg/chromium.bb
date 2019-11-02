@@ -1687,21 +1687,6 @@
             ]
         }
     ],
-    "ContextualSearchTranslation": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "ContextualSearchTranslationModel",
-                    "enable_features": [
-                        "ContextualSearchTranslationModel"
-                    ]
-                }
-            ]
-        }
-    ],
     "CopylessPaste": [
         {
             "platforms": [

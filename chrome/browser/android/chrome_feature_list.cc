@@ -389,7 +389,7 @@ const base::Feature kContextualSearchTapDisableOverride{
     "ContextualSearchTapDisableOverride", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kContextualSearchTranslationModel{
-    "ContextualSearchTranslationModel", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ContextualSearchTranslationModel", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kDarkenWebsitesCheckboxInThemesSetting{
     "DarkenWebsitesCheckboxInThemesSetting", base::FEATURE_DISABLED_BY_DEFAULT};
