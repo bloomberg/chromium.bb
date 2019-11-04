@@ -7,6 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/public/cpp/shelf_config.h"
+#include "ash/public/cpp/shelf_types.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -62,6 +63,9 @@ class ASH_EXPORT HotseatWidget : public views::Widget,
     return scrollable_shelf_view_;
   }
 
+  void set_state(HotseatState state) { state_ = state; }
+  HotseatState state() const { return state_; }
+
   // Whether the widget is in the extended position because of a direct
   // manual user intervention (dragging the hotseat into its extended state).
   // This will return |false| after any visible change in the shelf
@@ -72,6 +76,8 @@ class ASH_EXPORT HotseatWidget : public views::Widget,
 
  private:
   class DelegateView;
+
+  HotseatState state_ = HotseatState::kShown;
 
   // View containing the shelf items within an active user session. Owned by
   // the views hierarchy.
