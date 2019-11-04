@@ -147,7 +147,10 @@ bool TrustedTypeFail(TrustedTypeViolationKind kind,
 }
 
 TrustedTypePolicy* GetDefaultPolicy(const ExecutionContext* execution_context) {
-  return execution_context->GetTrustedTypes()->defaultPolicy();
+  DCHECK(execution_context);
+  return execution_context->GetTrustedTypes()
+             ? execution_context->GetTrustedTypes()->defaultPolicy()
+             : nullptr;
 }
 
 }  // namespace
