@@ -78,7 +78,7 @@ def GetParser():
       help='This is a dryrun, nothing will be triggered.')
 
   parser.add_argument(
-      '--keyset', required=True, help='The keyset to use.')
+      '--keyset', default='cr50-accessory-mp', help='The keyset to use.')
 
   parser.add_argument(
       '--image-type', choices=_image_types, default='cr50_firmware',
@@ -86,7 +86,7 @@ def GetParser():
 
   parser.add_argument(
       '--signer-type', choices=_signer_types,
-      default='dev', help='The image type.')
+      default='production', help='The image type.')
 
   parser.add_argument(
       '--target', choices=_target_types,

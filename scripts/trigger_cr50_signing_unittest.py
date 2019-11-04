@@ -64,7 +64,7 @@ class TestMain(cros_test_lib.RunCommandTempDirTestCase):
                 'target': sign_image_pb2.Cr50Instructions.UNSPECIFIED},
             'image_type': common_pb2.CR50_FIRMWARE,
             'keyset': 'test-keyset',
-            'signer_type': sign_image_pb2.SIGNER_DEV})
+            'signer_type': sign_image_pb2.SIGNER_PRODUCTION})
 
   def testPropertiesCorrect(self):
     """Test minimal instructions."""
@@ -106,7 +106,7 @@ class TestMain(cros_test_lib.RunCommandTempDirTestCase):
                 'target': sign_image_pb2.Cr50Instructions.UNSPECIFIED},
             'image_type': common_pb2.CR50_FIRMWARE,
             'keyset': 'test-keyset',
-            'signer_type': sign_image_pb2.SIGNER_DEV})
+            'signer_type': sign_image_pb2.SIGNER_PRODUCTION})
 
   def testDryRun(self):
     """Test --dry-run works."""
@@ -123,7 +123,7 @@ class TestMain(cros_test_lib.RunCommandTempDirTestCase):
                 'target': sign_image_pb2.Cr50Instructions.UNSPECIFIED},
             'image_type': common_pb2.CR50_FIRMWARE,
             'keyset': 'test-keyset',
-            'signer_type': sign_image_pb2.SIGNER_DEV})
+            'signer_type': sign_image_pb2.SIGNER_PRODUCTION})
 
   def testNodeLockedCatchesBadDeviceId(self):
     """Test --target node_locked catches bad --device-id."""
@@ -166,13 +166,13 @@ class TestMain(cros_test_lib.RunCommandTempDirTestCase):
          'channel': 0,
          'cr50_instructions': {'target': trigger._target_types['node_locked'],
                                'device_id': '00000001-00001234'},
-         'signer_type': sign_image_pb2.SIGNER_DEV,
+         'signer_type': sign_image_pb2.SIGNER_PRODUCTION,
          'image_type': common_pb2.CR50_FIRMWARE, 'keyset': 'test-keyset'},
         {'archive': 'gs://test/file.bin', 'build_target': {'name': 'unknown'},
          'channel': 0,
          'cr50_instructions': {'target': trigger._target_types['node_locked'],
                                'device_id': '00000002-00000021'},
-         'signer_type': sign_image_pb2.SIGNER_DEV,
+         'signer_type': sign_image_pb2.SIGNER_PRODUCTION,
          'image_type': common_pb2.CR50_FIRMWARE, 'keyset': 'test-keyset'}]
     # Check the calls in two parts, since we need to convert the json string
     # back to a dict.
