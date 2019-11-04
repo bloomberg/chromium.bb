@@ -38,7 +38,7 @@ class TestClient : public AwMetricsServiceClient {
   void SetInSample(bool value) { in_sample_ = value; }
 
  protected:
-  bool IsInSample() override { return true; }
+  bool IsInSample() override { return in_sample_; }
 
  private:
   bool in_sample_;
