@@ -38,8 +38,6 @@ class TabHoverCardBubbleView : public views::BubbleDialogDelegateView,
   // Updates card content and anchoring and shows the tab hover card.
   void UpdateAndShow(Tab* tab);
 
-  void UpdateAnchorBounds(gfx::Rect anchor_bounds);
-
   bool IsVisible();
 
   void FadeOutToHide();
