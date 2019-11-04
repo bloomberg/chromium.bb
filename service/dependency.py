@@ -7,8 +7,8 @@
 
 from __future__ import print_function
 
-import fileinput
 import os
+import re
 
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
@@ -48,6 +48,85 @@ def NormalizeSourcePaths(source_paths):
       results.append(path)
 
   return results
+
+
+def GetRelevantEclassesForEbuild(ebuild_path, path_cache, overlay_dirs):
+
+  # Trim '.ebuild' from the tail of the path.
+  ebuild_path_no_ext, _ = os.path.splitext(ebuild_path)
+
+  # Ebuild paths look like:
+  # {some_dir}/category/package/package-version
+  # but cache entry paths look like:
+  # {some_dir}/category/package-version
+  # So we need to remove the second to last path element from the ebuild path
+  # to construct the path to the matching edb cache entry.
+  path_head, package_name = os.path.split(ebuild_path_no_ext)
+  path_head, _ = os.path.split(path_head)
+  overlay_head, category = os.path.split(path_head)
+  fixed_path = os.path.join(overlay_head, category, package_name)
+
+  cache_file_relpath = os.path.relpath(fixed_path, '/')
+
+  edb_cache_file_path = os.path.join('/var/cache/edb/dep', cache_file_relpath)
+  md5_cache_file_path = os.path.join(overlay_head, 'metadata', 'md5-cache',
+                                     category, package_name)
+
+  relevant_eclass_paths = []
+
+  if os.path.isfile(edb_cache_file_path):
+    cache_entries = parse_edb_cache_entry(edb_cache_file_path)
+  elif os.path.isfile(md5_cache_file_path):
+    cache_entries = parse_md5_cache_entry(md5_cache_file_path)
+  else:
+    raise ValueError('No cache entry found for package: %s' % package_name)
+
+  for eclass, digest in cache_entries:
+    if digest in path_cache:
+      relevant_eclass_paths.append(path_cache[digest])
+    else:
+      eclass_path = find_matching_eclass_file(eclass, digest, overlay_dirs)
+      path_cache[digest] = eclass_path
+      relevant_eclass_paths.append(eclass_path)
+
+  return relevant_eclass_paths
+
+
+def find_matching_eclass_file(eclass, digest, overlay_dirs):
+  for overlay in overlay_dirs:
+    path = os.path.join(overlay, 'eclass', eclass) + '.eclass'
+    if os.path.isfile(path) and digest == osutils.MD5HashFile(path):
+      return path
+  raise ValueError('No matching eclass file found: %s %s' % (eclass, digest))
+
+
+def parse_edb_cache_entry(edb_cache_file_path):
+  ECLASS_REGEX = re.compile(r'_eclasses_=(.*)')
+  ECLASS_CLAUSE_REGEX = (r'(?P<eclass>[^\s]+)\s+(?P<overlay_path>[^\s]+)\s+'
+                         r'(?P<digest>[\da-fA-F]+)\s?')
+
+  cachefile = osutils.ReadFile(edb_cache_file_path)
+  m = ECLASS_REGEX.search(cachefile)
+  if not m:
+    return []
+
+  start, end = m.start(1), m.end(1)
+  entries = re.finditer(ECLASS_CLAUSE_REGEX, cachefile[start:end])
+  return [(c.group('eclass'), c.group('digest')) for c in entries]
+
+
+def parse_md5_cache_entry(md5_cache_file_path):
+  ECLASS_REGEX = re.compile(r'_eclasses_=(.*)')
+  ECLASS_CLAUSE_REGEX = r'(?P<eclass>[^\s]+)\s+(?P<digest>[\da-fA-F]+)\s?'
+
+  cachefile = osutils.ReadFile(md5_cache_file_path)
+  m = ECLASS_REGEX.search(cachefile)
+  if not m:
+    return []
+
+  start, end = m.start(1), m.end(1)
+  entries = re.finditer(ECLASS_CLAUSE_REGEX, cachefile[start:end])
+  return [(c.group('eclass'), c.group('digest')) for c in entries]
 
 
 def GenerateSourcePathMapping(packages, board):
@@ -108,31 +187,6 @@ def GenerateSourcePathMapping(packages, board):
     for path in workon_subtrees:
       results[package].append(path)
 
-  # Source paths which are the eclasses which ebuilds inherit from.
-  # For now, we just include all the whole eclass directory.
-  # TODO(crbug.com/917174): for each package, expand the enalysis to output
-  # only the path to eclass files which the packakge depends on.
-  # Eclasses can live in either chromiumos-overlay, portage-stable, or
-  # eclass-overlay. Without inspecting which eclasses are actually inherited
-  # by a given ebuild we must pessimistically include all three.
-  _ECLASS_DIRS = [
-      os.path.join(constants.CHROOT_SOURCE_ROOT,
-                   constants.CHROMIUMOS_OVERLAY_DIR, 'eclass'),
-      os.path.join(constants.CHROOT_SOURCE_ROOT,
-                   constants.PORTAGE_STABLE_OVERLAY_DIR, 'eclass'),
-      os.path.join(constants.CHROOT_SOURCE_ROOT, constants.ECLASS_OVERLAY_DIR,
-                   'eclass'),
-  ]
-  for package, ebuild_path in packages_to_ebuild_paths.items():
-    use_inherit = False
-    for line in fileinput.input(ebuild_path):
-      if line.startswith('inherit '):
-        use_inherit = True
-    if use_inherit:
-      results[package].extend(_ECLASS_DIRS)
-
-  # Source paths which are the overlay directories for the given board
-  # (packages are board specific).
   if board:
     overlay_directories = portage_util.FindOverlays(
         overlay_type='both', board=board)
@@ -141,6 +195,17 @@ def GenerateSourcePathMapping(packages, board):
     # and so we use the overlays for the SDK builder.
     overlay_directories = portage_util.FindOverlays(
         overlay_type='both', board=constants.CHROOT_BUILDER_BOARD)
+
+  eclass_path_cache = {}
+
+  for package, ebuild_path in packages_to_ebuild_paths.items():
+    eclass_paths = GetRelevantEclassesForEbuild(ebuild_path, eclass_path_cache,
+                                                overlay_directories)
+    results[package].extend(eclass_paths)
+
+  # Source paths which are the overlay directories for the given board
+  # (packages are board specific).
+
   # The only parts of the overlay that affect every package are the current
   # profile (which lives somewhere in the profiles/ subdir) and a top-level
   # make.conf (if it exists).
