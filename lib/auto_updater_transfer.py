@@ -71,49 +71,81 @@ class Transfer(six.with_metaclass(abc.ABCMeta, object)):
 
   PAYLOAD_DIR_NAME = 'payloads'
 
-  def __init__(self, device, cmd_kwargs, dev_dir='',
-               transfer_stateful_update=True, transfer_rootfs_update=True):
+  def __init__(self, device, payload_dir, device_restore_dir,
+               payload_name, cmd_kwargs, device_payload_dir, dev_dir='',
+               original_payload_dir=None, transfer_stateful_update=True,
+               transfer_rootfs_update=True):
     """Initialize Base Class for transferring payloads functionality.
 
     Args:
       device: The ChromiumOSDevice to be updated.
-      dev_dir: The directory of the nebraska that runs the CrOS auto-update.
+      payload_dir: The directory of payload(s).
+      device_restore_dir: Path to the old payload directory in the device's work
+          directory.
+      payload_name: Filename of exact payload file to use for update.
       cmd_kwargs: Keyword arguments that are sent along with the commands that
           are run on the device.
+      device_payload_dir: Path to the payload directory in the device's work
+          directory.
+      dev_dir: The directory of the nebraska that runs the CrOS auto-update.
+      original_payload_dir: The directory containing payloads whose version is
+          the same as current host's rootfs partition. If it's None, will first
+          try installing the matched stateful.tgz with the host's rootfs
+          Partition when restoring stateful. Otherwise, install the target
+          stateful.tgz.
       transfer_stateful_update: Whether to transfer payloads necessary for
           stateful update. The default is True.
       transfer_rootfs_update: Whether to transfer payloads necessary for
           rootfs update. The default is True.
     """
     self._device = device
+    self._payload_dir = payload_dir
+    self._device_restore_dir = device_restore_dir
+    self._payload_name = payload_name
     self._cmd_kwargs = cmd_kwargs
+    self._device_payload_dir = device_payload_dir
     self._dev_dir = dev_dir
+    self._original_payload_dir = original_payload_dir
     self._transfer_stateful_update = transfer_stateful_update
     self._transfer_rootfs_update = transfer_rootfs_update
+    self._stateful_update_bin = None
 
   @abc.abstractmethod
   def CheckPayloads(self):
     """Verify that all required payloads are in |self.payload_dir|."""
 
-  @abc.abstractmethod
   def TransferUpdateUtilsPackage(self):
     """Transfer update-utils package to work directory of the remote device."""
+    retry_util.RetryException(
+        cros_build_lib.RunCommandError,
+        _MAX_RETRY,
+        self._TransferUpdateUtilsPackage,
+        delay_sec=_DELAY_SEC_FOR_RETRY)
 
-  @abc.abstractmethod
   def TransferRootfsUpdate(self):
     """Transfer files for rootfs update.
 
     The corresponding payloads are copied to the remote device for rootfs
     update.
     """
+    retry_util.RetryException(
+        cros_build_lib.RunCommandError,
+        _MAX_RETRY,
+        self._TransferRootfsUpdate,
+        delay_sec=_DELAY_SEC_FOR_RETRY)
 
-  @abc.abstractmethod
   def TransferStatefulUpdate(self):
     """Transfer files for stateful update.
 
     The stateful update bin and the corresponding payloads are copied to the
     target remote device for stateful update.
     """
+    retry_util.RetryException(
+        cros_build_lib.RunCommandError,
+        _MAX_RETRY,
+        self._TransferStatefulUpdate,
+        delay_sec=_DELAY_SEC_FOR_RETRY)
+    return self._stateful_update_bin
 
   def _EnsureDeviceDirectory(self, directory):
     """Mkdir the directory no matther whether this directory exists on host.
@@ -139,43 +171,31 @@ class LocalTransfer(Transfer):
     """Initialize LocalTransfer to handle transferring files from local to DUT.
 
     Args:
-      device: The ChromiumOSDevice to be updated.
-      device_payload_dir: Path to the payload directory in the device's work
-          directory.
+      device: See Base class.
+      payload_dir: See Base class.
       tempdir: The temp directory in caller, not in the device. For example,
           the tempdir for cros flash is /tmp/cros-flash****/, used to
           temporarily keep files when transferring update-utils package, and
           reserve nebraska and update engine logs.
-      dev_dir: The directory of the nebraska that runs the CrOS auto-update.
-      payload_dir: The directory of payload(s).
+      device_restore_dir: See Base class.
+      payload_name: See Base class.
+      cmd_kwargs: See Base class.
+      device_payload_dir: See Base class.
+      dev_dir: See Base class.
       payload_mode: The payload mode - it can be 'parallel' or 'scp'.
-      cmd_kwargs: keyword arguments that are sent along with the commands that
-          are run on the device.
-      original_payload_dir: The directory containing payloads whose version is
-          the same as current host's rootfs partition. If it's None, will first
-          try installing the matched stateful.tgz with the host's rootfs
-          Partition when restoring stateful. Otherwise, install the target
-          stateful.tgz.
-      device_restore_dir: Path to the old payload directory in the device's work
-          directory.
-      payload_name: Filename of exact payload file to use for update.
-      transfer_stateful_update: Whether to transfer payloads necessary for
-          stateful update. The default is True.
-      transfer_rootfs_update: Whether to transfer payloads necessary for
-          rootfs update. The default is True.
+      original_payload_dir: See Base class.
+      transfer_stateful_update: See Base class.
+      transfer_rootfs_update: See Base class.
     """
     super(LocalTransfer, self).__init__(
-        device=device, cmd_kwargs=cmd_kwargs, dev_dir=dev_dir,
+        device=device, payload_dir=payload_dir,
+        device_restore_dir=device_restore_dir, payload_name=payload_name,
+        cmd_kwargs=cmd_kwargs, device_payload_dir=device_payload_dir,
+        dev_dir=dev_dir, original_payload_dir=original_payload_dir,
         transfer_stateful_update=transfer_stateful_update,
         transfer_rootfs_update=transfer_rootfs_update)
-    self._device_payload_dir = device_payload_dir
     self._tempdir = tempdir
-    self._payload_dir = payload_dir
     self._payload_mode = payload_mode
-    self._original_payload_dir = original_payload_dir
-    self._device_restore_dir = device_restore_dir
-    self._payload_name = payload_name
-    self._stateful_update_bin = None
 
   def CheckPayloads(self):
     """Verify that all required payloads are in |self.payload_dir|."""
@@ -210,14 +230,6 @@ class LocalTransfer(Transfer):
     self._device.CopyToWorkDir(source_dir, mode='rsync', log_output=True,
                                **self._cmd_kwargs)
 
-  def TransferUpdateUtilsPackage(self):
-    """Transfer update-utils package to work directory of the remote device."""
-    retry_util.RetryException(
-        cros_build_lib.RunCommandError,
-        _MAX_RETRY,
-        self._TransferUpdateUtilsPackage,
-        delay_sec=_DELAY_SEC_FOR_RETRY)
-
   def _TransferRootfsUpdate(self):
     """Transfer files for rootfs update.
 
@@ -233,18 +245,6 @@ class LocalTransfer(Transfer):
     self._device.CopyToWorkDir(payload_properties_path, self.PAYLOAD_DIR_NAME,
                                mode=self._payload_mode,
                                log_output=True, **self._cmd_kwargs)
-
-  def TransferRootfsUpdate(self):
-    """Transfer files for rootfs update.
-
-    The corresponding payload(s) are copied to the remote device for rootfs
-    update.
-    """
-    retry_util.RetryException(
-        cros_build_lib.RunCommandError,
-        _MAX_RETRY,
-        self._TransferRootfsUpdate,
-        delay_sec=_DELAY_SEC_FOR_RETRY)
 
   def _GetStatefulUpdateScript(self):
     """Returns the path to the stateful_update_bin on the target.
@@ -313,16 +313,3 @@ class LocalTransfer(Transfer):
     payload = os.path.join(self._payload_dir, STATEFUL_FILENAME)
     self._device.CopyToWorkDir(payload, mode=self._payload_mode,
                                log_output=True, **self._cmd_kwargs)
-
-  def TransferStatefulUpdate(self):
-    """Transfer files for stateful update.
-
-    The stateful update bin and the corresponding payloads are copied to the
-    target remote device for stateful update.
-    """
-    retry_util.RetryException(
-        cros_build_lib.RunCommandError,
-        _MAX_RETRY,
-        self._TransferStatefulUpdate,
-        delay_sec=_DELAY_SEC_FOR_RETRY)
-    return self._stateful_update_bin
