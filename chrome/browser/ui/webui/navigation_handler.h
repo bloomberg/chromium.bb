@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_WEBUI_GENERIC_HANDLER_H_
-#define CONTENT_BROWSER_WEBUI_GENERIC_HANDLER_H_
+#ifndef CHROME_BROWSER_UI_WEBUI_NAVIGATION_HANDLER_H_
+#define CHROME_BROWSER_UI_WEBUI_NAVIGATION_HANDLER_H_
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -13,13 +13,13 @@ namespace base {
 class ListValue;
 }
 
-namespace content {
+namespace webui {
 
 // A place to add handlers for messages shared across all WebUI pages.
-class GenericHandler : public WebUIMessageHandler {
+class NavigationHandler : public content::WebUIMessageHandler {
  public:
-  GenericHandler();
-  ~GenericHandler() override;
+  NavigationHandler();
+  ~NavigationHandler() override;
 
   // WebUIMessageHandler implementation.
   void RegisterMessages() override;
@@ -27,9 +27,9 @@ class GenericHandler : public WebUIMessageHandler {
  private:
   void HandleNavigateToUrl(const base::ListValue* args);
 
-  DISALLOW_COPY_AND_ASSIGN(GenericHandler);
+  DISALLOW_COPY_AND_ASSIGN(NavigationHandler);
 };
 
-}  // namespace content
+}  // namespace webui
 
-#endif  // CONTENT_BROWSER_WEBUI_GENERIC_HANDLER_H_
+#endif  // CHROME_BROWSER_UI_WEBUI_NAVIGATION_HANDLER_H_

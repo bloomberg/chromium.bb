@@ -2,31 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/webui/generic_handler.h"
+#include "chrome/browser/ui/webui/navigation_handler.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/values.h"
-#include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui.h"
 #include "ui/base/window_open_disposition.h"
 
-namespace content {
+namespace webui {
 
-GenericHandler::GenericHandler() {
-}
+NavigationHandler::NavigationHandler() {}
 
-GenericHandler::~GenericHandler() {
-}
+NavigationHandler::~NavigationHandler() {}
 
-void GenericHandler::RegisterMessages() {
+void NavigationHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
-      "navigateToUrl", base::BindRepeating(&GenericHandler::HandleNavigateToUrl,
-                                           base::Unretained(this)));
+      "navigateToUrl",
+      base::BindRepeating(&NavigationHandler::HandleNavigateToUrl,
+                          base::Unretained(this)));
 }
 
-void GenericHandler::HandleNavigateToUrl(const base::ListValue* args) {
+void NavigationHandler::HandleNavigateToUrl(const base::ListValue* args) {
   std::string url_string;
   std::string target_string;
   double button;
@@ -52,13 +51,11 @@ void GenericHandler::HandleNavigateToUrl(const base::ListValue* args) {
       target_string == "_blank")
     disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
 
-  web_ui()->GetWebContents()->OpenURL(OpenURLParams(GURL(url_string),
-                                                    Referrer(),
-                                                    disposition,
-                                                    ui::PAGE_TRANSITION_LINK,
-                                                    false));
+  web_ui()->GetWebContents()->OpenURL(
+      content::OpenURLParams(GURL(url_string), content::Referrer(), disposition,
+                             ui::PAGE_TRANSITION_LINK, false));
 
   // This may delete us!
 }
 
-}  // namespace content
+}  // namespace webui

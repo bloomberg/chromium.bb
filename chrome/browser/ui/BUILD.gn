@@ -261,6 +261,8 @@ jumbo_static_library("ui") {
     "webui/memory_internals_ui.h",
     "webui/metrics_handler.cc",
     "webui/metrics_handler.h",
+    "webui/navigation_handler.cc",
+    "webui/navigation_handler.h",
     "webui/net_export_ui.cc",
     "webui/net_export_ui.h",
     "webui/net_internals/net_internals_ui.cc",
