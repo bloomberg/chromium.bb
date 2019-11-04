@@ -42,3 +42,12 @@ file://ui/android/java/res/LAYOUT_OWNERS
 # The rules are documented at:
 # https://sites.google.com/a/chromium.org/dev/developers/how-tos/enterprise/adding-new-policies
 file://components/policy/resources/ENTERPRISE_POLICY_OWNERS
+
+# This restriction is in place due to the complicated compliance regulations
+# around this code.
+file://chrome/android/java/src/org/chromium/chrome/browser/searchwidget/COMPLIANCE_OWNERS
+
+# Notification channels appear in system UI and are persisted forever by
+# Android, so should not be added or removed lightly, and the proper
+# deprecation and versioning steps must be taken when doing so.
+file://chrome/android/java/src/org/chromium/chrome/browser/notifications/channels/NOTIFICATION_CHANNEL_OWNERS
