@@ -2274,7 +2274,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'fizz',
       'fizz-accelerator',
       'flapjack',
-      'gale',
       'gandof',
       'glados',
       'gnawty',
@@ -2388,15 +2387,16 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'cave',  # temporary hack for crbug.com/1008674
       'elm',  # temporary hack for crbug.com/1008674
       'fizz-moblab', # crbug.com/995170
+      'gale', # https://crbug.com/981002
       'lakitu',  # crbug.com/1015040  review on 2019-10-17
       'lakitu-gpu',  # crbug.com/1015040  review on 2019-10-17
       'lakitu-st',  # crbug.com/1015040  review on 2019-10-17
-      'mistral', # b/140536001, crbug.com/981002
+      'mistral', # b/140536001, https://crbug.com/981002
       'moblab-generic-vm', # crbug.com/960998, crbug.com/976297
       'samus-kernelnext', # https://crbug.com/1004618
       'veyron_mighty', # https://crbug.com/1001290
       'veyron_rialto',  # https://crbug.com/1007997
-      'whirlwind', # https://crbug.com/1001714
+      'whirlwind', # https://crbug.com/981002
       'wizpig', # crbug.com/996944
   ])
 
