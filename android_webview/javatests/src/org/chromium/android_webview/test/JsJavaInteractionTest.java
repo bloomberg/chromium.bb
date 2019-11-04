@@ -827,6 +827,40 @@ public class JsJavaInteractionTest {
         Assert.assertTrue(mListener.hasNoMoreOnPostMessage());
     }
 
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView", "JsJavaInteraction"})
+    public void testPostMessage_JsObjectName_Number() throws Throwable {
+        checkInjectAndAccessJsObjectNameAsWindowProperty("123");
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView", "JsJavaInteraction"})
+    public void testPostMessage_JsObjectName_Keyword() throws Throwable {
+        checkInjectAndAccessJsObjectNameAsWindowProperty("var");
+    }
+
+    private void checkInjectAndAccessJsObjectNameAsWindowProperty(String jsObjName)
+            throws Throwable {
+        addWebMessageListenerOnUiThread(mAwContents, jsObjName, new String[] {"*"}, mListener);
+
+        String html = "<html><head><script>window['" + jsObjName + "'].postMessage('Hello');"
+                + "</script></head><body><div>postMessage</div></body></html>";
+        mActivityTestRule.loadDataWithBaseUrlSync(mAwContents,
+                mContentsClient.getOnPageFinishedHelper(), html, "text/html", false,
+                "http://www.google.com", null);
+
+        TestWebMessageListener.Data data = mListener.waitForOnPostMessage();
+
+        Assert.assertEquals("http://www.google.com", data.mSourceOrigin.toString());
+        Assert.assertEquals(HELLO, data.mMessage);
+        Assert.assertTrue(data.mIsMainFrame);
+        Assert.assertEquals(0, data.mPorts.length);
+
+        Assert.assertTrue(mListener.hasNoMoreOnPostMessage());
+    }
+
     private boolean isJsObjectInjectedWhenLoadingUrl(
             final String baseUrl, final String jsObjectName) throws Throwable {
         mActivityTestRule.loadDataWithBaseUrlSync(mAwContents,
