@@ -2777,7 +2777,7 @@ const FeatureEntry kFeatureEntries[] = {
 
     {"omnibox-local-entity-suggestions",
      flag_descriptions::kOmniboxLocalEntitySuggestionsName,
-     flag_descriptions::kOmniboxLocalEntitySuggestionsDescription, kOsDesktop,
+     flag_descriptions::kOmniboxLocalEntitySuggestionsDescription, kOsAll,
      FEATURE_VALUE_TYPE(omnibox::kOmniboxLocalEntitySuggestions)},
 
     {"omnibox-experimental-suggest-scoring",
