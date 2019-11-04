@@ -4948,7 +4948,6 @@ crbug.com/907862 [ Mac10.13 ] gamepad/multiple-event-listeners.html [ Pass Failu
 crbug.com/874162 virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-event-fired.html [ Skip ]
 
 # Sheriff 2018-11-26
-crbug.com/908276 [ Mac ] external/wpt/webstorage/storage_setitem.html [ Pass Timeout ]
 crbug.com/908347 media/autoplay/webaudio-audio-context-resume.html [ Failure Pass ]
 crbug.com/908347 virtual/audio-service/media/autoplay/webaudio-audio-context-resume.html [ Failure Pass ]
 
