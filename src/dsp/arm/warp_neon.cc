@@ -126,6 +126,25 @@ void Warp_NEON(const void* const source, const ptrdiff_t source_stride,
             (y4 & ((1 << kWarpedModelPrecisionBits) - 1)) - MultiplyBy4(delta);
         for (int y = 0; y < 8; ++y) {
           int sy = sy4 - MultiplyBy4(gamma);
+#if defined(__aarch64__)
+          const int16x8_t intermediate =
+              vld1q_s16(&intermediate_result_column[y]);
+          for (int x = 0; x < 8; ++x) {
+            const int offset =
+                RightShiftWithRounding(sy, kWarpedDiffPrecisionBits) +
+                kWarpedPixelPrecisionShifts;
+            const int16x8_t filter = vld1q_s16(kWarpedFilters[offset]);
+            const int32x4_t product_low =
+                vmull_s16(vget_low_s16(filter), vget_low_s16(intermediate));
+            const int32x4_t product_high =
+                vmull_s16(vget_high_s16(filter), vget_high_s16(intermediate));
+            // vaddvq_s32 is only available on __aarch64__.
+            const int32_t sum = vertical_offset + vaddvq_s32(product_low) +
+                                vaddvq_s32(product_high);
+            dst_row[x] = RightShiftWithRounding(sum, inter_round_bits_vertical);
+            sy += gamma;
+          }
+#else   // !defined(__aarch64__)
           int16x8_t filter[8];
           for (int x = 0; x < 8; ++x) {
             const int offset =
@@ -147,15 +166,6 @@ void Warp_NEON(const void* const source, const ptrdiff_t source_stride,
           }
           assert(inter_round_bits_vertical == 7 ||
                  inter_round_bits_vertical == 11);
-#if defined(__aarch64__)
-          const int32x4_t shift = vdupq_n_s32(-inter_round_bits_vertical);
-          const uint32x4_t sum_low_shifted =
-              vrshlq_u32(vreinterpretq_u32_s32(sum_low), shift);
-          const uint32x4_t sum_high_shifted =
-              vrshlq_u32(vreinterpretq_u32_s32(sum_high), shift);
-          const uint16x4_t sum_low_16 = vmovn_u32(sum_low_shifted);
-          const uint16x4_t sum_high_16 = vmovn_u32(sum_high_shifted);
-#else   // !defined(__aarch64__)
           uint16x4_t sum_low_16;
           uint16x4_t sum_high_16;
           if (inter_round_bits_vertical == 7) {
@@ -165,9 +175,9 @@ void Warp_NEON(const void* const source, const ptrdiff_t source_stride,
             sum_low_16 = vrshrn_n_u32(vreinterpretq_u32_s32(sum_low), 11);
             sum_high_16 = vrshrn_n_u32(vreinterpretq_u32_s32(sum_high), 11);
           }
-#endif  // defined(__aarch64__)
           vst1_u16(dst_row, sum_low_16);
           vst1_u16(dst_row + 4, sum_high_16);
+#endif  // defined(__aarch64__)
           dst_row += dest_stride;
           sy4 += delta;
         }
