@@ -212,6 +212,10 @@ NonClientFrameViewAsh::NonClientFrameViewAsh(views::Widget* frame)
   window_util::InstallResizeHandleWindowTargeterForWindow(frame_window);
   // |header_view_| is set as the non client view's overlay view so that it can
   // overlay the web contents in immersive fullscreen.
+  // TODO(pkasting): Consider having something like NonClientViewAsh, which
+  // would avoid the need to expose an "overlay view" concept on the
+  // cross-platform class, and might allow for simpler creation/ownership/
+  // plumbing.
   frame->non_client_view()->SetOverlayView(overlay_view_);
 
   // A delegate may be set which takes over the responsibilities of the
