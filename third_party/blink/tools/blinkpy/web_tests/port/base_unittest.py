@@ -588,8 +588,8 @@ class PortTest(LoggingTestCase):
     def test_update_manifest_once_by_default(self):
         # pylint: disable=protected-access
         port = self.make_port(with_tests=True)
-        port._wpt_manifest('external/wpt')
-        port._wpt_manifest('external/wpt')
+        port.wpt_manifest('external/wpt')
+        port.wpt_manifest('external/wpt')
         self.assertEqual(len(port.host.filesystem.written_files), 1)
         self.assertEqual(len(port.host.executive.calls), 1)
 
@@ -601,7 +601,7 @@ class PortTest(LoggingTestCase):
         filesystem.write_text_file(WEB_TEST_DIR + '/external/wpt/MANIFEST.json', '{}')
         filesystem.clear_written_files()
 
-        port._wpt_manifest('external/wpt')
+        port.wpt_manifest('external/wpt')
         self.assertEqual(len(port.host.filesystem.written_files), 0)
         self.assertEqual(len(port.host.executive.calls), 0)
 
@@ -610,7 +610,7 @@ class PortTest(LoggingTestCase):
         port = self.make_port(with_tests=True)
         port.set_option_default('manifest_update', False)
 
-        port._wpt_manifest('external/wpt')
+        port.wpt_manifest('external/wpt')
         self.assertEqual(len(port.host.filesystem.written_files), 1)
         self.assertEqual(len(port.host.executive.calls), 1)
 
