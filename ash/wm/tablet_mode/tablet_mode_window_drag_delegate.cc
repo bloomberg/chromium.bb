@@ -101,6 +101,14 @@ TabletModeWindowDragDelegate::TabletModeWindowDragDelegate()
 }
 
 TabletModeWindowDragDelegate::~TabletModeWindowDragDelegate() {
+  if (dragged_window_) {
+    OverviewGrid* overview_grid = GetOverviewGrid(dragged_window_);
+    if (overview_grid) {
+      overview_grid->RemoveDropTarget();
+      overview_grid->PositionWindows(/*animate=*/true);
+    }
+  }
+
   Shell::Get()->UpdateShelfVisibility();
 }
 

@@ -1378,6 +1378,25 @@ TEST_P(OverviewSessionTest, DropTargetOnCorrectDisplayForDraggingFromOverview) {
   EXPECT_FALSE(GetDropTarget(1));
 }
 
+// Tests that the drop target is removed if a window is destroyed while being
+// dragged from the top.
+TEST_P(OverviewSessionTest,
+       DropTargetRemovedIfWindowDraggedFromTopIsDestroyed) {
+  EnterTabletMode();
+  std::unique_ptr<aura::Window> window = CreateTestWindow();
+  window->SetProperty(aura::client::kAppType,
+                      static_cast<int>(AppType::BROWSER));
+  std::unique_ptr<WindowResizer> resizer =
+      CreateWindowResizer(window.get(), gfx::Point(400, 0), HTCAPTION,
+                          ::wm::WINDOW_MOVE_SOURCE_TOUCH);
+  ASSERT_TRUE(InOverviewSession());
+  EXPECT_TRUE(GetDropTarget(0));
+  resizer.reset();
+  window.reset();
+  ASSERT_TRUE(InOverviewSession());
+  EXPECT_FALSE(GetDropTarget(0));
+}
+
 namespace {
 
 // A simple window delegate that returns the specified hit-test code when
