@@ -188,6 +188,7 @@ TEST_F(GcpGaiaCredentialBaseTest,
 
   // Verify that the authentication results dictionary is not empty.
   ASSERT_FALSE(test->IsAuthenticationResultsEmpty());
+  ASSERT_FALSE(test->IsAdJoinedUser());
 
   // Trigger ReportResult and verify that the authentication results are saved
   // into registry and ResetInternalState is triggered.
@@ -1210,6 +1211,7 @@ TEST_F(GcpGaiaCredentialBaseAdScenariosTest,
   ASSERT_EQ(S_OK, StartLogonProcessAndWait());
 
   EXPECT_EQ(test->GetFinalEmail(), kDefaultEmail);
+  ASSERT_TRUE(test->IsAdJoinedUser());
 
   // Make sure no user was created and the login happens on the
   // existing user instead.

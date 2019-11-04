@@ -53,6 +53,7 @@ class DECLSPEC_UUID("3710aa3a-13c7-44c2-bc38-09ba137804d8") ITestCredential
   virtual bool STDMETHODCALLTYPE CanAttemptWindowsLogon() = 0;
   virtual bool STDMETHODCALLTYPE IsWindowsPasswordValidForStoredUser() = 0;
   virtual bool STDMETHODCALLTYPE IsGlsRunning() = 0;
+  virtual bool STDMETHODCALLTYPE IsAdJoinedUser() = 0;
 };
 
 // Test implementation of an ICredentialProviderCredential backed by a Gaia
@@ -92,6 +93,7 @@ class ATL_NO_VTABLE CTestCredentialBase : public T, public ITestCredential {
   bool STDMETHODCALLTYPE CanAttemptWindowsLogon() override;
   bool STDMETHODCALLTYPE IsWindowsPasswordValidForStoredUser() override;
   bool STDMETHODCALLTYPE IsGlsRunning() override;
+  bool STDMETHODCALLTYPE IsAdJoinedUser() override;
 
   void SignalGlsCompletion();
 
@@ -226,6 +228,21 @@ std::string CTestCredentialBase<T>::GetFinalEmail() {
   if (!email_value)
     return std::string();
   return *email_value;
+}
+
+template <class T>
+bool CTestCredentialBase<T>::IsAdJoinedUser() {
+  auto& results = this->get_authentication_results();
+
+  if (!results)
+    return false;
+
+  base::Optional<bool> is_ad_joined_user =
+      results->FindBoolKey(kKeyIsAdJoinedUser);
+
+  if (!is_ad_joined_user.has_value())
+    return false;
+  return is_ad_joined_user.value();
 }
 
 template <class T>

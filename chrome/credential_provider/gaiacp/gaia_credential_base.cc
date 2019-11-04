@@ -1909,7 +1909,8 @@ HRESULT CGaiaCredentialBase::ReportResult(
     // handle. Token handle is saved as empty here, so that if for any reason
     // forked process fails to save association, it will enforce re-auth due to
     // invalid token handle.
-    HRESULT hr = RegisterAssociation(OLE2CW(user_sid_), gaia_id, email, L"");
+    base::string16 sid = OLE2CW(user_sid_);
+    HRESULT hr = RegisterAssociation(sid, gaia_id, email, L"");
     if (FAILED(hr))
       return hr;
 
@@ -2138,6 +2139,10 @@ HRESULT CGaiaCredentialBase::OnUserAuthenticated(BSTR authentication_info,
 
     base::IgnoreResult(zero_dict_on_exit.Release());
     authentication_results_ = std::move(properties);
+    // Update the info whether the user is an AD joined user or local user.
+    base::string16 sid = OLE2CW(user_sid_);
+    authentication_results_->SetBoolKey(
+        kKeyIsAdJoinedUser, OSUserManager::Get()->IsUserDomainJoined(sid));
   }
 
   base::string16 local_password =
