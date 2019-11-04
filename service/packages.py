@@ -15,7 +15,9 @@ import os
 import re
 import sys
 
+from google.protobuf import json_format
 
+from chromite.api.gen.config import replication_config_pb2
 from chromite.cbuildbot import manifest_version
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
@@ -23,6 +25,7 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import portage_util
+from chromite.lib import replication_lib
 from chromite.lib import uprev_lib
 
 if cros_build_lib.IsInsideChroot():
@@ -356,6 +359,48 @@ def uprev_chrome(build_targets, refs, chroot):
     uprev_manager.uprev(package)
 
   return result.add_result(chrome_version, uprev_manager.modified_ebuilds)
+
+
+@uprevs_versioned_package('chromeos-base/chromeos-config-bsp-coral-private')
+def replicate_private_config(_build_targets, refs, _chroot):
+  """Replicate a private cros_config change to the corresponding public config.
+
+    See uprev_versioned_package for args
+  """
+  # TODO(crbug.com/1020262): Generalize this to other packages.
+  package = 'chromeos-base/chromeos-config-bsp-coral-private'
+
+  if len(refs) != 1:
+    raise ValueError('Expected exactly one ref, actual %s' % refs)
+
+  # Expect a replication_config.jsonpb in the package root.
+  package_root = os.path.join(constants.SOURCE_ROOT, refs[0].path, package)
+  replication_config_path = os.path.join(package_root,
+                                         'replication_config.jsonpb')
+
+  try:
+    replication_config = json_format.Parse(
+        osutils.ReadFile(replication_config_path),
+        replication_config_pb2.ReplicationConfig())
+  except IOError:
+    raise ValueError('Expected ReplicationConfig missing at %s' %
+                     replication_config_path)
+
+  replication_lib.Replicate(replication_config)
+
+  modified_files = [
+      rule.destination_path
+      for rule in replication_config.file_replication_rules
+  ]
+
+  # TODO(crbug.com/1021241): Use cros_config_schema to generate platform JSON
+  # and C files.
+
+  # Use the private repo's commit hash as the new version.
+  new_private_version = refs[0].revision
+
+  return UprevVersionedPackageResult().add_result(new_private_version,
+                                                  modified_files)
 
 
 def get_best_visible(atom, build_target=None):

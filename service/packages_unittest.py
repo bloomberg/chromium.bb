@@ -7,16 +7,29 @@
 
 from __future__ import print_function
 
+import json
+import os
 import re
 
+from google.protobuf import json_format
+from google.protobuf.field_mask_pb2 import FieldMask
+
+from chromite.api.gen.config.replication_config_pb2 import (
+    ReplicationConfig, FileReplicationRule, FILE_TYPE_JSON,
+    REPLICATION_TYPE_FILTER
+)
 from chromite.cbuildbot import manifest_version
 from chromite.lib import build_target_util
+from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import portage_util
 from chromite.lib.chroot_lib import Chroot
+from chromite.lib.uprev_lib import GitRef
 from chromite.service import packages
+
+D = cros_test_lib.Directory
 
 
 class UprevAndroidTest(cros_test_lib.RunCommandTestCase):
@@ -89,6 +102,110 @@ class UprevsVersionedPackageTest(cros_test_lib.MockTestCase):
 
     with self.assertRaises(packages.UnknownPackageError):
       packages.uprev_versioned_package(cpv, [], [], Chroot())
+
+
+class ReplicatePrivateConfigTest(cros_test_lib.MockTempDirTestCase):
+  """replicate_private_config tests."""
+
+  def setUp(self):
+    # Set up fake public and private chromeos-config overlays.
+    private_package_root = (
+        'overlay-coral-private/chromeos-base/chromeos-config-bsp-coral-private')
+    self.public_package_root = (
+        'overlay-coral/chromeos-base/chromeos-config-bsp-coral')
+    file_layout = (
+        D(os.path.join(private_package_root, 'files'), ['build_config.json']),
+        D(private_package_root, ['replication_config.jsonpb']),
+        D(
+            os.path.join(self.public_package_root, 'files'),
+            ['build_config.json']),
+    )
+
+    cros_test_lib.CreateOnDiskHierarchy(self.tempdir, file_layout)
+
+    # Private config contains 'a' and 'b' fields.
+    private_config_path = os.path.join(self.tempdir, private_package_root,
+                                       'files', 'build_config.json')
+    osutils.WriteFile(private_config_path,
+                      json.dumps({'chromeos': {
+                          'configs': [{
+                              'a': 3,
+                              'b': 2
+                          }]
+                      }}))
+
+    # Public config only contains the 'a' field. Note that the value of 'a' is
+    # 1 in the public config; it will get updated to 3 when the private config
+    # is replicated.
+    self.public_config_path = os.path.join(self.tempdir,
+                                           self.public_package_root, 'files',
+                                           'build_config.json')
+    osutils.WriteFile(self.public_config_path,
+                      json.dumps({'chromeos': {
+                          'configs': [{
+                              'a': 1
+                          }]
+                      }}))
+
+    # Put a ReplicationConfig JSONPB in the private package. Note that it
+    # specifies only the 'a' field is replicated.
+    self.replication_config_path = os.path.join(self.tempdir,
+                                                private_package_root,
+                                                'replication_config.jsonpb')
+    replication_config = ReplicationConfig(file_replication_rules=[
+        FileReplicationRule(
+            source_path=private_config_path,
+            destination_path=self.public_config_path,
+            file_type=FILE_TYPE_JSON,
+            replication_type=REPLICATION_TYPE_FILTER,
+            destination_fields=FieldMask(paths=['a']))
+    ])
+
+    osutils.WriteFile(self.replication_config_path,
+                      json_format.MessageToJson(replication_config))
+    self.PatchObject(constants, 'SOURCE_ROOT', new=self.tempdir)
+
+  def test_replicate_private_config(self):
+    """Basic replication test."""
+    refs = [GitRef(path='overlay-coral-private', ref='master', revision='123')]
+    result = packages.replicate_private_config(
+        _build_targets=None, refs=refs, _chroot=None)
+
+    self.assertEqual(len(result.modified), 1)
+    # The public build_config.json was modified.
+    self.assertEqual(result.modified[0].files, [self.public_config_path])
+    self.assertEqual(result.modified[0].new_version, '123')
+
+    # The update from the private build_config.json was copied to the public.
+    # Note that only the 'a' field is present, as per destination_fields.
+    with open(self.public_config_path, 'r') as f:
+      self.assertEqual(json.load(f), {'chromeos': {'configs': [{'a': 3}]}})
+
+  def test_replicate_private_config_wrong_number_of_refs(self):
+    """An error is thrown if there is not exactly one ref."""
+    with self.assertRaisesRegex(ValueError, 'Expected exactly one ref'):
+      packages.replicate_private_config(
+          _build_targets=None, refs=[], _chroot=None)
+
+    with self.assertRaisesRegex(ValueError, 'Expected exactly one ref'):
+      refs = [
+          GitRef(path='a', ref='master', revision='1'),
+          GitRef(path='a', ref='master', revision='2')
+      ]
+      packages.replicate_private_config(
+          _build_targets=None, refs=refs, _chroot=None)
+
+  def test_replicate_private_config_replication_config_missing(self):
+    """An error is thrown if there is not a replication config."""
+    os.remove(self.replication_config_path)
+    with self.assertRaisesRegex(
+        ValueError, 'Expected ReplicationConfig missing at %s' %
+        self.replication_config_path):
+      refs = [
+          GitRef(path='overlay-coral-private', ref='master', revision='123')
+      ]
+      packages.replicate_private_config(
+          _build_targets=None, refs=refs, _chroot=None)
 
 
 class GetBestVisibleTest(cros_test_lib.TestCase):
