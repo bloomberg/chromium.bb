@@ -77,10 +77,15 @@
 using net::test::IsError;
 using net::test::IsOk;
 using ::testing::_;
+using ::testing::AllOf;
 using ::testing::Between;
 using ::testing::ByMove;
-using ::testing::NotNull;
+using ::testing::Eq;
+using ::testing::Optional;
+using ::testing::Pair;
+using ::testing::Property;
 using ::testing::Return;
+using ::testing::UnorderedElementsAre;
 
 namespace net {
 
@@ -2700,6 +2705,7 @@ TEST_F(HostResolverManagerTest, Mdns) {
           CreateExpected("000a:0000:0000:0000:0001:0002:0003:0004", 80)));
   EXPECT_FALSE(response.request()->GetTextResults());
   EXPECT_FALSE(response.request()->GetHostnameResults());
+  EXPECT_FALSE(response.request()->GetEsniResults());
 }
 
 TEST_F(HostResolverManagerTest, Mdns_AaaaOnly) {
@@ -2751,6 +2757,7 @@ TEST_F(HostResolverManagerTest, Mdns_Txt) {
   EXPECT_THAT(response.request()->GetTextResults(),
               testing::Optional(testing::ElementsAre("foo", "bar")));
   EXPECT_FALSE(response.request()->GetHostnameResults());
+  EXPECT_FALSE(response.request()->GetEsniResults());
 }
 
 TEST_F(HostResolverManagerTest, Mdns_Ptr) {
@@ -2775,6 +2782,7 @@ TEST_F(HostResolverManagerTest, Mdns_Ptr) {
   EXPECT_THAT(response.result_error(), IsOk());
   EXPECT_FALSE(response.request()->GetAddressResults());
   EXPECT_FALSE(response.request()->GetTextResults());
+  EXPECT_FALSE(response.request()->GetEsniResults());
   EXPECT_THAT(
       response.request()->GetHostnameResults(),
       testing::Optional(testing::ElementsAre(HostPortPair("foo.com", 83))));
@@ -2802,6 +2810,7 @@ TEST_F(HostResolverManagerTest, Mdns_Srv) {
   EXPECT_THAT(response.result_error(), IsOk());
   EXPECT_FALSE(response.request()->GetAddressResults());
   EXPECT_FALSE(response.request()->GetTextResults());
+  EXPECT_FALSE(response.request()->GetEsniResults());
   EXPECT_THAT(
       response.request()->GetHostnameResults(),
       testing::Optional(testing::ElementsAre(HostPortPair("foo.com", 8265))));
@@ -2829,6 +2838,7 @@ TEST_F(HostResolverManagerTest, Mdns_Srv_Unrestricted) {
   EXPECT_THAT(response.result_error(), IsOk());
   EXPECT_FALSE(response.request()->GetAddressResults());
   EXPECT_FALSE(response.request()->GetTextResults());
+  EXPECT_FALSE(response.request()->GetEsniResults());
   EXPECT_THAT(
       response.request()->GetHostnameResults(),
       testing::Optional(testing::ElementsAre(HostPortPair("foo.com", 8265))));
@@ -2857,6 +2867,7 @@ TEST_F(HostResolverManagerTest, Mdns_Srv_Result_Unrestricted) {
   EXPECT_THAT(response.result_error(), IsOk());
   EXPECT_FALSE(response.request()->GetAddressResults());
   EXPECT_FALSE(response.request()->GetTextResults());
+  EXPECT_FALSE(response.request()->GetEsniResults());
   EXPECT_THAT(response.request()->GetHostnameResults(),
               testing::Optional(
                   testing::ElementsAre(HostPortPair("foo bar.local", 8265))));
@@ -2921,6 +2932,7 @@ TEST_F(HostResolverManagerTest, Mdns_NoResponse) {
   EXPECT_FALSE(response.request()->GetAddressResults());
   EXPECT_FALSE(response.request()->GetTextResults());
   EXPECT_FALSE(response.request()->GetHostnameResults());
+  EXPECT_FALSE(response.request()->GetEsniResults());
 
   test_task_runner->FastForwardUntilNoTasksRemain();
 }
@@ -2964,6 +2976,7 @@ TEST_F(HostResolverManagerTest, Mdns_WrongType) {
   EXPECT_FALSE(response.request()->GetAddressResults());
   EXPECT_FALSE(response.request()->GetTextResults());
   EXPECT_FALSE(response.request()->GetHostnameResults());
+  EXPECT_FALSE(response.request()->GetEsniResults());
 
   test_task_runner->FastForwardUntilNoTasksRemain();
 }
@@ -7444,6 +7457,7 @@ TEST_F(HostResolverManagerDnsTest, TxtQuery) {
   EXPECT_THAT(response.result_error(), IsOk());
   EXPECT_FALSE(response.request()->GetAddressResults());
   EXPECT_FALSE(response.request()->GetHostnameResults());
+  EXPECT_FALSE(response.request()->GetEsniResults());
 
   // Order between separate DNS records is undefined, but each record should
   // stay in order as that order may be meaningful.
@@ -7496,6 +7510,7 @@ TEST_F(HostResolverManagerDnsTest, TxtQuery_NonexistentDomain) {
   EXPECT_FALSE(response.request()->GetAddressResults());
   EXPECT_FALSE(response.request()->GetTextResults());
   EXPECT_FALSE(response.request()->GetHostnameResults());
+  EXPECT_FALSE(response.request()->GetEsniResults());
 }
 
 TEST_F(HostResolverManagerDnsTest, TxtQuery_Failure) {
@@ -7522,6 +7537,7 @@ TEST_F(HostResolverManagerDnsTest, TxtQuery_Failure) {
   EXPECT_FALSE(response.request()->GetAddressResults());
   EXPECT_FALSE(response.request()->GetTextResults());
   EXPECT_FALSE(response.request()->GetHostnameResults());
+  EXPECT_FALSE(response.request()->GetEsniResults());
 }
 
 TEST_F(HostResolverManagerDnsTest, TxtQuery_Timeout) {
@@ -7548,6 +7564,7 @@ TEST_F(HostResolverManagerDnsTest, TxtQuery_Timeout) {
   EXPECT_FALSE(response.request()->GetAddressResults());
   EXPECT_FALSE(response.request()->GetTextResults());
   EXPECT_FALSE(response.request()->GetHostnameResults());
+  EXPECT_FALSE(response.request()->GetEsniResults());
 }
 
 TEST_F(HostResolverManagerDnsTest, TxtQuery_Empty) {
@@ -7574,6 +7591,7 @@ TEST_F(HostResolverManagerDnsTest, TxtQuery_Empty) {
   EXPECT_FALSE(response.request()->GetAddressResults());
   EXPECT_FALSE(response.request()->GetTextResults());
   EXPECT_FALSE(response.request()->GetHostnameResults());
+  EXPECT_FALSE(response.request()->GetEsniResults());
 }
 
 TEST_F(HostResolverManagerDnsTest, TxtQuery_Malformed) {
@@ -7600,6 +7618,7 @@ TEST_F(HostResolverManagerDnsTest, TxtQuery_Malformed) {
   EXPECT_FALSE(response.request()->GetAddressResults());
   EXPECT_FALSE(response.request()->GetTextResults());
   EXPECT_FALSE(response.request()->GetHostnameResults());
+  EXPECT_FALSE(response.request()->GetEsniResults());
 }
 
 TEST_F(HostResolverManagerDnsTest, TxtQuery_MismatchedName) {
@@ -7623,6 +7642,7 @@ TEST_F(HostResolverManagerDnsTest, TxtQuery_MismatchedName) {
   EXPECT_FALSE(response.request()->GetAddressResults());
   EXPECT_FALSE(response.request()->GetTextResults());
   EXPECT_FALSE(response.request()->GetHostnameResults());
+  EXPECT_FALSE(response.request()->GetEsniResults());
 }
 
 TEST_F(HostResolverManagerDnsTest, TxtQuery_WrongType) {
@@ -7647,6 +7667,7 @@ TEST_F(HostResolverManagerDnsTest, TxtQuery_WrongType) {
   EXPECT_FALSE(response.request()->GetAddressResults());
   EXPECT_FALSE(response.request()->GetTextResults());
   EXPECT_FALSE(response.request()->GetHostnameResults());
+  EXPECT_FALSE(response.request()->GetEsniResults());
 }
 
 // Same as TxtQuery except we specify DNS HostResolverSource instead of relying
@@ -7679,6 +7700,7 @@ TEST_F(HostResolverManagerDnsTest, TxtDnsQuery) {
   EXPECT_THAT(response.result_error(), IsOk());
   EXPECT_FALSE(response.request()->GetAddressResults());
   EXPECT_FALSE(response.request()->GetHostnameResults());
+  EXPECT_FALSE(response.request()->GetEsniResults());
 
   // Order between separate DNS records is undefined, but each record should
   // stay in order as that order may be meaningful.
@@ -7712,6 +7734,7 @@ TEST_F(HostResolverManagerDnsTest, PtrQuery) {
   EXPECT_THAT(response.result_error(), IsOk());
   EXPECT_FALSE(response.request()->GetAddressResults());
   EXPECT_FALSE(response.request()->GetTextResults());
+  EXPECT_FALSE(response.request()->GetEsniResults());
 
   // Order between separate records is undefined.
   EXPECT_THAT(response.request()->GetHostnameResults(),
@@ -7738,6 +7761,7 @@ TEST_F(HostResolverManagerDnsTest, PtrQuery_Ip) {
   EXPECT_THAT(response.result_error(), IsOk());
   EXPECT_FALSE(response.request()->GetAddressResults());
   EXPECT_FALSE(response.request()->GetTextResults());
+  EXPECT_FALSE(response.request()->GetEsniResults());
 
   // Order between separate records is undefined.
   EXPECT_THAT(response.request()->GetHostnameResults(),
@@ -7769,6 +7793,7 @@ TEST_F(HostResolverManagerDnsTest, PtrQuery_NonexistentDomain) {
   EXPECT_FALSE(response.request()->GetAddressResults());
   EXPECT_FALSE(response.request()->GetTextResults());
   EXPECT_FALSE(response.request()->GetHostnameResults());
+  EXPECT_FALSE(response.request()->GetEsniResults());
 }
 
 TEST_F(HostResolverManagerDnsTest, PtrQuery_Failure) {
@@ -7795,6 +7820,7 @@ TEST_F(HostResolverManagerDnsTest, PtrQuery_Failure) {
   EXPECT_FALSE(response.request()->GetAddressResults());
   EXPECT_FALSE(response.request()->GetTextResults());
   EXPECT_FALSE(response.request()->GetHostnameResults());
+  EXPECT_FALSE(response.request()->GetEsniResults());
 }
 
 TEST_F(HostResolverManagerDnsTest, PtrQuery_Timeout) {
@@ -7821,6 +7847,7 @@ TEST_F(HostResolverManagerDnsTest, PtrQuery_Timeout) {
   EXPECT_FALSE(response.request()->GetAddressResults());
   EXPECT_FALSE(response.request()->GetTextResults());
   EXPECT_FALSE(response.request()->GetHostnameResults());
+  EXPECT_FALSE(response.request()->GetEsniResults());
 }
 
 TEST_F(HostResolverManagerDnsTest, PtrQuery_Empty) {
@@ -7847,6 +7874,7 @@ TEST_F(HostResolverManagerDnsTest, PtrQuery_Empty) {
   EXPECT_FALSE(response.request()->GetAddressResults());
   EXPECT_FALSE(response.request()->GetTextResults());
   EXPECT_FALSE(response.request()->GetHostnameResults());
+  EXPECT_FALSE(response.request()->GetEsniResults());
 }
 
 TEST_F(HostResolverManagerDnsTest, PtrQuery_Malformed) {
@@ -7873,6 +7901,7 @@ TEST_F(HostResolverManagerDnsTest, PtrQuery_Malformed) {
   EXPECT_FALSE(response.request()->GetAddressResults());
   EXPECT_FALSE(response.request()->GetTextResults());
   EXPECT_FALSE(response.request()->GetHostnameResults());
+  EXPECT_FALSE(response.request()->GetEsniResults());
 }
 
 TEST_F(HostResolverManagerDnsTest, PtrQuery_MismatchedName) {
@@ -7896,6 +7925,7 @@ TEST_F(HostResolverManagerDnsTest, PtrQuery_MismatchedName) {
   EXPECT_FALSE(response.request()->GetAddressResults());
   EXPECT_FALSE(response.request()->GetTextResults());
   EXPECT_FALSE(response.request()->GetHostnameResults());
+  EXPECT_FALSE(response.request()->GetEsniResults());
 }
 
 TEST_F(HostResolverManagerDnsTest, PtrQuery_WrongType) {
@@ -7920,6 +7950,7 @@ TEST_F(HostResolverManagerDnsTest, PtrQuery_WrongType) {
   EXPECT_FALSE(response.request()->GetAddressResults());
   EXPECT_FALSE(response.request()->GetTextResults());
   EXPECT_FALSE(response.request()->GetHostnameResults());
+  EXPECT_FALSE(response.request()->GetEsniResults());
 }
 
 // Same as PtrQuery except we specify DNS HostResolverSource instead of relying
@@ -7946,6 +7977,7 @@ TEST_F(HostResolverManagerDnsTest, PtrDnsQuery) {
   EXPECT_THAT(response.result_error(), IsOk());
   EXPECT_FALSE(response.request()->GetAddressResults());
   EXPECT_FALSE(response.request()->GetTextResults());
+  EXPECT_FALSE(response.request()->GetEsniResults());
 
   // Order between separate records is undefined.
   EXPECT_THAT(response.request()->GetHostnameResults(),
@@ -7976,6 +8008,7 @@ TEST_F(HostResolverManagerDnsTest, SrvQuery) {
   EXPECT_THAT(response.result_error(), IsOk());
   EXPECT_FALSE(response.request()->GetAddressResults());
   EXPECT_FALSE(response.request()->GetTextResults());
+  EXPECT_FALSE(response.request()->GetEsniResults());
 
   // Expect ordered by priority, and random within a priority.
   base::Optional<std::vector<HostPortPair>> results =
@@ -8020,6 +8053,7 @@ TEST_F(HostResolverManagerDnsTest, SrvQuery_ZeroWeight) {
   EXPECT_THAT(response.result_error(), IsOk());
   EXPECT_FALSE(response.request()->GetAddressResults());
   EXPECT_FALSE(response.request()->GetTextResults());
+  EXPECT_FALSE(response.request()->GetEsniResults());
 
   // Expect ordered by priority, and random within a priority.
   EXPECT_THAT(response.request()->GetHostnameResults(),
@@ -8051,6 +8085,7 @@ TEST_F(HostResolverManagerDnsTest, SrvQuery_NonexistentDomain) {
   EXPECT_FALSE(response.request()->GetAddressResults());
   EXPECT_FALSE(response.request()->GetTextResults());
   EXPECT_FALSE(response.request()->GetHostnameResults());
+  EXPECT_FALSE(response.request()->GetEsniResults());
 }
 
 TEST_F(HostResolverManagerDnsTest, SrvQuery_Failure) {
@@ -8077,6 +8112,7 @@ TEST_F(HostResolverManagerDnsTest, SrvQuery_Failure) {
   EXPECT_FALSE(response.request()->GetAddressResults());
   EXPECT_FALSE(response.request()->GetTextResults());
   EXPECT_FALSE(response.request()->GetHostnameResults());
+  EXPECT_FALSE(response.request()->GetEsniResults());
 }
 
 TEST_F(HostResolverManagerDnsTest, SrvQuery_Timeout) {
@@ -8103,6 +8139,7 @@ TEST_F(HostResolverManagerDnsTest, SrvQuery_Timeout) {
   EXPECT_FALSE(response.request()->GetAddressResults());
   EXPECT_FALSE(response.request()->GetTextResults());
   EXPECT_FALSE(response.request()->GetHostnameResults());
+  EXPECT_FALSE(response.request()->GetEsniResults());
 }
 
 TEST_F(HostResolverManagerDnsTest, SrvQuery_Empty) {
@@ -8129,6 +8166,7 @@ TEST_F(HostResolverManagerDnsTest, SrvQuery_Empty) {
   EXPECT_FALSE(response.request()->GetAddressResults());
   EXPECT_FALSE(response.request()->GetTextResults());
   EXPECT_FALSE(response.request()->GetHostnameResults());
+  EXPECT_FALSE(response.request()->GetEsniResults());
 }
 
 TEST_F(HostResolverManagerDnsTest, SrvQuery_Malformed) {
@@ -8155,6 +8193,7 @@ TEST_F(HostResolverManagerDnsTest, SrvQuery_Malformed) {
   EXPECT_FALSE(response.request()->GetAddressResults());
   EXPECT_FALSE(response.request()->GetTextResults());
   EXPECT_FALSE(response.request()->GetHostnameResults());
+  EXPECT_FALSE(response.request()->GetEsniResults());
 }
 
 TEST_F(HostResolverManagerDnsTest, SrvQuery_MismatchedName) {
@@ -8178,6 +8217,7 @@ TEST_F(HostResolverManagerDnsTest, SrvQuery_MismatchedName) {
   EXPECT_FALSE(response.request()->GetAddressResults());
   EXPECT_FALSE(response.request()->GetTextResults());
   EXPECT_FALSE(response.request()->GetHostnameResults());
+  EXPECT_FALSE(response.request()->GetEsniResults());
 }
 
 TEST_F(HostResolverManagerDnsTest, SrvQuery_WrongType) {
@@ -8202,6 +8242,7 @@ TEST_F(HostResolverManagerDnsTest, SrvQuery_WrongType) {
   EXPECT_FALSE(response.request()->GetAddressResults());
   EXPECT_FALSE(response.request()->GetTextResults());
   EXPECT_FALSE(response.request()->GetHostnameResults());
+  EXPECT_FALSE(response.request()->GetEsniResults());
 }
 
 // Same as SrvQuery except we specify DNS HostResolverSource instead of relying
@@ -8232,6 +8273,7 @@ TEST_F(HostResolverManagerDnsTest, SrvDnsQuery) {
   EXPECT_THAT(response.result_error(), IsOk());
   EXPECT_FALSE(response.request()->GetAddressResults());
   EXPECT_FALSE(response.request()->GetTextResults());
+  EXPECT_FALSE(response.request()->GetEsniResults());
 
   // Expect ordered by priority, and random within a priority.
   base::Optional<std::vector<HostPortPair>> results =
@@ -8251,6 +8293,349 @@ TEST_F(HostResolverManagerDnsTest, SrvDnsQuery) {
   EXPECT_THAT(priority5,
               testing::UnorderedElementsAre(HostPortPair("bar.com", 80),
                                             HostPortPair("google.com", 5)));
+}
+
+TEST_F(HostResolverManagerDnsTest, EsniQuery) {
+  EsniContent c1, c2, c3;
+  IPAddress a1(1, 2, 3, 4), a2(5, 6, 7, 8);
+  IPAddress a3(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1);
+
+  std::string kKey1 = GenerateWellFormedEsniKeys("a");
+  std::string kKey2 = GenerateWellFormedEsniKeys("b");
+  std::string kKey3 = GenerateWellFormedEsniKeys("c");
+
+  c1.AddKey(kKey1);
+
+  c2.AddKeyForAddress(a1, kKey2);
+  c2.AddKeyForAddress(a2, kKey2);
+  c2.AddKeyForAddress(a3, kKey2);
+
+  c3.AddKeyForAddress(a1, kKey3);
+
+  std::vector<EsniContent> esni_records = {c1, c2, c3};
+
+  MockDnsClientRuleList rules;
+  rules.emplace_back("host", dns_protocol::kExperimentalTypeEsniDraft4,
+                     false /* secure */,
+                     MockDnsClientRule::Result(BuildTestDnsEsniResponse(
+                         "host", std::move(esni_records))),
+                     false /* delay */);
+
+  CreateResolver();
+  UseMockDnsClient(CreateValidDnsConfig(), std::move(rules));
+
+  HostResolver::ResolveHostParameters parameters;
+  parameters.dns_query_type = DnsQueryType::ESNI;
+
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("host", 108), NetworkIsolationKey(), NetLogWithSource(),
+      parameters, request_context_.get(), host_cache_.get()));
+  EXPECT_THAT(response.result_error(), IsOk());
+
+  EXPECT_FALSE(response.request()->GetHostnameResults());
+  EXPECT_FALSE(response.request()->GetTextResults());
+
+  // The IPv6 address |a3| should come first, and the other
+  // addresses should have been deduplicated.
+  EXPECT_THAT(
+      response.request()->GetAddressResults(),
+      Optional(AllOf(Property(&AddressList::endpoints,
+                              UnorderedElementsAre(IPEndPoint(a3, 108),
+                                                   IPEndPoint(a1, 108),
+                                                   IPEndPoint(a2, 108))),
+                     Property(&AddressList::front, IPEndPoint(a3, 108)))));
+
+  // During aggregation of ESNI query results, we drop ESNI keys
+  // with no associated addresses, like key 1 here. (This is an implementation
+  // decision declining a "MAY" behavior from the spec.)
+  // So, we require that only keys 2 and 3 are surfaced.
+  //
+  // The Eq() wrappers are necessary here because keys_for_addresses
+  // returns a container of StringPieces.
+  EXPECT_THAT(
+      response.request()->GetEsniResults(),
+      Optional(AllOf(
+          Property(&EsniContent::keys,
+                   UnorderedElementsAre(Eq(kKey2), Eq(kKey3))),
+          Property(&EsniContent::keys_for_addresses,
+                   UnorderedElementsAre(
+                       Pair(a1, UnorderedElementsAre(Eq(kKey2), Eq(kKey3))),
+                       Pair(a2, UnorderedElementsAre(Eq(kKey2))),
+                       Pair(a3, UnorderedElementsAre(Eq(kKey2))))))));
+}
+
+TEST_F(HostResolverManagerDnsTest, EsniQuery_InvalidConfig) {
+  set_allow_fallback_to_proctask(false);
+  // Set empty DnsConfig.
+  InvalidateDnsConfig();
+
+  HostResolver::ResolveHostParameters parameters;
+  parameters.dns_query_type = DnsQueryType::ESNI;
+
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("host", 108), NetworkIsolationKey(), NetLogWithSource(),
+      parameters, request_context_.get(), host_cache_.get()));
+  EXPECT_THAT(response.result_error(), IsError(ERR_DNS_CACHE_MISS));
+}
+
+TEST_F(HostResolverManagerDnsTest, EsniQuery_NonexistentDomain) {
+  // Setup fallback to confirm it is not used for non-address results.
+  set_allow_fallback_to_proctask(true);
+  proc_->AddRuleForAllFamilies("host", "192.168.1.102");
+  proc_->SignalMultiple(1u);
+
+  MockDnsClientRuleList rules;
+  rules.emplace_back("host", dns_protocol::kExperimentalTypeEsniDraft4,
+                     false /* secure */,
+                     MockDnsClientRule::Result(MockDnsClientRule::NODOMAIN),
+                     false /* delay */);
+
+  CreateResolver();
+  UseMockDnsClient(CreateValidDnsConfig(), std::move(rules));
+
+  HostResolver::ResolveHostParameters parameters;
+  parameters.dns_query_type = DnsQueryType::ESNI;
+
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("host", 108), NetworkIsolationKey(), NetLogWithSource(),
+      parameters, request_context_.get(), host_cache_.get()));
+  EXPECT_THAT(response.result_error(), IsError(ERR_NAME_NOT_RESOLVED));
+  EXPECT_FALSE(response.request()->GetAddressResults());
+  EXPECT_FALSE(response.request()->GetTextResults());
+  EXPECT_FALSE(response.request()->GetHostnameResults());
+  EXPECT_FALSE(response.request()->GetEsniResults());
+}
+
+TEST_F(HostResolverManagerDnsTest, EsniQuery_Failure) {
+  // Setup fallback to confirm it is not used for non-address results.
+  set_allow_fallback_to_proctask(true);
+  proc_->AddRuleForAllFamilies("host", "192.168.1.102");
+  proc_->SignalMultiple(1u);
+
+  MockDnsClientRuleList rules;
+  rules.emplace_back(
+      "host", dns_protocol::kExperimentalTypeEsniDraft4, false /* secure */,
+      MockDnsClientRule::Result(MockDnsClientRule::FAIL), false /* delay */);
+
+  CreateResolver();
+  UseMockDnsClient(CreateValidDnsConfig(), std::move(rules));
+
+  HostResolver::ResolveHostParameters parameters;
+  parameters.dns_query_type = DnsQueryType::ESNI;
+
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("host", 108), NetworkIsolationKey(), NetLogWithSource(),
+      parameters, request_context_.get(), host_cache_.get()));
+  EXPECT_THAT(response.result_error(), IsError(ERR_NAME_NOT_RESOLVED));
+  EXPECT_FALSE(response.request()->GetAddressResults());
+  EXPECT_FALSE(response.request()->GetTextResults());
+  EXPECT_FALSE(response.request()->GetHostnameResults());
+  EXPECT_FALSE(response.request()->GetEsniResults());
+}
+
+TEST_F(HostResolverManagerDnsTest, EsniQuery_Timeout) {
+  // Setup fallback to confirm it is not used for non-address results.
+  set_allow_fallback_to_proctask(true);
+  proc_->AddRuleForAllFamilies("host", "192.168.1.102");
+  proc_->SignalMultiple(1u);
+
+  MockDnsClientRuleList rules;
+  rules.emplace_back(
+      "host", dns_protocol::kExperimentalTypeEsniDraft4, false /* secure */,
+      MockDnsClientRule::Result(MockDnsClientRule::TIMEOUT), false /* delay */);
+
+  CreateResolver();
+  UseMockDnsClient(CreateValidDnsConfig(), std::move(rules));
+
+  HostResolver::ResolveHostParameters parameters;
+  parameters.dns_query_type = DnsQueryType::ESNI;
+
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("host", 108), NetworkIsolationKey(), NetLogWithSource(),
+      parameters, request_context_.get(), host_cache_.get()));
+  EXPECT_THAT(response.result_error(), IsError(ERR_DNS_TIMED_OUT));
+  EXPECT_FALSE(response.request()->GetAddressResults());
+  EXPECT_FALSE(response.request()->GetTextResults());
+  EXPECT_FALSE(response.request()->GetHostnameResults());
+  EXPECT_FALSE(response.request()->GetEsniResults());
+}
+
+TEST_F(HostResolverManagerDnsTest, EsniQuery_Empty) {
+  // Setup fallback to confirm it is not used for non-address results.
+  set_allow_fallback_to_proctask(true);
+  proc_->AddRuleForAllFamilies("host", "192.168.1.102");
+  proc_->SignalMultiple(1u);
+
+  MockDnsClientRuleList rules;
+  rules.emplace_back(
+      "host", dns_protocol::kExperimentalTypeEsniDraft4, false /* secure */,
+      MockDnsClientRule::Result(MockDnsClientRule::EMPTY), false /* delay */);
+
+  CreateResolver();
+  UseMockDnsClient(CreateValidDnsConfig(), std::move(rules));
+
+  HostResolver::ResolveHostParameters parameters;
+  parameters.dns_query_type = DnsQueryType::ESNI;
+
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("host", 108), NetworkIsolationKey(), NetLogWithSource(),
+      parameters, request_context_.get(), host_cache_.get()));
+  EXPECT_THAT(response.result_error(), IsError(ERR_NAME_NOT_RESOLVED));
+  EXPECT_FALSE(response.request()->GetAddressResults());
+  EXPECT_FALSE(response.request()->GetTextResults());
+  EXPECT_FALSE(response.request()->GetHostnameResults());
+  EXPECT_FALSE(response.request()->GetEsniResults());
+}
+
+TEST_F(HostResolverManagerDnsTest, EsniQuery_Malformed) {
+  // Setup fallback to confirm it is not used for non-address results.
+  set_allow_fallback_to_proctask(true);
+  proc_->AddRuleForAllFamilies("host", "192.168.1.102");
+  proc_->SignalMultiple(1u);
+
+  MockDnsClientRuleList rules;
+  rules.emplace_back("host", dns_protocol::kExperimentalTypeEsniDraft4,
+                     false /* secure */,
+                     MockDnsClientRule::Result(MockDnsClientRule::MALFORMED),
+                     false /* delay */);
+
+  CreateResolver();
+  UseMockDnsClient(CreateValidDnsConfig(), std::move(rules));
+
+  HostResolver::ResolveHostParameters parameters;
+  parameters.dns_query_type = DnsQueryType::ESNI;
+
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("host", 108), NetworkIsolationKey(), NetLogWithSource(),
+      parameters, request_context_.get(), host_cache_.get()));
+  EXPECT_THAT(response.result_error(), IsError(ERR_DNS_MALFORMED_RESPONSE));
+  EXPECT_FALSE(response.request()->GetAddressResults());
+  EXPECT_FALSE(response.request()->GetTextResults());
+  EXPECT_FALSE(response.request()->GetHostnameResults());
+  EXPECT_FALSE(response.request()->GetEsniResults());
+}
+
+TEST_F(HostResolverManagerDnsTest, EsniQuery_MismatchedName) {
+  EsniContent content;
+  IPAddress address(1, 2, 3, 4);
+  std::string key = GenerateWellFormedEsniKeys("a");
+  content.AddKeyForAddress(address, key);
+
+  std::vector<EsniContent> esni_records = {content};
+
+  MockDnsClientRuleList rules;
+  rules.emplace_back("host", dns_protocol::kExperimentalTypeEsniDraft4,
+                     false /* secure */,
+                     MockDnsClientRule::Result(BuildTestDnsEsniResponse(
+                         "host", std::move(esni_records), "not.host")),
+                     false /* delay */);
+
+  CreateResolver();
+  UseMockDnsClient(CreateValidDnsConfig(), std::move(rules));
+
+  HostResolver::ResolveHostParameters parameters;
+  parameters.dns_query_type = DnsQueryType::ESNI;
+
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("host", 108), NetworkIsolationKey(), NetLogWithSource(),
+      parameters, request_context_.get(), host_cache_.get()));
+  EXPECT_THAT(response.result_error(), IsError(ERR_DNS_MALFORMED_RESPONSE));
+  EXPECT_FALSE(response.request()->GetAddressResults());
+  EXPECT_FALSE(response.request()->GetTextResults());
+  EXPECT_FALSE(response.request()->GetHostnameResults());
+  EXPECT_FALSE(response.request()->GetEsniResults());
+}
+
+TEST_F(HostResolverManagerDnsTest, EsniQuery_WrongType) {
+  // Respond to an ESNI query with an A response.
+  MockDnsClientRuleList rules;
+  rules.emplace_back("host", dns_protocol::kExperimentalTypeEsniDraft4,
+                     false /* secure */,
+                     MockDnsClientRule::Result(
+                         BuildTestDnsResponse("host", IPAddress(1, 2, 3, 4))),
+                     false /* delay */);
+
+  CreateResolver();
+  UseMockDnsClient(CreateValidDnsConfig(), std::move(rules));
+
+  HostResolver::ResolveHostParameters parameters;
+  parameters.dns_query_type = DnsQueryType::ESNI;
+
+  // Responses for the wrong type should be ignored.
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("ok", 108), NetworkIsolationKey(), NetLogWithSource(),
+      parameters, request_context_.get(), host_cache_.get()));
+  EXPECT_THAT(response.result_error(), IsError(ERR_NAME_NOT_RESOLVED));
+  EXPECT_FALSE(response.request()->GetAddressResults());
+  EXPECT_FALSE(response.request()->GetTextResults());
+  EXPECT_FALSE(response.request()->GetHostnameResults());
+  EXPECT_FALSE(response.request()->GetEsniResults());
+}
+
+// Same as EsniQuery except we specify DNS HostResolverSource instead of relying
+// on automatic determination.  Expect same results since DNS should be what we
+// automatically determine, but some slightly different logic paths are
+// involved.
+TEST_F(HostResolverManagerDnsTest, EsniDnsQuery) {
+  EsniContent c1, c2, c3;
+  IPAddress a1(1, 2, 3, 4), a2(5, 6, 7, 8);
+
+  const std::string kKey1 = GenerateWellFormedEsniKeys("a");
+  const std::string kKey2 = GenerateWellFormedEsniKeys("b");
+  const std::string kKey3 = GenerateWellFormedEsniKeys("c");
+
+  c1.AddKey(kKey1);
+
+  c2.AddKeyForAddress(a1, kKey2);
+  c2.AddKeyForAddress(a2, kKey2);
+
+  c3.AddKeyForAddress(a1, kKey3);
+
+  std::vector<EsniContent> esni_records = {c1, c2, c3};
+
+  MockDnsClientRuleList rules;
+  rules.emplace_back("host", dns_protocol::kExperimentalTypeEsniDraft4,
+                     false /* secure */,
+                     MockDnsClientRule::Result(BuildTestDnsEsniResponse(
+                         "host", std::move(esni_records))),
+                     false /* delay */);
+
+  CreateResolver();
+  UseMockDnsClient(CreateValidDnsConfig(), std::move(rules));
+
+  HostResolver::ResolveHostParameters parameters;
+  parameters.source = HostResolverSource::DNS;
+  parameters.dns_query_type = DnsQueryType::ESNI;
+
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("host", 108), NetworkIsolationKey(), NetLogWithSource(),
+      parameters, request_context_.get(), host_cache_.get()));
+  EXPECT_THAT(response.result_error(), IsOk());
+  EXPECT_FALSE(response.request()->GetHostnameResults());
+  EXPECT_FALSE(response.request()->GetTextResults());
+
+  // The multiple ESNI records should have been merged when parsing
+  // the results.
+  c1.MergeFrom(c2);
+  c1.MergeFrom(c3);
+
+  // The ESNI records' addresses should have been merged into
+  // the address list.
+  ASSERT_TRUE(response.request()->GetAddressResults());
+  EXPECT_THAT(
+      response.request()->GetAddressResults()->endpoints(),
+      testing::UnorderedElementsAre(IPEndPoint(a1, 108), IPEndPoint(a2, 108)));
+
+  ASSERT_TRUE(response.request()->GetEsniResults().has_value());
+
+  // During aggregation of ESNI query results, we drop ESNI keys
+  // with no associated addresses, like key 1 here. (This is an implementation
+  // decision declining a "MAY" behavior from the spec.) So, we require that
+  // only keys 2 and 3 are surfaced.
+  EXPECT_THAT(response.request()->GetEsniResults()->keys(),
+              testing::UnorderedElementsAre(kKey2, kKey3));
+  EXPECT_EQ(response.request()->GetEsniResults()->keys_for_addresses(),
+            c1.keys_for_addresses());
 }
 
 }  // namespace net

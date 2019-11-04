@@ -115,6 +115,16 @@ class ContextHostResolver::WrappedRequest
     return inner_request_->GetHostnameResults();
   }
 
+  const base::Optional<EsniContent>& GetEsniResults() const override {
+    if (!inner_request_) {
+      static const base::NoDestructor<base::Optional<EsniContent>>
+          nullopt_result;
+      return *nullopt_result;
+    }
+
+    return inner_request_->GetEsniResults();
+  }
+
   const base::Optional<HostCache::EntryStaleness>& GetStaleInfo()
       const override {
     if (!inner_request_) {
