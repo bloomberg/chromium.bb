@@ -14,31 +14,29 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/time/time.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_commands.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
-#include "chrome/common/chrome_switches.h"
-#include "chrome/common/url_constants.h"
-#include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/base/ui_test_utils.h"
+#include "content/browser/webui/content_web_ui_controller_factory.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/content_browser_test.h"
 #include "content/public/test/test_utils.h"
+#include "content/shell/browser/shell.h"
 #include "third_party/blink/public/platform/web_mouse_event.h"
 #include "third_party/blink/public/platform/web_mouse_wheel_event.h"
 #include "ui/events/base_event_utils.h"
 
+namespace content {
+
 namespace {
 
-using WebUIImplBrowserTest = InProcessBrowserTest;
+using WebUIImplBrowserTest = ContentBrowserTest;
 
-class TestWebUIMessageHandler : public content::WebUIMessageHandler {
+class TestWebUIMessageHandler : public WebUIMessageHandler {
  public:
   void RegisterMessages() override {
     web_ui()->RegisterMessageCallback(
@@ -73,7 +71,7 @@ class TestWebUIMessageHandler : public content::WebUIMessageHandler {
   base::RepeatingClosure finish_closure_;
 };
 
-class WebUIRequiringGestureBrowserTest : public InProcessBrowserTest {
+class WebUIRequiringGestureBrowserTest : public ContentBrowserTest {
  public:
   WebUIRequiringGestureBrowserTest() {
     clock_.SetNowTicks(base::TimeTicks::Now());
@@ -85,7 +83,7 @@ class WebUIRequiringGestureBrowserTest : public InProcessBrowserTest {
   }
 
   void SetUpOnMainThread() override {
-    ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIFlagsURL));
+    ASSERT_TRUE(NavigateToURL(web_contents(), GetWebUIURL(kChromeUIGpuHost)));
     test_handler_ = new TestWebUIMessageHandler();
     web_contents()->GetWebUI()->AddMessageHandler(
         base::WrapUnique(test_handler_));
@@ -104,12 +102,8 @@ class WebUIRequiringGestureBrowserTest : public InProcessBrowserTest {
 
   void AdvanceClock(base::TimeDelta delta) { clock_.Advance(delta); }
 
-  content::WebContents* web_contents() {
-    return browser()->tab_strip_model()->GetActiveWebContents();
-  }
-  content::RenderFrameHost* main_rfh() {
-    return web_contents()->GetMainFrame();
-  }
+  WebContents* web_contents() { return shell()->web_contents(); }
+  RenderFrameHost* main_rfh() { return web_contents()->GetMainFrame(); }
 
   TestWebUIMessageHandler* test_handler() { return test_handler_; }
 
@@ -127,60 +121,49 @@ class WebUIRequiringGestureBrowserTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(WebUIImplBrowserTest, ForceSwapOnDifferenteWebUITypes) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kProcessPerTab);
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
+  WebContents* web_contents = shell()->web_contents();
 
-  const GURL web_ui_url(std::string(content::kChromeUIScheme) + "://" +
-                        std::string(chrome::kChromeUIFlagsHost));
-  EXPECT_TRUE(ChromeWebUIControllerFactory::GetInstance()->UseWebUIForURL(
+  const GURL web_ui_url(GetWebUIURL(kChromeUIHistogramHost));
+  EXPECT_TRUE(ContentWebUIControllerFactory::GetInstance()->UseWebUIForURL(
       web_contents->GetBrowserContext(), web_ui_url));
-  ui_test_utils::NavigateToURL(browser(), web_ui_url);
-  EXPECT_TRUE(
-      content::ChildProcessSecurityPolicy::GetInstance()->HasWebUIBindings(
-          web_contents->GetMainFrame()->GetProcess()->GetID()));
+  ASSERT_TRUE(NavigateToURL(web_contents, web_ui_url));
+  EXPECT_TRUE(ChildProcessSecurityPolicy::GetInstance()->HasWebUIBindings(
+      web_contents->GetMainFrame()->GetProcess()->GetID()));
 
   // Capture the SiteInstance before navigating for later comparison.
-  scoped_refptr<content::SiteInstance> orig_site_instance(
+  scoped_refptr<SiteInstance> orig_site_instance(
       web_contents->GetSiteInstance());
 
   // Navigate to a different WebUI type and ensure that the SiteInstance
   // has changed and the new process also has WebUI bindings.
-  const GURL web_ui_url2(std::string(content::kChromeUIScheme) + "://" +
-                         std::string(chrome::kChromeUIVersionHost));
-  EXPECT_TRUE(ChromeWebUIControllerFactory::GetInstance()->UseWebUIForURL(
+  const GURL web_ui_url2(GetWebUIURL(kChromeUIGpuHost));
+  EXPECT_TRUE(ContentWebUIControllerFactory::GetInstance()->UseWebUIForURL(
       web_contents->GetBrowserContext(), web_ui_url2));
-  ui_test_utils::NavigateToURL(browser(), web_ui_url2);
+  ASSERT_TRUE(NavigateToURL(web_contents, web_ui_url2));
   EXPECT_NE(orig_site_instance, web_contents->GetSiteInstance());
-  EXPECT_TRUE(
-      content::ChildProcessSecurityPolicy::GetInstance()->HasWebUIBindings(
-          web_contents->GetMainFrame()->GetProcess()->GetID()));
+  EXPECT_TRUE(ChildProcessSecurityPolicy::GetInstance()->HasWebUIBindings(
+      web_contents->GetMainFrame()->GetProcess()->GetID()));
 }
 
 IN_PROC_BROWSER_TEST_F(WebUIImplBrowserTest, SameDocumentNavigationsAndReload) {
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUITermsURL));
+  auto* web_contents = shell()->web_contents();
+  ASSERT_TRUE(NavigateToURL(web_contents, GetWebUIURL(kChromeUIHistogramHost)));
 
-  content::WebUIMessageHandler* test_handler = new TestWebUIMessageHandler;
-  browser()
-      ->tab_strip_model()
-      ->GetActiveWebContents()
-      ->GetWebUI()
-      ->AddMessageHandler(base::WrapUnique(test_handler));
+  WebUIMessageHandler* test_handler = new TestWebUIMessageHandler;
+  web_contents->GetWebUI()->AddMessageHandler(base::WrapUnique(test_handler));
   test_handler->AllowJavascriptForTesting();
 
   // Push onto window.history. Back should now be an in-page navigation.
-  ASSERT_TRUE(content::ExecuteScript(
-      browser()->tab_strip_model()->GetActiveWebContents(),
-      "window.history.pushState({}, '', 'foo.html')"));
-  chrome::GoBack(browser(), WindowOpenDisposition::CURRENT_TAB);
-  content::WaitForLoadStop(
-      browser()->tab_strip_model()->GetActiveWebContents());
+  ASSERT_TRUE(ExecuteScript(web_contents,
+                            "window.history.pushState({}, '', 'foo.html')"));
+  shell()->GoBackOrForward(-1);
+  WaitForLoadStop(web_contents);
 
   // Test handler should still have JavaScript allowed after in-page navigation.
   EXPECT_TRUE(test_handler->IsJavascriptAllowed());
 
-  chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
-  content::WaitForLoadStop(
-      browser()->tab_strip_model()->GetActiveWebContents());
+  shell()->Reload();
+  WaitForLoadStop(web_contents);
 
   // Verify that after a reload, the test handler has been disallowed.
   EXPECT_FALSE(test_handler->IsJavascriptAllowed());
@@ -246,3 +229,5 @@ IN_PROC_BROWSER_TEST_F(WebUIRequiringGestureBrowserTest,
   SendMessageAndWaitForFinish();
   EXPECT_EQ(2, test_handler()->message_requiring_gesture_count());
 }
+
+}  // namespace content
