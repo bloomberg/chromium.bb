@@ -6,6 +6,7 @@
 
 #include "ash/focus_cycler.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/wallpaper_controller_observer.h"
@@ -118,7 +119,10 @@ void HotseatWidget::DelegateView::UpdateOpaqueBackground() {
   if (opaque_background_.bounds() != background_bounds)
     opaque_background_.SetBounds(background_bounds);
 
-  opaque_background_.SetBackgroundBlur(ShelfConfig::Get()->shelf_blur_radius());
+  if (features::IsBackgroundBlurEnabled()) {
+    opaque_background_.SetBackgroundBlur(
+        ShelfConfig::Get()->shelf_blur_radius());
+  }
 }
 
 void HotseatWidget::DelegateView::OnTabletModeChanged() {
