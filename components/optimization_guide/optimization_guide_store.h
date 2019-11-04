@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_OPTIMIZATION_GUIDE_HINT_CACHE_STORE_H_
-#define COMPONENTS_OPTIMIZATION_GUIDE_HINT_CACHE_STORE_H_
+#ifndef COMPONENTS_OPTIMIZATION_GUIDE_OPTIMIZATION_GUIDE_STORE_H_
+#define COMPONENTS_OPTIMIZATION_GUIDE_OPTIMIZATION_GUIDE_STORE_H_
 
 #include <map>
 #include <string>
@@ -34,7 +34,7 @@ class StoreEntry;
 // are locally available. While the HintCache itself may retain some hints in a
 // memory cache, all of its hints are initially loaded asynchronously by the
 // store. All calls to this store must be made from the same thread.
-class HintCacheStore {
+class OptimizationGuideStore {
  public:
   using HintLoadedCallback =
       base::OnceCallback<void(const std::string&,
@@ -87,14 +87,16 @@ class HintCacheStore {
     kMaxValue = kHostModelFeatures,
   };
 
-  HintCacheStore(leveldb_proto::ProtoDatabaseProvider* database_provider,
-                 const base::FilePath& database_dir,
-                 scoped_refptr<base::SequencedTaskRunner> store_task_runner);
+  OptimizationGuideStore(
+      leveldb_proto::ProtoDatabaseProvider* database_provider,
+      const base::FilePath& database_dir,
+      scoped_refptr<base::SequencedTaskRunner> store_task_runner);
   // For tests only.
-  explicit HintCacheStore(std::unique_ptr<StoreEntryProtoDatabase> database);
-  ~HintCacheStore();
+  explicit OptimizationGuideStore(
+      std::unique_ptr<StoreEntryProtoDatabase> database);
+  ~OptimizationGuideStore();
 
-  // Initializes the hint cache store. If |purge_existing_data| is set to true,
+  // Initializes the store. If |purge_existing_data| is set to true,
   // then the cache is purged during initialization and starts in a fresh state.
   // When initialization completes, the provided callback is run asynchronously.
   void Initialize(bool purge_existing_data, base::OnceClosure callback);
@@ -161,7 +163,7 @@ class HintCacheStore {
   void PurgeExpiredFetchedHints();
 
  private:
-  friend class HintCacheStoreTest;
+  friend class OptimizationGuideStoreTest;
   friend class StoreUpdateData;
 
   using EntryKeyPrefix = std::string;
@@ -334,16 +336,16 @@ class HintCacheStore {
   // store.
   base::Time fetched_update_time_;
 
-  // The keys of the hints available within the store.
-  std::unique_ptr<EntryKeySet> hint_entry_keys_;
+  // The keys of the entries available within the store.
+  std::unique_ptr<EntryKeySet> entry_keys_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<HintCacheStore> weak_ptr_factory_{this};
+  base::WeakPtrFactory<OptimizationGuideStore> weak_ptr_factory_{this};
 
-  DISALLOW_COPY_AND_ASSIGN(HintCacheStore);
+  DISALLOW_COPY_AND_ASSIGN(OptimizationGuideStore);
 };
 
 }  // namespace optimization_guide
 
-#endif  // COMPONENTS_OPTIMIZATION_GUIDE_HINT_CACHE_STORE_H_
+#endif  // COMPONENTS_OPTIMIZATION_GUIDE_OPTIMIZATION_GUIDE_STORE_H_

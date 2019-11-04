@@ -25,7 +25,6 @@
 #include "components/google/core/common/google_util.h"
 #include "components/optimization_guide/bloom_filter.h"
 #include "components/optimization_guide/hint_cache.h"
-#include "components/optimization_guide/hint_cache_store.h"
 #include "components/optimization_guide/hints_component_util.h"
 #include "components/optimization_guide/hints_fetcher.h"
 #include "components/optimization_guide/hints_processing_util.h"
@@ -36,6 +35,7 @@
 #include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/optimization_guide_prefs.h"
 #include "components/optimization_guide/optimization_guide_service.h"
+#include "components/optimization_guide/optimization_guide_store.h"
 #include "components/optimization_guide/optimization_guide_switches.h"
 #include "components/optimization_guide/top_host_provider.h"
 #include "components/prefs/pref_service.h"
@@ -171,7 +171,7 @@ OptimizationGuideHintsManager::OptimizationGuideHintsManager(
       profile_(profile),
       pref_service_(pref_service),
       hint_cache_(std::make_unique<optimization_guide::HintCache>(
-          std::make_unique<optimization_guide::HintCacheStore>(
+          std::make_unique<optimization_guide::OptimizationGuideStore>(
               database_provider,
               profile_path,
               background_task_runner_))),
@@ -184,7 +184,8 @@ OptimizationGuideHintsManager::OptimizationGuideHintsManager(
       ->AddEffectiveConnectionTypeObserver(this);
 
   hint_cache_->Initialize(
-      optimization_guide::switches::ShouldPurgeHintCacheStoreOnStartup(),
+      optimization_guide::switches::
+          ShouldPurgeOptimizationGuideStoreOnStartup(),
       base::BindOnce(&OptimizationGuideHintsManager::OnHintCacheInitialized,
                      ui_weak_ptr_factory_.GetWeakPtr()));
 
@@ -237,8 +238,8 @@ void OptimizationGuideHintsManager::OnHintsComponentAvailable(
   // Processes the hints from the newly available component on a background
   // thread, providing a StoreUpdateData for component update from the hint
   // cache, so that each hint within the component can be moved into it. In the
-  // case where the component's version is not newer than the hint cache store's
-  // component version, StoreUpdateData will be a nullptr and hint
+  // case where the component's version is not newer than the optimization guide
+  // store's component version, StoreUpdateData will be a nullptr and hint
   // processing will be skipped. After PreviewsHints::Create() returns the newly
   // created PreviewsHints, it is initialized in UpdateHints() on the UI thread.
   base::PostTaskAndReplyWithResult(

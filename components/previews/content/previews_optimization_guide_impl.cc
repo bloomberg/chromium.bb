@@ -16,7 +16,6 @@
 #include "base/task_runner_util.h"
 #include "base/time/default_clock.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
-#include "components/optimization_guide/hint_cache_store.h"
 #include "components/optimization_guide/hints_component_info.h"
 #include "components/optimization_guide/hints_component_util.h"
 #include "components/optimization_guide/hints_fetcher.h"
@@ -24,6 +23,7 @@
 #include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/optimization_guide_prefs.h"
 #include "components/optimization_guide/optimization_guide_service.h"
+#include "components/optimization_guide/optimization_guide_store.h"
 #include "components/optimization_guide/optimization_guide_switches.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/optimization_guide/top_host_provider.h"
@@ -78,7 +78,7 @@ PreviewsOptimizationGuideImpl::PreviewsOptimizationGuideImpl(
       ui_task_runner_(ui_task_runner),
       background_task_runner_(background_task_runner),
       hint_cache_(std::make_unique<optimization_guide::HintCache>(
-          std::make_unique<optimization_guide::HintCacheStore>(
+          std::make_unique<optimization_guide::OptimizationGuideStore>(
               database_provider,
               profile_path,
               background_task_runner_))),
@@ -90,7 +90,8 @@ PreviewsOptimizationGuideImpl::PreviewsOptimizationGuideImpl(
   DCHECK(optimization_guide_service_);
   network_quality_tracker_->AddEffectiveConnectionTypeObserver(this);
   hint_cache_->Initialize(
-      optimization_guide::switches::ShouldPurgeHintCacheStoreOnStartup(),
+      optimization_guide::switches::
+          ShouldPurgeOptimizationGuideStoreOnStartup(),
       base::BindOnce(&PreviewsOptimizationGuideImpl::OnHintCacheInitialized,
                      ui_weak_ptr_factory_.GetWeakPtr()));
 }
@@ -245,8 +246,8 @@ void PreviewsOptimizationGuideImpl::OnHintsComponentAvailable(
   // Create PreviewsHints from the newly available component on a background
   // thread, providing a StoreUpdateData for component update from the hint
   // cache, so that each hint within the component can be moved into it. In the
-  // case where the component's version is not newer than the hint cache store's
-  // component version, StoreUpdateData will be a nullptr and hint
+  // case where the component's version is not newer than the optimization guide
+  // store's component version, StoreUpdateData will be a nullptr and hint
   // processing will be skipped. After PreviewsHints::Create() returns the newly
   // created PreviewsHints, it is initialized in UpdateHints() on the UI thread.
   base::PostTaskAndReplyWithResult(

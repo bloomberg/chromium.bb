@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/optimization_guide/hint_cache_store.h"
+#include "components/optimization_guide/optimization_guide_store.h"
 
 #include "base/bind.h"
 #include "base/metrics/histogram_functions.h"
@@ -22,12 +22,13 @@ namespace {
 
 // Enforce that StoreEntryType enum is synced with the StoreEntryType proto
 // (components/previews/content/proto/hint_cache.proto)
-static_assert(proto::StoreEntryType_MAX ==
-                  static_cast<int>(HintCacheStore::StoreEntryType::kMaxValue),
-              "mismatched StoreEntryType enums");
+static_assert(
+    proto::StoreEntryType_MAX ==
+        static_cast<int>(OptimizationGuideStore::StoreEntryType::kMaxValue),
+    "mismatched StoreEntryType enums");
 
 // The folder where the data will be stored on disk.
-constexpr char kHintCacheStoreFolder[] = "previews_hint_cache_store";
+constexpr char kOptimizationGuideStore[] = "previews_hint_cache_store";
 
 // The amount of data to build up in memory before converting to a sorted on-
 // disk file.
@@ -79,7 +80,7 @@ class ScopedLoadMetadataResultRecorder {
   OptimizationGuideHintCacheLevelDBStoreLoadMetadataResult result_;
 };
 
-void RecordStatusChange(HintCacheStore::Status status) {
+void RecordStatusChange(OptimizationGuideStore::Status status) {
   UMA_HISTOGRAM_ENUMERATION("OptimizationGuide.HintCacheLevelDBStore.Status",
                             status);
 }
@@ -92,12 +93,12 @@ bool DatabasePrefixFilter(const std::string& key_prefix,
 
 }  // namespace
 
-HintCacheStore::HintCacheStore(
+OptimizationGuideStore::OptimizationGuideStore(
     leveldb_proto::ProtoDatabaseProvider* database_provider,
     const base::FilePath& database_dir,
     scoped_refptr<base::SequencedTaskRunner> store_task_runner) {
   base::FilePath hint_store_dir =
-      database_dir.AppendASCII(kHintCacheStoreFolder);
+      database_dir.AppendASCII(kOptimizationGuideStore);
   database_ = database_provider->GetDB<proto::StoreEntry>(
       leveldb_proto::ProtoDbType::HINT_CACHE_STORE, hint_store_dir,
       store_task_runner);
@@ -105,18 +106,18 @@ HintCacheStore::HintCacheStore(
   RecordStatusChange(status_);
 }
 
-HintCacheStore::HintCacheStore(
+OptimizationGuideStore::OptimizationGuideStore(
     std::unique_ptr<leveldb_proto::ProtoDatabase<proto::StoreEntry>> database)
     : database_(std::move(database)) {
   RecordStatusChange(status_);
 }
 
-HintCacheStore::~HintCacheStore() {
+OptimizationGuideStore::~OptimizationGuideStore() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-void HintCacheStore::Initialize(bool purge_existing_data,
-                                base::OnceClosure callback) {
+void OptimizationGuideStore::Initialize(bool purge_existing_data,
+                                        base::OnceClosure callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   UpdateStatus(Status::kInitializing);
 
@@ -133,13 +134,13 @@ void HintCacheStore::Initialize(bool purge_existing_data,
   leveldb_env::Options options = leveldb_proto::CreateSimpleOptions();
   options.write_buffer_size = kDatabaseWriteBufferSizeBytes;
   database_->Init(options,
-                  base::BindOnce(&HintCacheStore::OnDatabaseInitialized,
+                  base::BindOnce(&OptimizationGuideStore::OnDatabaseInitialized,
                                  weak_ptr_factory_.GetWeakPtr(),
                                  purge_existing_data, std::move(callback)));
 }
 
 std::unique_ptr<StoreUpdateData>
-HintCacheStore::MaybeCreateUpdateDataForComponentHints(
+OptimizationGuideStore::MaybeCreateUpdateDataForComponentHints(
     const base::Version& version) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(version.IsValid());
@@ -162,8 +163,9 @@ HintCacheStore::MaybeCreateUpdateDataForComponentHints(
 }
 
 std::unique_ptr<StoreUpdateData>
-HintCacheStore::CreateUpdateDataForFetchedHints(base::Time update_time,
-                                                base::Time expiry_time) const {
+OptimizationGuideStore::CreateUpdateDataForFetchedHints(
+    base::Time update_time,
+    base::Time expiry_time) const {
   // Create and returns a StoreUpdateData object. This object has has hints
   // from the GetHintsResponse moved into and organizes them in a format
   // usable by the store. The object will be store with UpdateFetchedData().
@@ -171,7 +173,7 @@ HintCacheStore::CreateUpdateDataForFetchedHints(base::Time update_time,
                                                        expiry_time);
 }
 
-void HintCacheStore::UpdateComponentHints(
+void OptimizationGuideStore::UpdateComponentHints(
     std::unique_ptr<StoreUpdateData> component_data,
     base::OnceClosure callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -205,7 +207,7 @@ void HintCacheStore::UpdateComponentHints(
   // The current keys are about to be removed, so clear out the keys available
   // within the store. The keys will be populated after the component data
   // update completes.
-  hint_entry_keys_.reset();
+  entry_keys_.reset();
 
   // Purge any component hints that are missing the new component version
   // prefix.
@@ -225,11 +227,11 @@ void HintCacheStore::UpdateComponentHints(
                    key.compare(0, filter_prefix.length(), filter_prefix) == 0;
           },
           retain_prefix, filter_prefix),
-      base::BindOnce(&HintCacheStore::OnUpdateHints,
+      base::BindOnce(&OptimizationGuideStore::OnUpdateHints,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void HintCacheStore::UpdateFetchedHints(
+void OptimizationGuideStore::UpdateFetchedHints(
     std::unique_ptr<StoreUpdateData> fetched_hints_data,
     base::OnceClosure callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -246,7 +248,7 @@ void HintCacheStore::UpdateFetchedHints(
 
   data_update_in_flight_ = true;
 
-  hint_entry_keys_.reset();
+  entry_keys_.reset();
 
   // This will remove the fetched metadata entry and insert all the entries
   // currently in |leveldb_fetched_hints_data|.
@@ -254,11 +256,11 @@ void HintCacheStore::UpdateFetchedHints(
       fetched_hints_data->TakeUpdateEntries(),
       base::BindRepeating(&DatabasePrefixFilter,
                           GetMetadataTypeEntryKey(MetadataType::kFetched)),
-      base::BindOnce(&HintCacheStore::OnUpdateHints,
+      base::BindOnce(&OptimizationGuideStore::OnUpdateHints,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void HintCacheStore::PurgeExpiredFetchedHints() {
+void OptimizationGuideStore::PurgeExpiredFetchedHints() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!IsAvailable()) {
@@ -269,11 +271,11 @@ void HintCacheStore::PurgeExpiredFetchedHints() {
   database_->LoadKeysAndEntriesWithFilter(
       base::BindRepeating(&DatabasePrefixFilter,
                           GetFetchedHintEntryKeyPrefix()),
-      base::BindOnce(&HintCacheStore::OnLoadFetchedHintsToPurgeExpired,
+      base::BindOnce(&OptimizationGuideStore::OnLoadFetchedHintsToPurgeExpired,
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-void HintCacheStore::OnLoadFetchedHintsToPurgeExpired(
+void OptimizationGuideStore::OnLoadFetchedHintsToPurgeExpired(
     bool success,
     std::unique_ptr<EntryMap> fetched_entries) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -296,7 +298,7 @@ void HintCacheStore::OnLoadFetchedHintsToPurgeExpired(
   // store.
 
   data_update_in_flight_ = true;
-  hint_entry_keys_.reset();
+  entry_keys_.reset();
 
   auto empty_entries = std::make_unique<EntryVector>();
 
@@ -307,12 +309,13 @@ void HintCacheStore::OnLoadFetchedHintsToPurgeExpired(
             return keys_to_remove->find(key) != keys_to_remove->end();
           },
           keys_to_remove.get()),
-      base::BindOnce(&HintCacheStore::OnUpdateHints,
+      base::BindOnce(&OptimizationGuideStore::OnUpdateHints,
                      weak_ptr_factory_.GetWeakPtr(), base::DoNothing::Once()));
 }
 
-bool HintCacheStore::FindHintEntryKey(const std::string& host,
-                                      EntryKey* out_hint_entry_key) const {
+bool OptimizationGuideStore::FindHintEntryKey(
+    const std::string& host,
+    EntryKey* out_hint_entry_key) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Search for kFetched hint entry keys first, fetched hints should be
@@ -333,7 +336,7 @@ bool HintCacheStore::FindHintEntryKey(const std::string& host,
   return false;
 }
 
-bool HintCacheStore::FindHintEntryKeyForHostWithPrefix(
+bool OptimizationGuideStore::FindHintEntryKeyForHostWithPrefix(
     const std::string& host,
     EntryKey* out_hint_entry_key,
     const EntryKeyPrefix& hint_entry_key_prefix) const {
@@ -347,8 +350,8 @@ bool HintCacheStore::FindHintEntryKeyForHostWithPrefix(
   while (host_suffix.length() >= kMinHostSuffix) {
     // Attempt to find a hint entry key associated with the current host suffix.
     *out_hint_entry_key = hint_entry_key_prefix + host_suffix;
-    if (hint_entry_keys_ && hint_entry_keys_->find(*out_hint_entry_key) !=
-                                hint_entry_keys_->end()) {
+    if (entry_keys_ &&
+        entry_keys_->find(*out_hint_entry_key) != entry_keys_->end()) {
       return true;
     }
 
@@ -361,8 +364,8 @@ bool HintCacheStore::FindHintEntryKeyForHostWithPrefix(
   return false;
 }
 
-void HintCacheStore::LoadHint(const EntryKey& hint_entry_key,
-                              HintLoadedCallback callback) {
+void OptimizationGuideStore::LoadHint(const EntryKey& hint_entry_key,
+                                      HintLoadedCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!IsAvailable()) {
@@ -371,12 +374,12 @@ void HintCacheStore::LoadHint(const EntryKey& hint_entry_key,
   }
 
   database_->GetEntry(hint_entry_key,
-                      base::BindOnce(&HintCacheStore::OnLoadHint,
+                      base::BindOnce(&OptimizationGuideStore::OnLoadHint,
                                      weak_ptr_factory_.GetWeakPtr(),
                                      hint_entry_key, std::move(callback)));
 }
 
-base::Time HintCacheStore::FetchedHintsUpdateTime() const {
+base::Time OptimizationGuideStore::FetchedHintsUpdateTime() const {
   // If the store is not available, the metadata entries have not been loaded
   // so there are no fetched hints.
   if (!IsAvailable())
@@ -385,61 +388,64 @@ base::Time HintCacheStore::FetchedHintsUpdateTime() const {
 }
 
 // static
-const char HintCacheStore::kStoreSchemaVersion[] = "1";
+const char OptimizationGuideStore::kStoreSchemaVersion[] = "1";
 
 // static
-HintCacheStore::EntryKeyPrefix HintCacheStore::GetMetadataEntryKeyPrefix() {
-  return base::NumberToString(
-             static_cast<int>(HintCacheStore::StoreEntryType::kMetadata)) +
+OptimizationGuideStore::EntryKeyPrefix
+OptimizationGuideStore::GetMetadataEntryKeyPrefix() {
+  return base::NumberToString(static_cast<int>(
+             OptimizationGuideStore::StoreEntryType::kMetadata)) +
          kKeySectionDelimiter;
 }
 
 // static
-HintCacheStore::EntryKey HintCacheStore::GetMetadataTypeEntryKey(
-    MetadataType metadata_type) {
+OptimizationGuideStore::EntryKey
+OptimizationGuideStore::GetMetadataTypeEntryKey(MetadataType metadata_type) {
   return GetMetadataEntryKeyPrefix() +
          base::NumberToString(static_cast<int>(metadata_type));
 }
 
 // static
-HintCacheStore::EntryKeyPrefix
-HintCacheStore::GetComponentHintEntryKeyPrefixWithoutVersion() {
-  return base::NumberToString(
-             static_cast<int>(HintCacheStore::StoreEntryType::kComponentHint)) +
+OptimizationGuideStore::EntryKeyPrefix
+OptimizationGuideStore::GetComponentHintEntryKeyPrefixWithoutVersion() {
+  return base::NumberToString(static_cast<int>(
+             OptimizationGuideStore::StoreEntryType::kComponentHint)) +
          kKeySectionDelimiter;
 }
 
 // static
-HintCacheStore::EntryKeyPrefix HintCacheStore::GetComponentHintEntryKeyPrefix(
+OptimizationGuideStore::EntryKeyPrefix
+OptimizationGuideStore::GetComponentHintEntryKeyPrefix(
     const base::Version& component_version) {
   return GetComponentHintEntryKeyPrefixWithoutVersion() +
          component_version.GetString() + kKeySectionDelimiter;
 }
 
 // static
-HintCacheStore::EntryKeyPrefix HintCacheStore::GetFetchedHintEntryKeyPrefix() {
-  return base::NumberToString(
-             static_cast<int>(HintCacheStore::StoreEntryType::kFetchedHint)) +
+OptimizationGuideStore::EntryKeyPrefix
+OptimizationGuideStore::GetFetchedHintEntryKeyPrefix() {
+  return base::NumberToString(static_cast<int>(
+             OptimizationGuideStore::StoreEntryType::kFetchedHint)) +
          kKeySectionDelimiter;
 }
 
 // static
-HintCacheStore::EntryKeyPrefix
-HintCacheStore::GetPredictionModelEntryKeyPrefix() {
+OptimizationGuideStore::EntryKeyPrefix
+OptimizationGuideStore::GetPredictionModelEntryKeyPrefix() {
   return base::NumberToString(static_cast<int>(
-             HintCacheStore::StoreEntryType::kPredictionModel)) +
+             OptimizationGuideStore::StoreEntryType::kPredictionModel)) +
          kKeySectionDelimiter;
 }
 
 // static
-HintCacheStore::EntryKeyPrefix
-HintCacheStore::GetHostModelFeaturesEntryKeyPrefix() {
+OptimizationGuideStore::EntryKeyPrefix
+OptimizationGuideStore::GetHostModelFeaturesEntryKeyPrefix() {
   return base::NumberToString(static_cast<int>(
-             HintCacheStore::StoreEntryType::kHostModelFeatures)) +
+             OptimizationGuideStore::StoreEntryType::kHostModelFeatures)) +
          kKeySectionDelimiter;
 }
 
-void HintCacheStore::UpdateStatus(Status new_status) {
+void OptimizationGuideStore::UpdateStatus(Status new_status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Status::kUninitialized can only transition to Status::kInitializing.
@@ -464,19 +470,20 @@ void HintCacheStore::UpdateStatus(Status new_status) {
   RecordStatusChange(status_);
 
   if (status_ == Status::kFailed) {
-    database_->Destroy(base::BindOnce(&HintCacheStore::OnDatabaseDestroyed,
-                                      weak_ptr_factory_.GetWeakPtr()));
+    database_->Destroy(
+        base::BindOnce(&OptimizationGuideStore::OnDatabaseDestroyed,
+                       weak_ptr_factory_.GetWeakPtr()));
     ClearComponentVersion();
-    hint_entry_keys_.reset();
+    entry_keys_.reset();
   }
 }
 
-bool HintCacheStore::IsAvailable() const {
+bool OptimizationGuideStore::IsAvailable() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return status_ == Status::kAvailable;
 }
 
-void HintCacheStore::PurgeDatabase(base::OnceClosure callback) {
+void OptimizationGuideStore::PurgeDatabase(base::OnceClosure callback) {
   // When purging the database, update the schema version to the current one.
   EntryKey schema_entry_key = GetMetadataTypeEntryKey(MetadataType::kSchema);
   proto::StoreEntry schema_entry;
@@ -493,11 +500,11 @@ void HintCacheStore::PurgeDatabase(base::OnceClosure callback) {
                                schema_entry_key) != 0;
           },
           schema_entry_key),
-      base::BindOnce(&HintCacheStore::OnPurgeDatabase,
+      base::BindOnce(&OptimizationGuideStore::OnPurgeDatabase,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void HintCacheStore::SetComponentVersion(
+void OptimizationGuideStore::SetComponentVersion(
     const base::Version& component_version) {
   DCHECK(component_version.IsValid());
   component_version_ = component_version;
@@ -505,12 +512,12 @@ void HintCacheStore::SetComponentVersion(
       GetComponentHintEntryKeyPrefix(component_version_.value());
 }
 
-void HintCacheStore::ClearComponentVersion() {
+void OptimizationGuideStore::ClearComponentVersion() {
   component_version_.reset();
   component_hint_entry_key_prefix_.clear();
 }
 
-void HintCacheStore::ClearFetchedHintsFromDatabase() {
+void OptimizationGuideStore::ClearFetchedHintsFromDatabase() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!data_update_in_flight_);
 
@@ -522,7 +529,7 @@ void HintCacheStore::ClearFetchedHintsFromDatabase() {
   auto entries_to_save = std::make_unique<EntryVector>();
 
   // TODO(mcrouse): Add histogram to record the number of hints being removed.
-  hint_entry_keys_.reset();
+  entry_keys_.reset();
 
   // Removes all |kFetchedHint| store entries. OnUpdateHints will handle
   // updating status and re-filling hint_entry_keys with the hints still in the
@@ -531,11 +538,12 @@ void HintCacheStore::ClearFetchedHintsFromDatabase() {
       std::move(entries_to_save),  // this should be empty.
       base::BindRepeating(&DatabasePrefixFilter,
                           GetFetchedHintEntryKeyPrefix()),
-      base::BindOnce(&HintCacheStore::OnUpdateHints,
+      base::BindOnce(&OptimizationGuideStore::OnUpdateHints,
                      weak_ptr_factory_.GetWeakPtr(), base::DoNothing::Once()));
 }
 
-void HintCacheStore::MaybeLoadHintEntryKeys(base::OnceClosure callback) {
+void OptimizationGuideStore::MaybeLoadHintEntryKeys(
+    base::OnceClosure callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // If the database is unavailable or if there's an in-flight component data
@@ -564,17 +572,17 @@ void HintCacheStore::MaybeLoadHintEntryKeys(base::OnceClosure callback) {
             return false;
           },
           raw_hint_entry_keys_pointer, GetMetadataEntryKeyPrefix()),
-      base::BindOnce(&HintCacheStore::OnLoadHintEntryKeys,
+      base::BindOnce(&OptimizationGuideStore::OnLoadHintEntryKeys,
                      weak_ptr_factory_.GetWeakPtr(), std::move(hint_entry_keys),
                      std::move(callback)));
 }
 
-size_t HintCacheStore::GetHintEntryKeyCount() const {
+size_t OptimizationGuideStore::GetHintEntryKeyCount() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return hint_entry_keys_ ? hint_entry_keys_->size() : 0;
+  return entry_keys_ ? entry_keys_->size() : 0;
 }
 
-void HintCacheStore::OnDatabaseInitialized(
+void OptimizationGuideStore::OnDatabaseInitialized(
     bool purge_existing_data,
     base::OnceClosure callback,
     leveldb_proto::Enums::InitStatus status) {
@@ -598,15 +606,15 @@ void HintCacheStore::OnDatabaseInitialized(
   database_->LoadKeysAndEntriesWithFilter(
       leveldb_proto::KeyFilter(), leveldb::ReadOptions(),
       GetMetadataEntryKeyPrefix(),
-      base::BindOnce(&HintCacheStore::OnLoadMetadata,
+      base::BindOnce(&OptimizationGuideStore::OnLoadMetadata,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void HintCacheStore::OnDatabaseDestroyed(bool /*success*/) {
+void OptimizationGuideStore::OnDatabaseDestroyed(bool /*success*/) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-void HintCacheStore::OnLoadMetadata(
+void OptimizationGuideStore::OnLoadMetadata(
     base::OnceClosure callback,
     bool success,
     std::unique_ptr<EntryMap> metadata_entries) {
@@ -686,7 +694,8 @@ void HintCacheStore::OnLoadMetadata(
   MaybeLoadHintEntryKeys(std::move(callback));
 }
 
-void HintCacheStore::OnPurgeDatabase(base::OnceClosure callback, bool success) {
+void OptimizationGuideStore::OnPurgeDatabase(base::OnceClosure callback,
+                                             bool success) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // The database can only be purged during initialization.
   DCHECK_EQ(status_, Status::kInitializing);
@@ -695,7 +704,8 @@ void HintCacheStore::OnPurgeDatabase(base::OnceClosure callback, bool success) {
   std::move(callback).Run();
 }
 
-void HintCacheStore::OnUpdateHints(base::OnceClosure callback, bool success) {
+void OptimizationGuideStore::OnUpdateHints(base::OnceClosure callback,
+                                           bool success) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(data_update_in_flight_);
 
@@ -708,13 +718,13 @@ void HintCacheStore::OnUpdateHints(base::OnceClosure callback, bool success) {
   MaybeLoadHintEntryKeys(std::move(callback));
 }
 
-void HintCacheStore::OnLoadHintEntryKeys(
+void OptimizationGuideStore::OnLoadHintEntryKeys(
     std::unique_ptr<EntryKeySet> hint_entry_keys,
     base::OnceClosure callback,
     bool success,
     std::unique_ptr<EntryMap> /*unused*/) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!hint_entry_keys_);
+  DCHECK(!entry_keys_);
 
   if (!success) {
     UpdateStatus(Status::kFailed);
@@ -730,14 +740,15 @@ void HintCacheStore::OnLoadHintEntryKeys(
     hint_entry_keys.reset();
   }
 
-  hint_entry_keys_ = std::move(hint_entry_keys);
+  entry_keys_ = std::move(hint_entry_keys);
   std::move(callback).Run();
 }
 
-void HintCacheStore::OnLoadHint(const std::string& entry_key,
-                                HintLoadedCallback callback,
-                                bool success,
-                                std::unique_ptr<proto::StoreEntry> entry) {
+void OptimizationGuideStore::OnLoadHint(
+    const std::string& entry_key,
+    HintLoadedCallback callback,
+    bool success,
+    std::unique_ptr<proto::StoreEntry> entry) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // If either the request failed, the store was set to unavailable after the

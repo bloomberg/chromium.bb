@@ -803,10 +803,11 @@ TEST_F(PreviewsOptimizationGuideImplTest,
   EXPECT_FALSE(guide()->GetHintsForTesting());
 }
 
-TEST_F(PreviewsOptimizationGuideImplTest,
-       ProcessHintsWithPurgeHintCacheStoreCommandLineAndNoPreexistingData) {
+TEST_F(
+    PreviewsOptimizationGuideImplTest,
+    ProcessHintsWithPurgeOptimizationGuideStoreCommandLineAndNoPreexistingData) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      optimization_guide::switches::kPurgeHintCacheStore);
+      optimization_guide::switches::kPurgeOptimizationGuideStore);
   CreateServiceAndGuide();
 
   EXPECT_FALSE(CallMaybeLoadOptimizationHints(GURL("https://somedomain.org/")));
@@ -820,8 +821,9 @@ TEST_F(PreviewsOptimizationGuideImplTest,
       GURL("https://www.somedomain.org/news/football")));
 }
 
-TEST_F(PreviewsOptimizationGuideImplTest,
-       ProcessHintsWithPurgeHintCacheStoreCommandLineAndPreexistingData) {
+TEST_F(
+    PreviewsOptimizationGuideImplTest,
+    ProcessHintsWithPurgeOptimizationGuideStoreCommandLineAndPreexistingData) {
   InitializeFixedCountResourceLoadingHints();
 
   EXPECT_TRUE(CallMaybeLoadOptimizationHints(GURL("https://somedomain.org/")));
@@ -829,7 +831,7 @@ TEST_F(PreviewsOptimizationGuideImplTest,
       GURL("https://www.somedomain.org/news/football")));
 
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      optimization_guide::switches::kPurgeHintCacheStore);
+      optimization_guide::switches::kPurgeOptimizationGuideStore);
   CreateServiceAndGuide();
 
   EXPECT_FALSE(CallMaybeLoadOptimizationHints(GURL("https://somedomain.org/")));

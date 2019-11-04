@@ -29,13 +29,13 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/google/core/common/google_util.h"
-#include "components/optimization_guide/hint_cache_store.h"
 #include "components/optimization_guide/hints_component_info.h"
 #include "components/optimization_guide/hints_component_util.h"
 #include "components/optimization_guide/optimization_guide_constants.h"
 #include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/optimization_guide_prefs.h"
 #include "components/optimization_guide/optimization_guide_service.h"
+#include "components/optimization_guide/optimization_guide_store.h"
 #include "components/optimization_guide/optimization_guide_switches.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/optimization_guide/test_hints_component_creator.h"
@@ -661,14 +661,14 @@ IN_PROC_BROWSER_TEST_P(
 
   histogram_tester->ExpectBucketCount(
       "OptimizationGuide.HintCache.HintType.Loaded",
-      static_cast<int>(
-          optimization_guide::HintCacheStore::StoreEntryType::kFetchedHint),
+      static_cast<int>(optimization_guide::OptimizationGuideStore::
+                           StoreEntryType::kFetchedHint),
       1);
 
   histogram_tester->ExpectBucketCount(
       "OptimizationGuide.HintCache.HintType.Loaded",
-      static_cast<int>(
-          optimization_guide::HintCacheStore::StoreEntryType::kComponentHint),
+      static_cast<int>(optimization_guide::OptimizationGuideStore::
+                           StoreEntryType::kComponentHint),
       0);
 }
 
@@ -775,13 +775,13 @@ IN_PROC_BROWSER_TEST_P(
   // Component hint is loaded.
   histogram_tester->ExpectBucketCount(
       "OptimizationGuide.HintCache.HintType.Loaded",
-      static_cast<int>(
-          optimization_guide::HintCacheStore::StoreEntryType::kComponentHint),
+      static_cast<int>(optimization_guide::OptimizationGuideStore::
+                           StoreEntryType::kComponentHint),
       1);
   histogram_tester->ExpectBucketCount(
       "OptimizationGuide.HintCache.HintType.Loaded",
-      static_cast<int>(
-          optimization_guide::HintCacheStore::StoreEntryType::kFetchedHint),
+      static_cast<int>(optimization_guide::OptimizationGuideStore::
+                           StoreEntryType::kFetchedHint),
       0);
 }
 
@@ -819,13 +819,13 @@ IN_PROC_BROWSER_TEST_P(
   EXPECT_LE(1,
             GetCountBucketSamples(
                 histogram_tester, "OptimizationGuide.HintCache.HintType.Loaded",
-                static_cast<int>(optimization_guide::HintCacheStore::
+                static_cast<int>(optimization_guide::OptimizationGuideStore::
                                      StoreEntryType::kFetchedHint)));
 
   EXPECT_EQ(0,
             GetCountBucketSamples(
                 histogram_tester, "OptimizationGuide.HintCache.HintType.Loaded",
-                static_cast<int>(optimization_guide::HintCacheStore::
+                static_cast<int>(optimization_guide::OptimizationGuideStore::
                                      StoreEntryType::kComponentHint)));
 
   // Wipe the browser history - clear all the fetched hints.
@@ -840,13 +840,13 @@ IN_PROC_BROWSER_TEST_P(
   EXPECT_LE(1,
             GetCountBucketSamples(
                 histogram_tester, "OptimizationGuide.HintCache.HintType.Loaded",
-                static_cast<int>(optimization_guide::HintCacheStore::
+                static_cast<int>(optimization_guide::OptimizationGuideStore::
                                      StoreEntryType::kFetchedHint)));
 
   EXPECT_LE(IsOptimizationGuideKeyedServiceEnabled() ? 0 : 1,
             GetCountBucketSamples(
                 histogram_tester, "OptimizationGuide.HintCache.HintType.Loaded",
-                static_cast<int>(optimization_guide::HintCacheStore::
+                static_cast<int>(optimization_guide::OptimizationGuideStore::
                                      StoreEntryType::kComponentHint)));
 }
 
@@ -897,14 +897,14 @@ IN_PROC_BROWSER_TEST_P(
   // fetched hints are prioritized.
   histogram_tester->ExpectBucketCount(
       "OptimizationGuide.HintCache.HintType.Loaded",
-      static_cast<int>(
-          optimization_guide::HintCacheStore::StoreEntryType::kFetchedHint),
+      static_cast<int>(optimization_guide::OptimizationGuideStore::
+                           StoreEntryType::kFetchedHint),
       1);
 
   histogram_tester->ExpectBucketCount(
       "OptimizationGuide.HintCache.HintType.Loaded",
-      static_cast<int>(
-          optimization_guide::HintCacheStore::StoreEntryType::kComponentHint),
+      static_cast<int>(optimization_guide::OptimizationGuideStore::
+                           StoreEntryType::kComponentHint),
       0);
 }
 
