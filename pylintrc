@@ -443,6 +443,8 @@ known-third-party=
     google,
     googleapiclient,
     httplib2,
+    jinja2,
+    jsonschema,
     lddtree,
     magic,
     mock,
@@ -452,6 +454,7 @@ known-third-party=
     requests,
     six,
     sqlalchemy,
+    yaml,
 
 
 [LOGGING]
