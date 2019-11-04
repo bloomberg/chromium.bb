@@ -21243,6 +21243,14 @@ Called by update_net_error_codes.py.-->
   <int value="24" label="UPDATE_NON_EXISTING_EXTENSION"/>
 </enum>
 
+<enum name="ExtensionInstallationDownloadingCacheStatus">
+  <int value="0" label="UNKNOWN"/>
+  <int value="1" label="DISABLED"/>
+  <int value="2" label="MISS"/>
+  <int value="3" label="OUTDATED"/>
+  <int value="4" label="HIT"/>
+</enum>
+
 <enum name="ExtensionInstallationDownloadingStage">
   <int value="0" label="PENDING"/>
   <int value="1" label="QUEUED_FOR_MANIFEST"/>
