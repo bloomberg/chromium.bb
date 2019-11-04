@@ -4260,12 +4260,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(blink::features::kAudioWorkletRealtimeThread)},
 
 #if defined(OS_CHROMEOS)
-    {"dim-shelf", flag_descriptions::kShelfDimmingName,
-     flag_descriptions::kShelfDimmingDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kShelfDimming)},
-#endif  // defined(OS_CHROMEOS)
-
-#if defined(OS_CHROMEOS)
     {"release-notes", flag_descriptions::kReleaseNotesName,
      flag_descriptions::kReleaseNotesDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kReleaseNotes)},
