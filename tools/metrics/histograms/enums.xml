@@ -12108,6 +12108,14 @@ Called by update_net_error_codes.py.-->
   <int value="2" label="Registered App"/>
 </enum>
 
+<enum name="CrostiniContainerOsVersion">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Debian Stretch"/>
+  <int value="2" label="Debian Buster"/>
+  <int value="3" label="Other Debian Version"/>
+  <int value="4" label="Non-Debian OS"/>
+</enum>
+
 <enum name="CrostiniExportContainerResult">
   <int value="0" label="Success"/>
   <int value="1" label="Failed"/>
