@@ -2375,6 +2375,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'kevin-arc64',
       'kumo',
       'puff',
+      'trogdor',  # New board b/143638832
       'veyron_jerry-kernelnext',
       'veyron_minnie-kernelnext',
       'viking-poc2',

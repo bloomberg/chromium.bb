@@ -123,6 +123,7 @@
     tatl-paladin
     terra-paladin
     tidus-paladin
+    trogdor-paladin
     ultima-paladin
     veyron_fievel-paladin
     veyron_jaq-paladin
@@ -2383,6 +2384,7 @@
     tatl-paladin-tryjob
     terra-paladin-tryjob
     tidus-paladin-tryjob
+    trogdor-paladin-tryjob
     ultima-paladin-tryjob
     veyron_fievel-paladin-tryjob
     veyron_jaq-paladin-tryjob
@@ -3229,6 +3231,21 @@
   tidus-tot-chrome-pfq-informational-tryjob
   tidus-tot-chromium-pfq-informational-tryjob
   tidus-unittest-stress
+  trogdor-compile-only-pre-cq
+  trogdor-full-tryjob
+  trogdor-llvm-next-toolchain-tryjob
+  trogdor-llvm-toolchain-tryjob
+  trogdor-no-vmtest-pre-cq
+  trogdor-paladin-tryjob
+  trogdor-payloads-tryjob
+  trogdor-pre-cq
+  trogdor-release-afdo-generate-tryjob
+  trogdor-release-afdo-tryjob
+  trogdor-release-afdo-use-tryjob
+  trogdor-release-tryjob
+  trogdor-tot-chrome-pfq-informational-tryjob
+  trogdor-tot-chromium-pfq-informational-tryjob
+  trogdor-unittest-stress
   ultima-compile-only-pre-cq
   ultima-factory-strago-7458.B-factorybranch-tryjob
   ultima-full-tryjob

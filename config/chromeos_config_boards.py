@@ -53,6 +53,7 @@ arm_internal_release_boards = frozenset([
     'octavius',
     'romer',
     'scarlet',
+    'trogdor',
     'veyron_fievel',
     'veyron_jaq',
     'veyron_jerry',
