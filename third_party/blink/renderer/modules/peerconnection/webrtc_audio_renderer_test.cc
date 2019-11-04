@@ -10,10 +10,9 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
-#include "base/test/task_environment.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "content/renderer/media/audio/audio_device_factory.h"
+#include "media/audio/audio_sink_parameters.h"
+#include "media/audio/audio_source_parameters.h"
 #include "media/base/audio_capturer_source.h"
 #include "media/base/mock_audio_renderer_sink.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -36,7 +35,7 @@ using testing::InvokeWithoutArgs;
 using testing::Return;
 using testing::SaveArg;
 
-namespace content {
+namespace blink {
 
 namespace {
 
@@ -50,10 +49,11 @@ class MockAudioRendererSource : public blink::WebRtcAudioRendererSource {
  public:
   MockAudioRendererSource() {}
   ~MockAudioRendererSource() override {}
-  MOCK_METHOD4(RenderData, void(media::AudioBus* audio_bus,
-                                int sample_rate,
-                                int audio_delay_milliseconds,
-                                base::TimeDelta* current_time));
+  MOCK_METHOD4(RenderData,
+               void(media::AudioBus* audio_bus,
+                    int sample_rate,
+                    int audio_delay_milliseconds,
+                    base::TimeDelta* current_time));
   MOCK_METHOD1(RemoveAudioRenderer, void(blink::WebRtcAudioRenderer* renderer));
   MOCK_METHOD0(AudioRendererThreadStopped, void());
   MOCK_METHOD1(SetOutputDeviceForAec, void(const std::string&));
@@ -185,8 +185,6 @@ class WebRtcAudioRendererTest : public testing::Test {
       audio_device_factory_platform_;
   const base::Optional<base::UnguessableToken> kAudioProcessingId =
       base::UnguessableToken::Create();
-  base::test::SingleThreadTaskEnvironment task_environment_{
-      base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
   std::unique_ptr<MockAudioRendererSource> source_;
   blink::WebMediaStream stream_;
   scoped_refptr<blink::WebRtcAudioRenderer> renderer_;
@@ -228,7 +226,7 @@ TEST_F(WebRtcAudioRendererTest, MultipleRenderers) {
   renderer_proxy_->Stop();
 
   for (int i = 0; i < kNumberOfRendererProxy; ++i) {
-    if (i != kNumberOfRendererProxy -1) {
+    if (i != kNumberOfRendererProxy - 1) {
       EXPECT_CALL(*mock_sink(), Stop()).Times(0);
     } else {
       // When the last proxy is stopped, the sink will stop.
@@ -390,4 +388,4 @@ TEST_F(WebRtcAudioRendererTest, SwitchOutputDeviceStoppedSource) {
   loop.Run();
 }
 
-}  // namespace content
+}  // namespace blink
