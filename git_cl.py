@@ -54,13 +54,16 @@ import subcommand
 import subprocess2
 import watchlists
 
-from third_party import six
-from six.moves import urllib
-
-
-if sys.version_info.major == 3:
-  basestring = (str,)  # pylint: disable=redefined-builtin
-
+if sys.version_info.major == 2:
+  import httplib
+  import urllib2 as urllib_request
+  import urllib2 as urllib_error
+  import urlparse
+else:
+  import http.client as httplib
+  import urllib.request as urllib_request
+  import urllib.error as urllib_error
+  import urllib.parse as urlparse
 
 __version__ = '2.0'
 
@@ -154,15 +157,14 @@ def GetNoGitPagerEnv():
 
 def RunCommand(args, error_ok=False, error_message=None, shell=False, **kwargs):
   try:
-    stdout = subprocess2.check_output(args, shell=shell, **kwargs)
-    return stdout.decode('utf-8', 'replace')
+    return subprocess2.check_output(args, shell=shell, **kwargs)
   except subprocess2.CalledProcessError as e:
     logging.debug('Failed running %s', args)
     if not error_ok:
       DieWithError(
           'Command "%s" failed.\n%s' % (
             ' '.join(args), error_message or e.stdout or ''))
-    return e.stdout.decode('utf-8', 'replace')
+    return e.stdout
 
 
 def RunGit(args, **kwargs):
@@ -181,10 +183,10 @@ def RunGitWithCode(args, suppress_stderr=False):
                                              env=GetNoGitPagerEnv(),
                                              stdout=subprocess2.PIPE,
                                              stderr=stderr)
-    return code, out.decode('utf-8', 'replace')
+    return code, out
   except subprocess2.CalledProcessError as e:
     logging.debug('Failed running %s', ['git'] + args)
-    return e.returncode, e.stdout.decode('utf-8', 'replace')
+    return e.returncode, e.stdout
 
 
 def RunGitSilent(args):
@@ -1015,7 +1017,7 @@ def ParseIssueNumberArgument(arg):
 
   url = gclient_utils.UpgradeToHttps(arg)
   try:
-    parsed_url = urllib.parse.urlparse(url)
+    parsed_url = urlparse.urlparse(url)
   except ValueError:
     return fail_result
 
@@ -1320,7 +1322,7 @@ class Changelist(object):
     url = RunGit(['config', 'remote.%s.url' % remote], error_ok=True).strip()
 
     # Check if the remote url can be parsed as an URL.
-    host = urllib.parse.urlparse(url).netloc
+    host = urlparse.urlparse(url).netloc
     if host:
       self._cached_remote_url = (True, url)
       return url
@@ -1340,7 +1342,7 @@ class Changelist(object):
                  error_ok=True,
                  cwd=url).strip()
 
-    host = urllib.parse.urlparse(url).netloc
+    host = urlparse.urlparse(url).netloc
     if not host:
       logging.error(
           'Remote "%(remote)s" for branch "%(branch)s" points to '
@@ -1653,7 +1655,7 @@ class Changelist(object):
     if self._gerrit_host and '.' not in self._gerrit_host:
       # Abbreviated domain like "chromium" instead of chromium.googlesource.com.
       # This happens for internal stuff http://crbug.com/614312.
-      parsed = urllib.parse.urlparse(self.GetRemoteUrl())
+      parsed = urlparse.urlparse(self.GetRemoteUrl())
       if parsed.scheme == 'sso':
         print('WARNING: using non-https URLs for remote is likely broken\n'
               '  Your current remote is: %s' % self.GetRemoteUrl())
@@ -1666,7 +1668,7 @@ class Changelist(object):
     remote_url = self.GetRemoteUrl()
     if not remote_url:
       return None
-    return urllib.parse.urlparse(remote_url).netloc
+    return urlparse.urlparse(remote_url).netloc
 
   def GetCodereviewServer(self):
     if not self._gerrit_server:
@@ -1676,7 +1678,7 @@ class Changelist(object):
         self._gerrit_server = self._GitGetBranchConfigValue(
             self.CodereviewServerConfigKey())
         if self._gerrit_server:
-          self._gerrit_host = urllib.parse.urlparse(self._gerrit_server).netloc
+          self._gerrit_host = urlparse.urlparse(self._gerrit_server).netloc
       if not self._gerrit_server:
         # We assume repo to be hosted on Gerrit, and hence Gerrit server
         # has "-review" suffix for lowest level subdomain.
@@ -1692,7 +1694,7 @@ class Changelist(object):
     if remote_url is None:
       logging.warn('can\'t detect Gerrit project.')
       return None
-    project = urllib.parse.urlparse(remote_url).path.strip('/')
+    project = urlparse.urlparse(remote_url).path.strip('/')
     if project.endswith('.git'):
       project = project[:-len('.git')]
     # *.googlesource.com hosts ensure that Git/Gerrit projects don't start with
@@ -1741,7 +1743,7 @@ class Changelist(object):
     if not isinstance(cookie_auth, gerrit_util.CookiesAuthenticator):
       return
 
-    if urllib.parse.urlparse(self.GetRemoteUrl()).scheme != 'https':
+    if urlparse.urlparse(self.GetRemoteUrl()).scheme != 'https':
       print('WARNING: Ignoring branch %s with non-https remote %s' %
             (self.branch, self.GetRemoteUrl()))
       return
@@ -1851,7 +1853,7 @@ class Changelist(object):
     try:
       data = self._GetChangeDetail([
           'DETAILED_LABELS', 'CURRENT_REVISION', 'SUBMITTABLE'])
-    except GerritChangeNotExists:
+    except (httplib.HTTPException, GerritChangeNotExists):
       return 'error'
 
     if data['status'] in ('ABANDONED', 'MERGED'):
@@ -1873,7 +1875,7 @@ class Changelist(object):
       return 'unsent'
 
     owner = data['owner'].get('_account_id')
-    messages = sorted(data.get('messages', []), key=lambda m: m.get('date'))
+    messages = sorted(data.get('messages', []), key=lambda m: m.get('updated'))
     last_message_author = messages.pop().get('author', {})
     while last_message_author:
       if last_message_author.get('email') == COMMIT_BOT_EMAIL:
@@ -1900,7 +1902,8 @@ class Changelist(object):
     data = self._GetChangeDetail(['CURRENT_REVISION', 'CURRENT_COMMIT'],
                                  no_cache=force)
     current_rev = data['current_revision']
-    return data['revisions'][current_rev]['commit']['message']
+    return data['revisions'][current_rev]['commit']['message'].encode(
+        'utf-8', 'ignore')
 
   def UpdateDescriptionRemote(self, description, force=False):
     if gerrit_util.HasPendingChangeEdit(
@@ -2321,7 +2324,6 @@ class Changelist(object):
           # Flush after every line: useful for seeing progress when running as
           # recipe.
           filter_fn=lambda _: sys.stdout.flush())
-      push_stdout = push_stdout.decode('utf-8', 'replace')
     except subprocess2.CalledProcessError as e:
       push_returncode = e.returncode
       DieWithError('Failed to create a change. Please examine output above '
@@ -2475,7 +2477,7 @@ class Changelist(object):
       parent = self._ComputeParent(remote, upstream_branch, custom_cl_base,
                                    options.force, change_desc)
       tree = RunGit(['rev-parse', 'HEAD:']).strip()
-      with tempfile.NamedTemporaryFile('w', delete=False) as desc_tempfile:
+      with tempfile.NamedTemporaryFile(delete=False) as desc_tempfile:
         desc_tempfile.write(change_desc.description)
         desc_tempfile.close()
         ref_to_push = RunGit(['commit-tree', tree, '-p', parent,
@@ -2526,7 +2528,7 @@ class Changelist(object):
     # Add cc's from the --cc flag.
     if options.cc:
       cc.extend(options.cc)
-    cc = [email.strip() for email in cc if email.strip()]
+    cc = filter(None, [email.strip() for email in cc])
     if change_desc.get_cced():
       cc.extend(change_desc.get_cced())
     if self._GetGerritHost() == 'chromium-review.googlesource.com':
@@ -2727,7 +2729,7 @@ class Changelist(object):
 
   def GetGerritChange(self, patchset=None):
     """Returns a buildbucket.v2.GerritChange message for the current issue."""
-    host = urllib.parse.urlparse(self.GetCodereviewServer()).hostname
+    host = urlparse.urlparse(self.GetCodereviewServer()).hostname
     issue = self.GetIssue()
     patchset = int(patchset or self.GetPatchset())
     data = self._GetChangeDetail(['ALL_REVISIONS'])
@@ -3191,7 +3193,7 @@ def urlretrieve(source, destination):
   This is necessary because urllib is broken for SSL connections via a proxy.
   """
   with open(destination, 'w') as f:
-    f.write(urllib.request.urlopen(source).read())
+    f.write(urllib_request.urlopen(source).read())
 
 
 def hasSheBang(fname):
@@ -3327,7 +3329,7 @@ class _GitCookiesChecker(object):
     if not hosts:
       print('No Git/Gerrit credentials found')
       return
-    lengths = [max(map(len, (row[i] for row in hosts))) for i in range(3)]
+    lengths = [max(map(len, (row[i] for row in hosts))) for i in xrange(3)]
     header = [('Host', 'User', 'Which file'),
               ['=' * l for l in lengths]]
     for row in (header + hosts):
@@ -3894,7 +3896,7 @@ def CMDstatus(parser, args):
   for cl in sorted(changes, key=lambda c: c.GetBranch()):
     branch = cl.GetBranch()
     while branch not in branch_statuses:
-      c, status = next(output)
+      c, status = output.next()
       branch_statuses[c.GetBranch()] = status
     status = branch_statuses.pop(branch)
     url = cl.GetIssueURL()
@@ -4079,10 +4081,10 @@ def CMDcomments(parser, args):
 
   if options.json_file:
     def pre_serialize(c):
-      dct = c._asdict().copy()
+      dct = c.__dict__.copy()
       dct['date'] = dct['date'].strftime('%Y-%m-%d %H:%M:%S.%f')
       return dct
-    write_json(options.json_file, [pre_serialize(x) for x in summary])
+    write_json(options.json_file, map(pre_serialize, summary))
   return 0
 
 
@@ -4664,7 +4666,7 @@ def GetTreeStatus(url=None):
   'unknown' or 'unset'."""
   url = url or settings.GetTreeStatusUrl(error_ok=True)
   if url:
-    status = urllib.request.urlopen(url).read().lower()
+    status = urllib_request.urlopen(url).read().lower()
     if status.find('closed') != -1 or status == '0':
       return 'closed'
     elif status.find('open') != -1 or status == '1':
@@ -4678,7 +4680,7 @@ def GetTreeStatusReason():
   with the reason for the tree to be opened or closed."""
   url = settings.GetTreeStatusUrl()
   json_url = urlparse.urljoin(url, '/current?format=json')
-  connection = urllib.request.urlopen(json_url)
+  connection = urllib_request.urlopen(json_url)
   status = json.loads(connection.read())
   connection.close()
   return status['message']
@@ -5444,7 +5446,7 @@ class OptionParser(optparse.OptionParser):
     # Store the options passed by the user in an _actual_options attribute.
     # We store only the keys, and not the values, since the values can contain
     # arbitrary information, which might be PII.
-    metrics.collector.add('arguments', list(actual_options.__dict__.keys()))
+    metrics.collector.add('arguments', actual_options.__dict__.keys())
 
     levels = [logging.WARNING, logging.INFO, logging.DEBUG]
     logging.basicConfig(
@@ -5467,7 +5469,7 @@ def main(argv):
     return dispatcher.execute(OptionParser(), argv)
   except auth.LoginRequiredError as e:
     DieWithError(str(e))
-  except urllib.error.HTTPError as e:
+  except urllib_error.HTTPError as e:
     if e.code != 500:
       raise
     DieWithError(
