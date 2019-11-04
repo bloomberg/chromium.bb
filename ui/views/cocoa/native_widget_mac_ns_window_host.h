@@ -15,7 +15,7 @@
 #include "components/remote_cocoa/browser/application_host.h"
 #include "components/remote_cocoa/common/native_widget_ns_window.mojom.h"
 #include "components/remote_cocoa/common/native_widget_ns_window_host.mojom.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "ui/accelerated_widget_mac/accelerated_widget_mac.h"
 #include "ui/base/cocoa/accessibility_focus_overrider.h"
@@ -483,8 +483,8 @@ class VIEWS_EXPORT NativeWidgetMacNSWindowHost
   // attached to |this|.
   std::map<const views::View*, NSView*> attached_native_view_host_views_;
 
-  mojo::AssociatedBinding<remote_cocoa::mojom::NativeWidgetNSWindowHost>
-      remote_ns_window_host_binding_;
+  mojo::AssociatedReceiver<remote_cocoa::mojom::NativeWidgetNSWindowHost>
+      remote_ns_window_host_receiver_{this};
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetMacNSWindowHost);
 };
 

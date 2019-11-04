@@ -14,7 +14,7 @@
 #include "components/remote_cocoa/app_shim/native_widget_ns_window_bridge.h"
 #include "components/remote_cocoa/browser/ns_view_ids.h"
 #include "components/remote_cocoa/browser/window.h"
-#include "mojo/public/cpp/bindings/strong_associated_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_associated_receiver.h"
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 #include "ui/base/cocoa/animation_utils.h"
 #include "ui/base/cocoa/remote_accessibility_api.h"
@@ -247,8 +247,7 @@ NativeWidgetMacNSWindowHost::NativeWidgetMacNSWindowHost(NativeWidgetMac* owner)
       native_widget_mac_(owner),
       root_view_id_(remote_cocoa::GetNewNSViewId()),
       accessibility_focus_overrider_(this),
-      text_input_host_(new TextInputHost(this)),
-      remote_ns_window_host_binding_(this) {
+      text_input_host_(new TextInputHost(this)) {
   DCHECK(GetIdToWidgetHostImplMap().find(widget_id_) ==
          GetIdToWidgetHostImplMap().end());
   GetIdToWidgetHostImplMap().emplace(widget_id_, this);
@@ -265,11 +264,12 @@ NativeWidgetMacNSWindowHost::~NativeWidgetMacNSWindowHost() {
   }
 
   // Workaround for https://crbug.com/915572
-  if (remote_ns_window_host_binding_.is_bound()) {
-    auto request = remote_ns_window_host_binding_.Unbind();
-    if (request.is_pending()) {
-      mojo::MakeStrongAssociatedBinding(
-          std::make_unique<BridgedNativeWidgetHostDummy>(), std::move(request));
+  if (remote_ns_window_host_receiver_.is_bound()) {
+    auto receiver = remote_ns_window_host_receiver_.Unbind();
+    if (receiver.is_valid()) {
+      mojo::MakeSelfOwnedAssociatedReceiver(
+          std::make_unique<BridgedNativeWidgetHostDummy>(),
+          std::move(receiver));
     }
   }
 
@@ -350,15 +350,13 @@ void NativeWidgetMacNSWindowHost::CreateRemoteNSWindow(
 
   // Initialize |remote_ns_window_remote_| to point to a bridge created by
   // |factory|.
-  remote_cocoa::mojom::NativeWidgetNSWindowHostAssociatedPtr host_ptr;
-  remote_ns_window_host_binding_.Bind(
-      mojo::MakeRequest(&host_ptr),
-      ui::WindowResizeHelperMac::Get()->task_runner());
   remote_cocoa::mojom::TextInputHostAssociatedPtr text_input_host_ptr;
   text_input_host_->BindRequest(mojo::MakeRequest(&text_input_host_ptr));
   application_host_->GetApplication()->CreateNativeWidgetNSWindow(
       widget_id_, remote_ns_window_remote_.BindNewEndpointAndPassReceiver(),
-      host_ptr.PassInterface(), text_input_host_ptr.PassInterface());
+      remote_ns_window_host_receiver_.BindNewEndpointAndPassRemote(
+          ui::WindowResizeHelperMac::Get()->task_runner()),
+      text_input_host_ptr.PassInterface());
 
   // Create the window in its process, and attach it to its parent window.
   GetNSWindowMojo()->CreateWindow(std::move(window_create_params));
