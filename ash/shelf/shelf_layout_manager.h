@@ -14,7 +14,6 @@
 #include "ash/public/cpp/wallpaper_controller_observer.h"
 #include "ash/session/session_observer.h"
 #include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_widget.h"
 #include "ash/shell_observer.h"
 #include "ash/system/locale/locale_update_controller_impl.h"
 #include "ash/wm/desks/desks_controller.h"
@@ -65,7 +64,6 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
                                       public ShellObserver,
                                       public SplitViewObserver,
                                       public OverviewObserver,
-                                      public HotseatWidget::Observer,
                                       public ::wm::ActivationChangeObserver,
                                       public LockStateObserver,
                                       public WmDefaultLayoutManager,
@@ -121,7 +119,7 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
   void ProcessGestureEventOfAutoHideShelf(ui::GestureEvent* event,
                                           aura::Window* target);
 
-  // Handles events that are detected while the hotseat is extended in in-app
+  // Handles events that are detected while the hotseat is kExtended in in-app
   // shelf.
   void ProcessGestureEventOfInAppHotseat(ui::GestureEvent* event,
                                          aura::Window* target);
@@ -189,9 +187,6 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
   void OnOverviewModeEndingAnimationComplete(bool canceled) override;
   void OnOverviewModeEnded() override;
 
-  // HotseatWidget::Observer:
-  void OnHotseatStateChanged() override;
-
   // AppListControllerObserver:
   void OnAppListVisibilityWillChange(bool shown, int64_t display_id) override;
   void OnAppListVisibilityChanged(bool shown, int64_t display_id) override;
@@ -237,9 +232,7 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
 
   bool updating_bounds() const { return updating_bounds_; }
   ShelfAutoHideState auto_hide_state() const { return state_.auto_hide_state; }
-  HotseatState hotseat_state() const {
-    return shelf_widget_->hotseat_widget()->state();
-  }
+  HotseatState hotseat_state() const { return state_.hotseat_state; }
 
   DragWindowFromShelfController* window_drag_controller_for_testing() {
     return window_drag_controller_.get();
