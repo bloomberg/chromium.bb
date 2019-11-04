@@ -25339,6 +25339,7 @@ Called by update_net_error_codes.py.-->
   <int value="3078" label="UpgradeInsecureRequestsUpgradedRequestWebsocket"/>
   <int value="3079" label="UpgradeInsecureRequestsUpgradedRequestForm"/>
   <int value="3080" label="UpgradeInsecureRequestsUpgradedRequestUnknown"/>
+  <int value="3081" label="HasGlyphRelativeUnits"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
