@@ -32,7 +32,7 @@ ThumbnailTabHelper::ThumbnailTabHelper(content::WebContents* contents)
       last_visibility_(web_contents()->GetVisibility()) {}
 
 ThumbnailTabHelper::~ThumbnailTabHelper() {
-  DCHECK(!video_capturer_);
+  StopVideoCapture();
 }
 
 void ThumbnailTabHelper::ThumbnailImageBeingObservedChanged(
@@ -136,14 +136,17 @@ void ThumbnailTabHelper::StartVideoCapture() {
 
 void ThumbnailTabHelper::StopVideoCapture() {
   if (video_capturer_) {
-    web_contents()->DecrementCapturerCount();
+    if (web_contents())
+      web_contents()->DecrementCapturerCount();
     video_capturer_->Stop();
     video_capturer_ = nullptr;
   }
 }
 
 content::RenderWidgetHostView* ThumbnailTabHelper::GetView() {
-  return web_contents()->GetRenderViewHost()->GetWidget()->GetView();
+  return web_contents()
+             ? web_contents()->GetRenderViewHost()->GetWidget()->GetView()
+             : nullptr;
 }
 
 void ThumbnailTabHelper::OnVisibilityChanged(content::Visibility visibility) {
