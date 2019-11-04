@@ -161,9 +161,10 @@ class OwnersFinder(object):
     self.selected_owners = set()
     self.deselected_owners = set()
 
-    # Initialize owners queue, sort it by the score
-    self.owners_queue = list(sorted(self.owners_to_files.keys(),
-                                    key=lambda owner: self.owners_score[owner]))
+    # Initialize owners queue, sort it by the score and name
+    self.owners_queue = sorted(
+        self.owners_to_files.keys(),
+        key=lambda owner: (self.owners_score[owner], owner))
     self.find_mandatory_owners()
 
   def select_owner(self, owner, findMandatoryOwners=True):
