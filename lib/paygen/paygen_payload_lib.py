@@ -60,8 +60,8 @@ class PayloadVerificationError(Error):
 class PaygenPayload(object):
   """Class to manage the process of generating and signing a payload."""
 
-  # 50 GB of cache.
-  CACHE_SIZE = 50 * 1024 * 1024 * 1024
+  # 250 GB of cache.
+  CACHE_SIZE = 250 * 1024 * 1024 * 1024
 
   # 10 minutes.
   _SEMAPHORE_TIMEOUT = 10 * 60
