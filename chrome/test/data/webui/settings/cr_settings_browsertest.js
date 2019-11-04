@@ -2274,7 +2274,14 @@ CrSettingsCrostiniPageTest.prototype = {
   ]),
 };
 
-TEST_F('CrSettingsCrostiniPageTest', 'All', function() {
+// Disabling on debug due to timeout.  https://crbug.com/1020318
+GEN('#if !defined(NDEBUG)');
+GEN('#define MAYBE_Crostini_All DISABLED_All');
+GEN('#else');
+GEN('#define MAYBE_Crostini_All All');
+GEN('#endif');
+
+TEST_F('CrSettingsCrostiniPageTest', 'MAYBE_Crostini_All', function() {
   mocha.run();
 });
 
