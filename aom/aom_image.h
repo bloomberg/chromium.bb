@@ -341,6 +341,7 @@ int aom_img_plane_height(const aom_image_t *img, int plane);
  *
  * Adds metadata to aom_image_t.
  * Function makes a copy of the provided data parameter.
+ * Currently, only ITUT T35 metadata support is implemented.
  *
  * \param[in]    img       Image descriptor
  * \param[in]    type      Metadata type

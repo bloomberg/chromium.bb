@@ -3795,6 +3795,62 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
   return total_size;
 }
 
+static uint32_t av1_write_itut_t35_metadata_obu(const aom_metadata_t *metadata,
+                                                uint8_t *const dst) {
+  size_t coded_metadata_size = 0;
+  const uint64_t metadata_type = (uint64_t)metadata->type;
+  if (aom_uleb_encode(metadata_type, sizeof(metadata_type), dst,
+                      &coded_metadata_size) != 0) {
+    return 0;
+  }
+  memcpy(dst + coded_metadata_size, metadata->payload, metadata->sz);
+  // Add trailing bits.
+  dst[coded_metadata_size + metadata->sz] = 0x80;
+  return (uint32_t)(coded_metadata_size + metadata->sz + 1);
+}
+
+// Only ITUT T35 metadata writing is currently implemented.
+static uint32_t av1_write_metadata_array(AV1_COMP *const cpi, uint8_t *dst) {
+  if (!cpi->source) return 0;
+  aom_metadata_array_t *arr = cpi->source->metadata;
+  if (!arr) return 0;
+  uint32_t obu_header_size = 0;
+  uint32_t obu_payload_size = 0;
+  uint32_t total_bytes_written = 0;
+  size_t length_field_size = 0;
+  for (size_t i = 0; i < arr->sz; i++) {
+    aom_metadata_t *current_metadata = arr->metadata_array[i];
+    if (current_metadata && current_metadata->payload) {
+      OBU_METADATA_TYPE type = (OBU_METADATA_TYPE)current_metadata->type;
+      switch (type) {
+        case OBU_METADATA_TYPE_ITUT_T35:
+          obu_header_size = av1_write_obu_header(cpi, OBU_METADATA, 0, dst);
+          obu_payload_size = av1_write_itut_t35_metadata_obu(
+              current_metadata, dst + obu_header_size);
+          length_field_size =
+              obu_memmove(obu_header_size, obu_payload_size, dst);
+          if (av1_write_uleb_obu_size(obu_header_size, obu_payload_size, dst) ==
+              AOM_CODEC_OK) {
+            dst += (size_t)(obu_header_size + obu_payload_size) +
+                   length_field_size;
+            total_bytes_written +=
+                obu_header_size + obu_payload_size + length_field_size;
+          } else {
+            aom_internal_error(&cpi->common.error, AOM_CODEC_ERROR,
+                               "Error writing metadata OBU size");
+          }
+          break;
+        default:
+          aom_internal_error(&cpi->common.error, AOM_CODEC_ERROR,
+                             "Writing of metadata type %u is not implemented",
+                             type);
+          break;
+      }
+    }
+  }
+  return total_bytes_written;
+}
+
 int av1_pack_bitstream(AV1_COMP *const cpi, uint8_t *dst, size_t *size,
                        int *const largest_tile_id) {
   uint8_t *data = dst;
@@ -3834,6 +3890,9 @@ int av1_pack_bitstream(AV1_COMP *const cpi, uint8_t *dst, size_t *size,
 
     data += obu_header_size + obu_payload_size + length_field_size;
   }
+
+  // write metadata obus before the frame obu that has the show_frame flag set
+  if (cm->show_frame) data += av1_write_metadata_array(cpi, data);
 
   const int write_frame_header =
       (cm->num_tg > 1 || encode_show_existing_frame(cm));
