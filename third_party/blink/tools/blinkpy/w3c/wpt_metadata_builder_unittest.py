@@ -102,6 +102,15 @@ class WPTMetadataBuilderTest(unittest.TestCase):
         self.assertIsNone(filename)
         self.assertIsNone(contents)
 
+    def test_wpt_test_without_manifest_entry(self):
+        """A WPT test that is not in the manifest should not get a baseline."""
+        test_name = "external/wpt/test-not-in-manifest.html"
+        expectations = _make_expectation(self.port, test_name, "SKIP")
+        metadata_builder = WPTMetadataBuilder(expectations, self.port)
+        filename, contents = metadata_builder.get_metadata_filename_and_contents(test_name, 'SKIP')
+        self.assertIsNone(filename)
+        self.assertIsNone(contents)
+
     def test_wpt_test_not_skipped(self):
         """A WPT test that is not skipped should not get a SKIP metadata."""
         test_name = "external/wpt/test.html"

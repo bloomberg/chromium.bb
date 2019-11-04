@@ -171,11 +171,11 @@ class WPTMetadataBuilder(object):
             # For individual tests, we create one file per test, with the name
             # of the test in the file as well. This name can contain variants.
             test_file_path = self.wpt_manifest.file_path_for_test_url(wpt_test_name)
-            test_file_parts = test_file_path.split("/")
-
             if not test_file_path:
                 _log.info("Could not find file for test %s, skipping" % wpt_test_name)
                 return None, None
+            test_file_parts = test_file_path.split("/")
+
             # Append `.ini` to the test filename to indicate it's the metadata
             # file. The `test_filename` can differ from the `wpt_test_name` for
             # multi-global tests.
