@@ -583,15 +583,17 @@ class GeneratePayloadsTest(cros_test_lib.MockTempDirTestCase):
     artifacts.GenerateQuickProvisionPayloads(self.target_image, self.tempdir)
 
     extract_kernel_mock.assert_called_once_with(
-        self.target_image, partial_mock.HasString('full_dev_part_KERN.bin'))
+        self.target_image, partial_mock.HasString('kernel.bin'))
     extract_root_mock.assert_called_once_with(
-        self.target_image, partial_mock.HasString('full_dev_part_ROOT.bin'),
+        self.target_image, partial_mock.HasString('rootfs.bin'),
         truncate=False)
 
-    calls = [mock.call(partial_mock.HasString('full_dev_part_KERN.bin'),
-                       partial_mock.HasString('full_dev_part_KERN.bin.gz')),
-             mock.call(partial_mock.HasString('full_dev_part_ROOT.bin'),
-                       partial_mock.HasString('full_dev_part_ROOT.bin.gz'))]
+    calls = [mock.call(partial_mock.HasString('kernel.bin'),
+                       partial_mock.HasString(
+                           constants.QUICK_PROVISION_PAYLOAD_KERNEL)),
+             mock.call(partial_mock.HasString('rootfs.bin'),
+                       partial_mock.HasString(
+                           constants.QUICK_PROVISION_PAYLOAD_ROOTFS))]
     compress_file_mock.assert_has_calls(calls)
 
 

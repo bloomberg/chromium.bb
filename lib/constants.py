@@ -1284,6 +1284,13 @@ PART_ROOT_B = 'ROOT-B'
 PART_KERN_A = 'KERN-A'
 PART_KERN_B = 'KERN-B'
 
+# Quick provision payloads. These file names should never be changed, otherwise
+# very bad things can happen :). The reason is we have already uploaded these
+# files with these names for all boards. So if the name changes, all scripts
+# that have been using this need to handle both cases to be backward compatible.
+QUICK_PROVISION_PAYLOAD_KERNEL = 'full_dev_part_KERN.bin.gz'
+QUICK_PROVISION_PAYLOAD_ROOTFS = 'full_dev_part_ROOT.bin.gz'
+
 # Mock build and stage IDs.
 MOCK_STAGE_ID = 313377
 MOCK_BUILD_ID = 31337

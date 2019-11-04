@@ -454,14 +454,18 @@ def GenerateQuickProvisionPayloads(target_image_path, archive_dir):
   payloads = []
   with osutils.TempDir() as temp_dir:
     # These partitions are mainly used by quick_provision.
+    kernel_part = 'kernel.bin'
+    rootfs_part = 'rootfs.bin'
     partition_lib.ExtractKernel(
-        target_image_path, os.path.join(temp_dir, 'full_dev_part_KERN.bin'))
+        target_image_path, os.path.join(temp_dir, kernel_part))
     partition_lib.ExtractRoot(target_image_path,
-                              os.path.join(temp_dir, 'full_dev_part_ROOT.bin'),
+                              os.path.join(temp_dir, rootfs_part),
                               truncate=False)
-    for partition in ('KERN', 'ROOT'):
-      source = os.path.join(temp_dir, 'full_dev_part_%s.bin' % partition)
-      dest = os.path.join(archive_dir, 'full_dev_part_%s.bin.gz' % partition)
+    for partition, payload in {
+        kernel_part: constants.QUICK_PROVISION_PAYLOAD_KERNEL,
+        rootfs_part: constants.QUICK_PROVISION_PAYLOAD_ROOTFS}.items():
+      source = os.path.join(temp_dir, partition)
+      dest = os.path.join(archive_dir, payload)
       cros_build_lib.CompressFile(source, dest)
       payloads.append(dest)
 

@@ -422,6 +422,8 @@ def PushImage(src_path, board, versionrev=None, profile=None, priority=50,
         (hwqual_tarball, None, None),
         ('stateful.tgz', None, None),
         ('dlc', None, None),
+        (constants.QUICK_PROVISION_PAYLOAD_KERNEL, None, None),
+        (constants.QUICK_PROVISION_PAYLOAD_ROOTFS, None, None),
     )
 
     # The following build artifacts, if present, are always copied.
