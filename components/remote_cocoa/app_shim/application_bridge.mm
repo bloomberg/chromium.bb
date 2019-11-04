@@ -27,13 +27,15 @@ class NativeWidgetBridgeOwner : public NativeWidgetNSWindowHostHelper {
           bridge_receiver,
       mojo::PendingAssociatedRemote<mojom::NativeWidgetNSWindowHost>
           host_remote,
-      mojom::TextInputHostAssociatedPtrInfo text_input_host_ptr) {
+      mojo::PendingAssociatedRemote<mojom::TextInputHost>
+          text_input_host_remote) {
     host_remote_.Bind(std::move(host_remote),
                       ui::WindowResizeHelperMac::Get()->task_runner());
-    text_input_host_ptr_.Bind(std::move(text_input_host_ptr),
-                              ui::WindowResizeHelperMac::Get()->task_runner());
+    text_input_host_remote_.Bind(
+        std::move(text_input_host_remote),
+        ui::WindowResizeHelperMac::Get()->task_runner());
     bridge_ = std::make_unique<NativeWidgetNSWindowBridge>(
-        bridge_id, host_remote_.get(), this, text_input_host_ptr_.get());
+        bridge_id, host_remote_.get(), this, text_input_host_remote_.get());
     bridge_->BindReceiver(
         std::move(bridge_receiver),
         base::BindOnce(&NativeWidgetBridgeOwner::OnMojoDisconnect,
@@ -91,7 +93,7 @@ class NativeWidgetBridgeOwner : public NativeWidgetNSWindowHostHelper {
   }
 
   mojo::AssociatedRemote<mojom::NativeWidgetNSWindowHost> host_remote_;
-  mojom::TextInputHostAssociatedPtr text_input_host_ptr_;
+  mojo::AssociatedRemote<mojom::TextInputHost> text_input_host_remote_;
 
   std::unique_ptr<NativeWidgetNSWindowBridge> bridge_;
   base::scoped_nsobject<NSAccessibilityRemoteUIElement>
@@ -137,7 +139,7 @@ void ApplicationBridge::CreateNativeWidgetNSWindow(
     mojo::PendingAssociatedReceiver<mojom::NativeWidgetNSWindow>
         bridge_receiver,
     mojo::PendingAssociatedRemote<mojom::NativeWidgetNSWindowHost> host,
-    mojom::TextInputHostAssociatedPtrInfo text_input_host) {
+    mojo::PendingAssociatedRemote<mojom::TextInputHost> text_input_host) {
   // The resulting object will be destroyed when its message pipe is closed.
   ignore_result(
       new NativeWidgetBridgeOwner(bridge_id, std::move(bridge_receiver),

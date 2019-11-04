@@ -350,13 +350,15 @@ void NativeWidgetMacNSWindowHost::CreateRemoteNSWindow(
 
   // Initialize |remote_ns_window_remote_| to point to a bridge created by
   // |factory|.
-  remote_cocoa::mojom::TextInputHostAssociatedPtr text_input_host_ptr;
-  text_input_host_->BindRequest(mojo::MakeRequest(&text_input_host_ptr));
+  mojo::PendingAssociatedRemote<remote_cocoa::mojom::TextInputHost>
+      text_input_host_remote;
+  text_input_host_->BindReceiver(
+      text_input_host_remote.InitWithNewEndpointAndPassReceiver());
   application_host_->GetApplication()->CreateNativeWidgetNSWindow(
       widget_id_, remote_ns_window_remote_.BindNewEndpointAndPassReceiver(),
       remote_ns_window_host_receiver_.BindNewEndpointAndPassRemote(
           ui::WindowResizeHelperMac::Get()->task_runner()),
-      text_input_host_ptr.PassInterface());
+      std::move(text_input_host_remote));
 
   // Create the window in its process, and attach it to its parent window.
   GetNSWindowMojo()->CreateWindow(std::move(window_create_params));

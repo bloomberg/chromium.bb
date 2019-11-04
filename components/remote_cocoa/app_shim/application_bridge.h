@@ -53,7 +53,8 @@ class REMOTE_COCOA_APP_SHIM_EXPORT ApplicationBridge
       mojo::PendingAssociatedReceiver<mojom::NativeWidgetNSWindow>
           bridge_receiver,
       mojo::PendingAssociatedRemote<mojom::NativeWidgetNSWindowHost> host,
-      mojom::TextInputHostAssociatedPtrInfo text_input_host) override;
+      mojo::PendingAssociatedRemote<mojom::TextInputHost> text_input_host)
+      override;
   void CreateRenderWidgetHostNSView(
       mojom::StubInterfaceAssociatedPtrInfo host,
       mojom::StubInterfaceAssociatedRequest view_request) override;
