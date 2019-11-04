@@ -116,9 +116,7 @@ class PLATFORM_EXPORT ScrollbarThemeMac : public ScrollbarTheme {
 
   int TickmarkBorderWidth() override { return 1; }
 
-  void PaintTrackBackground(GraphicsContext&,
-                            const Scrollbar&,
-                            const IntRect&) override;
+  void PaintTrack(GraphicsContext&, const Scrollbar&, const IntRect&) override;
   void PaintThumbInternal(GraphicsContext&,
                           const Scrollbar&,
                           const IntRect&,

@@ -247,9 +247,9 @@ ScrollbarPainter ScrollbarThemeMac::PainterForScrollbar(
       [GetScrollbarPainterMap().at(const_cast<Scrollbar*>(&scrollbar)) painter];
 }
 
-void ScrollbarThemeMac::PaintTrackBackground(GraphicsContext& context,
-                                             const Scrollbar& scrollbar,
-                                             const IntRect& rect) {
+void ScrollbarThemeMac::PaintTrack(GraphicsContext& context,
+                                   const Scrollbar& scrollbar,
+                                   const IntRect& rect) {
   GraphicsContextStateSaver state_saver(context);
   context.Translate(rect.X(), rect.Y());
   LocalCurrentGraphicsContext local_context(context,

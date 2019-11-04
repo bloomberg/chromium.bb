@@ -1633,10 +1633,7 @@ TEST_P(ScrollbarAppearanceTest, NativeScrollbarChangeToMobileByEmulator) {
 
   // Ensure div scrollbar also change to mobile overlay theme.
   EXPECT_TRUE(div_scrollable->VerticalScrollbar()->IsOverlayScrollbar());
-
-  ScrollbarThemeOverlay& theme =
-      (ScrollbarThemeOverlay&)div_scrollable->VerticalScrollbar()->GetTheme();
-  EXPECT_TRUE(theme.IsMobileTheme());
+  EXPECT_TRUE(div_scrollable->VerticalScrollbar()->IsSolidColor());
 
   // Turn off mobile emulator.
   WebView().DisableDeviceEmulation();
