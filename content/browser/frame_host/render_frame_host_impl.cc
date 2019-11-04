@@ -7660,7 +7660,9 @@ void RenderFrameHostImpl::AddMessageToConsoleImpl(
 
 void RenderFrameHostImpl::AddSameSiteCookieDeprecationMessage(
     const std::string& cookie_url,
-    net::CanonicalCookie::CookieInclusionStatus::WarningReason warning) {
+    net::CanonicalCookie::CookieInclusionStatus::WarningReason warning,
+    bool is_lax_by_default_enabled,
+    bool is_none_requires_secure_enabled) {
   std::string deprecation_message;
   if (warning == net::CanonicalCookie::CookieInclusionStatus::WarningReason::
                      WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT) {
@@ -7668,10 +7670,15 @@ void RenderFrameHostImpl::AddSameSiteCookieDeprecationMessage(
             cookie_url, &cookie_no_samesite_deprecation_url_hashes_)) {
       return;
     }
+    std::string warning_or_blocked_message =
+        (is_lax_by_default_enabled
+             ? "It has been blocked, as Chrome now only delivers "
+             : "A future release of Chrome will only deliver ");
     deprecation_message =
         "A cookie associated with a cross-site resource at " + cookie_url +
-        " was set without the `SameSite` attribute. "
-        "A future release of Chrome will only deliver cookies with "
+        " was set without the `SameSite` attribute. " +
+        warning_or_blocked_message +
+        "cookies with "
         "cross-site requests if they are set with `SameSite=None` and "
         "`Secure`. You can review cookies in developer tools under "
         "Application>Storage>Cookies and see more details at "
@@ -7684,10 +7691,15 @@ void RenderFrameHostImpl::AddSameSiteCookieDeprecationMessage(
             &cookie_samesite_none_insecure_deprecation_url_hashes_)) {
       return;
     }
+    std::string warning_or_blocked_message =
+        (is_none_requires_secure_enabled
+             ? "It has been blocked, as Chrome now only delivers "
+             : "A future release of Chrome will only deliver ");
     deprecation_message =
         "A cookie associated with a resource at " + cookie_url +
-        " was set with `SameSite=None` but without `Secure`. "
-        "A future release of Chrome will only deliver cookies marked "
+        " was set with `SameSite=None` but without `Secure`. " +
+        warning_or_blocked_message +
+        "cookies marked "
         "`SameSite=None` if they are also marked `Secure`. You "
         "can review cookies in developer tools under "
         "Application>Storage>Cookies and see more details at "
