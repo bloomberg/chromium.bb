@@ -110,6 +110,8 @@ static_library("test_support") {
     "base/chrome_unit_test_suite.h",
     "base/find_result_waiter.cc",
     "base/find_result_waiter.h",
+    "base/launchservices_utils_mac.h",
+    "base/launchservices_utils_mac.mm",
     "base/process_inspector_win.cc",
     "base/process_inspector_win.h",
     "base/process_lineage_win.cc",
