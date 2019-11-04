@@ -322,7 +322,7 @@ def main(argv):
   opts = ParseArgs(argv)
 
   sysroot = opts.sysroot or cros_build_lib.GetSysroot(opts.board)
-  deps_list, = ExtractDeps(sysroot, opts.pkgs, opts.format)
+  deps_list, _ = ExtractDeps(sysroot, opts.pkgs, opts.format)
 
   deps_output = json.dumps(deps_list, sort_keys=True, indent=2)
   if opts.output_path:
