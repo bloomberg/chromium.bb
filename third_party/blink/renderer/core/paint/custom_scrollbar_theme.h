@@ -49,6 +49,7 @@ class CustomScrollbarTheme final : public ScrollbarTheme {
   }
 
   void PaintScrollCorner(GraphicsContext&,
+                         const Scrollbar* vertical_scrollbar,
                          const DisplayItemClient&,
                          const IntRect& corner_rect,
                          WebColorScheme color_scheme) override;

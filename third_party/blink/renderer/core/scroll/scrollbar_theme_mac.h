@@ -101,7 +101,6 @@ class PLATFORM_EXPORT ScrollbarThemeMac : public ScrollbarTheme {
 
   bool ShouldDragDocumentInsteadOfThumb(const Scrollbar&,
                                         const WebMouseEvent&) override;
-  int ScrollbarPartToHIPressedState(ScrollbarPart);
 
   virtual void UpdateButtonPlacement(WebScrollbarButtonsPlacement) {}
 
@@ -117,6 +116,11 @@ class PLATFORM_EXPORT ScrollbarThemeMac : public ScrollbarTheme {
   int TickmarkBorderWidth() override { return 1; }
 
   void PaintTrack(GraphicsContext&, const Scrollbar&, const IntRect&) override;
+  void PaintScrollCorner(GraphicsContext&,
+                         const Scrollbar* vertical_scrollbar,
+                         const DisplayItemClient&,
+                         const IntRect& corner_rect,
+                         WebColorScheme color_scheme) override;
   void PaintThumbInternal(GraphicsContext&,
                           const Scrollbar&,
                           const IntRect&,

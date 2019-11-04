@@ -96,6 +96,7 @@ class CORE_EXPORT ScrollbarTheme {
   }
 
   virtual void PaintScrollCorner(GraphicsContext&,
+                                 const Scrollbar* vertical_scrollbar,
                                  const DisplayItemClient&,
                                  const IntRect& corner_rect,
                                  WebColorScheme color_scheme);

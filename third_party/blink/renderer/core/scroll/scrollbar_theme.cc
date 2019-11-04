@@ -114,6 +114,7 @@ ScrollbarPart ScrollbarTheme::HitTest(const Scrollbar& scrollbar,
 
 void ScrollbarTheme::PaintScrollCorner(
     GraphicsContext& context,
+    const Scrollbar* vertical_scrollbar,
     const DisplayItemClient& display_item_client,
     const IntRect& corner_rect,
     WebColorScheme color_scheme) {
