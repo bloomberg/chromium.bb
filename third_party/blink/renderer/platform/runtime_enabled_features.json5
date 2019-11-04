@@ -341,6 +341,10 @@
       status: {"Android": "experimental", "default": "test"},
     },
     {
+      name: "ContactsManagerIcons",
+      status: {"Android": "experimental", "default": "test"},
+    },
+    {
       name: "ContentIndex",
       status: "experimental",
     },
