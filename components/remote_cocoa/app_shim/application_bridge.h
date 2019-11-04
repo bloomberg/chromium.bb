@@ -11,6 +11,7 @@
 #include "components/remote_cocoa/common/native_widget_ns_window.mojom.h"
 #include "components/remote_cocoa/common/native_widget_ns_window_host.mojom.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 
@@ -48,7 +49,8 @@ class REMOTE_COCOA_APP_SHIM_EXPORT ApplicationBridge
                       mojo::PendingRemote<mojom::ColorPanelHost> host) override;
   void CreateNativeWidgetNSWindow(
       uint64_t bridge_id,
-      mojom::NativeWidgetNSWindowAssociatedRequest bridge_request,
+      mojo::PendingAssociatedReceiver<mojom::NativeWidgetNSWindow>
+          bridge_receiver,
       mojom::NativeWidgetNSWindowHostAssociatedPtrInfo host,
       mojom::TextInputHostAssociatedPtrInfo text_input_host) override;
   void CreateRenderWidgetHostNSView(

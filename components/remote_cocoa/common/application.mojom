@@ -37,7 +37,7 @@ interface Application {
   // the bridge.
   CreateNativeWidgetNSWindow(
       uint64 bridge_id,
-      associated NativeWidgetNSWindow& window_request,
+      pending_associated_receiver<NativeWidgetNSWindow> window_receiver,
       associated NativeWidgetNSWindowHost host,
       associated TextInputHost text_input_host);
 

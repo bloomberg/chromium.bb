@@ -22,7 +22,8 @@ class NativeWidgetBridgeOwner : public NativeWidgetNSWindowHostHelper {
  public:
   NativeWidgetBridgeOwner(
       uint64_t bridge_id,
-      mojom::NativeWidgetNSWindowAssociatedRequest bridge_request,
+      mojo::PendingAssociatedReceiver<mojom::NativeWidgetNSWindow>
+          bridge_receiver,
       mojom::NativeWidgetNSWindowHostAssociatedPtrInfo host_ptr,
       mojom::TextInputHostAssociatedPtrInfo text_input_host_ptr) {
     host_ptr_.Bind(std::move(host_ptr),
@@ -31,16 +32,16 @@ class NativeWidgetBridgeOwner : public NativeWidgetNSWindowHostHelper {
                               ui::WindowResizeHelperMac::Get()->task_runner());
     bridge_ = std::make_unique<NativeWidgetNSWindowBridge>(
         bridge_id, host_ptr_.get(), this, text_input_host_ptr_.get());
-    bridge_->BindRequest(
-        std::move(bridge_request),
-        base::BindOnce(&NativeWidgetBridgeOwner::OnConnectionError,
+    bridge_->BindReceiver(
+        std::move(bridge_receiver),
+        base::BindOnce(&NativeWidgetBridgeOwner::OnMojoDisconnect,
                        base::Unretained(this)));
   }
 
  private:
   ~NativeWidgetBridgeOwner() override {}
 
-  void OnConnectionError() { delete this; }
+  void OnMojoDisconnect() { delete this; }
 
   // NativeWidgetNSWindowHostHelper:
   id GetNativeViewAccessible() override {
@@ -131,12 +132,13 @@ void ApplicationBridge::ShowColorPanel(
 
 void ApplicationBridge::CreateNativeWidgetNSWindow(
     uint64_t bridge_id,
-    mojom::NativeWidgetNSWindowAssociatedRequest bridge_request,
+    mojo::PendingAssociatedReceiver<mojom::NativeWidgetNSWindow>
+        bridge_receiver,
     mojom::NativeWidgetNSWindowHostAssociatedPtrInfo host,
     mojom::TextInputHostAssociatedPtrInfo text_input_host) {
   // The resulting object will be destroyed when its message pipe is closed.
   ignore_result(
-      new NativeWidgetBridgeOwner(bridge_id, std::move(bridge_request),
+      new NativeWidgetBridgeOwner(bridge_id, std::move(bridge_receiver),
                                   std::move(host), std::move(text_input_host)));
 }
 

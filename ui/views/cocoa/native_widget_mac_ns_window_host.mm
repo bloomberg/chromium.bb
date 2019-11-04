@@ -259,7 +259,7 @@ NativeWidgetMacNSWindowHost::~NativeWidgetMacNSWindowHost() {
   DCHECK(children_.empty());
   native_window_mapping_.reset();
   if (application_host_) {
-    remote_ns_window_ptr_.reset();
+    remote_ns_window_remote_.reset();
     application_host_->RemoveObserver(this);
     application_host_ = nullptr;
   }
@@ -309,8 +309,8 @@ NativeWidgetMacNSWindowHost::GetNativeViewAccessibleForNSWindow() const {
 
 remote_cocoa::mojom::NativeWidgetNSWindow*
 NativeWidgetMacNSWindowHost::GetNSWindowMojo() const {
-  if (remote_ns_window_ptr_)
-    return remote_ns_window_ptr_.get();
+  if (remote_ns_window_remote_)
+    return remote_ns_window_remote_.get();
   if (in_process_ns_window_bridge_)
     return in_process_ns_window_bridge_.get();
   return nullptr;
@@ -348,7 +348,7 @@ void NativeWidgetMacNSWindowHost::CreateRemoteNSWindow(
             root_view_id_, [in_process_ns_window_ contentView]);
   }
 
-  // Initialize |remote_ns_window_ptr_| to point to a bridge created by
+  // Initialize |remote_ns_window_remote_| to point to a bridge created by
   // |factory|.
   remote_cocoa::mojom::NativeWidgetNSWindowHostAssociatedPtr host_ptr;
   remote_ns_window_host_binding_.Bind(
@@ -357,7 +357,7 @@ void NativeWidgetMacNSWindowHost::CreateRemoteNSWindow(
   remote_cocoa::mojom::TextInputHostAssociatedPtr text_input_host_ptr;
   text_input_host_->BindRequest(mojo::MakeRequest(&text_input_host_ptr));
   application_host_->GetApplication()->CreateNativeWidgetNSWindow(
-      widget_id_, mojo::MakeRequest(&remote_ns_window_ptr_),
+      widget_id_, remote_ns_window_remote_.BindNewEndpointAndPassReceiver(),
       host_ptr.PassInterface(), text_input_host_ptr.PassInterface());
 
   // Create the window in its process, and attach it to its parent window.
@@ -464,7 +464,7 @@ void NativeWidgetMacNSWindowHost::SetBounds(const gfx::Rect& bounds) {
   GetNSWindowMojo()->SetBounds(
       bounds, native_widget_mac_->GetWidget()->GetMinimumSize());
 
-  if (remote_ns_window_ptr_) {
+  if (remote_ns_window_remote_) {
     gfx::Rect window_in_screen =
         gfx::ScreenRectFromNSRect([in_process_ns_window_ frame]);
     gfx::Rect content_in_screen =
@@ -734,7 +734,7 @@ void NativeWidgetMacNSWindowHost::GetAttachedNativeViewHostViewsRecursive(
 
 void NativeWidgetMacNSWindowHost::UpdateLocalWindowFrame(
     const gfx::Rect& frame) {
-  if (!remote_ns_window_ptr_)
+  if (!remote_ns_window_remote_)
     return;
   [in_process_ns_window_ setFrame:gfx::ScreenRectToNSRect(frame)
                           display:NO
