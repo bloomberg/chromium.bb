@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_PROCESSED_LOCAL_AUDIO_SOURCE_H_
-#define THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_PROCESSED_LOCAL_AUDIO_SOURCE_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_PROCESSED_LOCAL_AUDIO_SOURCE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_PROCESSED_LOCAL_AUDIO_SOURCE_H_
 
 #include <string>
 
 #include "base/atomicops.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/synchronization/lock.h"
 #include "media/base/audio_capturer_source.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_level_calculator.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_processor_options.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
-#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/webrtc/api/media_stream_interface.h"
 
 namespace media {
@@ -25,9 +25,6 @@ class AudioProcessorControls;
 }  // namespace media
 
 namespace blink {
-
-// TODO(crbug.com/704136): Move this class out of the Blink exposed
-// API when all users of it have been Onion souped.
 
 class AudioServiceAudioProcessorProxy;
 class MediaStreamAudioProcessor;
@@ -39,7 +36,7 @@ class WebLocalFrame;
 // video conferencing call). Owns a media::AudioCapturerSource and the
 // MediaStreamProcessor that modifies its audio. Modified audio is delivered to
 // one or more MediaStreamAudioTracks.
-class BLINK_MODULES_EXPORT ProcessedLocalAudioSource final
+class MODULES_EXPORT ProcessedLocalAudioSource final
     : public blink::MediaStreamAudioSource,
       public media::AudioCapturerSource::CaptureCallback {
  public:

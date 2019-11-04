@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_MEDIA_STREAM_CONSTRAINTS_UTIL_SETS_H_
-#define THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_MEDIA_STREAM_CONSTRAINTS_UTIL_SETS_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_MEDIA_STREAM_CONSTRAINTS_UTIL_SETS_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_MEDIA_STREAM_CONSTRAINTS_UTIL_SETS_H_
 
 #include <algorithm>
 #include <limits>
@@ -14,8 +14,8 @@
 #include "base/gtest_prod_util.h"
 #include "base/logging.h"
 #include "base/optional.h"
-#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
 
 namespace blink {
 
@@ -217,25 +217,23 @@ inline bool DiscreteSet<bool>::is_universal() const {
   return Contains(true) && Contains(false);
 }
 
-// TODO(crbug.com/704136): Remove BLINK_MODULES_EXPORT when this file is moved
-// out of blink/public/platform.
-BLINK_MODULES_EXPORT DiscreteSet<std::string> StringSetFromConstraint(
+MODULES_EXPORT DiscreteSet<std::string> StringSetFromConstraint(
     const StringConstraint& constraint);
-BLINK_MODULES_EXPORT DiscreteSet<bool> BoolSetFromConstraint(
+MODULES_EXPORT DiscreteSet<bool> BoolSetFromConstraint(
     const BooleanConstraint& constraint);
 
 // This class represents a set of (height, width) screen resolution candidates
 // determined by width, height and aspect-ratio constraints.
 // This class supports widths and heights from 0 to kMaxDimension, both
 // inclusive and aspect ratios from 0.0 to positive infinity, both inclusive.
-class BLINK_MODULES_EXPORT ResolutionSet {
+class MODULES_EXPORT ResolutionSet {
  public:
   static const int kMaxDimension = std::numeric_limits<int>::max();
 
   // Helper class that represents (height, width) points on a plane.
   // TODO(guidou): Use a generic point/vector class that uses double once it
   // becomes available (e.g., a gfx::Vector2dD).
-  class BLINK_MODULES_EXPORT Point {
+  class MODULES_EXPORT Point {
    public:
     // Creates a (|height|, |width|) point. |height| and |width| must be finite.
     Point(double height, double width);
@@ -445,9 +443,8 @@ class BLINK_MODULES_EXPORT ResolutionSet {
 };
 
 // Scalar multiplication for Points.
-BLINK_MODULES_EXPORT ResolutionSet::Point operator*(
-    double d,
-    const ResolutionSet::Point& p);
+MODULES_EXPORT ResolutionSet::Point operator*(double d,
+                                              const ResolutionSet::Point& p);
 
 // This function returns a set of bools from a resizeMode StringConstraint.
 // If |resize_mode_constraint| includes
@@ -455,10 +452,10 @@ BLINK_MODULES_EXPORT ResolutionSet::Point operator*(
 // returned value. If |resize_mode_constraint| includes
 // WebMediaStreamTrack::kResizeModeRescale, true is included in the
 // returned value.
-BLINK_MODULES_EXPORT DiscreteSet<bool> RescaleSetFromConstraint(
+MODULES_EXPORT DiscreteSet<bool> RescaleSetFromConstraint(
     const StringConstraint& resize_mode_constraint);
 
 }  // namespace media_constraints
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_MEDIA_STREAM_CONSTRAINTS_UTIL_SETS_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_MEDIA_STREAM_CONSTRAINTS_UTIL_SETS_H_

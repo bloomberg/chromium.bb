@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_REMOTE_MEDIA_STREAM_TRACK_ADAPTER_H_
-#define THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_REMOTE_MEDIA_STREAM_TRACK_ADAPTER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_REMOTE_MEDIA_STREAM_TRACK_ADAPTER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_REMOTE_MEDIA_STREAM_TRACK_ADAPTER_H_
 
 #include "base/callback.h"
 #include "base/logging.h"
-#include "base/memory/ref_counted.h"
-#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 #include "third_party/webrtc/api/media_stream_interface.h"
 
 namespace base {
@@ -25,12 +25,9 @@ class TrackObserver;
 // Base class used for mapping between webrtc and blink MediaStream tracks.
 // RemoteMediaStreamImpl has a RemoteMediaStreamTrackAdapter per remote audio
 // (RemoteAudioTrackAdapter) and video (RemoteVideoTrackAdapter) track.
-//
-// TODO(crbug.com/704136): Move these classes out of the Blink exposed API
-// when all users of it have been Onion souped.
 template <typename WebRtcMediaStreamTrackType>
-class BLINK_MODULES_EXPORT RemoteMediaStreamTrackAdapter
-    : public base::RefCountedThreadSafe<
+class MODULES_EXPORT RemoteMediaStreamTrackAdapter
+    : public WTF::ThreadSafeRefCounted<
           RemoteMediaStreamTrackAdapter<WebRtcMediaStreamTrackType>> {
  public:
   RemoteMediaStreamTrackAdapter(
@@ -65,7 +62,7 @@ class BLINK_MODULES_EXPORT RemoteMediaStreamTrackAdapter
   }
 
  protected:
-  friend class base::RefCountedThreadSafe<
+  friend class WTF::ThreadSafeRefCounted<
       RemoteMediaStreamTrackAdapter<WebRtcMediaStreamTrackType>>;
 
   virtual ~RemoteMediaStreamTrackAdapter() {
@@ -99,7 +96,7 @@ class BLINK_MODULES_EXPORT RemoteMediaStreamTrackAdapter
   DISALLOW_COPY_AND_ASSIGN(RemoteMediaStreamTrackAdapter);
 };
 
-class BLINK_MODULES_EXPORT RemoteVideoTrackAdapter
+class MODULES_EXPORT RemoteVideoTrackAdapter
     : public RemoteMediaStreamTrackAdapter<webrtc::VideoTrackInterface> {
  public:
   // Called on the signaling thread.
@@ -118,7 +115,7 @@ class BLINK_MODULES_EXPORT RemoteVideoTrackAdapter
 // RemoteAudioTrackAdapter is responsible for listening on state
 // change notifications on a remote webrtc audio MediaStreamTracks and notify
 // Blink.
-class BLINK_MODULES_EXPORT RemoteAudioTrackAdapter
+class MODULES_EXPORT RemoteAudioTrackAdapter
     : public RemoteMediaStreamTrackAdapter<webrtc::AudioTrackInterface>,
       public webrtc::ObserverInterface {
  public:
@@ -153,4 +150,4 @@ class BLINK_MODULES_EXPORT RemoteAudioTrackAdapter
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_REMOTE_MEDIA_STREAM_TRACK_ADAPTER_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_REMOTE_MEDIA_STREAM_TRACK_ADAPTER_H_

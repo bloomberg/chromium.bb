@@ -97,22 +97,12 @@ source_set("test_headers") {
     "platform/scheduler/test/renderer_scheduler_test_support.h",
     "platform/scheduler/test/web_fake_thread_scheduler.h",
     "platform/scheduler/test/web_mock_thread_scheduler.h",
-
-    # TODO(crbug.com/704136): Remove the group of mock_media_*.h
-    # files below when content/renderer/media/stream Onion souping
-    # is done.
-    "web/modules/mediastream/mock_media_stream_registry.h",
-    "web/modules/mediastream/mock_media_stream_video_sink.h",
-    "web/modules/mediastream/mock_media_stream_video_source.h",
   ]
   deps = [
     ":blink_headers",
     "//base:base",
     "//cc:cc",
     "//testing/gmock:gmock",
-    "//third_party/webrtc/api:libjingle_peerconnection_api",
-    "//third_party/webrtc/api:media_stream_interface",
-    "//third_party/webrtc/api:rtc_stats_api",
   ]
 }
 
@@ -348,14 +338,9 @@ source_set("blink_headers") {
     "web/mac/web_substring_util.h",
     "web/modules/autofill/web_form_element_observer.h",
     "web/modules/media/webmediaplayer_util.h",
-    "web/modules/mediastream/media_stream_constraints_util.h",
-    "web/modules/mediastream/media_stream_constraints_util_sets.h",
     "web/modules/mediastream/media_stream_video_sink.h",
     "web/modules/mediastream/media_stream_video_source.h",
     "web/modules/mediastream/media_stream_video_track.h",
-    "web/modules/mediastream/processed_local_audio_source.h",
-    "web/modules/mediastream/remote_media_stream_track_adapter.h",
-    "web/modules/mediastream/video_track_adapter_settings.h",
     "web/modules/mediastream/web_media_stream_device_observer.h",
     "web/modules/mediastream/web_media_stream_renderer_factory.h",
     "web/modules/mediastream/web_media_stream_utils.h",

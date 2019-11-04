@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_VIDEO_TRACK_ADAPTER_SETTINGS_H_
-#define THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_VIDEO_TRACK_ADAPTER_SETTINGS_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_VIDEO_TRACK_ADAPTER_SETTINGS_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_VIDEO_TRACK_ADAPTER_SETTINGS_H_
 
 #include <stdint.h>
 
 #include "base/macros.h"
 #include "base/optional.h"
-#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace blink {
 
-class BLINK_MODULES_EXPORT VideoTrackAdapterSettings {
+class MODULES_EXPORT VideoTrackAdapterSettings {
  public:
   // Creates a VideoTrackAdapterSettings with no target resolution or frame rate
   // and without any constraints on the resolution.
@@ -62,4 +62,4 @@ class BLINK_MODULES_EXPORT VideoTrackAdapterSettings {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_VIDEO_TRACK_ADAPTER_SETTINGS_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_VIDEO_TRACK_ADAPTER_SETTINGS_H_

@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_MEDIA_STREAM_CONSTRAINTS_UTIL_H_
-#define THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_MEDIA_STREAM_CONSTRAINTS_UTIL_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_MEDIA_STREAM_CONSTRAINTS_UTIL_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_MEDIA_STREAM_CONSTRAINTS_UTIL_H_
 
 #include <string>
 
 #include "media/base/video_facing.h"
 #include "media/capture/video_capture_types.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_processor_options.h"
-#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
-#include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util_sets.h"
-#include "third_party/blink/public/web/modules/mediastream/video_track_adapter_settings.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_constraints_util_sets.h"
+#include "third_party/blink/renderer/modules/mediastream/video_track_adapter_settings.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
 
 namespace blink {
 
@@ -52,7 +52,7 @@ extern const double kMinDeviceCaptureFrameRate;
 // If SelectSettings fails, the HasValue() method returns false and
 // failed_constraint_name() returns the name of one of the (possibly multiple)
 // constraints that could not be satisfied.
-class BLINK_MODULES_EXPORT VideoCaptureSettings {
+class MODULES_EXPORT VideoCaptureSettings {
  public:
   // Creates an object without value and with an empty failed constraint name.
   VideoCaptureSettings();
@@ -162,7 +162,7 @@ class BLINK_MODULES_EXPORT VideoCaptureSettings {
 // If SelectSettings fails, the HasValue() method returns false and
 // failed_constraint_name() returns the name of one of the (possibly multiple)
 // constraints that could not be satisfied.
-class BLINK_MODULES_EXPORT AudioCaptureSettings {
+class MODULES_EXPORT AudioCaptureSettings {
  public:
   enum class ProcessingType {
     // System echo cancellation can be enabled, but all other processing is
@@ -239,7 +239,7 @@ class BLINK_MODULES_EXPORT AudioCaptureSettings {
 // Method to get boolean value of constraint with |name| from constraints.
 // Returns true if the constraint is specified in either mandatory or optional
 // constraints.
-BLINK_MODULES_EXPORT bool GetConstraintValueAsBoolean(
+MODULES_EXPORT bool GetConstraintValueAsBoolean(
     const blink::WebMediaConstraints& constraints,
     const blink::BooleanConstraint blink::WebMediaTrackConstraintSet::*picker,
     bool* value);
@@ -247,17 +247,17 @@ BLINK_MODULES_EXPORT bool GetConstraintValueAsBoolean(
 // Method to get int value of constraint with |name| from constraints.
 // Returns true if the constraint is specified in either mandatory or Optional
 // constraints.
-BLINK_MODULES_EXPORT bool GetConstraintValueAsInteger(
+MODULES_EXPORT bool GetConstraintValueAsInteger(
     const blink::WebMediaConstraints& constraints,
     const blink::LongConstraint blink::WebMediaTrackConstraintSet::*picker,
     int* value);
 
-BLINK_MODULES_EXPORT bool GetConstraintMinAsInteger(
+MODULES_EXPORT bool GetConstraintMinAsInteger(
     const blink::WebMediaConstraints& constraints,
     const blink::LongConstraint blink::WebMediaTrackConstraintSet::*picker,
     int* value);
 
-BLINK_MODULES_EXPORT bool GetConstraintMaxAsInteger(
+MODULES_EXPORT bool GetConstraintMaxAsInteger(
     const blink::WebMediaConstraints& constraints,
     const blink::LongConstraint blink::WebMediaTrackConstraintSet::*picker,
     int* value);
@@ -265,7 +265,7 @@ BLINK_MODULES_EXPORT bool GetConstraintMaxAsInteger(
 // Method to get double precision value of constraint with |name| from
 // constraints. Returns true if the constraint is specified in either mandatory
 // or Optional constraints.
-BLINK_MODULES_EXPORT bool GetConstraintValueAsDouble(
+MODULES_EXPORT bool GetConstraintValueAsDouble(
     const blink::WebMediaConstraints& constraints,
     const blink::DoubleConstraint blink::WebMediaTrackConstraintSet::*picker,
     double* value);
@@ -295,7 +295,7 @@ BLINK_MODULES_EXPORT bool GetConstraintValueAsDouble(
 // aspectRatio and frameRate are used.
 // This function has undefined behavior if any of |resolution_set| or
 // |frame_rate_set| are empty.
-BLINK_MODULES_EXPORT VideoTrackAdapterSettings SelectVideoTrackAdapterSettings(
+MODULES_EXPORT VideoTrackAdapterSettings SelectVideoTrackAdapterSettings(
     const blink::WebMediaTrackConstraintSet& basic_constraint_set,
     const media_constraints::ResolutionSet& resolution_set,
     const media_constraints::NumericRangeSet<double>& frame_rate_set,
@@ -305,8 +305,8 @@ BLINK_MODULES_EXPORT VideoTrackAdapterSettings SelectVideoTrackAdapterSettings(
 // Generic distance function between two values for numeric constraints. Based
 // on the fitness-distance function described in
 // https://w3c.github.io/mediacapture-main/#dfn-fitness-distance
-BLINK_MODULES_EXPORT double NumericConstraintFitnessDistance(double value1,
-                                                             double value2);
+MODULES_EXPORT double NumericConstraintFitnessDistance(double value1,
+                                                       double value2);
 
 // Fitness distance between |value| and |constraint|.
 // Based on https://w3c.github.io/mediacapture-main/#dfn-fitness-distance.
@@ -316,7 +316,7 @@ double StringConstraintFitnessDistance(
 
 // This method computes capabilities for a video source based on the given
 // |formats|. |facing_mode| is valid only in case of video device capture.
-BLINK_MODULES_EXPORT blink::WebMediaStreamSource::Capabilities
+MODULES_EXPORT blink::WebMediaStreamSource::Capabilities
 ComputeCapabilitiesForVideoSource(
     const blink::WebString& device_id,
     const media::VideoCaptureFormats& formats,
@@ -326,4 +326,4 @@ ComputeCapabilitiesForVideoSource(
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_MEDIA_STREAM_CONSTRAINTS_UTIL_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_MEDIA_STREAM_CONSTRAINTS_UTIL_H_

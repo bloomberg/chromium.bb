@@ -729,6 +729,7 @@ _CONFIG = [
             'webrtc::EchoCanceller3Factory',
             'webrtc::ExperimentalAgc',
             'webrtc::MediaStreamTrackInterface',
+            'webrtc::ObserverInterface',
             'webrtc::StreamConfig',
             'webrtc::TypingDetection',
             'webrtc::VideoTrackInterface',
