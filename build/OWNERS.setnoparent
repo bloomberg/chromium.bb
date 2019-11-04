@@ -34,3 +34,10 @@ file://extensions/common/api/API_OWNERS
 # layout files, such as add duplicated assets, or introducing new colors when
 # we don't want them.
 file://ui/android/java/res/LAYOUT_OWNERS
+
+# Updating policy_templates.json can have drastic effects for systems depending
+# on policy definitions (for example, Google's cloud management tools for
+# Chrome and Chrome OS).
+# The rules are documented at:
+# https://sites.google.com/a/chromium.org/dev/developers/how-tos/enterprise/adding-new-policies
+file://components/policy/resources/ENTERPRISE_POLICY_OWNERS
