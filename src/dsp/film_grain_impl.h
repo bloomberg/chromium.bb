@@ -29,6 +29,7 @@
 
 namespace libgav1 {
 namespace dsp {
+namespace film_grain {
 
 // bitdepth  min grain    max grain
 // ------------------------------
@@ -51,6 +52,8 @@ template <int bitdepth>
 int GetGrainMin() {
   return -(1 << (bitdepth - 1));
 }
+
+int GetRandomNumber(int bits, uint16_t* seed);
 
 enum {
   kAutoRegressionBorder = 3,
@@ -78,8 +81,6 @@ class FilmGrain {
 
   // Note: These static methods are declared public so that the unit tests can
   // call them.
-
-  static int GetRandomNumber(int bits, uint16_t* seed);
 
   static void GenerateLumaGrain(const FilmGrainParams& params,
                                 GrainType* luma_grain);
@@ -219,6 +220,7 @@ class FilmGrain {
   Array2D<GrainType> noise_image_[kMaxPlanes];
 };
 
+}  // namespace film_grain
 }  // namespace dsp
 }  // namespace libgav1
 

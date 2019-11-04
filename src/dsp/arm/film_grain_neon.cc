@@ -36,6 +36,7 @@
 
 namespace libgav1 {
 namespace dsp {
+namespace film_grain {
 namespace {
 
 // Section 7.18.3.1.
@@ -57,20 +58,6 @@ bool FilmGrainSynthesis_NEON(
       source_plane_v, source_stride_v, dest_plane_y, dest_stride_y,
       dest_plane_u, dest_stride_u, dest_plane_v, dest_stride_v);
 }
-
-void Init8bpp() {
-  Dsp* const dsp = dsp_internal::GetWritableDspTable(8);
-  assert(dsp != nullptr);
-  dsp->film_grain_synthesis = FilmGrainSynthesis_NEON<8>;
-}
-
-#if LIBGAV1_MAX_BITDEPTH >= 10
-void Init10bpp() {
-  Dsp* const dsp = dsp_internal::GetWritableDspTable(10);
-  assert(dsp != nullptr);
-  dsp->film_grain_synthesis = FilmGrainSynthesis_NEON<10>;
-}
-#endif  // LIBGAV1_MAX_BITDEPTH >= 10
 
 // This function is overloaded for both possible GrainTypes in order to simplify
 // loading in a template function.
@@ -411,13 +398,6 @@ void ApplyAutoRegressiveFilterChroma(const FilmGrainParams& params,
 
 }  // namespace
 
-void FilmGrainInit_NEON() {
-  Init8bpp();
-#if LIBGAV1_MAX_BITDEPTH >= 10
-  Init10bpp();
-#endif  // LIBGAV1_MAX_BITDEPTH >= 10
-}
-
 // Applies an auto-regressive filter to the white noise in luma_grain.
 template <int bitdepth>
 template <int auto_regression_coeff_lag>
@@ -726,6 +706,32 @@ template class FilmGrain<8>;
 #if LIBGAV1_MAX_BITDEPTH >= 10
 template class FilmGrain<10>;
 #endif
+
+namespace {
+
+void Init8bpp() {
+  Dsp* const dsp = dsp_internal::GetWritableDspTable(8);
+  assert(dsp != nullptr);
+  dsp->film_grain_synthesis = FilmGrainSynthesis_NEON<8>;
+}
+
+#if LIBGAV1_MAX_BITDEPTH >= 10
+void Init10bpp() {
+  Dsp* const dsp = dsp_internal::GetWritableDspTable(10);
+  assert(dsp != nullptr);
+  dsp->film_grain_synthesis = FilmGrainSynthesis_NEON<10>;
+}
+#endif  // LIBGAV1_MAX_BITDEPTH >= 10
+
+}  // namespace
+}  // namespace film_grain
+
+void FilmGrainInit_NEON() {
+  film_grain::Init8bpp();
+#if LIBGAV1_MAX_BITDEPTH >= 10
+  film_grain::Init10bpp();
+#endif  // LIBGAV1_MAX_BITDEPTH >= 10
+}
 
 }  // namespace dsp
 }  // namespace libgav1

@@ -30,6 +30,7 @@
 
 namespace libgav1 {
 namespace dsp {
+namespace film_grain {
 
 namespace {
 
@@ -254,42 +255,7 @@ bool FilmGrainSynthesis_C(const void* source_plane_y, ptrdiff_t source_stride_y,
                              dest_stride_u, dest_plane_v, dest_stride_v);
 }
 
-void Init8bpp() {
-  Dsp* const dsp = dsp_internal::GetWritableDspTable(8);
-  assert(dsp != nullptr);
-#if LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
-  dsp->film_grain_synthesis = FilmGrainSynthesis_C<8>;
-#else  // !LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
-  static_cast<void>(dsp);
-#ifndef LIBGAV1_Dsp8bpp_FilmGrainSynthesis
-  dsp->film_grain_synthesis = FilmGrainSynthesis_C<8>;
-#endif
-#endif  // LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
-}
-
-#if LIBGAV1_MAX_BITDEPTH >= 10
-void Init10bpp() {
-  Dsp* const dsp = dsp_internal::GetWritableDspTable(10);
-  assert(dsp != nullptr);
-#if LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
-  dsp->film_grain_synthesis = FilmGrainSynthesis_C<10>;
-#else  // !LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
-  static_cast<void>(dsp);
-#ifndef LIBGAV1_Dsp10bpp_FilmGrainSynthesis
-  dsp->film_grain_synthesis = FilmGrainSynthesis_C<10>;
-#endif
-#endif  // LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
-}
-#endif
-
 }  // namespace
-
-void FilmGrainInit_C() {
-  Init8bpp();
-#if LIBGAV1_MAX_BITDEPTH >= 10
-  Init10bpp();
-#endif
-}
 
 template <int bitdepth>
 FilmGrain<bitdepth>::FilmGrain(const FilmGrainParams& params,
@@ -373,8 +339,7 @@ bool FilmGrain<bitdepth>::Init() {
 
 // Section 7.18.3.2.
 // |bits| is the number of random bits to return.
-template <int bitdepth>
-int FilmGrain<bitdepth>::GetRandomNumber(int bits, uint16_t* seed) {
+int GetRandomNumber(int bits, uint16_t* seed) {
   uint16_t s = *seed;
   uint16_t bit = (s ^ (s >> 1) ^ (s >> 3) ^ (s >> 12)) & 1;
   s = (s >> 1) | (bit << 15);
@@ -969,6 +934,46 @@ template class FilmGrain<8>;
 #if LIBGAV1_MAX_BITDEPTH >= 10
 template class FilmGrain<10>;
 #endif
+
+namespace {
+
+void Init8bpp() {
+  Dsp* const dsp = dsp_internal::GetWritableDspTable(8);
+  assert(dsp != nullptr);
+#if LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
+  dsp->film_grain_synthesis = FilmGrainSynthesis_C<8>;
+#else  // !LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
+  static_cast<void>(dsp);
+#ifndef LIBGAV1_Dsp8bpp_FilmGrainSynthesis
+  dsp->film_grain_synthesis = FilmGrainSynthesis_C<8>;
+#endif
+#endif  // LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
+}
+
+#if LIBGAV1_MAX_BITDEPTH >= 10
+void Init10bpp() {
+  Dsp* const dsp = dsp_internal::GetWritableDspTable(10);
+  assert(dsp != nullptr);
+#if LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
+  dsp->film_grain_synthesis = FilmGrainSynthesis_C<10>;
+#else  // !LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
+  static_cast<void>(dsp);
+#ifndef LIBGAV1_Dsp10bpp_FilmGrainSynthesis
+  dsp->film_grain_synthesis = FilmGrainSynthesis_C<10>;
+#endif
+#endif  // LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
+}
+#endif
+}  // namespace
+
+}  // namespace film_grain
+
+void FilmGrainInit_C() {
+  film_grain::Init8bpp();
+#if LIBGAV1_MAX_BITDEPTH >= 10
+  film_grain::Init10bpp();
+#endif
+}
 
 }  // namespace dsp
 }  // namespace libgav1
