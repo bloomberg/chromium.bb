@@ -2731,7 +2731,7 @@ bool Browser::WebAppBrowserSupportsWindowFeature(WindowFeature feature,
     case FEATURE_LOCATIONBAR:
       return check_can_support || !fullscreen;
     case FEATURE_TABSTRIP:
-      return app_controller_->HasTabStrip();
+      return app_controller_->has_tab_strip();
     case FEATURE_BOOKMARKBAR:
     case FEATURE_NONE:
       return false;
