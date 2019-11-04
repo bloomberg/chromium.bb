@@ -411,7 +411,14 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiCanvasTest, DynamicBrowserAction) {
   EXPECT_EQ(kEmptyPathError, catcher.message());
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserActionApiCanvasTest, InvisibleIconBrowserAction) {
+// https://crbug.com/1019669; flaky on ChromeOS.
+#if defined(OS_CHROMEOS)
+#define MAYBE_InvisibleIconBrowserAction DISABLED_InvisibleIconBrowserAction
+#else
+#define MAYBE_InvisibleIconBrowserAction InvisibleIconBrowserAction
+#endif
+IN_PROC_BROWSER_TEST_F(BrowserActionApiCanvasTest,
+                       MAYBE_InvisibleIconBrowserAction) {
   // Turn this on so errors are reported.
   ExtensionActionSetIconFunction::SetReportErrorForInvisibleIconForTesting(
       true);
