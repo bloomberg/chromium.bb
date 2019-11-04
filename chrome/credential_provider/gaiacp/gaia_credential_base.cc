@@ -2012,6 +2012,27 @@ HRESULT CGaiaCredentialBase::ValidateOrCreateUser(const base::Value& result,
       return hr;
     }
 
+    // Update the name on the OS account if authenticated user has a different
+    // name.
+    base::string16 os_account_fullname;
+    hr = OSUserManager::Get()->GetUserFullname(found_domain, found_username,
+                                               &os_account_fullname);
+    if (FAILED(hr)) {
+      LOGFN(ERROR) << "GetUserFullname hr=" << putHR(hr);
+      return hr;
+    }
+
+    base::string16 profile_fullname = GetDictString(result, kKeyFullname);
+    if (SUCCEEDED(hr) &&
+        os_account_fullname.compare(profile_fullname.c_str()) != 0) {
+      hr = OSUserManager::Get()->SetUserFullname(found_domain, found_username,
+                                                 profile_fullname.c_str());
+      if (FAILED(hr)) {
+        LOGFN(ERROR) << "SetUserFullname hr=" << putHR(hr);
+        return hr;
+      }
+    }
+
     *username = ::SysAllocString(found_username);
     *domain = ::SysAllocString(found_domain);
     *sid = ::SysAllocString(found_sid);
