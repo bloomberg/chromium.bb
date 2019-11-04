@@ -266,17 +266,13 @@ class Port(object):
         best_match = None
         configs = self._flag_specific_configs()
         for name in configs:
-            # To match, the specified flags must contain all config args.
+            # To match the specified flags must start with all config args.
             args = configs[name]
-            if any(arg not in specified_flags for arg in args):
+            if specified_flags[:len(args)] != args:
                 continue
             # The first config matching the highest number of specified flags wins.
             if not best_match or len(configs[best_match]) < len(args):
                 best_match = name
-            else:
-                assert len(configs[best_match]) > len(args), (
-                    'Ambiguous flag-specific configs {} and {}: they match the same number of additional driver args.'
-                    .format(best_match, name))
 
         if best_match:
             return best_match
@@ -311,17 +307,14 @@ class Port(object):
     def _specified_additional_driver_flags(self):
         """Returns the list of additional driver flags specified by the user in
            the following ways, concatenated:
-           1. A single flag in web_tests/additional-driver-flag.setting. If present,
-              this flag will be the first flag.
+           1. Flags in web_tests/additional-driver-flag.setting.
            2. flags expanded from --flag-specific=<name> based on flag-specific config.
            3. Zero or more flags passed by --additional-driver-flag.
         """
         flags = []
         flag_file = self._filesystem.join(self.web_tests_dir(), 'additional-driver-flag.setting')
         if self._filesystem.exists(flag_file):
-            flag = self._filesystem.read_text_file(flag_file).strip()
-            if flag:
-                flags = [flag]
+            flags = self._filesystem.read_text_file(flag_file).split()
 
         flag_specific_option = self.get_option('flag_specific')
         if flag_specific_option:
