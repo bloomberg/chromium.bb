@@ -314,6 +314,10 @@ class MockDnsTransactionFactory : public DnsTransactionFactory {
   DnsConfig::SecureDnsMode GetSecureDnsModeForTest() override;
 
   void CompleteDelayedTransactions();
+  // If there are any pending transactions of the given type,
+  // completes one and returns true. Otherwise, returns false.
+  bool CompleteOneDelayedTransactionOfType(DnsQueryType type)
+      WARN_UNUSED_RESULT;
 
   bool doh_probes_running() { return doh_probes_running_; }
 
@@ -358,6 +362,10 @@ class MockDnsClient : public DnsClient {
 
   // Completes all DnsTransactions that were delayed by a rule.
   void CompleteDelayedTransactions();
+  // If there are any pending transactions of the given type,
+  // completes one and returns true. Otherwise, returns false.
+  bool CompleteOneDelayedTransactionOfType(DnsQueryType type)
+      WARN_UNUSED_RESULT;
 
   void set_max_fallback_failures(int max_fallback_failures) {
     max_fallback_failures_ = max_fallback_failures;

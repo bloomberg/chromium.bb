@@ -628,6 +628,18 @@ void MockDnsTransactionFactory::CompleteDelayedTransactions() {
   }
 }
 
+bool MockDnsTransactionFactory::CompleteOneDelayedTransactionOfType(
+    DnsQueryType type) {
+  for (base::WeakPtr<MockTransaction>& t : delayed_transactions_) {
+    if (t && t->GetType() == DnsQueryTypeToQtype(type)) {
+      t->FinishDelayedTransaction();
+      t.reset();
+      return true;
+    }
+  }
+  return false;
+}
+
 MockDnsClient::MockDnsClient(DnsConfig config, MockDnsClientRuleList rules)
     : config_(std::move(config)),
       factory_(new MockDnsTransactionFactory(std::move(rules))),
@@ -734,6 +746,10 @@ void MockDnsClient::StartDohProbesForTesting() {
 
 void MockDnsClient::CompleteDelayedTransactions() {
   factory_->CompleteDelayedTransactions();
+}
+
+bool MockDnsClient::CompleteOneDelayedTransactionOfType(DnsQueryType type) {
+  return factory_->CompleteOneDelayedTransactionOfType(type);
 }
 
 base::Optional<DnsConfig> MockDnsClient::BuildEffectiveConfig() {

@@ -1016,6 +1016,11 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
     } else {
       transactions_needed_.push(DnsQueryType::A);
       transactions_needed_.push(DnsQueryType::AAAA);
+
+      if (secure_ &&
+          base::FeatureList::IsEnabled(features::kRequestEsniDnsRecords)) {
+        transactions_needed_.push(DnsQueryType::ESNI);
+      }
     }
     num_needed_transactions_ = transactions_needed_.size();
 
@@ -1035,7 +1040,8 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
   void StartNextTransaction() {
     DCHECK(needs_another_transaction());
 
-    if (transactions_started_.empty())
+    if (num_needed_transactions_ ==
+        static_cast<int>(transactions_needed_.size()))
       net_log_.BeginEvent(NetLogEventType::HOST_RESOLVER_IMPL_DNS_TASK);
 
     DnsQueryType type = transactions_needed_.front();
@@ -1067,12 +1073,45 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
     return trans;
   }
 
+  void OnEsniTransactionTimeout() {
+    // Currently, the ESNI transaction timer only gets started
+    // when all non-ESNI transactions have completed.
+    DCHECK(std::all_of(
+        transactions_started_.begin(), transactions_started_.end(),
+        [&](const std::unique_ptr<DnsTransaction>& p) {
+          return p && p->GetType() == dns_protocol::kExperimentalTypeEsniDraft4;
+        }));
+
+    num_completed_transactions_ += transactions_started_.size();
+    DCHECK(num_completed_transactions_ == num_needed_transactions());
+    transactions_started_.clear();
+
+    // TODO(crbug.com/1003494): Log the failure to a histogram, along with
+    // the values of the absolute and relative additional wait parameters.
+
+    ProcessResultsOnCompletion();
+  }
+
   void OnTransactionComplete(const base::TimeTicks& start_time,
                              DnsQueryType dns_query_type,
                              DnsTransaction* transaction,
                              int net_error,
                              const DnsResponse* response) {
     DCHECK(transaction);
+
+    // Once control leaves OnTransactionComplete, there's no further
+    // need for the transaction object. On the other hand, since it owns
+    // |*response|, it should stay around while OnTransactionComplete
+    // executes.
+    std::unique_ptr<DnsTransaction> destroy_transaction_on_return;
+    {
+      auto it = transactions_started_.find(transaction);
+      DCHECK(it != transactions_started_.end());
+
+      destroy_transaction_on_return = std::move(*it);
+      transactions_started_.erase(it);
+    }
+
     if (net_error != OK && !(net_error == ERR_NAME_NOT_RESOLVED && response &&
                              response->IsValid())) {
       OnFailure(net_error, DnsResponse::DNS_PARSE_OK, base::nullopt);
@@ -1141,14 +1180,29 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
       }
     }
 
+    saved_results_ = std::move(results);
+
     // If not all transactions are complete, the task cannot yet be completed
     // and the results so far must be saved to merge with additional results.
     ++num_completed_transactions_;
     if (num_completed_transactions_ < num_needed_transactions()) {
-      saved_results_ = std::move(results);
       delegate_->OnIntermediateTransactionComplete();
+      MaybeStartEsniTimer();
       return;
     }
+
+    // Since all transactions are complete, in particular, all ESNI transactions
+    // are complete (if any were started).
+    esni_cancellation_timer_.Stop();
+
+    ProcessResultsOnCompletion();
+  }
+
+  // Postprocesses the transactions' aggregated results after all
+  // transactions have completed.
+  void ProcessResultsOnCompletion() {
+    DCHECK(saved_results_.has_value());
+    HostCache::Entry results = std::move(*saved_results_);
 
     // If there are multiple addresses, and at least one is IPv6, need to
     // sort them.
@@ -1492,6 +1546,39 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
     delegate_->OnDnsTaskComplete(task_start_time_, results, secure_);
   }
 
+  // If ESNI transactions are being executed as part of this task
+  // and all transactions except the ESNI transactions have finished, and the
+  // ESNI transactions have not finished, starts a timer after which to abort
+  // the ESNI transactions.
+  //
+  // This timer has duration equal to the shorter of two parameterized values:
+  // - a fixed, absolute duration
+  // - a relative duration (as a proportion of the total time taken for
+  // the task's other transactions).
+  void MaybeStartEsniTimer() {
+    DCHECK(!transactions_started_.empty());
+    DCHECK(saved_results_);
+    if (!esni_cancellation_timer_.IsRunning() &&
+        std::all_of(transactions_started_.begin(), transactions_started_.end(),
+                    [&](const std::unique_ptr<DnsTransaction>& p) {
+                      DCHECK(p);
+                      return p->GetType() ==
+                             dns_protocol::kExperimentalTypeEsniDraft4;
+                    })) {
+      base::TimeDelta total_time_taken_for_other_transactions =
+          tick_clock_->NowTicks() - task_start_time_;
+
+      esni_cancellation_timer_.Start(
+          FROM_HERE,
+          std::min(
+              features::EsniDnsMaxAbsoluteAdditionalWait(),
+              total_time_taken_for_other_transactions *
+                  (0.01 *
+                   features::kEsniDnsMaxRelativeAdditionalWaitPercent.Get())),
+          this, &DnsTask::OnEsniTransactionTimeout);
+    }
+  }
+
   DnsClient* client_;
   std::string hostname_;
   URLRequestContext* const request_context_;
@@ -1505,7 +1592,8 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
   const NetLogWithSource net_log_;
 
   base::queue<DnsQueryType> transactions_needed_;
-  base::flat_set<std::unique_ptr<DnsTransaction>> transactions_started_;
+  base::flat_set<std::unique_ptr<DnsTransaction>, base::UniquePtrComparator>
+      transactions_started_;
   int num_needed_transactions_;
   int num_completed_transactions_;
 
@@ -1515,6 +1603,10 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
 
   const base::TickClock* tick_clock_;
   base::TimeTicks task_start_time_;
+
+  // Timer for early abort of ESNI transactions. See comments describing
+  // the timeout parameters in net/base/features.h.
+  base::OneShotTimer esni_cancellation_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(DnsTask);
 };
