@@ -662,20 +662,12 @@ public class JsJavaInteractionTest {
 
         // Listener for myObject.
         final String listener1 = "function (event) {"
-                + "  if (window.listenerResult1) {"
-                + "    window.listenerResult1 += event.data;"
-                + "  } else {"
-                + "    window.listenerResult1 = event.data;"
-                + "  }"
+                + "  " + JS_OBJECT_NAME + ".postMessage('ack1' + event.data);"
                 + "}";
 
         // Listener for myObject2.
         final String listener2 = "function (event) {"
-                + "  if (window.listenerResult2) {"
-                + "    window.listenerResult2 += event.data;"
-                + "  } else {"
-                + "    window.listenerResult2 = event.data;"
-                + "  }"
+                + "  " + JS_OBJECT_NAME_2 + ".postMessage('ack2' + event.data);"
                 + "}";
 
         // Add two different js objects.
@@ -693,19 +685,16 @@ public class JsJavaInteractionTest {
 
         Assert.assertEquals(message, data2.mMessage);
 
-        final String hello1 = "hello1";
-        final String hello2 = "hello2";
         // Targeting myObject.
-        data.mReplyProxy.postMessage(hello1);
+        data.mReplyProxy.postMessage(HELLO);
         // Targeting myObject2.
-        data2.mReplyProxy.postMessage(hello2);
+        data2.mReplyProxy.postMessage(HELLO);
 
-        Assert.assertEquals(hello1,
-                getJsObjectValue(
-                        "window.listenerResult1", mActivityTestRule, mAwContents, mContentsClient));
-        Assert.assertEquals(hello2,
-                getJsObjectValue(
-                        "window.listenerResult2", mActivityTestRule, mAwContents, mContentsClient));
+        TestWebMessageListener.Data replyData1 = mListener.waitForOnPostMessage();
+        TestWebMessageListener.Data replyData2 = webMessageListener2.waitForOnPostMessage();
+
+        Assert.assertEquals("ack1" + HELLO, replyData1.mMessage);
+        Assert.assertEquals("ack2" + HELLO, replyData2.mMessage);
 
         Assert.assertTrue(mListener.hasNoMoreOnPostMessage());
         Assert.assertTrue(webMessageListener2.hasNoMoreOnPostMessage());
@@ -751,19 +740,21 @@ public class JsJavaInteractionTest {
         JsReplyProxy proxy = mListener.waitForOnPostMessage().mReplyProxy;
 
         final String listener1 = "function (event) {"
-                + "  if (window.listenerResult1) {"
-                + "    window.listenerResult1 += event.data;"
+                + "  if (window.receivedCount1) {"
+                + "    window.receivedCount1++;"
                 + "  } else {"
-                + "    window.listenerResult1 = event.data;"
+                + "    window.receivedCount1 = 1;"
                 + "  }"
+                + "  " + JS_OBJECT_NAME + ".postMessage('ack1:' + window.receivedCount1);"
                 + "}";
 
         final String listener2 = "function (event) {"
-                + "  if (window.listenerResult2) {"
-                + "    window.listenerResult2 += event.data;"
+                + "  if (window.receivedCount2) {"
+                + "    window.receivedCount2++;"
                 + "  } else {"
-                + "    window.listenerResult2 = event.data;"
+                + "    window.receivedCount2 = 1;"
                 + "  }"
+                + "  " + JS_OBJECT_NAME + ".postMessage('ack2:' + window.receivedCount2);"
                 + "}";
 
         addEventListener(listener1, "listener1", JS_OBJECT_NAME, mActivityTestRule, mAwContents,
@@ -772,30 +763,26 @@ public class JsJavaInteractionTest {
                 mContentsClient);
 
         // Post message to test both listeners receive message.
-        final String message = "testListener";
-        proxy.postMessage(message);
+        proxy.postMessage(HELLO);
 
-        Assert.assertEquals(message,
-                getJsObjectValue(
-                        "window.listenerResult1", mActivityTestRule, mAwContents, mContentsClient));
-        Assert.assertEquals(message,
-                getJsObjectValue(
-                        "window.listenerResult2", mActivityTestRule, mAwContents, mContentsClient));
+        TestWebMessageListener.Data replyData1 = mListener.waitForOnPostMessage();
+        TestWebMessageListener.Data replyData2 = mListener.waitForOnPostMessage();
+
+        Assert.assertEquals("ack1:1", replyData1.mMessage);
+        Assert.assertEquals("ack2:1", replyData2.mMessage);
 
         removeEventListener(
                 "listener2", JS_OBJECT_NAME, mActivityTestRule, mAwContents, mContentsClient);
 
         // Post message again to test if remove works.
-        proxy.postMessage(message);
+        proxy.postMessage(HELLO);
 
         // listener 1 should add message again.
-        Assert.assertEquals(message + message,
-                getJsObjectValue(
-                        "window.listenerResult1", mActivityTestRule, mAwContents, mContentsClient));
-        // listener 2 result should remain the same.
-        Assert.assertEquals(message,
-                getJsObjectValue(
-                        "window.listenerResult2", mActivityTestRule, mAwContents, mContentsClient));
+        TestWebMessageListener.Data replyData3 = mListener.waitForOnPostMessage();
+        Assert.assertEquals("ack1:2", replyData3.mMessage);
+
+        // Should be no more messages.
+        Assert.assertTrue(mListener.hasNoMoreOnPostMessage());
     }
 
     @Test
@@ -923,13 +910,6 @@ public class JsJavaInteractionTest {
             final TestAwContentsClient contentsClient) throws Throwable {
         String code = jsObjectName + ".removeEventListener('message', " + funcName + ")";
         rule.executeJavaScriptAndWaitForResult(awContents, contentsClient, code);
-    }
-
-    private static String getJsObjectValue(final String jsObjectName, final AwActivityTestRule rule,
-            final AwContents awContents, final TestAwContentsClient contentsClient)
-            throws Throwable {
-        return rule.maybeStripDoubleQuotes(
-                rule.executeJavaScriptAndWaitForResult(awContents, contentsClient, jsObjectName));
     }
 
     private static String parseOrigin(String url) {
