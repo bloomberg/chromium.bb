@@ -2,10 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_GAMEPAD_LISTENER_H_
-#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_GAMEPAD_LISTENER_H_
-
-#include "third_party/blink/public/platform/web_platform_event_listener.h"
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_GAMEPAD_GAMEPAD_LISTENER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_GAMEPAD_GAMEPAD_LISTENER_H_
 
 namespace device {
 class Gamepad;
@@ -13,8 +11,10 @@ class Gamepad;
 
 namespace blink {
 
-class WebGamepadListener : public WebPlatformEventListener {
+class GamepadListener {
  public:
+  virtual ~GamepadListener() = default;
+
   // Called when a gamepad is connected. |index| is the index of the gamepad in
   // the gamepad array, and |gamepad| is a reference to the connected gamepad.
   virtual void DidConnectGamepad(uint32_t index,
@@ -31,11 +31,8 @@ class WebGamepadListener : public WebPlatformEventListener {
   // to the gamepad.
   virtual void ButtonOrAxisDidChange(uint32_t index,
                                      const device::Gamepad& gamepad) = 0;
-
- protected:
-  ~WebGamepadListener() override = default;
 };
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_GAMEPAD_GAMEPAD_LISTENER_H_
