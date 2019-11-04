@@ -61,6 +61,14 @@ class _ProguardOutputFilter(object):
     return ''.join(ret)
 
 
+class ProguardProcessError(build_utils.CalledProcessError):
+  """Wraps CalledProcessError and enables adding extra output to failures."""
+
+  def __init__(self, cpe, output):
+    super(ProguardProcessError, self).__init__(cpe.cwd, cpe.args,
+                                               cpe.output + output)
+
+
 def _ParseOptions():
   args = build_utils.ExpandFileArgs(sys.argv[1:])
   parser = argparse.ArgumentParser()
@@ -211,8 +219,14 @@ def _OptimizeWithR8(options,
     if options.disable_outlining:
       env['_JAVA_OPTIONS'] += '-Dcom.android.tools.r8.disableOutlining=1'
 
-    build_utils.CheckOutput(
-        cmd, env=env, print_stdout=print_stdout, stderr_filter=stderr_filter)
+    try:
+      build_utils.CheckOutput(
+          cmd, env=env, print_stdout=print_stdout, stderr_filter=stderr_filter)
+    except build_utils.CalledProcessError as err:
+      debugging_link = ('R8 failed. Please see {}.'.format(
+          'https://chromium.googlesource.com/chromium/src/+/HEAD/build/'
+          'android/docs/java_optimization.md#Debugging-common-failures\n'))
+      raise ProguardProcessError(err, debugging_link)
 
     if not output_is_zipped:
       found_files = os.listdir(tmp_output)
