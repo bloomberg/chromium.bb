@@ -56,6 +56,11 @@ constexpr float kMinimumDragDistanceAlreadyInSnapRegionDp = 48.f;
 constexpr float kFlingToCloseVelocityThreshold = 2000.f;
 constexpr float kItemMinOpacity = 0.4f;
 
+// Amount of time we wait to unpause the occlusion tracker after a overview item
+// is finished dragging. Waits a bit longer than the overview item animation.
+constexpr base::TimeDelta kOcclusionPauseDurationForDrag =
+    base::TimeDelta::FromMilliseconds(300);
+
 // The UMA histogram that records presentation time for window dragging
 // operation in overview mode.
 constexpr char kOverviewWindowDragHistogram[] =

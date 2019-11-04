@@ -1063,8 +1063,6 @@ void OverviewItem::OnWindowDestroying(aura::Window* window) {
   if (is_being_dragged_) {
     DCHECK_EQ(this, overview_session_->window_drag_controller()->item());
     overview_session_->window_drag_controller()->ResetGesture();
-    Shell::Get()->overview_controller()->UnpauseOcclusionTracker(
-        kOcclusionPauseDurationForDrag);
   }
 
   overview_grid_->RemoveItem(this, /*item_destroying=*/true,
