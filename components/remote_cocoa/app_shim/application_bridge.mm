@@ -108,10 +108,10 @@ ApplicationBridge* ApplicationBridge::Get() {
   return application_bridge.get();
 }
 
-void ApplicationBridge::BindRequest(
-    mojom::ApplicationAssociatedRequest request) {
-  binding_.Bind(std::move(request),
-                ui::WindowResizeHelperMac::Get()->task_runner());
+void ApplicationBridge::BindReceiver(
+    mojo::PendingAssociatedReceiver<mojom::Application> receiver) {
+  receiver_.Bind(std::move(receiver),
+                 ui::WindowResizeHelperMac::Get()->task_runner());
 }
 
 void ApplicationBridge::SetContentNSViewCreateCallbacks(
@@ -165,8 +165,8 @@ void ApplicationBridge::CreateWebContentsNSView(
                                    view_request.PassHandle());
 }
 
-ApplicationBridge::ApplicationBridge() : binding_(this) {}
+ApplicationBridge::ApplicationBridge() = default;
 
-ApplicationBridge::~ApplicationBridge() {}
+ApplicationBridge::~ApplicationBridge() = default;
 
 }  // namespace remote_cocoa

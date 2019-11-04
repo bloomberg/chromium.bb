@@ -10,7 +10,7 @@
 #include "components/remote_cocoa/common/application.mojom.h"
 #include "components/remote_cocoa/common/native_widget_ns_window.mojom.h"
 #include "components/remote_cocoa/common/native_widget_ns_window_host.mojom.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -26,7 +26,8 @@ class REMOTE_COCOA_APP_SHIM_EXPORT ApplicationBridge
     : public mojom::Application {
  public:
   static ApplicationBridge* Get();
-  void BindRequest(mojom::ApplicationAssociatedRequest request);
+  void BindReceiver(
+      mojo::PendingAssociatedReceiver<mojom::Application> receiver);
 
   // Set callbacks to create content types (content types cannot be created
   // in remote_cocoa).
@@ -71,7 +72,7 @@ class REMOTE_COCOA_APP_SHIM_EXPORT ApplicationBridge
   RenderWidgetHostNSViewCreateCallback render_widget_host_create_callback_;
   WebContentsNSViewCreateCallback web_conents_create_callback_;
 
-  mojo::AssociatedBinding<mojom::Application> binding_;
+  mojo::AssociatedReceiver<mojom::Application> receiver_{this};
 };
 
 }  // namespace remote_cocoa
