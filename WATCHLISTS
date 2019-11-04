@@ -736,7 +736,6 @@
     'chromedriver': {
       'filepath': 'chrome/test/chromedriver|'\
                   'chrome/test/data/chromedriver|'\
-                  'third_party/blink/renderer/devtools/front_end/emulated_devices/module.json|'\
                   'third_party/blink/web_tests/external/wpt/webdriver|'\
                   'third_party/blink/web_tests/WebDriverExpectations|'\
                   'third_party/webdriver'
