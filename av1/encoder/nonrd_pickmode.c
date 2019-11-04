@@ -588,10 +588,11 @@ static int ac_thr_factor(const int speed, const int width, const int height,
 }
 
 static void model_skip_for_sb_y_large(AV1_COMP *cpi, BLOCK_SIZE bsize,
-                                      MACROBLOCK *x, MACROBLOCKD *xd,
-                                      int *out_rate, int64_t *out_dist,
-                                      unsigned int *var_y, unsigned int *sse_y,
-                                      int *early_term, int calculate_rd) {
+                                      int mi_row, int mi_col, MACROBLOCK *x,
+                                      MACROBLOCKD *xd, int *out_rate,
+                                      int64_t *out_dist, unsigned int *var_y,
+                                      unsigned int *sse_y, int *early_term,
+                                      int calculate_rd) {
   // Note our transform coeffs are 8 times an orthogonal transform.
   // Hence quantizer step is also 8 times. To get effective quantizer
   // we need to divide by 8 before sending to modeling function.
@@ -680,7 +681,40 @@ static void model_skip_for_sb_y_large(AV1_COMP *cpi, BLOCK_SIZE bsize,
       }
 
     if (ac_test && dc_test) {
-      *early_term = 1;
+      int skip_uv[2] = { 0 };
+      unsigned int var_uv[2];
+      unsigned int sse_uv[2];
+      AV1_COMMON *const cm = &cpi->common;
+      // Transform skipping test in UV planes.
+      for (int i = 1; i <= 2; i++) {
+        int j = i - 1;
+        skip_uv[j] = 1;
+        if (x->color_sensitivity[j]) {
+          skip_uv[j] = 0;
+          struct macroblock_plane *const puv = &x->plane[i];
+          struct macroblockd_plane *const puvd = &xd->plane[i];
+          const BLOCK_SIZE uv_bsize = get_plane_block_size(
+              bsize, puvd->subsampling_x, puvd->subsampling_y);
+          // Adjust these thresholds for UV.
+          const int64_t uv_dc_thr =
+              (puv->dequant_QTX[0] * puv->dequant_QTX[0]) >> 3;
+          const int64_t uv_ac_thr =
+              (puv->dequant_QTX[1] * puv->dequant_QTX[1]) >> 3;
+          av1_enc_build_inter_predictor(cm, xd, mi_row, mi_col, NULL, bsize, i,
+                                        i);
+          var_uv[j] = cpi->fn_ptr[uv_bsize].vf(puv->src.buf, puv->src.stride,
+                                               puvd->dst.buf, puvd->dst.stride,
+                                               &sse_uv[j]);
+          if ((var_uv[j] < uv_ac_thr || var_uv[j] == 0) &&
+              (sse_uv[j] - var_uv[j] < uv_dc_thr || sse_uv[j] == var_uv[j]))
+            skip_uv[j] = 1;
+          else
+            break;
+        }
+      }
+      if (skip_uv[0] & skip_uv[1]) {
+        *early_term = 1;
+      }
     }
   }
   if (calculate_rd && out_dist != NULL && out_rate != NULL) {
@@ -694,7 +728,7 @@ static void model_skip_for_sb_y_large(AV1_COMP *cpi, BLOCK_SIZE bsize,
 
     if (*early_term) {
       *out_rate = 0;
-      *out_dist = (sse - var) << 4;
+      *out_dist = sse << 4;
     }
   }
 }
@@ -1213,8 +1247,9 @@ static void search_filter_ref(AV1_COMP *cpi, MACROBLOCK *x, RD_STATS *this_rdc,
     av1_enc_build_inter_predictor(cm, xd, mi_row, mi_col, NULL, bsize,
                                   AOM_PLANE_Y, AOM_PLANE_Y);
     if (use_model_yrd_large)
-      model_skip_for_sb_y_large(cpi, bsize, x, xd, &pf_rate[i], &pf_dist[i],
-                                &pf_var[i], &pf_sse[i], this_early_term,
+      model_skip_for_sb_y_large(cpi, bsize, mi_row, mi_col, x, xd, &pf_rate[i],
+                                &pf_dist[i], &pf_var[i], &pf_sse[i],
+                                this_early_term,
                                 !cpi->sf.nonrd_use_blockyrd_interp_filter);
     else
       model_rd_for_sb_y(cpi, bsize, x, xd, &pf_rate[i], &pf_dist[i],
@@ -1708,8 +1743,8 @@ void av1_fast_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
                           &this_rdc.skip, NULL, &var_y, &sse_y, 1);
       } else {
         if (use_model_yrd_large) {
-          model_skip_for_sb_y_large(cpi, bsize, x, xd, NULL, NULL, &var_y,
-                                    &sse_y, &this_early_term, 0);
+          model_skip_for_sb_y_large(cpi, bsize, mi_row, mi_col, x, xd, NULL,
+                                    NULL, &var_y, &sse_y, &this_early_term, 0);
         } else {
           model_rd_for_sb_y(cpi, bsize, x, xd, &this_rdc.rate, &this_rdc.dist,
                             &this_rdc.skip, NULL, &var_y, &sse_y, 0);
