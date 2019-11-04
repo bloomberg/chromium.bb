@@ -114,14 +114,17 @@ class Gsutil(object):
         stderr=subprocess2.PIPE,
         env=self.get_sub_env())
 
+    out = out.decode('utf-8', 'replace')
+    err = err.decode('utf-8', 'replace')
+
     # Parse output.
-    status_code_match = re.search(b'status=([0-9]+)', err)
+    status_code_match = re.search('status=([0-9]+)', err)
     if status_code_match:
       return (int(status_code_match.group(1)), out, err)
-    if (b'You are attempting to access protected data with '
-        b'no configured credentials.' in err):
+    if ('You are attempting to access protected data with '
+        'no configured credentials.' in err):
       return (403, out, err)
-    if b'matched no objects' in err:
+    if 'matched no objects' in err:
       return (404, out, err)
     return (code, out, err)
 
@@ -267,9 +270,9 @@ def _downloader_worker_thread(thread_num, q, force, base_url,
       else:
         # Other error, probably auth related (bad ~/.boto, etc).
         out_q.put('%d> Failed to fetch file %s for %s, skipping. [Err: %s]' %
-                  (thread_num, file_url, output_filename, err.decode()))
+                  (thread_num, file_url, output_filename, err))
         ret_codes.put((1, 'Failed to fetch file %s for %s. [Err: %s]' %
-                       (file_url, output_filename, err.decode())))
+                       (file_url, output_filename, err)))
       continue
     # Fetch the file.
     out_q.put('%d> Downloading %s...' % (thread_num, output_filename))
@@ -282,8 +285,8 @@ def _downloader_worker_thread(thread_num, q, force, base_url,
             thread_num, output_filename))
     code, _, err = gsutil.check_call('cp', file_url, output_filename)
     if code != 0:
-      out_q.put('%d> %s' % (thread_num, err.decode()))
-      ret_codes.put((code, err.decode()))
+      out_q.put('%d> %s' % (thread_num, err))
+      ret_codes.put((code, err))
       continue
 
     remote_sha1 = get_sha1(output_filename)
@@ -336,11 +339,11 @@ def _downloader_worker_thread(thread_num, q, force, base_url,
     elif sys.platform != 'win32':
       # On non-Windows platforms, key off of the custom header
       # "x-goog-meta-executable".
-      code, out, _ = gsutil.check_call('stat', file_url)
+      code, out, err = gsutil.check_call('stat', file_url)
       if code != 0:
-        out_q.put('%d> %s' % (thread_num, err.decode()))
-        ret_codes.put((code, err.decode()))
-      elif re.search(r'executable:\s*1', out.decode()):
+        out_q.put('%d> %s' % (thread_num, err))
+        ret_codes.put((code, err))
+      elif re.search(r'executable:\s*1', out):
         st = os.stat(output_filename)
         os.chmod(output_filename, st.st_mode | stat.S_IEXEC)
 

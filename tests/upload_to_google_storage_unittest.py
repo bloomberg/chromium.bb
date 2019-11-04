@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env vpython3
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -7,6 +7,7 @@
 
 import optparse
 import os
+import posixpath
 
 try:
   import Queue as queue
@@ -87,11 +88,12 @@ class UploadTests(unittest.TestCase):
       self.assertTrue(os.path.exists(tar_gz_file))
       with tarfile.open(tar_gz_file, 'r:gz') as tar:
         content = map(lambda x: x.name, tar.getmembers())
-        self.assertTrue(dirname in content)
-        self.assertTrue(os.path.join(dirname, 'subfolder_text.txt') in content)
-        self.assertTrue(
-            os.path.join(dirname, 'subfolder_text.txt.sha1') in content)
+        self.assertIn(dirname, content)
+        self.assertIn(posixpath.join(dirname, 'subfolder_text.txt'), content)
+        self.assertIn(
+            posixpath.join(dirname, 'subfolder_text.txt.sha1'), content)
 
+  @unittest.skipIf(sys.platform == 'win32', 'os.symlink does not exist on win')
   def test_validate_archive_dirs_fails(self):
     work_dir = os.path.join(self.base_path, 'download_test_data')
     with ChangedWorkingDirectory(work_dir):

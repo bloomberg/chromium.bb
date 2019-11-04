@@ -70,7 +70,6 @@ def CommonChecks(input_api, output_api, tests_to_black_list, run_on_python3):
     print('Warning: skipping most unit tests on Windows')
     tests_to_black_list = [
         r'.*auth_test\.py$',
-        r'.*download_from_google_storage_unittest\.py$',
         r'.*gclient_smoketest\.py$',
         r'.*git_cl_test\.py$',
         r'.*git_common_test\.py$',
@@ -82,7 +81,6 @@ def CommonChecks(input_api, output_api, tests_to_black_list, run_on_python3):
         r'.*roll_dep_test\.py$',
         r'.*scm_unittest\.py$',
         r'.*subprocess2_test\.py$',
-        r'.*upload_to_google_storage_unittest\.py$',
     ]
 
   # TODO(maruel): Make sure at least one file is modified first.
