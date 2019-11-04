@@ -212,6 +212,9 @@ scoped_hinternet NetworkFetcherWinHTTP::OpenRequest() {
 
 HRESULT NetworkFetcherWinHTTP::SendRequest(const std::string& data) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  VLOG(2) << data;
+
   const uint32_t bytes_to_send = base::saturated_cast<uint32_t>(data.size());
   void* request_body =
       bytes_to_send ? const_cast<char*>(data.c_str()) : WINHTTP_NO_REQUEST_DATA;
@@ -232,7 +235,7 @@ void NetworkFetcherWinHTTP::SendRequestComplete() {
       request_handle_.get(),
       WINHTTP_QUERY_RAW_HEADERS_CRLF | WINHTTP_QUERY_FLAG_REQUEST_HEADERS,
       WINHTTP_HEADER_NAME_BY_INDEX, &all);
-  VLOG(2) << "request headers: " << all;
+  VLOG(3) << "request headers: " << all;
 
   net_error_ = ReceiveResponse();
   if (FAILED(net_error_))
@@ -252,7 +255,7 @@ void NetworkFetcherWinHTTP::ReceiveResponseComplete() {
   base::string16 all;
   QueryHeadersString(request_handle_.get(), WINHTTP_QUERY_RAW_HEADERS_CRLF,
                      WINHTTP_HEADER_NAME_BY_INDEX, &all);
-  VLOG(2) << "response headers: " << all;
+  VLOG(3) << "response headers: " << all;
 
   int response_code = 0;
   net_error_ = QueryHeadersInt(request_handle_.get(), WINHTTP_QUERY_STATUS_CODE,
@@ -518,7 +521,7 @@ void NetworkFetcherWinHTTP::StatusCallback(HINTERNET handle,
     base::StringAppendF(&msg, ", info=%s",
                         base::SysWideToUTF8(info_string).c_str());
 
-  VLOG(2) << "WinHttp status callback:"
+  VLOG(3) << "WinHttp status callback:"
           << " handle=" << handle << ", " << msg;
 
   switch (status) {
