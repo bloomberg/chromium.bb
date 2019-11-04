@@ -48,7 +48,6 @@
 #include "third_party/blink/public/platform/web_rtc_answer_options.h"
 #include "third_party/blink/public/platform/web_rtc_data_channel_init.h"
 #include "third_party/blink/public/platform/web_rtc_ice_candidate.h"
-#include "third_party/blink/public/platform/web_rtc_offer_options.h"
 #include "third_party/blink/public/platform/web_rtc_session_description.h"
 #include "third_party/blink/public/platform/web_rtc_session_description_request.h"
 #include "third_party/blink/public/platform/web_rtc_stats_request.h"
@@ -194,8 +193,9 @@ bool IsIceCandidateMissingSdp(
   return false;
 }
 
-WebRTCOfferOptions ConvertToWebRTCOfferOptions(const RTCOfferOptions* options) {
-  return WebRTCOfferOptions(MakeGarbageCollected<RTCOfferOptionsPlatform>(
+RTCOfferOptionsPlatform* ConvertToRTCOfferOptionsPlatform(
+    const RTCOfferOptions* options) {
+  return MakeGarbageCollected<RTCOfferOptionsPlatform>(
       options->hasOfferToReceiveVideo()
           ? std::max(options->offerToReceiveVideo(), 0)
           : -1,
@@ -204,7 +204,7 @@ WebRTCOfferOptions ConvertToWebRTCOfferOptions(const RTCOfferOptions* options) {
           : -1,
       options->hasVoiceActivityDetection() ? options->voiceActivityDetection()
                                            : true,
-      options->hasIceRestart() ? options->iceRestart() : false));
+      options->hasIceRestart() ? options->iceRestart() : false);
 }
 
 WebRTCAnswerOptions ConvertToWebRTCAnswerOptions(
@@ -855,8 +855,8 @@ ScriptPromise RTCPeerConnection::createOffer(ScriptState* script_state,
         context,
         WebFeature::kRTCPeerConnectionCreateOfferOptionsOfferToReceive);
   }
-  auto web_transceivers =
-      peer_handler_->CreateOffer(request, ConvertToWebRTCOfferOptions(options));
+  auto web_transceivers = peer_handler_->CreateOffer(
+      request, ConvertToRTCOfferOptionsPlatform(options));
   for (auto& web_transceiver : web_transceivers)
     CreateOrUpdateTransceiver(std::move(web_transceiver));
   return promise;
@@ -899,8 +899,7 @@ ScriptPromise RTCPeerConnection::createOffer(
           context, WebFeature::kRTCPeerConnectionCreateOfferLegacyCompliant);
     }
 
-    web_transceivers =
-        peer_handler_->CreateOffer(request, WebRTCOfferOptions(offer_options));
+    web_transceivers = peer_handler_->CreateOffer(request, offer_options);
   } else {
     MediaErrorState media_error_state;
     WebMediaConstraints constraints = media_constraints_impl::Create(
