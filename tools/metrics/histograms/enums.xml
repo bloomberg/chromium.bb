@@ -22889,7 +22889,7 @@ Called by update_net_error_codes.py.-->
   <int value="738" label="CryptoAlgorithmPbkdf2"/>
   <int value="739" label="DocumentSetDomain"/>
   <int value="740" label="UpgradeInsecureRequestsEnabled"/>
-  <int value="741" label="UpgradeInsecureRequestsUpgradedRequest"/>
+  <int value="741" label="UpgradeInsecureRequestsUpgradedRequest_Obsolete"/>
   <int value="742" label="DocumentDesignMode"/>
   <int value="743" label="GlobalCacheStorage"/>
   <int value="744" label="NetInfo"/>
@@ -25325,6 +25325,12 @@ Called by update_net_error_codes.py.-->
   <int value="3074"
       label="CredentialManagerIsUserVerifyingPlatformAuthenticatorAvailable"/>
   <int value="3075" label="ObsoleteWebrtcTlsVersion"/>
+  <int value="3076" label="UpgradeInsecureRequestsUpgradedRequestBlockable"/>
+  <int value="3077"
+      label="UpgradeInsecureRequestsUpgradedRequestOptionallyBlockable"/>
+  <int value="3078" label="UpgradeInsecureRequestsUpgradedRequestWebsocket"/>
+  <int value="3079" label="UpgradeInsecureRequestsUpgradedRequestForm"/>
+  <int value="3080" label="UpgradeInsecureRequestsUpgradedRequestUnknown"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
