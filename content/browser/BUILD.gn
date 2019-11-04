@@ -1744,12 +1744,16 @@ jumbo_source_set("browser") {
     "service_worker/service_worker_version.h",
     "site_instance_impl.cc",
     "site_instance_impl.h",
+    "sms/sms_fetcher_impl.cc",
+    "sms/sms_fetcher_impl.h",
     "sms/sms_metrics.cc",
     "sms/sms_metrics.h",
     "sms/sms_parser.cc",
     "sms/sms_parser.h",
     "sms/sms_provider.cc",
     "sms/sms_provider.h",
+    "sms/sms_queue.cc",
+    "sms/sms_queue.h",
     "sms/sms_service.cc",
     "sms/sms_service.h",
     "speech/speech_recognition_dispatcher_host.cc",
@@ -2461,10 +2465,6 @@ jumbo_source_set("browser") {
       # The Serial API is not implemented on Android.
       "serial/serial_service.cc",
       "serial/serial_service.h",
-
-      # The SMS API is stubbed out outside of Android.
-      "sms/sms_provider_desktop.cc",
-      "sms/sms_provider_desktop.h",
 
       # Most speech code is non-Android.
       "speech/audio_buffer.cc",

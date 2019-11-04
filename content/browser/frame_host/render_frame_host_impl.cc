@@ -147,6 +147,7 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/shared_cors_origin_access_list.h"
 #include "content/public/browser/site_isolation_policy.h"
+#include "content/public/browser/sms_fetcher.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_client.h"
@@ -6612,8 +6613,8 @@ void RenderFrameHostImpl::BindSmsReceiverReceiver(
     mojo::ReportBadMessage("Must have the same origin as the top-level frame.");
     return;
   }
-  auto* provider = BrowserMainLoop::GetInstance()->GetSmsProvider();
-  SmsService::Create(provider, this, std::move(receiver));
+  auto* fetcher = SmsFetcher::Get(GetProcess()->GetBrowserContext());
+  SmsService::Create(fetcher, this, std::move(receiver));
 }
 
 void RenderFrameHostImpl::GetInterface(

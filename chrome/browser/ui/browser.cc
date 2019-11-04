@@ -1270,6 +1270,15 @@ Browser::ShowBluetoothScanningPrompt(
   return std::move(bluetooth_scanning_prompt_desktop);
 }
 
+void Browser::CreateSmsPrompt(content::RenderFrameHost*,
+                              const url::Origin&,
+                              const std::string& one_time_code,
+                              base::OnceClosure on_confirm,
+                              base::OnceClosure on_cancel) {
+  // TODO(crbug.com/1015645): implementation left pending deliberately.
+  std::move(on_confirm).Run();
+}
+
 void Browser::PassiveInsecureContentFound(const GURL& resource_url) {
   // Note: this implementation is a mirror of
   // ContentSettingsObserver::passiveInsecureContentFound
