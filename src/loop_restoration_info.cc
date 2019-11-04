@@ -197,13 +197,16 @@ void LoopRestorationInfo::ReadSgrProjInfo(
         return;
       }
     } else {
-      multiplier = 0;
-      if (i == 1) {
-        multiplier =
-            Clip3((1 << kSgrProjPrecisionBits) -
-                      (*reference_unit_info)[plane].sgr_proj_info.multiplier[0],
-                  multiplier_min, multiplier_max);
-      }
+      // The range of (*reference_unit_info)[plane].sgr_proj_info.multiplier[0]
+      // from DecodeSignedSubexpWithReference() is [-96, 31], the default is
+      // -32, making Clip3(128 - 31, -32, 95) unnecessary.
+      static constexpr int kMultiplier[2] = {0, 95};
+      multiplier = kMultiplier[i];
+      assert(
+          i == 0 ||
+          Clip3((1 << kSgrProjPrecisionBits) -
+                    (*reference_unit_info)[plane].sgr_proj_info.multiplier[0],
+                multiplier_min, multiplier_max) == kMultiplier[1]);
     }
     loop_restoration_info_[plane][unit_id].sgr_proj_info.multiplier[i] =
         multiplier;
