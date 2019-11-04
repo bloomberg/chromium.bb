@@ -293,6 +293,7 @@ source_set("test_support") {
     "//ios/web/public/deprecated",
     "//ios/web/public/test:element_selector",
     "//ios/web/public/test/http_server",
+    "//net:test_support",
     "//services/metrics/public/cpp:metrics_cpp",
     "//ui/base",
     "//ui/base:test_support",
@@ -306,7 +307,6 @@ source_set("test_support") {
     "//ios/third_party/gtx:gtx+link",
     "//ios/web/public/test",
     "//ios/web/public/test/fakes",
-    "//net:test_support",
   ]
 
   libs = [
@@ -487,11 +487,8 @@ source_set("eg_test_support+eg2") {
     "//ios/third_party/gtx:gtx+link",
     "//ios/web/public/test:element_selector",
     "//ios/web/public/test/http_server",
+    "//net:test_support",
     "//ui/base",
     "//url",
-  ]
-
-  public_deps = [
-    "//net:test_support",
   ]
 }

@@ -201,6 +201,7 @@ source_set("eg_tests") {
     "//ios/web/public/test",
     "//ios/web/public/test/http_server",
     "//net",
+    "//net:test_support",
   ]
   libs = [
     "UIKit.framework",
