@@ -81,8 +81,8 @@ TEST_F(AwMetricsServiceClientTest, TestSetConsentTrueBeforeInit) {
   auto client = std::make_unique<TestClient>();
   client->SetHaveMetricsConsent(true, true);
   client->Initialize(prefs.get());
-  ASSERT_TRUE(client->IsRecordingActive());
-  ASSERT_TRUE(prefs->HasPrefPath(metrics::prefs::kMetricsClientID));
+  EXPECT_TRUE(client->IsRecordingActive());
+  EXPECT_TRUE(prefs->HasPrefPath(metrics::prefs::kMetricsClientID));
 }
 
 TEST_F(AwMetricsServiceClientTest, TestSetConsentFalseBeforeInit) {
@@ -90,24 +90,24 @@ TEST_F(AwMetricsServiceClientTest, TestSetConsentFalseBeforeInit) {
   auto client = std::make_unique<TestClient>();
   client->SetHaveMetricsConsent(false, false);
   client->Initialize(prefs.get());
-  ASSERT_FALSE(client->IsRecordingActive());
-  ASSERT_FALSE(prefs->HasPrefPath(metrics::prefs::kMetricsClientID));
+  EXPECT_FALSE(client->IsRecordingActive());
+  EXPECT_FALSE(prefs->HasPrefPath(metrics::prefs::kMetricsClientID));
 }
 
 TEST_F(AwMetricsServiceClientTest, TestSetConsentTrueAfterInit) {
   auto prefs = CreateTestPrefs();
   auto client = CreateAndInitTestClient(prefs.get());
   client->SetHaveMetricsConsent(true, true);
-  ASSERT_TRUE(client->IsRecordingActive());
-  ASSERT_TRUE(prefs->HasPrefPath(metrics::prefs::kMetricsClientID));
+  EXPECT_TRUE(client->IsRecordingActive());
+  EXPECT_TRUE(prefs->HasPrefPath(metrics::prefs::kMetricsClientID));
 }
 
 TEST_F(AwMetricsServiceClientTest, TestSetConsentFalseAfterInit) {
   auto prefs = CreateTestPrefs();
   auto client = CreateAndInitTestClient(prefs.get());
   client->SetHaveMetricsConsent(false, false);
-  ASSERT_FALSE(client->IsRecordingActive());
-  ASSERT_FALSE(prefs->HasPrefPath(metrics::prefs::kMetricsClientID));
+  EXPECT_FALSE(client->IsRecordingActive());
+  EXPECT_FALSE(prefs->HasPrefPath(metrics::prefs::kMetricsClientID));
 }
 
 // If there is already a valid client ID, it should be reused.
@@ -116,9 +116,9 @@ TEST_F(AwMetricsServiceClientTest, TestKeepExistingClientId) {
   prefs->SetString(metrics::prefs::kMetricsClientID, kTestClientId);
   auto client = CreateAndInitTestClient(prefs.get());
   client->SetHaveMetricsConsent(true, true);
-  ASSERT_TRUE(client->IsRecordingActive());
-  ASSERT_TRUE(prefs->HasPrefPath(metrics::prefs::kMetricsClientID));
-  ASSERT_EQ(kTestClientId, prefs->GetString(metrics::prefs::kMetricsClientID));
+  EXPECT_TRUE(client->IsRecordingActive());
+  EXPECT_TRUE(prefs->HasPrefPath(metrics::prefs::kMetricsClientID));
+  EXPECT_EQ(kTestClientId, prefs->GetString(metrics::prefs::kMetricsClientID));
 }
 
 TEST_F(AwMetricsServiceClientTest, TestSetConsentFalseClearsClientId) {
@@ -126,8 +126,8 @@ TEST_F(AwMetricsServiceClientTest, TestSetConsentFalseClearsClientId) {
   prefs->SetString(metrics::prefs::kMetricsClientID, kTestClientId);
   auto client = CreateAndInitTestClient(prefs.get());
   client->SetHaveMetricsConsent(false, false);
-  ASSERT_FALSE(client->IsRecordingActive());
-  ASSERT_FALSE(prefs->HasPrefPath(metrics::prefs::kMetricsClientID));
+  EXPECT_FALSE(client->IsRecordingActive());
+  EXPECT_FALSE(prefs->HasPrefPath(metrics::prefs::kMetricsClientID));
 }
 
 TEST_F(AwMetricsServiceClientTest, TestCanForceEnableMetrics) {
@@ -143,8 +143,8 @@ TEST_F(AwMetricsServiceClientTest, TestCanForceEnableMetrics) {
   client->SetInSample(false);
   client->Initialize(prefs.get());
 
-  ASSERT_TRUE(client->IsReportingEnabled());
-  ASSERT_TRUE(client->IsRecordingActive());
+  EXPECT_TRUE(client->IsReportingEnabled());
+  EXPECT_TRUE(client->IsRecordingActive());
 }
 
 TEST_F(AwMetricsServiceClientTest, TestCanForceEnableMetricsIfAlreadyEnabled) {
@@ -160,8 +160,8 @@ TEST_F(AwMetricsServiceClientTest, TestCanForceEnableMetricsIfAlreadyEnabled) {
   client->SetInSample(true);
   client->Initialize(prefs.get());
 
-  ASSERT_TRUE(client->IsReportingEnabled());
-  ASSERT_TRUE(client->IsRecordingActive());
+  EXPECT_TRUE(client->IsReportingEnabled());
+  EXPECT_TRUE(client->IsRecordingActive());
 }
 
 TEST_F(AwMetricsServiceClientTest, TestCannotForceEnableMetricsIfAppOptsOut) {
@@ -176,8 +176,8 @@ TEST_F(AwMetricsServiceClientTest, TestCannotForceEnableMetricsIfAppOptsOut) {
   client->SetInSample(true);
   client->Initialize(prefs.get());
 
-  ASSERT_FALSE(client->IsReportingEnabled());
-  ASSERT_FALSE(client->IsRecordingActive());
+  EXPECT_FALSE(client->IsReportingEnabled());
+  EXPECT_FALSE(client->IsRecordingActive());
 }
 
 // TODO(https://crbug.com/1012025): remove this when the kInstallDate pref has
@@ -188,7 +188,7 @@ TEST_F(AwMetricsServiceClientTest, TestPreferPersistedInstallDate) {
   int64_t install_date = 12345;
   prefs->SetInt64(metrics::prefs::kInstallDate, install_date);
   auto client = CreateAndInitTestClient(prefs.get());
-  ASSERT_EQ(install_date, prefs->GetInt64(metrics::prefs::kInstallDate));
+  EXPECT_EQ(install_date, prefs->GetInt64(metrics::prefs::kInstallDate));
 
   // Verify the histogram.
   histogram_tester.ExpectBucketCount(
@@ -207,7 +207,7 @@ TEST_F(AwMetricsServiceClientTest, TestGetInstallDateFromJavaIfMissing) {
   // All we can safely assert is the install time is set, since checking the
   // actual time is racy (ex. in the unlikely scenario if this test executes in
   // the same millisecond as when the package was installed).
-  ASSERT_TRUE(prefs->HasPrefPath(metrics::prefs::kInstallDate));
+  EXPECT_TRUE(prefs->HasPrefPath(metrics::prefs::kInstallDate));
 
   // Verify the histogram.
   histogram_tester.ExpectBucketCount(
