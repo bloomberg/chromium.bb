@@ -44,6 +44,7 @@ class SyncService;
 }  // namespace syncer
 
 class NotificationDisplayService;
+class RemoteCopyMessageHandler;
 class SharedClipboardMessageHandler;
 class SharingFCMHandler;
 class SharingFCMSender;
@@ -209,12 +210,19 @@ class SharingService : public KeyedService,
 
   PingMessageHandler ping_message_handler_;
   std::unique_ptr<AckMessageHandler> ack_message_handler_;
+
 #if defined(OS_ANDROID)
   ClickToCallMessageHandler click_to_call_message_handler_;
   std::unique_ptr<SmsFetchRequestHandler> sms_fetch_request_handler_;
 #endif  // defined(OS_ANDROID)
+
   std::unique_ptr<SharedClipboardMessageHandler>
       shared_clipboard_message_handler_;
+
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
+    defined(OS_CHROMEOS)
+  std::unique_ptr<RemoteCopyMessageHandler> remote_copy_message_handler_;
+#endif
 
   base::WeakPtrFactory<SharingService> weak_ptr_factory_{this};
 

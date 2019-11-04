@@ -44,6 +44,11 @@
 #include "chrome/browser/sharing/shared_clipboard/shared_clipboard_message_handler_desktop.h"
 #endif  // defined(OS_ANDROID)
 
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
+    defined(OS_CHROMEOS)
+#include "chrome/browser/sharing/shared_clipboard/remote_copy_message_handler.h"
+#endif
+
 namespace {
 // Clones device with new device name.
 std::unique_ptr<syncer::DeviceInfo> CloneDevice(
@@ -133,6 +138,18 @@ SharingService::SharingService(
         chrome_browser_sharing::SharingMessage::kSharedClipboardMessage,
         shared_clipboard_message_handler_.get());
   }
+
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
+    defined(OS_CHROMEOS)
+  if (sharing_device_registration_->IsRemoteCopySupported()) {
+    remote_copy_message_handler_ = std::make_unique<RemoteCopyMessageHandler>(
+        notification_display_service);
+    fcm_handler_->AddSharingHandler(
+        chrome_browser_sharing::SharingMessage::kRemoteCopyMessage,
+        remote_copy_message_handler_.get());
+  }
+#endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) ||
+        // defined(OS_CHROMEOS)
 
   // If device has already registered before, start listening to FCM right away
   // to avoid missing messages.
