@@ -287,7 +287,6 @@ source_set("blink_headers") {
     "platform/web_rtc_dtmf_sender_handler.h",
     "platform/web_rtc_dtmf_sender_handler_client.h",
     "platform/web_rtc_ice_candidate.h",
-    "platform/web_rtc_key_params.h",
     "platform/web_rtc_legacy_stats.h",
     "platform/web_rtc_offer_options.h",
     "platform/web_rtc_peer_connection_handler.h",

@@ -48,7 +48,6 @@
 #include "third_party/blink/public/platform/web_rtc_answer_options.h"
 #include "third_party/blink/public/platform/web_rtc_data_channel_init.h"
 #include "third_party/blink/public/platform/web_rtc_ice_candidate.h"
-#include "third_party/blink/public/platform/web_rtc_key_params.h"
 #include "third_party/blink/public/platform/web_rtc_offer_options.h"
 #include "third_party/blink/public/platform/web_rtc_session_description.h"
 #include "third_party/blink/public/platform/web_rtc_session_description_request.h"
@@ -129,6 +128,7 @@
 #include "third_party/webrtc/api/jsep.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
 #include "third_party/webrtc/pc/session_description.h"
+#include "third_party/webrtc/rtc_base/ssl_identity.h"
 
 namespace blink {
 
@@ -1659,7 +1659,7 @@ ScriptPromise RTCPeerConnection::generateCertificate(
   const char* unsupported_params_string =
       "The 1st argument provided is an AlgorithmIdentifier with a supported "
       "algorithm name, but the parameters are not supported.";
-  base::Optional<WebRTCKeyParams> key_params;
+  base::Optional<rtc::KeyParams> key_params;
   switch (crypto_algorithm.Id()) {
     case kWebCryptoAlgorithmIdRsaSsaPkcs1v1_5:
       // name: "RSASSA-PKCS1-v1_5"
@@ -1672,8 +1672,7 @@ ScriptPromise RTCPeerConnection::generateCertificate(
               kWebCryptoAlgorithmIdSha256) {
         unsigned modulus_length =
             crypto_algorithm.RsaHashedKeyGenParams()->ModulusLengthBits();
-        key_params =
-            WebRTCKeyParams::CreateRSA(modulus_length, public_exponent);
+        key_params = rtc::KeyParams::RSA(modulus_length, public_exponent);
       } else {
         return ScriptPromise::RejectWithDOMException(
             script_state, MakeGarbageCollected<DOMException>(
@@ -1686,7 +1685,7 @@ ScriptPromise RTCPeerConnection::generateCertificate(
       // The only recognized "namedCurve" is "P-256".
       if (crypto_algorithm.EcKeyGenParams()->NamedCurve() ==
           kWebCryptoNamedCurveP256) {
-        key_params = WebRTCKeyParams::CreateECDSA(kWebRTCECCurveNistP256);
+        key_params = rtc::KeyParams::ECDSA(rtc::EC_NIST_P256);
       } else {
         return ScriptPromise::RejectWithDOMException(
             script_state, MakeGarbageCollected<DOMException>(
