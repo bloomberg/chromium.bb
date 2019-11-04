@@ -26,7 +26,7 @@ const char kTestClientId[] = "01234567-89ab-40cd-80ef-0123456789ab";
 
 class TestClient : public AwMetricsServiceClient {
  public:
-  TestClient() : in_sample_(true) {}
+  TestClient() : in_sample_(true), record_package_name_(true) {}
   ~TestClient() override {}
 
   bool IsRecordingActive() {
@@ -36,12 +36,15 @@ class TestClient : public AwMetricsServiceClient {
     return false;
   }
   void SetInSample(bool value) { in_sample_ = value; }
+  void SetRecordPackageName(bool value) { record_package_name_ = value; }
 
  protected:
   bool IsInSample() override { return in_sample_; }
+  bool CanRecordPackageName() override { return record_package_name_; }
 
  private:
   bool in_sample_;
+  bool record_package_name_;
   DISALLOW_COPY_AND_ASSIGN(TestClient);
 };
 
@@ -128,6 +131,26 @@ TEST_F(AwMetricsServiceClientTest, TestSetConsentFalseClearsClientId) {
   client->SetHaveMetricsConsent(false, false);
   EXPECT_FALSE(client->IsRecordingActive());
   EXPECT_FALSE(prefs->HasPrefPath(metrics::prefs::kMetricsClientID));
+}
+
+TEST_F(AwMetricsServiceClientTest, TestShouldNotUploadPackageName) {
+  auto prefs = CreateTestPrefs();
+  prefs->SetString(metrics::prefs::kMetricsClientID, kTestClientId);
+  auto client = CreateAndInitTestClient(prefs.get());
+  client->SetHaveMetricsConsent(true, true);
+  client->SetRecordPackageName(false);
+  std::string package_name = client->GetAppPackageName();
+  EXPECT_TRUE(package_name.empty());
+}
+
+TEST_F(AwMetricsServiceClientTest, TestCanUploadPackageName) {
+  auto prefs = CreateTestPrefs();
+  prefs->SetString(metrics::prefs::kMetricsClientID, kTestClientId);
+  auto client = CreateAndInitTestClient(prefs.get());
+  client->SetHaveMetricsConsent(true, true);
+  client->SetRecordPackageName(true);
+  std::string package_name = client->GetAppPackageName();
+  EXPECT_FALSE(package_name.empty());
 }
 
 TEST_F(AwMetricsServiceClientTest, TestCanForceEnableMetrics) {
