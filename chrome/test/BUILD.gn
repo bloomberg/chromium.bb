@@ -3638,6 +3638,7 @@ test("unit_tests") {
       "../browser/permissions/permission_request_notification_android_unittest.cc",
       "../browser/permissions/permission_request_notification_handler_unittest.cc",
       "../browser/translate/translate_manager_render_view_host_android_unittest.cc",
+      "../browser/updates/update_notification_config_unittest.cc",
     ]
     deps += [
       "//base:base_java",

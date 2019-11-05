@@ -2875,6 +2875,8 @@ jumbo_static_library("browser") {
       "translate/android/translate_bridge.cc",
       "updates/update_notification_client.cc",
       "updates/update_notification_client.h",
+      "updates/update_notification_config.cc",
+      "updates/update_notification_config.h",
     ]
     public_deps += [
       "//chrome/android/features/dev_ui:buildflags",
