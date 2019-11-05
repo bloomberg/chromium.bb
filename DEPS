@@ -65,7 +65,7 @@ deps = {
     'third_party/googletest/src': {
         'url': Var('chromium_git') +
             '/external/github.com/google/googletest.git' +
-            '@' + '565f1b848215b77c3732bca345fe76a0431d8b34',
+            '@' + '8697709e0308af4cd5b09dc108480804e5447cf0',
         'condition': 'not build_with_chromium',
     },
 
