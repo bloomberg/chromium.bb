@@ -666,6 +666,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'webview_bot_oor_cors_gtests',
+          'isolated_scripts': 'android_wpt_scripts',
         },
         'args': [
           '--enable-features=OutOfBlinkCors',
