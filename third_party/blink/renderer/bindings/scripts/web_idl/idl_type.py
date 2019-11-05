@@ -180,17 +180,39 @@ class IdlType(WithExtendedAttributes, WithDebugInfo):
         """
         callback(self)
 
-    def unwrap(self, nullable=True, typedef=True):
+    def unwrap(self, nullable=None, typedef=None):
         """
         Returns the body part of the actual type, i.e. returns the interesting
         part of this type.
 
         Args:
-            nullable: Unwraps a nullable type and returns |inner_type| if True.
-            typedef: Dereferences a typedef type and returns |original_type| if
-                True.
+            nullable:
+            typedef:
+                All these arguments take tri-state value: True, False, or None.
+                True unwraps that type, False stops unwrapping that type.  All
+                of specified arguments' values must be consistent, and mixture
+                of True and False is not allowed.  Unspecified arguments are
+                automatically set to the opposite value.  If no argument is
+                specified, unwraps all types.
         """
-        return self
+        switches = {
+            'nullable': nullable,
+            'typedef': typedef,
+        }
+
+        value_counts = {None: 0, False: 0, True: 0}
+        for value in switches.itervalues():
+            assert value is None or isinstance(value, bool)
+            value_counts[value] += 1
+        assert value_counts[False] == 0 or value_counts[True] == 0, (
+            "Specify only True or False arguments.  Unspecified arguments are "
+            "automatically set to the opposite value.")
+        default = value_counts[True] == 0
+        for arg, value in switches.iteritems():
+            if value is None:
+                switches[arg] = default
+
+        return self._unwrap(switches)
 
     @property
     def does_include_nullable_type(self):
@@ -416,6 +438,9 @@ class IdlType(WithExtendedAttributes, WithDebugInfo):
         """Helper function to implement |type_name|."""
         return '{}{}'.format(type_name_inner, ''.join(
             sorted(self.extended_attributes.keys())))
+
+    def _unwrap(self, switches):
+        return self
 
 
 class SimpleType(IdlType):
@@ -656,12 +681,6 @@ class TypedefType(IdlType, WithIdentifier):
         callback(self)
         self.original_type.apply_to_all_composing_elements(callback)
 
-    def unwrap(self, nullable=True, typedef=True):
-        if typedef:
-            return self.original_type.unwrap(
-                nullable=nullable, typedef=typedef)
-        return self
-
     @property
     def does_include_nullable_type(self):
         return self.original_type.does_include_nullable_type
@@ -673,6 +692,11 @@ class TypedefType(IdlType, WithIdentifier):
     @property
     def original_type(self):
         return self._typedef.idl_type
+
+    def _unwrap(self, switches):
+        if switches['typedef']:
+            return self.original_type._unwrap(switches)
+        return self
 
 
 class _ArrayLikeType(IdlType):
@@ -1050,11 +1074,6 @@ class NullableType(IdlType):
         callback(self)
         self.inner_type.apply_to_all_composing_elements(callback)
 
-    def unwrap(self, nullable=True, typedef=True):
-        if nullable:
-            return self.inner_type.unwrap(nullable=nullable, typedef=typedef)
-        return self
-
     @property
     def does_include_nullable_type(self):
         return True
@@ -1066,3 +1085,8 @@ class NullableType(IdlType):
     @property
     def inner_type(self):
         return self._inner_type
+
+    def _unwrap(self, switches):
+        if switches['nullable']:
+            return self.inner_type._unwrap(switches)
+        return self
