@@ -364,48 +364,6 @@ DOMDataView* NDEFRecord::data() const {
   return DOMDataView::Create(dom_buffer, 0, payload_data_.size());
 }
 
-String NDEFRecord::text() const {
-  if (record_type_ == "empty")
-    return String();
-
-  // TODO(https://crbug.com/520391): Support utf-16 decoding for 'TEXT' record
-  // as described at
-  // http://w3c.github.io/web-nfc/#dfn-convert-ndefrecord-payloaddata-bytes.
-  return String::FromUTF8WithLatin1Fallback(payload_data_.data(),
-                                            payload_data_.size());
-}
-
-DOMArrayBuffer* NDEFRecord::arrayBuffer() const {
-  if (record_type_ == "empty" || record_type_ == "text" ||
-      record_type_ == "url" || record_type_ == "absolute-url") {
-    return nullptr;
-  }
-  DCHECK(record_type_ == "mime" || record_type_ == "unknown" ||
-         !ValidateCustomRecordType(record_type_).IsNull());
-
-  return DOMArrayBuffer::Create(payload_data_.data(), payload_data_.size());
-}
-
-ScriptValue NDEFRecord::json(ScriptState* script_state,
-                             ExceptionState& exception_state) const {
-  if (record_type_ == "empty" || record_type_ == "text" ||
-      record_type_ == "url" || record_type_ == "absolute-url") {
-    return ScriptValue::CreateNull(script_state->GetIsolate());
-  }
-  DCHECK(record_type_ == "mime" || record_type_ == "unknown" ||
-         !ValidateCustomRecordType(record_type_).IsNull());
-
-  ScriptState::Scope scope(script_state);
-  v8::Local<v8::Value> json_object =
-      FromJSONString(script_state->GetIsolate(), script_state->GetContext(),
-                     String::FromUTF8WithLatin1Fallback(payload_data_.data(),
-                                                        payload_data_.size()),
-                     exception_state);
-  if (exception_state.HadException())
-    return ScriptValue::CreateNull(script_state->GetIsolate());
-  return ScriptValue(script_state->GetIsolate(), json_object);
-}
-
 const WTF::Vector<uint8_t>& NDEFRecord::payloadData() const {
   return payload_data_;
 }
