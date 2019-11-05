@@ -98,9 +98,7 @@ function addModelHeader(model) {
       new Date(model.information.timestamp).toLocaleString() :
       'Unknown date';
   header.getElementsByClassName('arc-tracing-app-date')[0].textContent = date;
-  var duration = model.information.duration ?
-      (model.information.duration * 0.000001).toFixed(2) :
-      'unknown duration';
+  var duration = (model.information.duration * 0.000001).toFixed(2);
   header.getElementsByClassName('arc-tracing-app-duration')[0].textContent =
       duration;
   var platform = model.information.platform ? model.information.platform :
@@ -108,14 +106,12 @@ function addModelHeader(model) {
   header.getElementsByClassName('arc-tracing-app-platform')[0].textContent =
       platform;
 
-  if (model.information.duration) {
-    header.getElementsByClassName('arc-tracing-app-fps')[0].textContent =
-        calculateFPS(getAppCommitEvents(model), model.information.duration)
-            .toFixed(2);
-    header.getElementsByClassName('arc-tracing-chrome-fps')[0].textContent =
-        calculateFPS(getChromeSwapEvents(model), model.information.duration)
-            .toFixed(2);
-  }
+  header.getElementsByClassName('arc-tracing-app-fps')[0].textContent =
+      calculateFPS(getAppCommitEvents(model), model.information.duration)
+          .toFixed(2);
+  header.getElementsByClassName('arc-tracing-chrome-fps')[0].textContent =
+      calculateFPS(getChromeSwapEvents(model), model.information.duration)
+          .toFixed(2);
 
   var cpuPower = getAveragePower(model, 10 /* kCpuPower */);
   var gpuPower = getAveragePower(model, 11 /* kGpuPower */);
@@ -458,7 +454,7 @@ function refreshModels() {
 
   var duration = 0;
   for (i = 0; i < models.length; i++) {
-    duration = Math.max(duration, models[i].duration);
+    duration = Math.max(duration, models[i].information.duration);
   }
 
   for (i = 0; i < models.length; i++) {
@@ -516,14 +512,6 @@ function setModelColor(model) {
  * @param {object} model to add.
  */
 function addModel(model) {
-  // Patch old models that do not have model.information to simplify checks.
-  if (!model.information) {
-    model.information = {};
-    if (!model.information.duration) {
-      model.information.duration = model.duration;
-    }
-  }
-
   models.push(model);
 
   setModelColor(model);
