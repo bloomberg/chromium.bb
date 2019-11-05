@@ -20,7 +20,7 @@
 
 #include "third_party/blink/renderer/core/svg/svg_point_list.h"
 
-#include "third_party/blink/renderer/core/svg/svg_animation_element.h"
+#include "third_party/blink/renderer/core/svg/svg_animate_element.h"
 #include "third_party/blink/renderer/core/svg/svg_parser_utilities.h"
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -93,7 +93,7 @@ void SVGPointList::Add(SVGPropertyBase* other, SVGElement* context_element) {
 }
 
 void SVGPointList::CalculateAnimatedValue(
-    const SVGAnimationElement& animation_element,
+    const SVGAnimateElement& animation_element,
     float percentage,
     unsigned repeat_count,
     SVGPropertyBase* from_value,
