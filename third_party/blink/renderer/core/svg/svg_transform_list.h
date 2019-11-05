@@ -37,6 +37,7 @@
 
 namespace blink {
 
+class CSSValue;
 class SVGTransformListTearOff;
 
 class SVGTransformList final

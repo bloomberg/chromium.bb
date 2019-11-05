@@ -96,8 +96,9 @@ void SVGNumberList::CalculateAnimatedValue(
   uint32_t to_at_end_of_duration_list_size =
       to_at_end_of_duration_list->length();
 
-  if (!AdjustFromToListValues(from_list, to_list, percentage,
-                              animation_element.GetAnimationMode()))
+  const bool is_to_animation =
+      animation_element.GetAnimationMode() == kToAnimation;
+  if (!AdjustFromToListValues(from_list, to_list, percentage, is_to_animation))
     return;
 
   for (uint32_t i = 0; i < to_list_size; ++i) {
