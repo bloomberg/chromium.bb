@@ -20,6 +20,7 @@ const char kTestSwitch[] = "test";
 const char kInitDoneNotifierSwitch[] = "init-done-notifier";
 const char kNoRateLimitSwitch[] = "no-rate-limit";
 const char kEnableLoggingSwitch[] = "enable-logging";
+const char kLoggingLevelSwitch[] = "v";
 const char kLoggingModuleSwitch[] = "vmodule";
 
 // URLs.

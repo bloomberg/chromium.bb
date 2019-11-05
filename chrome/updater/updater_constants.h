@@ -44,6 +44,9 @@ extern const char kInitDoneNotifierSwitch[];
 // Enables logging.
 extern const char kEnableLoggingSwitch[];
 
+// Specifies the logging level.
+extern const char kLoggingLevelSwitch[];
+
 // Specifies the logging module filter.
 extern const char kLoggingModuleSwitch[];
 
@@ -56,7 +59,7 @@ extern const char kUpdaterJSONDefaultUrl[];
 extern const char kCrashUploadURL[];
 extern const char kCrashStagingUploadURL[];
 
-// File system paths.
+// Paths.
 //
 // The directory name where CRX apps get installed. This is provided for demo
 // purposes, since products installed by this updater will be installed in
