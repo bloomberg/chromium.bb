@@ -59,6 +59,10 @@ interface LocalFrameHost {
   // about whether it is occluded or has visual effects applied, in order to
   // service IntersectionObserver's that track visibility.
   SetNeedsOcclusionTracking(bool needs_tracking);
+
+  // Evicts the page from the back/forward cache due to e.g., JavaScript
+  // execution.
+  EvictFromBackForwardCache();
 };
 
 // Implemented in Blink, this interface defines frame-specific methods that will

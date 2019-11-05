@@ -1773,7 +1773,7 @@ bool LocalFrame::IsCapturingMedia() const {
 }
 
 void LocalFrame::EvictFromBackForwardCache() {
-  Client()->EvictFromBackForwardCache();
+  GetLocalFrameHostRemote().EvictFromBackForwardCache();
 }
 
 void LocalFrame::DidChangeVisibleToHitTesting() {

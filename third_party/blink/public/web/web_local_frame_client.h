@@ -838,10 +838,6 @@ class BLINK_EXPORT WebLocalFrameClient {
 
   // Transfers user activation state from |source_frame| to the current frame.
   virtual void TransferUserActivationFrom(WebLocalFrame* source_frame) {}
-
-  // Evicts the page from the back forward cache due to e.g., JavaScript
-  // execution.
-  virtual void EvictFromBackForwardCache() {}
 };
 
 }  // namespace blink

@@ -34,6 +34,7 @@ class FakeLocalFrameHost : public mojom::blink::LocalFrameHost {
   void DidDisplayInsecureContent() override;
   void DidContainInsecureFormAction() override;
   void SetNeedsOcclusionTracking(bool needs_tracking) override;
+  void EvictFromBackForwardCache() override;
 
  private:
   void BindFrameHostReceiver(mojo::ScopedInterfaceEndpointHandle handle);

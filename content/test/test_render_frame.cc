@@ -219,8 +219,6 @@ class MockFrameHost : public mojom::FrameHost {
   void UpdateUserGestureCarryoverInfo() override {}
 #endif
 
-  void EvictFromBackForwardCache() override {}
-
   void DidChangeThemeColor(
       const base::Optional<::SkColor>& theme_color) override {}
 

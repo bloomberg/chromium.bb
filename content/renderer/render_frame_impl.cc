@@ -3912,10 +3912,6 @@ void RenderFrameImpl::UpdateSubresourceFactory(
   GetLoaderFactoryBundle()->Update(std::move(child_info));
 }
 
-void RenderFrameImpl::EvictFromBackForwardCache() {
-  GetFrameHost()->EvictFromBackForwardCache();
-}
-
 void RenderFrameImpl::BindToFrame(blink::WebNavigationControl* frame) {
   DCHECK(!frame_);
 

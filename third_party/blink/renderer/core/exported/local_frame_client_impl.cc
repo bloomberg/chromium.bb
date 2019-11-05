@@ -1224,9 +1224,4 @@ void LocalFrameClientImpl::UpdateSubresourceFactory(
   web_frame_->Client()->UpdateSubresourceFactory(std::move(info));
 }
 
-void LocalFrameClientImpl::EvictFromBackForwardCache() {
-  DCHECK(web_frame_->Client());
-  return web_frame_->Client()->EvictFromBackForwardCache();
-}
-
 }  // namespace blink

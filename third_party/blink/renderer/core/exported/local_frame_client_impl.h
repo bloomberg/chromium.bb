@@ -319,8 +319,6 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   void UpdateSubresourceFactory(
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo> info) override;
 
-  void EvictFromBackForwardCache() override;
-
  private:
   struct DocumentInterfaceBrokerForwarderTraits {
     using Interface = mojom::blink::DocumentInterfaceBroker;
