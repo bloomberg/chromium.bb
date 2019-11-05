@@ -534,7 +534,6 @@ jumbo_component("platform") {
     "exported/web_prerender.cc",
     "exported/web_prerendering_support.cc",
     "exported/web_resource_timing_info.cc",
-    "exported/web_rtc_answer_options.cc",
     "exported/web_rtc_ice_candidate.cc",
     "exported/web_rtc_peer_connection_handler_client.cc",
     "exported/web_rtc_rtp_receiver.cc",
