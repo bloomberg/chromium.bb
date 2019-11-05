@@ -34,8 +34,8 @@ RootCompositorFrameSinkImpl::Create(
     uint32_t restart_id,
     bool run_all_compositor_stages_before_draw) {
   // First create an output surface.
-  mojom::DisplayClientPtr display_client =
-      mojom::DisplayClientPtr(std::move(params->display_client));
+  mojo::Remote<mojom::DisplayClient> display_client(
+      std::move(params->display_client));
   auto output_surface = output_surface_provider->CreateOutputSurface(
       params->widget, params->gpu_compositing, display_client.get(),
       params->renderer_settings);
@@ -294,7 +294,7 @@ RootCompositorFrameSinkImpl::RootCompositorFrameSinkImpl(
         frame_sink_receiver,
     mojo::PendingRemote<mojom::CompositorFrameSinkClient> frame_sink_client,
     mojom::DisplayPrivateAssociatedRequest display_request,
-    mojom::DisplayClientPtr display_client,
+    mojo::Remote<mojom::DisplayClient> display_client,
     std::unique_ptr<SyntheticBeginFrameSource> synthetic_begin_frame_source,
     std::unique_ptr<ExternalBeginFrameSource> external_begin_frame_source,
     std::unique_ptr<Display> display)

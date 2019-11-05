@@ -37,7 +37,7 @@ struct RootCompositorFrameSinkParams {
   pending_remote<CompositorFrameSinkClient> compositor_frame_sink_client;
 
   associated DisplayPrivate& display_private;
-  DisplayClient display_client;
+  pending_remote<DisplayClient> display_client;
 
   associated ExternalBeginFrameController&? external_begin_frame_controller;
 };

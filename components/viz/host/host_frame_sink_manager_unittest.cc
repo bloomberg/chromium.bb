@@ -58,7 +58,7 @@ struct RootCompositorFrameSinkData {
     params->compositor_frame_sink_client =
         compositor_frame_sink_client.BindInterfaceRemote();
     params->display_private = MakeRequest(&display_private);
-    params->display_client = display_client.BindInterfacePtr().PassInterface();
+    params->display_client = display_client.BindRemote();
     return params;
   }
 

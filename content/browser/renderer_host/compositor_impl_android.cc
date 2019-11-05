@@ -829,8 +829,7 @@ void CompositorImpl::InitializeVizLayerTreeFrameSink(
           .InitWithNewPipeAndPassReceiver();
   root_params->display_private = mojo::MakeRequest(&display_private_);
   display_client_ = std::make_unique<AndroidHostDisplayClient>(this);
-  root_params->display_client =
-      display_client_->GetBoundPtr(task_runner).PassInterface();
+  root_params->display_client = display_client_->GetBoundRemote(task_runner);
 
   const auto& display_props =
       display::Screen::GetScreen()->GetDisplayNearestWindow(root_window_);

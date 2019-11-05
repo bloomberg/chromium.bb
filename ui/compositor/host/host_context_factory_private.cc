@@ -116,8 +116,7 @@ void HostContextFactoryPrivate::ConfigureCompositor(
   compositor_data.display_client =
       std::make_unique<HostDisplayClient>(compositor);
   root_params->display_client =
-      compositor_data.display_client->GetBoundPtr(resize_task_runner_)
-          .PassInterface();
+      compositor_data.display_client->GetBoundRemote(resize_task_runner_);
 
   if (compositor->use_external_begin_frame_control()) {
     root_params->external_begin_frame_controller =

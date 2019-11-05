@@ -98,7 +98,7 @@ class RootCompositorFrameSinkImpl : public mojom::CompositorFrameSink,
           frame_sink_receiver,
       mojo::PendingRemote<mojom::CompositorFrameSinkClient> frame_sink_client,
       mojom::DisplayPrivateAssociatedRequest display_request,
-      mojom::DisplayClientPtr display_client,
+      mojo::Remote<mojom::DisplayClient> display_client,
       std::unique_ptr<SyntheticBeginFrameSource> synthetic_begin_frame_source,
       std::unique_ptr<ExternalBeginFrameSource> external_begin_frame_source,
       std::unique_ptr<Display> display);
@@ -120,8 +120,8 @@ class RootCompositorFrameSinkImpl : public mojom::CompositorFrameSink,
   mojo::Remote<mojom::CompositorFrameSinkClient> compositor_frame_sink_client_;
   mojo::AssociatedReceiver<mojom::CompositorFrameSink>
       compositor_frame_sink_receiver_;
-  // |display_client_| may be nullptr on platforms that do not use it.
-  mojom::DisplayClientPtr display_client_;
+  // |display_client_| may be NullRemote on platforms that do not use it.
+  mojo::Remote<mojom::DisplayClient> display_client_;
   mojo::AssociatedBinding<mojom::DisplayPrivate> display_private_binding_;
 
   std::unique_ptr<VSyncParameterListener> vsync_listener_;
