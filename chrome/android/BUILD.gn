@@ -2434,6 +2434,11 @@ template("monochrome_or_trichrome_public_bundle_tmpl") {
   }
 
   chrome_bundle(target_name) {
+    forward_variables_from(invoker,
+                           [
+                             "static_library_proguard_disabled",
+                             "static_library_provider",
+                           ])
     base_module_target = ":$_base_module_target_name"
     bundle_name = _bundle_name
     include_32_bit_webview = defined(invoker.include_32_bit_webview) &&
@@ -2497,6 +2502,10 @@ if (public_android_sdk) {
   monochrome_or_trichrome_public_bundle_tmpl("trichrome_chrome_bundle") {
     bundle_suffix = ""
     use_trichrome_library = true
+    static_library_provider = ":trichrome_library_for_bundle_apk"
+    if (!is_java_debug) {
+      static_library_proguard_disabled = !trichrome_synchronized_proguard
+    }
   }
 
   if (android_64bit_target_cpu) {
