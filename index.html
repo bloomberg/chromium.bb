@@ -41,13 +41,12 @@
         width: 100%;
         padding: 1px 2px 1px 1px;
       }
-      .nodebuttons {
-        flex-grow: 0;
-        flex-shrink: 0;
-      }
       .noderun,
-      .nodelink {
+      .nodelink,
+      .testcaselogbtn {
         display: inline-block;
+        flex-shrink: 0;
+        flex-grow: 0;
         vertical-align: top;
         background-color: #eee;
         background-repeat: no-repeat;
@@ -55,22 +54,20 @@
         border: 1px solid #888;
       }
       @media (pointer: fine) {
-        .nodebuttons {
-          flex-basis: 52px;
-        }
         .noderun,
-        .nodelink {
+        .nodelink,
+        .testcaselogbtn {
+          flex-basis: 24px;
           border-radius: 4px;
           width: 24px;
           height: 24px;
         }
       }
       @media (pointer: coarse) {
-        .nodebuttons {
-          flex-basis: 76px;
-        }
         .noderun,
-        .nodelink {
+        .nodelink,
+        .testcaselogbtn {
+          flex-basis: 36px;
           border-radius: 6px;
           width: 36px;
           height: 36px;
@@ -144,9 +141,7 @@
         background: white;
       }
       .testcaselog {
-        font-size: 10pt;
-        margin: 0 2px;
-        color: #666;
+        display: flex;
       }
       .testcaselog:nth-child(odd) {
         background: #fff;
@@ -154,7 +149,18 @@
       .testcaselog:nth-child(even) {
         background: #f8f8f8;
       }
-      .testcaselog::first-line {
+      .testcaselogbtn {
+        background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMAQMAAABsu86kAAAABlBMVEUAAAAAAAClZ7nPAAAAAXRSTlMAQObYZgAAACRJREFUCNdjYGBg+H+AwUGBwV+BQUGAQX0CiNQQYFABk8ogLgBsYQUt2gNKPwAAAABJRU5ErkJggg==);
+      }
+      .testcaselogtext {
+        flex: 1 0;
+        font-size: 10pt;
+        white-space: pre-wrap;
+        word-break: break-word;
+        margin: 0;
+        color: #666;
+      }
+      .testcaselogtext::first-line {
         color: #000;
       }
 

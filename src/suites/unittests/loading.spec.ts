@@ -60,12 +60,15 @@ const specsData: { [k: string]: TestSpecOrReadme } = {
     g: (() => {
       const g = new TestGroup(UnitTest);
       g.test('blah', t => {
-        t.log('OK');
+        t.debug('OK');
       });
       g.test('bleh', t => {
-        t.log('OK');
-        t.log('OK');
+        t.debug('OK');
+        t.debug('OK');
       }).params([{}]);
+      g.test('bluh', t => {
+        t.fail('bye');
+      });
       return g;
     })(),
   },
@@ -196,7 +199,7 @@ g.test('end2end', async t => {
   const log = new Logger();
   const [rec, res] = log.record(l[0].id);
   const rcs = Array.from(l[0].spec.g.iterate(rec));
-  if (rcs.length !== 2) {
+  if (rcs.length !== 3) {
     throw new Error('iterate length');
   }
 
@@ -212,7 +215,7 @@ g.test('end2end', async t => {
 
   {
     const cases = res.cases;
-    const res0 = await rcs[0].run();
+    const res0 = await rcs[0].run(true);
     if (cases.length !== 1) {
       throw new Error('results cases length');
     }
@@ -220,18 +223,18 @@ g.test('end2end', async t => {
     t.expect(res0.test === 'blah');
     t.expect(res0.params === null);
     t.expect(res0.status === 'pass');
-    t.expect(res0.timems > 0);
+    t.expect(res0.timems >= 0);
     if (res0.logs === undefined) {
       throw new Error('results case logs');
     }
-    t.expect(objectEquals(res0.logs, ['OK']));
+    t.expect(objectEquals(JSON.stringify(res0.logs), '["OK"]'));
   }
   {
     // Store cases off to a separate variable due to a typescript bug
     // where it can't detect that res.cases.length might change between
     // above and here.
     const cases = res.cases;
-    const res1 = await rcs[1].run();
+    const res1 = await rcs[1].run(true);
     if (cases.length !== 2) {
       throw new Error('results cases length');
     }
@@ -239,10 +242,32 @@ g.test('end2end', async t => {
     t.expect(res1.test === 'bleh');
     t.expect(paramsEquals(res1.params, {}));
     t.expect(res1.status === 'pass');
-    t.expect(res1.timems > 0);
+    t.expect(res1.timems >= 0);
     if (res1.logs === undefined) {
       throw new Error('results case logs');
     }
-    t.expect(objectEquals(res1.logs, ['OK', 'OK']));
+    t.expect(objectEquals(JSON.stringify(res1.logs), '["OK","OK"]'));
+  }
+  {
+    // Store cases off to a separate variable due to a typescript bug
+    // where it can't detect that res.cases.length might change between
+    // above and here.
+    const cases = res.cases;
+    const res2 = await rcs[2].run(true);
+    if (cases.length !== 3) {
+      throw new Error('results cases length');
+    }
+    t.expect(res.cases[2] === res2);
+    t.expect(res2.test === 'bluh');
+    t.expect(res2.params === null);
+    t.expect(res2.status === 'fail');
+    t.expect(res2.timems >= 0);
+    if (res2.logs === undefined) {
+      throw new Error('results case logs');
+    }
+    t.expect(res2.logs.length === 1);
+    const l = res2.logs[0].toJSON();
+    t.expect(l.startsWith('FAIL: bye\n'));
+    t.expect(l.indexOf('loading.spec.') !== -1);
   }
 });

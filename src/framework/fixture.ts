@@ -22,11 +22,7 @@ export class Fixture {
   async init(): Promise<void> {}
 
   debug(msg: string): void {
-    this.rec.debug(msg);
-  }
-
-  log(msg: string): void {
-    this.rec.log(msg);
+    this.rec.debug(new Error(msg));
   }
 
   skip(msg: string): never {
@@ -44,11 +40,11 @@ export class Fixture {
   }
 
   warn(msg?: string): void {
-    this.rec.warn(msg);
+    this.rec.warn(new Error(msg));
   }
 
   fail(msg?: string): void {
-    this.rec.fail(msg);
+    this.rec.fail(new Error(msg));
   }
 
   protected async immediateAsyncExpectation<T>(fn: () => Promise<T>): Promise<T> {
@@ -58,33 +54,38 @@ export class Fixture {
     return ret;
   }
 
-  protected eventualAsyncExpectation<T>(fn: () => Promise<T>): Promise<T> {
-    const promise = fn();
+  protected eventualAsyncExpectation<T>(fn: (niceStack: Error) => Promise<T>): Promise<T> {
+    const promise = fn(new Error());
     this.eventualExpectations.push(promise);
     return promise;
   }
 
-  private expectErrorValue(expectedName: string, ex: unknown, m: string): void {
+  private expectErrorValue(expectedName: string, ex: unknown, niceStack: Error): void {
     if (!(ex instanceof Error)) {
-      this.fail('THREW non-error value, of type ' + typeof ex);
+      niceStack.message = 'THREW non-error value, of type ' + typeof ex + niceStack.message;
+      this.rec.fail(niceStack);
       return;
     }
     const actualName = ex.name;
     if (actualName !== expectedName) {
-      this.fail(`THREW ${actualName}, instead of ${expectedName}${m}`);
+      niceStack.message = `THREW ${actualName}, instead of ${expectedName}` + niceStack.message;
+      this.rec.fail(niceStack);
     } else {
-      this.debug(`OK: threw ${actualName}${m}`);
+      niceStack.message = 'OK: threw ' + actualName + niceStack.message;
+      this.rec.debug(niceStack);
     }
   }
 
   shouldReject(expectedName: string, p: Promise<unknown>, msg?: string): void {
-    this.eventualAsyncExpectation(async () => {
+    this.eventualAsyncExpectation(async niceStack => {
       const m = msg ? ': ' + msg : '';
       try {
         await p;
-        this.fail('DID NOT THROW' + m);
+        niceStack.message = 'DID NOT THROW' + m;
+        this.rec.fail(niceStack);
       } catch (ex) {
-        this.expectErrorValue(expectedName, ex, m);
+        niceStack.message = m;
+        this.expectErrorValue(expectedName, ex, niceStack);
       }
     });
   }
@@ -93,18 +94,18 @@ export class Fixture {
     const m = msg ? ': ' + msg : '';
     try {
       fn();
-      this.fail('DID NOT THROW' + m);
+      this.rec.fail(new Error('DID NOT THROW' + m));
     } catch (ex) {
-      this.expectErrorValue(expectedName, ex, m);
+      this.expectErrorValue(expectedName, ex, new Error(m));
     }
   }
 
   expect(cond: boolean, msg?: string): boolean {
     if (cond) {
       const m = msg ? ': ' + msg : '';
-      this.debug('expect OK' + m);
+      this.rec.debug(new Error('expect OK' + m));
     } else {
-      this.rec.fail(msg);
+      this.rec.fail(new Error(msg));
     }
     return cond;
   }

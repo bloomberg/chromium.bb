@@ -16,8 +16,32 @@ export interface LiveTestCaseResult {
   readonly test: string;
   readonly params: ParamSpec | null;
   status: Status;
-  logs?: string[];
+  logs?: LogMessageWithStack[];
   timems: number;
+}
+
+class LogMessageWithStack extends Error {
+  constructor(name: string, ex: Error) {
+    super(ex.message);
+
+    this.name = name;
+    this.stack = ex.stack;
+  }
+
+  toJSON(): string {
+    let m = this.name;
+    if (this.message) {
+      m += ': ' + this.message;
+    }
+    m += '\n' + getStackTrace(this);
+    return m;
+  }
+}
+
+class LogMessageWithoutStack extends LogMessageWithStack {
+  toJSON(): string {
+    return this.message;
+  }
 }
 
 export class Logger {
@@ -66,7 +90,7 @@ export class TestCaseRecorder {
   private result: LiveTestCaseResult;
   private state = PassState.pass;
   private startTime = -1;
-  private logs: string[] = [];
+  private logs: LogMessageWithStack[] = [];
   private debugging = false;
 
   constructor(result: LiveTestCaseResult) {
@@ -93,41 +117,26 @@ export class TestCaseRecorder {
     this.debugging = false;
   }
 
-  debug(msg: string): void {
+  debug(ex: Error): void {
     if (!this.debugging) {
       return;
     }
-    this.log('DEBUG: ' + msg);
+    this.logs.push(new LogMessageWithoutStack('DEBUG', ex));
   }
 
-  log(msg: string): void {
-    this.logs.push(msg);
-  }
-
-  warn(msg?: string): void {
+  warn(ex: Error): void {
     this.setState(PassState.warn);
-    let m = 'WARN';
-    if (msg) {
-      m += ': ' + msg;
-    }
-    m += ' ' + getStackTrace(new Error());
-    this.log(m);
+    this.logs.push(new LogMessageWithStack('WARN', ex));
   }
 
-  fail(msg?: string): void {
+  fail(ex: Error): void {
     this.setState(PassState.fail);
-    let m = 'FAIL';
-    if (msg) {
-      m += ': ' + msg;
-    }
-    m += '\n' + getStackTrace(new Error());
-    this.log(m);
+    this.logs.push(new LogMessageWithStack('FAIL', ex));
   }
 
   skipped(ex: SkipTestCase): void {
     this.setState(PassState.skip);
-    const m = 'SKIPPED: ' + getStackTrace(ex);
-    this.log(m);
+    this.logs.push(new LogMessageWithStack('SKIP', ex));
   }
 
   threw(ex: Error): void {
@@ -135,8 +144,9 @@ export class TestCaseRecorder {
       this.skipped(ex);
       return;
     }
+
     this.setState(PassState.fail);
-    this.log('EXCEPTION: ' + ex.name + ':\n' + ex.message + '\n' + getStackTrace(ex));
+    this.logs.push(new LogMessageWithStack('EXCEPTION', ex));
   }
 
   private setState(state: PassState): void {

@@ -57,10 +57,22 @@ function makeCaseHTML(name: string, t: RunCase): [HTMLElement, RunSubtree] {
     if (res.logs) {
       caselogs.empty();
       for (const l of res.logs) {
-        $('<pre>')
+        const caselog = $('<div>')
           .addClass('testcaselog')
-          .appendTo(caselogs)
-          .text(l);
+          .appendTo(caselogs);
+        $('<button>')
+          .addClass('testcaselogbtn')
+          .attr('alt', 'Log stack to console')
+          .attr('title', 'Log stack to console')
+          .appendTo(caselog)
+          .on('click', () => {
+            // tslint:disable-next-line: no-console
+            console.log(l);
+          });
+        $('<pre>')
+          .addClass('testcaselogtext')
+          .appendTo(caselog)
+          .text(l.toJSON());
       }
     }
   };
@@ -129,26 +141,21 @@ function makeTreeNodeHeaderHTML(
   }
 
   const href = `?${worker ? 'worker&' : ''}${debug ? 'debug&' : ''}q=${nameEncoded}`;
-  $('<div>')
-    .addClass('nodebuttons')
-    .appendTo(div)
-    .append(
-      $('<button>')
-        .addClass('noderun')
-        .attr('alt', 'Run subtree')
-        .attr('title', 'Run subtree')
-        .on('click', async () => {
-          await runSubtree();
-          updateJSON();
-        })
-    )
-    .append(
-      $('<a>')
-        .addClass('nodelink')
-        .attr('href', href)
-        .attr('alt', 'Open')
-        .attr('title', 'Open')
-    );
+  $('<button>')
+    .addClass('noderun')
+    .attr('alt', 'Run subtree')
+    .attr('title', 'Run subtree')
+    .on('click', async () => {
+      await runSubtree();
+      updateJSON();
+    })
+    .appendTo(div);
+  $('<a>')
+    .addClass('nodelink')
+    .attr('href', href)
+    .attr('alt', 'Open')
+    .attr('title', 'Open')
+    .appendTo(div);
   const nodetitle = $('<div>')
     .addClass('nodetitle')
     .appendTo(div);

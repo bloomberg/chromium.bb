@@ -82,19 +82,26 @@ for (const a of process.argv.slice(2)) {
       console.log(log.asJSON(2));
     }
 
+    function printResults(results: Array<[TestSpecID, LiveTestCaseResult]>): void {
+      for (const [id, r] of results) {
+        console.log(makeQueryString(id, r), r.status, r.timems + 'ms');
+        if (r.logs) {
+          for (const l of r.logs) {
+            console.log('- ' + l.toJSON().replace(/\n/g, '\n  '));
+          }
+        }
+      }
+    }
+
     if (warned.length) {
       console.log('');
       console.log('** Warnings **');
-      for (const [id, r] of warned) {
-        console.log(makeQueryString(id), r);
-      }
+      printResults(warned);
     }
     if (failed.length) {
       console.log('');
       console.log('** Failures **');
-      for (const [id, r] of failed) {
-        console.log(makeQueryString(id), r);
-      }
+      printResults(failed);
     }
 
     const total = running.length;

@@ -71,8 +71,9 @@ g.test('stack', async t0 => {
     if (logs === undefined) {
       throw new Error('expected logs');
     }
-    t0.expect(search.test(logs[0]));
-    const st = logs[0].split('\n');
+    const l = logs[0].toJSON();
+    t0.expect(search.test(l));
+    const st = l.split('\n');
     t0.expect(search.test(st[st.length - 1]));
   }
 });

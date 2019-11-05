@@ -103,28 +103,39 @@ export class GPUTest extends Fixture {
 
     this.queue.submit([c.finish()]);
 
-    this.eventualAsyncExpectation(async () => {
+    this.eventualAsyncExpectation(async niceStack => {
       const actual = new Uint8Array(await dst.mapReadAsync());
-      this.expectBuffer(actual, exp);
+      const check = this.checkBuffer(actual, exp);
+      if (check !== undefined) {
+        niceStack.message = check;
+        this.rec.fail(niceStack);
+      }
       dst.destroy();
     });
   }
 
   expectBuffer(actual: Uint8Array, exp: Uint8Array): void {
+    const check = this.checkBuffer(actual, exp);
+    if (check !== undefined) {
+      this.rec.fail(new Error(check));
+    }
+  }
+
+  checkBuffer(actual: Uint8Array, exp: Uint8Array): string | undefined {
     const size = exp.byteLength;
     if (actual.byteLength !== size) {
-      this.rec.fail('size mismatch');
-      return;
+      return 'size mismatch';
     }
+    const lines = [];
     let failedPixels = 0;
     for (let i = 0; i < size; ++i) {
       if (actual[i] !== exp[i]) {
         if (failedPixels > 4) {
-          this.rec.fail('... and more');
+          lines.push('... and more');
           break;
         }
         failedPixels++;
-        this.rec.fail(`at [${i}], expected ${exp[i]}, got ${actual[i]}`);
+        lines.push(`at [${i}], expected ${exp[i]}, got ${actual[i]}`);
       }
     }
     if (size <= 256 && failedPixels > 0) {
@@ -134,8 +145,12 @@ export class GPUTest extends Fixture {
       const actHex = Array.from(actual)
         .map(x => x.toString(16).padStart(2, '0'))
         .join('');
-      this.rec.log('EXPECT: ' + expHex);
-      this.rec.log('ACTUAL: ' + actHex);
+      lines.push('EXPECT: ' + expHex);
+      lines.push('ACTUAL: ' + actHex);
     }
+    if (failedPixels) {
+      return lines.join('\n');
+    }
+    return undefined;
   }
 }

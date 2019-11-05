@@ -13,11 +13,11 @@ g.test('test/sync', t => {});
 g.test('test/async', async t => {});
 
 g.test('testp/sync', t => {
-  t.log(JSON.stringify(t.params));
+  t.debug(JSON.stringify(t.params));
 }).params([{}]);
 
 g.test('testp/async', async t => {
-  t.log(JSON.stringify(t.params));
+  t.debug(JSON.stringify(t.params));
 }).params([{}]);
 
 g.test('testp/private', t => {

@@ -60,7 +60,7 @@ g.test('pass', t => {
   const [rec, res] = testrec.record('baz', null);
 
   rec.start();
-  rec.log('hello');
+  rec.debug(new Error('hello'));
   t.expect(res.status === 'running');
   rec.finish();
   t.expect(res.status === 'pass');
@@ -76,7 +76,7 @@ g.test('skip', t => {
   t.expect(res.status === 'running');
 
   rec.skipped(new SkipTestCase());
-  rec.log('hello');
+  rec.debug(new Error('hello'));
 
   t.expect(res.status === 'running');
   rec.finish();
@@ -93,7 +93,7 @@ g.test('warn', t => {
   rec.start();
   t.expect(res.status === 'running');
 
-  rec.warn();
+  rec.warn(new Error());
   rec.skipped(new SkipTestCase());
 
   t.expect(res.status === 'running');
@@ -111,8 +111,8 @@ g.test('fail', t => {
   rec.start();
   t.expect(res.status === 'running');
 
-  rec.fail('bye');
-  rec.warn();
+  rec.fail(new Error('bye'));
+  rec.warn(new Error());
   rec.skipped(new SkipTestCase());
 
   t.expect(res.status === 'running');
@@ -130,7 +130,7 @@ g.test('debug', t => {
   const [rec, res] = testrec.record('baz', null);
 
   rec.start(debug);
-  rec.debug('hello');
+  rec.debug(new Error('hello'));
   rec.finish();
   t.expect(res.status === 'pass');
   t.expect(res.timems >= 0);
