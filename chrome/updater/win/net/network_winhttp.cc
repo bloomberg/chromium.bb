@@ -289,9 +289,7 @@ void NetworkFetcherWinHTTP::ReceiveResponseComplete() {
     xheader_retry_after_sec_ = xheader_retry_after_sec;
   }
 
-  std::move(fetch_started_callback_)
-      .Run(final_url_.is_valid() ? final_url_ : url_, response_code,
-           content_length);
+  std::move(fetch_started_callback_).Run(response_code, content_length);
 
   net_error_ = QueryDataAvailable();
   if (FAILED(net_error_))
@@ -525,9 +523,6 @@ void NetworkFetcherWinHTTP::StatusCallback(HINTERNET handle,
           << " handle=" << handle << ", " << msg;
 
   switch (status) {
-    case WINHTTP_CALLBACK_STATUS_REDIRECT:
-      final_url_ = GURL(static_cast<base::char16*>(info));
-      break;
     case WINHTTP_CALLBACK_STATUS_HANDLE_CLOSING:
       self_ = nullptr;
       break;
