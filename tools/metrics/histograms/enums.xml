@@ -10257,6 +10257,7 @@ Called by update_net_error_codes.py.-->
   <int value="56" label="Legacy cookie access"/>
   <int value="57" label="Native file system write guard"/>
   <int value="58" label="Installed web app metadata"/>
+  <int value="59" label="NFC"/>
 </enum>
 
 <enum name="ContentTypeParseableResult">
@@ -49109,6 +49110,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="19" label="PERMISSION_PERIODIC_BACKGROUND_SYNC"/>
   <int value="20" label="PERMISSION_WAKE_LOCK_SCREEN"/>
   <int value="21" label="PERMISSION_WAKE_LOCK_SYSTEM"/>
+  <int value="22" label="PERMISSION_NFC"/>
 </enum>
 
 <enum name="PersistedLogsLogReadStatus">
