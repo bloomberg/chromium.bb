@@ -364,6 +364,19 @@ const std::vector<std::string>& FakeServer::GetKeystoreKeys() const {
   return loopback_server_->GetKeystoreKeysForTesting();
 }
 
+void FakeServer::TriggerKeystoreKeyRotation() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  loopback_server_->AddNewKeystoreKeyForTesting();
+
+  std::vector<sync_pb::SyncEntity> nigori_entities =
+      loopback_server_->GetPermanentSyncEntitiesByModelType(syncer::NIGORI);
+
+  DCHECK_EQ(nigori_entities.size(), 1U);
+  DCHECK(ModifyEntitySpecifics(
+      loopback_server_->GetTopLevelPermanentItemId(syncer::NIGORI),
+      nigori_entities[0].specifics()));
+}
+
 void FakeServer::InjectEntity(std::unique_ptr<LoopbackServerEntity> entity) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(entity->GetModelType() != syncer::AUTOFILL_WALLET_DATA)
