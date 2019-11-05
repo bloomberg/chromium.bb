@@ -3045,7 +3045,6 @@ crbug.com/626703 [ Win10 ] external/wpt/html/infrastructure/urls/resolving-urls/
 crbug.com/626703 [ Win7 ] external/wpt/html/infrastructure/urls/resolving-urls/query-encoding/windows-1252.html [ Failure Timeout Pass ]
 crbug.com/626703 external/wpt/html/infrastructure/urls/resolving-urls/query-encoding/navigation.sub.html?encoding=windows-1252 [ Timeout ]
 crbug.com/626703 external/wpt/css/css-values/ch-unit-011.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-values/attr-invalid-type-008.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-grid/abspos/descendant-static-position-003.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-grid/abspos/descendant-static-position-002.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-grid/abspos/descendant-static-position-001.html [ Failure ]
