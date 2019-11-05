@@ -72,8 +72,10 @@ class WebContentsLoadFinishedWaiter : public content::WebContentsObserver {
   ~WebContentsLoadFinishedWaiter() override = default;
 
   void Wait() {
-    if (!web_contents()->IsLoading())
+    if (!web_contents()->IsLoading() &&
+        web_contents()->GetLastCommittedURL() != GURL::EmptyGURL()) {
       return;
+    }
 
     run_loop_ = std::make_unique<base::RunLoop>();
     run_loop_->Run();
@@ -107,26 +109,23 @@ class EulaTest : public OobeBaseTest {
   EulaTest() = default;
   ~EulaTest() override = default;
 
+  void SetUpOnMainThread() override {
+    // Retrieve the URL from the embedded test server and override EULA URL.
+    fake_eula_url_ =
+        embedded_test_server()->base_url().Resolve(kFakeOnlineEulaPath).spec();
+    EulaScreenHandler::set_eula_url_for_testing(fake_eula_url_.c_str());
+
+    OobeBaseTest::SetUpOnMainThread();
+  }
+
   // OobeBaseTest:
   void RegisterAdditionalRequestHandlers() override {
     embedded_test_server()->RegisterRequestHandler(
         base::Bind(&EulaTest::HandleRequest, base::Unretained(this)));
   }
 
-  void OverrideOnlineEulaUrl() {
-    // Override with the embedded test server's base url. Otherwise, the load
-    // would not hit the embedded test server.
-    const GURL fake_eula_url =
-        embedded_test_server()->base_url().Resolve(kFakeOnlineEulaPath);
-    test::OobeJS().Evaluate(
-        base::StringPrintf("loadTimeData.overrideValues({eulaOnlineUrl: '%s'});"
-                           "Oobe.updateLocalizedContent();",
-                           fake_eula_url.spec().c_str()));
-  }
-
   void ShowEulaScreen() {
     LoginDisplayHost::default_host()->StartWizard(EulaView::kScreenId);
-    OverrideOnlineEulaUrl();
     OobeScreenWaiter(EulaView::kScreenId).Wait();
   }
 
@@ -230,6 +229,9 @@ class EulaTest : public OobeBaseTest {
 
   bool allow_online_eula_ = false;
 
+  // URL used for testing. Retrieved from the embedded server.
+  std::string fake_eula_url_;
+
   DISALLOW_COPY_AND_ASSIGN(EulaTest);
 };
 
@@ -247,8 +249,7 @@ IN_PROC_BROWSER_TEST_F(EulaTest, DISABLED_LoadOnline) {
 
 // Tests that offline version is shown when the online version is not
 // accessible.
-// Disable due to flaky crbug.com/1015948
-IN_PROC_BROWSER_TEST_F(EulaTest, DISABLED_LoadOffline) {
+IN_PROC_BROWSER_TEST_F(EulaTest, LoadOffline) {
   set_allow_online_eula(false);
   ShowEulaScreen();
 
@@ -261,8 +262,14 @@ IN_PROC_BROWSER_TEST_F(EulaTest, DISABLED_LoadOffline) {
     WebContentsLoadFinishedWaiter(eula_contents).Wait();
   }
 
-  EXPECT_TRUE(test::GetWebViewContents({"oobe-eula-md", "crosEulaFrame"})
-                  .find(kOfflineEULAWarning) != std::string::npos);
+  // Wait until the Accept button on the EULA frame becomes enabled.
+  chromeos::test::OobeJS()
+      .CreateEnabledWaiter(true, {"oobe-eula-md", "acceptButton"})
+      ->Wait();
+
+  const std::string webview_contents =
+      test::GetWebViewContents({"oobe-eula-md", "crosEulaFrame"});
+  EXPECT_TRUE(webview_contents.find(kOfflineEULAWarning) != std::string::npos);
 }
 
 // Tests that clicking on "System security settings" button opens a dialog

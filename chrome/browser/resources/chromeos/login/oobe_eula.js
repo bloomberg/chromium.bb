@@ -120,6 +120,7 @@ Polymer({
    */
   updateLocalizedContent: function(event) {
     // This forces frame to reload.
+    this.acceptButtonDisabled = true;
     this.screen.loadEulaToWebview_(this.$.crosEulaFrame);
     this.i18nUpdateLocale();
   },
