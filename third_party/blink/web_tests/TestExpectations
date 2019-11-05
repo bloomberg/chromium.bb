@@ -5761,3 +5761,8 @@ crbug.com/963183 http/tests/devtools/network/network-cookies-pane.js [ Pass Time
 crbug.com/963183 http/tests/devtools/network/preview-searchable.js [ Pass Failure ]
 crbug.com/963183 http/tests/devtools/network/waterfall-header-height-updates.js [ Pass Failure ]
 crbug.com/963183 http/tests/devtools/network/network-search.js [ Pass Timeout Failure ]
+
+# Sheriff 2019-11-04
+crbug.com/1021407 [ Retina Release ] virtual/audio-service/media/video-controls-rendering.html [ Pass Failure ]
+crbug.com/1021407 [ Mac10.11 ] virtual/audio-service/media/controls/video-overlay-cast-dark-rendering.html [ Pass Failure ]
+crbug.com/1021407 [ Mac10.11 ] media/controls/video-overlay-cast-dark-rendering.html [ Pass Failure ]
