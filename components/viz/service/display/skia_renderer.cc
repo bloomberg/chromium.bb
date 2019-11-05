@@ -1253,7 +1253,7 @@ SkiaRenderer::DrawQuadParams SkiaRenderer::CalculateDrawQuadParams(
     const gfx::Transform& target_to_device,
     const gfx::Rect* scissor_rect,
     const DrawQuad* quad,
-    const gfx::QuadF* draw_region) {
+    const gfx::QuadF* draw_region) const {
   DrawQuadParams params(
       target_to_device * quad->shared_quad_state->quad_to_target_transform,
       gfx::RectF(quad->visible_rect), SkCanvas::kNone_QuadAAFlags,
@@ -1392,7 +1392,7 @@ const DrawQuad* SkiaRenderer::CanPassBeDrawnDirectly(const RenderPass* pass) {
 SkiaRenderer::BypassMode SkiaRenderer::CalculateBypassParams(
     const DrawQuad* bypass_quad,
     DrawRPDQParams* rpdq_params,
-    DrawQuadParams* params) {
+    DrawQuadParams* params) const {
   // Depending on bypass_quad's blend mode, its content may be irrelevant
   if (RenderPassRemainsTransparent(
           bypass_quad->shared_quad_state->blend_mode)) {
@@ -1469,9 +1469,10 @@ SkiaRenderer::BypassMode SkiaRenderer::CalculateBypassParams(
   return BypassMode::kDrawBypassQuad;
 }
 
-SkCanvas::ImageSetEntry SkiaRenderer::MakeEntry(const SkImage* image,
-                                                int matrix_index,
-                                                const DrawQuadParams& params) {
+SkCanvas::ImageSetEntry SkiaRenderer::MakeEntry(
+    const SkImage* image,
+    int matrix_index,
+    const DrawQuadParams& params) const {
   return SkCanvas::ImageSetEntry(
       {sk_ref_sp(image), gfx::RectFToSkRect(params.vis_tex_coords),
        gfx::RectFToSkRect(params.visible_rect), matrix_index, params.opacity,
@@ -1481,7 +1482,7 @@ SkCanvas::ImageSetEntry SkiaRenderer::MakeEntry(const SkImage* image,
 SkCanvas::SrcRectConstraint SkiaRenderer::ResolveTextureConstraints(
     const SkImage* image,
     const gfx::RectF& valid_texel_bounds,
-    DrawQuadParams* params) {
+    DrawQuadParams* params) const {
   if (params->aa_flags == SkCanvas::kNone_QuadAAFlags &&
       params->filter_quality == kNone_SkFilterQuality) {
     // Non-AA and no bilinear filtering so rendering won't filter outside the
@@ -1523,7 +1524,7 @@ SkCanvas::SrcRectConstraint SkiaRenderer::ResolveTextureConstraints(
 
 bool SkiaRenderer::MustFlushBatchedQuads(const DrawQuad* new_quad,
                                          const DrawRPDQParams* rpdq_params,
-                                         const DrawQuadParams& params) {
+                                         const DrawQuadParams& params) const {
   if (batched_quads_.empty())
     return false;
 
