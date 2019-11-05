@@ -2261,9 +2261,9 @@ TEST_P(OverviewSessionTest, WindowItemTitleCloseVisibilityOnDrag) {
   generator->PressLeftButton();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0.f, item1->GetTitlebarOpacityForTesting());
-  EXPECT_EQ(1.f, item1->GetCloseButtonVisibilityForTesting());
+  EXPECT_EQ(1.f, item1->GetCloseButtonOpacityForTesting());
   EXPECT_EQ(1.f, item2->GetTitlebarOpacityForTesting());
-  EXPECT_EQ(0.f, item2->GetCloseButtonVisibilityForTesting());
+  EXPECT_EQ(0.f, item2->GetCloseButtonOpacityForTesting());
 
   // Drag |item1| in a way so that |window1| does not get activated (drags
   // within a certain threshold count as clicks). Verify the close button and
@@ -2277,9 +2277,9 @@ TEST_P(OverviewSessionTest, WindowItemTitleCloseVisibilityOnDrag) {
   generator->ReleaseLeftButton();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1.f, item1->GetTitlebarOpacityForTesting());
-  EXPECT_EQ(1.f, item1->GetCloseButtonVisibilityForTesting());
+  EXPECT_EQ(1.f, item1->GetCloseButtonOpacityForTesting());
   EXPECT_EQ(1.f, item2->GetTitlebarOpacityForTesting());
-  EXPECT_EQ(1.f, item2->GetCloseButtonVisibilityForTesting());
+  EXPECT_EQ(1.f, item2->GetCloseButtonOpacityForTesting());
   histogram_tester.ExpectTotalCount(
       "Ash.Overview.WindowDrag.PresentationTime.TabletMode", 1);
   histogram_tester.ExpectTotalCount(
