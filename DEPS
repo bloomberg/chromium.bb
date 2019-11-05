@@ -89,7 +89,7 @@ deps = {
 
     'third_party/tinycbor/src':
         Var('chromium_git') + '/external/github.com/intel/tinycbor.git' +
-        '@' + 'bfc40dcf909f1998d7760c2bc0e1409979d3c8cb',
+        '@' + '755f9ef932f9830a63a712fd2ac971d838b131f1',
 
     'third_party/abseil/src': {
         'url': Var('chromium_git') +
