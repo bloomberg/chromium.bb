@@ -86,7 +86,7 @@ bool HomeScreenController::GoHome(int64_t display_id) {
       SplitViewController::Get(Shell::GetPrimaryRootWindow());
   const bool split_view_active = split_view_controller->InSplitViewMode();
 
-  if (!features::IsHomerviewGestureEnabled()) {
+  if (!features::IsDragFromShelfToHomeOrOverviewEnabled()) {
     if (home_launcher_gesture_handler_->ShowHomeLauncher(
             Shell::Get()->display_manager()->GetDisplayForId(display_id))) {
       return true;

@@ -76,7 +76,7 @@ base::TimeDelta GetAnimationDuration(OverviewAnimationType animation_type) {
       return kCloseFadeOut;
     case OVERVIEW_ANIMATION_ENTER_FROM_HOME_LAUNCHER:
     case OVERVIEW_ANIMATION_EXIT_TO_HOME_LAUNCHER:
-      return features::IsHomerviewGestureEnabled()
+      return features::IsDragFromShelfToHomeOrOverviewEnabled()
                  ? kHomeLauncherTransition
                  : kHomeLauncherSlideTransition;
     case OVERVIEW_ANIMATION_DROP_TARGET_FADE:
@@ -167,9 +167,9 @@ ScopedOverviewAnimationSettings::ScopedOverviewAnimationSettings(
           ui::LayerAnimator::ENQUEUE_NEW_ANIMATION);
       // Add animation delay when entering from home launcher.
       // Delay transform only when using slide animation (which is used
-      // if kHomerviewGesture is not enabled), as otherwise the overview item
-      // will only fade in.
-      if (features::IsHomerviewGestureEnabled()) {
+      // if kDragFromShelfToHomeOrOverview is not enabled), as otherwise
+      // the overview item will only fade in.
+      if (features::IsDragFromShelfToHomeOrOverviewEnabled()) {
         animator->SchedulePauseForProperties(
             kFromHomeLauncherDelay, ui::LayerAnimationElement::OPACITY);
       } else {

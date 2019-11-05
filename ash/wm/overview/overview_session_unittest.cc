@@ -2882,99 +2882,6 @@ TEST_P(OverviewSessionTest, ShelfAlignmentChangeWhileInOverview) {
   EXPECT_FALSE(InOverviewSession());
 }
 
-// Tests overview behavior with kHomerviewGesture flag enabled.
-class OverviewSessionWithHomerviewGestureTest : public OverviewSessionTest {
- public:
-  OverviewSessionWithHomerviewGestureTest() = default;
-  ~OverviewSessionWithHomerviewGestureTest() override = default;
-
-  void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(features::kHomerviewGesture);
-    OverviewSessionTest::SetUp();
-    EnterTabletMode();
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(OverviewSessionWithHomerviewGestureTest);
-};
-
-// Tests starting the overview session using kFadeInEnter type.
-TEST_P(OverviewSessionWithHomerviewGestureTest, FadeIn) {
-  // Create a minimized window.
-  std::unique_ptr<aura::Window> window = CreateTestWindow();
-  WindowState::Get(window.get())->Minimize();
-
-  ui::ScopedAnimationDurationScaleMode test_duration_mode(
-      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
-
-  ToggleOverview(OverviewSession::EnterExitOverviewType::kFadeInEnter);
-  ASSERT_TRUE(InOverviewSession());
-
-  OverviewItem* item = GetOverviewItemForWindow(window.get());
-
-  // Verify that the item widget's transform is not animated as part of the
-  // animation.
-  views::Widget* widget = item_widget(item);
-  EXPECT_FALSE(widget->GetLayer()->GetAnimator()->IsAnimatingProperty(
-      ui::LayerAnimationElement::TRANSFORM));
-
-  // Opacity should be animated to full opacity.
-  EXPECT_EQ(1.0f, widget->GetLayer()->GetTargetOpacity());
-  EXPECT_TRUE(widget->GetLayer()->GetAnimator()->IsAnimatingProperty(
-      ui::LayerAnimationElement::OPACITY));
-
-  // Validate item bounds are within the grid.
-  const gfx::Rect bounds = gfx::ToEnclosedRect(item->target_bounds());
-  EXPECT_TRUE(GetGridBounds().Contains(bounds));
-
-  // Header is expected to be shown immediately.
-  EXPECT_EQ(
-      1.0f,
-      item->overview_item_view()->header_view()->layer()->GetTargetOpacity());
-
-  EXPECT_EQ(OverviewSession::EnterExitOverviewType::kFadeInEnter,
-            overview_session()->enter_exit_overview_type());
-}
-
-// Tests exiting the overview session using kFadeOutExit type.
-TEST_P(OverviewSessionWithHomerviewGestureTest, FadeOutExit) {
-  // Create a test window.
-  std::unique_ptr<views::Widget> test_widget(CreateTestWidget());
-  ToggleOverview();
-  ASSERT_TRUE(InOverviewSession());
-  EXPECT_FALSE(test_widget->IsMinimized());
-
-  ui::ScopedAnimationDurationScaleMode test_duration_mode(
-      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
-
-  // Grab the item widget before the session starts shutting down. The widget
-  // should outlive the session, at least until the animations are done - give
-  // tha NON_ZERO_DURATION animation duration scale, it should be safe to
-  // dereference the widget poiner immediately (synchronously) after the session
-  // ends.
-  OverviewItem* item = GetOverviewItemForWindow(test_widget->GetNativeWindow());
-  views::Widget* grid_item_widget = item_widget(item);
-
-  ToggleOverview(OverviewSession::EnterExitOverviewType::kFadeOutExit);
-  ASSERT_FALSE(InOverviewSession());
-
-  // The test window should be minimized as overview fade out exit starts.
-  EXPECT_TRUE(test_widget->IsMinimized());
-
-  // Verify that the item widget's transform is not animated as part of the
-  // animation, and that no transform is applied after minimizing the window.
-  EXPECT_FALSE(grid_item_widget->GetLayer()->GetAnimator()->IsAnimatingProperty(
-      ui::LayerAnimationElement::TRANSFORM));
-  EXPECT_EQ(gfx::Transform(), grid_item_widget->GetLayer()->transform());
-
-  // Opacity should be animated to zero opacity.
-  EXPECT_EQ(0.0f, grid_item_widget->GetLayer()->GetTargetOpacity());
-  EXPECT_TRUE(grid_item_widget->GetLayer()->GetAnimator()->IsAnimatingProperty(
-      ui::LayerAnimationElement::OPACITY));
-}
-
 // The class to test overview behavior with kDragFromShelfToHomeOrOverview flag
 // enabled.
 class OverviewSessionWithDragFromShelfFeatureTest : public OverviewSessionTest {
@@ -3041,6 +2948,81 @@ TEST_P(OverviewSessionWithDragFromShelfFeatureTest,
   EXPECT_TRUE(InOverviewSession());
   EXPECT_FALSE(Shell::Get()->home_screen_controller()->IsHomeScreenVisible());
   EXPECT_TRUE(split_view_controller()->InSplitViewMode());
+}
+
+// Tests starting the overview session using kFadeInEnter type.
+TEST_P(OverviewSessionWithDragFromShelfFeatureTest, FadeIn) {
+  // Create a minimized window.
+  std::unique_ptr<aura::Window> window = CreateTestWindow();
+  WindowState::Get(window.get())->Minimize();
+
+  ui::ScopedAnimationDurationScaleMode test_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  ToggleOverview(OverviewSession::EnterExitOverviewType::kFadeInEnter);
+  ASSERT_TRUE(InOverviewSession());
+
+  OverviewItem* item = GetOverviewItemForWindow(window.get());
+
+  // Verify that the item widget's transform is not animated as part of the
+  // animation.
+  views::Widget* widget = item_widget(item);
+  EXPECT_FALSE(widget->GetLayer()->GetAnimator()->IsAnimatingProperty(
+      ui::LayerAnimationElement::TRANSFORM));
+
+  // Opacity should be animated to full opacity.
+  EXPECT_EQ(1.0f, widget->GetLayer()->GetTargetOpacity());
+  EXPECT_TRUE(widget->GetLayer()->GetAnimator()->IsAnimatingProperty(
+      ui::LayerAnimationElement::OPACITY));
+
+  // Validate item bounds are within the grid.
+  const gfx::Rect bounds = gfx::ToEnclosedRect(item->target_bounds());
+  EXPECT_TRUE(GetGridBounds().Contains(bounds));
+
+  // Header is expected to be shown immediately.
+  EXPECT_EQ(
+      1.0f,
+      item->overview_item_view()->header_view()->layer()->GetTargetOpacity());
+
+  EXPECT_EQ(OverviewSession::EnterExitOverviewType::kFadeInEnter,
+            overview_session()->enter_exit_overview_type());
+}
+
+// Tests exiting the overview session using kFadeOutExit type.
+TEST_P(OverviewSessionWithDragFromShelfFeatureTest, FadeOutExit) {
+  // Create a test window.
+  std::unique_ptr<views::Widget> test_widget(CreateTestWidget());
+  ToggleOverview();
+  ASSERT_TRUE(InOverviewSession());
+  EXPECT_FALSE(test_widget->IsMinimized());
+
+  ui::ScopedAnimationDurationScaleMode test_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  // Grab the item widget before the session starts shutting down. The widget
+  // should outlive the session, at least until the animations are done - given
+  // that NON_ZERO_DURATION animation duration scale, it should be safe to
+  // dereference the widget pointer immediately (synchronously) after the
+  // session ends.
+  OverviewItem* item = GetOverviewItemForWindow(test_widget->GetNativeWindow());
+  views::Widget* grid_item_widget = item_widget(item);
+
+  ToggleOverview(OverviewSession::EnterExitOverviewType::kFadeOutExit);
+  ASSERT_FALSE(InOverviewSession());
+
+  // The test window should be minimized as overview fade out exit starts.
+  EXPECT_TRUE(test_widget->IsMinimized());
+
+  // Verify that the item widget's transform is not animated as part of the
+  // animation, and that no transform is applied after minimizing the window.
+  EXPECT_FALSE(grid_item_widget->GetLayer()->GetAnimator()->IsAnimatingProperty(
+      ui::LayerAnimationElement::TRANSFORM));
+  EXPECT_EQ(gfx::Transform(), grid_item_widget->GetLayer()->transform());
+
+  // Opacity should be animated to zero opacity.
+  EXPECT_EQ(0.0f, grid_item_widget->GetLayer()->GetTargetOpacity());
+  EXPECT_TRUE(grid_item_widget->GetLayer()->GetAnimator()->IsAnimatingProperty(
+      ui::LayerAnimationElement::OPACITY));
 }
 
 // TODO(sammiequon): Merge this into SplitViewOverviewSessionTest and rename
@@ -5855,9 +5837,6 @@ INSTANTIATE_TEST_SUITE_P(
     testing::Values(true));
 INSTANTIATE_TEST_SUITE_P(,
                          OverviewSessionWithDragFromShelfFeatureTest,
-                         testing::Bool());
-INSTANTIATE_TEST_SUITE_P(,
-                         OverviewSessionWithHomerviewGestureTest,
                          testing::Bool());
 
 }  // namespace ash

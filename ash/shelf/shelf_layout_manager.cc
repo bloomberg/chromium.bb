@@ -130,8 +130,8 @@ bool IsHotseatEnabled() {
 // gestures.
 ash::HomeLauncherGestureHandler::Mode
 GetHomeLauncherGestureHandlerModeForDrag() {
-  if (features::IsHomerviewGestureEnabled() && IsHotseatEnabled() &&
-      Shell::Get()->home_screen_controller() &&
+  if (features::IsDragFromShelfToHomeOrOverviewEnabled() &&
+      IsHotseatEnabled() && Shell::Get()->home_screen_controller() &&
       Shell::Get()->home_screen_controller()->IsHomeScreenVisible() &&
       Shell::Get()->overview_controller() &&
       !Shell::Get()->overview_controller()->InOverviewSession()) {
