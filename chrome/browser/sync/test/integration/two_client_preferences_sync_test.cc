@@ -190,10 +190,8 @@ class TwoClientPreferencesSyncTestWithSelfNotifications : public SyncTest {
   DISALLOW_COPY_AND_ASSIGN(TwoClientPreferencesSyncTestWithSelfNotifications);
 };
 
-// Flaky. https://crbug.com/1012688
-// This was E2E_ENABLED(ShouldKeepLocalDataOnTypeMismatch).
 IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTestWithSelfNotifications,
-                       DISABLED_ShouldKeepLocalDataOnTypeMismatch) {
+                       E2E_ENABLED(ShouldKeepLocalDataOnTypeMismatch)) {
   ResetSyncForPrimaryAccount();
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
 
