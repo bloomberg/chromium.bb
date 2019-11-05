@@ -2259,7 +2259,8 @@ bool ChromeContentBrowserClient::IsDataSaverEnabled(
 
   Profile* profile = Profile::FromBrowserContext(browser_context);
   return profile && data_reduction_proxy::DataReductionProxySettings::
-                        IsDataSaverEnabledByUser(profile->GetPrefs());
+                        IsDataSaverEnabledByUser(profile->IsOffTheRecord(),
+                                                 profile->GetPrefs());
 }
 
 void ChromeContentBrowserClient::UpdateRendererPreferencesForWorker(

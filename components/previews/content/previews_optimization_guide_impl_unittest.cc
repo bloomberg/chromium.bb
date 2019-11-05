@@ -183,6 +183,7 @@ class TestPreviewsOptimizationGuide : public PreviewsOptimizationGuideImpl {
                                       background_task_runner,
                                       profile_path,
                                       pref_service,
+                                      false,
                                       database_provider,
                                       optimization_guide_top_host_provider,
                                       url_loader_factory,

@@ -70,6 +70,7 @@ PreviewsOptimizationGuideImpl::PreviewsOptimizationGuideImpl(
     const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
     const base::FilePath& profile_path,
     PrefService* pref_service,
+    bool is_off_the_record_profile,
     leveldb_proto::ProtoDatabaseProvider* database_provider,
     optimization_guide::TopHostProvider* top_host_provider,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
@@ -86,8 +87,10 @@ PreviewsOptimizationGuideImpl::PreviewsOptimizationGuideImpl(
       time_clock_(base::DefaultClock::GetInstance()),
       pref_service_(pref_service),
       url_loader_factory_(url_loader_factory),
-      network_quality_tracker_(network_quality_tracker) {
+      network_quality_tracker_(network_quality_tracker),
+      is_off_the_record_profile_(is_off_the_record_profile) {
   DCHECK(optimization_guide_service_);
+  DCHECK(!is_off_the_record_profile_);
   network_quality_tracker_->AddEffectiveConnectionTypeObserver(this);
   hint_cache_->Initialize(
       optimization_guide::switches::
@@ -354,7 +357,7 @@ void PreviewsOptimizationGuideImpl::OnHintsUpdated(
   // flag |kOptimizationHintsFetching|, fetch hints from the remote Optimization
   // Guide Service.
   if (!data_reduction_proxy::DataReductionProxySettings::
-          IsDataSaverEnabledByUser(pref_service_)) {
+          IsDataSaverEnabledByUser(is_off_the_record_profile_, pref_service_)) {
     return;
   }
 
@@ -392,7 +395,7 @@ void PreviewsOptimizationGuideImpl::ScheduleHintsFetch() {
   DCHECK(pref_service_);
 
   if (!data_reduction_proxy::DataReductionProxySettings::
-          IsDataSaverEnabledByUser(pref_service_)) {
+          IsDataSaverEnabledByUser(is_off_the_record_profile_, pref_service_)) {
     return;
   }
   const base::TimeDelta time_until_update_time =
