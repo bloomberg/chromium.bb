@@ -493,6 +493,7 @@ int MockHostResolverBase::Resolve(RequestImpl* request) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   last_request_priority_ = request->parameters().initial_priority;
+  last_request_network_isolation_key_ = request->network_isolation_key();
   last_secure_dns_mode_override_ =
       request->parameters().secure_dns_mode_override;
   num_resolve_++;

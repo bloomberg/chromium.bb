@@ -188,10 +188,17 @@ class MockHostResolverBase
     return last_request_priority_;
   }
 
+  // Returns the NetworkIsolationKey passed in to the last call to Resolve() (or
+  // base::nullopt if Resolve() hasn't been called yet).
+  const base::Optional<NetworkIsolationKey>&
+  last_request_network_isolation_key() {
+    return last_request_network_isolation_key_;
+  }
+
   // Returns the SecureDnsMode override of the last call to Resolve() (or
   // base::nullopt if Resolve() hasn't been called yet).
-  base::Optional<DnsConfig::SecureDnsMode> last_secure_dns_mode_override()
-      const {
+  const base::Optional<DnsConfig::SecureDnsMode>&
+  last_secure_dns_mode_override() const {
     return last_secure_dns_mode_override_;
   }
 
@@ -254,6 +261,7 @@ class MockHostResolverBase
   void RemoveCancelledListener(MdnsListenerImpl* listener);
 
   RequestPriority last_request_priority_;
+  base::Optional<NetworkIsolationKey> last_request_network_isolation_key_;
   base::Optional<DnsConfig::SecureDnsMode> last_secure_dns_mode_override_;
   bool synchronous_mode_;
   bool ondemand_mode_;
