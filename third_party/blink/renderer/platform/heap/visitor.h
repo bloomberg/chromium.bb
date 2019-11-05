@@ -98,11 +98,9 @@ class PLATFORM_EXPORT Visitor {
                   "T needs to be a garbage collected object");
     if (!t)
       return;
-    VisitRoot(const_cast<void*>(reinterpret_cast<const void*>(t)),
-              TraceDescriptorFor(t), location);
+    VisitRoot(const_cast<T*>(t), TraceDescriptorFor(t), location);
   }
 
-  // Member version of the one-argument templated trace method.
   template <typename T>
   void Trace(const Member<T>& t) {
     DCHECK(!t.IsHashTableDeletedValueSafe());
@@ -111,7 +109,7 @@ class PLATFORM_EXPORT Visitor {
 
   template <typename T>
   void Trace(const SameThreadCheckedMember<T>& t) {
-    Trace(*(static_cast<const Member<T>*>(&t)));
+    Trace(static_cast<const Member<T>&>(t));
   }
 
   // Fallback methods used only when we need to trace raw pointers of T. This is
@@ -128,8 +126,7 @@ class PLATFORM_EXPORT Visitor {
                   "T needs to be a garbage collected object");
     if (!t)
       return;
-    Visit(const_cast<void*>(reinterpret_cast<const void*>(t)),
-          TraceDescriptorFor(t));
+    Visit(t, TraceDescriptorFor(t));
   }
 
   template <typename T>
@@ -138,7 +135,7 @@ class PLATFORM_EXPORT Visitor {
     static_assert(IsGarbageCollectedType<T>::value,
                   "T needs to be a garbage collected object");
 
-    VisitBackingStoreStrongly(reinterpret_cast<void*>(backing_store),
+    VisitBackingStoreStrongly(backing_store,
                               reinterpret_cast<void**>(backing_store_slot),
                               TraceDescriptorFor(backing_store));
   }
@@ -152,12 +149,10 @@ class PLATFORM_EXPORT Visitor {
     static_assert(IsGarbageCollectedType<T>::value,
                   "T needs to be a garbage collected object");
 
-    VisitBackingStoreWeakly(reinterpret_cast<void*>(backing_store),
+    VisitBackingStoreWeakly(backing_store,
                             reinterpret_cast<void**>(backing_store_slot),
-                            TraceTrait<T>::GetTraceDescriptor(
-                                reinterpret_cast<void*>(backing_store)),
-                            TraceTrait<T>::GetWeakTraceDescriptor(
-                                reinterpret_cast<void*>(backing_store)),
+                            TraceDescriptorFor(backing_store),
+                            WeakTraceDescriptorFor(backing_store),
                             weak_callback, weak_callback_parameter);
   }
 
@@ -167,7 +162,7 @@ class PLATFORM_EXPORT Visitor {
     static_assert(IsGarbageCollectedType<T>::value,
                   "T needs to be a garbage collected object");
 
-    VisitBackingStoreOnly(reinterpret_cast<void*>(backing_store),
+    VisitBackingStoreOnly(backing_store,
                           reinterpret_cast<void**>(backing_store_slot));
   }
 
@@ -178,21 +173,20 @@ class PLATFORM_EXPORT Visitor {
   // picking the correct overload, so all these trace methods have to have
   // the same constness on their argument to allow the type to decide.
   template <typename T>
-  void Trace(const WeakMember<T>& t) {
+  void Trace(const WeakMember<T>& const_weak_member) {
     static_assert(sizeof(T), "T must be fully defined");
     static_assert(IsGarbageCollectedType<T>::value,
                   "T needs to be a garbage collected object");
 
-    T* weak_member = t.GetSafe();
+    WeakMember<T>& weak_member = const_cast<WeakMember<T>&>(const_weak_member);
+    std::remove_const_t<T>* value =
+        const_cast<std::remove_const_t<T>*>(weak_member.GetSafe());
 
-    if (!weak_member)
+    if (!value)
       return;
 
-    DCHECK(!t.IsHashTableDeletedValueSafe());
-    VisitWeak(const_cast<void*>(reinterpret_cast<const void*>(weak_member)),
-              reinterpret_cast<void*>(const_cast<WeakMember<T>*>(&t)),
-              TraceTrait<T>::GetTraceDescriptor(const_cast<void*>(
-                  reinterpret_cast<const void*>(weak_member))),
+    DCHECK(!weak_member.IsHashTableDeletedValueSafe());
+    VisitWeak(value, &weak_member, TraceDescriptorFor(value),
               &HandleWeakCell<T>);
   }
 
@@ -283,6 +277,11 @@ class PLATFORM_EXPORT Visitor {
   template <typename T>
   static inline TraceDescriptor TraceDescriptorFor(const T* traceable) {
     return TraceTrait<T>::GetTraceDescriptor(const_cast<T*>(traceable));
+  }
+
+  template <typename T>
+  static inline TraceDescriptor WeakTraceDescriptorFor(const T* traceable) {
+    return TraceTrait<T>::GetWeakTraceDescriptor(const_cast<T*>(traceable));
   }
 
  private:
