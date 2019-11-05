@@ -841,7 +841,6 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
   FRAME_INFO *frame_info = &cpi->frame_info;
   int i;
 
-  double boost_score = 0.0;
   double gf_group_err = 0.0;
 #if GROUP_ADAPTIVE_MAXQ
   double gf_group_raw_error = 0.0;
@@ -989,10 +988,6 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
       }
     }
 
-    // Calculate a boost number for this frame.
-    boost_score += decay_accumulator *
-                   calc_frame_boost(rc, frame_info, &next_frame,
-                                    this_frame_mv_in_out, GF_MAX_BOOST);
     // If almost totally static, we will not use the the max GF length later,
     // so we can continue for more frames.
     if ((i >= active_max_gf_interval + 1) &&
