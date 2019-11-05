@@ -57,8 +57,6 @@ struct TraceTrait;
 class ThreadState;
 class Visitor;
 template <typename T>
-class SameThreadCheckedMember;
-template <typename T>
 class TraceWrapperV8Reference;
 
 // The TraceMethodDelegate is used to convert a trace method for type T to a
@@ -105,11 +103,6 @@ class PLATFORM_EXPORT Visitor {
   void Trace(const Member<T>& t) {
     DCHECK(!t.IsHashTableDeletedValueSafe());
     Trace(t.GetSafe());
-  }
-
-  template <typename T>
-  void Trace(const SameThreadCheckedMember<T>& t) {
-    Trace(static_cast<const Member<T>&>(t));
   }
 
   // Fallback methods used only when we need to trace raw pointers of T. This is
