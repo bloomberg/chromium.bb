@@ -3292,7 +3292,8 @@ hooks = [
     'name': 'clang_coverage',
     'pattern': '.',
     'condition': 'checkout_clang_coverage_tools',
-    'action': ['python', 'src/tools/code_coverage/update_clang_coverage_tools.py'],
+    'action': ['python', 'src/tools/clang/scripts/update.py',
+               '--package=coverage_tools'],
   },
   {
     # Mac doesn't use lld so it's not included in the default clang bundle
@@ -3301,7 +3302,8 @@ hooks = [
     'name': 'lld/mac',
     'pattern': '.',
     'condition': 'host_os == "mac" and (checkout_win or checkout_fuchsia)',
-    'action': ['python', 'src/tools/clang/scripts/download_lld_mac.py'],
+    'action': ['python', 'src/tools/clang/scripts/update.py',
+               '--package=lld_mac'],
   },
   {
     # Update LASTCHANGE.
