@@ -2592,7 +2592,13 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityTreeDumpTest,
   RunPDFTest(FILE_PATH_LITERAL("paragraphs-and-heading-untagged.pdf"));
 }
 
-IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityTreeDumpTest, MultiPage) {
+// crbug.com/1021499
+#if defined(OS_LINUX)
+#define MAYBE_MultiPage DISABLED_MultiPage
+#else
+#define MAYBE_MultiPage MultiPage
+#endif
+IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityTreeDumpTest, MAYBE_MultiPage) {
   RunPDFTest(FILE_PATH_LITERAL("multi-page.pdf"));
 }
 
@@ -2623,6 +2629,12 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityTreeDumpTest,
   RunPDFTest(FILE_PATH_LITERAL("text-run-style-heuristic.pdf"));
 }
 
-IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityTreeDumpTest, TextStyle) {
+// crbug.com/1021499
+#if defined(OS_LINUX)
+#define MAYBE_TextStyle DISABLED_TextStyle
+#else
+#define MAYBE_TextStyle TextStyle
+#endif
+IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityTreeDumpTest, MAYBE_TextStyle) {
   RunPDFTest(FILE_PATH_LITERAL("text-style.pdf"));
 }
