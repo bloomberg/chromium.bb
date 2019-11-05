@@ -115,7 +115,7 @@ class _IRBuilder(object):
 
         identifier = Identifier(node.GetName())
         members = [
-            self._build_interface_or_namespace_member(
+            self._build_interface_member(
                 child, interface_identifier=identifier)
             for child in child_nodes
         ]
@@ -163,7 +163,7 @@ class _IRBuilder(object):
         child_nodes = list(node.GetChildren())
         extended_attributes = self._take_extended_attributes(child_nodes)
 
-        members = map(self._build_interface_or_namespace_member, child_nodes)
+        members = map(self._build_interface_member, child_nodes)
         attributes = []
         constants = []
         operations = []
@@ -189,10 +189,10 @@ class _IRBuilder(object):
             component=self._component,
             debug_info=self._build_debug_info(node))
 
-    def _build_interface_or_namespace_member(self,
-                                             node,
-                                             fallback_extended_attributes=None,
-                                             interface_identifier=None):
+    def _build_interface_member(self,
+                                node,
+                                fallback_extended_attributes=None,
+                                interface_identifier=None):
         def build_attribute(node):
             child_nodes = list(node.GetChildren())
             idl_type = self._take_type(child_nodes)
@@ -305,7 +305,7 @@ class _IRBuilder(object):
 
         child_nodes = list(node.GetChildren())
         extended_attributes = self._take_extended_attributes(child_nodes)
-        members = map(self._build_interface_or_namespace_member, child_nodes)
+        members = map(self._build_interface_member, child_nodes)
         constants = []
         operations = []
         for member in members:
@@ -570,8 +570,9 @@ class _IRBuilder(object):
 
         member = None
         if len(child_nodes) == 1:
-            member = self._build_interface_or_namespace_member(
-                child_nodes[0], extended_attributes)
+            member = self._build_interface_member(
+                child_nodes[0],
+                fallback_extended_attributes=extended_attributes)
             extended_attributes = None
         operation = member if isinstance(member, Operation.IR) else None
         attribute = member if isinstance(member, Attribute.IR) else None
