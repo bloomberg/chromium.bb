@@ -374,10 +374,6 @@ void LoopbackServer::EnableStrongConsistencyWithConflictDetectionModel() {
   strong_consistency_model_enabled_ = true;
 }
 
-void LoopbackServer::AddNewKeystoreKeyForTesting() {
-  keystore_keys_.push_back(GenerateNewKeystoreKey());
-}
-
 bool LoopbackServer::HandleGetUpdatesRequest(
     const sync_pb::GetUpdatesMessage& get_updates,
     const std::string& store_birthday,
