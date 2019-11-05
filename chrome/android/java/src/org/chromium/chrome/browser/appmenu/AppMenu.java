@@ -37,6 +37,7 @@ import org.chromium.base.AnimationFrameTimeHistogram;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.SysUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ui.widget.highlight.ViewHighlighter;
@@ -295,14 +296,6 @@ class AppMenu implements OnItemClickListener, OnKeyListener, AppMenuAdapter.OnCl
                 }
             });
         }
-    }
-
-    /**
-     * @return The footer view for the menu or null if one has not been set.
-     */
-    @Nullable
-    public View getFooterView() {
-        return mFooterView;
     }
 
     private int[] getPopupPosition(int screenRotation, Rect appRect, Rect padding, View anchorView,
@@ -567,5 +560,10 @@ class AppMenu implements OnItemClickListener, OnKeyListener, AppMenuAdapter.OnCl
         if (mHandler != null) mHandler.onHeaderViewInflated(headerView);
 
         return headerView.getMeasuredHeight();
+    }
+
+    @VisibleForTesting
+    void finishAnimationsForTests() {
+        if (mMenuItemEnterAnimator != null) mMenuItemEnterAnimator.end();
     }
 }

@@ -823,6 +823,7 @@ android_library("chrome_test_java") {
     "//chrome/browser/ui/android/widget:java",
     "//chrome/browser/ui/android/widget:test_support_java",
     "//chrome/browser/util:java",
+    "//chrome/lib/lifecycle/public/android:java",
     "//chrome/test/android:chrome_java_test_support",
     "//chrome/test/android/test_trusted_web_activity:test_trusted_web_activity_java",
     "//components/autofill/android:autofill_java",
