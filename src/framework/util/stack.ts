@@ -18,10 +18,9 @@ export function getStackTrace(e: Error): string {
       break;
     }
     if (isSuites) {
+      stack.push(part);
       found = true;
     }
-
-    stack.push(part);
   }
   return stack.join('\n');
 }
