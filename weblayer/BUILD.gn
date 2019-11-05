@@ -122,6 +122,7 @@ jumbo_static_library("weblayer_lib") {
     "//components/security_interstitials/content:security_interstitial_page",
     "//components/security_interstitials/content/renderer:security_interstitial_page_controller",
     "//components/security_interstitials/core",
+    "//components/web_cache/browser",
     "//content:resources",
     "//content/app/resources",
     "//content/public/app:both",
