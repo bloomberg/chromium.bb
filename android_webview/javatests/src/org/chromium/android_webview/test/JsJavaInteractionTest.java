@@ -198,7 +198,7 @@ public class JsJavaInteractionTest {
 
     @Test
     @SmallTest
-    @Feature({"AndroidWebView", "JsJavaInterfaction"})
+    @Feature({"AndroidWebView", "JsJavaInteraction"})
     public void testAddWebMessageListenerAfterPageLoadWontAffectCurrentPage() throws Throwable {
         loadUrlFromPath(POST_MESSAGE_SIMPLE_HTML);
 
@@ -215,7 +215,7 @@ public class JsJavaInteractionTest {
 
     @Test
     @SmallTest
-    @Feature({"AndroidWebView", "JsJavaInterfaction"})
+    @Feature({"AndroidWebView", "JsJavaInteraction"})
     public void testAddTheSameWebMessageListenerForDifferentJsObjectsWorks() throws Throwable {
         addWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME, new String[] {"*"}, mListener);
         addWebMessageListenerOnUiThread(
@@ -235,7 +235,7 @@ public class JsJavaInteractionTest {
 
     @Test
     @SmallTest
-    @Feature({"AndroidWebView", "JsJavaInterfaction"})
+    @Feature({"AndroidWebView", "JsJavaInteraction"})
     public void testFragmentNavigationWontDoJsInjection() throws Throwable {
         String url = loadUrlFromPath(POST_MESSAGE_SIMPLE_HTML);
 
@@ -256,7 +256,7 @@ public class JsJavaInteractionTest {
 
     @Test
     @SmallTest
-    @Feature({"AndroidWebView", "JsJavaInterfaction"})
+    @Feature({"AndroidWebView", "JsJavaInteraction"})
     public void testAddWebMessageListenerAffectsRendererInitiatedNavigation() throws Throwable {
         // TODO(crbug.com/969842): We'd either replace the following html file with a file contains
         // no JavaScript code or add a test to ensure that evaluateJavascript() won't
@@ -293,7 +293,7 @@ public class JsJavaInteractionTest {
 
     @Test
     @SmallTest
-    @Feature({"AndroidWebView", "JsJavaInterfaction"})
+    @Feature({"AndroidWebView", "JsJavaInteraction"})
     public void testAddWebMessageListenerWontAffectOtherAwContents() throws Throwable {
         // Create another AwContents object.
         final TestAwContentsClient awContentsClient = new TestAwContentsClient();
@@ -325,7 +325,7 @@ public class JsJavaInteractionTest {
 
     @Test
     @SmallTest
-    @Feature({"AndroidWebView", "JsJavaInterfaction"})
+    @Feature({"AndroidWebView", "JsJavaInteraction"})
     public void testAddWebMessageListenerAllowsCertainUrlWorksWithIframe() throws Throwable {
         final String frameUrl = mTestServer.getURL(POST_MESSAGE_SIMPLE_HTML);
         final String html = createCrossOriginAccessTestPageHtml(frameUrl);
@@ -349,7 +349,7 @@ public class JsJavaInteractionTest {
 
     @Test
     @SmallTest
-    @Feature({"AndroidWebView", "JsJavaInterfaction"})
+    @Feature({"AndroidWebView", "JsJavaInteraction"})
     public void testRemoveWebMessageListener_preventInjectionForNextPageLoad() throws Throwable {
         addWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME, new String[] {"*"}, mListener);
 
@@ -373,7 +373,7 @@ public class JsJavaInteractionTest {
 
     @Test
     @SmallTest
-    @Feature({"AndroidWebView", "JsJavaInterfaction"})
+    @Feature({"AndroidWebView", "JsJavaInteraction"})
     public void testRemoveWebMessageListener_cutJsJavaMappingImmediately() throws Throwable {
         addWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME, new String[] {"*"}, mListener);
 
@@ -400,7 +400,7 @@ public class JsJavaInteractionTest {
 
     @Test
     @SmallTest
-    @Feature({"AndroidWebView", "JsJavaInterfaction"})
+    @Feature({"AndroidWebView", "JsJavaInteraction"})
     public void testRemoveWebMessageListener_removeWithNoAddWebMessageListener() throws Throwable {
         // Call removeWebMessageListener() without addWebMessageListener() shouldn't fail.
         removeWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME);
@@ -410,7 +410,7 @@ public class JsJavaInteractionTest {
 
     @Test
     @SmallTest
-    @Feature({"AndroidWebView", "JsJavaInterfaction"})
+    @Feature({"AndroidWebView", "JsJavaInteraction"})
     public void testRemoveWebMessageListener_removeBeforeLoadPage() throws Throwable {
         addWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME, new String[] {"*"}, mListener);
         removeWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME);
@@ -423,7 +423,7 @@ public class JsJavaInteractionTest {
 
     @Test
     @SmallTest
-    @Feature({"AndroidWebView", "JsJavaInterfaction"})
+    @Feature({"AndroidWebView", "JsJavaInteraction"})
     public void testRemoveWebMessageListener_extraRemove() throws Throwable {
         addWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME, new String[] {"*"}, mListener);
         removeWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME);
@@ -438,7 +438,7 @@ public class JsJavaInteractionTest {
 
     @Test
     @MediumTest
-    @Feature({"AndroidWebView", "JsJavaInterfaction"})
+    @Feature({"AndroidWebView", "JsJavaInteraction"})
     public void testAllowedOriginsWorksForVariousBaseUrls() throws Throwable {
         // Set a typical rule.
         addWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME,
@@ -506,7 +506,7 @@ public class JsJavaInteractionTest {
 
     @Test
     @MediumTest
-    @Feature({"AndroidWebView", "JsJavaInterfaction"})
+    @Feature({"AndroidWebView", "JsJavaInteraction"})
     public void testDontAllowAddWebMessageLitenerWithTheSameJsObjectName() {
         addWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME, new String[] {"*"}, mListener);
         try {
@@ -525,7 +525,7 @@ public class JsJavaInteractionTest {
 
     @Test
     @MediumTest
-    @Feature({"AndroidWebView", "JsJavaInterfaction"})
+    @Feature({"AndroidWebView", "JsJavaInteraction"})
     public void testAddWebMessageListener_SameOrigins() throws Throwable {
         final String[] allowedOriginRules =
                 new String[] {"https://www.example.com", "https://www.allowed.com"};
@@ -552,7 +552,7 @@ public class JsJavaInteractionTest {
 
     @Test
     @MediumTest
-    @Feature({"AndroidWebView", "JsJavaInterfaction"})
+    @Feature({"AndroidWebView", "JsJavaInteraction"})
     public void testAddWebMessageListener_OverlappingSetOfOrigins() throws Throwable {
         final String[] allowedOriginRules1 =
                 new String[] {"https://www.example.com", "https://www.allowed.com"};
@@ -596,7 +596,7 @@ public class JsJavaInteractionTest {
 
     @Test
     @MediumTest
-    @Feature({"AndroidWebView", "JsJavaInterfaction"})
+    @Feature({"AndroidWebView", "JsJavaInteraction"})
     public void testAddWebMessageListener_NonOverlappingSetOfOrigins() throws Throwable {
         final String[] allowedOriginRules1 =
                 new String[] {"https://www.example.com", "https://www.allowed.com"};
@@ -628,7 +628,7 @@ public class JsJavaInteractionTest {
 
     @Test
     @MediumTest
-    @Feature({"AndroidWebView", "JsJavaInterfaction"})
+    @Feature({"AndroidWebView", "JsJavaInteraction"})
     public void testJsReplyProxyWorks() throws Throwable {
         addWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME, new String[] {"*"}, mListener);
 
@@ -651,7 +651,7 @@ public class JsJavaInteractionTest {
 
     @Test
     @MediumTest
-    @Feature({"AndroidWebView", "JsJavaInterfaction"})
+    @Feature({"AndroidWebView", "JsJavaInteraction"})
     public void testJsReplyProxyReplyToTheCorrectJsObject() throws Throwable {
         final TestWebMessageListener webMessageListener2 = new TestWebMessageListener();
         addWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME, new String[] {"*"}, mListener);
@@ -787,7 +787,7 @@ public class JsJavaInteractionTest {
 
     @Test
     @MediumTest
-    @Feature({"AndroidWebView", "JsJavaInterfaction"})
+    @Feature({"AndroidWebView", "JsJavaInteraction"})
     public void testJsObjectRemoveOnMessage() throws Throwable {
         addWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME, new String[] {"*"}, mListener);
 
