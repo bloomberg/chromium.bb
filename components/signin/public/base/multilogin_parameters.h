@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SIGNIN_CORE_BROWSER_MULTILOGIN_PARAMETERS_H_
-#define COMPONENTS_SIGNIN_CORE_BROWSER_MULTILOGIN_PARAMETERS_H_
+#ifndef COMPONENTS_SIGNIN_PUBLIC_BASE_MULTILOGIN_PARAMETERS_H_
+#define COMPONENTS_SIGNIN_PUBLIC_BASE_MULTILOGIN_PARAMETERS_H_
 
 #include <string>
 #include <vector>
@@ -30,4 +30,4 @@ struct MultiloginParameters {
 };
 }  // namespace signin
 
-#endif  // COMPONENTS_SIGNIN_CORE_BROWSER_MULTILOGIN_PARAMETERS_H_
+#endif  // COMPONENTS_SIGNIN_PUBLIC_BASE_MULTILOGIN_PARAMETERS_H_

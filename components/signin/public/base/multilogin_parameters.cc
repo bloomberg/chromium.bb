@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/signin/core/browser/multilogin_parameters.h"
+#include "components/signin/public/base/multilogin_parameters.h"
 
 namespace signin {
 
