@@ -69,6 +69,14 @@ KeyParams KeystoreKeyParams(const std::string& key) {
           std::move(encoded_key)};
 }
 
+std::string ComputeKeyName(const KeyParams& key_params) {
+  std::string key_name;
+  syncer::Nigori::CreateByDerivation(key_params.derivation_params,
+                                     key_params.password)
+      ->Permute(syncer::Nigori::Password, syncer::kNigoriKeyName, &key_name);
+  return key_name;
+}
+
 // Builds NigoriSpecifics with following fields:
 // 1. encryption_keybag contains all keys derived from |keybag_keys_params|
 // and encrypted with a key derived from |keybag_decryptor_params|.
@@ -326,6 +334,22 @@ IN_PROC_BROWSER_TEST_P(SingleClientNigoriSyncTestWithUssTests,
       kDefaultKeyParams.derivation_params, GetFakeServer());
   ASSERT_TRUE(SetupSync());
   EXPECT_TRUE(WaitForPasswordForms({password_form}));
+}
+
+IN_PROC_BROWSER_TEST_P(SingleClientNigoriSyncTestWithUssTests,
+                       ShouldRotateKeystoreKey) {
+  ASSERT_TRUE(SetupSync());
+
+  GetFakeServer()->TriggerKeystoreKeyRotation();
+  const std::vector<std::string>& keystore_keys =
+      GetFakeServer()->GetKeystoreKeys();
+  ASSERT_THAT(keystore_keys, SizeIs(2));
+  const KeyParams new_keystore_key_params = KeystoreKeyParams(keystore_keys[1]);
+  const std::string expected_key_bag_key_name =
+      ComputeKeyName(new_keystore_key_params);
+  EXPECT_TRUE(ServerNigoriKeyNameChecker(expected_key_bag_key_name,
+                                         GetSyncService(0), GetFakeServer())
+                  .Wait());
 }
 
 IN_PROC_BROWSER_TEST_P(SingleClientNigoriSyncTestWithUssTests,
