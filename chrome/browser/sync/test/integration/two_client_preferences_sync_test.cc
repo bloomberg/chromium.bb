@@ -167,39 +167,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest,
   ASSERT_TRUE(ListPrefMatchChecker(prefs::kURLsToRestoreOnStartup).Wait());
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest,
-                       E2E_ENABLED(SingleClientEnabledEncryptionBothChanged)) {
-  ResetSyncForPrimaryAccount();
-  ASSERT_TRUE(SetupSync());
-  ASSERT_TRUE(BooleanPrefMatchChecker(prefs::kHomePageIsNewTabPage).Wait());
-  ASSERT_TRUE(StringPrefMatchChecker(prefs::kHomePage).Wait());
-
-  ASSERT_TRUE(EnableEncryption(0));
-  ChangeBooleanPref(0, prefs::kHomePageIsNewTabPage);
-  ChangeStringPref(1, prefs::kHomePage, "http://www.google.com/1");
-  ASSERT_TRUE(AwaitEncryptionComplete(0));
-  ASSERT_TRUE(AwaitEncryptionComplete(1));
-  ASSERT_TRUE(StringPrefMatchChecker(prefs::kHomePage).Wait());
-  ASSERT_TRUE(BooleanPrefMatchChecker(prefs::kHomePageIsNewTabPage).Wait());
-}
-
-IN_PROC_BROWSER_TEST_F(
-    TwoClientPreferencesSyncTest,
-    E2E_ENABLED(BothClientsEnabledEncryptionAndChangedMultipleTimes)) {
-  ResetSyncForPrimaryAccount();
-  ASSERT_TRUE(SetupSync());
-  ASSERT_TRUE(BooleanPrefMatchChecker(prefs::kHomePageIsNewTabPage).Wait());
-
-  ChangeBooleanPref(0, prefs::kHomePageIsNewTabPage);
-  ASSERT_TRUE(EnableEncryption(0));
-  ASSERT_TRUE(EnableEncryption(1));
-  ASSERT_TRUE(BooleanPrefMatchChecker(prefs::kHomePageIsNewTabPage).Wait());
-
-  ASSERT_TRUE(BooleanPrefMatchChecker(prefs::kShowHomeButton).Wait());
-  ChangeBooleanPref(0, prefs::kShowHomeButton);
-  ASSERT_TRUE(BooleanPrefMatchChecker(prefs::kShowHomeButton).Wait());
-}
-
 // The following tests use lower-level mechanisms to wait for sync cycle
 // completions. Those only work reliably with self notifications turned on.
 class TwoClientPreferencesSyncTestWithSelfNotifications : public SyncTest {
