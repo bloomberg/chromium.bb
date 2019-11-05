@@ -8,14 +8,19 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/unguessable_token.h"
+#include "chrome/browser/media/router/media_router_factory.h"
 #include "chrome/browser/media/router/test/mock_media_router.h"
+#include "chrome/browser/ui/global_media_controls/cast_media_notification_provider.h"
 #include "chrome/browser/ui/global_media_controls/media_dialog_delegate.h"
 #include "chrome/browser/ui/global_media_controls/media_toolbar_button_controller_delegate.h"
+#include "chrome/test/base/testing_profile.h"
 #include "components/media_message_center/media_notification_item.h"
 #include "components/media_message_center/media_notification_util.h"
 #include "components/media_message_center/media_session_notification_item.h"
 #include "content/public/test/browser_task_environment.h"
+#include "media/base/media_switches.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -85,9 +90,13 @@ class MediaToolbarButtonControllerTest : public testing::Test {
   ~MediaToolbarButtonControllerTest() override = default;
 
   void SetUp() override {
+    media_router::MediaRouterFactory::GetInstance()->SetTestingFactory(
+        &profile_, base::BindRepeating(&media_router::MockMediaRouter::Create));
     controller_ = std::make_unique<MediaToolbarButtonController>(
-        base::UnguessableToken::Create(), nullptr, &delegate_, &media_router_);
+        base::UnguessableToken::Create(), nullptr, &delegate_, &profile_);
   }
+
+  void TearDown() override { controller_.reset(); }
 
  protected:
   void AdvanceClockMilliseconds(int milliseconds) {
@@ -198,7 +207,7 @@ class MediaToolbarButtonControllerTest : public testing::Test {
 
   void SimulateMediaRoutesUpdate(
       const std::vector<media_router::MediaRoute>& routes) {
-    controller_->media_routes_observer_->OnRoutesUpdated(routes, {});
+    controller_->cast_notification_provider_->OnRoutesUpdated(routes, {});
   }
 
   MockMediaToolbarButtonControllerDelegate& delegate() { return delegate_; }
@@ -206,11 +215,25 @@ class MediaToolbarButtonControllerTest : public testing::Test {
  private:
   content::BrowserTaskEnvironment task_environment_;
   MockMediaToolbarButtonControllerDelegate delegate_;
-  media_router::MockMediaRouter media_router_;
   std::unique_ptr<MediaToolbarButtonController> controller_;
   base::HistogramTester histogram_tester_;
+  TestingProfile profile_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaToolbarButtonControllerTest);
+};
+
+// TODO(takumif): Remove this class once |kGlobalMediaControlsForCast| is
+// enabled by default.
+class MediaToolbarButtonControllerCastTest
+    : public MediaToolbarButtonControllerTest {
+ public:
+  void SetUp() override {
+    feature_list_.InitAndEnableFeature(media::kGlobalMediaControlsForCast);
+    MediaToolbarButtonControllerTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
 };
 
 TEST_F(MediaToolbarButtonControllerTest, ShowControllableOnGainAndHideOnLoss) {
@@ -428,7 +451,7 @@ TEST_F(MediaToolbarButtonControllerTest, DismissesMediaSession) {
   testing::Mock::VerifyAndClearExpectations(&delegate());
 }
 
-TEST_F(MediaToolbarButtonControllerTest, ShowButtonForCastSession) {
+TEST_F(MediaToolbarButtonControllerCastTest, ShowButtonForCastSession) {
   media_router::MediaRoute media_route("id",
                                        media_router::MediaSource("source_id"),
                                        "sink_id", "description", true, true);

@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/media/router/media_routes_observer.h"
+#include "chrome/browser/ui/global_media_controls/cast_media_notification_provider.h"
 #include "chrome/browser/ui/global_media_controls/media_notification_container_observer.h"
 #include "components/media_message_center/media_notification_controller.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -27,10 +28,6 @@ class WebContents;
 namespace media_message_center {
 class MediaSessionNotificationItem;
 }  // namespace media_message_center
-
-namespace media_router {
-class MediaRouter;
-}  // namespace media_router
 
 namespace service_manager {
 class Connector;
@@ -51,7 +48,7 @@ class MediaToolbarButtonController
   MediaToolbarButtonController(const base::UnguessableToken& source_id,
                                service_manager::Connector* connector,
                                MediaToolbarButtonControllerDelegate* delegate,
-                               media_router::MediaRouter* media_router);
+                               Profile* profile);
   ~MediaToolbarButtonController() override;
 
   // media_session::mojom::AudioFocusObserver implementation.
@@ -110,33 +107,13 @@ class MediaToolbarButtonController
     std::unique_ptr<media_message_center::MediaSessionNotificationItem> item_;
   };
 
-  class MediaRoutesObserver : public media_router::MediaRoutesObserver {
-   public:
-    MediaRoutesObserver(media_router::MediaRouter* router,
-                        base::RepeatingClosure routes_changed_callback);
-    MediaRoutesObserver(const MediaRoutesObserver&) = delete;
-    MediaRoutesObserver& operator=(const MediaRoutesObserver&) = delete;
-
-    ~MediaRoutesObserver() override;
-
-    // media_router::MediaRoutesObserver implementation.
-    void OnRoutesUpdated(const std::vector<media_router::MediaRoute>& routes,
-                         const std::vector<media_router::MediaRoute::Id>&
-                             joinable_route_ids) override;
-
-    bool has_routes() const { return has_routes_; }
-
-   private:
-    bool has_routes_ = false;
-
-    // Called when the presence of media routes has changed.
-    base::RepeatingClosure routes_changed_callback_;
-  };
-
   void OnReceivedAudioFocusRequests(
       std::vector<media_session::mojom::AudioFocusRequestStatePtr> sessions);
 
   void UpdateToolbarButtonState();
+
+  base::WeakPtr<media_message_center::MediaNotificationItem>
+  GetNotificationItem(const std::string& id);
 
   service_manager::Connector* const connector_;
   MediaToolbarButtonControllerDelegate* const delegate_;
@@ -169,8 +146,7 @@ class MediaToolbarButtonController
   mojo::Receiver<media_session::mojom::AudioFocusObserver>
       audio_focus_observer_receiver_{this};
 
-  // Observes for active Cast sessions that can be controlled.
-  std::unique_ptr<MediaRoutesObserver> media_routes_observer_;
+  std::unique_ptr<CastMediaNotificationProvider> cast_notification_provider_;
 
   base::WeakPtrFactory<MediaToolbarButtonController> weak_ptr_factory_{this};
 

@@ -5,6 +5,8 @@
 #include "chrome/browser/ui/global_media_controls/media_toolbar_button_controller.h"
 
 #include "base/metrics/histogram_functions.h"
+#include "chrome/browser/media/router/media_router_feature.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -16,6 +18,7 @@
 #include "components/media_message_center/media_notification_util.h"
 #include "components/media_message_center/media_session_notification_item.h"
 #include "content/public/browser/media_session.h"
+#include "media/base/media_switches.h"
 #include "services/media_session/public/mojom/constants.mojom.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -65,45 +68,22 @@ void MediaToolbarButtonController::Session::WebContentsDestroyed() {
   owner_->RemoveItem(id_);
 }
 
-MediaToolbarButtonController::MediaRoutesObserver::MediaRoutesObserver(
-    media_router::MediaRouter* router,
-    base::RepeatingClosure routes_changed_callback)
-    : media_router::MediaRoutesObserver(router),
-      routes_changed_callback_(std::move(routes_changed_callback)) {}
-
-MediaToolbarButtonController::MediaRoutesObserver::~MediaRoutesObserver() =
-    default;
-
-void MediaToolbarButtonController::MediaRoutesObserver::OnRoutesUpdated(
-    const std::vector<media_router::MediaRoute>& routes,
-    const std::vector<media_router::MediaRoute::Id>& joinable_route_ids) {
-  bool has_routes_now =
-      std::find_if(routes.begin(), routes.end(),
-                   [](const media_router::MediaRoute& route) {
-                     return route.for_display() &&
-                            route.controller_type() ==
-                                media_router::RouteControllerType::kGeneric;
-                   }) != routes.end();
-  if (has_routes_ != has_routes_now) {
-    has_routes_ = has_routes_now;
-    routes_changed_callback_.Run();
-  }
-}
-
 MediaToolbarButtonController::MediaToolbarButtonController(
     const base::UnguessableToken& source_id,
     service_manager::Connector* connector,
     MediaToolbarButtonControllerDelegate* delegate,
-    media_router::MediaRouter* media_router)
+    Profile* profile)
     : connector_(connector), delegate_(delegate) {
   DCHECK(delegate_);
 
-  if (media_router) {
-    media_routes_observer_ = std::make_unique<MediaRoutesObserver>(
-        media_router,
-        base::BindRepeating(
-            &MediaToolbarButtonController::UpdateToolbarButtonState,
-            base::Unretained(this)));
+  if (base::FeatureList::IsEnabled(media::kGlobalMediaControlsForCast) &&
+      media_router::MediaRouterEnabled(profile)) {
+    cast_notification_provider_ =
+        std::make_unique<CastMediaNotificationProvider>(
+            profile, this,
+            base::BindRepeating(
+                &MediaToolbarButtonController::UpdateToolbarButtonState,
+                base::Unretained(this)));
   }
 
   // |connector| can be null in tests.
@@ -195,12 +175,8 @@ void MediaToolbarButtonController::ShowNotification(const std::string& id) {
   if (!dialog_delegate_)
     return;
 
-  base::WeakPtr<media_message_center::MediaNotificationItem> item;
-
-  auto it = sessions_.find(id);
-  if (it != sessions_.end())
-    item = it->second.item()->GetWeakPtr();
-
+  base::WeakPtr<media_message_center::MediaNotificationItem> item =
+      GetNotificationItem(id);
   MediaNotificationContainerImpl* container =
       dialog_delegate_->ShowMediaSession(id, item);
 
@@ -290,12 +266,8 @@ void MediaToolbarButtonController::SetDialogDelegate(
     return;
 
   for (const std::string& id : active_controllable_session_ids_) {
-    base::WeakPtr<media_message_center::MediaNotificationItem> item;
-
-    auto it = sessions_.find(id);
-    if (it != sessions_.end())
-      item = it->second.item()->GetWeakPtr();
-
+    base::WeakPtr<media_message_center::MediaNotificationItem> item =
+        GetNotificationItem(id);
     MediaNotificationContainerImpl* container =
         dialog_delegate_->ShowMediaSession(id, item);
 
@@ -318,7 +290,8 @@ void MediaToolbarButtonController::OnReceivedAudioFocusRequests(
 
 void MediaToolbarButtonController::UpdateToolbarButtonState() {
   if (!active_controllable_session_ids_.empty() ||
-      (media_routes_observer_ && media_routes_observer_->has_routes())) {
+      (cast_notification_provider_ &&
+       cast_notification_provider_->HasItems())) {
     if (delegate_display_state_ != DisplayState::kShown) {
       delegate_->Enable();
       delegate_->Show();
@@ -339,4 +312,15 @@ void MediaToolbarButtonController::UpdateToolbarButtonState() {
       delegate_->Disable();
     delegate_display_state_ = DisplayState::kDisabled;
   }
+}
+
+base::WeakPtr<media_message_center::MediaNotificationItem>
+MediaToolbarButtonController::GetNotificationItem(const std::string& id) {
+  auto it = sessions_.find(id);
+  if (it != sessions_.end()) {
+    return it->second.item()->GetWeakPtr();
+  } else if (cast_notification_provider_) {
+    return cast_notification_provider_->GetNotificationItem(id);
+  }
+  return nullptr;
 }

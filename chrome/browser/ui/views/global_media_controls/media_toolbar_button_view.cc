@@ -6,9 +6,6 @@
 
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
-#include "chrome/browser/media/router/media_router_factory.h"
-#include "chrome/browser/media/router/media_router_feature.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/global_media_controls/media_toolbar_button_controller.h"
@@ -28,30 +25,17 @@
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/controls/button/button_controller.h"
 
-namespace {
-
-media_router::MediaRouter* GetMediaRouter(Profile* profile) {
-  bool supports_cast =
-      base::FeatureList::IsEnabled(media::kGlobalMediaControlsForCast) &&
-      media_router::MediaRouterEnabled(profile);
-  if (!supports_cast)
-    return nullptr;
-  return media_router::MediaRouterFactory::GetApiForBrowserContext(profile);
-}
-
-}  // namespace
-
 MediaToolbarButtonView::MediaToolbarButtonView(
     const base::UnguessableToken& source_id,
     service_manager::Connector* connector,
     const Browser* browser)
     : ToolbarButton(this),
       connector_(connector),
-      controller_(std::make_unique<MediaToolbarButtonController>(
-          source_id,
-          connector_,
-          this,
-          GetMediaRouter(browser->profile()))),
+      controller_(
+          std::make_unique<MediaToolbarButtonController>(source_id,
+                                                         connector_,
+                                                         this,
+                                                         browser->profile())),
       browser_(browser) {
   GlobalMediaControlsInProductHelp* in_product_help =
       GlobalMediaControlsInProductHelpFactory::GetForProfile(
