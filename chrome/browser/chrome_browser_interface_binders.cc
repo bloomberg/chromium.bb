@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chrome_browser_interface_binders.h"
 
+#include <utility>
+
 #include "base/feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/accessibility/accessibility_labels_service.h"
@@ -21,6 +23,13 @@
 #include "third_party/blink/public/mojom/insecure_input/insecure_input_service.mojom.h"
 #include "third_party/blink/public/mojom/loader/navigation_predictor.mojom.h"
 #include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
+#include "third_party/blink/public/public_buildflags.h"
+
+#if BUILDFLAG(ENABLE_UNHANDLED_TAP)
+#include "chrome/browser/android/contextualsearch/unhandled_tap_notifier_impl.h"
+#include "chrome/browser/android/contextualsearch/unhandled_tap_web_contents_observer.h"
+#include "third_party/blink/public/mojom/unhandled_tap_notifier/unhandled_tap_notifier.mojom.h"
+#endif  // BUILDFLAG(ENABLE_UNHANDLED_TAP)
 
 #if defined(OS_ANDROID)
 #include "content/public/browser/web_contents.h"
@@ -37,6 +46,20 @@
 
 namespace chrome {
 namespace internal {
+
+#if BUILDFLAG(ENABLE_UNHANDLED_TAP)
+void BindUnhandledTapWebContentsObserver(
+    content::RenderFrameHost* const host,
+    mojo::PendingReceiver<blink::mojom::UnhandledTapNotifier> receiver) {
+  auto* unhandled_tap_notifier_observer =
+      contextual_search::UnhandledTapWebContentsObserver::FromWebContents(
+          content::WebContents::FromRenderFrameHost(host));
+  contextual_search::CreateUnhandledTapNotifierImpl(
+      unhandled_tap_notifier_observer->device_scale_factor(),
+      unhandled_tap_notifier_observer->unhandled_tap_callback(),
+      std::move(receiver));
+}
+#endif  // BUILDFLAG(ENABLE_UNHANDLED_TAP)
 
 // Forward image Annotator requests to the profile's AccessibilityLabelsService.
 void BindImageAnnotator(
@@ -92,6 +115,12 @@ void PopulateChromeFrameBinders(
   }
   map->Add<blink::mojom::ShareService>(base::BindRepeating(
       &ForwardToJavaWebContents<blink::mojom::ShareService>));
+
+#if BUILDFLAG(ENABLE_UNHANDLED_TAP)
+  map->Add<blink::mojom::UnhandledTapNotifier>(
+      base::BindRepeating(&BindUnhandledTapWebContentsObserver));
+#endif  // BUILDFLAG(ENABLE_UNHANDLED_TAP)
+
 #if defined(ENABLE_SPATIAL_NAVIGATION_HOST)
   map->Add<blink::mojom::SpatialNavigationHost>(base::BindRepeating(
       &ForwardToJavaWebContents<blink::mojom::SpatialNavigationHost>));
