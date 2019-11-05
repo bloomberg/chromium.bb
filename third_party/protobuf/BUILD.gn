@@ -15,18 +15,16 @@ config("protobuf_warnings") {
   # protobuf-3 does some things that Chromium style wouldn't normally allow.
   # Turn off the default-enabled warnings for those.
   cflags_cc = [
-    "-Wno-enum-compare",
-    "-Wno-unused-function",
     "-Wno-sign-compare",
+    "-Wno-deprecated-declarations",
+    "-Wno-unneeded-internal-declaration",
+    "-Wno-unused-private-field",
   ]
 
   if (is_clang) {
     cflags_cc += [
-      "-Wno-c++98-compat-extra-semi",
       "-Wno-exit-time-destructors",
       "-Wno-extra-semi",
-      "-Wno-unused-const-variable",
-      "-Wno-inconsistent-missing-override",
     ]
 
     if (is_mac) {
@@ -49,6 +47,7 @@ lite_sources = [
   "src/src/google/protobuf/any_lite.cc",
   "src/src/google/protobuf/arena.cc",
   "src/src/google/protobuf/extension_set.cc",
+  "src/src/google/protobuf/generated_enum_util.cc",
   "src/src/google/protobuf/generated_message_table_driven_lite.cc",
   "src/src/google/protobuf/generated_message_util.cc",
   "src/src/google/protobuf/implicit_weak_message.cc",
@@ -56,6 +55,7 @@ lite_sources = [
   "src/src/google/protobuf/io/io_win32.cc",
   "src/src/google/protobuf/io/strtod.cc",
   "src/src/google/protobuf/io/zero_copy_stream.cc",
+  "src/src/google/protobuf/io/zero_copy_stream_impl.cc",
   "src/src/google/protobuf/io/zero_copy_stream_impl_lite.cc",
   "src/src/google/protobuf/message_lite.cc",
   "src/src/google/protobuf/parse_context.cc",
@@ -104,7 +104,6 @@ static_library("protobuf_full") {
         "src/src/google/protobuf/io/gzip_stream.cc",
         "src/src/google/protobuf/io/printer.cc",
         "src/src/google/protobuf/io/tokenizer.cc",
-        "src/src/google/protobuf/io/zero_copy_stream_impl.cc",
         "src/src/google/protobuf/map_field.cc",
         "src/src/google/protobuf/message.cc",
         "src/src/google/protobuf/reflection_ops.cc",
