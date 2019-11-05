@@ -281,7 +281,7 @@ class AppMenuHandlerImpl
     }
 
     @VisibleForTesting
-    public void onOptionsItemSelected(MenuItem item) {
+    void onOptionsItemSelected(MenuItem item) {
         if (mTestOptionsItemSelectedListener != null) {
             mTestOptionsItemSelectedListener.onResult(item);
             return;
