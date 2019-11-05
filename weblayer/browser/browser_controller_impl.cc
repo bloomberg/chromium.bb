@@ -119,8 +119,10 @@ BrowserControllerImpl::BrowserControllerImpl(
 }
 
 BrowserControllerImpl::~BrowserControllerImpl() {
-  // Destruct this now to avoid it calling back when this object is partially
-  // destructed.
+  // Destruct WebContents now to avoid it calling back when this object is
+  // partially destructed. DidFinishNavigation can be called while destroying
+  // WebContents, so stop observing first.
+  Observe(nullptr);
   web_contents_.reset();
 }
 
