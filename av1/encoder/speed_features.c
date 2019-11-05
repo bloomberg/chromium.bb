@@ -362,9 +362,6 @@ static void set_good_speed_features_framesize_independent(
     sf->prune_warp_using_wmtype = 1;
     sf->disable_smooth_intra =
         !frame_is_intra_only(&cpi->common) || (cpi->rc.frames_to_key != 1);
-
-    // TODO(yunqing): need to test and turn it on for speed > 1.
-    sf->adaptive_overlay_encoding = 0;
   }
 
   if (speed >= 3) {
