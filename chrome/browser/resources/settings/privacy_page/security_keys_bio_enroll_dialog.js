@@ -71,6 +71,10 @@ Polymer({
 
   /** @override */
   attached: function() {
+    Polymer.RenderStatus.afterNextRender(this, function() {
+      Polymer.IronA11yAnnouncer.requestAvailability();
+    });
+
     this.$.dialog.showModal();
     this.addWebUIListener(
         'security-keys-bio-enroll-error', this.onError_.bind(this));
@@ -224,6 +228,8 @@ Polymer({
       this.progressArcLabel_ =
           this.i18n('securityKeysBioEnrollmentEnrollingCompleteLabel');
       this.$.confirmButton.focus();
+      // Make screen-readers announce enrollment completion.
+      this.fire('iron-announce', {text: this.progressArcLabel_});
     }
     this.fire('bio-enroll-dialog-ready-for-testing');
   },
