@@ -210,53 +210,13 @@ static NDEFRecord* CreateUrlRecord(const String& record_type,
                                           GetUTF8DataFromString(url));
 }
 
-static NDEFRecord* CreateJsonRecord(const String& media_type,
+static NDEFRecord* CreateMimeRecord(const String& media_type,
                                     const ScriptValue& data,
                                     ExceptionState& exception_state) {
-  // https://w3c.github.io/web-nfc/#mapping-json-to-ndef
-  if (data.IsEmpty()) {
-    exception_state.ThrowTypeError(
-        "The data for 'json' NDEFRecord is missing.");
-    return nullptr;
-  }
-
-  // ExtractMIMETypeFromMediaType() ignores parameters of the MIME type.
-  String mime_type = ExtractMIMETypeFromMediaType(AtomicString(media_type));
-  if (mime_type.IsEmpty()) {
-    mime_type = "application/json";
-  } else if (mime_type != "application/json" && mime_type != "text/json" &&
-             !mime_type.EndsWithIgnoringASCIICase("+json")) {
-    // According to https://mimesniff.spec.whatwg.org/#json-mime-type, a JSON
-    // MIME type is any MIME type whose subtype ends in "+json" or whose
-    // essence is "application/json" or "text/json".
-    exception_state.ThrowDOMException(DOMExceptionCode::kSyntaxError,
-                                      "Invalid media type for 'json' record.");
-    return nullptr;
-  }
-
-  // Serialize JSON to bytes, rethrow any exceptions.
-  v8::Local<v8::String> jsonString;
-  v8::TryCatch try_catch(data.GetIsolate());
-  if (!v8::JSON::Stringify(data.GetIsolate()->GetCurrentContext(),
-                           data.V8Value())
-           .ToLocal(&jsonString)) {
-    DCHECK(try_catch.HasCaught());
-    exception_state.RethrowV8Exception(try_catch.Exception());
-    return nullptr;
-  }
-  return MakeGarbageCollected<NDEFRecord>(
-      "json", mime_type,
-      GetUTF8DataFromString(
-          ToBlinkString<String>(jsonString, kDoNotExternalize)));
-}
-
-static NDEFRecord* CreateOpaqueRecord(const String& media_type,
-                                      const ScriptValue& data,
-                                      ExceptionState& exception_state) {
   // https://w3c.github.io/web-nfc/#mapping-binary-data-to-ndef
-  if (data.IsEmpty() || !data.V8Value()->IsArrayBuffer()) {
+  if (!IsBufferSource(data)) {
     exception_state.ThrowTypeError(
-        "The data for 'opaque' NDEFRecord must be an ArrayBuffer.");
+        "The data for 'mime' NDEFRecord must be a BufferSource.");
     return nullptr;
   }
 
@@ -265,13 +225,8 @@ static NDEFRecord* CreateOpaqueRecord(const String& media_type,
   if (mime_type.IsEmpty()) {
     mime_type = "application/octet-stream";
   }
-  DOMArrayBuffer* array_buffer =
-      V8ArrayBuffer::ToImpl(data.V8Value().As<v8::Object>());
-  WTF::Vector<uint8_t> bytes;
-  bytes.Append(static_cast<uint8_t*>(array_buffer->Data()),
-               array_buffer->ByteLength());
-  return MakeGarbageCollected<NDEFRecord>("opaque", mime_type,
-                                          std::move(bytes));
+  return MakeGarbageCollected<NDEFRecord>("mime", mime_type,
+                                          GetBytesOfBufferSource(data));
 }
 
 static NDEFRecord* CreateUnknownRecord(const String& media_type,
@@ -322,10 +277,8 @@ NDEFRecord* NDEFRecord::Create(const ExecutionContext* execution_context,
     v8::Local<v8::Value> data = init->data().V8Value();
     if (data->IsString()) {
       record_type = "text";
-    } else if (data->IsArrayBuffer()) {
-      record_type = "opaque";
     } else {
-      record_type = "json";
+      record_type = "mime";
     }
   } else {
     record_type = init->recordType();
@@ -343,10 +296,8 @@ NDEFRecord* NDEFRecord::Create(const ExecutionContext* execution_context,
   } else if (record_type == "url" || record_type == "absolute-url") {
     return CreateUrlRecord(record_type, init->mediaType(), init->data(),
                            exception_state);
-  } else if (record_type == "json") {
-    return CreateJsonRecord(init->mediaType(), init->data(), exception_state);
-  } else if (record_type == "opaque") {
-    return CreateOpaqueRecord(init->mediaType(), init->data(), exception_state);
+  } else if (record_type == "mime") {
+    return CreateMimeRecord(init->mediaType(), init->data(), exception_state);
   } else if (record_type == "unknown") {
     return CreateUnknownRecord(init->mediaType(), init->data(),
                                exception_state);
@@ -391,7 +342,7 @@ NDEFRecord::NDEFRecord(const ExecutionContext* execution_context,
       payload_data_(GetUTF8DataFromString(text)) {}
 
 NDEFRecord::NDEFRecord(WTF::Vector<uint8_t> payload_data)
-    : record_type_("opaque"),
+    : record_type_("mime"),
       media_type_("application/octet-stream"),
       payload_data_(std::move(payload_data)) {}
 
@@ -445,8 +396,7 @@ DOMArrayBuffer* NDEFRecord::arrayBuffer() const {
       record_type_ == "url" || record_type_ == "absolute-url") {
     return nullptr;
   }
-  DCHECK(record_type_ == "json" || record_type_ == "opaque" ||
-         record_type_ == "unknown" ||
+  DCHECK(record_type_ == "mime" || record_type_ == "unknown" ||
          !ValidateCustomRecordType(record_type_).IsNull());
 
   return DOMArrayBuffer::Create(payload_data_.data(), payload_data_.size());
@@ -458,8 +408,7 @@ ScriptValue NDEFRecord::json(ScriptState* script_state,
       record_type_ == "url" || record_type_ == "absolute-url") {
     return ScriptValue::CreateNull(script_state->GetIsolate());
   }
-  DCHECK(record_type_ == "json" || record_type_ == "opaque" ||
-         record_type_ == "unknown" ||
+  DCHECK(record_type_ == "mime" || record_type_ == "unknown" ||
          !ValidateCustomRecordType(record_type_).IsNull());
 
   ScriptState::Scope scope(script_state);

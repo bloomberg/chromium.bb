@@ -33,7 +33,7 @@ class MODULES_EXPORT NDEFRecord final : public ScriptWrappable {
   // Construct a "text" record from a string.
   explicit NDEFRecord(const ExecutionContext*, const String&);
 
-  // Construct a "opaque" record from the raw payload bytes.
+  // Construct a "mime" record from the raw payload bytes.
   explicit NDEFRecord(WTF::Vector<uint8_t> payload_data);
 
   NDEFRecord(const String&, const String&, WTF::Vector<uint8_t>);
