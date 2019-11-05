@@ -54,16 +54,13 @@ void PaintedScrollbarLayer::PushPropertiesTo(LayerImpl* layer) {
   scrollbar_layer->SetSupportsDragSnapBack(supports_drag_snap_back_);
   scrollbar_layer->SetBackButtonRect(back_button_rect_);
   scrollbar_layer->SetForwardButtonRect(forward_button_rect_);
+  scrollbar_layer->SetTrackRect(track_rect_);
   if (orientation_ == HORIZONTAL) {
     scrollbar_layer->SetThumbThickness(thumb_size_.height());
     scrollbar_layer->SetThumbLength(thumb_size_.width());
-    scrollbar_layer->SetTrackStart(track_rect_.x());
-    scrollbar_layer->SetTrackLength(track_rect_.width());
   } else {
     scrollbar_layer->SetThumbThickness(thumb_size_.width());
     scrollbar_layer->SetThumbLength(thumb_size_.height());
-    scrollbar_layer->SetTrackStart(track_rect_.y());
-    scrollbar_layer->SetTrackLength(track_rect_.height());
   }
 
   if (track_resource_.get())

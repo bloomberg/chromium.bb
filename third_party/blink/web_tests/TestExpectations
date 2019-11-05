@@ -2540,6 +2540,15 @@ crbug.com/1009892 [ Win ] virtual/compositor_threaded_scrollbar_scrolling_hidpi_
 crbug.com/1016186 [ Win ] virtual/compositor_threaded_scrollbar_scrolling_hidpi_nozoomfordsf/fast/scrolling/scrollbars/dsf-ready/mouse-interactions-dsf-2.html [ Failure Timeout ]
 crbug.com/1016186 [ Linux ] virtual/compositor_threaded_scrollbar_scrolling_hidpi_nozoomfordsf/fast/scrolling/scrollbars/dsf-ready/mouse-interactions-dsf-2.html [ Failure Timeout ]
 
+# TODO (arakeri): Mac uses the "Option" modifier instead of "Shift" to do the non-animated jump. This hasn't been implemented yet.
+crbug.com/1016955 [ Mac ] fast/scrolling/scrollbars/dsf-ready/mouse-interactions-dsf-2.html [ Failure Timeout ]
+crbug.com/1016955 [ Mac ] virtual/threaded-prefer-compositing/fast/scrolling/scrollbars/dsf-ready/mouse-interactions-dsf-2.html [ Failure Timeout ]
+crbug.com/1016955 [ Mac ] virtual/scroll_customization/fast/scrolling/scrollbars/dsf-ready/mouse-interactions-dsf-2.html [ Failure Timeout ]
+crbug.com/1016955 [ Mac ] virtual/hidpi/fast/scrolling/scrollbars/dsf-ready/mouse-interactions-dsf-2.html [ Failure Timeout ]
+crbug.com/1016955 [ Mac ] virtual/compositor_threaded_scrollbar_scrolling/fast/scrolling/scrollbars/dsf-ready/mouse-interactions-dsf-2.html [ Failure Timeout ]
+crbug.com/1016955 [ Mac ] virtual/compositor_threaded_scrollbar_scrolling_hidpi/fast/scrolling/scrollbars/dsf-ready/mouse-interactions-dsf-2.html [ Failure Timeout ]
+crbug.com/1016955 [ Mac ] virtual/compositor_threaded_scrollbar_scrolling_hidpi_nozoomfordsf/fast/scrolling/scrollbars/dsf-ready/mouse-interactions-dsf-2.html [ Failure Timeout ]
+
 # Some control characters still not visible
 crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-001.html [ Failure ]
 crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-002.html [ Failure ]

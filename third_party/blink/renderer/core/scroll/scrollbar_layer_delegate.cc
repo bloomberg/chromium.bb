@@ -80,6 +80,10 @@ bool ScrollbarLayerDelegate::SupportsDragSnapBack() const {
 }
 
 gfx::Rect ScrollbarLayerDelegate::BackButtonRect() const {
+  if (scrollbar_->GetTheme().ButtonsPlacement() ==
+      kWebScrollbarButtonsPlacementNone)
+    return gfx::Rect();
+
   IntRect back_button_rect = scrollbar_->GetTheme().BackButtonRect(
       *scrollbar_, blink::kBackButtonStartPart);
   back_button_rect.MoveBy(-scrollbar_->Location());
@@ -87,6 +91,10 @@ gfx::Rect ScrollbarLayerDelegate::BackButtonRect() const {
 }
 
 gfx::Rect ScrollbarLayerDelegate::ForwardButtonRect() const {
+  if (scrollbar_->GetTheme().ButtonsPlacement() ==
+      kWebScrollbarButtonsPlacementNone)
+    return gfx::Rect();
+
   IntRect forward_button_rect = scrollbar_->GetTheme().ForwardButtonRect(
       *scrollbar_, blink::kForwardButtonEndPart);
   forward_button_rect.MoveBy(-scrollbar_->Location());

@@ -10871,8 +10871,7 @@ TEST_F(LayerTreeHostImplTest, SingleGSUForScrollbarThumbDragPerFrame) {
   // Set up the thumb dimensions.
   scrollbar->SetThumbThickness(15);
   scrollbar->SetThumbLength(50);
-  scrollbar->SetTrackStart(15);
-  scrollbar->SetTrackLength(575);
+  scrollbar->SetTrackRect(gfx::Rect(0, 15, 15, 575));
 
   // Set up scrollbar arrows.
   scrollbar->SetBackButtonRect(
