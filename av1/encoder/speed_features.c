@@ -502,6 +502,7 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
   sf->check_intra_pred_nonrd = 1;
   sf->use_nonrd_filter_search = 1;
   sf->nonrd_use_blockyrd_interp_filter = 0;
+  sf->nonrd_reduce_golden_mode_search = 0;
 
   if (speed >= 1) {
     sf->gm_erroradv_type = GM_ERRORADV_TR_1;
@@ -693,6 +694,7 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->short_circuit_low_temp_var = 1;
     sf->reuse_inter_pred_nonrd = 1;
     sf->max_intra_bsize = BLOCK_32X32;
+    sf->nonrd_reduce_golden_mode_search = 1;
     // This gives ~2% bdrate improvement but with 5-10% slowdown.
     // sf->nonrd_use_blockyrd_interp_filter = 1;
 

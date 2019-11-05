@@ -1488,7 +1488,8 @@ void av1_fast_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     usable_ref_frame = LAST_FRAME;
   }
 
-  if (cpi->sf.short_circuit_low_temp_var) {
+  if (cpi->sf.short_circuit_low_temp_var &&
+      x->nonrd_reduce_golden_mode_search) {
     force_skip_low_temp_var =
         get_force_skip_low_temp_var(&x->variance_low[0], mi_row, mi_col, bsize);
     // If force_skip_low_temp_var is set, and for short circuit mode = 1 and 3,
@@ -1594,11 +1595,14 @@ void av1_fast_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
 
     if (const_motion[ref_frame] && this_mode == NEARMV) continue;
 
-    if (ref_frame != LAST_FRAME &&
-        (bsize > BLOCK_64X64 || (bsize > BLOCK_16X16 && this_mode == NEWMV)))
-      continue;
+    // Skip testing golden if this flag is set.
+    if (x->nonrd_reduce_golden_mode_search) {
+      if (ref_frame != LAST_FRAME &&
+          (bsize > BLOCK_64X64 || (bsize > BLOCK_16X16 && this_mode == NEWMV)))
+        continue;
 
-    if (ref_frame != LAST_FRAME && this_mode == NEARMV) continue;
+      if (ref_frame != LAST_FRAME && this_mode == NEARMV) continue;
+    }
 
     // Skip non-zeromv mode search for golden frame if force_skip_low_temp_var
     // is set. If nearestmv for golden frame is 0, zeromv mode will be skipped
@@ -1728,7 +1732,7 @@ void av1_fast_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
 #endif
     if (cpi->sf.use_nonrd_filter_search &&
         ((mi->mv[0].as_mv.row & 0x07) || (mi->mv[0].as_mv.col & 0x07)) &&
-        ref_frame == LAST_FRAME) {
+        (ref_frame == LAST_FRAME || !x->nonrd_reduce_golden_mode_search)) {
       search_filter_ref(cpi, x, &this_rdc, mi_row, mi_col, tmp, bsize,
                         reuse_inter_pred, &this_mode_pred, &var_y, &sse_y,
                         &this_early_term, use_model_yrd_large, &this_sse,
