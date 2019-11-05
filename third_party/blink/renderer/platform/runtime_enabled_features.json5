@@ -1185,12 +1185,10 @@
     {
       name: "PageFreezeOptIn",
       origin_trial_feature_name: "PageFreezeOptIn",
-      status: "experimental",
     },
     {
       name: "PageFreezeOptOut",
       origin_trial_feature_name: "PageFreezeOptOut",
-      status: "experimental",
     },
     {
       name: "PagePopup",
