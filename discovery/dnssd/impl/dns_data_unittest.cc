@@ -17,53 +17,50 @@ class DnsDataTesting : public DnsData {
   explicit DnsDataTesting(const InstanceKey& instance_key)
       : DnsData(instance_key) {}
 
-  void set_srv(absl::optional<cast::mdns::SrvRecordRdata> new_srv) {
-    SetVariable(new_srv, srv(), cast::mdns::DnsType::kSRV);
+  void set_srv(absl::optional<SrvRecordRdata> new_srv) {
+    SetVariable(new_srv, srv(), DnsType::kSRV);
   }
 
-  void set_txt(absl::optional<cast::mdns::TxtRecordRdata> new_txt) {
-    SetVariable(new_txt, txt(), cast::mdns::DnsType::kTXT);
+  void set_txt(absl::optional<TxtRecordRdata> new_txt) {
+    SetVariable(new_txt, txt(), DnsType::kTXT);
   }
 
-  void set_a(absl::optional<cast::mdns::ARecordRdata> new_a) {
-    SetVariable(new_a, a(), cast::mdns::DnsType::kA);
+  void set_a(absl::optional<ARecordRdata> new_a) {
+    SetVariable(new_a, a(), DnsType::kA);
   }
 
-  void set_aaaa(absl::optional<cast::mdns::AAAARecordRdata> new_aaaa) {
-    SetVariable(new_aaaa, aaaa(), cast::mdns::DnsType::kAAAA);
+  void set_aaaa(absl::optional<AAAARecordRdata> new_aaaa) {
+    SetVariable(new_aaaa, aaaa(), DnsType::kAAAA);
   }
 
-  const absl::optional<cast::mdns::SrvRecordRdata>& srv() { return srv_; };
-  const absl::optional<cast::mdns::TxtRecordRdata>& txt() { return txt_; };
-  const absl::optional<cast::mdns::ARecordRdata>& a() { return a_; };
-  const absl::optional<cast::mdns::AAAARecordRdata>& aaaa() { return aaaa_; };
+  const absl::optional<SrvRecordRdata>& srv() { return srv_; };
+  const absl::optional<TxtRecordRdata>& txt() { return txt_; };
+  const absl::optional<ARecordRdata>& a() { return a_; };
+  const absl::optional<AAAARecordRdata>& aaaa() { return aaaa_; };
 
  private:
   template <typename T>
   void SetVariable(absl::optional<T> new_val,
                    const absl::optional<T>& old_val,
-                   cast::mdns::DnsType type) {
+                   DnsType type) {
     if (!new_val.has_value() && !old_val.has_value()) {
       return;
     }
 
     if (!new_val.has_value()) {
-      cast::mdns::MdnsRecord record(cast::mdns::DomainName{"0"}, type,
-                                    cast::mdns::DnsClass::kIN,
-                                    cast::mdns::RecordType::kUnique,
-                                    std::chrono::seconds(1), old_val.value());
-      ApplyDataRecordChange(record, cast::mdns::RecordChangedEvent::kDeleted);
+      MdnsRecord record(DomainName{"0"}, type, DnsClass::kIN,
+                        RecordType::kUnique, std::chrono::seconds(1),
+                        old_val.value());
+      ApplyDataRecordChange(record, RecordChangedEvent::kDeleted);
       return;
     }
 
-    cast::mdns::MdnsRecord record(cast::mdns::DomainName{"0"}, type,
-                                  cast::mdns::DnsClass::kIN,
-                                  cast::mdns::RecordType::kUnique,
-                                  std::chrono::seconds(1), new_val.value());
+    MdnsRecord record(DomainName{"0"}, type, DnsClass::kIN, RecordType::kUnique,
+                      std::chrono::seconds(1), new_val.value());
     if (!old_val.has_value()) {
-      ApplyDataRecordChange(record, cast::mdns::RecordChangedEvent::kCreated);
+      ApplyDataRecordChange(record, RecordChangedEvent::kCreated);
     } else {
-      ApplyDataRecordChange(record, cast::mdns::RecordChangedEvent::kUpdated);
+      ApplyDataRecordChange(record, RecordChangedEvent::kUpdated);
     }
   }
 };
@@ -81,12 +78,11 @@ static constexpr uint16_t port_num = uint16_t{80};
 DnsDataTesting CreateFullyPopulatedData() {
   InstanceKey instance{instance_name, service_name, domain_name};
   DnsDataTesting data(instance);
-  cast::mdns::DomainName target{instance_name, "_srv-name", "_udp",
-                                domain_name};
-  cast::mdns::SrvRecordRdata srv(0, 0, port_num, target);
-  cast::mdns::TxtRecordRdata txt{"name=value", "boolValue"};
-  cast::mdns::ARecordRdata a(v4_address);
-  cast::mdns::AAAARecordRdata aaaa(v6_address);
+  DomainName target{instance_name, "_srv-name", "_udp", domain_name};
+  SrvRecordRdata srv(0, 0, port_num, target);
+  TxtRecordRdata txt{"name=value", "boolValue"};
+  ARecordRdata a(v4_address);
+  AAAARecordRdata aaaa(v6_address);
 
   data.set_srv(srv);
   data.set_txt(txt);
@@ -96,15 +92,14 @@ DnsDataTesting CreateFullyPopulatedData() {
   return data;
 }
 
-cast::mdns::MdnsRecord CreateFullyPopulatedRecord(uint16_t port = port_num) {
-  cast::mdns::DomainName target{instance_name, "_srv-name", "_udp",
-                                domain_name};
-  auto type = cast::mdns::DnsType::kSRV;
-  auto clazz = cast::mdns::DnsClass::kIN;
-  auto record_type = cast::mdns::RecordType::kShared;
+MdnsRecord CreateFullyPopulatedRecord(uint16_t port = port_num) {
+  DomainName target{instance_name, "_srv-name", "_udp", domain_name};
+  auto type = DnsType::kSRV;
+  auto clazz = DnsClass::kIN;
+  auto record_type = RecordType::kShared;
   auto ttl = std::chrono::seconds(0);
-  cast::mdns::SrvRecordRdata srv(0, 0, port, target);
-  return cast::mdns::MdnsRecord(target, type, clazz, record_type, ttl, srv);
+  SrvRecordRdata srv(0, 0, port, target);
+  return MdnsRecord(target, type, clazz, record_type, ttl, srv);
 }
 
 // DnsData Conversions.
@@ -180,46 +175,41 @@ TEST(DnsSdDnsDataTests, TestConvertDnsDataOneAddress) {
 
 TEST(DnsSdDnsDataTests, TestConvertDnsDataBadTxt) {
   DnsDataTesting data = CreateFullyPopulatedData();
-  data.set_txt(cast::mdns::TxtRecordRdata{"=bad_text"});
+  data.set_txt(TxtRecordRdata{"=bad_text"});
   ErrorOr<DnsSdInstanceRecord> result = data.CreateRecord();
   EXPECT_TRUE(result.is_error());
 }
 
 // ApplyDataRecordChange tests.
 TEST(DnsSdDnsDataTests, TestApplyRecordChanges) {
-  cast::mdns::MdnsRecord record = CreateFullyPopulatedRecord(port_num);
+  MdnsRecord record = CreateFullyPopulatedRecord(port_num);
   InstanceKey instance{instance_name, service_name, domain_name};
   DnsDataTesting data(instance);
-  EXPECT_TRUE(data.ApplyDataRecordChange(
-                      record, cast::mdns::RecordChangedEvent::kCreated)
-                  .ok());
+  EXPECT_TRUE(
+      data.ApplyDataRecordChange(record, RecordChangedEvent::kCreated).ok());
   ASSERT_TRUE(data.srv().has_value());
   EXPECT_EQ(data.srv().value().port(), port_num);
 
   record = CreateFullyPopulatedRecord(234);
-  EXPECT_FALSE(data.ApplyDataRecordChange(
-                       record, cast::mdns::RecordChangedEvent::kCreated)
-                   .ok());
+  EXPECT_FALSE(
+      data.ApplyDataRecordChange(record, RecordChangedEvent::kCreated).ok());
   ASSERT_TRUE(data.srv().has_value());
   EXPECT_EQ(data.srv().value().port(), port_num);
 
   record = CreateFullyPopulatedRecord(345);
-  EXPECT_TRUE(data.ApplyDataRecordChange(
-                      record, cast::mdns::RecordChangedEvent::kUpdated)
-                  .ok());
+  EXPECT_TRUE(
+      data.ApplyDataRecordChange(record, RecordChangedEvent::kUpdated).ok());
   ASSERT_TRUE(data.srv().has_value());
   EXPECT_EQ(data.srv().value().port(), 345);
 
   record = CreateFullyPopulatedRecord();
-  EXPECT_TRUE(data.ApplyDataRecordChange(
-                      record, cast::mdns::RecordChangedEvent::kDeleted)
-                  .ok());
+  EXPECT_TRUE(
+      data.ApplyDataRecordChange(record, RecordChangedEvent::kDeleted).ok());
   ASSERT_FALSE(data.srv().has_value());
 
   record = CreateFullyPopulatedRecord(1234);
-  EXPECT_FALSE(data.ApplyDataRecordChange(
-                       record, cast::mdns::RecordChangedEvent::kUpdated)
-                   .ok());
+  EXPECT_FALSE(
+      data.ApplyDataRecordChange(record, RecordChangedEvent::kUpdated).ok());
   ASSERT_FALSE(data.srv().has_value());
 }
 

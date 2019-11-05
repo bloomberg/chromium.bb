@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cast/common/mdns/mdns_service_impl.h"
+#include "discovery/mdns/mdns_service_impl.h"
 
-namespace cast {
-namespace mdns {
+namespace openscreen {
+namespace discovery {
 
 void MdnsServiceImpl::StartQuery(const DomainName& name,
                                  DnsType dns_type,
@@ -29,5 +29,5 @@ void MdnsServiceImpl::DeregisterRecord(const MdnsRecord& record) {
   // TODO(yakimakha): Implement this method
 }
 
-}  // namespace mdns
-}  // namespace cast
+}  // namespace discovery
+}  // namespace openscreen

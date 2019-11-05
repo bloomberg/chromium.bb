@@ -2,23 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CAST_COMMON_MDNS_MDNS_RECEIVER_H_
-#define CAST_COMMON_MDNS_MDNS_RECEIVER_H_
+#ifndef DISCOVERY_MDNS_MDNS_RECEIVER_H_
+#define DISCOVERY_MDNS_MDNS_RECEIVER_H_
 
 #include "platform/api/udp_packet.h"
 #include "platform/api/udp_socket.h"
 #include "platform/base/error.h"
 
-namespace cast {
-namespace mdns {
+namespace openscreen {
+namespace discovery {
 
 class MdnsMessage;
 
 class MdnsReceiver : openscreen::platform::UdpSocket::Client {
  public:
-  template <typename T>
-  using ErrorOr = openscreen::ErrorOr<T>;
-  using Error = openscreen::Error;
   using UdpPacket = openscreen::platform::UdpPacket;
   using UdpSocket = openscreen::platform::UdpSocket;
 
@@ -59,7 +56,7 @@ class MdnsReceiver : openscreen::platform::UdpSocket::Client {
   State state_ = State::kStopped;
 };
 
-}  // namespace mdns
-}  // namespace cast
+}  // namespace discovery
+}  // namespace openscreen
 
-#endif  // CAST_COMMON_MDNS_MDNS_RECEIVER_H_
+#endif  // DISCOVERY_MDNS_MDNS_RECEIVER_H_

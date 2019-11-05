@@ -9,20 +9,11 @@
 #include <vector>
 
 #include "absl/strings/string_view.h"
-#include "cast/common/mdns/mdns_records.h"
 #include "discovery/dnssd/impl/constants.h"
 #include "discovery/dnssd/public/instance_record.h"
 #include "discovery/dnssd/public/txt_record.h"
+#include "discovery/mdns/mdns_records.h"
 #include "platform/base/error.h"
-
-namespace cast {
-namespace mdns {
-
-class MdnsRecord;
-class TxtRecordRdata;
-
-}  // namespace mdns
-}  // namespace cast
 
 namespace openscreen {
 namespace discovery {
@@ -30,8 +21,8 @@ namespace discovery {
 // *** Key Generation functions ***
 
 // Helper functions to get the Key associated with a given DNS Record.
-ErrorOr<InstanceKey> GetInstanceKey(const cast::mdns::MdnsRecord& record);
-ErrorOr<ServiceKey> GetServiceKey(const cast::mdns::MdnsRecord& record);
+ErrorOr<InstanceKey> GetInstanceKey(const MdnsRecord& record);
+ErrorOr<ServiceKey> GetServiceKey(const MdnsRecord& record);
 
 // Creates the ServiceKey associated with the provided service and dotted fully
 // qualified domain names. NOTE: The provided parameters must be valid service
@@ -46,9 +37,9 @@ ServiceKey GetServiceKey(const InstanceKey& key);
 // Attempts to create a new TXT record from the provided set of strings,
 // returning a TxtRecord on success or an error if the provided strings are
 // not valid.
-ErrorOr<DnsSdTxtRecord> CreateFromDnsTxt(const cast::mdns::TxtRecordRdata& txt);
+ErrorOr<DnsSdTxtRecord> CreateFromDnsTxt(const TxtRecordRdata& txt);
 
-bool IsPtrRecord(const cast::mdns::MdnsRecord& record);
+bool IsPtrRecord(const MdnsRecord& record);
 
 //*** Conversions to DNS entities from DNS-SD Entities ***
 
@@ -62,8 +53,7 @@ DnsQueryInfo GetPtrQueryInfo(const ServiceKey& key);
 
 // Returns all MdnsRecord entites generated from this InstanceRecord.
 // TODO(rwkeane): Implement this method.
-std::vector<cast::mdns::MdnsRecord> GetDnsRecords(
-    const DnsSdInstanceRecord& record);
+std::vector<MdnsRecord> GetDnsRecords(const DnsSdInstanceRecord& record);
 
 }  // namespace discovery
 }  // namespace openscreen

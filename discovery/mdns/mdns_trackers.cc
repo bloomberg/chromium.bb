@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cast/common/mdns/mdns_trackers.h"
+#include "discovery/mdns/mdns_trackers.h"
 
 #include <array>
 
-#include "cast/common/mdns/mdns_random.h"
-#include "cast/common/mdns/mdns_record_changed_callback.h"
-#include "cast/common/mdns/mdns_sender.h"
+#include "discovery/mdns/mdns_random.h"
+#include "discovery/mdns/mdns_record_changed_callback.h"
+#include "discovery/mdns/mdns_sender.h"
 #include "util/std_util.h"
 
-namespace cast {
-namespace mdns {
+namespace openscreen {
+namespace discovery {
 
 namespace {
 
@@ -75,7 +75,7 @@ MdnsRecordTracker::MdnsRecordTracker(
   OSP_DCHECK(record_expired_callback);
 }
 
-openscreen::Error MdnsRecordTracker::Start(MdnsRecord record) {
+Error MdnsRecordTracker::Start(MdnsRecord record) {
   OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
 
   if (record_.has_value()) {
@@ -89,7 +89,7 @@ openscreen::Error MdnsRecordTracker::Start(MdnsRecord record) {
   return Error::None();
 }
 
-openscreen::Error MdnsRecordTracker::Stop() {
+Error MdnsRecordTracker::Stop() {
   OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
 
   if (!record_.has_value()) {
@@ -101,7 +101,7 @@ openscreen::Error MdnsRecordTracker::Stop() {
   return Error::None();
 }
 
-openscreen::Error MdnsRecordTracker::Update(const MdnsRecord& new_record) {
+Error MdnsRecordTracker::Update(const MdnsRecord& new_record) {
   OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
 
   if (!record_.has_value()) {
@@ -187,7 +187,7 @@ MdnsQuestionTracker::MdnsQuestionTracker(MdnsSender* sender,
                                          MdnsRandom* random_delay)
     : MdnsTracker(sender, task_runner, now_function, random_delay) {}
 
-openscreen::Error MdnsQuestionTracker::Start(MdnsQuestion question) {
+Error MdnsQuestionTracker::Start(MdnsQuestion question) {
   OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
 
   if (question_.has_value()) {
@@ -204,7 +204,7 @@ openscreen::Error MdnsQuestionTracker::Start(MdnsQuestion question) {
   return Error::None();
 }
 
-openscreen::Error MdnsQuestionTracker::Stop() {
+Error MdnsQuestionTracker::Stop() {
   OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
 
   if (!question_.has_value()) {
@@ -317,5 +317,5 @@ void MdnsQuestionTracker::SendQuery() {
   }
 }
 
-}  // namespace mdns
-}  // namespace cast
+}  // namespace discovery
+}  // namespace openscreen

@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CAST_COMMON_MDNS_MDNS_QUERIER_H_
-#define CAST_COMMON_MDNS_MDNS_QUERIER_H_
+#ifndef DISCOVERY_MDNS_MDNS_QUERIER_H_
+#define DISCOVERY_MDNS_MDNS_QUERIER_H_
 
 #include <unordered_map>
 
 #include "absl/hash/hash.h"
-#include "cast/common/mdns/mdns_records.h"
+#include "discovery/mdns/mdns_records.h"
 #include "platform/api/task_runner.h"
 
-namespace cast {
-namespace mdns {
+namespace openscreen {
+namespace discovery {
 
 class MdnsRandom;
 class MdnsReceiver;
@@ -68,7 +68,7 @@ class MdnsQuerier {
       queries_;
 };
 
-}  // namespace mdns
-}  // namespace cast
+}  // namespace discovery
+}  // namespace openscreen
 
-#endif  // CAST_COMMON_MDNS_MDNS_QUERIER_H_
+#endif  // DISCOVERY_MDNS_MDNS_QUERIER_H_

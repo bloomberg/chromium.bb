@@ -7,7 +7,7 @@
 namespace openscreen {
 namespace discovery {
 
-QuerierImpl::QuerierImpl(cast::mdns::MdnsService* mdns_querier)
+QuerierImpl::QuerierImpl(MdnsService* mdns_querier)
     : mdns_querier_(mdns_querier) {
   OSP_DCHECK(mdns_querier_);
 }
@@ -24,8 +24,8 @@ void QuerierImpl::StopQuery(const absl::string_view& service,
   // TODO(rwkeane): Implement this method.
 }
 
-void QuerierImpl::OnRecordChanged(const cast::mdns::MdnsRecord& record,
-                                  cast::mdns::RecordChangedEvent event) {
+void QuerierImpl::OnRecordChanged(const MdnsRecord& record,
+                                  RecordChangedEvent event) {
   // TODO(rwkeane): Implement this method.
 }
 

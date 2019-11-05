@@ -9,22 +9,21 @@
 
 #include "absl/hash/hash.h"
 #include "absl/strings/string_view.h"
-#include "cast/common/mdns/mdns_record_changed_callback.h"
-#include "cast/common/mdns/mdns_records.h"
-#include "cast/common/mdns/public/mdns_service.h"
 #include "discovery/dnssd/impl/constants.h"
 #include "discovery/dnssd/impl/dns_data.h"
 #include "discovery/dnssd/public/instance_record.h"
 #include "discovery/dnssd/public/querier.h"
+#include "discovery/mdns/mdns_record_changed_callback.h"
+#include "discovery/mdns/mdns_records.h"
+#include "discovery/mdns/public/mdns_service.h"
 
 namespace openscreen {
 namespace discovery {
 
-class QuerierImpl : public DnsSdQuerier,
-                    public cast::mdns::MdnsRecordChangedCallback {
+class QuerierImpl : public DnsSdQuerier, public MdnsRecordChangedCallback {
  public:
   // |querier| must outlive the QuerierImpl instance constructed.
-  explicit QuerierImpl(cast::mdns::MdnsService* querier);
+  explicit QuerierImpl(MdnsService* querier);
   virtual ~QuerierImpl() override = default;
 
   inline bool IsQueryRunning(const absl::string_view& service,
@@ -38,9 +37,9 @@ class QuerierImpl : public DnsSdQuerier,
                  const absl::string_view& domain,
                  Callback* callback) override;
 
-  // cast::mdns::MdnsRecordChangedCallback overrides.
-  void OnRecordChanged(const cast::mdns::MdnsRecord& record,
-                       cast::mdns::RecordChangedEvent event) override;
+  // MdnsRecordChangedCallback overrides.
+  void OnRecordChanged(const MdnsRecord& record,
+                       RecordChangedEvent event) override;
 
  private:
   // Map from {instance, service, domain} to the data received so far for this
@@ -52,7 +51,7 @@ class QuerierImpl : public DnsSdQuerier,
   // records with this ServiceKey.
   std::map<ServiceKey, std::vector<Callback*>> callback_map_;
 
-  cast::mdns::MdnsService* const mdns_querier_;
+  MdnsService* const mdns_querier_;
 };
 
 }  // namespace discovery

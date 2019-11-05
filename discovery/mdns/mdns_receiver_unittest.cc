@@ -2,19 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cast/common/mdns/mdns_receiver.h"
+#include "discovery/mdns/mdns_receiver.h"
 
-#include "cast/common/mdns/mdns_records.h"
+#include "discovery/mdns/mdns_records.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "platform/api/time.h"
 #include "platform/test/fake_udp_socket.h"
 
-namespace cast {
-namespace mdns {
+namespace openscreen {
+namespace discovery {
 
-using openscreen::IPAddress;
-using openscreen::IPEndpoint;
 using openscreen::platform::FakeUdpSocket;
 using openscreen::platform::TaskRunner;
 using openscreen::platform::UdpPacket;
@@ -45,7 +43,7 @@ TEST(MdnsReceiverTest, ReceiveQuery) {
   // clang-format on
 
   std::unique_ptr<FakeUdpSocket> socket_info =
-      FakeUdpSocket::CreateDefault(openscreen::IPAddress::Version::kV4);
+      FakeUdpSocket::CreateDefault(IPAddress::Version::kV4);
   MockMdnsReceiverDelegate delegate;
   MdnsReceiver receiver(socket_info.get());
   receiver.SetQueryCallback([&delegate](const MdnsMessage& message) {
@@ -100,7 +98,7 @@ TEST(MdnsReceiverTest, ReceiveResponse) {
   // clang-format on
 
   std::unique_ptr<FakeUdpSocket> socket_info =
-      FakeUdpSocket::CreateDefault(openscreen::IPAddress::Version::kV6);
+      FakeUdpSocket::CreateDefault(IPAddress::Version::kV6);
   MockMdnsReceiverDelegate delegate;
   MdnsReceiver receiver(socket_info.get());
   receiver.SetResponseCallback([&delegate](const MdnsMessage& message) {
@@ -130,5 +128,5 @@ TEST(MdnsReceiverTest, ReceiveResponse) {
   receiver.Stop();
 }
 
-}  // namespace mdns
-}  // namespace cast
+}  // namespace discovery
+}  // namespace openscreen

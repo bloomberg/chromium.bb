@@ -2,20 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CAST_COMMON_MDNS_MDNS_READER_H_
-#define CAST_COMMON_MDNS_MDNS_READER_H_
+#ifndef DISCOVERY_MDNS_MDNS_READER_H_
+#define DISCOVERY_MDNS_MDNS_READER_H_
 
-#include "cast/common/mdns/mdns_records.h"
+#include "discovery/mdns/mdns_records.h"
 #include "util/big_endian.h"
 
-namespace cast {
-namespace mdns {
+namespace openscreen {
+namespace discovery {
 
-class MdnsReader : public openscreen::BigEndianReader {
+class MdnsReader : public BigEndianReader {
  public:
   using BigEndianReader::BigEndianReader;
   using BigEndianReader::Read;
-  using IPAddress = openscreen::IPAddress;
 
   // The following methods return true if the method was able to successfully
   // read the value to |out| and advances current() to point right past the read
@@ -69,7 +68,7 @@ class MdnsReader : public openscreen::BigEndianReader {
   }
 };
 
-}  // namespace mdns
-}  // namespace cast
+}  // namespace discovery
+}  // namespace openscreen
 
-#endif  // CAST_COMMON_MDNS_MDNS_READER_H_
+#endif  // DISCOVERY_MDNS_MDNS_READER_H_

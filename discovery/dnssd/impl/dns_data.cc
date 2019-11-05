@@ -5,16 +5,15 @@
 #include "discovery/dnssd/impl/dns_data.h"
 
 #include "absl/types/optional.h"
-#include "cast/common/mdns/mdns_records.h"
 #include "discovery/dnssd/impl/conversion_layer.h"
+#include "discovery/mdns/mdns_records.h"
 
 namespace openscreen {
 namespace discovery {
 namespace {
 
 template <typename T>
-inline Error CreateRecord(absl::optional<T>* stored,
-                          const cast::mdns::MdnsRecord& record) {
+inline Error CreateRecord(absl::optional<T>* stored, const MdnsRecord& record) {
   if (stored->has_value()) {
     return Error::Code::kItemAlreadyExists;
   }
@@ -23,8 +22,7 @@ inline Error CreateRecord(absl::optional<T>* stored,
 }
 
 template <typename T>
-inline Error UpdateRecord(absl::optional<T>* stored,
-                          const cast::mdns::MdnsRecord& record) {
+inline Error UpdateRecord(absl::optional<T>* stored, const MdnsRecord& record) {
   if (!stored->has_value()) {
     return Error::Code::kItemNotFound;
   }
@@ -43,14 +41,14 @@ inline Error DeleteRecord(absl::optional<T>* stored) {
 
 template <typename T>
 inline Error ProcessRecord(absl::optional<T>* stored,
-                           const cast::mdns::MdnsRecord& record,
-                           cast::mdns::RecordChangedEvent event) {
+                           const MdnsRecord& record,
+                           RecordChangedEvent event) {
   switch (event) {
-    case cast::mdns::RecordChangedEvent::kCreated:
+    case RecordChangedEvent::kCreated:
       return CreateRecord(stored, record);
-    case cast::mdns::RecordChangedEvent::kUpdated:
+    case RecordChangedEvent::kUpdated:
       return UpdateRecord(stored, record);
-    case cast::mdns::RecordChangedEvent::kDeleted:
+    case RecordChangedEvent::kDeleted:
       return DeleteRecord(stored);
   }
   return Error::Code::kUnknownError;
@@ -89,16 +87,16 @@ ErrorOr<DnsSdInstanceRecord> DnsData::CreateRecord() {
   }
 }
 
-Error DnsData::ApplyDataRecordChange(const cast::mdns::MdnsRecord& record,
-                                     cast::mdns::RecordChangedEvent event) {
+Error DnsData::ApplyDataRecordChange(const MdnsRecord& record,
+                                     RecordChangedEvent event) {
   switch (record.dns_type()) {
-    case cast::mdns::DnsType::kSRV:
+    case DnsType::kSRV:
       return ProcessRecord(&srv_, record, event);
-    case cast::mdns::DnsType::kTXT:
+    case DnsType::kTXT:
       return ProcessRecord(&txt_, record, event);
-    case cast::mdns::DnsType::kA:
+    case DnsType::kA:
       return ProcessRecord(&a_, record, event);
-    case cast::mdns::DnsType::kAAAA:
+    case DnsType::kAAAA:
       return ProcessRecord(&aaaa_, record, event);
     default:
       return Error::Code::kOperationInvalid;

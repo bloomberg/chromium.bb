@@ -2,24 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cast/common/mdns/mdns_querier.h"
+#include "discovery/mdns/mdns_querier.h"
 
-#include "cast/common/mdns/mdns_random.h"
-#include "cast/common/mdns/mdns_receiver.h"
-#include "cast/common/mdns/mdns_record_changed_callback.h"
-#include "cast/common/mdns/mdns_sender.h"
-#include "cast/common/mdns/mdns_writer.h"
+#include "discovery/mdns/mdns_random.h"
+#include "discovery/mdns/mdns_receiver.h"
+#include "discovery/mdns/mdns_record_changed_callback.h"
+#include "discovery/mdns/mdns_sender.h"
+#include "discovery/mdns/mdns_writer.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "platform/api/udp_packet.h"
 #include "platform/test/fake_clock.h"
 #include "platform/test/fake_task_runner.h"
 
-namespace cast {
-namespace mdns {
+namespace openscreen {
+namespace discovery {
 
-using openscreen::IPAddress;
-using openscreen::IPEndpoint;
 using openscreen::platform::Clock;
 using openscreen::platform::FakeClock;
 using openscreen::platform::FakeTaskRunner;
@@ -257,5 +255,5 @@ TEST_F(MdnsQuerierTest, SameCallerDifferentQuestions) {
   receiver_.OnRead(&socket_, CreatePacketWithRecord(record1_created_));
 }
 
-}  // namespace mdns
-}  // namespace cast
+}  // namespace discovery
+}  // namespace openscreen

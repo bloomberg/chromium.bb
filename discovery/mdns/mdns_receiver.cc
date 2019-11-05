@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cast/common/mdns/mdns_receiver.h"
+#include "discovery/mdns/mdns_receiver.h"
 
-#include "cast/common/mdns/mdns_reader.h"
+#include "discovery/mdns/mdns_reader.h"
 #include "platform/api/trace_logging.h"
 
-namespace cast {
-namespace mdns {
+namespace openscreen {
+namespace discovery {
 
 MdnsReceiver::MdnsReceiver(UdpSocket* socket) : socket_(socket) {
   OSP_DCHECK(socket_);
@@ -79,5 +79,5 @@ void MdnsReceiver::OnSendError(UdpSocket* socket, Error error) {
   OSP_UNIMPLEMENTED();
 }
 
-}  // namespace mdns
-}  // namespace cast
+}  // namespace discovery
+}  // namespace openscreen

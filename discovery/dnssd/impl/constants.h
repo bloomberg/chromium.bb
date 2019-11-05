@@ -8,8 +8,8 @@
 #include <string>
 #include <utility>
 
-#include "cast/common/mdns/mdns_records.h"
-#include "cast/common/mdns/public/mdns_constants.h"
+#include "discovery/mdns/mdns_records.h"
+#include "discovery/mdns/public/mdns_constants.h"
 
 namespace openscreen {
 namespace discovery {
@@ -31,9 +31,9 @@ struct ServiceKey {
 
 // This is the DNS Information required to start a new query.
 struct DnsQueryInfo {
-  cast::mdns::DomainName name;
-  cast::mdns::DnsType dns_type;
-  cast::mdns::DnsClass dns_class;
+  DomainName name;
+  DnsType dns_type;
+  DnsClass dns_class;
 };
 
 // Hashing functions to allow for using with absl::Hash<...>.

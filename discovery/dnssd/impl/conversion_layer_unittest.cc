@@ -23,36 +23,35 @@ static const std::string domain_name = "local";
 static const InstanceKey key = {instance_name, service_name, domain_name};
 static constexpr uint16_t port_num = uint16_t{80};
 
-cast::mdns::MdnsRecord CreateFullyPopulatedRecord(uint16_t port = port_num) {
-  cast::mdns::DomainName target{instance_name, "_srv-name", "_udp",
-                                domain_name};
-  auto type = cast::mdns::DnsType::kSRV;
-  auto clazz = cast::mdns::DnsClass::kIN;
-  auto record_type = cast::mdns::RecordType::kShared;
+MdnsRecord CreateFullyPopulatedRecord(uint16_t port = port_num) {
+  DomainName target{instance_name, "_srv-name", "_udp", domain_name};
+  auto type = DnsType::kSRV;
+  auto clazz = DnsClass::kIN;
+  auto record_type = RecordType::kShared;
   auto ttl = std::chrono::seconds(0);
-  cast::mdns::SrvRecordRdata srv(0, 0, port, target);
-  return cast::mdns::MdnsRecord(target, type, clazz, record_type, ttl, srv);
+  SrvRecordRdata srv(0, 0, port, target);
+  return MdnsRecord(target, type, clazz, record_type, ttl, srv);
 }
 
 }  // namespace
 
 // TXT Conversions.
 TEST(DnsSdConversionLayerTest, TestCreateTxtEmpty) {
-  cast::mdns::TxtRecordRdata txt{};
+  TxtRecordRdata txt{};
   ErrorOr<DnsSdTxtRecord> record = CreateFromDnsTxt(txt);
   EXPECT_TRUE(record.is_value());
   EXPECT_TRUE(record.value().IsEmpty());
 }
 
 TEST(DnsSdConversionLayerTest, TestCreateTxtOnlyEmptyString) {
-  cast::mdns::TxtRecordRdata txt;
+  TxtRecordRdata txt;
   ErrorOr<DnsSdTxtRecord> record = CreateFromDnsTxt(txt);
   EXPECT_TRUE(record.is_value());
   EXPECT_TRUE(record.value().IsEmpty());
 }
 
 TEST(DnsSdConversionLayerTest, TestCreateTxtValidKeyValue) {
-  cast::mdns::TxtRecordRdata txt{"name=value"};
+  TxtRecordRdata txt{"name=value"};
   ErrorOr<DnsSdTxtRecord> record = CreateFromDnsTxt(txt);
   ASSERT_TRUE(record.is_value());
   ASSERT_TRUE(record.value().GetValue("name").is_value());
@@ -66,13 +65,13 @@ TEST(DnsSdConversionLayerTest, TestCreateTxtValidKeyValue) {
 }
 
 TEST(DnsSdConversionLayerTest, TestCreateTxtInvalidKeyValue) {
-  cast::mdns::TxtRecordRdata txt{"=value"};
+  TxtRecordRdata txt{"=value"};
   ErrorOr<DnsSdTxtRecord> record = CreateFromDnsTxt(txt);
   EXPECT_TRUE(record.is_error());
 }
 
 TEST(DnsSdConversionLayerTest, TestCreateTxtValidBool) {
-  cast::mdns::TxtRecordRdata txt{"name"};
+  TxtRecordRdata txt{"name"};
   ErrorOr<DnsSdTxtRecord> record = CreateFromDnsTxt(txt);
   ASSERT_TRUE(record.is_value());
   ASSERT_TRUE(record.value().GetFlag("name").is_value());
@@ -81,7 +80,7 @@ TEST(DnsSdConversionLayerTest, TestCreateTxtValidBool) {
 
 // Get*Key functions.
 TEST(DnsSdConversionLayerTest, GetSrvKeyFromRecordTest) {
-  cast::mdns::MdnsRecord record = CreateFullyPopulatedRecord();
+  MdnsRecord record = CreateFullyPopulatedRecord();
   ErrorOr<InstanceKey> key = GetInstanceKey(record);
   ASSERT_TRUE(key.is_value());
   EXPECT_EQ(key.value().instance_id, instance_name);
@@ -90,7 +89,7 @@ TEST(DnsSdConversionLayerTest, GetSrvKeyFromRecordTest) {
 }
 
 TEST(DnsSdConversionLayerTest, GetPtrKeyFromRecordTest) {
-  cast::mdns::MdnsRecord record = CreateFullyPopulatedRecord();
+  MdnsRecord record = CreateFullyPopulatedRecord();
   ErrorOr<ServiceKey> key = GetServiceKey(record);
   ASSERT_TRUE(key.is_value());
   EXPECT_EQ(key.value().service_id, service_name);
@@ -107,8 +106,8 @@ TEST(DnsSdConversionLayerTest, GetPtrKeyFromStringsTest) {
 TEST(DnsSdConversionLayerTest, GetInstanceQueryInfoTest) {
   InstanceKey key{"instance.Id", "_service-id._udp", "192.168.0.0"};
   DnsQueryInfo query = GetInstanceQueryInfo(key);
-  EXPECT_EQ(query.dns_type, cast::mdns::DnsType::kANY);
-  EXPECT_EQ(query.dns_class, cast::mdns::DnsClass::kANY);
+  EXPECT_EQ(query.dns_type, DnsType::kANY);
+  EXPECT_EQ(query.dns_class, DnsClass::kANY);
   ASSERT_EQ(query.name.labels().size(), size_t{7});
   EXPECT_EQ(query.name.labels()[0], "instance.Id");
   EXPECT_EQ(query.name.labels()[1], "_service-id");
@@ -122,8 +121,8 @@ TEST(DnsSdConversionLayerTest, GetInstanceQueryInfoTest) {
 TEST(DnsSdConversionLayerTest, GetPtrQueryInfoTest) {
   ServiceKey key{"_service-id._udp", "192.168.0.0"};
   DnsQueryInfo query = GetPtrQueryInfo(key);
-  EXPECT_EQ(query.dns_type, cast::mdns::DnsType::kPTR);
-  EXPECT_EQ(query.dns_class, cast::mdns::DnsClass::kANY);
+  EXPECT_EQ(query.dns_type, DnsType::kPTR);
+  EXPECT_EQ(query.dns_class, DnsClass::kANY);
   ASSERT_EQ(query.name.labels().size(), size_t{6});
   EXPECT_EQ(query.name.labels()[0], "_service-id");
   EXPECT_EQ(query.name.labels()[1], "_udp");

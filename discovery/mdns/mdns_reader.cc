@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cast/common/mdns/mdns_reader.h"
+#include "discovery/mdns/mdns_reader.h"
 
 #include "platform/api/logging.h"
 
-namespace cast {
-namespace mdns {
+namespace openscreen {
+namespace discovery {
 
 bool MdnsReader::Read(absl::string_view* out) {
   Cursor cursor(this);
@@ -46,7 +46,7 @@ bool MdnsReader::Read(DomainName* out) {
   // the buffer, we are in a circular compression loop.
   while (position >= begin() && position < end() &&
          bytes_processed <= length()) {
-    const uint8_t label_type = openscreen::ReadBigEndian<uint8_t>(position);
+    const uint8_t label_type = ReadBigEndian<uint8_t>(position);
     if (IsTerminationLabel(label_type)) {
       *out = DomainName(labels);
       if (!bytes_consumed) {
@@ -58,7 +58,7 @@ bool MdnsReader::Read(DomainName* out) {
         return false;
       }
       const uint16_t label_offset =
-          GetPointerLabelOffset(openscreen::ReadBigEndian<uint16_t>(position));
+          GetPointerLabelOffset(ReadBigEndian<uint16_t>(position));
       if (!bytes_consumed) {
         bytes_consumed = position + sizeof(uint16_t) - current();
       }
@@ -291,5 +291,5 @@ bool MdnsReader::Read(Header* out) {
   return false;
 }
 
-}  // namespace mdns
-}  // namespace cast
+}  // namespace discovery
+}  // namespace openscreen

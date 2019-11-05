@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cast/common/mdns/mdns_querier.h"
+#include "discovery/mdns/mdns_querier.h"
 
-#include "cast/common/mdns/mdns_random.h"
-#include "cast/common/mdns/mdns_receiver.h"
-#include "cast/common/mdns/mdns_sender.h"
-#include "cast/common/mdns/mdns_trackers.h"
+#include "discovery/mdns/mdns_random.h"
+#include "discovery/mdns/mdns_receiver.h"
+#include "discovery/mdns/mdns_sender.h"
+#include "discovery/mdns/mdns_trackers.h"
 
-namespace cast {
-namespace mdns {
+namespace openscreen {
+namespace discovery {
 
 MdnsQuerier::MdnsQuerier(MdnsSender* sender,
                          MdnsReceiver* receiver,
@@ -93,5 +93,5 @@ void MdnsQuerier::OnMessageReceived(const MdnsMessage& message) {
   }
 }
 
-}  // namespace mdns
-}  // namespace cast
+}  // namespace discovery
+}  // namespace openscreen

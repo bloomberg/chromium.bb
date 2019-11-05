@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cast/common/mdns/mdns_records.h"
+#include "discovery/mdns/mdns_records.h"
 
 #include <atomic>
 
 #include "absl/strings/match.h"
 #include "absl/strings/str_join.h"
 
-namespace cast {
-namespace mdns {
+namespace openscreen {
+namespace discovery {
 
 bool IsValidDomainLabel(absl::string_view label) {
   const size_t label_size = label.size();
@@ -305,5 +305,5 @@ uint16_t CreateMessageId() {
   return id++;
 }
 
-}  // namespace mdns
-}  // namespace cast
+}  // namespace discovery
+}  // namespace openscreen

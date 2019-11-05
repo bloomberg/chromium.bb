@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CAST_COMMON_MDNS_MDNS_RECORD_CHANGED_CALLBACK_H_
-#define CAST_COMMON_MDNS_MDNS_RECORD_CHANGED_CALLBACK_H_
+#ifndef DISCOVERY_MDNS_MDNS_RECORD_CHANGED_CALLBACK_H_
+#define DISCOVERY_MDNS_MDNS_RECORD_CHANGED_CALLBACK_H_
 
-namespace cast {
-namespace mdns {
+namespace openscreen {
+namespace discovery {
 
 class MdnsRecord;
 
@@ -23,7 +23,7 @@ class MdnsRecordChangedCallback {
                                RecordChangedEvent event) = 0;
 };
 
-}  // namespace mdns
-}  // namespace cast
+}  // namespace discovery
+}  // namespace openscreen
 
-#endif  // CAST_COMMON_MDNS_MDNS_RECORD_CHANGED_CALLBACK_H_
+#endif  // DISCOVERY_MDNS_MDNS_RECORD_CHANGED_CALLBACK_H_

@@ -6,9 +6,9 @@
 
 #include "absl/strings/str_join.h"
 #include "absl/strings/str_split.h"
-#include "cast/common/mdns/mdns_records.h"
 #include "discovery/dnssd/impl/constants.h"
 #include "discovery/dnssd/public/instance_record.h"
+#include "discovery/mdns/mdns_records.h"
 
 namespace openscreen {
 namespace discovery {
@@ -25,8 +25,7 @@ inline void AddServiceInfoToLabels(const ServiceKey& key,
 
 }  // namespace
 
-ErrorOr<DnsSdTxtRecord> CreateFromDnsTxt(
-    const cast::mdns::TxtRecordRdata& txt_data) {
+ErrorOr<DnsSdTxtRecord> CreateFromDnsTxt(const TxtRecordRdata& txt_data) {
   DnsSdTxtRecord txt;
   if (txt_data.texts().size() == 1 && txt_data.texts()[0] == "") {
     return txt;
@@ -61,11 +60,11 @@ ErrorOr<DnsSdTxtRecord> CreateFromDnsTxt(
   return txt;
 }
 
-ErrorOr<InstanceKey> GetInstanceKey(const cast::mdns::MdnsRecord& record) {
-  const cast::mdns::DomainName& names =
+ErrorOr<InstanceKey> GetInstanceKey(const MdnsRecord& record) {
+  const DomainName& names =
       !IsPtrRecord(record)
           ? record.name()
-          : absl::get<cast::mdns::PtrRecordRdata>(record.rdata()).ptr_domain();
+          : absl::get<PtrRecordRdata>(record.rdata()).ptr_domain();
   if (names.labels().size() < 4) {
     return Error::Code::kParameterInvalid;
   }
@@ -84,7 +83,7 @@ ErrorOr<InstanceKey> GetInstanceKey(const cast::mdns::MdnsRecord& record) {
   return result;
 }
 
-ErrorOr<ServiceKey> GetServiceKey(const cast::mdns::MdnsRecord& record) {
+ErrorOr<ServiceKey> GetServiceKey(const MdnsRecord& record) {
   ErrorOr<InstanceKey> key_or_error = GetInstanceKey(record);
   if (key_or_error.is_error()) {
     return key_or_error.error();
@@ -101,15 +100,13 @@ DnsQueryInfo GetInstanceQueryInfo(const InstanceKey& key) {
   labels.emplace_back(key.instance_id);
 
   AddServiceInfoToLabels(GetServiceKey(key), &labels);
-  return {cast::mdns::DomainName{labels}, cast::mdns::DnsType::kANY,
-          cast::mdns::DnsClass::kANY};
+  return {DomainName{labels}, DnsType::kANY, DnsClass::kANY};
 }
 
 DnsQueryInfo GetPtrQueryInfo(const ServiceKey& key) {
   std::vector<std::string> labels;
   AddServiceInfoToLabels(key, &labels);
-  return {cast::mdns::DomainName{labels}, cast::mdns::DnsType::kPTR,
-          cast::mdns::DnsClass::kANY};
+  return {DomainName{labels}, DnsType::kPTR, DnsClass::kANY};
 }
 
 ServiceKey GetServiceKey(absl::string_view service, absl::string_view domain) {
@@ -118,8 +115,8 @@ ServiceKey GetServiceKey(absl::string_view service, absl::string_view domain) {
   return {service.data(), domain.data()};
 }
 
-bool IsPtrRecord(const cast::mdns::MdnsRecord& record) {
-  return record.dns_type() == cast::mdns::DnsType::kPTR;
+bool IsPtrRecord(const MdnsRecord& record) {
+  return record.dns_type() == DnsType::kPTR;
 }
 
 }  // namespace discovery

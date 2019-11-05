@@ -6,10 +6,10 @@
 #define DISCOVERY_DNSSD_IMPL_DNS_DATA_H_
 
 #include "absl/types/optional.h"
-#include "cast/common/mdns/mdns_record_changed_callback.h"
-#include "cast/common/mdns/mdns_records.h"
 #include "discovery/dnssd/impl/constants.h"
 #include "discovery/dnssd/public/instance_record.h"
+#include "discovery/mdns/mdns_record_changed_callback.h"
+#include "discovery/mdns/mdns_records.h"
 
 namespace openscreen {
 namespace discovery {
@@ -30,14 +30,14 @@ class DnsData {
   // result will be an error if the change does not make sense from our current
   // data state, and Error::None() otherwise. Valid record types with which this
   // method can be called are SRV, TXT, A, and AAAA record types.
-  Error ApplyDataRecordChange(const cast::mdns::MdnsRecord& record,
-                              cast::mdns::RecordChangedEvent event);
+  Error ApplyDataRecordChange(const MdnsRecord& record,
+                              RecordChangedEvent event);
 
  private:
-  absl::optional<cast::mdns::SrvRecordRdata> srv_;
-  absl::optional<cast::mdns::TxtRecordRdata> txt_;
-  absl::optional<cast::mdns::ARecordRdata> a_;
-  absl::optional<cast::mdns::AAAARecordRdata> aaaa_;
+  absl::optional<SrvRecordRdata> srv_;
+  absl::optional<TxtRecordRdata> txt_;
+  absl::optional<ARecordRdata> a_;
+  absl::optional<AAAARecordRdata> aaaa_;
 
   InstanceKey instance_id_;
 
