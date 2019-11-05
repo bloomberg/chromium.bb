@@ -148,7 +148,8 @@ void CallStackProfileBuilder::OnSampleCompleted(std::vector<base::Frame> frames,
   if (is_continued_work_)
     stack_sample_proto->set_continued_work(is_continued_work_);
 
-  AddSampleMetadata(call_stack_profile, stack_sample_proto);
+  *stack_sample_proto->mutable_metadata() =
+      CreateSampleMetadata(call_stack_profile->mutable_metadata_name_hash());
 }
 
 void CallStackProfileBuilder::OnProfileCompleted(
@@ -289,18 +290,23 @@ CallStackProfileBuilder::GetDeletedMetadataItems(
   return deleted_items;
 }
 
-void CallStackProfileBuilder::AddSampleMetadata(
-    CallStackProfile* profile,
-    CallStackProfile::StackSample* sample) {
+google::protobuf::RepeatedPtrField<CallStackProfile::MetadataItem>
+CallStackProfileBuilder::CreateSampleMetadata(
+    google::protobuf::RepeatedField<uint64_t>* metadata_name_hashes) {
+  DCHECK_EQ(metadata_hashes_cache_.size(),
+            static_cast<size_t>(metadata_name_hashes->size()));
+
+  google::protobuf::RepeatedPtrField<CallStackProfile::MetadataItem>
+      metadata_items;
   MetadataMap current_items =
       CreateMetadataMap(metadata_items_, metadata_item_count_);
 
   for (auto item :
        GetNewOrModifiedMetadataItems(current_items, previous_items_)) {
     size_t name_hash_index =
-        MaybeAddNameHashToProfile(profile, item.first.name_hash);
+        MaybeAppendNameHash(item.first.name_hash, metadata_name_hashes);
 
-    CallStackProfile::MetadataItem* profile_item = sample->add_metadata();
+    CallStackProfile::MetadataItem* profile_item = metadata_items.Add();
     profile_item->set_name_hash_index(name_hash_index);
     if (item.first.key.has_value())
       profile_item->set_key(*item.first.key);
@@ -309,9 +315,9 @@ void CallStackProfileBuilder::AddSampleMetadata(
 
   for (auto item : GetDeletedMetadataItems(current_items, previous_items_)) {
     size_t name_hash_index =
-        MaybeAddNameHashToProfile(profile, item.first.name_hash);
+        MaybeAppendNameHash(item.first.name_hash, metadata_name_hashes);
 
-    CallStackProfile::MetadataItem* profile_item = sample->add_metadata();
+    CallStackProfile::MetadataItem* profile_item = metadata_items.Add();
     profile_item->set_name_hash_index(name_hash_index);
     if (item.first.key.has_value())
       profile_item->set_key(*item.first.key);
@@ -320,19 +326,21 @@ void CallStackProfileBuilder::AddSampleMetadata(
 
   previous_items_ = std::move(current_items);
   metadata_item_count_ = 0;
+
+  return metadata_items;
 }
 
-size_t CallStackProfileBuilder::MaybeAddNameHashToProfile(
-    CallStackProfile* profile,
-    uint64_t name_hash) {
+size_t CallStackProfileBuilder::MaybeAppendNameHash(
+    uint64_t name_hash,
+    google::protobuf::RepeatedField<uint64_t>* metadata_name_hashes) {
   std::unordered_map<uint64_t, int>::iterator it;
   bool inserted;
-  int next_item_index = profile->metadata_name_hash_size();
+  int next_item_index = metadata_name_hashes->size();
 
   std::tie(it, inserted) =
       metadata_hashes_cache_.emplace(name_hash, next_item_index);
   if (inserted)
-    profile->add_metadata_name_hash(name_hash);
+    metadata_name_hashes->Add(name_hash);
 
   return it->second;
 }

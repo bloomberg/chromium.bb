@@ -132,14 +132,19 @@ class CallStackProfileBuilder : public base::ProfileBuilder {
   MetadataMap GetDeletedMetadataItems(const MetadataMap& current_items,
                                       const MetadataMap& previous_items);
 
-  // Adds the already-collected metadata to the sample.
-  void AddSampleMetadata(CallStackProfile* profile,
-                         CallStackProfile::StackSample* sample);
+  // Creates MetadataItems for the currently active metadata, adding new name
+  // hashes to |metadata_name_hashes| if necessary. The same
+  // |metadata_name_hashes| must be passed to each invocation, and must not be
+  // modified outside this function.
+  google::protobuf::RepeatedPtrField<CallStackProfile::MetadataItem>
+  CreateSampleMetadata(
+      google::protobuf::RepeatedField<uint64_t>* metadata_name_hashes);
 
-  // Adds the specified name hash to the profile's name hash collection if it's
-  // not already in it. Returns the index of the name hash in the collection.
-  size_t MaybeAddNameHashToProfile(CallStackProfile* profile,
-                                   uint64_t name_hash);
+  // Appends the |name_hash| to |name_hashes| if it's not already
+  // present. Returns its index in |name_hashes|.
+  size_t MaybeAppendNameHash(
+      uint64_t name_hash,
+      google::protobuf::RepeatedField<uint64_t>* metadata_name_hashes);
 
   // The module cache to use for the duration the sampling associated with this
   // ProfileBuilder.
