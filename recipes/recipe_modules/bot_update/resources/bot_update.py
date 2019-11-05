@@ -638,12 +638,14 @@ def _maybe_break_locks(checkout_path, tries=3):
 
 
 
-def git_checkouts(solutions, revisions, refs, git_cache_dir, cleanup_dir):
+def git_checkouts(solutions, revisions, refs, no_fetch_tags, git_cache_dir,
+                  cleanup_dir):
   build_dir = os.getcwd()
   first_solution = True
   for sln in solutions:
     sln_dir = path.join(build_dir, sln['name'])
-    _git_checkout(sln, sln_dir, revisions, refs, git_cache_dir, cleanup_dir)
+    _git_checkout(sln, sln_dir, revisions, refs, no_fetch_tags, git_cache_dir,
+                  cleanup_dir)
     if first_solution:
       git_ref = git('log', '--format=%H', '--max-count=1',
                     cwd=path.join(build_dir, sln['name'])
@@ -652,11 +654,14 @@ def git_checkouts(solutions, revisions, refs, git_cache_dir, cleanup_dir):
   return git_ref
 
 
-def _git_checkout(sln, sln_dir, revisions, refs, git_cache_dir, cleanup_dir):
+def _git_checkout(sln, sln_dir, revisions, refs, no_fetch_tags, git_cache_dir,
+                  cleanup_dir):
   name = sln['name']
   url = sln['url']
   populate_cmd = (['cache', 'populate', '--ignore_locks', '-v',
                    '--cache-dir', git_cache_dir, url, '--reset-fetch-config'])
+  if no_fetch_tags:
+    populate_cmd.extend(['--no-fetch-tags'])
   for ref in refs:
     populate_cmd.extend(['--ref', ref])
 
@@ -823,15 +828,16 @@ def emit_json(out_file, did_run, gclient_output=None, **kwargs):
 
 
 def ensure_checkout(solutions, revisions, first_sln, target_os, target_os_only,
-                    target_cpu, patch_root, patch_refs,
-                    gerrit_rebase_patch_ref, refs, git_cache_dir,
-                    cleanup_dir, gerrit_reset, disable_syntax_validation):
+                    target_cpu, patch_root, patch_refs, gerrit_rebase_patch_ref,
+                    no_fetch_tags, refs, git_cache_dir, cleanup_dir,
+                    gerrit_reset, disable_syntax_validation):
   # Get a checkout of each solution, without DEPS or hooks.
   # Calling git directly because there is no way to run Gclient without
   # invoking DEPS.
   print('Fetching Git checkout')
 
-  git_checkouts(solutions, revisions, refs, git_cache_dir, cleanup_dir)
+  git_checkouts(solutions, revisions, refs, no_fetch_tags, git_cache_dir,
+                cleanup_dir)
 
   # Ensure our build/ directory is set up with the correct .gclient file.
   gclient_configure(solutions, target_os, target_os_only, target_cpu,
@@ -941,6 +947,12 @@ def parse_args():
                         'Can prepend root@<rev> to specify which repository, '
                         'where root is either a filesystem path or git https '
                         'url. To specify Tip of Tree, set rev to HEAD. ')
+  parse.add_option(
+      '--no_fetch_tags',
+      action='store_true',
+      help=('Don\'t fetch tags from the server for the git checkout. '
+            'This can speed up fetch considerably when '
+            'there are many tags.'))
   # TODO(machenbach): Remove the flag when all uses have been removed.
   parse.add_option('--output_manifest', action='store_true',
                    help=('Deprecated.'))
@@ -1071,6 +1083,9 @@ def checkout(options, git_slns, specs, revisions, step_text):
           patch_root=options.patch_root,
           patch_refs=options.patch_refs,
           gerrit_rebase_patch_ref=not options.gerrit_no_rebase_patch_ref,
+
+          # Control how the fetch step will occur.
+          no_fetch_tags=options.no_fetch_tags,
 
           # Finally, extra configurations cleanup dir location.
           refs=options.refs,

@@ -151,6 +151,7 @@ class BotUpdateUnittests(unittest.TestCase):
       'patch_root': None,
       'patch_refs': [],
       'gerrit_rebase_patch_ref': None,
+      'no_fetch_tags': False,
       'refs': [],
       'git_cache_dir': '',
       'cleanup_dir': None,
@@ -206,6 +207,30 @@ class BotUpdateUnittests(unittest.TestCase):
     self.assertEqual(args[idx_first_revision+1], 'somename@unmanaged')
     self.assertEqual(args[idx_second_revision+1], 'src@origin/master')
     self.assertEqual(args[idx_third_revision+1], 'src/v8@deadbeef')
+    return self.call.records
+
+  def testTagsByDefault(self):
+    bot_update.ensure_checkout(**self.params)
+    found = False
+    for record in self.call.records:
+      args = record[0]
+      if args[:3] == ('git', 'cache', 'populate'):
+        self.assertFalse('--no-fetch-tags' in args)
+        found = True
+    self.assertTrue(found)
+    return self.call.records
+
+  def testNoTags(self):
+    params = self.params
+    params['no_fetch_tags'] = True
+    bot_update.ensure_checkout(**params)
+    found = False
+    for record in self.call.records:
+      args = record[0]
+      if args[:3] == ('git', 'cache', 'populate'):
+        self.assertTrue('--no-fetch-tags' in args)
+        found = True
+    self.assertTrue(found)
     return self.call.records
 
   def testApplyPatchOnGclient(self):

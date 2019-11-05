@@ -14,6 +14,7 @@ DEPS = [
 def RunSteps(api):
   api.gclient.set_config('depot_tools')
   api.bot_update.ensure_checkout()
+  api.bot_update.ensure_checkout(no_fetch_tags=True)
 
 
 def GenTests(api):
