@@ -496,8 +496,10 @@ void DragWindowFromShelfController::ScaleDownWindowAfterDrag() {
   for (auto* window : GetTransientTreeIterator(window_)) {
     // self-destructed when window transform animation is done.
     new WindowTransformToHomeScreenAnimation(
-        window, window == window_ ? base::make_optional(original_backdrop_mode_)
-                                  : base::nullopt);
+        window,
+        window == window_ ? base::make_optional(original_backdrop_mode_)
+                          : base::nullopt,
+        base::NullCallback());
   }
 }
 
