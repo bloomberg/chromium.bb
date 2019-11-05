@@ -304,9 +304,7 @@ function addCPUFrequencyView(parent, resolution, duration) {
     var attributes = Object.assign({}, attributesTemplate);
     attributes.color = modelColors.get(models[i]);
     bands.addChartSources(
-        [new Events(
-            models[i].system.memory, 9 /* kCpuTemperature */,
-            9 /* kCpuFrequency */)],
+        [new Events(models[i].system.memory, 9 /* kCpuFrequency */)],
         true /* smooth */, attributes);
   }
 }
@@ -332,10 +330,34 @@ function addCPUTempView(parent, resolution, duration) {
     var attributes = Object.assign({}, attributesTemplate);
     attributes.color = modelColors.get(models[i]);
     bands.addChartSources(
-        [new Events(
-            models[i].system.memory, 8 /* kCpuTemperature */,
-            8 /* kCpuTemperature */)],
+        [new Events(models[i].system.memory, 8 /* kCpuTemperature */)],
         true /* smooth */, attributes);
+  }
+}
+
+/**
+ * Creates view that shows GPU frequency.
+ *
+ * @param {HTMLElement} parent container for the newly created view.
+ * @param {number} resolution scale of the chart in microseconds per pixel.
+ * @param {number} duration length of the chart in microseconds.
+ */
+function addGPUFrequencyView(parent, resolution, duration) {
+  // Range from 300MHz to 1GHz
+  // 14MHz  1 pixel resolution
+  var bands = createChart(
+      parent, 'GPU Frequency' /* title */, resolution, duration,
+      50 /* height */, 4 /* gridLinesCount */);
+  var attributesTemplate =
+      Object.assign({}, valueAttributes[7 /* kGpuFrequency */]);
+  attributesTemplate.minValue = 300;   // Mhz
+  attributesTemplate.maxValue = 1000;  // Mhz
+  for (i = 0; i < models.length; i++) {
+    var attributes = Object.assign({}, attributesTemplate);
+    attributes.color = modelColors.get(models[i]);
+    bands.addChartSources(
+        [new Events(models[i].system.memory, 7 /* kGpuFrequency */)],
+        false /* smooth */, attributes);
   }
 }
 
@@ -463,6 +485,7 @@ function refreshModels() {
 
   addCPUFrequencyView(parent, resolution, duration);
   addCPUTempView(parent, resolution, duration);
+  addGPUFrequencyView(parent, resolution, duration);
   addFPSView(parent, resolution, duration, true /* appView */);
   addDeltaView(parent, resolution, duration, true /* appView */);
   addFPSView(parent, resolution, duration, false /* appView */);

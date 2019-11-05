@@ -286,6 +286,8 @@ base::trace_event::TraceConfig GetTracingConfig(ArcGraphicsTracingMode mode) {
     case ArcGraphicsTracingMode::kOverview: {
       base::trace_event::TraceConfig config(
           "-*,exo,viz,toplevel,gpu", base::trace_event::RECORD_CONTINUOUSLY);
+      config.EnableSystrace();
+      config.EnableSystraceEvent("i915:intel_gpu_freq_change");
       return config;
     }
   }
