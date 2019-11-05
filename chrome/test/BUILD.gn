@@ -1140,6 +1140,7 @@ if (!is_android) {
       "../browser/ui/views/tabs/tab_hover_card_bubble_view_browsertest.cc",
       "../browser/ui/views/tabs/tab_strip_browsertest.cc",
       "../browser/wake_lock/wake_lock_browsertest.cc",
+      "../browser/web_components_browsertest.cc",
 
       # If this list is used on Android in the future, these browser / speech/*
       # files will probably not be applicable.
