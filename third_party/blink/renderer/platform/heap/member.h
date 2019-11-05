@@ -73,7 +73,8 @@ class MemberPointerVerifier {
       if (IsFullyDefined<T>::value && !IsGarbageCollectedMixin<T>::value)
         HeapObjectHeader::CheckFromPayload(pointer);
     } else {
-      DCHECK(HeapObjectHeader::FromInnerAddress(pointer));
+      DCHECK(HeapObjectHeader::FromInnerAddress<
+             HeapObjectHeader::AccessMode::kAtomic>(pointer));
     }
   }
 

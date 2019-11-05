@@ -147,8 +147,9 @@ bool MarkingVisitor::WriteBarrierSlow(void* value) {
   HeapObjectHeader* header;
   if (LIKELY(!base_page->IsLargeObjectPage())) {
     header = reinterpret_cast<HeapObjectHeader*>(
-        static_cast<NormalPage*>(base_page)->FindHeaderFromAddress(
-            reinterpret_cast<Address>(value)));
+        static_cast<NormalPage*>(base_page)
+            ->FindHeaderFromAddress<HeapObjectHeader::AccessMode::kAtomic>(
+                reinterpret_cast<Address>(value)));
   } else {
     LargeObjectPage* large_page = static_cast<LargeObjectPage*>(base_page);
     header = large_page->ObjectHeader();
