@@ -3,13 +3,13 @@
 // found in the LICENSE file.
 
 package org.chromium.chrome.browser.download;
+
 import org.chromium.base.annotations.NativeMethods;
 
 /**
  * Handles initialization for the downloads system, i.e. creating in-progress download manager or
  * full download manager depending on whether we are in reduced mode or full browser mode.
  */
-
 public class DownloadStartupUtils {
     /**
      * Initializes the downloads system if not already initialized.
