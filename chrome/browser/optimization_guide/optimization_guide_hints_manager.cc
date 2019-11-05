@@ -157,6 +157,8 @@ const optimization_guide::proto::PageHint* GetPageHintForNavigation(
 }  // namespace
 
 OptimizationGuideHintsManager::OptimizationGuideHintsManager(
+    const std::vector<optimization_guide::proto::OptimizationType>&
+        optimization_types_at_initialization,
     optimization_guide::OptimizationGuideService* optimization_guide_service,
     Profile* profile,
     const base::FilePath& profile_path,
@@ -179,6 +181,8 @@ OptimizationGuideHintsManager::OptimizationGuideHintsManager(
       url_loader_factory_(url_loader_factory),
       clock_(base::DefaultClock::GetInstance()) {
   DCHECK(optimization_guide_service_);
+
+  RegisterOptimizationTypes(optimization_types_at_initialization);
 
   g_browser_process->network_quality_tracker()
       ->AddEffectiveConnectionTypeObserver(this);

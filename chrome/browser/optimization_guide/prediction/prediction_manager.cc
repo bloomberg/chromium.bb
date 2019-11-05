@@ -26,11 +26,14 @@
 namespace optimization_guide {
 
 PredictionManager::PredictionManager(
+    const std::vector<optimization_guide::proto::OptimizationTarget>&
+        optimization_targets_at_initialization,
     TopHostProvider* top_host_provider,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : session_fcp_(),
       top_host_provider_(top_host_provider),
       url_loader_factory_(url_loader_factory) {
+  RegisterOptimizationTargets(optimization_targets_at_initialization);
   g_browser_process->network_quality_tracker()
       ->AddEffectiveConnectionTypeObserver(this);
 }

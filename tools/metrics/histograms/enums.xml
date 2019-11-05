@@ -46455,6 +46455,9 @@ Called by update_net_trust_anchors.py.-->
     will return false in an attempt to not taint the data in order to understand
     the production recall of the model.
   </int>
+  <int value="5" label="Optimization Guide Decider not initialized">
+    The OptimizationGuideDecider was not initialized yet.
+  </int>
 </enum>
 
 <enum name="OptimizationGuideOptimizationTypeDecision">
@@ -46495,6 +46498,9 @@ Called by update_net_trust_anchors.py.-->
   </int>
   <int value="8" label="No hint available for page load">
     There was no hint on the device that matched the page load.
+  </int>
+  <int value="9" label="Optimization Guide Decider not initialized">
+    The OptimizationGuideDecider was not initialized yet.
   </int>
 </enum>
 
