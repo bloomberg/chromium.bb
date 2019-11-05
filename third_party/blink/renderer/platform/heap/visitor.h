@@ -226,7 +226,6 @@ class PLATFORM_EXPORT Visitor {
   virtual bool VisitEphemeronKeyValuePair(
       void* key,
       void* value,
-      bool strong_handling,
       EphemeronTracingCallback key_trace_callback,
       EphemeronTracingCallback value_trace_callback) {
     return true;

@@ -333,7 +333,7 @@ struct TraceKeyValuePairTraits {
   template <>
   static bool Trace<true>(Visitor* visitor, Key& key, Value& value) {
     return visitor->VisitEphemeronKeyValuePair(
-        &key, &value, Strongify,
+        &key, &value,
         TraceCollectionIfEnabled < Strongify ? WTF::kNoWeakHandling
                                              : KeyTraits::kWeakHandlingFlag,
         Key, KeyTraits > ::Trace,
