@@ -90,6 +90,7 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   void GenerateMipmap() override;
 
  private:
+  enum class BypassMode;
   struct DrawQuadParams;
   struct DrawRPDQParams;
   class ScopedSkImageBuilder;
@@ -131,9 +132,9 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
                                      DrawQuadParams* params);
   // Modifies |params| and |rpdq_params| to apply correctly when drawing the
   // RenderPass directly via |bypass_quad|.
-  void CalculateBypassParams(const DrawQuad* bypass_quad,
-                             DrawRPDQParams* rpdq_params,
-                             DrawQuadParams* params);
+  BypassMode CalculateBypassParams(const DrawQuad* bypass_quad,
+                                   DrawRPDQParams* rpdq_params,
+                                   DrawQuadParams* params);
 
   SkCanvas::ImageSetEntry MakeEntry(const SkImage* image,
                                     int matrix_index,
