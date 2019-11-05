@@ -125,10 +125,10 @@ public class InstrumentationActivityTestRule extends ActivityTestRule<Instrument
     }
 
     /**
-     * Starts the WebLayer activity with the given extras Bundle and completely loads the given URL
-     * (this calls navigateAndWait()).
+     * Starts the WebLayer activity with the given extras Bundle. This does not create and load
+     * WebLayer.
      */
-    public InstrumentationActivity launchShellWithUrl(String url, Bundle extras) {
+    public InstrumentationActivity launchShell(Bundle extras) {
         Intent intent = new Intent(Intent.ACTION_MAIN);
         intent.putExtras(extras);
         intent.addCategory(Intent.CATEGORY_LAUNCHER);
@@ -136,8 +136,18 @@ public class InstrumentationActivityTestRule extends ActivityTestRule<Instrument
         intent.setComponent(
                 new ComponentName(InstrumentationRegistry.getInstrumentation().getTargetContext(),
                         InstrumentationActivity.class));
-        InstrumentationActivity activity = launchActivity(intent);
+        return launchActivity(intent);
+    }
+
+    /**
+     * Starts the WebLayer activity with the given extras Bundle and completely loads the given URL
+     * (this calls navigateAndWait()).
+     */
+    public InstrumentationActivity launchShellWithUrl(String url, Bundle extras) {
+        InstrumentationActivity activity = launchShell(extras);
         Assert.assertNotNull(activity);
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { activity.createWebLayer(activity.getApplication(), null).get(); });
         if (url != null) navigateAndWait(url);
         return activity;
     }
