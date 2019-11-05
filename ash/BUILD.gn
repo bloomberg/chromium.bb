@@ -1711,6 +1711,7 @@ test("ash_unittests") {
     "display/extended_mouse_warp_controller_unittest.cc",
     "display/mirror_window_controller_unittest.cc",
     "display/mouse_cursor_event_filter_unittest.cc",
+    "display/overscan_calibrator_unittest.cc",
     "display/persistent_window_controller_unittest.cc",
     "display/projecting_observer_unittest.cc",
     "display/resolution_notification_controller_unittest.cc",
