@@ -771,8 +771,9 @@ void ServiceWorkerProviderHost::OnBeginNavigationCommit(int render_process_id,
       provider_type() == blink::mojom::ServiceWorkerProviderType::kForWindow) {
     auto* rfh = RenderFrameHostImpl::FromID(render_process_id_, frame_id_);
     // At this point, |rfh| should point at the correct one. (crbug.com/1012238)
-    DCHECK(rfh);
-    rfh->AddServiceWorkerProviderHost(this);
+    // |rfh| may be null in tests (but it should not happen in production).
+    if (rfh)
+      rfh->AddServiceWorkerProviderHost(this);
   }
 
   TransitionToClientPhase(ClientPhase::kResponseCommitted);
