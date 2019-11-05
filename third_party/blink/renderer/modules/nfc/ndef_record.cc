@@ -117,9 +117,7 @@ static NDEFRecord* CreateTextRecord(const ExecutionContext* execution_context,
                                     const ScriptValue& data,
                                     ExceptionState& exception_state) {
   // https://w3c.github.io/web-nfc/#mapping-string-to-ndef
-  if (data.IsEmpty() ||
-      !(data.V8Value()->IsString() || data.V8Value()->IsArrayBuffer() ||
-        data.V8Value()->IsArrayBufferView())) {
+  if (data.IsEmpty() || !(data.V8Value()->IsString() || IsBufferSource(data))) {
     exception_state.ThrowTypeError(
         "The data for 'text' NDEFRecords must be a String or a BufferSource.");
     return nullptr;
@@ -128,10 +126,6 @@ static NDEFRecord* CreateTextRecord(const ExecutionContext* execution_context,
   // ExtractMIMETypeFromMediaType() ignores parameters of the MIME type.
   String mime_type = ExtractMIMETypeFromMediaType(AtomicString(media_type));
 
-  // TODO(https://crbug.com/520391): Step 2-5, parse a MIME type on
-  // |media_type| to get 'lang' and 'charset' parameters. Now we ignore them
-  // and the embedder always uses "lang=en-US;charset=UTF-8" when pushing the
-  // record to a NFC tag.
   if (mime_type.IsEmpty()) {
     mime_type = "text/plain";
   } else if (!mime_type.StartsWithIgnoringASCIICase("text/")) {
@@ -168,19 +162,9 @@ static NDEFRecord* CreateTextRecord(const ExecutionContext* execution_context,
     String text = ToCoreString(data.V8Value().As<v8::String>());
     StringUTF8Adaptor utf8_string(text);
     bytes.Append(utf8_string.data(), utf8_string.size());
-  } else if (data.V8Value()->IsArrayBuffer()) {
-    DOMArrayBuffer* array_buffer =
-        V8ArrayBuffer::ToImpl(data.V8Value().As<v8::Object>());
-    bytes.Append(static_cast<uint8_t*>(array_buffer->Data()),
-                 array_buffer->ByteLength());
-  } else if (data.V8Value()->IsArrayBufferView()) {
-    DOMArrayBufferView* array_buffer_view =
-        V8ArrayBufferView::ToImpl(data.V8Value().As<v8::Object>());
-    bytes.Append(
-        static_cast<uint8_t*>(array_buffer_view->View()->BaseAddress()),
-        array_buffer_view->View()->ByteLength());
   } else {
-    DCHECK(false);
+    DCHECK(IsBufferSource(data));
+    bytes = GetBytesOfBufferSource(data);
   }
 
   return MakeGarbageCollected<NDEFRecord>("text", mime_type, encoding_label,
