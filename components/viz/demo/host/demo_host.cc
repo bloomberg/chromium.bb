@@ -128,7 +128,8 @@ void DemoHost::Initialize(
       sink_remote.InitWithNewEndpointAndPassReceiver();
   auto client_receiver = root_params->compositor_frame_sink_client
                              .InitWithNewPipeAndPassReceiver();
-  root_params->display_private = mojo::MakeRequest(&display_private_);
+  root_params->display_private =
+      display_private_.BindNewEndpointAndPassReceiver();
   root_params->display_client = display_client_->GetBoundRemote(nullptr);
 
   constexpr viz::FrameSinkId root_frame_sink_id(0xdead, 0xbeef);

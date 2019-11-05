@@ -111,8 +111,9 @@ void HostContextFactoryPrivate::ConfigureCompositor(
   mojo::PendingReceiver<viz::mojom::CompositorFrameSinkClient> client_receiver =
       root_params->compositor_frame_sink_client
           .InitWithNewPipeAndPassReceiver();
+  compositor_data.display_private.reset();
   root_params->display_private =
-      mojo::MakeRequest(&compositor_data.display_private);
+      compositor_data.display_private.BindNewEndpointAndPassReceiver();
   compositor_data.display_client =
       std::make_unique<HostDisplayClient>(compositor);
   root_params->display_client =
