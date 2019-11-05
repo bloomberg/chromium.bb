@@ -5300,6 +5300,21 @@
             ]
         }
     ],
+    "SafeBrowsingPasswordProtectionPasswordReusePingAndroid": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SafeBrowsingSendPasswordReusePing"
+                    ]
+                }
+            ]
+        }
+    ],
     "SafeBrowsingRealTimeUrlLookupFetchAllowlist": [
         {
             "platforms": [
