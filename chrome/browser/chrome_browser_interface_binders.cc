@@ -6,6 +6,8 @@
 
 #include "base/feature_list.h"
 #include "build/build_config.h"
+#include "chrome/browser/accessibility/accessibility_labels_service.h"
+#include "chrome/browser/accessibility/accessibility_labels_service_factory.h"
 #include "chrome/browser/content_settings/content_settings_manager_impl.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor.h"
 #include "chrome/browser/profiles/profile.h"
@@ -36,13 +38,14 @@
 namespace chrome {
 namespace internal {
 
-// Forward image Annotator requests to the profile's ImageAnnotationService.
+// Forward image Annotator requests to the profile's AccessibilityLabelsService.
 void BindImageAnnotator(
     content::RenderFrameHost* const frame_host,
     mojo::PendingReceiver<image_annotation::mojom::Annotator> receiver) {
-  Profile::FromBrowserContext(frame_host->GetProcess()->GetBrowserContext())
-      ->GetImageAnnotationService()
-      ->BindAnnotator(std::move(receiver));
+  AccessibilityLabelsServiceFactory::GetForProfile(
+      Profile::FromBrowserContext(
+          frame_host->GetProcess()->GetBrowserContext()))
+      ->BindImageAnnotator(std::move(receiver));
 }
 
 #if defined(OS_ANDROID)
