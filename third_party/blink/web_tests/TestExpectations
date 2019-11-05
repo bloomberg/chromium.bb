@@ -1265,6 +1265,7 @@ crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/tall-content-in-inne
 crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/tall-float1.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/tall-float2.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/three-inner-rows.html [ Failure ]
+crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/transform-inside-opacity.html [ Failure ]
 crbug.com/874506 virtual/layout_ng_block_frag/fast/multicol/unsplittable-inline-block.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/vertical-lr/abspos-auto-position-on-line.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/vertical-lr/break-properties.html [ Failure ]
