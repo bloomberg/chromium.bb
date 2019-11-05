@@ -33,7 +33,6 @@
 #include "media/base/pipeline_status.h"
 #include "media/base/renderer.h"
 #include "media/base/renderer_client.h"
-#include "media/base/renderer_factory.h"
 #include "media/base/stream_parser.h"
 #include "media/base/text_track.h"
 #include "media/base/text_track_config.h"
@@ -76,12 +75,23 @@ class MockPipeline : public Pipeline {
   MockPipeline();
   ~MockPipeline() override;
 
-  MOCK_METHOD4(Start,
-               void(StartType, Demuxer*, Client*, const PipelineStatusCB&));
+  // Note: Start() and Resume() declarations are not actually overrides; they
+  // take unique_ptr* instead of unique_ptr so that they can be mock methods.
+  // Private stubs for Start() and Resume() implement the actual Pipeline
+  // interface by forwarding to these mock methods.
+  MOCK_METHOD5(Start,
+               void(StartType start_type,
+                    Demuxer*,
+                    std::unique_ptr<Renderer>*,
+                    Client*,
+                    const PipelineStatusCB&));
   MOCK_METHOD0(Stop, void());
   MOCK_METHOD2(Seek, void(base::TimeDelta, const PipelineStatusCB&));
   MOCK_METHOD1(Suspend, void(const PipelineStatusCB&));
-  MOCK_METHOD2(Resume, void(base::TimeDelta, const PipelineStatusCB&));
+  MOCK_METHOD3(Resume,
+               void(std::unique_ptr<Renderer>*,
+                    base::TimeDelta,
+                    const PipelineStatusCB&));
   MOCK_METHOD2(OnEnabledAudioTracksChanged,
                void(const std::vector<MediaTrack::Id>&, base::OnceClosure));
   MOCK_METHOD2(OnSelectedVideoTrackChanged,
@@ -113,6 +123,16 @@ class MockPipeline : public Pipeline {
                void(CdmContext* cdm_context, CdmAttachedCB& cdm_attached_cb));
 
  private:
+  // Forwarding stubs (see comment above).
+  void Start(StartType start_type,
+             Demuxer* demuxer,
+             std::unique_ptr<Renderer> renderer,
+             Client* client,
+             const PipelineStatusCB& seek_cb) override;
+  void Resume(std::unique_ptr<Renderer> renderer,
+              base::TimeDelta timestamp,
+              const PipelineStatusCB& seek_cb) override;
+
   DISALLOW_COPY_AND_ASSIGN(MockPipeline);
 };
 
@@ -361,25 +381,6 @@ class MockRenderer : public Renderer {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockRenderer);
-};
-
-class MockRendererFactory : public RendererFactory {
- public:
-  MockRendererFactory();
-  ~MockRendererFactory() override;
-
-  // Renderer implementation.
-  MOCK_METHOD6(CreateRenderer,
-               std::unique_ptr<Renderer>(
-                   const scoped_refptr<base::SingleThreadTaskRunner>&,
-                   const scoped_refptr<base::TaskRunner>&,
-                   AudioRendererSink*,
-                   VideoRendererSink*,
-                   const RequestOverlayInfoCB&,
-                   const gfx::ColorSpace&));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockRendererFactory);
 };
 
 class MockTimeSource : public TimeSource {
