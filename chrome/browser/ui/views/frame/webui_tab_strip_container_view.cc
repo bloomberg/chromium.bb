@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "base/i18n/message_formatter.h"
+#include "base/i18n/number_formatting.h"
 #include "base/logging.h"
 #include "base/scoped_observer.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -16,6 +18,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/layout_constants.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
@@ -141,6 +145,35 @@ class WebUITabStripContainerView::AutoCloser : public ui::EventHandler,
   bool enabled_ = false;
 };
 
+class TabCounterModelObserver : public TabStripModelObserver {
+ public:
+  explicit TabCounterModelObserver(views::LabelButton* tab_counter)
+      : tab_counter_(tab_counter) {}
+  ~TabCounterModelObserver() override = default;
+
+  void UpdateCounter(TabStripModel* model) {
+    const int num_tabs = model->count();
+
+    tab_counter_->SetTooltipText(
+        base::i18n::MessageFormatter::FormatWithNumberedArgs(
+            l10n_util::GetStringUTF16(IDS_TOOLTIP_WEBUI_TAB_STRIP_TAB_COUNTER),
+            num_tabs));
+    // TODO(999557): Have a 99+-style fallback to limit the max text width.
+    tab_counter_->SetText(base::FormatNumber(num_tabs));
+  }
+
+  // TabStripModelObserver:
+  void OnTabStripModelChanged(
+      TabStripModel* tab_strip_model,
+      const TabStripModelChange& change,
+      const TabStripSelectionChange& selection) override {
+    UpdateCounter(tab_strip_model);
+  }
+
+ private:
+  views::LabelButton* tab_counter_;
+};
+
 WebUITabStripContainerView::WebUITabStripContainerView(
     Browser* browser,
     views::View* tab_contents_container)
@@ -199,8 +232,6 @@ std::unique_ptr<views::View> WebUITabStripContainerView::CreateTabCounter() {
   auto tab_counter = std::make_unique<views::LabelButton>(
       this, base::string16(), views::style::CONTEXT_BUTTON_MD);
   tab_counter->SetID(VIEW_ID_WEBUI_TAB_STRIP_TAB_COUNTER);
-  tab_counter->SetTooltipText(
-      l10n_util::GetStringUTF16(IDS_TOOLTIP_WEBUI_TAB_STRIP_TAB_COUNTER));
   tab_counter->SetProperty(views::kFlexBehaviorKey,
                            views::FlexSpecification::ForSizeRule(
                                views::MinimumFlexSizeRule::kScaleToMinimum,
@@ -224,7 +255,10 @@ std::unique_ptr<views::View> WebUITabStripContainerView::CreateTabCounter() {
   // auto* tab_count_label = tab_counter->AddChildView(
   //     std::make_unique<views::Label>(base::string16()));*/
 
-  // TODO(999557): Hook into tabstripmodel events to update text and tooltip.
+  tab_counter_model_observer_ =
+      std::make_unique<TabCounterModelObserver>(tab_counter.get());
+  browser_->tab_strip_model()->AddObserver(tab_counter_model_observer_.get());
+  tab_counter_model_observer_->UpdateCounter(browser_->tab_strip_model());
 
   return tab_counter;
 }
