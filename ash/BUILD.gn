@@ -2064,6 +2064,7 @@ test("ash_unittests") {
     "//mojo/core/embedder",
     "//mojo/public/cpp/bindings",
     "//net:net",
+    "//services/data_decoder/public/cpp:test_support",
     "//services/device/public/cpp/bluetooth",
     "//services/media_session/public/cpp/test:test_support",
     "//services/media_session/public/mojom",
