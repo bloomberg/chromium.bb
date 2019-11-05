@@ -178,7 +178,6 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cookies/cookie_constants.h"
@@ -382,12 +381,13 @@ class RemoterFactoryImpl final : public media::mojom::RemoterFactory {
   RemoterFactoryImpl(int process_id, int routing_id)
       : process_id_(process_id), routing_id_(routing_id) {}
 
-  static void Bind(int process_id,
-                   int routing_id,
-                   media::mojom::RemoterFactoryRequest request) {
-    mojo::MakeStrongBinding(
+  static void Bind(
+      int process_id,
+      int routing_id,
+      mojo::PendingReceiver<media::mojom::RemoterFactory> receiver) {
+    mojo::MakeSelfOwnedReceiver(
         std::make_unique<RemoterFactoryImpl>(process_id, routing_id),
-        std::move(request));
+        std::move(receiver));
   }
 
  private:
