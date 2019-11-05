@@ -370,16 +370,22 @@ IN_PROC_BROWSER_TEST_P(SingleClientNigoriSyncTestWithNotAwaitQuiescence,
                        PRE_ShouldCompleteKeystoreInitializationAfterRestart) {
   GetFakeServer()->TriggerCommitError(sync_pb::SyncEnums::THROTTLED);
   ASSERT_TRUE(SetupSync());
+
+  sync_pb::NigoriSpecifics specifics;
+  ASSERT_TRUE(GetServerNigori(GetFakeServer(), &specifics));
+  ASSERT_EQ(specifics.passphrase_type(),
+            sync_pb::NigoriSpecifics::IMPLICIT_PASSPHRASE);
 }
 
 // After browser restart the client should commit initialized Nigori.
 IN_PROC_BROWSER_TEST_P(SingleClientNigoriSyncTestWithNotAwaitQuiescence,
                        ShouldCompleteKeystoreInitializationAfterRestart) {
+  sync_pb::NigoriSpecifics specifics;
+  ASSERT_TRUE(GetServerNigori(GetFakeServer(), &specifics));
+  ASSERT_EQ(specifics.passphrase_type(),
+            sync_pb::NigoriSpecifics::IMPLICIT_PASSPHRASE);
+
   ASSERT_TRUE(SetupClients());
-  ASSERT_TRUE(ServerNigoriChecker(GetSyncService(0), GetFakeServer(),
-                                  syncer::PassphraseType::kImplicitPassphrase)
-                  .Wait());
-  GetFakeServer()->TriggerCommitError(sync_pb::SyncEnums::SUCCESS);
   EXPECT_TRUE(ServerNigoriChecker(GetSyncService(0), GetFakeServer(),
                                   syncer::PassphraseType::kKeystorePassphrase)
                   .Wait());
