@@ -83,8 +83,7 @@ void CallStackProfileBuilder::RecordMetadata(
     }
   }
 
-  if (metadata_provider)
-    metadata_item_count_ = metadata_provider->GetItems(&metadata_items_);
+  metadata_item_count_ = metadata_provider->GetItems(&metadata_items_);
 }
 
 void CallStackProfileBuilder::OnSampleCompleted(
