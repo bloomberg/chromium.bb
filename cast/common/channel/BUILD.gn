@@ -4,21 +4,39 @@
 
 source_set("channel") {
   sources = [
+    "cast_message_handler.h",
     "cast_socket.cc",
     "cast_socket.h",
     "message_framer.cc",
     "message_framer.h",
     "message_util.h",
+    "virtual_connection.h",
+    "virtual_connection_manager.cc",
+    "virtual_connection_manager.h",
+  ]
+
+  public_deps = [
+    "../../../platform",
+    "../../../third_party/abseil",
   ]
 
   deps = [
     "../../../util",
     "proto",
   ]
+}
+
+source_set("test") {
+  testonly = true
+  sources = [
+    "test/fake_cast_socket.h",
+    "test/mock_cast_message_handler.h",
+  ]
 
   public_deps = [
-    "../../../platform",
-    "../../../third_party/abseil",
+    ":channel",
+    "../../../platform:test",
+    "../../../third_party/googletest:gmock",
   ]
 }
 
@@ -27,11 +45,14 @@ source_set("unittests") {
   sources = [
     "cast_socket_unittest.cc",
     "message_framer_unittest.cc",
+    "virtual_connection_manager_unittest.cc",
   ]
 
   deps = [
     ":channel",
+    ":test",
     "../../../platform",
+    "../../../platform:test",
     "../../../third_party/googletest:gmock",
     "../../../third_party/googletest:gtest",
     "../../../util",
