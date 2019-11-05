@@ -18,5 +18,5 @@ interface IBrowserController {
 
   void setFullscreenCallbackClient(in IFullscreenCallbackClient client) = 3;
 
-  void executeScript(in String script, in IObjectWrapper callback) = 4;
+  void executeScript(in String script, boolean useSeparateIsolate, in IObjectWrapper callback) = 4;
 }

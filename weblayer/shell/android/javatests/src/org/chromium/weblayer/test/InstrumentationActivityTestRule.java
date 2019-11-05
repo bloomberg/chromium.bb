@@ -203,12 +203,12 @@ public class InstrumentationActivityTestRule extends ActivityTestRule<Instrument
     /**
      * Executes the script passed in and waits for the result.
      */
-    public JSONObject executeScriptSync(String script) {
+    public JSONObject executeScriptSync(String script, boolean useSeparateIsolate) {
         JSONCallbackHelper callbackHelper = new JSONCallbackHelper();
         int count = callbackHelper.getCallCount();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            getActivity().getBrowserController().executeScript(
-                    script, (JSONObject result) -> { callbackHelper.notifyCalled(result); });
+            getActivity().getBrowserController().executeScript(script, useSeparateIsolate,
+                    (JSONObject result) -> { callbackHelper.notifyCalled(result); });
         });
         try {
             callbackHelper.waitForCallback(count);
@@ -220,7 +220,8 @@ public class InstrumentationActivityTestRule extends ActivityTestRule<Instrument
 
     public int executeScriptAndExtractInt(String script) {
         try {
-            return executeScriptSync(script).getInt(BrowserController.SCRIPT_RESULT_KEY);
+            return executeScriptSync(script, true /* useSeparateIsolate */)
+                    .getInt(BrowserController.SCRIPT_RESULT_KEY);
         } catch (JSONException e) {
             throw new RuntimeException(e);
         }
@@ -228,7 +229,8 @@ public class InstrumentationActivityTestRule extends ActivityTestRule<Instrument
 
     public String executeScriptAndExtractString(String script) {
         try {
-            return executeScriptSync(script).getString(BrowserController.SCRIPT_RESULT_KEY);
+            return executeScriptSync(script, true /* useSeparateIsolate */)
+                    .getString(BrowserController.SCRIPT_RESULT_KEY);
         } catch (JSONException e) {
             throw new RuntimeException(e);
         }
@@ -236,7 +238,8 @@ public class InstrumentationActivityTestRule extends ActivityTestRule<Instrument
 
     public boolean executeScriptAndExtractBoolean(String script) {
         try {
-            return executeScriptSync(script).getBoolean(BrowserController.SCRIPT_RESULT_KEY);
+            return executeScriptSync(script, true /* useSeparateIsolate */)
+                    .getBoolean(BrowserController.SCRIPT_RESULT_KEY);
         } catch (JSONException e) {
             throw new RuntimeException(e);
         }

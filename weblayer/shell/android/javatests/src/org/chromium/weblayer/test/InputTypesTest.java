@@ -307,7 +307,8 @@ public class InputTypesTest {
     public void testColorInput() {
         // Just make sure we don't crash when opening the color picker.
         mActivityTestRule.executeScriptSync("var done = false; document.onclick = function() {"
-                + "document.getElementById('input_color').click(); done = true;}");
+                        + "document.getElementById('input_color').click(); done = true;}",
+                true /* useSeparateIsolate */);
         EventUtils.simulateTouchCenterOfView(
                 mActivityTestRule.getActivity().getWindow().getDecorView());
         CriteriaHelper.pollInstrumentationThread(
@@ -318,7 +319,8 @@ public class InputTypesTest {
         // We need to click the input after user input, otherwise it won't open due to security
         // policy.
         mActivityTestRule.executeScriptSync(
-                "document.onclick = function() {document.getElementById('" + id + "').click()}");
+                "document.onclick = function() {document.getElementById('" + id + "').click()}",
+                true /* useSeparateIsolate */);
         EventUtils.simulateTouchCenterOfView(
                 mActivityTestRule.getActivity().getWindow().getDecorView());
         mIntentInterceptor.waitForIntent();

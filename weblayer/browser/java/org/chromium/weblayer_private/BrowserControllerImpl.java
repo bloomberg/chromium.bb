@@ -167,7 +167,7 @@ public final class BrowserControllerImpl extends IBrowserController.Stub {
     }
 
     @Override
-    public void executeScript(String script, IObjectWrapper callback) {
+    public void executeScript(String script, boolean useSeparateIsolate, IObjectWrapper callback) {
         Callback<String> nativeCallback = new Callback<String>() {
             @Override
             public void onResult(String result) {
@@ -179,7 +179,7 @@ public final class BrowserControllerImpl extends IBrowserController.Stub {
             }
         };
         BrowserControllerImplJni.get().executeScript(
-                mNativeBrowserController, script, nativeCallback);
+                mNativeBrowserController, script, useSeparateIsolate, nativeCallback);
     }
 
     public void destroy() {
@@ -222,7 +222,7 @@ public final class BrowserControllerImpl extends IBrowserController.Stub {
                 BrowserControllerImpl caller, long nativeTopControlsContainerView);
         void deleteBrowserController(long browserController);
         WebContents getWebContents(long nativeBrowserControllerImpl, BrowserControllerImpl caller);
-        void executeScript(
-                long nativeBrowserControllerImpl, String script, Callback<String> callback);
+        void executeScript(long nativeBrowserControllerImpl, String script,
+                boolean useSeparateIsolate, Callback<String> callback);
     }
 }

@@ -9,6 +9,7 @@
 #include "content/public/browser/file_select_listener.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/browser_controls_state.h"
@@ -178,9 +179,16 @@ NavigationController* BrowserControllerImpl::GetNavigationController() {
 }
 
 void BrowserControllerImpl::ExecuteScript(const base::string16& script,
+                                          bool use_separate_isolate,
                                           JavaScriptResultCallback callback) {
-  web_contents_->GetMainFrame()->ExecuteJavaScriptInIsolatedWorld(
-      script, std::move(callback), ISOLATED_WORLD_ID_WEBLAYER);
+  if (use_separate_isolate) {
+    web_contents_->GetMainFrame()->ExecuteJavaScriptInIsolatedWorld(
+        script, std::move(callback), ISOLATED_WORLD_ID_WEBLAYER);
+  } else {
+    content::RenderFrameHost::AllowInjectingJavaScript();
+    web_contents_->GetMainFrame()->ExecuteJavaScript(script,
+                                                     std::move(callback));
+  }
 }
 
 #if !defined(OS_ANDROID)
@@ -223,9 +231,11 @@ void BrowserControllerImpl::SetTopControlsContainerView(
 void BrowserControllerImpl::ExecuteScript(
     JNIEnv* env,
     const base::android::JavaParamRef<jstring>& script,
+    bool use_separate_isolate,
     const base::android::JavaParamRef<jobject>& callback) {
   base::android::ScopedJavaGlobalRef<jobject> jcallback(env, callback);
   ExecuteScript(base::android::ConvertJavaStringToUTF16(script),
+                use_separate_isolate,
                 base::BindOnce(&HandleJavaScriptResult, jcallback));
 }
 

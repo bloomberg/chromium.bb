@@ -245,11 +245,9 @@ const void* const kRenderFrameHostAndroidKey = &kRenderFrameHostAndroidKey;
 // The next value to use for the accessibility reset token.
 int g_next_accessibility_reset_token = 1;
 
-#if defined(OS_ANDROID) || defined(OS_FUCHSIA) || defined(IS_CHROMECAST)
 // Whether to allow injecting javascript into any kind of frame, for Android
-// WebView, Fuchsia web.ContextProvider and CastOS content shell.
+// WebView, WebLayer, Fuchsia web.ContextProvider and CastOS content shell.
 bool g_allow_injecting_javascript = false;
-#endif
 
 typedef std::unordered_map<GlobalFrameRoutingId,
                            RenderFrameHostImpl*,
@@ -818,12 +816,10 @@ RenderFrameHost* RenderFrameHost::FromID(int render_process_id,
       GlobalFrameRoutingId(render_process_id, render_frame_id));
 }
 
-#if defined(OS_ANDROID) || defined(OS_FUCHSIA) || defined(IS_CHROMECAST)
 // static
 void RenderFrameHost::AllowInjectingJavaScript() {
   g_allow_injecting_javascript = true;
 }
-#endif  // defined(OS_ANDROID) || defined(OS_FUCHSIA) || defined(IS_CHROMECAST)
 
 // static
 RenderFrameHostImpl* RenderFrameHostImpl::FromID(int render_process_id,
@@ -6253,10 +6249,8 @@ bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryInternal(
 }
 
 bool RenderFrameHostImpl::CanExecuteJavaScript() {
-#if defined(OS_ANDROID) || defined(OS_FUCHSIA) || defined(IS_CHROMECAST)
   if (g_allow_injecting_javascript)
     return true;
-#endif
   return !frame_tree_node_->current_url().is_valid() ||
          frame_tree_node_->current_url().SchemeIs(kChromeDevToolsScheme) ||
          ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
