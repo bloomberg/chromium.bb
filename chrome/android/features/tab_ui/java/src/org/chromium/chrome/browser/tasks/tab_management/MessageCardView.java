@@ -22,15 +22,30 @@ import java.lang.ref.WeakReference;
  * Represents a secondary card view in Grid Tab Switcher. The view contains an icon, a description,
  * an action button for acceptance, and a close button for dismissal.
  */
-class TabGridMessageCardView extends LinearLayout {
+class MessageCardView extends LinearLayout {
     private static WeakReference<Bitmap> sCloseButtonBitmapWeakRef;
+
+    /**
+     * An interface to get the icon to be shown inside the message card.
+     */
+    public interface IconProvider { Drawable getIconDrawable(); }
+
+    /**
+     * An interface to handle the review action.
+     */
+    public interface ReviewActionProvider { void review(); }
+
+    /**
+     * An interface to handle the dismiss action.
+     */
+    public interface DismissActionProvider { void dismiss(); }
 
     private ChromeImageView mIcon;
     private TemplatePreservingTextView mDescription;
     private ButtonCompat mActionButton;
     private ChromeImageView mCloseButton;
 
-    public TabGridMessageCardView(Context context, AttributeSet attrs) {
+    public MessageCardView(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
 
@@ -72,7 +87,7 @@ class TabGridMessageCardView extends LinearLayout {
      * Set action text for the action button.
      * @param actionText Text to be displayed.
      */
-    void setAction(String actionText) {
+    void setActionText(String actionText) {
         mActionButton.setText(actionText);
     }
 
@@ -82,5 +97,29 @@ class TabGridMessageCardView extends LinearLayout {
      */
     void setIcon(Drawable iconDrawable) {
         mIcon.setImageDrawable(iconDrawable);
+    }
+
+    /**
+     * Set click listener for the action button.
+     * @param listener {@link android.view.View.OnClickListener} for the action button.
+     */
+    void setActionButtonOnClickListener(OnClickListener listener) {
+        mActionButton.setOnClickListener(listener);
+    }
+
+    /**
+     * Set content description for dismiss button.
+     * @param description The content description.
+     */
+    void setDismissButtonContentDescription(String description) {
+        mCloseButton.setContentDescription(description);
+    }
+
+    /**
+     * Set {@link android.view.View.OnClickListener} for dismiss button.
+     * @param listener {@link android.view.View.OnClickListener} to set.
+     */
+    void setDismissButtonOnClickListener(OnClickListener listener) {
+        mCloseButton.setOnClickListener(listener);
     }
 }

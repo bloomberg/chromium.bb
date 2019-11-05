@@ -2,9 +2,9 @@
 <!-- Copyright 2019 The Chromium Authors. All rights reserved.
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
-<org.chromium.chrome.browser.tasks.tab_management.TabGridMessageCardView
+<org.chromium.chrome.browser.tasks.tab_management.MessageCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/tab_grid_iph_item"
+    android:id="@+id/tab_grid_message_item"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
@@ -42,4 +42,4 @@
         style="@style/BottomToolbarButton"
         android:contentDescription="@string/close"
         android:tint="@color/default_icon_color" />
-</org.chromium.chrome.browser.tasks.tab_management.TabGridMessageCardView>
+</org.chromium.chrome.browser.tasks.tab_management.MessageCardView>
