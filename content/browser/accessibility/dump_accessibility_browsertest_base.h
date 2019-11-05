@@ -96,9 +96,11 @@ class DumpAccessibilityTestBase : public ContentBrowserTest,
 
   void RunTestForPlatform(const base::FilePath file_path, const char* file_dir);
 
-  // Retrieve the accessibility node, starting from the root node, that matches
-  // the accessibility name.
-  BrowserAccessibility* FindNode(const std::string& name);
+  // Retrieve the accessibility node that matches the accessibility name. There
+  // is an optional search_root parameter that defaults to the document root if
+  // not provided.
+  BrowserAccessibility* FindNode(const std::string& name,
+                                 BrowserAccessibility* search_root = nullptr);
 
   // Retrieve the browser accessibility manager object for the current web
   // contents.
