@@ -120,7 +120,7 @@ class ASH_EXPORT OverviewItem : public views::ButtonListener,
 
   // Shows/Hides window item during window dragging. Used when swiping up a
   // window from shelf.
-  void SetVisibleDuringWindowDragging(bool visible);
+  void SetVisibleDuringWindowDragging(bool visible, bool animate);
 
   ScopedOverviewTransformWindow::GridWindowFillMode GetWindowDimensionsType()
       const;

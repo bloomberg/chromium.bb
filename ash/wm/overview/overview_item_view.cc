@@ -7,6 +7,7 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/wm/overview/overview_constants.h"
+#include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_item.h"
 #include "ash/wm/overview/rounded_rect_view.h"
 #include "ash/wm/window_preview_view.h"
@@ -161,7 +162,9 @@ OverviewItemView::OverviewItemView(OverviewItem* overview_item,
   // Call this last as it calls |Layout()| which relies on the some of the other
   // elements existing.
   SetShowPreview(show_preview);
-  if (show_preview) {
+  // Do not show header if the current overview item is the drop target widget.
+  if (show_preview || overview_item_->overview_grid()->IsDropTargetWindow(
+                          overview_item_->GetWindow())) {
     header_view()->layer()->SetOpacity(0.f);
     current_header_visibility_ = HeaderVisibility::kInvisible;
   }

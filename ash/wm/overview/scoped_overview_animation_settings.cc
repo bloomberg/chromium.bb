@@ -50,6 +50,11 @@ constexpr base::TimeDelta kOverviewHighlightTransition =
 constexpr base::TimeDelta kDropTargetFade =
     base::TimeDelta::FromMilliseconds(250);
 
+// Time duration to fade in overview windows when a window drag slows down or
+// stops.
+constexpr base::TimeDelta kFadeInOnWindowDrag =
+    base::TimeDelta::FromMilliseconds(350);
+
 base::TimeDelta GetAnimationDuration(OverviewAnimationType animation_type) {
   switch (animation_type) {
     case OVERVIEW_ANIMATION_NONE:
@@ -80,6 +85,8 @@ base::TimeDelta GetAnimationDuration(OverviewAnimationType animation_type) {
     case OVERVIEW_ANIMATION_SELECTION_WINDOW:
     case OVERVIEW_ANIMATION_FRAME_HEADER_CLIP:
       return kOverviewHighlightTransition;
+    case OVERVIEW_ANIMATION_OPACITY_ON_WINDOW_DRAG:
+      return kFadeInOnWindowDrag;
   }
   NOTREACHED();
   return base::TimeDelta();
@@ -189,6 +196,11 @@ ScopedOverviewAnimationSettings::ScopedOverviewAnimationSettings(
       break;
     case OVERVIEW_ANIMATION_SELECTION_WINDOW:
       animation_settings_->SetTweenType(gfx::Tween::EASE_OUT);
+      animation_settings_->SetPreemptionStrategy(
+          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+      break;
+    case OVERVIEW_ANIMATION_OPACITY_ON_WINDOW_DRAG:
+      animation_settings_->SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
       animation_settings_->SetPreemptionStrategy(
           ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
       break;

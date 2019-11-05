@@ -563,11 +563,21 @@ void OverviewItem::OnSelectorItemDragEnded(bool snap) {
   is_being_dragged_ = false;
 }
 
-void OverviewItem::SetVisibleDuringWindowDragging(bool visible) {
+void OverviewItem::SetVisibleDuringWindowDragging(bool visible, bool animate) {
   aura::Window::Windows windows = GetWindowsForHomeGesture();
+  float new_opacity = visible ? 1.f : 0.f;
   for (auto* window : windows) {
     ui::Layer* layer = window->layer();
-    layer->SetOpacity(visible ? 1.f : 0.f);
+    if (layer->GetTargetOpacity() == new_opacity)
+      continue;
+
+    if (animate) {
+      ScopedOverviewAnimationSettings settings(
+          OVERVIEW_ANIMATION_OPACITY_ON_WINDOW_DRAG, window);
+      layer->SetOpacity(new_opacity);
+    } else {
+      layer->SetOpacity(new_opacity);
+    }
   }
 }
 
