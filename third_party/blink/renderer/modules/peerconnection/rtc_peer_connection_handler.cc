@@ -33,7 +33,6 @@
 #include "third_party/blink/public/platform/web_rtc_rtp_sender.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_transceiver.h"
 #include "third_party/blink/public/platform/web_rtc_session_description.h"
-#include "third_party/blink/public/platform/web_rtc_session_description_request.h"
 #include "third_party/blink/public/platform/web_rtc_stats.h"
 #include "third_party/blink/public/platform/web_rtc_void_request.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -49,6 +48,7 @@
 #include "third_party/blink/renderer/platform/peerconnection/rtc_event_log_output_sink.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_event_log_output_sink_proxy.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_offer_options_platform.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_session_description_request.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 #include "third_party/webrtc/api/rtc_event_log_output.h"
@@ -214,13 +214,13 @@ void CopyConstraintsIntoRtcConfiguration(
 }
 
 // Class mapping responses from calls to libjingle CreateOffer/Answer and
-// the blink::WebRTCSessionDescriptionRequest.
+// the blink::RTCSessionDescriptionRequest.
 class CreateSessionDescriptionRequest
     : public webrtc::CreateSessionDescriptionObserver {
  public:
   explicit CreateSessionDescriptionRequest(
       const scoped_refptr<base::SingleThreadTaskRunner>& main_thread,
-      const blink::WebRTCSessionDescriptionRequest& request,
+      blink::RTCSessionDescriptionRequest* request,
       const base::WeakPtr<RTCPeerConnectionHandler>& handler,
       const base::WeakPtr<PeerConnectionTracker>& tracker,
       PeerConnectionTracker::Action action)
@@ -251,8 +251,8 @@ class CreateSessionDescriptionRequest
       tracker_->TrackSessionId(handler_.get(),
                                String::FromUTF8(desc->session_id()));
     }
-    webkit_request_.RequestSucceeded(CreateWebKitSessionDescription(desc));
-    webkit_request_.Reset();
+    webkit_request_->RequestSucceeded(CreateWebKitSessionDescription(desc));
+    webkit_request_ = nullptr;
     delete desc;
   }
   void OnFailure(webrtc::RTCError error) override {
@@ -272,8 +272,8 @@ class CreateSessionDescriptionRequest
           String::FromUTF8(error.message()));
     }
     // TODO(hta): Convert CreateSessionDescriptionRequest.OnFailure
-    webkit_request_.RequestFailed(error);
-    webkit_request_.Reset();
+    webkit_request_->RequestFailed(error);
+    webkit_request_ = nullptr;
   }
 
  protected:
@@ -283,12 +283,12 @@ class CreateSessionDescriptionRequest
     // the main thread. Since the main thread may complete before the signaling
     // thread has deferenced this object there is no guarantee that this object
     // is destructed on the main thread.
-    DLOG_IF(ERROR, !webkit_request_.IsNull())
+    DLOG_IF(ERROR, webkit_request_)
         << "CreateSessionDescriptionRequest not completed. Shutting down?";
   }
 
   const scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
-  blink::WebRTCSessionDescriptionRequest webkit_request_;
+  Persistent<RTCSessionDescriptionRequest> webkit_request_;
   const base::WeakPtr<RTCPeerConnectionHandler> handler_;
   const base::WeakPtr<PeerConnectionTracker> tracker_;
   PeerConnectionTracker::Action action_;
@@ -1135,7 +1135,7 @@ bool RTCPeerConnectionHandler::InitializeForTest(
 
 blink::WebVector<std::unique_ptr<blink::WebRTCRtpTransceiver>>
 RTCPeerConnectionHandler::CreateOffer(
-    const blink::WebRTCSessionDescriptionRequest& request,
+    blink::RTCSessionDescriptionRequest* request,
     const blink::WebMediaConstraints& options) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::createOffer");
@@ -1150,7 +1150,7 @@ RTCPeerConnectionHandler::CreateOffer(
 
 blink::WebVector<std::unique_ptr<blink::WebRTCRtpTransceiver>>
 RTCPeerConnectionHandler::CreateOffer(
-    const blink::WebRTCSessionDescriptionRequest& request,
+    blink::RTCSessionDescriptionRequest* request,
     blink::RTCOfferOptionsPlatform* options) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::createOffer");
@@ -1165,7 +1165,7 @@ RTCPeerConnectionHandler::CreateOffer(
 
 std::vector<std::unique_ptr<blink::WebRTCRtpTransceiver>>
 RTCPeerConnectionHandler::CreateOfferInternal(
-    const blink::WebRTCSessionDescriptionRequest& request,
+    blink::RTCSessionDescriptionRequest* request,
     webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   scoped_refptr<CreateSessionDescriptionRequest> description_request(
@@ -1210,7 +1210,7 @@ void RTCPeerConnectionHandler::CreateOfferOnSignalingThread(
 }
 
 void RTCPeerConnectionHandler::CreateAnswer(
-    const blink::WebRTCSessionDescriptionRequest& request,
+    blink::RTCSessionDescriptionRequest* request,
     const blink::WebMediaConstraints& options) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::createAnswer");
@@ -1230,7 +1230,7 @@ void RTCPeerConnectionHandler::CreateAnswer(
 }
 
 void RTCPeerConnectionHandler::CreateAnswer(
-    const blink::WebRTCSessionDescriptionRequest& request,
+    blink::RTCSessionDescriptionRequest* request,
     blink::RTCAnswerOptionsPlatform* options) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::createAnswer");

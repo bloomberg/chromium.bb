@@ -108,15 +108,15 @@ class MODULES_EXPORT RTCPeerConnectionHandler
                   const blink::WebMediaConstraints& options) override;
 
   blink::WebVector<std::unique_ptr<blink::WebRTCRtpTransceiver>> CreateOffer(
-      const blink::WebRTCSessionDescriptionRequest& request,
+      blink::RTCSessionDescriptionRequest* request,
       const blink::WebMediaConstraints& options) override;
   blink::WebVector<std::unique_ptr<blink::WebRTCRtpTransceiver>> CreateOffer(
-      const blink::WebRTCSessionDescriptionRequest& request,
+      blink::RTCSessionDescriptionRequest* request,
       blink::RTCOfferOptionsPlatform* options) override;
 
-  void CreateAnswer(const blink::WebRTCSessionDescriptionRequest& request,
+  void CreateAnswer(blink::RTCSessionDescriptionRequest* request,
                     const blink::WebMediaConstraints& options) override;
-  void CreateAnswer(const blink::WebRTCSessionDescriptionRequest& request,
+  void CreateAnswer(blink::RTCSessionDescriptionRequest* request,
                     blink::RTCAnswerOptionsPlatform* options) override;
 
   void SetLocalDescription(const blink::WebRTCVoidRequest& request) override;
@@ -307,7 +307,7 @@ class MODULES_EXPORT RTCPeerConnectionHandler
       blink::TransceiverStateSurfacer* transceiver_state_surfacer,
       bool* result);
   std::vector<std::unique_ptr<blink::WebRTCRtpTransceiver>> CreateOfferInternal(
-      const blink::WebRTCSessionDescriptionRequest& request,
+      blink::RTCSessionDescriptionRequest* request,
       webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options);
   void CreateOfferOnSignalingThread(
       webrtc::CreateSessionDescriptionObserver* observer,

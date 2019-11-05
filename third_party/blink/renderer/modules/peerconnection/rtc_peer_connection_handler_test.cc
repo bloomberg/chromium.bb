@@ -35,7 +35,6 @@
 #include "third_party/blink/public/platform/web_rtc_peer_connection_handler_client.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_receiver.h"
 #include "third_party/blink/public/platform/web_rtc_session_description.h"
-#include "third_party/blink/public/platform/web_rtc_session_description_request.h"
 #include "third_party/blink/public/platform/web_rtc_stats.h"
 #include "third_party/blink/public/platform/web_rtc_stats_request.h"
 #include "third_party/blink/public/platform/web_rtc_void_request.h"
@@ -617,27 +616,25 @@ TEST_F(RTCPeerConnectionHandlerTest, NoCallbacksToClientAfterStop) {
 }
 
 TEST_F(RTCPeerConnectionHandlerTest, CreateOffer) {
-  blink::WebRTCSessionDescriptionRequest request;
   blink::WebMediaConstraints options;
   EXPECT_CALL(*mock_tracker_.get(), TrackCreateOffer(pc_handler_.get(), _));
 
-  // TODO(perkj): Can blink::WebRTCSessionDescriptionRequest be changed so
-  // the |reqest| requestSucceeded can be tested? Currently the |request| object
-  // can not be initialized from a unit test.
+  // TODO(perkj): Can blink::RTCSessionDescriptionRequest be changed so
+  // the |request| requestSucceeded can be tested? Currently the |request|
+  // object can not be initialized from a unit test.
   EXPECT_FALSE(mock_peer_connection_->created_session_description());
-  pc_handler_->CreateOffer(request, options);
+  pc_handler_->CreateOffer(nullptr /*RTCSessionDescriptionRequest*/, options);
   EXPECT_TRUE(mock_peer_connection_->created_session_description());
 }
 
 TEST_F(RTCPeerConnectionHandlerTest, CreateAnswer) {
-  blink::WebRTCSessionDescriptionRequest request;
   blink::WebMediaConstraints options;
   EXPECT_CALL(*mock_tracker_.get(), TrackCreateAnswer(pc_handler_.get(), _));
-  // TODO(perkj): Can blink::WebRTCSessionDescriptionRequest be changed so
-  // the |reqest| requestSucceeded can be tested? Currently the |request| object
-  // can not be initialized from a unit test.
+  // TODO(perkj): Can blink::RTCSessionDescriptionRequest be changed so
+  // the |request| requestSucceeded can be tested? Currently the |request|
+  // object can not be initialized from a unit test.
   EXPECT_FALSE(mock_peer_connection_->created_session_description());
-  pc_handler_->CreateAnswer(request, options);
+  pc_handler_->CreateAnswer(nullptr /*RTCSessionDescriptionRequest*/, options);
   EXPECT_TRUE(mock_peer_connection_->created_session_description());
 }
 

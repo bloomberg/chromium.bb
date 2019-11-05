@@ -14,7 +14,6 @@
 #include "third_party/blink/public/platform/web_rtc_rtp_receiver.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_sender.h"
 #include "third_party/blink/public/platform/web_rtc_session_description.h"
-#include "third_party/blink/public/platform/web_rtc_session_description_request.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/web_heap.h"
 #include "third_party/blink/public/web/web_script_source.h"
@@ -660,22 +659,10 @@ enum class AsyncOperationAction {
 };
 
 template <typename RequestType>
-void CompleteRequest(RequestType request, bool resolve);
+void CompleteRequestDeprecated(RequestType request, bool resolve);
 
 template <>
-void CompleteRequest(WebRTCSessionDescriptionRequest request, bool resolve) {
-  if (resolve) {
-    WebRTCSessionDescription description =
-        WebRTCSessionDescription(WebString(), WebString());
-    request.RequestSucceeded(description);
-  } else {
-    request.RequestFailed(
-        webrtc::RTCError(webrtc::RTCErrorType::INVALID_MODIFICATION));
-  }
-}
-
-template <>
-void CompleteRequest(WebRTCVoidRequest request, bool resolve) {
+void CompleteRequestDeprecated(WebRTCVoidRequest request, bool resolve) {
   if (resolve) {
     request.RequestSucceeded();
   } else {
@@ -685,8 +672,46 @@ void CompleteRequest(WebRTCVoidRequest request, bool resolve) {
 }
 
 template <typename RequestType>
-void PostToCompleteRequest(AsyncOperationAction action,
-                           const RequestType& request) {
+void PostToCompleteRequestDeprecated(AsyncOperationAction action,
+                                     const RequestType& request) {
+  switch (action) {
+    case AsyncOperationAction::kLeavePending:
+      return;
+    case AsyncOperationAction::kResolve:
+      scheduler::GetSequencedTaskRunnerForTesting()->PostTask(
+          FROM_HERE, base::BindOnce(&CompleteRequestDeprecated<RequestType>,
+                                    request, true));
+      return;
+    case AsyncOperationAction::kReject:
+      scheduler::GetSequencedTaskRunnerForTesting()->PostTask(
+          FROM_HERE, base::BindOnce(&CompleteRequestDeprecated<RequestType>,
+                                    request, false));
+      return;
+  }
+}
+
+// TODO(crbug.com/787254): The template definitions below temporarily
+// duplicate the variant above.
+// Use this one for both RTCSessionDescriptionRequest
+// and RTCVoidRequest when the later gets used everywhere instead of
+// WebRTCVoidRequest.
+template <typename RequestType>
+void CompleteRequest(RequestType* request, bool resolve);
+
+template <>
+void CompleteRequest(RTCSessionDescriptionRequest* request, bool resolve) {
+  if (resolve) {
+    WebRTCSessionDescription description =
+        WebRTCSessionDescription(WebString(), WebString());
+    request->RequestSucceeded(description);
+  } else {
+    request->RequestFailed(
+        webrtc::RTCError(webrtc::RTCErrorType::INVALID_MODIFICATION));
+  }
+}
+
+template <typename RequestType>
+void PostToCompleteRequest(AsyncOperationAction action, RequestType* request) {
   switch (action) {
     case AsyncOperationAction::kLeavePending:
       return;
@@ -706,41 +731,43 @@ void PostToCompleteRequest(AsyncOperationAction action,
 class FakeWebRTCPeerConnectionHandler : public MockWebRTCPeerConnectionHandler {
  public:
   WebVector<std::unique_ptr<WebRTCRtpTransceiver>> CreateOffer(
-      const WebRTCSessionDescriptionRequest& request,
+      RTCSessionDescriptionRequest* request,
       const WebMediaConstraints&) override {
-    PostToCompleteRequest<WebRTCSessionDescriptionRequest>(
-        async_operation_action_, request);
+    PostToCompleteRequest<RTCSessionDescriptionRequest>(async_operation_action_,
+                                                        request);
     return {};
   }
 
   WebVector<std::unique_ptr<WebRTCRtpTransceiver>> CreateOffer(
-      const WebRTCSessionDescriptionRequest& request,
+      RTCSessionDescriptionRequest* request,
       RTCOfferOptionsPlatform*) override {
-    PostToCompleteRequest<WebRTCSessionDescriptionRequest>(
-        async_operation_action_, request);
+    PostToCompleteRequest<RTCSessionDescriptionRequest>(async_operation_action_,
+                                                        request);
     return {};
   }
 
-  void CreateAnswer(const WebRTCSessionDescriptionRequest& request,
+  void CreateAnswer(RTCSessionDescriptionRequest* request,
                     const WebMediaConstraints&) override {
-    PostToCompleteRequest<WebRTCSessionDescriptionRequest>(
-        async_operation_action_, request);
+    PostToCompleteRequest<RTCSessionDescriptionRequest>(async_operation_action_,
+                                                        request);
   }
 
-  void CreateAnswer(const WebRTCSessionDescriptionRequest& request,
+  void CreateAnswer(RTCSessionDescriptionRequest* request,
                     RTCAnswerOptionsPlatform*) override {
-    PostToCompleteRequest<WebRTCSessionDescriptionRequest>(
-        async_operation_action_, request);
+    PostToCompleteRequest<RTCSessionDescriptionRequest>(async_operation_action_,
+                                                        request);
   }
 
   void SetLocalDescription(const WebRTCVoidRequest& request,
                            const WebRTCSessionDescription&) override {
-    PostToCompleteRequest<WebRTCVoidRequest>(async_operation_action_, request);
+    PostToCompleteRequestDeprecated<WebRTCVoidRequest>(async_operation_action_,
+                                                       request);
   }
 
   void SetRemoteDescription(const WebRTCVoidRequest& request,
                             const WebRTCSessionDescription&) override {
-    PostToCompleteRequest<WebRTCVoidRequest>(async_operation_action_, request);
+    PostToCompleteRequestDeprecated<WebRTCVoidRequest>(async_operation_action_,
+                                                       request);
   }
 
   void set_async_operation_action(AsyncOperationAction action) {

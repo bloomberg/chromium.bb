@@ -251,25 +251,23 @@ bool MockWebRTCPeerConnectionHandler::Initialize(
 }
 
 WebVector<std::unique_ptr<WebRTCRtpTransceiver>>
-MockWebRTCPeerConnectionHandler::CreateOffer(
-    const WebRTCSessionDescriptionRequest&,
-    const WebMediaConstraints&) {
+MockWebRTCPeerConnectionHandler::CreateOffer(RTCSessionDescriptionRequest*,
+                                             const WebMediaConstraints&) {
   return {};
 }
 
 WebVector<std::unique_ptr<WebRTCRtpTransceiver>>
-MockWebRTCPeerConnectionHandler::CreateOffer(
-    const WebRTCSessionDescriptionRequest&,
-    RTCOfferOptionsPlatform*) {
+MockWebRTCPeerConnectionHandler::CreateOffer(RTCSessionDescriptionRequest*,
+                                             RTCOfferOptionsPlatform*) {
   return {};
 }
 
 void MockWebRTCPeerConnectionHandler::CreateAnswer(
-    const WebRTCSessionDescriptionRequest&,
+    RTCSessionDescriptionRequest*,
     const WebMediaConstraints&) {}
 
 void MockWebRTCPeerConnectionHandler::CreateAnswer(
-    const WebRTCSessionDescriptionRequest&,
+    RTCSessionDescriptionRequest*,
     RTCAnswerOptionsPlatform*) {}
 
 void MockWebRTCPeerConnectionHandler::SetLocalDescription(
