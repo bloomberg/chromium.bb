@@ -62121,7 +62121,7 @@ Full version information for the fingerprint enum values:
 </enum>
 
 <enum name="UkmResetReason">
-  <int value="0" label="OnSyncPrefsChanged"/>
+  <int value="0" label="OnUkmAllowedStateChanged"/>
   <int value="1" label="UpdatePermissions"/>
 </enum>
 
