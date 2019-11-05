@@ -1,5 +1,6 @@
 {
   "testResult": {
+    "testPath" : "DummySuite.DummyCase",
     "status": "PASS",
     "expected": true,
     "outputArtifacts":{
