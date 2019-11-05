@@ -186,7 +186,9 @@ def GeneralTemplates(site_config):
       build_type=constants.PALADIN_TYPE,
       overlays=constants.PUBLIC_OVERLAYS,
       luci_builder=config_lib.LUCI_BUILDER_COMMITQUEUE,
-      build_timeout=5 * 60 * 60,
+      # Extended to 8 hours from 5, see goma problems https://crbug.com/1021125
+      # and https://crbug.com/1021532.
+      build_timeout=8 * 60 * 60,
       manifest_version=True,
       description='Commit Queue',
       upload_standalone_images=False,
