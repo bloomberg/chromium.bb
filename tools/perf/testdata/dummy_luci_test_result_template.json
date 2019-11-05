@@ -4,7 +4,7 @@
     "status": "PASS",
     "expected": true,
     "outputArtifacts":{
-      "trace": {
+      "trace/1.json": {
         "contentType":"application/json",
         "filePath":"FULL_TRACE_FILE_PATH"
       }
