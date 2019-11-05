@@ -4435,11 +4435,6 @@ void RenderFrameImpl::SetMouseCapture(bool capture) {
   GetLocalRootRenderWidget()->SetMouseCapture(capture);
 }
 
-void RenderFrameImpl::LifecycleStateChanged(
-    blink::mojom::FrameLifecycleState state) {
-  GetFrameHost()->LifecycleStateChanged(state);
-}
-
 bool RenderFrameImpl::ShouldReportDetailedMessageForSource(
     const blink::WebString& source) {
   return GetContentClient()->renderer()->ShouldReportDetailedMessageForSource(

@@ -471,10 +471,6 @@ interface FrameHost {
   // status.
   VisibilityChanged(blink.mojom.FrameVisibility visibility);
 
-  // Notifies the browser that the current frame has changed its lifecycle
-  // state.
-  LifecycleStateChanged(blink.mojom.FrameLifecycleState state);
-
   // Updates information to determine whether a user gesture should carryover to
   // future navigations. This is needed so navigations within a certain
   // timeframe of a request initiated by a gesture will be treated as if they

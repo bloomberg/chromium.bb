@@ -1717,7 +1717,7 @@ void LocalFrame::SetLifecycleState(mojom::FrameLifecycleState state) {
         return;
     }
   }
-  Client()->LifecycleStateChanged(state);
+  GetLocalFrameHostRemote().LifecycleStateChanged(state);
 }
 
 void LocalFrame::MaybeLogAdClickNavigation() {

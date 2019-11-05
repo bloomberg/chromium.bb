@@ -1162,11 +1162,6 @@ void LocalFrameClientImpl::FrameRectsChanged(const IntRect& frame_rect) {
   web_frame_->Client()->FrameRectsChanged(frame_rect);
 }
 
-void LocalFrameClientImpl::LifecycleStateChanged(
-    mojom::FrameLifecycleState state) {
-  web_frame_->Client()->LifecycleStateChanged(state);
-}
-
 bool LocalFrameClientImpl::IsPluginHandledExternally(
     HTMLPlugInElement& plugin_element,
     const KURL& resource_url,

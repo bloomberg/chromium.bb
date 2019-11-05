@@ -321,9 +321,6 @@ class BLINK_EXPORT WebLocalFrameClient {
   // is being dragged.
   virtual void SetMouseCapture(bool capture) {}
 
-  // Lifecycle of the frame has changed.
-  virtual void LifecycleStateChanged(mojom::FrameLifecycleState state) {}
-
   // Console messages ----------------------------------------------------
 
   // Whether or not we should report a detailed message for the given source.

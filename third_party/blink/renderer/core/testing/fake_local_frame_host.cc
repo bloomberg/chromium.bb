@@ -37,6 +37,9 @@ void FakeLocalFrameHost::DidContainInsecureFormAction() {}
 
 void FakeLocalFrameHost::SetNeedsOcclusionTracking(bool needs_tracking) {}
 
+void FakeLocalFrameHost::LifecycleStateChanged(
+    mojom::blink::FrameLifecycleState state) {}
+
 void FakeLocalFrameHost::EvictFromBackForwardCache() {}
 
 void FakeLocalFrameHost::BindFrameHostReceiver(
