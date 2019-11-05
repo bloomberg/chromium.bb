@@ -282,6 +282,9 @@ static void set_good_speed_features_framesize_independent(
 
   if (speed >= 1) {
     sf->selective_ref_frame = 2;
+    // TODO(any): Experiment with this speed feature for speed=0 and clean-up
+    // the code altogether.
+    sf->disable_hash_me = frame_is_intra_only(cm) ? 0 : 1;
 
     sf->prune_ref_frame_for_gm_search = boosted ? 0 : 1;
     sf->intra_tx_size_search_init_depth_rect = 1;
@@ -821,6 +824,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   sf->use_intra_txb_hash = 0;
   sf->use_inter_txb_hash = 1;
   sf->use_mb_rd_hash = 1;
+  sf->disable_hash_me = 0;
   sf->optimize_b_precheck = 0;
   sf->use_dist_wtd_comp_flag = DIST_WTD_COMP_ENABLED;
   sf->reuse_inter_intra_mode = 0;

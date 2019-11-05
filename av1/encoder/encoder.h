@@ -1263,8 +1263,8 @@ static INLINE int frame_is_kf_gf_arf(const AV1_COMP *cpi) {
 }
 
 // TODO(huisu@google.com, youzhou@microsoft.com): enable hash-me for HBD.
-static INLINE int av1_use_hash_me(const AV1_COMMON *const cm) {
-  return cm->allow_screen_content_tools;
+static INLINE int av1_use_hash_me(const AV1_COMP *const cpi) {
+  return (cpi->common.allow_screen_content_tools && !cpi->sf.disable_hash_me);
 }
 
 static INLINE hash_table *av1_get_ref_frame_hash_map(

@@ -2415,7 +2415,7 @@ int av1_full_pixel_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
 
   // Use hash-me for intrablock copy
   do {
-    if (!intra || !av1_use_hash_me(&cpi->common)) break;
+    if (!intra || !av1_use_hash_me(cpi)) break;
 
     // already single ME
     // get block size and original buffer of current block

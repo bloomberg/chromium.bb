@@ -5532,8 +5532,6 @@ static int is_integer_mv(AV1_COMP *cpi, const YV12_BUFFER_CONFIG *cur_picture,
   aom_clear_system_state();
   // check use hash ME
   int k;
-  uint32_t hash_value_1;
-  uint32_t hash_value_2;
 
   const int block_size = FORCE_INT_MV_DECISION_BLOCK_SIZE;
   const double threshold_current = 0.8;
@@ -5596,14 +5594,15 @@ static int is_integer_mv(AV1_COMP *cpi, const YV12_BUFFER_CONFIG *cur_picture,
         S++;
         continue;
       }
-
-      av1_get_block_hash_value(
-          cur_picture->y_buffer + y_pos * stride_cur + x_pos, stride_cur,
-          block_size, &hash_value_1, &hash_value_2,
-          (cur_picture->flags & YV12_FLAG_HIGHBITDEPTH), &cpi->td.mb);
-      // Hashing does not work for highbitdepth currently.
-      // TODO(Roger): Make it work for highbitdepth.
-      if (av1_use_hash_me(&cpi->common)) {
+      if (av1_use_hash_me(cpi)) {
+        uint32_t hash_value_1;
+        uint32_t hash_value_2;
+        av1_get_block_hash_value(
+            cur_picture->y_buffer + y_pos * stride_cur + x_pos, stride_cur,
+            block_size, &hash_value_1, &hash_value_2,
+            (cur_picture->flags & YV12_FLAG_HIGHBITDEPTH), &cpi->td.mb);
+        // Hashing does not work for highbitdepth currently.
+        // TODO(Roger): Make it work for highbitdepth.
         if (av1_has_exact_match(last_hash_table, hash_value_1, hash_value_2)) {
           M++;
         }
@@ -6064,7 +6063,7 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
   // Store encoded frame's hash table for in_integer_mv() next time.
   // Beware! If we don't update previous_hash_table here we will leak the
   // items stored in cur_frame's hash_table!
-  if (oxcf->pass != 1 && av1_use_hash_me(cm)) {
+  if (oxcf->pass != 1 && av1_use_hash_me(cpi)) {
     cpi->previous_hash_table = &cm->cur_frame->hash_table;
     cpi->need_to_clear_prev_hash_table = 1;
   }

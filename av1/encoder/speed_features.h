@@ -561,6 +561,10 @@ typedef struct SPEED_FEATURES {
   // to avoid repeated search on the same residue signal.
   int use_mb_rd_hash;
 
+  // Use to control hash generation and use of the same
+  // Applicable only for screen contents
+  int disable_hash_me;
+
   // Calculate RD cost before doing optimize_b, and skip if the cost is large.
   int optimize_b_precheck;
 
