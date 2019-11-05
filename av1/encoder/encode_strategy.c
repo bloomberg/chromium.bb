@@ -931,6 +931,7 @@ static int denoise_and_encode(AV1_COMP *const cpi, uint8_t *const dest,
   }
   const int apply_filtering =
       oxcf->pass == 2 && frame_params->frame_type == KEY_FRAME &&
+      frame_params->show_frame &&
       cpi->rc.frames_to_key > NUM_KEY_FRAME_DENOISING && noise_level > 0 &&
       !is_lossless_requested(oxcf) && oxcf->arnr_max_frames > 0;
   // Save the pointer to the original source image.
