@@ -8,16 +8,16 @@
 from __future__ import print_function
 
 import inspect
-import os
+# import os
 import unittest
 
 from chromite.cbuildbot import binhost
 from chromite.lib import config_lib
-from chromite.lib import constants
+# from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import cros_test_lib
-from chromite.lib import osutils
+# from chromite.lib import osutils
 from chromite.lib import parallel
 
 
@@ -249,70 +249,74 @@ class PrebuiltCompatibilityTest(cros_test_lib.TestCase):
 
     return result
 
-  def testChromePrebuiltsPresent(self, filename=None):
-    """Verify all builds that use Chrome have matching Chrome PFQ configs.
+  # TODO:(https://crbug.com/1021398) get rid of this test as chrome PFQ no
+  # longer runs in legacy and any such tests would need to exist in the new
+  # PCQ world.
 
-    Args:
-      filename: Filename to load our PFQ mappings from. By default, generate
-        the PFQ mappings based on the current config.
-    """
-    if filename is not None:
-      logging.info('Checking PFQ database: %s', filename)
-      pfq_configs = binhost.PrebuiltMapping.Load(filename)
-    else:
-      logging.info('Checking config_lib.GetConfig().site_config')
-      keys = list(binhost.GetChromePrebuiltConfigs(self.site_config))
-      pfq_configs = binhost.PrebuiltMapping.Get(keys, self.COMPAT_IDS)
+  # def testChromePrebuiltsPresent(self, filename=None):
+  #   """Verify all builds that use Chrome have matching Chrome PFQ configs.
 
-    for compat_id, pfqs in sorted(pfq_configs.by_compat_id.items(),
-                                  key=lambda x: str(x[1])):
-      if len(pfqs) > 1:
-        self.Complain(
-            'The following Chrome PFQs produce identical prebuilts:\n'
-            '\t%s\n\t%s'
-            % ('\n\t'.join(sorted(str(x) for x in pfqs)), compat_id),
-            fatal=False)
+  #   Args:
+  #     filename: Filename to load our PFQ mappings from. By default, generate
+  #       the PFQ mappings based on the current config.
+  #   """
+  #   if filename is not None:
+  #     logging.info('Checking PFQ database: %s', filename)
+  #     pfq_configs = binhost.PrebuiltMapping.Load(filename)
+  #   else:
+  #     logging.info('Checking config_lib.GetConfig().site_config')
+  #     keys = list(binhost.GetChromePrebuiltConfigs(self.site_config))
+  #     pfq_configs = binhost.PrebuiltMapping.Get(keys, self.COMPAT_IDS)
 
-    # Sort the names to ensure consistent errors.
-    for _name, config in sorted(self._GuessActiveConfigs().items()):
+  #   for compat_id, pfqs in sorted(pfq_configs.by_compat_id.items(),
+  #                                 key=lambda x: str(x[1])):
+  #     if len(pfqs) > 1:
+  #       self.Complain(
+  #           'The following Chrome PFQs produce identical prebuilts:\n'
+  #           '\t%s\n\t%s'
+  #           % ('\n\t'.join(sorted(str(x) for x in pfqs)), compat_id),
+  #           fatal=False)
 
-      # Skip over configs that don't have Chrome or have >1 board.
-      if config.sync_chrome is False or len(config.boards) != 1:
-        continue
+  #   # Sort the names to ensure consistent errors.
+  #   for _name, config in sorted(self._GuessActiveConfigs().items()):
 
-      # Look for boards with missing prebuilts.
-      if config.usepkg_build_packages and not config.chrome_rev:
-        self.AssertChromePrebuilts(pfq_configs, config)
+  #     # Skip over configs that don't have Chrome or have >1 board.
+  #     if config.sync_chrome is False or len(config.boards) != 1:
+  #       continue
 
-        # Check that we have a builder for the version w/o custom useflags as
-        # well.
-        if (config.useflags and
-            config.boards[0] not in self.BOARDS_WITHOUT_CHROMIUM_PFQS):
-          self.AssertChromePrebuilts(pfq_configs, config, skip_useflags=True)
+  #     # Look for boards with missing prebuilts.
+  #     if config.usepkg_build_packages and not config.chrome_rev:
+  #       self.AssertChromePrebuilts(pfq_configs, config)
 
-  def testCurrentChromePrebuiltsEnough(self):
-    """Verify Chrome prebuilts actually exist for all configs that build Chrome.
+  #       # Check that we have a builder for the version w/o custom useflags as
+  #       # well.
+  #       if (config.useflags and
+  #           config.boards[0] not in self.BOARDS_WITHOUT_CHROMIUM_PFQS):
+  #         self.AssertChromePrebuilts(pfq_configs, config, skip_useflags=True)
 
-    This loads the list of Chrome prebuilts that were generated during the last
-    Chrome PFQ run from disk and verifies that it is sufficient.
-    """
-    filename = binhost.PrebuiltMapping.GetFilename(constants.SOURCE_ROOT,
-                                                   'chrome')
-    if os.path.exists(filename):
-      self.testChromePrebuiltsPresent(filename)
+  # def testCurrentChromePrebuiltsEnough(self):
+  #   """Verify Chrome prebuilts actually exist for all configs building Chrome.
 
-  def testDumping(self):
-    """Verify Chrome prebuilts exist for all configs that build Chrome.
+  #   This loads the list of Chrome prebuilts that were generated during last
+  #   Chrome PFQ run from disk and verifies that it is sufficient.
+  #   """
+  #   filename = binhost.PrebuiltMapping.GetFilename(constants.SOURCE_ROOT,
+  #                                                  'chrome')
+  #   if os.path.exists(filename):
+  #     self.testChromePrebuiltsPresent(filename)
 
-    This loads the list of Chrome prebuilts that were generated during the last
-    Chrome PFQ run from disk and verifies that it is sufficient.
-    """
-    with osutils.TempDir() as tempdir:
-      keys = list(binhost.GetChromePrebuiltConfigs(self.site_config))
-      pfq_configs = binhost.PrebuiltMapping.Get(keys, self.COMPAT_IDS)
-      filename = os.path.join(tempdir, 'foo.json')
-      pfq_configs.Dump(filename)
-      self.assertEqual(pfq_configs, binhost.PrebuiltMapping.Load(filename))
+  # def testDumping(self):
+  #   """Verify Chrome prebuilts exist for all configs that build Chrome.
+
+  #   This loads the list of Chrome prebuilts that were generated during last
+  #   Chrome PFQ run from disk and verifies that it is sufficient.
+  #   """
+  #   with osutils.TempDir() as tempdir:
+  #     keys = list(binhost.GetChromePrebuiltConfigs(self.site_config))
+  #     pfq_configs = binhost.PrebuiltMapping.Get(keys, self.COMPAT_IDS)
+  #     filename = os.path.join(tempdir, 'foo.json')
+  #     pfq_configs.Dump(filename)
+  #     self.assertEqual(pfq_configs, binhost.PrebuiltMapping.Load(filename))
 
 
 def NoIncremental():
