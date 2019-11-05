@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_INDEXED_DB_LEVELDB_LEVELDB_ENV_H_
-#define CONTENT_BROWSER_INDEXED_DB_LEVELDB_LEVELDB_ENV_H_
+#ifndef CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_LEVELDB_ENV_H_
+#define CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_LEVELDB_ENV_H_
 
 #include <memory>
 #include <tuple>
@@ -15,15 +15,15 @@
 namespace content {
 
 // The leveldb::Env used by the Indexed DB backend.
-class LevelDBEnv : public leveldb_env::ChromiumEnv {
+class IndexedDBLevelDBEnv : public leveldb_env::ChromiumEnv {
  public:
-  CONTENT_EXPORT static LevelDBEnv* Get();
+  CONTENT_EXPORT static IndexedDBLevelDBEnv* Get();
 
  private:
-  friend class base::NoDestructor<LevelDBEnv>;
-  LevelDBEnv();
+  friend class base::NoDestructor<IndexedDBLevelDBEnv>;
+  IndexedDBLevelDBEnv();
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_INDEXED_DB_LEVELDB_LEVELDB_ENV_H_
+#endif  // CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_LEVELDB_ENV_H_

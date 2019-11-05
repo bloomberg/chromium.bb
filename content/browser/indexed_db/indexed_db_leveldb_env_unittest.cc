@@ -2,14 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/indexed_db/leveldb/leveldb_env.h"
+#include "content/browser/indexed_db/indexed_db_leveldb_env.h"
 
 #include <utility>
 
-#include "base/files/file.h"
 #include "base/files/file_path.h"
-#include "base/files/scoped_temp_dir.h"
-#include "base/optional.h"
 #include "components/services/storage/indexed_db/leveldb/leveldb_factory.h"
 #include "components/services/storage/indexed_db/leveldb/leveldb_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -21,7 +18,6 @@ namespace content {
 namespace indexed_db {
 namespace {
 leveldb_env::Options GetLevelDBOptions() {
-  static base::NoDestructor<leveldb_env::ChromiumEnv> test_env;
   static const leveldb::FilterPolicy* kFilterPolicy =
       leveldb::NewBloomFilterPolicy(10);
   leveldb_env::Options options;
@@ -29,11 +25,11 @@ leveldb_env::Options GetLevelDBOptions() {
   options.paranoid_checks = true;
   options.filter_policy = kFilterPolicy;
   options.compression = leveldb::kSnappyCompression;
-  options.env = test_env.get();
+  options.env = IndexedDBLevelDBEnv::Get();
   return options;
 }
 
-TEST(LevelDBEnvTest, TestInMemory) {
+TEST(IndexedDBLevelDBEnvTest, TestInMemory) {
   DefaultLevelDBFactory default_factory(GetLevelDBOptions(),
                                         "test-in-memory-db");
   scoped_refptr<LevelDBState> state;
