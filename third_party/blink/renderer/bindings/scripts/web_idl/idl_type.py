@@ -11,8 +11,8 @@ from .composition_parts import WithDebugInfo
 from .composition_parts import WithExtendedAttributes
 from .composition_parts import WithIdentifier
 from .extended_attribute import ExtendedAttributes
-from .reference import Proxy
 from .reference import RefById
+from .reference import RefByIdFactory
 from .typedef import Typedef
 from .user_defined_type import UserDefinedType
 
@@ -47,6 +47,13 @@ class IdlTypeFactory(object):
 
     def __init__(self):
         self._idl_types = []
+        # Factory to initialize instances of ReferenceType.
+        attrs_to_be_proxied = (
+            set(RefById.get_all_attributes(IdlType)).difference(
+                # attributes not to be proxied
+                set(('debug_info', 'extended_attributes', 'is_optional'))))
+        self._ref_by_id_factory = RefByIdFactory(
+            target_attrs_with_priority=attrs_to_be_proxied)
         # |_is_frozen| is initially False and you can create new instances of
         # IdlType.  The first invocation of |for_each| freezes the factory and
         # you can no longer create a new instance of IdlType.
@@ -68,10 +75,26 @@ class IdlTypeFactory(object):
         for idl_type in self._idl_types:
             callback(idl_type)
 
+    def for_each_reference(self, callback):
+        """
+        Applies |callback| to all the instances of IdlType that is referencing
+        to another IdlType.
+
+        Instantiation of referencing IdlType is no longer possible, but it's
+        still possible to instantiate other IdlTypes.
+
+        Args:
+            callback: A callable that takes an IdlType as only the argument.
+                Return value is not used.
+        """
+        self._ref_by_id_factory.for_each(callback)
+
     def simple_type(self, *args, **kwargs):
         return self._create(SimpleType, args, kwargs)
 
     def reference_type(self, *args, **kwargs):
+        assert 'ref_by_id_factory' not in kwargs
+        kwargs['ref_by_id_factory'] = self._ref_by_id_factory
         return self._create(ReferenceType, args, kwargs)
 
     def definition_type(self, *args, **kwargs):
@@ -525,7 +548,7 @@ class SimpleType(IdlType):
         return self._name == 'void'
 
 
-class ReferenceType(IdlType, WithIdentifier, Proxy):
+class ReferenceType(IdlType, RefById):
     """
     Represents a type specified with the given identifier.
 
@@ -537,28 +560,23 @@ class ReferenceType(IdlType, WithIdentifier, Proxy):
     identifier may be resolved to a TypedefType.
     """
 
-    _attrs_to_be_proxied = set(Proxy.get_all_attributes(IdlType)).difference(
-        # attributes not to be proxied
-        set(('debug_info', 'extended_attributes', 'is_optional')))
-
     def __init__(self,
-                 ref_to_idl_type,
+                 identifier,
                  is_optional=False,
                  extended_attributes=None,
                  debug_info=None,
+                 ref_by_id_factory=None,
                  pass_key=None):
-        assert isinstance(ref_to_idl_type, RefById)
+        assert isinstance(ref_by_id_factory, RefByIdFactory)
+
         IdlType.__init__(
             self,
             is_optional=is_optional,
             extended_attributes=extended_attributes,
             debug_info=debug_info,
             pass_key=pass_key)
-        WithIdentifier.__init__(self, ref_to_idl_type.identifier)
-        Proxy.__init__(
-            self,
-            target_object=ref_to_idl_type,
-            target_attrs_with_priority=ReferenceType._attrs_to_be_proxied)
+        ref_by_id_factory.init_subclass_instance(
+            self, identifier=identifier, debug_info=debug_info)
 
     def __eq__(self, other):
         return (IdlType.__eq__(self, other)
