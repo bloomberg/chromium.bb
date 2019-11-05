@@ -54,6 +54,9 @@ Polymer({
     enrollments_: Array,
 
     /** @private */
+    progressArcLabel_: String,
+
+    /** @private */
     recentEnrollmentName_: String,
   },
 
@@ -171,6 +174,8 @@ Polymer({
 
     this.maxSamples_ = -1;  // Reset maxSamples_ before enrolling starts.
     this.$.arc.reset();
+    this.progressArcLabel_ =
+        this.i18n('securityKeysBioEnrollmentEnrollingLabel');
 
     this.recentEnrollmentId_ = '';
     this.recentEnrollmentName_ = '';
@@ -216,6 +221,8 @@ Polymer({
       this.cancelButtonVisible_ = false;
       this.confirmButtonVisible_ = true;
       this.confirmButtonDisabled_ = false;
+      this.progressArcLabel_ =
+          this.i18n('securityKeysBioEnrollmentEnrollingCompleteLabel');
       this.$.confirmButton.focus();
     }
     this.fire('bio-enroll-dialog-ready-for-testing');
