@@ -46,7 +46,6 @@ source_set("cpp") {
     ":service_provider",
     "//base",
     "//services/data_decoder/public/mojom",
-    "//services/service_manager/public/cpp",
   ]
 
   if (is_android) {
