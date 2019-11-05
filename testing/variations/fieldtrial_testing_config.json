@@ -1885,21 +1885,6 @@
             ]
         }
     ],
-    "DeferAllScript": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "DeferAllScriptPreviews_Enabled_20190814",
-                    "enable_features": [
-                        "DeferAllScript"
-                    ]
-                }
-            ]
-        }
-    ],
     "DialMediaRouteProvider": [
         {
             "platforms": [
