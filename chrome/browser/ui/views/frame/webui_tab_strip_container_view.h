@@ -45,7 +45,7 @@ class WebUITabStripContainerView : public TabStripUI::Embedder,
 
   // Control buttons.
   std::unique_ptr<ToolbarButton> CreateNewTabButton();
-  std::unique_ptr<ToolbarButton> CreateToggleButton();
+  std::unique_ptr<views::View> CreateTabCounter();
 
  private:
   class AutoCloser;

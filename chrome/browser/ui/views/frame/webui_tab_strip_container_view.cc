@@ -193,15 +193,40 @@ WebUITabStripContainerView::CreateNewTabButton() {
   return new_tab_button;
 }
 
-// TODO(crbug.com/992972): Replace this button with tab counter. Consider
-// replacing the "toggle" string with a separate show/hide tooltip string.
-std::unique_ptr<ToolbarButton>
-WebUITabStripContainerView::CreateToggleButton() {
-  auto toggle_button = std::make_unique<ToolbarButton>(this);
-  toggle_button->SetID(VIEW_ID_WEBUI_TAB_STRIP_TOGGLE_BUTTON);
-  toggle_button->SetTooltipText(
-      l10n_util::GetStringUTF16(IDS_TOOLTIP_WEBUI_TAB_STRIP_TOGGLE_BUTTON));
-  return toggle_button;
+std::unique_ptr<views::View> WebUITabStripContainerView::CreateTabCounter() {
+  // TODO(999557): Create a custom text style to get the correct size/weight.
+  // TODO(999557): Figure out how to get the right font.
+  auto tab_counter = std::make_unique<views::LabelButton>(
+      this, base::string16(), views::style::CONTEXT_BUTTON_MD);
+  tab_counter->SetID(VIEW_ID_WEBUI_TAB_STRIP_TAB_COUNTER);
+  tab_counter->SetTooltipText(
+      l10n_util::GetStringUTF16(IDS_TOOLTIP_WEBUI_TAB_STRIP_TAB_COUNTER));
+  tab_counter->SetProperty(views::kFlexBehaviorKey,
+                           views::FlexSpecification::ForSizeRule(
+                               views::MinimumFlexSizeRule::kScaleToMinimum,
+                               views::MaximumFlexSizeRule::kPreferred)
+                               .WithOrder(1));
+
+  // TODO(999557): Correctly configure the size (height, minimum width).
+
+  // TODO(999557): Install an inkdrop.
+
+  // TODO(999557): Add a roundrect border, like below but more like spec.
+  // tab_counter->SetBorder(views::CreateRoundedRectBorder(
+  //     1,
+  //     views::LayoutProvider::Get()->GetCornerRadiusMetric(
+  //         views::EMPHASIS_MEDIUM),
+  //     gfx::kGoogleGrey300));
+
+  // TODO(999557): I'd like to do this instead of making this be a LabelButton.
+  // But Button is not concrete... ?
+  // tab_counter->SetLayoutManager(std::make_unique<views::FillLayout>());
+  // auto* tab_count_label = tab_counter->AddChildView(
+  //     std::make_unique<views::Label>(base::string16()));*/
+
+  // TODO(999557): Hook into tabstripmodel events to update text and tooltip.
+
+  return tab_counter;
 }
 
 void WebUITabStripContainerView::CloseContainer() {
@@ -255,7 +280,7 @@ int WebUITabStripContainerView::GetHeightForWidth(int w) const {
 
 void WebUITabStripContainerView::ButtonPressed(views::Button* sender,
                                                const ui::Event& event) {
-  if (sender->GetID() == VIEW_ID_WEBUI_TAB_STRIP_TOGGLE_BUTTON) {
+  if (sender->GetID() == VIEW_ID_WEBUI_TAB_STRIP_TAB_COUNTER) {
     SetContainerTargetVisibility(!GetVisible());
   } else if (sender->GetID() == VIEW_ID_WEBUI_TAB_STRIP_NEW_TAB_BUTTON) {
     chrome::ExecuteCommand(browser_, IDC_NEW_TAB);
