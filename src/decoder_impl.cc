@@ -248,7 +248,7 @@ StatusCode DecoderImpl::DequeueFrame(const DecoderBuffer** out_ptr) {
         }
         const dsp::Dsp* const dsp =
             dsp::GetDspTable(displayable_frame->buffer()->bitdepth());
-        if (!dsp->film_grain_synthesis(
+        if (!dsp->film_grain.synthesis(
                 displayable_frame->buffer()->data(kPlaneY),
                 displayable_frame->buffer()->stride(kPlaneY),
                 displayable_frame->buffer()->data(kPlaneU),

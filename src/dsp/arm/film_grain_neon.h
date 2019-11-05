@@ -23,14 +23,19 @@
 namespace libgav1 {
 namespace dsp {
 
-// Initialize Dsp::film_grain_synthesis. This function is not thread-safe.
+// Initialize members of Dsp::film_grain. This function is not thread-safe.
 void FilmGrainInit_NEON();
 
 }  // namespace dsp
 }  // namespace libgav1
 
 #if LIBGAV1_ENABLE_NEON
-#define LIBGAV1_Dsp8bpp_ApplyAutoregressiveFilterToLuma LIBGAV1_DSP_NEON
+#define LIBGAV1_Dsp8bpp_FilmGrainSynthesis LIBGAV1_DSP_NEON
+#define LIBGAV1_Dsp10bpp_FilmGrainSynthesis LIBGAV1_DSP_NEON
+#define LIBGAV1_Dsp8bpp_FilmGrainAutoregressionLuma LIBGAV1_DSP_NEON
+#define LIBGAV1_Dsp10bpp_FilmGrainAutoregressionLuma LIBGAV1_DSP_NEON
+#define LIBGAV1_Dsp8bpp_FilmGrainAutoregressionChroma LIBGAV1_DSP_NEON
+#define LIBGAV1_Dsp10bpp_FilmGrainAutoregressionChroma LIBGAV1_DSP_NEON
 #endif  // LIBGAV1_ENABLE_NEON
 
 #endif  // LIBGAV1_SRC_DSP_ARM_FILM_GRAIN_NEON_H_

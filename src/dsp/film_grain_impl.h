@@ -85,41 +85,11 @@ class FilmGrain {
   static void GenerateLumaGrain(const FilmGrainParams& params,
                                 GrainType* luma_grain);
 
-  // Applies an auto-regressive filter to the white noise in luma_grain.
-  //
-  // Note: This method assumes params.auto_regression_coeff_lag is not 0. Do
-  // not call this method if params.auto_regression_coeff_lag is 0.
-  static void ApplyAutoRegressiveFilterToLumaGrain(
-      const FilmGrainParams& params, int grain_min, int grain_max,
-      GrainType* luma_grain);
-
-#if LIBGAV1_ENABLE_NEON
-  template <int auto_regression_coeff_lag>
-  static void ApplyAutoRegressiveFilterToLumaGrain_NEON(
-      const FilmGrainParams& params, int grain_min, int grain_max,
-      GrainType* luma_grain);
-#endif
-
   // Generates white noise arrays u_grain and v_grain chroma_width samples wide
   // and chroma_height samples high.
   static void GenerateChromaGrains(const FilmGrainParams& params,
                                    int chroma_width, int chroma_height,
                                    GrainType* u_grain, GrainType* v_grain);
-
-  static void ApplyAutoRegressiveFilterToChromaGrains(
-      const FilmGrainParams& params, int grain_min, int grain_max,
-      const GrainType* luma_grain, int subsampling_x, int subsampling_y,
-      int chroma_width, int chroma_height, GrainType* u_grain,
-      GrainType* v_grain);
-
-#if LIBGAV1_ENABLE_NEON
-  template <int auto_regression_coeff_lag>
-  static void ApplyAutoRegressiveFilterToChromaGrains_NEON(
-      const FilmGrainParams& params, int grain_min, int grain_max,
-      const GrainType* luma_grain, int subsampling_x, int subsampling_y,
-      int chroma_width, int chroma_height, GrainType* u_grain,
-      GrainType* v_grain);
-#endif
 
   static void InitializeScalingLookupTable(int num_points,
                                            const uint8_t point_value[],
@@ -134,24 +104,11 @@ class FilmGrain {
                 ptrdiff_t dest_stride_u, void* dest_plane_v,
                 ptrdiff_t dest_stride_v);
 
-#if LIBGAV1_ENABLE_NEON
-  bool AddNoise_NEON(const void* source_plane_y, ptrdiff_t source_stride_y,
-                     const void* source_plane_u, ptrdiff_t source_stride_u,
-                     const void* source_plane_v, ptrdiff_t source_stride_v,
-                     void* dest_plane_y, ptrdiff_t dest_stride_y,
-                     void* dest_plane_u, ptrdiff_t dest_stride_u,
-                     void* dest_plane_v, ptrdiff_t dest_stride_v);
-#endif
-
  private:
   using Pixel =
       typename std::conditional<bitdepth == 8, uint8_t, uint16_t>::type;
 
   bool Init();
-
-#if LIBGAV1_ENABLE_NEON
-  bool Init_NEON();
-#endif
 
   // Allocates noise_stripes_, which points to memory owned by noise_buffer_.
   bool AllocateNoiseStripes();

@@ -39,26 +39,6 @@ namespace dsp {
 namespace film_grain {
 namespace {
 
-// Section 7.18.3.1.
-template <int bitdepth>
-bool FilmGrainSynthesis_NEON(
-    const void* source_plane_y, ptrdiff_t source_stride_y,
-    const void* source_plane_u, ptrdiff_t source_stride_u,
-    const void* source_plane_v, ptrdiff_t source_stride_v,
-    const FilmGrainParams& film_grain_params, const bool is_monochrome,
-    const bool color_matrix_is_identity, const int width, const int height,
-    const int subsampling_x, const int subsampling_y, void* dest_plane_y,
-    ptrdiff_t dest_stride_y, void* dest_plane_u, ptrdiff_t dest_stride_u,
-    void* dest_plane_v, ptrdiff_t dest_stride_v) {
-  FilmGrain<bitdepth> film_grain(film_grain_params, is_monochrome,
-                                 color_matrix_is_identity, subsampling_x,
-                                 subsampling_y, width, height);
-  return film_grain.AddNoise_NEON(
-      source_plane_y, source_stride_y, source_plane_u, source_stride_u,
-      source_plane_v, source_stride_v, dest_plane_y, dest_stride_y,
-      dest_plane_u, dest_stride_u, dest_plane_v, dest_stride_v);
-}
-
 // This function is overloaded for both possible GrainTypes in order to simplify
 // loading in a template function.
 inline int16x8_t GetSource8(const int8_t* src) {
@@ -153,8 +133,8 @@ inline void SetZero(int32x4x2_t* v) {
 
 // Computes subsampled luma for use with chroma, by averaging in the x direction
 // or y direction when applicable.
-template <int subsampling_x, int subsampling_y>
-int16x8_t GetSubsampledLuma(const int8_t* const luma, ptrdiff_t stride) {
+int16x8_t GetSubsampledLuma(const int8_t* const luma, int subsampling_x,
+                            int subsampling_y, ptrdiff_t stride) {
   if (subsampling_y != 0) {
     assert(subsampling_x != 0);
     const int8x16_t src0 = vld1q_s8(luma);
@@ -177,8 +157,8 @@ int16x8_t GetSubsampledLuma(const int8_t* const luma, ptrdiff_t stride) {
 #if LIBGAV1_MAX_BITDEPTH >= 10
 // Computes subsampled luma for use with chroma, by averaging in the x direction
 // or y direction when applicable.
-template <int subsampling_x, int subsampling_y>
-int16x8_t GetSubsampledLuma(const int16_t* const luma, ptrdiff_t stride) {
+int16x8_t GetSubsampledLuma(const int16_t* const luma, int subsampling_x,
+                            int subsampling_y, ptrdiff_t stride) {
   if (subsampling_y != 0) {
     assert(subsampling_x != 0);
     int16x8_t src0_lo = vld1q_s16(luma);
@@ -205,15 +185,18 @@ int16x8_t GetSubsampledLuma(const int16_t* const luma, ptrdiff_t stride) {
 }
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
 
-template <typename GrainType, int bitdepth, int auto_regression_coeff_lag,
-          int subsampling_x, int subsampling_y, bool use_luma>
-void ApplyAutoRegressiveFilterChroma(const FilmGrainParams& params,
-                                     int /*grain_min*/, int /*grain_max*/,
-                                     const GrainType* luma_grain,
-                                     int /*chroma_width*/,
-                                     int /*chroma_height*/, GrainType* u_grain,
-                                     GrainType* v_grain) {
+template <int bitdepth, typename GrainType, int auto_regression_coeff_lag,
+          bool use_luma>
+void ApplyAutoRegressiveFilterToChromaGrains_NEON(const FilmGrainParams& params,
+                                                  const void* luma_grain_buffer,
+                                                  int subsampling_x,
+                                                  int subsampling_y,
+                                                  void* u_grain_buffer,
+                                                  void* v_grain_buffer) {
   static_assert(auto_regression_coeff_lag <= 3, "Invalid autoregression lag.");
+  const auto* luma_grain = static_cast<const GrainType*>(luma_grain_buffer);
+  auto* u_grain = static_cast<GrainType*>(u_grain_buffer);
+  auto* v_grain = static_cast<GrainType*>(v_grain_buffer);
   const int auto_regression_shift = params.auto_regression_shift;
   const int chroma_width =
       (subsampling_x == 0) ? kMaxChromaWidth : kMinChromaWidth;
@@ -283,8 +266,8 @@ void ApplyAutoRegressiveFilterChroma(const FilmGrainParams& params,
       }
 
       if (use_luma) {
-        const int16x8_t luma = GetSubsampledLuma<subsampling_x, subsampling_y>(
-            luma_grain + luma_x, kLumaWidth);
+        const int16x8_t luma = GetSubsampledLuma(
+            luma_grain + luma_x, subsampling_x, subsampling_y, kLumaWidth);
 
         // Luma samples get the final coefficient in the formula, but are best
         // computed all at once before the final row.
@@ -363,8 +346,8 @@ void ApplyAutoRegressiveFilterChroma(const FilmGrainParams& params,
     }
 
     if (use_luma) {
-      const int16x8_t luma = GetSubsampledLuma<subsampling_x, subsampling_y>(
-          luma_grain + luma_x, kLumaWidth);
+      const int16x8_t luma = GetSubsampledLuma(
+          luma_grain + luma_x, subsampling_x, subsampling_y, kLumaWidth);
 
       // Luma samples get the final coefficient in the formula, but are best
       // computed all at once before the final row.
@@ -396,20 +379,17 @@ void ApplyAutoRegressiveFilterChroma(const FilmGrainParams& params,
 #undef WRITE_AUTO_REGRESSION_RESULT
 }
 
-}  // namespace
-
 // Applies an auto-regressive filter to the white noise in luma_grain.
-template <int bitdepth>
-template <int auto_regression_coeff_lag>
-void FilmGrain<bitdepth>::ApplyAutoRegressiveFilterToLumaGrain_NEON(
-    const FilmGrainParams& params, int /*grain_min*/, int /*grain_max*/,
-    GrainType* luma_grain) {
+template <int bitdepth, typename GrainType, int auto_regression_coeff_lag>
+void ApplyAutoRegressiveFilterToLumaGrain_NEON(const FilmGrainParams& params,
+                                               void* luma_grain_buffer) {
   static_assert(auto_regression_coeff_lag > 0, "");
   const int8_t* const auto_regression_coeff_y = params.auto_regression_coeff_y;
   const uint8_t auto_regression_shift = params.auto_regression_shift;
 
   int y = kAutoRegressionBorder;
-  luma_grain += kLumaWidth * y;
+  auto* luma_grain =
+      static_cast<GrainType*>(luma_grain_buffer) + kLumaWidth * y;
   do {
     // Each row is computed 8 values at a time in the following loop. At the
     // end of the loop, 4 values remain to write. They are given a special
@@ -538,188 +518,73 @@ void FilmGrain<bitdepth>::ApplyAutoRegressiveFilterToLumaGrain_NEON(
 #undef ACCUMULATE_WEIGHTED_GRAIN
 }
 
-template <int bitdepth>
-template <int auto_regression_coeff_lag>
-void FilmGrain<bitdepth>::ApplyAutoRegressiveFilterToChromaGrains_NEON(
-    const FilmGrainParams& params, int grain_min, int grain_max,
-    const GrainType* luma_grain, int subsampling_x, int subsampling_y,
-    int chroma_width, int chroma_height, GrainType* u_grain,
-    GrainType* v_grain) {
-  const bool use_luma = params.num_y_points > 0;
-  if (subsampling_x == 0) {
-    assert(subsampling_x == 0 && subsampling_y == 0);
-    if (use_luma) {
-      ApplyAutoRegressiveFilterChroma<GrainType, bitdepth,
-                                      auto_regression_coeff_lag, 0, 0, true>(
-          params, grain_min, grain_max, luma_grain, chroma_width, chroma_height,
-          u_grain, v_grain);
-    } else {
-      ApplyAutoRegressiveFilterChroma<GrainType, bitdepth,
-                                      auto_regression_coeff_lag, 0, 0, false>(
-          params, grain_min, grain_max, luma_grain, chroma_width, chroma_height,
-          u_grain, v_grain);
-    }
-  } else {
-    if (subsampling_y == 0) {
-      assert(subsampling_x == 1 && subsampling_y == 0);
-      if (use_luma) {
-        ApplyAutoRegressiveFilterChroma<GrainType, bitdepth,
-                                        auto_regression_coeff_lag, 1, 0, true>(
-            params, grain_min, grain_max, luma_grain, chroma_width,
-            chroma_height, u_grain, v_grain);
-      } else {
-        ApplyAutoRegressiveFilterChroma<GrainType, bitdepth,
-                                        auto_regression_coeff_lag, 1, 0, false>(
-            params, grain_min, grain_max, luma_grain, chroma_width,
-            chroma_height, u_grain, v_grain);
-      }
-    } else {
-      assert(subsampling_x == 1 && subsampling_y == 1);
-      if (use_luma) {
-        ApplyAutoRegressiveFilterChroma<GrainType, bitdepth,
-                                        auto_regression_coeff_lag, 1, 1, true>(
-            params, grain_min, grain_max, luma_grain, chroma_width,
-            chroma_height, u_grain, v_grain);
-      } else {
-        ApplyAutoRegressiveFilterChroma<GrainType, bitdepth,
-                                        auto_regression_coeff_lag, 1, 1, false>(
-            params, grain_min, grain_max, luma_grain, chroma_width,
-            chroma_height, u_grain, v_grain);
-      }
-    }
-  }
-}
-
-template <int bitdepth>
-bool FilmGrain<bitdepth>::Init_NEON() {
-  // Section 7.18.3.3. Generate grain process.
-
-  using LumaAutoRegressionFunc =
-      void (*)(const FilmGrainParams& params, int grain_min, int grain_max,
-               GrainType* luma_grain);
-  static const LumaAutoRegressionFunc kAutoRegressionFuncTableLuma[3] = {
-      FilmGrain<bitdepth>::ApplyAutoRegressiveFilterToLumaGrain_NEON<1>,
-      FilmGrain<bitdepth>::ApplyAutoRegressiveFilterToLumaGrain_NEON<2>,
-      FilmGrain<bitdepth>::ApplyAutoRegressiveFilterToLumaGrain_NEON<3>};
-  // If params_.num_y_points is 0, luma_grain_ will never be read, so we don't
-  // need to generate it.
-  if (params_.num_y_points > 0) {
-    GenerateLumaGrain(params_, luma_grain_);
-    // If params_.auto_regression_coeff_lag is 0, the filter is the identity
-    // filter and therefore can be skipped.
-    if (params_.auto_regression_coeff_lag > 0) {
-      kAutoRegressionFuncTableLuma[params_.auto_regression_coeff_lag - 1](
-          params_, GetGrainMin<bitdepth>(), GetGrainMax<bitdepth>(),
-          luma_grain_);
-    }
-  } else {
-    ASAN_POISON_MEMORY_REGION(luma_grain_, sizeof(luma_grain_));
-  }
-  using ChromaAutoRegressionFunc =
-      void (*)(const FilmGrainParams& params, int grain_min, int grain_max,
-               const GrainType* luma_grain, int subsampling_x,
-               int subsampling_y, int chroma_width, int chroma_height,
-               GrainType* u_grain, GrainType* v_grain);
-  static const ChromaAutoRegressionFunc kAutoRegressionFuncTableChroma[4] = {
-      FilmGrain<bitdepth>::ApplyAutoRegressiveFilterToChromaGrains_NEON<0>,
-      FilmGrain<bitdepth>::ApplyAutoRegressiveFilterToChromaGrains_NEON<1>,
-      FilmGrain<bitdepth>::ApplyAutoRegressiveFilterToChromaGrains_NEON<2>,
-      FilmGrain<bitdepth>::ApplyAutoRegressiveFilterToChromaGrains_NEON<3>};
-  if (!is_monochrome_) {
-    GenerateChromaGrains(params_, chroma_width_, chroma_height_, u_grain_,
-                         v_grain_);
-    if (params_.auto_regression_coeff_lag > 0 || params_.num_y_points > 0) {
-      kAutoRegressionFuncTableChroma[params_.auto_regression_coeff_lag](
-          params_, GetGrainMin<bitdepth>(), GetGrainMax<bitdepth>(),
-          luma_grain_, subsampling_x_, subsampling_y_, chroma_width_,
-          chroma_height_, u_grain_, v_grain_);
-    }
-  }
-
-  // Section 7.18.3.4. Scaling lookup initialization process.
-
-  // Initialize scaling_lut_y_. If params_.num_y_points > 0, scaling_lut_y_
-  // is used for the Y plane. If params_.chroma_scaling_from_luma is true,
-  // scaling_lut_u_ and scaling_lut_v_ are the same as scaling_lut_y_ and are
-  // set up as aliases. So we need to initialize scaling_lut_y_ under these
-  // two conditions.
-  //
-  // Note: Although it does not seem to make sense, there are test vectors
-  // with chroma_scaling_from_luma=true and params_.num_y_points=0.
-  if (params_.num_y_points > 0 || params_.chroma_scaling_from_luma) {
-    InitializeScalingLookupTable(params_.num_y_points, params_.point_y_value,
-                                 params_.point_y_scaling, scaling_lut_y_);
-  } else {
-    ASAN_POISON_MEMORY_REGION(scaling_lut_y_, sizeof(scaling_lut_y_));
-  }
-  if (!is_monochrome_) {
-    if (params_.chroma_scaling_from_luma) {
-      scaling_lut_u_ = scaling_lut_y_;
-      scaling_lut_v_ = scaling_lut_y_;
-    } else {
-      scaling_lut_chroma_buffer_.reset(new (std::nothrow) uint8_t[256 * 2]);
-      if (scaling_lut_chroma_buffer_ == nullptr) return false;
-      scaling_lut_u_ = &scaling_lut_chroma_buffer_[0];
-      scaling_lut_v_ = &scaling_lut_chroma_buffer_[256];
-      InitializeScalingLookupTable(params_.num_u_points, params_.point_u_value,
-                                   params_.point_u_scaling, scaling_lut_u_);
-      InitializeScalingLookupTable(params_.num_v_points, params_.point_v_value,
-                                   params_.point_v_scaling, scaling_lut_v_);
-    }
-  }
-  return true;
-}
-
-template <int bitdepth>
-bool FilmGrain<bitdepth>::AddNoise_NEON(
-    const void* source_plane_y, ptrdiff_t source_stride_y,
-    const void* source_plane_u, ptrdiff_t source_stride_u,
-    const void* source_plane_v, ptrdiff_t source_stride_v, void* dest_plane_y,
-    ptrdiff_t dest_stride_y, void* dest_plane_u, ptrdiff_t dest_stride_u,
-    void* dest_plane_v, ptrdiff_t dest_stride_v) {
-  if (!Init_NEON()) {
-    LIBGAV1_DLOG(ERROR, "Init() failed.");
-    return false;
-  }
-  if (!AllocateNoiseStripes()) {
-    LIBGAV1_DLOG(ERROR, "AllocateNoiseStripes() failed.");
-    return false;
-  }
-  ConstructNoiseStripes();
-
-  if (!AllocateNoiseImage()) {
-    LIBGAV1_DLOG(ERROR, "AllocateNoiseImage() failed.");
-    return false;
-  }
-  ConstructNoiseImage();
-
-  BlendNoiseWithImage(source_plane_y, source_stride_y, source_plane_u,
-                      source_stride_u, source_plane_v, source_stride_v,
-                      dest_plane_y, dest_stride_y, dest_plane_u, dest_stride_u,
-                      dest_plane_v, dest_stride_v);
-
-  return true;
-}
-
-// Explicit instantiations.
-template class FilmGrain<8>;
-#if LIBGAV1_MAX_BITDEPTH >= 10
-template class FilmGrain<10>;
-#endif
-
-namespace {
-
 void Init8bpp() {
   Dsp* const dsp = dsp_internal::GetWritableDspTable(8);
   assert(dsp != nullptr);
-  dsp->film_grain_synthesis = FilmGrainSynthesis_NEON<8>;
+
+  // LumaAutoRegressionFunc[auto_regression_coeff_lag]
+  // Luma autoregression should never be called when lag is 0.
+  dsp->film_grain.luma_auto_regression[0] = nullptr;
+  dsp->film_grain.luma_auto_regression[1] =
+      ApplyAutoRegressiveFilterToLumaGrain_NEON<8, int8_t, 1>;
+  dsp->film_grain.luma_auto_regression[2] =
+      ApplyAutoRegressiveFilterToLumaGrain_NEON<8, int8_t, 2>;
+  dsp->film_grain.luma_auto_regression[3] =
+      ApplyAutoRegressiveFilterToLumaGrain_NEON<8, int8_t, 3>;
+
+  // ChromaAutoRegressionFunc[use_luma][auto_regression_coeff_lag]
+  // Chroma autoregression should never be called when lag is 0 and use_luma is
+  // false.
+  dsp->film_grain.chroma_auto_regression[0][0] = nullptr;
+  dsp->film_grain.chroma_auto_regression[0][1] =
+      ApplyAutoRegressiveFilterToChromaGrains_NEON<8, int8_t, 1, false>;
+  dsp->film_grain.chroma_auto_regression[0][2] =
+      ApplyAutoRegressiveFilterToChromaGrains_NEON<8, int8_t, 2, false>;
+  dsp->film_grain.chroma_auto_regression[0][3] =
+      ApplyAutoRegressiveFilterToChromaGrains_NEON<8, int8_t, 3, false>;
+  dsp->film_grain.chroma_auto_regression[1][0] =
+      ApplyAutoRegressiveFilterToChromaGrains_NEON<8, int8_t, 0, true>;
+  dsp->film_grain.chroma_auto_regression[1][1] =
+      ApplyAutoRegressiveFilterToChromaGrains_NEON<8, int8_t, 1, true>;
+  dsp->film_grain.chroma_auto_regression[1][2] =
+      ApplyAutoRegressiveFilterToChromaGrains_NEON<8, int8_t, 2, true>;
+  dsp->film_grain.chroma_auto_regression[1][3] =
+      ApplyAutoRegressiveFilterToChromaGrains_NEON<8, int8_t, 3, true>;
 }
 
 #if LIBGAV1_MAX_BITDEPTH >= 10
 void Init10bpp() {
   Dsp* const dsp = dsp_internal::GetWritableDspTable(10);
   assert(dsp != nullptr);
-  dsp->film_grain_synthesis = FilmGrainSynthesis_NEON<10>;
+
+  // LumaAutoRegressionFunc[auto_regression_coeff_lag]
+  // Luma autoregression should never be called when lag is 0.
+  dsp->film_grain.luma_auto_regression[0] = nullptr;
+  dsp->film_grain.luma_auto_regression[1] =
+      ApplyAutoRegressiveFilterToLumaGrain_NEON<10, int16_t, 1>;
+  dsp->film_grain.luma_auto_regression[2] =
+      ApplyAutoRegressiveFilterToLumaGrain_NEON<10, int16_t, 2>;
+  dsp->film_grain.luma_auto_regression[3] =
+      ApplyAutoRegressiveFilterToLumaGrain_NEON<10, int16_t, 3>;
+
+  // ChromaAutoRegressionFunc[use_luma][auto_regression_coeff_lag][subsampling]
+  // Chroma autoregression should never be called when lag is 0 and use_luma is
+  // false.
+  dsp->film_grain.chroma_auto_regression[0][0] = nullptr;
+  dsp->film_grain.chroma_auto_regression[0][1] =
+      ApplyAutoRegressiveFilterToChromaGrains_NEON<10, int16_t, 1, false>;
+  dsp->film_grain.chroma_auto_regression[0][2] =
+      ApplyAutoRegressiveFilterToChromaGrains_NEON<10, int16_t, 2, false>;
+  dsp->film_grain.chroma_auto_regression[0][3] =
+      ApplyAutoRegressiveFilterToChromaGrains_NEON<10, int16_t, 3, false>;
+  dsp->film_grain.chroma_auto_regression[1][0] =
+      ApplyAutoRegressiveFilterToChromaGrains_NEON<10, int16_t, 0, true>;
+  dsp->film_grain.chroma_auto_regression[1][1] =
+      ApplyAutoRegressiveFilterToChromaGrains_NEON<10, int16_t, 1, true>;
+  dsp->film_grain.chroma_auto_regression[1][2] =
+      ApplyAutoRegressiveFilterToChromaGrains_NEON<10, int16_t, 2, true>;
+  dsp->film_grain.chroma_auto_regression[1][3] =
+      ApplyAutoRegressiveFilterToChromaGrains_NEON<10, int16_t, 3, true>;
 }
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
 

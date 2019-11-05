@@ -598,6 +598,42 @@ using FilmGrainSynthesisFunc = bool (*)(
     int subsampling_y, void* dest_plane_y, ptrdiff_t dest_stride_y,
     void* dest_plane_u, ptrdiff_t dest_stride_u, void* dest_plane_v,
     ptrdiff_t dest_stride_v);
+
+constexpr int kNumAutoRegressionLags = 4;
+// Applies an auto-regressive filter to the white noise in |luma_grain_buffer|.
+// Section 7.18.3.3, second code block
+// |params| are parameters read from frame header, mainly providing
+// auto_regression_coeff_y for the filter and auto_regression_shift to right
+// shift the filter sum by. Note: This method assumes
+// params.auto_regression_coeff_lag is not 0. Do not call this method if
+// params.auto_regression_coeff_lag is 0.
+using LumaAutoRegressionFunc = void (*)(const FilmGrainParams& params,
+                                        void* luma_grain_buffer);
+using LumaAutoRegressionFuncs = LumaAutoRegressionFunc[kNumAutoRegressionLags];
+
+// Applies an auto-regressive filter to the white noise in u_grain and v_grain.
+// Section 7.18.3.3, third code block
+// The |luma_grain_buffer| provides samples that are added to the autoregressive
+// sum when num_y_points > 0.
+// |u_grain_buffer| and |v_grain_buffer| point to the buffers of chroma noise
+// that were generated from the stored Gaussian sequence, and are overwritten
+// with the results of the autoregressive filter. |params| are parameters read
+// from frame header, mainly providing auto_regression_coeff_u and
+// auto_regression_coeff_v for each chroma plane's filter, and
+// auto_regression_shift to right shift the filter sums by.
+using ChromaAutoRegressionFunc = void (*)(const FilmGrainParams& params,
+                                          const void* luma_grain_buffer,
+                                          int subsampling_x, int subsampling_y,
+                                          void* u_grain_buffer,
+                                          void* v_grain_buffer);
+using ChromaAutoRegressionFuncs =
+    ChromaAutoRegressionFunc[/*use_luma*/ 2][kNumAutoRegressionLags];
+
+struct FilmGrainFuncs {
+  FilmGrainSynthesisFunc synthesis;
+  LumaAutoRegressionFuncs luma_auto_regression;
+  ChromaAutoRegressionFuncs chroma_auto_regression;
+};
 //------------------------------------------------------------------------------
 
 struct Dsp {
@@ -624,7 +660,7 @@ struct Dsp {
   InterIntraMaskBlendFuncs8bpp inter_intra_mask_blend_8bpp;
   ObmcBlendFuncs obmc_blend;
   WarpFunc warp;
-  FilmGrainSynthesisFunc film_grain_synthesis;
+  FilmGrainFuncs film_grain;
 };
 
 // Initializes function pointers based on build config and runtime environment.
