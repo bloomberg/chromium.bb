@@ -5201,6 +5201,31 @@ TEST_P(SplitViewOverviewSessionTest,
   EXPECT_FALSE(overview_item->IsDragItem());
 }
 
+// Tests that a window which is dragged to a splitview zone is destroyed, the
+// grid bounds return to a non-splitview bounds.
+TEST_P(SplitViewOverviewSessionTest, GridBoundsAfterWindowDestroyed) {
+  // Create two windows otherwise we exit overview after one window is
+  // destroyed.
+  std::unique_ptr<aura::Window> window1 = CreateTestWindow();
+  std::unique_ptr<aura::Window> window2 = CreateTestWindow();
+
+  ToggleOverview();
+  const gfx::Rect grid_bounds = GetGridBounds();
+  // Drag the item such that the splitview preview area shows up and the grid
+  // bounds shrink.
+  OverviewItem* overview_item = GetOverviewItemForWindow(window1.get());
+  overview_session()->InitiateDrag(overview_item,
+                                   overview_item->target_bounds().CenterPoint(),
+                                   /*is_touch_dragging=*/true);
+  overview_session()->Drag(overview_item, gfx::PointF(1.f, 1.f));
+  EXPECT_NE(grid_bounds, GetGridBounds());
+
+  // Tests that when the dragged window is destroyed, the grid bounds return to
+  // their normal size.
+  window1.reset();
+  EXPECT_EQ(grid_bounds, GetGridBounds());
+}
+
 // Test the split view and overview functionalities in clamshell mode. Split
 // view is only active when overview is active in clamshell mode.
 class SplitViewOverviewSessionInClamshellTest

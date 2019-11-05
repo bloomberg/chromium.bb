@@ -661,8 +661,26 @@ void OverviewGrid::RemoveItem(OverviewItem* overview_item,
     return;
   }
 
-  if (reposition)
-    PositionWindows(/*animate=*/true);
+  if (reposition) {
+    // Update the grid bounds if needed and reposition the windows minus the
+    // currently overview dragged window, if there is one. Note: this does not
+    // update the grid bounds if the window being dragged from the top or shelf,
+    // the former being handled in TabletModeWindowDragDelegate's destructor.
+    base::flat_set<OverviewItem*> ignored_items;
+    if (overview_session_->window_drag_controller() &&
+        overview_session_->window_drag_controller()->item()) {
+      ignored_items.insert(overview_session_->window_drag_controller()->item());
+    }
+    auto* split_view_drag_indicators =
+        overview_session_->split_view_drag_indicators();
+    const gfx::Rect grid_bounds = GetGridBoundsInScreenForSplitview(
+        root_window_,
+        split_view_drag_indicators
+            ? base::make_optional(
+                  split_view_drag_indicators->current_window_dragging_state())
+            : base::nullopt);
+    SetBoundsAndUpdatePositions(grid_bounds, ignored_items, /*animate=*/true);
+  }
 }
 
 void OverviewGrid::AddDropTargetForDraggingFromOverview(
