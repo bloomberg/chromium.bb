@@ -54,7 +54,8 @@ void AccountsCookieMutatorImpl::SetAccountsInCookie(
         account_id, account_tracker_service_->GetAccountInfo(account_id).gaia));
   }
   gaia_cookie_manager_service_->SetAccountsInCookie(
-      accounts, source, std::move(set_accounts_in_cookies_completed_callback));
+      parameters.mode, accounts, source,
+      std::move(set_accounts_in_cookies_completed_callback));
 }
 
 void AccountsCookieMutatorImpl::TriggerCookieJarUpdate() {
