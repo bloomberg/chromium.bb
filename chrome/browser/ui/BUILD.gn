@@ -4110,6 +4110,8 @@ static_library("test_support") {
     ]
     sources += [
       "extensions/browser_action_test_util.h",
+      "views/extensions/extensions_menu_test_util.cc",
+      "views/extensions/extensions_menu_test_util.h",
       "views/find_bar_host_unittest_util_views.cc",
       "views/payments/test_chrome_payment_request_delegate.cc",
       "views/payments/test_chrome_payment_request_delegate.h",
