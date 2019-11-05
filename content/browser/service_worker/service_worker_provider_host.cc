@@ -31,6 +31,7 @@
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/browser/web_contents/frame_tree_node_id_registry.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/browser/webtransport/quic_transport_connector_impl.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -148,6 +149,21 @@ void CreatePaymentManagerImpl(
     return;
 
   process->CreatePaymentManagerForOrigin(origin, std::move(receiver));
+}
+
+void CreateQuicTransportConnectorImpl(
+    int process_id,
+    const url::Origin& origin,
+    mojo::PendingReceiver<blink::mojom::QuicTransportConnector> receiver) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  auto* process = RenderProcessHost::FromID(process_id);
+  if (!process)
+    return;
+
+  mojo::MakeSelfOwnedReceiver(
+      std::make_unique<QuicTransportConnectorImpl>(
+          process_id, origin, net::NetworkIsolationKey(origin, origin)),
+      std::move(receiver));
 }
 
 ServiceWorkerMetrics::EventType PurposeToEventType(
@@ -1540,6 +1556,17 @@ void ServiceWorkerProviderHost::CreatePaymentManager(
       base::BindOnce(&CreatePaymentManagerImpl,
                      running_hosted_version_->script_origin(),
                      render_process_id_, std::move(receiver)));
+}
+
+void ServiceWorkerProviderHost::CreateQuicTransportConnector(
+    mojo::PendingReceiver<blink::mojom::QuicTransportConnector> receiver) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+  DCHECK(IsProviderForServiceWorker());
+  DCHECK(top_frame_origin().has_value());
+  RunOrPostTaskOnThread(
+      FROM_HERE, BrowserThread::UI,
+      base::BindOnce(&CreateQuicTransportConnectorImpl, render_process_id_,
+                     *top_frame_origin(), std::move(receiver)));
 }
 
 bool ServiceWorkerProviderHost::IsInBackForwardCache() const {

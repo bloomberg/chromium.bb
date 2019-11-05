@@ -108,6 +108,7 @@
 #include "content/browser/webauth/authenticator_environment_impl.h"
 #include "content/browser/webauth/authenticator_impl.h"
 #include "content/browser/websockets/websocket_connector_impl.h"
+#include "content/browser/webtransport/quic_transport_connector_impl.h"
 #include "content/browser/webui/url_data_manager_backend.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/browser/webui/web_ui_url_loader_factory_internal.h"
@@ -6496,6 +6497,14 @@ void RenderFrameHostImpl::CreateWebSocketConnector(
           GetProcess()->GetID(), routing_id_, last_committed_origin_,
           network_isolation_key_),
       std::move(receiver));
+}
+
+void RenderFrameHostImpl::CreateQuicTransportConnector(
+    mojo::PendingReceiver<blink::mojom::QuicTransportConnector> receiver) {
+  mojo::MakeSelfOwnedReceiver(std::make_unique<QuicTransportConnectorImpl>(
+                                  GetProcess()->GetID(), last_committed_origin_,
+                                  network_isolation_key_),
+                              std::move(receiver));
 }
 
 void RenderFrameHostImpl::CreateDedicatedWorkerHostFactory(
