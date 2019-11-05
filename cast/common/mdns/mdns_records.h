@@ -39,6 +39,7 @@ class DomainName {
     OSP_DCHECK(max_wire_size_ <= kMaxDomainNameLength);
   }
 
+  explicit DomainName(const std::vector<std::string>& labels);
   explicit DomainName(const std::vector<absl::string_view>& labels);
   explicit DomainName(std::initializer_list<absl::string_view> labels);
 

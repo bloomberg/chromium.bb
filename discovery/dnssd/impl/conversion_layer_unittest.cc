@@ -103,5 +103,35 @@ TEST(DnsSdConversionLayerTest, GetPtrKeyFromStringsTest) {
   EXPECT_EQ(key.domain_id, domain_name);
 }
 
+// Get*QueryInfo methods.
+TEST(DnsSdConversionLayerTest, GetInstanceQueryInfoTest) {
+  InstanceKey key{"instance.Id", "_service-id._udp", "192.168.0.0"};
+  DnsQueryInfo query = GetInstanceQueryInfo(key);
+  EXPECT_EQ(query.dns_type, cast::mdns::DnsType::kANY);
+  EXPECT_EQ(query.dns_class, cast::mdns::DnsClass::kANY);
+  ASSERT_EQ(query.name.labels().size(), size_t{7});
+  EXPECT_EQ(query.name.labels()[0], "instance.Id");
+  EXPECT_EQ(query.name.labels()[1], "_service-id");
+  EXPECT_EQ(query.name.labels()[2], "_udp");
+  EXPECT_EQ(query.name.labels()[3], "192");
+  EXPECT_EQ(query.name.labels()[4], "168");
+  EXPECT_EQ(query.name.labels()[5], "0");
+  EXPECT_EQ(query.name.labels()[6], "0");
+}
+
+TEST(DnsSdConversionLayerTest, GetPtrQueryInfoTest) {
+  ServiceKey key{"_service-id._udp", "192.168.0.0"};
+  DnsQueryInfo query = GetPtrQueryInfo(key);
+  EXPECT_EQ(query.dns_type, cast::mdns::DnsType::kPTR);
+  EXPECT_EQ(query.dns_class, cast::mdns::DnsClass::kANY);
+  ASSERT_EQ(query.name.labels().size(), size_t{6});
+  EXPECT_EQ(query.name.labels()[0], "_service-id");
+  EXPECT_EQ(query.name.labels()[1], "_udp");
+  EXPECT_EQ(query.name.labels()[2], "192");
+  EXPECT_EQ(query.name.labels()[3], "168");
+  EXPECT_EQ(query.name.labels()[4], "0");
+  EXPECT_EQ(query.name.labels()[5], "0");
+}
+
 }  // namespace discovery
 }  // namespace openscreen

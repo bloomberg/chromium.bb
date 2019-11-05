@@ -17,6 +17,9 @@ bool IsValidDomainLabel(absl::string_view label) {
   return label_size > 0 && label_size <= kMaxLabelLength;
 }
 
+DomainName::DomainName(const std::vector<std::string>& labels)
+    : DomainName(labels.begin(), labels.end()) {}
+
 DomainName::DomainName(const std::vector<absl::string_view>& labels)
     : DomainName(labels.begin(), labels.end()) {}
 

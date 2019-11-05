@@ -8,6 +8,9 @@
 #include <string>
 #include <utility>
 
+#include "cast/common/mdns/mdns_records.h"
+#include "cast/common/mdns/public/mdns_constants.h"
+
 namespace openscreen {
 namespace discovery {
 
@@ -24,6 +27,13 @@ struct InstanceKey {
 struct ServiceKey {
   std::string service_id;
   std::string domain_id;
+};
+
+// This is the DNS Information required to start a new query.
+struct DnsQueryInfo {
+  cast::mdns::DomainName name;
+  cast::mdns::DnsType dns_type;
+  cast::mdns::DnsClass dns_class;
 };
 
 // Hashing functions to allow for using with absl::Hash<...>.
