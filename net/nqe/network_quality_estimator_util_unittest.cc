@@ -10,6 +10,7 @@
 #include "base/test/task_environment.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
+#include "net/base/network_isolation_key.h"
 #include "net/base/test_completion_callback.h"
 #include "net/dns/context_host_resolver.h"
 #include "net/dns/host_resolver.h"
@@ -49,11 +50,11 @@ TEST(NetworkQualityEstimatorUtilTest, ReservedHost) {
   EXPECT_EQ(0u, mock_host_resolver.num_resolve());
 
   // Load hostnames into HostResolver cache.
-  int rv = mock_host_resolver.LoadIntoCache(HostPortPair("example1.com", 443),
-                                            base::nullopt);
+  int rv = mock_host_resolver.LoadIntoCache(
+      HostPortPair("example1.com", 443), NetworkIsolationKey(), base::nullopt);
   EXPECT_EQ(OK, rv);
   rv = mock_host_resolver.LoadIntoCache(HostPortPair("example2.com", 443),
-                                        base::nullopt);
+                                        NetworkIsolationKey(), base::nullopt);
   EXPECT_EQ(OK, rv);
 
   EXPECT_EQ(2u, mock_host_resolver.num_non_local_resolves());
@@ -99,8 +100,8 @@ TEST(NetworkQualityEstimatorUtilTest, ReservedHostUncached) {
       IsPrivateHost(&mock_host_resolver, HostPortPair("example3.com", 443)));
   EXPECT_EQ(0u, mock_host_resolver.num_non_local_resolves());
 
-  int rv = mock_host_resolver.LoadIntoCache(HostPortPair("example3.com", 443),
-                                            base::nullopt);
+  int rv = mock_host_resolver.LoadIntoCache(
+      HostPortPair("example3.com", 443), NetworkIsolationKey(), base::nullopt);
   EXPECT_EQ(OK, rv);
   EXPECT_EQ(1u, mock_host_resolver.num_non_local_resolves());
 

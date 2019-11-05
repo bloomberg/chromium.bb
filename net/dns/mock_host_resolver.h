@@ -130,6 +130,7 @@ class MockHostResolverBase
   // with the given parameters. Returns the net error of the cached result.
   int LoadIntoCache(
       const HostPortPair& host,
+      const NetworkIsolationKey& network_isolation_key,
       const base::Optional<ResolveHostParameters>& optional_parameters);
 
   // Returns true if there are pending requests that can be resolved by invoking
@@ -162,7 +163,7 @@ class MockHostResolverBase
   RequestPriority request_priority(size_t id);
 
   // Returns NetworkIsolationKey of the request with the given id.
-  const NetworkIsolationKey& network_isolation_key(size_t id);
+  const NetworkIsolationKey& request_network_isolation_key(size_t id);
 
   // Like ResolveNow, but doesn't take an ID. DCHECKs if there's more than one
   // pending request.
@@ -234,6 +235,7 @@ class MockHostResolverBase
   // DNS_CACHE_MISS if failed.
   int ResolveFromIPLiteralOrCache(
       const HostPortPair& host,
+      const NetworkIsolationKey& network_isolation_key,
       DnsQueryType dns_query_type,
       HostResolverFlags flags,
       HostResolverSource source,
@@ -242,6 +244,7 @@ class MockHostResolverBase
       base::Optional<HostCache::EntryStaleness>* stale_info);
   // Resolve via |proc_|.
   int ResolveProc(const HostPortPair& host,
+                  const NetworkIsolationKey& network_isolation_key,
                   AddressFamily requested_address_family,
                   HostResolverFlags flags,
                   HostResolverSource source,
