@@ -51,6 +51,13 @@ class DnsSdTxtRecord {
     return key_value_txt_.empty() && boolean_txt_.empty();
   }
 
+  // Returns the data for the TXT record represented by this object.
+  // Specifically, it returns a vector containing an entry for each string s in
+  // boolean_txt_ of the form 's' (without quotes) and an entry for each key-
+  // value pair (key, value) in key_value_txt_ of the form 'key=value' (without
+  // quotes).
+  std::vector<std::vector<uint8_t>> GetData() const;
+
  private:
   struct CaseInsensitiveComparison {
     bool operator()(const std::string& lhs, const std::string& rhs) const;

@@ -90,6 +90,40 @@ TEST(TxtRecordTest, TestClearWrongRecordTypeFails) {
   EXPECT_TRUE(txt.SetFlag("key2", true).ok());
 }
 
+TEST(TxtRecordTest, TestGetDataWorks) {
+  DnsSdTxtRecord txt;
+  uint8_t data[]{'a', 'b', 'c'};
+  EXPECT_TRUE(txt.SetValue("key", data).ok());
+  EXPECT_TRUE(txt.SetFlag("bool", true).ok());
+  std::vector<std::vector<uint8_t>> results = txt.GetData();
+  ASSERT_EQ(results.size(), size_t{2});
+  bool seen_flag = false;
+  bool seen_kv_pair = false;
+  for (const std::vector<uint8_t>& entry : results) {
+    std::string flag = "bool";
+    std::string kv_pair = "key=abc";
+    for (size_t i = 0; i < flag.size(); i++) {
+      if (entry[i] != flag[i]) {
+        break;
+      }
+      if (i == flag.size() - 1) {
+        seen_flag = true;
+      }
+    }
+    for (size_t i = 0; i < kv_pair.size(); i++) {
+      if (entry[i] != kv_pair[i]) {
+        break;
+      }
+      if (i == kv_pair.size() - 1) {
+        seen_kv_pair = true;
+      }
+    }
+  }
+
+  EXPECT_TRUE(seen_flag);
+  EXPECT_TRUE(seen_kv_pair);
+}
+
 }  // namespace dnssd
 }  // namespace discovery
 }  // namespace openscreen
