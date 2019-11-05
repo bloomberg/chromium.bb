@@ -208,14 +208,14 @@ void ContextHostResolver::OnShutdown() {
 std::unique_ptr<HostResolver::ResolveHostRequest>
 ContextHostResolver::CreateRequest(
     const HostPortPair& host,
+    const NetworkIsolationKey& network_isolation_key,
     const NetLogWithSource& source_net_log,
     const base::Optional<ResolveHostParameters>& optional_parameters) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   std::unique_ptr<HostResolverManager::CancellableRequest> inner_request;
   if (!shutting_down_) {
-    // TODO(mmenke): Pass in a NetworkIsolationKey.
-    inner_request = manager_->CreateRequest(host, NetworkIsolationKey(),
+    inner_request = manager_->CreateRequest(host, network_isolation_key,
                                             source_net_log, optional_parameters,
                                             context_, host_cache_.get());
   }

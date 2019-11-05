@@ -303,6 +303,7 @@ void MockHostResolverBase::OnShutdown() {
 std::unique_ptr<HostResolver::ResolveHostRequest>
 MockHostResolverBase::CreateRequest(
     const HostPortPair& host,
+    const NetworkIsolationKey& network_isolation_key,
     const NetLogWithSource& source_net_log,
     const base::Optional<ResolveHostParameters>& optional_parameters) {
   return std::make_unique<RequestImpl>(host, optional_parameters, AsWeakPtr());
@@ -954,6 +955,7 @@ void HangingHostResolver::OnShutdown() {
 std::unique_ptr<HostResolver::ResolveHostRequest>
 HangingHostResolver::CreateRequest(
     const HostPortPair& host,
+    const NetworkIsolationKey& network_isolation_key,
     const NetLogWithSource& source_net_log,
     const base::Optional<ResolveHostParameters>& optional_parameters) {
   if (shutting_down_)

@@ -99,6 +99,14 @@ HostResolver::ResolveHostParameters::ResolveHostParameters(
 
 HostResolver::~HostResolver() = default;
 
+std::unique_ptr<HostResolver::ResolveHostRequest> HostResolver::CreateRequest(
+    const HostPortPair& host,
+    const NetLogWithSource& net_log,
+    const base::Optional<ResolveHostParameters>& optional_parameters) {
+  return CreateRequest(host, NetworkIsolationKey(), net_log,
+                       optional_parameters);
+}
+
 std::unique_ptr<HostResolver::MdnsListener> HostResolver::CreateMdnsListener(
     const HostPortPair& host,
     DnsQueryType query_type) {

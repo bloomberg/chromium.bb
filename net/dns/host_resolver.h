@@ -290,8 +290,18 @@ class NET_EXPORT HostResolver {
   // defaults will be used if passed |base::nullopt|.
   virtual std::unique_ptr<ResolveHostRequest> CreateRequest(
       const HostPortPair& host,
+      const NetworkIsolationKey& network_isolation_key,
       const NetLogWithSource& net_log,
       const base::Optional<ResolveHostParameters>& optional_parameters) = 0;
+
+  // Deprecated version of above method that uses an empty NetworkIsolationKey.
+  //
+  // TODO(mmenke): Once all consumers have been updated to use the other
+  // overload instead, remove this method and make above method pure virtual.
+  virtual std::unique_ptr<ResolveHostRequest> CreateRequest(
+      const HostPortPair& host,
+      const NetLogWithSource& net_log,
+      const base::Optional<ResolveHostParameters>& optional_parameters);
 
   // Create a listener to watch for updates to an MDNS result.
   virtual std::unique_ptr<MdnsListener> CreateMdnsListener(
