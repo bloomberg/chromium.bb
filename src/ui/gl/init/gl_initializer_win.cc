@@ -65,9 +65,7 @@ bool InitializeStaticEGLInternal(GLImplementation implementation) {
   base::FilePath gles_path;
   if (implementation == kGLImplementationSwiftShaderGL) {
 #if BUILDFLAG(ENABLE_SWIFTSHADER)
-#if !defined(IS_BLPWTK2)
     gles_path = module_path.Append(L"swiftshader/");
-#endif
     // Preload library
     LoadLibrary(L"ddraw.dll");
 #else
