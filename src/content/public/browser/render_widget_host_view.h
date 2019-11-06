@@ -118,6 +118,8 @@ class CONTENT_EXPORT RenderWidgetHostView {
 
   // Set focus to the associated View component.
   virtual void Focus() = 0;
+  // Remove focus from the associated View component.
+  virtual void Blur() {}
   // Returns true if the View currently has the focus.
   virtual bool HasFocus() = 0;
 
