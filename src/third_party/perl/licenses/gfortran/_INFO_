@@ -1,0 +1,4 @@
+Package: gfortran-4.6.3
+Homepage: http://gcc.gnu.org/
+Sources: ftp://gcc.gnu.org/pub/gcc/releases/
+Comment: based on Mark Dootson's 20120411 pack - check: http://sourceforge.net/projects/perlmingw/

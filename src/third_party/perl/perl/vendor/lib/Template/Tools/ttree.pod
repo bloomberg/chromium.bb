@@ -1,0 +1,314 @@
+=head1 NAME
+
+Template::Tools::ttree - Process entire directory trees of templates
+
+=head1 SYNOPSIS
+
+    ttree [options] [files]
+
+=head1 DESCRIPTION
+
+The F<ttree> script is used to process entire directory trees containing
+template files.  The resulting output from processing each file is then 
+written to a corresponding file in a destination directory.  The script
+compares the modification times of source and destination files (where
+they already exist) and processes only those files that have been modified.
+In other words, it is the equivalent of 'make' for the Template Toolkit.
+
+It supports a number of options which can be used to configure
+behaviour, define locations and set Template Toolkit options.  The
+script first reads the F<.ttreerc> configuration file in the HOME
+directory, or an alternative file specified in the TTREERC environment
+variable.  Then, it processes any command line arguments, including
+any additional configuration files specified via the C<-f> (file)
+option.
+
+=head2 The F<.ttreerc> Configuration File
+
+When you run F<ttree> for the first time it will ask you if you want
+it to create a F<.ttreerc> file for you.  This will be created in your
+home directory.
+
+    $ ttree
+    Do you want me to create a sample '.ttreerc' file for you?
+    (file: /home/abw/.ttreerc)   [y/n]: y
+    /home/abw/.ttreerc created.  Please edit accordingly and re-run ttree
+
+The purpose of this file is to set any I<global> configuration options
+that you want applied I<every> time F<ttree> is run.  For example, you
+can use the C<ignore> and C<copy> option to provide regular expressions
+that specify which files should be ignored and which should be copied 
+rather than being processed as templates.  You may also want to set 
+flags like C<verbose> and C<recurse> according to your preference.
+
+A minimal F<.ttreerc>:
+
+    # ignore these files
+    ignore = \b(CVS|RCS)\b
+    ignore = ^#
+    ignore = ~$
+
+    # copy these files
+    copy   = \.(gif|png|jpg|pdf)$ 
+
+    # recurse into directories
+    recurse
+
+    # provide info about what's going on
+    verbose
+
+In most cases, you'll want to create a different F<ttree> configuration 
+file for each project you're working on.  The C<cfg> option allows you
+to specify a directory where F<ttree> can find further configuration 
+files.
+
+    cfg = /home/abw/.ttree
+
+The C<-f> command line option can be used to specify which configuration
+file should be used.  You can specify a filename using an absolute or 
+relative path:
+
+    $ ttree -f /home/abw/web/example/etc/ttree.cfg
+    $ ttree -f ./etc/ttree.cfg
+    $ ttree -f ../etc/ttree.cfg
+
+If the configuration file does not begin with C</> or C<.> or something
+that looks like a MS-DOS absolute path (e.g. C<C:\\etc\\ttree.cfg>) then
+F<ttree> will look for it in the directory specified by the C<cfg> option.
+
+    $ ttree -f test1          # /home/abw/.ttree/test1
+
+The C<cfg> option can only be used in the F<.ttreerc> file.  All the
+other options can be used in the F<.ttreerc> or any other F<ttree>
+configuration file.  They can all also be specified as command line
+options.
+
+Remember that F<.ttreerc> is always processed I<before> any
+configuration file specified with the C<-f> option.  Certain options
+like C<lib> can be used any number of times and accumulate their values.
+
+For example, consider the following configuration files:
+
+F</home/abw/.ttreerc>:
+
+    cfg = /home/abw/.ttree
+    lib = /usr/local/tt2/templates
+
+F</home/abw/.ttree/myconfig>:
+
+    lib = /home/abw/web/example/templates/lib
+
+When F<ttree> is invoked as follows:
+
+    $ ttree -f myconfig
+
+the C<lib> option will be set to the following directories:
+
+    /usr/local/tt2/templates
+    /home/abw/web/example/templates/lib
+
+Any templates located under F</usr/local/tt2/templates> will be used
+in preference to those located under
+F</home/abw/web/example/templates/lib>.  This may be what you want,
+but then again, it might not.  For this reason, it is good practice to
+keep the F<.ttreerc> as simple as possible and use different
+configuration files for each F<ttree> project.
+
+=head2 Directory Options
+
+The C<src> option is used to define the directory containing the
+source templates to be processed.  It can be provided as a command
+line option or in a configuration file as shown here:
+
+    src = /home/abw/web/example/templates/src
+
+Each template in this directory typically corresponds to a single
+web page or other document. 
+
+The C<dest> option is used to specify the destination directory for the
+generated output.
+
+    dest = /home/abw/web/example/html
+
+The C<lib> option is used to define one or more directories containing
+additional library templates.  These templates are not documents in
+their own right and typically comprise of smaller, modular components
+like headers, footers and menus that are incorporated into pages templates.
+
+    lib = /home/abw/web/example/templates/lib
+    lib = /usr/local/tt2/templates
+
+The C<lib> option can be used repeatedly to add further directories to
+the search path.
+
+A list of templates can be passed to F<ttree> as command line arguments.
+
+    $ ttree foo.html bar.html
+
+It looks for these templates in the C<src> directory and processes them
+through the Template Toolkit, using any additional template components
+from the C<lib> directories.  The generated output is then written to 
+the corresponding file in the C<dest> directory.
+
+If F<ttree> is invoked without explicitly specifying any templates
+to be processed then it will process every file in the C<src> directory.
+If the C<-r> (recurse) option is set then it will additionally iterate
+down through sub-directories and process and other template files it finds
+therein.
+
+    $ ttree -r
+
+If a template has been processed previously, F<ttree> will compare the
+modification times of the source and destination files.  If the source
+template (or one it is dependant on) has not been modified more
+recently than the generated output file then F<ttree> will not process
+it.  The F<-a> (all) option can be used to force F<ttree> to process
+all files regardless of modification time.
+
+    $ tree -a
+
+Any templates explicitly named as command line argument are always
+processed and the modification time checking is bypassed.
+
+=head2 File Options
+
+The C<ignore>, C<copy> and C<accept> options are used to specify Perl
+regexen to filter file names.  Files that match any of the C<ignore>
+options will not be processed.  Remaining files that match any of the
+C<copy> regexen will be copied to the destination directory.  Remaining
+files that then match any of the C<accept> criteria are then processed
+via the Template Toolkit.  If no C<accept> parameter is specified then 
+all files will be accepted for processing if not already copied or
+ignored.
+
+    # ignore these files
+    ignore = \b(CVS|RCS)\b
+    ignore = ^#
+    ignore = ~$
+
+    # copy these files
+    copy   = \.(gif|png|jpg|pdf)$ 
+
+    # accept only .tt2 templates
+    accept = \.tt2$
+
+The C<suffix> option is used to define mappings between the file
+extensions for source templates and the generated output files.  The
+following example specifies that source templates with a C<.tt2>
+suffix should be output as C<.html> files:
+
+    suffix tt2=html
+
+Or on the command line, 
+
+    --suffix tt2=html
+
+You can provide any number of different suffix mappings by repeating 
+this option.
+
+=head2 Template Dependencies
+
+The C<depend> and C<depend_file> options allow you to specify
+how any given template file depends on another file or group of files. 
+The C<depend> option is used to express a single dependency.
+
+  $ ttree --depend foo=bar,baz
+
+This command line example shows the C<--depend> option being used to
+specify that the F<foo> file is dependant on the F<bar> and F<baz>
+templates.  This option can be used many time on the command line:
+
+  $ ttree --depend foo=bar,baz --depend crash=bang,wallop
+
+or in a configuration file:
+
+  depend foo=bar,baz
+  depend crash=bang,wallop
+
+The file appearing on the left of the C<=> is specified relative to
+the C<src> or C<lib> directories.  The file(s) appearing on the right
+can be specified relative to any of these directories or as absolute
+file paths.
+
+For example:
+
+  $ ttree --depend foo=bar,/tmp/baz
+
+To define a dependency that applies to all files, use C<*> on the 
+left of the C<=>.
+
+  $ ttree --depend *=header,footer
+
+or in a configuration file:
+
+  depend *=header,footer
+
+Any templates that are defined in the C<pre_process>, C<post_process>,
+C<process> or C<wrapper> options will automatically be added to the
+list of global dependencies that apply to all templates.
+
+The C<depend_file> option can be used to specify a file that contains
+dependency information.  
+
+    $ ttree --depend_file=/home/abw/web/example/etc/ttree.dep
+
+Here is an example of a dependency file:
+
+   # This is a comment. It is ignored.
+  
+   index.html: header footer menubar 
+  
+   header: titlebar hotlinks
+  
+   menubar: menuitem
+  
+   # spanning multiple lines with the backslash
+   another.html: header footer menubar \
+   sidebar searchform
+
+Lines beginning with the C<#> character are comments and are ignored.
+Blank lines are also ignored.  All other lines should provide a
+filename followed by a colon and then a list of dependant files
+separated by whitespace, commas or both.  Whitespace around the colon
+is also optional.  Lines ending in the C<\> character are continued
+onto the following line.
+
+Files that contain spaces can be quoted. That is only necessary
+for files after the colon (':'). The file before the colon may be
+quoted if it contains a colon. 
+
+As with the command line options, the C<*> character can be used
+as a wildcard to specify a dependency for all templates.
+
+    * : config,header
+
+=head2 Template Toolkit Options
+
+F<ttree> also provides access to the usual range of Template Toolkit
+options.  For example, the C<--pre_chomp> and C<--post_chomp> F<ttree>
+options correspond to the C<PRE_CHOMP> and C<POST_CHOMP> options.
+
+Run C<ttree -h> for a summary of the options available.
+
+=head1 AUTHORS
+
+Andy Wardley E<lt>abw@wardley.orgE<gt>
+
+L<http://www.wardley.org>
+
+With contributions from Dylan William Hardison (support for
+dependencies), Bryce Harrington (C<absolute> and C<relative> options),
+Mark Anderson (C<suffix> and C<debug> options), Harald Joerg and Leon
+Brocard who gets everywhere, it seems.
+
+=head1 COPYRIGHT
+
+Copyright (C) 1996-2007 Andy Wardley.  All Rights Reserved.
+
+This module is free software; you can redistribute it and/or
+modify it under the same terms as Perl itself.
+
+=head1 SEE ALSO
+
+L<Template::Tools::tpage|tpage>
+

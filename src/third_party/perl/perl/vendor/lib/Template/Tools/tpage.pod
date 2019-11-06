@@ -1,0 +1,53 @@
+=head1 NAME
+
+Template::Tools::tpage - Process templates from command line
+
+=head1 USAGE
+
+    tpage [ --define var=value ] file(s)
+
+=head1 DESCRIPTION
+
+The B<tpage> script is a simple wrapper around the Template Toolkit processor.
+Files specified by name on the command line are processed in turn by the 
+template processor and the resulting output is sent to STDOUT and can be 
+redirected accordingly.  e.g.
+
+    tpage myfile > myfile.out
+    tpage header myfile footer > myfile.html
+
+If no file names are specified on the command line then B<tpage> will read
+STDIN for input.
+
+The C<--define> option can be used to set the values of template variables.
+e.g.
+
+    tpage --define author="Andy Wardley" skeleton.pm > MyModule.pm
+
+See L<Template> for general information about the Perl Template 
+Toolkit and the template language and features.
+
+=head1 AUTHOR
+
+Andy Wardley L<http://wardley.org/>
+
+=head1 COPYRIGHT
+
+Copyright (C) 1996-2008 Andy Wardley.  All Rights Reserved.
+
+This module is free software; you can redistribute it and/or
+modify it under the same terms as Perl itself.
+
+=head1 SEE ALSO
+
+L<ttree|Template::Tools::ttree>
+
+=cut
+
+# Local Variables:
+# mode: perl
+# perl-indent-level: 4
+# indent-tabs-mode: nil
+# End:
+#
+# vim: expandtab shiftwidth=4:
