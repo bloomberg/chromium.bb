@@ -107,6 +107,13 @@ interface Element : Node {
     void scrollTo(unrestricted double x, unrestricted double y);
     void scrollBy(optional ScrollToOptions options);
     void scrollBy(unrestricted double x, unrestricted double y);
+
+    // Bloomberg-specific extensions
+    attribute long bbScrollLeftNoZoomAdjust;
+    attribute long bbScrollTopNoZoomAdjust;
+    readonly attribute long bbScrollWidthNoZoomAdjust;
+    readonly attribute long bbScrollHeightNoZoomAdjust;
+
     [Affects=Nothing] attribute unrestricted double scrollTop;
     [Affects=Nothing] attribute unrestricted double scrollLeft;
     [Affects=Nothing] readonly attribute long scrollWidth;
