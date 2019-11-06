@@ -21250,6 +21250,7 @@ Called by update_net_error_codes.py.-->
   <int value="1401" label="AUTOTESTPRIVATE_CREATENEWDESK"/>
   <int value="1402" label="AUTOTESTPRIVATE_ACTIVATEDESKATINDEX"/>
   <int value="1403" label="AUTOTESTPRIVATE_REMOVEACTIVEDESK"/>
+  <int value="1404" label="TERMINALPRIVATE_GETCROSHSETTINGS"/>
 </enum>
 
 <enum name="ExtensionIconState">
