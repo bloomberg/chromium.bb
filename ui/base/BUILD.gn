@@ -46,6 +46,7 @@ component("ui_data_pack") {
   deps = [
     "//base",
     "//net",
+    "//third_party/zlib/google:compression_utils",
   ]
 
   defines = [ "UI_DATA_PACK_IMPLEMENTATION" ]
@@ -919,6 +920,7 @@ test("ui_base_unittests") {
     "//testing/gtest",
     "//third_party/brotli:dec",
     "//third_party/icu",
+    "//third_party/zlib/google:compression_utils",
     "//ui/base",
     "//ui/base:test_support",
     "//ui/base:ui_data_pack",
