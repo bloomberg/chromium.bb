@@ -1,0 +1,12 @@
+[
+  {
+    "cmd": [
+      "echo",
+      "windows-386"
+    ],
+    "name": "platform_suffix"
+  },
+  {
+    "name": "$result"
+  }
+]
