@@ -2288,8 +2288,12 @@ void ShelfLayoutManager::CancelDrag() {
     UpdateVisibilityState();
   }
   if (hotseat_is_in_drag_) {
+    // If the gesture started the overview session, the hotseat will be
+    // extended, but should not be marked as manually extended, as
+    // extending the hotseat was not the primary goal of the gesture.
     shelf_widget_->hotseat_widget()->set_manually_extended(
-        hotseat_state() == HotseatState::kExtended);
+        hotseat_state() == HotseatState::kExtended &&
+        !Shell::Get()->overview_controller()->InOverviewSession());
   }
   hotseat_is_in_drag_ = false;
   drag_status_ = kDragNone;
