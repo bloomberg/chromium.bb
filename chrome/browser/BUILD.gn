@@ -3717,6 +3717,7 @@ jumbo_static_library("browser") {
     deps += [
       "//ash/public/cpp",
       "//chrome/browser/chromeos",
+      "//chrome/services/app_service/public/cpp:instance_update",
       "//chromeos/components/account_manager",
       "//chromeos/components/sync_wifi",
       "//chromeos/services/assistant/public:feature_flags",

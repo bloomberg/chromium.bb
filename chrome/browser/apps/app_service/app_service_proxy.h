@@ -15,6 +15,7 @@
 #include "chrome/services/app_service/public/cpp/app_registry_cache.h"
 #include "chrome/services/app_service/public/cpp/icon_cache.h"
 #include "chrome/services/app_service/public/cpp/icon_coalescer.h"
+#include "chrome/services/app_service/public/cpp/instance_registry.h"
 #include "chrome/services/app_service/public/cpp/preferred_apps.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -52,6 +53,11 @@ class AppServiceProxy : public KeyedService,
 
   mojo::Remote<apps::mojom::AppService>& AppService();
   apps::AppRegistryCache& AppRegistryCache();
+
+#if defined(OS_CHROMEOS)
+  apps::InstanceRegistry& InstanceRegistry();
+#endif
+
   apps::PreferredApps& PreferredApps();
 
   // apps::IconLoader overrides.
@@ -204,7 +210,10 @@ class AppServiceProxy : public KeyedService,
   std::unique_ptr<CrostiniApps> crostini_apps_;
   std::unique_ptr<ExtensionApps> extension_apps_;
   std::unique_ptr<ExtensionApps> extension_web_apps_;
+
   bool arc_is_registered_ = false;
+
+  apps::InstanceRegistry instance_registry_;
 #endif  // OS_CHROMEOS
 
   Profile* profile_;
