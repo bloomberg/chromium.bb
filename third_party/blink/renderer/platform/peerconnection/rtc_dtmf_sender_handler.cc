@@ -9,7 +9,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
-#include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 
@@ -63,8 +62,7 @@ RtcDtmfSenderHandler::~RtcDtmfSenderHandler() {
   observer_ = nullptr;
 }
 
-void RtcDtmfSenderHandler::SetClient(
-    blink::WebRTCDTMFSenderHandlerClient* client) {
+void RtcDtmfSenderHandler::SetClient(RtcDtmfSenderHandler::Client* client) {
   webkit_client_ = client;
 }
 
@@ -85,11 +83,9 @@ bool RtcDtmfSenderHandler::InsertDTMF(const String& tones,
 
 void RtcDtmfSenderHandler::OnToneChange(const String& tone) {
   if (!webkit_client_) {
-    LOG(ERROR) << "WebRTCDTMFSenderHandlerClient not set.";
+    LOG(ERROR) << "RtcDtmfSenderHandler::Client not set.";
     return;
   }
-  // TODO(crbug.com/787254): Remove the respective web_string.h header inclusion
-  // when WebRtcDtmfSenderHandlerClient moves out of the Blink API.
   webkit_client_->DidPlayTone(tone);
 }
 
