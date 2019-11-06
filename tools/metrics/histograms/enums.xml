@@ -59579,6 +59579,9 @@ Called by update_net_trust_anchors.py.-->
   <int value="5"
       label="Abandoned because profiled content failed to load its main
              resource"/>
+  <int value="6"
+      label="Abandoned because no content was visible at the beginning of
+             startup"/>
 </enum>
 
 <enum name="StartupTemperature">
