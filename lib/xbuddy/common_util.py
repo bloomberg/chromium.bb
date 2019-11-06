@@ -313,6 +313,8 @@ class LockDict(object):
       return lock
 
 
+# TODO(ahassani, achuith, vapier): Move to cros_build_lib, which has a
+# CreateTarball utility function.
 def ExtractTarball(tarball_path, install_path, files_to_extract=None,
                    excluded_files=None, return_extracted_files=False):
   """Extracts a tarball using tar.
@@ -342,9 +344,7 @@ def ExtractTarball(tarball_path, install_path, files_to_extract=None,
 
   # Determine how to decompress.
   tarball = os.path.basename(tarball_path)
-  if tarball.endswith('.tar.bz2'):
-    cmd.append('--use-compress-prog=pbzip2')
-  elif tarball.endswith('.tgz') or tarball.endswith('.tar.gz'):
+  if tarball.endswith('.tgz') or tarball.endswith('.tar.gz'):
     cmd.append('--gzip')
 
   if excluded_files:

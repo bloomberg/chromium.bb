@@ -265,7 +265,7 @@ class Artifact(cherrypy_log_util.Loggable):
     Args:
       e: Exception object to be saved.
     """
-    with open(self.exception_file_path, 'w') as f:
+    with open(self.exception_file_path, 'wb') as f:
       pickle.dump('%s\n%s' % (e, str(traceback.format_exc())), f)
 
   def GetException(self):
@@ -277,7 +277,7 @@ class Artifact(cherrypy_log_util.Loggable):
     """
     if not os.path.exists(self.exception_file_path):
       return None
-    with open(self.exception_file_path, 'r') as f:
+    with open(self.exception_file_path, 'rb') as f:
       return pickle.load(f)
 
   def Process(self, downloader, no_wait):
@@ -341,7 +341,6 @@ class Artifact(cherrypy_log_util.Loggable):
                 self.name, self.is_regex_name, timeout)
             self._UpdateName(new_names)
 
-
           files = self.name if isinstance(self.name, list) else [self.name]
           for filename in files:
             self._Log('Downloading file %s', filename)
@@ -349,14 +348,12 @@ class Artifact(cherrypy_log_util.Loggable):
           self._Setup()
           self._MarkArtifactStaged()
         except Exception as e:
+          # Convert an unknown exception into an ArtifactDownloadError.
+          if not isinstance(e, ArtifactDownloadError):
+            e = ArtifactDownloadError(e)
           # Save the exception to a file for downloader.IsStaged to retrieve.
           self._SaveException(e)
-
-          # Convert an unknown exception into an ArtifactDownloadError.
-          if isinstance(e, ArtifactDownloadError):
-            raise
-          else:
-            raise ArtifactDownloadError('An error occurred: %s' % e)
+          raise e
       else:
         self._Log('%s is already staged.', self)
 
