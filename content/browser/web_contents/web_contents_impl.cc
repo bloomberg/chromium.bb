@@ -2194,6 +2194,12 @@ ukm::SourceId WebContentsImpl::GetUkmSourceIdForLastCommittedSource() const {
   return last_committed_source_id_;
 }
 
+ukm::SourceId
+WebContentsImpl::GetUkmSourceIdForLastCommittedSourceIncludingSameDocument()
+    const {
+  return last_committed_source_id_including_same_document_;
+}
+
 void WebContentsImpl::SetTopControlsShownRatio(
     RenderWidgetHostImpl* render_widget_host,
     float ratio) {
@@ -4464,12 +4470,16 @@ void WebContentsImpl::DidFinishNavigation(NavigationHandle* navigation_handle) {
       }
     }
 
-    if (navigation_handle->IsInMainFrame() &&
-        !navigation_handle->IsSameDocument()) {
-      was_ever_audible_ = false;
-      last_committed_source_id_ =
+    if (navigation_handle->IsInMainFrame()) {
+      last_committed_source_id_including_same_document_ =
           ukm::ConvertToSourceId(navigation_handle->GetNavigationId(),
                                  ukm::SourceIdType::NAVIGATION_ID);
+
+      if (!navigation_handle->IsSameDocument()) {
+        was_ever_audible_ = false;
+        last_committed_source_id_ =
+            last_committed_source_id_including_same_document_;
+      }
     }
   }
 

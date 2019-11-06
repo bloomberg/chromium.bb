@@ -4674,7 +4674,8 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
           ? media::MediaMetricsProvider::FrameStatus::kTopFrame
           : media::MediaMetricsProvider::FrameStatus::kNotTopFrame,
       base::BindRepeating(
-          &RenderFrameHostDelegate::GetUkmSourceIdForLastCommittedSource,
+          &RenderFrameHostDelegate::
+              GetUkmSourceIdForLastCommittedSourceIncludingSameDocument,
           // This callback is only executed when Create() is called, during
           // which the lifetime of the |delegate_| is guaranteed.
           base::Unretained(delegate_)),
