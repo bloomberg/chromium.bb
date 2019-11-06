@@ -23,10 +23,6 @@ Element* StyleInvalidationRoot::RootElement() const {
 ContainerNode* StyleInvalidationRoot::Parent(const Node& node) const {
   return node.ParentOrShadowHostNode();
 }
-
-bool StyleInvalidationRoot::IsChildDirty(const ContainerNode& node) const {
-  return node.ChildNeedsStyleInvalidation();
-}
 #endif  // DCHECK_IS_ON()
 
 bool StyleInvalidationRoot::IsDirty(const Node& node) const {

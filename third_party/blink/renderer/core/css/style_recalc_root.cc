@@ -40,10 +40,6 @@ Element& StyleRecalcRoot::RootElement() const {
 ContainerNode* StyleRecalcRoot::Parent(const Node& node) const {
   return node.GetStyleRecalcParent();
 }
-
-bool StyleRecalcRoot::IsChildDirty(const ContainerNode& node) const {
-  return node.ChildNeedsStyleRecalc();
-}
 #endif  // DCHECK_IS_ON()
 
 bool StyleRecalcRoot::IsDirty(const Node& node) const {

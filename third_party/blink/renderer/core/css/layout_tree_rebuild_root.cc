@@ -38,10 +38,6 @@ Element& LayoutTreeRebuildRoot::RootElement() const {
 ContainerNode* LayoutTreeRebuildRoot::Parent(const Node& node) const {
   return node.GetReattachParent();
 }
-
-bool LayoutTreeRebuildRoot::IsChildDirty(const ContainerNode& node) const {
-  return node.ChildNeedsReattachLayoutTree();
-}
 #endif  // DCHECK_IS_ON()
 
 bool LayoutTreeRebuildRoot::IsDirty(const Node& node) const {

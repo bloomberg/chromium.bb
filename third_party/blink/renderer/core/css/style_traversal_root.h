@@ -55,9 +55,6 @@ class CORE_EXPORT StyleTraversalRoot {
   // Return the parent node for type of traversal for which the implementation
   // is a root.
   virtual ContainerNode* Parent(const Node&) const = 0;
-
-  // Return true if the given node has dirty descendants.
-  virtual bool IsChildDirty(const ContainerNode&) const = 0;
 #endif  // DCHECK_IS_ON()
 
   // Return true if the given node is dirty.
