@@ -249,7 +249,7 @@ const base::Feature kAdjustWebApkInstallationSpace = {
     "AdjustWebApkInstallationSpace", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kAndroidNightMode{"AndroidNightMode",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
+                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kAndroidNightModeCCT{"AndroidNightModeCCT",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
