@@ -43,6 +43,26 @@
   [self updateNowPlayingInfo];
 }
 
+- (void)setTitle:(NSString*)title {
+  [nowPlayingInfo_ setObject:title forKey:MPMediaItemPropertyTitle];
+  [self updateNowPlayingInfo];
+}
+
+- (void)setArtist:(NSString*)artist {
+  [nowPlayingInfo_ setObject:artist forKey:MPMediaItemPropertyArtist];
+  [self updateNowPlayingInfo];
+}
+
+- (void)setAlbum:(NSString*)album {
+  [nowPlayingInfo_ setObject:album forKey:MPMediaItemPropertyAlbumTitle];
+  [self updateNowPlayingInfo];
+}
+
+- (void)clearMetadata {
+  [self initializeNowPlayingInfoValues];
+  [self updateNowPlayingInfo];
+}
+
 - (void)initializeNowPlayingInfoValues {
   [nowPlayingInfo_ setObject:[NSNumber numberWithDouble:0]
                       forKey:MPNowPlayingInfoPropertyElapsedPlaybackTime];
@@ -56,6 +76,7 @@
   [nowPlayingInfo_ setObject:@"Chromium" forKey:MPMediaItemPropertyTitle];
 #endif
   [nowPlayingInfo_ setObject:@"" forKey:MPMediaItemPropertyArtist];
+  [nowPlayingInfo_ setObject:@"" forKey:MPMediaItemPropertyAlbumTitle];
 }
 
 - (void)updateNowPlayingInfo {

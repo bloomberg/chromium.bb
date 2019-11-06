@@ -38,12 +38,12 @@ class API_AVAILABLE(macos(10.12.2)) SystemMediaControlsMac
   void SetIsPlayPauseEnabled(bool value) override;
   void SetIsStopEnabled(bool value) override;
   void SetPlaybackStatus(PlaybackStatus status) override;
-  void SetTitle(const base::string16& title) override {}
-  void SetArtist(const base::string16& artist) override {}
-  void SetAlbum(const base::string16& album) override {}
+  void SetTitle(const base::string16& title) override;
+  void SetArtist(const base::string16& artist) override;
+  void SetAlbum(const base::string16& album) override;
   void SetThumbnail(const SkBitmap& bitmap) override {}
   void ClearThumbnail() override {}
-  void ClearMetadata() override {}
+  void ClearMetadata() override;
   void UpdateDisplay() override {}
 
  private:

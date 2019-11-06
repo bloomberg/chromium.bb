@@ -18,6 +18,12 @@ API_AVAILABLE(macos(10.12.2))
 
 // Called by the NowPlayingInfoCenterDelegateImpl to set metadata.
 - (void)setPlaybackState:(MPNowPlayingPlaybackState)state;
+- (void)setTitle:(NSString*)title;
+- (void)setArtist:(NSString*)artist;
+- (void)setAlbum:(NSString*)album;
+
+// Sets all metadata to default values.
+- (void)clearMetadata;
 
 @end
 

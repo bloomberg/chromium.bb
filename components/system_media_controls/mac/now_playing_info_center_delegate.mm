@@ -6,6 +6,7 @@
 
 #import <MediaPlayer/MediaPlayer.h>
 
+#include "base/strings/sys_string_conversions.h"
 #include "components/system_media_controls/mac/now_playing_info_center_delegate_cocoa.h"
 
 namespace system_media_controls {
@@ -45,6 +46,25 @@ void NowPlayingInfoCenterDelegate::SetPlaybackStatus(
   MPNowPlayingPlaybackState state =
       PlaybackStatusToMPNowPlayingPlaybackState(status);
   [now_playing_info_center_delegate_cocoa_ setPlaybackState:state];
+}
+
+void NowPlayingInfoCenterDelegate::SetTitle(const base::string16& title) {
+  [now_playing_info_center_delegate_cocoa_
+      setTitle:base::SysUTF16ToNSString(title)];
+}
+
+void NowPlayingInfoCenterDelegate::SetArtist(const base::string16& artist) {
+  [now_playing_info_center_delegate_cocoa_
+      setArtist:base::SysUTF16ToNSString(artist)];
+}
+
+void NowPlayingInfoCenterDelegate::SetAlbum(const base::string16& album) {
+  [now_playing_info_center_delegate_cocoa_
+      setAlbum:base::SysUTF16ToNSString(album)];
+}
+
+void NowPlayingInfoCenterDelegate::ClearMetadata() {
+  [now_playing_info_center_delegate_cocoa_ clearMetadata];
 }
 
 }  // namespace internal

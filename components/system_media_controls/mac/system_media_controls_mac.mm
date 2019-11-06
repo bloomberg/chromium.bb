@@ -58,5 +58,21 @@ void SystemMediaControlsMac::SetPlaybackStatus(PlaybackStatus status) {
   now_playing_info_center_delegate_.SetPlaybackStatus(status);
 }
 
+void SystemMediaControlsMac::SetTitle(const base::string16& title) {
+  now_playing_info_center_delegate_.SetTitle(title);
+}
+
+void SystemMediaControlsMac::SetArtist(const base::string16& artist) {
+  now_playing_info_center_delegate_.SetArtist(artist);
+}
+
+void SystemMediaControlsMac::SetAlbum(const base::string16& album) {
+  now_playing_info_center_delegate_.SetAlbum(album);
+}
+
+void SystemMediaControlsMac::ClearMetadata() {
+  now_playing_info_center_delegate_.ClearMetadata();
+}
+
 }  // namespace internal
 }  // namespace system_media_controls
