@@ -278,7 +278,6 @@ TEST(CrossOriginReadBlockingTest, GetCanonicalMimeType) {
       {"application/gzip", MimeType::kNeverSniffed},
       {"application/x-protobuf", MimeType::kNeverSniffed},
       {"application/x-gzip", MimeType::kNeverSniffed},
-      {"application/x-www-form-urlencoded", MimeType::kNeverSniffed},
       {"application/zip", MimeType::kNeverSniffed},
       {"text/event-stream", MimeType::kNeverSniffed},
       // TODO(lukasza): https://crbug.com/944162: Add application/pdf and

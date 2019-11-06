@@ -106,7 +106,7 @@ entries = {
   'src/tools/page_cycler/acid3': 'https://chromium.googlesource.com/chromium/deps/acid3.git@6be0a66a1ebd7ebc5abc1b2f405a945f6d871521',
   'src/tools/skia_goldctl:skia/tools/goldctl/${platform}': 'https://chrome-infra-packages.appspot.com/skia/tools/goldctl/${platform}@git_revision:f87a7deecc778c67e04af82265f040fef5d05c3f',
   'src/tools/swarming_client': 'https://chromium.googlesource.com/infra/luci/client-py.git@779c4f0f8488c64587b75dbb001d18c3c0c4cda9',
-  'src/v8': 'https://chromium.googlesource.com/v8/v8.git@5bec950c6647873c777f55f1b95ed7ae5d7def73',
+  'src/v8': 'https://chromium.googlesource.com/v8/v8.git@27646c1d2e7303cd3e56b189eb89ba4444cccbf0',
   'src/third_party/angle/third_party/deqp/src': 'https://chromium.googlesource.com/external/deqp@39894bc13c69b22c4aea018979b7daabc8dfc602',
   'src/third_party/angle/third_party/glmark2/src': 'https://chromium.googlesource.com/external/github.com/glmark2/glmark2@c4b3ff5a481348e8bdc2b71ee275864db91e40b1',
   'src/third_party/angle/third_party/rapidjson/src': 'https://chromium.googlesource.com/external/github.com/Tencent/rapidjson@7484e06c589873e1ed80382d262087e4fa80fb63',
