@@ -650,6 +650,25 @@ void NGInlineCursor::MoveTo(const LayoutObject& layout_object) {
     MoveToNext();
 }
 
+void NGInlineCursor::MoveTo(const NGInlineCursor& cursor) {
+  if (const NGPaintFragment* paint_fragment = cursor.CurrentPaintFragment()) {
+    MoveTo(*paint_fragment);
+    return;
+  }
+  if (cursor.current_item_) {
+    if (!fragment_items_)
+      SetRoot(*cursor.fragment_items_);
+    // Note: We use address instead of iterato because we can't compare
+    // iterators in different span. See |base::CheckedContiguousIterator<T>|.
+    const ptrdiff_t index = &*cursor.item_iter_ - &*items_.begin();
+    DCHECK_GE(index, 0);
+    DCHECK_LT(static_cast<size_t>(index), items_.size());
+    MoveToItem(items_.begin() + index);
+    return;
+  }
+  *this = cursor;
+}
+
 void NGInlineCursor::MoveTo(const NGPaintFragment& paint_fragment) {
   DCHECK(!fragment_items_);
   if (!root_paint_fragment_)

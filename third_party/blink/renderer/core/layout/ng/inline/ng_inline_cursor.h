@@ -210,6 +210,11 @@ class CORE_EXPORT NGInlineCursor {
   // Functions to move the current position.
   //
 
+  // Move the current position at |cursor|. Unlinke copy constrcutr, this
+  // function doesn't copy root. Note: The current position in |cursor|
+  // should be part of |this| cursor.
+  void MoveTo(const NGInlineCursor& cursor);
+
   // Move the current posint at |paint_fragment|.
   void MoveTo(const NGPaintFragment& paint_fragment);
 
