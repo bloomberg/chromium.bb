@@ -2250,6 +2250,46 @@ def _CheckHardcodedGoogleHostsInLowerLayers(input_api, output_api):
     return []
 
 
+def _CheckChromeOsSyncedPrefRegistration(input_api, output_api):
+  """Warns if Chrome OS C++ files register syncable prefs as browser prefs."""
+  def FileFilter(affected_file):
+    """Includes directories known to be Chrome OS only."""
+    return input_api.FilterSourceFile(
+      affected_file,
+      white_list=('^ash/',
+                  '^chromeos/',  # Top-level src/chromeos.
+                  '/chromeos/',  # Any path component.
+                  '^components/arc',
+                  '^components/exo'),
+      black_list=(input_api.DEFAULT_BLACK_LIST))
+
+  prefs = []
+  priority_prefs = []
+  for f in input_api.AffectedFiles(file_filter=FileFilter):
+    for line_num, line in f.ChangedContents():
+      if input_api.re.search('PrefRegistrySyncable::SYNCABLE_PREF', line):
+        prefs.append('    %s:%d:' % (f.LocalPath(), line_num))
+        prefs.append('      %s' % line)
+      if input_api.re.search(
+          'PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF', line):
+        priority_prefs.append('    %s:%d' % (f.LocalPath(), line_num))
+        priority_prefs.append('      %s' % line)
+
+  results = []
+  if (prefs):
+    results.append(output_api.PresubmitPromptWarning(
+        'Preferences were registered as SYNCABLE_PREF and will be controlled '
+        'by browser sync settings. If these prefs should be controlled by OS '
+        'sync settings use SYNCABLE_OS_PREF instead.\n' + '\n'.join(prefs)))
+  if (priority_prefs):
+    results.append(output_api.PresubmitPromptWarning(
+        'Preferences were registered as SYNCABLE_PRIORITY_PREF and will be '
+        'controlled by browser sync settings. If these prefs should be '
+        'controlled by OS sync settings use SYNCABLE_OS_PRIORITY_PREF '
+        'instead.\n' + '\n'.join(prefs)))
+  return results
+
+
 # TODO: add unit tests.
 def _CheckNoAbbreviationInPngFileName(input_api, output_api):
   """Makes sure there are no abbreviations in the name of PNG files.
@@ -4080,6 +4120,7 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckForVersionControlConflicts(input_api, output_api))
   results.extend(_CheckPatchFiles(input_api, output_api))
   results.extend(_CheckHardcodedGoogleHostsInLowerLayers(input_api, output_api))
+  results.extend(_CheckChromeOsSyncedPrefRegistration(input_api, output_api))
   results.extend(_CheckNoAbbreviationInPngFileName(input_api, output_api))
   results.extend(_CheckBuildConfigMacrosWithoutInclude(input_api, output_api))
   results.extend(_CheckForInvalidOSMacros(input_api, output_api))
