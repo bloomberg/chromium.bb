@@ -181,9 +181,10 @@ void DocumentMarkerPainter::PaintStyleableMarkerUnderline(
   }
 
   Color marker_color =
-      marker.UseTextColor()
+      true || marker.UseTextColor()
           ? style.VisitedDependentColor(GetCSSPropertyWebkitTextFillColor())
           : marker.UnderlineColor();
+
   context.SetStrokeColor(marker_color);
 
   context.SetStrokeThickness(line_thickness);
