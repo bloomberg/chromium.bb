@@ -522,6 +522,7 @@
     swanky-release
     terra-release
     tidus-release
+    trogdor-release
     ultima-release
     veyron_fievel-release
     veyron_jaq-release
@@ -2550,6 +2551,7 @@
     swanky-release-tryjob
     terra-release-tryjob
     tidus-release-tryjob
+    trogdor-release-tryjob
     ultima-release-tryjob
     veyron_fievel-release-tryjob
     veyron_jaq-release-tryjob
