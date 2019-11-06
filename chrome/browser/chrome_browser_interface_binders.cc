@@ -14,6 +14,8 @@
 #include "chrome/browser/navigation_predictor/navigation_predictor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/insecure_sensitive_input_driver_factory.h"
+#include "components/dom_distiller/content/browser/distillability_driver.h"
+#include "components/dom_distiller/content/common/mojom/distillability_service.mojom.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -71,6 +73,18 @@ void BindImageAnnotator(
       ->BindImageAnnotator(std::move(receiver));
 }
 
+void BindDistillabilityService(
+    content::RenderFrameHost* const frame_host,
+    mojo::PendingReceiver<dom_distiller::mojom::DistillabilityService>
+        receiver) {
+  dom_distiller::DistillabilityDriver* driver =
+      dom_distiller::DistillabilityDriver::FromWebContents(
+          content::WebContents::FromRenderFrameHost(frame_host));
+  if (!driver)
+    return;
+  driver->CreateDistillabilityService(std::move(receiver));
+}
+
 #if defined(OS_ANDROID)
 template <typename Interface>
 void ForwardToJavaWebContents(content::RenderFrameHost* frame_host,
@@ -101,6 +115,9 @@ void PopulateChromeFrameBinders(
 
   map->Add<blink::mojom::InsecureInputService>(
       base::BindRepeating(&InsecureSensitiveInputDriverFactory::BindDriver));
+
+  map->Add<dom_distiller::mojom::DistillabilityService>(
+      base::BindRepeating(&BindDistillabilityService));
 
 #if defined(OS_ANDROID)
   map->Add<blink::mojom::InstalledAppProvider>(base::BindRepeating(
