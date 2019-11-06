@@ -238,22 +238,19 @@ std::unique_ptr<views::View> WebUITabStripContainerView::CreateTabCounter() {
                                views::MaximumFlexSizeRule::kPreferred)
                                .WithOrder(1));
 
-  // TODO(999557): Correctly configure the size (height, minimum width).
+  // TODO(999557): also update this in response to touch mode changes.
+  const int button_height = GetLayoutConstant(TOOLBAR_BUTTON_HEIGHT);
+  tab_counter->SetMinSize(gfx::Size(button_height, button_height));
+  tab_counter->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_CENTER);
 
   // TODO(999557): Install an inkdrop.
 
   // TODO(999557): Add a roundrect border, like below but more like spec.
   // tab_counter->SetBorder(views::CreateRoundedRectBorder(
-  //     1,
+  //     2,
   //     views::LayoutProvider::Get()->GetCornerRadiusMetric(
   //         views::EMPHASIS_MEDIUM),
   //     gfx::kGoogleGrey300));
-
-  // TODO(999557): I'd like to do this instead of making this be a LabelButton.
-  // But Button is not concrete... ?
-  // tab_counter->SetLayoutManager(std::make_unique<views::FillLayout>());
-  // auto* tab_count_label = tab_counter->AddChildView(
-  //     std::make_unique<views::Label>(base::string16()));*/
 
   tab_counter_model_observer_ =
       std::make_unique<TabCounterModelObserver>(tab_counter.get());
