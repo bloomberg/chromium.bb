@@ -179,9 +179,10 @@ function getAveragePower(model, eventType) {
   var lastTimestamp = 0;
   var totalEnergy = 0;
   var index = events.getFirstEvent();
-  while (index > 0) {
+  while (index >= 0) {
     var timestamp = events.events[index][1];
-    totalEnergy = events.events[index][2] * (timestamp - lastTimestamp);
+    totalEnergy +=
+        events.events[index][2] * (timestamp - lastTimestamp) * 0.001;
     lastTimestamp = timestamp;
     index = events.getNextEvent(index, 1 /* direction */);
   }

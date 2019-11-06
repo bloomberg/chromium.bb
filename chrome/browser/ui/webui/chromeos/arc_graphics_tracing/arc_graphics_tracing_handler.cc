@@ -88,7 +88,7 @@ base::FilePath GetModelPathFromTitle(Profile* profile,
       normalized_name[index++] = '_';
       continue;
     }
-    if (c >= 'a' && c <= 'z')
+    if ((c >= 'a' && c <= 'z') || (c >= '0' && c <= '9'))
       normalized_name[index++] = c;
   }
   normalized_name[index] = 0;
