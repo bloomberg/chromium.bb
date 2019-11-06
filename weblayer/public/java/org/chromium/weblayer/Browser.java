@@ -13,8 +13,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import org.chromium.weblayer_private.aidl.APICallException;
-import org.chromium.weblayer_private.aidl.IBrowserController;
-import org.chromium.weblayer_private.aidl.IBrowserFragmentController;
+import org.chromium.weblayer_private.aidl.IBrowser;
+import org.chromium.weblayer_private.aidl.ITab;
 import org.chromium.weblayer_private.aidl.ObjectWrapper;
 
 import java.util.ArrayList;
@@ -23,73 +23,70 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * BrowserFragmentController contains any number of BrowserControllers, with one active
- * BrowserController. The active BrowserController is visible to the user, all other
- * BrowserControllers are hidden.
+ * Browser contains any number of Tabs, with one active Tab. The active Tab is visible to the user,
+ * all other Tabs are hidden.
  *
- * By default BrowserFragmentController has a single active BrowserController.
+ * By default Browser has a single active Tab.
  */
-public final class BrowserFragmentController {
-    private final IBrowserFragmentController mImpl;
-    // Mapes from id (as returned from IBrowserController.getId() to BrowserController.
-    private final Map<Integer, BrowserController> mBrowserControllerMap;
+public final class Browser {
+    private final IBrowser mImpl;
+    // Maps from id (as returned from ITab.getId() to Tab).
+    private final Map<Integer, Tab> mTabMap;
 
-    BrowserFragmentController(IBrowserFragmentController impl) {
+    Browser(IBrowser impl) {
         mImpl = impl;
-        mBrowserControllerMap = new HashMap<Integer, BrowserController>();
+        mTabMap = new HashMap<Integer, Tab>();
         try {
-            for (Object browserController : impl.getBrowserControllers()) {
-                // getBrowserControllers() returns List<BrowserControllerImpl>, which isn't
-                // accessible from the client library.
-                IBrowserController iBrowserController =
-                        IBrowserController.Stub.asInterface((android.os.IBinder) browserController);
-                // BrowserController's constructor calls registerBrowserController().
-                new BrowserController(iBrowserController, this);
+            for (Object tab : impl.getTabs()) {
+                // getTabs() returns List<TabImpl>, which isn't accessible from the client library.
+                ITab iTab = ITab.Stub.asInterface((android.os.IBinder) tab);
+                // Tab's constructor calls registerTab().
+                new Tab(iTab, this);
             }
         } catch (RemoteException e) {
             throw new APICallException(e);
         }
     }
 
-    // This is called when a new BrowserController is created.
-    void registerBrowserController(BrowserController browserController) {
+    // This is called when a new Tab is created.
+    void registerTab(Tab tab) {
         try {
-            int id = browserController.getIBrowserController().getId();
-            assert !mBrowserControllerMap.containsKey(id);
-            mBrowserControllerMap.put(id, browserController);
+            int id = tab.getITab().getId();
+            assert !mTabMap.containsKey(id);
+            mTabMap.put(id, tab);
         } catch (RemoteException e) {
             throw new APICallException(e);
         }
     }
 
     /**
-     * Returns the BrowserFragmentController for the supplied Fragment; null if
+     * Returns the Browser for the supplied Fragment; null if
      * {@link fragment} was not created by WebLayer.
      *
-     * @return the BrowserFragmentController
+     * @return the Browser
      */
     @Nullable
-    public static BrowserFragmentController fromFragment(@Nullable Fragment fragment) {
-        return fragment instanceof BrowserFragment ? ((BrowserFragment) fragment).getController()
+    public static Browser fromFragment(@Nullable Fragment fragment) {
+        return fragment instanceof BrowserFragment ? ((BrowserFragment) fragment).getBrowser()
                                                    : null;
     }
 
     /**
-     * Sets the active (visible) BrowserController. Only one BrowserController is visible at a time.
+     * Sets the active (visible) Tab. Only one Tab is visible at a time.
      *
-     * @param browserController The BrowserController to make active.
+     * @param tab The Tab to make active.
      *
-     * @throws IllegalStateException if {@link browserController} was not added to this
-     *         BrowserFragmentController.
+     * @throws IllegalStateException if {@link tab} was not added to this
+     *         Browser.
      *
-     * @see #addBrowserController()
+     * @see #addTab()
      */
-    public void setActiveBrowserController(@NonNull BrowserController browserController) {
+    public void setActiveTab(@NonNull Tab tab) {
         ThreadCheck.ensureOnUiThread();
         try {
-            if (!mImpl.setActiveBrowserController(browserController.getIBrowserController())) {
-                throw new IllegalStateException("attachBrowserController() must be called before "
-                        + "setActiveBrowserController");
+            if (!mImpl.setActiveTab(tab.getITab())) {
+                throw new IllegalStateException("attachTab() must be called before "
+                        + "setActiveTab");
             }
         } catch (RemoteException e) {
             throw new APICallException(e);
@@ -97,43 +94,42 @@ public final class BrowserFragmentController {
     }
 
     /**
-     * Returns the active (visible) BrowserController associated with this
-     * BrowserFragmentController.
+     * Returns the active (visible) Tab associated with this
+     * Browser.
      *
-     * @return The BrowserController.
+     * @return The Tab.
      */
     @Nullable
-    public BrowserController getActiveBrowserController() {
+    public Tab getActiveTab() {
         ThreadCheck.ensureOnUiThread();
         try {
-            return mBrowserControllerMap.get(mImpl.getActiveBrowserControllerId());
+            return mTabMap.get(mImpl.getActiveTabId());
         } catch (RemoteException e) {
             throw new APICallException(e);
         }
     }
 
     /**
-     * Returns the set of BrowserControllers contained in this BrowserFragmentController.
+     * Returns the set of Tabs contained in this Browser.
      *
-     * @return The BrowserControllers
+     * @return The Tabs
      */
     @NonNull
-    public List<BrowserController> getBrowserControllers() {
+    public List<Tab> getTabs() {
         ThreadCheck.ensureOnUiThread();
-        return new ArrayList<BrowserController>(mBrowserControllerMap.values());
+        return new ArrayList<Tab>(mTabMap.values());
     }
 
     /**
-     * Disposes a BrowserController. If {@link browserController} is the active BrowserController,
-     * no BrowserController is made active. After this call {@link browserController} should not be
+     * Disposes a Tab. If {@link tabl} is the active Tab,
+     * no Tab is made active. After this call {@link tabl} should not be
      * used.
      *
-     * @param browserController The BrowserController to dispose.
+     * @param tab The Tab to dispose.
      *
-     * @throws IllegalStateException is {@link browserController} is not in this
-     *         BrowserFragmentController.
+     * @throws IllegalStateException is {@link tab} is not in this Browser.
      */
-    public void disposeBrowserController(BrowserController browserController) {
+    public void disposeTab(Tab browserController) {
         ThreadCheck.ensureOnUiThread();
         // TODO(sky): implement this.
     }

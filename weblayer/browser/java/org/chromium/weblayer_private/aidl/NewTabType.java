@@ -9,10 +9,10 @@ import androidx.annotation.IntDef;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
-@IntDef({NewBrowserType.FOREGROUND_TAB, NewBrowserType.BACKGROUND_TAB, NewBrowserType.NEW_POPUP,
-        NewBrowserType.NEW_WINDOW})
+@IntDef({NewTabType.FOREGROUND_TAB, NewTabType.BACKGROUND_TAB, NewTabType.NEW_POPUP,
+        NewTabType.NEW_WINDOW})
 @Retention(RetentionPolicy.SOURCE)
-public @interface NewBrowserType {
+public @interface NewTabType {
     int FOREGROUND_TAB = 0;
     int BACKGROUND_TAB = 1;
     int NEW_POPUP = 2;

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBLAYER_PUBLIC_BROWSER_CONTROLLER_H_
-#define WEBLAYER_PUBLIC_BROWSER_CONTROLLER_H_
+#ifndef WEBLAYER_PUBLIC_TAB_H_
+#define WEBLAYER_PUBLIC_TAB_H_
 
 #include <algorithm>
 
@@ -22,23 +22,23 @@ class WebView;
 #endif
 
 namespace weblayer {
-class BrowserObserver;
 class DownloadDelegate;
 class FullscreenDelegate;
 class NavigationController;
-class NewBrowserDelegate;
+class NewTabDelegate;
 class Profile;
+class TabObserver;
 
-// Represents a browser window that is navigable.
-class BrowserController {
+// Represents a tab that is navigable.
+class Tab {
  public:
-  static std::unique_ptr<BrowserController> Create(Profile* profile);
+  static std::unique_ptr<Tab> Create(Profile* profile);
 
 #if defined(OS_ANDROID)
-  static BrowserController* GetLastControllerForTesting();
+  static Tab* GetLastTabForTesting();
 #endif
 
-  virtual ~BrowserController() {}
+  virtual ~Tab() {}
 
   // Sets the DownloadDelegate. If none is set, downloads will be dropped.
   virtual void SetDownloadDelegate(DownloadDelegate* delegate) = 0;
@@ -49,11 +49,11 @@ class BrowserController {
 
   // Sets the NewBrowserDelegate. Setting a null value implicitly disables
   // popups.
-  virtual void SetNewBrowserDelegate(NewBrowserDelegate* delegate) = 0;
+  virtual void SetNewTabDelegate(NewTabDelegate* delegate) = 0;
 
-  virtual void AddObserver(BrowserObserver* observer) = 0;
+  virtual void AddObserver(TabObserver* observer) = 0;
 
-  virtual void RemoveObserver(BrowserObserver* observer) = 0;
+  virtual void RemoveObserver(TabObserver* observer) = 0;
 
   virtual NavigationController* GetNavigationController() = 0;
 
@@ -80,4 +80,4 @@ class BrowserController {
 
 }  // namespace weblayer
 
-#endif  // WEBLAYER_PUBLIC_BROWSER_CONTROLLER_H_
+#endif  // WEBLAYER_PUBLIC_TAB_H_

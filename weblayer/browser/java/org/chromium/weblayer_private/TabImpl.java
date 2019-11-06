@@ -17,34 +17,33 @@ import org.chromium.content_public.browser.ViewEventSink;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.WindowAndroid;
-import org.chromium.weblayer_private.aidl.IBrowserController;
-import org.chromium.weblayer_private.aidl.IBrowserControllerClient;
 import org.chromium.weblayer_private.aidl.IDownloadCallbackClient;
 import org.chromium.weblayer_private.aidl.IFullscreenCallbackClient;
 import org.chromium.weblayer_private.aidl.INavigationControllerClient;
 import org.chromium.weblayer_private.aidl.IObjectWrapper;
+import org.chromium.weblayer_private.aidl.ITab;
+import org.chromium.weblayer_private.aidl.ITabClient;
 import org.chromium.weblayer_private.aidl.ObjectWrapper;
 
 /**
- * Implementation of IBrowserController.
+ * Implementation of ITab.
  */
 @JNINamespace("weblayer")
-public final class BrowserControllerImpl extends IBrowserController.Stub {
+public final class TabImpl extends ITab.Stub {
     private static int sNextId = 1;
-    private long mNativeBrowserController;
+    private long mNativeTab;
 
     private ProfileImpl mProfile;
     private WebContents mWebContents;
-    private BrowserCallbackProxy mBrowserCallbackProxy;
+    private TabCallbackProxy mTabCallbackProxy;
     private NavigationControllerImpl mNavigationController;
     private DownloadCallbackProxy mDownloadCallbackProxy;
     private FullscreenCallbackProxy mFullscreenCallbackProxy;
     private ViewAndroidDelegate mViewAndroidDelegate;
-    // BrowserFragmentControllerImpl this BrowserControllerImpl is in. This is only null during
-    // creation.
-    private BrowserFragmentControllerImpl mFragment;
-    private NewBrowserCallbackProxy mNewBrowserCallbackProxy;
-    private IBrowserControllerClient mClient;
+    // BrowserImpl this TabImpl is in. This is only null during creation.
+    private BrowserImpl mBrowser;
+    private NewTabCallbackProxy mNewTabCallbackProxy;
+    private ITabClient mClient;
     private final int mId;
 
     private static class InternalAccessDelegateImpl
@@ -68,35 +67,30 @@ public final class BrowserControllerImpl extends IBrowserController.Stub {
         public void onScrollChanged(int lPix, int tPix, int oldlPix, int oldtPix) {}
     }
 
-    public BrowserControllerImpl(ProfileImpl profile, WindowAndroid windowAndroid) {
+    public TabImpl(ProfileImpl profile, WindowAndroid windowAndroid) {
         mId = ++sNextId;
-        init(profile, windowAndroid,
-                BrowserControllerImplJni.get().createBrowserController(
-                        profile.getNativeProfile(), this));
+        init(profile, windowAndroid, TabImplJni.get().createTab(profile.getNativeProfile(), this));
     }
 
     /**
-     * This constructor is called when the native side triggers creation of a BrowserControllerImpl
+     * This constructor is called when the native side triggers creation of a TabImpl
      * (as happens with popups).
      */
-    public BrowserControllerImpl(
-            ProfileImpl profile, WindowAndroid windowAndroid, long nativeBrowserController) {
+    public TabImpl(ProfileImpl profile, WindowAndroid windowAndroid, long nativeBrowserController) {
         mId = ++sNextId;
-        BrowserControllerImplJni.get().setJavaImpl(
-                nativeBrowserController, BrowserControllerImpl.this);
+        TabImplJni.get().setJavaImpl(nativeBrowserController, TabImpl.this);
         init(profile, windowAndroid, nativeBrowserController);
     }
 
     private void init(
             ProfileImpl profile, WindowAndroid windowAndroid, long nativeBrowserController) {
         mProfile = profile;
-        mNativeBrowserController = nativeBrowserController;
-        mWebContents = BrowserControllerImplJni.get().getWebContents(
-                mNativeBrowserController, BrowserControllerImpl.this);
+        mNativeTab = nativeBrowserController;
+        mWebContents = TabImplJni.get().getWebContents(mNativeTab, TabImpl.this);
         mViewAndroidDelegate = new ViewAndroidDelegate(null) {
             @Override
             public void onTopControlsChanged(int topControlsOffsetY, int topContentOffsetY) {
-                BrowserFragmentViewController viewController = getViewController();
+                BrowserViewController viewController = getViewController();
                 if (viewController != null) {
                     viewController.onTopControlsChanged(topControlsOffsetY, topContentOffsetY);
                 }
@@ -110,32 +104,32 @@ public final class BrowserControllerImpl extends IBrowserController.Stub {
         return mProfile;
     }
 
-    public IBrowserControllerClient getClient() {
+    public ITabClient getClient() {
         return mClient;
     }
 
     /**
-     * Sets the BrowserFragmentControllerImpl this BrowserControllerImpl is contained in.
+     * Sets the BrowserImpl this TabImpl is contained in.
      */
-    public void attachToFragment(BrowserFragmentControllerImpl fragment) {
-        mFragment = fragment;
-        mWebContents.setTopLevelNativeWindow(fragment.getWindowAndroid());
-        mViewAndroidDelegate.setContainerView(fragment.getViewAndroidDelegateContainerView());
+    public void attachToBrowser(BrowserImpl browser) {
+        mBrowser = browser;
+        mWebContents.setTopLevelNativeWindow(browser.getWindowAndroid());
+        mViewAndroidDelegate.setContainerView(browser.getViewAndroidDelegateContainerView());
         SelectionPopupController.fromWebContents(mWebContents)
                 .setActionModeCallback(new ActionModeCallback(mWebContents));
     }
 
-    public BrowserFragmentControllerImpl getFragment() {
-        return mFragment;
+    public BrowserImpl getBrowser() {
+        return mBrowser;
     }
 
     @Override
-    public void setNewBrowsersEnabled(boolean enable) {
-        if (enable && mNewBrowserCallbackProxy == null) {
-            mNewBrowserCallbackProxy = new NewBrowserCallbackProxy(this);
-        } else if (!enable && mNewBrowserCallbackProxy != null) {
-            mNewBrowserCallbackProxy.destroy();
-            mNewBrowserCallbackProxy = null;
+    public void setNewTabsEnabled(boolean enable) {
+        if (enable && mNewTabCallbackProxy == null) {
+            mNewTabCallbackProxy = new NewTabCallbackProxy(this);
+        } else if (!enable && mNewTabCallbackProxy != null) {
+            mNewTabCallbackProxy.destroy();
+            mNewTabCallbackProxy = null;
         }
     }
 
@@ -145,22 +139,21 @@ public final class BrowserControllerImpl extends IBrowserController.Stub {
     }
 
     /**
-     * Called when this BrowserControllerImpl becomes the active BrowserControllerImpl.
+     * Called when this TabImpl becomes the active TabImpl.
      */
     public void onDidGainActive(long topControlsContainerViewHandle) {
         // attachToFragment() must be called before activate().
-        assert mFragment != null;
-        BrowserControllerImplJni.get().setTopControlsContainerView(mNativeBrowserController,
-                BrowserControllerImpl.this, topControlsContainerViewHandle);
+        assert mBrowser != null;
+        TabImplJni.get().setTopControlsContainerView(
+                mNativeTab, TabImpl.this, topControlsContainerViewHandle);
         mWebContents.onShow();
     }
     /**
-     * Called when this BrowserControllerImpl is no longer the active BrowserControllerImpl.
+     * Called when this TabImpl is no longer the active TabImpl.
      */
     public void onDidLoseActive() {
         mWebContents.onHide();
-        BrowserControllerImplJni.get().setTopControlsContainerView(
-                mNativeBrowserController, BrowserControllerImpl.this, 0);
+        TabImplJni.get().setTopControlsContainerView(mNativeTab, TabImpl.this, 0);
     }
 
     public WebContents getWebContents() {
@@ -168,7 +161,7 @@ public final class BrowserControllerImpl extends IBrowserController.Stub {
     }
 
     long getNativeBrowserController() {
-        return mNativeBrowserController;
+        return mNativeTab;
     }
 
     @Override
@@ -180,17 +173,16 @@ public final class BrowserControllerImpl extends IBrowserController.Stub {
     }
 
     @Override
-    public void setClient(IBrowserControllerClient client) {
+    public void setClient(ITabClient client) {
         mClient = client;
-        mBrowserCallbackProxy = new BrowserCallbackProxy(mNativeBrowserController, client);
+        mTabCallbackProxy = new TabCallbackProxy(mNativeTab, client);
     }
 
     @Override
     public void setDownloadCallbackClient(IDownloadCallbackClient client) {
         if (client != null) {
             if (mDownloadCallbackProxy == null) {
-                mDownloadCallbackProxy =
-                        new DownloadCallbackProxy(mNativeBrowserController, client);
+                mDownloadCallbackProxy = new DownloadCallbackProxy(mNativeTab, client);
             } else {
                 mDownloadCallbackProxy.setClient(client);
             }
@@ -204,8 +196,7 @@ public final class BrowserControllerImpl extends IBrowserController.Stub {
     public void setFullscreenCallbackClient(IFullscreenCallbackClient client) {
         if (client != null) {
             if (mFullscreenCallbackProxy == null) {
-                mFullscreenCallbackProxy =
-                        new FullscreenCallbackProxy(mNativeBrowserController, client);
+                mFullscreenCallbackProxy = new FullscreenCallbackProxy(mNativeTab, client);
             } else {
                 mFullscreenCallbackProxy.setClient(client);
             }
@@ -227,14 +218,13 @@ public final class BrowserControllerImpl extends IBrowserController.Stub {
                 }
             }
         };
-        BrowserControllerImplJni.get().executeScript(
-                mNativeBrowserController, script, useSeparateIsolate, nativeCallback);
+        TabImplJni.get().executeScript(mNativeTab, script, useSeparateIsolate, nativeCallback);
     }
 
     public void destroy() {
-        if (mBrowserCallbackProxy != null) {
-            mBrowserCallbackProxy.destroy();
-            mBrowserCallbackProxy = null;
+        if (mTabCallbackProxy != null) {
+            mTabCallbackProxy.destroy();
+            mTabCallbackProxy = null;
         }
         if (mDownloadCallbackProxy != null) {
             mDownloadCallbackProxy.destroy();
@@ -244,39 +234,38 @@ public final class BrowserControllerImpl extends IBrowserController.Stub {
             mFullscreenCallbackProxy.destroy();
             mFullscreenCallbackProxy = null;
         }
-        if (mNewBrowserCallbackProxy != null) {
-            mNewBrowserCallbackProxy.destroy();
-            mNewBrowserCallbackProxy = null;
+        if (mNewTabCallbackProxy != null) {
+            mNewTabCallbackProxy.destroy();
+            mNewTabCallbackProxy = null;
         }
         mNavigationController = null;
-        BrowserControllerImplJni.get().deleteBrowserController(mNativeBrowserController);
-        mNativeBrowserController = 0;
+        TabImplJni.get().deleteTab(mNativeTab);
+        mNativeTab = 0;
     }
 
     @CalledByNative
     private boolean doBrowserControlsShrinkRendererSize() {
-        BrowserFragmentViewController viewController = getViewController();
+        BrowserViewController viewController = getViewController();
         return viewController != null && viewController.doBrowserControlsShrinkRendererSize();
     }
 
     /**
-     * Returns the BrowserFragmentViewController for this BrowserControllerImpl, but only if this
-     * is the active BrowserControllerImpl.
+     * Returns the BrowserViewController for this TabImpl, but only if this
+     * is the active TabImpl.
      */
-    private BrowserFragmentViewController getViewController() {
-        return (mFragment.getActiveBrowserController() == this) ? mFragment.getViewController()
-                                                                : null;
+    private BrowserViewController getViewController() {
+        return (mBrowser.getActiveTab() == this) ? mBrowser.getViewController() : null;
     }
 
     @NativeMethods
     interface Natives {
-        long createBrowserController(long profile, BrowserControllerImpl caller);
-        void setJavaImpl(long nativeBrowserControllerImpl, BrowserControllerImpl impl);
-        void setTopControlsContainerView(long nativeBrowserControllerImpl,
-                BrowserControllerImpl caller, long nativeTopControlsContainerView);
-        void deleteBrowserController(long browserController);
-        WebContents getWebContents(long nativeBrowserControllerImpl, BrowserControllerImpl caller);
-        void executeScript(long nativeBrowserControllerImpl, String script,
-                boolean useSeparateIsolate, Callback<String> callback);
+        long createTab(long profile, TabImpl caller);
+        void setJavaImpl(long nativeTabImpl, TabImpl impl);
+        void setTopControlsContainerView(
+                long nativeTabImpl, TabImpl caller, long nativeTopControlsContainerView);
+        void deleteTab(long browserController);
+        WebContents getWebContents(long nativeTabImpl, TabImpl caller);
+        void executeScript(long nativeTabImpl, String script, boolean useSeparateIsolate,
+                Callback<String> callback);
     }
 }

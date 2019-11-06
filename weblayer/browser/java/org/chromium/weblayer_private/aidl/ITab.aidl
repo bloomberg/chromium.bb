@@ -4,13 +4,13 @@
 
 package org.chromium.weblayer_private.aidl;
 
-import org.chromium.weblayer_private.aidl.IBrowserControllerClient;
+import org.chromium.weblayer_private.aidl.ITabClient;
 import org.chromium.weblayer_private.aidl.IFullscreenCallbackClient;
 import org.chromium.weblayer_private.aidl.INavigationController;
 import org.chromium.weblayer_private.aidl.INavigationControllerClient;
 
-interface IBrowserController {
-  void setClient(in IBrowserControllerClient client) = 0;
+interface ITab {
+  void setClient(in ITabClient client) = 0;
 
   INavigationController createNavigationController(in INavigationControllerClient client) = 1;
 
@@ -20,10 +20,10 @@ interface IBrowserController {
 
   void executeScript(in String script, boolean useSeparateIsolate, in IObjectWrapper callback) = 4;
 
-  void setNewBrowsersEnabled(in boolean enabled) = 5;
+  void setNewTabsEnabled(in boolean enabled) = 5;
 
-  // Returns a unique identifier for this BrowserController. The id is *not* unique across
+  // Returns a unique identifier for this Tab. The id is *not* unique across
   // restores. The id is intended for the client library to avoid creating duplicate client objects
-  // for the same IBrowserController.
+  // for the same ITab.
   int getId() = 6;
 }

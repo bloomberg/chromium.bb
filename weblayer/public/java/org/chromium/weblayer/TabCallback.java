@@ -9,9 +9,9 @@ import android.net.Uri;
 import androidx.annotation.NonNull;
 
 /**
- * Informed of interesting events that happen during the lifetime of a BrowserController.
+ * Informed of interesting events that happen during the lifetime of a Tab.
  */
-public abstract class BrowserCallback {
+public abstract class TabCallback {
     /**
      * The Uri that should be displayed in the url-bar has updated.
      *

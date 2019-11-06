@@ -4,10 +4,10 @@
 
 package org.chromium.weblayer_private.aidl;
 
-import org.chromium.weblayer_private.aidl.IBrowserFragmentController;
+import org.chromium.weblayer_private.aidl.IBrowser;
 import org.chromium.weblayer_private.aidl.IRemoteFragment;
 
 interface IBrowserFragment {
   IRemoteFragment asRemoteFragment() = 0;
-  IBrowserFragmentController getController() = 1;
+  IBrowser getBrowser() = 1;
 }

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "weblayer/browser/browser_controller_impl.h"
+#include "weblayer/browser/tab_impl.h"
 
 #include "base/auto_reset.h"
 #include "base/logging.h"
@@ -18,10 +18,10 @@
 #include "weblayer/browser/isolated_world_ids.h"
 #include "weblayer/browser/navigation_controller_impl.h"
 #include "weblayer/browser/profile_impl.h"
-#include "weblayer/public/browser_observer.h"
 #include "weblayer/public/download_delegate.h"
 #include "weblayer/public/fullscreen_delegate.h"
-#include "weblayer/public/new_browser_delegate.h"
+#include "weblayer/public/new_tab_delegate.h"
+#include "weblayer/public/tab_observer.h"
 
 #if !defined(OS_ANDROID)
 #include "ui/views/controls/webview/webview.h"
@@ -32,7 +32,7 @@
 #include "base/android/jni_string.h"
 #include "base/json/json_writer.h"
 #include "components/embedder_support/android/delegate/color_chooser_android.h"
-#include "weblayer/browser/java/jni/BrowserControllerImpl_jni.h"
+#include "weblayer/browser/java/jni/TabImpl_jni.h"
 #include "weblayer/browser/top_controls_container_view.h"
 #endif
 
@@ -40,24 +40,23 @@ namespace weblayer {
 
 namespace {
 
-NewBrowserType NewBrowserTypeFromWindowDisposition(
-    WindowOpenDisposition disposition) {
+NewTabType NewTabTypeFromWindowDisposition(WindowOpenDisposition disposition) {
   // WindowOpenDisposition has a *ton* of types, but the following are really
   // the only ones that should be hit for this code path.
   switch (disposition) {
     case WindowOpenDisposition::NEW_FOREGROUND_TAB:
-      return NewBrowserType::FOREGROUND_TAB;
+      return NewTabType::FOREGROUND_TAB;
     case WindowOpenDisposition::NEW_BACKGROUND_TAB:
-      return NewBrowserType::BACKGROUND_TAB;
+      return NewTabType::BACKGROUND_TAB;
     case WindowOpenDisposition::NEW_POPUP:
-      return NewBrowserType::NEW_POPUP;
+      return NewTabType::NEW_POPUP;
     case WindowOpenDisposition::NEW_WINDOW:
-      return NewBrowserType::NEW_WINDOW;
+      return NewTabType::NEW_WINDOW;
     default:
       // The set of allowed types are in
-      // ContentBrowserClientImpl::CanCreateWindow().
+      // ContentTabClientImpl::CanCreateWindow().
       NOTREACHED();
-      return NewBrowserType::FOREGROUND_TAB;
+      return NewTabType::FOREGROUND_TAB;
   }
 }
 
@@ -66,11 +65,11 @@ NewBrowserType NewBrowserTypeFromWindowDisposition(
 constexpr int kWebContentsUserDataKey = 0;
 
 struct UserData : public base::SupportsUserData::Data {
-  BrowserControllerImpl* controller = nullptr;
+  TabImpl* controller = nullptr;
 };
 
 #if defined(OS_ANDROID)
-BrowserController* g_last_browser_controller;
+Tab* g_last_tab;
 
 void HandleJavaScriptResult(
     const base::android::ScopedJavaGlobalRef<jobject>& callback,
@@ -84,20 +83,18 @@ void HandleJavaScriptResult(
 }  // namespace
 
 #if defined(OS_ANDROID)
-BrowserControllerImpl::BrowserControllerImpl(
-    ProfileImpl* profile,
-    const base::android::JavaParamRef<jobject>& java_impl)
-    : BrowserControllerImpl(profile) {
+TabImpl::TabImpl(ProfileImpl* profile,
+                 const base::android::JavaParamRef<jobject>& java_impl)
+    : TabImpl(profile) {
   java_impl_ = java_impl;
 }
 #endif
 
-BrowserControllerImpl::BrowserControllerImpl(
-    ProfileImpl* profile,
-    std::unique_ptr<content::WebContents> web_contents)
+TabImpl::TabImpl(ProfileImpl* profile,
+                 std::unique_ptr<content::WebContents> web_contents)
     : profile_(profile), web_contents_(std::move(web_contents)) {
 #if defined(OS_ANDROID)
-  g_last_browser_controller = this;
+  g_last_tab = this;
 #endif
   if (web_contents_) {
     // This code path is hit when the page requests a new tab, which should
@@ -119,7 +116,7 @@ BrowserControllerImpl::BrowserControllerImpl(
   navigation_controller_ = std::make_unique<NavigationControllerImpl>(this);
 }
 
-BrowserControllerImpl::~BrowserControllerImpl() {
+TabImpl::~TabImpl() {
   // Destruct WebContents now to avoid it calling back when this object is
   // partially destructed. DidFinishNavigation can be called while destroying
   // WebContents, so stop observing first.
@@ -128,19 +125,17 @@ BrowserControllerImpl::~BrowserControllerImpl() {
 }
 
 // static
-BrowserControllerImpl* BrowserControllerImpl::FromWebContents(
-    content::WebContents* web_contents) {
+TabImpl* TabImpl::FromWebContents(content::WebContents* web_contents) {
   return reinterpret_cast<UserData*>(
              web_contents->GetUserData(&kWebContentsUserDataKey))
       ->controller;
 }
 
-void BrowserControllerImpl::SetDownloadDelegate(DownloadDelegate* delegate) {
+void TabImpl::SetDownloadDelegate(DownloadDelegate* delegate) {
   download_delegate_ = delegate;
 }
 
-void BrowserControllerImpl::SetFullscreenDelegate(
-    FullscreenDelegate* delegate) {
+void TabImpl::SetFullscreenDelegate(FullscreenDelegate* delegate) {
   if (delegate == fullscreen_delegate_)
     return;
 
@@ -161,26 +156,25 @@ void BrowserControllerImpl::SetFullscreenDelegate(
     host->OnWebkitPreferencesChanged();
 }
 
-void BrowserControllerImpl::SetNewBrowserDelegate(
-    NewBrowserDelegate* delegate) {
-  new_browser_delegate_ = delegate;
+void TabImpl::SetNewTabDelegate(NewTabDelegate* delegate) {
+  new_tab_delegate_ = delegate;
 }
 
-void BrowserControllerImpl::AddObserver(BrowserObserver* observer) {
+void TabImpl::AddObserver(TabObserver* observer) {
   observers_.AddObserver(observer);
 }
 
-void BrowserControllerImpl::RemoveObserver(BrowserObserver* observer) {
+void TabImpl::RemoveObserver(TabObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-NavigationController* BrowserControllerImpl::GetNavigationController() {
+NavigationController* TabImpl::GetNavigationController() {
   return navigation_controller_.get();
 }
 
-void BrowserControllerImpl::ExecuteScript(const base::string16& script,
-                                          bool use_separate_isolate,
-                                          JavaScriptResultCallback callback) {
+void TabImpl::ExecuteScript(const base::string16& script,
+                            bool use_separate_isolate,
+                            JavaScriptResultCallback callback) {
   if (use_separate_isolate) {
     web_contents_->GetMainFrame()->ExecuteJavaScriptInIsolatedWorld(
         script, std::move(callback), ISOLATED_WORLD_ID_WEBLAYER);
@@ -192,35 +186,32 @@ void BrowserControllerImpl::ExecuteScript(const base::string16& script,
 }
 
 #if !defined(OS_ANDROID)
-void BrowserControllerImpl::AttachToView(views::WebView* web_view) {
+void TabImpl::AttachToView(views::WebView* web_view) {
   web_view->SetWebContents(web_contents_.get());
   web_contents_->Focus();
 }
 #endif
 
 #if defined(OS_ANDROID)
-static jlong JNI_BrowserControllerImpl_CreateBrowserController(
+static jlong JNI_TabImpl_CreateTab(
     JNIEnv* env,
     jlong profile,
     const base::android::JavaParamRef<jobject>& java_impl) {
-  return reinterpret_cast<intptr_t>(new BrowserControllerImpl(
-      reinterpret_cast<ProfileImpl*>(profile), java_impl));
+  return reinterpret_cast<intptr_t>(
+      new TabImpl(reinterpret_cast<ProfileImpl*>(profile), java_impl));
 }
 
-static void JNI_BrowserControllerImpl_DeleteBrowserController(
-    JNIEnv* env,
-    jlong browser_controller) {
-  delete reinterpret_cast<BrowserControllerImpl*>(browser_controller);
+static void JNI_TabImpl_DeleteTab(JNIEnv* env, jlong tab) {
+  delete reinterpret_cast<TabImpl*>(tab);
 }
 
-base::android::ScopedJavaLocalRef<jobject>
-BrowserControllerImpl::GetWebContents(
+base::android::ScopedJavaLocalRef<jobject> TabImpl::GetWebContents(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {
   return web_contents_->GetJavaWebContents();
 }
 
-void BrowserControllerImpl::SetTopControlsContainerView(
+void TabImpl::SetTopControlsContainerView(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& caller,
     jlong native_top_controls_container_view) {
@@ -228,7 +219,7 @@ void BrowserControllerImpl::SetTopControlsContainerView(
       native_top_controls_container_view);
 }
 
-void BrowserControllerImpl::ExecuteScript(
+void TabImpl::ExecuteScript(
     JNIEnv* env,
     const base::android::JavaParamRef<jstring>& script,
     bool use_separate_isolate,
@@ -239,9 +230,8 @@ void BrowserControllerImpl::ExecuteScript(
                 base::BindOnce(&HandleJavaScriptResult, jcallback));
 }
 
-void BrowserControllerImpl::SetJavaImpl(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& impl) {
+void TabImpl::SetJavaImpl(JNIEnv* env,
+                          const base::android::JavaParamRef<jobject>& impl) {
   // This should only be called early on and only once.
   DCHECK(!java_impl_);
   java_impl_ = impl;
@@ -249,7 +239,7 @@ void BrowserControllerImpl::SetJavaImpl(
 
 #endif
 
-content::WebContents* BrowserControllerImpl::OpenURLFromTab(
+content::WebContents* TabImpl::OpenURLFromTab(
     content::WebContents* source,
     const content::OpenURLParams& params) {
   if (params.disposition != WindowOpenDisposition::CURRENT_TAB) {
@@ -262,13 +252,13 @@ content::WebContents* BrowserControllerImpl::OpenURLFromTab(
   return source;
 }
 
-void BrowserControllerImpl::DidNavigateMainFramePostCommit(
+void TabImpl::DidNavigateMainFramePostCommit(
     content::WebContents* web_contents) {
   for (auto& observer : observers_)
     observer.DisplayedUrlChanged(web_contents->GetVisibleURL());
 }
 
-content::ColorChooser* BrowserControllerImpl::OpenColorChooser(
+content::ColorChooser* TabImpl::OpenColorChooser(
     content::WebContents* web_contents,
     SkColor color,
     const std::vector<blink::mojom::ColorSuggestionPtr>& suggestions) {
@@ -280,7 +270,7 @@ content::ColorChooser* BrowserControllerImpl::OpenColorChooser(
 #endif
 }
 
-void BrowserControllerImpl::RunFileChooser(
+void TabImpl::RunFileChooser(
     content::RenderFrameHost* render_frame_host,
     std::unique_ptr<content::FileSelectListener> listener,
     const blink::mojom::FileChooserParams& params) {
@@ -288,7 +278,7 @@ void BrowserControllerImpl::RunFileChooser(
                                    params);
 }
 
-int BrowserControllerImpl::GetTopControlsHeight() {
+int TabImpl::GetTopControlsHeight() {
 #if defined(OS_ANDROID)
   return top_controls_container_view_
              ? top_controls_container_view_->GetTopControlsHeight()
@@ -298,67 +288,64 @@ int BrowserControllerImpl::GetTopControlsHeight() {
 #endif
 }
 
-bool BrowserControllerImpl::DoBrowserControlsShrinkRendererSize(
+bool TabImpl::DoBrowserControlsShrinkRendererSize(
     const content::WebContents* web_contents) {
 #if defined(OS_ANDROID)
-  return Java_BrowserControllerImpl_doBrowserControlsShrinkRendererSize(
+  return Java_TabImpl_doBrowserControlsShrinkRendererSize(
       base::android::AttachCurrentThread(), java_impl_);
 #else
   return false;
 #endif
 }
 
-bool BrowserControllerImpl::EmbedsFullscreenWidget() {
+bool TabImpl::EmbedsFullscreenWidget() {
   return true;
 }
 
-void BrowserControllerImpl::EnterFullscreenModeForTab(
+void TabImpl::EnterFullscreenModeForTab(
     content::WebContents* web_contents,
     const GURL& origin,
     const blink::mojom::FullscreenOptions& options) {
   // TODO: support |options|.
   is_fullscreen_ = true;
-  auto exit_fullscreen_closure = base::BindOnce(
-      &BrowserControllerImpl::OnExitFullscreen, weak_ptr_factory_.GetWeakPtr());
+  auto exit_fullscreen_closure = base::BindOnce(&TabImpl::OnExitFullscreen,
+                                                weak_ptr_factory_.GetWeakPtr());
   base::AutoReset<bool> reset(&processing_enter_fullscreen_, true);
   fullscreen_delegate_->EnterFullscreen(std::move(exit_fullscreen_closure));
 }
 
-void BrowserControllerImpl::ExitFullscreenModeForTab(
-    content::WebContents* web_contents) {
+void TabImpl::ExitFullscreenModeForTab(content::WebContents* web_contents) {
   is_fullscreen_ = false;
   fullscreen_delegate_->ExitFullscreen();
 }
 
-bool BrowserControllerImpl::IsFullscreenForTabOrPending(
+bool TabImpl::IsFullscreenForTabOrPending(
     const content::WebContents* web_contents) {
   return is_fullscreen_;
 }
 
-blink::mojom::DisplayMode BrowserControllerImpl::GetDisplayMode(
+blink::mojom::DisplayMode TabImpl::GetDisplayMode(
     const content::WebContents* web_contents) {
   return is_fullscreen_ ? blink::mojom::DisplayMode::kFullscreen
                         : blink::mojom::DisplayMode::kBrowser;
 }
 
-void BrowserControllerImpl::AddNewContents(
-    content::WebContents* source,
-    std::unique_ptr<content::WebContents> new_contents,
-    WindowOpenDisposition disposition,
-    const gfx::Rect& initial_rect,
-    bool user_gesture,
-    bool* was_blocked) {
-  if (!new_browser_delegate_)
+void TabImpl::AddNewContents(content::WebContents* source,
+                             std::unique_ptr<content::WebContents> new_contents,
+                             WindowOpenDisposition disposition,
+                             const gfx::Rect& initial_rect,
+                             bool user_gesture,
+                             bool* was_blocked) {
+  if (!new_tab_delegate_)
     return;
 
-  std::unique_ptr<BrowserController> browser =
-      std::make_unique<BrowserControllerImpl>(profile_,
-                                              std::move(new_contents));
-  new_browser_delegate_->OnNewBrowser(
-      std::move(browser), NewBrowserTypeFromWindowDisposition(disposition));
+  std::unique_ptr<Tab> tab =
+      std::make_unique<TabImpl>(profile_, std::move(new_contents));
+  new_tab_delegate_->OnNewTab(std::move(tab),
+                              NewTabTypeFromWindowDisposition(disposition));
 }
 
-void BrowserControllerImpl::DidFinishNavigation(
+void TabImpl::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
 #if defined(OS_ANDROID)
   web_contents_->GetMainFrame()->UpdateBrowserControlsState(
@@ -375,7 +362,7 @@ void BrowserControllerImpl::DidFinishNavigation(
 #endif
 }
 
-void BrowserControllerImpl::OnExitFullscreen() {
+void TabImpl::OnExitFullscreen() {
   // If |processing_enter_fullscreen_| is true, it means the callback is being
   // called while processing EnterFullscreenModeForTab(). WebContents doesn't
   // deal well with this. FATAL as Android generally doesn't run with DCHECKs.
@@ -384,14 +371,13 @@ void BrowserControllerImpl::OnExitFullscreen() {
   web_contents_->ExitFullscreen(/* will_cause_resize */ false);
 }
 
-std::unique_ptr<BrowserController> BrowserController::Create(Profile* profile) {
-  return std::make_unique<BrowserControllerImpl>(
-      static_cast<ProfileImpl*>(profile));
+std::unique_ptr<Tab> Tab::Create(Profile* profile) {
+  return std::make_unique<TabImpl>(static_cast<ProfileImpl*>(profile));
 }
 
 #if defined(OS_ANDROID)
-BrowserController* BrowserController::GetLastControllerForTesting() {
-  return g_last_browser_controller;
+Tab* Tab::GetLastTabForTesting() {
+  return g_last_tab;
 }
 #endif
 

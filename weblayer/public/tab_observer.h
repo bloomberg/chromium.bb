@@ -2,21 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBLAYER_PUBLIC_BROWSER_OBSERVER_H_
-#define WEBLAYER_PUBLIC_BROWSER_OBSERVER_H_
+#ifndef WEBLAYER_PUBLIC_TAB_OBSERVER_H_
+#define WEBLAYER_PUBLIC_TAB_OBSERVER_H_
 
 class GURL;
 
 namespace weblayer {
 
-class BrowserObserver {
+class TabObserver {
  public:
-  virtual ~BrowserObserver() {}
-
   // The URL bar should be updated to |url|.
   virtual void DisplayedUrlChanged(const GURL& url) {}
+
+ protected:
+  virtual ~TabObserver() {}
 };
 
 }  // namespace weblayer
 
-#endif  // WEBLAYER_PUBLIC_BROWSER_OBSERVER_H_
+#endif  // WEBLAYER_PUBLIC_TAB_OBSERVER_H_

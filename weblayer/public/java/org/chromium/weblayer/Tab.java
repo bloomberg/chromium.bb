@@ -15,47 +15,46 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import org.chromium.weblayer_private.aidl.APICallException;
-import org.chromium.weblayer_private.aidl.IBrowserController;
-import org.chromium.weblayer_private.aidl.IBrowserControllerClient;
 import org.chromium.weblayer_private.aidl.IDownloadCallbackClient;
 import org.chromium.weblayer_private.aidl.IFullscreenCallbackClient;
 import org.chromium.weblayer_private.aidl.IObjectWrapper;
+import org.chromium.weblayer_private.aidl.ITab;
+import org.chromium.weblayer_private.aidl.ITabClient;
 import org.chromium.weblayer_private.aidl.ObjectWrapper;
 
 /**
- * Represents a web-browser. More specifically, owns a NavigationController, and allows configuring
- * state of the browser, such as delegates and callbacks.
+ * Represents a single tab in a browser. More specifically, owns a NavigationController, and allows
+ * configuring state of the tab, such as delegates and callbacks.
  */
-public final class BrowserController {
+public final class Tab {
     /** The top level key of the JSON object returned by executeScript(). */
     public static final String SCRIPT_RESULT_KEY = "result";
 
-    private final IBrowserController mImpl;
+    private final ITab mImpl;
     private FullscreenCallbackClientImpl mFullscreenCallbackClient;
     private final NavigationController mNavigationController;
-    private final ObserverList<BrowserCallback> mCallbacks;
-    private BrowserFragmentController mBrowserFragmentController;
+    private final ObserverList<TabCallback> mCallbacks;
+    private Browser mBrowser;
     private DownloadCallbackClientImpl mDownloadCallbackClient;
-    private NewBrowserCallback mNewBrowserCallback;
+    private NewTabCallback mNewTabCallback;
 
-    BrowserController(
-            IBrowserController impl, BrowserFragmentController browserFragmentController) {
+    Tab(ITab impl, Browser browserFragmentController) {
         mImpl = impl;
-        mBrowserFragmentController = browserFragmentController;
+        mBrowser = browserFragmentController;
         try {
-            mImpl.setClient(new BrowserClientImpl());
+            mImpl.setClient(new TabClientImpl());
         } catch (RemoteException e) {
             throw new APICallException(e);
         }
 
-        mCallbacks = new ObserverList<BrowserCallback>();
+        mCallbacks = new ObserverList<TabCallback>();
         mNavigationController = NavigationController.create(mImpl);
-        mBrowserFragmentController.registerBrowserController(this);
+        mBrowser.registerTab(this);
     }
 
-    public BrowserFragmentController getBrowserFragmentController() {
+    public Browser getBrowser() {
         ThreadCheck.ensureOnUiThread();
-        return mBrowserFragmentController;
+        return mBrowser;
     }
 
     public void setDownloadCallback(@Nullable DownloadCallback callback) {
@@ -126,11 +125,11 @@ public final class BrowserController {
         }
     }
 
-    public void setNewBrowserCallback(@Nullable NewBrowserCallback callback) {
+    public void setNewTabCallback(@Nullable NewTabCallback callback) {
         ThreadCheck.ensureOnUiThread();
-        mNewBrowserCallback = callback;
+        mNewTabCallback = callback;
         try {
-            mImpl.setNewBrowsersEnabled(mNewBrowserCallback != null);
+            mImpl.setNewTabsEnabled(mNewTabCallback != null);
         } catch (RemoteException e) {
             throw new APICallException(e);
         }
@@ -148,37 +147,36 @@ public final class BrowserController {
         return mNavigationController;
     }
 
-    public void registerBrowserCallback(@Nullable BrowserCallback callback) {
+    public void registerTabCallback(@Nullable TabCallback callback) {
         ThreadCheck.ensureOnUiThread();
         mCallbacks.addObserver(callback);
     }
 
-    public void unregisterBrowserCallback(@Nullable BrowserCallback callback) {
+    public void unregisterTabCallback(@Nullable TabCallback callback) {
         ThreadCheck.ensureOnUiThread();
         mCallbacks.removeObserver(callback);
     }
 
-    IBrowserController getIBrowserController() {
+    ITab getITab() {
         return mImpl;
     }
 
-    private final class BrowserClientImpl extends IBrowserControllerClient.Stub {
+    private final class TabClientImpl extends ITabClient.Stub {
         @Override
         public void visibleUrlChanged(String url) {
             Uri uri = Uri.parse(url);
-            for (BrowserCallback callback : mCallbacks) {
+            for (TabCallback callback : mCallbacks) {
                 callback.visibleUrlChanged(uri);
             }
         }
 
         @Override
-        public void onNewBrowser(IBrowserController browser, int mode) {
-            // This should only be hit if setNewBrowserCallback() has been called with a non-null
+        public void onNewTab(ITab iTab, int mode) {
+            // This should only be hit if setNewTabCallback() has been called with a non-null
             // value.
-            assert mNewBrowserCallback != null;
-            BrowserController browserController =
-                    new BrowserController(browser, mBrowserFragmentController);
-            mNewBrowserCallback.onNewBrowser(browserController, mode);
+            assert mNewTabCallback != null;
+            Tab tab = new Tab(iTab, mBrowser);
+            mNewTabCallback.onNewTab(tab, mode);
         }
     }
 

@@ -7,10 +7,9 @@ package org.chromium.weblayer;
 import androidx.annotation.NonNull;
 
 /**
- * Used for handling new browsers (such as occurs when window.open() is called). If this is not
+ * Used for handling new tabs (such as occurs when window.open() is called). If this is not
  * set, popups are disabled.
  */
-public abstract class NewBrowserCallback {
-    public abstract void onNewBrowser(
-            @NonNull BrowserController browserController, @NewBrowserType int type);
+public abstract class NewTabCallback {
+    public abstract void onNewTab(@NonNull Tab tab, @NewTabType int type);
 }

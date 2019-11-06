@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBLAYER_BROWSER_BROWSER_CONTROLLER_IMPL_H_
-#define WEBLAYER_BROWSER_BROWSER_CONTROLLER_IMPL_H_
+#ifndef WEBLAYER_BROWSER_TAB_IMPL_H_
+#define WEBLAYER_BROWSER_TAB_IMPL_H_
 
 #include <memory>
 
@@ -13,7 +13,7 @@
 #include "build/build_config.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "weblayer/public/browser_controller.h"
+#include "weblayer/public/tab.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/scoped_java_ref.h"
@@ -26,37 +26,33 @@ class WebContents;
 namespace weblayer {
 class FullscreenDelegate;
 class NavigationControllerImpl;
-class NewBrowserDelegate;
+class NewTabDelegate;
 class ProfileImpl;
 
 #if defined(OS_ANDROID)
 class TopControlsContainerView;
 #endif
 
-class BrowserControllerImpl : public BrowserController,
-                              public content::WebContentsDelegate,
-                              public content::WebContentsObserver {
+class TabImpl : public Tab,
+                public content::WebContentsDelegate,
+                public content::WebContentsObserver {
  public:
   // TODO(sky): investigate a better way to not have so many ifdefs.
 #if defined(OS_ANDROID)
-  BrowserControllerImpl(ProfileImpl* profile,
-                        const base::android::JavaParamRef<jobject>& java_impl);
+  TabImpl(ProfileImpl* profile,
+          const base::android::JavaParamRef<jobject>& java_impl);
 #endif
-  explicit BrowserControllerImpl(
-      ProfileImpl* profile,
-      std::unique_ptr<content::WebContents> = nullptr);
-  ~BrowserControllerImpl() override;
+  explicit TabImpl(ProfileImpl* profile,
+                   std::unique_ptr<content::WebContents> = nullptr);
+  ~TabImpl() override;
 
-  // Returns the BrowserControllerImpl from the specified WebContents, or null
-  // if BrowserControllerImpl was not created by a BrowserControllerImpl.
-  static BrowserControllerImpl* FromWebContents(
-      content::WebContents* web_contents);
+  // Returns the TabImpl from the specified WebContents, or null
+  // if TabImpl was not created by a TabImpl.
+  static TabImpl* FromWebContents(content::WebContents* web_contents);
 
   content::WebContents* web_contents() const { return web_contents_.get(); }
 
-  bool has_new_browser_delegate() const {
-    return new_browser_delegate_ != nullptr;
-  }
+  bool has_new_tab_delegate() const { return new_tab_delegate_ != nullptr; }
 
 #if defined(OS_ANDROID)
   base::android::ScopedJavaLocalRef<jobject> GetWebContents(
@@ -77,12 +73,12 @@ class BrowserControllerImpl : public BrowserController,
   DownloadDelegate* download_delegate() { return download_delegate_; }
   FullscreenDelegate* fullscreen_delegate() { return fullscreen_delegate_; }
 
-  // BrowserController:
+  // Tab:
   void SetDownloadDelegate(DownloadDelegate* delegate) override;
   void SetFullscreenDelegate(FullscreenDelegate* delegate) override;
-  void SetNewBrowserDelegate(NewBrowserDelegate* delegate) override;
-  void AddObserver(BrowserObserver* observer) override;
-  void RemoveObserver(BrowserObserver* observer) override;
+  void SetNewTabDelegate(NewTabDelegate* delegate) override;
+  void AddObserver(TabObserver* observer) override;
+  void RemoveObserver(TabObserver* observer) override;
   NavigationController* GetNavigationController() override;
   void ExecuteScript(const base::string16& script,
                      bool use_separate_isolate,
@@ -135,11 +131,11 @@ class BrowserControllerImpl : public BrowserController,
 
   DownloadDelegate* download_delegate_ = nullptr;
   FullscreenDelegate* fullscreen_delegate_ = nullptr;
-  NewBrowserDelegate* new_browser_delegate_ = nullptr;
+  NewTabDelegate* new_tab_delegate_ = nullptr;
   ProfileImpl* profile_;
   std::unique_ptr<content::WebContents> web_contents_;
   std::unique_ptr<NavigationControllerImpl> navigation_controller_;
-  base::ObserverList<BrowserObserver>::Unchecked observers_;
+  base::ObserverList<TabObserver>::Unchecked observers_;
 #if defined(OS_ANDROID)
   TopControlsContainerView* top_controls_container_view_ = nullptr;
   base::android::ScopedJavaGlobalRef<jobject> java_impl_;
@@ -149,11 +145,11 @@ class BrowserControllerImpl : public BrowserController,
   // Set to true doing EnterFullscreenModeForTab().
   bool processing_enter_fullscreen_ = false;
 
-  base::WeakPtrFactory<BrowserControllerImpl> weak_ptr_factory_{this};
+  base::WeakPtrFactory<TabImpl> weak_ptr_factory_{this};
 
-  DISALLOW_COPY_AND_ASSIGN(BrowserControllerImpl);
+  DISALLOW_COPY_AND_ASSIGN(TabImpl);
 };
 
 }  // namespace weblayer
 
-#endif  // WEBLAYER_BROWSER_BROWSER_CONTROLLER_IMPL_H_
+#endif  // WEBLAYER_BROWSER_TAB_IMPL_H_

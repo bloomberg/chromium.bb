@@ -10,11 +10,11 @@ import android.os.RemoteException;
 import androidx.annotation.NonNull;
 
 import org.chromium.weblayer_private.aidl.APICallException;
-import org.chromium.weblayer_private.aidl.IBrowserController;
 import org.chromium.weblayer_private.aidl.IClientNavigation;
 import org.chromium.weblayer_private.aidl.INavigation;
 import org.chromium.weblayer_private.aidl.INavigationController;
 import org.chromium.weblayer_private.aidl.INavigationControllerClient;
+import org.chromium.weblayer_private.aidl.ITab;
 
 /**
  * Provides methods to control navigation, along with maintaining the current list of navigations.
@@ -23,12 +23,11 @@ public final class NavigationController {
     private INavigationController mNavigationController;
     private final ObserverList<NavigationCallback> mCallbacks;
 
-    static NavigationController create(IBrowserController browserController) {
+    static NavigationController create(ITab tab) {
         NavigationController navigationController = new NavigationController();
         try {
-            navigationController.mNavigationController =
-                    browserController.createNavigationController(
-                            navigationController.new NavigationControllerClientImpl());
+            navigationController.mNavigationController = tab.createNavigationController(
+                    navigationController.new NavigationControllerClientImpl());
         } catch (RemoteException e) {
             throw new APICallException(e);
         }

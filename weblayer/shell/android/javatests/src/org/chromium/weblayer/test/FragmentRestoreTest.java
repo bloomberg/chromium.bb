@@ -6,46 +6,35 @@ package org.chromium.weblayer.test;
 
 import android.support.test.filters.SmallTest;
 
-import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.weblayer.Tab;
 import org.chromium.weblayer.shell.InstrumentationActivity;
 
-import java.util.concurrent.CountDownLatch;
-
 @RunWith(BaseJUnit4ClassRunner.class)
-public class SmokeTest {
+public class FragmentRestoreTest {
     @Rule
     public InstrumentationActivityTestRule mActivityTestRule =
             new InstrumentationActivityTestRule();
 
     @Test
     @SmallTest
-    public void testSetSupportEmbedding() {
+    public void successfullyLoadsUrlAfterRotation() {
         InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl("about:blank");
+        Tab tab = TestThreadUtils.runOnUiThreadBlockingNoException(() -> activity.getTab());
 
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> { activity.getBrowser().setSupportsEmbedding(true); });
-
-        CountDownLatch latch = new CountDownLatch(1);
         String url = "data:text,foo";
+        mActivityTestRule.navigateAndWait(tab, url, false);
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            activity.getBrowser().setSupportsEmbedding(true).addCallback((Boolean result) -> {
-                Assert.assertTrue(result);
-                latch.countDown();
-            });
-        });
+        mActivityTestRule.recreateActivity();
 
-        try {
-            latch.await();
-        } catch (InterruptedException e) {
-            Assert.fail(e.toString());
-        }
-        mActivityTestRule.navigateAndWait(url);
+        InstrumentationActivity newActivity = mActivityTestRule.getActivity();
+        tab = TestThreadUtils.runOnUiThreadBlockingNoException(() -> newActivity.getTab());
+        url = "data:text,bar";
+        mActivityTestRule.navigateAndWait(tab, url, false);
     }
 }

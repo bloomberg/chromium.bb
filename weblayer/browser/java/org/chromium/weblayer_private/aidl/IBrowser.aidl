@@ -4,12 +4,12 @@
 
 package org.chromium.weblayer_private.aidl;
 
-import org.chromium.weblayer_private.aidl.IBrowserController;
 import org.chromium.weblayer_private.aidl.IObjectWrapper;
+import org.chromium.weblayer_private.aidl.ITab;
 
 import java.util.List;
 
-interface IBrowserFragmentController {
+interface IBrowser {
   IProfile getProfile() = 0;
   void setTopView(in IObjectWrapper view) = 1;
 
@@ -18,9 +18,9 @@ interface IBrowserFragmentController {
   // following request, or if this object is destroyed.
   void setSupportsEmbedding(in boolean enable, in IObjectWrapper valueCallback) = 2;
 
-  // Returns false if browserController is not attached to this fragment.
-  boolean setActiveBrowserController(in IBrowserController browserController) = 3;
+  // Sets the active tab, returns false if tab is not attached to this fragment.
+  boolean setActiveTab(in ITab tab) = 3;
 
-  int getActiveBrowserControllerId() = 4;
-  List getBrowserControllers() = 5;
+  int getActiveTabId() = 4;
+  List getTabs() = 5;
 }

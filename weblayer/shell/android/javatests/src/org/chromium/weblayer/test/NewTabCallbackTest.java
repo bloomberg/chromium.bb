@@ -18,15 +18,15 @@ import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
-import org.chromium.weblayer.BrowserController;
-import org.chromium.weblayer.NewBrowserCallback;
+import org.chromium.weblayer.NewTabCallback;
+import org.chromium.weblayer.Tab;
 import org.chromium.weblayer.shell.InstrumentationActivity;
 
 /**
- * Tests that NewBrowserCallback methods are invoked as expected.
+ * Tests that NewTabCallback methods are invoked as expected.
  */
 @RunWith(BaseJUnit4ClassRunner.class)
-public class NewBrowserCallbackTest {
+public class NewTabCallbackTest {
     @Rule
     public InstrumentationActivityTestRule mActivityTestRule =
             new InstrumentationActivityTestRule();
@@ -34,17 +34,16 @@ public class NewBrowserCallbackTest {
     private EmbeddedTestServer mTestServer;
     private InstrumentationActivity mActivity;
 
-    private static class NewBrowserCallbackImpl extends NewBrowserCallback {
-        public int mNewBrowserCount;
+    private static class NewTabCallbackImpl extends NewTabCallback {
         private CallbackHelper mCallbackHelper = new CallbackHelper();
 
         @Override
-        public void onNewBrowser(BrowserController browser, int mode) {
+        public void onNewTab(Tab tab, int mode) {
             mCallbackHelper.notifyCalled();
-            browser.getBrowserFragmentController().setActiveBrowserController(browser);
+            tab.getBrowser().setActiveTab(tab);
         }
 
-        public void waitForNewBrowser() {
+        public void waitForNewTab() {
             try {
                 mCallbackHelper.waitForCallback(0);
             } catch (Exception e) {
@@ -73,23 +72,19 @@ public class NewBrowserCallbackTest {
         String url = mTestServer.getURL("/new_browser.html");
         mActivity = mActivityTestRule.launchShellWithUrl(url);
         Assert.assertNotNull(mActivity);
-        NewBrowserCallbackImpl callback = new NewBrowserCallbackImpl();
-        BrowserController firstBrowserController =
-                TestThreadUtils.runOnUiThreadBlockingNoException(() -> {
-                    BrowserController browserController =
-                            mActivity.getBrowserFragmentController().getActiveBrowserController();
-                    browserController.setNewBrowserCallback(callback);
-                    return browserController;
-                });
+        NewTabCallbackImpl callback = new NewTabCallbackImpl();
+        Tab firstTab = TestThreadUtils.runOnUiThreadBlockingNoException(() -> {
+            Tab browserController = mActivity.getBrowser().getActiveTab();
+            browserController.setNewTabCallback(callback);
+            return browserController;
+        });
 
         EventUtils.simulateTouchCenterOfView(mActivity.getWindow().getDecorView());
-        callback.waitForNewBrowser();
+        callback.waitForNewTab();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            Assert.assertEquals(
-                    2, mActivity.getBrowserFragmentController().getBrowserControllers().size());
-            BrowserController browserController =
-                    mActivity.getBrowserFragmentController().getActiveBrowserController();
-            Assert.assertNotSame(firstBrowserController, browserController);
+            Assert.assertEquals(2, mActivity.getBrowser().getTabs().size());
+            Tab secondTab = mActivity.getBrowser().getActiveTab();
+            Assert.assertNotSame(firstTab, secondTab);
         });
     }
 }

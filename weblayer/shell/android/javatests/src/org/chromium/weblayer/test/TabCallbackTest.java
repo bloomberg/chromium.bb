@@ -15,7 +15,7 @@ import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
-import org.chromium.weblayer.BrowserCallback;
+import org.chromium.weblayer.TabCallback;
 import org.chromium.weblayer.shell.InstrumentationActivity;
 
 import java.util.ArrayList;
@@ -23,16 +23,16 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Tests that BrowserCallback methods are invoked as expected.
+ * Tests that TabCallback methods are invoked as expected.
  */
 @RunWith(BaseJUnit4ClassRunner.class)
-public class BrowserCallbackTest {
+public class TabCallbackTest {
     @Rule
     public InstrumentationActivityTestRule mActivityTestRule =
             new InstrumentationActivityTestRule();
 
-    private static class Callback extends BrowserCallback {
-        public static class BrowserCallbackValueRecorder {
+    private static class Callback extends TabCallback {
+        public static class TabCallbackValueRecorder {
             private List<String> mObservedValues =
                     Collections.synchronizedList(new ArrayList<String>());
 
@@ -57,8 +57,7 @@ public class BrowserCallbackTest {
             }
         }
 
-        public BrowserCallbackValueRecorder visibleUrlChangedCallback =
-                new BrowserCallbackValueRecorder();
+        public TabCallbackValueRecorder visibleUrlChangedCallback = new TabCallbackValueRecorder();
 
         @Override
         public void visibleUrlChanged(Uri url) {
@@ -74,7 +73,7 @@ public class BrowserCallbackTest {
 
         Callback calllback = new Callback();
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> { activity.getBrowserController().registerBrowserCallback(calllback); });
+                () -> { activity.getTab().registerTabCallback(calllback); });
 
         String url = "data:text,foo";
         mActivityTestRule.navigateAndWait(url);

@@ -12,25 +12,25 @@ import android.view.ViewGroup;
 import android.webkit.ValueCallback;
 
 import org.chromium.ui.base.WindowAndroid;
-import org.chromium.weblayer_private.aidl.IBrowserController;
-import org.chromium.weblayer_private.aidl.IBrowserFragmentController;
+import org.chromium.weblayer_private.aidl.IBrowser;
 import org.chromium.weblayer_private.aidl.IObjectWrapper;
 import org.chromium.weblayer_private.aidl.IProfile;
+import org.chromium.weblayer_private.aidl.ITab;
 import org.chromium.weblayer_private.aidl.ObjectWrapper;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Implementation of {@link IBrowserFragmentController}.
+ * Implementation of {@link IBrowser}.
  */
-public class BrowserFragmentControllerImpl extends IBrowserFragmentController.Stub {
+public class BrowserImpl extends IBrowser.Stub {
     private final ProfileImpl mProfile;
-    private BrowserFragmentViewController mViewController;
+    private BrowserViewController mViewController;
     private FragmentWindowAndroid mWindowAndroid;
-    private ArrayList<BrowserControllerImpl> mBrowsers = new ArrayList<BrowserControllerImpl>();
+    private ArrayList<TabImpl> mTabs = new ArrayList<TabImpl>();
 
-    public BrowserFragmentControllerImpl(ProfileImpl profile, Bundle savedInstanceState) {
+    public BrowserImpl(ProfileImpl profile, Bundle savedInstanceState) {
         mProfile = profile;
         // Restore tabs etc from savedInstanceState here.
     }
@@ -45,10 +45,10 @@ public class BrowserFragmentControllerImpl extends IBrowserFragmentController.St
 
     public void onFragmentAttached(Context context, FragmentWindowAndroid windowAndroid) {
         mWindowAndroid = windowAndroid;
-        mViewController = new BrowserFragmentViewController(context, windowAndroid);
-        BrowserControllerImpl browser = new BrowserControllerImpl(mProfile, windowAndroid);
-        attachBrowserController(browser);
-        boolean set_active_result = setActiveBrowserController(browser);
+        mViewController = new BrowserViewController(context, windowAndroid);
+        TabImpl tab = new TabImpl(mProfile, windowAndroid);
+        attachTab(tab);
+        boolean set_active_result = setActiveTab(tab);
         assert set_active_result;
     }
 
@@ -80,7 +80,7 @@ public class BrowserFragmentControllerImpl extends IBrowserFragmentController.St
                 (ValueCallback<Boolean>) ObjectWrapper.unwrap(valueCallback, ValueCallback.class));
     }
 
-    public BrowserFragmentViewController getViewController() {
+    public BrowserViewController getViewController() {
         if (mViewController == null) {
             throw new RuntimeException("Currently BrowserController requires Activity context, so "
                     + "it exists only while BrowserFragment is attached to an Activity");
@@ -93,50 +93,50 @@ public class BrowserFragmentControllerImpl extends IBrowserFragmentController.St
         return mProfile;
     }
 
-    public void attachBrowserController(IBrowserController iBrowserController) {
-        BrowserControllerImpl browserController = (BrowserControllerImpl) iBrowserController;
-        if (browserController.getFragment() == this) return;
-        attachBrowserControllerImpl(browserController);
+    public void attachTab(ITab iTab) {
+        TabImpl tab = (TabImpl) iTab;
+        if (tab.getBrowser() == this) return;
+        attachTabImpl(tab);
     }
 
-    private void attachBrowserControllerImpl(BrowserControllerImpl browser) {
+    private void attachTabImpl(TabImpl tab) {
         // Null case is only during initial creation.
-        if (browser.getFragment() != this && browser.getFragment() != null) {
-            browser.getFragment().detachBrowserController(browser);
+        if (tab.getBrowser() != this && tab.getBrowser() != null) {
+            tab.getBrowser().detachTab(tab);
         }
-        mBrowsers.add(browser);
-        browser.attachToFragment(this);
+        mTabs.add(tab);
+        tab.attachToBrowser(this);
     }
 
-    public void detachBrowserController(IBrowserController controller) {
-        BrowserControllerImpl browser = (BrowserControllerImpl) controller;
-        if (browser.getFragment() != this) return;
-        if (getActiveBrowserController() == browser) setActiveBrowserController(null);
-        mBrowsers.remove(browser);
-        // This doesn't reset state on BrowserControllerImpl as |browser| is either about to be
+    public void detachTab(ITab iTab) {
+        TabImpl tab = (TabImpl) iTab;
+        if (tab.getBrowser() != this) return;
+        if (getActiveTab() == tab) setActiveTab(null);
+        mTabs.remove(tab);
+        // This doesn't reset state on TabImpl as |browser| is either about to be
         // destroyed, or switching to a different fragment.
     }
 
     @Override
-    public boolean setActiveBrowserController(IBrowserController controller) {
-        BrowserControllerImpl browser = (BrowserControllerImpl) controller;
-        if (browser.getFragment() != this) return false;
-        mViewController.setActiveBrowserController(browser);
+    public boolean setActiveTab(ITab controller) {
+        TabImpl tab = (TabImpl) controller;
+        if (tab.getBrowser() != this) return false;
+        mViewController.setActiveTab(tab);
         return true;
     }
 
-    public BrowserControllerImpl getActiveBrowserController() {
-        return mViewController.getBrowserController();
+    public TabImpl getActiveTab() {
+        return mViewController.getTab();
     }
 
     @Override
-    public List getBrowserControllers() {
-        return new ArrayList(mBrowsers);
+    public List getTabs() {
+        return new ArrayList(mTabs);
     }
 
     @Override
-    public int getActiveBrowserControllerId() {
-        return getActiveBrowserController() != null ? getActiveBrowserController().getId() : 0;
+    public int getActiveTabId() {
+        return getActiveTab() != null ? getActiveTab().getId() : 0;
     }
 
     public View getFragmentView() {
@@ -146,8 +146,8 @@ public class BrowserFragmentControllerImpl extends IBrowserFragmentController.St
     public void destroy() {
         if (mViewController != null) {
             mViewController.destroy();
-            for (BrowserControllerImpl browser : mBrowsers) {
-                browser.destroy();
+            for (TabImpl tab : mTabs) {
+                tab.destroy();
             }
             mViewController = null;
         }

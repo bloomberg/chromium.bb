@@ -18,15 +18,14 @@ import org.chromium.weblayer_private.aidl.INavigationControllerClient;
 @JNINamespace("weblayer")
 public final class NavigationControllerImpl extends INavigationController.Stub {
     private long mNativeNavigationController;
-    private BrowserControllerImpl mBrowserController;
+    private TabImpl mTab;
     private INavigationControllerClient mNavigationControllerClient;
 
-    public NavigationControllerImpl(
-            BrowserControllerImpl browserController, INavigationControllerClient client) {
+    public NavigationControllerImpl(TabImpl tab, INavigationControllerClient client) {
         mNavigationControllerClient = client;
-        mBrowserController = browserController;
+        mTab = tab;
         mNativeNavigationController = NavigationControllerImplJni.get().getNavigationController(
-                browserController.getNativeBrowserController());
+                tab.getNativeBrowserController());
         NavigationControllerImplJni.get().setNavigationControllerImpl(
                 mNativeNavigationController, NavigationControllerImpl.this);
     }

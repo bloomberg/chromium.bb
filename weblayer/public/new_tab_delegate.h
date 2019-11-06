@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBLAYER_PUBLIC_NEW_BROWSER_DELEGATE_H_
-#define WEBLAYER_PUBLIC_NEW_BROWSER_DELEGATE_H_
+#ifndef WEBLAYER_PUBLIC_NEW_TAB_DELEGATE_H_
+#define WEBLAYER_PUBLIC_NEW_TAB_DELEGATE_H_
 
 #include <memory>
 
 namespace weblayer {
 
-class BrowserController;
+class Tab;
 
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.weblayer_private
-// GENERATED_JAVA_CLASS_NAME_OVERRIDE: ImplNewBrowserType
+// GENERATED_JAVA_CLASS_NAME_OVERRIDE: ImplNewTabType
 // Corresponds to type of browser the page requested.
-enum class NewBrowserType {
+enum class NewTabType {
   // The new browser should be opened in the foreground.
   FOREGROUND_TAB = 0,
 
@@ -31,15 +31,14 @@ enum class NewBrowserType {
 
 // An interface that allows clients to handle requests for new browsers, or
 // in web terms, a new popup/window (and random other things).
-class NewBrowserDelegate {
+class NewTabDelegate {
  public:
-  virtual void OnNewBrowser(std::unique_ptr<BrowserController> new_contents,
-                            NewBrowserType type) = 0;
+  virtual void OnNewTab(std::unique_ptr<Tab> new_tab, NewTabType type) = 0;
 
  protected:
-  virtual ~NewBrowserDelegate() {}
+  virtual ~NewTabDelegate() {}
 };
 
 }  // namespace weblayer
 
-#endif  // WEBLAYER_PUBLIC_NEW_BROWSER_DELEGATE_H_
+#endif  // WEBLAYER_PUBLIC_NEW_TAB_DELEGATE_H_

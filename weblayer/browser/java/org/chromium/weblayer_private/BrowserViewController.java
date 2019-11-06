@@ -18,11 +18,10 @@ import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.WindowAndroid;
 
 /**
- * BrowserFragmentViewController controls the set of Views needed to show the
- * WebContents.
+ * BrowserViewController controls the set of Views needed to show the WebContents.
  */
 @JNINamespace("weblayer")
-public final class BrowserFragmentViewController
+public final class BrowserViewController
         implements TopControlsContainerView.Listener,
                    WebContentsGestureStateTracker.OnGestureStateChangedListener {
     private final ContentViewRenderView mContentViewRenderView;
@@ -30,7 +29,7 @@ public final class BrowserFragmentViewController
     // Child of mContentViewRenderView, holds top-view from client.
     private final TopControlsContainerView mTopControlsContainerView;
 
-    private BrowserControllerImpl mBrowserController;
+    private TabImpl mTab;
 
     private WebContentsGestureStateTracker mGestureStateTracker;
 
@@ -41,7 +40,7 @@ public final class BrowserFragmentViewController
      */
     private boolean mCachedDoBrowserControlsShrinkRendererSize;
 
-    public BrowserFragmentViewController(Context context, WindowAndroid windowAndroid) {
+    public BrowserViewController(Context context, WindowAndroid windowAndroid) {
         mContentViewRenderView = new ContentViewRenderView(context);
 
         mContentViewRenderView.onNativeLibraryLoaded(
@@ -66,7 +65,7 @@ public final class BrowserFragmentViewController
     }
 
     public void destroy() {
-        setActiveBrowserController(null);
+        setActiveTab(null);
         mTopControlsContainerView.destroy();
         mContentViewRenderView.destroy();
     }
@@ -80,36 +79,35 @@ public final class BrowserFragmentViewController
         return mContentView;
     }
 
-    public void setActiveBrowserController(BrowserControllerImpl browserController) {
-        if (browserController == mBrowserController) return;
+    public void setActiveTab(TabImpl tab) {
+        if (tab == mTab) return;
 
-        if (mBrowserController != null) {
-            mBrowserController.onDidLoseActive();
+        if (mTab != null) {
+            mTab.onDidLoseActive();
             // WebContentsGestureStateTracker is relatively cheap, easier to destroy rather than
             // update WebContents.
             mGestureStateTracker.destroy();
             mGestureStateTracker = null;
         }
-        mBrowserController = browserController;
-        WebContents webContents =
-                mBrowserController != null ? mBrowserController.getWebContents() : null;
+        mTab = tab;
+        WebContents webContents = mTab != null ? mTab.getWebContents() : null;
         // Create the WebContentsGestureStateTracker before setting the WebContents on
         // the views as they may call back to this class.
-        if (mBrowserController != null) {
+        if (mTab != null) {
             mGestureStateTracker =
                     new WebContentsGestureStateTracker(mContentView, webContents, this);
         }
         mContentView.setWebContents(webContents);
         mContentViewRenderView.setWebContents(webContents);
         mTopControlsContainerView.setWebContents(webContents);
-        if (mBrowserController != null) {
-            mBrowserController.onDidGainActive(mTopControlsContainerView.getNativeHandle());
+        if (mTab != null) {
+            mTab.onDidGainActive(mTopControlsContainerView.getNativeHandle());
             mContentView.requestFocus();
         }
     }
 
-    public BrowserControllerImpl getBrowserController() {
-        return mBrowserController;
+    public TabImpl getTab() {
+        return mTab;
     }
 
     public void setTopView(View view) {
