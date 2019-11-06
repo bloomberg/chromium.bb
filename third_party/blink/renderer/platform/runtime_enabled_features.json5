@@ -267,6 +267,10 @@
       name: "CacheInlineScriptCode"
     },
     {
+      name: "CacheStorageCodeCacheHint",
+      status: "experimental",
+    },
+    {
       name: "Canvas2dContextLostRestored",
       status: "experimental",
     },
