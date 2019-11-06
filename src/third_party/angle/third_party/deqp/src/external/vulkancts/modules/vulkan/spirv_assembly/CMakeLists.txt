@@ -1,0 +1,64 @@
+# SPIR-V assembly tests
+
+include_directories(..)
+
+set(DEQP_VK_SPIRV_ASSEMBLY_SRCS
+	vktSpvAsm8bitStorageTests.cpp
+	vktSpvAsm8bitStorageTests.hpp
+	vktSpvAsmCrossStageInterfaceTests.cpp
+	vktSpvAsmCrossStageInterfaceTests.hpp
+	vktSpvAsm16bitStorageTests.cpp
+	vktSpvAsm16bitStorageTests.hpp
+	vktSpvAsmFloatControlsTests.cpp
+	vktSpvAsmFloatControlsTests.hpp
+	vktSpvAsmUboMatrixPaddingTests.cpp
+	vktSpvAsmUboMatrixPaddingTests.hpp
+	vktSpvAsmCompositeInsertTests.cpp
+	vktSpvAsmCompositeInsertTests.hpp
+	vktSpvAsmConditionalBranchTests.cpp
+	vktSpvAsmConditionalBranchTests.hpp
+	vktSpvAsmIndexingTests.cpp
+	vktSpvAsmIndexingTests.hpp
+	vktSpvAsmImageSamplerTests.cpp
+	vktSpvAsmImageSamplerTests.hpp
+	vktSpvAsmComputeShaderCase.cpp
+	vktSpvAsmComputeShaderCase.hpp
+	vktSpvAsmComputeShaderTestUtil.cpp
+	vktSpvAsmComputeShaderTestUtil.hpp
+	vktSpvAsmGraphicsShaderTestUtil.cpp
+	vktSpvAsmGraphicsShaderTestUtil.hpp
+	vktSpvAsmInstructionTests.cpp
+	vktSpvAsmInstructionTests.hpp
+	vktSpvAsmPointerParameterTests.cpp
+	vktSpvAsmPointerParameterTests.hpp
+	vktSpvAsmTypeTests.cpp
+	vktSpvAsmTypeTests.hpp
+	vktSpvAsmTests.cpp
+	vktSpvAsmTests.hpp
+	vktSpvAsmUtils.cpp
+	vktSpvAsmUtils.hpp
+	vktSpvAsmVariableInitTests.cpp
+	vktSpvAsmVariableInitTests.hpp
+	vktSpvAsmVariablePointersTests.cpp
+	vktSpvAsmVariablePointersTests.hpp
+	vktSpvAsmSpirvVersionTests.cpp
+	vktSpvAsmSpirvVersionTests.hpp
+	vktSpvAsmLoopDepLenTests.cpp
+	vktSpvAsmLoopDepLenTests.hpp
+	vktSpvAsmLoopDepInfTests.cpp
+	vktSpvAsmLoopDepInfTests.hpp
+	vktSpvAsmVaryingNameTests.cpp
+	vktSpvAsmVaryingNameTests.hpp
+	vktSpvAsmWorkgroupMemoryTests.cpp
+	vktSpvAsmWorkgroupMemoryTests.hpp
+	)
+
+set(DEQP_VK_SPIRV_ASSEMBLY_LIBS
+	tcutil
+	vkutil
+	)
+
+PCH(DEQP_VK_SPIRV_ASSEMBLY_SRCS ../pch.cpp)
+
+add_library(deqp-vk-spirv-assembly STATIC ${DEQP_VK_SPIRV_ASSEMBLY_SRCS})
+target_link_libraries(deqp-vk-spirv-assembly ${DEQP_VK_SPIRV_ASSEMBLY_LIBS})
