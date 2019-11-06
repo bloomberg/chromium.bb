@@ -15847,6 +15847,7 @@ Called by update_net_error_codes.py.-->
   <int value="385" label="weba"/>
   <int value="386" label="webm"/>
   <int value="387" label="xbm"/>
+  <int value="388" label="accdb"/>
 </enum>
 
 <enum name="DownloadItem.DangerType">
@@ -55347,6 +55348,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="385" label="WEBA"/>
   <int value="386" label="WEBM"/>
   <int value="387" label="XBM"/>
+  <int value="388" label="ACCDB"/>
 </enum>
 
 <enum name="SBClientDownloadIsSignedBinary">
