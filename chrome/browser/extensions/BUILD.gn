@@ -1046,6 +1046,7 @@ jumbo_static_library("extensions") {
       "default_apps.cc",
       "default_apps.h",
     ]
+    deps += [ "//components/keep_alive_registry" ]
     if (is_posix) {
       sources += [ "api/messaging/native_process_launcher_posix.cc" ]
     }
