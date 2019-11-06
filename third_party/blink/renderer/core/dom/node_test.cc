@@ -341,7 +341,8 @@ TEST_F(NodeTest, MutationOutsideFlatTreeStyleDirty) {
   GetDocument()
       .getElementById("nonslotted")
       ->setAttribute("style", "color:green");
-  EXPECT_TRUE(GetDocument().NeedsLayoutTreeUpdate());
+  EXPECT_EQ(!RuntimeEnabledFeatures::FlatTreeStyleRecalcEnabled(),
+            GetDocument().NeedsLayoutTreeUpdate());
 }
 
 TEST_F(NodeTest, SkipStyleDirtyHostChild) {
