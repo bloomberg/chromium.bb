@@ -53,7 +53,7 @@ g.test('fullscreen quad', async t => {
       frontFace: 'ccw',
     },
     colorStates: [{ format: 'rgba8unorm', alphaBlend: {}, colorBlend: {} }],
-    vertexInput: {
+    vertexState: {
       indexFormat: 'uint16',
       vertexBuffers: [],
     },

@@ -1,5 +1,5 @@
 export const description = `
-vertexInput validation tests.
+vertexState validation tests.
 `;
 
 import { TestGroup } from '../../../framework/index.js';
@@ -8,7 +8,7 @@ import { ValidationTest } from './validation_test.js';
 
 const MAX_VERTEX_ATTRIBUTES: number = 16;
 const MAX_VERTEX_BUFFER_END: number = 2048;
-const MAX_VERTEX_BUFFER_STRIDE: number = 2048;
+const MAX_VERTEX_BUFFER_ARRAY_STRIDE: number = 2048;
 const MAX_VERTEX_BUFFERS: number = 16;
 
 const VERTEX_SHADER_CODE_WITH_NO_INPUT = `
@@ -18,7 +18,7 @@ const VERTEX_SHADER_CODE_WITH_NO_INPUT = `
   }
 `;
 
-function clone(descriptor: GPUVertexInputDescriptor): GPUVertexInputDescriptor {
+function clone(descriptor: GPUVertexStateDescriptor): GPUVertexStateDescriptor {
   return JSON.parse(JSON.stringify(descriptor));
 }
 
@@ -28,7 +28,7 @@ class F extends ValidationTest {
   }
 
   getDescriptor(
-    vertexInput: GPUVertexInputDescriptor,
+    vertexState: GPUVertexStateDescriptor,
     vertexShaderCode: string
   ): GPURenderPipelineDescriptor {
     const descriptor: GPURenderPipelineDescriptor = {
@@ -37,7 +37,7 @@ class F extends ValidationTest {
       layout: this.getPipelineLayout(),
       primitiveTopology: 'triangle-list',
       colorStates: [{ format: 'rgba8unorm' }],
-      vertexInput,
+      vertexState,
     };
     return descriptor;
   }
@@ -71,93 +71,98 @@ class F extends ValidationTest {
 export const g = new TestGroup(F);
 
 g.test('an empty vertex input is valid', t => {
-  const vertexInput: GPUVertexInputDescriptor = {};
-  const descriptor = t.getDescriptor(vertexInput, VERTEX_SHADER_CODE_WITH_NO_INPUT);
+  const vertexState: GPUVertexStateDescriptor = {};
+  const descriptor = t.getDescriptor(vertexState, VERTEX_SHADER_CODE_WITH_NO_INPUT);
   t.device.createRenderPipeline(descriptor);
 });
 
 g.test('a null buffer is valid', t => {
   {
     // One null buffer is OK
-    const vertexInput: GPUVertexInputDescriptor = {
+    const vertexState: GPUVertexStateDescriptor = {
       vertexBuffers: [
         {
-          stride: 0,
-          attributeSet: [],
+          arrayStride: 0,
+          attributes: [],
         },
       ],
     };
-    const descriptor = t.getDescriptor(vertexInput, VERTEX_SHADER_CODE_WITH_NO_INPUT);
+    const descriptor = t.getDescriptor(vertexState, VERTEX_SHADER_CODE_WITH_NO_INPUT);
     t.device.createRenderPipeline(descriptor);
   }
   {
     //  One null buffer followed by a buffer is OK
-    const vertexInput: GPUVertexInputDescriptor = {
+    const vertexState: GPUVertexStateDescriptor = {
       vertexBuffers: [
         {
-          stride: 0,
-          attributeSet: [],
+          arrayStride: 0,
+          attributes: [],
         },
         {
-          stride: 0,
-          attributeSet: [
+          arrayStride: 0,
+          attributes: [
             {
-              shaderLocation: 0,
               format: 'float',
+              offset: 0,
+              shaderLocation: 0,
             },
           ],
         },
       ],
     };
-    const descriptor = t.getDescriptor(vertexInput, VERTEX_SHADER_CODE_WITH_NO_INPUT);
+    const descriptor = t.getDescriptor(vertexState, VERTEX_SHADER_CODE_WITH_NO_INPUT);
     t.device.createRenderPipeline(descriptor);
   }
   {
     //  One null buffer sitting between buffers is OK
-    const vertexInput: GPUVertexInputDescriptor = {
+    const vertexState: GPUVertexStateDescriptor = {
       vertexBuffers: [
         {
-          stride: 0,
-          attributeSet: [
+          arrayStride: 0,
+          attributes: [
             {
-              shaderLocation: 0,
               format: 'float',
+              offset: 0,
+              shaderLocation: 0,
             },
           ],
         },
         {
-          stride: 0,
-          attributeSet: [],
+          arrayStride: 0,
+          attributes: [],
         },
         {
-          stride: 0,
-          attributeSet: [
+          arrayStride: 0,
+          attributes: [
             {
-              shaderLocation: 1,
               format: 'float',
+              offset: 0,
+              shaderLocation: 1,
             },
           ],
         },
       ],
     };
-    const descriptor = t.getDescriptor(vertexInput, VERTEX_SHADER_CODE_WITH_NO_INPUT);
+    const descriptor = t.getDescriptor(vertexState, VERTEX_SHADER_CODE_WITH_NO_INPUT);
     t.device.createRenderPipeline(descriptor);
   }
 });
 
 g.test('pipeline vertex buffers are backed by attributes in vertex input', async t => {
-  const vertexInput: GPUVertexInputDescriptor = {
+  const vertexState: GPUVertexStateDescriptor = {
     vertexBuffers: [
       {
-        stride: 2 * Float32Array.BYTES_PER_ELEMENT,
-        attributeSet: [
+        arrayStride: 2 * Float32Array.BYTES_PER_ELEMENT,
+        attributes: [
           {
-            shaderLocation: 0,
             format: 'float',
+            offset: 0,
+            shaderLocation: 0,
           },
           {
-            shaderLocation: 1,
             format: 'float',
+            offset: 0,
+            shaderLocation: 1,
           },
         ],
       },
@@ -173,11 +178,11 @@ g.test('pipeline vertex buffers are backed by attributes in vertex input', async
           gl_Position = vec4(0.0);
       }
     `;
-    const descriptor = t.getDescriptor(vertexInput, code);
+    const descriptor = t.getDescriptor(vertexState, code);
     t.device.createRenderPipeline(descriptor);
   }
   {
-    // Check it is valid for the pipeline to use a subset of the VertexInput
+    // Check it is valid for the pipeline to use a subset of the VertexState
     const code = `
       #version 450
       layout(location = 0) in vec4 a;
@@ -185,7 +190,7 @@ g.test('pipeline vertex buffers are backed by attributes in vertex input', async
           gl_Position = vec4(0.0);
       }
     `;
-    const descriptor = t.getDescriptor(vertexInput, code);
+    const descriptor = t.getDescriptor(vertexState, code);
     t.device.createRenderPipeline(descriptor);
   }
   {
@@ -197,7 +202,7 @@ g.test('pipeline vertex buffers are backed by attributes in vertex input', async
           gl_Position = vec4(0.0);
       }
     `;
-    const descriptor = t.getDescriptor(vertexInput, code);
+    const descriptor = t.getDescriptor(vertexState, code);
 
     t.expectValidationError(() => {
       t.device.createRenderPipeline(descriptor);
@@ -205,15 +210,16 @@ g.test('pipeline vertex buffers are backed by attributes in vertex input', async
   }
 });
 
-g.test('a stride of 0 is valid', t => {
-  const vertexInput: GPUVertexInputDescriptor = {
+g.test('an arrayStride of 0 is valid', t => {
+  const vertexState: GPUVertexStateDescriptor = {
     vertexBuffers: [
       {
-        stride: 0,
-        attributeSet: [
+        arrayStride: 0,
+        attributes: [
           {
-            shaderLocation: 0,
             format: 'float',
+            offset: 0,
+            shaderLocation: 0,
           },
         ],
       },
@@ -221,99 +227,101 @@ g.test('a stride of 0 is valid', t => {
   };
   {
     // Works ok without attributes
-    const descriptor = t.getDescriptor(vertexInput, VERTEX_SHADER_CODE_WITH_NO_INPUT);
+    const descriptor = t.getDescriptor(vertexState, VERTEX_SHADER_CODE_WITH_NO_INPUT);
     t.device.createRenderPipeline(descriptor);
   }
   {
     // Works ok with attributes at a large-ish offset
-    vertexInput.vertexBuffers![0].attributeSet![0].offset = 128;
-    const descriptor = t.getDescriptor(vertexInput, VERTEX_SHADER_CODE_WITH_NO_INPUT);
+    vertexState.vertexBuffers![0].attributes![0].offset = 128;
+    const descriptor = t.getDescriptor(vertexState, VERTEX_SHADER_CODE_WITH_NO_INPUT);
     t.device.createRenderPipeline(descriptor);
   }
 });
 
-g.test('offset should be within vertex buffer stride if stride is not zero', async t => {
-  const vertexInput: GPUVertexInputDescriptor = {
+g.test('offset should be within vertex buffer arrayStride if arrayStride is not zero', async t => {
+  const vertexState: GPUVertexStateDescriptor = {
     vertexBuffers: [
       {
-        stride: 2 * Float32Array.BYTES_PER_ELEMENT,
-        attributeSet: [
+        arrayStride: 2 * Float32Array.BYTES_PER_ELEMENT,
+        attributes: [
           {
-            shaderLocation: 0,
             format: 'float',
+            offset: 0,
+            shaderLocation: 0,
           },
           {
+            format: 'float',
             offset: Float32Array.BYTES_PER_ELEMENT,
             shaderLocation: 1,
-            format: 'float',
           },
         ],
       },
     ],
   };
   {
-    // Control case, setting correct stride and offset
-    const descriptor = t.getDescriptor(vertexInput, VERTEX_SHADER_CODE_WITH_NO_INPUT);
+    // Control case, setting correct arrayStride and offset
+    const descriptor = t.getDescriptor(vertexState, VERTEX_SHADER_CODE_WITH_NO_INPUT);
     t.device.createRenderPipeline(descriptor);
   }
   {
-    // Test vertex attribute offset exceed vertex buffer stride range
-    const badVertexInput = clone(vertexInput);
-    badVertexInput.vertexBuffers![0].attributeSet[1].format = 'float2';
-    const descriptor = t.getDescriptor(badVertexInput, VERTEX_SHADER_CODE_WITH_NO_INPUT);
+    // Test vertex attribute offset exceed vertex buffer arrayStride range
+    const badVertexState = clone(vertexState);
+    badVertexState.vertexBuffers![0].attributes[1].format = 'float2';
+    const descriptor = t.getDescriptor(badVertexState, VERTEX_SHADER_CODE_WITH_NO_INPUT);
 
     t.expectValidationError(() => {
       t.device.createRenderPipeline(descriptor);
     });
   }
   {
-    // Test vertex attribute offset exceed vertex buffer stride range
-    const badVertexInput = clone(vertexInput);
-    badVertexInput.vertexBuffers![0].stride = Float32Array.BYTES_PER_ELEMENT;
-    const descriptor = t.getDescriptor(badVertexInput, VERTEX_SHADER_CODE_WITH_NO_INPUT);
+    // Test vertex attribute offset exceed vertex buffer arrayStride range
+    const badVertexState = clone(vertexState);
+    badVertexState.vertexBuffers![0].arrayStride = Float32Array.BYTES_PER_ELEMENT;
+    const descriptor = t.getDescriptor(badVertexState, VERTEX_SHADER_CODE_WITH_NO_INPUT);
 
     t.expectValidationError(() => {
       t.device.createRenderPipeline(descriptor);
     });
   }
   {
-    // It's OK if stride is zero
-    const goodVertexInput = clone(vertexInput);
-    goodVertexInput.vertexBuffers![0].stride = 0;
-    const descriptor = t.getDescriptor(goodVertexInput, VERTEX_SHADER_CODE_WITH_NO_INPUT);
+    // It's OK if arrayStride is zero
+    const goodVertexState = clone(vertexState);
+    goodVertexState.vertexBuffers![0].arrayStride = 0;
+    const descriptor = t.getDescriptor(goodVertexState, VERTEX_SHADER_CODE_WITH_NO_INPUT);
     t.device.createRenderPipeline(descriptor);
   }
 });
 
 g.test('check two attributes overlapping', async t => {
-  const vertexInput: GPUVertexInputDescriptor = {
+  const vertexState: GPUVertexStateDescriptor = {
     vertexBuffers: [
       {
-        stride: 2 * Float32Array.BYTES_PER_ELEMENT,
-        attributeSet: [
+        arrayStride: 2 * Float32Array.BYTES_PER_ELEMENT,
+        attributes: [
           {
-            shaderLocation: 0,
             format: 'float',
+            offset: 0,
+            shaderLocation: 0,
           },
           {
+            format: 'float',
             offset: Float32Array.BYTES_PER_ELEMENT,
             shaderLocation: 1,
-            format: 'float',
           },
         ],
       },
     ],
   };
   {
-    // Control case, setting correct stride and offset
-    const descriptor = t.getDescriptor(vertexInput, VERTEX_SHADER_CODE_WITH_NO_INPUT);
+    // Control case, setting correct arrayStride and offset
+    const descriptor = t.getDescriptor(vertexState, VERTEX_SHADER_CODE_WITH_NO_INPUT);
     t.device.createRenderPipeline(descriptor);
   }
   {
     // Test two attributes overlapping
-    const badVertexInput = clone(vertexInput);
-    badVertexInput.vertexBuffers![0].attributeSet[0].format = 'int2';
-    const descriptor = t.getDescriptor(badVertexInput, VERTEX_SHADER_CODE_WITH_NO_INPUT);
+    const badVertexState = clone(vertexState);
+    badVertexState.vertexBuffers![0].attributes[0].format = 'int2';
+    const descriptor = t.getDescriptor(badVertexState, VERTEX_SHADER_CODE_WITH_NO_INPUT);
 
     t.expectValidationError(() => {
       t.device.createRenderPipeline(descriptor);
@@ -322,42 +330,44 @@ g.test('check two attributes overlapping', async t => {
 });
 
 g.test('check out of bounds condition on total number of vertex buffers', async t => {
-  const vertexBuffers: GPUVertexBufferDescriptor[] = [];
+  const vertexBuffers: GPUVertexBufferLayoutDescriptor[] = [];
 
   for (let i = 0; i < MAX_VERTEX_BUFFERS; i++) {
     vertexBuffers.push({
-      stride: 0,
-      attributeSet: [
+      arrayStride: 0,
+      attributes: [
         {
-          shaderLocation: i,
           format: 'float',
+          offset: 0,
+          shaderLocation: i,
         },
       ],
     });
   }
   {
     // Control case, setting max vertex buffer number
-    const vertexInput: GPUVertexInputDescriptor = { vertexBuffers };
-    const descriptor = t.getDescriptor(vertexInput, VERTEX_SHADER_CODE_WITH_NO_INPUT);
+    const vertexState: GPUVertexStateDescriptor = { vertexBuffers };
+    const descriptor = t.getDescriptor(vertexState, VERTEX_SHADER_CODE_WITH_NO_INPUT);
     t.device.createRenderPipeline(descriptor);
   }
   {
     // Test vertex buffer number exceed the limit
-    const vertexInput: GPUVertexInputDescriptor = {
+    const vertexState: GPUVertexStateDescriptor = {
       vertexBuffers: [
         ...vertexBuffers,
         {
-          stride: 0,
-          attributeSet: [
+          arrayStride: 0,
+          attributes: [
             {
-              shaderLocation: MAX_VERTEX_BUFFERS,
               format: 'float',
+              offset: 0,
+              shaderLocation: MAX_VERTEX_BUFFERS,
             },
           ],
         },
       ],
     };
-    const descriptor = t.getDescriptor(vertexInput, VERTEX_SHADER_CODE_WITH_NO_INPUT);
+    const descriptor = t.getDescriptor(vertexState, VERTEX_SHADER_CODE_WITH_NO_INPUT);
 
     t.expectValidationError(() => {
       t.device.createRenderPipeline(descriptor);
@@ -370,40 +380,42 @@ g.test('check out of bounds on number of vertex attributes on a single vertex bu
 
   for (let i = 0; i < MAX_VERTEX_ATTRIBUTES; i++) {
     vertexAttributes.push({
-      shaderLocation: i,
       format: 'float',
+      offset: 0,
+      shaderLocation: i,
     });
   }
   {
     // Control case, setting max vertex buffer number
-    const vertexInput: GPUVertexInputDescriptor = {
+    const vertexState: GPUVertexStateDescriptor = {
       vertexBuffers: [
         {
-          stride: 0,
-          attributeSet: vertexAttributes,
+          arrayStride: 0,
+          attributes: vertexAttributes,
         },
       ],
     };
-    const descriptor = t.getDescriptor(vertexInput, VERTEX_SHADER_CODE_WITH_NO_INPUT);
+    const descriptor = t.getDescriptor(vertexState, VERTEX_SHADER_CODE_WITH_NO_INPUT);
     t.device.createRenderPipeline(descriptor);
   }
   {
     // Test vertex attribute number exceed the limit
-    const vertexInput: GPUVertexInputDescriptor = {
+    const vertexState: GPUVertexStateDescriptor = {
       vertexBuffers: [
         {
-          stride: 0,
-          attributeSet: [
+          arrayStride: 0,
+          attributes: [
             ...vertexAttributes,
             {
-              shaderLocation: MAX_VERTEX_ATTRIBUTES,
               format: 'float',
+              offset: 0,
+              shaderLocation: MAX_VERTEX_ATTRIBUTES,
             },
           ],
         },
       ],
     };
-    const descriptor = t.getDescriptor(vertexInput, VERTEX_SHADER_CODE_WITH_NO_INPUT);
+    const descriptor = t.getDescriptor(vertexState, VERTEX_SHADER_CODE_WITH_NO_INPUT);
 
     t.expectValidationError(() => {
       t.device.createRenderPipeline(descriptor);
@@ -412,14 +424,15 @@ g.test('check out of bounds on number of vertex attributes on a single vertex bu
 });
 
 g.test('check out of bounds on number of vertex attributes across vertex buffers', async t => {
-  const vertexBuffers: GPUVertexBufferDescriptor[] = [];
+  const vertexBuffers: GPUVertexBufferLayoutDescriptor[] = [];
   for (let i = 0; i < MAX_VERTEX_ATTRIBUTES; i++) {
     vertexBuffers.push({
-      stride: 0,
-      attributeSet: [
+      arrayStride: 0,
+      attributes: [
         {
-          shaderLocation: i,
           format: 'float',
+          offset: 0,
+          shaderLocation: i,
         },
       ],
     });
@@ -427,18 +440,19 @@ g.test('check out of bounds on number of vertex attributes across vertex buffers
 
   {
     // Control case, setting max vertex buffer number
-    const vertexInput: GPUVertexInputDescriptor = { vertexBuffers };
-    const descriptor = t.getDescriptor(vertexInput, VERTEX_SHADER_CODE_WITH_NO_INPUT);
+    const vertexState: GPUVertexStateDescriptor = { vertexBuffers };
+    const descriptor = t.getDescriptor(vertexState, VERTEX_SHADER_CODE_WITH_NO_INPUT);
     t.device.createRenderPipeline(descriptor);
   }
   {
     // Test vertex attribute number exceed the limit
-    vertexBuffers[MAX_VERTEX_ATTRIBUTES - 1].attributeSet.push({
-      shaderLocation: MAX_VERTEX_ATTRIBUTES,
+    vertexBuffers[MAX_VERTEX_ATTRIBUTES - 1].attributes.push({
       format: 'float',
+      offset: 0,
+      shaderLocation: MAX_VERTEX_ATTRIBUTES,
     });
-    const vertexInput: GPUVertexInputDescriptor = { vertexBuffers };
-    const descriptor = t.getDescriptor(vertexInput, VERTEX_SHADER_CODE_WITH_NO_INPUT);
+    const vertexState: GPUVertexStateDescriptor = { vertexBuffers };
+    const descriptor = t.getDescriptor(vertexState, VERTEX_SHADER_CODE_WITH_NO_INPUT);
 
     t.expectValidationError(() => {
       t.device.createRenderPipeline(descriptor);
@@ -447,23 +461,23 @@ g.test('check out of bounds on number of vertex attributes across vertex buffers
 });
 
 g.test('check out of bounds condition on input strides', async t => {
-  const vertexInput: GPUVertexInputDescriptor = {
+  const vertexState: GPUVertexStateDescriptor = {
     vertexBuffers: [
       {
-        stride: MAX_VERTEX_BUFFER_STRIDE,
-        attributeSet: [],
+        arrayStride: MAX_VERTEX_BUFFER_ARRAY_STRIDE,
+        attributes: [],
       },
     ],
   };
   {
-    // Control case, setting max input stride
-    const descriptor = t.getDescriptor(vertexInput, VERTEX_SHADER_CODE_WITH_NO_INPUT);
+    // Control case, setting max input arrayStride
+    const descriptor = t.getDescriptor(vertexState, VERTEX_SHADER_CODE_WITH_NO_INPUT);
     t.device.createRenderPipeline(descriptor);
   }
   {
-    // Test input stride OOB
-    vertexInput.vertexBuffers![0].stride = MAX_VERTEX_BUFFER_STRIDE + 4;
-    const descriptor = t.getDescriptor(vertexInput, VERTEX_SHADER_CODE_WITH_NO_INPUT);
+    // Test input arrayStride OOB
+    vertexState.vertexBuffers![0].arrayStride = MAX_VERTEX_BUFFER_ARRAY_STRIDE + 4;
+    const descriptor = t.getDescriptor(vertexState, VERTEX_SHADER_CODE_WITH_NO_INPUT);
 
     t.expectValidationError(() => {
       t.device.createRenderPipeline(descriptor);
@@ -471,29 +485,30 @@ g.test('check out of bounds condition on input strides', async t => {
   }
 });
 
-g.test('check multiple of 4 bytes constraint on input stride', async t => {
-  const vertexInput: GPUVertexInputDescriptor = {
+g.test('check multiple of 4 bytes constraint on input arrayStride', async t => {
+  const vertexState: GPUVertexStateDescriptor = {
     vertexBuffers: [
       {
-        stride: 4,
-        attributeSet: [
+        arrayStride: 4,
+        attributes: [
           {
-            shaderLocation: 0,
             format: 'uchar2',
+            offset: 0,
+            shaderLocation: 0,
           },
         ],
       },
     ],
   };
   {
-    // Control case, setting input stride 4 bytes
-    const descriptor = t.getDescriptor(vertexInput, VERTEX_SHADER_CODE_WITH_NO_INPUT);
+    // Control case, setting input arrayStride 4 bytes
+    const descriptor = t.getDescriptor(vertexState, VERTEX_SHADER_CODE_WITH_NO_INPUT);
     t.device.createRenderPipeline(descriptor);
   }
   {
-    // Test input stride not multiple of 4 bytes
-    vertexInput.vertexBuffers![0].stride = 2;
-    const descriptor = t.getDescriptor(vertexInput, VERTEX_SHADER_CODE_WITH_NO_INPUT);
+    // Test input arrayStride not multiple of 4 bytes
+    vertexState.vertexBuffers![0].arrayStride = 2;
+    const descriptor = t.getDescriptor(vertexState, VERTEX_SHADER_CODE_WITH_NO_INPUT);
 
     t.expectValidationError(() => {
       t.device.createRenderPipeline(descriptor);
@@ -502,14 +517,15 @@ g.test('check multiple of 4 bytes constraint on input stride', async t => {
 });
 
 g.test('identical duplicate attributes are invalid', async t => {
-  const vertexInput: GPUVertexInputDescriptor = {
+  const vertexState: GPUVertexStateDescriptor = {
     vertexBuffers: [
       {
-        stride: 0,
-        attributeSet: [
+        arrayStride: 0,
+        attributes: [
           {
-            shaderLocation: 0,
             format: 'float',
+            offset: 0,
+            shaderLocation: 0,
           },
         ],
       },
@@ -517,16 +533,17 @@ g.test('identical duplicate attributes are invalid', async t => {
   };
   {
     // Control case, setting attribute 0
-    const descriptor = t.getDescriptor(vertexInput, VERTEX_SHADER_CODE_WITH_NO_INPUT);
+    const descriptor = t.getDescriptor(vertexState, VERTEX_SHADER_CODE_WITH_NO_INPUT);
     t.device.createRenderPipeline(descriptor);
   }
   {
     // Oh no, attribute 0 is set twice
-    vertexInput.vertexBuffers![0].attributeSet.push({
-      shaderLocation: 0,
+    vertexState.vertexBuffers![0].attributes.push({
       format: 'float',
+      offset: 0,
+      shaderLocation: 0,
     });
-    const descriptor = t.getDescriptor(vertexInput, VERTEX_SHADER_CODE_WITH_NO_INPUT);
+    const descriptor = t.getDescriptor(vertexState, VERTEX_SHADER_CODE_WITH_NO_INPUT);
 
     t.expectValidationError(() => {
       t.device.createRenderPipeline(descriptor);
@@ -536,19 +553,20 @@ g.test('identical duplicate attributes are invalid', async t => {
 
 g.test('we cannot set same shader location', async t => {
   {
-    const vertexInput: GPUVertexInputDescriptor = {
+    const vertexState: GPUVertexStateDescriptor = {
       vertexBuffers: [
         {
-          stride: 0,
-          attributeSet: [
+          arrayStride: 0,
+          attributes: [
             {
-              shaderLocation: 0,
               format: 'float',
+              offset: 0,
+              shaderLocation: 0,
             },
             {
+              format: 'float',
               offset: Float32Array.BYTES_PER_ELEMENT,
               shaderLocation: 1,
-              format: 'float',
             },
           ],
         },
@@ -556,13 +574,13 @@ g.test('we cannot set same shader location', async t => {
     };
     {
       // Control case, setting different shader locations in two attributes
-      const descriptor = t.getDescriptor(vertexInput, VERTEX_SHADER_CODE_WITH_NO_INPUT);
+      const descriptor = t.getDescriptor(vertexState, VERTEX_SHADER_CODE_WITH_NO_INPUT);
       t.device.createRenderPipeline(descriptor);
     }
     {
       // Test same shader location in two attributes in the same buffer
-      vertexInput.vertexBuffers![0].attributeSet![1].shaderLocation = 0;
-      const descriptor = t.getDescriptor(vertexInput, VERTEX_SHADER_CODE_WITH_NO_INPUT);
+      vertexState.vertexBuffers![0].attributes![1].shaderLocation = 0;
+      const descriptor = t.getDescriptor(vertexState, VERTEX_SHADER_CODE_WITH_NO_INPUT);
 
       t.expectValidationError(() => {
         t.device.createRenderPipeline(descriptor);
@@ -570,30 +588,32 @@ g.test('we cannot set same shader location', async t => {
     }
   }
   {
-    const vertexInput: GPUVertexInputDescriptor = {
+    const vertexState: GPUVertexStateDescriptor = {
       vertexBuffers: [
         {
-          stride: 0,
-          attributeSet: [
+          arrayStride: 0,
+          attributes: [
             {
-              shaderLocation: 0,
               format: 'float',
+              offset: 0,
+              shaderLocation: 0,
             },
           ],
         },
         {
-          stride: 0,
-          attributeSet: [
+          arrayStride: 0,
+          attributes: [
             {
-              shaderLocation: 0,
               format: 'float',
+              offset: 0,
+              shaderLocation: 0,
             },
           ],
         },
       ],
     };
     // Test same shader location in two attributes in different buffers
-    const descriptor = t.getDescriptor(vertexInput, VERTEX_SHADER_CODE_WITH_NO_INPUT);
+    const descriptor = t.getDescriptor(vertexState, VERTEX_SHADER_CODE_WITH_NO_INPUT);
 
     t.expectValidationError(() => {
       t.device.createRenderPipeline(descriptor);
@@ -602,14 +622,15 @@ g.test('we cannot set same shader location', async t => {
 });
 
 g.test('check out of bounds condition on attribute shader location', async t => {
-  const vertexInput: GPUVertexInputDescriptor = {
+  const vertexState: GPUVertexStateDescriptor = {
     vertexBuffers: [
       {
-        stride: 0,
-        attributeSet: [
+        arrayStride: 0,
+        attributes: [
           {
-            shaderLocation: MAX_VERTEX_ATTRIBUTES - 1,
             format: 'float',
+            offset: 0,
+            shaderLocation: MAX_VERTEX_ATTRIBUTES - 1,
           },
         ],
       },
@@ -617,13 +638,13 @@ g.test('check out of bounds condition on attribute shader location', async t => 
   };
   {
     // Control case, setting last attribute shader location
-    const descriptor = t.getDescriptor(vertexInput, VERTEX_SHADER_CODE_WITH_NO_INPUT);
+    const descriptor = t.getDescriptor(vertexState, VERTEX_SHADER_CODE_WITH_NO_INPUT);
     t.device.createRenderPipeline(descriptor);
   }
   {
     // Test attribute location OOB
-    vertexInput.vertexBuffers![0].attributeSet![0].shaderLocation = MAX_VERTEX_ATTRIBUTES;
-    const descriptor = t.getDescriptor(vertexInput, VERTEX_SHADER_CODE_WITH_NO_INPUT);
+    vertexState.vertexBuffers![0].attributes![0].shaderLocation = MAX_VERTEX_ATTRIBUTES;
+    const descriptor = t.getDescriptor(vertexState, VERTEX_SHADER_CODE_WITH_NO_INPUT);
 
     t.expectValidationError(() => {
       t.device.createRenderPipeline(descriptor);
@@ -632,15 +653,15 @@ g.test('check out of bounds condition on attribute shader location', async t => 
 });
 
 g.test('check attribute offset out of bounds', async t => {
-  const vertexInput: GPUVertexInputDescriptor = {
+  const vertexState: GPUVertexStateDescriptor = {
     vertexBuffers: [
       {
-        stride: 0,
-        attributeSet: [
+        arrayStride: 0,
+        attributes: [
           {
+            format: 'float2',
             offset: MAX_VERTEX_BUFFER_END - 2 * Float32Array.BYTES_PER_ELEMENT,
             shaderLocation: 0,
-            format: 'float2',
           },
         ],
       },
@@ -648,19 +669,19 @@ g.test('check attribute offset out of bounds', async t => {
   };
   {
     // Control case, setting max attribute offset to MAX_VERTEX_BUFFER_END - 8
-    const descriptor = t.getDescriptor(vertexInput, VERTEX_SHADER_CODE_WITH_NO_INPUT);
+    const descriptor = t.getDescriptor(vertexState, VERTEX_SHADER_CODE_WITH_NO_INPUT);
     t.device.createRenderPipeline(descriptor);
   }
   {
     // Control case, setting attribute offset to 8
-    vertexInput.vertexBuffers![0].attributeSet![0].offset = 8;
-    const descriptor = t.getDescriptor(vertexInput, VERTEX_SHADER_CODE_WITH_NO_INPUT);
+    vertexState.vertexBuffers![0].attributes![0].offset = 8;
+    const descriptor = t.getDescriptor(vertexState, VERTEX_SHADER_CODE_WITH_NO_INPUT);
     t.device.createRenderPipeline(descriptor);
   }
   {
     // Test attribute offset out of bounds
-    vertexInput.vertexBuffers![0].attributeSet![0].offset = MAX_VERTEX_BUFFER_END - 4;
-    const descriptor = t.getDescriptor(vertexInput, VERTEX_SHADER_CODE_WITH_NO_INPUT);
+    vertexState.vertexBuffers![0].attributes![0].offset = MAX_VERTEX_BUFFER_END - 4;
+    const descriptor = t.getDescriptor(vertexState, VERTEX_SHADER_CODE_WITH_NO_INPUT);
 
     t.expectValidationError(() => {
       t.device.createRenderPipeline(descriptor);
@@ -669,15 +690,15 @@ g.test('check attribute offset out of bounds', async t => {
 });
 
 g.test('check multiple of 4 bytes constraint on offset', async t => {
-  const vertexInput: GPUVertexInputDescriptor = {
+  const vertexState: GPUVertexStateDescriptor = {
     vertexBuffers: [
       {
-        stride: 0,
-        attributeSet: [
+        arrayStride: 0,
+        attributes: [
           {
+            format: 'float',
             offset: Float32Array.BYTES_PER_ELEMENT,
             shaderLocation: 0,
-            format: 'float',
           },
         ],
       },
@@ -685,23 +706,23 @@ g.test('check multiple of 4 bytes constraint on offset', async t => {
   };
   {
     // Control case, setting offset 4 bytes
-    const descriptor = t.getDescriptor(vertexInput, VERTEX_SHADER_CODE_WITH_NO_INPUT);
+    const descriptor = t.getDescriptor(vertexState, VERTEX_SHADER_CODE_WITH_NO_INPUT);
     t.device.createRenderPipeline(descriptor);
   }
   {
     // Test offset of 2 bytes with uchar2 format
-    vertexInput.vertexBuffers![0].attributeSet![0].offset = 2;
-    vertexInput.vertexBuffers![0].attributeSet![0].format = 'uchar2';
-    const descriptor = t.getDescriptor(vertexInput, VERTEX_SHADER_CODE_WITH_NO_INPUT);
+    vertexState.vertexBuffers![0].attributes![0].offset = 2;
+    vertexState.vertexBuffers![0].attributes![0].format = 'uchar2';
+    const descriptor = t.getDescriptor(vertexState, VERTEX_SHADER_CODE_WITH_NO_INPUT);
     t.expectValidationError(() => {
       t.device.createRenderPipeline(descriptor);
     });
   }
   {
     // Test offset of 2 bytes with float format
-    vertexInput.vertexBuffers![0].attributeSet![0].offset = 2;
-    vertexInput.vertexBuffers![0].attributeSet![0].format = 'float';
-    const descriptor = t.getDescriptor(vertexInput, VERTEX_SHADER_CODE_WITH_NO_INPUT);
+    vertexState.vertexBuffers![0].attributes![0].offset = 2;
+    vertexState.vertexBuffers![0].attributes![0].format = 'float';
+    const descriptor = t.getDescriptor(vertexState, VERTEX_SHADER_CODE_WITH_NO_INPUT);
 
     t.expectValidationError(() => {
       t.device.createRenderPipeline(descriptor);
@@ -710,21 +731,21 @@ g.test('check multiple of 4 bytes constraint on offset', async t => {
 });
 
 g.test('check attribute offset overflow', async t => {
-  const vertexInput: GPUVertexInputDescriptor = {
+  const vertexState: GPUVertexStateDescriptor = {
     vertexBuffers: [
       {
-        stride: 0,
-        attributeSet: [
+        arrayStride: 0,
+        attributes: [
           {
+            format: 'float',
             offset: Number.MAX_SAFE_INTEGER,
             shaderLocation: 0,
-            format: 'float',
           },
         ],
       },
     ],
   };
-  const descriptor = t.getDescriptor(vertexInput, VERTEX_SHADER_CODE_WITH_NO_INPUT);
+  const descriptor = t.getDescriptor(vertexState, VERTEX_SHADER_CODE_WITH_NO_INPUT);
 
   t.expectValidationError(() => {
     t.device.createRenderPipeline(descriptor);
