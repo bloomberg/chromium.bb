@@ -22016,6 +22016,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="TabGridSheet.UndoCloseTab">
+  <obsolete>Deprecated as of 11/2019. Sheet UI is no longer used.</obsolete>
   <owner>yusufo@chromium.org</owner>
   <owner>wychen@chromium.org</owner>
   <description>
