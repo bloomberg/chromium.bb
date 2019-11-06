@@ -86,9 +86,6 @@ struct GenericHashTraitsBase<false, T> {
     static const bool value = !std::is_pod<T>::value;
   };
 
-  static const WeakHandlingFlag kWeakHandlingFlag =
-      IsWeak<T>::value ? kWeakHandling : kNoWeakHandling;
-
   static constexpr bool kCanHaveDeletedValue = true;
 
   // The kHasMovingCallback value is only used for HashTable backing stores.
@@ -444,12 +441,6 @@ struct KeyValuePairHashTraits
         KeyTraits::template NeedsToForbidGCOnMove<>::value ||
         ValueTraits::template NeedsToForbidGCOnMove<>::value;
   };
-
-  static const WeakHandlingFlag kWeakHandlingFlag =
-      (KeyTraits::kWeakHandlingFlag == kWeakHandling ||
-       ValueTraits::kWeakHandlingFlag == kWeakHandling)
-          ? kWeakHandling
-          : kNoWeakHandling;
 
   static const unsigned kMinimumTableSize = KeyTraits::kMinimumTableSize;
 

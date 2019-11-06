@@ -51,6 +51,11 @@ enum WeakHandlingFlag {
   kWeakHandling,
 };
 
+template <typename T>
+inline constexpr WeakHandlingFlag GetWeakHandlingFlag() {
+  return WTF::IsWeak<T>::value ? kWeakHandling : kNoWeakHandling;
+}
+
 template <typename T, typename U>
 struct IsSubclass {
  private:

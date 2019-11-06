@@ -1987,7 +1987,7 @@ Vector<T, inlineCapacity, Allocator>::Trace(VisitorDispatcher visitor) {
     if (IsTraceableInCollectionTrait<VectorTraits<T>>::value) {
       for (const T* buffer_entry = buffer_begin; buffer_entry != buffer_end;
            buffer_entry++) {
-        Allocator::template Trace<VisitorDispatcher, T, VectorTraits<T>>(
+        Allocator::template Trace<T, VectorTraits<T>>(
             visitor, *const_cast<T*>(buffer_entry));
       }
       CheckUnusedSlots(Buffer() + size(), Buffer() + capacity());

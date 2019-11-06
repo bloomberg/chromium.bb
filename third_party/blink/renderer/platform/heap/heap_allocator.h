@@ -194,9 +194,9 @@ class PLATFORM_EXPORT HeapAllocator {
     return ThreadHeap::IsHeapObjectAlive(object);
   }
 
-  template <typename VisitorDispatcher, typename T, typename Traits>
-  static void Trace(VisitorDispatcher visitor, T& t) {
-    TraceCollectionIfEnabled<Traits::kWeakHandlingFlag, T, Traits>::Trace(
+  template <typename T, typename Traits>
+  static void Trace(blink::Visitor* visitor, T& t) {
+    TraceCollectionIfEnabled<WTF::GetWeakHandlingFlag<T>(), T, Traits>::Trace(
         visitor, &t);
   }
 
