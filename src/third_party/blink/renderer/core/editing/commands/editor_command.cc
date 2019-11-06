@@ -1789,6 +1789,16 @@ static const EditorInternalCommand* InternalCommand(
       {WebEditingCommandType::kAlignCenter, ExecuteJustifyCenter,
        SupportedFromMenuOrKeyBinding, EnabledInRichlyEditableText, StateNone,
        ValueStateOrNull, kNotTextInsertion, CanNotExecuteWhenDisabled},
+
+
+
+      // patch section: insert HTML nested
+
+
+      // patch section: indent-block/outdent-block
+
+
+
   };
   // Handles all commands except WebEditingCommandType::Invalid.
   static_assert(
