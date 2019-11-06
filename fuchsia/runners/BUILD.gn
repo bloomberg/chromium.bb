@@ -28,6 +28,20 @@ buildflag_header("buildflags") {
   visibility = [ ":*" ]
 }
 
+# TODO(https://crbug.com/1021844): Remove this hack once we have Vulkan
+# emulation available via AEMU.
+source_set("detect_vulkan_hack") {
+  sources = [
+    "common/detect_vulkan_hack.cc",
+    "common/detect_vulkan_hack.h",
+  ]
+  deps = [
+    "//gpu/vulkan",
+    "//third_party/fuchsia-sdk/sdk:web",
+  ]
+  visibility = [ ":*" ]
+}
+
 # Files common to both cast_runner and web_runner targets.
 source_set("common") {
   sources = [
@@ -92,6 +106,7 @@ executable("cast_runner_exe") {
     ":buildflags",
     ":cast_runner_core",
     ":common",
+    ":detect_vulkan_hack",
     "//base",
     "//fuchsia/base",
   ]
@@ -206,6 +221,7 @@ executable("web_runner_exe") {
   ]
   deps = [
     ":common",
+    ":detect_vulkan_hack",
     "//base",
     "//fuchsia/base",
   ]

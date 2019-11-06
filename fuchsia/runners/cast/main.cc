@@ -13,6 +13,7 @@
 #include "fuchsia/base/init_logging.h"
 #include "fuchsia/runners/buildflags.h"
 #include "fuchsia/runners/cast/cast_runner.h"
+#include "fuchsia/runners/common/detect_vulkan_hack.h"
 
 int main(int argc, char** argv) {
   base::SingleThreadTaskExecutor io_task_executor(base::MessagePumpType::IO);
@@ -30,6 +31,9 @@ int main(int argc, char** argv) {
       fuchsia::web::ContextFeatureFlags::VULKAN |
       fuchsia::web::ContextFeatureFlags::HARDWARE_VIDEO_DECODER |
       fuchsia::web::ContextFeatureFlags::WIDEVINE_CDM;
+
+  // Vulkan is not currently available in our integration test environment.
+  DisableVulkanIfUnavailable(&features);
 
   if (!BUILDFLAG(ENABLE_SOFTWARE_VIDEO_DECODERS))
     features |= fuchsia::web::ContextFeatureFlags::HARDWARE_VIDEO_DECODER_ONLY;

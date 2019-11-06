@@ -247,14 +247,20 @@ void ContextProviderImpl::Create(
   }
 
   if (enable_vulkan) {
+    DLOG(ERROR) << "Enabling Vulkan GPU acceleration.";
     launch_command.AppendSwitch(switches::kUseVulkan);
     launch_command.AppendSwitchASCII(switches::kEnableFeatures,
                                      features::kUseSkiaRenderer.name);
     launch_command.AppendSwitch(switches::kEnableOopRasterization);
+    launch_command.AppendSwitch(switches::kDisableSoftwareRasterizer);
     launch_command.AppendSwitchASCII(switches::kUseGL,
                                      gl::kGLImplementationStubName);
     launch_command.AppendSwitchASCII(switches::kGrContextType,
                                      switches::kGrContextTypeVulkan);
+  } else {
+    DLOG(ERROR) << "Disabling GPU acceleration.";
+    launch_command.AppendSwitch(switches::kDisableGpu);
+    launch_command.AppendSwitch(switches::kDisableSoftwareRasterizer);
   }
 
   if (enable_widevine) {
