@@ -245,16 +245,8 @@ void ContentSettingsAgentImpl::OnContentSettingsAgentRequest(
 }
 
 bool ContentSettingsAgentImpl::AllowDatabase() {
-  WebLocalFrame* frame = render_frame()->GetWebFrame();
-  if (IsUniqueFrame(frame))
-    return false;
-
-  bool result = false;
-  content_settings_manager_->AllowStorageAccess(
-      chrome::mojom::ContentSettingsManager::StorageType::DATABASE,
-      frame->GetSecurityOrigin(), frame->GetDocument().SiteForCookies(),
-      frame->GetDocument().TopFrameOrigin(), &result);
-  return result;
+  return AllowStorageAccess(
+      chrome::mojom::ContentSettingsManager::StorageType::DATABASE);
 }
 
 void ContentSettingsAgentImpl::RequestFileSystemAccessAsync(
@@ -293,29 +285,18 @@ bool ContentSettingsAgentImpl::AllowImage(bool enabled_per_settings,
 }
 
 bool ContentSettingsAgentImpl::AllowIndexedDB() {
-  WebLocalFrame* frame = render_frame()->GetWebFrame();
-  if (IsUniqueFrame(frame))
-    return false;
-
-  bool result = false;
-  content_settings_manager_->AllowStorageAccess(
-      chrome::mojom::ContentSettingsManager::StorageType::INDEXED_DB,
-      frame->GetSecurityOrigin(), frame->GetDocument().SiteForCookies(),
-      frame->GetDocument().TopFrameOrigin(), &result);
-  return result;
+  return AllowStorageAccess(
+      chrome::mojom::ContentSettingsManager::StorageType::INDEXED_DB);
 }
 
 bool ContentSettingsAgentImpl::AllowCacheStorage() {
-  WebLocalFrame* frame = render_frame()->GetWebFrame();
-  if (IsUniqueFrame(frame))
-    return false;
+  return AllowStorageAccess(
+      chrome::mojom::ContentSettingsManager::StorageType::CACHE);
+}
 
-  bool result = false;
-  content_settings_manager_->AllowStorageAccess(
-      chrome::mojom::ContentSettingsManager::StorageType::CACHE,
-      frame->GetSecurityOrigin(), frame->GetDocument().SiteForCookies(),
-      frame->GetDocument().TopFrameOrigin(), &result);
-  return result;
+bool ContentSettingsAgentImpl::AllowWebLocks() {
+  return AllowStorageAccess(
+      chrome::mojom::ContentSettingsManager::StorageType::WEB_LOCKS);
 }
 
 bool ContentSettingsAgentImpl::AllowScript(bool enabled_per_settings) {
@@ -634,4 +615,18 @@ bool ContentSettingsAgentImpl::IsWhitelistedForContentSettings(
     return GURL(document_url).ExtractFileName().empty();
   }
   return false;
+}
+
+bool ContentSettingsAgentImpl::AllowStorageAccess(
+    chrome::mojom::ContentSettingsManager::StorageType storage_type) {
+  WebLocalFrame* frame = render_frame()->GetWebFrame();
+  if (IsUniqueFrame(frame))
+    return false;
+
+  bool result = false;
+  content_settings_manager_->AllowStorageAccess(
+      storage_type, frame->GetSecurityOrigin(),
+      frame->GetDocument().SiteForCookies(),
+      frame->GetDocument().TopFrameOrigin(), &result);
+  return result;
 }

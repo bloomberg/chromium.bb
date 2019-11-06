@@ -2526,6 +2526,15 @@ bool ChromeContentBrowserClient::AllowWorkerCacheStorage(
   return allow;
 }
 
+bool ChromeContentBrowserClient::AllowWorkerWebLocks(
+    const GURL& url,
+    content::BrowserContext* browser_context,
+    const std::vector<content::GlobalFrameRoutingId>& render_frames) {
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  auto cookie_settings = CookieSettingsFactory::GetForProfile(profile);
+  return cookie_settings->IsCookieAccessAllowed(url, url);
+}
+
 ChromeContentBrowserClient::AllowWebBluetoothResult
 ChromeContentBrowserClient::AllowWebBluetooth(
     content::BrowserContext* browser_context,

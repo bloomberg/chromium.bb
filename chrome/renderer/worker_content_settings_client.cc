@@ -70,6 +70,11 @@ bool WorkerContentSettingsClient::AllowCacheStorage() {
       chrome::mojom::ContentSettingsManager::StorageType::CACHE);
 }
 
+bool WorkerContentSettingsClient::AllowWebLocks() {
+  return AllowStorageAccess(
+      chrome::mojom::ContentSettingsManager::StorageType::WEB_LOCKS);
+}
+
 bool WorkerContentSettingsClient::AllowRunningInsecureContent(
     bool allowed_per_settings,
     const blink::WebURL& url) {
