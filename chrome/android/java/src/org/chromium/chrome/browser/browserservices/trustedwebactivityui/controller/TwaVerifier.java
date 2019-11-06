@@ -23,10 +23,10 @@ import javax.inject.Inject;
 import androidx.browser.customtabs.CustomTabsService;
 
 /**
- * Provides Trusted Web Activity specific behaviour for the {@link Verifier}.
+ * Provides Trusted Web Activity specific behaviour for the {@link CurrentPageVerifier}.
  */
 @ActivityScope
-public class TwaVerifierDelegate implements VerifierDelegate, Destroyable {
+public class TwaVerifier implements Verifier, Destroyable {
     /** The Digital Asset Link relationship used for Trusted Web Activities. */
     private static final int RELATIONSHIP = CustomTabsService.RELATION_HANDLE_ALL_URLS;
 
@@ -37,7 +37,7 @@ public class TwaVerifierDelegate implements VerifierDelegate, Destroyable {
     private Set<Origin> mOriginsPendingVerification;
 
     @Inject
-    public TwaVerifierDelegate(
+    public TwaVerifier(
             ActivityLifecycleDispatcher lifecycleDispatcher,
             CustomTabIntentDataProvider intentDataProvider,
             OriginVerifier.Factory originVerifierFactory,

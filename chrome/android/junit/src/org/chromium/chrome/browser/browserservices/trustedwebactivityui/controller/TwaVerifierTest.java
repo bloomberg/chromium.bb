@@ -42,12 +42,12 @@ import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import java.util.Collections;
 
 /**
- * Tests for {@link TwaVerifierDelegate}.
+ * Tests for {@link TwaVerifier}.
  */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 @DisableFeatures(ChromeFeatureList.TRUSTED_WEB_ACTIVITY_POST_MESSAGE)
-public class TwaVerifierDelegateTest {
+public class TwaVerifierTest {
     private static final String INITIAL_URL = "https://www.initialurl.com/page.html";
     private static final String ADDITIONAL_ORIGIN = "https://www.otherverifiedorigin.com";
     private static final String OTHER_URL = "https://www.notverifiedurl.com/page2.html";
@@ -62,7 +62,7 @@ public class TwaVerifierDelegateTest {
     @Mock CustomTabActivityTabProvider mActivityTabProvider;
     @Mock ClientPackageNameProvider mClientPackageNameProvider;
 
-    private TwaVerifierDelegate mDelegate;
+    private TwaVerifier mDelegate;
 
     @Before
     public void setUp() {
@@ -77,7 +77,7 @@ public class TwaVerifierDelegateTest {
 
         when(mClientPackageNameProvider.get()).thenReturn("some.package.name");
 
-        mDelegate = new TwaVerifierDelegate(mLifecycleDispatcher, mIntentDataProvider,
+        mDelegate = new TwaVerifier(mLifecycleDispatcher, mIntentDataProvider,
                 mOriginVerifierFactory, mActivityTabProvider, mClientPackageNameProvider);
     }
 

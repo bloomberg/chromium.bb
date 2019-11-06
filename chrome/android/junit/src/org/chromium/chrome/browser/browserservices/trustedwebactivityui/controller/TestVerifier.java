@@ -13,9 +13,9 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * A {@link VerifierDelegate} for testing.
+ * A {@link Verifier} for testing.
  */
-class TestVerifierDelegate implements VerifierDelegate {
+class TestVerifier implements Verifier {
     private final Set<Origin> mPreviouslyVerifiedOrigins = new HashSet<>();
     private final Map<Origin, Promise<Boolean>> mPendingVerifications = new HashMap<>();
 
