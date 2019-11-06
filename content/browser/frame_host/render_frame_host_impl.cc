@@ -3719,13 +3719,13 @@ void RenderFrameHostImpl::EvictFromBackForwardCache() {
 
 void RenderFrameHostImpl::EvictFromBackForwardCacheWithReason(
     BackForwardCacheMetrics::NotRestoredReason reason) {
-  BackForwardCacheMetrics::NotRestoredReasons reasons;
-  reasons.set(static_cast<size_t>(reason));
-  EvictFromBackForwardCacheWithReasons(reasons);
+  BackForwardCacheCanStoreDocumentResult can_store;
+  can_store.No(reason);
+  EvictFromBackForwardCacheWithReasons(can_store);
 }
 
 void RenderFrameHostImpl::EvictFromBackForwardCacheWithReasons(
-    const BackForwardCacheMetrics::NotRestoredReasons& reasons) {
+    const BackForwardCacheCanStoreDocumentResult& can_store) {
   DCHECK(IsBackForwardCacheEnabled());
 
   if (is_evicted_from_back_forward_cache_)
@@ -3742,10 +3742,8 @@ void RenderFrameHostImpl::EvictFromBackForwardCacheWithReasons(
   // TODO(hajimehoshi): Record the 'race condition' by JavaScript execution when
   // |is_in_back_forward_cache()| is false.
   BackForwardCacheMetrics* metrics = top_document->GetBackForwardCacheMetrics();
-  if (is_in_back_forward_cache() && metrics) {
-    BackForwardCacheCanStoreDocumentResult can_store(reasons);
+  if (is_in_back_forward_cache() && metrics)
     metrics->MarkNotRestoredWithReason(can_store);
-  }
 
   if (!in_back_forward_cache) {
     BackForwardCacheMetrics::RecordEvictedAfterDocumentRestored(
@@ -7872,9 +7870,7 @@ void RenderFrameHostImpl::MaybeEvictFromBackForwardCache() {
   if (can_store)
     return;
 
-  // TODO(hajimehoshi): Pass and record the other information of |can_store|
-  // like blocklisted features.
-  EvictFromBackForwardCacheWithReasons(can_store.not_stored_reasons());
+  EvictFromBackForwardCacheWithReasons(can_store);
 }
 
 void RenderFrameHostImpl::LogCannotCommitOriginCrashKeys(

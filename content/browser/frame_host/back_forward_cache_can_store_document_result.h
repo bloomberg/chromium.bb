@@ -21,8 +21,6 @@ class BackForwardCacheCanStoreDocumentResult {
                   1ul>;
 
   BackForwardCacheCanStoreDocumentResult();
-  BackForwardCacheCanStoreDocumentResult(const NotStoredReasons& reasons);
-
   BackForwardCacheCanStoreDocumentResult(
       BackForwardCacheCanStoreDocumentResult&&);
   BackForwardCacheCanStoreDocumentResult& operator=(

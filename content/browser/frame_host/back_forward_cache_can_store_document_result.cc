@@ -115,10 +115,6 @@ void BackForwardCacheCanStoreDocumentResult::NoDueToFeatures(
   blocklisted_features_ |= features;
 }
 
-BackForwardCacheCanStoreDocumentResult::BackForwardCacheCanStoreDocumentResult(
-    const NotStoredReasons& reasons)
-    : not_stored_reasons_(reasons) {}
-
 BackForwardCacheCanStoreDocumentResult::
     BackForwardCacheCanStoreDocumentResult() = default;
 BackForwardCacheCanStoreDocumentResult::BackForwardCacheCanStoreDocumentResult(
