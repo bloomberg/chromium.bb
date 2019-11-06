@@ -508,7 +508,7 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
       WorkspaceWindowState current_workspace_window_state);
 
   // Maybe start/update/end the window drag when swiping up from the shelf.
-  void MaybeStartDragWindowFromShelf(const ui::LocatedEvent& event_in_screen);
+  bool MaybeStartDragWindowFromShelf(const ui::LocatedEvent& event_in_screen);
   void MaybeUpdateWindowDrag(const ui::LocatedEvent& event_in_screen,
                              float scroll_x,
                              float scroll_y);
