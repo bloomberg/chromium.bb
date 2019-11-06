@@ -338,6 +338,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   void SetHitTestable(bool should_hit_test);
   virtual bool HitTestable() const;
 
+  virtual void SetContentsOpaqueForLCDText(bool opaque);
+  bool contents_opaque_for_lcd_text() const { return inputs_.contents_opaque_for_lcd_text; }
   // Set or gets if this layer is a container for fixed position layers in its
   // subtree. Such layers will be positioned and transformed relative to this
   // layer instead of their direct parent.
@@ -938,6 +940,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     bool hit_testable : 1;
 
     bool contents_opaque : 1;
+    bool contents_opaque_for_lcd_text : 1;
 
     gfx::PointF position;
     gfx::Transform transform;
