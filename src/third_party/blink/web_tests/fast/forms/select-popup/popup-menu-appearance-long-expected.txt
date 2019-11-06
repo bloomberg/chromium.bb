@@ -1,0 +1,29 @@
+very very very long option
+very very very long option
+very very very long option
+very very very long option
+very very very long option
+very very very long option
+very very very long option
+very very very long option
+very very very long option
+very very very long option
+very very very long option
+very very very long option
+very very very long option
+very very very long option
+very very very long option
+very very very long option
+very very very long option
+very very very long option
+very very very long option
+very very very long option
+very very very long option
+very very very long option
+very very very long option
+very very very long option
+
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

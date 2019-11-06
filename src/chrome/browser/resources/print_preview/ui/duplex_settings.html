@@ -1,0 +1,71 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_checkbox/cr_checkbox.html">
+<link rel="import" href="chrome://resources/cr_elements/md_select_css.html">
+<link rel="import" href="chrome://resources/html/util.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-iconset-svg/iron-iconset-svg.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-meta/iron-meta.html">
+<link rel="import" href="../icons.html">
+<link rel="import" href="../print_preview_utils.html">
+<link rel="import" href="print_preview_shared_css.html">
+<link rel="import" href="select_behavior.html">
+<link rel="import" href="settings_behavior.html">
+<link rel="import" href="settings_section.html">
+
+<dom-module id="print-preview-duplex-settings">
+  <template>
+    <style include="print-preview-shared cr-hidden-style md-select">
+      :host {
+        --duplex-icon-side-padding: 8px;
+        --duplex-icon-size: 16px;
+      }
+
+      .md-select {
+        background-position: var(--duplex-icon-side-padding) center,
+            calc(100% - var(--md-select-side-padding)) center;
+        background-size: var(--duplex-icon-size), var(--md-arrow-width);
+        padding-inline-start: 32px;
+      }
+
+      :host-context([dir=rtl]) .md-select {
+        background-position-x: calc(100% - var(--duplex-icon-side-padding)),
+            var(--md-select-side-padding);
+      }
+    </style>
+    <print-preview-settings-section hidden$="[[!settings.duplex.available]]">
+      <div slot="title">
+        <label id="label">$i18n{optionTwoSided}</label>
+      </div>
+      <div slot="controls" class="checkbox">
+        <cr-checkbox id="duplex" aria-labelledby="label"
+            disabled$="[[getDisabled_(settings.duplex.setByPolicy, disabled)]]"
+            on-change="onCheckboxChange_">
+          $i18n{printOnBothSidesLabel}
+        </cr-checkbox>
+      </div>
+    </print-preview-settings-section>
+    <iron-collapse opened="[[getOpenCollapse_(
+        settings.duplex.*, settings.duplexShortEdge.available)]]">
+      <print-preview-settings-section>
+        <div slot="title"></div>
+        <div slot="controls">
+          <select class="md-select" aria-labelledby="duplex"
+              style="background-image: [[getBackgroundImages_(
+                settings.duplexShortEdge.value, dark)]];"
+              disabled$="[[getDisabled_(
+                settings.duplexShortEdge.setByPolicy, disabled)]]"
+              value="{{selectedValue::change}}">
+            <option value="[[duplexValueEnum_.LONG_EDGE]]">
+              $i18n{optionLongEdge}
+            </option>
+            <option value="[[duplexValueEnum_.SHORT_EDGE]]">
+              $i18n{optionShortEdge}
+            </option>
+          </select>
+        </div>
+      </print-preview-settings-section>
+    </iron-collapse>
+  </template>
+  <script src="duplex_settings.js"></script>
+</dom-module>

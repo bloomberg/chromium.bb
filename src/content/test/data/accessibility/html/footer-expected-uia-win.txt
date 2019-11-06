@@ -1,0 +1,3 @@
+document
+++contentinfo LocalizedLandmarkType='content information'
+++++description Name='Footer element'

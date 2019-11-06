@@ -1,0 +1,40 @@
+  
+   
+  
+{
+  "layers": [
+    {
+      "name": "Scrolling background of LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "LayoutBlockFlow DIV class='composited block'",
+      "position": [14, 164],
+      "bounds": [210, 60],
+      "backgroundColor": "#0000FF"
+    },
+    {
+      "name": "LayoutBlockFlow DIV class='composited box'",
+      "position": [19, 169],
+      "bounds": [50, 50],
+      "contentsOpaque": true,
+      "backgroundColor": "#008000"
+    },
+    {
+      "name": "LayoutBlockFlow DIV class='composited block'",
+      "position": [272, 89],
+      "bounds": [210, 60],
+      "backgroundColor": "#0000FF"
+    },
+    {
+      "name": "LayoutBlockFlow DIV class='composited box'",
+      "position": [277, 94],
+      "bounds": [50, 50],
+      "contentsOpaque": true,
+      "backgroundColor": "#008000"
+    }
+  ]
+}
+

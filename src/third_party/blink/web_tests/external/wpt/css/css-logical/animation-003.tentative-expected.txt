@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL Logical properties are represented as physical properties in keyframes assert_own_property: expected property "height" missing
+Harness: the test ran to completion.
+

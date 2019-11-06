@@ -1,0 +1,37 @@
+In all iframes, the green fixed-position element should not be composited.
+{
+  "layers": [
+    {
+      "name": "Scrolling background of LayoutView #document",
+      "bounds": [785, 4016],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "VerticalScrollbar",
+      "position": [785, 0],
+      "bounds": [15, 600]
+    },
+    {
+      "name": "LayoutNGBlockFlow (positioned) DIV class='composited box'",
+      "position": [50, 360],
+      "bounds": [300, 100],
+      "contentsOpaque": true,
+      "backgroundColor": "#00FFFF"
+    },
+    {
+      "name": "LayoutIFrame (positioned) IFRAME id='iframe2' class='composited'",
+      "position": [10, 200],
+      "bounds": [154, 154],
+      "backgroundColor": "#9A9A9A"
+    },
+    {
+      "name": "LayoutIFrame (positioned) IFRAME id='iframe3'",
+      "position": [10, 380],
+      "bounds": [154, 154],
+      "backgroundColor": "#9A9A9A"
+    }
+  ]
+}
+
+Composited box underneath iframe.

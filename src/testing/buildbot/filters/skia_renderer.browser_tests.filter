@@ -1,0 +1,5 @@
+# Some browser_tests are flaking and as the SkiaRenderer changes some timings
+# the rate of flakes could be affected. Currently all known cases of this are
+# fixed. See https://crbug.com/982933 for details.
+# Add vasilyt@chromium.org and jonross@chromium.org on bugs related to flakes.
+

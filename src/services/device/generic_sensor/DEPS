@@ -1,0 +1,7 @@
+include_rules = [
+  "+device/base/synchronization",
+  "+services/device/generic_sensor/jni_headers",
+  "+services/device/public/cpp/device_features.h",
+  "+third_party/sudden_motion_sensor",
+  "+ui/gfx/geometry"
+]

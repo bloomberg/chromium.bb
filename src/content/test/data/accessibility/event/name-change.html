@@ -1,0 +1,14 @@
+<!--
+@UIA-WIN-DENY:Text_TextChanged*
+-->
+<!DOCTYPE html>
+<html>
+<body>
+<h1 id="a">Before</h1>
+<script>
+  function go() {
+    document.getElementById('a').setAttribute('aria-label', 'After');
+  }
+</script>
+</body>
+</html>

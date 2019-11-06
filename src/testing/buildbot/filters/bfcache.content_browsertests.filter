@@ -1,0 +1,101 @@
+# These tests currently fail when run with --enable-features=BackForwardCache.
+
+# Same-document navigation pointing to a URL that would cause a redirect if it
+# was reloaded. It never happen, because the document is restored directly.
+-NavigationControllerBrowserTest.SiteInstanceChangeOnHistoryNavigation
+
+# Expect an iframe to load again. It isn't because the page was restored from
+# the BackForwardCache.
+-BackForwardCacheMetricsBrowserTest.Features_SameOriginSubframes_CrossOriginNavigation
+-NavigationControllerBrowserTest.FrameNavigationEntry_DynamicSubframeHistoryFallback
+-NavigationControllerBrowserTest.FrameNavigationEntry_RecreatedSubframeBackForward
+-NavigationControllerBrowserTest.FrameNavigationEntry_SubframeHistoryFallback
+
+# Create a URLLoaderInterceptor. It should cause the navigation to fail, but it
+# isn't using an URLLoader anymore.
+-RenderFrameHostManagerTest.ErrorPageNavigationHistoryNavigationSuccess
+-RenderFrameHostManagerTest.ErrorPageNavigationHistoryNavigationFailure
+
+# Document expects javascript to run again from the beginning.
+-WebContentsImplBrowserTest.JavaScriptDialogsInMainAndSubframes
+
+# Histogram not recorded. It will probably be fixed by https://crbug.com/976697.
+-NavigationHandleImplBrowserTest.StartToCommitMetrics
+
+# render_view_impl.cc. Check failed: !frame_widget_.
+# https://crbug.com/999846
+-NavigationControllerBrowserTest.PageStateAfterForwardInCompetingFrames
+-NavigationControllerBrowserTest.PageStateWithIframeAfterForwardInCompetingFrames
+-NavigationControllerHistoryInterventionBrowserTest.NoUserActivationSetSkipOnBackForwardCrossSite
+-NavigationControllerHistoryInterventionBrowserTest.NoUserActivationSetSkipOnBackForwardCrossSite
+-RenderFrameHostManagerTest.BackForwardNotStale
+
+# Javascript dialog is shown from a page in the BackForwardCache.
+# https://crbug.com/999847
+-NavigationControllerBrowserTest.NoDialogsFromSwappedOutFrames
+
+# history.back(); history.back() causes the tab to go back twice instead of
+# once. The navigations are now committing synchronously, which is too fast.
+-NavigationControllerBrowserTest.HistoryBackTwiceFromRendererWithoutUserGesture
+
+# Page with no-cache, no-store, must-revalidate shouldn't be cached.
+-NavigationControllerBrowserTest.UncacheablePost
+
+# Test expects the RenderFrameHost to be deleted after a navigation. It is now
+# stored into the BackForwardCache instead. It isn't deleted.
+-RenderFrameHostManagerTest.CleanupOnCrossProcessNavigation
+-ServiceWorkerMainScriptRequestNetworkIsolationKeyBrowserTest.ServiceWorkerMainScriptRequest/*
+-SharedWorkerMainScriptRequestNetworkIsolationKeyBrowserTest.SharedWorkerMainScriptRequest/*
+-SitePerProcessBrowserTest.PendingDeletionCheckCompletedOnSubtree
+-SitePerProcessBrowserTest.SlowUnloadHandlerInIframe
+-WebContentsBindingSetBrowserTest.CloseOnFrameDeletion
+-WorkerImportScriptsAndFetchRequestNetworkIsolationKeyBrowserTest.ImportScriptsAndFetchRequest/*
+
+# This test waits for a network request after a back navigation. It won't be
+# made, because the document is restored from the BackForwardCache.
+-RenderFrameHostManagerTest.DeleteSpeculativeRFHPendingCommitOfPendingEntryOnInterrupted2
+
+# Wait for the old process to exit. It won't, because it is still used by a
+# bfcached document.
+-DynamicIsolatedOriginTest.LockedProcessNotReusedForNonisolatedSameSiteNavigation
+-NavigationControllerBrowserTest.UtilizationOfSpareRenderProcessHost
+-RenderFrameHostManagerTest.DontSelectInvalidFiles
+-RenderFrameHostManagerTest.NavigateWithUnassignedSiteInstance
+-RenderFrameHostManagerTest.PostMessageFromSubframeUnloadHandler
+-RenderFrameHostManagerTest.RestoreFileAccessForHistoryNavigation
+-RenderFrameHostManagerTest.RestoreSubframeFileAccessForHistoryNavigation
+-RenderFrameHostManagerTest.UnloadPushStateOnCrossProcessNavigation
+-RenderFrameHostManagerTest.WebUIJavascriptDisallowedAfterSwapOut
+-RenderProcessHostTest.KeepAliveRendererProcess
+-SitePerProcessBrowserTest.RenderViewHostIsNotReusedAfterDelayedSwapOutACK
+-SitePerProcessBrowserTest.SubframePendingAndBackToSameSiteInstance
+-SitePerProcessBrowserTest.SwapOutACKArrivesPriorToProcessShutdownRequest
+
+# Expect the swapped out RenderFrameHost to have a replacement proxy. This won't
+# happen when the BackForwardCache is used to store the old document.
+-RenderFrameHostManagerTest.RenderViewInitAfterNewProxyAndProcessKill
+
+# Waiting for unload handler, but they aren't executed.
+-SitePerProcessBrowserTest.PartialUnloadHandler
+-SitePerProcessBrowserTest.Unload_ABAB
+-WebContentsImplBrowserTest.SetTitleOnUnload
+
+# FATAL:casting.h Security DCHECK failed: IsA<Derived>(from).
+# In content::RenderFrameProxy::OnSetFrameOwnerProperties()
+# https://crbug.com/999849
+-WebContentsSplitCacheBrowserTestEnabled.SplitCacheDedicatedWorkers/0
+-WebContentsSplitCacheBrowserTestEnabled.SplitCacheDedicatedWorkers/1
+-WebContentsSplitCacheWithFrameOriginBrowserTest.SplitCache
+-WebContentsSplitCacheWithFrameOriginBrowserTest.SplitCacheDedicatedWorkers
+
+# Check failed: popup_ || pepper_fullscreen_ in RenderWidget::OnClose()
+# https://crbug.com/992891
+-WebContentsSplitCacheBrowserTestEnabled.SplitCacheDedicatedWorkerScripts/1
+-WebContentsSplitCacheBrowserTestEnabled.SplitCacheDedicatedWorkerScripts/0
+
+# Histogram "PrefetchedSignedExchangeCache.Count" is recorded when the document
+# in the RenderFrameHost is replaced, or when the RenderFrameHost is deleted.
+# With the BackForwardCache, the RenderFrameHost is not deleted, so the
+# histogram is not recorded before the end of the test.
+-SignedExchangeRequestHandlerBrowserTest.Simple/3
+-SignedExchangeRequestHandlerBrowserTest.VariantMatch/3

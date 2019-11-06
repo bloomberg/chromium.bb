@@ -1,0 +1,3 @@
+rootWebArea
+++genericContainer
+++++button inputType='file' name='Choose File' value='No file chosen'

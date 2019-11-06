@@ -1,0 +1,35 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
+<link rel="import" href="../data/destination.html">
+<link rel="import" href="advanced_settings_dialog.html">
+<link rel="import" href="print_preview_shared_css.html">
+<link rel="import" href="settings_section.html">
+
+<dom-module id="print-preview-advanced-options-settings">
+  <template>
+    <style include="print-preview-shared">
+      cr-button {
+        min-height: 32px;
+        text-align: center;
+        width: calc(100% - 2 * var(--print-preview-sidebar-margin));
+      }
+    </style>
+    <print-preview-settings-section>
+      <span slot="title"></span>
+      <div slot="controls">
+        <cr-button id="button" disabled$="[[disabled]]"
+            on-click="onButtonClick_">
+          $i18n{newShowAdvancedOptions}
+        </cr-button>
+      </div>
+    </print-preview-settings-section>
+    <template is="dom-if" if="[[showAdvancedDialog_]]" restamp>
+      <print-preview-advanced-settings-dialog
+          settings="[[settings]]" destination="[[destination]]"
+          on-close="onDialogClose_">
+      </print-preview-advanced-settings-dialog>
+    </template>
+  </template>
+  <script src="advanced_options_settings.js"></script>
+</dom-module>

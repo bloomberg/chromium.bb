@@ -1,0 +1,109 @@
+<style>
+  :host {
+    border-radius: var(--tabstrip-card-border-radius);
+    box-shadow: var(--tabstrip-elevation-box-shadow);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    height: 230px;
+    overflow: hidden;
+    width: 280px;
+  }
+
+  :host([active]) {
+    box-shadow: 0 0 0 2px var(--tabstrip-focus-color);
+    outline: none;
+  }
+
+  #title {
+    align-items: center;
+    background: var(--tabstrip-card-background-color);
+    border-block-end: 1px solid var(--tabstrip-separator-color);
+    box-sizing: border-box;
+    display: flex;
+    height: 40px;
+    justify-content: center;
+    margin: 0;
+    padding-inline-end: 4px;
+    padding-inline-start: 12px;
+  }
+
+  #favicon {
+    flex-shrink: 0;
+    height: 16px;
+    margin-inline-end: 8px;
+    width: 16px;
+  }
+
+  #titleText {
+    font-size: 100%;
+    font-weight: normal;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  #close {
+    -webkit-appearance: none;
+    align-items: center;
+    background-color: transparent;
+    border: 0;
+    display: flex;
+    flex-shrink: 0;
+    height: 32px;
+    justify-content: center;
+    margin-inline-start: auto;
+    padding: 0;
+    position: relative;
+    width: 32px;
+  }
+
+  #closeIcon {
+    background:
+        url(chrome://resources/images/icon_clear.svg) center/contain no-repeat;
+    display: block;
+    height: 24px;
+    position: relative;
+    width: 24px;
+  }
+
+  #thumbnail {
+    background: var(--tabstrip-card-background-color);
+    flex: 1;
+  }
+
+  #thumbnailImg {
+    height: 100%;
+    object-fit: contain;
+    width: 100%;
+  }
+
+  /* Pinned tab styles */
+  :host([pinned]) {
+    height: 50px;
+    width: 50px;
+  }
+
+  :host([pinned]) #title {
+    border-block-end: 0;
+    height: 100%;
+  }
+
+  :host([pinned]) #titleText,
+  :host([pinned]) #close,
+  :host([pinned]) #thumbnail {
+    display: none;
+  }
+</style>
+
+<header id="title">
+  <span id="favicon"></span>
+  <h2 id="titleText"></h2>
+  <button id="close">
+    <span id="closeIcon"></span>
+  </button>
+</header>
+
+<div id="thumbnail">
+  <img id="thumbnailImg">
+</div>

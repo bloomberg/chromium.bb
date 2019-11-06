@@ -1,0 +1,7 @@
+chfremer@chromium.org
+
+# Original (legacy) owner.
+per-file *video*=mcasas@chromium.org
+
+# COMPONENT: Blink>GetUserMedia
+# TEAM: webrtc-dev@chromium.org

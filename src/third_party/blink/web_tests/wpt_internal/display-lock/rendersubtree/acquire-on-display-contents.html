@@ -1,0 +1,46 @@
+<!doctype HTML>
+<html>
+<meta charset="utf8">
+<title>Display Locking: acquire, display:contents</title>
+<link rel="author" title="Rakina Zata Amni" href="mailto:rakina@chromium.org">
+<link rel="help" href="https://github.com/WICG/display-locking">
+
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="resources/utils.js"></script>
+
+<body></body>
+<script>
+async_test(async (t) => {
+  let div = document.createElement("div");
+  div.style = "display: contents;";
+  document.body.appendChild(div);
+  await setInvisible(div).then(() => {
+      // TODO(rakina): Change this once we support non-contained locking.
+      t.step(() => assert_false(div.displayLock.locked));
+      t.done();
+    });
+}, "Elements with display:contents can't be locked");
+
+async_test(async (t) => {
+  let slot = document.createElement("slot");
+  document.body.appendChild(slot);
+  await setInvisible(slot).then(() => {
+      // TODO(rakina): Change this once we support non-contained locking.
+      t.step(() => assert_false(slot.displayLock.locked));
+      t.done();
+    });
+}, "<slot> can't be locked");
+
+async_test(async (t) => {
+  let slot = document.createElement("slot");
+  slot.style = "display: block;";
+  document.body.appendChild(slot);
+  await setInvisible(slot).then(() => {
+    // TODO(rakina): Change this once we support non-contained locking.
+    t.step(() => assert_true(slot.displayLock.locked));
+    t.done();
+  });
+}, "<slot> with changed display type can be locked");
+</script>
+</html>

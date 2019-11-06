@@ -1,0 +1,13 @@
+document
+++article
+++++group
+++++++group
+++++++++description Name='Header inside article.'
+++group
+++++group
+++++++group
+++++++++description Name='Header inside section.'
+++main
+++++group
+++++++group
+++++++++description Name='Header inside main.'

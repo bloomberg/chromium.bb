@@ -1,0 +1,80 @@
+<!--
+ * Copyright 2019 The Chromium Authors. All rights reserved.  Use of this
+ * source code is governed by a BSD-style license that can be found in the
+ * LICENSE file.
+-->
+<!DOCTYPE html>
+<html>
+<body>
+  <video id="video" preload=auto src="/media/bigbuck.webm"></video>
+  <video id="secondVideo" preload=auto src="/media/bigbuck.webm"></video>
+  <script>
+    video.addEventListener('enterpictureinpicture', () => {
+      document.title = 'video.enterpictureinpicture';
+    });
+
+    video.addEventListener('leavepictureinpicture', () => {
+      document.title = 'video.leavepictureinpicture';
+    });
+
+    secondVideo.addEventListener('enterpictureinpicture', () => {
+      document.title = 'secondVideo.enterpictureinpicture';
+    });
+
+    secondVideo.addEventListener('leavepictureinpicture', () => {
+      document.title = 'secondVideo.leavepictureinpicture';
+    });
+
+    document.addEventListener('visibilitychange', () => {
+      document.title = document.visibilityState;
+    });
+
+    function enterPictureInPicture() {
+      video.requestPictureInPicture()
+      .then(_ => { window.domAutomationController.send(true); })
+      .catch(e => { window.domAutomationController.send(false); });
+    }
+
+    function isInPictureInPicture() {
+      window.domAutomationController.send(document.pictureInPictureElement == video);
+    }
+
+    function changeVideoSrcToNoAudioTrackVideo() {
+      video.src = '/media/engagement/engagement_no_audio_track.webm';
+      video.play()
+      .then(_ => { window.domAutomationController.send(true); })
+      .catch(e => { window.domAutomationController.send(false); });
+    }
+
+    function isPaused() {
+      window.domAutomationController.send(video.paused);
+    }
+
+    function playVideo() {
+      video.play()
+      .then(_ => { window.domAutomationController.send(true); })
+      .catch(e => { window.domAutomationController.send(false); });
+    }
+
+    function playSecondVideo() {
+      secondVideo.play()
+      .then(_ => { window.domAutomationController.send(true); })
+      .catch(e => { window.domAutomationController.send(false); });
+    }
+
+    function addHtmlVideoWithAutoPictureInPicture() {
+      document.body.insertAdjacentHTML('beforeend',
+        '<video id="htmlVideo" autopictureinpicture></video>');
+      htmlVideo.src = '/media/bigbuck.webm';
+
+      htmlVideo.play()
+      .then(_ => { window.domAutomationController.send(true); })
+      .catch(e => { window.domAutomationController.send(false); });
+
+      htmlVideo.addEventListener('enterpictureinpicture', () => {
+        document.title = 'htmlVideo.enterpictureinpicture';
+      });
+    }
+  </script>
+</body>
+</html>

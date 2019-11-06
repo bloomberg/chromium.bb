@@ -1,0 +1,34 @@
+This tests that squashed layers' offset from renderer is updated properly. If not properly updated, the two divs will appear to be aligned vertically in the pixel results, while really the blue div ('squashed') should be offset 100px left of the green ('host').
+
+{
+  "layers": [
+    {
+      "name": "Scrolling background of LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "LayoutNGBlockFlow (positioned) DIV id='background'",
+      "position": [8, 50],
+      "bounds": [100, 100],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFF00"
+    },
+    {
+      "name": "LayoutNGBlockFlow (positioned) DIV id='host'",
+      "position": [100, 100],
+      "bounds": [100, 100],
+      "contentsOpaque": true,
+      "backgroundColor": "#008000"
+    },
+    {
+      "name": "LayoutNGBlockFlow (relative positioned) DIV id='squashed'",
+      "position": [8, 8],
+      "bounds": [100, 100],
+      "contentsOpaque": true,
+      "backgroundColor": "#0000FF"
+    }
+  ]
+}
+

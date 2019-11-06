@@ -1,0 +1,67 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "content/utility/services.h"
+
+#include <utility>
+
+#include "base/no_destructor.h"
+#include "base/threading/thread_task_runner_handle.h"
+#include "content/public/utility/content_utility_client.h"
+#include "mojo/public/cpp/bindings/service_factory.h"
+#include "services/video_capture/public/mojom/video_capture_service.mojom.h"
+#include "services/video_capture/video_capture_service_impl.h"
+
+namespace content {
+
+namespace {
+
+auto RunVideoCapture(
+    mojo::PendingReceiver<video_capture::mojom::VideoCaptureService> receiver) {
+  return std::make_unique<video_capture::VideoCaptureServiceImpl>(
+      std::move(receiver), base::ThreadTaskRunnerHandle::Get());
+}
+
+mojo::ServiceFactory& GetMainThreadServiceFactory() {
+  static base::NoDestructor<mojo::ServiceFactory> factory{
+      RunVideoCapture,
+  };
+  return *factory;
+}
+
+}  // namespace
+
+void HandleServiceRequestOnIOThread(
+    mojo::GenericPendingReceiver receiver,
+    base::SequencedTaskRunner* main_thread_task_runner) {
+  // If the request was handled already, we should not reach this point.
+  DCHECK(receiver.is_valid());
+  auto* embedder_factory =
+      GetContentClient()->utility()->GetIOThreadServiceFactory();
+  if (embedder_factory && embedder_factory->MaybeRunService(&receiver))
+    return;
+
+  DCHECK(receiver.is_valid());
+  main_thread_task_runner->PostTask(
+      FROM_HERE,
+      base::BindOnce(&HandleServiceRequestOnMainThread, std::move(receiver)));
+}
+
+void HandleServiceRequestOnMainThread(mojo::GenericPendingReceiver receiver) {
+  if (GetMainThreadServiceFactory().MaybeRunService(&receiver))
+    return;
+
+  // If the request was handled already, we should not reach this point.
+  DCHECK(receiver.is_valid());
+  auto* embedder_factory =
+      GetContentClient()->utility()->GetMainThreadServiceFactory();
+  if (embedder_factory && embedder_factory->MaybeRunService(&receiver))
+    return;
+
+  DCHECK(receiver.is_valid());
+  DLOG(ERROR) << "Unhandled out-of-process service request for "
+              << receiver.interface_name().value();
+}
+
+}  // namespace content

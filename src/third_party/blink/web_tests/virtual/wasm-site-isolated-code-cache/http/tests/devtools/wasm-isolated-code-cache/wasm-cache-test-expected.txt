@@ -1,0 +1,216 @@
+Tests V8 code cache for WebAssembly resources.
+
+---First navigation - produce and consume code cache ------
+
+v8.wasm.streamFromResponseCallback Properties:
+{
+    data : {
+    }
+    endTime : <number>
+    startTime : <number>
+    type : "v8.wasm.streamFromResponseCallback"
+}
+v8.wasm.compiledModule Properties:
+{
+    data : {
+        url : http://127.0.0.1:8000/wasm/resources/load-wasm.php?name=small.wasm&cors
+    }
+    endTime : <number>
+    startTime : <number>
+    type : "v8.wasm.compiledModule"
+}
+v8.wasm.streamFromResponseCallback Properties:
+{
+    data : {
+    }
+    endTime : <number>
+    startTime : <number>
+    type : "v8.wasm.streamFromResponseCallback"
+}
+v8.wasm.compiledModule Properties:
+{
+    data : {
+        url : http://127.0.0.1:8000/wasm/resources/load-wasm.php?name=large.wasm&cors
+    }
+    endTime : <number>
+    startTime : <number>
+    type : "v8.wasm.compiledModule"
+}
+v8.wasm.cachedModule Properties:
+{
+    data : {
+        producedCacheSize : <number>
+    }
+    endTime : <number>
+    startTime : <number>
+    type : "v8.wasm.cachedModule"
+}
+v8.wasm.streamFromResponseCallback Properties:
+{
+    data : {
+    }
+    endTime : <number>
+    startTime : <number>
+    type : "v8.wasm.streamFromResponseCallback"
+}
+v8.wasm.compiledModule Properties:
+{
+    data : {
+        url : http://127.0.0.1:8000/wasm/resources/load-wasm.php?name=small.wasm&cors
+    }
+    endTime : <number>
+    startTime : <number>
+    type : "v8.wasm.compiledModule"
+}
+v8.wasm.streamFromResponseCallback Properties:
+{
+    data : {
+    }
+    endTime : <number>
+    startTime : <number>
+    type : "v8.wasm.streamFromResponseCallback"
+}
+v8.wasm.moduleCacheHit Properties:
+{
+    data : {
+        consumedCacheSize : <number>
+        url : http://127.0.0.1:8000/wasm/resources/load-wasm.php?name=large.wasm&cors
+    }
+    endTime : <number>
+    startTime : <number>
+    type : "v8.wasm.moduleCacheHit"
+}
+v8.wasm.streamFromResponseCallback Properties:
+{
+    data : {
+    }
+    endTime : <number>
+    startTime : <number>
+    type : "v8.wasm.streamFromResponseCallback"
+}
+v8.wasm.compiledModule Properties:
+{
+    data : {
+        url : http://localhost:8000/wasm/resources/load-wasm.php?name=large.wasm&cors
+    }
+    endTime : <number>
+    startTime : <number>
+    type : "v8.wasm.compiledModule"
+}
+v8.wasm.cachedModule Properties:
+{
+    data : {
+        producedCacheSize : <number>
+    }
+    endTime : <number>
+    startTime : <number>
+    type : "v8.wasm.cachedModule"
+}
+
+--- Second navigation - from a different origin ------
+
+v8.wasm.streamFromResponseCallback Properties:
+{
+    data : {
+    }
+    endTime : <number>
+    startTime : <number>
+    type : "v8.wasm.streamFromResponseCallback"
+}
+v8.wasm.compiledModule Properties:
+{
+    data : {
+        url : http://127.0.0.1:8000/wasm/resources/load-wasm.php?name=small.wasm&cors
+    }
+    endTime : <number>
+    startTime : <number>
+    type : "v8.wasm.compiledModule"
+}
+v8.wasm.streamFromResponseCallback Properties:
+{
+    data : {
+    }
+    endTime : <number>
+    startTime : <number>
+    type : "v8.wasm.streamFromResponseCallback"
+}
+v8.wasm.compiledModule Properties:
+{
+    data : {
+        url : http://127.0.0.1:8000/wasm/resources/load-wasm.php?name=large.wasm&cors
+    }
+    endTime : <number>
+    startTime : <number>
+    type : "v8.wasm.compiledModule"
+}
+v8.wasm.cachedModule Properties:
+{
+    data : {
+        producedCacheSize : <number>
+    }
+    endTime : <number>
+    startTime : <number>
+    type : "v8.wasm.cachedModule"
+}
+v8.wasm.streamFromResponseCallback Properties:
+{
+    data : {
+    }
+    endTime : <number>
+    startTime : <number>
+    type : "v8.wasm.streamFromResponseCallback"
+}
+v8.wasm.compiledModule Properties:
+{
+    data : {
+        url : http://127.0.0.1:8000/wasm/resources/load-wasm.php?name=small.wasm&cors
+    }
+    endTime : <number>
+    startTime : <number>
+    type : "v8.wasm.compiledModule"
+}
+v8.wasm.streamFromResponseCallback Properties:
+{
+    data : {
+    }
+    endTime : <number>
+    startTime : <number>
+    type : "v8.wasm.streamFromResponseCallback"
+}
+v8.wasm.moduleCacheHit Properties:
+{
+    data : {
+        consumedCacheSize : <number>
+        url : http://127.0.0.1:8000/wasm/resources/load-wasm.php?name=large.wasm&cors
+    }
+    endTime : <number>
+    startTime : <number>
+    type : "v8.wasm.moduleCacheHit"
+}
+v8.wasm.streamFromResponseCallback Properties:
+{
+    data : {
+    }
+    endTime : <number>
+    startTime : <number>
+    type : "v8.wasm.streamFromResponseCallback"
+}
+v8.wasm.compiledModule Properties:
+{
+    data : {
+        url : http://localhost:8000/wasm/resources/load-wasm.php?name=large.wasm&cors
+    }
+    endTime : <number>
+    startTime : <number>
+    type : "v8.wasm.compiledModule"
+}
+v8.wasm.cachedModule Properties:
+{
+    data : {
+        producedCacheSize : <number>
+    }
+    endTime : <number>
+    startTime : <number>
+    type : "v8.wasm.cachedModule"
+}
+

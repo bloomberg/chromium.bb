@@ -1,0 +1,14 @@
+{
+    "dependencies": [
+        "components",
+        "browser_sdk",
+        "common"
+    ],
+    "scripts": [
+        "ExtensionAPI.js",
+        "ExtensionTraceProvider.js",
+        "ExtensionServer.js",
+        "ExtensionPanel.js",
+        "ExtensionView.js"
+    ]
+}

@@ -1,0 +1,46 @@
+{
+  "layers": [
+    {
+      "name": "Scrolling background of LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "LayoutNGBlockFlow (positioned) DIV",
+      "position": [8, 8],
+      "bounds": [200, 200],
+      "contentsOpaque": true,
+      "backgroundColor": "#D3D3D3"
+    },
+    {
+      "name": "LayoutNGBlockFlow (positioned) DIV",
+      "position": [50, 50],
+      "bounds": [200, 200],
+      "contentsOpaque": true,
+      "backgroundColor": "#ADD8E6",
+      "paintInvalidations": [
+        {
+          "object": "LayoutNGBlockFlow (positioned) DIV id='target'",
+          "rect": [0, 0, 200, 200],
+          "reason": "disappeared"
+        }
+      ]
+    },
+    {
+      "name": "LayoutNGBlockFlow (positioned) DIV id='target'",
+      "position": [50, 50],
+      "bounds": [200, 200],
+      "contentsOpaque": true,
+      "backgroundColor": "#ADD8E6",
+      "paintInvalidations": [
+        {
+          "object": "LayoutNGBlockFlow (positioned) DIV id='target'",
+          "rect": [0, 0, 200, 200],
+          "reason": "full layer"
+        }
+      ]
+    }
+  ]
+}
+

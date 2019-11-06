@@ -1,0 +1,25 @@
+{
+  "layers": [
+    {
+      "name": "Scrolling background of LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "LayoutNGBlockFlow DIV id='inner'",
+      "position": [8, 8],
+      "bounds": [200, 10],
+      "contentsOpaque": true,
+      "backgroundColor": "#F5F5F5"
+    },
+    {
+      "name": "LayoutNGBlockFlow (positioned) DIV class='hoverable'",
+      "position": [8, 0],
+      "bounds": [100, 100],
+      "contentsOpaque": true,
+      "backgroundColor": "#90EE90"
+    }
+  ]
+}
+

@@ -1,0 +1,5 @@
+rootWebArea
+++genericContainer
+++++textField inputType='text'
+++++++genericContainer
+++++button inputType='reset' name='Reset'
