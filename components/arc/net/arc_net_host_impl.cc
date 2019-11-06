@@ -269,6 +269,55 @@ void TranslateONCNetworkTypeDetails(const base::DictionaryValue* dict,
   }
 }
 
+// Add shill's Device properties to the given mojo NetworkConfiguration objects.
+// This adds the network interface and current IP configurations.
+void AddDeviceProperties(arc::mojom::NetworkConfiguration* network,
+                         const std::string& device_path) {
+  const auto* device = GetStateHandler()->GetDeviceState(device_path);
+  if (!device)
+    return;
+
+  network->network_interface = device->interface();
+
+  // IP configurations were already obtained through cached ONC properties.
+  if (network->ip_configs)
+    return;
+
+  std::vector<arc::mojom::IPConfigurationPtr> ip_configs;
+  for (const auto& kv : device->ip_configs()) {
+    auto ip_config = arc::mojom::IPConfiguration::New();
+    if (const std::string* r =
+            kv.second->FindStringPath(shill::kAddressProperty))
+      ip_config->ip_address = *r;
+    if (const std::string* r =
+            kv.second->FindStringPath(shill::kGatewayProperty))
+      ip_config->gateway = *r;
+    ip_config->routing_prefix =
+        kv.second->FindIntPath(shill::kPrefixlenProperty).value_or(0);
+    ip_config->type = (ip_config->routing_prefix < 64)
+                          ? arc::mojom::IPAddressType::IPV4
+                          : arc::mojom::IPAddressType::IPV6;
+    if (const base::Value* dns_list =
+            kv.second->FindListKey(shill::kNameServersProperty)) {
+      for (const auto& dnsValue : dns_list->GetList()) {
+        const std::string& dns = dnsValue.GetString();
+        if (dns.empty())
+          continue;
+
+        // When manually setting DNS, up to 4 addresses can be specified in the
+        // UI. Unspecified entries can show up as 0.0.0.0 and should be removed.
+        if (dns == "0.0.0.0")
+          continue;
+
+        ip_config->name_servers.push_back(dns);
+      }
+    }
+    ip_configs.push_back(std::move(ip_config));
+  }
+
+  network->ip_configs = std::move(ip_configs);
+}
+
 arc::mojom::NetworkConfigurationPtr TranslateONCConfiguration(
     const chromeos::NetworkState* network_state,
     const base::DictionaryValue* dict) {
@@ -305,10 +354,7 @@ arc::mojom::NetworkConfigurationPtr TranslateONCConfiguration(
   if (network_state) {
     mojo->connection_state =
         TranslateConnectionState(network_state->connection_state());
-    const chromeos::DeviceState* device_state =
-        GetStateHandler()->GetDeviceState(network_state->device_path());
-    if (device_state)
-      mojo->network_interface = device_state->interface();
+    AddDeviceProperties(mojo.get(), network_state->device_path());
   }
 
   return mojo;
