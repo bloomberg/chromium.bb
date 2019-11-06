@@ -116,6 +116,14 @@ public class IdentityManager {
     }
 
     /**
+     * Provides the information of all accounts that have refresh tokens.
+     */
+    @VisibleForTesting
+    public CoreAccountInfo[] getAccountsWithRefreshTokens() {
+        return IdentityManagerJni.get().getAccountsWithRefreshTokens(mNativeIdentityManager);
+    }
+
+    /**
      * Provides access to the core information of the user's primary account.
      * Returns null if no such info is available, either because there
      * is no primary account yet or because the user signed out.
@@ -217,5 +225,6 @@ public class IdentityManager {
         public @Nullable CoreAccountInfo
         findExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
                 long nativeIdentityManager, String email);
+        public CoreAccountInfo[] getAccountsWithRefreshTokens(long nativeIdentityManager);
     }
 }
