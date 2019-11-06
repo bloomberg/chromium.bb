@@ -89,6 +89,7 @@ class CC_EXPORT PictureLayerTilingSet {
   WhichTree tree() const { return tree_; }
 
   PictureLayerTiling* FindTilingWithScaleKey(float scale_key) const;
+  PictureLayerTiling* FindTilingWithScale(const gfx::SizeF& scale) const;
   PictureLayerTiling* FindTilingWithResolution(TileResolution resolution) const;
 
   void MarkAllTilingsNonIdeal();
@@ -114,6 +115,8 @@ class CC_EXPORT PictureLayerTilingSet {
   // Removes all tilings with a contents scale key > |maximum_scale_key|.
   void RemoveTilingsAboveScaleKey(float maximum_scale);
 
+  void RemoveTilingsWithStaleAspectRatio();
+
   // Removes all resources (tilings, raster source).
   void ReleaseAllResources();
 
@@ -130,6 +133,9 @@ class CC_EXPORT PictureLayerTilingSet {
                             double current_frame_time_in_seconds,
                             const Occlusion& occlusion_in_layer_space,
                             bool can_require_tiles_for_activation);
+
+  void SetAspectRatio(float ratio);
+  float aspect_ratio() const { return aspect_ratio_; }
 
   void GetAllPrioritizedTilesForTracing(
       std::vector<PrioritizedTile>* prioritized_tiles) const;
@@ -262,6 +268,8 @@ class CC_EXPORT PictureLayerTilingSet {
   gfx::Rect skewport_in_layer_space_;
   gfx::Rect soon_border_rect_in_layer_space_;
   gfx::Rect eventually_rect_in_layer_space_;
+
+  float aspect_ratio_ = 1.f;
 
   friend class Iterator;
 };

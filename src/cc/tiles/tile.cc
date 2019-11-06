@@ -55,9 +55,10 @@ void Tile::AsValueInto(base::trace_event::TracedValue* value) const {
   value->SetDouble("contents_scale", contents_scale_key());
 
   value->BeginArray("raster_transform");
-  value->AppendDouble(raster_transform_.scale());
   value->AppendDouble(raster_transform_.translation().x());
   value->AppendDouble(raster_transform_.translation().y());
+  value->AppendDouble(raster_transform_.scale().width());
+  value->AppendDouble(raster_transform_.scale().height());
   value->EndArray();
 
   MathUtil::AddToTracedValue("content_rect", content_rect_, value);
