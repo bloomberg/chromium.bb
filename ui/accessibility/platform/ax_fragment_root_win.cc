@@ -208,8 +208,11 @@ class AXFragmentRootMapWin {
 };
 
 AXFragmentRootWin::AXFragmentRootWin(gfx::AcceleratedWidget widget,
-                                     AXFragmentRootDelegateWin* delegate)
-    : widget_(widget), delegate_(delegate) {
+                                     AXFragmentRootDelegateWin* delegate,
+                                     bool is_controller_for_root)
+    : widget_(widget),
+      delegate_(delegate),
+      is_controller_for_root_(is_controller_for_root) {
   platform_node_ = ui::AXFragmentRootPlatformNodeWin::Create(this);
   AXFragmentRootMapWin::GetInstance().AddFragmentRoot(widget, this);
 }
@@ -342,7 +345,10 @@ int AXFragmentRootWin::GetIndexInParentOfChild() const {
         return child_index;
     }
   }
-  return 0;
+
+  NOTREACHED();
+
+  return -1;
 }
 
 }  // namespace ui
