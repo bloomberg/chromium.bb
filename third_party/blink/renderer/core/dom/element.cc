@@ -4501,7 +4501,7 @@ void Element::SetInnerHTMLFromString(const String& html,
     if (DocumentFragment* fragment = CreateFragmentForInnerOuterHTML(
             html, this, kAllowScriptingContent, "innerHTML", exception_state)) {
       ContainerNode* container = this;
-      if (auto* template_element = ToHTMLTemplateElementOrNull(*this))
+      if (auto* template_element = DynamicTo<HTMLTemplateElement>(*this))
         container = template_element->content();
       ReplaceChildrenWithFragment(container, fragment, exception_state);
     }
