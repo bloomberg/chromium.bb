@@ -1855,6 +1855,9 @@ def FindEbuildsForPackages(packages_list, sysroot, include_masked=False,
   Returns:
     A map from packages in |packages_list| to their corresponding ebuilds.
   """
+  if not packages_list:
+    return {}
+
   cmd = [cros_build_lib.GetSysrootToolPath(sysroot, 'equery'), 'which']
   if include_masked:
     cmd += ['--include-masked']
