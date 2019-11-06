@@ -1,0 +1,27 @@
+This is a testharness.js-based test.
+PASS idl_test setup
+PASS Partial interface Document: original interface defined
+PASS Partial interface HTMLIFrameElement: original interface defined
+PASS Stringification of document.featurePolicy
+PASS FeaturePolicy interface: document.featurePolicy must inherit property "allowsFeature(DOMString, DOMString)" with the proper type
+PASS FeaturePolicy interface: calling allowsFeature(DOMString, DOMString) on document.featurePolicy with too few arguments must throw TypeError
+PASS FeaturePolicy interface: document.featurePolicy must inherit property "features()" with the proper type
+PASS FeaturePolicy interface: document.featurePolicy must inherit property "allowedFeatures()" with the proper type
+PASS FeaturePolicy interface: document.featurePolicy must inherit property "getAllowlistForFeature(DOMString)" with the proper type
+PASS FeaturePolicy interface: calling getAllowlistForFeature(DOMString) on document.featurePolicy with too few arguments must throw TypeError
+FAIL FeaturePolicyViolationReportBody interface: existence and properties of interface object assert_own_property: self does not have own property "FeaturePolicyViolationReportBody" expected property "FeaturePolicyViolationReportBody" missing
+FAIL FeaturePolicyViolationReportBody interface object length assert_own_property: self does not have own property "FeaturePolicyViolationReportBody" expected property "FeaturePolicyViolationReportBody" missing
+FAIL FeaturePolicyViolationReportBody interface object name assert_own_property: self does not have own property "FeaturePolicyViolationReportBody" expected property "FeaturePolicyViolationReportBody" missing
+FAIL FeaturePolicyViolationReportBody interface: existence and properties of interface prototype object assert_own_property: self does not have own property "FeaturePolicyViolationReportBody" expected property "FeaturePolicyViolationReportBody" missing
+FAIL FeaturePolicyViolationReportBody interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "FeaturePolicyViolationReportBody" expected property "FeaturePolicyViolationReportBody" missing
+FAIL FeaturePolicyViolationReportBody interface: existence and properties of interface prototype object's @@unscopables property assert_own_property: self does not have own property "FeaturePolicyViolationReportBody" expected property "FeaturePolicyViolationReportBody" missing
+FAIL FeaturePolicyViolationReportBody interface: attribute featureId assert_own_property: self does not have own property "FeaturePolicyViolationReportBody" expected property "FeaturePolicyViolationReportBody" missing
+FAIL FeaturePolicyViolationReportBody interface: attribute sourceFile assert_own_property: self does not have own property "FeaturePolicyViolationReportBody" expected property "FeaturePolicyViolationReportBody" missing
+FAIL FeaturePolicyViolationReportBody interface: attribute lineNumber assert_own_property: self does not have own property "FeaturePolicyViolationReportBody" expected property "FeaturePolicyViolationReportBody" missing
+FAIL FeaturePolicyViolationReportBody interface: attribute columnNumber assert_own_property: self does not have own property "FeaturePolicyViolationReportBody" expected property "FeaturePolicyViolationReportBody" missing
+FAIL FeaturePolicyViolationReportBody interface: attribute disposition assert_own_property: self does not have own property "FeaturePolicyViolationReportBody" expected property "FeaturePolicyViolationReportBody" missing
+PASS HTMLIFrameElement interface: attribute featurePolicy
+PASS Document interface: attribute featurePolicy
+PASS Document interface: document must inherit property "featurePolicy" with the proper type
+Harness: the test ran to completion.
+

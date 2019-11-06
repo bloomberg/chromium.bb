@@ -1,0 +1,71 @@
+Tests that a long stack trace is truncated.
+
+Message count: 2
+
+console-trim-long-traces.js:15 console.trace
+recursive @ console-trim-long-traces.js:15
+recursive @ console-trim-long-traces.js:13
+recursive @ console-trim-long-traces.js:13
+recursive @ console-trim-long-traces.js:13
+recursive @ console-trim-long-traces.js:13
+recursive @ console-trim-long-traces.js:13
+recursive @ console-trim-long-traces.js:13
+recursive @ console-trim-long-traces.js:13
+recursive @ console-trim-long-traces.js:13
+recursive @ console-trim-long-traces.js:13
+(anonymous) @ console-trim-long-traces.js:18
+
+console-trim-long-traces.js:15 console.trace
+recursive @ console-trim-long-traces.js:15
+recursive @ console-trim-long-traces.js:13
+recursive @ console-trim-long-traces.js:13
+recursive @ console-trim-long-traces.js:13
+recursive @ console-trim-long-traces.js:13
+recursive @ console-trim-long-traces.js:13
+recursive @ console-trim-long-traces.js:13
+recursive @ console-trim-long-traces.js:13
+recursive @ console-trim-long-traces.js:13
+recursive @ console-trim-long-traces.js:13
+recursive @ console-trim-long-traces.js:13
+recursive @ console-trim-long-traces.js:13
+recursive @ console-trim-long-traces.js:13
+recursive @ console-trim-long-traces.js:13
+recursive @ console-trim-long-traces.js:13
+recursive @ console-trim-long-traces.js:13
+recursive @ console-trim-long-traces.js:13
+recursive @ console-trim-long-traces.js:13
+recursive @ console-trim-long-traces.js:13
+recursive @ console-trim-long-traces.js:13
+recursive @ console-trim-long-traces.js:13
+recursive @ console-trim-long-traces.js:13
+recursive @ console-trim-long-traces.js:13
+recursive @ console-trim-long-traces.js:13
+recursive @ console-trim-long-traces.js:13
+recursive @ console-trim-long-traces.js:13
+recursive @ console-trim-long-traces.js:13
+recursive @ console-trim-long-traces.js:13
+recursive @ console-trim-long-traces.js:13
+recursive @ console-trim-long-traces.js:13
+recursive @ console-trim-long-traces.js:13
+recursive @ console-trim-long-traces.js:13
+recursive @ console-trim-long-traces.js:13
+recursive @ console-trim-long-traces.js:13
+recursive @ console-trim-long-traces.js:13
+recursive @ console-trim-long-traces.js:13
+recursive @ console-trim-long-traces.js:13
+recursive @ console-trim-long-traces.js:13
+recursive @ console-trim-long-traces.js:13
+recursive @ console-trim-long-traces.js:13
+recursive @ console-trim-long-traces.js:13
+recursive @ console-trim-long-traces.js:13
+recursive @ console-trim-long-traces.js:13
+recursive @ console-trim-long-traces.js:13
+recursive @ console-trim-long-traces.js:13
+recursive @ console-trim-long-traces.js:13
+recursive @ console-trim-long-traces.js:13
+recursive @ console-trim-long-traces.js:13
+recursive @ console-trim-long-traces.js:13
+recursive @ console-trim-long-traces.js:13
+(anonymous) @ console-trim-long-traces.js:19
+Show 21 more frames
+

@@ -1,0 +1,1792 @@
+/* Copyright 2015 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+html {
+  /* Material Design constants */
+  --md-tile-margin: 16px;
+  --md-tile-size: 112px;
+
+  /* This will be overridden based on the viewport width, see below. */
+  --column-count: 3;
+
+  --content-width: calc(var(--column-count) * var(--md-tile-size)
+      /* We add an extra pixel because rounding errors on different zooms can
+       * make the width shorter than it should be. */
+      + 1px);
+
+  --logo-color: #eee; /* Background color for alternative logo. */
+  --logo-height: 200px; /* Normal height of a doodle. */
+  --logo-margin-top: 56px; /* Expected OGB height, so logo doesn't overlap. */
+  --logo-margin-bottom: 38px; /* Between logo and fakebox. */
+
+  /* Initial height determines the margin between the logo and the fakebox. If
+   * the iframe height exceeds the normal --logo-height, the difference is
+   * subtracted from the margin. The actual --logo-iframe-{width,height} can be
+   * changed later, but the initial height, and therefore the margin, remains
+   * the same.
+   */
+  --logo-iframe-initial-height: var(--logo-height);
+  --logo-iframe-height: var(--logo-height);
+  --logo-iframe-resize-duration: 150ms;
+  --logo-iframe-width: 500px;
+
+  --mv-notice-time: 10s;
+
+  /* These can be overridden by themes. */
+  --text-color: #000;
+  --text-color-light: #fff;
+  --text-color-link: rgb(17, 85, 204);
+
+  height: 100%;
+}
+
+@media (prefers-color-scheme: dark) {
+  body:not(.light-chip) {
+    /* These can be overridden by themes. */
+    --text-color: rgb(var(--GG200-rgb));
+    --text-color-light: rgb(var(--GG200-rgb));
+    --text-color-link: rgb(var(--GB400-dark-rgb));
+  }
+}
+
+/* width >= (4 cols * 112px (tile width) + 112px (1 tile margin)) */
+@media (min-width: 560px) {
+  html {
+    --column-count: 4;
+  }
+}
+
+/* width >= (5 cols * 112px (tile width) + 112px (1 tile margin)) */
+@media (min-width: 672px) {
+  html {
+    --column-count: 5;
+  }
+}
+
+body {
+  background-attachment: fixed !important;
+  cursor: default;
+  display: none;
+  font-size: small;
+  margin: 0;
+  min-height: 100%;
+}
+
+body.inited {
+  display: block;
+}
+
+/* Button defaults vary by platform. Reset CSS so that the NTP can use buttons
+ * as a kind of clickable div. */
+button {
+  background: transparent;
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+
+#ntp-contents {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  position: relative;
+  z-index: 1;
+}
+
+#logo,
+#fakebox-container {
+  flex-shrink: 0;
+}
+
+.non-google-page #ntp-contents {
+  /* The inherited height from #ntp-contents applies from the "top" location,
+   * but uses the size of the overall NTP content area, resulting in an
+   * unnecessary scrollbar. This height corresponds to MV tile height for a
+   * single row, but also works for a row of icons, and works well on small
+   * screens (like Pixelbook), as well as high-res screens. */
+  height: 155px;
+  left: calc(50% - var(--content-width)/2);
+  position: absolute;
+  top: calc(50% - 155px);
+}
+
+body.hide-fakebox #fakebox {
+  opacity: 0;
+  visibility: hidden;
+}
+
+#fakebox-container {
+  margin: 0 auto 0 auto;
+  /* Increase min-width again to account for the search icon: 390px new
+   * min-width + additional 20px */
+  min-width: 410px;
+  width: var(--content-width);
+}
+
+#fakebox {
+  background: white;
+  border-radius: 22px;
+  box-shadow: 0 1px 6px 0 rgba(32, 33, 36, .28);
+  box-sizing: border-box;
+  cursor: text;
+  font-size: 16px;
+  height: 44px;
+  margin: 0 auto;
+  max-width: 584px;
+  opacity: 1;
+  position: relative;
+  transition: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  #fakebox {
+    box-shadow: 0 1px 6px 0 rgba(32, 33, 36, .78);
+  }
+}
+
+.non-google-page #fakebox-container {
+  display: none;
+}
+
+#fakebox > input {
+  bottom: 0;
+  box-sizing: border-box;
+  left: 0;
+  margin: 0;
+  opacity: 0;
+  padding-inline-start: 20px;
+  position: absolute;
+  top: 0;
+  width: 100%;
+}
+
+html[dir=rtl] #fakebox > input {
+  right: 0;
+}
+
+#fakebox-search-icon {
+  -webkit-mask-image:
+      url(../../../../ui/webui/resources/images/icon_search.svg);
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: 100%;
+  background: 24px 24px rgb(117, 117, 117);
+  bottom: 0;
+  height: 24px;
+  left: 0;
+  margin: auto 0;
+  margin-inline-start: 16px;
+  position: absolute;
+  top: 0;
+  width: 24px;
+}
+
+html[dir=rtl] #fakebox-search-icon {
+  right: 0;
+}
+
+#fakebox-text {
+  bottom: 0;
+  color: rgb(117, 117, 117);
+  font-size: 16px;
+  height: 44px;
+  left: 0;
+  line-height: 44px;
+  margin: auto 0;
+  overflow: hidden;
+  padding-inline-start: 48px;
+  position: absolute;
+  right: 44px;
+  text-align: initial;
+  text-overflow: ellipsis;
+  top: 0;
+  vertical-align: middle;
+  visibility: inherit;
+  white-space: nowrap;
+}
+
+html[dir=rtl] #fakebox-text {
+  left: 44px;
+  right: 0;
+}
+
+#fakebox-cursor {
+  background: #333;
+  /* Total 16px height: (46px fakebox height - 2px border) - 14px top - 14px
+   * bottom */
+  bottom: 14px;
+  left: 48px;
+  position: absolute;
+  top: 14px;
+  visibility: hidden;
+  width: 1px;
+}
+
+html[dir=rtl] #fakebox-cursor {
+  left: auto;
+  right: 48px;
+}
+
+#fakebox-microphone {
+  background: url(icons/googlemic_clr_24px.svg) no-repeat center;
+  background-size: 21px 21px;
+  bottom: 0;
+  cursor: pointer;
+  margin-inline-end: 16px;
+  padding: 22px 12px 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 21px;
+}
+
+html[dir=rtl] #fakebox-microphone {
+  left: 0;
+  right: auto;
+}
+
+@keyframes blink {
+  0% {
+    opacity: 1;
+  }
+  61.55% {
+    opacity: 0;
+  }
+}
+
+body.fakebox-drag-focused #fakebox-text:not(.show-placeholder),
+body.fakebox-focused #fakebox-text:not(.show-placeholder) {
+  visibility: hidden;
+}
+
+body.fakebox-drag-focused #fakebox-cursor {
+  visibility: inherit;
+}
+
+body.fakebox-focused #fakebox-cursor {
+  animation: blink 1.3s step-end infinite;
+  visibility: inherit;
+}
+
+#most-visited {
+  /* Total of 40px margin between fakebox and MV tiles: 8px fakebox
+   * margin-bottom + 22px here margin-top + 10px MV margin-top */
+  margin-top: 22px;
+  text-align: -webkit-center;
+  user-select: none;
+}
+
+/* Non-Google pages have no Fakebox, so don't need top margin. */
+.non-google-page #most-visited {
+  margin-top: 0;
+}
+
+#mv-tiles {
+  /* Two rows of tiles of 112px each, 16px of spacing after each row, and 10px
+   * of padding on top. If you change this, also change the corresponding values
+   * in most_visited_single.css. */
+  height: calc(2*(var(--md-tile-size) + var(--md-tile-margin)) + 10px);
+  margin: 0;
+  position: relative;
+  text-align: -webkit-auto;
+  /* Add 2*6px to account for drop shadow on the tiles. If you change this, also
+   * change the corresponding padding in most_visited_single.css. */
+  width: calc(var(--content-width) + 12px);
+}
+
+#mv-notice-container {
+  bottom: -50px;
+  left: 0;
+  margin-bottom: 16px;
+  position: fixed;
+  transition: bottom 400ms;
+  width: 100%;
+}
+
+/* Required to allow click events through the wrapping div of the toast
+ * notification container. */
+#mv-notice-container,
+#error-notice-container {
+  pointer-events: none;
+}
+#mv-notice-container > div,
+#error-notice-container > div {
+  pointer-events: all;
+}
+
+#mv-notice-container.float-up {
+  bottom: 0;
+}
+
+#mv-notice-container.notice-hide {
+  display: none;
+}
+
+/* The notification shown when a tile is blacklisted. */
+#mv-notice {
+  background-color: white;
+  border: 1px solid rgb(var(--GG300-rgb));
+  /* Necessary for a "pill" shape. Using 50% creates an oval. */
+  border-radius: 16px;
+  box-sizing: border-box;
+  font-size: 12px;
+  height: fit-content;
+  margin: 0 auto;
+  /* Set min-height in order to prevent the border from disappearing at certain
+     zooms. */
+  min-height: 35px;
+  opacity: 1;
+  width: fit-content;
+}
+
+@media (prefers-color-scheme: dark) {
+  body:not(.light-chip)  #mv-notice {
+    background-color: rgb(var(--GG900-rgb));
+    border-color: rgba(0, 0, 0, .1);
+  }
+}
+
+#mv-notice span {
+  color: rgb(var(--GG700-rgb));
+  cursor: default;
+  display: inline-block;
+  height: auto;
+  /* Use odd height in order to prevent rounding errors at certain zooms. */
+  line-height: 33px;
+  vertical-align: unset;
+}
+
+@media (prefers-color-scheme: dark) {
+  body:not(.light-chip)  #mv-notice span {
+    color: rgb(var(--GG200-rgb));
+  }
+}
+
+/* Links in the notification. */
+#mv-notice-links span {
+  /* Necessary for a "pill" shape. Using 50% creates an oval. */
+  border-radius: 16px;
+  color: rgb(var(--GB600-rgb));
+  cursor: pointer;
+  margin-inline-start: 0;
+  outline: none;
+  padding: 0 16px;
+  position: relative;
+}
+
+@media (prefers-color-scheme: dark) {
+  body:not(.light-chip)  #mv-notice-links span {
+    color: rgb(var(--GB400-dark-rgb));
+  }
+}
+
+#mv-notice-links span:focus {
+  text-decoration: underline;
+}
+
+#mv-notice-links span:hover,
+#mv-notice-links span:active {
+  background-color: rgba(var(--GB600-rgb), .1);
+  text-decoration: none;
+  transition: background-color 200ms;
+}
+
+@media (prefers-color-scheme: dark) {
+  body:not(.light-chip)  #mv-notice-links
+  :-webkit-any(span:hover, span:active) {
+    background-color: rgba(var(--GB400-dark-rgb), .1);
+  }
+}
+
+#mv-msg {
+  color: var(--text-color);
+  padding: 0 16px;
+}
+
+@media (prefers-color-scheme: dark) {
+  body:not(.light-chip) .default-theme.dark #mv-msg,
+  body:not(.light-chip) .default-theme.dark #mv-notice-links span {
+    color: rgb(var(--GG200-rgb));
+  }
+}
+
+#mv-notice.mv-notice-delayed-hide:not(:focus-within) {
+  opacity: 0;
+  transition-delay: var(--mv-notice-time);
+  transition-property: opacity;
+}
+
+#mv-notice.notice-hide {
+  display: none;
+}
+
+#attribution {
+  bottom: 0;
+  color: var(--text-color-light);
+  cursor: default;
+  display: inline-block;
+  font-size: 13px;
+  left: auto;
+  position: fixed;
+  right: 8px;
+  text-align: start;
+  user-select: none;
+  z-index: -1;
+}
+
+html[dir=rtl] #attribution,
+#attribution.left-align-attribution {
+  left: 8px;
+  right: auto;
+  text-align: end;
+}
+
+#mv-single {
+  border: none;
+  display: block;
+  height: 100%;
+  width: 100%;
+}
+
+.customize-dialog::backdrop {
+  background-color: rgba(255, 255, 255, .75);
+}
+
+@media (prefers-color-scheme: dark) {
+  .customize-dialog::backdrop {
+    background-color: rgba(0, 0, 0, .4);
+  }
+}
+
+#custom-links-edit-dialog {
+  background: transparent;
+  border: none;
+  height: 100%;
+  padding: 0;
+  position: fixed;
+  top: 0;
+  width: 100%;
+}
+
+#custom-links-edit {
+  border: none;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  width: 100%;
+}
+
+#one-google {
+  display: none;
+  position: absolute;
+  top: 0;
+  transition: opacity 130ms;
+  /* One Google Bar can automatically align to left and right
+    based on the profile language preference */
+  width: 100%;
+}
+
+#error-notice-container {
+  bottom: -50px;
+  margin-bottom: 16px;
+  position: fixed;
+  transition: bottom 400ms;
+  user-select: none;
+  width: 100%;
+}
+
+#error-notice-container.float-up {
+  bottom: 0;
+}
+
+#error-notice {
+  background-color: white;
+  border: 1px solid rgb(var(--GG300-rgb));
+  /* Necessary for a "pill" shape. Using 50% creates an oval. */
+  border-radius: 16px;
+  color: rgb(var(--GR600-rgb));
+  display: flex;
+  font-size: 12px;
+  font-weight: normal;
+  height: fit-content;
+  margin: 0 auto;
+  opacity: 1;
+  padding: 0;
+  position: relative;
+  width: fit-content;
+}
+
+@media (prefers-color-scheme: dark) {
+  body:not(.light-chip) #error-notice {
+    background-color: rgb(var(--GG900-rgb));
+    border-color: rgba(0, 0, 0, .1);
+    color: rgb(var(--GR500-dark-rgb));
+  }
+}
+
+#error-notice.notice-hide {
+  display: none;
+}
+
+#error-notice span {
+  align-self: center;
+  display: inline-block;
+  line-height: 32px;
+}
+
+#error-notice-icon {
+  background: url(../../../../ui/webui/resources/images/error.svg) no-repeat center;
+  background-size: 18px 18px;
+  height: 32px;
+  padding: 0 8px;
+  width: 18px;
+}
+
+#error-notice-msg {
+  cursor: default;
+  padding-inline-end: 16px;
+}
+
+#error-notice.has-link #error-notice-msg {
+  padding-inline-end: 0;
+}
+
+html[dir=rtl] #error-notice.has-link #error-notice-msg {
+  padding: 0;
+}
+
+#error-notice-link {
+  /* Necessary for a "pill" shape. Using 50% creates an oval. */
+  border-radius: 16px;
+  color: rgb(var(--GB600-rgb));
+  cursor: pointer;
+  display: none;
+  outline: none;
+  padding: 0 16px;
+  position: relative;
+}
+
+@media (prefers-color-scheme: dark) {
+  body:not(.light-chip) #error-notice-link {
+    color: rgb(var(--GB400-dark-rgb));
+  }
+}
+
+#error-notice:not(.has-link) #error-notice-link {
+  display: none;
+}
+
+#error-notice-link:hover,
+#error-notice-link:focus {
+  text-decoration: underline;
+}
+
+#error-notice-link:hover,
+#error-notice-link:active {
+  background-color: rgba(var(--GB600-rgb), .1);
+  text-decoration: none;
+  transition: background-color 200ms;
+}
+
+@media (prefers-color-scheme: dark) {
+  body:not(.light-chip) #error-notice-link:hover,
+  body:not(.light-chip) #error-notice-link:active {
+    background-color: rgba(var(--GB400-dark-rgb), .1);
+  }
+}
+
+#promo {
+  bottom: 16px;
+  display: none;
+  left: 0;
+  pointer-events: none;
+  position: fixed;
+  right: 0;
+  text-align: center;
+  transition: bottom 400ms;
+}
+
+#promo.float-down {
+  bottom: -50px;
+}
+
+#promo > div {
+  background-color: #FFF;
+  border: 1px solid rgb(var(--GG300-rgb));
+  border-radius: 16px;
+  box-sizing: border-box;
+  color: rgb(var(--GG700-rgb));
+  display: inline-block;
+  font-size: 12px;
+  line-height: 32px;
+  margin-bottom: 0;
+  max-width: 505px;
+  overflow: hidden;
+  padding: 0 16px;
+  pointer-events: all;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (prefers-color-scheme: dark) {
+  body:not(.light-chip) #promo > div {
+    background-color: rgb(var(--GG900-rgb));
+    border-color: rgba(0, 0, 0, .1);
+    color: rgb(var(--GG200-rgb));
+  }
+}
+
+/**
+ * Hide the promo if the window is too small:
+ * max-width = promo.max-width (505px) + 2 * edit gear icon (16px + 28px + 8px)
+ * max-height = ntp-contents.max-height (628px) + promo div height (16px + 22px)
+ */
+@media only screen and (max-width: 609px),
+            screen and (max-height: 666px)  {
+  #promo > div {
+    display: none;
+  }
+}
+
+#promo > div > a {
+  color: rgb(51, 103, 214) !important;
+  text-decoration: none;
+}
+
+#promo > div > a:visited {
+  color: rgb(51, 103, 214) !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  body:not(.light-chip) #promo > div > :-webkit-any(a, a:visited) {
+    color: rgb(var(--GB400-dark-rgb)) !important;
+  }
+}
+
+#promo > div > img {
+  border-radius: 50%;
+  height: 24px;
+  margin: 0 8px 2px -12px;
+  object-fit: cover;
+  vertical-align: middle;
+  width: 24px;
+}
+
+@media (prefers-color-scheme: dark) {
+  body:not(.light-chip) #promo > div > img {
+    background-color: rgb(var(--GG200-rgb));
+  }
+}
+
+#one-google.show-element,
+#promo.show-element {
+  display: block;
+}
+
+#promo.notice-hide {
+  display: none;
+}
+
+#user-content {
+  /* Reduce margin by new height of fakebox (46px) - old height (44px) = 2px */
+  margin-top: -2px;
+  z-index: -1;
+}
+
+#customization-menu {
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px 0 rgba(var(--GG800-rgb), .3),
+              0 4px 8px 3px rgba(var(--GG800-rgb), .15);
+  color: rgb(var(--GG700-rgb));
+  font-size: 0;  /* Remove extra spacing between inline-block elements. */
+  height: 528px;
+  min-width: 800px;
+  padding: 0;
+  user-select: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  #customization-menu {
+    background-color: rgb(var(--dark-mode-dialog-rgb));
+    box-shadow: var(--dark-mode-shadow);
+    color: rgb(var(--GG200-rgb));
+  }
+}
+
+#customization-menu > div {
+  font-size: 13px;
+}
+
+#menu-nav-panel {
+  display: inline-block;
+  height: 384px;
+  left: 0;
+  margin-top: 80px;
+  vertical-align: top;
+  width: 192px;
+}
+
+.menu-option {
+  border-radius: 0 16px 16px 0;
+  color: rgb(var(--GG700-rgb));
+  cursor: pointer;
+  font-size: 14px;
+  height: 32px;
+  left: 0;
+  line-height: 32px;
+  margin-bottom: 16px;
+  outline: none;
+  text-align: start;
+  width: 192px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .menu-option {
+    color: rgb(var(--GG200-rgb));
+  }
+}
+
+html[dir=rtl] .menu-option {
+  border-radius: 16px 0 0 16px;
+}
+
+.menu-option:hover,
+.menu-option:focus {
+  background-color: rgba(var(--GG900-rgb), .1);
+}
+
+@media (prefers-color-scheme: dark) {
+  .menu-option:hover,
+  .menu-option:focus {
+    background-color: rgba(var(--GG500-rgb), .12);
+  }
+}
+
+.menu-option:active,
+.menu-option.selected {
+  background-color: rgb(232, 240, 254);
+  color: rgb(var(--GB700-rgb));
+}
+
+@media (prefers-color-scheme: dark) {
+  .menu-option:active,
+  .menu-option.selected {
+    background-color: rgba(var(--GB200-rgb), .1);
+    color: rgb(var(--GB300-rgb));
+  }
+}
+
+.menu-option-icon-wrapper {
+  display: inline-block;
+  height: 32px;
+  margin-inline-start: 24px;
+  width: 20px;
+}
+
+.menu-option-icon {
+  -webkit-mask-position-x: center;
+  -webkit-mask-position-y: center;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: 20px;
+  background-color: black;
+  background-size: 20px 20px;
+  height: 20px;
+  margin-top: 6px;
+  width: 20px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .menu-option-icon {
+    background-color: rgb(var(--GG200-rgb));
+  }
+}
+
+.menu-option:active .menu-option-icon-wrapper .menu-option-icon,
+.menu-option.selected .menu-option-icon-wrapper .menu-option-icon {
+  background-color: rgb(var(--GB600-rgb));
+}
+
+@media (prefers-color-scheme: dark) {
+  .menu-option:active .menu-option-icon-wrapper .menu-option-icon,
+  .menu-option.selected .menu-option-icon-wrapper .menu-option-icon {
+    background-color: rgb(var(--GB300-rgb));
+  }
+}
+
+#shortcuts-icon {
+  -webkit-mask-image: url(icons/link.svg);
+}
+
+#backgrounds-icon {
+  -webkit-mask-image: url(icons/backgrounds.svg);
+}
+
+#colors-icon {
+  -webkit-mask-image: url(icons/colors.svg);
+}
+
+.menu-option-label {
+  display: inline-block;
+  height: 32px;
+  line-height: 32px;
+  margin-inline-start: 16px;
+  max-width: 126px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  user-select: none;
+  white-space: nowrap;
+}
+
+#menu-header {
+  display: flex;
+  height: 80px;
+  line-height: 80px;
+  padding-inline-end: 24px;
+}
+
+#menu-title {
+  font-size: 16px;
+  user-select: none;
+  width: fit-content;
+}
+
+#menu-footer {
+  border-top: 1px solid rgb(var(--GG200-rgb));
+  bottom: 0;
+  box-sizing: border-box;
+  color: rgb(var(--GG800-rgb));
+  display: flex;
+  height: 64px;
+  justify-content: flex-end;
+  left: 0;
+  padding-inline-start: 0;
+  position: absolute;
+  text-align: end;
+  user-select: none;
+  width: 100%;
+}
+
+@media (prefers-color-scheme: dark) {
+  #menu-footer {
+    border-color: rgba(255, 255, 255, .1);
+  }
+}
+
+#menu-footer > button {
+  height: 32px;
+  line-height: 32px;
+}
+
+#menu-done {
+  margin-inline-end: 16px;
+}
+
+#menu-cancel {
+  margin-inline-end: 8px;
+}
+
+#menu-contents {
+  display: inline-block;
+  height: 464px;
+  margin-inline-start: 40px;
+  position: relative;
+  width: 568px;
+}
+
+.menu-panel {
+  height: 384px;
+  left: 0;
+  /* Pad the content by 5px top/left. This will prevent the focus outline on
+   * tiles from being cut off by overflow-y. */
+  margin-inline-start: -5px;
+  margin-top: -5px;
+  overflow-y: auto;
+  padding-inline-start: 5px;
+  padding-top: 5px;
+  position: absolute;
+  top: 80px;
+  visibility: hidden;
+  width: 100%;
+}
+
+.menu-panel.menu-shown {
+  visibility: visible;
+}
+
+#backgrounds-menu .bg-sel-tile-bg,
+#backgrounds-image-menu .bg-sel-tile-bg {
+  border-radius: 4px;
+  height: 176px;
+  margin-bottom: 45px;
+  margin-inline-end: 8px;
+  margin-inline-start: 0;
+  margin-top: 0;
+  width: 176px;
+}
+
+/* Remove left/right spacing from the last tile in each row. */
+#backgrounds-menu .bg-sel-tile-bg:nth-of-type(3n),
+#backgrounds-image-menu .bg-sel-tile-bg:nth-of-type(3n) {
+  margin-inline-end: 0;
+}
+
+#backgrounds-image-menu .bg-sel-tile-bg {
+  margin-bottom: 8px;
+}
+
+#backgrounds-menu .bg-sel-tile-bg.selected .bg-sel-tile,
+#backgrounds-image-menu .bg-sel-tile-bg.selected .bg-sel-tile {
+  box-shadow: 0 1px 3px 0 rgba(var(--GG800-rgb), .3),
+      0 4px 8px 3px rgba(var(--GG800-rgb), .15);
+  height: 144px;
+  margin: 16px 16px 0 16px;
+  width: 144px;
+}
+
+@media (prefers-color-scheme: dark) {
+  #backgrounds-menu .bg-sel-tile-bg.selected .bg-sel-tile,
+  #backgrounds-image-menu .bg-sel-tile-bg.selected .bg-sel-tile {
+    box-shadow: var(--dark-mode-shadow);
+  }
+}
+
+.using-mouse-nav .bg-sel-tile:focus {
+  outline: none;
+}
+
+#backgrounds-menu .bg-sel-tile,
+#backgrounds-image-menu .bg-sel-tile {
+  background-position: center;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+#customization-menu .bg-sel-tile-title {
+  background-color: unset;
+  color: rgb(var(--GG700-rgb));
+  font-size: 13px;
+  margin-bottom: -34px;
+  min-height: 30px;
+  padding: 0;
+}
+
+@media (prefers-color-scheme: dark) {
+  #customization-menu .bg-sel-tile-title {
+    color: rgb(var(--GG200-rgb));
+  }
+}
+
+#backgrounds-default.bg-sel-tile-bg {
+  background-color: white;
+  height: 176px;
+  width: 176px;
+}
+
+@media (prefers-color-scheme: dark) {
+  #backgrounds-default.bg-sel-tile-bg {
+    background-color: transparent;
+  }
+}
+
+#backgrounds-menu .bg-sel-tile-bg.selected,
+#backgrounds-image-menu .bg-sel-tile-bg.selected  {
+  background-color: rgba(var(--GB900-rgb), .08);
+}
+
+@media (prefers-color-scheme: dark) {
+  #backgrounds-default.selected,
+  #backgrounds-menu .bg-sel-tile-bg.selected,
+  #backgrounds-image-menu .bg-sel-tile-bg.selected {
+    background-color: rgba(var(--GB200-rgb), .1);
+  }
+}
+
+#backgrounds-menu,
+#colors-menu {
+  /* Remove extra spacing between inline-block elements. */
+  font-size: 0;
+}
+
+#backgrounds-upload.bg-sel-tile-bg {
+  background-color: transparent;
+  vertical-align: top;
+}
+
+#menu-back {
+  -webkit-mask-image: url(../../../../ui/webui/resources/images/icon_arrow_back.svg);
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: 20px;
+  background-color: rgb(var(--GG900-rgb));
+  cursor: pointer;
+  height: 20px;
+  margin-inline-start: 8px;
+  margin-top: 8px;
+  outline: none;
+  width: 20px;
+}
+
+@media (prefers-color-scheme: dark) {
+  #menu-back {
+    background-color: rgb(var(--GG200-rgb));
+  }
+}
+
+#menu-back-circle {
+  border-radius: 50%;
+  display: none;
+  height: 36px;
+  margin-inline-end: 4px;
+  margin-inline-start: -12px;
+  margin-top: 22px;
+  outline: none;
+  width: 36px;
+}
+
+.on-img-menu #menu-back-circle {
+  display: inline-block;
+}
+
+#menu-back-circle:active,
+#menu-back-circle:focus {
+  background: rgb(var(--GG300-rgb));
+  background-position: center;
+  background-size: 36px 36px;
+}
+
+@media (prefers-color-scheme: dark) {
+  #menu-back-circle:active,
+  #menu-back-circle:focus {
+    background: rgb(var(--GG800-rgb));
+  }
+
+  #menu-back {
+    background-color: rgb(var(--GG200-rgb));
+  }
+}
+
+html[dir=rtl] #menu-back {
+  transform: scaleX(-1);
+}
+
+#backgrounds-upload-icon {
+  background: white;
+  border: 1px solid rgb(var(--GG300-rgb));
+  box-sizing: border-box;
+  display: inline-block;
+  left: 0;
+  opacity: 1;
+  top: 0;
+}
+
+@media (prefers-color-scheme: dark) {
+  #backgrounds-upload-icon {
+    background-color: rgb(var(--dark-mode-bg-rgb));
+    border-color: rgb(var(--GG700-rgb));
+  }
+}
+
+#backgrounds-upload-arrow {
+  -webkit-mask-image: url(icons/upload.svg);
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: 100%;
+  background: 32px 32px rgb(var(--GG700-rgb));
+  height: 32px;
+  margin: 61px auto 8px;
+  width: 32px;
+}
+
+.selected #backgrounds-upload-arrow {
+  margin-top: 45px;
+}
+
+#backgrounds-upload-text {
+  color: rgb(var(--GG700-rgb));
+  font-size: 13px;
+  text-align: center;
+  width: 100%;
+}
+
+@media (prefers-color-scheme: dark) {
+  #backgrounds-upload-text {
+    color: inherit;
+  }
+}
+
+#customization-menu .bg-sel-tile .selected-circle {
+  height: 20px;
+  left: initial;
+  right: 10px;
+  top: 10px;
+  width: 20px;
+}
+
+html[dir=rtl] #customization-menu .bg-sel-tile .selected-circle {
+  left: 10px;
+  right: initial;
+}
+
+#customization-menu .bg-sel-tile .selected-check {
+  height: 24px;
+  left: initial;
+  right: 9px;
+  top: 7px;
+  width: 24px;
+}
+
+html[dir=rtl] #customization-menu .bg-sel-tile .selected-check {
+  left: 9px;
+  right: initial;
+}
+
+#backgrounds-default-icon {
+  background-color: white;
+  background-repeat: no-repeat;
+  border: 1px solid rgb(var(--GG300-rgb));
+  box-sizing: border-box;
+  margin: auto;
+  opacity: 1;
+}
+
+@media (prefers-color-scheme: dark) {
+  #backgrounds-default-icon {
+    background-color: rgb(var(--dark-mode-dialog-rgb));
+    border-color: rgb(var(--GG700-rgb));
+  }
+
+  .selected #backgrounds-default-icon {
+    border-color: transparent;
+  }
+}
+
+.mini-page {
+  margin: auto;
+  padding-top: 26px;
+  width: fit-content;
+}
+
+.mini-header {
+  -webkit-mask-image: url(icons/header.svg);
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: 100%;
+  background-color: rgb(var(--GG300-rgb));
+  height: 40px;
+  width: 130px;
+}
+
+.mini-header-colorful {
+  background-image: url(icons/colored_header.svg);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 100%;
+  height: 40px;
+  width: 130px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .mini-header-colorful {
+    -webkit-mask-image: url(icons/colored_header.svg);
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-size: 100%;
+    background: white;
+  }
+}
+
+.mini-shortcuts {
+  -webkit-mask-image: url(icons/shortcut-circles.svg);
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: 100%;
+  background-color: rgb(var(--GG300-rgb));
+  height: 42px;
+  margin-inline-start: 7px;
+  margin-top: 12px;
+  width: 116px;
+}
+
+#backgrounds-default:not(.selected) .mini-page {
+  padding-top: 32px;
+}
+
+#backgrounds-default:not(.selected) .mini-header,
+#backgrounds-default:not(.selected) .mini-header-colorful {
+  height: 48px;
+  width: 156px;
+}
+
+#backgrounds-default:not(.selected) .mini-shortcuts {
+  height: 50px;
+  margin-inline-start: 8px;
+  margin-top: 14px;
+  width: 140px;
+}
+
+#shortcuts-menu {
+  line-height: 20px;
+}
+
+#sh-options {
+  display: flex;
+}
+
+.sh-option {
+  margin-inline-end: 9px;
+  width: 268px;
+}
+
+.sh-option-image {
+  border: 1px solid rgb(var(--GG300-rgb));
+  border-radius: 4px;
+  box-sizing: border-box;
+  cursor: pointer;
+  height: 176px;
+  position: relative;
+  width: 268px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .sh-option-image {
+    border-color: rgb(var(--GG700-rgb));
+  }
+}
+
+.selected .sh-option-image {
+  background-color: rgb(var(--GB050-rgb));
+  border-color: rgb(var(--GB600-rgb));
+}
+
+@media (prefers-color-scheme: dark) {
+  .selected .sh-option-image {
+    background-color: rgba(var(--GB200-rgb), .1);
+    border-color: rgb(var(--GB300-rgb));
+  }
+}
+
+.sh-option-mini {
+  background-color: white;
+  border: 1px solid rgb(var(--GG300-rgb));
+  border-radius: 4px;
+  box-sizing: border-box;
+  height: 144px;
+  position: absolute;
+  right: 40px;
+  top: 16px;
+  width: 144px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .sh-option-mini {
+    background-color: rgb(var(--dark-mode-dialog-rgb));
+    border-color: rgb(var(--GG700-rgb));
+  }
+}
+
+html[dir=rtl] .sh-option-mini {
+  left: 40px;
+  right: unset;
+}
+
+.selected .sh-option-mini {
+  box-shadow: 0 1px 3px 0 rgba(var(--GG800-rgb), .3),
+      0 4px 8px 3px rgba(var(--GG800-rgb), .15);
+}
+
+@media (prefers-color-scheme: dark) {
+  .selected .sh-option-mini {
+    border-color: transparent;
+    box-shadow: var(--dark-mode-shadow);
+  }
+}
+
+.sh-option-mini .mini-shortcuts {
+  background-color: rgb(var(--GG500-rgb));
+}
+
+.selected .sh-option-mini .mini-shortcuts {
+  background-color: rgb(var(--GB600-rgb));
+}
+
+@media (prefers-color-scheme: dark) {
+  .selected .sh-option-mini .mini-shortcuts {
+    background-color: rgb(var(--GB300-rgb));
+  }
+}
+
+.sh-option-icon {
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: 100%;
+  background: 96px 96px rgb(var(--GG200-rgb));
+  height: 96px;
+  left: 16px;
+  position: absolute;
+  top: 48px;
+  width: 96px;
+}
+
+#sh-option-cl .sh-option-icon {
+  -webkit-mask-image: url(../../../../ui/webui/resources/images/account_circle.svg);
+}
+
+#sh-option-mv .sh-option-icon {
+  -webkit-mask-image: url(../../../../components/neterror/resources/images/generic-globe.svg);
+}
+
+html[dir=rtl] .sh-option-icon {
+  right: 16px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .sh-option-icon {
+    background-color: rgb(var(--GG700-rgb));
+  }
+}
+
+.selected .sh-option-icon {
+  background-color: rgba(var(--GB600-rgb), .24);
+}
+
+@media (prefers-color-scheme: dark) {
+  .selected .sh-option-icon {
+    background-color: rgb(var(--GB300-rgb));
+  }
+}
+
+.sh-option-image .selected-circle {
+  box-shadow: 0 3px 6px 1px rgba(0, 0, 0, .16),
+      0 1px 2px 1px rgba(0, 0, 0, .23);
+  height: 22px;
+  left: 209px;
+  top: 9px;
+  width: 22px;
+}
+
+html[dir=rtl] .sh-option-image .selected-circle {
+  left: 0;
+  right: 209px;
+}
+
+.sh-option-image .selected-check {
+  left: initial;
+  right: 32px;
+  top: 6px;
+}
+
+html[dir=rtl] .sh-option-image .selected-check {
+  left: 32px;
+  right: initial;
+}
+
+.sh-option-title {
+  font-weight: bold;
+  margin: 8px 0;
+}
+
+#sh-hide {
+  border: 1px solid rgb(var(--GG300-rgb));
+  border-radius: 4px;
+  box-sizing: border-box;
+  display: flex;
+  height: 64px;
+  margin-top: 24px;
+  max-width: 544px;
+  width: 100%;
+}
+
+@media (prefers-color-scheme: dark) {
+  #sh-hide {
+    border-color: rgb(var(--GG700-rgb));
+  }
+}
+
+#sh-hide.selected {
+  background-color: rgb(var(--GB050-rgb));
+  border-color: rgb(var(--GB600-rgb));
+  color: rgb(var(--GB600-rgb));
+}
+
+@media (prefers-color-scheme: dark) {
+  #sh-hide.selected {
+    background-color: rgba(var(--GB200-rgb), .1);
+    border-color: rgb(var(--GB300-rgb));
+    color: rgb(var(--GB300-rgb));
+  }
+}
+
+#sh-hide > div {
+  margin-bottom: auto;
+  margin-top: auto;
+}
+
+#sh-hide-icon {
+  -webkit-mask-image: url(../../../../ui/webui/resources/images/icon_visibility_off.svg);
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: 100%;
+  background: 24px 24px rgb(var(--GG700-rgb));
+  height: 24px;
+  margin-inline-end: 20px;
+  margin-inline-start: 24px;
+  width: 24px;
+}
+
+.selected #sh-hide-icon {
+  background-color: rgb(var(--GB600-rgb));
+}
+
+@media (prefers-color-scheme: dark) {
+  .selected #sh-hide-icon {
+    background-color: rgb(var(--GB300-rgb));
+  }
+}
+
+#sh-hide-title {
+  font-weight: bold;
+}
+
+#sh-hide-toggle-wrapper {
+  height: 16px;
+  margin-inline-end: 20px;
+  margin-inline-start: auto;
+  position: relative;
+  width: 34px;
+}
+
+/* The toggle's container. */
+.switch {
+  background-color: white;
+  border-radius: 8px;
+  display: inline-block;
+  height: 12px;
+  left: 3px;
+  position: absolute;
+  top: 2px;
+  transition: background-color linear 80ms;
+  width: 28px;
+  z-index: 0;
+}
+
+@media (prefers-color-scheme: dark) {
+  .switch {
+    background-color: rgb(var(--dark-mode-dialog-rgb));
+  }
+}
+
+/* Hide the toggle's default checkbox. */
+.switch input {
+  opacity: 0;
+}
+
+/* The slider for the toggle. */
+.toggle {
+  background-color: #ccc;
+  border-radius: 34px;
+  bottom: 0;
+  cursor: pointer;
+  display: block;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  transition: transform linear 80ms, background-color linear 80ms;
+}
+
+/* The knob for the toggle. */
+.toggle .knob {
+  background-color: white;
+  border-radius: 50%;
+  bottom: -2px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, .4);
+  content: '';
+  display: block;
+  height: 16px;
+  left: -3px;
+  position: absolute;
+  transition: transform linear 80ms, background-color linear 80ms;
+  width: 16px;
+}
+
+/* Gray/blue highlight around the knob. */
+.toggle .highlight {
+  background-color: rgb(128, 134, 139);
+  border-radius: 50%;
+  height: 40px;
+  left: -15px;
+  opacity: 0;
+  position: absolute;
+  top: -14px;
+  transition: transform linear 80ms, opacity linear 80ms;
+  width: 40px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .toggle .highlight {
+    background-color: rgb(var(--GG300-rgb));
+  }
+}
+
+input:checked + .toggle {
+  background-color: rgba(var(--GB600-rgb), .5);
+}
+
+@media (prefers-color-scheme: dark) {
+  input:checked + .toggle {
+    background-color: rgba(var(--GB300-rgb), .5);
+  }
+}
+
+input:focus + .toggle {
+  box-shadow: 0 0 1px rgb(33, 150, 243);
+}
+
+input:active + .toggle .highlight,
+#customization-menu:not(.using-mouse-nav) input:focus + .toggle .highlight {
+  opacity: .15;
+}
+
+@media (prefers-color-scheme: dark) {
+  input:active + .toggle .highlight,
+  #customization-menu:not(.using-mouse-nav) input:focus + .toggle .highlight {
+    opacity: .4;
+  }
+}
+
+input:checked + .toggle .knob,
+input:checked + .toggle .highlight {
+  background-color: rgb(var(--GB600-rgb));
+  transform: translateX(18px);
+}
+
+@media (prefers-color-scheme: dark) {
+  input:checked + .toggle .knob,
+  input:checked + .toggle .highlight {
+    background-color: rgb(var(--GB300-rgb));
+  }
+}
+
+#colors-menu {
+  --check-mark-size: 20px;
+  --custom-color-border: rgb(var(--GG300-rgb));
+  --custom-color-dark: rgb(var(--GG100-rgb));
+  --custom-color-light: white;
+  --tile-size: 64px;
+  --tile-margin: 25px;
+}
+
+#colors-menu .bg-sel-tile-bg {
+  background-color: unset;
+  border-radius: 50%;
+  box-sizing: border-box;
+  cursor: pointer;
+  height: var(--tile-size);
+  margin-bottom: var(--tile-margin);
+  margin-inline-end: var(--tile-margin);
+  margin-inline-start: 0;
+  margin-top: 0;
+  width: var(--tile-size);
+}
+
+#colors-menu .bg-sel-tile-bg.selected {
+  box-shadow: 0 0 0 4px rgba(var(--GB600-rgb), .4);
+}
+
+@media (prefers-color-scheme: dark) {
+  #colors-menu .bg-sel-tile-bg.selected {
+    box-shadow: 0 0 0 4px rgba(var(--GB600-rgb), .4);
+  }
+}
+
+/*
+ To avoid circle showing behind the checkmark, draw it 2px smaller and 1px
+ below so that it is always 1px smaller then the checkmark from all sides.
+ */
+#colors-menu .bg-sel-tile .selected-circle {
+  height: calc(var(--check-mark-size) - 2px);
+  right: 0;
+  top: 1px;
+  width: calc(var(--check-mark-size) - 2px);
+}
+
+html[dir=rtl] #colors-menu .bg-sel-tile .selected-circle {
+  left: 0;
+}
+
+#colors-menu .bg-sel-tile .selected-check {
+  background: url(icons/check_circle.svg) no-repeat center;
+  background-size: var(--check-mark-size) var(--check-mark-size);
+  height: var(--check-mark-size);
+  right: 0;
+  top: 0;
+  width: var(--check-mark-size);
+}
+
+html[dir=rtl] #colors-menu .bg-sel-tile .selected-check {
+  left: 0;
+}
+
+@media (prefers-color-scheme: dark) {
+  #colors-menu .bg-sel-tile .selected-check::after {
+    -webkit-mask-image: url(icons/check_circle.svg);
+    -webkit-mask-size: var(--check-mark-size);
+    height: var(--check-mark-size);
+    width: var(--check-mark-size);
+  }
+}
+
+#colors-default-icon {
+  background-image: url(icons/default_theme.svg);
+  background-repeat: no-repeat;
+  background-size: contain;
+  opacity: 1;
+}
+
+@media (prefers-color-scheme: dark) {
+  #colors-default-icon {
+    background-image: url(icons/default_theme_dark.svg);
+  }
+}
+
+#colors-theme {
+  border: 1px solid rgb(var(--GG200-rgb));
+  border-radius: 4px;
+  display: none;
+  height: 64px;
+  margin-bottom: 24px;
+  max-width: 544px;
+  width: 100%;
+}
+
+@media (prefers-color-scheme: dark) {
+  #colors-theme {
+    border-color: rgb(var(--GG700-rgb));
+  }
+}
+
+#colors-theme.visible {
+  display: flex;
+  font-size: small;
+}
+
+#colors-theme > * {
+  margin-bottom: auto;
+  margin-top: auto;
+}
+
+#colors-theme-icon {
+  -webkit-mask-image: url(icons/brush.svg);
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: 100%;
+  background-color: rgb(var(--GG700-rgb));
+  height: 24px;
+  margin-inline-end: 20px;
+  margin-inline-start: 24px;
+  width: 24px;
+}
+
+@media (prefers-color-scheme: dark) {
+  #colors-theme-icon {
+    background-color: rgb(var(--GG200-rgb));
+  }
+}
+
+#colors-theme-name {
+  font-weight: bold;
+}
+
+#colors-theme-link {
+  margin-inline-end: 24px;
+  margin-inline-start: auto;
+  text-decoration: none;
+}
+
+#colors-theme-link-icon {
+  -webkit-mask-image: url(../../../../ui/webui/resources/images/open_in_new.svg);
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: 100%;
+  background-color: rgb(var(--GG700-rgb));
+  height: 20px;
+  width: 20px;
+}
+
+@media (prefers-color-scheme: dark) {
+  #colors-theme-link-icon {
+    background-color: rgb(var(--GG200-rgb));
+  }
+}
+
+#colors-theme-uninstall {
+  height: fit-content;
+  margin-inline-end: 16px;
+}
+
+#color-picker-container.visible {
+  display: inline-block;
+}
+
+#color-picker-container {
+  display: none;
+  vertical-align: top;
+}
+
+#color-picker-tile {
+  background-color: var(--custom-color-dark);
+  border: 1px solid var(--custom-color-border);
+  border-radius: 50%;
+  box-sizing: border-box;
+  opacity: 1;
+}
+
+#color-picker-icon {
+  -webkit-mask-image: url(icons/colorize.svg);
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: 100%;
+  background-color: rgb(var(--GG700-rgb));
+  display: inline-block;
+  height: 20px;
+  /* Position the icon in the middle with offset of half its size. */
+  left: calc(50% - 10px);
+  position: absolute;
+  /* Position the icon in the middle with offset of half its size. */
+  top: calc(50% - 10px);
+  width: 20px;
+}
+
+#color-picker-icon.white {
+  background-color: white;
+}
+
+#left-semicircle {
+  background-color: var(--custom-color-light);
+  border-bottom-left-radius: var(--tile-size);
+  border-top-left-radius: var(--tile-size);
+  display: inline-block;
+  height: 100%;
+  width: 50%;
+}
+
+html[dir=rtl] #left-semicircle {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: var(--tile-size);
+  border-top-left-radius: 0;
+  border-top-right-radius: var(--tile-size);
+}
+
+#refresh-daily-wrapper {
+  display: none;
+  margin-inline-start: auto;
+}
+
+.on-img-menu #refresh-daily-wrapper {
+  display: flex;
+}
+
+#refresh-toggle-wrapper {
+  height: 16px;
+  margin-inline-end: 12px;
+  margin-top: 31px;
+  position: relative;
+  width: 34px;
+}
+
+#refresh-text {
+  font-size: 16px;
+  user-select: none;
+  width: fit-content;
+}

@@ -1,0 +1,16 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="chrome://resources/cr_components/chromeos/cellular_setup/base_page.html">
+
+<dom-module id="provisioning-page">
+  <template>
+    <base-page title="[[i18n('provisioningPageTitle')]]">
+      <div slot="page-body">
+        <!-- TODO(azeemarshad): Add webview and error screen -->
+        [[i18n('provisioningPageTitle')]]
+      </div>
+    </base-page>
+  </template>
+  <script src="provisioning_page.js"></script>
+</dom-module>

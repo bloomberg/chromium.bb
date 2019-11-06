@@ -1,0 +1,48 @@
+Name: Android SDK
+URL: http://developer.android.com/sdk/index.html
+Version: 28
+  Android SDK Build-tools 27.0.3
+  Android SDK Emulator 29.0.9
+  Android SDK Platform-tools 28.0.3
+  Android SDK Platform API 28
+  Android SDK Sources 28
+  Android SDK Tools 26.1.1
+  Android Lint 26.4.0-alpha04
+  Google Cloud Messaging 3
+  SDK Patch Applier v4
+Security Critical: no
+License: Apache Version 2.0
+
+Description:
+The Android SDK provide API libraries and developer tools necessary to
+build, test and debug for Android.
+
+Local Modifications:
+
+- public/
+  - Included the Android support library and required extras packages.
+  - Added extras/chromium/.
+  - Added build-tools/25.0.2/lib/dx.jar for //third_party/byte_buddy
+- public/tools-lint/
+  - Go to go/studio-master-grid
+  - Find the first green build under sdk_tools_linux
+  - Email tnorbye@google.com and cc android-devtools@ to determine if that build
+    can be used publicly.
+  - Click through to Artifacts.
+  - Click the copy icon at the right for sdk-repo-linux-tools-XXXXXXX.zip
+  - Use the copied command to download the zip.
+  - Unzip and rename tools to tools-lint and move to the right spot in our repo.
+  - Create CL and carbon copy tnorbye@google.com
+
+No other modifications has been made to the public Android SDK.
+
+Update Instructions:
+
+public/tools/bin/sdkmanager --list  # Look for"Installed packages:"
+public/tools/bin/sdkmanager --update "name from --list's output"
+cipd create --pkg-def cipd_emulator.yaml  # For each package updated
+
+Then,
+* Update //DEPS with InstanceIds printed by "cipd create".
+* Update versions in this README.chromium.
+  * The overall Version field should corresponde to the Platform API version.

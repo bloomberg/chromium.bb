@@ -1,0 +1,31 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+library chromium.cast;
+
+/// Describes the configuration under which a Cast application should run.
+table ApplicationConfig {
+  /// Cast application Id.
+  1: string id;
+
+  /// Name to display to the user when referring to this application.
+  2: string display_name;
+
+  /// URL from which the application should be loaded, if it has a web-based
+  /// implementation.
+  3: string web_url;
+
+  /// Touch input policy to be applied to the application.
+  /// If true, then touch input is forced on.
+  /// If false, then touch input is disabled.
+  /// If unset, then the caller is allowed to enable or disable input.
+  4: bool touch_enabled_policy;
+};
+
+/// Service interface for working with application configurations.
+[Discoverable]
+protocol ApplicationConfigManager {
+  /// Returns the ApplicationConfig for the specified application Id.
+  GetConfig(string id) -> (ApplicationConfig config);
+};

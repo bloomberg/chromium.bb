@@ -1,0 +1,15 @@
+include_rules = [
+  "-components",
+  "+components/mirroring/mojom",
+  "+components/mirroring/service",
+  "+components/version_info",
+  "+crypto",
+  "+gpu/config",
+  "+gpu/ipc/client",
+  "+net",
+  "+services/network/public",
+  "+services/network/test",
+  "+services/service_manager",
+  "+services/viz/public",
+  "+ui/base",
+]

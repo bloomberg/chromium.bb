@@ -1,0 +1,39 @@
+diff --git a/components-chromium/font-roboto/roboto.js b/components-chromium/font-roboto/roboto.js
+index 02aebd81b0df..342d26d6f797 100644
+--- a/components-chromium/font-roboto/roboto.js
++++ b/components-chromium/font-roboto/roboto.js
+@@ -17,7 +17,6 @@ if (!window.polymerSkipLoadingFontRoboto) {
+   link.rel = 'stylesheet';
+   link.type = 'text/css';
+   link.crossOrigin = 'anonymous';
+-  link.href =
+-      'https://fonts.googleapis.com/css?family=Roboto+Mono:400,700|Roboto:400,300,300italic,400italic,500,500italic,700,700italic';
++  link.href = 'chrome://resources/css/roboto.css';
+   document.head.appendChild(link);
+ }
+diff --git a/components-chromium/polymer/lib/legacy/legacy-element-mixin.js b/components-chromium/polymer/lib/legacy/legacy-element-mixin.js
+index 21fa65c0208d..bd591b6dd341 100644
+--- a/components-chromium/polymer/lib/legacy/legacy-element-mixin.js
++++ b/components-chromium/polymer/lib/legacy/legacy-element-mixin.js
+@@ -10,7 +10,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
+ import '../../../shadycss/entrypoints/apply-shim.js';
+ import { ElementMixin } from '../mixins/element-mixin.js';
+ import { GestureEventListeners } from '../mixins/gesture-event-listeners.js';
+-import { DirMixin } from '../mixins/dir-mixin.js';
+ import { dedupingMixin } from '../utils/mixin.js';
+ import '../utils/render-status.js';
+ import '../utils/unresolved.js';
+@@ -42,11 +41,10 @@ export const LegacyElementMixin = dedupingMixin((base) => {
+    * @constructor
+    * @implements {Polymer_ElementMixin}
+    * @implements {Polymer_GestureEventListeners}
+-   * @implements {Polymer_DirMixin}
+    * @extends {HTMLElement}
+    * @private
+    */
+-  const legacyElementBase = DirMixin(GestureEventListeners(ElementMixin(base)));
++  const legacyElementBase = GestureEventListeners(ElementMixin(base));
+ 
+   /**
+    * Map of simple names to touch action names
+

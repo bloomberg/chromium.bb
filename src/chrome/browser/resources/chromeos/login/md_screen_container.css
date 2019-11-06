@@ -1,0 +1,120 @@
+/* Copyright 2014 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+#outer-container {
+  align-items: center;
+  bottom: 57px;  /* Leave space for the header bar */
+  display: flex;
+  justify-content: center;
+  left: 0;
+  min-height: 717px; /* This enables scrolling. Min resolution: 1024x768 */
+  perspective: 1px; /* Workaround, see http://crbug.com/360567 */
+  position: absolute;
+  right: 0;
+  top: 0;
+  z-index: 1;
+}
+
+.oobe-display #outer-container {
+  bottom: 47px; /* header-bar is 47 pixels high during OOBE */
+  perspective: 600px;
+}
+
+#scroll-container {
+  bottom: 0;        /* Allows content overlap with control bar. */
+  left: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+#scroll-container.disable-scroll {
+  overflow-y: hidden;
+}
+
+#scroll-container::-webkit-scrollbar {
+  display: none;
+}
+
+#inner-container {
+  border-radius: 2px;
+  position: relative;
+}
+
+#inner-container.animation {
+  overflow: hidden;
+}
+
+#inner-container.disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+#inner-container.disable-scroll {
+  left: 0;
+  position: absolute;
+}
+
+/* Screens that have a border and background. */
+html:not([full-screen-dialog]) #oobe.auto-enrollment-check #inner-container,
+html:not([full-screen-dialog]) #oobe.autolaunch #inner-container,
+html:not([full-screen-dialog]) #oobe.confirm-password #inner-container,
+html:not([full-screen-dialog]) #oobe.debugging #inner-container,
+html:not([full-screen-dialog]) #oobe.enrollment #inner-container,
+html:not([full-screen-dialog]) #oobe.fatal-error #inner-container,
+html:not([full-screen-dialog]) #oobe.gaia-signin #inner-container,
+html:not([full-screen-dialog]) #oobe.hid-detection #inner-container,
+html:not([full-screen-dialog]) #oobe.kiosk-enable #inner-container,
+html:not([full-screen-dialog]) #oobe.oauth-enrollment #inner-container,
+html:not([full-screen-dialog]) #oobe.password-changed #inner-container,
+html:not([full-screen-dialog]) #oobe.ad-password-change #inner-container,
+html:not([full-screen-dialog]) #oobe.supervised-user-creation #inner-container,
+html:not([full-screen-dialog]) #oobe.supervised-user-creation-dialog
+    #inner-container,
+html:not([full-screen-dialog]) #oobe.terms-of-service #inner-container,
+html:not([full-screen-dialog]) #oobe.arc-tos #inner-container,
+html:not([full-screen-dialog]) #oobe.update #inner-container,
+html:not([full-screen-dialog]) #oobe.update-required #inner-container,
+html:not([full-screen-dialog]) #oobe.user-image #inner-container,
+html:not([full-screen-dialog]) #oobe.wrong-hwid #inner-container,
+html:not([full-screen-dialog]) #oobe.unrecoverable-cryptohome-error
+    #inner-container {
+  background: white;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3),
+              0 4px 23px 5px rgba(0, 0, 0, 0.2),
+              0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+html:not([full-screen-dialog]) #oobe.error-message #inner-container,
+html:not([full-screen-dialog]) #oobe.tpm-error-message #inner-container {
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3),
+              0 4px 23px 5px rgba(0, 0, 0, 0.2),
+              0 2px 6px rgba(0, 0, 0, 0.15);
+
+}
+
+/* Only play this animation when 'down' class is removed. */
+.oobe-display #inner-container:not(.down) {
+  transition: transform 200ms ease-in-out;
+}
+
+.oobe-display #inner-container.down {
+  transform: translateY(50px) rotateX(-2.5deg);
+}
+
+body:not(.oobe-display) #inner-container {
+  height: 262px;
+  padding: 0;
+  width: 1100px;
+}
+
+#outer-container.fullscreen,
+#outer-container.fullscreen #oobe,
+#outer-container.fullscreen #oobe #inner-container {
+  height: 100%;
+  width: 100%;
+}

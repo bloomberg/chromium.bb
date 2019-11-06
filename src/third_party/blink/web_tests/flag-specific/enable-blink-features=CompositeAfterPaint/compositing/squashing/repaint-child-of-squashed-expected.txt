@@ -1,0 +1,59 @@
+CASE 1, original layer tree
+{
+  "layers": [
+    {
+      "name": "Scrolling background of LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "LayoutNGBlockFlow (positioned) DIV class='composited box behind'",
+      "position": [50, 50],
+      "bounds": [100, 100],
+      "contentsOpaque": true,
+      "backgroundColor": "#0000FF"
+    },
+    {
+      "name": "LayoutNGBlockFlow (positioned) DIV class='box top'",
+      "position": [130, 130],
+      "bounds": [100, 100],
+      "contentsOpaque": true,
+      "backgroundColor": "#00FFFF"
+    }
+  ]
+}
+
+CASE 2, change color of "inner" to red
+{
+  "layers": [
+    {
+      "name": "Scrolling background of LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "LayoutNGBlockFlow (positioned) DIV class='composited box behind'",
+      "position": [50, 50],
+      "bounds": [100, 100],
+      "contentsOpaque": true,
+      "backgroundColor": "#0000FF"
+    },
+    {
+      "name": "LayoutNGBlockFlow (positioned) DIV class='box top'",
+      "position": [130, 130],
+      "bounds": [100, 100],
+      "contentsOpaque": true,
+      "backgroundColor": "#00FFFF",
+      "paintInvalidations": [
+        {
+          "object": "LayoutNGBlockFlow (positioned) DIV id='inner'",
+          "rect": [10, 10, 50, 50],
+          "reason": "background"
+        }
+      ]
+    }
+  ]
+}
+

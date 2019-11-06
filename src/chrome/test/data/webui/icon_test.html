@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script>
+
+// Test the case where a non-favicon URL is passed.
+function testGetFavicon_NonFavicon() {
+  var url = 'http://foo.com';
+  var expectedDesktop = '-webkit-image-set(' +
+      'url("chrome://favicon2/?size=16&scale_factor=1x&url_type=page_url&url=' +
+      encodeURIComponent('http://foo.com') +
+      '&allow_google_server_fallback=0") 1x, ' +
+      'url("chrome://favicon2/?size=16&scale_factor=2x&url_type=page_url&url=' +
+      encodeURIComponent('http://foo.com') +
+      '&allow_google_server_fallback=0") 2x)';
+  var expectedOther = '-webkit-image-set(' +
+      'url("chrome://favicon2/?size=16&scale_factor=1x&url_type=page_url&url=' +
+      encodeURIComponent('http://foo.com') +
+      '&allow_google_server_fallback=0") ' +
+      window.devicePixelRatio + 'x)';
+
+  var isDesktop = cr.isMac || cr.isChromeOS || cr.isWindows || cr.isLinux;
+  var expected = isDesktop ? expectedDesktop : expectedOther;
+  assertEquals(expected, cr.icon.getFavicon(url));
+}
+
+// Test the case where the favicon URL is passed.
+function testGetFavicon_IconUrl() {
+  var url = 'http://foo.com/foo.ico';
+  var expectedDesktop = '-webkit-image-set(' +
+      'url("chrome://favicon2/?size=16&scale_factor=1x&url_type=icon_url&url=' +
+      encodeURIComponent('http://foo.com/foo.ico')+'") 1x, ' +
+      'url("chrome://favicon2/?size=16&scale_factor=2x&url_type=icon_url&url=' +
+      encodeURIComponent('http://foo.com/foo.ico')+'") 2x)';
+  var expectedOther = '-webkit-image-set(' +
+      'url("chrome://favicon2/?size=16&scale_factor=1x&url_type=icon_url&url=' +
+      encodeURIComponent('http://foo.com/foo.ico')+'") ' +
+      window.devicePixelRatio + 'x)';
+
+  var isDesktop = cr.isMac || cr.isChromeOS || cr.isWindows || cr.isLinux;
+  var expected = isDesktop ? expectedDesktop : expectedOther;
+  assertEquals(expected, cr.icon.getFavicon(url));
+}
+
+function testGetFileIconUrl() {
+  assertEquals(cr.icon.getFileIconUrl('file path'),
+               'chrome://fileicon/?path=file+path&scale=' +
+                   window.devicePixelRatio + 'x');
+}
+
+</script>
+</body>
+</html>

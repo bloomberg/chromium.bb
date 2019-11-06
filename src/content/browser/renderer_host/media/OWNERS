@@ -1,0 +1,16 @@
+file://media/OWNERS
+
+# WebRTC OWNERS.
+guidou@chromium.org
+tommi@chromium.org
+olka@chromium.org
+maxmorin@chromium.org
+
+per-file *video*=chfremer@chromium.org
+
+# Original (legacy) owner.
+per-file *video*=emircan@chromium.org
+per-file *video*=mcasas@chromium.org
+
+# TEAM: webrtc-dev@chromium.org
+# COMPONENT: Blink>GetUserMedia

@@ -1,0 +1,11 @@
+boliu@chromium.org
+changwan@chromium.org
+michaelbai@chromium.org
+tobiasjs@chromium.org
+torne@chromium.org
+
+# Translation artifacts:
+per-file *.xtb=file://tools/translation/TRANSLATION_OWNERS
+
+# TEAM: android-webview-dev@chromium.org
+# COMPONENT: Mobile>WebView

@@ -1,0 +1,5 @@
+# The public includes shouldn't depend on anything not public.
+include_rules = [
+  "-chrome/browser/performance_manager",
+  "+chrome/browser/performance_manager/public",
+]

@@ -1,0 +1,7 @@
+rootWebArea
+++genericContainer ignored
+++++form
+++++++group name='Browser Engines:'
+++++++++legend
+++++++++++staticText name='Browser Engines:'
+++++++++++++inlineTextBox name='Browser Engines:'

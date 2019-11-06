@@ -1,0 +1,14 @@
+[
+    {
+        "duration": "48.0",
+        "name": "heap_profiling.mobile.disabled/load:news:cnn:2018"
+    },
+    {
+        "duration": "38.0",
+        "name": "heap_profiling.mobile.disabled/load:search:google:2018"
+    },
+    {
+        "duration": "37.0",
+        "name": "heap_profiling.mobile.disabled/load:social:twitter"
+    }
+]

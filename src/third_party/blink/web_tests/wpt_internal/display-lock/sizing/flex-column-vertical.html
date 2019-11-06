@@ -1,0 +1,45 @@
+<!doctype HTML>
+<html class="reftest-wait">
+<meta charset="utf8">
+<title>Display Locking: flex column, vertical-rl</title>
+<link rel="author" title="Vladimir Levin" href="mailto:vmpstr@chromium.org">
+<link rel="help" href="https://github.com/WICG/display-locking">
+<link rel="match" href="flex-column-vertical-ref.html">
+<script src="/common/reftest-wait.js"></script>
+
+<style>
+#flexer {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  width: 200px;
+  height: 200px;
+  background: lightgreen;
+  writing-mode: vertical-rl;
+}
+#container {
+  contain: style layout;
+}
+.item {
+  width: 50px;
+  height: 60px;
+  background: blue;
+}
+</style>
+
+<div id="flexer">
+  <div class="item"></div>
+  <div id="container"></div>
+  <div class="item"></div>
+</div>
+
+<script>
+async function runTest() {
+  const container = document.getElementById("container");
+  await container.displayLock.acquire({ timeout: Infinity, size: [12, 34] });
+  takeScreenshot();
+}
+
+window.onload = runTest;
+</script>
+</html>

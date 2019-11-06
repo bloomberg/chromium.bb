@@ -1,0 +1,4 @@
+# WebGPU tests are only run with --enable-unsafe-webgpu
+Bug(none) webgpu/canvas_context.html [ Pass ]
+Bug(none) webgpu/buffer_mapping.html [ Pass ]
+Bug(none) webgpu/fence.html [ Pass ]

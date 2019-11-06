@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- XR specific strings (included from generated_resources.grd and android_chrome_strings.grd). -->
+<!-- These strings are used in the consent flow dialog. -->
+<grit-part>
+  <!-- XR consent dialog. -->
+  <message name="IDS_XR_CONSENT_DIALOG_TITLE" desc="Title of the user consent dialog displayed before allowing a website to start a VR presentation">
+    Allow this site to access your VR sensors?
+  </message>
+  <message name="IDS_XR_CONSENT_DIALOG_DESCRIPTION" desc="Body of the user consent dialog displayed before allowing a website to start a VR presentation">
+    Sensor data will only be shared while you're in this VR experience. The site may be able to learn about you using certain info, such as:
+    - Your location
+    - Your physical features, like eye position
+    - Your movements, like how you walk
+
+    Make sure you trust this site before you allow access.
+  </message>
+  <message name="IDS_XR_CONSENT_DIALOG_BUTTON_DENY_VR" desc="Text on the button of a user consent dialog which denies a website from starting a VR presentation">
+    Don&#39;t allow
+  </message>
+  <message name="IDS_XR_CONSENT_DIALOG_BUTTON_ALLOW_AND_ENTER_VR" desc="Text on the button of a user consent dialog which allows a website to start a VR presentation">
+    Allow &amp; enter VR
+  </message>
+</grit-part>

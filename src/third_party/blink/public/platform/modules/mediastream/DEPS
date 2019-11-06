@@ -1,0 +1,6 @@
+include_rules = [
+    "+base/memory/singleton.h",
+    "+base/sequence_checker.h",
+    "+media/base",
+    "+media/capture",
+]

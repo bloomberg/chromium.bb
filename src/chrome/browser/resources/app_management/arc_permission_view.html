@@ -1,0 +1,82 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="browser_proxy.html">
+<link rel="import" href="icons.html">
+<link rel="import" href="metadata_view.html">
+<link rel="import" href="permission_item.html">
+<link rel="import" href="permission_view_header.html">
+<link rel="import" href="shared_style.html">
+<link rel="import" href="store_client.html">
+<link rel="import" href="pin_to_shelf_item.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
+<link rel="import" href="chrome://resources/cr_elements/icons.html">
+
+<dom-module id="app-management-arc-permission-view">
+  <template>
+    <style include="app-management-shared-css">
+    </style>
+
+    <app-management-permission-view-header>
+    </app-management-permission-view-header>
+
+    <div class="permission-list card-container">
+      <app-management-pin-to-shelf-item
+        id="pin-to-shelf-setting"
+        class="permission-card-row separated-row header-text"
+        app_="[[app_]]">
+      </app-management-pin-to-shelf-item>
+      <app-management-permission-item id="notifications-card"
+        class="permission-card-row separated-row header-text"
+        permission-label="$i18n{notifications}" permission-type="NOTIFICATIONS"
+        hidden$="[[!isArcSupported_]]">
+      </app-management-permission-item>
+      <div id="permissions-card"
+        class="permission-card-row"
+        hidden$="[[!isArcSupported_]]">
+        <div class="subpermission-list">
+          <div id="subpermission-expand-row"
+            class="subpermission-row separated-row"
+            hidden$="[[!isArcSupported_]]">
+            <div class="header-text">$i18n{permissions}</div>
+          </div>
+          <app-management-permission-item class="subpermission-row"
+            icon="cr:location-on"
+            permission-label="$i18n{location}"
+            permission-type="LOCATION">
+          </app-management-permission-item>
+          <app-management-permission-item class="subpermission-row"
+            icon="cr:videocam"
+            permission-label="$i18n{camera}"
+            permission-type="CAMERA">
+          </app-management-permission-item>
+          <app-management-permission-item class="subpermission-row"
+            icon="cr:mic"
+            permission-label="$i18n{microphone}"
+            permission-type="MICROPHONE">
+          </app-management-permission-item>
+          <app-management-permission-item class="subpermission-row"
+            icon="app-management:contacts"
+            permission-label="$i18n{contacts}"
+            permission-type="CONTACTS">
+          </app-management-permission-item>
+          <app-management-permission-item class="subpermission-row"
+            icon="app-management:storage"
+            permission-label="$i18n{storage}"
+            permission-type="STORAGE">
+          </app-management-permission-item>
+        </div>
+      </div>
+      <div id="more-settings"
+        class="permission-card-row separated-row header-text clickable"
+        on-click="onClickNativeSettingsButton_">
+        <div class="header-text">$i18n{moreSettings}</div>
+        <div class="permission-row-controls">
+          <cr-icon-button class="native-settings-icon icon-external"
+            tabindex="0">
+          </cr-icon-button>
+        </div>
+      </div>
+    </div>
+  </template>
+  <script src="arc_permission_view.js"></script>
+</dom-module>

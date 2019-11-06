@@ -1,0 +1,99 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+apply plugin: ChromiumPlugin
+
+repositories {
+    mavenCentral()
+    maven {
+        url 'https://maven.google.com'
+    }
+}
+
+dependencies {
+    // Note about the configuration names: they are defined in buildSrc/ChromiumPlugin
+
+    // Architecture components
+    def archComponentsVersion = '1.1.1'
+    compile "android.arch.lifecycle:runtime:${archComponentsVersion}"
+    compile "android.arch.lifecycle:common:${archComponentsVersion}"
+    compile "android.arch.lifecycle:common-java8:${archComponentsVersion}"
+
+    // Play services libraries
+    // See https://developers.google.com/android/guides/releases for updates
+    // Starting from 15.0.0 these libraries are allowed to update independently
+    def gmsVersion = '15.0.1'
+    compile "com.google.android.gms:play-services-basement:${gmsVersion}"
+    compile "com.google.android.gms:play-services-tasks:${gmsVersion}"
+    compile "com.google.android.gms:play-services-base:${gmsVersion}"
+    compile "com.google.android.gms:play-services-auth-base:${gmsVersion}"
+    compile "com.google.android.gms:play-services-auth-api-phone:${gmsVersion}"
+    compile "com.google.android.gms:play-services-auth:${gmsVersion}"
+    compile "com.google.android.gms:play-services-cast:16.0.1"
+    compile "com.google.android.gms:play-services-cast-framework:16.0.1"
+    compile "com.google.android.gms:play-services-iid:${gmsVersion}"
+    compile "com.google.android.gms:play-services-instantapps:16.0.0"
+    compile "com.google.android.gms:play-services-gcm:${gmsVersion}"
+    compile "com.google.android.gms:play-services-location:${gmsVersion}"
+    compile "com.google.android.gms:play-services-vision-common:${gmsVersion}"
+    compile "com.google.android.gms:play-services-vision:${gmsVersion}"
+    compile "com.google.android.gms:play-services-fido:${gmsVersion}"
+
+    // Support v4 libraries
+    def supportLibVersion = '27.0.0'
+    compile "com.android.support:support-v4:${supportLibVersion}"
+    compile "com.android.support:support-compat:${supportLibVersion}"
+    compile "com.android.support:support-core-ui:${supportLibVersion}"
+    compile "com.android.support:support-core-utils:${supportLibVersion}"
+
+    // Support v7 libraries
+    compile "com.android.support:appcompat-v7:${supportLibVersion}"
+    compile "com.android.support:gridlayout-v7:${supportLibVersion}"
+    compile "com.android.support:mediarouter-v7:${supportLibVersion}"
+    compile "com.android.support:recyclerview-v7:${supportLibVersion}"
+    compile "com.android.support:cardview-v7:${supportLibVersion}"
+    compile "com.android.support:preference-v7:${supportLibVersion}"
+
+    compile "com.android.support:support-v13:${supportLibVersion}"
+
+    compile "com.android.support:preference-leanback-v17:${supportLibVersion}"
+
+    compile "com.android.support:support-annotations:${supportLibVersion}"
+    compile "com.android.support:design:${supportLibVersion}"
+
+    compile "com.android.support:multidex:1.0.0"
+
+    buildCompile "javax.inject:javax.inject:1"
+
+    // Dagger
+    def daggerVersion = '2.17'
+    buildCompile "com.google.dagger:dagger:${daggerVersion}"
+    annotationProcessor "com.google.dagger:dagger-compiler:${daggerVersion}"
+
+    // JavaPoet
+    // Matches version depended on by Dagger. Uses annotationProcessor so that
+    // it doesn't get supports_android, which is given by compile.
+    annotationProcessor "com.squareup:javapoet:1.11.0"
+
+    compile "com.google.protobuf:protobuf-lite:3.0.1"
+
+    // Androidx test libraries
+    testCompile "androidx.test:core:1.0.0"
+    testCompile "androidx.test:monitor:1.1.0"
+    testCompile "androidx.test:rules:1.1.0"
+    testCompile "androidx.test:runner:1.1.0"
+    testCompile "androidx.test.ext:junit:1.0.0"
+}
+
+task setUpRepository(type: BuildConfigGenerator) {
+    // Paths are relative to the chromium source root.
+    repositoryPath 'third_party/android_deps'
+    depsPath 'DEPS'
+    chromiumSourceRoot '../../../..'
+    cipdBucket 'chromium'
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '4.3.1'
+}

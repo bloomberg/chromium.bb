@@ -1,0 +1,47 @@
+/* Copyright 2018 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+.title {
+  font-size: 26px;
+  padding-bottom: 48px;
+}
+
+#footer-text {
+  padding-top: 24px;
+}
+
+.oobe-popup {
+  width: 640px;
+}
+
+#webview-container {
+  width: 100%;
+}
+
+#webview-container.overlay-loading > webview {
+  visibility: hidden;
+}
+
+#overlay-webview {
+  border: 1px solid #d9d9d9;
+  box-sizing: border-box;
+  display: block;
+  height: 300px;
+  margin: 16px;
+  width: 608px;
+}
+
+#overlay-close-button {
+  margin-right: 0;
+}
+
+#close-button-text {
+  padding: 0 16px 0 16px;
+}
+
+.button-strip {
+  display: flex;
+  justify-content: flex-end;
+  margin: 16px;
+}

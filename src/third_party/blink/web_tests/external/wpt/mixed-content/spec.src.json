@@ -1,0 +1,290 @@
+{
+  "specification": [
+    {
+      "name": "optionally-blockable",
+      "title": "Optionally-blockable content",
+      "description": "Test behavior of optionally-blockable content",
+      "specification_url": "http://www.w3.org/TR/mixed-content/#category-optionally-blockable",
+      "test_expansion": [
+        {
+          "name": "opt-in-blocks",
+          "expansion": "default",
+          "source_protocol": "https",
+          "delivery_type": "*",
+          "delivery_value": "opt-in",
+          "redirection": "*",
+          "subresource": {
+            "blockable": [],
+            "optionally-blockable": "*"
+          },
+          "origin": [
+            "cross-http",
+            "same-http"
+          ],
+          "expectation": "blocked"
+        },
+        {
+          "name": "no-opt-in-allows",
+          "expansion": "default",
+          "source_protocol": "https",
+          "delivery_type": "*",
+          "delivery_value": null,
+          "redirection": "*",
+          "subresource": {
+            "blockable": [],
+            "optionally-blockable": "*"
+          },
+          "origin": [
+            "cross-http",
+            "same-http"
+          ],
+          "expectation": "allowed"
+        }
+      ]
+    },
+    {
+      "name": "blockable",
+      "title": "Blockable content",
+      "description": "Test behavior of blockable content.",
+      "specification_url": "http://www.w3.org/TR/mixed-content/#category-blockable",
+      "test_expansion": [
+        {
+          "name": "opt-in-blocks",
+          "expansion": "default",
+          "source_protocol": "https",
+          "delivery_type": "*",
+          "delivery_value": "opt-in",
+          "redirection": "*",
+          "subresource": {
+            "blockable": "*",
+            "optionally-blockable": []
+          },
+          "origin": [
+            "cross-http",
+            "same-http"
+          ],
+          "expectation": "blocked"
+        },
+        {
+          "name": "no-opt-in-blocks",
+          "expansion": "default",
+          "source_protocol": "https",
+          "delivery_type": "*",
+          "delivery_value": null,
+          "redirection": "*",
+          "subresource": {
+            "blockable": "*",
+            "optionally-blockable": []
+          },
+          "origin": [
+            "cross-http",
+            "same-http"
+          ],
+          "expectation": "blocked"
+        },
+        {
+          "name": "ws-downgrade-blocks",
+          "expansion": "default",
+          "source_protocol": "https",
+          "delivery_type": "*",
+          "delivery_value": "*",
+          "redirection": "*",
+          "subresource": {
+            "blockable": "websocket-request",
+            "optionally-blockable": []
+          },
+          "origin": [
+            "cross-ws",
+            "same-ws"
+          ],
+          "expectation": "blocked"
+        }
+      ]
+    },
+    {
+      "name": "allowed",
+      "title": "Allowed content",
+      "description": "Test behavior of allowed content.",
+      "specification_url": "http://www.w3.org/TR/mixed-content/",
+      "test_expansion": [
+        {
+          "name": "allowed",
+          "expansion": "default",
+          "source_protocol": "https",
+          "delivery_type": "*",
+          "delivery_value": "*",
+          "redirection": [
+            "no-redirect",
+            "keep-scheme"
+          ],
+          "subresource": {
+            "blockable": "*",
+            "optionally-blockable": "*"
+          },
+          "origin": [
+            "same-https"
+          ],
+          "expectation": "allowed"
+        },
+        {
+          "name": "websocket-allowed",
+          "expansion": "default",
+          "source_protocol": "https",
+          "delivery_type": "*",
+          "delivery_value": "*",
+          "redirection": [
+            "no-redirect",
+            "keep-scheme"
+          ],
+          "subresource": {
+            "blockable": "websocket-request",
+            "optionally-blockable": []
+          },
+          "origin": [
+            "same-wss"
+          ],
+          "expectation": "allowed"
+        }
+      ]
+    }
+  ],
+  "delivery_key": "mixedContent",
+  "excluded_tests": [
+    {
+      "name": "Skip-redundant-no-opt-in",
+      "expansion": "*",
+      "source_protocol": "*",
+      "delivery_type": "http-rp",
+      "delivery_value": null,
+      "redirection": "*",
+      "subresource": {
+        "blockable": "*",
+        "optionally-blockable": "*"
+      },
+      "origin": "*",
+      "expectation": "*"
+    },
+    {
+      "name": "Redundant-subresources",
+      "expansion": "*",
+      "source_protocol": "*",
+      "delivery_type": "*",
+      "delivery_value": "*",
+      "redirection": "*",
+      "subresource": {
+        "blockable": [
+          "a-tag"
+        ],
+        "optionally-blockable": []
+      },
+      "origin": "*",
+      "expectation": "*"
+    },
+    {
+      "name": "Skip-origins-not-applicable-to-websockets",
+      "expansion": "*",
+      "source_protocol": "*",
+      "delivery_type": "*",
+      "delivery_value": "*",
+      "redirection": "*",
+      "subresource": {
+        "blockable": [
+          "websocket-request"
+        ],
+        "optionally-blockable": []
+      },
+      "origin": [
+        "same-https",
+        "same-http",
+        "cross-https",
+        "cross-http"
+      ],
+      "expectation": "*"
+    },
+    {
+      "name": "Skip-redundant-for-opt-in-method",
+      "expansion": "*",
+      "source_protocol": "*",
+      "delivery_type": "meta",
+      "delivery_value": "opt-in",
+      "redirection": [
+        "keep-scheme",
+        "swap-scheme"
+      ],
+      "subresource": {
+        "blockable": "*",
+        "optionally-blockable": "*"
+      },
+      "origin": "*",
+      "expectation": "*"
+    }
+  ],
+  "test_expansion_schema": {
+    "expansion": [
+      "default",
+      "override"
+    ],
+    "source_protocol": [
+      "http",
+      "https"
+    ],
+    "delivery_type": [
+      "http-rp",
+      "meta"
+    ],
+    "delivery_value": [
+      null,
+      "opt-in"
+    ],
+    "redirection": [
+      "no-redirect",
+      "keep-scheme",
+      "swap-scheme"
+    ],
+    "origin": [
+      "same-https",
+      "same-http",
+      "cross-https",
+      "cross-http",
+      "same-wss",
+      "same-ws",
+      "cross-wss",
+      "cross-ws"
+    ],
+    "subresource": {
+      "blockable": [
+        "script-tag",
+        "link-css-tag",
+        "xhr-request",
+        "worker-request",
+        "module-worker-top-level",
+        "module-data-worker-import",
+        "classic-data-worker-fetch",
+        "worklet-animation-top-level",
+        "worklet-audio-top-level",
+        "worklet-layout-top-level",
+        "worklet-paint-top-level",
+        "worklet-animation-data-import",
+        "worklet-audio-data-import",
+        "worklet-layout-data-import",
+        "worklet-paint-data-import",
+        "fetch-request",
+        "a-tag",
+        "object-tag",
+        "picture-tag",
+        "websocket-request",
+        "link-prefetch-tag",
+        "beacon-request"
+      ],
+      "optionally-blockable": [
+        "img-tag",
+        "audio-tag",
+        "video-tag"
+      ]
+    },
+    "expectation": [
+      "allowed",
+      "blocked"
+    ]
+  }
+}

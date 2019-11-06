@@ -1,0 +1,116 @@
+10.5px,12.5px,10.5px:
+{
+  "layers": [
+    {
+      "name": "Scrolling background of LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "LayoutNGBlockFlow (relative positioned) DIV id='container'",
+      "position": [21, 0],
+      "bounds": [12, 12],
+      "paintInvalidations": [
+        {
+          "object": "LayoutNGBlockFlow (relative positioned) DIV id='container'",
+          "rect": [0, 0, 12, 12],
+          "reason": "paint property change"
+        }
+      ]
+    }
+  ]
+}
+10.6px,12.4px,10.4px:
+{
+  "layers": [
+    {
+      "name": "Scrolling background of LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "LayoutNGBlockFlow (relative positioned) DIV id='container'",
+      "position": [20, 0],
+      "bounds": [13, 12],
+      "paintInvalidations": [
+        {
+          "object": "LayoutNGBlockFlow (relative positioned) DIV id='container'",
+          "rect": [0, 0, 13, 12],
+          "reason": "paint property change"
+        }
+      ]
+    }
+  ]
+}
+10.4px,12.6px,10.6px:
+{
+  "layers": [
+    {
+      "name": "Scrolling background of LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "LayoutNGBlockFlow (relative positioned) DIV id='container'",
+      "position": [20, 0],
+      "bounds": [13, 12],
+      "paintInvalidations": [
+        {
+          "object": "LayoutNGBlockFlow (relative positioned) DIV id='container'",
+          "rect": [0, 0, 13, 12],
+          "reason": "paint property change"
+        }
+      ]
+    }
+  ]
+}
+10.6px,12.6px,10.6px:
+{
+  "layers": [
+    {
+      "name": "Scrolling background of LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "LayoutNGBlockFlow (relative positioned) DIV id='container'",
+      "position": [21, 0],
+      "bounds": [13, 12],
+      "paintInvalidations": [
+        {
+          "object": "LayoutNGBlockFlow (relative positioned) DIV id='container'",
+          "rect": [0, 0, 13, 12],
+          "reason": "paint property change"
+        }
+      ]
+    }
+  ]
+}
+10.4px,12.4px,10.4px:
+{
+  "layers": [
+    {
+      "name": "Scrolling background of LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "LayoutNGBlockFlow (relative positioned) DIV id='container'",
+      "position": [20, 0],
+      "bounds": [13, 12],
+      "paintInvalidations": [
+        {
+          "object": "LayoutNGBlockFlow (relative positioned) DIV id='container'",
+          "rect": [0, 0, 13, 12],
+          "reason": "paint property change"
+        }
+      ]
+    }
+  ]
+}
+

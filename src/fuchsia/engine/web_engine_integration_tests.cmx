@@ -1,0 +1,23 @@
+{
+  "sandbox": {
+    "features": [
+      "isolated-persistent-storage",
+      "deprecated-shell",
+      "system-temp",
+      "deprecated-ambient-replace-as-executable"
+    ],
+    "services": [
+      "fuchsia.deprecatedtimezone.Timezone",
+      "fuchsia.device.NameProvider",
+      "fuchsia.fonts.Provider",
+      "fuchsia.logger.LogSink",
+      "fuchsia.net.NameLookup",
+      "fuchsia.net.SocketProvider",
+      "fuchsia.netstack.Netstack",
+      "fuchsia.posix.socket.Provider",
+      "fuchsia.process.Launcher",
+      "fuchsia.sysmem.Allocator",
+      "fuchsia.web.ContextProvider"
+    ]
+  }
+}

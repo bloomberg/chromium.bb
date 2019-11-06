@@ -1,0 +1,81 @@
+/* Copyright 2019 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+/* These styles adjust the default styling for HTML elements as defined in
+ * core/html/resources/html.css in order to provide an updated style when
+ * using the refreshed controls UI.
+ */
+
+input,
+select,
+textarea {
+  background-color: #ffffff;
+  border-color: #cecece;
+}
+
+input:hover,
+select:hover,
+textarea:hover {
+  border-color: #9d9d9d;
+}
+
+input:disabled,
+select:disabled,
+textarea:disabled {
+  background-color: #ffffff;
+  border-color: #c5c5c5;
+}
+
+input[type="button" i],
+input[type="submit" i],
+input[type="reset" i],
+input[type="color" i],
+input[type="file" i]::-webkit-file-upload-button,
+button {
+  background-color: #efefef;
+  border-color: #cecece;
+}
+
+input[type="button" i]:disabled,
+input[type="submit" i]:disabled,
+input[type="reset" i]:disabled,
+input[type="color" i]:disabled,
+input[type="file" i]:disabled::-webkit-file-upload-button,
+button:disabled {
+  border-color: #c5c5c5;
+}
+
+input[type="range" i] {
+  color: #101010;
+}
+
+input[type="range" i]:disabled {
+  color: #c5c5c5;
+}
+
+meter::-webkit-meter-bar {
+  background: #efefef;
+  border-width: 1px;
+  border-style: solid;
+  border-color: #cecece;
+  border-radius: 2px;
+  box-sizing: border-box;
+  padding: 1px;
+}
+
+meter::-webkit-meter-optimum-value {
+  background: #107c10;
+  border-radius: 1px 0px 0px 1px;
+}
+
+meter::-webkit-meter-suboptimum-value {
+  background: #ffb900;
+  border-radius: 1px 0px 0px 1px;
+}
+
+meter::-webkit-meter-even-less-good-value {
+  background: #d83b01;
+  border-radius: 1px 0px 0px 1px;
+}

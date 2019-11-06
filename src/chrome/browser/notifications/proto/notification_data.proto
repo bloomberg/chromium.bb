@@ -1,0 +1,50 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+
+package notifications.proto;
+
+// Custom key value pair associated with a notification.
+message CustomData {
+  optional string key = 1;
+  optional bytes value = 2;
+}
+
+// Button type.
+enum ActionButtonType {
+  UNKNOWN_ACTION = 0;
+  HELPFUL = 1;
+  UNHELPFUL = 2;
+}
+
+// Stores data used to display a notification in the UI.
+// Next tag: 6
+message NotificationData {
+  // Represents the button on the notification.
+  // Next tag: 4
+  message Button {
+    optional string text = 1;
+    optional ActionButtonType button_type = 2;
+    optional string id = 3;
+  }
+
+  // Title of the notification.
+  optional string title = 1;
+
+  // Body text of the notification.
+  optional string message = 2;
+
+  // The unique identifiers of the icons on the notification. Each time we
+  // should only load icons asynchronously into memory.
+  repeated string icon_uuid = 3;
+
+  // Custom data associated with a notification.
+  repeated CustomData custom_data = 4;
+
+  // A list of buttons on the notification.
+  repeated Button buttons = 5;
+}

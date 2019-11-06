@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script>
+'use strict';
+
+self.testRunner.setPermission('wake-lock-screen', 'granted', location.origin, location.origin);
+
+promise_test(t => {
+  window.testRunner.setPageVisibility('hidden');
+  assert_true(document.hidden);
+  return promise_rejects(t, "NotAllowedError", WakeLock.request('screen'));
+}, "WakeLock.request('screen') fails when the document is hidden");
+
+promise_test(t => {
+  window.testRunner.setPageVisibility('visible');
+
+  const screenLock = WakeLock.request('screen');
+  window.testRunner.setPageVisibility('hidden');
+  assert_true(document.hidden);
+  return promise_rejects(t, "AbortError", screenLock);
+}, "WakeLock.request('screen') aborts when the page is hidden");
+
+promise_test(async t => {
+  window.testRunner.setPageVisibility('visible');
+
+  const controller = new AbortController();
+  const screenLock = WakeLock.request('screen', { signal: controller.signal });
+  window.testRunner.setPageVisibility('hidden');
+  assert_true(document.hidden);
+  await promise_rejects(t, "AbortError", screenLock);
+  controller.abort();
+}, "Aborting a rejected wake lock does not crash");
+</script>
+</body>
+</html>

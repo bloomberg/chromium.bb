@@ -1,0 +1,10 @@
+include_rules = [
+  "+components/arc/common",
+  "+gpu/config/gpu_preferences.h",
+  "+media/base",
+  "+media/gpu",
+  "+media/video",
+  "+services/service_manager/public/cpp",
+  "+ui/gfx",
+  "+ui/ozone/public",
+]

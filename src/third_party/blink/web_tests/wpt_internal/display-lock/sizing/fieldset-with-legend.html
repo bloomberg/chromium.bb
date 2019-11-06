@@ -1,0 +1,37 @@
+<!doctype HTML>
+<html class="reftest-wait">
+<meta charset="utf8">
+<title>Display Locking: fieldset with legend</title>
+<link rel="author" title="Vladimir Levin" href="mailto:vmpstr@chromium.org">
+<link rel="help" href="https://github.com/WICG/display-locking">
+<!-- The legend should be ignored when sizing, resulting in the same ref as empty -->
+<link rel="match" href="fieldset-empty-ref.html">
+<script src="/common/reftest-wait.js"></script>
+
+<style>
+#border {
+  border: 1px solid black;
+  width: min-content;
+}
+#container {
+  contain: style layout;
+}
+</style>
+
+<div id="border">
+  <fieldset id="container">
+    <legend>This is a legend</legend>
+  </fieldset>
+</div>
+
+<script>
+async function runTest() {
+  const container = document.getElementById("container");
+  await container.displayLock.acquire({ timeout: Infinity, size: [0, 0] });
+  takeScreenshot();
+}
+
+window.onload = runTest;
+</script>
+
+</html>

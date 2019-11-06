@@ -1,0 +1,36 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto3";
+
+import "click_to_call_message.proto";
+
+package chrome_browser_sharing;
+
+// Required in Chrome.
+option optimize_for = LITE_RUNTIME;
+
+// Message for sending between devices in Sharing.
+message SharingMessage {
+  // Identifier of sender. required.
+  string sender_guid = 1;
+
+  // Payload of the message, contains one of the messages below. required.
+  oneof payload {
+    PingMessage ping_message = 2;
+    AckMessage ack_message = 3;
+    ClickToCallMessage click_to_call_message = 4;
+  }
+}
+
+// Message for pinging the receiver expecting an acknowledgement.
+message PingMessage {
+  // Intentionally empty.
+}
+
+// Message for acknowledging the sender after a non-AckMessage is received.
+message AckMessage {
+  // required.
+  string original_message_id = 1;
+}
