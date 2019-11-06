@@ -239,6 +239,10 @@ bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
       rounded_size, UnguessableToken::Create());
   if (!shm_.IsValid()) {
     // The error is logged within CreateFileMappingWithReducedPermissions().
+    PLOG(ERROR) << "CreateFileMapping failed"
+                << ", name = " << name_
+                << ", rounded_size = " << rounded_size;
+
     return false;
   }
 
@@ -330,7 +334,9 @@ bool SharedMemory::MapAt(off_t offset, size_t bytes) {
     ReleaseReservation();
   }
   if (!memory_) {
-    DPLOG(ERROR) << "Failed executing MapViewOfFile";
+    PLOG(ERROR) << "Failed executing MapViewOfFile"
+                << ", Error info: offset = " << offset << ", bytes = " << bytes
+                << ", requested_size_ = " << requested_size_;
     return false;
   }
 

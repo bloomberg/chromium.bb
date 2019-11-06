@@ -424,7 +424,10 @@ void DiscardableSharedMemoryManager::AllocateLockedDiscardableSharedMemory(
   // Make sure |id| is not already in use.
   MemorySegmentMap& client_segments = clients_[client_id];
   if (client_segments.find(id) != client_segments.end()) {
-    LOG(ERROR) << "Invalid discardable shared memory ID";
+    LOG(ERROR) << "Invalid discardable shared memory ID"
+               << ", client process id = " << client_id
+               << ", size = " << size
+               << ", id = " << id;
     *shared_memory_region = base::UnsafeSharedMemoryRegion();
     return;
   }
@@ -446,6 +449,12 @@ void DiscardableSharedMemoryManager::AllocateLockedDiscardableSharedMemory(
   std::unique_ptr<base::DiscardableSharedMemory> memory(
       new base::DiscardableSharedMemory);
   if (!memory->CreateAndMap(size)) {
+    LOG(ERROR) << "Cannot create and map discardable memory segment"
+               << ", client process id = " << client_id
+               << ", size = " << size
+               << ", id = " << id
+               << ", bytes_allocated_ = " << bytes_allocated_
+               << ", memory_limit_ = " << memory_limit_;
     *shared_memory_region = base::UnsafeSharedMemoryRegion();
     return;
   }
@@ -453,6 +462,12 @@ void DiscardableSharedMemoryManager::AllocateLockedDiscardableSharedMemory(
   base::CheckedNumeric<size_t> checked_bytes_allocated = bytes_allocated_;
   checked_bytes_allocated += memory->mapped_size();
   if (!checked_bytes_allocated.IsValid()) {
+    LOG(ERROR) << "checked_bytes_allocated is invalid"
+               << ", client process id = " << client_id
+               << ", size = " << size
+               << ", id = " << id
+               << ", bytes_allocated_ = " << bytes_allocated_
+               << ", memory_limit_ = " << memory_limit_;
     *shared_memory_region = base::UnsafeSharedMemoryRegion();
     return;
   }
