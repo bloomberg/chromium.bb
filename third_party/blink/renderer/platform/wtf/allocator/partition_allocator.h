@@ -42,11 +42,6 @@ class WTF_EXPORT PartitionAllocator {
     return reinterpret_cast<T*>(
         AllocateBacking(size, WTF_HEAP_PROFILER_TYPE_NAME(T)));
   }
-  template <typename T>
-  static T* AllocateExpandedVectorBacking(size_t size) {
-    return reinterpret_cast<T*>(
-        AllocateBacking(size, WTF_HEAP_PROFILER_TYPE_NAME(T)));
-  }
   static void FreeVectorBacking(void* address);
   static inline bool ExpandVectorBacking(void*, size_t) { return false; }
   static inline bool ShrinkVectorBacking(void* address,
@@ -88,7 +83,6 @@ class WTF_EXPORT PartitionAllocator {
 
   static void TraceMarkedBackingStore(void*) {}
   static void BackingWriteBarrier(void*) {}
-  static void BackingWriteBarrier(void*, size_t) {}
   template <typename>
   static void BackingWriteBarrierForHashTable(void*) {}
 
@@ -114,9 +108,6 @@ class WTF_EXPORT PartitionAllocator {
 // heap.)
 template <>
 WTF_EXPORT char* PartitionAllocator::AllocateVectorBacking<char>(size_t);
-template <>
-WTF_EXPORT char* PartitionAllocator::AllocateExpandedVectorBacking<char>(
-    size_t);
 
 }  // namespace WTF
 
