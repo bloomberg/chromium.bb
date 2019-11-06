@@ -1237,6 +1237,19 @@ int UseCounterHelper::MapCSSPropertyIdToCSSSampleIdForHistogram(
       return 636;
     case CSSPropertyID::kColorScheme:
       return 637;
+
+
+
+    // patch section: rubberband (returns 638)
+
+
+    // patch section: lcd-text background (returns 641)
+
+
+    // patch section: suppress-needs-compositing-input-update (returns 642)
+
+
+
     // 1. Add new features above this line (don't change the assigned numbers of
     // the existing items).
     // 2. Update kMaximumCSSSampleId (defined in
