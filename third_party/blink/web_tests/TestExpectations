@@ -2606,6 +2606,9 @@ crbug.com/618969 external/wpt/css/css-grid/subgrid/ [ Skip ]
 
 crbug.com/1012627 [ Win7 ] external/wpt/css/css-text/line-breaking/line-breaking-021.html [ Failure ]
 
+crbug.com/1022141 external/wpt/speech-api/SpeechSynthesis-speak-events.html [ Crash Timeout ]
+crbug.com/1022141 virtual/speech-with-unified-autoplay/external/wpt/speech-api/SpeechSynthesis-speak-events.html [ Crash Timeout ]
+
 # ====== New tests from wpt-importer added here ======
 crbug.com/626703 [ Linux ] external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-iframe-messagechannel.https.html [ Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-iframe-messagechannel.https.html [ Timeout ]
@@ -3116,10 +3119,8 @@ crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/the-fieldset-
 crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/legend-display-rendering.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-text/hyphens/hyphens-auto-001.html [ Failure ]
 crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/legend-tall.html [ Failure ]
-crbug.com/626703 external/wpt/speech-api/SpeechSynthesis-speak-events.html [ Timeout ]
 crbug.com/626703 external/wpt/speech-api/SpeechSynthesis-pause-resume.tentative.html [ Timeout ]
 crbug.com/626703 virtual/speech-with-unified-autoplay/external/wpt/speech-api/SpeechSynthesis-pause-resume.tentative.html [ Timeout ]
-crbug.com/626703 virtual/speech-with-unified-autoplay/external/wpt/speech-api/SpeechSynthesis-speak-events.html [ Timeout ]
 crbug.com/626703 virtual/speech-with-unified-autoplay/external/wpt/speech-api/SpeechSynthesis-speak-without-activation-fails.tentative.html [ Failure ]
 crbug.com/880983 external/wpt/css/css-masking/clip-path/clip-path-path-interpolation-001.html [ Failure ]
 crbug.com/880983 external/wpt/css/css-masking/clip-path/clip-path-path-interpolation-002.html [ Failure ]
