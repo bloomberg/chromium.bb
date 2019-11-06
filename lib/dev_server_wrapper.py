@@ -246,7 +246,8 @@ def GetIPv4Address(dev=None, global_ip=True):
   cmd += ['scope', 'global' if global_ip else 'host']
   cmd += [] if dev is None else ['dev', dev]
 
-  result = cros_build_lib.run(cmd, print_cmd=False, capture_output=True)
+  result = cros_build_lib.run(cmd, print_cmd=False, capture_output=True,
+                              encoding='utf-8')
   matches = re.findall(r'\binet (\d+\.\d+\.\d+\.\d+).*', result.output)
   if matches:
     return matches[0]
@@ -483,7 +484,7 @@ class DevServerWrapper(multiprocessing.Process):
     result = self._RunCommand(
         cmd, enter_chroot=True, chroot_args=chroot_args,
         cwd=constants.SOURCE_ROOT, extra_env=extra_env, error_code_ok=True,
-        redirect_stdout=True, combine_stdout_stderr=True)
+        redirect_stdout=True, combine_stdout_stderr=True, encoding='utf-8')
     if result.returncode != 0:
       msg = ('Devserver failed to start!\n'
              '--- Start output from the devserver startup command ---\n'
@@ -534,7 +535,7 @@ class DevServerWrapper(multiprocessing.Process):
     if self._RunCommand(
         ['test', '-f', fname], error_code_ok=True).returncode == 0:
       result = self._RunCommand(['tail', '-n', str(num_lines), fname],
-                                capture_output=True)
+                                capture_output=True, encoding='utf-8')
       output = '--- Start output from %s ---' % fname
       output += result.output
       output += '--- End output from %s ---' % fname
