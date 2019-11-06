@@ -510,7 +510,5 @@ class BotUpdateApi(recipe_api.RecipeApi):
         bot_update_json['properties'][rev_property])
     self._resolve_fixed_revisions(bot_update_json)
 
-    # TODO(crbug.com/1019824): Pass |no_fetch_tags=True| here to prevent
-    # fetching 10k+ tags for chromium. This operation shouldn't need tags, it is
-    # removing a previously applied patch.
-    self.ensure_checkout(patch=False, update_presentation=False)
+    self.ensure_checkout(
+        patch=False, no_fetch_tags=True, update_presentation=False)
