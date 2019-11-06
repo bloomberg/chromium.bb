@@ -357,7 +357,8 @@ class NetworkContextTest : public testing::Test {
  public:
   NetworkContextTest()
       : task_environment_(base::test::TaskEnvironment::MainThreadType::IO),
-        network_change_notifier_(net::NetworkChangeNotifier::CreateMock()),
+        network_change_notifier_(
+            net::NetworkChangeNotifier::CreateMockIfNeeded()),
         network_service_(NetworkService::CreateForTesting()) {}
   ~NetworkContextTest() override {}
 
