@@ -1455,7 +1455,6 @@ crbug.com/591099 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/scrollb
 crbug.com/591099 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/scrollbars.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/table-as-item-auto-min-width.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/ttwf-reftest-flex-inline.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/ttwf-reftest-flex-order.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/hittest-overlapping-margin.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/hittest-overlapping-order.html [ Failure ]
 
